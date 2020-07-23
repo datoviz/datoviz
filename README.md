@@ -1,6 +1,6 @@
 # Visky: scientific visualization with Vulkan
 
-**Visky** is a **scientific visualization library written in C** and leveraging the low-level Vulkan API for GPUs. It is still highly experimental and the API/ABI changes a lot. The main goals of Visky are **performance, scalability, visual quality**, and ease of use. Longer-term goals are: integration with dynamic languages, easy and fast generation of static plots and videos, remote use.
+**Visky** is a **scientific visualization library written in C** leveraging the low-level Vulkan API for GPUs. It is still highly experimental and the API/ABI changes a lot. The main goals of Visky are **performance, scalability, visual quality**, and ease of use. Longer-term goals are: integration with dynamic languages, easy and fast generation of static plots and videos, remote use.
 
 Visky provides a high-level interface to create interactive plots, as well as a low-level API for those who want to deal with shaders, GPU buffers, etc. Visky is entirely implemented in C, except for thin C wrappers of C++ dependencies.
 
@@ -17,19 +17,18 @@ Tighter integration with Dear ImGui is also planned to make it possible to build
 
 Mandatory dependencies:
 
-* cmake
-* ninja (for building)
-* xcb
-* glfw3
-* vulkan
+* **cmake and ninja**
+* **xcb**
+* **glfw3**
+* **vulkan**
 
 Optional dependencies:
 
-* libpng (screenshot and offscreen backends)
-* ffmpeg (video backend)
-* libvncserver (VNC backend)
-* Qt5 (Qt example). Note: Ubuntu users need Ubuntu 20.04 in order to have a distribution of Qt5 with Vulkan support.
-* ASSIMP (mesh file loading)
+* **libpng** (screenshot and offscreen backends)
+* **ffmpeg** (video backend)
+* **libvncserver** (VNC backend)
+* **Qt5** (Qt example). Note: Ubuntu users need Ubuntu 20.04 in order to have a distribution of Qt5 with Vulkan support.
+* **ASSIMP** (mesh file loading)
 
 The following libraries are statically bundled within the Visky library and they don't need to be installed separately:
 
