@@ -1,5 +1,6 @@
 # Visky: scientific visualization with Vulkan
 
+**Visky** is a scientific visualization library written in C and leveraging the low-level Vulkan API for GPUs. It is still highly experimental and the API/ABI changes a lot.
 
 ## Installation
 
@@ -12,7 +13,6 @@ Mandatory dependencies:
 * xcb
 * glfw3
 * vulkan
-* cglm
 
 Optional dependencies:
 
@@ -20,62 +20,66 @@ Optional dependencies:
 * ffmpeg (video backend)
 * libvncserver (VNC backend)
 * Qt5 (Qt example)
+* ASSIMP (mesh file loading)
 
 
-### Unix / macOS
+### Unix
 
 The following instructions were tested on **Ubuntu 20.04**.
 
 1. Install the latest graphics drivers for your system and hardware.
 2. Install build tools and dependencies:
 
-    `sudo apt install build-essentials cmake ninja-build xcb libx11-xcb-dev libglfw3-dev`
+    `sudo apt install build-essential cmake ninja-build xcb libx11-xcb-dev libglfw3-dev`
 
     - If you prefer to install **all dependencies in one go**:
 
-    `sudo apt install cmake xcb libx11-xcb-dev libglfw3-dev libpng-dev libavcodec-dev libavformat-dev libavfilter-dev libavutil-dev libswresample-dev libvncserver-dev xtightvncviewer libqt5opengl5-dev libfreetype-dev`
+    `sudo apt install build-essential cmake ninja-build xcb libx11-xcb-dev libglfw3-dev libpng-dev libavcodec-dev libavformat-dev libavfilter-dev libavutil-dev libswresample-dev libvncserver-dev xtightvncviewer libqt5opengl5-dev libfreetype-dev libassimp-dev`
 
 3. Install the latest [Lunarg Vulkan SDK](https://vulkan.lunarg.com/) (tarball SDK), for example in `~/vulkan`
 
     1. `cd ~/vulkan`
     2. `./vulkansdk samples` (build the Vulkan samples)
     3. `./samples/build/Sample-Programs/Hologram/Hologram` (test an example)
-    4. Add `source ~/vulkan/setup-env.sh` to your `~/.bashrc` so that the `$VULKAN_SDK` environment variable and other variables are properly set in your terminal.
+    4. **Important**: add `source ~/vulkan/setup-env.sh` to your `~/.bashrc` so that the `$VULKAN_SDK` environment variable and other variables are properly set in your terminal.
 
-4. Install [cglm](https://cglm.readthedocs.io/en/latest/):
-
-    1. `git clone git@github.com:recp/cglm.git`
-    2. `cd cglm`
-    3. `mkdir build`
-    4. `cd build`
-    5. `cmake ..`
-    6. `make`
-    7. `sudo make install`
-
-5. (Optional) Install optional dependencies to unlock all features.
+4. (Optional) Install optional dependencies to unlock all features.
 
     1. PNG support: `sudo apt install libpng-dev`
     2. FFmpeg support: `sudo apt install libavcodec-dev libavformat-dev libavfilter-dev libavutil-dev libswresample-dev`
     3. VNC support: `sudo apt install libvncserver-dev xtightvncviewer`
     4. Qt5 support: `sudo apt install libqt5opengl5-dev`
-    5. To create custom font textures from TTF files: `sudo apt install libfreetype-dev`
+    5. ASSIMP support: `sudo apt install libassimp-dev`
+    6. To create custom font textures from TTF files: `sudo apt install libfreetype-dev`
 
-6. Clone the visky repository and build the library:
+5. Clone the visky repository and build the library:
 
     1. `git clone git@github.com:viskydev/visky.git`
     2. `cd visky`
-    3. `bash manage.sh compile`
+    3. `./manage.sh build`
 
-7. Check the compilation worked by running an example:
+6. Check the compilation worked by running an example:
 
-    1. `export VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation`
-    2. `./build/app_blank`
+    1. `./manage.sh run app_triangle`
+
+    Note: this will only work if Vulkan SDK's `setup-env.sh` file is source-ed in the terminal.
+
+
+### macOS
+
+**Help needed to fill in the details**. Note: the tests do not work yet because of a bug in the Vulkan SDK in the June 2020 release, which will be fixed in the next release.
+
+1. Install the latest graphics drivers for your system and hardware.
+2. Install xcode, brew, ninja, glfw3
+3. Install the Vulkan SDK for macOS (it uses MoltenVK to map the Vulkan API to the native Apple Metal API).
+4. Clone the repository and do `./manage.sh build` to build the library and the examples.
+5. Use `./manage.sh run app_triangle` to run an example.
 
 
 
 ### Windows 10
 
-[WIP] The following instructions were tested on **Windows 10 and Visual Studio Community 2019**.
+**Not working yet, help needed**
 
 1. Install the latest graphics drivers for your system and hardware.
 2. Install Visual Studio Community 2019 (free).
@@ -88,23 +92,35 @@ The following instructions were tested on **Ubuntu 20.04**.
 
 5. Install the latest [Lunarg Vulkan SDK](https://vulkan.lunarg.com/) (`.exe` executable).
     Windows Universal C Runtime https://stackoverflow.com/a/52329698
-6. ...
+6. To continue...
 
 
+## Code organization
 
-## Tests
+There are two sets of APIs:
 
-The library comes with a work-in-progress testing suite that runs a few examples (offscreen), makes screenshots, and compares them to presaved reference screenshots. A test pass if the two images are not too different (using a simple mean square metrics for now).
+* The **scene** API: high-level, deals with visual elements such as markers, paths, images, text, subplots, axes...
+* The **app** API: low-level, deals with shaders, GPU buffers, pipelines, etc.
 
-1. `bash manage.sh test`
+The scene API is build on top of the app API. The app API is based on a thin Vulkan wrapper called **vklite** and implemented in `src/vklite.c`. Almost all of Vulkan-specific code is found in this file. The app API could later support other GPU renderers such as WebGPU, DirectX 12, Metal...
+
+There are some examples using either the app API or the scene API in `examples/`. There is also a testing suite that implements many examples.
+
+
+## Testing suite
+
+There are no unit tests yet, but the library comes with an integration testing suite that runs a few examples (offscreen), makes screenshots, and compares them to presaved reference screenshots. A test passes if the two images are almost identical.
+
+1. `./manage.sh test`
 2. Screenshots are saved in `test/screenshots/` the first time you run the tests.
 3. Afterwards, screenshots are no longer saved but compared to the reference screenshots, unless a test fails, in which case the failing screenshot it saved with the`*_fail.png` suffix. To see a diff:
 
     1. Install ImageMagick.
-    2. Make a diff with `compare test/screenshots/test_11_1/plot2d_scatter1* -compose src diff.png`
+    2. Make a diff with `compare test/screenshots/test_11_image* -compose src diff.png`
     3. Open `diff.png`
 
-### No GPU? Enable pure CPU Vulkan emulation with Google SwiftShader
+
+## No GPU? Enable CPU Vulkan emulation with Google SwiftShader
 
 This is useful on computers with no GPUs or on continuous integration servers, for testing purposes only. SwiftShader only works with **offscreen backends**.
 
