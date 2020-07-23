@@ -1,0 +1,10 @@
+[package]
+name = "visky_rust_demo"
+version = "0.0.1"
+authors = ["Me <me@me.com>"]
+edition = "2018"
+
+[dependencies]
+libc = "0.2.0"
+rand = "0.7"
+rand_distr = "0.2"
