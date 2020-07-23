@@ -105,8 +105,8 @@ END_INCL_NO_WARN
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #define POS(a)    ((a) >= 0 ? (a) : 0)
 
-#define DBG(x)  printf("%d\n", (x))
-#define DBGF(x) printf("%.8f\n", (x))
+#define DBG(x)  printf("%d\n", (int)(x))
+#define DBGF(x) printf("%.8f\n", (double)(x))
 #define PRT(x)  printf("%s\n", (x))
 
 #define PLUS_INF  (+1e30)
@@ -142,6 +142,8 @@ write_ppm(const char* filename, uint32_t width, uint32_t height, const uint8_t* 
 
 VKY_EXPORT char* read_file(const char* filename, uint32_t* size);
 
+VKY_EXPORT char* read_npy(const char* filename, uint32_t* size);
+
 VKY_EXPORT uint8_t* read_ppm(const char* filename, int*, int*);
 
 
@@ -165,6 +167,8 @@ VKY_EXPORT uint64_t vky_get_fps(uint64_t frame_count);
 VKY_EXPORT void vky_normalize(uint32_t point_count, dvec2* points);
 
 VKY_EXPORT void vky_earth_to_pixels(uint32_t point_count, dvec2* points);
+
+VKY_EXPORT dvec2s vky_min_max(size_t size, double* points);
 
 
 

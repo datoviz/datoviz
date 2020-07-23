@@ -6,7 +6,7 @@ Visky provides a high-level interface to create interactive plots, as well as a 
 
 A longer-term goal is to provide a reasonably **stable ABI** that will allow dynamic languages to implement bindings via a foreign function interface. The `bindings/` subfolder provides binding proofs of concepts for **Python, Julia, and Rust** (help appreciated for other languages).
 
-The main supported windowing library is **glfw** at the moment. The next step is to support Qt5 (note that Ubuntu 20.04 is required to have a distribution of Qt5 with Vulkan support), a proof of concept is provided in the examples. Offscreen backends are also provided, which are useful for testing, the video backend (using ffmpeg), and remote backends (there's a VNC backend proof of concept, and integration with Jupyter is planned via tornado and WebSockets).
+The main supported windowing library is **glfw** at the moment. The next step is to support Qt5, a proof of concept is provided in the examples. Offscreen backends are also provided, which are useful for testing, the video backend (using ffmpeg), and remote backends (there's a VNC backend proof of concept, and integration with Jupyter is planned via tornado and WebSockets).
 
 Tighter integration with Dear ImGui is also planned to make it possible to build rich, interactive GUIs without the need for an external GUI system like Qt.
 
@@ -28,7 +28,7 @@ Optional dependencies:
 * libpng (screenshot and offscreen backends)
 * ffmpeg (video backend)
 * libvncserver (VNC backend)
-* Qt5 (Qt example)
+* Qt5 (Qt example). Note: Ubuntu users need Ubuntu 20.04 in order to have a distribution of Qt5 with Vulkan support.
 * ASSIMP (mesh file loading)
 
 The following libraries are statically bundled within the Visky library and they don't need to be installed separately:

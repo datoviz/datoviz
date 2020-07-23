@@ -1,19 +1,5 @@
 #include <visky/visky.h>
 
-static inline dvec2s vky_min_max(size_t size, double* points)
-{
-    const double INF = 1e9;
-    double min = +INF, max = -INF;
-    for (uint32_t i = 0; i < size; i++)
-    {
-        if (points[i] < min)
-            min = points[i];
-        if (points[i] > max)
-            max = points[i];
-    }
-    return (dvec2s){min, max};
-}
-
 int main()
 {
     log_set_level_env();
@@ -28,15 +14,16 @@ int main()
     char path[1024];
 
     // Spike samples.
-    snprintf(path, sizeof(path), "%s/misc/spike_samples.bin", DATA_DIR);
-    uint64_t* samples = (uint64_t*)read_file(path, &size);
+    snprintf(path, sizeof(path), "%s/misc/spikes.samples.npy", DATA_DIR);
+    uint64_t* samples = (uint64_t*)read_npy(path, &size);
     ASSERT(samples != NULL);
     ASSERT(size > 0);
-    uint32_t n = size / 8;
+    uint32_t n = size / 8; // 8 bytes per number
+    ASSERT(samples[n - 1] != 0);
 
     // Spike depths.
-    snprintf(path, sizeof(path), "%s/misc/spike_depths.bin", DATA_DIR);
-    double* depths = (double*)read_file(path, &size);
+    snprintf(path, sizeof(path), "%s/misc/spikes.depths.npy", DATA_DIR);
+    double* depths = (double*)read_npy(path, &size);
 
     // Set the axes controller.
     VkyAxes2DParams axparams = vky_default_axes_2D_params();
@@ -53,12 +40,13 @@ int main()
     VkyVertex* data = calloc(2 * n, sizeof(VkyVertex));
     float x, y;
     dvec2s dminmax = vky_min_max(n, depths);
+    ASSERT(dminmax.x < dminmax.y);
 
     for (uint32_t i = 0; i < n; i++)
     {
         x = -1 + 2 * ((double)samples[i] / samples[n - 1]);
         y = -1 + 2 * (depths[i] - dminmax.x) / (dminmax.y - dminmax.x);
-        data[i] = (VkyVertex){{x, y, 0}, {0, 0, 0, 8}};
+        data[i] = (VkyVertex){{x, y, 0}, {0, 0, 0, 4}};
     }
     vky_visual_upload(visual, (VkyData){n, data});
     free(samples);

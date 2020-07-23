@@ -192,6 +192,79 @@ char* read_file(const char* filename, uint32_t* size)
     return buffer;
 }
 
+// static inline int memvcmp(void* memory, unsigned char val, unsigned int size)
+// {
+//     unsigned char* mm = (unsigned char*)memory;
+//     return (*mm == val) && memcmp(mm, mm + 1, size - 1) == 0;
+// }
+
+char* read_npy(const char* filename, uint32_t* size)
+{
+    /* Tiny NPY reader that requires the user to know in advance the data type of the file. */
+
+    /* The returned pointer must be freed by the caller. */
+    char* buffer = NULL;
+    long length = 0;
+    int nread = 0, err = 0;
+
+    FILE* f = fopen(filename, "rb");
+    if (!f)
+    {
+        log_error("the file %s does not exist", filename);
+        return NULL;
+    }
+
+    // Determine the total file size.
+    fseek(f, 0, SEEK_END);
+    length = ftell(f);
+    fseek(f, 0, SEEK_SET);
+
+    // const uint32_t MAGIC_SIZE = 6;
+    // char magic[MAGIC_SIZE];
+
+    // // Read NPY header.
+    // nread = fread(magic, sizeof(char), MAGIC_SIZE, f);
+    // if (!nread)
+    //     goto error;
+
+    // TODO: check the magic
+    // TODO: check the version numbers
+
+    // Determine the header size.
+    uint16_t header_len = 0;
+    err = fseek(f, 8, SEEK_SET);
+    if (err)
+        goto error;
+    nread = fread(&header_len, sizeof(uint16_t), 1, f);
+    if (!nread)
+        goto error;
+    log_trace("npy file header size is %d bytes", header_len);
+    ASSERT(header_len > 0);
+    header_len += 10; // NOTE: the header len does NOT include the 10 bytes with the magic string,
+                      // the version, the header length
+
+    // Jump to the beginning of the data buffer.
+    fseek(f, 0, header_len);
+    length -= header_len;
+    if (size != NULL)
+        *size = length;
+    err = fseek(f, header_len, SEEK_SET);
+    if (err)
+        goto error;
+
+    // Read the data buffer.
+    buffer = calloc((size_t)length, 1);
+    ASSERT(buffer != NULL);
+    fread(buffer, 1, (size_t)length, f);
+    fclose(f);
+
+    return buffer;
+
+error:
+    log_error("unable to read the NPY file %s", filename);
+    return NULL;
+}
+
 
 
 /*************************************************************************************************/
@@ -264,6 +337,21 @@ void vky_normalize(uint32_t point_count, dvec2* points)
         if (ymin < ymax)
             points[i][1] = -1 + dy * (points[i][1] - ymin);
     }
+}
+
+
+dvec2s vky_min_max(size_t size, double* points)
+{
+    const double INF = 1e9;
+    double min = +INF, max = -INF;
+    for (uint32_t i = 0; i < size; i++)
+    {
+        if (points[i] < min)
+            min = points[i];
+        if (points[i] > max)
+            max = points[i];
+    }
+    return (dvec2s){min, max};
 }
 
 
