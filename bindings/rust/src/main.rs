@@ -10,9 +10,10 @@ extern {
 fn main() {
 
     let normal = Normal::new(0.0, 0.25);
-    let mut x: [f64; 2000] = [0.0; 2000];
+    // NOTE: this number is the number of points TIMES 2 (x and y)
+    let mut x: [f64; 50000] = [0.0; 50000];
     for i in 0..x.len() {
         x[i] = normal.sample(&mut rand::thread_rng());
     }
-    unsafe { vky_demo_scatter(1000, x.as_mut_ptr() as *mut f64) };
+    unsafe { vky_demo_scatter(25000, x.as_mut_ptr() as *mut f64) };
 }
