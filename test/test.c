@@ -52,13 +52,14 @@
 
 // TODO:
 // test_canvas(canvas, #func, 1);
-#define VKLITE_TEST(func)                                                                         \
+#define VKLITE_TEST(func, funcd)                                                                  \
     res = func(canvas);                                                                           \
     show_single_test(#func, res);                                                                 \
     res_tot += res;                                                                               \
     vky_reset_canvas(canvas);                                                                     \
     vky_clear_all_buffers(canvas->gpu);                                                           \
-    vky_reset_all_constants();
+    vky_reset_all_constants();                                                                    \
+    funcd(canvas);
 
 
 
@@ -343,7 +344,8 @@ static int test_vklite()
     VkyApp* app = vky_create_app(VKY_BACKEND_OFFSCREEN, NULL);
     VkyCanvas* canvas = vky_create_canvas(app, WIDTH, HEIGHT);
 
-    VKLITE_TEST(test_vklite_blank);
+    VKLITE_TEST(test_vklite_blank, no_destroy);
+    VKLITE_TEST(test_vklite_triangle, test_vklite_triangle_destroy);
 
     vky_destroy_app(app);
 
@@ -359,8 +361,7 @@ int main(int argc, char* argv[])
     int res = 0;
 
     TEST_INDEX = 0;
-    // Only run vklite tests when no arguments are given.
-    if (argc == 1)
+    if (argc == 1 || strcmp(argv[1], "vklite") == 0)
     {
         res += test_vklite();
     }
