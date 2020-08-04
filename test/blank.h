@@ -1,6 +1,9 @@
 #include <visky/visky.h>
 
-static void blank(VkyPanel* panel) {}
+static void blank(VkyPanel* panel)
+{
+    vky_clear_color(panel->scene, (VkClearColorValue){{255, 0, 0, 255}});
+}
 
 static void hello(VkyPanel* panel)
 {

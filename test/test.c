@@ -118,6 +118,14 @@ static int image_diff(const uint8_t* image_0, const char* path)
     uint8_t* image_1 = read_ppm(path, &w, &h);
     ASSERT(w == WIDTH && h == HEIGHT);
 
+    // Make sure the image is not all black.
+    void* black = calloc(WIDTH * HEIGHT * 3, sizeof(uint8_t));
+    if (memcmp(image_0, black, (size_t)(WIDTH * HEIGHT * 3 * sizeof(uint8_t))) == 0)
+    {
+        free(black);
+        return 1;
+    }
+
     // Fast byte-to-byte comparison of the images.
     if (memcmp(image_0, image_1, (size_t)(WIDTH * HEIGHT * 3 * sizeof(uint8_t))) == 0)
         return 0;
