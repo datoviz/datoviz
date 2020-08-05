@@ -231,6 +231,8 @@ void vky_create_event_controller(VkyCanvas* canvas)
 
     canvas->event_controller->frame_callbacks =
         calloc(VKY_MAX_EVENT_CALLBACKS, sizeof(VkyFrameCallback));
+    canvas->event_controller->mock_input_callbacks =
+        calloc(VKY_MAX_EVENT_CALLBACKS, sizeof(VkyFrameCallback));
 }
 
 void vky_reset_event_controller(VkyEventController* event_controller)
@@ -258,6 +260,9 @@ void vky_destroy_event_controller(VkyEventController* event_controller)
     if (event_controller->frame_callbacks != NULL)
         free(event_controller->frame_callbacks);
 
+    if (event_controller->mock_input_callbacks != NULL)
+        free(event_controller->mock_input_callbacks);
+
     free(event_controller);
 }
 
@@ -270,13 +275,11 @@ void vky_destroy_event_controller(VkyEventController* event_controller)
 /* Update the mouse state from a mouse position and mouse button. */
 void vky_update_mouse_state(VkyMouse* mouse, vec2 pos, VkyMouseButton button)
 {
-    // log_trace("update mouse state");
-
     double time = vky_get_timer();
 
     // Update the last pos.
     glm_vec2_copy(mouse->cur_pos, mouse->last_pos);
-    // Update the mouse current position.
+    // Update the mouse current position, in pixels.
     mouse->cur_pos[0] = pos[0];
     mouse->cur_pos[1] = pos[1];
 
@@ -363,12 +366,6 @@ void vky_update_mouse_state(VkyMouse* mouse, vec2 pos, VkyMouseButton button)
         }
     }
 }
-
-
-
-/*************************************************************************************************/
-/*  Mouse normalization                                                                          */
-/*************************************************************************************************/
 
 void vky_mouse_normalize(vec2 size, vec2 center, vec2 pos)
 {
@@ -482,8 +479,30 @@ void vky_update_keyboard_state(VkyKeyboard* keyboard, VkyKey key, VkyKeyModifier
 
 
 /*************************************************************************************************/
-/*  Event loop                                                                                   */
+/*  Callbacks                                                                                    */
 /*************************************************************************************************/
+
+void vky_add_mock_input_callback(VkyCanvas* canvas, VkyFrameCallback cb)
+{
+    /* Mock input callbacks may call vky_update_mouse_state() and vky_update_keyboard_state()
+    to manually update the mouse and keyboard states. Useful for testing purposes. */
+
+    uint32_t n = canvas->event_controller->mock_input_callback_count;
+    ASSERT(canvas->event_controller->mock_input_callbacks != NULL);
+    canvas->event_controller->mock_input_callbacks[n] = cb;
+    canvas->event_controller->mock_input_callback_count++;
+}
+
+int vky_call_mock_input_callbacks(VkyEventController* event_controller)
+{
+    ASSERT(event_controller != NULL);
+    for (uint32_t i = 0; i < event_controller->mock_input_callback_count; i++)
+    {
+        ASSERT(event_controller->mock_input_callbacks[i] != NULL);
+        event_controller->mock_input_callbacks[i](event_controller->canvas);
+    }
+    return (int)event_controller->mock_input_callback_count;
+}
 
 void vky_add_frame_callback(VkyCanvas* canvas, VkyFrameCallback cb)
 {
@@ -502,6 +521,12 @@ void vky_call_frame_callbacks(VkyEventController* event_controller)
         event_controller->frame_callbacks[i](event_controller->canvas);
     }
 }
+
+
+
+/*************************************************************************************************/
+/*  Event loop                                                                                   */
+/*************************************************************************************************/
 
 // This function updates the VkyMouse and VkyKeyboard structures:
 //
@@ -541,6 +566,12 @@ void vky_update_event_states(VkyEventController* event_controller)
         return;
     }
     VkyBackendType backend = event_controller->canvas->app->backend;
+
+    // Mock input.
+    if (vky_call_mock_input_callbacks(event_controller) > 0)
+        // Do not process normal interactive events when using mock input in order to avoid
+        // conflicts.
+        return;
 
     // Fill the pos and button variables, depending on the backend.
     vec2 pos = {0, 0};

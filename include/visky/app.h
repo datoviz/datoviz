@@ -268,6 +268,9 @@ struct VkyEventController
     VkyMouse* mouse;
     VkyKeyboard* keyboard;
 
+    uint32_t mock_input_callback_count;
+    VkyFrameCallback* mock_input_callbacks;
+
     uint32_t frame_callback_count;
     VkyFrameCallback* frame_callbacks;
 };
@@ -288,13 +291,13 @@ VKY_EXPORT void vky_create_event_controller(VkyCanvas*);
 VKY_EXPORT void vky_reset_event_controller(VkyEventController* event_controller);
 VKY_EXPORT void vky_destroy_event_controller(VkyEventController*);
 
+
+
+/*************************************************************************************************/
+/*  Mouse                                                                                        */
+/*************************************************************************************************/
+
 VKY_EXPORT void vky_update_mouse_state(VkyMouse*, vec2, VkyMouseButton);
-
-
-
-/*************************************************************************************************/
-/*  Mouse normalization                                                                          */
-/*************************************************************************************************/
 
 void vky_mouse_normalize(vec2 size, vec2 center, vec2 pos);
 void vky_mouse_normalize_window(VkyCanvas* canvas, vec2 pos);
@@ -315,8 +318,23 @@ VKY_EXPORT bool vky_is_key_modifier(VkyKey key);
 VKY_EXPORT void
 vky_update_keyboard_state(VkyKeyboard* keyboard, VkyKey key, VkyKeyModifiers modifiers);
 
+
+
+/*************************************************************************************************/
+/*  Callbacks                                                                                    */
+/*************************************************************************************************/
+
+VKY_EXPORT void vky_add_mock_input_callback(VkyCanvas*, VkyFrameCallback);
+VKY_EXPORT int vky_call_mock_input_callbacks(VkyEventController*);
+
 VKY_EXPORT void vky_add_frame_callback(VkyCanvas*, VkyFrameCallback);
-VKY_EXPORT void vky_call_frame_callbacks(VkyEventController*);
+VKY_EXPORT void vky_call_frame_callbacks(VkyEventController*); // TODO: return int?
+
+
+
+/*************************************************************************************************/
+/*  Event loop                                                                                   */
+/*************************************************************************************************/
 
 // This function updates the VkyMouse and VkyKeyboard structures:
 //
