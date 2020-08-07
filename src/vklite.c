@@ -277,8 +277,15 @@ VkyGpu vky_create_device(uint32_t required_extension_count, const char** require
     // Also: this function should be glfw independent
 
     // Add ext debug extension.
-
-    bool has_validation = ENABLE_VALIDATION_LAYERS && check_validation_layer_support(1, layers);
+    bool has_validation = false;
+    if (ENABLE_VALIDATION_LAYERS)
+    {
+        has_validation = check_validation_layer_support(1, layers);
+        if (!has_validation)
+            log_error(
+                "validation layer support missing, make sure you have exported the environment "
+                "variable VK_LAYER_PATH=\"$VULKAN_SDK/etc/vulkan/explicit_layer.d\"");
+    }
 
     uint32_t extension_count = required_extension_count;
     if (has_validation)
@@ -295,10 +302,6 @@ VkyGpu vky_create_device(uint32_t required_extension_count, const char** require
         extensions[required_extension_count] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
     }
 
-    if (ENABLE_VALIDATION_LAYERS && !check_validation_layer_support(1, layers))
-    {
-        log_error("validation layer support missing");
-    }
 
     // Prepare the creation of the Vulkan instance.
     VkApplicationInfo appInfo = {0};
@@ -346,9 +349,12 @@ VkyGpu vky_create_device(uint32_t required_extension_count, const char** require
 
     // Create the debug utils messenger.
     VkDebugUtilsMessengerEXT debug_messenger = {0};
-    log_trace("create debug utils messenger");
-    VK_CHECK_RESULT(
-        create_debug_utils_messenger_EXT(instance, &debug_create_info, NULL, &debug_messenger));
+    if (has_validation)
+    {
+        log_trace("create debug utils messenger");
+        VK_CHECK_RESULT(create_debug_utils_messenger_EXT(
+            instance, &debug_create_info, NULL, &debug_messenger));
+    }
 
     // Create the VkyGpu struct.
     VkyGpu gpu = {0};
