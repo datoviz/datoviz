@@ -84,7 +84,7 @@ The following instructions were tested on **Ubuntu 20.04**.
 
 ### macOS
 
-**Help needed to fill in the details**. Note: the tests do not work yet because of a bug in the Vulkan SDK in the June 2020 release, which will be fixed in the next release.
+**Help needed to fill in the details**.
 
 1. Install the latest graphics drivers for your system and hardware.
 2. Install xcode, brew, ninja, glfw3
@@ -94,22 +94,32 @@ The following instructions were tested on **Ubuntu 20.04**.
 
 
 
-### Windows 10
+### Windows 10 (mingw-w64)
 
-**Not working yet, help needed**
+**Help needed to fill in the details**.
 
 1. Install the latest graphics drivers for your system and hardware.
-2. Install Visual Studio Community 2019 (free).
-3. Install Cmake for Windows, and put `C:\Program Files (x86)\GnuWin32\bin` in the PATH.
-4. Install vcpkg
-
-    git clone vcpkg
-    double click on bootstrap-vcpkg.bat
-    .\vcpkg.exe integrate install
-
-5. Install the latest [Lunarg Vulkan SDK](https://vulkan.lunarg.com/) (`.exe` executable).
+2. Install [Winlibs](http://winlibs.com/), a Windows port of gcc, using mingw-w64.
+3. Install [CMake for Windows](https://cmake.org/download/)
+4. Install the latest [Lunarg Vulkan SDK](https://vulkan.lunarg.com/) (`.exe` executable).
     Windows Universal C Runtime https://stackoverflow.com/a/52329698
-6. To continue...
+5. Clone the repository.
+6. Enter the following commands within the repository's directory:
+
+    ```
+    cd build
+    cmake .. -G "MinGW Makefiles"
+    mingw32-make
+    cd ..
+    ```
+7. To run an example (the batch script will only work in cmd.exe, not Powershell):
+
+    ```
+    setup-env.bat
+    build\app_triangle.exe
+    ```
+
+**Note**: Visky does not yet compile with MSVC, PRs welcome.
 
 
 ## Code organization

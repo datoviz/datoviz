@@ -21,7 +21,13 @@ option(VISKY_WITH_ASSIMP "Build Visky with ASSIMP support" OFF)
 set(VISKY_VERSION 0.0.1)
 project(visky VERSION ${VISKY_VERSION} DESCRIPTION "visky")
 
+# Vulkan dependency
 find_package(Vulkan)
+if (Vulkan_FOUND)
+    message(STATUS "Found Vulkan")
+else()
+    message(FATAL_ERROR "-- Could NOT find Vulkan")
+endif()
 
 # cglm dependency: download from GitHub
 FetchContent_Declare(
@@ -30,6 +36,21 @@ FetchContent_Declare(
   GIT_TAG        v0.7.4
 )
 FetchContent_MakeAvailable(cglm)
+
+# glfw3 dependency on Windows
+if (WIN32)
+    set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+
+    FetchContent_Declare(
+    glfw
+    GIT_REPOSITORY https://github.com/glfw/glfw/
+    GIT_TAG        3.3.2
+    )
+    FetchContent_MakeAvailable(glfw)
+ 
+endif()
 
 set(CC_GCC 0)
 set(CC_CLANG 0)
@@ -48,7 +69,10 @@ else ()
         -Wshadow -Wsign-conversion -Wstrict-overflow=5 -Wundef -Wno-unused-parameter -Wno-unused-function")
     # GCC-specific
     if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
-        set(COMMON_FLAGS "${COMMON_FLAGS} -pg -Wlogical-op -fdiagnostics-color=always")
+        set(COMMON_FLAGS "${COMMON_FLAGS} -Wlogical-op -fdiagnostics-color=always")
+        if (NOT WIN32)
+            set(COMMON_FLAGS "${COMMON_FLAGS} -pg")
+        endif()
         set(CC_GCC 1)
     # Clang-specific
     elseif ("${CMAKE_C_COMPILER_ID}" MATCHES "Clang")
@@ -62,7 +86,7 @@ endif()
 set(COMMON_FLAGS_VISIBLE "${COMMON_FLAGS}")
 set(COMMON_FLAGS "${COMMON_FLAGS} -fvisibility=hidden")
 
-set(LDFLAGS -lm -ldl)
+#set(LDFLAGS -lm -ldl)
 
 
 # DEBUG/RELEASE
@@ -75,17 +99,21 @@ endif ()
 
 
 set(INCL_DIRS ${CMAKE_SOURCE_DIR}/external ${CMAKE_SOURCE_DIR}/external/imgui ${CMAKE_SOURCE_DIR}/include/)
-set(LINK_LIBS m glfw vulkan cglm)
+set(LINK_LIBS m dl glfw cglm Vulkan::Vulkan)
 
 # macOS-specific
 set(OS_MACOS 0)
+set(OS_WIN32 0)
 if(${APPLE})
     set(INCL_DIRS ${INCL_DIRS} /usr/local/include)
     link_directories(/usr/local/lib)
     set(OS_MACOS 1)
+# Windows-specific
 elseif(${WIN32})
     set(INCL_DIRS ${INCL_DIRS} $ENV{VULKAN_SDK}/include $ENV{CGLM_INCLUDE})
-    link_directories($ENV{CGLM_LIB})
+    find_path(MINGW_DIR NAMES "gcc.exe")
+    link_directories($ENV{CGLM_LIB} $ENV{VULKAN_SDK}\\Lib $ENV{VULKAN_SDK}\\Bin ${MINGW_DIR})
+    set(OS_WIN32 1)
 endif()
 
 
@@ -209,6 +237,7 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
     HAS_ASSIMP=${HAS_ASSIMP}
 
     OS_MACOS=${OS_MACOS}
+    OS_WIN32=${OS_WIN32}
 
     MSVC=${CC_MSVC}
     GCC=${CC_GCC}
@@ -276,7 +305,7 @@ add_dependencies(visky shaders)
 # endif()
 target_compile_definitions(visky PUBLIC ${COMPILE_DEFINITIONS})
 target_include_directories(visky PUBLIC ${INCL_DIRS})
-target_link_options(visky PUBLIC ${LDFLAGS})
+#target_link_options(visky PUBLIC ${LDFLAGS})
 target_link_libraries(visky ${LINK_LIBS})
 
 
@@ -292,7 +321,7 @@ function(target_visky target_name)
         add_compile_options(-fcolor-diagnostics)
     endif()
     target_link_libraries(${target_name} visky)
-    target_link_options(${target_name} PUBLIC ${LDFLAGS})
+    #target_link_options(${target_name} PUBLIC ${LDFLAGS})
 endfunction()
 
 

@@ -1,5 +1,6 @@
 #include "../include/visky/visky.h"
 #include "vkutils.h"
+#include <stdlib.h>
 
 BEGIN_INCL_NO_WARN
 #include <stb_image.h>
@@ -2460,6 +2461,8 @@ VkyUniformBuffer vky_create_dynamic_uniform_buffer(
     // Allocate the aligned buffer.
 #if OS_MACOS
     posix_memalign((void**)&dubo.data, dubo.alignment, dubo.buffer_size);
+#elif OS_WIN32
+    dubo.data = _aligned_malloc(dubo.buffer_size, dubo.alignment);
 #else
     dubo.data = aligned_alloc(dubo.alignment, dubo.buffer_size);
 #endif
