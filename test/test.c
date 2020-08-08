@@ -17,6 +17,7 @@
 #define FPS      60
 #define DURATION 1
 
+#define MAX_RETRIES 10
 
 
 /*************************************************************************************************/
@@ -172,7 +173,7 @@ static int test_canvas(VkyCanvas* canvas, const char* test_name, uint32_t frame_
     log_debug("Starting test %s", test_name);
 
     srand(0);
-    int diff = 0;
+    int diff = -1;
     char path[1024];
     snprintf(path, sizeof(path), "%s/%s.ppm", SCREENSHOT_DIR, test_name);
 
@@ -189,22 +190,30 @@ static int test_canvas(VkyCanvas* canvas, const char* test_name, uint32_t frame_
     // Make a screenshot.
     VkyScreenshot* screenshot = vky_create_screenshot(canvas);
 
-    vky_begin_screenshot(screenshot);
     uint8_t* image = NULL;
-    for (uint32_t i = 0; i < 10; i++)
+    bool blank = false;
+    for (uint32_t i = 0; i < MAX_RETRIES; i++)
     {
+        vky_begin_screenshot(screenshot);
         image = vky_screenshot_to_rgb(screenshot, false);
-        if (is_blank(image))
+        blank = is_blank(image);
+        ASSERT(image != NULL);
+        vky_end_screenshot(screenshot);
+        if (blank)
         {
-            log_warn("blank image in test %s, retry %d/10", test_name, i);
-            free(image);
+            log_debug("blank image in test %s, retry %d/%d", test_name, i, MAX_RETRIES);
+            if (i < MAX_RETRIES - 1)
+            {
+                free(image);
+                image = NULL;
+            }
         }
         else
         {
             break;
         }
     }
-    vky_end_screenshot(screenshot);
+    ASSERT(image != NULL);
 
     // If there is no existing saved screenshot, save it and skip the test.
     if (!file_exists(path))
@@ -216,7 +225,7 @@ static int test_canvas(VkyCanvas* canvas, const char* test_name, uint32_t frame_
             printf("  | created %s\n", path);
     }
     // Otherwise, compare the images.
-    else
+    else if (!blank)
     {
         diff = image_diff(image, path);
     }
@@ -242,7 +251,6 @@ static int test_canvas(VkyCanvas* canvas, const char* test_name, uint32_t frame_
     }
 
     free(image);
-
     vky_destroy_screenshot(screenshot);
 
     // Report.

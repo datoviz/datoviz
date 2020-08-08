@@ -433,6 +433,7 @@ uint8_t* vky_screenshot_to_rgb(VkyScreenshot* screenshot, bool swizzle)
     uint32_t h = screenshot->height;
     // First, memcopy from the GPU to the CPU.
     uint8_t* image = calloc(w * h, 4);
+    uint8_t* image_orig = image;
     memcpy(image, screenshot->image, w * h * 4);
 
     uint8_t* rgb = calloc(w * h, 3);
@@ -463,6 +464,7 @@ uint8_t* vky_screenshot_to_rgb(VkyScreenshot* screenshot, bool swizzle)
         image += screenshot->row_pitch;
     }
     ASSERT(dst_offset == w * h * 3);
+    free(image_orig);
     return rgb;
 }
 
