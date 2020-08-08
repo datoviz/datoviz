@@ -119,14 +119,6 @@ static int image_diff(const uint8_t* image_0, const char* path)
     uint8_t* image_1 = read_ppm(path, &w, &h);
     ASSERT(w == WIDTH && h == HEIGHT);
 
-    // Make sure the image is not all black.
-    void* black = calloc(WIDTH * HEIGHT * 3, sizeof(uint8_t));
-    if (memcmp(image_0, black, (size_t)(WIDTH * HEIGHT * 3 * sizeof(uint8_t))) == 0)
-    {
-        free(black);
-        return 1;
-    }
-
     // Fast byte-to-byte comparison of the images.
     if (memcmp(image_0, image_1, (size_t)(WIDTH * HEIGHT * 3 * sizeof(uint8_t))) == 0)
         return 0;
@@ -162,6 +154,19 @@ static int image_diff(const uint8_t* image_0, const char* path)
 /*  Image tests                                                                                  */
 /*************************************************************************************************/
 
+static bool is_blank(uint8_t* image)
+{
+    // Make sure the image is not all black.
+    void* black = calloc(WIDTH * HEIGHT * 3, sizeof(uint8_t));
+    if (memcmp(image, black, (size_t)(WIDTH * HEIGHT * 3 * sizeof(uint8_t))) == 0)
+    {
+        free(black);
+        return true;
+    }
+    return false;
+}
+
+
 static int test_canvas(VkyCanvas* canvas, const char* test_name, uint32_t frame_count)
 {
     log_debug("Starting test %s", test_name);
@@ -183,8 +188,23 @@ static int test_canvas(VkyCanvas* canvas, const char* test_name, uint32_t frame_
 
     // Make a screenshot.
     VkyScreenshot* screenshot = vky_create_screenshot(canvas);
+
     vky_begin_screenshot(screenshot);
-    uint8_t* image = vky_screenshot_to_rgb(screenshot, false);
+    uint8_t* image = NULL;
+    for (uint32_t i = 0; i < 10; i++)
+    {
+        image = vky_screenshot_to_rgb(screenshot, false);
+        if (is_blank(image))
+        {
+            log_warn("blank image in test %s, retry %d/10", test_name, i);
+            free(image);
+        }
+        else
+        {
+            break;
+        }
+    }
+    vky_end_screenshot(screenshot);
 
     // If there is no existing saved screenshot, save it and skip the test.
     if (!file_exists(path))
@@ -214,7 +234,7 @@ static int test_canvas(VkyCanvas* canvas, const char* test_name, uint32_t frame_
     }
     else
     {
-        log_debug("test %s passed", test_name);
+        // log_debug("test %s passed", test_name);
         if (file_exists(path_failed))
         {
             remove(path_failed);
@@ -222,7 +242,7 @@ static int test_canvas(VkyCanvas* canvas, const char* test_name, uint32_t frame_
     }
 
     free(image);
-    vky_end_screenshot(screenshot);
+
     vky_destroy_screenshot(screenshot);
 
     // Report.
