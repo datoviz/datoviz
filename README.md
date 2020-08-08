@@ -24,6 +24,7 @@ Mandatory dependencies:
 
 Optional dependencies:
 
+* **freetype** (text bitmap support)
 * **libpng** (screenshot and offscreen backends)
 * **ffmpeg** (video backend)
 * **libvncserver** (VNC backend)
@@ -51,7 +52,7 @@ The following instructions were tested on **Ubuntu 20.04**.
 
     - If you prefer to install **all dependencies in one go**:
 
-    `sudo apt install build-essential cmake ninja-build xcb libx11-xcb-dev libglfw3-dev libpng-dev libavcodec-dev libavformat-dev libavfilter-dev libavutil-dev libswresample-dev libvncserver-dev xtightvncviewer libqt5opengl5-dev libfreetype-dev libassimp-dev`
+    `sudo apt install build-essential cmake ninja-build xcb libx11-xcb-dev libglfw3-dev libpng-dev libavcodec-dev libavformat-dev libavfilter-dev libavutil-dev libswresample-dev libvncserver-dev xtightvncviewer libqt5opengl5-dev libfreetype6-dev libassimp-dev`
 
 3. Install the latest [Lunarg Vulkan SDK](https://vulkan.lunarg.com/) (tarball SDK), for example in `~/vulkan`
 
@@ -63,11 +64,11 @@ The following instructions were tested on **Ubuntu 20.04**.
 4. (Optional) Install optional dependencies to unlock all features.
 
     1. PNG support: `sudo apt install libpng-dev`
-    2. FFmpeg support: `sudo apt install libavcodec-dev libavformat-dev libavfilter-dev libavutil-dev libswresample-dev`
-    3. VNC support: `sudo apt install libvncserver-dev xtightvncviewer`
-    4. Qt5 support: `sudo apt install libqt5opengl5-dev`
-    5. ASSIMP support: `sudo apt install libassimp-dev`
-    6. To create custom font textures from TTF files: `sudo apt install libfreetype-dev`
+    2. Freetype support: `sudo apt install libfreetype6-dev`
+    3. FFmpeg support: `sudo apt install libavcodec-dev libavformat-dev libavfilter-dev libavutil-dev libswresample-dev`
+    4. VNC support: `sudo apt install libvncserver-dev xtightvncviewer`
+    5. Qt5 support: `sudo apt install libqt5opengl5-dev`
+    6. ASSIMP support: `sudo apt install libassimp-dev`
 
 5. Clone the visky repository and build the library:
 

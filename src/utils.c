@@ -192,12 +192,6 @@ char* read_file(const char* filename, uint32_t* size)
     return buffer;
 }
 
-// static inline int memvcmp(void* memory, unsigned char val, unsigned int size)
-// {
-//     unsigned char* mm = (unsigned char*)memory;
-//     return (*mm == val) && memcmp(mm, mm + 1, size - 1) == 0;
-// }
-
 char* read_npy(const char* filename, uint32_t* size)
 {
     /* Tiny NPY reader that requires the user to know in advance the data type of the file. */

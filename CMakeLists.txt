@@ -14,6 +14,7 @@ option(VISKY_WITH_FFMPEG "Build Visky with FFMPEG support" ON)
 option(VISKY_WITH_VNC "Build Visky with VNC support" ON)
 option(VISKY_WITH_PNG "Build Visky with PNG support" ON)
 option(VISKY_WITH_QT "Build Visky with QT support" ON)
+option(VISKY_WITH_FREETYPE "Build Visky with Freetype support" ON)
 option(VISKY_WITH_ASSIMP "Build Visky with ASSIMP support" OFF)
 
 
@@ -49,7 +50,7 @@ if (WIN32)
     GIT_TAG        3.3.2
     )
     FetchContent_MakeAvailable(glfw)
- 
+
 endif()
 
 set(CC_GCC 0)
@@ -85,8 +86,6 @@ endif()
 
 set(COMMON_FLAGS_VISIBLE "${COMMON_FLAGS}")
 set(COMMON_FLAGS "${COMMON_FLAGS} -fvisibility=hidden")
-
-#set(LDFLAGS -lm -ldl)
 
 
 # DEBUG/RELEASE
@@ -222,6 +221,21 @@ if(VISKY_WITH_ASSIMP)
 endif()
 
 
+# Optional Freetype
+set(HAS_FREETYPE 0)
+if(VISKY_WITH_FREETYPE)
+    find_package(Freetype)
+    if(Freetype_FOUND)
+        message(STATUS "Found Freetype")
+        set(INCL_DIRS ${INCL_DIRS} ${FREETYPE_INCLUDE_DIRS})
+        set(LINK_LIBS ${LINK_LIBS} ${FREETYPE_LIBRARIES})
+        set(HAS_FREETYPE 1)
+    else()
+        message(WARNING "-- Could NOT find FREETYPE")
+    endif()
+endif()
+
+
 # Pass definitions
 set(DATA_DIR "${CMAKE_SOURCE_DIR}/data")
 set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
@@ -272,7 +286,6 @@ foreach(shader_source ${shader_sources})
     # NOTE: there was a bug because the shader output was a relative path, not a full path
     # and cmake believed the output was not properly created by the custom command glslc.
     set(shader_output "${SPIRV_DIR}${shader_name}.spv")
-    # message(STATUS ${shader_output})
     add_custom_command(
         OUTPUT ${shader_output}
         COMMAND ${GLSLC} -o "${shader_output}" ${shader_source}
@@ -284,7 +297,12 @@ endforeach()
 add_custom_target(shaders DEPENDS ${shader_outputs})
 
 # Define the visky library target
-file(GLOB sources "src/*.h*" "src/*.c*" "external/*.h*" "external/*.c*" "external/imgui/*.h*" "external/imgui/*.c*" "include/*.h*")
+file(GLOB sources
+    "include/*.h*"
+    "src/*.h*" "src/*.c*"
+    "external/*.h*" "external/*.c*"
+    "external/imgui/*.h*" "external/imgui/*.c*"
+)
 
 add_library(visky SHARED ${sources})
 
@@ -300,12 +318,8 @@ set_target_properties(visky PROPERTIES
     PUBLIC_HEADER include/visky/visky.h)
 add_dependencies(visky shaders)
 
-# if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-#     add_compile_options(-fcolor-diagnostics)
-# endif()
 target_compile_definitions(visky PUBLIC ${COMPILE_DEFINITIONS})
 target_include_directories(visky PUBLIC ${INCL_DIRS})
-#target_link_options(visky PUBLIC ${LDFLAGS})
 target_link_libraries(visky ${LINK_LIBS})
 
 
@@ -321,12 +335,10 @@ function(target_visky target_name)
         add_compile_options(-fcolor-diagnostics)
     endif()
     target_link_libraries(${target_name} visky)
-    #target_link_options(${target_name} PUBLIC ${LDFLAGS})
 endfunction()
 
 
 set(VKY_EXAMPLE $ENV{VKY_EXAMPLE})
-# message("${VKY_EXAMPLE}")
 
 # Compilation function .
 function(compile_example example_file)
@@ -376,6 +388,7 @@ foreach(test_case ${TEST_CASES})
 endforeach()
 
 
-# ffmpeg DEBUG
-# add_executable(demuxing experimental/demuxing.c)
-# target_link_libraries(demuxing avcodec avutil avformat swscale swresample -lm)
+# experimental
+add_executable(freetype_example experimental/freetype-example.c)
+target_include_directories(freetype_example PUBLIC ${INCL_DIRS})
+target_link_libraries(freetype_example freetype -lm)
