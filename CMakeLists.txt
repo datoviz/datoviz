@@ -63,7 +63,7 @@ if (MSVC)
     set(CC_MSVC 1)
 else ()
     # NOTE: need to remove -pg (gprof profiling) in RELEASE mode?
-    set(COMMON_FLAGS "-g -m64 -pedantic -Wall -Wextra \
+    set(COMMON_FLAGS "-g -m64 -pedantic -Wall -Wextra -Werror=vla \
         -Wcast-align -Wcast-qual -Wredundant-decls -Wswitch-default -Wdisabled-optimization \
         -Wformat=2 -Winit-self -Wno-missing-field-initializers \
         -Wmissing-declarations -Wmissing-include-dirs -Wno-format-nonliteral \

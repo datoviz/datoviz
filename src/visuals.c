@@ -159,12 +159,13 @@ static void colorbar_tick_upload(VkyVisual* text, VkyVisual* ticks, VkyColorbarP
 
     // Upload the data.
     uint32_t n = 5;
-    VkyTextData text_data[n];
-    VkySegmentVertex tick_data[n + 4]; // ticks + colorbar outline (4 segments)
+    VkyTextData* text_data = calloc(n, sizeof(VkyTextData));
+    VkySegmentVertex* tick_data =
+        calloc(n + 4, sizeof(VkySegmentVertex)); // ticks + colorbar outline (4 segments)
     double pos = 0;
     double t = 0;
     const uint32_t MAX_TICK_LEN = 16;
-    char tick[MAX_TICK_LEN * n];
+    char* tick = calloc(MAX_TICK_LEN * n, sizeof(char));
     char* cur_tick = tick;
     uint32_t tick_len = 0;
     float tick_length = VKY_COLORBAR_TICK_LENGTH;
@@ -234,6 +235,10 @@ static void colorbar_tick_upload(VkyVisual* text, VkyVisual* ticks, VkyColorbarP
 
     vky_visual_upload(text, (VkyData){n, text_data});
     vky_visual_upload(ticks, (VkyData){n + 4, tick_data});
+
+    free(tick);
+    free(tick_data);
+    free(text_data);
 }
 
 VkyVisualBundle* vky_bundle_colorbar(VkyScene* scene, VkyColorbarParams params)

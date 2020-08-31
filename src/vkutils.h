@@ -113,7 +113,7 @@ static bool check_validation_layer_support(
     uint32_t layer_count;
     vkEnumerateInstanceLayerProperties(&layer_count, NULL);
 
-    VkLayerProperties available_layers[layer_count];
+    VkLayerProperties* available_layers = calloc(layer_count, sizeof(VkLayerProperties));
     vkEnumerateInstanceLayerProperties(&layer_count, available_layers);
 
     for (uint32_t i = 0; i < validation_layers_count; i++)
@@ -130,9 +130,11 @@ static bool check_validation_layer_support(
         }
         if (!layerFound)
         {
+            free(available_layers);
             return false;
         }
     }
+    free(available_layers);
     return true;
 }
 

@@ -74,7 +74,7 @@ static void arrows(VkyPanel* panel)
 
     // Upload the data.
     const uint32_t n = 20;
-    VkyArrowVertex data[n];
+    VkyArrowVertex data[20];
     double t = 0;
     double r = .25;
     double R = .75;
@@ -102,8 +102,8 @@ static void paths(VkyPanel* panel)
 
     // Upload the data.
     const uint32_t n = 1000;
-    vec3 points[n];
-    VkyColorBytes color[n];
+    vec3 points[1000];
+    VkyColorBytes color[1000];
     double t = 0;
     for (uint32_t i = 0; i < n; i++)
     {
@@ -135,7 +135,7 @@ static void segments(VkyPanel* panel)
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
     const uint32_t n = 20;
-    VkySegmentVertex data[n];
+    VkySegmentVertex data[20];
     memset(data, 0, sizeof(data));
     float y = 0;
     float t = 0;
@@ -164,7 +164,7 @@ static void text(VkyPanel* panel)
     // Upload the data.
     uint32_t n = 32;
     float t = 0;
-    VkyTextData text[n];
+    VkyTextData text[32];
     for (uint32_t i = 0; i < n; i++)
     {
         t = M_2PI * (float)i / n;
@@ -193,7 +193,7 @@ static void hist(VkyPanel* panel)
 
     // Upload the data.
     const uint32_t n = 100;
-    VkyRectangleData data[n];
+    VkyRectangleData data[100];
     float x = 0, dx = 2 / (float)n;
     float eps = 2e-3;
     for (uint32_t i = 0; i < n; i++)
@@ -219,7 +219,7 @@ static void area(VkyPanel* panel)
 
     // Upload the data.
     const uint32_t n = 1000;
-    VkyAreaData data[2 * n];
+    VkyAreaData data[2000];
     float width = 2 / (float)n;
     float height = .25;
     float x = 0, y = 0;
@@ -247,7 +247,7 @@ static void axrect(VkyPanel* panel)
 
     // Upload the data.
     const uint32_t n = 10;
-    VkyRectangleAxisData data[2 * n];
+    VkyRectangleAxisData data[20];
     float w = .25 / (float)n;
     float x = 0;
     for (uint32_t i = 0; i < n; i++)
@@ -433,18 +433,19 @@ static void polygon(VkyPanel* panel)
 
     const uint32_t n0 = 4, n1 = 5, n2 = 6;
     uint32_t point_count = n0 + n1 + n2;
-    dvec2 points[point_count];
+    ASSERT(point_count <= 1000);
+    dvec2 points[1000];
     add_polygon(points, n0, M_PI / 2, (vec2){-.75, 0});
     add_polygon(points + n0, n1, M_PI / 4, (vec2){0, 0});
     add_polygon(points + n0 + n1, n2, M_PI / 2, (vec2){+.75, 0});
 
     const uint32_t poly_count = 3;
-    uint32_t poly_lengths[poly_count];
+    uint32_t poly_lengths[3];
     poly_lengths[0] = n0;
     poly_lengths[1] = n1;
     poly_lengths[2] = n2;
 
-    VkyColorBytes poly_colors[poly_count];
+    VkyColorBytes poly_colors[3];
     poly_colors[0] = vky_color(VKY_CMAP_HSV, 0, 0, 3, 1);
     poly_colors[1] = vky_color(VKY_CMAP_HSV, 1, 0, 3, 1);
     poly_colors[2] = vky_color(VKY_CMAP_HSV, 2, 0, 3, 1);
@@ -521,8 +522,10 @@ static void pslg_2(VkyPanel* panel)
     const uint32_t segment_count = 4 + N - 1;
     double a = .75, b = .1;
 
-    uvec2 segments[segment_count];
-    dvec2 points[point_count];
+    ASSERT(segment_count <= 1000);
+    ASSERT(point_count <= 1000);
+    uvec2 segments[1000];
+    dvec2 points[1000];
 
     // Square.
     points[0][0] = -a;

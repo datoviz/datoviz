@@ -70,7 +70,7 @@ int write_png(const char* filename, uint32_t width, uint32_t height, const uint8
     if (height > PNG_SIZE_MAX / (width * bytes_per_pixel))
         png_error(png_ptr, "Image data buffer would be too large");
 
-    png_bytep row_pointers[height];
+    png_bytep* row_pointers = calloc(height, sizeof(png_bytep));
     if (height > PNG_UINT_32_MAX / (sizeof(png_bytep)))
         png_error(png_ptr, "Image is too tall to process in memory");
 
@@ -80,6 +80,7 @@ int write_png(const char* filename, uint32_t width, uint32_t height, const uint8
     png_write_end(png_ptr, info_ptr);
     png_destroy_write_struct(&png_ptr, &info_ptr);
     fclose(fp);
+    free(row_pointers);
     return 0;
 #else
     log_error("visky was not build with PNG support, please install libpng-dev");

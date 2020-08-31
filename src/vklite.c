@@ -231,8 +231,9 @@ VkyQueueFamilyIndices vky_find_queue_families(VkPhysicalDevice device, VkSurface
     bool graphics_found = false, present_found = false, compute_found = false;
 
     uint32_t queue_family_count = 0;
+    VkQueueFamilyProperties queueFamilies[100];
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, NULL);
-    VkQueueFamilyProperties queueFamilies[queue_family_count];
+    ASSERT(queue_family_count <= 100);
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, queueFamilies);
 
     for (uint32_t i = 0; i < queue_family_count; i++)
@@ -292,7 +293,8 @@ VkyGpu vky_create_device(uint32_t required_extension_count, const char** require
     {
         extension_count++;
     }
-    const char* extensions[extension_count];
+    ASSERT(extension_count <= 100);
+    const char* extensions[100];
     for (uint32_t i = 0; i < required_extension_count; i++)
     {
         extensions[i] = required_extensions[i];
@@ -366,7 +368,8 @@ VkyGpu vky_create_device(uint32_t required_extension_count, const char** require
     // Pick the physical device.
     uint32_t device_count = 0;
     vkEnumeratePhysicalDevices(instance, &device_count, NULL);
-    VkPhysicalDevice physical_devices[device_count];
+    ASSERT(device_count <= 100);
+    VkPhysicalDevice physical_devices[100];
     vkEnumeratePhysicalDevices(instance, &device_count, physical_devices);
     // TODO: select the appropriate GPU instead of just the first one.
     VkPhysicalDevice physical_device = physical_devices[0];
@@ -456,7 +459,8 @@ void vky_prepare_gpu(VkyGpu* gpu, VkSurfaceKHR* surface)
     {
         queue_count = 2;
     }
-    VkDeviceQueueCreateInfo queue_create_infos[queue_count];
+    ASSERT(queue_count <= 100);
+    VkDeviceQueueCreateInfo queue_create_infos[100];
     float queue_priority = 1.0f;
 
     queue_create_infos[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -1375,7 +1379,8 @@ VkyGraphicsPipeline vky_create_graphics_pipeline(
     gp.shaders = shaders;
 
     // Descriptor set layout.
-    VkDescriptorSetLayoutBinding layout_bindings[gp.resource_layout.binding_count];
+    ASSERT(gp.resource_layout.binding_count <= 100);
+    VkDescriptorSetLayoutBinding layout_bindings[100];
     for (size_t i = 0; i < gp.resource_layout.binding_count; i++)
     {
         VkDescriptorType dtype = gp.resource_layout.binding_types[i];
@@ -1501,7 +1506,8 @@ VkyGraphicsPipeline vky_create_graphics_pipeline(
     binding_description.stride = gp.vertex_layout.stride;
     binding_description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-    VkVertexInputAttributeDescription attribute_descriptions[gp.vertex_layout.attribute_count];
+    ASSERT(gp.vertex_layout.attribute_count <= 100);
+    VkVertexInputAttributeDescription attribute_descriptions[100];
     for (uint32_t i = 0; i < gp.vertex_layout.attribute_count; i++)
     {
         attribute_descriptions[i].binding = gp.vertex_layout.binding;
@@ -1516,7 +1522,8 @@ VkyGraphicsPipeline vky_create_graphics_pipeline(
     vertex_input_info.pVertexAttributeDescriptions = attribute_descriptions;
 
     // Create the shader stages.
-    VkPipelineShaderStageCreateInfo shader_stages[shaders.shader_count];
+    ASSERT(shaders.shader_count <= 100);
+    VkPipelineShaderStageCreateInfo shader_stages[100];
     for (uint32_t i = 0; i < shaders.shader_count; i++)
     {
         shader_stages[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -1553,7 +1560,8 @@ VkyGraphicsPipeline vky_create_graphics_pipeline(
         gpu->device, VK_NULL_HANDLE, 1, &pipelineInfo, NULL, &gp.pipeline));
 
     // Allocate descriptor sets.
-    VkDescriptorSetLayout layouts[gp.resource_layout.image_count];
+    ASSERT(gp.resource_layout.image_count <= 100);
+    VkDescriptorSetLayout layouts[100];
     for (uint32_t i = 0; i < gp.resource_layout.image_count; i++)
     {
         layouts[i] = gp.descriptor_set_layout;
@@ -1754,7 +1762,8 @@ vky_create_compute_pipeline(VkyGpu* gpu, const char* filename, VkyResourceLayout
     gp.resource_layout = resource_layout;
 
     // Descriptor set layout.
-    VkDescriptorSetLayoutBinding layout_bindings[gp.resource_layout.binding_count];
+    ASSERT(gp.resource_layout.binding_count <= 100);
+    VkDescriptorSetLayoutBinding layout_bindings[100];
     for (size_t i = 0; i < gp.resource_layout.binding_count; i++)
     {
         VkDescriptorType dtype = gp.resource_layout.binding_types[i];
@@ -1786,7 +1795,8 @@ vky_create_compute_pipeline(VkyGpu* gpu, const char* filename, VkyResourceLayout
 
     // Allocate descriptor sets.
     ASSERT(gp.resource_layout.image_count == 1);
-    VkDescriptorSetLayout layouts[gp.resource_layout.image_count]; // NOTE: should be 1
+    ASSERT(gp.resource_layout.image_count <= 100);
+    VkDescriptorSetLayout layouts[100]; // NOTE: should be 1
     for (uint32_t i = 0; i < gp.resource_layout.image_count; i++)
     {
         layouts[i] = gp.descriptor_set_layout;
@@ -2358,14 +2368,16 @@ void vky_bind_resources(
     log_trace("bind resources");
     VkyGpu* gpu = resource_layout.gpu;
 
+    ASSERT(resource_layout.binding_count <= 100);
+
     for (size_t i = 0; i < resource_layout.image_count; i++)
     {
-        VkWriteDescriptorSet descriptor_writes[resource_layout.binding_count];
+        VkWriteDescriptorSet descriptor_writes[100];
 
         // NOTE: need to instantiate this here and not in the inner loop
         // to ensure the descriptor writes get the right buffers.
-        VkDescriptorBufferInfo buffer_infos[resource_layout.binding_count];
-        VkDescriptorImageInfo image_infos[resource_layout.binding_count];
+        VkDescriptorBufferInfo buffer_infos[100];
+        VkDescriptorImageInfo image_infos[100];
 
         for (size_t j = 0; j < resource_layout.binding_count; j++)
         {
@@ -2512,7 +2524,8 @@ void vky_bind_dynamic_uniform(
     VkCommandBuffer command_buffer, VkyGraphicsPipeline* pipeline, VkyUniformBuffer* dubo,
     uint32_t current_image, uint32_t item_index)
 {
-    uint32_t dynamicOffsets[pipeline->resource_layout.dynamic_binding_count];
+    ASSERT(pipeline->resource_layout.dynamic_binding_count <= 100);
+    uint32_t dynamicOffsets[100];
     // TODO: different item_index for different dynamic uniform descriptor sets.
     // Compute the dynamic offset in each dynamic uniform.
     for (uint32_t i = 0; i < pipeline->resource_layout.dynamic_binding_count; i++)

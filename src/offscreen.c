@@ -90,7 +90,8 @@ VkyCanvas* vky_create_offscreen_canvas(VkyGpu* gpu, uint32_t width, uint32_t hei
 {
     // Queues.
     uint32_t queue_count = 1;
-    VkDeviceQueueCreateInfo queue_create_infos[queue_count];
+    ASSERT(queue_count <= 100);
+    VkDeviceQueueCreateInfo queue_create_infos[100];
     float queue_priority = 1.0f;
 
     queue_create_infos[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -255,7 +256,8 @@ void vky_offscreen_frame(VkyCanvas* canvas, double time)
 
     // Command buffers to submit.
     uint32_t cmd_buf_count = canvas->cb_fill_live_command_buffer == NULL ? 1 : 2;
-    VkCommandBuffer submit_cmd_bufs[cmd_buf_count];
+    ASSERT(cmd_buf_count <= 100);
+    VkCommandBuffer submit_cmd_bufs[100];
 
     // The main command buffer.
     submit_cmd_bufs[0] = canvas->command_buffers[canvas->image_index];

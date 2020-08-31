@@ -1,30 +1,30 @@
 #include <visky/visky.h>
 
 #define STRING "Hello world!"
+#define N      64
 const uint32_t n_chars = strlen(STRING);
 
 static void upload_text(VkyVisual* visual)
 {
     // Upload the data.
-    uint32_t n = 64;
     float t = visual->scene->canvas->local_time;
-    VkyTextData text[n];
-    for (uint32_t i = 0; i < n; i++)
+    VkyTextData text[N];
+    for (uint32_t i = 0; i < N; i++)
     {
-        // t = M_2PI * (float)i / n;
+        // t = M_2PI * (float)i / N;
         text[i] = (VkyTextData){
-            .pos = {.5 * cos(M_2PI * (float)i / n), .5 * sin(M_2PI * (float)i / n), 0},
+            .pos = {.5 * cos(M_2PI * (float)i / N), .5 * sin(M_2PI * (float)i / N), 0},
             .shift = {0, 0},
-            .color = vky_color(VKY_CMAP_HSV, fmod(i + t, n), 0, n, .75),
+            .color = vky_color(VKY_CMAP_HSV, fmod(i + t, N), 0, N, .75),
             .glyph_size = 40 + 20 * cos(3 * t + i),
             .anchor = {0, 0},
-            .angle = -.67 * t + M_2PI * (float)i / n,
+            .angle = -.67 * t + M_2PI * (float)i / N,
             .string = STRING,
             .string_len = n_chars,
             .is_static = false,
         };
     }
-    vky_visual_upload(visual, (VkyData){n, text});
+    vky_visual_upload(visual, (VkyData){N, text});
 }
 
 static void frame_callback(VkyCanvas* canvas)

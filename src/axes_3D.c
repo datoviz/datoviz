@@ -237,7 +237,7 @@ static VkyVisual* _add_3D_axes(VkyScene* scene)
 
     const uint32_t n_ticks = 9;
     const uint32_t n = 3 * 2 * n_ticks;
-    VkyAxes3DVertex vertices[n];
+    VkyAxes3DVertex* vertices = calloc(n, sizeof(VkyAxes3DVertex));
     VkyAxes3DVertex* vertex = NULL;
     for (uint32_t side = 0; side < 3; side++)
     {
@@ -260,6 +260,7 @@ static VkyVisual* _add_3D_axes(VkyScene* scene)
     }
     vky_visual_upload(segment_visual, (VkyData){n, vertices});
 
+    free(vertices);
     return segment_visual;
 }
 
@@ -268,7 +269,7 @@ static VkyVisual* _add_3D_axes_text(VkyScene* scene)
     const uint32_t n_ticks = 5;
     const uint32_t n = 3 * n_ticks;
     VkyVisual* text_visual = vky_visual_axes_3D_text(scene);
-    VkyAxes3DTextData text_vertices[n];
+    VkyAxes3DTextData* text_vertices = calloc(n, sizeof(VkyAxes3DTextData));
     VkyAxes3DTextData* vertex = NULL;
 
     double tick = 0;
@@ -294,6 +295,7 @@ static VkyVisual* _add_3D_axes_text(VkyScene* scene)
         }
     }
     vky_visual_upload(text_visual, (VkyData){n, text_vertices});
+    free(text_vertices);
 
     return text_visual;
 }

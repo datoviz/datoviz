@@ -129,7 +129,7 @@ void vky_demo_scatter(size_t point_count, const dvec2* points)
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
     // Upload the data.
-    VkyMarkersVertex data[point_count];
+    VkyMarkersVertex* data = calloc(point_count, sizeof(VkyMarkersVertex));
     for (uint32_t i = 0; i < point_count; i++)
     {
         data[i] = (VkyMarkersVertex){
@@ -140,6 +140,7 @@ void vky_demo_scatter(size_t point_count, const dvec2* points)
             0};
     }
     vky_visual_upload(visual, (VkyData){point_count, data});
+    free(data);
 
     vky_run_app(app);
     vky_destroy_scene(scene);

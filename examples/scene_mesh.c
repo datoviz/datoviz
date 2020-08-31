@@ -66,7 +66,7 @@ static void cube(void)
 static void sphere(void)
 {
     uint32_t nv = N * N;
-    VkyColorBytes color[nv];
+    VkyColorBytes* color = calloc(nv, sizeof(uint32_t));
     for (uint32_t i = 0; i < N; i++)
     {
         for (uint32_t j = 0; j < N; j++)
@@ -75,12 +75,13 @@ static void sphere(void)
         }
     }
     vky_mesh_sphere(&mesh, N, N, color);
+    free(color);
 }
 
 static void cylinder(void)
 {
     uint32_t nv = 2 * N;
-    VkyColorBytes color[nv];
+    VkyColorBytes* color = calloc(nv, sizeof(VkyColorBytes));
     for (uint32_t i = 0; i < 2; i++)
     {
         for (uint32_t j = 0; j < N; j++)
@@ -89,12 +90,13 @@ static void cylinder(void)
         }
     }
     vky_mesh_cylinder(&mesh, N, color);
+    free(color);
 }
 
 static void cone(void)
 {
     uint32_t nv = 2 * N;
-    VkyColorBytes color[nv];
+    VkyColorBytes* color = calloc(nv, sizeof(VkyColorBytes));
     for (uint32_t i = 0; i < 2; i++)
     {
         for (uint32_t j = 0; j < N; j++)
@@ -103,6 +105,7 @@ static void cone(void)
         }
     }
     vky_mesh_cone(&mesh, N, color);
+    free(color);
 }
 
 static void surface(void)

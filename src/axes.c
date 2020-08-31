@@ -530,10 +530,10 @@ void vky_axes_make_vertices(
     const int32_t NxC = (NXC - 1) * ((int32_t)MIT - 1);
     const int32_t NyC = (NYC - 1) * ((int32_t)MIT - 1);
 
-    double TX[NXC];
-    double TY[NYC];
-    double Tx[NxC];
-    double Ty[NyC];
+    double* TX = calloc(NXC, sizeof(double));
+    double* TY = calloc(NYC, sizeof(double));
+    double* Tx = calloc(NxC, sizeof(double));
+    double* Ty = calloc(NyC, sizeof(double));
 
     // Minor ticks, major ticks, grid, lims, user.
     const int64_t N = 2 * NXC + 2 * NYC + NxC + NyC + 2 + (int32_t)axes->user.tick_count;
@@ -688,6 +688,11 @@ void vky_axes_make_vertices(
         vertices[N - axes->user.tick_count + i] =
             (VkyAxesTickVertex){a * axes->user.ticks_ndc[i] + b, 8 + axes->user.levels[i]};
     }
+
+    free(TX);
+    free(TY);
+    free(Tx);
+    free(Ty);
 }
 
 

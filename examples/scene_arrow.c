@@ -1,5 +1,7 @@
 #include <visky/visky.h>
 
+#define N 20
+
 int main()
 {
     log_set_level_env();
@@ -17,23 +19,22 @@ int main()
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
     // Upload the data.
-    const uint32_t n = 20;
-    VkyArrowVertex data[n];
+    VkyArrowVertex data[N];
     double t = 0;
     double r = .25;
     double R = .75;
-    for (uint32_t i = 0; i < n; i++)
+    for (uint32_t i = 0; i < N; i++)
     {
-        t = 2 * M_PI * (float)i / n;
+        t = 2 * M_PI * (float)i / N;
         data[i] = (VkyArrowVertex){
             {R * cos(t), R * sin(t), 0},
             {r * cos(t), r * sin(t), 0},
-            vky_color(VKY_DEFAULT_COLORMAP, i, 0, n, 1),
+            vky_color(VKY_DEFAULT_COLORMAP, i, 0, N, 1),
             15,
             5,
             VKY_ARROW_STEALTH};
     }
-    vky_visual_upload(visual, (VkyData){n, data});
+    vky_visual_upload(visual, (VkyData){N, data});
 
     vky_reset_all_mvp(scene);
     vky_run_app(app);

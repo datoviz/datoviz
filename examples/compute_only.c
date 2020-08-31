@@ -1,9 +1,10 @@
 #include <visky/visky.h>
 
+#define N 20
+
 int main()
 {
     log_set_level_env();
-    const uint32_t n = 20;
 
     // Create the interface to the GPU.
     VkyGpu gpu = vky_create_device(0, NULL);
@@ -13,16 +14,16 @@ int main()
 
     // Create the storage buffer with the initial numbers, and that will be modified in-place
     // by the compute shader.
-    VkDeviceSize size = n * sizeof(float);
+    VkDeviceSize size = N * sizeof(float);
     VkyBuffer buffer = vky_create_buffer(
         &gpu, size, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
     VkyBufferRegion buffer_region = vky_allocate_buffer(&buffer, size);
 
     // Fill the buffer with numbers.
-    float numbers[n];
+    float numbers[N];
     printf("Input : ");
-    for (uint32_t i = 0; i < n; i++)
+    for (uint32_t i = 0; i < N; i++)
     {
         numbers[i] = (float)i + 1;
         printf("%2.0f ", numbers[i]);
@@ -46,7 +47,7 @@ int main()
     // Create the compute command buffer making the computation on the GPU using the filled storage
     // buffer.
     vky_begin_compute(&gpu);
-    vky_compute(&pipeline, n, 1, 1);
+    vky_compute(&pipeline, N, 1, 1);
     vky_end_compute(
         &gpu, 0, NULL,
         NULL); // 0 and NULL as we don't need to synchronize with the graphics queue.
@@ -60,7 +61,7 @@ int main()
 
     // Display the results.
     printf("Output: ");
-    for (uint32_t i = 0; i < n; i++)
+    for (uint32_t i = 0; i < N; i++)
     {
         printf("%2.0f ", numbers[i]);
     }

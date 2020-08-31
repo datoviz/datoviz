@@ -1,5 +1,7 @@
 #include <visky/visky.h>
 
+#define N 1000
+
 int main()
 {
     log_set_level_env();
@@ -21,29 +23,28 @@ int main()
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
     // Upload the data.
-    const uint32_t n = 1000;
-    vec3 points[n];
-    VkyColorBytes color[n];
+    vec3 points[N];
+    VkyColorBytes color[N];
     double t = 0;
-    for (uint32_t i = 0; i < n; i++)
+    for (uint32_t i = 0; i < N; i++)
     {
-        t = (float)i / n;
+        t = (float)i / N;
 
         points[i][0] = -1 + 2 * t;
         points[i][0] *= .9;
         points[i][1] = .5 * sin(8 * M_PI * t);
         points[i][2] = 0;
 
-        if (i >= n / 2)
+        if (i >= N / 2)
             points[i][1] += .25;
         else
             points[i][1] -= .25;
 
-        color[i] = vky_color(VKY_CMAP_JET, (i >= n / 2), 0, 1, 1);
+        color[i] = vky_color(VKY_CMAP_JET, (i >= N / 2), 0, 1, 1);
     }
 
-    VkyPathData path1 = {n / 2, points, color, VKY_PATH_OPEN};
-    VkyPathData path2 = {n / 2, points + (n / 2), color + (n / 2), VKY_PATH_OPEN};
+    VkyPathData path1 = {N / 2, points, color, VKY_PATH_OPEN};
+    VkyPathData path2 = {N / 2, points + (N / 2), color + (N / 2), VKY_PATH_OPEN};
     // paths is an array of VkyPathData, each item represent 1 path.
     vky_visual_upload(visual, (VkyData){2, (VkyPathData[]){path1, path2}});
 
