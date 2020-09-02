@@ -374,6 +374,7 @@ static int test_vklite()
 
     VKLITE_TEST(test_vklite_blank, no_destroy);
     VKLITE_TEST(test_vklite_triangle, test_vklite_triangle_destroy);
+    VKLITE_TEST(test_vklite_push, test_vklite_push_destroy);
 
     vky_destroy_app(app);
 
