@@ -1,8 +1,8 @@
 #include <visky/visky.h>
 
-#define STRING "Hello world!"
-#define N      64
-const uint32_t n_chars = strlen(STRING);
+#define STRING  "Hello world!"
+#define N       64
+#define n_chars (strlen(STRING))
 
 static void upload_text(VkyVisual* visual)
 {
