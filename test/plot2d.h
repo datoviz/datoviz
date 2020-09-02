@@ -1,5 +1,21 @@
 #include <visky/visky.h>
 
+static void mesh_raw(VkyPanel* panel)
+{
+    // Create the visual.
+    VkyVisual* visual = vky_visual_mesh_raw(panel->scene);
+    vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
+
+    // Upload the data.
+    float x = .5;
+    VkyVertex vertices[] = {
+        {{-x, -x, 0}, {255, 0, 0, 255}},  {{+x, -x, 0}, {0, 255, 0, 255}},
+        {{+x, x, 0}, {0, 0, 255, 255}},   {{+x, x, 0}, {0, 0, 255, 255}},
+        {{-x, x, 0}, {255, 0, 255, 255}}, {{-x, -x, 0}, {255, 0, 0, 255}},
+    };
+    vky_visual_upload(visual, (VkyData){0, NULL, 6, vertices, 0, NULL});
+}
+
 static void scatter(VkyPanel* panel)
 {
     vky_clear_color(panel->scene, VKY_CLEAR_COLOR_WHITE);

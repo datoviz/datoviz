@@ -30,6 +30,7 @@ TEST_11(triangle, VKY_CONTROLLER_NONE, NULL, 1)
 
 /**** plot2d *********************************************************************************/
 
+TEST_11(mesh_raw, VKY_CONTROLLER_PANZOOM, NULL, 1)
 TEST_11(scatter, VKY_CONTROLLER_AXES_2D, NULL, 1)
 axparams.user.colors[0][3] = 0;
 TEST_11(imshow, VKY_CONTROLLER_AXES_2D, &axparams, 1)
