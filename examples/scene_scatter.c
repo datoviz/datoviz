@@ -40,7 +40,7 @@ int main()
     vky_set_controller(panel, VKY_CONTROLLER_AXES_2D, &axparams);
 
     // Upload the data.
-    const uint32_t n0 = 1000;
+    const uint32_t n0 = 100;
     const uint32_t n = n0 * n0;
     VkyMarkersVertex* data = calloc(n, sizeof(VkyMarkersVertex));
     for (uint32_t i = 0; i < n; i++)

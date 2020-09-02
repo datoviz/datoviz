@@ -91,3 +91,19 @@ static void volume(VkyPanel* panel)
     free(pixels);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 }
+
+static void brain(VkyPanel* panel)
+{
+    // Mesh visual.
+    VkyVisual* visual =
+        vky_visual_mesh(panel->scene, VKY_MESH_COLOR_RGBA, VKY_MESH_SHADING_BLINN_PHONG, 0, NULL);
+    vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
+
+    // Load the mesh object.
+    VkyMesh mesh = vky_create_mesh(1e6, 1e6);
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/mesh/brain.obj", DATA_DIR);
+    vky_mesh_obj(&mesh, path);
+    vky_mesh_upload(&mesh, visual);
+    vky_mesh_destroy(&mesh);
+}
