@@ -185,14 +185,14 @@ struct VkyBackendVideoParams
 };
 
 typedef struct VkyScreenshot VkyScreenshot;
-typedef struct VkyBackendVNCParams VkyBackendVNCParams;
-struct VkyBackendVNCParams
-{
-    void* server;
-    VkyScreenshot* screenshot;
-    vec2 mouse_pos;
-    uint32_t mouse_button;
-};
+// typedef struct VkyBackendVNCParams VkyBackendVNCParams;
+// struct VkyBackendVNCParams
+// {
+//     void* server;
+//     VkyScreenshot* screenshot;
+//     vec2 mouse_pos;
+//     uint32_t mouse_button;
+// };
 
 typedef struct VkyBackendScreenshotParams VkyBackendScreenshotParams;
 struct VkyBackendScreenshotParams

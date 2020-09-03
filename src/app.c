@@ -1,7 +1,7 @@
 #include "../include/visky/visky.h"
 
 #include "glfw.h"
-#include "vnc.h"
+// #include "vnc.h"
 
 
 
@@ -79,7 +79,7 @@ VkyCanvas* vky_create_canvas(VkyApp* app, uint32_t width, uint32_t height)
         break;
 
     case VKY_BACKEND_VIDEO:
-    case VKY_BACKEND_VNC:
+    // case VKY_BACKEND_VNC:
     case VKY_BACKEND_OFFSCREEN:
     case VKY_BACKEND_SCREENSHOT:
         canvas = vky_create_offscreen_canvas(app->gpu, width, height);
@@ -118,9 +118,9 @@ void vky_run_app(VkyApp* app)
         vky_run_video_app(app);
         break;
 
-    case VKY_BACKEND_VNC:
-        vky_run_vnc_app(app);
-        break;
+        // case VKY_BACKEND_VNC:
+        //     vky_run_vnc_app(app);
+        //     break;
 
     case VKY_BACKEND_OFFSCREEN:
         vky_run_offscreen_app(app);
@@ -175,10 +175,10 @@ void vky_destroy_app(VkyApp* app)
                 glfwDestroyWindow(window);
             break;
 
-        case VKY_BACKEND_VNC:
-            vky_destroy_screenshot(
-                ((VkyBackendVNCParams*)canvas->app->backend_params)->screenshot);
-            break;
+            // case VKY_BACKEND_VNC:
+            //     vky_destroy_screenshot(
+            //         ((VkyBackendVNCParams*)canvas->app->backend_params)->screenshot);
+            //     break;
 
         default:
             break;
@@ -593,12 +593,12 @@ void vky_update_event_states(VkyEventController* event_controller)
 
         break;
 
-    case VKY_BACKEND_VNC:;
-        VkyBackendVNCParams* params =
-            (VkyBackendVNCParams*)event_controller->canvas->app->backend_params;
-        glm_vec2_copy(params->mouse_pos, pos);
-        button = params->mouse_button;
-        break;
+        // case VKY_BACKEND_VNC:;
+        //     VkyBackendVNCParams* params =
+        //         (VkyBackendVNCParams*)event_controller->canvas->app->backend_params;
+        //     glm_vec2_copy(params->mouse_pos, pos);
+        //     button = params->mouse_button;
+        //     break;
 
     default:
         break;

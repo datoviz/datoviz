@@ -900,7 +900,7 @@ bool is_canvas_offscreen(VkyCanvas* canvas)
     VkyBackendType backend = canvas->app->backend;
     return (
         backend == VKY_BACKEND_VIDEO || backend == VKY_BACKEND_SCREENSHOT ||
-        backend == VKY_BACKEND_OFFSCREEN || backend == VKY_BACKEND_VNC);
+        backend == VKY_BACKEND_OFFSCREEN);
 }
 
 void vky_submit_command_buffers(

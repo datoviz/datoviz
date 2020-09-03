@@ -5,7 +5,7 @@
 #include "../include/visky/visky.h"
 #include "video.h"
 #include "vkutils.h"
-#include "vnc.h"
+// #include "vnc.h"
 
 
 
