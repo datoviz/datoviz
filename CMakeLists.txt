@@ -389,6 +389,6 @@ endforeach()
 
 
 # experimental
-add_executable(freetype_example experimental/freetype-example.c)
-target_include_directories(freetype_example PUBLIC ${INCL_DIRS})
-target_link_libraries(freetype_example freetype -lm)
+# add_executable(freetype_example experimental/freetype-example.c)
+# target_include_directories(freetype_example PUBLIC ${INCL_DIRS})
+# target_link_libraries(freetype_example freetype -lm)
