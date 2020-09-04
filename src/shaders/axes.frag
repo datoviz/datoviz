@@ -20,8 +20,8 @@ void main (void)
     float level = in_coord_level.y;
 
     // float hlw = in_length + linewidth;
-    float mb = 0;  // margin bottom increase
-    float ml = 0;  // margin left increase
+    float mb = 1;  // margin bottom increase
+    float ml = 1;  // margin left increase
     if (coord == 0) mb += in_length;
     else if (coord == 1) ml += in_length;
     vec4 m = vec4(0, 0, mb, ml);

@@ -15,6 +15,7 @@ END_INCL_NO_WARN
 
 VkyAxesTickRange vky_axes_get_ticks(double dmin, double dmax, VkyAxesContext context)
 {
+    // log_trace("get tick %.4f %.4f\n", dmin, dmax);
     double dpi_factor = context.dpi_factor;
     int32_t m = (int)ceil(
         VKY_AXES_DEFAULT_TICK_COUNT * context.viewport_size[context.coord] /
@@ -376,8 +377,8 @@ void vky_axes_panzoom_update(VkyAxes* axes, VkyPanzoom* panzoom, bool force_trig
     double h = .5 * (axes->yscale_orig.vmax - axes->yscale_orig.vmin);
 
     // Update xscale and yscale.
-    xc += xoffset / zxlevel;
-    yc += yoffset / zylevel;
+    xc += xoffset * .5 * (axes->xscale_orig.vmax - axes->xscale_orig.vmin) / zxlevel;
+    yc += yoffset * .5 * (axes->yscale_orig.vmax - axes->yscale_orig.vmin) / zylevel;
 
     axes->xscale.vmin = xc - w / zxlevel;
     axes->xscale.vmax = xc + w / zxlevel;
@@ -444,8 +445,8 @@ VkyAxes* vky_axes_init(VkyPanel* panel, VkyAxes2DParams params)
     VkyCanvas* canvas = scene->canvas;
     VkyAxes* axes = calloc(1, sizeof(VkyAxes));
     axes->panel = panel;
-    axes->xscale = axes->xscale_orig = params.xscale; // : VKY_AXES_DEFAULT_SCALE;
-    axes->yscale = axes->yscale_orig = params.yscale; // : VKY_AXES_DEFAULT_SCALE;
+    axes->xscale = axes->xscale_orig = params.xscale;
+    axes->yscale = axes->yscale_orig = params.yscale;
 
     // Formatters can be changed by the user.
     axes->xtick_fmt = params.xtick_fmt != NULL ? params.xtick_fmt : _tick_formatter_x;
@@ -546,14 +547,30 @@ void vky_axes_make_vertices(
     char* str = axes->str_buffer;
 
     // Normalization of the ticks to convert into NDC coordinates.
-    double xsum = axes->panzoom_box.xmax + axes->panzoom_box.xmin;
-    double xdiff = axes->panzoom_box.xmax - axes->panzoom_box.xmin;
-    double ysum = axes->panzoom_box.ymax + axes->panzoom_box.ymin;
-    double ydiff = axes->panzoom_box.ymax - axes->panzoom_box.ymin;
-    double ax = 2. / xdiff;
-    double bx = -xsum / xdiff;
-    double ay = 2. / ydiff;
-    double by = -ysum / ydiff;
+    VkyAxesScale xscale = axes->xscale_orig;
+    VkyAxesScale yscale = axes->yscale_orig;
+
+    double alphax = axes->panzoom_box.xmin;
+    double betax = axes->panzoom_box.xmax;
+    double alphay = axes->panzoom_box.ymin;
+    double betay = axes->panzoom_box.ymax;
+
+    double mx = xscale.vmin;
+    double Mx = xscale.vmax;
+    double my = yscale.vmin;
+    double My = yscale.vmax;
+
+    double ux = mx + .5 * (Mx - mx) * (alphax + 1.0);
+    double vx = mx + .5 * (Mx - mx) * (betax + 1.0);
+    double uy = my + .5 * (My - my) * (alphay + 1.0);
+    double vy = my + .5 * (My - my) * (betay + 1.0);
+
+    double ax = 2.0 / (vx - ux);
+    double ay = 2.0 / (vy - uy);
+    double bx = .5 * (vx + ux);
+    double by = .5 * (vy + uy);
+
+    // printf("ax=%.4f, bx=%.4f, ay=%.4f, by=%.4f\n", ax, bx, ay, by);
 
     // Major xticks.
     offset = 0;
@@ -569,7 +586,7 @@ void vky_axes_make_vertices(
         uint32_t ns = strlen(&str[char_offset]);
         ASSERT(ns < VKY_AXES_MAX_GLYPHS_PER_TICK);
         text_data[Lxmin + k] = (VkyAxesTextData){
-            ax * tick + bx,
+            ax * (tick - bx),
             0,
             ns,
             &str[char_offset],
@@ -591,7 +608,7 @@ void vky_axes_make_vertices(
         uint32_t ns = strlen(&str[char_offset]);
         ASSERT(ns < VKY_AXES_MAX_GLYPHS_PER_TICK);
         text_data[NXC + Lymin + k] = (VkyAxesTextData){
-            ay * tick + by,
+            ay * (tick - by),
             1,
             ns,
             &str[char_offset],
@@ -641,8 +658,8 @@ void vky_axes_make_vertices(
     m = NXC;
     for (int32_t i = 0; i < m; i++)
     {
-        vertices[offset + 2 * i + 0] = (VkyAxesTickVertex){ax * TX[i] + bx, 1}; // major xtick
-        vertices[offset + 2 * i + 1] = (VkyAxesTickVertex){ax * TX[i] + bx, 2}; // x grid
+        vertices[offset + 2 * i + 0] = (VkyAxesTickVertex){ax * (TX[i] - bx), 1}; // major xtick
+        vertices[offset + 2 * i + 1] = (VkyAxesTickVertex){ax * (TX[i] - bx), 2}; // x grid
     }
     offset += 2 * m;
 
@@ -650,8 +667,8 @@ void vky_axes_make_vertices(
     m = NYC;
     for (int32_t i = 0; i < m; i++)
     {
-        vertices[offset + 2 * i + 0] = (VkyAxesTickVertex){ay * TY[i] + by, 5}; // major ytick
-        vertices[offset + 2 * i + 1] = (VkyAxesTickVertex){ay * TY[i] + by, 6}; // y grid
+        vertices[offset + 2 * i + 0] = (VkyAxesTickVertex){ay * (TY[i] - by), 5}; // major ytick
+        vertices[offset + 2 * i + 1] = (VkyAxesTickVertex){ay * (TY[i] - by), 6}; // y grid
     }
     offset += 2 * m;
 
@@ -659,7 +676,7 @@ void vky_axes_make_vertices(
     m = NxC;
     for (int32_t i = 0; i < m; i++)
     {
-        vertices[offset + i] = (VkyAxesTickVertex){ax * Tx[i] + bx, 0};
+        vertices[offset + i] = (VkyAxesTickVertex){ax * (Tx[i] - bx), 0};
     }
     offset += m;
 
@@ -667,7 +684,7 @@ void vky_axes_make_vertices(
     m = NyC;
     for (int32_t i = 0; i < m; i++)
     {
-        vertices[offset + i] = (VkyAxesTickVertex){ay * Ty[i] + by, 4};
+        vertices[offset + i] = (VkyAxesTickVertex){ay * (Ty[i] - by), 4};
     }
     offset += m;
 
@@ -686,7 +703,7 @@ void vky_axes_make_vertices(
         a = axes->user.levels[i] <= 3 ? ax : ay;
         b = axes->user.levels[i] <= 3 ? bx : by;
         vertices[N - axes->user.tick_count + i] =
-            (VkyAxesTickVertex){a * axes->user.ticks_ndc[i] + b, 8 + axes->user.levels[i]};
+            (VkyAxesTickVertex){a * (axes->user.ticks_ndc[i] - b), 8 + axes->user.levels[i]};
     }
 
     free(TX);

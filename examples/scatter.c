@@ -24,6 +24,10 @@ int main()
     // Set the panel controller.
     VkyAxes2DParams axparams = vky_default_axes_2D_params();
 
+    // Set the yscale.
+    axparams.yscale.vmin = -25;
+    axparams.yscale.vmax = +75;
+
     // x label
     strcpy(axparams.xlabel.label, "Scatter plot");
     axparams.xlabel.axis = VKY_AXIS_X;
@@ -48,7 +52,7 @@ int main()
         data[i] = (VkyMarkersVertex)
         {
 #if RANDOM_POS
-            RAND_POS_2D,
+            {.25f * randn(), -.5 + .25f * randn(), 0.0f},
 #else
             {-1 + .02 * (i % n0), -1 + .02 * (i / n0), 0},
 #endif
