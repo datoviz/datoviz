@@ -220,9 +220,14 @@ static int test_canvas(VkyCanvas* canvas, const char* test_name, uint32_t frame_
     {
         log_debug("file %s didn't exist, creating it and skipping test", path);
         if (write_ppm(path, screenshot->width, screenshot->height, image) != 0)
+        {
             log_error("failed creating %s", path);
+        }
         else
-            printf("  | created %s\n", path);
+        {
+            log_info("  | created %s\n", path);
+            diff = 0;
+        }
     }
     // Otherwise, compare the images.
     else if (!blank)
