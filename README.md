@@ -4,7 +4,7 @@
 
 Visky provides a high-level interface to create interactive plots, as well as a low-level API for those who want to deal with shaders, GPU buffers, etc. Visky is entirely implemented in C, except for thin C wrappers of C++ dependencies.
 
-A longer-term goal is to provide a reasonably **stable ABI** that will allow dynamic languages to implement bindings via a foreign function interface. The `bindings/` subfolder provides binding proofs of concepts for **Python, Julia, and Rust** (help appreciated for other languages).
+A longer-term goal would be to provide a reasonably **stable ABI** allowing dynamic languages to implement bindings via a foreign function interface. The `bindings/` subfolder provides binding proofs of concepts for **Python, Julia, and Rust** (help appreciated for other languages).
 
 The main supported windowing library is **glfw** at the moment. The next step is to support Qt5, a proof of concept is provided in the examples. Offscreen backends are also provided, which are useful for testing, the video backend (using ffmpeg), and remote backends (there's a VNC backend proof of concept, and integration with Jupyter is planned via tornado and WebSockets).
 

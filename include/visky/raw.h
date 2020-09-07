@@ -48,11 +48,18 @@ typedef enum
     VKY_SCALING_ON
 } VkyScalingMode;
 
+typedef enum
+{
+    VKY_ALPHA_SCALING_OFF,
+    VKY_ALPHA_SCALING_ON
+} VkyAlphaScalingMode;
+
 typedef struct VkyMarkersRawParams VkyMarkersRawParams;
 struct VkyMarkersRawParams
 {
     vec2 marker_size;
     int32_t scaling_mode;
+    int32_t alpha_scaling_mode;
 };
 
 VKY_EXPORT VkyVisual* vky_visual_marker_raw(VkyScene* scene, VkyMarkersRawParams params);

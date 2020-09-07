@@ -32,7 +32,8 @@ int main()
 
     vky_add_vertex_buffer(canvas->gpu, 1e7);
 
-    VkyMarkersRawParams params = (VkyMarkersRawParams){{2.0f, 10.0f}, VKY_SCALING_OFF};
+    VkyMarkersRawParams params =
+        (VkyMarkersRawParams){{2.0f, 10.0f}, VKY_SCALING_OFF, VKY_ALPHA_SCALING_ON};
     VkyVisual* visual = vky_visual_marker_raw(panel->scene, params);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 

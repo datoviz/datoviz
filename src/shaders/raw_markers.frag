@@ -11,7 +11,9 @@ void main()
     vec2 ms = in_size;
     vec2 p = gl_PointCoord * max(ms.x, ms.y);
     bool do_discard = (
-        ((ms.x < ms.y) && (abs(p.x - .5 * ms.y) > .5 * ms.x)) || ((ms.x > ms.y) && (abs(p.y - .5 * ms.x) > .5 * ms.y))
+        ((ms.x < ms.y) && (abs(p.x - .5 * ms.y) > .5 * ms.x)) ||
+        ((ms.x > ms.y) && (abs(p.y - .5 * ms.x) > .5 * ms.y))
     );
-    if (do_discard) discard;
+    if (do_discard)
+        discard;
 }
