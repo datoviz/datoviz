@@ -1,6 +1,7 @@
 .vscode
 build*
 _old
+__pycache__
 experimental
 wip
 data
