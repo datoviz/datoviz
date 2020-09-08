@@ -9,7 +9,8 @@ from numpy.ctypeslib import ndpointer
 
 def load_library():
     if system() == 'Linux':
-        lib_path = (Path(__file__).parent / '../build/libvisky.so').resolve()
+        lib_path = next(Path(__file__).parent.parent.glob(
+            'visky.*.so/libvisky.so')).resolve()
         return ctypes.cdll.LoadLibrary(lib_path)
 
 

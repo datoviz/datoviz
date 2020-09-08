@@ -27,7 +27,6 @@ int main()
 
     // Set the axes controller.
     VkyAxes2DParams axparams = vky_default_axes_2D_params();
-    // TODO: fix initial scale
     vky_set_controller(panel, VKY_CONTROLLER_AXES_2D, &axparams);
 
     vky_add_vertex_buffer(canvas->gpu, 1e7);
