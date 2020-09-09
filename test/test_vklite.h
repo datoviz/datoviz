@@ -93,7 +93,7 @@ static int test_vklite_blank(VkyCanvas* canvas)
 
 static void test_vklite_triangle_fill(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
 {
-    vky_begin_render_pass(cmd_buf, canvas, (VkClearColorValue){{0, 0, 0, 0}});
+    vky_begin_render_pass(cmd_buf, canvas, VKY_CLEAR_COLOR_BLACK);
     vky_bind_vertex_buffer(cmd_buf, vbr, 0);
     vky_bind_graphics_pipeline(cmd_buf, &pipeline);
     vky_set_viewport(
@@ -162,7 +162,7 @@ static int test_vklite_triangle_destroy(VkyCanvas* canvas)
 static void test_vklite_push_fill(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
 {
     // Begin the render pass.
-    vky_begin_render_pass(cmd_buf, canvas, (VkClearColorValue){{0, 0, 0, 0}});
+    vky_begin_render_pass(cmd_buf, canvas, VKY_CLEAR_COLOR_BLACK);
 
     // Bind the vertex buffer.
     vky_bind_vertex_buffer(cmd_buf, vbr, 0);

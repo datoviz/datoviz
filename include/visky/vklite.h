@@ -597,7 +597,7 @@ VKY_EXPORT VkDeviceSize vky_compute_dynamic_alignment(VkyGpu* gpu, size_t size);
 /*************************************************************************************************/
 
 VKY_EXPORT void vky_begin_render_pass(
-    VkCommandBuffer command_buffer, VkyCanvas* canvas, VkClearColorValue clear_color);
+    VkCommandBuffer command_buffer, VkyCanvas* canvas, VkyColorBytes clear_color);
 
 VKY_EXPORT void vky_begin_live_render_pass(VkCommandBuffer command_buffer, VkyCanvas* canvas);
 

@@ -250,31 +250,17 @@ typedef enum
 #ifdef __cplusplus
 #define VKY_CLEAR_COLOR_WHITE                                                                     \
     {                                                                                             \
-        {                                                                                         \
-            1, 1, 1, 1                                                                            \
-        }                                                                                         \
+        255, 255, 255, 255                                                                        \
     }
 #define VKY_CLEAR_COLOR_BLACK                                                                     \
     {                                                                                             \
-        {                                                                                         \
-            0, 0, 0, 0                                                                            \
-        }                                                                                         \
+        0, 0, 0, 0                                                                                \
     }
 #else
 #define VKY_CLEAR_COLOR_WHITE                                                                     \
-    (VkClearColorValue)                                                                           \
-    {                                                                                             \
-        {                                                                                         \
-            1, 1, 1, 1                                                                            \
-        }                                                                                         \
-    }
+    (VkyColorBytes) { 255, 255, 255, 255 }
 #define VKY_CLEAR_COLOR_BLACK                                                                     \
-    (VkClearColorValue)                                                                           \
-    {                                                                                             \
-        {                                                                                         \
-            0, 0, 0, 0                                                                            \
-        }                                                                                         \
-    }
+    (VkyColorBytes) { 0, 0, 0, 0 }
 #endif
 
 #define VKY_FONT_MAP_FILENAME "font_inconsolata.png"

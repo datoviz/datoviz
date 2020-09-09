@@ -328,13 +328,6 @@ typedef enum
 /*  Color structs                                                                                */
 /*************************************************************************************************/
 
-// Normal RGBA color with 4 bytes.
-typedef struct VkyColorBytes VkyColorBytes;
-struct VkyColorBytes
-{
-    uint8_t r, g, b, a;
-};
-
 // Only 2 bytes per vertex to determine the color.
 // - A colormap is chosen in the common uniform (mvp.colormap.x), specific to each panel.
 // - The value within the colormap is stored, for each vertex, in the first byte.

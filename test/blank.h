@@ -2,7 +2,7 @@
 
 static void blank(VkyPanel* panel)
 {
-    vky_clear_color(panel->scene, (VkClearColorValue){{255, 0, 0, 255}});
+    vky_clear_color(panel->scene, (VkyColorBytes){255, 0, 0, 255});
 }
 
 static void hello(VkyPanel* panel)

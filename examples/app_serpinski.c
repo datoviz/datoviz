@@ -20,7 +20,7 @@ static VkyUniformBuffer params_buffer;
 static void fill_command_buffer(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
 {
     // Begin the render pass.
-    vky_begin_render_pass(cmd_buf, canvas, (VkClearColorValue){{0, 0, 0, 0}});
+    vky_begin_render_pass(cmd_buf, canvas, VKY_CLEAR_COLOR_BLACK);
 
     // Bind the vertex buffer.
     vky_bind_vertex_buffer(cmd_buf, vertex_buffer, 0);
