@@ -1,1 +1,3 @@
 import visky
+
+visky.figure()

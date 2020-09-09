@@ -1113,6 +1113,11 @@ VkyScene* vky_create_scene(
     scene->visual_bundle_count = 0;
     scene->visual_bundles = calloc(VKY_MAX_VISUAL_BUNDLE_COUNT, sizeof(VkyVisualBundle));
 
+    // Sanity check.
+    log_trace("create scene with %d row(s) and %d col(s)", row_count, col_count);
+    ASSERT(row_count <= 1000);
+    ASSERT(col_count <= 1000);
+
     // Create the grid.
     scene->grid = vky_create_grid(scene, row_count, col_count);
 

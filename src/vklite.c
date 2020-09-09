@@ -1183,7 +1183,7 @@ void vky_destroy_canvas(VkyCanvas* canvas)
 
 void vky_destroy_device(VkyGpu* gpu)
 {
-
+    log_trace("destroy device");
     VkDevice device = gpu->device;
 
     // Destroy buffers.
@@ -1205,13 +1205,17 @@ void vky_destroy_device(VkyGpu* gpu)
     gpu->textures = NULL;
 
     log_trace("destroy graphics and compute semaphores");
-    vkDestroySemaphore(device, gpu->graphics_semaphore, NULL);
-    vkDestroySemaphore(device, gpu->compute_semaphore, NULL);
+    if (gpu->graphics_semaphore)
+        vkDestroySemaphore(device, gpu->graphics_semaphore, NULL);
+    if (gpu->compute_semaphore)
+        vkDestroySemaphore(device, gpu->compute_semaphore, NULL);
 
     // Destroy the command pool.
     log_trace("destroy command pools");
-    vkDestroyCommandPool(device, gpu->command_pool, NULL);
-    vkDestroyCommandPool(device, gpu->compute_command_pool, NULL);
+    if (gpu->command_pool)
+        vkDestroyCommandPool(device, gpu->command_pool, NULL);
+    if (gpu->compute_command_pool)
+        vkDestroyCommandPool(device, gpu->compute_command_pool, NULL);
 
     if (gpu->has_validation)
     {
@@ -1219,7 +1223,8 @@ void vky_destroy_device(VkyGpu* gpu)
     }
 
     log_trace("destroy descriptor pool");
-    vkDestroyDescriptorPool(gpu->device, gpu->descriptor_pool, NULL);
+    if (gpu->descriptor_pool)
+        vkDestroyDescriptorPool(gpu->device, gpu->descriptor_pool, NULL);
 
     // Destroy the device.
     log_trace("destroy device");

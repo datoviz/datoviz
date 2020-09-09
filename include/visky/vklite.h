@@ -22,16 +22,6 @@ END_INCL_NO_WARN
 
 
 /*************************************************************************************************/
-/*  Macros                                                                                       */
-/*************************************************************************************************/
-
-#define ENGINE_NAME         "Visky"
-#define APPLICATION_NAME    "Visky prototype"
-#define APPLICATION_VERSION VK_MAKE_VERSION(1, 0, 0)
-
-
-
-/*************************************************************************************************/
 /*  Type definitions                                                                             */
 /*************************************************************************************************/
 
@@ -61,16 +51,6 @@ typedef struct VkyComputePipeline VkyComputePipeline;
 typedef void (*VkyWaitCallback)(VkyCanvas*);
 typedef void (*VkyCommandBufferCallback)(VkyCanvas*, VkCommandBuffer);
 typedef void (*VkyResizeCallback)(VkyCanvas*);
-
-typedef enum
-{
-    VKY_BACKEND_NONE,
-    VKY_BACKEND_GLFW,
-    VKY_BACKEND_OFFSCREEN,
-    VKY_BACKEND_SCREENSHOT,
-    // VKY_BACKEND_VNC,
-    VKY_BACKEND_VIDEO,
-} VkyBackendType;
 
 
 

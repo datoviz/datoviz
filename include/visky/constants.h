@@ -176,6 +176,19 @@ VKY_INLINE double vky_get_env(const char* name, bool default_value)
 /*  Built-in fixed constants                                                                     */
 /*************************************************************************************************/
 
+#define ENGINE_NAME         "Visky"
+#define APPLICATION_NAME    "Visky prototype"
+#define APPLICATION_VERSION VK_MAKE_VERSION(1, 0, 0)
+
+typedef enum
+{
+    VKY_BACKEND_NONE = 0,
+    VKY_BACKEND_GLFW = 1,
+    VKY_BACKEND_OFFSCREEN = 10,
+    VKY_BACKEND_SCREENSHOT = 11,
+    VKY_BACKEND_VIDEO = 12,
+} VkyBackendType;
+
 // Mathematical constants
 #ifndef M_PI
 #define M_PI 3.141592653589793
