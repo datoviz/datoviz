@@ -15,50 +15,52 @@
 
 typedef enum
 {
-    VKY_VIEWPORT_INNER,
-    VKY_VIEWPORT_OUTER,
+    VKY_VIEWPORT_INNER = 0,
+    VKY_VIEWPORT_OUTER = 1,
 } VkyViewportType;
 
 typedef enum
 {
-    VKY_VISUAL_PRIORITY_NONE,
-    VKY_VISUAL_PRIORITY_FIRST,
-    VKY_VISUAL_PRIORITY_LAST,
+    VKY_VISUAL_PRIORITY_NONE = 0,
+    VKY_VISUAL_PRIORITY_FIRST = 1,
+    VKY_VISUAL_PRIORITY_LAST = 2,
 } VkyVisualPriority;
 
 typedef enum
 {
     VKY_VISUAL_UNDEFINED = 0,
 
-    VKY_VISUAL_RECTANGLE,
-    VKY_VISUAL_RECTANGLE_AXIS,
-    VKY_VISUAL_AREA,
+    VKY_VISUAL_RECTANGLE = 10,
+    VKY_VISUAL_RECTANGLE_AXIS = 11,
+    VKY_VISUAL_AREA = 12,
 
-    VKY_VISUAL_MESH,
-    VKY_VISUAL_MESH_RAW,
+    VKY_VISUAL_MESH = 20,
+    VKY_VISUAL_MESH_RAW = 21,
 
-    VKY_VISUAL_MARKER,
-    VKY_VISUAL_MARKER_RAW,
+    VKY_VISUAL_MARKER = 30,
+    VKY_VISUAL_MARKER_RAW = 31,
+    VKY_VISUAL_SEGMENT = 32,
+    VKY_VISUAL_ARROW = 33,
 
-    VKY_VISUAL_PATH,
-    VKY_VISUAL_PATH_RAW,
-    VKY_VISUAL_PATH_RAW_MULTI,
+    VKY_VISUAL_PATH = 40,
+    VKY_VISUAL_PATH_RAW = 41,
+    VKY_VISUAL_PATH_RAW_MULTI = 42,
 
-    VKY_VISUAL_FAKE_PATH,
-    VKY_VISUAL_FAKE_SPHERE,
+    VKY_VISUAL_FAKE_PATH = 50,
+    VKY_VISUAL_FAKE_SPHERE = 51,
 
-    VKY_VISUAL_AXES_TEXT,
-    VKY_VISUAL_AXES_TICK,
+    VKY_VISUAL_AXES_TEXT = 60,
+    VKY_VISUAL_AXES_TICK = 61,
 
-    VKY_VISUAL_AXES_3D,
-    VKY_VISUAL_AXES_3D_TEXT,
+    VKY_VISUAL_AXES_3D = 70,
+    VKY_VISUAL_AXES_3D_TEXT = 71,
 
-    VKY_VISUAL_ARROW,
-    VKY_VISUAL_COLORBAR,
-    VKY_VISUAL_IMAGE,
-    VKY_VISUAL_SEGMENT,
-    VKY_VISUAL_TEXT,
-    VKY_VISUAL_VOLUME,
+    VKY_VISUAL_IMAGE = 80,
+    VKY_VISUAL_VOLUME = 81,
+
+    VKY_VISUAL_COLORBAR = 90,
+    VKY_VISUAL_TEXT = 100,
+
 
 } VkyVisualType;
 
@@ -610,6 +612,7 @@ VKY_EXPORT void vky_end_commands(VkyScene* Scene);
 VKY_EXPORT VkyVisual* vky_create_visual(VkyScene* scene, VkyVisualType);
 VKY_EXPORT void vky_visual_params(VkyVisual* visual, size_t params_size, const void* params);
 VKY_EXPORT void vky_add_visual_to_panel(VkyVisual*, VkyPanel*, VkyViewportType, VkyVisualPriority);
+VKY_EXPORT VkyVisual* vky_visual(VkyScene* scene, VkyVisualType visual_type, const void* params);
 
 VKY_EXPORT VkyResourceLayout vky_common_resource_layout(VkyVisual*);
 VKY_EXPORT void

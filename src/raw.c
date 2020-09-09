@@ -256,7 +256,7 @@ VkyVisual* vky_visual_path_raw_multi(VkyScene* scene, VkyMultiRawPathParams para
 /*  Raw markers visual                                                                           */
 /*************************************************************************************************/
 
-VkyVisual* vky_visual_marker_raw(VkyScene* scene, VkyMarkersRawParams params)
+VkyVisual* vky_visual_marker_raw(VkyScene* scene, const VkyMarkersRawParams* params)
 {
     VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_MARKER_RAW);
     VkyCanvas* canvas = scene->canvas;
@@ -273,10 +273,24 @@ VkyVisual* vky_visual_marker_raw(VkyScene* scene, VkyMarkersRawParams params)
     vky_add_vertex_attribute(
         &vertex_layout, 1, VKY_DEFAULT_VERTEX_FORMAT_COLOR, offsetof(VkyVertex, color));
 
+
+
+    // Default params.
+    VkyMarkersRawParams vparams = {0};
+    if (params != NULL)
+    {
+        memcpy(&vparams, params, sizeof(VkyMarkersRawParams));
+    }
+    else
+    {
+        // TODO: constants
+        vparams.marker_size[0] = 10;
+        vparams.marker_size[1] = 10;
+    }
     // DPI scaling factor.
-    params.marker_size[0] *= canvas->dpi_factor;
-    params.marker_size[1] *= canvas->dpi_factor;
-    vky_visual_params(visual, sizeof(VkyMarkersRawParams), &params);
+    vparams.marker_size[0] *= canvas->dpi_factor;
+    vparams.marker_size[1] *= canvas->dpi_factor;
+    vky_visual_params(visual, sizeof(VkyMarkersRawParams), &vparams);
     // Resource layout.
     VkyResourceLayout resource_layout = vky_common_resource_layout(visual);
 

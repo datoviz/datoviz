@@ -599,9 +599,9 @@ VkyVisualBundle* vky_bundle_triangulation(VkyScene* scene, VkyTriangulationParam
     vky_add_visual_to_bundle(vb, visual_segments);
 
     // Marker visual.
-    VkyVisual* visual_markers = vky_visual_marker_raw(
-        scene,
-        (VkyMarkersRawParams){{params.marker_size[0], params.marker_size[1]}, VKY_SCALING_OFF});
+    VkyMarkersRawParams vparams =
+        (VkyMarkersRawParams){{params.marker_size[0], params.marker_size[1]}, VKY_SCALING_OFF};
+    VkyVisual* visual_markers = vky_visual_marker_raw(scene, &vparams);
     vky_add_visual_to_bundle(vb, visual_markers);
 
     // Copy the parameters.

@@ -62,7 +62,7 @@ struct VkyMarkersRawParams
     int32_t alpha_scaling_mode;
 };
 
-VKY_EXPORT VkyVisual* vky_visual_marker_raw(VkyScene* scene, VkyMarkersRawParams params);
+VKY_EXPORT VkyVisual* vky_visual_marker_raw(VkyScene* scene, const VkyMarkersRawParams* params);
 
 
 

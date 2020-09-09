@@ -286,7 +286,7 @@ static void raster(VkyPanel* panel)
 {
     vky_clear_color(panel->scene, VKY_CLEAR_COLOR_WHITE);
     VkyMarkersRawParams params = (VkyMarkersRawParams){{5.0f, 20.0f}, VKY_SCALING_OFF};
-    VkyVisual* visual = vky_visual_marker_raw(panel->scene, params);
+    VkyVisual* visual = vky_visual_marker_raw(panel->scene, &params);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
     const uint32_t n_rows = 100;

@@ -527,6 +527,22 @@ VkyVisual* vky_create_visual(VkyScene* scene, VkyVisualType visual_type)
     return out;
 }
 
+VkyVisual* vky_visual(VkyScene* scene, VkyVisualType visual_type, const void* params)
+{
+    VkyVisual* visual = NULL;
+    switch (visual_type)
+    {
+    case VKY_VISUAL_MARKER_RAW:
+        visual = vky_visual_marker_raw(scene, (const VkyMarkersRawParams*)params);
+        break;
+        // TODO: other visuals
+    default:
+        break;
+    }
+    ASSERT(visual != NULL);
+    return visual;
+}
+
 VkyVisualBundle* vky_create_visual_bundle(VkyScene* scene)
 {
     VkyVisualBundle vb = {0};
