@@ -5,6 +5,8 @@ from platform import system
 import numpy as np
 from numpy.ctypeslib import ndpointer
 
+from . import _constants as const
+
 
 def load_library():
     if system() == 'Linux':
@@ -42,6 +44,16 @@ def make_vertices(pos, col):
     return vertices
 
 
+def upload_data(visual, items=None, indices=None):
+    if indices is None:
+        data = T_DATA(
+            len(items), array_pointer(items), 0, None, 0, None, False)
+    else:
+        data = T_DATA(
+            0, None, len(items), array_pointer(items), len(indices), array_pointer(indices), False)
+    viskylib.vky_visual_upload(visual, data)
+
+
 # Types
 T_VP = ctypes.c_void_p
 T_INT = ctypes.c_int
@@ -71,6 +83,10 @@ class T_DATA(ctypes.Structure):
 
         ("no_vertices_alloc", ctypes.c_bool),
     ]
+
+
+const.WHITE = T_COLOR(255, 255, 255, 255)
+const.BLACK = T_COLOR(0, 0, 0, 255)
 
 
 # Function wrappers
