@@ -114,25 +114,29 @@ typedef void (*VkyAxesTickFormatter)(VkyAxes*, double value, char* out_text);
 
 typedef enum
 {
-    VKY_CONTROLLER_NONE, // NOTE: need to the the first so that it is 0 = default
-    VKY_CONTROLLER_ARCBALL,
-    VKY_CONTROLLER_AUTOROTATE,
-    VKY_CONTROLLER_AXES_2D,
-    VKY_CONTROLLER_AXES_3D,
-    VKY_CONTROLLER_FLY,
-    VKY_CONTROLLER_FPS,
-    VKY_CONTROLLER_IMAGE,
-    VKY_CONTROLLER_PANZOOM,
-    VKY_CONTROLLER_TURNTABLE,
-    VKY_CONTROLLER_VOLUME,
+    VKY_CONTROLLER_NONE = 0, // NOTE: need to the the first so that it is 0 = default
+
+    VKY_CONTROLLER_PANZOOM = 10,
+    VKY_CONTROLLER_AXES_2D = 11,
+
+    VKY_CONTROLLER_ARCBALL = 20,
+    VKY_CONTROLLER_TURNTABLE = 21,
+    VKY_CONTROLLER_AUTOROTATE = 22,
+    VKY_CONTROLLER_AXES_3D = 23,
+
+    VKY_CONTROLLER_FLY = 30,
+    VKY_CONTROLLER_FPS = 31,
+
+    VKY_CONTROLLER_IMAGE = 40,
+    VKY_CONTROLLER_VOLUME = 41,
 } VkyControllerType;
 
 typedef enum
 {
     VKY_MVP_MODEL = 1,
-    VKY_MVP_VIEW,
-    VKY_MVP_PROJ,
-    VKY_MVP_ORTHO,
+    VKY_MVP_VIEW = 2,
+    VKY_MVP_PROJ = 3,
+    VKY_MVP_ORTHO = 4,
 } VkyMVPMatrix;
 
 

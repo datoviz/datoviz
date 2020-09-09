@@ -63,8 +63,12 @@ def demo_blank():
 def figure():
     app = visky.vky_create_app(vky.BACKEND_GLFW, None)
     canvas = visky.vky_create_canvas(app, 100, 100)
-    scene = visky.vky_create_scene(canvas, T_COLOR(0, 0, 0, 0), 1, 1)
+    scene = visky.vky_create_scene(canvas, T_COLOR(255, 255, 255, 255), 1, 1)
     panel = visky.vky_get_panel(scene, 0, 0)
+
+    visky.vky_set_controller(panel, vky.CONTROLLER_AXES_2D, None)
+    # vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
+
     visky.vky_run_app(app)
     visky.vky_destroy_scene(scene)
     visky.vky_destroy_app(app)
