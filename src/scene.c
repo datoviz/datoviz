@@ -1100,6 +1100,9 @@ static void _scene_fill_command_buffer(VkyCanvas* canvas, VkCommandBuffer cmd_bu
 VkyScene* vky_create_scene(
     VkyCanvas* canvas, VkyColorBytes clear_color, uint32_t row_count, uint32_t col_count)
 {
+    log_trace(
+        "create scene with clear color (%d, %d, %d, %d)", clear_color.r, clear_color.g,
+        clear_color.b, clear_color.a);
     VkyScene* scene = calloc(1, sizeof(VkyScene));
 
     scene->canvas = canvas;
@@ -1114,7 +1117,7 @@ VkyScene* vky_create_scene(
     scene->visual_bundles = calloc(VKY_MAX_VISUAL_BUNDLE_COUNT, sizeof(VkyVisualBundle));
 
     // Sanity check.
-    log_trace("create scene with %d row(s) and %d col(s)", row_count, col_count);
+    log_trace("create grid with %d row(s) and %d col(s)", row_count, col_count);
     ASSERT(row_count <= 1000);
     ASSERT(col_count <= 1000);
 

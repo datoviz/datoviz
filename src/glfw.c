@@ -117,7 +117,7 @@ void vky_glfw_wait(VkyCanvas* canvas)
 
 VkyCanvas* vky_create_glfw_canvas(VkyApp* app, uint32_t width, uint32_t height)
 {
-    log_trace("create glfw canvas %dx%d", width, height);
+    log_trace("create glfw canvas with size %dx%d", width, height);
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
     GLFWwindow* window = glfwCreateWindow((int)width, (int)height, APPLICATION_NAME, NULL, NULL);

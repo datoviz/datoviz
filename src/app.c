@@ -67,7 +67,7 @@ static void _esc_close_canvas(VkyCanvas* canvas)
 
 VkyCanvas* vky_create_canvas(VkyApp* app, uint32_t width, uint32_t height)
 {
-    log_trace("create canvas");
+    log_trace("create canvas with size %dx%d", width, height);
     VkyCanvas* canvas = NULL;
     VkyBackendType backend = app->backend;
 
