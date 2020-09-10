@@ -49,7 +49,7 @@ static void spiral(VkyPanel* panel)
 {
     // Create the path visual.
     VkyPathParams params = {10, 2., VKY_CAP_ROUND, VKY_JOIN_ROUND, VKY_DEPTH_ENABLE};
-    spiral_visual = vky_visual_path(panel->scene, params);
+    spiral_visual = vky_visual_path(panel->scene, &params);
     vky_add_visual_to_panel(spiral_visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
     const uint32_t N_path = 1000;
     vec3 points[1000];

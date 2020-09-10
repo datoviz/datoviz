@@ -133,7 +133,7 @@ int main(int argc, char** argv)
     {
         // Texture.
         VkyTextureParams tex_params = VKY_TEXTURE_PARAMS_NEAREST(2, 2, 1);
-        VkyTexture texture = vky_create_texture(canvas->gpu, tex_params);
+        VkyTexture texture = vky_create_texture(canvas->gpu, &tex_params);
         uint8_t pixels[4 * 4] = {255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255, 255, 0, 255};
         vky_upload_texture(&texture, pixels);
         imtexture = vky_imgui_image_from_texture(texture);

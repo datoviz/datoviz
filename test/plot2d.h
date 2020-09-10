@@ -19,8 +19,8 @@ static void mesh_raw(VkyPanel* panel)
 static void scatter(VkyPanel* panel)
 {
     vky_clear_color(panel->scene, VKY_CLEAR_COLOR_WHITE);
-    VkyMarkersParams params = (VkyMarkersParams){{0, 0, 0, 1}, 1.0f};
-    VkyVisual* visual = vky_visual_marker(panel->scene, params, false);
+    VkyMarkersParams params = (VkyMarkersParams){{0, 0, 0, 1}, 1.0f, false};
+    VkyVisual* visual = vky_visual_marker(panel->scene, &params);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
     const uint32_t n0 = 11;
@@ -66,7 +66,7 @@ static void imshow(VkyPanel* panel)
         VK_IMAGE_LAYOUT_UNDEFINED,
         false,
     };
-    VkyVisual* visual = vky_visual_image(panel->scene, params);
+    VkyVisual* visual = vky_visual_image(panel->scene, &params);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
     VkyImageData data[1] = {{
@@ -113,7 +113,7 @@ static void paths(VkyPanel* panel)
     vky_clear_color(panel->scene, VKY_CLEAR_COLOR_WHITE);
     // Create the visual.
     VkyPathParams params = {20, 4., VKY_CAP_ROUND, VKY_JOIN_ROUND, VKY_DEPTH_DISABLE};
-    VkyVisual* visual = vky_visual_path(panel->scene, params);
+    VkyVisual* visual = vky_visual_path(panel->scene, &params);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
     // Upload the data.
@@ -399,7 +399,7 @@ static void image(VkyPanel* panel)
         VK_IMAGE_LAYOUT_UNDEFINED,
         false,
     };
-    VkyVisual* visual = vky_visual_image(panel->scene, params);
+    VkyVisual* visual = vky_visual_image(panel->scene, &params);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
     const uint32_t n0 = 3;

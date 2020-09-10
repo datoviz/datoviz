@@ -50,9 +50,10 @@ VkyVisualBundle* vky_bundle_graph(VkyScene* scene, VkyGraphParams params)
     VkyMarkersParams node_params = {0};
     vec4_copy(params.marker_edge_color, node_params.edge_color);
     node_params.edge_width = params.marker_edge_width;
+    node_params.enable_depth = false;
 
     VkyVisual* edges = vky_visual_segment(scene);
-    VkyVisual* nodes = vky_visual_marker(scene, node_params, false);
+    VkyVisual* nodes = vky_visual_marker(scene, &node_params);
 
     ASSERT(vb->visual_count == 0);
     vky_add_visual_to_bundle(vb, edges);

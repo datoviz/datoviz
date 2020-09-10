@@ -2119,7 +2119,7 @@ VkyBuffer* vky_add_index_buffer(VkyGpu* gpu, VkDeviceSize size)
     return vky_add_buffer(gpu, size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 }
 
-VkyTexture* vky_add_texture(VkyGpu* gpu, VkyTextureParams params)
+VkyTexture* vky_add_texture(VkyGpu* gpu, const VkyTextureParams* params)
 {
     VkyTexture texture = vky_create_texture(gpu, params);
     gpu->textures[gpu->texture_count] = texture;
@@ -2165,7 +2165,7 @@ VkyTexture* vky_get_color_texture(VkyGpu* gpu)
                                        VK_SAMPLER_ADDRESS_MODE_REPEAT,
                                        0,
                                        false};
-        vky_add_texture(gpu, tex_params);
+        vky_add_texture(gpu, &tex_params);
         // Load the color texture from file on disk if it is empty.
         uint8_t empty[256] = {0};
         // NOTE: this function is implemented in colormaps.c.
@@ -2217,7 +2217,7 @@ VkyTexture* vky_get_font_texture(VkyGpu* gpu)
                                                          false};
 
         // Create the texture.
-        VkyTexture* texture = vky_add_texture(gpu, tex_params);
+        VkyTexture* texture = vky_add_texture(gpu, &tex_params);
 
         // Upload the font texture.
         vky_upload_texture(texture, pixels);
@@ -2232,9 +2232,10 @@ VkyTexture* vky_get_font_texture(VkyGpu* gpu)
 /*  Textures                                                                                     */
 /*************************************************************************************************/
 
-VkyTexture vky_create_texture(VkyGpu* gpu, VkyTextureParams params)
+VkyTexture vky_create_texture(VkyGpu* gpu, const VkyTextureParams* p_params)
 {
     log_trace("create texture");
+    VkyTextureParams params = *p_params;
     VkyTexture texture = {0};
     texture.gpu = gpu;
 

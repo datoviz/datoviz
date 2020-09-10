@@ -131,7 +131,7 @@ static VkyData vky_path_bake(VkyVisual* visual, VkyData data)
     return data;
 }
 
-VkyVisual* vky_visual_path(VkyScene* scene, VkyPathParams params)
+VkyVisual* vky_visual_path(VkyScene* scene, const VkyPathParams* params)
 {
     VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_PATH);
     VkyCanvas* canvas = scene->canvas;
@@ -156,8 +156,20 @@ VkyVisual* vky_visual_path(VkyScene* scene, VkyPathParams params)
         &vertex_layout, 4, VKY_DEFAULT_VERTEX_FORMAT_COLOR, offsetof(VkyPathVertex, color));
 
     // DPI scaling factor.
-    params.linewidth *= canvas->dpi_factor;
-    vky_visual_params(visual, sizeof(VkyPathParams), &params);
+
+    // Params.
+    VkyPathParams vparams = {0};
+    if (params != NULL)
+    {
+        memcpy(&vparams, params, sizeof(VkyPathParams));
+    }
+    else
+    {
+        // TODO: constants
+        vparams.linewidth = 1;
+    }
+    vparams.linewidth *= canvas->dpi_factor;
+    vky_visual_params(visual, sizeof(VkyPathParams), &vparams);
 
     // Resource layout.
     VkyResourceLayout resource_layout = vky_common_resource_layout(visual);
@@ -165,7 +177,7 @@ VkyVisual* vky_visual_path(VkyScene* scene, VkyPathParams params)
     // Pipeline.
     visual->pipeline = vky_create_graphics_pipeline(
         canvas, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP, shaders, vertex_layout, resource_layout,
-        (VkyGraphicsPipelineParams){params.enable_depth > 0});
+        (VkyGraphicsPipelineParams){vparams.enable_depth > 0});
 
     // Resources.
     vky_add_common_resources(visual);
@@ -316,7 +328,7 @@ static VkyData vky_marker_bake(VkyVisual* visual, VkyData data)
     return data;
 }
 
-VkyVisual* vky_visual_marker(VkyScene* scene, VkyMarkersParams params, bool enable_depth)
+VkyVisual* vky_visual_marker(VkyScene* scene, const VkyMarkersParams* params)
 {
     VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_MARKER);
     VkyCanvas* canvas = scene->canvas;
@@ -342,8 +354,18 @@ VkyVisual* vky_visual_marker(VkyScene* scene, VkyMarkersParams params, bool enab
         &vertex_layout, 4, VK_FORMAT_R8_UNORM, offsetof(VkyMarkersVertex, angle));
 
     // Params.
-    params.edge_width *= canvas->dpi_factor;
-    vky_visual_params(visual, sizeof(VkyMarkersParams), &params);
+    VkyMarkersParams vparams = {0};
+    if (params != NULL)
+    {
+        memcpy(&vparams, params, sizeof(VkyMarkersParams));
+    }
+    else
+    {
+        // Default.
+        vparams.edge_width = 1;
+    }
+    vparams.edge_width *= canvas->dpi_factor;
+    vky_visual_params(visual, sizeof(VkyMarkersParams), &vparams);
 
     // Resource layout.
     VkyResourceLayout resource_layout = vky_common_resource_layout(visual);
@@ -351,7 +373,7 @@ VkyVisual* vky_visual_marker(VkyScene* scene, VkyMarkersParams params, bool enab
     // Pipeline.
     visual->pipeline = vky_create_graphics_pipeline(
         canvas, VK_PRIMITIVE_TOPOLOGY_POINT_LIST, shaders, vertex_layout, resource_layout,
-        (VkyGraphicsPipelineParams){enable_depth});
+        (VkyGraphicsPipelineParams){vparams.enable_depth});
 
     // Resources.
     vky_add_common_resources(visual);

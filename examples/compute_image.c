@@ -30,7 +30,7 @@ int main()
         VK_SAMPLER_ADDRESS_MODE_REPEAT,
         VK_IMAGE_LAYOUT_GENERAL,
         true};
-    VkyTexture* texture = vky_add_texture(canvas->gpu, tex_params);
+    VkyTexture* texture = vky_add_texture(canvas->gpu, &tex_params);
     VkyVisual* visual =
         vky_visual_mesh(scene, VKY_MESH_COLOR_UV, VKY_MESH_SHADING_NONE, 0, texture);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);

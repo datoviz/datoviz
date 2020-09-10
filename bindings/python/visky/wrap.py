@@ -90,6 +90,7 @@ const.BLACK = T_COLOR(0, 0, 0, 255)
 
 
 # Function wrappers
+wrap(viskylib.log_set_level_env, [], None)
 wrap(viskylib.vky_create_app, [T_INT, T_VP], T_VP)
 wrap(viskylib.vky_run_app, [T_VP], None)
 wrap(viskylib.vky_destroy_app, [T_VP], None)

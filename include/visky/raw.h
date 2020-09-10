@@ -19,7 +19,8 @@ struct VkyMultiRawPathParams
 };
 
 
-VKY_EXPORT VkyVisual* vky_visual_path_raw_multi(VkyScene* scene, VkyMultiRawPathParams params);
+VKY_EXPORT VkyVisual*
+vky_visual_path_raw_multi(VkyScene* scene, const VkyMultiRawPathParams* params);
 
 
 
@@ -33,7 +34,7 @@ struct VkyImageData
     vec2 uv0, uv1;
 };
 
-VKY_EXPORT VkyVisual* vky_visual_image(VkyScene* scene, VkyTextureParams params);
+VKY_EXPORT VkyVisual* vky_visual_image(VkyScene* scene, const VkyTextureParams* params);
 
 VKY_EXPORT void vky_visual_image_upload(VkyVisual*, const void*);
 

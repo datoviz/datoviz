@@ -7,6 +7,8 @@ def demo_blank():
 
 
 def markers(pos, color):
+    viskylib.log_set_level_env()
+
     app = viskylib.vky_create_app(const.BACKEND_GLFW, None)
     canvas = viskylib.vky_create_canvas(app, 100, 100)
     scene = viskylib.vky_create_scene(canvas, const.WHITE, 1, 1)

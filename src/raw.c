@@ -71,8 +71,9 @@ static VkyData vky_visual_image_bake(VkyVisual* visual, VkyData data)
     return data;
 }
 
-VkyVisual* vky_visual_image(VkyScene* scene, VkyTextureParams params)
+VkyVisual* vky_visual_image(VkyScene* scene, const VkyTextureParams* params)
 {
+    ASSERT(params != NULL);
     VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_IMAGE);
     VkyCanvas* canvas = scene->canvas;
 
@@ -101,7 +102,7 @@ VkyVisual* vky_visual_image(VkyScene* scene, VkyTextureParams params)
     // Add the texture.
     VkyTexture* tex = vky_add_texture(canvas->gpu, params);
     // HACK: to avoid empty texture, use an empty texture.
-    void* pixels = calloc(params.width * params.height * params.depth, params.format_bytes);
+    void* pixels = calloc(params->width * params->height * params->depth, params->format_bytes);
     vky_upload_texture(tex, pixels);
     free(pixels);
 
@@ -213,7 +214,7 @@ static VkyData vky_path_raw_multi_bake(VkyVisual* visual, VkyData data)
     return data;
 }
 
-VkyVisual* vky_visual_path_raw_multi(VkyScene* scene, VkyMultiRawPathParams params)
+VkyVisual* vky_visual_path_raw_multi(VkyScene* scene, const VkyMultiRawPathParams* params)
 {
     VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_PATH_RAW_MULTI);
     VkyCanvas* canvas = scene->canvas;
@@ -230,7 +231,7 @@ VkyVisual* vky_visual_path_raw_multi(VkyScene* scene, VkyMultiRawPathParams para
     // TODO: if Metal, need to use R32_SFLOAT and conversion from int16 to float in baking
 
     // Params.
-    vky_visual_params(visual, sizeof(VkyMultiRawPathParams), &params);
+    vky_visual_params(visual, sizeof(VkyMultiRawPathParams), params);
 
     // Resource layout.
     // VkyResourceLayout resource_layout = vky_create_resource_layout(canvas->gpu,

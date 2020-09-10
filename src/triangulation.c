@@ -95,9 +95,9 @@ VkyVisualBundle* vky_bundle_polygon(VkyScene* scene, VkyPolygonParams params)
     // Polygon outlines.
     if (params.linewidth > 0)
     {
-        VkyVisual* visual_outline = vky_visual_path(
-            scene, (VkyPathParams){
-                       params.linewidth, 4., VKY_CAP_ROUND, VKY_JOIN_ROUND, VKY_DEPTH_DISABLE});
+        VkyPathParams vparams = (VkyPathParams){
+            params.linewidth, 4., VKY_CAP_ROUND, VKY_JOIN_ROUND, VKY_DEPTH_DISABLE};
+        VkyVisual* visual_outline = vky_visual_path(scene, &vparams);
         vky_add_visual_to_bundle(vb, visual_outline);
     }
 

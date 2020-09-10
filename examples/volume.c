@@ -104,7 +104,7 @@ int main()
                                VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
                                0,
                                false};
-    VkyTexture* tex = vky_add_texture(canvas->gpu, params);
+    VkyTexture* tex = vky_add_texture(canvas->gpu, &params);
 
     // Uniform buffer with the volume position.
     uniform_buffer = vky_create_uniform_buffer(canvas->gpu, canvas->image_count, sizeof(vec3));

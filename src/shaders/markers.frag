@@ -7,6 +7,7 @@
 layout (binding = 2) uniform MarkersParams {
     vec4 edge_color;
     float edge_width;
+    bool enable_depth;
 } params;
 
 layout(location = 0) in vec4 color;

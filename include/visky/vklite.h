@@ -450,7 +450,7 @@ VKY_EXPORT void vky_destroy_uniform_buffer(VkyUniformBuffer* ubo);
 /*  Textures                                                                                     */
 /*************************************************************************************************/
 
-VKY_EXPORT VkyTexture vky_create_texture(VkyGpu* gpu, VkyTextureParams params);
+VKY_EXPORT VkyTexture vky_create_texture(VkyGpu* gpu, const VkyTextureParams* params);
 
 VKY_EXPORT void vky_upload_texture(VkyTexture* texture, const void* pixels);
 
@@ -494,7 +494,7 @@ VKY_EXPORT VkyBuffer* vky_add_buffer(VkyGpu*, VkDeviceSize size, VkBufferUsageFl
 VKY_EXPORT VkyBuffer* vky_add_vertex_buffer(VkyGpu*, VkDeviceSize size);
 VKY_EXPORT VkyBuffer* vky_add_index_buffer(VkyGpu*, VkDeviceSize size);
 VKY_EXPORT VkyBuffer* vky_find_buffer(VkyGpu*, VkDeviceSize size, VkBufferUsageFlagBits flags);
-VKY_EXPORT VkyTexture* vky_add_texture(VkyGpu*, VkyTextureParams params);
+VKY_EXPORT VkyTexture* vky_add_texture(VkyGpu*, const VkyTextureParams* params);
 
 
 

@@ -111,7 +111,7 @@ struct VkyPathVertex
     VkyColorBytes color;
 };
 
-VKY_EXPORT VkyVisual* vky_visual_path(VkyScene* scene, VkyPathParams params);
+VKY_EXPORT VkyVisual* vky_visual_path(VkyScene* scene, const VkyPathParams* params);
 
 
 
@@ -156,10 +156,10 @@ struct VkyMarkersParams
 {
     vec4 edge_color;
     float edge_width;
+    bool enable_depth;
 };
 
-VKY_EXPORT VkyVisual*
-vky_visual_marker(VkyScene* scene, VkyMarkersParams params, bool enable_depth);
+VKY_EXPORT VkyVisual* vky_visual_marker(VkyScene* scene, const VkyMarkersParams* params);
 
 
 

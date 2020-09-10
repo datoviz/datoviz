@@ -89,7 +89,7 @@ int main()
         VK_SAMPLER_ADDRESS_MODE_REPEAT,
         VK_IMAGE_LAYOUT_GENERAL,
         true};
-    VkyTexture* noise_texture = vky_add_texture(canvas->gpu, tex_params);
+    VkyTexture* noise_texture = vky_add_texture(canvas->gpu, &tex_params);
     vky_upload_texture(noise_texture, pixels);
     free(pixels);
 
