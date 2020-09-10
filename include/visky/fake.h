@@ -16,4 +16,4 @@ struct VkyFakeSphereVertex
     float radius;
 };
 
-VKY_EXPORT VkyVisual* vky_visual_fake_sphere(VkyScene* scene, VkyFakeSphereParams params);
+VKY_EXPORT VkyVisual* vky_visual_fake_sphere(VkyScene* scene, const VkyFakeSphereParams* params);

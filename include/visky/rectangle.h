@@ -27,7 +27,7 @@ struct VkyRectangleData
     VkyColorBytes color;
 };
 
-VKY_EXPORT VkyVisual* vky_visual_rectangle(VkyScene* scene, VkyRectangleParams params);
+VKY_EXPORT VkyVisual* vky_visual_rectangle(VkyScene* scene, const VkyRectangleParams* params);
 
 
 
@@ -61,7 +61,7 @@ struct VkyAreaData
     uint32_t area_idx;
 };
 
-VKY_EXPORT VkyVisual* vky_visual_area(VkyScene* scene, VkyAreaParams params);
+VKY_EXPORT VkyVisual* vky_visual_area(VkyScene* scene, const VkyAreaParams* params);
 
 
 

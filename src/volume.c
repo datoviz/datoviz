@@ -2,7 +2,8 @@
 
 
 
-VkyVisual* vky_visual_volume(VkyScene* scene, VkyTextureParams tex_params, const void* pixels)
+VkyVisual*
+vky_visual_volume(VkyScene* scene, const VkyTextureParams* tex_params, const void* pixels)
 {
     VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_VOLUME);
     VkyCanvas* canvas = scene->canvas;
@@ -35,7 +36,7 @@ VkyVisual* vky_visual_volume(VkyScene* scene, VkyTextureParams tex_params, const
         (VkyGraphicsPipelineParams){true});
 
     // Texture.
-    VkyTexture* tex = vky_add_texture(canvas->gpu, &tex_params);
+    VkyTexture* tex = vky_add_texture(canvas->gpu, tex_params);
     vky_upload_texture(tex, pixels);
 
     // Resources.

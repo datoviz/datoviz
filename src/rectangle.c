@@ -30,10 +30,11 @@ static VkyData vky_visual_rectangle_bake(VkyVisual* visual, VkyData data)
     const VkyRectangleData* items = (const VkyRectangleData*)data.items;
 
     vec3 origin, u, v, w;
-    VkyRectangleParams* params = (VkyRectangleParams*)visual->params;
-    glm_vec3_copy(params->origin, origin);
-    glm_vec3_copy(params->u, u);
-    glm_vec3_copy(params->v, v);
+    VkyRectangleParams params = {0};
+    memcpy(&params, visual->params, sizeof(VkyRectangleParams));
+    glm_vec3_copy(params.origin, origin);
+    glm_vec3_copy(params.u, u);
+    glm_vec3_copy(params.v, v);
 
     for (uint32_t i = 0; i < data.item_count; i++)
     {
@@ -78,7 +79,7 @@ static VkyData vky_visual_rectangle_bake(VkyVisual* visual, VkyData data)
 
 
 
-VkyVisual* vky_visual_rectangle(VkyScene* scene, VkyRectangleParams params)
+VkyVisual* vky_visual_rectangle(VkyScene* scene, const VkyRectangleParams* params)
 {
     VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_RECTANGLE);
     VkyCanvas* canvas = scene->canvas;
@@ -103,7 +104,7 @@ VkyVisual* vky_visual_rectangle(VkyScene* scene, VkyRectangleParams params)
         canvas, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, shaders, vertex_layout, resource_layout,
         (VkyGraphicsPipelineParams){true});
 
-    vky_visual_params(visual, sizeof(VkyRectangleParams), &params);
+    vky_visual_params(visual, sizeof(VkyRectangleParams), params);
     vky_add_common_resources(visual);
     visual->cb_bake_data = vky_visual_rectangle_bake;
     return visual;
@@ -134,10 +135,11 @@ static VkyData vky_visual_area_bake(VkyVisual* visual, VkyData data)
     const VkyAreaData* items = (const VkyAreaData*)data.items;
 
     vec3 origin, u, v, w;
-    VkyAreaParams* params = (VkyAreaParams*)visual->params;
-    glm_vec3_copy(params->origin, origin);
-    glm_vec3_copy(params->u, u);
-    glm_vec3_copy(params->v, v);
+    VkyAreaParams params = {0};
+    memcpy(&params, visual->params, sizeof(VkyAreaParams));
+    glm_vec3_copy(params.origin, origin);
+    glm_vec3_copy(params.u, u);
+    glm_vec3_copy(params.v, v);
 
     for (uint32_t i = 0; i < data.item_count; i++)
     {
@@ -168,7 +170,7 @@ static VkyData vky_visual_area_bake(VkyVisual* visual, VkyData data)
 
 
 
-VkyVisual* vky_visual_area(VkyScene* scene, VkyAreaParams params)
+VkyVisual* vky_visual_area(VkyScene* scene, const VkyAreaParams* params)
 {
     VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_AREA);
     VkyCanvas* canvas = scene->canvas;
@@ -196,7 +198,7 @@ VkyVisual* vky_visual_area(VkyScene* scene, VkyAreaParams params)
         canvas, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP, shaders, vertex_layout, resource_layout,
         (VkyGraphicsPipelineParams){true});
 
-    vky_visual_params(visual, sizeof(VkyAreaParams), &params);
+    vky_visual_params(visual, sizeof(VkyAreaParams), params);
     vky_add_common_resources(visual);
     visual->cb_bake_data = vky_visual_area_bake;
     return visual;

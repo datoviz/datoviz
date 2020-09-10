@@ -722,7 +722,7 @@ void vky_axes_update(VkyAxes* axes)
 
     // Get the axes context.
     VkyCanvas* canvas = axes->tick_visual->scene->canvas;
-    VkyAxesTextParams* params = (VkyAxesTextParams*)axes->text_visual->params;
+    const VkyAxesTextParams* params = (const VkyAxesTextParams*)axes->text_visual->params;
     float glyph_width = params->glyph_size[0];
     float glyph_height = params->glyph_size[1];
     float viewport_width = axes->panel->viewport.w * canvas->size.framebuffer_width;

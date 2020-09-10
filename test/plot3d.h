@@ -66,7 +66,7 @@ static void spheres(VkyPanel* panel)
     // Visual.
     VkyFakeSphereParams params = {0};
     glm_vec4_copy((vec4){2, 2, -2, 1}, params.light_pos);
-    VkyVisual* visual = vky_visual_fake_sphere(panel->scene, params);
+    VkyVisual* visual = vky_visual_fake_sphere(panel->scene, &params);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
     vky_visual_upload(visual, (VkyData){n, vertices});
 }
@@ -87,7 +87,7 @@ static void volume(VkyPanel* panel)
     char path[1024];
     snprintf(path, sizeof(path), "%s/volume/skull.img", DATA_DIR);
     char* pixels = read_file(path, NULL);
-    VkyVisual* visual = vky_visual_volume(scene, params, pixels);
+    VkyVisual* visual = vky_visual_volume(scene, &params, pixels);
     free(pixels);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 }

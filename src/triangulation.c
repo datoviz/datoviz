@@ -84,7 +84,7 @@ void vky_destroy_polygon_triangulation(VkyPolygonTriangulation* tr)
 /*  Polygon visual bundle                                                                        */
 /*************************************************************************************************/
 
-VkyVisualBundle* vky_bundle_polygon(VkyScene* scene, VkyPolygonParams params)
+VkyVisualBundle* vky_bundle_polygon(VkyScene* scene, const VkyPolygonParams* params)
 {
     VkyVisualBundle* vb = vky_create_visual_bundle(scene);
 
@@ -93,17 +93,17 @@ VkyVisualBundle* vky_bundle_polygon(VkyScene* scene, VkyPolygonParams params)
     vky_add_visual_to_bundle(vb, visual_poly);
 
     // Polygon outlines.
-    if (params.linewidth > 0)
+    if (params->linewidth > 0)
     {
         VkyPathParams vparams = (VkyPathParams){
-            params.linewidth, 4., VKY_CAP_ROUND, VKY_JOIN_ROUND, VKY_DEPTH_DISABLE};
+            params->linewidth, 4., VKY_CAP_ROUND, VKY_JOIN_ROUND, VKY_DEPTH_DISABLE};
         VkyVisual* visual_outline = vky_visual_path(scene, &vparams);
         vky_add_visual_to_bundle(vb, visual_outline);
     }
 
     // Copy the parameters.
     vb->params = malloc(sizeof(VkyPolygonParams));
-    memcpy(vb->params, &params, sizeof(VkyPolygonParams));
+    memcpy(vb->params, params, sizeof(VkyPolygonParams));
 
     return vb;
 }
@@ -117,7 +117,7 @@ VkyPolygonTriangulation vky_bundle_polygon_upload(
     const VkyColorBytes* poly_colors                         // polygon colors
 )
 {
-    VkyPolygonParams* params = (VkyPolygonParams*)vb->params;
+    const VkyPolygonParams* params = (const VkyPolygonParams*)vb->params;
     ASSERT(params != NULL);
 
     VkyVisual* visual_poly = vb->visuals[0];
@@ -500,7 +500,7 @@ void vky_destroy_pslg_triangulation(VkyPSLGTriangulation* tr)
 /*  PSLG visual bundle                                                                           */
 /*************************************************************************************************/
 
-VkyVisualBundle* vky_bundle_pslg(VkyScene* scene, VkyPSLGParams params)
+VkyVisualBundle* vky_bundle_pslg(VkyScene* scene, const VkyPSLGParams* params)
 {
     VkyVisualBundle* vb = vky_create_visual_bundle(scene);
 
@@ -514,7 +514,7 @@ VkyVisualBundle* vky_bundle_pslg(VkyScene* scene, VkyPSLGParams params)
 
     // Copy the parameters.
     vb->params = malloc(sizeof(VkyPSLGParams));
-    memcpy(vb->params, &params, sizeof(VkyPSLGParams));
+    memcpy(vb->params, params, sizeof(VkyPSLGParams));
 
     return vb;
 }
@@ -531,7 +531,7 @@ VkyPSLGTriangulation vky_bundle_pslg_upload(
 {
     VkyVisual* visual_mesh = vb->visuals[0];
     VkyVisual* visual_segments = vb->visuals[1];
-    VkyPSLGParams* params = (VkyPSLGParams*)vb->params;
+    const VkyPSLGParams* params = (const VkyPSLGParams*)vb->params;
     ASSERT(params != NULL);
 
 
@@ -590,7 +590,7 @@ VkyPSLGTriangulation vky_bundle_pslg_upload(
 /*    Can be used with any raw mesh VkyVertex-based visual                                       */
 /*************************************************************************************************/
 
-VkyVisualBundle* vky_bundle_triangulation(VkyScene* scene, VkyTriangulationParams params)
+VkyVisualBundle* vky_bundle_triangulation(VkyScene* scene, const VkyTriangulationParams* params)
 {
     VkyVisualBundle* vb = vky_create_visual_bundle(scene);
 
@@ -600,13 +600,13 @@ VkyVisualBundle* vky_bundle_triangulation(VkyScene* scene, VkyTriangulationParam
 
     // Marker visual.
     VkyMarkersRawParams vparams =
-        (VkyMarkersRawParams){{params.marker_size[0], params.marker_size[1]}, VKY_SCALING_OFF};
+        (VkyMarkersRawParams){{params->marker_size[0], params->marker_size[1]}, VKY_SCALING_OFF};
     VkyVisual* visual_markers = vky_visual_marker_raw(scene, &vparams);
     vky_add_visual_to_bundle(vb, visual_markers);
 
     // Copy the parameters.
     vb->params = malloc(sizeof(VkyTriangulationParams));
-    memcpy(vb->params, &params, sizeof(VkyTriangulationParams));
+    memcpy(vb->params, params, sizeof(VkyTriangulationParams));
 
     return vb;
 }
@@ -620,7 +620,7 @@ void vky_bundle_triangulation_upload(
 {
     VkyVisual* visual_segments = vb->visuals[0];
     VkyVisual* visual_markers = vb->visuals[1];
-    VkyTriangulationParams* params = (VkyTriangulationParams*)vb->params;
+    const VkyTriangulationParams* params = (const VkyTriangulationParams*)vb->params;
 
     ASSERT(params != NULL);
 

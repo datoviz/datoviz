@@ -20,7 +20,7 @@ struct VkyVolumeParams
     mat4 normal_mat;
 };
 
-VKY_EXPORT VkyVisual* vky_visual_volume(VkyScene*, VkyTextureParams, const void*);
+VKY_EXPORT VkyVisual* vky_visual_volume(VkyScene*, const VkyTextureParams*, const void*);
 
 
 

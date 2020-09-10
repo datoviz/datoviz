@@ -171,7 +171,7 @@ VkyVisual* vky_visual_path_raw(VkyScene* scene)
 
 static VkyData vky_path_raw_multi_bake(VkyVisual* visual, VkyData data)
 {
-    VkyMultiRawPathParams* params = (VkyMultiRawPathParams*)visual->params;
+    const VkyMultiRawPathParams* params = (const VkyMultiRawPathParams*)visual->params;
 
     // Determine the actual number of vertices and indices.
     uint32_t nv = data.item_count; // total number of points

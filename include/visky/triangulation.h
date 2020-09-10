@@ -66,7 +66,7 @@ struct VkyPolygonParams
     VkyColorBytes edge_color;
 };
 
-VKY_EXPORT VkyVisualBundle* vky_bundle_polygon(VkyScene* scene, VkyPolygonParams params);
+VKY_EXPORT VkyVisualBundle* vky_bundle_polygon(VkyScene* scene, const VkyPolygonParams* params);
 
 VKY_EXPORT VkyPolygonTriangulation vky_bundle_polygon_upload(
     VkyVisualBundle* vb,                                     // visual bundle
@@ -106,7 +106,7 @@ struct VkyPSLGParams
 
 
 
-VKY_EXPORT VkyVisualBundle* vky_bundle_pslg(VkyScene* scene, VkyPSLGParams params);
+VKY_EXPORT VkyVisualBundle* vky_bundle_pslg(VkyScene* scene, const VkyPSLGParams* params);
 
 VKY_EXPORT VkyPSLGTriangulation vky_bundle_pslg_upload(
     VkyVisualBundle* vb,          //
@@ -133,7 +133,7 @@ struct VkyTriangulationParams
     VkyColorBytes marker_color;
 };
 
-VKY_EXPORT VkyVisualBundle* vky_bundle_triangulation(VkyScene*, VkyTriangulationParams);
+VKY_EXPORT VkyVisualBundle* vky_bundle_triangulation(VkyScene*, const VkyTriangulationParams*);
 
 VKY_EXPORT void vky_bundle_triangulation_upload(
     VkyVisualBundle*, uint32_t, size_t, const void*, uint32_t, const VkyIndex*);

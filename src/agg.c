@@ -1,9 +1,5 @@
 #include "../include/visky/visky.h"
 
-// BEGIN_INCL_NO_WARN
-// #include <stb_image.h>
-// END_INCL_NO_WARN
-
 
 
 /*************************************************************************************************/
@@ -169,6 +165,7 @@ VkyVisual* vky_visual_path(VkyScene* scene, const VkyPathParams* params)
         vparams.linewidth = 1;
     }
     vparams.linewidth *= canvas->dpi_factor;
+    ASSERT(vparams.linewidth > 0);
     vky_visual_params(visual, sizeof(VkyPathParams), &vparams);
 
     // Resource layout.
@@ -373,7 +370,7 @@ VkyVisual* vky_visual_marker(VkyScene* scene, const VkyMarkersParams* params)
     // Pipeline.
     visual->pipeline = vky_create_graphics_pipeline(
         canvas, VK_PRIMITIVE_TOPOLOGY_POINT_LIST, shaders, vertex_layout, resource_layout,
-        (VkyGraphicsPipelineParams){vparams.enable_depth});
+        (VkyGraphicsPipelineParams){vparams.enable_depth > 0});
 
     // Resources.
     vky_add_common_resources(visual);
@@ -414,7 +411,7 @@ static VkyData vky_text_bake(VkyVisual* visual, VkyData data)
     VkyTextVertex* vertices = calloc(data.vertex_count, sizeof(VkyTextVertex));
 
     // Glyph aspect ratio and size.
-    VkyTextParams params = *((VkyTextParams*)visual->params);
+    VkyTextParams params = *((const VkyTextParams*)visual->params);
     float glyph_width = params.tex_size[0] / (float)params.grid_size[1];
     float glyph_height = params.tex_size[1] / (float)params.grid_size[0];
 

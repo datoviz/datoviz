@@ -6,7 +6,7 @@
 /*  Fake sphere visual                                                                           */
 /*************************************************************************************************/
 
-VkyVisual* vky_visual_fake_sphere(VkyScene* scene, VkyFakeSphereParams params)
+VkyVisual* vky_visual_fake_sphere(VkyScene* scene, const VkyFakeSphereParams* params)
 {
     VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_FAKE_SPHERE);
     VkyCanvas* canvas = scene->canvas;
@@ -27,7 +27,7 @@ VkyVisual* vky_visual_fake_sphere(VkyScene* scene, VkyFakeSphereParams params)
         &vertex_layout, 2, VK_FORMAT_R32_SFLOAT, offsetof(VkyFakeSphereVertex, radius));
 
     // Params.
-    vky_visual_params(visual, sizeof(VkyFakeSphereParams), &params);
+    vky_visual_params(visual, sizeof(VkyFakeSphereParams), params);
 
     // Resource layout.
     VkyResourceLayout resource_layout = vky_common_resource_layout(visual);

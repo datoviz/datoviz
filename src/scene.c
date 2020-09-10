@@ -1026,6 +1026,7 @@ void vky_add_visual_bundle_to_panel(
 
 void vky_draw_visual(VkyVisual* visual, VkyPanel* panel, VkyViewportType viewport_type)
 {
+    log_trace("draw visual type %d", visual->visual_type);
     VkyScene* scene = visual->scene;
     VkyCanvas* canvas = scene->canvas;
     VkyViewport viewport = vky_get_viewport(panel, viewport_type);

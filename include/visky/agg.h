@@ -156,7 +156,7 @@ struct VkyMarkersParams
 {
     vec4 edge_color;
     float edge_width;
-    bool enable_depth;
+    int32_t enable_depth;
 };
 
 VKY_EXPORT VkyVisual* vky_visual_marker(VkyScene* scene, const VkyMarkersParams* params);
