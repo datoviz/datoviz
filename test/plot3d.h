@@ -19,7 +19,7 @@ static void surface(VkyPanel* panel)
     // Mesh visual.
     VkyMeshParams params = vky_default_mesh_params(
         VKY_MESH_COLOR_RGBA, VKY_MESH_SHADING_BLINN_PHONG, (ivec2){0, 0}, 0);
-    VkyVisual* visual = vky_visual_mesh(scene, &params, NULL);
+    VkyVisual* visual = vky_visual(scene, VKY_VISUAL_MESH, &params, NULL);
     vky_add_vertex_buffer(canvas->gpu, MAX_VERTEX_COUNT * sizeof(VkyMeshVertex));
     vky_add_index_buffer(canvas->gpu, MAX_INDEX_COUNT * sizeof(VkyIndex));
     vky_allocate_vertex_buffer(visual, MAX_VERTEX_COUNT * sizeof(VkyMeshVertex));
@@ -67,7 +67,7 @@ static void spheres(VkyPanel* panel)
     // Visual.
     VkyFakeSphereParams params = {0};
     glm_vec4_copy((vec4){2, 2, -2, 1}, params.light_pos);
-    VkyVisual* visual = vky_visual_fake_sphere(panel->scene, &params);
+    VkyVisual* visual = vky_visual(panel->scene, VKY_VISUAL_FAKE_SPHERE, &params, NULL);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
     vky_visual_upload(visual, (VkyData){n, vertices});
 }
@@ -88,7 +88,7 @@ static void volume(VkyPanel* panel)
     char path[1024];
     snprintf(path, sizeof(path), "%s/volume/skull.img", DATA_DIR);
     char* pixels = read_file(path, NULL);
-    VkyVisual* visual = vky_visual_volume(scene, &params, pixels);
+    VkyVisual* visual = vky_visual(scene, VKY_VISUAL_VOLUME, &params, pixels);
     free(pixels);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 }
@@ -98,7 +98,7 @@ static void brain(VkyPanel* panel)
     // Mesh visual.
     VkyMeshParams params = vky_default_mesh_params(
         VKY_MESH_COLOR_RGBA, VKY_MESH_SHADING_BLINN_PHONG, (ivec2){0, 0}, 0);
-    VkyVisual* visual = vky_visual_mesh(panel->scene, &params, NULL);
+    VkyVisual* visual = vky_visual(panel->scene, VKY_VISUAL_MESH, &params, NULL);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
     // Load the mesh object.

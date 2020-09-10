@@ -18,7 +18,7 @@ int main()
 
     // Create the visual.
     VkyMarkersParams params = (VkyMarkersParams){{0, 0, 0, 1}, 1.0f, false};
-    VkyVisual* visual = vky_visual_marker(scene, &params);
+    VkyVisual* visual = vky_visual(scene, VKY_VISUAL_MARKER, &params, NULL);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
     // Set the panel controller.

@@ -82,7 +82,7 @@ int main()
     }
 
     // Create the visual.
-    VkyVisual* visual = vky_visual_path_raw_multi(scene, &params);
+    VkyVisual* visual = vky_visual(scene, VKY_VISUAL_PATH_RAW_MULTI, &params, NULL);
 
     // Create the buffers.
     vky_add_vertex_buffer(canvas->gpu, vertex_count_per_path * path_count * sizeof(int16_t));

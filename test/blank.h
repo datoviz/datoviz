@@ -7,7 +7,7 @@ static void blank(VkyPanel* panel)
 
 static void hello(VkyPanel* panel)
 {
-    VkyVisual* visual = vky_visual_text(panel->scene);
+    VkyVisual* visual = vky_visual(panel->scene, VKY_VISUAL_TEXT, NULL, NULL);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
     VkyTextData data[1] = {
         {{0, 0, 0}, {0, 0}, {255, 0, 0, 255}, 30, {0, 0}, 0, 12, "Hello world!", false}};

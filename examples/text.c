@@ -53,7 +53,7 @@ int main()
     vky_set_panel_aspect_ratio(panel, 1);
 
     // Create the visual.
-    VkyVisual* visual = vky_visual_text(scene);
+    VkyVisual* visual = vky_visual(scene, VKY_VISUAL_TEXT, NULL, NULL);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
     upload_text(visual);

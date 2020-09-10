@@ -106,7 +106,7 @@ int main()
     vky_set_controller(panel, VKY_CONTROLLER_PANZOOM, NULL);
 
     // Create the visual.
-    VkyVisual* visual = vky_visual_mesh_raw(panel->scene);
+    VkyVisual* visual = vky_visual(panel->scene, VKY_VISUAL_MESH_RAW, NULL, NULL);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
     // Upload the data.

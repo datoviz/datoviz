@@ -25,7 +25,7 @@ static void compute_image(VkyPanel* panel)
         VK_SAMPLER_ADDRESS_MODE_REPEAT,
         VK_IMAGE_LAYOUT_GENERAL,
         true};
-    VkyVisual* visual = vky_visual_image(scene, &tex_params);
+    VkyVisual* visual = vky_visual(scene, VKY_VISUAL_IMAGE, &tex_params, NULL);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
     // HACK: find the texture created by visual_image
     // TODO: better way to obtain the image's texture

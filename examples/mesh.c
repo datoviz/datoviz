@@ -267,7 +267,7 @@ int main()
 
     // Mesh visual.
     VkyMeshParams params = vky_default_mesh_params(VKY_MESH_COLOR_RGBA, SHADING, (ivec2){0, 0}, 0);
-    visual = vky_visual_mesh(scene, &params, NULL);
+    visual = vky_visual(scene, VKY_VISUAL_MESH, &params, NULL);
     vky_add_vertex_buffer(canvas->gpu, MAX_VERTEX_COUNT * sizeof(VkyMeshVertex));
     vky_add_index_buffer(canvas->gpu, MAX_INDEX_COUNT * sizeof(VkyIndex));
     vky_allocate_vertex_buffer(visual, MAX_VERTEX_COUNT * sizeof(VkyMeshVertex));

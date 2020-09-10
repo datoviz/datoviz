@@ -49,7 +49,7 @@ static void spiral(VkyPanel* panel)
 {
     // Create the path visual.
     VkyPathParams params = {10, 2., VKY_CAP_ROUND, VKY_JOIN_ROUND, VKY_DEPTH_ENABLE};
-    spiral_visual = vky_visual_path(panel->scene, &params);
+    spiral_visual = vky_visual(panel->scene, VKY_VISUAL_PATH, &params, NULL);
     vky_add_visual_to_panel(spiral_visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
     const uint32_t N_path = 1000;
     vec3 points[1000];
@@ -74,7 +74,7 @@ static void surface(VkyPanel* panel)
 {
     VkyMeshParams params = vky_default_mesh_params(
         VKY_MESH_COLOR_RGBA, VKY_MESH_SHADING_BLINN_PHONG, (ivec2){0, 0}, 0);
-    surface_visual = vky_visual_mesh(panel->scene, &params, NULL);
+    surface_visual = vky_visual(panel->scene, VKY_VISUAL_MESH, &params, NULL);
     vky_allocate_vertex_buffer(surface_visual, MAX_VERTEX_COUNT * sizeof(VkyMeshVertex));
     vky_allocate_index_buffer(surface_visual, MAX_INDEX_COUNT * sizeof(VkyIndex));
     vky_add_visual_to_panel(surface_visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
