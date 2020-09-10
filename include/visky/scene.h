@@ -612,7 +612,8 @@ VKY_EXPORT void vky_end_commands(VkyScene* Scene);
 VKY_EXPORT VkyVisual* vky_create_visual(VkyScene* scene, VkyVisualType);
 VKY_EXPORT void vky_visual_params(VkyVisual* visual, size_t params_size, const void* params);
 VKY_EXPORT void vky_add_visual_to_panel(VkyVisual*, VkyPanel*, VkyViewportType, VkyVisualPriority);
-VKY_EXPORT VkyVisual* vky_visual(VkyScene* scene, VkyVisualType visual_type, const void* params);
+VKY_EXPORT VkyVisual*
+vky_visual(VkyScene* scene, VkyVisualType visual_type, const void* params, const void* obj);
 
 VKY_EXPORT VkyResourceLayout vky_common_resource_layout(VkyVisual*);
 VKY_EXPORT void

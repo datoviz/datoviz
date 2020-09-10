@@ -1,7 +1,3 @@
-// #include <assimp/cimport.h>        // Plain-C interface
-// #include <assimp/scene.h>          // Output data structure
-// #include <assimp/postprocess.h>    // Post processing flags
-
 #include "../include/visky/mesh.h"
 
 
@@ -10,24 +6,20 @@
 /*  Mesh visual                                                                                  */
 /*************************************************************************************************/
 
-VkyVisual* vky_visual_mesh(
-    VkyScene* scene, VkyMeshColorType color_type, VkyMeshShading shading, float wire_linewidth,
-    VkyTexture* texture)
+VkyMeshParams vky_default_mesh_params(
+    VkyMeshColorType color_type, VkyMeshShading shading, ivec2 tex_size, float wire_linewidth)
 {
-
-    // Make the params struct.
-    int32_t texwidth = 0, texheight = 0;
-    if (texture != NULL)
-    {
-        texwidth = (int32_t)texture->params.width;
-        texheight = (int32_t)texture->params.height;
-    }
-
     VkyMeshParams params = {
-        VKY_DEFAULT_LIGHT_POSITION, VKY_DEFAULT_LIGHT_COEFFS, {texwidth, texheight},
+        VKY_DEFAULT_LIGHT_POSITION, VKY_DEFAULT_LIGHT_COEFFS, {tex_size[0], tex_size[1]},
         (int32_t)color_type,        (int32_t)shading,         wire_linewidth,
     };
+    return params;
+}
 
+
+VkyVisual*
+vky_visual_mesh(VkyScene* scene, const VkyMeshParams* params, const VkyTextureParams* tparams)
+{
     VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_MESH);
     VkyCanvas* canvas = scene->canvas;
 
@@ -47,11 +39,16 @@ VkyVisual* vky_visual_mesh(
         &vertex_layout, 2, VK_FORMAT_R8G8B8A8_UINT, offsetof(VkyMeshVertex, color));
 
     // Params.
-    vky_visual_params(visual, sizeof(VkyMeshParams), &params);
+    if (tparams != NULL && (params->tex_size[0] != (int32_t)tparams->width ||
+                            params->tex_size[1] != (int32_t)tparams->height))
+    {
+        log_error("texture size specified in mesh params does not match texture params");
+        tparams = NULL;
+    }
+    vky_visual_params(visual, sizeof(VkyMeshParams), params);
 
     // Resource layout.
     VkyResourceLayout resource_layout = vky_common_resource_layout(visual);
-    // if (texture != NULL)
     vky_add_resource_binding(&resource_layout, 3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
     // Pipeline.
@@ -61,12 +58,38 @@ VkyVisual* vky_visual_mesh(
 
     // Resources.
     vky_add_common_resources(visual);
-    // HACK: default texture to avoid Vulkan error.
-    if (texture == NULL)
-        texture = &canvas->gpu->textures[0];
-    vky_add_texture_resource(visual, texture);
+    // Add the texture.
+    VkyTexture* tex = NULL;
+    if (tparams != NULL)
+    {
+        tex = vky_add_texture(canvas->gpu, tparams);
+        // HACK: to avoid empty texture, use an empty texture.
+        {
+            void* pixels =
+                calloc(tparams->width * tparams->height * tparams->depth, tparams->format_bytes);
+            vky_upload_texture(tex, pixels);
+            free(pixels);
+        }
+    }
+    else
+    {
+        // HACK: use an existing texture if none is provided in order to prevent Vulkan errors
+        tex = &canvas->gpu->textures[0];
+    }
+    ASSERT(tex != NULL);
+    vky_add_texture_resource(visual, tex);
 
     return visual;
+}
+
+
+void vky_visual_mesh_upload(VkyVisual* visual, const void* pixels)
+{
+    ASSERT(visual->visual_type == VKY_VISUAL_MESH);
+    ASSERT(visual->resource_count == 3); // MVP, color texture, visual's image
+    VkyTexture* texture = (VkyTexture*)visual->resources[2];
+    ASSERT(texture != NULL);
+    vky_upload_texture(texture, pixels);
 }
 
 

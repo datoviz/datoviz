@@ -2234,7 +2234,7 @@ VkyTexture* vky_get_font_texture(VkyGpu* gpu)
 
 VkyTexture vky_create_texture(VkyGpu* gpu, const VkyTextureParams* p_params)
 {
-    log_trace("create texture");
+    log_trace("create texture, compute %d", p_params->enable_compute);
     VkyTextureParams params = *p_params;
     VkyTexture texture = {0};
     texture.gpu = gpu;

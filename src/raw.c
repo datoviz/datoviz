@@ -115,8 +115,6 @@ VkyVisual* vky_visual_image(VkyScene* scene, const VkyTextureParams* params)
     return visual;
 }
 
-
-
 void vky_visual_image_upload(VkyVisual* visual, const void* pixels)
 {
     ASSERT(visual->visual_type == VKY_VISUAL_IMAGE);

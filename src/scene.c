@@ -527,16 +527,79 @@ VkyVisual* vky_create_visual(VkyScene* scene, VkyVisualType visual_type)
     return out;
 }
 
-VkyVisual* vky_visual(VkyScene* scene, VkyVisualType visual_type, const void* params)
+VkyVisual*
+vky_visual(VkyScene* scene, VkyVisualType visual_type, const void* params, const void* obj)
 {
     VkyVisual* visual = NULL;
     switch (visual_type)
     {
+
+    case VKY_VISUAL_RECTANGLE:
+        visual = vky_visual_rectangle(scene, (const VkyRectangleParams*)params);
+        break;
+
+    case VKY_VISUAL_RECTANGLE_AXIS:
+        visual = vky_visual_rectangle_axis(scene);
+        break;
+
+    case VKY_VISUAL_AREA:
+        visual = vky_visual_area(scene, (const VkyAreaParams*)params);
+        break;
+
+    case VKY_VISUAL_MESH:
+        visual = vky_visual_mesh(scene, (const VkyMeshParams*)params, obj);
+        break;
+
+    case VKY_VISUAL_MESH_RAW:
+        visual = vky_visual_mesh_raw(scene);
+        break;
+
+    case VKY_VISUAL_MARKER:
+        visual = vky_visual_marker(scene, (const VkyMarkersParams*)params);
+        break;
+
     case VKY_VISUAL_MARKER_RAW:
         visual = vky_visual_marker_raw(scene, (const VkyMarkersRawParams*)params);
         break;
-        // TODO: other visuals
+
+    case VKY_VISUAL_SEGMENT:
+        visual = vky_visual_segment(scene);
+        break;
+
+    case VKY_VISUAL_ARROW:
+        visual = vky_visual_arrow(scene);
+        break;
+
+    case VKY_VISUAL_PATH:
+        visual = vky_visual_path(scene, (const VkyPathParams*)params);
+        break;
+
+    case VKY_VISUAL_PATH_RAW:
+        visual = vky_visual_path_raw(scene);
+        break;
+
+    case VKY_VISUAL_PATH_RAW_MULTI:
+        visual = vky_visual_path_raw_multi(scene, (const VkyMultiRawPathParams*)params);
+        break;
+
+    case VKY_VISUAL_FAKE_SPHERE:
+        visual = vky_visual_fake_sphere(scene, (const VkyFakeSphereParams*)params);
+        break;
+
+    case VKY_VISUAL_IMAGE:
+        visual = vky_visual_image(scene, (const VkyTextureParams*)params);
+        break;
+
+    case VKY_VISUAL_VOLUME:
+        visual = vky_visual_volume(scene, (const VkyTextureParams*)params, obj);
+        break;
+
+    case VKY_VISUAL_TEXT:
+        visual = vky_visual_text(scene);
+        break;
+
     default:
+        log_error("unknown visual type");
         break;
     }
     ASSERT(visual != NULL);
@@ -573,9 +636,12 @@ void vky_visual_params(VkyVisual* visual, size_t params_size, const void* params
     }
     // Copy the params data to a heap-allocated buffer so that it lives until the destruction
     // of the visual.
-    void* p_params = malloc(params_size);
-    memcpy(p_params, params, params_size);
-    visual->params = p_params;
+    if (visual->params == NULL)
+    {
+        visual->params = malloc(params_size);
+    }
+    ASSERT(visual->params != NULL);
+    memcpy(visual->params, params, params_size);
     for (uint32_t image_index = 0; image_index < visual->scene->canvas->image_count; image_index++)
     {
         vky_upload_uniform_buffer(&visual->params_buffer, image_index, params);

@@ -266,7 +266,8 @@ int main()
     vky_set_controller(panel, CONTROLLER, NULL);
 
     // Mesh visual.
-    visual = vky_visual_mesh(scene, VKY_MESH_COLOR_RGBA, SHADING, 0, NULL);
+    VkyMeshParams params = vky_default_mesh_params(VKY_MESH_COLOR_RGBA, SHADING, (ivec2){0, 0}, 0);
+    visual = vky_visual_mesh(scene, &params, NULL);
     vky_add_vertex_buffer(canvas->gpu, MAX_VERTEX_COUNT * sizeof(VkyMeshVertex));
     vky_add_index_buffer(canvas->gpu, MAX_INDEX_COUNT * sizeof(VkyIndex));
     vky_allocate_vertex_buffer(visual, MAX_VERTEX_COUNT * sizeof(VkyMeshVertex));
@@ -283,8 +284,8 @@ int main()
     set_mesh();
 
     VkyGui* gui = vky_create_gui(canvas, (VkyGuiParams){VKY_GUI_STANDARD, 0});
-    VkyGuiListParams params = {mesh_type_count, mesh_types};
-    vky_gui_control(gui, VKY_GUI_LISTBOX, "", &params, &new_mesh_type);
+    VkyGuiListParams gparams = {mesh_type_count, mesh_types};
+    vky_gui_control(gui, VKY_GUI_LISTBOX, "", &gparams, &new_mesh_type);
     vky_add_frame_callback(canvas, mesh_selection);
 
     // Run app and quit.

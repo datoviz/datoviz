@@ -72,8 +72,9 @@ static void spiral(VkyPanel* panel)
 
 static void surface(VkyPanel* panel)
 {
-    surface_visual =
-        vky_visual_mesh(panel->scene, VKY_MESH_COLOR_RGBA, VKY_MESH_SHADING_BLINN_PHONG, 0, NULL);
+    VkyMeshParams params = vky_default_mesh_params(
+        VKY_MESH_COLOR_RGBA, VKY_MESH_SHADING_BLINN_PHONG, (ivec2){0, 0}, 0);
+    surface_visual = vky_visual_mesh(panel->scene, &params, NULL);
     vky_allocate_vertex_buffer(surface_visual, MAX_VERTEX_COUNT * sizeof(VkyMeshVertex));
     vky_allocate_index_buffer(surface_visual, MAX_INDEX_COUNT * sizeof(VkyIndex));
     vky_add_visual_to_panel(surface_visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);

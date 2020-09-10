@@ -41,8 +41,13 @@ struct VkyMeshVertex
     VkyColorBytes color;
 };
 
+VKY_EXPORT VkyMeshParams vky_default_mesh_params(
+    VkyMeshColorType color_type, VkyMeshShading shading, ivec2 tex_size, float wire_linewidth);
+
 VKY_EXPORT VkyVisual*
-vky_visual_mesh(VkyScene* scene, VkyMeshColorType, VkyMeshShading, float, VkyTexture*);
+vky_visual_mesh(VkyScene* scene, const VkyMeshParams* params, const VkyTextureParams* tparams);
+
+VKY_EXPORT void vky_visual_mesh_upload(VkyVisual* visual, const void* pixels);
 
 VKY_EXPORT VkyVisual* vky_visual_mesh_raw(VkyScene* scene);
 

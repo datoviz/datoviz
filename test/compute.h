@@ -25,23 +25,15 @@ static void compute_image(VkyPanel* panel)
         VK_SAMPLER_ADDRESS_MODE_REPEAT,
         VK_IMAGE_LAYOUT_GENERAL,
         true};
-    VkyTexture* texture = vky_add_texture(canvas->gpu, &tex_params);
-    VkyVisual* visual =
-        vky_visual_mesh(scene, VKY_MESH_COLOR_UV, VKY_MESH_SHADING_NONE, 0, texture);
+    VkyVisual* visual = vky_visual_image(scene, &tex_params);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
+    // HACK: find the texture created by visual_image
+    // TODO: better way to obtain the image's texture
+    VkyTexture* texture = &canvas->gpu->textures[canvas->gpu->texture_count - 1];
 
     // Square.
-    float x = 1.0f;
-    // TODO: function to convert vec2 uv => u16vec4
-    VkyMeshVertex vertices[] = {
-        {{-x, -x, 0}, {0, 0, 0}, {0, 0, 255, 255}},
-        {{+x, -x, 0}, {0, 0, 0}, {255, 255, 255, 255}},
-        {{-x, +x, 0}, {0, 0, 0}, {0, 0, 0, 0}},
-        {{-x, +x, 0}, {0, 0, 0}, {0, 0, 0, 0}},
-        {{+x, -x, 0}, {0, 0, 0}, {255, 255, 255, 255}},
-        {{+x, +x, 0}, {0, 0, 0}, {255, 255, 0, 0}},
-    };
-    vky_visual_upload(visual, (VkyData){0, NULL, 6, vertices, 0, NULL});
+    VkyImageData data = {{-1, +1, 0}, {+1, -1, 0}, {0, 0}, {1, 1}};
+    vky_visual_upload(visual, (VkyData){1, (VkyImageData[]){data}});
 
     // Color texture.
     int width, height, depth;
@@ -52,7 +44,7 @@ static void compute_image(VkyPanel* panel)
     {
         log_error("unable to load %s", path);
     }
-    vky_upload_texture(texture, pixels);
+    vky_visual_image_upload(visual, pixels);
     stbi_image_free(pixels);
 
     // Compute pipeline.

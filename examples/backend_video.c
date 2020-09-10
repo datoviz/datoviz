@@ -19,8 +19,9 @@ int main()
     vky_set_controller(panel, VKY_CONTROLLER_AUTOROTATE, NULL);
 
     // Cube mesh.
-    VkyVisual* visual =
-        vky_visual_mesh(scene, VKY_MESH_COLOR_RGBA, VKY_MESH_SHADING_BLINN_PHONG, 0, NULL);
+    VkyMeshParams params = vky_default_mesh_params(
+        VKY_MESH_COLOR_RGBA, VKY_MESH_SHADING_BLINN_PHONG, (ivec2){0, 0}, 0);
+    VkyVisual* visual = vky_visual_mesh(scene, &params, NULL);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
     // Create the mesh.

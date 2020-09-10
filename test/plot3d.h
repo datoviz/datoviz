@@ -17,8 +17,9 @@ static void surface(VkyPanel* panel)
     VkyMesh mesh = vky_create_mesh(MAX_VERTEX_COUNT, MAX_INDEX_COUNT);
 
     // Mesh visual.
-    VkyVisual* visual =
-        vky_visual_mesh(scene, VKY_MESH_COLOR_RGBA, VKY_MESH_SHADING_BLINN_PHONG, 0, NULL);
+    VkyMeshParams params = vky_default_mesh_params(
+        VKY_MESH_COLOR_RGBA, VKY_MESH_SHADING_BLINN_PHONG, (ivec2){0, 0}, 0);
+    VkyVisual* visual = vky_visual_mesh(scene, &params, NULL);
     vky_add_vertex_buffer(canvas->gpu, MAX_VERTEX_COUNT * sizeof(VkyMeshVertex));
     vky_add_index_buffer(canvas->gpu, MAX_INDEX_COUNT * sizeof(VkyIndex));
     vky_allocate_vertex_buffer(visual, MAX_VERTEX_COUNT * sizeof(VkyMeshVertex));
@@ -95,8 +96,9 @@ static void volume(VkyPanel* panel)
 static void brain(VkyPanel* panel)
 {
     // Mesh visual.
-    VkyVisual* visual =
-        vky_visual_mesh(panel->scene, VKY_MESH_COLOR_RGBA, VKY_MESH_SHADING_BLINN_PHONG, 0, NULL);
+    VkyMeshParams params = vky_default_mesh_params(
+        VKY_MESH_COLOR_RGBA, VKY_MESH_SHADING_BLINN_PHONG, (ivec2){0, 0}, 0);
+    VkyVisual* visual = vky_visual_mesh(panel->scene, &params, NULL);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
     // Load the mesh object.
