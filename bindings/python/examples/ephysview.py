@@ -86,9 +86,17 @@ def get_scale(x):
 
 def normalize(x, scale):
     m, s = scale
-    y = (x - m) / (1 * s)
-    assert x.shape == y.shape
-    return np.clip(np.round(255 * .5 * (1 + y)), 0, 255).astype(np.uint8)
+    out = np.empty_like(x, dtype=np.float32)
+    out[...] = x
+    # y = (x - m) / (1 * s)
+    # assert x.shape == y.shape
+    out -= m
+    out *= (1.0 / s)
+    out += 1
+    out *= 255 * .5
+    out[out < 0] = 0
+    out[out > 255] = 255
+    return out.astype(np.uint8)
 
 
 def get_data(raw, sample, buffer):
