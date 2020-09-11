@@ -122,7 +122,7 @@ class DataScroller:
             self.axes,
             self.sample / self.sample_rate,
             (self.sample + self.buffer) / self.sample_rate,
-            0, 0)
+            0, self.data.shape[1])
 
 
 def ephys_view(path, n_channels, sample_rate, dtype, buffer):
