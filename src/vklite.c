@@ -2144,6 +2144,24 @@ VkyBuffer* vky_find_buffer(VkyGpu* gpu, VkDeviceSize size, VkBufferUsageFlagBits
 }
 
 
+VkyTextureParams vky_default_texture_params(ivec3 shape)
+{
+    ASSERT(shape[0] > 0);
+    ASSERT(shape[1] > 0);
+    ASSERT(shape[2] > 0);
+
+    VkyTextureParams params = {
+        (uint32_t)shape[0],
+        (uint32_t)shape[1],
+        (uint32_t)shape[2],
+        4,
+        VK_FORMAT_R8G8B8A8_UNORM,
+        VK_FILTER_NEAREST,
+        VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        false};
+    return params;
+}
 
 /*************************************************************************************************/
 /*  Common textures                                                                              */

@@ -15,6 +15,8 @@ def _memmap_flat(path, dtype=None, n_channels=None, offset=0):
     fsize = path.stat().st_size
     item_size = np.dtype(dtype).itemsize
     n_samples = (fsize - offset) // (item_size * n_channels)
+    if item_size * n_channels * n_samples != (fsize - offset):
+        raise IOError("n_channels incorrect or binary file truncated")
     shape = (n_samples, n_channels)
     return np.memmap(path, dtype=dtype, offset=offset, shape=shape)
 
@@ -46,9 +48,44 @@ def multi_path(scene, panel, raw):
     upload_data(visual, raw)
 
 
+def image(scene, panel, raw):
+    n_samples, n_channels = raw.shape
+    image = np.zeros((n_channels, n_samples, 4), dtype=np.uint8)
+
+    raw = raw - np.median(raw, axis=0)
+    x = (raw - raw.min()) / (raw.max() - raw.min())
+    image[..., :3] = np.round(x * 255).T[:, :, np.newaxis]
+    image[..., 3] = 255
+
+    # Texture.
+    tex_params = vl.vky_default_texture_params(
+        tp.T_IVEC3(n_samples, n_channels, 1))
+
+    # Visual.
+    visual = vl.vky_visual(scene, const.VISUAL_IMAGE,
+                           pointer(tex_params), None)
+    vl.vky_add_visual_to_panel(
+        visual, panel, const.VIEWPORT_INNER, const.VISUAL_PRIORITY_NONE)
+
+    # Image vertices.
+    vertices = np.zeros((1,), dtype=[
+        ('p0', 'f4', 3),
+        ('p1', 'f4', 3),
+        ('uv0', 'f4', 2),
+        ('uv1', 'f4', 2)
+    ])
+    vertices['p0'][0] = (-1, -1, 0)
+    vertices['p1'][0] = (+1, +1, 0)
+    vertices['uv0'][0] = (0, 1)
+    vertices['uv1'][0] = (1, 0)
+    upload_data(visual, vertices)
+
+    vl.vky_visual_image_upload(visual, array_pointer(image))
+
+
 def ephys_view(path, n_channels, dtype):
     raw = _memmap_flat(path, dtype=dtype, n_channels=n_channels)
-    raw = raw[:10000, :]
+    raw = raw[:10_000, :]
 
     assert raw.ndim == 2
     assert raw.shape[1] == n_channels
@@ -61,7 +98,7 @@ def ephys_view(path, n_channels, dtype):
     panel = vl.vky_get_panel(scene, 0, 0)
     vl.vky_set_controller(panel, const.CONTROLLER_AXES_2D, None)
 
-    multi_path(scene, panel, raw)
+    image(scene, panel, raw)
 
     vl.vky_run_app(app)
     vl.vky_destroy_scene(scene)
