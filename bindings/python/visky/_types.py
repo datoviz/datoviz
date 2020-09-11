@@ -21,6 +21,13 @@ T_IVEC3 = ctypes.c_int * 3
 T_IVEC4 = ctypes.c_int * 4
 
 
+# Callbacks
+
+canvas_callback = ctypes.CFUNCTYPE(None, T_VP)
+
+
+# Structs
+
 class T_COLOR(ctypes.Structure):
     _fields_ = [
         ("r", ctypes.c_uint8),

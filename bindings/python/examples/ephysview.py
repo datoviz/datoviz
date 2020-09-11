@@ -48,18 +48,9 @@ def multi_path(scene, panel, raw):
     upload_data(visual, raw)
 
 
-def image(scene, panel, raw):
-    n_samples, n_channels = raw.shape
-    image = np.zeros((n_channels, n_samples, 4), dtype=np.uint8)
-
-    raw = raw - np.median(raw, axis=0)
-    x = (raw - raw.min()) / (raw.max() - raw.min())
-    image[..., :3] = np.round(x * 255).T[:, :, np.newaxis]
-    image[..., 3] = 255
-
-    # Texture.
+def add_visual(scene, panel, shape):
     tex_params = vl.vky_default_texture_params(
-        tp.T_IVEC3(n_samples, n_channels, 1))
+        tp.T_IVEC3(shape[0], shape[1], 1))
 
     # Visual.
     visual = vl.vky_visual(scene, const.VISUAL_IMAGE,
@@ -80,12 +71,55 @@ def image(scene, panel, raw):
     vertices['uv1'][0] = (1, 0)
     upload_data(visual, vertices)
 
-    vl.vky_visual_image_upload(visual, array_pointer(image))
+    return visual
+
+
+def create_image(shape):
+    image = np.zeros((shape[1], shape[0], 4), dtype=np.uint8)
+    image[..., 3] = 255
+    return image
+
+
+def get_scale(x):
+    return np.median(x), x.std()
+
+
+def normalize(x, scale):
+    m, s = scale
+    y = (x - m) / (3 * s)
+    assert x.shape == y.shape
+    return np.clip(np.round(255 * .5 * (1 + y)), 0, 255).astype(np.uint8)
+
+
+def get_data(raw, sample, buffer):
+    return raw[sample:sample+buffer, :]
+
+
+class DataScroller:
+    def __init__(self, visual, raw, buffer):
+        self.visual = visual
+        self.raw = raw
+        self.image = create_image((buffer, raw.shape[1]))
+        self.sample = int(10 * 3e4)
+        self.buffer = buffer
+        self.scale = None
+        self.data = None
+
+    def load_data(self):
+        self.sample = np.clip(self.sample, 0, self.raw.shape[0] - self.buffer)
+        self.data = get_data(self.raw, self.sample, self.buffer)
+
+    def upload(self):
+        if self.data is None:
+            self.load_data()
+        self.scale = scale = self.scale or get_scale(self.data)
+        self.image[..., :3] = normalize(self.data, scale).T[:, :, np.newaxis]
+        vl.vky_visual_image_upload(self.visual, array_pointer(self.image))
 
 
 def ephys_view(path, n_channels, dtype):
     raw = _memmap_flat(path, dtype=dtype, n_channels=n_channels)
-    raw = raw[:10_000, :]
+    buffer = 10_000
 
     assert raw.ndim == 2
     assert raw.shape[1] == n_channels
@@ -98,7 +132,30 @@ def ephys_view(path, n_channels, dtype):
     panel = vl.vky_get_panel(scene, 0, 0)
     vl.vky_set_controller(panel, const.CONTROLLER_AXES_2D, None)
 
-    image(scene, panel, raw)
+    visual = add_visual(scene, panel, (buffer, n_channels))
+
+    ds = DataScroller(visual, raw, buffer)
+    ds.upload()
+
+    @tp.canvas_callback
+    def on_key(canvas):
+        key = vl.vky_event_key(canvas)
+        if key == const.KEY_LEFT:
+            ds.sample -= 1000
+            ds.load_data()
+            ds.upload()
+        if key == const.KEY_RIGHT:
+            ds.sample += 1000
+            ds.load_data()
+            ds.upload()
+        if key == const.KEY_KP_ADD:
+            ds.scale = (ds.scale[0], ds.scale[1] / 1.1)
+            ds.upload()
+        if key == const.KEY_KP_SUBTRACT:
+            ds.scale = (ds.scale[0], ds.scale[1] * 1.1)
+            ds.upload()
+
+    vl.vky_add_frame_callback(canvas, on_key)
 
     vl.vky_run_app(app)
     vl.vky_destroy_scene(scene)

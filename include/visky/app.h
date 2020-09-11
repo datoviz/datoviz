@@ -314,6 +314,7 @@ void vky_mouse_press_pos(VkyMouse* mouse, VkyViewport viewport, vec2 pos);
 /*  Keyboard                                                                                     */
 /*************************************************************************************************/
 
+VKY_EXPORT VkyKey vky_event_key(VkyCanvas* canvas);
 VKY_EXPORT bool vky_is_key_modifier(VkyKey key);
 VKY_EXPORT void
 vky_update_keyboard_state(VkyKeyboard* keyboard, VkyKey key, VkyKeyModifiers modifiers);

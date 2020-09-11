@@ -23,7 +23,7 @@ viskylib = load_library()
 
 
 # Wrap helpers
-def wrap(fun, args, res):
+def wrap(fun, args, res=None):
     fun.argtypes = args
     fun.restype = res
 
@@ -65,22 +65,25 @@ const.BLACK = T_COLOR(0, 0, 0, 255)
 
 
 # Function wrappers
-wrap(viskylib.log_set_level_env, [], None)
+wrap(viskylib.log_set_level_env, [])
 wrap(viskylib.vky_create_app, [T_INT, T_VP], T_VP)
-wrap(viskylib.vky_run_app, [T_VP], None)
-wrap(viskylib.vky_destroy_app, [T_VP], None)
+wrap(viskylib.vky_run_app, [T_VP])
+wrap(viskylib.vky_destroy_app, [T_VP])
 
 wrap(viskylib.vky_create_canvas, [T_VP, T_UINT32, T_UINT32], T_VP)
 
 wrap(viskylib.vky_create_scene, [T_VP, T_COLOR, T_UINT32, T_UINT32], T_VP)
-wrap(viskylib.vky_destroy_scene, [T_VP], None)
+wrap(viskylib.vky_destroy_scene, [T_VP])
 
 wrap(viskylib.vky_get_panel, [T_VP, T_UINT32, T_UINT32], T_VP)
-wrap(viskylib.vky_set_controller, [T_INT, T_VP], None)
-wrap(viskylib.vky_add_visual_to_panel, [T_VP, T_INT, T_INT], None)
+wrap(viskylib.vky_set_controller, [T_INT, T_VP])
+wrap(viskylib.vky_add_visual_to_panel, [T_VP, T_INT, T_INT])
 wrap(viskylib.vky_visual, [T_VP, T_INT, T_VP, T_VP], T_VP)
-wrap(viskylib.vky_visual_upload, [T_VP, T_DATA], None)
+wrap(viskylib.vky_visual_upload, [T_VP, T_DATA])
 
-wrap(viskylib.vky_visual_image_upload, [T_VP, T_VP], None)
+wrap(viskylib.vky_visual_image_upload, [T_VP, T_VP])
 
 wrap(viskylib.vky_default_texture_params, [tp.T_IVEC3], tp.T_TEXTURE_PARAMS)
+
+wrap(viskylib.vky_add_frame_callback, [T_VP, T_VP])
+wrap(viskylib.vky_event_key, [T_VP], T_INT)

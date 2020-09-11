@@ -24,12 +24,13 @@ def _python(x):
 
 def parse_constants():
     d = {}
-    r1 = re.compile(r'(VKY_[A-Za-z0-9\_]+)\s*=\s*([^\n\,]+)')
-    r2 = re.compile(r'#define\s(VKY_[^ ]+)\s+([*A-Za-z0-9\.,_\s+-/]+)\n')
+    r1 = re.compile(r'(VKY_[A-Za-z0-9\_]+)\s+=\s+([^\n\,]+)')
+    r2 = re.compile(
+        r'#define\s(VKY_[A-Za-z0-9_]+)[ ]+([*A-Za-z0-9\.,_ +-/]+)\n')
     r3 = re.compile(
-        r'#define\s(VKY_[^ ]+)\s+VKY_CONST[_INT]*\([A-Za-z0-9_]+\s*,\s*([*A-Za-z0-9\.,_\s+-/]+)\)')
+        r'#define\s(VKY_[^ ]+)\s+VKY_CONST[_INT]*\([A-Za-z0-9_]+\s*,\s*([*A-Za-z0-9\.,_ +-/]+)\)')
 
-    fns = ('constants.h', 'scene.h')
+    fns = ('constants.h', 'scene.h', 'app.h')
     for fn in fns:
         path = Path(__file__).parent / '../../include/visky' / fn
         constants = path.read_text()

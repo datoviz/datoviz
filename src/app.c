@@ -454,6 +454,8 @@ void vky_mouse_press_pos(VkyMouse* mouse, VkyViewport viewport, vec2 pos)
 /*  Keyboard                                                                                     */
 /*************************************************************************************************/
 
+VkyKey vky_event_key(VkyCanvas* canvas) { return canvas->event_controller->keyboard->key; }
+
 bool vky_is_key_modifier(VkyKey key)
 {
     return (
