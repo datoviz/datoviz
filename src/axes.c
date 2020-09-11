@@ -390,6 +390,59 @@ void vky_axes_panzoom_update(VkyAxes* axes, VkyPanzoom* panzoom, bool force_trig
     vky_axes_update(axes);
 }
 
+void vky_axes_set_range(VkyAxes* axes, double xmin, double xmax, double ymin, double ymax)
+{
+    ASSERT(axes != NULL);
+    ASSERT(axes->panel != NULL);
+
+    VkyPanzoom* panzoom = ((VkyControllerAxes2D*)axes->panel->controller)->panzoom;
+    ASSERT(panzoom != NULL);
+
+    VkyPanzoom* axpanzoom = axes->panzoom;
+    ASSERT(axpanzoom != NULL);
+
+    bool update_x = xmin < xmax;
+    bool update_y = ymin < ymax;
+
+    if (update_x)
+    {
+        log_trace("update x axis");
+
+        // panzoom->camera_pos[0] = 0;
+        // axpanzoom->camera_pos[0] = 0;
+        // panzoom->zoom[0] = 1;
+        // axpanzoom->zoom[0] = 1;
+
+        axes->xscale.vmin = xmin;
+        axes->xscale.vmax = xmax;
+
+        axes->xscale_orig.vmin = xmin;
+        axes->xscale_orig.vmax = xmax;
+    }
+
+    if (update_y)
+    {
+        log_trace("update y axis");
+
+        // panzoom->camera_pos[1] = 0;
+        // axpanzoom->camera_pos[1] = 0;
+        // panzoom->zoom[1] = 1;
+        // axpanzoom->zoom[1] = 1;
+
+        axes->yscale.vmin = ymin;
+        axes->yscale.vmax = ymax;
+
+        axes->yscale_orig.vmin = ymin;
+        axes->yscale_orig.vmax = ymax;
+    }
+
+    if (update_x || update_y)
+    {
+        vky_axes_panzoom_update(axes, panzoom, true);
+        vky_axes_update(axes);
+    }
+}
+
 
 
 /*************************************************************************************************/

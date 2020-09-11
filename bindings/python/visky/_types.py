@@ -7,6 +7,7 @@ from . import _constants as const
 T_VP = ctypes.c_void_p
 
 T_FLOAT = ctypes.c_float
+T_DOUBLE = ctypes.c_double
 
 T_VEC2 = ctypes.c_float * 2
 T_VEC3 = ctypes.c_float * 3

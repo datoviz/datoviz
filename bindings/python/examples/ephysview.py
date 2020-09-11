@@ -81,12 +81,12 @@ def create_image(shape):
 
 
 def get_scale(x):
-    return np.median(x), x.std()
+    return np.median(x, axis=0), x.std()
 
 
 def normalize(x, scale):
     m, s = scale
-    y = (x - m) / (3 * s)
+    y = (x - m) / (1 * s)
     assert x.shape == y.shape
     return np.clip(np.round(255 * .5 * (1 + y)), 0, 255).astype(np.uint8)
 
@@ -96,9 +96,11 @@ def get_data(raw, sample, buffer):
 
 
 class DataScroller:
-    def __init__(self, visual, raw, buffer):
+    def __init__(self, axes, visual, raw, sample_rate, buffer):
+        self.axes = axes
         self.visual = visual
         self.raw = raw
+        self.sample_rate = float(sample_rate)
         self.image = create_image((buffer, raw.shape[1]))
         self.sample = int(10 * 3e4)
         self.buffer = buffer
@@ -114,12 +116,17 @@ class DataScroller:
             self.load_data()
         self.scale = scale = self.scale or get_scale(self.data)
         self.image[..., :3] = normalize(self.data, scale).T[:, :, np.newaxis]
+
         vl.vky_visual_image_upload(self.visual, array_pointer(self.image))
+        vl.vky_axes_set_range(
+            self.axes,
+            self.sample / self.sample_rate,
+            (self.sample + self.buffer) / self.sample_rate,
+            0, 0)
 
 
-def ephys_view(path, n_channels, dtype):
+def ephys_view(path, n_channels, sample_rate, dtype, buffer):
     raw = _memmap_flat(path, dtype=dtype, n_channels=n_channels)
-    buffer = 10_000
 
     assert raw.ndim == 2
     assert raw.shape[1] == n_channels
@@ -131,21 +138,22 @@ def ephys_view(path, n_channels, dtype):
     scene = vl.vky_create_scene(canvas, const.WHITE, 1, 1)
     panel = vl.vky_get_panel(scene, 0, 0)
     vl.vky_set_controller(panel, const.CONTROLLER_AXES_2D, None)
+    axes = vl.vky_get_axes(panel)
 
     visual = add_visual(scene, panel, (buffer, n_channels))
 
-    ds = DataScroller(visual, raw, buffer)
+    ds = DataScroller(axes, visual, raw, sample_rate, buffer)
     ds.upload()
 
     @tp.canvas_callback
     def on_key(canvas):
         key = vl.vky_event_key(canvas)
         if key == const.KEY_LEFT:
-            ds.sample -= 1000
+            ds.sample -= 500
             ds.load_data()
             ds.upload()
         if key == const.KEY_RIGHT:
-            ds.sample += 1000
+            ds.sample += 500
             ds.load_data()
             ds.upload()
         if key == const.KEY_KP_ADD:
@@ -167,4 +175,6 @@ if __name__ == '__main__':
         "/data/spikesorting/probe_left/_iblrig_ephysData.raw_g0_t0.imec.ap.bin")
     n_channels = 385
     dtype = np.int16
-    ephys_view(path, n_channels, dtype)
+    buffer = 10_000
+    sample_rate = 30_000
+    ephys_view(path, n_channels, sample_rate, dtype, buffer)

@@ -23,7 +23,7 @@ void vky_axes_update(VkyAxes* axes);
 VkyAxesBox vky_panzoom_get_box(VkyPanzoom* panzoom);
 void vky_axes_panzoom_update(VkyAxes*, VkyPanzoom*, bool);
 void vky_axes_set_box(VkyAxes* axes, VkyAxesBox box);
-
+void vky_axes_set_range(VkyAxes* axes, double xmin, double xmax, double ymin, double ymax);
 
 
 #endif

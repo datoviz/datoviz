@@ -479,6 +479,18 @@ static void _controller_resize_callback(VkyCanvas* canvas)
     }
 }
 
+void* vky_get_axes(VkyPanel* panel)
+{
+    switch (panel->controller_type)
+    {
+    case VKY_CONTROLLER_AXES_2D:
+        return ((VkyControllerAxes2D*)panel->controller)->axes;
+    default:
+        log_warn("no axes found in this panel");
+        return NULL;
+    }
+}
+
 void vky_destroy_controller(VkyPanel* panel)
 {
     ASSERT(panel != NULL);
