@@ -15,12 +15,19 @@ def _float(x):
         return
 
 
+def _python(x):
+    try:
+        return eval(x)
+    except Exception:
+        return
+
+
 def parse_constants():
     d = {}
-    r1 = re.compile(r'(VKY_[A-Za-z0-9\_]+)\s=\s([^\n\,]+)')
-    r2 = re.compile(r'#define\s(VKY_[^ ]+)\s([A-Za-z0-9\_]+)\n')
+    r1 = re.compile(r'(VKY_[A-Za-z0-9\_]+)\s*=\s*([^\n\,]+)')
+    r2 = re.compile(r'#define\s(VKY_[^ ]+)\s+([*A-Za-z0-9\.,_\s+-/]+)\n')
     r3 = re.compile(
-        r'#define\s(VKY_[^ ]+)\s+VKY_CONST[_INT]*\([A-Za-z0-9\_]+\s*\,\s*([A-Za-z0-9\.\,\_]+)\)')
+        r'#define\s(VKY_[^ ]+)\s+VKY_CONST[_INT]*\([A-Za-z0-9_]+\s*,\s*([*A-Za-z0-9\.,_\s+-/]+)\)')
 
     fns = ('constants.h', 'scene.h')
     for fn in fns:
@@ -33,6 +40,8 @@ def parse_constants():
                     v = int(v)
                 elif _float(v) is not None:
                     v = _float(v)
+                elif _python(v) is not None:
+                    v = _python(v)
                 else:
                     v = f"'{v}'  # TODO"
                 # TODO: handle VK_* header #define's

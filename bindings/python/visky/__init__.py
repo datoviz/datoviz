@@ -16,7 +16,7 @@ def markers(pos, color):
     vl.vky_set_controller(panel, const.CONTROLLER_AXES_2D, None)
 
     # Raw markers.
-    visual = vl.vky_visual(scene, const.VISUAL_MARKER_RAW, None)
+    visual = vl.vky_visual(scene, const.VISUAL_MARKER_RAW, None, None)
     vl.vky_add_visual_to_panel(
         visual, panel, const.VIEWPORT_INNER, const.VISUAL_PRIORITY_NONE)
 

@@ -1,4 +1,5 @@
 import ctypes
+from ctypes import pointer
 from pathlib import Path
 from platform import system
 
@@ -6,6 +7,7 @@ import numpy as np
 from numpy.ctypeslib import ndpointer
 
 from . import _constants as const
+from ._types import T_VP, T_INT, T_UINT32, T_COLOR, T_DATA
 
 
 def load_library():
@@ -45,44 +47,16 @@ def make_vertices(pos, col):
 
 
 def upload_data(visual, items=None, indices=None):
+    assert items is not None
+    assert isinstance(items, np.ndarray)
+    assert items.size > 0
     if indices is None:
         data = T_DATA(
-            len(items), array_pointer(items), 0, None, 0, None, False)
+            items.size, array_pointer(items), 0, None, 0, None, False)
     else:
         data = T_DATA(
             0, None, len(items), array_pointer(items), len(indices), array_pointer(indices), False)
     viskylib.vky_visual_upload(visual, data)
-
-
-# Types
-T_VP = ctypes.c_void_p
-T_INT = ctypes.c_int
-T_UINT8 = ctypes.c_uint8
-T_UINT32 = ctypes.c_uint32
-
-
-class T_COLOR(ctypes.Structure):
-    _fields_ = [
-        ("r", ctypes.c_uint8),
-        ("g", ctypes.c_uint8),
-        ("b", ctypes.c_uint8),
-        ("a", ctypes.c_uint8),
-    ]
-
-
-class T_DATA(ctypes.Structure):
-    _fields_ = [
-        ("item_count", ctypes.c_uint32),
-        ("items", ctypes.c_void_p),
-
-        ("vertex_count", ctypes.c_uint32),
-        ("vertices", ctypes.c_void_p),
-
-        ("index_count", ctypes.c_uint32),
-        ("indices", ctypes.c_void_p),
-
-        ("no_vertices_alloc", ctypes.c_bool),
-    ]
 
 
 const.WHITE = T_COLOR(255, 255, 255, 255)
@@ -103,5 +77,5 @@ wrap(viskylib.vky_destroy_scene, [T_VP], None)
 wrap(viskylib.vky_get_panel, [T_VP, T_UINT32, T_UINT32], T_VP)
 wrap(viskylib.vky_set_controller, [T_INT, T_VP], None)
 wrap(viskylib.vky_add_visual_to_panel, [T_VP, T_INT, T_INT], None)
-wrap(viskylib.vky_visual, [T_VP, T_INT, T_VP], T_VP)
+wrap(viskylib.vky_visual, [T_VP, T_INT, T_VP, T_VP], T_VP)
 wrap(viskylib.vky_visual_upload, [T_VP, T_DATA], None)
