@@ -76,9 +76,9 @@ def get_data(raw, sample, buffer):
 
 
 class DataScroller:
-    def __init__(self, p_axes, p_visual, raw, sample_rate, buffer):
-        self.p_axes = p_axes
-        self.p_visual = p_visual
+    def __init__(self, visual, raw, sample_rate, buffer):
+        self.p_axes = visual.panel._axes
+        self.p_visual = visual._visual
         self.raw = raw
         self.sample_rate = float(sample_rate)
         self.image = create_image((buffer, raw.shape[1]))
@@ -141,21 +141,23 @@ class Panel:
         self._panel = vl.vky_get_panel(self._scene, row, col)
         controller_type = controller_type or const.CONTROLLER_AXES_2D
         self.set_controller(controller_type, params=params)
+        self._axes = vl.vky_get_axes(self._panel)
 
     def set_controller(self, controller_type, params=None):
         vl.vky_set_controller(self._panel, controller_type, params)
 
     def visual(self, visual_type, params=None, obj=None):
-        visual = vl.vky_visual(self._scene, visual_type, params, obj)
+        p_visual = vl.vky_visual(self._scene, visual_type, params, obj)
         vl.vky_add_visual_to_panel(
-            visual, self._panel, const.VIEWPORT_INNER, const.VISUAL_PRIORITY_NONE)
-        return Visual(self._scene, visual)
+            p_visual, self._panel, const.VIEWPORT_INNER, const.VISUAL_PRIORITY_NONE)
+        return Visual(self, p_visual)
 
 
 class Visual:
-    def __init__(self, scene, visual):
-        self._scene = scene
-        self._visual = visual
+    def __init__(self, panel, p_visual):
+        self.panel = panel
+        self._scene = panel._scene
+        self._visual = p_visual
 
     def upload(self, vertices):
         upload_data(self._visual, vertices)
@@ -190,9 +192,7 @@ def ephys_view(path, n_channels, sample_rate, dtype, buffer):
     vertices['uv1'][0] = (1, 0)
     visual.upload(vertices)
 
-    p_axes = vl.vky_get_axes(panel._panel)
-
-    ds = DataScroller(p_axes, visual._visual, raw, sample_rate, buffer)
+    ds = DataScroller(visual, raw, sample_rate, buffer)
     ds.upload()
 
     @tp.canvas_callback
