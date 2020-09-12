@@ -2,10 +2,10 @@ from pathlib import Path
 
 import numpy as np
 
-import visky
-from visky.wrap import viskylib as vl, make_vertices, upload_data, array_pointer, pointer
+from visky.wrap import viskylib as vl, upload_data, pointer
 from visky import _constants as const
 from visky import _types as tp
+from visky import api
 
 
 def _memmap_flat(path, dtype=None, n_channels=None, offset=0):
@@ -77,8 +77,8 @@ def get_data(raw, sample, buffer):
 
 class DataScroller:
     def __init__(self, visual, raw, sample_rate, buffer):
-        self.p_axes = visual.panel._axes
-        self.p_visual = visual._visual
+        self.visual = visual
+        self.panel = visual.panel
         self.raw = raw
         self.sample_rate = float(sample_rate)
         self.image = create_image((buffer, raw.shape[1]))
@@ -96,71 +96,11 @@ class DataScroller:
             self.load_data()
         self.scale = scale = self.scale or get_scale(self.data)
         self.image[..., :3] = normalize(self.data, scale).T[:, :, np.newaxis]
-
-        vl.vky_visual_image_upload(self.p_visual, array_pointer(self.image))
-        vl.vky_axes_set_range(
-            self.p_axes,
+        self.visual.upload_image(self.image)
+        self.panel.axes_range(
             self.sample / self.sample_rate,
             (self.sample + self.buffer) / self.sample_rate,
             0, self.data.shape[1])
-
-
-class App:
-    def __init__(self):
-        self._app = vl.vky_create_app(const.BACKEND_GLFW, None)
-        self._canvases = []
-
-    def canvas(self):
-        c = Canvas(self._app)
-        self._canvases.append(c)
-        return c
-
-    def run(self):
-        vl.vky_run_app(self._app)
-        for c in self._canvases:
-            vl.vky_destroy_scene(c._scene)
-        vl.vky_destroy_app(self._app)
-
-
-class Canvas:
-    def __init__(self, app, shape=(1, 1), width=800, height=600, background=None):
-        self._canvas = vl.vky_create_canvas(app, width, height)
-        self._scene = vl.vky_create_scene(
-            self._canvas, background or const.WHITE, shape[0], shape[1])
-
-    def __getitem__(self, shape):
-        assert len(shape) == 2
-        return Panel(self, row=shape[0], col=shape[1])
-
-
-class Panel:
-    def __init__(self, canvas, row=0, col=0, controller_type=None, params=None):
-        self._canvas = canvas._canvas
-        self._scene = canvas._scene
-        self.row, self.col = row, col
-        self._panel = vl.vky_get_panel(self._scene, row, col)
-        controller_type = controller_type or const.CONTROLLER_AXES_2D
-        self.set_controller(controller_type, params=params)
-        self._axes = vl.vky_get_axes(self._panel)
-
-    def set_controller(self, controller_type, params=None):
-        vl.vky_set_controller(self._panel, controller_type, params)
-
-    def visual(self, visual_type, params=None, obj=None):
-        p_visual = vl.vky_visual(self._scene, visual_type, params, obj)
-        vl.vky_add_visual_to_panel(
-            p_visual, self._panel, const.VIEWPORT_INNER, const.VISUAL_PRIORITY_NONE)
-        return Visual(self, p_visual)
-
-
-class Visual:
-    def __init__(self, panel, p_visual):
-        self.panel = panel
-        self._scene = panel._scene
-        self._visual = p_visual
-
-    def upload(self, vertices):
-        upload_data(self._visual, vertices)
 
 
 def ephys_view(path, n_channels, sample_rate, dtype, buffer):
@@ -171,26 +111,9 @@ def ephys_view(path, n_channels, sample_rate, dtype, buffer):
 
     vl.log_set_level_env()
 
-    app = App()
+    app = api.App()
     canvas = app.canvas()
-    panel = canvas[0, 0]
-
-    tex_params = vl.vky_default_texture_params(
-        tp.T_IVEC3(buffer, n_channels, 1))
-    visual = panel.visual(const.VISUAL_IMAGE, pointer(tex_params))
-
-    # Image vertices.
-    vertices = np.zeros((1,), dtype=[
-        ('p0', 'f4', 3),
-        ('p1', 'f4', 3),
-        ('uv0', 'f4', 2),
-        ('uv1', 'f4', 2)
-    ])
-    vertices['p0'][0] = (-1, -1, 0)
-    vertices['p1'][0] = (+1, +1, 0)
-    vertices['uv0'][0] = (0, 1)
-    vertices['uv1'][0] = (1, 0)
-    visual.upload(vertices)
+    visual = canvas[0, 0].image(buffer, n_channels)
 
     ds = DataScroller(visual, raw, sample_rate, buffer)
     ds.upload()
