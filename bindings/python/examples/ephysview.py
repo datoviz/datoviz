@@ -48,32 +48,6 @@ def multi_path(scene, panel, raw):
     upload_data(visual, raw)
 
 
-def add_visual(scene, panel, shape):
-    tex_params = vl.vky_default_texture_params(
-        tp.T_IVEC3(shape[0], shape[1], 1))
-
-    # Visual.
-    visual = vl.vky_visual(scene, const.VISUAL_IMAGE,
-                           pointer(tex_params), None)
-    vl.vky_add_visual_to_panel(
-        visual, panel, const.VIEWPORT_INNER, const.VISUAL_PRIORITY_NONE)
-
-    # Image vertices.
-    vertices = np.zeros((1,), dtype=[
-        ('p0', 'f4', 3),
-        ('p1', 'f4', 3),
-        ('uv0', 'f4', 2),
-        ('uv1', 'f4', 2)
-    ])
-    vertices['p0'][0] = (-1, -1, 0)
-    vertices['p1'][0] = (+1, +1, 0)
-    vertices['uv0'][0] = (0, 1)
-    vertices['uv1'][0] = (1, 0)
-    upload_data(visual, vertices)
-
-    return visual
-
-
 def create_image(shape):
     image = np.zeros((shape[1], shape[0], 4), dtype=np.uint8)
     image[..., 3] = 255
@@ -88,8 +62,6 @@ def normalize(x, scale):
     m, s = scale
     out = np.empty_like(x, dtype=np.float32)
     out[...] = x
-    # y = (x - m) / (1 * s)
-    # assert x.shape == y.shape
     out -= m
     out *= (1.0 / s)
     out += 1
@@ -100,13 +72,13 @@ def normalize(x, scale):
 
 
 def get_data(raw, sample, buffer):
-    return raw[sample:sample+buffer, :]
+    return raw[sample:sample + buffer, :]
 
 
 class DataScroller:
-    def __init__(self, axes, visual, raw, sample_rate, buffer):
-        self.axes = axes
-        self.visual = visual
+    def __init__(self, p_axes, p_visual, raw, sample_rate, buffer):
+        self.p_axes = p_axes
+        self.p_visual = p_visual
         self.raw = raw
         self.sample_rate = float(sample_rate)
         self.image = create_image((buffer, raw.shape[1]))
@@ -125,12 +97,68 @@ class DataScroller:
         self.scale = scale = self.scale or get_scale(self.data)
         self.image[..., :3] = normalize(self.data, scale).T[:, :, np.newaxis]
 
-        vl.vky_visual_image_upload(self.visual, array_pointer(self.image))
+        vl.vky_visual_image_upload(self.p_visual, array_pointer(self.image))
         vl.vky_axes_set_range(
-            self.axes,
+            self.p_axes,
             self.sample / self.sample_rate,
             (self.sample + self.buffer) / self.sample_rate,
             0, self.data.shape[1])
+
+
+class App:
+    def __init__(self):
+        self._app = vl.vky_create_app(const.BACKEND_GLFW, None)
+        self._canvases = []
+
+    def canvas(self):
+        c = Canvas(self._app)
+        self._canvases.append(c)
+        return c
+
+    def run(self):
+        vl.vky_run_app(self._app)
+        for c in self._canvases:
+            vl.vky_destroy_scene(c._scene)
+        vl.vky_destroy_app(self._app)
+
+
+class Canvas:
+    def __init__(self, app, shape=(1, 1), width=800, height=600, background=None):
+        self._canvas = vl.vky_create_canvas(app, width, height)
+        self._scene = vl.vky_create_scene(
+            self._canvas, background or const.WHITE, shape[0], shape[1])
+
+    def __getitem__(self, shape):
+        assert len(shape) == 2
+        return Panel(self, row=shape[0], col=shape[1])
+
+
+class Panel:
+    def __init__(self, canvas, row=0, col=0, controller_type=None, params=None):
+        self._canvas = canvas._canvas
+        self._scene = canvas._scene
+        self.row, self.col = row, col
+        self._panel = vl.vky_get_panel(self._scene, row, col)
+        controller_type = controller_type or const.CONTROLLER_AXES_2D
+        self.set_controller(controller_type, params=params)
+
+    def set_controller(self, controller_type, params=None):
+        vl.vky_set_controller(self._panel, controller_type, params)
+
+    def visual(self, visual_type, params=None, obj=None):
+        visual = vl.vky_visual(self._scene, visual_type, params, obj)
+        vl.vky_add_visual_to_panel(
+            visual, self._panel, const.VIEWPORT_INNER, const.VISUAL_PRIORITY_NONE)
+        return Visual(self._scene, visual)
+
+
+class Visual:
+    def __init__(self, scene, visual):
+        self._scene = scene
+        self._visual = visual
+
+    def upload(self, vertices):
+        upload_data(self._visual, vertices)
 
 
 def ephys_view(path, n_channels, sample_rate, dtype, buffer):
@@ -141,16 +169,30 @@ def ephys_view(path, n_channels, sample_rate, dtype, buffer):
 
     vl.log_set_level_env()
 
-    app = vl.vky_create_app(const.BACKEND_GLFW, None)
-    canvas = vl.vky_create_canvas(app, 800, 600)
-    scene = vl.vky_create_scene(canvas, const.WHITE, 1, 1)
-    panel = vl.vky_get_panel(scene, 0, 0)
-    vl.vky_set_controller(panel, const.CONTROLLER_AXES_2D, None)
-    axes = vl.vky_get_axes(panel)
+    app = App()
+    canvas = app.canvas()
+    panel = canvas[0, 0]
 
-    visual = add_visual(scene, panel, (buffer, n_channels))
+    tex_params = vl.vky_default_texture_params(
+        tp.T_IVEC3(buffer, n_channels, 1))
+    visual = panel.visual(const.VISUAL_IMAGE, pointer(tex_params))
 
-    ds = DataScroller(axes, visual, raw, sample_rate, buffer)
+    # Image vertices.
+    vertices = np.zeros((1,), dtype=[
+        ('p0', 'f4', 3),
+        ('p1', 'f4', 3),
+        ('uv0', 'f4', 2),
+        ('uv1', 'f4', 2)
+    ])
+    vertices['p0'][0] = (-1, -1, 0)
+    vertices['p1'][0] = (+1, +1, 0)
+    vertices['uv0'][0] = (0, 1)
+    vertices['uv1'][0] = (1, 0)
+    visual.upload(vertices)
+
+    p_axes = vl.vky_get_axes(panel._panel)
+
+    ds = DataScroller(p_axes, visual._visual, raw, sample_rate, buffer)
     ds.upload()
 
     @tp.canvas_callback
@@ -171,11 +213,9 @@ def ephys_view(path, n_channels, sample_rate, dtype, buffer):
             ds.scale = (ds.scale[0], ds.scale[1] * 1.1)
             ds.upload()
 
-    vl.vky_add_frame_callback(canvas, on_key)
+    vl.vky_add_frame_callback(canvas._canvas, on_key)
 
-    vl.vky_run_app(app)
-    vl.vky_destroy_scene(scene)
-    vl.vky_destroy_app(app)
+    app.run()
 
 
 if __name__ == '__main__':
