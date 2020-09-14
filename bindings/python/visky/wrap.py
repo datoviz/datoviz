@@ -68,13 +68,10 @@ def upload_data(visual, items=None, indices=None):
 
 def get_const(x, default=None):
     if isinstance(x, str):
-        val = getattr(const, x.upper(), None)
-        if val is None:
-            logger.warning("Constant %s not found", x)
-    else:
-        val = x
-    val = val if val is not None else get_const(default)
-    return val
+        x = getattr(const, x.upper(), None)
+    elif x is None and default is not None:
+        return get_const(default)
+    return x if x is not None else 0
 
 
 _KEY_STRINGS = {

@@ -22,6 +22,7 @@ class App:
 
 class Canvas:
     def __init__(self, app, shape=(1, 1), width=800, height=600, background=None):
+        self.n_rows, self.n_cols = shape
         self._canvas = vl.vky_create_canvas(app, width, height)
         self._scene = vl.vky_create_scene(
             self._canvas, get_const(background, 'white'), shape[0], shape[1])
@@ -33,6 +34,12 @@ class Canvas:
     def __getitem__(self, shape):
         assert len(shape) == 2
         return Panel(self, row=shape[0], col=shape[1])
+
+    def set_heights(self, heights):
+        heights = np.asarray(heights, dtype=np.float32)
+        assert heights.ndim == 1
+        assert heights.shape == (self.n_rows,)
+        vl.vky_set_grid_heights(self._scene, heights)
 
     def on_key(self, f):
         @tp.canvas_callback
@@ -90,6 +97,28 @@ class Panel:
         visual.upload(vertices)
         return visual
 
+    def plot(self, points, colors=None, lw=2):
+        miter_limit = 4
+        cap_type = get_const('cap_round')
+        round_join = get_const('join_round')
+        params = tp.T_PATH_PARAMS(lw, miter_limit, cap_type, round_join, 0)
+        visual = self.visual('visual_path', pointer(params))
+
+        n = len(points)
+        # points = np.zeros(n, dtype=np.dtype(tp.T_VEC3))
+        # colors = np.zeros(n, dtype=np.dtype(tp.T_COLOR))
+
+        # TODO: multiple paths
+        items = np.zeros((1,), dtype=np.dtype(tp.T_PATH_DATA))
+        items['point_count'][0] = n
+        items['points'][0] = int(array_pointer(points).value)
+        items['colors'][0] = int(array_pointer(colors).value)
+        items['topology'][0] = 0
+
+        visual.upload(items)
+
+        return visual
+
 
 class Visual:
     def __init__(self, panel, p_visual):
@@ -97,8 +126,8 @@ class Visual:
         self._scene = panel._scene
         self._visual = p_visual
 
-    def upload(self, vertices):
-        upload_data(self._visual, vertices)
+    def upload(self, *args, **kwargs):
+        upload_data(self._visual, *args, **kwargs)
 
 
 class Image(Visual):

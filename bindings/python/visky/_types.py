@@ -26,7 +26,11 @@ T_IVEC4 = ctypes.c_int * 4
 
 
 def T_NDARRAY(dtype, ndim=1):
-    return ndpointer(np.ctypeslib.as_ctypes_type(dtype), ndim=ndim, flags='C_CONTIGUOUS')
+    if isinstance(dtype, np.dtype):
+        ctype = np.ctypeslib.as_ctypes_type(dtype)
+    else:
+        ctype = dtype
+    return ndpointer(ctype, ndim=ndim, flags='C_CONTIGUOUS')
 
 
 # Callbacks
@@ -61,6 +65,25 @@ class T_DATA(ctypes.Structure):
 
 
 # Visual param structures
+
+class T_PATH_PARAMS(ctypes.Structure):
+    _fields_ = [
+        ("linewidth", ctypes.c_float),
+        ("miter_limit", ctypes.c_float),
+        ("cap_type", ctypes.c_int32),
+        ("round_join", ctypes.c_int32),
+        ("enable_depth", ctypes.c_int32),
+    ]
+
+
+class T_PATH_DATA(ctypes.Structure):
+    _fields_ = [
+        ("point_count", ctypes.c_uint32),
+        ("points", T_VP),
+        ("colors", T_VP),
+        ("topology", T_INT),
+    ]
+
 
 class T_MULTI_RAW_PATH_PARAMS(ctypes.Structure):
     raw_path_max_paths = int(const.RAW_PATH_MAX_PATHS)
