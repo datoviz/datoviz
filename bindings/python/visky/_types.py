@@ -1,5 +1,8 @@
 import ctypes
 
+import numpy as np
+from numpy.ctypeslib import ndpointer
+
 from . import _constants as const
 
 
@@ -20,6 +23,10 @@ T_UINT32 = ctypes.c_uint32
 T_IVEC2 = ctypes.c_int * 2
 T_IVEC3 = ctypes.c_int * 3
 T_IVEC4 = ctypes.c_int * 4
+
+
+def T_NDARRAY(dtype, ndim=1):
+    return ndpointer(np.ctypeslib.as_ctypes_type(dtype), ndim=ndim, flags='C_CONTIGUOUS')
 
 
 # Callbacks

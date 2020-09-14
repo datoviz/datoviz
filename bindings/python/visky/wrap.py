@@ -9,7 +9,7 @@ from numpy.ctypeslib import ndpointer
 
 from . import _constants as const
 from . import _types as tp
-from ._types import T_VP, T_INT, T_UINT32, T_FLOAT, T_DOUBLE, T_COLOR, T_DATA
+from ._types import T_VP, T_INT, T_UINT32, T_FLOAT, T_DOUBLE, T_NDARRAY, T_COLOR, T_DATA
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +101,8 @@ wrap(viskylib.vky_destroy_app, [T_VP])
 wrap(viskylib.vky_create_canvas, [T_VP, T_UINT32, T_UINT32], T_VP)
 
 wrap(viskylib.vky_create_scene, [T_VP, T_COLOR, T_UINT32, T_UINT32], T_VP)
+wrap(viskylib.vky_set_grid_widths, [T_VP, T_NDARRAY(np.float32)], None)
+wrap(viskylib.vky_set_grid_heights, [T_VP, T_NDARRAY(np.float32)], None)
 wrap(viskylib.vky_destroy_scene, [T_VP])
 
 wrap(viskylib.vky_get_panel, [T_VP, T_UINT32, T_UINT32], T_VP)

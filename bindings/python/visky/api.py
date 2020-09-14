@@ -10,8 +10,8 @@ class App:
         self._app = vl.vky_create_app(const.BACKEND_GLFW, None)
         self._canvases = []
 
-    def canvas(self):
-        c = Canvas(self._app)
+    def canvas(self, **kwargs):
+        c = Canvas(self._app, **kwargs)
         self._canvases.append(c)
         return c
 

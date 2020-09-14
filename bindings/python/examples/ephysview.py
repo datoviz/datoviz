@@ -112,7 +112,7 @@ def ephys_view(path, n_channels, sample_rate, dtype, buffer):
     vl.log_set_level_env()
 
     app = api.App()
-    canvas = app.canvas()
+    canvas = app.canvas(shape=(1, 1))
     visual = canvas[0, 0].image(buffer, n_channels)
 
     ds = DataScroller(visual, raw, sample_rate, buffer)
