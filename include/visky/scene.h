@@ -683,7 +683,6 @@ VKY_EXPORT VkyViewport vky_add_viewport_margins(VkyViewport viewport, vec4 margi
 VKY_EXPORT VkyViewport vky_remove_viewport_margins(VkyViewport viewport, vec4 margins);
 
 VKY_EXPORT void vky_destroy_axes(VkyAxes* axes);
-VKY_EXPORT void vky_destroy_scene(VkyScene* scene);
 VKY_EXPORT void vky_destroy_controller(VkyPanel* panel);
 
 

@@ -10,9 +10,8 @@ void vky_demo_blank()
 {
     VkyApp* app = vky_create_app(VKY_DEFAULT_BACKEND);
     VkyCanvas* canvas = vky_create_canvas(app, VKY_DEFAULT_WIDTH, VKY_DEFAULT_HEIGHT);
-    VkyScene* scene = vky_create_scene(canvas, (VkyColorBytes){128, 172, 172, 255}, 1, 1);
+    vky_create_scene(canvas, (VkyColorBytes){128, 172, 172, 255}, 1, 1);
     vky_run_app(app);
-    vky_destroy_scene(scene);
     vky_destroy_app(app);
 }
 
@@ -85,7 +84,6 @@ void vky_demo_raytracing()
     raytracing_demo(panel);
 
     vky_run_app(app);
-    vky_destroy_scene(scene);
     vky_destroy_app(app);
 }
 
@@ -105,9 +103,8 @@ void vky_demo_param(vec4 clear_color)
 
     VkyApp* app = vky_create_app(VKY_DEFAULT_BACKEND);
     VkyCanvas* canvas = vky_create_canvas(app, VKY_DEFAULT_WIDTH, VKY_DEFAULT_HEIGHT);
-    VkyScene* scene = vky_create_scene(canvas, color, 1, 1);
+    vky_create_scene(canvas, color, 1, 1);
     vky_run_app(app);
-    vky_destroy_scene(scene);
     vky_destroy_app(app);
 }
 
@@ -147,6 +144,5 @@ void vky_demo_scatter(size_t point_count, const dvec2* points)
     free(data);
 
     vky_run_app(app);
-    vky_destroy_scene(scene);
     vky_destroy_app(app);
 }

@@ -1406,6 +1406,12 @@ void vky_destroy_axes(VkyAxes* axes)
 
 void vky_destroy_scene(VkyScene* scene)
 {
+    if (scene == NULL)
+    {
+        log_trace("skip destroy scene as it was probably already destroyed");
+        return;
+    }
+
     for (uint32_t i = 0; i < scene->visual_count; i++)
     {
         vky_destroy_visual(&scene->visuals[i]);
@@ -1441,5 +1447,6 @@ void vky_destroy_scene(VkyScene* scene)
 
     vky_destroy_guis();
 
+    scene->canvas->scene = NULL;
     free(scene);
 }

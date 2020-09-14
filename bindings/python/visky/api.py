@@ -17,8 +17,6 @@ class App:
 
     def run(self):
         vl.vky_run_app(self._app)
-        for c in self._canvases:
-            vl.vky_destroy_scene(c._scene)
         vl.vky_destroy_app(self._app)
 
 

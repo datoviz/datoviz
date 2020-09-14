@@ -124,7 +124,6 @@ int main()
     vky_run_app(app);
 #endif
 
-    vky_destroy_scene(scene);
     vky_destroy_app(app);
     return 0;
 }

@@ -290,7 +290,6 @@ int main()
 
     // Run app and quit.
     vky_run_app(app);
-    vky_destroy_scene(scene);
     vky_destroy_app(app);
     return 0;
 }

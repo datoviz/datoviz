@@ -110,7 +110,6 @@ int main()
     if (f)
         fclose(f);
 
-    vky_destroy_scene(scene);
     vky_destroy_app(app);
     free(vertices);
     return 0;

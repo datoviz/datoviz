@@ -111,7 +111,6 @@ int main()
     vky_run_app(app);
 
     vky_destroy_uniform_buffer(&ubo);
-    vky_destroy_scene(scene);
     vky_destroy_app(app);
     return 0;
 }

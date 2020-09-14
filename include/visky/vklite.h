@@ -579,6 +579,8 @@ VKY_EXPORT void vky_create_swapchain_resources(VkyCanvas* canvas);
 
 VKY_EXPORT void vky_destroy_device(VkyGpu* gpu);
 
+VKY_EXPORT void vky_destroy_scene(VkyScene* scene);
+
 VKY_EXPORT void vky_destroy_canvas(VkyCanvas* canvas);
 
 VKY_EXPORT void vky_destroy_swapchain_resources(VkyCanvas* canvas);

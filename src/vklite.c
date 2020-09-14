@@ -1138,6 +1138,12 @@ void vky_destroy_canvas(VkyCanvas* canvas)
 {
     log_trace("destroy canvas");
 
+    if (canvas->scene != NULL)
+    {
+        log_trace("destroy scene while destroying canvas");
+        vky_destroy_scene(canvas->scene);
+    }
+
     VkDevice device = canvas->gpu->device;
     vky_destroy_swapchain_resources(canvas);
 
