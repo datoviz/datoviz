@@ -118,25 +118,22 @@ def ephys_view(path, n_channels, sample_rate, dtype, buffer):
     ds = DataScroller(visual, raw, sample_rate, buffer)
     ds.upload()
 
-    @tp.canvas_callback
-    def on_key(canvas):
-        key = vl.vky_event_key(canvas)
-        if key == const.KEY_LEFT:
+    @canvas.on_key
+    def on_key(key):
+        if key == 'left':
             ds.sample -= 500
             ds.load_data()
             ds.upload()
-        if key == const.KEY_RIGHT:
+        if key == 'right':
             ds.sample += 500
             ds.load_data()
             ds.upload()
-        if key == const.KEY_KP_ADD:
+        if key == 'kp_add':
             ds.scale = (ds.scale[0], ds.scale[1] / 1.1)
             ds.upload()
-        if key == const.KEY_KP_SUBTRACT:
+        if key == 'kp_subtract':
             ds.scale = (ds.scale[0], ds.scale[1] * 1.1)
             ds.upload()
-
-    vl.vky_add_frame_callback(canvas._canvas, on_key)
 
     app.run()
 

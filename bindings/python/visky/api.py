@@ -1,6 +1,6 @@
 import numpy as np
 
-from visky.wrap import viskylib as vl, upload_data, pointer, array_pointer, get_const
+from visky.wrap import viskylib as vl, upload_data, pointer, array_pointer, get_const, key_string
 from visky import _constants as const
 from visky import _types as tp
 
@@ -28,16 +28,22 @@ class Canvas:
         self._scene = vl.vky_create_scene(
             self._canvas, get_const(background, 'white'), shape[0], shape[1])
 
+        # HACK: need to keep track of the callbacks in order to prevent them from being
+        # garbage-collected, which would lead to a segfault in the C library.
+        self._callbacks = []
+
     def __getitem__(self, shape):
         assert len(shape) == 2
         return Panel(self, row=shape[0], col=shape[1])
 
-    # def on_key(self, f):
-    #     @tp.canvas_callback
-    #     def callback(p_canvas):
-    #         # key = vl.vky_event_key(p_canvas)
-    #         # f(key)
-    #     vl.vky_add_frame_callback(self._canvas, callback)
+    def on_key(self, f):
+        @tp.canvas_callback
+        def _on_key_wrap(p_canvas):
+            key = vl.vky_event_key(p_canvas)
+            key_s = key_string(key)
+            f(key_s)
+        self._callbacks.append(_on_key_wrap)
+        vl.vky_add_frame_callback(self._canvas, _on_key_wrap)
 
 
 class Panel:

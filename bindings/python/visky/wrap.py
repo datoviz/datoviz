@@ -26,6 +26,7 @@ viskylib = load_library()
 
 
 # Wrap helpers
+
 def wrap(fun, args, res=None):
     fun.argtypes = args
     fun.restype = res
@@ -63,6 +64,8 @@ def upload_data(visual, items=None, indices=None):
     viskylib.vky_visual_upload(visual, data)
 
 
+# Constant helpers
+
 def get_const(x, default=None):
     if isinstance(x, str):
         val = getattr(const, x.upper(), None)
@@ -74,11 +77,22 @@ def get_const(x, default=None):
     return val
 
 
+_KEY_STRINGS = {
+    getattr(const, key_s): key_s[4:].lower()
+    for key_s in dir(const) if key_s.startswith('KEY_')
+}
+
+
+def key_string(key):
+    return _KEY_STRINGS.get(key, None)
+
+
 const.WHITE = T_COLOR(255, 255, 255, 255)
 const.BLACK = T_COLOR(0, 0, 0, 255)
 
 
 # Function wrappers
+
 wrap(viskylib.log_set_level_env, [])
 wrap(viskylib.vky_create_app, [T_INT, T_VP], T_VP)
 wrap(viskylib.vky_run_app, [T_VP])
