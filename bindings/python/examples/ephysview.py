@@ -142,8 +142,7 @@ def ephys_view(path, n_channels, sample_rate, dtype, buffer):
 
 
 if __name__ == '__main__':
-    path = Path(
-        "/data/spikesorting/probe_left/_iblrig_ephysData.raw_g0_t0.imec.ap.bin")
+    path = Path(__file__).parent / "raw_ephys.bin"
     n_channels = 385
     dtype = np.int16
     buffer = 10_000

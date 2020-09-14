@@ -1,6 +1,6 @@
 import numpy as np
 
-from visky.wrap import viskylib as vl, upload_data, pointer, array_pointer
+from visky.wrap import viskylib as vl, upload_data, pointer, array_pointer, get_const
 from visky import _constants as const
 from visky import _types as tp
 
@@ -26,7 +26,7 @@ class Canvas:
     def __init__(self, app, shape=(1, 1), width=800, height=600, background=None):
         self._canvas = vl.vky_create_canvas(app, width, height)
         self._scene = vl.vky_create_scene(
-            self._canvas, background or const.WHITE, shape[0], shape[1])
+            self._canvas, get_const(background, 'white'), shape[0], shape[1])
 
     def __getitem__(self, shape):
         assert len(shape) == 2
@@ -46,7 +46,7 @@ class Panel:
         self._scene = canvas._scene
         self.row, self.col = row, col
         self._panel = vl.vky_get_panel(self._scene, row, col)
-        controller_type = controller_type or const.CONTROLLER_AXES_2D
+        controller_type = get_const(controller_type, 'controller_axes_2D')
         self.set_controller(controller_type, params=params)
         self._axes = vl.vky_get_axes(self._panel)
 
@@ -57,9 +57,11 @@ class Panel:
         vl.vky_axes_set_range(self._axes, x0, x1, y0, y1)
 
     def visual(self, visual_type, params=None, obj=None):
+        visual_type = get_const(visual_type)
+        assert visual_type
         p_visual = vl.vky_visual(self._scene, visual_type, params, obj)
         vl.vky_add_visual_to_panel(
-            p_visual, self._panel, const.VIEWPORT_INNER, const.VISUAL_PRIORITY_NONE)
+            p_visual, self._panel, get_const('viewport_inner'), get_const('visual_priority_none'))
         cls = Visual
         if visual_type == const.VISUAL_IMAGE:
             cls = Image
@@ -68,7 +70,7 @@ class Panel:
     def image(self, width, height):
         tex_params = vl.vky_default_texture_params(
             tp.T_IVEC3(width, height, 1))
-        visual = self.visual(const.VISUAL_IMAGE, pointer(tex_params))
+        visual = self.visual('visual_image', pointer(tex_params))
 
         # Image vertices.
         vertices = np.zeros((1,), dtype=[

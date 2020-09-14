@@ -1,5 +1,6 @@
 import ctypes
 from ctypes import pointer
+import logging
 from pathlib import Path
 from platform import system
 
@@ -9,6 +10,8 @@ from numpy.ctypeslib import ndpointer
 from . import _constants as const
 from . import _types as tp
 from ._types import T_VP, T_INT, T_UINT32, T_FLOAT, T_DOUBLE, T_COLOR, T_DATA
+
+logger = logging.getLogger(__name__)
 
 
 def load_library():
@@ -58,6 +61,17 @@ def upload_data(visual, items=None, indices=None):
         data = T_DATA(
             0, None, len(items), array_pointer(items), len(indices), array_pointer(indices), False)
     viskylib.vky_visual_upload(visual, data)
+
+
+def get_const(x, default=None):
+    if isinstance(x, str):
+        val = getattr(const, x.upper(), None)
+        if val is None:
+            logger.warning("Constant %s not found", x)
+    else:
+        val = x
+    val = val if val is not None else get_const(default)
+    return val
 
 
 const.WHITE = T_COLOR(255, 255, 255, 255)

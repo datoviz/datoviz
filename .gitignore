@@ -24,6 +24,7 @@ bindings/r
 *.mpg
 *.mp4
 *.ts
+*.bin
 data.zip
 
 # Prerequisites
