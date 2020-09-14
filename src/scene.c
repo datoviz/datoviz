@@ -1299,6 +1299,21 @@ void vky_set_regular_grid(VkyScene* scene, vec4 margins)
     }
 }
 
+static void _set_panel_viewport(VkyPanel* panel)
+{
+    VkyGrid* grid = panel->scene->grid;
+
+    float x = grid->xs[panel->col];
+    float y = grid->ys[panel->row];
+    float w = grid->widths[panel->col];
+    float h = grid->heights[panel->row];
+    uint32_t hspan = panel->hspan;
+    uint32_t vspan = panel->vspan;
+
+    VkyViewport viewport = {panel->scene->canvas, x, y, w * hspan, h * vspan};
+    panel->viewport = viewport;
+}
+
 void vky_set_grid_widths(VkyScene* scene, const float* widths)
 {
     VkyGrid* grid = scene->grid;
@@ -1319,6 +1334,11 @@ void vky_set_grid_widths(VkyScene* scene, const float* widths)
     {
         grid->xs[i] /= total;
         grid->widths[i] /= total;
+    }
+    // Need to update the panel's viewport.
+    for (uint32_t i = 0; i < grid->panel_count; i++)
+    {
+        _set_panel_viewport(&grid->panels[i]);
     }
 }
 
@@ -1343,6 +1363,11 @@ void vky_set_grid_heights(VkyScene* scene, const float* heights)
         grid->ys[i] /= total;
         grid->heights[i] /= total;
     }
+    // Need to update the panel's viewport.
+    for (uint32_t i = 0; i < grid->panel_count; i++)
+    {
+        _set_panel_viewport(&grid->panels[i]);
+    }
 }
 
 void vky_add_panel(
@@ -1351,23 +1376,17 @@ void vky_add_panel(
 {
     VkyGrid* grid = scene->grid;
 
-    float x = grid->xs[col];
-    float y = grid->ys[row];
-    float w = grid->widths[col];
-    float h = grid->heights[row];
-    VkyViewport viewport = {scene->canvas, x, y, w * hspan, h * vspan};
-
     // Create the panel struct.
     VkyPanel panel = {0};
-
     panel.row = row;
     panel.col = col;
     panel.vspan = vspan;
     panel.hspan = hspan;
-
     panel.scene = scene;
-    panel.viewport = viewport;
     glm_vec4_copy(margins, panel.margins);
+
+    // Set the panel's viewport.
+    _set_panel_viewport(&panel);
 
     // NOTE: there are 2 DUBO locations, the inner viewport is first, the outer viewport
     // second.
