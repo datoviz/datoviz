@@ -30,7 +30,7 @@ def parse_constants():
     r3 = re.compile(
         r'#define\s(VKY_[^ ]+)\s+VKY_CONST[_INT]*\([A-Za-z0-9_]+\s*,\s*([*A-Za-z0-9\.,_ +-/]+)\)')
 
-    fns = ('constants.h', 'scene.h', 'app.h')
+    fns = ('constants.h', 'scene.h', 'app.h', 'agg.h')
     for fn in fns:
         path = Path(__file__).parent / '../../include/visky' / fn
         constants = path.read_text()
@@ -43,6 +43,8 @@ def parse_constants():
                     v = _float(v)
                 elif _python(v) is not None:
                     v = _python(v)
+                elif 'true' in v or 'false' in v:
+                    v = eval(v.capitalize())
                 else:
                     v = f"'{v}'  # TODO"
                 # TODO: handle VK_* header #define's

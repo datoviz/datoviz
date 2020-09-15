@@ -11,12 +11,12 @@
 
 typedef enum
 {
-    VKY_CAP_TYPE_NONE,
-    VKY_CAP_ROUND,
-    VKY_CAP_TRIANGLE_IN,
-    VKY_CAP_TRIANGLE_OUT,
-    VKY_CAP_SQUARE,
-    VKY_CAP_BUTT
+    VKY_CAP_TYPE_NONE = 0,
+    VKY_CAP_ROUND = 1,
+    VKY_CAP_TRIANGLE_IN = 2,
+    VKY_CAP_TRIANGLE_OUT = 3,
+    VKY_CAP_SQUARE = 4,
+    VKY_CAP_BUTT = 5
 } VkyCapType;
 
 typedef enum

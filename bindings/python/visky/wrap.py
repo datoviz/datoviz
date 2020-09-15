@@ -68,9 +68,14 @@ def upload_data(visual, items=None, indices=None):
 
 def get_const(x, default=None):
     if isinstance(x, str):
+        n = x
         x = getattr(const, x.upper(), None)
     elif x is None and default is not None:
         return get_const(default)
+    if x is not None:
+        return x
+    else:
+        logger.warning(f"Constant {n} could not be found, defaulting to 0")
     return x if x is not None else 0
 
 
