@@ -53,7 +53,6 @@ The following instructions were tested on **Ubuntu 20.04**.
     - If you prefer to install **all dependencies in one go**:
 
     `sudo apt install build-essential cmake ninja-build xcb libx11-xcb-dev libglfw3-dev libpng-dev libavcodec-dev libavformat-dev libavfilter-dev libavutil-dev libswresample-dev libvncserver-dev xtightvncviewer libqt5opengl5-dev libfreetype6-dev libassimp-dev`
-
 3. Install the latest [Lunarg Vulkan SDK](https://vulkan.lunarg.com/) (tarball SDK), for example in `~/vulkan`
 
     1. `cd ~/vulkan`
@@ -74,7 +73,8 @@ The following instructions were tested on **Ubuntu 20.04**.
 
     1. `git clone git@github.com:viskydev/visky.git`
     2. `cd visky`
-    3. `./manage.sh build`
+    3. `mkdir data`
+    4. `./manage.sh build`
 
 6. Check that the compilation worked by running an example:
 

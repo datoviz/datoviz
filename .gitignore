@@ -17,6 +17,7 @@ Testing
 msdfgen
 cglm
 bindings/r
+.idea/
 _skbuild
 
 *.png
