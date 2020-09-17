@@ -1,6 +1,12 @@
+from pathlib import Path
+
+from imageio import imread
 import numpy as np
 
-from visky.wrap import viskylib as vl, upload_data, pointer, array_pointer, get_const, key_string
+from visky.wrap import viskylib as vl
+from visky.wrap import (
+    upload_data, pointer, array_pointer, get_const, key_string, to_byte
+)
 from visky import _constants as const
 from visky import _types as tp
 
@@ -98,7 +104,7 @@ class Panel:
         visual.upload(vertices)
         return visual
 
-    def plot(self, points, colors=None, lw=2, miter=4, cap='round', join='round'):
+    def plot(self, points, colors=None, lw=1, miter=4, cap='round', join='round'):
         cap = get_const('cap_%s' % cap)
         join = get_const('join_%s' % join)
         params = tp.T_PATH_PARAMS(lw, miter, cap, join, 0)
@@ -131,3 +137,19 @@ class Visual:
 class Image(Visual):
     def upload_image(self, image):
         vl.vky_visual_image_upload(self._visual, array_pointer(image))
+
+
+# Read the colormap texture.
+COLORMAP = imread(
+    Path(__file__).parent / '../../../data/textures/color_texture.png')
+
+
+def get_color(cmap, x, vmin=0, vmax=1, alpha=1):
+    if isinstance(cmap, str):
+        cmap = get_const('cmap_%s' % cmap)
+    assert isinstance(cmap, int)
+    i = to_byte(x, vmin=vmin, vmax=vmax)
+    out = np.empty(i.shape + (4,), dtype=np.uint8)
+    out[..., :] = COLORMAP[cmap, i, :]
+    out[..., 3] = to_byte(alpha)
+    return out

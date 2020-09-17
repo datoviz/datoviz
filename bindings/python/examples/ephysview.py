@@ -122,8 +122,8 @@ def ephys_view(path, n_channels, sample_rate, dtype, buffer):
     points[:, 0] = t
     points[:, 1] = .5 * np.cos(20 * t)
 
-    colors = np.zeros((n, 4), dtype=np.uint8)
-    colors[:, 3] = 255
+    # TODO: cmap constants
+    colors = api.get_color(61, np.linspace(0, 1, n))
 
     v_plot = canvas[0, 0].plot(points, colors=colors, lw=5)
     v_image = canvas[1, 0].image(

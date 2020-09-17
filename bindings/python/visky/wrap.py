@@ -89,6 +89,13 @@ def key_string(key):
     return _KEY_STRINGS.get(key, None)
 
 
+def to_byte(x, vmin=0, vmax=1):
+    assert vmin < vmax
+    x = np.clip(np.asarray(x, dtype=np.float64), vmin, vmax)
+    x = np.round(255 * (x - vmin) / (vmax - vmin)).astype(np.uint8)
+    return x
+
+
 const.WHITE = T_COLOR(255, 255, 255, 255)
 const.BLACK = T_COLOR(0, 0, 0, 255)
 
