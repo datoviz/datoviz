@@ -78,7 +78,8 @@ class Panel:
             cls = Image
         return cls(self, p_visual)
 
-    def image(self, width, height):
+    def image(self, image):
+        height, width = image.shape[:2]
         tex_params = vl.vky_default_texture_params(
             tp.T_IVEC3(width, height, 1))
         visual = self.visual('visual_image', pointer(tex_params))
@@ -97,16 +98,13 @@ class Panel:
         visual.upload(vertices)
         return visual
 
-    def plot(self, points, colors=None, lw=2):
-        miter_limit = 4
-        cap_type = get_const('cap_round')
-        round_join = get_const('join_round')
-        params = tp.T_PATH_PARAMS(lw, miter_limit, cap_type, round_join, 0)
+    def plot(self, points, colors=None, lw=2, miter=4, cap='round', join='round'):
+        cap = get_const('cap_%s' % cap)
+        join = get_const('join_%s' % join)
+        params = tp.T_PATH_PARAMS(lw, miter, cap, join, 0)
         visual = self.visual('visual_path', pointer(params))
 
         n = len(points)
-        # points = np.zeros(n, dtype=np.dtype(tp.T_VEC3))
-        # colors = np.zeros(n, dtype=np.dtype(tp.T_COLOR))
 
         # TODO: multiple paths
         items = np.zeros((1,), dtype=np.dtype(tp.T_PATH_DATA))
