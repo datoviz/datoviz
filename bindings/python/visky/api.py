@@ -57,6 +57,14 @@ class Canvas:
         self._callbacks.append(_on_key_wrap)
         vl.vky_add_frame_callback(self._canvas, _on_key_wrap)
 
+    def on_mouse(self, f):
+        @tp.canvas_callback
+        def _on_mouse_wrap(p_canvas):
+            pos = vl.vky_event_mouse(p_canvas)
+            f((pos.x, pos.y))
+        self._callbacks.append(_on_mouse_wrap)
+        vl.vky_add_frame_callback(self._canvas, _on_mouse_wrap)
+
 
 class Panel:
     def __init__(self, canvas, row=0, col=0, controller_type=None, params=None):

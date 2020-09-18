@@ -314,10 +314,14 @@ struct VkyPanel
 
 struct VkyPick
 {
-    vec2 mouse_coords; // pixel coordinates
-    vec2 pos;          // NDC coordinates relative to the panel's viewport, either outer or inner
-    uint32_t row, col; // panel index
-    VkyViewportType viewport_type;
+    vec2 canvas_px;    // pixel coordinates in canvas system
+    vec2 canvas_ndc;   // NDC coordinates in canvas system
+                       //
+    vec2 panel_px;     // pixel coordinates relative to the panel, (0, 0) is the panel's center
+    vec2 panel_ndc;    // NDC coordinates relative to the panel, (0, 0) is the panel's center
+                       //
+    dvec2 data_coords; // data coordinates (only axes 2D controller for now)
+    VkyPanel* panel;   // pointer to the picked panel
 };
 
 
@@ -575,7 +579,7 @@ struct VkyAxes
 /*  Picking                                                                                      */
 /*************************************************************************************************/
 
-VKY_EXPORT VkyPick vky_pick(VkyScene* scene, vec2 mouse_coords, VkyViewportType viewport_type);
+VKY_EXPORT VkyPick vky_pick(VkyScene* scene, vec2 canvas_coords);
 
 
 

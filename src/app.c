@@ -272,6 +272,14 @@ void vky_destroy_event_controller(VkyEventController* event_controller)
 /*  Mouse                                                                                        */
 /*************************************************************************************************/
 
+vec2s vky_event_mouse(VkyCanvas* canvas)
+{
+    vec2s pos;
+    pos.x = canvas->event_controller->mouse->cur_pos[0];
+    pos.y = canvas->event_controller->mouse->cur_pos[1];
+    return pos;
+}
+
 /* Update the mouse state from a mouse position and mouse button. */
 void vky_update_mouse_state(VkyMouse* mouse, vec2 pos, VkyMouseButton button)
 {
@@ -387,8 +395,16 @@ void vky_mouse_normalize_window(VkyCanvas* canvas, vec2 pos)
 
 void vky_mouse_normalize_viewport(VkyViewport viewport, vec2 pos)
 {
-    pos[0] *= (viewport.canvas->size.framebuffer_width / viewport.canvas->size.window_width);
-    pos[1] *= (viewport.canvas->size.framebuffer_height / viewport.canvas->size.window_height);
+    if (viewport.canvas->size.window_width == 0)
+    {
+        log_trace("skipping normalization as the canvas size has not been set yet");
+    }
+    else
+    {
+        pos[0] *= (viewport.canvas->size.framebuffer_width / viewport.canvas->size.window_width);
+        pos[1] *= (viewport.canvas->size.framebuffer_height / viewport.canvas->size.window_height);
+    }
+
     // viewport center in pixels
     vec2 center = {viewport.x + viewport.w / 2, viewport.y + viewport.h / 2};
     vec2 size = {viewport.w, viewport.h};

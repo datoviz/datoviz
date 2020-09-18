@@ -25,6 +25,7 @@ VkyAxesTickRange vky_axes_get_ticks(double dmin, double dmax, VkyAxesContext con
     return (VkyAxesTickRange){result.lmin, result.lmax, result.lstep, 0, 0, 0, result.f};
 }
 
+
 dvec2s vky_axes_normalize_pos(VkyAxes* axes, dvec2s pos)
 {
     double xmin = axes->xscale.vmin;
@@ -39,12 +40,51 @@ dvec2s vky_axes_normalize_pos(VkyAxes* axes, dvec2s pos)
     return (dvec2s){x, y};
 }
 
+
 void vky_axes_set_box(VkyAxes* axes, VkyAxesBox box) {}
+
+
+VkyAxesBox vky_axes_get_box(VkyAxes* axes)
+{
+    // Normalization of the ticks to convert into NDC coordinates.
+    VkyAxesScale xscale = axes->xscale_orig;
+    VkyAxesScale yscale = axes->yscale_orig;
+
+    double alphax = axes->panzoom_box.xmin;
+    double betax = axes->panzoom_box.xmax;
+    double alphay = axes->panzoom_box.ymin;
+    double betay = axes->panzoom_box.ymax;
+
+    double mx = xscale.vmin;
+    double Mx = xscale.vmax;
+    double my = yscale.vmin;
+    double My = yscale.vmax;
+
+    double ux = mx + .5 * (Mx - mx) * (alphax + 1.0);
+    double vx = mx + .5 * (Mx - mx) * (betax + 1.0);
+    double uy = my + .5 * (My - my) * (alphay + 1.0);
+    double vy = my + .5 * (My - my) * (betay + 1.0);
+
+    double ax = 2.0 / (vx - ux);
+    double ay = 2.0 / (vy - uy);
+    double bx = .5 * (vx + ux);
+    double by = .5 * (vy + uy);
+
+    VkyAxesBox box = {0};
+    box.xmin = -1 / ax + bx;
+    box.xmax = +1 / ax + bx;
+    box.ymin = -1 / ay + by;
+    box.ymax = +1 / ay + by;
+
+    return box;
+}
+
 
 void vky_axes_reset(VkyAxes* axes)
 {
     // call vky_axes_set_box()
 }
+
 
 void vky_axes_register_visual(VkyAxes* axis, VkyVisual* visual) {}
 

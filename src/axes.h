@@ -25,5 +25,7 @@ void vky_axes_panzoom_update(VkyAxes*, VkyPanzoom*, bool);
 void vky_axes_set_box(VkyAxes* axes, VkyAxesBox box);
 void vky_axes_set_range(VkyAxes* axes, double xmin, double xmax, double ymin, double ymax);
 
+VKY_EXPORT VkyAxesBox vky_axes_get_box(VkyAxes* axes);
+
 
 #endif

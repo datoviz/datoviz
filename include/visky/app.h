@@ -297,6 +297,8 @@ VKY_EXPORT void vky_destroy_event_controller(VkyEventController*);
 /*  Mouse                                                                                        */
 /*************************************************************************************************/
 
+VKY_EXPORT vec2s vky_event_mouse(VkyCanvas* canvas);
+
 VKY_EXPORT void vky_update_mouse_state(VkyMouse*, vec2, VkyMouseButton);
 
 void vky_mouse_normalize(vec2 size, vec2 center, vec2 pos);
@@ -315,6 +317,7 @@ void vky_mouse_press_pos(VkyMouse* mouse, VkyViewport viewport, vec2 pos);
 /*************************************************************************************************/
 
 VKY_EXPORT VkyKey vky_event_key(VkyCanvas* canvas);
+
 VKY_EXPORT bool vky_is_key_modifier(VkyKey key);
 VKY_EXPORT void
 vky_update_keyboard_state(VkyKeyboard* keyboard, VkyKey key, VkyKeyModifiers modifiers);

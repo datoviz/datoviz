@@ -9,7 +9,7 @@ from numpy.ctypeslib import ndpointer
 
 from . import _constants as const
 from . import _types as tp
-from ._types import T_VP, T_INT, T_UINT32, T_FLOAT, T_DOUBLE, T_NDARRAY, T_COLOR, T_DATA
+from ._types import T_VP, T_INT, T_UINT32, T_FLOAT, T_VEC2, T_DOUBLE, T_NDARRAY, T_COLOR, T_DATA
 
 logger = logging.getLogger(__name__)
 
@@ -123,9 +123,11 @@ wrap(viskylib.vky_visual_upload, [T_VP, T_DATA])
 wrap(viskylib.vky_get_axes, [T_VP], T_VP)
 wrap(viskylib.vky_axes_set_range, [
      T_VP, T_DOUBLE, T_DOUBLE, T_DOUBLE, T_DOUBLE])
+wrap(viskylib.vky_pick, [T_VP, T_VEC2], tp.T_PICK)
 
 wrap(viskylib.vky_visual_image_upload, [T_VP, T_VP])
 wrap(viskylib.vky_default_texture_params, [tp.T_IVEC3], tp.T_TEXTURE_PARAMS)
 
 wrap(viskylib.vky_add_frame_callback, [T_VP, T_VP])
 wrap(viskylib.vky_event_key, [T_VP], T_INT)
+wrap(viskylib.vky_event_mouse, [T_VP], tp.T_SVEC2)

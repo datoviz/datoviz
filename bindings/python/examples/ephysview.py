@@ -132,7 +132,7 @@ def ephys_view(path, n_channels, sample_rate, dtype, buffer):
     ds.upload()
 
     @canvas.on_key
-    def on_key(key):
+    def on_key(key, modifiers=None):
         if key == 'left':
             ds.sample -= 500
             ds.load_data()
@@ -147,6 +147,14 @@ def ephys_view(path, n_channels, sample_rate, dtype, buffer):
         if key == 'kp_subtract':
             ds.scale = (ds.scale[0], ds.scale[1] * 1.1)
             ds.upload()
+
+    @canvas.on_mouse
+    def on_mouse(pos):
+        pass
+        # TODO: button, modifiers
+        # print(pos)
+        pick = vl.vky_pick(canvas._scene, tp.T_VEC2(pos[0], pos[1]))
+        print(pick.data_coords[0], pick.data_coords[1])
 
     app.run()
 

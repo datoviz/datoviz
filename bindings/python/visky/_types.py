@@ -25,6 +25,13 @@ T_IVEC3 = ctypes.c_int * 3
 T_IVEC4 = ctypes.c_int * 4
 
 
+class T_SVEC2(ctypes.Structure):
+    _fields_ = [
+        ("x", ctypes.c_float),
+        ("y", ctypes.c_float),
+    ]
+
+
 def T_NDARRAY(dtype, ndim=1):
     if isinstance(dtype, np.dtype):
         ctype = np.ctypeslib.as_ctypes_type(dtype)
@@ -61,6 +68,20 @@ class T_DATA(ctypes.Structure):
         ("indices", ctypes.c_void_p),
 
         ("no_vertices_alloc", ctypes.c_bool),
+    ]
+
+
+class T_PICK(ctypes.Structure):
+    _fields_ = [
+        ("canvas_px", ctypes.c_float * 2),
+        ("canvas_ndc", ctypes.c_float * 2),
+
+        ("panel_px", ctypes.c_float * 2),
+        ("panel_ndc", ctypes.c_float * 2),
+
+        ("data_coords", ctypes.c_double * 2),
+
+        ("panel", ctypes.c_void_p),
     ]
 
 
