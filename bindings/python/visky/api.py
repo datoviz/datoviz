@@ -1,3 +1,4 @@
+import csv
 from pathlib import Path
 
 from imageio import imread
@@ -139,17 +140,33 @@ class Image(Visual):
         vl.vky_visual_image_upload(self._visual, array_pointer(image))
 
 
+def read_csv(path):
+    out = {}
+    with open(path, 'r') as f:
+        csv_reader = csv.DictReader(f)
+        for row in csv_reader:
+            out[row['name'].lower()] = (
+                int(row['row']), int(row['col']), int(row['size']))
+    return out
+
+
 # Read the colormap texture.
 COLORMAP = imread(
     Path(__file__).parent / '../../../data/textures/color_texture.png')
+COLORMAP_INFO = read_csv(
+    Path(__file__).parent / '../../../data/textures/color_texture.csv')
 
 
 def get_color(cmap, x, vmin=0, vmax=1, alpha=1):
-    if isinstance(cmap, str):
-        cmap = get_const('cmap_%s' % cmap)
-    assert isinstance(cmap, int)
-    i = to_byte(x, vmin=vmin, vmax=vmax)
-    out = np.empty(i.shape + (4,), dtype=np.uint8)
-    out[..., :] = COLORMAP[cmap, i, :]
+    out = np.empty(x.shape + (4,), dtype=np.uint8)
+    assert cmap in COLORMAP_INFO, cmap
+    row, col, size = COLORMAP_INFO.get(cmap)
+    if size == 256:
+        # continuous colormap with interpolation
+        i = to_byte(x, vmin=vmin, vmax=vmax)
+        out[..., :] = COLORMAP[row, i, :]
+    else:
+        # colormap with no interpolation
+        out[..., :] = COLORMAP[row, x, :]
     out[..., 3] = to_byte(alpha)
     return out
