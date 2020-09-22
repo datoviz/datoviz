@@ -376,6 +376,7 @@ static int test_utils()
     printf("--- utils tests -----------------------------------\n");
 
     UNIT_TEST(test_utils_transform_1);
+    UNIT_TEST(test_utils_transform_2);
 
     return res_tot;
 }

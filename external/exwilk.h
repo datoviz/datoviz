@@ -127,7 +127,11 @@ optimal_precision(double lmin, double lmax, double lstep, VkyTickFormatType form
             lmin = 1;
         precision = (int)fabs(floor(log10(lstep / fabs(lmin))));
     }
-    assert(precision >= 0);
+    if (precision < 0)
+    {
+        log_warn("precision is negative: %d", precision);
+        precision = 0;
+    }
     return precision;
 }
 

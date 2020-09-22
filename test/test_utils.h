@@ -1,4 +1,5 @@
-#include <visky/transform.h>
+#include "../src/axes.h"
+#include <visky/visky.h>
 
 
 /*************************************************************************************************/
@@ -8,6 +9,12 @@
 #define AT(x)                                                                                     \
     if (!(x))                                                                                     \
         return 1;
+
+#define AIN(x, m, M) AT((m) <= (x) && (x) <= (M))
+
+#define W 800
+#define H 600
+
 
 static int test_utils_transform_1()
 {
@@ -57,5 +64,101 @@ static int test_utils_transform_1()
     AT(pout[0] == 1);
     AT(pout[1] == 1);
 
+    return 0;
+}
+
+
+
+static int test_utils_transform_2()
+{
+    VkyApp* app = vky_create_app(VKY_BACKEND_OFFSCREEN, NULL);
+    VkyCanvas* canvas = vky_create_canvas(app, W, H);
+    VkyScene* scene = vky_create_scene(canvas, VKY_CLEAR_COLOR_WHITE, 2, 4);
+    VkyPanel* panel = vky_get_panel(scene, 1, 2);
+
+    VkyAxes2DParams params = vky_default_axes_2D_params();
+    params.xscale.vmin = 0;
+    params.xscale.vmax = 1000;
+    params.yscale.vmin = -12;
+    params.yscale.vmax = +12;
+
+    vky_set_controller(panel, VKY_CONTROLLER_AXES_2D, &params);
+    // VkyAxes* axes = ((VkyControllerAxes2D*)panel->controller)->axes;
+    VkyPanzoom* panzoom = ((VkyControllerAxes2D*)panel->controller)->panzoom;
+
+    VkyAxesTransform tr = {0};
+    dvec2 ll = {0, -12};
+    dvec2 ur = {1000, +12};
+    dvec2 p = {0, 0};
+    dvec2 out = {0, 0};
+
+    // Data to NDC.
+    tr = vky_axes_transform(panel, VKY_CDS_DATA, VKY_CDS_NDC);
+    vky_axes_transform_apply(&tr, ll, out);
+    AT(out[0] == -1);
+    AT(out[1] == -1);
+
+    vky_axes_transform_apply(&tr, ur, out);
+    AT(out[0] == +1);
+    AT(out[1] == +1);
+
+    p[0] = 500;
+    p[1] = 0;
+    vky_axes_transform_apply(&tr, p, out);
+    AT(out[0] == 0);
+    AT(out[1] == 0);
+
+    // NDC to panel (panzoom)
+    tr = vky_axes_transform(panel, VKY_CDS_NDC, VKY_CDS_PANEL);
+    AT(tr.scale[0] == 1);
+    AT(tr.scale[1] == 1);
+    AT(tr.shift[0] == 0);
+    AT(tr.shift[1] == 0);
+
+    panzoom->camera_pos[0] = .5;
+    panzoom->camera_pos[1] = .5;
+    panzoom->zoom[0] = 2;
+    panzoom->zoom[1] = 2;
+    tr = vky_axes_transform(panel, VKY_CDS_NDC, VKY_CDS_PANEL);
+    vky_axes_transform_apply(&tr, (dvec2){.5, .5}, out);
+    AT(out[0] == 0);
+    AT(out[1] == 0);
+    vky_axes_transform_apply(&tr, (dvec2){0, 0}, out);
+    AT(out[0] == -1);
+    AT(out[1] == -1);
+    vky_axes_transform_apply(&tr, (dvec2){1, 1}, out);
+    AT(out[0] == +1);
+    AT(out[1] == +1);
+
+    // Panel to canvas
+    tr = vky_axes_transform(panel, VKY_CDS_PANEL, VKY_CDS_CANVAS_NDC);
+    vky_axes_transform_apply(&tr, (dvec2){-1, -1}, out);
+    AIN(out[0], 0, 0.05);
+    AIN(out[1], -1, -0.95);
+
+    vky_axes_transform_apply(&tr, (dvec2){+1, +1}, out);
+    AIN(out[0], 0.49, 0.5);
+    AIN(out[1], -.02, 0);
+
+    // Canvas NDC to PX
+    tr = vky_axes_transform(panel, VKY_CDS_CANVAS_NDC, VKY_CDS_CANVAS_PX);
+    vky_axes_transform_apply(&tr, (dvec2){-1, -1}, out);
+    AT(out[0] == 0);
+    AT(out[1] == H);
+
+    vky_axes_transform_apply(&tr, (dvec2){+1, +1}, out);
+    AT(out[0] == W);
+    AT(out[1] == 0);
+
+    // Full transform.
+    tr = vky_axes_transform(panel, VKY_CDS_DATA, VKY_CDS_CANVAS_PX);
+    vky_axes_transform_apply(&tr, (dvec2){750, +6}, out);
+    DBGF(out[0]);
+    DBGF(out[1]);
+    AIN(out[0], W * .5, W * .75);
+    AIN(out[1], H * .5, H * 1);
+
+
+    vky_destroy_app(app);
     return 0;
 }
