@@ -64,7 +64,7 @@ then
         CTEST_OUTPUT_ON_FAILURE=1 ctest && \
         cd ..
     else
-        bash manage.sh build
+        # bash manage.sh build
         VKY_DEBUG_TEST= build/visky_test $2
     fi
 fi

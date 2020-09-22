@@ -3,9 +3,9 @@
 #include "../include/visky/utils.h"
 #include "../include/visky/visky.h"
 
-BEGIN_INCL_NO_WARN
-#include <stb_image.h>
-END_INCL_NO_WARN
+// BEGIN_INCL_NO_WARN
+// #include <stb_image.h>
+// END_INCL_NO_WARN
 
 
 

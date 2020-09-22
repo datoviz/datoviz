@@ -8,6 +8,7 @@
 #include "plot2d.h"
 #include "plot3d.h"
 
+#include "test_utils.h"
 #include "test_vklite.h"
 
 #define WIDTH  1024
@@ -61,6 +62,10 @@
     vky_clear_all_buffers(canvas->gpu);                                                           \
     vky_reset_all_constants();                                                                    \
     funcd(canvas);
+#define UNIT_TEST(func)                                                                           \
+    res = func();                                                                                 \
+    show_single_test(#func, res);                                                                 \
+    res_tot += res;
 
 
 
@@ -360,8 +365,21 @@ static int test_images(int argc, char* argv[])
 
 
 /*************************************************************************************************/
-/*  vklitetests                                                                                  */
+/*  vklite tests                                                                                 */
 /*************************************************************************************************/
+
+static int test_utils()
+{
+    log_set_level_env();
+    int res = 0, res_tot = 0;
+
+    printf("--- utils tests -----------------------------------\n");
+
+    UNIT_TEST(test_utils_transform_1);
+
+    return res_tot;
+}
+
 
 static int test_vklite()
 {
@@ -392,8 +410,13 @@ int main(int argc, char* argv[])
 {
     snprintf(SCREENSHOT_DIR, sizeof(SCREENSHOT_DIR), "%s/test/screenshots", ROOT_DIR);
 
+    // Unit tests.
     int res = 0;
+    TEST_INDEX = 0;
+    res += test_utils();
+    printf("\n");
 
+    // Vklite tests.
     TEST_INDEX = 0;
     if (argc == 1 || strcmp(argv[1], "vklite") == 0)
     {
@@ -401,8 +424,12 @@ int main(int argc, char* argv[])
     }
     printf("\n");
 
-    TEST_INDEX = 0;
-    res += test_images(argc, argv);
+    // Image tests.
+    if (argc == 1 || strcmp(argv[1], "utils") != 0)
+    {
+        TEST_INDEX = 0;
+        res += test_images(argc, argv);
+    }
 
     return res;
 }
