@@ -1,7 +1,13 @@
 /*
 C implementation of the Extended Wilkinson’s Algorithm, see
-http://vis.stanford.edu/papers/tick-labels Implementation adapted from Adam Lucke's at
+
+http://vis.stanford.edu/papers/tick-labels
+http://vis.stanford.edu/files/2010-TickLabels-InfoVis.pdf
+
+Implementation adapted from Adam Lucke's at
+
 https://github.com/quantenschaum/ctplot/blob/master/ctplot/ticks.py
+
 */
 
 #ifndef VKY_EXWILK_HEADER
@@ -17,8 +23,10 @@ https://github.com/quantenschaum/ctplot/blob/master/ctplot/ticks.py
 
 #include "ticks.h"
 
-#define INF 100000000
-
+#define INF   100000000
+#define J_MAX 10
+#define K_MAX 50
+#define Z_MAX 18
 
 typedef struct Q Q;
 struct Q
@@ -164,6 +172,7 @@ leg_overlap(double lmin, double lmax, double lstep, VkyTickFormat format, VkyAxe
     double size = context.coord == 0 ? VKY_AXES_COVERAGE_NTICKS_X * nglyphs * glyph_size
                                      : VKY_AXES_COVERAGE_NTICKS_Y * glyph_size;
     double coverage = size * n_labels / viewport_size;
+    // printf("%f %f\n", size, coverage);
     if (coverage < VKY_AXES_PHYSICAL_DENSITY_MAX)
     {
         return pow(coverage / VKY_AXES_PHYSICAL_DENSITY_MAX, 2);
@@ -204,10 +213,19 @@ score(dvec4s weights, double simplicity, double coverage, double density, double
     return s;
 }
 
-
+/*
+k : current number of labels
+m : requested number of labels
+q : nice number
+j : skip, amount among a sequence of nice numbers
+z : 10-exponent of the step size
+*/
 R wilk_ext(double dmin, double dmax, int32_t m, int32_t only_inside, VkyAxesContext context)
 {
-    if ((dmin >= dmax) || (m < 1))
+    if ((dmin >= dmax) || (m < 1) ||
+        // check viewport size
+        context.viewport_size[0] / context.dpi_factor < 200 ||
+        context.viewport_size[1] / context.dpi_factor < 200)
         return (R){dmin, dmax, dmax - dmin, 1, 0, 2, {0, 0, 0}, 0};
 
     double DEFAULT_Q[] = {1, 5, 2, 2.5, 4, 3};
@@ -223,10 +241,12 @@ R wilk_ext(double dmin, double dmax, int32_t m, int32_t only_inside, VkyAxesCont
     q.values = DEFAULT_Q;
 
     int32_t j = 1;
-    while (j < INF)
+    while (j < J_MAX)
     {
+        // printf("j %d\n", j);
         for (int32_t u = 0; u < n; u++)
         {
+            // printf("u %d\n", u);
             q.i = u;
             q.value = DEFAULT_Q[q.i];
             double sm = simplicity_max(q, j);
@@ -238,8 +258,9 @@ R wilk_ext(double dmin, double dmax, int32_t m, int32_t only_inside, VkyAxesCont
             }
 
             int32_t k = 2;
-            while (k < INF)
+            while (k < K_MAX)
             {
+                // printf("k %d\n", k);
                 double dm = density_max(k, m);
 
                 if (score(W, sm, 1, dm, 1) < best_score)
@@ -248,8 +269,9 @@ R wilk_ext(double dmin, double dmax, int32_t m, int32_t only_inside, VkyAxesCont
                 double delta = (dmax - dmin) / (k + 1.) / j / q.value;
                 double z = ceil(log10(delta));
 
-                while (z < INF)
+                while (z < Z_MAX)
                 {
+                    // printf("z %f\n", z);
                     assert(j > 0);
                     assert(q.value > 0);
                     double step = j * q.value * pow(10., z);

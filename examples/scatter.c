@@ -7,6 +7,10 @@ static void frame_callback(VkyCanvas* canvas)
     VkyMouse* mouse = canvas->event_controller->mouse;
     if (mouse->cur_state == VKY_MOUSE_STATE_CLICK && mouse->button == VKY_MOUSE_BUTTON_LEFT)
     {
+        if (vky_panel_from_mouse(canvas->scene, mouse->cur_pos)->row != 1)
+        {
+            return;
+        }
         VkyPick pick = vky_pick(canvas->scene, mouse->cur_pos);
         printf("CLICKED AT:\n");
         printf("pos canvas px %f %f\n", pick.pos_canvas_px[0], pick.pos_canvas_px[1]);
@@ -24,12 +28,13 @@ int main()
 
     VkyApp* app = vky_create_app(VKY_DEFAULT_BACKEND);
     VkyCanvas* canvas = vky_create_canvas(app, VKY_DEFAULT_WIDTH, VKY_DEFAULT_HEIGHT);
-    VkyScene* scene = vky_create_scene(canvas, VKY_CLEAR_COLOR_WHITE, 1, 1);
+    VkyScene* scene = vky_create_scene(canvas, VKY_CLEAR_COLOR_WHITE, 2, 1);
+    vky_set_grid_heights(scene, (float[]){1, 2});
 
     vky_add_vertex_buffer(canvas->gpu, 1e7);
     vky_add_index_buffer(canvas->gpu, 1e7);
 
-    VkyPanel* panel = vky_get_panel(scene, 0, 0);
+    VkyPanel* panel = vky_get_panel(scene, 0, 1);
 
     // Create the visual.
     VkyMarkersParams params = (VkyMarkersParams){{0, 0, 0, 1}, 1.0f, false};
@@ -79,6 +84,10 @@ int main()
     free(data);
 
     vky_add_frame_callback(canvas, frame_callback);
+
+    // Second panel.
+    VkyPanel* panel2 = vky_get_panel(scene, 0, 0);
+    vky_set_controller(panel2, VKY_CONTROLLER_AXES_2D, NULL);
 
     vky_run_app(app);
     vky_destroy_app(app);
