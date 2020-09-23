@@ -12,10 +12,11 @@
 typedef enum
 {
     VKY_CDS_DATA = 1,       // data coordinate system
-    VKY_CDS_NDC = 2,        // renormalization in [-1, 1], this is what is sent to the GPU
-    VKY_CDS_PANEL = 3,      // normalized coords within the panel inner's viewport (w/ panzoom)
-    VKY_CDS_CANVAS_NDC = 4, // normalized coords within the canvas
-    VKY_CDS_CANVAS_PX = 5,  // same but in pixels
+    VKY_CDS_GPU = 2,        // data coordinates normalized to -1,+1 and sent to the GPU
+    VKY_CDS_PANZOOM = 3,    // normalized coords within the panel inner's viewport (w/ panzoom)
+    VKY_CDS_PANEL = 4,      // NDC coordinates within the outer panel viewport
+    VKY_CDS_CANVAS_NDC = 5, // normalized coords within the canvas
+    VKY_CDS_CANVAS_PX = 6,  // same but in pixels, origin at the upper left
 } VkyCDS;
 
 

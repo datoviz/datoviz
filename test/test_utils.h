@@ -92,8 +92,8 @@ static int test_utils_transform_2()
     dvec2 p = {0, 0};
     dvec2 out = {0, 0};
 
-    // Data to NDC.
-    tr = vky_axes_transform(panel, VKY_CDS_DATA, VKY_CDS_NDC);
+    // Data to GPU.
+    tr = vky_axes_transform(panel, VKY_CDS_DATA, VKY_CDS_GPU);
     vky_axes_transform_apply(&tr, ll, out);
     AT(out[0] == -1);
     AT(out[1] == -1);
@@ -108,8 +108,8 @@ static int test_utils_transform_2()
     AT(out[0] == 0);
     AT(out[1] == 0);
 
-    // NDC to panel (panzoom)
-    tr = vky_axes_transform(panel, VKY_CDS_NDC, VKY_CDS_PANEL);
+    // GPU to panzoom
+    tr = vky_axes_transform(panel, VKY_CDS_GPU, VKY_CDS_PANZOOM);
     AT(tr.scale[0] == 1);
     AT(tr.scale[1] == 1);
     AT(tr.shift[0] == 0);
@@ -119,7 +119,7 @@ static int test_utils_transform_2()
     panzoom->camera_pos[1] = .5;
     panzoom->zoom[0] = 2;
     panzoom->zoom[1] = 2;
-    tr = vky_axes_transform(panel, VKY_CDS_NDC, VKY_CDS_PANEL);
+    tr = vky_axes_transform(panel, VKY_CDS_GPU, VKY_CDS_PANZOOM);
     vky_axes_transform_apply(&tr, (dvec2){.5, .5}, out);
     AT(out[0] == 0);
     AT(out[1] == 0);
@@ -131,7 +131,7 @@ static int test_utils_transform_2()
     AT(out[1] == +1);
 
     // Panel to canvas
-    tr = vky_axes_transform(panel, VKY_CDS_PANEL, VKY_CDS_CANVAS_NDC);
+    tr = vky_axes_transform(panel, VKY_CDS_PANZOOM, VKY_CDS_CANVAS_NDC);
     vky_axes_transform_apply(&tr, (dvec2){-1, -1}, out);
     AIN(out[0], 0, 0.05);
     AIN(out[1], -1, -0.95);

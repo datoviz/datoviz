@@ -296,6 +296,7 @@ void vky_update_mouse_state(VkyMouse* mouse, vec2 pos, VkyMouseButton button)
         mouse->cur_state == VKY_MOUSE_STATE_DOUBLE_CLICK)
     {
         mouse->cur_state = VKY_MOUSE_STATE_STATIC;
+        mouse->button = VKY_MOUSE_BUTTON_NONE;
     }
 
     bool pressed = button != VKY_MOUSE_BUTTON_NONE;

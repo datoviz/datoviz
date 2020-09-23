@@ -2,10 +2,25 @@
 
 #define RANDOM_POS true
 
+static void frame_callback(VkyCanvas* canvas)
+{
+    VkyMouse* mouse = canvas->event_controller->mouse;
+    if (mouse->cur_state == VKY_MOUSE_STATE_CLICK && mouse->button == VKY_MOUSE_BUTTON_LEFT)
+    {
+        VkyPick pick = vky_pick(canvas->scene, mouse->cur_pos);
+        printf("CLICKED AT:\n");
+        printf("pos canvas px %f %f\n", pick.pos_canvas_px[0], pick.pos_canvas_px[1]);
+        printf("pos canvas ndc %f %f\n", pick.pos_canvas_ndc[0], pick.pos_canvas_ndc[1]);
+        printf("pos panel %f %f\n", pick.pos_panel[0], pick.pos_panel[1]);
+        printf("pos panzoom %f %f\n", pick.pos_panzoom[0], pick.pos_panzoom[1]);
+        printf("pos gpu %f %f\n", pick.pos_gpu[0], pick.pos_gpu[1]);
+        printf("pos data %f %f\n\n", pick.pos_data[0], pick.pos_data[1]);
+    }
+}
+
 int main()
 {
     log_set_level_env();
-    // vky_set_constant(VKY_DPI_SCALING_FACTOR_ID, 2);
 
     VkyApp* app = vky_create_app(VKY_DEFAULT_BACKEND);
     VkyCanvas* canvas = vky_create_canvas(app, VKY_DEFAULT_WIDTH, VKY_DEFAULT_HEIGHT);
@@ -62,6 +77,8 @@ int main()
     }
     vky_visual_upload(visual, (VkyData){n, data});
     free(data);
+
+    vky_add_frame_callback(canvas, frame_callback);
 
     vky_run_app(app);
     vky_destroy_app(app);

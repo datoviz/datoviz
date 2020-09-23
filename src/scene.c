@@ -21,61 +21,28 @@ uint8_t VKY_COLOR_TEXTURE[CMAP_COUNT * CMAP_COUNT * 4];
 VkyPick vky_pick(VkyScene* scene, vec2 canvas_coords)
 {
     VkyPick pick = {0};
-    pick.canvas_px[0] = canvas_coords[0];
-    pick.canvas_px[1] = canvas_coords[1];
-
-    pick.canvas_ndc[0] = canvas_coords[0];
-    pick.canvas_ndc[1] = canvas_coords[1];
-
-    glm_vec2_copy(canvas_coords, pick.canvas_ndc);
-    vky_mouse_normalize_window(scene->canvas, pick.canvas_ndc);
-
     VkyPanel* panel = vky_panel_from_mouse(scene, canvas_coords);
+
     pick.panel = panel;
+    pick.pos_canvas_px[0] = canvas_coords[0];
+    pick.pos_canvas_px[1] = canvas_coords[1];
 
-    // relative coordinates, need to multiply by canvas (not framebuffer) size
-    VkyViewport viewport = panel->viewport;
-    float W = scene->canvas->size.window_width;
-    float H = scene->canvas->size.window_height;
-    viewport.x *= W;
-    viewport.w *= W;
-    viewport.y *= H;
-    viewport.h *= H;
-    // Remove the margins if getting the inner viewport.
-    viewport = vky_remove_viewport_margins(viewport, panel->margins);
+    VkyAxesTransform tr = {0};
 
-    // float w = viewport.w;
-    // float h = viewport.h;
-    float x0 = viewport.x;
-    float y0 = viewport.y;
-    // float x1 = x0 + w;
-    // float y1 = y0 + h;
-    // float xc = .5 * (x0 + x1);
-    // float yc = .5 * (y0 + y1);
-    float x = canvas_coords[0];
-    float y = canvas_coords[1];
+    tr = vky_axes_transform(panel, VKY_CDS_CANVAS_PX, VKY_CDS_CANVAS_NDC);
+    vky_axes_transform_apply(&tr, pick.pos_canvas_px, pick.pos_canvas_ndc);
 
-    pick.panel_px[0] = x - x0;
-    pick.panel_px[1] = y - y0;
+    tr = vky_axes_transform(panel, VKY_CDS_CANVAS_NDC, VKY_CDS_PANEL);
+    vky_axes_transform_apply(&tr, pick.pos_canvas_ndc, pick.pos_panel);
 
-    glm_vec2_copy(pick.panel_px, pick.panel_ndc);
-    // vky_mouse_normalize_viewport(panel->viewport, pick.panel_ndc);
-    pick.panel_ndc[0] = 2 * (pick.panel_px[0] - .5 * viewport.w) / viewport.w;
-    pick.panel_ndc[1] = 2 * (pick.panel_px[1] - .5 * viewport.h) / viewport.h;
+    tr = vky_axes_transform(panel, VKY_CDS_PANEL, VKY_CDS_PANZOOM);
+    vky_axes_transform_apply(&tr, pick.pos_panel, pick.pos_panzoom);
 
-    if (panel->controller_type == VKY_CONTROLLER_AXES_2D)
-    {
-        VkyAxes* axes = ((VkyControllerAxes2D*)panel->controller)->axes;
-        VkyAxesBox box = vky_axes_get_box(axes);
+    tr = vky_axes_transform(panel, VKY_CDS_PANZOOM, VKY_CDS_GPU);
+    vky_axes_transform_apply(&tr, pick.pos_panzoom, pick.pos_gpu);
 
-        double xd = .5 * (pick.panel_ndc[0] + 1);
-        double yd = .5 * (pick.panel_ndc[1] + 1);
-
-        xd = box.xmin + (box.xmax - box.xmin) * xd;
-        yd = box.ymin + (box.ymax - box.ymin) * yd;
-        pick.data_coords[0] = xd;
-        pick.data_coords[1] = yd;
-    }
+    tr = vky_axes_transform(panel, VKY_CDS_GPU, VKY_CDS_DATA);
+    vky_axes_transform_apply(&tr, pick.pos_gpu, pick.pos_data);
 
     return pick;
 }
