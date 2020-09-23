@@ -308,6 +308,7 @@ struct VkyPanel
     uint32_t inner_uniform_index;
     uint32_t outer_uniform_index;
     float aspect_ratio;
+    bool is_active; // whether the panel is being interacted with
 };
 
 

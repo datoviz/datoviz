@@ -44,6 +44,7 @@ void vky_panzoom_update(VkyPanel* panel, VkyPanzoom* panzoom, VkyViewportType vi
         // Restrict the panzoom updates to cases when the mouse press position was in the panel.
         if (vky_panel_from_mouse(scene, mouse->press_pos) != panel)
             return;
+        panel->is_active = true;
 
         vec2 delta = {0};
         vky_mouse_move_delta(mouse, viewport, delta);
@@ -72,6 +73,7 @@ void vky_panzoom_update(VkyPanel* panel, VkyPanzoom* panzoom, VkyViewportType vi
             // panel.
             if (vky_panel_from_mouse(scene, mouse->press_pos) != panel)
                 return;
+            panel->is_active = true;
 
             // Get the center position: mouse press position.
             vky_mouse_press_pos(mouse, viewport, center);
@@ -92,6 +94,7 @@ void vky_panzoom_update(VkyPanel* panel, VkyPanzoom* panzoom, VkyViewportType vi
             // panel.
             if (vky_panel_from_mouse(scene, mouse->cur_pos) != panel)
                 return;
+            panel->is_active = true;
 
             vky_mouse_cur_pos(mouse, viewport, center);
             glm_vec2_copy(mouse->wheel_delta, delta);
@@ -158,11 +161,17 @@ void vky_panzoom_update(VkyPanel* panel, VkyPanzoom* panzoom, VkyViewportType vi
         // Restrict the panzoom updates to cases when the mouse press position was in the panel.
         if (vky_panel_from_mouse(scene, mouse->cur_pos) != panel)
             return;
+        panel->is_active = false;
 
         panzoom->camera_pos[0] = 0;
         panzoom->camera_pos[1] = 0;
         panzoom->zoom[0] = 1;
         panzoom->zoom[1] = 1;
+    }
+
+    if (mouse->cur_state == VKY_MOUSE_STATE_STATIC)
+    {
+        panel->is_active = false;
     }
 }
 
@@ -311,6 +320,7 @@ void vky_arcball_update(VkyPanel* panel, VkyArcball* arcball, VkyViewportType vi
         // Restrict the panzoom updates to cases when the mouse press position was in the panel.
         if (vky_panel_from_mouse(scene, mouse->press_pos) != panel)
             return;
+        panel->is_active = true;
 
         vky_mouse_cur_pos(mouse, viewport, cur_pos);
         vky_mouse_last_pos(mouse, viewport, last_pos);
@@ -340,6 +350,7 @@ void vky_arcball_update(VkyPanel* panel, VkyArcball* arcball, VkyViewportType vi
         // Restrict the panzoom updates to cases when the mouse press position was in the panel.
         if (vky_panel_from_mouse(scene, mouse->cur_pos) != panel)
             return;
+        panel->is_active = true;
 
         vec3 motion = {0, 0, -2 * mouse->wheel_delta[1]};
         mat4 tr;
@@ -355,6 +366,7 @@ void vky_arcball_update(VkyPanel* panel, VkyArcball* arcball, VkyViewportType vi
     if (mouse->cur_state == VKY_MOUSE_STATE_DOUBLE_CLICK)
     {
         _reset_arcball(arcball);
+        panel->is_active = false;
     }
 
     // Compute the View matrix.
@@ -366,6 +378,10 @@ void vky_arcball_update(VkyPanel* panel, VkyArcball* arcball, VkyViewportType vi
     // Pan.
     if (mouse->cur_state == VKY_MOUSE_STATE_DRAG && mouse->button == VKY_MOUSE_BUTTON_RIGHT)
     {
+        if (vky_panel_from_mouse(scene, mouse->press_pos) != panel)
+            return;
+        panel->is_active = true;
+
         // float zoom_amount = 1;//abs(arcball->translation[3][2]);
         vec2 delta;
         vky_mouse_move_delta(mouse, viewport, delta);
@@ -418,6 +434,11 @@ void vky_arcball_update(VkyPanel* panel, VkyArcball* arcball, VkyViewportType vi
     vky_mvp_set_proj_3D(panel, viewport_type, &arcball->mvp);
     vky_mvp_upload(panel, viewport_type, &arcball->mvp);
     vky_mvp_finalize(scene);
+
+    if (mouse->cur_state == VKY_MOUSE_STATE_STATIC)
+    {
+        panel->is_active = false;
+    }
 }
 
 
@@ -568,6 +589,7 @@ void vky_camera_update(VkyPanel* panel, VkyCamera* camera, VkyViewportType viewp
     if (mouse->cur_state == VKY_MOUSE_STATE_DOUBLE_CLICK)
     {
         _reset_camera(camera);
+        panel->is_active = false;
     }
 
     glm_vec3_normalize(camera->forward);
