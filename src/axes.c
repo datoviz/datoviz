@@ -357,6 +357,7 @@ VkyVisual* vky_axes_create_text_visual(VkyScene* scene, VkyAxes* axes)
 
 VkyAxesBox vky_panzoom_get_box(VkyPanzoom* panzoom)
 {
+    // TODO: move into interact
     VkyAxesBox box = {
         -1 / panzoom->zoom[0] + panzoom->camera_pos[0],
         +1 / panzoom->zoom[0] + panzoom->camera_pos[0],

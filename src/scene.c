@@ -463,6 +463,31 @@ static void _update_controller(VkyPanel* panel)
     }
 }
 
+static void _update_linked_panel(VkyPanel* p0, VkyPanel* p1, VkyPanelLinkMode mode)
+{
+    // update the linked panel p1 as a function of the active panel p0, using the specified link
+    // mode.
+    ASSERT(p0 != NULL);
+    ASSERT(p1 != NULL);
+    ASSERT(p0->controller_type == p1->controller_type);
+
+    switch (p0->controller_type)
+    {
+    case VKY_CONTROLLER_AXES_2D:;
+        VkyControllerAxes2D* c0 = (VkyControllerAxes2D*)p0->controller;
+        VkyControllerAxes2D* c1 = (VkyControllerAxes2D*)p1->controller;
+        bool update_x = mode & VKY_PANEL_LINK_X != 0;
+        bool update_y = mode & VKY_PANEL_LINK_Y != 0;
+
+        // TODO
+
+        break;
+
+    default:
+        break;
+    }
+}
+
 static void _update_mvp(VkyPanel* panel)
 {
     // Upload the MVP data to the GPU using the panel's controller state.
@@ -521,10 +546,6 @@ static void _link_panels(VkyApp* app)
     VkyPanel* p0 = NULL;
     VkyPanel* p1 = NULL;
     VkyPanelLink* link = NULL;
-    VkyPanzoom* pz0 = NULL;
-    VkyPanzoom* pz1 = NULL;
-    // VkyPanzoom* apz0 = NULL;
-    // VkyPanzoom* apz1 = NULL;
 
     for (uint32_t i = 0; i < app->link_count; i++)
     {
@@ -565,37 +586,7 @@ static void _link_panels(VkyApp* app)
             log_warn("linking panels of different controller types is not yet supported");
             continue;
         }
-        if (p0->controller_type != VKY_CONTROLLER_AXES_2D)
-        {
-            log_warn("panel linking is only supported for axes 2D controller types at the moment");
-            // TODO: other controllers
-            continue;
-        }
-        ASSERT(p0 != p1);
-        ASSERT(p0->controller_type == VKY_CONTROLLER_AXES_2D);
-        ASSERT(p1->controller_type == VKY_CONTROLLER_AXES_2D);
-
-        pz0 = ((VkyControllerAxes2D*)p0->controller)->panzoom;
-        pz1 = ((VkyControllerAxes2D*)p1->controller)->panzoom;
-        // apz0 = ((VkyControllerAxes2D*)p0->controller)->axes->panzoom;
-        // apz1 = ((VkyControllerAxes2D*)p1->controller)->axes->panzoom;
-
-        // Update the dependent panel's panzoom.
-        if (link->mode & VKY_PANEL_LINK_X)
-        {
-            // printf("update %d %f\n", p1, pz1->camera_pos[0]);
-            pz1->camera_pos[0] = pz0->camera_pos[0];
-            pz1->zoom[0] = pz0->zoom[0];
-            // apz1->camera_pos[0] = apz0->camera_pos[0];
-            // apz1->zoom[0] = apz0->zoom[0];
-        }
-        if (link->mode & VKY_PANEL_LINK_Y)
-        {
-            pz1->camera_pos[1] = pz0->camera_pos[1];
-            pz1->zoom[1] = pz0->zoom[1];
-            // apz1->camera_pos[1] = apz0->camera_pos[1];
-            // apz1->zoom[1] = apz0->zoom[1];
-        }
+        _update_linked_panel(p0, p1, link->mode);
     }
 }
 
