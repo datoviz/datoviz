@@ -60,7 +60,7 @@ VkyAxesTransform vky_axes_transform(VkyPanel* panel, VkyCDS source, VkyCDS targe
     ASSERT(panel->controller_type == VKY_CONTROLLER_AXES_2D);
     VkyAxes* axes = ((VkyControllerAxes2D*)panel->controller)->axes;
     VkyPanzoom* panzoom = ((VkyControllerAxes2D*)panel->controller)->panzoom;
-    VkyViewport v = panel->viewport;
+    VkyViewport viewport = panel->viewport;
 
     if (source == target)
     {
@@ -112,6 +112,8 @@ VkyAxesTransform vky_axes_transform(VkyPanel* panel, VkyCDS source, VkyCDS targe
                 // Margins.
                 double cw = panel->scene->canvas->size.framebuffer_width;
                 double ch = panel->scene->canvas->size.framebuffer_height;
+                cw *= viewport.w;
+                ch *= viewport.h;
                 double mt = 2 * panel->margins[0] / ch;
                 double mr = 2 * panel->margins[1] / cw;
                 double mb = 2 * panel->margins[2] / ch;
@@ -128,10 +130,10 @@ VkyAxesTransform vky_axes_transform(VkyPanel* panel, VkyCDS source, VkyCDS targe
             {
                 // From outer to inner viewport.
                 dvec2 ll, ur;
-                ll[0] = -1 + 2 * v.x;
-                ll[1] = +1 - 2 * (v.y + v.h);
-                ur[0] = -1 + 2 * (v.x + v.w);
-                ur[1] = +1 - 2 * v.y;
+                ll[0] = -1 + 2 * viewport.x;
+                ll[1] = +1 - 2 * (viewport.y + viewport.h);
+                ur[0] = -1 + 2 * (viewport.x + viewport.w);
+                ur[1] = +1 - 2 * viewport.y;
 
                 tr = vky_axes_transform_interp(NDC0, ll, NDC1, ur);
             }
