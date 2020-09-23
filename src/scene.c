@@ -376,100 +376,253 @@ void vky_set_controller(VkyPanel* panel, VkyControllerType controller_type, cons
     panel->controller = controller;
 }
 
+static void _update_controller(VkyPanel* panel)
+{
+    // Update the panel's controller from the event controller (mouse and keyboard).
+
+    // printf("update panel %d %d\n", panel, source);
+    VkyPanzoom* panzoom = NULL;
+
+    switch (panel->controller_type)
+    {
+
+    case VKY_CONTROLLER_PANZOOM:
+        panzoom = (VkyPanzoom*)(panel->controller);
+
+        // Reset lim_reached.
+        panzoom->lim_reached[0] = false;
+        panzoom->lim_reached[1] = false;
+
+        vky_panzoom_update(panel, panzoom, VKY_VIEWPORT_INNER);
+
+        break;
+
+    case VKY_CONTROLLER_AXES_2D:;
+        VkyAxes* axes = ((VkyControllerAxes2D*)panel->controller)->axes;
+        panzoom = ((VkyControllerAxes2D*)panel->controller)->panzoom;
+
+        // Reset lim_reached.
+        panzoom->lim_reached[0] = false;
+        panzoom->lim_reached[1] = false;
+
+        // Main panel panzoom update, inner viewport.
+        vky_panzoom_update(panel, panzoom, VKY_VIEWPORT_INNER);
+
+        // Now, lim_reached may have been set to true. In this case, we need to freeze the axes
+        // panzoom as well.
+        axes->panzoom->lim_reached[0] = panzoom->lim_reached[0];
+        axes->panzoom->lim_reached[1] = panzoom->lim_reached[1];
+
+        // We update the axes panzoom, outer viewport.
+        vky_panzoom_update(panel, axes->panzoom, VKY_VIEWPORT_OUTER);
+
+        // Update the axes.
+        // if (update_from_event_controller)
+        vky_axes_panzoom_update(axes, panzoom, false);
+
+        break;
+
+    case VKY_CONTROLLER_ARCBALL:
+    case VKY_CONTROLLER_AXES_3D:
+        // TODO: split between update and mvp
+        vky_arcball_update(panel, (VkyArcball*)(panel->controller), VKY_VIEWPORT_INNER);
+        break;
+
+    case VKY_CONTROLLER_VOLUME:;
+        // Arcball interaction.
+        VkyArcball* arcball = (VkyArcball*)(panel->controller);
+        vky_arcball_update(panel, arcball, VKY_VIEWPORT_INNER);
+
+        // Get the volume visual.
+        VkyVisual* visual = vky_get_panel_first_visual(panel);
+        VkyVolumeParams* volume_params = (VkyVolumeParams*)(visual->params);
+
+        // Compute the inverse transform (view and proj) to simulate the camera directly in the
+        // fragment shader.
+        mat4 mat;
+        glm_mat4_mul(arcball->mvp.proj, arcball->mvp.view, mat);
+        glm_mat4_inv(mat, volume_params->inv_proj_view);
+
+        // Compute the normal matrix.
+        vky_mvp_normal_matrix(&arcball->mvp, volume_params->normal_mat);
+
+        // Update the params.
+        vky_visual_params(visual, sizeof(VkyVolumeParams), volume_params);
+
+        break;
+
+    case VKY_CONTROLLER_FPS:
+    case VKY_CONTROLLER_FLY:
+    case VKY_CONTROLLER_AUTOROTATE:;
+        VkyCamera* camera = (VkyCamera*)(panel->controller);
+        vky_camera_update(panel, camera, VKY_VIEWPORT_INNER);
+        break;
+
+    default:
+        break;
+    }
+}
+
+static void _update_mvp(VkyPanel* panel)
+{
+    // Upload the MVP data to the GPU using the panel's controller state.
+
+    // printf("update panel %d %d\n", panel, source);
+    VkyPanzoom* panzoom = NULL;
+
+    switch (panel->controller_type)
+    {
+
+    case VKY_CONTROLLER_PANZOOM:
+        panzoom = (VkyPanzoom*)(panel->controller);
+        vky_panzoom_mvp(panel, panzoom, VKY_VIEWPORT_INNER);
+        break;
+
+    case VKY_CONTROLLER_AXES_2D:;
+        VkyAxes* axes = ((VkyControllerAxes2D*)panel->controller)->axes;
+        panzoom = ((VkyControllerAxes2D*)panel->controller)->panzoom;
+        vky_panzoom_mvp(panel, axes->panzoom, VKY_VIEWPORT_OUTER);
+        vky_panzoom_mvp(panel, panzoom, VKY_VIEWPORT_INNER);
+        break;
+
+    case VKY_CONTROLLER_ARCBALL:
+    case VKY_CONTROLLER_AXES_3D:
+        // TODO: split between update and mvp
+        break;
+
+    case VKY_CONTROLLER_VOLUME:;
+        // TODO: split between update and mvp
+        break;
+
+    case VKY_CONTROLLER_FPS:
+    case VKY_CONTROLLER_FLY:
+    case VKY_CONTROLLER_AUTOROTATE:;
+        // TODO: split between update and mvp
+        // VkyCamera* camera = (VkyCamera*)(panel->controller);
+        break;
+
+    default:
+        break;
+    }
+}
+
+static void _link_panels(VkyApp* app)
+{
+    // NOTE: using the app and not canvas as we might want to link panels between different
+    // canvases.
+    ASSERT(app != NULL);
+    if (app->links == NULL)
+    {
+        return;
+    }
+    ASSERT(app->links != NULL);
+    ASSERT(app->link_count > 0);
+
+    VkyPanel* p0 = NULL;
+    VkyPanel* p1 = NULL;
+    VkyPanelLink* link = NULL;
+    VkyPanzoom* pz0 = NULL;
+    VkyPanzoom* pz1 = NULL;
+    // VkyPanzoom* apz0 = NULL;
+    // VkyPanzoom* apz1 = NULL;
+
+    for (uint32_t i = 0; i < app->link_count; i++)
+    {
+        link = &((VkyPanelLink*)app->links)[i];
+        ASSERT(link != NULL);
+        ASSERT(link->p0 != NULL);
+        ASSERT(link->p1 != NULL);
+        p0 = link->p0;
+        p1 = link->p1;
+        if (link->mode == VKY_PANEL_LINK_NONE)
+            continue;
+        ASSERT(link->mode);
+
+        // NOTE: we ensure p0 is the active panel and p1 is the non-active one.
+        if (link->p0->status == VKY_PANEL_STATUS_ACTIVE)
+        {
+            p0 = link->p0;
+            p1 = link->p1;
+        }
+        else if (link->p1->status == VKY_PANEL_STATUS_ACTIVE)
+        {
+            p0 = link->p1;
+            p1 = link->p0;
+        }
+        else
+        {
+            continue;
+        }
+
+        ASSERT(p0->status == VKY_PANEL_STATUS_ACTIVE);
+        // Set the status of the linked panel.
+        p1->status = VKY_PANEL_STATUS_LINKED;
+
+        if (p0 == p1)
+            continue;
+        if (p0->controller_type != p1->controller_type)
+        {
+            log_warn("linking panels of different controller types is not yet supported");
+            continue;
+        }
+        if (p0->controller_type != VKY_CONTROLLER_AXES_2D)
+        {
+            log_warn("panel linking is only supported for axes 2D controller types at the moment");
+            // TODO: other controllers
+            continue;
+        }
+        ASSERT(p0 != p1);
+        ASSERT(p0->controller_type == VKY_CONTROLLER_AXES_2D);
+        ASSERT(p1->controller_type == VKY_CONTROLLER_AXES_2D);
+
+        pz0 = ((VkyControllerAxes2D*)p0->controller)->panzoom;
+        pz1 = ((VkyControllerAxes2D*)p1->controller)->panzoom;
+        // apz0 = ((VkyControllerAxes2D*)p0->controller)->axes->panzoom;
+        // apz1 = ((VkyControllerAxes2D*)p1->controller)->axes->panzoom;
+
+        // Update the dependent panel's panzoom.
+        if (link->mode & VKY_PANEL_LINK_X)
+        {
+            // printf("update %d %f\n", p1, pz1->camera_pos[0]);
+            pz1->camera_pos[0] = pz0->camera_pos[0];
+            pz1->zoom[0] = pz0->zoom[0];
+            // apz1->camera_pos[0] = apz0->camera_pos[0];
+            // apz1->zoom[0] = apz0->zoom[0];
+        }
+        if (link->mode & VKY_PANEL_LINK_Y)
+        {
+            pz1->camera_pos[1] = pz0->camera_pos[1];
+            pz1->zoom[1] = pz0->zoom[1];
+            // apz1->camera_pos[1] = apz0->camera_pos[1];
+            // apz1->zoom[1] = apz0->zoom[1];
+        }
+    }
+}
+
 static void _controller_callback(VkyCanvas* canvas)
 {
     VkyScene* scene = canvas->scene;
     VkyGrid* grid = scene->grid;
-    VkyPanel* panel = NULL;
-    VkyPanzoom* panzoom = NULL;
 
     for (uint32_t i = 0; i < grid->panel_count; i++)
     {
-        panel = &grid->panels[i];
-        switch (panel->controller_type)
-        {
+        // Reset the status of every panel.
+        grid->panels[i].status = VKY_PANEL_STATUS_NONE;
+        // This function will set the active panel's status to ACTIVE.
+        _update_controller(&grid->panels[i]);
+    }
 
-        case VKY_CONTROLLER_PANZOOM:
-            panzoom = (VkyPanzoom*)(panel->controller);
+    // This function finds the panels that depend on the active panel, set them to LINKED
+    // status, update their controller.
+    _link_panels(canvas->app);
 
-            // Reset lim_reached.
-            panzoom->lim_reached[0] = false;
-            panzoom->lim_reached[1] = false;
-
-            vky_panzoom_update(panel, panzoom, VKY_VIEWPORT_INNER);
-            vky_panzoom_mvp(panel, panzoom, VKY_VIEWPORT_INNER);
-
-            break;
-
-        case VKY_CONTROLLER_AXES_2D:;
-            VkyAxes* axes = ((VkyControllerAxes2D*)panel->controller)->axes;
-            panzoom = ((VkyControllerAxes2D*)panel->controller)->panzoom;
-            bool is_static = false; // TODO: obtain from axes params.
-
-            // Reset lim_reached.
-            panzoom->lim_reached[0] = false;
-            panzoom->lim_reached[1] = false;
-
-            // Main panel panzoom update, inner viewport.
-            if (!is_static)
-                vky_panzoom_update(panel, panzoom, VKY_VIEWPORT_INNER);
-
-            // Now, lim_reached may have been set to true. In this case, we need to freeze the axes
-            // panzoom as well.
-            axes->panzoom->lim_reached[0] = panzoom->lim_reached[0];
-            axes->panzoom->lim_reached[1] = panzoom->lim_reached[1];
-
-            // We update the axes panzoom, outer viewport.
-            if (!is_static)
-                vky_panzoom_update(panel, axes->panzoom, VKY_VIEWPORT_OUTER);
-
-            // Update the axes.
-            vky_axes_panzoom_update(axes, panzoom, false);
-
-            // Finally we upload the panzooms MVPs.
-            vky_panzoom_mvp(panel, axes->panzoom, VKY_VIEWPORT_OUTER);
-            vky_panzoom_mvp(panel, panzoom, VKY_VIEWPORT_INNER);
-
-            break;
-
-        case VKY_CONTROLLER_ARCBALL:
-        case VKY_CONTROLLER_AXES_3D:
-            vky_arcball_update(panel, (VkyArcball*)(panel->controller), VKY_VIEWPORT_INNER);
-            break;
-
-        case VKY_CONTROLLER_VOLUME:;
-            // Arcball interaction.
-            VkyArcball* arcball = (VkyArcball*)(panel->controller);
-            vky_arcball_update(panel, arcball, VKY_VIEWPORT_INNER);
-
-            // Get the volume visual.
-            VkyVisual* visual = vky_get_panel_first_visual(panel);
-            VkyVolumeParams* volume_params = (VkyVolumeParams*)(visual->params);
-
-            // Compute the inverse transform (view and proj) to simulate the camera directly in the
-            // fragment shader.
-            mat4 mat;
-            glm_mat4_mul(arcball->mvp.proj, arcball->mvp.view, mat);
-            glm_mat4_inv(mat, volume_params->inv_proj_view);
-
-            // Compute the normal matrix.
-            vky_mvp_normal_matrix(&arcball->mvp, volume_params->normal_mat);
-
-            // Update the params.
-            vky_visual_params(visual, sizeof(VkyVolumeParams), volume_params);
-
-            break;
-
-        case VKY_CONTROLLER_FPS:
-        case VKY_CONTROLLER_FLY:
-        case VKY_CONTROLLER_AUTOROTATE:;
-            VkyCamera* camera = (VkyCamera*)(panel->controller);
-            vky_camera_update(panel, camera, VKY_VIEWPORT_INNER);
-            break;
-
-        default:
-            break;
-        }
+    // Update the MVP of all panels.
+    for (uint32_t i = 0; i < grid->panel_count; i++)
+    {
+        // printf(
+        //     "show   %d %f\n", &grid->panels[i],
+        //     ((VkyControllerAxes2D*)grid->panels[i].controller)->panzoom->camera_pos[0]);
+        _update_mvp(&grid->panels[i]);
     }
 }
 
@@ -528,6 +681,28 @@ void vky_destroy_controller(VkyPanel* panel)
     if (controller != NULL)
         free(controller);
     panel->controller = NULL;
+}
+
+void vky_link_panels(VkyPanel* p0, VkyPanel* p1, VkyPanelLinkMode mode)
+{
+    VkyApp* app = p0->scene->canvas->app;
+    ASSERT(app != NULL);
+    ASSERT(p1->scene->canvas->app == app);
+    // Create the array of panel links if needed.
+    if (app->links == NULL)
+    {
+        app->links = calloc(VKY_MAX_PANEL_LINKS, sizeof(VkyPanelLink));
+    }
+    VkyPanelLink* link = &((VkyPanelLink*)app->links)[app->link_count];
+    ASSERT(link != NULL);
+    ASSERT(p0 != NULL);
+    ASSERT(p1 != NULL);
+
+    link->p0 = p0;
+    link->p1 = p1;
+    link->mode = mode;
+
+    app->link_count++;
 }
 
 

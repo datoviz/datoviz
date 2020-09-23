@@ -89,6 +89,8 @@ int main()
     VkyPanel* panel2 = vky_get_panel(scene, 0, 0);
     vky_set_controller(panel2, VKY_CONTROLLER_AXES_2D, NULL);
 
+    // vky_link_panels(panel, panel2, VKY_PANEL_LINK_ALL);
+
     vky_run_app(app);
     vky_destroy_app(app);
     return 0;

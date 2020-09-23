@@ -201,6 +201,13 @@ void vky_destroy_app(VkyApp* app)
         break;
     }
 
+    if (app->links != NULL)
+    {
+        free(app->links);
+        app->link_count = 0;
+        app->links = NULL;
+    }
+
     free(app->gpu);
     free(app);
 }

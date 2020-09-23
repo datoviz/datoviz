@@ -66,6 +66,7 @@ typedef enum
 
 typedef struct VkyAxes VkyAxes;
 typedef struct VkyPanel VkyPanel;
+typedef struct VkyPanelLink VkyPanelLink;
 typedef struct VkyVisualPanel VkyVisualPanel;
 typedef struct VkyData VkyData;
 typedef struct VkyGrid VkyGrid;
@@ -133,6 +134,7 @@ typedef enum
     VKY_CONTROLLER_VOLUME = 41,
 } VkyControllerType;
 
+
 typedef enum
 {
     VKY_MVP_MODEL = 1,
@@ -141,6 +143,33 @@ typedef enum
     VKY_MVP_ORTHO = 4,
 } VkyMVPMatrix;
 
+
+typedef enum
+{
+    VKY_PANEL_LINK_NONE = 0x0,
+    VKY_PANEL_LINK_X = 0x1,
+    VKY_PANEL_LINK_Y = 0x2,
+    VKY_PANEL_LINK_Z = 0x4,
+    VKY_PANEL_LINK_ALL = 0x7,
+} VkyPanelLinkMode;
+
+
+typedef enum
+{
+    VKY_CONTROLLER_SOURCE_NONE = 0,
+    VKY_CONTROLLER_SOURCE_HUMAN = 1,
+    VKY_CONTROLLER_SOURCE_MOCK = 2,
+    VKY_CONTROLLER_SOURCE_LINK = 3,
+} VkyControllerSource;
+
+
+typedef enum
+{
+    VKY_PANEL_STATUS_NONE = 0,
+    VKY_PANEL_STATUS_ACTIVE = 1,
+    VKY_PANEL_STATUS_LINKED = 2,
+    VKY_PANEL_STATUS_RESET = 7,
+} VkyPanelStatus;
 
 
 struct VkyMVP
@@ -290,6 +319,14 @@ struct VkyGrid
 
 
 
+struct VkyPanelLink
+{
+    VkyPanel* p0;
+    VkyPanel* p1;
+    VkyPanelLinkMode mode;
+};
+
+
 struct VkyPanel
 {
     VkyScene* scene;
@@ -308,7 +345,8 @@ struct VkyPanel
     uint32_t inner_uniform_index;
     uint32_t outer_uniform_index;
     float aspect_ratio;
-    bool is_active; // whether the panel is being interacted with
+
+    VkyPanelStatus status;
 };
 
 
@@ -660,7 +698,7 @@ VKY_EXPORT void vky_set_panel_aspect_ratio(VkyPanel*, float aspect_ratio);
 VKY_EXPORT void
 vky_set_controller(VkyPanel* panel, VkyControllerType controller_type, const void*);
 VKY_EXPORT VkyPanel* vky_panel_from_mouse(VkyScene* scene, vec2 pos);
-
+VKY_EXPORT void vky_link_panels(VkyPanel*, VkyPanel*, VkyPanelLinkMode);
 
 
 /*************************************************************************************************/

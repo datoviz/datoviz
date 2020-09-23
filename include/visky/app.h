@@ -185,14 +185,6 @@ struct VkyBackendVideoParams
 };
 
 typedef struct VkyScreenshot VkyScreenshot;
-// typedef struct VkyBackendVNCParams VkyBackendVNCParams;
-// struct VkyBackendVNCParams
-// {
-//     void* server;
-//     VkyScreenshot* screenshot;
-//     vec2 mouse_pos;
-//     uint32_t mouse_button;
-// };
 
 typedef struct VkyBackendScreenshotParams VkyBackendScreenshotParams;
 struct VkyBackendScreenshotParams
@@ -216,6 +208,10 @@ struct VkyApp
 
     uint32_t canvas_count;
     VkyCanvas** canvases;
+
+    // links between canvases
+    uint32_t link_count;
+    void* links;
 
     VkyWaitCallback cb_wait;
 };

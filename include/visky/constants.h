@@ -195,10 +195,11 @@ typedef enum
 #endif
 #define M_2PI 6.283185307179586
 
-#define VKY_NEVER         -1000000
-#define VKY_MAX_CONSTANTS 1000
-#define VKY_MAX_CANVASES  1000
-#define VKY_DEFAULT_TIMER vky_get_timer()
+#define VKY_NEVER           -1000000
+#define VKY_MAX_CONSTANTS   1000
+#define VKY_MAX_CANVASES    1000
+#define VKY_MAX_PANEL_LINKS 1000
+#define VKY_DEFAULT_TIMER   vky_get_timer()
 
 #define VKY_TEXTURE_PARAMS_NEAREST(w, h, d)                                                       \
     {w,                                                                                           \

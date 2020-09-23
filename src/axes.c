@@ -448,11 +448,6 @@ void vky_axes_set_range(VkyAxes* axes, double xmin, double xmax, double ymin, do
     {
         log_trace("update x axis");
 
-        // panzoom->camera_pos[0] = 0;
-        // axpanzoom->camera_pos[0] = 0;
-        // panzoom->zoom[0] = 1;
-        // axpanzoom->zoom[0] = 1;
-
         axes->xscale.vmin = xmin;
         axes->xscale.vmax = xmax;
 
@@ -463,11 +458,6 @@ void vky_axes_set_range(VkyAxes* axes, double xmin, double xmax, double ymin, do
     if (update_y)
     {
         log_trace("update y axis");
-
-        // panzoom->camera_pos[1] = 0;
-        // axpanzoom->camera_pos[1] = 0;
-        // panzoom->zoom[1] = 1;
-        // axpanzoom->zoom[1] = 1;
 
         axes->yscale.vmin = ymin;
         axes->yscale.vmax = ymax;
