@@ -12,8 +12,8 @@
 
 #define AIN(x, m, M) AT((m) <= (x) && (x) <= (M))
 
-#define W 800
-#define H 600
+#define W 1200
+#define H 800
 
 
 static int test_utils_transform_1()
@@ -77,6 +77,7 @@ static int test_utils_transform_2()
     VkyPanel* panel = vky_get_panel(scene, 1, 2);
 
     VkyAxes2DParams params = vky_default_axes_2D_params();
+    glm_vec4_scale(params.margins, 0.25, params.margins);
     params.xscale.vmin = 0;
     params.xscale.vmax = 1000;
     params.yscale.vmin = -12;
