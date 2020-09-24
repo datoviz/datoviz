@@ -407,7 +407,7 @@ void vky_axes_set_range(VkyAxes* axes, VkyBox2D box, bool recompute_ticks)
         VkyAxesTransform tr_outer = {0};
 
         // Update the inner panzoom.
-        tr_inner = vky_axes_transform(axes->panel, VKY_CDS_DATA, VKY_CDS_PANZOOM);
+        tr_inner = vky_axes_transform(axes->panel, VKY_CDS_DATA, VKY_CDS_GPU);
         vky_axes_transform_apply(&tr_inner, box.pos_ll, box_inner.pos_ll);
         vky_axes_transform_apply(&tr_inner, box.pos_ur, box_inner.pos_ur);
         vky_panzoom_set_box(panzoom, VKY_VIEWPORT_INNER, box_inner);
@@ -422,6 +422,7 @@ void vky_axes_set_range(VkyAxes* axes, VkyBox2D box, bool recompute_ticks)
 
         // Possibly trigger a tick recompute after panzoom.
         vky_axes_panzoom_update(axes, panzoom, false);
+        vky_axes_update(axes);
     }
     else
     {
@@ -544,6 +545,19 @@ VkyAxes* vky_axes_init(VkyPanel* panel, VkyAxes2DParams params)
     return axes;
 }
 
+void vky_axes_reset(VkyAxes* axes)
+{
+    axes->xscale = axes->xscale_orig;
+    axes->yscale = axes->yscale_orig;
+    axes->panzoom_box =
+        (VkyBox2D){{axes->xscale.vmin, axes->yscale.vmin}, {axes->xscale.vmax, axes->yscale.vmax}};
+    vky_panzoom_reset(axes->panzoom);
+    if (axes->panel->controller_type == VKY_CONTROLLER_AXES_2D)
+    {
+        vky_panzoom_reset(((VkyControllerAxes2D*)axes->panel->controller)->panzoom);
+    }
+    vky_axes_update(axes);
+}
 
 void vky_axes_make_vertices(
     VkyAxes* axes, uint32_t* vertex_count, VkyAxesTickVertex* vertices,

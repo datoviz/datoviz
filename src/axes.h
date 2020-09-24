@@ -13,7 +13,6 @@ VkyAxes* vky_axes_init(VkyPanel*, VkyAxes2DParams);
 VkyVisual* vky_axes_create_tick_visual(VkyScene* scene, VkyAxes* axes);
 VkyVisual* vky_axes_create_text_visual(VkyScene* scene, VkyAxes* axes);
 
-void vky_axes_reset(VkyAxes* axes);
 void vky_axes_make_vertices(
     VkyAxes* axes, uint32_t* vertex_count, VkyAxesTickVertex* vertices,
     uint32_t* text_vertex_count, VkyAxesTextData* text_data);
@@ -22,6 +21,7 @@ void vky_axes_register_visual(VkyAxes* axis, VkyVisual* visual);
 void vky_axes_update(VkyAxes* axes);
 void vky_axes_panzoom_update(VkyAxes*, VkyPanzoom*, bool);
 
+VKY_EXPORT void vky_axes_reset(VkyAxes* axes);
 VKY_EXPORT VkyBox2D vky_axes_get_range(VkyAxes* axes);
 VKY_EXPORT void vky_axes_set_range(VkyAxes* axes, VkyBox2D, bool recompute_ticks);
 

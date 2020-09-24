@@ -476,8 +476,8 @@ static void _update_linked_panel(VkyPanel* p0, VkyPanel* p1, VkyPanelLinkMode mo
     case VKY_CONTROLLER_AXES_2D:;
         VkyControllerAxes2D* c0 = (VkyControllerAxes2D*)p0->controller;
         VkyControllerAxes2D* c1 = (VkyControllerAxes2D*)p1->controller;
-        bool update_x = mode & VKY_PANEL_LINK_X != 0;
-        bool update_y = mode & VKY_PANEL_LINK_Y != 0;
+        bool update_x = (mode & VKY_PANEL_LINK_X) != 0;
+        bool update_y = (mode & VKY_PANEL_LINK_Y) != 0;
 
         // TODO
 

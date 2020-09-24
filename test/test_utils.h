@@ -11,6 +11,11 @@
         return 1;
 
 #define AIN(x, m, M) AT((m) <= (x) && (x) <= (M))
+#define ABOX(x, a, b, c, d)                                                                       \
+    AT(((x).pos_ll[0] == (a)) && ((x).pos_ll[1] == (b)) && ((x).pos_ur[0] == (c)) &&              \
+       ((x).pos_ur[1] == (d)))
+#define PBOX(x)                                                                                   \
+    printf("%f %f %f %f\n", (x).pos_ll[0], (x).pos_ll[1], (x).pos_ur[0], (x).pos_ur[1]);
 
 #define W 1200
 #define H 800
@@ -225,39 +230,41 @@ static int test_utils_axes_1(VkyPanel* panel)
 
 
 
+static int _check_axes_range(VkyAxes* axes, double xmin, double ymin, double xmax, double ymax)
+{
+    // Check set range/get range round trip for both bool values of recompute_ticks, and twice
+    // each time.
+    for (uint8_t b = 0; b < 2; b++)
+    {
+        vky_axes_reset(axes);
+
+        for (uint32_t i = 0; i < 2; i++)
+        {
+
+            VkyBox2D box = (VkyBox2D){{xmin, ymin}, {xmax, ymax}};
+            vky_axes_set_range(axes, box, b);
+            VkyBox2D box_ = vky_axes_get_range(axes);
+            // PBOX(box);
+            // PBOX(box_);
+            // printf("\n");
+            ABOX(box_, xmin, ymin, xmax, ymax);
+        }
+    }
+    return 0;
+}
+
+
 static int test_utils_axes_2(VkyPanel* panel)
 {
     VkyPanzoom* panzoom = ((VkyControllerAxes2D*)panel->controller)->panzoom;
     VkyAxes* axes = ((VkyControllerAxes2D*)panel->controller)->axes;
 
-    VkyBox2D box = {{0, -12}, {1000, +12}};
-    vky_axes_set_range(axes, box, true);
-    box = vky_axes_get_range(axes);
-    AT(box.pos_ll[0] == 0);
-    AT(box.pos_ll[1] == -12);
-    AT(box.pos_ur[0] == 1000);
-    AT(box.pos_ur[1] == 12);
+    int res = 0;
 
-    box = (VkyBox2D){{0, -12}, {500, +12}};
-    vky_axes_set_range(axes, box, true);
-    box = vky_axes_get_range(axes);
-    AT(box.pos_ll[0] == 0);
-    AT(box.pos_ll[1] == -12);
-    AT(box.pos_ur[0] == 500);
-    AT(box.pos_ur[1] == 12);
+    res += _check_axes_range(axes, 0, -12, 1000, 12);
+    res += _check_axes_range(axes, 0, -12, 500, 12);
+    res += _check_axes_range(axes, 250, -12, 750, 12);
+    res += _check_axes_range(axes, 450, -6, 550, 6);
 
-    box = (VkyBox2D){{250, -6}, {750, +6}};
-    vky_axes_set_range(axes, box, true);
-    box = vky_axes_get_range(axes);
-    AT(box.pos_ll[0] == 250);
-    AT(box.pos_ll[1] == -6);
-    AT(box.pos_ur[0] == 750);
-    AT(box.pos_ur[1] == 6);
-
-    // DBGF(box.pos_ll[0]);
-    // DBGF(box.pos_ll[1]);
-    // DBGF(box.pos_ur[0]);
-    // DBGF(box.pos_ur[1]);
-
-    return 0;
+    return res;
 }

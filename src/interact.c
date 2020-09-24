@@ -15,14 +15,19 @@ VkyPanzoom* vky_panzoom_init()
     VkyPanzoom* panzoom = (VkyPanzoom*)calloc(1, sizeof(VkyPanzoom));
 
     // Initialize the panzoom properties.
+    vky_panzoom_reset(panzoom);
+
+    return panzoom;
+}
+
+void vky_panzoom_reset(VkyPanzoom* panzoom)
+{
     panzoom->camera_pos[0] = VKY_PANZOOM_LOOKAT_POS_X;
     panzoom->camera_pos[1] = VKY_PANZOOM_LOOKAT_POS_Y;
     panzoom->camera_pos[2] = VKY_PANZOOM_LOOKAT_POS_Z;
     glm_vec2_copy((vec2){1.0f, 1.0f}, panzoom->zoom);
 
     glm_mat4_identity(panzoom->model);
-
-    return panzoom;
 }
 
 void vky_panzoom_update(VkyPanel* panel, VkyPanzoom* panzoom, VkyViewportType viewport_type)
