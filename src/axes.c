@@ -373,10 +373,12 @@ void vky_axes_panzoom_update(VkyAxes* axes, VkyPanzoom* panzoom, bool force_trig
 }
 
 
-VkyBox2D vky_axes_get_range(VkyAxes* axes)
+VkyBox2D vky_axes_get_range(VkyPanel* panel)
 {
+    VkyAxesTransform tr = vky_axes_transform(panel, VKY_CDS_PANZOOM, VKY_CDS_DATA);
     VkyBox2D box = {0};
-    // TODO
+    vky_axes_transform_apply(&tr, (dvec2){-1, -1}, box.pos_ll);
+    vky_axes_transform_apply(&tr, (dvec2){+1, +1}, box.pos_ur);
     return box;
 }
 

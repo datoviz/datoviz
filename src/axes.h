@@ -22,7 +22,7 @@ void vky_axes_register_visual(VkyAxes* axis, VkyVisual* visual);
 void vky_axes_update(VkyAxes* axes);
 void vky_axes_panzoom_update(VkyAxes*, VkyPanzoom*, bool);
 
-VKY_EXPORT VkyBox2D vky_axes_get_range(VkyAxes* axes);
+VKY_EXPORT VkyBox2D vky_axes_get_range(VkyPanel* panel);
 VKY_EXPORT void vky_axes_set_range(VkyAxes* axes, VkyBox2D, bool recompute_ticks);
 
 

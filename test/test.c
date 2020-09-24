@@ -66,6 +66,10 @@
     res = func();                                                                                 \
     show_single_test(#func, res);                                                                 \
     res_tot += res;
+#define UNIT_TEST_PANEL(func)                                                                     \
+    res = func(panel);                                                                            \
+    show_single_test(#func, res);                                                                 \
+    res_tot += res;
 
 
 
@@ -377,7 +381,29 @@ static int test_utils()
 
     UNIT_TEST(test_utils_transform_1);
     UNIT_TEST(test_utils_transform_2);
-    UNIT_TEST(test_utils_transform_3);
+    UNIT_TEST(test_utils_panzoom_1);
+
+
+    printf("\n--- utils tests with panel-------------------------\n");
+
+    VkyApp* app = vky_create_app(VKY_BACKEND_OFFSCREEN, NULL);
+    VkyCanvas* canvas = vky_create_canvas(app, W, H);
+    VkyScene* scene = vky_create_scene(canvas, VKY_CLEAR_COLOR_WHITE, 1, 1);
+    VkyPanel* panel = vky_get_panel(scene, 0, 0);
+    VkyAxes2DParams params = vky_default_axes_2D_params();
+    glm_vec4_scale(params.margins, 0.25, params.margins);
+    params.xscale.vmin = 0;
+    params.xscale.vmax = 1000;
+    params.yscale.vmin = -12;
+    params.yscale.vmax = +12;
+    vky_set_controller(panel, VKY_CONTROLLER_AXES_2D, &params);
+
+
+    UNIT_TEST_PANEL(test_utils_axes_1);
+
+
+    vky_destroy_app(app);
+
 
     return res_tot;
 }

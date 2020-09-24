@@ -164,16 +164,14 @@ static int test_utils_transform_2()
 
 
 
-static int test_utils_transform_3()
+static int test_utils_panzoom_1()
 {
     VkyApp* app = vky_create_app(VKY_BACKEND_OFFSCREEN, NULL);
     VkyCanvas* canvas = vky_create_canvas(app, W, H);
     VkyScene* scene = vky_create_scene(canvas, VKY_CLEAR_COLOR_WHITE, 1, 1);
     VkyPanel* panel = vky_get_panel(scene, 0, 0);
 
-    VkyAxes2DParams params = vky_default_axes_2D_params();
-
-    vky_set_controller(panel, VKY_CONTROLLER_PANZOOM, &params);
+    vky_set_controller(panel, VKY_CONTROLLER_PANZOOM, NULL);
     VkyPanzoom* panzoom = ((VkyPanzoom*)panel->controller);
 
     panzoom->camera_pos[0] = 0;
@@ -195,5 +193,24 @@ static int test_utils_transform_3()
     AT(panzoom->zoom[1] == 2);
 
     vky_destroy_app(app);
+    return 0;
+}
+
+
+
+static int test_utils_axes_1(VkyPanel* panel)
+{
+    VkyPanzoom* panzoom = ((VkyControllerAxes2D*)panel->controller)->panzoom;
+    panzoom->camera_pos[0] = .5;
+    panzoom->camera_pos[1] = .5;
+    panzoom->zoom[0] = 2;
+    panzoom->zoom[1] = 2;
+
+    VkyBox2D box = vky_axes_get_range(panel);
+    AT(box.pos_ll[0] == 500);
+    AT(box.pos_ll[1] == 0);
+    AT(box.pos_ur[0] == 1000);
+    AT(box.pos_ur[1] == 12);
+
     return 0;
 }
