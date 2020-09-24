@@ -373,9 +373,12 @@ void vky_axes_panzoom_update(VkyAxes* axes, VkyPanzoom* panzoom, bool force_trig
 }
 
 
-VkyBox2D vky_axes_get_range(VkyPanel* panel)
+VkyBox2D vky_axes_get_range(VkyAxes* axes)
 {
-    VkyAxesTransform tr = vky_axes_transform(panel, VKY_CDS_PANZOOM, VKY_CDS_DATA);
+    ASSERT(axes != NULL);
+    ASSERT(axes->panel != NULL);
+
+    VkyAxesTransform tr = vky_axes_transform(axes->panel, VKY_CDS_PANZOOM, VKY_CDS_DATA);
     VkyBox2D box = {0};
     vky_axes_transform_apply(&tr, (dvec2){-1, -1}, box.pos_ll);
     vky_axes_transform_apply(&tr, (dvec2){+1, +1}, box.pos_ur);
@@ -385,8 +388,6 @@ VkyBox2D vky_axes_get_range(VkyPanel* panel)
 
 void vky_axes_set_range(VkyAxes* axes, VkyBox2D box, bool recompute_ticks)
 {
-    // TODO: recompute_ticks = false
-
     ASSERT(axes != NULL);
     ASSERT(axes->panel != NULL);
 
@@ -399,26 +400,52 @@ void vky_axes_set_range(VkyAxes* axes, VkyBox2D box, bool recompute_ticks)
     bool update_x = box.pos_ll[0] < box.pos_ur[0];
     bool update_y = box.pos_ll[1] < box.pos_ur[1];
 
-    if (update_x)
+    if (!recompute_ticks)
     {
-        log_trace("update x axis");
+        VkyBox2D box_inner = {0};
+        VkyAxesTransform tr_inner = {0};
+        VkyAxesTransform tr_outer = {0};
 
-        axes->xscale_orig.vmin = axes->xscale.vmin = box.pos_ll[0];
-        axes->xscale_orig.vmax = axes->xscale.vmax = box.pos_ur[0];
+        // Update the inner panzoom.
+        tr_inner = vky_axes_transform(axes->panel, VKY_CDS_DATA, VKY_CDS_PANZOOM);
+        vky_axes_transform_apply(&tr_inner, box.pos_ll, box_inner.pos_ll);
+        vky_axes_transform_apply(&tr_inner, box.pos_ur, box_inner.pos_ur);
+        vky_panzoom_set_box(panzoom, VKY_VIEWPORT_INNER, box_inner);
+
+        // Update the outer panzoom.
+        tr_outer = vky_axes_transform_interp(
+            (dvec2){-1, -1}, box_inner.pos_ll, (dvec2){+1, +1}, box_inner.pos_ur);
+        axpanzoom->camera_pos[0] = tr_outer.shift[0];
+        axpanzoom->camera_pos[1] = tr_outer.shift[1];
+        axpanzoom->zoom[0] = tr_outer.scale[0];
+        axpanzoom->zoom[1] = tr_outer.scale[1];
+
+        // Possibly trigger a tick recompute after panzoom.
+        vky_axes_panzoom_update(axes, panzoom, false);
     }
-
-    if (update_y)
+    else
     {
-        log_trace("update y axis");
+        if (update_x)
+        {
+            log_trace("update x axis");
 
-        axes->yscale_orig.vmin = axes->yscale.vmin = box.pos_ll[1];
-        axes->yscale_orig.vmax = axes->yscale.vmax = box.pos_ur[1];
-    }
+            axes->xscale_orig.vmin = axes->xscale.vmin = box.pos_ll[0];
+            axes->xscale_orig.vmax = axes->xscale.vmax = box.pos_ur[0];
+        }
 
-    if (update_x || update_y)
-    {
-        vky_axes_panzoom_update(axes, panzoom, true);
-        vky_axes_update(axes);
+        if (update_y)
+        {
+            log_trace("update y axis");
+
+            axes->yscale_orig.vmin = axes->yscale.vmin = box.pos_ll[1];
+            axes->yscale_orig.vmax = axes->yscale.vmax = box.pos_ur[1];
+        }
+
+        if (update_x || update_y)
+        {
+            vky_axes_panzoom_update(axes, panzoom, true);
+            vky_axes_update(axes);
+        }
     }
 }
 

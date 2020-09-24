@@ -75,7 +75,6 @@ typedef struct VkyVertex VkyVertex;
 typedef struct VkyTextureVertex VkyTextureVertex;
 typedef struct VkyVisual VkyVisual;
 typedef struct VkyVisualBundle VkyVisualBundle;
-typedef struct VkyPanzoom VkyPanzoom;
 typedef struct VkyPick VkyPick;
 
 typedef struct VkyPanzoom VkyPanzoom;

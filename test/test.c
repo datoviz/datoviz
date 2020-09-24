@@ -400,6 +400,7 @@ static int test_utils()
 
 
     UNIT_TEST_PANEL(test_utils_axes_1);
+    UNIT_TEST_PANEL(test_utils_axes_2);
 
 
     vky_destroy_app(app);

@@ -11,7 +11,6 @@
 
 struct VkyPanzoom
 {
-    VkyScene* scene;
     vec3 camera_pos;
     vec2 zoom;
     mat4 model;
@@ -54,7 +53,7 @@ VKY_EXPORT void vky_panzoom_update(VkyPanel*, VkyPanzoom*, VkyViewportType viewp
 VKY_EXPORT void vky_panzoom_mvp(VkyPanel*, VkyPanzoom*, VkyViewportType viewport_type);
 
 VKY_EXPORT VkyBox2D vky_panzoom_get_box(VkyPanel*, VkyPanzoom*, VkyViewportType);
-VKY_EXPORT void vky_panzoom_set_box(VkyPanel*, VkyPanzoom*, VkyViewportType, VkyBox2D);
+VKY_EXPORT void vky_panzoom_set_box(VkyPanzoom*, VkyViewportType, VkyBox2D);
 
 
 /*************************************************************************************************/

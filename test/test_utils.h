@@ -186,7 +186,7 @@ static int test_utils_panzoom_1()
 
     box.pos_ll[0] = 0;
     box.pos_ur[0] = 1;
-    vky_panzoom_set_box(panel, panzoom, VKY_VIEWPORT_INNER, box);
+    vky_panzoom_set_box(panzoom, VKY_VIEWPORT_INNER, box);
     AT(panzoom->camera_pos[0] == .5);
     AT(panzoom->camera_pos[1] == .5);
     AT(panzoom->zoom[0] == 2);
@@ -201,14 +201,41 @@ static int test_utils_panzoom_1()
 static int test_utils_axes_1(VkyPanel* panel)
 {
     VkyPanzoom* panzoom = ((VkyControllerAxes2D*)panel->controller)->panzoom;
+    VkyAxes* axes = ((VkyControllerAxes2D*)panel->controller)->axes;
+
     panzoom->camera_pos[0] = .5;
     panzoom->camera_pos[1] = .5;
     panzoom->zoom[0] = 2;
     panzoom->zoom[1] = 2;
 
-    VkyBox2D box = vky_axes_get_range(panel);
+    VkyBox2D box = vky_axes_get_range(axes);
     AT(box.pos_ll[0] == 500);
     AT(box.pos_ll[1] == 0);
+    AT(box.pos_ur[0] == 1000);
+    AT(box.pos_ur[1] == 12);
+
+    // Reset panzoom for next test
+    panzoom->camera_pos[0] = 0;
+    panzoom->camera_pos[1] = 0;
+    panzoom->zoom[0] = 1;
+    panzoom->zoom[1] = 1;
+
+    return 0;
+}
+
+
+
+static int test_utils_axes_2(VkyPanel* panel)
+{
+    VkyPanzoom* panzoom = ((VkyControllerAxes2D*)panel->controller)->panzoom;
+    VkyAxes* axes = ((VkyControllerAxes2D*)panel->controller)->axes;
+
+    VkyBox2D box = {{0, 1000}, {-12, +12}};
+
+    vky_axes_set_range(axes, box, true);
+    box = vky_axes_get_range(axes);
+    AT(box.pos_ll[0] == 0);
+    AT(box.pos_ll[1] == -12);
     AT(box.pos_ur[0] == 1000);
     AT(box.pos_ur[1] == 12);
 
