@@ -230,14 +230,34 @@ static int test_utils_axes_2(VkyPanel* panel)
     VkyPanzoom* panzoom = ((VkyControllerAxes2D*)panel->controller)->panzoom;
     VkyAxes* axes = ((VkyControllerAxes2D*)panel->controller)->axes;
 
-    VkyBox2D box = {{0, 1000}, {-12, +12}};
-
+    VkyBox2D box = {{0, -12}, {1000, +12}};
     vky_axes_set_range(axes, box, true);
     box = vky_axes_get_range(axes);
     AT(box.pos_ll[0] == 0);
     AT(box.pos_ll[1] == -12);
     AT(box.pos_ur[0] == 1000);
     AT(box.pos_ur[1] == 12);
+
+    box = (VkyBox2D){{0, -12}, {500, +12}};
+    vky_axes_set_range(axes, box, true);
+    box = vky_axes_get_range(axes);
+    AT(box.pos_ll[0] == 0);
+    AT(box.pos_ll[1] == -12);
+    AT(box.pos_ur[0] == 500);
+    AT(box.pos_ur[1] == 12);
+
+    box = (VkyBox2D){{250, -6}, {750, +6}};
+    vky_axes_set_range(axes, box, true);
+    box = vky_axes_get_range(axes);
+    AT(box.pos_ll[0] == 250);
+    AT(box.pos_ll[1] == -6);
+    AT(box.pos_ur[0] == 750);
+    AT(box.pos_ur[1] == 6);
+
+    // DBGF(box.pos_ll[0]);
+    // DBGF(box.pos_ll[1]);
+    // DBGF(box.pos_ur[0]);
+    // DBGF(box.pos_ur[1]);
 
     return 0;
 }
