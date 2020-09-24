@@ -20,12 +20,10 @@ void vky_axes_make_vertices(
 
 void vky_axes_register_visual(VkyAxes* axis, VkyVisual* visual);
 void vky_axes_update(VkyAxes* axes);
-VkyAxesBox vky_panzoom_get_box(VkyPanzoom* panzoom);
 void vky_axes_panzoom_update(VkyAxes*, VkyPanzoom*, bool);
-void vky_axes_set_box(VkyAxes* axes, VkyAxesBox box);
-void vky_axes_set_range(VkyAxes* axes, double xmin, double xmax, double ymin, double ymax);
 
-VKY_EXPORT VkyAxesBox vky_axes_get_box(VkyAxes* axes);
+VKY_EXPORT VkyBox2D vky_axes_get_range(VkyAxes* axes);
+VKY_EXPORT void vky_axes_set_range(VkyAxes* axes, VkyBox2D, bool recompute_ticks);
 
 
 #endif

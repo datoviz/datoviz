@@ -377,6 +377,7 @@ static int test_utils()
 
     UNIT_TEST(test_utils_transform_1);
     UNIT_TEST(test_utils_transform_2);
+    UNIT_TEST(test_utils_transform_3);
 
     return res_tot;
 }

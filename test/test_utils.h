@@ -154,11 +154,37 @@ static int test_utils_transform_2()
     // Full transform.
     tr = vky_axes_transform(panel, VKY_CDS_DATA, VKY_CDS_CANVAS_PX);
     vky_axes_transform_apply(&tr, (dvec2){750, +6}, out);
-    DBGF(out[0]);
-    DBGF(out[1]);
     AIN(out[0], W * .5, W * .75);
     AIN(out[1], H * .5, H * 1);
 
+
+    vky_destroy_app(app);
+    return 0;
+}
+
+
+
+static int test_utils_transform_3()
+{
+    VkyApp* app = vky_create_app(VKY_BACKEND_OFFSCREEN, NULL);
+    VkyCanvas* canvas = vky_create_canvas(app, W, H);
+    VkyScene* scene = vky_create_scene(canvas, VKY_CLEAR_COLOR_WHITE, 1, 1);
+    VkyPanel* panel = vky_get_panel(scene, 0, 10);
+
+    VkyAxes2DParams params = vky_default_axes_2D_params();
+
+    vky_set_controller(panel, VKY_CONTROLLER_PANZOOM, &params);
+    VkyPanzoom* panzoom = ((VkyPanzoom*)panel->controller);
+
+    panzoom->camera_pos[0] = 0;
+    panzoom->camera_pos[1] = 0.5;
+    panzoom->zoom[0] = .5;
+    panzoom->zoom[1] = 2;
+    VkyBox2D box = vky_panzoom_get_box(panel, panzoom, VKY_VIEWPORT_INNER);
+    AT(box.pos_ll[0] == -2);
+    AT(box.pos_ll[1] == 0);
+    AT(box.pos_ur[0] == +2);
+    AT(box.pos_ur[1] == 1);
 
     vky_destroy_app(app);
     return 0;

@@ -56,10 +56,29 @@ VkyAxesTransform vky_axes_transform(VkyPanel* panel, VkyCDS source, VkyCDS targe
     VkyAxesTransform tr = {{1, 1}, {0, 0}}; // identity
     dvec2 NDC0 = {-1, -1};
     dvec2 NDC1 = {+1, +1};
+    dvec2 ll = {-1, -1};
+    dvec2 ur = {+1, +1};
+    VkyPanzoom* panzoom = NULL;
 
-    ASSERT(panel->controller_type == VKY_CONTROLLER_AXES_2D);
-    VkyAxes* axes = ((VkyControllerAxes2D*)panel->controller)->axes;
-    VkyPanzoom* panzoom = ((VkyControllerAxes2D*)panel->controller)->panzoom;
+    if (panel->controller_type == VKY_CONTROLLER_AXES_2D)
+    {
+        VkyAxes* axes = ((VkyControllerAxes2D*)panel->controller)->axes;
+        ll[0] = axes->xscale_orig.vmin;
+        ll[1] = axes->yscale_orig.vmin;
+        ur[0] = axes->xscale_orig.vmax;
+        ur[1] = axes->yscale_orig.vmax;
+        panzoom = ((VkyControllerAxes2D*)panel->controller)->panzoom;
+    }
+    else if (panel->controller_type == VKY_CONTROLLER_PANZOOM)
+    {
+        panzoom = (VkyPanzoom*)panel->controller;
+    }
+    else
+    {
+        log_error("controller other than axes 2D and panzoom not yet supported");
+        return tr;
+    }
+
     VkyViewport viewport = panel->viewport;
 
     if (source == target)
@@ -86,8 +105,6 @@ VkyAxesTransform vky_axes_transform(VkyPanel* panel, VkyCDS source, VkyCDS targe
             // linear normalization based on axes range
             ASSERT(target == VKY_CDS_GPU);
             {
-                dvec2 ll = {axes->xscale_orig.vmin, axes->yscale_orig.vmin};
-                dvec2 ur = {axes->xscale_orig.vmax, axes->yscale_orig.vmax};
                 tr = vky_axes_transform_interp(ll, NDC0, ur, NDC1);
             }
             break;
@@ -129,7 +146,6 @@ VkyAxesTransform vky_axes_transform(VkyPanel* panel, VkyCDS source, VkyCDS targe
             ASSERT(target == VKY_CDS_CANVAS_NDC);
             {
                 // From outer to inner viewport.
-                dvec2 ll, ur;
                 ll[0] = -1 + 2 * viewport.x;
                 ll[1] = +1 - 2 * (viewport.y + viewport.h);
                 ur[0] = -1 + 2 * (viewport.x + viewport.w);

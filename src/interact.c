@@ -1,4 +1,5 @@
 #include "../include/visky/interact.h"
+#include "../include/visky/transform.h"
 
 
 
@@ -216,6 +217,21 @@ void vky_panzoom_mvp(VkyPanel* panel, VkyPanzoom* panzoom, VkyViewportType viewp
     mvp.aspect_ratio = aspect_ratio;
     vky_mvp_upload(panel, viewport_type, &mvp);
     vky_mvp_finalize(scene);
+}
+
+VkyBox2D vky_panzoom_get_box(VkyPanel* panel, VkyPanzoom* pz, VkyViewportType viewport_type)
+{
+    VkyAxesTransform tr = vky_axes_transform(
+        panel, viewport_type == VKY_VIEWPORT_INNER ? VKY_CDS_PANZOOM : VKY_CDS_PANEL, VKY_CDS_GPU);
+    VkyBox2D box = {0};
+    vky_axes_transform_apply(&tr, (dvec2){-1, -1}, box.pos_ll);
+    vky_axes_transform_apply(&tr, (dvec2){+1, +1}, box.pos_ur);
+    return box;
+}
+
+void vky_panzoom_set_box(VkyPanzoom* pz, VkyBox2D box)
+{
+    // TODO
 }
 
 

@@ -3,10 +3,6 @@
 #include "../include/visky/utils.h"
 #include "../include/visky/visky.h"
 
-// BEGIN_INCL_NO_WARN
-// #include <stb_image.h>
-// END_INCL_NO_WARN
-
 
 
 /*************************************************************************************************/
@@ -38,51 +34,6 @@ dvec2s vky_axes_normalize_pos(VkyAxes* axes, dvec2s pos)
     double y = -1.0 + 2 * (pos.y - ymin) / (ymax - ymin);
 
     return (dvec2s){x, y};
-}
-
-
-void vky_axes_set_box(VkyAxes* axes, VkyAxesBox box) {}
-
-
-VkyAxesBox vky_axes_get_box(VkyAxes* axes)
-{
-    // Normalization of the ticks to convert into NDC coordinates.
-    VkyAxesScale xscale = axes->xscale_orig;
-    VkyAxesScale yscale = axes->yscale_orig;
-
-    double alphax = axes->panzoom_box.xmin;
-    double betax = axes->panzoom_box.xmax;
-    double alphay = axes->panzoom_box.ymin;
-    double betay = axes->panzoom_box.ymax;
-
-    double mx = xscale.vmin;
-    double Mx = xscale.vmax;
-    double my = yscale.vmin;
-    double My = yscale.vmax;
-
-    double ux = mx + .5 * (Mx - mx) * (alphax + 1.0);
-    double vx = mx + .5 * (Mx - mx) * (betax + 1.0);
-    double uy = my + .5 * (My - my) * (alphay + 1.0);
-    double vy = my + .5 * (My - my) * (betay + 1.0);
-
-    double ax = 2.0 / (vx - ux);
-    double ay = 2.0 / (vy - uy);
-    double bx = .5 * (vx + ux);
-    double by = .5 * (vy + uy);
-
-    VkyAxesBox box = {0};
-    box.xmin = -1 / ax + bx;
-    box.xmax = +1 / ax + bx;
-    box.ymin = -1 / ay + by;
-    box.ymax = +1 / ay + by;
-
-    return box;
-}
-
-
-void vky_axes_reset(VkyAxes* axes)
-{
-    // call vky_axes_set_box()
 }
 
 
@@ -140,6 +91,7 @@ static VkyData vky_axes_tick_bake(VkyVisual* visual, VkyData data)
 
     return data;
 }
+
 
 VkyVisual* vky_axes_create_tick_visual(VkyScene* scene, VkyAxes* axes)
 {
@@ -292,6 +244,7 @@ static VkyData vky_axes_text_bake(VkyVisual* visual, VkyData data)
     return data;
 }
 
+
 VkyVisual* vky_axes_create_text_visual(VkyScene* scene, VkyAxes* axes)
 {
     VkyCanvas* canvas = scene->canvas;
@@ -355,18 +308,6 @@ VkyVisual* vky_axes_create_text_visual(VkyScene* scene, VkyAxes* axes)
 /*  Axes panzoom functions                                                                       */
 /*************************************************************************************************/
 
-VkyAxesBox vky_panzoom_get_box(VkyPanzoom* panzoom)
-{
-    // TODO: move into interact
-    VkyAxesBox box = {
-        -1 / panzoom->zoom[0] + panzoom->camera_pos[0],
-        +1 / panzoom->zoom[0] + panzoom->camera_pos[0],
-        -1 / panzoom->zoom[1] + panzoom->camera_pos[1],
-        +1 / panzoom->zoom[1] + panzoom->camera_pos[1],
-    };
-    return box;
-}
-
 void vky_axes_panzoom_update(VkyAxes* axes, VkyPanzoom* panzoom, bool force_trigger)
 {
     VkyPanzoom* axpanzoom = axes->panzoom;
@@ -398,7 +339,7 @@ void vky_axes_panzoom_update(VkyAxes* axes, VkyPanzoom* panzoom, bool force_trig
     log_trace("axes panzoom update: recompute new tick extents");
 
     // Axes extent.
-    axes->panzoom_box = vky_panzoom_get_box(panzoom);
+    axes->panzoom_box = vky_panzoom_get_box(axes->panel, panzoom, VKY_VIEWPORT_INNER);
 
     // Reset the axes panzoom.
     axpanzoom->camera_pos[0] = 0;
@@ -431,8 +372,19 @@ void vky_axes_panzoom_update(VkyAxes* axes, VkyPanzoom* panzoom, bool force_trig
     vky_axes_update(axes);
 }
 
-void vky_axes_set_range(VkyAxes* axes, double xmin, double xmax, double ymin, double ymax)
+
+VkyBox2D vky_axes_get_range(VkyAxes* axes)
 {
+    VkyBox2D box = {0};
+    // TODO
+    return box;
+}
+
+
+void vky_axes_set_range(VkyAxes* axes, VkyBox2D box, bool recompute_ticks)
+{
+    // TODO: recompute_ticks = false
+
     ASSERT(axes != NULL);
     ASSERT(axes->panel != NULL);
 
@@ -442,29 +394,23 @@ void vky_axes_set_range(VkyAxes* axes, double xmin, double xmax, double ymin, do
     VkyPanzoom* axpanzoom = axes->panzoom;
     ASSERT(axpanzoom != NULL);
 
-    bool update_x = xmin < xmax;
-    bool update_y = ymin < ymax;
+    bool update_x = box.pos_ll[0] < box.pos_ur[0];
+    bool update_y = box.pos_ll[1] < box.pos_ur[1];
 
     if (update_x)
     {
         log_trace("update x axis");
 
-        axes->xscale.vmin = xmin;
-        axes->xscale.vmax = xmax;
-
-        axes->xscale_orig.vmin = xmin;
-        axes->xscale_orig.vmax = xmax;
+        axes->xscale_orig.vmin = axes->xscale.vmin = box.pos_ll[0];
+        axes->xscale_orig.vmax = axes->xscale.vmax = box.pos_ur[0];
     }
 
     if (update_y)
     {
         log_trace("update y axis");
 
-        axes->yscale.vmin = ymin;
-        axes->yscale.vmax = ymax;
-
-        axes->yscale_orig.vmin = ymin;
-        axes->yscale_orig.vmax = ymax;
+        axes->yscale_orig.vmin = axes->yscale.vmin = box.pos_ll[1];
+        axes->yscale_orig.vmax = axes->yscale.vmax = box.pos_ur[1];
     }
 
     if (update_x || update_y)
@@ -521,7 +467,6 @@ static void _tick_formatter_y(VkyAxes* axes, double value, char* out_text)
 }
 
 
-
 VkyAxes* vky_axes_init(VkyPanel* panel, VkyAxes2DParams params)
 {
     log_trace("axes init");
@@ -564,12 +509,11 @@ VkyAxes* vky_axes_init(VkyPanel* panel, VkyAxes2DParams params)
 
     // Initialize the axes visual.
     axes->panzoom_box =
-        (VkyAxesBox){axes->xscale.vmin, axes->xscale.vmax, axes->yscale.vmin, axes->yscale.vmax};
+        (VkyBox2D){{axes->xscale.vmin, axes->yscale.vmin}, {axes->xscale.vmax, axes->yscale.vmax}};
     vky_axes_update(axes);
 
     return axes;
 }
-
 
 
 void vky_axes_make_vertices(
@@ -634,10 +578,10 @@ void vky_axes_make_vertices(
     VkyAxesScale xscale = axes->xscale_orig;
     VkyAxesScale yscale = axes->yscale_orig;
 
-    double alphax = axes->panzoom_box.xmin;
-    double betax = axes->panzoom_box.xmax;
-    double alphay = axes->panzoom_box.ymin;
-    double betay = axes->panzoom_box.ymax;
+    double alphax = axes->panzoom_box.pos_ll[0];
+    double betax = axes->panzoom_box.pos_ur[0];
+    double alphay = axes->panzoom_box.pos_ll[1];
+    double betay = axes->panzoom_box.pos_ur[1];
 
     double mx = xscale.vmin;
     double Mx = xscale.vmax;
@@ -795,7 +739,6 @@ void vky_axes_make_vertices(
     free(Tx);
     free(Ty);
 }
-
 
 
 void vky_axes_update(VkyAxes* axes)

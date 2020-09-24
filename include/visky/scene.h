@@ -79,6 +79,7 @@ typedef struct VkyPanzoom VkyPanzoom;
 typedef struct VkyPick VkyPick;
 
 typedef struct VkyPanzoom VkyPanzoom;
+typedef struct VkyBox2D VkyBox2D;
 typedef struct VkyArcball VkyArcball;
 typedef struct VkyCamera VkyCamera;
 
@@ -90,7 +91,7 @@ typedef struct VkyAxesTextData VkyAxesTextData;
 typedef struct VkyAxesTextParams VkyAxesTextParams;
 typedef struct VkyAxes VkyAxes;
 typedef struct VkyAxesTickParams VkyAxesTickParams;
-typedef struct VkyAxesBox VkyAxesBox;
+// typedef struct VkyAxesBox VkyAxesBox;
 typedef struct VkyAxesUser VkyAxesUser;
 typedef struct VkyAxesLabel VkyAxesLabel;
 
@@ -464,10 +465,9 @@ struct VkyAxesTickParams
 
 
 
-struct VkyAxesBox
+struct VkyBox2D
 {
-    double xmin, xmax;
-    double ymin, ymax;
+    dvec2 pos_ll, pos_ur;
 };
 
 
@@ -590,7 +590,7 @@ struct VkyAxes
 
     VkyAxesTickRange xticks, yticks; // min, step, max, format (decimal/scientific, precision)
 
-    VkyAxesBox panzoom_box; // used to make smooth panzoom transitions while recomputing new ticks
+    VkyBox2D panzoom_box; // used to make smooth panzoom transitions while recomputing new ticks
 
     VkyVisual* tick_visual;
     VkyVisual* text_visual;

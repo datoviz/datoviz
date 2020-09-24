@@ -18,6 +18,7 @@ struct VkyPanzoom
     bool lim_reached[2];
 };
 
+
 struct VkyArcball
 {
     VkyScene* scene;
@@ -30,6 +31,7 @@ struct VkyArcball
         which_matrix; // whether the model or the view matrix should be affected by the arcball
     VkyMVP mvp;
 };
+
 
 struct VkyCamera
 {
@@ -51,6 +53,8 @@ VKY_EXPORT VkyPanzoom* vky_panzoom_init(void);
 VKY_EXPORT void vky_panzoom_update(VkyPanel*, VkyPanzoom*, VkyViewportType viewport_type);
 VKY_EXPORT void vky_panzoom_mvp(VkyPanel*, VkyPanzoom*, VkyViewportType viewport_type);
 
+VKY_EXPORT VkyBox2D vky_panzoom_get_box(VkyPanel*, VkyPanzoom*, VkyViewportType);
+VKY_EXPORT void vky_panzoom_set_box(VkyPanzoom*, VkyBox2D);
 
 
 /*************************************************************************************************/
