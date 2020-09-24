@@ -169,7 +169,7 @@ static int test_utils_transform_3()
     VkyApp* app = vky_create_app(VKY_BACKEND_OFFSCREEN, NULL);
     VkyCanvas* canvas = vky_create_canvas(app, W, H);
     VkyScene* scene = vky_create_scene(canvas, VKY_CLEAR_COLOR_WHITE, 1, 1);
-    VkyPanel* panel = vky_get_panel(scene, 0, 10);
+    VkyPanel* panel = vky_get_panel(scene, 0, 0);
 
     VkyAxes2DParams params = vky_default_axes_2D_params();
 
@@ -185,6 +185,14 @@ static int test_utils_transform_3()
     AT(box.pos_ll[1] == 0);
     AT(box.pos_ur[0] == +2);
     AT(box.pos_ur[1] == 1);
+
+    box.pos_ll[0] = 0;
+    box.pos_ur[0] = 1;
+    vky_panzoom_set_box(panel, panzoom, VKY_VIEWPORT_INNER, box);
+    AT(panzoom->camera_pos[0] == .5);
+    AT(panzoom->camera_pos[1] == .5);
+    AT(panzoom->zoom[0] == 2);
+    AT(panzoom->zoom[1] == 2);
 
     vky_destroy_app(app);
     return 0;

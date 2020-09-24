@@ -229,9 +229,15 @@ VkyBox2D vky_panzoom_get_box(VkyPanel* panel, VkyPanzoom* pz, VkyViewportType vi
     return box;
 }
 
-void vky_panzoom_set_box(VkyPanzoom* pz, VkyBox2D box)
+void vky_panzoom_set_box(
+    VkyPanel* panel, VkyPanzoom* pz, VkyViewportType viewport_type, VkyBox2D box)
 {
-    // TODO
+    VkyAxesTransform tr =
+        vky_axes_transform_interp(box.pos_ll, (dvec2){-1, -1}, box.pos_ur, (dvec2){+1, +1});
+    pz->camera_pos[0] = tr.shift[0];
+    pz->camera_pos[1] = tr.shift[1];
+    pz->zoom[0] = tr.scale[0];
+    pz->zoom[1] = tr.scale[1];
 }
 
 
