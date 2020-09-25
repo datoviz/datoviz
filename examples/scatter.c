@@ -87,6 +87,12 @@ int main()
 
     // Second panel.
     VkyPanel* panel2 = vky_get_panel(scene, 0, 0);
+
+    axparams.xlabel.label[0] = 0;
+    // axparams.margins[2] = 100;
+    // axparams.margins[3] = 100;
+    // axparams.ylabel.label[0] = 0;
+
     vky_set_controller(panel2, VKY_CONTROLLER_AXES_2D, &axparams);
     vky_add_visual_to_panel(visual, panel2, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 

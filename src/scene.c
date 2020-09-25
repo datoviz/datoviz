@@ -543,12 +543,15 @@ static void _link_panels(VkyApp* app)
         ASSERT(link->mode);
 
         // NOTE: we ensure p0 is the active panel and p1 is the non-active one.
-        if (link->p0->status == VKY_PANEL_STATUS_ACTIVE)
+        if (link->p0->status == VKY_PANEL_STATUS_ACTIVE ||
+            link->p0->status == VKY_PANEL_STATUS_RESET)
         {
             p0 = link->p0;
             p1 = link->p1;
         }
-        else if (link->p1->status == VKY_PANEL_STATUS_ACTIVE)
+        else if (
+            link->p1->status == VKY_PANEL_STATUS_ACTIVE ||
+            link->p1->status == VKY_PANEL_STATUS_RESET)
         {
             p0 = link->p1;
             p1 = link->p0;
@@ -558,7 +561,6 @@ static void _link_panels(VkyApp* app)
             continue;
         }
 
-        ASSERT(p0->status == VKY_PANEL_STATUS_ACTIVE);
         // Set the status of the linked panel.
         p1->status = VKY_PANEL_STATUS_LINKED;
 
