@@ -67,7 +67,7 @@ VkyAxesTransform vky_axes_transform(VkyPanel* panel, VkyCDS source, VkyCDS targe
         ll[1] = axes->yscale_orig.vmin;
         ur[0] = axes->xscale_orig.vmax;
         ur[1] = axes->yscale_orig.vmax;
-        panzoom = ((VkyControllerAxes2D*)panel->controller)->panzoom;
+        panzoom = axes->inner_panzoom;
     }
     else if (panel->controller_type == VKY_CONTROLLER_PANZOOM)
     {

@@ -594,6 +594,7 @@ struct VkyAxes
     VkyVisual* tick_visual;
     VkyVisual* text_visual;
     VkyPanzoom* panzoom;
+    VkyPanzoom* inner_panzoom;
 
     VkyAxesTickFormatter xtick_fmt, ytick_fmt;
 

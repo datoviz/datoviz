@@ -340,7 +340,9 @@ void vky_set_controller(VkyPanel* panel, VkyControllerType controller_type, cons
         }
 
         ((VkyControllerAxes2D*)controller)->axes = vky_axes_init(panel, axparams);
-        ((VkyControllerAxes2D*)controller)->panzoom = vky_panzoom_init();
+        ((VkyControllerAxes2D*)controller)->panzoom =
+            ((VkyControllerAxes2D*)controller)
+                ->axes->inner_panzoom; // vky_panzoom_init(); // TODO: remove?
 
         vky_add_visual_to_panel(
             ((VkyControllerAxes2D*)controller)->axes->tick_visual, panel, VKY_VIEWPORT_OUTER,
@@ -399,26 +401,28 @@ static void _update_controller(VkyPanel* panel)
 
     case VKY_CONTROLLER_AXES_2D:;
         VkyAxes* axes = ((VkyControllerAxes2D*)panel->controller)->axes;
-        panzoom = ((VkyControllerAxes2D*)panel->controller)->panzoom;
+        // panzoom = ((VkyControllerAxes2D*)panel->controller)->panzoom;
 
-        // Reset lim_reached.
-        panzoom->lim_reached[0] = false;
-        panzoom->lim_reached[1] = false;
+        // // Reset lim_reached.
+        // panzoom->lim_reached[0] = false;
+        // panzoom->lim_reached[1] = false;
 
-        // Main panel panzoom update, inner viewport.
-        vky_panzoom_update(panel, panzoom, VKY_VIEWPORT_INNER);
+        // // Main panel panzoom update, inner viewport.
+        // vky_panzoom_update(panel, axes->inner_panzoom, VKY_VIEWPORT_INNER);
 
-        // Now, lim_reached may have been set to true. In this case, we need to freeze the axes
-        // panzoom as well.
-        axes->panzoom->lim_reached[0] = panzoom->lim_reached[0];
-        axes->panzoom->lim_reached[1] = panzoom->lim_reached[1];
+        // // Now, lim_reached may have been set to true. In this case, we need to freeze the axes
+        // // panzoom as well.
+        // axes->panzoom->lim_reached[0] = axes->inner_panzoom->lim_reached[0];
+        // axes->panzoom->lim_reached[1] = axes->inner_panzoom->lim_reached[1];
 
-        // We update the axes panzoom, outer viewport.
-        vky_panzoom_update(panel, axes->panzoom, VKY_VIEWPORT_OUTER);
+        // // We update the axes panzoom, outer viewport.
+        // vky_panzoom_update(panel, axes->panzoom, VKY_VIEWPORT_OUTER);
 
-        // Update the axes.
-        // if (update_from_event_controller)
-        vky_axes_recompute_ticks(axes, panzoom, false);
+        // // Update the axes.
+        // // if (update_from_event_controller)
+        // vky_axes_recompute_ticks(axes, panzoom, false);
+
+        vky_axes_panzoom_update(axes);
 
         break;
 
@@ -519,9 +523,9 @@ static void _update_mvp(VkyPanel* panel)
 
     case VKY_CONTROLLER_AXES_2D:;
         VkyAxes* axes = ((VkyControllerAxes2D*)panel->controller)->axes;
-        panzoom = ((VkyControllerAxes2D*)panel->controller)->panzoom;
+        // panzoom = ((VkyControllerAxes2D*)panel->controller)->panzoom;
         vky_panzoom_mvp(panel, axes->panzoom, VKY_VIEWPORT_OUTER);
-        vky_panzoom_mvp(panel, panzoom, VKY_VIEWPORT_INNER);
+        vky_panzoom_mvp(panel, axes->inner_panzoom, VKY_VIEWPORT_INNER);
         break;
 
     case VKY_CONTROLLER_ARCBALL:
@@ -646,8 +650,11 @@ static void _controller_resize_callback(VkyCanvas* canvas)
 
         case VKY_CONTROLLER_AXES_2D:;
             VkyAxes* axes = ((VkyControllerAxes2D*)(panel->controller))->axes;
-            VkyPanzoom* panzoom = ((VkyControllerAxes2D*)(panel->controller))->panzoom;
-            vky_axes_recompute_ticks(axes, panzoom, true);
+            vky_axes_rescale(axes);
+            vky_axes_compute_ticks(axes);
+            vky_axes_update_visuals(axes);
+            // VkyPanzoom* panzoom = ((VkyControllerAxes2D*)(panel->controller))->panzoom;
+            // vky_axes_recompute_ticks(axes, panzoom, true);
             break;
 
         default:
@@ -677,7 +684,7 @@ void vky_destroy_controller(VkyPanel* panel)
 
     case VKY_CONTROLLER_AXES_2D:
         vky_destroy_axes(((VkyControllerAxes2D*)controller)->axes);
-        free(((VkyControllerAxes2D*)controller)->panzoom);
+        // free(((VkyControllerAxes2D*)controller)->panzoom);
         break;
 
     default:
@@ -1618,6 +1625,8 @@ void vky_destroy_axes(VkyAxes* axes)
             free(axes->str_buffer);
         if (axes->panzoom != NULL)
             free(axes->panzoom);
+        if (axes->inner_panzoom != NULL)
+            free(axes->inner_panzoom);
         free(axes);
     }
 }

@@ -6,10 +6,10 @@
 
 
 /*************************************************************************************************/
-/*  Axes functions                                                                               */
+/*  Internal functions                                                                           */
 /*************************************************************************************************/
 
-VkyAxesTickRange vky_axes_get_ticks(double dmin, double dmax, VkyAxesContext context)
+static VkyAxesTickRange _get_ticks(double dmin, double dmax, VkyAxesContext context)
 {
     // log_trace("get tick %.4f %.4f\n", dmin, dmax);
     double dpi_factor = context.dpi_factor;
@@ -22,30 +22,56 @@ VkyAxesTickRange vky_axes_get_ticks(double dmin, double dmax, VkyAxesContext con
 }
 
 
-// dvec2s vky_axes_normalize_pos(VkyAxes* axes, dvec2s pos)
-// {
-//     double xmin = axes->xscale.vmin;
-//     double xmax = axes->xscale.vmax;
+VKY_INLINE void _get_tick_format(VkyAxes* axes, int32_t axis, char* fmt)
+{
+    VkyTickFormat vtf = {0};
+    if (axis == 0)
+        vtf = axes->xticks.format;
+    else
+        vtf = axes->yticks.format;
 
-//     double ymin = axes->yscale.vmin;
-//     double ymax = axes->yscale.vmax;
+    strcpy(fmt, "%.XF"); // [2] = precision, [3] = f or e
+    sprintf(&fmt[2], "%d", vtf.precision);
+    switch (vtf.format_type)
+    {
+    case VKY_TICK_FORMAT_DECIMAL:
+        fmt[3] = 'f';
+        break;
+    case VKY_TICK_FORMAT_SCIENTIFIC:
+        fmt[3] = 'e';
+        break;
+    default:
+        break;
+    }
+}
 
-//     double x = -1.0 + 2 * (pos.x - xmin) / (xmax - xmin);
-//     double y = -1.0 + 2 * (pos.y - ymin) / (ymax - ymin);
 
-//     return (dvec2s){x, y};
-// }
+static void _tick_formatter(VkyAxes* axes, int32_t axis, double value, char* out_text)
+{
+    char tick_format[16] = {0};
+    _get_tick_format(axes, axis, tick_format);
+    snprintf(out_text, VKY_AXES_MAX_GLYPHS_PER_TICK, tick_format, value);
+}
 
 
-// void vky_axes_register_visual(VkyAxes* axis, VkyVisual* visual) {}
+static void _tick_formatter_x(VkyAxes* axes, double value, char* out_text)
+{
+    _tick_formatter(axes, 0, value, out_text);
+}
+
+
+static void _tick_formatter_y(VkyAxes* axes, double value, char* out_text)
+{
+    _tick_formatter(axes, 1, value, out_text);
+}
 
 
 
 /*************************************************************************************************/
-/*  Axes tick/grid visual                                                                        */
+/*  Axes visuals                                                                                 */
 /*************************************************************************************************/
 
-static VkyData vky_axes_tick_bake(VkyVisual* visual, VkyData data)
+static VkyData _tick_bake(VkyVisual* visual, VkyData data)
 {
     uint32_t nv = 4 * data.item_count;
     uint32_t ni = 6 * data.item_count;
@@ -93,7 +119,7 @@ static VkyData vky_axes_tick_bake(VkyVisual* visual, VkyData data)
 }
 
 
-VkyVisual* vky_axes_create_tick_visual(VkyScene* scene, VkyAxes* axes)
+static VkyVisual* _tick_visual(VkyScene* scene, VkyAxes* axes)
 {
     VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_AXES_TICK);
 
@@ -173,18 +199,13 @@ VkyVisual* vky_axes_create_tick_visual(VkyScene* scene, VkyAxes* axes)
     // Resources.
     vky_add_common_resources(visual);
 
-    visual->cb_bake_data = vky_axes_tick_bake;
+    visual->cb_bake_data = _tick_bake;
 
     return visual;
 }
 
 
-
-/*************************************************************************************************/
-/*  Axes text visual                                                                             */
-/*************************************************************************************************/
-
-static VkyData vky_axes_text_bake(VkyVisual* visual, VkyData data)
+static VkyData _text_bake(VkyVisual* visual, VkyData data)
 {
 
     ASSERT(data.items != NULL); // TODO: support allocation with no upload by specifying a max
@@ -245,7 +266,7 @@ static VkyData vky_axes_text_bake(VkyVisual* visual, VkyData data)
 }
 
 
-VkyVisual* vky_axes_create_text_visual(VkyScene* scene, VkyAxes* axes)
+static VkyVisual* _text_visual(VkyScene* scene, VkyAxes* axes)
 {
     VkyCanvas* canvas = scene->canvas;
     VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_AXES_TEXT);
@@ -297,270 +318,13 @@ VkyVisual* vky_axes_create_text_visual(VkyScene* scene, VkyAxes* axes)
     vky_add_common_resources(visual);
     vky_add_texture_resource(visual, texture);
 
-    visual->cb_bake_data = vky_axes_text_bake;
+    visual->cb_bake_data = _text_bake;
 
     return visual;
 }
 
 
-
-/*************************************************************************************************/
-/*  Axes panzoom functions                                                                       */
-/*************************************************************************************************/
-
-void vky_axes_recompute_ticks(VkyAxes* axes, VkyPanzoom* panzoom, bool force_trigger)
-{
-    VkyPanzoom* axpanzoom = axes->panzoom;
-
-    int32_t xlevel = (int)round(log2(panzoom->zoom[0]));
-    int32_t ylevel = (int)round(log2(panzoom->zoom[1]));
-
-    double zxlevel = pow(2, xlevel);
-    double zylevel = pow(2, ylevel);
-
-    int32_t xoffset = (int)round(panzoom->camera_pos[0] * zxlevel);
-    int32_t yoffset = (int)round(panzoom->camera_pos[1] * zylevel);
-
-    bool trigger =
-        (force_trigger || abs(axes->xdyad.level - xlevel) >= (int32_t)VKY_AXES_DYAD_TRIGGER ||
-         abs(axes->ydyad.level - ylevel) >= (int32_t)VKY_AXES_DYAD_TRIGGER ||
-         abs(axes->xdyad.offset - xoffset) >= (int32_t)VKY_AXES_DYAD_TRIGGER ||
-         abs(axes->ydyad.offset - yoffset) >= (int32_t)VKY_AXES_DYAD_TRIGGER);
-
-    // Force trigger on panzoom reset.
-    VkyMouse* mouse = axes->panel->scene->canvas->event_controller->mouse;
-    if (mouse->cur_state == VKY_MOUSE_STATE_DOUBLE_CLICK)
-    {
-        trigger = true;
-    }
-
-    if (!trigger)
-        return;
-    log_trace("axes panzoom update: recompute new tick extents");
-
-    // Axes extent.
-    axes->panzoom_box = vky_panzoom_get_box(axes->panel, panzoom, VKY_VIEWPORT_INNER);
-
-    // Reset the axes panzoom.
-    axpanzoom->camera_pos[0] = 0;
-    axpanzoom->camera_pos[1] = 0;
-    axpanzoom->zoom[0] = 1;
-    axpanzoom->zoom[1] = 1;
-
-    axes->xdyad = (VkyAxesDyad){xlevel, xoffset};
-    axes->ydyad = (VkyAxesDyad){ylevel, yoffset};
-
-    // Center of the original view.
-    double xc = .5 * (axes->xscale_orig.vmin + axes->xscale_orig.vmax);
-    double yc = .5 * (axes->yscale_orig.vmin + axes->yscale_orig.vmax);
-
-    // Size of the original view.
-    double w = .5 * (axes->xscale_orig.vmax - axes->xscale_orig.vmin);
-    double h = .5 * (axes->yscale_orig.vmax - axes->yscale_orig.vmin);
-
-    // Update xscale and yscale.
-    xc += xoffset * .5 * (axes->xscale_orig.vmax - axes->xscale_orig.vmin) / zxlevel;
-    yc += yoffset * .5 * (axes->yscale_orig.vmax - axes->yscale_orig.vmin) / zylevel;
-
-    axes->xscale.vmin = xc - w / zxlevel;
-    axes->xscale.vmax = xc + w / zxlevel;
-
-    axes->yscale.vmin = yc - h / zylevel;
-    axes->yscale.vmax = yc + h / zylevel;
-
-    // Update the axes: recompute the ticks and update the axes visual.
-    vky_axes_update_visuals(axes);
-}
-
-
-VkyBox2D vky_axes_get_range(VkyAxes* axes)
-{
-    ASSERT(axes != NULL);
-    ASSERT(axes->panel != NULL);
-
-    VkyAxesTransform tr = vky_axes_transform(axes->panel, VKY_CDS_PANZOOM, VKY_CDS_DATA);
-    VkyBox2D box = {0};
-    vky_axes_transform_apply(&tr, (dvec2){-1, -1}, box.pos_ll);
-    vky_axes_transform_apply(&tr, (dvec2){+1, +1}, box.pos_ur);
-    return box;
-}
-
-
-void vky_axes_set_range(VkyAxes* axes, VkyBox2D box, bool recompute_ticks)
-{
-    ASSERT(axes != NULL);
-    ASSERT(axes->panel != NULL);
-
-    VkyPanzoom* panzoom = ((VkyControllerAxes2D*)axes->panel->controller)->panzoom;
-    ASSERT(panzoom != NULL);
-
-    VkyPanzoom* axpanzoom = axes->panzoom;
-    ASSERT(axpanzoom != NULL);
-
-    bool update_x = box.pos_ll[0] < box.pos_ur[0];
-    bool update_y = box.pos_ll[1] < box.pos_ur[1];
-
-    if (!recompute_ticks)
-    {
-        VkyBox2D box_inner = {0};
-        VkyAxesTransform tr_inner = {0};
-        VkyAxesTransform tr_outer = {0};
-
-        // Update the inner panzoom.
-        tr_inner = vky_axes_transform(axes->panel, VKY_CDS_DATA, VKY_CDS_GPU);
-        vky_axes_transform_apply(&tr_inner, box.pos_ll, box_inner.pos_ll);
-        vky_axes_transform_apply(&tr_inner, box.pos_ur, box_inner.pos_ur);
-        vky_panzoom_set_box(panzoom, VKY_VIEWPORT_INNER, box_inner);
-
-        // Update the outer panzoom.
-        tr_outer = vky_axes_transform_interp(
-            (dvec2){-1, -1}, box_inner.pos_ll, (dvec2){+1, +1}, box_inner.pos_ur);
-        axpanzoom->camera_pos[0] = tr_outer.shift[0];
-        axpanzoom->camera_pos[1] = tr_outer.shift[1];
-        axpanzoom->zoom[0] = tr_outer.scale[0];
-        axpanzoom->zoom[1] = tr_outer.scale[1];
-
-        // Possibly trigger a tick recompute after panzoom.
-        vky_axes_recompute_ticks(axes, panzoom, false);
-        vky_axes_update_visuals(axes);
-    }
-    else
-    {
-        if (update_x)
-        {
-            log_trace("update x axis");
-
-            axes->xscale_orig.vmin = axes->xscale.vmin = box.pos_ll[0];
-            axes->xscale_orig.vmax = axes->xscale.vmax = box.pos_ur[0];
-        }
-
-        if (update_y)
-        {
-            log_trace("update y axis");
-
-            axes->yscale_orig.vmin = axes->yscale.vmin = box.pos_ll[1];
-            axes->yscale_orig.vmax = axes->yscale.vmax = box.pos_ur[1];
-        }
-
-        if (update_x || update_y)
-        {
-            vky_axes_recompute_ticks(axes, panzoom, true);
-            vky_axes_update_visuals(axes);
-            // vky_panzoom_set_box(panzoom, VKY_VIEWPORT_INNER, box);
-        }
-    }
-}
-
-
-
-/*************************************************************************************************/
-/*  Main axes functions                                                                          */
-/*************************************************************************************************/
-
-VKY_INLINE void _get_tick_format(VkyAxes* axes, int32_t axis, char* fmt)
-{
-    VkyTickFormat vtf = {0};
-    if (axis == 0)
-        vtf = axes->xticks.format;
-    else
-        vtf = axes->yticks.format;
-
-    strcpy(fmt, "%.XF"); // [2] = precision, [3] = f or e
-    sprintf(&fmt[2], "%d", vtf.precision);
-    switch (vtf.format_type)
-    {
-    case VKY_TICK_FORMAT_DECIMAL:
-        fmt[3] = 'f';
-        break;
-    case VKY_TICK_FORMAT_SCIENTIFIC:
-        fmt[3] = 'e';
-        break;
-    default:
-        break;
-    }
-}
-
-static void _tick_formatter(VkyAxes* axes, int32_t axis, double value, char* out_text)
-{
-    char tick_format[16] = {0};
-    _get_tick_format(axes, axis, tick_format);
-    snprintf(out_text, VKY_AXES_MAX_GLYPHS_PER_TICK, tick_format, value);
-}
-
-static void _tick_formatter_x(VkyAxes* axes, double value, char* out_text)
-{
-    _tick_formatter(axes, 0, value, out_text);
-}
-
-static void _tick_formatter_y(VkyAxes* axes, double value, char* out_text)
-{
-    _tick_formatter(axes, 1, value, out_text);
-}
-
-
-VkyAxes* vky_axes_init(VkyPanel* panel, VkyAxes2DParams params)
-{
-    log_trace("axes init");
-    VkyScene* scene = panel->scene;
-    VkyCanvas* canvas = scene->canvas;
-    VkyAxes* axes = calloc(1, sizeof(VkyAxes));
-    axes->panel = panel;
-    axes->xscale = axes->xscale_orig = params.xscale;
-    axes->yscale = axes->yscale_orig = params.yscale;
-
-    // Formatters can be changed by the user.
-    axes->xtick_fmt = params.xtick_fmt != NULL ? params.xtick_fmt : _tick_formatter_x;
-    axes->ytick_fmt = params.ytick_fmt != NULL ? params.ytick_fmt : _tick_formatter_y;
-
-    // User axes
-    axes->user = params.user;
-
-    // Update the margins.
-    glm_vec4_scale(params.margins, canvas->dpi_factor, panel->margins);
-
-    // Initialize the Panzoom instance.
-    axes->panzoom = vky_panzoom_init();
-
-    // Create the visuals.
-    axes->tick_visual = vky_axes_create_tick_visual(scene, axes);
-    axes->text_visual = vky_axes_create_text_visual(scene, axes);
-
-    // Initialize the buffers.
-    axes->tick_data = calloc(VKY_AXES_MAX_VERTICES, sizeof(VkyAxesTickVertex));
-    axes->text_data = calloc(VKY_AXES_MAX_STRINGS, sizeof(VkyAxesTextData));
-    axes->str_buffer = calloc(VKY_AXES_MAX_GLYPHS, sizeof(char));
-
-    // Pre-allocate the vertex/index buffers.
-    vky_allocate_vertex_buffer(
-        axes->tick_visual,
-        VKY_AXES_MAX_VERTICES * 4 * axes->tick_visual->pipeline.vertex_layout.stride);
-    vky_allocate_index_buffer(axes->tick_visual, VKY_AXES_MAX_VERTICES * 6 * sizeof(VkyIndex));
-    vky_allocate_vertex_buffer(
-        axes->text_visual, VKY_AXES_MAX_GLYPHS * axes->text_visual->pipeline.vertex_layout.stride);
-
-    // Initialize the axes visual.
-    axes->panzoom_box =
-        (VkyBox2D){{axes->xscale.vmin, axes->yscale.vmin}, {axes->xscale.vmax, axes->yscale.vmax}};
-    vky_axes_update_visuals(axes);
-
-    return axes;
-}
-
-void vky_axes_reset(VkyAxes* axes)
-{
-    axes->xscale = axes->xscale_orig;
-    axes->yscale = axes->yscale_orig;
-    axes->panzoom_box =
-        (VkyBox2D){{axes->xscale.vmin, axes->yscale.vmin}, {axes->xscale.vmax, axes->yscale.vmax}};
-    vky_panzoom_reset(axes->panzoom);
-    if (axes->panel->controller_type == VKY_CONTROLLER_AXES_2D)
-    {
-        vky_panzoom_reset(((VkyControllerAxes2D*)axes->panel->controller)->panzoom);
-    }
-    vky_axes_update_visuals(axes);
-}
-
-void vky_axes_make_vertices(
+static void _make_vertices(
     VkyAxes* axes, uint32_t* vertex_count, VkyAxesTickVertex* vertices,
     uint32_t* text_vertex_count, VkyAxesTextData* text_data)
 {
@@ -785,7 +549,184 @@ void vky_axes_make_vertices(
 }
 
 
-void vky_axes_update_visuals(VkyAxes* axes)
+
+/*************************************************************************************************/
+/*  Main axes functions                                                                          */
+/*************************************************************************************************/
+
+
+VkyAxes* vky_axes_init(VkyPanel* panel, VkyAxes2DParams params)
+{
+    log_trace("axes init");
+    VkyScene* scene = panel->scene;
+    VkyCanvas* canvas = scene->canvas;
+    VkyAxes* axes = calloc(1, sizeof(VkyAxes));
+    axes->panel = panel;
+    axes->xscale = axes->xscale_orig = params.xscale;
+    axes->yscale = axes->yscale_orig = params.yscale;
+
+    // Formatters can be changed by the user.
+    axes->xtick_fmt = params.xtick_fmt != NULL ? params.xtick_fmt : _tick_formatter_x;
+    axes->ytick_fmt = params.ytick_fmt != NULL ? params.ytick_fmt : _tick_formatter_y;
+
+    // User axes
+    axes->user = params.user;
+
+    // Update the margins.
+    glm_vec4_scale(params.margins, canvas->dpi_factor, panel->margins);
+
+    // Initialize the Panzoom instance.
+    axes->panzoom = vky_panzoom_init();
+    axes->inner_panzoom = vky_panzoom_init();
+
+    // Create the visuals.
+    axes->tick_visual = _tick_visual(scene, axes);
+    axes->text_visual = _text_visual(scene, axes);
+
+    // Initialize the buffers.
+    axes->tick_data = calloc(VKY_AXES_MAX_VERTICES, sizeof(VkyAxesTickVertex));
+    axes->text_data = calloc(VKY_AXES_MAX_STRINGS, sizeof(VkyAxesTextData));
+    axes->str_buffer = calloc(VKY_AXES_MAX_GLYPHS, sizeof(char));
+
+    // Pre-allocate the vertex/index buffers.
+    vky_allocate_vertex_buffer(
+        axes->tick_visual,
+        VKY_AXES_MAX_VERTICES * 4 * axes->tick_visual->pipeline.vertex_layout.stride);
+    vky_allocate_index_buffer(axes->tick_visual, VKY_AXES_MAX_VERTICES * 6 * sizeof(VkyIndex));
+    vky_allocate_vertex_buffer(
+        axes->text_visual, VKY_AXES_MAX_GLYPHS * axes->text_visual->pipeline.vertex_layout.stride);
+
+    // Initialize the axes visual.
+    axes->panzoom_box =
+        (VkyBox2D){{axes->xscale.vmin, axes->yscale.vmin}, {axes->xscale.vmax, axes->yscale.vmax}};
+    vky_axes_compute_ticks(axes);
+    vky_axes_update_visuals(axes);
+
+    return axes;
+}
+
+
+void vky_axes_reset(VkyAxes* axes)
+{
+    axes->xscale = axes->xscale_orig;
+    axes->yscale = axes->yscale_orig;
+    axes->panzoom_box =
+        (VkyBox2D){{axes->xscale.vmin, axes->yscale.vmin}, {axes->xscale.vmax, axes->yscale.vmax}};
+
+    vky_panzoom_reset(axes->panzoom);
+    if (axes->inner_panzoom != NULL)
+        vky_panzoom_reset(axes->inner_panzoom);
+
+    vky_axes_compute_ticks(axes);
+    vky_axes_update_visuals(axes);
+}
+
+
+void vky_axes_panzoom_update(VkyAxes* axes)
+{
+    // Reset lim_reached.
+    axes->inner_panzoom->lim_reached[0] = false;
+    axes->inner_panzoom->lim_reached[1] = false;
+
+    // Main panel panzoom update, inner viewport.
+    vky_panzoom_update(axes->panel, axes->inner_panzoom, VKY_VIEWPORT_INNER);
+
+    // Now, lim_reached may have been set to true. In this case, we need to freeze the axes
+    // panzoom as well.
+    axes->panzoom->lim_reached[0] = axes->inner_panzoom->lim_reached[0];
+    axes->panzoom->lim_reached[1] = axes->inner_panzoom->lim_reached[1];
+
+    // We update the axes panzoom, outer viewport
+    vky_panzoom_update(axes->panel, axes->panzoom, VKY_VIEWPORT_OUTER);
+
+    // Possibly trigger a tick recompute after panzoom.
+    if (vky_axes_refill_needed(axes))
+    {
+        vky_axes_rescale(axes);
+        vky_axes_compute_ticks(axes);
+        vky_axes_update_visuals(axes);
+    }
+}
+
+
+bool vky_axes_refill_needed(VkyAxes* axes)
+{
+    VkyPanzoom* panzoom = axes->inner_panzoom;
+    // VkyPanzoom* axpanzoom = axes->panzoom;
+
+    int32_t xlevel = (int)round(log2(panzoom->zoom[0]));
+    int32_t ylevel = (int)round(log2(panzoom->zoom[1]));
+
+    double zxlevel = pow(2, xlevel);
+    double zylevel = pow(2, ylevel);
+
+    int32_t xoffset = (int)round(panzoom->camera_pos[0] * zxlevel);
+    int32_t yoffset = (int)round(panzoom->camera_pos[1] * zylevel);
+
+    bool trigger =
+        (abs(axes->xdyad.level - xlevel) >= (int32_t)VKY_AXES_DYAD_TRIGGER ||
+         abs(axes->ydyad.level - ylevel) >= (int32_t)VKY_AXES_DYAD_TRIGGER ||
+         abs(axes->xdyad.offset - xoffset) >= (int32_t)VKY_AXES_DYAD_TRIGGER ||
+         abs(axes->ydyad.offset - yoffset) >= (int32_t)VKY_AXES_DYAD_TRIGGER);
+
+    // Force trigger on panzoom reset.
+    VkyMouse* mouse = axes->panel->scene->canvas->event_controller->mouse;
+    if (mouse->cur_state == VKY_MOUSE_STATE_DOUBLE_CLICK)
+    {
+        trigger = true;
+    }
+
+    return trigger;
+}
+
+
+void vky_axes_rescale(VkyAxes* axes)
+{
+    VkyPanzoom* panzoom = axes->inner_panzoom;
+    VkyPanzoom* axpanzoom = axes->panzoom;
+
+    int32_t xlevel = (int)round(log2(panzoom->zoom[0]));
+    int32_t ylevel = (int)round(log2(panzoom->zoom[1]));
+
+    double zxlevel = pow(2, xlevel);
+    double zylevel = pow(2, ylevel);
+
+    int32_t xoffset = (int)round(panzoom->camera_pos[0] * zxlevel);
+    int32_t yoffset = (int)round(panzoom->camera_pos[1] * zylevel);
+
+    // Axes extent.
+    axes->panzoom_box = vky_panzoom_get_box(axes->panel, panzoom, VKY_VIEWPORT_INNER);
+
+    // Reset the axes panzoom.
+    axpanzoom->camera_pos[0] = 0;
+    axpanzoom->camera_pos[1] = 0;
+    axpanzoom->zoom[0] = 1;
+    axpanzoom->zoom[1] = 1;
+
+    axes->xdyad = (VkyAxesDyad){xlevel, xoffset};
+    axes->ydyad = (VkyAxesDyad){ylevel, yoffset};
+
+    // Center of the original view.
+    double xc = .5 * (axes->xscale_orig.vmin + axes->xscale_orig.vmax);
+    double yc = .5 * (axes->yscale_orig.vmin + axes->yscale_orig.vmax);
+
+    // Size of the original view.
+    double w = .5 * (axes->xscale_orig.vmax - axes->xscale_orig.vmin);
+    double h = .5 * (axes->yscale_orig.vmax - axes->yscale_orig.vmin);
+
+    // Update xscale and yscale.
+    xc += xoffset * .5 * (axes->xscale_orig.vmax - axes->xscale_orig.vmin) / zxlevel;
+    yc += yoffset * .5 * (axes->yscale_orig.vmax - axes->yscale_orig.vmin) / zylevel;
+
+    axes->xscale.vmin = xc - w / zxlevel;
+    axes->xscale.vmax = xc + w / zxlevel;
+
+    axes->yscale.vmin = yc - h / zylevel;
+    axes->yscale.vmax = yc + h / zylevel;
+}
+
+
+void vky_axes_compute_ticks(VkyAxes* axes)
 {
     memset(axes->tick_data, 0, VKY_AXES_MAX_VERTICES);
     memset(axes->text_data, 0, VKY_AXES_MAX_STRINGS);
@@ -809,14 +750,17 @@ void vky_axes_update_visuals(VkyAxes* axes)
         {viewport_width, viewport_height},
         canvas->dpi_factor,
         false};
-    axes->xticks = vky_axes_get_ticks(axes->xscale.vmin, axes->xscale.vmax, context);
+    axes->xticks = _get_ticks(axes->xscale.vmin, axes->xscale.vmax, context);
     context.coord = 1;
-    axes->yticks = vky_axes_get_ticks(axes->yscale.vmin, axes->yscale.vmax, context);
+    axes->yticks = _get_ticks(axes->yscale.vmin, axes->yscale.vmax, context);
+}
 
+
+void vky_axes_update_visuals(VkyAxes* axes)
+{
     // Generate the tick vertices.
     uint32_t vertex_count, text_vertex_count;
-    vky_axes_make_vertices(
-        axes, &vertex_count, axes->tick_data, &text_vertex_count, axes->text_data);
+    _make_vertices(axes, &vertex_count, axes->tick_data, &text_vertex_count, axes->text_data);
 
     // Bake them for the segment visual and upload to the GPU.
     ASSERT(vertex_count > 0);
@@ -827,4 +771,201 @@ void vky_axes_update_visuals(VkyAxes* axes)
 
     // log_trace("update axes text visual %d", text_vertex_count);
     vky_visual_upload(axes->text_visual, (VkyData){text_vertex_count, axes->text_data});
+}
+
+
+/*
+static void vky_axes_recompute_ticks(VkyAxes* axes, VkyPanzoom* panzoom, bool force_trigger)
+{
+    VkyPanzoom* axpanzoom = axes->panzoom;
+
+    int32_t xlevel = (int)round(log2(panzoom->zoom[0]));
+    int32_t ylevel = (int)round(log2(panzoom->zoom[1]));
+
+    double zxlevel = pow(2, xlevel);
+    double zylevel = pow(2, ylevel);
+
+    int32_t xoffset = (int)round(panzoom->camera_pos[0] * zxlevel);
+    int32_t yoffset = (int)round(panzoom->camera_pos[1] * zylevel);
+
+    bool trigger =
+        (force_trigger || abs(axes->xdyad.level - xlevel) >= (int32_t)VKY_AXES_DYAD_TRIGGER ||
+         abs(axes->ydyad.level - ylevel) >= (int32_t)VKY_AXES_DYAD_TRIGGER ||
+         abs(axes->xdyad.offset - xoffset) >= (int32_t)VKY_AXES_DYAD_TRIGGER ||
+         abs(axes->ydyad.offset - yoffset) >= (int32_t)VKY_AXES_DYAD_TRIGGER);
+
+    // Force trigger on panzoom reset.
+    VkyMouse* mouse = axes->panel->scene->canvas->event_controller->mouse;
+    if (mouse->cur_state == VKY_MOUSE_STATE_DOUBLE_CLICK)
+    {
+        trigger = true;
+    }
+
+    if (!trigger)
+        return;
+    log_trace("axes panzoom update: recompute new tick extents");
+
+    // Axes extent.
+    axes->panzoom_box = vky_panzoom_get_box(axes->panel, panzoom, VKY_VIEWPORT_INNER);
+
+    // Reset the axes panzoom.
+    axpanzoom->camera_pos[0] = 0;
+    axpanzoom->camera_pos[1] = 0;
+    axpanzoom->zoom[0] = 1;
+    axpanzoom->zoom[1] = 1;
+
+    axes->xdyad = (VkyAxesDyad){xlevel, xoffset};
+    axes->ydyad = (VkyAxesDyad){ylevel, yoffset};
+
+    // Center of the original view.
+    double xc = .5 * (axes->xscale_orig.vmin + axes->xscale_orig.vmax);
+    double yc = .5 * (axes->yscale_orig.vmin + axes->yscale_orig.vmax);
+
+    // Size of the original view.
+    double w = .5 * (axes->xscale_orig.vmax - axes->xscale_orig.vmin);
+    double h = .5 * (axes->yscale_orig.vmax - axes->yscale_orig.vmin);
+
+    // Update xscale and yscale.
+    xc += xoffset * .5 * (axes->xscale_orig.vmax - axes->xscale_orig.vmin) / zxlevel;
+    yc += yoffset * .5 * (axes->yscale_orig.vmax - axes->yscale_orig.vmin) / zylevel;
+
+    axes->xscale.vmin = xc - w / zxlevel;
+    axes->xscale.vmax = xc + w / zxlevel;
+
+    axes->yscale.vmin = yc - h / zylevel;
+    axes->yscale.vmax = yc + h / zylevel;
+
+    // Update the axes: recompute the ticks and update the axes visual.
+    vky_axes_update_visuals(axes);
+}
+
+
+static void vky_axes_update_visuals(VkyAxes* axes)
+{
+    memset(axes->tick_data, 0, VKY_AXES_MAX_VERTICES);
+    memset(axes->text_data, 0, VKY_AXES_MAX_STRINGS);
+    memset(axes->str_buffer, 0, VKY_AXES_MAX_GLYPHS);
+
+    // Get the axes context.
+    VkyCanvas* canvas = axes->tick_visual->scene->canvas;
+    const VkyAxesTextParams* params = (const VkyAxesTextParams*)axes->text_visual->params;
+    float glyph_width = params->glyph_size[0];
+    float glyph_height = params->glyph_size[1];
+    float viewport_width = axes->panel->viewport.w * canvas->size.framebuffer_width;
+    float viewport_height = axes->panel->viewport.h * canvas->size.framebuffer_height;
+
+    ASSERT(viewport_width > 0);
+    ASSERT(viewport_height > 0);
+
+    // Find the ticks.
+    VkyAxesContext context = {
+        0,
+        {glyph_width, glyph_height},
+        {viewport_width, viewport_height},
+        canvas->dpi_factor,
+        false};
+    axes->xticks = _get_ticks(axes->xscale.vmin, axes->xscale.vmax, context);
+    context.coord = 1;
+    axes->yticks = _get_ticks(axes->yscale.vmin, axes->yscale.vmax, context);
+
+    // Generate the tick vertices.
+    uint32_t vertex_count, text_vertex_count;
+    _make_vertices(axes, &vertex_count, axes->tick_data, &text_vertex_count, axes->text_data);
+
+    // Bake them for the segment visual and upload to the GPU.
+    ASSERT(vertex_count > 0);
+    ASSERT(VKY_AXES_MAX_VERTICES >= vertex_count);
+
+    // log_trace("update axes visual %d", vertex_count);
+    vky_visual_upload(axes->tick_visual, (VkyData){vertex_count, axes->tick_data});
+
+    // log_trace("update axes text visual %d", text_vertex_count);
+    vky_visual_upload(axes->text_visual, (VkyData){text_vertex_count, axes->text_data});
+}
+*/
+
+
+/*************************************************************************************************/
+/*  Axes range                                                                                   */
+/*************************************************************************************************/
+
+VkyBox2D vky_axes_get_range(VkyAxes* axes)
+{
+    ASSERT(axes != NULL);
+    ASSERT(axes->panel != NULL);
+
+    VkyAxesTransform tr = vky_axes_transform(axes->panel, VKY_CDS_PANZOOM, VKY_CDS_DATA);
+    VkyBox2D box = {0};
+    vky_axes_transform_apply(&tr, (dvec2){-1, -1}, box.pos_ll);
+    vky_axes_transform_apply(&tr, (dvec2){+1, +1}, box.pos_ur);
+    return box;
+}
+
+
+void vky_axes_set_range(VkyAxes* axes, VkyBox2D box, bool recompute_ticks)
+{
+    ASSERT(axes != NULL);
+    ASSERT(axes->panel != NULL);
+
+    VkyPanzoom* panzoom = axes->inner_panzoom;
+    ASSERT(panzoom != NULL);
+
+    VkyPanzoom* axpanzoom = axes->panzoom;
+    ASSERT(axpanzoom != NULL);
+
+    bool update_x = box.pos_ll[0] < box.pos_ur[0];
+    bool update_y = box.pos_ll[1] < box.pos_ur[1];
+
+    if (!recompute_ticks)
+    {
+        VkyBox2D box_inner = {0};
+        VkyAxesTransform tr_inner = {0};
+        VkyAxesTransform tr_outer = {0};
+
+        // Update the inner panzoom.
+        tr_inner = vky_axes_transform(axes->panel, VKY_CDS_DATA, VKY_CDS_GPU);
+        vky_axes_transform_apply(&tr_inner, box.pos_ll, box_inner.pos_ll);
+        vky_axes_transform_apply(&tr_inner, box.pos_ur, box_inner.pos_ur);
+        vky_panzoom_set_box(panzoom, VKY_VIEWPORT_INNER, box_inner);
+
+        // Update the outer panzoom.
+        tr_outer = vky_axes_transform_interp(
+            box_inner.pos_ll, (dvec2){-1, -1}, box_inner.pos_ur, (dvec2){+1, +1});
+        axpanzoom->camera_pos[0] = tr_outer.shift[0];
+        axpanzoom->camera_pos[1] = tr_outer.shift[1];
+        axpanzoom->zoom[0] = tr_outer.scale[0];
+        axpanzoom->zoom[1] = tr_outer.scale[1];
+
+        // Possibly trigger a tick recompute after panzoom.
+        if (vky_axes_refill_needed(axes))
+        {
+            vky_axes_rescale(axes);
+            vky_axes_compute_ticks(axes);
+            vky_axes_update_visuals(axes);
+        }
+    }
+    else
+    {
+        if (update_x)
+        {
+            log_trace("update x axis");
+
+            axes->xscale_orig.vmin = axes->xscale.vmin = box.pos_ll[0];
+            axes->xscale_orig.vmax = axes->xscale.vmax = box.pos_ur[0];
+        }
+
+        if (update_y)
+        {
+            log_trace("update y axis");
+
+            axes->yscale_orig.vmin = axes->yscale.vmin = box.pos_ll[1];
+            axes->yscale_orig.vmax = axes->yscale.vmax = box.pos_ur[1];
+        }
+
+        if (update_x || update_y)
+        {
+            vky_axes_compute_ticks(axes);
+            vky_axes_update_visuals(axes);
+        }
+    }
 }
