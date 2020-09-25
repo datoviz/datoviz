@@ -317,9 +317,7 @@ void vky_set_controller(VkyPanel* panel, VkyControllerType controller_type, cons
         controller = vky_panzoom_init();
         break;
 
-    case VKY_CONTROLLER_AXES_2D:
-        controller = calloc(1, sizeof(VkyControllerAxes2D));
-
+    case VKY_CONTROLLER_AXES_2D:;
         // Create default axes params if needed.
         VkyAxes2DParams axparams = {0};
         if (params == NULL)
@@ -339,16 +337,13 @@ void vky_set_controller(VkyPanel* panel, VkyControllerType controller_type, cons
             set_colorbar(panel, &axparams);
         }
 
-        ((VkyControllerAxes2D*)controller)->axes = vky_axes_init(panel, axparams);
-        ((VkyControllerAxes2D*)controller)->panzoom =
-            ((VkyControllerAxes2D*)controller)
-                ->axes->inner_panzoom; // vky_panzoom_init(); // TODO: remove?
+        controller = vky_axes_init(panel, axparams);
 
         vky_add_visual_to_panel(
-            ((VkyControllerAxes2D*)controller)->axes->tick_visual, panel, VKY_VIEWPORT_OUTER,
+            ((VkyAxes*)controller)->tick_visual, panel, VKY_VIEWPORT_OUTER,
             VKY_VISUAL_PRIORITY_LAST);
         vky_add_visual_to_panel(
-            ((VkyControllerAxes2D*)controller)->axes->text_visual, panel, VKY_VIEWPORT_OUTER,
+            ((VkyAxes*)controller)->text_visual, panel, VKY_VIEWPORT_OUTER,
             VKY_VISUAL_PRIORITY_LAST);
 
         break;
@@ -382,7 +377,6 @@ static void _update_controller(VkyPanel* panel)
 {
     // Update the panel's controller from the event controller (mouse and keyboard).
 
-    // printf("update panel %d %d\n", panel, source);
     VkyPanzoom* panzoom = NULL;
 
     switch (panel->controller_type)
@@ -396,34 +390,10 @@ static void _update_controller(VkyPanel* panel)
         panzoom->lim_reached[1] = false;
 
         vky_panzoom_update(panel, panzoom, VKY_VIEWPORT_INNER);
-
         break;
 
     case VKY_CONTROLLER_AXES_2D:;
-        VkyAxes* axes = ((VkyControllerAxes2D*)panel->controller)->axes;
-        // panzoom = ((VkyControllerAxes2D*)panel->controller)->panzoom;
-
-        // // Reset lim_reached.
-        // panzoom->lim_reached[0] = false;
-        // panzoom->lim_reached[1] = false;
-
-        // // Main panel panzoom update, inner viewport.
-        // vky_panzoom_update(panel, axes->inner_panzoom, VKY_VIEWPORT_INNER);
-
-        // // Now, lim_reached may have been set to true. In this case, we need to freeze the axes
-        // // panzoom as well.
-        // axes->panzoom->lim_reached[0] = axes->inner_panzoom->lim_reached[0];
-        // axes->panzoom->lim_reached[1] = axes->inner_panzoom->lim_reached[1];
-
-        // // We update the axes panzoom, outer viewport.
-        // vky_panzoom_update(panel, axes->panzoom, VKY_VIEWPORT_OUTER);
-
-        // // Update the axes.
-        // // if (update_from_event_controller)
-        // vky_axes_recompute_ticks(axes, panzoom, false);
-
-        vky_axes_panzoom_update(axes);
-
+        vky_axes_panzoom_update((VkyAxes*)panel->controller);
         break;
 
     case VKY_CONTROLLER_ARCBALL:
@@ -483,13 +453,13 @@ static void _update_linked_panel(VkyPanel* p0, VkyPanel* p1, VkyPanelLinkMode mo
     switch (p0->controller_type)
     {
     case VKY_CONTROLLER_AXES_2D:;
-        VkyControllerAxes2D* c0 = (VkyControllerAxes2D*)p0->controller;
-        VkyControllerAxes2D* c1 = (VkyControllerAxes2D*)p1->controller;
+        VkyAxes* ax0 = (VkyAxes*)p0->controller;
+        VkyAxes* ax1 = (VkyAxes*)p1->controller;
         bool update_x = (mode & VKY_PANEL_LINK_X) != 0;
         bool update_y = (mode & VKY_PANEL_LINK_Y) != 0;
         if (!update_x && !update_y)
             return;
-        box = vky_axes_get_range(c0->axes);
+        box = vky_axes_get_range(ax0);
         if (!update_x)
         {
             box.pos_ll[0] = box.pos_ur[0] = 0;
@@ -498,7 +468,7 @@ static void _update_linked_panel(VkyPanel* p0, VkyPanel* p1, VkyPanelLinkMode mo
         {
             box.pos_ll[1] = box.pos_ur[1] = 0;
         }
-        vky_axes_set_range(c1->axes, box, true);
+        vky_axes_set_range(ax1, box, true);
         break;
 
     default:
@@ -509,8 +479,6 @@ static void _update_linked_panel(VkyPanel* p0, VkyPanel* p1, VkyPanelLinkMode mo
 static void _update_mvp(VkyPanel* panel)
 {
     // Upload the MVP data to the GPU using the panel's controller state.
-
-    // printf("update panel %d %d\n", panel, source);
     VkyPanzoom* panzoom = NULL;
 
     switch (panel->controller_type)
@@ -522,10 +490,9 @@ static void _update_mvp(VkyPanel* panel)
         break;
 
     case VKY_CONTROLLER_AXES_2D:;
-        VkyAxes* axes = ((VkyControllerAxes2D*)panel->controller)->axes;
-        // panzoom = ((VkyControllerAxes2D*)panel->controller)->panzoom;
-        vky_panzoom_mvp(panel, axes->panzoom, VKY_VIEWPORT_OUTER);
-        vky_panzoom_mvp(panel, axes->inner_panzoom, VKY_VIEWPORT_INNER);
+        VkyAxes* axes = (VkyAxes*)panel->controller;
+        vky_panzoom_mvp(panel, axes->panzoom_outer, VKY_VIEWPORT_OUTER);
+        vky_panzoom_mvp(panel, axes->panzoom_inner, VKY_VIEWPORT_INNER);
         break;
 
     case VKY_CONTROLLER_ARCBALL:
@@ -540,8 +507,6 @@ static void _update_mvp(VkyPanel* panel)
     case VKY_CONTROLLER_FPS:
     case VKY_CONTROLLER_FLY:
     case VKY_CONTROLLER_AUTOROTATE:;
-        // TODO: split between update and mvp
-        // VkyCamera* camera = (VkyCamera*)(panel->controller);
         break;
 
     default:
@@ -628,9 +593,6 @@ static void _controller_callback(VkyCanvas* canvas)
     // Update the MVP of all panels.
     for (uint32_t i = 0; i < grid->panel_count; i++)
     {
-        // printf(
-        //     "show   %d %f\n", &grid->panels[i],
-        //     ((VkyControllerAxes2D*)grid->panels[i].controller)->panzoom->camera_pos[0]);
         _update_mvp(&grid->panels[i]);
     }
 }
@@ -649,12 +611,10 @@ static void _controller_resize_callback(VkyCanvas* canvas)
             break;
 
         case VKY_CONTROLLER_AXES_2D:;
-            VkyAxes* axes = ((VkyControllerAxes2D*)(panel->controller))->axes;
+            VkyAxes* axes = (VkyAxes*)(panel->controller);
             vky_axes_rescale(axes);
             vky_axes_compute_ticks(axes);
             vky_axes_update_visuals(axes);
-            // VkyPanzoom* panzoom = ((VkyControllerAxes2D*)(panel->controller))->panzoom;
-            // vky_axes_recompute_ticks(axes, panzoom, true);
             break;
 
         default:
@@ -668,7 +628,7 @@ void* vky_get_axes(VkyPanel* panel)
     switch (panel->controller_type)
     {
     case VKY_CONTROLLER_AXES_2D:
-        return ((VkyControllerAxes2D*)panel->controller)->axes;
+        return panel->controller;
     default:
         log_warn("no axes found in this panel");
         return NULL;
@@ -681,11 +641,6 @@ void vky_destroy_controller(VkyPanel* panel)
     void* controller = panel->controller;
     switch (panel->controller_type)
     {
-
-    case VKY_CONTROLLER_AXES_2D:
-        vky_destroy_axes(((VkyControllerAxes2D*)controller)->axes);
-        // free(((VkyControllerAxes2D*)controller)->panzoom);
-        break;
 
     default:
         break;
@@ -1623,10 +1578,10 @@ void vky_destroy_axes(VkyAxes* axes)
             free(axes->text_data);
         if (axes->str_buffer != NULL)
             free(axes->str_buffer);
-        if (axes->panzoom != NULL)
-            free(axes->panzoom);
-        if (axes->inner_panzoom != NULL)
-            free(axes->inner_panzoom);
+        if (axes->panzoom_outer != NULL)
+            free(axes->panzoom_outer);
+        if (axes->panzoom_inner != NULL)
+            free(axes->panzoom_inner);
         free(axes);
     }
 }

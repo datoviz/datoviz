@@ -576,8 +576,8 @@ VkyAxes* vky_axes_init(VkyPanel* panel, VkyAxes2DParams params)
     glm_vec4_scale(params.margins, canvas->dpi_factor, panel->margins);
 
     // Initialize the Panzoom instance.
-    axes->panzoom = vky_panzoom_init();
-    axes->inner_panzoom = vky_panzoom_init();
+    axes->panzoom_outer = vky_panzoom_init();
+    axes->panzoom_inner = vky_panzoom_init();
 
     // Create the visuals.
     axes->tick_visual = _tick_visual(scene, axes);
@@ -613,9 +613,9 @@ void vky_axes_reset(VkyAxes* axes)
     axes->panzoom_box =
         (VkyBox2D){{axes->xscale.vmin, axes->yscale.vmin}, {axes->xscale.vmax, axes->yscale.vmax}};
 
-    vky_panzoom_reset(axes->panzoom);
-    if (axes->inner_panzoom != NULL)
-        vky_panzoom_reset(axes->inner_panzoom);
+    vky_panzoom_reset(axes->panzoom_outer);
+    if (axes->panzoom_inner != NULL)
+        vky_panzoom_reset(axes->panzoom_inner);
 
     vky_axes_compute_ticks(axes);
     vky_axes_update_visuals(axes);
@@ -625,19 +625,19 @@ void vky_axes_reset(VkyAxes* axes)
 void vky_axes_panzoom_update(VkyAxes* axes)
 {
     // Reset lim_reached.
-    axes->inner_panzoom->lim_reached[0] = false;
-    axes->inner_panzoom->lim_reached[1] = false;
+    axes->panzoom_inner->lim_reached[0] = false;
+    axes->panzoom_inner->lim_reached[1] = false;
 
     // Main panel panzoom update, inner viewport.
-    vky_panzoom_update(axes->panel, axes->inner_panzoom, VKY_VIEWPORT_INNER);
+    vky_panzoom_update(axes->panel, axes->panzoom_inner, VKY_VIEWPORT_INNER);
 
     // Now, lim_reached may have been set to true. In this case, we need to freeze the axes
     // panzoom as well.
-    axes->panzoom->lim_reached[0] = axes->inner_panzoom->lim_reached[0];
-    axes->panzoom->lim_reached[1] = axes->inner_panzoom->lim_reached[1];
+    axes->panzoom_outer->lim_reached[0] = axes->panzoom_inner->lim_reached[0];
+    axes->panzoom_outer->lim_reached[1] = axes->panzoom_inner->lim_reached[1];
 
     // We update the axes panzoom, outer viewport
-    vky_panzoom_update(axes->panel, axes->panzoom, VKY_VIEWPORT_OUTER);
+    vky_panzoom_update(axes->panel, axes->panzoom_outer, VKY_VIEWPORT_OUTER);
 
     // Possibly trigger a tick recompute after panzoom.
     if (vky_axes_refill_needed(axes))
@@ -651,7 +651,7 @@ void vky_axes_panzoom_update(VkyAxes* axes)
 
 bool vky_axes_refill_needed(VkyAxes* axes)
 {
-    VkyPanzoom* panzoom = axes->inner_panzoom;
+    VkyPanzoom* panzoom = axes->panzoom_inner;
     // VkyPanzoom* axpanzoom = axes->panzoom;
 
     int32_t xlevel = (int)round(log2(panzoom->zoom[0]));
@@ -682,8 +682,8 @@ bool vky_axes_refill_needed(VkyAxes* axes)
 
 void vky_axes_rescale(VkyAxes* axes)
 {
-    VkyPanzoom* panzoom = axes->inner_panzoom;
-    VkyPanzoom* axpanzoom = axes->panzoom;
+    VkyPanzoom* panzoom = axes->panzoom_inner;
+    VkyPanzoom* axpanzoom = axes->panzoom_outer;
 
     int32_t xlevel = (int)round(log2(panzoom->zoom[0]));
     int32_t ylevel = (int)round(log2(panzoom->zoom[1]));
@@ -907,10 +907,10 @@ void vky_axes_set_range(VkyAxes* axes, VkyBox2D box, bool recompute_ticks)
     ASSERT(axes != NULL);
     ASSERT(axes->panel != NULL);
 
-    VkyPanzoom* panzoom = axes->inner_panzoom;
+    VkyPanzoom* panzoom = axes->panzoom_inner;
     ASSERT(panzoom != NULL);
 
-    VkyPanzoom* axpanzoom = axes->panzoom;
+    VkyPanzoom* axpanzoom = axes->panzoom_outer;
     ASSERT(axpanzoom != NULL);
 
     bool update_x = box.pos_ll[0] < box.pos_ur[0];

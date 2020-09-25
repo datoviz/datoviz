@@ -90,13 +90,11 @@ typedef struct VkyAxesTextData VkyAxesTextData;
 typedef struct VkyAxesTextParams VkyAxesTextParams;
 typedef struct VkyAxes VkyAxes;
 typedef struct VkyAxesTickParams VkyAxesTickParams;
-// typedef struct VkyAxesBox VkyAxesBox;
 typedef struct VkyAxesUser VkyAxesUser;
 typedef struct VkyAxesLabel VkyAxesLabel;
 
 typedef struct VkyColorbarParams VkyColorbarParams;
 
-typedef struct VkyControllerAxes2D VkyControllerAxes2D;
 typedef struct VkyAxes2DParams VkyAxes2DParams;
 typedef struct VkyControllerAutorotate VkyControllerAutorotate;
 
@@ -178,14 +176,6 @@ struct VkyMVP
     mat4 view;
     mat4 proj;
     float aspect_ratio; // if not 0, the aspect ratio is forced to be 1 in the common.glsl shader
-};
-
-
-
-struct VkyControllerAxes2D
-{
-    VkyAxes* axes; // comes with its own panzoom
-    VkyPanzoom* panzoom;
 };
 
 
@@ -593,8 +583,8 @@ struct VkyAxes
 
     VkyVisual* tick_visual;
     VkyVisual* text_visual;
-    VkyPanzoom* panzoom;
-    VkyPanzoom* inner_panzoom;
+    VkyPanzoom* panzoom_outer;
+    VkyPanzoom* panzoom_inner;
 
     VkyAxesTickFormatter xtick_fmt, ytick_fmt;
 
