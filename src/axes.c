@@ -22,22 +22,22 @@ VkyAxesTickRange vky_axes_get_ticks(double dmin, double dmax, VkyAxesContext con
 }
 
 
-dvec2s vky_axes_normalize_pos(VkyAxes* axes, dvec2s pos)
-{
-    double xmin = axes->xscale.vmin;
-    double xmax = axes->xscale.vmax;
+// dvec2s vky_axes_normalize_pos(VkyAxes* axes, dvec2s pos)
+// {
+//     double xmin = axes->xscale.vmin;
+//     double xmax = axes->xscale.vmax;
 
-    double ymin = axes->yscale.vmin;
-    double ymax = axes->yscale.vmax;
+//     double ymin = axes->yscale.vmin;
+//     double ymax = axes->yscale.vmax;
 
-    double x = -1.0 + 2 * (pos.x - xmin) / (xmax - xmin);
-    double y = -1.0 + 2 * (pos.y - ymin) / (ymax - ymin);
+//     double x = -1.0 + 2 * (pos.x - xmin) / (xmax - xmin);
+//     double y = -1.0 + 2 * (pos.y - ymin) / (ymax - ymin);
 
-    return (dvec2s){x, y};
-}
+//     return (dvec2s){x, y};
+// }
 
 
-void vky_axes_register_visual(VkyAxes* axis, VkyVisual* visual) {}
+// void vky_axes_register_visual(VkyAxes* axis, VkyVisual* visual) {}
 
 
 
@@ -308,7 +308,7 @@ VkyVisual* vky_axes_create_text_visual(VkyScene* scene, VkyAxes* axes)
 /*  Axes panzoom functions                                                                       */
 /*************************************************************************************************/
 
-void vky_axes_panzoom_update(VkyAxes* axes, VkyPanzoom* panzoom, bool force_trigger)
+void vky_axes_recompute_ticks(VkyAxes* axes, VkyPanzoom* panzoom, bool force_trigger)
 {
     VkyPanzoom* axpanzoom = axes->panzoom;
 
@@ -369,7 +369,7 @@ void vky_axes_panzoom_update(VkyAxes* axes, VkyPanzoom* panzoom, bool force_trig
     axes->yscale.vmax = yc + h / zylevel;
 
     // Update the axes: recompute the ticks and update the axes visual.
-    vky_axes_update(axes);
+    vky_axes_update_visuals(axes);
 }
 
 
@@ -421,8 +421,8 @@ void vky_axes_set_range(VkyAxes* axes, VkyBox2D box, bool recompute_ticks)
         axpanzoom->zoom[1] = tr_outer.scale[1];
 
         // Possibly trigger a tick recompute after panzoom.
-        vky_axes_panzoom_update(axes, panzoom, false);
-        vky_axes_update(axes);
+        vky_axes_recompute_ticks(axes, panzoom, false);
+        vky_axes_update_visuals(axes);
     }
     else
     {
@@ -444,8 +444,9 @@ void vky_axes_set_range(VkyAxes* axes, VkyBox2D box, bool recompute_ticks)
 
         if (update_x || update_y)
         {
-            vky_axes_panzoom_update(axes, panzoom, true);
-            vky_axes_update(axes);
+            vky_axes_recompute_ticks(axes, panzoom, true);
+            vky_axes_update_visuals(axes);
+            // vky_panzoom_set_box(panzoom, VKY_VIEWPORT_INNER, box);
         }
     }
 }
@@ -540,7 +541,7 @@ VkyAxes* vky_axes_init(VkyPanel* panel, VkyAxes2DParams params)
     // Initialize the axes visual.
     axes->panzoom_box =
         (VkyBox2D){{axes->xscale.vmin, axes->yscale.vmin}, {axes->xscale.vmax, axes->yscale.vmax}};
-    vky_axes_update(axes);
+    vky_axes_update_visuals(axes);
 
     return axes;
 }
@@ -556,7 +557,7 @@ void vky_axes_reset(VkyAxes* axes)
     {
         vky_panzoom_reset(((VkyControllerAxes2D*)axes->panel->controller)->panzoom);
     }
-    vky_axes_update(axes);
+    vky_axes_update_visuals(axes);
 }
 
 void vky_axes_make_vertices(
@@ -784,7 +785,7 @@ void vky_axes_make_vertices(
 }
 
 
-void vky_axes_update(VkyAxes* axes)
+void vky_axes_update_visuals(VkyAxes* axes)
 {
     memset(axes->tick_data, 0, VKY_AXES_MAX_VERTICES);
     memset(axes->text_data, 0, VKY_AXES_MAX_STRINGS);

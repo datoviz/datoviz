@@ -32,16 +32,16 @@ VkyAxesTransform vky_axes_transform_mul(VkyAxesTransform tr0, VkyAxesTransform t
 
 VkyAxesTransform vky_axes_transform_interp(dvec2 pin, dvec2 pout, dvec2 qin, dvec2 qout)
 {
-    ASSERT(qin[0] != pin[0]);
-    ASSERT(qin[1] != pin[1]);
-    ASSERT(qout[0] != pout[0]);
-    ASSERT(qout[1] != pout[1]);
-
     VkyAxesTransform tr = {0};
-    tr.scale[0] = (qout[0] - pout[0]) / (qin[0] - pin[0]);
-    tr.scale[1] = (qout[1] - pout[1]) / (qin[1] - pin[1]);
-    tr.shift[0] = (pin[0] * qout[0] - pout[0] * qin[0]) / (qout[0] - pout[0]);
-    tr.shift[1] = (pin[1] * qout[1] - pout[1] * qin[1]) / (qout[1] - pout[1]);
+    tr.scale[0] = tr.scale[1] = 1;
+    if (qin[0] != pin[0])
+        tr.scale[0] = (qout[0] - pout[0]) / (qin[0] - pin[0]);
+    if (qin[1] != pin[1])
+        tr.scale[1] = (qout[1] - pout[1]) / (qin[1] - pin[1]);
+    if (qout[0] != pout[0])
+        tr.shift[0] = (pin[0] * qout[0] - pout[0] * qin[0]) / (qout[0] - pout[0]);
+    if (qout[1] != pout[1])
+        tr.shift[1] = (pin[1] * qout[1] - pout[1] * qin[1]) / (qout[1] - pout[1]);
     return tr;
 }
 

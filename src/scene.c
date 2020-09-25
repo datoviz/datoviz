@@ -418,7 +418,7 @@ static void _update_controller(VkyPanel* panel)
 
         // Update the axes.
         // if (update_from_event_controller)
-        vky_axes_panzoom_update(axes, panzoom, false);
+        vky_axes_recompute_ticks(axes, panzoom, false);
 
         break;
 
@@ -463,6 +463,9 @@ static void _update_controller(VkyPanel* panel)
     }
 }
 
+#define PBOX(x)                                                                                   \
+    printf("%f %f %f %f\n", (x).pos_ll[0], (x).pos_ll[1], (x).pos_ur[0], (x).pos_ur[1]);
+
 static void _update_linked_panel(VkyPanel* p0, VkyPanel* p1, VkyPanelLinkMode mode)
 {
     // update the linked panel p1 as a function of the active panel p0, using the specified link
@@ -471,6 +474,8 @@ static void _update_linked_panel(VkyPanel* p0, VkyPanel* p1, VkyPanelLinkMode mo
     ASSERT(p1 != NULL);
     ASSERT(p0->controller_type == p1->controller_type);
 
+    VkyBox2D box = {0};
+
     switch (p0->controller_type)
     {
     case VKY_CONTROLLER_AXES_2D:;
@@ -478,9 +483,18 @@ static void _update_linked_panel(VkyPanel* p0, VkyPanel* p1, VkyPanelLinkMode mo
         VkyControllerAxes2D* c1 = (VkyControllerAxes2D*)p1->controller;
         bool update_x = (mode & VKY_PANEL_LINK_X) != 0;
         bool update_y = (mode & VKY_PANEL_LINK_Y) != 0;
-
-        // TODO
-
+        if (!update_x && !update_y)
+            return;
+        box = vky_axes_get_range(c0->axes);
+        if (!update_x)
+        {
+            box.pos_ll[0] = box.pos_ur[0] = 0;
+        }
+        if (!update_y)
+        {
+            box.pos_ll[1] = box.pos_ur[1] = 0;
+        }
+        vky_axes_set_range(c1->axes, box, true);
         break;
 
     default:
@@ -633,7 +647,7 @@ static void _controller_resize_callback(VkyCanvas* canvas)
         case VKY_CONTROLLER_AXES_2D:;
             VkyAxes* axes = ((VkyControllerAxes2D*)(panel->controller))->axes;
             VkyPanzoom* panzoom = ((VkyControllerAxes2D*)(panel->controller))->panzoom;
-            vky_axes_panzoom_update(axes, panzoom, true);
+            vky_axes_recompute_ticks(axes, panzoom, true);
             break;
 
         default:
