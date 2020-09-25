@@ -47,8 +47,10 @@ VkyAxesTransform vky_axes_transform_interp(dvec2 pin, dvec2 pout, dvec2 qin, dve
 
 void vky_axes_transform_apply(VkyAxesTransform* tr, dvec2 in, dvec2 out)
 {
-    out[0] = tr->scale[0] * (in[0] - tr->shift[0]);
-    out[1] = tr->scale[1] * (in[1] - tr->shift[1]);
+    if (tr->scale[0] != 0)
+        out[0] = tr->scale[0] * (in[0] - tr->shift[0]);
+    if (tr->scale[1] != 0)
+        out[1] = tr->scale[1] * (in[1] - tr->shift[1]);
 }
 
 VkyAxesTransform vky_axes_transform(VkyPanel* panel, VkyCDS source, VkyCDS target)
