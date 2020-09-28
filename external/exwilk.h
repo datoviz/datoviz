@@ -222,11 +222,14 @@ z : 10-exponent of the step size
 */
 R wilk_ext(double dmin, double dmax, int32_t m, int32_t only_inside, VkyAxesContext context)
 {
-    if ((dmin >= dmax) || (m < 1) ||
+    if ((dmin >= dmax) || (m < 1)
         // check viewport size
-        context.viewport_size[0] / context.dpi_factor < 200 ||
-        context.viewport_size[1] / context.dpi_factor < 200)
+        // context.viewport_size[0] / context.dpi_factor < 200 ||
+        // context.viewport_size[1] / context.dpi_factor < 200
+    )
+    {
         return (R){dmin, dmax, dmax - dmin, 1, 0, 2, {0, 0, 0}, 0};
+    }
 
     double DEFAULT_Q[] = {1, 5, 2, 2.5, 4, 3};
     const dvec4s W = {0.2, 0.25, 0.5, 0.05};

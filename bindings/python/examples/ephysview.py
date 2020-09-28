@@ -1,3 +1,13 @@
+"""
+Python example of an interactive raw ephys data viewer.
+
+TODO:
+- top panel with another file
+- sort by different words
+- apply different filters
+
+"""
+
 import math
 from pathlib import Path
 
