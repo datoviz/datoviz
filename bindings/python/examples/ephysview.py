@@ -1,3 +1,4 @@
+import math
 from pathlib import Path
 
 import numpy as np
@@ -155,7 +156,17 @@ def ephys_view(path, n_channels, sample_rate, dtype, buffer):
             pick = vl.vky_pick(canvas._scene, tp.T_VEC2(pos[0], pos[1]))
             idx = vl.vky_get_panel_index(pick.panel)
             if (idx.row, idx.col) == (1, 0):
-                print(f"Picked {pick.pos_data[0]}, {pick.pos_data[1]}")
+                x, y = pick.pos_data
+                i = math.floor(
+                    (x - ds.sample / ds.sample_rate) /
+                    (buffer / ds.sample_rate) *
+                    ds.data.shape[0])
+                j = math.floor(y)
+                j = ds.data.shape[1] - 1 - j
+                i = np.clip(i, 0, ds.data.shape[0] - 1)
+                j = np.clip(j, 0, ds.data.shape[1] - 1)
+                print(
+                    f"Picked {x}, {y} : {ds.data[i, j]}")
 
     app.run()
 
