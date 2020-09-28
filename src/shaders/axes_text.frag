@@ -39,7 +39,7 @@ void main() {
         vec2 q1 = vec2(uv.x, h - uv.y);
         float s = (q0.x * q1.y - q0.y * q1.x);
         float eps = left * 5;
-        if (s > -eps && coord == 0 || s < eps && coord == 1)
+        if ((s > -eps && coord < .5) || (s < eps && coord > .5))
             discard;
     }
 
