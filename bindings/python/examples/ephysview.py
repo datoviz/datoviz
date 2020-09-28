@@ -99,8 +99,9 @@ class DataScroller:
         self.visual.upload_image(self.image)
         self.panel.axes_range(
             self.sample / self.sample_rate,
+            0,
             (self.sample + self.buffer) / self.sample_rate,
-            0, self.data.shape[1])
+            self.data.shape[1])
 
 
 def ephys_view(path, n_channels, sample_rate, dtype, buffer):
@@ -149,12 +150,12 @@ def ephys_view(path, n_channels, sample_rate, dtype, buffer):
             ds.upload()
 
     @canvas.on_mouse
-    def on_mouse(pos):
-        pass
-        # TODO: button, modifiers
-        # print(pos)
-        pick = vl.vky_pick(canvas._scene, tp.T_VEC2(pos[0], pos[1]))
-        print(pick.data_coords[0], pick.data_coords[1])
+    def on_mouse(button, pos, ev=None):
+        if ev.state == 'click':
+            pick = vl.vky_pick(canvas._scene, tp.T_VEC2(pos[0], pos[1]))
+            idx = vl.vky_get_panel_index(pick.panel)
+            if (idx.row, idx.col) == (1, 0):
+                print(f"Picked {pick.pos_data[0]}, {pick.pos_data[1]}")
 
     app.run()
 

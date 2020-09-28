@@ -1,4 +1,5 @@
 import csv
+import logging
 from pathlib import Path
 
 from imageio import imread
@@ -6,10 +7,13 @@ import numpy as np
 
 from visky.wrap import viskylib as vl
 from visky.wrap import (
-    upload_data, pointer, array_pointer, get_const, key_string, to_byte
+    mouse_button, mouse_state, key_modifiers, key_string,
+    upload_data, pointer, array_pointer, get_const, to_byte,
 )
 from visky import _constants as const
 from visky import _types as tp
+
+logger = logging.getLogger(__file__)
 
 
 class App:
@@ -51,17 +55,29 @@ class Canvas:
     def on_key(self, f):
         @tp.canvas_callback
         def _on_key_wrap(p_canvas):
-            key = vl.vky_event_key(p_canvas)
-            key_s = key_string(key)
+            keyboard = vl.vky_event_keyboard(p_canvas).contents
+            key_s = key_string(keyboard.key)
             f(key_s)
         self._callbacks.append(_on_key_wrap)
         vl.vky_add_frame_callback(self._canvas, _on_key_wrap)
 
     def on_mouse(self, f):
+
         @tp.canvas_callback
         def _on_mouse_wrap(p_canvas):
-            pos = vl.vky_event_mouse(p_canvas)
-            f((pos.x, pos.y))
+            mouse = vl.vky_event_mouse(p_canvas).contents
+            keyboard = vl.vky_event_keyboard(p_canvas).contents
+            state = mouse_state(mouse.cur_state)
+            button = mouse_button(mouse.button)
+            modifiers = key_modifiers(keyboard.key)
+
+            try:
+                f(
+                    button, (mouse.cur_pos[0], mouse.cur_pos[1]),
+                    ev=tp.Bunch(state=state, modifiers=modifiers))
+            except Exception as e:
+                logger.error(e)
+
         self._callbacks.append(_on_mouse_wrap)
         vl.vky_add_frame_callback(self._canvas, _on_mouse_wrap)
 
@@ -79,8 +95,9 @@ class Panel:
     def set_controller(self, controller_type, params=None):
         vl.vky_set_controller(self._panel, controller_type, params)
 
-    def axes_range(self, x0, x1, y0, y1):
-        vl.vky_axes_set_range(self._axes, x0, x1, y0, y1)
+    def axes_range(self, x0, y0, x1, y1):
+        box = tp.T_BOX2D((x0, y0), (x1, y1))
+        vl.vky_axes_set_initial_range(self._axes, box)
 
     def visual(self, visual_type, params=None, obj=None):
         visual_type = get_const(visual_type)

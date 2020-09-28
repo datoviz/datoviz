@@ -66,6 +66,7 @@ typedef enum
 
 typedef struct VkyAxes VkyAxes;
 typedef struct VkyPanel VkyPanel;
+typedef struct VkyPanelIndex VkyPanelIndex;
 typedef struct VkyPanelLink VkyPanelLink;
 typedef struct VkyVisualPanel VkyVisualPanel;
 typedef struct VkyData VkyData;
@@ -315,6 +316,14 @@ struct VkyPanelLink
     VkyPanel* p1;
     VkyPanelLinkMode mode;
 };
+
+
+
+struct VkyPanelIndex
+{
+    uint32_t row, col;
+};
+
 
 
 struct VkyPanel
@@ -679,6 +688,7 @@ VKY_EXPORT void vky_destroy_visual_bundle(VkyVisualBundle* visual_bundle);
 
 VKY_EXPORT void vky_set_full_viewport(VkyCanvas* canvas); // TODO: scene
 VKY_EXPORT VkyPanel* vky_get_panel(VkyScene* scene, uint32_t row, uint32_t col);
+VKY_EXPORT VkyPanelIndex vky_get_panel_index(VkyPanel*);
 VKY_EXPORT void* vky_get_axes(VkyPanel* panel);
 VKY_EXPORT VkyViewport vky_get_viewport(VkyPanel*, VkyViewportType viewport_type);
 VKY_EXPORT void vky_mvp_finalize(VkyScene* scene);

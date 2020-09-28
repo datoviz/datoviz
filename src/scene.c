@@ -1209,6 +1209,11 @@ VkyPanel* vky_get_panel(VkyScene* scene, uint32_t row, uint32_t col)
     return &scene->grid->panels[panel_index];
 }
 
+VkyPanelIndex vky_get_panel_index(VkyPanel* panel)
+{
+    return (VkyPanelIndex){panel->row, panel->col};
+}
+
 VkyViewport vky_get_viewport(VkyPanel* panel, VkyViewportType viewport_type)
 {
     VkyScene* scene = panel->scene;

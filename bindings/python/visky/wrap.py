@@ -1,5 +1,5 @@
 import ctypes
-from ctypes import pointer
+from ctypes import pointer, POINTER
 import logging
 from pathlib import Path
 from platform import system
@@ -9,7 +9,10 @@ from numpy.ctypeslib import ndpointer
 
 from . import _constants as const
 from . import _types as tp
-from ._types import T_VP, T_INT, T_UINT32, T_FLOAT, T_VEC2, T_DOUBLE, T_NDARRAY, T_COLOR, T_DATA
+from ._types import (
+    Bunch,
+    T_VP, T_BOOL, T_INT, T_UINT32, T_FLOAT, T_VEC2, T_DOUBLE, T_NDARRAY, T_COLOR, T_DATA
+)
 
 logger = logging.getLogger(__name__)
 
@@ -79,14 +82,34 @@ def get_const(x, default=None):
     return x if x is not None else 0
 
 
-_KEY_STRINGS = {
-    getattr(const, key_s): key_s[4:].lower()
-    for key_s in dir(const) if key_s.startswith('KEY_')
-}
+def _stringify(n):
+    return {
+        getattr(const, s): s[len(n):].lower()
+        for s in dir(const) if s.startswith(n)
+    }
+
+
+# TODO; Python 3 enum
+_KEY_STRINGS = _stringify('KEY_')
+_KEY_MODIFIER_STRINGS = _stringify('KEY_MODIFIER_')
+_MOUSE_BUTTON_STRINGS = _stringify('MOUSE_BUTTON_')
+_MOUSE_STATE_STRINGS = _stringify('MOUSE_STATE_')
 
 
 def key_string(key):
     return _KEY_STRINGS.get(key, None)
+
+
+def mouse_state(state):
+    return _MOUSE_STATE_STRINGS.get(state, None)
+
+
+def mouse_button(button):
+    return _MOUSE_BUTTON_STRINGS.get(button, None) if button != 0 else None
+
+
+def key_modifiers(keyboard):
+    pass
 
 
 def to_byte(x, vmin=0, vmax=1):
@@ -115,19 +138,20 @@ wrap(viskylib.vky_set_grid_heights, [T_VP, T_NDARRAY(np.float32)], None)
 wrap(viskylib.vky_destroy_scene, [T_VP])
 
 wrap(viskylib.vky_get_panel, [T_VP, T_UINT32, T_UINT32], T_VP)
+wrap(viskylib.vky_get_panel_index, [T_VP], tp.T_PANEL_INDEX)
 wrap(viskylib.vky_set_controller, [T_INT, T_VP])
 wrap(viskylib.vky_add_visual_to_panel, [T_VP, T_INT, T_INT])
 wrap(viskylib.vky_visual, [T_VP, T_INT, T_VP, T_VP], T_VP)
 wrap(viskylib.vky_visual_upload, [T_VP, T_DATA])
 
 wrap(viskylib.vky_get_axes, [T_VP], T_VP)
-wrap(viskylib.vky_axes_set_range, [
-     T_VP, T_DOUBLE, T_DOUBLE, T_DOUBLE, T_DOUBLE])
+wrap(viskylib.vky_axes_set_initial_range, [T_VP, tp.T_BOX2D])
+wrap(viskylib.vky_axes_set_range, [T_VP, tp.T_BOX2D, T_BOOL])
 wrap(viskylib.vky_pick, [T_VP, T_VEC2], tp.T_PICK)
 
 wrap(viskylib.vky_visual_image_upload, [T_VP, T_VP])
 wrap(viskylib.vky_default_texture_params, [tp.T_IVEC3], tp.T_TEXTURE_PARAMS)
 
 wrap(viskylib.vky_add_frame_callback, [T_VP, T_VP])
-wrap(viskylib.vky_event_key, [T_VP], T_INT)
-wrap(viskylib.vky_event_mouse, [T_VP], tp.T_SVEC2)
+wrap(viskylib.vky_event_keyboard, [T_VP], POINTER(tp.T_KEYBOARD))
+wrap(viskylib.vky_event_mouse, [T_VP], POINTER(tp.T_MOUSE))

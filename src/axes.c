@@ -337,6 +337,10 @@ static void _make_vertices(
         1 + (int32_t)round((axes->xticks.vmax - axes->xticks.vmin) / axes->xticks.step);
     const int32_t NY =
         1 + (int32_t)round((axes->yticks.vmax - axes->yticks.vmin) / axes->yticks.step);
+
+    ASSERT(axes->xticks.vmin < axes->xticks.vmax);
+    ASSERT(axes->yticks.vmin < axes->yticks.vmax);
+
     ASSERT(NX >= 1);
     ASSERT(NY >= 1);
 
@@ -774,116 +778,6 @@ void vky_axes_update_visuals(VkyAxes* axes)
 }
 
 
-/*
-static void vky_axes_recompute_ticks(VkyAxes* axes, VkyPanzoom* panzoom, bool force_trigger)
-{
-    VkyPanzoom* axpanzoom = axes->panzoom;
-
-    int32_t xlevel = (int)round(log2(panzoom->zoom[0]));
-    int32_t ylevel = (int)round(log2(panzoom->zoom[1]));
-
-    double zxlevel = pow(2, xlevel);
-    double zylevel = pow(2, ylevel);
-
-    int32_t xoffset = (int)round(panzoom->camera_pos[0] * zxlevel);
-    int32_t yoffset = (int)round(panzoom->camera_pos[1] * zylevel);
-
-    bool trigger =
-        (force_trigger || abs(axes->xdyad.level - xlevel) >= (int32_t)VKY_AXES_DYAD_TRIGGER ||
-         abs(axes->ydyad.level - ylevel) >= (int32_t)VKY_AXES_DYAD_TRIGGER ||
-         abs(axes->xdyad.offset - xoffset) >= (int32_t)VKY_AXES_DYAD_TRIGGER ||
-         abs(axes->ydyad.offset - yoffset) >= (int32_t)VKY_AXES_DYAD_TRIGGER);
-
-    // Force trigger on panzoom reset.
-    VkyMouse* mouse = axes->panel->scene->canvas->event_controller->mouse;
-    if (mouse->cur_state == VKY_MOUSE_STATE_DOUBLE_CLICK)
-    {
-        trigger = true;
-    }
-
-    if (!trigger)
-        return;
-    log_trace("axes panzoom update: recompute new tick extents");
-
-    // Axes extent.
-    axes->panzoom_box = vky_panzoom_get_box(axes->panel, panzoom, VKY_VIEWPORT_INNER);
-
-    // Reset the axes panzoom.
-    axpanzoom->camera_pos[0] = 0;
-    axpanzoom->camera_pos[1] = 0;
-    axpanzoom->zoom[0] = 1;
-    axpanzoom->zoom[1] = 1;
-
-    axes->xdyad = (VkyAxesDyad){xlevel, xoffset};
-    axes->ydyad = (VkyAxesDyad){ylevel, yoffset};
-
-    // Center of the original view.
-    double xc = .5 * (axes->xscale_orig.vmin + axes->xscale_orig.vmax);
-    double yc = .5 * (axes->yscale_orig.vmin + axes->yscale_orig.vmax);
-
-    // Size of the original view.
-    double w = .5 * (axes->xscale_orig.vmax - axes->xscale_orig.vmin);
-    double h = .5 * (axes->yscale_orig.vmax - axes->yscale_orig.vmin);
-
-    // Update xscale and yscale.
-    xc += xoffset * .5 * (axes->xscale_orig.vmax - axes->xscale_orig.vmin) / zxlevel;
-    yc += yoffset * .5 * (axes->yscale_orig.vmax - axes->yscale_orig.vmin) / zylevel;
-
-    axes->xscale.vmin = xc - w / zxlevel;
-    axes->xscale.vmax = xc + w / zxlevel;
-
-    axes->yscale.vmin = yc - h / zylevel;
-    axes->yscale.vmax = yc + h / zylevel;
-
-    // Update the axes: recompute the ticks and update the axes visual.
-    vky_axes_update_visuals(axes);
-}
-
-
-static void vky_axes_update_visuals(VkyAxes* axes)
-{
-    memset(axes->tick_data, 0, VKY_AXES_MAX_VERTICES);
-    memset(axes->text_data, 0, VKY_AXES_MAX_STRINGS);
-    memset(axes->str_buffer, 0, VKY_AXES_MAX_GLYPHS);
-
-    // Get the axes context.
-    VkyCanvas* canvas = axes->tick_visual->scene->canvas;
-    const VkyAxesTextParams* params = (const VkyAxesTextParams*)axes->text_visual->params;
-    float glyph_width = params->glyph_size[0];
-    float glyph_height = params->glyph_size[1];
-    float viewport_width = axes->panel->viewport.w * canvas->size.framebuffer_width;
-    float viewport_height = axes->panel->viewport.h * canvas->size.framebuffer_height;
-
-    ASSERT(viewport_width > 0);
-    ASSERT(viewport_height > 0);
-
-    // Find the ticks.
-    VkyAxesContext context = {
-        0,
-        {glyph_width, glyph_height},
-        {viewport_width, viewport_height},
-        canvas->dpi_factor,
-        false};
-    axes->xticks = _get_ticks(axes->xscale.vmin, axes->xscale.vmax, context);
-    context.coord = 1;
-    axes->yticks = _get_ticks(axes->yscale.vmin, axes->yscale.vmax, context);
-
-    // Generate the tick vertices.
-    uint32_t vertex_count, text_vertex_count;
-    _make_vertices(axes, &vertex_count, axes->tick_data, &text_vertex_count, axes->text_data);
-
-    // Bake them for the segment visual and upload to the GPU.
-    ASSERT(vertex_count > 0);
-    ASSERT(VKY_AXES_MAX_VERTICES >= vertex_count);
-
-    // log_trace("update axes visual %d", vertex_count);
-    vky_visual_upload(axes->tick_visual, (VkyData){vertex_count, axes->tick_data});
-
-    // log_trace("update axes text visual %d", text_vertex_count);
-    vky_visual_upload(axes->text_visual, (VkyData){text_vertex_count, axes->text_data});
-}
-*/
-
 
 /*************************************************************************************************/
 /*  Axes range                                                                                   */
@@ -906,6 +800,18 @@ VkyBox2D vky_axes_get_range(VkyAxes* axes)
     printf("%f %f %f %f\n", (x).pos_ll[0], (x).pos_ll[1], (x).pos_ur[0], (x).pos_ur[1]);
 
 
+
+void vky_axes_set_initial_range(VkyAxes* axes, VkyBox2D box)
+{
+    axes->xscale_orig.vmin = axes->xscale.vmin = box.pos_ll[0];
+    axes->yscale_orig.vmin = axes->yscale.vmin = box.pos_ll[1];
+    axes->xscale_orig.vmax = axes->xscale.vmax = box.pos_ur[0];
+    axes->yscale_orig.vmax = axes->yscale.vmax = box.pos_ur[1];
+    vky_axes_compute_ticks(axes);
+    vky_axes_update_visuals(axes);
+}
+
+
 void vky_axes_set_range(VkyAxes* axes, VkyBox2D box, bool refill)
 {
     ASSERT(axes != NULL);
@@ -919,6 +825,7 @@ void vky_axes_set_range(VkyAxes* axes, VkyBox2D box, bool refill)
 
     bool update_x = box.pos_ll[0] < box.pos_ur[0];
     bool update_y = box.pos_ll[1] < box.pos_ur[1];
+
     if (!update_x && !update_y)
         return;
 

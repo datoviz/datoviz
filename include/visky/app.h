@@ -24,19 +24,19 @@ typedef enum
 
 typedef enum
 {
-    VKY_MOUSE_BUTTON_NONE,
-    VKY_MOUSE_BUTTON_LEFT,
-    VKY_MOUSE_BUTTON_MIDDLE,
-    VKY_MOUSE_BUTTON_RIGHT,
+    VKY_MOUSE_BUTTON_NONE = 0,
+    VKY_MOUSE_BUTTON_LEFT = 1,
+    VKY_MOUSE_BUTTON_MIDDLE = 2,
+    VKY_MOUSE_BUTTON_RIGHT = 3,
 } VkyMouseButton;
 
 typedef enum
 {
-    VKY_MOUSE_STATE_STATIC,
-    VKY_MOUSE_STATE_DRAG,
-    VKY_MOUSE_STATE_WHEEL,
-    VKY_MOUSE_STATE_CLICK,
-    VKY_MOUSE_STATE_DOUBLE_CLICK,
+    VKY_MOUSE_STATE_STATIC = 0,
+    VKY_MOUSE_STATE_DRAG = 1,
+    VKY_MOUSE_STATE_WHEEL = 2,
+    VKY_MOUSE_STATE_CLICK = 3,
+    VKY_MOUSE_STATE_DOUBLE_CLICK = 4,
 } VkyMouseState;
 
 // taken from https://www.glfw.org/docs/3.3/group__keys.html
@@ -293,7 +293,7 @@ VKY_EXPORT void vky_destroy_event_controller(VkyEventController*);
 /*  Mouse                                                                                        */
 /*************************************************************************************************/
 
-VKY_EXPORT vec2s vky_event_mouse(VkyCanvas* canvas);
+VKY_EXPORT VkyMouse* vky_event_mouse(VkyCanvas* canvas);
 
 VKY_EXPORT void vky_update_mouse_state(VkyMouse*, vec2, VkyMouseButton);
 
@@ -312,7 +312,7 @@ void vky_mouse_press_pos(VkyMouse* mouse, VkyViewport viewport, vec2 pos);
 /*  Keyboard                                                                                     */
 /*************************************************************************************************/
 
-VKY_EXPORT VkyKey vky_event_key(VkyCanvas* canvas);
+VKY_EXPORT VkyKeyboard* vky_event_keyboard(VkyCanvas* canvas);
 
 VKY_EXPORT bool vky_is_key_modifier(VkyKey key);
 VKY_EXPORT void

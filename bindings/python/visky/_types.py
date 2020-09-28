@@ -6,15 +6,26 @@ from numpy.ctypeslib import ndpointer
 from . import _constants as const
 
 
+class Bunch(dict):
+    def __init__(self, *args, **kwargs):
+        super(Bunch, self).__init__(*args, **kwargs)
+        self.__dict__.update(self)
+
+
 # Types
 T_VP = ctypes.c_void_p
 
+T_BOOL = ctypes.c_bool
 T_FLOAT = ctypes.c_float
 T_DOUBLE = ctypes.c_double
 
 T_VEC2 = ctypes.c_float * 2
 T_VEC3 = ctypes.c_float * 3
 T_VEC4 = ctypes.c_float * 4
+
+T_DVEC2 = ctypes.c_double * 2
+T_DVEC3 = ctypes.c_double * 3
+T_DVEC4 = ctypes.c_double * 4
 
 T_INT = ctypes.c_int
 T_UINT8 = ctypes.c_uint8
@@ -56,32 +67,71 @@ class T_COLOR(ctypes.Structure):
     ]
 
 
+class T_BOX2D(ctypes.Structure):
+    _fields_ = [
+        ("pos_ll", T_DVEC2),
+        ("pos_ur", T_DVEC2),
+    ]
+
+
+class T_PANEL_INDEX(ctypes.Structure):
+    _fields_ = [
+        ("row", T_UINT32),
+        ("col", T_UINT32),
+    ]
+
+
 class T_DATA(ctypes.Structure):
     _fields_ = [
-        ("item_count", ctypes.c_uint32),
-        ("items", ctypes.c_void_p),
+        ("item_count", T_UINT32),
+        ("items", T_VP),
 
-        ("vertex_count", ctypes.c_uint32),
-        ("vertices", ctypes.c_void_p),
+        ("vertex_count", T_UINT32),
+        ("vertices", T_VP),
 
-        ("index_count", ctypes.c_uint32),
-        ("indices", ctypes.c_void_p),
+        ("index_count", T_UINT32),
+        ("indices", T_VP),
 
-        ("no_vertices_alloc", ctypes.c_bool),
+        ("no_vertices_alloc", T_BOOL),
     ]
 
 
 class T_PICK(ctypes.Structure):
     _fields_ = [
-        ("canvas_px", ctypes.c_float * 2),
-        ("canvas_ndc", ctypes.c_float * 2),
+        ("panel", T_VP),
 
-        ("panel_px", ctypes.c_float * 2),
-        ("panel_ndc", ctypes.c_float * 2),
+        ("pos_canvas_px", T_DVEC2),
+        ("pos_canvas_ndc", T_DVEC2),
+        ("pos_panel", T_DVEC2),
+        ("pos_panzoom", T_DVEC2),
+        ("pos_gpu", T_DVEC2),
+        ("pos_data", T_DVEC2),
+    ]
 
-        ("data_coords", ctypes.c_double * 2),
 
-        ("panel", ctypes.c_void_p),
+class T_MOUSE(ctypes.Structure):
+    _fields_ = [
+        ("button", T_INT),
+
+        ("press_pos", T_VEC2),
+        ("last_pos", T_VEC2),
+        ("cur_pos", T_VEC2),
+
+        ("wheel_delta", T_VEC2),
+
+        ("prev_state", T_INT),
+        ("cur_state", T_INT),
+
+        ("press_time", T_DOUBLE),
+        ("click_time", T_DOUBLE),
+    ]
+
+
+class T_KEYBOARD(ctypes.Structure):
+    _fields_ = [
+        ("key", T_INT),
+        ("modifiers", T_UINT32),
+        ("press_time", T_DOUBLE),
     ]
 
 

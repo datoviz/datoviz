@@ -279,13 +279,7 @@ void vky_destroy_event_controller(VkyEventController* event_controller)
 /*  Mouse                                                                                        */
 /*************************************************************************************************/
 
-vec2s vky_event_mouse(VkyCanvas* canvas)
-{
-    vec2s pos;
-    pos.x = canvas->event_controller->mouse->cur_pos[0];
-    pos.y = canvas->event_controller->mouse->cur_pos[1];
-    return pos;
-}
+VkyMouse* vky_event_mouse(VkyCanvas* canvas) { return canvas->event_controller->mouse; }
 
 /* Update the mouse state from a mouse position and mouse button. */
 void vky_update_mouse_state(VkyMouse* mouse, vec2 pos, VkyMouseButton button)
@@ -340,6 +334,7 @@ void vky_update_mouse_state(VkyMouse* mouse, vec2 pos, VkyMouseButton button)
         {
             log_trace("end drag event");
             mouse->cur_state = VKY_MOUSE_STATE_STATIC;
+            mouse->button = VKY_MOUSE_BUTTON_NONE;
         }
 
         // Double click event.
@@ -478,7 +473,7 @@ void vky_mouse_press_pos(VkyMouse* mouse, VkyViewport viewport, vec2 pos)
 /*  Keyboard                                                                                     */
 /*************************************************************************************************/
 
-VkyKey vky_event_key(VkyCanvas* canvas) { return canvas->event_controller->keyboard->key; }
+VkyKeyboard* vky_event_keyboard(VkyCanvas* canvas) { return canvas->event_controller->keyboard; }
 
 bool vky_is_key_modifier(VkyKey key)
 {

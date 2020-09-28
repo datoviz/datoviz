@@ -15,6 +15,7 @@ void vky_axes_update_visuals(VkyAxes*); // update the tick visuals after a tick 
 
 VKY_EXPORT VkyBox2D vky_axes_get_range(VkyAxes* axes);
 VKY_EXPORT void vky_axes_set_range(VkyAxes* axes, VkyBox2D, bool refill);
+VKY_EXPORT void vky_axes_set_initial_range(VkyAxes* axes, VkyBox2D box);
 
 
 #endif
