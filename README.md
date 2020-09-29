@@ -17,9 +17,9 @@ Tighter integration with Dear ImGui is also planned to make it possible to build
 
 Mandatory dependencies:
 
-* **cmake and ninja**
+* **cmake 3.16+ and ninja**
 * **xcb**
-* **glfw3**
+* **glfw3** 3.3+
 * **vulkan**
 
 Optional dependencies:

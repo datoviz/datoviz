@@ -4,10 +4,9 @@
 #define N                100
 #define MAX_VERTEX_COUNT 10000000
 #define MAX_INDEX_COUNT  10000000
-
-static const uint32_t col_count = N + 1;
-static const uint32_t row_count = 2 * N + 1;
-static const uint32_t point_count = col_count * row_count;
+#define COLS             N + 1
+#define ROWS             2 * N + 1
+#define POINTS           COLS* ROWS
 
 static const char* items[] = {"mesh", "spiral"};
 static const char* citems[] = {"axes 3D", "FPS", "fly"};
@@ -23,25 +22,25 @@ static VkyVisual* spiral_visual = NULL;
 
 static void generate_surface(VkyMesh* mesh)
 {
-    float* heights = calloc(point_count, sizeof(float));
-    VkyColorBytes* color = calloc(point_count, sizeof(VkyColorBytes));
+    float* heights = calloc(POINTS, sizeof(float));
+    VkyColorBytes* color = calloc(POINTS, sizeof(VkyColorBytes));
     float w = 1;
     float x, y, z;
-    for (uint32_t i = 0; i < row_count; i++)
+    for (uint32_t i = 0; i < ROWS; i++)
     {
-        x = (float)i / (row_count - 1);
+        x = (float)i / (ROWS - 1);
         x = -w + 2 * w * x;
-        for (uint32_t j = 0; j < col_count; j++)
+        for (uint32_t j = 0; j < COLS; j++)
         {
-            y = (float)j / (col_count - 1);
+            y = (float)j / (COLS - 1);
             y = -w + 2 * w * y;
             z = .25 * sin(10 * x) * cos(10 * y);
-            heights[col_count * i + j] = z;
-            color[col_count * i + j] = vky_color(VKY_CMAP_JET, 2 * (z + .25), 0, 1, 1);
+            heights[COLS * i + j] = z;
+            color[COLS * i + j] = vky_color(VKY_CMAP_JET, 2 * (z + .25), 0, 1, 1);
         }
     }
     vec3 p00 = {-1, 0, -1}, p10 = {+1, 0, -1}, p01 = {-1, 0, +1};
-    vky_mesh_grid_surface(mesh, row_count, col_count, p00, p01, p10, heights, (cvec4*)color);
+    vky_mesh_grid_surface(mesh, ROWS, COLS, p00, p01, p10, heights, (cvec4*)color);
 }
 
 

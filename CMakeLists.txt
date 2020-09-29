@@ -53,6 +53,14 @@ if (WIN32)
 
 endif()
 
+find_package(glfw3)
+if (${glfw3_VERSION} VERSION_GREATER "3.3")
+    set(GLFW_GT_33 1)
+    else()
+    set(GLFW_GT_33 0)
+endif()
+
+
 set(CC_GCC 0)
 set(CC_CLANG 0)
 set(CC_MSVC 0)
@@ -256,6 +264,8 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
     MSVC=${CC_MSVC}
     GCC=${CC_GCC}
     CLANG=${CC_CLANG}
+
+    GLFW_GT_33=${GLFW_GT_33}
 )
 
 

@@ -144,8 +144,16 @@ VkyCanvas* vky_create_glfw_canvas(VkyApp* app, uint32_t width, uint32_t height)
     // Create the Canvas.
     VkyCanvas* canvas = vky_create_canvas_from_surface(app, window, &surface);
 
-    float xscale, yscale;
+    float xscale = 0, yscale = 0;
+
+#if GLFW_GT_33
+    // This function is only available in glfw3 >= 3.3
     glfwGetWindowContentScale(window, &xscale, &yscale);
+#else
+    log_warn("Visky has not been compiled with glfw3>=3.3 so won't be DPI-aware");
+    xscale = yscale = 1;
+#endif
+
     canvas->size.content_scale = .5 * (xscale + yscale);
     canvas->dpi_factor *= canvas->size.content_scale;
 #if OS_MACOS

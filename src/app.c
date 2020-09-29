@@ -40,6 +40,7 @@ VkyApp* vky_create_app(VkyBackendType backend, void* backend_params)
         app->cb_wait = vky_glfw_wait;
         log_trace("init glfw backend");
         glfwInit();
+        ASSERT(glfwVulkanSupported() != 0);
         required_extensions = glfwGetRequiredInstanceExtensions(&required_extension_count);
         ASSERT(required_extensions != NULL);
         ASSERT(required_extension_count > 0);
