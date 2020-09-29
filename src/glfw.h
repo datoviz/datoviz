@@ -27,4 +27,6 @@ void vky_glfw_end_frame(VkyCanvas* canvas);
 
 void vky_run_glfw_app(VkyApp* app);
 
+void vky_glfw_stop_app(VkyApp* app);
+
 #endif

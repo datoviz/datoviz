@@ -389,3 +389,11 @@ void vky_run_glfw_app(VkyApp* app)
     log_trace("all windows have closed");
     vkDeviceWaitIdle(canvas->gpu->device);
 }
+
+void vky_glfw_stop_app(VkyApp* app)
+{
+    for (uint32_t i = 0; i < app->canvas_count; i++)
+    {
+        app->canvases[i]->to_close = true;
+    }
+}
