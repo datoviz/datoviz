@@ -130,6 +130,11 @@ wrap(viskylib.vky_create_app, [T_INT, T_VP], T_VP)
 wrap(viskylib.vky_run_app, [T_VP])
 wrap(viskylib.vky_destroy_app, [T_VP])
 
+wrap(viskylib.vky_glfw_run_app_begin, [T_VP])
+wrap(viskylib.vky_glfw_run_app_process, [T_VP])
+wrap(viskylib.vky_glfw_run_app_end, [T_VP])
+wrap(viskylib.vky_all_windows_closed, [T_VP], T_BOOL)
+
 wrap(viskylib.vky_create_canvas, [T_VP, T_UINT32, T_UINT32], T_VP)
 
 wrap(viskylib.vky_create_scene, [T_VP, T_COLOR, T_UINT32, T_UINT32], T_VP)
@@ -155,3 +160,8 @@ wrap(viskylib.vky_default_texture_params, [tp.T_IVEC3], tp.T_TEXTURE_PARAMS)
 wrap(viskylib.vky_add_frame_callback, [T_VP, T_VP])
 wrap(viskylib.vky_event_keyboard, [T_VP], POINTER(tp.T_KEYBOARD))
 wrap(viskylib.vky_event_mouse, [T_VP], POINTER(tp.T_MOUSE))
+
+wrap(viskylib.vky_demo_raytracing, [])
+
+
+viskylib.log_set_level_env()

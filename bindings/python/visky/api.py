@@ -1,3 +1,4 @@
+import atexit
 import csv
 import logging
 from pathlib import Path
@@ -16,6 +17,10 @@ from visky import _types as tp
 logger = logging.getLogger(__file__)
 
 
+_APP = None
+_IN_IPYTHON_TERMINAL = False
+
+
 class App:
     def __init__(self):
         self._app = vl.vky_create_app(const.BACKEND_GLFW, None)
@@ -26,9 +31,66 @@ class App:
         self._canvases.append(c)
         return c
 
+    def run_begin(self):
+        vl.vky_glfw_run_app_begin(self._app)
+
+    def run_process(self):
+        vl.vky_glfw_run_app_process(self._app)
+
+    def run_end(self):
+        vl.vky_glfw_run_app_end(self._app)
+
     def run(self):
-        vl.vky_run_app(self._app)
+        if not _IN_IPYTHON_TERMINAL:
+            # TO be called in a script, NOT from IPython terminal in which case the app is run
+            # automatically via the input hook.
+            vl.vky_run_app(self._app)
+
+    def destroy(self):
+        vl.vky_glfw_run_app_end(self._app)
         vl.vky_destroy_app(self._app)
+
+
+def app():
+    global _APP
+    if _APP is None:
+        _APP = App()
+    return _APP
+
+
+def canvas(*args, **kwargs):
+    return app().canvas(*args, **kwargs)
+
+
+def run():
+    app().run()
+
+
+# IPython console event loop integration
+try:
+    from IPython.terminal.pt_inputhooks import register
+
+    def inputhook(context):
+        global _APP
+        if _APP is None:
+            _APP = App()
+            _APP.run_begin()
+        assert _APP is not None
+        while not context.input_is_ready():
+            _APP.run_process()
+        global _IN_IPYTHON_TERMINAL
+        _IN_IPYTHON_TERMINAL = True
+        # TODO: end & destroy
+
+    register('visky', inputhook)
+
+except ImportError:
+    logger.info("IPython not available")
+
+
+@atexit.register
+def destroy_app():
+    app().destroy()
 
 
 class Canvas:

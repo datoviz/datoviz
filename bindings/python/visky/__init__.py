@@ -1,27 +1,23 @@
+import numpy as np
+
 from .wrap import viskylib as vl, make_vertices, upload_data
 from . import _constants as const
+from . import _types as tp
+from .api import App, app, canvas, run, get_color
 
 
-def demo_blank():
-    vl.vky_demo_blank()
+def demo():
+    c = canvas()
 
+    n = 1000
+    t = np.linspace(-1, 1, n)
 
-def markers(pos, color):
-    vl.log_set_level_env()
+    points = np.zeros((n, 3), dtype=np.float32)
+    points[:, 0] = t
+    points[:, 1] = .5 * np.cos(20 * t)
 
-    app = vl.vky_create_app(const.BACKEND_GLFW, None)
-    canvas = vl.vky_create_canvas(app, 100, 100)
-    scene = vl.vky_create_scene(canvas, const.WHITE, 1, 1)
-    panel = vl.vky_get_panel(scene, 0, 0)
-    vl.vky_set_controller(panel, const.CONTROLLER_AXES_2D, None)
+    colors = get_color('jet', np.linspace(0, 1, n))
 
-    # Raw markers.
-    visual = vl.vky_visual(scene, const.VISUAL_MARKER_RAW, None, None)
-    vl.vky_add_visual_to_panel(
-        visual, panel, const.VIEWPORT_INNER, const.VISUAL_PRIORITY_NONE)
+    v_plot = c[0, 0].plot(points, colors=colors, lw=10)
 
-    upload_data(visual, make_vertices(pos, color))
-
-    vl.vky_run_app(app)
-    vl.vky_destroy_scene(scene)
-    vl.vky_destroy_app(app)
+    run()

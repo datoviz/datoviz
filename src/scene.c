@@ -1397,6 +1397,7 @@ VkyScene* vky_create_scene(
 
     // Draw all visuals in the callback that recreates the command buffers.
     canvas->cb_fill_command_buffer = _scene_fill_command_buffer;
+    canvas->need_refill = true;
     canvas->cb_resize = _controller_resize_callback;
 
     // Controller activity responding to mouse is defined in this callback function.
