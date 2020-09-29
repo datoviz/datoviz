@@ -9,6 +9,24 @@
 /*  App                                                                                          */
 /*************************************************************************************************/
 
+static void _esc_close_canvas(VkyCanvas* canvas)
+{
+    VkyKeyboard* keyboard = canvas->event_controller->keyboard;
+    if (keyboard->key == VKY_KEY_ESCAPE)
+    {
+        vky_close_canvas(canvas);
+    }
+    // return 0;
+}
+
+static void fcb(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
+{
+    vky_begin_render_pass(cmd_buf, canvas, VKY_CLEAR_COLOR_BLACK);
+    vky_end_render_pass(cmd_buf, canvas);
+}
+
+
+
 void vky_wait_canvas_ready(VkyCanvas* canvas)
 {
     VkyApp* app = canvas->app;
@@ -56,16 +74,6 @@ VkyApp* vky_create_app(VkyBackendType backend, void* backend_params)
     return app;
 }
 
-static void _esc_close_canvas(VkyCanvas* canvas)
-{
-    VkyKeyboard* keyboard = canvas->event_controller->keyboard;
-    if (keyboard->key == VKY_KEY_ESCAPE)
-    {
-        vky_close_canvas(canvas);
-    }
-    // return 0;
-}
-
 VkyCanvas* vky_create_canvas(VkyApp* app, uint32_t width, uint32_t height)
 {
     log_trace("create canvas with size %dx%d", width, height);
@@ -76,7 +84,7 @@ VkyCanvas* vky_create_canvas(VkyApp* app, uint32_t width, uint32_t height)
     {
 
     case VKY_BACKEND_GLFW:
-        canvas = vky_create_glfw_canvas(app, width, height);
+        canvas = vky_glfw_create_canvas(app, width, height);
         break;
 
     case VKY_BACKEND_VIDEO:
@@ -99,6 +107,9 @@ VkyCanvas* vky_create_canvas(VkyApp* app, uint32_t width, uint32_t height)
     app->canvases[app->canvas_count] = canvas;
     app->canvas_count++;
 
+    // Black canvas by default.
+    canvas->cb_fill_command_buffer = fcb;
+
     vky_add_frame_callback(canvas, _esc_close_canvas);
 
     return canvas;
@@ -112,7 +123,7 @@ void vky_run_app(VkyApp* app)
     {
 
     case VKY_BACKEND_GLFW:
-        vky_run_glfw_app(app);
+        vky_glfw_run_app(app);
         break;
 
     case VKY_BACKEND_VIDEO:;
@@ -212,6 +223,8 @@ void vky_destroy_app(VkyApp* app)
     free(app->gpu);
     free(app);
 }
+
+bool vky_all_windows_closed(VkyApp* app) { return app->all_windows_closed; }
 
 
 
@@ -605,13 +618,13 @@ void vky_update_event_states(VkyEventController* event_controller)
     case VKY_BACKEND_GLFW:
 
         // Get the mouse button.
-        button = vky_get_glfw_mouse_button((GLFWwindow*)event_controller->canvas->window);
+        button = vky_glfw_get_mouse_button((GLFWwindow*)event_controller->canvas->window);
 
         // Get the mouse position.
-        vky_get_glfw_mouse_pos((GLFWwindow*)event_controller->canvas->window, pos);
+        vky_glfw_get_mouse_pos((GLFWwindow*)event_controller->canvas->window, pos);
 
         // Get the keyboard keys.
-        vky_get_glfw_keyboard((GLFWwindow*)event_controller->canvas->window, &key, &modifiers);
+        vky_glfw_get_keyboard((GLFWwindow*)event_controller->canvas->window, &key, &modifiers);
 
         break;
 

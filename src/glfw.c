@@ -1,31 +1,6 @@
 #include "glfw.h"
 
-VkyMouseButton vky_get_glfw_mouse_button(GLFWwindow* window)
-{
-    VkyMouseButton button = VKY_MOUSE_BUTTON_NONE;
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-    {
-        button = VKY_MOUSE_BUTTON_LEFT;
-    }
-    else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS)
-    {
-        button = VKY_MOUSE_BUTTON_MIDDLE;
-    }
-    else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
-    {
-        button = VKY_MOUSE_BUTTON_RIGHT;
-    }
-    return button;
-}
 
-void vky_get_glfw_mouse_pos(GLFWwindow* window, vec2 pos)
-{
-    // Get the mouse position.
-    double x, y;
-    glfwGetCursorPos(window, &x, &y);
-    pos[0] = (float)x;
-    pos[1] = (float)y;
-}
 
 static void _mouse_wheel_callback(GLFWwindow* window, double dx, double dy)
 {
@@ -47,19 +22,6 @@ static void _mouse_wheel_callback(GLFWwindow* window, double dx, double dy)
     {
         mouse->wheel_delta[0] *= -1;
         mouse->wheel_delta[1] *= -1;
-    }
-}
-
-void vky_get_glfw_keyboard(GLFWwindow* window, VkyKey* key, uint32_t* modifiers)
-{
-    VkyCanvas* canvas = (VkyCanvas*)glfwGetWindowUserPointer(window);
-    ASSERT(canvas->event_controller != NULL);
-    VkyKeyboard* keyboard = canvas->event_controller->keyboard;
-    ASSERT(keyboard != NULL);
-    if (keyboard->key != VKY_KEY_NONE)
-    {
-        *key = keyboard->key;
-        *modifiers = keyboard->modifiers;
     }
 }
 
@@ -96,26 +58,49 @@ static void _key_callback(GLFWwindow* window, int key, int scancode, int action,
     keyboard->modifiers = (uint32_t)mods;
 }
 
-void vky_glfw_wait(VkyCanvas* canvas)
+
+
+VkyMouseButton vky_glfw_get_mouse_button(GLFWwindow* window)
 {
-    GLFWwindow* window = canvas->window;
-    int w, h;
-    // Wait until the device is ready and the window fully resized.
-    glfwGetFramebufferSize(window, &w, &h);
-    while (w == 0 || h == 0)
+    VkyMouseButton button = VKY_MOUSE_BUTTON_NONE;
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
     {
-        glfwGetFramebufferSize(window, &w, &h);
-        glfwWaitEvents();
+        button = VKY_MOUSE_BUTTON_LEFT;
     }
-    ASSERT((w > 0) && (h > 0));
-    // canvas->window_size.w = (uint32_t)w;
-    // canvas->window_size.h = (uint32_t)h;
-    canvas->size.framebuffer_width = (uint32_t)w;
-    canvas->size.framebuffer_height = (uint32_t)h;
-    vkDeviceWaitIdle(canvas->gpu->device);
+    else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS)
+    {
+        button = VKY_MOUSE_BUTTON_MIDDLE;
+    }
+    else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+    {
+        button = VKY_MOUSE_BUTTON_RIGHT;
+    }
+    return button;
 }
 
-VkyCanvas* vky_create_glfw_canvas(VkyApp* app, uint32_t width, uint32_t height)
+void vky_glfw_get_mouse_pos(GLFWwindow* window, vec2 pos)
+{
+    // Get the mouse position.
+    double x, y;
+    glfwGetCursorPos(window, &x, &y);
+    pos[0] = (float)x;
+    pos[1] = (float)y;
+}
+
+void vky_glfw_get_keyboard(GLFWwindow* window, VkyKey* key, uint32_t* modifiers)
+{
+    VkyCanvas* canvas = (VkyCanvas*)glfwGetWindowUserPointer(window);
+    ASSERT(canvas->event_controller != NULL);
+    VkyKeyboard* keyboard = canvas->event_controller->keyboard;
+    ASSERT(keyboard != NULL);
+    if (keyboard->key != VKY_KEY_NONE)
+    {
+        *key = keyboard->key;
+        *modifiers = keyboard->modifiers;
+    }
+}
+
+VkyCanvas* vky_glfw_create_canvas(VkyApp* app, uint32_t width, uint32_t height)
 {
     log_trace("create glfw canvas with size %dx%d", width, height);
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -219,39 +204,43 @@ void vky_glfw_begin_frame(VkyCanvas* canvas)
     glfwPollEvents();
 
     // Acquire the next swap chain image.
-    VkyGpu* gpu = canvas->gpu;
-    VkyDrawSync* draw_sync = &canvas->draw_sync;
-    vkWaitForFences(
-        gpu->device, 1, &(draw_sync->in_flight_fences[canvas->current_frame]), VK_TRUE,
-        UINT64_MAX);
-
-    VkResult result = vkAcquireNextImageKHR(
-        gpu->device, canvas->swapchain, UINT64_MAX,
-        draw_sync->image_available_semaphores[canvas->current_frame], VK_NULL_HANDLE,
-        &(canvas->image_index));
-
-    if (result == VK_ERROR_OUT_OF_DATE_KHR)
+    if (canvas->cb_fill_command_buffer != NULL)
     {
-        log_trace("out of date begin frame");
-        // Handle minimization: wait until the device is ready and the window fully resized.
-        vky_glfw_wait(canvas);
-        // in the main loop
-        canvas->need_recreation = true;
-        return;
-    }
-    else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
-    {
-        log_error("failed acquiring the swap chain image");
-    }
 
-    if (draw_sync->images_in_flight[canvas->image_index] != VK_NULL_HANDLE)
-    {
+        VkyGpu* gpu = canvas->gpu;
+        VkyDrawSync* draw_sync = &canvas->draw_sync;
         vkWaitForFences(
-            gpu->device, 1, &(draw_sync->images_in_flight[canvas->image_index]), VK_TRUE,
+            gpu->device, 1, &(draw_sync->in_flight_fences[canvas->current_frame]), VK_TRUE,
             UINT64_MAX);
+
+        VkResult result = vkAcquireNextImageKHR(
+            gpu->device, canvas->swapchain, UINT64_MAX,
+            draw_sync->image_available_semaphores[canvas->current_frame], VK_NULL_HANDLE,
+            &(canvas->image_index));
+
+        if (result == VK_ERROR_OUT_OF_DATE_KHR)
+        {
+            log_trace("out of date begin frame");
+            // Handle minimization: wait until the device is ready and the window fully resized.
+            vky_glfw_wait(canvas);
+            // in the main loop
+            canvas->need_recreation = true;
+            return;
+        }
+        else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+        {
+            log_error("failed acquiring the swap chain image");
+        }
+
+        if (draw_sync->images_in_flight[canvas->image_index] != VK_NULL_HANDLE)
+        {
+            vkWaitForFences(
+                gpu->device, 1, &(draw_sync->images_in_flight[canvas->image_index]), VK_TRUE,
+                UINT64_MAX);
+        }
+        draw_sync->images_in_flight[canvas->image_index] =
+            draw_sync->in_flight_fences[canvas->current_frame];
     }
-    draw_sync->images_in_flight[canvas->image_index] =
-        draw_sync->in_flight_fences[canvas->current_frame];
 }
 
 void vky_glfw_end_frame(VkyCanvas* canvas)
@@ -260,94 +249,132 @@ void vky_glfw_end_frame(VkyCanvas* canvas)
     ASSERT(!canvas->need_recreation);
 
     VkyGpu* gpu = canvas->gpu;
-    VkyDrawSync* draw_sync = &canvas->draw_sync;
 
-    // Present the buffer to the surface.
-    VkPresentInfoKHR presentInfo = {0};
-    VkSemaphore signalSemaphores[] = {
-        draw_sync->render_finished_semaphores[canvas->current_frame]};
-
-    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-    presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = signalSemaphores;
-
-    VkSwapchainKHR swapchains[] = {canvas->swapchain};
-    presentInfo.swapchainCount = 1;
-    presentInfo.pSwapchains = swapchains;
-    presentInfo.pImageIndices = &canvas->image_index;
-
-    VkResult result = vkQueuePresentKHR(gpu->present_queue, &presentInfo);
-
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || canvas->size.resized)
+    if (canvas->cb_fill_command_buffer != NULL)
     {
-        log_trace("out of date end frame");
-        canvas->size.resized = false;
-        canvas->need_recreation = true;
-        vky_glfw_wait(canvas);
-        canvas->current_frame = (canvas->current_frame + 1) % VKY_MAX_FRAMES_IN_FLIGHT;
-        canvas->frame_count++;
-        return;
-    }
-    else if (result != VK_SUCCESS)
-    {
-        log_error("failed presenting the swap chain image");
+
+        VkyDrawSync* draw_sync = &canvas->draw_sync;
+
+        // Present the buffer to the surface.
+        VkPresentInfoKHR presentInfo = {0};
+        VkSemaphore signalSemaphores[] = {
+            draw_sync->render_finished_semaphores[canvas->current_frame]};
+
+        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        presentInfo.waitSemaphoreCount = 1;
+        presentInfo.pWaitSemaphores = signalSemaphores;
+
+        VkSwapchainKHR swapchains[] = {canvas->swapchain};
+        presentInfo.swapchainCount = 1;
+        presentInfo.pSwapchains = swapchains;
+        presentInfo.pImageIndices = &canvas->image_index;
+
+        VkResult result = vkQueuePresentKHR(gpu->present_queue, &presentInfo);
+
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR ||
+            canvas->size.resized)
+        {
+            log_trace("out of date end frame");
+            canvas->size.resized = false;
+            canvas->need_recreation = true;
+            vky_glfw_wait(canvas);
+            canvas->current_frame = (canvas->current_frame + 1) % VKY_MAX_FRAMES_IN_FLIGHT;
+            canvas->frame_count++;
+            return;
+        }
+        else if (result != VK_SUCCESS)
+        {
+            log_error("failed presenting the swap chain image");
+        }
     }
 
     canvas->current_frame = (canvas->current_frame + 1) % VKY_MAX_FRAMES_IN_FLIGHT;
     canvas->frame_count++;
 }
 
-void vky_run_glfw_app(VkyApp* app)
+void vky_glfw_wait(VkyCanvas* canvas)
+{
+    GLFWwindow* window = canvas->window;
+    int w, h;
+    // Wait until the device is ready and the window fully resized.
+    glfwGetFramebufferSize(window, &w, &h);
+    while (w == 0 || h == 0)
+    {
+        glfwGetFramebufferSize(window, &w, &h);
+        glfwWaitEvents();
+    }
+    ASSERT((w > 0) && (h > 0));
+    // canvas->window_size.w = (uint32_t)w;
+    // canvas->window_size.h = (uint32_t)h;
+    canvas->size.framebuffer_width = (uint32_t)w;
+    canvas->size.framebuffer_height = (uint32_t)h;
+    vkDeviceWaitIdle(canvas->gpu->device);
+}
+
+void vky_glfw_stop_app(VkyApp* app)
+{
+    for (uint32_t i = 0; i < app->canvas_count; i++)
+    {
+        app->canvases[i]->to_close = true;
+    }
+}
+
+
+
+void vky_glfw_run_app_begin(VkyApp* app)
 {
     log_trace("main glfw event loop");
     vky_start_timer();
-    bool all_windows_closed = false;
 
     // Create the swap chain and all objects that will need to be recreated upon resize.
     for (uint32_t i = 0; i < app->canvas_count; i++)
     {
         vky_fill_command_buffers(app->canvases[i]);
     }
+}
 
+void vky_glfw_run_app_process(VkyApp* app)
+{
+    // Check whether all windows are closed
+    app->all_windows_closed = true;
     VkyCanvas* canvas;
     bool should_close = false;
     uint32_t cmd_buf_count = 1;
     VkCommandBuffer submit_cmd_bufs[2];
-    while (!all_windows_closed)
+    uint64_t fps = 0;
+
+    for (uint32_t i = 0; i < app->canvas_count; i++)
     {
+        canvas = app->canvases[i];
+        if (canvas == NULL)
+            continue;
+        if (canvas->window == NULL)
+            continue;
 
-        // Check whether all windows are closed
-        all_windows_closed = true;
-        uint64_t fps = 0;
-        for (uint32_t i = 0; i < app->canvas_count; i++)
+        // Close one canvas.
+        should_close = glfwWindowShouldClose((GLFWwindow*)canvas->window) || canvas->to_close;
+        if (should_close)
         {
-            canvas = app->canvases[i];
-            if (canvas == NULL)
-                continue;
-            if (canvas->window == NULL)
-                continue;
+            glfwWaitEvents();
+            glfwPollEvents();
+            glfwDestroyWindow(canvas->window);
+            app->canvases[i]->window = NULL;
+            continue;
+        }
 
-            // Close one canvas.
-            should_close = glfwWindowShouldClose((GLFWwindow*)canvas->window);
-            if (should_close)
-            {
-                glfwWaitEvents();
-                glfwPollEvents();
-                glfwDestroyWindow(canvas->window);
-                app->canvases[i]->window = NULL;
-                continue;
-            }
+        // Update the mouse/keyboard states, and call the user callbacks for the mouse,
+        // keyboard, and frame.
+        canvas->dt = vky_get_timer() - canvas->local_time; // time since last frame
+        canvas->local_time = vky_get_timer();
+        vky_next_frame(canvas);
 
-            // Update the mouse/keyboard states, and call the user callbacks for the mouse,
-            // keyboard, and frame.
-            canvas->dt = vky_get_timer() - canvas->local_time; // time since last frame
-            canvas->local_time = vky_get_timer();
-            vky_next_frame(canvas);
+        // Begin of the frame, skipped if the canvas need to be recreated after a resize.
+        // This method also updates the window size.
+        vky_glfw_begin_frame(canvas);
 
-            // Begin of the frame, skipped if the canvas need to be recreated after a resize.
-            // This method also updates the window size.
-            vky_glfw_begin_frame(canvas);
-
+        // Empty canvases: skip the vulkan swapchain logic.
+        if (canvas->cb_fill_command_buffer != NULL)
+        {
             // Handle resizing.
             if (canvas->need_recreation)
             {
@@ -379,21 +406,33 @@ void vky_run_glfw_app(VkyApp* app)
                 vky_glfw_end_frame(canvas);
                 vky_compute_submit(canvas->gpu);
             }
-
-            all_windows_closed &= (should_close || canvas->to_close);
-            fps = vky_get_fps(canvas->frame_count);
-            if (fps > 0)
-                canvas->fps = fps;
         }
+        else
+        {
+            // For empty canvases.
+            vky_glfw_wait(canvas);
+            vky_glfw_end_frame(canvas);
+        }
+
+        app->all_windows_closed &= should_close;
+        fps = vky_get_fps(canvas->frame_count);
+        if (fps > 0)
+            canvas->fps = fps;
     }
-    log_trace("all windows have closed");
-    vkDeviceWaitIdle(canvas->gpu->device);
 }
 
-void vky_glfw_stop_app(VkyApp* app)
+void vky_glfw_run_app_end(VkyApp* app)
 {
-    for (uint32_t i = 0; i < app->canvas_count; i++)
+    log_trace("all windows have closed");
+    vkDeviceWaitIdle(app->gpu->device);
+}
+
+void vky_glfw_run_app(VkyApp* app)
+{
+    vky_glfw_run_app_begin(app);
+    while (!vky_all_windows_closed(app))
     {
-        app->canvases[i]->to_close = true;
+        vky_glfw_run_app_process(app);
     }
+    vky_glfw_run_app_end(app);
 }

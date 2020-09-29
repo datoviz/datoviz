@@ -208,6 +208,7 @@ struct VkyApp
 
     uint32_t canvas_count;
     VkyCanvas** canvases;
+    bool all_windows_closed;
 
     // links between canvases
     uint32_t link_count;
@@ -282,6 +283,7 @@ VKY_EXPORT VkyCanvas* vky_create_canvas(VkyApp*, uint32_t, uint32_t);
 VKY_EXPORT void vky_run_app(VkyApp*);
 VKY_EXPORT void vky_destroy_app(VkyApp*);
 VKY_EXPORT void vky_close_canvas(VkyCanvas* canvas);
+VKY_EXPORT bool vky_all_windows_closed(VkyApp*);
 
 VKY_EXPORT void vky_create_event_controller(VkyCanvas*);
 VKY_EXPORT void vky_reset_event_controller(VkyEventController* event_controller);
