@@ -23,6 +23,7 @@ _IN_IPYTHON_TERMINAL = False
 
 class App:
     def __init__(self):
+        # print("CREATE APP")
         self._app = vl.vky_create_app(const.BACKEND_GLFW, None)
         self._canvases = []
 
@@ -42,11 +43,13 @@ class App:
 
     def run(self):
         if not _IN_IPYTHON_TERMINAL:
+            # print("RUN APP")
             # TO be called in a script, NOT from IPython terminal in which case the app is run
             # automatically via the input hook.
             vl.vky_run_app(self._app)
 
     def destroy(self):
+        # print("DESTROY")
         vl.vky_glfw_run_app_end(self._app)
         vl.vky_destroy_app(self._app)
 
@@ -96,6 +99,7 @@ def destroy_app():
 class Canvas:
     def __init__(self, app, shape=(1, 1), width=800, height=600, background=None):
         self.n_rows, self.n_cols = shape
+        # print("CREATE CANVAS")
         self._canvas = vl.vky_create_canvas(app, width, height)
         self._scene = vl.vky_create_scene(
             self._canvas, get_const(background, 'white'), shape[0], shape[1])

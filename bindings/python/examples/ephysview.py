@@ -123,8 +123,7 @@ def ephys_view(path, n_channels, sample_rate, dtype, buffer):
 
     vl.log_set_level_env()
 
-    app = api.App()
-    canvas = app.canvas(shape=(2, 1))
+    canvas = api.canvas(shape=(2, 1))
     canvas.set_heights([2, 8])
 
     n = 1000
@@ -178,7 +177,7 @@ def ephys_view(path, n_channels, sample_rate, dtype, buffer):
                 print(
                     f"Picked {x}, {y} : {ds.data[i, j]}")
 
-    app.run()
+    api.run()
 
 
 if __name__ == '__main__':
