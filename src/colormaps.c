@@ -9,3 +9,14 @@ void vky_load_color_texture()
     memcpy(VKY_COLOR_TEXTURE, data, 256 * 256 * 4);
     free(data);
 }
+
+
+void vky_colormap_apply(
+    VkyColormap cmap, double vmin, double vmax, uint32_t value_count, const double* values,
+    VkyColorBytes* colors)
+{
+    for (uint32_t i = 0; i < value_count; i++)
+    {
+        colors[i] = vky_color(cmap, (float)values[i], (float)vmin, (float)vmax, 1);
+    }
+}

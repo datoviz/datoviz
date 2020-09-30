@@ -424,7 +424,8 @@ void vky_glfw_run_app_process(VkyApp* app)
 void vky_glfw_run_app_end(VkyApp* app)
 {
     log_trace("all windows have closed");
-    vkDeviceWaitIdle(app->gpu->device);
+    if (app != NULL && app->gpu != NULL && app->gpu->device != 0)
+        vkDeviceWaitIdle(app->gpu->device);
 }
 
 void vky_glfw_run_app(VkyApp* app)

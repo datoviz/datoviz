@@ -384,7 +384,7 @@ vky_cmap(VkyColormap cmap, float value, float vmin, float vmax, float mod_var)
 
     if (vmin == vmax)
     {
-        log_warn("division by zero error in vky_cmap(): vmin = vmax = %.3f", vmin);
+        // log_warn("division by zero error in vky_cmap(): vmin = vmax = %.3f", vmin);
         return get_cmap_bytes(cmap, 0, 0);
     }
 
@@ -430,6 +430,11 @@ vky_color(VkyColormap cmap, float value, float vmin, float vmax, float alpha)
 
     return color;
 }
+
+
+VKY_EXPORT void vky_colormap_apply(
+    VkyColormap cmap, double vmin, double vmax, uint32_t value_count, const double* values,
+    VkyColorBytes* colors);
 
 
 
