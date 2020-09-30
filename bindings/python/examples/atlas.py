@@ -45,6 +45,9 @@ def on_mouse(button, pos, ev=None):
     j = atlas.bc.x2i(x)
     i = atlas.bc.y2i(y)
 
+    i = np.clip(i, 0, atlas.bc.nxyz[1] - 1)
+    j = np.clip(j, 0, atlas.bc.nxyz[0] - 1)
+
     v_im1.set_image(make_image(atlas.image[::-1, j, :].T))
     v_im2.set_image(make_image(atlas.image[i, ::-1, :].T))
 
