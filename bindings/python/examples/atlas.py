@@ -20,6 +20,13 @@ def make_image(im):
         'gray', im, vmin=np.nanmin(im), vmax=np.nanmax(im), alpha=1)
 
 
+c[0, 0].axes_range(atlas.bc.xlim[0], atlas.bc.ylim[1],
+                   atlas.bc.xlim[1], atlas.bc.ylim[0])
+c[0, 1].axes_range(atlas.bc.ylim[1], atlas.bc.zlim[1],
+                   atlas.bc.ylim[0], atlas.bc.zlim[0])
+c[0, 2].axes_range(atlas.bc.xlim[0], atlas.bc.zlim[1],
+                   atlas.bc.xlim[1], atlas.bc.zlim[0])
+
 v_imtop = c[0, 0].imshow(make_image(atlas.top))
 v_im1 = c[0, 1].imshow(make_image(atlas.image[:, 0, :].T))
 v_im2 = c[0, 2].imshow(make_image(atlas.image[0, :, :].T))
@@ -34,11 +41,9 @@ def on_mouse(button, pos, ev=None):
     if (idx.row, idx.col) != (0, 0):
         return
     x, y = pick.pos_data
-    x = .5 * (x + 1)
-    y = .5 * (y + 1)
 
-    i = atlas.bc.r2ix(1 - y)
-    j = atlas.bc.r2iy(1 - x)
+    j = atlas.bc.x2i(x)
+    i = atlas.bc.y2i(y)
 
     v_im1.set_image(make_image(atlas.image[::-1, j, :].T))
     v_im2.set_image(make_image(atlas.image[i, ::-1, :].T))

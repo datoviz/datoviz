@@ -306,6 +306,11 @@ static void add_label(VkyPanel* panel, VkyAxis axis, VkyAxes2DParams* params)
 
 void vky_set_controller(VkyPanel* panel, VkyControllerType controller_type, const void* params)
 {
+    if (panel->controller_type == controller_type)
+    {
+        log_debug("The controller type has been already set, skipping.");
+        return;
+    }
     /* NOTE: this function should ideally be called *after* all visuals have been added to the
      * scene so that any controller visuals are on top of the others */
     panel->controller_type = controller_type;
