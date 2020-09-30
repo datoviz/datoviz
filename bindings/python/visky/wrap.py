@@ -1,9 +1,11 @@
+import csv
 import ctypes
 from ctypes import pointer, POINTER
 import logging
 from pathlib import Path
 from platform import system
 
+from imageio import imread
 import numpy as np
 from numpy.ctypeslib import ndpointer
 
@@ -113,9 +115,17 @@ def key_modifiers(keyboard):
 
 
 def to_byte(x, vmin=0, vmax=1):
-    assert vmin < vmax
+    if vmin >= vmax:
+        logger.warning("vmin >= vmax")
+        vmin = np.nanmin(x)
+        vmax = np.nanmax(x)
+    if vmin >= vmax:
+        d = 1
+    else:
+        d = 1 / (vmax - vmin)
+    assert d > 0
     x = np.clip(np.asarray(x, dtype=np.float64), vmin, vmax)
-    x = np.round(255 * (x - vmin) / (vmax - vmin)).astype(np.uint8)
+    x = np.round(255 * (x - vmin) * d).astype(np.uint8)
     return x
 
 
@@ -145,6 +155,8 @@ wrap(viskylib.vky_destroy_scene, [T_VP])
 wrap(viskylib.vky_get_panel, [T_VP, T_UINT32, T_UINT32], T_VP)
 wrap(viskylib.vky_get_panel_index, [T_VP], tp.T_PANEL_INDEX)
 wrap(viskylib.vky_set_controller, [T_INT, T_VP])
+wrap(viskylib.vky_set_panel_aspect_ratio, [T_VP, T_FLOAT])
+
 wrap(viskylib.vky_add_visual_to_panel, [T_VP, T_INT, T_INT])
 wrap(viskylib.vky_visual, [T_VP, T_INT, T_VP, T_VP], T_VP)
 wrap(viskylib.vky_visual_upload, [T_VP, T_DATA])
@@ -161,7 +173,41 @@ wrap(viskylib.vky_add_frame_callback, [T_VP, T_VP])
 wrap(viskylib.vky_event_keyboard, [T_VP], POINTER(tp.T_KEYBOARD))
 wrap(viskylib.vky_event_mouse, [T_VP], POINTER(tp.T_MOUSE))
 
+wrap(viskylib.vky_colormap_apply, [
+     T_INT, T_DOUBLE, T_DOUBLE, T_UINT32, POINTER(tp.T_DOUBLE), POINTER(T_COLOR)])
 wrap(viskylib.vky_demo_raytracing, [])
 
 
 viskylib.log_set_level_env()
+
+
+def read_csv(path):
+    out = {}
+    with open(path, 'r') as f:
+        csv_reader = csv.DictReader(f)
+        for row in csv_reader:
+            out[row['name'].lower()] = (
+                int(row['row']), int(row['col']), int(row['size']))
+    return out
+
+
+# Read the colormap texture.
+COLORMAP = imread(
+    Path(__file__).parent / '../../../data/textures/color_texture.png')
+COLORMAP_INFO = read_csv(
+    Path(__file__).parent / '../../../data/textures/color_texture.csv')
+
+
+def get_color(cmap, x, vmin=0, vmax=1, alpha=1):
+    out = np.empty(x.shape + (4,), dtype=np.uint8)
+    assert cmap in COLORMAP_INFO, cmap
+    row, col, size = COLORMAP_INFO.get(cmap)
+    if size == 256:
+        # continuous colormap with interpolation
+        i = to_byte(x, vmin=vmin, vmax=vmax)
+        out[..., :] = COLORMAP[row, i, :]
+    else:
+        # colormap with no interpolation
+        out[..., :] = COLORMAP[row, x, :]
+    out[..., 3] = to_byte(alpha)
+    return out

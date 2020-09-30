@@ -1,15 +1,14 @@
 import atexit
-import csv
 import logging
 from pathlib import Path
 
-from imageio import imread
 import numpy as np
 
 from visky.wrap import viskylib as vl
 from visky.wrap import (
     mouse_button, mouse_state, key_modifiers, key_string,
     upload_data, pointer, array_pointer, get_const, to_byte,
+    get_color,
 )
 from visky import _constants as const
 from visky import _types as tp
@@ -93,7 +92,9 @@ except ImportError:
 
 @atexit.register
 def destroy_app():
-    app().destroy()
+    global _APP
+    if _APP:
+        app().destroy()
 
 
 class Canvas:
@@ -161,6 +162,9 @@ class Panel:
     def set_controller(self, controller_type, params=None):
         vl.vky_set_controller(self._panel, controller_type, params)
 
+    def set_aspect_ratio(self, value):
+        vl.vky_set_panel_aspect_ratio(self._panel, value)
+
     def axes_range(self, x0, y0, x1, y1):
         box = tp.T_BOX2D((x0, y0), (x1, y1))
         vl.vky_axes_set_initial_range(self._axes, box)
@@ -176,7 +180,13 @@ class Panel:
             cls = Image
         return cls(self, p_visual)
 
-    def image(self, image):
+    def imshow(self, image):
+
+        # TODO: support other formats!
+        assert image.ndim == 3
+        assert image.dtype == np.uint8
+        assert image.shape[2] == 4
+
         height, width = image.shape[:2]
         tex_params = vl.vky_default_texture_params(
             tp.T_IVEC3(width, height, 1))
@@ -194,6 +204,9 @@ class Panel:
         vertices['uv0'][0] = (0, 1)
         vertices['uv1'][0] = (1, 0)
         visual.upload(vertices)
+
+        visual.set_image(image)
+
         return visual
 
     def plot(self, points, colors=None, lw=1, miter=4, cap='round', join='round'):
@@ -227,37 +240,5 @@ class Visual:
 
 
 class Image(Visual):
-    def upload_image(self, image):
+    def set_image(self, image):
         vl.vky_visual_image_upload(self._visual, array_pointer(image))
-
-
-def read_csv(path):
-    out = {}
-    with open(path, 'r') as f:
-        csv_reader = csv.DictReader(f)
-        for row in csv_reader:
-            out[row['name'].lower()] = (
-                int(row['row']), int(row['col']), int(row['size']))
-    return out
-
-
-# Read the colormap texture.
-COLORMAP = imread(
-    Path(__file__).parent / '../../../data/textures/color_texture.png')
-COLORMAP_INFO = read_csv(
-    Path(__file__).parent / '../../../data/textures/color_texture.csv')
-
-
-def get_color(cmap, x, vmin=0, vmax=1, alpha=1):
-    out = np.empty(x.shape + (4,), dtype=np.uint8)
-    assert cmap in COLORMAP_INFO, cmap
-    row, col, size = COLORMAP_INFO.get(cmap)
-    if size == 256:
-        # continuous colormap with interpolation
-        i = to_byte(x, vmin=vmin, vmax=vmax)
-        out[..., :] = COLORMAP[row, i, :]
-    else:
-        # colormap with no interpolation
-        out[..., :] = COLORMAP[row, x, :]
-    out[..., 3] = to_byte(alpha)
-    return out

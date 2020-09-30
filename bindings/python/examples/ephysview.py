@@ -107,7 +107,7 @@ class DataScroller:
             self.load_data()
         self.scale = scale = self.scale or get_scale(self.data)
         self.image[..., :3] = normalize(self.data, scale).T[:, :, np.newaxis]
-        self.visual.upload_image(self.image)
+        self.visual.set_image(self.image)
         self.panel.axes_range(
             self.sample / self.sample_rate,
             0,
@@ -136,7 +136,7 @@ def ephys_view(path, n_channels, sample_rate, dtype, buffer):
     colors = api.get_color('jet', np.linspace(0, 1, n))
 
     v_plot = canvas[0, 0].plot(points, colors=colors, lw=5)
-    v_image = canvas[1, 0].image(
+    v_image = canvas[1, 0].imshow(
         np.empty((n_channels, buffer, 4), dtype=np.uint8))
 
     ds = DataScroller(v_image, raw, sample_rate, buffer)
