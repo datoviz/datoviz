@@ -116,7 +116,6 @@ def key_modifiers(keyboard):
 
 def to_byte(x, vmin=0, vmax=1):
     if vmin >= vmax:
-        logger.warning("vmin >= vmax")
         vmin = np.nanmin(x)
         vmax = np.nanmax(x)
     if vmin >= vmax:
