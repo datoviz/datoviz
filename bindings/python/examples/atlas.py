@@ -2,7 +2,7 @@ from pathlib import Path
 
 import numpy as np
 
-from visky.wrap import viskylib as vl, upload_data, pointer
+from visky.wrap import viskylib as vl, upload_data, pointer, get_const
 from visky import _constants as const
 from visky import _types as tp
 from visky import api as vk
@@ -12,7 +12,7 @@ from ibllib.atlas import AllenAtlas
 res = 25
 atlas = AllenAtlas(res)
 
-c = vk.canvas(shape=(1, 3))
+c = vk.canvas(shape=(1, 3), background=get_const('black'))
 
 
 def make_image(im):

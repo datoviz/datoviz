@@ -16,6 +16,7 @@ option(VISKY_WITH_PNG "Build Visky with PNG support" ON)
 option(VISKY_WITH_QT "Build Visky with QT support" ON)
 option(VISKY_WITH_FREETYPE "Build Visky with Freetype support" ON)
 option(VISKY_WITH_ASSIMP "Build Visky with ASSIMP support" OFF)
+option(VISKY_WITH_EXAMPLES "Build Visky examples" ON)
 
 
 # Define the project
@@ -53,6 +54,7 @@ if (WIN32)
 
 endif()
 
+# TODO: fix on Mac
 find_package(glfw3)
 if (${glfw3_VERSION} VERSION_GREATER "3.3")
     set(GLFW_GT_33 1)
@@ -359,6 +361,7 @@ function(compile_example example_file)
 endfunction()
 
 
+if (VISKY_WITH_EXAMPLES)
 set(VKY_EXAMPLE_PATH ${CMAKE_SOURCE_DIR}/examples/${VKY_EXAMPLE})
 if (${VKY_EXAMPLE}xxx STREQUAL "xxx")
     # Compile all examples
@@ -374,6 +377,7 @@ elseif(EXISTS "${VKY_EXAMPLE_PATH}.cpp")
     compile_example("${VKY_EXAMPLE_PATH}.cpp")
 elseif(NOT ${VKY_EXAMPLE} STREQUAL "test")
     message("WARNING: example '${VKY_EXAMPLE}' not found")
+endif()
 endif()
 
 

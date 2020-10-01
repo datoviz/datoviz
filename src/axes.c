@@ -119,6 +119,20 @@ static VkyData _tick_bake(VkyVisual* visual, VkyData data)
 }
 
 
+static void _invert_color(vec4 color)
+{
+    glm_vec3_subs(color, 1, color);
+    glm_vec3_negate(color);
+}
+
+
+static bool _is_dark_mode(VkyScene* scene)
+{
+    return (scene->clear_color.r == 0) && (scene->clear_color.g == 0) &&
+           (scene->clear_color.b == 0);
+}
+
+
 static VkyVisual* _tick_visual(VkyScene* scene, VkyAxes* axes)
 {
     VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_AXES_TICK);
@@ -168,6 +182,15 @@ static VkyVisual* _tick_visual(VkyScene* scene, VkyAxes* axes)
     params.colors[3][1] = VKY_AXES_LIM_COLOR_G;
     params.colors[3][2] = VKY_AXES_LIM_COLOR_B;
     params.colors[3][3] = VKY_AXES_LIM_COLOR_A;
+
+    // HACK: handle dark mode. RGB = 1 - RGB
+    if (_is_dark_mode(scene))
+    {
+        for (uint32_t i = 0; i < 4; i++)
+        {
+            _invert_color(params.colors[i]);
+        }
+    }
 
     // User line widths.
     params.user_linewidths[0] = dpif * axes->user.linewidths[0];
@@ -303,6 +326,11 @@ static VkyVisual* _text_visual(VkyScene* scene, VkyAxes* axes)
         {VKY_AXES_TEXT_COLOR_R, VKY_AXES_TEXT_COLOR_G, VKY_AXES_TEXT_COLOR_B,
          VKY_AXES_TEXT_COLOR_A},
     };
+    // HACK: dark mode
+    if (_is_dark_mode(scene))
+    {
+        _invert_color(params.color);
+    }
     vky_visual_params(visual, sizeof(VkyAxesTextParams), &params);
 
     // Resource layout.

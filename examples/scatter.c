@@ -28,7 +28,7 @@ int main()
 
     VkyApp* app = vky_create_app(VKY_DEFAULT_BACKEND);
     VkyCanvas* canvas = vky_create_canvas(app, VKY_DEFAULT_WIDTH, VKY_DEFAULT_HEIGHT);
-    VkyScene* scene = vky_create_scene(canvas, VKY_CLEAR_COLOR_WHITE, 2, 1);
+    VkyScene* scene = vky_create_scene(canvas, VKY_CLEAR_COLOR_BLACK, 2, 1);
     vky_set_grid_heights(scene, (float[]){1, 2});
 
     vky_add_vertex_buffer(canvas->gpu, 1e7);
