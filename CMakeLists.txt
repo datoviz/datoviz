@@ -54,12 +54,14 @@ if (WIN32)
 
 endif()
 
-# TODO: fix on Mac
-find_package(glfw3)
-if (${glfw3_VERSION} VERSION_GREATER "3.3")
-    set(GLFW_GT_33 1)
+# HACK: ensure correct version of glfw3 >= 3.3
+set(GLFW_GT_33 1)
+if(UNIX AND NOT APPLE)
+    find_package(glfw3)
+    if (${glfw3_VERSION} VERSION_GREATER "3.3")   
     else()
     set(GLFW_GT_33 0)
+    endif()
 endif()
 
 
