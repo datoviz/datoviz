@@ -21,8 +21,9 @@ logger = logging.getLogger(__name__)
 
 def load_library():
     if system() == 'Linux':
+        # HACK: only works on development machine for now
         lib_path = next(Path(__file__).parent.parent.glob(
-            'visky.*.so/libvisky.so')).resolve()
+            '_skbuild/*/cmake-build/libvisky.so')).resolve()
         return ctypes.cdll.LoadLibrary(lib_path)
 
 
