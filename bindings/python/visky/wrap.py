@@ -37,6 +37,13 @@ def load_library():
         lib_path = dir_path / "libvisky.dll"
         assert lib_path.exists()
         return ctypes.cdll.LoadLibrary(str(lib_path))
+    elif system() == 'Darwin':
+        dir_path = next(Path(__file__).parent.parent.glob(
+            '_skbuild/*/cmake-build/')).resolve()
+        assert dir_path.exists()
+        lib_path = dir_path / "libvisky.dylib"
+        assert lib_path.exists()
+        return ctypes.cdll.LoadLibrary(str(lib_path))
     raise Exception("visky shared library not found")
 
 
