@@ -1210,6 +1210,16 @@ VkyViewport vky_add_viewport_margins(VkyViewport viewport, vec4 margins)
 
 VkyPanel* vky_get_panel(VkyScene* scene, uint32_t row, uint32_t col)
 {
+    if (row >= scene->grid->row_count)
+    {
+        log_error("row %d doesn't exist", row);
+        row = scene->grid->row_count - 1;
+    }
+    if (col >= scene->grid->col_count)
+    {
+        log_error("col %d doesn't exist", col);
+        col = scene->grid->col_count - 1;
+    }
     uint32_t panel_index = row * scene->grid->col_count + col;
     return &scene->grid->panels[panel_index];
 }

@@ -52,7 +52,7 @@ int main()
     vky_add_vertex_buffer(canvas->gpu, 1e7);
     vky_add_index_buffer(canvas->gpu, 1e7);
 
-    VkyPanel* panel = vky_get_panel(scene, 0, 1);
+    VkyPanel* panel = vky_get_panel(scene, 1, 0);
 
     // Create the visual.
     VkyMarkersParams params = (VkyMarkersParams){{0, 0, 0, 1}, 1.0f, false};

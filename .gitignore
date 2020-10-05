@@ -17,6 +17,7 @@ Testing
 msdfgen
 cglm
 bindings/r
+_skbuild
 
 *.png
 *.ppm

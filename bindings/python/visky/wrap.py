@@ -2,6 +2,7 @@ import csv
 import ctypes
 from ctypes import pointer, POINTER
 import logging
+import os
 from pathlib import Path
 from platform import system
 
@@ -20,10 +21,30 @@ logger = logging.getLogger(__name__)
 
 
 def load_library():
+    # HACK: only works on development machine for now
     if system() == 'Linux':
         lib_path = next(Path(__file__).parent.parent.glob(
-            'visky.*.so/libvisky.so')).resolve()
+            '_skbuild/*/cmake-build/libvisky.so')).resolve()
+        assert lib_path.exists()
         return ctypes.cdll.LoadLibrary(lib_path)
+    elif system() == 'Windows':
+        dir_path = next(Path(__file__).parent.parent.glob(
+            '_skbuild/*/cmake-build/')).resolve()
+        assert dir_path.exists()
+        os.add_dll_directory(dir_path)
+        # BIG HACK to fix ctypes.CDLL() error when loading libvisky.dll
+        os.add_dll_directory("c:\\mingw64\\bin")
+        lib_path = dir_path / "libvisky.dll"
+        assert lib_path.exists()
+        return ctypes.cdll.LoadLibrary(str(lib_path))
+    elif system() == 'Darwin':
+        dir_path = next(Path(__file__).parent.parent.glob(
+            '_skbuild/*/cmake-build/')).resolve()
+        assert dir_path.exists()
+        lib_path = dir_path / "libvisky.dylib"
+        assert lib_path.exists()
+        return ctypes.cdll.LoadLibrary(str(lib_path))
+    raise Exception("visky shared library not found")
 
 
 # Load the shared library
