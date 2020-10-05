@@ -1,6 +1,10 @@
+#include <math.h>
+
 #include "../include/visky/visky.h"
+#include "../src/axes.h"
 
 #define RANDOM_POS true
+
 
 static void frame_callback(VkyCanvas* canvas)
 {
@@ -20,7 +24,21 @@ static void frame_callback(VkyCanvas* canvas)
         printf("pos gpu %f %f\n", pick.pos_gpu[0], pick.pos_gpu[1]);
         printf("pos data %f %f\n\n", pick.pos_data[0], pick.pos_data[1]);
     }
+
+    VkyKeyboard* keyboard = canvas->event_controller->keyboard;
+    if (keyboard->key == VKY_KEY_G)
+    {
+        for (uint32_t i = 0; i < canvas->scene->grid->panel_count; i++)
+        {
+            if (canvas->scene->grid->panels[i].controller_type == VKY_CONTROLLER_AXES_2D)
+            {
+                vky_axes_toggle_tick(
+                    (VkyAxes*)canvas->scene->grid->panels[i].controller, VKY_AXES_TICK_GRID);
+            }
+        }
+    }
 }
+
 
 int main()
 {

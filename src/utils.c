@@ -312,10 +312,9 @@ static void project_lonlat(double lon, double lat, dvec2 out)
 }
 
 
-void vky_normalize(uint32_t point_count, dvec2* points)
+static void _normalize_2D(uint32_t point_count, dvec2* points)
 {
-    const double INF = 1000000;
-    double xmin = +INF, ymin = +INF, xmax = -INF, ymax = -INF;
+    double xmin = +DBL_MAX, ymin = +DBL_MAX, xmax = -DBL_MAX, ymax = -DBL_MAX;
     for (uint32_t i = 0; i < point_count; i++)
     {
         xmin = fmin(xmin, points[i][0]);
@@ -356,7 +355,7 @@ void vky_earth_to_pixels(uint32_t point_count, dvec2* points)
     {
         project_lonlat(points[i][0], points[i][1], points[i]);
     }
-    vky_normalize(point_count, points);
+    _normalize_2D(point_count, points);
 }
 
 

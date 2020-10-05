@@ -133,24 +133,14 @@ static bool _is_dark_mode(VkyScene* scene)
 }
 
 
-static VkyVisual* _tick_visual(VkyScene* scene, VkyAxes* axes)
+#define VISCOEF(x) ((int)((axes->visibility_flags & (x)) != 0))
+
+
+void vky_axes_set_tick_params(VkyAxes* axes)
 {
-    VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_AXES_TICK);
+    VkyVisual* visual = axes->tick_visual;
 
-    // Shaders.
-    VkyShaders shaders = vky_create_shaders(scene->canvas->gpu);
-    vky_add_shader(&shaders, VK_SHADER_STAGE_VERTEX_BIT, "axes.vert.spv");
-    vky_add_shader(&shaders, VK_SHADER_STAGE_FRAGMENT_BIT, "axes.frag.spv");
-
-    // Vertex layout.
-    VkyVertexLayout vertex_layout =
-        vky_create_vertex_layout(scene->canvas->gpu, 0, sizeof(VkyAxesTickVertex));
-    vky_add_vertex_attribute(
-        &vertex_layout, 0, VK_FORMAT_R32_SFLOAT, offsetof(VkyAxesTickVertex, tick));
-    vky_add_vertex_attribute(
-        &vertex_layout, 1, VK_FORMAT_R8_UINT, offsetof(VkyAxesTickVertex, coord_level));
-
-    float dpif = scene->canvas->dpi_factor;
+    float dpif = visual->scene->canvas->dpi_factor;
     VkyAxesTickParams params = {0};
 
     // Axes margins.
@@ -163,28 +153,32 @@ static VkyVisual* _tick_visual(VkyScene* scene, VkyAxes* axes)
     params.linewidths[3] = dpif * VKY_AXES_TICK_LINEWIDTH_LIM;
 
     // Tick colors.
+    // Minor.
     params.colors[0][0] = VKY_AXES_TICK_COLOR_R;
     params.colors[0][1] = VKY_AXES_TICK_COLOR_G;
     params.colors[0][2] = VKY_AXES_TICK_COLOR_B;
-    params.colors[0][3] = VKY_AXES_TICK_COLOR_A;
+    params.colors[0][3] = VKY_AXES_TICK_COLOR_A * VISCOEF(VKY_AXES_TICK_MINOR);
 
+    // Major.
     params.colors[1][0] = VKY_AXES_TICK_COLOR_R;
     params.colors[1][1] = VKY_AXES_TICK_COLOR_G;
     params.colors[1][2] = VKY_AXES_TICK_COLOR_B;
-    params.colors[1][3] = VKY_AXES_TICK_COLOR_A;
+    params.colors[1][3] = VKY_AXES_TICK_COLOR_A * VISCOEF(VKY_AXES_TICK_MAJOR);
 
+    // Grid.
     params.colors[2][0] = VKY_AXES_GRID_COLOR_R;
     params.colors[2][1] = VKY_AXES_GRID_COLOR_G;
     params.colors[2][2] = VKY_AXES_GRID_COLOR_B;
-    params.colors[2][3] = VKY_AXES_GRID_COLOR_A;
+    params.colors[2][3] = VKY_AXES_GRID_COLOR_A * VISCOEF(VKY_AXES_TICK_GRID);
 
+    // Lim.
     params.colors[3][0] = VKY_AXES_LIM_COLOR_R;
     params.colors[3][1] = VKY_AXES_LIM_COLOR_G;
     params.colors[3][2] = VKY_AXES_LIM_COLOR_B;
-    params.colors[3][3] = VKY_AXES_LIM_COLOR_A;
+    params.colors[3][3] = VKY_AXES_LIM_COLOR_A * VISCOEF(VKY_AXES_TICK_LIM);
 
     // HACK: handle dark mode. RGB = 1 - RGB
-    if (_is_dark_mode(scene))
+    if (_is_dark_mode(visual->scene))
     {
         for (uint32_t i = 0; i < 4; i++)
         {
@@ -200,6 +194,10 @@ static VkyVisual* _tick_visual(VkyScene* scene, VkyAxes* axes)
 
     // User colors.
     glm_mat4_copy(axes->user.colors, params.user_colors);
+    params.user_colors[0][3] *= VISCOEF(VKY_AXES_TICK_USER_0);
+    params.user_colors[1][3] *= VISCOEF(VKY_AXES_TICK_USER_1);
+    params.user_colors[2][3] *= VISCOEF(VKY_AXES_TICK_USER_2);
+    params.user_colors[3][3] *= VISCOEF(VKY_AXES_TICK_USER_3);
 
     // Tick lengths in pixels.
     params.tick_lengths[0] = dpif * VKY_AXES_TICK_LENGTH_MINOR;
@@ -210,6 +208,35 @@ static VkyVisual* _tick_visual(VkyScene* scene, VkyAxes* axes)
 
     // Params.
     vky_visual_params(visual, sizeof(VkyAxesTickParams), &params);
+}
+
+
+void vky_axes_toggle_tick(VkyAxes* axes, int tick_element)
+{
+    axes->visibility_flags ^= 1UL << (int)round(log2(tick_element));
+    vky_axes_set_tick_params(axes);
+}
+
+
+static void _tick_visual(VkyScene* scene, VkyAxes* axes)
+{
+    VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_AXES_TICK);
+    axes->tick_visual = visual;
+
+    // Shaders.
+    VkyShaders shaders = vky_create_shaders(scene->canvas->gpu);
+    vky_add_shader(&shaders, VK_SHADER_STAGE_VERTEX_BIT, "axes.vert.spv");
+    vky_add_shader(&shaders, VK_SHADER_STAGE_FRAGMENT_BIT, "axes.frag.spv");
+
+    // Vertex layout.
+    VkyVertexLayout vertex_layout =
+        vky_create_vertex_layout(scene->canvas->gpu, 0, sizeof(VkyAxesTickVertex));
+    vky_add_vertex_attribute(
+        &vertex_layout, 0, VK_FORMAT_R32_SFLOAT, offsetof(VkyAxesTickVertex, tick));
+    vky_add_vertex_attribute(
+        &vertex_layout, 1, VK_FORMAT_R8_UINT, offsetof(VkyAxesTickVertex, coord_level));
+
+    vky_axes_set_tick_params(axes);
 
     // Resource layout.
     VkyResourceLayout resource_layout = vky_common_resource_layout(visual);
@@ -223,8 +250,34 @@ static VkyVisual* _tick_visual(VkyScene* scene, VkyAxes* axes)
     vky_add_common_resources(visual);
 
     visual->cb_bake_data = _tick_bake;
+}
 
-    return visual;
+
+void vky_axes_set_text_params(VkyAxes* axes)
+{
+    VkyVisual* visual = axes->text_visual;
+
+    // Font texture.
+    VkyTexture* texture = vky_get_font_texture(visual->scene->canvas->gpu);
+
+    // UBO params.
+    int width = (int)texture->params.width;
+    int height = (int)texture->params.height;
+    float glyph_height = VKY_AXES_FONT_SIZE * visual->scene->canvas->dpi_factor;
+    float glyph_width = glyph_height / height * width * 6 / 16.;
+    VkyAxesTextParams params = {
+        VKY_FONT_TEXTURE_SHAPE,
+        {width, height},
+        {glyph_width, glyph_height},
+        {VKY_AXES_TEXT_COLOR_R, VKY_AXES_TEXT_COLOR_G, VKY_AXES_TEXT_COLOR_B,
+         VKY_AXES_TEXT_COLOR_A},
+    };
+    // HACK: dark mode
+    if (_is_dark_mode(visual->scene))
+    {
+        _invert_color(params.color);
+    }
+    vky_visual_params(visual, sizeof(VkyAxesTextParams), &params);
 }
 
 
@@ -289,10 +342,11 @@ static VkyData _text_bake(VkyVisual* visual, VkyData data)
 }
 
 
-static VkyVisual* _text_visual(VkyScene* scene, VkyAxes* axes)
+static void _text_visual(VkyScene* scene, VkyAxes* axes)
 {
     VkyCanvas* canvas = scene->canvas;
     VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_AXES_TEXT);
+    axes->text_visual = visual;
 
     // Shaders.
     VkyShaders shaders = vky_create_shaders(canvas->gpu);
@@ -311,27 +365,7 @@ static VkyVisual* _text_visual(VkyScene* scene, VkyAxes* axes)
     vky_add_vertex_attribute(
         &vertex_layout, 3, VK_FORMAT_R16G16B16A16_UINT, offsetof(VkyAxesTextVertex, glyph));
 
-    // Font texture.
-    VkyTexture* texture = vky_get_font_texture(canvas->gpu);
-
-    // UBO params.
-    int width = (int)texture->params.width;
-    int height = (int)texture->params.height;
-    float glyph_height = VKY_AXES_FONT_SIZE * canvas->dpi_factor;
-    float glyph_width = glyph_height / height * width * 6 / 16.;
-    VkyAxesTextParams params = {
-        VKY_FONT_TEXTURE_SHAPE,
-        {width, height},
-        {glyph_width, glyph_height},
-        {VKY_AXES_TEXT_COLOR_R, VKY_AXES_TEXT_COLOR_G, VKY_AXES_TEXT_COLOR_B,
-         VKY_AXES_TEXT_COLOR_A},
-    };
-    // HACK: dark mode
-    if (_is_dark_mode(scene))
-    {
-        _invert_color(params.color);
-    }
-    vky_visual_params(visual, sizeof(VkyAxesTextParams), &params);
+    vky_axes_set_text_params(axes);
 
     // Resource layout.
     VkyResourceLayout resource_layout = vky_common_resource_layout(visual);
@@ -344,11 +378,9 @@ static VkyVisual* _text_visual(VkyScene* scene, VkyAxes* axes)
 
     // Resources.
     vky_add_common_resources(visual);
-    vky_add_texture_resource(visual, texture);
+    vky_add_texture_resource(visual, vky_get_font_texture(visual->scene->canvas->gpu));
 
     visual->cb_bake_data = _text_bake;
-
-    return visual;
 }
 
 
@@ -594,6 +626,7 @@ VkyAxes* vky_axes_init(VkyPanel* panel, VkyAxes2DParams params)
     VkyCanvas* canvas = scene->canvas;
     VkyAxes* axes = calloc(1, sizeof(VkyAxes));
     axes->panel = panel;
+    axes->visibility_flags = VKY_AXES_TICK_ALL;
     axes->xscale = axes->xscale_orig = params.xscale;
     axes->yscale = axes->yscale_orig = params.yscale;
 
@@ -612,8 +645,8 @@ VkyAxes* vky_axes_init(VkyPanel* panel, VkyAxes2DParams params)
     axes->panzoom_inner = vky_panzoom_init();
 
     // Create the visuals.
-    axes->tick_visual = _tick_visual(scene, axes);
-    axes->text_visual = _text_visual(scene, axes);
+    _tick_visual(scene, axes);
+    _text_visual(scene, axes);
 
     // Initialize the buffers.
     axes->tick_data = calloc(VKY_AXES_MAX_VERTICES, sizeof(VkyAxesTickVertex));

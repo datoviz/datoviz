@@ -476,8 +476,8 @@ struct VkyAxesUser
     mat4 colors;
 
     uint32_t tick_count;
-    uint8_t
-        levels[VKY_AXES_MAX_USER_TICKS]; // 0 to 7, 0-3=x, 4-7=y, %4=index in linewidths and colors
+    // 0 to 7, 0-3=x, 4-7=y, %4=index in linewidths and colors
+    uint8_t levels[VKY_AXES_MAX_USER_TICKS];
     double ticks[VKY_AXES_MAX_USER_TICKS];
     float ticks_ndc[VKY_AXES_MAX_USER_TICKS];
 };
@@ -600,6 +600,8 @@ struct VkyAxes
     VkyAxesTickVertex* tick_data;
     VkyAxesTextData* text_data;
     char* str_buffer;
+
+    long unsigned int visibility_flags;
 
     VkyAxesUser user;
     VkyPanel* panel;
