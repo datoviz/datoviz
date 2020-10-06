@@ -829,6 +829,8 @@ void vky_axes_update_visuals(VkyAxes* axes)
 {
     // Generate the tick vertices.
     uint32_t vertex_count, text_vertex_count;
+    if (axes->xticks.vmin >= axes->xticks.vmax || axes->yticks.vmin >= axes->yticks.vmax)
+        return;
     _make_vertices(axes, &vertex_count, axes->tick_data, &text_vertex_count, axes->text_data);
 
     // Bake them for the segment visual and upload to the GPU.
