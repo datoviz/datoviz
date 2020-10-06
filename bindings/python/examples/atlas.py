@@ -20,16 +20,25 @@ def make_image(im):
         'gray', im, vmin=np.nanmin(im), vmax=np.nanmax(im), alpha=1)
 
 
-c[0, 0].axes_range(atlas.bc.xlim[0], atlas.bc.ylim[1],
-                   atlas.bc.xlim[1], atlas.bc.ylim[0])
-c[0, 1].axes_range(atlas.bc.ylim[1], atlas.bc.zlim[1],
-                   atlas.bc.ylim[0], atlas.bc.zlim[0])
-c[0, 2].axes_range(atlas.bc.xlim[0], atlas.bc.zlim[1],
-                   atlas.bc.xlim[1], atlas.bc.zlim[0])
+xmin, xmax = atlas.bc.xlim
+ymin, ymax = atlas.bc.ylim
+zmin, zmax = atlas.bc.zlim
+
+c[0, 0].axes_range(xmin, ymax, xmax, ymin)
+c[0, 1].axes_range(ymax, zmax, ymin, zmin)
+c[0, 2].axes_range(xmin, zmax, xmax, zmin)
 
 v_imtop = c[0, 0].imshow(make_image(atlas.top))
 v_im1 = c[0, 1].imshow(make_image(atlas.image[:, 0, :].T))
 v_im2 = c[0, 2].imshow(make_image(atlas.image[0, :, :].T))
+
+xmin, .5 * (ymin + ymax), 0
+xmax, .5 * (ymin + ymax), 0
+
+p0 = np.array([[-1, -1, 0]], dtype=np.float32)
+p1 = np.array([[+1, +1, 0]], dtype=np.float32)
+col = np.array([[255, 255, 0, 255]], dtype=np.uint8)
+c[0, 0].segments(p0, p1, color=col, lw=10, cap='round', transform_mode=None)
 
 
 @ c.on_mouse

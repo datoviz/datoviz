@@ -28,6 +28,7 @@ T_DVEC3 = ctypes.c_double * 3
 T_DVEC4 = ctypes.c_double * 4
 
 T_INT = ctypes.c_int
+T_INT32 = ctypes.c_int32
 T_UINT8 = ctypes.c_uint8
 T_UINT32 = ctypes.c_uint32
 
@@ -153,6 +154,19 @@ class T_PATH_DATA(ctypes.Structure):
         ("points", T_VP),
         ("colors", T_VP),
         ("topology", T_INT),
+    ]
+
+
+class T_SEGMENT_DATA(ctypes.Structure):
+    _fields_ = [
+        ("P0", T_VEC3),
+        ("P1", T_VEC3),
+        ("shift", T_VEC4),
+        ("color", T_COLOR),
+        ("linewidth", T_FLOAT),
+        ("cap0", T_INT32),
+        ("cap1", T_INT32),
+        ("transform_mode", T_UINT8),
     ]
 
 

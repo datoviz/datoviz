@@ -8,7 +8,7 @@ from visky.wrap import viskylib as vl
 from visky.wrap import (
     mouse_button, mouse_state, key_modifiers, key_string,
     upload_data, pointer, array_pointer, get_const, to_byte,
-    get_color,
+    get_color, POINTER,
 )
 from visky import _constants as const
 from visky import _types as tp
@@ -225,7 +225,30 @@ class Panel:
         items['topology'][0] = 0
 
         visual.upload(items)
+        return visual
 
+    def segments(self, p0, p1, color=None, lw=1, cap='round', transform_mode=None):
+        cap = get_const('cap_%s' % cap)
+        visual = self.visual('visual_segment')
+
+        n = len(p0)
+
+        items = np.zeros((n,), dtype=np.dtype(tp.T_SEGMENT_DATA))
+
+        items['P0'] = p0
+        items['P1'] = p1
+        items['color']['r'] = color[:, 0]
+        items['color']['g'] = color[:, 1]
+        items['color']['b'] = color[:, 2]
+        items['color']['a'] = color[:, 3]
+        items['linewidth'] = lw
+        items['cap0'] = cap
+        items['cap1'] = cap  # TODO: different values for both caps
+        if transform_mode is not None:
+            items['transform_mode'] = transform_mode
+
+        print(items)
+        visual.upload(items)
         return visual
 
 
