@@ -13,7 +13,7 @@ layout (location = 3) in vec2 glyph_size;
 layout (location = 4) in vec2 anchor;
 layout (location = 5) in float angle;
 layout (location = 6) in uvec4 glyph;  // char, char_index, str_len, str_index
-layout (location = 7) in uint is_static;
+layout (location = 7) in uint transform_mode;
 
 layout (location = 0) out vec4 out_color;
 layout (location = 1) out vec2 out_tex_coords;
@@ -22,7 +22,7 @@ layout (location = 3) out float out_str_index;
 
 
 void main() {
-    vec4 pos_tr = transform_pos(pos, shift, is_static > 0);
+    vec4 pos_tr = transform_pos(pos, shift, transform_mode);
 
     mat4 ortho = get_ortho_matrix(mvp.viewport.zw);
     mat4 ortho_inv = inverse(ortho);

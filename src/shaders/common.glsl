@@ -57,8 +57,8 @@ vec4 transform_pos(vec3 pos) {
 
 
 
-vec4 transform_pos(vec3 pos, bool is_static) {
-    return is_static ? vec4(pos, 1.0) : transform_pos(pos);
+vec4 transform_pos(vec3 pos, uint transform_mode) {
+    return transform_mode > 0 ? vec4(pos, 1.0) : transform_pos(pos);
 }
 
 
@@ -70,8 +70,8 @@ vec4 transform_pos(vec3 pos, vec2 shift) {
 
 
 
-vec4 transform_pos(vec3 pos, vec2 shift, bool is_static) {
-    return is_static ? (vec4(pos, 1.0) + vec4(2 * shift / mvp.viewport.zw, 0, 0)) : transform_pos(pos, shift);
+vec4 transform_pos(vec3 pos, vec2 shift, uint transform_mode) {
+    return transform_mode > 0 ? (vec4(pos, 1.0) + vec4(2 * shift / mvp.viewport.zw, 0, 0)) : transform_pos(pos, shift);
 }
 
 

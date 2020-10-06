@@ -225,7 +225,7 @@ static VkyData vky_segment_bake(VkyVisual* visual, VkyData data)
             vertices[4 * i + j].cap0 = items[i].cap0;
             vertices[4 * i + j].cap1 = items[i].cap1;
             vertices[4 * i + j].linewidth = items[i].linewidth * dpi;
-            vertices[4 * i + j].is_static = items[i].is_static;
+            vertices[4 * i + j].transform_mode = items[i].transform_mode;
 
             ASSERT(4 * i + j < nv);
         }
@@ -274,7 +274,7 @@ VkyVisual* vky_visual_segment(VkyScene* scene)
     vky_add_vertex_attribute(
         &vertex_layout, 6, VK_FORMAT_R32_SINT, offsetof(VkySegmentVertex, cap1));
     vky_add_vertex_attribute(
-        &vertex_layout, 7, VK_FORMAT_R8_UINT, offsetof(VkySegmentVertex, is_static));
+        &vertex_layout, 7, VK_FORMAT_R8_UINT, offsetof(VkySegmentVertex, transform_mode));
 
     // Resource layout.
     VkyResourceLayout resource_layout = vky_common_resource_layout(visual);
@@ -435,7 +435,7 @@ static VkyData vky_text_bake(VkyVisual* visual, VkyData data)
                 {text[i].anchor[0], text[i].anchor[1]},
                 text[i].angle,
                 {ci, j, str_len, i}, // char, charIdx, strLen, strIdx
-                (uint8_t)text[i].is_static,
+                (uint8_t)text[i].transform_mode,
             };
             // Duplicate the vertex for the 2 triangles composing the rectangle.
             for (uint32_t u = 0; u < 4; u++)
@@ -481,7 +481,7 @@ VkyVisual* vky_visual_text(VkyScene* scene)
     vky_add_vertex_attribute(
         &vertex_layout, 6, VK_FORMAT_R16G16B16A16_UINT, offsetof(VkyTextVertex, glyph));
     vky_add_vertex_attribute(
-        &vertex_layout, 7, VK_FORMAT_R8_UINT, offsetof(VkyTextVertex, is_static));
+        &vertex_layout, 7, VK_FORMAT_R8_UINT, offsetof(VkyTextVertex, transform_mode));
 
     // Font texture.
     VkyTexture* texture = vky_get_font_texture(canvas->gpu);

@@ -21,7 +21,7 @@ static void upload_text(VkyVisual* visual)
             .angle = -.67 * t + M_2PI * (float)i / N,
             .string = STRING,
             .string_len = n_chars,
-            .is_static = false,
+            .transform_mode = 0,
         };
     }
     vky_visual_upload(visual, (VkyData){N, text});

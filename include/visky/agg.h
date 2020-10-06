@@ -129,7 +129,7 @@ struct VkySegmentVertex
     float linewidth;
     int32_t cap0;
     int32_t cap1;
-    uint8_t is_static;
+    uint8_t transform_mode;
 };
 
 VKY_EXPORT VkyVisual* vky_visual_segment(VkyScene* scene);
@@ -182,7 +182,7 @@ struct VkyTextData
     float angle;
     uint32_t string_len;
     char* string;
-    bool is_static;
+    uint8_t transform_mode;
 };
 
 typedef struct VkyTextVertex VkyTextVertex;
@@ -195,7 +195,7 @@ struct VkyTextVertex
     vec2 anchor;
     float angle;
     usvec4 glyph; // char, char_index, str_len, str_index
-    uint8_t is_static;
+    uint8_t transform_mode;
 };
 
 typedef struct VkyTextParams VkyTextParams;
