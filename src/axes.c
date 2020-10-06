@@ -626,6 +626,8 @@ VkyAxes* vky_axes_init(VkyPanel* panel, VkyAxes2DParams params)
     VkyCanvas* canvas = scene->canvas;
     VkyAxes* axes = calloc(1, sizeof(VkyAxes));
     axes->panel = panel;
+    axes->enable_panzoom = params.enable_panzoom;
+
     axes->visibility_flags = VKY_AXES_TICK_ALL;
     axes->xscale = axes->xscale_orig = params.xscale;
     axes->yscale = axes->yscale_orig = params.yscale;
@@ -689,6 +691,8 @@ void vky_axes_reset(VkyAxes* axes)
 
 void vky_axes_panzoom_update(VkyAxes* axes)
 {
+    if (!axes->enable_panzoom)
+        return;
     // Reset lim_reached.
     axes->panzoom_inner->lim_reached[0] = false;
     axes->panzoom_inner->lim_reached[1] = false;

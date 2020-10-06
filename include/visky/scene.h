@@ -532,6 +532,7 @@ struct VkyAxes2DParams
     // TODO: add VkyAxesTextParams and VkyAxesTickParams
     VkyColorbarParams colorbar;
     VkyAxesUser user;
+    bool enable_panzoom;
 };
 
 
@@ -580,6 +581,7 @@ static VkyAxes2DParams vky_default_axes_2D_params()
             {0, 0},
             {0, 0},
         },
+        true,
     };
     return params;
 }
@@ -614,6 +616,7 @@ struct VkyAxes
 
     VkyAxesUser user;
     VkyPanel* panel;
+    bool enable_panzoom;
 };
 
 
