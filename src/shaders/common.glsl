@@ -30,6 +30,11 @@ layout (binding = 1) uniform sampler2D color_texture;
 
 #define CLIP_VIEWPORT _CLIP((MARGINS), (VIEWPORT))
 
+#define TRANSFORM_MODE_NORMAL   0x00
+#define TRANSFORM_MODE_X_ONLY   0x01
+#define TRANSFORM_MODE_Y_ONLY   0x02
+#define TRANSFORM_MODE_STATIC   0x07
+
 
 mat4 get_ortho_matrix(vec2 size) {
     // The orthographic projection is:
@@ -58,7 +63,14 @@ vec4 transform_pos(vec3 pos) {
 
 
 vec4 transform_pos(vec3 pos, uint transform_mode) {
-    return transform_mode > 0 ? vec4(pos, 1.0) : transform_pos(pos);
+    if (transform_mode == TRANSFORM_MODE_NORMAL)
+        return transform_pos(pos);
+    else if (transform_mode == TRANSFORM_MODE_X_ONLY)
+        return vec4(transform_pos(pos).x, pos.yz, 1.0);
+    else if (transform_mode == TRANSFORM_MODE_Y_ONLY)
+        return vec4(pos.x, transform_pos(pos).y, pos.z, 1.0);
+    // else if (transform_mode == TRANSFORM_MODE_STATIC)
+    return vec4(pos, 1.0);
 }
 
 
@@ -71,7 +83,14 @@ vec4 transform_pos(vec3 pos, vec2 shift) {
 
 
 vec4 transform_pos(vec3 pos, vec2 shift, uint transform_mode) {
-    return transform_mode > 0 ? (vec4(pos, 1.0) + vec4(2 * shift / mvp.viewport.zw, 0, 0)) : transform_pos(pos, shift);
+    if (transform_mode == TRANSFORM_MODE_NORMAL)
+        return transform_pos(pos, shift);
+    else if (transform_mode == TRANSFORM_MODE_X_ONLY)
+        return vec4(transform_pos(pos, shift).x, pos.y + 2 * shift.y / mvp.viewport.w, pos.z, 1.0);
+    else if (transform_mode == TRANSFORM_MODE_Y_ONLY)
+        return vec4(pos.x + 2 * shift.x / mvp.viewport.z, transform_pos(pos, shift).y, pos.z, 1.0);
+    // else if (transform_mode == TRANSFORM_MODE_STATIC)
+    return vec4(pos, 1.0) + vec4(2 * shift / mvp.viewport.zw, 0, 0);
 }
 
 

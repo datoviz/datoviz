@@ -155,6 +155,15 @@ typedef enum
 
 typedef enum
 {
+    VKY_TRANSFORM_MODE_NORMAL = 0x0,
+    VKY_TRANSFORM_MODE_X_ONLY = 0x1,
+    VKY_TRANSFORM_MODE_Y_ONLY = 0x2,
+    VKY_TRANSFORM_MODE_STATIC = 0x7,
+} VkyTransformMode;
+
+
+typedef enum
+{
     VKY_CONTROLLER_SOURCE_NONE = 0,
     VKY_CONTROLLER_SOURCE_HUMAN = 1,
     VKY_CONTROLLER_SOURCE_MOCK = 2,
