@@ -75,17 +75,18 @@ static void _set_top_lines(float x, float y)
 }
 
 
+
 static void _update_v1(float u)
 {
     double a = 1;
     VkyTexturedVertex3D vertices[] = {
 
-        {{-a, -a, 0}, {0, 0, u}}, //
-        {{+a, -a, 0}, {1, 0, u}}, //
-        {{-a, +a, 0}, {0, 1, u}}, //
-        {{-a, +a, 0}, {0, 1, u}}, //
-        {{+a, -a, 0}, {1, 0, u}}, //
-        {{+a, +a, 0}, {1, 1, u}}, //
+        {{-a, -a, 0}, {1, u, 1}}, //
+        {{-a, +a, 0}, {0, u, 1}}, //
+        {{+a, -a, 0}, {1, u, 0}}, //
+        {{+a, -a, 0}, {1, u, 0}}, //
+        {{-a, +a, 0}, {0, u, 1}}, //
+        {{+a, +a, 0}, {0, u, 0}}, //
 
     };
     vky_visual_upload(v1, (VkyData){0, NULL, 6, vertices, 0, NULL});
@@ -103,7 +104,7 @@ static void frame_callback(VkyCanvas* canvas)
         VkyPick pick = vky_pick(canvas->scene, mouse->cur_pos);
         log_debug("pick %f %f", pick.pos_data[0], pick.pos_data[1]);
         _set_top_lines(pick.pos_gpu[0], pick.pos_gpu[1]);
-        _update_v1(pick.pos_gpu[0]);
+        _update_v1(.5 * (1 + pick.pos_gpu[0]));
     }
 }
 
@@ -156,7 +157,18 @@ int main()
     // 3D volume
     {
         panel = vky_get_panel(scene, 0, 1);
-        vky_set_controller(panel, VKY_CONTROLLER_AXES_2D, NULL);
+
+        axparams = vky_default_axes_2D_params();
+
+        axparams.xscale.vmin = YMIN;
+        axparams.xscale.vmax = YMAX;
+        axparams.yscale.vmin = ZMIN;
+        axparams.yscale.vmax = ZMAX;
+
+        vky_set_controller(panel, VKY_CONTROLLER_AXES_2D, &axparams);
+
+        vky_axes_toggle_tick(panel->controller, VKY_AXES_TICK_GRID);
+        vky_axes_toggle_tick(panel->controller, VKY_AXES_TICK_USER_0);
 
         // Create the visual.
         VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_UNDEFINED);
@@ -203,23 +215,11 @@ int main()
         vky_add_uniform_buffer_resource(visual, &scene->grid->dynamic_buffer);
         vky_add_texture_resource(visual, tex);
 
-        double a = 1;
-        VkyTexturedVertex3D vertices[] = {
-
-            {{-a, -a, 0}, {0, 0, .5}}, //
-            {{+a, -a, 0}, {1, 0, .5}}, //
-            {{-a, +a, 0}, {0, 1, .5}}, //
-            {{-a, +a, 0}, {0, 1, .5}}, //
-            {{+a, -a, 0}, {1, 0, .5}}, //
-            {{+a, +a, 0}, {1, 1, .5}}, //
-
-        };
-        vky_visual_upload(visual, (VkyData){0, NULL, 6, vertices, 0, NULL});
+        _update_v1(.5);
 
         snprintf(path, sizeof(path), "%s/volume/%s", DATA_DIR, "atlas_25.img");
         uint32_t size = 0;
         pixels = read_file(path, &size);
-        DBG(size);
         vky_upload_texture(tex, pixels);
         free(pixels);
     }
