@@ -17,6 +17,9 @@ struct VkyTexturedVertex3D
 #define ZMIN -0.007643
 #define ZMAX +0.000332
 
+#define ATLAS_25_SHAPE 320, 456, 528
+#define ATLAS_10_SHAPE 800, 1140, 1320
+
 #define LINE_COLOR                                                                                \
     {                                                                                             \
         240, 10, 0, 255                                                                           \
@@ -200,9 +203,7 @@ int main()
             (VkyGraphicsPipelineParams){false});
 
         // 3D texture.
-        VkyTextureParams params = {320,
-                                   456,
-                                   528,
+        VkyTextureParams params = {ATLAS_25_SHAPE,
                                    2,
                                    VK_FORMAT_R16_UNORM,
                                    VK_FILTER_LINEAR,
