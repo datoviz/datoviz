@@ -85,10 +85,8 @@ VkyVisual* vky_visual_volume_slicer(VkyScene* scene, VkyTexture* tex)
         &vertex_layout, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VkyTexturedVertex3D, coords));
 
     // Resource layout.
-    VkyResourceLayout resource_layout =
-        vky_create_resource_layout(canvas->gpu, canvas->image_count);
-    vky_add_resource_binding(&resource_layout, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC);
-    vky_add_resource_binding(&resource_layout, 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+    VkyResourceLayout resource_layout = vky_common_resource_layout(visual);
+    vky_add_resource_binding(&resource_layout, 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
     // Pipeline.
     visual->pipeline = vky_create_graphics_pipeline(
@@ -96,7 +94,7 @@ VkyVisual* vky_visual_volume_slicer(VkyScene* scene, VkyTexture* tex)
         (VkyGraphicsPipelineParams){false});
 
     // Resources.
-    vky_add_uniform_buffer_resource(visual, &scene->grid->dynamic_buffer);
+    vky_add_common_resources(visual);
     vky_add_texture_resource(visual, tex);
 
     return visual;

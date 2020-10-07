@@ -12,8 +12,27 @@
 #define ZMAX +0.000332
 
 
-#define ATLAS_25_SHAPE 320, 456, 528
-#define ATLAS_10_SHAPE 800, 1140, 1320
+#define ATLAS 25
+
+#if ATLAS == 10
+
+#define ATLAS_SHAPE 800, 1140, 1320
+#define ATLAS_PATH  "atlas_10.img"
+
+// #define ATLAS_TOP_SHAPE 1320, 1140
+#define ATLAS_TOP_SHAPE 528, 456
+#define ATLAS_TOP_PATH  "atlas_25_top.img"
+
+#elif ATLAS == 25
+
+#define ATLAS_SHAPE 320, 456, 528
+#define ATLAS_PATH  "atlas_25.img"
+
+#define ATLAS_TOP_SHAPE 528, 456
+#define ATLAS_TOP_PATH  "atlas_25_top.img"
+
+#endif
+
 
 #define LINE_COLOR                                                                                \
     {                                                                                             \
@@ -161,12 +180,10 @@ int main()
 
 
     // Top image.
-    const int top_width = 528;
-    const int top_height = 456;
     char path[1024];
-    snprintf(path, sizeof(path), "%s/volume/%s", DATA_DIR, "atlas_25_top.img");
+    snprintf(path, sizeof(path), "%s/volume/%s", DATA_DIR, ATLAS_TOP_PATH);
     char* pixels = read_file(path, NULL);
-    _add_image(panel, top_width, top_height, pixels);
+    _add_image(panel, ATLAS_TOP_SHAPE, pixels);
     free(pixels);
 
 
@@ -176,16 +193,15 @@ int main()
     _set_top_lines(0, 0);
 
     // 3D volume
-    VkyTextureParams tex_params = {
-        ATLAS_25_SHAPE,
-        2,
-        VK_FORMAT_R16_UNORM,
-        VK_FILTER_NEAREST,
-        VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-        0,
-        false};
+    VkyTextureParams tex_params = {ATLAS_SHAPE,
+                                   2,
+                                   VK_FORMAT_R16_UNORM,
+                                   VK_FILTER_NEAREST,
+                                   VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+                                   0,
+                                   false};
     VkyTexture* tex = vky_add_texture(canvas->gpu, &tex_params);
-    snprintf(path, sizeof(path), "%s/volume/%s", DATA_DIR, "atlas_25.img");
+    snprintf(path, sizeof(path), "%s/volume/%s", DATA_DIR, ATLAS_PATH);
     pixels = read_file(path, NULL);
     vky_upload_texture(tex, pixels);
     free(pixels);
