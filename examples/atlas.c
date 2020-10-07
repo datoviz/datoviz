@@ -3,12 +3,6 @@
 #include "../include/visky/visky.h"
 #include "../src/axes.h"
 
-typedef struct VkyTexturedVertex3D VkyTexturedVertex3D;
-struct VkyTexturedVertex3D
-{
-    vec3 pos;
-    vec3 coords;
-};
 
 #define XMIN -0.005738
 #define XMAX -0.005636
@@ -16,6 +10,7 @@ struct VkyTexturedVertex3D
 #define YMAX +0.005400
 #define ZMIN -0.007643
 #define ZMAX +0.000332
+
 
 #define ATLAS_25_SHAPE 320, 456, 528
 #define ATLAS_10_SHAPE 800, 1140, 1320
@@ -100,14 +95,18 @@ static void _update_v1(float u)
 static void frame_callback(VkyCanvas* canvas)
 {
     VkyMouse* mouse = canvas->event_controller->mouse;
+    // bool xvalid, yvalid;
+    float x, y;
     if (mouse->button != VKY_MOUSE_BUTTON_NONE)
     {
         if (vky_panel_from_mouse(canvas->scene, mouse->cur_pos)->col != 0)
             return;
         VkyPick pick = vky_pick(canvas->scene, mouse->cur_pos);
-        log_debug("pick %f %f", pick.pos_data[0], pick.pos_data[1]);
-        _set_top_lines(pick.pos_gpu[0], pick.pos_gpu[1]);
-        _update_v1(.5 * (1 + pick.pos_gpu[0]));
+        // log_debug("pick %f %f", pick.pos_data[0], pick.pos_data[1]);
+        x = CLIP(pick.pos_gpu[0], -1, 1);
+        y = CLIP(pick.pos_gpu[1], -1, 1);
+        _set_top_lines(x, y);
+        _update_v1(.5 * (1 + x));
     }
 }
 
@@ -156,73 +155,33 @@ int main()
     _set_top_lines(0, 0);
 
 
-
     // 3D volume
     {
         panel = vky_get_panel(scene, 0, 1);
 
         axparams = vky_default_axes_2D_params();
-
         axparams.xscale.vmin = YMIN;
         axparams.xscale.vmax = YMAX;
         axparams.yscale.vmin = ZMIN;
         axparams.yscale.vmax = ZMAX;
-
         vky_set_controller(panel, VKY_CONTROLLER_AXES_2D, &axparams);
-
         vky_axes_toggle_tick(panel->controller, VKY_AXES_TICK_GRID);
         vky_axes_toggle_tick(panel->controller, VKY_AXES_TICK_USER_0);
 
-        // Create the visual.
-        VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_UNDEFINED);
-        v1 = visual;
-        vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
-
-        // Shaders.
-        VkyShaders shaders = vky_create_shaders(canvas->gpu);
-        vky_add_shader(&shaders, VK_SHADER_STAGE_VERTEX_BIT, "volume_slice.vert.spv");
-        vky_add_shader(&shaders, VK_SHADER_STAGE_FRAGMENT_BIT, "volume_slice.frag.spv");
-
-        // Vertex layout.
-        VkyVertexLayout vertex_layout =
-            vky_create_vertex_layout(canvas->gpu, 0, sizeof(VkyTexturedVertex3D));
-        vky_add_vertex_attribute(
-            &vertex_layout, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VkyTexturedVertex3D, pos));
-        vky_add_vertex_attribute(
-            &vertex_layout, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VkyTexturedVertex3D, coords));
-
-        // Resource layout.
-        VkyResourceLayout resource_layout =
-            vky_create_resource_layout(canvas->gpu, canvas->image_count);
-        vky_add_resource_binding(&resource_layout, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC);
-        vky_add_resource_binding(&resource_layout, 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
-
-        // Pipeline.
-        visual->pipeline = vky_create_graphics_pipeline(
-            canvas, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, shaders, vertex_layout, resource_layout,
-            (VkyGraphicsPipelineParams){false});
-
         // 3D texture.
-        VkyTextureParams params = {ATLAS_25_SHAPE,
-                                   2,
-                                   VK_FORMAT_R16_UNORM,
-                                   VK_FILTER_LINEAR,
-                                   VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-                                   0,
-                                   false};
-        VkyTexture* tex = vky_add_texture(canvas->gpu, &params);
-
-        // Resources.
-        vky_add_uniform_buffer_resource(visual, &scene->grid->dynamic_buffer);
-        vky_add_texture_resource(visual, tex);
-
-        _update_v1(.5);
+        VkyTextureParams tex_params = {ATLAS_25_SHAPE,
+                                       2,
+                                       VK_FORMAT_R16_UNORM,
+                                       VK_FILTER_LINEAR,
+                                       VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+                                       0,
+                                       false};
 
         snprintf(path, sizeof(path), "%s/volume/%s", DATA_DIR, "atlas_25.img");
-        uint32_t size = 0;
-        pixels = read_file(path, &size);
-        vky_upload_texture(tex, pixels);
+        pixels = read_file(path, NULL);
+        v1 = vky_visual_volume_slicer(scene, &tex_params, pixels);
         free(pixels);
+        vky_add_visual_to_panel(v1, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
     }
 
 

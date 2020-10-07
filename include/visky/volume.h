@@ -6,6 +6,10 @@
 
 
 
+/*************************************************************************************************/
+/*  Volume visual                                                                                */
+/*************************************************************************************************/
+
 typedef struct VkyVertexUV VkyVertexUV;
 struct VkyVertexUV
 {
@@ -22,6 +26,21 @@ struct VkyVolumeParams
 
 VKY_EXPORT VkyVisual* vky_visual_volume(VkyScene*, const VkyTextureParams*, const void*);
 
+
+
+/*************************************************************************************************/
+/*  Volume slicer visual                                                                         */
+/*************************************************************************************************/
+
+typedef struct VkyTexturedVertex3D VkyTexturedVertex3D;
+struct VkyTexturedVertex3D
+{
+    vec3 pos;
+    vec3 coords;
+};
+
+VkyVisual*
+vky_visual_volume_slicer(VkyScene* scene, const VkyTextureParams* tex_params, const void* pixels);
 
 
 #endif
