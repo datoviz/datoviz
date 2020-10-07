@@ -39,8 +39,7 @@ struct VkyTexturedVertex3D
     vec3 coords;
 };
 
-VkyVisual*
-vky_visual_volume_slicer(VkyScene* scene, const VkyTextureParams* tex_params, const void* pixels);
+VkyVisual* vky_visual_volume_slicer(VkyScene* scene, VkyTexture* tex);
 
 
 #endif

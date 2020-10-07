@@ -57,6 +57,7 @@ typedef enum
 
     VKY_VISUAL_IMAGE = 80,
     VKY_VISUAL_VOLUME = 81,
+    VKY_VISUAL_VOLUME_SLICER = 82,
 
     VKY_VISUAL_COLORBAR = 90,
     VKY_VISUAL_TEXT = 100,
@@ -625,7 +626,7 @@ struct VkyAxes
 /*  Picking                                                                                      */
 /*************************************************************************************************/
 
-VKY_EXPORT VkyPick vky_pick(VkyScene* scene, vec2 canvas_coords);
+VKY_EXPORT VkyPick vky_pick(VkyScene* scene, vec2 canvas_coords, VkyPanel* panel);
 
 
 

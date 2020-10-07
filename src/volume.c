@@ -65,11 +65,10 @@ vky_visual_volume(VkyScene* scene, const VkyTextureParams* tex_params, const voi
 /*  Volume slicer visual                                                                         */
 /*************************************************************************************************/
 
-VkyVisual*
-vky_visual_volume_slicer(VkyScene* scene, const VkyTextureParams* tex_params, const void* pixels)
+VkyVisual* vky_visual_volume_slicer(VkyScene* scene, VkyTexture* tex)
 {
     // Create the visual.
-    VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_UNDEFINED);
+    VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_VOLUME_SLICER);
     VkyCanvas* canvas = scene->canvas;
 
     // Shaders.
@@ -96,27 +95,9 @@ vky_visual_volume_slicer(VkyScene* scene, const VkyTextureParams* tex_params, co
         canvas, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, shaders, vertex_layout, resource_layout,
         (VkyGraphicsPipelineParams){false});
 
-    // 3D texture.
-    VkyTexture* tex = vky_add_texture(canvas->gpu, tex_params);
-
     // Resources.
     vky_add_uniform_buffer_resource(visual, &scene->grid->dynamic_buffer);
     vky_add_texture_resource(visual, tex);
-
-    double a = 1;
-    VkyTexturedVertex3D vertices[] = {
-
-        {{-a, -a, 0}, {1, .5, 1}}, //
-        {{-a, +a, 0}, {0, .5, 1}}, //
-        {{+a, -a, 0}, {1, .5, 0}}, //
-        {{+a, -a, 0}, {1, .5, 0}}, //
-        {{-a, +a, 0}, {0, .5, 1}}, //
-        {{+a, +a, 0}, {0, .5, 0}}, //
-
-    };
-    vky_visual_upload(visual, (VkyData){0, NULL, 6, vertices, 0, NULL});
-
-    vky_upload_texture(tex, pixels);
 
     return visual;
 }

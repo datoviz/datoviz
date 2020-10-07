@@ -162,7 +162,7 @@ def ephys_view(path, n_channels, sample_rate, dtype, buffer):
     @canvas.on_mouse
     def on_mouse(button, pos, ev=None):
         if ev.state == 'click':
-            pick = vl.vky_pick(canvas._scene, tp.T_VEC2(pos[0], pos[1]))
+            pick = vl.vky_pick(canvas._scene, tp.T_VEC2(pos[0], pos[1]), None)
             idx = vl.vky_get_panel_index(pick.panel)
             if (idx.row, idx.col) == (1, 0):
                 x, y = pick.pos_data

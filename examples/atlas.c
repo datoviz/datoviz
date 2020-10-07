@@ -24,6 +24,7 @@
 
 static VkyVisual* top_lines = NULL;
 static VkyVisual* v1 = NULL;
+static VkyVisual* v2 = NULL;
 
 
 
@@ -92,6 +93,24 @@ static void _update_v1(float u)
 
 
 
+static void _update_v2(float u)
+{
+    double a = 1;
+    VkyTexturedVertex3D vertices[] = {
+
+        {{-a, -a, 0}, {1, 1, u}}, //
+        {{-a, +a, 0}, {0, 1, u}}, //
+        {{+a, -a, 0}, {1, 0, u}}, //
+        {{+a, -a, 0}, {1, 0, u}}, //
+        {{-a, +a, 0}, {0, 1, u}}, //
+        {{+a, +a, 0}, {0, 0, u}}, //
+
+    };
+    vky_visual_upload(v2, (VkyData){0, NULL, 6, vertices, 0, NULL});
+}
+
+
+
 static void frame_callback(VkyCanvas* canvas)
 {
     VkyMouse* mouse = canvas->event_controller->mouse;
@@ -99,14 +118,16 @@ static void frame_callback(VkyCanvas* canvas)
     float x, y;
     if (mouse->button != VKY_MOUSE_BUTTON_NONE)
     {
-        if (vky_panel_from_mouse(canvas->scene, mouse->cur_pos)->col != 0)
+        if (vky_panel_from_mouse(canvas->scene, mouse->press_pos)->col != 0)
             return;
-        VkyPick pick = vky_pick(canvas->scene, mouse->cur_pos);
+        VkyPick pick = vky_pick(canvas->scene, mouse->cur_pos, &canvas->scene->grid->panels[0]);
         // log_debug("pick %f %f", pick.pos_data[0], pick.pos_data[1]);
         x = CLIP(pick.pos_gpu[0], -1, 1);
         y = CLIP(pick.pos_gpu[1], -1, 1);
         _set_top_lines(x, y);
+
         _update_v1(.5 * (1 + x));
+        _update_v2(.5 * (1 - y));
     }
 }
 
@@ -154,36 +175,53 @@ int main()
     vky_add_visual_to_panel(top_lines, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
     _set_top_lines(0, 0);
 
-
     // 3D volume
-    {
-        panel = vky_get_panel(scene, 0, 1);
+    VkyTextureParams tex_params = {
+        ATLAS_25_SHAPE,
+        2,
+        VK_FORMAT_R16_UNORM,
+        VK_FILTER_NEAREST,
+        VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+        0,
+        false};
+    VkyTexture* tex = vky_add_texture(canvas->gpu, &tex_params);
+    snprintf(path, sizeof(path), "%s/volume/%s", DATA_DIR, "atlas_25.img");
+    pixels = read_file(path, NULL);
+    vky_upload_texture(tex, pixels);
+    free(pixels);
 
-        axparams = vky_default_axes_2D_params();
-        axparams.xscale.vmin = YMIN;
-        axparams.xscale.vmax = YMAX;
-        axparams.yscale.vmin = ZMIN;
-        axparams.yscale.vmax = ZMAX;
-        vky_set_controller(panel, VKY_CONTROLLER_AXES_2D, &axparams);
-        vky_axes_toggle_tick(panel->controller, VKY_AXES_TICK_GRID);
-        vky_axes_toggle_tick(panel->controller, VKY_AXES_TICK_USER_0);
+    // Visuals
+    v1 = vky_visual_volume_slicer(scene, tex);
+    _update_v1(.5);
 
-        // 3D texture.
-        VkyTextureParams tex_params = {ATLAS_25_SHAPE,
-                                       2,
-                                       VK_FORMAT_R16_UNORM,
-                                       VK_FILTER_LINEAR,
-                                       VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-                                       0,
-                                       false};
+    v2 = vky_visual_volume_slicer(scene, tex);
+    _update_v2(.5);
 
-        snprintf(path, sizeof(path), "%s/volume/%s", DATA_DIR, "atlas_25.img");
-        pixels = read_file(path, NULL);
-        v1 = vky_visual_volume_slicer(scene, &tex_params, pixels);
-        free(pixels);
-        vky_add_visual_to_panel(v1, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
-    }
 
+    // Panel 1
+    axparams = vky_default_axes_2D_params();
+    axparams.xscale.vmin = YMIN;
+    axparams.xscale.vmax = YMAX;
+    axparams.yscale.vmin = ZMIN;
+    axparams.yscale.vmax = ZMAX;
+    panel = vky_get_panel(scene, 0, 1);
+    vky_set_controller(panel, VKY_CONTROLLER_AXES_2D, &axparams);
+    vky_axes_toggle_tick(panel->controller, VKY_AXES_TICK_GRID);
+    vky_axes_toggle_tick(panel->controller, VKY_AXES_TICK_USER_0);
+    vky_add_visual_to_panel(v1, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
+
+
+    // Panel 2
+    axparams = vky_default_axes_2D_params();
+    axparams.xscale.vmin = XMIN;
+    axparams.xscale.vmax = XMAX;
+    axparams.yscale.vmin = ZMIN;
+    axparams.yscale.vmax = ZMAX;
+    panel = vky_get_panel(scene, 0, 2);
+    vky_set_controller(panel, VKY_CONTROLLER_AXES_2D, &axparams);
+    vky_axes_toggle_tick(panel->controller, VKY_AXES_TICK_GRID);
+    vky_axes_toggle_tick(panel->controller, VKY_AXES_TICK_USER_0);
+    vky_add_visual_to_panel(v2, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
 
     vky_add_frame_callback(canvas, frame_callback);

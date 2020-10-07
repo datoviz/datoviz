@@ -18,10 +18,11 @@ uint8_t VKY_COLOR_TEXTURE[CMAP_COUNT * CMAP_COUNT * 4];
 /*  Picking                                                                                      */
 /*************************************************************************************************/
 
-VkyPick vky_pick(VkyScene* scene, vec2 canvas_coords)
+VkyPick vky_pick(VkyScene* scene, vec2 canvas_coords, VkyPanel* panel)
 {
     VkyPick pick = {0};
-    VkyPanel* panel = vky_panel_from_mouse(scene, canvas_coords);
+    if (panel == NULL)
+        panel = vky_panel_from_mouse(scene, canvas_coords);
 
     pick.panel = panel;
     pick.pos_canvas_px[0] = canvas_coords[0];

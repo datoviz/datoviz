@@ -15,7 +15,7 @@ static void frame_callback(VkyCanvas* canvas)
         {
             return;
         }
-        VkyPick pick = vky_pick(canvas->scene, mouse->cur_pos);
+        VkyPick pick = vky_pick(canvas->scene, mouse->cur_pos, NULL);
         printf("CLICKED AT:\n");
         printf("pos canvas px %f %f\n", pick.pos_canvas_px[0], pick.pos_canvas_px[1]);
         printf("pos canvas ndc %f %f\n", pick.pos_canvas_ndc[0], pick.pos_canvas_ndc[1]);
