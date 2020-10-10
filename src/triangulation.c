@@ -111,7 +111,7 @@ VkyVisual* vky_visual_polygon(VkyScene* scene, const VkyPolygonParams* params)
 
 
 VkyPolygonTriangulation vky_visual_polygon_upload(
-    VkyVisual* vb,                                           // visual bundle
+    VkyVisual* vb,                                           // visual
     const uint32_t point_count, const dvec2* points,         // points
     const uint32_t poly_count, const uint32_t* poly_lengths, // polygons
     const VkyColor* poly_colors                              // polygon colors
@@ -497,20 +497,20 @@ void vky_destroy_pslg_triangulation(VkyPSLGTriangulation* tr)
 
 
 /*************************************************************************************************/
-/*  PSLG visual bundle                                                                           */
+/*  PSLG visual                                                                                  */
 /*************************************************************************************************/
 
-VkyVisualBundle* vky_bundle_pslg(VkyScene* scene, const VkyPSLGParams* params)
+VkyVisual* vky_visual_pslg(VkyScene* scene, const VkyPSLGParams* params)
 {
-    VkyVisualBundle* vb = vky_create_visual_bundle(scene);
+    VkyVisual* vb = vky_create_visual(scene, VKY_VISUAL_EMPTY);
 
     // Mesh visual.
     VkyVisual* visual_mesh = vky_visual_mesh_flat(scene);
-    vky_add_visual_to_bundle(vb, visual_mesh);
+    vky_visual_add_child(vb, visual_mesh);
 
     // Segment visual.
     VkyVisual* visual_segments = vky_visual_segment(scene);
-    vky_add_visual_to_bundle(vb, visual_segments);
+    vky_visual_add_child(vb, visual_segments);
 
     // Copy the parameters.
     vb->params = malloc(sizeof(VkyPSLGParams));
@@ -521,16 +521,16 @@ VkyVisualBundle* vky_bundle_pslg(VkyScene* scene, const VkyPSLGParams* params)
 
 
 
-VkyPSLGTriangulation vky_bundle_pslg_upload(
-    VkyVisualBundle* vb,                                     //
+VkyPSLGTriangulation vky_visual_pslg_upload(
+    VkyVisual* vb,                                           //
     const uint32_t point_count, const dvec2* points,         // points
     const uint32_t segment_count, const uvec2* segments,     // segments
     const uint32_t region_count, const dvec2* region_coords, // regions
     const VkyColor* region_colors,                           // region  colors
     const char* triangle_params)                             // triangle params
 {
-    VkyVisual* visual_mesh = vb->visuals[0];
-    VkyVisual* visual_segments = vb->visuals[1];
+    VkyVisual* visual_mesh = vb->children[0];
+    VkyVisual* visual_segments = vb->children[1];
     const VkyPSLGParams* params = (const VkyPSLGParams*)vb->params;
     ASSERT(params != NULL);
 

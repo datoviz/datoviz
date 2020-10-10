@@ -511,10 +511,10 @@ static void pslg_1(VkyPanel* panel)
 
     // PSLG visual bundle.
     VkyPSLGParams params = (VkyPSLGParams){5, {{0, 0, 0}, 255}};
-    VkyVisualBundle* vb = vky_bundle_pslg(panel->scene, &params);
-    vky_add_visual_bundle_to_panel(vb, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
-    VkyPSLGTriangulation tr = vky_bundle_pslg_upload(
-        vb,                                         // visual bundle
+    VkyVisual* vb = vky_visual_pslg(panel->scene, &params);
+    vky_add_visual_to_panel(vb, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
+    VkyPSLGTriangulation tr = vky_visual_pslg_upload(
+        vb,                                         // visual
         point_count, points,                        // points
         segment_count, segments,                    // segments
         region_count, region_coords, region_colors, // regions,
@@ -596,10 +596,10 @@ static void pslg_2(VkyPanel* panel)
 
     // PSLG visual bundle.
     VkyPSLGParams params = (VkyPSLGParams){5, {{0, 0, 0}, 255}};
-    VkyVisualBundle* vb = vky_bundle_pslg(panel->scene, &params);
-    vky_add_visual_bundle_to_panel(vb, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
-    VkyPSLGTriangulation tr = vky_bundle_pslg_upload(
-        vb,                                         // visual bundle
+    VkyVisual* vb = vky_visual_pslg(panel->scene, &params);
+    vky_add_visual_to_panel(vb, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
+    VkyPSLGTriangulation tr = vky_visual_pslg_upload(
+        vb,                                         // visual
         point_count, (const dvec2*)points,          // points
         segment_count, (const uvec2*)segments,      // segments
         region_count, region_coords, region_colors, // regions,

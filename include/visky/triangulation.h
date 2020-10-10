@@ -48,8 +48,8 @@ VKY_EXPORT VkyPolygonTriangulation vky_visual_polygon_upload(
 );
 
 
-VKY_EXPORT VkyPSLGTriangulation vky_bundle_pslg_upload(
-    VkyVisualBundle* vb,          //
+VKY_EXPORT VkyPSLGTriangulation vky_visual_pslg_upload(
+    VkyVisual* vb,                //
     const uint32_t, const dvec2*, // points
     const uint32_t, const uvec2*, // segments
     const uint32_t, const dvec2*, // regions

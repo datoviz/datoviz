@@ -474,7 +474,7 @@ struct VkyPSLGParams
 
 
 
-VKY_EXPORT VkyVisualBundle* vky_bundle_pslg(VkyScene* scene, const VkyPSLGParams* params);
+VKY_EXPORT VkyVisual* vky_visual_pslg(VkyScene* scene, const VkyPSLGParams* params);
 
 
 /*************************************************************************************************/
