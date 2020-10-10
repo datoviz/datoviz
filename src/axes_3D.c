@@ -11,7 +11,7 @@ END_INCL_NO_WARN
 /*  Axes 3D visual                                                                               */
 /*************************************************************************************************/
 
-static VkyData vky_axes_3D_bake(VkyVisual* visual, VkyData data)
+static VkyData _axes_3D_bake(VkyVisual* visual, VkyData data)
 {
     uint32_t nv = 4 * data.item_count;
     uint32_t ni = 6 * data.item_count;
@@ -102,7 +102,7 @@ static VkyVisual* _axes_3D(VkyScene* scene)
     // Resources.
     vky_add_common_resources(visual);
 
-    visual->cb_bake_data = vky_axes_3D_bake;
+    visual->cb_bake_data = _axes_3D_bake;
 
     return visual;
 }
@@ -113,7 +113,7 @@ static VkyVisual* _axes_3D(VkyScene* scene)
 /*  Axes 3D text visual                                                                          */
 /*************************************************************************************************/
 
-static VkyData vky_axes_3D_text_bake(VkyVisual* visual, VkyData data)
+static VkyData _axes_3D_text_bake(VkyVisual* visual, VkyData data)
 {
 
     ASSERT(data.items != NULL); // TODO: support allocation with no upload by specifying a max
@@ -220,7 +220,7 @@ static VkyVisual* _axes_3D_text(VkyScene* scene)
     vky_add_common_resources(visual);
     vky_add_texture_resource(visual, texture);
 
-    visual->cb_bake_data = vky_axes_3D_text_bake;
+    visual->cb_bake_data = _axes_3D_text_bake;
 
     return visual;
 }
@@ -233,7 +233,7 @@ static VkyVisual* _axes_3D_text(VkyScene* scene)
 
 static VkyVisual* _add_3D_axes(VkyScene* scene)
 {
-    VkyVisual* segment_visual = vky_visual_axes_3D(scene);
+    VkyVisual* segment_visual = _axes_3D(scene);
 
     const uint32_t n_ticks = 9;
     const uint32_t n = 3 * 2 * n_ticks;
