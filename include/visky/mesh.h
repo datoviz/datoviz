@@ -4,34 +4,9 @@
 #include "scene.h"
 
 
-
 /*************************************************************************************************/
-/*  Mesh visual                                                                                  */
+/*  Mesh creation                                                                                */
 /*************************************************************************************************/
-
-typedef enum
-{
-    VKY_MESH_COLOR_RGBA = 1,
-    VKY_MESH_COLOR_UV = 2,
-} VkyMeshColorType;
-
-typedef enum
-{
-    VKY_MESH_SHADING_NONE = 0,
-    VKY_MESH_SHADING_BLINN_PHONG = 1,
-} VkyMeshShading;
-
-// Struct sent to the GPU as uniform buffer.
-typedef struct VkyMeshParams VkyMeshParams;
-struct VkyMeshParams
-{
-    vec4 light_pos;
-    vec4 light_coefs;
-    ivec2 tex_size;
-    int32_t mode_color; // how to interpret the u16vec2 color attribute
-    int32_t mode_shading;
-    float wire_linewidth;
-};
 
 typedef struct VkyMeshVertex VkyMeshVertex;
 struct VkyMeshVertex
@@ -41,23 +16,6 @@ struct VkyMeshVertex
     VkyColorBytes color;
 };
 
-VKY_EXPORT VkyMeshParams vky_default_mesh_params(
-    VkyMeshColorType color_type, VkyMeshShading shading, ivec2 tex_size, float wire_linewidth);
-
-VKY_EXPORT VkyVisual*
-vky_visual_mesh(VkyScene* scene, const VkyMeshParams* params, const VkyTextureParams* tparams);
-
-VKY_EXPORT void vky_visual_mesh_upload(VkyVisual* visual, const void* pixels);
-
-VKY_EXPORT VkyVisual* vky_visual_mesh_raw(VkyScene* scene);
-
-VKY_EXPORT VkyVisual* vky_visual_mesh_flat(VkyScene* scene);
-
-
-
-/*************************************************************************************************/
-/*  Mesh creation                                                                                */
-/*************************************************************************************************/
 
 typedef struct VkyMesh VkyMesh;
 struct VkyMesh
