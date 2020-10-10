@@ -496,7 +496,7 @@ VKY_EXPORT VkyBuffer* vky_add_index_buffer(VkyGpu*, VkDeviceSize size);
 VKY_EXPORT VkyBuffer* vky_find_buffer(VkyGpu*, VkDeviceSize size, VkBufferUsageFlagBits flags);
 VKY_EXPORT VkyTexture* vky_add_texture(VkyGpu*, const VkyTextureParams* params);
 
-VKY_EXPORT VkyTextureParams vky_default_texture_params(ivec3 shape);
+VKY_EXPORT VkyTextureParams vky_default_texture_params(uint32_t, uint32_t, uint32_t);
 
 
 /*************************************************************************************************/

@@ -17,6 +17,110 @@
 
 
 /*************************************************************************************************/
+/*  Built-in fixed constants                                                                     */
+/*************************************************************************************************/
+
+#define ENGINE_NAME         "Visky"
+#define APPLICATION_NAME    "Visky prototype"
+#define APPLICATION_VERSION VK_MAKE_VERSION(1, 0, 0)
+
+
+/*************************************************************************************************/
+/*  Visky environment variables                                                                  */
+/*************************************************************************************************/
+
+#define VKY_FPS                 (vky_check_env("VKY_FPS", false))
+#define VKY_VSYNC               (vky_check_env("VKY_VSYNC", true) && !VKY_FPS)
+#define VKY_DEBUG_TEST          (vky_check_env("VKY_DEBUG_TEST", false))
+#define VKY_INVERSE_MOUSE_WHEEL vky_check_env("VKY_INVERSE_MOUSE_WHEEL", false)
+
+
+/*************************************************************************************************/
+/*  Math                                                                                         */
+/*************************************************************************************************/
+
+#ifndef M_PI
+#define M_PI 3.141592653589793
+#endif
+#define M_2PI 6.283185307179586
+
+#define VKY_NEVER -1000000
+
+
+
+/*************************************************************************************************/
+/*  Builtin limits                                                                               */
+/*************************************************************************************************/
+
+#define VKY_MAX_CONSTANTS         1000
+#define VKY_MAX_CANVASES          1000
+#define VKY_MAX_PANEL_LINKS       1000
+#define VKY_MAX_EVENT_CALLBACKS   100
+#define VKY_MAX_FRAMES_IN_FLIGHT  2
+#define VKY_MAX_ATTRIBUTE_COUNT   100
+#define VKY_MAX_BINDING_COUNT     100
+#define VKY_MAX_SHADER_COUNT      20
+#define VKY_MAX_GUI_COUNT         100
+#define VKY_MAX_GUI_CONTROLS      1000
+#define VKY_AXES_MAX_USER_TICKS   100
+#define VKY_AXES_MAX_LABEL_LENGTH 256
+
+// Number of matrices per viewport in the MVP dynamic uniform buffer
+#define VKY_MVP_BUFFER_SIZE (3 * sizeof(mat4) + 3 * sizeof(vec4) + sizeof(cvec4))
+// Note that the params buffer must be < 65K as it is passed as an UBO to the GPU.
+// Should be a multiple of 4 for alignement reasons.
+#define VKY_RAW_PATH_MAX_PATHS 4 * 500
+
+
+
+/*************************************************************************************************/
+/*  Defaults                                                                                     */
+/*************************************************************************************************/
+
+#define VKY_DEFAULT_VERTEX_FORMAT_POS   VK_FORMAT_R32G32B32_SFLOAT
+#define VKY_DEFAULT_VERTEX_FORMAT_CMAP  VK_FORMAT_R8G8_UINT
+#define VKY_DEFAULT_VERTEX_FORMAT_COLOR VK_FORMAT_R8G8B8A8_UNORM
+#define VKY_DEFAULT_BACKEND             VKY_BACKEND_GLFW, NULL
+#define VKY_DEFAULT_COLORMAP            VKY_CMAP_HSV
+#define VKY_DEFAULT_TRIANGLE_PARAMS     "pzqAQ"
+#define VKY_AXES_DEFAULT_SCALE                                                                    \
+    {                                                                                             \
+        -1.0, +1.0, false                                                                         \
+    }
+
+
+/*************************************************************************************************/
+/*  Misc                                                                                         */
+/*************************************************************************************************/
+
+#define VKY_TIME vky_get_timer()
+
+#define VKY_FONT_TEXTURE_SHAPE                                                                    \
+    {                                                                                             \
+        6, 16                                                                                     \
+    }
+
+#ifdef __cplusplus
+#define VKY_CLEAR_COLOR_WHITE                                                                     \
+    {                                                                                             \
+        255, 255, 255, 255                                                                        \
+    }
+#define VKY_CLEAR_COLOR_BLACK                                                                     \
+    {                                                                                             \
+        0, 0, 0, 0                                                                                \
+    }
+#else
+#define VKY_CLEAR_COLOR_WHITE                                                                     \
+    (VkyColorBytes) { 255, 255, 255, 255 }
+#define VKY_CLEAR_COLOR_BLACK                                                                     \
+    (VkyColorBytes) { 0, 0, 0, 0 }
+#endif
+
+#define VKY_FONT_MAP_FILENAME "font_inconsolata.png"
+
+
+
+/*************************************************************************************************/
 /*  Constant system                                                                              */
 /*************************************************************************************************/
 
@@ -139,8 +243,8 @@ VKY_EXPORT void vky_reset_constant(VkyConstantName name);
 
 VKY_EXPORT void vky_reset_all_constants(void);
 
+#define VKY_CONST(name, value) vky_get_constant(name, value)
 
-#define VKY_CONST(name, value)     vky_get_constant(name, value)
 #define VKY_CONST_INT(name, value) ((uint32_t)round(vky_get_constant(name, value)))
 
 VKY_INLINE bool vky_check_env(const char* name, bool default_value)
@@ -158,112 +262,6 @@ VKY_INLINE double vky_get_env(const char* name, bool default_value)
     sscanf(value, "%lf", &number);
     return number;
 }
-
-
-
-/*************************************************************************************************/
-/*  Visky environment variables                                                                  */
-/*************************************************************************************************/
-
-#define VKY_FPS                 (vky_check_env("VKY_FPS", false))
-#define VKY_VSYNC               (vky_check_env("VKY_VSYNC", true) && !VKY_FPS)
-#define VKY_DEBUG_TEST          (vky_check_env("VKY_DEBUG_TEST", false))
-#define VKY_INVERSE_MOUSE_WHEEL vky_check_env("VKY_INVERSE_MOUSE_WHEEL", false)
-
-
-
-/*************************************************************************************************/
-/*  Built-in fixed constants                                                                     */
-/*************************************************************************************************/
-
-#define ENGINE_NAME         "Visky"
-#define APPLICATION_NAME    "Visky prototype"
-#define APPLICATION_VERSION VK_MAKE_VERSION(1, 0, 0)
-
-typedef enum
-{
-    VKY_BACKEND_NONE = 0,
-    VKY_BACKEND_GLFW = 1,
-    VKY_BACKEND_OFFSCREEN = 10,
-    VKY_BACKEND_SCREENSHOT = 11,
-    VKY_BACKEND_VIDEO = 12,
-} VkyBackendType;
-
-// Mathematical constants
-#ifndef M_PI
-#define M_PI 3.141592653589793
-#endif
-#define M_2PI 6.283185307179586
-
-#define VKY_NEVER           -1000000
-#define VKY_MAX_CONSTANTS   1000
-#define VKY_MAX_CANVASES    1000
-#define VKY_MAX_PANEL_LINKS 1000
-#define VKY_DEFAULT_TIMER   vky_get_timer()
-
-#define VKY_TEXTURE_PARAMS_NEAREST(w, h, d)                                                       \
-    {w,                                                                                           \
-     h,                                                                                           \
-     d,                                                                                           \
-     4,                                                                                           \
-     VK_FORMAT_R8G8B8A8_UNORM,                                                                    \
-     VK_FILTER_NEAREST,                                                                           \
-     VK_SAMPLER_ADDRESS_MODE_REPEAT,                                                              \
-     VK_IMAGE_LAYOUT_UNDEFINED,                                                                   \
-     false};
-#define VKY_TEXTURE_PARAMS_LINEAR(w, h, d)                                                        \
-    {w,                                                                                           \
-     h,                                                                                           \
-     d,                                                                                           \
-     4,                                                                                           \
-     VK_FORMAT_R8G8B8A8_UNORM,                                                                    \
-     VK_FILTER_LINEAR,                                                                            \
-     VK_SAMPLER_ADDRESS_MODE_REPEAT,                                                              \
-     VK_IMAGE_LAYOUT_UNDEFINED,                                                                   \
-     false};
-
-// Number of matrices per viewport in the MVP dynamic uniform buffer
-#define VKY_MVP_BUFFER_SIZE             (3 * sizeof(mat4) + 3 * sizeof(vec4) + sizeof(cvec4))
-#define VKY_DEFAULT_VERTEX_FORMAT_POS   VK_FORMAT_R32G32B32_SFLOAT
-#define VKY_DEFAULT_VERTEX_FORMAT_CMAP  VK_FORMAT_R8G8_UINT
-#define VKY_DEFAULT_VERTEX_FORMAT_COLOR VK_FORMAT_R8G8B8A8_UNORM
-#define VKY_MAX_EVENT_CALLBACKS         100
-#define VKY_MAX_FRAMES_IN_FLIGHT        2
-#define VKY_MAX_ATTRIBUTE_COUNT         100
-#define VKY_MAX_BINDING_COUNT           100
-#define VKY_MAX_SHADER_COUNT            20
-#define VKY_MAX_GUI_COUNT               100
-#define VKY_MAX_GUI_CONTROLS            1000
-
-// Note that the params buffer must be < 65K as it is passed as an UBO to the GPU.
-// Should be a multiple of 4 for alignement reasons.
-#define VKY_RAW_PATH_MAX_PATHS      4 * 500
-#define VKY_DEFAULT_BACKEND         VKY_BACKEND_GLFW, NULL
-#define VKY_DEFAULT_COLORMAP        VKY_CMAP_HSV
-#define VKY_DEFAULT_COLOR_OPT       255
-#define VKY_DEFAULT_TRIANGLE_PARAMS "pzqAQ"
-#define VKY_FONT_TEXTURE_SHAPE                                                                    \
-    {                                                                                             \
-        6, 16                                                                                     \
-    }
-
-#ifdef __cplusplus
-#define VKY_CLEAR_COLOR_WHITE                                                                     \
-    {                                                                                             \
-        255, 255, 255, 255                                                                        \
-    }
-#define VKY_CLEAR_COLOR_BLACK                                                                     \
-    {                                                                                             \
-        0, 0, 0, 0                                                                                \
-    }
-#else
-#define VKY_CLEAR_COLOR_WHITE                                                                     \
-    (VkyColorBytes) { 255, 255, 255, 255 }
-#define VKY_CLEAR_COLOR_BLACK                                                                     \
-    (VkyColorBytes) { 0, 0, 0, 0 }
-#endif
-
-#define VKY_FONT_MAP_FILENAME "font_inconsolata.png"
 
 
 
@@ -368,13 +366,6 @@ typedef enum
 // Note that the tick cache must be taken into account when zooming.
 #define VKY_AXES_PHYSICAL_DENSITY_MAX VKY_CONST(VKY_AXES_PHYSICAL_DENSITY_MAX_ID, .350)
 
-#define VKY_AXES_MAX_USER_TICKS   100
-#define VKY_AXES_MAX_LABEL_LENGTH 256
-
-#define VKY_AXES_DEFAULT_SCALE                                                                    \
-    {                                                                                             \
-        -1.0, +1.0, false                                                                         \
-    }
 
 // The factors below is used to compute the physical coverage of the axes ticks
 // to determine the appropriate number of ticks. The higher the value, the sparsier the number of

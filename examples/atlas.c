@@ -47,9 +47,9 @@ static VkyVisual* v2 = NULL;
 
 
 
-static VkyVisual* _add_image(VkyPanel* panel, int width, int height, void* image)
+static VkyVisual* _add_image(VkyPanel* panel, uint32_t width, uint32_t height, void* image)
 {
-    VkyTextureParams params = vky_default_texture_params((int[]){(int)height, (int)width, 1});
+    VkyTextureParams params = vky_default_texture_params(height, width, 1);
     VkyVisual* visual = vky_visual(panel->scene, VKY_VISUAL_IMAGE, &params, NULL);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 

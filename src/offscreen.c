@@ -624,14 +624,14 @@ void vky_run_offscreen_app(VkyApp* app)
     VkyCanvas* canvas = app->canvases[0];
     vky_fill_command_buffers(canvas);
     // vky_submit_command_buffer_offscreen(canvas);
-    vky_offscreen_frame(canvas, VKY_DEFAULT_TIMER);
+    vky_offscreen_frame(canvas, VKY_TIME);
 
     // Event loop.
     while (!canvas->to_close)
     {
         // vky_next_frame(canvas);
         // vky_submit_command_buffer_offscreen(canvas);
-        vky_offscreen_frame(canvas, VKY_DEFAULT_TIMER);
+        vky_offscreen_frame(canvas, VKY_TIME);
         canvas->frame_count++;
     }
 }
@@ -650,12 +650,12 @@ void vky_run_screenshot_app(VkyApp* app)
     ASSERT(params != NULL);
 
     vky_fill_command_buffers(canvas);
-    vky_offscreen_frame(canvas, VKY_DEFAULT_TIMER);
+    vky_offscreen_frame(canvas, VKY_TIME);
 
     // Event loop.
     while (!canvas->to_close)
     {
-        vky_offscreen_frame(canvas, VKY_DEFAULT_TIMER);
+        vky_offscreen_frame(canvas, VKY_TIME);
         // Save screenshot for the requested frame index.
         if (canvas->frame_count == params->frame_index)
         {

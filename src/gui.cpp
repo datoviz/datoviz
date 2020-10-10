@@ -117,7 +117,7 @@ VkyImGuiTexture vky_imgui_image_from_texture(VkyTexture texture)
 
 VkyImGuiTexture vky_imgui_image_from_canvas(VkyCanvas* canvas)
 {
-    VkyTextureParams params = VKY_TEXTURE_PARAMS_NEAREST(
+    VkyTextureParams params = vky_default_texture_params(
         canvas->size.framebuffer_width, canvas->size.framebuffer_height, 1);
 
     VkyTexture texture = {0};
@@ -238,7 +238,7 @@ void vky_imgui_canvas_init(VkyCanvas* canvas)
 {
     vky_fill_command_buffers(canvas);
     // vky_submit_command_buffer_offscreen(canvas);
-    vky_offscreen_frame(canvas, VKY_DEFAULT_TIMER);
+    vky_offscreen_frame(canvas, VKY_TIME);
 }
 
 
@@ -247,7 +247,7 @@ void vky_imgui_canvas_next_frame(VkyCanvas* canvas)
 {
     // vky_next_frame(canvas);
     // vky_submit_command_buffer_offscreen(canvas);
-    vky_offscreen_frame(canvas, VKY_DEFAULT_TIMER);
+    vky_offscreen_frame(canvas, VKY_TIME);
     canvas->frame_count++;
 }
 

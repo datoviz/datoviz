@@ -67,14 +67,14 @@ static void run_vnc(VkyCanvas* canvas)
     vky_add_mock_input_callback(canvas, mouse_input);
 
     vky_fill_command_buffers(canvas);
-    vky_offscreen_frame(canvas, VKY_DEFAULT_TIMER);
+    vky_offscreen_frame(canvas, VKY_TIME);
 
     // Event loop.
     int usec = server->deferUpdateTime * 1000;
     while (rfbIsActive(server))
     {
         vky_begin_screenshot(screenshot);
-        vky_offscreen_frame(canvas, VKY_DEFAULT_TIMER);
+        vky_offscreen_frame(canvas, VKY_TIME);
         vky_end_screenshot(screenshot);
         rfbMarkRectAsModified(
             server, 0, 0, (int)canvas->size.window_width, (int)canvas->size.window_height);

@@ -2150,16 +2150,12 @@ VkyBuffer* vky_find_buffer(VkyGpu* gpu, VkDeviceSize size, VkBufferUsageFlagBits
 }
 
 
-VkyTextureParams vky_default_texture_params(ivec3 shape)
+VkyTextureParams vky_default_texture_params(uint32_t width, uint32_t height, uint32_t depth)
 {
-    ASSERT(shape[0] > 0);
-    ASSERT(shape[1] > 0);
-    ASSERT(shape[2] > 0);
-
     VkyTextureParams params = {
-        (uint32_t)shape[0],
-        (uint32_t)shape[1],
-        (uint32_t)shape[2],
+        width,
+        height,
+        depth,
         4,
         VK_FORMAT_R8G8B8A8_UNORM,
         VK_FILTER_NEAREST,

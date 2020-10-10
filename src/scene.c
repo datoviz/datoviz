@@ -1157,8 +1157,7 @@ void vky_reset_all_mvp(VkyScene* scene)
         for (uint32_t v = 0; v < 2; v++)
         {
             // Default color context.
-            vky_set_color_context(
-                &scene->grid->panels[i], VKY_DEFAULT_COLORMAP, VKY_DEFAULT_COLOR_OPT);
+            vky_set_color_context(&scene->grid->panels[i], VKY_DEFAULT_COLORMAP, 255);
             // TODO: rename to vky_common_upload() or something?
             vky_mvp_upload(&scene->grid->panels[i], v, &mvp);
         }

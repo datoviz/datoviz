@@ -151,13 +151,3 @@ vec4 get_color(vec4 color) {
     // no-op when the color is already in RGBA format (4 bytes of uint8 transformed to float by Vulkan via FORMAT_UNORM)
     return color;
 }
-
-/*
-
-How to switch from cmap to color system:
-1) use VKY_DEFAULT_VERTEX_FORMAT_COLOR_RGBA in the vertex layout.
-2) use VkyColorBytes instead of VkyCmapBytes in the vertex struct color component
-3) use vec4 in color GLSL attribute
-4) use vky_color() instead of vky_cmap() when setting the color
-
-*/

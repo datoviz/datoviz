@@ -167,6 +167,14 @@ typedef enum
     VKY_KEY_LAST = 348,
 } VkyKey;
 
+typedef enum
+{
+    VKY_BACKEND_NONE = 0,
+    VKY_BACKEND_GLFW = 1,
+    VKY_BACKEND_OFFSCREEN = 10,
+    VKY_BACKEND_SCREENSHOT = 11,
+    VKY_BACKEND_VIDEO = 12,
+} VkyBackendType;
 
 
 /*************************************************************************************************/
