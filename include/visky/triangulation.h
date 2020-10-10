@@ -40,8 +40,8 @@ struct VkyPolygonTriangulation
 /*  Visual upload                                                                                */
 /*************************************************************************************************/
 
-VKY_EXPORT VkyPolygonTriangulation vky_bundle_polygon_upload(
-    VkyVisualBundle* vb,                                     // visual bundle
+VKY_EXPORT VkyPolygonTriangulation vky_visual_polygon_upload(
+    VkyVisual* vb,                                           // visual bundle
     const uint32_t point_count, const dvec2* points,         // points
     const uint32_t poly_count, const uint32_t* poly_lengths, // polygons
     const VkyColor* poly_colors                              // polygon colors

@@ -325,7 +325,7 @@ static void graph(VkyPanel* panel)
     glm_vec4_copy(GLM_VEC4_BLACK, params.marker_edge_color);
 
     // Create the graph visual bundle.
-    VkyVisual* graph = vky_bundle_graph(panel->scene, params);
+    VkyVisual* graph = vky_visual_graph(panel->scene, params);
     vky_add_visual_to_panel(graph, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
     // Create the graph.
@@ -445,8 +445,8 @@ static void polygon(VkyPanel* panel)
     vky_set_panel_aspect_ratio(panel, 1);
 
     VkyPolygonParams params = (VkyPolygonParams){20, {{0, 0, 0}, 128}};
-    VkyVisualBundle* vb = vky_bundle_polygon(panel->scene, &params);
-    vky_add_visual_bundle_to_panel(vb, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
+    VkyVisual* vb = vky_visual_polygon(panel->scene, &params);
+    vky_add_visual_to_panel(vb, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
     const uint32_t n0 = 4, n1 = 5, n2 = 6;
     uint32_t point_count = n0 + n1 + n2;
@@ -467,7 +467,7 @@ static void polygon(VkyPanel* panel)
     poly_colors[1] = vky_color(VKY_CMAP_HSV, 1, 0, 3, 1);
     poly_colors[2] = vky_color(VKY_CMAP_HSV, 2, 0, 3, 1);
 
-    vky_bundle_polygon_upload(
+    vky_visual_polygon_upload(
         vb,                                // visual bundle
         point_count, (const dvec2*)points, // points
         poly_count, poly_lengths,          // polygons
@@ -648,10 +648,10 @@ static void france(VkyPanel* panel)
 
     // Create the polygon visual bundle.
     VkyPolygonParams params = (VkyPolygonParams){2, {{0, 0, 0}, 255}};
-    VkyVisualBundle* vb = vky_bundle_polygon(panel->scene, &params);
-    vky_add_visual_bundle_to_panel(vb, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
+    VkyVisual* vb = vky_visual_polygon(panel->scene, &params);
+    vky_add_visual_to_panel(vb, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
-    VkyPolygonTriangulation tr = vky_bundle_polygon_upload(
+    VkyPolygonTriangulation tr = vky_visual_polygon_upload(
         vb,                                // visual bundle
         point_count, (const dvec2*)points, // points
         poly_count, poly_lengths,          // polygons

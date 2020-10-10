@@ -3,7 +3,7 @@
 
 
 /*************************************************************************************************/
-/*  Graph visual bundle                                                                          */
+/*  Graph visual                                                                                 */
 /*************************************************************************************************/
 
 void vky_graph_upload(
@@ -43,7 +43,7 @@ void vky_graph_upload(
     free(edge_items);
 }
 
-VkyVisual* vky_bundle_graph(VkyScene* scene, VkyGraphParams params)
+VkyVisual* vky_visual_graph(VkyScene* scene, VkyGraphParams params)
 {
     VkyVisual* vb = vky_create_visual(scene, VKY_VISUAL_EMPTY);
 
@@ -64,7 +64,7 @@ VkyVisual* vky_bundle_graph(VkyScene* scene, VkyGraphParams params)
 
 
 /*************************************************************************************************/
-/*  Color bar visual bundle                                                                      */
+/*  Color bar visual                                                                             */
 /*************************************************************************************************/
 
 #define TICK_DATA                                                                                 \
@@ -243,7 +243,7 @@ static void colorbar_tick_upload(VkyVisual* text, VkyVisual* ticks, VkyColorbarP
     free(text_data);
 }
 
-VkyVisual* vky_bundle_colorbar(VkyScene* scene, VkyColorbarParams params)
+VkyVisual* vky_visual_colorbar(VkyScene* scene, VkyColorbarParams params)
 {
     VkyVisual* vb = vky_create_visual(scene, VKY_VISUAL_EMPTY);
 
@@ -252,7 +252,7 @@ VkyVisual* vky_bundle_colorbar(VkyScene* scene, VkyColorbarParams params)
     VkyVisual* text = vky_visual_text(scene);
     VkyVisual* ticks = vky_visual_segment(scene);
 
-    // Add the visuals to the bundle.
+    // Add the child visuals.
     vky_visual_add_child(vb, colorbar);
     vky_visual_add_child(vb, text);
     vky_visual_add_child(vb, ticks);

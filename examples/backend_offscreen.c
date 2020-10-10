@@ -37,7 +37,7 @@ int main(void)
     glm_vec4_copy(GLM_VEC4_BLACK, params.marker_edge_color);
 
     // Create the graph visual bundle.
-    VkyVisual* graph = vky_bundle_graph(scene, params);
+    VkyVisual* graph = vky_visual_graph(scene, params);
     vky_add_visual_to_panel(graph, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
     // Create the graph.

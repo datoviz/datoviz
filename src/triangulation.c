@@ -84,13 +84,13 @@ void vky_destroy_polygon_triangulation(VkyPolygonTriangulation* tr)
 /*  Polygon visual bundle                                                                        */
 /*************************************************************************************************/
 
-VkyVisualBundle* vky_bundle_polygon(VkyScene* scene, const VkyPolygonParams* params)
+VkyVisual* vky_visual_polygon(VkyScene* scene, const VkyPolygonParams* params)
 {
-    VkyVisualBundle* vb = vky_create_visual_bundle(scene);
+    VkyVisual* vb = vky_create_visual(scene, VKY_VISUAL_EMPTY);
 
     // Raw mesh visual.
     VkyVisual* visual_poly = vky_visual_mesh_raw(scene);
-    vky_add_visual_to_bundle(vb, visual_poly);
+    vky_visual_add_child(vb, visual_poly);
 
     // Polygon outlines.
     if (params->linewidth > 0)
@@ -98,7 +98,7 @@ VkyVisualBundle* vky_bundle_polygon(VkyScene* scene, const VkyPolygonParams* par
         VkyPathParams vparams = (VkyPathParams){
             params->linewidth, 4., VKY_CAP_ROUND, VKY_JOIN_ROUND, VKY_DEPTH_DISABLE};
         VkyVisual* visual_outline = vky_visual_path(scene, &vparams);
-        vky_add_visual_to_bundle(vb, visual_outline);
+        vky_visual_add_child(vb, visual_outline);
     }
 
     // Copy the parameters.
@@ -110,8 +110,8 @@ VkyVisualBundle* vky_bundle_polygon(VkyScene* scene, const VkyPolygonParams* par
 
 
 
-VkyPolygonTriangulation vky_bundle_polygon_upload(
-    VkyVisualBundle* vb,                                     // visual bundle
+VkyPolygonTriangulation vky_visual_polygon_upload(
+    VkyVisual* vb,                                           // visual bundle
     const uint32_t point_count, const dvec2* points,         // points
     const uint32_t poly_count, const uint32_t* poly_lengths, // polygons
     const VkyColor* poly_colors                              // polygon colors
@@ -120,10 +120,10 @@ VkyPolygonTriangulation vky_bundle_polygon_upload(
     const VkyPolygonParams* params = (const VkyPolygonParams*)vb->params;
     ASSERT(params != NULL);
 
-    VkyVisual* visual_poly = vb->visuals[0];
+    VkyVisual* visual_poly = vb->children[0];
     VkyVisual* visual_outline = NULL;
-    if (vb->visual_count == 2)
-        visual_outline = vb->visuals[1];
+    if (vb->children_count == 2)
+        visual_outline = vb->children[1];
 
     // Make the triangulation of the polygons.
     VkyPolygonTriangulation tr =

@@ -245,7 +245,7 @@ static void set_colorbar(VkyPanel* panel, VkyAxes2DParams* params)
         break;
     }
 
-    VkyVisual* colorbar = vky_bundle_colorbar(panel->scene, params->colorbar);
+    VkyVisual* colorbar = vky_visual_colorbar(panel->scene, params->colorbar);
     vky_add_visual_to_panel(colorbar, panel, VKY_VIEWPORT_OUTER, VKY_VISUAL_PRIORITY_NONE);
 }
 
