@@ -4,9 +4,9 @@
 #define N                100
 #define MAX_VERTEX_COUNT 10000000
 #define MAX_INDEX_COUNT  10000000
-#define COLS             N + 1
-#define ROWS             2 * N + 1
-#define POINTS           COLS* ROWS
+#define COLS             (N + 1)
+#define ROWS             (2 * N + 1)
+#define POINTS           (COLS * ROWS)
 
 static const char* items[] = {"mesh", "spiral"};
 static const char* citems[] = {"axes 3D", "FPS", "fly"};
