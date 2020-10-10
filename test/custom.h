@@ -8,7 +8,7 @@ static void mandelbrot(VkyPanel* panel)
     vky_set_panel_aspect_ratio(panel, 1);
 
     // Create the visual.
-    VkyVisual* visual = vky_create_visual(panel->scene, VKY_VISUAL_UNDEFINED);
+    VkyVisual* visual = vky_create_visual(panel->scene, VKY_VISUAL_CUSTOM);
 
     // Shaders.
     VkyShaders shaders = vky_create_shaders(canvas->gpu);

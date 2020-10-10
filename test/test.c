@@ -442,7 +442,10 @@ int main(int argc, char* argv[])
     // Unit tests.
     int res = 0;
     TEST_INDEX = 0;
-    res += test_utils();
+    if (argc == 1 || strcmp(argv[1], "vklite") == 0)
+    {
+        res += test_utils();
+    }
     printf("\n");
 
     // Vklite tests.

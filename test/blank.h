@@ -16,7 +16,7 @@ static void triangle(VkyPanel* panel)
     VkyCanvas* canvas = panel->scene->canvas;
 
     // Create the visual.
-    VkyVisual* visual = vky_create_visual(panel->scene, VKY_VISUAL_UNDEFINED);
+    VkyVisual* visual = vky_create_visual(panel->scene, VKY_VISUAL_CUSTOM);
 
     // Shaders.
     VkyShaders shaders = vky_create_shaders(canvas->gpu);

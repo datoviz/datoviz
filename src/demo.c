@@ -35,7 +35,7 @@ void raytracing_demo(VkyPanel* panel)
     VkyScene* scene = panel->scene;
 
     // Create the visual.
-    VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_UNDEFINED);
+    VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_CUSTOM);
 
     // Shaders.
     VkyShaders shaders = vky_create_shaders(canvas->gpu);

@@ -561,11 +561,11 @@ struct VkyGraphEdge
 };
 
 VKY_EXPORT void vky_graph_upload(
-    VkyVisualBundle* vb,                       //
+    VkyVisual* vb,                             //
     uint32_t node_count, VkyGraphNode* nodes,  // nodes
     uint32_t edge_count, VkyGraphEdge* edges); // edges
 
-VKY_EXPORT VkyVisualBundle* vky_bundle_graph(VkyScene* scene, VkyGraphParams params);
+VKY_EXPORT VkyVisual* vky_bundle_graph(VkyScene* scene, VkyGraphParams params);
 
 
 
@@ -581,7 +581,7 @@ struct VkyColorbarVertex
     cvec2 uv;
 };
 
-VKY_EXPORT VkyVisualBundle* vky_bundle_colorbar(VkyScene* scene, VkyColorbarParams params);
+VKY_EXPORT VkyVisual* vky_bundle_colorbar(VkyScene* scene, VkyColorbarParams params);
 
 
 

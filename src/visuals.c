@@ -7,7 +7,7 @@
 /*************************************************************************************************/
 
 void vky_graph_upload(
-    VkyVisualBundle* vb,                      //
+    VkyVisual* vb,                            //
     uint32_t node_count, VkyGraphNode* nodes, // nodes
     uint32_t edge_count, VkyGraphEdge* edges) // edges
 {
@@ -37,15 +37,15 @@ void vky_graph_upload(
     edge_data.item_count = edge_count;
     edge_data.items = edge_items;
 
-    vky_visual_upload(vb->visuals[0], edge_data);
-    vky_visual_upload(vb->visuals[1], node_data);
+    vky_visual_upload(vb->children[0], edge_data);
+    vky_visual_upload(vb->children[1], node_data);
 
     free(edge_items);
 }
 
-VkyVisualBundle* vky_bundle_graph(VkyScene* scene, VkyGraphParams params)
+VkyVisual* vky_bundle_graph(VkyScene* scene, VkyGraphParams params)
 {
-    VkyVisualBundle* vb = vky_create_visual_bundle(scene);
+    VkyVisual* vb = vky_create_visual(scene, VKY_VISUAL_EMPTY);
 
     VkyMarkersParams node_params = {0};
     vec4_copy(params.marker_edge_color, node_params.edge_color);
@@ -55,10 +55,8 @@ VkyVisualBundle* vky_bundle_graph(VkyScene* scene, VkyGraphParams params)
     VkyVisual* edges = vky_visual_segment(scene);
     VkyVisual* nodes = vky_visual_marker(scene, &node_params);
 
-    ASSERT(vb->visual_count == 0);
-    vky_add_visual_to_bundle(vb, edges);
-    vky_add_visual_to_bundle(vb, nodes);
-    ASSERT(vb->visual_count == 2);
+    vky_visual_add_child(vb, edges);
+    vky_visual_add_child(vb, nodes);
 
     return vb;
 }
@@ -245,9 +243,9 @@ static void colorbar_tick_upload(VkyVisual* text, VkyVisual* ticks, VkyColorbarP
     free(text_data);
 }
 
-VkyVisualBundle* vky_bundle_colorbar(VkyScene* scene, VkyColorbarParams params)
+VkyVisual* vky_bundle_colorbar(VkyScene* scene, VkyColorbarParams params)
 {
-    VkyVisualBundle* vb = vky_create_visual_bundle(scene);
+    VkyVisual* vb = vky_create_visual(scene, VKY_VISUAL_EMPTY);
 
     // Colorbar visual.
     VkyVisual* colorbar = colorbar_visual(scene);
@@ -255,9 +253,9 @@ VkyVisualBundle* vky_bundle_colorbar(VkyScene* scene, VkyColorbarParams params)
     VkyVisual* ticks = vky_visual_segment(scene);
 
     // Add the visuals to the bundle.
-    vky_add_visual_to_bundle(vb, colorbar);
-    vky_add_visual_to_bundle(vb, text);
-    vky_add_visual_to_bundle(vb, ticks);
+    vky_visual_add_child(vb, colorbar);
+    vky_visual_add_child(vb, text);
+    vky_visual_add_child(vb, ticks);
 
     // Upload the colorbar data.
     colorbar_upload(colorbar, params);

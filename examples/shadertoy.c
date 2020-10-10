@@ -48,7 +48,7 @@ int main()
     vky_set_constant(VKY_PANZOOM_MIN_ZOOM_ID, 1);
 
     // Create the visual.
-    VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_UNDEFINED);
+    VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_CUSTOM);
 
     // Shaders.
     VkyShaders shaders = vky_create_shaders(canvas->gpu);

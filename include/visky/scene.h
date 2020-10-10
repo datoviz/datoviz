@@ -28,7 +28,7 @@ typedef enum
 
 typedef enum
 {
-    VKY_VISUAL_UNDEFINED = 0,
+    VKY_VISUAL_EMPTY = 0,
 
     VKY_VISUAL_RECTANGLE = 10,
     VKY_VISUAL_RECTANGLE_AXIS = 11,
@@ -62,6 +62,7 @@ typedef enum
     VKY_VISUAL_COLORBAR = 90,
     VKY_VISUAL_TEXT = 100,
 
+    VKY_VISUAL_CUSTOM = 255,
 
 } VkyVisualType;
 
@@ -266,8 +267,11 @@ struct VkyVisual
     VkyBufferRegion vertex_buffer;
     VkyBufferRegion index_buffer;
 
+    uint32_t resource_count;
     void** resources;
-    uint16_t resource_count;
+
+    uint32_t children_count;
+    VkyVisual** children;
 
     VkyVisualBakeCallback cb_bake_data;
     VkyVisualResizeCallback cb_resize; // NOTE: unused yet
@@ -694,6 +698,7 @@ VKY_EXPORT void vky_add_visual_bundle_to_panel(
     VkyVisualPriority priority);
 VKY_EXPORT void vky_destroy_visual_bundle(VkyVisualBundle* visual_bundle);
 
+VKY_EXPORT void vky_visual_add_child(VkyVisual* parent, VkyVisual* child);
 
 
 /*************************************************************************************************/

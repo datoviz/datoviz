@@ -245,8 +245,8 @@ static void set_colorbar(VkyPanel* panel, VkyAxes2DParams* params)
         break;
     }
 
-    VkyVisualBundle* colorbar = vky_bundle_colorbar(panel->scene, params->colorbar);
-    vky_add_visual_bundle_to_panel(colorbar, panel, VKY_VIEWPORT_OUTER, VKY_VISUAL_PRIORITY_NONE);
+    VkyVisual* colorbar = vky_bundle_colorbar(panel->scene, params->colorbar);
+    vky_add_visual_to_panel(colorbar, panel, VKY_VIEWPORT_OUTER, VKY_VISUAL_PRIORITY_NONE);
 }
 
 static void add_label(VkyPanel* panel, VkyAxis axis, VkyAxes2DParams* params)
@@ -692,6 +692,7 @@ VkyVisual* vky_create_visual(VkyScene* scene, VkyVisualType visual_type)
     visual.scene = scene;
     visual.visual_type = visual_type;
     visual.resources = calloc(VKY_MAX_VISUAL_RESOURCES, sizeof(void*));
+    visual.children = calloc(VKY_MAX_VISUALS_PER_BUNDLE, sizeof(void*));
 
     // NOTE: by convention, the first buffer is the indirect draw buffer.
     // HACK: we allocate the bigger indexed command so that we have enough space,
@@ -805,6 +806,12 @@ void vky_add_visual_to_bundle(VkyVisualBundle* vb, VkyVisual* visual)
 {
     vb->visuals[vb->visual_count] = visual;
     vb->visual_count++;
+}
+
+void vky_visual_add_child(VkyVisual* parent, VkyVisual* child)
+{
+    parent->children[parent->children_count] = child;
+    parent->children_count++;
 }
 
 void vky_visual_params(VkyVisual* visual, size_t params_size, const void* params)
@@ -1097,15 +1104,20 @@ void vky_toggle_visual_visibility(VkyVisual* visual, bool is_visible)
 
 void vky_destroy_visual(VkyVisual* visual)
 {
-    log_trace("destroy visual");
-    vky_destroy_uniform_buffer(&visual->params_buffer);
-    vky_destroy_vertex_layout(&visual->pipeline.vertex_layout);
-    vky_destroy_resource_layout(&visual->pipeline.resource_layout);
-    vky_destroy_shaders(&visual->pipeline.shaders);
-    vky_destroy_graphics_pipeline(&visual->pipeline);
+    if (visual->visual_type != VKY_VISUAL_EMPTY)
+    {
+        log_trace("destroy visual");
+        vky_destroy_uniform_buffer(&visual->params_buffer);
+        vky_destroy_vertex_layout(&visual->pipeline.vertex_layout);
+        vky_destroy_resource_layout(&visual->pipeline.resource_layout);
+        vky_destroy_shaders(&visual->pipeline.shaders);
+        vky_destroy_graphics_pipeline(&visual->pipeline);
+    }
 
     free(visual->resources);
     visual->resources = NULL;
+    free(visual->children);
+    visual->children = NULL;
     free(visual->params);
     visual->params = NULL;
 }
@@ -1284,56 +1296,70 @@ void vky_add_visual_bundle_to_panel(
     }
 }
 
+static void vky_draw_children(VkyVisual* visual, VkyPanel* panel, VkyViewportType viewport_type)
+{
+    for (uint32_t i = 0; i < visual->children_count; i++)
+    {
+        if (visual->children[i] != NULL)
+            vky_draw_visual(visual->children[i], panel, viewport_type);
+    }
+}
+
 void vky_draw_visual(VkyVisual* visual, VkyPanel* panel, VkyViewportType viewport_type)
 {
-    log_trace("draw visual type %d", visual->visual_type);
-    VkyScene* scene = visual->scene;
-    VkyCanvas* canvas = scene->canvas;
-    VkyViewport viewport = vky_get_viewport(panel, viewport_type);
-    VkCommandBuffer command_buffer = canvas->command_buffers[canvas->current_command_buffer_index];
-    uint32_t buffer_index = vky_get_panel_buffer_index(panel, viewport_type);
-
-    // Bind the vertex buffer.
-    if (visual->vertex_buffer.buffer == NULL)
+    if (visual->visual_type != VKY_VISUAL_EMPTY)
     {
-        log_error("no buffer, skipping draw");
-        return;
+        log_trace("draw visual %d", visual->visual_type);
+        VkyScene* scene = visual->scene;
+        VkyCanvas* canvas = scene->canvas;
+        VkyViewport viewport = vky_get_viewport(panel, viewport_type);
+        VkCommandBuffer command_buffer =
+            canvas->command_buffers[canvas->current_command_buffer_index];
+        uint32_t buffer_index = vky_get_panel_buffer_index(panel, viewport_type);
+
+        // Bind the vertex buffer.
+        if (visual->vertex_buffer.buffer == NULL)
+        {
+            log_error("no buffer, skipping draw");
+            return;
+        }
+        vky_bind_vertex_buffer(command_buffer, visual->vertex_buffer, 0);
+
+        // Bind the index buffer if there is one.
+        if (visual->index_buffer.buffer != NULL)
+        {
+            vky_bind_index_buffer(command_buffer, visual->index_buffer, 0);
+        }
+
+        // Bind the pipeline.
+        vky_bind_graphics_pipeline(command_buffer, &visual->pipeline);
+
+        // Bind the dynamic uniform with the panel's MVP.
+        vky_bind_dynamic_uniform(
+            command_buffer, &visual->pipeline, &scene->grid->dynamic_buffer,
+            canvas->current_command_buffer_index, buffer_index);
+
+        // Set the panel viewport.
+        vky_set_viewport(
+            command_buffer, (int32_t)viewport.x, (int32_t)viewport.y, (uint32_t)viewport.w,
+            (uint32_t)viewport.h);
+
+        // Draw
+        // TODO: option to disable indirect drawing if fixed # of vertices/indices
+        if (visual->index_buffer.buffer != NULL)
+        {
+            // Indexed.
+            ASSERT(visual->data.index_count > 0);
+            vky_draw_indexed_indirect(command_buffer, visual->indirect_buffer);
+        }
+        else
+        {
+            // Non-indexed.
+            ASSERT(visual->data.vertex_count > 0);
+            vky_draw_indirect(command_buffer, visual->indirect_buffer);
+        }
     }
-    vky_bind_vertex_buffer(command_buffer, visual->vertex_buffer, 0);
-
-    // Bind the index buffer if there is one.
-    if (visual->index_buffer.buffer != NULL)
-    {
-        vky_bind_index_buffer(command_buffer, visual->index_buffer, 0);
-    }
-
-    // Bind the pipeline.
-    vky_bind_graphics_pipeline(command_buffer, &visual->pipeline);
-
-    // Bind the dynamic uniform with the panel's MVP.
-    vky_bind_dynamic_uniform(
-        command_buffer, &visual->pipeline, &scene->grid->dynamic_buffer,
-        canvas->current_command_buffer_index, buffer_index);
-
-    // Set the panel viewport.
-    vky_set_viewport(
-        command_buffer, (int32_t)viewport.x, (int32_t)viewport.y, (uint32_t)viewport.w,
-        (uint32_t)viewport.h);
-
-    // Draw
-    // TODO: option to disable indirect drawing if fixed # of vertices/indices
-    if (visual->index_buffer.buffer != NULL)
-    {
-        // Indexed.
-        ASSERT(visual->data.index_count > 0);
-        vky_draw_indexed_indirect(command_buffer, visual->indirect_buffer);
-    }
-    else
-    {
-        // Non-indexed.
-        ASSERT(visual->data.vertex_count > 0);
-        vky_draw_indirect(command_buffer, visual->indirect_buffer);
-    }
+    vky_draw_children(visual, panel, viewport_type);
 }
 
 void vky_draw_all_visuals(VkyScene* scene)
