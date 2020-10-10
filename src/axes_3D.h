@@ -20,7 +20,7 @@ struct VkyAxes3DVertex
     uint8_t coord_side; // H: 0x,1y,2z,(3). V: 4x, 5y, 6z, (7)
 };
 
-VkyVisual* vky_visual_axes_3D(VkyScene* scene);
+// VkyVisual* vky_visual_axes_3D(VkyScene* scene);
 
 
 
@@ -54,7 +54,7 @@ struct VkyAxes3DTextVertex
     usvec4 glyph;       // char, char_index, str_len, str_index
 };
 
-VkyVisual* vky_visual_axes_3D_text(VkyScene* scene);
+// VkyVisual* vky_visual_axes_3D_text(VkyScene* scene);
 
 
 
@@ -62,7 +62,7 @@ VkyVisual* vky_visual_axes_3D_text(VkyScene* scene);
 /*  Axes 3D                                                                                      */
 /*************************************************************************************************/
 
-VkyVisual* vky_bundle_axes_3D(VkyScene* scene);
+VkyVisual* vky_visual_axes_3D(VkyScene* scene);
 
 void vky_axes_3D_init(VkyPanel* panel);
 

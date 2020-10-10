@@ -29,7 +29,7 @@ VkyMesh mesh;
 int current_mesh_type = MESH;
 int new_mesh_type = MESH;
 VkyVisual* visual = NULL;
-VkyVisualBundle* vbt;
+VkyVisual* vbt;
 VkyPanel* panel = NULL;
 
 static void square(void)
@@ -277,7 +277,7 @@ int main()
     // vbt = vky_visual_triangulation(
     //     visual->scene, (VkyTriangulationParams){0.5, {255, 0, 0, 255}, {3, 3}, {0, 255, 0,
     //     255}});
-    // vky_add_visual_bundle_to_panel(vbt, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
+    // vky_add_visual_to_panel(vbt, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
     // Upload the mesh data.
     set_mesh();

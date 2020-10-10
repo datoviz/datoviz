@@ -36,7 +36,7 @@ int main(void)
     params.marker_edge_width = 1.0f;
     glm_vec4_copy(GLM_VEC4_BLACK, params.marker_edge_color);
 
-    // Create the graph visual bundle.
+    // Create the graph visual.
     VkyVisual* graph = vky_visual_graph(scene, params);
     vky_add_visual_to_panel(graph, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
@@ -86,8 +86,7 @@ int main(void)
     free(nodes);
     free(edges);
 
-    ASSERT(scene->visual_count == 2);
-    ASSERT(scene->visual_bundle_count == 1);
+    ASSERT(scene->visual_count == 3);
 
     vky_add_frame_callback(canvas, frame_callback);
 

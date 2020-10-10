@@ -64,7 +64,7 @@ static VkyData vky_axes_3D_bake(VkyVisual* visual, VkyData data)
     return data;
 }
 
-VkyVisual* vky_visual_axes_3D(VkyScene* scene)
+static VkyVisual* _axes_3D(VkyScene* scene)
 {
     log_trace("vky_visual_axes_3D");
     VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_AXES_3D);
@@ -169,7 +169,7 @@ static VkyData vky_axes_3D_text_bake(VkyVisual* visual, VkyData data)
     return data;
 }
 
-VkyVisual* vky_visual_axes_3D_text(VkyScene* scene)
+static VkyVisual* _axes_3D_text(VkyScene* scene)
 {
     log_trace("vky_visual_axes_3D_text");
     VkyCanvas* canvas = scene->canvas;
@@ -265,7 +265,7 @@ static VkyVisual* _add_3D_axes_text(VkyScene* scene)
 {
     const uint32_t n_ticks = 5;
     const uint32_t n = 3 * n_ticks;
-    VkyVisual* text_visual = vky_visual_axes_3D_text(scene);
+    VkyVisual* text_visual = _axes_3D_text(scene);
     VkyAxes3DTextData* text_vertices = calloc(n, sizeof(VkyAxes3DTextData));
     VkyAxes3DTextData* vertex = NULL;
 
@@ -299,9 +299,9 @@ static VkyVisual* _add_3D_axes_text(VkyScene* scene)
 
 
 
-VkyVisual* vky_bundle_axes_3D(VkyScene* scene)
+VkyVisual* vky_visual_axes_3D(VkyScene* scene)
 {
-    log_trace("vky_bundle_axes_3D");
+    log_trace("vky_visual_axes_3D");
     VkyVisual* axes = _add_3D_axes(scene);
     VkyVisual* text = _add_3D_axes_text(scene);
 
@@ -317,6 +317,6 @@ VkyVisual* vky_bundle_axes_3D(VkyScene* scene)
 void vky_axes_3D_init(VkyPanel* panel)
 {
     log_trace("vky_axes_3D_init");
-    VkyVisual* vb = vky_bundle_axes_3D(panel->scene);
+    VkyVisual* vb = vky_visual_axes_3D(panel->scene);
     vky_add_visual_to_panel(vb, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 }
