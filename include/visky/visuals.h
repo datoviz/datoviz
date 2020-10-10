@@ -461,7 +461,7 @@ VKY_EXPORT VkyVisual* vky_visual_polygon(VkyScene* scene, const VkyPolygonParams
 
 
 /*************************************************************************************************/
-/*  PSLG visual bundle                                                                           */
+/*  PSLG visual                                                                                  */
 /*************************************************************************************************/
 
 typedef struct VkyPSLGParams VkyPSLGParams;
@@ -478,7 +478,7 @@ VKY_EXPORT VkyVisual* vky_visual_pslg(VkyScene* scene, const VkyPSLGParams* para
 
 
 /*************************************************************************************************/
-/*  Triangulation visual bundle with triangle segments and markers                               */
+/*  Triangulation visual with triangle segments and markers                                      */
 /*************************************************************************************************/
 
 typedef struct VkyTriangulationParams VkyTriangulationParams;
@@ -492,10 +492,10 @@ struct VkyTriangulationParams
     VkyColor marker_color;
 };
 
-VKY_EXPORT VkyVisualBundle* vky_bundle_triangulation(VkyScene*, const VkyTriangulationParams*);
+VKY_EXPORT VkyVisual* vky_visual_triangulation(VkyScene*, const VkyTriangulationParams*);
 
-VKY_EXPORT void vky_bundle_triangulation_upload(
-    VkyVisualBundle*, uint32_t, size_t, const void*, uint32_t, const VkyIndex*);
+VKY_EXPORT void vky_visual_triangulation_upload(
+    VkyVisual*, uint32_t, size_t, const void*, uint32_t, const VkyIndex*);
 
 
 

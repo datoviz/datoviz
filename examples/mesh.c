@@ -230,7 +230,7 @@ static void set_mesh()
     vky_mesh_upload(&mesh, visual);
 
     // if (vbt)
-    //     vky_bundle_triangulation_upload(
+    //     vky_visual_triangulation_upload(
     //         vbt,                                                           //
     //         mesh.vertex_offsets[mesh.object_count], sizeof(VkyMeshVertex), // vertices
     //         mesh.vertices,                                                 //
@@ -274,7 +274,7 @@ int main()
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
     // // Triangulation.
-    // vbt = vky_bundle_triangulation(
+    // vbt = vky_visual_triangulation(
     //     visual->scene, (VkyTriangulationParams){0.5, {255, 0, 0, 255}, {3, 3}, {0, 255, 0,
     //     255}});
     // vky_add_visual_bundle_to_panel(vbt, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);

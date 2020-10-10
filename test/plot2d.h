@@ -523,9 +523,9 @@ static void pslg_1(VkyPanel* panel)
     // Triangulation visual bundle.
     VkyTriangulationParams tparams =
         (VkyTriangulationParams){2, {{0, 0, 0}, 255}, {8, 8}, {{0, 0, 0}, 255}};
-    VkyVisualBundle* vbt = vky_bundle_triangulation(panel->scene, &tparams);
-    vky_add_visual_bundle_to_panel(vbt, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
-    vky_bundle_triangulation_upload(
+    VkyVisual* vbt = vky_visual_triangulation(panel->scene, &tparams);
+    vky_add_visual_to_panel(vbt, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
+    vky_visual_triangulation_upload(
         vbt, tr.vertex_count, sizeof(VkyVertex), tr.mesh_vertices, tr.index_count, tr.indices);
     vky_destroy_pslg_triangulation(&tr);
 }
@@ -594,7 +594,7 @@ static void pslg_2(VkyPanel* panel)
         {{64, 64, 64}, 255}, // DEBUG: extra triangles
     };
 
-    // PSLG visual bundle.
+    // PSLG visual.
     VkyPSLGParams params = (VkyPSLGParams){5, {{0, 0, 0}, 255}};
     VkyVisual* vb = vky_visual_pslg(panel->scene, &params);
     vky_add_visual_to_panel(vb, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
@@ -605,12 +605,12 @@ static void pslg_2(VkyPanel* panel)
         region_count, region_coords, region_colors, // regions,
         "pzqAQa0.002");                             // triangle params
 
-    // Triangulation visual bundle.
+    // Triangulation visual.
     VkyTriangulationParams tparams =
         (VkyTriangulationParams){2, {{0, 0, 0}, 255}, {8, 8}, {{0, 0, 0}, 255}};
-    VkyVisualBundle* vbt = vky_bundle_triangulation(panel->scene, &tparams);
-    vky_add_visual_bundle_to_panel(vbt, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
-    vky_bundle_triangulation_upload(
+    VkyVisual* vbt = vky_visual_triangulation(panel->scene, &tparams);
+    vky_add_visual_to_panel(vbt, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
+    vky_visual_triangulation_upload(
         vbt, tr.vertex_count, sizeof(VkyVertex), tr.mesh_vertices, tr.index_count, tr.indices);
     vky_destroy_pslg_triangulation(&tr);
 }
@@ -646,27 +646,27 @@ static void france(VkyPanel* panel)
     vky_set_controller(panel, VKY_CONTROLLER_PANZOOM, NULL);
     vky_set_panel_aspect_ratio(panel, 1);
 
-    // Create the polygon visual bundle.
+    // Create the polygon visual.
     VkyPolygonParams params = (VkyPolygonParams){2, {{0, 0, 0}, 255}};
     VkyVisual* vb = vky_visual_polygon(panel->scene, &params);
     vky_add_visual_to_panel(vb, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
     VkyPolygonTriangulation tr = vky_visual_polygon_upload(
-        vb,                                // visual bundle
+        vb,                                // visual
         point_count, (const dvec2*)points, // points
         poly_count, poly_lengths,          // polygons
         poly_colors                        // polygon colors
     );
 
 
-    // Triangulation visual bundle.
+    // Triangulation visual.
     if (0) // NOTE: disable for now
     {
         VkyTriangulationParams tparams =
             (VkyTriangulationParams){2, {{0, 0, 0}, 255}, {6, 6}, {{0, 0, 0}, 255}};
-        VkyVisualBundle* vbt = vky_bundle_triangulation(panel->scene, &tparams);
-        vky_add_visual_bundle_to_panel(vbt, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
-        vky_bundle_triangulation_upload(
+        VkyVisual* vbt = vky_visual_triangulation(panel->scene, &tparams);
+        vky_add_visual_to_panel(vbt, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
+        vky_visual_triangulation_upload(
             vbt, point_count, sizeof(VkyVertex), tr.mesh_vertices, tr.index_count, tr.indices);
         vky_destroy_polygon_triangulation(&tr);
     }

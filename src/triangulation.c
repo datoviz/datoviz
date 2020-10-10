@@ -81,7 +81,7 @@ void vky_destroy_polygon_triangulation(VkyPolygonTriangulation* tr)
 
 
 /*************************************************************************************************/
-/*  Polygon visual bundle                                                                        */
+/*  Polygon visual                                                                               */
 /*************************************************************************************************/
 
 VkyVisual* vky_visual_polygon(VkyScene* scene, const VkyPolygonParams* params)
@@ -586,23 +586,23 @@ VkyPSLGTriangulation vky_visual_pslg_upload(
 
 
 /*************************************************************************************************/
-/*  Triangulation visual bundle with triangle segments and markers                               */
+/*  Triangulation visual with triangle segments and markers                                      */
 /*    Can be used with any raw mesh VkyVertex-based visual                                       */
 /*************************************************************************************************/
 
-VkyVisualBundle* vky_bundle_triangulation(VkyScene* scene, const VkyTriangulationParams* params)
+VkyVisual* vky_visual_triangulation(VkyScene* scene, const VkyTriangulationParams* params)
 {
-    VkyVisualBundle* vb = vky_create_visual_bundle(scene);
+    VkyVisual* vb = vky_create_visual(scene, VKY_VISUAL_EMPTY);
 
     // Segment visual.
     VkyVisual* visual_segments = vky_visual_segment(scene);
-    vky_add_visual_to_bundle(vb, visual_segments);
+    vky_visual_add_child(vb, visual_segments);
 
     // Marker visual.
     VkyMarkersRawParams vparams =
         (VkyMarkersRawParams){{params->marker_size[0], params->marker_size[1]}, VKY_SCALING_OFF};
     VkyVisual* visual_markers = vky_visual_marker_raw(scene, &vparams);
-    vky_add_visual_to_bundle(vb, visual_markers);
+    vky_visual_add_child(vb, visual_markers);
 
     // Copy the parameters.
     vb->params = malloc(sizeof(VkyTriangulationParams));
@@ -613,13 +613,13 @@ VkyVisualBundle* vky_bundle_triangulation(VkyScene* scene, const VkyTriangulatio
 
 
 
-void vky_bundle_triangulation_upload(
-    VkyVisualBundle* vb,                                        //
+void vky_visual_triangulation_upload(
+    VkyVisual* vb,                                              //
     uint32_t vertex_count, size_t stride, const void* vertices, // vertices
     uint32_t index_count, const VkyIndex* indices)              // indices
 {
-    VkyVisual* visual_segments = vb->visuals[0];
-    VkyVisual* visual_markers = vb->visuals[1];
+    VkyVisual* visual_segments = vb->children[0];
+    VkyVisual* visual_markers = vb->children[1];
     const VkyTriangulationParams* params = (const VkyTriangulationParams*)vb->params;
 
     ASSERT(params != NULL);
