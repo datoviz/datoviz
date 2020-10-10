@@ -255,7 +255,7 @@ static VkyVisual* _add_3D_axes(VkyScene* scene)
             }
         }
     }
-    vky_visual_upload(segment_visual, (VkyData){n, vertices});
+    vky_visual_data(segment_visual, (VkyData){n, vertices});
 
     free(vertices);
     return segment_visual;
@@ -291,7 +291,7 @@ static VkyVisual* _add_3D_axes_text(VkyScene* scene)
             vertex->string_len = strlen(vertex->string);
         }
     }
-    vky_visual_upload(text_visual, (VkyData){n, text_vertices});
+    vky_visual_data(text_visual, (VkyData){n, text_vertices});
     free(text_vertices);
 
     return text_visual;

@@ -65,7 +65,7 @@ void raytracing_demo(VkyPanel* panel)
     vec3 data[6] = {
         {-1, -1, 0}, {+1, -1, 0}, {-1, +1, 0}, {-1, +1, 0}, {+1, -1, 0}, {+1, +1, 0},
     };
-    vky_visual_upload(visual, (VkyData){6, data});
+    vky_visual_data(visual, (VkyData){6, data});
 
     vky_add_frame_callback(canvas, _raytracing_callback);
 }
@@ -140,7 +140,7 @@ void vky_demo_scatter(size_t point_count, const dvec2* points)
             VKY_MARKER_DISC,
             0};
     }
-    vky_visual_upload(visual, (VkyData){point_count, data});
+    vky_visual_data(visual, (VkyData){point_count, data});
     free(data);
 
     vky_run_app(app);

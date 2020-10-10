@@ -116,7 +116,7 @@ int main()
         {{+x, -x, 0}, {{0, 255, 0}, 255}},
         {{0, x, 0}, {{0, 0, 255}, 255}},
     };
-    vky_visual_upload(visual, (VkyData){0, NULL, 3, vertices, 0, NULL});
+    vky_visual_data(visual, (VkyData){0, NULL, 3, vertices, 0, NULL});
 
 #if HAS_VNC
     run_vnc(canvas);

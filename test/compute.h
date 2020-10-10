@@ -33,7 +33,7 @@ static void compute_image(VkyPanel* panel)
 
     // Square.
     VkyImageData data = {{-1, +1, 0}, {+1, -1, 0}, {0, 0}, {1, 1}};
-    vky_visual_upload(visual, (VkyData){1, (VkyImageData[]){data}});
+    vky_visual_data(visual, (VkyData){1, (VkyImageData[]){data}});
 
     // Color texture.
     int width, height, depth;

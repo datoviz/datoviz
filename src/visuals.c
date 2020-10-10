@@ -37,8 +37,8 @@ void vky_graph_upload(
     edge_data.item_count = edge_count;
     edge_data.items = edge_items;
 
-    vky_visual_upload(vb->children[0], edge_data);
-    vky_visual_upload(vb->children[1], node_data);
+    vky_visual_data(vb->children[0], edge_data);
+    vky_visual_data(vb->children[1], node_data);
 
     free(edge_items);
 }
@@ -142,7 +142,7 @@ static void colorbar_upload(VkyVisual* colorbar, VkyColorbarParams params)
 
     VkyIndex indices[] = {0, 1, 2, 2, 3, 0};
 
-    vky_visual_upload(colorbar, (VkyData){0, NULL, 4, vertices, 6, indices});
+    vky_visual_data(colorbar, (VkyData){0, NULL, 4, vertices, 6, indices});
 }
 
 static void colorbar_tick_upload(VkyVisual* text, VkyVisual* ticks, VkyColorbarParams params)
@@ -235,8 +235,8 @@ static void colorbar_tick_upload(VkyVisual* text, VkyVisual* ticks, VkyColorbarP
         {-params.pad_tl[0] + hlw, -params.pad_br[1], -params.pad_br[0] - hlw, -params.pad_br[1]},
         TICK_DATA};
 
-    vky_visual_upload(text, (VkyData){n, text_data});
-    vky_visual_upload(ticks, (VkyData){n + 4, tick_data});
+    vky_visual_data(text, (VkyData){n, text_data});
+    vky_visual_data(ticks, (VkyData){n + 4, tick_data});
 
     free(tick);
     free(tick_data);
@@ -318,7 +318,7 @@ vky_visual_volume(VkyScene* scene, const VkyTextureParams* tex_params, const voi
         {{-x, +x, 0}, {0, 1}}, {{+x, -x, 0}, {1, 0}}, {{+x, +x, 0}, {1, 1}},
     };
 
-    vky_visual_upload(visual, (VkyData){0, NULL, 6, vertices, 0, NULL});
+    vky_visual_data(visual, (VkyData){0, NULL, 6, vertices, 0, NULL});
 
     return visual;
 }
@@ -1790,5 +1790,5 @@ void vky_mesh_upload(VkyMesh* mesh, VkyVisual* visual)
 {
     ASSERT(visual->visual_type == VKY_VISUAL_MESH || visual->visual_type == VKY_VISUAL_MESH_RAW);
     VkyData data = vky_mesh_data(mesh);
-    vky_visual_upload(visual, data);
+    vky_visual_data(visual, data);
 }

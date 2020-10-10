@@ -302,7 +302,7 @@ static void add_label(VkyPanel* panel, VkyAxis axis, VkyAxes2DParams* params)
         break;
     }
 
-    vky_visual_upload(label, (VkyData){i, text_data});
+    vky_visual_data(label, (VkyData){i, text_data});
 }
 
 void vky_set_controller(VkyPanel* panel, VkyControllerType controller_type, const void* params)
@@ -905,7 +905,7 @@ void vky_set_color_context(VkyPanel* panel, VkyColormap cmap, uint8_t constant)
     panel->color_ctx[3] = 0; // NOTE: currently unused
 }
 
-void vky_visual_upload(VkyVisual* visual, VkyData data)
+void vky_visual_data(VkyVisual* visual, VkyData data)
 {
     // Bake the data and save the size and pointers of the baked vertex/index buffers into the
     // data struct.
@@ -1020,7 +1020,7 @@ void vky_visual_upload(VkyVisual* visual, VkyData data)
     visual->data = data;
 }
 
-void vky_visual_upload_partial(VkyVisual* visual, uint32_t item_offset, VkyData data)
+void vky_visual_data_partial(VkyVisual* visual, uint32_t item_offset, VkyData data)
 {
     // Bake the data and save the size and pointers of the baked vertex/index buffers into the
     // data struct.

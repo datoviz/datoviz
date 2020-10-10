@@ -838,10 +838,10 @@ void vky_axes_update_visuals(VkyAxes* axes)
     ASSERT(VKY_AXES_MAX_VERTICES >= vertex_count);
 
     // log_trace("update axes visual %d", vertex_count);
-    vky_visual_upload(axes->tick_visual, (VkyData){vertex_count, axes->tick_data});
+    vky_visual_data(axes->tick_visual, (VkyData){vertex_count, axes->tick_data});
 
     // log_trace("update axes text visual %d", text_vertex_count);
-    vky_visual_upload(axes->text_visual, (VkyData){text_vertex_count, axes->text_data});
+    vky_visual_data(axes->text_visual, (VkyData){text_vertex_count, axes->text_data});
 }
 
 
