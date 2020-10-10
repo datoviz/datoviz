@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-#include "../include/visky/vkycommon.h"
+#include "../include/visky/common.h"
 #include <stdarg.h>
 #include <stdio.h>
 

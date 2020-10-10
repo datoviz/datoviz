@@ -35,7 +35,7 @@ We need to generate different types of data structures for colors:
 #include <math.h>
 #include <stdint.h>
 
-#include "utils.h"
+#include "common.h"
 
 
 

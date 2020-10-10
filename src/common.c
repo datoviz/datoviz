@@ -8,7 +8,7 @@
 #include <zlib.h>
 #endif
 
-#include "../include/visky/utils.h"
+#include "../include/visky/common.h"
 
 BEGIN_INCL_NO_WARN
 #include <cglm/struct.h>

@@ -1,8 +1,8 @@
 #ifndef VKY_TRANSFORM_HEADER
 #define VKY_TRANSFORM_HEADER
 
+#include "common.h"
 #include "scene.h"
-#include "types.h"
 
 
 /*************************************************************************************************/

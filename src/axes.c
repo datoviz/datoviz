@@ -1,6 +1,5 @@
 #include "axes.h"
 #include "../external/exwilk.h"
-#include "../include/visky/utils.h"
 #include "../include/visky/visky.h"
 
 

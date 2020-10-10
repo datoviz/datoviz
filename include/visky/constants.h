@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "vkycommon.h"
+#include "common.h"
 
 // This should be set by cmake
 #ifndef DATA_DIR

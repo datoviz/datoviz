@@ -13,7 +13,7 @@
 
 #include <vulkan/vulkan.h>
 
-#include "utils.h"
+#include "common.h"
 
 BEGIN_INCL_NO_WARN
 #include <cglm/struct.h>

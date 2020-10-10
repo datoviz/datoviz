@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include "common.h"
+
 #include "colormaps.h"
 #include "constants.h"
 #include "demo.h"
@@ -16,7 +18,6 @@ extern "C" {
 #include "scene.h"
 #include "transform.h"
 #include "triangulation.h"
-#include "utils.h"
 #include "visuals.h"
 #include "vklite.h"
 

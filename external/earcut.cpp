@@ -1,13 +1,14 @@
 // #include <visky/triangulation.h>
 
+#include <array>
 #include <stdio.h>
 #include <stdlib.h>
-#include <array>
 #include <vector>
+
+#include <visky/common.h>
 
 #include <earcut.hpp>
 #include <visky/triangulation.h>
-#include <visky/utils.h>
 
 
 
