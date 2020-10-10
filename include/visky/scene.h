@@ -667,8 +667,7 @@ VKY_EXPORT VkyVisual*
 vky_visual(VkyScene* scene, VkyVisualType visual_type, const void* params, const void* obj);
 
 VKY_EXPORT VkyResourceLayout vky_common_resource_layout(VkyVisual*);
-VKY_EXPORT void
-vky_set_color_context(VkyPanel* panel, VkyColormap cmap, VkyColorMod modifier, uint8_t constant);
+VKY_EXPORT void vky_set_color_context(VkyPanel* panel, VkyColormap cmap, uint8_t constant);
 VKY_EXPORT void vky_allocate_vertex_buffer(VkyVisual* visual, VkDeviceSize size);
 VKY_EXPORT void vky_allocate_index_buffer(VkyVisual* visual, VkDeviceSize size);
 VKY_EXPORT void vky_add_common_resources(VkyVisual*);

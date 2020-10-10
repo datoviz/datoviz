@@ -905,7 +905,7 @@ void vky_add_texture_resource(VkyVisual* visual, VkyTexture* texture)
     }
 }
 
-void vky_set_color_context(VkyPanel* panel, VkyColormap cmap, VkyColorMod cmod, uint8_t constant)
+void vky_set_color_context(VkyPanel* panel, VkyColormap cmap, uint8_t constant)
 {
     // 32-colors palettes need special care as there is a discrepancy with the tex row.
     if (cmap >= CPAL032_OFS)
@@ -913,7 +913,7 @@ void vky_set_color_context(VkyPanel* panel, VkyColormap cmap, VkyColorMod cmod, 
         cmap = (VkyColormap)(CPAL032_OFS + ((uint8_t)cmap - CPAL032_OFS) / CPAL032_PER_ROW);
     }
     panel->color_ctx[0] = cmap;
-    panel->color_ctx[1] = cmod;
+    panel->color_ctx[1] = 0; // unused, legacy color mode
     panel->color_ctx[2] = constant;
     panel->color_ctx[3] = 0; // NOTE: currently unused
 }
@@ -1158,8 +1158,7 @@ void vky_reset_all_mvp(VkyScene* scene)
         {
             // Default color context.
             vky_set_color_context(
-                &scene->grid->panels[i], VKY_DEFAULT_COLORMAP, VKY_DEFAULT_COLOR_MOD,
-                VKY_DEFAULT_COLOR_OPT);
+                &scene->grid->panels[i], VKY_DEFAULT_COLORMAP, VKY_DEFAULT_COLOR_OPT);
             // TODO: rename to vky_common_upload() or something?
             vky_mvp_upload(&scene->grid->panels[i], v, &mvp);
         }

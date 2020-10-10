@@ -285,84 +285,14 @@ typedef enum
 
 } VkyColormap;
 
-typedef enum
-{
-    VKY_COLOR_MOD_NONE,
-
-    VKY_COLOR_MOD_ALPHA,      // variable opt is alpha channel, no constant override
-    VKY_COLOR_MOD_HUE,        // variable opt is ue, no constant override
-    VKY_COLOR_MOD_SATURATION, // variable opt is saturation, no constant override
-    VKY_COLOR_MOD_VALUE,      // variable opt is HSV value, no constant override
-    VKY_COLOR_MOD_LIGHTNESS,  // variable opt is HSL lightness, no constant override
-
-    VKY_COLOR_MOD_ALPHA_H, // variable opt is alpha channel, constant is hue
-    VKY_COLOR_MOD_ALPHA_S,
-    VKY_COLOR_MOD_ALPHA_V,
-    VKY_COLOR_MOD_ALPHA_L,
-
-    VKY_COLOR_MOD_HUE_A, // variable opt is hue, constant is alpha
-    VKY_COLOR_MOD_HUE_S,
-    VKY_COLOR_MOD_HUE_V,
-    VKY_COLOR_MOD_HUE_L,
-
-    VKY_COLOR_MOD_SATURATION_A,
-    VKY_COLOR_MOD_SATURATION_H,
-    VKY_COLOR_MOD_SATURATION_V,
-    VKY_COLOR_MOD_SATURATION_L,
-
-    VKY_COLOR_MOD_VALUE_A,
-    VKY_COLOR_MOD_VALUE_H,
-    VKY_COLOR_MOD_VALUE_S,
-    VKY_COLOR_MOD_VALUE_L,
-
-    VKY_COLOR_MOD_LIGHTNESS_A,
-    VKY_COLOR_MOD_LIGHTNESS_H,
-    VKY_COLOR_MOD_LIGHTNESS_S,
-    VKY_COLOR_MOD_LIGHTNESS_V,
-
-} VkyColorMod;
-
-
-
-/*************************************************************************************************/
-/*  Color structs                                                                                */
-/*************************************************************************************************/
-
-// Only 2 bytes per vertex to determine the color.
-// - A colormap is chosen in the common uniform (mvp.colormap.x), specific to each panel.
-// - The value within the colormap is stored, for each vertex, in the first byte.
-// - This is sufficient in many cases. However, there is an additional byte that can be used.
-// - How this byte is used is determined by (mvp.colormap.y).
-// - If VKY_COLOR_MOD_ALPHA, the additional color byte is the alpha channel.
-// - If VKY_COLOR_MOD_HUE, the additional color byte is the HSV hue, which overrides the colormap
-// color.
-// - If VKY_COLOR_MOD_SATURATION, the additional color byte is the HSV saturation, which overrides
-// the colormap color.
-// - For even more control on the colors, there are additional modes where a constant (determined
-// in (mvp.colormap.z))
-//   can override the color.
-// - For example, VKY_COLOR_MOD_ALPHA_H is similar to VKY_COLOR_MOD_ALPHA, except that
-// mvp.colormap.z also overrides the hue (useful with grayscale color map).
-
-typedef struct VkyCmapBytes VkyCmapBytes;
-struct VkyCmapBytes
-{
-    uint8_t cmap_texcol; // colormap value (the choice of the colormap is indicated in a common
-                         // uniform)
-    uint8_t
-        cmap_mod_var; // additional value that can be used to modify the colormap color, eg alpha,
-                      // or HSV saturation or value etc. This is also specified in the uniform
-};
-
 
 
 /*************************************************************************************************/
 /*  Color utils                                                                                  */
 /*************************************************************************************************/
 
-VKY_INLINE VkyCmapBytes get_cmap_bytes(VkyColormap cmap, uint8_t u_value, uint8_t u_mod_var)
+VKY_INLINE uint8_t get_cmap_bytes(VkyColormap cmap, uint8_t u_value)
 {
-    VkyCmapBytes cmap_bytes = {0};
     if (cmap >= CPAL032_OFS)
     {
         // For 32-color palettes, we need to alter the cmap and value.
@@ -371,21 +301,18 @@ VKY_INLINE VkyCmapBytes get_cmap_bytes(VkyColormap cmap, uint8_t u_value, uint8_
         // to the GPU. So the GPU does not have to do the transformation of cmap. cmap =
         // (VkyColormap)(CPAL032_OFS + ((uint8_t)cmap - CPAL032_OFS) / CPAL032_PER_ROW);
     }
-    cmap_bytes.cmap_texcol = u_value;
-    cmap_bytes.cmap_mod_var = u_mod_var;
-    return cmap_bytes;
+    return u_value;
 }
 
-VKY_INLINE VkyCmapBytes
-vky_cmap(VkyColormap cmap, float value, float vmin, float vmax, float mod_var)
+VKY_INLINE uint8_t vky_cmap(VkyColormap cmap, float value, float vmin, float vmax)
 {
-    // Create the VkyCmapBytes instance to be fed to the GPU. Essentially Make the transformation
+    // Create the uint8_t instance to be fed to the GPU. Essentially Make the transformation
     // required only for 32-color palettes.
 
     if (vmin == vmax)
     {
         // log_warn("division by zero error in vky_cmap(): vmin = vmax = %.3f", vmin);
-        return get_cmap_bytes(cmap, 0, 0);
+        return get_cmap_bytes(cmap, 0);
     }
 
     // Value byte is the tex row.
@@ -393,10 +320,7 @@ vky_cmap(VkyColormap cmap, float value, float vmin, float vmax, float mod_var)
     value = (vmax - value) / (vmax - vmin);
     uint8_t texcol = TO_BYTE(value);
 
-    // Cmap modifier variable.
-    uint8_t u_mod_var = TO_BYTE(mod_var);
-
-    return get_cmap_bytes(cmap, texcol, u_mod_var);
+    return get_cmap_bytes(cmap, texcol);
 }
 
 static bool _is_colormap_initialized = false;
@@ -412,8 +336,7 @@ vky_color(VkyColormap cmap, float value, float vmin, float vmax, float alpha)
         vky_load_color_texture();
         _is_colormap_initialized = true;
     }
-    VkyCmapBytes cmap_bytes = vky_cmap(cmap, value, vmin, vmax, alpha);
-    uint8_t texcol = cmap_bytes.cmap_texcol;
+    uint8_t texcol = vky_cmap(cmap, value, vmin, vmax);
 
     int32_t cmap_idx = (int32_t)cmap;
 
@@ -426,7 +349,7 @@ vky_color(VkyColormap cmap, float value, float vmin, float vmax, float alpha)
     color.r = VKY_COLOR_TEXTURE[cmap_idx * 256 * 4 + texcol * 4 + 0];
     color.g = VKY_COLOR_TEXTURE[cmap_idx * 256 * 4 + texcol * 4 + 1];
     color.b = VKY_COLOR_TEXTURE[cmap_idx * 256 * 4 + texcol * 4 + 2];
-    color.a = cmap_bytes.cmap_mod_var; // alpha value as uint8
+    color.a = TO_BYTE(alpha);
 
     return color;
 }

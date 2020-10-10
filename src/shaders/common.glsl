@@ -126,63 +126,24 @@ uvec2 unpack_16_8(uint n) {
 }
 
 
-#define VKY_COLOR_MOD_NONE            0
-#define VKY_COLOR_MOD_ALPHA           1
-#define VKY_COLOR_MOD_HUE             2
-#define VKY_COLOR_MOD_SATURATION      3
-#define VKY_COLOR_MOD_VALUE           4
-#define VKY_COLOR_MOD_LIGHTNESS       5
-#define VKY_COLOR_MOD_ALPHA_H         6
-#define VKY_COLOR_MOD_ALPHA_S         7
-#define VKY_COLOR_MOD_ALPHA_V         8
-#define VKY_COLOR_MOD_ALPHA_L         9
-#define VKY_COLOR_MOD_HUE_A           10
-#define VKY_COLOR_MOD_HUE_S           11
-#define VKY_COLOR_MOD_HUE_V           12
-#define VKY_COLOR_MOD_HUE_L           13
-#define VKY_COLOR_MOD_SATURATION_A    14
-#define VKY_COLOR_MOD_SATURATION_H    15
-#define VKY_COLOR_MOD_SATURATION_V    16
-#define VKY_COLOR_MOD_SATURATION_L    17
-#define VKY_COLOR_MOD_VALUE_A         18
-#define VKY_COLOR_MOD_VALUE_H         19
-#define VKY_COLOR_MOD_VALUE_S         20
-#define VKY_COLOR_MOD_VALUE_L         21
-#define VKY_COLOR_MOD_LIGHTNESS_A     22
-#define VKY_COLOR_MOD_LIGHTNESS_H     23
-#define VKY_COLOR_MOD_LIGHTNESS_S     24
-#define VKY_COLOR_MOD_LIGHTNESS_V     25
-
-
 vec4 get_color(uvec2 cmap_bytes) {
     vec4 color = vec4(0, 0, 0, 1);
 
     // Color context
     uvec4 cmap_ctx = unpack_32_8(mvp.cmap_context);
     float cmap_texrow = float(cmap_ctx.x) / 255.0;  // colormap
-    uint cmap_mod = cmap_ctx.y;  // modifier
     float cmap_const = float(cmap_ctx.z) / 255.0;   // constant
     float cunused = float(cmap_ctx.w) / 255.0;      // not yet used
 
     float cmap_texcol = float(cmap_bytes.x) / 255.0;
-    float cmap_mod_var = float(cmap_bytes.y) / 255.0;
+    float alpha = float(cmap_bytes.y) / 255.0;
 
     // Fetch the color using the colormap index and the value. The third value in icol is currently unused.
     color = texture(color_texture, vec2(cmap_texcol, cmap_texrow));
-    color.a = 1;
+    color.a = alpha;
     // TODO: try to replace by imageLoad, might have to use SSBO instead of texture for the colormap image
     // color = imageLoad(color_texture, ivec2(cmap_bytes.x, cmap));
 
-    switch (cmap_mod) {
-    case VKY_COLOR_MOD_NONE:  // color modifier
-        break;
-    case VKY_COLOR_MOD_ALPHA:
-        color.a = cmap_mod_var;
-        break;
-    // TODO: implement the other modifiers
-    default:
-        break;
-    }
     return color;
 }
 

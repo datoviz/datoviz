@@ -240,7 +240,6 @@ typedef enum
 #define VKY_RAW_PATH_MAX_PATHS      4 * 500
 #define VKY_DEFAULT_BACKEND         VKY_BACKEND_GLFW, NULL
 #define VKY_DEFAULT_COLORMAP        VKY_CMAP_HSV
-#define VKY_DEFAULT_COLOR_MOD       VKY_COLOR_MOD_ALPHA
 #define VKY_DEFAULT_COLOR_OPT       255
 #define VKY_DEFAULT_TRIANGLE_PARAMS "pzqAQ"
 #define VKY_FONT_TEXTURE_SHAPE                                                                    \
