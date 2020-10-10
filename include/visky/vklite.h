@@ -523,7 +523,8 @@ vky_bind_graphics_pipeline(VkCommandBuffer command_buffer, VkyGraphicsPipeline* 
 
 VKY_EXPORT void vky_destroy_graphics_pipeline(VkyGraphicsPipeline* gp);
 
-VKY_EXPORT VkShaderModule vky_create_shader_module(VkyGpu* gpu, char* filename);
+VKY_EXPORT VkShaderModule vky_create_shader_module(VkyGpu* gpu, uint32_t, const uint32_t*);
+VKY_EXPORT VkShaderModule vky_create_shader_module_from_file(VkyGpu* gpu, char* filename);
 
 VKY_EXPORT VkyShaders vky_create_shaders(VkyGpu* gpu);
 

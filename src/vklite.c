@@ -1317,21 +1317,27 @@ void vky_destroy_resource_layout(VkyResourceLayout* layout)
 /*  Shaders                                                                                      */
 /*************************************************************************************************/
 
-VkShaderModule vky_create_shader_module(VkyGpu* gpu, char* filename)
+VkShaderModule vky_create_shader_module(VkyGpu* gpu, uint32_t size, const uint32_t* buffer)
 {
-    log_trace("create shader module %s", filename);
-    uint32_t size = 0;
-    uint32_t* shader_code = (uint32_t*)read_file(filename, &size);
     VkShaderModuleCreateInfo createInfo = {0};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     createInfo.codeSize = size;
-    createInfo.pCode = shader_code;
+    createInfo.pCode = buffer;
 
-    VkShaderModule shaderModule = {0};
-    VK_CHECK_RESULT(vkCreateShaderModule(gpu->device, &createInfo, NULL, &shaderModule));
+    VkShaderModule module = {0};
+    VK_CHECK_RESULT(vkCreateShaderModule(gpu->device, &createInfo, NULL, &module));
+
+    return module;
+}
+
+VkShaderModule vky_create_shader_module_from_file(VkyGpu* gpu, char* filename)
+{
+    log_trace("create shader module from file %s", filename);
+    uint32_t size = 0;
+    uint32_t* shader_code = (uint32_t*)read_file(filename, &size);
+    VkShaderModule module = vky_create_shader_module(gpu, size, shader_code);
     free(shader_code);
-
-    return shaderModule;
+    return module;
 }
 
 VkyShaders vky_create_shaders(VkyGpu* gpu)
@@ -1350,7 +1356,7 @@ void vky_add_shader(VkyShaders* shaders, VkShaderStageFlagBits stage, const char
     log_trace("add shader");
     char path[1024];
     snprintf(path, sizeof(path), "%s/spirv/%s", DATA_DIR, filename);
-    shaders->modules[shaders->_index] = vky_create_shader_module(shaders->gpu, path);
+    shaders->modules[shaders->_index] = vky_create_shader_module_from_file(shaders->gpu, path);
 
     shaders->stages[shaders->_index] = stage;
     shaders->_index++;
@@ -1839,7 +1845,7 @@ vky_create_compute_pipeline(VkyGpu* gpu, const char* filename, VkyResourceLayout
     pipelineInfo.stage.pName = "main";
     char path[1024];
     snprintf(path, sizeof(path), "%s/spirv/%s", DATA_DIR, filename);
-    pipelineInfo.stage.module = gp.shader = vky_create_shader_module(gpu, path);
+    pipelineInfo.stage.module = gp.shader = vky_create_shader_module_from_file(gpu, path);
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
     VK_CHECK_RESULT(vkCreateComputePipelines(
         gpu->device, VK_NULL_HANDLE, 1, &pipelineInfo, NULL, &gp.pipeline));
