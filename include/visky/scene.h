@@ -77,7 +77,6 @@ typedef struct VkyMVP VkyMVP;
 typedef struct VkyVertex VkyVertex;
 typedef struct VkyTextureVertex VkyTextureVertex;
 typedef struct VkyVisual VkyVisual;
-typedef struct VkyVisualBundle VkyVisualBundle;
 typedef struct VkyPick VkyPick;
 
 typedef struct VkyPanzoom VkyPanzoom;
@@ -106,7 +105,6 @@ typedef struct VkyControllerAutorotate VkyControllerAutorotate;
 // typedef void (*VkyCallback)(VkyScene*);
 typedef void (*VkyVisualCallback)(VkyVisual*);
 typedef VkyData (*VkyVisualBakeCallback)(VkyVisual*, VkyData);
-typedef VkyData (*VkyVisualBundleBakeCallback)(VkyVisualBundle*, VkyData);
 typedef void (*VkyVisualResizeCallback)(VkyVisual*);
 
 typedef void (*VkyAxesTickFormatter)(VkyAxes*, double value, char* out_text);
@@ -224,9 +222,6 @@ struct VkyScene
 
     uint32_t visual_count;
     VkyVisual* visuals;
-
-    uint32_t visual_bundle_count;
-    VkyVisualBundle* visual_bundles;
 };
 
 
@@ -275,19 +270,6 @@ struct VkyVisual
 
     VkyVisualBakeCallback cb_bake_data;
     VkyVisualResizeCallback cb_resize; // NOTE: unused yet
-};
-
-
-
-struct VkyVisualBundle
-{
-    VkyScene* scene;
-    void* params;
-    VkyData data;
-    uint32_t visual_count;
-    VkyVisual** visuals; // array of pointers to VkyVisual
-
-    VkyVisualBundleBakeCallback cb_bake_data;
 };
 
 
@@ -684,21 +666,8 @@ VKY_EXPORT void vky_draw_all_visuals(VkyScene* scene);
 VKY_EXPORT void vky_toggle_visual_visibility(VkyVisual* visual, bool is_visible);
 VKY_EXPORT void vky_destroy_visual(VkyVisual* visual);
 VKY_EXPORT void vky_free_data(VkyData data);
-
-
-
-/*************************************************************************************************/
-/*  Visual bundles                                                                               */
-/*************************************************************************************************/
-
-VKY_EXPORT VkyVisualBundle* vky_create_visual_bundle(VkyScene* scene);
-VKY_EXPORT void vky_add_visual_to_bundle(VkyVisualBundle* vb, VkyVisual* visual);
-VKY_EXPORT void vky_add_visual_bundle_to_panel(
-    VkyVisualBundle* visual_bundle, VkyPanel* panel, VkyViewportType viewport_type,
-    VkyVisualPriority priority);
-VKY_EXPORT void vky_destroy_visual_bundle(VkyVisualBundle* visual_bundle);
-
 VKY_EXPORT void vky_visual_add_child(VkyVisual* parent, VkyVisual* child);
+
 
 
 /*************************************************************************************************/

@@ -692,7 +692,7 @@ VkyVisual* vky_create_visual(VkyScene* scene, VkyVisualType visual_type)
     visual.scene = scene;
     visual.visual_type = visual_type;
     visual.resources = calloc(VKY_MAX_VISUAL_RESOURCES, sizeof(void*));
-    visual.children = calloc(VKY_MAX_VISUALS_PER_BUNDLE, sizeof(void*));
+    visual.children = calloc(VKY_MAX_VISUALS_CHILDREN, sizeof(void*));
 
     // NOTE: by convention, the first buffer is the indirect draw buffer.
     // HACK: we allocate the bigger indexed command so that we have enough space,
@@ -786,26 +786,6 @@ vky_visual(VkyScene* scene, VkyVisualType visual_type, const void* params, const
     }
     ASSERT(visual != NULL);
     return visual;
-}
-
-VkyVisualBundle* vky_create_visual_bundle(VkyScene* scene)
-{
-    VkyVisualBundle vb = {0};
-    vb.scene = scene;
-    vb.visual_count = 0;
-    vb.visuals = calloc(VKY_MAX_VISUALS_PER_BUNDLE, sizeof(VkyVisual));
-
-    scene->visual_bundles[scene->visual_bundle_count] = vb;
-    VkyVisualBundle* out = &scene->visual_bundles[scene->visual_bundle_count];
-    ASSERT(out != NULL);
-    scene->visual_bundle_count++;
-    return out;
-}
-
-void vky_add_visual_to_bundle(VkyVisualBundle* vb, VkyVisual* visual)
-{
-    vb->visuals[vb->visual_count] = visual;
-    vb->visual_count++;
 }
 
 void vky_visual_add_child(VkyVisual* parent, VkyVisual* child)
@@ -1122,19 +1102,6 @@ void vky_destroy_visual(VkyVisual* visual)
     visual->params = NULL;
 }
 
-void vky_destroy_visual_bundle(VkyVisualBundle* vb)
-{
-    log_trace("destroy visual bundle");
-
-    if (vb->visuals != NULL)
-        free(vb->visuals);
-    vb->visuals = NULL;
-
-    // Destroy the parametersS.
-    if (vb->params != NULL)
-        free(vb->params);
-}
-
 void vky_free_data(VkyData data)
 {
     if (data.vertices != NULL)
@@ -1285,17 +1252,6 @@ void vky_add_visual_to_panel(
     grid->visual_panel_count++;
 }
 
-void vky_add_visual_bundle_to_panel(
-    VkyVisualBundle* visual_bundle, VkyPanel* panel, VkyViewportType viewport_type,
-    VkyVisualPriority priority)
-{
-    // Add to the panel all visuals in the bundle.
-    for (uint32_t i = 0; i < visual_bundle->visual_count; i++)
-    {
-        vky_add_visual_to_panel(visual_bundle->visuals[i], panel, viewport_type, priority);
-    }
-}
-
 static void vky_draw_children(VkyVisual* visual, VkyPanel* panel, VkyViewportType viewport_type)
 {
     for (uint32_t i = 0; i < visual->children_count; i++)
@@ -1412,9 +1368,6 @@ vky_create_scene(VkyCanvas* canvas, VkyColor clear_color, uint32_t row_count, ui
 
     scene->visual_count = 0;
     scene->visuals = calloc(VKY_MAX_VISUAL_COUNT, sizeof(VkyVisual));
-
-    scene->visual_bundle_count = 0;
-    scene->visual_bundles = calloc(VKY_MAX_VISUAL_BUNDLE_COUNT, sizeof(VkyVisualBundle));
 
     // Sanity check.
     log_trace("create grid with %d row(s) and %d col(s)", row_count, col_count);
@@ -1643,17 +1596,10 @@ void vky_destroy_scene(VkyScene* scene)
     {
         vky_destroy_visual(&scene->visuals[i]);
     }
-    for (uint32_t i = 0; i < scene->visual_bundle_count; i++)
-    {
-        vky_destroy_visual_bundle(&scene->visual_bundles[i]);
-    }
     vky_destroy_dynamic_uniform_buffer(&scene->grid->dynamic_buffer);
 
     free(scene->visuals);
     scene->visuals = NULL;
-
-    free(scene->visual_bundles);
-    scene->visual_bundles = NULL;
 
     for (uint32_t i = 0; i < scene->grid->panel_count; i++)
     {
