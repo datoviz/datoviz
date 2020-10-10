@@ -46,7 +46,7 @@ int main()
     {
         x = -1 + 2 * ((double)samples[i] / samples[n - 1]);
         y = -1 + 2 * (depths[i] - dminmax.x) / (dminmax.y - dminmax.x);
-        data[i] = (VkyVertex){{x, y, 0}, {0, 0, 0, 4}};
+        data[i] = (VkyVertex){{x, y, 0}, {{0, 0, 0}, 4}};
     }
     vky_visual_upload(visual, (VkyData){n, data});
     free(samples);

@@ -36,7 +36,7 @@
 
 #define LINE_COLOR                                                                                \
     {                                                                                             \
-        240, 10, 0, 255                                                                           \
+        {240, 10, 0}, 255                                                                         \
     }
 #define LINE_WIDTH 4
 

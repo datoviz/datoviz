@@ -23,7 +23,7 @@ static VkyVisual* spiral_visual = NULL;
 static void generate_surface(VkyMesh* mesh)
 {
     float* heights = calloc(POINTS, sizeof(float));
-    VkyColorBytes* color = calloc(POINTS, sizeof(VkyColorBytes));
+    VkyColor* color = calloc(POINTS, sizeof(VkyColor));
     float w = 1;
     float x, y, z;
     for (uint32_t i = 0; i < ROWS; i++)
@@ -52,7 +52,7 @@ static void spiral(VkyPanel* panel)
     vky_add_visual_to_panel(spiral_visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
     const uint32_t N_path = 1000;
     vec3 points[1000];
-    VkyColorBytes color[1000];
+    VkyColor color[1000];
     double t = 0;
     for (uint32_t i = 0; i < N_path; i++)
     {

@@ -8,13 +8,13 @@ VkyAxes2DParams axparams = vky_default_axes_2D_params();
 // x label
 strcpy(axparams.xlabel.label, "x axis");
 axparams.xlabel.axis = VKY_AXIS_X;
-axparams.xlabel.color.a = TO_BYTE(VKY_AXES_LABEL_COLOR_A);
+axparams.xlabel.color.alpha = TO_BYTE(VKY_AXES_LABEL_COLOR_A);
 axparams.xlabel.font_size = 12;
 
 // y label
 strcpy(axparams.ylabel.label, "y axis");
 axparams.ylabel.axis = VKY_AXIS_Y;
-axparams.ylabel.color.a = TO_BYTE(VKY_AXES_LABEL_COLOR_A);
+axparams.ylabel.color.alpha = TO_BYTE(VKY_AXES_LABEL_COLOR_A);
 axparams.ylabel.font_size = 12;
 
 axparams.colorbar.position = VKY_COLORBAR_RIGHT;

@@ -217,7 +217,7 @@ struct VkyVisualPanel
 struct VkyScene
 {
     VkyCanvas* canvas;
-    VkyColorBytes clear_color;
+    VkyColor clear_color;
 
     VkyGrid* grid;
 
@@ -292,7 +292,7 @@ struct VkyVisualBundle
 struct VkyVertex
 {
     vec3 pos;
-    VkyColorBytes color; // 4 bytes for RGBA
+    VkyColor color; // 4 bytes for RGBA
 };
 
 
@@ -519,7 +519,7 @@ struct VkyAxesLabel
     char label[VKY_AXES_MAX_LABEL_LENGTH];
     // TODO: label text alignment
     float font_size;
-    VkyColorBytes color;
+    VkyColor color;
 };
 
 
@@ -555,8 +555,8 @@ static VkyAxes2DParams vky_default_axes_2D_params()
             (float)VKY_AXES_MARGIN_LEFT * ((float)VKY_AXES_FONT_SIZE / 8.0f),
         },
         // Labels
-        {VKY_AXIS_X, {0}, 0, {0}},
-        {VKY_AXIS_X, {0}, 0, {0}},
+        {VKY_AXIS_X, {0}, 0, {{0}}},
+        {VKY_AXIS_X, {0}, 0, {{0}}},
         // Default colorbar (the position must be set in order to activate it)
         {
             VKY_COLORBAR_NONE,
@@ -720,9 +720,9 @@ VKY_EXPORT void vky_link_panels(VkyPanel*, VkyPanel*, VkyPanelLinkMode);
 /*************************************************************************************************/
 
 VKY_EXPORT VkyGrid* vky_create_grid(VkyScene* scene, uint32_t row_count, uint32_t col_count);
-VKY_EXPORT VkyScene* vky_create_scene(
-    VkyCanvas* canvas, VkyColorBytes clear_color, uint32_t row_count, uint32_t col_count);
-VKY_EXPORT void vky_clear_color(VkyScene* scene, VkyColorBytes clear_color);
+VKY_EXPORT VkyScene*
+vky_create_scene(VkyCanvas* canvas, VkyColor clear_color, uint32_t row_count, uint32_t col_count);
+VKY_EXPORT void vky_clear_color(VkyScene* scene, VkyColor clear_color);
 VKY_EXPORT void vky_set_regular_grid(VkyScene* scene, vec4 margins);
 VKY_EXPORT void vky_set_grid_widths(VkyScene* scene, const float* widths);
 VKY_EXPORT void vky_set_grid_heights(VkyScene* scene, const float* heights);

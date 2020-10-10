@@ -216,9 +216,7 @@ void vky_mesh_grid(
             // Color/texture coordinates.
             if (color != NULL)
             {
-                memcpy(
-                    &vertex->color, &((const VkyColorBytes*)color)[point_idx],
-                    sizeof(VkyColorBytes));
+                memcpy(&vertex->color, &((const VkyColor*)color)[point_idx], sizeof(VkyColor));
             }
             else
             {
@@ -377,14 +375,14 @@ void vky_mesh_cube(VkyMesh* mesh, const void* color)
     };
 
     // Transform, colors, indices.
-    const VkyColorBytes* p_color = (const VkyColorBytes*)color;
+    const VkyColor* p_color = (const VkyColor*)color;
     for (uint32_t i = 0; i < nv; i++)
     {
         transform_pos(mesh, vertices[i].pos);
         transform_normal(mesh, vertices[i].normal);
         if (color != NULL)
         {
-            memcpy(&vertices[i].color, &p_color[i], sizeof(VkyColorBytes));
+            memcpy(&vertices[i].color, &p_color[i], sizeof(VkyColor));
         }
         *index = first_vertex + i;
         index++;
@@ -488,7 +486,7 @@ void vky_mesh_square(VkyMesh* mesh, const void* color)
     };
 
     // Transform, colors, indices.
-    const VkyColorBytes* p_color = (const VkyColorBytes*)color;
+    const VkyColor* p_color = (const VkyColor*)color;
     for (uint32_t i = 0; i < nv; i++)
     {
         // Transform.
@@ -496,7 +494,7 @@ void vky_mesh_square(VkyMesh* mesh, const void* color)
         transform_normal(mesh, vertices[i].normal);
         if (color != NULL)
         {
-            memcpy(&vertices[i].color, &p_color[i], sizeof(VkyColorBytes));
+            memcpy(&vertices[i].color, &p_color[i], sizeof(VkyColor));
         }
         *index = (first_vertex + i);
         index++;
@@ -534,11 +532,11 @@ void vky_mesh_disc(VkyMesh* mesh, uint32_t count, const void* color)
     transform_normal(mesh, vertex->normal);
     if (color != NULL)
     {
-        memcpy(&vertex->color, color, sizeof(VkyColorBytes));
+        memcpy(&vertex->color, color, sizeof(VkyColor));
     }
 
     // Transform, colors, indices.
-    const VkyColorBytes* p_color = (const VkyColorBytes*)color;
+    const VkyColor* p_color = (const VkyColor*)color;
     for (uint32_t i = 0; i < count; i++)
     {
         vertex++; // Go to next vertex in the mesh vertices array.
@@ -561,7 +559,7 @@ void vky_mesh_disc(VkyMesh* mesh, uint32_t count, const void* color)
         // Color.
         if (p_color != NULL)
         {
-            memcpy(&vertex->color, &p_color[i], sizeof(VkyColorBytes));
+            memcpy(&vertex->color, &p_color[i], sizeof(VkyColor));
         }
 
         // Indices.

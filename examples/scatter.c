@@ -70,13 +70,13 @@ int main()
     // x label
     strcpy(axparams.xlabel.label, "Scatter plot");
     axparams.xlabel.axis = VKY_AXIS_X;
-    axparams.xlabel.color.a = TO_BYTE(VKY_AXES_LABEL_COLOR_A);
+    axparams.xlabel.color.alpha = TO_BYTE(VKY_AXES_LABEL_COLOR_A);
     axparams.xlabel.font_size = 12;
 
     // y label
     strcpy(axparams.ylabel.label, "Vertical axis");
     axparams.ylabel.axis = VKY_AXIS_Y;
-    axparams.ylabel.color.a = TO_BYTE(VKY_AXES_LABEL_COLOR_A);
+    axparams.ylabel.color.alpha = TO_BYTE(VKY_AXES_LABEL_COLOR_A);
     axparams.ylabel.font_size = 12;
 
     axparams.colorbar.cmap = VKY_CMAP_VIRIDIS;

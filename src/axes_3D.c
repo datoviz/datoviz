@@ -246,10 +246,7 @@ static VkyVisual* _add_3D_axes(VkyScene* scene)
             for (uint32_t i = 0; i < n_ticks; i++)
             {
                 vertex = &vertices[2 * n_ticks * side + orientation * n_ticks + i];
-                vertex->color = (VkyColorBytes){
-                    // side == 0 ? 255 : 0, side == 1 ? 255 : 0, side == 2 ? 255 : 0, //
-                    0, 0, 0, //
-                    128};
+                vertex->color = (VkyColor){{0, 0, 0}, 128};
                 vertex->cap0 = 1;
                 vertex->cap1 = 1;
                 vertex->coord_side = orientation * 4 + side;

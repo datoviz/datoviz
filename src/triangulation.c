@@ -114,7 +114,7 @@ VkyPolygonTriangulation vky_bundle_polygon_upload(
     VkyVisualBundle* vb,                                     // visual bundle
     const uint32_t point_count, const dvec2* points,         // points
     const uint32_t poly_count, const uint32_t* poly_lengths, // polygons
-    const VkyColorBytes* poly_colors                         // polygon colors
+    const VkyColor* poly_colors                              // polygon colors
 )
 {
     const VkyPolygonParams* params = (const VkyPolygonParams*)vb->params;
@@ -157,7 +157,7 @@ VkyPolygonTriangulation vky_bundle_polygon_upload(
         // Make the paths data.
         VkyPathData* paths = calloc(poly_count, sizeof(VkyPathData));
         vec3* path_points = calloc(point_count, sizeof(vec3));
-        VkyColorBytes* path_colors = calloc(point_count, sizeof(VkyColorBytes));
+        VkyColor* path_colors = calloc(point_count, sizeof(VkyColor));
 
         for (uint32_t i = 0; i < point_count; i++)
         {
@@ -526,7 +526,7 @@ VkyPSLGTriangulation vky_bundle_pslg_upload(
     const uint32_t point_count, const dvec2* points,         // points
     const uint32_t segment_count, const uvec2* segments,     // segments
     const uint32_t region_count, const dvec2* region_coords, // regions
-    const VkyColorBytes* region_colors,                      // region  colors
+    const VkyColor* region_colors,                           // region  colors
     const char* triangle_params)                             // triangle params
 {
     VkyVisual* visual_mesh = vb->visuals[0];

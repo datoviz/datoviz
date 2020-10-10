@@ -327,8 +327,7 @@ static bool _is_colormap_initialized = false;
 
 VKY_EXPORT void vky_load_color_texture(void);
 
-VKY_INLINE VkyColorBytes
-vky_color(VkyColormap cmap, float value, float vmin, float vmax, float alpha)
+VKY_INLINE VkyColor vky_color(VkyColormap cmap, float value, float vmin, float vmax, float alpha)
 {
     // Make sure the color texture is initialized.
     if (!_is_colormap_initialized)
@@ -345,11 +344,11 @@ vky_color(VkyColormap cmap, float value, float vmin, float vmax, float alpha)
         cmap_idx = (CPAL032_OFS + (cmap_idx - CPAL032_OFS) / CPAL032_PER_ROW);
     }
 
-    VkyColorBytes color = {0};
-    color.r = VKY_COLOR_TEXTURE[cmap_idx * 256 * 4 + texcol * 4 + 0];
-    color.g = VKY_COLOR_TEXTURE[cmap_idx * 256 * 4 + texcol * 4 + 1];
-    color.b = VKY_COLOR_TEXTURE[cmap_idx * 256 * 4 + texcol * 4 + 2];
-    color.a = TO_BYTE(alpha);
+    VkyColor color = {0};
+    color.rgb[0] = VKY_COLOR_TEXTURE[cmap_idx * 256 * 4 + texcol * 4 + 0];
+    color.rgb[1] = VKY_COLOR_TEXTURE[cmap_idx * 256 * 4 + texcol * 4 + 1];
+    color.rgb[2] = VKY_COLOR_TEXTURE[cmap_idx * 256 * 4 + texcol * 4 + 2];
+    color.alpha = TO_BYTE(alpha);
 
     return color;
 }
@@ -357,7 +356,7 @@ vky_color(VkyColormap cmap, float value, float vmin, float vmax, float alpha)
 
 VKY_EXPORT void vky_colormap_apply(
     VkyColormap cmap, double vmin, double vmax, uint32_t value_count, const double* values,
-    VkyColorBytes* colors);
+    VkyColor* colors);
 
 
 

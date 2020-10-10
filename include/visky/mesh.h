@@ -13,7 +13,7 @@ struct VkyMeshVertex
 {
     vec3 pos;
     vec3 normal;
-    VkyColorBytes color;
+    VkyColor color;
 };
 
 

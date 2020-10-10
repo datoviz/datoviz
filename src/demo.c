@@ -10,7 +10,7 @@ void vky_demo_blank()
 {
     VkyApp* app = vky_create_app(VKY_DEFAULT_BACKEND);
     VkyCanvas* canvas = vky_create_canvas(app, VKY_DEFAULT_WIDTH, VKY_DEFAULT_HEIGHT);
-    vky_create_scene(canvas, (VkyColorBytes){128, 172, 172, 255}, 1, 1);
+    vky_create_scene(canvas, (VkyColor){{128, 172, 172}, 255}, 1, 1);
     vky_run_app(app);
     vky_destroy_app(app);
 }
@@ -95,11 +95,11 @@ void vky_demo_raytracing()
 
 void vky_demo_param(vec4 clear_color)
 {
-    VkyColorBytes color = {0};
-    color.r = TO_BYTE(clear_color[0]);
-    color.g = TO_BYTE(clear_color[1]);
-    color.b = TO_BYTE(clear_color[2]);
-    color.a = TO_BYTE(clear_color[3]);
+    VkyColor color = {0};
+    color.rgb[0] = TO_BYTE(clear_color[0]);
+    color.rgb[1] = TO_BYTE(clear_color[1]);
+    color.rgb[2] = TO_BYTE(clear_color[2]);
+    color.alpha = TO_BYTE(clear_color[3]);
 
     VkyApp* app = vky_create_app(VKY_DEFAULT_BACKEND);
     VkyCanvas* canvas = vky_create_canvas(app, VKY_DEFAULT_WIDTH, VKY_DEFAULT_HEIGHT);

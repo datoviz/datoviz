@@ -125,6 +125,7 @@ END_INCL_NO_WARN
 /*************************************************************************************************/
 
 typedef uint8_t cvec2[2];
+typedef uint8_t cvec3[3]; // used for color index
 typedef uint8_t cvec4[4]; // used for color index
 
 
@@ -196,10 +197,11 @@ struct dvec4s
 /*************************************************************************************************/
 
 // Normal RGBA color with 4 bytes.
-typedef struct VkyColorBytes VkyColorBytes;
-struct VkyColorBytes
+typedef struct VkyColor VkyColor;
+struct VkyColor
 {
-    uint8_t r, g, b, a;
+    cvec3 rgb;
+    uint8_t alpha;
 };
 
 

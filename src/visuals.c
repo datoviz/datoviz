@@ -70,7 +70,8 @@ VkyVisualBundle* vky_bundle_graph(VkyScene* scene, VkyGraphParams params)
 /*************************************************************************************************/
 
 #define TICK_DATA                                                                                 \
-    {TO_BYTE(VKY_AXES_LIM_COLOR_R), TO_BYTE(VKY_AXES_LIM_COLOR_G), TO_BYTE(VKY_AXES_LIM_COLOR_B), \
+    {{TO_BYTE(VKY_AXES_LIM_COLOR_R), TO_BYTE(VKY_AXES_LIM_COLOR_G),                               \
+      TO_BYTE(VKY_AXES_LIM_COLOR_B)},                                                             \
      TO_BYTE(VKY_AXES_LIM_COLOR_A)},                                                              \
         VKY_AXES_TICK_LINEWIDTH_LIM, VKY_CAP_SQUARE, VKY_CAP_SQUARE, true,
 
@@ -187,8 +188,10 @@ static void colorbar_tick_upload(VkyVisual* text, VkyVisual* ticks, VkyColorbarP
         text_data[i] = (VkyTextData){
             {1, pos, 0},
             {VKY_AXES_MARGIN_RIGHT - params.pad_br[0], 0},
-            {TO_BYTE(VKY_AXES_TEXT_COLOR_R), TO_BYTE(VKY_AXES_TEXT_COLOR_G),
-             TO_BYTE(VKY_AXES_TEXT_COLOR_B), TO_BYTE(VKY_AXES_TEXT_COLOR_A)},
+            {{TO_BYTE(VKY_AXES_TEXT_COLOR_R), //
+              TO_BYTE(VKY_AXES_TEXT_COLOR_G), //
+              TO_BYTE(VKY_AXES_TEXT_COLOR_B)},
+             TO_BYTE(VKY_AXES_TEXT_COLOR_A)},
             VKY_AXES_FONT_SIZE,
             {+1, anchor_y},
             0,
@@ -373,7 +376,7 @@ const uint32_t path_vertices_per_segment = 4;
 
 static void add_path_point(
     VkyPathVertex* vertices, uint32_t vertex_offset, vec3 p0, vec3 p1, vec2 p2, vec3 p3,
-    VkyColorBytes color)
+    VkyColor color)
 {
     // Repeat the vertices path_vertices_per_segment times for the triangulation occurring in the
     // vertex shader.
@@ -421,7 +424,7 @@ static VkyData vky_path_bake(VkyVisual* visual, VkyData data)
     int32_t j0, j1, j2, j3;
     vec3* points = NULL;
     int32_t point_count_path = 0;
-    VkyColorBytes color;
+    VkyColor color;
 
     for (uint32_t i = 0; i < path_count; i++)
     {
@@ -471,12 +474,12 @@ static VkyData vky_path_bake(VkyVisual* visual, VkyData data)
         {
             // Add last point of current path.
             vec3_copy(paths[i].points[point_count_path - 1], p0);
-            add_path_point(vertices, vertex_offset, p0, p0, p0, p0, (VkyColorBytes){0, 0, 0, 0});
+            add_path_point(vertices, vertex_offset, p0, p0, p0, p0, (VkyColor){{0, 0, 0}, 0});
             vertex_offset++;
 
             // Add first point of next path.
             vec3_copy(paths[i + 1].points[0], p0);
-            add_path_point(vertices, vertex_offset, p0, p0, p0, p0, (VkyColorBytes){0, 0, 0, 0});
+            add_path_point(vertices, vertex_offset, p0, p0, p0, p0, (VkyColor){{0, 0, 0}, 0});
             vertex_offset++;
 
         } // end for loop on points in current path

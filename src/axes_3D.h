@@ -13,7 +13,7 @@ typedef struct VkyAxes3DVertex VkyAxes3DVertex;
 struct VkyAxes3DVertex
 {
     float tick;
-    VkyColorBytes color;
+    VkyColor color;
     float linewidth;
     int32_t cap0;
     int32_t cap1;

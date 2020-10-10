@@ -34,7 +34,7 @@ VkyPanel* panel = NULL;
 
 static void square(void)
 {
-    VkyColorBytes color[6];
+    VkyColor color[6];
     for (uint32_t i = 0; i < 6; i++)
     {
         color[i] = vky_color(VKY_CMAP_HSV, 0, 0, 6, 1);
@@ -44,8 +44,8 @@ static void square(void)
 
 static void disc(void)
 {
-    VkyColorBytes color[N];
-    color[0].a = 1;
+    VkyColor color[N];
+    color[0].alpha = 1;
     for (uint32_t i = 0; i < N; i++)
     {
         color[i] = vky_color(VKY_CMAP_HSV, i + 1, 0, N, 1);
@@ -55,7 +55,7 @@ static void disc(void)
 
 static void cube(void)
 {
-    VkyColorBytes color[36];
+    VkyColor color[36];
     for (uint32_t i = 0; i < 36; i++)
     {
         color[i] = vky_color(VKY_CMAP_HSV, i / 6, 0, 6, 1);
@@ -66,7 +66,7 @@ static void cube(void)
 static void sphere(void)
 {
     uint32_t nv = N * N;
-    VkyColorBytes* color = calloc(nv, sizeof(uint32_t));
+    VkyColor* color = calloc(nv, sizeof(uint32_t));
     for (uint32_t i = 0; i < N; i++)
     {
         for (uint32_t j = 0; j < N; j++)
@@ -81,7 +81,7 @@ static void sphere(void)
 static void cylinder(void)
 {
     uint32_t nv = 2 * N;
-    VkyColorBytes* color = calloc(nv, sizeof(VkyColorBytes));
+    VkyColor* color = calloc(nv, sizeof(VkyColor));
     for (uint32_t i = 0; i < 2; i++)
     {
         for (uint32_t j = 0; j < N; j++)
@@ -96,7 +96,7 @@ static void cylinder(void)
 static void cone(void)
 {
     uint32_t nv = 2 * N;
-    VkyColorBytes* color = calloc(nv, sizeof(VkyColorBytes));
+    VkyColor* color = calloc(nv, sizeof(VkyColor));
     for (uint32_t i = 0; i < 2; i++)
     {
         for (uint32_t j = 0; j < N; j++)
@@ -111,7 +111,7 @@ static void cone(void)
 static void surface(void)
 {
     float* heights = calloc(point_count, sizeof(float));
-    VkyColorBytes* color = calloc(point_count, sizeof(VkyColorBytes));
+    VkyColor* color = calloc(point_count, sizeof(VkyColor));
     float w = 1;
     float x, y, z;
     for (uint32_t i = 0; i < row_count; i++)
@@ -146,8 +146,8 @@ static void harmonic(void)
     float m7 = 4;
     float r, phi, theta, x, y, z;
     vec3* positions = calloc(point_count, sizeof(vec3));
-    VkyColorBytes* color = calloc(point_count, sizeof(VkyColorBytes));
-    ASSERT(sizeof(VkyColorBytes) == sizeof(cvec4));
+    VkyColor* color = calloc(point_count, sizeof(VkyColor));
+    ASSERT(sizeof(VkyColor) == sizeof(cvec4));
     for (uint32_t i = 0; i < row_count; i++)
     {
         theta = dtheta * i;
@@ -163,8 +163,7 @@ static void harmonic(void)
             color[col_count * i + j] = vky_color(VKY_CMAP_JET, j, 0, col_count, 1);
         }
     }
-    vky_mesh_grid(
-        &mesh, row_count, col_count, (const vec3*)positions, (const VkyColorBytes*)color);
+    vky_mesh_grid(&mesh, row_count, col_count, (const vec3*)positions, (const VkyColor*)color);
 }
 
 static void set_mesh()

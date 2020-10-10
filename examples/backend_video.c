@@ -26,7 +26,7 @@ int main()
 
     // Create the mesh.
     VkyMesh mesh = vky_create_mesh(100, 100);
-    VkyColorBytes color[36];
+    VkyColor color[36];
     for (uint32_t i = 0; i < 36; i++)
     {
         color[i] = vky_color(VKY_CMAP_HSV, i / 6, 0, 6, 1);

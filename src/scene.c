@@ -1374,12 +1374,9 @@ static void _scene_fill_command_buffer(VkyCanvas* canvas, VkCommandBuffer cmd_bu
     vky_end_render_pass(cmd_buf, canvas);
 }
 
-VkyScene* vky_create_scene(
-    VkyCanvas* canvas, VkyColorBytes clear_color, uint32_t row_count, uint32_t col_count)
+VkyScene*
+vky_create_scene(VkyCanvas* canvas, VkyColor clear_color, uint32_t row_count, uint32_t col_count)
 {
-    log_trace(
-        "create scene with clear color (%d, %d, %d, %d)", clear_color.r, clear_color.g,
-        clear_color.b, clear_color.a);
     VkyScene* scene = calloc(1, sizeof(VkyScene));
 
     scene->canvas = canvas;
@@ -1427,7 +1424,7 @@ VkyScene* vky_create_scene(
     return scene;
 }
 
-void vky_clear_color(VkyScene* scene, VkyColorBytes clear_color)
+void vky_clear_color(VkyScene* scene, VkyColor clear_color)
 {
     scene->clear_color = clear_color;
     scene->canvas->need_refill = true;

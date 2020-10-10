@@ -167,8 +167,8 @@ typedef struct VkyPathData VkyPathData;
 struct VkyPathData
 {
     uint32_t point_count;
-    vec3* points;          // size: point_count
-    VkyColorBytes* colors; // size: point_count
+    vec3* points;     // size: point_count
+    VkyColor* colors; // size: point_count
     VkyPathTopology topology;
 };
 
@@ -179,7 +179,7 @@ struct VkyPathVertex
     vec3 p1;
     vec3 p2;
     vec3 p3;
-    VkyColorBytes color;
+    VkyColor color;
 };
 
 VKY_EXPORT VkyVisual* vky_visual_path(VkyScene* scene, const VkyPathParams* params);
@@ -196,7 +196,7 @@ struct VkySegmentVertex
     vec3 P0;
     vec3 P1;
     vec4 shift;
-    VkyColorBytes color;
+    VkyColor color;
     float linewidth;
     int32_t cap0;
     int32_t cap1;
@@ -215,7 +215,7 @@ typedef struct VkyMarkersVertex VkyMarkersVertex;
 struct VkyMarkersVertex
 {
     vec3 pos;
-    VkyColorBytes color;
+    VkyColor color;
     VkyMarkerSize size;
     uint8_t
         marker; // in fact a VkyMarkerType but we should control the exact data type for the GPU
@@ -247,7 +247,7 @@ struct VkyTextData
 {
     vec3 pos;
     vec2 shift;
-    VkyColorBytes color;
+    VkyColor color;
     float glyph_size;
     vec2 anchor;
     float angle;
@@ -261,7 +261,7 @@ struct VkyTextVertex
 {
     vec3 pos;
     vec2 shift;
-    VkyColorBytes color;
+    VkyColor color;
     vec2 glyph_size;
     vec2 anchor;
     float angle;
@@ -289,7 +289,7 @@ struct VkyArrowVertex
 {
     vec3 P0;
     vec3 P1;
-    VkyColorBytes color;
+    VkyColor color;
     float head;
     float linewidth;
     float arrow_type;
@@ -313,7 +313,7 @@ typedef struct VkyFakeSphereVertex VkyFakeSphereVertex;
 struct VkyFakeSphereVertex
 {
     vec3 pos;
-    VkyColorBytes color;
+    VkyColor color;
     float radius;
 };
 
@@ -354,7 +354,7 @@ struct VkyMeshParams
 // {
 //     vec3 pos;
 //     vec3 normal;
-//     VkyColorBytes color;
+//     VkyColor color;
 // };
 
 VKY_EXPORT VkyMeshParams vky_default_mesh_params(
@@ -389,7 +389,7 @@ struct VkyRectangleData
     // position of the lower left corner in the 2D coordinate system defined by (origin, u, v)
     vec2 p;
     vec2 size; // size of the rectangle
-    VkyColorBytes color;
+    VkyColor color;
 };
 
 VKY_EXPORT VkyVisual* vky_visual_rectangle(VkyScene* scene, const VkyRectangleParams* params);
@@ -412,7 +412,7 @@ typedef struct VkyAreaVertex VkyAreaVertex;
 struct VkyAreaVertex
 {
     vec3 pos;
-    VkyColorBytes color;
+    VkyColor color;
     uint32_t area_idx;
 };
 
@@ -422,7 +422,7 @@ struct VkyAreaData
     // position of the lower left corner in the 2D coordinate system defined by (origin, u, v)
     vec2 p;
     float h;
-    VkyColorBytes color;
+    VkyColor color;
     uint32_t area_idx;
 };
 
@@ -439,7 +439,7 @@ struct VkyRectangleAxisData
 {
     vec2 ab;
     uint8_t span_axis; // 0 or 1
-    VkyColorBytes color;
+    VkyColor color;
 };
 
 VKY_EXPORT VkyVisual* vky_visual_rectangle_axis(VkyScene* scene);
@@ -454,7 +454,7 @@ typedef struct VkyPolygonParams VkyPolygonParams;
 struct VkyPolygonParams
 {
     float linewidth;
-    VkyColorBytes edge_color;
+    VkyColor edge_color;
 };
 
 VKY_EXPORT VkyVisualBundle* vky_bundle_polygon(VkyScene* scene, const VkyPolygonParams* params);
@@ -469,7 +469,7 @@ struct VkyPSLGParams
 {
     // segments
     float linewidth;
-    VkyColorBytes edge_color;
+    VkyColor edge_color;
 };
 
 
@@ -486,10 +486,10 @@ struct VkyTriangulationParams
 {
     // segments
     float linewidth;
-    VkyColorBytes edge_color;
+    VkyColor edge_color;
     // markers
     vec2 marker_size;
-    VkyColorBytes marker_color;
+    VkyColor marker_color;
 };
 
 VKY_EXPORT VkyVisualBundle* vky_bundle_triangulation(VkyScene*, const VkyTriangulationParams*);
@@ -554,7 +554,7 @@ struct VkyGraphEdge
 {
     uint32_t source_node;
     uint32_t target_node;
-    VkyColorBytes color;
+    VkyColor color;
     float linewidth;
     VkyCapType cap0;
     VkyCapType cap1;

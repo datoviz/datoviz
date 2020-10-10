@@ -841,8 +841,7 @@ void vky_begin_command_buffer(VkCommandBuffer command_buffer, VkyGpu* gpu)
     VK_CHECK_RESULT(vkBeginCommandBuffer(command_buffer, &begin_info));
 }
 
-void vky_begin_render_pass(
-    VkCommandBuffer command_buffer, VkyCanvas* canvas, VkyColorBytes clear_color)
+void vky_begin_render_pass(VkCommandBuffer command_buffer, VkyCanvas* canvas, VkyColor clear_color)
 {
     // log_trace("begin render pass");
 
@@ -855,10 +854,10 @@ void vky_begin_render_pass(
     render_pass_info.renderArea = renderArea;
 
     VkClearValue clear_color_value = {0};
-    clear_color_value.color.float32[0] = (float)clear_color.r / 255.0f;
-    clear_color_value.color.float32[1] = (float)clear_color.g / 255.0f;
-    clear_color_value.color.float32[2] = (float)clear_color.b / 255.0f;
-    clear_color_value.color.float32[3] = (float)clear_color.a / 255.0f;
+    clear_color_value.color.float32[0] = (float)clear_color.rgb[0] / 255.0f;
+    clear_color_value.color.float32[1] = (float)clear_color.rgb[1] / 255.0f;
+    clear_color_value.color.float32[2] = (float)clear_color.rgb[2] / 255.0f;
+    clear_color_value.color.float32[3] = (float)clear_color.alpha / 255.0f;
 
     VkClearValue clear_depth_value = {0};
     clear_depth_value.depthStencil.depth = 1.0f;

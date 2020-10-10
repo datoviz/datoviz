@@ -27,7 +27,7 @@ static void surface(VkyPanel* panel)
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
     float* heights = calloc(point_count, sizeof(float));
-    VkyColorBytes* color = calloc(point_count, sizeof(VkyColorBytes));
+    VkyColor* color = calloc(point_count, sizeof(VkyColor));
     float w = 1;
     float x, y, z;
     for (uint32_t i = 0; i < row_count; i++)

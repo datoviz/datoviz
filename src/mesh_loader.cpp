@@ -65,10 +65,10 @@ void vky_mesh_assimp(VkyMesh* mesh, const char* file_path)
                 vertex->normal[2] = ai_mesh->mNormals[i].z;
 
                 // TODO: color
-                vertex->color.r = 255;
-                vertex->color.g = 255;
-                vertex->color.b = 255;
-                vertex->color.a = 255;
+                vertex->color.rgb[0] = 255;
+                vertex->color.rgb[1] = 255;
+                vertex->color.rgb[2] = 255;
+                vertex->color.alpha = 255;
 
                 vertex++;
             }
@@ -156,10 +156,10 @@ void vky_mesh_obj(VkyMesh* mesh, const char* file_path)
             vertex->normal[1] = attrib.normals[3 * i + 1];
             vertex->normal[2] = attrib.normals[3 * i + 2];
 
-            vertex->color.r = TO_BYTE(attrib.colors[3 * i + 0]);
-            vertex->color.g = TO_BYTE(attrib.colors[3 * i + 1]);
-            vertex->color.b = TO_BYTE(attrib.colors[3 * i + 2]);
-            vertex->color.a = 255;
+            vertex->color.rgb[0] = TO_BYTE(attrib.colors[3 * i + 0]);
+            vertex->color.rgb[1] = TO_BYTE(attrib.colors[3 * i + 1]);
+            vertex->color.rgb[2] = TO_BYTE(attrib.colors[3 * i + 2]);
+            vertex->color.alpha = 255;
 
             vertex++;
         }

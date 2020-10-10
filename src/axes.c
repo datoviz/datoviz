@@ -127,8 +127,9 @@ static void _invert_color(vec4 color)
 
 static bool _is_dark_mode(VkyScene* scene)
 {
-    return (scene->clear_color.r == 0) && (scene->clear_color.g == 0) &&
-           (scene->clear_color.b == 0);
+    return (scene->clear_color.rgb[0] == 0) && //
+           (scene->clear_color.rgb[1] == 0) && //
+           (scene->clear_color.rgb[2] == 0);
 }
 
 

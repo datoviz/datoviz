@@ -111,9 +111,9 @@
     }
 #else
 #define VKY_CLEAR_COLOR_WHITE                                                                     \
-    (VkyColorBytes) { 255, 255, 255, 255 }
+    (VkyColor) { {255, 255, 255}, 255 }
 #define VKY_CLEAR_COLOR_BLACK                                                                     \
-    (VkyColorBytes) { 0, 0, 0, 0 }
+    (VkyColor) { {0, 0, 0}, 0 }
 #endif
 
 #define VKY_FONT_MAP_FILENAME "font_inconsolata.png"

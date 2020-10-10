@@ -13,7 +13,7 @@ void vky_load_color_texture()
 
 void vky_colormap_apply(
     VkyColormap cmap, double vmin, double vmax, uint32_t value_count, const double* values,
-    VkyColorBytes* colors)
+    VkyColor* colors)
 {
     for (uint32_t i = 0; i < value_count; i++)
     {

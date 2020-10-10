@@ -44,7 +44,7 @@ VKY_EXPORT VkyPolygonTriangulation vky_bundle_polygon_upload(
     VkyVisualBundle* vb,                                     // visual bundle
     const uint32_t point_count, const dvec2* points,         // points
     const uint32_t poly_count, const uint32_t* poly_lengths, // polygons
-    const VkyColorBytes* poly_colors                         // polygon colors
+    const VkyColor* poly_colors                              // polygon colors
 );
 
 
@@ -53,7 +53,7 @@ VKY_EXPORT VkyPSLGTriangulation vky_bundle_pslg_upload(
     const uint32_t, const dvec2*, // points
     const uint32_t, const uvec2*, // segments
     const uint32_t, const dvec2*, // regions
-    const VkyColorBytes*,         // region colors
+    const VkyColor*,              // region colors
     const char*);                 // triangle params
 
 

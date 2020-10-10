@@ -67,14 +67,14 @@ int main(void)
             edges[k] = (VkyGraphEdge){
                 i,
                 j,
-                {0, 0, 0, 255}, // TODO: black
+                {{0, 0, 0}, 255}, // TODO: black
                 1,
                 VKY_CAP_ROUND,
                 VKY_CAP_ROUND};
             // Hide some edges.
             if (rand_float() < .85)
             {
-                edges[k].color.a = 0;
+                edges[k].color.alpha = 0;
             }
             k++;
         }
