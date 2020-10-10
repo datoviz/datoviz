@@ -324,7 +324,7 @@ static void graph(VkyPanel* panel)
     params.marker_edge_width = 1.0f;
     glm_vec4_copy(GLM_VEC4_BLACK, params.marker_edge_color);
 
-    // Create the graph visual bundle.
+    // Create the graph visual.
     VkyVisual* graph = vky_visual_graph(panel->scene, params);
     vky_add_visual_to_panel(graph, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
@@ -468,7 +468,7 @@ static void polygon(VkyPanel* panel)
     poly_colors[2] = vky_color(VKY_CMAP_HSV, 2, 0, 3, 1);
 
     vky_visual_polygon_upload(
-        vb,                                // visual bundle
+        vb,                                // visual
         point_count, (const dvec2*)points, // points
         poly_count, poly_lengths,          // polygons
         poly_colors                        // polygon colors
@@ -509,7 +509,7 @@ static void pslg_1(VkyPanel* panel)
         vky_color(VKY_CMAP_JET, 7, 0, 10, 1),
     };
 
-    // PSLG visual bundle.
+    // PSLG visual.
     VkyPSLGParams params = (VkyPSLGParams){5, {{0, 0, 0}, 255}};
     VkyVisual* vb = vky_visual_pslg(panel->scene, &params);
     vky_add_visual_to_panel(vb, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
@@ -520,7 +520,7 @@ static void pslg_1(VkyPanel* panel)
         region_count, region_coords, region_colors, // regions,
         "pzqAQa0.002");                             // triangle params
 
-    // Triangulation visual bundle.
+    // Triangulation visual.
     VkyTriangulationParams tparams =
         (VkyTriangulationParams){2, {{0, 0, 0}, 255}, {8, 8}, {{0, 0, 0}, 255}};
     VkyVisual* vbt = vky_visual_triangulation(panel->scene, &tparams);

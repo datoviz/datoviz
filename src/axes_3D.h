@@ -62,7 +62,7 @@ VkyVisual* vky_visual_axes_3D_text(VkyScene* scene);
 /*  Axes 3D                                                                                      */
 /*************************************************************************************************/
 
-VkyVisualBundle* vky_bundle_axes_3D(VkyScene* scene);
+VkyVisual* vky_bundle_axes_3D(VkyScene* scene);
 
 void vky_axes_3D_init(VkyPanel* panel);
 
