@@ -16,7 +16,6 @@ extern "C" {
 #include "mesh_loader.h"
 #include "offscreen.h"
 #include "scene.h"
-#include "transform.h"
 #include "triangulation.h"
 #include "visuals.h"
 #include "vklite.h"
