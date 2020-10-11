@@ -691,6 +691,7 @@ VkyVisual* vky_create_visual(VkyScene* scene, VkyVisualType visual_type)
     VkyVisual visual = {0};
     visual.scene = scene;
     visual.visual_type = visual_type;
+    visual.props = calloc(VKY_MAX_VISUAL_PROP_COUNT, sizeof(VkyVisualProp));
     visual.resources = calloc(VKY_MAX_VISUAL_RESOURCES, sizeof(void*));
     visual.children = calloc(VKY_MAX_VISUALS_CHILDREN, sizeof(void*));
 
@@ -1094,6 +1095,8 @@ void vky_destroy_visual(VkyVisual* visual)
         vky_destroy_graphics_pipeline(&visual->pipeline);
     }
 
+    free(visual->props);
+    visual->props = NULL;
     free(visual->resources);
     visual->resources = NULL;
     free(visual->children);
@@ -1109,6 +1112,55 @@ void vky_free_data(VkyData data)
     if (data.indices != NULL)
         free(data.indices);
     data.vertices = data.indices = NULL;
+}
+
+VkyVisualProp* vky_visual_prop_add(VkyVisual* visual, VkyVisualPropType prop_type)
+{
+    VkyVisualProp vp = {0};
+    vp.type = prop_type;
+    visual->props[visual->prop_count] = vp;
+    visual->prop_count++;
+    return &visual->props[visual->prop_count - 1];
+}
+
+VkyVisualProp*
+vky_visual_prop_get(VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index)
+{
+    uint32_t k = 0;
+    for (uint32_t i = 0; i < visual->prop_count; i++)
+    {
+        if (visual->props[i].type == prop_type)
+        {
+            if (k == prop_index)
+                return &visual->props[i];
+            else
+                k++;
+        }
+    }
+
+    ASSERT(prop_index >= k);
+
+    // Search among the children.
+    VkyVisualProp* vp = NULL;
+    for (uint32_t i = 0; i < visual->children_count; i++)
+    {
+        ASSERT(prop_index >= k);
+        vp = vky_visual_prop_get(visual->children[i], prop_type, prop_index - k);
+        if (vp != NULL)
+            return vp;
+        else
+        {
+            // HACK: we must add the number of props in the child visual with the requested prop
+            // type
+            uint32_t l = 0;
+            for (uint32_t j = 0; j < visual->children[i]->prop_count; j++)
+                if (visual->children[i]->props[j].type == prop_type)
+                    l++;
+            k += l;
+        }
+    }
+
+    return NULL;
 }
 
 

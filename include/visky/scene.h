@@ -10,21 +10,8 @@
 
 
 /*************************************************************************************************/
-/*  Typedefs                                                                                     */
+/*  Enums                                                                                        */
 /*************************************************************************************************/
-
-typedef enum
-{
-    VKY_VIEWPORT_INNER = 0,
-    VKY_VIEWPORT_OUTER = 1,
-} VkyViewportType;
-
-typedef enum
-{
-    VKY_VISUAL_PRIORITY_NONE = 0,
-    VKY_VISUAL_PRIORITY_FIRST = 1,
-    VKY_VISUAL_PRIORITY_LAST = 2,
-} VkyVisualPriority;
 
 typedef enum
 {
@@ -66,53 +53,26 @@ typedef enum
 
 } VkyVisualType;
 
-typedef struct VkyAxes VkyAxes;
-typedef struct VkyPanel VkyPanel;
-typedef struct VkyPanelIndex VkyPanelIndex;
-typedef struct VkyPanelLink VkyPanelLink;
-typedef struct VkyVisualPanel VkyVisualPanel;
-typedef struct VkyData VkyData;
-typedef struct VkyGrid VkyGrid;
-typedef struct VkyMVP VkyMVP;
-typedef struct VkyVertex VkyVertex;
-typedef struct VkyTextureVertex VkyTextureVertex;
-typedef struct VkyVisual VkyVisual;
-typedef struct VkyPick VkyPick;
 
-typedef struct VkyPanzoom VkyPanzoom;
-typedef struct VkyBox2D VkyBox2D;
-typedef struct VkyArcball VkyArcball;
-typedef struct VkyCamera VkyCamera;
+typedef enum
+{
+    VKY_VISUAL_PROP_NONE = 0,
+    VKY_VISUAL_PROP_POS2D = 1,      // dvec2
+    VKY_VISUAL_PROP_POS = 2,        // vec3
+    VKY_VISUAL_PROP_COLOR = 3,      // bvec3
+    VKY_VISUAL_PROP_ALPHA = 4,      // uint8_t
+    VKY_VISUAL_PROP_SIZE = 5,       // uint32_t
+    VKY_VISUAL_PROP_SHAPE = 6,      // uint8
+    VKY_VISUAL_PROP_EDGE_COLOR = 7, // bvec3
+    VKY_VISUAL_PROP_EDGE_ALPHA = 8, // uint8_t
+    VKY_VISUAL_PROP_TEXT = 9,       // char*
+    VKY_VISUAL_PROP_SHIFT = 10,     // vec2
+    VKY_VISUAL_PROP_IMAGE = 11,     // VkyTexture*
+    VKY_VISUAL_PROP_VOLUME = 12,    // VkyTexture*
+    VKY_VISUAL_PROP_BUFFER = 13,    // VkyBuffer*
+    VKY_VISUAL_PROP_GROUPS = 32,    //
+} VkyVisualPropType;
 
-typedef struct VkyAxesScale VkyAxesScale;
-typedef struct VkyAxesDyad VkyAxesDyad;
-typedef struct VkyAxesTickVertex VkyAxesTickVertex;
-typedef struct VkyAxesTextVertex VkyAxesTextVertex;
-typedef struct VkyAxesTextData VkyAxesTextData;
-typedef struct VkyAxesTextParams VkyAxesTextParams;
-typedef struct VkyAxes VkyAxes;
-typedef struct VkyAxesTickParams VkyAxesTickParams;
-typedef struct VkyAxesUser VkyAxesUser;
-typedef struct VkyAxesLabel VkyAxesLabel;
-
-typedef struct VkyColorbarParams VkyColorbarParams;
-
-typedef struct VkyAxes2DParams VkyAxes2DParams;
-typedef struct VkyControllerAutorotate VkyControllerAutorotate;
-
-// Callbacks.
-// typedef VkyScene* (*VkyInitCallback)(VkyCanvas*);
-// typedef void (*VkyCallback)(VkyScene*);
-typedef void (*VkyVisualCallback)(VkyVisual*);
-typedef VkyData (*VkyVisualBakeCallback)(VkyVisual*, VkyData);
-typedef void (*VkyVisualResizeCallback)(VkyVisual*);
-
-typedef void (*VkyAxesTickFormatter)(VkyAxes*, double value, char* out_text);
-
-
-/*************************************************************************************************/
-/*  Controller                                                                                   */
-/*************************************************************************************************/
 
 typedef enum
 {
@@ -141,6 +101,28 @@ typedef enum
     VKY_MVP_PROJ = 3,
     VKY_MVP_ORTHO = 4,
 } VkyMVPMatrix;
+
+
+typedef enum
+{
+    VKY_VIEWPORT_INNER = 0,
+    VKY_VIEWPORT_OUTER = 1,
+} VkyViewportType;
+
+
+typedef enum
+{
+    VKY_ASPECT_UNCONSTRAINED = 0,
+    VKY_ASPECT_SQUARE = 1,
+} VkyAspect;
+
+
+typedef enum
+{
+    VKY_VISUAL_PRIORITY_NONE = 0,
+    VKY_VISUAL_PRIORITY_FIRST = 1,
+    VKY_VISUAL_PRIORITY_LAST = 2,
+} VkyVisualPriority;
 
 
 typedef enum
@@ -179,6 +161,71 @@ typedef enum
     VKY_PANEL_STATUS_RESET = 7,
 } VkyPanelStatus;
 
+
+typedef enum
+{
+    VKY_AXIS_X = 0,
+    VKY_AXIS_Y = 1
+} VkyAxis;
+
+
+typedef enum
+{
+    VKY_COLORBAR_NONE = 0,
+    VKY_COLORBAR_RIGHT,
+    VKY_COLORBAR_BOTTOM,
+    VKY_COLORBAR_LEFT,
+    VKY_COLORBAR_TOP,
+} VkyColorbarPosition;
+
+
+
+/*************************************************************************************************/
+/*  Typedefs                                                                                     */
+/*************************************************************************************************/
+
+typedef struct VkyArcball VkyArcball;
+typedef struct VkyAxes VkyAxes;
+typedef struct VkyAxes2DParams VkyAxes2DParams;
+typedef struct VkyAxesDyad VkyAxesDyad;
+typedef struct VkyAxesLabel VkyAxesLabel;
+typedef struct VkyAxesScale VkyAxesScale;
+typedef struct VkyAxesTextData VkyAxesTextData;
+typedef struct VkyAxesTextParams VkyAxesTextParams;
+typedef struct VkyAxesTextVertex VkyAxesTextVertex;
+typedef struct VkyAxesTickParams VkyAxesTickParams;
+typedef struct VkyAxesTickVertex VkyAxesTickVertex;
+typedef struct VkyAxesUser VkyAxesUser;
+typedef struct VkyBox2D VkyBox2D;
+typedef struct VkyCamera VkyCamera;
+typedef struct VkyColorbarParams VkyColorbarParams;
+typedef struct VkyControllerAutorotate VkyControllerAutorotate;
+typedef struct VkyData VkyData;
+typedef struct VkyGrid VkyGrid;
+typedef struct VkyMVP VkyMVP;
+typedef struct VkyPanel VkyPanel;
+typedef struct VkyPanelIndex VkyPanelIndex;
+typedef struct VkyPanelLink VkyPanelLink;
+typedef struct VkyPanzoom VkyPanzoom;
+typedef struct VkyPick VkyPick;
+typedef struct VkyTextureVertex VkyTextureVertex;
+typedef struct VkyVertex VkyVertex;
+typedef struct VkyVisual VkyVisual;
+typedef struct VkyVisualProp VkyVisualProp;
+typedef struct VkyVisualPanel VkyVisualPanel;
+
+// Callbacks.
+typedef VkyData (*VkyVisualBakeCallback)(VkyVisual*, VkyData);
+typedef void (*VkyAxesTickFormatter)(VkyAxes*, double value, char* out_text);
+typedef void (*VkyVisualCallback)(VkyVisual*);
+typedef void (*VkyVisualResizeCallback)(VkyVisual*);
+typedef void (*VkyVisualPropCallback)(VkyVisualProp*, VkyVisual*, void* controller);
+
+
+
+/*************************************************************************************************/
+/*  Controller                                                                                   */
+/*************************************************************************************************/
 
 struct VkyMVP
 {
@@ -244,6 +291,17 @@ struct VkyData
 
 
 
+struct VkyVisualProp
+{
+    VkyVisualPropType type;
+    uint32_t value_count;
+    void* values;
+    void* resource; // (only for the _RESOURCE prop types)
+    VkyVisualPropCallback callback;
+};
+
+
+
 struct VkyVisual
 {
     VkyVisualType visual_type;
@@ -261,6 +319,9 @@ struct VkyVisual
     VkyBufferRegion indirect_buffer;
     VkyBufferRegion vertex_buffer;
     VkyBufferRegion index_buffer;
+
+    uint32_t prop_count;
+    VkyVisualProp* props;
 
     uint32_t resource_count;
     void** resources;
@@ -357,25 +418,6 @@ struct VkyPick
 /*************************************************************************************************/
 /*  Axes                                                                                         */
 /*************************************************************************************************/
-
-typedef enum
-{
-    VKY_AXIS_X = 0,
-    VKY_AXIS_Y = 1
-} VkyAxis;
-
-
-
-typedef enum
-{
-    VKY_COLORBAR_NONE = 0,
-    VKY_COLORBAR_RIGHT,
-    VKY_COLORBAR_BOTTOM,
-    VKY_COLORBAR_LEFT,
-    VKY_COLORBAR_TOP,
-} VkyColorbarPosition;
-
-
 
 struct VkyAxesScale
 {
@@ -524,57 +566,6 @@ struct VkyAxes2DParams
 
 
 
-static VkyAxes2DParams vky_default_axes_2D_params()
-{
-    VkyAxes2DParams params = {
-        // Default axes scale.
-        VKY_AXES_DEFAULT_SCALE,
-        VKY_AXES_DEFAULT_SCALE,
-        // Default tick formatters will be set automatically in axes.c
-        NULL,
-        NULL,
-        // Default axis argins
-        {
-            (float)VKY_AXES_MARGIN_TOP,
-            (float)VKY_AXES_MARGIN_RIGHT,
-            (float)VKY_AXES_MARGIN_BOTTOM,
-            (float)VKY_AXES_MARGIN_LEFT * ((float)VKY_AXES_FONT_SIZE / 8.0f),
-        },
-        // Labels
-        {VKY_AXIS_X, {0}, 0, {{0}}},
-        {VKY_AXIS_X, {0}, 0, {{0}}},
-        // Default colorbar (the position must be set in order to activate it)
-        {
-            VKY_COLORBAR_NONE,
-            VKY_DEFAULT_COLORMAP,
-            {0, 1, false}, // default colormap scale
-            {0, 0},
-            {0, 0},
-            {0, 0},
-            {0, 0},
-            0,
-        },
-
-        // User axes
-        {
-            {1, 5, 0, 0}, // four possible slots for custom line widths, we only use the first one
-            {             // four possible slots for custom line colors
-             {.5, .5, .5, 1},
-             {0, 0, 0, 0},
-             {0, 0, 0, 0},
-             {0, 0, 0, 0}},
-            2, // number of ticks
-            {0, 4},
-            {0, 0},
-            {0, 0},
-        },
-        true,
-    };
-    return params;
-}
-
-
-
 struct VkyAxes
 {
     VkyAxesScale xscale_orig, yscale_orig; // corresponds to dyad 0, 0
@@ -630,6 +621,55 @@ VKY_EXPORT void vky_mvp_set_proj_3D(VkyPanel*, VkyViewportType, VkyMVP* mvp);
 VKY_EXPORT void vky_mvp_normal_matrix(VkyMVP* mvp, mat4 normal);
 VKY_EXPORT void vky_mvp_upload(VkyPanel*, VkyViewportType viewport_type, VkyMVP* mvp);
 
+static VkyAxes2DParams vky_default_axes_2D_params()
+{
+    VkyAxes2DParams params = {
+        // Default axes scale.
+        VKY_AXES_DEFAULT_SCALE,
+        VKY_AXES_DEFAULT_SCALE,
+        // Default tick formatters will be set automatically in axes.c
+        NULL,
+        NULL,
+        // Default axis argins
+        {
+            (float)VKY_AXES_MARGIN_TOP,
+            (float)VKY_AXES_MARGIN_RIGHT,
+            (float)VKY_AXES_MARGIN_BOTTOM,
+            (float)VKY_AXES_MARGIN_LEFT * ((float)VKY_AXES_FONT_SIZE / 8.0f),
+        },
+        // Labels
+        {VKY_AXIS_X, {0}, 0, {{0}}},
+        {VKY_AXIS_X, {0}, 0, {{0}}},
+        // Default colorbar (the position must be set in order to activate it)
+        {
+            VKY_COLORBAR_NONE,
+            VKY_DEFAULT_COLORMAP,
+            {0, 1, false}, // default colormap scale
+            {0, 0},
+            {0, 0},
+            {0, 0},
+            {0, 0},
+            0,
+        },
+
+        // User axes
+        {
+            {1, 5, 0, 0}, // four possible slots for custom line widths, we only use the first one
+            {             // four possible slots for custom line colors
+             {.5, .5, .5, 1},
+             {0, 0, 0, 0},
+             {0, 0, 0, 0},
+             {0, 0, 0, 0}},
+            2, // number of ticks
+            {0, 4},
+            {0, 0},
+            {0, 0},
+        },
+        true,
+    };
+    return params;
+}
+
 
 
 /*************************************************************************************************/
@@ -667,7 +707,8 @@ VKY_EXPORT void vky_toggle_visual_visibility(VkyVisual* visual, bool is_visible)
 VKY_EXPORT void vky_destroy_visual(VkyVisual* visual);
 VKY_EXPORT void vky_free_data(VkyData data);
 VKY_EXPORT void vky_visual_add_child(VkyVisual* parent, VkyVisual* child);
-
+VKY_EXPORT VkyVisualProp* vky_visual_prop_add(VkyVisual*, VkyVisualPropType);
+VKY_EXPORT VkyVisualProp* vky_visual_prop_get(VkyVisual*, VkyVisualPropType, uint32_t prop_index);
 
 
 /*************************************************************************************************/

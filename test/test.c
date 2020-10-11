@@ -379,6 +379,7 @@ static int test_utils()
 
     printf("--- utils tests -----------------------------------\n");
 
+    UNIT_TEST(test_visuals_props_1);
     UNIT_TEST(test_utils_transform_1);
     UNIT_TEST(test_utils_transform_2);
     UNIT_TEST(test_utils_panzoom_1);
@@ -442,7 +443,7 @@ int main(int argc, char* argv[])
     // Unit tests.
     int res = 0;
     TEST_INDEX = 0;
-    if (argc == 1 || strcmp(argv[1], "vklite") == 0)
+    if (argc == 1 || strcmp(argv[1], "utils") == 0)
     {
         res += test_utils();
     }

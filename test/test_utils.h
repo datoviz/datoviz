@@ -2,13 +2,67 @@
 #include <visky/visky.h>
 
 
-/*************************************************************************************************/
-/*  Utils tests                                                                                  */
-/*************************************************************************************************/
-
 #define AT(x)                                                                                     \
     if (!(x))                                                                                     \
         return 1;
+
+
+/*************************************************************************************************/
+/*  Visual tests                                                                                 */
+/*************************************************************************************************/
+
+static VkyVisual _blank_visual()
+{
+    VkyVisual v = {0};
+    v.props = calloc(10, sizeof(VkyVisualProp));
+    v.children = calloc(10, sizeof(VkyVisual*));
+    return v;
+}
+
+static void _destroy_visual(VkyVisual* v)
+{
+    free(v->children);
+    free(v->props);
+}
+
+static int test_visuals_props_1()
+{
+    VkyVisual v = _blank_visual();
+
+    VkyVisualProp* vp = NULL;
+    VkyVisualProp* vpc = NULL;
+
+    // Add a prop to the visual.
+    vp = vky_visual_prop_add(&v, VKY_VISUAL_PROP_POS);
+
+    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_ALPHA, 0) == NULL);
+    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS, 0) == vp);
+    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS, 1) == NULL);
+
+    // Add a child.
+    v.children_count = 1;
+    VkyVisual vc = _blank_visual();
+    v.children[0] = &vc;
+
+    // Add a prop to the child visual.
+    vpc = vky_visual_prop_add(&vc, VKY_VISUAL_PROP_POS);
+
+    // Check that we get the correct prop, belonging either to the parent visual or the child.
+    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS, 0) == vp);
+    AT(vky_visual_prop_get(&vc, VKY_VISUAL_PROP_POS, 0) == vpc);
+    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS, 1) == vpc);
+    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS, 2) == NULL);
+
+    _destroy_visual(&vc);
+    _destroy_visual(&v);
+
+    return 0;
+}
+
+
+/*************************************************************************************************/
+/*  Transform tests                                                                              */
+/*************************************************************************************************/
 
 #define AIN(x, m, M) AT((m) <= (x) && (x) <= (M))
 #define ABOX(x, a, b, c, d)                                                                       \
@@ -254,6 +308,7 @@ static int _check_axes_range(VkyAxes* axes, double xmin, double ymin, double xma
     }
     return 0;
 }
+
 
 
 static int test_utils_axes_2(VkyPanel* panel)
