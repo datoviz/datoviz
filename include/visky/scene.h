@@ -219,7 +219,7 @@ typedef VkyData (*VkyVisualBakeCallback)(VkyVisual*, VkyData);
 typedef void (*VkyAxesTickFormatter)(VkyAxes*, double value, char* out_text);
 typedef void (*VkyVisualCallback)(VkyVisual*);
 typedef void (*VkyVisualResizeCallback)(VkyVisual*);
-typedef void (*VkyVisualPropCallback)(VkyVisualProp*, VkyVisual*, void* controller);
+typedef void (*VkyVisualPropCallback)(VkyVisualProp*, VkyVisual*, VkyPanel*);
 
 
 
@@ -295,7 +295,7 @@ struct VkyVisualProp
 {
     VkyVisualPropType type;
     uint32_t value_count;
-    void* values;
+    const void* values;
     void* resource; // (only for the _RESOURCE prop types)
     VkyVisualPropCallback callback;
 };
@@ -707,12 +707,28 @@ VKY_EXPORT void vky_toggle_visual_visibility(VkyVisual* visual, bool is_visible)
 VKY_EXPORT void vky_destroy_visual(VkyVisual* visual);
 VKY_EXPORT void vky_free_data(VkyData data);
 VKY_EXPORT void vky_visual_add_child(VkyVisual* parent, VkyVisual* child);
+
 VKY_EXPORT VkyVisualProp* vky_visual_prop_add(VkyVisual*, VkyVisualPropType);
 VKY_EXPORT VkyVisualProp* vky_visual_prop_get(VkyVisual*, VkyVisualPropType, uint32_t prop_index);
+VKY_EXPORT void vky_visual_data_values(
+    VkyVisual*, VkyVisualPropType, uint32_t prop_index, uint32_t value_count, const void* values);
+VKY_EXPORT void vky_visual_data_resource(VkyVisual*, VkyVisualPropType, uint32_t, void*);
+VKY_EXPORT void vky_visual_data_callback(
+    VkyVisual*, VkyVisualPropType, uint32_t prop_index, VkyVisualPropCallback);
+void vky_visual_data_bake(VkyVisual*, VkyPanel*);
+
+// VKY_INLINE void vky_visual_prop_value(VkyVisualProp* vp, uint32_t value_index)
+// {
+//     if (vp->resource != NULL)
+//         return vp->resource;
+//     ASSERT(vp->values != NULL);
+//     value_index = CLIP(value_index, 0, vp->value_count - 1);
+//     return vp->values[value_index];
+// }
 
 
 /*************************************************************************************************/
-/*  Panels                                                                                       */
+/*  Panels */
 /*************************************************************************************************/
 
 VKY_EXPORT void vky_set_full_viewport(VkyCanvas* canvas); // TODO: scene

@@ -1114,6 +1114,8 @@ void vky_free_data(VkyData data)
     data.vertices = data.indices = NULL;
 }
 
+
+
 VkyVisualProp* vky_visual_prop_add(VkyVisual* visual, VkyVisualPropType prop_type)
 {
     VkyVisualProp vp = {0};
@@ -1161,6 +1163,82 @@ vky_visual_prop_get(VkyVisual* visual, VkyVisualPropType prop_type, uint32_t pro
     }
 
     return NULL;
+}
+
+void vky_visual_data_values(
+    VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index, //
+    uint32_t value_count, const void* values)
+{
+    VkyVisualProp* vp = vky_visual_prop_get(visual, prop_type, prop_index);
+    vp->value_count = value_count;
+    vp->values = values;
+}
+
+void vky_visual_data_resource(
+    VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index, //
+    void* resource)
+{
+    VkyVisualProp* vp = vky_visual_prop_get(visual, prop_type, prop_index);
+    vp->resource = resource;
+}
+
+void vky_visual_data_callback(
+    VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index,
+    VkyVisualPropCallback callback)
+{
+    VkyVisualProp* vp = vky_visual_prop_get(visual, prop_type, prop_index);
+    vp->callback = callback;
+}
+
+void vky_visual_data_bake(VkyVisual* visual, VkyPanel* panel)
+{
+    VkyVisualProp* vp = NULL;
+    // call the callbacks and ensure the prop's values are all set.
+    for (uint32_t i = 0; i < visual->prop_count; i++)
+    {
+        vp = &visual->props[i];
+        if (vp->callback != NULL)
+            vp->callback(vp, visual, panel);
+        ASSERT(vp->values != NULL);
+    }
+    // Deal with position.
+    vp = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS, 0);
+    if (vp == NULL)
+    {
+        // Need to compute the GPU pos vec3 from the 2D double-precision positions.
+        vp = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS2D, 0);
+        ASSERT(vp != NULL);
+        ASSERT(panel != NULL);
+        switch (panel->controller_type)
+        {
+        case VKY_CONTROLLER_AXES_2D:
+            // TODO: log
+            // TODO: normalize 2D
+            //  vky_normalize_2D(axes->box_init, uint32_t item_count, const dvec2* pos2D, vec3*
+            //  pos_prop)
+            // TODO:
+            // VKY_CONTROLLER_POLAR
+            // VKY_CONTROLLER_WEB_MERCATOR
+            break;
+        default:
+            break;
+        }
+    }
+    // Now, after normalization, the pos prop should be set.
+    vp = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS, 0);
+    ASSERT(vp != NULL);
+
+    // TODO:
+    // Bake the data using the visual's props.
+    // visual's item count = vp->value_count
+    // VkyData data = visual->cb_bake_data(visual);
+    // vky_visual_data(visual, data);
+
+    // Call the visual's children recursively.
+    for (uint32_t i = 0; i < visual->children_count; i++)
+    {
+        vky_visual_data_bake(visual->children[i], panel);
+    }
 }
 
 
