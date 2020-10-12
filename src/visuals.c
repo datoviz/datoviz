@@ -1726,6 +1726,28 @@ void vky_visual_mesh_upload(VkyVisual* visual, const void* pixels)
 /*  Raw mesh visual                                                                              */
 /*************************************************************************************************/
 
+static VkyData _mesh_raw_bake_props(VkyVisual* visual)
+{
+    VkyData data = {0};
+    VkyVisualProp* vp_pos = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS, 0);
+    VkyVisualProp* vp_col = vky_visual_prop_get(visual, VKY_VISUAL_PROP_COLOR, 0);
+
+    ASSERT(vp_pos->value_count == vp_col->value_count);
+
+    data.vertex_count = vp_pos->value_count;
+    VkyVertex* vertices = calloc(data.vertex_count, sizeof(VkyVertex));
+
+    for (uint32_t i = 0; i < data.vertex_count; i++)
+    {
+        memcpy(vertices[i].pos, ((vec3*)vp_pos->values)[i], sizeof(vec3));
+        memcpy(vertices[i].color.rgb, ((cvec3*)vp_col->values)[i], sizeof(cvec3));
+        vertices[i].color.alpha = 255;
+    }
+
+    data.vertices = vertices;
+    return data;
+}
+
 VkyVisual* vky_visual_mesh_raw(VkyScene* scene)
 {
     VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_MESH_RAW);
@@ -1752,6 +1774,12 @@ VkyVisual* vky_visual_mesh_raw(VkyScene* scene)
         (VkyGraphicsPipelineParams){true});
 
     vky_add_common_resources(visual);
+
+    // Props.
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS);
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR);
+    visual->cb_bake_props = _mesh_raw_bake_props;
+
     return visual;
 }
 

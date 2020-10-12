@@ -1167,7 +1167,7 @@ vky_visual_prop_get(VkyVisual* visual, VkyVisualPropType prop_type, uint32_t pro
 
 void vky_visual_data(
     VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index, //
-    uint32_t value_count, const void* values)
+    uint32_t value_count, void* values)
 {
     VkyVisualProp* vp = vky_visual_prop_get(visual, prop_type, prop_index);
     if (vp == NULL)
@@ -1177,6 +1177,8 @@ void vky_visual_data(
     }
     vp->value_count = value_count;
     vp->values = values;
+    // Tag the visual for data upload at the next frame.
+    visual->need_data_upload = true;
 }
 
 void vky_visual_data_resource(
@@ -1195,9 +1197,16 @@ void vky_visual_data_callback(
     vp->callback = callback;
 }
 
-void vky_visual_data_bake(VkyVisual* visual, VkyPanel* panel)
+void vky_visual_data_upload(VkyVisual* visual, VkyPanel* panel)
 {
+    if (visual->cb_bake_props == NULL)
+    {
+        log_warn("visual does not support visual prop API, you need to use vky_visual_data_raw()");
+        return;
+    }
+
     VkyVisualProp* vp = NULL;
+
     // call the callbacks and ensure the prop's values are all set.
     for (uint32_t i = 0; i < visual->prop_count; i++)
     {
@@ -1206,6 +1215,7 @@ void vky_visual_data_bake(VkyVisual* visual, VkyPanel* panel)
             vp->callback(vp, visual, panel);
         ASSERT(vp->values != NULL);
     }
+
     // Deal with position.
     vp = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS, 0);
     if (vp == NULL)
@@ -1235,14 +1245,13 @@ void vky_visual_data_bake(VkyVisual* visual, VkyPanel* panel)
 
     // TODO:
     // Bake the data using the visual's props.
-    // visual's item count = vp->value_count
-    // VkyData data = visual->cb_bake_data(visual);
-    // vky_visual_data_raw(visual, data);
+    VkyData data = visual->cb_bake_props(visual);
+    vky_visual_data_raw(visual, data);
 
     // Call the visual's children recursively.
     for (uint32_t i = 0; i < visual->children_count; i++)
     {
-        vky_visual_data_bake(visual->children[i], panel);
+        vky_visual_data_upload(visual->children[i], panel);
     }
 }
 
@@ -1411,7 +1420,7 @@ void vky_draw_visual(VkyVisual* visual, VkyPanel* panel, VkyViewportType viewpor
         // Bind the vertex buffer.
         if (visual->vertex_buffer.buffer == NULL)
         {
-            log_error("no buffer, skipping draw");
+            log_debug("no buffer, skipping draw");
             return;
         }
         vky_bind_vertex_buffer(command_buffer, visual->vertex_buffer, 0);

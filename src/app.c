@@ -665,6 +665,21 @@ void vky_finish_event_states(VkyEventController* event_controller)
 // Called at every frame.
 void vky_next_frame(VkyCanvas* canvas)
 {
+    // Upload the pending data for the visuals.
+    if (canvas->scene != NULL && canvas->scene->grid != NULL)
+    {
+        VkyVisualPanel* vp = NULL;
+        for (uint32_t i = 0; i < canvas->scene->grid->visual_panel_count; i++)
+        {
+            vp = &canvas->scene->grid->visual_panels[i];
+            if (vp->visual->need_data_upload)
+            {
+                vky_visual_data_upload(vp->visual, vky_get_panel(canvas->scene, vp->row, vp->col));
+                vp->visual->need_data_upload = false;
+            }
+        }
+    }
+
     VkyEventController* event_controller = canvas->event_controller;
 
     // Update the mouse state following mouse events raised by glfw.

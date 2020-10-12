@@ -217,6 +217,7 @@ typedef struct VkyVisualPanel VkyVisualPanel;
 
 // Callbacks.
 typedef VkyData (*VkyVisualBakeCallback)(VkyVisual*, VkyData);
+typedef VkyData (*VkyVisualBakePropsCallback)(VkyVisual*);
 typedef void (*VkyAxesTickFormatter)(VkyAxes*, double value, char* out_text);
 typedef void (*VkyVisualCallback)(VkyVisual*);
 typedef void (*VkyVisualResizeCallback)(VkyVisual*);
@@ -296,7 +297,7 @@ struct VkyVisualProp
 {
     VkyVisualPropType type;
     uint32_t value_count;
-    const void* values;
+    void* values;
     void* resource; // (only for the _RESOURCE prop types)
     VkyVisualPropCallback callback;
 };
@@ -331,7 +332,10 @@ struct VkyVisual
     VkyVisual** children;
 
     VkyVisualBakeCallback cb_bake_data;
+    VkyVisualBakePropsCallback cb_bake_props;
     VkyVisualResizeCallback cb_resize; // NOTE: unused yet
+
+    bool need_data_upload;
 };
 
 
@@ -712,11 +716,11 @@ VKY_EXPORT void vky_visual_add_child(VkyVisual* parent, VkyVisual* child);
 VKY_EXPORT VkyVisualProp* vky_visual_prop_add(VkyVisual*, VkyVisualPropType);
 VKY_EXPORT VkyVisualProp* vky_visual_prop_get(VkyVisual*, VkyVisualPropType, uint32_t prop_index);
 VKY_EXPORT void vky_visual_data(
-    VkyVisual*, VkyVisualPropType, uint32_t prop_index, uint32_t value_count, const void* values);
+    VkyVisual*, VkyVisualPropType, uint32_t prop_index, uint32_t value_count, void* values);
 VKY_EXPORT void vky_visual_data_resource(VkyVisual*, VkyVisualPropType, uint32_t, void*);
 VKY_EXPORT void vky_visual_data_callback(
     VkyVisual*, VkyVisualPropType, uint32_t prop_index, VkyVisualPropCallback);
-void vky_visual_data_bake(VkyVisual*, VkyPanel*);
+void vky_visual_data_upload(VkyVisual*, VkyPanel*);
 
 // VKY_INLINE void vky_visual_prop_value(VkyVisualProp* vp, uint32_t value_index)
 // {
