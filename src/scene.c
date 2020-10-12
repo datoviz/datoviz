@@ -1170,6 +1170,11 @@ void vky_visual_data_values(
     uint32_t value_count, const void* values)
 {
     VkyVisualProp* vp = vky_visual_prop_get(visual, prop_type, prop_index);
+    if (vp == NULL)
+    {
+        log_error("could not find visual prop %d", prop_type);
+        return;
+    }
     vp->value_count = value_count;
     vp->values = values;
 }

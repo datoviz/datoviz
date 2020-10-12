@@ -14,12 +14,23 @@ int main()
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
     // Triangle.
-    VkyVertex vertices[3] = {
-        {{-1, -1, 0}, {{255, 0, 0}, 255}},
-        {{+1, -1, 0}, {{0, 255, 0}, 255}},
-        {{0, +1, 0}, {{0, 0, 255}, 255}},
-    };
-    vky_visual_data(visual, (VkyData){0, NULL, 3, vertices, 0, NULL});
+    {
+        VkyVertex vertices[3] = {
+            {{-1, -1, 0}, {{255, 0, 0}, 255}},
+            {{+1, -1, 0}, {{0, 255, 0}, 255}},
+            {{0, +1, 0}, {{0, 0, 255}, 255}},
+        };
+        vky_visual_data(visual, (VkyData){0, NULL, 3, vertices, 0, NULL});
+    }
+
+    {
+        // Positions.
+        vec3 positions[3] = {{-1, -1, 0}, {+1, -1, 0}, {0, +1, 0}};
+        // Colors.
+        cvec3 colors[3] = {{255, 0, 0}, {0, 255, 0}, {0, 0, 255}};
+        vky_visual_data_values(visual, VKY_VISUAL_PROP_POS, 0, 3, positions);
+        vky_visual_data_values(visual, VKY_VISUAL_PROP_COLOR, 0, 3, colors);
+    }
 
     vky_run_app(app);
     vky_destroy_app(app);
