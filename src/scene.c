@@ -1095,6 +1095,12 @@ void vky_destroy_visual(VkyVisual* visual)
         vky_destroy_graphics_pipeline(&visual->pipeline);
     }
 
+    for (uint32_t i = 0; i < visual->prop_count; i++)
+    {
+        if (visual->props[i].values != NULL)
+            free(visual->props[i].values);
+    }
+
     free(visual->props);
     visual->props = NULL;
     free(visual->resources);
@@ -1134,8 +1140,18 @@ VkyVisualProp* vky_visual_prop_add(VkyVisual* visual, VkyVisualPropType prop_typ
     case VKY_VISUAL_PROP_COLOR_ALPHA:
         vp.value_size = sizeof(cvec4);
         break;
+    case VKY_VISUAL_PROP_SIZE:
+        vp.value_size = sizeof(uint8_t);
+        break;
+    case VKY_VISUAL_PROP_SHAPE:
+        vp.value_size = sizeof(uint8_t);
+        break;
+    case VKY_VISUAL_PROP_ANGLE:
+        vp.value_size = sizeof(uint8_t);
+        break;
     // TODO: other types
     default:
+        log_error("prop type %d not yet implemented", prop_type);
         break;
     }
     ASSERT(vp.value_size > 0);
@@ -1199,8 +1215,9 @@ void vky_visual_data(
     // WARNING: do a copy here to make sure the pointed memory buffer is still valid when uploading
     // later.
     size_t size = vp->value_count * vp->value_size;
-    vp->values = malloc(size);
+    vp->values = calloc(vp->value_count, vp->value_size);
     memcpy(vp->values, values, size);
+    // vp->values = values;
 
     // Tag the visual for data upload at the next frame.
     visual->need_data_upload = true;
@@ -1239,7 +1256,11 @@ void vky_visual_data_upload(VkyVisual* visual, VkyPanel* panel)
         vp = &visual->props[i];
         if (vp->callback != NULL)
             vp->callback(vp, visual, panel);
-        ASSERT(vp->values != NULL);
+        if (vp->values == NULL)
+        {
+            log_error("visual prop %d is empty", vp->type);
+            return;
+        }
     }
 
     // Deal with position.

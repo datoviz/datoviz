@@ -329,6 +329,7 @@ void vky_glfw_run_app_begin(VkyApp* app)
     // Create the swap chain and all objects that will need to be recreated upon resize.
     for (uint32_t i = 0; i < app->canvas_count; i++)
     {
+        vky_upload_pending_data(app->canvases[i]);
         vky_fill_command_buffers(app->canvases[i]);
     }
 }

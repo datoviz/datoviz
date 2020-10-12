@@ -66,8 +66,9 @@ typedef enum
     VKY_VISUAL_PROP_SHAPE = 11,      // uint8
     VKY_VISUAL_PROP_SHIFT = 12,      // vec2
     VKY_VISUAL_PROP_TEXT = 13,       // char*
-    VKY_VISUAL_PROP_EDGE_COLOR = 14, // bvec3
-    VKY_VISUAL_PROP_EDGE_ALPHA = 15, // uint8_t
+    VKY_VISUAL_PROP_ANGLE = 14,      // uint8_t
+    VKY_VISUAL_PROP_EDGE_COLOR = 18, // bvec3
+    VKY_VISUAL_PROP_EDGE_ALPHA = 19, // uint8_t
     VKY_VISUAL_PROP_IMAGE = 20,      // VkyTexture*
     VKY_VISUAL_PROP_VOLUME = 21,     // VkyTexture*
     VKY_VISUAL_PROP_BUFFER = 22,     // VkyBuffer*

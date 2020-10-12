@@ -29,18 +29,26 @@ static void scatter(VkyPanel* panel)
 
     const uint32_t n0 = 11;
     const uint32_t n = n0 * n0;
-    VkyMarkersVertex* data = calloc(n, sizeof(VkyMarkersVertex));
+    // VkyMarkersVertex* data = calloc(n, sizeof(VkyMarkersVertex));
+    vec3* positions = calloc(n, sizeof(vec3));
+    VkyColor* colors = calloc(n, sizeof(VkyColor));
     for (uint32_t i = 0; i < n; i++)
     {
-        data[i] = (VkyMarkersVertex){
-            {-1 + (2.0 / (n0 - 1)) * (i % n0), -1 + (2.0 / (n0 - 1)) * (i / n0), 0},
-            vky_color(VKY_CMAP_JET, i % n0, 0, n0, .5 + .5 * rand_float()),
-            20,
-            VKY_MARKER_DISC,
-            0};
+        positions[i][0] = -1 + (2.0 / (n0 - 1)) * (i % n0);
+        positions[i][1] = -1 + (2.0 / (n0 - 1)) * (i / n0);
+
+        colors[i] = vky_color(VKY_CMAP_JET, i % n0, 0, n0, .5 + .5 * rand_float());
     }
-    vky_visual_data_raw(visual, (VkyData){n, data});
-    free(data);
+
+    uint8_t size = 20;
+    VkyMarkerType marker = VKY_MARKER_DISC;
+    uint8_t angle = 0;
+
+    vky_visual_data(visual, VKY_VISUAL_PROP_POS, 0, n, positions);
+    vky_visual_data(visual, VKY_VISUAL_PROP_COLOR_ALPHA, 0, n, colors);
+    vky_visual_data(visual, VKY_VISUAL_PROP_SIZE, 0, 1, &size);
+    vky_visual_data(visual, VKY_VISUAL_PROP_SHAPE, 0, 1, &marker);
+    vky_visual_data(visual, VKY_VISUAL_PROP_ANGLE, 0, 1, &angle);
 }
 
 static void imshow(VkyPanel* panel)

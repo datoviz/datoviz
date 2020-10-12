@@ -14,10 +14,19 @@
     data.vertices = calloc(data.vertex_count, sizeof(VERT_TYPE));                                 \
     VERT_TYPE* vertices = (VERT_TYPE*)data.vertices;
 
-#define PROP_LOOP         for (uint32_t i = 0; i < data.vertex_count; i++)
-#define PROP_POS3D(FIELD) memcpy(vertices[i].FIELD, ((vec3*)vp_pos->values)[i], sizeof(vec3));
-#define PROP_COLOR_ALPHA(FIELD)                                                                   \
-    memcpy(&vertices[i].FIELD, ((cvec4*)vp_col->values)[i], sizeof(cvec4));
+#define CLAMP(i, n) ((i) > (n - 1) ? (n - 1) : (i))
+
+#define PROP_LOOP          for (uint32_t i = 0; i < data.vertex_count; i++)
+#define PROP_GET(VP, TYPE) ((TYPE*)VP->values)[CLAMP(i, VP->value_count)]
+
+#define PROP_POS3D(FIELD)       memcpy(vertices[i].FIELD, PROP_GET(vp_pos, vec3), sizeof(vec3));
+#define PROP_COLOR_ALPHA(FIELD) memcpy(&vertices[i].FIELD, PROP_GET(vp_col, cvec4), sizeof(cvec4));
+// TODO: remove TYPE argument by uniformizing types of prop types
+#define PROP_SIZE(FIELD, TYPE) memcpy(&vertices[i].FIELD, &PROP_GET(vp_size, TYPE), sizeof(TYPE));
+#define PROP_SHAPE(FIELD, TYPE)                                                                   \
+    memcpy(&vertices[i].FIELD, &PROP_GET(vp_shape, TYPE), sizeof(TYPE));
+#define PROP_ANGLE(FIELD)                                                                         \
+    memcpy(&vertices[i].FIELD, &PROP_GET(vp_angle, uint8_t), sizeof(uint8_t));
 
 
 
@@ -708,6 +717,23 @@ static VkyData vky_marker_bake(VkyVisual* visual, VkyData data)
     return data;
 }
 
+static VkyData _marker_bake_props(VkyVisual* visual)
+{
+    PROP_START(VkyMarkersVertex)
+    VkyVisualProp* vp_size = vky_visual_prop_get(visual, VKY_VISUAL_PROP_SIZE, 0);
+    VkyVisualProp* vp_shape = vky_visual_prop_get(visual, VKY_VISUAL_PROP_SHAPE, 0);
+    VkyVisualProp* vp_angle = vky_visual_prop_get(visual, VKY_VISUAL_PROP_ANGLE, 0);
+    PROP_LOOP
+    {
+        PROP_POS3D(pos)
+        PROP_COLOR_ALPHA(color)
+        PROP_SIZE(size, VkyMarkerSize)
+        PROP_SHAPE(marker, uint8_t)
+        PROP_ANGLE(angle)
+    }
+    return data;
+}
+
 VkyVisual* vky_visual_marker(VkyScene* scene, const VkyMarkersParams* params)
 {
     VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_MARKER);
@@ -759,6 +785,14 @@ VkyVisual* vky_visual_marker(VkyScene* scene, const VkyMarkersParams* params)
     vky_add_common_resources(visual);
 
     visual->cb_bake_data = vky_marker_bake;
+
+    // Props.
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS);
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA);
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_SIZE);
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_SHAPE);
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_ANGLE);
+    visual->cb_bake_props = _marker_bake_props;
 
     return visual;
 }
