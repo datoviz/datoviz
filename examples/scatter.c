@@ -61,7 +61,6 @@ int main()
 
     // Set the panel controller.
     VkyAxes2DParams axparams = vky_default_axes_2D_params();
-    axparams.enable_panzoom = false;
 
     // Set the yscale.
     axparams.yscale.vmin = -25;
