@@ -71,7 +71,7 @@ VkyVisual* vky_visual_graph(VkyScene* scene, VkyGraphParams params)
     {{TO_BYTE(VKY_AXES_LIM_COLOR_R), TO_BYTE(VKY_AXES_LIM_COLOR_G),                               \
       TO_BYTE(VKY_AXES_LIM_COLOR_B)},                                                             \
      TO_BYTE(VKY_AXES_LIM_COLOR_A)},                                                              \
-        VKY_AXES_TICK_LINEWIDTH_LIM, VKY_CAP_SQUARE, VKY_CAP_SQUARE, true,
+        VKY_AXES_TICK_LINEWIDTH_LIM, VKY_CAP_SQUARE, VKY_CAP_SQUARE, VKY_TRANSFORM_MODE_STATIC,
 
 static VkyVisual* colorbar_visual(VkyScene* scene)
 {
@@ -195,7 +195,7 @@ static void colorbar_tick_upload(VkyVisual* text, VkyVisual* ticks, VkyColorbarP
             0,
             tick_len,
             cur_tick,
-            true,
+            VKY_TRANSFORM_MODE_STATIC,
         };
 
         // Tick segment.

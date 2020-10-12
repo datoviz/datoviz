@@ -274,7 +274,7 @@ static void add_label(VkyPanel* panel, VkyAxis axis, VkyAxes2DParams* params)
             0, // angle (horizontal)
             strlen(params->xlabel.label),
             params->xlabel.label,
-            true,
+            VKY_TRANSFORM_MODE_STATIC,
         };
         memcpy(text_data + i, &label_data, sizeof(VkyTextData));
         i++;
@@ -292,7 +292,7 @@ static void add_label(VkyPanel* panel, VkyAxis axis, VkyAxes2DParams* params)
             M_PI / 2,                 // angle (vertical)
             strlen(params->ylabel.label),
             params->ylabel.label,
-            true,
+            VKY_TRANSFORM_MODE_STATIC,
         };
         memcpy(text_data + i, &label_data, sizeof(VkyTextData));
         i++;
