@@ -281,6 +281,7 @@ static void set_test_case(VkyCanvas* canvas, uint32_t row, uint32_t col, TestCas
     VkyPanel* panel = vky_get_panel(canvas->scene, row, col);
     test_case.func(panel);
     vky_set_controller(panel, test_case.controller, test_case.controller_params);
+    vky_upload_pending_data(canvas);
 }
 
 

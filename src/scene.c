@@ -309,7 +309,7 @@ void vky_set_controller(VkyPanel* panel, VkyControllerType controller_type, cons
 {
     if (panel->controller_type == controller_type)
     {
-        log_debug("The controller type has been already set, skipping.");
+        log_debug("the controller type has been already set, skipping.");
         return;
     }
     /* NOTE: this function should ideally be called *after* all visuals have been added to the
@@ -1120,6 +1120,25 @@ VkyVisualProp* vky_visual_prop_add(VkyVisual* visual, VkyVisualPropType prop_typ
 {
     VkyVisualProp vp = {0};
     vp.type = prop_type;
+    switch (prop_type)
+    {
+    case VKY_VISUAL_PROP_POS2D:
+        vp.value_size = sizeof(dvec2);
+        break;
+    case VKY_VISUAL_PROP_POS:
+        vp.value_size = sizeof(vec3);
+        break;
+    case VKY_VISUAL_PROP_COLOR:
+        vp.value_size = sizeof(cvec3);
+        break;
+    case VKY_VISUAL_PROP_COLOR_ALPHA:
+        vp.value_size = sizeof(cvec4);
+        break;
+    // TODO: other types
+    default:
+        break;
+    }
+    ASSERT(vp.value_size > 0);
     visual->props[visual->prop_count] = vp;
     visual->prop_count++;
     return &visual->props[visual->prop_count - 1];
@@ -1176,9 +1195,16 @@ void vky_visual_data(
         return;
     }
     vp->value_count = value_count;
-    vp->values = values;
+
+    // WARNING: do a copy here to make sure the pointed memory buffer is still valid when uploading
+    // later.
+    size_t size = vp->value_count * vp->value_size;
+    vp->values = malloc(size);
+    memcpy(vp->values, values, size);
+
     // Tag the visual for data upload at the next frame.
     visual->need_data_upload = true;
+    visual->scene->canvas->need_data_upload = true;
 }
 
 void vky_visual_data_resource(

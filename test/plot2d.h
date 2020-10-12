@@ -8,12 +8,16 @@ static void mesh_raw(VkyPanel* panel)
 
     // Upload the data.
     float x = .5;
-    VkyVertex vertices[] = {
-        {{-x, -x, 0}, {{255, 0, 0}, 255}},  {{+x, -x, 0}, {{0, 255, 0}, 255}},
-        {{+x, x, 0}, {{0, 0, 255}, 255}},   {{+x, x, 0}, {{0, 0, 255}, 255}},
-        {{-x, x, 0}, {{255, 0, 255}, 255}}, {{-x, -x, 0}, {{255, 0, 0}, 255}},
+    const uint32_t n = 6;
+    vec3 positions[] = {
+        {-x, -x, 0}, {+x, -x, 0}, {+x, x, 0}, {+x, x, 0}, {-x, x, 0}, {-x, -x, 0},
     };
-    vky_visual_data_raw(visual, (VkyData){0, NULL, 6, vertices, 0, NULL});
+    cvec4 colors[] = {
+        {255, 0, 0, 255}, {0, 255, 0, 255},   {0, 0, 255, 255},
+        {0, 0, 255, 255}, {255, 0, 255, 255}, {255, 0, 0, 255},
+    };
+    vky_visual_data(visual, VKY_VISUAL_PROP_POS, 0, n, positions);
+    vky_visual_data(visual, VKY_VISUAL_PROP_COLOR_ALPHA, 0, n, colors);
 }
 
 static void scatter(VkyPanel* panel)

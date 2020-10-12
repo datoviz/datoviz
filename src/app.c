@@ -663,11 +663,11 @@ void vky_finish_event_states(VkyEventController* event_controller)
 }
 
 // Called at every frame.
-void vky_next_frame(VkyCanvas* canvas)
+void vky_upload_pending_data(VkyCanvas* canvas)
 {
-    // Upload the pending data for the visuals.
-    if (canvas->scene != NULL && canvas->scene->grid != NULL)
+    if (canvas->scene != NULL && canvas->scene->grid != NULL && canvas->need_data_upload)
     {
+        log_debug("upload pending data");
         VkyVisualPanel* vp = NULL;
         for (uint32_t i = 0; i < canvas->scene->grid->visual_panel_count; i++)
         {
@@ -678,7 +678,14 @@ void vky_next_frame(VkyCanvas* canvas)
                 vp->visual->need_data_upload = false;
             }
         }
+        canvas->need_data_upload = false;
     }
+}
+
+void vky_next_frame(VkyCanvas* canvas)
+{
+    // Upload the pending data for the visuals.
+    vky_upload_pending_data(canvas);
 
     VkyEventController* event_controller = canvas->event_controller;
 

@@ -222,6 +222,7 @@ struct VkyCanvas
 
     bool need_recreation;
     bool need_refill;
+    bool need_data_upload;
     bool to_close;
 };
 

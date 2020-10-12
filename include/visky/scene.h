@@ -296,6 +296,7 @@ struct VkyData
 struct VkyVisualProp
 {
     VkyVisualPropType type;
+    size_t value_size;
     uint32_t value_count;
     void* values;
     void* resource; // (only for the _RESOURCE prop types)

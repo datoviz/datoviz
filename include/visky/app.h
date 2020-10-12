@@ -379,6 +379,7 @@ VKY_EXPORT void vky_finish_event_states(VkyEventController* event_controller);
 // 3. submit the command buffers
 VKY_EXPORT void vky_next_frame(VkyCanvas*);
 
+void vky_upload_pending_data(VkyCanvas* canvas);
 
 
 #ifdef __cplusplus
