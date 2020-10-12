@@ -1,6 +1,25 @@
 #include "../include/visky/triangulation.h"
 
 
+/*************************************************************************************************/
+/*  Prop macros                                                                                  */
+/*************************************************************************************************/
+
+#define PROP_START(VERT_TYPE)                                                                     \
+    VkyData data = {0};                                                                           \
+    VkyVisualProp* vp_pos = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS, 0);                  \
+    VkyVisualProp* vp_col = vky_visual_prop_get(visual, VKY_VISUAL_PROP_COLOR_ALPHA, 0);          \
+    ASSERT(vp_pos->value_count == vp_col->value_count);                                           \
+    data.vertex_count = vp_pos->value_count;                                                      \
+    data.vertices = calloc(data.vertex_count, sizeof(VERT_TYPE));                                 \
+    VERT_TYPE* vertices = (VERT_TYPE*)data.vertices;
+
+#define PROP_LOOP         for (uint32_t i = 0; i < data.vertex_count; i++)
+#define PROP_POS3D(FIELD) memcpy(vertices[i].FIELD, ((vec3*)vp_pos->values)[i], sizeof(vec3));
+#define PROP_COLOR_ALPHA(FIELD)                                                                   \
+    memcpy(&vertices[i].FIELD, ((cvec4*)vp_col->values)[i], sizeof(cvec4));
+
+
 
 /*************************************************************************************************/
 /*  Graph visual                                                                                 */
@@ -1728,23 +1747,12 @@ void vky_visual_mesh_upload(VkyVisual* visual, const void* pixels)
 
 static VkyData _mesh_raw_bake_props(VkyVisual* visual)
 {
-    VkyData data = {0};
-    VkyVisualProp* vp_pos = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS, 0);
-    VkyVisualProp* vp_col = vky_visual_prop_get(visual, VKY_VISUAL_PROP_COLOR, 0);
-
-    ASSERT(vp_pos->value_count == vp_col->value_count);
-
-    data.vertex_count = vp_pos->value_count;
-    VkyVertex* vertices = calloc(data.vertex_count, sizeof(VkyVertex));
-
-    for (uint32_t i = 0; i < data.vertex_count; i++)
+    PROP_START(VkyVertex)
+    PROP_LOOP
     {
-        memcpy(vertices[i].pos, ((vec3*)vp_pos->values)[i], sizeof(vec3));
-        memcpy(vertices[i].color.rgb, ((cvec3*)vp_col->values)[i], sizeof(cvec3));
-        vertices[i].color.alpha = 255;
+        PROP_POS3D(pos)
+        PROP_COLOR_ALPHA(color)
     }
-
-    data.vertices = vertices;
     return data;
 }
 
@@ -1777,7 +1785,7 @@ VkyVisual* vky_visual_mesh_raw(VkyScene* scene)
 
     // Props.
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS);
-    vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR);
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA);
     visual->cb_bake_props = _mesh_raw_bake_props;
 
     return visual;

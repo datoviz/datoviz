@@ -27,9 +27,9 @@ int main()
     // Positions.
     vec3 positions[3] = {{-1, -1, 0}, {+1, -1, 0}, {0, +1, 0}};
     // Colors.
-    cvec3 colors[3] = {{255, 0, 0}, {0, 255, 0}, {0, 0, 255}};
+    cvec4 colors[3] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
     vky_visual_data(visual, VKY_VISUAL_PROP_POS, 0, 3, positions);
-    vky_visual_data(visual, VKY_VISUAL_PROP_COLOR, 0, 3, colors);
+    vky_visual_data(visual, VKY_VISUAL_PROP_COLOR_ALPHA, 0, 3, colors);
 #endif
 
     vky_run_app(app);
