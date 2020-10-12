@@ -30,7 +30,8 @@ void main() {
     float left = mvp.margins.w;
 
     // Discard top and right edges.
-    if (uv.y < top * .5 || uv.x > w - right * .2)
+    // NOTE: extra margin: 10, 30px
+    if (uv.y < top - 10.0 || uv.x > w - right + 30.0)
         discard;
 
     // Bottom-left corner: discard along the diagonal
