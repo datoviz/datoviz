@@ -93,7 +93,7 @@ int main()
     // Initialize the data.
     // NOTE: need to allocate on the heap as we may reach the maximum allocation size on the stack.
     int16_t* empty = calloc(vertex_count_per_path * path_count, sizeof(int16_t));
-    vky_visual_data(
+    vky_visual_data_raw(
         visual, (VkyData){vertex_count_per_path * path_count, empty, 0, NULL, 0, NULL});
     free(empty);
 

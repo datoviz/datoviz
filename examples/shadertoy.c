@@ -105,7 +105,7 @@ int main()
     vec3 data[6] = {
         {-1, -1, 0}, {+1, -1, 0}, {-1, +1, 0}, {-1, +1, 0}, {+1, -1, 0}, {+1, +1, 0},
     };
-    vky_visual_data(visual, (VkyData){6, data});
+    vky_visual_data_raw(visual, (VkyData){6, data});
 
     vky_add_frame_callback(canvas, callback);
     vky_run_app(app);

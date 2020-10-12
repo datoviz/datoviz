@@ -700,7 +700,7 @@ VKY_EXPORT void vky_allocate_index_buffer(VkyVisual* visual, VkDeviceSize size);
 VKY_EXPORT void vky_add_common_resources(VkyVisual*);
 VKY_EXPORT void vky_add_uniform_buffer_resource(VkyVisual* visual, VkyUniformBuffer* ubo);
 VKY_EXPORT void vky_add_texture_resource(VkyVisual* visual, VkyTexture* texture);
-VKY_EXPORT void vky_visual_data(VkyVisual* visual, VkyData data);
+VKY_EXPORT void vky_visual_data_raw(VkyVisual* visual, VkyData data);
 VKY_EXPORT void vky_visual_data_partial(VkyVisual* visual, uint32_t item_offset, VkyData data);
 VKY_EXPORT void vky_draw_visual(VkyVisual* visual, VkyPanel*, VkyViewportType viewport_type);
 VKY_EXPORT void vky_draw_all_visuals(VkyScene* scene);
@@ -711,7 +711,7 @@ VKY_EXPORT void vky_visual_add_child(VkyVisual* parent, VkyVisual* child);
 
 VKY_EXPORT VkyVisualProp* vky_visual_prop_add(VkyVisual*, VkyVisualPropType);
 VKY_EXPORT VkyVisualProp* vky_visual_prop_get(VkyVisual*, VkyVisualPropType, uint32_t prop_index);
-VKY_EXPORT void vky_visual_data_values(
+VKY_EXPORT void vky_visual_data(
     VkyVisual*, VkyVisualPropType, uint32_t prop_index, uint32_t value_count, const void* values);
 VKY_EXPORT void vky_visual_data_resource(VkyVisual*, VkyVisualPropType, uint32_t, void*);
 VKY_EXPORT void vky_visual_data_callback(

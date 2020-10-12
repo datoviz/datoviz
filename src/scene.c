@@ -302,7 +302,7 @@ static void add_label(VkyPanel* panel, VkyAxis axis, VkyAxes2DParams* params)
         break;
     }
 
-    vky_visual_data(label, (VkyData){i, text_data});
+    vky_visual_data_raw(label, (VkyData){i, text_data});
 }
 
 void vky_set_controller(VkyPanel* panel, VkyControllerType controller_type, const void* params)
@@ -906,7 +906,7 @@ void vky_set_color_context(VkyPanel* panel, VkyColormap cmap, uint8_t constant)
     panel->color_ctx[3] = 0; // NOTE: currently unused
 }
 
-void vky_visual_data(VkyVisual* visual, VkyData data)
+void vky_visual_data_raw(VkyVisual* visual, VkyData data)
 {
     // Bake the data and save the size and pointers of the baked vertex/index buffers into the
     // data struct.
@@ -1165,7 +1165,7 @@ vky_visual_prop_get(VkyVisual* visual, VkyVisualPropType prop_type, uint32_t pro
     return NULL;
 }
 
-void vky_visual_data_values(
+void vky_visual_data(
     VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index, //
     uint32_t value_count, const void* values)
 {
@@ -1237,7 +1237,7 @@ void vky_visual_data_bake(VkyVisual* visual, VkyPanel* panel)
     // Bake the data using the visual's props.
     // visual's item count = vp->value_count
     // VkyData data = visual->cb_bake_data(visual);
-    // vky_visual_data(visual, data);
+    // vky_visual_data_raw(visual, data);
 
     // Call the visual's children recursively.
     for (uint32_t i = 0; i < visual->children_count; i++)

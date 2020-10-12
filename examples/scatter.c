@@ -99,7 +99,7 @@ int main()
                 RAND_MARKER_SIZE, VKY_MARKER_ARROW, i % 256
         };
     }
-    vky_visual_data(visual, (VkyData){n, data});
+    vky_visual_data_raw(visual, (VkyData){n, data});
     free(data);
 
     vky_add_frame_callback(canvas, frame_callback);

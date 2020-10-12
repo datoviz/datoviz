@@ -13,7 +13,7 @@ static void mesh_raw(VkyPanel* panel)
         {{+x, x, 0}, {{0, 0, 255}, 255}},   {{+x, x, 0}, {{0, 0, 255}, 255}},
         {{-x, x, 0}, {{255, 0, 255}, 255}}, {{-x, -x, 0}, {{255, 0, 0}, 255}},
     };
-    vky_visual_data(visual, (VkyData){0, NULL, 6, vertices, 0, NULL});
+    vky_visual_data_raw(visual, (VkyData){0, NULL, 6, vertices, 0, NULL});
 }
 
 static void scatter(VkyPanel* panel)
@@ -35,7 +35,7 @@ static void scatter(VkyPanel* panel)
             VKY_MARKER_DISC,
             0};
     }
-    vky_visual_data(visual, (VkyData){n, data});
+    vky_visual_data_raw(visual, (VkyData){n, data});
     free(data);
 }
 
@@ -75,7 +75,7 @@ static void imshow(VkyPanel* panel)
         {0, 1},
         {1, 0},
     }};
-    vky_visual_data(visual, (VkyData){1, data});
+    vky_visual_data_raw(visual, (VkyData){1, data});
 
     // Upload the texture
     vky_visual_image_upload(visual, (uint8_t*)image);
@@ -105,7 +105,7 @@ static void arrows(VkyPanel* panel)
             5,
             VKY_ARROW_STEALTH};
     }
-    vky_visual_data(visual, (VkyData){n, data});
+    vky_visual_data_raw(visual, (VkyData){n, data});
 }
 
 static void paths(VkyPanel* panel)
@@ -141,7 +141,7 @@ static void paths(VkyPanel* panel)
     VkyPathData path1 = {n / 2, points, color, VKY_PATH_OPEN};
     VkyPathData path2 = {n / 2, points + (n / 2), color + (n / 2), VKY_PATH_OPEN};
     // paths is an array of VkyPathData, each item represent 1 path.
-    vky_visual_data(visual, (VkyData){2, (VkyPathData[]){path1, path2}});
+    vky_visual_data_raw(visual, (VkyData){2, (VkyPathData[]){path1, path2}});
 }
 
 static void segments(VkyPanel* panel)
@@ -167,7 +167,7 @@ static void segments(VkyPanel* panel)
         data[i].cap1 = VKY_CAP_ROUND;
         glm_vec4_copy((vec4){-100 + 200 * t, 0, -100 + 200 * t, 0}, data[i].shift);
     }
-    vky_visual_data(visual, (VkyData){n, data});
+    vky_visual_data_raw(visual, (VkyData){n, data});
 }
 
 static void text(VkyPanel* panel)
@@ -195,7 +195,7 @@ static void text(VkyPanel* panel)
             "Hello world!",
             false};
     }
-    vky_visual_data(visual, (VkyData){n, text});
+    vky_visual_data_raw(visual, (VkyData){n, text});
 }
 
 static void hist(VkyPanel* panel)
@@ -221,7 +221,7 @@ static void hist(VkyPanel* panel)
             vky_color(VKY_DEFAULT_COLORMAP, i, 0, n, 1),
         };
     }
-    vky_visual_data(visual, (VkyData){n, data});
+    vky_visual_data_raw(visual, (VkyData){n, data});
 }
 
 static void area(VkyPanel* panel)
@@ -252,7 +252,7 @@ static void area(VkyPanel* panel)
                 k};
         }
     }
-    vky_visual_data(visual, (VkyData){2 * n, data});
+    vky_visual_data_raw(visual, (VkyData){2 * n, data});
 }
 
 static void axrect(VkyPanel* panel)
@@ -279,7 +279,7 @@ static void axrect(VkyPanel* panel)
             ASSERT(2 * i + k < 2 * n);
         }
     }
-    vky_visual_data(visual, (VkyData){2 * n, data});
+    vky_visual_data_raw(visual, (VkyData){2 * n, data});
 }
 
 static void raster(VkyPanel* panel)
@@ -311,7 +311,7 @@ static void raster(VkyPanel* panel)
             count++;
         }
     }
-    vky_visual_data(visual, (VkyData){count, data});
+    vky_visual_data_raw(visual, (VkyData){count, data});
     free(data);
 }
 
@@ -422,7 +422,7 @@ static void image(VkyPanel* panel)
             };
         }
     }
-    vky_visual_data(visual, (VkyData){n, data});
+    vky_visual_data_raw(visual, (VkyData){n, data});
     free(data);
 
     // Upload the texture

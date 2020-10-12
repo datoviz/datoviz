@@ -38,7 +38,7 @@ static void mandelbrot(VkyPanel* panel)
     vec3 data[6] = {
         {-1, -1, 0}, {+1, -1, 0}, {-1, +1, 0}, {-1, +1, 0}, {+1, -1, 0}, {+1, +1, 0},
     };
-    vky_visual_data(visual, (VkyData){6, data});
+    vky_visual_data_raw(visual, (VkyData){6, data});
 }
 
 

@@ -59,7 +59,7 @@ static VkyVisual* _add_image(VkyPanel* panel, uint32_t width, uint32_t height, v
         {0, 1},
         {1, 0},
     }};
-    vky_visual_data(visual, (VkyData){1, data});
+    vky_visual_data_raw(visual, (VkyData){1, data});
     vky_visual_image_upload(visual, image);
     return visual;
 }
@@ -89,7 +89,7 @@ static void _set_top_lines(float x, float y)
          VKY_TRANSFORM_MODE_NORMAL},
 
     };
-    vky_visual_data(top_lines, (VkyData){2, data});
+    vky_visual_data_raw(top_lines, (VkyData){2, data});
 }
 
 
@@ -107,7 +107,7 @@ static void _update_v1(float u)
         {{+a, +a, 0}, {0, u, 0}}, //
 
     };
-    vky_visual_data(v1, (VkyData){0, NULL, 6, vertices, 0, NULL});
+    vky_visual_data_raw(v1, (VkyData){0, NULL, 6, vertices, 0, NULL});
 }
 
 
@@ -125,7 +125,7 @@ static void _update_v2(float u)
         {{+a, +a, 0}, {0, 0, u}}, //
 
     };
-    vky_visual_data(v2, (VkyData){0, NULL, 6, vertices, 0, NULL});
+    vky_visual_data_raw(v2, (VkyData){0, NULL, 6, vertices, 0, NULL});
 }
 
 
