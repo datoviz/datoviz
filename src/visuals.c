@@ -2,37 +2,6 @@
 
 
 /*************************************************************************************************/
-/*  Prop macros                                                                                  */
-/*************************************************************************************************/
-
-// #define PROP_START(VERT_TYPE)                                                                     \
-//     VkyData data = {0};                                                                           \
-//     VkyVisualProp* vp_pos = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS, 0);                  \
-//     VkyVisualProp* vp_col = vky_visual_prop_get(visual, VKY_VISUAL_PROP_COLOR_ALPHA, 0);          \
-//     ASSERT(vp_pos->value_count == vp_col->value_count);                                           \
-//     data->vertex_count = vp_pos->value_count;                                                      \
-//     data->vertices = calloc(data->vertex_count, sizeof(VERT_TYPE));                                 \
-//     VERT_TYPE* vertices = (VERT_TYPE*)data->vertices;
-
-#define CLAMP(i, n) ((i) > (n - 1) ? (n - 1) : (i))
-
-// #define PROP_LOOP          for (uint32_t i = 0; i < data->vertex_count; i++)
-// #define PROP_GET(VP, TYPE) ((TYPE*)VP->values)[CLAMP(i, VP->value_count)]
-
-// #define PROP_POS3D(FIELD)       memcpy(vertices[i].FIELD, PROP_GET(vp_pos, vec3), sizeof(vec3));
-// #define PROP_COLOR_ALPHA(FIELD) memcpy(&vertices[i].FIELD, PROP_GET(vp_col, cvec4),
-// sizeof(cvec4));
-// // TODO: remove TYPE argument by uniformizing types of prop types
-// #define PROP_SIZE(FIELD, TYPE) memcpy(&vertices[i].FIELD, &PROP_GET(vp_size, TYPE),
-// sizeof(TYPE));
-// #define PROP_SHAPE(FIELD, TYPE) \
-//     memcpy(&vertices[i].FIELD, &PROP_GET(vp_shape, TYPE), sizeof(TYPE));
-// #define PROP_ANGLE(FIELD) \
-//     memcpy(&vertices[i].FIELD, &PROP_GET(vp_angle, uint8_t), sizeof(uint8_t));
-
-
-
-/*************************************************************************************************/
 /*  Graph visual                                                                                 */
 /*************************************************************************************************/
 
@@ -807,14 +776,13 @@ VkyVisual* vky_visual_marker(VkyScene* scene, const VkyMarkersParams* params)
 
     visual->cb_bake_data = vky_marker_bake;
 
-    // TODO
-    // // Props.
-    // vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS);
-    // vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA);
-    // vky_visual_prop_add(visual, VKY_VISUAL_PROP_SIZE);
-    // vky_visual_prop_add(visual, VKY_VISUAL_PROP_SHAPE);
-    // vky_visual_prop_add(visual, VKY_VISUAL_PROP_ANGLE);
-    // visual->cb_bake_props = _marker_bake_props;
+    // Props.
+    vky_visual_prop_spec(visual, sizeof(VkyMarkersVertex));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyMarkersVertex, pos));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA, offsetof(VkyMarkersVertex, color));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_SIZE, offsetof(VkyMarkersVertex, size));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_SHAPE, offsetof(VkyMarkersVertex, marker));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_ANGLE, offsetof(VkyMarkersVertex, angle));
 
     return visual;
 }

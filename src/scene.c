@@ -1211,10 +1211,13 @@ static void _copy_prop_values(VkyVisual* visual, VkyVisualProp* vp)
     ASSERT(visual->data.items != NULL);
     int64_t out_byte = (int64_t)visual->data.items + offset;
 
-    for (uint32_t i = 0; i < vp->value_count; i++)
+    for (uint32_t i = 0; i < visual->data.item_count; i++)
     {
         memcpy((void*)out_byte, (const void*)in_byte, (size_t)item_size);
-        in_byte += item_size;
+        // NOTE: if there are less values in the prop than items, it will copy the last prop
+        // value on all remaining items.
+        if (i < vp->value_count)
+            in_byte += item_size;
         out_byte += out_stride;
     }
 }
