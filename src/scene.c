@@ -1139,7 +1139,7 @@ void vky_visual_data_raw(VkyVisual* visual)
 
 
 
-void vky_visual_prop_spec(VkyVisual* visual, size_t size) { visual->prop_size = size; }
+void vky_visual_prop_spec(VkyVisual* visual, size_t size) { visual->item_size = size; }
 
 
 VkyVisualProp* vky_visual_prop_add(VkyVisual* visual, VkyVisualPropType prop_type, size_t offset)
@@ -1204,7 +1204,7 @@ static void _copy_prop_values(VkyVisual* visual, VkyVisualProp* vp)
 {
     int64_t offset = (int64_t)vp->field_offset;
     int64_t item_size = (int64_t)vp->field_size;
-    int64_t out_stride = (int64_t)visual->prop_size;
+    int64_t out_stride = (int64_t)visual->item_size;
     ASSERT(offset >= 0);
     ASSERT(item_size > 0);
     ASSERT(out_stride > 0);
@@ -1243,7 +1243,7 @@ void vky_visual_data(
     if (visual->data.items == NULL)
     {
         ASSERT(value_count > 0);
-        visual->data.items = calloc(value_count, visual->prop_size);
+        visual->data.items = calloc(value_count, visual->item_size);
         visual->data.need_free_items = true;
         // NOTE: the size of data.items is determined by the size of the first call to
         // vky_visual_data
@@ -1256,19 +1256,19 @@ void vky_visual_data(
         // Here, the data.items array already exists, but it is too small. Need to recreate a new
         // array with the right size, and copy the old array to the new one.
         void* old_data_items = visual->data.items;
-        visual->data.items = calloc(value_count, visual->prop_size);
-        memcpy(visual->data.items, old_data_items, visual->data.item_count * visual->prop_size);
+        visual->data.items = calloc(value_count, visual->item_size);
+        memcpy(visual->data.items, old_data_items, visual->data.item_count * visual->item_size);
         free(old_data_items);
         // The extra space at the end of the current item array is empty, we need to feel it
         // with the existing values.
         {
             int64_t offset = (int64_t)visual->data.items +
-                             (int64_t)(visual->data.item_count * visual->prop_size);
+                             (int64_t)(visual->data.item_count * visual->item_size);
             for (uint32_t i = 0; i < value_count - visual->data.item_count; i++)
             {
                 memcpy(
-                    (void*)(offset + (int64_t)(i * visual->prop_size)), //
-                    (void*)(offset - (int64_t)visual->prop_size), visual->prop_size);
+                    (void*)(offset + (int64_t)(i * visual->item_size)), //
+                    (void*)(offset - (int64_t)visual->item_size), visual->item_size);
             }
         }
         visual->data.need_free_items = true;
@@ -1284,7 +1284,7 @@ void vky_visual_data(
     // offset and the struct's total size (since it is the last field of the struct).
     if (vp->field_size == 0)
     {
-        vp->field_size = visual->prop_size - vp->field_offset;
+        vp->field_size = visual->item_size - vp->field_offset;
     }
     ASSERT(vp->field_size > 0);
 

@@ -64,8 +64,6 @@ typedef enum
     VKY_ARROW_TRIANGLE_90 = 7,
 } VkyArrowType;
 
-typedef uint8_t VkyMarkerSize;
-
 
 
 /*************************************************************************************************/
@@ -216,7 +214,7 @@ struct VkyMarkersVertex
 {
     vec3 pos;
     VkyColor color;
-    VkyMarkerSize size;
+    float size;
     uint8_t
         marker; // in fact a VkyMarkerType but we should control the exact data type for the GPU
     uint8_t angle;

@@ -29,7 +29,6 @@ static void scatter(VkyPanel* panel)
 
     const uint32_t n0 = 11;
     const uint32_t n = n0 * n0;
-    // VkyMarkersVertex* data = calloc(n, sizeof(VkyMarkersVertex));
     vec3* positions = calloc(n, sizeof(vec3));
     VkyColor* colors = calloc(n, sizeof(VkyColor));
     for (uint32_t i = 0; i < n; i++)
@@ -40,7 +39,7 @@ static void scatter(VkyPanel* panel)
         colors[i] = vky_color(VKY_CMAP_JET, i % n0, 0, n0, .5 + .5 * rand_float());
     }
 
-    uint8_t size = 20;
+    float size = 20;
     VkyMarkerType marker = VKY_MARKER_DISC;
     uint8_t angle = 0;
 

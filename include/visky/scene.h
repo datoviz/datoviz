@@ -328,7 +328,7 @@ struct VkyVisual
     VkyBufferRegion vertex_buffer;
     VkyBufferRegion index_buffer;
 
-    size_t prop_size;    // size in bytes of the prop struct (corresponds to VkyData.items)
+    size_t item_size;    // size in bytes of the prop struct (corresponds to VkyData.items)
     uint32_t prop_count; // number of props/fields in the struct
     VkyVisualProp* props;
 

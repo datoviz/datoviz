@@ -707,23 +707,6 @@ static void vky_marker_bake(VkyVisual* visual)
     data->need_free_vertices = true;
 }
 
-// static VkyData _marker_bake_props(VkyVisual* visual)
-// {
-//     PROP_START(VkyMarkersVertex)
-//     VkyVisualProp* vp_size = vky_visual_prop_get(visual, VKY_VISUAL_PROP_SIZE, 0);
-//     VkyVisualProp* vp_shape = vky_visual_prop_get(visual, VKY_VISUAL_PROP_SHAPE, 0);
-//     VkyVisualProp* vp_angle = vky_visual_prop_get(visual, VKY_VISUAL_PROP_ANGLE, 0);
-//     PROP_LOOP
-//     {
-//         PROP_POS3D(pos)
-//         PROP_COLOR_ALPHA(color)
-//         PROP_SIZE(size, VkyMarkerSize)
-//         PROP_SHAPE(marker, uint8_t)
-//         PROP_ANGLE(angle)
-//     }
-//     return data;
-// }
-
 VkyVisual* vky_visual_marker(VkyScene* scene, const VkyMarkersParams* params)
 {
     VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_MARKER);
@@ -743,7 +726,7 @@ VkyVisual* vky_visual_marker(VkyScene* scene, const VkyMarkersParams* params)
     vky_add_vertex_attribute(
         &vertex_layout, 1, VKY_DEFAULT_VERTEX_FORMAT_COLOR, offsetof(VkyMarkersVertex, color));
     vky_add_vertex_attribute(
-        &vertex_layout, 2, VK_FORMAT_R8_UINT, offsetof(VkyMarkersVertex, size));
+        &vertex_layout, 2, VK_FORMAT_R32_SFLOAT, offsetof(VkyMarkersVertex, size));
     vky_add_vertex_attribute(
         &vertex_layout, 3, VK_FORMAT_R8_UINT, offsetof(VkyMarkersVertex, marker));
     vky_add_vertex_attribute(
