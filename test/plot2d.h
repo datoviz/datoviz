@@ -67,17 +67,7 @@ static void imshow(VkyPanel* panel)
     }
 
     vky_clear_color(panel->scene, VKY_CLEAR_COLOR_WHITE);
-    VkyTextureParams params = (VkyTextureParams){
-        size,
-        size,
-        1,
-        4,
-        VK_FORMAT_R8G8B8A8_UNORM,
-        VK_FILTER_NEAREST,
-        VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-        VK_IMAGE_LAYOUT_UNDEFINED,
-        false,
-    };
+    VkyTextureParams params = vky_default_texture_params(size, size, 1); // (VkyTextureParams){
     VkyVisual* visual = vky_visual(panel->scene, VKY_VISUAL_IMAGE, &params, NULL);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 

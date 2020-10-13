@@ -108,7 +108,7 @@ int main()
     // Second panel.
     VkyPanel* panel2 = vky_get_panel(scene, 0, 0);
 
-    axparams.xlabel.label[0] = 0;
+    // axparams.xlabel.label[0] = 0;
     // axparams.margins[2] = 100;
     // axparams.margins[3] = 100;
     // axparams.ylabel.label[0] = 0;
