@@ -87,7 +87,7 @@ def upload_data(visual, items=None, indices=None):
     else:
         data = T_DATA(
             0, None, len(items), array_pointer(items), len(indices), array_pointer(indices), False)
-    viskylib.vky_visual_upload(visual, data)
+    viskylib.vky_visual_data_raw(visual, data)
 
 
 # Constant helpers
@@ -179,7 +179,7 @@ wrap(viskylib.vky_set_panel_aspect_ratio, [T_VP, T_FLOAT])
 
 wrap(viskylib.vky_add_visual_to_panel, [T_VP, T_INT, T_INT])
 wrap(viskylib.vky_visual, [T_VP, T_INT, T_VP, T_VP], T_VP)
-wrap(viskylib.vky_visual_upload, [T_VP, T_DATA])
+wrap(viskylib.vky_visual_data_raw, [T_VP, T_DATA])
 
 wrap(viskylib.vky_get_axes, [T_VP], T_VP)
 wrap(viskylib.vky_axes_set_initial_range, [T_VP, tp.T_BOX2D])
