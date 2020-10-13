@@ -8,7 +8,9 @@ static void hello(VkyPanel* panel)
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
     VkyTextData data[1] = {
         {{0, 0, 0}, {0, 0}, {{255, 0, 0}, 255}, 30, {0, 0}, 0, 12, "Hello world!", false}};
-    vky_visual_data_raw(visual, (VkyData){1, data});
+    visual->data.item_count = 1;
+    visual->data.items = data;
+    vky_visual_data_raw(visual);
 }
 
 static void triangle(VkyPanel* panel)
@@ -54,5 +56,7 @@ static void triangle(VkyPanel* panel)
         {{+0, -1, 0}, {0, 0, 1, 1}},
     };
 
-    vky_visual_data_raw(visual, (VkyData){3, data});
+    visual->data.item_count = 3;
+    visual->data.items = data;
+    vky_visual_data_raw(visual);
 }

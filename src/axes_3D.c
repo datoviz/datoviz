@@ -11,30 +11,31 @@ END_INCL_NO_WARN
 /*  Axes 3D visual                                                                               */
 /*************************************************************************************************/
 
-static VkyData _axes_3D_bake(VkyVisual* visual, VkyData data)
+static void _axes_3D_bake(VkyVisual* visual)
 {
-    uint32_t nv = 4 * data.item_count;
-    uint32_t ni = 6 * data.item_count;
+    VkyData* data = &visual->data;
+    uint32_t nv = 4 * data->item_count;
+    uint32_t ni = 6 * data->item_count;
 
     ASSERT(nv > 0);
     ASSERT(ni > 0);
 
-    data.vertex_count = nv;
-    data.index_count = ni;
+    data->vertex_count = nv;
+    data->index_count = ni;
 
-    if (data.items == NULL)
+    if (data->items == NULL)
     {
-        return data;
+        return;
     }
 
     // Allocate the data buffer to be uploaded to the vertex buffer. Will be freed by visky.
     log_trace("allocating vertices and indices");
     VkyAxes3DVertex* vertices = calloc(nv, sizeof(VkyAxes3DVertex));
     VkyIndex* indices = calloc(ni, sizeof(VkyIndex));
-    const VkyAxes3DVertex* items = (const VkyAxes3DVertex*)data.items;
+    const VkyAxes3DVertex* items = (const VkyAxes3DVertex*)data->items;
     double dpi = visual->scene->canvas->dpi_factor;
 
-    for (uint32_t i = 0; i < data.item_count; i++)
+    for (uint32_t i = 0; i < data->item_count; i++)
     {
         for (uint32_t j = 0; j < 4; j++)
         {
@@ -58,10 +59,8 @@ static VkyData _axes_3D_bake(VkyVisual* visual, VkyData data)
         ASSERT(6 * i + 5 < ni);
     }
 
-    data.vertices = vertices;
-    data.indices = indices;
-
-    return data;
+    data->vertices = vertices;
+    data->indices = indices;
 }
 
 static VkyVisual* _axes_3D(VkyScene* scene)
@@ -113,19 +112,20 @@ static VkyVisual* _axes_3D(VkyScene* scene)
 /*  Axes 3D text visual                                                                          */
 /*************************************************************************************************/
 
-static VkyData _axes_3D_text_bake(VkyVisual* visual, VkyData data)
+static void _axes_3D_text_bake(VkyVisual* visual)
 {
+    VkyData* data = &visual->data;
 
-    ASSERT(data.items != NULL); // TODO: support allocation with no upload by specifying a max
-                                // number of glyphs per string
-    ASSERT(data.item_count > 0);
+    ASSERT(data->items != NULL); // TODO: support allocation with no upload by specifying a max
+                                 // number of glyphs per string
+    ASSERT(data->item_count > 0);
 
     // Input text as array of VkyAxes3DTextData.
-    const VkyAxes3DTextData* text = (const VkyAxes3DTextData*)data.items;
+    const VkyAxes3DTextData* text = (const VkyAxes3DTextData*)data->items;
 
     // Count the number of glyphs.
     uint32_t glyph_count = 0;
-    for (uint32_t i = 0; i < data.item_count; i++)
+    for (uint32_t i = 0; i < data->item_count; i++)
     { // vertex_count is the number of strings here
         glyph_count += text[i].string_len;
     }
@@ -133,16 +133,16 @@ static VkyData _axes_3D_text_bake(VkyVisual* visual, VkyData data)
     uint32_t nv = glyph_count;
     ASSERT(nv > 0);
 
-    data.vertex_count = nv * 4;
-    data.index_count = 0; // we don't use the index buffer
+    data->vertex_count = nv * 4;
+    data->index_count = 0; // we don't use the index buffer
 
     // Allocate the data buffer to be uploaded to the vertex buffer. Will be freed by visky.
-    VkyAxes3DTextVertex* vertices = calloc(data.vertex_count, sizeof(VkyAxes3DTextVertex));
+    VkyAxes3DTextVertex* vertices = calloc(data->vertex_count, sizeof(VkyAxes3DTextVertex));
 
     uint32_t k = 0;
     VkyAxes3DTextVertex vertex = {0};
     // Go through all strings.
-    for (uint32_t i = 0; i < data.item_count; i++)
+    for (uint32_t i = 0; i < data->item_count; i++)
     {
         uint32_t str_len = text[i].string_len;
         // For each string, go through the chars.
@@ -163,10 +163,8 @@ static VkyData _axes_3D_text_bake(VkyVisual* visual, VkyData data)
         }
     }
 
-    data.vertices = vertices;
-    data.indices = NULL;
-
-    return data;
+    data->vertices = vertices;
+    data->indices = NULL;
 }
 
 static VkyVisual* _axes_3D_text(VkyScene* scene)
@@ -255,7 +253,9 @@ static VkyVisual* _add_3D_axes(VkyScene* scene)
             }
         }
     }
-    vky_visual_data_raw(segment_visual, (VkyData){n, vertices});
+    segment_visual->data.item_count = n;
+    segment_visual->data.items = vertices;
+    vky_visual_data_raw(segment_visual);
 
     free(vertices);
     return segment_visual;
@@ -291,7 +291,9 @@ static VkyVisual* _add_3D_axes_text(VkyScene* scene)
             vertex->string_len = strlen(vertex->string);
         }
     }
-    vky_visual_data_raw(text_visual, (VkyData){n, text_vertices});
+    text_visual->data.item_count = n;
+    text_visual->data.items = text_vertices;
+    vky_visual_data_raw(text_visual);
     free(text_vertices);
 
     return text_visual;

@@ -70,29 +70,31 @@ static void _tick_formatter_y(VkyAxes* axes, double value, char* out_text)
 /*  Axes visuals                                                                                 */
 /*************************************************************************************************/
 
-static VkyData _tick_bake(VkyVisual* visual, VkyData data)
+static void _tick_bake(VkyVisual* visual)
 {
-    uint32_t nv = 4 * data.item_count;
-    uint32_t ni = 6 * data.item_count;
+    VkyData* data = &visual->data;
+
+    uint32_t nv = 4 * data->item_count;
+    uint32_t ni = 6 * data->item_count;
 
     ASSERT(nv > 0);
     ASSERT(ni > 0);
 
-    data.vertex_count = nv;
-    data.index_count = ni;
+    data->vertex_count = nv;
+    data->index_count = ni;
 
-    if (data.items == NULL)
+    if (data->items == NULL)
     {
-        return data;
+        return;
     }
 
     // Allocate the data buffer to be uploaded to the vertex buffer. Will be freed by visky.
     // log_trace("allocating vertices and indices");
     VkyAxesTickVertex* vertices = calloc(nv, sizeof(VkyAxesTickVertex));
     VkyIndex* indices = calloc(ni, sizeof(VkyIndex));
-    const VkyAxesTickVertex* items = (const VkyAxesTickVertex*)data.items;
+    const VkyAxesTickVertex* items = (const VkyAxesTickVertex*)data->items;
 
-    for (uint32_t i = 0; i < data.item_count; i++)
+    for (uint32_t i = 0; i < data->item_count; i++)
     {
         for (uint32_t j = 0; j < 4; j++)
         {
@@ -111,10 +113,8 @@ static VkyData _tick_bake(VkyVisual* visual, VkyData data)
         ASSERT(6 * i + 5 < ni);
     }
 
-    data.vertices = vertices;
-    data.indices = indices;
-
-    return data;
+    data->vertices = vertices;
+    data->indices = indices;
 }
 
 
@@ -281,19 +281,20 @@ void vky_axes_set_text_params(VkyAxes* axes)
 }
 
 
-static VkyData _text_bake(VkyVisual* visual, VkyData data)
+static void _text_bake(VkyVisual* visual)
 {
+    VkyData* data = &visual->data;
 
-    ASSERT(data.items != NULL); // TODO: support allocation with no upload by specifying a max
-                                // number of glyphs per string
-    ASSERT(data.item_count > 0);
+    ASSERT(data->items != NULL); // TODO: support allocation with no upload by specifying a max
+                                 // number of glyphs per string
+    ASSERT(data->item_count > 0);
 
     // Input text as array of VkyAxesTextData.
-    const VkyAxesTextData* text = (const VkyAxesTextData*)data.items;
+    const VkyAxesTextData* text = (const VkyAxesTextData*)data->items;
 
     // Count the number of glyphs.
     uint32_t glyph_count = 0;
-    for (uint32_t i = 0; i < data.item_count; i++)
+    for (uint32_t i = 0; i < data->item_count; i++)
     { // vertex_count is the number of strings here
         glyph_count += text[i].string_len;
     }
@@ -301,16 +302,16 @@ static VkyData _text_bake(VkyVisual* visual, VkyData data)
     uint32_t nv = glyph_count;
     ASSERT(nv > 0);
 
-    data.vertex_count = nv * 4;
-    data.index_count = 0; // we don't use the index buffer
+    data->vertex_count = nv * 4;
+    data->index_count = 0; // we don't use the index buffer
 
     // Allocate the data buffer to be uploaded to the vertex buffer. Will be freed by visky.
-    VkyAxesTextVertex* vertices = calloc(data.vertex_count, sizeof(VkyAxesTextVertex));
+    VkyAxesTextVertex* vertices = calloc(data->vertex_count, sizeof(VkyAxesTextVertex));
 
     uint32_t k = 0;
     VkyAxesTextVertex vertex = {0};
     // Go through all strings.
-    for (uint32_t i = 0; i < data.item_count; i++)
+    for (uint32_t i = 0; i < data->item_count; i++)
     {
         uint32_t str_len = text[i].string_len;
         // Compute the anchor to align with the dot.
@@ -335,10 +336,8 @@ static VkyData _text_bake(VkyVisual* visual, VkyData data)
         }
     }
 
-    data.vertices = vertices;
-    data.indices = NULL;
-
-    return data;
+    data->vertices = vertices;
+    data->indices = NULL;
 }
 
 
@@ -838,10 +837,14 @@ void vky_axes_update_visuals(VkyAxes* axes)
     ASSERT(VKY_AXES_MAX_VERTICES >= vertex_count);
 
     // log_trace("update axes visual %d", vertex_count);
-    vky_visual_data_raw(axes->tick_visual, (VkyData){vertex_count, axes->tick_data});
+    axes->tick_visual->data.item_count = vertex_count;
+    axes->tick_visual->data.items = axes->tick_data;
+    vky_visual_data_raw(axes->tick_visual);
 
     // log_trace("update axes text visual %d", text_vertex_count);
-    vky_visual_data_raw(axes->text_visual, (VkyData){text_vertex_count, axes->text_data});
+    axes->text_visual->data.item_count = text_vertex_count;
+    axes->text_visual->data.items = axes->text_data;
+    vky_visual_data_raw(axes->text_visual);
 }
 
 

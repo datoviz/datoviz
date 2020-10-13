@@ -33,7 +33,9 @@ static void compute_image(VkyPanel* panel)
 
     // Square.
     VkyImageData data = {{-1, +1, 0}, {+1, -1, 0}, {0, 0}, {1, 1}};
-    vky_visual_data_raw(visual, (VkyData){1, (VkyImageData[]){data}});
+    visual->data.item_count = 1;
+    visual->data.items = (VkyImageData[]){data};
+    vky_visual_data_raw(visual);
 
     // Color texture.
     int width, height, depth;

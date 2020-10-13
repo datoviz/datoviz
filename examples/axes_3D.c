@@ -65,7 +65,9 @@ static void spiral(VkyPanel* panel)
         color[i] = vky_color(VKY_CMAP_JET, i, 0, N_path, 1);
     }
     VkyPathData path = {N_path, points, color, VKY_PATH_OPEN};
-    vky_visual_data_raw(spiral_visual, (VkyData){1, (VkyPathData[]){path}});
+    spiral_visual->data.item_count = 1;
+    spiral_visual->data.items = (VkyPathData[]){path};
+    vky_visual_data_raw(spiral_visual);
 }
 
 

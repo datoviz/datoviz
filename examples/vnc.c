@@ -116,7 +116,9 @@ int main()
         {{+x, -x, 0}, {{0, 255, 0}, 255}},
         {{0, x, 0}, {{0, 0, 255}, 255}},
     };
-    vky_visual_data_raw(visual, (VkyData){0, NULL, 3, vertices, 0, NULL});
+    visual->data.vertex_count = 3;
+    visual->data.vertices = vertices;
+    vky_visual_data_raw(visual);
 
 #if HAS_VNC
     run_vnc(canvas);

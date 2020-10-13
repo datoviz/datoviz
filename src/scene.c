@@ -302,7 +302,9 @@ static void add_label(VkyPanel* panel, VkyAxis axis, VkyAxes2DParams* params)
         break;
     }
 
-    vky_visual_data_raw(label, (VkyData){i, text_data});
+    label->data.item_count = i;
+    label->data.items = text_data;
+    vky_visual_data_raw(label);
 }
 
 void vky_set_controller(VkyPanel* panel, VkyControllerType controller_type, const void* params)
@@ -906,164 +908,50 @@ void vky_set_color_context(VkyPanel* panel, VkyColormap cmap, uint8_t constant)
     panel->color_ctx[3] = 0; // NOTE: currently unused
 }
 
-void vky_visual_data_raw(VkyVisual* visual, VkyData data)
-{
-    // Bake the data and save the size and pointers of the baked vertex/index buffers into the
-    // data struct.
-    ASSERT(visual != NULL);
+// TODO:
+// void vky_visual_data_partial(VkyVisual* visual, uint32_t item_offset, VkyData data)
+// {
+//     // Bake the data and save the size and pointers of the baked vertex/index buffers into the
+//     // data struct.
 
-    // Determine whether the visual has a baking process.
-    bool has_bake = visual->cb_bake_data != NULL;
+//     // Determine whether the visual has a baking process.
+//     // log_trace("upload partial");
+//     bool has_bake = visual->cb_bake_data != NULL;
+//     uint32_t vertex_count = 0;
+//     void* vertices = NULL;
 
-    if (data.vertex_count == 0 || data.vertices == NULL)
-    {
-        // NOTE: if no vertices but no baking, we assume the items pass through to vertices
-        if (!has_bake)
-        {
-            log_trace("pass through vertex data");
-            data.vertex_count = data.item_count;
-            data.vertices = data.items;
-        }
-        else
-        {
-            // log_trace("bake vertex data");
-            // NOTE: the cb_bake_data callback function must malloc() the arrays with the
-            // vertices and indices. They will be freed at the end of the present function.
-            data = visual->data = visual->cb_bake_data(visual, data);
-        }
-    }
-    ASSERT(data.vertex_count > 0);
-    bool has_indices = data.index_count > 0;
+//     if (!has_bake)
+//     {
+//         // NOTE: if no vertices but no baking, we assume the items pass through to vertices
+//         vertex_count = data.item_count;
+//         vertices = data.items;
+//     }
+//     else
+//     {
+//         // NOTE: the cb_bake_data callback function must malloc() the arrays with the
+//         // vertices and indices. They will be freed at the end of the present function.
+//         data = visual->cb_bake_data(visual, data);
+//         vertex_count = data.vertex_count;
+//         vertices = data.vertices;
+//     }
+//     ASSERT(vertex_count > 0);
+//     ASSERT(vertices != NULL);
 
-    // Allocation of the vertex and index buffers if needed.
-    VkDeviceSize vertex_size = visual->pipeline.vertex_layout.stride;
-    ASSERT(vertex_size > 0);
-    VkDeviceSize vbuf_size = data.vertex_count * vertex_size;
+//     // Find the offset and size in the vertex buffer.
+//     VkDeviceSize vertex_size = visual->pipeline.vertex_layout.stride;
+//     ASSERT(vertex_size > 0);
+//     VkDeviceSize vbuf_size = data.vertex_count * vertex_size;
+//     VkDeviceSize vertex_offset = item_offset * vertex_size;
 
-    // Create vertex buffer if the user didn't already do it.
-    if (visual->vertex_buffer.size == 0)
-    {
-        ASSERT(data.vertex_count > 0);
-        // Reuse an existing vertex buffer if one sufficiently large exists, or create a new
-        // one.
-        VkyBuffer* buffer = vky_find_buffer(
-            visual->scene->canvas->gpu, vbuf_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-        ASSERT(buffer != NULL);
-        visual->vertex_buffer = vky_allocate_buffer(buffer, vbuf_size);
-    }
-    ASSERT(visual->vertex_buffer.buffer != NULL);
+//     vky_upload_buffer(visual->vertex_buffer, vertex_offset, vbuf_size, data.vertices);
+//     // NOT IMPLEMENTED YET: update the index buffer with new indices.
 
-    // Create index buffer if the user didn't already do it.
-    if (has_indices && visual->index_buffer.size == 0)
-    {
-        VkDeviceSize ibuf_size = data.index_count * sizeof(VkyIndex);
-        // Reuse an existing vertex buffer if one sufficiently large exists, or create a new
-        // one.
-        VkyBuffer* buffer = vky_find_buffer(
-            visual->scene->canvas->gpu, ibuf_size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
-        ASSERT(buffer != NULL);
-        visual->index_buffer = vky_allocate_buffer(buffer, ibuf_size);
-    }
-    ASSERT(!has_indices || visual->index_buffer.buffer != NULL);
-
-    // Check that the buffers are large enough.
-    ASSERT(visual->vertex_buffer.size >= vbuf_size);
-    ASSERT(!has_indices || visual->index_buffer.size >= data.index_count * sizeof(VkyIndex));
-
-    // Upload the data if data was provided.
-    if (data.vertices != NULL)
-    {
-        vky_upload_buffer(visual->vertex_buffer, 0, vbuf_size, data.vertices);
-    }
-    if (has_indices && data.indices != NULL)
-    {
-        vky_upload_buffer(
-            visual->index_buffer, 0, data.index_count * sizeof(VkyIndex), data.indices);
-    }
-
-    // Indirect draw call.
-    if (!has_indices)
-    {
-        // TODO: customizable offsets
-        ASSERT(data.vertex_count > 0);
-        // log_trace("upload indirect draw data %d", data.vertex_count);
-        VkDrawIndirectCommand ind = (VkDrawIndirectCommand){data.vertex_count, 1, 0, 0};
-        visual->indirect_item_count = data.vertex_count;
-        vky_upload_buffer(visual->indirect_buffer, 0, sizeof(ind), &ind);
-    }
-    else
-    {
-        ASSERT(data.index_count > 0);
-        // log_trace("upload indirect indexed draw data %d", data.index_count);
-        VkDrawIndexedIndirectCommand ind = {data.index_count, 1, 0, 0, 0};
-        visual->indirect_item_count = data.index_count;
-        vky_upload_buffer(visual->indirect_buffer, 0, sizeof(ind), &ind);
-    }
-
-    // Free the allocated buffers.
-    if (has_bake)
-    {
-        if (data.vertices != NULL && !data.no_vertices_alloc)
-        {
-            log_trace("freeing data.vertices");
-            free(data.vertices);
-            data.vertices = NULL;
-        }
-        if (data.indices != NULL)
-        {
-            log_trace("freeing data.indices");
-            free(data.indices);
-            data.indices = NULL;
-        }
-    }
-
-    // Update the visual's data structure.
-    visual->data = data;
-}
-
-void vky_visual_data_partial(VkyVisual* visual, uint32_t item_offset, VkyData data)
-{
-    // Bake the data and save the size and pointers of the baked vertex/index buffers into the
-    // data struct.
-
-    // Determine whether the visual has a baking process.
-    // log_trace("upload partial");
-    bool has_bake = visual->cb_bake_data != NULL;
-    uint32_t vertex_count = 0;
-    void* vertices = NULL;
-
-    if (!has_bake)
-    {
-        // NOTE: if no vertices but no baking, we assume the items pass through to vertices
-        vertex_count = data.item_count;
-        vertices = data.items;
-    }
-    else
-    {
-        // NOTE: the cb_bake_data callback function must malloc() the arrays with the
-        // vertices and indices. They will be freed at the end of the present function.
-        data = visual->cb_bake_data(visual, data);
-        vertex_count = data.vertex_count;
-        vertices = data.vertices;
-    }
-    ASSERT(vertex_count > 0);
-    ASSERT(vertices != NULL);
-
-    // Find the offset and size in the vertex buffer.
-    VkDeviceSize vertex_size = visual->pipeline.vertex_layout.stride;
-    ASSERT(vertex_size > 0);
-    VkDeviceSize vbuf_size = data.vertex_count * vertex_size;
-    VkDeviceSize vertex_offset = item_offset * vertex_size;
-
-    vky_upload_buffer(visual->vertex_buffer, vertex_offset, vbuf_size, data.vertices);
-    // NOT IMPLEMENTED YET: update the index buffer with new indices.
-
-    // Free the allocated buffers.
-    if (has_bake)
-    {
-        free(vertices);
-    }
-}
+//     // Free the allocated buffers.
+//     if (has_bake)
+//     {
+//         free(vertices);
+//     }
+// }
 
 void vky_toggle_visual_visibility(VkyVisual* visual, bool is_visible)
 {
@@ -1085,9 +973,9 @@ void vky_toggle_visual_visibility(VkyVisual* visual, bool is_visible)
 
 void vky_destroy_visual(VkyVisual* visual)
 {
+    log_trace("destroy visual");
     if (visual->visual_type != VKY_VISUAL_EMPTY)
     {
-        log_trace("destroy visual");
         vky_destroy_uniform_buffer(&visual->params_buffer);
         vky_destroy_vertex_layout(&visual->pipeline.vertex_layout);
         vky_destroy_resource_layout(&visual->pipeline.resource_layout);
@@ -1095,10 +983,18 @@ void vky_destroy_visual(VkyVisual* visual)
         vky_destroy_graphics_pipeline(&visual->pipeline);
     }
 
-    for (uint32_t i = 0; i < visual->prop_count; i++)
+    // for (uint32_t i = 0; i < visual->prop_count; i++)
+    // {
+    //     if (visual->props[i].values != NULL)
+    //         free(visual->props[i].values);
+    // }
+
+    // This array is kept in memory for the duration of the visual.
+    if (visual->data.items != NULL)
     {
-        if (visual->props[i].values != NULL)
-            free(visual->props[i].values);
+        log_trace("destroy visual's data.items");
+        free(visual->data.items);
+        visual->data.items = NULL;
     }
 
     free(visual->props);
@@ -1111,54 +1007,166 @@ void vky_destroy_visual(VkyVisual* visual)
     visual->params = NULL;
 }
 
-void vky_free_data(VkyData data)
+
+
+/*************************************************************************************************/
+/*  Visual data and props                                                                        */
+/*************************************************************************************************/
+
+static void _bake(VkyVisual* visual)
 {
-    if (data.vertices != NULL)
-        free(data.vertices);
-    if (data.indices != NULL)
-        free(data.indices);
-    data.vertices = data.indices = NULL;
+    ASSERT(visual != NULL);
+    VkyData* data = &visual->data;
+    ASSERT(visual->cb_bake_data != NULL);
+    ASSERT(data->item_count > 0);
+    ASSERT(data->items != NULL);
+    ASSERT(data->vertex_count == 0);
+    ASSERT(data->vertices == NULL);
+
+    // This call fills the vertices and possibly indices.
+    visual->cb_bake_data(visual);
+    ASSERT(data->vertex_count > 0);
+    ASSERT(data->vertices != NULL);
+}
+
+void vky_visual_data_raw(VkyVisual* visual)
+{
+    // Bake the data and save the size and pointers of the baked vertex/index buffers into the
+    // data struct.
+    ASSERT(visual != NULL);
+    VkyData* data = &visual->data;
+
+    // Determine whether the visual has a baking process.
+    bool has_bake = visual->cb_bake_data != NULL;
+    bool has_items = data->item_count > 0 && data->items != NULL;
+    bool has_vertices = data->vertex_count > 0 && data->vertices != NULL;
+    bool has_indices = data->index_count > 0 && data->indices != NULL;
+    bool need_to_free_vertices = false;
+    bool need_to_free_indices = false;
+
+    // Bake the data from VkyData.items if there are no vertices yet.
+    if (!has_vertices)
+    {
+        if (has_bake)
+        {
+            ASSERT(has_items);
+            _bake(visual);
+            need_to_free_vertices = !visual->data.no_vertices_alloc;
+        }
+        else
+        {
+            // If there is no baking function, we assume the data.items array goes straight
+            // to the GPU.
+            data->vertex_count = data->item_count;
+            data->vertices = data->items;
+            need_to_free_vertices = false;
+        }
+    }
+    // At this point, the vertices have been allocated and set.
+    has_vertices = data->vertex_count > 0 && data->vertices != NULL;
+    // Need to free the indices if they were created during the baking.
+    if (!has_indices && (data->index_count > 0 && data->indices != NULL))
+        need_to_free_indices = true;
+    has_indices = data->index_count > 0 && data->indices != NULL;
+    ASSERT(has_vertices);
+
+    // Allocation of the vertex and index buffers if needed.
+    VkDeviceSize vertex_size = visual->pipeline.vertex_layout.stride;
+    ASSERT(vertex_size > 0);
+    VkDeviceSize vbuf_size = data->vertex_count * vertex_size;
+
+    // Create vertex buffer if the user didn't already do it.
+    if (visual->vertex_buffer.size == 0)
+    {
+        ASSERT(data->vertex_count > 0);
+        // Reuse an existing vertex buffer if one sufficiently large exists, or create a new
+        // one.
+        VkyBuffer* buffer = vky_find_buffer(
+            visual->scene->canvas->gpu, vbuf_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+        ASSERT(buffer != NULL);
+        visual->vertex_buffer = vky_allocate_buffer(buffer, vbuf_size);
+    }
+    ASSERT(visual->vertex_buffer.buffer != NULL);
+
+    // Create index buffer if the user didn't already do it.
+    if (has_indices && visual->index_buffer.size == 0)
+    {
+        VkDeviceSize ibuf_size = data->index_count * sizeof(VkyIndex);
+        // Reuse an existing vertex buffer if one sufficiently large exists, or create a new
+        // one.
+        VkyBuffer* buffer = vky_find_buffer(
+            visual->scene->canvas->gpu, ibuf_size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+        ASSERT(buffer != NULL);
+        visual->index_buffer = vky_allocate_buffer(buffer, ibuf_size);
+    }
+    ASSERT(!has_indices || visual->index_buffer.buffer != NULL);
+
+    // Check that the buffers are large enough.
+    ASSERT(visual->vertex_buffer.size >= vbuf_size);
+    ASSERT(!has_indices || visual->index_buffer.size >= data->index_count * sizeof(VkyIndex));
+
+    // Upload the vertices.
+    vky_upload_buffer(visual->vertex_buffer, 0, vbuf_size, data->vertices);
+
+    // Upload the indices, if any.
+    if (has_indices)
+        vky_upload_buffer(
+            visual->index_buffer, 0, data->index_count * sizeof(VkyIndex), data->indices);
+
+    // Indirect draw call.
+    if (!has_indices)
+    {
+        // TODO: customizable offsets
+        ASSERT(data->vertex_count > 0);
+        VkDrawIndirectCommand ind = (VkDrawIndirectCommand){data->vertex_count, 1, 0, 0};
+        visual->indirect_item_count = data->vertex_count;
+        vky_upload_buffer(visual->indirect_buffer, 0, sizeof(ind), &ind);
+    }
+    else
+    {
+        ASSERT(data->index_count > 0);
+        // log_trace("upload indirect indexed draw data %d", data->index_count);
+        VkDrawIndexedIndirectCommand ind = {data->index_count, 1, 0, 0, 0};
+        visual->indirect_item_count = data->index_count;
+        vky_upload_buffer(visual->indirect_buffer, 0, sizeof(ind), &ind);
+    }
+
+    // Free the allocated buffers.
+    if (need_to_free_vertices)
+    {
+        log_trace("freeing data->vertices");
+        free(data->vertices);
+        data->vertices = NULL;
+    }
+    if (need_to_free_indices)
+    {
+        log_trace("freeing data->indices");
+        free(data->indices);
+        data->indices = NULL;
+    }
 }
 
 
 
-VkyVisualProp* vky_visual_prop_add(VkyVisual* visual, VkyVisualPropType prop_type)
+void vky_visual_prop_spec(VkyVisual* visual, size_t size) { visual->prop_size = size; }
+
+
+VkyVisualProp* vky_visual_prop_add(VkyVisual* visual, VkyVisualPropType prop_type, size_t offset)
 {
     VkyVisualProp vp = {0};
     vp.type = prop_type;
-    switch (prop_type)
-    {
-    case VKY_VISUAL_PROP_POS2D:
-        vp.value_size = sizeof(dvec2);
-        break;
-    case VKY_VISUAL_PROP_POS:
-        vp.value_size = sizeof(vec3);
-        break;
-    case VKY_VISUAL_PROP_COLOR:
-        vp.value_size = sizeof(cvec3);
-        break;
-    case VKY_VISUAL_PROP_COLOR_ALPHA:
-        vp.value_size = sizeof(cvec4);
-        break;
-    case VKY_VISUAL_PROP_SIZE:
-        vp.value_size = sizeof(uint8_t);
-        break;
-    case VKY_VISUAL_PROP_SHAPE:
-        vp.value_size = sizeof(uint8_t);
-        break;
-    case VKY_VISUAL_PROP_ANGLE:
-        vp.value_size = sizeof(uint8_t);
-        break;
-    // TODO: other types
-    default:
-        log_error("prop type %d not yet implemented", prop_type);
-        break;
-    }
-    ASSERT(vp.value_size > 0);
+    vp.field_offset = offset;
     visual->props[visual->prop_count] = vp;
+    // Update the previous prop size depending on the current prop offset.
+    if (visual->prop_count > 0)
+    {
+        visual->props[visual->prop_count - 1].field_size =
+            offset - visual->props[visual->prop_count - 1].field_offset;
+    }
     visual->prop_count++;
     return &visual->props[visual->prop_count - 1];
 }
+
 
 VkyVisualProp*
 vky_visual_prop_get(VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index)
@@ -1200,24 +1208,71 @@ vky_visual_prop_get(VkyVisual* visual, VkyVisualPropType prop_type, uint32_t pro
     return NULL;
 }
 
+
+static void _copy_prop_values(VkyVisual* visual, VkyVisualProp* vp)
+{
+    int64_t offset = (int64_t)vp->field_offset;
+    int64_t item_size = (int64_t)vp->field_size;
+    int64_t out_stride = (int64_t)visual->prop_size;
+
+    int64_t in_byte = (int64_t)vp->values;
+    ASSERT(in_byte != 0);
+    ASSERT(visual->data.items != NULL);
+    int64_t out_byte = (int64_t)visual->data.items + offset;
+
+    for (uint32_t i = 0; i < vp->value_count; i++)
+    {
+        memcpy((void*)out_byte, (const void*)in_byte, (size_t)item_size);
+        in_byte += item_size;
+        out_byte += out_stride;
+    }
+}
+
+
+
 void vky_visual_data(
     VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index, //
     uint32_t value_count, void* values)
 {
+    // Get the visual prop object.
     VkyVisualProp* vp = vky_visual_prop_get(visual, prop_type, prop_index);
     if (vp == NULL)
     {
         log_error("could not find visual prop %d", prop_type);
         return;
     }
-    vp->value_count = value_count;
 
-    // WARNING: do a copy here to make sure the pointed memory buffer is still valid when uploading
-    // later.
-    size_t size = vp->value_count * vp->value_size;
-    vp->values = calloc(vp->value_count, vp->value_size);
-    memcpy(vp->values, values, size);
-    // vp->values = values;
+    // Allocate the VkyData.items array if needed.
+    if (visual->data.items == NULL)
+    {
+        ASSERT(value_count > 0);
+        visual->data.items = calloc(value_count, visual->prop_size);
+        visual->data.item_count = value_count;
+    }
+    else if (visual->data.items != NULL && value_count > visual->data.item_count)
+    {
+        // Here, the data.items array already exists, but it is too small. Need to recreate it
+        // with the right size.
+        free(visual->data.items);
+        visual->data.items = calloc(value_count, visual->prop_size);
+        visual->data.item_count = value_count;
+    }
+    ASSERT(visual->data.items != NULL);
+    // Now we can assume data.items is allocated and has at least value_count items.
+
+    vp->value_count = value_count;
+    vp->values = values;
+
+    // HACK: the first time the last prop is accessed, we need to update its field size, given its
+    // offset and the struct's total size (since it is the last field of the struct).
+    if (vp->field_size == 0)
+    {
+        vp->field_size = visual->prop_size - vp->field_offset;
+    }
+    ASSERT(vp->field_size > 0);
+
+    // Copy the prop array into the structured array.
+    _copy_prop_values(visual, vp);
 
     // Tag the visual for data upload at the next frame.
     visual->need_data_upload = true;
@@ -1225,8 +1280,7 @@ void vky_visual_data(
 }
 
 void vky_visual_data_resource(
-    VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index, //
-    void* resource)
+    VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index, void* resource)
 {
     VkyVisualProp* vp = vky_visual_prop_get(visual, prop_type, prop_index);
     vp->resource = resource;
@@ -1240,14 +1294,10 @@ void vky_visual_data_callback(
     vp->callback = callback;
 }
 
+
+
 void vky_visual_data_upload(VkyVisual* visual, VkyPanel* panel)
 {
-    if (visual->cb_bake_props == NULL)
-    {
-        log_warn("visual does not support visual prop API, you need to use vky_visual_data_raw()");
-        return;
-    }
-
     VkyVisualProp* vp = NULL;
 
     // call the callbacks and ensure the prop's values are all set.
@@ -1290,16 +1340,28 @@ void vky_visual_data_upload(VkyVisual* visual, VkyPanel* panel)
     vp = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS, 0);
     ASSERT(vp != NULL);
 
-    // TODO:
-    // Bake the data using the visual's props.
-    VkyData data = visual->cb_bake_props(visual);
-    vky_visual_data_raw(visual, data);
+    // The VkyData.items array is kept up to date in vky_visual_data(), called by the user.
+    // Here, we send it to the visual's bake callback, which creates the vertices and indices
+    // and sends them to the GPU.
+    vky_visual_data_raw(visual);
 
     // Call the visual's children recursively.
     for (uint32_t i = 0; i < visual->children_count; i++)
     {
         vky_visual_data_upload(visual->children[i], panel);
     }
+}
+
+
+void vky_free_data(VkyData data)
+{
+    if (data.items != NULL)
+        free(data.items);
+    if (data.vertices != NULL)
+        free(data.vertices);
+    if (data.indices != NULL)
+        free(data.indices);
+    data.items = data.vertices = data.indices = NULL;
 }
 
 

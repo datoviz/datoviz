@@ -48,7 +48,9 @@ int main()
         y = -1 + 2 * (depths[i] - dminmax.x) / (dminmax.y - dminmax.x);
         data[i] = (VkyVertex){{x, y, 0}, {{0, 0, 0}, 4}};
     }
-    vky_visual_data_raw(visual, (VkyData){n, data});
+    visual->data.item_count = n;
+    visual->data.items = data;
+    vky_visual_data_raw(visual);
     free(samples);
     free(depths);
     free(data);

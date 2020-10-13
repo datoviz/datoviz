@@ -24,7 +24,9 @@ static void upload_text(VkyVisual* visual)
             .transform_mode = 0,
         };
     }
-    vky_visual_data_raw(visual, (VkyData){N, text});
+    visual->data.item_count = N;
+    visual->data.items = text;
+    vky_visual_data_raw(visual);
 }
 
 static void frame_callback(VkyCanvas* canvas)

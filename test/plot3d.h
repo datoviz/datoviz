@@ -69,7 +69,9 @@ static void spheres(VkyPanel* panel)
     glm_vec4_copy((vec4){2, 2, -2, 1}, params.light_pos);
     VkyVisual* visual = vky_visual(panel->scene, VKY_VISUAL_FAKE_SPHERE, &params, NULL);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
-    vky_visual_data_raw(visual, (VkyData){n, vertices});
+    visual->data.item_count = n;
+    visual->data.items = vertices;
+    vky_visual_data_raw(visual);
 }
 
 static void volume(VkyPanel* panel)

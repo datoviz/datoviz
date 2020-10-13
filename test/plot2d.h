@@ -87,7 +87,9 @@ static void imshow(VkyPanel* panel)
         {0, 1},
         {1, 0},
     }};
-    vky_visual_data_raw(visual, (VkyData){1, data});
+    visual->data.item_count = 1;
+    visual->data.items = data;
+    vky_visual_data_raw(visual);
 
     // Upload the texture
     vky_visual_image_upload(visual, (uint8_t*)image);
@@ -117,7 +119,9 @@ static void arrows(VkyPanel* panel)
             5,
             VKY_ARROW_STEALTH};
     }
-    vky_visual_data_raw(visual, (VkyData){n, data});
+    visual->data.item_count = n;
+    visual->data.items = data;
+    vky_visual_data_raw(visual);
 }
 
 static void paths(VkyPanel* panel)
@@ -153,7 +157,9 @@ static void paths(VkyPanel* panel)
     VkyPathData path1 = {n / 2, points, color, VKY_PATH_OPEN};
     VkyPathData path2 = {n / 2, points + (n / 2), color + (n / 2), VKY_PATH_OPEN};
     // paths is an array of VkyPathData, each item represent 1 path.
-    vky_visual_data_raw(visual, (VkyData){2, (VkyPathData[]){path1, path2}});
+    visual->data.item_count = 2;
+    visual->data.items = (VkyPathData[]){path1, path2};
+    vky_visual_data_raw(visual);
 }
 
 static void segments(VkyPanel* panel)
@@ -179,7 +185,9 @@ static void segments(VkyPanel* panel)
         data[i].cap1 = VKY_CAP_ROUND;
         glm_vec4_copy((vec4){-100 + 200 * t, 0, -100 + 200 * t, 0}, data[i].shift);
     }
-    vky_visual_data_raw(visual, (VkyData){n, data});
+    visual->data.item_count = n;
+    visual->data.items = data;
+    vky_visual_data_raw(visual);
 }
 
 static void text(VkyPanel* panel)
@@ -207,7 +215,9 @@ static void text(VkyPanel* panel)
             "Hello world!",
             false};
     }
-    vky_visual_data_raw(visual, (VkyData){n, text});
+    visual->data.item_count = n;
+    visual->data.items = text;
+    vky_visual_data_raw(visual);
 }
 
 static void hist(VkyPanel* panel)
@@ -233,7 +243,9 @@ static void hist(VkyPanel* panel)
             vky_color(VKY_DEFAULT_COLORMAP, i, 0, n, 1),
         };
     }
-    vky_visual_data_raw(visual, (VkyData){n, data});
+    visual->data.item_count = n;
+    visual->data.items = data;
+    vky_visual_data_raw(visual);
 }
 
 static void area(VkyPanel* panel)
@@ -264,7 +276,9 @@ static void area(VkyPanel* panel)
                 k};
         }
     }
-    vky_visual_data_raw(visual, (VkyData){2 * n, data});
+    visual->data.item_count = 2 * n;
+    visual->data.items = data;
+    vky_visual_data_raw(visual);
 }
 
 static void axrect(VkyPanel* panel)
@@ -291,7 +305,9 @@ static void axrect(VkyPanel* panel)
             ASSERT(2 * i + k < 2 * n);
         }
     }
-    vky_visual_data_raw(visual, (VkyData){2 * n, data});
+    visual->data.item_count = 2 * n;
+    visual->data.items = data;
+    vky_visual_data_raw(visual);
 }
 
 static void raster(VkyPanel* panel)
@@ -323,7 +339,9 @@ static void raster(VkyPanel* panel)
             count++;
         }
     }
-    vky_visual_data_raw(visual, (VkyData){count, data});
+    visual->data.item_count = count;
+    visual->data.items = data;
+    vky_visual_data_raw(visual);
     free(data);
 }
 
@@ -434,7 +452,9 @@ static void image(VkyPanel* panel)
             };
         }
     }
-    vky_visual_data_raw(visual, (VkyData){n, data});
+    visual->data.item_count = n;
+    visual->data.items = data;
+    vky_visual_data_raw(visual);
     free(data);
 
     // Upload the texture

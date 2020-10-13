@@ -59,7 +59,9 @@ static VkyVisual* _add_image(VkyPanel* panel, uint32_t width, uint32_t height, v
         {0, 1},
         {1, 0},
     }};
-    vky_visual_data_raw(visual, (VkyData){1, data});
+    visual->data.item_count = 1;
+    visual->data.items = data;
+    vky_visual_data_raw(visual);
     vky_visual_image_upload(visual, image);
     return visual;
 }
@@ -89,7 +91,9 @@ static void _set_top_lines(float x, float y)
          VKY_TRANSFORM_MODE_NORMAL},
 
     };
-    vky_visual_data_raw(top_lines, (VkyData){2, data});
+    top_lines->data.item_count = 2;
+    top_lines->data.items = data;
+    vky_visual_data_raw(top_lines);
 }
 
 
@@ -107,7 +111,9 @@ static void _update_v1(float u)
         {{+a, +a, 0}, {0, u, 0}}, //
 
     };
-    vky_visual_data_raw(v1, (VkyData){0, NULL, 6, vertices, 0, NULL});
+    v1->data.vertex_count = 6;
+    v1->data.vertices = vertices;
+    vky_visual_data_raw(v1);
 }
 
 
@@ -125,7 +131,9 @@ static void _update_v2(float u)
         {{+a, +a, 0}, {0, 0, u}}, //
 
     };
-    vky_visual_data_raw(v2, (VkyData){0, NULL, 6, vertices, 0, NULL});
+    v2->data.vertex_count = 6;
+    v2->data.vertices = vertices;
+    vky_visual_data_raw(v2);
 }
 
 

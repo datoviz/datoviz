@@ -149,8 +149,12 @@ VkyPolygonTriangulation vky_visual_polygon_upload(
     }
     ASSERT(poly == poly_count);
     ASSERT(offset == point_count);
-    vky_visual_data_raw(
-        visual_poly, (VkyData){0, NULL, point_count, vertices, tr.index_count, tr.indices});
+
+    visual_poly->data.vertex_count = point_count;
+    visual_poly->data.vertices = vertices;
+    visual_poly->data.index_count = tr.index_count;
+    visual_poly->data.indices = tr.indices;
+    vky_visual_data_raw(visual_poly);
 
     if (visual_outline != NULL)
     {
@@ -179,7 +183,9 @@ VkyPolygonTriangulation vky_visual_polygon_upload(
         ASSERT(offset == point_count);
 
         // Upload the paths data.
-        vky_visual_data_raw(visual_outline, (VkyData){poly_count, paths});
+        visual_outline->data.item_count = poly_count;
+        visual_outline->data.items = paths;
+        vky_visual_data_raw(visual_outline);
         free(paths);
         free(path_points);
         free(path_colors);
@@ -551,8 +557,11 @@ VkyPSLGTriangulation vky_visual_pslg_upload(
 
         vertices[i].color = region_colors[(uint32_t)round(tr.region_idx[i])];
     }
-    vky_visual_data_raw(
-        visual_mesh, (VkyData){0, NULL, tr.vertex_count, vertices, tr.index_count, tr.indices});
+    visual_mesh->data.vertex_count = tr.vertex_count;
+    visual_mesh->data.vertices = vertices;
+    visual_mesh->data.index_count = tr.index_count;
+    visual_mesh->data.indices = tr.indices;
+    vky_visual_data_raw(visual_mesh);
     // free(vertices); // NOTE: the caller must free the vertices
     tr.mesh_vertices = vertices;
 
@@ -577,7 +586,9 @@ VkyPSLGTriangulation vky_visual_pslg_upload(
         seg_vertices[i].cap1 = VKY_CAP_ROUND;
     }
 
-    vky_visual_data_raw(visual_segments, (VkyData){segment_count, seg_vertices});
+    visual_segments->data.item_count = segment_count;
+    visual_segments->data.items = seg_vertices;
+    vky_visual_data_raw(visual_segments);
     free(seg_vertices);
 
     return tr;
@@ -674,7 +685,9 @@ void vky_visual_triangulation_upload(
     }
 
     // Upload the segment data.
-    vky_visual_data_raw(visual_segments, (VkyData){index_count, seg_vertices});
+    visual_segments->data.item_count = index_count;
+    visual_segments->data.items = seg_vertices;
+    vky_visual_data_raw(visual_segments);
     free(seg_vertices);
 
     // Make the marker data.
@@ -685,6 +698,8 @@ void vky_visual_triangulation_upload(
         vertices_markers[i].color = params->marker_color;
     }
     // Upload the marker data.
-    vky_visual_data_raw(visual_markers, (VkyData){vertex_count, vertices_markers});
+    visual_markers->data.item_count = vertex_count;
+    visual_markers->data.items = vertices_markers;
+    vky_visual_data_raw(visual_markers);
     free(vertices_markers);
 }

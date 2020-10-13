@@ -217,8 +217,8 @@ typedef struct VkyVisualProp VkyVisualProp;
 typedef struct VkyVisualPanel VkyVisualPanel;
 
 // Callbacks.
-typedef VkyData (*VkyVisualBakeCallback)(VkyVisual*, VkyData);
-typedef VkyData (*VkyVisualBakePropsCallback)(VkyVisual*);
+typedef void (*VkyVisualBakeCallback)(VkyVisual*);
+// typedef VkyData (*VkyVisualBakePropsCallback)(VkyVisual*);
 typedef void (*VkyAxesTickFormatter)(VkyAxes*, double value, char* out_text);
 typedef void (*VkyVisualCallback)(VkyVisual*);
 typedef void (*VkyVisualResizeCallback)(VkyVisual*);
@@ -297,7 +297,9 @@ struct VkyData
 struct VkyVisualProp
 {
     VkyVisualPropType type;
-    size_t value_size;
+    size_t field_offset;
+    size_t field_size;
+
     uint32_t value_count;
     void* values;
     void* resource; // (only for the _RESOURCE prop types)
@@ -324,7 +326,8 @@ struct VkyVisual
     VkyBufferRegion vertex_buffer;
     VkyBufferRegion index_buffer;
 
-    uint32_t prop_count;
+    size_t prop_size;    // size in bytes of the prop struct (corresponds to VkyData.items)
+    uint32_t prop_count; // number of props/fields in the struct
     VkyVisualProp* props;
 
     uint32_t resource_count;
@@ -334,7 +337,7 @@ struct VkyVisual
     VkyVisual** children;
 
     VkyVisualBakeCallback cb_bake_data;
-    VkyVisualBakePropsCallback cb_bake_props;
+    // VkyVisualBakePropsCallback cb_bake_props; // TO REMOVE
     VkyVisualResizeCallback cb_resize; // NOTE: unused yet
 
     bool need_data_upload;
@@ -706,7 +709,7 @@ VKY_EXPORT void vky_allocate_index_buffer(VkyVisual* visual, VkDeviceSize size);
 VKY_EXPORT void vky_add_common_resources(VkyVisual*);
 VKY_EXPORT void vky_add_uniform_buffer_resource(VkyVisual* visual, VkyUniformBuffer* ubo);
 VKY_EXPORT void vky_add_texture_resource(VkyVisual* visual, VkyTexture* texture);
-VKY_EXPORT void vky_visual_data_raw(VkyVisual* visual, VkyData data);
+VKY_EXPORT void vky_visual_data_raw(VkyVisual* visual);
 VKY_EXPORT void vky_visual_data_partial(VkyVisual* visual, uint32_t item_offset, VkyData data);
 VKY_EXPORT void vky_draw_visual(VkyVisual* visual, VkyPanel*, VkyViewportType viewport_type);
 VKY_EXPORT void vky_draw_all_visuals(VkyScene* scene);
@@ -715,7 +718,8 @@ VKY_EXPORT void vky_destroy_visual(VkyVisual* visual);
 VKY_EXPORT void vky_free_data(VkyData data);
 VKY_EXPORT void vky_visual_add_child(VkyVisual* parent, VkyVisual* child);
 
-VKY_EXPORT VkyVisualProp* vky_visual_prop_add(VkyVisual*, VkyVisualPropType);
+VKY_EXPORT void vky_visual_prop_spec(VkyVisual*, size_t size);
+VKY_EXPORT VkyVisualProp* vky_visual_prop_add(VkyVisual*, VkyVisualPropType, size_t offset);
 VKY_EXPORT VkyVisualProp* vky_visual_prop_get(VkyVisual*, VkyVisualPropType, uint32_t prop_index);
 VKY_EXPORT void vky_visual_data(
     VkyVisual*, VkyVisualPropType, uint32_t prop_index, uint32_t value_count, void* values);

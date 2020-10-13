@@ -5,28 +5,30 @@
 /*  Prop macros                                                                                  */
 /*************************************************************************************************/
 
-#define PROP_START(VERT_TYPE)                                                                     \
-    VkyData data = {0};                                                                           \
-    VkyVisualProp* vp_pos = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS, 0);                  \
-    VkyVisualProp* vp_col = vky_visual_prop_get(visual, VKY_VISUAL_PROP_COLOR_ALPHA, 0);          \
-    ASSERT(vp_pos->value_count == vp_col->value_count);                                           \
-    data.vertex_count = vp_pos->value_count;                                                      \
-    data.vertices = calloc(data.vertex_count, sizeof(VERT_TYPE));                                 \
-    VERT_TYPE* vertices = (VERT_TYPE*)data.vertices;
+// #define PROP_START(VERT_TYPE)                                                                     \
+//     VkyData data = {0};                                                                           \
+//     VkyVisualProp* vp_pos = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS, 0);                  \
+//     VkyVisualProp* vp_col = vky_visual_prop_get(visual, VKY_VISUAL_PROP_COLOR_ALPHA, 0);          \
+//     ASSERT(vp_pos->value_count == vp_col->value_count);                                           \
+//     data->vertex_count = vp_pos->value_count;                                                      \
+//     data->vertices = calloc(data->vertex_count, sizeof(VERT_TYPE));                                 \
+//     VERT_TYPE* vertices = (VERT_TYPE*)data->vertices;
 
 #define CLAMP(i, n) ((i) > (n - 1) ? (n - 1) : (i))
 
-#define PROP_LOOP          for (uint32_t i = 0; i < data.vertex_count; i++)
-#define PROP_GET(VP, TYPE) ((TYPE*)VP->values)[CLAMP(i, VP->value_count)]
+// #define PROP_LOOP          for (uint32_t i = 0; i < data->vertex_count; i++)
+// #define PROP_GET(VP, TYPE) ((TYPE*)VP->values)[CLAMP(i, VP->value_count)]
 
-#define PROP_POS3D(FIELD)       memcpy(vertices[i].FIELD, PROP_GET(vp_pos, vec3), sizeof(vec3));
-#define PROP_COLOR_ALPHA(FIELD) memcpy(&vertices[i].FIELD, PROP_GET(vp_col, cvec4), sizeof(cvec4));
-// TODO: remove TYPE argument by uniformizing types of prop types
-#define PROP_SIZE(FIELD, TYPE) memcpy(&vertices[i].FIELD, &PROP_GET(vp_size, TYPE), sizeof(TYPE));
-#define PROP_SHAPE(FIELD, TYPE)                                                                   \
-    memcpy(&vertices[i].FIELD, &PROP_GET(vp_shape, TYPE), sizeof(TYPE));
-#define PROP_ANGLE(FIELD)                                                                         \
-    memcpy(&vertices[i].FIELD, &PROP_GET(vp_angle, uint8_t), sizeof(uint8_t));
+// #define PROP_POS3D(FIELD)       memcpy(vertices[i].FIELD, PROP_GET(vp_pos, vec3), sizeof(vec3));
+// #define PROP_COLOR_ALPHA(FIELD) memcpy(&vertices[i].FIELD, PROP_GET(vp_col, cvec4),
+// sizeof(cvec4));
+// // TODO: remove TYPE argument by uniformizing types of prop types
+// #define PROP_SIZE(FIELD, TYPE) memcpy(&vertices[i].FIELD, &PROP_GET(vp_size, TYPE),
+// sizeof(TYPE));
+// #define PROP_SHAPE(FIELD, TYPE) \
+//     memcpy(&vertices[i].FIELD, &PROP_GET(vp_shape, TYPE), sizeof(TYPE));
+// #define PROP_ANGLE(FIELD) \
+//     memcpy(&vertices[i].FIELD, &PROP_GET(vp_angle, uint8_t), sizeof(uint8_t));
 
 
 
@@ -65,8 +67,11 @@ void vky_graph_upload(
     edge_data.item_count = edge_count;
     edge_data.items = edge_items;
 
-    vky_visual_data_raw(vb->children[0], edge_data);
-    vky_visual_data_raw(vb->children[1], node_data);
+    vb->children[0]->data = edge_data;
+    vb->children[1]->data = node_data;
+
+    vky_visual_data_raw(vb->children[0]);
+    vky_visual_data_raw(vb->children[1]);
 
     free(edge_items);
 }
@@ -170,7 +175,12 @@ static void colorbar_upload(VkyVisual* colorbar, VkyColorbarParams params)
 
     VkyIndex indices[] = {0, 1, 2, 2, 3, 0};
 
-    vky_visual_data_raw(colorbar, (VkyData){0, NULL, 4, vertices, 6, indices});
+    colorbar->data.vertex_count = 4;
+    colorbar->data.vertices = vertices;
+    colorbar->data.index_count = 9;
+    colorbar->data.indices = indices;
+
+    vky_visual_data_raw(colorbar);
 }
 
 static void colorbar_tick_upload(VkyVisual* text, VkyVisual* ticks, VkyColorbarParams params)
@@ -263,8 +273,13 @@ static void colorbar_tick_upload(VkyVisual* text, VkyVisual* ticks, VkyColorbarP
         {-params.pad_tl[0] + hlw, -params.pad_br[1], -params.pad_br[0] - hlw, -params.pad_br[1]},
         TICK_DATA};
 
-    vky_visual_data_raw(text, (VkyData){n, text_data});
-    vky_visual_data_raw(ticks, (VkyData){n + 4, tick_data});
+    text->data.item_count = n;
+    text->data.items = text_data;
+    vky_visual_data_raw(text);
+
+    ticks->data.item_count = n + 4;
+    ticks->data.items = tick_data;
+    vky_visual_data_raw(ticks);
 
     free(tick);
     free(tick_data);
@@ -346,7 +361,9 @@ vky_visual_volume(VkyScene* scene, const VkyTextureParams* tex_params, const voi
         {{-x, +x, 0}, {0, 1}}, {{+x, -x, 0}, {1, 0}}, {{+x, +x, 0}, {1, 1}},
     };
 
-    vky_visual_data_raw(visual, (VkyData){0, NULL, 6, vertices, 0, NULL});
+    visual->data.vertex_count = 6;
+    visual->data.vertices = vertices;
+    vky_visual_data_raw(visual);
 
     return visual;
 }
@@ -419,15 +436,17 @@ static void add_path_point(
     }
 }
 
-static VkyData vky_path_bake(VkyVisual* visual, VkyData data)
+static void vky_path_bake(VkyVisual* visual)
 {
+    VkyData* data = &visual->data;
+
     // Determine the actual number of vertices and indices.
-    uint32_t path_count = data.item_count;
+    uint32_t path_count = data->item_count;
     uint32_t vertex_count = 0; // NOT multiplied by path_vertices_per_segment
-    if (data.items == NULL)
-        return data;
+    if (data->items == NULL)
+        return;
     ASSERT(path_count > 0);
-    const VkyPathData* paths = (const VkyPathData*)data.items;
+    const VkyPathData* paths = (const VkyPathData*)data->items;
     for (uint32_t i = 0; i < path_count; i++)
     {
         ASSERT(paths[i].point_count >= 2);
@@ -439,10 +458,10 @@ static VkyData vky_path_bake(VkyVisual* visual, VkyData data)
 
     ASSERT(vertex_count > 0);
 
-    data.vertex_count = vertex_count * path_vertices_per_segment;
-    data.index_count = 0;
+    data->vertex_count = vertex_count * path_vertices_per_segment;
+    data->index_count = 0;
 
-    VkyPathVertex* vertices = calloc(data.vertex_count, sizeof(VkyPathVertex));
+    VkyPathVertex* vertices = calloc(data->vertex_count, sizeof(VkyPathVertex));
 
     uint32_t vertex_offset = 0; // NOT multiplied by path_vertices_per_segment
 
@@ -512,11 +531,10 @@ static VkyData vky_path_bake(VkyVisual* visual, VkyData data)
     }     // end for loop on paths
     ASSERT(vertex_offset == vertex_count);
 
-    data.vertices = vertices;
-    data.indices = NULL;
+    data->vertices = vertices;
+    data->indices = NULL;
 
     log_trace("finished baking the path data");
-    return data;
 }
 
 VkyVisual* vky_visual_path(VkyScene* scene, const VkyPathParams* params)
@@ -582,30 +600,32 @@ VkyVisual* vky_visual_path(VkyScene* scene, const VkyPathParams* params)
 /*  Segment visual                                                                               */
 /*************************************************************************************************/
 
-static VkyData vky_segment_bake(VkyVisual* visual, VkyData data)
+static void vky_segment_bake(VkyVisual* visual)
 {
-    uint32_t nv = 4 * data.item_count;
-    uint32_t ni = 6 * data.item_count;
+    VkyData* data = &visual->data;
+
+    uint32_t nv = 4 * data->item_count;
+    uint32_t ni = 6 * data->item_count;
 
     ASSERT(nv > 0);
     ASSERT(ni > 0);
 
-    data.vertex_count = nv;
-    data.index_count = ni;
+    data->vertex_count = nv;
+    data->index_count = ni;
 
-    if (data.items == NULL)
+    if (data->items == NULL)
     {
-        return data;
+        return;
     }
 
     // Allocate the data buffer to be uploaded to the vertex buffer. Will be freed by visky.
     log_trace("allocating vertices and indices");
     VkySegmentVertex* vertices = calloc(nv, sizeof(VkySegmentVertex));
     VkyIndex* indices = calloc(ni, sizeof(VkyIndex));
-    const VkySegmentVertex* items = (const VkySegmentVertex*)data.items;
+    const VkySegmentVertex* items = (const VkySegmentVertex*)data->items;
     double dpi = visual->scene->canvas->dpi_factor;
 
-    for (uint32_t i = 0; i < data.item_count; i++)
+    for (uint32_t i = 0; i < data->item_count; i++)
     {
         for (uint32_t j = 0; j < 4; j++)
         {
@@ -632,10 +652,8 @@ static VkyData vky_segment_bake(VkyVisual* visual, VkyData data)
         ASSERT(6 * i + 5 < ni);
     }
 
-    data.vertices = vertices;
-    data.indices = indices;
-
-    return data;
+    data->vertices = vertices;
+    data->indices = indices;
 }
 
 VkyVisual* vky_visual_segment(VkyScene* scene)
@@ -690,49 +708,48 @@ VkyVisual* vky_visual_segment(VkyScene* scene)
 /*  Markers visual                                                                               */
 /*************************************************************************************************/
 
-static VkyData vky_marker_bake(VkyVisual* visual, VkyData data)
+static void vky_marker_bake(VkyVisual* visual)
 {
-    data.vertex_count = data.item_count;
+    VkyData* data = &visual->data;
+    data->vertex_count = data->item_count;
 
-    if (data.items == NULL)
+    if (data->items == NULL)
     {
-        return data;
+        return;
     }
 
     // Allocate the data buffer to be uploaded to the vertex buffer. Will be freed by visky.
     log_trace("allocating vertices and indices");
-    VkyMarkersVertex* vertices = calloc(data.vertex_count, sizeof(VkyMarkersVertex));
-    const VkyMarkersVertex* items = (const VkyMarkersVertex*)data.items;
+    VkyMarkersVertex* vertices = calloc(data->vertex_count, sizeof(VkyMarkersVertex));
+    const VkyMarkersVertex* items = (const VkyMarkersVertex*)data->items;
 
     // TODO: avoid copying and multiply the marker size in the shader instead, adding
     // the dpi factor in the params
-    for (uint32_t i = 0; i < data.item_count; i++)
+    for (uint32_t i = 0; i < data->item_count; i++)
     {
         vertices[i] = items[i];
         vertices[i].size *= visual->scene->canvas->dpi_factor;
     }
 
-    data.vertices = vertices;
-
-    return data;
+    data->vertices = vertices;
 }
 
-static VkyData _marker_bake_props(VkyVisual* visual)
-{
-    PROP_START(VkyMarkersVertex)
-    VkyVisualProp* vp_size = vky_visual_prop_get(visual, VKY_VISUAL_PROP_SIZE, 0);
-    VkyVisualProp* vp_shape = vky_visual_prop_get(visual, VKY_VISUAL_PROP_SHAPE, 0);
-    VkyVisualProp* vp_angle = vky_visual_prop_get(visual, VKY_VISUAL_PROP_ANGLE, 0);
-    PROP_LOOP
-    {
-        PROP_POS3D(pos)
-        PROP_COLOR_ALPHA(color)
-        PROP_SIZE(size, VkyMarkerSize)
-        PROP_SHAPE(marker, uint8_t)
-        PROP_ANGLE(angle)
-    }
-    return data;
-}
+// static VkyData _marker_bake_props(VkyVisual* visual)
+// {
+//     PROP_START(VkyMarkersVertex)
+//     VkyVisualProp* vp_size = vky_visual_prop_get(visual, VKY_VISUAL_PROP_SIZE, 0);
+//     VkyVisualProp* vp_shape = vky_visual_prop_get(visual, VKY_VISUAL_PROP_SHAPE, 0);
+//     VkyVisualProp* vp_angle = vky_visual_prop_get(visual, VKY_VISUAL_PROP_ANGLE, 0);
+//     PROP_LOOP
+//     {
+//         PROP_POS3D(pos)
+//         PROP_COLOR_ALPHA(color)
+//         PROP_SIZE(size, VkyMarkerSize)
+//         PROP_SHAPE(marker, uint8_t)
+//         PROP_ANGLE(angle)
+//     }
+//     return data;
+// }
 
 VkyVisual* vky_visual_marker(VkyScene* scene, const VkyMarkersParams* params)
 {
@@ -786,13 +803,14 @@ VkyVisual* vky_visual_marker(VkyScene* scene, const VkyMarkersParams* params)
 
     visual->cb_bake_data = vky_marker_bake;
 
-    // Props.
-    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS);
-    vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA);
-    vky_visual_prop_add(visual, VKY_VISUAL_PROP_SIZE);
-    vky_visual_prop_add(visual, VKY_VISUAL_PROP_SHAPE);
-    vky_visual_prop_add(visual, VKY_VISUAL_PROP_ANGLE);
-    visual->cb_bake_props = _marker_bake_props;
+    // TODO
+    // // Props.
+    // vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS);
+    // vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA);
+    // vky_visual_prop_add(visual, VKY_VISUAL_PROP_SIZE);
+    // vky_visual_prop_add(visual, VKY_VISUAL_PROP_SHAPE);
+    // vky_visual_prop_add(visual, VKY_VISUAL_PROP_ANGLE);
+    // visual->cb_bake_props = _marker_bake_props;
 
     return visual;
 }
@@ -803,17 +821,19 @@ VkyVisual* vky_visual_marker(VkyScene* scene, const VkyMarkersParams* params)
 /*  Text visual                                                                                  */
 /*************************************************************************************************/
 
-static VkyData vky_text_bake(VkyVisual* visual, VkyData data)
+static void vky_text_bake(VkyVisual* visual)
 {
-    ASSERT(data.items != NULL); // TODO: support allocation with no upload by specifying a max
-                                // number of glyphs per string
+    VkyData* data = &visual->data;
+
+    ASSERT(data->items != NULL); // TODO: support allocation with no upload by specifying a max
+                                 // number of glyphs per string
 
     // Input text as array of VkyTextData.
-    const VkyTextData* text = (const VkyTextData*)data.items;
+    const VkyTextData* text = (const VkyTextData*)data->items;
 
     // Count the number of glyphs.
     uint32_t glyph_count = 0;
-    for (uint32_t i = 0; i < data.item_count; i++)
+    for (uint32_t i = 0; i < data->item_count; i++)
     { // vertex_count is the number of strings here
         glyph_count += text[i].string_len;
     }
@@ -821,11 +841,11 @@ static VkyData vky_text_bake(VkyVisual* visual, VkyData data)
     uint32_t nv = glyph_count;
     ASSERT(nv > 0);
 
-    data.vertex_count = nv * 4;
-    data.index_count = 0; // we don't use the index buffer
+    data->vertex_count = nv * 4;
+    data->index_count = 0; // we don't use the index buffer
 
     // Allocate the data buffer to be uploaded to the vertex buffer. Will be freed by visky.
-    VkyTextVertex* vertices = calloc(data.vertex_count, sizeof(VkyTextVertex));
+    VkyTextVertex* vertices = calloc(data->vertex_count, sizeof(VkyTextVertex));
 
     // Glyph aspect ratio and size.
     VkyTextParams params = *((const VkyTextParams*)visual->params);
@@ -836,7 +856,7 @@ static VkyData vky_text_bake(VkyVisual* visual, VkyData data)
     VkyTextVertex vertex = {0};
     double dpi = visual->scene->canvas->dpi_factor;
     // Go through all strings.
-    for (uint32_t i = 0; i < data.item_count; i++)
+    for (uint32_t i = 0; i < data->item_count; i++)
     {
         uint32_t str_len = text[i].string_len;
         // For each string, go through the chars.
@@ -863,11 +883,9 @@ static VkyData vky_text_bake(VkyVisual* visual, VkyData data)
         }
     }
 
-    data.vertices = vertices;
-    ASSERT(data.vertices != NULL);
-    data.indices = NULL;
-
-    return data;
+    data->vertices = vertices;
+    ASSERT(data->vertices != NULL);
+    data->indices = NULL;
 }
 
 VkyVisual* vky_visual_text(VkyScene* scene)
@@ -932,29 +950,31 @@ VkyVisual* vky_visual_text(VkyScene* scene)
 /*  Arrow visual                                                                                 */
 /*************************************************************************************************/
 
-static VkyData vky_arrow_bake(VkyVisual* visual, VkyData data)
+static void vky_arrow_bake(VkyVisual* visual)
 {
-    uint32_t nv = 4 * data.item_count;
-    uint32_t ni = 6 * data.item_count;
+    VkyData* data = &visual->data;
+
+    uint32_t nv = 4 * data->item_count;
+    uint32_t ni = 6 * data->item_count;
 
     ASSERT(nv > 0);
     ASSERT(ni > 0);
 
-    data.vertex_count = nv;
-    data.index_count = ni;
+    data->vertex_count = nv;
+    data->index_count = ni;
 
-    if (data.items == NULL)
+    if (data->items == NULL)
     {
-        return data;
+        return;
     }
 
     // Allocate the data buffer to be uploaded to the vertex buffer. Will be freed by visky.
     log_trace("allocating vertices and indices");
     VkyArrowVertex* vertices = calloc(nv, sizeof(VkyArrowVertex));
     VkyIndex* indices = calloc(ni, sizeof(VkyIndex));
-    const VkyArrowVertex* items = (const VkyArrowVertex*)data.items;
+    const VkyArrowVertex* items = (const VkyArrowVertex*)data->items;
 
-    for (uint32_t i = 0; i < data.item_count; i++)
+    for (uint32_t i = 0; i < data->item_count; i++)
     {
         for (uint32_t j = 0; j < 4; j++)
         {
@@ -980,10 +1000,8 @@ static VkyData vky_arrow_bake(VkyVisual* visual, VkyData data)
         ASSERT(6 * i + 5 < ni);
     }
 
-    data.vertices = vertices;
-    data.indices = indices;
-
-    return data;
+    data->vertices = vertices;
+    data->indices = indices;
 }
 
 VkyVisual* vky_visual_arrow(VkyScene* scene)
@@ -1077,20 +1095,22 @@ VkyVisual* vky_visual_fake_sphere(VkyScene* scene, const VkyFakeSphereParams* pa
 /*  Rectangle visual                                                                             */
 /*************************************************************************************************/
 
-static VkyData vky_visual_rectangle_bake(VkyVisual* visual, VkyData data)
+static void vky_visual_rectangle_bake(VkyVisual* visual)
 {
-    uint32_t nv = 4 * data.item_count;
-    uint32_t ni = 6 * data.item_count;
+    VkyData* data = &visual->data;
+
+    uint32_t nv = 4 * data->item_count;
+    uint32_t ni = 6 * data->item_count;
 
     ASSERT(nv > 0);
     ASSERT(ni > 0);
 
-    data.vertex_count = nv;
-    data.index_count = ni;
+    data->vertex_count = nv;
+    data->index_count = ni;
 
-    if (data.items == NULL)
+    if (data->items == NULL)
     {
-        return data;
+        return;
     }
 
     // Allocate the data buffer to be uploaded to the vertex buffer. Will be freed by visky.
@@ -1098,7 +1118,7 @@ static VkyData vky_visual_rectangle_bake(VkyVisual* visual, VkyData data)
     VkyVertex* vertices = calloc(nv, sizeof(VkyVertex));
     VkyIndex* indices = calloc(ni, sizeof(VkyIndex));
 
-    const VkyRectangleData* items = (const VkyRectangleData*)data.items;
+    const VkyRectangleData* items = (const VkyRectangleData*)data->items;
 
     vec3 origin, u, v, w;
     VkyRectangleParams params = {0};
@@ -1107,7 +1127,7 @@ static VkyData vky_visual_rectangle_bake(VkyVisual* visual, VkyData data)
     glm_vec3_copy(params.u, u);
     glm_vec3_copy(params.v, v);
 
-    for (uint32_t i = 0; i < data.item_count; i++)
+    for (uint32_t i = 0; i < data->item_count; i++)
     {
         // p00
         glm_vec3_scale(u, items[i].p[0], w);
@@ -1142,10 +1162,8 @@ static VkyData vky_visual_rectangle_bake(VkyVisual* visual, VkyData data)
         ASSERT(6 * i + 5 < ni);
     }
 
-    data.vertices = vertices;
-    data.indices = indices;
-
-    return data;
+    data->vertices = vertices;
+    data->indices = indices;
 }
 
 
@@ -1187,23 +1205,25 @@ VkyVisual* vky_visual_rectangle(VkyScene* scene, const VkyRectangleParams* param
 /*  Area visual                                                                                  */
 /*************************************************************************************************/
 
-static VkyData vky_visual_area_bake(VkyVisual* visual, VkyData data)
+static void vky_visual_area_bake(VkyVisual* visual)
 {
-    uint32_t nv = 2 * data.item_count;
+    VkyData* data = &visual->data;
+
+    uint32_t nv = 2 * data->item_count;
 
     ASSERT(nv > 0);
 
-    data.vertex_count = nv;
-    data.index_count = 0;
+    data->vertex_count = nv;
+    data->index_count = 0;
 
-    if (data.items == NULL)
-        return data;
+    if (data->items == NULL)
+        return;
 
     // Allocate the data buffer to be uploaded to the vertex buffer. Will be freed by visky.
     log_trace("allocating vertices");
     VkyAreaVertex* vertices = calloc(nv, sizeof(VkyAreaVertex));
 
-    const VkyAreaData* items = (const VkyAreaData*)data.items;
+    const VkyAreaData* items = (const VkyAreaData*)data->items;
 
     vec3 origin, u, v, w;
     VkyAreaParams params = {0};
@@ -1212,7 +1232,7 @@ static VkyData vky_visual_area_bake(VkyVisual* visual, VkyData data)
     glm_vec3_copy(params.u, u);
     glm_vec3_copy(params.v, v);
 
-    for (uint32_t i = 0; i < data.item_count; i++)
+    for (uint32_t i = 0; i < data->item_count; i++)
     {
         // pos_bottom
         glm_vec3_scale(u, items[i].p[0], w);                               // w = u * x
@@ -1233,10 +1253,8 @@ static VkyData vky_visual_area_bake(VkyVisual* visual, VkyData data)
         }
     }
 
-    data.vertices = vertices;
-    data.indices = NULL;
-
-    return data;
+    data->vertices = vertices;
+    data->indices = NULL;
 }
 
 
@@ -1281,20 +1299,22 @@ VkyVisual* vky_visual_area(VkyScene* scene, const VkyAreaParams* params)
 /*  Axis rectangle visual                                                                        */
 /*************************************************************************************************/
 
-static VkyData vky_visual_rectangle_axis_bake(VkyVisual* visual, VkyData data)
+static void vky_visual_rectangle_axis_bake(VkyVisual* visual)
 {
-    uint32_t nv = 4 * data.item_count;
-    uint32_t ni = 6 * data.item_count;
+    VkyData* data = &visual->data;
+
+    uint32_t nv = 4 * data->item_count;
+    uint32_t ni = 6 * data->item_count;
 
     ASSERT(nv > 0);
     ASSERT(ni > 0);
 
-    data.vertex_count = nv;
-    data.index_count = ni;
+    data->vertex_count = nv;
+    data->index_count = ni;
 
-    if (data.items == NULL)
+    if (data->items == NULL)
     {
-        return data;
+        return;
     }
 
     // Allocate the data buffer to be uploaded to the vertex buffer. Will be freed by visky.
@@ -1302,10 +1322,10 @@ static VkyData vky_visual_rectangle_axis_bake(VkyVisual* visual, VkyData data)
     VkyVertex* vertices = calloc(nv, sizeof(VkyVertex));
     VkyIndex* indices = calloc(ni, sizeof(VkyIndex));
 
-    const VkyRectangleAxisData* items = (const VkyRectangleAxisData*)data.items;
+    const VkyRectangleAxisData* items = (const VkyRectangleAxisData*)data->items;
 
     float span_axis = 0;
-    for (uint32_t i = 0; i < data.item_count; i++)
+    for (uint32_t i = 0; i < data->item_count; i++)
     {
         span_axis = (float)items[i].span_axis;
         if (items[i].span_axis == 0)
@@ -1339,10 +1359,8 @@ static VkyData vky_visual_rectangle_axis_bake(VkyVisual* visual, VkyData data)
         ASSERT(6 * i + 5 < ni);
     }
 
-    data.vertices = vertices;
-    data.indices = indices;
-
-    return data;
+    data->vertices = vertices;
+    data->indices = indices;
 }
 
 
@@ -1383,25 +1401,27 @@ VkyVisual* vky_visual_rectangle_axis(VkyScene* scene)
 /*  Image visual                                                                                 */
 /*************************************************************************************************/
 
-static VkyData vky_visual_image_bake(VkyVisual* visual, VkyData data)
+static void vky_visual_image_bake(VkyVisual* visual)
 {
+    VkyData* data = &visual->data;
+
     // Determine the actual number of vertices and indices.
-    uint32_t image_count = data.item_count; // 1 data item per image
-    uint32_t nv = 4 * image_count;          // total number of points
+    uint32_t image_count = data->item_count; // 1 data item per image
+    uint32_t nv = 4 * image_count;           // total number of points
     uint32_t ni = 6 * image_count;
 
     ASSERT(nv > 0);
     ASSERT(ni > 0);
 
-    data.vertex_count = nv;
-    data.index_count = ni;
+    data->vertex_count = nv;
+    data->index_count = ni;
 
-    if (data.items == NULL)
+    if (data->items == NULL)
     {
-        return data;
+        return;
     }
 
-    const VkyImageData* items = (const VkyImageData*)data.items;
+    const VkyImageData* items = (const VkyImageData*)data->items;
     VkyTextureVertex* vertices = calloc(nv, sizeof(VkyTextureVertex));
     VkyIndex* indices = calloc(ni, sizeof(VkyIndex));
 
@@ -1442,10 +1462,8 @@ static VkyData vky_visual_image_bake(VkyVisual* visual, VkyData data)
     }
 
     // Pass-through for the vertices.
-    data.vertices = vertices;
-    data.indices = indices;
-
-    return data;
+    data->vertices = vertices;
+    data->indices = indices;
 }
 
 VkyVisual* vky_visual_image(VkyScene* scene, const VkyTextureParams* params)
@@ -1544,12 +1562,13 @@ VkyVisual* vky_visual_path_raw(VkyScene* scene)
 /*  Raw multi path visual                                                                        */
 /*************************************************************************************************/
 
-static VkyData vky_path_raw_multi_bake(VkyVisual* visual, VkyData data)
+static void vky_path_raw_multi_bake(VkyVisual* visual)
 {
+    VkyData* data = &visual->data;
     const VkyMultiRawPathParams* params = (const VkyMultiRawPathParams*)visual->params;
 
     // Determine the actual number of vertices and indices.
-    uint32_t nv = data.item_count; // total number of points
+    uint32_t nv = data->item_count; // total number of points
     uint32_t path_count = (uint32_t)params->info[0];
     ASSERT(nv % path_count == 0);
     uint32_t vertex_count_per_path = nv / path_count;
@@ -1558,16 +1577,17 @@ static VkyData vky_path_raw_multi_bake(VkyVisual* visual, VkyData data)
     ASSERT(nv > 0);
     ASSERT(ni > 0);
 
-    data.vertex_count = nv;
-    data.index_count = ni;
+    data->vertex_count = nv;
+    data->index_count = ni;
 
-    if (data.items == NULL)
+    if (data->items == NULL)
     {
-        return data;
+        return;
     }
 
     // We don't allocate data for the vertices, we pass through the user data.
-    data.no_vertices_alloc = true;
+    data->no_vertices_alloc = true;
+
     // Allocate the data buffer to be uploaded to the vertex buffer. Will be freed by visky.
     VkyIndex* indices = calloc(ni, sizeof(VkyIndex));
 
@@ -1583,10 +1603,8 @@ static VkyData vky_path_raw_multi_bake(VkyVisual* visual, VkyData data)
     ASSERT(offset == ni);
 
     // Pass-through for the vertices.
-    data.vertices = data.items;
-    data.indices = indices;
-
-    return data;
+    data->vertices = data->items;
+    data->indices = indices;
 }
 
 VkyVisual* vky_visual_path_raw_multi(VkyScene* scene, const VkyMultiRawPathParams* params)
@@ -1648,8 +1666,6 @@ VkyVisual* vky_visual_marker_raw(VkyScene* scene, const VkyMarkersRawParams* par
         &vertex_layout, 0, VKY_DEFAULT_VERTEX_FORMAT_POS, offsetof(VkyVertex, pos));
     vky_add_vertex_attribute(
         &vertex_layout, 1, VKY_DEFAULT_VERTEX_FORMAT_COLOR, offsetof(VkyVertex, color));
-
-
 
     // Default params.
     VkyMarkersRawParams vparams = {0};
@@ -1779,17 +1795,6 @@ void vky_visual_mesh_upload(VkyVisual* visual, const void* pixels)
 /*  Raw mesh visual                                                                              */
 /*************************************************************************************************/
 
-static VkyData _mesh_raw_bake_props(VkyVisual* visual)
-{
-    PROP_START(VkyVertex)
-    PROP_LOOP
-    {
-        PROP_POS3D(pos)
-        PROP_COLOR_ALPHA(color)
-    }
-    return data;
-}
-
 VkyVisual* vky_visual_mesh_raw(VkyScene* scene)
 {
     VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_MESH_RAW);
@@ -1818,9 +1823,9 @@ VkyVisual* vky_visual_mesh_raw(VkyScene* scene)
     vky_add_common_resources(visual);
 
     // Props.
-    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS);
-    vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA);
-    visual->cb_bake_props = _mesh_raw_bake_props;
+    vky_visual_prop_spec(visual, sizeof(VkyVertex));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyVertex, pos));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA, offsetof(VkyVertex, color));
 
     return visual;
 }
@@ -1859,6 +1864,6 @@ VkyVisual* vky_visual_mesh_flat(VkyScene* scene)
 void vky_mesh_upload(VkyMesh* mesh, VkyVisual* visual)
 {
     ASSERT(visual->visual_type == VKY_VISUAL_MESH || visual->visual_type == VKY_VISUAL_MESH_RAW);
-    VkyData data = vky_mesh_data(mesh);
-    vky_visual_data_raw(visual, data);
+    visual->data = vky_mesh_data(mesh);
+    vky_visual_data_raw(visual);
 }
