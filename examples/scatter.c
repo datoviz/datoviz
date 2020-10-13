@@ -69,12 +69,18 @@ int main()
     // x label
     strcpy(axparams.xlabel.label, "Scatter plot");
     axparams.xlabel.axis = VKY_AXIS_X;
+    axparams.xlabel.color.rgb[0] = 255;
+    axparams.xlabel.color.rgb[1] = 0;
+    axparams.xlabel.color.rgb[2] = 0;
     axparams.xlabel.color.alpha = TO_BYTE(VKY_AXES_LABEL_COLOR_A);
     axparams.xlabel.font_size = 12;
 
     // y label
     strcpy(axparams.ylabel.label, "Vertical axis");
     axparams.ylabel.axis = VKY_AXIS_Y;
+    axparams.ylabel.color.rgb[0] = 0;
+    axparams.ylabel.color.rgb[1] = 255;
+    axparams.ylabel.color.rgb[2] = 0;
     axparams.ylabel.color.alpha = TO_BYTE(VKY_AXES_LABEL_COLOR_A);
     axparams.ylabel.font_size = 12;
 
@@ -108,7 +114,7 @@ int main()
     // Second panel.
     VkyPanel* panel2 = vky_get_panel(scene, 0, 0);
 
-    // axparams.xlabel.label[0] = 0;
+    axparams.xlabel.label[0] = 0;
     // axparams.margins[2] = 100;
     // axparams.margins[3] = 100;
     // axparams.ylabel.label[0] = 0;

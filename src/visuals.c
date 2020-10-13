@@ -146,7 +146,7 @@ static void colorbar_upload(VkyVisual* colorbar, VkyColorbarParams params)
 
     colorbar->data.vertex_count = 4;
     colorbar->data.vertices = vertices;
-    colorbar->data.index_count = 9;
+    colorbar->data.index_count = 6;
     colorbar->data.indices = indices;
 
     vky_visual_data_raw(colorbar);

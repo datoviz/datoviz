@@ -620,7 +620,6 @@ static void _make_vertices(
 /*  Main axes functions                                                                          */
 /*************************************************************************************************/
 
-
 VkyAxes* vky_axes_init(VkyPanel* panel, VkyAxes2DParams params)
 {
     log_trace("axes init");
