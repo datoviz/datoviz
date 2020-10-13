@@ -114,7 +114,9 @@ static void _tick_bake(VkyVisual* visual)
     }
 
     data->vertices = vertices;
+    data->need_free_vertices = true;
     data->indices = indices;
+    data->need_free_indices = true;
 }
 
 
@@ -337,6 +339,7 @@ static void _text_bake(VkyVisual* visual)
     }
 
     data->vertices = vertices;
+    data->need_free_vertices = true;
     data->indices = NULL;
 }
 

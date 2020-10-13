@@ -532,6 +532,7 @@ static void vky_path_bake(VkyVisual* visual)
     ASSERT(vertex_offset == vertex_count);
 
     data->vertices = vertices;
+    data->need_free_vertices = true;
     data->indices = NULL;
 
     log_trace("finished baking the path data");
@@ -653,7 +654,9 @@ static void vky_segment_bake(VkyVisual* visual)
     }
 
     data->vertices = vertices;
+    data->need_free_vertices = true;
     data->indices = indices;
+    data->need_free_indices = true;
 }
 
 VkyVisual* vky_visual_segment(VkyScene* scene)
@@ -732,6 +735,7 @@ static void vky_marker_bake(VkyVisual* visual)
     }
 
     data->vertices = vertices;
+    data->need_free_vertices = true;
 }
 
 // static VkyData _marker_bake_props(VkyVisual* visual)
@@ -884,7 +888,7 @@ static void vky_text_bake(VkyVisual* visual)
     }
 
     data->vertices = vertices;
-    ASSERT(data->vertices != NULL);
+    data->need_free_vertices = true;
     data->indices = NULL;
 }
 
@@ -1001,7 +1005,9 @@ static void vky_arrow_bake(VkyVisual* visual)
     }
 
     data->vertices = vertices;
+    data->need_free_vertices = true;
     data->indices = indices;
+    data->need_free_indices = true;
 }
 
 VkyVisual* vky_visual_arrow(VkyScene* scene)
@@ -1163,7 +1169,9 @@ static void vky_visual_rectangle_bake(VkyVisual* visual)
     }
 
     data->vertices = vertices;
+    data->need_free_vertices = true;
     data->indices = indices;
+    data->need_free_indices = true;
 }
 
 
@@ -1254,6 +1262,7 @@ static void vky_visual_area_bake(VkyVisual* visual)
     }
 
     data->vertices = vertices;
+    data->need_free_vertices = true;
     data->indices = NULL;
 }
 
@@ -1360,7 +1369,9 @@ static void vky_visual_rectangle_axis_bake(VkyVisual* visual)
     }
 
     data->vertices = vertices;
+    data->need_free_vertices = true;
     data->indices = indices;
+    data->need_free_indices = true;
 }
 
 
@@ -1463,7 +1474,9 @@ static void vky_visual_image_bake(VkyVisual* visual)
 
     // Pass-through for the vertices.
     data->vertices = vertices;
+    data->need_free_vertices = true;
     data->indices = indices;
+    data->need_free_indices = true;
 }
 
 VkyVisual* vky_visual_image(VkyScene* scene, const VkyTextureParams* params)
@@ -1585,9 +1598,6 @@ static void vky_path_raw_multi_bake(VkyVisual* visual)
         return;
     }
 
-    // We don't allocate data for the vertices, we pass through the user data.
-    data->no_vertices_alloc = true;
-
     // Allocate the data buffer to be uploaded to the vertex buffer. Will be freed by visky.
     VkyIndex* indices = calloc(ni, sizeof(VkyIndex));
 
@@ -1604,7 +1614,9 @@ static void vky_path_raw_multi_bake(VkyVisual* visual)
 
     // Pass-through for the vertices.
     data->vertices = data->items;
+    data->need_free_vertices = false; // NOTE: pass-through so vertices pointer should not be free
     data->indices = indices;
+    data->need_free_indices = true;
 }
 
 VkyVisual* vky_visual_path_raw_multi(VkyScene* scene, const VkyMultiRawPathParams* params)

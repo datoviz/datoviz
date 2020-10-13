@@ -37,7 +37,7 @@ VkyData vky_mesh_data(VkyMesh* mesh)
     data.index_count = mesh->index_offsets[mesh->object_count];
     data.vertices = mesh->vertices;
     data.indices = mesh->indices;
-    data.no_vertices_alloc = true; // vky_mesh_destroy() will take care of the freeing instead
+    data.need_free_vertices = false; // vky_mesh_destroy() will take care of the freeing instead
     return data;
 }
 

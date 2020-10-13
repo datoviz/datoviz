@@ -60,7 +60,9 @@ static void _axes_3D_bake(VkyVisual* visual)
     }
 
     data->vertices = vertices;
+    data->need_free_vertices = true;
     data->indices = indices;
+    data->need_free_indices = true;
 }
 
 static VkyVisual* _axes_3D(VkyScene* scene)
@@ -164,6 +166,7 @@ static void _axes_3D_text_bake(VkyVisual* visual)
     }
 
     data->vertices = vertices;
+    data->need_free_vertices = true;
     data->indices = NULL;
 }
 

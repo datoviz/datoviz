@@ -2303,6 +2303,7 @@ VkyTexture vky_create_texture(VkyGpu* gpu, const VkyTextureParams* p_params)
 
 void vky_upload_texture(VkyTexture* texture, const void* pixels)
 {
+    log_trace("upload texture");
     // TODO: support partial upload
     VkyGpu* gpu = texture->gpu;
 

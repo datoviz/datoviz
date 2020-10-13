@@ -983,16 +983,10 @@ void vky_destroy_visual(VkyVisual* visual)
         vky_destroy_graphics_pipeline(&visual->pipeline);
     }
 
-    // for (uint32_t i = 0; i < visual->prop_count; i++)
-    // {
-    //     if (visual->props[i].values != NULL)
-    //         free(visual->props[i].values);
-    // }
-
     // This array is kept in memory for the duration of the visual.
-    if (visual->data.items != NULL)
+    if (visual->data.items != NULL && visual->data.need_free_items)
     {
-        log_trace("destroy visual's data.items");
+        log_trace("free visual's data.items");
         free(visual->data.items);
         visual->data.items = NULL;
     }
@@ -1020,8 +1014,6 @@ static void _bake(VkyVisual* visual)
     ASSERT(visual->cb_bake_data != NULL);
     ASSERT(data->item_count > 0);
     ASSERT(data->items != NULL);
-    ASSERT(data->vertex_count == 0);
-    ASSERT(data->vertices == NULL);
 
     // This call fills the vertices and possibly indices.
     visual->cb_bake_data(visual);
@@ -1041,17 +1033,13 @@ void vky_visual_data_raw(VkyVisual* visual)
     bool has_items = data->item_count > 0 && data->items != NULL;
     bool has_vertices = data->vertex_count > 0 && data->vertices != NULL;
     bool has_indices = data->index_count > 0 && data->indices != NULL;
-    bool need_to_free_vertices = false;
-    bool need_to_free_indices = false;
 
     // Bake the data from VkyData.items if there are no vertices yet.
-    if (!has_vertices)
+    if (has_items)
     {
         if (has_bake)
         {
-            ASSERT(has_items);
             _bake(visual);
-            need_to_free_vertices = !visual->data.no_vertices_alloc;
         }
         else
         {
@@ -1059,16 +1047,17 @@ void vky_visual_data_raw(VkyVisual* visual)
             // to the GPU.
             data->vertex_count = data->item_count;
             data->vertices = data->items;
-            need_to_free_vertices = false;
+            // NOTE: since items will be freed anyway, we should not free the vertices.
+            visual->data.need_free_vertices = false;
         }
     }
+
     // At this point, the vertices have been allocated and set.
     has_vertices = data->vertex_count > 0 && data->vertices != NULL;
-    // Need to free the indices if they were created during the baking.
-    if (!has_indices && (data->index_count > 0 && data->indices != NULL))
-        need_to_free_indices = true;
-    has_indices = data->index_count > 0 && data->indices != NULL;
     ASSERT(has_vertices);
+
+    // Need to free the indices if they were created during the baking.
+    has_indices = data->index_count > 0 && data->indices != NULL;
 
     // Allocation of the vertex and index buffers if needed.
     VkDeviceSize vertex_size = visual->pipeline.vertex_layout.stride;
@@ -1132,17 +1121,19 @@ void vky_visual_data_raw(VkyVisual* visual)
     }
 
     // Free the allocated buffers.
-    if (need_to_free_vertices)
+    if (visual->data.need_free_vertices)
     {
         log_trace("freeing data->vertices");
         free(data->vertices);
         data->vertices = NULL;
+        data->need_free_vertices = false;
     }
-    if (need_to_free_indices)
+    if (visual->data.need_free_indices)
     {
         log_trace("freeing data->indices");
         free(data->indices);
         data->indices = NULL;
+        data->need_free_indices = false;
     }
 }
 
@@ -1247,14 +1238,18 @@ void vky_visual_data(
     {
         ASSERT(value_count > 0);
         visual->data.items = calloc(value_count, visual->prop_size);
+        visual->data.need_free_items = true;
+        log_trace("allocate data.items");
         visual->data.item_count = value_count;
     }
     else if (visual->data.items != NULL && value_count > visual->data.item_count)
     {
+        log_trace("need to reallocate data.items to fit %d elements", value_count);
         // Here, the data.items array already exists, but it is too small. Need to recreate it
         // with the right size.
         free(visual->data.items);
         visual->data.items = calloc(value_count, visual->prop_size);
+        visual->data.need_free_items = true;
         visual->data.item_count = value_count;
     }
     ASSERT(visual->data.items != NULL);

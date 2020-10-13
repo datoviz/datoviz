@@ -289,7 +289,9 @@ struct VkyData
     uint32_t index_count;
     VkyIndex* indices;
 
-    bool no_vertices_alloc;
+    bool need_free_items;
+    bool need_free_vertices;
+    bool need_free_indices;
 };
 
 
