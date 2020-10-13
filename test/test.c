@@ -380,6 +380,8 @@ static int test_utils()
     printf("--- utils tests -----------------------------------\n");
 
     UNIT_TEST(test_visuals_props_1);
+    UNIT_TEST(test_visuals_props_2);
+    UNIT_TEST(test_visuals_props_3);
     UNIT_TEST(test_utils_transform_1);
     UNIT_TEST(test_utils_transform_2);
     UNIT_TEST(test_utils_panzoom_1);

@@ -27,15 +27,13 @@ static void _destroy_visual(VkyVisual* v)
 
 static int test_visuals_props_1()
 {
-    return 0;
-    /*
     VkyVisual v = _blank_visual();
 
     VkyVisualProp* vp = NULL;
     VkyVisualProp* vpc = NULL;
 
     // Add a prop to the visual.
-    vp = vky_visual_prop_add(&v, VKY_VISUAL_PROP_POS);
+    vp = vky_visual_prop_add(&v, VKY_VISUAL_PROP_POS, 4);
 
     AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_ALPHA, 0) == NULL);
     AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS, 0) == vp);
@@ -47,7 +45,7 @@ static int test_visuals_props_1()
     v.children[0] = &vc;
 
     // Add a prop to the child visual.
-    vpc = vky_visual_prop_add(&vc, VKY_VISUAL_PROP_POS);
+    vpc = vky_visual_prop_add(&vc, VKY_VISUAL_PROP_POS, 4);
 
     // Check that we get the correct prop, belonging either to the parent visual or the child.
     AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS, 0) == vp);
@@ -58,7 +56,53 @@ static int test_visuals_props_1()
     _destroy_visual(&vc);
     _destroy_visual(&v);
     return 0;
-    */
+}
+
+static int test_visuals_props_2()
+{
+    VkyVisual v = _blank_visual();
+    vky_visual_prop_spec(&v, 6);
+    vky_visual_prop_add(&v, VKY_VISUAL_PROP_POS, 0);   // 1 byte
+    vky_visual_prop_add(&v, VKY_VISUAL_PROP_COLOR, 1); // 2 bytes
+    vky_visual_prop_add(&v, VKY_VISUAL_PROP_SIZE, 3);  // 3 bytes
+
+    uint8_t val1[] = {10, 20, 30};
+    cvec2 val2[] = {{11, 12}, {13, 14}, {15, 16}};
+    // Only one cvec3 item here, but should be copied over automatically
+    cvec3 val3[] = {{21, 22, 23}};
+
+    vky_visual_data(&v, VKY_VISUAL_PROP_POS, 0, 3, val1);
+    AT(v.data.item_count == 3)
+    vky_visual_data(&v, VKY_VISUAL_PROP_COLOR, 0, 3, val2);
+    vky_visual_data(&v, VKY_VISUAL_PROP_SIZE, 0, 1, val3);
+    AT(v.data.item_count == 3)
+
+    uint8_t expected[] = {10, 11, 12, 21, 22, 23, 20, 13, 14, 21, 22, 23, 30, 15, 16, 21, 22, 23};
+    AT(memcmp(v.data.items, expected, sizeof(expected)) == 0);
+    return 0;
+}
+
+static int test_visuals_props_3()
+{
+    VkyVisual v = _blank_visual();
+    vky_visual_prop_spec(&v, 3);
+    vky_visual_prop_add(&v, VKY_VISUAL_PROP_POS, 0);   // 1 byte
+    vky_visual_prop_add(&v, VKY_VISUAL_PROP_COLOR, 1); // 2 bytes
+
+    uint8_t val1[] = {10};
+    cvec2 val2[] = {{11, 12}, {13, 14}};
+
+    vky_visual_data(&v, VKY_VISUAL_PROP_POS, 0, 1, val1);
+    AT(v.data.item_count == 1)
+    // Test the case where a subsequent call to vky_visual_data() increases the number
+    // of data items, and causes the library to enlarge the array and copy over the last item value
+    vky_visual_data(&v, VKY_VISUAL_PROP_COLOR, 0, 2, val2);
+    AT(v.data.item_count == 2)
+
+    uint8_t expected[] = {10, 11, 12, 10, 13, 14};
+    AT(memcmp(v.data.items, expected, sizeof(expected)) == 0);
+
+    return 0;
 }
 
 

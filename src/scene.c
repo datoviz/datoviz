@@ -1205,6 +1205,9 @@ static void _copy_prop_values(VkyVisual* visual, VkyVisualProp* vp)
     int64_t offset = (int64_t)vp->field_offset;
     int64_t item_size = (int64_t)vp->field_size;
     int64_t out_stride = (int64_t)visual->prop_size;
+    ASSERT(offset >= 0);
+    ASSERT(item_size > 0);
+    ASSERT(out_stride > 0);
 
     int64_t in_byte = (int64_t)vp->values;
     ASSERT(in_byte != 0);
@@ -1216,7 +1219,7 @@ static void _copy_prop_values(VkyVisual* visual, VkyVisualProp* vp)
         memcpy((void*)out_byte, (const void*)in_byte, (size_t)item_size);
         // NOTE: if there are less values in the prop than items, it will copy the last prop
         // value on all remaining items.
-        if (i < vp->value_count)
+        if (i < vp->value_count - 1)
             in_byte += item_size;
         out_byte += out_stride;
     }
@@ -1242,16 +1245,32 @@ void vky_visual_data(
         ASSERT(value_count > 0);
         visual->data.items = calloc(value_count, visual->prop_size);
         visual->data.need_free_items = true;
-        log_trace("allocate data.items");
+        // NOTE: the size of data.items is determined by the size of the first call to
+        // vky_visual_data
+        log_trace("allocate data.items with %d values", value_count);
         visual->data.item_count = value_count;
     }
     else if (visual->data.items != NULL && value_count > visual->data.item_count)
     {
         log_trace("need to reallocate data.items to fit %d elements", value_count);
-        // Here, the data.items array already exists, but it is too small. Need to recreate it
-        // with the right size.
-        free(visual->data.items);
+        // Here, the data.items array already exists, but it is too small. Need to recreate a new
+        // array with the right size, and copy the old array to the new one.
+        void* old_data_items = visual->data.items;
         visual->data.items = calloc(value_count, visual->prop_size);
+        memcpy(visual->data.items, old_data_items, visual->data.item_count * visual->prop_size);
+        free(old_data_items);
+        // The extra space at the end of the current item array is empty, we need to feel it
+        // with the existing values.
+        {
+            int64_t offset = (int64_t)visual->data.items +
+                             (int64_t)(visual->data.item_count * visual->prop_size);
+            for (uint32_t i = 0; i < value_count - visual->data.item_count; i++)
+            {
+                memcpy(
+                    (void*)(offset + (int64_t)(i * visual->prop_size)), //
+                    (void*)(offset - (int64_t)visual->prop_size), visual->prop_size);
+            }
+        }
         visual->data.need_free_items = true;
         visual->data.item_count = value_count;
     }
@@ -1274,7 +1293,8 @@ void vky_visual_data(
 
     // Tag the visual for data upload at the next frame.
     visual->need_data_upload = true;
-    visual->scene->canvas->need_data_upload = true;
+    if (visual->scene)
+        visual->scene->canvas->need_data_upload = true;
 }
 
 void vky_visual_data_resource(
