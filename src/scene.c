@@ -190,10 +190,8 @@ static VkyVisual* vky_get_panel_first_visual(VkyPanel* panel)
     for (uint32_t i = 0; i < grid->visual_panel_count; i++)
     {
         vp = grid->visual_panels[i];
-        if (vp.row == panel->row && vp.col == panel->col)
-        {
+        if (vp.panel == panel)
             return vp.visual;
-        }
     }
     return NULL;
 }
@@ -1694,8 +1692,7 @@ void vky_add_visual_to_panel(
 {
     VkyGrid* grid = visual->scene->grid;
     uint32_t n = grid->visual_panel_count;
-    grid->visual_panels[n] =
-        (VkyVisualPanel){visual, panel->row, panel->col, viewport_type, priority};
+    grid->visual_panels[n] = (VkyVisualPanel){visual, panel, viewport_type, priority};
     grid->visual_panel_count++;
 }
 
@@ -1783,7 +1780,7 @@ void vky_draw_all_visuals(VkyScene* scene)
             vp = grid->visual_panels[i];
             if (vp.priority == priorities[priority_idx])
             {
-                panel = vky_get_panel(scene, vp.row, vp.col);
+                panel = vp.panel;
                 vky_draw_visual(vp.visual, panel, vp.viewport_type);
             }
         }

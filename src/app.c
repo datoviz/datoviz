@@ -674,7 +674,7 @@ void vky_upload_pending_data(VkyCanvas* canvas)
             vp = &canvas->scene->grid->visual_panels[i];
             if (vp->visual->need_data_upload)
             {
-                vky_visual_data_upload(vp->visual, vky_get_panel(canvas->scene, vp->row, vp->col));
+                vky_visual_data_upload(vp->visual, vp->panel);
                 vp->visual->need_data_upload = false;
             }
         }

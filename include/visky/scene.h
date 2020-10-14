@@ -262,7 +262,7 @@ struct VkyControllerAutorotate
 struct VkyVisualPanel
 {
     VkyVisual* visual;
-    uint32_t row, col;
+    VkyPanel* panel;
     VkyViewportType viewport_type;
     VkyVisualPriority priority;
 };
