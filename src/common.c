@@ -295,7 +295,7 @@ uint64_t vky_get_fps(uint64_t frame_count)
 /*  Data normalization and coordinate transforms                                                 */
 /*************************************************************************************************/
 
-static void project_lonlat(double lon, double lat, dvec2 out)
+static void _project_lonlat(double lon, double lat, dvec2 out)
 {
     // Web Mercator projection
     double lonrad = lon / 180.0 * M_PI;
@@ -353,7 +353,7 @@ void vky_earth_to_pixels(uint32_t point_count, dvec2* points)
 {
     for (uint32_t i = 0; i < point_count; i++)
     {
-        project_lonlat(points[i][0], points[i][1], points[i]);
+        _project_lonlat(points[i][0], points[i][1], points[i]);
     }
     _normalize_2D(point_count, points);
 }

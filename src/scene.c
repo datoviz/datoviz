@@ -1106,6 +1106,38 @@ static VkyVisualProp* _get_pos2D_prop(VkyVisual* visual)
 }
 
 
+static void _allocate_pos_prop(VkyVisualProp* vp, uint32_t value_count)
+{
+    vp->value_count = value_count;
+    vp->values = calloc(value_count, sizeof(vec3));
+}
+
+
+// TODO: move to new C file
+static void
+vky_transform_cartesian(VkyBox2D box, uint32_t item_count, const dvec2* pos_in, vec3* pos_out)
+{
+    double xmin = box.pos_ll[0];
+    double ymin = box.pos_ll[1];
+    double xmax = box.pos_ur[0];
+    double ymax = box.pos_ur[1];
+
+    double dx = xmin < xmax ? 1. / (xmax - xmin) : 1;
+    double dy = ymin < ymax ? 1. / (ymax - ymin) : 1;
+
+    double ax = 2 * dx;
+    double ay = 2 * dy;
+    double bx = -(xmin + xmax) * dx;
+    double by = -(ymin + ymax) * dy;
+
+    for (uint32_t i = 0; i < item_count; i++)
+    {
+        pos_out[i][0] = ax * pos_in[i][0] + bx;
+        pos_out[i][1] = ay * pos_in[i][1] + by;
+    }
+}
+
+
 static VkyVisualProp* _get_pos_prop_or_renormalize(VkyVisual* visual, VkyPanel* panel)
 {
     // Deal with position.
@@ -1113,27 +1145,37 @@ static VkyVisualProp* _get_pos_prop_or_renormalize(VkyVisual* visual, VkyPanel* 
     if (vp == NULL || vp->value_count == 0)
     {
         // Need to compute the GPU pos vec3 from the 2D double-precision positions.
-        vp = _get_pos2D_prop(visual);
-        ASSERT(vp != NULL);
+        VkyVisualProp* vp_pos2D = _get_pos2D_prop(visual);
+        ASSERT(vp_pos2D != NULL);
+        ASSERT(vp_pos2D->values != NULL);
+        ASSERT(vp_pos2D->value_count > 0);
         ASSERT(panel != NULL);
         switch (panel->controller_type)
         {
-        case VKY_CONTROLLER_AXES_2D:
-            // TODO: log
-            // TODO: normalize 2D
-            //  vky_normalize_2D(axes->box_init, uint32_t item_count, const dvec2* pos2D, vec3*
-            //  pos_prop)
-            // TODO:
-            // VKY_CONTROLLER_POLAR
-            // VKY_CONTROLLER_WEB_MERCATOR
+
+        case VKY_CONTROLLER_AXES_2D:;
+            VkyAxes* axes = (VkyAxes*)panel->controller;
+            _allocate_pos_prop(vp, vp_pos2D->value_count);
+
+            vky_transform_cartesian(
+                vky_axes_get_range(axes), vp_pos2D->value_count, vp_pos2D->values, vp->values);
+
+            // TODO: other controllers
+            // - log scale
+            // - polar
+            // - web mercator
+
             break;
+
         default:
+            log_error(
+                "normalization with controller type %d not implemented yet",
+                panel->controller_type);
             break;
         }
     }
-    // Now, after normalization, the pos prop should be set.
-    vp = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS, 0);
-    ASSERT(vp != NULL);
+    // Now, after normalization, the POS prop should be set.
+    ASSERT(vp != NULL && vp->value_count > 0 && vp->values != NULL);
     return vp;
 }
 
@@ -1492,7 +1534,18 @@ void vky_visual_data_upload(VkyVisual* visual, VkyPanel* panel)
     {
         vky_visual_data_upload(visual->children[i], panel);
     }
+
+    // If the POS prop needs to be freed after renormalization, free it.
+    // NOTE: renormalization will happen at the next visual data invalidation.
+    if (vp->need_free)
+    {
+        free(vp->values);
+        vp->values = NULL;
+        vp->value_count = 0;
+        vp->need_free = false;
+    }
 }
+
 
 void vky_free_data(VkyData data)
 {

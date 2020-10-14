@@ -317,6 +317,8 @@ struct VkyVisualProp
     void* values;
     void* resource; // (only for the _RESOURCE prop types)
     VkyVisualPropCallback callback;
+
+    bool need_free;
 };
 
 
