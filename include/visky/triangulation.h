@@ -13,6 +13,8 @@ extern "C" {
 /*  Structures                                                                                   */
 /*************************************************************************************************/
 
+typedef struct VkyVertex VkyVertex;
+
 typedef struct triangulateio triangulateio; // forward declaration
 
 typedef struct VkyPSLGTriangulation VkyPSLGTriangulation;

@@ -106,6 +106,11 @@ typedef enum
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
+typedef struct VkyTextureVertex VkyTextureVertex;
+typedef struct VkyTexturedVertex3D VkyTexturedVertex3D;
+typedef struct VkyVertex VkyVertex;
+typedef struct VkyVertexUV VkyVertexUV;
+
 typedef struct VkyAreaData VkyAreaData;
 typedef struct VkyAreaParams VkyAreaParams;
 typedef struct VkyAreaVertex VkyAreaVertex;
@@ -119,6 +124,7 @@ typedef struct VkyImageData VkyImageData;
 typedef struct VkyMarkersParams VkyMarkersParams;
 typedef struct VkyMarkersRawParams VkyMarkersRawParams;
 typedef struct VkyMarkersVertex VkyMarkersVertex;
+typedef VkyMarkersVertex VkyGraphNode;
 typedef struct VkyMeshParams VkyMeshParams;
 typedef struct VkyMultiRawPathParams VkyMultiRawPathParams;
 typedef struct VkyPathData VkyPathData;
@@ -132,12 +138,9 @@ typedef struct VkyRectangleParams VkyRectangleParams;
 typedef struct VkySegmentVertex VkySegmentVertex;
 typedef struct VkyTextData VkyTextData;
 typedef struct VkyTextParams VkyTextParams;
-typedef struct VkyTexturedVertex3D VkyTexturedVertex3D;
 typedef struct VkyTextVertex VkyTextVertex;
 typedef struct VkyTriangulationParams VkyTriangulationParams;
-typedef struct VkyVertexUV VkyVertexUV;
 typedef struct VkyVolumeParams VkyVolumeParams;
-typedef VkyMarkersVertex VkyGraphNode;
 
 
 
@@ -148,6 +151,38 @@ typedef VkyMarkersVertex VkyGraphNode;
 static const char VKY_TEXT_CHARS[] =
     " !\"#$%&'()*+,-./"
     "0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7f";
+
+
+
+/*************************************************************************************************/
+/*  Common vertex structs                                                                        */
+/*************************************************************************************************/
+
+// Default vertex with vec3 pos and usvec4 color.
+struct VkyVertex
+{
+    vec3 pos;
+    VkyColor color; // 4 bytes for RGBA
+};
+
+// Default vertex with vec3 pos and vec2 uv texture coordinates.
+struct VkyTextureVertex
+{
+    vec3 pos;
+    vec2 uv;
+};
+
+struct VkyTexturedVertex3D
+{
+    vec3 pos;
+    vec3 coords;
+};
+
+struct VkyVertexUV
+{
+    vec3 pos;
+    vec2 uv;
+};
 
 
 
@@ -177,6 +212,8 @@ struct VkyRectangleAxisData
     VkyColor color;
 };
 
+
+
 struct VkyAreaParams
 {
     vec3 origin;
@@ -200,6 +237,8 @@ struct VkyAreaData
     uint32_t area_idx;
 };
 
+
+
 // Struct sent to the GPU as uniform buffer.
 struct VkyMeshParams
 {
@@ -210,6 +249,8 @@ struct VkyMeshParams
     int32_t mode_shading;
     float wire_linewidth;
 };
+
+
 
 struct VkyMarkersVertex
 {
@@ -235,6 +276,8 @@ struct VkyMarkersRawParams
     int32_t alpha_scaling_mode;
 };
 
+
+
 struct VkySegmentVertex
 {
     vec3 P0;
@@ -247,6 +290,8 @@ struct VkySegmentVertex
     uint8_t transform_mode;
 };
 
+
+
 struct VkyArrowVertex
 {
     vec3 P0;
@@ -256,6 +301,8 @@ struct VkyArrowVertex
     float linewidth;
     float arrow_type;
 };
+
+
 
 struct VkyPathParams
 {
@@ -283,12 +330,16 @@ struct VkyPathVertex
     VkyColor color;
 };
 
+
+
 struct VkyMultiRawPathParams
 {
     vec4 info;                                  // path_count, vertex_count_per_path, scaling
     vec4 y_offsets[VKY_RAW_PATH_MAX_PATHS / 4]; // NOTE: 16 bytes alignment enforced
     vec4 colors[VKY_RAW_PATH_MAX_PATHS];        // 16 bytes per path
 };
+
+
 
 struct VkyFakeSphereParams
 {
@@ -302,28 +353,20 @@ struct VkyFakeSphereVertex
     float radius;
 };
 
+
+
 struct VkyImageData
 {
     vec3 p0, p1;
     vec2 uv0, uv1;
 };
 
-struct VkyVertexUV
-{
-    vec3 pos;
-    vec2 uv;
-};
+
 
 struct VkyVolumeParams
 {
     mat4 inv_proj_view;
     mat4 normal_mat;
-};
-
-struct VkyTexturedVertex3D
-{
-    vec3 pos;
-    vec3 coords;
 };
 
 struct VkyColorbarVertex
@@ -332,6 +375,8 @@ struct VkyColorbarVertex
     vec2 padding;
     cvec2 uv;
 };
+
+
 
 struct VkyGraphParams
 {
@@ -347,6 +392,14 @@ struct VkyGraphEdge
     float linewidth;
     VkyCapType cap0;
     VkyCapType cap1;
+};
+
+
+
+struct VkyTextParams
+{
+    ivec2 grid_size;
+    ivec2 tex_size;
 };
 
 struct VkyTextData
@@ -374,11 +427,7 @@ struct VkyTextVertex
     uint8_t transform_mode;
 };
 
-struct VkyTextParams
-{
-    ivec2 grid_size;
-    ivec2 tex_size;
-};
+
 
 struct VkyPolygonParams
 {

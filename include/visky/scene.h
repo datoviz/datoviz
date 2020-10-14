@@ -178,10 +178,10 @@ typedef enum
 typedef enum
 {
     VKY_COLORBAR_NONE = 0,
-    VKY_COLORBAR_RIGHT,
-    VKY_COLORBAR_BOTTOM,
-    VKY_COLORBAR_LEFT,
-    VKY_COLORBAR_TOP,
+    VKY_COLORBAR_TOP = 1,
+    VKY_COLORBAR_RIGHT = 2,
+    VKY_COLORBAR_BOTTOM = 3,
+    VKY_COLORBAR_LEFT = 4,
 } VkyColorbarPosition;
 
 
@@ -214,19 +214,16 @@ typedef struct VkyPanelIndex VkyPanelIndex;
 typedef struct VkyPanelLink VkyPanelLink;
 typedef struct VkyPanzoom VkyPanzoom;
 typedef struct VkyPick VkyPick;
-typedef struct VkyTextureVertex VkyTextureVertex;
-typedef struct VkyVertex VkyVertex;
 typedef struct VkyVisual VkyVisual;
-typedef struct VkyVisualProp VkyVisualProp;
 typedef struct VkyVisualPanel VkyVisualPanel;
+typedef struct VkyVisualProp VkyVisualProp;
 
 // Callbacks.
-typedef void (*VkyVisualBakeCallback)(VkyVisual*);
-// typedef VkyData (*VkyVisualBakePropsCallback)(VkyVisual*);
 typedef void (*VkyAxesTickFormatter)(VkyAxes*, double value, char* out_text);
+typedef void (*VkyVisualBakeCallback)(VkyVisual*);
 typedef void (*VkyVisualCallback)(VkyVisual*);
-typedef void (*VkyVisualResizeCallback)(VkyVisual*);
 typedef void (*VkyVisualPropCallback)(VkyVisualProp*, VkyVisual*, VkyPanel*);
+typedef void (*VkyVisualResizeCallback)(VkyVisual*);
 
 
 
@@ -347,23 +344,6 @@ struct VkyVisual
     VkyVisualResizeCallback cb_resize; // NOTE: unused yet
 
     bool need_data_upload;
-};
-
-
-
-// Default vertex with vec3 pos and usvec4 color.
-struct VkyVertex
-{
-    vec3 pos;
-    VkyColor color; // 4 bytes for RGBA
-};
-
-
-
-struct VkyTextureVertex
-{
-    vec3 pos;
-    vec2 uv;
 };
 
 
@@ -732,15 +712,6 @@ VKY_EXPORT void vky_visual_data_resource(VkyVisual*, VkyVisualPropType, uint32_t
 VKY_EXPORT void vky_visual_data_callback(
     VkyVisual*, VkyVisualPropType, uint32_t prop_index, VkyVisualPropCallback);
 void vky_visual_data_upload(VkyVisual*, VkyPanel*);
-
-// VKY_INLINE void vky_visual_prop_value(VkyVisualProp* vp, uint32_t value_index)
-// {
-//     if (vp->resource != NULL)
-//         return vp->resource;
-//     ASSERT(vp->values != NULL);
-//     value_index = CLIP(value_index, 0, vp->value_count - 1);
-//     return vp->values[value_index];
-// }
 
 
 /*************************************************************************************************/
