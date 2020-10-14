@@ -22,7 +22,6 @@ static void upload_text(VkyVisual* visual)
                 .anchor = {0, 0},
                 .angle = -.67 * t + M_2PI * (float)i / N,
                 .glyph = STRING[j],
-                .string_index = i,
                 .transform_mode = 0,
             };
             k++;

@@ -945,8 +945,7 @@ static void _path_bake(VkyVisual* visual)
 
     // Number of paths
     uint32_t path_count = data->group_count;
-    if (path_count == 0)
-        path_count = 1; // if no group, only one group is assumed
+    ASSERT(path_count > 0);
 
     // Extra vertices to to hide joins between two paths.
     uint32_t vertex_count = item_count + path_count - 2;
@@ -965,18 +964,18 @@ static void _path_bake(VkyVisual* visual)
     VkyPathTopology* topologies = (VkyPathTopology*)data->group_params;
     int32_t first_point_idx = 0;
     bool is_open = true;
+    ASSERT(data->group_starts != NULL);
+    ASSERT(data->group_lengths != NULL);
 
-    // vec3* pos = NULL;
     VkyColor color = {0};
 
     for (uint32_t i = 0; i < path_count; i++)
     {
         // Index, within the VkyPathData* array, of the first point in the current path.
-        first_point_idx = data->group_starts != NULL ? (int32_t)data->group_starts[i] : 0;
+        first_point_idx = (int32_t)data->group_starts[i];
 
         // Number of points in the current path.
-        point_count_path =
-            data->group_lengths != NULL ? (int32_t)data->group_lengths[i] : (int32_t)item_count;
+        point_count_path = (int32_t)data->group_lengths[i];
 
         if (topologies != NULL)
             is_open = topologies[i] == VKY_PATH_OPEN;
@@ -1649,19 +1648,23 @@ static void _colorbar_tick_upload(VkyVisual* text, VkyVisual* ticks, VkyColorbar
     float anchor_y = 0;
     float hlw = VKY_ANTIALIAS / 2;
     uint32_t k = 0;
+    uint32_t* tick_lengths = calloc(n, sizeof(uint32_t));
     for (uint32_t i = 0; i < n; i++)
     {
         // TODO: support right and horizontal colorbars
         t = (double)i / (n - 1);
         pos = 1.0 - 2.0 * t;
         anchor_y = (-anchor_bottom) + (anchor_top + anchor_bottom) * t;
+
+        // Generate the tick text.
         snprintf(
             cur_tick, MAX_TICK_LEN, normal_range ? "%.3f" : "%.3e",
             params.scale.vmin + (params.scale.vmax - params.scale.vmin) * t);
         tick_len = strlen(cur_tick);
         ASSERT(tick_len <= VKY_AXES_MAX_GLYPHS_PER_TICK);
+        tick_lengths[i] = tick_len;
 
-        // Tick text.
+        // Tick text data for the visual.
         for (uint32_t j = 0; j < tick_len; j++)
         {
             ASSERT(k < n * VKY_AXES_MAX_GLYPHS_PER_TICK);
@@ -1676,7 +1679,6 @@ static void _colorbar_tick_upload(VkyVisual* text, VkyVisual* ticks, VkyColorbar
                 {+1, anchor_y},
                 0,
                 cur_tick[j],
-                i,
                 VKY_TRANSFORM_MODE_STATIC,
             };
             k++;
@@ -1721,6 +1723,8 @@ static void _colorbar_tick_upload(VkyVisual* text, VkyVisual* ticks, VkyColorbar
 
     text->data.item_count = k;
     text->data.items = text_data;
+
+    vky_visual_data_set_groups(text, n, tick_lengths, NULL);
     vky_visual_data_raw(text);
 
     ticks->data.item_count = n + 4;
@@ -1730,6 +1734,7 @@ static void _colorbar_tick_upload(VkyVisual* text, VkyVisual* ticks, VkyColorbar
     free(tick);
     free(tick_data);
     free(text_data);
+    free(tick_lengths);
 }
 
 VkyVisual* vky_visual_colorbar(VkyScene* scene, VkyColorbarParams params)
@@ -1834,20 +1839,10 @@ static void _text_bake(VkyVisual* visual)
     const VkyTextData* text = (const VkyTextData*)data->items;
 
     // Determine the length of each string.
-    uint32_t* string_lengths = calloc(data->item_count, sizeof(uint32_t));
-    uint32_t string_count = 0;
-    for (uint32_t i = 0; i < data->item_count; i++)
-    {
-        // string_index should be 0 0 0 1 1 1 2 2 2 2 2 2 3 3 3...
-        // Still in the same string.
-        if (text[i].string_index != string_count)
-        {
-            string_count++;
-        }
-        string_lengths[string_count]++;
-    }
-    string_count++;
+    uint32_t* string_lengths = data->group_lengths;
+    uint32_t string_count = data->group_count;
     ASSERT(string_count > 0);
+    ASSERT(string_lengths != NULL);
     ASSERT(string_lengths[0] > 0);
     ASSERT(string_lengths[string_count - 1] > 0);
 
@@ -1875,12 +1870,12 @@ static void _text_bake(VkyVisual* visual)
     for (uint32_t i = 0; i < data->item_count; i++)
     {
         // Keep track of the changes of strings.
-        if (str_idx != text[i].string_index)
+        if (str_idx + 1 <= data->group_count - 1 && i >= data->group_starts[str_idx + 1])
         {
             k += string_lengths[str_idx];
+            str_idx++;
         }
 
-        str_idx = text[i].string_index;    // index of the string the current glyph is in
         str_len = string_lengths[str_idx]; // length of the string the current glyph is in
         ASSERT(i >= str_idx);
         char c[] = {text[i].glyph};
@@ -1969,7 +1964,6 @@ VkyVisual* vky_visual_text(VkyScene* scene)
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_SHIFT, offsetof(VkyTextData, anchor));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_ANGLE, offsetof(VkyTextData, angle));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_TEXT, offsetof(VkyTextData, glyph));
-    // vky_visual_prop_add(visual, VKY_VISUAL_PROP_GROUP, offsetof(VkyTextData, string_index));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_TRANSFORM, offsetof(VkyTextData, transform_mode));
 
     return visual;

@@ -273,7 +273,6 @@ static void add_label(VkyPanel* panel, VkyAxis axis, VkyAxes2DParams* params)
                 {0, +1},                                                                  // anchor
                 0, // angle (horizontal)
                 str[j],
-                0,
                 VKY_TRANSFORM_MODE_STATIC,
             };
         }
@@ -292,7 +291,6 @@ static void add_label(VkyPanel* panel, VkyAxis axis, VkyAxes2DParams* params)
                 {0, -1},                  // anchor
                 M_PI / 2,                 // angle (vertical)
                 str[j],
-                0,
                 VKY_TRANSFORM_MODE_STATIC,
             };
         }
@@ -698,7 +696,6 @@ VkyVisual* vky_create_visual(VkyScene* scene, VkyVisualType visual_type)
     visual.props = calloc(VKY_MAX_VISUAL_PROP_COUNT, sizeof(VkyVisualProp));
     visual.resources = calloc(VKY_MAX_VISUAL_RESOURCES, sizeof(void*));
     visual.children = calloc(VKY_MAX_VISUALS_CHILDREN, sizeof(void*));
-    visual.data.group_count = 1;
 
     // NOTE: by convention, the first buffer is the indirect draw buffer.
     // HACK: we allocate the bigger indexed command so that we have enough space,
@@ -1093,7 +1090,7 @@ static void _allocate_data_items(VkyVisual* visual, uint32_t item_count)
     // Allocate the VkyData.items array.
     if (visual->data.items != NULL)
         free(visual->data.items);
-    log_trace("allocate data.items with %d values", item_count);
+    log_debug("allocate data.items with %d values of %d bytes", item_count, visual->item_size);
     visual->data.items = calloc(item_count, visual->item_size);
     visual->data.need_free_items = true;
 }
@@ -1138,8 +1135,11 @@ static VkyVisualProp* _get_pos2D_prop(VkyVisual* visual)
 
 static void _allocate_pos_prop(VkyVisualProp* vp, uint32_t value_count)
 {
+    // The POS prop is the only one we allocate values for, so that we can renormalize
+    // them and get the POS prop.
     vp->value_count = value_count;
     vp->values = calloc(value_count, sizeof(vec3));
+    vp->need_free = true;
 }
 
 
@@ -1171,9 +1171,10 @@ vky_transform_cartesian(VkyBox2D box, uint32_t item_count, const dvec2* pos_in, 
 static VkyVisualProp* _get_pos_prop_or_renormalize(VkyVisual* visual, VkyPanel* panel)
 {
     // Deal with position.
-    VkyVisualProp* vp = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS, 0);
-    if (vp == NULL || vp->value_count == 0)
+    VkyVisualProp* vp_pos = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS, 0);
+    if (vp_pos == NULL || vp_pos->value_count == 0)
     {
+        log_debug("computing POS prop from POS2D prop");
         // Need to compute the GPU pos vec3 from the 2D double-precision positions.
         VkyVisualProp* vp_pos2D = _get_pos2D_prop(visual);
         ASSERT(vp_pos2D != NULL);
@@ -1185,10 +1186,10 @@ static VkyVisualProp* _get_pos_prop_or_renormalize(VkyVisual* visual, VkyPanel* 
 
         case VKY_CONTROLLER_AXES_2D:;
             VkyAxes* axes = (VkyAxes*)panel->controller;
-            _allocate_pos_prop(vp, vp_pos2D->value_count);
+            _allocate_pos_prop(vp_pos, vp_pos2D->value_count);
 
             vky_transform_cartesian(
-                vky_axes_get_range(axes), vp_pos2D->value_count, vp_pos2D->values, vp->values);
+                vky_axes_get_range(axes), vp_pos2D->value_count, vp_pos2D->values, vp_pos->values);
 
             // TODO: other controllers
             // - log scale
@@ -1204,9 +1205,7 @@ static VkyVisualProp* _get_pos_prop_or_renormalize(VkyVisual* visual, VkyPanel* 
             break;
         }
     }
-    // Now, after normalization, the POS prop should be set.
-    ASSERT(vp != NULL && vp->value_count > 0 && vp->values != NULL);
-    return vp;
+    return vp_pos;
 }
 
 
@@ -1250,6 +1249,19 @@ static void _bake(VkyVisual* visual)
     ASSERT(visual->cb_bake_data != NULL);
     ASSERT(data->item_count > 0);
     ASSERT(data->items != NULL);
+
+    // Create trivial group if there are no groups.
+    if (data->group_count == 0)
+        data->group_count = 1;
+    if (data->group_lengths == 0)
+    {
+        data->group_lengths = calloc(1, sizeof(uint32_t));
+        data->group_lengths[0] = data->item_count;
+    }
+    if (data->group_starts == 0)
+    {
+        data->group_starts = calloc(1, sizeof(uint32_t));
+    }
 
     // This call fills the vertices and possibly indices.
     visual->cb_bake_data(visual);
@@ -1375,67 +1387,6 @@ void vky_visual_data_raw(VkyVisual* visual)
 }
 
 
-void vky_visual_data(
-    VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index, //
-    uint32_t value_count, void* values)
-{
-    ASSERT(value_count > 0);
-    ASSERT(values != NULL);
-
-    // Get the visual prop object.
-    VkyVisualProp* vp = vky_visual_prop_get(visual, prop_type, prop_index);
-    if (vp == NULL)
-    {
-        log_error("could not find visual prop %d", prop_type);
-        return;
-    }
-
-    // Allocate the VkyData.items array if needed.
-    if (visual->data.items == NULL)
-    {
-        _allocate_data_items(visual, value_count);
-        // NOTE: the size of data.items is determined by the size of the first call to
-        // vky_visual_data
-        visual->data.item_count = value_count;
-    }
-    // Here, the data.items array already exists, but it is too small. Need to recreate a new
-    // array with the right size, and copy the old array to the new one.
-    else if (visual->data.items != NULL && value_count > visual->data.item_count)
-    {
-        _reallocate_data_items(visual, value_count);
-    }
-    // Here, the data.items array already exists, but it is larger than the current POS prop.
-    // This means there are now less elements.
-    else if (
-        visual->data.items != NULL && value_count < visual->data.item_count &&
-        prop_type == VKY_VISUAL_PROP_POS)
-    {
-        log_trace("need to make data.items smaller, with %d elements", value_count);
-        // We don't change the underlying array, we just make data.item_count lower.
-        visual->data.item_count = value_count;
-    }
-    ASSERT(visual->data.items != NULL);
-    ASSERT(visual->data.item_count > 0);
-    // Now we can assume data.items is allocated and has at least value_count items.
-
-    vp->value_count = value_count;
-    vp->values = values;
-
-    // HACK: the first time the last prop is accessed, we need to update its field size, given its
-    // offset and the struct's total size (since it is the last field of the struct).
-    if (vp->field_size == 0)
-    {
-        vp->field_size = visual->item_size - vp->field_offset;
-    }
-    ASSERT(vp->field_size > 0);
-
-    // Copy the prop array into the structured array.
-    _copy_prop_values(visual, vp, 0, visual->data.item_count, vp->values);
-
-    _visual_need_data_upload(visual, vp);
-}
-
-
 void vky_visual_data_set_groups(
     VkyVisual* visual, uint32_t group_count, //
     const uint32_t* group_lengths, const void* group_params)
@@ -1482,12 +1433,71 @@ void vky_visual_data_set_groups(
 }
 
 
+void vky_visual_data(
+    VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index, //
+    uint32_t value_count, void* values)
+{
+    ASSERT(value_count > 0);
+
+    // Get the visual prop object.
+    VkyVisualProp* vp = vky_visual_prop_get(visual, prop_type, prop_index);
+    if (vp == NULL)
+    {
+        log_error("could not find visual prop %d", prop_type);
+        return;
+    }
+
+    // Allocate the VkyData.items array if needed.
+    if (visual->data.items == NULL)
+    {
+        _allocate_data_items(visual, value_count);
+        // NOTE: the size of data.items is determined by the size of the first call to
+        // vky_visual_data
+        visual->data.item_count = value_count;
+    }
+    // Here, the data.items array already exists, but it is too small. Need to recreate a new
+    // array with the right size, and copy the old array to the new one.
+    else if (visual->data.items != NULL && value_count > visual->data.item_count)
+    {
+        _reallocate_data_items(visual, value_count);
+    }
+    // Here, the data.items array already exists, but it is larger than the current POS prop.
+    // This means there are now less elements.
+    else if (
+        visual->data.items != NULL && value_count < visual->data.item_count &&
+        prop_type == VKY_VISUAL_PROP_POS)
+    {
+        log_trace("need to make data.items smaller, with %d elements", value_count);
+        // We don't change the underlying array, we just make data.item_count lower.
+        visual->data.item_count = value_count;
+    }
+    ASSERT(visual->data.items != NULL);
+    ASSERT(visual->data.item_count > 0);
+    // Now we can assume data.items is allocated and has at least value_count items.
+
+    vp->value_count = value_count;
+
+    // HACK: the first time the last prop is accessed, we need to update its field size, given its
+    // offset and the struct's total size (since it is the last field of the struct).
+    if (vp->field_size == 0)
+    {
+        vp->field_size = visual->item_size - vp->field_offset;
+    }
+    ASSERT(vp->field_size > 0);
+
+    // Copy the prop array into the structured array.
+    if (values != NULL)
+        _copy_prop_values(visual, vp, 0, visual->data.item_count, values);
+
+    _visual_need_data_upload(visual, vp);
+}
+
+
 void vky_visual_data_partial(
     VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index, //
     uint32_t first_item, uint32_t value_count, const void* values)
 {
     ASSERT(value_count > 0);
-    ASSERT(values != NULL);
 
     // Get the visual prop object.
     VkyVisualProp* vp = vky_visual_prop_get(visual, prop_type, prop_index);
@@ -1502,7 +1512,10 @@ void vky_visual_data_partial(
     ASSERT(visual->data.items != NULL);
     ASSERT(visual->data.item_count > 0);
 
-    _copy_prop_values(visual, vp, first_item, value_count, values);
+    vp->value_count = value_count;
+
+    if (values != NULL)
+        _copy_prop_values(visual, vp, first_item, value_count, values);
 
     _visual_need_data_upload(visual, vp);
 }
@@ -1512,23 +1525,35 @@ void vky_visual_data_group(
     VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index, uint32_t group_idx,
     const void* value)
 {
-    uint32_t first_item = 0, group_size = 0;
+    uint32_t group_size = 0;
 
     ASSERT(group_idx < visual->data.group_count);
+    // Need to call vky_visual_data_set_groups() first.
     ASSERT(visual->data.group_lengths != NULL);
+    ASSERT(visual->data.group_starts != NULL);
+
     group_size = visual->data.group_lengths[group_idx];
-    for (uint32_t i = 0; i < group_idx; i++)
-    {
-        first_item += visual->data.group_lengths[i];
-    }
+    uint32_t first_item = visual->data.group_starts[group_idx];
+
+    VkyVisualProp* vp = vky_visual_prop_get(visual, prop_type, prop_index);
 
     // Repeat the value for the current group.
-    void* values = calloc(group_size, visual->item_size);
-    for (uint32_t i = 0; i < group_size; i++)
+    void* values = calloc(group_size, vp->field_size);
+    if (value != NULL)
     {
-        memcpy(
-            (void*)((int64_t)values + (int64_t)(i * visual->item_size)), value, visual->item_size);
+        for (uint32_t i = 0; i < group_size; i++)
+        {
+            memcpy(
+                (void*)((int64_t)values + (int64_t)(i * vp->field_size)), //
+                value, vp->field_size);
+        }
     }
+
+    // HACK: when setting a prop via a group rather than vky_visual_data(), we need to
+    // allocate it at least for the POS/POS2D props, so that renormalization still works.
+    if (prop_type == VKY_VISUAL_PROP_POS && vp->values == NULL)
+        _allocate_pos_prop(vp, visual->data.item_count);
+
     vky_visual_data_partial(visual, prop_type, prop_index, first_item, group_size, values);
     free(values);
 }
@@ -1561,15 +1586,12 @@ void vky_visual_data_upload(VkyVisual* visual, VkyPanel* panel)
         vp = &visual->props[i];
         if (vp->callback != NULL)
             vp->callback(vp, visual, panel);
-        if (vp->values == NULL)
-        {
-            log_error("visual prop %d is empty", vp->type);
-            return;
-        }
     }
 
     // Renormalize the POS prop if POS2D is specified.
     vp = _get_pos_prop_or_renormalize(visual, panel);
+    if (vp == NULL)
+        return;
     ASSERT(vp != NULL);
 
     // The VkyData.items array is kept up to date in vky_visual_data(), called by the user.

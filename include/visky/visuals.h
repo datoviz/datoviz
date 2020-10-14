@@ -411,7 +411,6 @@ struct VkyTextData
     vec2 anchor;
     float angle;
     char glyph;
-    uint32_t string_index;
     uint8_t transform_mode;
 };
 

@@ -6,25 +6,18 @@ static void hello(VkyPanel* panel)
 {
     VkyVisual* visual = vky_visual(panel->scene, VKY_VISUAL_TEXT, NULL, NULL);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
-    VkyTextData data[12] = {0};
-    const char* str = "Hello world!";
-    for (uint32_t i = 0; i < 12; i++)
-    {
-        data[i] = (VkyTextData){
-            .pos = {0, 0, 0},
-            .shift = {0, 0},
-            .color = {{255, 0, 0}, 255},
-            .glyph_size = 30,
-            .anchor = {0, 0},
-            .angle = 0,
-            .glyph = str[i],
-            .string_index = 0,
-            .transform_mode = 0,
-        };
-    }
-    visual->data.item_count = 12;
-    visual->data.items = data;
-    vky_visual_data_raw(visual);
+    char* str = "Hello world!";
+    uint32_t n = strlen(str);
+
+    vec3 pos = {0, 0, 0};
+    VkyColor color = {{255, 0, 0}, 255};
+    float size = 30;
+
+    vky_visual_data_set_groups(visual, 1, (uint32_t[]){n}, NULL);
+    vky_visual_data_group(visual, VKY_VISUAL_PROP_POS, 0, 0, pos);
+    vky_visual_data_group(visual, VKY_VISUAL_PROP_COLOR_ALPHA, 0, 0, &color);
+    vky_visual_data_group(visual, VKY_VISUAL_PROP_SIZE, 0, 0, &size);
+    vky_visual_data(visual, VKY_VISUAL_PROP_TEXT, 0, n, (void*)str);
 }
 
 static void triangle(VkyPanel* panel)
