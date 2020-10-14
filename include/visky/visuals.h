@@ -217,18 +217,17 @@ struct VkyAreaParams
     vec3 v;
 };
 
-struct VkyAreaVertex
-{
-    vec3 pos;
-    VkyColor color;
-    uint32_t area_idx;
-};
-
 struct VkyAreaData
 {
     // position of the lower left corner in the 2D coordinate system defined by (origin, u, v)
     vec2 p;
     float h;
+    VkyColor color;
+};
+
+struct VkyAreaVertex
+{
+    vec3 pos;
     VkyColor color;
     uint32_t area_idx;
 };

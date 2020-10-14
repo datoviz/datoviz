@@ -218,26 +218,28 @@ static void area(VkyPanel* panel)
 
     // Upload the data.
     const uint32_t n = 1000;
-    VkyAreaData data[2000];
     float width = 2 / (float)n;
     float height = .25;
     float x = 0, y = 0;
-    for (uint32_t k = 0; k < 2; k++)
+
+    vec2* pos = calloc(2 * n, sizeof(vec2));
+    VkyColor* color = calloc(2 * n, sizeof(VkyColor));
+    for (uint32_t i = 0; i < 2 * n; i++)
     {
-        for (uint32_t i = 0; i < n; i++)
-        {
-            x = -1 + i * width;
-            y = -.375 + .5 * cos(2 * M_2PI * x) + .5 * k;
-            data[k * n + i] = (VkyAreaData){
-                {x, y},
-                height,
-                vky_color(VKY_DEFAULT_COLORMAP, k == 0 ? i : n - 1 - i, 0, n, 1),
-                k};
-        }
-    }
-    visual->data.item_count = 2 * n;
-    visual->data.items = data;
-    vky_visual_data_raw(visual);
+        x = -1 + (i % n) * width;
+        y = -.375 + .5 * cos(2 * M_2PI * x) + .5 * (i < n);
+        pos[i][0] = x;
+        pos[i][1] = y;
+        color[i] = vky_color(VKY_DEFAULT_COLORMAP, i < n ? i : 2 * n - 1 - i, 0, n, 1);
+    };
+
+    vky_visual_data_set_groups(visual, 2, (uint32_t[]){n, n}, NULL);
+    vky_visual_data(visual, VKY_VISUAL_PROP_POS, 0, 2 * n, pos);
+    vky_visual_data(visual, VKY_VISUAL_PROP_COLOR_ALPHA, 0, 2 * n, color);
+    vky_visual_data(visual, VKY_VISUAL_PROP_SIZE, 0, 1, &height);
+
+    free(pos);
+    free(color);
 }
 
 static void axrect(VkyPanel* panel)

@@ -254,6 +254,7 @@ static void _area_bake(VkyVisual* visual)
     const VkyAreaData* items = (const VkyAreaData*)data->items;
 
     vec3 origin, u, v, w;
+    uint32_t area_idx = 0;
     VkyAreaParams params = {0};
     memcpy(&params, visual->params, sizeof(VkyAreaParams));
     glm_vec3_copy(params.origin, origin);
@@ -273,11 +274,18 @@ static void _area_bake(VkyVisual* visual)
         glm_vec3_scale(v, items[i].h, w);                                  // w = v * h
         glm_vec3_add(vertices[2 * i + 1].pos, w, vertices[2 * i + 1].pos); // pos += w
 
-        // Copy the color.
+        ASSERT(area_idx < data->group_count);
+
+        // Copy the color and area index.
         for (uint32_t j = 0; j < 2; j++)
         {
             memcpy(&vertices[2 * i + j].color, &items[i].color, sizeof(items[i].color));
-            vertices[2 * i + j].area_idx = items[i].area_idx;
+            vertices[2 * i + j].area_idx = area_idx;
+        }
+        // Keep track of the current area idx.
+        if (area_idx + 1 < data->group_count && i + 1 >= data->group_starts[area_idx + 1])
+        {
+            area_idx++;
         }
     }
 
@@ -323,7 +331,6 @@ VkyVisual* vky_visual_area(VkyScene* scene, const VkyAreaParams* params)
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyAreaData, p));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_SIZE, offsetof(VkyAreaData, h));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA, offsetof(VkyAreaData, color));
-    // vky_visual_prop_add(visual, VKY_VISUAL_PROP_GROUP, offsetof(VkyAreaData, area_idx));
 
     return visual;
 }

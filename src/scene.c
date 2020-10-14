@@ -698,6 +698,7 @@ VkyVisual* vky_create_visual(VkyScene* scene, VkyVisualType visual_type)
     visual.props = calloc(VKY_MAX_VISUAL_PROP_COUNT, sizeof(VkyVisualProp));
     visual.resources = calloc(VKY_MAX_VISUAL_RESOURCES, sizeof(void*));
     visual.children = calloc(VKY_MAX_VISUALS_CHILDREN, sizeof(void*));
+    visual.data.group_count = 1;
 
     // NOTE: by convention, the first buffer is the indirect draw buffer.
     // HACK: we allocate the bigger indexed command so that we have enough space,
