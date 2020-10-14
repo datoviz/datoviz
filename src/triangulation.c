@@ -86,7 +86,7 @@ void vky_destroy_polygon_triangulation(VkyPolygonTriangulation* tr)
 
 VkyVisual* vky_visual_polygon(VkyScene* scene, const VkyPolygonParams* params)
 {
-    VkyVisual* vb = vky_create_visual(scene, VKY_VISUAL_EMPTY);
+    VkyVisual* vb = vky_create_visual(scene, VKY_VISUAL_POLYGON);
 
     // Raw mesh visual.
     VkyVisual* visual_poly = vky_visual_mesh_raw(scene);
@@ -508,7 +508,7 @@ void vky_destroy_pslg_triangulation(VkyPSLGTriangulation* tr)
 
 VkyVisual* vky_visual_pslg(VkyScene* scene, const VkyPSLGParams* params)
 {
-    VkyVisual* vb = vky_create_visual(scene, VKY_VISUAL_EMPTY);
+    VkyVisual* vb = vky_create_visual(scene, VKY_VISUAL_PSLG);
 
     // Mesh visual.
     VkyVisual* visual_mesh = vky_visual_mesh_flat(scene);
@@ -562,7 +562,6 @@ VkyPSLGTriangulation vky_visual_pslg_upload(
     visual_mesh->data.index_count = tr.index_count;
     visual_mesh->data.indices = tr.indices;
     vky_visual_data_raw(visual_mesh);
-    // free(vertices); // NOTE: the caller must free the vertices
     tr.mesh_vertices = vertices;
 
 
@@ -603,7 +602,7 @@ VkyPSLGTriangulation vky_visual_pslg_upload(
 
 VkyVisual* vky_visual_triangulation(VkyScene* scene, const VkyTriangulationParams* params)
 {
-    VkyVisual* vb = vky_create_visual(scene, VKY_VISUAL_EMPTY);
+    VkyVisual* vb = vky_create_visual(scene, VKY_VISUAL_TRIANGULATION);
 
     // Segment visual.
     VkyVisual* visual_segments = vky_visual_segment(scene);

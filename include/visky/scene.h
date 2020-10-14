@@ -28,19 +28,24 @@ typedef enum
     VKY_VISUAL_MARKER_RAW = 31,
     VKY_VISUAL_SEGMENT = 32,
     VKY_VISUAL_ARROW = 33,
+    VKY_VISUAL_GRAPH = 34,
 
     VKY_VISUAL_PATH = 40,
     VKY_VISUAL_PATH_RAW = 41,
     VKY_VISUAL_PATH_RAW_MULTI = 42,
 
-    VKY_VISUAL_FAKE_PATH = 50,
-    VKY_VISUAL_FAKE_SPHERE = 51,
+    VKY_VISUAL_POLYGON = 50,
+    VKY_VISUAL_PSLG = 51,
+    VKY_VISUAL_TRIANGULATION = 52,
 
-    VKY_VISUAL_AXES_TEXT = 60,
-    VKY_VISUAL_AXES_TICK = 61,
+    VKY_VISUAL_FAKE_SPHERE = 60,
 
-    VKY_VISUAL_AXES_3D = 70,
-    VKY_VISUAL_AXES_3D_TEXT = 71,
+    VKY_VISUAL_AXES_TEXT = 70,
+    VKY_VISUAL_AXES_TICK = 71,
+
+    VKY_VISUAL_AXES_3D = 72,
+    VKY_VISUAL_AXES_3D_SEGMENTS = 73,
+    VKY_VISUAL_AXES_3D_TEXT = 74,
 
     VKY_VISUAL_IMAGE = 80,
     VKY_VISUAL_VOLUME = 81,
@@ -48,7 +53,6 @@ typedef enum
 
     VKY_VISUAL_COLORBAR = 90,
     VKY_VISUAL_TEXT = 100,
-
     VKY_VISUAL_CUSTOM = 255,
 
 } VkyVisualType;
@@ -712,7 +716,6 @@ VKY_EXPORT void vky_add_common_resources(VkyVisual*);
 VKY_EXPORT void vky_add_uniform_buffer_resource(VkyVisual* visual, VkyUniformBuffer* ubo);
 VKY_EXPORT void vky_add_texture_resource(VkyVisual* visual, VkyTexture* texture);
 VKY_EXPORT void vky_visual_data_raw(VkyVisual* visual);
-VKY_EXPORT void vky_visual_data_partial(VkyVisual* visual, uint32_t item_offset, VkyData data);
 VKY_EXPORT void vky_draw_visual(VkyVisual* visual, VkyPanel*, VkyViewportType viewport_type);
 VKY_EXPORT void vky_draw_all_visuals(VkyScene* scene);
 VKY_EXPORT void vky_toggle_visual_visibility(VkyVisual* visual, bool is_visible);
@@ -720,7 +723,7 @@ VKY_EXPORT void vky_destroy_visual(VkyVisual* visual);
 VKY_EXPORT void vky_free_data(VkyData data);
 VKY_EXPORT void vky_visual_add_child(VkyVisual* parent, VkyVisual* child);
 
-VKY_EXPORT void vky_visual_prop_spec(VkyVisual*, size_t size);
+VKY_EXPORT void vky_visual_data_item_size(VkyVisual*, size_t size);
 VKY_EXPORT VkyVisualProp* vky_visual_prop_add(VkyVisual*, VkyVisualPropType, size_t offset);
 VKY_EXPORT VkyVisualProp* vky_visual_prop_get(VkyVisual*, VkyVisualPropType, uint32_t prop_index);
 VKY_EXPORT void vky_visual_data(

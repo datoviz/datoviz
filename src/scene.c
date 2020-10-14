@@ -908,51 +908,6 @@ void vky_set_color_context(VkyPanel* panel, VkyColormap cmap, uint8_t constant)
     panel->color_ctx[3] = 0; // NOTE: currently unused
 }
 
-// TODO:
-// void vky_visual_data_partial(VkyVisual* visual, uint32_t item_offset, VkyData data)
-// {
-//     // Bake the data and save the size and pointers of the baked vertex/index buffers into the
-//     // data struct.
-
-//     // Determine whether the visual has a baking process.
-//     // log_trace("upload partial");
-//     bool has_bake = visual->cb_bake_data != NULL;
-//     uint32_t vertex_count = 0;
-//     void* vertices = NULL;
-
-//     if (!has_bake)
-//     {
-//         // NOTE: if no vertices but no baking, we assume the items pass through to vertices
-//         vertex_count = data.item_count;
-//         vertices = data.items;
-//     }
-//     else
-//     {
-//         // NOTE: the cb_bake_data callback function must malloc() the arrays with the
-//         // vertices and indices. They will be freed at the end of the present function.
-//         data = visual->cb_bake_data(visual, data);
-//         vertex_count = data.vertex_count;
-//         vertices = data.vertices;
-//     }
-//     ASSERT(vertex_count > 0);
-//     ASSERT(vertices != NULL);
-
-//     // Find the offset and size in the vertex buffer.
-//     VkDeviceSize vertex_size = visual->pipeline.vertex_layout.stride;
-//     ASSERT(vertex_size > 0);
-//     VkDeviceSize vbuf_size = data.vertex_count * vertex_size;
-//     VkDeviceSize vertex_offset = item_offset * vertex_size;
-
-//     vky_upload_buffer(visual->vertex_buffer, vertex_offset, vbuf_size, data.vertices);
-//     // NOT IMPLEMENTED YET: update the index buffer with new indices.
-
-//     // Free the allocated buffers.
-//     if (has_bake)
-//     {
-//         free(vertices);
-//     }
-// }
-
 void vky_toggle_visual_visibility(VkyVisual* visual, bool is_visible)
 {
     uint32_t count = is_visible ? visual->indirect_item_count : 0;
@@ -974,7 +929,8 @@ void vky_toggle_visual_visibility(VkyVisual* visual, bool is_visible)
 void vky_destroy_visual(VkyVisual* visual)
 {
     log_trace("destroy visual");
-    if (visual->visual_type != VKY_VISUAL_EMPTY)
+    // HACK: this test is verified exactly for the non-empty visuals.
+    if (visual->pipeline.gpu != NULL)
     {
         vky_destroy_uniform_buffer(&visual->params_buffer);
         vky_destroy_vertex_layout(&visual->pipeline.vertex_layout);
@@ -1004,8 +960,97 @@ void vky_destroy_visual(VkyVisual* visual)
 
 
 /*************************************************************************************************/
-/*  Visual data and props                                                                        */
+/*  Visual props                                                                                 */
 /*************************************************************************************************/
+
+void vky_visual_data_item_size(VkyVisual* visual, size_t size) { visual->item_size = size; }
+
+VkyVisualProp* vky_visual_prop_add(VkyVisual* visual, VkyVisualPropType prop_type, size_t offset)
+{
+    VkyVisualProp vp = {0};
+    vp.type = prop_type;
+    vp.field_offset = offset;
+    visual->props[visual->prop_count] = vp;
+    // Update the previous prop size depending on the current prop offset.
+    if (visual->prop_count > 0)
+    {
+        visual->props[visual->prop_count - 1].field_size =
+            offset - visual->props[visual->prop_count - 1].field_offset;
+    }
+    visual->prop_count++;
+    return &visual->props[visual->prop_count - 1];
+}
+
+VkyVisualProp*
+vky_visual_prop_get(VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index)
+{
+    uint32_t k = 0;
+    for (uint32_t i = 0; i < visual->prop_count; i++)
+    {
+        if (visual->props[i].type == prop_type)
+        {
+            if (k == prop_index)
+                return &visual->props[i];
+            else
+                k++;
+        }
+    }
+
+    ASSERT(prop_index >= k);
+
+    // Search among the children.
+    VkyVisualProp* vp = NULL;
+    for (uint32_t i = 0; i < visual->children_count; i++)
+    {
+        ASSERT(prop_index >= k);
+        vp = vky_visual_prop_get(visual->children[i], prop_type, prop_index - k);
+        if (vp != NULL)
+            return vp;
+        else
+        {
+            // HACK: we must add the number of props in the child visual with the requested prop
+            // type
+            uint32_t l = 0;
+            for (uint32_t j = 0; j < visual->children[i]->prop_count; j++)
+                if (visual->children[i]->props[j].type == prop_type)
+                    l++;
+            k += l;
+        }
+    }
+
+    return NULL;
+}
+
+
+
+/*************************************************************************************************/
+/*  Visual data                                                                                  */
+/*************************************************************************************************/
+
+static void _copy_prop_values(VkyVisual* visual, VkyVisualProp* vp)
+{
+    int64_t offset = (int64_t)vp->field_offset;
+    int64_t item_size = (int64_t)vp->field_size;
+    int64_t out_stride = (int64_t)visual->item_size;
+    ASSERT(offset >= 0);
+    ASSERT(item_size > 0);
+    ASSERT(out_stride > 0);
+
+    int64_t in_byte = (int64_t)vp->values;
+    ASSERT(in_byte != 0);
+    ASSERT(visual->data.items != NULL);
+    int64_t out_byte = (int64_t)visual->data.items + offset;
+
+    for (uint32_t i = 0; i < visual->data.item_count; i++)
+    {
+        memcpy((void*)out_byte, (const void*)in_byte, (size_t)item_size);
+        // NOTE: if there are less values in the prop than items, it will copy the last prop
+        // value on all remaining items.
+        if (i < vp->value_count - 1)
+            in_byte += item_size;
+        out_byte += out_stride;
+    }
+}
 
 static void _bake(VkyVisual* visual)
 {
@@ -1137,96 +1182,6 @@ void vky_visual_data_raw(VkyVisual* visual)
     }
 }
 
-
-
-void vky_visual_prop_spec(VkyVisual* visual, size_t size) { visual->item_size = size; }
-
-
-VkyVisualProp* vky_visual_prop_add(VkyVisual* visual, VkyVisualPropType prop_type, size_t offset)
-{
-    VkyVisualProp vp = {0};
-    vp.type = prop_type;
-    vp.field_offset = offset;
-    visual->props[visual->prop_count] = vp;
-    // Update the previous prop size depending on the current prop offset.
-    if (visual->prop_count > 0)
-    {
-        visual->props[visual->prop_count - 1].field_size =
-            offset - visual->props[visual->prop_count - 1].field_offset;
-    }
-    visual->prop_count++;
-    return &visual->props[visual->prop_count - 1];
-}
-
-
-VkyVisualProp*
-vky_visual_prop_get(VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index)
-{
-    uint32_t k = 0;
-    for (uint32_t i = 0; i < visual->prop_count; i++)
-    {
-        if (visual->props[i].type == prop_type)
-        {
-            if (k == prop_index)
-                return &visual->props[i];
-            else
-                k++;
-        }
-    }
-
-    ASSERT(prop_index >= k);
-
-    // Search among the children.
-    VkyVisualProp* vp = NULL;
-    for (uint32_t i = 0; i < visual->children_count; i++)
-    {
-        ASSERT(prop_index >= k);
-        vp = vky_visual_prop_get(visual->children[i], prop_type, prop_index - k);
-        if (vp != NULL)
-            return vp;
-        else
-        {
-            // HACK: we must add the number of props in the child visual with the requested prop
-            // type
-            uint32_t l = 0;
-            for (uint32_t j = 0; j < visual->children[i]->prop_count; j++)
-                if (visual->children[i]->props[j].type == prop_type)
-                    l++;
-            k += l;
-        }
-    }
-
-    return NULL;
-}
-
-
-static void _copy_prop_values(VkyVisual* visual, VkyVisualProp* vp)
-{
-    int64_t offset = (int64_t)vp->field_offset;
-    int64_t item_size = (int64_t)vp->field_size;
-    int64_t out_stride = (int64_t)visual->item_size;
-    ASSERT(offset >= 0);
-    ASSERT(item_size > 0);
-    ASSERT(out_stride > 0);
-
-    int64_t in_byte = (int64_t)vp->values;
-    ASSERT(in_byte != 0);
-    ASSERT(visual->data.items != NULL);
-    int64_t out_byte = (int64_t)visual->data.items + offset;
-
-    for (uint32_t i = 0; i < visual->data.item_count; i++)
-    {
-        memcpy((void*)out_byte, (const void*)in_byte, (size_t)item_size);
-        // NOTE: if there are less values in the prop than items, it will copy the last prop
-        // value on all remaining items.
-        if (i < vp->value_count - 1)
-            in_byte += item_size;
-        out_byte += out_stride;
-    }
-}
-
-
-
 void vky_visual_data(
     VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index, //
     uint32_t value_count, void* values)
@@ -1326,7 +1281,6 @@ void vky_visual_data_callback(
 }
 
 
-
 void vky_visual_data_upload(VkyVisual* visual, VkyPanel* panel)
 {
     VkyVisualProp* vp = NULL;
@@ -1382,7 +1336,6 @@ void vky_visual_data_upload(VkyVisual* visual, VkyPanel* panel)
         vky_visual_data_upload(visual->children[i], panel);
     }
 }
-
 
 void vky_free_data(VkyData data)
 {
@@ -1547,7 +1500,8 @@ static void vky_draw_children(VkyVisual* visual, VkyPanel* panel, VkyViewportTyp
 
 void vky_draw_visual(VkyVisual* visual, VkyPanel* panel, VkyViewportType viewport_type)
 {
-    if (visual->visual_type != VKY_VISUAL_EMPTY)
+    // Non-empty visuals.
+    if (visual->pipeline.gpu != NULL)
     {
         log_trace("draw visual %d", visual->visual_type);
         VkyScene* scene = visual->scene;

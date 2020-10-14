@@ -68,7 +68,7 @@ static void _axes_3D_bake(VkyVisual* visual)
 static VkyVisual* _axes_3D(VkyScene* scene)
 {
     log_trace("vky_visual_axes_3D");
-    VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_AXES_3D);
+    VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_AXES_3D_SEGMENTS);
     VkyCanvas* canvas = scene->canvas;
 
     // Shaders.
@@ -310,7 +310,7 @@ VkyVisual* vky_visual_axes_3D(VkyScene* scene)
     VkyVisual* axes = _add_3D_axes(scene);
     VkyVisual* text = _add_3D_axes_text(scene);
 
-    VkyVisual* vb = vky_create_visual(scene, VKY_VISUAL_EMPTY);
+    VkyVisual* vb = vky_create_visual(scene, VKY_VISUAL_AXES_3D);
     vky_visual_add_child(vb, axes);
     vky_visual_add_child(vb, text);
 
