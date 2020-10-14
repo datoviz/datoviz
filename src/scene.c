@@ -1405,7 +1405,8 @@ void vky_visual_data(
 
 
 void vky_visual_data_set_groups(
-    VkyVisual* visual, uint32_t group_count, const uint32_t* group_lengths)
+    VkyVisual* visual, uint32_t group_count, //
+    const uint32_t* group_lengths, const size_t param_size, const void* group_params)
 {
     ASSERT(group_count > 0);
     // Allocate and fill VkyData.group_lengths.
@@ -1416,6 +1417,14 @@ void vky_visual_data_set_groups(
         free(visual->data.group_lengths);
     visual->data.group_lengths = calloc(group_count, sizeof(uint32_t));
     memcpy(visual->data.group_lengths, group_lengths, group_count * sizeof(uint32_t));
+
+    // Copy the group params, if any.
+    if (group_params != NULL)
+    {
+        ASSERT(param_size > 0);
+        visual->data.group_params = calloc(group_count, param_size);
+        memcpy(visual->data.group_params, group_params, group_count * param_size);
+    }
 
     // Count the total number of items across all groups.
     uint32_t item_count = 0;

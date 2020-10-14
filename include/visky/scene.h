@@ -299,6 +299,7 @@ struct VkyData
     // or paths, where each path has multiple data points.
     uint32_t group_count;
     uint32_t* group_lengths;
+    void* group_params;
 
     bool need_free_items;
     bool need_free_vertices;
@@ -724,8 +725,9 @@ VKY_EXPORT void vky_visual_add_child(VkyVisual* parent, VkyVisual* child);
 
 VKY_EXPORT void vky_visual_prop_spec(VkyVisual*, size_t item_size);
 
-VKY_EXPORT void
-vky_visual_data_set_groups(VkyVisual* visual, uint32_t group_count, const uint32_t* group_lengths);
+VKY_EXPORT void vky_visual_data_set_groups(
+    VkyVisual* visual, uint32_t group_count, //
+    const uint32_t* group_lengths, const size_t param_size, const void* group_params);
 
 VKY_EXPORT VkyVisualProp* vky_visual_prop_add(VkyVisual*, VkyVisualPropType, size_t offset);
 
