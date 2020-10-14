@@ -797,6 +797,7 @@ vky_visual(VkyScene* scene, VkyVisualType visual_type, const void* params, const
 
 void vky_visual_add_child(VkyVisual* parent, VkyVisual* child)
 {
+    child->parent = parent;
     parent->children[parent->children_count] = child;
     parent->children_count++;
 }
@@ -1038,6 +1039,105 @@ vky_visual_prop_get(VkyVisual* visual, VkyVisualPropType prop_type, uint32_t pro
 /*  Visual data                                                                                  */
 /*************************************************************************************************/
 
+static void _visual_need_data_upload(VkyVisual* visual, VkyVisualProp* vp)
+{
+    if (visual == NULL)
+        return;
+
+    // Tag the visual for data upload at the next frame.
+    visual->need_data_upload = true;
+    if (visual->scene)
+        visual->scene->canvas->need_data_upload = true;
+
+    // Special handling of POS2D prop: all children should be invalidated.
+    if (vp != NULL && vp->type == VKY_VISUAL_PROP_POS2D)
+    {
+        for (uint32_t i = 0; i < visual->children_count; i++)
+            _visual_need_data_upload(visual->children[i], vp);
+    }
+}
+
+
+static void _allocate_data_items(VkyVisual* visual, uint32_t item_count)
+{
+    // Allocate the VkyData.items array.
+    if (visual->data.items != NULL)
+        free(visual->data.items);
+    log_trace("allocate data.items with %d values", item_count);
+    visual->data.items = calloc(item_count, visual->item_size);
+    visual->data.need_free_items = true;
+}
+
+
+static void _reallocate_data_items(VkyVisual* visual, uint32_t item_count)
+{
+    log_trace("need to reallocate data.items to fit %d elements", item_count);
+    void* old_data_items = visual->data.items;
+    visual->data.items = calloc(item_count, visual->item_size);
+    memcpy(visual->data.items, old_data_items, visual->data.item_count * visual->item_size);
+    free(old_data_items);
+    // The extra space at the end of the current item array is empty, we need to feel it
+    // with the existing values.
+    {
+        int64_t offset =
+            (int64_t)visual->data.items + (int64_t)(visual->data.item_count * visual->item_size);
+        for (uint32_t i = 0; i < item_count - visual->data.item_count; i++)
+        {
+            memcpy(
+                (void*)(offset + (int64_t)(i * visual->item_size)), //
+                (void*)(offset - (int64_t)visual->item_size), visual->item_size);
+        }
+    }
+    visual->data.need_free_items = true;
+    visual->data.item_count = item_count;
+}
+
+
+static VkyVisualProp* _get_pos2D_prop(VkyVisual* visual)
+{
+    // Return the POS2D prop of the visual, of the first POS2D prop found in the hierarcy of
+    // parents.
+    if (visual == NULL)
+        return NULL;
+    VkyVisualProp* vp = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS2D, 0);
+    if (vp == NULL || vp->value_count == 0)
+        vp = _get_pos2D_prop(visual->parent);
+    return vp;
+}
+
+
+static VkyVisualProp* _get_pos_prop_or_renormalize(VkyVisual* visual, VkyPanel* panel)
+{
+    // Deal with position.
+    VkyVisualProp* vp = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS, 0);
+    if (vp == NULL || vp->value_count == 0)
+    {
+        // Need to compute the GPU pos vec3 from the 2D double-precision positions.
+        vp = _get_pos2D_prop(visual);
+        ASSERT(vp != NULL);
+        ASSERT(panel != NULL);
+        switch (panel->controller_type)
+        {
+        case VKY_CONTROLLER_AXES_2D:
+            // TODO: log
+            // TODO: normalize 2D
+            //  vky_normalize_2D(axes->box_init, uint32_t item_count, const dvec2* pos2D, vec3*
+            //  pos_prop)
+            // TODO:
+            // VKY_CONTROLLER_POLAR
+            // VKY_CONTROLLER_WEB_MERCATOR
+            break;
+        default:
+            break;
+        }
+    }
+    // Now, after normalization, the pos prop should be set.
+    vp = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS, 0);
+    ASSERT(vp != NULL);
+    return vp;
+}
+
+
 static void _copy_prop_values(
     VkyVisual* visual, VkyVisualProp* vp,     //
     uint32_t first_item, uint32_t item_count, // part of the VkyData.items array to update
@@ -1221,36 +1321,16 @@ void vky_visual_data(
     // Allocate the VkyData.items array if needed.
     if (visual->data.items == NULL)
     {
-        visual->data.items = calloc(value_count, visual->item_size);
-        visual->data.need_free_items = true;
+        _allocate_data_items(visual, value_count);
         // NOTE: the size of data.items is determined by the size of the first call to
         // vky_visual_data
-        log_trace("allocate data.items with %d values", value_count);
         visual->data.item_count = value_count;
     }
     // Here, the data.items array already exists, but it is too small. Need to recreate a new
     // array with the right size, and copy the old array to the new one.
     else if (visual->data.items != NULL && value_count > visual->data.item_count)
     {
-        log_trace("need to reallocate data.items to fit %d elements", value_count);
-        void* old_data_items = visual->data.items;
-        visual->data.items = calloc(value_count, visual->item_size);
-        memcpy(visual->data.items, old_data_items, visual->data.item_count * visual->item_size);
-        free(old_data_items);
-        // The extra space at the end of the current item array is empty, we need to feel it
-        // with the existing values.
-        {
-            int64_t offset = (int64_t)visual->data.items +
-                             (int64_t)(visual->data.item_count * visual->item_size);
-            for (uint32_t i = 0; i < value_count - visual->data.item_count; i++)
-            {
-                memcpy(
-                    (void*)(offset + (int64_t)(i * visual->item_size)), //
-                    (void*)(offset - (int64_t)visual->item_size), visual->item_size);
-            }
-        }
-        visual->data.need_free_items = true;
-        visual->data.item_count = value_count;
+        _reallocate_data_items(visual, value_count);
     }
     // Here, the data.items array already exists, but it is larger than the current POS prop.
     // This means there are now less elements.
@@ -1280,10 +1360,7 @@ void vky_visual_data(
     // Copy the prop array into the structured array.
     _copy_prop_values(visual, vp, 0, visual->data.item_count, vp->values);
 
-    // Tag the visual for data upload at the next frame.
-    visual->need_data_upload = true;
-    if (visual->scene)
-        visual->scene->canvas->need_data_upload = true;
+    _visual_need_data_upload(visual, vp);
 }
 
 
@@ -1309,11 +1386,9 @@ void vky_visual_data_set_groups(
     visual->data.item_count = item_count;
 
     // Allocate the VkyData.items array.
-    if (visual->data.items != NULL)
-        free(visual->data.items);
-    log_trace("allocate data.items with %d values", item_count);
-    visual->data.items = calloc(item_count, visual->item_size);
-    visual->data.need_free_items = true;
+    _allocate_data_items(visual, item_count);
+
+    _visual_need_data_upload(visual, NULL);
 }
 
 
@@ -1338,6 +1413,8 @@ void vky_visual_data_partial(
     ASSERT(visual->data.item_count > 0);
 
     _copy_prop_values(visual, vp, first_item, value_count, values);
+
+    _visual_need_data_upload(visual, vp);
 }
 
 
@@ -1401,31 +1478,8 @@ void vky_visual_data_upload(VkyVisual* visual, VkyPanel* panel)
         }
     }
 
-    // Deal with position.
-    vp = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS, 0);
-    if (vp == NULL)
-    {
-        // Need to compute the GPU pos vec3 from the 2D double-precision positions.
-        vp = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS2D, 0);
-        ASSERT(vp != NULL);
-        ASSERT(panel != NULL);
-        switch (panel->controller_type)
-        {
-        case VKY_CONTROLLER_AXES_2D:
-            // TODO: log
-            // TODO: normalize 2D
-            //  vky_normalize_2D(axes->box_init, uint32_t item_count, const dvec2* pos2D, vec3*
-            //  pos_prop)
-            // TODO:
-            // VKY_CONTROLLER_POLAR
-            // VKY_CONTROLLER_WEB_MERCATOR
-            break;
-        default:
-            break;
-        }
-    }
-    // Now, after normalization, the pos prop should be set.
-    vp = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS, 0);
+    // Renormalize the POS prop if POS2D is specified.
+    vp = _get_pos_prop_or_renormalize(visual, panel);
     ASSERT(vp != NULL);
 
     // The VkyData.items array is kept up to date in vky_visual_data(), called by the user.

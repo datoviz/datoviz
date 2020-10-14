@@ -348,6 +348,7 @@ struct VkyVisual
 
     uint32_t children_count;
     VkyVisual** children;
+    VkyVisual* parent;
 
     VkyVisualBakeCallback cb_bake_data;
     // VkyVisualBakePropsCallback cb_bake_props; // TO REMOVE
