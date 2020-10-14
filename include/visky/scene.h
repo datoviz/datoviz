@@ -61,22 +61,27 @@ typedef enum
 typedef enum
 {
     VKY_VISUAL_PROP_NONE = 0,
-    VKY_VISUAL_PROP_POS2D = 1,       // dvec2
-    VKY_VISUAL_PROP_POS = 2,         // vec3
-    VKY_VISUAL_PROP_COLOR = 3,       // bvec3
-    VKY_VISUAL_PROP_ALPHA = 4,       // uint8_t
-    VKY_VISUAL_PROP_COLOR_ALPHA = 5, // VkyColor
-    VKY_VISUAL_PROP_SIZE = 10,       // uint32_t
-    VKY_VISUAL_PROP_SHAPE = 11,      // uint8
-    VKY_VISUAL_PROP_SHIFT = 12,      // vec2
-    VKY_VISUAL_PROP_TEXT = 13,       // char*
-    VKY_VISUAL_PROP_ANGLE = 14,      // uint8_t
-    VKY_VISUAL_PROP_EDGE_COLOR = 18, // bvec3
-    VKY_VISUAL_PROP_EDGE_ALPHA = 19, // uint8_t
-    VKY_VISUAL_PROP_IMAGE = 20,      // VkyTexture*
-    VKY_VISUAL_PROP_VOLUME = 21,     // VkyTexture*
-    VKY_VISUAL_PROP_BUFFER = 22,     // VkyBuffer*
-    VKY_VISUAL_PROP_GROUPS = 32,     //
+    VKY_VISUAL_PROP_POS2D = 1,          // dvec2
+    VKY_VISUAL_PROP_POS = 2,            // vec3
+    VKY_VISUAL_PROP_TEXTURE_COORDS = 3, // vec2
+    VKY_VISUAL_PROP_NORMAL = 4,         // vec3
+    VKY_VISUAL_PROP_COLOR = 5,          // bvec3
+    VKY_VISUAL_PROP_ALPHA = 6,          // uint8_t
+    VKY_VISUAL_PROP_COLOR_ALPHA = 7,    // VkyColor
+    VKY_VISUAL_PROP_SIZE = 10,          // uint32_t
+    VKY_VISUAL_PROP_SHAPE = 11,         // uint8_t
+    VKY_VISUAL_PROP_SHIFT = 12,         // vec2
+    VKY_VISUAL_PROP_AXIS = 13,          // uint8_t
+    VKY_VISUAL_PROP_TEXT = 14,          // char*
+    VKY_VISUAL_PROP_ANGLE = 15,         // uint8_t
+    VKY_VISUAL_PROP_LINEWIDTH = 17,     // float
+    VKY_VISUAL_PROP_EDGE_COLOR = 18,    // bvec3
+    VKY_VISUAL_PROP_EDGE_ALPHA = 19,    // uint8_t
+    VKY_VISUAL_PROP_IMAGE = 20,         // VkyTexture*
+    VKY_VISUAL_PROP_VOLUME = 21,        // VkyTexture*
+    VKY_VISUAL_PROP_BUFFER = 22,        // VkyBuffer*
+    VKY_VISUAL_PROP_TRANSFORM = 31,     // uint8_t
+    VKY_VISUAL_PROP_GROUP = 32,         //
 } VkyVisualPropType;
 
 

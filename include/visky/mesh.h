@@ -9,14 +9,6 @@
 /*************************************************************************************************/
 
 typedef struct VkyMeshVertex VkyMeshVertex;
-struct VkyMeshVertex
-{
-    vec3 pos;
-    vec3 normal;
-    VkyColor color;
-};
-
-
 typedef struct VkyMesh VkyMesh;
 struct VkyMesh
 {

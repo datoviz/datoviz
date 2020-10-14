@@ -107,6 +107,13 @@ VkyVisual* vky_visual_rectangle(VkyScene* scene, const VkyRectangleParams* param
     vky_visual_params(visual, sizeof(VkyRectangleParams), params);
     vky_add_common_resources(visual);
     visual->cb_bake_data = _rectangle_bake;
+
+    // Props.
+    vky_visual_data_item_size(visual, sizeof(VkyRectangleData));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyRectangleData, p));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_SIZE, offsetof(VkyRectangleData, size));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA, offsetof(VkyRectangleData, color));
+
     return visual;
 }
 
@@ -209,6 +216,14 @@ VkyVisual* vky_visual_rectangle_axis(VkyScene* scene)
 
     vky_add_common_resources(visual);
     visual->cb_bake_data = _rectangle_axis_bake;
+
+    // Props.
+    vky_visual_data_item_size(visual, sizeof(VkyRectangleAxisData));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyRectangleAxisData, ab));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_AXIS, offsetof(VkyRectangleAxisData, span_axis));
+    vky_visual_prop_add(
+        visual, VKY_VISUAL_PROP_COLOR_ALPHA, offsetof(VkyRectangleAxisData, color));
+
     return visual;
 }
 
@@ -302,6 +317,14 @@ VkyVisual* vky_visual_area(VkyScene* scene, const VkyAreaParams* params)
     vky_visual_params(visual, sizeof(VkyAreaParams), params);
     vky_add_common_resources(visual);
     visual->cb_bake_data = _area_bake;
+
+    // Props.
+    vky_visual_data_item_size(visual, sizeof(VkyAreaData));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyAreaData, p));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_SIZE, offsetof(VkyAreaData, h));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA, offsetof(VkyAreaData, color));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_GROUP, offsetof(VkyAreaData, area_idx));
+
     return visual;
 }
 
@@ -383,6 +406,12 @@ vky_visual_mesh(VkyScene* scene, const VkyMeshParams* params, const VkyTexturePa
     }
     ASSERT(tex != NULL);
     vky_add_texture_resource(visual, tex);
+
+    // Props.
+    vky_visual_data_item_size(visual, sizeof(VkyMeshVertex));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyMeshVertex, pos));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_NORMAL, offsetof(VkyMeshVertex, normal));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR, offsetof(VkyMeshVertex, color));
 
     return visual;
 }
@@ -625,14 +654,12 @@ VkyVisual* vky_visual_marker_raw(VkyScene* scene, const VkyMarkersRawParams* par
     // Resources.
     vky_add_common_resources(visual);
 
-    return visual;
-}
+    // Props.
+    vky_visual_data_item_size(visual, sizeof(VkyVertex));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyVertex, pos));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA, offsetof(VkyVertex, color));
 
-void vky_mesh_upload(VkyMesh* mesh, VkyVisual* visual)
-{
-    ASSERT(visual->visual_type == VKY_VISUAL_MESH || visual->visual_type == VKY_VISUAL_MESH_RAW);
-    visual->data = vky_mesh_data(mesh);
-    vky_visual_data_raw(visual);
+    return visual;
 }
 
 
@@ -742,6 +769,18 @@ VkyVisual* vky_visual_segment(VkyScene* scene)
 
     visual->cb_bake_data = _segment_bake;
 
+    // Props.
+    vky_visual_data_item_size(visual, sizeof(VkySegmentVertex));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkySegmentVertex, P0));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkySegmentVertex, P1));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_SHIFT, offsetof(VkySegmentVertex, shift));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA, offsetof(VkySegmentVertex, color));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_LINEWIDTH, offsetof(VkySegmentVertex, linewidth));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_SHAPE, offsetof(VkySegmentVertex, cap0));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_SHAPE, offsetof(VkySegmentVertex, cap1));
+    vky_visual_prop_add(
+        visual, VKY_VISUAL_PROP_TRANSFORM, offsetof(VkySegmentVertex, transform_mode));
+
     return visual;
 }
 
@@ -845,6 +884,15 @@ VkyVisual* vky_visual_arrow(VkyScene* scene)
     vky_add_common_resources(visual);
 
     visual->cb_bake_data = _arrow_bake;
+
+    // Props.
+    vky_visual_data_item_size(visual, sizeof(VkyArrowVertex));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyArrowVertex, P0));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyArrowVertex, P1));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA, offsetof(VkyArrowVertex, color));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_SIZE, offsetof(VkyArrowVertex, head));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_LINEWIDTH, offsetof(VkyArrowVertex, linewidth));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_SHAPE, offsetof(VkyArrowVertex, arrow_type));
 
     return visual;
 }
@@ -1032,6 +1080,10 @@ VkyVisual* vky_visual_path(VkyScene* scene, const VkyPathParams* params)
 
     visual->cb_bake_data = _path_bake;
 
+    // Props.
+    // vky_visual_data_item_size(visual, sizeof(VkyPathData));
+    // TODO: refactor VkyPathData
+
     return visual;
 }
 
@@ -1068,6 +1120,11 @@ VkyVisual* vky_visual_path_raw(VkyScene* scene)
 
     // Resources.
     vky_add_common_resources(visual);
+
+    // Props.
+    vky_visual_data_item_size(visual, sizeof(VkyVertex));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyVertex, pos));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA, offsetof(VkyVertex, color));
 
     return visual;
 }
@@ -1199,6 +1256,12 @@ VkyVisual* vky_visual_fake_sphere(VkyScene* scene, const VkyFakeSphereParams* pa
     // Resources.
     vky_add_common_resources(visual);
 
+    // Props.
+    vky_visual_data_item_size(visual, sizeof(VkyFakeSphereVertex));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyFakeSphereVertex, pos));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA, offsetof(VkyFakeSphereVertex, color));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_SIZE, offsetof(VkyFakeSphereVertex, radius));
+
     return visual;
 }
 
@@ -1315,6 +1378,13 @@ VkyVisual* vky_visual_image(VkyScene* scene, const VkyTextureParams* params)
 
     visual->cb_bake_data = _image_bake;
 
+    // Props.
+    vky_visual_data_item_size(visual, sizeof(VkyImageData));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyImageData, p0));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyImageData, p1));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_TEXTURE_COORDS, offsetof(VkyImageData, uv0));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_TEXTURE_COORDS, offsetof(VkyImageData, uv1));
+
     return visual;
 }
 
@@ -1385,6 +1455,11 @@ vky_visual_volume(VkyScene* scene, const VkyTextureParams* tex_params, const voi
     visual->data.vertices = vertices;
     vky_visual_data_raw(visual);
 
+    // Props.
+    vky_visual_data_item_size(visual, sizeof(VkyVertexUV));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyVertexUV, pos));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_TEXTURE_COORDS, offsetof(VkyVertexUV, uv));
+
     return visual;
 }
 
@@ -1424,6 +1499,12 @@ VkyVisual* vky_visual_volume_slicer(VkyScene* scene, VkyTexture* tex)
     // Resources.
     vky_add_common_resources(visual);
     vky_add_texture_resource(visual, tex);
+
+
+    // Props.
+    vky_visual_data_item_size(visual, sizeof(VkyVertexUVW));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyVertexUVW, pos));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_TEXTURE_COORDS, offsetof(VkyVertexUVW, uvw));
 
     return visual;
 }
@@ -1471,6 +1552,12 @@ static VkyVisual* _colorbar_visual(VkyScene* scene)
         (VkyGraphicsPipelineParams){true});
 
     vky_add_common_resources(visual);
+
+    // Props.
+    vky_visual_data_item_size(visual, sizeof(VkyColorbarVertex));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyColorbarVertex, pos));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_SHIFT, offsetof(VkyColorbarVertex, padding));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_TEXTURE_COORDS, offsetof(VkyColorbarVertex, uv));
 
     return visual;
 }
@@ -1830,6 +1917,17 @@ VkyVisual* vky_visual_text(VkyScene* scene)
     vky_add_texture_resource(visual, texture); // font texture
 
     visual->cb_bake_data = _text_bake;
+
+    // Props.
+    vky_visual_data_item_size(visual, sizeof(VkyTextData));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyTextData, pos));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_SHIFT, offsetof(VkyTextData, shift));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA, offsetof(VkyTextData, color));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_SIZE, offsetof(VkyTextData, glyph_size));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_SHIFT, offsetof(VkyTextData, anchor));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_ANGLE, offsetof(VkyTextData, angle));
+    // TODO: refactor VkyTextData. string/string_len
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_TRANSFORM, offsetof(VkyTextData, transform_mode));
 
     return visual;
 }

@@ -1,4 +1,5 @@
 #include <visky/mesh_loader.h>
+#include <visky/visuals.h>
 
 #if HAS_ASSIMP
 #include <assimp/cimport.h>

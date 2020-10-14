@@ -1,4 +1,5 @@
 #include "../include/visky/mesh.h"
+#include "../include/visky/visuals.h"
 
 
 /*************************************************************************************************/
@@ -110,6 +111,13 @@ void vky_normalize_mesh(uint32_t vertex_count, VkyMeshVertex* vertices)
         glm_vec3_sub(vertices[i].pos, center, vertices[i].pos);
         glm_vec3_scale(vertices[i].pos, a, vertices[i].pos);
     }
+}
+
+void vky_mesh_upload(VkyMesh* mesh, VkyVisual* visual)
+{
+    ASSERT(visual->visual_type == VKY_VISUAL_MESH || visual->visual_type == VKY_VISUAL_MESH_RAW);
+    visual->data = vky_mesh_data(mesh);
+    vky_visual_data_raw(visual);
 }
 
 

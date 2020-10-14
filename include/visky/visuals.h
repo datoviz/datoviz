@@ -126,6 +126,7 @@ typedef struct VkyMarkersRawParams VkyMarkersRawParams;
 typedef struct VkyMarkersVertex VkyMarkersVertex;
 typedef VkyMarkersVertex VkyGraphNode;
 typedef struct VkyMeshParams VkyMeshParams;
+typedef struct VkyMeshVertex VkyMeshVertex;
 typedef struct VkyMultiRawPathParams VkyMultiRawPathParams;
 typedef struct VkyPathData VkyPathData;
 typedef struct VkyPathParams VkyPathParams;
@@ -245,6 +246,12 @@ struct VkyMeshParams
     float wire_linewidth;
 };
 
+struct VkyMeshVertex
+{
+    vec3 pos;
+    vec3 normal;
+    VkyColor color;
+};
 
 
 struct VkyMarkersVertex
