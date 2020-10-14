@@ -106,8 +106,8 @@ typedef enum
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct VkyTextureVertex VkyTextureVertex;
-typedef struct VkyTexturedVertex3D VkyTexturedVertex3D;
+typedef struct VkyVertexUV VkyVertexUV;
+typedef struct VkyVertexUVW VkyVertexUVW;
 typedef struct VkyVertex VkyVertex;
 typedef struct VkyVertexUV VkyVertexUV;
 
@@ -165,23 +165,18 @@ struct VkyVertex
     VkyColor color; // 4 bytes for RGBA
 };
 
-// Default vertex with vec3 pos and vec2 uv texture coordinates.
-struct VkyTextureVertex
-{
-    vec3 pos;
-    vec2 uv;
-};
-
-struct VkyTexturedVertex3D
-{
-    vec3 pos;
-    vec3 coords;
-};
-
+// Default vertex with vec3 pos and vec2 texture 2D coordinates.
 struct VkyVertexUV
 {
     vec3 pos;
     vec2 uv;
+};
+
+// Default vertex with vec3 pos and vec3 texture 3D coordinates.
+struct VkyVertexUVW
+{
+    vec3 pos;
+    vec3 uvw;
 };
 
 

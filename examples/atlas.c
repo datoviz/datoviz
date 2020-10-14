@@ -101,7 +101,7 @@ static void _set_top_lines(float x, float y)
 static void _update_v1(float u)
 {
     double a = 1;
-    VkyTexturedVertex3D vertices[] = {
+    VkyVertexUVW vertices[] = {
 
         {{-a, -a, 0}, {1, u, 1}}, //
         {{-a, +a, 0}, {0, u, 1}}, //
@@ -121,7 +121,7 @@ static void _update_v1(float u)
 static void _update_v2(float u)
 {
     double a = 1;
-    VkyTexturedVertex3D vertices[] = {
+    VkyVertexUVW vertices[] = {
 
         {{-a, -a, 0}, {1, 1, u}}, //
         {{-a, +a, 0}, {0, 1, u}}, //

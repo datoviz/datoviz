@@ -1229,7 +1229,7 @@ static void _image_bake(VkyVisual* visual)
     }
 
     const VkyImageData* items = (const VkyImageData*)data->items;
-    VkyTextureVertex* vertices = calloc(nv, sizeof(VkyTextureVertex));
+    VkyVertexUV* vertices = calloc(nv, sizeof(VkyVertexUV));
     VkyIndex* indices = calloc(ni, sizeof(VkyIndex));
 
     for (uint32_t i = 0; i < image_count; i++)
@@ -1287,12 +1287,11 @@ VkyVisual* vky_visual_image(VkyScene* scene, const VkyTextureParams* params)
     vky_add_shader(&shaders, VK_SHADER_STAGE_FRAGMENT_BIT, "image.frag.spv");
 
     // Vertex layout.
-    VkyVertexLayout vertex_layout =
-        vky_create_vertex_layout(canvas->gpu, 0, sizeof(VkyTextureVertex));
+    VkyVertexLayout vertex_layout = vky_create_vertex_layout(canvas->gpu, 0, sizeof(VkyVertexUV));
     vky_add_vertex_attribute(
-        &vertex_layout, 0, VKY_DEFAULT_VERTEX_FORMAT_POS, offsetof(VkyTextureVertex, pos));
+        &vertex_layout, 0, VKY_DEFAULT_VERTEX_FORMAT_POS, offsetof(VkyVertexUV, pos));
     vky_add_vertex_attribute(
-        &vertex_layout, 1, VK_FORMAT_R32G32_SFLOAT, offsetof(VkyTextureVertex, uv));
+        &vertex_layout, 1, VK_FORMAT_R32G32_SFLOAT, offsetof(VkyVertexUV, uv));
 
     // Resource layout.
     VkyResourceLayout resource_layout = vky_common_resource_layout(visual);
@@ -1407,12 +1406,11 @@ VkyVisual* vky_visual_volume_slicer(VkyScene* scene, VkyTexture* tex)
     vky_add_shader(&shaders, VK_SHADER_STAGE_FRAGMENT_BIT, "volume_slice.frag.spv");
 
     // Vertex layout.
-    VkyVertexLayout vertex_layout =
-        vky_create_vertex_layout(canvas->gpu, 0, sizeof(VkyTexturedVertex3D));
+    VkyVertexLayout vertex_layout = vky_create_vertex_layout(canvas->gpu, 0, sizeof(VkyVertexUVW));
     vky_add_vertex_attribute(
-        &vertex_layout, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VkyTexturedVertex3D, pos));
+        &vertex_layout, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VkyVertexUVW, pos));
     vky_add_vertex_attribute(
-        &vertex_layout, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VkyTexturedVertex3D, coords));
+        &vertex_layout, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VkyVertexUVW, uvw));
 
     // Resource layout.
     VkyResourceLayout resource_layout = vky_common_resource_layout(visual);
