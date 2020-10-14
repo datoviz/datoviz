@@ -560,6 +560,43 @@ void vky_call_frame_callbacks(VkyEventController* event_controller)
 
 
 /*************************************************************************************************/
+/*  Data upload                                                                                  */
+/*************************************************************************************************/
+
+static void _upload_visual_data(VkyVisual* visual, VkyPanel* panel)
+{
+    if (visual->need_data_upload)
+    {
+        vky_visual_data_upload(visual, panel);
+        visual->need_data_upload = false;
+    }
+}
+
+// Called at every frame.
+void vky_upload_pending_data(VkyCanvas* canvas)
+{
+    if (canvas->scene != NULL && canvas->scene->grid != NULL && canvas->need_data_upload)
+    {
+        log_debug("upload pending data");
+        VkyVisualPanel* vp = NULL;
+        for (uint32_t i = 0; i < canvas->scene->grid->visual_panel_count; i++)
+        {
+            vp = &canvas->scene->grid->visual_panels[i];
+
+            // Upload the visual's data if any.
+            _upload_visual_data(vp->visual, vp->panel);
+
+            // Upload the visual's children data if any.
+            for (uint32_t j = 0; j < vp->visual->children_count; j++)
+                _upload_visual_data(vp->visual->children[j], vp->panel);
+        }
+        canvas->need_data_upload = false;
+    }
+}
+
+
+
+/*************************************************************************************************/
 /*  Event loop                                                                                   */
 /*************************************************************************************************/
 
@@ -659,26 +696,6 @@ void vky_finish_event_states(VkyEventController* event_controller)
     {
         keyboard->key = VKY_KEY_NONE;
         keyboard->modifiers = VKY_KEY_MODIFIER_NONE;
-    }
-}
-
-// Called at every frame.
-void vky_upload_pending_data(VkyCanvas* canvas)
-{
-    if (canvas->scene != NULL && canvas->scene->grid != NULL && canvas->need_data_upload)
-    {
-        log_debug("upload pending data");
-        VkyVisualPanel* vp = NULL;
-        for (uint32_t i = 0; i < canvas->scene->grid->visual_panel_count; i++)
-        {
-            vp = &canvas->scene->grid->visual_panels[i];
-            if (vp->visual->need_data_upload)
-            {
-                vky_visual_data_upload(vp->visual, vp->panel);
-                vp->visual->need_data_upload = false;
-            }
-        }
-        canvas->need_data_upload = false;
     }
 }
 
