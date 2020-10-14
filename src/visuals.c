@@ -1624,7 +1624,7 @@ static void _colorbar_tick_upload(VkyVisual* text, VkyVisual* ticks, VkyColorbar
 
 VkyVisual* vky_visual_colorbar(VkyScene* scene, VkyColorbarParams params)
 {
-    VkyVisual* vb = vky_create_visual(scene, VKY_VISUAL_EMPTY);
+    VkyVisual* vb = vky_create_visual(scene, VKY_VISUAL_COLORBAR);
 
     // Colorbar visual.
     VkyVisual* colorbar = _colorbar_visual(scene);
@@ -1691,7 +1691,7 @@ void vky_graph_upload(
 
 VkyVisual* vky_visual_graph(VkyScene* scene, VkyGraphParams params)
 {
-    VkyVisual* vb = vky_create_visual(scene, VKY_VISUAL_EMPTY);
+    VkyVisual* vb = vky_create_visual(scene, VKY_VISUAL_GRAPH);
 
     VkyMarkersParams node_params = {0};
     vec4_copy(params.marker_edge_color, node_params.edge_color);
