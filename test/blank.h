@@ -6,9 +6,23 @@ static void hello(VkyPanel* panel)
 {
     VkyVisual* visual = vky_visual(panel->scene, VKY_VISUAL_TEXT, NULL, NULL);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
-    VkyTextData data[1] = {
-        {{0, 0, 0}, {0, 0}, {{255, 0, 0}, 255}, 30, {0, 0}, 0, 12, "Hello world!", false}};
-    visual->data.item_count = 1;
+    VkyTextData data[12] = {0};
+    const char* str = "Hello world!";
+    for (uint32_t i = 0; i < 12; i++)
+    {
+        data[i] = (VkyTextData){
+            .pos = {0, 0, 0},
+            .shift = {0, 0},
+            .color = {{255, 0, 0}, 255},
+            .glyph_size = 30,
+            .anchor = {0, 0},
+            .angle = 0,
+            .glyph = str[i],
+            .string_index = 0,
+            .transform_mode = 0,
+        };
+    }
+    visual->data.item_count = 12;
     visual->data.items = data;
     vky_visual_data_raw(visual);
 }

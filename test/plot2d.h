@@ -179,35 +179,7 @@ static void segments(VkyPanel* panel)
     vky_visual_data_raw(visual);
 }
 
-static void text(VkyPanel* panel)
-{
-    vky_clear_color(panel->scene, VKY_CLEAR_COLOR_WHITE);
-    // Create the visual.
-    VkyVisual* visual = vky_visual(panel->scene, VKY_VISUAL_TEXT, NULL, NULL);
-    vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
-
-    // Upload the data.
-    uint32_t n = 32;
-    float t = 0;
-    VkyTextData text[32];
-    for (uint32_t i = 0; i < n; i++)
-    {
-        t = M_2PI * (float)i / n;
-        text[i] = (VkyTextData){
-            {.25 * cos(t), .75 * sin(t), 0},
-            {0, 0},
-            vky_color(VKY_CMAP_RAINBOW, i, 0, n, 1),
-            10 + 30 * rand_float(),
-            {0, 0},
-            0,
-            12,
-            "Hello world!",
-            false};
-    }
-    visual->data.item_count = n;
-    visual->data.items = text;
-    vky_visual_data_raw(visual);
-}
+static void text(VkyPanel* panel) { hello(panel); }
 
 static void hist(VkyPanel* panel)
 {

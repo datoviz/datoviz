@@ -2,31 +2,37 @@
 
 #define STRING  "Hello world!"
 #define N       64
-#define n_chars (strlen(STRING))
+#define N_CHARS (strlen(STRING))
 
 static void upload_text(VkyVisual* visual)
 {
     // Upload the data.
     float t = visual->scene->canvas->local_time;
-    VkyTextData text[N];
+    VkyTextData* text = calloc(N * N_CHARS, sizeof(VkyTextData));
+    uint32_t k = 0;
     for (uint32_t i = 0; i < N; i++)
     {
-        // t = M_2PI * (float)i / N;
-        text[i] = (VkyTextData){
-            .pos = {.5 * cos(M_2PI * (float)i / N), .5 * sin(M_2PI * (float)i / N), 0},
-            .shift = {0, 0},
-            .color = vky_color(VKY_CMAP_HSV, fmod(i + t, N), 0, N, .75),
-            .glyph_size = 40 + 20 * cos(3 * t + i),
-            .anchor = {0, 0},
-            .angle = -.67 * t + M_2PI * (float)i / N,
-            .string = STRING,
-            .string_len = n_chars,
-            .transform_mode = 0,
-        };
+        for (uint32_t j = 0; j < N_CHARS; j++)
+        {
+            text[k] = (VkyTextData){
+                .pos = {.5 * cos(M_2PI * (float)i / N), .5 * sin(M_2PI * (float)i / N), 0},
+                .shift = {0, 0},
+                .color = vky_color(VKY_CMAP_HSV, fmod(i + t, N), 0, N, .75),
+                .glyph_size = 30 + 15 * cos(3 * t + i),
+                .anchor = {0, 0},
+                .angle = -.67 * t + M_2PI * (float)i / N,
+                .glyph = STRING[j],
+                .string_index = i,
+                .transform_mode = 0,
+            };
+            k++;
+        }
     }
-    visual->data.item_count = N;
+    ASSERT(k == N_CHARS * N);
+    visual->data.item_count = N * N_CHARS;
     visual->data.items = text;
     vky_visual_data_raw(visual);
+    free(text);
 }
 
 static void frame_callback(VkyCanvas* canvas)

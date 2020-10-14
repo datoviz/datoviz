@@ -1630,6 +1630,7 @@ static void _colorbar_tick_upload(VkyVisual* text, VkyVisual* ticks, VkyColorbar
     float tick_length = VKY_COLORBAR_TICK_LENGTH;
     float anchor_y = 0;
     float hlw = VKY_ANTIALIAS / 2;
+    uint32_t k = 0;
     for (uint32_t i = 0; i < n; i++)
     {
         // TODO: support right and horizontal colorbars
@@ -1642,20 +1643,24 @@ static void _colorbar_tick_upload(VkyVisual* text, VkyVisual* ticks, VkyColorbar
         tick_len = strlen(cur_tick);
 
         // Tick text.
-        text_data[i] = (VkyTextData){
-            {1, pos, 0},
-            {VKY_AXES_MARGIN_RIGHT - params.pad_br[0], 0},
-            {{TO_BYTE(VKY_AXES_TEXT_COLOR_R), //
-              TO_BYTE(VKY_AXES_TEXT_COLOR_G), //
-              TO_BYTE(VKY_AXES_TEXT_COLOR_B)},
-             TO_BYTE(VKY_AXES_TEXT_COLOR_A)},
-            VKY_AXES_FONT_SIZE,
-            {+1, anchor_y},
-            0,
-            tick_len,
-            cur_tick,
-            VKY_TRANSFORM_MODE_STATIC,
-        };
+        for (uint32_t j = 0; j < tick_len; k++)
+        {
+            text_data[k] = (VkyTextData){
+                {1, pos, 0},
+                {VKY_AXES_MARGIN_RIGHT - params.pad_br[0], 0},
+                {{TO_BYTE(VKY_AXES_TEXT_COLOR_R), //
+                  TO_BYTE(VKY_AXES_TEXT_COLOR_G), //
+                  TO_BYTE(VKY_AXES_TEXT_COLOR_B)},
+                 TO_BYTE(VKY_AXES_TEXT_COLOR_A)},
+                VKY_AXES_FONT_SIZE,
+                {+1, anchor_y},
+                0,
+                cur_tick[j],
+                i,
+                VKY_TRANSFORM_MODE_STATIC,
+            };
+            k++;
+        }
 
         // Tick segment.
         anchor_y = -params.pad_br[1] + (params.pad_tl[1] + params.pad_br[1]) * t;
@@ -1802,20 +1807,32 @@ static void _text_bake(VkyVisual* visual)
 {
     VkyData* data = &visual->data;
 
-    ASSERT(data->items != NULL); // TODO: support allocation with no upload by specifying a max
-                                 // number of glyphs per string
+    ASSERT(data->items != NULL);
+    ASSERT(data->item_count > 0);
 
     // Input text as array of VkyTextData.
     const VkyTextData* text = (const VkyTextData*)data->items;
 
-    // Count the number of glyphs.
-    uint32_t glyph_count = 0;
+    // Determine the length of each string.
+    uint32_t* string_lengths = calloc(data->item_count, sizeof(uint32_t));
+    uint32_t string_count = 0;
     for (uint32_t i = 0; i < data->item_count; i++)
-    { // vertex_count is the number of strings here
-        glyph_count += text[i].string_len;
+    {
+        // string_index should be 0 0 0 1 1 1 2 2 2 2 2 2 3 3 3...
+        // Still in the same string.
+        if (text[i].string_index != string_count)
+        {
+            string_count++;
+        }
+        string_lengths[string_count]++;
     }
+    string_count++;
+    ASSERT(string_count > 0);
+    ASSERT(string_lengths[0] > 0);
+    ASSERT(string_lengths[string_count - 1] > 0);
 
-    uint32_t nv = glyph_count;
+    // One item = one character. The string_index field gives the group index.
+    uint32_t nv = data->item_count;
     ASSERT(nv > 0);
 
     data->vertex_count = nv * 4;
@@ -1829,34 +1846,39 @@ static void _text_bake(VkyVisual* visual)
     float glyph_width = params.tex_size[0] / (float)params.grid_size[1];
     float glyph_height = params.tex_size[1] / (float)params.grid_size[0];
 
+    uint32_t str_idx = 0;
+    uint32_t str_len = 0;
     uint32_t k = 0;
     VkyTextVertex vertex = {0};
     double dpi = visual->scene->canvas->dpi_factor;
     // Go through all strings.
     for (uint32_t i = 0; i < data->item_count; i++)
     {
-        uint32_t str_len = text[i].string_len;
-        // For each string, go through the chars.
-        for (uint32_t j = 0; j < str_len; j++)
+        // Keep track of the changes of strings.
+        if (str_idx != text[i].string_index)
         {
-            char c[] = {text[i].string[j]};
-            uint32_t ci = strcspn(VKY_TEXT_CHARS, c);
-            vertex = (VkyTextVertex){
-                {text[i].pos[0], text[i].pos[1], text[i].pos[2]},
-                {text[i].shift[0] * dpi, text[i].shift[1] * dpi},
-                text[i].color,
-                {text[i].glyph_size / glyph_height * glyph_width * dpi, text[i].glyph_size * dpi},
-                {text[i].anchor[0], text[i].anchor[1]},
-                text[i].angle,
-                {ci, j, str_len, i}, // char, charIdx, strLen, strIdx
-                (uint8_t)text[i].transform_mode,
-            };
-            // Duplicate the vertex for the 2 triangles composing the rectangle.
-            for (uint32_t u = 0; u < 4; u++)
-            {
-                vertices[4 * k + u] = vertex;
-            }
-            k++;
+            k += string_lengths[str_idx];
+        }
+
+        str_idx = text[i].string_index;    // index of the string the current glyph is in
+        str_len = string_lengths[str_idx]; // length of the string the current glyph is in
+        ASSERT(i >= str_idx);
+        char c[] = {text[i].glyph};
+        uint32_t ci = strcspn(VKY_TEXT_CHARS, c);
+        vertex = (VkyTextVertex){
+            {text[i].pos[0], text[i].pos[1], text[i].pos[2]},
+            {text[i].shift[0] * dpi, text[i].shift[1] * dpi},
+            text[i].color,
+            {text[i].glyph_size / glyph_height * glyph_width * dpi, text[i].glyph_size * dpi},
+            {text[i].anchor[0], text[i].anchor[1]},
+            text[i].angle,
+            {ci, i - k, str_len, str_idx}, // char, charIdx, strLen, strIdx
+            (uint8_t)text[i].transform_mode,
+        };
+        // Duplicate the vertex for the 2 triangles composing the rectangle.
+        for (uint32_t u = 0; u < 4; u++)
+        {
+            vertices[4 * i + u] = vertex;
         }
     }
 
@@ -1926,7 +1948,8 @@ VkyVisual* vky_visual_text(VkyScene* scene)
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_SIZE, offsetof(VkyTextData, glyph_size));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_SHIFT, offsetof(VkyTextData, anchor));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_ANGLE, offsetof(VkyTextData, angle));
-    // TODO: refactor VkyTextData. string/string_len
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_TEXT, offsetof(VkyTextData, glyph));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_GROUP, offsetof(VkyTextData, string_index));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_TRANSFORM, offsetof(VkyTextData, transform_mode));
 
     return visual;

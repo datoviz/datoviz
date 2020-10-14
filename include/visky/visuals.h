@@ -412,8 +412,8 @@ struct VkyTextData
     float glyph_size;
     vec2 anchor;
     float angle;
-    uint32_t string_len;
-    char* string;
+    char glyph;
+    uint32_t string_index;
     uint8_t transform_mode;
 };
 
@@ -615,6 +615,9 @@ VKY_EXPORT VkyVisual* vky_visual_graph(VkyScene* scene, VkyGraphParams params);
 /*************************************************************************************************/
 
 VKY_EXPORT VkyVisual* vky_visual_text(VkyScene* scene);
+
+VKY_EXPORT void vky_visual_text_set_size(VkyVisual* visual, uint32_t char_count);
+VKY_EXPORT void vky_visual_text_add_string(VkyVisual* visual, const char* text);
 
 
 

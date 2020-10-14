@@ -125,7 +125,7 @@ END_INCL_NO_WARN
 /*************************************************************************************************/
 
 typedef uint8_t cvec2[2];
-typedef uint8_t cvec3[3]; // used for color index
+typedef uint8_t cvec3[3];
 typedef uint8_t cvec4[4]; // used for color index
 
 
