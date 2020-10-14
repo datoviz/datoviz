@@ -94,12 +94,36 @@ static int test_visuals_props_3()
 
     vky_visual_data(&v, VKY_VISUAL_PROP_POS, 0, 1, val1);
     AT(v.data.item_count == 1)
+
     // Test the case where a subsequent call to vky_visual_data() increases the number
     // of data items, and causes the library to enlarge the array and copy over the last item value
     vky_visual_data(&v, VKY_VISUAL_PROP_COLOR, 0, 2, val2);
     AT(v.data.item_count == 2)
 
     uint8_t expected[] = {10, 11, 12, 10, 13, 14};
+    AT(memcmp(v.data.items, expected, sizeof(expected)) == 0);
+
+    return 0;
+}
+
+static int test_visuals_props_4()
+{
+    VkyVisual v = _blank_visual();
+    vky_visual_prop_spec(&v, 3);
+    vky_visual_prop_add(&v, VKY_VISUAL_PROP_POS, 0); // 1 byte
+
+    uint8_t val1[] = {10, 11, 12};
+    uint8_t val2[] = {20};
+
+    vky_visual_data(&v, VKY_VISUAL_PROP_POS, 0, 3, val1);
+    AT(v.data.item_count == 3)
+
+    // Test the case where a subsequent call to vky_visual_data() decreases the number
+    // of data items.
+    vky_visual_data(&v, VKY_VISUAL_PROP_POS, 0, 1, val2);
+    AT(v.data.item_count == 1)
+
+    uint8_t expected[] = {20};
     AT(memcmp(v.data.items, expected, sizeof(expected)) == 0);
 
     return 0;

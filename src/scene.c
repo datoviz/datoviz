@@ -1231,6 +1231,9 @@ void vky_visual_data(
     VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index, //
     uint32_t value_count, void* values)
 {
+    ASSERT(value_count > 0);
+    ASSERT(values != NULL);
+
     // Get the visual prop object.
     VkyVisualProp* vp = vky_visual_prop_get(visual, prop_type, prop_index);
     if (vp == NULL)
@@ -1242,7 +1245,6 @@ void vky_visual_data(
     // Allocate the VkyData.items array if needed.
     if (visual->data.items == NULL)
     {
-        ASSERT(value_count > 0);
         visual->data.items = calloc(value_count, visual->item_size);
         visual->data.need_free_items = true;
         // NOTE: the size of data.items is determined by the size of the first call to
@@ -1250,11 +1252,11 @@ void vky_visual_data(
         log_trace("allocate data.items with %d values", value_count);
         visual->data.item_count = value_count;
     }
+    // Here, the data.items array already exists, but it is too small. Need to recreate a new
+    // array with the right size, and copy the old array to the new one.
     else if (visual->data.items != NULL && value_count > visual->data.item_count)
     {
         log_trace("need to reallocate data.items to fit %d elements", value_count);
-        // Here, the data.items array already exists, but it is too small. Need to recreate a new
-        // array with the right size, and copy the old array to the new one.
         void* old_data_items = visual->data.items;
         visual->data.items = calloc(value_count, visual->item_size);
         memcpy(visual->data.items, old_data_items, visual->data.item_count * visual->item_size);
@@ -1274,7 +1276,18 @@ void vky_visual_data(
         visual->data.need_free_items = true;
         visual->data.item_count = value_count;
     }
+    // Here, the data.items array already exists, but it is larger than the current POS prop.
+    // This means there are now less elements.
+    else if (
+        visual->data.items != NULL && value_count < visual->data.item_count &&
+        prop_type == VKY_VISUAL_PROP_POS)
+    {
+        log_trace("need to make data.items smaller, with %d elements", value_count);
+        // We don't change the underlying array, we just make data.item_count lower.
+        visual->data.item_count = value_count;
+    }
     ASSERT(visual->data.items != NULL);
+    ASSERT(visual->data.item_count > 0);
     // Now we can assume data.items is allocated and has at least value_count items.
 
     vp->value_count = value_count;
