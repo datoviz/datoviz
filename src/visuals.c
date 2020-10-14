@@ -109,7 +109,7 @@ VkyVisual* vky_visual_rectangle(VkyScene* scene, const VkyRectangleParams* param
     visual->cb_bake_data = _rectangle_bake;
 
     // Props.
-    vky_visual_prop_spec(visual, sizeof(VkyRectangleData));
+    vky_visual_prop_spec(visual, sizeof(VkyRectangleData), 0);
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyRectangleData, p));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_SIZE, offsetof(VkyRectangleData, size));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA, offsetof(VkyRectangleData, color));
@@ -218,7 +218,7 @@ VkyVisual* vky_visual_rectangle_axis(VkyScene* scene)
     visual->cb_bake_data = _rectangle_axis_bake;
 
     // Props.
-    vky_visual_prop_spec(visual, sizeof(VkyRectangleAxisData));
+    vky_visual_prop_spec(visual, sizeof(VkyRectangleAxisData), 0);
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyRectangleAxisData, ab));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_AXIS, offsetof(VkyRectangleAxisData, span_axis));
     vky_visual_prop_add(
@@ -319,11 +319,11 @@ VkyVisual* vky_visual_area(VkyScene* scene, const VkyAreaParams* params)
     visual->cb_bake_data = _area_bake;
 
     // Props.
-    vky_visual_prop_spec(visual, sizeof(VkyAreaData));
+    vky_visual_prop_spec(visual, sizeof(VkyAreaData), 0);
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyAreaData, p));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_SIZE, offsetof(VkyAreaData, h));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA, offsetof(VkyAreaData, color));
-    vky_visual_prop_add(visual, VKY_VISUAL_PROP_GROUP, offsetof(VkyAreaData, area_idx));
+    // vky_visual_prop_add(visual, VKY_VISUAL_PROP_GROUP, offsetof(VkyAreaData, area_idx));
 
     return visual;
 }
@@ -408,7 +408,7 @@ vky_visual_mesh(VkyScene* scene, const VkyMeshParams* params, const VkyTexturePa
     vky_add_texture_resource(visual, tex);
 
     // Props.
-    vky_visual_prop_spec(visual, sizeof(VkyMeshVertex));
+    vky_visual_prop_spec(visual, sizeof(VkyMeshVertex), 0);
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyMeshVertex, pos));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_NORMAL, offsetof(VkyMeshVertex, normal));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR, offsetof(VkyMeshVertex, color));
@@ -460,7 +460,7 @@ VkyVisual* vky_visual_mesh_raw(VkyScene* scene)
     vky_add_common_resources(visual);
 
     // Props.
-    vky_visual_prop_spec(visual, sizeof(VkyVertex));
+    vky_visual_prop_spec(visual, sizeof(VkyVertex), 0);
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyVertex, pos));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA, offsetof(VkyVertex, color));
 
@@ -501,7 +501,7 @@ VkyVisual* vky_visual_mesh_flat(VkyScene* scene)
     vky_add_common_resources(visual);
 
     // Props.
-    vky_visual_prop_spec(visual, sizeof(VkyVertex));
+    vky_visual_prop_spec(visual, sizeof(VkyVertex), 0);
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyVertex, pos));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA, offsetof(VkyVertex, color));
 
@@ -594,7 +594,7 @@ VkyVisual* vky_visual_marker(VkyScene* scene, const VkyMarkersParams* params)
     visual->cb_bake_data = _marker_bake;
 
     // Props.
-    vky_visual_prop_spec(visual, sizeof(VkyMarkersVertex));
+    vky_visual_prop_spec(visual, sizeof(VkyMarkersVertex), 0);
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyMarkersVertex, pos));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA, offsetof(VkyMarkersVertex, color));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_SIZE, offsetof(VkyMarkersVertex, size));
@@ -655,7 +655,7 @@ VkyVisual* vky_visual_marker_raw(VkyScene* scene, const VkyMarkersRawParams* par
     vky_add_common_resources(visual);
 
     // Props.
-    vky_visual_prop_spec(visual, sizeof(VkyVertex));
+    vky_visual_prop_spec(visual, sizeof(VkyVertex), 0);
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyVertex, pos));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA, offsetof(VkyVertex, color));
 
@@ -770,7 +770,7 @@ VkyVisual* vky_visual_segment(VkyScene* scene)
     visual->cb_bake_data = _segment_bake;
 
     // Props.
-    vky_visual_prop_spec(visual, sizeof(VkySegmentVertex));
+    vky_visual_prop_spec(visual, sizeof(VkySegmentVertex), 0);
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkySegmentVertex, P0));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkySegmentVertex, P1));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_SHIFT, offsetof(VkySegmentVertex, shift));
@@ -886,7 +886,7 @@ VkyVisual* vky_visual_arrow(VkyScene* scene)
     visual->cb_bake_data = _arrow_bake;
 
     // Props.
-    vky_visual_prop_spec(visual, sizeof(VkyArrowVertex));
+    vky_visual_prop_spec(visual, sizeof(VkyArrowVertex), 0);
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyArrowVertex, P0));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyArrowVertex, P1));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA, offsetof(VkyArrowVertex, color));
@@ -929,21 +929,20 @@ static void _path_bake(VkyVisual* visual)
     VkyData* data = &visual->data;
 
     // Determine the actual number of vertices and indices.
-    uint32_t path_count = data->item_count;
-    uint32_t vertex_count = 0; // NOT multiplied by path_vertices_per_segment
+    uint32_t item_count = data->item_count; // NOT multiplied by path_vertices_per_segment
     if (data->items == NULL)
         return;
-    ASSERT(path_count > 0);
-    const VkyPathData* paths = (const VkyPathData*)data->items;
-    for (uint32_t i = 0; i < path_count; i++)
-    {
-        ASSERT(paths[i].point_count >= 2);
-        vertex_count += paths[i].point_count - 1;
-    }
+    ASSERT(item_count > 0);
+
+    const VkyPathData* path_points = (const VkyPathData*)data->items;
+
+    // Number of paths
+    uint32_t path_count = data->group_count;
+    if (path_count == 0)
+        path_count = 1; // if no group, only one group is assumed
 
     // Extra vertices to to hide joins between two paths.
-    vertex_count += 2 * (path_count - 1);
-
+    uint32_t vertex_count = item_count + path_count - 2;
     ASSERT(vertex_count > 0);
 
     data->vertex_count = vertex_count * path_vertices_per_segment;
@@ -955,14 +954,25 @@ static void _path_bake(VkyVisual* visual)
 
     vec3 p0, p1, p2, p3;
     int32_t j0, j1, j2, j3;
-    vec3* points = NULL;
     int32_t point_count_path = 0;
-    VkyColor color;
+    VkyPathTopology* topologies = (VkyPathTopology*)data->group_params;
+    int32_t first_point_idx = 0;
+    bool is_open = true;
+
+    // vec3* pos = NULL;
+    VkyColor color = {0};
 
     for (uint32_t i = 0; i < path_count; i++)
     {
-        points = paths[i].points;
-        point_count_path = (int32_t)paths[i].point_count;
+        // Index, within the VkyPathData* array, of the first point in the current path.
+        first_point_idx = data->group_starts != NULL ? (int32_t)data->group_starts[i] : 0;
+
+        // Number of points in the current path.
+        point_count_path =
+            data->group_lengths != NULL ? (int32_t)data->group_lengths[i] : (int32_t)item_count;
+
+        if (topologies != NULL)
+            is_open = topologies[i] == VKY_PATH_OPEN;
 
         // Make the path vertices.
         for (int32_t j = 0; j < point_count_path - 1; j++)
@@ -972,13 +982,13 @@ static void _path_bake(VkyVisual* visual)
             j1 = j;
             j2 = j + 1;
             j3 = j + 2;
-            if (paths[i].topology == VKY_PATH_OPEN)
+            if (is_open)
             {
                 j0 = j0 < 0 ? 0 : j0;
                 j2 = j2 >= point_count_path ? (point_count_path - 1) : j2;
                 j3 = j3 >= point_count_path ? (point_count_path - 1) : j3;
             }
-            else if (paths[i].topology == VKY_PATH_CLOSED)
+            else
             {
                 j0 = j0 < 0 ? (point_count_path - 2) : j0;
                 j2 = j2 >= point_count_path ? 0 : j2;
@@ -990,12 +1000,12 @@ static void _path_bake(VkyVisual* visual)
             ASSERT(0 <= j2 && j2 < point_count_path);
             ASSERT(0 <= j3 && j3 < point_count_path);
 
-            vec3_copy(points[j0], p0);
-            vec3_copy(points[j1], p1);
-            vec3_copy(points[j2], p2);
-            vec3_copy(points[j3], p3);
+            vec3_copy(path_points[first_point_idx + j0].pos, p0);
+            vec3_copy(path_points[first_point_idx + j1].pos, p1);
+            vec3_copy(path_points[first_point_idx + j2].pos, p2);
+            vec3_copy(path_points[first_point_idx + j3].pos, p3);
 
-            color = paths[i].colors[j];
+            color = path_points[first_point_idx + j].color;
 
             _add_path_point(vertices, vertex_offset, p0, p1, p2, p3, color);
             ASSERT(vertex_offset < vertex_count);
@@ -1006,12 +1016,12 @@ static void _path_bake(VkyVisual* visual)
         if (i < path_count - 1)
         {
             // Add last point of current path.
-            vec3_copy(paths[i].points[point_count_path - 1], p0);
+            vec3_copy(path_points[first_point_idx + point_count_path - 1].pos, p0);
             _add_path_point(vertices, vertex_offset, p0, p0, p0, p0, (VkyColor){{0, 0, 0}, 0});
             vertex_offset++;
 
             // Add first point of next path.
-            vec3_copy(paths[i + 1].points[0], p0);
+            vec3_copy(path_points[first_point_idx + point_count_path].pos, p0);
             _add_path_point(vertices, vertex_offset, p0, p0, p0, p0, (VkyColor){{0, 0, 0}, 0});
             vertex_offset++;
 
@@ -1081,8 +1091,9 @@ VkyVisual* vky_visual_path(VkyScene* scene, const VkyPathParams* params)
     visual->cb_bake_data = _path_bake;
 
     // Props.
-    // vky_visual_prop_spec(visual, sizeof(VkyPathData));
-    // TODO: refactor VkyPathData
+    vky_visual_prop_spec(visual, sizeof(VkyPathData), sizeof(VkyPathTopology));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyPathData, pos));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA, offsetof(VkyPathData, color));
 
     return visual;
 }
@@ -1122,7 +1133,7 @@ VkyVisual* vky_visual_path_raw(VkyScene* scene)
     vky_add_common_resources(visual);
 
     // Props.
-    vky_visual_prop_spec(visual, sizeof(VkyVertex));
+    vky_visual_prop_spec(visual, sizeof(VkyVertex), 0);
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyVertex, pos));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA, offsetof(VkyVertex, color));
 
@@ -1257,7 +1268,7 @@ VkyVisual* vky_visual_fake_sphere(VkyScene* scene, const VkyFakeSphereParams* pa
     vky_add_common_resources(visual);
 
     // Props.
-    vky_visual_prop_spec(visual, sizeof(VkyFakeSphereVertex));
+    vky_visual_prop_spec(visual, sizeof(VkyFakeSphereVertex), 0);
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyFakeSphereVertex, pos));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA, offsetof(VkyFakeSphereVertex, color));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_SIZE, offsetof(VkyFakeSphereVertex, radius));
@@ -1379,7 +1390,7 @@ VkyVisual* vky_visual_image(VkyScene* scene, const VkyTextureParams* params)
     visual->cb_bake_data = _image_bake;
 
     // Props.
-    vky_visual_prop_spec(visual, sizeof(VkyImageData));
+    vky_visual_prop_spec(visual, sizeof(VkyImageData), 0);
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyImageData, p0));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyImageData, p1));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_TEXTURE_COORDS, offsetof(VkyImageData, uv0));
@@ -1456,7 +1467,7 @@ vky_visual_volume(VkyScene* scene, const VkyTextureParams* tex_params, const voi
     vky_visual_data_raw(visual);
 
     // Props.
-    vky_visual_prop_spec(visual, sizeof(VkyVertexUV));
+    vky_visual_prop_spec(visual, sizeof(VkyVertexUV), 0);
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyVertexUV, pos));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_TEXTURE_COORDS, offsetof(VkyVertexUV, uv));
 
@@ -1502,7 +1513,7 @@ VkyVisual* vky_visual_volume_slicer(VkyScene* scene, VkyTexture* tex)
 
 
     // Props.
-    vky_visual_prop_spec(visual, sizeof(VkyVertexUVW));
+    vky_visual_prop_spec(visual, sizeof(VkyVertexUVW), 0);
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyVertexUVW, pos));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_TEXTURE_COORDS, offsetof(VkyVertexUVW, uvw));
 
@@ -1554,7 +1565,7 @@ static VkyVisual* _colorbar_visual(VkyScene* scene)
     vky_add_common_resources(visual);
 
     // Props.
-    vky_visual_prop_spec(visual, sizeof(VkyColorbarVertex));
+    vky_visual_prop_spec(visual, sizeof(VkyColorbarVertex), 0);
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyColorbarVertex, pos));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_SHIFT, offsetof(VkyColorbarVertex, padding));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_TEXTURE_COORDS, offsetof(VkyColorbarVertex, uv));
@@ -1943,7 +1954,7 @@ VkyVisual* vky_visual_text(VkyScene* scene)
     visual->cb_bake_data = _text_bake;
 
     // Props.
-    vky_visual_prop_spec(visual, sizeof(VkyTextData));
+    vky_visual_prop_spec(visual, sizeof(VkyTextData), 0);
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, offsetof(VkyTextData, pos));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_SHIFT, offsetof(VkyTextData, shift));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR_ALPHA, offsetof(VkyTextData, color));
@@ -1951,7 +1962,7 @@ VkyVisual* vky_visual_text(VkyScene* scene)
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_SHIFT, offsetof(VkyTextData, anchor));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_ANGLE, offsetof(VkyTextData, angle));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_TEXT, offsetof(VkyTextData, glyph));
-    vky_visual_prop_add(visual, VKY_VISUAL_PROP_GROUP, offsetof(VkyTextData, string_index));
+    // vky_visual_prop_add(visual, VKY_VISUAL_PROP_GROUP, offsetof(VkyTextData, string_index));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_TRANSFORM, offsetof(VkyTextData, transform_mode));
 
     return visual;

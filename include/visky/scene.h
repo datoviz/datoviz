@@ -81,7 +81,7 @@ typedef enum
     VKY_VISUAL_PROP_VOLUME = 21,        // VkyTexture*
     VKY_VISUAL_PROP_BUFFER = 22,        // VkyBuffer*
     VKY_VISUAL_PROP_TRANSFORM = 31,     // uint8_t
-    VKY_VISUAL_PROP_GROUP = 32,         //
+    // VKY_VISUAL_PROP_GROUP = 32,         //
 } VkyVisualPropType;
 
 
@@ -298,6 +298,7 @@ struct VkyData
     // Groups are used in visuals such as text, where each text item has multiple glyphs,
     // or paths, where each path has multiple data points.
     uint32_t group_count;
+    uint32_t* group_starts;
     uint32_t* group_lengths;
     void* group_params;
 
@@ -345,6 +346,7 @@ struct VkyVisual
     size_t item_size;    // size in bytes of the prop struct (corresponds to VkyData.items)
     uint32_t prop_count; // number of props/fields in the struct
     VkyVisualProp* props;
+    size_t group_param_size; // size in bytes of the group parameters
 
     uint32_t resource_count;
     void** resources;
@@ -723,11 +725,11 @@ VKY_EXPORT void vky_visual_add_child(VkyVisual* parent, VkyVisual* child);
 /*  Visual props */
 /*************************************************************************************************/
 
-VKY_EXPORT void vky_visual_prop_spec(VkyVisual*, size_t item_size);
+VKY_EXPORT void vky_visual_prop_spec(VkyVisual*, size_t item_size, size_t group_param_size);
 
 VKY_EXPORT void vky_visual_data_set_groups(
-    VkyVisual* visual, uint32_t group_count, //
-    const uint32_t* group_lengths, const size_t param_size, const void* group_params);
+    VkyVisual* visual, uint32_t group_count, const uint32_t* group_lengths,
+    const void* group_params);
 
 VKY_EXPORT VkyVisualProp* vky_visual_prop_add(VkyVisual*, VkyVisualPropType, size_t offset);
 

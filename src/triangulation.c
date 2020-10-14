@@ -158,37 +158,38 @@ VkyPolygonTriangulation vky_visual_polygon_upload(
 
     if (visual_outline != NULL)
     {
-        // Make the paths data.
-        VkyPathData* paths = calloc(poly_count, sizeof(VkyPathData));
-        vec3* path_points = calloc(point_count, sizeof(vec3));
-        VkyColor* path_colors = calloc(point_count, sizeof(VkyColor));
+        // TODO
+        // // Make the paths data.
+        // VkyPathData* paths = calloc(poly_count, sizeof(VkyPathData));
+        // vec3* path_points = calloc(point_count, sizeof(vec3));
+        // VkyColor* path_colors = calloc(point_count, sizeof(VkyColor));
 
-        for (uint32_t i = 0; i < point_count; i++)
-        {
-            path_points[i][0] = (float)points[i][0];
-            path_points[i][1] = (float)points[i][1];
-            path_colors[i] = params->edge_color;
-        }
-        offset = 0;
-        uint32_t n = 0;
-        for (uint32_t i = 0; i < poly_count; i++)
-        {
-            n = poly_lengths[i];
-            paths[i].point_count = n;
-            paths[i].topology = VKY_PATH_CLOSED;
-            paths[i].points = path_points + offset;
-            paths[i].colors = path_colors + offset;
-            offset += n;
-        }
-        ASSERT(offset == point_count);
+        // for (uint32_t i = 0; i < point_count; i++)
+        // {
+        //     path_points[i][0] = (float)points[i][0];
+        //     path_points[i][1] = (float)points[i][1];
+        //     path_colors[i] = params->edge_color;
+        // }
+        // offset = 0;
+        // uint32_t n = 0;
+        // for (uint32_t i = 0; i < poly_count; i++)
+        // {
+        //     n = poly_lengths[i];
+        //     paths[i].point_count = n;
+        //     paths[i].topology = VKY_PATH_CLOSED;
+        //     paths[i].points = path_points + offset;
+        //     paths[i].colors = path_colors + offset;
+        //     offset += n;
+        // }
+        // ASSERT(offset == point_count);
 
-        // Upload the paths data.
-        visual_outline->data.item_count = poly_count;
-        visual_outline->data.items = paths;
-        vky_visual_data_raw(visual_outline);
-        free(paths);
-        free(path_points);
-        free(path_colors);
+        // // Upload the paths data.
+        // visual_outline->data.item_count = poly_count;
+        // visual_outline->data.items = paths;
+        // vky_visual_data_raw(visual_outline);
+        // free(paths);
+        // free(path_points);
+        // free(path_colors);
     }
 
     // Cleanup.

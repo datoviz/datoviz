@@ -317,10 +317,9 @@ struct VkyPathParams
 
 struct VkyPathData
 {
-    uint32_t point_count;
-    vec3* points;     // size: point_count
-    VkyColor* colors; // size: point_count
-    VkyPathTopology topology;
+    vec3 pos;
+    VkyColor color;
+    // uint32_t path_idx;
 };
 
 struct VkyPathVertex

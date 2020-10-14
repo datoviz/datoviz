@@ -143,12 +143,10 @@ static void paths(VkyPanel* panel)
         color[i] = vky_color(VKY_CMAP_JET, (i >= n / 2), 0, 1, 1);
     }
 
-    VkyPathData path1 = {n / 2, points, color, VKY_PATH_OPEN};
-    VkyPathData path2 = {n / 2, points + (n / 2), color + (n / 2), VKY_PATH_OPEN};
-    // paths is an array of VkyPathData, each item represent 1 path.
-    visual->data.item_count = 2;
-    visual->data.items = (VkyPathData[]){path1, path2};
-    vky_visual_data_raw(visual);
+    vky_visual_data_set_groups(
+        visual, 2, (uint32_t[]){n / 2, n / 2}, (VkyPathTopology[]){VKY_PATH_OPEN, VKY_PATH_OPEN});
+    vky_visual_data(visual, VKY_VISUAL_PROP_POS, 0, n, points);
+    vky_visual_data(visual, VKY_VISUAL_PROP_COLOR_ALPHA, 0, n, color);
 }
 
 static void segments(VkyPanel* panel)

@@ -957,6 +957,20 @@ void vky_destroy_visual(VkyVisual* visual)
         visual->data.group_lengths = NULL;
     }
 
+    if (visual->data.group_starts != NULL)
+    {
+        log_trace("destroy the group starts of the visual");
+        free(visual->data.group_starts);
+        visual->data.group_starts = NULL;
+    }
+
+    if (visual->data.group_params != NULL)
+    {
+        log_trace("destroy the group params of the visual");
+        free(visual->data.group_params);
+        visual->data.group_params = NULL;
+    }
+
     free(visual->props);
     visual->props = NULL;
     free(visual->resources);
@@ -973,7 +987,11 @@ void vky_destroy_visual(VkyVisual* visual)
 /*  Visual props                                                                                 */
 /*************************************************************************************************/
 
-void vky_visual_prop_spec(VkyVisual* visual, size_t item_size) { visual->item_size = item_size; }
+void vky_visual_prop_spec(VkyVisual* visual, size_t item_size, size_t group_param_size)
+{
+    visual->item_size = item_size;
+    visual->group_param_size = group_param_size;
+}
 
 VkyVisualProp* vky_visual_prop_add(VkyVisual* visual, VkyVisualPropType prop_type, size_t offset)
 {
@@ -1036,6 +1054,19 @@ vky_visual_prop_get(VkyVisual* visual, VkyVisualPropType prop_type, uint32_t pro
 /*************************************************************************************************/
 /*  Visual data                                                                                  */
 /*************************************************************************************************/
+
+static void* _reallocate(void* old, const void* new, size_t size)
+{
+    if (old != NULL)
+        free(old);
+    void* out = NULL;
+    if (size > 0)
+        out = calloc(size, 1);
+    if (new != NULL)
+        memcpy(out, new, size);
+    return out;
+}
+
 
 static void _visual_need_data_upload(VkyVisual* visual, VkyVisualProp* vp)
 {
@@ -1406,33 +1437,42 @@ void vky_visual_data(
 
 void vky_visual_data_set_groups(
     VkyVisual* visual, uint32_t group_count, //
-    const uint32_t* group_lengths, const size_t param_size, const void* group_params)
+    const uint32_t* group_lengths, const void* group_params)
 {
     ASSERT(group_count > 0);
+
+    VkyData* data = &visual->data;
+
     // Allocate and fill VkyData.group_lengths.
     ASSERT(group_lengths != NULL);
-    visual->data.group_count = group_count;
+    data->group_count = group_count;
+
     // Reallocate the group lengths array if needed.
-    if (visual->data.group_lengths != NULL)
-        free(visual->data.group_lengths);
-    visual->data.group_lengths = calloc(group_count, sizeof(uint32_t));
-    memcpy(visual->data.group_lengths, group_lengths, group_count * sizeof(uint32_t));
+    data->group_lengths =
+        (uint32_t*)_reallocate(data->group_lengths, group_lengths, group_count * sizeof(uint32_t));
 
     // Copy the group params, if any.
     if (group_params != NULL)
     {
-        ASSERT(param_size > 0);
-        visual->data.group_params = calloc(group_count, param_size);
-        memcpy(visual->data.group_params, group_params, group_count * param_size);
+        ASSERT(visual->group_param_size > 0);
+        data->group_params =
+            _reallocate(data->group_params, group_params, group_count * visual->group_param_size);
     }
+
+    // Reallocate the group starts.
+    data->group_starts =
+        (uint32_t*)_reallocate(data->group_starts, NULL, group_count * sizeof(uint32_t));
 
     // Count the total number of items across all groups.
     uint32_t item_count = 0;
     for (uint32_t i = 0; i < group_count; i++)
     {
+        data->group_starts[i] = item_count;
         item_count += group_lengths[i];
     }
-    visual->data.item_count = item_count;
+    data->item_count = item_count;
+    ASSERT(
+        data->group_starts[group_count - 1] + data->group_lengths[group_count - 1] == item_count);
 
     // Allocate the VkyData.items array.
     _allocate_data_items(visual, item_count);
