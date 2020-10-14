@@ -255,56 +255,60 @@ static void add_label(VkyPanel* panel, VkyAxis axis, VkyAxes2DParams* params)
 
     VkyVisual* label = vky_visual_text(panel->scene);
     vky_add_visual_to_panel(label, panel, VKY_VIEWPORT_OUTER, VKY_VISUAL_PRIORITY_NONE);
-    uint32_t i = 0;
-    VkyTextData text_data[2];
-    memset(text_data, 0, sizeof(text_data));
+    char* str = axis == VKY_AXIS_X ? params->xlabel.label : params->ylabel.label;
+    uint32_t str_len = strlen(str);
 
-    VkyTextData label_data = {0};
+    VkyTextData* label_data = calloc(str_len, sizeof(VkyTextData));
     switch (axis)
     {
 
     case VKY_AXIS_X:
         params->margins[2] += VKY_AXES_LABEL_VMARGIN;
-        label_data = (VkyTextData){
-            {0, +1, 0}, // label position
-            {0, -params->margins[2] + VKY_AXES_FONT_SIZE + VKY_AXES_LABEL_VMARGIN * .9}, // shift
-            params->xlabel.color,                                                        //
-            params->xlabel.font_size,                                                    //
-            {0, +1},                                                                     // anchor
-            0, // angle (horizontal)
-            strlen(params->xlabel.label),
-            params->xlabel.label,
-            VKY_TRANSFORM_MODE_STATIC,
-        };
-        memcpy(text_data + i, &label_data, sizeof(VkyTextData));
-        i++;
+        for (uint32_t j = 0; j < str_len; j++)
+        {
+            label_data[j] = (VkyTextData){
+                {0, +1, 0}, // label position
+                {0,
+                 -params->margins[2] + VKY_AXES_FONT_SIZE + VKY_AXES_LABEL_VMARGIN * .9}, // shift
+                params->xlabel.color,                                                     //
+                params->xlabel.font_size,                                                 //
+                {0, +1},                                                                  // anchor
+                0, // angle (horizontal)
+                str[j],
+                0,
+                VKY_TRANSFORM_MODE_STATIC,
+            };
+        }
         break;
 
     case VKY_AXIS_Y:
         params->margins[3] += VKY_AXES_LABEL_HMARGIN;
-        label_data = (VkyTextData){
-            {-1, 0, 0}, // label position
-            // shift
-            {VKY_AXES_LABEL_HMARGIN, 0},
-            params->ylabel.color,     //
-            params->ylabel.font_size, //
-            {0, -1},                  // anchor
-            M_PI / 2,                 // angle (vertical)
-            strlen(params->ylabel.label),
-            params->ylabel.label,
-            VKY_TRANSFORM_MODE_STATIC,
-        };
-        memcpy(text_data + i, &label_data, sizeof(VkyTextData));
-        i++;
+        for (uint32_t j = 0; j < str_len; j++)
+        {
+            label_data[j] = (VkyTextData){
+                {-1, 0, 0}, // label position
+                // shift
+                {VKY_AXES_LABEL_HMARGIN, 0},
+                params->ylabel.color,     //
+                params->ylabel.font_size, //
+                {0, -1},                  // anchor
+                M_PI / 2,                 // angle (vertical)
+                str[j],
+                0,
+                VKY_TRANSFORM_MODE_STATIC,
+            };
+        }
         break;
 
     default:
+        log_error("unknown VKY_AXIS=%d", axis);
         break;
     }
 
-    label->data.item_count = i;
-    label->data.items = text_data;
+    label->data.item_count = str_len;
+    label->data.items = label_data;
     vky_visual_data_raw(label);
+    free(label_data);
 }
 
 void vky_set_controller(VkyPanel* panel, VkyControllerType controller_type, const void* params)
@@ -947,6 +951,13 @@ void vky_destroy_visual(VkyVisual* visual)
         visual->data.items = NULL;
     }
 
+    if (visual->data.group_lengths != NULL)
+    {
+        log_trace("destroy the group lengths of the visual");
+        free(visual->data.group_lengths);
+        visual->data.group_lengths = NULL;
+    }
+
     free(visual->props);
     visual->props = NULL;
     free(visual->resources);
@@ -963,7 +974,7 @@ void vky_destroy_visual(VkyVisual* visual)
 /*  Visual props                                                                                 */
 /*************************************************************************************************/
 
-void vky_visual_data_item_size(VkyVisual* visual, size_t size) { visual->item_size = size; }
+void vky_visual_prop_spec(VkyVisual* visual, size_t item_size) { visual->item_size = item_size; }
 
 VkyVisualProp* vky_visual_prop_add(VkyVisual* visual, VkyVisualPropType prop_type, size_t offset)
 {
@@ -1027,8 +1038,15 @@ vky_visual_prop_get(VkyVisual* visual, VkyVisualPropType prop_type, uint32_t pro
 /*  Visual data                                                                                  */
 /*************************************************************************************************/
 
-static void _copy_prop_values(VkyVisual* visual, VkyVisualProp* vp)
+static void _copy_prop_values(
+    VkyVisual* visual, VkyVisualProp* vp,     //
+    uint32_t first_item, uint32_t item_count, // part of the VkyData.items array to update
+    const void* values)                       // input array
 {
+    ASSERT(first_item < visual->data.item_count);
+    ASSERT(item_count <= visual->data.item_count);
+    ASSERT(first_item + item_count <= visual->data.item_count);
+
     int64_t offset = (int64_t)vp->field_offset;
     int64_t item_size = (int64_t)vp->field_size;
     int64_t out_stride = (int64_t)visual->item_size;
@@ -1036,12 +1054,12 @@ static void _copy_prop_values(VkyVisual* visual, VkyVisualProp* vp)
     ASSERT(item_size > 0);
     ASSERT(out_stride > 0);
 
-    int64_t in_byte = (int64_t)vp->values;
+    int64_t in_byte = (int64_t)values;
     ASSERT(in_byte != 0);
     ASSERT(visual->data.items != NULL);
     int64_t out_byte = (int64_t)visual->data.items + offset;
 
-    for (uint32_t i = 0; i < visual->data.item_count; i++)
+    for (uint32_t i = first_item; i < item_count; i++)
     {
         memcpy((void*)out_byte, (const void*)in_byte, (size_t)item_size);
         // NOTE: if there are less values in the prop than items, it will copy the last prop
@@ -1051,6 +1069,7 @@ static void _copy_prop_values(VkyVisual* visual, VkyVisualProp* vp)
         out_byte += out_stride;
     }
 }
+
 
 static void _bake(VkyVisual* visual)
 {
@@ -1065,6 +1084,7 @@ static void _bake(VkyVisual* visual)
     ASSERT(data->vertex_count > 0);
     ASSERT(data->vertices != NULL);
 }
+
 
 void vky_visual_data_raw(VkyVisual* visual)
 {
@@ -1182,6 +1202,7 @@ void vky_visual_data_raw(VkyVisual* visual)
     }
 }
 
+
 void vky_visual_data(
     VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index, //
     uint32_t value_count, void* values)
@@ -1257,7 +1278,7 @@ void vky_visual_data(
     ASSERT(vp->field_size > 0);
 
     // Copy the prop array into the structured array.
-    _copy_prop_values(visual, vp);
+    _copy_prop_values(visual, vp, 0, visual->data.item_count, vp->values);
 
     // Tag the visual for data upload at the next frame.
     visual->need_data_upload = true;
@@ -1265,12 +1286,94 @@ void vky_visual_data(
         visual->scene->canvas->need_data_upload = true;
 }
 
+
+void vky_visual_data_set_groups(
+    VkyVisual* visual, uint32_t group_count, const uint32_t* group_lengths)
+{
+    ASSERT(group_count > 0);
+    // Allocate and fill VkyData.group_lengths.
+    ASSERT(group_lengths != NULL);
+    visual->data.group_count = group_count;
+    // Reallocate the group lengths array if needed.
+    if (visual->data.group_lengths != NULL)
+        free(visual->data.group_lengths);
+    visual->data.group_lengths = calloc(group_count, sizeof(uint32_t));
+    memcpy(visual->data.group_lengths, group_lengths, group_count * sizeof(uint32_t));
+
+    // Count the total number of items across all groups.
+    uint32_t item_count = 0;
+    for (uint32_t i = 0; i < group_count; i++)
+    {
+        item_count += group_lengths[i];
+    }
+    visual->data.item_count = item_count;
+
+    // Allocate the VkyData.items array.
+    if (visual->data.items != NULL)
+        free(visual->data.items);
+    log_trace("allocate data.items with %d values", item_count);
+    visual->data.items = calloc(item_count, visual->item_size);
+    visual->data.need_free_items = true;
+}
+
+
+void vky_visual_data_partial(
+    VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index, //
+    uint32_t first_item, uint32_t value_count, const void* values)
+{
+    ASSERT(value_count > 0);
+    ASSERT(values != NULL);
+
+    // Get the visual prop object.
+    VkyVisualProp* vp = vky_visual_prop_get(visual, prop_type, prop_index);
+    if (vp == NULL)
+    {
+        log_error("could not find visual prop %d", prop_type);
+        return;
+    }
+
+    // NOTE: currently we assume that vky_visual_data() has been called first so that
+    // all arrays are already allocated.
+    ASSERT(visual->data.items != NULL);
+    ASSERT(visual->data.item_count > 0);
+
+    _copy_prop_values(visual, vp, first_item, value_count, values);
+}
+
+
+void vky_visual_data_group(
+    VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index, uint32_t group_idx,
+    const void* value)
+{
+    uint32_t first_item = 0, group_size = 0;
+
+    ASSERT(group_idx < visual->data.group_count);
+    ASSERT(visual->data.group_lengths != NULL);
+    group_size = visual->data.group_lengths[group_idx];
+    for (uint32_t i = 0; i < group_idx; i++)
+    {
+        first_item += visual->data.group_lengths[i];
+    }
+
+    // Repeat the value for the current group.
+    void* values = calloc(group_size, visual->item_size);
+    for (uint32_t i = 0; i < group_size; i++)
+    {
+        memcpy(
+            (void*)((int64_t)values + (int64_t)(i * visual->item_size)), value, visual->item_size);
+    }
+    vky_visual_data_partial(visual, prop_type, prop_index, first_item, group_size, values);
+    free(values);
+}
+
+
 void vky_visual_data_resource(
     VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index, void* resource)
 {
     VkyVisualProp* vp = vky_visual_prop_get(visual, prop_type, prop_index);
     vp->resource = resource;
 }
+
 
 void vky_visual_data_callback(
     VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index,

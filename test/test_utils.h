@@ -61,7 +61,7 @@ static int test_visuals_props_1()
 static int test_visuals_props_2()
 {
     VkyVisual v = _blank_visual();
-    vky_visual_data_item_size(&v, 6);
+    vky_visual_prop_spec(&v, 6);
     vky_visual_prop_add(&v, VKY_VISUAL_PROP_POS, 0);   // 1 byte
     vky_visual_prop_add(&v, VKY_VISUAL_PROP_COLOR, 1); // 2 bytes
     vky_visual_prop_add(&v, VKY_VISUAL_PROP_SIZE, 3);  // 3 bytes
@@ -85,7 +85,7 @@ static int test_visuals_props_2()
 static int test_visuals_props_3()
 {
     VkyVisual v = _blank_visual();
-    vky_visual_data_item_size(&v, 3);
+    vky_visual_prop_spec(&v, 3);
     vky_visual_prop_add(&v, VKY_VISUAL_PROP_POS, 0);   // 1 byte
     vky_visual_prop_add(&v, VKY_VISUAL_PROP_COLOR, 1); // 2 bytes
 
@@ -109,7 +109,7 @@ static int test_visuals_props_3()
 static int test_visuals_props_4()
 {
     VkyVisual v = _blank_visual();
-    vky_visual_data_item_size(&v, 3);
+    vky_visual_prop_spec(&v, 3);
     vky_visual_prop_add(&v, VKY_VISUAL_PROP_POS, 0); // 1 byte
 
     uint8_t val1[] = {10, 11, 12};

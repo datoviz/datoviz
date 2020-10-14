@@ -295,6 +295,11 @@ struct VkyData
     uint32_t index_count;
     VkyIndex* indices;
 
+    // Groups are used in visuals such as text, where each text item has multiple glyphs,
+    // or paths, where each path has multiple data points.
+    uint32_t group_count;
+    uint32_t* group_lengths;
+
     bool need_free_items;
     bool need_free_vertices;
     bool need_free_indices;
@@ -708,15 +713,38 @@ VKY_EXPORT void vky_destroy_visual(VkyVisual* visual);
 VKY_EXPORT void vky_free_data(VkyData data);
 VKY_EXPORT void vky_visual_add_child(VkyVisual* parent, VkyVisual* child);
 
-VKY_EXPORT void vky_visual_data_item_size(VkyVisual*, size_t size);
+
+
+/*************************************************************************************************/
+/*  Visual props */
+/*************************************************************************************************/
+
+VKY_EXPORT void vky_visual_prop_spec(VkyVisual*, size_t item_size);
+
+VKY_EXPORT void
+vky_visual_data_set_groups(VkyVisual* visual, uint32_t group_count, const uint32_t* group_lengths);
+
 VKY_EXPORT VkyVisualProp* vky_visual_prop_add(VkyVisual*, VkyVisualPropType, size_t offset);
+
 VKY_EXPORT VkyVisualProp* vky_visual_prop_get(VkyVisual*, VkyVisualPropType, uint32_t prop_index);
+
 VKY_EXPORT void vky_visual_data(
     VkyVisual*, VkyVisualPropType, uint32_t prop_index, uint32_t value_count, void* values);
+
+VKY_EXPORT void vky_visual_data_partial(
+    VkyVisual*, VkyVisualPropType, uint32_t prop_index, //
+    uint32_t first_item, uint32_t value_count, const void* values);
+
+VKY_EXPORT void vky_visual_data_group(
+    VkyVisual*, VkyVisualPropType, uint32_t prop_index, uint32_t group_idx, const void* value);
+
 VKY_EXPORT void vky_visual_data_resource(VkyVisual*, VkyVisualPropType, uint32_t, void*);
+
 VKY_EXPORT void vky_visual_data_callback(
     VkyVisual*, VkyVisualPropType, uint32_t prop_index, VkyVisualPropCallback);
+
 void vky_visual_data_upload(VkyVisual*, VkyPanel*);
+
 
 
 /*************************************************************************************************/
