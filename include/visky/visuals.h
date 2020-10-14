@@ -13,6 +13,25 @@
 
 typedef enum
 {
+    VKY_ALPHA_SCALING_OFF = 0,
+    VKY_ALPHA_SCALING_ON = 1,
+} VkyAlphaScalingMode;
+
+// NOTE: the numbers need to correspond to arrows.glsl at the bottom.
+typedef enum
+{
+    VKY_ARROW_CURVED = 0,
+    VKY_ARROW_STEALTH = 1,
+    VKY_ARROW_ANGLE_30 = 2,
+    VKY_ARROW_ANGLE_60 = 3,
+    VKY_ARROW_ANGLE_90 = 4,
+    VKY_ARROW_TRIANGLE_30 = 5,
+    VKY_ARROW_TRIANGLE_60 = 6,
+    VKY_ARROW_TRIANGLE_90 = 7,
+} VkyArrowType;
+
+typedef enum
+{
     VKY_CAP_TYPE_NONE = 0,
     VKY_CAP_ROUND = 1,
     VKY_CAP_TRIANGLE_IN = 2,
@@ -20,6 +39,12 @@ typedef enum
     VKY_CAP_SQUARE = 4,
     VKY_CAP_BUTT = 5
 } VkyCapType;
+
+typedef enum
+{
+    VKY_DEPTH_DISABLE = 0,
+    VKY_DEPTH_ENABLE = 1
+} VkyDepthStatus;
 
 typedef enum
 {
@@ -51,93 +76,17 @@ typedef enum
     VKY_MARKER_VBAR = 18,
 } VkyMarkerType;
 
-// NOTE: the numbers need to correspond to arrows.glsl at the bottom.
 typedef enum
 {
-    VKY_ARROW_CURVED = 0,
-    VKY_ARROW_STEALTH = 1,
-    VKY_ARROW_ANGLE_30 = 2,
-    VKY_ARROW_ANGLE_60 = 3,
-    VKY_ARROW_ANGLE_90 = 4,
-    VKY_ARROW_TRIANGLE_30 = 5,
-    VKY_ARROW_TRIANGLE_60 = 6,
-    VKY_ARROW_TRIANGLE_90 = 7,
-} VkyArrowType;
-
-
-
-/*************************************************************************************************/
-/*  Multi raw path visual                                                                        */
-/*************************************************************************************************/
-
-typedef struct VkyMultiRawPathParams VkyMultiRawPathParams;
-struct VkyMultiRawPathParams
-{
-    vec4 info;                                  // path_count, vertex_count_per_path, scaling
-    vec4 y_offsets[VKY_RAW_PATH_MAX_PATHS / 4]; // NOTE: 16 bytes alignment enforced
-    vec4 colors[VKY_RAW_PATH_MAX_PATHS];        // 16 bytes per path
-};
-
-
-VKY_EXPORT VkyVisual*
-vky_visual_path_raw_multi(VkyScene* scene, const VkyMultiRawPathParams* params);
-
-
-
-/*************************************************************************************************/
-/*  Image visual                                                                                 */
-/*************************************************************************************************/
-typedef struct VkyImageData VkyImageData;
-struct VkyImageData
-{
-    vec3 p0, p1;
-    vec2 uv0, uv1;
-};
-
-VKY_EXPORT VkyVisual* vky_visual_image(VkyScene* scene, const VkyTextureParams* params);
-
-VKY_EXPORT void vky_visual_image_upload(VkyVisual*, const void*);
-
-
-/*************************************************************************************************/
-/*  Raw marker                                                                                   */
-/*************************************************************************************************/
+    VKY_MESH_COLOR_RGBA = 1,
+    VKY_MESH_COLOR_UV = 2,
+} VkyMeshColorType;
 
 typedef enum
 {
-    VKY_SCALING_OFF,
-    VKY_SCALING_ON
-} VkyScalingMode;
-
-typedef enum
-{
-    VKY_ALPHA_SCALING_OFF,
-    VKY_ALPHA_SCALING_ON
-} VkyAlphaScalingMode;
-
-typedef struct VkyMarkersRawParams VkyMarkersRawParams;
-struct VkyMarkersRawParams
-{
-    vec2 marker_size;
-    int32_t scaling_mode;
-    int32_t alpha_scaling_mode;
-};
-
-VKY_EXPORT VkyVisual* vky_visual_marker_raw(VkyScene* scene, const VkyMarkersRawParams* params);
-
-
-
-/*************************************************************************************************/
-/*  Raw path                                                                                     */
-/*************************************************************************************************/
-
-VKY_EXPORT VkyVisual* vky_visual_path_raw(VkyScene* scene);
-
-
-
-/*************************************************************************************************/
-/*  Path visual                                                                                  */
-/*************************************************************************************************/
+    VKY_MESH_SHADING_NONE = 0,
+    VKY_MESH_SHADING_BLINN_PHONG = 1,
+} VkyMeshShading;
 
 typedef enum
 {
@@ -147,48 +96,145 @@ typedef enum
 
 typedef enum
 {
-    VKY_DEPTH_DISABLE = 0,
-    VKY_DEPTH_ENABLE = 1
-} VkyDepthStatus;
+    VKY_SCALING_OFF = 0,
+    VKY_SCALING_ON = 1,
+} VkyScalingMode;
 
-typedef struct VkyPathParams VkyPathParams;
-struct VkyPathParams
-{
-    float linewidth;
-    float miter_limit;
-    int32_t cap_type;
-    int32_t round_join;
-    int32_t enable_depth;
-};
 
+
+/*************************************************************************************************/
+/*  Typedefs                                                                                     */
+/*************************************************************************************************/
+
+typedef struct VkyAreaData VkyAreaData;
+typedef struct VkyAreaParams VkyAreaParams;
+typedef struct VkyAreaVertex VkyAreaVertex;
+typedef struct VkyArrowVertex VkyArrowVertex;
+typedef struct VkyColorbarVertex VkyColorbarVertex;
+typedef struct VkyFakeSphereParams VkyFakeSphereParams;
+typedef struct VkyFakeSphereVertex VkyFakeSphereVertex;
+typedef struct VkyGraphEdge VkyGraphEdge;
+typedef struct VkyGraphParams VkyGraphParams;
+typedef struct VkyImageData VkyImageData;
+typedef struct VkyMarkersParams VkyMarkersParams;
+typedef struct VkyMarkersRawParams VkyMarkersRawParams;
+typedef struct VkyMarkersVertex VkyMarkersVertex;
+typedef struct VkyMeshParams VkyMeshParams;
+typedef struct VkyMultiRawPathParams VkyMultiRawPathParams;
 typedef struct VkyPathData VkyPathData;
-struct VkyPathData
+typedef struct VkyPathParams VkyPathParams;
+typedef struct VkyPathVertex VkyPathVertex;
+typedef struct VkyPolygonParams VkyPolygonParams;
+typedef struct VkyPSLGParams VkyPSLGParams;
+typedef struct VkyRectangleAxisData VkyRectangleAxisData;
+typedef struct VkyRectangleData VkyRectangleData;
+typedef struct VkyRectangleParams VkyRectangleParams;
+typedef struct VkySegmentVertex VkySegmentVertex;
+typedef struct VkyTextData VkyTextData;
+typedef struct VkyTextParams VkyTextParams;
+typedef struct VkyTexturedVertex3D VkyTexturedVertex3D;
+typedef struct VkyTextVertex VkyTextVertex;
+typedef struct VkyTriangulationParams VkyTriangulationParams;
+typedef struct VkyVertexUV VkyVertexUV;
+typedef struct VkyVolumeParams VkyVolumeParams;
+typedef VkyMarkersVertex VkyGraphNode;
+
+
+
+/*************************************************************************************************/
+/*  Consts                                                                                       */
+/*************************************************************************************************/
+
+static const char VKY_TEXT_CHARS[] =
+    " !\"#$%&'()*+,-./"
+    "0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7f";
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+struct VkyRectangleParams
 {
-    uint32_t point_count;
-    vec3* points;     // size: point_count
-    VkyColor* colors; // size: point_count
-    VkyPathTopology topology;
+    vec3 origin;
+    vec3 u;
+    vec3 v;
 };
 
-typedef struct VkyPathVertex VkyPathVertex;
-struct VkyPathVertex
+struct VkyRectangleData
 {
-    vec3 p0;
-    vec3 p1;
-    vec3 p2;
-    vec3 p3;
+    // position of the lower left corner in the 2D coordinate system defined by (origin, u, v)
+    vec2 p;
+    vec2 size; // size of the rectangle
     VkyColor color;
 };
 
-VKY_EXPORT VkyVisual* vky_visual_path(VkyScene* scene, const VkyPathParams* params);
+struct VkyRectangleAxisData
+{
+    vec2 ab;
+    uint8_t span_axis; // 0 or 1
+    VkyColor color;
+};
 
+struct VkyAreaParams
+{
+    vec3 origin;
+    vec3 u;
+    vec3 v;
+};
 
+struct VkyAreaVertex
+{
+    vec3 pos;
+    VkyColor color;
+    uint32_t area_idx;
+};
 
-/*************************************************************************************************/
-/*  Segment visual                                                                               */
-/*************************************************************************************************/
+struct VkyAreaData
+{
+    // position of the lower left corner in the 2D coordinate system defined by (origin, u, v)
+    vec2 p;
+    float h;
+    VkyColor color;
+    uint32_t area_idx;
+};
 
-typedef struct VkySegmentVertex VkySegmentVertex;
+// Struct sent to the GPU as uniform buffer.
+struct VkyMeshParams
+{
+    vec4 light_pos;
+    vec4 light_coefs;
+    ivec2 tex_size;
+    int32_t mode_color; // how to interpret the u16vec2 color attribute
+    int32_t mode_shading;
+    float wire_linewidth;
+};
+
+struct VkyMarkersVertex
+{
+    vec3 pos;
+    VkyColor color;
+    float size;
+    uint8_t
+        marker; // in fact a VkyMarkerType but we should control the exact data type for the GPU
+    uint8_t angle;
+};
+
+struct VkyMarkersParams
+{
+    vec4 edge_color;
+    float edge_width;
+    int32_t enable_depth;
+};
+
+struct VkyMarkersRawParams
+{
+    vec2 marker_size;
+    int32_t scaling_mode;
+    int32_t alpha_scaling_mode;
+};
+
 struct VkySegmentVertex
 {
     vec3 P0;
@@ -201,46 +247,108 @@ struct VkySegmentVertex
     uint8_t transform_mode;
 };
 
-VKY_EXPORT VkyVisual* vky_visual_segment(VkyScene* scene);
-
-
-
-/*************************************************************************************************/
-/*  Markers visual                                                                               */
-/*************************************************************************************************/
-
-typedef struct VkyMarkersVertex VkyMarkersVertex;
-struct VkyMarkersVertex
+struct VkyArrowVertex
 {
-    vec3 pos;
+    vec3 P0;
+    vec3 P1;
     VkyColor color;
-    float size;
-    uint8_t
-        marker; // in fact a VkyMarkerType but we should control the exact data type for the GPU
-    uint8_t angle;
+    float head;
+    float linewidth;
+    float arrow_type;
 };
 
-typedef struct VkyMarkersParams VkyMarkersParams;
-struct VkyMarkersParams
+struct VkyPathParams
 {
-    vec4 edge_color;
-    float edge_width;
+    float linewidth;
+    float miter_limit;
+    int32_t cap_type;
+    int32_t round_join;
     int32_t enable_depth;
 };
 
-VKY_EXPORT VkyVisual* vky_visual_marker(VkyScene* scene, const VkyMarkersParams* params);
+struct VkyPathData
+{
+    uint32_t point_count;
+    vec3* points;     // size: point_count
+    VkyColor* colors; // size: point_count
+    VkyPathTopology topology;
+};
 
+struct VkyPathVertex
+{
+    vec3 p0;
+    vec3 p1;
+    vec3 p2;
+    vec3 p3;
+    VkyColor color;
+};
 
+struct VkyMultiRawPathParams
+{
+    vec4 info;                                  // path_count, vertex_count_per_path, scaling
+    vec4 y_offsets[VKY_RAW_PATH_MAX_PATHS / 4]; // NOTE: 16 bytes alignment enforced
+    vec4 colors[VKY_RAW_PATH_MAX_PATHS];        // 16 bytes per path
+};
 
-/*************************************************************************************************/
-/*  Text visual                                                                                  */
-/*************************************************************************************************/
+struct VkyFakeSphereParams
+{
+    vec4 light_pos;
+};
 
-static const char VKY_TEXT_CHARS[] =
-    " !\"#$%&'()*+,-./"
-    "0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7f";
+struct VkyFakeSphereVertex
+{
+    vec3 pos;
+    VkyColor color;
+    float radius;
+};
 
-typedef struct VkyTextData VkyTextData;
+struct VkyImageData
+{
+    vec3 p0, p1;
+    vec2 uv0, uv1;
+};
+
+struct VkyVertexUV
+{
+    vec3 pos;
+    vec2 uv;
+};
+
+struct VkyVolumeParams
+{
+    mat4 inv_proj_view;
+    mat4 normal_mat;
+};
+
+struct VkyTexturedVertex3D
+{
+    vec3 pos;
+    vec3 coords;
+};
+
+struct VkyColorbarVertex
+{
+    vec3 pos;
+    vec2 padding;
+    cvec2 uv;
+};
+
+struct VkyGraphParams
+{
+    float marker_edge_width;
+    vec4 marker_edge_color;
+};
+
+struct VkyGraphEdge
+{
+    uint32_t source_node;
+    uint32_t target_node;
+    VkyColor color;
+    float linewidth;
+    VkyCapType cap0;
+    VkyCapType cap1;
+};
+
 struct VkyTextData
 {
     vec3 pos;
@@ -254,7 +362,6 @@ struct VkyTextData
     uint8_t transform_mode;
 };
 
-typedef struct VkyTextVertex VkyTextVertex;
 struct VkyTextVertex
 {
     vec3 pos;
@@ -267,93 +374,64 @@ struct VkyTextVertex
     uint8_t transform_mode;
 };
 
-typedef struct VkyTextParams VkyTextParams;
 struct VkyTextParams
 {
     ivec2 grid_size;
     ivec2 tex_size;
 };
 
-VKY_EXPORT VkyVisual* vky_visual_text(VkyScene* scene);
-
-
-
-/*************************************************************************************************/
-/*  Arrow visual                                                                                 */
-/*************************************************************************************************/
-
-typedef struct VkyArrowVertex VkyArrowVertex;
-struct VkyArrowVertex
+struct VkyPolygonParams
 {
-    vec3 P0;
-    vec3 P1;
-    VkyColor color;
-    float head;
     float linewidth;
-    float arrow_type;
+    VkyColor edge_color;
 };
 
-VKY_EXPORT VkyVisual* vky_visual_arrow(VkyScene* scene);
+struct VkyPSLGParams
+{
+    // segments
+    float linewidth;
+    VkyColor edge_color;
+};
+
+struct VkyTriangulationParams
+{
+    // segments
+    float linewidth;
+    VkyColor edge_color;
+    // markers
+    vec2 marker_size;
+    VkyColor marker_color;
+};
 
 
 
 /*************************************************************************************************/
-/*  Fake sphere visual                                                                           */
+/*  Rectangle visual                                                                             */
 /*************************************************************************************************/
 
-typedef struct VkyFakeSphereParams VkyFakeSphereParams;
-struct VkyFakeSphereParams
-{
-    vec4 light_pos;
-};
+VKY_EXPORT VkyVisual* vky_visual_rectangle(VkyScene* scene, const VkyRectangleParams* params);
 
-typedef struct VkyFakeSphereVertex VkyFakeSphereVertex;
-struct VkyFakeSphereVertex
-{
-    vec3 pos;
-    VkyColor color;
-    float radius;
-};
 
-VKY_EXPORT VkyVisual* vky_visual_fake_sphere(VkyScene* scene, const VkyFakeSphereParams* params);
+
+/*************************************************************************************************/
+/*  Axis rectangle visual                                                                        */
+/*************************************************************************************************/
+
+VKY_EXPORT VkyVisual* vky_visual_rectangle_axis(VkyScene* scene);
+
+
+
+/*************************************************************************************************/
+/*  Area visual                                                                                  */
+/*************************************************************************************************/
+
+VKY_EXPORT VkyVisual* vky_visual_area(VkyScene* scene, const VkyAreaParams* params);
 
 
 
 /*************************************************************************************************/
 /*  Mesh visual                                                                                  */
 /*************************************************************************************************/
-
-typedef enum
-{
-    VKY_MESH_COLOR_RGBA = 1,
-    VKY_MESH_COLOR_UV = 2,
-} VkyMeshColorType;
-
-typedef enum
-{
-    VKY_MESH_SHADING_NONE = 0,
-    VKY_MESH_SHADING_BLINN_PHONG = 1,
-} VkyMeshShading;
-
-// Struct sent to the GPU as uniform buffer.
-typedef struct VkyMeshParams VkyMeshParams;
-struct VkyMeshParams
-{
-    vec4 light_pos;
-    vec4 light_coefs;
-    ivec2 tex_size;
-    int32_t mode_color; // how to interpret the u16vec2 color attribute
-    int32_t mode_shading;
-    float wire_linewidth;
-};
-
-// typedef struct VkyMeshVertex VkyMeshVertex;
-// struct VkyMeshVertex
-// {
-//     vec3 pos;
-//     vec3 normal;
-//     VkyColor color;
-// };
 
 VKY_EXPORT VkyMeshParams vky_default_mesh_params(
     VkyMeshColorType color_type, VkyMeshShading shading, ivec2 tex_size, float wire_linewidth);
@@ -370,150 +448,83 @@ VKY_EXPORT VkyVisual* vky_visual_mesh_flat(VkyScene* scene);
 
 
 /*************************************************************************************************/
-/*  Rectangle visual                                                                             */
+/*  Markers visual                                                                               */
 /*************************************************************************************************/
 
-typedef struct VkyRectangleParams VkyRectangleParams;
-struct VkyRectangleParams
-{
-    vec3 origin;
-    vec3 u;
-    vec3 v;
-};
-
-typedef struct VkyRectangleData VkyRectangleData;
-struct VkyRectangleData
-{
-    // position of the lower left corner in the 2D coordinate system defined by (origin, u, v)
-    vec2 p;
-    vec2 size; // size of the rectangle
-    VkyColor color;
-};
-
-VKY_EXPORT VkyVisual* vky_visual_rectangle(VkyScene* scene, const VkyRectangleParams* params);
+VKY_EXPORT VkyVisual* vky_visual_marker(VkyScene* scene, const VkyMarkersParams* params);
 
 
 
 /*************************************************************************************************/
-/*  Area visual                                                                                  */
+/*  Raw marker                                                                                   */
 /*************************************************************************************************/
 
-typedef struct VkyAreaParams VkyAreaParams;
-struct VkyAreaParams
-{
-    vec3 origin;
-    vec3 u;
-    vec3 v;
-};
-
-typedef struct VkyAreaVertex VkyAreaVertex;
-struct VkyAreaVertex
-{
-    vec3 pos;
-    VkyColor color;
-    uint32_t area_idx;
-};
-
-typedef struct VkyAreaData VkyAreaData;
-struct VkyAreaData
-{
-    // position of the lower left corner in the 2D coordinate system defined by (origin, u, v)
-    vec2 p;
-    float h;
-    VkyColor color;
-    uint32_t area_idx;
-};
-
-VKY_EXPORT VkyVisual* vky_visual_area(VkyScene* scene, const VkyAreaParams* params);
+VKY_EXPORT VkyVisual* vky_visual_marker_raw(VkyScene* scene, const VkyMarkersRawParams* params);
 
 
 
 /*************************************************************************************************/
-/*  Axis rectangle visual                                                                        */
+/*  Segment visual                                                                               */
 /*************************************************************************************************/
 
-typedef struct VkyRectangleAxisData VkyRectangleAxisData;
-struct VkyRectangleAxisData
-{
-    vec2 ab;
-    uint8_t span_axis; // 0 or 1
-    VkyColor color;
-};
-
-VKY_EXPORT VkyVisual* vky_visual_rectangle_axis(VkyScene* scene);
+VKY_EXPORT VkyVisual* vky_visual_segment(VkyScene* scene);
 
 
 
 /*************************************************************************************************/
-/*  Polygon                                                                                      */
+/*  Arrow visual                                                                                 */
 /*************************************************************************************************/
 
-typedef struct VkyPolygonParams VkyPolygonParams;
-struct VkyPolygonParams
-{
-    float linewidth;
-    VkyColor edge_color;
-};
+VKY_EXPORT VkyVisual* vky_visual_arrow(VkyScene* scene);
 
-VKY_EXPORT VkyVisual* vky_visual_polygon(VkyScene* scene, const VkyPolygonParams* params);
 
 
 /*************************************************************************************************/
-/*  PSLG visual                                                                                  */
+/*  Path visual                                                                                  */
 /*************************************************************************************************/
 
-typedef struct VkyPSLGParams VkyPSLGParams;
-struct VkyPSLGParams
-{
-    // segments
-    float linewidth;
-    VkyColor edge_color;
-};
+VKY_EXPORT VkyVisual* vky_visual_path(VkyScene* scene, const VkyPathParams* params);
 
-
-
-VKY_EXPORT VkyVisual* vky_visual_pslg(VkyScene* scene, const VkyPSLGParams* params);
 
 
 /*************************************************************************************************/
-/*  Triangulation visual with triangle segments and markers                                      */
+/*  Raw path                                                                                     */
 /*************************************************************************************************/
 
-typedef struct VkyTriangulationParams VkyTriangulationParams;
-struct VkyTriangulationParams
-{
-    // segments
-    float linewidth;
-    VkyColor edge_color;
-    // markers
-    vec2 marker_size;
-    VkyColor marker_color;
-};
+VKY_EXPORT VkyVisual* vky_visual_path_raw(VkyScene* scene);
 
-VKY_EXPORT VkyVisual* vky_visual_triangulation(VkyScene*, const VkyTriangulationParams*);
 
-VKY_EXPORT void vky_visual_triangulation_upload(
-    VkyVisual*, uint32_t, size_t, const void*, uint32_t, const VkyIndex*);
+
+/*************************************************************************************************/
+/*  Multi raw path visual                                                                        */
+/*************************************************************************************************/
+
+VKY_EXPORT VkyVisual*
+vky_visual_path_raw_multi(VkyScene* scene, const VkyMultiRawPathParams* params);
+
+
+
+/*************************************************************************************************/
+/*  Fake sphere visual                                                                           */
+/*************************************************************************************************/
+
+VKY_EXPORT VkyVisual* vky_visual_fake_sphere(VkyScene* scene, const VkyFakeSphereParams* params);
+
+
+
+/*************************************************************************************************/
+/*  Image visual                                                                                 */
+/*************************************************************************************************/
+
+VKY_EXPORT VkyVisual* vky_visual_image(VkyScene* scene, const VkyTextureParams* params);
+
+VKY_EXPORT void vky_visual_image_upload(VkyVisual*, const void*);
 
 
 
 /*************************************************************************************************/
 /*  Volume visual                                                                                */
 /*************************************************************************************************/
-
-typedef struct VkyVertexUV VkyVertexUV;
-struct VkyVertexUV
-{
-    vec3 pos;
-    vec2 uv;
-};
-
-typedef struct VkyVolumeParams VkyVolumeParams;
-struct VkyVolumeParams
-{
-    mat4 inv_proj_view;
-    mat4 normal_mat;
-};
 
 VKY_EXPORT VkyVisual* vky_visual_volume(VkyScene*, const VkyTextureParams*, const void*);
 
@@ -523,40 +534,21 @@ VKY_EXPORT VkyVisual* vky_visual_volume(VkyScene*, const VkyTextureParams*, cons
 /*  Volume slicer visual                                                                         */
 /*************************************************************************************************/
 
-typedef struct VkyTexturedVertex3D VkyTexturedVertex3D;
-struct VkyTexturedVertex3D
-{
-    vec3 pos;
-    vec3 coords;
-};
-
 VkyVisual* vky_visual_volume_slicer(VkyScene* scene, VkyTexture* tex);
+
+
+
+/*************************************************************************************************/
+/*  Colorbar                                                                                     */
+/*************************************************************************************************/
+
+VKY_EXPORT VkyVisual* vky_visual_colorbar(VkyScene* scene, VkyColorbarParams params);
 
 
 
 /*************************************************************************************************/
 /*  Graph                                                                                        */
 /*************************************************************************************************/
-
-typedef struct VkyGraphParams VkyGraphParams;
-struct VkyGraphParams
-{
-    float marker_edge_width;
-    vec4 marker_edge_color;
-};
-
-typedef VkyMarkersVertex VkyGraphNode;
-
-typedef struct VkyGraphEdge VkyGraphEdge;
-struct VkyGraphEdge
-{
-    uint32_t source_node;
-    uint32_t target_node;
-    VkyColor color;
-    float linewidth;
-    VkyCapType cap0;
-    VkyCapType cap1;
-};
 
 VKY_EXPORT void vky_graph_upload(
     VkyVisual* vb,                             //
@@ -568,18 +560,37 @@ VKY_EXPORT VkyVisual* vky_visual_graph(VkyScene* scene, VkyGraphParams params);
 
 
 /*************************************************************************************************/
-/*  Colorbar                                                                                     */
+/*  Text visual                                                                                  */
 /*************************************************************************************************/
 
-typedef struct VkyColorbarVertex VkyColorbarVertex;
-struct VkyColorbarVertex
-{
-    vec3 pos;
-    vec2 padding;
-    cvec2 uv;
-};
+VKY_EXPORT VkyVisual* vky_visual_text(VkyScene* scene);
 
-VKY_EXPORT VkyVisual* vky_visual_colorbar(VkyScene* scene, VkyColorbarParams params);
+
+
+/*************************************************************************************************/
+/*  Polygon                                                                                      */
+/*************************************************************************************************/
+
+VKY_EXPORT VkyVisual* vky_visual_polygon(VkyScene* scene, const VkyPolygonParams* params);
+
+
+
+/*************************************************************************************************/
+/*  PSLG visual                                                                                  */
+/*************************************************************************************************/
+
+VKY_EXPORT VkyVisual* vky_visual_pslg(VkyScene* scene, const VkyPSLGParams* params);
+
+
+
+/*************************************************************************************************/
+/*  Triangulation visual with triangle segments and markers                                      */
+/*************************************************************************************************/
+
+VKY_EXPORT VkyVisual* vky_visual_triangulation(VkyScene*, const VkyTriangulationParams*);
+
+VKY_EXPORT void vky_visual_triangulation_upload(
+    VkyVisual*, uint32_t, size_t, const void*, uint32_t, const VkyIndex*);
 
 
 
