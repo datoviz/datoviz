@@ -1030,15 +1030,6 @@ vky_visual_prop_get(VkyVisual* visual, VkyVisualPropType prop_type, uint32_t pro
 {
     uint32_t k = 0;
 
-    // Special handling of POS prop.
-    // if (prop_type == VKY_VISUAL_PROP_POS)
-    // {
-    //     if (prop_index == 0)
-    //         return &visual->prop_pos;
-    //     k++; // There is 1 and exactly 1 POS prop per visual.
-    // }
-    // else
-    // {
     // Search the #prop_index-th prop with the requested type.
     for (uint32_t i = 0; i < visual->prop_count; i++)
     {
@@ -1051,7 +1042,6 @@ vky_visual_prop_get(VkyVisual* visual, VkyVisualPropType prop_type, uint32_t pro
         }
     }
     ASSERT(prop_index >= k);
-    // }
 
     // Search among the children.
     VkyVisualProp* vp = NULL;
@@ -1120,41 +1110,44 @@ static void* _reallocate(void* old, size_t old_size, size_t new_size)
 static void _reallocate_pos_props(VkyVisual* visual, uint32_t item_count)
 {
     // Reallocate all pos props.
-    // TODO
+    VkyVisualProp* vp = NULL;
+    for (uint32_t i = 0; i < visual->pos_prop_count; i++)
+    {
+        vp = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS, i);
+        vp->values = _reallocate(
+            vp->values, visual->data.item_count * sizeof(dvec2), item_count * sizeof(dvec2));
+    }
 }
 
 
 static void _renormalize_pos(VkyVisual* visual, VkyPanel* panel)
 {
-    // TODO
-    /*
-        // This function ensures the POS_GPU prop exists and is possibly recomputed from the POS
-        // prop, if it has been set.
-        VkyVisualProp* vp_pos_gpu = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS_GPU, 0);
-        VkyVisualProp* vp_pos = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS, 0);
+    // Go through the different POS props of the visual.
+    for (uint32_t i = 0; i < visual->pos_prop_count; i++)
+    {
+        VkyVisualProp* vp_pos_gpu = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS_GPU, i);
+        VkyVisualProp* vp_pos = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS, i);
 
-        // Both types of props are mandatory.
-        ASSERT(vp_pos != NULL);
-        ASSERT(vp_pos_gpu != NULL);
-
-        if (!vp_pos->is_set)
+        if (vp_pos_gpu == NULL || vp_pos == NULL || !vp_pos->is_set)
+        {
+            log_warn("POS or POS_GPU prop was null or not set for visual %d", visual->visual_type);
             return;
+        }
 
-        // Now, we ensure the POS prop has been set, so we need to renormalize into the POS_GPU
-       prop. ASSERT(vp_pos->is_set); ASSERT(visual->data.pos != NULL); log_debug("rescale POS_GPU
-       prop from POS prop");
-
+        // Now we renormalize.
+        ASSERT(vp_pos_gpu != NULL && vp_pos != NULL);
+        ASSERT(vp_pos->is_set);
         ASSERT(panel != NULL);
-        bool success = true;
+        vec3* pos_out = calloc(visual->data.item_count, sizeof(vec3));
+
         switch (panel->controller_type)
         {
-
         case VKY_CONTROLLER_AXES_2D:;
             VkyAxes* axes = (VkyAxes*)panel->controller;
 
             vky_transform_cartesian(
-                vky_axes_get_range(axes), visual->data.item_count, //
-                visual->data.pos, visual->data.pos_gpu);
+                vky_axes_get_range(axes), visual->data.item_count, vp_pos_gpu->values, pos_out);
+            // (void*)((int64_t)visual->data.items + (int64_t)vp_pos_gpu->field_offset));
 
             // TODO: other controllers
             // - log scale
@@ -1166,21 +1159,24 @@ static void _renormalize_pos(VkyVisual* visual, VkyPanel* panel)
         default:
             log_error(
                 "normalization with controller type %d not implemented yet",
-       panel->controller_type); success = false; break;
+                panel->controller_type);
+            // success = false;
+            break;
         }
 
-        if (success)
+        // Set the POS_GPU prop to the normalized values.
+        ASSERT(vp_pos_gpu->field_size == sizeof(vec3));
+        vky_visual_data(visual, VKY_VISUAL_PROP_POS_GPU, i, visual->data.item_count, pos_out);
+
+        // Set it also for the children.
+        for (uint32_t j = 0; j < visual->children_count; j++)
         {
-            // Once the data has been rescale, it needs to be copied over in the current visual and
-            // all of its children.
-            for (uint32_t k = 0; k < visual->pos_gpu_prop_count; k++)
-            {
-                vky_visual_data(
-                    visual, VKY_VISUAL_PROP_POS_GPU, 0, visual->data.item_count,
-       visual->data.pos_gpu);
-            }
-}
-    */
+            vky_visual_data(
+                visual->children[j], VKY_VISUAL_PROP_POS_GPU, i, visual->data.item_count, pos_out);
+        }
+
+        free(pos_out);
+    }
 }
 
 
@@ -1443,16 +1439,20 @@ void vky_visual_data_set_size(
         data->item_count = item_count;
         data->need_free_items = true;
 
-        // Allocate the position arrays.
+        // Allocate the position arrays corresponding to the POS props.
         _reallocate_pos_props(visual, item_count);
-        // data->pos =
-        //     _reallocate(data->pos, data->item_count * sizeof(dvec2), item_count *
-        //     sizeof(dvec2));
     }
     else
     {
         // Nothing to do if the requested data.items has the same size as the existing one.
         ASSERT(item_count == data->item_count);
+    }
+
+    // Resize the children visuals too.
+    for (uint32_t i = 0; i < visual->children_count; i++)
+    {
+        vky_visual_data_set_size(
+            visual->children[i], item_count, group_count, group_lengths, group_params);
     }
 }
 

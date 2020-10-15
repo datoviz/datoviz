@@ -313,6 +313,8 @@ struct VkyVisualProp
     size_t field_offset;
     size_t field_size;
 
+    void* values; // only used by POS prop, as we need dvec2* array for renormalization
+
     void* resource; // (only for the _RESOURCE prop types)
     VkyVisualPropCallback callback;
 

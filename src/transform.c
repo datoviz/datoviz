@@ -1,5 +1,8 @@
 #include "transform.h"
 
+#define GET_VEC3(buf) ((float*)((int64_t)(buf) + (int64_t)(item_size * i)))
+
+
 
 void vky_transform_cartesian(VkyBox2D box, uint32_t item_count, const dvec2* pos_in, vec3* pos_out)
 {
