@@ -1421,6 +1421,7 @@ void vky_visual_data_set_size(
         ASSERT(visual->group_param_size > 0);
         data->group_params =
             _reallocate(data->group_params, 0, group_count * visual->group_param_size);
+        memcpy(data->group_params, group_params, group_count * visual->group_param_size);
     }
 
     // Reallocate the group starts.
@@ -1452,10 +1453,7 @@ void vky_visual_data_set_size(
     else if (item_count > data->item_count)
     {
         // Need to reallocate and copy the old array into the new one
-        data->items = _reallocate(
-            data->items, data->item_count * visual->item_size, item_count * visual->item_size);
-        data->item_count = item_count;
-        data->need_free_items = true;
+        _reallocate_data_items(visual, item_count);
     }
     else
     {

@@ -16,6 +16,8 @@ static void mesh_raw(VkyPanel* panel)
         {255, 0, 0, 255}, {0, 255, 0, 255},   {0, 0, 255, 255},
         {0, 0, 255, 255}, {255, 0, 255, 255}, {255, 0, 0, 255},
     };
+
+    vky_visual_data_set_size(visual, n, 0, NULL, NULL);
     vky_visual_data(visual, VKY_VISUAL_PROP_POS, 0, n, positions);
     vky_visual_data(visual, VKY_VISUAL_PROP_COLOR_ALPHA, 0, n, colors);
 }
@@ -43,6 +45,7 @@ static void scatter(VkyPanel* panel)
     VkyMarkerType marker = VKY_MARKER_DISC;
     uint8_t angle = 0;
 
+    vky_visual_data_set_size(visual, n, 0, NULL, NULL);
     vky_visual_data(visual, VKY_VISUAL_PROP_POS, 0, n, positions);
     vky_visual_data(visual, VKY_VISUAL_PROP_COLOR_ALPHA, 0, n, colors);
     vky_visual_data(visual, VKY_VISUAL_PROP_SIZE, 0, 1, &size);
