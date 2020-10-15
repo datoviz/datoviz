@@ -16,6 +16,7 @@ static VkyVisual _blank_visual()
     VkyVisual v = {0};
     v.props = calloc(10, sizeof(VkyVisualProp));
     v.children = calloc(10, sizeof(VkyVisual*));
+    v.prop_pos.type = VKY_VISUAL_PROP_POS;
     return v;
 }
 
@@ -36,6 +37,8 @@ static int test_visuals_props_1()
     vp = vky_visual_prop_add(&v, VKY_VISUAL_PROP_POS_GPU, 4);
 
     AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_COLOR, 0) == NULL);
+    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS, 0) != NULL);
+    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS, 1) == NULL);
     AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS_GPU, 0) == vp);
     AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS_GPU, 1) == NULL);
 
@@ -53,8 +56,16 @@ static int test_visuals_props_1()
     AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS_GPU, 1) == vpc);
     AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS_GPU, 2) == NULL);
 
+    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS, 0) != NULL);
+    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS, 1) != NULL);
+    AT(vky_visual_prop_get(&vc, VKY_VISUAL_PROP_POS, 0) != NULL);
+    AT(vky_visual_prop_get(&vc, VKY_VISUAL_PROP_POS, 1) == NULL);
+    AT(vky_visual_prop_get(&vc, VKY_VISUAL_PROP_POS, 0) ==
+       vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS, 1));
+
     _destroy_visual(&vc);
     _destroy_visual(&v);
+
     return 0;
 }
 

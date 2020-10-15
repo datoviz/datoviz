@@ -61,7 +61,7 @@ typedef enum
 typedef enum
 {
     VKY_VISUAL_PROP_NONE = 0,
-    VKY_VISUAL_PROP_POS2D = 1,          // dvec2
+    VKY_VISUAL_PROP_POS = 1,            // dvec2
     VKY_VISUAL_PROP_POS_GPU = 2,        // vec3
     VKY_VISUAL_PROP_TEXTURE_COORDS = 3, // vec2
     VKY_VISUAL_PROP_NORMAL = 4,         // vec3
@@ -345,6 +345,7 @@ struct VkyVisual
     size_t item_size;    // size in bytes of the prop struct (corresponds to VkyData.items)
     uint32_t prop_count; // number of props/fields in the struct
     VkyVisualProp* props;
+    VkyVisualProp prop_pos;  // special prop with dvec2* values, used for pos renormalization
     size_t group_param_size; // size in bytes of the group parameters
 
     uint32_t resource_count;
@@ -359,6 +360,7 @@ struct VkyVisual
     VkyVisualResizeCallback cb_resize; // NOTE: unused yet
 
     bool need_data_upload;
+    bool need_pos_rescale;
 };
 
 

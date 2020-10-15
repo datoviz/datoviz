@@ -697,6 +697,10 @@ VkyVisual* vky_create_visual(VkyScene* scene, VkyVisualType visual_type)
     visual.resources = calloc(VKY_MAX_VISUAL_RESOURCES, sizeof(void*));
     visual.children = calloc(VKY_MAX_VISUALS_CHILDREN, sizeof(void*));
 
+    // Special POS prop.
+    visual.prop_pos.type = VKY_VISUAL_PROP_POS;
+    visual.prop_pos.field_size = sizeof(dvec2);
+
     // NOTE: by convention, the first buffer is the indirect draw buffer.
     // HACK: we allocate the bigger indexed command so that we have enough space,
     // even if the visual doesn't use indexed drawing.
@@ -993,6 +997,9 @@ void vky_visual_prop_spec(VkyVisual* visual, size_t item_size, size_t group_para
 
 VkyVisualProp* vky_visual_prop_add(VkyVisual* visual, VkyVisualPropType prop_type, size_t offset)
 {
+    // POS prop is handled separately since it does not fit in the data.items array.
+    ASSERT(prop_type != VKY_VISUAL_PROP_POS);
+
     VkyVisualProp vp = {0};
     vp.type = prop_type;
     vp.field_offset = offset;
@@ -1021,18 +1028,29 @@ VkyVisualProp*
 vky_visual_prop_get(VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index)
 {
     uint32_t k = 0;
-    for (uint32_t i = 0; i < visual->prop_count; i++)
-    {
-        if (visual->props[i].type == prop_type)
-        {
-            if (k == prop_index)
-                return &visual->props[i];
-            else
-                k++;
-        }
-    }
 
-    ASSERT(prop_index >= k);
+    // Special handling of POS prop.
+    if (prop_type == VKY_VISUAL_PROP_POS)
+    {
+        if (prop_index == 0)
+            return &visual->prop_pos;
+        k++; // There is 1 and exactly 1 POS prop per visual.
+    }
+    else
+    {
+        // Search the #prop_index-th prop with the requested type.
+        for (uint32_t i = 0; i < visual->prop_count; i++)
+        {
+            if (visual->props[i].type == prop_type)
+            {
+                if (k == prop_index)
+                    return &visual->props[i];
+                else
+                    k++;
+            }
+        }
+        ASSERT(prop_index >= k);
+    }
 
     // Search among the children.
     VkyVisualProp* vp = NULL;
@@ -1089,7 +1107,7 @@ static void _visual_prop_has_been_set(VkyVisual* visual, VkyVisualProp* vp)
         visual->scene->canvas->need_data_upload = true;
 
     // // Special handling of POS2D prop: all children should be invalidated.
-    // if (vp != NULL && vp->type == VKY_VISUAL_PROP_POS2D)
+    // if (vp != NULL && vp->type == VKY_VISUAL_PROP_POS)
     // {
     //     for (uint32_t i = 0; i < visual->children_count; i++)
     //         _visual_prop_has_been_set(visual->children[i], vp);
@@ -1104,7 +1122,7 @@ static VkyVisualProp* _get_pos2D_prop(VkyVisual* visual)
     // parents.
     if (visual == NULL)
         return NULL;
-    VkyVisualProp* vp = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS2D, 0);
+    VkyVisualProp* vp = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS, 0);
     if (vp == NULL || vp->value_count == 0)
         vp = _get_pos2D_prop(visual->parent);
     return vp;

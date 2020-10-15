@@ -468,5 +468,8 @@ int main(int argc, char* argv[])
         res += test_images(argc, argv);
     }
 
+    if (res != 0)
+        log_error("Tests failed!");
+
     return res;
 }
