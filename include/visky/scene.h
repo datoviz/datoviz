@@ -745,7 +745,8 @@ VKY_EXPORT void vky_visual_data_partial(
     uint32_t value_count, const void* values);
 
 VKY_EXPORT void vky_visual_data_group(
-    VkyVisual*, VkyVisualPropType, uint32_t prop_index, uint32_t group_idx, const void* value);
+    VkyVisual*, VkyVisualPropType, uint32_t prop_index, uint32_t group_idx, //
+    uint32_t value_count, const void* value);
 
 VKY_EXPORT void vky_visual_data_resource(VkyVisual*, VkyVisualPropType, uint32_t, void*);
 

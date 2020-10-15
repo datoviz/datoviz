@@ -22,10 +22,10 @@ static void upload_text(VkyVisual* visual)
         size = 30 + 15 * cos(3 * t + i);
         angle = -.67 * t + M_2PI * (float)i / N;
 
-        vky_visual_data_group(visual, VKY_VISUAL_PROP_POS, 0, i, pos);
-        vky_visual_data_group(visual, VKY_VISUAL_PROP_COLOR_ALPHA, 0, i, &color);
-        vky_visual_data_group(visual, VKY_VISUAL_PROP_SIZE, 0, i, &size);
-        vky_visual_data_group(visual, VKY_VISUAL_PROP_ANGLE, 0, i, &angle);
+        vky_visual_data_group(visual, VKY_VISUAL_PROP_POS, 0, i, 1, pos);
+        vky_visual_data_group(visual, VKY_VISUAL_PROP_COLOR_ALPHA, 0, i, 1, &color);
+        vky_visual_data_group(visual, VKY_VISUAL_PROP_SIZE, 0, i, 1, &size);
+        vky_visual_data_group(visual, VKY_VISUAL_PROP_ANGLE, 0, i, 1, &angle);
     }
 }
 
@@ -68,8 +68,7 @@ int main()
     // Set the text.
     const char* str = STRING;
     for (uint32_t i = 0; i < N; i++)
-        vky_visual_data_partial(
-            visual, VKY_VISUAL_PROP_TEXT, 0, N_CHARS * i, N_CHARS, N_CHARS, str);
+        vky_visual_data_group(visual, VKY_VISUAL_PROP_TEXT, 0, i, strlen(str), str);
 
     upload_text(visual);
     vky_add_frame_callback(canvas, frame_callback);

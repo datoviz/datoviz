@@ -14,9 +14,9 @@ static void hello(VkyPanel* panel)
     float size = 30;
 
     vky_visual_data_set_size(visual, n, 1, (uint32_t[]){n}, NULL);
-    vky_visual_data_group(visual, VKY_VISUAL_PROP_POS, 0, 0, pos);
-    vky_visual_data_group(visual, VKY_VISUAL_PROP_COLOR_ALPHA, 0, 0, &color);
-    vky_visual_data_group(visual, VKY_VISUAL_PROP_SIZE, 0, 0, &size);
+    vky_visual_data_group(visual, VKY_VISUAL_PROP_POS, 0, 0, 1, pos);
+    vky_visual_data_group(visual, VKY_VISUAL_PROP_COLOR_ALPHA, 0, 0, 1, &color);
+    vky_visual_data_group(visual, VKY_VISUAL_PROP_SIZE, 0, 0, 1, &size);
     vky_visual_data(visual, VKY_VISUAL_PROP_TEXT, 0, n, (void*)str);
 }
 

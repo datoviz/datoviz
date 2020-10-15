@@ -162,12 +162,12 @@ static int test_visuals_props_5()
     vky_visual_data_partial(&v, VKY_VISUAL_PROP_POS, 0, 3, 2, 1, &x);
 
     x = 11;
-    vky_visual_data_group(&v, VKY_VISUAL_PROP_POS, 0, 1, &x);
+    vky_visual_data_group(&v, VKY_VISUAL_PROP_POS, 0, 1, 1, &x);
 
     uint8_t y[] = {20, 21};
     vky_visual_data(&v, VKY_VISUAL_PROP_COLOR, 0, 2, y);
 
-    vky_visual_data_group(&v, VKY_VISUAL_PROP_SIZE, 0, 2, y);
+    vky_visual_data_group(&v, VKY_VISUAL_PROP_SIZE, 0, 2, 1, y);
 
     uint8_t expected[] = {0,  20, 0,  0,  11, 21, 0,  0,  11, 21, 0,  0,
                           10, 21, 20, 21, 10, 21, 20, 21, 0,  21, 20, 21};

@@ -1537,8 +1537,9 @@ void vky_visual_data_partial(
 
 void vky_visual_data_group(
     VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index, uint32_t group_idx,
-    const void* value)
+    uint32_t value_count, const void* value)
 {
+    ASSERT(value_count > 0);
     ASSERT(group_idx < visual->data.group_count);
     // Need to call vky_visual_data_set_size() first.
     ASSERT(visual->data.group_lengths != NULL);
@@ -1553,7 +1554,8 @@ void vky_visual_data_group(
     ASSERT(group_size > 0);
     ASSERT(vp->field_size > 0);
 
-    vky_visual_data_partial(visual, prop_type, prop_index, first_item, group_size, 1, value);
+    vky_visual_data_partial(
+        visual, prop_type, prop_index, first_item, group_size, value_count, value);
 }
 
 
