@@ -320,6 +320,7 @@ struct VkyVisualProp
     void* resource; // (only for the _RESOURCE prop types)
     VkyVisualPropCallback callback;
 
+    bool is_set;
     bool need_free;
 };
 
@@ -727,8 +728,8 @@ VKY_EXPORT void vky_visual_add_child(VkyVisual* parent, VkyVisual* child);
 
 VKY_EXPORT void vky_visual_prop_spec(VkyVisual*, size_t item_size, size_t group_param_size);
 
-VKY_EXPORT void vky_visual_data_set_groups(
-    VkyVisual* visual, uint32_t group_count, const uint32_t* group_lengths,
+VKY_EXPORT void vky_visual_data_set_size(
+    VkyVisual* visual, uint32_t item_count, uint32_t group_count, const uint32_t* group_lengths,
     const void* group_params);
 
 VKY_EXPORT VkyVisualProp* vky_visual_prop_add(VkyVisual*, VkyVisualPropType, size_t offset);
@@ -740,7 +741,8 @@ VKY_EXPORT void vky_visual_data(
 
 VKY_EXPORT void vky_visual_data_partial(
     VkyVisual*, VkyVisualPropType, uint32_t prop_index, //
-    uint32_t first_item, uint32_t value_count, const void* values);
+    uint32_t first_item, uint32_t item_count,           //
+    uint32_t value_count, const void* values);
 
 VKY_EXPORT void vky_visual_data_group(
     VkyVisual*, VkyVisualPropType, uint32_t prop_index, uint32_t group_idx, const void* value);

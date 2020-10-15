@@ -383,6 +383,7 @@ static int test_utils()
     UNIT_TEST(test_visuals_props_2);
     UNIT_TEST(test_visuals_props_3);
     UNIT_TEST(test_visuals_props_4);
+    UNIT_TEST(test_visuals_props_5);
     UNIT_TEST(test_utils_transform_1);
     UNIT_TEST(test_utils_transform_2);
     UNIT_TEST(test_utils_panzoom_1);

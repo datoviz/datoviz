@@ -1724,7 +1724,7 @@ static void _colorbar_tick_upload(VkyVisual* text, VkyVisual* ticks, VkyColorbar
     text->data.item_count = k;
     text->data.items = text_data;
 
-    vky_visual_data_set_groups(text, n, tick_lengths, NULL);
+    vky_visual_data_set_size(text, k, n, tick_lengths, NULL);
     vky_visual_data_raw(text);
 
     ticks->data.item_count = n + 4;

@@ -13,7 +13,7 @@ static void hello(VkyPanel* panel)
     VkyColor color = {{255, 0, 0}, 255};
     float size = 30;
 
-    vky_visual_data_set_groups(visual, 1, (uint32_t[]){n}, NULL);
+    vky_visual_data_set_size(visual, n, 1, (uint32_t[]){n}, NULL);
     vky_visual_data_group(visual, VKY_VISUAL_PROP_POS, 0, 0, pos);
     vky_visual_data_group(visual, VKY_VISUAL_PROP_COLOR_ALPHA, 0, 0, &color);
     vky_visual_data_group(visual, VKY_VISUAL_PROP_SIZE, 0, 0, &size);

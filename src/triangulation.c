@@ -171,7 +171,8 @@ VkyPolygonTriangulation vky_visual_polygon_upload(
             path_topologies[i] = VKY_PATH_CLOSED;
         }
 
-        vky_visual_data_set_groups(visual_outline, poly_count, poly_lengths, path_topologies);
+        vky_visual_data_set_size(
+            visual_outline, point_count, poly_count, poly_lengths, path_topologies);
         vky_visual_data(visual_outline, VKY_VISUAL_PROP_POS, 0, point_count, path_points);
         vky_visual_data(visual_outline, VKY_VISUAL_PROP_COLOR_ALPHA, 0, point_count, path_colors);
 

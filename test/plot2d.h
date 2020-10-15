@@ -143,8 +143,9 @@ static void paths(VkyPanel* panel)
         color[i] = vky_color(VKY_CMAP_JET, (i >= n / 2), 0, 1, 1);
     }
 
-    vky_visual_data_set_groups(
-        visual, 2, (uint32_t[]){n / 2, n / 2}, (VkyPathTopology[]){VKY_PATH_OPEN, VKY_PATH_OPEN});
+    vky_visual_data_set_size(
+        visual, n, 2, (uint32_t[]){n / 2, n / 2},
+        (VkyPathTopology[]){VKY_PATH_OPEN, VKY_PATH_OPEN});
     vky_visual_data(visual, VKY_VISUAL_PROP_POS, 0, n, points);
     vky_visual_data(visual, VKY_VISUAL_PROP_COLOR_ALPHA, 0, n, color);
 }
@@ -233,7 +234,7 @@ static void area(VkyPanel* panel)
         color[i] = vky_color(VKY_DEFAULT_COLORMAP, i < n ? i : 2 * n - 1 - i, 0, n, 1);
     };
 
-    vky_visual_data_set_groups(visual, 2, (uint32_t[]){n, n}, NULL);
+    vky_visual_data_set_size(visual, 2 * n, 2, (uint32_t[]){n, n}, NULL);
     vky_visual_data(visual, VKY_VISUAL_PROP_POS, 0, 2 * n, pos);
     vky_visual_data(visual, VKY_VISUAL_PROP_COLOR_ALPHA, 0, 2 * n, color);
     vky_visual_data(visual, VKY_VISUAL_PROP_SIZE, 0, 1, &height);

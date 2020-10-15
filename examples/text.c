@@ -8,30 +8,25 @@ static void upload_text(VkyVisual* visual)
 {
     // Upload the data.
     float t = visual->scene->canvas->local_time;
-    VkyTextData* text = calloc(N * N_CHARS, sizeof(VkyTextData));
-    uint32_t k = 0;
+
+    vec3 pos = {0};
+    VkyColor color = {0};
+    float size = {0};
+    float angle = {0};
+
     for (uint32_t i = 0; i < N; i++)
     {
-        for (uint32_t j = 0; j < N_CHARS; j++)
-        {
-            text[k] = (VkyTextData){
-                .pos = {.5 * cos(M_2PI * (float)i / N), .5 * sin(M_2PI * (float)i / N), 0},
-                .shift = {0, 0},
-                .color = vky_color(VKY_CMAP_HSV, fmod(i + t, N), 0, N, .75),
-                .glyph_size = 30 + 15 * cos(3 * t + i),
-                .anchor = {0, 0},
-                .angle = -.67 * t + M_2PI * (float)i / N,
-                .glyph = STRING[j],
-                .transform_mode = 0,
-            };
-            k++;
-        }
+        pos[0] = .5 * cos(M_2PI * (float)i / N);
+        pos[1] = .5 * sin(M_2PI * (float)i / N);
+        color = vky_color(VKY_CMAP_HSV, fmod(i + t, N), 0, N, .75);
+        size = 30 + 15 * cos(3 * t + i);
+        angle = -.67 * t + M_2PI * (float)i / N;
+
+        vky_visual_data_group(visual, VKY_VISUAL_PROP_POS, 0, i, pos);
+        vky_visual_data_group(visual, VKY_VISUAL_PROP_COLOR_ALPHA, 0, i, &color);
+        vky_visual_data_group(visual, VKY_VISUAL_PROP_SIZE, 0, i, &size);
+        vky_visual_data_group(visual, VKY_VISUAL_PROP_ANGLE, 0, i, &angle);
     }
-    ASSERT(k == N_CHARS * N);
-    visual->data.item_count = N * N_CHARS;
-    visual->data.items = text;
-    vky_visual_data_raw(visual);
-    free(text);
 }
 
 static void frame_callback(VkyCanvas* canvas)
@@ -62,6 +57,19 @@ int main()
     // Create the visual.
     VkyVisual* visual = vky_visual(scene, VKY_VISUAL_TEXT, NULL, NULL);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
+
+    // Set the groups.
+    uint32_t* group_size = calloc(N, sizeof(uint32_t));
+    for (uint32_t i = 0; i < N; i++)
+        group_size[i] = N_CHARS;
+    vky_visual_data_set_size(visual, N * N_CHARS, N, group_size, NULL);
+    free(group_size);
+
+    // Set the text.
+    const char* str = STRING;
+    for (uint32_t i = 0; i < N; i++)
+        vky_visual_data_partial(
+            visual, VKY_VISUAL_PROP_TEXT, 0, N_CHARS * i, N_CHARS, N_CHARS, str);
 
     upload_text(visual);
     vky_add_frame_callback(canvas, frame_callback);
