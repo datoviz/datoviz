@@ -1149,7 +1149,7 @@ vky_transform_cartesian(VkyBox2D box, uint32_t item_count, const dvec2* pos_in, 
 static VkyVisualProp* _get_pos_prop_or_renormalize(VkyVisual* visual, VkyPanel* panel)
 {
     // Deal with position.
-    VkyVisualProp* vp_pos = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS, 0);
+    VkyVisualProp* vp_pos = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS_GPU, 0);
     if (vp_pos == NULL || vp_pos->value_count == 0)
     {
         log_debug("computing POS prop from POS2D prop");
@@ -1472,7 +1472,7 @@ void vky_visual_data(
     }
     ASSERT(value_count <= visual->data.item_count);
 
-    vp->value_count = value_count;
+    // vp->value_count = value_count;
     ASSERT(vp->field_size > 0);
 
     // Copy the prop array into the structured array.

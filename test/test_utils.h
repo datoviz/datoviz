@@ -33,11 +33,11 @@ static int test_visuals_props_1()
     VkyVisualProp* vpc = NULL;
 
     // Add a prop to the visual.
-    vp = vky_visual_prop_add(&v, VKY_VISUAL_PROP_POS, 4);
+    vp = vky_visual_prop_add(&v, VKY_VISUAL_PROP_POS_GPU, 4);
 
-    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_ALPHA, 0) == NULL);
-    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS, 0) == vp);
-    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS, 1) == NULL);
+    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_COLOR, 0) == NULL);
+    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS_GPU, 0) == vp);
+    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS_GPU, 1) == NULL);
 
     // Add a child.
     v.children_count = 1;
@@ -45,13 +45,13 @@ static int test_visuals_props_1()
     v.children[0] = &vc;
 
     // Add a prop to the child visual.
-    vpc = vky_visual_prop_add(&vc, VKY_VISUAL_PROP_POS, 4);
+    vpc = vky_visual_prop_add(&vc, VKY_VISUAL_PROP_POS_GPU, 4);
 
     // Check that we get the correct prop, belonging either to the parent visual or the child.
-    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS, 0) == vp);
-    AT(vky_visual_prop_get(&vc, VKY_VISUAL_PROP_POS, 0) == vpc);
-    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS, 1) == vpc);
-    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS, 2) == NULL);
+    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS_GPU, 0) == vp);
+    AT(vky_visual_prop_get(&vc, VKY_VISUAL_PROP_POS_GPU, 0) == vpc);
+    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS_GPU, 1) == vpc);
+    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS_GPU, 2) == NULL);
 
     _destroy_visual(&vc);
     _destroy_visual(&v);
@@ -62,9 +62,9 @@ static int test_visuals_props_2()
 {
     VkyVisual v = _blank_visual();
     vky_visual_prop_spec(&v, 6, 0);
-    vky_visual_prop_add(&v, VKY_VISUAL_PROP_POS, 0);   // 1 byte
-    vky_visual_prop_add(&v, VKY_VISUAL_PROP_COLOR, 1); // 2 bytes
-    vky_visual_prop_add(&v, VKY_VISUAL_PROP_SIZE, 3);  // 3 bytes
+    vky_visual_prop_add(&v, VKY_VISUAL_PROP_POS_GPU, 0); // 1 byte
+    vky_visual_prop_add(&v, VKY_VISUAL_PROP_COLOR, 1);   // 2 bytes
+    vky_visual_prop_add(&v, VKY_VISUAL_PROP_SIZE, 3);    // 3 bytes
 
     uint8_t val1[] = {10, 20, 30};
     cvec2 val2[] = {{11, 12}, {13, 14}, {15, 16}};
@@ -72,7 +72,7 @@ static int test_visuals_props_2()
     cvec3 val3[] = {{21, 22, 23}};
 
     vky_visual_data_set_size(&v, 3, 0, NULL, NULL);
-    vky_visual_data(&v, VKY_VISUAL_PROP_POS, 0, 3, val1);
+    vky_visual_data(&v, VKY_VISUAL_PROP_POS_GPU, 0, 3, val1);
     AT(v.data.item_count == 3)
     vky_visual_data(&v, VKY_VISUAL_PROP_COLOR, 0, 3, val2);
     vky_visual_data(&v, VKY_VISUAL_PROP_SIZE, 0, 1, val3);
@@ -87,8 +87,8 @@ static int test_visuals_props_3()
 {
     VkyVisual v = _blank_visual();
     vky_visual_prop_spec(&v, 3, 0);
-    vky_visual_prop_add(&v, VKY_VISUAL_PROP_POS, 0);   // 1 byte
-    vky_visual_prop_add(&v, VKY_VISUAL_PROP_COLOR, 1); // 2 bytes
+    vky_visual_prop_add(&v, VKY_VISUAL_PROP_POS_GPU, 0); // 1 byte
+    vky_visual_prop_add(&v, VKY_VISUAL_PROP_COLOR, 1);   // 2 bytes
 
     uint8_t val1[] = {10};
     cvec2 val2[] = {{11, 12}, {13, 14}};
@@ -97,7 +97,7 @@ static int test_visuals_props_3()
     vky_visual_data_set_size(&v, 1, 0, NULL, NULL);
     AT(v.data.item_count == 1)
 
-    vky_visual_data(&v, VKY_VISUAL_PROP_POS, 0, 1, val1);
+    vky_visual_data(&v, VKY_VISUAL_PROP_POS_GPU, 0, 1, val1);
     AT(memcmp(v.data.items, (uint8_t[]){10, 0, 0}, 3) == 0);
 
     vky_visual_data(&v, VKY_VISUAL_PROP_COLOR, 0, 1, val2);
@@ -126,19 +126,19 @@ static int test_visuals_props_4()
 {
     VkyVisual v = _blank_visual();
     vky_visual_prop_spec(&v, 3, 0);
-    vky_visual_prop_add(&v, VKY_VISUAL_PROP_POS, 0); // 1 byte
+    vky_visual_prop_add(&v, VKY_VISUAL_PROP_POS_GPU, 0); // 1 byte
 
     uint8_t val1[] = {10, 11, 12};
     uint8_t val2[] = {20};
 
     vky_visual_data_set_size(&v, 3, 0, NULL, NULL);
-    vky_visual_data(&v, VKY_VISUAL_PROP_POS, 0, 3, val1);
+    vky_visual_data(&v, VKY_VISUAL_PROP_POS_GPU, 0, 3, val1);
     AT(v.data.item_count == 3)
 
     // Test the case where a subsequent call to vky_visual_data() decreases the number
     // of data items.
     vky_visual_data_set_size(&v, 1, 0, NULL, NULL);
-    vky_visual_data(&v, VKY_VISUAL_PROP_POS, 0, 1, val2);
+    vky_visual_data(&v, VKY_VISUAL_PROP_POS_GPU, 0, 1, val2);
     AT(v.data.item_count == 1)
 
     uint8_t expected[] = {20};
@@ -151,18 +151,18 @@ static int test_visuals_props_5()
 {
     VkyVisual v = _blank_visual();
     vky_visual_prop_spec(&v, 4, 0);
-    vky_visual_prop_add(&v, VKY_VISUAL_PROP_POS, 0);   // 1 byte
-    vky_visual_prop_add(&v, VKY_VISUAL_PROP_COLOR, 1); // 1 byte
-    vky_visual_prop_add(&v, VKY_VISUAL_PROP_SIZE, 2);  // 2 bytes
+    vky_visual_prop_add(&v, VKY_VISUAL_PROP_POS_GPU, 0); // 1 byte
+    vky_visual_prop_add(&v, VKY_VISUAL_PROP_COLOR, 1);   // 1 byte
+    vky_visual_prop_add(&v, VKY_VISUAL_PROP_SIZE, 2);    // 2 bytes
 
     vky_visual_data_set_size(&v, 6, 3, (uint32_t[]){1, 2, 3}, NULL);
     AT(v.data.item_count == 6);
 
     uint8_t x = 10;
-    vky_visual_data_partial(&v, VKY_VISUAL_PROP_POS, 0, 3, 2, 1, &x);
+    vky_visual_data_partial(&v, VKY_VISUAL_PROP_POS_GPU, 0, 3, 2, 1, &x);
 
     x = 11;
-    vky_visual_data_group(&v, VKY_VISUAL_PROP_POS, 0, 1, 1, &x);
+    vky_visual_data_group(&v, VKY_VISUAL_PROP_POS_GPU, 0, 1, 1, &x);
 
     uint8_t y[] = {20, 21};
     vky_visual_data(&v, VKY_VISUAL_PROP_COLOR, 0, 2, y);

@@ -65,8 +65,8 @@ static void spiral(VkyPanel* panel)
         color[i] = vky_color(VKY_CMAP_JET, i, 0, N_path, 1);
     }
     vky_visual_data_set_size(spiral_visual, N_path, 0, NULL, NULL);
-    vky_visual_data(spiral_visual, VKY_VISUAL_PROP_POS, 0, N_path, points);
-    vky_visual_data(spiral_visual, VKY_VISUAL_PROP_COLOR_ALPHA, 0, N_path, color);
+    vky_visual_data(spiral_visual, VKY_VISUAL_PROP_POS_GPU, 0, N_path, points);
+    vky_visual_data(spiral_visual, VKY_VISUAL_PROP_COLOR, 0, N_path, color);
 }
 
 

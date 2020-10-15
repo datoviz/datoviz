@@ -22,8 +22,8 @@ static void upload_text(VkyVisual* visual)
         size = 30 + 15 * cos(3 * t + i);
         angle = -.67 * t + M_2PI * (float)i / N;
 
-        vky_visual_data_group(visual, VKY_VISUAL_PROP_POS, 0, i, 1, pos);
-        vky_visual_data_group(visual, VKY_VISUAL_PROP_COLOR_ALPHA, 0, i, 1, &color);
+        vky_visual_data_group(visual, VKY_VISUAL_PROP_POS_GPU, 0, i, 1, pos);
+        vky_visual_data_group(visual, VKY_VISUAL_PROP_COLOR, 0, i, 1, &color);
         vky_visual_data_group(visual, VKY_VISUAL_PROP_SIZE, 0, i, 1, &size);
         vky_visual_data_group(visual, VKY_VISUAL_PROP_ANGLE, 0, i, 1, &angle);
     }

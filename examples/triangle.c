@@ -30,8 +30,8 @@ int main()
     cvec4 colors[] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
 
     vky_visual_data_set_size(visual, 3, 0, NULL, NULL);
-    vky_visual_data(visual, VKY_VISUAL_PROP_POS, 0, 3, positions);
-    vky_visual_data(visual, VKY_VISUAL_PROP_COLOR_ALPHA, 0, 3, colors);
+    vky_visual_data(visual, VKY_VISUAL_PROP_POS_GPU, 0, 3, positions);
+    vky_visual_data(visual, VKY_VISUAL_PROP_COLOR, 0, 3, colors);
 #endif
 
     vky_run_app(app);

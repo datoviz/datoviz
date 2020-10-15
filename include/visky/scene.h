@@ -62,12 +62,10 @@ typedef enum
 {
     VKY_VISUAL_PROP_NONE = 0,
     VKY_VISUAL_PROP_POS2D = 1,          // dvec2
-    VKY_VISUAL_PROP_POS = 2,            // vec3
+    VKY_VISUAL_PROP_POS_GPU = 2,        // vec3
     VKY_VISUAL_PROP_TEXTURE_COORDS = 3, // vec2
     VKY_VISUAL_PROP_NORMAL = 4,         // vec3
-    VKY_VISUAL_PROP_COLOR = 5,          // bvec3
-    VKY_VISUAL_PROP_ALPHA = 6,          // uint8_t
-    VKY_VISUAL_PROP_COLOR_ALPHA = 7,    // VkyColor
+    VKY_VISUAL_PROP_COLOR = 5,          // VkyColor
     VKY_VISUAL_PROP_SIZE = 10,          // uint32_t
     VKY_VISUAL_PROP_SHAPE = 11,         // uint8_t
     VKY_VISUAL_PROP_SHIFT = 12,         // vec2

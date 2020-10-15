@@ -18,8 +18,8 @@ static void mesh_raw(VkyPanel* panel)
     };
 
     vky_visual_data_set_size(visual, n, 0, NULL, NULL);
-    vky_visual_data(visual, VKY_VISUAL_PROP_POS, 0, n, positions);
-    vky_visual_data(visual, VKY_VISUAL_PROP_COLOR_ALPHA, 0, n, colors);
+    vky_visual_data(visual, VKY_VISUAL_PROP_POS_GPU, 0, n, positions);
+    vky_visual_data(visual, VKY_VISUAL_PROP_COLOR, 0, n, colors);
 }
 
 static void scatter(VkyPanel* panel)
@@ -46,8 +46,8 @@ static void scatter(VkyPanel* panel)
     uint8_t angle = 0;
 
     vky_visual_data_set_size(visual, n, 0, NULL, NULL);
-    vky_visual_data(visual, VKY_VISUAL_PROP_POS, 0, n, positions);
-    vky_visual_data(visual, VKY_VISUAL_PROP_COLOR_ALPHA, 0, n, colors);
+    vky_visual_data(visual, VKY_VISUAL_PROP_POS_GPU, 0, n, positions);
+    vky_visual_data(visual, VKY_VISUAL_PROP_COLOR, 0, n, colors);
     vky_visual_data(visual, VKY_VISUAL_PROP_SIZE, 0, 1, &size);
     vky_visual_data(visual, VKY_VISUAL_PROP_SHAPE, 0, 1, &marker);
     vky_visual_data(visual, VKY_VISUAL_PROP_ANGLE, 0, 1, &angle);
@@ -149,8 +149,8 @@ static void paths(VkyPanel* panel)
     vky_visual_data_set_size(
         visual, n, 2, (uint32_t[]){n / 2, n / 2},
         (VkyPathTopology[]){VKY_PATH_OPEN, VKY_PATH_OPEN});
-    vky_visual_data(visual, VKY_VISUAL_PROP_POS, 0, n, points);
-    vky_visual_data(visual, VKY_VISUAL_PROP_COLOR_ALPHA, 0, n, color);
+    vky_visual_data(visual, VKY_VISUAL_PROP_POS_GPU, 0, n, points);
+    vky_visual_data(visual, VKY_VISUAL_PROP_COLOR, 0, n, color);
 }
 
 static void segments(VkyPanel* panel)
@@ -238,8 +238,8 @@ static void area(VkyPanel* panel)
     };
 
     vky_visual_data_set_size(visual, 2 * n, 2, (uint32_t[]){n, n}, NULL);
-    vky_visual_data(visual, VKY_VISUAL_PROP_POS, 0, 2 * n, pos);
-    vky_visual_data(visual, VKY_VISUAL_PROP_COLOR_ALPHA, 0, 2 * n, color);
+    vky_visual_data(visual, VKY_VISUAL_PROP_POS_GPU, 0, 2 * n, pos);
+    vky_visual_data(visual, VKY_VISUAL_PROP_COLOR, 0, 2 * n, color);
     vky_visual_data(visual, VKY_VISUAL_PROP_SIZE, 0, 1, &height);
 
     free(pos);
