@@ -313,8 +313,6 @@ struct VkyVisualProp
     size_t field_offset;
     size_t field_size;
 
-    uint32_t value_count;
-    void* values;
     void* resource; // (only for the _RESOURCE prop types)
     VkyVisualPropCallback callback;
 
@@ -345,7 +343,7 @@ struct VkyVisual
     size_t item_size;    // size in bytes of the prop struct (corresponds to VkyData.items)
     uint32_t prop_count; // number of props/fields in the struct
     VkyVisualProp* props;
-    VkyVisualProp prop_pos;  // special prop with dvec2* values, used for pos renormalization
+    uint32_t pos_prop_count;
     size_t group_param_size; // size in bytes of the group parameters
 
     uint32_t resource_count;
@@ -356,7 +354,6 @@ struct VkyVisual
     VkyVisual* parent;
 
     VkyVisualBakeCallback cb_bake_data;
-    // VkyVisualBakePropsCallback cb_bake_props; // TO REMOVE
     VkyVisualResizeCallback cb_resize; // NOTE: unused yet
 
     bool need_data_upload;
@@ -737,7 +734,7 @@ VKY_EXPORT VkyVisualProp* vky_visual_prop_add(VkyVisual*, VkyVisualPropType, siz
 VKY_EXPORT VkyVisualProp* vky_visual_prop_get(VkyVisual*, VkyVisualPropType, uint32_t prop_index);
 
 VKY_EXPORT void vky_visual_data(
-    VkyVisual*, VkyVisualPropType, uint32_t prop_index, uint32_t value_count, void* values);
+    VkyVisual*, VkyVisualPropType, uint32_t prop_index, uint32_t value_count, const void* values);
 
 VKY_EXPORT void vky_visual_data_partial(
     VkyVisual*, VkyVisualPropType, uint32_t prop_index, //

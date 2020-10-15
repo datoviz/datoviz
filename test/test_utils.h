@@ -16,7 +16,7 @@ static VkyVisual _blank_visual()
     VkyVisual v = {0};
     v.props = calloc(10, sizeof(VkyVisualProp));
     v.children = calloc(10, sizeof(VkyVisual*));
-    v.prop_pos.type = VKY_VISUAL_PROP_POS;
+    vky_visual_prop_add(&v, VKY_VISUAL_PROP_POS, 0);
     return v;
 }
 

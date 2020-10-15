@@ -1,6 +1,8 @@
 #include "../include/visky/visky.h"
 #include "axes.h"
 #include "axes_3D.h"
+#include "transform.h"
+
 
 #define STB_IMAGE_IMPLEMENTATION
 BEGIN_INCL_NO_WARN
@@ -697,10 +699,6 @@ VkyVisual* vky_create_visual(VkyScene* scene, VkyVisualType visual_type)
     visual.resources = calloc(VKY_MAX_VISUAL_RESOURCES, sizeof(void*));
     visual.children = calloc(VKY_MAX_VISUALS_CHILDREN, sizeof(void*));
 
-    // Special POS prop.
-    visual.prop_pos.type = VKY_VISUAL_PROP_POS;
-    visual.prop_pos.field_size = sizeof(dvec2);
-
     // NOTE: by convention, the first buffer is the indirect draw buffer.
     // HACK: we allocate the bigger indexed command so that we have enough space,
     // even if the visual doesn't use indexed drawing.
@@ -998,8 +996,6 @@ void vky_visual_prop_spec(VkyVisual* visual, size_t item_size, size_t group_para
 VkyVisualProp* vky_visual_prop_add(VkyVisual* visual, VkyVisualPropType prop_type, size_t offset)
 {
     // POS prop is handled separately since it does not fit in the data.items array.
-    ASSERT(prop_type != VKY_VISUAL_PROP_POS);
-
     VkyVisualProp vp = {0};
     vp.type = prop_type;
     vp.field_offset = offset;
@@ -1021,6 +1017,11 @@ VkyVisualProp* vky_visual_prop_add(VkyVisual* visual, VkyVisualPropType prop_typ
         visual->item_size - visual->props[visual->prop_count].field_offset;
 
     visual->prop_count++;
+
+    // Keep track of the number of POS_GPU props in the visual.
+    if (prop_type == VKY_VISUAL_PROP_POS)
+        visual->pos_prop_count++;
+
     return &visual->props[visual->prop_count - 1];
 }
 
@@ -1030,27 +1031,27 @@ vky_visual_prop_get(VkyVisual* visual, VkyVisualPropType prop_type, uint32_t pro
     uint32_t k = 0;
 
     // Special handling of POS prop.
-    if (prop_type == VKY_VISUAL_PROP_POS)
+    // if (prop_type == VKY_VISUAL_PROP_POS)
+    // {
+    //     if (prop_index == 0)
+    //         return &visual->prop_pos;
+    //     k++; // There is 1 and exactly 1 POS prop per visual.
+    // }
+    // else
+    // {
+    // Search the #prop_index-th prop with the requested type.
+    for (uint32_t i = 0; i < visual->prop_count; i++)
     {
-        if (prop_index == 0)
-            return &visual->prop_pos;
-        k++; // There is 1 and exactly 1 POS prop per visual.
-    }
-    else
-    {
-        // Search the #prop_index-th prop with the requested type.
-        for (uint32_t i = 0; i < visual->prop_count; i++)
+        if (visual->props[i].type == prop_type)
         {
-            if (visual->props[i].type == prop_type)
-            {
-                if (k == prop_index)
-                    return &visual->props[i];
-                else
-                    k++;
-            }
+            if (k == prop_index)
+                return &visual->props[i];
+            else
+                k++;
         }
-        ASSERT(prop_index >= k);
     }
+    ASSERT(prop_index >= k);
+    // }
 
     // Search among the children.
     VkyVisualProp* vp = NULL;
@@ -1081,6 +1082,27 @@ vky_visual_prop_get(VkyVisual* visual, VkyVisualPropType prop_type, uint32_t pro
 /*  Visual data                                                                                  */
 /*************************************************************************************************/
 
+static void _visual_prop_has_been_set(VkyVisual* visual, VkyVisualProp* vp)
+{
+    if (visual == NULL)
+        return;
+
+    vp->is_set = true;
+    // Tag the visual for data upload at the next frame.
+    visual->need_data_upload = true;
+    if (visual->scene)
+        visual->scene->canvas->need_data_upload = true;
+
+    // Special handling of POS2D prop: all children should be invalidated.
+    if (vp != NULL && vp->type == VKY_VISUAL_PROP_POS)
+    {
+        visual->need_pos_rescale = true;
+        for (uint32_t i = 0; i < visual->children_count; i++)
+            _visual_prop_has_been_set(visual->children[i], vp);
+    }
+}
+
+
 static void* _reallocate(void* old, size_t old_size, size_t new_size)
 {
     ASSERT(new_size > 0);
@@ -1095,97 +1117,44 @@ static void* _reallocate(void* old, size_t old_size, size_t new_size)
 }
 
 
-static void _visual_prop_has_been_set(VkyVisual* visual, VkyVisualProp* vp)
+static void _reallocate_pos_props(VkyVisual* visual, uint32_t item_count)
 {
-    if (visual == NULL)
-        return;
-
-    // Tag the visual for data upload at the next frame.
-    visual->need_data_upload = true;
-    vp->is_set = true;
-    if (visual->scene)
-        visual->scene->canvas->need_data_upload = true;
-
-    // // Special handling of POS2D prop: all children should be invalidated.
-    // if (vp != NULL && vp->type == VKY_VISUAL_PROP_POS)
-    // {
-    //     for (uint32_t i = 0; i < visual->children_count; i++)
-    //         _visual_prop_has_been_set(visual->children[i], vp);
-    // }
+    // Reallocate all pos props.
+    // TODO
 }
 
 
-/*
-static VkyVisualProp* _get_pos2D_prop(VkyVisual* visual)
+static void _renormalize_pos(VkyVisual* visual, VkyPanel* panel)
 {
-    // Return the POS2D prop of the visual, of the first POS2D prop found in the hierarcy of
-    // parents.
-    if (visual == NULL)
-        return NULL;
-    VkyVisualProp* vp = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS, 0);
-    if (vp == NULL || vp->value_count == 0)
-        vp = _get_pos2D_prop(visual->parent);
-    return vp;
-}
+    // TODO
+    /*
+        // This function ensures the POS_GPU prop exists and is possibly recomputed from the POS
+        // prop, if it has been set.
+        VkyVisualProp* vp_pos_gpu = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS_GPU, 0);
+        VkyVisualProp* vp_pos = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS, 0);
 
+        // Both types of props are mandatory.
+        ASSERT(vp_pos != NULL);
+        ASSERT(vp_pos_gpu != NULL);
 
-static void _allocate_pos_prop(VkyVisualProp* vp, uint32_t value_count)
-{
-    // The POS prop is the only one we allocate values for, so that we can renormalize
-    // them and get the POS prop.
-    vp->value_count = value_count;
-    vp->values = calloc(value_count, sizeof(vec3));
-    vp->need_free = true;
-}
+        if (!vp_pos->is_set)
+            return;
 
+        // Now, we ensure the POS prop has been set, so we need to renormalize into the POS_GPU
+       prop. ASSERT(vp_pos->is_set); ASSERT(visual->data.pos != NULL); log_debug("rescale POS_GPU
+       prop from POS prop");
 
-// TODO: move to new C file
-static void
-vky_transform_cartesian(VkyBox2D box, uint32_t item_count, const dvec2* pos_in, vec3* pos_out)
-{
-    double xmin = box.pos_ll[0];
-    double ymin = box.pos_ll[1];
-    double xmax = box.pos_ur[0];
-    double ymax = box.pos_ur[1];
-
-    double dx = xmin < xmax ? 1. / (xmax - xmin) : 1;
-    double dy = ymin < ymax ? 1. / (ymax - ymin) : 1;
-
-    double ax = 2 * dx;
-    double ay = 2 * dy;
-    double bx = -(xmin + xmax) * dx;
-    double by = -(ymin + ymax) * dy;
-
-    for (uint32_t i = 0; i < item_count; i++)
-    {
-        pos_out[i][0] = ax * pos_in[i][0] + bx;
-        pos_out[i][1] = ay * pos_in[i][1] + by;
-    }
-}
-
-
-static VkyVisualProp* _get_pos_prop_or_renormalize(VkyVisual* visual, VkyPanel* panel)
-{
-    // Deal with position.
-    VkyVisualProp* vp_pos = vky_visual_prop_get(visual, VKY_VISUAL_PROP_POS_GPU, 0);
-    if (vp_pos == NULL || vp_pos->value_count == 0)
-    {
-        log_debug("computing POS prop from POS2D prop");
-        // Need to compute the GPU pos vec3 from the 2D double-precision positions.
-        VkyVisualProp* vp_pos2D = _get_pos2D_prop(visual);
-        ASSERT(vp_pos2D != NULL);
-        ASSERT(vp_pos2D->values != NULL);
-        ASSERT(vp_pos2D->value_count > 0);
         ASSERT(panel != NULL);
+        bool success = true;
         switch (panel->controller_type)
         {
 
         case VKY_CONTROLLER_AXES_2D:;
             VkyAxes* axes = (VkyAxes*)panel->controller;
-            _allocate_pos_prop(vp_pos, vp_pos2D->value_count);
 
             vky_transform_cartesian(
-                vky_axes_get_range(axes), vp_pos2D->value_count, vp_pos2D->values, vp_pos->values);
+                vky_axes_get_range(axes), visual->data.item_count, //
+                visual->data.pos, visual->data.pos_gpu);
 
             // TODO: other controllers
             // - log scale
@@ -1197,13 +1166,23 @@ static VkyVisualProp* _get_pos_prop_or_renormalize(VkyVisual* visual, VkyPanel* 
         default:
             log_error(
                 "normalization with controller type %d not implemented yet",
-                panel->controller_type);
-            break;
+       panel->controller_type); success = false; break;
         }
-    }
-    return vp_pos;
+
+        if (success)
+        {
+            // Once the data has been rescale, it needs to be copied over in the current visual and
+            // all of its children.
+            for (uint32_t k = 0; k < visual->pos_gpu_prop_count; k++)
+            {
+                vky_visual_data(
+                    visual, VKY_VISUAL_PROP_POS_GPU, 0, visual->data.item_count,
+       visual->data.pos_gpu);
+            }
 }
-*/
+    */
+}
+
 
 static void _copy_prop_values(
     VkyVisual* visual, VkyVisualProp* vp,     //
@@ -1239,6 +1218,15 @@ static void _copy_prop_values(
             in_byte += item_size;
         out_byte += out_stride;
     }
+}
+
+
+static void _copy_pos_prop_values(
+    VkyVisual* visual, VkyVisualProp* vp,     //
+    uint32_t first_item, uint32_t item_count, // part of the VkyData.items array to update
+    uint32_t value_count, const void* values)
+{
+    // TODO
 }
 
 
@@ -1398,6 +1386,7 @@ void vky_visual_data_set_size(
 
     VkyData* data = &visual->data;
 
+
     // Allocate and fill VkyData.group_lengths.
     data->group_count = group_count;
 
@@ -1437,6 +1426,7 @@ void vky_visual_data_set_size(
     ASSERT(
         data->group_starts[group_count - 1] + data->group_lengths[group_count - 1] == item_count);
 
+
     // Allocate the VkyData.items array.
     // 3 cases depending on whether the current data.items exists or not, and if so, is larger or
     // smaller.
@@ -1452,6 +1442,12 @@ void vky_visual_data_set_size(
             data->items, data->item_count * visual->item_size, item_count * visual->item_size);
         data->item_count = item_count;
         data->need_free_items = true;
+
+        // Allocate the position arrays.
+        _reallocate_pos_props(visual, item_count);
+        // data->pos =
+        //     _reallocate(data->pos, data->item_count * sizeof(dvec2), item_count *
+        //     sizeof(dvec2));
     }
     else
     {
@@ -1463,41 +1459,10 @@ void vky_visual_data_set_size(
 
 void vky_visual_data(
     VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index, //
-    uint32_t value_count, void* values)
+    uint32_t value_count, const void* values)
 {
-    ASSERT(value_count > 0);
-
-    // Get the visual prop object.
-    VkyVisualProp* vp = vky_visual_prop_get(visual, prop_type, prop_index);
-    if (vp == NULL)
-    {
-        log_error("could not find visual prop %d", prop_type);
-        return;
-    }
-
-    // Allocate the VkyData.items array if needed.
-    if (visual->data.items == NULL)
-    {
-        log_error("you need to call vky_visual_data_set_size() before calling vky_visual_data()");
-        return;
-    }
-    ASSERT(visual->data.items != NULL);
-    ASSERT(visual->data.item_count > 0);
-    if (value_count > visual->data.item_count)
-    {
-        log_error("trying to set a prop with more values than already allocated in data.items");
-        return;
-    }
-    ASSERT(value_count <= visual->data.item_count);
-
-    // vp->value_count = value_count;
-    ASSERT(vp->field_size > 0);
-
-    // Copy the prop array into the structured array.
-    if (values != NULL)
-        _copy_prop_values(visual, vp, 0, visual->data.item_count, value_count, values);
-
-    _visual_prop_has_been_set(visual, vp);
+    vky_visual_data_partial(
+        visual, prop_type, prop_index, 0, visual->data.item_count, value_count, values);
 }
 
 
@@ -1505,18 +1470,28 @@ void vky_visual_data_partial(
     VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index, //
     uint32_t first_item, uint32_t item_count, uint32_t value_count, const void* values)
 {
-    // printf(
-    //     "visual data partial %d from %d for %d item, value count = %d, values pointer %d\n",
-    //     prop_type, first_item, item_count, value_count, values);
     ASSERT(value_count > 0);
     ASSERT(item_count > 0);
     ASSERT(value_count <= item_count);
+
+    if (visual->data.items == NULL)
+    {
+        log_error("you need to call vky_visual_data_set_size() before calling vky_visual_data()");
+        return;
+    }
 
     // Get the visual prop object.
     VkyVisualProp* vp = vky_visual_prop_get(visual, prop_type, prop_index);
     if (vp == NULL)
     {
         log_error("could not find visual prop %d", prop_type);
+        return;
+    }
+
+    // Special handling of the POS prop (we don't copy it in data.items)
+    if (prop_type == VKY_VISUAL_PROP_POS)
+    {
+        _copy_pos_prop_values(visual, vp, first_item, item_count, value_count, values);
         return;
     }
 
@@ -1584,11 +1559,9 @@ void vky_visual_data_upload(VkyVisual* visual, VkyPanel* panel)
             vp->callback(vp, visual, panel);
     }
 
-    // // Renormalize the POS prop if POS2D is specified.
-    // vp = _get_pos_prop_or_renormalize(visual, panel);
-    // if (vp == NULL)
-    //     return;
-    // ASSERT(vp != NULL);
+    // Renormalize the POS_GPU prop if POS is specified.
+    if (visual->need_pos_rescale)
+        _renormalize_pos(visual, panel);
 
     // The VkyData.items array is kept up to date in vky_visual_data(), called by the user.
     // Here, we send it to the visual's bake callback, which creates the vertices and indices
@@ -1600,16 +1573,6 @@ void vky_visual_data_upload(VkyVisual* visual, VkyPanel* panel)
     {
         vky_visual_data_upload(visual->children[i], panel);
     }
-
-    // // If the POS prop needs to be freed after renormalization, free it.
-    // // NOTE: renormalization will happen at the next visual data invalidation.
-    // if (vp->need_free)
-    // {
-    //     free(vp->values);
-    //     vp->values = NULL;
-    //     vp->value_count = 0;
-    //     vp->need_free = false;
-    // }
 }
 
 
