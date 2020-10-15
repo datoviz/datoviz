@@ -1097,29 +1097,6 @@ static void _visual_prop_has_been_set(VkyVisual* visual, VkyVisualProp* vp)
 }
 
 
-static void _reallocate_data_items(VkyVisual* visual, uint32_t item_count)
-{
-    log_trace("need to reallocate data.items to fit %d elements", item_count);
-    void* old_data_items = visual->data.items;
-    visual->data.items = calloc(item_count, visual->item_size);
-    memcpy(visual->data.items, old_data_items, visual->data.item_count * visual->item_size);
-    free(old_data_items);
-    // The extra space at the end of the current item array is empty, we need to feel it
-    // with the existing values.
-    {
-        int64_t offset =
-            (int64_t)visual->data.items + (int64_t)(visual->data.item_count * visual->item_size);
-        for (uint32_t i = 0; i < item_count - visual->data.item_count; i++)
-        {
-            memcpy(
-                (void*)(offset + (int64_t)(i * visual->item_size)), //
-                (void*)(offset - (int64_t)visual->item_size), visual->item_size);
-        }
-    }
-    visual->data.need_free_items = true;
-    visual->data.item_count = item_count;
-}
-
 /*
 static VkyVisualProp* _get_pos2D_prop(VkyVisual* visual)
 {
@@ -1453,7 +1430,10 @@ void vky_visual_data_set_size(
     else if (item_count > data->item_count)
     {
         // Need to reallocate and copy the old array into the new one
-        _reallocate_data_items(visual, item_count);
+        data->items = _reallocate(
+            data->items, data->item_count * visual->item_size, item_count * visual->item_size);
+        data->item_count = item_count;
+        data->need_free_items = true;
     }
     else
     {
