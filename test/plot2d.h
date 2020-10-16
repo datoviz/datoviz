@@ -442,8 +442,8 @@ static void polygon(VkyPanel* panel)
     vky_set_panel_aspect_ratio(panel, 1);
 
     VkyPolygonParams params = (VkyPolygonParams){20, {{0, 0, 0}, 128}};
-    VkyVisual* vb = vky_visual_polygon(panel->scene, &params);
-    vky_add_visual_to_panel(vb, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
+    VkyVisual* visual_root = vky_visual_polygon(panel->scene, &params);
+    vky_add_visual_to_panel(visual_root, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
     const uint32_t n0 = 4, n1 = 5, n2 = 6;
     uint32_t point_count = n0 + n1 + n2;
@@ -465,18 +465,18 @@ static void polygon(VkyPanel* panel)
     poly_colors[2] = vky_color(VKY_CMAP_HSV, 2, 0, 3, 1);
 
     vky_visual_polygon_upload(
-        vb,                                // visual
+        visual_root,                       // visual
         point_count, (const dvec2*)points, // points
         poly_count, poly_lengths,          // polygons
         poly_colors                        // polygon colors
     );
 
     // TODO
-    // vky_visual_data_set_size(vb, point_count, poly_count, poly_lengths, NULL);
-    // vky_visual_data(vb, VKY_VISUAL_PROP_POS, 0, point_count, points);
+    // vky_visual_data_set_size(visual_root, point_count, poly_count, poly_lengths, NULL);
+    // vky_visual_data(visual_root, VKY_VISUAL_PROP_POS, 0, point_count, points);
     // for (uint32_t i = 0; i < poly_count; i++)
     // {
-    //     vky_visual_data_group(vb, VKY_VISUAL_PROP_COLOR, 0, i, 1, &poly_colors[i]);
+    //     vky_visual_data_group(visual_root, VKY_VISUAL_PROP_COLOR, 0, i, 1, &poly_colors[i]);
     // }
 }
 
@@ -516,10 +516,10 @@ static void pslg_1(VkyPanel* panel)
 
     // PSLG visual.
     VkyPSLGParams params = (VkyPSLGParams){5, {{0, 0, 0}, 255}};
-    VkyVisual* vb = vky_visual_pslg(panel->scene, &params);
-    vky_add_visual_to_panel(vb, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
+    VkyVisual* visual_root = vky_visual_pslg(panel->scene, &params);
+    vky_add_visual_to_panel(visual_root, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
     VkyPSLGTriangulation tr = vky_visual_pslg_upload(
-        vb,                                         // visual
+        visual_root,                                // visual
         point_count, points,                        // points
         segment_count, segments,                    // segments
         region_count, region_coords, region_colors, // regions,
@@ -601,10 +601,10 @@ static void pslg_2(VkyPanel* panel)
 
     // PSLG visual.
     VkyPSLGParams params = (VkyPSLGParams){5, {{0, 0, 0}, 255}};
-    VkyVisual* vb = vky_visual_pslg(panel->scene, &params);
-    vky_add_visual_to_panel(vb, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
+    VkyVisual* visual_root = vky_visual_pslg(panel->scene, &params);
+    vky_add_visual_to_panel(visual_root, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
     VkyPSLGTriangulation tr = vky_visual_pslg_upload(
-        vb,                                         // visual
+        visual_root,                                // visual
         point_count, (const dvec2*)points,          // points
         segment_count, (const uvec2*)segments,      // segments
         region_count, region_coords, region_colors, // regions,
@@ -653,11 +653,11 @@ static void france(VkyPanel* panel)
 
     // Create the polygon visual.
     VkyPolygonParams params = (VkyPolygonParams){2, {{0, 0, 0}, 255}};
-    VkyVisual* vb = vky_visual_polygon(panel->scene, &params);
-    vky_add_visual_to_panel(vb, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
+    VkyVisual* visual_root = vky_visual_polygon(panel->scene, &params);
+    vky_add_visual_to_panel(visual_root, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
     VkyPolygonTriangulation tr = vky_visual_polygon_upload(
-        vb,                                // visual
+        visual_root,                       // visual
         point_count, (const dvec2*)points, // points
         poly_count, poly_lengths,          // polygons
         poly_colors                        // polygon colors

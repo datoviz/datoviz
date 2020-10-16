@@ -310,11 +310,11 @@ VkyVisual* vky_visual_axes_3D(VkyScene* scene)
     VkyVisual* axes = _add_3D_axes(scene);
     VkyVisual* text = _add_3D_axes_text(scene);
 
-    VkyVisual* vb = vky_create_visual(scene, VKY_VISUAL_AXES_3D);
-    vky_visual_add_child(vb, axes);
-    vky_visual_add_child(vb, text);
+    VkyVisual* visual_root = vky_create_visual(scene, VKY_VISUAL_AXES_3D);
+    vky_visual_add_child(visual_root, axes);
+    vky_visual_add_child(visual_root, text);
 
-    return vb;
+    return visual_root;
 }
 
 
@@ -322,6 +322,6 @@ VkyVisual* vky_visual_axes_3D(VkyScene* scene)
 void vky_axes_3D_init(VkyPanel* panel)
 {
     log_trace("vky_axes_3D_init");
-    VkyVisual* vb = vky_visual_axes_3D(panel->scene);
-    vky_add_visual_to_panel(vb, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
+    VkyVisual* visual_root = vky_visual_axes_3D(panel->scene);
+    vky_add_visual_to_panel(visual_root, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 }

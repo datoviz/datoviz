@@ -599,7 +599,7 @@ VKY_EXPORT VkyVisual* vky_visual_colorbar(VkyScene* scene, VkyColorbarParams par
 /*************************************************************************************************/
 
 VKY_EXPORT void vky_graph_upload(
-    VkyVisual* vb,                             //
+    VkyVisual* visual_root,                    //
     uint32_t node_count, VkyGraphNode* nodes,  // nodes
     uint32_t edge_count, VkyGraphEdge* edges); // edges
 

@@ -141,19 +141,19 @@ VkyVisual* vky_visual_polygon(VkyScene* scene, const VkyPolygonParams* params)
 
 
 VkyPolygonTriangulation vky_visual_polygon_upload(
-    VkyVisual* vb,                                           // visual
+    VkyVisual* visual_root,                                  // visual
     const uint32_t point_count, const dvec2* points,         // points
     const uint32_t poly_count, const uint32_t* poly_lengths, // polygons
     const VkyColor* poly_colors                              // polygon colors
 )
 {
-    const VkyPolygonParams* params = (const VkyPolygonParams*)vb->params;
+    const VkyPolygonParams* params = (const VkyPolygonParams*)visual_root->params;
     ASSERT(params != NULL);
 
-    VkyVisual* visual_poly = vb->children[0];
+    VkyVisual* visual_poly = visual_root->children[0];
     VkyVisual* visual_outline = NULL;
-    if (vb->children_count == 2)
-        visual_outline = vb->children[1];
+    if (visual_root->children_count == 2)
+        visual_outline = visual_root->children[1];
 
     // Make the triangulation of the polygons.
     VkyPolygonTriangulation tr =
@@ -527,36 +527,36 @@ void vky_destroy_pslg_triangulation(VkyPSLGTriangulation* tr)
 
 VkyVisual* vky_visual_pslg(VkyScene* scene, const VkyPSLGParams* params)
 {
-    VkyVisual* vb = vky_create_visual(scene, VKY_VISUAL_PSLG);
+    VkyVisual* visual_root = vky_create_visual(scene, VKY_VISUAL_PSLG);
 
     // Mesh visual.
     VkyVisual* visual_mesh = vky_visual_mesh_flat(scene);
-    vky_visual_add_child(vb, visual_mesh);
+    vky_visual_add_child(visual_root, visual_mesh);
 
     // Segment visual.
     VkyVisual* visual_segments = vky_visual_segment(scene);
-    vky_visual_add_child(vb, visual_segments);
+    vky_visual_add_child(visual_root, visual_segments);
 
     // Copy the parameters.
-    vb->params = malloc(sizeof(VkyPSLGParams));
-    memcpy(vb->params, params, sizeof(VkyPSLGParams));
+    visual_root->params = malloc(sizeof(VkyPSLGParams));
+    memcpy(visual_root->params, params, sizeof(VkyPSLGParams));
 
-    return vb;
+    return visual_root;
 }
 
 
 
 VkyPSLGTriangulation vky_visual_pslg_upload(
-    VkyVisual* vb,                                           //
+    VkyVisual* visual_root,                                  //
     const uint32_t point_count, const dvec2* points,         // points
     const uint32_t segment_count, const uvec2* segments,     // segments
     const uint32_t region_count, const dvec2* region_coords, // regions
     const VkyColor* region_colors,                           // region  colors
     const char* triangle_params)                             // triangle params
 {
-    VkyVisual* visual_mesh = vb->children[0];
-    VkyVisual* visual_segments = vb->children[1];
-    const VkyPSLGParams* params = (const VkyPSLGParams*)vb->params;
+    VkyVisual* visual_mesh = visual_root->children[0];
+    VkyVisual* visual_segments = visual_root->children[1];
+    const VkyPSLGParams* params = (const VkyPSLGParams*)visual_root->params;
     ASSERT(params != NULL);
 
 
@@ -621,35 +621,35 @@ VkyPSLGTriangulation vky_visual_pslg_upload(
 
 VkyVisual* vky_visual_triangulation(VkyScene* scene, const VkyTriangulationParams* params)
 {
-    VkyVisual* vb = vky_create_visual(scene, VKY_VISUAL_TRIANGULATION);
+    VkyVisual* visual_root = vky_create_visual(scene, VKY_VISUAL_TRIANGULATION);
 
     // Segment visual.
     VkyVisual* visual_segments = vky_visual_segment(scene);
-    vky_visual_add_child(vb, visual_segments);
+    vky_visual_add_child(visual_root, visual_segments);
 
     // Marker visual.
     VkyMarkersRawParams vparams =
         (VkyMarkersRawParams){{params->marker_size[0], params->marker_size[1]}, VKY_SCALING_OFF};
     VkyVisual* visual_markers = vky_visual_marker_raw(scene, &vparams);
-    vky_visual_add_child(vb, visual_markers);
+    vky_visual_add_child(visual_root, visual_markers);
 
     // Copy the parameters.
-    vb->params = malloc(sizeof(VkyTriangulationParams));
-    memcpy(vb->params, params, sizeof(VkyTriangulationParams));
+    visual_root->params = malloc(sizeof(VkyTriangulationParams));
+    memcpy(visual_root->params, params, sizeof(VkyTriangulationParams));
 
-    return vb;
+    return visual_root;
 }
 
 
 
 void vky_visual_triangulation_upload(
-    VkyVisual* vb,                                              //
+    VkyVisual* visual_root,                                     //
     uint32_t vertex_count, size_t stride, const void* vertices, // vertices
     uint32_t index_count, const VkyIndex* indices)              // indices
 {
-    VkyVisual* visual_segments = vb->children[0];
-    VkyVisual* visual_markers = vb->children[1];
-    const VkyTriangulationParams* params = (const VkyTriangulationParams*)vb->params;
+    VkyVisual* visual_segments = visual_root->children[0];
+    VkyVisual* visual_markers = visual_root->children[1];
+    const VkyTriangulationParams* params = (const VkyTriangulationParams*)visual_root->params;
 
     ASSERT(params != NULL);
 

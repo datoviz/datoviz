@@ -1738,7 +1738,7 @@ static void _colorbar_tick_upload(VkyVisual* text, VkyVisual* ticks, VkyColorbar
 
 VkyVisual* vky_visual_colorbar(VkyScene* scene, VkyColorbarParams params)
 {
-    VkyVisual* vb = vky_create_visual(scene, VKY_VISUAL_COLORBAR);
+    VkyVisual* visual_root = vky_create_visual(scene, VKY_VISUAL_COLORBAR);
 
     // Colorbar visual.
     VkyVisual* colorbar = _colorbar_visual(scene);
@@ -1746,15 +1746,15 @@ VkyVisual* vky_visual_colorbar(VkyScene* scene, VkyColorbarParams params)
     VkyVisual* ticks = vky_visual_segment(scene);
 
     // Add the child visuals.
-    vky_visual_add_child(vb, colorbar);
-    vky_visual_add_child(vb, text);
-    vky_visual_add_child(vb, ticks);
+    vky_visual_add_child(visual_root, colorbar);
+    vky_visual_add_child(visual_root, text);
+    vky_visual_add_child(visual_root, ticks);
 
     // Upload the colorbar data.
     _colorbar_upload(colorbar, params);
     _colorbar_tick_upload(text, ticks, params);
 
-    return vb;
+    return visual_root;
 }
 
 
@@ -1764,7 +1764,7 @@ VkyVisual* vky_visual_colorbar(VkyScene* scene, VkyColorbarParams params)
 /*************************************************************************************************/
 
 void vky_graph_upload(
-    VkyVisual* vb,                            //
+    VkyVisual* visual_root,                   //
     uint32_t node_count, VkyGraphNode* nodes, // nodes
     uint32_t edge_count, VkyGraphEdge* edges) // edges
 {
@@ -1794,18 +1794,18 @@ void vky_graph_upload(
     edge_data.item_count = edge_count;
     edge_data.items = edge_items;
 
-    vb->children[0]->data = edge_data;
-    vb->children[1]->data = node_data;
+    visual_root->children[0]->data = edge_data;
+    visual_root->children[1]->data = node_data;
 
-    vky_visual_data_raw(vb->children[0]);
-    vky_visual_data_raw(vb->children[1]);
+    vky_visual_data_raw(visual_root->children[0]);
+    vky_visual_data_raw(visual_root->children[1]);
 
     FREE(edge_items);
 }
 
 VkyVisual* vky_visual_graph(VkyScene* scene, VkyGraphParams params)
 {
-    VkyVisual* vb = vky_create_visual(scene, VKY_VISUAL_GRAPH);
+    VkyVisual* visual_root = vky_create_visual(scene, VKY_VISUAL_GRAPH);
 
     VkyMarkersParams node_params = {0};
     vec4_copy(params.marker_edge_color, node_params.edge_color);
@@ -1815,10 +1815,10 @@ VkyVisual* vky_visual_graph(VkyScene* scene, VkyGraphParams params)
     VkyVisual* edges = vky_visual_segment(scene);
     VkyVisual* nodes = vky_visual_marker(scene, &node_params);
 
-    vky_visual_add_child(vb, edges);
-    vky_visual_add_child(vb, nodes);
+    vky_visual_add_child(visual_root, edges);
+    vky_visual_add_child(visual_root, nodes);
 
-    return vb;
+    return visual_root;
 }
 
 
