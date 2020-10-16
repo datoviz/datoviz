@@ -10,14 +10,20 @@ extern "C" {
 
 
 /*************************************************************************************************/
-/*  Structures                                                                                   */
+/*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
 typedef struct VkyVertex VkyVertex;
-
 typedef struct triangulateio triangulateio; // forward declaration
-
 typedef struct VkyPSLGTriangulation VkyPSLGTriangulation;
+typedef struct VkyPolygonTriangulation VkyPolygonTriangulation;
+
+
+
+/*************************************************************************************************/
+/*  Structures                                                                                   */
+/*************************************************************************************************/
+
 struct VkyPSLGTriangulation
 {
     uint32_t vertex_count;          // vertices in the triangulation
@@ -29,7 +35,6 @@ struct VkyPSLGTriangulation
     VkyVertex* mesh_vertices;
 };
 
-typedef struct VkyPolygonTriangulation VkyPolygonTriangulation;
 struct VkyPolygonTriangulation
 {
     uint32_t index_count; // indices making the triangles, 3 indices = 1 triangle
@@ -56,7 +61,8 @@ VKY_EXPORT VkyPSLGTriangulation vky_visual_pslg_upload(
     const uint32_t, const uvec2*, // segments
     const uint32_t, const dvec2*, // regions
     const VkyColor*,              // region colors
-    const char*);                 // triangle params
+    const char*                   // triangle params
+);
 
 
 

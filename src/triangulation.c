@@ -105,6 +105,11 @@ VkyVisual* vky_visual_polygon(VkyScene* scene, const VkyPolygonParams* params)
     vb->params = malloc(sizeof(VkyPolygonParams));
     memcpy(vb->params, params, sizeof(VkyPolygonParams));
 
+    // // Props.
+    // vky_visual_prop_spec(vb, sizeof(vec3) + sizeof(VkyColor), 0);
+    // vky_visual_prop_add(vb, VKY_VISUAL_PROP_POS_GPU, 0);
+    // vky_visual_prop_add(vb, VKY_VISUAL_PROP_COLOR, sizeof(vec3));
+
     return vb;
 }
 

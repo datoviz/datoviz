@@ -50,18 +50,15 @@ static int test_visuals_props_1()
     // Add a prop to the child visual.
     vpc = vky_visual_prop_add(&vc, VKY_VISUAL_PROP_POS_GPU, 4);
 
-    // Check that we get the correct prop, belonging either to the parent visual or the child.
+    // Check that we get the correct prop.
     AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS_GPU, 0) == vp);
     AT(vky_visual_prop_get(&vc, VKY_VISUAL_PROP_POS_GPU, 0) == vpc);
-    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS_GPU, 1) == vpc);
-    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS_GPU, 2) == NULL);
+    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS_GPU, 1) == NULL);
 
     AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS, 0) != NULL);
-    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS, 1) != NULL);
+    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS, 1) == NULL);
     AT(vky_visual_prop_get(&vc, VKY_VISUAL_PROP_POS, 0) != NULL);
     AT(vky_visual_prop_get(&vc, VKY_VISUAL_PROP_POS, 1) == NULL);
-    AT(vky_visual_prop_get(&vc, VKY_VISUAL_PROP_POS, 0) ==
-       vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS, 1));
 
     _destroy_visual(&vc);
     _destroy_visual(&v);
@@ -125,11 +122,6 @@ static int test_visuals_props_3()
     vky_visual_data(&v, VKY_VISUAL_PROP_COLOR, 0, 2, val2);
     AT(memcmp(v.data.items, (uint8_t[]){10, 11, 12, 0, 13, 14}, 6) == 0);
 
-    // for (uint32_t i = 0; i < v.data.item_count * v.item_size; i++)
-    // {
-    //     DBG(((uint8_t*)v.data.items)[i]);
-    // }
-
     return 0;
 }
 
@@ -183,6 +175,41 @@ static int test_visuals_props_5()
     uint8_t expected[] = {0,  20, 0,  0,  11, 21, 0,  0,  11, 21, 0,  0,
                           10, 21, 20, 21, 10, 21, 20, 21, 0,  21, 20, 21};
     AT(memcmp(v.data.items, expected, 6 * 4) == 0);
+
+    return 0;
+}
+
+static int test_visuals_props_6()
+{
+    // Root empty visual with a POS prop, used for renormalizing the POS_GPU props of the child.
+    VkyVisual v = _blank_visual();
+
+    // Add a prop to the visual.
+    VkyVisualProp* vp = vky_visual_prop_add(&v, VKY_VISUAL_PROP_POS, 0);
+    AT(vky_visual_prop_get(&v, VKY_VISUAL_PROP_POS, 0) != NULL);
+
+    // Add a child.
+    v.children_count = 1;
+    VkyVisual vc = _blank_visual();
+    vky_visual_prop_spec(&vc, sizeof(vec3), 0);
+    v.children[0] = &vc;
+
+    // Add a prop to the child visual.
+    VkyVisualProp* vpc = vky_visual_prop_add(&vc, VKY_VISUAL_PROP_POS, 0);
+    vky_visual_prop_add(&vc, VKY_VISUAL_PROP_POS_GPU, 0);
+
+    // Set data.
+    vky_visual_data_set_size(&v, 2, 0, NULL, NULL);
+    dvec2 positions[2] = {{10, 11}, {20, 21}};
+    vky_visual_data(&v, VKY_VISUAL_PROP_POS, 0, 2, positions);
+
+    AT(v.data.item_count == 2);
+    AT(v.data.items == NULL);
+    AT(vc.data.item_count == 2);
+    AT(vc.data.items != NULL);
+
+    AT(vp->values != NULL);
+    AT(vpc->values != NULL);
 
     return 0;
 }

@@ -222,6 +222,8 @@ void vky_axes_toggle_tick(VkyAxes* axes, int tick_element)
 
 static void _tick_visual(VkyScene* scene, VkyAxes* axes)
 {
+    if (scene == NULL)
+        return;
     VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_AXES_TICK);
     axes->tick_visual = visual;
 
@@ -346,6 +348,8 @@ static void _text_bake(VkyVisual* visual)
 
 static void _text_visual(VkyScene* scene, VkyAxes* axes)
 {
+    if (scene == NULL)
+        return;
     VkyCanvas* canvas = scene->canvas;
     VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_AXES_TEXT);
     axes->text_visual = visual;
@@ -623,8 +627,11 @@ static void _make_vertices(
 VkyAxes* vky_axes_init(VkyPanel* panel, VkyAxes2DParams params)
 {
     log_trace("axes init");
+    ASSERT(panel != NULL);
     VkyScene* scene = panel->scene;
+    ASSERT(scene != NULL);
     VkyCanvas* canvas = scene->canvas;
+    ASSERT(canvas != NULL);
     VkyAxes* axes = calloc(1, sizeof(VkyAxes));
     axes->panel = panel;
     axes->enable_panzoom = params.enable_panzoom;
