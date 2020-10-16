@@ -1,6 +1,6 @@
 #include <visky/visky.h>
 
-int main()
+int main(int argc, char** argv)
 {
     log_set_level_env();
 
@@ -11,22 +11,37 @@ int main()
 
     // Load the data.
     uint32_t size = 0;
-    char path[1024];
+    // char path[1024];
 
-    // Spike samples.
-    snprintf(path, sizeof(path), "%s/misc/spikes.samples.npy", DATA_DIR);
-    uint64_t* samples = (uint64_t*)read_npy(path, &size);
-    ASSERT(samples != NULL);
+    if (argc < 4)
+    {
+        log_error("this example requires 3 command-line arguments: spike times, spike clusters, "
+                  "spike depths");
+        return 1;
+    }
+
+
+    // Load the data from disk.
+    // Spike times.
+    double* times = (double*)read_npy(argv[1], &size);
+    ASSERT(times != NULL);
     ASSERT(size > 0);
     uint32_t n = size / 8; // 8 bytes per number
-    ASSERT(samples[n - 1] != 0);
+    ASSERT(times[n - 1] != 0);
+
+    // Spike clusters.
+    uint32_t* spike_clusters = (uint32_t*)read_npy(argv[2], &size);
 
     // Spike depths.
-    snprintf(path, sizeof(path), "%s/misc/spikes.depths.npy", DATA_DIR);
-    double* depths = (double*)read_npy(path, &size);
+    double* depths = (double*)read_npy(argv[3], &size);
+    dvec2s depth_min_max = vky_min_max(n, depths);
 
     // Set the axes controller.
     VkyAxes2DParams axparams = vky_default_axes_2D_params();
+    axparams.xscale.vmin = 0;
+    axparams.xscale.vmax = times[n - 1];
+    axparams.yscale.vmin = depth_min_max.x;
+    axparams.yscale.vmax = depth_min_max.y;
     vky_set_controller(panel, VKY_CONTROLLER_AXES_2D, &axparams);
 
     vky_add_vertex_buffer(canvas->gpu, 1e7);
@@ -44,14 +59,15 @@ int main()
 
     for (uint32_t i = 0; i < n; i++)
     {
-        x = -1 + 2 * ((double)samples[i] / samples[n - 1]);
+        x = -1 + 2 * ((double)times[i] / times[n - 1]);
         y = -1 + 2 * (depths[i] - dminmax.x) / (dminmax.y - dminmax.x);
         data[i] = (VkyVertex){{x, y, 0}, {{0, 0, 0}, 4}};
+        data[i].color = vky_color(VKY_CPAL256_GLASBEY, spike_clusters[i] % 32, 0, 32, .05);
     }
     visual->data.item_count = n;
     visual->data.items = data;
     vky_visual_data_raw(visual);
-    FREE(samples);
+    FREE(times);
     FREE(depths);
     FREE(data);
 

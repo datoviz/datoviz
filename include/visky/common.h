@@ -305,7 +305,7 @@ VKY_EXPORT uint64_t vky_get_fps(uint64_t frame_count);
 
 VKY_EXPORT void vky_earth_to_pixels(uint32_t point_count, dvec2* points);
 
-VKY_EXPORT dvec2s vky_min_max(size_t size, double* points);
+VKY_EXPORT dvec2s vky_min_max(uint32_t size, double* points);
 
 
 

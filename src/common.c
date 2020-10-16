@@ -334,7 +334,7 @@ static void _normalize_2D(uint32_t point_count, dvec2* points)
 }
 
 
-dvec2s vky_min_max(size_t size, double* points)
+dvec2s vky_min_max(uint32_t size, double* points)
 {
     const double INF = 1e9;
     double min = +INF, max = -INF;
