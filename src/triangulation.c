@@ -224,7 +224,7 @@ VkyPolygonTriangulation vky_visual_polygon_upload(
 /*************************************************************************************************/
 
 static void*
-concatenate_arrays(size_t item_size, size_t size0, void* arr0, size_t size1, void* arr1)
+concatenate_arrays(size_t item_size, uint32_t size0, void* arr0, uint32_t size1, void* arr1)
 {
     size0 *= item_size;
     size1 *= item_size;
@@ -286,7 +286,7 @@ VkyPSLGTriangulation vky_triangulate_pslg(
     // Initialize the regions to match the Triangle format.
     if (region_count > 0)
     {
-        in.regionlist = (REAL*)calloc((size_t)in.numberofregions * 4, sizeof(REAL));
+        in.regionlist = (REAL*)calloc((uint32_t)in.numberofregions * 4, sizeof(REAL));
         // Each region = 1 point, Triangle will assign region_idx to each vertex in the region.
         for (uint32_t i = 0; i < region_count; i++)
         {
@@ -350,10 +350,10 @@ VkyPSLGTriangulation vky_triangulate_pslg(
     // Extra vertices for complex boundaries.
     // For each triangle, whether we need to duplicate it.
     uint32_t extra_triangle_count = 0;
-    bool* extra_triangles = (bool*)calloc((size_t)out.numberoftriangles, sizeof(bool));
+    bool* extra_triangles = (bool*)calloc((uint32_t)out.numberoftriangles, sizeof(bool));
 
     // Loop over all triangles.
-    for (uint32_t i = 0; i < (size_t)out.numberoftriangles; i++)
+    for (uint32_t i = 0; i < (uint32_t)out.numberoftriangles; i++)
     {
         // Processing trick #1 to fix vertex region conflicts on the boundaries:
         //

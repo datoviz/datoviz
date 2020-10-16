@@ -116,7 +116,7 @@ void vky_demo_param(vec4 clear_color)
 /*  Scatter plot demo                                                                            */
 /*************************************************************************************************/
 
-void vky_demo_scatter(size_t point_count, const dvec2* points)
+void vky_demo_scatter(uint32_t point_count, const dvec2* points)
 {
     VkyApp* app = vky_create_app(VKY_DEFAULT_BACKEND);
     VkyCanvas* canvas = vky_create_canvas(app, VKY_DEFAULT_WIDTH, VKY_DEFAULT_HEIGHT);

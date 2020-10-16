@@ -161,7 +161,7 @@ uint8_t* read_ppm(const char* filename, int* width, int* height)
     while (fgetc(fp) != '\n')
         ;
 
-    size_t size = (size_t)(*width * *height * 3);
+    uint32_t size = (uint32_t)(*width * *height * 3);
     ASSERT(size > 0);
     uint8_t* image = calloc(size, sizeof(uint8_t));
     fread(image, 1, size, fp);
@@ -248,7 +248,7 @@ char* read_npy(const char* filename, uint32_t* size)
         goto error;
 
     // Read the data buffer.
-    buffer = calloc((size_t)length, 1);
+    buffer = calloc((uint32_t)length, 1);
     ASSERT(buffer != NULL);
     fread(buffer, 1, (size_t)length, f);
     fclose(f);

@@ -437,10 +437,10 @@ static void _make_vertices(
     const int32_t NxC = (NXC - 1) * ((int32_t)MIT - 1);
     const int32_t NyC = (NYC - 1) * ((int32_t)MIT - 1);
 
-    double* TX = calloc((size_t)NXC, sizeof(double));
-    double* TY = calloc((size_t)NYC, sizeof(double));
-    double* Tx = calloc((size_t)NxC, sizeof(double));
-    double* Ty = calloc((size_t)NyC, sizeof(double));
+    double* TX = calloc((uint32_t)NXC, sizeof(double));
+    double* TY = calloc((uint32_t)NYC, sizeof(double));
+    double* Tx = calloc((uint32_t)NxC, sizeof(double));
+    double* Ty = calloc((uint32_t)NyC, sizeof(double));
 
     // Minor ticks, major ticks, grid, lims, user.
     const int64_t N = 2 * NXC + 2 * NYC + NxC + NyC + 2 + (int32_t)axes->user.tick_count;

@@ -132,7 +132,7 @@ void vky_mesh_obj(VkyMesh* mesh, const char* file_path)
 
     // Loop over shapes
     uint32_t nv;
-    for (size_t s = 0; s < shapes.size(); s++)
+    for (uint32_t s = 0; s < shapes.size(); s++)
     {
 
         vky_mesh_begin(mesh, &first_vertex, &vertex, &index);
@@ -166,13 +166,13 @@ void vky_mesh_obj(VkyMesh* mesh, const char* file_path)
         }
 
         // Faces.
-        size_t index_offset = 0;
-        for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++)
+        uint32_t index_offset = 0;
+        for (uint32_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++)
         {
-            size_t fv = shapes[s].mesh.num_face_vertices[f];
+            uint32_t fv = shapes[s].mesh.num_face_vertices[f];
 
             // Points in each face.
-            for (size_t v = 0; v < fv; v++)
+            for (uint32_t v = 0; v < fv; v++)
             {
                 // access to vertex
                 tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];

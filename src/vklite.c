@@ -660,7 +660,7 @@ void vky_create_sync_resources(VkyCanvas* canvas)
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    for (size_t i = 0; i < VKY_MAX_FRAMES_IN_FLIGHT; i++)
+    for (uint32_t i = 0; i < VKY_MAX_FRAMES_IN_FLIGHT; i++)
     {
         VK_CHECK_RESULT(
             vkCreateSemaphore(device, &semaphoreInfo, NULL, &image_available_semaphores[i]));
@@ -1157,7 +1157,7 @@ void vky_destroy_canvas(VkyCanvas* canvas)
     if (draw_sync->image_available_semaphores != NULL)
     {
         log_trace("destroy %d sync objects", VKY_MAX_FRAMES_IN_FLIGHT);
-        for (size_t i = 0; i < VKY_MAX_FRAMES_IN_FLIGHT; i++)
+        for (uint32_t i = 0; i < VKY_MAX_FRAMES_IN_FLIGHT; i++)
         {
             vkDestroySemaphore(device, draw_sync->render_finished_semaphores[i], NULL);
             vkDestroySemaphore(device, draw_sync->image_available_semaphores[i], NULL);
@@ -1399,7 +1399,7 @@ VkyGraphicsPipeline vky_create_graphics_pipeline(
     // Descriptor set layout.
     ASSERT(gp.resource_layout.binding_count <= 100);
     VkDescriptorSetLayoutBinding layout_bindings[100];
-    for (size_t i = 0; i < gp.resource_layout.binding_count; i++)
+    for (uint32_t i = 0; i < gp.resource_layout.binding_count; i++)
     {
         VkDescriptorType dtype = gp.resource_layout.binding_types[i];
         layout_bindings[i].binding = i;
@@ -1782,7 +1782,7 @@ vky_create_compute_pipeline(VkyGpu* gpu, const char* filename, VkyResourceLayout
     // Descriptor set layout.
     ASSERT(gp.resource_layout.binding_count <= 100);
     VkDescriptorSetLayoutBinding layout_bindings[100];
-    for (size_t i = 0; i < gp.resource_layout.binding_count; i++)
+    for (uint32_t i = 0; i < gp.resource_layout.binding_count; i++)
     {
         VkDescriptorType dtype = gp.resource_layout.binding_types[i];
         layout_bindings[i].binding = i;
@@ -2378,7 +2378,7 @@ vky_create_uniform_buffer(VkyGpu* gpu, uint32_t image_count, VkDeviceSize type_s
     ubo.memories = calloc(image_count, sizeof(VkDeviceMemory));
 
     // Create the buffers.
-    for (size_t i = 0; i < image_count; i++)
+    for (uint32_t i = 0; i < image_count; i++)
     {
         create_buffer(
             gpu->device, type_size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, &ubo.buffers[i],
@@ -2404,7 +2404,7 @@ void vky_bind_resources(
 
     ASSERT(resource_layout.binding_count <= 100);
 
-    for (size_t i = 0; i < resource_layout.image_count; i++)
+    for (uint32_t i = 0; i < resource_layout.image_count; i++)
     {
         VkWriteDescriptorSet descriptor_writes[100];
 
@@ -2474,7 +2474,7 @@ void vky_bind_resources(
 void vky_destroy_uniform_buffer(VkyUniformBuffer* ubo)
 {
     log_trace("destroy ubo");
-    for (size_t i = 0; i < ubo->image_count; i++)
+    for (uint32_t i = 0; i < ubo->image_count; i++)
     {
         vkDestroyBuffer(ubo->gpu->device, ubo->buffers[i], NULL);
         vkFreeMemory(ubo->gpu->device, ubo->memories[i], NULL);
@@ -2525,7 +2525,7 @@ VkyUniformBuffer vky_create_dynamic_uniform_buffer(
     }
 
     // Create the buffers.
-    for (size_t i = 0; i < image_count; i++)
+    for (uint32_t i = 0; i < image_count; i++)
     {
         create_buffer(
             gpu->device, dubo.buffer_size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, &dubo.buffers[i],
@@ -2581,7 +2581,7 @@ void vky_bind_dynamic_uniform(
 void vky_destroy_dynamic_uniform_buffer(VkyUniformBuffer* dubo)
 {
     log_trace("destroy dubo");
-    for (size_t i = 0; i < dubo->image_count; i++)
+    for (uint32_t i = 0; i < dubo->image_count; i++)
     {
         vkUnmapMemory(dubo->gpu->device, dubo->memories[i]);
 
