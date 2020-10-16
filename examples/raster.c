@@ -36,15 +36,28 @@ int main(int argc, char** argv)
     double* depths = (double*)read_npy(argv[3], &size);
     dvec2s depth_min_max = vky_min_max(n, depths);
 
+
     // Set the axes controller.
     VkyAxes2DParams axparams = vky_default_axes_2D_params();
     axparams.xscale.vmin = 0;
     axparams.xscale.vmax = times[n - 1];
     axparams.yscale.vmin = depth_min_max.x;
     axparams.yscale.vmax = depth_min_max.y;
+
+    // xlabel
+    axparams.xlabel.color.alpha = 255;
+    axparams.xlabel.font_size = 12;
+    strcpy(axparams.xlabel.label, "Time (s)");
+
+    // ylabel
+    axparams.ylabel.color.alpha = 255;
+    axparams.ylabel.font_size = 12;
+    strcpy(axparams.ylabel.label, "Depth (um)");
+
     vky_set_controller(panel, VKY_CONTROLLER_AXES_2D, &axparams);
 
-    vky_add_vertex_buffer(canvas->gpu, 1e7);
+    // vky_add_vertex_buffer(canvas->gpu, 1e7);
+
 
     VkyMarkersRawParams params =
         (VkyMarkersRawParams){{2.0f, 10.0f}, VKY_SCALING_OFF, VKY_ALPHA_SCALING_ON};
