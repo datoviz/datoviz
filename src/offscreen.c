@@ -425,7 +425,7 @@ void vky_destroy_screenshot(VkyScreenshot* screenshot)
     vkDestroyImage(device, screenshot->dstImage, NULL);
     vkFreeCommandBuffers(device, screenshot->canvas->gpu->command_pool, 1, &screenshot->cmd_buf);
 
-    free(screenshot);
+    FREE(screenshot);
 }
 
 uint8_t* vky_screenshot_to_rgb(VkyScreenshot* screenshot, bool swizzle)
@@ -466,7 +466,7 @@ uint8_t* vky_screenshot_to_rgb(VkyScreenshot* screenshot, bool swizzle)
         image += screenshot->row_pitch;
     }
     ASSERT(dst_offset == w * h * 3);
-    free(image_orig);
+    FREE(image_orig);
     return rgb;
 }
 
@@ -498,7 +498,7 @@ void vky_save_screenshot(VkyCanvas* canvas, char* filename)
     {
         log_error("Unknown image format, skip saving of %s.", filename);
     }
-    free(image);
+    FREE(image);
     vky_end_screenshot(screenshot);
     vky_destroy_screenshot(screenshot);
 }
@@ -576,8 +576,8 @@ void vky_end_video(VkyVideo* vky_video)
 
     end_video(vky_video->video);
     vky_destroy_screenshot(vky_video->screenshot);
-    free(vky_video->buffer);
-    free(vky_video);
+    FREE(vky_video->buffer);
+    FREE(vky_video);
 }
 
 void vky_run_video_app(VkyApp* app)

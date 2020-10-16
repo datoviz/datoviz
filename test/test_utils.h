@@ -22,8 +22,8 @@ static VkyVisual _blank_visual()
 
 static void _destroy_visual(VkyVisual* v)
 {
-    free(v->children);
-    free(v->props);
+    FREE(v->children);
+    FREE(v->props);
 }
 
 static int test_visuals_props_1()

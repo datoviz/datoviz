@@ -1128,9 +1128,9 @@ void vky_destroy_swapchain_resources(VkyCanvas* canvas)
         vkFreeMemory(device, canvas->image_memory, NULL);
     }
 
-    free(canvas->framebuffers);
-    free(canvas->image_views);
-    free(canvas->images);
+    FREE(canvas->framebuffers);
+    FREE(canvas->image_views);
+    FREE(canvas->images);
 }
 
 void vky_destroy_canvas(VkyCanvas* canvas)
@@ -1164,10 +1164,10 @@ void vky_destroy_canvas(VkyCanvas* canvas)
             vkDestroyFence(device, draw_sync->in_flight_fences[i], NULL);
         }
 
-        free(draw_sync->render_finished_semaphores);
-        free(draw_sync->image_available_semaphores);
-        free(draw_sync->in_flight_fences);
-        free(draw_sync->images_in_flight);
+        FREE(draw_sync->render_finished_semaphores);
+        FREE(draw_sync->image_available_semaphores);
+        FREE(draw_sync->in_flight_fences);
+        FREE(draw_sync->images_in_flight);
     }
 
     log_trace("free command buffers");
@@ -1182,11 +1182,10 @@ void vky_destroy_canvas(VkyCanvas* canvas)
     if (canvas->compute_pipeline != NULL)
     {
         vky_destroy_compute_pipeline(canvas->compute_pipeline);
-        free(canvas->compute_pipeline);
-        canvas->compute_pipeline = NULL;
+        FREE(canvas->compute_pipeline);
     }
 
-    free(canvas->command_buffers);
+    FREE(canvas->command_buffers);
 }
 
 void vky_destroy_device(VkyGpu* gpu)
@@ -1200,7 +1199,7 @@ void vky_destroy_device(VkyGpu* gpu)
     {
         vky_destroy_buffer(&gpu->buffers[i]);
     }
-    free(gpu->buffers);
+    FREE(gpu->buffers);
     gpu->buffers = NULL;
 
     // Destroy textures.
@@ -1209,7 +1208,7 @@ void vky_destroy_device(VkyGpu* gpu)
     {
         vky_destroy_texture(&gpu->textures[i]);
     }
-    free(gpu->textures);
+    FREE(gpu->textures);
     gpu->textures = NULL;
 
     log_trace("destroy graphics and compute semaphores");
@@ -1271,8 +1270,8 @@ void vky_add_vertex_attribute(
 
 void vky_destroy_vertex_layout(VkyVertexLayout* layout)
 {
-    free(layout->attribute_offsets);
-    free(layout->attribute_formats);
+    FREE(layout->attribute_offsets);
+    FREE(layout->attribute_formats);
 }
 
 
@@ -1307,8 +1306,8 @@ void vky_add_resource_binding(VkyResourceLayout* layout, uint32_t binding, VkDes
 
 void vky_destroy_resource_layout(VkyResourceLayout* layout)
 {
-    free(layout->binding_types);
-    // free(layout->alignedSizes);
+    FREE(layout->binding_types);
+    // FREE(layout->alignedSizes);
 }
 
 
@@ -1336,7 +1335,7 @@ VkShaderModule vky_create_shader_module_from_file(VkyGpu* gpu, char* filename)
     uint32_t size = 0;
     uint32_t* shader_code = (uint32_t*)read_file(filename, &size);
     VkShaderModule module = vky_create_shader_module(gpu, size, shader_code);
-    free(shader_code);
+    FREE(shader_code);
     return module;
 }
 
@@ -1371,8 +1370,8 @@ void vky_destroy_shaders(VkyShaders* shaders)
         log_trace("destroy shader %d", i);
         vkDestroyShaderModule(shaders->gpu->device, shaders->modules[i], NULL);
     }
-    free(shaders->modules);
-    free(shaders->stages);
+    FREE(shaders->modules);
+    FREE(shaders->stages);
 }
 
 
@@ -1623,7 +1622,7 @@ void vky_destroy_graphics_pipeline(VkyGraphicsPipeline* gp)
     vkDestroyDescriptorSetLayout(gp->gpu->device, gp->descriptor_set_layout, NULL);
     vkDestroyPipelineLayout(gp->gpu->device, gp->pipeline_layout, NULL);
     vkDestroyPipeline(gp->gpu->device, gp->pipeline, NULL);
-    free(gp->descriptor_sets);
+    FREE(gp->descriptor_sets);
 }
 
 
@@ -2480,8 +2479,8 @@ void vky_destroy_uniform_buffer(VkyUniformBuffer* ubo)
         vkDestroyBuffer(ubo->gpu->device, ubo->buffers[i], NULL);
         vkFreeMemory(ubo->gpu->device, ubo->memories[i], NULL);
     }
-    free(ubo->buffers);
-    free(ubo->memories);
+    FREE(ubo->buffers);
+    FREE(ubo->memories);
 }
 
 
@@ -2589,8 +2588,8 @@ void vky_destroy_dynamic_uniform_buffer(VkyUniformBuffer* dubo)
         vkDestroyBuffer(dubo->gpu->device, dubo->buffers[i], NULL);
         vkFreeMemory(dubo->gpu->device, dubo->memories[i], NULL);
     }
-    free(dubo->buffers);
-    free(dubo->memories);
-    free(dubo->data);
-    free(dubo->cdata);
+    FREE(dubo->buffers);
+    FREE(dubo->memories);
+    FREE(dubo->data);
+    FREE(dubo->cdata);
 }

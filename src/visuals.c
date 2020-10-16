@@ -402,7 +402,7 @@ vky_visual_mesh(VkyScene* scene, const VkyMeshParams* params, const VkyTexturePa
             void* pixels =
                 calloc(tparams->width * tparams->height * tparams->depth, tparams->format_bytes);
             vky_upload_texture(tex, pixels);
-            free(pixels);
+            FREE(pixels);
         }
     }
     else
@@ -1386,7 +1386,7 @@ VkyVisual* vky_visual_image(VkyScene* scene, const VkyTextureParams* params)
     // HACK: to avoid empty texture, use an empty texture.
     void* pixels = calloc(params->width * params->height * params->depth, params->format_bytes);
     vky_upload_texture(tex, pixels);
-    free(pixels);
+    FREE(pixels);
 
     // Resources.
     vky_add_common_resources(visual);
@@ -1730,10 +1730,10 @@ static void _colorbar_tick_upload(VkyVisual* text, VkyVisual* ticks, VkyColorbar
     ticks->data.items = tick_data;
     vky_visual_data_raw(ticks);
 
-    free(tick);
-    free(tick_data);
-    free(text_data);
-    free(tick_lengths);
+    FREE(tick);
+    FREE(tick_data);
+    FREE(text_data);
+    FREE(tick_lengths);
 }
 
 VkyVisual* vky_visual_colorbar(VkyScene* scene, VkyColorbarParams params)
@@ -1800,7 +1800,7 @@ void vky_graph_upload(
     vky_visual_data_raw(vb->children[0]);
     vky_visual_data_raw(vb->children[1]);
 
-    free(edge_items);
+    FREE(edge_items);
 }
 
 VkyVisual* vky_visual_graph(VkyScene* scene, VkyGraphParams params)

@@ -608,10 +608,10 @@ static void _make_vertices(
             (VkyAxesTickVertex){a * (axes->user.ticks_ndc[i] - b), 8 + axes->user.levels[i]};
     }
 
-    free(TX);
-    free(TY);
-    free(Tx);
-    free(Ty);
+    FREE(TX);
+    FREE(TY);
+    FREE(Tx);
+    FREE(Ty);
 }
 
 

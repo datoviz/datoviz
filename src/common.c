@@ -80,7 +80,7 @@ int write_png(const char* filename, uint32_t width, uint32_t height, const uint8
     png_write_end(png_ptr, info_ptr);
     png_destroy_write_struct(&png_ptr, &info_ptr);
     fclose(fp);
-    free(row_pointers);
+    FREE(row_pointers);
     return 0;
 #else
     log_error("visky was not build with PNG support, please install libpng-dev");

@@ -83,8 +83,8 @@ int main(void)
 
     vky_graph_upload(graph, nv, nodes, ne, edges);
 
-    free(nodes);
-    free(edges);
+    FREE(nodes);
+    FREE(edges);
 
     ASSERT(scene->visual_count == 3);
 

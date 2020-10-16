@@ -91,7 +91,7 @@ int main()
         true};
     VkyTexture* noise_texture = vky_add_texture(canvas->gpu, &tex_params);
     vky_upload_texture(noise_texture, pixels);
-    free(pixels);
+    FREE(pixels);
 
     // Resources.
     vky_add_uniform_buffer_resource(visual, &scene->grid->dynamic_buffer);

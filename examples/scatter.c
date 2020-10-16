@@ -107,7 +107,7 @@ int main()
     visual->data.item_count = n;
     visual->data.items = data;
     vky_visual_data_raw(visual);
-    free(data);
+    FREE(data);
 
     vky_add_frame_callback(canvas, frame_callback);
 

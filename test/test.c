@@ -154,7 +154,7 @@ static int image_diff(const uint8_t* image_0, const char* path)
     }
     err /= (WIDTH * HEIGHT);
     log_debug("image diff was %.20f", err);
-    free(image_1);
+    FREE(image_1);
     return err < NORM3_THRESHOLD ? 0 : 1;
 }
 
@@ -170,7 +170,7 @@ static bool is_blank(uint8_t* image)
     void* black = calloc(WIDTH * HEIGHT * 3, sizeof(uint8_t));
     if (memcmp(image, black, (size_t)(WIDTH * HEIGHT * 3 * sizeof(uint8_t))) == 0)
     {
-        free(black);
+        FREE(black);
         return true;
     }
     return false;
@@ -213,7 +213,7 @@ static int test_canvas(VkyCanvas* canvas, const char* test_name, uint32_t frame_
             log_debug("blank image in test %s, retry %d/%d", test_name, i, MAX_RETRIES);
             if (i < MAX_RETRIES - 1)
             {
-                free(image);
+                FREE(image);
                 image = NULL;
             }
         }
@@ -264,7 +264,7 @@ static int test_canvas(VkyCanvas* canvas, const char* test_name, uint32_t frame_
         }
     }
 
-    free(image);
+    FREE(image);
     vky_destroy_screenshot(screenshot);
 
     // Report.

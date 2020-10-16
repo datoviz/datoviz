@@ -145,7 +145,7 @@ void vky_demo_scatter(size_t point_count, const dvec2* points)
     visual->data.item_count = point_count;
     visual->data.items = data;
     vky_visual_data_raw(visual);
-    free(data);
+    FREE(data);
 
     vky_run_app(app);
     vky_destroy_app(app);

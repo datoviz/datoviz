@@ -85,7 +85,7 @@ static void imshow(VkyPanel* panel)
 
     // Upload the texture
     vky_visual_image_upload(visual, (uint8_t*)image);
-    free(image);
+    FREE(image);
 }
 
 static void arrows(VkyPanel* panel)
@@ -242,8 +242,8 @@ static void area(VkyPanel* panel)
     vky_visual_data(visual, VKY_VISUAL_PROP_COLOR, 0, 2 * n, color);
     vky_visual_data(visual, VKY_VISUAL_PROP_SIZE, 0, 1, &height);
 
-    free(pos);
-    free(color);
+    FREE(pos);
+    FREE(color);
 }
 
 static void axrect(VkyPanel* panel)
@@ -307,7 +307,7 @@ static void raster(VkyPanel* panel)
     visual->data.item_count = count;
     visual->data.items = data;
     vky_visual_data_raw(visual);
-    free(data);
+    FREE(data);
 }
 
 static void graph(VkyPanel* panel)
@@ -366,8 +366,8 @@ static void graph(VkyPanel* panel)
 
     vky_graph_upload(graph, nv, nodes, ne, edges);
 
-    free(nodes);
-    free(edges);
+    FREE(nodes);
+    FREE(edges);
 }
 
 static void image(VkyPanel* panel)
@@ -420,7 +420,7 @@ static void image(VkyPanel* panel)
     visual->data.item_count = n;
     visual->data.items = data;
     vky_visual_data_raw(visual);
-    free(data);
+    FREE(data);
 
     // Upload the texture
     vky_visual_image_upload(visual, pixels);
@@ -669,7 +669,7 @@ static void france(VkyPanel* panel)
     }
 
     // Cleanup
-    free(points);
-    free(poly_lengths);
-    free(poly_colors);
+    FREE(points);
+    FREE(poly_lengths);
+    FREE(poly_colors);
 }

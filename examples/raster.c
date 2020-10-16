@@ -51,9 +51,9 @@ int main()
     visual->data.item_count = n;
     visual->data.items = data;
     vky_visual_data_raw(visual);
-    free(samples);
-    free(depths);
-    free(data);
+    FREE(samples);
+    FREE(depths);
+    FREE(data);
 
     vky_run_app(app);
     vky_destroy_app(app);

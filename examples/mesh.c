@@ -75,7 +75,7 @@ static void sphere(void)
         }
     }
     vky_mesh_sphere(&mesh, N, N, color);
-    free(color);
+    FREE(color);
 }
 
 static void cylinder(void)
@@ -90,7 +90,7 @@ static void cylinder(void)
         }
     }
     vky_mesh_cylinder(&mesh, N, color);
-    free(color);
+    FREE(color);
 }
 
 static void cone(void)
@@ -105,7 +105,7 @@ static void cone(void)
         }
     }
     vky_mesh_cone(&mesh, N, color);
-    free(color);
+    FREE(color);
 }
 
 static void surface(void)

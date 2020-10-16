@@ -336,7 +336,7 @@ void end_video(Video* video)
     /* free the stream */
     avformat_free_context(oc);
 
-    free(video);
+    FREE(video);
 
     return;
 }

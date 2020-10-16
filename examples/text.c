@@ -63,7 +63,7 @@ int main()
     for (uint32_t i = 0; i < N; i++)
         group_size[i] = N_CHARS;
     vky_visual_data_set_size(visual, N * N_CHARS, N, group_size, NULL);
-    free(group_size);
+    FREE(group_size);
 
     // Set the text.
     const char* str = STRING;

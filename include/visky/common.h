@@ -28,7 +28,6 @@ extern "C" {
 #endif
 
 
-
 #ifndef __STDC_VERSION__
 #define __STDC_VERSION__ 0
 #endif
@@ -110,7 +109,6 @@ int gettimeofday(struct timeval* tp, struct timezone* tzp)
 #endif
 
 
-
 BEGIN_INCL_NO_WARN
 #include <cglm/cglm.h>
 END_INCL_NO_WARN
@@ -118,6 +116,33 @@ END_INCL_NO_WARN
 #include "constants.h"
 #include "log.h"
 
+
+
+/*************************************************************************************************/
+/*  Macros                                                                                       */
+/*************************************************************************************************/
+
+#define CLIP(x, a, b) fmax(fmin((x), (b)), (a))
+
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#define POS(a)    ((a) >= 0 ? (a) : 0)
+
+#define DBG(x)  printf("%d\n", (int)(x))
+#define DBGF(x) printf("%.8f\n", (double)(x))
+#define PRT(x)  printf("%s\n", (x))
+
+#define PLUS_INF  (+1e30)
+#define MINUS_INF (-1e30)
+
+#define ASSERT(x) assert((x))
+
+#define FREE(x)                                                                                   \
+    if ((x) != NULL)                                                                              \
+    {                                                                                             \
+        free((x));                                                                                \
+        (x) = NULL;                                                                               \
+    }
 
 
 /*************************************************************************************************/
@@ -227,27 +252,6 @@ VKY_INLINE void vec4_scale(const float* input, float s, float* output)
         output[i] = s * input[i];
     }
 }
-
-
-
-/*************************************************************************************************/
-/*  Macros                                                                                       */
-/*************************************************************************************************/
-
-#define CLIP(x, a, b) fmax(fmin((x), (b)), (a))
-
-#define MIN(a, b) (((a) < (b)) ? (a) : (b))
-#define MAX(a, b) (((a) > (b)) ? (a) : (b))
-#define POS(a)    ((a) >= 0 ? (a) : 0)
-
-#define DBG(x)  printf("%d\n", (int)(x))
-#define DBGF(x) printf("%.8f\n", (double)(x))
-#define PRT(x)  printf("%s\n", (x))
-
-#define PLUS_INF  (+1e30)
-#define MINUS_INF (-1e30)
-
-#define ASSERT(x) assert((x))
 
 
 

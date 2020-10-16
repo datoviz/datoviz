@@ -44,10 +44,10 @@ VkyData vky_mesh_data(VkyMesh* mesh)
 
 void vky_mesh_destroy(VkyMesh* mesh)
 {
-    free(mesh->vertices);
-    free(mesh->indices);
-    free(mesh->vertex_offsets);
-    free(mesh->index_offsets);
+    FREE(mesh->vertices);
+    FREE(mesh->indices);
+    FREE(mesh->vertex_offsets);
+    FREE(mesh->index_offsets);
 }
 
 void vky_mesh_begin(

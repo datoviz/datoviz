@@ -91,7 +91,7 @@ static void volume(VkyPanel* panel)
     snprintf(path, sizeof(path), "%s/volume/skull.img", DATA_DIR);
     char* pixels = read_file(path, NULL);
     VkyVisual* visual = vky_visual(scene, VKY_VISUAL_VOLUME, &params, pixels);
-    free(pixels);
+    FREE(pixels);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 }
 

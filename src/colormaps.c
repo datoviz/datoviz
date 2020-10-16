@@ -7,7 +7,7 @@ void vky_load_color_texture()
     snprintf(path, sizeof(path), "%s/textures/%s", DATA_DIR, "color_texture.img");
     uint8_t* data = (uint8_t*)read_file(path, NULL);
     memcpy(VKY_COLOR_TEXTURE, data, 256 * 256 * 4);
-    free(data);
+    FREE(data);
 }
 
 

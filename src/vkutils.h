@@ -130,11 +130,11 @@ static bool check_validation_layer_support(
         }
         if (!layerFound)
         {
-            free(available_layers);
+            FREE(available_layers);
             return false;
         }
     }
-    free(available_layers);
+    FREE(available_layers);
     return true;
 }
 

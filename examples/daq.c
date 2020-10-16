@@ -96,7 +96,7 @@ int main()
     visual->data.item_count = vertex_count_per_path * path_count;
     visual->data.items = empty;
     vky_visual_data_raw(visual);
-    free(empty);
+    FREE(empty);
 
     // Add the visual to the panel.
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
@@ -112,6 +112,6 @@ int main()
         fclose(f);
 
     vky_destroy_app(app);
-    free(vertices);
+    FREE(vertices);
     return 0;
 }

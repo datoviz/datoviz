@@ -428,7 +428,7 @@ void vky_destroy_guis()
         return;
     for (uint32_t i = 0; i < gui_count; i++)
     {
-        free(guis[i]);
+        FREE(guis[i]);
     }
     vky_imgui_destroy();
 }

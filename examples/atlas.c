@@ -192,7 +192,7 @@ int main()
     snprintf(path, sizeof(path), "%s/volume/%s", DATA_DIR, ATLAS_TOP_PATH);
     char* pixels = read_file(path, NULL);
     _add_image(panel, ATLAS_TOP_SHAPE, pixels);
-    free(pixels);
+    FREE(pixels);
 
 
     // Slice position.
@@ -212,7 +212,7 @@ int main()
     snprintf(path, sizeof(path), "%s/volume/%s", DATA_DIR, ATLAS_PATH);
     pixels = read_file(path, NULL);
     vky_upload_texture(tex, pixels);
-    free(pixels);
+    FREE(pixels);
 
     // Visuals
     v1 = vky_visual_volume_slicer(scene, tex);

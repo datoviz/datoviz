@@ -195,10 +195,10 @@ void vky_destroy_app(VkyApp* app)
         default:
             break;
         }
-        free(canvas);
+        FREE(canvas);
     }
 
-    free(app->canvases);
+    FREE(app->canvases);
     vky_destroy_device(app->gpu);
 
     switch (backend)
@@ -215,13 +215,13 @@ void vky_destroy_app(VkyApp* app)
 
     if (app->links != NULL)
     {
-        free(app->links);
+        FREE(app->links);
         app->link_count = 0;
         app->links = NULL;
     }
 
-    free(app->gpu);
-    free(app);
+    FREE(app->gpu);
+    FREE(app);
 }
 
 bool vky_all_windows_closed(VkyApp* app) { return app->all_windows_closed; }
@@ -273,18 +273,18 @@ void vky_destroy_event_controller(VkyEventController* event_controller)
         log_debug("skipping destroy event controller");
     }
     if (event_controller->mouse != NULL)
-        free(event_controller->mouse);
+        FREE(event_controller->mouse);
 
     if (event_controller->keyboard != NULL)
-        free(event_controller->keyboard);
+        FREE(event_controller->keyboard);
 
     if (event_controller->frame_callbacks != NULL)
-        free(event_controller->frame_callbacks);
+        FREE(event_controller->frame_callbacks);
 
     if (event_controller->mock_input_callbacks != NULL)
-        free(event_controller->mock_input_callbacks);
+        FREE(event_controller->mock_input_callbacks);
 
-    free(event_controller);
+    FREE(event_controller);
 }
 
 

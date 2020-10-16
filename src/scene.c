@@ -306,7 +306,7 @@ static void add_label(VkyPanel* panel, VkyAxis axis, VkyAxes2DParams* params)
     label->data.item_count = str_len;
     label->data.items = label_data;
     vky_visual_data_raw(label);
-    free(label_data);
+    FREE(label_data);
 }
 
 void vky_set_controller(VkyPanel* panel, VkyControllerType controller_type, const void* params)
@@ -657,8 +657,7 @@ void vky_destroy_controller(VkyPanel* panel)
     default:
         break;
     }
-    if (controller != NULL)
-        free(controller);
+    FREE(controller);
     panel->controller = NULL;
 }
 
@@ -946,39 +945,18 @@ void vky_destroy_visual(VkyVisual* visual)
     if (visual->data.items != NULL && visual->data.need_free_items)
     {
         log_trace("free visual's data.items");
-        free(visual->data.items);
+        FREE(visual->data.items);
         visual->data.items = NULL;
     }
 
-    if (visual->data.group_lengths != NULL)
-    {
-        log_trace("destroy the group lengths of the visual");
-        free(visual->data.group_lengths);
-        visual->data.group_lengths = NULL;
-    }
+    FREE(visual->data.group_lengths);
+    FREE(visual->data.group_starts);
+    FREE(visual->data.group_params);
 
-    if (visual->data.group_starts != NULL)
-    {
-        log_trace("destroy the group starts of the visual");
-        free(visual->data.group_starts);
-        visual->data.group_starts = NULL;
-    }
-
-    if (visual->data.group_params != NULL)
-    {
-        log_trace("destroy the group params of the visual");
-        free(visual->data.group_params);
-        visual->data.group_params = NULL;
-    }
-
-    free(visual->props);
-    visual->props = NULL;
-    free(visual->resources);
-    visual->resources = NULL;
-    free(visual->children);
-    visual->children = NULL;
-    free(visual->params);
-    visual->params = NULL;
+    FREE(visual->props);
+    FREE(visual->resources);
+    FREE(visual->children);
+    FREE(visual->params);
 }
 
 
@@ -1101,8 +1079,7 @@ static void* _reallocate(void* old, size_t old_size, size_t new_size)
         out = calloc(new_size, 1);
     if (out != NULL && old_size > 0)
         memcpy(out, old, old_size);
-    if (old != NULL)
-        free(old);
+    FREE(old);
     return out;
 }
 
@@ -1175,7 +1152,7 @@ static void _renormalize_pos(VkyVisual* visual, VkyPanel* panel)
                 visual->children[j], VKY_VISUAL_PROP_POS_GPU, i, visual->data.item_count, pos_out);
         }
 
-        free(pos_out);
+        FREE(pos_out);
     }
 }
 
@@ -1357,14 +1334,14 @@ void vky_visual_data_raw(VkyVisual* visual)
     if (visual->data.need_free_vertices)
     {
         log_trace("freeing data->vertices");
-        free(data->vertices);
+        FREE(data->vertices);
         data->vertices = NULL;
         data->need_free_vertices = false;
     }
     if (visual->data.need_free_indices)
     {
         log_trace("freeing data->indices");
-        free(data->indices);
+        FREE(data->indices);
         data->indices = NULL;
         data->need_free_indices = false;
     }
@@ -1578,12 +1555,9 @@ void vky_visual_data_upload(VkyVisual* visual, VkyPanel* panel)
 
 void vky_free_data(VkyData data)
 {
-    if (data.items != NULL)
-        free(data.items);
-    if (data.vertices != NULL)
-        free(data.vertices);
-    if (data.indices != NULL)
-        free(data.indices);
+    FREE(data.items);
+    FREE(data.vertices);
+    FREE(data.indices);
     data.items = data.vertices = data.indices = NULL;
 }
 
@@ -2046,17 +2020,12 @@ void vky_destroy_axes(VkyAxes* axes)
 {
     if (axes != NULL)
     {
-        if (axes->tick_data != NULL)
-            free(axes->tick_data);
-        if (axes->text_data != NULL)
-            free(axes->text_data);
-        if (axes->str_buffer != NULL)
-            free(axes->str_buffer);
-        if (axes->panzoom_outer != NULL)
-            free(axes->panzoom_outer);
-        if (axes->panzoom_inner != NULL)
-            free(axes->panzoom_inner);
-        free(axes);
+        FREE(axes->tick_data);
+        FREE(axes->text_data);
+        FREE(axes->str_buffer);
+        FREE(axes->panzoom_outer);
+        FREE(axes->panzoom_inner);
+        FREE(axes);
     }
 }
 
@@ -2074,7 +2043,7 @@ void vky_destroy_scene(VkyScene* scene)
     }
     vky_destroy_dynamic_uniform_buffer(&scene->grid->dynamic_buffer);
 
-    free(scene->visuals);
+    FREE(scene->visuals);
     scene->visuals = NULL;
 
     for (uint32_t i = 0; i < scene->grid->panel_count; i++)
@@ -2082,20 +2051,20 @@ void vky_destroy_scene(VkyScene* scene)
         vky_destroy_controller(&scene->grid->panels[i]);
     }
 
-    free(scene->grid->panels);
+    FREE(scene->grid->panels);
     scene->grid->panels = NULL;
 
-    free(scene->grid->xs);
-    free(scene->grid->ys);
-    free(scene->grid->widths);
-    free(scene->grid->heights);
-    free(scene->grid->visual_panels);
+    FREE(scene->grid->xs);
+    FREE(scene->grid->ys);
+    FREE(scene->grid->widths);
+    FREE(scene->grid->heights);
+    FREE(scene->grid->visual_panels);
 
-    free(scene->grid);
+    FREE(scene->grid);
     scene->grid = NULL;
 
     vky_destroy_guis();
 
     scene->canvas->scene = NULL;
-    free(scene);
+    FREE(scene);
 }

@@ -260,7 +260,7 @@ static VkyVisual* _add_3D_axes(VkyScene* scene)
     segment_visual->data.items = vertices;
     vky_visual_data_raw(segment_visual);
 
-    free(vertices);
+    FREE(vertices);
     return segment_visual;
 }
 
@@ -297,7 +297,7 @@ static VkyVisual* _add_3D_axes_text(VkyScene* scene)
     text_visual->data.item_count = n;
     text_visual->data.items = text_vertices;
     vky_visual_data_raw(text_visual);
-    free(text_vertices);
+    FREE(text_vertices);
 
     return text_visual;
 }

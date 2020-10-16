@@ -56,7 +56,7 @@ VkyPolygonTriangulation vky_triangulate_polygons(
         }
         offset += index_count_list[i];
         voffset += polygon_lengths[i];
-        free(indices_list[i]);
+        FREE(indices_list[i]);
     }
 
     // Make the output structure.
@@ -65,17 +65,17 @@ VkyPolygonTriangulation vky_triangulate_polygons(
     // This field must be freed by the caller.
     tr.indices = total_indices;
 
-    free(index_count_list);
-    free(indices_list);
+    FREE(index_count_list);
+    FREE(indices_list);
     return tr;
 }
 
 
 void vky_destroy_polygon_triangulation(VkyPolygonTriangulation* tr)
 {
-    free(tr->indices);
+    FREE(tr->indices);
     if (tr->mesh_vertices != NULL)
-        free(tr->mesh_vertices);
+        FREE(tr->mesh_vertices);
 }
 
 
@@ -176,8 +176,8 @@ VkyPolygonTriangulation vky_visual_polygon_upload(
         vky_visual_data(visual_outline, VKY_VISUAL_PROP_POS_GPU, 0, point_count, path_points);
         vky_visual_data(visual_outline, VKY_VISUAL_PROP_COLOR, 0, point_count, path_colors);
 
-        free(path_points);
-        free(path_colors);
+        FREE(path_points);
+        FREE(path_colors);
     }
 
     // Cleanup.
@@ -202,8 +202,8 @@ concatenate_arrays(size_t item_size, size_t size0, void* arr0, size_t size1, voi
     void* cat = malloc(size0 + size1);
     memcpy(cat, arr0, size0);
     memcpy((void*)((int64_t)cat + (int64_t)size0), arr1, size1);
-    free(arr0);
-    free(arr1);
+    FREE(arr0);
+    FREE(arr1);
     return cat;
 }
 
@@ -457,7 +457,7 @@ VkyPSLGTriangulation vky_triangulate_pslg(
         tr.vertex_count += extra_vertex_count;
         ASSERT(tr.vertex_count == (uint32_t)out.numberofpoints);
 
-        free(extra_triangles);
+        FREE(extra_triangles);
     }
 
     // Copy the triangle struct into the output struct.
@@ -465,10 +465,10 @@ VkyPSLGTriangulation vky_triangulate_pslg(
     memcpy(tr.triangle, &out, sizeof(out));
 
     // Free the initialized variables.
-    free(in.pointlist);
+    FREE(in.pointlist);
     if (region_count > 0)
-        free(in.regionlist);
-    free(out.triangleattributelist);
+        FREE(in.regionlist);
+    FREE(out.triangleattributelist);
     return tr;
 }
 
@@ -477,16 +477,16 @@ VkyPSLGTriangulation vky_triangulate_pslg(
 void vky_destroy_pslg_triangulation(VkyPSLGTriangulation* tr)
 {
     // Allocated by Triangle.
-    // free(tr->triangle->pointlist);  // NOTE: already freed by free(tr.vertices)
-    free(tr->triangle->trianglelist);
-    free(tr->triangle->segmentlist);
+    // FREE(tr->triangle->pointlist);  // NOTE: already freed by FREE(tr.vertices)
+    FREE(tr->triangle->trianglelist);
+    FREE(tr->triangle->segmentlist);
 
     // Allocated by vky_triangulate_pslg.
-    free(tr->region_idx);
+    FREE(tr->region_idx);
     if (tr->triangle != NULL)
-        free(tr->triangle);
+        FREE(tr->triangle);
     if (tr->mesh_vertices != NULL)
-        free(tr->mesh_vertices);
+        FREE(tr->mesh_vertices);
 }
 
 
@@ -577,7 +577,7 @@ VkyPSLGTriangulation vky_visual_pslg_upload(
     visual_segments->data.item_count = segment_count;
     visual_segments->data.items = seg_vertices;
     vky_visual_data_raw(visual_segments);
-    free(seg_vertices);
+    FREE(seg_vertices);
 
     return tr;
 }
@@ -676,7 +676,7 @@ void vky_visual_triangulation_upload(
     visual_segments->data.item_count = index_count;
     visual_segments->data.items = seg_vertices;
     vky_visual_data_raw(visual_segments);
-    free(seg_vertices);
+    FREE(seg_vertices);
 
     // Make the marker data.
     VkyVertex* vertices_markers = (VkyVertex*)calloc(vertex_count, sizeof(VkyVertex));
@@ -689,5 +689,5 @@ void vky_visual_triangulation_upload(
     visual_markers->data.item_count = vertex_count;
     visual_markers->data.items = vertices_markers;
     vky_visual_data_raw(visual_markers);
-    free(vertices_markers);
+    FREE(vertices_markers);
 }
