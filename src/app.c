@@ -566,10 +566,7 @@ void vky_call_frame_callbacks(VkyEventController* event_controller)
 static void _upload_visual_data(VkyVisual* visual, VkyPanel* panel)
 {
     if (visual->need_data_upload)
-    {
         vky_visual_data_upload(visual, panel);
-        visual->need_data_upload = false;
-    }
 }
 
 // Called at every frame.

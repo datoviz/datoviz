@@ -25,3 +25,18 @@ void vky_transform_cartesian(VkyBox2D box, uint32_t item_count, const dvec2* pos
         pos_out[i][1] = ay * pos_in[i][1] + by;
     }
 }
+
+
+
+VkyBox2D vky_transform_compute_box(uint32_t point_count, dvec2* points)
+{
+    double xmin = +DBL_MAX, ymin = +DBL_MAX, xmax = -DBL_MAX, ymax = -DBL_MAX;
+    for (uint32_t i = 0; i < point_count; i++)
+    {
+        xmin = fmin(xmin, points[i][0]);
+        ymin = fmin(ymin, points[i][1]);
+        xmax = fmax(xmax, points[i][0]);
+        ymax = fmax(ymax, points[i][1]);
+    }
+    return (VkyBox2D){{xmin, ymin}, {xmax, ymax}};
+}

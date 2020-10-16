@@ -84,13 +84,35 @@ void vky_destroy_polygon_triangulation(VkyPolygonTriangulation* tr)
 /*  Polygon visual                                                                               */
 /*************************************************************************************************/
 
+static void _polygon_bake(VkyVisual* visual)
+{
+    // VkyData* data = &visual->data;
+    const VkyPolygonParams* params = (const VkyPolygonParams*)visual->parent->params;
+    ASSERT(params != NULL);
+
+    // Make the triangulation of the polygons.
+    // TODO
+    // uint32_t point_count = data->item_count;
+    // VkyPolygonTriangulation tr =
+    //     vky_triangulate_polygons(point_count, points, data->group_count, data->group_lengths);
+
+    // visual->data.vertex_count = point_count;
+    // visual->data.vertices = data->items;
+    // visual->data.index_count = tr.index_count;
+    // visual->data.indices = tr.indices;
+}
+
 VkyVisual* vky_visual_polygon(VkyScene* scene, const VkyPolygonParams* params)
 {
-    VkyVisual* vb = vky_create_visual(scene, VKY_VISUAL_POLYGON);
+    VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_POLYGON);
 
     // Raw mesh visual.
     VkyVisual* visual_poly = vky_visual_mesh_raw(scene);
-    vky_visual_add_child(vb, visual_poly);
+    // NOTE: normally, the mesh raw visual doesn't need a baking function as the passed items
+    // are directly the vertices. But here, we need to compute the indices by running
+    // a triangulation algorithm. That will happen in the bake function.
+    visual_poly->cb_bake_data = _polygon_bake;
+    vky_visual_add_child(visual, visual_poly);
 
     // Polygon outlines.
     if (params->linewidth > 0)
@@ -98,19 +120,22 @@ VkyVisual* vky_visual_polygon(VkyScene* scene, const VkyPolygonParams* params)
         VkyPathParams vparams = (VkyPathParams){
             params->linewidth, 4., VKY_CAP_ROUND, VKY_JOIN_ROUND, VKY_DEPTH_DISABLE};
         VkyVisual* visual_outline = vky_visual_path(scene, &vparams);
-        vky_visual_add_child(vb, visual_outline);
+        vky_visual_add_child(visual, visual_outline);
     }
 
     // Copy the parameters.
-    vb->params = malloc(sizeof(VkyPolygonParams));
-    memcpy(vb->params, params, sizeof(VkyPolygonParams));
+    visual->params = malloc(sizeof(VkyPolygonParams));
+    memcpy(visual->params, params, sizeof(VkyPolygonParams));
 
-    // // Props.
-    // vky_visual_prop_spec(vb, sizeof(vec3) + sizeof(VkyColor), 0);
-    // vky_visual_prop_add(vb, VKY_VISUAL_PROP_POS_GPU, 0);
-    // vky_visual_prop_add(vb, VKY_VISUAL_PROP_COLOR, sizeof(vec3));
+    // Props.
+    // NOTE: no call to vky_visual_prop_spec(), so this is an empty visual. Setting the props
+    // allow the user to assign data to them, but they will be redirected directly to the
+    // children visuals.
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS, 0);
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS_GPU, 0);
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR, 0);
 
-    return vb;
+    return visual;
 }
 
 

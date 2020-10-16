@@ -471,8 +471,13 @@ static void polygon(VkyPanel* panel)
         poly_colors                        // polygon colors
     );
 
+    // TODO
     // vky_visual_data_set_size(vb, point_count, poly_count, poly_lengths, NULL);
-    // vky_visual_data(vb, VKY_VISUAL_PROP_POS_GPU, 0, point_count, points);
+    // vky_visual_data(vb, VKY_VISUAL_PROP_POS, 0, point_count, points);
+    // for (uint32_t i = 0; i < poly_count; i++)
+    // {
+    //     vky_visual_data_group(vb, VKY_VISUAL_PROP_COLOR, 0, i, 1, &poly_colors[i]);
+    // }
 }
 
 static void pslg_1(VkyPanel* panel)

@@ -1112,11 +1112,13 @@ static void _renormalize_pos(VkyVisual* visual, VkyPanel* panel)
 
             break;
 
-        default:
-            log_error(
-                "normalization with controller type %d not implemented yet",
-                panel->controller_type);
-            // success = false;
+        default:;
+            // By default, compute the box around the points and linearly transform them into
+            // [-1, 1].
+            // VkyBox2D box = vky_transform_compute_box(visual->data.item_count, vp_pos->values);
+            // DEBUG
+            VkyBox2D box = {{-1, -1}, {+1, +1}};
+            vky_transform_cartesian(box, visual->data.item_count, vp_pos->values, pos_out);
             break;
         }
 
@@ -1127,7 +1129,6 @@ static void _renormalize_pos(VkyVisual* visual, VkyPanel* panel)
         }
         else
         {
-            ASSERT(vp_pos_gpu->field_size == sizeof(vec3));
             vky_visual_data(visual, VKY_VISUAL_PROP_POS_GPU, i, visual->data.item_count, pos_out);
         }
 
@@ -1153,6 +1154,12 @@ static void _copy_prop_values(
         memcpy(
             (void*)((int64_t)vp->values + (int64_t)(first_item * sizeof(dvec2))), values,
             value_count * sizeof(dvec2));
+        return;
+    }
+
+    if (visual->data.items == NULL)
+    {
+        log_warn("skip copy of prop values to empty visual");
         return;
     }
 
@@ -1443,7 +1450,7 @@ void vky_visual_data_partial(
     ASSERT(item_count > 0);
     ASSERT(value_count <= item_count);
 
-    if (visual->data.items == NULL && prop_type != VKY_VISUAL_PROP_POS)
+    if (visual->item_size > 0 && visual->data.items == NULL && prop_type != VKY_VISUAL_PROP_POS)
     {
         log_error("you need to call vky_visual_data_set_size() before calling vky_visual_data()");
         return;
@@ -1495,11 +1502,10 @@ void vky_visual_data_group(
     uint32_t group_size = visual->data.group_lengths[group_idx];
     uint32_t first_item = visual->data.group_starts[group_idx];
 
-    VkyVisualProp* vp = vky_visual_prop_get(visual, prop_type, prop_index);
+    // VkyVisualProp* vp = vky_visual_prop_get(visual, prop_type, prop_index);
 
     // Repeat the value for the current group.
     ASSERT(group_size > 0);
-    ASSERT(vp->field_size > 0);
 
     vky_visual_data_partial(
         visual, prop_type, prop_index, first_item, group_size, value_count, value);
@@ -1555,6 +1561,7 @@ void vky_visual_data_upload(VkyVisual* visual, VkyPanel* panel)
 
     // NOTE: normally, visual_data_upload() shoulld already be called to all children who were
     // marker as need_upload.
+    visual->need_data_upload = false;
 }
 
 
