@@ -671,6 +671,96 @@ VkyVisual* vky_visual_marker_raw(VkyScene* scene, const VkyMarkersRawParams* par
 
 
 /*************************************************************************************************/
+/*  Transient markers visual                                                                     */
+/*************************************************************************************************/
+
+static void _marker_transient_bake(VkyVisual* visual)
+{
+    VkyData* data = &visual->data;
+    data->vertex_count = data->item_count;
+
+    if (data->items == NULL)
+        return;
+
+    // Allocate the data buffer to be uploaded to the vertex buffer. Will be freed by visky.
+    log_trace("allocating vertices and indices");
+    VkyMarkersTransientVertex* vertices =
+        calloc(data->vertex_count, sizeof(VkyMarkersTransientVertex));
+    const VkyMarkersTransientVertex* items = (const VkyMarkersTransientVertex*)data->items;
+
+    for (uint32_t i = 0; i < data->item_count; i++)
+    {
+        vertices[i] = items[i];
+        vertices[i].size *= visual->scene->canvas->dpi_factor;
+    }
+
+    data->vertices = vertices;
+    data->need_free_vertices = true;
+}
+
+VkyVisual* vky_visual_marker_transient(VkyScene* scene, const VkyMarkersTransientParams* params)
+{
+    VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_MARKER_TRANSIENT);
+    VkyCanvas* canvas = scene->canvas;
+
+    // Shaders.
+    VkyShaders shaders = vky_create_shaders(canvas->gpu);
+    vky_add_shader(&shaders, VK_SHADER_STAGE_VERTEX_BIT, "markers_transient.vert.spv");
+    vky_add_shader(&shaders, VK_SHADER_STAGE_FRAGMENT_BIT, "markers_transient.frag.spv");
+
+    // Vertex layout.
+    VkyVertexLayout vertex_layout =
+        vky_create_vertex_layout(canvas->gpu, 0, sizeof(VkyMarkersTransientVertex));
+    vky_add_vertex_attribute(
+        &vertex_layout, 0, VKY_DEFAULT_VERTEX_FORMAT_POS,
+        offsetof(VkyMarkersTransientVertex, pos));
+    vky_add_vertex_attribute(
+        &vertex_layout, 1, VKY_DEFAULT_VERTEX_FORMAT_COLOR,
+        offsetof(VkyMarkersTransientVertex, color));
+    vky_add_vertex_attribute(
+        &vertex_layout, 2, VK_FORMAT_R32_SFLOAT, offsetof(VkyMarkersTransientVertex, size));
+    vky_add_vertex_attribute(
+        &vertex_layout, 3, VK_FORMAT_R32_SFLOAT, offsetof(VkyMarkersTransientVertex, half_life));
+    vky_add_vertex_attribute(
+        &vertex_layout, 4, VK_FORMAT_R32_SFLOAT, offsetof(VkyMarkersTransientVertex, last_active));
+
+    // Default params.
+    VkyMarkersTransientParams vparams = {0};
+    if (params != NULL)
+    {
+        memcpy(&vparams, params, sizeof(VkyMarkersTransientParams));
+    }
+    vky_visual_params(visual, sizeof(VkyMarkersTransientParams), &vparams);
+
+    // Resource layout.
+    VkyResourceLayout resource_layout = vky_common_resource_layout(visual);
+
+    // Pipeline.
+    visual->pipeline = vky_create_graphics_pipeline(
+        canvas, VK_PRIMITIVE_TOPOLOGY_POINT_LIST, shaders, vertex_layout, resource_layout,
+        (VkyGraphicsPipelineParams){true});
+
+    // Resources.
+    vky_add_common_resources(visual);
+
+    visual->cb_bake_data = _marker_transient_bake;
+
+    // Props.
+    vky_visual_prop_spec(visual, sizeof(VkyMarkersTransientVertex), 0);
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS_GPU, offsetof(VkyMarkersTransientVertex, pos));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_COLOR, offsetof(VkyMarkersTransientVertex, color));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_SIZE, offsetof(VkyMarkersTransientVertex, size));
+    vky_visual_prop_add(
+        visual, VKY_VISUAL_PROP_LENGTH, offsetof(VkyMarkersTransientVertex, half_life));
+    vky_visual_prop_add(
+        visual, VKY_VISUAL_PROP_TIME, offsetof(VkyMarkersTransientVertex, last_active));
+
+    return visual;
+}
+
+
+
+/*************************************************************************************************/
 /*  Segment visual                                                                               */
 /*************************************************************************************************/
 

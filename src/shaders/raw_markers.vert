@@ -22,9 +22,14 @@ layout (location = 1) out vec2 out_size;
 void main() {
     gl_Position = transform_pos(pos);
     out_color = get_color(color);
+    // if (gl_Position.x / gl_Position.w > 1 || gl_Position.y / gl_Position.w > 1) {
+    //     out_color.a = 0;
+    //     return;
+    // }
+    float alpha = out_color.a;
     if (params.alpha_scaling_mode == ALPHA_SCALING_ON) {
         float c = .2 * (mvp.proj[0][0] + mvp.proj[1][1]);
-        out_color.a = clamp(out_color.a * c, out_color.a, 1);
+        out_color.a = clamp(alpha * c, alpha, 1);
     }
 
     vec2 ms = params.marker_size;

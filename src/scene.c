@@ -748,6 +748,10 @@ vky_visual(VkyScene* scene, VkyVisualType visual_type, const void* params, const
         visual = vky_visual_marker_raw(scene, (const VkyMarkersRawParams*)params);
         break;
 
+    case VKY_VISUAL_MARKER_TRANSIENT:
+        visual = vky_visual_marker_transient(scene, (const VkyMarkersTransientParams*)params);
+        break;
+
     case VKY_VISUAL_SEGMENT:
         visual = vky_visual_segment(scene);
         break;

@@ -124,6 +124,8 @@ typedef struct VkyImageCmapParams VkyImageCmapParams;
 typedef struct VkyImageData VkyImageData;
 typedef struct VkyMarkersParams VkyMarkersParams;
 typedef struct VkyMarkersRawParams VkyMarkersRawParams;
+typedef struct VkyMarkersTransientParams VkyMarkersTransientParams;
+typedef struct VkyMarkersTransientVertex VkyMarkersTransientVertex;
 typedef struct VkyMarkersVertex VkyMarkersVertex;
 typedef VkyMarkersVertex VkyGraphNode;
 typedef struct VkyMeshParams VkyMeshParams;
@@ -276,6 +278,20 @@ struct VkyMarkersRawParams
     vec2 marker_size;
     int32_t scaling_mode;
     int32_t alpha_scaling_mode;
+};
+
+struct VkyMarkersTransientVertex
+{
+    vec3 pos;
+    VkyColor color;
+    float size;
+    float half_life;
+    float last_active;
+};
+
+struct VkyMarkersTransientParams
+{
+    float local_time;
 };
 
 
@@ -517,6 +533,9 @@ VKY_EXPORT VkyVisual* vky_visual_marker(VkyScene* scene, const VkyMarkersParams*
 /*************************************************************************************************/
 
 VKY_EXPORT VkyVisual* vky_visual_marker_raw(VkyScene* scene, const VkyMarkersRawParams* params);
+
+VKY_EXPORT VkyVisual*
+vky_visual_marker_transient(VkyScene* scene, const VkyMarkersTransientParams* params);
 
 
 

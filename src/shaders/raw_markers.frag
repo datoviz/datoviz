@@ -8,6 +8,8 @@ layout (location = 0) out vec4 out_color;
 void main()
 {
     out_color = in_color;
+    // if (out_color.a < .001)
+    //     discard;
     vec2 ms = in_size;
     vec2 p = gl_PointCoord * max(ms.x, ms.y);
     bool do_discard = (
