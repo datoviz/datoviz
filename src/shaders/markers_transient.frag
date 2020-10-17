@@ -30,7 +30,7 @@ void main()
 {
     vec2 p = 2 * (gl_PointCoord - vec2(.5, .5)) * (in_size + 2);
     out_color = filled(length(p) - .5 * in_size, in_color);
-    bool do_discard = out_color.a < .01;// || length(p) > 1;
+    bool do_discard = out_color.a < .01;
     if (do_discard)
         discard;
 }

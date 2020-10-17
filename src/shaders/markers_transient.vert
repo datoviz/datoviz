@@ -16,12 +16,21 @@ layout (location = 1) out float out_size;
 
 void main() {
     gl_Position = transform_pos(pos);
-    out_color = get_color(color);
 
     float t = params.local_time;
     float k = 0.6931471805599453 / half_life; // -log(2) / half_life
-    if (t < last_active) out_color.a = 0;
-    else out_color.a = out_color.a * exp(-k * (t - last_active));
+    float u = exp(-k * (t - last_active));
+
+    out_color = color;
+    vec3 hsv = rgb2hsv(color.rgb);
+    float value = hsv.z;
+
+    if (t < last_active) {
+        out_color.a = 0;
+    }
+    else {
+        out_color.rgb = hsv2rgb(vec3(hsv.xy, .2 + .8 * u));
+    }
 
     out_size = size;
     gl_PointSize = size;
