@@ -169,11 +169,11 @@ uint8_t* read_ppm(const char* filename, int* width, int* height)
     return image;
 }
 
-char* read_file(const char* filename, uint32_t* size)
+char* read_file(const char* filename, size_t* size)
 {
     /* The returned pointer must be freed by the caller. */
     char* buffer = NULL;
-    long length = 0;
+    size_t length = 0;
     FILE* f = fopen(filename, "rb");
 
     if (!f)
@@ -182,7 +182,7 @@ char* read_file(const char* filename, uint32_t* size)
         return NULL;
     }
     fseek(f, 0, SEEK_END);
-    length = ftell(f);
+    length = (size_t)ftell(f);
     if (size != NULL)
         *size = length;
     fseek(f, 0, SEEK_SET);
@@ -193,13 +193,13 @@ char* read_file(const char* filename, uint32_t* size)
     return buffer;
 }
 
-char* read_npy(const char* filename, uint32_t* size)
+char* read_npy(const char* filename, size_t* size)
 {
     /* Tiny NPY reader that requires the user to know in advance the data type of the file. */
 
     /* The returned pointer must be freed by the caller. */
     char* buffer = NULL;
-    long length = 0;
+    size_t length = 0;
     int nread = 0, err = 0;
 
     FILE* f = fopen(filename, "rb");
@@ -211,7 +211,7 @@ char* read_npy(const char* filename, uint32_t* size)
 
     // Determine the total file size.
     fseek(f, 0, SEEK_END);
-    length = ftell(f);
+    length = (size_t)ftell(f);
     fseek(f, 0, SEEK_SET);
 
     // const uint32_t MAGIC_SIZE = 6;

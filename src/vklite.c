@@ -1332,7 +1332,7 @@ VkShaderModule vky_create_shader_module(VkyGpu* gpu, uint32_t size, const uint32
 VkShaderModule vky_create_shader_module_from_file(VkyGpu* gpu, char* filename)
 {
     log_trace("create shader module from file %s", filename);
-    uint32_t size = 0;
+    size_t size = 0;
     uint32_t* shader_code = (uint32_t*)read_file(filename, &size);
     VkShaderModule module = vky_create_shader_module(gpu, size, shader_code);
     FREE(shader_code);

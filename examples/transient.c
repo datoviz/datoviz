@@ -66,7 +66,7 @@ int main()
 
 
     // Load the files.
-    uint32_t size = 0;
+    size_t size = 0;
 
     // Channel colors.
     cvec3* channel_colors =

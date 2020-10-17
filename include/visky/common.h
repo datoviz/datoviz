@@ -279,9 +279,9 @@ write_png(const char* filename, uint32_t width, uint32_t height, const uint8_t* 
 VKY_EXPORT int
 write_ppm(const char* filename, uint32_t width, uint32_t height, const uint8_t* image);
 
-VKY_EXPORT char* read_file(const char* filename, uint32_t* size);
+VKY_EXPORT char* read_file(const char* filename, size_t* size);
 
-VKY_EXPORT char* read_npy(const char* filename, uint32_t* size);
+VKY_EXPORT char* read_npy(const char* filename, size_t* size);
 
 VKY_EXPORT uint8_t* read_ppm(const char* filename, int*, int*);
 

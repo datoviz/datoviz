@@ -10,7 +10,7 @@ int main(int argc, char** argv)
     VkyPanel* panel = vky_get_panel(scene, 0, 0);
 
     // Load the data.
-    uint32_t size = 0;
+    size_t size = 0;
     // char path[1024];
 
     if (argc < 4)
@@ -26,7 +26,7 @@ int main(int argc, char** argv)
     double* times = (double*)read_npy(argv[1], &size);
     ASSERT(times != NULL);
     ASSERT(size > 0);
-    uint32_t n = size / 8; // 8 bytes per number
+    size_t n = size / 8; // 8 bytes per number
     ASSERT(times[n - 1] != 0);
 
     // Spike clusters.
