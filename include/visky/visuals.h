@@ -120,6 +120,7 @@ typedef struct VkyFakeSphereParams VkyFakeSphereParams;
 typedef struct VkyFakeSphereVertex VkyFakeSphereVertex;
 typedef struct VkyGraphEdge VkyGraphEdge;
 typedef struct VkyGraphParams VkyGraphParams;
+typedef struct VkyImageCmapParams VkyImageCmapParams;
 typedef struct VkyImageData VkyImageData;
 typedef struct VkyMarkersParams VkyMarkersParams;
 typedef struct VkyMarkersRawParams VkyMarkersRawParams;
@@ -361,6 +362,14 @@ struct VkyImageData
     vec2 uv0, uv1;
 };
 
+struct VkyImageCmapParams
+{
+    uint32_t cmap;
+    float scaling;
+    float alpha;
+    VkyTextureParams* tex_params;
+};
+
 
 
 struct VkyVolumeParams
@@ -565,6 +574,8 @@ VKY_EXPORT VkyVisual* vky_visual_fake_sphere(VkyScene* scene, const VkyFakeSpher
 /*************************************************************************************************/
 
 VKY_EXPORT VkyVisual* vky_visual_image(VkyScene* scene, const VkyTextureParams* params);
+
+VKY_EXPORT VkyVisual* vky_visual_image_cmap(VkyScene* scene, const VkyImageCmapParams* params);
 
 VKY_EXPORT void vky_visual_image_upload(VkyVisual*, const void*);
 

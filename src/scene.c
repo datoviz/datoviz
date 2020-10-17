@@ -776,6 +776,10 @@ vky_visual(VkyScene* scene, VkyVisualType visual_type, const void* params, const
         visual = vky_visual_image(scene, (const VkyTextureParams*)params);
         break;
 
+    case VKY_VISUAL_IMAGE_CMAP:
+        visual = vky_visual_image_cmap(scene, (const VkyImageCmapParams*)params);
+        break;
+
     case VKY_VISUAL_VOLUME:
         visual = vky_visual_volume(scene, (const VkyTextureParams*)params, obj);
         break;

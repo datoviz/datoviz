@@ -1404,11 +1404,67 @@ VkyVisual* vky_visual_image(VkyScene* scene, const VkyTextureParams* params)
     return visual;
 }
 
+VkyVisual* vky_visual_image_cmap(VkyScene* scene, const VkyImageCmapParams* params)
+{
+    ASSERT(params != NULL);
+    VkyVisual* visual = vky_create_visual(scene, VKY_VISUAL_IMAGE_CMAP);
+    VkyCanvas* canvas = scene->canvas;
+
+    // Shaders.
+    VkyShaders shaders = vky_create_shaders(canvas->gpu);
+    vky_add_shader(&shaders, VK_SHADER_STAGE_VERTEX_BIT, "image.vert.spv");
+    vky_add_shader(&shaders, VK_SHADER_STAGE_FRAGMENT_BIT, "image_cmap.frag.spv");
+
+    // Vertex layout.
+    VkyVertexLayout vertex_layout = vky_create_vertex_layout(canvas->gpu, 0, sizeof(VkyVertexUV));
+    vky_add_vertex_attribute(
+        &vertex_layout, 0, VKY_DEFAULT_VERTEX_FORMAT_POS, offsetof(VkyVertexUV, pos));
+    vky_add_vertex_attribute(
+        &vertex_layout, 1, VK_FORMAT_R32G32_SFLOAT, offsetof(VkyVertexUV, uv));
+
+    vky_visual_params(visual, sizeof(VkyImageCmapParams), params);
+
+    // Resource layout.
+    VkyResourceLayout resource_layout = vky_common_resource_layout(visual);
+    vky_add_resource_binding(&resource_layout, 3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+
+    // Pipeline.
+    visual->pipeline = vky_create_graphics_pipeline(
+        canvas, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, shaders, vertex_layout, resource_layout,
+        (VkyGraphicsPipelineParams){true});
+
+    // Add the texture.
+    VkyTextureParams* tex_params = params->tex_params;
+    ASSERT(tex_params != NULL);
+    VkyTexture* tex = vky_add_texture(canvas->gpu, tex_params);
+    // HACK: to avoid empty texture, use an empty texture.
+    void* pixels = calloc(
+        tex_params->width * tex_params->height * tex_params->depth, tex_params->format_bytes);
+    vky_upload_texture(tex, pixels);
+    FREE(pixels);
+
+    // Resources.
+    vky_add_common_resources(visual);
+    vky_add_texture_resource(visual, tex);
+
+    visual->cb_bake_data = _image_bake;
+
+    // Props.
+    vky_visual_prop_spec(visual, sizeof(VkyImageData), 0);
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS_GPU, offsetof(VkyImageData, p0));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_POS_GPU, offsetof(VkyImageData, p1));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_TEXTURE_COORDS, offsetof(VkyImageData, uv0));
+    vky_visual_prop_add(visual, VKY_VISUAL_PROP_TEXTURE_COORDS, offsetof(VkyImageData, uv1));
+
+    return visual;
+}
+
 void vky_visual_image_upload(VkyVisual* visual, const void* pixels)
 {
-    ASSERT(visual->visual_type == VKY_VISUAL_IMAGE);
-    ASSERT(visual->resource_count == 3); // MVP, color texture, visual's image
-    VkyTexture* texture = (VkyTexture*)visual->resources[2];
+    ASSERT(
+        visual->visual_type == VKY_VISUAL_IMAGE || visual->visual_type == VKY_VISUAL_IMAGE_CMAP);
+    ASSERT(visual->resource_count >= 3); // MVP, color texture, *, visual's image is last
+    VkyTexture* texture = (VkyTexture*)visual->resources[visual->resource_count - 1];
     ASSERT(texture != NULL);
     vky_upload_texture(texture, pixels);
 }
