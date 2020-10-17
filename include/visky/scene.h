@@ -790,6 +790,7 @@ VKY_EXPORT void vky_clear_color(VkyScene* scene, VkyColor clear_color);
 VKY_EXPORT void vky_set_regular_grid(VkyScene* scene, vec4 margins);
 VKY_EXPORT void vky_set_grid_widths(VkyScene* scene, const float* widths);
 VKY_EXPORT void vky_set_grid_heights(VkyScene* scene, const float* heights);
+VKY_EXPORT void vky_set_panel_span(VkyPanel* panel, uint32_t hspan, uint32_t vspan);
 
 VKY_EXPORT void vky_add_panel(
     VkyScene* scene, uint32_t i, uint32_t j, uint32_t vspan, uint32_t hspan, vec4 margins,

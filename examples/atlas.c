@@ -166,12 +166,11 @@ int main()
 
     VkyApp* app = vky_create_app(VKY_DEFAULT_BACKEND);
     VkyCanvas* canvas = vky_create_canvas(app, VKY_DEFAULT_WIDTH, VKY_DEFAULT_HEIGHT);
-    VkyScene* scene = vky_create_scene(canvas, VKY_CLEAR_COLOR_BLACK, 1, 3);
-
+    VkyScene* scene = vky_create_scene(canvas, VKY_CLEAR_COLOR_BLACK, 2, 2);
 
     // Top panel.
     VkyPanel* panel = vky_get_panel(scene, 0, 0);
-
+    vky_set_panel_span(panel, 1, 2);
 
     // Set the panel controller.
     VkyAxes2DParams axparams = vky_default_axes_2D_params();
@@ -241,7 +240,7 @@ int main()
     axparams.xscale.vmax = XMAX;
     axparams.yscale.vmin = ZMIN;
     axparams.yscale.vmax = ZMAX;
-    panel = vky_get_panel(scene, 0, 2);
+    panel = vky_get_panel(scene, 1, 1);
     vky_set_controller(panel, VKY_CONTROLLER_AXES_2D, &axparams);
     vky_axes_toggle_tick(panel->controller, VKY_AXES_TICK_GRID);
     vky_axes_toggle_tick(panel->controller, VKY_AXES_TICK_USER_0);

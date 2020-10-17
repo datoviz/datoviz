@@ -1999,6 +1999,13 @@ void vky_set_grid_heights(VkyScene* scene, const float* heights)
     }
 }
 
+void vky_set_panel_span(VkyPanel* panel, uint32_t hspan, uint32_t vspan)
+{
+    panel->hspan = hspan;
+    panel->vspan = vspan;
+    _set_panel_viewport(panel);
+}
+
 void vky_add_panel(
     VkyScene* scene, uint32_t row, uint32_t col, uint32_t vspan, uint32_t hspan, vec4 margins,
     VkyControllerType controller_type)
