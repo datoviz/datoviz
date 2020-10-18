@@ -27,3 +27,17 @@ This expert manual provides a comprehensive guide to writing custom visuals for 
 ## Panel transformation matrices
 
 ## Visual props
+
+## Checklist when writing a custom visual
+
+1. Start with the template file
+2. Determine the geometric primitive
+3. Determine the vertex attributes and their types
+4. Determine the uniform parameter structure and check alignment
+5. Determine the required resources
+6. Write the shaders in GLSL
+7. Put it all together
+8. Try the visual by setting directly the vertex attributes and, optionally, the indices
+9. Determine the visual props
+10. Make the visual data array structure
+11. Write the baking function (optional)

@@ -31,4 +31,12 @@ This page provides a brief documentation of the vklite API. Familiarity with GPU
 
 ## Compute pipeline
 
+## Command buffer
+
+## Command queue
+
+## Viewport
+
+## Indirect rendering
+
 ## Event loop
