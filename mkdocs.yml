@@ -1,0 +1,49 @@
+site_name: Visky Documentation
+repo_url: https://github.com/viskydev/visky
+site_description: High-performance interactive scientific data visualization library
+site_author: Cyrille Rossant
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.expand
+  icon:
+    repo: fontawesome/brands/github
+markdown_extensions:
+  - toc:
+      permalink: true
+  - abbr
+  - admonition
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.highlight
+plugins:
+  - search
+nav:
+  - Home: 'index.md'
+  - User manual: 'user/index.md'
+  - Expert manual: 'expert/index.md'
+  - Developer manual: 'developer/index.md'
+  - Gallery: 'gallery.md'
+  - API: 'api.md'
+  - User manual:
+      - Introduction: 'user/index.md'
+      - Install instructions: 'user/install.md'
+      - Hello world: 'user/hello.md'
+      - The canvas: 'user/canvas.md'
+      - The plot layout: 'user/scene.md'
+      - Colormaps: 'user/color.md'
+      - 2D plotting: 'user/visuals2D.md'
+      - 3D plotting: 'user/visuals3D.md'
+      - Coordinate systems and transformations: 'user/coords.md'
+      - Interactivity: 'user/interact.md'
+      - Integrated GUI: 'user/gui.md'
+      - Backends: 'user/backends.md'
+  - Expert manual:
+      - Introduction: 'expert/index.md'
+  - Developer manual:
+      - Introduction: 'developer/index.md'
+  - Gallery:
+      - Introduction: 'gallery.md'
+  - API:
+      - API: 'api.md'

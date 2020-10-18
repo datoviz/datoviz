@@ -1,0 +1,3 @@
+# Developer manual
+
+Coming soon!

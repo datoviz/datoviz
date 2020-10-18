@@ -18,6 +18,7 @@ msdfgen
 cglm
 bindings/r
 _skbuild
+site
 
 *.png
 *.ppm
