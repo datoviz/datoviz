@@ -39,14 +39,26 @@ nav:
       - Colormaps: 'user/color.md'
       - 2D plotting: 'user/visuals2D.md'
       - 3D plotting: 'user/visuals3D.md'
+      - Meshes and triangulations: 'user/mesh.md'
       - Coordinate systems and transformations: 'user/coords.md'
       - Interactivity: 'user/interact.md'
       - Integrated GUI: 'user/gui.md'
       - Backends: 'user/backends.md'
   - Expert manual:
       - Introduction: 'expert/index.md'
+      - 'vklite: Vulkan for Humans': 'expert/vklite.md'
+      - 'Custom visuals: beginner': 'expert/custom1.md'
+      - 'Custom visuals: intermediate': 'expert/custom2.md'
+      - 'Custom visuals: advanced': 'expert/custom3.md'
   - Developer manual:
       - Introduction: 'developer/index.md'
+      - Coding practices: 'developer/coding.md'
+      - Code organization: 'developer/code.md'
+      - Build scripts and tools: 'developer/build.md'
+      - Testing: 'developer/testing.md'
+      - Continuous integration: 'developer/ci.md'
+      - Implementation details: 'developer/implementation.md'
+
   - Gallery:
       - Introduction: 'gallery.md'
   - API:

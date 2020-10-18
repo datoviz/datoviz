@@ -7,6 +7,7 @@ extern "C" {
 
 #include "common.h"
 
+#include "basic.h"
 #include "colormaps.h"
 #include "constants.h"
 #include "demo.h"
