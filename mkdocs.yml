@@ -21,15 +21,19 @@ plugins:
   - search
 nav:
   - Home: 'index.md'
+  - Quick start: 'quickstart/index.md'
   - User manual: 'user/index.md'
   - Expert manual: 'expert/index.md'
   - Developer manual: 'developer/index.md'
   - Gallery: 'gallery.md'
   - API: 'api.md'
+  - Quick start:
+      - Introduction: 'quickstart/index.md'
+      - Install instructions: 'quickstart/install.md'
+      - Hello triangle: 'quickstart/hello.md'
+      - Basic interface: 'quickstart/basic.md'
   - User manual:
       - Introduction: 'user/index.md'
-      - Install instructions: 'user/install.md'
-      - Hello world: 'user/hello.md'
       - The canvas: 'user/canvas.md'
       - The plot layout: 'user/scene.md'
       - Colormaps: 'user/color.md'
