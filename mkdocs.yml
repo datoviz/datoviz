@@ -40,7 +40,7 @@ nav:
       - 2D plotting: 'user/visuals2D.md'
       - 3D plotting: 'user/visuals3D.md'
       - Meshes and triangulations: 'user/mesh.md'
-      - Coordinate systems and transformations: 'user/coords.md'
+      - Coordinate systems and transformations: 'user/transform.md'
       - Interactivity: 'user/interact.md'
       - Integrated GUI: 'user/gui.md'
       - Backends: 'user/backends.md'
@@ -55,7 +55,7 @@ nav:
       - Coding practices: 'developer/coding.md'
       - Code organization: 'developer/code.md'
       - Build scripts and tools: 'developer/build.md'
-      - Testing: 'developer/testing.md'
+      - Testing: 'developer/test.md'
       - Continuous integration: 'developer/ci.md'
       - Implementation details: 'developer/implementation.md'
 
