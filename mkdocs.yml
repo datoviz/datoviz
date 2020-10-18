@@ -37,6 +37,7 @@ nav:
       - The canvas: 'user/canvas.md'
       - The plot layout: 'user/scene.md'
       - Colormaps: 'user/color.md'
+      - Visuals: 'user/visuals.md'
       - 2D plotting: 'user/visuals2D.md'
       - 3D plotting: 'user/visuals3D.md'
       - Meshes and triangulations: 'user/mesh.md'
