@@ -93,7 +93,7 @@ class DataScroller:
         self.raw = raw
         self.sample_rate = float(sample_rate)
         self.image = create_image((buffer, raw.shape[1]))
-        self.sample = int(10 * 3e4)
+        self.sample = 0
         self.buffer = buffer
         self.scale = None
         self.data = None
@@ -115,67 +115,85 @@ class DataScroller:
             self.data.shape[1])
 
 
-def ephys_view(path, n_channels, sample_rate, dtype, buffer):
-    raw = _memmap_flat(path, dtype=dtype, n_channels=n_channels)
+class RawEphysViewer:
+    def __init__(self, n_channels, sample_rate, dtype, buffer_size=30_000):
+        self.n_channels = n_channels
+        self.sample_rate = sample_rate
+        self.dtype = dtype
+        self.buffer_size = buffer_size
 
-    assert raw.ndim == 2
-    assert raw.shape[1] == n_channels
+    def memmap_file(self, path):
+        self.data = _memmap_flat(
+            path, dtype=self.dtype, n_channels=self.n_channels)
+        assert self.data.ndim == 2
+        assert self.data.shape[1] == n_channels
+        self.duration = self.data.shape[0] / float(self.sample_rate)
 
-    vl.log_set_level_env()
+    def create(self):
+        vl.log_set_level_env()
+        self.canvas = api.canvas(shape=(1, 1))
+        self.v_image = self.canvas[0, 0].imshow(
+            np.empty((self.n_channels, self.buffer_size, 4), dtype=np.uint8))
 
-    canvas = api.canvas(shape=(1, 1))
+        self.ds = DataScroller(
+            self.v_image, self.data, self.sample_rate, self.buffer_size)
+        self.ds.upload()
 
-    n = 1000
-    t = np.linspace(-1, 1, n)
+        self.canvas.on_key(self.on_key)
+        self.canvas.on_mouse(self.on_mouse)
 
-    v_image = canvas[0, 0].imshow(
-        np.empty((n_channels, buffer, 4), dtype=np.uint8))
+    @property
+    def time(self):
+        return self.ds.sample / float(self.sample_rate)
 
-    ds = DataScroller(v_image, raw, sample_rate, buffer)
-    ds.upload()
+    def goto(self, time):
+        self.ds.sample = int(round(time * self.sample_rate))
+        self.ds.load_data()
+        self.ds.upload()
 
-    @canvas.on_key
-    def on_key(key, modifiers=None):
+    def on_key(self, key, modifiers=None):
         if key == 'left':
-            ds.sample -= 500
-            ds.load_data()
-            ds.upload()
+            self.goto(self.time - 1)
         if key == 'right':
-            ds.sample += 500
-            ds.load_data()
-            ds.upload()
+            self.goto(self.time + 1)
         if key == 'kp_add':
-            ds.scale = (ds.scale[0], ds.scale[1] / 1.1)
-            ds.upload()
+            self.ds.scale = (self.ds.scale[0], self.ds.scale[1] / 1.1)
+            self.ds.upload()
         if key == 'kp_subtract':
-            ds.scale = (ds.scale[0], ds.scale[1] * 1.1)
-            ds.upload()
+            self.ds.scale = (self.ds.scale[0], self.ds.scale[1] * 1.1)
+            self.ds.upload()
+        if key == 'home':
+            self.goto(0)
+        if key == 'end':
+            self.goto(self.duration)
 
-    @canvas.on_mouse
-    def on_mouse(button, pos, ev=None):
+    def on_mouse(self, button, pos, ev=None):
         if ev.state == 'click':
-            pick = vl.vky_pick(canvas._scene, tp.T_VEC2(pos[0], pos[1]), None)
-            idx = vl.vky_get_panel_index(pick.panel)
-            if (idx.row, idx.col) == (1, 0):
-                x, y = pick.pos_data
-                i = math.floor(
-                    (x - ds.sample / ds.sample_rate) /
-                    (buffer / ds.sample_rate) *
-                    ds.data.shape[0])
-                j = math.floor(y)
-                j = ds.data.shape[1] - 1 - j
-                i = np.clip(i, 0, ds.data.shape[0] - 1)
-                j = np.clip(j, 0, ds.data.shape[1] - 1)
-                print(
-                    f"Picked {x}, {y} : {ds.data[i, j]}")
+            pick = vl.vky_pick(
+                self.canvas._scene, tp.T_VEC2(pos[0], pos[1]), None)
+            x, y = pick.pos_data
+            i = math.floor(
+                (x - self.ds.sample / self.ds.sample_rate) /
+                (self.buffer_size / self.ds.sample_rate) *
+                self.ds.data.shape[0])
+            j = math.floor(y)
+            j = self.ds.data.shape[1] - 1 - j
+            i = np.clip(i, 0, self.ds.data.shape[0] - 1)
+            j = np.clip(j, 0, self.ds.data.shape[1] - 1)
+            print(
+                f"Picked {x}, {y} : {self.ds.data[i, j]}")
 
-    api.run()
+    def show(self):
+        api.run()
 
 
 if __name__ == '__main__':
     path = Path(__file__).parent / "raw_ephys.bin"
     n_channels = 385
     dtype = np.int16
-    buffer = 10_000
     sample_rate = 30_000
-    ephys_view(path, n_channels, sample_rate, dtype, buffer)
+
+    viewer = RawEphysViewer(n_channels, sample_rate, dtype)
+    viewer.memmap_file(path)
+    viewer.create()
+    viewer.show()
