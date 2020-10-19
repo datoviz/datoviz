@@ -206,6 +206,9 @@ wrap(viskylib.vky_colormap_apply, [
      T_INT, T_DOUBLE, T_DOUBLE, T_UINT32, POINTER(tp.T_DOUBLE), POINTER(T_COLOR)])
 wrap(viskylib.vky_demo_raytracing, [])
 
+wrap(viskylib.vky_prompt, [T_VP])
+wrap(viskylib.vky_prompt_get, [T_VP], ctypes.c_char_p)
+
 
 viskylib.log_set_level_env()
 

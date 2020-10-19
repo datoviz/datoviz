@@ -119,6 +119,13 @@ class Canvas:
         assert heights.shape == (self.n_rows,)
         vl.vky_set_grid_heights(self._scene, heights)
 
+    def on_frame(self, f):
+        @tp.canvas_callback
+        def _on_frame_wrap(p_canvas):
+            f()
+        self._callbacks.append(_on_frame_wrap)
+        vl.vky_add_frame_callback(self._canvas, _on_frame_wrap)
+
     def on_key(self, f):
         @tp.canvas_callback
         def _on_key_wrap(p_canvas):

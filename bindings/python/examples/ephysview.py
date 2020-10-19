@@ -184,6 +184,7 @@ class RawEphysViewer:
         # Interactivity bindings.
         self.canvas.on_key(self.on_key)
         self.canvas.on_mouse(self.on_mouse)
+        self.canvas.on_frame(self.on_frame)
 
     @property
     def duration(self):
@@ -194,7 +195,7 @@ class RawEphysViewer:
         return self.sample / float(self.sample_rate)
 
     def goto(self, time):
-        self.sample = int(round(time * self.sample_rate))
+        self.sample = int(round(time)) * self.sample_rate
         self.load_data()
         self.update_view()
 
@@ -214,7 +215,8 @@ class RawEphysViewer:
         if key == 'end':
             self.goto(self.duration)
         if key == 'g':
-            self.goto(float(input()))
+            vl.vky_prompt(self.canvas._canvas)
+            # self.goto(float(input()))
 
     def on_mouse(self, button, pos, ev=None):
         if ev.state == 'click':
@@ -232,6 +234,18 @@ class RawEphysViewer:
             print(
                 f"Picked {x}, {y} : {self.arr_buf[i, j]}")
 
+    def on_frame(self):
+        t = vl.vky_prompt_get(self.canvas._canvas)
+        if not t:
+            return
+        try:
+            t = float(t)
+        except:
+            print("Invalid time %s" % t)
+            return
+        if t:
+            self.goto(t)
+
     def show(self):
         api.run()
 
@@ -243,13 +257,14 @@ if __name__ == '__main__':
 
     viewer = RawEphysViewer(n_channels, sample_rate, dtype)
 
-    # Load from HTTP.
-    viewer.load_session('d33baf74-263c-4b37-a0d0-b79dcb80a764')
-    viewer.create()
-    viewer.show()
-
-    # Load from disk.
-    # path = Path(__file__).parent / "raw_ephys.bin"
-    # viewer.memmap_file(path)
-    # viewer.create()
-    # viewer.show()
+    if 1:
+        # Load from HTTP.
+        viewer.load_session('d33baf74-263c-4b37-a0d0-b79dcb80a764')
+        viewer.create()
+        viewer.show()
+    else:
+        # Load from disk.
+        path = Path(__file__).parent / "raw_ephys.bin"
+        viewer.memmap_file(path)
+        viewer.create()
+        viewer.show()
