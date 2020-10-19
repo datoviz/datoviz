@@ -112,7 +112,7 @@ VKY_EXPORT void vky_imgui_newframe(void);
 VKY_EXPORT VkyImGuiTexture vky_imgui_image_from_texture(VkyTexture texture);
 VKY_EXPORT VkyImGuiTexture vky_imgui_image_from_canvas(VkyCanvas* canvas);
 
-VKY_EXPORT VkyCanvas* vky_imgui_canvas_create(VkyGpu* gpu, uint32_t width, uint32_t height);
+VKY_EXPORT VkyCanvas* vky_imgui_canvas_create(VkyCanvas* canvas, uint32_t width, uint32_t height);
 VKY_EXPORT void vky_imgui_canvas_init(VkyCanvas* canvas);
 VKY_EXPORT void vky_imgui_canvas_next_frame(VkyCanvas* canvas);
 

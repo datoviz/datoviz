@@ -5,7 +5,7 @@ BEGIN_INCL_NO_WARN
 END_INCL_NO_WARN
 
 
-#define SHOW_CANVAS 0
+#define SHOW_CANVAS 1
 
 
 
@@ -124,7 +124,7 @@ int main(int argc, char** argv)
     if (SHOW_CANVAS)
     {
         // ImGui Canvas.
-        imcanvas = vky_imgui_canvas_create(canvas->gpu, 300, 300);
+        imcanvas = vky_imgui_canvas_create(canvas, 300, 300);
         imcanvas->cb_fill_command_buffer = fill_command_buffer;
         imtexture = vky_imgui_image_from_canvas(imcanvas);
         vky_imgui_canvas_init(imcanvas);

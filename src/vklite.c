@@ -577,6 +577,7 @@ VkyCanvas* vky_create_canvas_from_surface(VkyApp* app, void* window, VkSurfaceKH
 
     VkyCanvas canvas = {0};
     canvas.app = app;
+    canvas.is_offscreen = app->backend != VKY_BACKEND_GLFW;
     canvas.window = window;
     canvas.gpu = gpu;
     canvas.dpi_factor = VKY_DPI_SCALING_FACTOR;
@@ -897,14 +898,6 @@ void vky_end_command_buffer(VkCommandBuffer command_buffer, VkyGpu* gpu)
     VK_CHECK_RESULT(vkEndCommandBuffer(command_buffer));
 }
 
-bool is_canvas_offscreen(VkyCanvas* canvas)
-{
-    VkyBackendType backend = canvas->app->backend;
-    return (
-        backend == VKY_BACKEND_VIDEO || backend == VKY_BACKEND_SCREENSHOT ||
-        backend == VKY_BACKEND_OFFSCREEN);
-}
-
 void vky_submit_command_buffers(
     VkyCanvas* canvas, uint32_t command_buffer_count, VkCommandBuffer* command_buffers)
 {
@@ -934,8 +927,7 @@ void vky_submit_command_buffers(
 
     ASSERT(command_buffer_count > 0);
     ASSERT(command_buffers != NULL);
-
-    if (!is_canvas_offscreen(canvas))
+    if (!canvas->is_offscreen)
     {
         if (!do_compute)
         {

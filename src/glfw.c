@@ -62,6 +62,8 @@ static void _key_callback(GLFWwindow* window, int key, int scancode, int action,
 
 VkyMouseButton vky_glfw_get_mouse_button(GLFWwindow* window)
 {
+    if (window == NULL)
+        return VKY_MOUSE_BUTTON_NONE;
     VkyMouseButton button = VKY_MOUSE_BUTTON_NONE;
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
     {
@@ -80,6 +82,8 @@ VkyMouseButton vky_glfw_get_mouse_button(GLFWwindow* window)
 
 void vky_glfw_get_mouse_pos(GLFWwindow* window, vec2 pos)
 {
+    if (window == NULL)
+        return;
     // Get the mouse position.
     double x, y;
     glfwGetCursorPos(window, &x, &y);
@@ -89,6 +93,8 @@ void vky_glfw_get_mouse_pos(GLFWwindow* window, vec2 pos)
 
 void vky_glfw_get_keyboard(GLFWwindow* window, VkyKey* key, uint32_t* modifiers)
 {
+    if (window == NULL)
+        return;
     VkyCanvas* canvas = (VkyCanvas*)glfwGetWindowUserPointer(window);
     ASSERT(canvas->event_controller != NULL);
     VkyKeyboard* keyboard = canvas->event_controller->keyboard;

@@ -133,13 +133,16 @@ VkyImGuiTexture vky_imgui_image_from_canvas(VkyCanvas* canvas)
 
 
 
-VkyCanvas* vky_imgui_canvas_create(VkyGpu* gpu, uint32_t width, uint32_t height)
+VkyCanvas* vky_imgui_canvas_create(VkyCanvas* canvas_, uint32_t width, uint32_t height)
 {
     // Create the render pass.
     log_trace("create offscreen render pass");
 
+    VkyGpu* gpu = canvas_->gpu;
+
     VkyCanvas canvas_s = {0};
     canvas_s.gpu = gpu;
+    canvas_s.is_offscreen = true;
     // canvas_s.window_size.lw = width;
     // canvas_s.window_size.w = width;
     // canvas_s.window_size.lh = height;

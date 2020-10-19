@@ -220,6 +220,7 @@ struct VkyCanvas
     VkyCommandBufferCallback cb_fill_live_command_buffer;
     VkyResizeCallback cb_resize;
 
+    bool is_offscreen;
     bool need_recreation;
     bool need_refill;
     bool need_data_upload;
@@ -415,8 +416,6 @@ VkImageView create_image_view(
 void add_image_transition(
     VkCommandBuffer copyCmd, VkImage image, VkImageLayout old_layout, VkImageLayout new_layout,
     VkAccessFlags src_mask, VkAccessFlags dst_mask);
-
-bool is_canvas_offscreen(VkyCanvas* canvas);
 
 
 

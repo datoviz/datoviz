@@ -348,7 +348,7 @@ static int test_utils_transform_2()
     // Panel to canvas
     tr = vky_axes_transform(panel, VKY_CDS_PANZOOM, VKY_CDS_CANVAS_NDC);
     vky_axes_transform_apply(&tr, (dvec2){-1, -1}, out);
-    AIN(out[0], 0, 0.05);
+    AIN(out[0], 0, 0.1);
     AIN(out[1], -1, -0.95);
 
     vky_axes_transform_apply(&tr, (dvec2){+1, +1}, out);

@@ -168,6 +168,7 @@ VkyCanvas* vky_create_offscreen_canvas(VkyGpu* gpu, uint32_t width, uint32_t hei
 
     VkyCanvas canvas_s = {0};
     canvas_s.gpu = gpu;
+    canvas_s.is_offscreen = true;
     // canvas_s.window_size.lw = width;
     // canvas_s.window_size.w = width;
     // canvas_s.window_size.lh = height;
@@ -256,6 +257,7 @@ void vky_offscreen_frame(VkyCanvas* canvas, double time)
 
     // Command buffers to submit.
     uint32_t cmd_buf_count = canvas->cb_fill_live_command_buffer == NULL ? 1 : 2;
+    ASSERT(cmd_buf_count > 0);
     ASSERT(cmd_buf_count <= 100);
     VkCommandBuffer submit_cmd_bufs[100];
 
@@ -333,7 +335,7 @@ VkyScreenshot* vky_create_screenshot(VkyCanvas* canvas)
         VK_ACCESS_TRANSFER_WRITE_BIT);
 
     // Transition swapchain image.
-    if (!is_canvas_offscreen(canvas))
+    if (!canvas->is_offscreen)
     {
         add_image_transition(
             cmd_buf, canvas->images[canvas->image_index], VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
@@ -355,7 +357,7 @@ VkyScreenshot* vky_create_screenshot(VkyCanvas* canvas)
         dstImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &imageCopyRegion);
 
     // Transition back swapchain image.
-    if (!is_canvas_offscreen(canvas))
+    if (!canvas->is_offscreen)
     {
         add_image_transition(
             cmd_buf, canvas->images[canvas->image_index], VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
