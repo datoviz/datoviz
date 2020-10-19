@@ -82,8 +82,14 @@ def normalize(x, scale):
     return out.astype(np.uint8)
 
 
-def get_data(raw, sample, buffer):
-    return raw[sample:sample + buffer, :]
+DESC = '''
+Keyboard shortcuts:
+- right/left: go to the next/previous 1s chunk
+- +/-: change the scaling
+- Home/End keys: go to start/end of the recording
+- G: enter a time in seconds as a floating point in the terminal and press Enter to jump to that time
+
+'''
 
 
 class RawEphysViewer:
@@ -95,6 +101,7 @@ class RawEphysViewer:
         self.sample = 0  # current sample
         self.arr_buf = None
         self.scale = None
+        print(DESC)
 
     def memmap_file(self, path):
         self.mmap_array = _memmap_flat(
@@ -206,6 +213,8 @@ class RawEphysViewer:
             self.goto(0)
         if key == 'end':
             self.goto(self.duration)
+        if key == 'g':
+            self.goto(float(input()))
 
     def on_mouse(self, button, pos, ev=None):
         if ev.state == 'click':
