@@ -52,18 +52,19 @@
 /*  Builtin limits                                                                               */
 /*************************************************************************************************/
 
-#define VKY_MAX_CONSTANTS         1000
-#define VKY_MAX_CANVASES          1000
-#define VKY_MAX_PANEL_LINKS       1000
-#define VKY_MAX_EVENT_CALLBACKS   100
-#define VKY_MAX_FRAMES_IN_FLIGHT  2
+#define VKY_AXES_MAX_LABEL_LENGTH 256
+#define VKY_AXES_MAX_USER_TICKS   100
 #define VKY_MAX_ATTRIBUTE_COUNT   100
 #define VKY_MAX_BINDING_COUNT     100
-#define VKY_MAX_SHADER_COUNT      20
-#define VKY_MAX_GUI_COUNT         100
+#define VKY_MAX_CANVASES          1000
+#define VKY_MAX_CONSTANTS         1000
+#define VKY_MAX_EVENT_CALLBACKS   100
+#define VKY_MAX_FRAMES_IN_FLIGHT  2
 #define VKY_MAX_GUI_CONTROLS      1000
-#define VKY_AXES_MAX_USER_TICKS   100
-#define VKY_AXES_MAX_LABEL_LENGTH 256
+#define VKY_MAX_GUI_COUNT         100
+#define VKY_MAX_PANEL_LINKS       1000
+#define VKY_MAX_PROMPT_SIZE       2048
+#define VKY_MAX_SHADER_COUNT      20
 
 // Number of matrices per viewport in the MVP dynamic uniform buffer
 #define VKY_MVP_BUFFER_SIZE (3 * sizeof(mat4) + 3 * sizeof(vec4) + sizeof(cvec4))

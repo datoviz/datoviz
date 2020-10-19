@@ -28,6 +28,7 @@ END_INCL_NO_WARN
 typedef struct VkyScene VkyScene;
 typedef struct VkyGui VkyGui;
 typedef struct VkyGpu VkyGpu;
+typedef struct VkyPrompt VkyPrompt;
 typedef struct VkyCanvas VkyCanvas;
 typedef struct VkyApp VkyApp;
 typedef struct VkyQueueFamilyIndices VkyQueueFamilyIndices;
@@ -218,6 +219,7 @@ struct VkyCanvas
 
     VkyGui** guis;
     uint32_t gui_count;
+    VkyPrompt* prompt;
 
     VkyCommandBufferCallback cb_fill_command_buffer;
     VkyCommandBufferCallback cb_fill_live_command_buffer;

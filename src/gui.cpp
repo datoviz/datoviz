@@ -274,6 +274,121 @@ void vky_imgui_destroy()
 /*  Public GUI API                                                                               */
 /*************************************************************************************************/
 
+static void _set_style(ImGuiIO& io, VkyGui* gui, int* flags)
+{
+    switch (gui->style)
+    {
+
+    case VKY_GUI_STANDARD:
+        *flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
+        break;
+
+    case VKY_GUI_PROMPT:
+    {
+        *flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar |
+                 ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNav |
+                 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNavInputs |
+                 ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
+                 ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing;
+        ImGui::SetNextWindowBgAlpha(0.5f);
+
+        ImVec2 window_pos = ImVec2(0, io.DisplaySize.y);
+        ImVec2 window_pos_pivot = ImVec2(0, 1);
+        ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+
+        ImVec2 size = ImVec2(io.DisplaySize.x, 30);
+        ImGui::SetNextWindowSize(size);
+
+        break;
+    }
+
+    case VKY_GUI_FIXED_TL:
+    case VKY_GUI_FIXED_TR:
+    case VKY_GUI_FIXED_LL:
+    case VKY_GUI_FIXED_LR:
+    {
+        *flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar |
+                 ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNav |
+                 ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNavInputs |
+                 ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
+                 ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing;
+        ImGui::SetNextWindowBgAlpha(0.5f);
+
+        float distance = 0;
+        int corner = (int32_t)gui->style - 1; // 0 = TL, 1 = TR, 2 = LL, 3 = LR
+        ImVec2 window_pos = ImVec2(
+            (corner & 1) ? io.DisplaySize.x - distance : distance,
+            (corner & 2) ? io.DisplaySize.y - distance : distance);
+        ImVec2 window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
+        ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+        break;
+    }
+    default:
+        log_error("unknown GUI style");
+        break;
+    }
+}
+
+
+
+static void _add_control(VkyGui* gui, VkyGuiControl* control)
+{
+    switch (control->control_type)
+    {
+
+    case VKY_GUI_CHECKBOX:
+        ImGui::Checkbox(control->name, (bool*)control->value);
+        break;
+
+    case VKY_GUI_TEXTBOX_PROMPT:
+        ASSERT(control->value != NULL);
+        ImGui::PushItemWidth(400);
+        if (ImGui::InputText(
+                "", (char*)gui->canvas->prompt, VKY_MAX_PROMPT_SIZE,
+                ImGuiInputTextFlags_EnterReturnsTrue))
+        {
+            gui->canvas->prompt->state = VKY_PROMPT_ACTIVE;
+            gui->canvas->prompt->gui->is_visible = false;
+        }
+        ImGui::PushItemWidth(-400);
+
+        break;
+
+    case VKY_GUI_FPS:
+        ImGui::Text("FPS: %4" PRIu64 "", gui->canvas->fps);
+        break;
+
+    case VKY_GUI_LISTBOX:
+    {
+        const VkyGuiListParams* params = (const VkyGuiListParams*)control->params;
+        ImGui::ListBox(
+            control->name, (int*)control->value, params->item_names, (int)params->item_count, -1);
+    }
+    break;
+
+    case VKY_GUI_COMBO:
+    {
+        const VkyGuiListParams* params = (const VkyGuiListParams*)control->params;
+        ImGui::Combo(
+            control->name, (int*)control->value, params->item_names, (int)params->item_count);
+    }
+    break;
+
+    case VKY_GUI_COLOR:
+        ImGui::ColorPicker4(
+            control->name, (float*)control->value,
+            ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoInputs |
+                ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoOptions |
+                ImGuiColorEditFlags_NoDragDrop | ImGuiColorEditFlags_NoTooltip |
+                ImGuiColorEditFlags_NoSmallPreview | ImGuiColorEditFlags_NoSidePreview);
+        break;
+
+    default:
+        break;
+    }
+}
+
+
 static void fill_live_command_buffer(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
 {
     if (canvas->gui_count == 0)
@@ -299,90 +414,41 @@ static void fill_live_command_buffer(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
     for (uint32_t k = 0; k < canvas->gui_count; k++)
     {
         gui = canvas->guis[k];
+        // Skip non-existing or hidden GUIs.
+        if (gui == NULL)
+            continue;
+        if (!gui->is_visible)
+        {
+            gui->frame_count = 0;
+            continue;
+        }
 
         // Fixed GUI.
-        switch (gui->style)
-        {
-        case VKY_GUI_STANDARD:
-            flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
-            break;
-        default:
-            flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar |
-                    ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
-                    ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoMove |
-                    ImGuiWindowFlags_NoNavInputs | ImGuiWindowFlags_NoDecoration |
-                    ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
-                    ImGuiWindowFlags_NoFocusOnAppearing;
-            ImGui::SetNextWindowBgAlpha(0.5f);
+        _set_style(io, gui, &flags);
 
-            float distance = 0;
-            int corner = (int32_t)gui->style - 1; // 0 = TL, 1 = TR, 2 = LL, 3 = LR
-            ImVec2 window_pos = ImVec2(
-                (corner & 1) ? io.DisplaySize.x - distance : distance,
-                (corner & 2) ? io.DisplaySize.y - distance : distance);
-            ImVec2 window_pos_pivot =
-                ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
-            ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-            break;
-        }
 
         // Start the GUI creation.
         ImGui::Begin(gui->title, NULL, flags);
 
+        // HACK: set the keyboard focus on the prompt, when the GUI is created.
+        if (gui->style == VKY_GUI_PROMPT && gui->frame_count == 0)
+        {
+            ImGui::SetKeyboardFocusHere(0);
+        }
+
         // bool x = true;
         // ImGui::ShowDemoWindow(&x);
-
-        VkyGuiControl* control = NULL;
-
         // Add all GUI controls.
+        VkyGuiControl* control = NULL;
         for (uint32_t i = 0; i < gui->control_count; i++)
         {
             control = &gui->controls[i];
             ASSERT(control != NULL);
-            switch (control->control_type)
-            {
-
-            case VKY_GUI_CHECKBOX:
-                ImGui::Checkbox(control->name, (bool*)control->value);
-                break;
-
-            case VKY_GUI_FPS:
-                ImGui::Text("FPS: %4" PRIu64 "", canvas->fps);
-                break;
-
-            case VKY_GUI_LISTBOX:
-            {
-                const VkyGuiListParams* params = (const VkyGuiListParams*)control->params;
-                ImGui::ListBox(
-                    control->name, (int*)control->value, params->item_names,
-                    (int)params->item_count, -1);
-            }
-            break;
-
-            case VKY_GUI_COMBO:
-            {
-                const VkyGuiListParams* params = (const VkyGuiListParams*)control->params;
-                ImGui::Combo(
-                    control->name, (int*)control->value, params->item_names,
-                    (int)params->item_count);
-            }
-            break;
-
-            case VKY_GUI_COLOR:
-                ImGui::ColorPicker4(
-                    control->name, (float*)control->value,
-                    ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoInputs |
-                        ImGuiColorEditFlags_NoLabel | ImGuiColorEditFlags_NoOptions |
-                        ImGuiColorEditFlags_NoDragDrop | ImGuiColorEditFlags_NoTooltip |
-                        ImGuiColorEditFlags_NoSmallPreview | ImGuiColorEditFlags_NoSidePreview);
-                break;
-
-            default:
-                break;
-            }
+            _add_control(gui, control);
         }
 
         ImGui::End();
+        gui->frame_count++;
     }
 
     vky_imgui_render(canvas, cmd_buf);
@@ -395,8 +461,10 @@ VkyGui* vky_create_gui(VkyCanvas* canvas, VkyGuiParams params)
     vky_imgui_init(canvas);
 
     VkyGui* gui = (VkyGui*)calloc(1, sizeof(VkyGui));
+    gui->canvas = canvas;
     gui->title = params.title != NULL ? params.title : "GUI";
     gui->style = params.style;
+    gui->is_visible = true;
     canvas->cb_fill_live_command_buffer = fill_live_command_buffer;
     if (canvas->guis == NULL)
         canvas->guis = (VkyGui**)calloc(VKY_MAX_GUI_COUNT, sizeof(VkyGui*));
@@ -434,4 +502,49 @@ void vky_destroy_guis(VkyCanvas* canvas)
         FREE(canvas->guis[i]);
     }
     vky_imgui_destroy();
+}
+
+
+
+/*************************************************************************************************/
+/*  Prompt GUI                                                                                   */
+/*************************************************************************************************/
+
+void vky_prompt(VkyCanvas* canvas)
+{
+    if (canvas->prompt == NULL)
+        canvas->prompt = (VkyPrompt*)calloc(1, sizeof(VkyPrompt));
+    ASSERT(canvas->prompt != NULL);
+    if (canvas->prompt->state == VKY_PROMPT_SHOWN)
+        return;
+
+    // Create the prompt GUI only once.
+    if (canvas->prompt->gui == NULL)
+    {
+        VkyGuiParams params = {};
+        params.style = VKY_GUI_PROMPT;
+        canvas->prompt->gui = vky_create_gui(canvas, params);
+        vky_gui_control(
+            canvas->prompt->gui, VKY_GUI_TEXTBOX_PROMPT, NULL, NULL, canvas->prompt->text);
+    }
+
+    canvas->prompt->text[0] = 0;
+    canvas->prompt->gui->is_visible = true;
+    canvas->prompt->state = VKY_PROMPT_SHOWN;
+}
+
+
+
+char* vky_prompt_get(VkyCanvas* canvas)
+{
+    if (canvas->prompt == NULL)
+    {
+        // log_error("you need to call vky_prompt() first");
+        return NULL;
+    }
+    if (canvas->prompt->state != VKY_PROMPT_ACTIVE)
+        return NULL;
+    ASSERT(canvas->prompt->gui != NULL);
+    canvas->prompt->state = VKY_PROMPT_HIDDEN;
+    return canvas->prompt->text;
 }

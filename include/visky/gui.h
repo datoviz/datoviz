@@ -18,11 +18,12 @@ extern "C" {
 
 typedef enum
 {
-    VKY_GUI_STANDARD,
-    VKY_GUI_FIXED_TL,
-    VKY_GUI_FIXED_TR,
-    VKY_GUI_FIXED_LL,
-    VKY_GUI_FIXED_LR
+    VKY_GUI_STANDARD = 0,
+    VKY_GUI_PROMPT = 1,
+    VKY_GUI_FIXED_TL = 10,
+    VKY_GUI_FIXED_TR = 11,
+    VKY_GUI_FIXED_LL = 12,
+    VKY_GUI_FIXED_LR = 13,
 } VkyGuiStyle;
 
 
@@ -30,17 +31,27 @@ typedef enum
 typedef enum
 {
     VKY_GUI_BUTTON = 1,
-    VKY_GUI_CHECKBOX,
-    VKY_GUI_RADIO,
-    GKY_GUI_INT_STEPPER,
-    VKY_GUI_INT_SLIDER,
-    VKY_GUI_FLOAT_SLIDER,
-    VKY_GUI_TEXT,
-    VKY_GUI_COMBO,
-    VKY_GUI_LISTBOX,
-    VKY_GUI_COLOR,
-    VKY_GUI_FPS,
+    VKY_GUI_CHECKBOX = 2,
+    VKY_GUI_RADIO = 3,
+    VKY_GUI_COMBO = 4,
+    VKY_GUI_LISTBOX = 5,
+    VKY_GUI_TEXTBOX = 6,
+    VKY_GUI_TEXTBOX_PROMPT = 7,
+    VKY_GUI_TEXT = 8,
+    GKY_GUI_INT_STEPPER = 10,
+    VKY_GUI_INT_SLIDER = 11,
+    VKY_GUI_FLOAT_SLIDER = 12,
+    VKY_GUI_COLOR = 20,
+    VKY_GUI_FPS = 99,
 } VkyGuiControlType;
+
+
+typedef enum
+{
+    VKY_PROMPT_HIDDEN,
+    VKY_PROMPT_SHOWN,
+    VKY_PROMPT_ACTIVE
+} VkyPromptState;
 
 
 
@@ -48,10 +59,11 @@ typedef enum
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-typedef struct VkyCanvas VkyCanvas;
+// typedef struct VkyCanvas VkyCanvas;
 typedef struct VkyImGuiTexture VkyImGuiTexture;
 typedef struct VkyGuiControl VkyGuiControl;
 typedef struct VkyGui VkyGui;
+typedef struct VkyPrompt VkyPrompt;
 
 
 
@@ -87,17 +99,32 @@ struct VkyGuiControl
     const char* name;
     const void* params;
     void* value;
+    void* callback;
 };
 
 
 
 struct VkyGui
 {
+    VkyCanvas* canvas;
+
     const char* title;
     VkyGuiStyle style;
 
     uint32_t control_count;
     VkyGuiControl controls[VKY_MAX_GUI_CONTROLS];
+
+    bool is_visible;
+    uint32_t frame_count;
+};
+
+
+
+struct VkyPrompt
+{
+    char text[VKY_MAX_PROMPT_SIZE];
+    VkyPromptState state;
+    VkyGui* gui;
 };
 
 
@@ -134,6 +161,18 @@ vky_gui_control(VkyGui*, VkyGuiControlType, const char*, const void* params, voi
 VKY_EXPORT void vky_gui_fps(VkyGui* gui);
 
 VKY_EXPORT void vky_destroy_guis(VkyCanvas*);
+
+
+
+/*************************************************************************************************/
+/*  Prompt GUI                                                                                   */
+/*************************************************************************************************/
+
+VKY_EXPORT void vky_prompt(VkyCanvas*);
+
+VKY_EXPORT char* vky_prompt_get(VkyCanvas*);
+
+
 
 #ifdef __cplusplus
 }
