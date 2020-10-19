@@ -197,7 +197,6 @@ class Panel:
         height, width = image.shape[:2]
         tex_params = vl.vky_default_texture_params(width, height, 1)
         visual = self.visual('visual_image', pointer(tex_params))
-
         # Image vertices.
         vertices = np.zeros((1,), dtype=[
             ('p0', 'f4', 3),

@@ -93,7 +93,7 @@ Keyboard shortcuts:
 
 
 class RawEphysViewer:
-    def __init__(self, n_channels, sample_rate, dtype, buffer_size=30_000):
+    def __init__(self, n_channels, sample_rate, dtype, buffer_size=3_000):
         self.n_channels = n_channels
         self.sample_rate = sample_rate
         self.dtype = dtype
@@ -142,7 +142,7 @@ class RawEphysViewer:
             first_chunk=chunk_idx, last_chunk=chunk_idx)
         if self.n_samples == 0:
             self.n_samples = reader.cmeta.chopped_total_samples
-        return reader[:]
+        return reader[:self.buffer_size, :]
 
     def load_data(self):
         if self.sample > 0:

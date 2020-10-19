@@ -1495,6 +1495,7 @@ VkyVisual* vky_visual_image(VkyScene* scene, const VkyTextureParams* params)
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_TEXTURE_COORDS, offsetof(VkyImageData, uv0));
     vky_visual_prop_add(visual, VKY_VISUAL_PROP_TEXTURE_COORDS, offsetof(VkyImageData, uv1));
 
+
     return visual;
 }
 
