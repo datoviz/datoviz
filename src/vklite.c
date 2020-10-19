@@ -2156,6 +2156,10 @@ VkyBuffer* vky_find_buffer(VkyGpu* gpu, VkDeviceSize size, VkBufferUsageFlagBits
 
 VkyTextureParams vky_default_texture_params(uint32_t width, uint32_t height, uint32_t depth)
 {
+    ASSERT(width > 0);
+    ASSERT(height > 0);
+    ASSERT(depth > 0);
+
     VkyTextureParams params = {
         width,
         height,

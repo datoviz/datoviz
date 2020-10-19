@@ -1,7 +1,6 @@
 #include "../include/visky/visky.h"
 #include "axes.h"
 #include "axes_3D.h"
-#include "transform.h"
 
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -1231,6 +1230,14 @@ static void _bake(VkyVisual* visual)
     ASSERT(data->vertex_count > 0);
     ASSERT(data->vertices != NULL);
 }
+
+
+void vky_visual_data_raw_old(VkyVisual* visual, VkyData* data)
+{
+    visual->data = *data;
+    vky_visual_data_raw(visual);
+}
+
 
 
 void vky_visual_data_raw(VkyVisual* visual)

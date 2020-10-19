@@ -1,7 +1,7 @@
 #ifndef VKY_TRANSFORM_HEADER
 #define VKY_TRANSFORM_HEADER
 
-#include <../include/visky/scene.h>
+#include "scene.h"
 
 
 

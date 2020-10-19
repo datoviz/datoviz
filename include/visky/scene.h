@@ -716,6 +716,7 @@ VKY_EXPORT void vky_add_common_resources(VkyVisual*);
 VKY_EXPORT void vky_add_uniform_buffer_resource(VkyVisual* visual, VkyUniformBuffer* ubo);
 VKY_EXPORT void vky_add_texture_resource(VkyVisual* visual, VkyTexture* texture);
 VKY_EXPORT void vky_visual_data_raw(VkyVisual* visual);
+VKY_EXPORT void vky_visual_data_raw_old(VkyVisual* visual, VkyData* data);
 VKY_EXPORT void vky_draw_visual(VkyVisual* visual, VkyPanel*, VkyViewportType viewport_type);
 VKY_EXPORT void vky_draw_all_visuals(VkyScene* scene);
 VKY_EXPORT void vky_toggle_visual_visibility(VkyVisual* visual, bool is_visible);

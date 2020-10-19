@@ -1472,6 +1472,10 @@ VkyVisual* vky_visual_image(VkyScene* scene, const VkyTextureParams* params)
         (VkyGraphicsPipelineParams){true});
 
     // Add the texture.
+    ASSERT(params->width > 0);
+    ASSERT(params->height > 0);
+    ASSERT(params->depth > 0);
+    ASSERT(params->format_bytes > 0);
     VkyTexture* tex = vky_add_texture(canvas->gpu, params);
     // HACK: to avoid empty texture, use an empty texture.
     void* pixels = calloc(params->width * params->height * params->depth, params->format_bytes);
