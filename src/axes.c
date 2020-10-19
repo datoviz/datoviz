@@ -677,6 +677,9 @@ VkyAxes* vky_axes_init(VkyPanel* panel, VkyAxes2DParams params)
     vky_axes_compute_ticks(axes);
     vky_axes_update_visuals(axes);
 
+    // Disable grid by default.
+    vky_axes_toggle_tick(axes, VKY_AXES_TICK_GRID);
+
     return axes;
 }
 
