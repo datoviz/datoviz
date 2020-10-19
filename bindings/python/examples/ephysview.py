@@ -86,70 +86,90 @@ def get_data(raw, sample, buffer):
     return raw[sample:sample + buffer, :]
 
 
-class DataScroller:
-    def __init__(self, visual, raw, sample_rate, buffer):
-        self.visual = visual
-        self.panel = visual.panel
-        self.raw = raw
-        self.sample_rate = float(sample_rate)
-        self.image = create_image((buffer, raw.shape[1]))
-        self.sample = 0
-        self.buffer = buffer
-        self.scale = None
-        self.data = None
-
-    def load_data(self):
-        self.sample = np.clip(self.sample, 0, self.raw.shape[0] - self.buffer)
-        self.data = get_data(self.raw, self.sample, self.buffer)
-
-    def upload(self):
-        if self.data is None:
-            self.load_data()
-        self.scale = scale = self.scale or get_scale(self.data)
-        self.image[..., :3] = normalize(self.data, scale).T[:, :, np.newaxis]
-        self.visual.set_image(self.image)
-        self.panel.axes_range(
-            self.sample / self.sample_rate,
-            0,
-            (self.sample + self.buffer) / self.sample_rate,
-            self.data.shape[1])
-
-
 class RawEphysViewer:
     def __init__(self, n_channels, sample_rate, dtype, buffer_size=30_000):
         self.n_channels = n_channels
         self.sample_rate = sample_rate
         self.dtype = dtype
         self.buffer_size = buffer_size
+        self.sample = 0  # current sample
+        self.arr_buf = None
+        self.scale = None
 
     def memmap_file(self, path):
-        self.data = _memmap_flat(
+        self.mmap_array = _memmap_flat(
             path, dtype=self.dtype, n_channels=self.n_channels)
-        assert self.data.ndim == 2
-        assert self.data.shape[1] == n_channels
-        self.duration = self.data.shape[0] / float(self.sample_rate)
+        assert self.mmap_array.ndim == 2
+        assert self.mmap_array.shape[1] == n_channels
+        self.n_samples = self.mmap_array.shape[0]
+
+    def load_session(self, eid):
+        from oneibl.one import ONE
+        self.one = ONE()
+        # TODO
+        self.url_cbin = ""
+        self.url_ch = ""
+        self.n_samples = 0  # TODO
+
+    def _load_from_file(self):
+        return self.mmap_array[self.sample:self.sample + self.buffer_size, :]
+
+    def _load_from_web(self):
+        # WARNING: this assumes that 1 chunk = 1 second
+        chunk_idx = int(self.time)  # chunk number
+        return self.one.download_raw_partial(
+            self.url_cbin, self.url_ch,
+            first_chunk=chunk_idx, last_chunk=chunk_idx)
+
+    def load_data(self):
+        self.sample = np.clip(
+            self.sample, 0, self.n_samples - self.buffer_size)
+        if hasattr(self, 'mmap_array'):
+            self.arr_buf = self._load_from_file()
+        elif hasattr(self, 'one'):
+            self.arr_buf = self._load_from_web()
+        assert self.arr_buf.shape == (self.buffer_size, self.n_channels)
+
+    def update_view(self):
+        self.scale = scale = self.scale or get_scale(self.arr_buf)
+        self.image[..., :3] = normalize(
+            self.arr_buf, scale).T[:, :, np.newaxis]
+        self.v_image.set_image(self.image)
+        self.panel.axes_range(
+            self.sample / self.sample_rate,
+            0,
+            (self.sample + self.buffer_size) / self.sample_rate,
+            self.n_channels)
 
     def create(self):
+        # Create the Visky view.
         vl.log_set_level_env()
         self.canvas = api.canvas(shape=(1, 1))
         self.v_image = self.canvas[0, 0].imshow(
             np.empty((self.n_channels, self.buffer_size, 4), dtype=np.uint8))
+        self.panel = self.v_image.panel
+        self.image = create_image((self.buffer_size, self.n_channels))
 
-        self.ds = DataScroller(
-            self.v_image, self.data, self.sample_rate, self.buffer_size)
-        self.ds.upload()
+        # Load the data and put it on the GPU.
+        self.load_data()
+        self.update_view()
 
+        # Interactivity bindings.
         self.canvas.on_key(self.on_key)
         self.canvas.on_mouse(self.on_mouse)
 
     @property
+    def duration(self):
+        return self.n_samples / float(self.sample_rate)
+
+    @property
     def time(self):
-        return self.ds.sample / float(self.sample_rate)
+        return self.sample / float(self.sample_rate)
 
     def goto(self, time):
-        self.ds.sample = int(round(time * self.sample_rate))
-        self.ds.load_data()
-        self.ds.upload()
+        self.sample = int(round(time * self.sample_rate))
+        self.load_data()
+        self.update_view()
 
     def on_key(self, key, modifiers=None):
         if key == 'left':
@@ -157,11 +177,11 @@ class RawEphysViewer:
         if key == 'right':
             self.goto(self.time + 1)
         if key == 'kp_add':
-            self.ds.scale = (self.ds.scale[0], self.ds.scale[1] / 1.1)
-            self.ds.upload()
+            self.scale = (self.scale[0], self.scale[1] / 1.1)
+            self.update_view()
         if key == 'kp_subtract':
-            self.ds.scale = (self.ds.scale[0], self.ds.scale[1] * 1.1)
-            self.ds.upload()
+            self.scale = (self.scale[0], self.scale[1] * 1.1)
+            self.update_view()
         if key == 'home':
             self.goto(0)
         if key == 'end':
@@ -173,15 +193,15 @@ class RawEphysViewer:
                 self.canvas._scene, tp.T_VEC2(pos[0], pos[1]), None)
             x, y = pick.pos_data
             i = math.floor(
-                (x - self.ds.sample / self.ds.sample_rate) /
-                (self.buffer_size / self.ds.sample_rate) *
-                self.ds.data.shape[0])
+                (x - self.sample / self.sample_rate) /
+                (self.buffer_size / self.sample_rate) *
+                self.buffer_size)
             j = math.floor(y)
-            j = self.ds.data.shape[1] - 1 - j
-            i = np.clip(i, 0, self.ds.data.shape[0] - 1)
-            j = np.clip(j, 0, self.ds.data.shape[1] - 1)
+            j = self.n_channels - 1 - j
+            i = np.clip(i, 0, self.n_samples - 1)
+            j = np.clip(j, 0, self.n_channels - 1)
             print(
-                f"Picked {x}, {y} : {self.ds.data[i, j]}")
+                f"Picked {x}, {y} : {self.arr_buf[i, j]}")
 
     def show(self):
         api.run()
