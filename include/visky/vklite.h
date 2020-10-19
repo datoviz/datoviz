@@ -216,6 +216,9 @@ struct VkyCanvas
 
     VkyDrawSync draw_sync;
 
+    VkyGui** guis;
+    uint32_t gui_count;
+
     VkyCommandBufferCallback cb_fill_command_buffer;
     VkyCommandBufferCallback cb_fill_live_command_buffer;
     VkyResizeCallback cb_resize;

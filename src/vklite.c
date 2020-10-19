@@ -1178,6 +1178,10 @@ void vky_destroy_canvas(VkyCanvas* canvas)
     }
 
     FREE(canvas->command_buffers);
+
+    vky_destroy_guis(canvas);
+    if (canvas->guis != NULL)
+        FREE(canvas->guis);
 }
 
 void vky_destroy_device(VkyGpu* gpu)

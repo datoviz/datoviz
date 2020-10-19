@@ -133,7 +133,7 @@ vky_gui_control(VkyGui*, VkyGuiControlType, const char*, const void* params, voi
 
 VKY_EXPORT void vky_gui_fps(VkyGui* gui);
 
-VKY_EXPORT void vky_destroy_guis();
+VKY_EXPORT void vky_destroy_guis(VkyCanvas*);
 
 #ifdef __cplusplus
 }

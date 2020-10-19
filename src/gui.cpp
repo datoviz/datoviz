@@ -13,8 +13,6 @@ END_INCL_NO_WARN
 /*  Internal ImGui helpers                                                                       */
 /*************************************************************************************************/
 
-static VkyGui* guis[VKY_MAX_GUI_COUNT];
-static uint32_t gui_count = 0;
 static bool imgui_supported;
 
 
@@ -52,7 +50,7 @@ void vky_imgui_newframe()
 
 void vky_imgui_init(VkyCanvas* canvas)
 {
-    if (gui_count > 0)
+    if (canvas->gui_count > 0)
         return;
 
     if (canvas->app->backend != VKY_BACKEND_GLFW)
@@ -278,7 +276,7 @@ void vky_imgui_destroy()
 
 static void fill_live_command_buffer(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
 {
-    if (gui_count == 0)
+    if (canvas->gui_count == 0)
         return;
     if (!imgui_supported)
         return;
@@ -298,9 +296,9 @@ static void fill_live_command_buffer(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
     // Stop processing Visky events if the user is interacting with the GUI.
     canvas->event_controller->do_process_input = !io.WantCaptureMouse && !io.WantCaptureKeyboard;
 
-    for (uint32_t k = 0; k < gui_count; k++)
+    for (uint32_t k = 0; k < canvas->gui_count; k++)
     {
-        gui = guis[k];
+        gui = canvas->guis[k];
 
         // Fixed GUI.
         switch (gui->style)
@@ -400,8 +398,10 @@ VkyGui* vky_create_gui(VkyCanvas* canvas, VkyGuiParams params)
     gui->title = params.title != NULL ? params.title : "GUI";
     gui->style = params.style;
     canvas->cb_fill_live_command_buffer = fill_live_command_buffer;
-    guis[gui_count] = gui;
-    gui_count++;
+    if (canvas->guis == NULL)
+        canvas->guis = (VkyGui**)calloc(VKY_MAX_GUI_COUNT, sizeof(VkyGui*));
+    canvas->guis[canvas->gui_count] = gui;
+    canvas->gui_count++;
     return gui;
 }
 
@@ -423,15 +423,15 @@ void vky_gui_fps(VkyGui* gui) { vky_gui_control(gui, VKY_GUI_FPS, NULL, NULL, NU
 
 
 
-void vky_destroy_guis()
+void vky_destroy_guis(VkyCanvas* canvas)
 {
-    if (gui_count == 0)
-        return;
     if (!imgui_supported)
         return;
-    for (uint32_t i = 0; i < gui_count; i++)
+    if (canvas->gui_count == 0)
+        return;
+    for (uint32_t i = 0; i < canvas->gui_count; i++)
     {
-        FREE(guis[i]);
+        FREE(canvas->guis[i]);
     }
     vky_imgui_destroy();
 }

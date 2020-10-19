@@ -2097,8 +2097,6 @@ void vky_destroy_scene(VkyScene* scene)
     FREE(scene->grid);
     scene->grid = NULL;
 
-    vky_destroy_guis();
-
     scene->canvas->scene = NULL;
     FREE(scene);
 }
