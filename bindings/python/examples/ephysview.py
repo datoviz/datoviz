@@ -103,13 +103,25 @@ class RawEphysViewer:
         assert self.mmap_array.shape[1] == n_channels
         self.n_samples = self.mmap_array.shape[0]
 
-    def load_session(self, eid):
+    def load_session(self, eid, probe_idx=0):
         from oneibl.one import ONE
         self.one = ONE()
-        # TODO
-        self.url_cbin = ""
-        self.url_ch = ""
-        self.n_samples = 0  # TODO
+
+        dsets = self.one.alyx.rest(
+            'datasets', 'list', session='aad23144-0e52-4eac-80c5-c4ee2decb198',
+            django='name__icontains,ap.cbin')
+        for fr in dsets[probe_idx]['file_records']:
+            if fr['data_url']:
+                self.url_cbin = fr['data_url']
+
+        dsets = self.one.alyx.rest(
+            'datasets', 'list', session='aad23144-0e52-4eac-80c5-c4ee2decb198',
+            django='name__icontains,ap.ch')
+        for fr in dsets[probe_idx]['file_records']:
+            if fr['data_url']:
+                self.url_ch = fr['data_url']
+
+        self.n_samples = 0  # HACK: will be set by _load_from_web()
 
     def _load_from_file(self):
         return self.mmap_array[self.sample:self.sample + self.buffer_size, :]
@@ -117,17 +129,24 @@ class RawEphysViewer:
     def _load_from_web(self):
         # WARNING: this assumes that 1 chunk = 1 second
         chunk_idx = int(self.time)  # chunk number
-        return self.one.download_raw_partial(
+        chunk_idx = max(0, chunk_idx)
+        reader = self.one.download_raw_partial(
             self.url_cbin, self.url_ch,
             first_chunk=chunk_idx, last_chunk=chunk_idx)
+        if self.n_samples == 0:
+            self.n_samples = reader.cmeta.chopped_total_samples
+        return reader[:]
 
     def load_data(self):
+        if self.sample > 0:
+            assert self.n_samples > 0
         self.sample = np.clip(
             self.sample, 0, self.n_samples - self.buffer_size)
         if hasattr(self, 'mmap_array'):
             self.arr_buf = self._load_from_file()
         elif hasattr(self, 'one'):
             self.arr_buf = self._load_from_web()
+        print(self.arr_buf.shape, (self.buffer_size, self.n_channels))
         assert self.arr_buf.shape == (self.buffer_size, self.n_channels)
 
     def update_view(self):
@@ -208,12 +227,19 @@ class RawEphysViewer:
 
 
 if __name__ == '__main__':
-    path = Path(__file__).parent / "raw_ephys.bin"
     n_channels = 385
     dtype = np.int16
     sample_rate = 30_000
 
     viewer = RawEphysViewer(n_channels, sample_rate, dtype)
-    viewer.memmap_file(path)
+
+    # Load from HTTP.
+    viewer.load_session('d33baf74-263c-4b37-a0d0-b79dcb80a764')
     viewer.create()
     viewer.show()
+
+    # Load from disk.
+    # path = Path(__file__).parent / "raw_ephys.bin"
+    # viewer.memmap_file(path)
+    # viewer.create()
+    # viewer.show()
