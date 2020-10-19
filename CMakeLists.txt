@@ -35,7 +35,7 @@ endif()
 FetchContent_Declare(
   cglm
   GIT_REPOSITORY https://github.com/recp/cglm
-  GIT_TAG        v0.7.4
+  GIT_TAG        v0.7.8
 )
 FetchContent_MakeAvailable(cglm)
 
