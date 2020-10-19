@@ -93,7 +93,14 @@ class T_DATA(ctypes.Structure):
         ("index_count", T_UINT32),
         ("indices", T_VP),
 
-        ("no_vertices_alloc", T_BOOL),
+        ("group_count", T_UINT32),
+        ("group_starts", T_VP),
+        ("group_lengths", T_VP),
+        ("group_params", T_VP),
+
+        ("need_free_items", T_BOOL),
+        ("need_free_vertices", T_BOOL),
+        ("need_free_indices", T_BOOL),
     ]
 
 

@@ -123,20 +123,12 @@ def ephys_view(path, n_channels, sample_rate, dtype, buffer):
 
     vl.log_set_level_env()
 
-    canvas = api.canvas(shape=(2, 1))
-    canvas.set_heights([2, 8])
+    canvas = api.canvas(shape=(1, 1))
 
     n = 1000
     t = np.linspace(-1, 1, n)
 
-    points = np.zeros((n, 3), dtype=np.float32)
-    points[:, 0] = t
-    points[:, 1] = .5 * np.cos(20 * t)
-
-    colors = api.get_color('jet', np.linspace(0, 1, n))
-
-    v_plot = canvas[0, 0].plot(points, colors=colors, lw=5)
-    v_image = canvas[1, 0].imshow(
+    v_image = canvas[0, 0].imshow(
         np.empty((n_channels, buffer, 4), dtype=np.uint8))
 
     ds = DataScroller(v_image, raw, sample_rate, buffer)

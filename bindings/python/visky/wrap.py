@@ -81,13 +81,20 @@ def upload_data(visual, items=None, indices=None):
     assert items is not None
     assert isinstance(items, np.ndarray)
     assert items.size > 0
+    assert len(items) > 0
     if indices is None:
         data = T_DATA(
-            items.size, array_pointer(items), 0, None, 0, None, False)
+            items.size, array_pointer(items),
+            0, None,
+            0, None,
+            1, None, None, None, False, False, False)
     else:
         data = T_DATA(
-            0, None, len(items), array_pointer(items), len(indices), array_pointer(indices), False)
-    viskylib.vky_visual_data_raw(visual, data)
+            items.size, array_pointer(items),
+            0, None,
+            len(indices), array_pointer(indices),
+            1, None, None, None, False, False, False)
+    viskylib.vky_visual_data_raw_old(visual, pointer(data))
 
 
 # Constant helpers
@@ -179,7 +186,8 @@ wrap(viskylib.vky_set_panel_aspect_ratio, [T_VP, T_FLOAT])
 
 wrap(viskylib.vky_add_visual_to_panel, [T_VP, T_INT, T_INT])
 wrap(viskylib.vky_visual, [T_VP, T_INT, T_VP, T_VP], T_VP)
-wrap(viskylib.vky_visual_data_raw, [T_VP, T_DATA])
+wrap(viskylib.vky_visual_data_raw, [T_VP])
+wrap(viskylib.vky_visual_data_raw_old, [T_VP, T_VP])
 
 wrap(viskylib.vky_get_axes, [T_VP], T_VP)
 wrap(viskylib.vky_axes_set_initial_range, [T_VP, tp.T_BOX2D])
@@ -187,7 +195,8 @@ wrap(viskylib.vky_axes_set_range, [T_VP, tp.T_BOX2D, T_BOOL])
 wrap(viskylib.vky_pick, [T_VP, T_VEC2], tp.T_PICK)
 
 wrap(viskylib.vky_visual_image_upload, [T_VP, T_VP])
-wrap(viskylib.vky_default_texture_params, [tp.T_IVEC3], tp.T_TEXTURE_PARAMS)
+wrap(viskylib.vky_default_texture_params, [
+     T_UINT32, T_UINT32, T_UINT32], tp.T_TEXTURE_PARAMS)
 
 wrap(viskylib.vky_add_frame_callback, [T_VP, T_VP])
 wrap(viskylib.vky_event_keyboard, [T_VP], POINTER(tp.T_KEYBOARD))

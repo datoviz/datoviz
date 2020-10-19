@@ -188,8 +188,7 @@ class Panel:
         assert image.shape[2] == 4
 
         height, width = image.shape[:2]
-        tex_params = vl.vky_default_texture_params(
-            tp.T_IVEC3(width, height, 1))
+        tex_params = vl.vky_default_texture_params(width, height, 1)
         visual = self.visual('visual_image', pointer(tex_params))
 
         # Image vertices.
