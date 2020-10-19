@@ -8,10 +8,13 @@ TODO:
 
 """
 
+# from functools import lru_cache
 import math
 from pathlib import Path
 
+from joblib import Memory
 import numpy as np
+from oneibl.one import ONE
 
 from visky.wrap import viskylib as vl, upload_data, pointer
 from visky import _constants as const
@@ -92,16 +95,23 @@ Keyboard shortcuts:
 '''
 
 
+def _dl(url_cbin, url_ch, i0, i1):
+    one = ONE()
+    reader = one.download_raw_partial(url_cbin, url_ch, i0, i1)
+    return reader.cmeta.chopped_total_samples, reader[:]
+
+
 class RawEphysViewer:
     def __init__(self, n_channels, sample_rate, dtype, buffer_size=3_000):
         self.n_channels = n_channels
-        self.sample_rate = sample_rate
+        self.sample_rate = float(sample_rate)
         self.dtype = dtype
         self.buffer_size = buffer_size
         self.sample = 0  # current sample
         self.arr_buf = None
         self.scale = None
         print(DESC)
+        # self._download = lru_cache(maxsize=10)(self._download)
 
     def memmap_file(self, path):
         self.mmap_array = _memmap_flat(
@@ -113,6 +123,11 @@ class RawEphysViewer:
     def load_session(self, eid, probe_idx=0):
         from oneibl.one import ONE
         self.one = ONE()
+
+        # Disk cache of the downloading
+        location = Path('~/.one_cache/').expanduser()
+        self._memory = Memory(location, verbose=0)
+        self._dl = self._memory.cache(_dl)
 
         dsets = self.one.alyx.rest(
             'datasets', 'list', session='aad23144-0e52-4eac-80c5-c4ee2decb198',
@@ -130,27 +145,54 @@ class RawEphysViewer:
 
         self.n_samples = 0  # HACK: will be set by _load_from_web()
 
+    def _clip_sample(self):
+        if self.n_samples == 0:
+            self.sample = max(0, self.sample)
+        else:
+            self.sample = int(round(np.clip(
+                self.sample, 0, self.n_samples - self.buffer_size)))
+
+    def _download(self, i0, i1):
+        # print("download %d %d" % (i0, i1))
+
+        # Call the cached function.
+        ns, arr = self._dl(self.url_cbin, self.url_ch, i0, i1)
+
+        # NOTE: set n_samples after the first download has been done
+        if self.n_samples == 0:
+            self.n_samples = ns
+        assert arr.shape[1] == self.n_channels
+        assert arr.shape[0] <= int(round((i1 + 1 - i0) * self.sample_rate))
+        return arr
+
     def _load_from_file(self):
         return self.mmap_array[self.sample:self.sample + self.buffer_size, :]
 
     def _load_from_web(self):
-        # WARNING: this assumes that 1 chunk = 1 second
-        chunk_idx = int(self.time)  # chunk number
-        chunk_idx = max(0, chunk_idx)
-        reader = self.one.download_raw_partial(
-            self.url_cbin, self.url_ch,
-            first_chunk=chunk_idx, last_chunk=chunk_idx)
         if self.n_samples == 0:
-            self.n_samples = reader.cmeta.chopped_total_samples
-        return reader[:self.buffer_size, :]
+            i0 = i1 = 0
+        else:
+            t0 = self.time
+            t1 = t0 + (self.buffer_size - 1) / self.sample_rate
+            assert t0 >= 0
+            assert t1 <= self.duration
+            assert t0 < t1
+            i0 = int(t0)
+            i1 = int(t1)
+            assert i0 >= 0
+            assert i1 < self.n_samples
+
+        arr = self._download(i0, i1)
+
+        assert self.n_samples > 0
+        s0 = self.sample - int(round(i0 * self.sample_rate))
+        assert s0 >= 0
+        s1 = s0 + self.buffer_size
+        assert s1 - s0 == self.buffer_size
+        return arr[s0:s1, :]
 
     def load_data(self):
-        if self.sample > 0:
-            assert self.n_samples > 0
-        self.sample = max(0, self.sample)
-        if self.n_samples > 0:
-            assert self.n_samples - self.buffer_size >= 0
-            self.sample = min(self.sample, self.n_samples - self.buffer_size)
+        self._clip_sample()
         if hasattr(self, 'mmap_array'):
             self.arr_buf = self._load_from_file()
         elif hasattr(self, 'one'):
@@ -188,22 +230,23 @@ class RawEphysViewer:
 
     @property
     def duration(self):
-        return self.n_samples / float(self.sample_rate)
+        return self.n_samples / self.sample_rate
 
     @property
     def time(self):
-        return self.sample / float(self.sample_rate)
+        return self.sample / self.sample_rate
 
     def goto(self, time):
-        self.sample = int(round(time)) * self.sample_rate
+        self.sample = int(round(time * self.sample_rate))
         self.load_data()
         self.update_view()
 
     def on_key(self, key, modifiers=None):
+        delta = .25 * self.buffer_size / self.sample_rate
         if key == 'left':
-            self.goto(self.time - 1)
+            self.goto(self.time - delta)
         if key == 'right':
-            self.goto(self.time + 1)
+            self.goto(self.time + delta)
         if key == 'kp_add':
             self.scale = (self.scale[0], self.scale[1] / 1.1)
             self.update_view()
@@ -216,7 +259,6 @@ class RawEphysViewer:
             self.goto(self.duration)
         if key == 'g':
             vl.vky_prompt(self.canvas._canvas)
-            # self.goto(float(input()))
 
     def on_mouse(self, button, pos, ev=None):
         if ev.state == 'click':
