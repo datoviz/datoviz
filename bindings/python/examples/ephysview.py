@@ -140,13 +140,14 @@ class RawEphysViewer:
     def load_data(self):
         if self.sample > 0:
             assert self.n_samples > 0
-        self.sample = np.clip(
-            self.sample, 0, self.n_samples - self.buffer_size)
+        self.sample = max(0, self.sample)
+        if self.n_samples > 0:
+            assert self.n_samples - self.buffer_size >= 0
+            self.sample = min(self.sample, self.n_samples - self.buffer_size)
         if hasattr(self, 'mmap_array'):
             self.arr_buf = self._load_from_file()
         elif hasattr(self, 'one'):
             self.arr_buf = self._load_from_web()
-        print(self.arr_buf.shape, (self.buffer_size, self.n_channels))
         assert self.arr_buf.shape == (self.buffer_size, self.n_channels)
 
     def update_view(self):
