@@ -15,6 +15,9 @@ from visky import _types as tp
 
 logger = logging.getLogger(__file__)
 
+# DEBUG: default logger
+logging.basicConfig(level=logging.DEBUG)
+
 
 _APP = None
 _IN_IPYTHON_TERMINAL = False
@@ -100,8 +103,9 @@ def destroy_app():
 class Canvas:
     def __init__(self, app, shape=(1, 1), width=800, height=600, background=None):
         self.n_rows, self.n_cols = shape
-        # print("CREATE CANVAS")
+        logger.debug("create canvas")
         self._canvas = vl.vky_create_canvas(app, width, height)
+        logger.debug("create scene")
         self._scene = vl.vky_create_scene(
             self._canvas, get_const(background, 'white'), shape[0], shape[1])
 
@@ -117,6 +121,7 @@ class Canvas:
         heights = np.asarray(heights, dtype=np.float32)
         assert heights.ndim == 1
         assert heights.shape == (self.n_rows,)
+        logger.debug("set grid heights")
         vl.vky_set_grid_heights(self._scene, heights)
 
     def on_frame(self, f):
@@ -124,6 +129,7 @@ class Canvas:
         def _on_frame_wrap(p_canvas):
             f()
         self._callbacks.append(_on_frame_wrap)
+        logger.debug("add frame callback for frame")
         vl.vky_add_frame_callback(self._canvas, _on_frame_wrap)
 
     def on_key(self, f):
@@ -133,6 +139,7 @@ class Canvas:
             key_s = key_string(keyboard.key)
             f(key_s)
         self._callbacks.append(_on_key_wrap)
+        logger.debug("add frame callback for keyboard")
         vl.vky_add_frame_callback(self._canvas, _on_key_wrap)
 
     def on_mouse(self, f):
@@ -153,6 +160,7 @@ class Canvas:
                 logger.error(e)
 
         self._callbacks.append(_on_mouse_wrap)
+        logger.debug("add frame callback for mouse")
         vl.vky_add_frame_callback(self._canvas, _on_mouse_wrap)
 
 
@@ -161,25 +169,32 @@ class Panel:
         self._canvas = canvas._canvas
         self._scene = canvas._scene
         self.row, self.col = row, col
+        logger.debug("get panel")
         self._panel = vl.vky_get_panel(self._scene, row, col)
         controller_type = get_const(controller_type, 'controller_axes_2D')
         self.set_controller(controller_type, params=params)
+        logger.debug("get axes")
         self._axes = vl.vky_get_axes(self._panel)
 
     def set_controller(self, controller_type, params=None):
+        logger.debug("set controller")
         vl.vky_set_controller(self._panel, controller_type, params)
 
     def set_aspect_ratio(self, value):
+        logger.debug("set panel aspect ratio")
         vl.vky_set_panel_aspect_ratio(self._panel, value)
 
     def axes_range(self, x0, y0, x1, y1):
         box = tp.T_BOX2D((x0, y0), (x1, y1))
+        logger.debug("axes set initial range")
         vl.vky_axes_set_initial_range(self._axes, box)
 
     def visual(self, visual_type, params=None, obj=None):
         visual_type = get_const(visual_type)
         assert visual_type
+        logger.debug("create visual")
         p_visual = vl.vky_visual(self._scene, visual_type, params, obj)
+        logger.debug("add visual to panel")
         vl.vky_add_visual_to_panel(
             p_visual, self._panel, get_const('viewport_inner'), get_const('visual_priority_none'))
         cls = Visual
@@ -195,6 +210,7 @@ class Panel:
         assert image.shape[2] == 4
 
         height, width = image.shape[:2]
+        logger.debug("default texture params")
         tex_params = vl.vky_default_texture_params(width, height, 1)
         visual = self.visual('visual_image', pointer(tex_params))
         # Image vertices.
@@ -269,4 +285,5 @@ class Visual:
 
 class Image(Visual):
     def set_image(self, image):
+        logger.debug("visual image upload")
         vl.vky_visual_image_upload(self._visual, array_pointer(image))

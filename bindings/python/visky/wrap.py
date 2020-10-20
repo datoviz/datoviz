@@ -94,6 +94,7 @@ def upload_data(visual, items=None, indices=None):
             0, None,
             len(indices), array_pointer(indices),
             1, None, None, None, False, False, False)
+    logger.debug("visual data raw")
     viskylib.vky_visual_data_raw_old(visual, pointer(data))
 
 

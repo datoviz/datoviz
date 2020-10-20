@@ -2,7 +2,7 @@ name: ci
 on:
   push:
     branches:
-      - master
+      - DISABLE-FOR-NOW-master
 jobs:
   deploy:
     runs-on: ubuntu-latest
