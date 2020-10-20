@@ -2,6 +2,7 @@ set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 cmake_minimum_required(VERSION 3.10)
 enable_testing()
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include("cmake/colormsg.cmake")
 include(FetchContent)
 
@@ -388,6 +389,19 @@ add_dependencies(visky shaders)
 target_compile_definitions(visky PUBLIC ${COMPILE_DEFINITIONS})
 target_include_directories(visky PUBLIC ${INCL_DIRS})
 target_link_libraries(visky ${LINK_LIBS})
+
+
+
+# -------------------------------------------------------------------------------------------------
+# Cython build
+# -------------------------------------------------------------------------------------------------
+
+add_subdirectory(bindings/cython/visky)
+find_package(Cython)
+include_directories(${INCL_DIRS} ${PYTHON_INCLUDE_DIRS})
+add_cython_target(pyvisky bindings/cython/visky/pyvisky.pyx PY3 C)
+add_library(pyvisky MODULE ${pyvisky})
+target_link_libraries(pyvisky ${PYTHON_LIBRARIES} ${LINK_LIBS} visky)
 
 
 

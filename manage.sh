@@ -14,10 +14,10 @@ then
     mkdir -p build &&
     cd build && \
     cmake .. -GNinja && \
-    VKY_EXAMPLE= ninja && \
-    cd ../bindings/python && \
-    ./build.sh && \
-    cd ../..
+    VKY_EXAMPLE= ninja #&& \
+    # cd ../bindings/python && \
+    #./build.sh && \
+    # cd ../..
 fi
 
 if [ $1 == "clang" ]
