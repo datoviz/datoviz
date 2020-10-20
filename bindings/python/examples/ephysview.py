@@ -95,9 +95,9 @@ Keyboard shortcuts:
 '''
 
 
-def _dl(url_cbin, url_ch, i0, i1):
+def _dl(url_cbin, url_ch, chunk):
     one = ONE()
-    reader = one.download_raw_partial(url_cbin, url_ch, i0, i1)
+    reader = one.download_raw_partial(url_cbin, url_ch, chunk, chunk)
     return reader.cmeta.chopped_total_samples, reader[:]
 
 
@@ -152,17 +152,17 @@ class RawEphysViewer:
             self.sample = int(round(np.clip(
                 self.sample, 0, self.n_samples - self.buffer_size)))
 
-    def _download(self, i0, i1):
+    def _download(self, chunk):
         # print("download %d %d" % (i0, i1))
 
         # Call the cached function.
-        ns, arr = self._dl(self.url_cbin, self.url_ch, i0, i1)
+        ns, arr = self._dl(self.url_cbin, self.url_ch, chunk)
 
         # NOTE: set n_samples after the first download has been done
         if self.n_samples == 0:
             self.n_samples = ns
         assert arr.shape[1] == self.n_channels
-        assert arr.shape[0] <= int(round((i1 + 1 - i0) * self.sample_rate))
+        # assert arr.shape[0] <= int(round((i1 + 1 - i0) * self.sample_rate))
         return arr
 
     def _load_from_file(self):
@@ -182,7 +182,10 @@ class RawEphysViewer:
             assert i0 >= 0
             assert i1 < self.n_samples
 
-        arr = self._download(i0, i1)
+        arr = self._download(i0)
+        if i1 != i0:
+            arr2 = self._download(i1)
+            arr = np.vstack((arr, arr2))
 
         assert self.n_samples > 0
         s0 = self.sample - int(round(i0 * self.sample_rate))
