@@ -56,3 +56,24 @@ cdef class Scene:
 
     cdef create(self, cv.VkyScene* c_scene):
         self._c_scene = c_scene
+
+    def panel(self, int row=0, int col=0):
+        c_panel = cv.vky_get_panel(self._c_scene, row, col)
+        if c_panel is NULL:
+            raise MemoryError()
+        p = Panel()
+        p.create(c_panel)
+        return p
+
+
+cdef class Panel:
+    cdef cv.VkyPanel* _c_panel
+
+    cdef create(self, cv.VkyPanel* c_panel):
+        self._c_panel = c_panel
+
+    def set_controller(self, str controller_type='axes'):
+        c_controller_type = cv.VKY_CONTROLLER_NONE
+        if controller_type == 'axes':
+            c_controller_type = cv.VKY_CONTROLLER_AXES_2D
+        cv.vky_set_controller(self._c_panel, c_controller_type, NULL)

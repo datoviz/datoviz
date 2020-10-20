@@ -1,25 +1,28 @@
 # WARNING: parts of this file are auto-generated
 
-cdef extern from "../../include/visky/app.h":
+cdef extern from "../../include/visky/visky.h":
 
     # Numerical types
     ctypedef unsigned long uint32_t
     ctypedef char uint8_t
     ctypedef char[3] cvec3
+    ctypedef struct VkyColor:
+        cvec3 rgb
+        uint8_t alpha
+
 
     # Opaque types
     ctypedef struct VkyApp:
         pass
+
     ctypedef struct VkyCanvas:
         pass
+
     ctypedef struct VkyScene:
         pass
+
     ctypedef struct VkyPanel:
         pass
-
-    ctypedef struct VkyColor:
-        cvec3 rgb
-        uint8_t alpha
 
 
     # Functions
@@ -28,6 +31,8 @@ cdef extern from "../../include/visky/app.h":
     VkyCanvas* vky_create_canvas(VkyApp* app, uint32_t width, uint32_t height)
     VkyScene* vky_create_scene(
         VkyCanvas* canvas, VkyColor clear_color, uint32_t row_count, uint32_t col_count)
+    VkyPanel* vky_get_panel(VkyScene* scene, uint32_t row, uint32_t col)
+    void vky_set_controller(VkyPanel* panel, VkyControllerType controller_type, const void*)
 
     # void vky_add_frame_callback(canvas, callback1)
 
@@ -40,20 +45,20 @@ cdef extern from "../../include/visky/app.h":
     # ENUM START
     # from file: app.h
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyKeyModifiers:
         VKY_KEY_MODIFIER_NONE = 0x00000000
         VKY_KEY_MODIFIER_SHIFT = 0x00000001
         VKY_KEY_MODIFIER_CONTROL = 0x00000002
         VKY_KEY_MODIFIER_ALT = 0x00000004
         VKY_KEY_MODIFIER_SUPER = 0x00000008
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyMouseButton:
         VKY_MOUSE_BUTTON_NONE = 0
         VKY_MOUSE_BUTTON_LEFT = 1
         VKY_MOUSE_BUTTON_MIDDLE = 2
         VKY_MOUSE_BUTTON_RIGHT = 3
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyMouseState:
         VKY_MOUSE_STATE_STATIC = 0
         VKY_MOUSE_STATE_DRAG = 1
         VKY_MOUSE_STATE_WHEEL = 2
@@ -69,7 +74,7 @@ cdef extern from "../../include/visky/app.h":
 
     # from file: colormaps.h
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyColormap:
         VKY_CMAP_BINARY = 0
         VKY_CMAP_HSV = 1
         VKY_CMAP_CIVIDIS = 2
@@ -220,7 +225,7 @@ cdef extern from "../../include/visky/app.h":
 
     # from file: gui.h
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyGuiStyle:
         VKY_GUI_STANDARD = 0
         VKY_GUI_PROMPT = 1
         VKY_GUI_FIXED_TL = 10
@@ -228,7 +233,7 @@ cdef extern from "../../include/visky/app.h":
         VKY_GUI_FIXED_LL = 12
         VKY_GUI_FIXED_LR = 13
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyGuiControlType:
         VKY_GUI_BUTTON = 1
         VKY_GUI_CHECKBOX = 2
         VKY_GUI_RADIO = 3
@@ -243,14 +248,14 @@ cdef extern from "../../include/visky/app.h":
         VKY_GUI_COLOR = 20
         VKY_GUI_FPS = 99
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyPromptState:
         VKY_PROMPT_HIDDEN = 0
         VKY_PROMPT_SHOWN = 1
         VKY_PROMPT_ACTIVE = 2
 
     # from file: scene.h
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyVisualType:
         VKY_VISUAL_EMPTY = 0
         VKY_VISUAL_RECTANGLE = 10
         VKY_VISUAL_RECTANGLE_AXIS = 11
@@ -283,7 +288,7 @@ cdef extern from "../../include/visky/app.h":
         VKY_VISUAL_TEXT = 100
         VKY_VISUAL_CUSTOM = 255
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyVisualPropType:
         VKY_VISUAL_PROP_NONE = 0
         VKY_VISUAL_PROP_POS = 1
         VKY_VISUAL_PROP_POS_GPU = 2
@@ -306,7 +311,7 @@ cdef extern from "../../include/visky/app.h":
         VKY_VISUAL_PROP_BUFFER = 26
         VKY_VISUAL_PROP_TRANSFORM = 31
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyControllerType:
         VKY_CONTROLLER_NONE = 0
         VKY_CONTROLLER_PANZOOM = 10
         VKY_CONTROLLER_AXES_2D = 11
@@ -319,55 +324,55 @@ cdef extern from "../../include/visky/app.h":
         VKY_CONTROLLER_IMAGE = 40
         VKY_CONTROLLER_VOLUME = 41
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyMVPMatrix:
         VKY_MVP_MODEL = 1
         VKY_MVP_VIEW = 2
         VKY_MVP_PROJ = 3
         VKY_MVP_ORTHO = 4
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyViewportType:
         VKY_VIEWPORT_INNER = 0
         VKY_VIEWPORT_OUTER = 1
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyAspect:
         VKY_ASPECT_UNCONSTRAINED = 0
         VKY_ASPECT_SQUARE = 1
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyVisualPriority:
         VKY_VISUAL_PRIORITY_NONE = 0
         VKY_VISUAL_PRIORITY_FIRST = 1
         VKY_VISUAL_PRIORITY_LAST = 2
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyPanelLinkMode:
         VKY_PANEL_LINK_NONE = 0x0
         VKY_PANEL_LINK_X = 0x1
         VKY_PANEL_LINK_Y = 0x2
         VKY_PANEL_LINK_Z = 0x4
         VKY_PANEL_LINK_ALL = 0x7
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyTransformMode:
         VKY_TRANSFORM_MODE_NORMAL = 0x0
         VKY_TRANSFORM_MODE_X_ONLY = 0x1
         VKY_TRANSFORM_MODE_Y_ONLY = 0x2
         VKY_TRANSFORM_MODE_STATIC = 0x7
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyControllerSource:
         VKY_CONTROLLER_SOURCE_NONE = 0
         VKY_CONTROLLER_SOURCE_HUMAN = 1
         VKY_CONTROLLER_SOURCE_MOCK = 2
         VKY_CONTROLLER_SOURCE_LINK = 3
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyPanelStatus:
         VKY_PANEL_STATUS_NONE = 0
         VKY_PANEL_STATUS_ACTIVE = 1
         VKY_PANEL_STATUS_LINKED = 2
         VKY_PANEL_STATUS_RESET = 7
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyAxis:
         VKY_AXIS_X = 0
         VKY_AXIS_Y = 1
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyColorbarPosition:
         VKY_COLORBAR_NONE = 0
         VKY_COLORBAR_TOP = 1
         VKY_COLORBAR_RIGHT = 2
@@ -376,11 +381,11 @@ cdef extern from "../../include/visky/app.h":
 
     # from file: visuals.h
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyAlphaScalingMode:
         VKY_ALPHA_SCALING_OFF = 0
         VKY_ALPHA_SCALING_ON = 1
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyArrowType:
         VKY_ARROW_CURVED = 0
         VKY_ARROW_STEALTH = 1
         VKY_ARROW_ANGLE_30 = 2
@@ -390,7 +395,7 @@ cdef extern from "../../include/visky/app.h":
         VKY_ARROW_TRIANGLE_60 = 6
         VKY_ARROW_TRIANGLE_90 = 7
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyCapType:
         VKY_CAP_TYPE_NONE = 0
         VKY_CAP_ROUND = 1
         VKY_CAP_TRIANGLE_IN = 2
@@ -398,15 +403,15 @@ cdef extern from "../../include/visky/app.h":
         VKY_CAP_SQUARE = 4
         VKY_CAP_BUTT = 5
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyDepthStatus:
         VKY_DEPTH_DISABLE = 0
         VKY_DEPTH_ENABLE = 1
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyJoinType:
         VKY_JOIN_SQUARE = False
         VKY_JOIN_ROUND = True
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyMarkerType:
         VKY_MARKER_ARROW = 0
         VKY_MARKER_ASTERISK = 1
         VKY_MARKER_CHEVRON = 2
@@ -427,19 +432,19 @@ cdef extern from "../../include/visky/app.h":
         VKY_MARKER_TRIANGLE = 17
         VKY_MARKER_VBAR = 18
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyMeshColorType:
         VKY_MESH_COLOR_RGBA = 1
         VKY_MESH_COLOR_UV = 2
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyMeshShading:
         VKY_MESH_SHADING_NONE = 0
         VKY_MESH_SHADING_BLINN_PHONG = 1
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyPathTopology:
         VKY_PATH_OPEN = 0
         VKY_PATH_CLOSED = 1
 
-    ctypedef enum VkyBackendType:
+    ctypedef enum VkyScalingMode:
         VKY_SCALING_OFF = 0
         VKY_SCALING_ON = 1
 

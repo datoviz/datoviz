@@ -110,7 +110,7 @@ def _parse_enum(text):
 def _gen_enum(enums):
     out = ''
     for name, l in enums.items():
-        out += 'ctypedef enum VkyBackendType:\n'
+        out += f'ctypedef enum {name}:\n'
         for identifier, value in l:
             out += f'    {identifier} = {value}\n'
         out += '\n'
