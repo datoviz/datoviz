@@ -77,7 +77,7 @@ else ()
     # NOTE: need to remove -pg (gprof profiling) in RELEASE mode?
     set(COMMON_FLAGS "-g -m64 -pedantic -Wall -Wextra -Werror=vla \
         -Wcast-align -Wcast-qual -Wredundant-decls -Wswitch-default -Wdisabled-optimization \
-        -Wformat=2 -Winit-self -Wno-missing-field-initializers \
+        -Wformat=2 -Winit-self -Wno-missing-field-initializers -Wno-unused-result \
         -Wmissing-declarations -Wmissing-include-dirs -Wno-format-nonliteral \
         -Wshadow -Wsign-conversion -Wstrict-overflow=5 -Wundef -Wno-unused-parameter -Wno-unused-function")
     # GCC-specific
@@ -100,13 +100,15 @@ set(COMMON_FLAGS_VISIBLE "${COMMON_FLAGS}")
 set(COMMON_FLAGS "${COMMON_FLAGS} -fvisibility=hidden")
 
 
-# DEBUG/RELEASE
-if (NOT CMAKE_BUILD_TYPE)
-   set(CMAKE_BUILD_TYPE Debug)
-endif()
-if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-    set(DEBUG 1)
-endif ()
+# DEBUG
+set(DEBUG 1)
+set(CMAKE_BUILD_TYPE Debug)
+# if (NOT CMAKE_BUILD_TYPE)
+#    set(CMAKE_BUILD_TYPE Debug)
+# endif()
+# if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+#     set(DEBUG 1)
+# endif ()
 
 
 set(INCL_DIRS ${CMAKE_SOURCE_DIR}/external ${CMAKE_SOURCE_DIR}/external/imgui ${CMAKE_SOURCE_DIR}/include/)

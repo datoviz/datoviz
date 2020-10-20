@@ -15,7 +15,9 @@ then
     cd build && \
     cmake .. -GNinja && \
     VKY_EXAMPLE= ninja && \
-    cd ..
+    cd ../bindings/python && \
+    ./build.sh && \
+    cd ../..
 fi
 
 if [ $1 == "clang" ]
