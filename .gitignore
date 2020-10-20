@@ -11,6 +11,7 @@ artifacts
 *.code-workspace
 *.ini
 *.out*
+*.log
 *.lock
 target/
 Testing
