@@ -4,6 +4,8 @@ cdef extern from "../../include/visky/app.h":
 
     # Numerical types
     ctypedef unsigned long uint32_t
+    ctypedef char uint8_t
+    ctypedef char[3] cvec3
 
     # Opaque types
     ctypedef struct VkyApp:
@@ -15,14 +17,22 @@ cdef extern from "../../include/visky/app.h":
     ctypedef struct VkyPanel:
         pass
 
+    ctypedef struct VkyColor:
+        cvec3 rgb
+        uint8_t alpha
+
 
     # Functions
+    void log_set_level_env()
     VkyApp* vky_create_app(VkyBackendType backend, void* params)
     VkyCanvas* vky_create_canvas(VkyApp* app, uint32_t width, uint32_t height)
-    void vky_run_app(VkyApp* app)
-    void vky_close_canvas(VkyCanvas* canvas)
+    VkyScene* vky_create_scene(
+        VkyCanvas* canvas, VkyColor clear_color, uint32_t row_count, uint32_t col_count)
+
     # void vky_add_frame_callback(canvas, callback1)
 
+    void vky_run_app(VkyApp* app)
+    void vky_close_canvas(VkyCanvas* canvas)
     void vky_destroy_app(VkyApp* app)
 
 

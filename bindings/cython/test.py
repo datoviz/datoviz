@@ -1,6 +1,7 @@
 from visky import pyvisky
 
 app = pyvisky.App()
-app.canvas()
+c = app.canvas()
+s = c.scene()
 app.run()
 del app
