@@ -1,8 +1,31 @@
 # WARNING: parts of this file are auto-generated
 
 cdef extern from "../../include/visky/app.h":
+
+    # Numerical types
+    ctypedef unsigned long uint32_t
+
+    # Opaque types
     ctypedef struct VkyApp:
         pass
+    ctypedef struct VkyCanvas:
+        pass
+    ctypedef struct VkyScene:
+        pass
+    ctypedef struct VkyPanel:
+        pass
+
+
+    # Functions
+    VkyApp* vky_create_app(VkyBackendType backend, void* params)
+    VkyCanvas* vky_create_canvas(VkyApp* app, uint32_t width, uint32_t height)
+    void vky_run_app(VkyApp* app)
+    void vky_close_canvas(VkyCanvas* canvas)
+    # void vky_add_frame_callback(canvas, callback1)
+
+    void vky_destroy_app(VkyApp* app)
+
+
 
     # ENUM START
     # from file: app.h
@@ -412,6 +435,3 @@ cdef extern from "../../include/visky/app.h":
 
 
     # ENUM END
-
-    VkyApp* vky_create_app(VkyBackendType backend, void* params)
-    void vky_destroy_app(VkyApp* app)

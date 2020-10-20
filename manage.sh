@@ -17,7 +17,9 @@ then
     cmake .. -GNinja && \
     VKY_EXAMPLE= ninja && \
     cd .. && \
-    ln -s $(pwd)/build/libpyvisky.so $(pwd)/bindings/cython/visky/pyvisky.so
+    if [ ! -L "$(pwd)/bindings/cython/visky/pyvisky.so" ]; then
+        ln -s $(pwd)/build/libpyvisky.so $(pwd)/bindings/cython/visky/pyvisky.so
+    fi
 fi
 
 if [ $1 == "clang" ]
