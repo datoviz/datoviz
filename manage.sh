@@ -9,14 +9,15 @@ fi
 if [ $1 == "build" ]
 then
     if [ ! -L "data" ]; then
-        ln -s ../visky-data/data data
+        ln -s $(pwd)/../visky-data/data data
     fi
     mkdir -p build &&
     python3 bindings/cython/gencython.py && \
     cd build && \
     cmake .. -GNinja && \
     VKY_EXAMPLE= ninja && \
-    cd ..
+    cd .. && \
+    ln -s $(pwd)/build/libpyvisky.so $(pwd)/bindings/cython/visky/pyvisky.so
 fi
 
 if [ $1 == "clang" ]
