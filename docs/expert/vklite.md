@@ -40,3 +40,17 @@ This page provides a brief documentation of the vklite API. Familiarity with GPU
 ## Indirect rendering
 
 ## Event loop
+
+## Hardware capabilities and limits
+
+The `VkyGpu` structure contains a few fields with native Vulkan structures defining GPU capabilities and limits.
+
+### Common minimal values
+
+We give here a few minimal values that we can reasonably expect on almost all devices (according to this [Vulkan database](http://vulkan.gpuinfo.org/listlimits.php)):
+
+| Texture dimension | Maximum allowed texture size (in any axis) |
+|-------------------|--------------------------------------------|
+|       1D          |                  16384                     |
+|       2D          |                  16384                     |
+|       3D          |                   2048                     |
