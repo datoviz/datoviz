@@ -39,6 +39,10 @@ cdef extern from "../../include/visky/visky.h":
 
     VkyVisual* vky_visual(VkyScene* scene, VkyVisualType visual_type, const void* params, const void* obj)
     void vky_add_visual_to_panel(VkyVisual* visual, VkyPanel* panel, VkyViewportType viewport_type, VkyVisualPriority priority)
+    void vky_visual_data(
+        VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index,
+        uint32_t value_count, const void* values)
+
     # void vky_add_frame_callback(canvas, callback1)
 
     void vky_run_app(VkyApp* app)

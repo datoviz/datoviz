@@ -1,4 +1,6 @@
+cimport numpy as np
 cimport visky.cyvisky as cv
+import numpy as np
 
 
 DEFAULT_WIDTH = 800
@@ -98,6 +100,9 @@ cdef class Visual:
         if c_visual is NULL:
             raise MemoryError()
 
-    def data(self, str prop):
-        # TODO
-        pass
+    def data(self, str prop, np.ndarray arr, int idx=0):
+        if prop == 'pos':
+            prop_type = cv.VKY_VISUAL_PROP_POS_GPU
+        cdef void* buf = &(arr.data[0])
+        cv.vky_visual_data(
+            self._c_visual, prop_type, idx, arr.shape[0], buf)
