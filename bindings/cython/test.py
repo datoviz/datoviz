@@ -5,5 +5,6 @@ c = app.canvas()
 s = c.scene()
 p = s.panel()
 p.set_controller()
+p.visual('marker')
 app.run()
 del app

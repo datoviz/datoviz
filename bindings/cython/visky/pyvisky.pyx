@@ -62,18 +62,42 @@ cdef class Scene:
         if c_panel is NULL:
             raise MemoryError()
         p = Panel()
-        p.create(c_panel)
+        p.create(c_panel, self._c_scene)
         return p
 
 
 cdef class Panel:
     cdef cv.VkyPanel* _c_panel
+    cdef cv.VkyScene* _c_scene
 
-    cdef create(self, cv.VkyPanel* c_panel):
+    cdef create(self, cv.VkyPanel* c_panel, cv.VkyScene* c_scene):
         self._c_panel = c_panel
+        self._c_scene = c_scene
 
     def set_controller(self, str controller_type='axes'):
         c_controller_type = cv.VKY_CONTROLLER_NONE
         if controller_type == 'axes':
             c_controller_type = cv.VKY_CONTROLLER_AXES_2D
         cv.vky_set_controller(self._c_panel, c_controller_type, NULL)
+
+    def visual(self, str visual_type):
+        if visual_type == 'marker':
+            c_visual_type = cv.VKY_VISUAL_MARKER
+        c_visual = cv.vky_visual(self._c_scene, c_visual_type, NULL, NULL)
+        cv.vky_add_visual_to_panel(c_visual, self._c_panel, cv.VKY_VIEWPORT_INNER, cv.VKY_VISUAL_PRIORITY_NONE);
+        visual = Visual()
+        visual.create(c_visual)
+        return visual
+
+
+cdef class Visual:
+    cdef cv.VkyVisual* _c_visual
+
+    cdef create(self, cv.VkyVisual* c_visual):
+        self._c_visual = c_visual
+        if c_visual is NULL:
+            raise MemoryError()
+
+    def data(self, str prop):
+        # TODO
+        pass

@@ -24,6 +24,9 @@ cdef extern from "../../include/visky/visky.h":
     ctypedef struct VkyPanel:
         pass
 
+    ctypedef struct VkyVisual:
+        pass
+
 
     # Functions
     void log_set_level_env()
@@ -34,6 +37,8 @@ cdef extern from "../../include/visky/visky.h":
     VkyPanel* vky_get_panel(VkyScene* scene, uint32_t row, uint32_t col)
     void vky_set_controller(VkyPanel* panel, VkyControllerType controller_type, const void*)
 
+    VkyVisual* vky_visual(VkyScene* scene, VkyVisualType visual_type, const void* params, const void* obj)
+    void vky_add_visual_to_panel(VkyVisual* visual, VkyPanel* panel, VkyViewportType viewport_type, VkyVisualPriority priority)
     # void vky_add_frame_callback(canvas, callback1)
 
     void vky_run_app(VkyApp* app)
