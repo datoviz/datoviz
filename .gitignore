@@ -13,6 +13,7 @@ artifacts
 *.out*
 *.log
 *.lock
+*.pyc
 target/
 Testing
 msdfgen

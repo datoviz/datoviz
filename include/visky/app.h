@@ -177,12 +177,33 @@ typedef enum
 } VkyBackendType;
 
 
+
 /*************************************************************************************************/
-/*  Backends                                                                                     */
+/*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
 typedef struct VkyVideo VkyVideo;
 typedef struct VkyBackendVideoParams VkyBackendVideoParams;
+typedef struct VkyScreenshot VkyScreenshot;
+typedef struct VkyBackendScreenshotParams VkyBackendScreenshotParams;
+typedef struct VkyMouse VkyMouse;
+typedef struct VkyKeyboard VkyKeyboard;
+
+
+// Return 1 if the canvas should be redrawn following the mouse event, 0 otherwise.
+typedef int (*VkyMouseCallback)(VkyCanvas*, VkyMouse*);
+
+// Return 1 if the canvas should be redrawn following the keyboard event, 0 otherwise.
+typedef int (*VkyKeyboardCallback)(VkyCanvas*, VkyKeyboard*);
+
+// Frame callback.
+typedef void (*VkyFrameCallback)(VkyCanvas*);
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
 struct VkyBackendVideoParams
 {
     char* filename;
@@ -192,9 +213,6 @@ struct VkyBackendVideoParams
     VkyVideo* video;
 };
 
-typedef struct VkyScreenshot VkyScreenshot;
-
-typedef struct VkyBackendScreenshotParams VkyBackendScreenshotParams;
 struct VkyBackendScreenshotParams
 {
     char* filename;
@@ -202,10 +220,6 @@ struct VkyBackendScreenshotParams
 };
 
 
-
-/*************************************************************************************************/
-/*  App                                                                                          */
-/*************************************************************************************************/
 
 struct VkyApp
 {
@@ -227,11 +241,6 @@ struct VkyApp
 
 
 
-/*************************************************************************************************/
-/*  Structures                                                                                   */
-/*************************************************************************************************/
-
-typedef struct VkyMouse VkyMouse;
 struct VkyMouse
 {
     VkyMouseButton button;
@@ -247,22 +256,12 @@ struct VkyMouse
     double click_time;
 };
 
-typedef struct VkyKeyboard VkyKeyboard;
 struct VkyKeyboard
 {
     VkyKey key;
     uint32_t modifiers;
     double press_time;
 };
-
-// Return 1 if the canvas should be redrawn following the mouse event, 0 otherwise.
-typedef int (*VkyMouseCallback)(VkyCanvas*, VkyMouse*);
-
-// Return 1 if the canvas should be redrawn following the keyboard event, 0 otherwise.
-typedef int (*VkyKeyboardCallback)(VkyCanvas*, VkyKeyboard*);
-
-// Frame callback.
-typedef void (*VkyFrameCallback)(VkyCanvas*);
 
 struct VkyEventController
 {

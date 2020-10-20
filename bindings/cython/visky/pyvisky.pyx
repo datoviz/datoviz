@@ -5,7 +5,7 @@ cdef class App:
     cdef cv.VkyApp* _c_app
 
     def __cinit__(self):
-        self._c_app = cv.vky_create_app(cv.VkyBackendType.VKY_BACKEND_NONE, NULL)
+        self._c_app = cv.vky_create_app(cv.VKY_BACKEND_NONE, NULL)
         if self._c_app is NULL:
             raise MemoryError()
 
