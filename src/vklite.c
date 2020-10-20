@@ -2256,12 +2256,66 @@ VkyTexture* vky_get_font_texture(VkyGpu* gpu)
 /*  Textures                                                                                     */
 /*************************************************************************************************/
 
+static bool _check_texture_size(VkyGpu* gpu, const VkyTextureParams* p_params)
+{
+    VkPhysicalDeviceLimits limits = gpu->device_properties.limits;
+    uint32_t width = p_params->width;
+    uint32_t height = p_params->height;
+    uint32_t depth = p_params->depth;
+    uint32_t max = 0;
+    // HACK: find the dimension of the texture.
+    uint8_t dim = 0;
+    if (depth <= 1)
+    {
+        if (height <= 1)
+            dim = 1;
+        else
+            dim = 2;
+    }
+    else
+        dim = 3;
+    bool texture_fits = false;
+    switch (dim)
+    {
+    case 1:
+        max = limits.maxImageDimension1D;
+        texture_fits = width <= max;
+        break;
+    case 2:
+        max = limits.maxImageDimension2D;
+        texture_fits = width <= max && //
+                       height <= max;
+        break;
+    case 3:
+        max = limits.maxImageDimension3D;
+        texture_fits = width <= max &&  //
+                       height <= max && //
+                       depth <= max;
+        break;
+    default:
+        break;
+    }
+    if (!texture_fits)
+    {
+        log_error(
+            "could not create %dD texture %dx%dx%d, maximum possible size on this hardware is %d",
+            dim, width, height, depth, max);
+        return false;
+    }
+    return true;
+}
+
 VkyTexture vky_create_texture(VkyGpu* gpu, const VkyTextureParams* p_params)
 {
     log_trace("create texture, compute %d", p_params->enable_compute);
+    ASSERT(p_params != NULL);
     VkyTextureParams params = *p_params;
+
     VkyTexture texture = {0};
     texture.gpu = gpu;
+
+    if (!_check_texture_size(gpu, p_params))
+        return texture;
 
     // Usage flags.
     VkImageUsageFlagBits flags = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
