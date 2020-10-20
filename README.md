@@ -13,16 +13,15 @@ Tighter integration with Dear ImGui is also planned to make it possible to build
 
 ## Installation
 
+Currently Visky works best on Ubuntu 20.04. Installation on other platforms is possible but might require slightly more work.
+
+*Note*: Ubuntu < 20.04 does not support the Qt5 backend example.
+
 ### Dependencies
 
-Mandatory dependencies:
+The only mandatory dependency is the **Vulkan SDK**. The build process uses **cmake 3.16+** and **ninja** (to make the build faster).
 
-* **cmake 3.16+ and ninja**
-* **xcb**
-* **glfw3** 3.3+
-* **vulkan**
-
-Optional dependencies:
+**Optional dependencies** are:
 
 * **freetype** (text bitmap support)
 * **libpng** (screenshot and offscreen backends)
@@ -31,44 +30,34 @@ Optional dependencies:
 * **Qt5** (Qt example). Note: Ubuntu users need Ubuntu 20.04 in order to have a distribution of Qt5 with Vulkan support.
 * **ASSIMP** (mesh file loading)
 
-The following libraries are statically bundled within the Visky library and they don't need to be installed separately:
+Automatically-handled dependencies are (statically bundled or managed by the build process, no need to install them manually):
 
+* **glfw3 3.3+**: cross-platform windowing system
 * **cglm**: basic types and math computations on vectors and matrices
 * **Dear ImGui**: rich graphical user interfaces
-* **earcut**: triangulation of polygons
+* **earcut.hpp**: triangulation of polygons
 * **triangle**: triangulation of complex polygons and planar straight-line graphs (PSLG)
 * **stb_image**: image file input and output
 * **tiny_obj_loader**: loading of `.obj` mesh files
 
 
-### Unix
-
-The following instructions were tested on **Ubuntu 20.04**.
+### Ubuntu 20.04
 
 1. Install the latest graphics drivers for your system and hardware.
-2. Install build tools and dependencies:
+2. Install the build tools:
 
     `sudo apt install build-essential cmake ninja-build xcb libx11-xcb-dev libglfw3-dev`
 
-    - If you prefer to install **all dependencies in one go**:
+3. Install the optional dependencies:
 
-    `sudo apt install build-essential cmake ninja-build xcb libx11-xcb-dev libglfw3-dev libpng-dev libavcodec-dev libavformat-dev libavfilter-dev libavutil-dev libswresample-dev libvncserver-dev xtightvncviewer libqt5opengl5-dev libfreetype6-dev libassimp-dev`
+    `sudo apt install libpng-dev libavcodec-dev libavformat-dev libavfilter-dev libavutil-dev libswresample-dev libvncserver-dev xtightvncviewer libqt5opengl5-dev libfreetype6-dev libassimp-dev`
 
-3. Install the latest [Lunarg Vulkan SDK](https://vulkan.lunarg.com/) (tarball SDK), for example in `~/vulkan`
+4. Install the latest [Lunarg Vulkan SDK](https://vulkan.lunarg.com/) (tarball SDK), for example in `~/vulkan`
 
     1. `cd ~/vulkan`
     2. `./vulkansdk samples` (build the Vulkan samples)
     3. `./samples/build/Sample-Programs/Hologram/Hologram` (test an example)
     4. **Important**: add `source ~/vulkan/setup-env.sh` to your `~/.bashrc` so that the `$VULKAN_SDK` environment variable and other variables are properly set in your terminal.
-
-4. (Optional) Install optional dependencies to unlock all features.
-
-    1. PNG support: `sudo apt install libpng-dev`
-    2. Freetype support: `sudo apt install libfreetype6-dev`
-    3. FFmpeg support: `sudo apt install libavcodec-dev libavformat-dev libavfilter-dev libavutil-dev libswresample-dev`
-    4. VNC support: `sudo apt install libvncserver-dev xtightvncviewer`
-    5. Qt5 support: `sudo apt install libqt5opengl5-dev`
-    6. ASSIMP support: `sudo apt install libassimp-dev`
 
 5. Clone the visky repository and build the library:
 
@@ -120,7 +109,7 @@ The following instructions were tested on **Ubuntu 20.04**.
     build\app_triangle.exe
     ```
 
-**Note**: Visky does not yet compile with MSVC, PRs welcome.
+**Note**: Visky does not yet compile with Microsoft Visual C++ compiler, PRs welcome.
 
 
 ## Code organization
@@ -137,7 +126,7 @@ There are some examples using either the app API or the scene API in `examples/`
 
 ## Testing suite
 
-There are no unit tests yet, but the library comes with an integration testing suite that runs a few examples (offscreen), makes screenshots, and compares them to presaved reference screenshots. A test passes if the two images are almost identical.
+There are few unit tests yet, but the library comes with an integration testing suite that runs a few examples (offscreen), makes screenshots, and compares them to presaved reference screenshots. A test passes if the two images are almost identical.
 
 1. `./manage.sh test`
 2. Screenshots are saved in `test/screenshots/` the first time you run the tests.
