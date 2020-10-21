@@ -55,14 +55,14 @@ typedef enum
 // NOTE: the numbers need to correspond to markers.glsl at the bottom.
 typedef enum
 {
-    VKY_MARKER_ARROW = 0,
+    VKY_MARKER_DISC = 0,
     VKY_MARKER_ASTERISK = 1,
     VKY_MARKER_CHEVRON = 2,
     VKY_MARKER_CLOVER = 3,
     VKY_MARKER_CLUB = 4,
     VKY_MARKER_CROSS = 5,
     VKY_MARKER_DIAMOND = 6,
-    VKY_MARKER_DISC = 7,
+    VKY_MARKER_ARROW = 7,
     VKY_MARKER_ELLIPSE = 8,
     VKY_MARKER_HBAR = 9,
     VKY_MARKER_HEART = 10,

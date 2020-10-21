@@ -582,6 +582,7 @@ VkyVisual* vky_visual_marker(VkyScene* scene, const VkyMarkersParams* params)
     {
         // Default.
         vparams.edge_width = 1;
+        vparams.edge_color[3] = 1;
     }
     vparams.edge_width *= canvas->dpi_factor;
     vky_visual_params(visual, sizeof(VkyMarkersParams), &vparams);

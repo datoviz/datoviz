@@ -3,12 +3,19 @@
 cdef extern from "../../include/visky/visky.h":
 
     # Numerical types
+    ctypedef long int32_t
     ctypedef unsigned long uint32_t
     ctypedef char uint8_t
     ctypedef char[3] cvec3
+    ctypedef float[4] vec4
+
     ctypedef struct VkyColor:
         cvec3 rgb
         uint8_t alpha
+
+    ctypedef struct VkyPanelIndex:
+        uint32_t row
+        uint32_t col
 
 
     # Opaque types
@@ -27,6 +34,11 @@ cdef extern from "../../include/visky/visky.h":
     ctypedef struct VkyVisual:
         pass
 
+    ctypedef struct VkyMarkersParams:
+        vec4 edge_color
+        float edge_width
+        int32_t enable_depth
+
 
     # Functions
     void log_set_level_env()
@@ -35,10 +47,17 @@ cdef extern from "../../include/visky/visky.h":
     VkyScene* vky_create_scene(
         VkyCanvas* canvas, VkyColor clear_color, uint32_t row_count, uint32_t col_count)
     VkyPanel* vky_get_panel(VkyScene* scene, uint32_t row, uint32_t col)
+    VkyPanelIndex vky_get_panel_index(VkyPanel* panel)
     void vky_set_controller(VkyPanel* panel, VkyControllerType controller_type, const void*)
 
     VkyVisual* vky_visual(VkyScene* scene, VkyVisualType visual_type, const void* params, const void* obj)
+
     void vky_add_visual_to_panel(VkyVisual* visual, VkyPanel* panel, VkyViewportType viewport_type, VkyVisualPriority priority)
+
+    void vky_visual_data_set_size(
+        VkyVisual* visual, uint32_t item_count,
+        uint32_t group_count, const uint32_t* group_lengths, const void* group_params)
+
     void vky_visual_data(
         VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index,
         uint32_t value_count, const void* values)
@@ -421,14 +440,14 @@ cdef extern from "../../include/visky/visky.h":
         VKY_JOIN_ROUND = True
 
     ctypedef enum VkyMarkerType:
-        VKY_MARKER_ARROW = 0
+        VKY_MARKER_DISC = 0
         VKY_MARKER_ASTERISK = 1
         VKY_MARKER_CHEVRON = 2
         VKY_MARKER_CLOVER = 3
         VKY_MARKER_CLUB = 4
         VKY_MARKER_CROSS = 5
         VKY_MARKER_DIAMOND = 6
-        VKY_MARKER_DISC = 7
+        VKY_MARKER_ARROW = 7
         VKY_MARKER_ELLIPSE = 8
         VKY_MARKER_HBAR = 9
         VKY_MARKER_HEART = 10

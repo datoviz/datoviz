@@ -67,6 +67,14 @@ cdef class Scene:
         p.create(c_panel, self._c_scene)
         return p
 
+    def visual(self, str visual_type, **kwargs):
+        if visual_type == 'marker':
+            c_visual_type = cv.VKY_VISUAL_MARKER
+        c_visual = cv.vky_visual(self._c_scene, c_visual_type, NULL, NULL)
+        visual = Visual()
+        visual.create(c_visual, self._c_scene)
+        return visual
+
 
 cdef class Panel:
     cdef cv.VkyPanel* _c_panel
@@ -74,35 +82,59 @@ cdef class Panel:
 
     cdef create(self, cv.VkyPanel* c_panel, cv.VkyScene* c_scene):
         self._c_panel = c_panel
-        self._c_scene = c_scene
+        self._c_scene = c_scene # TODO: remove
 
     def set_controller(self, str controller_type='axes'):
         c_controller_type = cv.VKY_CONTROLLER_NONE
         if controller_type == 'axes':
             c_controller_type = cv.VKY_CONTROLLER_AXES_2D
+        elif controller_type == 'arcball':
+            c_controller_type = cv.VKY_CONTROLLER_ARCBALL
         cv.vky_set_controller(self._c_panel, c_controller_type, NULL)
 
-    def visual(self, str visual_type):
-        if visual_type == 'marker':
-            c_visual_type = cv.VKY_VISUAL_MARKER
-        c_visual = cv.vky_visual(self._c_scene, c_visual_type, NULL, NULL)
-        cv.vky_add_visual_to_panel(c_visual, self._c_panel, cv.VKY_VIEWPORT_INNER, cv.VKY_VISUAL_PRIORITY_NONE);
-        visual = Visual()
-        visual.create(c_visual)
-        return visual
+    @property
+    def row_col(self):
+        index = cv.vky_get_panel_index(self._c_panel)
+        return (index.row, index.col)
+
+    @property
+    def row(self):
+        index = cv.vky_get_panel_index(self._c_panel)
+        return index.row
+
+    @property
+    def col(self):
+        index = cv.vky_get_panel_index(self._c_panel)
+        return index.col
 
 
 cdef class Visual:
     cdef cv.VkyVisual* _c_visual
+    cdef cv.VkyScene* _c_scene
 
-    cdef create(self, cv.VkyVisual* c_visual):
+    cdef create(self, cv.VkyVisual* c_visual, cv.VkyScene* c_scene):
         self._c_visual = c_visual
+        self._c_scene = c_scene
         if c_visual is NULL:
             raise MemoryError()
+
+    def add_to_panel(self, Panel panel):
+        row, col = panel.row_col
+        c_panel = cv.vky_get_panel(self._c_scene, row, col)
+        cv.vky_add_visual_to_panel(
+            self._c_visual, c_panel, cv.VKY_VIEWPORT_INNER, cv.VKY_VISUAL_PRIORITY_NONE)
 
     def data(self, str prop, np.ndarray arr, int idx=0):
         if prop == 'pos':
             prop_type = cv.VKY_VISUAL_PROP_POS_GPU
+        elif prop == 'color':
+            prop_type = cv.VKY_VISUAL_PROP_COLOR
+        elif prop == 'size':
+            prop_type = cv.VKY_VISUAL_PROP_SIZE
+
+        item_count = arr.shape[0]
+        cv.vky_visual_data_set_size(self._c_visual, item_count, 1, NULL, NULL)
+
         cdef void* buf = &(arr.data[0])
         cv.vky_visual_data(
-            self._c_visual, prop_type, idx, arr.shape[0], buf)
+            self._c_visual, prop_type, idx, item_count, buf)

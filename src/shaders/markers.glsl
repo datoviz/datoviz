@@ -251,14 +251,14 @@ float marker_vbar(vec2 P, float size)
 
 float select_marker(vec2 P, float size, float marker_type) {
     // NOTE: the numbers need to correspond to VkyMarkerType enum in visuals.h
-    if (marker_type <  0.5) return marker_arrow(P, size);
+    if (marker_type <  0.5) return marker_disc(P, size);
     if (marker_type <  1.5) return marker_asterisk(P, size);
     if (marker_type <  2.5) return marker_chevron(P, size);
     if (marker_type <  3.5) return marker_clover(P, size);
     if (marker_type <  4.5) return marker_club(P, size);
     if (marker_type <  5.5) return marker_cross(P, size);
     if (marker_type <  6.5) return marker_diamond(P, size);
-    if (marker_type <  7.5) return marker_disc(P, size);
+    if (marker_type <  7.5) return marker_arrow(P, size);
     if (marker_type <  8.5) return marker_ellipse(P, size);
     if (marker_type <  9.5) return marker_hbar(P, size);
     if (marker_type < 10.5) return marker_heart(P, size);
