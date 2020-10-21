@@ -21,7 +21,7 @@ void vky_demo_blank()
 /*  Raytracing demo                                                                              */
 /*************************************************************************************************/
 
-static void _raytracing_callback(VkyCanvas* canvas)
+static void _raytracing_callback(VkyCanvas* canvas, void* data)
 {
     double t = canvas->local_time;
     VkyCamera* camera = (VkyCamera*)canvas->scene->grid->panels[0].controller;
@@ -69,7 +69,7 @@ void raytracing_demo(VkyPanel* panel)
     visual->data.items = data;
     vky_visual_data_raw(visual);
 
-    vky_add_frame_callback(canvas, _raytracing_callback);
+    vky_add_frame_callback(canvas, _raytracing_callback, NULL);
 }
 
 void vky_demo_raytracing()

@@ -584,7 +584,7 @@ static void _link_panels(VkyApp* app)
     }
 }
 
-static void _controller_callback(VkyCanvas* canvas)
+static void _controller_callback(VkyCanvas* canvas, void* data)
 {
     VkyScene* scene = canvas->scene;
     VkyGrid* grid = scene->grid;
@@ -1868,7 +1868,7 @@ vky_create_scene(VkyCanvas* canvas, VkyColor clear_color, uint32_t row_count, ui
     canvas->cb_resize = _controller_resize_callback;
 
     // Controller activity responding to mouse is defined in this callback function.
-    vky_add_frame_callback(canvas, _controller_callback);
+    vky_add_frame_callback(canvas, _controller_callback, NULL);
 
     // Show FPS
     if (VKY_FPS)

@@ -191,13 +191,14 @@ typedef struct VkyKeyboard VkyKeyboard;
 
 
 // Return 1 if the canvas should be redrawn following the mouse event, 0 otherwise.
-typedef int (*VkyMouseCallback)(VkyCanvas*, VkyMouse*);
+// typedef int (*VkyMouseCallback)(VkyCanvas*, VkyMouse*);
 
 // Return 1 if the canvas should be redrawn following the keyboard event, 0 otherwise.
-typedef int (*VkyKeyboardCallback)(VkyCanvas*, VkyKeyboard*);
+// typedef int (*VkyKeyboardCallback)(VkyCanvas*, VkyKeyboard*);
 
 // Frame callback.
-typedef void (*VkyFrameCallback)(VkyCanvas*);
+typedef struct VkyFrameCallbackStruct VkyFrameCallbackStruct;
+typedef void (*VkyFrameCallback)(VkyCanvas*, void*);
 
 
 /*************************************************************************************************/
@@ -263,6 +264,12 @@ struct VkyKeyboard
     double press_time;
 };
 
+struct VkyFrameCallbackStruct
+{
+    VkyFrameCallback callback;
+    void* data;
+};
+
 struct VkyEventController
 {
     VkyCanvas* canvas;
@@ -273,10 +280,10 @@ struct VkyEventController
     VkyKeyboard* keyboard;
 
     uint32_t mock_input_callback_count;
-    VkyFrameCallback* mock_input_callbacks;
+    VkyFrameCallbackStruct* mock_input_callbacks;
 
     uint32_t frame_callback_count;
-    VkyFrameCallback* frame_callbacks;
+    VkyFrameCallbackStruct* frame_callbacks;
 };
 
 
@@ -333,11 +340,11 @@ vky_update_keyboard_state(VkyKeyboard* keyboard, VkyKey key, VkyKeyModifiers mod
 /*  Callbacks                                                                                    */
 /*************************************************************************************************/
 
-VKY_EXPORT void vky_add_mock_input_callback(VkyCanvas*, VkyFrameCallback);
-VKY_EXPORT int vky_call_mock_input_callbacks(VkyEventController*);
+VKY_EXPORT void vky_add_mock_input_callback(VkyCanvas* canvas, VkyFrameCallback cb, void* data);
+VKY_EXPORT int vky_call_mock_input_callbacks(VkyCanvas* canvas);
 
-VKY_EXPORT void vky_add_frame_callback(VkyCanvas*, VkyFrameCallback);
-VKY_EXPORT void vky_call_frame_callbacks(VkyEventController*); // TODO: return int?
+VKY_EXPORT void vky_add_frame_callback(VkyCanvas* canvas, VkyFrameCallback cb, void* data);
+VKY_EXPORT void vky_call_frame_callbacks(VkyCanvas* canvas); // TODO: return int?
 
 
 

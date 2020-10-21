@@ -9,7 +9,7 @@
 /*  App                                                                                          */
 /*************************************************************************************************/
 
-static void _esc_close_canvas(VkyCanvas* canvas)
+static void _esc_close_canvas(VkyCanvas* canvas, void* data)
 {
     VkyKeyboard* keyboard = canvas->event_controller->keyboard;
     if (keyboard->key == VKY_KEY_ESCAPE)
@@ -110,7 +110,7 @@ VkyCanvas* vky_create_canvas(VkyApp* app, uint32_t width, uint32_t height)
     // Black canvas by default.
     canvas->cb_fill_command_buffer = fcb;
 
-    vky_add_frame_callback(canvas, _esc_close_canvas);
+    vky_add_frame_callback(canvas, _esc_close_canvas, NULL);
 
     return canvas;
 }
@@ -517,43 +517,53 @@ void vky_update_keyboard_state(VkyKeyboard* keyboard, VkyKey key, VkyKeyModifier
 /*  Callbacks                                                                                    */
 /*************************************************************************************************/
 
-void vky_add_mock_input_callback(VkyCanvas* canvas, VkyFrameCallback cb)
+void vky_add_mock_input_callback(VkyCanvas* canvas, VkyFrameCallback cb, void* data)
 {
     /* Mock input callbacks may call vky_update_mouse_state() and vky_update_keyboard_state()
     to manually update the mouse and keyboard states. Useful for testing purposes. */
 
     uint32_t n = canvas->event_controller->mock_input_callback_count;
     ASSERT(canvas->event_controller->mock_input_callbacks != NULL);
-    canvas->event_controller->mock_input_callbacks[n] = cb;
+    canvas->event_controller->mock_input_callbacks[n] = (VkyFrameCallbackStruct){cb, data};
     canvas->event_controller->mock_input_callback_count++;
 }
 
-int vky_call_mock_input_callbacks(VkyEventController* event_controller)
+int vky_call_mock_input_callbacks(VkyCanvas* canvas)
 {
+    ASSERT(canvas != NULL);
+    VkyEventController* event_controller = canvas->event_controller;
     ASSERT(event_controller != NULL);
+    VkyFrameCallbackStruct* fcs = NULL;
     for (uint32_t i = 0; i < event_controller->mock_input_callback_count; i++)
     {
-        ASSERT(event_controller->mock_input_callbacks[i] != NULL);
-        event_controller->mock_input_callbacks[i](event_controller->canvas);
+        ASSERT(event_controller->mock_input_callbacks != NULL);
+        fcs = &event_controller->mock_input_callbacks[i];
+        ASSERT(fcs->callback != NULL);
+        fcs->callback(event_controller->canvas, fcs->data);
     }
     return (int)event_controller->mock_input_callback_count;
 }
 
-void vky_add_frame_callback(VkyCanvas* canvas, VkyFrameCallback cb)
+void vky_add_frame_callback(VkyCanvas* canvas, VkyFrameCallback cb, void* data)
 {
     uint32_t n = canvas->event_controller->frame_callback_count;
     ASSERT(canvas->event_controller->frame_callbacks != NULL);
-    canvas->event_controller->frame_callbacks[n] = cb;
+    canvas->event_controller->frame_callbacks[n] = (VkyFrameCallbackStruct){cb, data};
     canvas->event_controller->frame_callback_count++;
 }
 
-void vky_call_frame_callbacks(VkyEventController* event_controller)
+void vky_call_frame_callbacks(VkyCanvas* canvas)
 {
+    ASSERT(canvas != NULL);
+    VkyEventController* event_controller = canvas->event_controller;
     ASSERT(event_controller != NULL);
+    VkyFrameCallbackStruct* fcs = NULL;
     for (uint32_t i = 0; i < event_controller->frame_callback_count; i++)
     {
-        ASSERT(event_controller->frame_callbacks[i] != NULL);
-        event_controller->frame_callbacks[i](event_controller->canvas);
+        ASSERT(event_controller->frame_callbacks != NULL);
+        fcs = &event_controller->frame_callbacks[i];
+        ASSERT(fcs->callback != NULL);
+        fcs->callback(event_controller->canvas, fcs->data);
     }
 }
 
@@ -637,7 +647,7 @@ void vky_update_event_states(VkyEventController* event_controller)
     VkyBackendType backend = event_controller->canvas->app->backend;
 
     // Mock input.
-    if (vky_call_mock_input_callbacks(event_controller) > 0)
+    if (vky_call_mock_input_callbacks(event_controller->canvas) > 0)
         // Do not process normal interactive events when using mock input in order to avoid
         // conflicts.
         return;
@@ -701,13 +711,11 @@ void vky_next_frame(VkyCanvas* canvas)
     // Upload the pending data for the visuals.
     vky_upload_pending_data(canvas);
 
-    VkyEventController* event_controller = canvas->event_controller;
-
     // Update the mouse state following mouse events raised by glfw.
     vky_update_event_states(canvas->event_controller);
 
     // Call the update callbacks.
-    vky_call_frame_callbacks(event_controller);
+    vky_call_frame_callbacks(canvas);
 
     // Require for some vents like mouse wheel which should be raised in a single frame.
     vky_finish_event_states(canvas->event_controller);
