@@ -52,6 +52,18 @@ cdef extern from "../../include/visky/visky.h":
 
 
 
+    # NOTE: to remove later
+    ctypedef enum  VkFormat:
+        VK_FORMAT_R8_UNORM = 9
+    ctypedef struct VkyTextureParams:
+        uint32_t width
+        uint32_t height
+        uint32_t depth
+        uint8_t format_bytes
+        VkFormat format
+
+
+
     # Functions
     void log_set_level_env()
     VkyApp* vky_create_app(VkyBackendType backend, void* params)
@@ -74,8 +86,10 @@ cdef extern from "../../include/visky/visky.h":
         VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index,
         uint32_t value_count, const void* values)
 
-    # void vky_add_frame_callback(canvas, callback1)
+    VkyTextureParams vky_default_texture_params(uint32_t width, uint32_t height, uint32_t depth);
+    void vky_visual_image_upload(VkyVisual* visual, const void* image)
 
+    # void vky_add_frame_callback(canvas, callback1)
     void vky_run_app(VkyApp* app)
     void vky_close_canvas(VkyCanvas* canvas)
     void vky_destroy_app(VkyApp* app)
@@ -130,6 +144,12 @@ cdef extern from "../../include/visky/visky.h":
 
     ctypedef struct VkyFakeSphereParams:
         vec4 light_pos
+
+    ctypedef struct VkyImageCmapParams:
+        uint32_t cmap
+        float scaling
+        float alpha
+        VkyTextureParams* tex_params
 
     ctypedef struct VkyVolumeParams:
         mat4 inv_proj_view

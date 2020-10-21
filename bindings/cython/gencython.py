@@ -124,7 +124,7 @@ def _parse_struct(text):
     # syntax we don't want to see in the final parse tree
     LBRACE, RBRACE, COMMA, SEMICOLON = map(Suppress, "{},;")
     _struct = Suppress("struct")
-    dtype = Word(alphanums + "_")
+    dtype = Word(alphanums + "_*")
     identifier = Word(alphanums + "_")
     structDecl = Group(dtype("dtype") + identifier("name") + SEMICOLON)
     structList = Group(structDecl + ZeroOrMore(structDecl))

@@ -14,15 +14,41 @@ _PROPS = {
     'pos': cv.VKY_VISUAL_PROP_POS_GPU,
     'color': cv.VKY_VISUAL_PROP_COLOR,
     'size': cv.VKY_VISUAL_PROP_SIZE,
+    'uv': cv.VKY_VISUAL_PROP_TEXTURE_COORDS,
 }
 
 _PROP_NAMES = list(_PROPS.keys())
 
+_VISUALS = {
+    'marker': cv.VKY_VISUAL_MARKER,
+    'image_cmap': cv.VKY_VISUAL_IMAGE_CMAP,
+}
+
+_CONTROLLERS = {
+    'axes': cv.VKY_CONTROLLER_AXES_2D,
+    'arcball': cv.VKY_CONTROLLER_ARCBALL,
+}
+
+
 def _get_prop(name):
     prop = _PROPS.get(name, None)
     if prop is None:
-        raise NotImplementedError("prop %s not implemented yet" % prop)
+        raise NotImplementedError("prop %s not implemented yet" % name)
     return prop
+
+
+def _get_visual(name):
+    visual = _VISUALS.get(name, None)
+    if visual is None:
+        raise NotImplementedError("visual %s not implemented yet" % name)
+    return visual
+
+
+def _get_controller(name):
+    controller = _CONTROLLERS.get(name, None)
+    if controller is None:
+        raise NotImplementedError("controller %s not implemented yet" % name)
+    return controller
 
 
 _APP = None
@@ -118,11 +144,7 @@ cdef class Panel:
         self._c_panel = c_panel
 
     def controller(self, str name='axes'):
-        c_controller_type = cv.VKY_CONTROLLER_NONE
-        if name == 'axes':
-            c_controller_type = cv.VKY_CONTROLLER_AXES_2D
-        elif name == 'arcball':
-            c_controller_type = cv.VKY_CONTROLLER_ARCBALL
+        c_controller_type = _get_controller(name)
         cv.vky_set_controller(self._c_panel, c_controller_type, NULL)
 
     def axes(self):
@@ -145,10 +167,9 @@ cdef class Panel:
         return index.col
 
     def visual(self, str name, **kwargs):
-        if name == 'marker':
-            c_visual_type = cv.VKY_VISUAL_MARKER
-        # TODO: visual params as kwargs.pop()
-        c_visual = cv.vky_visual(self._c_panel.scene, c_visual_type, NULL, NULL)
+        c_visual_type = _get_visual(name)
+        c_visual = cv.vky_visual(
+            self._c_panel.scene, c_visual_type, NULL, NULL)
         visual = Visual()
         visual.create(c_visual)
         cv.vky_add_visual_to_panel(
@@ -160,6 +181,36 @@ cdef class Panel:
 
     def markers(self, **kwargs):
         return self.visual('marker', **kwargs)
+
+    def imshow(self, np.ndarray image):
+        cdef cv.VkyImageCmapParams params
+        cdef cv.VkyTextureParams tex_params
+        tex_params = cv.vky_default_texture_params(
+            image.shape[0],
+            1 if image.ndim <= 1 else image.shape[1],
+            1 if image.ndim <= 2 else image.shape[2])
+        tex_params.format_bytes = 1
+        tex_params.format = cv.VK_FORMAT_R8_UNORM
+
+        params.cmap = cv.VKY_CMAP_VIRIDIS
+        params.scaling = 1
+        params.alpha = 1
+        params.tex_params = &tex_params
+
+        visual = Image()
+        c_visual_type = _get_visual('image_cmap')
+        c_visual = cv.vky_visual(
+            self._c_panel.scene, c_visual_type, &params, NULL)
+        visual.create(c_visual)
+        cv.vky_add_visual_to_panel(
+            c_visual, self._c_panel, cv.VKY_VIEWPORT_INNER, cv.VKY_VISUAL_PRIORITY_NONE)
+
+        visual.data('pos', np.array([-1, -1, 0], dtype=np.float32), idx=0)
+        visual.data('pos', np.array([+1, +1, 0], dtype=np.float32), idx=1)
+        visual.data('uv', np.array([0, 0], dtype=np.float32), idx=0)
+        visual.data('uv', np.array([1, 1], dtype=np.float32), idx=1)
+        visual.set_image(image)
+
 
 
 cdef class Visual:
@@ -190,3 +241,8 @@ cdef class Visual:
         cdef void* buf = &(values.data[0])
         cv.vky_visual_data(
             self._c_visual, prop, idx, item_count, buf)
+
+
+cdef class Image(Visual):
+    def set_image(self, np.ndarray image):
+        cv.vky_visual_image_upload(self._c_visual, &image.data[0])

@@ -345,7 +345,9 @@ struct VkyBufferRegion
 
 struct VkyTextureParams
 {
-    uint32_t width, height, depth;
+    uint32_t width;
+    uint32_t height;
+    uint32_t depth;
     uint8_t format_bytes;
     VkFormat format;
     VkFilter filter;
