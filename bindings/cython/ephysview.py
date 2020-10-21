@@ -184,11 +184,10 @@ class RawEphysViewer:
         self.load_data()
         self.update_view()
 
-        # TODO
-        # # Interactivity bindings.
-        # self.canvas.on_key(self.on_key)
-        # self.canvas.on_mouse(self.on_mouse)
-        # self.canvas.on_frame(self.on_frame)
+        # Interactivity bindings.
+        self.canvas.on_key(self.on_key)
+        self.canvas.on_mouse(self.on_mouse)
+        self.canvas.on_frame(self.on_frame)
 
     def update_view(self):
         self.scale = scale = self.scale or get_scale(self.arr_buf)
@@ -215,16 +214,16 @@ class RawEphysViewer:
         self.load_data()
         self.update_view()
 
-    def on_key(self, key, modifiers=None):
+    def on_key(self, canvas, key=None, modifiers=None):
         delta = .25 * self.buffer_size / self.sample_rate
         if key == 'left':
             self.goto(self.time - delta)
         if key == 'right':
             self.goto(self.time + delta)
-        if key == 'kp_add':
+        if key == '+':
             self.scale = (self.scale[0], self.scale[1] / 1.1)
             self.update_view()
-        if key == 'kp_subtract':
+        if key == '-':
             self.scale = (self.scale[0], self.scale[1] * 1.1)
             self.update_view()
         if key == 'home':
@@ -232,35 +231,41 @@ class RawEphysViewer:
         if key == 'end':
             self.goto(self.duration)
         if key == 'g':
-            vl.vky_prompt(self.canvas._canvas)
+            # TODO
+            # vl.vky_prompt(self.canvas._canvas)
+            pass
 
-    def on_mouse(self, button, pos, ev=None):
-        if ev.state == 'click':
-            pick = vl.vky_pick(
-                self.canvas._scene, tp.T_VEC2(pos[0], pos[1]), None)
-            x, y = pick.pos_data
-            i = math.floor(
-                (x - self.sample / self.sample_rate) /
-                (self.buffer_size / self.sample_rate) *
-                self.buffer_size)
-            j = math.floor(y)
-            j = self.n_channels - 1 - j
-            i = np.clip(i, 0, self.n_samples - 1)
-            j = np.clip(j, 0, self.n_channels - 1)
-            print(
-                f"Picked {x}, {y} : {self.arr_buf[i, j]}")
+    def on_mouse(self, canvas, button, pos):
+        pass
+        # TODO
+        # if ev.state == 'click':
+        #     pick = vl.vky_pick(
+        #         self.canvas._scene, tp.T_VEC2(pos[0], pos[1]), None)
+        #     x, y = pick.pos_data
+        #     i = math.floor(
+        #         (x - self.sample / self.sample_rate) /
+        #         (self.buffer_size / self.sample_rate) *
+        #         self.buffer_size)
+        #     j = math.floor(y)
+        #     j = self.n_channels - 1 - j
+        #     i = np.clip(i, 0, self.n_samples - 1)
+        #     j = np.clip(j, 0, self.n_channels - 1)
+        #     print(
+        #         f"Picked {x}, {y} : {self.arr_buf[i, j]}")
 
-    def on_frame(self):
-        t = vl.vky_prompt_get(self.canvas._canvas)
-        if not t:
-            return
-        try:
-            t = float(t)
-        except:
-            print("Invalid time %s" % t)
-            return
-        if t:
-            self.goto(t)
+    def on_frame(self, canvas):
+        pass
+        # TODO
+        # t = vl.vky_prompt_get(self.canvas._canvas)
+        # if not t:
+        #     return
+        # try:
+        #     t = float(t)
+        # except:
+        #     print("Invalid time %s" % t)
+        #     return
+        # if t:
+        # self.goto(t)
 
     def show(self):
         run()
