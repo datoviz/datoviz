@@ -1,21 +1,14 @@
 import numpy as np
-from visky import pyvisky
+from visky.pyvisky import canvas, run
 
-app = pyvisky.App()
-c = app.canvas()
-s = c.scene()
-
-p = s.panel()
-p.set_controller('axes')
-
-v = s.visual('marker')
-v.add_to_panel(p)
-
+# Test data
 n = 10000
-v.data('pos', .25 * np.random.randn(n, 3).astype(np.float32))
-v.data('color', np.random.randint(
-    size=(n, 4), low=100, high=255).astype(np.uint8))
-v.data('size', np.random.uniform(size=n, low=10, high=50).astype(np.float32))
+pos = .25 * np.random.randn(n, 3).astype(np.float32)
+color = np.random.randint(size=(n, 4), low=100, high=255).astype(np.uint8)
+size = np.random.uniform(size=n, low=10, high=50).astype(np.float32)
 
-app.run()
-del app
+# Make the canvas and create the marker visual
+canvas()[0, 0].axes().markers(pos=pos, color=color, size=size)
+
+# Start the event loop
+run()

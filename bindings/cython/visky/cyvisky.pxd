@@ -29,6 +29,7 @@ cdef extern from "../../include/visky/visky.h":
         pass
 
     ctypedef struct VkyPanel:
+        VkyScene* scene
         pass
 
     ctypedef struct VkyVisual:
