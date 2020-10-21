@@ -1,7 +1,10 @@
 import atexit
+from functools import wraps
 
 cimport numpy as np
 import numpy as np
+# from cpython.ref cimport PyObject
+from cpython.ref cimport Py_INCREF
 
 cimport visky.cyvisky as cv
 
@@ -103,6 +106,29 @@ cdef class App:
         cv.vky_run_app(self._c_app)
 
 
+
+cdef _wrapped_callback(cv.VkyCanvas* c_canvas, void* data):
+    cdef object tup
+    if data != NULL:
+        tup = <object>data
+        f, args = tup
+        f(*args)
+
+
+cdef _add_frame_callback(cv.VkyCanvas* c_canvas, f, args):
+    cdef void* ptr_to_obj
+    tup = (f, args)
+
+    # IMPORTANT: need to either keep a reference of this tuple object somewhere in the class,
+    # or increase the ref, otherwise this tuple will be deleted by the time we call it in the
+    # C callback function.
+    Py_INCREF(tup)
+
+    ptr_to_obj = <void*>tup
+    cv.vky_add_frame_callback(c_canvas, <cv.VkyFrameCallback>_wrapped_callback, ptr_to_obj)
+
+
+
 cdef class Canvas:
     cdef cv.VkyCanvas* _c_canvas
     cdef cv.VkyScene* _c_scene
@@ -135,6 +161,36 @@ cdef class Canvas:
         if len(idx) == 2:
             return self.panel(int(idx[0]), int(idx[1]))
         raise ValueError("panel idx is invalid %s" % str(idx))
+
+    def on_frame(self, f):
+        _add_frame_callback(self._c_canvas, f, (self,))
+
+    def _wrap_keyboard(self, f):
+        @wraps(f)
+        def wrapped(c):
+            cdef cv.VkyKeyboard* keyboard
+            cdef cv.VkyKey key
+            keyboard = cv.vky_event_keyboard(self._c_canvas)
+            key = keyboard.key
+            if key != cv.VKY_KEY_NONE:
+                # TODO: modifiers
+                f(c, key)
+        return wrapped
+
+    def _wrap_mouse(self, f):
+        @wraps(f)
+        def wrapped(c):
+            cdef cv.VkyMouse* mouse
+            mouse = cv.vky_event_mouse(self._c_canvas)
+            # TODO: state, wheel, etc
+            f(c, mouse.button, mouse.cur_pos)
+        return wrapped
+
+    def on_key(self, f):
+        _add_frame_callback(self._c_canvas, self._wrap_keyboard(f), (self,))
+
+    def on_mouse(self, f):
+        _add_frame_callback(self._c_canvas, self._wrap_mouse(f), (self,))
 
 
 

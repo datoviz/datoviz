@@ -54,7 +54,7 @@ cdef extern from "../../include/visky/visky.h":
 
 
     # Callback function types
-    ctypedef void (*VkyFrameCallback)(VkyCanvas*)
+    ctypedef void (*VkyFrameCallback)(VkyCanvas*, void*)
 
 
     # NOTE: to remove later
@@ -94,7 +94,7 @@ cdef extern from "../../include/visky/visky.h":
     VkyTextureParams vky_default_texture_params(uint32_t width, uint32_t height, uint32_t depth);
     void vky_visual_image_upload(VkyVisual* visual, const void* image)
 
-    void vky_add_frame_callback(VkyCanvas* canvas, VkyFrameCallback callback)
+    void vky_add_frame_callback(VkyCanvas* canvas, VkyFrameCallback callback, void* data)
     VkyMouse* vky_event_mouse(VkyCanvas* canvas)
     VkyKeyboard* vky_event_keyboard(VkyCanvas* canvas)
 
