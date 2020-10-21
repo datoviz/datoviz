@@ -22,14 +22,14 @@ void main() {
     float u = exp(-k * (t - last_active));
 
     out_color = color;
-    vec3 hsv = rgb2hsv(color.rgb);
+    vec3 hsv = rgb2hsv(color).rgb;
     float value = hsv.z;
 
     if (t < last_active) {
         out_color.a = 0;
     }
     else {
-        out_color.rgb = hsv2rgb(vec3(hsv.xy, .2 + .8 * u));
+        out_color.rgb = hsv2rgb(vec4(hsv.xy, .2 + .8 * u, color.a)).rgb;
     }
 
     out_size = size;

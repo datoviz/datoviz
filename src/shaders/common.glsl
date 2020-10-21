@@ -35,6 +35,8 @@ layout (binding = 1) uniform sampler2D color_texture;
 #define TRANSFORM_MODE_Y_ONLY   0x02
 #define TRANSFORM_MODE_STATIC   0x07
 
+#include "color.glsl"
+
 
 mat4 get_ortho_matrix(vec2 size) {
     // The orthographic projection is:
@@ -61,7 +63,6 @@ vec4 transform_pos(vec3 pos) {
 }
 
 
-
 vec4 transform_pos(vec3 pos, uint transform_mode) {
     if (transform_mode == TRANSFORM_MODE_NORMAL)
         return transform_pos(pos);
@@ -74,12 +75,10 @@ vec4 transform_pos(vec3 pos, uint transform_mode) {
 }
 
 
-
 vec4 transform_pos(vec3 pos, vec2 shift) {
     vec4 pos_tr = transform_pos(pos);
     return pos_tr + vec4(2 * shift / mvp.viewport.zw, 0, 0);
 }
-
 
 
 vec4 transform_pos(vec3 pos, vec2 shift, uint transform_mode) {
@@ -91,85 +90,4 @@ vec4 transform_pos(vec3 pos, vec2 shift, uint transform_mode) {
         return vec4(pos.x + 2 * shift.x / mvp.viewport.z, transform_pos(pos, shift).y, pos.z, 1.0);
     // else if (transform_mode == TRANSFORM_MODE_STATIC)
     return vec4(pos, 1.0) + vec4(2 * shift / mvp.viewport.zw, 0, 0);
-}
-
-
-
-uvec4 unpack_32_8(uint n) {
-    /* convert one uint32 into four uint8 */
-    return uvec4(
-        n & 0xFF,
-        (n >> 8) & 0xFF,
-        (n >> 16) & 0xFF,
-        (n >> 24) & 0xFF
-    );
-}
-
-
-
-uvec2 unpack_32_16(uint n) {
-    /* convert one uint32 into two uint16 */
-    return uvec2(
-        256 * (n         & 0xFF)  + ((n >> 8 ) & 0xFF),
-        256 * ((n >> 16) & 0xFF)  + ((n >> 24) & 0xFF)
-    );
-}
-
-
-
-uvec2 unpack_16_8(uint n) {
-    /* convert one uint16 into two uint8 */
-    return uvec2(
-        n & 0xFF,
-        (n >> 8) & 0xFF
-    );
-}
-
-
-vec4 get_color(uvec2 cmap_bytes) {
-    vec4 color = vec4(0, 0, 0, 1);
-
-    // Color context
-    uvec4 cmap_ctx = unpack_32_8(mvp.cmap_context);
-    float cmap_texrow = float(cmap_ctx.x) / 255.0;  // colormap
-    float cmap_const = float(cmap_ctx.z) / 255.0;   // constant
-    float cunused = float(cmap_ctx.w) / 255.0;      // not yet used
-
-    float cmap_texcol = float(cmap_bytes.x) / 255.0;
-    float alpha = float(cmap_bytes.y) / 255.0;
-
-    // Fetch the color using the colormap index and the value. The third value in icol is currently unused.
-    color = texture(color_texture, vec2(cmap_texcol, cmap_texrow));
-    color.a = alpha;
-    // TODO: try to replace by imageLoad, might have to use SSBO instead of texture for the colormap image
-    // color = imageLoad(color_texture, ivec2(cmap_bytes.x, cmap));
-
-    return color;
-}
-
-
-
-vec4 get_color(vec4 color) {
-    // no-op when the color is already in RGBA format (4 bytes of uint8 transformed to float by Vulkan via FORMAT_UNORM)
-    return color;
-}
-
-
-vec3 rgb2hsv(vec3 c)
-{
-    vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
-    vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
-    vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
-
-    float d = q.x - min(q.w, q.y);
-    float e = 1.0e-10;
-    return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
-}
-
-
-vec3 hsv2rgb(vec3 c)
-{
-    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
-    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
-    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
