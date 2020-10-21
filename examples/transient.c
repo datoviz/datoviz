@@ -15,7 +15,7 @@ static float* point_size = NULL;
 static int32_t* spike_clusters;
 static uint32_t n_spikes = 0;
 
-static void frame_callback(VkyCanvas* canvas)
+static void frame_callback(VkyCanvas* canvas, void* data)
 {
     params.local_time = canvas->local_time;
     vky_visual_params(visual, sizeof(params), &params);
@@ -151,7 +151,7 @@ int main()
     free(color);
     free(position);
 
-    vky_add_frame_callback(canvas, frame_callback);
+    vky_add_frame_callback(canvas, frame_callback, NULL);
 
     vky_run_app(app);
     vky_destroy_app(app);

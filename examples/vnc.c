@@ -44,7 +44,7 @@ static enum rfbNewClientAction _vnc_new_client(rfbClientPtr cl)
     return RFB_CLIENT_ACCEPT;
 }
 
-static void mouse_input(VkyCanvas* canvas)
+static void mouse_input(VkyCanvas* canvas, void* data)
 {
     vky_update_mouse_state(canvas->event_controller->mouse, mouse_pos, mouse_button);
 }
@@ -64,7 +64,7 @@ static void run_vnc(VkyCanvas* canvas)
     server->kbdAddEvent = _vnc_keyboard_callback;
     server->newClientHook = _vnc_new_client;
 
-    vky_add_mock_input_callback(canvas, mouse_input);
+    vky_add_mock_input_callback(canvas, mouse_input, NULL);
 
     vky_fill_command_buffers(canvas);
     vky_offscreen_frame(canvas, VKY_TIME);

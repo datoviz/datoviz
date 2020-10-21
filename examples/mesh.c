@@ -285,7 +285,7 @@ int main()
     VkyGui* gui = vky_create_gui(canvas, (VkyGuiParams){VKY_GUI_STANDARD, 0});
     VkyGuiListParams gparams = {mesh_type_count, mesh_types};
     vky_gui_control(gui, VKY_GUI_LISTBOX, "", &gparams, &new_mesh_type);
-    vky_add_frame_callback(canvas, mesh_selection);
+    vky_add_frame_callback(canvas, mesh_selection, NULL);
 
     // Run app and quit.
     vky_run_app(app);

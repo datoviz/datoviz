@@ -109,7 +109,7 @@ int main()
     vky_visual_data_raw(visual);
     FREE(data);
 
-    vky_add_frame_callback(canvas, frame_callback);
+    vky_add_frame_callback(canvas, frame_callback, NULL);
 
     // Second panel.
     VkyPanel* panel2 = vky_get_panel(scene, 0, 0);

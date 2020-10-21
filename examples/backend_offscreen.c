@@ -2,7 +2,7 @@
 
 #define IMAGE_SIZE 1024
 
-static void frame_callback(VkyCanvas* canvas)
+static void frame_callback(VkyCanvas* canvas, void* data)
 {
     if (canvas->frame_count == 10)
     {
@@ -88,7 +88,7 @@ int main(void)
 
     ASSERT(scene->visual_count == 3);
 
-    vky_add_frame_callback(canvas, frame_callback);
+    vky_add_frame_callback(canvas, frame_callback, NULL);
 
     vky_run_app(app);
     vky_destroy_app(app);

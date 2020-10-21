@@ -29,7 +29,7 @@ static void upload_text(VkyVisual* visual)
     }
 }
 
-static void frame_callback(VkyCanvas* canvas)
+static void frame_callback(VkyCanvas* canvas, void* data)
 {
     VkyScene* scene = canvas->scene;
     VkyPanel* panel = &scene->grid->panels[0];
@@ -71,7 +71,7 @@ int main()
         vky_visual_data_group(visual, VKY_VISUAL_PROP_TEXT, 0, i, strlen(str), str);
 
     upload_text(visual);
-    vky_add_frame_callback(canvas, frame_callback);
+    vky_add_frame_callback(canvas, frame_callback, NULL);
 
     vky_run_app(app);
     vky_destroy_app(app);

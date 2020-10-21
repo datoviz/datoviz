@@ -138,7 +138,7 @@ static void _update_v2(float u)
 
 
 
-static void frame_callback(VkyCanvas* canvas)
+static void frame_callback(VkyCanvas* canvas, void* data)
 {
     VkyMouse* mouse = canvas->event_controller->mouse;
     // bool xvalid, yvalid;
@@ -247,7 +247,7 @@ int main()
     vky_add_visual_to_panel(v2, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
 
-    vky_add_frame_callback(canvas, frame_callback);
+    vky_add_frame_callback(canvas, frame_callback, NULL);
     vky_run_app(app);
     vky_destroy_app(app);
     return 0;

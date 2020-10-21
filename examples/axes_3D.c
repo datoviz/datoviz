@@ -85,7 +85,7 @@ static void surface(VkyPanel* panel)
 }
 
 
-static void callback(VkyCanvas* canvas)
+static void callback(VkyCanvas* canvas, void* data)
 {
     if (current_item != previous_item)
     {
@@ -128,7 +128,7 @@ int main()
 
     VkyGuiListParams cparams = {3, citems};
     vky_gui_control(gui, VKY_GUI_LISTBOX, "controller", &cparams, &ccurrent_item);
-    vky_add_frame_callback(canvas, callback);
+    vky_add_frame_callback(canvas, callback, NULL);
 
     vky_run_app(app);
     vky_destroy_app(app);

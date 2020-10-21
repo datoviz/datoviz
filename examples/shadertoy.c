@@ -17,7 +17,7 @@ struct Params
 };
 static Params params = {0};
 
-static void callback(VkyCanvas* canvas)
+static void callback(VkyCanvas* canvas, void* data)
 {
     if (canvas->event_controller->mouse->cur_state == VKY_MOUSE_STATE_DRAG)
     {
@@ -109,7 +109,7 @@ int main()
     visual->data.items = data;
     vky_visual_data_raw(visual);
 
-    vky_add_frame_callback(canvas, callback);
+    vky_add_frame_callback(canvas, callback, NULL);
     vky_run_app(app);
 
     vky_destroy_uniform_buffer(&ubo);

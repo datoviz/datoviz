@@ -11,7 +11,7 @@ static int64_t data_offset = 0;
 static FILE* f;
 static bool play = true;
 
-static void keyboard_callback(VkyCanvas* canvas)
+static void keyboard_callback(VkyCanvas* canvas, void* data)
 {
     VkyKeyboard* keyboard = canvas->event_controller->keyboard;
     // Toggle play/pause by pressing a key.
@@ -103,8 +103,8 @@ int main()
 
     // The upload_data() function is called at every frame and update the data.
     f = fopen(filename, "rb");
-    vky_add_frame_callback(canvas, upload_data);
-    vky_add_frame_callback(canvas, keyboard_callback);
+    vky_add_frame_callback(canvas, upload_data, NULL);
+    vky_add_frame_callback(canvas, keyboard_callback, NULL);
 
     vky_run_app(app);
 
