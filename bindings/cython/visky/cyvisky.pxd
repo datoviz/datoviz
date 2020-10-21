@@ -6,8 +6,24 @@ cdef extern from "../../include/visky/visky.h":
     ctypedef long int32_t
     ctypedef unsigned long uint32_t
     ctypedef char uint8_t
+
+    ctypedef int32_t[2] ivec2
+    ctypedef int32_t[3] ivec3
+    ctypedef int32_t[4] ivec4
+
+    ctypedef char[2] cvec2
     ctypedef char[3] cvec3
+    ctypedef char[4] cvec4
+
+    ctypedef float[2] vec2
+    ctypedef float[3] vec3
     ctypedef float[4] vec4
+
+    ctypedef double[2] dvec2
+    ctypedef double[3] dvec3
+    ctypedef double[4] dvec4
+
+    ctypedef float[4][4] mat4
 
     ctypedef struct VkyColor:
         cvec3 rgb
@@ -23,22 +39,17 @@ cdef extern from "../../include/visky/visky.h":
         pass
 
     ctypedef struct VkyCanvas:
-        pass
+        VkyApp* app
 
     ctypedef struct VkyScene:
-        pass
+        VkyCanvas* canvas
 
     ctypedef struct VkyPanel:
         VkyScene* scene
-        pass
 
     ctypedef struct VkyVisual:
-        pass
+        VkyScene* scene
 
-    ctypedef struct VkyMarkersParams:
-        vec4 edge_color
-        float edge_width
-        int32_t enable_depth
 
 
     # Functions
@@ -68,6 +79,89 @@ cdef extern from "../../include/visky/visky.h":
     void vky_run_app(VkyApp* app)
     void vky_close_canvas(VkyCanvas* canvas)
     void vky_destroy_app(VkyApp* app)
+
+
+
+
+    # ---------------------------------------------------------------------------------------------
+    # AUTOMATICALLY-GENERATED PART:
+    # ---------------------------------------------------------------------------------------------
+
+    # STRUCT START
+    # from file: visuals.h
+
+    ctypedef struct VkyRectangleParams:
+        vec3 origin
+        vec3 u
+        vec3 v
+
+    ctypedef struct VkyAreaParams:
+        vec3 origin
+        vec3 u
+        vec3 v
+
+    ctypedef struct VkyMeshParams:
+        vec4 light_pos
+        vec4 light_coefs
+        ivec2 tex_size
+        int32_t mode_color
+        int32_t mode_shading
+        float wire_linewidth
+
+    ctypedef struct VkyMarkersParams:
+        vec4 edge_color
+        float edge_width
+        int32_t enable_depth
+
+    ctypedef struct VkyMarkersRawParams:
+        vec2 marker_size
+        int32_t scaling_mode
+        int32_t alpha_scaling_mode
+
+    ctypedef struct VkyMarkersTransientParams:
+        float local_time
+
+    ctypedef struct VkyPathParams:
+        float linewidth
+        float miter_limit
+        int32_t cap_type
+        int32_t round_join
+        int32_t enable_depth
+
+    ctypedef struct VkyFakeSphereParams:
+        vec4 light_pos
+
+    ctypedef struct VkyVolumeParams:
+        mat4 inv_proj_view
+        mat4 normal_mat
+
+    ctypedef struct VkyGraphParams:
+        float marker_edge_width
+        vec4 marker_edge_color
+
+    ctypedef struct VkyTextParams:
+        ivec2 grid_size
+        ivec2 tex_size
+
+    ctypedef struct VkyPolygonParams:
+        float linewidth
+        VkyColor edge_color
+
+    ctypedef struct VkyPSLGParams:
+        float linewidth
+        VkyColor edge_color
+
+    ctypedef struct VkyTriangulationParams:
+        float linewidth
+        VkyColor edge_color
+        vec2 marker_size
+        VkyColor marker_color
+
+
+    # STRUCT END
+
+
+
 
 
 

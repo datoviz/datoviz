@@ -6,7 +6,6 @@ import numpy as np
 cimport visky.cyvisky as cv
 
 
-
 DEFAULT_WIDTH = 800
 DEFAULT_HEIGHT = 800
 

@@ -16,6 +16,8 @@ CYTHON_OUTPUT = (Path(__file__).parent / 'visky/cyvisky.pxd').resolve()
 
 ENUM_START = '# ENUM START'
 ENUM_END = '# ENUM END'
+STRUCT_START = '# STRUCT START'
+STRUCT_END = '# STRUCT END'
 
 
 # File explorer and manipulation
@@ -117,16 +119,62 @@ def _gen_enum(enums):
     return out
 
 
+def _parse_struct(text):
+    structs = {}
+    # syntax we don't want to see in the final parse tree
+    LBRACE, RBRACE, COMMA, SEMICOLON = map(Suppress, "{},;")
+    _struct = Suppress("struct")
+    dtype = Word(alphanums + "_")
+    identifier = Word(alphanums + "_")
+    structDecl = Group(dtype("dtype") + identifier("name") + SEMICOLON)
+    structList = Group(structDecl + ZeroOrMore(structDecl))
+    struct = _struct + identifier("struct_name") + LBRACE + \
+        structList("names") + RBRACE + SEMICOLON
+
+    for item, start, stop in struct.scanString(text):
+        l = []
+        for i, entry in enumerate(item.names):
+            l.append((entry.dtype, entry.name))
+        structs[item.struct_name] = l
+    return structs
+
+
+def _gen_struct(structs):
+    out = ''
+    for name, l in structs.items():
+        if not name.endswith('Params'):
+            continue
+        out += f'ctypedef struct {name}:\n'
+        for dtype, identifier in l:
+            out += f'    {dtype} {identifier}\n'
+        out += '\n'
+    return out
+
+
 if __name__ == '__main__':
-    to_insert = ''
+    enums_to_insert = ''
+    structs_to_insert = ''
+
     for filename in iter_header_files():
+        text = read_file(filename)
+
         # Parse the enums
-        enums = _parse_enum(read_file(filename))
+        enums = _parse_enum(text)
         # Generate the Cython enum definitions
         generated = _gen_enum(enums)
-        if not generated:
-            continue
-        to_insert += f'# from file: {filename.name}\n\n{generated}'
-    # Insert it into the Cython file
+        if generated:
+            enums_to_insert += f'# from file: {filename.name}\n\n{generated}'
+
+        # Parse the structs
+        if filename.name in ('visuals.h',):
+            structs = _parse_struct(text)
+            # Generate the Cython enum definitions
+            generated = _gen_struct(structs)
+            if generated:
+                structs_to_insert += f'# from file: {filename.name}\n\n{generated}'
+
+    # Insert into the Cython file
     insert_into_file(
-        CYTHON_OUTPUT, ENUM_START, ENUM_END, to_insert)
+        CYTHON_OUTPUT, ENUM_START, ENUM_END, enums_to_insert)
+    insert_into_file(
+        CYTHON_OUTPUT, STRUCT_START, STRUCT_END, structs_to_insert)
