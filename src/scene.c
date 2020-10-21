@@ -634,7 +634,7 @@ static void _controller_resize_callback(VkyCanvas* canvas)
     }
 }
 
-void* vky_get_axes(VkyPanel* panel)
+VkyAxes* vky_get_axes(VkyPanel* panel)
 {
     switch (panel->controller_type)
     {

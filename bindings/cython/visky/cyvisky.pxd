@@ -25,6 +25,10 @@ cdef extern from "../../include/visky/visky.h":
 
     ctypedef float[4][4] mat4
 
+    ctypedef struct VkyBox2D:
+        dvec2 pos_ll
+        dvec2 pos_ur
+
     ctypedef struct VkyColor:
         cvec3 rgb
         uint8_t alpha
@@ -48,6 +52,8 @@ cdef extern from "../../include/visky/visky.h":
 
     ctypedef struct VkyPanel:
         VkyScene* scene
+    ctypedef struct VkyAxes:
+        pass
 
     ctypedef struct VkyVisual:
         VkyScene* scene
@@ -78,6 +84,8 @@ cdef extern from "../../include/visky/visky.h":
     VkyPanel* vky_get_panel(VkyScene* scene, uint32_t row, uint32_t col)
     VkyPanelIndex vky_get_panel_index(VkyPanel* panel)
     void vky_set_controller(VkyPanel* panel, VkyControllerType controller_type, const void*)
+    void vky_axes_set_initial_range(VkyAxes* axes, VkyBox2D box)
+    VkyAxes* vky_get_axes(VkyPanel* panel)
 
     VkyVisual* vky_visual(VkyScene* scene, VkyVisualType visual_type, const void* params, const void* obj)
 

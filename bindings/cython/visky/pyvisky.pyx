@@ -242,17 +242,26 @@ cdef class Canvas:
 
 cdef class Panel:
     cdef cv.VkyPanel* _c_panel
+    cdef cv.VkyAxes* _c_axes
 
     cdef create(self, cv.VkyPanel* c_panel):
         self._c_panel = c_panel
 
     def controller(self, str name='axes'):
         c_controller_type = _get_controller(name)
-        cv.vky_set_controller(self._c_panel, c_controller_type, NULL)
+        if name == 'axes':
+            cv.vky_set_controller(self._c_panel, c_controller_type, NULL)
+            self._c_axes = cv.vky_get_axes(self._c_panel)
 
     def axes(self):
         self.controller('axes')
         return self
+
+    def axes_range(self, x0, y0, x1, y1):
+        cdef cv.VkyBox2D box
+        box.pos_ll = (x0, y0)
+        box.pos_ur = (x1, y1)
+        cv.vky_axes_set_initial_range(self._c_axes, box)
 
     @property
     def row_col(self):

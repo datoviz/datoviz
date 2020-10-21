@@ -773,7 +773,7 @@ void vky_visual_data_upload(VkyVisual*, VkyPanel*);
 VKY_EXPORT void vky_set_full_viewport(VkyCanvas* canvas); // TODO: scene
 VKY_EXPORT VkyPanel* vky_get_panel(VkyScene* scene, uint32_t row, uint32_t col);
 VKY_EXPORT VkyPanelIndex vky_get_panel_index(VkyPanel*);
-VKY_EXPORT void* vky_get_axes(VkyPanel* panel);
+VKY_EXPORT VkyAxes* vky_get_axes(VkyPanel* panel);
 VKY_EXPORT VkyViewport vky_get_viewport(VkyPanel*, VkyViewportType viewport_type);
 VKY_EXPORT void vky_mvp_finalize(VkyScene* scene);
 VKY_EXPORT void vky_reset_all_mvp(VkyScene* scene);
