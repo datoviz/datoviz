@@ -3,7 +3,6 @@ from functools import wraps
 
 cimport numpy as np
 import numpy as np
-# from cpython.ref cimport PyObject
 from cpython.ref cimport Py_INCREF
 
 cimport visky.cyvisky as cv
@@ -34,6 +33,20 @@ _CONTROLLERS = {
 }
 
 
+# TODO: add more keys
+_KEYS = {
+    cv.VKY_KEY_LEFT: 'left',
+    cv.VKY_KEY_RIGHT: 'right',
+    cv.VKY_KEY_UP: 'up',
+    cv.VKY_KEY_DOWN: 'down',
+    cv.VKY_KEY_HOME: 'home',
+    cv.VKY_KEY_END: 'end',
+    cv.VKY_KEY_KP_ADD: '+',
+    cv.VKY_KEY_KP_SUBTRACT: '-',
+    cv.VKY_KEY_G: 'g',
+}
+
+
 def _get_prop(name):
     prop = _PROPS.get(name, None)
     if prop is None:
@@ -53,6 +66,10 @@ def _get_controller(name):
     if controller is None:
         raise NotImplementedError("controller %s not implemented yet" % name)
     return controller
+
+def _key_name(key):
+    return _KEYS.get(key, key)
+
 
 
 _APP = None
@@ -174,7 +191,7 @@ cdef class Canvas:
             key = keyboard.key
             if key != cv.VKY_KEY_NONE:
                 # TODO: modifiers
-                f(c, key)
+                f(c, _key_name(key))
         return wrapped
 
     def _wrap_mouse(self, f):
