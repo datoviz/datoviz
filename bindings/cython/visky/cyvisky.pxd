@@ -35,6 +35,8 @@ cdef extern from "../../include/visky/visky.h":
 
 
     # Opaque types
+    ctypedef struct VkyVideo:
+        pass
     ctypedef struct VkyApp:
         pass
 
@@ -50,6 +52,9 @@ cdef extern from "../../include/visky/visky.h":
     ctypedef struct VkyVisual:
         VkyScene* scene
 
+
+    # Callback function types
+    ctypedef void (*VkyFrameCallback)(VkyCanvas*)
 
 
     # NOTE: to remove later
@@ -89,7 +94,10 @@ cdef extern from "../../include/visky/visky.h":
     VkyTextureParams vky_default_texture_params(uint32_t width, uint32_t height, uint32_t depth);
     void vky_visual_image_upload(VkyVisual* visual, const void* image)
 
-    # void vky_add_frame_callback(canvas, callback1)
+    void vky_add_frame_callback(VkyCanvas* canvas, VkyFrameCallback callback)
+    VkyMouse* vky_event_mouse(VkyCanvas* canvas)
+    VkyKeyboard* vky_event_keyboard(VkyCanvas* canvas)
+
     void vky_run_app(VkyApp* app)
     void vky_close_canvas(VkyCanvas* canvas)
     void vky_destroy_app(VkyApp* app)
@@ -102,6 +110,35 @@ cdef extern from "../../include/visky/visky.h":
     # ---------------------------------------------------------------------------------------------
 
     # STRUCT START
+    # from file: app.h
+
+    ctypedef struct VkyBackendVideoParams:
+        char* filename
+        int fps
+        int bitrate
+        double duration
+        VkyVideo* video
+
+    ctypedef struct VkyBackendScreenshotParams:
+        char* filename
+        uint32_t frame_index
+
+    ctypedef struct VkyMouse:
+        VkyMouseButton button
+        vec2 press_pos
+        vec2 last_pos
+        vec2 cur_pos
+        vec2 wheel_delta
+        VkyMouseState prev_state
+        VkyMouseState cur_state
+        double press_time
+        double click_time
+
+    ctypedef struct VkyKeyboard:
+        VkyKey key
+        uint32_t modifiers
+        double press_time
+
     # from file: visuals.h
 
     ctypedef struct VkyRectangleParams:
@@ -207,6 +244,131 @@ cdef extern from "../../include/visky/visky.h":
         VKY_MOUSE_STATE_WHEEL = 2
         VKY_MOUSE_STATE_CLICK = 3
         VKY_MOUSE_STATE_DOUBLE_CLICK = 4
+
+    ctypedef enum VkyKey:
+        VKY_KEY_UNKNOWN = -1
+        VKY_KEY_NONE = +0
+        VKY_KEY_SPACE = 32
+        VKY_KEY_APOSTROPHE = 39
+        VKY_KEY_COMMA = 44
+        VKY_KEY_MINUS = 45
+        VKY_KEY_PERIOD = 46
+        VKY_KEY_SLASH = 47
+        VKY_KEY_0 = 48
+        VKY_KEY_1 = 49
+        VKY_KEY_2 = 50
+        VKY_KEY_3 = 51
+        VKY_KEY_4 = 52
+        VKY_KEY_5 = 53
+        VKY_KEY_6 = 54
+        VKY_KEY_7 = 55
+        VKY_KEY_8 = 56
+        VKY_KEY_9 = 57
+        VKY_KEY_SEMICOLON = 59
+        VKY_KEY_EQUAL = 61
+        VKY_KEY_A = 65
+        VKY_KEY_B = 66
+        VKY_KEY_C = 67
+        VKY_KEY_D = 68
+        VKY_KEY_E = 69
+        VKY_KEY_F = 70
+        VKY_KEY_G = 71
+        VKY_KEY_H = 72
+        VKY_KEY_I = 73
+        VKY_KEY_J = 74
+        VKY_KEY_K = 75
+        VKY_KEY_L = 76
+        VKY_KEY_M = 77
+        VKY_KEY_N = 78
+        VKY_KEY_O = 79
+        VKY_KEY_P = 80
+        VKY_KEY_Q = 81
+        VKY_KEY_R = 82
+        VKY_KEY_S = 83
+        VKY_KEY_T = 84
+        VKY_KEY_U = 85
+        VKY_KEY_V = 86
+        VKY_KEY_W = 87
+        VKY_KEY_X = 88
+        VKY_KEY_Y = 89
+        VKY_KEY_Z = 90
+        VKY_KEY_LEFT_BRACKET = 91
+        VKY_KEY_BACKSLASH = 92
+        VKY_KEY_RIGHT_BRACKET = 93
+        VKY_KEY_GRAVE_ACCENT = 96
+        VKY_KEY_WORLD_1 = 161
+        VKY_KEY_WORLD_2 = 162
+        VKY_KEY_ESCAPE = 256
+        VKY_KEY_ENTER = 257
+        VKY_KEY_TAB = 258
+        VKY_KEY_BACKSPACE = 259
+        VKY_KEY_INSERT = 260
+        VKY_KEY_DELETE = 261
+        VKY_KEY_RIGHT = 262
+        VKY_KEY_LEFT = 263
+        VKY_KEY_DOWN = 264
+        VKY_KEY_UP = 265
+        VKY_KEY_PAGE_UP = 266
+        VKY_KEY_PAGE_DOWN = 267
+        VKY_KEY_HOME = 268
+        VKY_KEY_END = 269
+        VKY_KEY_CAPS_LOCK = 280
+        VKY_KEY_SCROLL_LOCK = 281
+        VKY_KEY_NUM_LOCK = 282
+        VKY_KEY_PRINT_SCREEN = 283
+        VKY_KEY_PAUSE = 284
+        VKY_KEY_F1 = 290
+        VKY_KEY_F2 = 291
+        VKY_KEY_F3 = 292
+        VKY_KEY_F4 = 293
+        VKY_KEY_F5 = 294
+        VKY_KEY_F6 = 295
+        VKY_KEY_F7 = 296
+        VKY_KEY_F8 = 297
+        VKY_KEY_F9 = 298
+        VKY_KEY_F10 = 299
+        VKY_KEY_F11 = 300
+        VKY_KEY_F12 = 301
+        VKY_KEY_F13 = 302
+        VKY_KEY_F14 = 303
+        VKY_KEY_F15 = 304
+        VKY_KEY_F16 = 305
+        VKY_KEY_F17 = 306
+        VKY_KEY_F18 = 307
+        VKY_KEY_F19 = 308
+        VKY_KEY_F20 = 309
+        VKY_KEY_F21 = 310
+        VKY_KEY_F22 = 311
+        VKY_KEY_F23 = 312
+        VKY_KEY_F24 = 313
+        VKY_KEY_F25 = 314
+        VKY_KEY_KP_0 = 320
+        VKY_KEY_KP_1 = 321
+        VKY_KEY_KP_2 = 322
+        VKY_KEY_KP_3 = 323
+        VKY_KEY_KP_4 = 324
+        VKY_KEY_KP_5 = 325
+        VKY_KEY_KP_6 = 326
+        VKY_KEY_KP_7 = 327
+        VKY_KEY_KP_8 = 328
+        VKY_KEY_KP_9 = 329
+        VKY_KEY_KP_DECIMAL = 330
+        VKY_KEY_KP_DIVIDE = 331
+        VKY_KEY_KP_MULTIPLY = 332
+        VKY_KEY_KP_SUBTRACT = 333
+        VKY_KEY_KP_ADD = 334
+        VKY_KEY_KP_ENTER = 335
+        VKY_KEY_KP_EQUAL = 336
+        VKY_KEY_LEFT_SHIFT = 340
+        VKY_KEY_LEFT_CONTROL = 341
+        VKY_KEY_LEFT_ALT = 342
+        VKY_KEY_LEFT_SUPER = 343
+        VKY_KEY_RIGHT_SHIFT = 344
+        VKY_KEY_RIGHT_CONTROL = 345
+        VKY_KEY_RIGHT_ALT = 346
+        VKY_KEY_RIGHT_SUPER = 347
+        VKY_KEY_MENU = 348
+        VKY_KEY_LAST = 348
 
     ctypedef enum VkyBackendType:
         VKY_BACKEND_NONE = 0

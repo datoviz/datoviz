@@ -8,6 +8,7 @@ from textwrap import indent
 import pyparsing as pp
 from pyparsing import (
     Suppress, Word, alphas, alphanums, nums, Optional, Group, ZeroOrMore, empty, restOfLine,
+    cStyleComment,
 )
 
 
@@ -78,18 +79,25 @@ def parse_defines(text):
 
 COLOR_CONSTANTS = parse_defines(read_file(HEADER_DIR / 'colormaps.h'))
 
+_STRUCT_NAMES = ('VkyMouse', 'VkyKeyboard')
+
 
 def _parse_enum(text):
     enums = {}
     # syntax we don't want to see in the final parse tree
     LBRACE, RBRACE, EQ, COMMA, SEMICOLON = map(Suppress, "{}=,;")
     _enum = Suppress("typedef enum")
-    identifier = Word(alphanums + "_")
-    enumValue = Group(identifier("name") + Optional(EQ + identifier("value")))
-    enumList = Group(enumValue + ZeroOrMore(COMMA + enumValue))
+    identifier = Word(alphanums + "_+-")
+
+    enumValue = Group(
+        identifier("name") +
+        Optional(EQ + identifier("value")) +
+        Optional(COMMA) +
+        Optional(Suppress(cStyleComment)))
+
+    enumList = Group(enumValue + ZeroOrMore(enumValue))
     enum = _enum + LBRACE + \
-        enumList("names") + Optional(COMMA) + RBRACE + \
-        identifier("enum") + SEMICOLON
+        enumList("names") + RBRACE + identifier("enum") + SEMICOLON
 
     for item, start, stop in enum.scanString(text):
         if item.enum == 'VkyConstantName':
@@ -142,12 +150,11 @@ def _parse_struct(text):
 def _gen_struct(structs):
     out = ''
     for name, l in structs.items():
-        if not name.endswith('Params'):
-            continue
-        out += f'ctypedef struct {name}:\n'
-        for dtype, identifier in l:
-            out += f'    {dtype} {identifier}\n'
-        out += '\n'
+        if name.endswith('Params') or name in _STRUCT_NAMES:
+            out += f'ctypedef struct {name}:\n'
+            for dtype, identifier in l:
+                out += f'    {dtype} {identifier}\n'
+            out += '\n'
     return out
 
 
@@ -166,7 +173,7 @@ if __name__ == '__main__':
             enums_to_insert += f'# from file: {filename.name}\n\n{generated}'
 
         # Parse the structs
-        if filename.name in ('visuals.h',):
+        if filename.name in ('visuals.h', 'app.h'):
             structs = _parse_struct(text)
             # Generate the Cython enum definitions
             generated = _gen_struct(structs)
