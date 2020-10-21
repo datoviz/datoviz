@@ -214,7 +214,7 @@ class RawEphysViewer:
         self.load_data()
         self.update_view()
 
-    def on_key(self, canvas, key=None, modifiers=None):
+    def on_key(self, key=None, modifiers=None):
         delta = .25 * self.buffer_size / self.sample_rate
         if key == 'left':
             self.goto(self.time - delta)
@@ -233,8 +233,8 @@ class RawEphysViewer:
         if key == 'g':
             self.canvas.prompt()
 
-    def on_mouse(self, canvas, button, pos):
-        if button == 'left':
+    def on_mouse(self, button, pos, state=None):
+        if state == 'click' and button == 'left':
             # TODO: check 'click' mouse state instead
             x, y = pos
             x, y = self.canvas.pick(x, y)
@@ -250,7 +250,7 @@ class RawEphysViewer:
             print(
                 f"Picked {x}, {y} : {self.arr_buf[i, j]}")
 
-    def on_frame(self, canvas):
+    def on_frame(self):
         t = self.canvas.get_prompt()
         if not t:
             return

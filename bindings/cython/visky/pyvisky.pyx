@@ -51,6 +51,13 @@ _BUTTONS = {
     cv.VKY_MOUSE_BUTTON_RIGHT: 'right',
 }
 
+_MOUSE_STATES = {
+    cv.VKY_MOUSE_STATE_DRAG: 'drag',
+    cv.VKY_MOUSE_STATE_WHEEL: 'wheel',
+    cv.VKY_MOUSE_STATE_CLICK: 'click',
+    cv.VKY_MOUSE_STATE_DOUBLE_CLICK: 'double_click',
+}
+
 
 def _get_prop(name):
     prop = _PROPS.get(name, None)
@@ -77,6 +84,9 @@ def _key_name(key):
 
 def _button_name(button):
     return _BUTTONS.get(button, None)
+
+def _mouse_state(state):
+    return _MOUSE_STATES.get(state, None)
 
 
 
@@ -191,7 +201,7 @@ cdef class Canvas:
         raise ValueError("panel idx is invalid %s" % str(idx))
 
     def on_frame(self, f):
-        _add_frame_callback(self._c_canvas, f, (self,))
+        _add_frame_callback(self._c_canvas, f, ())
 
     def _wrap_keyboard(self, f):
         @wraps(f)
@@ -202,7 +212,7 @@ cdef class Canvas:
             key = keyboard.key
             if key != cv.VKY_KEY_NONE:
                 # TODO: modifiers
-                f(c, _key_name(key))
+                f(_key_name(key))
         return wrapped
 
     def _wrap_mouse(self, f):
@@ -212,8 +222,8 @@ cdef class Canvas:
             mouse = cv.vky_event_mouse(self._c_canvas)
             button = _button_name(mouse.button)
             pos = tuple(mouse.cur_pos)
-            # TODO: state, wheel, etc
-            f(c, button, pos)
+            info = {'state': _mouse_state(mouse.cur_state)}
+            f(button, pos, **info)
         return wrapped
 
     def on_key(self, f):
