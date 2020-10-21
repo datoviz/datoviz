@@ -79,7 +79,7 @@ def parse_defines(text):
 
 COLOR_CONSTANTS = parse_defines(read_file(HEADER_DIR / 'colormaps.h'))
 
-_STRUCT_NAMES = ('VkyMouse', 'VkyKeyboard')
+_STRUCT_NAMES = ('VkyMouse', 'VkyKeyboard', 'VkyPick')
 
 
 def _parse_enum(text):
@@ -150,6 +150,8 @@ def _parse_struct(text):
 def _gen_struct(structs):
     out = ''
     for name, l in structs.items():
+        if 'Axes' in name or 'Colorbar' in name:
+            continue
         if name.endswith('Params') or name in _STRUCT_NAMES:
             out += f'ctypedef struct {name}:\n'
             for dtype, identifier in l:
@@ -173,7 +175,7 @@ if __name__ == '__main__':
             enums_to_insert += f'# from file: {filename.name}\n\n{generated}'
 
         # Parse the structs
-        if filename.name in ('visuals.h', 'app.h'):
+        if filename.name in ('visuals.h', 'app.h', 'gui.h', 'scene.h'):
             structs = _parse_struct(text)
             # Generate the Cython enum definitions
             generated = _gen_struct(structs)

@@ -100,6 +100,7 @@ cdef extern from "../../include/visky/visky.h":
 
     void vky_prompt(VkyCanvas* canvas)
     char* vky_prompt_get(VkyCanvas* canvas)
+    VkyPick vky_pick(VkyScene* scene, vec2 canvas_coords, VkyPanel* panel)
 
     void vky_run_app(VkyApp* app)
     void vky_close_canvas(VkyCanvas* canvas)
@@ -141,6 +142,17 @@ cdef extern from "../../include/visky/visky.h":
         VkyKey key
         uint32_t modifiers
         double press_time
+
+    # from file: scene.h
+
+    ctypedef struct VkyPick:
+        VkyPanel* panel
+        dvec2 pos_canvas_px
+        dvec2 pos_canvas_ndc
+        dvec2 pos_panel
+        dvec2 pos_panzoom
+        dvec2 pos_gpu
+        dvec2 pos_data
 
     # from file: visuals.h
 

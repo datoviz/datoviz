@@ -32,7 +32,6 @@ _CONTROLLERS = {
     'arcball': cv.VKY_CONTROLLER_ARCBALL,
 }
 
-
 # TODO: add more keys
 _KEYS = {
     cv.VKY_KEY_LEFT: 'left',
@@ -44,6 +43,12 @@ _KEYS = {
     cv.VKY_KEY_KP_ADD: '+',
     cv.VKY_KEY_KP_SUBTRACT: '-',
     cv.VKY_KEY_G: 'g',
+}
+
+_BUTTONS = {
+    cv.VKY_MOUSE_BUTTON_LEFT: 'left',
+    cv.VKY_MOUSE_BUTTON_MIDDLE: 'middle',
+    cv.VKY_MOUSE_BUTTON_RIGHT: 'right',
 }
 
 
@@ -69,6 +74,9 @@ def _get_controller(name):
 
 def _key_name(key):
     return _KEYS.get(key, key)
+
+def _button_name(button):
+    return _BUTTONS.get(button, None)
 
 
 
@@ -129,7 +137,10 @@ cdef _wrapped_callback(cv.VkyCanvas* c_canvas, void* data):
     if data != NULL:
         tup = <object>data
         f, args = tup
-        f(*args)
+        try:
+            f(*args)
+        except Exception as e:
+            print("Error: %s" % e)
 
 
 cdef _add_frame_callback(cv.VkyCanvas* c_canvas, f, args):
@@ -199,8 +210,10 @@ cdef class Canvas:
         def wrapped(c):
             cdef cv.VkyMouse* mouse
             mouse = cv.vky_event_mouse(self._c_canvas)
+            button = _button_name(mouse.button)
+            pos = tuple(mouse.cur_pos)
             # TODO: state, wheel, etc
-            f(c, mouse.button, mouse.cur_pos)
+            f(c, button, pos)
         return wrapped
 
     def on_key(self, f):
@@ -217,6 +230,14 @@ cdef class Canvas:
         res = cv.vky_prompt_get(self._c_canvas)
         if res != NULL:
             return res
+
+    def pick(self, float x, float y):
+        cdef cv.vec2 pos
+        pos[0] = x
+        pos[1] = y
+        pick = cv.vky_pick(self._c_scene, pos, NULL)
+        px, py = pick.pos_data
+        return (px, py)
 
 
 cdef class Panel:

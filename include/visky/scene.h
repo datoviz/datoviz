@@ -426,7 +426,12 @@ struct VkyPanel
 struct VkyPick
 {
     VkyPanel* panel; // pointer to the picked panel
-    dvec2 pos_canvas_px, pos_canvas_ndc, pos_panel, pos_panzoom, pos_gpu, pos_data;
+    dvec2 pos_canvas_px;
+    dvec2 pos_canvas_ndc;
+    dvec2 pos_panel;
+    dvec2 pos_panzoom;
+    dvec2 pos_gpu;
+    dvec2 pos_data;
 };
 
 
