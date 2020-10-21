@@ -397,13 +397,14 @@ target_link_libraries(visky ${LINK_LIBS})
 # -------------------------------------------------------------------------------------------------
 
 add_subdirectory(bindings/cython/visky)
+find_package(PythonExtensions)
 find_package(Cython)
 find_package(NumPy)
 include_directories(${INCL_DIRS} ${PYTHON_INCLUDE_DIRS} ${NumPy_INCLUDE_DIRS})
 add_cython_target(pyvisky bindings/cython/visky/pyvisky.pyx PY3 C)
 add_library(pyvisky MODULE ${pyvisky})
 target_link_libraries(pyvisky ${PYTHON_LIBRARIES} ${LINK_LIBS} visky)
-
+python_extension_module(pyvisky)
 
 
 # -------------------------------------------------------------------------------------------------
