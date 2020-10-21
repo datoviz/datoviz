@@ -6,7 +6,7 @@
 #define RANDOM_POS true
 
 
-static void frame_callback(VkyCanvas* canvas)
+static void frame_callback(VkyCanvas* canvas, void* data)
 {
     VkyMouse* mouse = canvas->event_controller->mouse;
     if (mouse->cur_state == VKY_MOUSE_STATE_CLICK && mouse->button == VKY_MOUSE_BUTTON_LEFT)

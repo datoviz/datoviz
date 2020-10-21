@@ -20,7 +20,7 @@ static void keyboard_callback(VkyCanvas* canvas, void* data)
     play = !play;
 }
 
-static void upload_data(VkyCanvas* canvas)
+static void upload_data(VkyCanvas* canvas, void* data)
 {
     if (!play)
         return;

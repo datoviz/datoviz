@@ -239,7 +239,7 @@ static void set_mesh()
     vky_mesh_destroy(&mesh);
 }
 
-static void mesh_selection(VkyCanvas* canvas)
+static void mesh_selection(VkyCanvas* canvas, void* data)
 {
     if (new_mesh_type != current_mesh_type)
     {
