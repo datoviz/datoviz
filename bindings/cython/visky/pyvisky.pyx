@@ -209,6 +209,14 @@ cdef class Canvas:
     def on_mouse(self, f):
         _add_frame_callback(self._c_canvas, self._wrap_mouse(f), (self,))
 
+    def prompt(self):
+        cv.vky_prompt(self._c_canvas)
+
+    def get_prompt(self):
+        cdef char* res
+        res = cv.vky_prompt_get(self._c_canvas)
+        if res != NULL:
+            return res
 
 
 cdef class Panel:

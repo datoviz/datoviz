@@ -231,9 +231,7 @@ class RawEphysViewer:
         if key == 'end':
             self.goto(self.duration)
         if key == 'g':
-            # TODO
-            # vl.vky_prompt(self.canvas._canvas)
-            pass
+            self.canvas.prompt()
 
     def on_mouse(self, canvas, button, pos):
         pass
@@ -254,18 +252,16 @@ class RawEphysViewer:
         #         f"Picked {x}, {y} : {self.arr_buf[i, j]}")
 
     def on_frame(self, canvas):
-        pass
-        # TODO
-        # t = vl.vky_prompt_get(self.canvas._canvas)
-        # if not t:
-        #     return
-        # try:
-        #     t = float(t)
-        # except:
-        #     print("Invalid time %s" % t)
-        #     return
-        # if t:
-        # self.goto(t)
+        t = self.canvas.get_prompt()
+        if not t:
+            return
+        try:
+            t = float(t)
+        except Exception:
+            print("Invalid time %s" % t)
+            return
+        if t:
+            self.goto(t)
 
     def show(self):
         run()

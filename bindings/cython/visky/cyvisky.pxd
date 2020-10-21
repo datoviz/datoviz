@@ -98,6 +98,9 @@ cdef extern from "../../include/visky/visky.h":
     VkyMouse* vky_event_mouse(VkyCanvas* canvas)
     VkyKeyboard* vky_event_keyboard(VkyCanvas* canvas)
 
+    void vky_prompt(VkyCanvas* canvas)
+    char* vky_prompt_get(VkyCanvas* canvas)
+
     void vky_run_app(VkyApp* app)
     void vky_close_canvas(VkyCanvas* canvas)
     void vky_destroy_app(VkyApp* app)
