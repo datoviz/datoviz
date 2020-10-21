@@ -21,6 +21,7 @@ _PROP_NAMES = list(_PROPS.keys())
 
 _VISUALS = {
     'marker': cv.VKY_VISUAL_MARKER,
+    'image': cv.VKY_VISUAL_IMAGE,
     'image_cmap': cv.VKY_VISUAL_IMAGE_CMAP,
 }
 
@@ -52,16 +53,16 @@ def _get_controller(name):
 
 
 _APP = None
-def app():
+def app(*args, **kwargs):
     global _APP
     if _APP is None:
-        _APP = App()
+        _APP = App(*args, **kwargs)
     assert _APP
     return _APP
 
 
-def canvas():
-    return app().canvas()
+def canvas(*args, **kwargs):
+    return app().canvas(*args, **kwargs)
 
 
 def run():
@@ -182,13 +183,13 @@ cdef class Panel:
     def markers(self, **kwargs):
         return self.visual('marker', **kwargs)
 
-    def imshow(self, np.ndarray image):
+    def imshow_cmap(self, np.ndarray image):
         cdef cv.VkyImageCmapParams params
         cdef cv.VkyTextureParams tex_params
         tex_params = cv.vky_default_texture_params(
             image.shape[0],
             1 if image.ndim <= 1 else image.shape[1],
-            1 if image.ndim <= 2 else image.shape[2])
+            1)
         tex_params.format_bytes = 1
         tex_params.format = cv.VK_FORMAT_R8_UNORM
 
@@ -201,6 +202,27 @@ cdef class Panel:
         c_visual_type = _get_visual('image_cmap')
         c_visual = cv.vky_visual(
             self._c_panel.scene, c_visual_type, &params, NULL)
+        visual.create(c_visual)
+        cv.vky_add_visual_to_panel(
+            c_visual, self._c_panel, cv.VKY_VIEWPORT_INNER, cv.VKY_VISUAL_PRIORITY_NONE)
+
+        visual.data('pos', np.array([-1, -1, 0], dtype=np.float32), idx=0)
+        visual.data('pos', np.array([+1, +1, 0], dtype=np.float32), idx=1)
+        visual.data('uv', np.array([0, 0], dtype=np.float32), idx=0)
+        visual.data('uv', np.array([1, 1], dtype=np.float32), idx=1)
+        visual.set_image(image)
+
+    def imshow(self, np.ndarray image):
+        cdef cv.VkyTextureParams tex_params
+        tex_params = cv.vky_default_texture_params(
+            image.shape[0],
+            1 if image.ndim <= 1 else image.shape[1],
+            1)
+
+        visual = Image()
+        c_visual_type = _get_visual('image')
+        c_visual = cv.vky_visual(
+            self._c_panel.scene, c_visual_type, &tex_params, NULL)
         visual.create(c_visual)
         cv.vky_add_visual_to_panel(
             c_visual, self._c_panel, cv.VKY_VIEWPORT_INNER, cv.VKY_VISUAL_PRIORITY_NONE)
