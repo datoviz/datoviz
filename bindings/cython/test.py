@@ -11,7 +11,7 @@ size = np.random.uniform(size=n, low=10, high=50).astype(np.float32)
 c = canvas(cols=2)
 c[0, 0].axes().markers(pos=pos, color=color, size=size)
 c[0, 1].axes().imshow(np.random.uniform(
-    size=(32, 32, 4), low=0, high=255).astype(np.uint8))
+    size=(128, 32, 4), low=0, high=255).astype(np.uint8))
 
 # Start the event loop
 run()

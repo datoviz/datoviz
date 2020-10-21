@@ -187,8 +187,8 @@ cdef class Panel:
         cdef cv.VkyImageCmapParams params
         cdef cv.VkyTextureParams tex_params
         tex_params = cv.vky_default_texture_params(
-            image.shape[0],
-            1 if image.ndim <= 1 else image.shape[1],
+            image.shape[1],
+            1 if image.ndim <= 1 else image.shape[0],
             1)
         tex_params.format_bytes = 1
         tex_params.format = cv.VK_FORMAT_R8_UNORM
@@ -211,12 +211,13 @@ cdef class Panel:
         visual.data('uv', np.array([0, 0], dtype=np.float32), idx=0)
         visual.data('uv', np.array([1, 1], dtype=np.float32), idx=1)
         visual.set_image(image)
+        return visual
 
     def imshow(self, np.ndarray image):
         cdef cv.VkyTextureParams tex_params
         tex_params = cv.vky_default_texture_params(
-            image.shape[0],
-            1 if image.ndim <= 1 else image.shape[1],
+            image.shape[1],
+            1 if image.ndim <= 1 else image.shape[0],
             1)
 
         visual = Image()
@@ -227,11 +228,12 @@ cdef class Panel:
         cv.vky_add_visual_to_panel(
             c_visual, self._c_panel, cv.VKY_VIEWPORT_INNER, cv.VKY_VISUAL_PRIORITY_NONE)
 
-        visual.data('pos', np.array([-1, -1, 0], dtype=np.float32), idx=0)
-        visual.data('pos', np.array([+1, +1, 0], dtype=np.float32), idx=1)
+        visual.data('pos', np.array([-1, +1, 0], dtype=np.float32), idx=0)
+        visual.data('pos', np.array([+1, -1, 0], dtype=np.float32), idx=1)
         visual.data('uv', np.array([0, 0], dtype=np.float32), idx=0)
         visual.data('uv', np.array([1, 1], dtype=np.float32), idx=1)
         visual.set_image(image)
+        return visual
 
 
 
