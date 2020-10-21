@@ -178,7 +178,8 @@ class RawEphysViewer:
 
         # Create the image and visual
         self.image = create_image((self.buffer_size, self.n_channels))
-        self.v_image = self.canvas[0, 0].axes().imshow(self.image)
+        self.panel = self.canvas[0, 0].axes()
+        self.v_image = self.panel.imshow(self.image)
 
         # Load the data and put it on the GPU.
         self.load_data()
@@ -194,12 +195,11 @@ class RawEphysViewer:
         self.image[..., :3] = normalize(
             self.arr_buf, scale).T[:, :, np.newaxis]
         self.v_image.set_image(self.image)
-        # TODO
-        # self.panel.axes_range(
-        #     self.sample / self.sample_rate,
-        #     0,
-        #     (self.sample + self.buffer_size) / self.sample_rate,
-        #     self.n_channels)
+        self.panel.axes_range(
+            self.sample / self.sample_rate,
+            0,
+            (self.sample + self.buffer_size) / self.sample_rate,
+            self.n_channels)
 
     @property
     def duration(self):
@@ -234,22 +234,21 @@ class RawEphysViewer:
             self.canvas.prompt()
 
     def on_mouse(self, canvas, button, pos):
-        pass
-        # TODO
-        # if ev.state == 'click':
-        #     pick = vl.vky_pick(
-        #         self.canvas._scene, tp.T_VEC2(pos[0], pos[1]), None)
-        #     x, y = pick.pos_data
-        #     i = math.floor(
-        #         (x - self.sample / self.sample_rate) /
-        #         (self.buffer_size / self.sample_rate) *
-        #         self.buffer_size)
-        #     j = math.floor(y)
-        #     j = self.n_channels - 1 - j
-        #     i = np.clip(i, 0, self.n_samples - 1)
-        #     j = np.clip(j, 0, self.n_channels - 1)
-        #     print(
-        #         f"Picked {x}, {y} : {self.arr_buf[i, j]}")
+        if button == 'left':
+            # TODO: check 'click' mouse state instead
+            x, y = pos
+            x, y = self.canvas.pick(x, y)
+            # print(x, y)
+            i = math.floor(
+                (x - self.sample / self.sample_rate) /
+                (self.buffer_size / self.sample_rate) *
+                self.buffer_size)
+            j = math.floor(y)
+            j = self.n_channels - 1 - j
+            i = np.clip(i, 0, self.n_samples - 1)
+            j = np.clip(j, 0, self.n_channels - 1)
+            print(
+                f"Picked {x}, {y} : {self.arr_buf[i, j]}")
 
     def on_frame(self, canvas):
         t = self.canvas.get_prompt()
