@@ -134,7 +134,7 @@ struct VkyPrompt
 /*************************************************************************************************/
 
 VKY_EXPORT void vky_imgui_init(VkyCanvas* canvas);
-VKY_EXPORT void vky_imgui_newframe(void);
+VKY_EXPORT void vky_imgui_newframe();
 
 VKY_EXPORT VkyImGuiTexture vky_imgui_image_from_texture(VkyTexture texture);
 VKY_EXPORT VkyImGuiTexture vky_imgui_image_from_canvas(VkyCanvas* canvas);
@@ -145,7 +145,7 @@ VKY_EXPORT void vky_imgui_canvas_next_frame(VkyCanvas* canvas);
 
 VKY_EXPORT void vky_imgui_image(VkyImGuiTexture* imtexture, float, float);
 VKY_EXPORT void vky_imgui_render(VkyCanvas* canvas, VkCommandBuffer cmd_buf);
-VKY_EXPORT void vky_imgui_destroy(void);
+VKY_EXPORT void vky_imgui_destroy();
 
 
 
@@ -153,14 +153,15 @@ VKY_EXPORT void vky_imgui_destroy(void);
 /*  Public GUI API                                                                               */
 /*************************************************************************************************/
 
-VKY_EXPORT VkyGui* vky_create_gui(VkyCanvas*, VkyGuiParams);
+VKY_EXPORT VkyGui* vky_create_gui(VkyCanvas* canvas, VkyGuiParams);
 
-VKY_EXPORT void
-vky_gui_control(VkyGui*, VkyGuiControlType, const char*, const void* params, void* out_value);
+VKY_EXPORT void vky_gui_control(
+    VkyGui* gui, VkyGuiControlType control, const char* title, const void* params,
+    void* out_value);
 
 VKY_EXPORT void vky_gui_fps(VkyGui* gui);
 
-VKY_EXPORT void vky_destroy_guis(VkyCanvas*);
+VKY_EXPORT void vky_destroy_guis(VkyCanvas* canvas);
 
 
 
@@ -168,9 +169,9 @@ VKY_EXPORT void vky_destroy_guis(VkyCanvas*);
 /*  Prompt GUI                                                                                   */
 /*************************************************************************************************/
 
-VKY_EXPORT void vky_prompt(VkyCanvas*);
+VKY_EXPORT void vky_prompt(VkyCanvas* canvas);
 
-VKY_EXPORT char* vky_prompt_get(VkyCanvas*);
+VKY_EXPORT char* vky_prompt_get(VkyCanvas* canvas);
 
 
 

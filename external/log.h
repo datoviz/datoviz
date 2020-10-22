@@ -54,7 +54,7 @@ void log_set_quiet(int enable);
 
 VKY_EXPORT void log_log(int level, const char* file, int line, const char* fmt, ...);
 
-VKY_EXPORT void log_set_level_env(void);
+VKY_EXPORT void log_set_level_env();
 
 #ifdef __cplusplus
 }

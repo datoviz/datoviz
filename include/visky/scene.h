@@ -227,10 +227,10 @@ typedef struct VkyVisualProp VkyVisualProp;
 
 // Callbacks.
 typedef void (*VkyAxesTickFormatter)(VkyAxes*, double value, char* out_text);
-typedef void (*VkyVisualBakeCallback)(VkyVisual*);
-typedef void (*VkyVisualCallback)(VkyVisual*);
-typedef void (*VkyVisualPropCallback)(VkyVisualProp*, VkyVisual*, VkyPanel*);
-typedef void (*VkyVisualResizeCallback)(VkyVisual*);
+typedef void (*VkyVisualBakeCallback)(VkyVisual* visual);
+typedef void (*VkyVisualCallback)(VkyVisual* visual);
+typedef void (*VkyVisualPropCallback)(VkyVisualProp*, VkyVisual* visual, VkyPanel* panel);
+typedef void (*VkyVisualResizeCallback)(VkyVisual* visual);
 
 
 
@@ -638,9 +638,9 @@ VKY_EXPORT void vky_mvp_set_model(mat4 model, VkyMVP* mvp); // TODO: replace by 
 VKY_EXPORT void vky_mvp_set_view(mat4 view, VkyMVP* mvp);
 VKY_EXPORT void vky_mvp_set_view_3D(vec3 eye, vec3 center, VkyMVP* mvp);
 VKY_EXPORT void vky_mvp_set_proj(mat4 proj, VkyMVP* mvp);
-VKY_EXPORT void vky_mvp_set_proj_3D(VkyPanel*, VkyViewportType, VkyMVP* mvp);
+VKY_EXPORT void vky_mvp_set_proj_3D(VkyPanel* panel, VkyViewportType viewport_type, VkyMVP* mvp);
 VKY_EXPORT void vky_mvp_normal_matrix(VkyMVP* mvp, mat4 normal);
-VKY_EXPORT void vky_mvp_upload(VkyPanel*, VkyViewportType viewport_type, VkyMVP* mvp);
+VKY_EXPORT void vky_mvp_upload(VkyPanel* panel, VkyViewportType viewport_type, VkyMVP* mvp);
 
 static VkyAxes2DParams vky_default_axes_2D_params()
 {
@@ -709,20 +709,21 @@ VKY_EXPORT void vky_end_commands(VkyScene* Scene);
 
 VKY_EXPORT VkyVisual* vky_create_visual(VkyScene* scene, VkyVisualType);
 VKY_EXPORT void vky_visual_params(VkyVisual* visual, size_t params_size, const void* params);
-VKY_EXPORT void vky_add_visual_to_panel(VkyVisual*, VkyPanel*, VkyViewportType, VkyVisualPriority);
+VKY_EXPORT void vky_add_visual_to_panel(
+    VkyVisual* visual, VkyPanel* panel, VkyViewportType viewport_type, VkyVisualPriority priority);
 VKY_EXPORT VkyVisual*
 vky_visual(VkyScene* scene, VkyVisualType visual_type, const void* params, const void* obj);
 
-VKY_EXPORT VkyResourceLayout vky_common_resource_layout(VkyVisual*);
+VKY_EXPORT VkyResourceLayout vky_common_resource_layout(VkyVisual* visual);
 VKY_EXPORT void vky_set_color_context(VkyPanel* panel, VkyColormap cmap, uint8_t constant);
 VKY_EXPORT void vky_allocate_vertex_buffer(VkyVisual* visual, VkDeviceSize size);
 VKY_EXPORT void vky_allocate_index_buffer(VkyVisual* visual, VkDeviceSize size);
-VKY_EXPORT void vky_add_common_resources(VkyVisual*);
+VKY_EXPORT void vky_add_common_resources(VkyVisual* visual);
 VKY_EXPORT void vky_add_uniform_buffer_resource(VkyVisual* visual, VkyUniformBuffer* ubo);
 VKY_EXPORT void vky_add_texture_resource(VkyVisual* visual, VkyTexture* texture);
 VKY_EXPORT void vky_visual_data_raw(VkyVisual* visual);
 VKY_EXPORT void vky_visual_data_raw_old(VkyVisual* visual, VkyData* data);
-VKY_EXPORT void vky_draw_visual(VkyVisual* visual, VkyPanel*, VkyViewportType viewport_type);
+VKY_EXPORT void vky_draw_visual(VkyVisual* visual, VkyPanel* panel, VkyViewportType viewport_type);
 VKY_EXPORT void vky_draw_all_visuals(VkyScene* scene);
 VKY_EXPORT void vky_toggle_visual_visibility(VkyVisual* visual, bool is_visible);
 VKY_EXPORT void vky_destroy_visual(VkyVisual* visual);
@@ -735,34 +736,38 @@ VKY_EXPORT void vky_visual_add_child(VkyVisual* parent, VkyVisual* child);
 /*  Visual props */
 /*************************************************************************************************/
 
-VKY_EXPORT void vky_visual_prop_spec(VkyVisual*, size_t item_size, size_t group_param_size);
+VKY_EXPORT void vky_visual_prop_spec(VkyVisual* visual, size_t item_size, size_t group_param_size);
 
 VKY_EXPORT void vky_visual_data_set_size(
     VkyVisual* visual, uint32_t item_count, uint32_t group_count, const uint32_t* group_lengths,
     const void* group_params);
 
-VKY_EXPORT VkyVisualProp* vky_visual_prop_add(VkyVisual*, VkyVisualPropType, size_t offset);
+VKY_EXPORT VkyVisualProp*
+vky_visual_prop_add(VkyVisual* visual, VkyVisualPropType prop, size_t offset);
 
-VKY_EXPORT VkyVisualProp* vky_visual_prop_get(VkyVisual*, VkyVisualPropType, uint32_t prop_index);
+VKY_EXPORT VkyVisualProp*
+vky_visual_prop_get(VkyVisual* visual, VkyVisualPropType prop, uint32_t prop_index);
 
 VKY_EXPORT void vky_visual_data(
-    VkyVisual*, VkyVisualPropType, uint32_t prop_index, uint32_t value_count, const void* values);
+    VkyVisual* visual, VkyVisualPropType prop, uint32_t prop_index, uint32_t value_count,
+    const void* values);
 
 VKY_EXPORT void vky_visual_data_partial(
-    VkyVisual*, VkyVisualPropType, uint32_t prop_index, //
-    uint32_t first_item, uint32_t item_count,           //
+    VkyVisual* visual, VkyVisualPropType prop, uint32_t prop_index, //
+    uint32_t first_item, uint32_t item_count,                       //
     uint32_t value_count, const void* values);
 
 VKY_EXPORT void vky_visual_data_group(
-    VkyVisual*, VkyVisualPropType, uint32_t prop_index, uint32_t group_idx, //
+    VkyVisual* visual, VkyVisualPropType prop, uint32_t prop_index, uint32_t group_idx, //
     uint32_t value_count, const void* value);
 
-VKY_EXPORT void vky_visual_data_resource(VkyVisual*, VkyVisualPropType, uint32_t, void*);
+VKY_EXPORT void
+vky_visual_data_resource(VkyVisual* visual, VkyVisualPropType prop, uint32_t, void*);
 
 VKY_EXPORT void vky_visual_data_callback(
-    VkyVisual*, VkyVisualPropType, uint32_t prop_index, VkyVisualPropCallback);
+    VkyVisual* visual, VkyVisualPropType prop, uint32_t prop_index, VkyVisualPropCallback);
 
-void vky_visual_data_upload(VkyVisual*, VkyPanel*);
+void vky_visual_data_upload(VkyVisual* visual, VkyPanel* panel);
 
 
 
@@ -772,17 +777,17 @@ void vky_visual_data_upload(VkyVisual*, VkyPanel*);
 
 VKY_EXPORT void vky_set_full_viewport(VkyCanvas* canvas); // TODO: scene
 VKY_EXPORT VkyPanel* vky_get_panel(VkyScene* scene, uint32_t row, uint32_t col);
-VKY_EXPORT VkyPanelIndex vky_get_panel_index(VkyPanel*);
+VKY_EXPORT VkyPanelIndex vky_get_panel_index(VkyPanel* panel);
 VKY_EXPORT VkyAxes* vky_get_axes(VkyPanel* panel);
-VKY_EXPORT VkyViewport vky_get_viewport(VkyPanel*, VkyViewportType viewport_type);
+VKY_EXPORT VkyViewport vky_get_viewport(VkyPanel* panel, VkyViewportType viewport_type);
 VKY_EXPORT void vky_mvp_finalize(VkyScene* scene);
 VKY_EXPORT void vky_reset_all_mvp(VkyScene* scene);
 VKY_EXPORT uint32_t vky_get_panel_buffer_index(VkyPanel* panel, VkyViewportType viewport_type);
-VKY_EXPORT void vky_set_panel_aspect_ratio(VkyPanel*, float aspect_ratio);
-VKY_EXPORT void
-vky_set_controller(VkyPanel* panel, VkyControllerType controller_type, const void*);
+VKY_EXPORT void vky_set_panel_aspect_ratio(VkyPanel* panel, float aspect_ratio);
+VKY_EXPORT void vky_set_controller(
+    VkyPanel* panel, VkyControllerType controller_type, const void* controller_params);
 VKY_EXPORT VkyPanel* vky_panel_from_mouse(VkyScene* scene, vec2 pos);
-VKY_EXPORT void vky_link_panels(VkyPanel*, VkyPanel*, VkyPanelLinkMode);
+VKY_EXPORT void vky_link_panels(VkyPanel* panel0, VkyPanel* panel1, VkyPanelLinkMode link);
 
 
 /*************************************************************************************************/

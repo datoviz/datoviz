@@ -596,7 +596,7 @@ VKY_EXPORT VkyVisual* vky_visual_image(VkyScene* scene, const VkyTextureParams* 
 
 VKY_EXPORT VkyVisual* vky_visual_image_cmap(VkyScene* scene, const VkyImageCmapParams* params);
 
-VKY_EXPORT void vky_visual_image_upload(VkyVisual*, const void*);
+VKY_EXPORT void vky_visual_image_upload(VkyVisual* visual, const void* image);
 
 
 
@@ -604,7 +604,8 @@ VKY_EXPORT void vky_visual_image_upload(VkyVisual*, const void*);
 /*  Volume visual                                                                                */
 /*************************************************************************************************/
 
-VKY_EXPORT VkyVisual* vky_visual_volume(VkyScene*, const VkyTextureParams*, const void*);
+VKY_EXPORT VkyVisual*
+vky_visual_volume(VkyScene* scene, const VkyTextureParams* params, const void* volume);
 
 
 
