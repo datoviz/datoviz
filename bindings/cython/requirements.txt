@@ -1,0 +1,5 @@
+numpy
+cython
+scikit-build
+colorcet
+imageio
