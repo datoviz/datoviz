@@ -333,14 +333,14 @@ function(_set_python_extension_symbol_visibility _target)
   endif()
   message("_modinit_prefix:${_modinit_prefix}")
   if("${CMAKE_C_COMPILER_ID}" STREQUAL "MSVC")
-    set_target_properties(${_target} PROPERTIES LINK_FLAGS 
+    set_target_properties(${_target} PROPERTIES LINK_FLAGS
         "/EXPORT:${_modinit_prefix}${_target}"
     )
   elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU" AND NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(_script_path
       ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${_target}-version-script.map
     )
-    file(WRITE ${_script_path} 
+    file(WRITE ${_script_path}
                "{global: ${_modinit_prefix}${_target}; local: *; };"
     )
     set_property(TARGET ${_target} APPEND_STRING PROPERTY LINK_FLAGS
@@ -425,7 +425,7 @@ function(python_extension_module _target)
     endif()
 
     target_link_libraries_with_dynamic_lookup(${_target} ${PYTHON_LIBRARIES})
-    
+
     if(_is_module_lib)
       _set_python_extension_symbol_visibility(${_target})
     endif()
@@ -575,4 +575,3 @@ function(python_modules_header _name)
   endif()
   set(${_include_dirs_var} ${CMAKE_CURRENT_BINARY_DIR} PARENT_SCOPE)
 endfunction()
-
