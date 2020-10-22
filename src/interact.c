@@ -175,7 +175,7 @@ void vky_panzoom_update(VkyPanel* panel, VkyPanzoom* panzoom, VkyViewportType vi
         panzoom->zoom[1] = 1;
     }
 
-    if (mouse->cur_state == VKY_MOUSE_STATE_STATIC)
+    if (mouse->cur_state == VKY_MOUSE_STATE_INACTIVE)
     {
         panel->status = VKY_PANEL_STATUS_NONE;
     }
@@ -467,7 +467,7 @@ void vky_arcball_update(VkyPanel* panel, VkyArcball* arcball, VkyViewportType vi
     vky_mvp_upload(panel, viewport_type, &arcball->mvp);
     vky_mvp_finalize(scene);
 
-    if (mouse->cur_state == VKY_MOUSE_STATE_STATIC)
+    if (mouse->cur_state == VKY_MOUSE_STATE_INACTIVE)
     {
         panel->status = VKY_PANEL_STATUS_NONE;
     }

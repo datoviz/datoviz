@@ -267,7 +267,7 @@ cdef extern from "../../include/visky/visky.h":
         VKY_MOUSE_BUTTON_RIGHT = 3
 
     ctypedef enum VkyMouseState:
-        VKY_MOUSE_STATE_STATIC = 0
+        VKY_MOUSE_STATE_INACTIVE = 0
         VKY_MOUSE_STATE_DRAG = 1
         VKY_MOUSE_STATE_WHEEL = 2
         VKY_MOUSE_STATE_CLICK = 3

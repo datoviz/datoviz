@@ -415,19 +415,21 @@ static void fill_live_command_buffer(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
     // log_debug("process input %d", ec->do_process_input);
     if (!ec->do_process_input)
     {
-        ec->keyboard->prev_state = ec->keyboard->cur_state;
+        // ec->keyboard->prev_state = ec->keyboard->cur_state;
         ec->keyboard->cur_state = VKY_KEYBOARD_STATE_CAPTURE;
 
-        ec->mouse->prev_state = ec->mouse->cur_state;
+        // ec->mouse->prev_state = ec->mouse->cur_state;
         ec->mouse->cur_state = VKY_MOUSE_STATE_CAPTURE;
     }
     else
     {
         if (ec->keyboard->cur_state == VKY_KEYBOARD_STATE_CAPTURE)
-            ec->keyboard->cur_state = ec->keyboard->prev_state;
+            // ec->keyboard->cur_state = ec->keyboard->prev_state;
+            ec->keyboard->cur_state = VKY_KEYBOARD_STATE_INACTIVE;
 
         if (ec->mouse->cur_state == VKY_MOUSE_STATE_CAPTURE)
-            ec->mouse->cur_state = ec->mouse->prev_state;
+            // ec->mouse->cur_state = ec->mouse->prev_state;
+            ec->mouse->cur_state = VKY_MOUSE_STATE_INACTIVE;
     }
 
     for (uint32_t k = 0; k < canvas->gui_count; k++)
@@ -564,7 +566,7 @@ static void _dismiss_prompt(VkyCanvas* canvas)
     canvas->prompt->state = VKY_PROMPT_HIDDEN;
     VkyEventController* ec = canvas->event_controller;
     ec->keyboard->cur_state = VKY_KEYBOARD_STATE_INACTIVE;
-    ec->mouse->cur_state = VKY_MOUSE_STATE_STATIC;
+    ec->mouse->cur_state = VKY_MOUSE_STATE_INACTIVE;
 }
 
 char* vky_prompt_get(VkyCanvas* canvas)

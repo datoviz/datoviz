@@ -308,7 +308,7 @@ void vky_update_mouse_state(VkyMouse* mouse, vec2 pos, VkyMouseButton button)
     if (mouse->cur_state == VKY_MOUSE_STATE_CLICK ||
         mouse->cur_state == VKY_MOUSE_STATE_DOUBLE_CLICK)
     {
-        mouse->cur_state = VKY_MOUSE_STATE_STATIC;
+        mouse->cur_state = VKY_MOUSE_STATE_INACTIVE;
         mouse->button = VKY_MOUSE_BUTTON_NONE;
     }
 
@@ -345,7 +345,7 @@ void vky_update_mouse_state(VkyMouse* mouse, vec2 pos, VkyMouseButton button)
         if (mouse->cur_state == VKY_MOUSE_STATE_DRAG)
         {
             log_trace("end drag event");
-            mouse->cur_state = VKY_MOUSE_STATE_STATIC;
+            mouse->cur_state = VKY_MOUSE_STATE_INACTIVE;
             mouse->button = VKY_MOUSE_BUTTON_NONE;
         }
 
@@ -381,7 +381,7 @@ void vky_update_mouse_state(VkyMouse* mouse, vec2 pos, VkyMouseButton button)
     if (shift_length > VKY_MOUSE_CLICK_MAX_SHIFT)
     {
         // Mouse move.
-        if (mouse->cur_state == VKY_MOUSE_STATE_STATIC && button != VKY_MOUSE_BUTTON_NONE)
+        if (mouse->cur_state == VKY_MOUSE_STATE_INACTIVE && button != VKY_MOUSE_BUTTON_NONE)
         {
             log_trace("drag event on button %d", button);
             mouse->cur_state = VKY_MOUSE_STATE_DRAG;
@@ -696,7 +696,7 @@ void vky_finish_event_states(VkyEventController* event_controller)
     // Reset the wheel state.
     if (mouse->cur_state == VKY_MOUSE_STATE_WHEEL)
     {
-        mouse->cur_state = VKY_MOUSE_STATE_STATIC;
+        mouse->cur_state = VKY_MOUSE_STATE_INACTIVE;
         mouse->button = VKY_MOUSE_BUTTON_NONE;
     }
     // Make sure the keyboard event is only emitted during a single frame.
