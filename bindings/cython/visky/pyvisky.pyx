@@ -44,6 +44,19 @@ _KEYS = {
     cv.VKY_KEY_G: 'g',
 }
 
+# HACK: these keys do not raise a Python key event
+_EXCLUDED_KEYS = (
+    cv.VKY_KEY_NONE,
+    cv.VKY_KEY_LEFT_SHIFT,
+    cv.VKY_KEY_LEFT_CONTROL,
+    cv.VKY_KEY_LEFT_ALT,
+    cv.VKY_KEY_LEFT_SUPER,
+    cv.VKY_KEY_RIGHT_SHIFT,
+    cv.VKY_KEY_RIGHT_CONTROL,
+    cv.VKY_KEY_RIGHT_ALT,
+    cv.VKY_KEY_RIGHT_SUPER,
+)
+
 _BUTTONS = {
     cv.VKY_MOUSE_BUTTON_LEFT: 'left',
     cv.VKY_MOUSE_BUTTON_MIDDLE: 'middle',
@@ -209,7 +222,7 @@ cdef class Canvas:
             cdef cv.VkyKey key
             keyboard = cv.vky_event_keyboard(self._c_canvas)
             key = keyboard.key
-            if keyboard.cur_state != cv.VKY_KEYBOARD_STATE_CAPTURE and key != cv.VKY_KEY_NONE:
+            if keyboard.cur_state != cv.VKY_KEYBOARD_STATE_CAPTURE and key not in _EXCLUDED_KEYS:
                 # TODO: modifiers
                 f(_key_name(key))
         return wrapped
