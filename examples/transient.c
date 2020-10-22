@@ -1,7 +1,6 @@
 #include <math.h>
 
 #include "../include/visky/visky.h"
-#include "../src/axes.h"
 
 static VkyMarkersTransientParams params = {0};
 static VkyVisual* visual = NULL;

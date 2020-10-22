@@ -1,7 +1,6 @@
 #include <math.h>
 
 #include "../include/visky/visky.h"
-#include "../src/axes.h"
 
 #define RANDOM_POS true
 
