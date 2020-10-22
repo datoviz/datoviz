@@ -218,19 +218,19 @@ class RawEphysViewer:
         delta = .1 * self.buffer_size / self.sample_rate
         if key == 'left':
             self.goto(self.time - delta)
-        if key == 'right':
+        elif key == 'right':
             self.goto(self.time + delta)
-        if key == '+':
+        elif key == '+':
             self.scale = (self.scale[0], self.scale[1] / 1.1)
             self.update_view()
-        if key == '-':
+        elif key == '-':
             self.scale = (self.scale[0], self.scale[1] * 1.1)
             self.update_view()
-        if key == 'home':
+        elif key == 'home':
             self.goto(0)
-        if key == 'end':
+        elif key == 'end':
             self.goto(self.duration)
-        if key == 'g':
+        else:
             self.canvas.prompt()
 
     def on_mouse(self, button, pos, state=None):

@@ -290,14 +290,14 @@ static void _set_style(ImGuiIO& io, VkyGui* gui, int* flags)
                  ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNavInputs |
                  ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
                  ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing;
-        ImGui::SetNextWindowBgAlpha(0.5f);
+        ImGui::SetNextWindowBgAlpha(0.25f);
 
         ImVec2 window_pos = ImVec2(0, io.DisplaySize.y);
         ImVec2 window_pos_pivot = ImVec2(0, 1);
         ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
 
-        ImVec2 size = ImVec2(io.DisplaySize.x, 30);
-        ImGui::SetNextWindowSize(size);
+        // ImVec2 size = ImVec2(io.DisplaySize.x, 30);
+        // ImGui::SetNextWindowSize(size);
 
         break;
     }
