@@ -404,7 +404,11 @@ include_directories(${INCL_DIRS} ${PYTHON_INCLUDE_DIRS} ${NumPy_INCLUDE_DIRS})
 add_cython_target(pyvisky bindings/cython/visky/pyvisky.pyx PY3 C)
 add_library(pyvisky MODULE ${pyvisky})
 target_link_libraries(pyvisky ${PYTHON_LIBRARIES} ${LINK_LIBS} visky)
-python_extension_module(pyvisky)
+#python_extension_module(pyvisky)
+set_target_properties(
+    pyvisky PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bindings/cython/visky/)
+
 
 
 # -------------------------------------------------------------------------------------------------
