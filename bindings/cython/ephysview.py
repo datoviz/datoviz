@@ -100,15 +100,15 @@ class RawEphysViewer:
         self._dl = self._memory.cache(_dl)
 
         dsets = self.one.alyx.rest(
-            'datasets', 'list', session='aad23144-0e52-4eac-80c5-c4ee2decb198',
-            django='name__icontains,ap.cbin')
+            'datasets', 'list', session=eid,
+            django='name__icontains,ap.cbin,collection__endswith,probe%02d' % probe_idx)
         for fr in dsets[probe_idx]['file_records']:
             if fr['data_url']:
                 self.url_cbin = fr['data_url']
 
         dsets = self.one.alyx.rest(
-            'datasets', 'list', session='aad23144-0e52-4eac-80c5-c4ee2decb198',
-            django='name__icontains,ap.ch')
+            'datasets', 'list', session=eid,
+            django='name__icontains,ap.ch,collection__endswith,probe%02d' % probe_idx)
         for fr in dsets[probe_idx]['file_records']:
             if fr['data_url']:
                 self.url_ch = fr['data_url']
@@ -215,7 +215,7 @@ class RawEphysViewer:
         self.update_view()
 
     def on_key(self, key=None, modifiers=None):
-        delta = .25 * self.buffer_size / self.sample_rate
+        delta = .1 * self.buffer_size / self.sample_rate
         if key == 'left':
             self.goto(self.time - delta)
         if key == 'right':
