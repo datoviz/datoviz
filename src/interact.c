@@ -1,5 +1,5 @@
 #include "../include/visky/interact.h"
-#include "axes.h"
+#include "../include/visky/axes.h"
 
 
 

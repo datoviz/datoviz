@@ -1,5 +1,4 @@
 #include "../include/visky/visky.h"
-#include "axes.h"
 #include "axes_3D.h"
 
 

@@ -1,7 +1,7 @@
 #ifndef VKY_AXES_HEADER
 #define VKY_AXES_HEADER
 
-#include "../include/visky/visky.h"
+#include "scene.h"
 
 
 typedef enum

@@ -1,6 +1,7 @@
 #ifndef VKY_TICK_FORMAT_HEADER
 #define VKY_TICK_FORMAT_HEADER
 
+#include "../include/visky/common.h"
 #include <stdint.h>
 BEGIN_INCL_NO_WARN
 #include <cglm/struct.h>
