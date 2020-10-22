@@ -31,13 +31,10 @@ void vky_glfw_stop_app(VkyApp* app);
 
 
 
-void vky_glfw_run_app_begin(VkyApp* app);
-
-void vky_glfw_run_app_process(VkyApp* app);
-
-void vky_glfw_run_app_end(VkyApp* app);
-
-void vky_glfw_run_app(VkyApp* app);
+VKY_EXPORT void vky_glfw_run_app_begin(VkyApp* app);
+VKY_EXPORT void vky_glfw_run_app_process(VkyApp* app);
+VKY_EXPORT void vky_glfw_run_app_end(VkyApp* app);
+VKY_EXPORT void vky_glfw_run_app(VkyApp* app);
 
 
 

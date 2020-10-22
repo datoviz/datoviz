@@ -111,6 +111,11 @@ cdef extern from "../../include/visky/visky.h":
     # from file: vklite.h
     VkyTextureParams vky_default_texture_params(uint32_t width, uint32_t height, uint32_t depth)
 
+    # from file: glfw.h
+    void vky_glfw_run_app_begin(VkyApp* app)
+    void vky_glfw_run_app_process(VkyApp* app)
+    void vky_glfw_run_app_end(VkyApp* app)
+
     # from file: log.h
     void log_set_level_env()
 

@@ -14,7 +14,8 @@ from pyparsing import (
 
 
 HEADER_DIR = (Path(__file__).parent / '../../include/visky').resolve()
-EXTERNAL_DIR = HEADER_DIR / '../../external'
+INTERNAL_HEADER_DIR = (Path(__file__).parent / '../../src').resolve()
+EXTERNAL_HEADER_DIR = HEADER_DIR / '../../external'
 CYTHON_OUTPUT = (Path(__file__).parent / 'visky/cyvisky.pxd').resolve()
 
 ENUM_START = '# ENUM START'
@@ -31,8 +32,9 @@ FUNCTION_END = '# FUNCTION END'
 def iter_header_files():
     for h in sorted(HEADER_DIR.glob('*.h')):
         yield h
-
-    for h in (EXTERNAL_DIR / 'log.h',):
+    for h in sorted(INTERNAL_HEADER_DIR.glob('*.h')):
+        yield h
+    for h in (EXTERNAL_HEADER_DIR / 'log.h',):
         yield h
 
 
@@ -57,13 +59,6 @@ def _remove_comments(text):
 
 # C header parsing
 # -------------------------------------------------------------------------------------------------
-
-# def _parse_define(text):
-#     macro = Suppress("#define") + Word(alphas + "_", alphanums + "_") \
-#         .setResultsName("macro") + empty + restOfLine.setResultsName("value")
-#     for item, start, stop in macro.scanString(text):
-#         print(item)
-
 
 def parse_defines(text):
     defines = re.findall(
@@ -284,7 +279,9 @@ if __name__ == '__main__':
         else:
             funcs_to_insert += '\n'
 
-    assert not already_defined_funcs.keys()
+    if already_defined_funcs.keys():
+        raise RuntimeError(
+            "Some Cython function bindings are missing, check gencython.py")
 
     # Insert into the Cython file
     insert_into_file(
