@@ -409,7 +409,26 @@ static void fill_live_command_buffer(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
     int flags = 0;
 
     // Stop processing Visky events if the user is interacting with the GUI.
-    canvas->event_controller->do_process_input = !io.WantCaptureMouse && !io.WantCaptureKeyboard;
+    VkyEventController* ec = canvas->event_controller;
+    ASSERT(ec != NULL);
+    ec->do_process_input = !io.WantCaptureMouse && !io.WantCaptureKeyboard;
+    // log_debug("process input %d", ec->do_process_input);
+    if (!ec->do_process_input)
+    {
+        ec->keyboard->prev_state = ec->keyboard->cur_state;
+        ec->keyboard->cur_state = VKY_KEYBOARD_STATE_CAPTURE;
+
+        ec->mouse->prev_state = ec->mouse->cur_state;
+        ec->mouse->cur_state = VKY_MOUSE_STATE_CAPTURE;
+    }
+    else
+    {
+        if (ec->keyboard->cur_state == VKY_KEYBOARD_STATE_CAPTURE)
+            ec->keyboard->cur_state = ec->keyboard->prev_state;
+
+        if (ec->mouse->cur_state == VKY_MOUSE_STATE_CAPTURE)
+            ec->mouse->cur_state = ec->mouse->prev_state;
+    }
 
     for (uint32_t k = 0; k < canvas->gui_count; k++)
     {
@@ -512,39 +531,57 @@ void vky_destroy_guis(VkyCanvas* canvas)
 
 void vky_prompt(VkyCanvas* canvas)
 {
-    if (canvas->prompt == NULL)
+    ASSERT(canvas != NULL);
+    VkyPrompt* prompt = canvas->prompt;
+    if (prompt == NULL)
+    {
         canvas->prompt = (VkyPrompt*)calloc(1, sizeof(VkyPrompt));
-    ASSERT(canvas->prompt != NULL);
-    if (canvas->prompt->state == VKY_PROMPT_SHOWN)
+        prompt = canvas->prompt;
+    }
+    ASSERT(prompt != NULL);
+    if (prompt->state == VKY_PROMPT_SHOWN)
         return;
 
     // Create the prompt GUI only once.
-    if (canvas->prompt->gui == NULL)
+    if (prompt->gui == NULL)
     {
         VkyGuiParams params = {};
         params.style = VKY_GUI_PROMPT;
-        canvas->prompt->gui = vky_create_gui(canvas, params);
-        vky_gui_control(
-            canvas->prompt->gui, VKY_GUI_TEXTBOX_PROMPT, NULL, NULL, canvas->prompt->text);
+        prompt->gui = vky_create_gui(canvas, params);
+        vky_gui_control(prompt->gui, VKY_GUI_TEXTBOX_PROMPT, NULL, NULL, prompt->text);
     }
 
-    canvas->prompt->text[0] = 0;
-    canvas->prompt->gui->is_visible = true;
-    canvas->prompt->state = VKY_PROMPT_SHOWN;
+    prompt->text[0] = 0;
+    prompt->gui->is_visible = true;
+    prompt->state = VKY_PROMPT_SHOWN;
 }
 
 
+static void _dismiss_prompt(VkyCanvas* canvas)
+{
+    VkyPrompt* prompt = canvas->prompt;
+    prompt->gui->is_visible = false;
+    canvas->prompt->state = VKY_PROMPT_HIDDEN;
+    VkyEventController* ec = canvas->event_controller;
+    ec->keyboard->cur_state = VKY_KEYBOARD_STATE_INACTIVE;
+    ec->mouse->cur_state = VKY_MOUSE_STATE_STATIC;
+}
 
 char* vky_prompt_get(VkyCanvas* canvas)
 {
-    if (canvas->prompt == NULL)
+    ASSERT(canvas != NULL);
+    VkyPrompt* prompt = canvas->prompt;
+    if (prompt == NULL)
+        return NULL;
+    // Hide the prompt on pressing Esc.
+    if (prompt != NULL && canvas->event_controller->keyboard->key == VKY_KEY_ESCAPE)
     {
-        // log_error("you need to call vky_prompt() first");
-        return NULL;
+        _dismiss_prompt(canvas);
     }
-    if (canvas->prompt->state != VKY_PROMPT_ACTIVE)
+    if (prompt->state != VKY_PROMPT_ACTIVE)
         return NULL;
-    ASSERT(canvas->prompt->gui != NULL);
-    canvas->prompt->state = VKY_PROMPT_HIDDEN;
-    return canvas->prompt->text;
+    ASSERT(prompt->gui != NULL);
+    prompt->state = VKY_PROMPT_HIDDEN;
+    _dismiss_prompt(canvas);
+    return prompt->text;
 }

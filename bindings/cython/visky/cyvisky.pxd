@@ -152,6 +152,8 @@ cdef extern from "../../include/visky/visky.h":
     ctypedef struct VkyKeyboard:
         VkyKey key
         uint32_t modifiers
+        VkyKeyboardState prev_state
+        VkyKeyboardState cur_state
         double press_time
 
     # from file: scene.h
@@ -270,6 +272,12 @@ cdef extern from "../../include/visky/visky.h":
         VKY_MOUSE_STATE_WHEEL = 2
         VKY_MOUSE_STATE_CLICK = 3
         VKY_MOUSE_STATE_DOUBLE_CLICK = 4
+        VKY_MOUSE_STATE_CAPTURE = 5
+
+    ctypedef enum VkyKeyboardState:
+        VKY_KEYBOARD_STATE_INACTIVE = 0
+        VKY_KEYBOARD_STATE_ACTIVE = 1
+        VKY_KEYBOARD_STATE_CAPTURE = 2
 
     ctypedef enum VkyKey:
         VKY_KEY_UNKNOWN = -1

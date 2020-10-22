@@ -210,7 +210,7 @@ cdef class Canvas:
             cdef cv.VkyKey key
             keyboard = cv.vky_event_keyboard(self._c_canvas)
             key = keyboard.key
-            if key != cv.VKY_KEY_NONE:
+            if keyboard.cur_state != cv.VKY_KEYBOARD_STATE_CAPTURE and key != cv.VKY_KEY_NONE:
                 # TODO: modifiers
                 f(_key_name(key))
         return wrapped

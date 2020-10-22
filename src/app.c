@@ -12,11 +12,8 @@
 static void _esc_close_canvas(VkyCanvas* canvas, void* data)
 {
     VkyKeyboard* keyboard = canvas->event_controller->keyboard;
-    if (keyboard->key == VKY_KEY_ESCAPE)
-    {
+    if (keyboard->cur_state != VKY_KEYBOARD_STATE_CAPTURE && keyboard->key == VKY_KEY_ESCAPE)
         vky_close_canvas(canvas);
-    }
-    // return 0;
 }
 
 static void fcb(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
@@ -249,6 +246,7 @@ void vky_create_event_controller(VkyCanvas* canvas)
     canvas->event_controller->keyboard = calloc(1, sizeof(VkyKeyboard));
     canvas->event_controller->keyboard->key = VKY_KEY_NONE;
     canvas->event_controller->keyboard->modifiers = 0;
+    canvas->event_controller->keyboard->cur_state = VKY_KEYBOARD_STATE_INACTIVE;
 
     canvas->event_controller->frame_callbacks =
         calloc(VKY_MAX_EVENT_CALLBACKS, sizeof(VkyFrameCallback));
@@ -508,6 +506,13 @@ void vky_update_keyboard_state(VkyKeyboard* keyboard, VkyKey key, VkyKeyModifier
         keyboard->key = key;
         keyboard->modifiers = modifiers;
         keyboard->press_time = time;
+        if (keyboard->cur_state == VKY_KEYBOARD_STATE_INACTIVE)
+            keyboard->cur_state = VKY_KEYBOARD_STATE_ACTIVE;
+    }
+    else
+    {
+        if (keyboard->cur_state == VKY_KEYBOARD_STATE_ACTIVE)
+            keyboard->cur_state = VKY_KEYBOARD_STATE_INACTIVE;
     }
 }
 
@@ -628,10 +633,6 @@ void vky_update_event_states(VkyEventController* event_controller)
     if (event_controller == NULL)
     {
         log_debug("skipping event controller update");
-        return;
-    }
-    if (!event_controller->do_process_input)
-    {
         return;
     }
     ASSERT(event_controller->mouse != NULL);

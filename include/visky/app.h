@@ -32,12 +32,20 @@ typedef enum
 
 typedef enum
 {
-    VKY_MOUSE_STATE_STATIC = 0,
-    VKY_MOUSE_STATE_DRAG = 1,
-    VKY_MOUSE_STATE_WHEEL = 2,
-    VKY_MOUSE_STATE_CLICK = 3,
-    VKY_MOUSE_STATE_DOUBLE_CLICK = 4,
+    VKY_MOUSE_STATE_STATIC,
+    VKY_MOUSE_STATE_DRAG,
+    VKY_MOUSE_STATE_WHEEL,
+    VKY_MOUSE_STATE_CLICK,
+    VKY_MOUSE_STATE_DOUBLE_CLICK,
+    VKY_MOUSE_STATE_CAPTURE,
 } VkyMouseState;
+
+typedef enum
+{
+    VKY_KEYBOARD_STATE_INACTIVE,
+    VKY_KEYBOARD_STATE_ACTIVE,
+    VKY_KEYBOARD_STATE_CAPTURE,
+} VkyKeyboardState;
 
 // taken from https://www.glfw.org/docs/3.3/group__keys.html
 typedef enum
@@ -261,6 +269,10 @@ struct VkyKeyboard
 {
     VkyKey key;
     uint32_t modifiers;
+
+    VkyKeyboardState prev_state;
+    VkyKeyboardState cur_state;
+
     double press_time;
 };
 

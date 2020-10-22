@@ -8,11 +8,11 @@ static void _mouse_wheel_callback(GLFWwindow* window, double dx, double dy)
     VkyCanvas* canvas = (VkyCanvas*)glfwGetWindowUserPointer(window);
     VkyMouse* mouse = canvas->event_controller->mouse;
 
-    if (!canvas->event_controller->do_process_input)
-        return;
-
-    mouse->prev_state = mouse->cur_state;
-    mouse->cur_state = VKY_MOUSE_STATE_WHEEL;
+    if (mouse->cur_state != VKY_MOUSE_STATE_CAPTURE)
+    {
+        mouse->prev_state = mouse->cur_state;
+        mouse->cur_state = VKY_MOUSE_STATE_WHEEL;
+    }
 
     float delta = (float)dy * .1f;
     mouse->wheel_delta[0] = delta;
@@ -29,9 +29,6 @@ static void _key_callback(GLFWwindow* window, int key, int scancode, int action,
 {
     VkyCanvas* canvas = (VkyCanvas*)glfwGetWindowUserPointer(window);
     ASSERT(canvas->event_controller != NULL);
-
-    if (!canvas->event_controller->do_process_input)
-        return;
 
     VkyKeyboard* keyboard = canvas->event_controller->keyboard;
     ASSERT(keyboard != NULL);
