@@ -1127,7 +1127,12 @@ void vky_destroy_swapchain_resources(VkyCanvas* canvas)
 
 void vky_destroy_canvas(VkyCanvas* canvas)
 {
+    if (canvas == NULL)
+        return;
     log_trace("destroy canvas");
+
+    if (canvas->event_controller)
+        vky_destroy_event_controller(canvas->event_controller);
 
     if (canvas->scene != NULL)
     {
@@ -1182,6 +1187,7 @@ void vky_destroy_canvas(VkyCanvas* canvas)
     vky_destroy_guis(canvas);
     FREE(canvas->guis);
     FREE(canvas->prompt);
+    FREE(canvas);
 }
 
 void vky_destroy_device(VkyGpu* gpu)

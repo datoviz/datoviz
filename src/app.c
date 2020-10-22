@@ -165,34 +165,20 @@ void vky_destroy_app(VkyApp* app)
     VkyCanvas* canvas;
     VkyBackendType backend = app->backend;
 
-    // Destroy the canvases.
+    // Make sure all canvases were destroyed.
     for (uint32_t i = 0; i < app->canvas_count; i++)
     {
-        log_trace("destroy canvas %d", i);
         canvas = app->canvases[i];
         if (canvas == NULL)
-            continue;
-        vky_destroy_event_controller(canvas->event_controller);
-        GLFWwindow* window = (GLFWwindow*)canvas->window;
-        vky_destroy_canvas(canvas);
-        // Backend-specific window destruction.
-        switch (backend)
         {
-
-        case VKY_BACKEND_GLFW:
-            if (window != NULL)
-                glfwDestroyWindow(window);
-            break;
-
-            // case VKY_BACKEND_VNC:
-            //     vky_destroy_screenshot(
-            //         ((VkyBackendVNCParams*)canvas->app->backend_params)->screenshot);
-            //     break;
-
-        default:
-            break;
+            log_debug("canvas %d was already destroyed, all good", i);
         }
-        FREE(canvas);
+        else
+        {
+            log_debug(
+                "canvas %d was not destroyed previously, doing it while destroying the app", i);
+            vky_destroy_canvas(canvas);
+        }
     }
 
     FREE(app->canvases);
