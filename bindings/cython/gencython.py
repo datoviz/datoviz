@@ -1,3 +1,4 @@
+from functools import lru_cache
 from pathlib import Path
 import os
 from pprint import pprint
@@ -8,17 +9,20 @@ from textwrap import indent
 import pyparsing as pp
 from pyparsing import (
     Suppress, Word, alphas, alphanums, nums, Optional, Group, ZeroOrMore, empty, restOfLine,
-    cStyleComment,
+    Keyword, cStyleComment, Empty,
 )
 
 
 HEADER_DIR = (Path(__file__).parent / '../../include/visky').resolve()
+EXTERNAL_DIR = HEADER_DIR / '../../external'
 CYTHON_OUTPUT = (Path(__file__).parent / 'visky/cyvisky.pxd').resolve()
 
 ENUM_START = '# ENUM START'
 ENUM_END = '# ENUM END'
 STRUCT_START = '# STRUCT START'
 STRUCT_END = '# STRUCT END'
+FUNCTION_START = '# FUNCTION START'
+FUNCTION_END = '# FUNCTION END'
 
 
 # File explorer and manipulation
@@ -26,6 +30,9 @@ STRUCT_END = '# STRUCT END'
 
 def iter_header_files():
     for h in sorted(HEADER_DIR.glob('*.h')):
+        yield h
+
+    for h in (EXTERNAL_DIR / 'log.h',):
         yield h
 
 
@@ -160,9 +167,87 @@ def _gen_struct(structs):
     return out
 
 
+def _parse_func(text, is_output=False):
+    if is_output:
+        text = text[text.index(FUNCTION_START):text.index(FUNCTION_END)]
+    funcs = {}
+    # syntax we don't want to see in the final parse tree
+    LPAR, RPAR, LBRACE, RBRACE, COMMA, SEMICOLON = map(Suppress, "(){},;")
+    const = Keyword("const")
+    dtype = Word(alphanums + "_*")
+    # dtype = Group(Optional(const("const")) + dtype("dtype"))
+    identifier = Word(alphanums + "_")
+    argDecl = Group(
+        Optional(const("const")) +
+        dtype("dtype") +
+        Optional(identifier("name")
+                 ) + Optional(COMMA))
+    args = Group(ZeroOrMore(argDecl))
+    if not is_output:
+        func = Suppress("VKY_EXPORT")
+    else:
+        func = Empty()
+    func = func + \
+        dtype("out") + \
+        identifier("name") + \
+        LPAR + args("args") + RPAR + \
+        Optional(SEMICOLON)
+
+    for item, start, stop in func.scanString(text):
+        args = []
+        for i, entry in enumerate(item.args):
+            args.append((entry.const, entry.dtype, entry.name))
+        funcs[item.name] = (item.out, tuple(args))
+    return funcs
+
+
+@lru_cache
+def _camel_to_snake(name):
+    name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', name).lower()
+
+
+def _gen_cython_func(name, func):
+    out, args = func
+    args_s = []
+    for const, dtype, argname in args:
+        if not argname:
+            if 'int' in dtype:
+                argname = 'n%d' % len(args_s)
+            elif dtype == 'float':
+                argname = 'value'
+            elif 'vec' in dtype:
+                argname = 'vec'
+            elif dtype == 'void*':
+                argname = 'buf'
+            elif 'char' in dtype:
+                argname = 's'
+            elif dtype == 'void':
+                argname = ''
+            elif dtype == 'bool':
+                argname = 'value'
+            elif dtype == 'size_t':
+                argname = 'size'
+            elif 'Vky' in dtype:
+                argname = _camel_to_snake(
+                    dtype.replace('Vky', '')).replace('*', '')
+            else:
+                raise ValueError(dtype)
+        if const:
+            dtype = "const " + dtype
+        args_s.append(f'{dtype} {argname}')
+    args = ', '.join(args_s)
+    return f'{out} {name}({args})'
+
+
 if __name__ == '__main__':
     enums_to_insert = ''
     structs_to_insert = ''
+    funcs_to_insert = ''
+
+    # Parse already-defined functinos in the pxd
+    already_defined_funcs = _parse_func(
+        read_file(CYTHON_OUTPUT), is_output=True)
 
     for filename in iter_header_files():
         text = read_file(filename)
@@ -182,8 +267,28 @@ if __name__ == '__main__':
             if generated:
                 structs_to_insert += f'# from file: {filename.name}\n\n{generated}'
 
+        # Parse the functions
+        funcs = _parse_func(text)
+        h = f'# from file: {filename.name}\n'
+        funcs_to_insert += h
+        generated = ''
+        for name, func in funcs.items():
+            existing = already_defined_funcs.pop(name, None)
+            if not existing:
+                continue
+            generated = _gen_cython_func(name, func)
+            funcs_to_insert += generated + '\n'
+        if not generated:
+            funcs_to_insert = funcs_to_insert[:-len(h)]
+        else:
+            funcs_to_insert += '\n'
+
+    assert not already_defined_funcs.keys()
+
     # Insert into the Cython file
     insert_into_file(
         CYTHON_OUTPUT, ENUM_START, ENUM_END, enums_to_insert)
     insert_into_file(
         CYTHON_OUTPUT, STRUCT_START, STRUCT_END, structs_to_insert)
+    insert_into_file(
+        CYTHON_OUTPUT, FUNCTION_START, FUNCTION_END, funcs_to_insert)
