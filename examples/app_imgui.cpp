@@ -154,7 +154,6 @@ int main(int argc, char** argv)
     {
         vky_destroy_canvas(imcanvas);
         vkDestroySampler(canvas->gpu->device, imtexture.texture.sampler, NULL);
-        FREE(imcanvas);
     }
     else
     {

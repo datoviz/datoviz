@@ -1131,18 +1131,20 @@ void vky_destroy_canvas(VkyCanvas* canvas)
         return;
     log_trace("destroy canvas");
 
-    ASSERT(canvas->app != NULL);
-    switch (canvas->app->backend)
+    if (canvas->app != NULL)
     {
-    case VKY_BACKEND_GLFW:
-        // glfwWaitEvents();
-        glfwPollEvents();
-        vky_glfw_wait(canvas);
-        glfwDestroyWindow(canvas->window);
-        canvas->window = NULL;
-        break;
-    default:
-        break;
+        switch (canvas->app->backend)
+        {
+        case VKY_BACKEND_GLFW:
+            // glfwWaitEvents();
+            glfwPollEvents();
+            vky_glfw_wait(canvas);
+            glfwDestroyWindow(canvas->window);
+            canvas->window = NULL;
+            break;
+        default:
+            break;
+        }
     }
 
     if (canvas->event_controller)
@@ -1187,6 +1189,7 @@ void vky_destroy_canvas(VkyCanvas* canvas)
         canvas->command_buffers);
 
     // Destroy the render pass.
+    log_trace("destroy render pass");
     vkDestroyRenderPass(device, canvas->render_pass, NULL);
     vkDestroyRenderPass(device, canvas->live_render_pass, NULL);
 
