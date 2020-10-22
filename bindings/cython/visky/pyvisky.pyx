@@ -1,4 +1,3 @@
-import atexit
 from functools import wraps
 
 cimport numpy as np
@@ -90,32 +89,6 @@ def _mouse_state(state):
 
 
 
-_APP = None
-def app(*args, **kwargs):
-    global _APP
-    if _APP is None:
-        _APP = App(*args, **kwargs)
-    assert _APP
-    return _APP
-
-
-def canvas(*args, **kwargs):
-    return app().canvas(*args, **kwargs)
-
-
-def run():
-    app().run()
-
-
-@atexit.register
-def destroy():
-    global _APP
-    if _APP:
-        del _APP
-    _APP = None
-
-
-
 cdef class App:
     cdef cv.VkyApp* _c_app
 
@@ -126,6 +99,9 @@ cdef class App:
             raise MemoryError()
 
     def __dealloc__(self):
+        self.destroy()
+
+    def destroy(self):
         if self._c_app is not NULL:
             cv.vky_destroy_app(self._c_app)
 
@@ -401,22 +377,3 @@ cdef class Visual:
 cdef class Image(Visual):
     def set_image(self, np.ndarray image):
         cv.vky_visual_image_upload(self._c_visual, &image.data[0])
-
-
-
-
-from IPython.terminal.pt_inputhooks import register
-
-def inputhook(context):
-    global _APP
-    if _APP is None:
-        _APP = app()
-        _APP.run_begin()
-    assert _APP is not None
-    while not context.input_is_ready():
-        _APP.run_process()
-    global _IN_IPYTHON_TERMINAL
-    _IN_IPYTHON_TERMINAL = True
-    # TODO: end & destroy
-
-register('visky', inputhook)

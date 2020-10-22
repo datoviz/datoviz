@@ -21,6 +21,7 @@ cglm
 bindings/r
 _skbuild
 site
+_shaders.h
 
 *.png
 *.ppm

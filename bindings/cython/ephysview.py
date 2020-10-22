@@ -16,7 +16,7 @@ from joblib import Memory
 import numpy as np
 from oneibl.one import ONE
 
-from visky.pyvisky import canvas, run
+from visky import canvas, run
 
 
 def _memmap_flat(path, dtype=None, n_channels=None, offset=0):

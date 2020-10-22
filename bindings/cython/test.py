@@ -1,5 +1,7 @@
 import numpy as np
-from visky.pyvisky import canvas, run
+from visky import canvas, run, enable_ipython
+
+enable_ipython()
 
 # Test data
 n = 10000
@@ -14,4 +16,4 @@ c[0, 1].axes().imshow(np.random.uniform(
     size=(128, 32, 4), low=0, high=255).astype(np.uint8))
 
 # Start the event loop
-run()
+# run()
