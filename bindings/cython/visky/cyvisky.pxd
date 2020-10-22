@@ -75,44 +75,47 @@ cdef extern from "../../include/visky/visky.h":
 
 
 
-    # Functions
-    void log_set_level_env()
-    VkyApp* vky_create_app(VkyBackendType backend, void* params)
+    # FUNCTION START
+    # from file: app.h
+    VkyApp* vky_create_app(VkyBackendType backend, void* backend_params)
     VkyCanvas* vky_create_canvas(VkyApp* app, uint32_t width, uint32_t height)
-    VkyScene* vky_create_scene(
-        VkyCanvas* canvas, VkyColor clear_color, uint32_t row_count, uint32_t col_count)
-    VkyPanel* vky_get_panel(VkyScene* scene, uint32_t row, uint32_t col)
-    VkyPanelIndex vky_get_panel_index(VkyPanel* panel)
-    void vky_set_controller(VkyPanel* panel, VkyControllerType controller_type, const void*)
-    void vky_axes_set_initial_range(VkyAxes* axes, VkyBox2D box)
-    VkyAxes* vky_get_axes(VkyPanel* panel)
-
-    VkyVisual* vky_visual(VkyScene* scene, VkyVisualType visual_type, const void* params, const void* obj)
-
-    void vky_add_visual_to_panel(VkyVisual* visual, VkyPanel* panel, VkyViewportType viewport_type, VkyVisualPriority priority)
-
-    void vky_visual_data_set_size(
-        VkyVisual* visual, uint32_t item_count,
-        uint32_t group_count, const uint32_t* group_lengths, const void* group_params)
-
-    void vky_visual_data(
-        VkyVisual* visual, VkyVisualPropType prop_type, uint32_t prop_index,
-        uint32_t value_count, const void* values)
-
-    VkyTextureParams vky_default_texture_params(uint32_t width, uint32_t height, uint32_t depth);
-    void vky_visual_image_upload(VkyVisual* visual, const void* image)
-
-    void vky_add_frame_callback(VkyCanvas* canvas, VkyFrameCallback callback, void* data)
+    void vky_run_app(VkyApp* app)
+    void vky_destroy_app(VkyApp* app)
+    void vky_close_canvas(VkyCanvas* canvas)
     VkyMouse* vky_event_mouse(VkyCanvas* canvas)
     VkyKeyboard* vky_event_keyboard(VkyCanvas* canvas)
+    void vky_add_frame_callback(VkyCanvas* canvas, VkyFrameCallback cb, void* data)
 
+    # from file: axes.h
+    void vky_axes_set_initial_range(VkyAxes* axes, VkyBox2D box)
+
+    # from file: gui.h
     void vky_prompt(VkyCanvas* canvas)
     char* vky_prompt_get(VkyCanvas* canvas)
-    VkyPick vky_pick(VkyScene* scene, vec2 canvas_coords, VkyPanel* panel)
 
-    void vky_run_app(VkyApp* app)
-    void vky_close_canvas(VkyCanvas* canvas)
-    void vky_destroy_app(VkyApp* app)
+    # from file: scene.h
+    VkyPick vky_pick(VkyScene* scene, vec2 canvas_coords, VkyPanel* panel)
+    void vky_add_visual_to_panel(VkyVisual* visual, VkyPanel* panel, VkyViewportType viewport_type, VkyVisualPriority priority)
+    VkyVisual* vky_visual(VkyScene* scene, VkyVisualType visual_type, const void* params, const void* obj)
+    void vky_visual_data_set_size(VkyVisual* visual, uint32_t item_count, uint32_t group_count, const uint32_t* group_lengths, const void* group_params)
+    void vky_visual_data(VkyVisual* visual, VkyVisualPropType prop, uint32_t prop_index, uint32_t value_count, const void* values)
+    VkyPanel* vky_get_panel(VkyScene* scene, uint32_t row, uint32_t col)
+    VkyPanelIndex vky_get_panel_index(VkyPanel* panel)
+    VkyAxes* vky_get_axes(VkyPanel* panel)
+    void vky_set_controller(VkyPanel* panel, VkyControllerType controller_type, const void* controller_params)
+    VkyScene* vky_create_scene(VkyCanvas* canvas, VkyColor clear_color, uint32_t row_count, uint32_t col_count)
+
+    # from file: visuals.h
+    void vky_visual_image_upload(VkyVisual* visual, const void* image)
+
+    # from file: vklite.h
+    VkyTextureParams vky_default_texture_params(uint32_t width, uint32_t height, uint32_t depth)
+
+    # from file: log.h
+    void log_set_level_env()
+
+
+    # FUNCTION END
 
 
 
@@ -399,6 +402,28 @@ cdef extern from "../../include/visky/visky.h":
         VKY_BACKEND_OFFSCREEN = 10
         VKY_BACKEND_SCREENSHOT = 11
         VKY_BACKEND_VIDEO = 12
+
+    # from file: axes.h
+
+    ctypedef enum VkyAxesTickFlag:
+        VKY_AXES_TICK_NONE = 0x0000
+        VKY_AXES_TICK_MINOR = 0x0001
+        VKY_AXES_TICK_MAJOR = 0x0002
+        VKY_AXES_TICK_GRID = 0x0004
+        VKY_AXES_TICK_LIM = 0x0008
+        VKY_AXES_TICK_USER_0 = 0x0010
+        VKY_AXES_TICK_USER_1 = 0x0020
+        VKY_AXES_TICK_USER_2 = 0x0040
+        VKY_AXES_TICK_USER_3 = 0x0080
+        VKY_AXES_TICK_ALL = 0x00FF
+
+    ctypedef enum VkyCDS:
+        VKY_CDS_DATA = 1
+        VKY_CDS_GPU = 2
+        VKY_CDS_PANZOOM = 3
+        VKY_CDS_PANEL = 4
+        VKY_CDS_CANVAS_NDC = 5
+        VKY_CDS_CANVAS_PX = 6
 
     # from file: colormaps.h
 

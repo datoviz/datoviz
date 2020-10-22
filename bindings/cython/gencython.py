@@ -223,6 +223,7 @@ def _gen_cython_func(name, func):
             elif 'char' in dtype:
                 argname = 's'
             elif dtype == 'void':
+                dtype = ''
                 argname = ''
             elif dtype == 'bool':
                 argname = 'value'
