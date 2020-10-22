@@ -360,11 +360,6 @@ void vky_glfw_run_app_process(VkyApp* app)
         if (should_close)
         {
             // Close and destroy the canvas.
-            glfwWaitEvents();
-            glfwPollEvents();
-            vky_glfw_wait(canvas);
-            glfwDestroyWindow(canvas->window);
-            app->canvases[i]->window = NULL;
             vky_destroy_canvas(canvas);
             app->canvases[i] = NULL;
             continue;

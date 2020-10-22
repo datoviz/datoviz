@@ -13,7 +13,7 @@ static void _esc_close_canvas(VkyCanvas* canvas, void* data)
 {
     VkyKeyboard* keyboard = canvas->event_controller->keyboard;
     if (keyboard->cur_state != VKY_KEYBOARD_STATE_CAPTURE && keyboard->key == VKY_KEY_ESCAPE)
-        vky_close_canvas(canvas);
+        vky_canvas_to_close(canvas);
 }
 
 static void fcb(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
@@ -144,8 +144,10 @@ void vky_run_app(VkyApp* app)
     }
 }
 
-void vky_close_canvas(VkyCanvas* canvas)
+void vky_canvas_to_close(VkyCanvas* canvas)
 {
+    if (canvas == NULL)
+        return;
     VkyBackendType backend = canvas->app->backend;
     switch (backend)
     {

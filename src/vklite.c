@@ -1131,6 +1131,20 @@ void vky_destroy_canvas(VkyCanvas* canvas)
         return;
     log_trace("destroy canvas");
 
+    ASSERT(canvas->app != NULL);
+    switch (canvas->app->backend)
+    {
+    case VKY_BACKEND_GLFW:
+        // glfwWaitEvents();
+        glfwPollEvents();
+        vky_glfw_wait(canvas);
+        glfwDestroyWindow(canvas->window);
+        canvas->window = NULL;
+        break;
+    default:
+        break;
+    }
+
     if (canvas->event_controller)
         vky_destroy_event_controller(canvas->event_controller);
 

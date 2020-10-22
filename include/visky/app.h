@@ -308,7 +308,7 @@ VKY_EXPORT VkyApp* vky_create_app(VkyBackendType backend, void* backend_params);
 VKY_EXPORT VkyCanvas* vky_create_canvas(VkyApp* app, uint32_t width, uint32_t height);
 VKY_EXPORT void vky_run_app(VkyApp* app);
 VKY_EXPORT void vky_destroy_app(VkyApp* app);
-VKY_EXPORT void vky_close_canvas(VkyCanvas* canvas);
+VKY_EXPORT void vky_canvas_to_close(VkyCanvas* canvas);
 VKY_EXPORT bool vky_all_windows_closed(VkyApp* app);
 
 VKY_EXPORT void vky_create_event_controller(VkyCanvas*);
