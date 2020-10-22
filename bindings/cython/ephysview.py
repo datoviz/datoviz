@@ -72,7 +72,7 @@ def _dl(url_cbin, url_ch, chunk):
 
 
 class RawEphysViewer:
-    def __init__(self, n_channels, sample_rate, dtype, buffer_size=3_000):
+    def __init__(self, n_channels, sample_rate, dtype, buffer_size=7_500):
         self.n_channels = n_channels
         self.sample_rate = float(sample_rate)
         self.dtype = dtype

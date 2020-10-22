@@ -91,6 +91,7 @@ def _mouse_state(state):
 
 cdef class App:
     cdef cv.VkyApp* _c_app
+    _canvases = []
 
     def __cinit__(self):
         cv.log_set_level_env()
@@ -103,7 +104,10 @@ cdef class App:
 
     def destroy(self):
         if self._c_app is not NULL:
+            for c in self._canvases:
+                c.destroy()
             cv.vky_destroy_app(self._c_app)
+            self._c_app = NULL
 
     def canvas(self, int rows=1, int cols=1, int width=DEFAULT_WIDTH, int height=DEFAULT_HEIGHT):
         c_canvas = cv.vky_create_canvas(self._c_app, width, height)
@@ -111,6 +115,7 @@ cdef class App:
             raise MemoryError()
         c = Canvas()
         c.create(c_canvas, rows, cols)
+        self._canvases.append(c)
         return c
 
     def run(self):
@@ -170,6 +175,14 @@ cdef class Canvas:
         self._c_scene = cv.vky_create_scene(self._c_canvas, clear_color, rows, cols)
         if self._c_scene is NULL:
             raise MemoryError()
+
+    def __dealloc__(self):
+        self.destroy()
+
+    def destroy(self):
+        if self._c_canvas is not NULL:
+            cv.vky_canvas_to_close(self._c_canvas)
+            self._c_canvas = NULL
 
     def panel(self, int row=0, int col=0):
         c_panel = cv.vky_get_panel(self._c_scene, row, col)

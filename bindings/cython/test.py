@@ -16,4 +16,4 @@ c[0, 1].axes().imshow(np.random.uniform(
     size=(128, 32, 4), low=0, high=255).astype(np.uint8))
 
 # Start the event loop
-# run()
+run()

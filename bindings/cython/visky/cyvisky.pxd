@@ -81,7 +81,7 @@ cdef extern from "../../include/visky/visky.h":
     VkyCanvas* vky_create_canvas(VkyApp* app, uint32_t width, uint32_t height)
     void vky_run_app(VkyApp* app)
     void vky_destroy_app(VkyApp* app)
-    void vky_close_canvas(VkyCanvas* canvas)
+    void vky_canvas_to_close(VkyCanvas* canvas)
     VkyMouse* vky_event_mouse(VkyCanvas* canvas)
     VkyKeyboard* vky_event_keyboard(VkyCanvas* canvas)
     void vky_add_frame_callback(VkyCanvas* canvas, VkyFrameCallback cb, void* data)
@@ -110,6 +110,7 @@ cdef extern from "../../include/visky/visky.h":
 
     # from file: vklite.h
     VkyTextureParams vky_default_texture_params(uint32_t width, uint32_t height, uint32_t depth)
+    void vky_destroy_canvas(VkyCanvas* canvas)
 
     # from file: glfw.h
     void vky_glfw_run_app_begin(VkyApp* app)
