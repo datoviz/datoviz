@@ -113,7 +113,10 @@ set(CMAKE_BUILD_TYPE Debug)
 
 
 set(INCL_DIRS ${CMAKE_SOURCE_DIR}/external ${CMAKE_SOURCE_DIR}/external/imgui ${CMAKE_SOURCE_DIR}/include/)
-set(LINK_LIBS m dl glfw cglm Vulkan::Vulkan)
+set(LINK_LIBS m glfw cglm Vulkan::Vulkan)
+if(NOT ${WIN32})
+    set(LINK_LIBS dl ${LINK_LIBS})
+endif()
 
 # macOS-specific
 set(OS_MACOS 0)
@@ -390,6 +393,9 @@ target_compile_definitions(visky PUBLIC ${COMPILE_DEFINITIONS})
 target_include_directories(visky PUBLIC ${INCL_DIRS})
 target_link_libraries(visky ${LINK_LIBS})
 
+if(${WIN32})
+    target_link_libraries(visky -static gcc stdc++ winpthread -dynamic)
+endif()
 
 
 # -------------------------------------------------------------------------------------------------
