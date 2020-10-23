@@ -102,14 +102,14 @@ class RawEphysViewer:
         dsets = self.one.alyx.rest(
             'datasets', 'list', session=eid,
             django='name__icontains,ap.cbin,collection__endswith,probe%02d' % probe_idx)
-        for fr in dsets[probe_idx]['file_records']:
+        for fr in dsets[0]['file_records']:
             if fr['data_url']:
                 self.url_cbin = fr['data_url']
 
         dsets = self.one.alyx.rest(
             'datasets', 'list', session=eid,
             django='name__icontains,ap.ch,collection__endswith,probe%02d' % probe_idx)
-        for fr in dsets[probe_idx]['file_records']:
+        for fr in dsets[0]['file_records']:
             if fr['data_url']:
                 self.url_ch = fr['data_url']
 
