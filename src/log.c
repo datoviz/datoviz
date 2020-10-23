@@ -26,7 +26,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "log.h"
+#include <visky/log.h>
 
 static struct
 {
@@ -129,7 +129,7 @@ void log_log(int level, const char* file, int line, const char* fmt, ...)
     unlock();
 }
 
-void log_set_level_env()
+void log_set_level_env(void)
 {
     const char* level = getenv("VKY_LOG_LEVEL");
     int level_int = VKY_DEFAULT_LOG_LEVEL;

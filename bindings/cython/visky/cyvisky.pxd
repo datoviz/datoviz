@@ -1,6 +1,6 @@
 # WARNING: parts of this file are auto-generated
 
-cdef extern from "../../include/visky/visky.h":
+cdef extern from "../include/visky/visky.h":
 
     # Numerical types
     ctypedef long int32_t
@@ -93,6 +93,9 @@ cdef extern from "../../include/visky/visky.h":
     void vky_prompt(VkyCanvas* canvas)
     char* vky_prompt_get(VkyCanvas* canvas)
 
+    # from file: log.h
+    void log_set_level_env( )
+
     # from file: scene.h
     VkyPick vky_pick(VkyScene* scene, vec2 canvas_coords, VkyPanel* panel)
     void vky_add_visual_to_panel(VkyVisual* visual, VkyPanel* panel, VkyViewportType viewport_type, VkyVisualPriority priority)
@@ -116,9 +119,6 @@ cdef extern from "../../include/visky/visky.h":
     void vky_glfw_run_app_begin(VkyApp* app)
     void vky_glfw_run_app_process(VkyApp* app)
     void vky_glfw_run_app_end(VkyApp* app)
-
-    # from file: log.h
-    void log_set_level_env()
 
 
     # FUNCTION END

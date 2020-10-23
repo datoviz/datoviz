@@ -34,8 +34,8 @@ def iter_header_files():
         yield h
     for h in sorted(INTERNAL_HEADER_DIR.glob('*.h')):
         yield h
-    for h in (EXTERNAL_HEADER_DIR / 'log.h',):
-        yield h
+    # for h in (INTERNAL_HEADER_DIR / 'log.h',):
+    #     yield h
 
 
 def read_file(filename):

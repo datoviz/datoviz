@@ -1,4 +1,5 @@
 #include "../include/visky/visky.h"
+#include "glfw.h"
 #include "vkutils.h"
 #include <stdlib.h>
 

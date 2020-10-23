@@ -403,13 +403,15 @@ find_package(NumPy)
 include_directories(${INCL_DIRS} ${PYTHON_INCLUDE_DIRS} ${NumPy_INCLUDE_DIRS})
 add_cython_target(pyvisky bindings/cython/visky/pyvisky.pyx PY3 C)
 add_library(pyvisky MODULE ${pyvisky})
-target_compile_options(visky PUBLIC -w)
+python_extension_module(pyvisky)
+target_compile_options(pyvisky PUBLIC -w)
 # set_target_properties(
 #     pyvisky PROPERTIES
 #     LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bindings/cython/visky/)
-# python_extension_module(pyvisky)
 target_link_libraries(pyvisky ${PYTHON_LIBRARIES} ${LINK_LIBS} visky)
-
+# install(TARGETS pyvisky LIBRARY DESTINATION visky)
+# add_custom_target(pyvisky ALL COMMAND ${CMAKE_COMMAND} -E create_symlink ${PROJECT_BINARY_DIR}/ bindings/cython/visky)
+install(TARGETS pyvisky LIBRARY DESTINATION src)
 
 
 # -------------------------------------------------------------------------------------------------

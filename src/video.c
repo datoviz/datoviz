@@ -21,7 +21,7 @@
  */
 
 #include "video.h"
-#include "log.h"
+#include <visky/log.h>
 
 #define NUM_THREADS 8
 
