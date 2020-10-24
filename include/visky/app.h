@@ -358,6 +358,8 @@ VKY_EXPORT int vky_call_mock_input_callbacks(VkyCanvas* canvas);
 VKY_EXPORT void vky_add_frame_callback(VkyCanvas* canvas, VkyFrameCallback cb, void* data);
 VKY_EXPORT void vky_call_frame_callbacks(VkyCanvas* canvas); // TODO: return int?
 
+VKY_EXPORT void vky_add_close_callback(VkyCanvas* canvas, VkyCloseCallback cb, void* data);
+
 
 
 /*************************************************************************************************/

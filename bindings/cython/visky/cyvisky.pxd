@@ -61,6 +61,7 @@ cdef extern from "../include/visky/visky.h":
 
     # Callback function types
     ctypedef void (*VkyFrameCallback)(VkyCanvas*, void*)
+    ctypedef void (*VkyCloseCallback)(VkyCanvas*, void*)
 
 
     # NOTE: to remove later
@@ -85,6 +86,7 @@ cdef extern from "../include/visky/visky.h":
     VkyMouse* vky_event_mouse(VkyCanvas* canvas)
     VkyKeyboard* vky_event_keyboard(VkyCanvas* canvas)
     void vky_add_frame_callback(VkyCanvas* canvas, VkyFrameCallback cb, void* data)
+    void vky_add_close_callback(VkyCanvas* canvas, VkyCloseCallback cb, void* data)
 
     # from file: axes.h
     void vky_axes_set_initial_range(VkyAxes* axes, VkyBox2D box)

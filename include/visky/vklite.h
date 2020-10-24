@@ -53,11 +53,20 @@ typedef void (*VkyWaitCallback)(VkyCanvas*);
 typedef void (*VkyCommandBufferCallback)(VkyCanvas*, VkCommandBuffer);
 typedef void (*VkyResizeCallback)(VkyCanvas*);
 
+typedef struct VkyCloseCallbackStruct VkyCloseCallbackStruct;
+typedef void (*VkyCloseCallback)(VkyCanvas*, void*);
+
 
 
 /*************************************************************************************************/
 /*  Misc structs                                                                                 */
 /*************************************************************************************************/
+
+struct VkyCloseCallbackStruct
+{
+    VkyCloseCallback callback;
+    void* data;
+};
 
 
 struct VkyQueueFamilyIndices
@@ -224,6 +233,8 @@ struct VkyCanvas
     VkyCommandBufferCallback cb_fill_command_buffer;
     VkyCommandBufferCallback cb_fill_live_command_buffer;
     VkyResizeCallback cb_resize;
+
+    VkyCloseCallbackStruct cb_close;
 
     bool is_offscreen;
     bool need_recreation;

@@ -567,6 +567,13 @@ void vky_call_frame_callbacks(VkyCanvas* canvas)
     }
 }
 
+void vky_add_close_callback(VkyCanvas* canvas, VkyCloseCallback cb, void* data)
+{
+    // TODO: multiple callbacks
+    canvas->cb_close.callback = cb;
+    canvas->cb_close.data = data;
+}
+
 
 
 /*************************************************************************************************/

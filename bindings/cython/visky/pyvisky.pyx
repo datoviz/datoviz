@@ -127,7 +127,7 @@ cdef class App:
         if c_canvas is NULL:
             raise MemoryError()
         c = Canvas()
-        c.create(c_canvas, rows, cols)
+        c.create(self, c_canvas, rows, cols)
         self._canvases.append(c)
         return c
 
@@ -170,13 +170,24 @@ cdef _add_frame_callback(cv.VkyCanvas* c_canvas, f, args):
     cv.vky_add_frame_callback(c_canvas, <cv.VkyFrameCallback>_wrapped_callback, ptr_to_obj)
 
 
+cdef _add_close_callback(cv.VkyCanvas* c_canvas, f, args):
+    cdef void* ptr_to_obj
+    tup = (f, args)
+    Py_INCREF(tup)
+    ptr_to_obj = <void*>tup
+    cv.vky_add_close_callback(c_canvas, <cv.VkyCloseCallback>_wrapped_callback, ptr_to_obj)
+
 
 cdef class Canvas:
     cdef cv.VkyCanvas* _c_canvas
     cdef cv.VkyScene* _c_scene
+    cdef object _app
 
-    cdef create(self, cv.VkyCanvas* c_canvas, int rows, int cols):
+    cdef create(self, app, cv.VkyCanvas* c_canvas, int rows, int cols):
         self._c_canvas = c_canvas
+        self._app = app
+
+        _add_close_callback(self._c_canvas, self._destroy_wrapper, ())
 
         # TODO: customizable clear color
         cdef cv.VkyColor clear_color
@@ -192,7 +203,21 @@ cdef class Canvas:
     def __dealloc__(self):
         self.destroy()
 
+    def _destroy_wrapper(self):
+        # This is called when the user presses Esc, Visky organizes the canvas closing and
+        # destruction, but we need the Python object to be destroyed as well and the
+        # canvas to be removed from the canvas list in the App.
+        self._c_canvas = NULL
+        self._app._canvases.remove(self)
+
     def destroy(self):
+        # This is called when the canvas is closed from Python.
+        # The event loop will close the canvas and destroy it at the next frame.
+        # However this doesn't work when the canvas is closed from C (for example by pressing Esc)
+        # because then the C object will be destroyed, but not the Python one. We need to
+        # destroy the Python via the close callback, which is called when the C library
+        # is about to destroy the canvas, to give Python a chance to destroy the Python wrapper
+        # as well.
         if self._c_canvas is not NULL:
             cv.vky_canvas_to_close(self._c_canvas)
             self._c_canvas = NULL
@@ -214,6 +239,9 @@ cdef class Canvas:
 
     def on_frame(self, f):
         _add_frame_callback(self._c_canvas, f, ())
+
+    # def on_close(self, f):
+    #     _add_close_callback(self._c_canvas, f, ())
 
     def _wrap_keyboard(self, f):
         @wraps(f)

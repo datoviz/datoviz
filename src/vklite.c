@@ -1132,6 +1132,12 @@ void vky_destroy_canvas(VkyCanvas* canvas)
         return;
     log_trace("destroy canvas");
 
+    if (canvas->cb_close.callback != NULL)
+    {
+        log_trace("calling close callback");
+        canvas->cb_close.callback(canvas, canvas->cb_close.data);
+    }
+
     if (canvas->app != NULL)
     {
         switch (canvas->app->backend)
