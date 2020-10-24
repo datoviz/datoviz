@@ -1,5 +1,6 @@
 numpy
 cython
+pyparsing
 scikit-build
 colorcet
 imageio

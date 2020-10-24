@@ -146,14 +146,19 @@ void vky_run_app(VkyApp* app)
 
 void vky_canvas_to_close(VkyCanvas* canvas)
 {
+    log_trace("canvas to close", canvas);
     if (canvas == NULL)
+        return;
+    if (canvas->app == NULL)
         return;
     VkyBackendType backend = canvas->app->backend;
     switch (backend)
     {
-
     case VKY_BACKEND_GLFW:
-        glfwSetWindowShouldClose(canvas->window, 1);
+        if (canvas->window != NULL)
+        {
+            glfwSetWindowShouldClose(canvas->window, 1);
+        }
         break;
 
     default:
@@ -180,6 +185,8 @@ void vky_destroy_app(VkyApp* app)
             log_debug(
                 "canvas %d was not destroyed previously, doing it while destroying the app", i);
             vky_destroy_canvas(canvas);
+            app->canvases[i] = NULL;
+            canvas = NULL;
         }
     }
 
