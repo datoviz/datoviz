@@ -19,6 +19,9 @@ This page provides a brief documentation of the vklite API. Familiarity with GPU
 
 ## Other shaders
 
+!!! note
+    Although supported by Visky, using geometry shaders is discouraged. Compute shaders are typically more powerful and have better hardware support. Vulkan geometry shaders are not supported on macOS.
+
 ## Vertex layout
 
 ## Buffer
