@@ -8,7 +8,7 @@ TODO:
 
 """
 
-# from functools import lru_cache
+import logging
 import math
 from pathlib import Path
 
@@ -17,6 +17,9 @@ import numpy as np
 from oneibl.one import ONE
 
 from visky import canvas, run
+
+
+logger = logging.getLogger(__name__)
 
 
 def _memmap_flat(path, dtype=None, n_channels=None, offset=0):
@@ -188,7 +191,7 @@ class RawEphysViewer:
         # Interactivity bindings.
         self.canvas.on_key(self.on_key)
         self.canvas.on_mouse(self.on_mouse)
-        self.canvas.on_frame(self.on_frame)
+        self.canvas.on_prompt(self.on_prompt)
 
     def update_view(self):
         self.scale = scale = self.scale or get_scale(self.arr_buf)
@@ -250,14 +253,13 @@ class RawEphysViewer:
             print(
                 f"Picked {x}, {y} : {self.arr_buf[i, j]}")
 
-    def on_frame(self):
-        t = self.canvas.get_prompt()
+    def on_prompt(self, t):
         if not t:
             return
         try:
             t = float(t)
         except Exception:
-            print("Invalid time %s" % t)
+            logger.error("Invalid time %s" % str(t))
             return
         if t:
             self.goto(t)

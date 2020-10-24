@@ -1,10 +1,14 @@
-from functools import wraps
+from functools import wraps, partial
+import logging
 
 cimport numpy as np
 import numpy as np
 from cpython.ref cimport Py_INCREF
 
 cimport visky.cyvisky as cv
+
+
+logger = logging.getLogger(__name__)
 
 
 DEFAULT_WIDTH = 800
@@ -274,6 +278,17 @@ cdef class Canvas:
 
     def prompt(self):
         cv.vky_prompt(self._c_canvas)
+
+    def _prompt_callback(self, f):
+        res = self.get_prompt()
+        if res:
+            try:
+                f(res)
+            except Exception as e:
+                logger.error("Error with prompt callback: %s", str(e))
+
+    def on_prompt(self, f):
+        self.on_frame(partial(self._prompt_callback, f))
 
     def get_prompt(self):
         cdef char* res
