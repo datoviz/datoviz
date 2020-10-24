@@ -142,6 +142,7 @@ VKY_EXPORT VkyImGuiTexture vky_imgui_image_from_canvas(VkyCanvas* canvas);
 VKY_EXPORT VkyCanvas* vky_imgui_canvas_create(VkyCanvas* canvas, uint32_t width, uint32_t height);
 VKY_EXPORT void vky_imgui_canvas_init(VkyCanvas* canvas);
 VKY_EXPORT void vky_imgui_canvas_next_frame(VkyCanvas* canvas);
+VKY_EXPORT void vky_imgui_capture(VkyCanvas* canvas);
 
 VKY_EXPORT void vky_imgui_image(VkyImGuiTexture* imtexture, float, float);
 VKY_EXPORT void vky_imgui_render(VkyCanvas* canvas, VkCommandBuffer cmd_buf);

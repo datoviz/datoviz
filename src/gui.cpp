@@ -389,25 +389,11 @@ static void _add_control(VkyGui* gui, VkyGuiControl* control)
 }
 
 
-static void fill_live_command_buffer(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
+void vky_imgui_capture(VkyCanvas* canvas)
 {
-    if (canvas->gui_count == 0)
-        return;
     if (!imgui_supported)
         return;
-
-    // NOTE: skip the live render pass while we're still resizing the window.
-    if (canvas->size.resized)
-    {
-        log_trace("skip imgui render as we're resizing the window");
-        return;
-    }
-
-    vky_imgui_newframe();
-    VkyGui* gui = NULL;
     ImGuiIO& io = ImGui::GetIO();
-    int flags = 0;
-
     // Stop processing Visky events if the user is interacting with the GUI.
     VkyEventController* ec = canvas->event_controller;
     ASSERT(ec != NULL);
@@ -431,6 +417,29 @@ static void fill_live_command_buffer(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
             // ec->mouse->cur_state = ec->mouse->prev_state;
             ec->mouse->cur_state = VKY_MOUSE_STATE_INACTIVE;
     }
+}
+
+
+static void fill_live_command_buffer(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
+{
+    if (canvas->gui_count == 0)
+        return;
+    if (!imgui_supported)
+        return;
+
+    // NOTE: skip the live render pass while we're still resizing the window.
+    if (canvas->size.resized)
+    {
+        log_trace("skip imgui render as we're resizing the window");
+        return;
+    }
+
+    vky_imgui_newframe();
+    VkyGui* gui = NULL;
+    ImGuiIO& io = ImGui::GetIO();
+    int flags = 0;
+
+    vky_imgui_capture(canvas);
 
     for (uint32_t k = 0; k < canvas->gui_count; k++)
     {
@@ -446,7 +455,6 @@ static void fill_live_command_buffer(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
 
         // Fixed GUI.
         _set_style(io, gui, &flags);
-
 
         // Start the GUI creation.
         ImGui::Begin(gui->title, NULL, flags);

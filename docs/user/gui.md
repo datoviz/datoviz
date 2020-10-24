@@ -6,4 +6,6 @@ Visky offers a light C wrapper on top of Dear ImGui for the most basic types of 
 
 ## Basic graphical interfaces
 
-## Using Dear ImGui in C++
+## Prompt
+
+## Using the Dear ImGui API directly (C++)
