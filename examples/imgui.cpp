@@ -46,11 +46,7 @@ static void fill_live_command_buffer(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
     // Update the visual with the chosen color if the color has changed.
     if (memcmp(my_color, my_color_prev, sizeof(vec3)) != 0)
     {
-        VkyColor color = {0};
-        color.rgb[0] = TO_BYTE(my_color[0]);
-        color.rgb[1] = TO_BYTE(my_color[1]);
-        color.rgb[2] = TO_BYTE(my_color[2]);
-        color.alpha = 255;
+        VkyColor color = vky_vec3_to_color(my_color);
         vky_visual_data_partial(visual, VKY_VISUAL_PROP_COLOR, 0, 0, 1, 1, &color);
         glm_vec3_copy(my_color, my_color_prev);
     }

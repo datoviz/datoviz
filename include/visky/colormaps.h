@@ -353,6 +353,15 @@ VKY_INLINE VkyColor vky_color(VkyColormap cmap, float value, float vmin, float v
     return color;
 }
 
+VKY_INLINE VkyColor vky_vec3_to_color(vec3 my_color)
+{
+    VkyColor color = {0};
+    color.rgb[0] = TO_BYTE(my_color[0]);
+    color.rgb[1] = TO_BYTE(my_color[1]);
+    color.rgb[2] = TO_BYTE(my_color[2]);
+    color.alpha = 255;
+    return color;
+}
 
 VKY_EXPORT void vky_colormap_apply(
     VkyColormap cmap, double vmin, double vmax, uint32_t value_count, const double* values,
