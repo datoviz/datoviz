@@ -13,10 +13,10 @@ from pyparsing import (
 )
 
 
-HEADER_DIR = (Path(__file__).parent / '../../include/visky').resolve()
-INTERNAL_HEADER_DIR = (Path(__file__).parent / '../../src').resolve()
+HEADER_DIR = (Path(__file__).parent / '../../../include/visky').resolve()
+INTERNAL_HEADER_DIR = (Path(__file__).parent / '../../../src').resolve()
 EXTERNAL_HEADER_DIR = HEADER_DIR / '../../external'
-CYTHON_OUTPUT = (Path(__file__).parent / 'visky/cyvisky.pxd').resolve()
+CYTHON_OUTPUT = (Path(__file__).parent / '../visky/cyvisky.pxd').resolve()
 
 ENUM_START = '# ENUM START'
 ENUM_END = '# ENUM END'

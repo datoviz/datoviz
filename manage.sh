@@ -12,7 +12,7 @@ then
         ln -s $(pwd)/../visky-data/data data
     fi
     mkdir -p build &&
-    python3 bindings/cython/gencython.py && \
+    python3 bindings/cython/utils/gencython.py && \
     cd build && \
     cmake .. -GNinja && \
     VKY_EXAMPLE= ninja && \
