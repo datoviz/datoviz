@@ -6,7 +6,7 @@ static void frame_callback(VkyCanvas* canvas, void* data)
 {
     if (canvas->frame_count == 10)
     {
-        vky_save_screenshot(canvas, "artifacts/graph.png");
+        vky_screenshot(canvas, "artifacts/graph.png");
         canvas->to_close = true;
     }
     return;

@@ -70,7 +70,7 @@ VKY_EXPORT void vky_destroy_screenshot(VkyScreenshot* screenshot);
 
 VKY_EXPORT uint8_t* vky_screenshot_to_rgb(VkyScreenshot* screenshot, bool);
 
-VKY_EXPORT void vky_save_screenshot(VkyCanvas* canvas, char* filename);
+VKY_EXPORT void vky_screenshot(VkyCanvas* canvas, char* filename);
 
 
 

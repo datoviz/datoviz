@@ -254,7 +254,6 @@ VkyCanvas* vky_create_offscreen_canvas(VkyGpu* gpu, uint32_t width, uint32_t hei
 
 void vky_offscreen_frame(VkyCanvas* canvas, double time)
 {
-
     // Command buffers to submit.
     uint32_t cmd_buf_count = canvas->cb_fill_live_command_buffer == NULL ? 1 : 2;
     ASSERT(cmd_buf_count > 0);
@@ -472,7 +471,7 @@ uint8_t* vky_screenshot_to_rgb(VkyScreenshot* screenshot, bool swizzle)
     return rgb;
 }
 
-void vky_save_screenshot(VkyCanvas* canvas, char* filename)
+void vky_screenshot(VkyCanvas* canvas, char* filename)
 {
     // Make a screenshot and save to a PPM (fast, uncompressed) or PNG (slow, compressed).
     log_trace("saving screenshot to %s.", filename);
