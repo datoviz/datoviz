@@ -89,8 +89,6 @@ vky_create_video(VkyCanvas* canvas, const char* filename, double duration, int f
 
 VKY_EXPORT void vky_run_offscreen_app(VkyApp* app);
 
-VKY_EXPORT void vky_run_screenshot_app(VkyApp* app);
-
 
 
 #endif
