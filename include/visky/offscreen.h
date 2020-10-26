@@ -3,10 +3,21 @@
 
 #include "vklite.h"
 
-typedef struct Video Video;
 
+/*************************************************************************************************/
+/*  Typedefs                                                                                     */
+/*************************************************************************************************/
+
+typedef struct Video Video;
 typedef struct VkyVideo VkyVideo;
 typedef struct VkyScreenshot VkyScreenshot;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                     */
+/*************************************************************************************************/
+
 struct VkyScreenshot
 {
     VkyCanvas* canvas;
@@ -16,6 +27,18 @@ struct VkyScreenshot
     VkDeviceMemory dstImageMemory;
     VkImage dstImage;
     VkCommandBuffer cmd_buf;
+};
+
+struct VkyVideo
+{
+    VkyCanvas* canvas;
+    VkyScreenshot* screenshot;
+    Video* video;
+
+    VkDeviceSize image_size;
+    uint8_t* buffer;
+    uint32_t buffer_frame_count;
+    uint32_t current_frame_index;
 };
 
 
@@ -55,18 +78,6 @@ VKY_EXPORT void vky_save_screenshot(VkyCanvas* canvas, char* filename);
 /*  Video                                                                                        */
 /*************************************************************************************************/
 
-struct VkyVideo
-{
-    VkyCanvas* canvas;
-    VkyScreenshot* screenshot;
-    Video* video;
-
-    VkDeviceSize image_size;
-    uint8_t* buffer;
-    uint32_t buffer_frame_count;
-    uint32_t current_frame_index;
-};
-
 VKY_EXPORT VkyVideo*
 vky_create_video(VkyCanvas* canvas, const char* filename, int fps, int bitrate);
 
@@ -74,7 +85,8 @@ VKY_EXPORT void vky_video_add_frame(VkyVideo* video);
 
 VKY_EXPORT void vky_end_video(VkyVideo* video);
 
-VKY_EXPORT void vky_run_video_app(VkyApp* app);
+VKY_EXPORT void
+vky_run_video_app(VkyCanvas* canvas, const char* filename, double duration, int fps, int bitrate);
 
 
 

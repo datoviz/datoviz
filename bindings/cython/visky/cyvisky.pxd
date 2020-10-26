@@ -415,9 +415,7 @@ cdef extern from "../include/visky/visky.h":
     ctypedef enum VkyBackendType:
         VKY_BACKEND_NONE = 0
         VKY_BACKEND_GLFW = 1
-        VKY_BACKEND_OFFSCREEN = 10
-        VKY_BACKEND_SCREENSHOT = 11
-        VKY_BACKEND_VIDEO = 12
+        VKY_BACKEND_OFFSCREEN = 2
 
     # from file: axes.h
 

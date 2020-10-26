@@ -24,10 +24,10 @@ typedef enum
 
 typedef enum
 {
-    VKY_MOUSE_BUTTON_NONE = 0,
-    VKY_MOUSE_BUTTON_LEFT = 1,
-    VKY_MOUSE_BUTTON_MIDDLE = 2,
-    VKY_MOUSE_BUTTON_RIGHT = 3,
+    VKY_MOUSE_BUTTON_NONE,
+    VKY_MOUSE_BUTTON_LEFT,
+    VKY_MOUSE_BUTTON_MIDDLE,
+    VKY_MOUSE_BUTTON_RIGHT,
 } VkyMouseButton;
 
 typedef enum
@@ -177,11 +177,9 @@ typedef enum
 
 typedef enum
 {
-    VKY_BACKEND_NONE = 0,
-    VKY_BACKEND_GLFW = 1,
-    VKY_BACKEND_OFFSCREEN = 10,
-    VKY_BACKEND_SCREENSHOT = 11,
-    VKY_BACKEND_VIDEO = 12,
+    VKY_BACKEND_NONE,
+    VKY_BACKEND_GLFW,
+    VKY_BACKEND_OFFSCREEN,
 } VkyBackendType;
 
 
@@ -196,13 +194,6 @@ typedef struct VkyScreenshot VkyScreenshot;
 typedef struct VkyBackendScreenshotParams VkyBackendScreenshotParams;
 typedef struct VkyMouse VkyMouse;
 typedef struct VkyKeyboard VkyKeyboard;
-
-
-// Return 1 if the canvas should be redrawn following the mouse event, 0 otherwise.
-// typedef int (*VkyMouseCallback)(VkyCanvas*, VkyMouse*);
-
-// Return 1 if the canvas should be redrawn following the keyboard event, 0 otherwise.
-// typedef int (*VkyKeyboardCallback)(VkyCanvas*, VkyKeyboard*);
 
 // Frame callback.
 typedef struct VkyFrameCallbackStruct VkyFrameCallbackStruct;

@@ -84,10 +84,7 @@ VkyCanvas* vky_create_canvas(VkyApp* app, uint32_t width, uint32_t height)
         canvas = vky_glfw_create_canvas(app, width, height);
         break;
 
-    case VKY_BACKEND_VIDEO:
-    // case VKY_BACKEND_VNC:
     case VKY_BACKEND_OFFSCREEN:
-    case VKY_BACKEND_SCREENSHOT:
         canvas = vky_create_offscreen_canvas(app->gpu, width, height);
         break;
 
@@ -123,20 +120,8 @@ void vky_run_app(VkyApp* app)
         vky_glfw_run_app(app);
         break;
 
-    case VKY_BACKEND_VIDEO:;
-        vky_run_video_app(app);
-        break;
-
-        // case VKY_BACKEND_VNC:
-        //     vky_run_vnc_app(app);
-        //     break;
-
     case VKY_BACKEND_OFFSCREEN:
         vky_run_offscreen_app(app);
-        break;
-
-    case VKY_BACKEND_SCREENSHOT:
-        vky_run_screenshot_app(app);
         break;
 
     default:

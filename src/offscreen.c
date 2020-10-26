@@ -514,7 +514,7 @@ void vky_save_screenshot(VkyCanvas* canvas, char* filename)
 VkyVideo* vky_create_video(VkyCanvas* canvas, const char* filename, int fps, int bitrate)
 {
     ASSERT(canvas->app != NULL);
-    if (canvas->app->backend != VKY_BACKEND_VIDEO)
+    if (!canvas->is_offscreen)
     {
         log_error("Video recording is only supported on offscreen canvases at the moment.");
         return NULL;
@@ -582,22 +582,14 @@ void vky_end_video(VkyVideo* vky_video)
     FREE(vky_video);
 }
 
-void vky_run_video_app(VkyApp* app)
+void vky_run_video_app(
+    VkyCanvas* canvas, const char* filename, double duration, int fps, int bitrate)
 {
-    VkyBackendVideoParams* params = (VkyBackendVideoParams*)app->backend_params;
-    double duration = params->duration;
-    int fps = params->fps;
-    int bitrate = params->bitrate;
-    char* filename = params->filename;
     uint32_t frame_count = round(fps * duration);
-    // NOTE: only 1 canvas is supported here.
-    VkyCanvas* canvas = app->canvases[0];
-
     // Create the video.
-    params->video = vky_create_video(canvas, filename, fps, bitrate);
+    VkyVideo* video = vky_create_video(canvas, filename, fps, bitrate);
     // Fill the command buffer.
     vky_fill_command_buffers(canvas);
-    VkyVideo* video = params->video;
     for (uint32_t i = 0; i < frame_count; i++)
     {
         if (video->video == NULL)

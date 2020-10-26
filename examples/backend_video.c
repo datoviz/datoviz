@@ -4,13 +4,7 @@ int main()
 {
     log_set_level_env();
 
-    VkyBackendVideoParams backend_params = {0};
-    backend_params.filename = "artifacts/cube.mp4";
-    backend_params.fps = 30;
-    backend_params.bitrate = 4000000;
-    backend_params.duration = 5.0;
-
-    VkyApp* app = vky_create_app(VKY_BACKEND_VIDEO, &backend_params);
+    VkyApp* app = vky_create_app(VKY_BACKEND_OFFSCREEN, NULL);
     VkyCanvas* canvas = vky_create_canvas(app, 1920, 1080);
     VkyScene* scene = vky_create_scene(canvas, VKY_CLEAR_COLOR_BLACK, 1, 1);
 
@@ -36,7 +30,7 @@ int main()
     vky_mesh_destroy(&mesh);
 
     // Run app.
-    vky_run_app(app);
+    vky_run_video_app(canvas, "artifacts/cube.mp4", 5, 30, 4000000);
     vky_destroy_app(app);
     return 0;
 }
