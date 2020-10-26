@@ -30,7 +30,7 @@ int main()
     vky_mesh_destroy(&mesh);
 
     // Run app.
-    vky_run_video_app(canvas, "artifacts/cube.mp4", 5, 30, 4000000);
+    vky_create_video(canvas, "artifacts/cube.mp4", 5, 30, 4000000);
     vky_destroy_app(app);
     return 0;
 }

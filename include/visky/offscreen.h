@@ -78,15 +78,8 @@ VKY_EXPORT void vky_save_screenshot(VkyCanvas* canvas, char* filename);
 /*  Video                                                                                        */
 /*************************************************************************************************/
 
-VKY_EXPORT VkyVideo*
-vky_create_video(VkyCanvas* canvas, const char* filename, int fps, int bitrate);
-
-VKY_EXPORT void vky_video_add_frame(VkyVideo* video);
-
-VKY_EXPORT void vky_end_video(VkyVideo* video);
-
 VKY_EXPORT void
-vky_run_video_app(VkyCanvas* canvas, const char* filename, double duration, int fps, int bitrate);
+vky_create_video(VkyCanvas* canvas, const char* filename, double duration, int fps, int bitrate);
 
 
 

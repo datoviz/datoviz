@@ -511,7 +511,7 @@ void vky_save_screenshot(VkyCanvas* canvas, char* filename)
 /*  Video rendering                                                                              */
 /*************************************************************************************************/
 
-VkyVideo* vky_create_video(VkyCanvas* canvas, const char* filename, int fps, int bitrate)
+static VkyVideo* _create_video(VkyCanvas* canvas, const char* filename, int fps, int bitrate)
 {
     ASSERT(canvas->app != NULL);
     if (!canvas->is_offscreen)
@@ -541,7 +541,7 @@ VkyVideo* vky_create_video(VkyCanvas* canvas, const char* filename, int fps, int
     return vky_video;
 }
 
-void vky_video_add_frame(VkyVideo* vky_video)
+static void _add_frame(VkyVideo* vky_video)
 {
     // log_trace("add video frame");
     VkyScreenshot* screenshot = vky_video->screenshot;
@@ -567,7 +567,7 @@ void vky_video_add_frame(VkyVideo* vky_video)
     }
 }
 
-void vky_end_video(VkyVideo* vky_video)
+static void _end_video(VkyVideo* vky_video)
 {
     log_trace("end video");
     // Finish flushing the video.
@@ -582,12 +582,12 @@ void vky_end_video(VkyVideo* vky_video)
     FREE(vky_video);
 }
 
-void vky_run_video_app(
+void vky_create_video(
     VkyCanvas* canvas, const char* filename, double duration, int fps, int bitrate)
 {
     uint32_t frame_count = round(fps * duration);
     // Create the video.
-    VkyVideo* video = vky_create_video(canvas, filename, fps, bitrate);
+    VkyVideo* video = _create_video(canvas, filename, fps, bitrate);
     // Fill the command buffer.
     vky_fill_command_buffers(canvas);
     for (uint32_t i = 0; i < frame_count; i++)
@@ -600,10 +600,10 @@ void vky_run_video_app(
         printf("\rCreating video: %.1f%%", 100 * (float)i / frame_count);
         fflush(stdout);
         vky_offscreen_frame(canvas, (double)i / fps);
-        vky_video_add_frame(video);
+        _add_frame(video);
         canvas->frame_count++;
     }
-    vky_end_video(video);
+    _end_video(video);
 }
 
 
