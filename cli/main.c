@@ -1,10 +1,6 @@
 #include <unistd.h>
 #include <visky/visky.h>
 
-#include "demo.h"
-#include "test.h"
-#include "test_visuals.h"
-
 
 
 /*************************************************************************************************/
@@ -60,13 +56,53 @@ struct VkyTestCase
     if (argc >= 1 && strcmp(argv[1], #arg) == 0)                                                  \
         res = arg(argc - 1, &argv[1]);
 
+#define AT(x)                                                                                     \
+    if (!(x))                                                                                     \
+        return 1;
+
+#define AIN(x, m, M) AT((m) <= (x) && (x) <= (M))
+
+#define ABOX(x, a, b, c, d)                                                                       \
+    AT(((x).pos_ll[0] == (a)) && ((x).pos_ll[1] == (b)) && ((x).pos_ur[0] == (c)) &&              \
+       ((x).pos_ur[1] == (d)))
+
+#define PBOX(x)                                                                                   \
+    printf("%f %f %f %f\n", (x).pos_ll[0], (x).pos_ll[1], (x).pos_ur[0], (x).pos_ur[1]);
+
+
 
 /*************************************************************************************************/
-/*  Static variables                                                                             */
+/*  Include and define tests                                                                     */
 /*************************************************************************************************/
+
+#include "demo.h"
+#include "test.h"
+#include "test_basic.h"
+#include "test_visuals.h"
 
 static VkyTestCase TEST_CASES[] = {
-    CASE(visual_marker, true),
+
+    // Basic tests.
+    CASE(red_canvas, true),
+    CASE(blue_canvas, true),
+    CASE(hello, true),
+    CASE(triangle, true),
+
+    // Visual props.
+    CASE(visuals_props_1, false),
+    CASE(visuals_props_2, false),
+    CASE(visuals_props_3, false),
+    CASE(visuals_props_4, false),
+    CASE(visuals_props_5, false),
+    CASE(visuals_props_6, false),
+
+    // Transforms.
+    CASE(transform_1, false),
+    CASE(transform_2, false),
+    CASE(panzoom_1, false),
+    CASE(axes_1, false),
+    CASE(axes_2, false),
+
 };
 static uint32_t N_TESTS = sizeof(TEST_CASES) / sizeof(VkyTestCase);
 
@@ -227,6 +263,7 @@ static void reset_canvas(VkyCanvas* canvas)
     vky_reset_canvas(canvas);
     vky_clear_all_buffers(canvas->gpu);
     vky_reset_all_constants();
+    vky_clear_color(canvas->scene, VKY_CLEAR_COLOR_BLACK);
 }
 
 static void run_app(VkyCanvas* canvas)
@@ -296,6 +333,7 @@ static int test(int argc, char** argv)
     VkyBackendType backend = is_live ? VKY_BACKEND_GLFW : VKY_BACKEND_OFFSCREEN;
     VkyApp* app = vky_create_app(backend, NULL);
     VkyCanvas* canvas = vky_create_canvas(app, WIDTH, HEIGHT);
+    vky_create_scene(canvas, VKY_CLEAR_COLOR_BLACK, 1, 1);
     VkyGpu* gpu = canvas->gpu;
     // Create large GPU buffers that will be cleared after each test.
     vky_add_vertex_buffer(gpu, 1e6);

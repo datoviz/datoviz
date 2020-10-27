@@ -795,6 +795,7 @@ VKY_EXPORT void vky_link_panels(VkyPanel* panel0, VkyPanel* panel1, VkyPanelLink
 /*************************************************************************************************/
 
 VKY_EXPORT VkyGrid* vky_create_grid(VkyScene* scene, uint32_t row_count, uint32_t col_count);
+VKY_EXPORT void vky_reset_grid(VkyScene* scene, uint32_t row_count, uint32_t col_count);
 VKY_EXPORT VkyScene*
 vky_create_scene(VkyCanvas* canvas, VkyColor clear_color, uint32_t row_count, uint32_t col_count);
 VKY_EXPORT void vky_clear_color(VkyScene* scene, VkyColor clear_color);

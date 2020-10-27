@@ -1922,6 +1922,31 @@ VkyGrid* vky_create_grid(VkyScene* scene, uint32_t row_count, uint32_t col_count
     return grid;
 }
 
+void vky_reset_grid(VkyScene* scene, uint32_t row_count, uint32_t col_count)
+{
+    VkyGrid* grid = scene->grid;
+    ASSERT(grid != NULL);
+
+    grid->row_count = row_count;
+    grid->col_count = col_count;
+    grid->panel_count = 0;
+
+    // Regular sizes by default.
+    for (uint32_t i = 0; i < row_count; i++)
+    {
+        grid->ys[i] = (float)i / row_count;
+        grid->heights[i] = 1.0f / row_count;
+    }
+    for (uint32_t j = 0; j < col_count; j++)
+    {
+        grid->xs[j] = (float)j / col_count;
+        grid->widths[j] = 1.0f / col_count;
+    }
+
+    vky_set_regular_grid(scene, GLM_VEC4_ZERO);
+    vky_reset_all_mvp(scene);
+}
+
 void vky_set_regular_grid(VkyScene* scene, vec4 margins)
 {
     ASSERT(scene->grid != NULL);
