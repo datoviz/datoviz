@@ -122,6 +122,11 @@ static VkyTestCase TEST_CASES[] = {
     CASE(pslg_2, true),
     CASE(france, true),
 
+    CASE(surface, true),
+    CASE(spheres, true),
+    CASE(volume, true),
+    CASE(brain, true),
+
 };
 static uint32_t N_TESTS = sizeof(TEST_CASES) / sizeof(VkyTestCase);
 
@@ -272,7 +277,7 @@ static VkyTestCase get_test_case(const char* name)
             return TEST_CASES[i];
         }
     }
-    log_error("Test case %s not found!", name);
+    log_error("test case %s not found!", name);
     return (VkyTestCase){0};
 }
 
@@ -296,7 +301,8 @@ static void run_app(VkyCanvas* canvas)
 static int launcher(VkyCanvas* canvas, const char* name, bool is_live)
 {
     VkyTestCase test_case = get_test_case(name);
-    ASSERT(test_case.function != NULL);
+    if (test_case.function == NULL)
+        return 1;
 
     // Reset canvas for the next test.
     vky_reset_canvas(canvas);
@@ -338,6 +344,19 @@ static int launcher(VkyCanvas* canvas, const char* name, bool is_live)
     return res;
 }
 
+static VkyCanvas* init_canvas(bool is_live)
+{
+    VkyBackendType backend = is_live ? VKY_BACKEND_GLFW : VKY_BACKEND_OFFSCREEN;
+    VkyApp* app = vky_create_app(backend, NULL);
+    VkyCanvas* canvas = vky_create_canvas(app, WIDTH, HEIGHT);
+    VkyGpu* gpu = canvas->gpu;
+    // Create large GPU buffers that will be cleared after each test.
+    vky_add_vertex_buffer(gpu, 1e6);
+    vky_add_index_buffer(gpu, 1e6);
+    return canvas;
+}
+
+static void terminate(VkyApp* app) { vky_destroy_app(app); }
 
 
 /*************************************************************************************************/
@@ -348,20 +367,12 @@ static int test(int argc, char** argv)
 {
     // argv: test, <name>, --live
     bool is_live = argc >= 3 && strcmp(argv[2], "--live") == 0;
-
-    int res = 0;
-    int index = 0;
-
-    VkyBackendType backend = is_live ? VKY_BACKEND_GLFW : VKY_BACKEND_OFFSCREEN;
-    VkyApp* app = vky_create_app(backend, NULL);
-    VkyCanvas* canvas = vky_create_canvas(app, WIDTH, HEIGHT);
-    VkyGpu* gpu = canvas->gpu;
-    // Create large GPU buffers that will be cleared after each test.
-    vky_add_vertex_buffer(gpu, 1e6);
-    vky_add_index_buffer(gpu, 1e6);
+    VkyCanvas* canvas = init_canvas(is_live);
+    print_start();
 
     // Start the tests.
-    print_start();
+    int res = 0;
+    int index = 0;
     // Loop over all possible tests.
     for (uint32_t i = 0; i < N_TESTS; i++)
     {
@@ -375,14 +386,26 @@ static int test(int argc, char** argv)
         }
     }
     print_end(index, res);
+    terminate(canvas->app);
 
-    vky_destroy_app(app);
     return res;
 }
 
 static int info(int argc, char** argv) { return 0; }
 
-static int demo(int argc, char** argv) { return 0; }
+static int demo(int argc, char** argv)
+{
+    if (argc <= 1)
+    {
+        log_error("please specify a demo name");
+        return 1;
+    }
+    VkyCanvas* canvas = init_canvas(true);
+    VkyApp* app = canvas->app;
+    launcher(canvas, argv[1], true);
+    terminate(app);
+    return 0;
+}
 
 int main(int argc, char** argv)
 {
