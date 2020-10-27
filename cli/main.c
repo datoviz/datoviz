@@ -39,6 +39,7 @@ struct VkyTestCase
 {
     const char* name;
     VkyTestFunction function;
+    VkyTestFunction destroy;
     bool save_screenshot;
 };
 
@@ -50,7 +51,12 @@ struct VkyTestCase
 
 #define CASE(name, save_screenshot)                                                               \
     {                                                                                             \
-#name, name, save_screenshot                                                              \
+#name, name, NULL, save_screenshot                                                        \
+    }
+
+#define CASE_DESTROY(name, name_destroy, save_screenshot)                                         \
+    {                                                                                             \
+#name, name, name_destroy, save_screenshot                                                \
     }
 
 #define SWITCH_CLI_ARG(arg)                                                                       \
@@ -97,6 +103,12 @@ static VkyTestCase TEST_CASES[] = {
     CASE(panzoom_1, false),
     CASE(axes_1, false),
     CASE(axes_2, false),
+
+    // vklite tests.
+    // CASE_DESTROY(test_vklite_compute, no_destroy, false),
+    // CASE_DESTROY(test_vklite_blank, no_destroy, false),
+    // CASE_DESTROY(test_vklite_triangle, test_vklite_triangle_destroy, false),
+    // CASE_DESTROY(test_vklite_push, test_vklite_push_destroy, false),
 
     // Basic tests.
     CASE(red_canvas, true),
@@ -308,7 +320,11 @@ static int launcher(VkyCanvas* canvas, const char* name, bool is_live)
     vky_reset_canvas(canvas);
     vky_clear_all_buffers(canvas->gpu);
     vky_reset_all_constants();
-    vky_create_scene(canvas, VKY_CLEAR_COLOR_WHITE, 1, 1);
+
+    // Create a scene only if there is no destroy, meaning we use the scene API and not the
+    // canvas API.
+    if (test_case.destroy == NULL)
+        vky_create_scene(canvas, VKY_CLEAR_COLOR_WHITE, 1, 1);
 
     // Run the test case on the canvas.
     int res = test_case.function(canvas);
@@ -339,7 +355,12 @@ static int launcher(VkyCanvas* canvas, const char* name, bool is_live)
             FREE(rgb);
         }
     }
-    vky_destroy_scene(canvas->scene);
+    if (test_case.destroy == NULL)
+        vky_destroy_scene(canvas->scene);
+    else
+    {
+        test_case.destroy(canvas);
+    }
 
     return res;
 }

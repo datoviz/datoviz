@@ -70,7 +70,7 @@ static int test_vklite_compute()
 
 
 
-static void test_vklite_blank_fill(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
+static void _blank_fill(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
 {
     vky_begin_render_pass(cmd_buf, canvas, VKY_CLEAR_COLOR_BLACK);
     vky_end_render_pass(cmd_buf, canvas);
@@ -79,7 +79,7 @@ static void test_vklite_blank_fill(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
 static int test_vklite_blank(VkyCanvas* canvas)
 {
     // log_set_level_env();
-    canvas->cb_fill_command_buffer = test_vklite_blank_fill;
+    canvas->cb_fill_command_buffer = _blank_fill;
     // vky_run_app(canvas->app);
     // vky_destroy_app(app);
     return 0;
@@ -91,7 +91,7 @@ static int test_vklite_blank(VkyCanvas* canvas)
 /*  Test triangle                                                                                */
 /*************************************************************************************************/
 
-static void test_vklite_triangle_fill(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
+static void _triangle_fill(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
 {
     vky_begin_render_pass(cmd_buf, canvas, VKY_CLEAR_COLOR_BLACK);
     vky_bind_vertex_buffer(cmd_buf, vbr, 0);
@@ -104,7 +104,7 @@ static void test_vklite_triangle_fill(VkyCanvas* canvas, VkCommandBuffer cmd_buf
 
 static int test_vklite_triangle(VkyCanvas* canvas)
 {
-    canvas->cb_fill_command_buffer = test_vklite_triangle_fill;
+    canvas->cb_fill_command_buffer = _triangle_fill;
 
     // Shaders.
     VkyShaders shaders = vky_create_shaders(canvas->gpu);
@@ -159,7 +159,7 @@ static int test_vklite_triangle_destroy(VkyCanvas* canvas)
 /*  Test push constant                                                                           */
 /*************************************************************************************************/
 
-static void test_vklite_push_fill(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
+static void _push_fill(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
 {
     // Begin the render pass.
     vky_begin_render_pass(cmd_buf, canvas, VKY_CLEAR_COLOR_BLACK);
@@ -188,7 +188,7 @@ static int test_vklite_push(VkyCanvas* canvas)
 {
     // This callback function is called when the command buffers need to be recreated,
     // at initialization and resize.
-    canvas->cb_fill_command_buffer = test_vklite_push_fill;
+    canvas->cb_fill_command_buffer = _push_fill;
 
     // Shaders.
     VkyShaders shaders = vky_create_shaders(canvas->gpu);
