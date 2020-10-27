@@ -1930,6 +1930,7 @@ void vky_reset_grid(VkyScene* scene, uint32_t row_count, uint32_t col_count)
     grid->row_count = row_count;
     grid->col_count = col_count;
     grid->panel_count = 0;
+    grid->visual_panel_count = 0;
 
     // Regular sizes by default.
     for (uint32_t i = 0; i < row_count; i++)

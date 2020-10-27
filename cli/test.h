@@ -231,7 +231,7 @@ static int _check_axes_range(VkyAxes* axes, double xmin, double ymin, double xma
     return 0;
 }
 
-static void _set_axes(VkyPanel* panel)
+static void _set_axes_1(VkyPanel* panel)
 {
     VkyAxes2DParams params = vky_default_axes_2D_params();
     glm_vec4_scale(params.margins, 0.25, params.margins);
@@ -412,7 +412,7 @@ static int panzoom_1(VkyCanvas* canvas)
 static int axes_1(VkyCanvas* canvas)
 {
     VkyPanel* panel = vky_get_panel(canvas->scene, 0, 0);
-    _set_axes(panel);
+    _set_axes_1(panel);
     VkyAxes* axes = (VkyAxes*)panel->controller;
     VkyPanzoom* panzoom = axes->panzoom_inner;
 
@@ -439,7 +439,7 @@ static int axes_1(VkyCanvas* canvas)
 static int axes_2(VkyCanvas* canvas)
 {
     VkyPanel* panel = vky_get_panel(canvas->scene, 0, 0);
-    _set_axes(panel);
+    _set_axes_1(panel);
     VkyAxes* axes = (VkyAxes*)panel->controller;
 
     int res = 0;

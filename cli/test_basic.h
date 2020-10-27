@@ -12,6 +12,7 @@ static int blue_canvas(VkyCanvas* canvas)
 
 static int hello(VkyCanvas* canvas)
 {
+    vky_clear_color(canvas->scene, VKY_CLEAR_COLOR_BLACK);
     VkyPanel* panel = vky_get_panel(canvas->scene, 0, 0);
     VkyVisual* visual = vky_visual(panel->scene, VKY_VISUAL_TEXT, NULL, NULL);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
@@ -33,6 +34,7 @@ static int hello(VkyCanvas* canvas)
 
 static int triangle(VkyCanvas* canvas)
 {
+    vky_clear_color(canvas->scene, VKY_CLEAR_COLOR_BLACK);
     VkyPanel* panel = vky_get_panel(canvas->scene, 0, 0);
 
     // Create the visual.

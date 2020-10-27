@@ -1,3 +1,4 @@
+#include <stb_image.h>
 #include <unistd.h>
 #include <visky/visky.h>
 
@@ -82,12 +83,6 @@ struct VkyTestCase
 
 static VkyTestCase TEST_CASES[] = {
 
-    // Basic tests.
-    CASE(red_canvas, true),
-    CASE(blue_canvas, true),
-    CASE(hello, true),
-    CASE(triangle, true),
-
     // Visual props.
     CASE(visuals_props_1, false),
     CASE(visuals_props_2, false),
@@ -102,6 +97,30 @@ static VkyTestCase TEST_CASES[] = {
     CASE(panzoom_1, false),
     CASE(axes_1, false),
     CASE(axes_2, false),
+
+    // Basic tests.
+    CASE(red_canvas, true),
+    CASE(blue_canvas, true),
+    CASE(hello, true),
+    CASE(triangle, true),
+
+    // Visual tests
+    CASE(mesh_raw, true),
+    CASE(scatter, true),
+    CASE(imshow, true),
+    CASE(arrows, true),
+    CASE(paths, true),
+    CASE(segments, true),
+    CASE(hist, true),
+    CASE(area, true),
+    CASE(axrect, true),
+    CASE(raster, true),
+    CASE(graph, true),
+    CASE(image, true),
+    CASE(polygon, true),
+    CASE(pslg_1, true),
+    CASE(pslg_2, true),
+    CASE(france, true),
 
 };
 static uint32_t N_TESTS = sizeof(TEST_CASES) / sizeof(VkyTestCase);
@@ -257,22 +276,16 @@ static VkyTestCase get_test_case(const char* name)
     return (VkyTestCase){0};
 }
 
-static void reset_canvas(VkyCanvas* canvas)
-{
-    ASSERT(canvas != NULL);
-    vky_reset_canvas(canvas);
-    vky_clear_all_buffers(canvas->gpu);
-    vky_reset_all_constants();
-    vky_clear_color(canvas->scene, VKY_CLEAR_COLOR_BLACK);
-}
-
 static void run_app(VkyCanvas* canvas)
 {
     // Run one frame of the example.
     vky_fill_command_buffers(canvas);
 
     // TODO: multiple frames before screenshot, mock input etc
-    vky_offscreen_frame(canvas, 0);
+    if (canvas->is_offscreen)
+        vky_offscreen_frame(canvas, 0);
+    else
+        vky_run_app(canvas->app);
 
     // for (double t = 0; t < frame_count / (float)FPS; t += (1. / FPS))
     // {
@@ -280,38 +293,47 @@ static void run_app(VkyCanvas* canvas)
     // }
 }
 
-static int launcher(VkyCanvas* canvas, const char* name)
+static int launcher(VkyCanvas* canvas, const char* name, bool is_live)
 {
     VkyTestCase test_case = get_test_case(name);
     ASSERT(test_case.function != NULL);
 
+    // Reset canvas for the next test.
+    vky_reset_canvas(canvas);
+    vky_clear_all_buffers(canvas->gpu);
+    vky_reset_all_constants();
+    vky_create_scene(canvas, VKY_CLEAR_COLOR_WHITE, 1, 1);
+
     // Run the test case on the canvas.
     int res = test_case.function(canvas);
 
+    // Run the app.
     run_app(canvas);
 
-    // If the function passed and needs to be compared with the screenshot, do it.
-    if (res == 0 && test_case.save_screenshot)
+    // Only continue here when offscreen mode.
+    if (!is_live)
     {
-        // TODO OPTIM: create the screenshot only once, when creating the canvas
-        uint8_t* rgb = make_screenshot(canvas);
+        // If the function passed and needs to be compared with the screenshot, do it.
+        if (res == 0 && test_case.save_screenshot)
+        {
+            // TODO OPTIM: create the screenshot only once, when creating the canvas
+            uint8_t* rgb = make_screenshot(canvas);
 
-        // Test fails if image is blank, not even need to compare with screenshot.
-        if (is_blank(rgb))
-        {
-            log_debug("image was blank, test failed");
-            res = 1;
+            // Test fails if image is blank, not even need to compare with screenshot.
+            if (is_blank(rgb))
+            {
+                log_debug("image was blank, test failed");
+                res = 1;
+            }
+            else
+            {
+                res = compare_images(name, rgb);
+                log_debug("image comparison %s", res == 0 ? "succeeded" : "failed");
+            }
+            FREE(rgb);
         }
-        else
-        {
-            res = compare_images(name, rgb);
-            log_debug("image comparison %s", res == 0 ? "succeeded" : "failed");
-        }
-        FREE(rgb);
     }
-
-    // Reset canvas for the next test.
-    reset_canvas(canvas);
+    vky_destroy_scene(canvas->scene);
 
     return res;
 }
@@ -333,7 +355,6 @@ static int test(int argc, char** argv)
     VkyBackendType backend = is_live ? VKY_BACKEND_GLFW : VKY_BACKEND_OFFSCREEN;
     VkyApp* app = vky_create_app(backend, NULL);
     VkyCanvas* canvas = vky_create_canvas(app, WIDTH, HEIGHT);
-    vky_create_scene(canvas, VKY_CLEAR_COLOR_BLACK, 1, 1);
     VkyGpu* gpu = canvas->gpu;
     // Create large GPU buffers that will be cleared after each test.
     vky_add_vertex_buffer(gpu, 1e6);
@@ -348,7 +369,7 @@ static int test(int argc, char** argv)
         // the current test.
         if (argc == 1 || strcmp(TEST_CASES[i].name, argv[1]) == 0)
         {
-            res += launcher(canvas, TEST_CASES[i].name);
+            res += launcher(canvas, TEST_CASES[i].name, is_live);
             print_case(index, TEST_CASES[i].name, res);
             index++;
         }
