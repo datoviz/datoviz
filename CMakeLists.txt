@@ -17,7 +17,10 @@ option(VISKY_WITH_PNG "Build Visky with PNG support" ON)
 option(VISKY_WITH_QT "Build Visky with QT support" ON)
 option(VISKY_WITH_FREETYPE "Build Visky with Freetype support" ON)
 option(VISKY_WITH_ASSIMP "Build Visky with ASSIMP support" OFF)
-option(VISKY_WITH_EXAMPLES "Build Visky examples" ON)
+
+option(VISKY_WITH_EXAMPLES "Build Visky (old) examples" OFF)
+option(VISKY_WITH_TEST "Build Visky (old) tests" OFF)
+option(VISKY_WITH_CYTHON "Build Cython bindings" OFF)
 
 
 # Define the project
@@ -401,22 +404,24 @@ endif()
 # Cython build
 # -------------------------------------------------------------------------------------------------
 
-add_subdirectory(bindings/cython/visky)
-find_package(PythonExtensions)
-find_package(Cython)
-find_package(NumPy)
-include_directories(${INCL_DIRS} ${PYTHON_INCLUDE_DIRS} ${NumPy_INCLUDE_DIRS})
-add_cython_target(pyvisky bindings/cython/visky/pyvisky.pyx PY3 C)
-add_library(pyvisky MODULE ${pyvisky})
-python_extension_module(pyvisky)
-target_compile_options(pyvisky PUBLIC -w)
-# set_target_properties(
-#     pyvisky PROPERTIES
-#     LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bindings/cython/visky/)
-target_link_libraries(pyvisky ${PYTHON_LIBRARIES} ${LINK_LIBS} visky)
-# install(TARGETS pyvisky LIBRARY DESTINATION visky)
-# add_custom_target(pyvisky ALL COMMAND ${CMAKE_COMMAND} -E create_symlink ${PROJECT_BINARY_DIR}/ bindings/cython/visky)
-install(TARGETS pyvisky LIBRARY DESTINATION src)
+if (VISKY_WITH_CYTHON)
+    add_subdirectory(bindings/cython/visky)
+    find_package(PythonExtensions)
+    find_package(Cython)
+    find_package(NumPy)
+    include_directories(${INCL_DIRS} ${PYTHON_INCLUDE_DIRS} ${NumPy_INCLUDE_DIRS})
+    add_cython_target(pyvisky bindings/cython/visky/pyvisky.pyx PY3 C)
+    add_library(pyvisky MODULE ${pyvisky})
+    python_extension_module(pyvisky)
+    target_compile_options(pyvisky PUBLIC -w)
+    # set_target_properties(
+    #     pyvisky PROPERTIES
+    #     LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bindings/cython/visky/)
+    target_link_libraries(pyvisky ${PYTHON_LIBRARIES} ${LINK_LIBS} visky)
+    # install(TARGETS pyvisky LIBRARY DESTINATION visky)
+    # add_custom_target(pyvisky ALL COMMAND ${CMAKE_COMMAND} -E create_symlink ${PROJECT_BINARY_DIR}/ bindings/cython/visky)
+    install(TARGETS pyvisky LIBRARY DESTINATION src)
+endif()
 
 
 # -------------------------------------------------------------------------------------------------
@@ -449,22 +454,22 @@ endfunction()
 
 
 if (VISKY_WITH_EXAMPLES)
-set(VKY_EXAMPLE_PATH ${CMAKE_SOURCE_DIR}/examples/${VKY_EXAMPLE})
-if (${VKY_EXAMPLE}xxx STREQUAL "xxx")
-    # Compile all examples
-    file(GLOB examples "examples/*.c" "examples/*.cpp")
-    foreach(example_file ${examples})
-        compile_example(${example_file})
-    endforeach()
-elseif(EXISTS "${VKY_EXAMPLE_PATH}.c")
-    # Or compile a single C example
-    compile_example("${VKY_EXAMPLE_PATH}.c")
-elseif(EXISTS "${VKY_EXAMPLE_PATH}.cpp")
-    # Or compile a single C++ example
-    compile_example("${VKY_EXAMPLE_PATH}.cpp")
-elseif(NOT ${VKY_EXAMPLE} STREQUAL "test")
-    message("WARNING: example '${VKY_EXAMPLE}' not found")
-endif()
+    set(VKY_EXAMPLE_PATH ${CMAKE_SOURCE_DIR}/examples/${VKY_EXAMPLE})
+    if (${VKY_EXAMPLE}xxx STREQUAL "xxx")
+        # Compile all examples
+        file(GLOB examples "examples/*.c" "examples/*.cpp")
+        foreach(example_file ${examples})
+            compile_example(${example_file})
+        endforeach()
+    elseif(EXISTS "${VKY_EXAMPLE_PATH}.c")
+        # Or compile a single C example
+        compile_example("${VKY_EXAMPLE_PATH}.c")
+    elseif(EXISTS "${VKY_EXAMPLE_PATH}.cpp")
+        # Or compile a single C++ example
+        compile_example("${VKY_EXAMPLE_PATH}.cpp")
+    elseif(NOT ${VKY_EXAMPLE} STREQUAL "test")
+        message("WARNING: example '${VKY_EXAMPLE}' not found")
+    endif()
 endif()
 
 
@@ -474,19 +479,25 @@ endif()
 # -------------------------------------------------------------------------------------------------
 
 set(TEST_CASES all)
+if (${VISKY_WITH_TEST})
+    message("Compile tests")
+    add_executable(visky_test test/test.c)
+    target_visky(visky_test)
+    function(compile_test test_case)
+        set(test_name "test_${test_case}")
+        add_test(${test_name} visky_test ${test_case})
+    endfunction()
+
+    foreach(test_case ${TEST_CASES})
+        compile_test(${test_case})
+    endforeach()
+endif()
 
 
-message("Compile tests")
-add_executable(visky_test test/test.c)
-target_visky(visky_test)
-function(compile_test test_case)
-    set(test_name "test_${test_case}")
-    add_test(${test_name} visky_test ${test_case})
-endfunction()
-
-foreach(test_case ${TEST_CASES})
-    compile_test(${test_case})
-endforeach()
+file(GLOB cli "cli/*.c" "cli/*.cpp" "cli/*.h" "cli/*.hpp")
+add_executable(viskycli ${cli})
+target_visky(viskycli)
+set_target_properties(viskycli PROPERTIES OUTPUT_NAME "visky")
 
 
 # experimental
