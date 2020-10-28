@@ -44,6 +44,9 @@ void vky_imgui_newframe()
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+
+    // Enable docking in main window.
+    ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 }
 
 
@@ -68,7 +71,11 @@ void vky_imgui_init(VkyCanvas* canvas)
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
-    (void)io;
+
+    // Enable docking, requires the docking branch of imgui
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    io.ConfigDockingWithShift = false;
+
     ImGui::StyleColorsDark();
     ImGuiStyle style = ImGui::GetStyle();
     style.ScaleAllSizes(canvas->dpi_factor);

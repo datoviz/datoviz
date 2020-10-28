@@ -61,7 +61,7 @@ Automatically-handled dependencies are (statically bundled or managed by the bui
 
 5. Clone the visky repository and build the library:
 
-    1. `git clone git@github.com:viskydev/visky.git`
+    1. `git clone --recursive git@github.com:viskydev/visky.git`
     2. `git clone git@github.com:viskydev/visky-data.git`
     3. `cd visky`
     4. `ln -s ../visky-data/data data`
