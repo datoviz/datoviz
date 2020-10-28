@@ -18,8 +18,8 @@ option(VISKY_WITH_QT "Build Visky with QT support" ON)
 option(VISKY_WITH_FREETYPE "Build Visky with Freetype support" ON)
 option(VISKY_WITH_ASSIMP "Build Visky with ASSIMP support" OFF)
 
+option(VISKY_WITH_CLI "Build Visky command-line interface with tests and demos" ON)
 option(VISKY_WITH_EXAMPLES "Build Visky (old) examples" ON)
-option(VISKY_WITH_TEST "Build Visky (old) tests" OFF)
 option(VISKY_WITH_CYTHON "Build Cython bindings" ON)
 
 
@@ -453,6 +453,7 @@ function(compile_example example_file)
 endfunction()
 
 
+# NOTE: to remove later (to be integrated into the CLI)
 if (VISKY_WITH_EXAMPLES)
     set(VKY_EXAMPLE_PATH ${CMAKE_SOURCE_DIR}/examples/${VKY_EXAMPLE})
     if (${VKY_EXAMPLE}xxx STREQUAL "xxx")
@@ -478,27 +479,13 @@ endif()
 # Test build
 # -------------------------------------------------------------------------------------------------
 
-set(TEST_CASES all)
-if (${VISKY_WITH_TEST})
-    message("Compile tests")
-    add_executable(visky_test test/test.c)
-    target_visky(visky_test)
-    function(compile_test test_case)
-        set(test_name "test_${test_case}")
-        add_test(${test_name} visky_test ${test_case})
-    endfunction()
-
-    foreach(test_case ${TEST_CASES})
-        compile_test(${test_case})
-    endforeach()
+if (VISKY_WITH_CLI)
+    file(GLOB cli "cli/*.c" "cli/*.cpp" "cli/*.h" "cli/*.hpp")
+    add_executable(viskycli ${cli})
+    target_visky(viskycli)
+    set_target_properties(viskycli PROPERTIES OUTPUT_NAME "visky")
+    add_test(NAME visky_test COMMAND viskycli test)
 endif()
-
-
-file(GLOB cli "cli/*.c" "cli/*.cpp" "cli/*.h" "cli/*.hpp")
-add_executable(viskycli ${cli})
-target_visky(viskycli)
-set_target_properties(viskycli PROPERTIES OUTPUT_NAME "visky")
-
 
 # experimental
 # add_executable(freetype_example experimental/freetype-example.c)
