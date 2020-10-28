@@ -58,6 +58,7 @@ struct VkyTestContext
     VkyCanvas* canvas;
     VkyScene* scene;
     VkyPanel* panel;
+    VkyScreenshot* screenshot;
     bool is_live;
 };
 
@@ -289,14 +290,16 @@ static bool is_blank(uint8_t* image)
     return false;
 }
 
-static uint8_t* make_screenshot(VkyCanvas* canvas)
+static uint8_t* make_screenshot(VkyTestContext* context)
 {
+    ASSERT(context != NULL);
+    ASSERT(context->canvas != NULL);
     // NOTE: the caller must free the output buffer
-    VkyScreenshot* screenshot = vky_create_screenshot(canvas);
-    vky_begin_screenshot(screenshot);
-    uint8_t* rgb = vky_screenshot_to_rgb(screenshot, false);
-    vky_end_screenshot(screenshot);
-    vky_destroy_screenshot(screenshot);
+    if (context->screenshot == NULL)
+        context->screenshot = vky_create_screenshot(context->canvas);
+    vky_begin_screenshot(context->screenshot);
+    uint8_t* rgb = vky_screenshot_to_rgb(context->screenshot, false);
+    vky_end_screenshot(context->screenshot);
     return rgb;
 }
 
@@ -431,6 +434,14 @@ static VkyTestContext _create_context(bool is_live)
 
 static void _destroy_context(VkyTestContext* context)
 {
+    ASSERT(context != NULL);
+
+    if (context->screenshot != NULL)
+    {
+        vky_destroy_screenshot(context->screenshot);
+        context->screenshot = NULL;
+    }
+
     if (context->app != NULL)
     {
         vky_destroy_app(context->app);
@@ -469,7 +480,7 @@ static int launcher(VkyTestContext* context, const char* name)
         if (res == 0 && test_case.save_screenshot)
         {
             // TODO OPTIM: create the screenshot only once, when creating the canvas
-            uint8_t* rgb = make_screenshot(context->canvas);
+            uint8_t* rgb = make_screenshot(context);
 
             // Test fails if image is blank, not even need to compare with screenshot.
             if (is_blank(rgb))
