@@ -2,9 +2,9 @@
 #include <inttypes.h>
 
 BEGIN_INCL_NO_WARN
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_vulkan.h>
+#include <imgui/backends/imgui_impl_glfw.h>
+#include <imgui/backends/imgui_impl_vulkan.h>
+#include <imgui/imgui.h>
 END_INCL_NO_WARN
 
 
