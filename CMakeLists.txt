@@ -18,9 +18,9 @@ option(VISKY_WITH_QT "Build Visky with QT support" ON)
 option(VISKY_WITH_FREETYPE "Build Visky with Freetype support" ON)
 option(VISKY_WITH_ASSIMP "Build Visky with ASSIMP support" OFF)
 
-option(VISKY_WITH_EXAMPLES "Build Visky (old) examples" OFF)
+option(VISKY_WITH_EXAMPLES "Build Visky (old) examples" ON)
 option(VISKY_WITH_TEST "Build Visky (old) tests" OFF)
-option(VISKY_WITH_CYTHON "Build Cython bindings" OFF)
+option(VISKY_WITH_CYTHON "Build Cython bindings" ON)
 
 
 # Define the project
