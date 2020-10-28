@@ -28,16 +28,43 @@
 /*************************************************************************************************/
 
 typedef struct VkyTestCase VkyTestCase;
-typedef int (*VkyTestFunction)(VkyCanvas*);
+typedef struct VkyTestContext VkyTestContext;
+
+// Test cases callbacks.
+typedef int (*VkyTestFunction)(VkyTestContext*);
+
+
+
+/*************************************************************************************************/
+/*  Enums                                                                                        */
+/*************************************************************************************************/
+
+typedef enum
+{
+    VKY_TEST_FIXTURE_NONE,
+    VKY_TEST_FIXTURE_CANVAS,
+    VKY_TEST_FIXTURE_PANEL,
+} VkyTestFixture;
+
 
 
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+struct VkyTestContext
+{
+    VkyApp* app;
+    VkyCanvas* canvas;
+    VkyScene* scene;
+    VkyPanel* panel;
+    bool is_live;
+};
+
 struct VkyTestCase
 {
     const char* name;
+    VkyTestFixture fixture;
     VkyTestFunction function;
     VkyTestFunction destroy;
     bool save_screenshot;
@@ -49,15 +76,30 @@ struct VkyTestCase
 /*  Macros                                                                                       */
 /*************************************************************************************************/
 
-#define CASE(name, save_screenshot)                                                               \
+#define CASE_FIXTURE_NONE(func)                                                                   \
     {                                                                                             \
-#name, name, NULL, save_screenshot                                                        \
+#func, VKY_TEST_FIXTURE_NONE, func, NULL, false                                           \
     }
 
-#define CASE_DESTROY(name, name_destroy, save_screenshot)                                         \
+#define CASE_FIXTURE_CANVAS(func, func_destroy, screenshot)                                       \
     {                                                                                             \
-#name, name, name_destroy, save_screenshot                                                \
+#func, VKY_TEST_FIXTURE_CANVAS, func, func_destroy, screenshot                            \
     }
+
+#define CASE_FIXTURE_PANEL(func, screenshot)                                                      \
+    {                                                                                             \
+#func, VKY_TEST_FIXTURE_PANEL, func, NULL, screenshot                                     \
+    }
+
+// #define CASE(func, fixture, save_screenshot)
+//     {
+// #func, fixture, func, NULL, save_screenshot
+//     }
+
+// #define CASE_DESTROY(func, func_destroy, save_screenshot)
+//     {
+// #func, fixture, func, func_destroy, save_screenshot
+//     }
 
 #define SWITCH_CLI_ARG(arg)                                                                       \
     if (argc >= 1 && strcmp(argv[1], #arg) == 0)                                                  \
@@ -90,54 +132,54 @@ struct VkyTestCase
 static VkyTestCase TEST_CASES[] = {
 
     // Visual props.
-    CASE(visuals_props_1, false),
-    CASE(visuals_props_2, false),
-    CASE(visuals_props_3, false),
-    CASE(visuals_props_4, false),
-    CASE(visuals_props_5, false),
-    CASE(visuals_props_6, false),
+    CASE_FIXTURE_NONE(visuals_props_1), //
+    CASE_FIXTURE_NONE(visuals_props_2), //
+    CASE_FIXTURE_NONE(visuals_props_3), //
+    CASE_FIXTURE_NONE(visuals_props_4), //
+    CASE_FIXTURE_NONE(visuals_props_5), //
+    CASE_FIXTURE_NONE(visuals_props_6), //
 
-    // Transforms.
-    CASE(transform_1, false),
-    CASE(transform_2, false),
-    CASE(panzoom_1, false),
-    CASE(axes_1, false),
-    CASE(axes_2, false),
+    CASE_FIXTURE_NONE(transform_1), //
 
     // vklite tests.
-    // CASE_DESTROY(test_vklite_compute, no_destroy, false),
-    // CASE_DESTROY(test_vklite_blank, no_destroy, false),
-    // CASE_DESTROY(test_vklite_triangle, test_vklite_triangle_destroy, false),
-    // CASE_DESTROY(test_vklite_push, test_vklite_push_destroy, false),
+    CASE_FIXTURE_CANVAS(vklite_compute, no_destroy, false),               //
+    CASE_FIXTURE_CANVAS(vklite_blank, no_destroy, false),                 //
+    CASE_FIXTURE_CANVAS(vklite_triangle, vklite_triangle_destroy, false), //
+    CASE_FIXTURE_CANVAS(vklite_push, vklite_push_destroy, false),         //
+
+    // Transforms.
+    CASE_FIXTURE_PANEL(transform_2, false), //
+    CASE_FIXTURE_PANEL(panzoom_1, false),   //
+    CASE_FIXTURE_PANEL(axes_1, false),      //
+    CASE_FIXTURE_PANEL(axes_2, false),      //
 
     // Basic tests.
-    CASE(red_canvas, true),
-    CASE(blue_canvas, true),
-    CASE(hello, true),
-    CASE(triangle, true),
+    CASE_FIXTURE_PANEL(red_canvas, true),  //
+    CASE_FIXTURE_PANEL(blue_canvas, true), //
+    CASE_FIXTURE_PANEL(hello, true),       //
+    CASE_FIXTURE_PANEL(triangle, true),    //
 
     // Visual tests
-    CASE(mesh_raw, true),
-    CASE(scatter, true),
-    CASE(imshow, true),
-    CASE(arrows, true),
-    CASE(paths, true),
-    CASE(segments, true),
-    CASE(hist, true),
-    CASE(area, true),
-    CASE(axrect, true),
-    CASE(raster, true),
-    CASE(graph, true),
-    CASE(image, true),
-    CASE(polygon, true),
-    CASE(pslg_1, true),
-    CASE(pslg_2, true),
-    CASE(france, true),
-
-    CASE(surface, true),
-    CASE(spheres, true),
-    CASE(volume, true),
-    CASE(brain, true),
+    CASE_FIXTURE_PANEL(mesh_raw, true), //
+    CASE_FIXTURE_PANEL(scatter, true),  //
+    CASE_FIXTURE_PANEL(imshow, true),   //
+    CASE_FIXTURE_PANEL(arrows, true),   //
+    CASE_FIXTURE_PANEL(paths, true),    //
+    CASE_FIXTURE_PANEL(segments, true), //
+    CASE_FIXTURE_PANEL(hist, true),     //
+    CASE_FIXTURE_PANEL(area, true),     //
+    CASE_FIXTURE_PANEL(axrect, true),   //
+    CASE_FIXTURE_PANEL(raster, true),   //
+    CASE_FIXTURE_PANEL(graph, true),    //
+    CASE_FIXTURE_PANEL(image, true),    //
+    CASE_FIXTURE_PANEL(polygon, true),  //
+    CASE_FIXTURE_PANEL(pslg_1, true),   //
+    CASE_FIXTURE_PANEL(pslg_2, true),   //
+    CASE_FIXTURE_PANEL(france, true),   //
+    CASE_FIXTURE_PANEL(surface, true),  //
+    CASE_FIXTURE_PANEL(spheres, true),  //
+    CASE_FIXTURE_PANEL(volume, true),   //
+    CASE_FIXTURE_PANEL(brain, true),    //
 
 };
 static uint32_t N_TESTS = sizeof(TEST_CASES) / sizeof(VkyTestCase);
@@ -293,7 +335,7 @@ static VkyTestCase get_test_case(const char* name)
     return (VkyTestCase){0};
 }
 
-static void run_app(VkyCanvas* canvas)
+static void run_canvas(VkyCanvas* canvas)
 {
     // Run one frame of the example.
     vky_fill_command_buffers(canvas);
@@ -310,36 +352,124 @@ static void run_app(VkyCanvas* canvas)
     // }
 }
 
-static int launcher(VkyCanvas* canvas, const char* name, bool is_live)
+
+/*************************************************************************************************/
+/*  Testing infrastructure                                                                       */
+/*************************************************************************************************/
+
+static void _setup(VkyTestContext* context, VkyTestFixture fixture)
+{
+    ASSERT(context != NULL);
+
+    if (fixture >= VKY_TEST_FIXTURE_CANVAS)
+    {
+        if (context->app == NULL)
+        {
+            log_debug("fixture setup: create the app");
+            context->app =
+                vky_create_app(context->is_live ? VKY_BACKEND_GLFW : VKY_BACKEND_OFFSCREEN, NULL);
+        }
+        ASSERT(context->app != NULL);
+        if (context->canvas == NULL)
+        {
+            log_debug("fixture setup: create the canvas");
+            context->canvas = vky_create_canvas(context->app, WIDTH, HEIGHT);
+            // Create large GPU buffers that will be cleared after each test.
+            vky_add_vertex_buffer(context->canvas->gpu, 1e6);
+            vky_add_index_buffer(context->canvas->gpu, 1e6);
+        }
+
+        ASSERT(context->canvas != NULL);
+    }
+
+    if (fixture >= VKY_TEST_FIXTURE_PANEL)
+    {
+        ASSERT(context->canvas != NULL);
+        if (context->scene == NULL)
+        {
+            log_debug("fixture setup: create the scene");
+            context->scene = vky_create_scene(context->canvas, VKY_CLEAR_COLOR_WHITE, 1, 1);
+        }
+        ASSERT(context->scene != NULL);
+        if (context->panel == NULL)
+        {
+            log_debug("fixture setup: create the panel");
+            context->panel = vky_get_panel(context->scene, 0, 0);
+        }
+
+        ASSERT(context->panel != NULL);
+    }
+}
+
+static void _teardown(VkyTestContext* context, VkyTestFixture fixture)
+{
+    ASSERT(context != NULL);
+    if (fixture >= VKY_TEST_FIXTURE_CANVAS)
+    {
+        ASSERT(context->canvas != NULL);
+        log_debug("fixture teardown: reset the canvas");
+        vky_reset_canvas(context->canvas);
+        ASSERT(context->canvas->gpu != NULL);
+        vky_clear_all_buffers(context->canvas->gpu);
+        vky_reset_all_constants();
+    }
+    if (fixture >= VKY_TEST_FIXTURE_PANEL)
+    {
+        log_debug("fixture teardown: destroy the scene");
+        vky_destroy_scene(context->canvas->scene);
+        context->scene = NULL;
+        context->panel = NULL;
+    }
+}
+
+static VkyTestContext _create_context(bool is_live)
+{
+    VkyTestContext context = {0};
+    context.is_live = is_live;
+    return context;
+}
+
+static void _destroy_context(VkyTestContext* context)
+{
+    if (context->app != NULL)
+    {
+        vky_destroy_app(context->app);
+        context->app = NULL;
+    }
+}
+
+static int launcher(VkyTestContext* context, const char* name)
 {
     VkyTestCase test_case = get_test_case(name);
     if (test_case.function == NULL)
         return 1;
 
-    // Reset canvas for the next test.
-    vky_reset_canvas(canvas);
-    vky_clear_all_buffers(canvas->gpu);
-    vky_reset_all_constants();
+    ASSERT(context != NULL);
+    ASSERT(name != NULL);
 
-    // Create a scene only if there is no destroy, meaning we use the scene API and not the
-    // canvas API.
-    if (test_case.destroy == NULL)
-        vky_create_scene(canvas, VKY_CLEAR_COLOR_WHITE, 1, 1);
+    // Make sure either the canvas or panel is set up if the test case requires it.
+    _setup(context, test_case.fixture);
 
     // Run the test case on the canvas.
-    int res = test_case.function(canvas);
+    int res = 1;
+    ASSERT(test_case.function != NULL);
+    res = test_case.function(context);
 
     // Run the app.
-    run_app(canvas);
+    if (test_case.fixture >= VKY_TEST_FIXTURE_CANVAS)
+    {
+        ASSERT(context->canvas != NULL);
+        run_canvas(context->canvas);
+    }
 
     // Only continue here when offscreen mode.
-    if (!is_live)
+    if (!context->is_live)
     {
         // If the function passed and needs to be compared with the screenshot, do it.
         if (res == 0 && test_case.save_screenshot)
         {
             // TODO OPTIM: create the screenshot only once, when creating the canvas
-            uint8_t* rgb = make_screenshot(canvas);
+            uint8_t* rgb = make_screenshot(context->canvas);
 
             // Test fails if image is blank, not even need to compare with screenshot.
             if (is_blank(rgb))
@@ -355,29 +485,17 @@ static int launcher(VkyCanvas* canvas, const char* name, bool is_live)
             FREE(rgb);
         }
     }
-    if (test_case.destroy == NULL)
-        vky_destroy_scene(canvas->scene);
-    else
-    {
-        test_case.destroy(canvas);
-    }
+
+    // Call the test case-specific destruction function if there is one.
+    if (test_case.destroy != NULL)
+        test_case.destroy(context);
+
+    // Tear down the fixture (mainly resetting the canvas or destroying the scene).
+    _teardown(context, test_case.fixture);
 
     return res;
 }
 
-static VkyCanvas* init_canvas(bool is_live)
-{
-    VkyBackendType backend = is_live ? VKY_BACKEND_GLFW : VKY_BACKEND_OFFSCREEN;
-    VkyApp* app = vky_create_app(backend, NULL);
-    VkyCanvas* canvas = vky_create_canvas(app, WIDTH, HEIGHT);
-    VkyGpu* gpu = canvas->gpu;
-    // Create large GPU buffers that will be cleared after each test.
-    vky_add_vertex_buffer(gpu, 1e6);
-    vky_add_index_buffer(gpu, 1e6);
-    return canvas;
-}
-
-static void terminate(VkyApp* app) { vky_destroy_app(app); }
 
 
 /*************************************************************************************************/
@@ -388,8 +506,10 @@ static int test(int argc, char** argv)
 {
     // argv: test, <name>, --live
     bool is_live = argc >= 3 && strcmp(argv[2], "--live") == 0;
-    VkyCanvas* canvas = init_canvas(is_live);
     print_start();
+
+    // Create the test context.
+    VkyTestContext context = _create_context(is_live);
 
     // Start the tests.
     int res = 0;
@@ -401,13 +521,15 @@ static int test(int argc, char** argv)
         // the current test.
         if (argc == 1 || strcmp(TEST_CASES[i].name, argv[1]) == 0)
         {
-            res += launcher(canvas, TEST_CASES[i].name, is_live);
+            res += launcher(&context, TEST_CASES[i].name);
             print_case(index, TEST_CASES[i].name, res);
             index++;
         }
     }
     print_end(index, res);
-    terminate(canvas->app);
+
+    // Destroy the app if needed.
+    _destroy_context(&context);
 
     return res;
 }
@@ -421,10 +543,9 @@ static int demo(int argc, char** argv)
         log_error("please specify a demo name");
         return 1;
     }
-    VkyCanvas* canvas = init_canvas(true);
-    VkyApp* app = canvas->app;
-    launcher(canvas, argv[1], true);
-    terminate(app);
+    VkyTestContext context = _create_context(true);
+    launcher(&context, argv[1]);
+    _destroy_context(&context);
     return 0;
 }
 

@@ -9,35 +9,26 @@
 /*  Controllers                                                                                  */
 /*************************************************************************************************/
 
-static VkyPanel* _set_panzoom(VkyCanvas* canvas)
+static VkyPanel* _set_panzoom(VkyPanel* panel)
 {
-    ASSERT(canvas != NULL);
-    ASSERT(canvas->scene != NULL);
-    VkyPanel* panel = vky_get_panel(canvas->scene, 0, 0);
     ASSERT(panel != NULL);
     vky_set_controller(panel, VKY_CONTROLLER_PANZOOM, NULL);
     return panel;
 }
 
-static VkyPanel* _set_axes(VkyCanvas* canvas)
+static VkyPanel* _set_axes(VkyPanel* panel)
 {
-    ASSERT(canvas != NULL);
-    ASSERT(canvas->scene != NULL);
-    VkyPanel* panel = vky_get_panel(canvas->scene, 0, 0);
     ASSERT(panel != NULL);
     VkyAxes2DParams params = vky_default_axes_2D_params();
     vky_set_controller(panel, VKY_CONTROLLER_AXES_2D, &params);
     return panel;
 }
 
-static VkyPanel* _set_arcball(VkyCanvas* canvas)
+static VkyPanel* _set_arcball(VkyPanel* panel)
 {
-    ASSERT(canvas != NULL);
-    ASSERT(canvas->scene != NULL);
-    VkyPanel* panel = vky_get_panel(canvas->scene, 0, 0);
     ASSERT(panel != NULL);
     vky_set_controller(panel, VKY_CONTROLLER_ARCBALL, NULL);
-    vky_clear_color(canvas->scene, VKY_CLEAR_COLOR_BLACK);
+    vky_clear_color(panel->scene, VKY_CLEAR_COLOR_BLACK);
     return panel;
 }
 
@@ -47,9 +38,9 @@ static VkyPanel* _set_arcball(VkyCanvas* canvas)
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-static int mesh_raw(VkyCanvas* canvas)
+static int mesh_raw(VkyTestContext* context)
 {
-    VkyPanel* panel = _set_panzoom(canvas);
+    VkyPanel* panel = _set_panzoom(context->panel);
     vky_clear_color(panel->scene, VKY_CLEAR_COLOR_BLACK);
 
     // Create the visual.
@@ -73,9 +64,9 @@ static int mesh_raw(VkyCanvas* canvas)
     return 0;
 }
 
-static int scatter(VkyCanvas* canvas)
+static int scatter(VkyTestContext* context)
 {
-    VkyPanel* panel = _set_axes(canvas);
+    VkyPanel* panel = _set_axes(context->panel);
 
     VkyMarkersParams params = (VkyMarkersParams){{0, 0, 0, 1}, 1.0f, false};
     VkyVisual* visual = vky_visual(panel->scene, VKY_VISUAL_MARKER, &params, NULL);
@@ -106,9 +97,9 @@ static int scatter(VkyCanvas* canvas)
     return 0;
 }
 
-static int imshow(VkyCanvas* canvas)
+static int imshow(VkyTestContext* context)
 {
-    VkyPanel* panel = _set_axes(canvas);
+    VkyPanel* panel = _set_axes(context->panel);
     // vky_set_constant(VKY_AXES_GRID_COLOR_A_ID, 0);
 
     // Load the image.
@@ -143,9 +134,9 @@ static int imshow(VkyCanvas* canvas)
     return 0;
 }
 
-static int arrows(VkyCanvas* canvas)
+static int arrows(VkyTestContext* context)
 {
-    VkyPanel* panel = _set_axes(canvas);
+    VkyPanel* panel = _set_axes(context->panel);
 
     VkyVisual* visual = vky_visual(panel->scene, VKY_VISUAL_ARROW, NULL, NULL);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
@@ -173,9 +164,9 @@ static int arrows(VkyCanvas* canvas)
     return 0;
 }
 
-static int paths(VkyCanvas* canvas)
+static int paths(VkyTestContext* context)
 {
-    VkyPanel* panel = _set_axes(canvas);
+    VkyPanel* panel = _set_axes(context->panel);
 
     // Create the visual.
     VkyPathParams params = {20, 4., VKY_CAP_ROUND, VKY_JOIN_ROUND, VKY_DEPTH_DISABLE};
@@ -212,9 +203,9 @@ static int paths(VkyCanvas* canvas)
     return 0;
 }
 
-static int segments(VkyCanvas* canvas)
+static int segments(VkyTestContext* context)
 {
-    VkyPanel* panel = _set_axes(canvas);
+    VkyPanel* panel = _set_axes(context->panel);
 
     VkyVisual* visual = vky_visual(panel->scene, VKY_VISUAL_SEGMENT, NULL, NULL);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
@@ -242,9 +233,9 @@ static int segments(VkyCanvas* canvas)
     return 0;
 }
 
-static int hist(VkyCanvas* canvas)
+static int hist(VkyTestContext* context)
 {
-    VkyPanel* panel = _set_axes(canvas);
+    VkyPanel* panel = _set_axes(context->panel);
 
     VkyRectangleParams params = {0};
     params.u[0] = 1;
@@ -272,9 +263,9 @@ static int hist(VkyCanvas* canvas)
     return 0;
 }
 
-static int area(VkyCanvas* canvas)
+static int area(VkyTestContext* context)
 {
-    VkyPanel* panel = _set_axes(canvas);
+    VkyPanel* panel = _set_axes(context->panel);
 
     VkyAreaParams params = {0};
     params.u[0] = 1;
@@ -309,9 +300,9 @@ static int area(VkyCanvas* canvas)
     return 0;
 }
 
-static int axrect(VkyCanvas* canvas)
+static int axrect(VkyTestContext* context)
 {
-    VkyPanel* panel = _set_axes(canvas);
+    VkyPanel* panel = _set_axes(context->panel);
 
     VkyVisual* visual = vky_visual(panel->scene, VKY_VISUAL_RECTANGLE_AXIS, NULL, NULL);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
@@ -340,9 +331,9 @@ static int axrect(VkyCanvas* canvas)
     return 0;
 }
 
-static int raster(VkyCanvas* canvas)
+static int raster(VkyTestContext* context)
 {
-    VkyPanel* panel = _set_axes(canvas);
+    VkyPanel* panel = _set_axes(context->panel);
 
     VkyMarkersRawParams params = (VkyMarkersRawParams){{5.0f, 20.0f}, VKY_SCALING_OFF};
     VkyVisual* visual = vky_visual(panel->scene, VKY_VISUAL_MARKER_RAW, &params, NULL);
@@ -377,9 +368,9 @@ static int raster(VkyCanvas* canvas)
     return 0;
 }
 
-static int graph(VkyCanvas* canvas)
+static int graph(VkyTestContext* context)
 {
-    VkyPanel* panel = _set_panzoom(canvas);
+    VkyPanel* panel = _set_panzoom(context->panel);
 
     // Graph parameters.
     VkyGraphParams params = {0};
@@ -438,9 +429,9 @@ static int graph(VkyCanvas* canvas)
     return 0;
 }
 
-static int image(VkyCanvas* canvas)
+static int image(VkyTestContext* context)
 {
-    VkyPanel* panel = _set_panzoom(canvas);
+    VkyPanel* panel = _set_panzoom(context->panel);
 
     // Load the image.
     char path[1024];
@@ -507,9 +498,9 @@ static void add_polygon(dvec2* points, uint32_t n, double angle, vec2 offset)
     }
 }
 
-static int polygon(VkyCanvas* canvas)
+static int polygon(VkyTestContext* context)
 {
-    VkyPanel* panel = _set_panzoom(canvas);
+    VkyPanel* panel = _set_panzoom(context->panel);
     vky_set_panel_aspect_ratio(panel, 1);
 
     VkyPolygonParams params = (VkyPolygonParams){20, {{0, 0, 0}, 128}};
@@ -552,9 +543,9 @@ static int polygon(VkyCanvas* canvas)
     return 0;
 }
 
-static int pslg_1(VkyCanvas* canvas)
+static int pslg_1(VkyTestContext* context)
 {
-    VkyPanel* panel = _set_panzoom(canvas);
+    VkyPanel* panel = _set_panzoom(context->panel);
     vky_set_panel_aspect_ratio(panel, 1);
 
     // Points.
@@ -608,9 +599,9 @@ static int pslg_1(VkyCanvas* canvas)
     return 0;
 }
 
-static int pslg_2(VkyCanvas* canvas)
+static int pslg_2(VkyTestContext* context)
 {
-    VkyPanel* panel = _set_panzoom(canvas);
+    VkyPanel* panel = _set_panzoom(context->panel);
     vky_set_panel_aspect_ratio(panel, 1);
 
     // Points and segments.
@@ -694,9 +685,9 @@ static int pslg_2(VkyCanvas* canvas)
     return 0;
 }
 
-static int france(VkyCanvas* canvas)
+static int france(VkyTestContext* context)
 {
-    VkyPanel* panel = _set_panzoom(canvas);
+    VkyPanel* panel = _set_panzoom(context->panel);
     vky_set_panel_aspect_ratio(panel, 1);
 
     const uint32_t point_count = 31244;
@@ -759,15 +750,15 @@ static int france(VkyCanvas* canvas)
     return 0;
 }
 
-static int surface(VkyCanvas* canvas)
+static int surface(VkyTestContext* context)
 {
     const uint32_t N = 250;
     uint32_t col_count = N + 1;
     uint32_t row_count = 2 * N + 1;
     uint32_t point_count = col_count * row_count;
 
-    VkyPanel* panel = _set_arcball(canvas);
-
+    VkyPanel* panel = _set_arcball(context->panel);
+    VkyCanvas* canvas = context->canvas;
     VkyScene* scene = panel->scene;
 
     // Mesh object.
@@ -810,9 +801,9 @@ static int surface(VkyCanvas* canvas)
     return 0;
 }
 
-static int spheres(VkyCanvas* canvas)
+static int spheres(VkyTestContext* context)
 {
-    VkyPanel* panel = _set_arcball(canvas);
+    VkyPanel* panel = _set_arcball(context->panel);
 
     const uint32_t n = 1000;
     VkyFakeSphereVertex* vertices = calloc(n, sizeof(VkyFakeSphereVertex));
@@ -837,13 +828,13 @@ static int spheres(VkyCanvas* canvas)
     return 0;
 }
 
-static int volume(VkyCanvas* canvas)
+static int volume(VkyTestContext* context)
 {
-    VkyPanel* panel = vky_get_panel(canvas->scene, 0, 0);
-    vky_set_controller(panel, VKY_CONTROLLER_VOLUME, NULL);
+    VkyCanvas* canvas = context->canvas;
+    vky_set_controller(context->panel, VKY_CONTROLLER_VOLUME, NULL);
     vky_clear_color(canvas->scene, VKY_CLEAR_COLOR_BLACK);
 
-    VkyScene* scene = panel->scene;
+    VkyScene* scene = context->panel->scene;
     // Create the visual.
     VkyTextureParams params = {256,
                                256,
@@ -859,14 +850,14 @@ static int volume(VkyCanvas* canvas)
     char* pixels = read_file(path, NULL);
     VkyVisual* visual = vky_visual(scene, VKY_VISUAL_VOLUME, &params, pixels);
     FREE(pixels);
-    vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
+    vky_add_visual_to_panel(visual, context->panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
     return 0;
 }
 
-static int brain(VkyCanvas* canvas)
+static int brain(VkyTestContext* context)
 {
-    VkyPanel* panel = _set_arcball(canvas);
+    VkyPanel* panel = _set_arcball(context->panel);
 
     // Mesh visual.
     VkyMeshParams params = vky_default_mesh_params(

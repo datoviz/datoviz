@@ -1,19 +1,19 @@
-static int red_canvas(VkyCanvas* canvas)
+static int red_canvas(VkyTestContext* context)
 {
-    vky_clear_color(canvas->scene, (VkyColor){{255, 0, 0}, 255});
+    vky_clear_color(context->scene, (VkyColor){{255, 0, 0}, 255});
     return 0;
 }
 
-static int blue_canvas(VkyCanvas* canvas)
+static int blue_canvas(VkyTestContext* context)
 {
-    vky_clear_color(canvas->scene, (VkyColor){{0, 0, 255}, 255});
+    vky_clear_color(context->scene, (VkyColor){{0, 0, 255}, 255});
     return 0;
 }
 
-static int hello(VkyCanvas* canvas)
+static int hello(VkyTestContext* context)
 {
-    vky_clear_color(canvas->scene, VKY_CLEAR_COLOR_BLACK);
-    VkyPanel* panel = vky_get_panel(canvas->scene, 0, 0);
+    vky_clear_color(context->scene, VKY_CLEAR_COLOR_BLACK);
+    VkyPanel* panel = vky_get_panel(context->scene, 0, 0);
     VkyVisual* visual = vky_visual(panel->scene, VKY_VISUAL_TEXT, NULL, NULL);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
     char* str = "Hello world!";
@@ -32,10 +32,11 @@ static int hello(VkyCanvas* canvas)
     return 0;
 }
 
-static int triangle(VkyCanvas* canvas)
+static int triangle(VkyTestContext* context)
 {
-    vky_clear_color(canvas->scene, VKY_CLEAR_COLOR_BLACK);
-    VkyPanel* panel = vky_get_panel(canvas->scene, 0, 0);
+    vky_clear_color(context->scene, VKY_CLEAR_COLOR_BLACK);
+    VkyPanel* panel = vky_get_panel(context->scene, 0, 0);
+    VkyCanvas* canvas = context->canvas;
 
     // Create the visual.
     VkyVisual* visual = vky_create_visual(panel->scene, VKY_VISUAL_CUSTOM);
