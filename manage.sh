@@ -25,10 +25,10 @@ then
     # VKY_EXAMPLE= ninja && \
     cd ../bindings/cython && \
     python3 utils/gencython.py && \
-    ./build.sh # && \
-    # if [ ! -L "$(pwd)/visky/pyvisky.so" ]; then
-    #     ln -s $(pwd)/../../build/libpyvisky.so $(pwd)/visky/pyvisky.so
-    # fi
+    # ./build.sh # && \
+    if [ ! -L "$(pwd)/visky/pyvisky.so" ]; then
+        ln -s $(pwd)/../../build/pyvisky.*.so $(pwd)/visky/pyvisky.so
+    fi
 fi
 
 if [ $1 == "clang" ]
