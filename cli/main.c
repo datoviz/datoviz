@@ -125,9 +125,9 @@ struct VkyTestCase
 /*  Include and define tests                                                                     */
 /*************************************************************************************************/
 
-#include "demo.h"
 #include "test.h"
 #include "test_basic.h"
+#include "test_demo.h"
 #include "test_visuals.h"
 
 static VkyTestCase TEST_CASES[] = {
@@ -181,8 +181,11 @@ static VkyTestCase TEST_CASES[] = {
     CASE_FIXTURE_PANEL(surface, true),    //
     CASE_FIXTURE_PANEL(spheres, true),    //
     CASE_FIXTURE_PANEL(volume, true),     //
+
+    // Demo tests
     CASE_FIXTURE_PANEL(brain, true),      //
     CASE_FIXTURE_PANEL(axes_3D, true),    //
+    CASE_FIXTURE_PANEL(raytracing, true), //
 
 };
 static uint32_t N_TESTS = sizeof(TEST_CASES) / sizeof(VkyTestCase);
