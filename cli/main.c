@@ -186,6 +186,7 @@ static VkyTestCase TEST_CASES[] = {
     CASE_FIXTURE_PANEL(brain, true),      //
     CASE_FIXTURE_PANEL(axes_3D, true),    //
     CASE_FIXTURE_PANEL(raytracing, true), //
+    CASE_FIXTURE_PANEL(mandelbrot, true), //
 
 };
 static uint32_t N_TESTS = sizeof(TEST_CASES) / sizeof(VkyTestCase);
