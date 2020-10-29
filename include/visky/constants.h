@@ -254,7 +254,7 @@ VKY_INLINE bool vky_check_env(const char* name, bool default_value)
     return value == NULL ? default_value : strcmp(value, "0") != 0;
 }
 
-VKY_INLINE double vky_get_env(const char* name, bool default_value)
+VKY_INLINE double vky_get_env(const char* name, double default_value)
 {
     const char* value = getenv(name);
     if (value == NULL)

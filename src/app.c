@@ -112,6 +112,13 @@ VkyCanvas* vky_create_canvas(VkyApp* app, uint32_t width, uint32_t height)
 void vky_run_app(VkyApp* app)
 {
     log_trace("run app");
+
+    app->auto_close = vky_get_env("VKY_AUTO_CLOSE", 0);
+    if (app->auto_close < 0)
+    {
+        log_debug("VKY_AUTO_CLOSE=%d is < 0", app->auto_close);
+    }
+
     VkyBackendType backend = app->backend;
     switch (backend)
     {
@@ -147,6 +154,7 @@ void vky_canvas_to_close(VkyCanvas* canvas)
         break;
 
     default:
+        canvas->to_close = true;
         break;
     }
 }
@@ -713,4 +721,8 @@ void vky_next_frame(VkyCanvas* canvas)
 
     // Require for some vents like mouse wheel which should be raised in a single frame.
     vky_finish_event_states(canvas->event_controller);
+
+
+    if (canvas->app->auto_close > 0 && canvas->local_time >= canvas->app->auto_close)
+        canvas->to_close = true;
 }

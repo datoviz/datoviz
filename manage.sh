@@ -68,18 +68,12 @@ fi
 
 if [ $1 == "test" ]
 then
-    if [ -z "$2" ]
-    then
-        mkdir -p build &&
-        cd build && \
-        cmake .. && \
-        cmake --build . && \
-        CTEST_OUTPUT_ON_FAILURE=1 ctest && \
-        cd ..
-    else
-        # bash manage.sh build
-        VKY_DEBUG_TEST= build/visky_test $2
-    fi
+    ./build/visky test $2
+fi
+
+if [ $1 == "demo" ]
+then
+    ./build/visky demo $2
 fi
 
 if [ $1 == "prof" ]

@@ -225,6 +225,7 @@ struct VkyApp
 {
     VkyBackendType backend;
     void* backend_params;
+    double auto_close; // if X>0, automatically close a canvas after X seconds
 
     VkyGpu* gpu;
 
