@@ -4,6 +4,9 @@ Visky integrates the [Dear ImGUI C++ library](https://github.com/ocornut/imgui) 
 
 Visky offers a light C wrapper on top of Dear ImGui for the most basic types of graphical interfaces. Using Dear ImGui directly is possible but requires to use C++.
 
+!!! note
+    Dear ImGui has a rapid pace of development. Currently Visky integrates it via a git submodule. It uses the `docking` branch, but with [a patch](https://github.com/martty/imgui/commit/f1f948bea715754ad5e83d4dd9f928aecb4ed1d3) applied to it in order to support creating GUIs with integrated Visky canvases. This version currently lives on a [fork](https://github.com/viskydev/imgui) in the viskydev GitHub organization.
+
 ## Basic graphical interfaces
 
 ## Prompt

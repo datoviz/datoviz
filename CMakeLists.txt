@@ -20,7 +20,7 @@ option(VISKY_WITH_ASSIMP "Build Visky with ASSIMP support" OFF)
 
 option(VISKY_WITH_CLI "Build Visky command-line interface with tests and demos" ON)
 option(VISKY_WITH_EXAMPLES "Build Visky (old) examples" ON)
-option(VISKY_WITH_CYTHON "Build Cython bindings" ON)
+option(VISKY_WITH_CYTHON "Build Cython bindings" OFF)
 
 
 # Define the project
@@ -115,7 +115,7 @@ set(CMAKE_BUILD_TYPE Debug)
 # endif ()
 
 
-set(INCL_DIRS ${CMAKE_SOURCE_DIR}/external ${CMAKE_SOURCE_DIR}/external/imgui ${CMAKE_SOURCE_DIR}/include/)
+set(INCL_DIRS ${CMAKE_SOURCE_DIR}/external ${CMAKE_SOURCE_DIR}/external/imgui ${CMAKE_SOURCE_DIR}/external/imgui/backends ${CMAKE_SOURCE_DIR}/include/)
 set(LINK_LIBS m glfw cglm Vulkan::Vulkan)
 if(NOT ${WIN32})
     set(LINK_LIBS dl ${LINK_LIBS})
@@ -349,6 +349,8 @@ file(GLOB sources
     "src/*.h*" "src/*.c*"
     "external/*.h*" "external/*.c*"
     "external/imgui/*.h*" "external/imgui/*.c*"
+    "external/imgui/backends/imgui_impl_glfw.*"
+    "external/imgui/backends/imgui_impl_vulkan.*"
 )
 
 add_library(visky SHARED ${sources})

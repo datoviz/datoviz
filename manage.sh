@@ -12,13 +12,22 @@ then
         ln -s $(pwd)/../visky-data/data data
     fi
     mkdir -p build &&
-    python3 bindings/cython/utils/gencython.py && \
     cd build && \
     cmake .. -GNinja && \
     VKY_EXAMPLE= ninja && \
-    cd .. #&& \
-    # if [ ! -L "$(pwd)/bindings/cython/visky/pyvisky.so" ]; then
-    #     ln -s $(pwd)/build/libpyvisky.so $(pwd)/bindings/cython/visky/pyvisky.so
+    cd ..
+fi
+
+if [ $1 == "cython" ]
+then
+    cd build && \
+    # cmake .. -GNinja -DVISKY_WITH_CYTHON=ON && \
+    # VKY_EXAMPLE= ninja && \
+    cd ../bindings/cython && \
+    python3 utils/gencython.py && \
+    ./build.sh # && \
+    # if [ ! -L "$(pwd)/visky/pyvisky.so" ]; then
+    #     ln -s $(pwd)/../../build/libpyvisky.so $(pwd)/visky/pyvisky.so
     # fi
 fi
 
