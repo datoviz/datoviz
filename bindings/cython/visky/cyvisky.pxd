@@ -222,6 +222,8 @@ cdef extern from "../include/visky/visky.h":
         uint32_t cmap
         float scaling
         float alpha
+        VkyTextureOrigin origin
+        VkyAxis axis
         VkyTextureParams* tex_params
 
     ctypedef struct VkyVolumeParams:
@@ -814,6 +816,12 @@ cdef extern from "../include/visky/visky.h":
     ctypedef enum VkyScalingMode:
         VKY_SCALING_OFF = 0
         VKY_SCALING_ON = 1
+
+    ctypedef enum VkyTextureOrigin:
+        VKY_TEXTURE_ORIGIN_UL = 0
+        VKY_TEXTURE_ORIGIN_UR = 1
+        VKY_TEXTURE_ORIGIN_LR = 2
+        VKY_TEXTURE_ORIGIN_LL = 3
 
 
     # ENUM END
