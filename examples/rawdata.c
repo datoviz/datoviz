@@ -22,24 +22,32 @@ static RawData data = {
     .n_samples_buffer = 400,
 };
 
+static VkyVisual* visual;
+
+static double current_time() { return data.current_sample / data.sample_rate; }
 
 static void load_raw_data(double time)
 {
     int64_t bufsize = data.n_samples_buffer;
     ASSERT(bufsize % BYTES_PER_SAMPLE == 0);
     int64_t sample = (int64_t)(round(data.sample_rate * time));
-    if (sample < bufsize / 2)
-        sample = bufsize / 2;
-    else if (sample >= data.n_samples_total - bufsize / 2)
-        sample = data.n_samples_total - bufsize / 2;
+    int hb = bufsize / 2;
+    int64_t N = data.n_samples_total;
 
-    int64_t s0 = sample - bufsize / 2;
-    int64_t s1 = sample + bufsize / 2;
+    if (sample < hb)
+        sample = hb;
+    else if (sample >= N - hb)
+        sample = N - hb;
+
+    int64_t s0 = sample - hb;
+    int64_t s1 = sample + hb;
     int64_t length = s1 - s0;
 
     ASSERT(s0 <= data.n_samples_total - bufsize);
-    ASSERT(s1 < data.n_samples_total - bufsize / 2);
-    ASSERT(s0 + s1 == bufsize);
+    ASSERT(s1 <= N);
+    ASSERT(s1 - s0 == bufsize);
+
+    data.current_sample = sample;
 
     long offset = (int)(s0 * data.n_channels * BYTES_PER_SAMPLE);
     size_t n_bytes = (size_t)(BYTES_PER_SAMPLE * data.n_channels * length);
@@ -48,6 +56,8 @@ static void load_raw_data(double time)
     fseek(data.fp, offset, SEEK_SET);
     size_t n_bytes_read = fread(data.buffer, 1, n_bytes, data.fp);
     ASSERT(n_bytes_read == n_bytes);
+
+    vky_visual_image_upload(visual, data.buffer);
 }
 
 static void open_raw_data(char* path)
@@ -79,6 +89,19 @@ static void close_raw_data()
     fclose(data.fp);
 }
 
+static void cb(VkyCanvas* canvas, void* user_data)
+{
+    const double delta = .001;
+    VkyKey key = canvas->event_controller->keyboard->key;
+    if (key == VKY_KEY_HOME)
+        load_raw_data(0);
+    if (key == VKY_KEY_RIGHT)
+        load_raw_data(current_time() + delta);
+    if (key == VKY_KEY_LEFT)
+        load_raw_data(current_time() - delta);
+    if (key == VKY_KEY_END)
+        load_raw_data(data.n_samples_total / data.sample_rate);
+}
 
 int main(int argc, char** argv)
 {
@@ -101,19 +124,21 @@ int main(int argc, char** argv)
     tex_params.format_bytes = 2;
     tex_params.format = VK_FORMAT_R16_SNORM;
 
-    VkyImageCmapParams params = {6, 500, 1, &tex_params};
-    VkyVisual* visual = vky_visual(scene, VKY_VISUAL_IMAGE_CMAP, &params, NULL);
+    VkyImageCmapParams params = {//
+                                 VKY_CMAP_VIRIDIS,      500,        1,
+                                 VKY_TEXTURE_ORIGIN_UL, VKY_AXIS_Y, &tex_params};
+    visual = vky_visual(scene, VKY_VISUAL_IMAGE_CMAP, &params, NULL);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
 
     open_raw_data(argv[1]);
-
-    vky_visual_image_upload(visual, data.buffer);
 
     vky_visual_data_set_size(visual, 1, 0, NULL, NULL);
     vky_visual_data(visual, VKY_VISUAL_PROP_POS_GPU, 0, 1, (vec3[]){{-1, -1, 0}});
     vky_visual_data(visual, VKY_VISUAL_PROP_POS_GPU, 1, 1, (vec3[]){{+1, +1, 0}});
     vky_visual_data(visual, VKY_VISUAL_PROP_TEXTURE_COORDS, 0, 1, (vec2[]){{0, 0}});
     vky_visual_data(visual, VKY_VISUAL_PROP_TEXTURE_COORDS, 1, 1, (vec2[]){{1, 1}});
+
+    vky_add_frame_callback(canvas, cb, NULL);
 
     vky_run_app(app);
     vky_destroy_app(app);

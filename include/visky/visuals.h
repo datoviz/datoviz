@@ -13,8 +13,8 @@
 
 typedef enum
 {
-    VKY_ALPHA_SCALING_OFF = 0,
-    VKY_ALPHA_SCALING_ON = 1,
+    VKY_ALPHA_SCALING_OFF,
+    VKY_ALPHA_SCALING_ON,
 } VkyAlphaScalingMode;
 
 // NOTE: the numbers need to correspond to arrows.glsl at the bottom.
@@ -42,8 +42,8 @@ typedef enum
 
 typedef enum
 {
-    VKY_DEPTH_DISABLE = 0,
-    VKY_DEPTH_ENABLE = 1
+    VKY_DEPTH_DISABLE,
+    VKY_DEPTH_ENABLE,
 } VkyDepthStatus;
 
 typedef enum
@@ -84,21 +84,29 @@ typedef enum
 
 typedef enum
 {
-    VKY_MESH_SHADING_NONE = 0,
-    VKY_MESH_SHADING_BLINN_PHONG = 1,
+    VKY_MESH_SHADING_NONE,
+    VKY_MESH_SHADING_BLINN_PHONG,
 } VkyMeshShading;
 
 typedef enum
 {
-    VKY_PATH_OPEN = 0,
-    VKY_PATH_CLOSED = 1
+    VKY_PATH_OPEN,
+    VKY_PATH_CLOSED,
 } VkyPathTopology;
 
 typedef enum
 {
-    VKY_SCALING_OFF = 0,
-    VKY_SCALING_ON = 1,
+    VKY_SCALING_OFF,
+    VKY_SCALING_ON,
 } VkyScalingMode;
+
+typedef enum
+{
+    VKY_TEXTURE_ORIGIN_UL,
+    VKY_TEXTURE_ORIGIN_UR,
+    VKY_TEXTURE_ORIGIN_LR,
+    VKY_TEXTURE_ORIGIN_LL,
+} VkyTextureOrigin;
 
 
 
@@ -383,6 +391,8 @@ struct VkyImageCmapParams
     uint32_t cmap;
     float scaling;
     float alpha;
+    VkyTextureOrigin origin;
+    VkyAxis axis;
     VkyTextureParams* tex_params;
 };
 
