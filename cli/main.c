@@ -161,27 +161,28 @@ static VkyTestCase TEST_CASES[] = {
     CASE_FIXTURE_PANEL(triangle, true),    //
 
     // Visual tests
-    CASE_FIXTURE_PANEL(mesh_raw, true), //
-    CASE_FIXTURE_PANEL(scatter, true),  //
-    CASE_FIXTURE_PANEL(imshow, true),   //
-    CASE_FIXTURE_PANEL(arrows, true),   //
-    CASE_FIXTURE_PANEL(paths, true),    //
-    CASE_FIXTURE_PANEL(segments, true), //
-    CASE_FIXTURE_PANEL(hist, true),     //
-    CASE_FIXTURE_PANEL(area, true),     //
-    CASE_FIXTURE_PANEL(axrect, true),   //
-    CASE_FIXTURE_PANEL(raster, true),   //
-    CASE_FIXTURE_PANEL(graph, true),    //
-    CASE_FIXTURE_PANEL(image, true),    //
-    CASE_FIXTURE_PANEL(polygon, true),  //
-    CASE_FIXTURE_PANEL(pslg_1, true),   //
-    CASE_FIXTURE_PANEL(pslg_2, true),   //
-    CASE_FIXTURE_PANEL(france, true),   //
-    CASE_FIXTURE_PANEL(surface, true),  //
-    CASE_FIXTURE_PANEL(spheres, true),  //
-    CASE_FIXTURE_PANEL(volume, true),   //
-    CASE_FIXTURE_PANEL(brain, true),    //
-    CASE_FIXTURE_PANEL(axes_3D, true),  //
+    CASE_FIXTURE_PANEL(mesh_raw, true),   //
+    CASE_FIXTURE_PANEL(scatter, true),    //
+    CASE_FIXTURE_PANEL(imshow, true),     //
+    CASE_FIXTURE_PANEL(arrows, true),     //
+    CASE_FIXTURE_PANEL(paths, true),      //
+    CASE_FIXTURE_PANEL(segments, true),   //
+    CASE_FIXTURE_PANEL(hist, true),       //
+    CASE_FIXTURE_PANEL(area, true),       //
+    CASE_FIXTURE_PANEL(axrect, true),     //
+    CASE_FIXTURE_PANEL(raster, true),     //
+    CASE_FIXTURE_PANEL(graph, true),      //
+    CASE_FIXTURE_PANEL(image, true),      //
+    CASE_FIXTURE_PANEL(image_cmap, true), //
+    CASE_FIXTURE_PANEL(polygon, true),    //
+    CASE_FIXTURE_PANEL(pslg_1, true),     //
+    CASE_FIXTURE_PANEL(pslg_2, true),     //
+    CASE_FIXTURE_PANEL(france, true),     //
+    CASE_FIXTURE_PANEL(surface, true),    //
+    CASE_FIXTURE_PANEL(spheres, true),    //
+    CASE_FIXTURE_PANEL(volume, true),     //
+    CASE_FIXTURE_PANEL(brain, true),      //
+    CASE_FIXTURE_PANEL(axes_3D, true),    //
 
 };
 static uint32_t N_TESTS = sizeof(TEST_CASES) / sizeof(VkyTestCase);
@@ -455,6 +456,8 @@ static void _destroy_context(VkyTestContext* context)
 
 static int launcher(VkyTestContext* context, const char* name)
 {
+    srand(0);
+
     VkyTestCase test_case = get_test_case(name);
     if (test_case.function == NULL)
         return 1;
