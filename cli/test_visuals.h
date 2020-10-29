@@ -32,6 +32,13 @@ static VkyPanel* _set_arcball(VkyPanel* panel)
     return panel;
 }
 
+static VkyPanel* _set_axes_3D(VkyPanel* panel)
+{
+    ASSERT(panel != NULL);
+    vky_set_controller(panel, VKY_CONTROLLER_AXES_3D, NULL);
+    return panel;
+}
+
 
 
 /*************************************************************************************************/
@@ -872,6 +879,38 @@ static int brain(VkyTestContext* context)
     vky_mesh_obj(&mesh, path);
     vky_mesh_upload(&mesh, visual);
     vky_mesh_destroy(&mesh);
+
+    return 0;
+}
+
+static int axes_3D(VkyTestContext* context)
+{
+    VkyPanel* panel = _set_axes_3D(context->panel);
+
+    // Create the path visual.
+    VkyPathParams params = {10, 2., VKY_CAP_ROUND, VKY_JOIN_ROUND, VKY_DEPTH_ENABLE};
+    VkyVisual* spiral_visual = vky_visual(panel->scene, VKY_VISUAL_PATH, &params, NULL);
+    vky_add_visual_to_panel(spiral_visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
+
+    const uint32_t N_path = 1000;
+    vec3 points[1000];
+    VkyColor color[1000];
+    double t = 0;
+
+    for (uint32_t i = 0; i < N_path; i++)
+    {
+        t = (float)i / N_path;
+
+        points[i][0] = t * cos(8 * M_2PI * t);
+        points[i][1] = 2 * (.5 - t);
+        points[i][2] = t * sin(8 * M_2PI * t);
+
+        color[i] = vky_color(VKY_CMAP_JET, i, 0, N_path, 1);
+    }
+
+    vky_visual_data_set_size(spiral_visual, N_path, 0, NULL, NULL);
+    vky_visual_data(spiral_visual, VKY_VISUAL_PROP_POS_GPU, 0, N_path, points);
+    vky_visual_data(spiral_visual, VKY_VISUAL_PROP_COLOR, 0, N_path, color);
 
     return 0;
 }

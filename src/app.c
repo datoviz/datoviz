@@ -236,10 +236,16 @@ void vky_create_event_controller(VkyCanvas* canvas)
 
 void vky_reset_event_controller(VkyEventController* event_controller)
 {
+    ASSERT(event_controller != NULL);
+
+    ASSERT(event_controller->mouse != NULL);
     event_controller->mouse->press_time = VKY_NEVER;
     event_controller->mouse->click_time = VKY_NEVER;
+
+    ASSERT(event_controller->keyboard != NULL);
     event_controller->keyboard->key = VKY_KEY_NONE;
     event_controller->keyboard->modifiers = 0;
+
     event_controller->frame_callback_count = 1;
 }
 

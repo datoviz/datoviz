@@ -181,6 +181,7 @@ static VkyTestCase TEST_CASES[] = {
     CASE_FIXTURE_PANEL(spheres, true),  //
     CASE_FIXTURE_PANEL(volume, true),   //
     CASE_FIXTURE_PANEL(brain, true),    //
+    CASE_FIXTURE_PANEL(axes_3D, true),  //
 
 };
 static uint32_t N_TESTS = sizeof(TEST_CASES) / sizeof(VkyTestCase);
@@ -407,7 +408,10 @@ static void _setup(VkyTestContext* context, VkyTestFixture fixture)
 static void _teardown(VkyTestContext* context, VkyTestFixture fixture)
 {
     ASSERT(context != NULL);
-    if (fixture >= VKY_TEST_FIXTURE_CANVAS)
+    // NOTE: do not try to reset the canvas when is_live is true, because there is
+    // only one canvas so it doesn't make sense, and it would cause a segfault
+    // as the canvas is destroyed as soon as it is closed.
+    if (fixture >= VKY_TEST_FIXTURE_CANVAS && !context->is_live)
     {
         ASSERT(context->canvas != NULL);
         log_debug("fixture teardown: reset the canvas");

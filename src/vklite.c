@@ -629,6 +629,7 @@ VkyCanvas* vky_create_canvas_from_surface(VkyApp* app, void* window, VkSurfaceKH
 
 void vky_reset_canvas(VkyCanvas* canvas)
 {
+    ASSERT(canvas != NULL);
     canvas->local_time = 0;
     canvas->dt = 0;
     canvas->frame_count = 0;
@@ -638,6 +639,7 @@ void vky_reset_canvas(VkyCanvas* canvas)
     // any test using compute.
     canvas->gpu->has_compute = false;
 
+    ASSERT(canvas->event_controller!=NULL);
     vky_reset_event_controller(canvas->event_controller);
 }
 
