@@ -353,6 +353,14 @@ file(GLOB sources
     "external/imgui/backends/imgui_impl_vulkan.*"
 )
 
+file(GLOB imgui_sources
+    "external/imgui/*.h*" "external/imgui/*.c*"
+    "external/imgui/backends/imgui_impl_glfw.*"
+    "external/imgui/backends/imgui_impl_vulkan.*"
+)
+
+set_source_files_properties(${imgui_sources} PROPERTIES COMPILE_FLAGS -w)
+
 add_library(visky SHARED ${sources})
 
 # Creates C resources file from files in given directory
