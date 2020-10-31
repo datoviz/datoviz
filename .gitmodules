@@ -1,3 +1,7 @@
 [submodule "external/imgui"]
 	path = external/imgui
 	url = git@github.com:viskydev/imgui.git
+[submodule "data"]
+	path = data
+	url = git@github.com:viskydev/data.git
+	branch = refactor
