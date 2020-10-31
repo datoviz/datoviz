@@ -8,9 +8,9 @@ fi
 
 if [ $1 == "build" ]
 then
-    if [ ! -L "data" ]; then
-        ln -s $(pwd)/../visky-data/data data
-    fi
+    # if [ ! -L "data" ]; then
+    #     ln -s $(pwd)/../visky-data/data data
+    # fi
     mkdir -p build &&
     cd build && \
     cmake .. -GNinja && \
@@ -84,4 +84,14 @@ fi
 if [ $1 == "run" ]
 then
     VKY_EXAMPLE=$2 ./manage.sh build && ./build/$2
+fi
+
+if [ $1 == "docker" ]
+then
+    docker build -t visky .
+fi
+
+if [ $1 == "dockerrun" ]
+then
+    docker run -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -h $HOSTNAME -v $HOME/.Xauthority:/home/visky/.Xauthority -it visky
 fi

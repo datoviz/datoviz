@@ -1,0 +1,11 @@
+.*
+_*
+artifacts
+build
+experimental
+site
+images/tests/*.ppm
+*.out
+*.ini
+spirv
+_skbuild

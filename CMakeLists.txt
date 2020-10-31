@@ -311,8 +311,6 @@ set(SPIRV_DIR ${CMAKE_SOURCE_DIR}/data/spirv/)
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR})
 file(MAKE_DIRECTORY ${SPIRV_DIR})
 
-
-
 # -------------------------------------------------------------------------------------------------
 # Shaders compilation
 # -------------------------------------------------------------------------------------------------
