@@ -785,8 +785,7 @@ void vky_visual_data_upload(VkyVisual* visual, VkyPanel* panel);
 
 VKY_EXPORT void vky_set_full_viewport(VkyCanvas* canvas); // TODO: scene
 VKY_EXPORT VkyPanel* vky_get_panel(VkyScene* scene, uint32_t row, uint32_t col);
-VKY_EXPORT VkyPanel* vky_panel_inset(
-    VkyScene* scene, VkyControllerType controller_type, float x, float y, float w, float h);
+VKY_EXPORT VkyPanel* vky_panel_inset(VkyScene* scene, float x, float y, float w, float h);
 VKY_EXPORT VkyPanelIndex vky_get_panel_index(VkyPanel* panel);
 VKY_EXPORT VkyAxes* vky_get_axes(VkyPanel* panel);
 VKY_EXPORT VkyViewport vky_get_viewport(VkyPanel* panel, VkyViewportType viewport_type);
@@ -815,8 +814,7 @@ VKY_EXPORT void vky_set_grid_heights(VkyScene* scene, const float* heights);
 VKY_EXPORT void vky_set_panel_span(VkyPanel* panel, uint32_t hspan, uint32_t vspan);
 
 VKY_EXPORT void vky_add_panel(
-    VkyScene* scene, uint32_t i, uint32_t j, uint32_t vspan, uint32_t hspan, vec4 margins,
-    VkyControllerType);
+    VkyScene* scene, uint32_t i, uint32_t j, uint32_t vspan, uint32_t hspan, vec4 margins);
 VKY_EXPORT VkyViewport vky_add_viewport_margins(VkyViewport viewport, vec4 margins);
 VKY_EXPORT VkyViewport vky_remove_viewport_margins(VkyViewport viewport, vec4 margins);
 

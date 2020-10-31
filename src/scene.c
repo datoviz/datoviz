@@ -1700,9 +1700,12 @@ VkyPanelIndex vky_get_panel_index(VkyPanel* panel)
 
 VkyViewport vky_get_viewport(VkyPanel* panel, VkyViewportType viewport_type)
 {
+    ASSERT(panel != NULL);
     VkyScene* scene = panel->scene;
-    VkyViewport viewport =
-        panel->viewport; // NOTE: in relative NDC coordinates, need to multiply by the window size.
+    ASSERT(scene != NULL);
+    // NOTE: in relative NDC coordinates, need to multiply by the window size.
+    VkyViewport viewport = panel->viewport;
+    ASSERT(scene->canvas != NULL);
     float W = scene->canvas->size.framebuffer_width;
     float H = scene->canvas->size.framebuffer_height;
     viewport.x *= W;
@@ -1970,7 +1973,7 @@ void vky_set_regular_grid(VkyScene* scene, vec4 margins)
     {
         for (uint32_t j = 0; j < scene->grid->col_count; j++)
         {
-            vky_add_panel(scene, i, j, 1, 1, margins, VKY_CONTROLLER_NONE);
+            vky_add_panel(scene, i, j, 1, 1, margins);
         }
     }
 }
@@ -2054,8 +2057,7 @@ void vky_set_panel_span(VkyPanel* panel, uint32_t hspan, uint32_t vspan)
 }
 
 void vky_add_panel(
-    VkyScene* scene, uint32_t row, uint32_t col, uint32_t vspan, uint32_t hspan, vec4 margins,
-    VkyControllerType controller_type)
+    VkyScene* scene, uint32_t row, uint32_t col, uint32_t vspan, uint32_t hspan, vec4 margins)
 {
     VkyGrid* grid = scene->grid;
 
@@ -2078,16 +2080,12 @@ void vky_add_panel(
     panel.outer_uniform_index = panel.inner_uniform_index + 1;
     ASSERT(panel.outer_uniform_index > 0);
 
-    // Create the panel controller.
-    vky_set_controller(&panel, controller_type, NULL);
-
     // Add the panel to the scene grid.
     grid->panels[grid->panel_count] = panel;
     grid->panel_count++;
 }
 
-VkyPanel* vky_panel_inset(
-    VkyScene* scene, VkyControllerType controller_type, float x, float y, float w, float h)
+VkyPanel* vky_panel_inset(VkyScene* scene, float x, float y, float w, float h)
 {
     VkyGrid* grid = scene->grid;
 
@@ -2097,6 +2095,7 @@ VkyPanel* vky_panel_inset(
     panel.scene = scene;
 
     // Set the panel's viewport.
+    ASSERT(scene->canvas != NULL);
     VkyViewport viewport = {scene->canvas, x, y, w, h};
     panel.viewport = viewport;
 
@@ -2105,9 +2104,6 @@ VkyPanel* vky_panel_inset(
     panel.inner_uniform_index = 2 * grid->panel_count;
     panel.outer_uniform_index = panel.inner_uniform_index + 1;
     ASSERT(panel.outer_uniform_index > 0);
-
-    // Create the panel controller.
-    vky_set_controller(&panel, controller_type, NULL);
 
     // Add the panel to the scene grid.
     grid->panels[grid->panel_count] = panel;
