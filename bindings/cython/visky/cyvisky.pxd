@@ -737,6 +737,10 @@ cdef extern from "../include/visky/visky.h":
         VKY_PANEL_STATUS_LINKED = 2
         VKY_PANEL_STATUS_RESET = 7
 
+    ctypedef enum VkyPanelType:
+        VKY_PANEL_TYPE_GRID = 0
+        VKY_PANEL_TYPE_INSET = 1
+
     ctypedef enum VkyAxis:
         VKY_AXIS_X = 0
         VKY_AXIS_Y = 1
