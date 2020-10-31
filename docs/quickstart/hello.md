@@ -2,26 +2,37 @@
 
 This example shows you how to quickly make a window with a triangle.
 
-```c
-#include <visky/visky.h>
+=== "Python"
+    ```python
+    import numpy as np
+    from visky import basic
 
-// An array with 3 vectors.
-vec3 positions[] = {
-    {-1, -1, 0}, {+1, -1, 0}, {0, +1, 0}};
+    basic.mesh(
+        pos=np.array([[-1, -1, 0], [+1, -1, 0], [0, +1, 0]]),
+        color=['r', 'g', 'b'])
+    basic.run()
+    ```
 
-// An array with 3 colors: red, gree, blue, a full opacity.
-VkyColor colors[] = {
-    {{255, 0, 0}, 255}, {{0, 255, 0}, 255}, {{0, 0, 255}, 255}};
+=== "C"
+    ```c
+    #include <visky/visky.h>
 
-// This function automatically creates a canvas and shows a mesh visual
-// with 3 vertices, that is, a triangle.
-vky_basic_mesh(3, positions, colors);
+    // An array with 3 vectors.
+    vec3 positions[] = {
+        {-1, -1, 0}, {+1, -1, 0}, {0, +1, 0}};
 
-// Run the example, start the event loop until the window is closed or
-// the Escape key is pressed.
-vky_basic_run();
+    // An array with 3 colors: red, gree, blue, a full opacity.
+    VkyColor colors[] = {
+        {{255, 0, 0}, 255}, {{0, 255, 0}, 255}, {{0, 0, 255}, 255}};
 
-```
+    // This function automatically creates a canvas and shows a mesh visual
+    // with 3 vertices, that is, a triangle.
+    vky_basic_mesh(3, positions, colors);
+
+    // Run the example, start the event loop until the window is closed or
+    // the Escape key is pressed.
+    vky_basic_run();
+    ```
 
 This example is pretty self-explanatory. The `vky_basic_mesh()` function automatically sets up an arcball controller: you can rotate the triangle with the mouse in 3D.
 

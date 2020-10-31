@@ -14,9 +14,10 @@ markdown_extensions:
       permalink: true
   - abbr
   - admonition
+  - pymdownx.highlight
   - pymdownx.snippets
   - pymdownx.superfences
-  - pymdownx.highlight
+  - pymdownx.tabbed
 plugins:
   - search
 nav:
