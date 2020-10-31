@@ -54,6 +54,21 @@ VkyPanel* vky_panel_from_mouse(VkyScene* scene, vec2 pos)
     uint32_t height = scene->canvas->size.framebuffer_height;
     float x = pos[0] / width;
     float y = pos[1] / height;
+
+    // Determine first if the mouse is over an inset panel.
+    VkyViewport viewport = {0};
+    for (uint32_t i = 0; i < scene->grid->panel_count; i++)
+    {
+        if (scene->grid->panels[i].panel_type == VKY_PANEL_TYPE_INSET)
+        {
+            viewport = scene->grid->panels[i].viewport;
+            if (viewport.x <= x && x <= viewport.x + viewport.w && //
+                viewport.y <= y && y <= viewport.y + viewport.h)
+                return &scene->grid->panels[i];
+        }
+    }
+
+    // Otherwise, go through the grid panels.
     int32_t row = 0, col = 0;
     ASSERT(scene->grid->xs[0] == 0);
     for (col = 0; col < (int32_t)scene->grid->col_count; col++)
@@ -2051,6 +2066,7 @@ void vky_add_panel(
     panel.vspan = vspan;
     panel.hspan = hspan;
     panel.scene = scene;
+    panel.panel_type = VKY_PANEL_TYPE_GRID;
     glm_vec4_copy(margins, panel.margins);
 
     // Set the panel's viewport.
@@ -2068,6 +2084,36 @@ void vky_add_panel(
     // Add the panel to the scene grid.
     grid->panels[grid->panel_count] = panel;
     grid->panel_count++;
+}
+
+VkyPanel* vky_panel_inset(
+    VkyScene* scene, VkyControllerType controller_type, float x, float y, float w, float h)
+{
+    VkyGrid* grid = scene->grid;
+
+    // Create the panel struct.
+    VkyPanel panel = {0};
+    panel.panel_type = VKY_PANEL_TYPE_INSET;
+    panel.scene = scene;
+
+    // Set the panel's viewport.
+    VkyViewport viewport = {scene->canvas, x, y, w, h};
+    panel.viewport = viewport;
+
+    // NOTE: there are 2 DUBO locations, the inner viewport is first, the outer viewport
+    // second.
+    panel.inner_uniform_index = 2 * grid->panel_count;
+    panel.outer_uniform_index = panel.inner_uniform_index + 1;
+    ASSERT(panel.outer_uniform_index > 0);
+
+    // Create the panel controller.
+    vky_set_controller(&panel, controller_type, NULL);
+
+    // Add the panel to the scene grid.
+    grid->panels[grid->panel_count] = panel;
+    grid->panel_count++;
+
+    return &grid->panels[grid->panel_count - 1];
 }
 
 void vky_set_panel_aspect_ratio(VkyPanel* panel, float aspect_ratio)

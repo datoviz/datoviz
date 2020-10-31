@@ -177,6 +177,13 @@ typedef enum
 
 typedef enum
 {
+    VKY_PANEL_TYPE_GRID,
+    VKY_PANEL_TYPE_INSET
+} VkyPanelType;
+
+
+typedef enum
+{
     VKY_AXIS_X = 0,
     VKY_AXIS_Y = 1
 } VkyAxis;
@@ -409,6 +416,7 @@ struct VkyPanel
                      // unused
 
     uint32_t row, col, vspan, hspan;
+    VkyPanelType panel_type;
 
     VkyViewport viewport; // outer viewport, remove the margins to get the inner viewport
     vec4 margins;
@@ -777,6 +785,8 @@ void vky_visual_data_upload(VkyVisual* visual, VkyPanel* panel);
 
 VKY_EXPORT void vky_set_full_viewport(VkyCanvas* canvas); // TODO: scene
 VKY_EXPORT VkyPanel* vky_get_panel(VkyScene* scene, uint32_t row, uint32_t col);
+VKY_EXPORT VkyPanel* vky_panel_inset(
+    VkyScene* scene, VkyControllerType controller_type, float x, float y, float w, float h);
 VKY_EXPORT VkyPanelIndex vky_get_panel_index(VkyPanel* panel);
 VKY_EXPORT VkyAxes* vky_get_axes(VkyPanel* panel);
 VKY_EXPORT VkyViewport vky_get_viewport(VkyPanel* panel, VkyViewportType viewport_type);
