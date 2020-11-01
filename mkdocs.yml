@@ -35,6 +35,7 @@ nav:
       - Basic interface: 'quickstart/basic.md'
   - User manual:
       - Introduction: 'user/index.md'
+      - Abstractions: 'user/abstractions.md'
       - The canvas: 'user/canvas.md'
       - The plot layout: 'user/scene.md'
       - Colormaps: 'user/color.md'

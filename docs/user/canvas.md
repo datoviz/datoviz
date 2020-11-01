@@ -1,19 +1,16 @@
-# The canvas
+# The Canvas
 
-## Structure hierarchy
+## Creating a canvas
 
-- App
-- Window
-- Canvas
-- Scene
-- Panel
+* Background color
 
-Other objects:
-
-- Gui
+## Creating multiple canvases
 
 
-## Application and backend
+## Making screenshots
+
+
+
 
 ## Environment variables
 
@@ -21,7 +18,7 @@ Visky defines a few useful environment variables:
 
 | Environment variable              | Description                                           |
 |-----------------------------------|-------------------------------------------------------|
-| `VKY_AUTO_CLOSE=3`                | Automatically close the canvas after the X seconds    |
+| `VKY_AUTO_CLOSE=3`                | Automatically close the canvas after X seconds        |
 | `VKY_AUTO_SCREENSHOT=image.png`   | Automatically make a screenshot and close the canvas  |
 | `VKY_DPI_FACTOR=1.5`              | Change the DPI scaling factor                         |
 | `VKY_EXAMPLE=app_blank`           | Compile only this example with `./manage.sh build`    |
@@ -50,12 +47,3 @@ bool value = vky_check_env(name, default_bool_value);
 // Convenience function to parse the environment variable into a double-precision floating-point number.
 double value = vky_get_env(name, default_double_value);
 ```
-
-
-## Creating a canvas
-
-* Background color
-
-## Creating multiple canvases
-
-## Making screenshots
