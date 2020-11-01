@@ -99,18 +99,61 @@ The **Axes 2D controller** is similar to the Panzoom controller, but it adds X a
     The smaller viewport within the panel corresponding to the panel's contents is called the **inner viewport**. The larger one is the **outer viewport**.
 
 
-### Axes 3D
-
+=== "C"
+    ```c
+    VkyAxes2DParams params = vky_default_axes_2D_params();
+    vky_set_controller(panel, VKY_CONTROLLER_AXES_2D, &params);
+    ```
 
 
 ### Arcball
 
+The arcball controller is used to rotate a 3D object in all directions using the mouse. It is implemented with quaternions.
+
+=== "C"
+    ```c
+    vky_set_controller(panel, VKY_CONTROLLER_ARCBALL, NULL);
+    ```
 
 
-### Camera
+### Axes 3D
 
+The **Axes 3D** controller is similar to the arcball controller, but it displays 3D axes as well.
+
+=== "C"
+    ```c
+    vky_set_controller(panel, VKY_CONTROLLER_AXES_3D, NULL);
+    ```
+
+
+### First-person cameras
+
+Visky provides two first-person cameras at the moment:
+
+* **FPS camera**: left-dragging controls the camera, the arrow keys control the position, the Z is controlled by the mouse wheel.
+* **Fly camera**: like the FPS camera, but the Up and Down keys advance the camera in the 3D direction determined by the mouse. The Z axis has no special role.
+
+
+=== "C"
+    ```c
+    vky_set_controller(panel, VKY_CONTROLLER_FLY, NULL);
+    vky_set_controller(panel, VKY_CONTROLLER_FPS, NULL);
+    ```
 
 
 ### Others
 
+
 ## Panel linking
+
+Panels with an Axes 2D controller can be linked such that panning and zooming on one panel automatically updates both panels simultaneously. The panels can be linked in both X and Y dimensions, or only one of the two.
+
+=== "Python"
+    ```python
+    # TODO: not implemented yet
+    ```
+
+=== "C"
+    ```c
+    vky_link_panels(panel1, panel2, VKY_PANEL_LINK_ALL);
+    ```
