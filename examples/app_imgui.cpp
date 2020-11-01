@@ -5,7 +5,7 @@ BEGIN_INCL_NO_WARN
 END_INCL_NO_WARN
 
 
-#define SHOW_CANVAS 1
+#define SHOW_CANVAS 0
 
 
 
@@ -45,16 +45,14 @@ static void fill_live_command_buffer(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
 
     ImGui::Begin("FPS");
     ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
-    if (SHOW_CANVAS)
-    {
-        vky_imgui_canvas_next_frame(imcanvas);
-        vky_imgui_image(
-            &imtexture, imtexture.texture.params.width, imtexture.texture.params.height);
-    }
-    else
-    {
-        vky_imgui_image(&imtexture, 400, 400);
-    }
+
+#if SHOW_CANVAS
+    vky_imgui_canvas_next_frame(imcanvas);
+    vky_imgui_image(&imtexture, imtexture.texture.params.width, imtexture.texture.params.height);
+#else
+    vky_imgui_image(&imtexture, 400, 400);
+#endif
+
     ImGui::End();
 
     vky_imgui_render(canvas, cmd_buf);
@@ -121,23 +119,21 @@ int main(int argc, char** argv)
     vky_upload_buffer(vertex_buffer, 0, size, data);
 
 
-    if (SHOW_CANVAS)
-    {
-        // ImGui Canvas.
-        imcanvas = vky_imgui_canvas_create(canvas, 300, 300);
-        imcanvas->cb_fill_command_buffer = fill_command_buffer;
-        imtexture = vky_imgui_image_from_canvas(imcanvas);
-        vky_imgui_canvas_init(imcanvas);
-    }
-    else
-    {
-        // Texture.
-        VkyTextureParams tex_params = vky_default_texture_params(2, 2, 1);
-        VkyTexture texture = vky_create_texture(canvas->gpu, &tex_params);
-        uint8_t pixels[4 * 4] = {255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255, 255, 0, 255};
-        vky_upload_texture(&texture, pixels);
-        imtexture = vky_imgui_image_from_texture(texture);
-    }
+#if SHOW_CANVAS
+    // ImGui Canvas.
+    imcanvas = vky_imgui_canvas_create(canvas, 300, 300);
+    imcanvas->cb_fill_command_buffer = fill_command_buffer;
+    imtexture = vky_imgui_image_from_canvas(imcanvas);
+    vky_imgui_canvas_init(imcanvas);
+#else
+    // Texture.
+    VkyTextureParams tex_params = vky_default_texture_params(2, 2, 1);
+    VkyTexture texture = vky_create_texture(canvas->gpu, &tex_params);
+    uint8_t pixels[4 * 4] = {255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255, 255, 0, 255};
+    vky_upload_texture(&texture, pixels);
+    imtexture = vky_imgui_image_from_texture(texture);
+#endif
+
     canvas->cb_fill_live_command_buffer = fill_live_command_buffer;
 
     // Main loop.
@@ -150,15 +146,12 @@ int main(int argc, char** argv)
     vky_destroy_shaders(&pipeline.shaders);
     vky_destroy_graphics_pipeline(&pipeline);
 
-    if (SHOW_CANVAS)
-    {
-        vky_destroy_canvas(imcanvas);
-        vkDestroySampler(canvas->gpu->device, imtexture.texture.sampler, NULL);
-    }
-    else
-    {
-        vky_destroy_texture(&imtexture.texture);
-    }
+#if SHOW_CANVAS
+    vky_destroy_canvas(imcanvas);
+    vkDestroySampler(canvas->gpu->device, imtexture.texture.sampler, NULL);
+#else
+    vky_destroy_texture(&imtexture.texture);
+#endif
 
     vky_imgui_destroy();
 
