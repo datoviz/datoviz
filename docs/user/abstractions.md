@@ -45,7 +45,7 @@ Each panel has an associated **Controller** which defines the way the user inter
 
 ## Viewport
 
-The **Viewport** is a rectangular part of the canvas. It is defined by the _relative_ coordinates of its upper-left corner (two numbers between 0 and 1) and by its _relative_ width and height (also between 0 and 1). The viewport position and size are defined proportionally to the canvas size.
+The **Viewport** is an axis-aligned rectangular part of the canvas. It is defined by the _relative_ coordinates of its upper-left corner (two numbers between 0 and 1) and by its _relative_ width and height (also between 0 and 1). The viewport position and size are defined proportionally to the canvas size.
 
 
 ## Visual
@@ -65,7 +65,7 @@ Internally, visuals are rendered with a single draw command on the GPU, which us
 
 ## GUI
 
-Visky uses the [Dear ImGUI C++ library](https://github.com/ocornut/imgui) to provide support for [simple or complex graphical user interfaces](gui.md) directly integrated within a Canvas, _without the need for huge dependencies like Qt_. These simple user interfaces offer further avenues for user interactivity beyond built-in controllers (inspired by libraries such as [NanoGUI](https://github.com/wjakob/nanogui)).
+Visky uses the [Dear ImGUI C++ library](https://github.com/ocornut/imgui) to provide support for [simple or complex graphical user interfaces](gui.md) directly integrated within a Canvas, _without the need for massive dependencies like Qt_. These simple user interfaces offer further avenues for user interactivity beyond built-in controllers (inspired by libraries such as [NanoGUI](https://github.com/wjakob/nanogui)).
 
 That being said, integration of a Visky canvas within GUI backends such as Qt is definitely possible, but still a work-in-progress (see `examples/backend_qt.cpp` for a simple example).
 

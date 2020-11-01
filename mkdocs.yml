@@ -31,7 +31,6 @@ nav:
   - Quick start:
       - Introduction: 'quickstart/index.md'
       - Install instructions: 'quickstart/install.md'
-      - Hello triangle: 'quickstart/hello.md'
       - Basic interface: 'quickstart/basic.md'
   - User manual:
       - Introduction: 'user/index.md'

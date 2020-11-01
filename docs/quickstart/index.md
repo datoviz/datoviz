@@ -20,6 +20,7 @@ This quick start guide will introduce Visky and will bring you through the insta
 * **Subplots** organized in a grid layout and potentially spanning multiple rows and/or columns
 * **Mouse picking** with automatic data coordinate transformation
 * Built-in **triangulation algorithms** (Delaunay) via the **triangle** C library, used automatically for polygons and patches
+* **DPI-aware**: support for high-resolution monitors
 * **Integrated GUIs** via the **Dear ImGUI** C++ library (Qt or other backends not required)
 * Easy **video export** (requires compilation with ffmpeg)
 * Dedicated API for writing **custom visuals** with custom shaders and data processing pipelines
@@ -83,7 +84,7 @@ In our experience, most existing libraries do not scale well to large datasets, 
 
 ### VisPy
 
-Visky borrows ideas and code from several past projects, the main one being **VisPy**.
+Visky borrows ideas and code from several existing projects, the main one being **VisPy**.
 
 This Python scientific visualization library was created in 2013 by Luke Campagnola (developer of **pyqtgraph**), Almar Klein (developer of **visvis**), Nicolas Rougier (developer of **glumpy**), and myself (Cyrille Rossant, developer of **galry**). We had decided to join forces to create a single library borrowing ideas from the four projects. There is today a small community of developers and users around VisPy, although the four initial developers are no longer actively involved in the project. VisPy has recently received [funding from the **Chan Zuckerberg Initiative**](https://chanzuckerberg.com/eoss/proposals/rebuilding-the-community-behind-vispys-fast-interactive-visualizations/), thanks to the efforts of David Hoese, the new maintainer of the library. VisPy is also extensively used by the [napari image viewer software](https://napari.org/).
 
@@ -109,13 +110,13 @@ As Vulkan provides a C API, C was one possible choice for a development language
 
 Visky is developed primarily by Cyrille Rossant at the International Brain Laboratory.
 
-Visky could not have been developed without prior work around the following projects:
+Beyond VisPy, prior work used directly or indirectly by Visky include:
 
-* glumpy: antialiased visuals provided by Visky were initially written in GLSL by Nicolas Rougier as part of his glumpy visualization library. Visky reuses a lot of this code.
+* glumpy: Visky uses glumpy's GPU antialiased graphics code, contributed by Nicolas Rougier and published in several computer graphics papers
 * antigrain geometry
 * freetype
 * triangle
-* ffmpeg
 * GLFW
 * mayavi
 * VTK
+* ffmpeg
