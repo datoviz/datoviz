@@ -43,24 +43,29 @@ The Scene is divided into a single or multiple **Panels** (or "subplots") of var
 Each panel has an associated **Controller** which defines the way the user interacts with it. Built-in controllers include Panzoom, Axes 2D, Axes 3D, arcball, first-person camera, fly camera, and others.
 
 
+## Viewport
+
+The **Viewport** is a rectangular part of the canvas. It is defined by the _relative_ coordinates of its upper-left corner (two numbers between 0 and 1) and by its _relative_ width and height (also between 0 and 1). The viewport position and size are defined proportionally to the canvas size.
+
+
 ## Visual
 
-Whereas all objects above relate to the __structure__ of the window, the [**visuals**](visuals.md) define its __contents__. Visky provides many built-in visuals: markers, segments, paths, triangles, rectangles, polygons (patches), images, text, and so on. While almost all visuals may be used either in [2D](visuals2D.md) or [3D](visuals3D.md), some of them are typically only used in 2D (images, rectangles...) while others are mostly used in 3D (meshes).
+Whereas all objects above relate to the _structure_ of the window, the [**visuals**](visuals.md) define its _contents_. Visky provides many built-in visuals: markers, segments, paths, triangles, rectangles, polygons (patches), images, text, and so on. While almost all visuals may be used either in [2D](visuals2D.md) or [3D](visuals3D.md), some of them are typically only used in 2D (images, rectangles...) while others are mostly used in 3D (meshes).
 
 Visuals are added to the different panels.
 
 ### Batch rendering
 
-Visuals are designed around the idea of **batch rendering**: for optimal GPU utilization, __similar objects should be rendered together__. Typically, objects are considered similar if they have a similar visual aspect and if they follow the same geometrical transformations. For example, all markers within a scatter plot should be rendered in the same batch: they look similar, and they should move similarly when panning and zooming.
+Visuals are designed around the idea of **batch rendering**: for optimal GPU utilization, _similar objects should be rendered together_. Typically, objects are considered similar if they have a similar visual aspect and if they follow the same geometrical transformations. For example, all markers within a scatter plot should be rendered in the same batch: they look similar, and they should move similarly when panning and zooming.
 
 Internally, visuals are rendered with a single draw command on the GPU, which uses a given type of primitive (point, line, triangle) and a given set of shaders. Although Vulkan supports much more complex rendering organizations, visuals provide a significant simplification while still allowing for high performance on the vast majority of use-cases.
 
-**Minimizing the total number of visuals in a scene is the key to achieve optimal GPU performance.** For example, to display a set of discs, triangles, and rectangles in a given panel, one should use __a single Mesh visual__ and use the [mesh API](mesh.md) to create those different objects individually. They will be efficiently rendered in a single batch, even if they look like different disjoint objects.
+**Minimizing the total number of visuals in a scene is the key to achieve optimal GPU performance.** For example, to display a set of discs, triangles, and rectangles in a given panel, one should use _a single Mesh visual_ and use the [mesh API](mesh.md) to create those different objects individually. They will be efficiently rendered in a single batch, even if they look like different disjoint objects.
 
 
 ## GUI
 
-Visky uses the [Dear ImGUI C++ library](https://github.com/ocornut/imgui) to provide support for [simple or complex graphical user interfaces](gui.md) directly integrated within a Canvas, __without the need for huge dependencies like Qt__. These simple user interfaces offer further avenues for user interactivity beyond built-in controllers (inspired by libraries such as [NanoGUI](https://github.com/wjakob/nanogui)).
+Visky uses the [Dear ImGUI C++ library](https://github.com/ocornut/imgui) to provide support for [simple or complex graphical user interfaces](gui.md) directly integrated within a Canvas, _without the need for huge dependencies like Qt_. These simple user interfaces offer further avenues for user interactivity beyond built-in controllers (inspired by libraries such as [NanoGUI](https://github.com/wjakob/nanogui)).
 
 That being said, integration of a Visky canvas within GUI backends such as Qt is definitely possible, but still a work-in-progress (see `examples/backend_qt.cpp` for a simple example).
 

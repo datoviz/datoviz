@@ -80,6 +80,9 @@ While the event loop is running, a screenshot of a canvas can be made as follows
     vky_screenshot(canvas, "screenshot.png");
     ```
 
+!!! bug
+    Currently, the screenshot will fail if the event loop is not running. A screenshot cannot be done during the very first frame of the event loop, it needs to wait for the second frame.
+
 Alternatively, if the environment variable `VKY_AUTO_SCREENSHOT=screenshot.png` is set, a screenshot will be done after the first frame and the canvas will close immediately afterwards. This is useful when one needs to non-interactively run a Visky executable and automatically save a screenshot.
 
 
