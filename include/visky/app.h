@@ -225,7 +225,9 @@ struct VkyApp
 {
     VkyBackendType backend;
     void* backend_params;
-    double auto_close; // if X>0, automatically close a canvas after X seconds
+
+    double auto_close;     // if X>0, automatically close a canvas after X seconds
+    char* auto_screenshot; // if not null, will make a screenshot and automatically close
 
     VkyGpu* gpu;
 

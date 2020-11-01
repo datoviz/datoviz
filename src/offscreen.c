@@ -482,13 +482,9 @@ void vky_screenshot(VkyCanvas* canvas, char* filename)
     if (strstr(filename, ".png") != NULL)
     {
         if (write_png(filename, screenshot->width, screenshot->height, image) != 0)
-        {
             log_warn("could not save screenshot %s", filename);
-        }
         else
-        {
             log_info("saved screenshot %s", filename);
-        }
     }
     else if (strstr(filename, ".ppm") != NULL)
     {

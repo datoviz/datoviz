@@ -113,11 +113,11 @@ void vky_run_app(VkyApp* app)
 {
     log_trace("run app");
 
+    // Environment variables affecting the event loop.
     app->auto_close = vky_get_env("VKY_AUTO_CLOSE", 0);
+    app->auto_screenshot = getenv("VKY_AUTO_SCREENSHOT");
     if (app->auto_close < 0)
-    {
-        log_debug("VKY_AUTO_CLOSE=%d is < 0", app->auto_close);
-    }
+        log_debug("invalid value VKY_AUTO_CLOSE=%d is < 0", app->auto_close);
 
     VkyBackendType backend = app->backend;
     switch (backend)
@@ -722,7 +722,13 @@ void vky_next_frame(VkyCanvas* canvas)
     // Require for some vents like mouse wheel which should be raised in a single frame.
     vky_finish_event_states(canvas->event_controller);
 
-
-    if (canvas->app->auto_close > 0 && canvas->local_time >= canvas->app->auto_close)
+    // Handle auto-close.
+    if ((canvas->app->auto_close > 0 && canvas->local_time >= canvas->app->auto_close))
         canvas->to_close = true;
+    // Handle auto-screenshot.
+    if (canvas->frame_count > 0 && canvas->app->auto_screenshot != NULL)
+    {
+        vky_screenshot(canvas, canvas->app->auto_screenshot);
+        canvas->to_close = true;
+    }
 }
