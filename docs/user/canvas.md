@@ -1,14 +1,86 @@
 # The Canvas
 
+Although a Canvas is created in almost all applications, it is very rarely manipulated directly after its creation since it only provides a low-level API. In most scientific applications, one typically deals with the [**Scene**](scene.md), which provides a higher-level API.
+
+In this section, we show how to create a blank canvas in Python and C. Doing anything more useful requires either:
+
+* to use the Scene API (as shown in the next sections of this user manual),
+* or to deal with the [**vklite**](../expert/vklite.md) wrapper to Vulkan (which is described in the [expert manual](../expert/index.md)).
+
 ## Creating a canvas
 
-* Background color
+The following code snippet displays a blank window with a black background.
 
-## Creating multiple canvases
+=== "Python"
+    ```python
+    # Required imports.
+    from visky import canvas, run
+
+    # Create the canvas.
+    c = canvas()
+
+    # Run the event loop.
+    run()
+    ```
+
+=== "C"
+    ```c
+    #include <visky/visky.h>
+
+    int main()
+    {
+        // Create an app with the default backend, which is the GLFW backend.
+        VkyApp* app = vky_create_app(VKY_DEFAULT_BACKEND);
+
+        // Create a canvas with the default width and height.
+        VkyCanvas* canvas = vky_create_canvas(app, VKY_DEFAULT_WIDTH, VKY_DEFAULT_HEIGHT);
+
+        // Run the event loop.
+        vky_run_app(app);
+
+        // Once the event loop is finished, destroy the app and all canvases.
+        vky_destroy_app(app);
+
+        return 0;
+    }
+    ```
+
+The event loop is an infinite loop that continuously refreshes the canvas until the Escape key is pressed, at which point the canvas is closed. The canvas destruction logic (freeing the memory on the host and on the GPU) is called automatically as soon as the canvas is closed.
+
+Multiple canvases can be created. The application stops as soon as there is no remaining open canvas. In that case, the application is automatically destroyed.
+
+
+## Changing the background color
+
+By default, when creating a Canvas without creating a Scene, the background color is black. Here is how to change it:
+
+=== "Python"
+    ```python
+    # TODO: not implemented yet
+    ```
+
+=== "C"
+    ```c
+    // Red background.
+    vky_clear_color(canvas, (VkyColor) {{255, 0, 0}, 255});
+    ```
 
 
 ## Making screenshots
 
+While the event loop is running, a screenshot of a canvas can be made as follows (typically [in an event handler](interact.md), for example when pressing a key):
+
+=== "Python"
+    ```python
+    # TODO: not implemented yet
+    ```
+
+=== "C"
+    ```c
+    vky_screenshot(canvas, "screenshot.png");
+    ```
+
+Alternatively, if the environment variable `VKY_AUTO_SCREENSHOT=screenshot.png` is set, a screenshot will be done after the first frame and the canvas will close immediately afterwards. This is useful when one needs to non-interactively run a Visky executable and automatically save a screenshot.
 
 
 

@@ -37,7 +37,7 @@ nav:
       - Introduction: 'user/index.md'
       - Abstractions: 'user/abstractions.md'
       - The canvas: 'user/canvas.md'
-      - The plot layout: 'user/scene.md'
+      - The scene: 'user/scene.md'
       - Colormaps: 'user/color.md'
       - Visuals: 'user/visuals.md'
       - 2D plotting: 'user/visuals2D.md'

@@ -1,4 +1,4 @@
-# The plot layout
+# The scene
 
 ## The grid
 
