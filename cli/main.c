@@ -556,7 +556,13 @@ static int test(int argc, char** argv)
     return res;
 }
 
-static int info(int argc, char** argv) { return 0; }
+static int info(int argc, char** argv)
+{
+    VkyGpu gpu = vky_create_device(0, NULL);
+    printf("GPU: %s\n", gpu.device_properties.deviceName);
+    vky_destroy_device(&gpu);
+    return 0;
+}
 
 static int demo(int argc, char** argv)
 {
