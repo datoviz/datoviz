@@ -300,6 +300,7 @@ struct VkyEventController
 
 VKY_EXPORT VkyApp* vky_create_app(VkyBackendType backend, void* backend_params);
 VKY_EXPORT VkyCanvas* vky_create_canvas(VkyApp* app, uint32_t width, uint32_t height);
+VKY_EXPORT void vky_clear_color(VkyCanvas* canvas, VkyColor clear_color);
 VKY_EXPORT void vky_run_app(VkyApp* app);
 VKY_EXPORT void vky_destroy_app(VkyApp* app);
 VKY_EXPORT void vky_canvas_to_close(VkyCanvas* canvas);

@@ -281,7 +281,6 @@ struct VkyVisualPanel
 struct VkyScene
 {
     VkyCanvas* canvas;
-    VkyColor clear_color;
 
     VkyGrid* grid;
 
@@ -807,7 +806,6 @@ VKY_EXPORT VkyGrid* vky_create_grid(VkyScene* scene, uint32_t row_count, uint32_
 VKY_EXPORT void vky_reset_grid(VkyScene* scene, uint32_t row_count, uint32_t col_count);
 VKY_EXPORT VkyScene*
 vky_create_scene(VkyCanvas* canvas, VkyColor clear_color, uint32_t row_count, uint32_t col_count);
-VKY_EXPORT void vky_clear_color(VkyScene* scene, VkyColor clear_color);
 VKY_EXPORT void vky_set_regular_grid(VkyScene* scene, vec4 margins);
 VKY_EXPORT void vky_set_grid_widths(VkyScene* scene, const float* widths);
 VKY_EXPORT void vky_set_grid_heights(VkyScene* scene, const float* heights);

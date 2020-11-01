@@ -28,7 +28,7 @@ static VkyPanel* _set_arcball(VkyPanel* panel)
 {
     ASSERT(panel != NULL);
     vky_set_controller(panel, VKY_CONTROLLER_ARCBALL, NULL);
-    vky_clear_color(panel->scene, VKY_CLEAR_COLOR_BLACK);
+    vky_clear_color(panel->scene->canvas, VKY_CLEAR_COLOR_BLACK);
     return panel;
 }
 
@@ -48,7 +48,7 @@ static VkyPanel* _set_axes_3D(VkyPanel* panel)
 static int mesh_raw(VkyTestContext* context)
 {
     VkyPanel* panel = _set_panzoom(context->panel);
-    vky_clear_color(panel->scene, VKY_CLEAR_COLOR_BLACK);
+    vky_clear_color(panel->scene->canvas, VKY_CLEAR_COLOR_BLACK);
 
     // Create the visual.
     VkyVisual* visual = vky_visual(panel->scene, VKY_VISUAL_MESH_RAW, NULL, NULL);
@@ -120,7 +120,7 @@ static int imshow(VkyTestContext* context)
         }
     }
 
-    vky_clear_color(panel->scene, VKY_CLEAR_COLOR_WHITE);
+    vky_clear_color(panel->scene->canvas, VKY_CLEAR_COLOR_WHITE);
     VkyTextureParams params = vky_default_texture_params(size, size, 1); // (VkyTextureParams){
     VkyVisual* visual = vky_visual(panel->scene, VKY_VISUAL_IMAGE, &params, NULL);
     vky_add_visual_to_panel(visual, panel, VKY_VIEWPORT_INNER, VKY_VISUAL_PRIORITY_NONE);
@@ -450,7 +450,7 @@ static int image(VkyTestContext* context)
     uint32_t IMAGE_SIZE = (uint32_t)w;
     log_trace("load image with size %dx%d, %d bytes per channel", w, h, b);
 
-    vky_clear_color(panel->scene, VKY_CLEAR_COLOR_WHITE);
+    vky_clear_color(panel->scene->canvas, VKY_CLEAR_COLOR_WHITE);
     VkyTextureParams params = (VkyTextureParams){
         IMAGE_SIZE,
         IMAGE_SIZE,
@@ -839,7 +839,7 @@ static int volume(VkyTestContext* context)
 {
     VkyCanvas* canvas = context->canvas;
     vky_set_controller(context->panel, VKY_CONTROLLER_VOLUME, NULL);
-    vky_clear_color(canvas->scene, VKY_CLEAR_COLOR_BLACK);
+    vky_clear_color(canvas, VKY_CLEAR_COLOR_BLACK);
 
     VkyScene* scene = context->panel->scene;
     // Create the visual.

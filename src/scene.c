@@ -1845,7 +1845,7 @@ void vky_draw_all_visuals(VkyScene* scene)
 static void _scene_fill_command_buffer(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
 {
     log_trace("scene fill command buffer");
-    vky_begin_render_pass(cmd_buf, canvas, canvas->scene->clear_color);
+    vky_begin_render_pass(cmd_buf, canvas, canvas->clear_color);
     vky_draw_all_visuals(canvas->scene);
     vky_end_render_pass(cmd_buf, canvas);
 }
@@ -1858,7 +1858,7 @@ vky_create_scene(VkyCanvas* canvas, VkyColor clear_color, uint32_t row_count, ui
     scene->canvas = canvas;
     canvas->scene = scene;
 
-    scene->clear_color = clear_color;
+    canvas->clear_color = clear_color;
 
     scene->visual_count = 0;
     scene->visuals = calloc(VKY_MAX_VISUAL_COUNT, sizeof(VkyVisual));
@@ -1895,12 +1895,6 @@ vky_create_scene(VkyCanvas* canvas, VkyColor clear_color, uint32_t row_count, ui
     }
 
     return scene;
-}
-
-void vky_clear_color(VkyScene* scene, VkyColor clear_color)
-{
-    scene->clear_color = clear_color;
-    scene->canvas->need_refill = true;
 }
 
 VkyGrid* vky_create_grid(VkyScene* scene, uint32_t row_count, uint32_t col_count)

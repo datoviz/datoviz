@@ -199,6 +199,7 @@ struct VkyCanvas
     // VkExtent2D extent;
     // VkyWindowSize window_size;
     VkyWindowSize size;
+    VkyColor clear_color;
 
     VkFormat depth_format;
     VkFormat image_format;

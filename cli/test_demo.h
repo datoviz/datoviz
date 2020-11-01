@@ -13,7 +13,7 @@ static int mandelbrot(VkyTestContext* context)
     VkyPanel* panel = context->panel;
     VkyCanvas* canvas = panel->scene->canvas;
     vky_set_controller(context->panel, VKY_CONTROLLER_PANZOOM, NULL);
-    vky_clear_color(context->scene, VKY_CLEAR_COLOR_BLACK);
+    vky_clear_color(context->canvas, VKY_CLEAR_COLOR_BLACK);
     vky_set_panel_aspect_ratio(panel, 1);
 
     // Create the visual.

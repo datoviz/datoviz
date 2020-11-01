@@ -18,7 +18,7 @@ static void _esc_close_canvas(VkyCanvas* canvas, void* data)
 
 static void fcb(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
 {
-    vky_begin_render_pass(cmd_buf, canvas, VKY_CLEAR_COLOR_BLACK);
+    vky_begin_render_pass(cmd_buf, canvas, canvas->clear_color);
     vky_end_render_pass(cmd_buf, canvas);
 }
 
@@ -36,6 +36,7 @@ void vky_wait_canvas_ready(VkyCanvas* canvas)
 
 VkyApp* vky_create_app(VkyBackendType backend, void* backend_params)
 {
+    log_set_level_env();
     log_trace("create app with backend %d", backend);
     VkyApp* app = (VkyApp*)calloc(1, sizeof(VkyApp));
 
@@ -102,11 +103,18 @@ VkyCanvas* vky_create_canvas(VkyApp* app, uint32_t width, uint32_t height)
     app->canvas_count++;
 
     // Black canvas by default.
+    canvas->clear_color = VKY_CLEAR_COLOR_BLACK;
     canvas->cb_fill_command_buffer = fcb;
 
     vky_add_frame_callback(canvas, _esc_close_canvas, NULL);
 
     return canvas;
+}
+
+void vky_clear_color(VkyCanvas* canvas, VkyColor clear_color)
+{
+    canvas->clear_color = clear_color;
+    canvas->need_refill = true;
 }
 
 void vky_run_app(VkyApp* app)
