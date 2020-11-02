@@ -417,8 +417,6 @@ VkyCanvas* vky_create_canvas_from_surface(VkyApp* app, void* window, VkSurfaceKH
 
     // Wait until the window is fully resized after initialization.
     vky_wait_canvas_ready(&canvas);
-    // canvas.window_size.lw = canvas.window_size.w;
-    // canvas.window_size.lh = canvas.window_size.h;
 
     // Create the swap chain and all objects that will need to be recreated upon resize.
     vky_create_swapchain_resources(&canvas);
@@ -512,51 +510,11 @@ void vky_create_swapchain_resources(VkyCanvas* canvas)
 {
     VkDevice device = canvas->gpu->device;
 
-    // Swap chain.
-    VkSwapchainCreateInfoKHR screateInfo = {0};
-    screateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    screateInfo.surface = canvas->surface;
-    screateInfo.minImageCount = canvas->image_count;
-    screateInfo.imageFormat = canvas->image_format;
-    screateInfo.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-
-    VkSurfaceCapabilitiesKHR caps = {0};
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
-        canvas->gpu->physical_device, canvas->surface, &caps);
-
-    screateInfo.imageExtent = caps.currentExtent;
-    screateInfo.imageArrayLayers = 1;
-    screateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-    screateInfo.preTransform = caps.currentTransform;
-    screateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-    if (VKY_VSYNC)
-    {
-        log_trace("enable vsync");
-        screateInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR;
-    }
-    else
-    {
-        log_trace("disable vsync");
-        screateInfo.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
-    }
-    screateInfo.clipped = VK_TRUE;
-
-    VkyQueueFamilyIndices indices = canvas->gpu->queue_indices;
-    uint32_t queue_family_indices[] = {indices.graphics_family, indices.present_family};
-    if (indices.graphics_family != indices.present_family)
-    {
-        screateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-        screateInfo.queueFamilyIndexCount = 2;
-        screateInfo.pQueueFamilyIndices = queue_family_indices;
-    }
-    else
-    {
-        screateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    }
-
     VkSwapchainKHR swapchain = {0};
-    log_trace("create swapchain");
-    VK_CHECK_RESULT(vkCreateSwapchainKHR(device, &screateInfo, NULL, &swapchain));
+    VkSurfaceCapabilitiesKHR caps = {0};
+    create_swapchain(
+        device, canvas->gpu->physical_device, canvas->surface, canvas->image_count,
+        canvas->image_format, canvas->gpu->queue_indices, &caps, &swapchain);
 
     // Swap chain images and image views.
     uint32_t image_count = canvas->image_count;
