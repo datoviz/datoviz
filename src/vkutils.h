@@ -703,6 +703,58 @@ static void create_swapchain(
 }
 
 
+static VkImage*
+create_swapchain_images(VkDevice device, VkSwapchainKHR swapchain, uint32_t image_count)
+{
+    log_trace("create %d swapchain images", image_count);
+    vkGetSwapchainImagesKHR(device, swapchain, &image_count, NULL);
+    VkImage* swap_images = calloc(image_count, sizeof(VkImage));
+    vkGetSwapchainImagesKHR(device, swapchain, &image_count, swap_images);
+    return swap_images;
+}
+
+
+static VkImageView* create_swapchain_image_views(
+    VkDevice device, uint32_t image_count, VkFormat format, VkImage* swap_images)
+{
+    VkImageView* swap_image_views = calloc(image_count, sizeof(VkImageView));
+    for (uint32_t i = 0; i < image_count; i++)
+    {
+        swap_image_views[i] = create_image_view(
+            device, swap_images[i], VK_IMAGE_VIEW_TYPE_2D, format, VK_IMAGE_ASPECT_COLOR_BIT);
+    }
+    return swap_image_views;
+}
+
+
+static VkFramebuffer* create_swapchain_framebuffers(
+    VkDevice device, uint32_t image_count, VkRenderPass render_pass, //
+    VkImageView* swap_image_views, VkImageView depth_image_view, uint32_t width, uint32_t height)
+{
+    // Create the frame buffers.
+    log_trace("create %d swapchain framebuffers", image_count);
+    VkFramebuffer* swap_framebuffers = calloc(image_count, sizeof(VkFramebuffer));
+    for (uint32_t i = 0; i < image_count; i++)
+    {
+        // Create FrameBuffer
+        VkImageView attachments[] = {swap_image_views[i], depth_image_view};
+
+        VkFramebufferCreateInfo framebuffer_info = {0};
+        framebuffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        framebuffer_info.renderPass = render_pass;
+        framebuffer_info.attachmentCount = 2;
+        framebuffer_info.pAttachments = attachments;
+        framebuffer_info.width = width;
+        framebuffer_info.height = height;
+        framebuffer_info.layers = 1;
+
+        VK_CHECK_RESULT(
+            vkCreateFramebuffer(device, &framebuffer_info, NULL, &swap_framebuffers[i]));
+    }
+    return swap_framebuffers;
+}
+
+
 
 /*************************************************************************************************/
 /*  Graphics pipeline                                                                            */

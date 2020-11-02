@@ -509,26 +509,22 @@ VkDeviceSize vky_compute_dynamic_alignment(VkyGpu* gpu, size_t size)
 void vky_create_swapchain_resources(VkyCanvas* canvas)
 {
     VkDevice device = canvas->gpu->device;
+    uint32_t image_count = canvas->image_count;
 
     VkSwapchainKHR swapchain = {0};
     VkSurfaceCapabilitiesKHR caps = {0};
-    create_swapchain(
-        device, canvas->gpu->physical_device, canvas->surface, canvas->image_count,
-        canvas->image_format, canvas->gpu->queue_indices, &caps, &swapchain);
 
-    // Swap chain images and image views.
-    uint32_t image_count = canvas->image_count;
-    vkGetSwapchainImagesKHR(device, swapchain, &image_count, NULL);
-    VkImage* swap_images = calloc(image_count, sizeof(VkImage));
-    vkGetSwapchainImagesKHR(device, swapchain, &image_count, swap_images);
-    log_trace("create %d swapchain images", image_count);
-    VkImageView* swap_image_views = calloc(image_count, sizeof(VkImageView));
-    for (uint32_t i = 0; i < image_count; i++)
-    {
-        swap_image_views[i] = create_image_view(
-            device, swap_images[i], VK_IMAGE_VIEW_TYPE_2D, canvas->image_format,
-            VK_IMAGE_ASPECT_COLOR_BIT);
-    }
+    // Create the swap chain.
+    create_swapchain(
+        device, canvas->gpu->physical_device, canvas->surface, image_count, canvas->image_format,
+        canvas->gpu->queue_indices, &caps, &swapchain);
+
+    // Create the swap chain images.
+    VkImage* swap_images = create_swapchain_images(device, swapchain, image_count);
+
+    // Create the swap chain image views.
+    VkImageView* swap_image_views =
+        create_swapchain_image_views(device, image_count, canvas->image_format, swap_images);
 
     // Create the depth objects.
     VkImage depth_image = {0};
@@ -543,25 +539,9 @@ void vky_create_swapchain_resources(VkyCanvas* canvas)
         VK_IMAGE_ASPECT_DEPTH_BIT);
 
     // Create the frame buffers.
-    log_trace("create %d swapchain framebuffers", image_count);
-    VkFramebuffer* swap_framebuffers = calloc(image_count, sizeof(VkFramebuffer));
-    for (uint32_t i = 0; i < image_count; i++)
-    {
-        // Create FrameBuffer
-        VkImageView attachments[] = {swap_image_views[i], depth_image_view};
-
-        VkFramebufferCreateInfo framebuffer_info = {0};
-        framebuffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebuffer_info.renderPass = canvas->render_pass;
-        framebuffer_info.attachmentCount = 2;
-        framebuffer_info.pAttachments = attachments;
-        framebuffer_info.width = caps.currentExtent.width;
-        framebuffer_info.height = caps.currentExtent.height;
-        framebuffer_info.layers = 1;
-
-        VK_CHECK_RESULT(
-            vkCreateFramebuffer(device, &framebuffer_info, NULL, &swap_framebuffers[i]));
-    }
+    VkFramebuffer* swap_framebuffers = create_swapchain_framebuffers(
+        device, image_count, canvas->render_pass, swap_image_views, depth_image_view,
+        caps.currentExtent.width, caps.currentExtent.height);
 
     // Fill the VkyCanvas struct.
     canvas->size.framebuffer_width = caps.currentExtent.width;
