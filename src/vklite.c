@@ -3,6 +3,10 @@
 #include "vkutils.h"
 #include <stdlib.h>
 
+#ifndef ENABLE_VALIDATION_LAYERS
+#define ENABLE_VALIDATION_LAYERS 1
+#endif
+
 BEGIN_INCL_NO_WARN
 #include <stb_image.h>
 END_INCL_NO_WARN
@@ -275,96 +279,17 @@ VkyQueueFamilyIndices vky_find_queue_families(VkPhysicalDevice device, VkSurface
 VkyGpu vky_create_device(uint32_t required_extension_count, const char** required_extensions)
 {
     log_trace("create GPU");
-    // TODO: mechanism to specify extensions
-    // Also: this function should be glfw independent
 
-    // Add ext debug extension.
-    bool has_validation = false;
-    if (ENABLE_VALIDATION_LAYERS)
-    {
-        has_validation = check_validation_layer_support(1, layers);
-        if (!has_validation)
-            log_error(
-                "validation layer support missing, make sure you have exported the environment "
-                "variable VK_LAYER_PATH=\"$VULKAN_SDK/etc/vulkan/explicit_layer.d\"");
-    }
-
-    uint32_t extension_count = required_extension_count;
-    if (has_validation)
-    {
-        extension_count++;
-    }
-    ASSERT(extension_count <= 100);
-    const char* extensions[100];
-    for (uint32_t i = 0; i < required_extension_count; i++)
-    {
-        extensions[i] = required_extensions[i];
-    }
-    if (has_validation)
-    {
-        extensions[required_extension_count] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
-    }
-
-
-    // Prepare the creation of the Vulkan instance.
-    VkApplicationInfo appInfo = {0};
-    appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = APPLICATION_NAME;
-    appInfo.applicationVersion = APPLICATION_VERSION;
-    appInfo.pEngineName = ENGINE_NAME;
-    appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.apiVersion = VK_API_VERSION_1_0;
-
-    VkInstanceCreateInfo createInfo = {0};
-    createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    createInfo.pApplicationInfo = &appInfo;
-    createInfo.enabledExtensionCount = extension_count;
-    createInfo.ppEnabledExtensionNames = extensions;
-
-    // Validation layers.
-    VkDebugUtilsMessengerCreateInfoEXT debug_create_info = {0};
-    debug_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    debug_create_info.flags = 0;
-    debug_create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
-                                        VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-                                        VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-    debug_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-                                    VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-                                    VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-    debug_create_info.pfnUserCallback = debug_callback;
-
-    if (has_validation)
-    {
-        createInfo.enabledLayerCount = 1;
-        createInfo.ppEnabledLayerNames = layers;
-        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debug_create_info;
-    }
-    else
-    {
-        createInfo.enabledLayerCount = 0;
-        createInfo.pNext = NULL;
-    }
-
-    // Create the Vulkan instance.
+    // Create the instance.
     VkInstance instance = {0};
-    log_trace("create instance");
-    VK_CHECK_RESULT(vkCreateInstance(&createInfo, NULL, &instance));
-
-    // Create the debug utils messenger.
     VkDebugUtilsMessengerEXT debug_messenger = {0};
-    if (has_validation)
-    {
-        log_trace("create debug utils messenger");
-        VK_CHECK_RESULT(create_debug_utils_messenger_EXT(
-            instance, &debug_create_info, NULL, &debug_messenger));
-    }
+    create_instance(required_extension_count, required_extensions, &instance, &debug_messenger);
 
     // Create the VkyGpu struct.
     VkyGpu gpu = {0};
     gpu.instance = instance;
-    if (debug_messenger != 0)
-        gpu.debug_messenger = debug_messenger;
-    gpu.has_validation = has_validation;
+    gpu.debug_messenger = debug_messenger;
+    gpu.has_validation = debug_messenger != 0;
 
     // Pick the physical device.
     uint32_t device_count = 0;
@@ -639,7 +564,7 @@ void vky_reset_canvas(VkyCanvas* canvas)
     // any test using compute.
     canvas->gpu->has_compute = false;
 
-    ASSERT(canvas->event_controller!=NULL);
+    ASSERT(canvas->event_controller != NULL);
     vky_reset_event_controller(canvas->event_controller);
 }
 

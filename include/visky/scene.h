@@ -1,10 +1,10 @@
 #ifndef VKY_SCENE_HEADER
 #define VKY_SCENE_HEADER
 
+#include "../../external/ticks.h"
 #include "app.h"
 #include "colormaps.h"
 #include "constants.h"
-#include "ticks.h"
 #include "vklite.h"
 
 
