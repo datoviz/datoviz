@@ -29,10 +29,10 @@
 /*  Visky environment variables                                                                  */
 /*************************************************************************************************/
 
-#define VKY_FPS                 (vky_check_env("VKY_FPS", false))
-#define VKY_VSYNC               (vky_check_env("VKY_VSYNC", true) && !VKY_FPS)
-#define VKY_DEBUG_TEST          (vky_check_env("VKY_DEBUG_TEST", false))
-#define VKY_INVERSE_MOUSE_WHEEL vky_check_env("VKY_INVERSE_MOUSE_WHEEL", false)
+#define VKY_FPS                 (vky_env_bool("VKY_FPS", false))
+#define VKY_VSYNC               (vky_env_bool("VKY_VSYNC", true) && !VKY_FPS)
+#define VKY_DEBUG_TEST          (vky_env_bool("VKY_DEBUG_TEST", false))
+#define VKY_INVERSE_MOUSE_WHEEL vky_env_bool("VKY_INVERSE_MOUSE_WHEEL", false)
 
 
 /*************************************************************************************************/
@@ -248,13 +248,23 @@ VKY_EXPORT void vky_reset_all_constants(void);
 
 #define VKY_CONST_INT(name, value) ((uint32_t)round(vky_get_constant(name, value)))
 
-VKY_INLINE bool vky_check_env(const char* name, bool default_value)
+VKY_INLINE bool vky_env_bool(const char* name, bool default_value)
 {
     const char* value = getenv(name);
     return value == NULL ? default_value : strcmp(value, "0") != 0;
 }
 
-VKY_INLINE double vky_get_env(const char* name, double default_value)
+VKY_INLINE int vky_env_int(const char* name, int default_value)
+{
+    const char* value = getenv(name);
+    if (value == NULL)
+        return default_value;
+    int number = 0;
+    sscanf(value, "%d", &number);
+    return number;
+}
+
+VKY_INLINE double vky_env_double(const char* name, double default_value)
 {
     const char* value = getenv(name);
     if (value == NULL)
@@ -271,7 +281,7 @@ VKY_INLINE double vky_get_env(const char* name, double default_value)
 /*************************************************************************************************/
 
 #define VKY_DPI_SCALING_FACTOR                                                                    \
-    vky_get_env("VKY_DPI_FACTOR", VKY_CONST(VKY_DPI_SCALING_FACTOR_ID, 1.00))
+    vky_env_double("VKY_DPI_FACTOR", VKY_CONST(VKY_DPI_SCALING_FACTOR_ID, 1.00))
 
 #define VKY_ANTIALIAS                    VKY_CONST(VKY_ANTIALIAS_ID, 1.0)
 #define VKY_DEFAULT_CAMERA_CENTER_X      VKY_CONST(VKY_DEFAULT_CAMERA_CENTER_X_ID, 0)

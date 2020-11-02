@@ -122,7 +122,7 @@ void vky_run_app(VkyApp* app)
     log_trace("run app");
 
     // Environment variables affecting the event loop.
-    app->auto_close = vky_get_env("VKY_AUTO_CLOSE", 0);
+    app->auto_close = vky_env_double("VKY_AUTO_CLOSE", 0);
     app->auto_screenshot = getenv("VKY_AUTO_SCREENSHOT");
     if (app->auto_close < 0)
         log_debug("invalid value VKY_AUTO_CLOSE=%d is < 0", app->auto_close);

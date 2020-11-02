@@ -278,7 +278,7 @@ VkyQueueFamilyIndices vky_find_queue_families(VkPhysicalDevice device, VkSurface
 
 VkyGpu vky_create_device(uint32_t required_extension_count, const char** required_extensions)
 {
-    log_trace("create GPU");
+    log_trace("create the GPU struct");
 
     // Create the instance.
     VkInstance instance = {0};
@@ -291,34 +291,26 @@ VkyGpu vky_create_device(uint32_t required_extension_count, const char** require
     gpu.debug_messenger = debug_messenger;
     gpu.has_validation = debug_messenger != 0;
 
-    // Pick the physical device.
-    uint32_t device_count = 0;
-    vkEnumeratePhysicalDevices(instance, &device_count, NULL);
-    ASSERT(device_count <= 100);
-    VkPhysicalDevice physical_devices[100];
-    vkEnumeratePhysicalDevices(instance, &device_count, physical_devices);
-    // TODO: select the appropriate GPU instead of just the first one.
-    VkPhysicalDevice physical_device = physical_devices[0];
-
-    VkPhysicalDeviceProperties device_properties = {0};
-    VkPhysicalDeviceFeatures device_features = {0};
-    VkPhysicalDeviceMemoryProperties memory_properties = {0};
-
-    vkGetPhysicalDeviceProperties(physical_device, &device_properties);
-    vkGetPhysicalDeviceFeatures(physical_device, &device_features);
-    vkGetPhysicalDeviceMemoryProperties(physical_device, &memory_properties);
-
-    gpu.physical_device = physical_device;
-    gpu.device_properties = device_properties;
-    gpu.device_features = device_features;
-    gpu.memory_properties = memory_properties;
-
+    // Allocate buffers and textures arrays.
     gpu.buffer_count = 0;
     gpu.buffers = calloc(VKY_MAX_BUFFER_COUNT, sizeof(VkyBuffer));
     gpu.texture_count = 0;
     gpu.textures = calloc(VKY_MAX_TEXTURE_COUNT, sizeof(VkyTexture));
 
-    log_debug("successfully created device %s", device_properties.deviceName);
+    // Enumerate and pick the physical device.
+    VkPhysicalDevice physical_device = {0};
+    VkPhysicalDeviceProperties device_properties = {0};
+    VkPhysicalDeviceFeatures device_features = {0};
+    VkPhysicalDeviceMemoryProperties memory_properties = {0};
+
+    pick_device(
+        instance, &physical_device, &device_properties, &device_features, &memory_properties);
+    ASSERT(physical_device != 0);
+
+    gpu.physical_device = physical_device;
+    gpu.device_properties = device_properties;
+    gpu.device_features = device_features;
+    gpu.memory_properties = memory_properties;
 
     return gpu;
 }

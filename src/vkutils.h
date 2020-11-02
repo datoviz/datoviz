@@ -232,7 +232,47 @@ static void create_instance(
     }
 }
 
+static void pick_device(
+    VkInstance instance, VkPhysicalDevice* physical_device,
+    VkPhysicalDeviceProperties* device_properties, VkPhysicalDeviceFeatures* device_features,
+    VkPhysicalDeviceMemoryProperties* memory_properties)
+{
+    // Pick the physical device.
+    uint32_t device_count = 0;
+    vkEnumeratePhysicalDevices(instance, &device_count, NULL);
+    if (device_count == 0)
+    {
+        log_error("no compatible device found! aborting");
+        exit(1);
+    }
+    VkPhysicalDevice* physical_devices = calloc(device_count, sizeof(VkPhysicalDevice));
+    vkEnumeratePhysicalDevices(instance, &device_count, physical_devices);
 
+    int i = 0;
+    for (i = 0; i < (int)device_count; i++)
+    {
+        *physical_device = physical_devices[i];
+        vkGetPhysicalDeviceProperties(*physical_device, device_properties);
+        vkGetPhysicalDeviceFeatures(*physical_device, device_features);
+        vkGetPhysicalDeviceMemoryProperties(*physical_device, memory_properties);
+        log_debug("found device #%d: %s", i, device_properties->deviceName);
+    }
+    // By default, select the first device.
+    // TODO: better selection of the device depending on the capabililties etc.
+    i = vky_env_int("VKY_DEVICE", 0);
+    if (i < 0 || i >= (int)device_count)
+    {
+        log_error("invalid device number %d: should be between 0 and %d", i, 0, device_count - 1);
+        i = 0;
+    }
+    *physical_device = physical_devices[i];
+    FREE(physical_devices);
+
+    vkGetPhysicalDeviceProperties(*physical_device, device_properties);
+    vkGetPhysicalDeviceFeatures(*physical_device, device_features);
+    vkGetPhysicalDeviceMemoryProperties(*physical_device, memory_properties);
+    log_info("select device #%d: %s", i, device_properties->deviceName);
+}
 
 static uint32_t find_memory_type(
     uint32_t typeFilter, VkMemoryPropertyFlags properties,

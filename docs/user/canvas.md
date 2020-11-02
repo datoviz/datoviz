@@ -95,6 +95,7 @@ Visky defines a few useful environment variables:
 |-----------------------------------|-------------------------------------------------------|
 | `VKY_AUTO_CLOSE=3`                | Automatically close the canvas after X seconds        |
 | `VKY_AUTO_SCREENSHOT=image.png`   | Automatically make a screenshot and close the canvas  |
+| `VKY_DEVICE=0`                    | Default GPU device number to select                   |
 | `VKY_DPI_FACTOR=1.5`              | Change the DPI scaling factor                         |
 | `VKY_EXAMPLE=app_blank`           | Compile only this example with `./manage.sh build`    |
 | `VKY_FPS=1`                       | Show the number of frames per second                  |
@@ -117,8 +118,8 @@ The C API provides three functions to get the environment variables programmatic
 const char* value = getenv(name); // provided by the standard stdlib.h
 
 // Convenience function to parse the environment variable into a boolean.
-bool value = vky_check_env(name, default_bool_value);
+bool value = vky_env_bool(name, default_bool_value);
 
 // Convenience function to parse the environment variable into a double-precision floating-point number.
-double value = vky_get_env(name, default_double_value);
+double value = vky_env_double(name, default_double_value);
 ```
