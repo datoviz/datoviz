@@ -631,16 +631,8 @@ void vky_create_swapchain_resources(VkyCanvas* canvas)
 void vky_create_command_buffers(
     VkyGpu* gpu, uint32_t command_buffer_count, VkCommandBuffer* command_buffers)
 {
-    log_trace("create command buffers");
-
-    // Create the command buffers.
-    VkCommandBufferAllocateInfo alloc_info = {0};
-    alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    alloc_info.commandPool = gpu->command_pool;
-    alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    alloc_info.commandBufferCount = command_buffer_count;
-
-    VK_CHECK_RESULT(vkAllocateCommandBuffers(gpu->device, &alloc_info, command_buffers));
+    allocate_command_buffers(
+        gpu->device, gpu->command_pool, command_buffer_count, command_buffers);
 }
 
 void vky_begin_command_buffer(VkCommandBuffer command_buffer, VkyGpu* gpu)
@@ -656,57 +648,27 @@ void vky_begin_command_buffer(VkCommandBuffer command_buffer, VkyGpu* gpu)
 
 void vky_begin_render_pass(VkCommandBuffer command_buffer, VkyCanvas* canvas, VkyColor clear_color)
 {
-    // log_trace("begin render pass");
-
-    VkRenderPassBeginInfo render_pass_info = {0};
-    render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    render_pass_info.renderPass = canvas->render_pass;
-    render_pass_info.framebuffer = canvas->framebuffers[canvas->current_command_buffer_index];
-    VkRect2D renderArea = {
-        {0, 0}, {canvas->size.framebuffer_width, canvas->size.framebuffer_height}};
-    render_pass_info.renderArea = renderArea;
-
-    VkClearValue clear_color_value = {0};
-    clear_color_value.color.float32[0] = (float)clear_color.rgb[0] / 255.0f;
-    clear_color_value.color.float32[1] = (float)clear_color.rgb[1] / 255.0f;
-    clear_color_value.color.float32[2] = (float)clear_color.rgb[2] / 255.0f;
-    clear_color_value.color.float32[3] = (float)clear_color.alpha / 255.0f;
-
-    VkClearValue clear_depth_value = {0};
-    clear_depth_value.depthStencil.depth = 1.0f;
-    clear_depth_value.depthStencil.stencil = 0;
-
-    VkClearValue clear_values[] = {clear_color_value, clear_depth_value};
-    render_pass_info.clearValueCount = 2;
-    render_pass_info.pClearValues = clear_values;
-
-    vkCmdBeginRenderPass(command_buffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+    begin_render_pass(
+        canvas->render_pass, command_buffer,
+        canvas->framebuffers[canvas->current_command_buffer_index], canvas->size.framebuffer_width,
+        canvas->size.framebuffer_height, &clear_color, true);
 }
 
 void vky_begin_live_render_pass(VkCommandBuffer command_buffer, VkyCanvas* canvas)
 {
-    // log_trace("begin live render pass");
-
-    VkRenderPassBeginInfo render_pass_info = {0};
-    render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    render_pass_info.renderPass = canvas->live_render_pass;
-    render_pass_info.framebuffer = canvas->framebuffers[canvas->current_command_buffer_index];
-    VkRect2D renderArea = {
-        {0, 0}, {canvas->size.framebuffer_width, canvas->size.framebuffer_height}};
-    render_pass_info.renderArea = renderArea;
-
-    vkCmdBeginRenderPass(command_buffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+    begin_render_pass(
+        canvas->live_render_pass, command_buffer,
+        canvas->framebuffers[canvas->current_command_buffer_index], canvas->size.framebuffer_width,
+        canvas->size.framebuffer_height, NULL, false);
 }
 
 void vky_end_render_pass(VkCommandBuffer command_buffer, VkyCanvas* canvas)
 {
-    // log_trace("end render pass");
     vkCmdEndRenderPass(command_buffer);
 }
 
 void vky_end_command_buffer(VkCommandBuffer command_buffer, VkyGpu* gpu)
 {
-    // log_trace("end command buffer");
     VK_CHECK_RESULT(vkEndCommandBuffer(command_buffer));
 }
 
@@ -801,9 +763,7 @@ void vky_submit_command_buffers(
 
 void vky_fill_command_buffers(VkyCanvas* canvas)
 {
-    log_trace("clean and refill command buffers");
-    // Clean all command bufers.
-    // vkResetCommandPool(canvas->gpu->device, canvas->gpu->command_pool, 0);
+    log_trace("refill the command buffers");
     // Refill the main command buffers (one per swap chain image).
     for (uint32_t image_index = 0; image_index < canvas->image_count; image_index++)
     {

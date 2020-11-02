@@ -554,6 +554,39 @@ static void create_render_pass(
 }
 
 
+static void begin_render_pass(
+    VkRenderPass render_pass, VkCommandBuffer cmd_buf, VkFramebuffer framebuffer, uint32_t width,
+    uint32_t height, VkyColor* clear_color, bool clear_depth)
+{
+    VkRenderPassBeginInfo render_pass_info = {0};
+    render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    render_pass_info.renderPass = render_pass;
+    render_pass_info.framebuffer = framebuffer;
+    VkRect2D renderArea = {{0, 0}, {width, height}};
+    render_pass_info.renderArea = renderArea;
+
+    VkClearValue clear_color_value = {0};
+    if (clear_color != NULL)
+    {
+        clear_color_value.color.float32[0] = (float)clear_color->rgb[0] / 255.0f;
+        clear_color_value.color.float32[1] = (float)clear_color->rgb[1] / 255.0f;
+        clear_color_value.color.float32[2] = (float)clear_color->rgb[2] / 255.0f;
+        clear_color_value.color.float32[3] = (float)clear_color->alpha / 255.0f;
+    }
+
+    VkClearValue clear_depth_value = {0};
+    clear_depth_value.depthStencil.depth = 1.0f;
+    clear_depth_value.depthStencil.stencil = 0;
+
+    VkClearValue clear_values[] = {clear_color_value, clear_depth_value};
+    render_pass_info.clearValueCount =
+        (uint32_t)(clear_color != NULL ? 1 : 0) + (uint32_t)(clear_depth ? 1 : 0);
+    render_pass_info.pClearValues = clear_values;
+
+    vkCmdBeginRenderPass(cmd_buf, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+}
+
+
 
 /*************************************************************************************************/
 /*  Data management                                                                              */
