@@ -356,14 +356,8 @@ void vky_prepare_gpu(VkyGpu* gpu, VkSurfaceKHR* surface)
     vky_create_descriptor_pool(gpu);
 
     // Create the compute command buffer.
-    log_trace("allocate compute command buffers");
-    VkCommandBufferAllocateInfo alloc_info = {0};
-    alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    alloc_info.commandPool = gpu->compute_command_pool;
-    alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    alloc_info.commandBufferCount = 1;
-    VK_CHECK_RESULT(
-        vkAllocateCommandBuffers(gpu->device, &alloc_info, &gpu->compute_command_buffer));
+    allocate_command_buffers(
+        gpu->device, gpu->compute_command_pool, 1, &gpu->compute_command_buffer);
     ASSERT(gpu->compute_command_buffer != 0);
 
     vky_create_shared_objects(gpu);

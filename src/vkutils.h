@@ -398,6 +398,19 @@ static void add_device_layers(bool has_validation, VkDeviceCreateInfo* device_cr
     }
 }
 
+static void allocate_command_buffers(
+    VkDevice device, VkCommandPool command_pool, uint32_t count, VkCommandBuffer* cmd_bufs)
+{
+    ASSERT(count > 0);
+    log_trace("allocate %d command buffers", count);
+    VkCommandBufferAllocateInfo alloc_info = {0};
+    alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    alloc_info.commandPool = command_pool;
+    alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    alloc_info.commandBufferCount = count;
+    VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &alloc_info, cmd_bufs));
+}
+
 static uint32_t find_memory_type(
     uint32_t typeFilter, VkMemoryPropertyFlags properties,
     VkPhysicalDeviceMemoryProperties mem_properties)
