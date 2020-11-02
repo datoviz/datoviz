@@ -851,197 +851,6 @@ void vky_draw_indexed_indirect(VkCommandBuffer command_buffer, VkyBufferRegion i
 
 
 /*************************************************************************************************/
-/*  Destroy                                                                                      */
-/*************************************************************************************************/
-
-void vky_destroy_swapchain_resources(VkyCanvas* canvas)
-{
-    log_trace("destroy swapchain resources");
-    VkDevice device = canvas->gpu->device;
-
-    // log_trace("free command buffers");
-    // vkFreeCommandBuffers(canvas->gpu->device, canvas->gpu->command_pool, canvas->image_count,
-    // canvas->command_buffers);
-
-    // Destroy the framebuffers.
-    log_trace("destroy swapchain");
-    for (uint32_t i = 0; i < canvas->image_count; i++)
-    {
-        vkDestroyFramebuffer(device, canvas->framebuffers[i], NULL);
-    }
-
-    // Destroy the depth objects.
-    vkDestroyImageView(device, canvas->depth_image_view, NULL);
-    vkDestroyImage(device, canvas->depth_image, NULL);
-    vkFreeMemory(device, canvas->depth_image_memory, NULL);
-
-    // Destroy the swap chain image views and the swap chain.
-    for (uint32_t i = 0; i < canvas->image_count; i++)
-    {
-        vkDestroyImageView(device, canvas->image_views[i], NULL);
-    }
-
-    if (canvas->swapchain != NULL)
-    {
-        vkDestroySwapchainKHR(device, canvas->swapchain, NULL);
-    }
-    else
-    {
-        // Offscreen rendering.
-        vkDestroyImage(device, canvas->images[0], NULL);
-        vkFreeMemory(device, canvas->image_memory, NULL);
-    }
-
-    FREE(canvas->framebuffers);
-    FREE(canvas->image_views);
-    FREE(canvas->images);
-}
-
-void vky_destroy_canvas(VkyCanvas* canvas)
-{
-    if (canvas == NULL)
-        return;
-    log_trace("destroy canvas");
-
-    if (canvas->cb_close.callback != NULL)
-    {
-        log_trace("calling close callback");
-        canvas->cb_close.callback(canvas, canvas->cb_close.data);
-    }
-
-    if (canvas->app != NULL)
-    {
-        switch (canvas->app->backend)
-        {
-        case VKY_BACKEND_GLFW:
-            // glfwWaitEvents();
-            glfwPollEvents();
-            vky_glfw_wait(canvas);
-            glfwDestroyWindow(canvas->window);
-            canvas->window = NULL;
-            break;
-        default:
-            break;
-        }
-    }
-
-    if (canvas->event_controller)
-        vky_destroy_event_controller(canvas->event_controller);
-
-    if (canvas->scene != NULL)
-    {
-        log_trace("destroy scene while destroying canvas");
-        vky_destroy_scene(canvas->scene);
-    }
-
-    VkDevice device = canvas->gpu->device;
-    vky_destroy_swapchain_resources(canvas);
-
-    if (canvas->surface != 0)
-    {
-        log_trace("destroy surface");
-        vkDestroySurfaceKHR(canvas->gpu->instance, canvas->surface, NULL);
-    }
-
-    // Destroy the sync objects.
-    VkyDrawSync* draw_sync = &canvas->draw_sync;
-    if (draw_sync->image_available_semaphores != NULL)
-    {
-        log_trace("destroy %d sync objects", VKY_MAX_FRAMES_IN_FLIGHT);
-        for (uint32_t i = 0; i < VKY_MAX_FRAMES_IN_FLIGHT; i++)
-        {
-            vkDestroySemaphore(device, draw_sync->render_finished_semaphores[i], NULL);
-            vkDestroySemaphore(device, draw_sync->image_available_semaphores[i], NULL);
-            vkDestroyFence(device, draw_sync->in_flight_fences[i], NULL);
-        }
-
-        FREE(draw_sync->render_finished_semaphores);
-        FREE(draw_sync->image_available_semaphores);
-        FREE(draw_sync->in_flight_fences);
-        FREE(draw_sync->images_in_flight);
-    }
-
-    log_trace("free command buffers");
-    vkFreeCommandBuffers(
-        canvas->gpu->device, canvas->gpu->command_pool, canvas->image_count,
-        canvas->command_buffers);
-
-    // Destroy the render pass.
-    log_trace("destroy render pass");
-    vkDestroyRenderPass(device, canvas->render_pass, NULL);
-    vkDestroyRenderPass(device, canvas->live_render_pass, NULL);
-
-    if (canvas->compute_pipeline != NULL)
-    {
-        vky_destroy_compute_pipeline(canvas->compute_pipeline);
-        FREE(canvas->compute_pipeline);
-    }
-
-    FREE(canvas->command_buffers);
-
-    vky_destroy_guis(canvas);
-    FREE(canvas->guis);
-    FREE(canvas->prompt);
-    FREE(canvas);
-}
-
-void vky_destroy_device(VkyGpu* gpu)
-{
-    log_trace("destroy device");
-    VkDevice device = gpu->device;
-
-    // Destroy buffers.
-    log_trace("destroy buffers");
-    for (uint32_t i = 0; i < gpu->buffer_count; i++)
-    {
-        vky_destroy_buffer(&gpu->buffers[i]);
-    }
-    FREE(gpu->buffers);
-    gpu->buffers = NULL;
-
-    // Destroy textures.
-    log_trace("destroy textures");
-    for (uint32_t i = 0; i < gpu->texture_count; i++)
-    {
-        vky_destroy_texture(&gpu->textures[i]);
-    }
-    FREE(gpu->textures);
-    gpu->textures = NULL;
-
-    log_trace("destroy graphics and compute semaphores");
-    if (gpu->graphics_semaphore)
-        vkDestroySemaphore(device, gpu->graphics_semaphore, NULL);
-    if (gpu->compute_semaphore)
-        vkDestroySemaphore(device, gpu->compute_semaphore, NULL);
-
-    // Destroy the command pool.
-    log_trace("destroy command pools");
-    if (gpu->command_pool)
-        vkDestroyCommandPool(device, gpu->command_pool, NULL);
-    if (gpu->compute_command_pool)
-        vkDestroyCommandPool(device, gpu->compute_command_pool, NULL);
-
-    if (gpu->has_validation)
-    {
-        destroy_debug_utils_messenger_EXT(gpu->instance, gpu->debug_messenger, NULL);
-    }
-
-    log_trace("destroy descriptor pool");
-    if (gpu->descriptor_pool)
-        vkDestroyDescriptorPool(gpu->device, gpu->descriptor_pool, NULL);
-
-    // Destroy the device.
-    log_trace("destroy device");
-    vkDestroyDevice(device, NULL);
-
-    // Destroy the instance.
-    log_trace("destroy instance");
-    vkDestroyInstance(gpu->instance, NULL);
-}
-
-
-
-/*************************************************************************************************/
 /*  Vertex layout                                                                                */
 /*************************************************************************************************/
 
@@ -1101,11 +910,7 @@ void vky_add_resource_binding(VkyResourceLayout* layout, uint32_t binding, VkDes
     }
 }
 
-void vky_destroy_resource_layout(VkyResourceLayout* layout)
-{
-    FREE(layout->binding_types);
-    // FREE(layout->alignedSizes);
-}
+void vky_destroy_resource_layout(VkyResourceLayout* layout) { FREE(layout->binding_types); }
 
 
 
@@ -1299,8 +1104,8 @@ VkyGraphicsPipeline vky_create_graphics_pipeline(
 
     VkPipelineViewportStateCreateInfo viewport_state = {0};
     viewport_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-    viewport_state.viewportCount =
-        1; // NOTE: unused because the viewport/scissor are set in the dynamic states
+    // NOTE: unused because the viewport/scissor are set in the dynamic states
+    viewport_state.viewportCount = 1;
     viewport_state.scissorCount = 1;
 
     // Dynamic state
@@ -1420,352 +1225,6 @@ void vky_destroy_graphics_pipeline(VkyGraphicsPipeline* gp)
     vkDestroyPipelineLayout(gp->gpu->device, gp->pipeline_layout, NULL);
     vkDestroyPipeline(gp->gpu->device, gp->pipeline, NULL);
     FREE(gp->descriptor_sets);
-}
-
-
-
-/*************************************************************************************************/
-/*  Compute pipeline                                                                             */
-/*************************************************************************************************/
-
-static void vky_buffer_barrier(
-    VkCommandBuffer cmd_buf, VkyBufferRegion* buffer, VkAccessFlags src_access,
-    VkAccessFlags dst_access, VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage)
-{
-    VkyGpu* gpu = buffer->buffer->gpu;
-    if (gpu->queue_indices.graphics_family == gpu->queue_indices.compute_family)
-        return;
-
-    log_warn("Compute resource synchronization has never been tested yet on GPUs with different "
-             "graphics/compute queues!");
-
-    uint32_t src_family = gpu->queue_indices.graphics_family;
-    uint32_t dst_family = gpu->queue_indices.graphics_family;
-
-    if (src_stage & VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT)
-    {
-        src_family = gpu->queue_indices.compute_family;
-    }
-    else if (dst_stage & VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT)
-    {
-        dst_family = gpu->queue_indices.compute_family;
-    }
-
-    VkBufferMemoryBarrier barrier = {
-        VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
-        NULL,
-        src_access,
-        dst_access,
-        src_family,
-        dst_family,
-        buffer->buffer->raw_buffer,
-        buffer->offset,
-        buffer->size,
-    };
-
-    vkCmdPipelineBarrier(cmd_buf, src_stage, dst_stage, 0, 0, NULL, 1, &barrier, 0, NULL);
-}
-
-static void vky_texture_barrier(
-    VkCommandBuffer cmd_buf, VkyTexture* texture, VkAccessFlags src_access,
-    VkAccessFlags dst_access, VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage)
-{
-    VkyGpu* gpu = texture->gpu;
-    if (gpu->queue_indices.graphics_family == gpu->queue_indices.compute_family)
-        return;
-
-    uint32_t src_family = gpu->queue_indices.graphics_family;
-    uint32_t dst_family = gpu->queue_indices.graphics_family;
-
-    if (src_stage & VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT)
-    {
-        src_family = gpu->queue_indices.compute_family;
-    }
-    else if (dst_stage & VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT)
-    {
-        dst_family = gpu->queue_indices.compute_family;
-    }
-
-    VkImageMemoryBarrier barrier = {
-        VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-        NULL,
-        src_access,
-        dst_access,
-        VK_IMAGE_LAYOUT_GENERAL,
-        VK_IMAGE_LAYOUT_GENERAL,
-        src_family,
-        dst_family,
-        texture->image,
-        {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1},
-    };
-    vkCmdPipelineBarrier(cmd_buf, src_stage, dst_stage, 0, 0, NULL, 0, NULL, 1, &barrier);
-}
-
-static void vky_resource_barrier(
-    VkCommandBuffer cmd_buf, VkDescriptorType descriptor_type, void* resource,
-    VkAccessFlags src_access, VkAccessFlags dst_access, VkPipelineStageFlags src_stage,
-    VkPipelineStageFlags dst_stage)
-{
-    switch (descriptor_type)
-    {
-
-    case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER:
-        vky_buffer_barrier(
-            cmd_buf, (VkyBufferRegion*)resource, src_access, dst_access, src_stage, dst_stage);
-        break;
-
-    case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE:
-        vky_texture_barrier(
-            cmd_buf, (VkyTexture*)resource, src_access, dst_access, src_stage, dst_stage);
-        break;
-
-    default:
-        log_error("resource type not supported: %d", descriptor_type);
-        break;
-    }
-}
-
-static void
-vky_release_compute_resource(VkyGpu* gpu, VkDescriptorType descriptor_type, void* resource)
-{
-    if (gpu->queue_indices.graphics_family == gpu->queue_indices.compute_family)
-        return;
-
-    // Create a transient command buffer for setting up the initial buffer transfer state
-    log_trace("release compute resources");
-    VkCommandBuffer transferCmd = {0};
-    VkCommandBufferAllocateInfo alloc_info = {0};
-    alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    alloc_info.commandPool = gpu->compute_command_pool;
-    alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    alloc_info.commandBufferCount = 1;
-    VK_CHECK_RESULT(vkAllocateCommandBuffers(gpu->device, &alloc_info, &transferCmd));
-
-    vky_resource_barrier(
-        transferCmd, descriptor_type, resource, 0, VK_ACCESS_SHADER_WRITE_BIT,
-        VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
-    vky_resource_barrier(
-        transferCmd, descriptor_type, resource, VK_ACCESS_SHADER_WRITE_BIT, 0,
-        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT);
-
-    vkEndCommandBuffer(transferCmd);
-
-    VkSubmitInfo submit_info = {0};
-    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submit_info.commandBufferCount = 1;
-    submit_info.pCommandBuffers = &transferCmd;
-
-    // Create fence to ensure that the command buffer has finished executing
-    VkFenceCreateInfo fenceInfo = {0};
-    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    VkFence fence = {0};
-    vkCreateFence(gpu->device, &fenceInfo, NULL, &fence);
-    vkQueueSubmit(gpu->compute_queue, 1, &submit_info, fence);
-    // Wait for the fence to signal that command buffer has finished executing
-    vkWaitForFences(gpu->device, 1, &fence, VK_TRUE, UINT64_MAX);
-    vkDestroyFence(gpu->device, fence, NULL);
-    vkFreeCommandBuffers(gpu->device, gpu->compute_command_pool, 1, &transferCmd);
-}
-
-VkyComputePipeline
-vky_create_compute_pipeline(VkyGpu* gpu, const char* filename, VkyResourceLayout resource_layout)
-{
-
-    log_trace("create compute pipeline");
-    VkyComputePipeline gp = {0};
-    gp.gpu = gpu;
-    gp.resource_layout = resource_layout;
-
-    // Descriptor set layout.
-    ASSERT(gp.resource_layout.binding_count <= 100);
-    VkDescriptorSetLayoutBinding layout_bindings[100];
-    for (uint32_t i = 0; i < gp.resource_layout.binding_count; i++)
-    {
-        VkDescriptorType dtype = gp.resource_layout.binding_types[i];
-        layout_bindings[i].binding = i;
-        layout_bindings[i].descriptorType = dtype;
-        layout_bindings[i].descriptorCount = 1;
-        layout_bindings[i].stageFlags = VK_SHADER_STAGE_ALL;
-        layout_bindings[i].pImmutableSamplers = NULL; // Optional
-    }
-
-    // Create descriptor set layout.
-    VkDescriptorSetLayoutCreateInfo layout_info = {0};
-    layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layout_info.bindingCount = gp.resource_layout.binding_count;
-    layout_info.pBindings = layout_bindings;
-
-    log_trace("create descriptor set layout");
-    VK_CHECK_RESULT(
-        vkCreateDescriptorSetLayout(gpu->device, &layout_info, NULL, &gp.descriptor_set_layout));
-
-    // Pipeline layout.
-    VkPipelineLayoutCreateInfo pipeline_layout_info = {0};
-    pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipeline_layout_info.setLayoutCount = 1;
-    pipeline_layout_info.pSetLayouts = &gp.descriptor_set_layout;
-
-    VK_CHECK_RESULT(
-        vkCreatePipelineLayout(gpu->device, &pipeline_layout_info, NULL, &gp.pipeline_layout));
-
-    // Allocate descriptor sets.
-    ASSERT(gp.resource_layout.image_count == 1);
-    ASSERT(gp.resource_layout.image_count <= 100);
-    VkDescriptorSetLayout layouts[100]; // NOTE: should be 1
-    for (uint32_t i = 0; i < gp.resource_layout.image_count; i++)
-    {
-        layouts[i] = gp.descriptor_set_layout;
-    }
-    VkDescriptorSetAllocateInfo alloc_info = {0};
-    alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    ASSERT(gpu->descriptor_pool != 0);
-    alloc_info.descriptorPool = gpu->descriptor_pool;
-    alloc_info.descriptorSetCount = gp.resource_layout.image_count;
-    alloc_info.pSetLayouts = layouts;
-
-    gp.descriptor_set_count = gp.resource_layout.image_count;
-    gp.descriptor_sets = calloc(gp.resource_layout.image_count, sizeof(VkDescriptorSet));
-    log_trace("allocate descriptor sets");
-    if (gp.resource_layout.binding_count > 0)
-    {
-        VK_CHECK_RESULT(vkAllocateDescriptorSets(gpu->device, &alloc_info, gp.descriptor_sets));
-    }
-    ASSERT(gp.descriptor_sets != NULL);
-
-    // Create the shader and pipeline.
-    VkComputePipelineCreateInfo pipelineInfo = {0};
-    pipelineInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
-    pipelineInfo.layout = gp.pipeline_layout;
-    pipelineInfo.stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    pipelineInfo.stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
-    pipelineInfo.stage.pName = "main";
-    char path[1024];
-    snprintf(path, sizeof(path), "%s/spirv/%s", DATA_DIR, filename);
-    pipelineInfo.stage.module = gp.shader = vky_create_shader_module_from_file(gpu, path);
-    pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
-    VK_CHECK_RESULT(vkCreateComputePipelines(
-        gpu->device, VK_NULL_HANDLE, 1, &pipelineInfo, NULL, &gp.pipeline));
-
-    return gp;
-}
-
-void vky_begin_compute(VkyGpu* gpu)
-{
-    log_trace("begin compute");
-
-    if (gpu->has_graphics)
-    {
-        // Signal the semaphore
-        VkSubmitInfo submitInfo = {0};
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submitInfo.signalSemaphoreCount = 1;
-        submitInfo.pSignalSemaphores = &gpu->compute_semaphore;
-        vkQueueSubmit(gpu->graphics_queue, 1, &submitInfo, VK_NULL_HANDLE);
-        vkQueueWaitIdle(gpu->graphics_queue);
-    }
-    // Build compute command buffer.
-    VkCommandBufferBeginInfo cmdBufInfo = {0};
-    cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    VkCommandBuffer cmd_buf = gpu->compute_command_buffer;
-    ASSERT(cmd_buf != 0);
-    vkBeginCommandBuffer(cmd_buf, &cmdBufInfo);
-}
-
-void vky_compute_acquire(
-    VkyComputePipeline* pipeline, VkDescriptorType descriptor_type, void* resource,
-    VkPipelineStageFlagBits stage)
-{
-    vky_resource_barrier(
-        pipeline->gpu->compute_command_buffer, descriptor_type, resource, 0,
-        VK_ACCESS_SHADER_WRITE_BIT, stage, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
-}
-
-void vky_compute_release(
-    VkyComputePipeline* pipeline, VkDescriptorType descriptor_type, void* resource,
-    VkPipelineStageFlagBits stage)
-{
-    vky_resource_barrier(
-        pipeline->gpu->compute_command_buffer, descriptor_type, resource,
-        VK_ACCESS_SHADER_WRITE_BIT, 0, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, stage);
-}
-
-void vky_compute(VkyComputePipeline* pipeline, uint32_t nx, uint32_t ny, uint32_t nz)
-{
-    log_trace("make compute");
-    // NOTE: the passed buffer MUST be the same as the storage buffer bound via
-    // vky_bind_resources();
-
-    VkyGpu* gpu = pipeline->gpu;
-    VkCommandBuffer cmd_buf = gpu->compute_command_buffer;
-
-    // Dispatch the compute job
-    vkCmdBindPipeline(cmd_buf, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline->pipeline);
-    vkCmdBindDescriptorSets(
-        cmd_buf, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline->pipeline_layout, 0, 1,
-        pipeline->descriptor_sets, 0, 0);
-    vkCmdDispatch(cmd_buf, nx, ny, nz);
-}
-
-void vky_end_compute(
-    VkyGpu* gpu, uint32_t resource_count, VkDescriptorType* descriptor_types, void** resources)
-{
-    log_trace("end compute");
-
-    vkEndCommandBuffer(gpu->compute_command_buffer);
-
-    for (uint32_t i = 0; i < resource_count; i++)
-    {
-        vky_release_compute_resource(gpu, descriptor_types[i], resources[i]);
-    }
-
-    gpu->has_compute = true;
-}
-
-void vky_compute_submit(VkyGpu* gpu)
-{
-    if (!gpu->has_compute)
-        return;
-
-    vkQueueWaitIdle(gpu->graphics_queue);
-
-    // Wait for rendering finished
-    VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-
-    // Submit compute commands
-    // log_trace("submit compute command buffer");
-    VkSubmitInfo computeSubmitInfo = {0};
-    computeSubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    computeSubmitInfo.commandBufferCount = 1;
-    computeSubmitInfo.pCommandBuffers = &gpu->compute_command_buffer;
-
-    if (gpu->has_graphics)
-    {
-        computeSubmitInfo.waitSemaphoreCount = 1;
-        computeSubmitInfo.pWaitSemaphores = &gpu->graphics_semaphore;
-        computeSubmitInfo.pWaitDstStageMask = &waitStageMask;
-        computeSubmitInfo.signalSemaphoreCount = 1;
-        computeSubmitInfo.pSignalSemaphores = &gpu->compute_semaphore;
-    }
-
-    vkQueueSubmit(gpu->compute_queue, 1, &computeSubmitInfo, VK_NULL_HANDLE);
-}
-
-void vky_compute_wait(VkyGpu* gpu) { vkQueueWaitIdle(gpu->compute_queue); }
-
-void vky_destroy_compute_pipeline(VkyComputePipeline* pipeline)
-{
-    if (pipeline == NULL)
-    {
-        log_trace("skip destruction of null compute pipeline");
-        return;
-    }
-    log_trace("destroy compute pipeline");
-    VkDevice device = pipeline->gpu->device;
-    ASSERT(pipeline->shader != 0);
-    vkDestroyShaderModule(device, pipeline->shader, NULL);
-    vkDestroyPipelineLayout(device, pipeline->pipeline_layout, NULL);
-    vkDestroyDescriptorSetLayout(device, pipeline->descriptor_set_layout, NULL);
-    vkDestroyPipeline(device, pipeline->pipeline, NULL);
 }
 
 
@@ -1950,7 +1409,6 @@ VkyBuffer* vky_find_buffer(VkyGpu* gpu, VkDeviceSize size, VkBufferUsageFlagBits
     return vky_add_buffer(gpu, size, flags);
 }
 
-
 VkyTextureParams vky_default_texture_params(uint32_t width, uint32_t height, uint32_t depth)
 {
     ASSERT(width > 0);
@@ -1969,6 +1427,8 @@ VkyTextureParams vky_default_texture_params(uint32_t width, uint32_t height, uin
         false};
     return params;
 }
+
+
 
 /*************************************************************************************************/
 /*  Common textures                                                                              */
@@ -2447,4 +1907,541 @@ void vky_destroy_dynamic_uniform_buffer(VkyUniformBuffer* dubo)
     FREE(dubo->memories);
     FREE(dubo->data);
     FREE(dubo->cdata);
+}
+
+
+
+/*************************************************************************************************/
+/*  Compute pipeline                                                                             */
+/*************************************************************************************************/
+
+static void vky_buffer_barrier(
+    VkCommandBuffer cmd_buf, VkyBufferRegion* buffer, VkAccessFlags src_access,
+    VkAccessFlags dst_access, VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage)
+{
+    VkyGpu* gpu = buffer->buffer->gpu;
+    if (gpu->queue_indices.graphics_family == gpu->queue_indices.compute_family)
+        return;
+
+    log_warn("Compute resource synchronization has never been tested yet on GPUs with different "
+             "graphics/compute queues!");
+
+    uint32_t src_family = gpu->queue_indices.graphics_family;
+    uint32_t dst_family = gpu->queue_indices.graphics_family;
+
+    if (src_stage & VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT)
+    {
+        src_family = gpu->queue_indices.compute_family;
+    }
+    else if (dst_stage & VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT)
+    {
+        dst_family = gpu->queue_indices.compute_family;
+    }
+
+    VkBufferMemoryBarrier barrier = {
+        VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+        NULL,
+        src_access,
+        dst_access,
+        src_family,
+        dst_family,
+        buffer->buffer->raw_buffer,
+        buffer->offset,
+        buffer->size,
+    };
+
+    vkCmdPipelineBarrier(cmd_buf, src_stage, dst_stage, 0, 0, NULL, 1, &barrier, 0, NULL);
+}
+
+static void vky_texture_barrier(
+    VkCommandBuffer cmd_buf, VkyTexture* texture, VkAccessFlags src_access,
+    VkAccessFlags dst_access, VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage)
+{
+    VkyGpu* gpu = texture->gpu;
+    if (gpu->queue_indices.graphics_family == gpu->queue_indices.compute_family)
+        return;
+
+    uint32_t src_family = gpu->queue_indices.graphics_family;
+    uint32_t dst_family = gpu->queue_indices.graphics_family;
+
+    if (src_stage & VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT)
+    {
+        src_family = gpu->queue_indices.compute_family;
+    }
+    else if (dst_stage & VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT)
+    {
+        dst_family = gpu->queue_indices.compute_family;
+    }
+
+    VkImageMemoryBarrier barrier = {
+        VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+        NULL,
+        src_access,
+        dst_access,
+        VK_IMAGE_LAYOUT_GENERAL,
+        VK_IMAGE_LAYOUT_GENERAL,
+        src_family,
+        dst_family,
+        texture->image,
+        {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1},
+    };
+    vkCmdPipelineBarrier(cmd_buf, src_stage, dst_stage, 0, 0, NULL, 0, NULL, 1, &barrier);
+}
+
+static void vky_resource_barrier(
+    VkCommandBuffer cmd_buf, VkDescriptorType descriptor_type, void* resource,
+    VkAccessFlags src_access, VkAccessFlags dst_access, VkPipelineStageFlags src_stage,
+    VkPipelineStageFlags dst_stage)
+{
+    switch (descriptor_type)
+    {
+
+    case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER:
+        vky_buffer_barrier(
+            cmd_buf, (VkyBufferRegion*)resource, src_access, dst_access, src_stage, dst_stage);
+        break;
+
+    case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE:
+        vky_texture_barrier(
+            cmd_buf, (VkyTexture*)resource, src_access, dst_access, src_stage, dst_stage);
+        break;
+
+    default:
+        log_error("resource type not supported: %d", descriptor_type);
+        break;
+    }
+}
+
+static void
+vky_release_compute_resource(VkyGpu* gpu, VkDescriptorType descriptor_type, void* resource)
+{
+    if (gpu->queue_indices.graphics_family == gpu->queue_indices.compute_family)
+        return;
+
+    // Create a transient command buffer for setting up the initial buffer transfer state
+    log_trace("release compute resources");
+    VkCommandBuffer transferCmd = {0};
+    VkCommandBufferAllocateInfo alloc_info = {0};
+    alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    alloc_info.commandPool = gpu->compute_command_pool;
+    alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    alloc_info.commandBufferCount = 1;
+    VK_CHECK_RESULT(vkAllocateCommandBuffers(gpu->device, &alloc_info, &transferCmd));
+
+    vky_resource_barrier(
+        transferCmd, descriptor_type, resource, 0, VK_ACCESS_SHADER_WRITE_BIT,
+        VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
+    vky_resource_barrier(
+        transferCmd, descriptor_type, resource, VK_ACCESS_SHADER_WRITE_BIT, 0,
+        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT);
+
+    vkEndCommandBuffer(transferCmd);
+
+    VkSubmitInfo submit_info = {0};
+    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit_info.commandBufferCount = 1;
+    submit_info.pCommandBuffers = &transferCmd;
+
+    // Create fence to ensure that the command buffer has finished executing
+    VkFenceCreateInfo fenceInfo = {0};
+    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    VkFence fence = {0};
+    vkCreateFence(gpu->device, &fenceInfo, NULL, &fence);
+    vkQueueSubmit(gpu->compute_queue, 1, &submit_info, fence);
+    // Wait for the fence to signal that command buffer has finished executing
+    vkWaitForFences(gpu->device, 1, &fence, VK_TRUE, UINT64_MAX);
+    vkDestroyFence(gpu->device, fence, NULL);
+    vkFreeCommandBuffers(gpu->device, gpu->compute_command_pool, 1, &transferCmd);
+}
+
+VkyComputePipeline
+vky_create_compute_pipeline(VkyGpu* gpu, const char* filename, VkyResourceLayout resource_layout)
+{
+
+    log_trace("create compute pipeline");
+    VkyComputePipeline gp = {0};
+    gp.gpu = gpu;
+    gp.resource_layout = resource_layout;
+
+    // Descriptor set layout.
+    ASSERT(gp.resource_layout.binding_count <= 100);
+    VkDescriptorSetLayoutBinding layout_bindings[100];
+    for (uint32_t i = 0; i < gp.resource_layout.binding_count; i++)
+    {
+        VkDescriptorType dtype = gp.resource_layout.binding_types[i];
+        layout_bindings[i].binding = i;
+        layout_bindings[i].descriptorType = dtype;
+        layout_bindings[i].descriptorCount = 1;
+        layout_bindings[i].stageFlags = VK_SHADER_STAGE_ALL;
+        layout_bindings[i].pImmutableSamplers = NULL; // Optional
+    }
+
+    // Create descriptor set layout.
+    VkDescriptorSetLayoutCreateInfo layout_info = {0};
+    layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layout_info.bindingCount = gp.resource_layout.binding_count;
+    layout_info.pBindings = layout_bindings;
+
+    log_trace("create descriptor set layout");
+    VK_CHECK_RESULT(
+        vkCreateDescriptorSetLayout(gpu->device, &layout_info, NULL, &gp.descriptor_set_layout));
+
+    // Pipeline layout.
+    VkPipelineLayoutCreateInfo pipeline_layout_info = {0};
+    pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pipeline_layout_info.setLayoutCount = 1;
+    pipeline_layout_info.pSetLayouts = &gp.descriptor_set_layout;
+
+    VK_CHECK_RESULT(
+        vkCreatePipelineLayout(gpu->device, &pipeline_layout_info, NULL, &gp.pipeline_layout));
+
+    // Allocate descriptor sets.
+    ASSERT(gp.resource_layout.image_count == 1);
+    ASSERT(gp.resource_layout.image_count <= 100);
+    VkDescriptorSetLayout layouts[100]; // NOTE: should be 1
+    for (uint32_t i = 0; i < gp.resource_layout.image_count; i++)
+    {
+        layouts[i] = gp.descriptor_set_layout;
+    }
+    VkDescriptorSetAllocateInfo alloc_info = {0};
+    alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    ASSERT(gpu->descriptor_pool != 0);
+    alloc_info.descriptorPool = gpu->descriptor_pool;
+    alloc_info.descriptorSetCount = gp.resource_layout.image_count;
+    alloc_info.pSetLayouts = layouts;
+
+    gp.descriptor_set_count = gp.resource_layout.image_count;
+    gp.descriptor_sets = calloc(gp.resource_layout.image_count, sizeof(VkDescriptorSet));
+    log_trace("allocate descriptor sets");
+    if (gp.resource_layout.binding_count > 0)
+    {
+        VK_CHECK_RESULT(vkAllocateDescriptorSets(gpu->device, &alloc_info, gp.descriptor_sets));
+    }
+    ASSERT(gp.descriptor_sets != NULL);
+
+    // Create the shader and pipeline.
+    VkComputePipelineCreateInfo pipelineInfo = {0};
+    pipelineInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+    pipelineInfo.layout = gp.pipeline_layout;
+    pipelineInfo.stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    pipelineInfo.stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+    pipelineInfo.stage.pName = "main";
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/spirv/%s", DATA_DIR, filename);
+    pipelineInfo.stage.module = gp.shader = vky_create_shader_module_from_file(gpu, path);
+    pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+    VK_CHECK_RESULT(vkCreateComputePipelines(
+        gpu->device, VK_NULL_HANDLE, 1, &pipelineInfo, NULL, &gp.pipeline));
+
+    return gp;
+}
+
+void vky_begin_compute(VkyGpu* gpu)
+{
+    log_trace("begin compute");
+
+    if (gpu->has_graphics)
+    {
+        // Signal the semaphore
+        VkSubmitInfo submitInfo = {0};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores = &gpu->compute_semaphore;
+        vkQueueSubmit(gpu->graphics_queue, 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(gpu->graphics_queue);
+    }
+    // Build compute command buffer.
+    VkCommandBufferBeginInfo cmdBufInfo = {0};
+    cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    VkCommandBuffer cmd_buf = gpu->compute_command_buffer;
+    ASSERT(cmd_buf != 0);
+    vkBeginCommandBuffer(cmd_buf, &cmdBufInfo);
+}
+
+void vky_compute_acquire(
+    VkyComputePipeline* pipeline, VkDescriptorType descriptor_type, void* resource,
+    VkPipelineStageFlagBits stage)
+{
+    vky_resource_barrier(
+        pipeline->gpu->compute_command_buffer, descriptor_type, resource, 0,
+        VK_ACCESS_SHADER_WRITE_BIT, stage, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
+}
+
+void vky_compute_release(
+    VkyComputePipeline* pipeline, VkDescriptorType descriptor_type, void* resource,
+    VkPipelineStageFlagBits stage)
+{
+    vky_resource_barrier(
+        pipeline->gpu->compute_command_buffer, descriptor_type, resource,
+        VK_ACCESS_SHADER_WRITE_BIT, 0, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, stage);
+}
+
+void vky_compute(VkyComputePipeline* pipeline, uint32_t nx, uint32_t ny, uint32_t nz)
+{
+    log_trace("make compute");
+    // NOTE: the passed buffer MUST be the same as the storage buffer bound via
+    // vky_bind_resources();
+
+    VkyGpu* gpu = pipeline->gpu;
+    VkCommandBuffer cmd_buf = gpu->compute_command_buffer;
+
+    // Dispatch the compute job
+    vkCmdBindPipeline(cmd_buf, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline->pipeline);
+    vkCmdBindDescriptorSets(
+        cmd_buf, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline->pipeline_layout, 0, 1,
+        pipeline->descriptor_sets, 0, 0);
+    vkCmdDispatch(cmd_buf, nx, ny, nz);
+}
+
+void vky_end_compute(
+    VkyGpu* gpu, uint32_t resource_count, VkDescriptorType* descriptor_types, void** resources)
+{
+    log_trace("end compute");
+
+    vkEndCommandBuffer(gpu->compute_command_buffer);
+
+    for (uint32_t i = 0; i < resource_count; i++)
+    {
+        vky_release_compute_resource(gpu, descriptor_types[i], resources[i]);
+    }
+
+    gpu->has_compute = true;
+}
+
+void vky_compute_submit(VkyGpu* gpu)
+{
+    if (!gpu->has_compute)
+        return;
+
+    vkQueueWaitIdle(gpu->graphics_queue);
+
+    // Wait for rendering finished
+    VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+
+    // Submit compute commands
+    // log_trace("submit compute command buffer");
+    VkSubmitInfo computeSubmitInfo = {0};
+    computeSubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    computeSubmitInfo.commandBufferCount = 1;
+    computeSubmitInfo.pCommandBuffers = &gpu->compute_command_buffer;
+
+    if (gpu->has_graphics)
+    {
+        computeSubmitInfo.waitSemaphoreCount = 1;
+        computeSubmitInfo.pWaitSemaphores = &gpu->graphics_semaphore;
+        computeSubmitInfo.pWaitDstStageMask = &waitStageMask;
+        computeSubmitInfo.signalSemaphoreCount = 1;
+        computeSubmitInfo.pSignalSemaphores = &gpu->compute_semaphore;
+    }
+
+    vkQueueSubmit(gpu->compute_queue, 1, &computeSubmitInfo, VK_NULL_HANDLE);
+}
+
+void vky_compute_wait(VkyGpu* gpu) { vkQueueWaitIdle(gpu->compute_queue); }
+
+void vky_destroy_compute_pipeline(VkyComputePipeline* pipeline)
+{
+    if (pipeline == NULL)
+    {
+        log_trace("skip destruction of null compute pipeline");
+        return;
+    }
+    log_trace("destroy compute pipeline");
+    VkDevice device = pipeline->gpu->device;
+    ASSERT(pipeline->shader != 0);
+    vkDestroyShaderModule(device, pipeline->shader, NULL);
+    vkDestroyPipelineLayout(device, pipeline->pipeline_layout, NULL);
+    vkDestroyDescriptorSetLayout(device, pipeline->descriptor_set_layout, NULL);
+    vkDestroyPipeline(device, pipeline->pipeline, NULL);
+}
+
+
+
+/*************************************************************************************************/
+/*  Destruction                                                                                  */
+/*************************************************************************************************/
+
+void vky_destroy_swapchain_resources(VkyCanvas* canvas)
+{
+    log_trace("destroy swapchain resources");
+    VkDevice device = canvas->gpu->device;
+
+    // log_trace("free command buffers");
+    // vkFreeCommandBuffers(canvas->gpu->device, canvas->gpu->command_pool, canvas->image_count,
+    // canvas->command_buffers);
+
+    // Destroy the framebuffers.
+    log_trace("destroy swapchain");
+    for (uint32_t i = 0; i < canvas->image_count; i++)
+    {
+        vkDestroyFramebuffer(device, canvas->framebuffers[i], NULL);
+    }
+
+    // Destroy the depth objects.
+    vkDestroyImageView(device, canvas->depth_image_view, NULL);
+    vkDestroyImage(device, canvas->depth_image, NULL);
+    vkFreeMemory(device, canvas->depth_image_memory, NULL);
+
+    // Destroy the swap chain image views and the swap chain.
+    for (uint32_t i = 0; i < canvas->image_count; i++)
+    {
+        vkDestroyImageView(device, canvas->image_views[i], NULL);
+    }
+
+    if (canvas->swapchain != NULL)
+    {
+        vkDestroySwapchainKHR(device, canvas->swapchain, NULL);
+    }
+    else
+    {
+        // Offscreen rendering.
+        vkDestroyImage(device, canvas->images[0], NULL);
+        vkFreeMemory(device, canvas->image_memory, NULL);
+    }
+
+    FREE(canvas->framebuffers);
+    FREE(canvas->image_views);
+    FREE(canvas->images);
+}
+
+void vky_destroy_canvas(VkyCanvas* canvas)
+{
+    if (canvas == NULL)
+        return;
+    log_trace("destroy canvas");
+
+    if (canvas->cb_close.callback != NULL)
+    {
+        log_trace("calling close callback");
+        canvas->cb_close.callback(canvas, canvas->cb_close.data);
+    }
+
+    if (canvas->app != NULL)
+    {
+        switch (canvas->app->backend)
+        {
+        case VKY_BACKEND_GLFW:
+            // glfwWaitEvents();
+            glfwPollEvents();
+            vky_glfw_wait(canvas);
+            glfwDestroyWindow(canvas->window);
+            canvas->window = NULL;
+            break;
+        default:
+            break;
+        }
+    }
+
+    if (canvas->event_controller)
+        vky_destroy_event_controller(canvas->event_controller);
+
+    if (canvas->scene != NULL)
+    {
+        log_trace("destroy scene while destroying canvas");
+        vky_destroy_scene(canvas->scene);
+    }
+
+    VkDevice device = canvas->gpu->device;
+    vky_destroy_swapchain_resources(canvas);
+
+    if (canvas->surface != 0)
+    {
+        log_trace("destroy surface");
+        vkDestroySurfaceKHR(canvas->gpu->instance, canvas->surface, NULL);
+    }
+
+    // Destroy the sync objects.
+    VkyDrawSync* draw_sync = &canvas->draw_sync;
+    if (draw_sync->image_available_semaphores != NULL)
+    {
+        log_trace("destroy %d sync objects", VKY_MAX_FRAMES_IN_FLIGHT);
+        for (uint32_t i = 0; i < VKY_MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            vkDestroySemaphore(device, draw_sync->render_finished_semaphores[i], NULL);
+            vkDestroySemaphore(device, draw_sync->image_available_semaphores[i], NULL);
+            vkDestroyFence(device, draw_sync->in_flight_fences[i], NULL);
+        }
+
+        FREE(draw_sync->render_finished_semaphores);
+        FREE(draw_sync->image_available_semaphores);
+        FREE(draw_sync->in_flight_fences);
+        FREE(draw_sync->images_in_flight);
+    }
+
+    log_trace("free command buffers");
+    vkFreeCommandBuffers(
+        canvas->gpu->device, canvas->gpu->command_pool, canvas->image_count,
+        canvas->command_buffers);
+
+    // Destroy the render pass.
+    log_trace("destroy render pass");
+    vkDestroyRenderPass(device, canvas->render_pass, NULL);
+    vkDestroyRenderPass(device, canvas->live_render_pass, NULL);
+
+    if (canvas->compute_pipeline != NULL)
+    {
+        vky_destroy_compute_pipeline(canvas->compute_pipeline);
+        FREE(canvas->compute_pipeline);
+    }
+
+    FREE(canvas->command_buffers);
+
+    vky_destroy_guis(canvas);
+    FREE(canvas->guis);
+    FREE(canvas->prompt);
+    FREE(canvas);
+}
+
+void vky_destroy_device(VkyGpu* gpu)
+{
+    log_trace("destroy device");
+    VkDevice device = gpu->device;
+
+    // Destroy buffers.
+    log_trace("destroy buffers");
+    for (uint32_t i = 0; i < gpu->buffer_count; i++)
+    {
+        vky_destroy_buffer(&gpu->buffers[i]);
+    }
+    FREE(gpu->buffers);
+    gpu->buffers = NULL;
+
+    // Destroy textures.
+    log_trace("destroy textures");
+    for (uint32_t i = 0; i < gpu->texture_count; i++)
+    {
+        vky_destroy_texture(&gpu->textures[i]);
+    }
+    FREE(gpu->textures);
+    gpu->textures = NULL;
+
+    log_trace("destroy graphics and compute semaphores");
+    if (gpu->graphics_semaphore)
+        vkDestroySemaphore(device, gpu->graphics_semaphore, NULL);
+    if (gpu->compute_semaphore)
+        vkDestroySemaphore(device, gpu->compute_semaphore, NULL);
+
+    // Destroy the command pool.
+    log_trace("destroy command pools");
+    if (gpu->command_pool)
+        vkDestroyCommandPool(device, gpu->command_pool, NULL);
+    if (gpu->compute_command_pool)
+        vkDestroyCommandPool(device, gpu->compute_command_pool, NULL);
+
+    if (gpu->has_validation)
+    {
+        destroy_debug_utils_messenger_EXT(gpu->instance, gpu->debug_messenger, NULL);
+    }
+
+    log_trace("destroy descriptor pool");
+    if (gpu->descriptor_pool)
+        vkDestroyDescriptorPool(gpu->device, gpu->descriptor_pool, NULL);
+
+    // Destroy the device.
+    log_trace("destroy device");
+    vkDestroyDevice(device, NULL);
+
+    // Destroy the instance.
+    log_trace("destroy instance");
+    vkDestroyInstance(gpu->instance, NULL);
 }

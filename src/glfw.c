@@ -2,6 +2,10 @@
 
 
 
+/*************************************************************************************************/
+/*  Event callbacks                                                                              */
+/*************************************************************************************************/
+
 static void _mouse_wheel_callback(GLFWwindow* window, double dx, double dy)
 {
     // Update the MouseStateMachine when scrolling.
@@ -103,6 +107,12 @@ void vky_glfw_get_keyboard(GLFWwindow* window, VkyKey* key, uint32_t* modifiers)
     }
 }
 
+
+
+/*************************************************************************************************/
+/*  Canvas creation                                                                              */
+/*************************************************************************************************/
+
 VkyCanvas* vky_glfw_create_canvas(VkyApp* app, uint32_t width, uint32_t height)
 {
     log_trace("create glfw canvas with size %dx%d", width, height);
@@ -113,9 +123,7 @@ VkyCanvas* vky_glfw_create_canvas(VkyApp* app, uint32_t width, uint32_t height)
 
     VkSurfaceKHR surface;
     if (glfwCreateWindowSurface(app->gpu->instance, window, NULL, &surface) != VK_SUCCESS)
-    {
         log_error("error creating the GLFW surface");
-    }
 
     // Register the mouse wheel callback.
     glfwSetScrollCallback(window, _mouse_wheel_callback);
@@ -125,9 +133,7 @@ VkyCanvas* vky_glfw_create_canvas(VkyApp* app, uint32_t width, uint32_t height)
 
     // Prepare the GPU for the first canvas (to get the surface info to create the Device).
     if (app->gpu->image_count == 0)
-    {
         vky_prepare_gpu(app->gpu, &surface);
-    }
 
     // Create the Canvas.
     VkyCanvas* canvas = vky_create_canvas_from_surface(app, window, &surface);
@@ -156,18 +162,18 @@ VkyCanvas* vky_glfw_create_canvas(VkyApp* app, uint32_t width, uint32_t height)
     return canvas;
 }
 
+
+
+/*************************************************************************************************/
+/*  Frames                                                                                       */
+/*************************************************************************************************/
+
 void vky_glfw_begin_frame(VkyCanvas* canvas)
 {
-    // log_trace("begin frame");
-
     if (canvas->need_recreation)
-    {
         return;
-    }
 
     // Determine whether the window has been resized.
-    // int lw = (int)canvas->window_size.lw;
-    // int lh = (int)canvas->window_size.lh;
     int lw = 0, lh = 0, w = 0, h = 0;
 
     // Check window resize.
@@ -198,18 +204,13 @@ void vky_glfw_begin_frame(VkyCanvas* canvas)
 
     // Resize callback.
     if (canvas->size.resized && canvas->cb_resize != NULL)
-    {
         canvas->cb_resize(canvas);
-    }
 
-    // canvas->window_size.lw = canvas->window_size.w;
-    // canvas->window_size.lh = canvas->window_size.h;
     glfwPollEvents();
 
     // Acquire the next swap chain image.
     if (canvas->cb_fill_command_buffer != NULL)
     {
-
         VkyGpu* gpu = canvas->gpu;
         VkyDrawSync* draw_sync = &canvas->draw_sync;
         vkWaitForFences(
@@ -238,8 +239,8 @@ void vky_glfw_begin_frame(VkyCanvas* canvas)
         if (draw_sync->images_in_flight[canvas->image_index] != VK_NULL_HANDLE)
         {
             vkWaitForFences(
-                gpu->device, 1, &(draw_sync->images_in_flight[canvas->image_index]), VK_TRUE,
-                UINT64_MAX);
+                gpu->device, 1, &(draw_sync->images_in_flight[canvas->image_index]), //
+                VK_TRUE, UINT64_MAX);
         }
         draw_sync->images_in_flight[canvas->image_index] =
             draw_sync->in_flight_fences[canvas->current_frame];
@@ -255,7 +256,6 @@ void vky_glfw_end_frame(VkyCanvas* canvas)
 
     if (canvas->cb_fill_command_buffer != NULL)
     {
-
         VkyDrawSync* draw_sync = &canvas->draw_sync;
 
         // Present the buffer to the surface.
@@ -295,6 +295,12 @@ void vky_glfw_end_frame(VkyCanvas* canvas)
     canvas->frame_count++;
 }
 
+
+
+/*************************************************************************************************/
+/*  Wait and stop                                                                                */
+/*************************************************************************************************/
+
 void vky_glfw_wait(VkyCanvas* canvas)
 {
     GLFWwindow* window = canvas->window;
@@ -307,8 +313,6 @@ void vky_glfw_wait(VkyCanvas* canvas)
         glfwWaitEvents();
     }
     ASSERT((w > 0) && (h > 0));
-    // canvas->window_size.w = (uint32_t)w;
-    // canvas->window_size.h = (uint32_t)h;
     canvas->size.framebuffer_width = (uint32_t)w;
     canvas->size.framebuffer_height = (uint32_t)h;
     vkDeviceWaitIdle(canvas->gpu->device);
@@ -317,12 +321,14 @@ void vky_glfw_wait(VkyCanvas* canvas)
 void vky_glfw_stop_app(VkyApp* app)
 {
     for (uint32_t i = 0; i < app->canvas_count; i++)
-    {
         app->canvases[i]->to_close = true;
-    }
 }
 
 
+
+/*************************************************************************************************/
+/*  Event loop                                                                                   */
+/*************************************************************************************************/
 
 void vky_glfw_run_app_begin(VkyApp* app)
 {
@@ -435,8 +441,6 @@ void vky_glfw_run_app(VkyApp* app)
 {
     vky_glfw_run_app_begin(app);
     while (!vky_all_windows_closed(app))
-    {
         vky_glfw_run_app_process(app);
-    }
     vky_glfw_run_app_end(app);
 }
