@@ -10,42 +10,47 @@
         break
 #define noop
 
+static inline void check_result(VkResult res)
+{
+    char* str = "UNKNOWN_ERROR";
+    switch (res)
+    {
+        STR(NOT_READY);
+        STR(TIMEOUT);
+        STR(EVENT_SET);
+        STR(EVENT_RESET);
+        STR(INCOMPLETE);
+        STR(ERROR_OUT_OF_HOST_MEMORY);
+        STR(ERROR_OUT_OF_DEVICE_MEMORY);
+        STR(ERROR_INITIALIZATION_FAILED);
+        STR(ERROR_DEVICE_LOST);
+        STR(ERROR_MEMORY_MAP_FAILED);
+        STR(ERROR_LAYER_NOT_PRESENT);
+        STR(ERROR_EXTENSION_NOT_PRESENT);
+        STR(ERROR_FEATURE_NOT_PRESENT);
+        STR(ERROR_INCOMPATIBLE_DRIVER);
+        STR(ERROR_TOO_MANY_OBJECTS);
+        STR(ERROR_FORMAT_NOT_SUPPORTED);
+        STR(ERROR_SURFACE_LOST_KHR);
+        STR(ERROR_NATIVE_WINDOW_IN_USE_KHR);
+        STR(SUBOPTIMAL_KHR);
+        STR(ERROR_OUT_OF_DATE_KHR);
+        STR(ERROR_INCOMPATIBLE_DISPLAY_KHR);
+        STR(ERROR_VALIDATION_FAILED_EXT);
+        STR(ERROR_INVALID_SHADER_NV);
+    default:
+        noop;
+    }
+    if (res != VK_SUCCESS)
+    {
+        log_error("VkResult is %s in %s at line %s", str, __FILE__, __LINE__);
+    }
+}
+
 #define VK_CHECK_RESULT(f)                                                                        \
     {                                                                                             \
         VkResult res = (f);                                                                       \
-        char* str = "UNKNOWN_ERROR";                                                              \
-        switch (res)                                                                              \
-        {                                                                                         \
-            STR(NOT_READY);                                                                       \
-            STR(TIMEOUT);                                                                         \
-            STR(EVENT_SET);                                                                       \
-            STR(EVENT_RESET);                                                                     \
-            STR(INCOMPLETE);                                                                      \
-            STR(ERROR_OUT_OF_HOST_MEMORY);                                                        \
-            STR(ERROR_OUT_OF_DEVICE_MEMORY);                                                      \
-            STR(ERROR_INITIALIZATION_FAILED);                                                     \
-            STR(ERROR_DEVICE_LOST);                                                               \
-            STR(ERROR_MEMORY_MAP_FAILED);                                                         \
-            STR(ERROR_LAYER_NOT_PRESENT);                                                         \
-            STR(ERROR_EXTENSION_NOT_PRESENT);                                                     \
-            STR(ERROR_FEATURE_NOT_PRESENT);                                                       \
-            STR(ERROR_INCOMPATIBLE_DRIVER);                                                       \
-            STR(ERROR_TOO_MANY_OBJECTS);                                                          \
-            STR(ERROR_FORMAT_NOT_SUPPORTED);                                                      \
-            STR(ERROR_SURFACE_LOST_KHR);                                                          \
-            STR(ERROR_NATIVE_WINDOW_IN_USE_KHR);                                                  \
-            STR(SUBOPTIMAL_KHR);                                                                  \
-            STR(ERROR_OUT_OF_DATE_KHR);                                                           \
-            STR(ERROR_INCOMPATIBLE_DISPLAY_KHR);                                                  \
-            STR(ERROR_VALIDATION_FAILED_EXT);                                                     \
-            STR(ERROR_INVALID_SHADER_NV);                                                         \
-        default:                                                                                  \
-            noop;                                                                                 \
-        }                                                                                         \
-        if (res != VK_SUCCESS)                                                                    \
-        {                                                                                         \
-            log_error("VkResult is %s in %s at line %s", str, __FILE__, __LINE__);                \
-        }                                                                                         \
+        check_result(res);                                                                        \
     }
 
 // Validation layers.
@@ -409,6 +414,17 @@ static void allocate_command_buffers(
     alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     alloc_info.commandBufferCount = count;
     VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &alloc_info, cmd_bufs));
+}
+
+static void
+create_command_pool(VkDevice device, uint32_t queue_family_index, VkCommandPool* cmd_pool)
+{
+    log_trace("create command pool");
+    VkCommandPoolCreateInfo command_pool_info = {0};
+    command_pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    command_pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    command_pool_info.queueFamilyIndex = queue_family_index;
+    VK_CHECK_RESULT(vkCreateCommandPool(device, &command_pool_info, NULL, cmd_pool));
 }
 
 static uint32_t find_memory_type(

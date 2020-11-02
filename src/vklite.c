@@ -295,17 +295,11 @@ void vky_create_command_pool(VkyGpu* gpu)
 {
     // Create the command pool.
     log_trace("create graphics command pool");
-    VkCommandPoolCreateInfo command_pool_info = {0};
-    command_pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    command_pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-    command_pool_info.queueFamilyIndex = gpu->queue_indices.graphics_family;
-    VK_CHECK_RESULT(
-        vkCreateCommandPool(gpu->device, &command_pool_info, NULL, &gpu->command_pool));
+    create_command_pool(gpu->device, gpu->queue_indices.graphics_family, &gpu->command_pool);
 
     log_trace("create compute command pool");
-    command_pool_info.queueFamilyIndex = gpu->queue_indices.compute_family;
-    VK_CHECK_RESULT(
-        vkCreateCommandPool(gpu->device, &command_pool_info, NULL, &gpu->compute_command_pool));
+    create_command_pool(
+        gpu->device, gpu->queue_indices.compute_family, &gpu->compute_command_pool);
 }
 
 void vky_prepare_gpu(VkyGpu* gpu, VkSurfaceKHR* surface)
