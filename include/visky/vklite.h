@@ -74,6 +74,7 @@ struct VkyQueueFamilyIndices
     uint32_t graphics_family;
     uint32_t present_family;
     uint32_t compute_family;
+    uint32_t queue_count; // number of different queues
 };
 
 
@@ -409,12 +410,12 @@ struct VkyUniformBuffer
 
 void vky_show_fps(VkyCanvas*);
 
-VkyQueueFamilyIndices vky_find_queue_families(VkPhysicalDevice device, VkSurfaceKHR surface);
-
 VkCommandBuffer begin_single_time_commands(VkDevice device, VkCommandPool command_pool);
+
 void end_single_time_commands(
     VkDevice device, VkCommandPool command_pool, VkCommandBuffer* command_buffer,
     VkQueue graphics_queue);
+
 VkSampler create_texture_sampler(
     VkDevice device, VkFilter mag_filter, VkFilter min_filter, VkSamplerAddressMode address_mode);
 

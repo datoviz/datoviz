@@ -214,12 +214,6 @@ VkImageView create_image_view(
 /*  vklite API                                                                                   */
 /*************************************************************************************************/
 
-// Validation layers.
-const char* layers[] = {"VK_LAYER_KHRONOS_validation"};
-
-// Required device extensions.
-const char* device_extensions[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-
 void vky_show_fps(VkyCanvas* canvas)
 {
     uint64_t fps = vky_get_fps(canvas->frame_count);
@@ -228,52 +222,6 @@ void vky_show_fps(VkyCanvas* canvas)
         printf("\rFPS: %d", (int)fps);
         fflush(stdout);
     }
-}
-
-VkyQueueFamilyIndices vky_find_queue_families(VkPhysicalDevice device, VkSurfaceKHR surface)
-{
-    VkyQueueFamilyIndices indices = {0, 0, 0};
-    bool graphics_found = false, present_found = false, compute_found = false;
-
-    uint32_t queue_family_count = 0;
-    VkQueueFamilyProperties queueFamilies[100];
-    vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, NULL);
-    ASSERT(queue_family_count <= 100);
-    vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, queueFamilies);
-
-    for (uint32_t i = 0; i < queue_family_count; i++)
-    {
-        if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
-        {
-            indices.graphics_family = i;
-            graphics_found = true;
-        }
-        if (queueFamilies[i].queueFlags & VK_QUEUE_COMPUTE_BIT)
-        {
-            indices.compute_family = i;
-            compute_found = true;
-        }
-
-        VkBool32 presentSupport = false;
-        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
-        if (presentSupport)
-        {
-            indices.present_family = i;
-            present_found = true;
-        }
-
-        if (graphics_found && present_found)
-        {
-            break;
-        }
-    }
-
-    ASSERT(graphics_found && present_found && compute_found);
-    log_trace(
-        "queue families: graphics %d, present %d, compute %d", indices.graphics_family,
-        indices.present_family, indices.compute_family);
-
-    return indices;
 }
 
 VkyGpu vky_create_device(uint32_t required_extension_count, const char** required_extensions)
@@ -365,42 +313,14 @@ void vky_prepare_gpu(VkyGpu* gpu, VkSurfaceKHR* surface)
     log_trace("prepare the GPU from a surface");
 
     // Queue family indices.
-    VkyQueueFamilyIndices indices;
-    if (surface != NULL)
-        indices = vky_find_queue_families(gpu->physical_device, *surface);
-    else
-        indices = (VkyQueueFamilyIndices){0, 0}; // TODO
+    VkyQueueFamilyIndices indices = {0};
 
-    // Queues.
-    uint32_t queue_count = 1;
-    if (indices.present_family != indices.graphics_family)
-    {
-        queue_count = 2;
-    }
-    ASSERT(queue_count <= 100);
-    VkDeviceQueueCreateInfo queue_create_infos[100];
-    float queue_priority = 1.0f;
-
-    queue_create_infos[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    queue_create_infos[0].pNext = NULL;
-    queue_create_infos[0].flags = 0;
-    queue_create_infos[0].queueFamilyIndex = indices.graphics_family;
-    queue_create_infos[0].queueCount = 1;
-    queue_create_infos[0].pQueuePriorities = &queue_priority;
-
-    if (queue_count > 1)
-    {
-        queue_create_infos[1].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        queue_create_infos[1].pNext = NULL;
-        queue_create_infos[1].flags = 0;
-        queue_create_infos[1].queueFamilyIndex = indices.present_family;
-        queue_create_infos[1].queueCount = 1;
-        queue_create_infos[1].pQueuePriorities = &queue_priority;
-    }
+    VkDeviceQueueCreateInfo queue_create_infos[3] = {0};
+    create_queue_info(gpu->physical_device, &indices, surface, queue_create_infos);
 
     VkDeviceCreateInfo device_create_info = {0};
     device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    device_create_info.queueCreateInfoCount = queue_count;
+    device_create_info.queueCreateInfoCount = indices.queue_count;
     device_create_info.pQueueCreateInfos = queue_create_infos;
 
     // Device features.
@@ -409,29 +329,11 @@ void vky_prepare_gpu(VkyGpu* gpu, VkSurfaceKHR* surface)
     enabled_features.geometryShader = VK_FALSE;
     device_create_info.pEnabledFeatures = &enabled_features;
 
-    // Device extensions.
-    if (surface != NULL)
-    {
-        device_create_info.enabledExtensionCount = 1;
-        device_create_info.ppEnabledExtensionNames = device_extensions;
-        gpu->has_graphics = true;
-    }
-    else
-    {
-        device_create_info.enabledExtensionCount = 0;
-        device_create_info.ppEnabledExtensionNames = NULL;
-        gpu->has_graphics = false;
-    }
+    // Device extensions and layers.
+    add_device_extensions(surface, &device_create_info);
+    add_device_layers(gpu->has_validation, &device_create_info);
 
-    if (gpu->has_validation)
-    {
-        device_create_info.enabledLayerCount = 1;
-        device_create_info.ppEnabledLayerNames = layers;
-    }
-    else
-    {
-        device_create_info.enabledLayerCount = 0;
-    }
+    gpu->has_graphics = surface != NULL;
 
     // Create the device.
     VkDevice device = {0};
@@ -491,7 +393,7 @@ VkyCanvas* vky_create_canvas_from_surface(VkyApp* app, void* window, VkSurfaceKH
     // HACK: avoid following warning:
     // validation layer: vkQueuePresentKHR: Presenting image without calling
     // vkGetPhysicalDeviceSurfaceSupportKHR
-    vky_find_queue_families(gpu->physical_device, *surface);
+    find_queue_families(gpu->physical_device, *surface);
 
     VkyCanvas canvas = {0};
     canvas.app = app;

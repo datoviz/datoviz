@@ -48,6 +48,12 @@
         }                                                                                         \
     }
 
+// Validation layers.
+static const char* layers[] = {"VK_LAYER_KHRONOS_validation"};
+
+// Required device extensions.
+static const char* device_extensions[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+
 static VkDeviceSize texture_size_bytes(VkyTextureParams params)
 {
     return params.width * params.height * params.depth * params.format_bytes;
@@ -150,7 +156,7 @@ static void create_instance(
     VkInstance* instance, VkDebugUtilsMessengerEXT* debug_messenger)
 {
     // Validation layers.
-    const char* layers[] = {"VK_LAYER_KHRONOS_validation"};
+    // const char* layers[] = {"VK_LAYER_KHRONOS_validation"};
 
     // Add ext debug extension.
     bool has_validation = false;
@@ -272,6 +278,124 @@ static void pick_device(
     vkGetPhysicalDeviceFeatures(*physical_device, device_features);
     vkGetPhysicalDeviceMemoryProperties(*physical_device, memory_properties);
     log_info("select device #%d: %s", i, device_properties->deviceName);
+}
+
+static VkyQueueFamilyIndices find_queue_families(VkPhysicalDevice device, VkSurfaceKHR surface)
+{
+    VkyQueueFamilyIndices indices = {0, 0, 0};
+    bool graphics_found = false, present_found = false, compute_found = false;
+
+    uint32_t queue_family_count = 0;
+    VkQueueFamilyProperties queueFamilies[100];
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, NULL);
+    ASSERT(queue_family_count <= 100);
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, queueFamilies);
+
+    for (uint32_t i = 0; i < queue_family_count; i++)
+    {
+        if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+        {
+            indices.graphics_family = i;
+            graphics_found = true;
+        }
+        if (queueFamilies[i].queueFlags & VK_QUEUE_COMPUTE_BIT)
+        {
+            indices.compute_family = i;
+            compute_found = true;
+        }
+
+        VkBool32 presentSupport = false;
+        vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
+        if (presentSupport)
+        {
+            indices.present_family = i;
+            present_found = true;
+        }
+
+        if (graphics_found && present_found && compute_found)
+            break;
+    }
+
+    // Find the number of different queues.
+    uint32_t queue_count = 0;
+    if (indices.graphics_family == indices.present_family &&
+        indices.present_family == indices.compute_family)
+        queue_count = 1;
+    else
+    {
+        if (indices.graphics_family != indices.present_family &&
+            indices.graphics_family != indices.compute_family &&
+            indices.present_family != indices.compute_family)
+            queue_count = 3;
+        else
+            queue_count = 2;
+    }
+    indices.queue_count = queue_count;
+    ASSERT(graphics_found && present_found && compute_found);
+    log_trace(
+        "%d queue families: graphics %d, present %d, compute %d", //
+        queue_count, indices.graphics_family, indices.present_family, indices.compute_family);
+
+    return indices;
+}
+
+static void create_queue_info(
+    VkPhysicalDevice physical_device, VkyQueueFamilyIndices* indices, VkSurfaceKHR* surface,
+    VkDeviceQueueCreateInfo* queue_create_infos)
+{
+    if (surface != NULL)
+        *indices = find_queue_families(physical_device, *surface);
+    else
+        *indices = (VkyQueueFamilyIndices){0, 0, 0, 1};
+
+    // Queues.
+    float queue_priority = 1.0f;
+    uint32_t family[3] = {
+        indices->graphics_family, indices->present_family, indices->compute_family};
+
+    // HACK: handle the degenerate case where 2 queue indices are equal and the third is different.
+    // In this case we must ensure that the second queue create info corresponds to a number
+    // that is different from the first queue, so that we correctly create the 2 different queues.
+    if (indices->queue_count == 2 && indices->graphics_family == indices->present_family)
+        family[1] = indices->compute_family;
+
+    for (uint32_t i = 0; i < indices->queue_count; i++)
+    {
+        queue_create_infos[i].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queue_create_infos[i].pNext = NULL;
+        queue_create_infos[i].flags = 0;
+        queue_create_infos[i].queueFamilyIndex = family[i];
+        queue_create_infos[i].queueCount = 1;
+        queue_create_infos[i].pQueuePriorities = &queue_priority;
+    }
+}
+
+static void add_device_extensions(VkSurfaceKHR* surface, VkDeviceCreateInfo* device_create_info)
+{
+    // Device extensions.
+    if (surface != NULL)
+    {
+        device_create_info->enabledExtensionCount = 1;
+        device_create_info->ppEnabledExtensionNames = device_extensions;
+    }
+    else
+    {
+        device_create_info->enabledExtensionCount = 0;
+        device_create_info->ppEnabledExtensionNames = NULL;
+    }
+}
+
+static void add_device_layers(bool has_validation, VkDeviceCreateInfo* device_create_info)
+{
+    if (has_validation)
+    {
+        device_create_info->enabledLayerCount = 1;
+        device_create_info->ppEnabledLayerNames = layers;
+    }
+    else
+    {
+        device_create_info->enabledLayerCount = 0;
+    }
 }
 
 static uint32_t find_memory_type(

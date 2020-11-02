@@ -117,8 +117,6 @@ VkyCanvas* vky_create_offscreen_canvas(VkyGpu* gpu, uint32_t width, uint32_t hei
     device_create_info.ppEnabledExtensionNames = NULL;
 
     // Validation layers.
-    const char* layers[] = {"VK_LAYER_KHRONOS_validation"};
-
     if (gpu->has_validation)
     {
         device_create_info.enabledLayerCount = 1;
