@@ -810,6 +810,38 @@ static VkPipelineShaderStageCreateInfo* create_shader_stages(VkyShaders* shaders
 
 
 /*************************************************************************************************/
+/*  Descriptor sets                                                                              */
+/*************************************************************************************************/
+
+static VkDescriptorSet* allocate_descriptor_sets(
+    VkDevice device, VkDescriptorPool dset_pool, VkDescriptorSetLayout dset_layout,
+    uint32_t image_count, uint32_t binding_count)
+{
+    // NOTE: caller must free the output.
+
+    // Allocate descriptor sets.
+    VkDescriptorSetLayout* layouts = calloc(image_count, sizeof(VkDescriptorSetLayout));
+    for (uint32_t i = 0; i < image_count; i++)
+        layouts[i] = dset_layout;
+
+    VkDescriptorSetAllocateInfo alloc_info = {0};
+    alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    ASSERT(dset_pool != 0);
+    alloc_info.descriptorPool = dset_pool;
+    alloc_info.descriptorSetCount = image_count;
+    alloc_info.pSetLayouts = layouts;
+
+    VkDescriptorSet* dsets = calloc(image_count, sizeof(VkDescriptorSet));
+    log_trace("allocate descriptor sets");
+    if (binding_count > 0)
+        VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &alloc_info, dsets));
+    FREE(layouts);
+    return dsets;
+}
+
+
+
+/*************************************************************************************************/
 /*  Data management                                                                              */
 /*************************************************************************************************/
 

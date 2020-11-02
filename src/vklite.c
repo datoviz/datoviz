@@ -1047,26 +1047,9 @@ VkyGraphicsPipeline vky_create_graphics_pipeline(
     FREE(shader_stages);
 
     // Allocate descriptor sets.
-    ASSERT(gp.resource_layout.image_count <= 100);
-    VkDescriptorSetLayout layouts[100];
-    for (uint32_t i = 0; i < gp.resource_layout.image_count; i++)
-    {
-        layouts[i] = gp.descriptor_set_layout;
-    }
-    VkDescriptorSetAllocateInfo alloc_info = {0};
-    alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    ASSERT(gpu->descriptor_pool != 0);
-    alloc_info.descriptorPool = gpu->descriptor_pool;
-    alloc_info.descriptorSetCount = gp.resource_layout.image_count;
-    alloc_info.pSetLayouts = layouts;
-
-    gp.descriptor_set_count = gp.resource_layout.image_count;
-    gp.descriptor_sets = calloc(gp.resource_layout.image_count, sizeof(VkDescriptorSet));
-    log_trace("allocate descriptor sets");
-    if (gp.resource_layout.binding_count > 0)
-    {
-        VK_CHECK_RESULT(vkAllocateDescriptorSets(gpu->device, &alloc_info, gp.descriptor_sets));
-    }
+    gp.descriptor_sets = allocate_descriptor_sets(
+        gpu->device, gpu->descriptor_pool, gp.descriptor_set_layout,
+        gp.resource_layout.image_count, gp.resource_layout.binding_count);
 
     return gp;
 }
