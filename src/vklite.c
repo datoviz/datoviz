@@ -1017,46 +1017,9 @@ VkyGraphicsPipeline vky_create_graphics_pipeline(
     VkPipelineViewportStateCreateInfo viewport_state = create_viewport_state();
     VkPipelineDynamicStateCreateInfo dynamic_state = create_dynamic_states(
         2, (VkDynamicState[]){VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR});
-
-    // Vertex input state.
-    VkPipelineVertexInputStateCreateInfo vertex_input_info = {0};
-    vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-
-    VkVertexInputBindingDescription binding_description = {0};
-    binding_description.binding = gp.vertex_layout.binding;
-    binding_description.stride = gp.vertex_layout.stride;
-    binding_description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-    ASSERT(gp.vertex_layout.attribute_count <= 100);
-    VkVertexInputAttributeDescription attribute_descriptions[100];
-    for (uint32_t i = 0; i < gp.vertex_layout.attribute_count; i++)
-    {
-        attribute_descriptions[i].binding = gp.vertex_layout.binding;
-        attribute_descriptions[i].location = i;
-        attribute_descriptions[i].format = gp.vertex_layout.attribute_formats[i];
-        attribute_descriptions[i].offset = gp.vertex_layout.attribute_offsets[i];
-    }
-
-    vertex_input_info.vertexBindingDescriptionCount = 1; // TODO: support multiple bindings
-    vertex_input_info.vertexAttributeDescriptionCount = gp.vertex_layout.attribute_count;
-    vertex_input_info.pVertexBindingDescriptions = &binding_description;
-    vertex_input_info.pVertexAttributeDescriptions = attribute_descriptions;
-
-    // Create the shader stages.
-    ASSERT(shaders.shader_count <= 100);
-    VkPipelineShaderStageCreateInfo shader_stages[100];
-    for (uint32_t i = 0; i < shaders.shader_count; i++)
-    {
-        shader_stages[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        shader_stages[i].stage = shaders.stages[i];
-        shader_stages[i].module = shaders.modules[i];
-        shader_stages[i].pName = "main";
-        // NOTE: important to initialize empty fields as the memory has not been allocated
-        // for the array, so fields could contain garbage values..
-        shader_stages[i].pNext = NULL;
-        shader_stages[i].flags = 0;
-        shader_stages[i].pSpecializationInfo = NULL;
-    }
+    VkPipelineVertexInputStateCreateInfo vertex_input_info =
+        create_vertex_input_state(&vertex_layout);
+    VkPipelineShaderStageCreateInfo* shader_stages = create_shader_stages(&shaders);
 
     // Finally create the pipeline.
     VkGraphicsPipelineCreateInfo pipelineInfo = {0};
@@ -1079,6 +1042,9 @@ VkyGraphicsPipeline vky_create_graphics_pipeline(
     log_trace("create graphics pipeline");
     VK_CHECK_RESULT(vkCreateGraphicsPipelines(
         gpu->device, VK_NULL_HANDLE, 1, &pipelineInfo, NULL, &gp.pipeline));
+
+    FREE(vertex_layout.attribute_descriptions);
+    FREE(shader_stages);
 
     // Allocate descriptor sets.
     ASSERT(gp.resource_layout.image_count <= 100);

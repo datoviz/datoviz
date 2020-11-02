@@ -763,31 +763,48 @@ create_dynamic_states(uint32_t count, VkDynamicState* dynamic_states)
 
 
 static VkPipelineVertexInputStateCreateInfo
-create_vertex_input_state(VkyVertexLayout vertex_layout)
+create_vertex_input_state(VkyVertexLayout* vertex_layout)
 {
+    // NOTE: caller must free vertex_layout->attribute_descriptions afterwards
     VkPipelineVertexInputStateCreateInfo vertex_input_info = {0};
     vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
-    vertex_layout.binding_description.binding = vertex_layout.binding;
-    vertex_layout.binding_description.stride = vertex_layout.stride;
-    vertex_layout.binding_description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    vertex_layout->binding_description.binding = vertex_layout->binding;
+    vertex_layout->binding_description.stride = vertex_layout->stride;
+    vertex_layout->binding_description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-    vertex_layout.attribute_descriptions =
-        calloc(vertex_layout.attribute_count, sizeof(VkVertexInputAttributeDescription));
-    for (uint32_t i = 0; i < vertex_layout.attribute_count; i++)
+    vertex_layout->attribute_descriptions =
+        calloc(vertex_layout->attribute_count, sizeof(VkVertexInputAttributeDescription));
+    for (uint32_t i = 0; i < vertex_layout->attribute_count; i++)
     {
-        vertex_layout.attribute_descriptions[i].binding = vertex_layout.binding;
-        vertex_layout.attribute_descriptions[i].location = i;
-        vertex_layout.attribute_descriptions[i].format = vertex_layout.attribute_formats[i];
-        vertex_layout.attribute_descriptions[i].offset = vertex_layout.attribute_offsets[i];
+        vertex_layout->attribute_descriptions[i].binding = vertex_layout->binding;
+        vertex_layout->attribute_descriptions[i].location = i;
+        vertex_layout->attribute_descriptions[i].format = vertex_layout->attribute_formats[i];
+        vertex_layout->attribute_descriptions[i].offset = vertex_layout->attribute_offsets[i];
     }
 
     vertex_input_info.vertexBindingDescriptionCount = 1; // TODO: support multiple bindings
-    vertex_input_info.vertexAttributeDescriptionCount = vertex_layout.attribute_count;
-    vertex_input_info.pVertexBindingDescriptions = &vertex_layout.binding_description;
-    vertex_input_info.pVertexAttributeDescriptions = vertex_layout.attribute_descriptions;
+    vertex_input_info.vertexAttributeDescriptionCount = vertex_layout->attribute_count;
+    vertex_input_info.pVertexBindingDescriptions = &vertex_layout->binding_description;
+    vertex_input_info.pVertexAttributeDescriptions = vertex_layout->attribute_descriptions;
 
     return vertex_input_info;
+}
+
+
+static VkPipelineShaderStageCreateInfo* create_shader_stages(VkyShaders* shaders)
+{
+    // NOTE: caller must free the function result.
+    VkPipelineShaderStageCreateInfo* shader_stages =
+        calloc(shaders->shader_count, sizeof(VkPipelineShaderStageCreateInfo));
+    for (uint32_t i = 0; i < shaders->shader_count; i++)
+    {
+        shader_stages[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        shader_stages[i].stage = shaders->stages[i];
+        shader_stages[i].module = shaders->modules[i];
+        shader_stages[i].pName = "main";
+    }
+    return shader_stages;
 }
 
 
