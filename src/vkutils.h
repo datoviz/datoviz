@@ -587,6 +587,67 @@ static void begin_render_pass(
 }
 
 
+static void create_descriptor_set_layout(
+    VkDevice device, uint32_t binding_count, VkDescriptorType* binding_types,
+    VkDescriptorSetLayout* dset_layout)
+{
+    // Descriptor set layout.
+    VkDescriptorSetLayoutBinding* layout_bindings =
+        calloc(binding_count, sizeof(VkDescriptorSetLayoutBinding));
+
+    for (uint32_t i = 0; i < binding_count; i++)
+    {
+        VkDescriptorType dtype = binding_types[i];
+        layout_bindings[i].binding = i;
+        layout_bindings[i].descriptorType = dtype;
+        layout_bindings[i].descriptorCount = 1;
+        layout_bindings[i].stageFlags = VK_SHADER_STAGE_ALL;
+        layout_bindings[i].pImmutableSamplers = NULL; // Optional
+    }
+
+    // Create descriptor set layout.
+    VkDescriptorSetLayoutCreateInfo layout_info = {0};
+    layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layout_info.bindingCount = binding_count;
+    layout_info.pBindings = layout_bindings;
+
+    log_trace("create descriptor set layout");
+    VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &layout_info, NULL, dset_layout));
+    FREE(layout_bindings);
+}
+
+static void create_pipeline_layout(
+    VkDevice device, uint32_t push_constant_size, VkDescriptorSetLayout dset_layout,
+    VkPipelineLayout* layout)
+{
+
+    // Pipeline layout.
+    VkPipelineLayoutCreateInfo pipeline_layout_info = {0};
+    pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pipeline_layout_info.setLayoutCount = 1;
+    pipeline_layout_info.pSetLayouts = &dset_layout;
+
+    // Push constants
+    VkPushConstantRange push_constants = {0};
+    push_constants.offset = 0;
+    push_constants.size = push_constant_size;
+    push_constants.stageFlags = VK_SHADER_STAGE_ALL;
+    if (push_constant_size == 0)
+    {
+        pipeline_layout_info.pushConstantRangeCount = 0;
+        pipeline_layout_info.pPushConstantRanges = NULL;
+    }
+    else
+    {
+        pipeline_layout_info.pushConstantRangeCount = 1;
+        pipeline_layout_info.pPushConstantRanges = &push_constants;
+    }
+
+    log_trace("create pipeline layout");
+    VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pipeline_layout_info, NULL, layout));
+}
+
+
 
 /*************************************************************************************************/
 /*  Data management                                                                              */

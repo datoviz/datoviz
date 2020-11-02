@@ -998,54 +998,12 @@ VkyGraphicsPipeline vky_create_graphics_pipeline(
     gp.resource_layout = resource_layout;
     gp.shaders = shaders;
 
-    // Descriptor set layout.
-    ASSERT(gp.resource_layout.binding_count <= 100);
-    VkDescriptorSetLayoutBinding layout_bindings[100];
-    for (uint32_t i = 0; i < gp.resource_layout.binding_count; i++)
-    {
-        VkDescriptorType dtype = gp.resource_layout.binding_types[i];
-        layout_bindings[i].binding = i;
-        layout_bindings[i].descriptorType = dtype;
-        layout_bindings[i].descriptorCount = 1;
-        layout_bindings[i].stageFlags = VK_SHADER_STAGE_ALL;
-        layout_bindings[i].pImmutableSamplers = NULL; // Optional
-    }
+    create_descriptor_set_layout(
+        gpu->device, gp.resource_layout.binding_count, gp.resource_layout.binding_types,
+        &gp.descriptor_set_layout);
 
-    // Create descriptor set layout.
-    VkDescriptorSetLayoutCreateInfo layout_info = {0};
-    layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layout_info.bindingCount = gp.resource_layout.binding_count;
-    layout_info.pBindings = layout_bindings;
-
-    log_trace("create descriptor set layout");
-    VK_CHECK_RESULT(
-        vkCreateDescriptorSetLayout(gpu->device, &layout_info, NULL, &gp.descriptor_set_layout));
-
-    // Pipeline layout.
-    VkPipelineLayoutCreateInfo pipeline_layout_info = {0};
-    pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipeline_layout_info.setLayoutCount = 1;
-    pipeline_layout_info.pSetLayouts = &gp.descriptor_set_layout;
-
-    // Push constants
-    VkPushConstantRange push_constants = {0};
-    push_constants.offset = 0;
-    push_constants.size = params.push_constant_size;
-    push_constants.stageFlags = VK_SHADER_STAGE_ALL;
-    if (params.push_constant_size == 0)
-    {
-        pipeline_layout_info.pushConstantRangeCount = 0;
-        pipeline_layout_info.pPushConstantRanges = NULL;
-    }
-    else
-    {
-        pipeline_layout_info.pushConstantRangeCount = 1;
-        pipeline_layout_info.pPushConstantRanges = &push_constants;
-    }
-
-    log_trace("create pipeline layout");
-    VK_CHECK_RESULT(
-        vkCreatePipelineLayout(gpu->device, &pipeline_layout_info, NULL, &gp.pipeline_layout));
+    create_pipeline_layout(
+        gpu->device, params.push_constant_size, gp.descriptor_set_layout, &gp.pipeline_layout);
 
     // Pipeline.
     VkPipelineInputAssemblyStateCreateInfo input_assembly = {0};
