@@ -1,4 +1,6 @@
-// #include <visky/visky.h>
+/*************************************************************************************************/
+/*  Macros                                                                                       */
+/*************************************************************************************************/
 
 #ifndef ENABLE_VALIDATION_LAYERS
 #define ENABLE_VALIDATION_LAYERS 1
@@ -53,16 +55,29 @@ static inline void check_result(VkResult res)
         check_result(res);                                                                        \
     }
 
+
+
+/*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
 // Validation layers.
 static const char* layers[] = {"VK_LAYER_KHRONOS_validation"};
 
 // Required device extensions.
 static const char* device_extensions[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
+
+
+/*************************************************************************************************/
+/*  Misc                                                                                         */
+/*************************************************************************************************/
+
 static VkDeviceSize texture_size_bytes(VkyTextureParams params)
 {
     return params.width * params.height * params.depth * params.format_bytes;
 }
+
 
 static uint64_t next_pow2(uint64_t x)
 {
@@ -71,6 +86,7 @@ static uint64_t next_pow2(uint64_t x)
         p *= 2;
     return p;
 }
+
 
 static size_t compute_dynamic_alignment(size_t dynamic_alignment, size_t min_ubo_alignment)
 {
@@ -81,6 +97,29 @@ static size_t compute_dynamic_alignment(size_t dynamic_alignment, size_t min_ubo
     dynamic_alignment = next_pow2(dynamic_alignment);
     return dynamic_alignment;
 }
+
+
+static uint32_t find_memory_type(
+    uint32_t typeFilter, VkMemoryPropertyFlags properties,
+    VkPhysicalDeviceMemoryProperties mem_properties)
+{
+    for (uint32_t i = 0; i < mem_properties.memoryTypeCount; i++)
+    {
+        if ((typeFilter & (uint32_t)(1 << i)) &&
+            (mem_properties.memoryTypes[i].propertyFlags & properties) == properties)
+        {
+            return i;
+        }
+    }
+    log_error("could not find an appropriate memory type");
+    return 0;
+}
+
+
+
+/*************************************************************************************************/
+/*  Validation layers                                                                            */
+/*************************************************************************************************/
 
 static VkResult create_debug_utils_messenger_EXT(
     VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
@@ -99,6 +138,7 @@ static VkResult create_debug_utils_messenger_EXT(
     }
 }
 
+
 static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -112,6 +152,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
     return VK_FALSE;
 }
 
+
 static void destroy_debug_utils_messenger_EXT(
     VkInstance instance, VkDebugUtilsMessengerEXT debug_messenger,
     const VkAllocationCallbacks* pAllocator)
@@ -124,6 +165,7 @@ static void destroy_debug_utils_messenger_EXT(
         func(instance, debug_messenger, pAllocator);
     }
 }
+
 
 static bool check_validation_layer_support(
     const uint32_t validation_layers_count, const char** validation_layers)
@@ -155,6 +197,12 @@ static bool check_validation_layer_support(
     FREE(available_layers);
     return true;
 }
+
+
+
+/*************************************************************************************************/
+/*  Instance and device creation                                                                 */
+/*************************************************************************************************/
 
 static void create_instance(
     uint32_t required_extension_count, const char** required_extensions, //
@@ -243,6 +291,7 @@ static void create_instance(
     }
 }
 
+
 static void pick_device(
     VkInstance instance, VkPhysicalDevice* physical_device,
     VkPhysicalDeviceProperties* device_properties, VkPhysicalDeviceFeatures* device_features,
@@ -284,6 +333,7 @@ static void pick_device(
     vkGetPhysicalDeviceMemoryProperties(*physical_device, memory_properties);
     log_info("select device #%d: %s", i, device_properties->deviceName);
 }
+
 
 static VkyQueueFamilyIndices find_queue_families(VkPhysicalDevice device, VkSurfaceKHR surface)
 {
@@ -344,6 +394,7 @@ static VkyQueueFamilyIndices find_queue_families(VkPhysicalDevice device, VkSurf
     return indices;
 }
 
+
 static void create_queue_info(
     VkPhysicalDevice physical_device, VkyQueueFamilyIndices* indices, VkSurfaceKHR* surface,
     VkDeviceQueueCreateInfo* queue_create_infos)
@@ -375,6 +426,7 @@ static void create_queue_info(
     }
 }
 
+
 static void add_device_extensions(VkSurfaceKHR* surface, VkDeviceCreateInfo* device_create_info)
 {
     // Device extensions.
@@ -390,6 +442,7 @@ static void add_device_extensions(VkSurfaceKHR* surface, VkDeviceCreateInfo* dev
     }
 }
 
+
 static void add_device_layers(bool has_validation, VkDeviceCreateInfo* device_create_info)
 {
     if (has_validation)
@@ -402,6 +455,7 @@ static void add_device_layers(bool has_validation, VkDeviceCreateInfo* device_cr
         device_create_info->enabledLayerCount = 0;
     }
 }
+
 
 static void allocate_command_buffers(
     VkDevice device, VkCommandPool command_pool, uint32_t count, VkCommandBuffer* cmd_bufs)
@@ -416,6 +470,7 @@ static void allocate_command_buffers(
     VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &alloc_info, cmd_bufs));
 }
 
+
 static void
 create_command_pool(VkDevice device, uint32_t queue_family_index, VkCommandPool* cmd_pool)
 {
@@ -427,21 +482,82 @@ create_command_pool(VkDevice device, uint32_t queue_family_index, VkCommandPool*
     VK_CHECK_RESULT(vkCreateCommandPool(device, &command_pool_info, NULL, cmd_pool));
 }
 
-static uint32_t find_memory_type(
-    uint32_t typeFilter, VkMemoryPropertyFlags properties,
-    VkPhysicalDeviceMemoryProperties mem_properties)
+
+static void create_render_pass(
+    VkDevice device, VkFormat format, VkImageLayout initial_layout, VkImageLayout final_layout,
+    VkAttachmentLoadOp load_op, bool has_depth_attachment, VkRenderPass* render_pass)
 {
-    for (uint32_t i = 0; i < mem_properties.memoryTypeCount; i++)
+    log_trace("create render pass");
+    VkAttachmentDescription colorAttachment = {0};
+    colorAttachment.format = format;
+    colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    colorAttachment.loadOp = load_op;
+    // do_clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    colorAttachment.initialLayout = initial_layout;
+    colorAttachment.finalLayout = final_layout;
+
+    // Color attachment.
+    VkAttachmentReference colorAttachmentRef = {0};
+    colorAttachmentRef.attachment = 0;
+    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    // Subpass.
+    VkSubpassDescription subpass = {0};
+    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpass.colorAttachmentCount = 1;
+    subpass.pColorAttachments = &colorAttachmentRef;
+
+    // Depth attachment.
+    VkAttachmentDescription depthAttachment = {0};
+    VkAttachmentReference depthAttachmentRef = {0};
+    if (has_depth_attachment)
     {
-        if ((typeFilter & (uint32_t)(1 << i)) &&
-            (mem_properties.memoryTypes[i].propertyFlags & properties) == properties)
-        {
-            return i;
-        }
+        depthAttachment.format = VK_FORMAT_D32_SFLOAT;
+        depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        depthAttachment.loadOp = load_op;
+        // do_clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+        depthAttachmentRef.attachment = 1;
+        depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+        subpass.pDepthStencilAttachment = &depthAttachmentRef;
     }
-    log_error("could not find an appropriate memory type");
-    return 0;
+
+    VkSubpassDependency dependency = {0};
+    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+    dependency.dstSubpass = 0;
+    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    dependency.srcAccessMask = 0;
+    dependency.dstAccessMask =
+        VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+    VkAttachmentDescription attachments[2] = {colorAttachment, depthAttachment};
+    VkRenderPassCreateInfo render_pass_info = {0};
+    render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    render_pass_info.attachmentCount = has_depth_attachment ? 2 : 1;
+    render_pass_info.pAttachments = attachments;
+    render_pass_info.subpassCount = 1;
+    render_pass_info.pSubpasses = &subpass;
+    render_pass_info.dependencyCount = 1;
+    render_pass_info.pDependencies = &dependency;
+
+    VK_CHECK_RESULT(vkCreateRenderPass(device, &render_pass_info, NULL, render_pass));
 }
+
+
+
+/*************************************************************************************************/
+/*  Data management                                                                              */
+/*************************************************************************************************/
 
 static void transition_image_layout(
     VkDevice device, VkCommandPool command_pool, VkQueue graphics_queue, VkImage image,
@@ -500,68 +616,6 @@ static void transition_image_layout(
     end_single_time_commands(device, command_pool, &command_buffer, graphics_queue);
 }
 
-static void create_render_pass(
-    VkDevice device, VkFormat swapchain_image_format, VkImageLayout image_layout,
-    VkRenderPass* render_pass, bool do_clear)
-{
-    log_trace("create render pass");
-    VkAttachmentDescription colorAttachment = {0};
-    colorAttachment.format = swapchain_image_format;
-    colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-    colorAttachment.loadOp =
-        do_clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachment.finalLayout = image_layout;
-
-    VkAttachmentDescription depthAttachment = {0};
-    depthAttachment.format = VK_FORMAT_D32_SFLOAT;
-    depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-    depthAttachment.loadOp =
-        do_clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-    VkAttachmentReference depthAttachmentRef = {0};
-    depthAttachmentRef.attachment = 1;
-    depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-    VkAttachmentReference colorAttachmentRef = {0};
-    colorAttachmentRef.attachment = 0;
-    colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-    VkSubpassDescription subpass = {0};
-    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpass.colorAttachmentCount = 1;
-    subpass.pColorAttachments = &colorAttachmentRef;
-    subpass.pDepthStencilAttachment = &depthAttachmentRef;
-
-    VkSubpassDependency dependency = {0};
-    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-    dependency.dstSubpass = 0;
-    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependency.srcAccessMask = 0;
-    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependency.dstAccessMask =
-        VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-    VkAttachmentDescription attachments[2] = {colorAttachment, depthAttachment};
-    VkRenderPassCreateInfo render_pass_info = {0};
-    render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    render_pass_info.attachmentCount = 2;
-    render_pass_info.pAttachments = attachments;
-    render_pass_info.subpassCount = 1;
-    render_pass_info.pSubpasses = &subpass;
-    render_pass_info.dependencyCount = 1;
-    render_pass_info.pDependencies = &dependency;
-
-    VK_CHECK_RESULT(vkCreateRenderPass(device, &render_pass_info, NULL, render_pass));
-}
 
 static void copy_buffer(
     VkDevice device, VkCommandPool command_pool, VkQueue graphics_queue, VkBuffer src_buffer,
@@ -579,6 +633,7 @@ static void copy_buffer(
     }
     end_single_time_commands(device, command_pool, &command_buffer, graphics_queue);
 }
+
 
 static void copy_buffer_to_image(
     VkDevice device, VkCommandPool command_pool, VkQueue graphics_queue, VkBuffer buffer,
@@ -612,6 +667,7 @@ static void copy_buffer_to_image(
     end_single_time_commands(device, command_pool, &command_buffer, graphics_queue);
 }
 
+
 static void upload_data_to_buffer(
     VkDevice device, VkBufferCopy copy_region, const void* data, VkBuffer buffer,
     VkPhysicalDeviceMemoryProperties memory_properties, VkCommandPool command_pool,
@@ -638,6 +694,7 @@ static void upload_data_to_buffer(
     vkDestroyBuffer(device, staging_buffer, NULL);
     vkFreeMemory(device, staging_buffer_memory, NULL);
 }
+
 
 static void upload_uniform_data(
     VkDevice device, VkDeviceMemory memory, VkDeviceSize offset, VkDeviceSize size,

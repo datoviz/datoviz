@@ -399,14 +399,16 @@ VkyCanvas* vky_create_canvas_from_surface(VkyApp* app, void* window, VkSurfaceKH
     VkRenderPass render_pass = {0};
     VkFormat image_format = VKY_IMAGE_FORMAT;
     create_render_pass(
-        gpu->device, image_format, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &render_pass, true);
+        gpu->device, image_format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+        VK_ATTACHMENT_LOAD_OP_CLEAR, true, &render_pass);
     canvas.render_pass = render_pass;
 
     // Create the live render pass.
     log_trace("create live render pass");
     VkRenderPass live_render_pass = {0};
     create_render_pass(
-        gpu->device, image_format, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, &live_render_pass, false);
+        gpu->device, image_format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+        VK_ATTACHMENT_LOAD_OP_DONT_CARE, true, &live_render_pass); // TODO: false
     canvas.live_render_pass = live_render_pass;
 
     // Two per swap chain frame buffer: regular command buffer, and live command buffer (to be
