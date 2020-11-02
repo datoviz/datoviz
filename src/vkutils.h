@@ -957,7 +957,7 @@ static void transition_image_layout(
 {
     log_trace("transition image layout");
 
-    // TODO: refactor with vky_texture_barrier()
+    // TODO: refactor with texture_barrier()
 
     VkCommandBuffer command_buffer = begin_single_time_commands(device, command_pool);
 
@@ -1096,4 +1096,148 @@ static void upload_uniform_data(
     vkMapMemory(device, memory, offset, size, 0, &cdata);
     memcpy(cdata, data, size);
     vkUnmapMemory(device, memory);
+}
+
+
+
+/*************************************************************************************************/
+/*  Compute pipeline                                                                             */
+/*************************************************************************************************/
+
+static void buffer_barrier(
+    VkCommandBuffer cmd_buf, VkyBufferRegion* buffer, VkAccessFlags src_access,
+    VkAccessFlags dst_access, VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage)
+{
+    VkyGpu* gpu = buffer->buffer->gpu;
+    if (gpu->queue_indices.graphics_family == gpu->queue_indices.compute_family)
+        return;
+
+    log_warn("Compute resource synchronization has never been tested yet on GPUs with different "
+             "graphics/compute queues!");
+
+    uint32_t src_family = gpu->queue_indices.graphics_family;
+    uint32_t dst_family = gpu->queue_indices.graphics_family;
+
+    if (src_stage & VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT)
+    {
+        src_family = gpu->queue_indices.compute_family;
+    }
+    else if (dst_stage & VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT)
+    {
+        dst_family = gpu->queue_indices.compute_family;
+    }
+
+    VkBufferMemoryBarrier barrier = {
+        VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER,
+        NULL,
+        src_access,
+        dst_access,
+        src_family,
+        dst_family,
+        buffer->buffer->raw_buffer,
+        buffer->offset,
+        buffer->size,
+    };
+
+    vkCmdPipelineBarrier(cmd_buf, src_stage, dst_stage, 0, 0, NULL, 1, &barrier, 0, NULL);
+}
+
+static void texture_barrier(
+    VkCommandBuffer cmd_buf, VkyTexture* texture, VkAccessFlags src_access,
+    VkAccessFlags dst_access, VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage)
+{
+    VkyGpu* gpu = texture->gpu;
+    if (gpu->queue_indices.graphics_family == gpu->queue_indices.compute_family)
+        return;
+
+    uint32_t src_family = gpu->queue_indices.graphics_family;
+    uint32_t dst_family = gpu->queue_indices.graphics_family;
+
+    if (src_stage & VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT)
+    {
+        src_family = gpu->queue_indices.compute_family;
+    }
+    else if (dst_stage & VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT)
+    {
+        dst_family = gpu->queue_indices.compute_family;
+    }
+
+    VkImageMemoryBarrier barrier = {
+        VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+        NULL,
+        src_access,
+        dst_access,
+        VK_IMAGE_LAYOUT_GENERAL,
+        VK_IMAGE_LAYOUT_GENERAL,
+        src_family,
+        dst_family,
+        texture->image,
+        {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1},
+    };
+    vkCmdPipelineBarrier(cmd_buf, src_stage, dst_stage, 0, 0, NULL, 0, NULL, 1, &barrier);
+}
+
+static void resource_barrier(
+    VkCommandBuffer cmd_buf, VkDescriptorType descriptor_type, void* resource,
+    VkAccessFlags src_access, VkAccessFlags dst_access, VkPipelineStageFlags src_stage,
+    VkPipelineStageFlags dst_stage)
+{
+    switch (descriptor_type)
+    {
+
+    case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER:
+        buffer_barrier(
+            cmd_buf, (VkyBufferRegion*)resource, src_access, dst_access, src_stage, dst_stage);
+        break;
+
+    case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE:
+        texture_barrier(
+            cmd_buf, (VkyTexture*)resource, src_access, dst_access, src_stage, dst_stage);
+        break;
+
+    default:
+        log_error("resource type not supported: %d", descriptor_type);
+        break;
+    }
+}
+
+static void release_compute_resource(VkyGpu* gpu, VkDescriptorType descriptor_type, void* resource)
+{
+    if (gpu->queue_indices.graphics_family == gpu->queue_indices.compute_family)
+        return;
+
+    // Create a transient command buffer for setting up the initial buffer transfer state
+    log_trace("release compute resources");
+    VkCommandBuffer transferCmd = {0};
+    VkCommandBufferAllocateInfo alloc_info = {0};
+    alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    alloc_info.commandPool = gpu->compute_command_pool;
+    alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    alloc_info.commandBufferCount = 1;
+    VK_CHECK_RESULT(vkAllocateCommandBuffers(gpu->device, &alloc_info, &transferCmd));
+
+    resource_barrier(
+        transferCmd, descriptor_type, resource, 0, VK_ACCESS_SHADER_WRITE_BIT,
+        VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT);
+    resource_barrier(
+        transferCmd, descriptor_type, resource, VK_ACCESS_SHADER_WRITE_BIT, 0,
+        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT);
+
+    vkEndCommandBuffer(transferCmd);
+
+    VkSubmitInfo submit_info = {0};
+    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submit_info.commandBufferCount = 1;
+    submit_info.pCommandBuffers = &transferCmd;
+
+    // Create fence to ensure that the command buffer has finished executing
+    VkFenceCreateInfo fenceInfo = {0};
+    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    VkFence fence = {0};
+    vkCreateFence(gpu->device, &fenceInfo, NULL, &fence);
+    vkQueueSubmit(gpu->compute_queue, 1, &submit_info, fence);
+    // Wait for the fence to signal that command buffer has finished executing
+    vkWaitForFences(gpu->device, 1, &fence, VK_TRUE, UINT64_MAX);
+    vkDestroyFence(gpu->device, fence, NULL);
+    vkFreeCommandBuffers(gpu->device, gpu->compute_command_pool, 1, &transferCmd);
 }
