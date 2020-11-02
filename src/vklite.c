@@ -1012,33 +1012,11 @@ VkyGraphicsPipeline vky_create_graphics_pipeline(
     VkPipelineColorBlendAttachmentState color_blend_attachment = create_color_blend_attachment();
     VkPipelineColorBlendStateCreateInfo color_blending =
         create_color_blending(&color_blend_attachment);
-
-    VkPipelineDepthStencilStateCreateInfo depth_stencil = {0};
-    depth_stencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-    depth_stencil.depthTestEnable = params.depth_test_enable;
-    depth_stencil.depthWriteEnable = VK_TRUE;
-    depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS;
-    depth_stencil.depthBoundsTestEnable = VK_FALSE;
-    depth_stencil.minDepthBounds = 0.0f; // Optional
-    depth_stencil.maxDepthBounds = 1.0f; // Optional
-    depth_stencil.stencilTestEnable = VK_FALSE;
-    depth_stencil.front = (VkStencilOpState){0}; // Optional
-    depth_stencil.back = (VkStencilOpState){0};  // Optional
-
-    VkPipelineViewportStateCreateInfo viewport_state = {0};
-    viewport_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-    // NOTE: unused because the viewport/scissor are set in the dynamic states
-    viewport_state.viewportCount = 1;
-    viewport_state.scissorCount = 1;
-
-    // Dynamic state
-    VkPipelineDynamicStateCreateInfo dynamic_state = {0};
-    dynamic_state.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-    dynamic_state.pNext = NULL;
-
-    VkDynamicState dynamic_states[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
-    dynamic_state.pDynamicStates = dynamic_states;
-    dynamic_state.dynamicStateCount = 2;
+    VkPipelineDepthStencilStateCreateInfo depth_stencil =
+        create_depth_stencil(params.depth_test_enable);
+    VkPipelineViewportStateCreateInfo viewport_state = create_viewport_state();
+    VkPipelineDynamicStateCreateInfo dynamic_state = create_dynamic_states(
+        2, (VkDynamicState[]){VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR});
 
     // Vertex input state.
     VkPipelineVertexInputStateCreateInfo vertex_input_info = {0};

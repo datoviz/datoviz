@@ -259,6 +259,9 @@ struct VkyVertexLayout
     uint32_t* attribute_offsets;
     uint32_t binding;
     uint32_t stride;
+
+    VkVertexInputBindingDescription binding_description;
+    VkVertexInputAttributeDescription* attribute_descriptions;
 };
 
 

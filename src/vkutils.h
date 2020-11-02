@@ -663,6 +663,7 @@ static VkPipelineInputAssemblyStateCreateInfo create_input_assembly(VkPrimitiveT
     return input_assembly;
 }
 
+
 static VkPipelineRasterizationStateCreateInfo create_rasterizer()
 {
     VkPipelineRasterizationStateCreateInfo rasterizer = {0};
@@ -677,6 +678,7 @@ static VkPipelineRasterizationStateCreateInfo create_rasterizer()
     return rasterizer;
 }
 
+
 static VkPipelineMultisampleStateCreateInfo create_multisampling()
 {
     VkPipelineMultisampleStateCreateInfo multisampling = {0};
@@ -685,6 +687,7 @@ static VkPipelineMultisampleStateCreateInfo create_multisampling()
     multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
     return multisampling;
 }
+
 
 static VkPipelineColorBlendAttachmentState create_color_blend_attachment()
 {
@@ -701,6 +704,7 @@ static VkPipelineColorBlendAttachmentState create_color_blend_attachment()
     return color_blend_attachment;
 }
 
+
 static VkPipelineColorBlendStateCreateInfo
 create_color_blending(VkPipelineColorBlendAttachmentState* attachment)
 {
@@ -716,6 +720,76 @@ create_color_blending(VkPipelineColorBlendAttachmentState* attachment)
     color_blending.blendConstants[3] = 0.0f;
     return color_blending;
 }
+
+
+static VkPipelineDepthStencilStateCreateInfo create_depth_stencil(bool enable)
+{
+    VkPipelineDepthStencilStateCreateInfo depth_stencil = {0};
+    depth_stencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    depth_stencil.depthTestEnable = enable;
+    depth_stencil.depthWriteEnable = VK_TRUE;
+    depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS;
+    depth_stencil.depthBoundsTestEnable = VK_FALSE;
+    depth_stencil.minDepthBounds = 0.0f; // Optional
+    depth_stencil.maxDepthBounds = 1.0f; // Optional
+    depth_stencil.stencilTestEnable = VK_FALSE;
+    depth_stencil.front = (VkStencilOpState){0}; // Optional
+    depth_stencil.back = (VkStencilOpState){0};  // Optional
+    return depth_stencil;
+}
+
+
+static VkPipelineViewportStateCreateInfo create_viewport_state()
+{
+    VkPipelineViewportStateCreateInfo viewport_state = {0};
+    viewport_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    // NOTE: unused because the viewport/scissor are set in the dynamic states
+    viewport_state.viewportCount = 1;
+    viewport_state.scissorCount = 1;
+    return viewport_state;
+}
+
+
+static VkPipelineDynamicStateCreateInfo
+create_dynamic_states(uint32_t count, VkDynamicState* dynamic_states)
+{
+    VkPipelineDynamicStateCreateInfo dynamic_state = {0};
+    dynamic_state.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+    dynamic_state.pNext = NULL;
+    dynamic_state.pDynamicStates = dynamic_states;
+    dynamic_state.dynamicStateCount = count;
+    return dynamic_state;
+}
+
+
+static VkPipelineVertexInputStateCreateInfo
+create_vertex_input_state(VkyVertexLayout vertex_layout)
+{
+    VkPipelineVertexInputStateCreateInfo vertex_input_info = {0};
+    vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+
+    vertex_layout.binding_description.binding = vertex_layout.binding;
+    vertex_layout.binding_description.stride = vertex_layout.stride;
+    vertex_layout.binding_description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+    vertex_layout.attribute_descriptions =
+        calloc(vertex_layout.attribute_count, sizeof(VkVertexInputAttributeDescription));
+    for (uint32_t i = 0; i < vertex_layout.attribute_count; i++)
+    {
+        vertex_layout.attribute_descriptions[i].binding = vertex_layout.binding;
+        vertex_layout.attribute_descriptions[i].location = i;
+        vertex_layout.attribute_descriptions[i].format = vertex_layout.attribute_formats[i];
+        vertex_layout.attribute_descriptions[i].offset = vertex_layout.attribute_offsets[i];
+    }
+
+    vertex_input_info.vertexBindingDescriptionCount = 1; // TODO: support multiple bindings
+    vertex_input_info.vertexAttributeDescriptionCount = vertex_layout.attribute_count;
+    vertex_input_info.pVertexBindingDescriptions = &vertex_layout.binding_description;
+    vertex_input_info.pVertexAttributeDescriptions = vertex_layout.attribute_descriptions;
+
+    return vertex_input_info;
+}
+
 
 
 /*************************************************************************************************/
