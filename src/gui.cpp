@@ -98,8 +98,9 @@ void vky_imgui_init(VkyCanvas* canvas)
     ImGui_ImplVulkan_Init(&init_info, canvas->live_render_pass);
 
     // Load Fonts
-    io.Fonts->AddFontFromFileTTF(
-        "data/fonts/Roboto-Medium.ttf", VKY_IMGUI_FONT_SIZE * canvas->dpi_factor);
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/fonts/Roboto-Medium.ttf", DATA_DIR);
+    io.Fonts->AddFontFromFileTTF(path, VKY_IMGUI_FONT_SIZE * canvas->dpi_factor);
     // Upload Fonts
     VkCommandBuffer cmd_buf = begin_single_time_commands(gpu->device, gpu->command_pool);
     ImGui_ImplVulkan_CreateFontsTexture(cmd_buf);
