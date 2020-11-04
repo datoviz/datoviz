@@ -1,6 +1,7 @@
 #include <stb_image.h>
 #include <unistd.h>
 #include <visky/visky.h>
+#include <visky/vklite2.h>
 
 
 
@@ -129,8 +130,12 @@ struct VkyTestCase
 #include "test_basic.h"
 #include "test_demo.h"
 #include "test_visuals.h"
+#include "test_vklite2.h"
 
 static VkyTestCase TEST_CASES[] = {
+
+    // vklite2
+    CASE_FIXTURE_NONE(vklite2_test_app_1), //
 
     // Visual props.
     CASE_FIXTURE_NONE(visuals_props_1), //
