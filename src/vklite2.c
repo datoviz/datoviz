@@ -54,7 +54,19 @@ static void _create_gpu(VkPhysicalDevice physical_device, VklGpu* gpu)
     vkGetPhysicalDeviceProperties(physical_device, &gpu->device_properties);
     vkGetPhysicalDeviceFeatures(physical_device, &gpu->device_features);
     vkGetPhysicalDeviceMemoryProperties(physical_device, &gpu->memory_properties);
+
     gpu->name = gpu->device_properties.deviceName;
+}
+
+
+static void _create_device(VklGpu* gpu, VkSurfaceKHR surface)
+{
+    find_queue_families(gpu->physical_device, surface, &gpu->queues);
+
+    create_command_pool(
+        gpu->device, gpu->queues.indices[VKL_QUEUE_GRAPHICS], &gpu->cmd_pools[VKL_QUEUE_GRAPHICS]);
+    create_command_pool(
+        gpu->device, gpu->queues.indices[VKL_QUEUE_GRAPHICS], &gpu->cmd_pools[VKL_QUEUE_GRAPHICS]);
 }
 
 
@@ -88,6 +100,7 @@ VklApp* vkl_app(VklBackend backend)
 
     // Count the number of devices.
     vkEnumeratePhysicalDevices(app->instance, &app->gpu_count, NULL);
+    log_trace("found %d GPUs", app->gpu_count);
     if (app->gpu_count == 0)
     {
         log_error("no compatible device found! aborting");
@@ -130,3 +143,24 @@ void vkl_app_destroy(VklApp* app)
     FREE(app->gpus);
     FREE(app);
 }
+
+
+
+/*************************************************************************************************/
+/*  Commands                                                                                     */
+/*************************************************************************************************/
+
+VklCommands* vky_commands(VklGpu* gpu, VklCommandBufferType type, uint32_t count)
+{
+    INSTANCE_OBJ(VklCommands, commands, VKL_OBJECT_TYPE_COMMANDS)
+
+    return commands;
+}
+
+void vky_cmd_begin(VklCommands* cmds) {}
+
+void vky_cmd_end(VklCommands* cmds) {}
+
+void vky_cmd_reset(VklCommands* cmds) {}
+
+void vky_cmd_free(VklCommands* cmds) { FREE(cmds); }

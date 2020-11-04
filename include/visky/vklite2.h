@@ -22,7 +22,7 @@ END_INCL_NO_WARN
 
 /*
 TODO later
-- rename Vkl/VKL/vkl to Vky
+- rename Vkl/VKL/vkl to Vkl
 - move constants to constants.c
 - put glfw-specific code in the same place
 */
@@ -44,6 +44,7 @@ TODO later
 typedef struct VklObject VklObject;
 typedef struct VklApp VklApp;
 typedef struct VklGpu VklGpu;
+typedef struct VklQueues VklQueues;
 typedef struct VklCommands VklCommands;
 typedef struct VklBuffer VklBuffer;
 typedef struct VklImage VklImage;
@@ -107,6 +108,7 @@ typedef enum
 {
     VKL_QUEUE_GRAPHICS,
     VKL_QUEUE_COMPUTE,
+    VKL_QUEUE_PRESENT,
 } VklQueueType;
 
 
@@ -147,6 +149,16 @@ struct VklApp
 
 
 
+struct VklQueues
+{
+    VklObject obj;
+
+    int32_t indices[3]; // graphics, compute, present
+    VkQueue queues[3];
+};
+
+
+
 struct VklGpu
 {
     VklObject obj;
@@ -157,6 +169,11 @@ struct VklGpu
     VkPhysicalDeviceProperties device_properties;
     VkPhysicalDeviceFeatures device_features;
     VkPhysicalDeviceMemoryProperties memory_properties;
+
+    VklQueues queues;
+
+    VkDevice device;
+    VkCommandPool cmd_pools[2]; // graphics, compute
 };
 
 
@@ -258,14 +275,18 @@ VKY_EXPORT void vkl_app_destroy(VklApp* app);
 
 
 /*************************************************************************************************/
-/*  Gpu                                                                                          */
-/*************************************************************************************************/
-
-
-
-/*************************************************************************************************/
 /*  Commands                                                                                     */
 /*************************************************************************************************/
+
+VKY_EXPORT VklCommands* vky_commands(VklGpu* gpu, VklCommandBufferType type, uint32_t count);
+
+VKY_EXPORT void vky_cmd_begin(VklCommands* cmds);
+
+VKY_EXPORT void vky_cmd_end(VklCommands* cmds);
+
+VKY_EXPORT void vky_cmd_reset(VklCommands* cmds);
+
+VKY_EXPORT void vky_cmd_free(VklCommands* cmds);
 
 
 

@@ -234,3 +234,79 @@ static void create_instance(
             *instance, &debug_create_info, NULL, debug_messenger));
     }
 }
+
+
+
+static void find_queue_families(VkPhysicalDevice device, VkSurfaceKHR surface, VklQueues* queues)
+{
+    // Get the queue family properties.
+    uint32_t queue_family_count = 0;
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, NULL);
+    VkQueueFamilyProperties* queue_families =
+        calloc(queue_family_count, sizeof(VkQueueFamilyProperties));
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, queue_families);
+
+    queues->indices[0] = queues->indices[1] = queues->indices[2] = -1;
+
+    VkBool32 presentSupport = false;
+    for (int32_t i = 0; i < (int)queue_family_count; i++)
+    {
+        if (surface != 0)
+            vkGetPhysicalDeviceSurfaceSupportKHR(device, (uint32_t)i, surface, &presentSupport);
+        if (queue_families[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+            queues->indices[VKL_QUEUE_GRAPHICS] = i;
+        if (queue_families[i].queueFlags & VK_QUEUE_COMPUTE_BIT)
+            queues->indices[VKL_QUEUE_COMPUTE] = i;
+        if (presentSupport)
+            queues->indices[VKL_QUEUE_PRESENT] = i;
+        if (queues->indices[VKL_QUEUE_GRAPHICS] >= 0 && //
+            queues->indices[VKL_QUEUE_COMPUTE] >= 0 &&  //
+            queues->indices[VKL_QUEUE_PRESENT] >= 0)
+            break;
+    }
+
+    ASSERT(queues->indices[VKL_QUEUE_GRAPHICS] >= 0);
+    ASSERT(queues->indices[VKL_QUEUE_COMPUTE] >= 0);
+    ASSERT(queues->indices[VKL_QUEUE_PRESENT] >= 0);
+
+    log_trace(
+        "queue families: graphics %d, compute %d, present %d",
+        queues->indices[VKL_QUEUE_GRAPHICS], //
+        queues->indices[VKL_QUEUE_COMPUTE],  //
+        queues->indices[VKL_QUEUE_PRESENT]); //
+
+    FREE(queue_families);
+}
+
+
+
+/*************************************************************************************************/
+/*  Command buffers                                                                              */
+/*************************************************************************************************/
+
+static void
+create_command_pool(VkDevice device, int32_t queue_family_index, VkCommandPool* cmd_pool)
+{
+    log_trace("create command pool");
+    ASSERT(queue_family_index >= 0);
+    VkCommandPoolCreateInfo command_pool_info = {0};
+    command_pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    command_pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    command_pool_info.queueFamilyIndex = (uint32_t)queue_family_index;
+    VK_CHECK_RESULT(vkCreateCommandPool(device, &command_pool_info, NULL, cmd_pool));
+}
+
+
+
+static void allocate_command_buffers(
+    VkDevice device, VkCommandPool command_pool, uint32_t count, VkCommandBuffer* cmd_bufs)
+{
+    ASSERT(count > 0);
+    log_trace("allocate %d command buffers", count);
+    VkCommandBufferAllocateInfo alloc_info = {0};
+    alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    alloc_info.commandPool = command_pool;
+    alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    alloc_info.commandBufferCount = count;
+    VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &alloc_info, cmd_bufs));
+}
