@@ -237,45 +237,57 @@ static void create_instance(
 
 
 
-static void find_queue_families(VkPhysicalDevice device, VkSurfaceKHR surface, VklQueues* queues)
+static void find_queue_families(VkPhysicalDevice device, VklQueues* queues)
 {
+    ASSERT(device != 0);
+    ASSERT(queues != NULL);
+    ASSERT(queues->indices != NULL);
+
     // Get the queue family properties.
-    uint32_t queue_family_count = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, NULL);
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queues->queue_count, NULL);
+    ASSERT(queues->queue_count);
+
     VkQueueFamilyProperties* queue_families =
-        calloc(queue_family_count, sizeof(VkQueueFamilyProperties));
-    vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, queue_families);
+        calloc(queues->queue_count, sizeof(VkQueueFamilyProperties));
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queues->queue_count, queue_families);
 
     queues->indices[0] = queues->indices[1] = queues->indices[2] = -1;
 
-    VkBool32 presentSupport = false;
-    for (int32_t i = 0; i < (int)queue_family_count; i++)
+    for (int32_t i = 0; i < (int)queues->queue_count; i++)
     {
-        if (surface != 0)
-            vkGetPhysicalDeviceSurfaceSupportKHR(device, (uint32_t)i, surface, &presentSupport);
         if (queue_families[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
             queues->indices[VKL_QUEUE_GRAPHICS] = i;
         if (queue_families[i].queueFlags & VK_QUEUE_COMPUTE_BIT)
             queues->indices[VKL_QUEUE_COMPUTE] = i;
-        if (presentSupport)
-            queues->indices[VKL_QUEUE_PRESENT] = i;
-        if (queues->indices[VKL_QUEUE_GRAPHICS] >= 0 && //
-            queues->indices[VKL_QUEUE_COMPUTE] >= 0 &&  //
-            queues->indices[VKL_QUEUE_PRESENT] >= 0)
+        if (queues->indices[VKL_QUEUE_GRAPHICS] >= 0 && queues->indices[VKL_QUEUE_COMPUTE] >= 0)
             break;
     }
 
     ASSERT(queues->indices[VKL_QUEUE_GRAPHICS] >= 0);
     ASSERT(queues->indices[VKL_QUEUE_COMPUTE] >= 0);
-    ASSERT(queues->indices[VKL_QUEUE_PRESENT] >= 0);
 
     log_trace(
-        "queue families: graphics %d, compute %d, present %d",
-        queues->indices[VKL_QUEUE_GRAPHICS], //
-        queues->indices[VKL_QUEUE_COMPUTE],  //
-        queues->indices[VKL_QUEUE_PRESENT]); //
+        "queue families: graphics %d, compute %d", //
+        queues->indices[VKL_QUEUE_GRAPHICS], queues->indices[VKL_QUEUE_COMPUTE]);
 
     FREE(queue_families);
+}
+
+
+
+static void
+find_present_queue_family(VkPhysicalDevice device, VkSurfaceKHR surface, VklQueues* queues)
+{
+    VkBool32 presentSupport = false;
+    for (int32_t i = 0; i < (int)queues->queue_count; i++)
+    {
+        vkGetPhysicalDeviceSurfaceSupportKHR(device, (uint32_t)i, surface, &presentSupport);
+        if (presentSupport)
+        {
+            queues->indices[VKL_QUEUE_PRESENT] = i;
+            break;
+        }
+    }
 }
 
 

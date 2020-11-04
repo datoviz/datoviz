@@ -51,17 +51,21 @@ static void obj_created(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_CREATE
 
 static void _create_gpu(VkPhysicalDevice physical_device, VklGpu* gpu)
 {
+
     vkGetPhysicalDeviceProperties(physical_device, &gpu->device_properties);
     vkGetPhysicalDeviceFeatures(physical_device, &gpu->device_features);
     vkGetPhysicalDeviceMemoryProperties(physical_device, &gpu->memory_properties);
 
+    gpu->physical_device = physical_device;
     gpu->name = gpu->device_properties.deviceName;
+
+    find_queue_families(gpu->physical_device, &gpu->queues);
 }
 
 
 static void _create_device(VklGpu* gpu, VkSurfaceKHR surface)
 {
-    find_queue_families(gpu->physical_device, surface, &gpu->queues);
+    find_present_queue_family(gpu->physical_device, surface, &gpu->queues);
 
     create_command_pool(
         gpu->device, gpu->queues.indices[VKL_QUEUE_GRAPHICS], &gpu->cmd_pools[VKL_QUEUE_GRAPHICS]);

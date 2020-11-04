@@ -153,6 +153,7 @@ struct VklQueues
 {
     VklObject obj;
 
+    uint32_t queue_count;
     int32_t indices[3]; // graphics, compute, present
     VkQueue queues[3];
 };
