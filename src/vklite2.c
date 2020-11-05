@@ -12,17 +12,21 @@ END_INCL_NO_WARN
 /*  Macros                                                                                       */
 /*************************************************************************************************/
 
-#define INSTANCE_OBJ(s, o, t)                                                                     \
-    log_trace("create %s", #s);                                                                   \
+#define INSTANCE_CREATE(s, o, t)                                                                  \
+    log_trace("create object %s", #s);                                                            \
     s* o = calloc(1, sizeof(s));                                                                  \
     obj_init(&o->obj, t);
 
-#define INSTANCE_ARR(s, arr, n, t)                                                                \
-    log_trace("create %d %s(s)", (n), #s);                                                        \
+#define INSTANCE_ARRAY(s, arr, n, t)                                                              \
+    log_trace("create %d objects %s(s)", (n), #s);                                                \
     arr = calloc((n), sizeof(s));                                                                 \
     for (uint32_t i = 0; i < (n); i++)                                                            \
         obj_init(&arr[i].obj, t);
 
+#define INSTANCE_DESTROY(o)                                                                       \
+    log_trace("destroy object %s", #o);                                                           \
+    obj_destroyed(&o->obj);                                                                       \
+    FREE(o);
 
 
 /*************************************************************************************************/
@@ -47,7 +51,8 @@ static void obj_destroyed(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_DEST
 
 VklApp* vkl_app(VklBackend backend)
 {
-    INSTANCE_OBJ(VklApp, app, VKL_OBJECT_TYPE_APP)
+    INSTANCE_CREATE(VklApp, app, VKL_OBJECT_TYPE_APP)
+    app->backend = backend;
 
     // Which extensions are required? Depends on the backend.
     uint32_t required_extension_count = 0;
@@ -69,7 +74,7 @@ VklApp* vkl_app(VklBackend backend)
     }
 
     // Allocate the GPU structures.
-    INSTANCE_ARR(VklGpu, app->gpus, app->gpu_count, VKL_OBJECT_TYPE_GPU)
+    INSTANCE_ARRAY(VklGpu, app->gpus, app->gpu_count, VKL_OBJECT_TYPE_GPU)
 
     // Initialize the GPU(s).
     VkPhysicalDevice* physical_devices = calloc(app->gpu_count, sizeof(VkPhysicalDevice));
@@ -97,7 +102,6 @@ void vkl_app_destroy(VklApp* app)
     for (uint32_t i = 0; i < app->gpu_count; i++)
     {
         vkl_gpu_destroy(&app->gpus[i]);
-        obj_destroyed(&app->gpus[i].obj);
     }
 
     // Destroy the debug messenger.
@@ -114,7 +118,7 @@ void vkl_app_destroy(VklApp* app)
 
     // Free the memory.
     FREE(app->gpus);
-    FREE(app);
+    INSTANCE_DESTROY(app)
 
     log_trace("app destroyed");
 }
@@ -136,10 +140,14 @@ VklGpu* vkl_gpu(VklApp* app, uint32_t idx)
     return gpu;
 }
 
+
+
 void vkl_gpu_request_features(VklGpu* gpu, VkPhysicalDeviceFeatures requested_features)
 {
     gpu->requested_features = requested_features;
 }
+
+
 
 void vkl_gpu_create(VklGpu* gpu, VkSurfaceKHR surface)
 {
@@ -160,6 +168,8 @@ void vkl_gpu_create(VklGpu* gpu, VkSurfaceKHR surface)
     obj_created(&gpu->obj);
     log_trace("GPU #%d created", gpu->idx);
 }
+
+
 
 void vkl_gpu_destroy(VklGpu* gpu)
 {
@@ -195,8 +205,43 @@ void vkl_gpu_destroy(VklGpu* gpu)
     vkDestroyDevice(gpu->device, NULL);
     gpu->device = 0;
 
+    obj_destroyed(&gpu->obj);
     log_trace("GPU #%d destroyed", gpu->idx);
 }
+
+
+
+/*************************************************************************************************/
+/*  Window                                                                                       */
+/*************************************************************************************************/
+
+VklWindow* vkl_window(VklApp* app, uint32_t width, uint32_t height)
+{
+    INSTANCE_CREATE(VklWindow, window, VKL_OBJECT_TYPE_WINDOW)
+    window->app = app;
+
+    window->width = width;
+    window->height = height;
+
+    // Create the window, depending on the backend.
+    window->backend_window =
+        backend_window(app->instance, app->backend, width, height, &window->surface);
+
+    return window;
+}
+
+void vkl_window_destroy(VklWindow* window)
+{
+    backend_window_destroy(
+        window->app->instance, window->app->backend, window->backend_window, window->surface);
+    INSTANCE_DESTROY(window)
+}
+
+
+
+/*************************************************************************************************/
+/*  Canvas                                                                                       */
+/*************************************************************************************************/
 
 
 
@@ -206,15 +251,23 @@ void vkl_gpu_destroy(VklGpu* gpu)
 
 VklCommands* vkl_commands(VklGpu* gpu, VklQueueType queue, uint32_t count)
 {
-    INSTANCE_OBJ(VklCommands, commands, VKL_OBJECT_TYPE_COMMANDS)
+    INSTANCE_CREATE(VklCommands, commands, VKL_OBJECT_TYPE_COMMANDS)
 
     return commands;
 }
 
+
+
 void vkl_cmd_begin(VklCommands* cmds) {}
+
+
 
 void vkl_cmd_end(VklCommands* cmds) {}
 
+
+
 void vkl_cmd_reset(VklCommands* cmds) {}
+
+
 
 void vkl_cmd_free(VklCommands* cmds) { FREE(cmds); }

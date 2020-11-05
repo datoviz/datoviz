@@ -46,8 +46,10 @@ TODO later
 
 typedef struct VklObject VklObject;
 typedef struct VklApp VklApp;
-typedef struct VklGpu VklGpu;
 typedef struct VklQueues VklQueues;
+typedef struct VklGpu VklGpu;
+typedef struct VklWindow VklWindow;
+typedef struct VklCanvas VklCanvas;
 typedef struct VklCommands VklCommands;
 typedef struct VklBuffer VklBuffer;
 typedef struct VklImage VklImage;
@@ -59,7 +61,6 @@ typedef struct VklBarrier VklBarrier;
 typedef struct VklSync VklSync;
 typedef struct VklRenderpass VklRenderpass;
 typedef struct VklSubmit VklSubmit;
-typedef struct VklCanvas VklCanvas;
 
 
 
@@ -72,6 +73,8 @@ typedef enum
     VKL_OBJECT_TYPE_UNDEFINED,
     VKL_OBJECT_TYPE_APP,
     VKL_OBJECT_TYPE_GPU,
+    VKL_OBJECT_TYPE_WINDOW,
+    VKL_OBJECT_TYPE_CANVAS,
     VKL_OBJECT_TYPE_COMMANDS,
     VKL_OBJECT_TYPE_BUFFER,
     VKL_OBJECT_TYPE_IMAGE,
@@ -83,7 +86,6 @@ typedef enum
     VKL_OBJECT_TYPE_SYNC,
     VKL_OBJECT_TYPE_RENDERPASS,
     VKL_OBJECT_TYPE_SUBMIT,
-    VKL_OBJECT_TYPE_CANVAS,
     VKL_OBJECT_TYPE_CUSTOM,
 } VklObjectType;
 
@@ -142,6 +144,9 @@ struct VklApp
 {
     VklObject obj;
 
+    // Backend
+    VklBackend backend;
+
     // GPUs.
     uint32_t gpu_count;
     VklGpu* gpus;
@@ -184,6 +189,25 @@ struct VklGpu
 
     uint32_t cmd_pool_count;
     VkCommandPool cmd_pools[2]; // graphics, compute
+};
+
+
+
+struct VklWindow
+{
+    VklObject obj;
+    VklApp* app;
+
+    void* backend_window;
+    uint32_t width, height;
+    VkSurfaceKHR surface;
+};
+
+
+
+struct VklCanvas
+{
+    VklObject obj;
 };
 
 
@@ -265,13 +289,6 @@ struct VklSubmit
 
 
 
-struct VklCanvas
-{
-    VklObject obj;
-};
-
-
-
 /*************************************************************************************************/
 /*  App                                                                                          */
 /*************************************************************************************************/
@@ -311,6 +328,26 @@ VKY_EXPORT void vkl_gpu_request_features(VklGpu* gpu, VkPhysicalDeviceFeatures r
 VKY_EXPORT void vkl_gpu_create(VklGpu* gpu, VkSurfaceKHR surface);
 
 VKY_EXPORT void vkl_gpu_destroy(VklGpu* gpu);
+
+
+
+/*************************************************************************************************/
+/*  Window                                                                                       */
+/*************************************************************************************************/
+
+VKY_EXPORT VklWindow* vkl_window(VklApp* app, uint32_t width, uint32_t height);
+
+VKY_EXPORT void vkl_window_destroy(VklWindow* window);
+
+
+
+/*************************************************************************************************/
+/*  Canvas                                                                                       */
+/*************************************************************************************************/
+
+VKY_EXPORT VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height);
+
+VKY_EXPORT void vkl_canvas_attach_window(VklCanvas* canvas, VklWindow* window);
 
 
 
