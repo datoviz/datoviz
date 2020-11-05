@@ -12,14 +12,30 @@ END_INCL_NO_WARN
 /*  Macros                                                                                       */
 /*************************************************************************************************/
 
-#define INSTANCE_INIT(s, o, t)                                                                    \
-    log_trace("init object %s", #s);                                                              \
-    s* o = calloc(1, sizeof(s));                                                                  \
-    obj_init(&o->obj, t);
+#define INSTANCES_INIT(s, o, p, n, t)                                                             \
+    log_trace("init %d object(s) %s", n, #s);                                                     \
+    o->p = calloc(n, sizeof(s));                                                                  \
+    for (uint32_t i = 0; i < n; i++)                                                              \
+        obj_init(&o->p[i].obj, t);
 
-#define INSTANCE_DESTROY(o)                                                                       \
-    log_trace("destroy object %s", #o);                                                           \
-    obj_destroyed(&o->obj);                                                                       \
+#define INSTANCE_NEW(s, o, instances, n) s* o = &instances[n++];
+
+/*
+#define INSTANCE_GET(s, o, n, instances)                                                          \
+    s* o = NULL;                                                                                  \
+    for (uint32_t i = 0; i < n; i++)                                                              \
+        if (instances[i].obj.status <= 1)                                                         \
+        {                                                                                         \
+            o = &instances[i];                                                                    \
+            o->obj.status = VKL_OBJECT_STATUS_INIT;                                               \
+        }                                                                                         \
+    if (o == NULL)                                                                                \
+        log_error("maximum number of %s instances reached", #s);                                  \
+    exit(1);
+*/
+
+#define INSTANCES_DESTROY(o)                                                                      \
+    log_trace("destroy objects %s", #o);                                                          \
     FREE(o);
 
 
@@ -45,7 +61,8 @@ static void obj_destroyed(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_DEST
 
 VklApp* vkl_app(VklBackend backend)
 {
-    INSTANCE_INIT(VklApp, app, VKL_OBJECT_TYPE_APP)
+    VklApp* app = calloc(1, sizeof(VklApp));
+    obj_init(&app->obj, VKL_OBJECT_TYPE_APP);
     app->backend = backend;
 
     // Which extensions are required? Depends on the backend.
@@ -67,8 +84,6 @@ VklApp* vkl_app(VklBackend backend)
         exit(1);
     }
 
-
-
     // Discover the available GPUs.
     // ----------------------------
     {
@@ -76,18 +91,21 @@ VklApp* vkl_app(VklBackend backend)
         VkPhysicalDevice* physical_devices = calloc(app->gpu_count, sizeof(VkPhysicalDevice));
         vkEnumeratePhysicalDevices(app->instance, &app->gpu_count, physical_devices);
         ASSERT(app->gpu_count <= VKL_MAX_GPUS);
+        app->gpus = calloc(app->gpu_count, sizeof(VklGpu));
         for (uint32_t i = 0; i < app->gpu_count; i++)
         {
-            INSTANCE_INIT(VklGpu, gpu, VKL_OBJECT_TYPE_GPU)
-            app->gpus[i] = gpu;
-            gpu->app = app;
-            gpu->idx = i;
-            discover_gpu(physical_devices[i], gpu);
-            log_debug("found device #%d: %s", gpu->idx, gpu->name);
+            obj_init(&app->gpus[i].obj, VKL_OBJECT_TYPE_GPU);
+            app->gpus[i].app = app;
+            app->gpus[i].idx = i;
+            discover_gpu(physical_devices[i], &app->gpus[i]);
+            log_debug("found device #%d: %s", app->gpus[i].idx, app->gpus[i].name);
         }
 
         FREE(physical_devices);
     }
+
+    INSTANCES_INIT(VklWindow, app, windows, VKL_MAX_WINDOWS, VKL_OBJECT_TYPE_WINDOW)
+    INSTANCES_INIT(VklCanvas, app, canvases, VKL_MAX_WINDOWS, VKL_OBJECT_TYPE_CANVAS)
 
     return app;
 }
@@ -98,21 +116,33 @@ void vkl_app_destroy(VklApp* app)
 {
     log_trace("starting destruction of app...");
 
-    ASSERT(app->gpus != NULL);
+
     // Destroy the GPUs.
+    ASSERT(app->gpus != NULL);
     for (uint32_t i = 0; i < app->gpu_count; i++)
     {
-        vkl_gpu_destroy(app->gpus[i]);
-        app->gpus[i] = NULL;
+        vkl_gpu_destroy(&app->gpus[i]);
     }
+    INSTANCES_DESTROY(app->gpus);
 
-    ASSERT(app->windows != NULL);
+
     // Destroy the windows.
+    ASSERT(app->windows != NULL);
     for (uint32_t i = 0; i < app->window_count; i++)
     {
-        vkl_window_destroy(app->windows[i]);
-        app->windows[i] = NULL;
+        vkl_window_destroy(&app->windows[i]);
     }
+    INSTANCES_DESTROY(app->windows)
+
+
+    // Destroy the windows.
+    ASSERT(app->canvases != NULL);
+    for (uint32_t i = 0; i < app->canvas_count; i++)
+    {
+        vkl_canvas_destroy(&app->canvases[i]);
+    }
+    INSTANCES_DESTROY(app->canvases)
+
 
     // Destroy the debug messenger.
     if (app->debug_messenger)
@@ -120,6 +150,7 @@ void vkl_app_destroy(VklApp* app)
         destroy_debug_utils_messenger_EXT(app->instance, app->debug_messenger, NULL);
         app->debug_messenger = NULL;
     }
+
 
     // Destroy the instance.
     log_trace("destroy Vulkan instance");
@@ -129,8 +160,9 @@ void vkl_app_destroy(VklApp* app)
         app->instance = 0;
     }
 
-    // Free the memory.
-    INSTANCE_DESTROY(app)
+
+    // Free the App memory.
+    FREE(app);
     log_trace("app destroyed");
 }
 
@@ -147,7 +179,7 @@ VklGpu* vkl_gpu(VklApp* app, uint32_t idx)
         log_error("GPU index %d higher than number of GPUs %d", idx, app->gpu_count);
         idx = 0;
     }
-    VklGpu* gpu = app->gpus[idx];
+    VklGpu* gpu = &app->gpus[idx];
     return gpu;
 }
 
@@ -228,7 +260,10 @@ void vkl_gpu_destroy(VklGpu* gpu)
 
 VklWindow* vkl_window(VklApp* app, uint32_t width, uint32_t height)
 {
-    INSTANCE_INIT(VklWindow, window, VKL_OBJECT_TYPE_WINDOW)
+    INSTANCE_NEW(VklWindow, window, app->windows, app->window_count)
+
+    ASSERT(window->obj.type == VKL_OBJECT_TYPE_WINDOW);
+    ASSERT(window->obj.status == VKL_OBJECT_STATUS_INIT);
     window->app = app;
 
     window->width = width;
@@ -237,8 +272,6 @@ VklWindow* vkl_window(VklApp* app, uint32_t width, uint32_t height)
     // Create the window, depending on the backend.
     window->backend_window =
         backend_window(app->instance, app->backend, width, height, &window->surface);
-
-    app->windows[app->window_count++] = window;
 
     return window;
 }
@@ -254,7 +287,7 @@ void vkl_window_destroy(VklWindow* window)
     }
     backend_window_destroy(
         window->app->instance, window->app->backend, window->backend_window, window->surface);
-    INSTANCE_DESTROY(window)
+    obj_destroyed(&window->obj);
 }
 
 
@@ -265,7 +298,8 @@ void vkl_window_destroy(VklWindow* window)
 
 VklSwapchain* vkl_swapchain(VklGpu* gpu, VklWindow* window, uint32_t min_img_count)
 {
-    INSTANCE_INIT(VklSwapchain, swapchain, VKL_OBJECT_TYPE_SWAPCHAIN)
+    VklSwapchain* swapchain = calloc(1, sizeof(VklSwapchain));
+
     swapchain->gpu = gpu;
     swapchain->window = window;
     swapchain->img_count = min_img_count;
@@ -297,7 +331,7 @@ void vkl_swapchain_destroy(VklSwapchain* swapchain)
     if (swapchain->swapchain != 0)
         vkDestroySwapchainKHR(swapchain->gpu->device, swapchain->swapchain, NULL);
 
-    INSTANCE_DESTROY(swapchain)
+    FREE(swapchain);
     log_trace("swapchain destroyed");
 }
 
@@ -309,7 +343,7 @@ void vkl_swapchain_destroy(VklSwapchain* swapchain)
 
 VklCanvas* vkl_canvas(VklApp* app, uint32_t width, uint32_t height)
 {
-    INSTANCE_INIT(VklCanvas, canvas, VKL_OBJECT_TYPE_CANVAS)
+    INSTANCE_NEW(VklCanvas, canvas, app->canvases, app->canvas_count)
     canvas->app = app;
     canvas->width = width;
     canvas->height = height;
@@ -356,8 +390,15 @@ void vkl_canvas_create(VklCanvas* canvas)
 
 
 
-void vkl_canvas_destroy(VklCanvas* canvas){
-    INSTANCE_DESTROY(canvas) //
+void vkl_canvas_destroy(VklCanvas* canvas)
+{
+    if (canvas == NULL || canvas->obj.status == VKL_OBJECT_STATUS_DESTROYED)
+    {
+        log_trace("skip destruction of already-destroyed canvas");
+        return;
+    }
+    // TODO
+    obj_destroyed(&canvas->obj);
 }
 
 
@@ -366,12 +407,7 @@ void vkl_canvas_destroy(VklCanvas* canvas){
 /*  Commands */
 /*************************************************************************************************/
 
-VklCommands* vkl_commands(VklGpu* gpu, VklQueueType queue, uint32_t count)
-{
-    INSTANCE_INIT(VklCommands, commands, VKL_OBJECT_TYPE_COMMANDS)
-
-    return commands;
-}
+VklCommands* vkl_commands(VklGpu* gpu, VklQueueType queue, uint32_t count) { return NULL; }
 
 
 

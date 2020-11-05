@@ -158,11 +158,15 @@ struct VklApp
 
     // GPUs.
     uint32_t gpu_count;
-    VklGpu* gpus[VKL_MAX_GPUS];
+    VklGpu* gpus;
 
     // Windows.
     uint32_t window_count;
-    VklWindow* windows[VKL_MAX_WINDOWS];
+    VklWindow* windows;
+
+    // Canvas.
+    uint32_t canvas_count;
+    VklCanvas* canvases;
 };
 
 

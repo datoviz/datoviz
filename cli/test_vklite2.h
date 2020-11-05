@@ -7,8 +7,8 @@ static int vklite2_app(VkyTestContext* context)
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     ASSERT(app->obj.status == VKL_OBJECT_STATUS_CREATED);
     ASSERT(app->gpu_count >= 1);
-    ASSERT(app->gpus[0]->name != NULL);
-    ASSERT(app->gpus[0]->obj.status == VKL_OBJECT_STATUS_INIT);
+    ASSERT(app->gpus[0].name != NULL);
+    ASSERT(app->gpus[0].obj.status == VKL_OBJECT_STATUS_INIT);
 
     VklGpu* gpu = vkl_gpu(app, 0);
     vkl_gpu_create(gpu, 0);
@@ -52,13 +52,7 @@ static int vklite2_swapchain(VkyTestContext* context)
     VklSwapchain* swapchain = vkl_swapchain(gpu, window, 3);
     vkl_swapchain_create(swapchain, VK_FORMAT_B8G8R8A8_UNORM, VK_PRESENT_MODE_FIFO_KHR);
     vkl_swapchain_destroy(swapchain);
-
-    // HACK: this function should never be called manually, because the GPU keeps a reference
-    // to the destroyed pointer and will try to destroy again the window (which will cause
-    // a segfault)
-    app->windows[0] = NULL;
     vkl_window_destroy(window);
-
     vkl_app_destroy(app);
     return 0;
 }
