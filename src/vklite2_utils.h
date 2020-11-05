@@ -509,8 +509,52 @@ static void create_device(VklGpu* gpu, VkSurfaceKHR surface)
 
 
 /*************************************************************************************************/
-/*  Window                                                                                       */
+/*  Swapchain                                                                                    */
 /*************************************************************************************************/
+
+static void create_swapchain(
+    VkDevice device, VkPhysicalDevice pdevice,      //
+    VkSurfaceKHR surface, uint32_t image_count,     //
+    VkFormat format, VkPresentModeKHR present_mode, //
+    VklQueues queues,                               //
+    VkSurfaceCapabilitiesKHR* caps, VkSwapchainKHR* swapchain)
+{
+    // Swap chain.
+    VkSwapchainCreateInfoKHR screateInfo = {0};
+    screateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+    screateInfo.surface = surface;
+    screateInfo.minImageCount = image_count;
+    screateInfo.imageFormat = format;
+    screateInfo.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(pdevice, surface, caps);
+
+    screateInfo.imageExtent = caps->currentExtent;
+    screateInfo.imageArrayLayers = 1;
+    screateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+    screateInfo.preTransform = caps->currentTransform;
+    screateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    screateInfo.presentMode = present_mode;
+    screateInfo.clipped = VK_TRUE;
+
+    ASSERT(queues.indices[VKL_QUEUE_GRAPHICS] >= 0);
+    ASSERT(queues.indices[VKL_QUEUE_PRESENT] >= 0);
+    uint32_t queue_families[] = {
+        (uint32_t)queues.indices[VKL_QUEUE_GRAPHICS], (uint32_t)queues.indices[VKL_QUEUE_PRESENT]};
+    if (queue_families[0] != queue_families[1])
+    {
+        screateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+        screateInfo.queueFamilyIndexCount = 2;
+        screateInfo.pQueueFamilyIndices = queue_families;
+    }
+    else
+    {
+        screateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    }
+
+    log_trace("create swapchain");
+    VK_CHECK_RESULT(vkCreateSwapchainKHR(device, &screateInfo, NULL, swapchain));
+}
 
 
 

@@ -50,6 +50,7 @@ typedef struct VklApp VklApp;
 typedef struct VklQueues VklQueues;
 typedef struct VklGpu VklGpu;
 typedef struct VklWindow VklWindow;
+typedef struct VklSwapchain VklSwapchain;
 typedef struct VklCanvas VklCanvas;
 typedef struct VklCommands VklCommands;
 typedef struct VklBuffer VklBuffer;
@@ -59,7 +60,8 @@ typedef struct VklBinding VklBinding;
 typedef struct VklCompute VklCompute;
 typedef struct VklPipeline VklPipeline;
 typedef struct VklBarrier VklBarrier;
-typedef struct VklSync VklSync;
+typedef struct VklSyncCpu VklSyncCpu;
+typedef struct VklSyncGpu VklSyncGpu;
 typedef struct VklRenderpass VklRenderpass;
 typedef struct VklSubmit VklSubmit;
 
@@ -75,6 +77,7 @@ typedef enum
     VKL_OBJECT_TYPE_APP,
     VKL_OBJECT_TYPE_GPU,
     VKL_OBJECT_TYPE_WINDOW,
+    VKL_OBJECT_TYPE_SWAPCHAIN,
     VKL_OBJECT_TYPE_CANVAS,
     VKL_OBJECT_TYPE_COMMANDS,
     VKL_OBJECT_TYPE_BUFFER,
@@ -84,7 +87,8 @@ typedef enum
     VKL_OBJECT_TYPE_COMPUTE,
     VKL_OBJECT_TYPE_PIPELINE,
     VKL_OBJECT_TYPE_BARRIER,
-    VKL_OBJECT_TYPE_SYNC,
+    VKL_OBJECT_TYPE_SYNC_CPU,
+    VKL_OBJECT_TYPE_SYNC_GPU,
     VKL_OBJECT_TYPE_RENDERPASS,
     VKL_OBJECT_TYPE_SUBMIT,
     VKL_OBJECT_TYPE_CUSTOM,
@@ -205,7 +209,21 @@ struct VklWindow
 
     void* backend_window;
     uint32_t width, height;
+
     VkSurfaceKHR surface;
+    VkSurfaceCapabilitiesKHR caps;
+};
+
+
+
+struct VklSwapchain
+{
+    VklObject obj;
+    VklGpu* gpu;
+    VklWindow* window;
+
+    uint32_t img_count;
+    VkSwapchainKHR swapchain;
 };
 
 
@@ -213,6 +231,10 @@ struct VklWindow
 struct VklCanvas
 {
     VklObject obj;
+    VklApp* app;
+
+    VklWindow* window;
+    uint32_t width, height;
 };
 
 
@@ -220,6 +242,7 @@ struct VklCanvas
 struct VklCommands
 {
     VklObject obj;
+    VklGpu* gpu;
 };
 
 
@@ -227,6 +250,7 @@ struct VklCommands
 struct VklBuffer
 {
     VklObject obj;
+    VklGpu* gpu;
 };
 
 
@@ -234,6 +258,7 @@ struct VklBuffer
 struct VklImage
 {
     VklObject obj;
+    VklGpu* gpu;
 };
 
 
@@ -241,6 +266,7 @@ struct VklImage
 struct VklSampler
 {
     VklObject obj;
+    VklGpu* gpu;
 };
 
 
@@ -248,6 +274,7 @@ struct VklSampler
 struct VklBinding
 {
     VklObject obj;
+    VklGpu* gpu;
 };
 
 
@@ -255,6 +282,7 @@ struct VklBinding
 struct VklCompute
 {
     VklObject obj;
+    VklGpu* gpu;
 };
 
 
@@ -262,6 +290,7 @@ struct VklCompute
 struct VklPipeline
 {
     VklObject obj;
+    VklGpu* gpu;
 };
 
 
@@ -269,13 +298,23 @@ struct VklPipeline
 struct VklBarrier
 {
     VklObject obj;
+    VklGpu* gpu;
 };
 
 
 
-struct VklSync
+struct VklSyncCpu
 {
     VklObject obj;
+    VklGpu* gpu;
+};
+
+
+
+struct VklSyncGpu
+{
+    VklObject obj;
+    VklGpu* gpu;
 };
 
 
@@ -283,6 +322,7 @@ struct VklSync
 struct VklRenderpass
 {
     VklObject obj;
+    VklGpu* gpu;
 };
 
 
@@ -290,6 +330,7 @@ struct VklRenderpass
 struct VklSubmit
 {
     VklObject obj;
+    VklGpu* gpu;
 };
 
 
@@ -350,9 +391,31 @@ VKY_EXPORT void vkl_window_destroy(VklWindow* window);
 /*  Canvas                                                                                       */
 /*************************************************************************************************/
 
-VKY_EXPORT VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height);
+VKY_EXPORT VklSwapchain* vkl_swapchain(VklGpu* gpu, VklWindow* window, uint32_t min_img_count);
 
-VKY_EXPORT void vkl_canvas_attach_window(VklCanvas* canvas, VklWindow* window);
+VKY_EXPORT void
+vkl_swapchain_create(VklSwapchain* swapchain, VkFormat format, VkPresentModeKHR present_mode);
+
+VKY_EXPORT void vkl_swapchain_destroy(VklSwapchain* swapchain);
+
+
+
+/*************************************************************************************************/
+/*  Canvas                                                                                       */
+/*************************************************************************************************/
+
+VKY_EXPORT VklCanvas* vkl_canvas(VklApp* app, uint32_t width, uint32_t height);
+
+VKY_EXPORT void vkl_canvas_swapchain(VklCanvas* canvas, VklSwapchain* swapchain);
+
+VKY_EXPORT void vkl_canvas_offscreen(VklCanvas* canvas, VklGpu* gpu);
+
+VKY_EXPORT void vkl_canvas_create(VklCanvas* canvas);
+
+VKY_EXPORT VklImage*
+vkl_canvas_acquire_image(VklCanvas* canvas, VklSyncGpu* sync_gpu, VklSyncCpu* sync_cpu);
+
+VKY_EXPORT void vkl_canvas_destroy(VklCanvas* canvas);
 
 
 

@@ -12,8 +12,8 @@ END_INCL_NO_WARN
 /*  Macros                                                                                       */
 /*************************************************************************************************/
 
-#define INSTANCE_CREATE(s, o, t)                                                                  \
-    log_trace("create object %s", #s);                                                            \
+#define INSTANCE_INIT(s, o, t)                                                                    \
+    log_trace("init object %s", #s);                                                              \
     s* o = calloc(1, sizeof(s));                                                                  \
     obj_init(&o->obj, t);
 
@@ -45,7 +45,7 @@ static void obj_destroyed(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_DEST
 
 VklApp* vkl_app(VklBackend backend)
 {
-    INSTANCE_CREATE(VklApp, app, VKL_OBJECT_TYPE_APP)
+    INSTANCE_INIT(VklApp, app, VKL_OBJECT_TYPE_APP)
     app->backend = backend;
 
     // Which extensions are required? Depends on the backend.
@@ -78,7 +78,7 @@ VklApp* vkl_app(VklBackend backend)
         ASSERT(app->gpu_count <= VKL_MAX_GPUS);
         for (uint32_t i = 0; i < app->gpu_count; i++)
         {
-            INSTANCE_CREATE(VklGpu, gpu, VKL_OBJECT_TYPE_GPU)
+            INSTANCE_INIT(VklGpu, gpu, VKL_OBJECT_TYPE_GPU)
             app->gpus[i] = gpu;
             gpu->app = app;
             gpu->idx = i;
@@ -219,7 +219,7 @@ void vkl_gpu_destroy(VklGpu* gpu)
 
 VklWindow* vkl_window(VklApp* app, uint32_t width, uint32_t height)
 {
-    INSTANCE_CREATE(VklWindow, window, VKL_OBJECT_TYPE_WINDOW)
+    INSTANCE_INIT(VklWindow, window, VKL_OBJECT_TYPE_WINDOW)
     window->app = app;
 
     window->width = width;
@@ -246,8 +246,101 @@ void vkl_window_destroy(VklWindow* window)
 
 
 /*************************************************************************************************/
+/*  Swapchain                                                                                    */
+/*************************************************************************************************/
+
+VklSwapchain* vkl_swapchain(VklGpu* gpu, VklWindow* window, uint32_t min_img_count)
+{
+    INSTANCE_INIT(VklSwapchain, swapchain, VKL_OBJECT_TYPE_SWAPCHAIN)
+    swapchain->gpu = gpu;
+    swapchain->window = window;
+    swapchain->img_count = min_img_count;
+    return swapchain;
+}
+
+
+
+void vkl_swapchain_create(VklSwapchain* swapchain, VkFormat format, VkPresentModeKHR present_mode)
+{
+    log_trace("starting creation of swapchain...");
+
+    // Create swapchain
+    create_swapchain(
+        swapchain->gpu->device, swapchain->gpu->physical_device, swapchain->window->surface,
+        swapchain->img_count, format, present_mode, swapchain->gpu->queues,
+        &swapchain->window->caps, &swapchain->swapchain);
+
+    obj_created(&swapchain->obj);
+    log_trace("swapchain created");
+}
+
+
+
+void vkl_swapchain_destroy(VklSwapchain* swapchain)
+{
+    log_trace("starting destruction of swapchain...");
+    INSTANCE_DESTROY(swapchain)
+    log_trace("swapchain destroyed");
+}
+
+
+
+/*************************************************************************************************/
 /*  Canvas                                                                                       */
 /*************************************************************************************************/
+
+VklCanvas* vkl_canvas(VklApp* app, uint32_t width, uint32_t height)
+{
+    INSTANCE_INIT(VklCanvas, canvas, VKL_OBJECT_TYPE_CANVAS)
+    canvas->app = app;
+    canvas->width = width;
+    canvas->height = height;
+
+    return canvas;
+}
+
+
+
+void vkl_canvas_swapchain(VklCanvas* canvas, VklSwapchain* swapchain)
+{
+    // TODO
+    // obtain swapchain images
+    // update image_count
+    // create depth image and image view
+}
+
+
+
+void vkl_canvas_offscreen(VklCanvas* canvas, VklGpu* gpu)
+{
+    // TODO
+    // create 1 image, image view, depth image, depth image view
+}
+
+
+
+VklImage* vkl_canvas_acquire_image(VklCanvas* canvas, VklSyncGpu* sync_gpu, VklSyncCpu* sync_cpu)
+{
+    // TODO
+    return NULL;
+}
+
+
+
+void vkl_canvas_create(VklCanvas* canvas)
+{
+    // must call offscreen or swapchain before
+    // create renderpass, sync, predefined command buffers
+    // if swapchain
+    // create framebuffers
+    // event system
+}
+
+
+
+void vkl_canvas_destroy(VklCanvas* canvas){
+    INSTANCE_DESTROY(canvas) //
+}
 
 
 
@@ -257,7 +350,7 @@ void vkl_window_destroy(VklWindow* window)
 
 VklCommands* vkl_commands(VklGpu* gpu, VklQueueType queue, uint32_t count)
 {
-    INSTANCE_CREATE(VklCommands, commands, VKL_OBJECT_TYPE_COMMANDS)
+    INSTANCE_INIT(VklCommands, commands, VKL_OBJECT_TYPE_COMMANDS)
 
     return commands;
 }
