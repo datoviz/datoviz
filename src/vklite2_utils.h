@@ -441,6 +441,7 @@ static void create_device(VklGpu* gpu, VkSurfaceKHR surface)
 {
     log_trace("starting creation of device...");
     ASSERT(gpu != NULL);
+    ASSERT(gpu->app != NULL);
 
     bool has_surface = surface != NULL;
     bool has_validation = gpu->app->debug_messenger != NULL;

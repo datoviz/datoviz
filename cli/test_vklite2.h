@@ -6,10 +6,9 @@ static int vklite2_app(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     ASSERT(app->obj.status == VKL_OBJECT_STATUS_CREATED);
-    ASSERT(app->gpus != NULL);
     ASSERT(app->gpu_count >= 1);
-    ASSERT(app->gpus[0].name != NULL);
-    ASSERT(app->gpus[0].obj.status == VKL_OBJECT_STATUS_INIT);
+    ASSERT(app->gpus[0]->name != NULL);
+    ASSERT(app->gpus[0]->obj.status == VKL_OBJECT_STATUS_INIT);
 
     VklGpu* gpu = vkl_gpu(app, 0);
     vkl_gpu_create(gpu, 0);
@@ -30,6 +29,15 @@ static int vklite2_surface(VkyTestContext* context)
     vkl_gpu_create(gpu, surface);
 
     backend_window_destroy(app->instance, VKL_BACKEND_GLFW, window, surface);
+    vkl_app_destroy(app);
+    return 0;
+}
+
+static int vklite2_window(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklWindow* window = vkl_window(app, 100, 100);
+    vkl_window_destroy(window);
     vkl_app_destroy(app);
     return 0;
 }

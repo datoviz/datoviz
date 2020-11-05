@@ -36,7 +36,8 @@ TODO later
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define VKL_MAX_GPU 32
+#define VKL_MAX_GPUS    64
+#define VKL_MAX_WINDOWS 256
 
 
 
@@ -147,13 +148,17 @@ struct VklApp
     // Backend
     VklBackend backend;
 
-    // GPUs.
-    uint32_t gpu_count;
-    VklGpu* gpus;
-
     // Vulkan objects.
     VkInstance instance;
     VkDebugUtilsMessengerEXT debug_messenger;
+
+    // GPUs.
+    uint32_t gpu_count;
+    VklGpu* gpus[VKL_MAX_GPUS];
+
+    // Windows.
+    uint32_t window_count;
+    VklWindow* windows[VKL_MAX_WINDOWS];
 };
 
 

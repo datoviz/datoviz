@@ -17,12 +17,6 @@ END_INCL_NO_WARN
     s* o = calloc(1, sizeof(s));                                                                  \
     obj_init(&o->obj, t);
 
-#define INSTANCE_ARRAY(s, arr, n, t)                                                              \
-    log_trace("create %d objects %s(s)", (n), #s);                                                \
-    arr = calloc((n), sizeof(s));                                                                 \
-    for (uint32_t i = 0; i < (n); i++)                                                            \
-        obj_init(&arr[i].obj, t);
-
 #define INSTANCE_DESTROY(o)                                                                       \
     log_trace("destroy object %s", #o);                                                           \
     obj_destroyed(&o->obj);                                                                       \
@@ -73,21 +67,27 @@ VklApp* vkl_app(VklBackend backend)
         exit(1);
     }
 
-    // Allocate the GPU structures.
-    INSTANCE_ARRAY(VklGpu, app->gpus, app->gpu_count, VKL_OBJECT_TYPE_GPU)
 
-    // Initialize the GPU(s).
-    VkPhysicalDevice* physical_devices = calloc(app->gpu_count, sizeof(VkPhysicalDevice));
-    vkEnumeratePhysicalDevices(app->instance, &app->gpu_count, physical_devices);
-    for (uint32_t i = 0; i < app->gpu_count; i++)
+
+    // Discover the available GPUs.
+    // ----------------------------
     {
-        app->gpus[i].app = app;
-        app->gpus[i].idx = i;
-        discover_gpu(physical_devices[i], &app->gpus[i]);
-        log_debug("found device #%d: %s", i, app->gpus[i].name);
-    }
+        // Initialize the GPU(s).
+        VkPhysicalDevice* physical_devices = calloc(app->gpu_count, sizeof(VkPhysicalDevice));
+        vkEnumeratePhysicalDevices(app->instance, &app->gpu_count, physical_devices);
+        ASSERT(app->gpu_count <= VKL_MAX_GPUS);
+        for (uint32_t i = 0; i < app->gpu_count; i++)
+        {
+            INSTANCE_CREATE(VklGpu, gpu, VKL_OBJECT_TYPE_GPU)
+            app->gpus[i] = gpu;
+            gpu->app = app;
+            gpu->idx = i;
+            discover_gpu(physical_devices[i], gpu);
+            log_debug("found device #%d: %s", gpu->idx, gpu->name);
+        }
 
-    FREE(physical_devices);
+        FREE(physical_devices);
+    }
 
     return app;
 }
@@ -101,7 +101,7 @@ void vkl_app_destroy(VklApp* app)
     // Destroy the GPUs.
     for (uint32_t i = 0; i < app->gpu_count; i++)
     {
-        vkl_gpu_destroy(&app->gpus[i]);
+        vkl_gpu_destroy(app->gpus[i]);
     }
 
     // Destroy the debug messenger.
@@ -117,9 +117,7 @@ void vkl_app_destroy(VklApp* app)
     }
 
     // Free the memory.
-    FREE(app->gpus);
     INSTANCE_DESTROY(app)
-
     log_trace("app destroyed");
 }
 
@@ -136,7 +134,7 @@ VklGpu* vkl_gpu(VklApp* app, uint32_t idx)
         log_error("GPU index %d higher than number of GPUs %d", idx, app->gpu_count);
         idx = 0;
     }
-    VklGpu* gpu = &app->gpus[idx];
+    VklGpu* gpu = app->gpus[idx];
     return gpu;
 }
 
@@ -227,8 +225,12 @@ VklWindow* vkl_window(VklApp* app, uint32_t width, uint32_t height)
     window->backend_window =
         backend_window(app->instance, app->backend, width, height, &window->surface);
 
+    app->windows[app->window_count++] = window;
+
     return window;
 }
+
+
 
 void vkl_window_destroy(VklWindow* window)
 {
