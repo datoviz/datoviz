@@ -398,6 +398,7 @@ void vkl_canvas_destroy(VklCanvas* canvas)
         return;
     }
     // TODO
+
     obj_destroyed(&canvas->obj);
 }
 

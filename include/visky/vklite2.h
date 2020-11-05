@@ -36,8 +36,9 @@ TODO later
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define VKL_MAX_GPUS    64
-#define VKL_MAX_WINDOWS 256
+#define VKL_MAX_GPUS             64
+#define VKL_MAX_WINDOWS          256
+#define VKL_MAX_SWAPCHAIN_IMAGES 8
 
 
 
@@ -239,6 +240,20 @@ struct VklCanvas
 
     VklWindow* window;
     uint32_t width, height;
+
+    VklSwapchain* swapchain;
+    VklImage* images[VKL_MAX_SWAPCHAIN_IMAGES]; // swapchain images
+    VklImage* depth_image;
+
+    VklRenderpass* renderpass;
+    // TODO: rename to SyncDevice/SyncHost
+    VklSyncGpu* sync_image_acquired; // NOTE: wraps one VkSemaphore per image in flight
+    VklSyncGpu* sync_image_rendered;
+    VklSyncCpu* sync_render_finished;
+
+    VklCommands* commands[4]; // transfer, graphics, compute, gui
+
+    // TODO: event system
 };
 
 
@@ -327,6 +342,8 @@ struct VklRenderpass
 {
     VklObject obj;
     VklGpu* gpu;
+
+    // TODO: framebuffers
 };
 
 
@@ -387,6 +404,7 @@ VKY_EXPORT void vkl_gpu_destroy(VklGpu* gpu);
 
 VKY_EXPORT VklWindow* vkl_window(VklApp* app, uint32_t width, uint32_t height);
 
+// NOTE: to be called AFTER vkl_swapchain_destroy()
 VKY_EXPORT void vkl_window_destroy(VklWindow* window);
 
 
@@ -400,6 +418,7 @@ VKY_EXPORT VklSwapchain* vkl_swapchain(VklGpu* gpu, VklWindow* window, uint32_t 
 VKY_EXPORT void
 vkl_swapchain_create(VklSwapchain* swapchain, VkFormat format, VkPresentModeKHR present_mode);
 
+// NOTE: to be called BEFORE vkl_window_destroy()
 VKY_EXPORT void vkl_swapchain_destroy(VklSwapchain* swapchain);
 
 
