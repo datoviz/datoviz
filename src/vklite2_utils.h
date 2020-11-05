@@ -218,20 +218,22 @@ backend_window_destroy(VkInstance instance, VklBackend backend, void* window, Vk
     log_trace("starting destruction of backend window...");
     // NOTE TODO: need to vkDeviceWaitIdle(device) on all devices before calling this
 
-    if (surface != 0)
-    {
-        log_trace("destroy surface");
-        vkDestroySurfaceKHR(instance, surface, NULL);
-    }
-
     switch (backend)
     {
     case VKL_BACKEND_GLFW:
         glfwPollEvents();
+        ASSERT(window != NULL);
+        log_trace("destroy GLFW window");
         glfwDestroyWindow(window);
         break;
     default:
         break;
+    }
+
+    if (surface != 0)
+    {
+        log_trace("destroy surface");
+        vkDestroySurfaceKHR(instance, surface, NULL);
     }
 
     log_trace("backend window destroyed");

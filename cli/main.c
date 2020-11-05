@@ -135,9 +135,10 @@ struct VkyTestCase
 static VkyTestCase TEST_CASES[] = {
 
     // vklite2
-    CASE_FIXTURE_NONE(vklite2_app),     //
-    CASE_FIXTURE_NONE(vklite2_surface), //
-    CASE_FIXTURE_NONE(vklite2_window),  //
+    CASE_FIXTURE_NONE(vklite2_app),       //
+    CASE_FIXTURE_NONE(vklite2_surface),   //
+    CASE_FIXTURE_NONE(vklite2_window),    //
+    CASE_FIXTURE_NONE(vklite2_swapchain), //
 
     // Visual props.
     CASE_FIXTURE_NONE(visuals_props_1), //

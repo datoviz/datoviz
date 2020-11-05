@@ -101,16 +101,25 @@ void vkl_app_destroy(VklApp* app)
     ASSERT(app->gpus != NULL);
     // Destroy the GPUs.
     for (uint32_t i = 0; i < app->gpu_count; i++)
+    {
         vkl_gpu_destroy(app->gpus[i]);
+        app->gpus[i] = NULL;
+    }
 
     ASSERT(app->windows != NULL);
     // Destroy the windows.
     for (uint32_t i = 0; i < app->window_count; i++)
+    {
         vkl_window_destroy(app->windows[i]);
+        app->windows[i] = NULL;
+    }
 
     // Destroy the debug messenger.
     if (app->debug_messenger)
+    {
         destroy_debug_utils_messenger_EXT(app->instance, app->debug_messenger, NULL);
+        app->debug_messenger = NULL;
+    }
 
     // Destroy the instance.
     log_trace("destroy Vulkan instance");
@@ -238,6 +247,11 @@ VklWindow* vkl_window(VklApp* app, uint32_t width, uint32_t height)
 
 void vkl_window_destroy(VklWindow* window)
 {
+    if (window == NULL || window->obj.status == VKL_OBJECT_STATUS_DESTROYED)
+    {
+        log_trace("skip destruction of already-destroyed window");
+        return;
+    }
     backend_window_destroy(
         window->app->instance, window->app->backend, window->backend_window, window->surface);
     INSTANCE_DESTROY(window)
@@ -279,6 +293,10 @@ void vkl_swapchain_create(VklSwapchain* swapchain, VkFormat format, VkPresentMod
 void vkl_swapchain_destroy(VklSwapchain* swapchain)
 {
     log_trace("starting destruction of swapchain...");
+
+    if (swapchain->swapchain != 0)
+        vkDestroySwapchainKHR(swapchain->gpu->device, swapchain->swapchain, NULL);
+
     INSTANCE_DESTROY(swapchain)
     log_trace("swapchain destroyed");
 }

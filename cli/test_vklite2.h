@@ -43,6 +43,26 @@ static int vklite2_window(VkyTestContext* context)
     return 0;
 }
 
+static int vklite2_swapchain(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklWindow* window = vkl_window(app, 100, 100);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    vkl_gpu_create(gpu, window->surface);
+    VklSwapchain* swapchain = vkl_swapchain(gpu, window, 3);
+    vkl_swapchain_create(swapchain, VK_FORMAT_B8G8R8A8_UNORM, VK_PRESENT_MODE_FIFO_KHR);
+    vkl_swapchain_destroy(swapchain);
+
+    // HACK: this function should never be called manually, because the GPU keeps a reference
+    // to the destroyed pointer and will try to destroy again the window (which will cause
+    // a segfault)
+    app->windows[0] = NULL;
+    vkl_window_destroy(window);
+
+    vkl_app_destroy(app);
+    return 0;
+}
+
 static int vklite2_test_compute_only(VkyTestContext* context)
 {
     // VkyApp* app = vky_app();
