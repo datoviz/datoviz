@@ -37,7 +37,8 @@ static int vklite2_window(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklWindow* window = vkl_window(app, 100, 100);
-    vkl_window_destroy(window);
+    ASSERT(window != NULL);
+    // vkl_window_destroy(window);
     vkl_app_destroy(app);
     return 0;
 }

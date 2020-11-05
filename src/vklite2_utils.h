@@ -215,6 +215,7 @@ static void* backend_window(
 static void
 backend_window_destroy(VkInstance instance, VklBackend backend, void* window, VkSurfaceKHR surface)
 {
+    log_trace("starting destruction of backend window...");
     // NOTE TODO: need to vkDeviceWaitIdle(device) on all devices before calling this
 
     if (surface != 0)
@@ -232,6 +233,8 @@ backend_window_destroy(VkInstance instance, VklBackend backend, void* window, Vk
     default:
         break;
     }
+
+    log_trace("backend window destroyed");
 }
 
 

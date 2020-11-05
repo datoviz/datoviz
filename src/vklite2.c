@@ -97,19 +97,23 @@ VklApp* vkl_app(VklBackend backend)
 void vkl_app_destroy(VklApp* app)
 {
     log_trace("starting destruction of app...");
+
     ASSERT(app->gpus != NULL);
     // Destroy the GPUs.
     for (uint32_t i = 0; i < app->gpu_count; i++)
-    {
         vkl_gpu_destroy(app->gpus[i]);
-    }
+
+    ASSERT(app->windows != NULL);
+    // Destroy the windows.
+    for (uint32_t i = 0; i < app->window_count; i++)
+        vkl_window_destroy(app->windows[i]);
 
     // Destroy the debug messenger.
     if (app->debug_messenger)
         destroy_debug_utils_messenger_EXT(app->instance, app->debug_messenger, NULL);
 
     // Destroy the instance.
-    log_trace("destroy instance");
+    log_trace("destroy Vulkan instance");
     if (app->instance != 0)
     {
         vkDestroyInstance(app->instance, NULL);
