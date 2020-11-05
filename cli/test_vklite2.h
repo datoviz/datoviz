@@ -5,7 +5,11 @@ static int vklite2_test_app_1(VkyTestContext* context)
     ASSERT(app->gpus != NULL);
     ASSERT(app->gpu_count >= 1);
     ASSERT(app->gpus[0].name != NULL);
-    ASSERT(app->gpus[0].obj.status == VKL_OBJECT_STATUS_CREATED);
+    ASSERT(app->gpus[0].obj.status == VKL_OBJECT_STATUS_INIT);
+
+    VklGpu* gpu = vkl_gpu(app, 0);
+    vkl_gpu_create(gpu, 0);
+
     vkl_app_destroy(app);
     return 0;
 }

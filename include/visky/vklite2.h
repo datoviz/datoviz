@@ -85,14 +85,15 @@ typedef enum
 } VklObjectType;
 
 
+// NOTE: the order is important, status >= CREATED means the object has been created
 typedef enum
 {
-    VKL_OBJECT_STATUS_UNDEFINED,
-    VKL_OBJECT_STATUS_INIT,
-    VKL_OBJECT_STATUS_CREATED,
-    VKL_OBJECT_STATUS_NEED_RECREATE,
-    VKL_OBJECT_STATUS_NEED_UPDATE,
-    VKL_OBJECT_STATUS_DESTROYED,
+    VKL_OBJECT_STATUS_UNDEFINED,     // invalid state
+    VKL_OBJECT_STATUS_DESTROYED,     // after destruction
+    VKL_OBJECT_STATUS_INIT,          // after memory allocation
+    VKL_OBJECT_STATUS_CREATED,       // after proper creation on the GPU
+    VKL_OBJECT_STATUS_NEED_RECREATE, // need to be recreated
+    VKL_OBJECT_STATUS_NEED_UPDATE,   // need to be updated
 } VklObjectStatus;
 
 
@@ -163,6 +164,7 @@ struct VklQueues
 struct VklGpu
 {
     VklObject obj;
+    VklApp* app;
 
     const char* name;
 
@@ -173,7 +175,10 @@ struct VklGpu
 
     VklQueues queues;
 
+    VkPhysicalDeviceFeatures requested_features;
     VkDevice device;
+
+    uint32_t cmd_pool_count;
     VkCommandPool cmd_pools[2]; // graphics, compute
 };
 
@@ -267,11 +272,41 @@ struct VklCanvas
 /*  App                                                                                          */
 /*************************************************************************************************/
 
+/**
+ * Create an application instance.
+ *
+ * There is typically only one App object in a given application. This object holds a pointer to
+ * the Vulkan instance and is responsible for discovering the available GPUs.
+ *
+ * @param backend the backend, typically either VKL_BACKEND_GLFW or VKL_BACKEND_OFFSCREEN
+ * @returns a pointer to the created VklApp struct
+ */
 VKY_EXPORT VklApp* vkl_app(VklBackend backend);
 
-VKY_EXPORT VklGpu* vkl_app_get_gpu(VklApp* app, uint32_t idx);
 
+
+/**
+ * Destroy the application.
+ *
+ * This function automatically destroys all objects created within the application.
+ *
+ * @param app the application to destroy
+ */
 VKY_EXPORT void vkl_app_destroy(VklApp* app);
+
+
+
+/*************************************************************************************************/
+/*  GPU                                                                                          */
+/*************************************************************************************************/
+
+VKY_EXPORT VklGpu* vkl_gpu(VklApp* app, uint32_t idx);
+
+VKY_EXPORT void vkl_gpu_request_features(VklGpu* gpu, VkPhysicalDeviceFeatures requested_features);
+
+VKY_EXPORT void vkl_gpu_create(VklGpu* gpu, VkSurfaceKHR surface);
+
+VKY_EXPORT void vkl_gpu_destroy(VklGpu* gpu);
 
 
 
@@ -279,15 +314,15 @@ VKY_EXPORT void vkl_app_destroy(VklApp* app);
 /*  Commands                                                                                     */
 /*************************************************************************************************/
 
-VKY_EXPORT VklCommands* vky_commands(VklGpu* gpu, VklCommandBufferType type, uint32_t count);
+VKY_EXPORT VklCommands* vkl_commands(VklGpu* gpu, VklQueueType queue, uint32_t count);
 
-VKY_EXPORT void vky_cmd_begin(VklCommands* cmds);
+VKY_EXPORT void vkl_cmd_begin(VklCommands* cmds);
 
-VKY_EXPORT void vky_cmd_end(VklCommands* cmds);
+VKY_EXPORT void vkl_cmd_end(VklCommands* cmds);
 
-VKY_EXPORT void vky_cmd_reset(VklCommands* cmds);
+VKY_EXPORT void vkl_cmd_reset(VklCommands* cmds);
 
-VKY_EXPORT void vky_cmd_free(VklCommands* cmds);
+VKY_EXPORT void vkl_cmd_free(VklCommands* cmds);
 
 
 

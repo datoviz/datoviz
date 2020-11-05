@@ -96,7 +96,7 @@ void log_log(int level, const char* file, int line, const char* fmt, ...)
         buf[strftime(buf, sizeof(buf), "%H:%M:%S", lt)] = '\0';
 #ifdef LOG_USE_COLOR
         fprintf(
-            stderr, "%s %s%-1s\x1b[0m \x1b[90m%12s:%04d:\x1b[0m %s", buf, level_colors[level],
+            stderr, "%s %s%-1s\x1b[0m \x1b[90m%18s:%04d:\x1b[0m %s", buf, level_colors[level],
             level_names[level], file, line, level_colors[level]);
 #else
         fprintf(stderr, "%s %-5s %s:%d: ", buf, level_names[level], file, line);

@@ -4,10 +4,6 @@
 // #include "vkutils.h"
 #include <stdlib.h>
 
-#ifndef ENABLE_VALIDATION_LAYERS
-#define ENABLE_VALIDATION_LAYERS 1
-#endif
-
 BEGIN_INCL_NO_WARN
 #include <stb_image.h>
 END_INCL_NO_WARN
@@ -24,7 +20,7 @@ END_INCL_NO_WARN
     obj_init(&o->obj, t);
 
 #define INSTANCE_ARR(s, arr, n, t)                                                                \
-    log_trace("create %d %s's", (n), #s);                                                         \
+    log_trace("create %d %s(s)", (n), #s);                                                        \
     arr = calloc((n), sizeof(s));                                                                 \
     for (uint32_t i = 0; i < (n); i++)                                                            \
         obj_init(&arr[i].obj, t);
@@ -43,36 +39,13 @@ static void obj_init(VklObject* obj, VklObjectType type)
 
 static void obj_created(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_CREATED; }
 
+static void obj_destroyed(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_DESTROYED; }
+
 
 
 /*************************************************************************************************/
 /*  App                                                                                          */
 /*************************************************************************************************/
-
-static void _create_gpu(VkPhysicalDevice physical_device, VklGpu* gpu)
-{
-
-    vkGetPhysicalDeviceProperties(physical_device, &gpu->device_properties);
-    vkGetPhysicalDeviceFeatures(physical_device, &gpu->device_features);
-    vkGetPhysicalDeviceMemoryProperties(physical_device, &gpu->memory_properties);
-
-    gpu->physical_device = physical_device;
-    gpu->name = gpu->device_properties.deviceName;
-
-    find_queue_families(gpu->physical_device, &gpu->queues);
-}
-
-
-static void _create_device(VklGpu* gpu, VkSurfaceKHR surface)
-{
-    find_present_queue_family(gpu->physical_device, surface, &gpu->queues);
-
-    create_command_pool(
-        gpu->device, gpu->queues.indices[VKL_QUEUE_GRAPHICS], &gpu->cmd_pools[VKL_QUEUE_GRAPHICS]);
-    create_command_pool(
-        gpu->device, gpu->queues.indices[VKL_QUEUE_GRAPHICS], &gpu->cmd_pools[VKL_QUEUE_GRAPHICS]);
-}
-
 
 VklApp* vkl_app(VklBackend backend)
 {
@@ -104,7 +77,7 @@ VklApp* vkl_app(VklBackend backend)
 
     // Count the number of devices.
     vkEnumeratePhysicalDevices(app->instance, &app->gpu_count, NULL);
-    log_trace("found %d GPUs", app->gpu_count);
+    log_trace("found %d GPU(s)", app->gpu_count);
     if (app->gpu_count == 0)
     {
         log_error("no compatible device found! aborting");
@@ -112,16 +85,15 @@ VklApp* vkl_app(VklBackend backend)
     }
 
     // Allocate the GPU structures.
-    // app->gpus = calloc(app->gpu_count, sizeof(VklGpu));
     INSTANCE_ARR(VklGpu, app->gpus, app->gpu_count, VKL_OBJECT_TYPE_GPU)
 
-    // Initialize the GPUs.
+    // Initialize the GPU(s).
     VkPhysicalDevice* physical_devices = calloc(app->gpu_count, sizeof(VkPhysicalDevice));
     vkEnumeratePhysicalDevices(app->instance, &app->gpu_count, physical_devices);
     for (int i = 0; i < (int)app->gpu_count; i++)
     {
-        _create_gpu(physical_devices[i], &app->gpus[i]);
-        app->gpus[i].obj.status = VKL_OBJECT_STATUS_CREATED;
+        app->gpus[i].app = app;
+        discover_gpu(physical_devices[i], &app->gpus[i]);
         log_debug("found device #%d: %s", i, app->gpus[i].name);
     }
 
@@ -131,19 +103,30 @@ VklApp* vkl_app(VklBackend backend)
 }
 
 
-VklGpu* vkl_app_get_gpu(VklApp* app, uint32_t idx)
-{
-    ASSERT(app->gpu_count > 0);
-    ASSERT(app->gpus != NULL);
-    if (idx < app->gpu_count)
-        return &app->gpus[idx];
-    log_error("Invalid GPU index #%d (total %d GPUs)", idx, app->gpu_count);
-    return NULL;
-}
-
 
 void vkl_app_destroy(VklApp* app)
 {
+    ASSERT(app->gpus != NULL);
+    // Destroy the GPUs.
+    for (uint32_t i = 0; i < app->gpu_count; i++)
+    {
+        vkl_gpu_destroy(&app->gpus[i]);
+        obj_destroyed(&app->gpus[i].obj);
+    }
+
+    // Destroy the debug messenger.
+    if (app->debug_messenger)
+        destroy_debug_utils_messenger_EXT(app->instance, app->debug_messenger, NULL);
+
+    // Destroy the instance.
+    log_trace("destroy instance");
+    if (app->instance != 0)
+    {
+        vkDestroyInstance(app->instance, NULL);
+        app->instance = 0;
+    }
+
+    // Free the memory.
     FREE(app->gpus);
     FREE(app);
 }
@@ -151,20 +134,98 @@ void vkl_app_destroy(VklApp* app)
 
 
 /*************************************************************************************************/
-/*  Commands                                                                                     */
+/*  GPU                                                                                          */
 /*************************************************************************************************/
 
-VklCommands* vky_commands(VklGpu* gpu, VklCommandBufferType type, uint32_t count)
+VklGpu* vkl_gpu(VklApp* app, uint32_t idx)
+{
+    if (idx >= app->gpu_count)
+    {
+        log_error("GPU index %d higher than number of GPUs %d", idx, app->gpu_count);
+        idx = 0;
+    }
+    VklGpu* gpu = &app->gpus[idx];
+    return gpu;
+}
+
+void vkl_gpu_request_features(VklGpu* gpu, VkPhysicalDeviceFeatures requested_features)
+{
+    gpu->requested_features = requested_features;
+}
+
+void vkl_gpu_create(VklGpu* gpu, VkSurfaceKHR surface)
+{
+    log_trace("starting creation of GPU WITH%s surface", surface != 0 ? "" : "OUT");
+    create_device(gpu, surface);
+
+    // Create command pools
+    create_command_pool(
+        gpu->device, gpu->queues.indices[VKL_QUEUE_GRAPHICS], &gpu->cmd_pools[VKL_QUEUE_GRAPHICS]);
+
+    create_command_pool(
+        gpu->device, gpu->queues.indices[VKL_QUEUE_COMPUTE], &gpu->cmd_pools[VKL_QUEUE_COMPUTE]);
+
+    // Create descriptor pool
+    // TODO
+
+    obj_created(&gpu->obj);
+    log_trace("GPU created");
+}
+
+void vkl_gpu_destroy(VklGpu* gpu)
+{
+    log_trace("started destruction of GPU");
+    ASSERT(gpu != NULL);
+    if (gpu->obj.status < VKL_OBJECT_STATUS_CREATED)
+    {
+
+        log_trace("skip destruction of GPU as it was not properly created");
+        ASSERT(gpu->device == 0);
+        return;
+    }
+    VkDevice device = gpu->device;
+    ASSERT(device != 0);
+
+    // Destroy the command pool.
+    log_trace("destroy command pools");
+    for (uint32_t i = 0; i < gpu->cmd_pool_count; i++)
+    {
+        if (gpu->cmd_pools[i] != 0)
+        {
+            vkDestroyCommandPool(device, gpu->cmd_pools[i], NULL);
+            gpu->cmd_pools[i] = 0;
+        }
+    }
+
+    // log_trace("destroy descriptor pool");
+    // if (gpu->descriptor_pool)
+    //     vkDestroyDescriptorPool(gpu->device, gpu->descriptor_pool, NULL);
+
+    // Destroy the device.
+    log_trace("destroy device");
+    vkDestroyDevice(gpu->device, NULL);
+    gpu->device = 0;
+
+    log_trace("GPU destroyed");
+}
+
+
+
+/*************************************************************************************************/
+/*  Commands */
+/*************************************************************************************************/
+
+VklCommands* vkl_commands(VklGpu* gpu, VklQueueType queue, uint32_t count)
 {
     INSTANCE_OBJ(VklCommands, commands, VKL_OBJECT_TYPE_COMMANDS)
 
     return commands;
 }
 
-void vky_cmd_begin(VklCommands* cmds) {}
+void vkl_cmd_begin(VklCommands* cmds) {}
 
-void vky_cmd_end(VklCommands* cmds) {}
+void vkl_cmd_end(VklCommands* cmds) {}
 
-void vky_cmd_reset(VklCommands* cmds) {}
+void vkl_cmd_reset(VklCommands* cmds) {}
 
-void vky_cmd_free(VklCommands* cmds) { FREE(cmds); }
+void vkl_cmd_free(VklCommands* cmds) { FREE(cmds); }

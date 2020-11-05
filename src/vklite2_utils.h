@@ -1,12 +1,21 @@
+#include "../include/visky/vklite2.h"
+
+
+
 /*************************************************************************************************/
 /*  Constants                                                                                    */
 /*************************************************************************************************/
+
+#ifndef ENABLE_VALIDATION_LAYERS
+#define ENABLE_VALIDATION_LAYERS 1
+#endif
 
 // Validation layers.
 static const char* layers[] = {"VK_LAYER_KHRONOS_validation"};
 
 // Required device extensions.
 static const char* device_extensions[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+
 
 
 /*************************************************************************************************/
@@ -155,6 +164,8 @@ static void create_instance(
     uint32_t required_extension_count, const char** required_extensions, //
     VkInstance* instance, VkDebugUtilsMessengerEXT* debug_messenger)
 {
+    log_trace("starting creation of instance...");
+
     // Add ext debug extension.
     bool has_validation = false;
     if (ENABLE_VALIDATION_LAYERS)
@@ -233,6 +244,28 @@ static void create_instance(
         VK_CHECK_RESULT(create_debug_utils_messenger_EXT(
             *instance, &debug_create_info, NULL, debug_messenger));
     }
+
+    log_trace("instance created");
+}
+
+
+
+static void destroy_instance(VklApp* app)
+{
+    log_trace("starting destruction of instance...");
+
+    if (app->debug_messenger)
+        destroy_debug_utils_messenger_EXT(app->instance, app->debug_messenger, NULL);
+
+    // Destroy the instance.
+    log_trace("destroy instance");
+    if (app->instance != 0)
+    {
+        vkDestroyInstance(app->instance, NULL);
+        app->instance = 0;
+    }
+
+    log_trace("instance destroyed");
 }
 
 
@@ -275,9 +308,26 @@ static void find_queue_families(VkPhysicalDevice device, VklQueues* queues)
 
 
 
+static void discover_gpu(VkPhysicalDevice physical_device, VklGpu* gpu)
+{
+    vkGetPhysicalDeviceProperties(physical_device, &gpu->device_properties);
+    vkGetPhysicalDeviceFeatures(physical_device, &gpu->device_features);
+    vkGetPhysicalDeviceMemoryProperties(physical_device, &gpu->memory_properties);
+
+    gpu->physical_device = physical_device;
+    gpu->name = gpu->device_properties.deviceName;
+    gpu->cmd_pool_count = 2;
+
+    find_queue_families(gpu->physical_device, &gpu->queues);
+}
+
+
+
 static void
 find_present_queue_family(VkPhysicalDevice device, VkSurfaceKHR surface, VklQueues* queues)
 {
+    if (surface == 0)
+        return;
     VkBool32 presentSupport = false;
     for (int32_t i = 0; i < (int)queues->queue_count; i++)
     {
@@ -292,22 +342,91 @@ find_present_queue_family(VkPhysicalDevice device, VkSurfaceKHR surface, VklQueu
 
 
 
-/*************************************************************************************************/
-/*  Command buffers                                                                              */
-/*************************************************************************************************/
-
 static void
 create_command_pool(VkDevice device, int32_t queue_family_index, VkCommandPool* cmd_pool)
 {
-    log_trace("create command pool");
+    log_trace("starting creation of command pool...");
     ASSERT(queue_family_index >= 0);
     VkCommandPoolCreateInfo command_pool_info = {0};
     command_pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     command_pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     command_pool_info.queueFamilyIndex = (uint32_t)queue_family_index;
     VK_CHECK_RESULT(vkCreateCommandPool(device, &command_pool_info, NULL, cmd_pool));
+    log_trace("command pool created");
 }
 
+
+
+static void create_device(VklGpu* gpu, VkSurfaceKHR surface)
+{
+    log_trace("starting creation of device...");
+    ASSERT(gpu != NULL);
+
+    bool has_surface = surface != NULL;
+    bool has_validation = gpu->app->debug_messenger != NULL;
+
+    find_present_queue_family(gpu->physical_device, surface, &gpu->queues);
+
+    // Create the queue info structure.
+    VkDeviceQueueCreateInfo queues_info[3] = {0};
+    float queue_priority = 1.0f;
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        queues_info[i].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queues_info[i].queueCount = 1;
+        queues_info[i].pQueuePriorities = &queue_priority;
+    }
+    // Need to create unique queues only.
+    uint32_t queue_count = 1;
+    // There is at least one queue.
+    queues_info[0].queueFamilyIndex = (uint32_t)gpu->queues.indices[0];
+    // We add a second one if its index is different.
+    if (gpu->queues.indices[1] >= 0 && gpu->queues.indices[1] != gpu->queues.indices[0])
+    {
+        queues_info[1].queueFamilyIndex = (uint32_t)gpu->queues.indices[1];
+        queue_count++;
+    }
+    // We add a third one if its index is different.
+    if (gpu->queues.indices[2] >= 0 && gpu->queues.indices[2] != gpu->queues.indices[0] &&
+        gpu->queues.indices[2] != gpu->queues.indices[1])
+    {
+        queues_info[2].queueFamilyIndex = (uint32_t)gpu->queues.indices[2];
+        queue_count++;
+    }
+
+    VkDeviceCreateInfo device_info = {0};
+    device_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    // If there is no surface, the third queue (present queue) is not created.
+    log_trace("creating %d distinct queue(s)", queue_count);
+    device_info.queueCreateInfoCount = queue_count;
+    device_info.pQueueCreateInfos = queues_info;
+
+    // Requested features
+    device_info.pEnabledFeatures = &gpu->requested_features;
+
+    // Device extensions and layers
+    device_info.enabledExtensionCount = (uint32_t)has_surface;
+    device_info.ppEnabledExtensionNames = has_surface ? device_extensions : NULL;
+    device_info.enabledLayerCount = (uint32_t)has_validation;
+    device_info.ppEnabledLayerNames = has_validation ? layers : NULL;
+
+    // Create the device
+    VK_CHECK_RESULT(vkCreateDevice(gpu->physical_device, &device_info, NULL, &gpu->device));
+
+    // Get device queues
+    for (uint32_t i = 0; i < 2 + (uint32_t)has_surface; i++)
+    {
+        ASSERT(gpu->queues.indices[i] >= 0);
+        vkGetDeviceQueue(gpu->device, (uint32_t)gpu->queues.indices[i], 0, &gpu->queues.queues[i]);
+    }
+    log_trace("device created");
+}
+
+
+
+/*************************************************************************************************/
+/*  Command buffers                                                                              */
+/*************************************************************************************************/
 
 
 static void allocate_command_buffers(
