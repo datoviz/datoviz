@@ -1,4 +1,8 @@
-static int vklite2_test_app_1(VkyTestContext* context)
+#include "../src/vklite2_utils.h"
+
+
+
+static int vklite2_app(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     ASSERT(app->obj.status == VKL_OBJECT_STATUS_CREATED);
@@ -10,6 +14,22 @@ static int vklite2_test_app_1(VkyTestContext* context)
     VklGpu* gpu = vkl_gpu(app, 0);
     vkl_gpu_create(gpu, 0);
 
+    vkl_app_destroy(app);
+    return 0;
+}
+
+static int vklite2_surface(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+
+    // Create a GLFW window and surface.
+    VkSurfaceKHR surface = 0;
+    GLFWwindow* window =
+        (GLFWwindow*)backend_window(app->instance, VKL_BACKEND_GLFW, 100, 100, &surface);
+    vkl_gpu_create(gpu, surface);
+
+    backend_window_destroy(app->instance, VKL_BACKEND_GLFW, window, surface);
     vkl_app_destroy(app);
     return 0;
 }

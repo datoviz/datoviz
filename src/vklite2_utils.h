@@ -95,6 +95,7 @@ static VkResult create_debug_utils_messenger_EXT(
 }
 
 
+
 static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -109,6 +110,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
 }
 
 
+
 static void destroy_debug_utils_messenger_EXT(
     VkInstance instance, VkDebugUtilsMessengerEXT debug_messenger,
     const VkAllocationCallbacks* pAllocator)
@@ -121,6 +123,7 @@ static void destroy_debug_utils_messenger_EXT(
         func(instance, debug_messenger, pAllocator);
     }
 }
+
 
 
 static bool check_validation_layer_support(
@@ -152,6 +155,83 @@ static bool check_validation_layer_support(
     }
     FREE(available_layers);
     return true;
+}
+
+
+
+/*************************************************************************************************/
+/*  Backend-specific code                                                                        */
+/*************************************************************************************************/
+
+static const char** backend_extensions(VklBackend backend, uint32_t* required_extension_count)
+{
+    const char** required_extensions = NULL;
+
+    // Backend initialization and required extensions.
+    switch (backend)
+    {
+    case VKL_BACKEND_GLFW:
+
+        glfwInit();
+        ASSERT(glfwVulkanSupported() != 0);
+        required_extensions = glfwGetRequiredInstanceExtensions(required_extension_count);
+        log_trace("%d extension(s) required by backend GLFW", *required_extension_count);
+
+        break;
+    default:
+        break;
+    }
+
+    return required_extensions;
+}
+
+
+
+static void* backend_window(
+    VkInstance instance, VklBackend backend, uint32_t width, uint32_t height,
+    VkSurfaceKHR* surface)
+{
+    log_trace("create canvas with size %dx%d", width, height);
+
+    switch (backend)
+    {
+    case VKL_BACKEND_GLFW:
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        GLFWwindow* window =
+            glfwCreateWindow((int)width, (int)height, APPLICATION_NAME, NULL, NULL);
+        ASSERT(window != NULL);
+        if (glfwCreateWindowSurface(instance, window, NULL, surface) != VK_SUCCESS)
+            log_error("error creating the GLFW surface");
+        return window;
+        break;
+    default:
+        break;
+    }
+
+    return NULL;
+}
+
+
+static void
+backend_window_destroy(VkInstance instance, VklBackend backend, void* window, VkSurfaceKHR surface)
+{
+    // NOTE TODO: need to vkDeviceWaitIdle(device) on all devices before calling this
+
+    if (surface != 0)
+    {
+        log_trace("destroy surface");
+        vkDestroySurfaceKHR(instance, surface, NULL);
+    }
+
+    switch (backend)
+    {
+    case VKL_BACKEND_GLFW:
+        glfwPollEvents();
+        glfwDestroyWindow(window);
+        break;
+    default:
+        break;
+    }
 }
 
 

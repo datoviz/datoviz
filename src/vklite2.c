@@ -1,7 +1,5 @@
 #include "../include/visky/vklite2.h"
-#include "glfw.h"
 #include "vklite2_utils.h"
-// #include "vkutils.h"
 #include <stdlib.h>
 
 BEGIN_INCL_NO_WARN
@@ -53,21 +51,7 @@ VklApp* vkl_app(VklBackend backend)
 
     // Which extensions are required? Depends on the backend.
     uint32_t required_extension_count = 0;
-    const char** required_extensions = NULL;
-
-    // Backend initialization and required extensions.
-    {
-        switch (backend)
-        {
-        case VKL_BACKEND_GLFW:
-            glfwInit();
-            ASSERT(glfwVulkanSupported() != 0);
-            required_extensions = glfwGetRequiredInstanceExtensions(&required_extension_count);
-            break;
-        default:
-            break;
-        }
-    }
+    const char** required_extensions = backend_extensions(backend, &required_extension_count);
 
     // Create the instance.
     create_instance(
@@ -90,9 +74,10 @@ VklApp* vkl_app(VklBackend backend)
     // Initialize the GPU(s).
     VkPhysicalDevice* physical_devices = calloc(app->gpu_count, sizeof(VkPhysicalDevice));
     vkEnumeratePhysicalDevices(app->instance, &app->gpu_count, physical_devices);
-    for (int i = 0; i < (int)app->gpu_count; i++)
+    for (uint32_t i = 0; i < app->gpu_count; i++)
     {
         app->gpus[i].app = app;
+        app->gpus[i].idx = i;
         discover_gpu(physical_devices[i], &app->gpus[i]);
         log_debug("found device #%d: %s", i, app->gpus[i].name);
     }
@@ -106,6 +91,7 @@ VklApp* vkl_app(VklBackend backend)
 
 void vkl_app_destroy(VklApp* app)
 {
+    log_trace("starting destruction of app...");
     ASSERT(app->gpus != NULL);
     // Destroy the GPUs.
     for (uint32_t i = 0; i < app->gpu_count; i++)
@@ -129,6 +115,8 @@ void vkl_app_destroy(VklApp* app)
     // Free the memory.
     FREE(app->gpus);
     FREE(app);
+
+    log_trace("app destroyed");
 }
 
 
@@ -155,7 +143,8 @@ void vkl_gpu_request_features(VklGpu* gpu, VkPhysicalDeviceFeatures requested_fe
 
 void vkl_gpu_create(VklGpu* gpu, VkSurfaceKHR surface)
 {
-    log_trace("starting creation of GPU WITH%s surface", surface != 0 ? "" : "OUT");
+    log_trace(
+        "starting creation of GPU #%d WITH%s surface...", gpu->idx, surface != 0 ? "" : "OUT");
     create_device(gpu, surface);
 
     // Create command pools
@@ -169,12 +158,12 @@ void vkl_gpu_create(VklGpu* gpu, VkSurfaceKHR surface)
     // TODO
 
     obj_created(&gpu->obj);
-    log_trace("GPU created");
+    log_trace("GPU #%d created", gpu->idx);
 }
 
 void vkl_gpu_destroy(VklGpu* gpu)
 {
-    log_trace("started destruction of GPU");
+    log_trace("starting destruction of GPU #%d...", gpu->idx);
     ASSERT(gpu != NULL);
     if (gpu->obj.status < VKL_OBJECT_STATUS_CREATED)
     {
@@ -206,7 +195,7 @@ void vkl_gpu_destroy(VklGpu* gpu)
     vkDestroyDevice(gpu->device, NULL);
     gpu->device = 0;
 
-    log_trace("GPU destroyed");
+    log_trace("GPU #%d destroyed", gpu->idx);
 }
 
 

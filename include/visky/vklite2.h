@@ -11,7 +11,10 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <vulkan/vulkan.h>
+// #include <vulkan/vulkan.h>
+
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
 
 #include "common.h"
 
@@ -166,6 +169,7 @@ struct VklGpu
     VklObject obj;
     VklApp* app;
 
+    uint32_t idx; // GPU index within the app
     const char* name;
 
     VkPhysicalDevice physical_device;
