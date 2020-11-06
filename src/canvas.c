@@ -49,7 +49,8 @@ void vkl_canvas_offscreen(VklCanvas* canvas, VklGpu* gpu)
 
 
 
-VklImage* vkl_canvas_acquire_image(VklCanvas* canvas, VklSyncGpu* sync_gpu, VklSyncCpu* sync_cpu)
+VklImages*
+vkl_canvas_acquire_image(VklCanvas* canvas, VklSemaphores* semaphores, VklFences* fences)
 {
     // TODO
     return NULL;

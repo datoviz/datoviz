@@ -54,15 +54,15 @@ typedef struct VklWindow VklWindow;
 typedef struct VklSwapchain VklSwapchain;
 typedef struct VklCanvas VklCanvas;
 typedef struct VklCommands VklCommands;
-typedef struct VklBuffer VklBuffer;
-typedef struct VklImage VklImage;
+typedef struct VklBuffers VklBuffers;
+typedef struct VklImages VklImages;
 typedef struct VklSampler VklSampler;
-typedef struct VklBinding VklBinding;
+typedef struct VklBindings VklBindings;
 typedef struct VklCompute VklCompute;
 typedef struct VklPipeline VklPipeline;
 typedef struct VklBarrier VklBarrier;
-typedef struct VklSyncCpu VklSyncCpu;
-typedef struct VklSyncGpu VklSyncGpu;
+typedef struct VklFences VklFences;
+typedef struct VklSemaphores VklSemaphores;
 typedef struct VklRenderpass VklRenderpass;
 typedef struct VklSubmit VklSubmit;
 
@@ -227,7 +227,7 @@ struct VklQueues
 
     uint32_t queue_count;
     int32_t indices[3]; // graphics, compute, present
-    VkQueue queues[3];
+    VkQueue queues[3];  // graphics+compute, compute only, transfer
 };
 
 
@@ -290,7 +290,7 @@ struct VklCommands
 
 
 
-struct VklBuffer
+struct VklBuffers
 {
     VklObject obj;
     VklGpu* gpu;
@@ -298,7 +298,7 @@ struct VklBuffer
 
 
 
-struct VklImage
+struct VklImages
 {
     VklObject obj;
     VklGpu* gpu;
@@ -314,7 +314,7 @@ struct VklSampler
 
 
 
-struct VklBinding
+struct VklBindings
 {
     VklObject obj;
     VklGpu* gpu;
@@ -346,7 +346,7 @@ struct VklBarrier
 
 
 
-struct VklSyncCpu
+struct VklFences
 {
     VklObject obj;
     VklGpu* gpu;
@@ -354,7 +354,7 @@ struct VklSyncCpu
 
 
 
-struct VklSyncGpu
+struct VklSemaphores
 {
     VklObject obj;
     VklGpu* gpu;

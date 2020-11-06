@@ -30,14 +30,16 @@ struct VklCanvas
     uint32_t width, height;
 
     VklSwapchain* swapchain;
-    VklImage* images[VKL_MAX_SWAPCHAIN_IMAGES]; // swapchain images
-    VklImage* depth_image;
+    VklImages* images[VKL_MAX_SWAPCHAIN_IMAGES]; // swapchain images
+    VklImages* depth_image;
 
     VklRenderpass* renderpass;
+    VklRenderpass* renderpass_gui;
+
     // TODO: rename to SyncDevice/SyncHost
-    VklSyncGpu* sync_image_acquired; // NOTE: wraps one VkSemaphore per image in flight
-    VklSyncGpu* sync_image_rendered;
-    VklSyncCpu* sync_render_finished;
+    VklSemaphores* sync_image_acquired; // NOTE: wraps one VkSemaphore per image in flight
+    VklSemaphores* sync_image_rendered;
+    VklFences* sync_render_finished;
 
     VklCommands* commands[4]; // transfer, graphics, compute, gui
 
@@ -58,8 +60,8 @@ VKY_EXPORT void vkl_canvas_offscreen(VklCanvas* canvas, VklGpu* gpu);
 
 VKY_EXPORT void vkl_canvas_create(VklCanvas* canvas);
 
-VKY_EXPORT VklImage*
-vkl_canvas_acquire_image(VklCanvas* canvas, VklSyncGpu* sync_gpu, VklSyncCpu* sync_cpu);
+VKY_EXPORT VklImages*
+vkl_canvas_acquire_image(VklCanvas* canvas, VklSemaphores* semaphores, VklFences* fences);
 
 
 
