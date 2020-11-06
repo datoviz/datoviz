@@ -36,12 +36,9 @@ struct VklCanvas
     VklRenderpass* renderpass;
     VklRenderpass* renderpass_gui;
 
-    // TODO: rename to SyncDevice/SyncHost
     VklSemaphores* sync_image_acquired; // NOTE: wraps one VkSemaphore per image in flight
     VklSemaphores* sync_image_rendered;
     VklFences* sync_render_finished;
-
-    VklCommands* commands[4]; // transfer, graphics, compute, gui
 
     // TODO: event system
 };

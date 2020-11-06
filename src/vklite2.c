@@ -58,6 +58,7 @@ VklApp* vkl_app(VklBackend backend)
     }
 
     INSTANCES_INIT(VklWindow, app, windows, VKL_MAX_WINDOWS, VKL_OBJECT_TYPE_WINDOW)
+    // NOTE: init canvas in canvas.c instead, as the struct is defined there and not here
 
     return app;
 }
@@ -131,6 +132,9 @@ VklGpu* vkl_gpu(VklApp* app, uint32_t idx)
         idx = 0;
     }
     VklGpu* gpu = &app->gpus[idx];
+
+    INSTANCES_INIT(VklCommands, gpu, commands, VKL_MAX_COMMANDS, VKL_OBJECT_TYPE_COMMANDS)
+
     return gpu;
 }
 
@@ -143,18 +147,38 @@ void vkl_gpu_request_features(VklGpu* gpu, VkPhysicalDeviceFeatures requested_fe
 
 
 
+void vkl_gpu_queue(VklGpu* gpu, VklQueueType type, uint32_t idx)
+{
+    ASSERT(gpu != NULL);
+    VklQueues* q = &gpu->queues;
+    ASSERT(q != NULL);
+    ASSERT(idx < VKL_MAX_QUEUES);
+    q->queue_types[idx] = type;
+    ASSERT(idx == q->queue_count);
+    q->queue_count++;
+}
+
+
+
 void vkl_gpu_create(VklGpu* gpu, VkSurfaceKHR surface)
 {
+    if (gpu->queues.queue_count == 0)
+    {
+        log_error(
+            "you must request at least one queue with vkl_gpu_queue() before creating the GPU");
+        exit(1);
+    }
     log_trace(
         "starting creation of GPU #%d WITH%s surface...", gpu->idx, surface != 0 ? "" : "OUT");
     create_device(gpu, surface);
 
-    // Create command pools
-    create_command_pool(
-        gpu->device, gpu->queues.indices[VKL_QUEUE_GRAPHICS], &gpu->cmd_pools[VKL_QUEUE_GRAPHICS]);
-
-    create_command_pool(
-        gpu->device, gpu->queues.indices[VKL_QUEUE_COMPUTE], &gpu->cmd_pools[VKL_QUEUE_COMPUTE]);
+    // Create queues and command pools.
+    VklQueues* q = &gpu->queues;
+    for (uint32_t i = 0; i < q->queue_count; i++)
+    {
+        vkGetDeviceQueue(gpu->device, q->queue_families[i], q->queue_indices[i], &q->queues[i]);
+        create_command_pool(gpu->device, q->queue_families[i], &q->cmd_pools[i]);
+    }
 
     // Create descriptor pool
     // TODO
@@ -181,12 +205,12 @@ void vkl_gpu_destroy(VklGpu* gpu)
 
     // Destroy the command pool.
     log_trace("destroy command pools");
-    for (uint32_t i = 0; i < gpu->cmd_pool_count; i++)
+    for (uint32_t i = 0; i < gpu->queues.queue_family_count; i++)
     {
-        if (gpu->cmd_pools[i] != 0)
+        if (gpu->queues.cmd_pools[i] != 0)
         {
-            vkDestroyCommandPool(device, gpu->cmd_pools[i], NULL);
-            gpu->cmd_pools[i] = 0;
+            vkDestroyCommandPool(device, gpu->queues.cmd_pools[i], NULL);
+            gpu->queues.cmd_pools[i] = 0;
         }
     }
 
@@ -266,7 +290,7 @@ void vkl_swapchain_create(VklSwapchain* swapchain, VkFormat format, VkPresentMod
     // Create swapchain
     create_swapchain(
         swapchain->gpu->device, swapchain->gpu->physical_device, swapchain->window->surface,
-        swapchain->img_count, format, present_mode, swapchain->gpu->queues,
+        swapchain->img_count, format, present_mode, &swapchain->gpu->queues,
         &swapchain->window->caps, &swapchain->swapchain);
 
     obj_created(&swapchain->obj);
@@ -292,7 +316,16 @@ void vkl_swapchain_destroy(VklSwapchain* swapchain)
 /*  Commands */
 /*************************************************************************************************/
 
-VklCommands* vkl_commands(VklGpu* gpu, VklQueueType queue, uint32_t count) { return NULL; }
+VklCommands* vkl_commands(VklGpu* gpu, VklQueueType queue, uint32_t count)
+{
+    INSTANCE_NEW(VklCommands, commands, gpu->commands, gpu->commands_count)
+
+    ASSERT(VKL_MAX_COMMAND_BUFFERS <= count);
+    allocate_command_buffers(
+        gpu->device, gpu->queues.cmd_pools[(uint32_t)queue], count, commands->cmds);
+
+    return commands;
+}
 
 
 

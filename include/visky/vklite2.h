@@ -39,6 +39,11 @@ TODO later
 #define VKL_MAX_GPUS             64
 #define VKL_MAX_WINDOWS          256
 #define VKL_MAX_SWAPCHAIN_IMAGES 8
+#define VKL_MAX_COMMANDS         32
+#define VKL_MAX_QUEUE_FAMILIES   16
+#define VKL_MAX_QUEUES           16
+// Maximum number of command buffers per VklCommands struct
+#define VKL_MAX_COMMAND_BUFFERS VKL_MAX_SWAPCHAIN_IMAGES
 
 
 
@@ -118,9 +123,12 @@ typedef enum
 
 typedef enum
 {
-    VKL_QUEUE_GRAPHICS,
-    VKL_QUEUE_COMPUTE,
-    VKL_QUEUE_PRESENT,
+    VKL_QUEUE_TRANSFER = 0x01,
+    VKL_QUEUE_GRAPHICS = 0x02,
+    VKL_QUEUE_COMPUTE = 0x04,
+    VKL_QUEUE_PRESENT = 0x08,
+    VKL_QUEUE_RENDER = 0x07,
+    VKL_QUEUE_ALL = 0x0F,
 } VklQueueType;
 
 
@@ -225,9 +233,25 @@ struct VklQueues
 {
     VklObject obj;
 
+    // Hardware supported queues
+    // -------------------------
+    // Number of different queue families supported by the hardware
+    uint32_t queue_family_count;
+    // Properties of the queue families
+    // VkQueueFamilyProperties queue_families[VKL_MAX_QUEUE_FAMILIES];
+    bool support_transfer[VKL_MAX_QUEUE_FAMILIES];
+    bool support_graphics[VKL_MAX_QUEUE_FAMILIES];
+    bool support_compute[VKL_MAX_QUEUE_FAMILIES];
+    bool support_present[VKL_MAX_QUEUE_FAMILIES];
+    // Number of requested queues
     uint32_t queue_count;
-    int32_t indices[3]; // graphics, compute, present
-    VkQueue queues[3];  // graphics+compute, compute only, transfer
+    // Requested queue types.
+    VklQueueType queue_types[VKL_MAX_QUEUES];
+    // Queues and associated command pools
+    uint32_t queue_families[VKL_MAX_QUEUES];
+    uint32_t queue_indices[VKL_MAX_QUEUES];
+    VkQueue queues[VKL_MAX_QUEUES];
+    VkCommandPool cmd_pools[VKL_MAX_QUEUES];
 };
 
 
@@ -250,8 +274,11 @@ struct VklGpu
     VkPhysicalDeviceFeatures requested_features;
     VkDevice device;
 
-    uint32_t cmd_pool_count;
-    VkCommandPool cmd_pools[2]; // graphics, compute
+    // uint32_t cmd_pool_count;
+    // VkCommandPool cmd_pools[VKL_QUEUE_COUNT]; // transfer, graphics+compute, compute
+
+    uint32_t commands_count;
+    VklCommands* commands;
 };
 
 
@@ -286,6 +313,8 @@ struct VklCommands
 {
     VklObject obj;
     VklGpu* gpu;
+
+    VkCommandBuffer cmds[VKL_MAX_COMMAND_BUFFERS];
 };
 
 
@@ -416,6 +445,8 @@ VKY_EXPORT VklGpu* vkl_gpu(VklApp* app, uint32_t idx);
 
 VKY_EXPORT void vkl_gpu_request_features(VklGpu* gpu, VkPhysicalDeviceFeatures requested_features);
 
+VKY_EXPORT void vkl_gpu_queue(VklGpu* gpu, VklQueueType type, uint32_t idx);
+
 VKY_EXPORT void vkl_gpu_create(VklGpu* gpu, VkSurfaceKHR surface);
 
 VKY_EXPORT void vkl_gpu_destroy(VklGpu* gpu);
@@ -445,6 +476,9 @@ VKY_EXPORT VklSwapchain* vkl_swapchain(VklGpu* gpu, VklWindow* window, uint32_t 
 
 VKY_EXPORT void
 vkl_swapchain_create(VklSwapchain* swapchain, VkFormat format, VkPresentModeKHR present_mode);
+
+VKY_EXPORT void vkl_swapchain_present(
+    VklSwapchain* swapchain, VklSemaphores* wait, uint32_t semaphore_idx, uint32_t image_idx);
 
 // NOTE: to be called BEFORE vkl_window_destroy()
 VKY_EXPORT void vkl_swapchain_destroy(VklSwapchain* swapchain);

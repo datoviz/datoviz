@@ -11,6 +11,9 @@ static int vklite2_app(VkyTestContext* context)
     ASSERT(app->gpus[0].obj.status == VKL_OBJECT_STATUS_INIT);
 
     VklGpu* gpu = vkl_gpu(app, 0);
+    vkl_gpu_queue(gpu, VKL_QUEUE_TRANSFER, 0);
+    vkl_gpu_queue(gpu, VKL_QUEUE_GRAPHICS | VKL_QUEUE_COMPUTE, 1);
+    vkl_gpu_queue(gpu, VKL_QUEUE_COMPUTE, 2);
     vkl_gpu_create(gpu, 0);
 
     vkl_app_destroy(app);
@@ -21,6 +24,7 @@ static int vklite2_surface(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
+    vkl_gpu_queue(gpu, VKL_QUEUE_ALL, 0);
 
     // Create a GLFW window and surface.
     VkSurfaceKHR surface = 0;
@@ -47,6 +51,7 @@ static int vklite2_swapchain(VkyTestContext* context)
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklWindow* window = vkl_window(app, 100, 100);
     VklGpu* gpu = vkl_gpu(app, 0);
+    vkl_gpu_queue(gpu, VKL_QUEUE_ALL, 0);
     vkl_gpu_create(gpu, window->surface);
     VklSwapchain* swapchain = vkl_swapchain(gpu, window, 3);
     vkl_swapchain_create(swapchain, VK_FORMAT_B8G8R8A8_UNORM, VK_PRESENT_MODE_FIFO_KHR);
@@ -55,6 +60,8 @@ static int vklite2_swapchain(VkyTestContext* context)
     vkl_app_destroy(app);
     return 0;
 }
+
+
 
 static int vklite2_test_compute_only(VkyTestContext* context)
 {
