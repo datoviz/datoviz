@@ -463,12 +463,12 @@ static void create_device(VklGpu* gpu, VkSurfaceKHR surface)
     for (uint32_t i = 0; i < q->queue_count; i++)
     {
         log_trace("starting search of queue family for requested queue #%d", i);
-        qf_match = true;
         lowest_score = 1000;
         // For each possible queue family, determine whether it would fit for the current requested
         // queue.
         for (uint32_t qf = 0; qf < q->queue_family_count; qf++)
         {
+            qf_match = true;
             log_trace("looking at queue family %d with score %d", qf, queue_family_score[qf]);
             if ((q->queue_types[i] & VKL_QUEUE_TRANSFER) && !q->support_transfer[qf])
                 qf_match = false;
@@ -480,14 +480,23 @@ static void create_device(VklGpu* gpu, VkSurfaceKHR surface)
                 qf_match = false;
             // This queue family does not match, skipping.
             if (!qf_match)
+            {
+                log_trace("queue family #%d does not match", qf);
                 continue;
+            }
             // The current queue family matches, what is its score?
             if (queue_family_score[qf] <= lowest_score)
             {
                 // The best matching queue family so far for the current queue, saving it for now.
                 lowest_score = queue_family_score[qf];
                 q->queue_families[i] = qf;
-                log_trace("queue family %d matches requested queue #%d", qf, i);
+                log_trace("queue family #%d matches requested queue #%d", qf, i);
+            }
+            else
+            {
+                log_trace(
+                    "queue family #%d would match but its score %d is larger than %d", qf,
+                    queue_family_score[qf], lowest_score);
             }
         }
         if (lowest_score == 1000)
@@ -597,19 +606,24 @@ static void create_swapchain(
     // sharing mode will be concurrent, otherwise it is exclusive.
     uint32_t queue_families[VKL_MAX_QUEUE_FAMILIES] = {0};
     uint32_t n = 0;
-    for (uint32_t i = 0; i < queues->queue_family_count; i++)
+    uint32_t qf = 0;
+    for (uint32_t i = 0; i < queues->queue_count; i++)
     {
-        if (queues->support_graphics[i] || queues->support_present)
-            queue_families[n++] = i;
+        qf = queues->queue_families[i];
+        if (queues->support_graphics[qf] || queues->support_present[qf])
+            queue_families[n++] = qf;
     }
+    log_trace("found %d created queue familie(s) needing to access the swapchain images", n);
     if (n >= 2)
     {
+        log_trace("creating swapchain in concurrent image sharing mode");
         screateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
         screateInfo.queueFamilyIndexCount = n;
         screateInfo.pQueueFamilyIndices = queue_families;
     }
     else
     {
+        log_trace("creating swapchain in exclusive image sharing mode");
         screateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     }
 
