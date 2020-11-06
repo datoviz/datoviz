@@ -561,6 +561,8 @@ VKY_EXPORT void vkl_cmd_reset(VklCommands* cmds);
 
 VKY_EXPORT void vkl_cmd_free(VklCommands* cmds);
 
+VKY_EXPORT void vkl_cmd_submit_sync(VklCommands* cmds, uint32_t queue_idx);
+
 
 
 /*************************************************************************************************/
@@ -663,6 +665,14 @@ VKY_EXPORT void vkl_compute_destroy(VklCompute* compute);
 /*************************************************************************************************/
 /*  Submit                                                                                       */
 /*************************************************************************************************/
+
+
+
+/*************************************************************************************************/
+/*  Command buffer filling                                                                       */
+/*************************************************************************************************/
+
+VKY_EXPORT void vkl_cmd_compute(VklCommands* cmds, VklCompute* compute, uvec3 size);
 
 
 

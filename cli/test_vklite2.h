@@ -132,7 +132,8 @@ static int vklite2_compute(VkyTestContext* context)
 
     // Create the buffers
     VklBuffers* buffers = vkl_buffers(gpu, 1);
-    const VkDeviceSize size = 256;
+    const uint32_t n = 20;
+    const VkDeviceSize size = n * sizeof(float);
     vkl_buffers_size(buffers, size, 0);
     vkl_buffers_usage(
         buffers,
@@ -147,9 +148,9 @@ static int vklite2_compute(VkyTestContext* context)
     // Send some data to the GPU.
     void* buffer = vkl_buffers_map(buffers, 0, 0, size);
     ASSERT(buffer != NULL);
-    void* data = calloc(size, 1);
-    for (uint32_t i = 0; i < size; i++)
-        ((uint8_t*)data)[i] = i;
+    float* data = calloc(n, sizeof(float));
+    for (uint32_t i = 0; i < n; i++)
+        data[i] = i;
     memcpy(buffer, data, size);
     vkl_buffers_unmap(buffers, 0);
 
@@ -171,9 +172,17 @@ static int vklite2_compute(VkyTestContext* context)
     // Command buffers.
     VklCommands* cmds = vkl_commands(gpu, 0, 1);
     vkl_cmd_begin(cmds);
-    // TODO
-    // vky_cmd_compute(cmds, compute, (uvec3[]){256, 1, 1});
+    vkl_cmd_compute(cmds, compute, (uvec3){20, 1, 1});
     vkl_cmd_end(cmds);
+    vkl_cmd_submit_sync(cmds, 0);
+
+    // Get back the data.
+    buffer = vkl_buffers_map(buffers, 0, 0, size);
+    float* data2 = calloc(n, sizeof(float));
+    memcpy(data2, buffer, size);
+    vkl_buffers_unmap(buffers, 0);
+    for (uint32_t i = 0; i < n; i++)
+        ASSERT(data2[i] == 2 * data[i]);
 
     vkl_app_destroy(app);
     return 0;

@@ -29,7 +29,7 @@ VklApp* vkl_app(VklBackend backend)
     obj_created(&app->obj);
 
     // Count the number of devices.
-    vkEnumeratePhysicalDevices(app->instance, &app->gpu_count, NULL);
+    VK_CHECK_RESULT(vkEnumeratePhysicalDevices(app->instance, &app->gpu_count, NULL));
     log_trace("found %d GPU(s)", app->gpu_count);
     if (app->gpu_count == 0)
     {
@@ -42,7 +42,8 @@ VklApp* vkl_app(VklBackend backend)
     {
         // Initialize the GPU(s).
         VkPhysicalDevice* physical_devices = calloc(app->gpu_count, sizeof(VkPhysicalDevice));
-        vkEnumeratePhysicalDevices(app->instance, &app->gpu_count, physical_devices);
+        VK_CHECK_RESULT(
+            vkEnumeratePhysicalDevices(app->instance, &app->gpu_count, physical_devices));
         ASSERT(app->gpu_count <= VKL_MAX_GPUS);
         app->gpus = calloc(app->gpu_count, sizeof(VklGpu));
         for (uint32_t i = 0; i < app->gpu_count; i++)
@@ -225,10 +226,6 @@ void vkl_gpu_destroy(VklGpu* gpu)
             gpu->queues.cmd_pools[i] = 0;
         }
     }
-
-    // log_trace("destroy descriptor pool");
-    // if (gpu->descriptor_pool)
-    //     vkDestroyDescriptorPool(gpu->device, gpu->descriptor_pool, NULL);
 
     log_trace("destroy %d buffers sets", gpu->buffers_count);
     for (uint32_t i = 0; i < gpu->buffers_count; i++)
@@ -422,7 +419,7 @@ void vkl_cmd_reset(VklCommands* cmds)
     for (uint32_t i = 0; i < cmds->count; i++)
     {
         ASSERT(cmds->cmds[i] != 0);
-        vkResetCommandBuffer(cmds->cmds[i], 0);
+        VK_CHECK_RESULT(vkResetCommandBuffer(cmds->cmds[i], 0));
     }
 }
 
@@ -439,6 +436,25 @@ void vkl_cmd_free(VklCommands* cmds)
     vkFreeCommandBuffers(
         cmds->gpu->device, cmds->gpu->queues.cmd_pools[cmds->queue_idx], //
         cmds->count, cmds->cmds);
+}
+
+
+
+void vkl_cmd_submit_sync(VklCommands* cmds, uint32_t queue_idx)
+{
+    log_debug("[SLOW] submit %d command buffer(s)", cmds->count);
+
+    VklQueues* q = &cmds->gpu->queues;
+    ASSERT(queue_idx < q->queue_count);
+    VkQueue queue = q->queues[queue_idx];
+
+    vkQueueWaitIdle(queue);
+    VkSubmitInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    info.commandBufferCount = cmds->count;
+    info.pCommandBuffers = cmds->cmds;
+    vkQueueSubmit(queue, 1, &info, VK_NULL_HANDLE);
+    vkQueueWaitIdle(queue);
 }
 
 
@@ -540,7 +556,8 @@ void* vkl_buffers_map(VklBuffers* buffers, uint32_t idx, VkDeviceSize offset, Vk
 
     log_trace("map buffer #%d", idx);
     void* cdata = NULL;
-    vkMapMemory(buffers->gpu->device, buffers->memories[idx], offset, size, 0, &cdata);
+    VK_CHECK_RESULT(
+        vkMapMemory(buffers->gpu->device, buffers->memories[idx], offset, size, 0, &cdata));
     return cdata;
 }
 
@@ -805,3 +822,23 @@ void vkl_compute_destroy(VklCompute* compute)
 /*************************************************************************************************/
 /*  Submit                                                                                       */
 /*************************************************************************************************/
+
+
+
+/*************************************************************************************************/
+/*  Command buffer filling                                                                       */
+/*************************************************************************************************/
+
+void vkl_cmd_compute(VklCommands* cmds, VklCompute* compute, uvec3 size)
+{
+    VkCommandBuffer cb = {0};
+    for (uint32_t i = 0; i < cmds->count; i++)
+    {
+        cb = cmds->cmds[i];
+        vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_COMPUTE, compute->pipeline);
+        vkCmdBindDescriptorSets(
+            cb, VK_PIPELINE_BIND_POINT_COMPUTE, compute->bindings->pipeline_layout, 0, 1,
+            compute->bindings->dsets, 0, 0);
+        vkCmdDispatch(cb, size[0], size[1], size[2]);
+    }
+}

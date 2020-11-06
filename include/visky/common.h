@@ -179,6 +179,7 @@ typedef int32_t ivec4[4];
 
 /* Unsigned */
 typedef uint32_t uvec2[2];
+typedef uint32_t uvec3[3];
 typedef uint32_t uvec4[4];
 
 /* Index */
