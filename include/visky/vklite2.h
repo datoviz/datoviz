@@ -390,11 +390,19 @@ struct VklBindings
     VklObject obj;
     VklGpu* gpu;
 
-    uint32_t count;
+    uint32_t count; // TODO: rename into bindings_count
     VkDescriptorType types[VKL_MAX_BINDINGS_SIZE];
 
     VkPipelineLayout pipeline_layout;
     VkDescriptorSetLayout dset_layout;
+
+    // a Bindings struct holds multiple almost-identical copies of descriptor sets
+    // with the same layout, but possibly with the different idx in the VklBuffers
+    uint32_t dset_count;
+    VkDescriptorSet dsets[VKL_MAX_SWAPCHAIN_IMAGES];
+
+    VklBuffers buffers[VKL_MAX_BINDINGS_SIZE];
+    // TODO: textures
 };
 
 
@@ -603,7 +611,7 @@ VKY_EXPORT VklBindings* vkl_bindings(VklGpu* gpu);
 
 VKY_EXPORT void vkl_bindings_slot(VklBindings* bindings, uint32_t idx, VkDescriptorType type);
 
-VKY_EXPORT void vkl_bindings_create(VklBindings* bindings);
+VKY_EXPORT void vkl_bindings_create(VklBindings* bindings, uint32_t dset_count);
 
 VKY_EXPORT void vkl_bindings_buffer(VklPipeline* pipeline, uint32_t idx, VklBuffers* buffers);
 

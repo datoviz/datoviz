@@ -854,6 +854,29 @@ static void create_descriptor_set_layout(
 
 
 
+static void allocate_descriptor_sets(
+    VkDevice device, VkDescriptorPool dset_pool, VkDescriptorSetLayout dset_layout, uint32_t count,
+    VkDescriptorSet* dsets)
+{
+    // Allocate descriptor sets.
+    VkDescriptorSetLayout* layouts = calloc(count, sizeof(VkDescriptorSetLayout));
+    for (uint32_t i = 0; i < count; i++)
+        layouts[i] = dset_layout;
+
+    VkDescriptorSetAllocateInfo alloc_info = {0};
+    alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    ASSERT(dset_pool != 0);
+    alloc_info.descriptorPool = dset_pool;
+    alloc_info.descriptorSetCount = count;
+    alloc_info.pSetLayouts = layouts;
+
+    log_trace("allocate descriptor sets");
+    VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &alloc_info, dsets));
+    FREE(layouts);
+}
+
+
+
 /*************************************************************************************************/
 /*  Shaders                                                                                      */
 /*************************************************************************************************/

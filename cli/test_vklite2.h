@@ -131,7 +131,7 @@ static int vklite2_compute(VkyTestContext* context)
 
     VklBindings* bindings = vkl_bindings(gpu);
     vkl_bindings_slot(bindings, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-    vkl_bindings_create(bindings);
+    vkl_bindings_create(bindings, 1);
 
     vkl_compute_bindings(compute, bindings);
     vkl_compute_create(compute);
