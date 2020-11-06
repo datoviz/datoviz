@@ -9,7 +9,7 @@
 // Resources used in tests below.
 static VkyBufferRegion vbr;
 static VkyGraphicsPipeline pipeline;
-static VkyBuffer buffer;
+static VkyBuffer test_buffer;
 
 static int no_destroy(VkyTestContext* context) { return 0; }
 
@@ -20,10 +20,10 @@ static int vklite_compute(VkyTestContext* context)
     VkyGpu gpu = *context->app->gpu;
 
     VkDeviceSize size = N_NUMBERS * sizeof(float);
-    buffer = vky_create_buffer(
+    test_buffer = vky_create_buffer(
         &gpu, size, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    VkyBufferRegion buffer_region = vky_allocate_buffer(&buffer, size);
+    VkyBufferRegion buffer_region = vky_allocate_buffer(&test_buffer, size);
 
     float numbers[N_NUMBERS];
     for (uint32_t i = 0; i < N_NUMBERS; i++)
@@ -56,7 +56,7 @@ static int vklite_compute(VkyTestContext* context)
     }
 
     vky_destroy_compute_pipeline(&cpipeline);
-    vky_destroy_buffer(&buffer);
+    vky_destroy_buffer(&test_buffer);
     // vky_destroy_device(&gpu);
 
     return 0;
@@ -116,10 +116,10 @@ static int vklite_triangle(VkyTestContext* context)
         VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, // triangles, 3 vertices per primitive
         shaders, vertex_layout, resource_layout, (VkyGraphicsPipelineParams){true});
 
-    // Create the vertex buffer.
+    // Create the vertex test_buffer.
     VkDeviceSize size = 3 * sizeof(VkyDefaultVertex); // 3 vertices
-    buffer = vky_create_buffer(canvas->gpu, size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, 0);
-    vbr = vky_allocate_buffer(&buffer, size);
+    test_buffer = vky_create_buffer(canvas->gpu, size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, 0);
+    vbr = vky_allocate_buffer(&test_buffer, size);
 
     // Make the data and upload it to the GPU.
     VkyDefaultVertex data[3] = {
@@ -133,7 +133,7 @@ static int vklite_triangle(VkyTestContext* context)
 
 static int vklite_triangle_destroy(VkyTestContext* context)
 {
-    vky_destroy_buffer(&buffer);
+    vky_destroy_buffer(&test_buffer);
     vky_destroy_vertex_layout(&pipeline.vertex_layout);
     vky_destroy_resource_layout(&pipeline.resource_layout);
     vky_destroy_shaders(&pipeline.shaders);
@@ -149,7 +149,7 @@ static void _push_fill(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
     // Begin the render pass.
     vky_begin_render_pass(cmd_buf, canvas, VKY_CLEAR_COLOR_BLACK);
 
-    // Bind the vertex buffer.
+    // Bind the vertex test_buffer.
     vky_bind_vertex_buffer(cmd_buf, vbr, 0);
 
     // Bind the graphics pipeline.
@@ -208,12 +208,12 @@ static int vklite_push(VkyTestContext* context)
             sizeof(vec2) // push constant size, 0 if no push constants
         });
 
-    // Create the vertex buffer.
+    // Create the vertex test_buffer.
     VkDeviceSize size = 3 * sizeof(VkyDefaultVertex); // 3 vertices
-    // Typically one uses one giant vertex buffer for the whole application and allocates parts of
-    // the buffer to different visuals.
-    buffer = vky_create_buffer(canvas->gpu, size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, 0);
-    vbr = vky_allocate_buffer(&buffer, size);
+    // Typically one uses one giant vertex test_buffer for the whole application and allocates
+    // parts of the test_buffer to different visuals.
+    test_buffer = vky_create_buffer(canvas->gpu, size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, 0);
+    vbr = vky_allocate_buffer(&test_buffer, size);
 
     // Make the data and upload it to the GPU.
     VkyDefaultVertex data[3] = {
@@ -229,7 +229,7 @@ static int vklite_push(VkyTestContext* context)
 static int vklite_push_destroy(VkyTestContext* context)
 {
     // Destroy the resources.
-    vky_destroy_buffer(&buffer);
+    vky_destroy_buffer(&test_buffer);
     vky_destroy_vertex_layout(&pipeline.vertex_layout);
     vky_destroy_resource_layout(&pipeline.resource_layout);
     vky_destroy_shaders(&pipeline.shaders);

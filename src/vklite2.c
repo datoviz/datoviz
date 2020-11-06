@@ -134,6 +134,7 @@ VklGpu* vkl_gpu(VklApp* app, uint32_t idx)
     VklGpu* gpu = &app->gpus[idx];
 
     INSTANCES_INIT(VklCommands, gpu, commands, VKL_MAX_COMMANDS, VKL_OBJECT_TYPE_COMMANDS)
+    INSTANCES_INIT(VklBuffers, gpu, buffers, VKL_MAX_BUFFERS, VKL_OBJECT_TYPE_BUFFER)
 
     return gpu;
 }
@@ -218,12 +219,19 @@ void vkl_gpu_destroy(VklGpu* gpu)
     // if (gpu->descriptor_pool)
     //     vkDestroyDescriptorPool(gpu->device, gpu->descriptor_pool, NULL);
 
+    log_trace("destroy %d buffers sets", gpu->buffers_count);
+    for (uint32_t i = 0; i < gpu->buffers_count; i++)
+    {
+        vkl_buffers_destroy(&gpu->buffers[i]);
+    }
+
     // Destroy the device.
     log_trace("destroy device");
     vkDestroyDevice(gpu->device, NULL);
     gpu->device = 0;
 
     INSTANCES_DESTROY(gpu->commands)
+    INSTANCES_DESTROY(gpu->buffers)
 
     obj_destroyed(&gpu->obj);
     log_trace("GPU #%d destroyed", gpu->idx);
@@ -275,6 +283,9 @@ void vkl_window_destroy(VklWindow* window)
 
 VklSwapchain* vkl_swapchain(VklGpu* gpu, VklWindow* window, uint32_t min_img_count)
 {
+    ASSERT(gpu != NULL);
+    ASSERT(window != NULL);
+
     VklSwapchain* swapchain = calloc(1, sizeof(VklSwapchain));
 
     swapchain->gpu = gpu;
@@ -287,6 +298,9 @@ VklSwapchain* vkl_swapchain(VklGpu* gpu, VklWindow* window, uint32_t min_img_cou
 
 void vkl_swapchain_create(VklSwapchain* swapchain, VkFormat format, VkPresentModeKHR present_mode)
 {
+    ASSERT(swapchain != NULL);
+    ASSERT(swapchain->gpu != NULL);
+
     log_trace("starting creation of swapchain...");
 
     // Create swapchain
@@ -325,14 +339,14 @@ VklCommands* vkl_commands(VklGpu* gpu, uint32_t queue, uint32_t count)
 
     INSTANCE_NEW(VklCommands, commands, gpu->commands, gpu->commands_count)
 
-    ASSERT(count <= VKL_MAX_COMMAND_BUFFERS);
+    ASSERT(count <= VKL_MAX_COMMAND_BUFFERS_PER_SET);
     ASSERT(queue <= gpu->queues.queue_count);
     ASSERT(count > 0);
     ASSERT(gpu->queues.cmd_pools[queue] != 0);
 
     commands->gpu = gpu;
     commands->queue_idx = queue;
-    commands->cmd_count = count;
+    commands->count = count;
     allocate_command_buffers(gpu->device, gpu->queues.cmd_pools[queue], count, commands->cmds);
 
     obj_created(&commands->obj);
@@ -345,12 +359,12 @@ VklCommands* vkl_commands(VklGpu* gpu, uint32_t queue, uint32_t count)
 void vkl_cmd_begin(VklCommands* cmds)
 {
     ASSERT(cmds != NULL);
-    ASSERT(cmds->cmd_count > 0);
+    ASSERT(cmds->count > 0);
 
-    log_trace("begin %d command buffer(s)", cmds->cmd_count);
+    log_trace("begin %d command buffer(s)", cmds->count);
     VkCommandBufferBeginInfo begin_info = {0};
     begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    for (uint32_t i = 0; i < cmds->cmd_count; i++)
+    for (uint32_t i = 0; i < cmds->count; i++)
         VK_CHECK_RESULT(vkBeginCommandBuffer(cmds->cmds[i], &begin_info));
 }
 
@@ -359,10 +373,10 @@ void vkl_cmd_begin(VklCommands* cmds)
 void vkl_cmd_end(VklCommands* cmds)
 {
     ASSERT(cmds != NULL);
-    ASSERT(cmds->cmd_count > 0);
+    ASSERT(cmds->count > 0);
 
-    log_trace("end %d command buffer(s)", cmds->cmd_count);
-    for (uint32_t i = 0; i < cmds->cmd_count; i++)
+    log_trace("end %d command buffer(s)", cmds->count);
+    for (uint32_t i = 0; i < cmds->count; i++)
         VK_CHECK_RESULT(vkEndCommandBuffer(cmds->cmds[i]));
 }
 
@@ -371,10 +385,10 @@ void vkl_cmd_end(VklCommands* cmds)
 void vkl_cmd_reset(VklCommands* cmds)
 {
     ASSERT(cmds != NULL);
-    ASSERT(cmds->cmd_count > 0);
+    ASSERT(cmds->count > 0);
 
-    log_trace("reset %d command buffer(s)", cmds->cmd_count);
-    for (uint32_t i = 0; i < cmds->cmd_count; i++)
+    log_trace("reset %d command buffer(s)", cmds->count);
+    for (uint32_t i = 0; i < cmds->count; i++)
     {
         ASSERT(cmds->cmds[i] != 0);
         vkResetCommandBuffer(cmds->cmds[i], 0);
@@ -386,12 +400,128 @@ void vkl_cmd_reset(VklCommands* cmds)
 void vkl_cmd_free(VklCommands* cmds)
 {
     ASSERT(cmds != NULL);
-    ASSERT(cmds->cmd_count > 0);
+    ASSERT(cmds->count > 0);
     ASSERT(cmds->gpu != NULL);
     ASSERT(cmds->gpu->device != 0);
 
-    log_trace("free %d command buffer(s)", cmds->cmd_count);
+    log_trace("free %d command buffer(s)", cmds->count);
     vkFreeCommandBuffers(
         cmds->gpu->device, cmds->gpu->queues.cmd_pools[cmds->queue_idx], //
-        cmds->cmd_count, cmds->cmds);
+        cmds->count, cmds->cmds);
+}
+
+
+
+/*************************************************************************************************/
+/*  Buffers                                                                                      */
+/*************************************************************************************************/
+
+VklBuffers* vkl_buffers(VklGpu* gpu, uint32_t count)
+{
+    ASSERT(gpu != NULL);
+    ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
+
+    INSTANCE_NEW(VklBuffers, buffers, gpu->buffers, gpu->buffers_count)
+
+    ASSERT(count <= VKL_MAX_BUFFERS);
+
+    buffers->gpu = gpu;
+    buffers->count = count;
+
+    // Default values.
+    buffers->memory = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+
+    return buffers;
+}
+
+
+
+void vkl_buffers_size(VklBuffers* buffers, VkDeviceSize size, VkDeviceSize item_size)
+{
+    ASSERT(buffers != NULL);
+    buffers->size = size;
+    buffers->item_size = item_size;
+}
+
+
+
+void vkl_buffers_usage(VklBuffers* buffers, VkBufferUsageFlags usage)
+{
+    ASSERT(buffers != NULL);
+    buffers->usage = usage;
+}
+
+
+
+void vkl_buffers_memory(VklBuffers* buffers, VkMemoryPropertyFlags memory)
+{
+    ASSERT(buffers != NULL);
+    buffers->memory = memory;
+}
+
+
+
+void vkl_buffers_create(VklBuffers* buffers)
+{
+    ASSERT(buffers != NULL);
+    ASSERT(buffers->gpu != NULL);
+    ASSERT(buffers->gpu->device != 0);
+    ASSERT(buffers->count > 0);
+    ASSERT(buffers->size > 0);
+    ASSERT(buffers->usage != 0);
+    ASSERT(buffers->memory != 0);
+
+    log_trace("starting creation of %d buffer(s)...", buffers->count);
+    for (uint32_t i = 0; i < buffers->count; i++)
+    {
+        create_buffer2(
+            buffers->gpu->device, buffers->usage, buffers->memory, buffers->gpu->memory_properties,
+            buffers->size, &buffers->buffers[i], &buffers->memories[i]);
+    }
+
+    obj_created(&buffers->obj);
+    log_trace("buffers created");
+}
+
+
+
+void* vkl_buffers_map(VklBuffers* buffers, uint32_t idx, VkDeviceSize offset, VkDeviceSize size)
+{
+    ASSERT(buffers != NULL);
+    ASSERT(buffers->obj.status >= VKL_OBJECT_STATUS_CREATED);
+}
+
+
+
+void vkl_buffers_unmap(VklBuffers* buffers, uint32_t idx)
+{
+    ASSERT(buffers != NULL);
+    ASSERT(buffers->obj.status >= VKL_OBJECT_STATUS_CREATED);
+}
+
+
+
+VklBufferRegion
+vkl_buffers_region(VklBuffers* buffers, uint32_t idx, VkDeviceSize offset, VkDeviceSize size)
+{
+    ASSERT(buffers != NULL);
+}
+
+
+
+void vkl_buffers_destroy(VklBuffers* buffers)
+{
+    ASSERT(buffers != NULL);
+    if (buffers->obj.status < VKL_OBJECT_STATUS_CREATED)
+    {
+        log_trace("skip destruction of already-destroyed buffers");
+        return;
+    }
+    log_trace("destroy %d buffer(s)", buffers->count);
+    for (uint32_t i = 0; i < buffers->count; i++)
+    {
+        vkDestroyBuffer(buffers->gpu->device, buffers->buffers[i], NULL);
+        vkFreeMemory(buffers->gpu->device, buffers->memories[i], NULL);
+    }
+    obj_destroyed(&buffers->obj);
 }

@@ -40,10 +40,12 @@ TODO later
 #define VKL_MAX_WINDOWS          256
 #define VKL_MAX_SWAPCHAIN_IMAGES 8
 #define VKL_MAX_COMMANDS         256
+#define VKL_MAX_BUFFERS          256
 #define VKL_MAX_QUEUE_FAMILIES   16
 #define VKL_MAX_QUEUES           16
 // Maximum number of command buffers per VklCommands struct
-#define VKL_MAX_COMMAND_BUFFERS VKL_MAX_SWAPCHAIN_IMAGES
+#define VKL_MAX_COMMAND_BUFFERS_PER_SET VKL_MAX_SWAPCHAIN_IMAGES
+#define VKL_MAX_BUFFERS_PER_SET         VKL_MAX_SWAPCHAIN_IMAGES
 
 
 
@@ -60,6 +62,7 @@ typedef struct VklSwapchain VklSwapchain;
 typedef struct VklCanvas VklCanvas;
 typedef struct VklCommands VklCommands;
 typedef struct VklBuffers VklBuffers;
+typedef struct VklBufferRegion VklBufferRegion;
 typedef struct VklImages VklImages;
 typedef struct VklSampler VklSampler;
 typedef struct VklBindings VklBindings;
@@ -279,6 +282,9 @@ struct VklGpu
 
     uint32_t commands_count;
     VklCommands* commands;
+
+    uint32_t buffers_count;
+    VklBuffers* buffers;
 };
 
 
@@ -315,8 +321,8 @@ struct VklCommands
     VklGpu* gpu;
 
     uint32_t queue_idx;
-    uint32_t cmd_count;
-    VkCommandBuffer cmds[VKL_MAX_COMMAND_BUFFERS];
+    uint32_t count;
+    VkCommandBuffer cmds[VKL_MAX_COMMAND_BUFFERS_PER_SET];
 };
 
 
@@ -325,6 +331,25 @@ struct VklBuffers
 {
     VklObject obj;
     VklGpu* gpu;
+
+    uint32_t count;
+    VkBuffer buffers[VKL_MAX_BUFFERS_PER_SET];
+    VkDeviceMemory memories[VKL_MAX_BUFFERS_PER_SET];
+
+    VkDeviceSize size;
+    VkDeviceSize item_size; // stride, must be aligned, used in dynamic uniform buffer objects
+    VkBufferUsageFlags usage;
+    VkMemoryPropertyFlags memory;
+};
+
+
+
+struct VklBufferRegion
+{
+    VklBuffers* buffers;
+    uint32_t idx;
+    VkDeviceSize offset;
+    VkDeviceSize size;
 };
 
 
@@ -504,13 +529,33 @@ VKY_EXPORT void vkl_cmd_free(VklCommands* cmds);
 
 
 /*************************************************************************************************/
-/*  Buffer                                                                                       */
+/*  Buffers                                                                                      */
 /*************************************************************************************************/
 
+VKY_EXPORT VklBuffers* vkl_buffers(VklGpu* gpu, uint32_t count);
+
+VKY_EXPORT void vkl_buffers_size(VklBuffers* buffer, VkDeviceSize size, VkDeviceSize item_size);
+
+VKY_EXPORT void vkl_buffers_usage(VklBuffers* buffer, VkBufferUsageFlags usage);
+
+VKY_EXPORT void vkl_buffers_memory(VklBuffers* buffer, VkMemoryPropertyFlags memory);
+
+VKY_EXPORT void vkl_buffers_create(VklBuffers* buffer);
+
+VKY_EXPORT void*
+vkl_buffers_map(VklBuffers* buffer, uint32_t idx, VkDeviceSize offset, VkDeviceSize size);
+
+VKY_EXPORT void vkl_buffers_unmap(VklBuffers* buffer, uint32_t idx);
+
+VKY_EXPORT VklBufferRegion
+vkl_buffers_region(VklBuffers* buffer, uint32_t idx, VkDeviceSize offset, VkDeviceSize size);
+
+VKY_EXPORT void vkl_buffers_destroy(VklBuffers* buffer);
+
 
 
 /*************************************************************************************************/
-/*  Image                                                                                        */
+/*  Images                                                                                       */
 /*************************************************************************************************/
 
 

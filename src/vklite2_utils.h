@@ -658,3 +658,52 @@ static void allocate_command_buffers(
     alloc_info.commandBufferCount = count;
     VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &alloc_info, cmd_bufs));
 }
+
+
+
+/*************************************************************************************************/
+/*  Buffers                                                                                      */
+/*************************************************************************************************/
+
+static uint32_t find_memory_type(
+    uint32_t typeFilter, VkMemoryPropertyFlags properties,
+    VkPhysicalDeviceMemoryProperties mem_properties)
+{
+    for (uint32_t i = 0; i < mem_properties.memoryTypeCount; i++)
+    {
+        if ((typeFilter & (uint32_t)(1 << i)) &&
+            (mem_properties.memoryTypes[i].propertyFlags & properties) == properties)
+            return i;
+    }
+    log_error("could not find an appropriate memory type");
+    return 0;
+}
+
+
+
+static void create_buffer2(
+    VkDevice device, VkBufferUsageFlags usage,                                            //
+    VkMemoryPropertyFlags properties, VkPhysicalDeviceMemoryProperties memory_properties, //
+    VkDeviceSize size, VkBuffer* buffer, VkDeviceMemory* bufferMemory)
+{
+    VkBufferCreateInfo bufferInfo = {0};
+    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferInfo.size = size;
+    bufferInfo.usage = usage;
+    // TODO: support access from different queues
+    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    VK_CHECK_RESULT(vkCreateBuffer(device, &bufferInfo, NULL, buffer));
+
+    VkMemoryRequirements memRequirements = {0};
+    vkGetBufferMemoryRequirements(device, *buffer, &memRequirements);
+
+    VkMemoryAllocateInfo alloc_info = {0};
+    alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    alloc_info.allocationSize = memRequirements.size;
+    alloc_info.memoryTypeIndex =
+        find_memory_type(memRequirements.memoryTypeBits, properties, memory_properties);
+
+    VK_CHECK_RESULT(vkAllocateMemory(device, &alloc_info, NULL, bufferMemory));
+
+    vkBindBufferMemory(device, *buffer, *bufferMemory, 0);
+}
