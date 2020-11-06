@@ -125,16 +125,55 @@ static int vklite2_compute(VkyTestContext* context)
     vkl_gpu_queue(gpu, VKL_QUEUE_COMPUTE, 0);
     vkl_gpu_create(gpu, 0);
 
+    // Create the compute pipeline.
     char path[1024];
     snprintf(path, sizeof(path), "%s/spirv/pow2.comp.spv", DATA_DIR);
     VklCompute* compute = vkl_compute(gpu, path);
 
+    // Create the buffers
+    VklBuffers* buffers = vkl_buffers(gpu, 1);
+    const VkDeviceSize size = 256;
+    vkl_buffers_size(buffers, size, 0);
+    vkl_buffers_usage(
+        buffers,
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT |     //
+            VK_BUFFER_USAGE_TRANSFER_DST_BIT | //
+            VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+    vkl_buffers_memory(
+        buffers, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vkl_buffers_queue_access(buffers, 0);
+    vkl_buffers_create(buffers);
+
+    // Send some data to the GPU.
+    void* buffer = vkl_buffers_map(buffers, 0, 0, size);
+    ASSERT(buffer != NULL);
+    void* data = calloc(size, 1);
+    for (uint32_t i = 0; i < size; i++)
+        ((uint8_t*)data)[i] = i;
+    memcpy(buffer, data, size);
+    vkl_buffers_unmap(buffers, 0);
+
+    // Create the bindings.
     VklBindings* bindings = vkl_bindings(gpu);
     vkl_bindings_slot(bindings, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
     vkl_bindings_create(bindings, 1);
+    vkl_bindings_buffers(bindings, 0, buffers);
 
+    // TODO: should be called automatically and transparently. The implementation should keep track
+    // of binding changes and update the bindings before cmd dset binding.
+    // For now in this test, calling this manually.
+    update_bindings(bindings);
+
+    // Link the bindings to the compute pipeline and create it.
     vkl_compute_bindings(compute, bindings);
     vkl_compute_create(compute);
+
+    // Command buffers.
+    VklCommands* cmds = vkl_commands(gpu, 0, 1);
+    vkl_cmd_begin(cmds);
+    // TODO
+    // vky_cmd_compute(cmds, compute, (uvec3[]){256, 1, 1});
+    vkl_cmd_end(cmds);
 
     vkl_app_destroy(app);
     return 0;

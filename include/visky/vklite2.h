@@ -401,7 +401,7 @@ struct VklBindings
     uint32_t dset_count;
     VkDescriptorSet dsets[VKL_MAX_SWAPCHAIN_IMAGES];
 
-    VklBuffers buffers[VKL_MAX_BINDINGS_SIZE];
+    VklBuffers* buffers[VKL_MAX_BINDINGS_SIZE];
     // TODO: textures
 };
 
@@ -613,10 +613,10 @@ VKY_EXPORT void vkl_bindings_slot(VklBindings* bindings, uint32_t idx, VkDescrip
 
 VKY_EXPORT void vkl_bindings_create(VklBindings* bindings, uint32_t dset_count);
 
-VKY_EXPORT void vkl_bindings_buffer(VklPipeline* pipeline, uint32_t idx, VklBuffers* buffers);
+VKY_EXPORT void vkl_bindings_buffers(VklBindings* bindings, uint32_t idx, VklBuffers* buffers);
 
 VKY_EXPORT void
-vkl_bindings_texture(VklPipeline* pipeline, uint32_t idx, VklImages* images, VklSampler* sampler);
+vkl_bindings_texture(VklBindings* bindings, uint32_t idx, VklImages* images, VklSampler* sampler);
 
 VKY_EXPORT void vkl_bindings_destroy(VklBindings* bindings);
 

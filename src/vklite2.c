@@ -666,15 +666,19 @@ void vkl_bindings_create(VklBindings* bindings, uint32_t dset_count)
 
 
 
-void vkl_bindings_buffer(VklPipeline* pipeline, uint32_t idx, VklBuffers* buffers)
+void vkl_bindings_buffers(VklBindings* bindings, uint32_t idx, VklBuffers* buffers)
 {
-    // TODO
+    ASSERT(bindings != NULL);
+    ASSERT(buffers != NULL);
+    ASSERT(buffers->count == 1 || buffers->count == bindings->dset_count);
+
+    bindings->buffers[idx] = buffers;
 }
 
 
 
 void vkl_bindings_texture(
-    VklPipeline* pipeline, uint32_t idx, VklImages* images, VklSampler* sampler)
+    VklBindings* bindings, uint32_t idx, VklImages* images, VklSampler* sampler)
 {
     // TODO
 }
