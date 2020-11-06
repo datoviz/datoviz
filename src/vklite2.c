@@ -488,7 +488,18 @@ void vkl_buffers_create(VklBuffers* buffers)
 void* vkl_buffers_map(VklBuffers* buffers, uint32_t idx, VkDeviceSize offset, VkDeviceSize size)
 {
     ASSERT(buffers != NULL);
+    ASSERT(buffers->gpu != NULL);
+    ASSERT(buffers->gpu->device != 0);
     ASSERT(buffers->obj.status >= VKL_OBJECT_STATUS_CREATED);
+
+    ASSERT(
+        (buffers->memory & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) && //
+        (buffers->memory & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT));
+
+    log_trace("map buffer #%d", idx);
+    void* cdata = NULL;
+    vkMapMemory(buffers->gpu->device, buffers->memories[idx], offset, size, 0, &cdata);
+    return cdata;
 }
 
 
@@ -496,7 +507,16 @@ void* vkl_buffers_map(VklBuffers* buffers, uint32_t idx, VkDeviceSize offset, Vk
 void vkl_buffers_unmap(VklBuffers* buffers, uint32_t idx)
 {
     ASSERT(buffers != NULL);
+    ASSERT(buffers->gpu != NULL);
+    ASSERT(buffers->gpu->device != 0);
     ASSERT(buffers->obj.status >= VKL_OBJECT_STATUS_CREATED);
+
+    ASSERT(
+        (buffers->memory & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) && //
+        (buffers->memory & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT));
+
+    log_trace("unmap buffer #%d", idx);
+    vkUnmapMemory(buffers->gpu->device, buffers->memories[idx]);
 }
 
 
@@ -505,6 +525,13 @@ VklBufferRegion
 vkl_buffers_region(VklBuffers* buffers, uint32_t idx, VkDeviceSize offset, VkDeviceSize size)
 {
     ASSERT(buffers != NULL);
+    ASSERT(buffers->gpu != NULL);
+    ASSERT(buffers->gpu->device != 0);
+    ASSERT(buffers->obj.status >= VKL_OBJECT_STATUS_CREATED);
+
+    VklBufferRegion region = {0};
+    // TODO
+    return region;
 }
 
 

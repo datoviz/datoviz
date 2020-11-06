@@ -84,10 +84,33 @@ static int vklite2_buffers(VkyTestContext* context)
     vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
     vkl_gpu_create(gpu, 0);
     VklBuffers* buffers = vkl_buffers(gpu, 3);
+    VkDeviceSize size = 256;
     vkl_buffers_size(buffers, 256, 0);
     vkl_buffers_usage(
         buffers, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    vkl_buffers_memory(
+        buffers, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
     vkl_buffers_create(buffers);
+
+    // Send some data to the GPU.
+    void* buffer = vkl_buffers_map(buffers, 0, 0, size);
+    ASSERT(buffer != NULL);
+    void* data = calloc(size, 1);
+    for (uint32_t i = 0; i < size; i++)
+        ((uint8_t*)data)[i] = i;
+    memcpy(buffer, data, size);
+    vkl_buffers_unmap(buffers, 0);
+
+    // Recover the data.
+    buffer = vkl_buffers_map(buffers, 0, 0, size);
+    void* data2 = calloc(size, 1);
+    memcpy(data2, buffer, size);
+    vkl_buffers_unmap(buffers, 0);
+
+    // Check that the data downloaded from the GPU is the same.
+    ASSERT(memcmp(data2, data, size) == 0);
+
+    FREE(data);
     vkl_app_destroy(app);
     return 0;
 }
