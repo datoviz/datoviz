@@ -223,6 +223,8 @@ void vkl_gpu_destroy(VklGpu* gpu)
     vkDestroyDevice(gpu->device, NULL);
     gpu->device = 0;
 
+    INSTANCES_DESTROY(gpu->commands)
+
     obj_destroyed(&gpu->obj);
     log_trace("GPU #%d destroyed", gpu->idx);
 }
@@ -316,13 +318,24 @@ void vkl_swapchain_destroy(VklSwapchain* swapchain)
 /*  Commands */
 /*************************************************************************************************/
 
-VklCommands* vkl_commands(VklGpu* gpu, VklQueueType queue, uint32_t count)
+VklCommands* vkl_commands(VklGpu* gpu, uint32_t queue, uint32_t count)
 {
+    ASSERT(gpu != NULL);
+    ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
+
     INSTANCE_NEW(VklCommands, commands, gpu->commands, gpu->commands_count)
 
-    ASSERT(VKL_MAX_COMMAND_BUFFERS <= count);
-    allocate_command_buffers(
-        gpu->device, gpu->queues.cmd_pools[(uint32_t)queue], count, commands->cmds);
+    ASSERT(count <= VKL_MAX_COMMAND_BUFFERS);
+    ASSERT(queue <= gpu->queues.queue_count);
+    ASSERT(count > 0);
+    ASSERT(gpu->queues.cmd_pools[queue] != 0);
+
+    commands->gpu = gpu;
+    commands->queue_idx = queue;
+    commands->cmd_count = count;
+    allocate_command_buffers(gpu->device, gpu->queues.cmd_pools[queue], count, commands->cmds);
+
+    obj_created(&commands->obj);
 
     return commands;
 }
@@ -337,8 +350,30 @@ void vkl_cmd_end(VklCommands* cmds) {}
 
 
 
-void vkl_cmd_reset(VklCommands* cmds) {}
+void vkl_cmd_reset(VklCommands* cmds)
+{
+    ASSERT(cmds != NULL);
+    ASSERT(cmds->cmd_count > 0);
+
+    log_trace("reset %d command buffer(s)", cmds->cmd_count);
+    for (uint32_t i = 0; i < cmds->cmd_count; i++)
+    {
+        ASSERT(cmds->cmds[i] != 0);
+        vkResetCommandBuffer(cmds->cmds[i], 0);
+    }
+}
 
 
 
-void vkl_cmd_free(VklCommands* cmds) { FREE(cmds); }
+void vkl_cmd_free(VklCommands* cmds)
+{
+    ASSERT(cmds != NULL);
+    ASSERT(cmds->cmd_count > 0);
+    ASSERT(cmds->gpu != NULL);
+    ASSERT(cmds->gpu->device != 0);
+
+    log_trace("free %d command buffer(s)", cmds->cmd_count);
+    vkFreeCommandBuffers(
+        cmds->gpu->device, cmds->gpu->queues.cmd_pools[cmds->queue_idx], //
+        cmds->cmd_count, cmds->cmds);
+}

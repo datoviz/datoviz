@@ -647,7 +647,10 @@ static void allocate_command_buffers(
     VkDevice device, VkCommandPool command_pool, uint32_t count, VkCommandBuffer* cmd_bufs)
 {
     ASSERT(count > 0);
-    log_trace("allocate %d command buffers", count);
+    log_trace("allocate %d command buffer(s)", count);
+    ASSERT(command_pool != 0);
+    ASSERT(count > 0);
+
     VkCommandBufferAllocateInfo alloc_info = {0};
     alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     alloc_info.commandPool = command_pool;

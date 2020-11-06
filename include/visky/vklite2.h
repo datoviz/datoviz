@@ -39,7 +39,7 @@ TODO later
 #define VKL_MAX_GPUS             64
 #define VKL_MAX_WINDOWS          256
 #define VKL_MAX_SWAPCHAIN_IMAGES 8
-#define VKL_MAX_COMMANDS         32
+#define VKL_MAX_COMMANDS         256
 #define VKL_MAX_QUEUE_FAMILIES   16
 #define VKL_MAX_QUEUES           16
 // Maximum number of command buffers per VklCommands struct
@@ -243,6 +243,9 @@ struct VklQueues
     bool support_graphics[VKL_MAX_QUEUE_FAMILIES];
     bool support_compute[VKL_MAX_QUEUE_FAMILIES];
     bool support_present[VKL_MAX_QUEUE_FAMILIES];
+
+    // Requested queues
+    // ----------------
     // Number of requested queues
     uint32_t queue_count;
     // Requested queue types.
@@ -273,9 +276,6 @@ struct VklGpu
 
     VkPhysicalDeviceFeatures requested_features;
     VkDevice device;
-
-    // uint32_t cmd_pool_count;
-    // VkCommandPool cmd_pools[VKL_QUEUE_COUNT]; // transfer, graphics+compute, compute
 
     uint32_t commands_count;
     VklCommands* commands;
@@ -314,6 +314,8 @@ struct VklCommands
     VklObject obj;
     VklGpu* gpu;
 
+    uint32_t queue_idx;
+    uint32_t cmd_count;
     VkCommandBuffer cmds[VKL_MAX_COMMAND_BUFFERS];
 };
 
@@ -469,7 +471,7 @@ VKY_EXPORT void vkl_canvases_destroy(uint32_t canvas_count, VklCanvas* canvases)
 
 
 /*************************************************************************************************/
-/*  Canvas                                                                                       */
+/*  Swapchain                                                                                    */
 /*************************************************************************************************/
 
 VKY_EXPORT VklSwapchain* vkl_swapchain(VklGpu* gpu, VklWindow* window, uint32_t min_img_count);
@@ -489,7 +491,7 @@ VKY_EXPORT void vkl_swapchain_destroy(VklSwapchain* swapchain);
 /*  Commands                                                                                     */
 /*************************************************************************************************/
 
-VKY_EXPORT VklCommands* vkl_commands(VklGpu* gpu, VklQueueType queue, uint32_t count);
+VKY_EXPORT VklCommands* vkl_commands(VklGpu* gpu, uint32_t queue, uint32_t count);
 
 VKY_EXPORT void vkl_cmd_begin(VklCommands* cmds);
 

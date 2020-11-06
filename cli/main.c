@@ -139,6 +139,7 @@ static VkyTestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(vklite2_surface),   //
     CASE_FIXTURE_NONE(vklite2_window),    //
     CASE_FIXTURE_NONE(vklite2_swapchain), //
+    CASE_FIXTURE_NONE(vklite2_commands),  //
 
     // Visual props.
     CASE_FIXTURE_NONE(visuals_props_1), //
