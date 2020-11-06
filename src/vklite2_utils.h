@@ -819,6 +819,37 @@ static void create_pipeline_layout(
 
 
 
+static void create_descriptor_set_layout(
+    VkDevice device, uint32_t binding_count, VkDescriptorType* binding_types,
+    VkDescriptorSetLayout* dset_layout)
+{
+    // Descriptor set layout.
+    VkDescriptorSetLayoutBinding* layout_bindings =
+        calloc(binding_count, sizeof(VkDescriptorSetLayoutBinding));
+
+    for (uint32_t i = 0; i < binding_count; i++)
+    {
+        VkDescriptorType dtype = binding_types[i];
+        layout_bindings[i].binding = i;
+        layout_bindings[i].descriptorType = dtype;
+        layout_bindings[i].descriptorCount = 1;
+        layout_bindings[i].stageFlags = VK_SHADER_STAGE_ALL;
+        layout_bindings[i].pImmutableSamplers = NULL; // Optional
+    }
+
+    // Create descriptor set layout.
+    VkDescriptorSetLayoutCreateInfo layout_info = {0};
+    layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    layout_info.bindingCount = binding_count;
+    layout_info.pBindings = layout_bindings;
+
+    log_trace("create descriptor set layout");
+    VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &layout_info, NULL, dset_layout));
+    FREE(layout_bindings);
+}
+
+
+
 /*************************************************************************************************/
 /*  Shaders                                                                                      */
 /*************************************************************************************************/
@@ -854,7 +885,8 @@ static VkShaderModule create_shader_module_from_file(VkDevice device, const char
 /*************************************************************************************************/
 
 static void create_compute_pipeline(
-    VkDevice device, const char* path, VkPipelineLayout pipeline_layout, VkPipeline* pipeline)
+    VkDevice device, VkShaderModule shader_module, VkPipelineLayout pipeline_layout,
+    VkPipeline* pipeline)
 {
     // Create the shader and pipeline.
     VkComputePipelineCreateInfo pipelineInfo = {0};
@@ -863,7 +895,7 @@ static void create_compute_pipeline(
     pipelineInfo.stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     pipelineInfo.stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
     pipelineInfo.stage.pName = "main";
-    pipelineInfo.stage.module = create_shader_module_from_file(device, path);
+    pipelineInfo.stage.module = shader_module;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
     VK_CHECK_RESULT(
         vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, NULL, pipeline));

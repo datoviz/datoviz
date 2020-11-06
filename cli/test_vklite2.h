@@ -128,6 +128,12 @@ static int vklite2_compute(VkyTestContext* context)
     char path[1024];
     snprintf(path, sizeof(path), "%s/spirv/pow2.comp.spv", DATA_DIR);
     VklCompute* compute = vkl_compute(gpu, path);
+
+    VklBindings* bindings = vkl_bindings(gpu);
+    vkl_bindings_slot(bindings, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+    vkl_bindings_create(bindings);
+
+    vkl_compute_bindings(compute, bindings);
     vkl_compute_create(compute);
 
     vkl_app_destroy(app);

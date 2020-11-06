@@ -238,6 +238,12 @@ void vkl_gpu_destroy(VklGpu* gpu)
         vkl_compute_destroy(&gpu->computes[i]);
     }
 
+    if (gpu->dset_pool != 0)
+    {
+        log_trace("destroy descriptor pool");
+        vkDestroyDescriptorPool(gpu->device, gpu->dset_pool, NULL);
+    }
+
     // Destroy the device.
     log_trace("destroy device");
     vkDestroyDevice(gpu->device, NULL);
@@ -625,6 +631,26 @@ void vkl_bindings_slot(VklBindings* bindings, uint32_t idx, VkDescriptorType typ
 
 
 
+void vkl_bindings_create(VklBindings* bindings)
+{
+    ASSERT(bindings != NULL);
+    ASSERT(bindings->gpu != NULL);
+    ASSERT(bindings->gpu->device != 0);
+
+    log_trace("starting creation of bindings...");
+
+    create_descriptor_set_layout(
+        bindings->gpu->device, bindings->count, bindings->types, &bindings->dset_layout);
+
+    create_pipeline_layout(
+        bindings->gpu->device, &bindings->dset_layout, &bindings->pipeline_layout);
+
+    obj_created(&bindings->obj);
+    log_trace("bindings created");
+}
+
+
+
 void vkl_bindings_buffer(VklPipeline* pipeline, uint32_t idx, VklBuffers* buffers)
 {
     // TODO
@@ -643,13 +669,16 @@ void vkl_bindings_texture(
 void vkl_bindings_destroy(VklBindings* bindings)
 {
     ASSERT(bindings != NULL);
+    ASSERT(bindings->gpu != NULL);
     if (bindings->obj.status < VKL_OBJECT_STATUS_CREATED)
     {
         log_trace("skip destruction of already-destroyed bindings");
         return;
     }
     log_trace("destroy bindings");
-    // TODO
+    VkDevice device = bindings->gpu->device;
+    vkDestroyPipelineLayout(device, bindings->pipeline_layout, NULL);
+    vkDestroyDescriptorSetLayout(device, bindings->dset_layout, NULL);
     obj_destroyed(&bindings->obj);
 }
 
@@ -677,7 +706,7 @@ VklCompute* vkl_compute(VklGpu* gpu, const char* shader_path)
 
 void vkl_compute_bindings(VklCompute* compute, VklBindings* bindings)
 {
-    // TODO
+    compute->bindings = bindings;
 }
 
 
@@ -687,14 +716,22 @@ void vkl_compute_create(VklCompute* compute)
     ASSERT(compute != NULL);
     ASSERT(compute->gpu != NULL);
     ASSERT(compute->gpu->device != 0);
+    ASSERT(compute->shader_path != NULL);
+
+    if (compute->bindings == NULL)
+    {
+        log_error("vkl_compute_bindings() must be called before creating the compute");
+        exit(1);
+    }
 
     log_trace("starting creation of compute...");
 
-    // TODO: pipeline layout from bindings
-    VkPipelineLayout pipeline_layout = {0};
-    create_pipeline_layout(compute->gpu->device, NULL, &pipeline_layout);
+    compute->shader_module =
+        create_shader_module_from_file(compute->gpu->device, compute->shader_path);
+
     create_compute_pipeline(
-        compute->gpu->device, compute->shader_path, pipeline_layout, &compute->pipeline);
+        compute->gpu->device, compute->shader_module, //
+        compute->bindings->pipeline_layout, &compute->pipeline);
 
     obj_created(&compute->obj);
     log_trace("compute created");
@@ -705,13 +742,18 @@ void vkl_compute_create(VklCompute* compute)
 void vkl_compute_destroy(VklCompute* compute)
 {
     ASSERT(compute != NULL);
+    ASSERT(compute->gpu != NULL);
     if (compute->obj.status < VKL_OBJECT_STATUS_CREATED)
     {
         log_trace("skip destruction of already-destroyed compute");
         return;
     }
     log_trace("destroy compute");
-    // TODO
+
+    VkDevice device = compute->gpu->device;
+    vkDestroyShaderModule(device, compute->shader_module, NULL);
+    vkDestroyPipeline(device, compute->pipeline, NULL);
+
     obj_destroyed(&compute->obj);
 }
 

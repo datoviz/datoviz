@@ -392,6 +392,9 @@ struct VklBindings
 
     uint32_t count;
     VkDescriptorType types[VKL_MAX_BINDINGS_SIZE];
+
+    VkPipelineLayout pipeline_layout;
+    VkDescriptorSetLayout dset_layout;
 };
 
 
@@ -405,7 +408,7 @@ struct VklCompute
 
     VkPipeline pipeline;
     VklBindings* bindings;
-    VkShaderModule shader;
+    VkShaderModule shader_module;
 };
 
 
@@ -599,6 +602,8 @@ VKY_EXPORT void vkl_buffers_destroy(VklBuffers* buffers);
 VKY_EXPORT VklBindings* vkl_bindings(VklGpu* gpu);
 
 VKY_EXPORT void vkl_bindings_slot(VklBindings* bindings, uint32_t idx, VkDescriptorType type);
+
+VKY_EXPORT void vkl_bindings_create(VklBindings* bindings);
 
 VKY_EXPORT void vkl_bindings_buffer(VklPipeline* pipeline, uint32_t idx, VklBuffers* buffers);
 
