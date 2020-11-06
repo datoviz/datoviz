@@ -634,12 +634,6 @@ static void create_swapchain(
 
 
 /*************************************************************************************************/
-/*  Canvas                                                                                       */
-/*************************************************************************************************/
-
-
-
-/*************************************************************************************************/
 /*  Command buffers                                                                              */
 /*************************************************************************************************/
 
@@ -762,4 +756,86 @@ static void create_buffer2(
     VK_CHECK_RESULT(vkAllocateMemory(device, &alloc_info, NULL, bufferMemory));
 
     vkBindBufferMemory(device, *buffer, *bufferMemory, 0);
+}
+
+
+
+/*************************************************************************************************/
+/*  Images                                                                                       */
+/*************************************************************************************************/
+
+
+
+/*************************************************************************************************/
+/*  Sampler                                                                                      */
+/*************************************************************************************************/
+
+
+
+/*************************************************************************************************/
+/*  Bindings                                                                                     */
+/*************************************************************************************************/
+
+static void create_pipeline_layout(
+    VkDevice device, VkDescriptorSetLayout* dset_layout, VkPipelineLayout* pipeline_layout)
+{
+    // Pipeline layout.
+    VkPipelineLayoutCreateInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    info.setLayoutCount = dset_layout != NULL ? 1 : 0;
+    info.pSetLayouts = dset_layout;
+
+    VK_CHECK_RESULT(vkCreatePipelineLayout(device, &info, NULL, pipeline_layout));
+}
+
+
+
+/*************************************************************************************************/
+/*  Shaders                                                                                      */
+/*************************************************************************************************/
+
+static VkShaderModule create_shader_module(VkDevice device, uint32_t size, const uint32_t* buffer)
+{
+    VkShaderModuleCreateInfo createInfo = {0};
+    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    createInfo.codeSize = size;
+    createInfo.pCode = buffer;
+
+    VkShaderModule module = {0};
+    VK_CHECK_RESULT(vkCreateShaderModule(device, &createInfo, NULL, &module));
+    return module;
+}
+
+
+
+static VkShaderModule create_shader_module_from_file(VkDevice device, const char* filename)
+{
+    log_trace("create shader module from file %s", filename);
+    size_t size = 0;
+    uint32_t* shader_code = (uint32_t*)read_file(filename, &size);
+    VkShaderModule module = create_shader_module(device, size, shader_code);
+    FREE(shader_code);
+    return module;
+}
+
+
+
+/*************************************************************************************************/
+/*  Compute                                                                                      */
+/*************************************************************************************************/
+
+static void create_compute_pipeline(
+    VkDevice device, const char* path, VkPipelineLayout pipeline_layout, VkPipeline* pipeline)
+{
+    // Create the shader and pipeline.
+    VkComputePipelineCreateInfo pipelineInfo = {0};
+    pipelineInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+    pipelineInfo.layout = pipeline_layout;
+    pipelineInfo.stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    pipelineInfo.stage.stage = VK_SHADER_STAGE_COMPUTE_BIT;
+    pipelineInfo.stage.pName = "main";
+    pipelineInfo.stage.module = create_shader_module_from_file(device, path);
+    pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+    VK_CHECK_RESULT(
+        vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, NULL, pipeline));
 }

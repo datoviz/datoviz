@@ -8,7 +8,7 @@
 
 // Resources used in tests below.
 static VkyBufferRegion vbr;
-static VkyGraphicsPipeline pipeline;
+static VkyGraphicsPipeline test_pipeline;
 static VkyBuffer test_buffer;
 
 static int no_destroy(VkyTestContext* context) { return 0; }
@@ -83,7 +83,7 @@ static void _triangle_fill(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
 {
     vky_begin_render_pass(cmd_buf, canvas, VKY_CLEAR_COLOR_BLACK);
     vky_bind_vertex_buffer(cmd_buf, vbr, 0);
-    vky_bind_graphics_pipeline(cmd_buf, &pipeline);
+    vky_bind_graphics_pipeline(cmd_buf, &test_pipeline);
     vky_set_viewport(
         cmd_buf, 0, 0, canvas->size.framebuffer_width, canvas->size.framebuffer_height);
     vky_draw(cmd_buf, 0, 3);
@@ -110,8 +110,8 @@ static int vklite_triangle(VkyTestContext* context)
     VkyResourceLayout resource_layout =
         vky_create_resource_layout(canvas->gpu, canvas->image_count);
 
-    // Create the graphics pipeline.
-    pipeline = vky_create_graphics_pipeline(
+    // Create the graphics test_pipeline.
+    test_pipeline = vky_create_graphics_pipeline(
         canvas,
         VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, // triangles, 3 vertices per primitive
         shaders, vertex_layout, resource_layout, (VkyGraphicsPipelineParams){true});
@@ -134,10 +134,10 @@ static int vklite_triangle(VkyTestContext* context)
 static int vklite_triangle_destroy(VkyTestContext* context)
 {
     vky_destroy_buffer(&test_buffer);
-    vky_destroy_vertex_layout(&pipeline.vertex_layout);
-    vky_destroy_resource_layout(&pipeline.resource_layout);
-    vky_destroy_shaders(&pipeline.shaders);
-    vky_destroy_graphics_pipeline(&pipeline);
+    vky_destroy_vertex_layout(&test_pipeline.vertex_layout);
+    vky_destroy_resource_layout(&test_pipeline.resource_layout);
+    vky_destroy_shaders(&test_pipeline.shaders);
+    vky_destroy_graphics_pipeline(&test_pipeline);
 
     return 0;
 }
@@ -152,15 +152,15 @@ static void _push_fill(VkyCanvas* canvas, VkCommandBuffer cmd_buf)
     // Bind the vertex test_buffer.
     vky_bind_vertex_buffer(cmd_buf, vbr, 0);
 
-    // Bind the graphics pipeline.
-    vky_bind_graphics_pipeline(cmd_buf, &pipeline);
+    // Bind the graphics test_pipeline.
+    vky_bind_graphics_pipeline(cmd_buf, &test_pipeline);
 
     // Set the full viewport.
     vky_set_viewport(
         cmd_buf, 0, 0, canvas->size.framebuffer_width, canvas->size.framebuffer_height);
 
     // Push constants.
-    vky_push_constants(cmd_buf, &pipeline, sizeof(vec2), (vec2){1, 1});
+    vky_push_constants(cmd_buf, &test_pipeline, sizeof(vec2), (vec2){1, 1});
 
     // Draw 3 vertices = 1 triangle.
     vky_draw(cmd_buf, 0, 3);
@@ -198,8 +198,8 @@ static int vklite_push(VkyTestContext* context)
     VkyResourceLayout resource_layout =
         vky_create_resource_layout(canvas->gpu, canvas->image_count);
 
-    // Create the graphics pipeline.
-    pipeline = vky_create_graphics_pipeline(
+    // Create the graphics test_pipeline.
+    test_pipeline = vky_create_graphics_pipeline(
         canvas,
         VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, // triangles, 3 vertices per primitive
         shaders, vertex_layout, resource_layout,
@@ -230,10 +230,10 @@ static int vklite_push_destroy(VkyTestContext* context)
 {
     // Destroy the resources.
     vky_destroy_buffer(&test_buffer);
-    vky_destroy_vertex_layout(&pipeline.vertex_layout);
-    vky_destroy_resource_layout(&pipeline.resource_layout);
-    vky_destroy_shaders(&pipeline.shaders);
-    vky_destroy_graphics_pipeline(&pipeline);
+    vky_destroy_vertex_layout(&test_pipeline.vertex_layout);
+    vky_destroy_resource_layout(&test_pipeline.resource_layout);
+    vky_destroy_shaders(&test_pipeline.shaders);
+    vky_destroy_graphics_pipeline(&test_pipeline);
 
     return 0;
 }

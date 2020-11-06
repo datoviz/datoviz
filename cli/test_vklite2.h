@@ -118,6 +118,22 @@ static int vklite2_buffers(VkyTestContext* context)
     return 0;
 }
 
+static int vklite2_compute(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    vkl_gpu_queue(gpu, VKL_QUEUE_COMPUTE, 0);
+    vkl_gpu_create(gpu, 0);
+
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/spirv/pow2.comp.spv", DATA_DIR);
+    VklCompute* compute = vkl_compute(gpu, path);
+    vkl_compute_create(compute);
+
+    vkl_app_destroy(app);
+    return 0;
+}
+
 
 
 static int vklite2_test_compute_only(VkyTestContext* context)

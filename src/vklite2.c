@@ -135,6 +135,7 @@ VklGpu* vkl_gpu(VklApp* app, uint32_t idx)
 
     INSTANCES_INIT(VklCommands, gpu, commands, VKL_MAX_COMMANDS, VKL_OBJECT_TYPE_COMMANDS)
     INSTANCES_INIT(VklBuffers, gpu, buffers, VKL_MAX_BUFFERS, VKL_OBJECT_TYPE_BUFFER)
+    INSTANCES_INIT(VklCompute, gpu, computes, VKL_MAX_COMPUTES, VKL_OBJECT_TYPE_COMPUTE)
 
     return gpu;
 }
@@ -225,6 +226,12 @@ void vkl_gpu_destroy(VklGpu* gpu)
         vkl_buffers_destroy(&gpu->buffers[i]);
     }
 
+    log_trace("destroy %d computes", gpu->compute_count);
+    for (uint32_t i = 0; i < gpu->compute_count; i++)
+    {
+        vkl_compute_destroy(&gpu->computes[i]);
+    }
+
     // Destroy the device.
     log_trace("destroy device");
     vkDestroyDevice(gpu->device, NULL);
@@ -232,6 +239,7 @@ void vkl_gpu_destroy(VklGpu* gpu)
 
     INSTANCES_DESTROY(gpu->commands)
     INSTANCES_DESTROY(gpu->buffers)
+    INSTANCES_DESTROY(gpu->computes)
 
     obj_destroyed(&gpu->obj);
     log_trace("GPU #%d destroyed", gpu->idx);
@@ -567,3 +575,107 @@ void vkl_buffers_destroy(VklBuffers* buffers)
     }
     obj_destroyed(&buffers->obj);
 }
+
+
+
+/*************************************************************************************************/
+/*  Images                                                                                       */
+/*************************************************************************************************/
+
+
+
+/*************************************************************************************************/
+/*  Sampler                                                                                      */
+/*************************************************************************************************/
+
+
+
+/*************************************************************************************************/
+/*  Bindings                                                                                     */
+/*************************************************************************************************/
+
+
+
+/*************************************************************************************************/
+/*  Compute                                                                                      */
+/*************************************************************************************************/
+
+
+VklCompute* vkl_compute(VklGpu* gpu, const char* shader_path)
+{
+    ASSERT(gpu != NULL);
+    ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
+
+    INSTANCE_NEW(VklCompute, compute, gpu->computes, gpu->compute_count)
+
+    compute->gpu = gpu;
+    compute->shader_path = shader_path;
+
+    return compute;
+}
+
+void vkl_compute_bindings(VklCompute* compute, VklBindings* bindings)
+{
+    // TODO
+}
+
+void vkl_compute_create(VklCompute* compute)
+{
+    ASSERT(compute != NULL);
+    ASSERT(compute->gpu != NULL);
+    ASSERT(compute->gpu->device != 0);
+
+    log_trace("starting creation of compute...");
+
+    // TODO: pipeline layout from bindings
+    VkPipelineLayout pipeline_layout = {0};
+    create_pipeline_layout(compute->gpu->device, NULL, &pipeline_layout);
+    create_compute_pipeline(
+        compute->gpu->device, compute->shader_path, pipeline_layout, &compute->pipeline);
+
+    obj_created(&compute->obj);
+    log_trace("compute created");
+}
+
+void vkl_compute_destroy(VklCompute* compute)
+{
+    ASSERT(compute != NULL);
+    if (compute->obj.status < VKL_OBJECT_STATUS_CREATED)
+    {
+        log_trace("skip destruction of already-destroyed compute");
+        return;
+    }
+    log_trace("destroy compute");
+    // TODO
+    obj_destroyed(&compute->obj);
+}
+
+
+
+/*************************************************************************************************/
+/*  Pipeline                                                                                     */
+/*************************************************************************************************/
+
+
+
+/*************************************************************************************************/
+/*  Barrier                                                                                      */
+/*************************************************************************************************/
+
+
+
+/*************************************************************************************************/
+/*  Sync                                                                                         */
+/*************************************************************************************************/
+
+
+
+/*************************************************************************************************/
+/*  Renderpass                                                                                   */
+/*************************************************************************************************/
+
+
+
+/*************************************************************************************************/
+/*  Submit                                                                                       */
+/*************************************************************************************************/

@@ -43,6 +43,7 @@ TODO later
 #define VKL_MAX_BUFFERS          256
 #define VKL_MAX_QUEUE_FAMILIES   16
 #define VKL_MAX_QUEUES           16
+#define VKL_MAX_COMPUTES         256
 // Maximum number of command buffers per VklCommands struct
 #define VKL_MAX_COMMAND_BUFFERS_PER_SET VKL_MAX_SWAPCHAIN_IMAGES
 #define VKL_MAX_BUFFERS_PER_SET         VKL_MAX_SWAPCHAIN_IMAGES
@@ -285,6 +286,9 @@ struct VklGpu
 
     uint32_t buffers_count;
     VklBuffers* buffers;
+
+    uint32_t compute_count;
+    VklCompute* computes;
 };
 
 
@@ -386,6 +390,12 @@ struct VklCompute
 {
     VklObject obj;
     VklGpu* gpu;
+
+    const char* shader_path;
+
+    VkPipeline pipeline;
+    VklBindings* bindings;
+    VkShaderModule shader;
 };
 
 
@@ -544,7 +554,7 @@ VKY_EXPORT void vkl_buffers_usage(VklBuffers* buffers, VkBufferUsageFlags usage)
 
 VKY_EXPORT void vkl_buffers_memory(VklBuffers* buffers, VkMemoryPropertyFlags memory);
 
-VKY_EXPORT void vkl_buffers_queue_access(VklBuffers* buffers, uint32_t queue);
+VKY_EXPORT void vkl_buffers_queue_access(VklBuffers* buffers, uint32_t queues);
 
 VKY_EXPORT void vkl_buffers_create(VklBuffers* buffers);
 
@@ -573,7 +583,7 @@ VKY_EXPORT void vkl_buffers_destroy(VklBuffers* buffers);
 
 
 /*************************************************************************************************/
-/*  Binding                                                                                      */
+/*  Bindings                                                                                     */
 /*************************************************************************************************/
 
 
@@ -581,6 +591,14 @@ VKY_EXPORT void vkl_buffers_destroy(VklBuffers* buffers);
 /*************************************************************************************************/
 /*  Compute                                                                                      */
 /*************************************************************************************************/
+
+VKY_EXPORT VklCompute* vkl_compute(VklGpu* gpu, const char* shader_path);
+
+VKY_EXPORT void vkl_compute_create(VklCompute* compute);
+
+VKY_EXPORT void vkl_compute_bindings(VklCompute* compute, VklBindings* bindings);
+
+VKY_EXPORT void vkl_compute_destroy(VklCompute* compute);
 
 
 
@@ -610,12 +628,6 @@ VKY_EXPORT void vkl_buffers_destroy(VklBuffers* buffers);
 
 /*************************************************************************************************/
 /*  Submit                                                                                       */
-/*************************************************************************************************/
-
-
-
-/*************************************************************************************************/
-/*  Canvas                                                                                       */
 /*************************************************************************************************/
 
 
