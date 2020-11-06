@@ -134,7 +134,8 @@ VklGpu* vkl_gpu(VklApp* app, uint32_t idx)
     VklGpu* gpu = &app->gpus[idx];
 
     INSTANCES_INIT(VklCommands, gpu, commands, VKL_MAX_COMMANDS, VKL_OBJECT_TYPE_COMMANDS)
-    INSTANCES_INIT(VklBuffers, gpu, buffers, VKL_MAX_BUFFERS, VKL_OBJECT_TYPE_BUFFER)
+    INSTANCES_INIT(VklBuffers, gpu, buffers, VKL_MAX_BUFFERS, VKL_OBJECT_TYPE_BUFFERS)
+    INSTANCES_INIT(VklBindings, gpu, bindings, VKL_MAX_BINDINGS, VKL_OBJECT_TYPE_BINDINGS)
     INSTANCES_INIT(VklCompute, gpu, computes, VKL_MAX_COMPUTES, VKL_OBJECT_TYPE_COMPUTE)
 
     return gpu;
@@ -182,8 +183,7 @@ void vkl_gpu_create(VklGpu* gpu, VkSurfaceKHR surface)
         create_command_pool(gpu->device, q->queue_families[i], &q->cmd_pools[i]);
     }
 
-    // Create descriptor pool
-    // TODO
+    create_descriptor_pool(gpu->device, &gpu->dset_pool);
 
     obj_created(&gpu->obj);
     log_trace("GPU #%d created", gpu->idx);
@@ -226,6 +226,12 @@ void vkl_gpu_destroy(VklGpu* gpu)
         vkl_buffers_destroy(&gpu->buffers[i]);
     }
 
+    log_trace("destroy %d bindings", gpu->bindings_count);
+    for (uint32_t i = 0; i < gpu->bindings_count; i++)
+    {
+        vkl_bindings_destroy(&gpu->bindings[i]);
+    }
+
     log_trace("destroy %d computes", gpu->compute_count);
     for (uint32_t i = 0; i < gpu->compute_count; i++)
     {
@@ -239,6 +245,7 @@ void vkl_gpu_destroy(VklGpu* gpu)
 
     INSTANCES_DESTROY(gpu->commands)
     INSTANCES_DESTROY(gpu->buffers)
+    INSTANCES_DESTROY(gpu->bindings)
     INSTANCES_DESTROY(gpu->computes)
 
     obj_destroyed(&gpu->obj);
@@ -594,6 +601,58 @@ void vkl_buffers_destroy(VklBuffers* buffers)
 /*  Bindings                                                                                     */
 /*************************************************************************************************/
 
+VklBindings* vkl_bindings(VklGpu* gpu)
+{
+    ASSERT(gpu != NULL);
+    ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
+
+    INSTANCE_NEW(VklBindings, bindings, gpu->bindings, gpu->bindings_count)
+
+    bindings->gpu = gpu;
+
+    return bindings;
+}
+
+
+
+void vkl_bindings_slot(VklBindings* bindings, uint32_t idx, VkDescriptorType type)
+{
+    ASSERT(bindings != NULL);
+    ASSERT(idx == bindings->count);
+    ASSERT(idx < VKL_MAX_BINDINGS_SIZE);
+    bindings->types[bindings->count++] = type;
+}
+
+
+
+void vkl_bindings_buffer(VklPipeline* pipeline, uint32_t idx, VklBuffers* buffers)
+{
+    // TODO
+}
+
+
+
+void vkl_bindings_texture(
+    VklPipeline* pipeline, uint32_t idx, VklImages* images, VklSampler* sampler)
+{
+    // TODO
+}
+
+
+
+void vkl_bindings_destroy(VklBindings* bindings)
+{
+    ASSERT(bindings != NULL);
+    if (bindings->obj.status < VKL_OBJECT_STATUS_CREATED)
+    {
+        log_trace("skip destruction of already-destroyed bindings");
+        return;
+    }
+    log_trace("destroy bindings");
+    // TODO
+    obj_destroyed(&bindings->obj);
+}
+
 
 
 /*************************************************************************************************/
@@ -614,10 +673,14 @@ VklCompute* vkl_compute(VklGpu* gpu, const char* shader_path)
     return compute;
 }
 
+
+
 void vkl_compute_bindings(VklCompute* compute, VklBindings* bindings)
 {
     // TODO
 }
+
+
 
 void vkl_compute_create(VklCompute* compute)
 {
@@ -636,6 +699,8 @@ void vkl_compute_create(VklCompute* compute)
     obj_created(&compute->obj);
     log_trace("compute created");
 }
+
+
 
 void vkl_compute_destroy(VklCompute* compute)
 {

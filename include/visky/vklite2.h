@@ -41,9 +41,12 @@ TODO later
 #define VKL_MAX_SWAPCHAIN_IMAGES 8
 #define VKL_MAX_COMMANDS         256
 #define VKL_MAX_BUFFERS          256
+#define VKL_MAX_BINDINGS         256
 #define VKL_MAX_QUEUE_FAMILIES   16
 #define VKL_MAX_QUEUES           16
+#define VKL_MAX_DESCRIPTOR_SETS  256
 #define VKL_MAX_COMPUTES         256
+#define VKL_MAX_BINDINGS_SIZE    32
 // Maximum number of command buffers per VklCommands struct
 #define VKL_MAX_COMMAND_BUFFERS_PER_SET VKL_MAX_SWAPCHAIN_IMAGES
 #define VKL_MAX_BUFFERS_PER_SET         VKL_MAX_SWAPCHAIN_IMAGES
@@ -90,15 +93,15 @@ typedef enum
     VKL_OBJECT_TYPE_SWAPCHAIN,
     VKL_OBJECT_TYPE_CANVAS,
     VKL_OBJECT_TYPE_COMMANDS,
-    VKL_OBJECT_TYPE_BUFFER,
-    VKL_OBJECT_TYPE_IMAGE,
+    VKL_OBJECT_TYPE_BUFFERS,
+    VKL_OBJECT_TYPE_IMAGES,
     VKL_OBJECT_TYPE_SAMPLER,
-    VKL_OBJECT_TYPE_BINDING,
+    VKL_OBJECT_TYPE_BINDINGS,
     VKL_OBJECT_TYPE_COMPUTE,
     VKL_OBJECT_TYPE_PIPELINE,
     VKL_OBJECT_TYPE_BARRIER,
-    VKL_OBJECT_TYPE_SYNC_CPU,
-    VKL_OBJECT_TYPE_SYNC_GPU,
+    VKL_OBJECT_TYPE_FENCES,
+    VKL_OBJECT_TYPE_SEMAPHORES,
     VKL_OBJECT_TYPE_RENDERPASS,
     VKL_OBJECT_TYPE_SUBMIT,
     VKL_OBJECT_TYPE_CUSTOM,
@@ -277,6 +280,7 @@ struct VklGpu
     VkPhysicalDeviceMemoryProperties memory_properties;
 
     VklQueues queues;
+    VkDescriptorPool dset_pool;
 
     VkPhysicalDeviceFeatures requested_features;
     VkDevice device;
@@ -286,6 +290,9 @@ struct VklGpu
 
     uint32_t buffers_count;
     VklBuffers* buffers;
+
+    uint32_t bindings_count;
+    VklBindings* bindings;
 
     uint32_t compute_count;
     VklCompute* computes;
@@ -382,6 +389,9 @@ struct VklBindings
 {
     VklObject obj;
     VklGpu* gpu;
+
+    uint32_t count;
+    VkDescriptorType types[VKL_MAX_BINDINGS_SIZE];
 };
 
 
@@ -585,6 +595,17 @@ VKY_EXPORT void vkl_buffers_destroy(VklBuffers* buffers);
 /*************************************************************************************************/
 /*  Bindings                                                                                     */
 /*************************************************************************************************/
+
+VKY_EXPORT VklBindings* vkl_bindings(VklGpu* gpu);
+
+VKY_EXPORT void vkl_bindings_slot(VklBindings* bindings, uint32_t idx, VkDescriptorType type);
+
+VKY_EXPORT void vkl_bindings_buffer(VklPipeline* pipeline, uint32_t idx, VklBuffers* buffers);
+
+VKY_EXPORT void
+vkl_bindings_texture(VklPipeline* pipeline, uint32_t idx, VklImages* images, VklSampler* sampler);
+
+VKY_EXPORT void vkl_bindings_destroy(VklBindings* bindings);
 
 
 

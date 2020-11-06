@@ -776,6 +776,35 @@ static void create_buffer2(
 /*  Bindings                                                                                     */
 /*************************************************************************************************/
 
+static void create_descriptor_pool(VkDevice device, VkDescriptorPool* dset_pool)
+{
+    // Descriptor pool.
+    VkDescriptorPoolSize poolSizes[] = {
+        {VK_DESCRIPTOR_TYPE_SAMPLER, VKL_MAX_DESCRIPTOR_SETS},
+        {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VKL_MAX_DESCRIPTOR_SETS},
+        {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VKL_MAX_DESCRIPTOR_SETS},
+        {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VKL_MAX_DESCRIPTOR_SETS},
+        {VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, VKL_MAX_DESCRIPTOR_SETS},
+        {VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, VKL_MAX_DESCRIPTOR_SETS},
+        {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VKL_MAX_DESCRIPTOR_SETS},
+        {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VKL_MAX_DESCRIPTOR_SETS},
+        {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VKL_MAX_DESCRIPTOR_SETS},
+        {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, VKL_MAX_DESCRIPTOR_SETS},
+        {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VKL_MAX_DESCRIPTOR_SETS}};
+    VkDescriptorPoolCreateInfo descriptor_pool_info = {0};
+    descriptor_pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    descriptor_pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+    descriptor_pool_info.poolSizeCount = 11;
+    descriptor_pool_info.pPoolSizes = poolSizes;
+    descriptor_pool_info.maxSets = VKL_MAX_DESCRIPTOR_SETS * descriptor_pool_info.poolSizeCount;
+
+    // Create descriptor pool.
+    log_trace("create descriptor pool");
+    VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptor_pool_info, NULL, dset_pool));
+}
+
+
+
 static void create_pipeline_layout(
     VkDevice device, VkDescriptorSetLayout* dset_layout, VkPipelineLayout* pipeline_layout)
 {
