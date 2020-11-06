@@ -176,13 +176,22 @@ void vkl_gpu_create(VklGpu* gpu, VkSurfaceKHR surface)
     create_device(gpu, surface);
 
     VklQueues* q = &gpu->queues;
-    // Create command pools.
-    for (uint32_t i = 0; i < q->queue_family_count; i++)
-        create_command_pool(gpu->device, q->queue_families[i], &q->cmd_pools[i]);
 
-    // Create queues.
+    // Create queues and command pools.
+    uint32_t qf = 0;
+    uint32_t nqf = 0;
+    bool cmd_pool_created[VKL_MAX_QUEUE_FAMILIES] = {0};
     for (uint32_t i = 0; i < q->queue_count; i++)
-        vkGetDeviceQueue(gpu->device, q->queue_families[i], q->queue_indices[i], &q->queues[i]);
+    {
+        qf = q->queue_families[i];
+        vkGetDeviceQueue(gpu->device, qf, q->queue_indices[i], &q->queues[i]);
+        // Only create 1 command pool per used queue family.
+        if (!cmd_pool_created[qf])
+        {
+            create_command_pool(gpu->device, qf, &q->cmd_pools[nqf++]);
+            cmd_pool_created[qf] = true;
+        }
+    }
 
     create_descriptor_pool(gpu->device, &gpu->dset_pool);
 

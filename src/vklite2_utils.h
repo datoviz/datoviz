@@ -607,11 +607,15 @@ static void create_swapchain(
     uint32_t queue_families[VKL_MAX_QUEUE_FAMILIES] = {0};
     uint32_t n = 0;
     uint32_t qf = 0;
+    bool qf_counted[VKL_MAX_QUEUE_FAMILIES] = {0};
     for (uint32_t i = 0; i < queues->queue_count; i++)
     {
         qf = queues->queue_families[i];
-        if (queues->support_graphics[qf] || queues->support_present[qf])
+        if (!qf_counted[qf] && (queues->support_graphics[qf] || queues->support_present[qf]))
+        {
             queue_families[n++] = qf;
+            qf_counted[qf] = true;
+        }
     }
     log_trace("found %d created queue familie(s) needing to access the swapchain images", n);
     if (n >= 2)
