@@ -84,13 +84,15 @@ static int vklite2_buffers(VkyTestContext* context)
     vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
     vkl_gpu_create(gpu, 0);
     VklBuffers* buffers = vkl_buffers(gpu, 3);
-    VkDeviceSize size = 256;
-    vkl_buffers_size(buffers, 256, 0);
+    const VkDeviceSize size = 256;
+    vkl_buffers_size(buffers, size, 0);
     vkl_buffers_usage(
         buffers, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
     vkl_buffers_memory(
         buffers, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
     vkl_buffers_create(buffers);
+
+    ASSERT(vkl_buffers_region(buffers, 0, 0, size).buffers == buffers);
 
     // Send some data to the GPU.
     void* buffer = vkl_buffers_map(buffers, 0, 0, size);

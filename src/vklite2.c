@@ -530,7 +530,11 @@ vkl_buffers_region(VklBuffers* buffers, uint32_t idx, VkDeviceSize offset, VkDev
     ASSERT(buffers->obj.status >= VKL_OBJECT_STATUS_CREATED);
 
     VklBufferRegion region = {0};
-    // TODO
+    region.buffers = buffers;
+    region.idx = idx;
+    region.offset = offset;
+    region.size = size;
+
     return region;
 }
 
