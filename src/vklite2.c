@@ -204,7 +204,7 @@ void vkl_gpu_destroy(VklGpu* gpu)
     ASSERT(device != 0);
 
     // Destroy the command pool.
-    log_trace("destroy command pools");
+    log_trace("destroy %d command pool(s)", gpu->queues.queue_family_count);
     for (uint32_t i = 0; i < gpu->queues.queue_family_count; i++)
     {
         if (gpu->queues.cmd_pools[i] != 0)
@@ -342,11 +342,29 @@ VklCommands* vkl_commands(VklGpu* gpu, uint32_t queue, uint32_t count)
 
 
 
-void vkl_cmd_begin(VklCommands* cmds) {}
+void vkl_cmd_begin(VklCommands* cmds)
+{
+    ASSERT(cmds != NULL);
+    ASSERT(cmds->cmd_count > 0);
+
+    log_trace("begin %d command buffer(s)", cmds->cmd_count);
+    VkCommandBufferBeginInfo begin_info = {0};
+    begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    for (uint32_t i = 0; i < cmds->cmd_count; i++)
+        VK_CHECK_RESULT(vkBeginCommandBuffer(cmds->cmds[i], &begin_info));
+}
 
 
 
-void vkl_cmd_end(VklCommands* cmds) {}
+void vkl_cmd_end(VklCommands* cmds)
+{
+    ASSERT(cmds != NULL);
+    ASSERT(cmds->cmd_count > 0);
+
+    log_trace("end %d command buffer(s)", cmds->cmd_count);
+    for (uint32_t i = 0; i < cmds->cmd_count; i++)
+        VK_CHECK_RESULT(vkEndCommandBuffer(cmds->cmds[i]));
+}
 
 
 

@@ -68,7 +68,10 @@ static int vklite2_commands(VkyTestContext* context)
     VklGpu* gpu = vkl_gpu(app, 0);
     vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
     vkl_gpu_create(gpu, 0);
-    VklCommands* commands = vkl_commands(gpu, 0, 1);
+    VklCommands* commands = vkl_commands(gpu, 0, 3);
+    vkl_cmd_begin(commands);
+    vkl_cmd_end(commands);
+    vkl_cmd_reset(commands);
     vkl_cmd_free(commands);
     vkl_app_destroy(app);
     return 0;
