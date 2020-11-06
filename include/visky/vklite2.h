@@ -336,6 +336,10 @@ struct VklBuffers
     VkBuffer buffers[VKL_MAX_BUFFERS_PER_SET];
     VkDeviceMemory memories[VKL_MAX_BUFFERS_PER_SET];
 
+    // Queues that need access to the buffer.
+    uint32_t queue_count;
+    uint32_t queues[VKL_MAX_QUEUES];
+
     VkDeviceSize size;
     VkDeviceSize item_size; // stride, must be aligned, used in dynamic uniform buffer objects
     VkBufferUsageFlags usage;
@@ -534,23 +538,25 @@ VKY_EXPORT void vkl_cmd_free(VklCommands* cmds);
 
 VKY_EXPORT VklBuffers* vkl_buffers(VklGpu* gpu, uint32_t count);
 
-VKY_EXPORT void vkl_buffers_size(VklBuffers* buffer, VkDeviceSize size, VkDeviceSize item_size);
+VKY_EXPORT void vkl_buffers_size(VklBuffers* buffers, VkDeviceSize size, VkDeviceSize item_size);
 
-VKY_EXPORT void vkl_buffers_usage(VklBuffers* buffer, VkBufferUsageFlags usage);
+VKY_EXPORT void vkl_buffers_usage(VklBuffers* buffers, VkBufferUsageFlags usage);
 
-VKY_EXPORT void vkl_buffers_memory(VklBuffers* buffer, VkMemoryPropertyFlags memory);
+VKY_EXPORT void vkl_buffers_memory(VklBuffers* buffers, VkMemoryPropertyFlags memory);
 
-VKY_EXPORT void vkl_buffers_create(VklBuffers* buffer);
+VKY_EXPORT void vkl_buffers_queue_access(VklBuffers* buffers, uint32_t queue);
+
+VKY_EXPORT void vkl_buffers_create(VklBuffers* buffers);
 
 VKY_EXPORT void*
-vkl_buffers_map(VklBuffers* buffer, uint32_t idx, VkDeviceSize offset, VkDeviceSize size);
+vkl_buffers_map(VklBuffers* buffers, uint32_t idx, VkDeviceSize offset, VkDeviceSize size);
 
-VKY_EXPORT void vkl_buffers_unmap(VklBuffers* buffer, uint32_t idx);
+VKY_EXPORT void vkl_buffers_unmap(VklBuffers* buffers, uint32_t idx);
 
 VKY_EXPORT VklBufferRegion
-vkl_buffers_region(VklBuffers* buffer, uint32_t idx, VkDeviceSize offset, VkDeviceSize size);
+vkl_buffers_region(VklBuffers* buffers, uint32_t idx, VkDeviceSize offset, VkDeviceSize size);
 
-VKY_EXPORT void vkl_buffers_destroy(VklBuffers* buffer);
+VKY_EXPORT void vkl_buffers_destroy(VklBuffers* buffers);
 
 
 

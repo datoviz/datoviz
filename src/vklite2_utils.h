@@ -681,18 +681,74 @@ static uint32_t find_memory_type(
 
 
 
-static void create_buffer2(
-    VkDevice device, VkBufferUsageFlags usage,                                            //
-    VkMemoryPropertyFlags properties, VkPhysicalDeviceMemoryProperties memory_properties, //
-    VkDeviceSize size, VkBuffer* buffer, VkDeviceMemory* bufferMemory)
+static void make_shared(
+    VklQueues* queues, uint32_t queue_count, const uint32_t* queue_indices, //
+    VkSharingMode* sharing_mode, uint32_t* queue_family_count, uint32_t* queue_families)
 {
-    VkBufferCreateInfo bufferInfo = {0};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = size;
-    bufferInfo.usage = usage;
-    // TODO: support access from different queues
-    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    VK_CHECK_RESULT(vkCreateBuffer(device, &bufferInfo, NULL, buffer));
+    ASSERT(queues != NULL);
+    ASSERT(sharing_mode != NULL);
+    if (queue_count == 0)
+    {
+        return;
+    }
+    ASSERT(queue_families != NULL);
+
+    // Go through the requested queues, check their queue family, and count the total number of
+    // different queue families. If >= 2, mode is concurrent, otherwise it is exclusive.
+    uint32_t n = 0;
+    uint32_t qf = 0;
+    uint32_t qfs[VKL_MAX_QUEUE_FAMILIES] = {0}; // for each queue family, the number of queues
+    for (uint32_t i = 0; i < queue_count; i++)
+    {
+        // Get the family of the current requested queue.
+        qf = queues->queue_families[queue_indices[i]];
+        // If this queue family is first encountered, add it to the supplied output array.
+        if (qfs[qf] == 0)
+            queue_families[n++] = qf;
+        // Count the number of queues in that family.
+        qfs[qf]++;
+    }
+    // Now, n is the number of *different* queue families.
+    log_trace(
+        "requested %d queue(s), corresponding to %d distinct queue families", queue_count, n);
+    *queue_family_count = n;
+
+    if (n <= 1)
+    {
+        *sharing_mode = VK_SHARING_MODE_EXCLUSIVE;
+    }
+    else
+    {
+        *sharing_mode = VK_SHARING_MODE_CONCURRENT;
+    }
+}
+
+
+
+static void create_buffer2(
+    VkDevice device, VklQueues* queues, uint32_t queue_count, uint32_t* queue_indices, //
+    VkBufferUsageFlags usage, VkMemoryPropertyFlags properties,
+    VkPhysicalDeviceMemoryProperties memory_properties, VkDeviceSize size, //
+    VkBuffer* buffer, VkDeviceMemory* bufferMemory)
+{
+    ASSERT(queues != NULL);
+
+    VkBufferCreateInfo binfo = {0};
+    binfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    binfo.size = size;
+    binfo.usage = usage;
+
+    // binfo.pQueueFamilyIndices = calloc(VKL_MAX_QUEUE_FAMILIES, sizeof(uint32_t));
+    uint32_t queue_families[VKL_MAX_QUEUE_FAMILIES];
+    make_shared(
+        queues, queue_count, queue_indices, //
+        &binfo.sharingMode, &binfo.queueFamilyIndexCount, queue_families);
+    binfo.pQueueFamilyIndices = queue_families;
+
+    log_trace(
+        "create buffer with size %d, sharing mode %s", size,
+        binfo.sharingMode == 0 ? "exclusive" : "concurrent");
+    VK_CHECK_RESULT(vkCreateBuffer(device, &binfo, NULL, buffer));
 
     VkMemoryRequirements memRequirements = {0};
     vkGetBufferMemoryRequirements(device, *buffer, &memRequirements);

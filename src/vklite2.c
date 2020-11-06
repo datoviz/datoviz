@@ -461,6 +461,15 @@ void vkl_buffers_memory(VklBuffers* buffers, VkMemoryPropertyFlags memory)
 
 
 
+void vkl_buffers_queue_access(VklBuffers* buffers, uint32_t queue)
+{
+    ASSERT(buffers != NULL);
+    ASSERT(queue < buffers->gpu->queues.queue_count);
+    buffers->queues[buffers->queue_count++] = queue;
+}
+
+
+
 void vkl_buffers_create(VklBuffers* buffers)
 {
     ASSERT(buffers != NULL);
@@ -475,7 +484,9 @@ void vkl_buffers_create(VklBuffers* buffers)
     for (uint32_t i = 0; i < buffers->count; i++)
     {
         create_buffer2(
-            buffers->gpu->device, buffers->usage, buffers->memory, buffers->gpu->memory_properties,
+            buffers->gpu->device,                                             //
+            &buffers->gpu->queues, buffers->queue_count, buffers->queues,     //
+            buffers->usage, buffers->memory, buffers->gpu->memory_properties, //
             buffers->size, &buffers->buffers[i], &buffers->memories[i]);
     }
 

@@ -90,6 +90,7 @@ static int vklite2_buffers(VkyTestContext* context)
         buffers, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
     vkl_buffers_memory(
         buffers, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vkl_buffers_queue_access(buffers, 0);
     vkl_buffers_create(buffers);
 
     ASSERT(vkl_buffers_region(buffers, 0, 0, size).buffers == buffers);
