@@ -390,7 +390,7 @@ struct VklBindings
     VklObject obj;
     VklGpu* gpu;
 
-    uint32_t count; // TODO: rename into bindings_count
+    uint32_t bindings_count;
     VkDescriptorType types[VKL_MAX_BINDINGS_SIZE];
 
     VkPipelineLayout pipeline_layout;

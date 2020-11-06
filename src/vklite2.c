@@ -651,9 +651,9 @@ VklBindings* vkl_bindings(VklGpu* gpu)
 void vkl_bindings_slot(VklBindings* bindings, uint32_t idx, VkDescriptorType type)
 {
     ASSERT(bindings != NULL);
-    ASSERT(idx == bindings->count);
+    ASSERT(idx == bindings->bindings_count);
     ASSERT(idx < VKL_MAX_BINDINGS_SIZE);
-    bindings->types[bindings->count++] = type;
+    bindings->types[bindings->bindings_count++] = type;
 }
 
 
@@ -668,7 +668,7 @@ void vkl_bindings_create(VklBindings* bindings, uint32_t dset_count)
     bindings->dset_count = dset_count;
 
     create_descriptor_set_layout(
-        bindings->gpu->device, bindings->count, bindings->types, &bindings->dset_layout);
+        bindings->gpu->device, bindings->bindings_count, bindings->types, &bindings->dset_layout);
 
     create_pipeline_layout(
         bindings->gpu->device, &bindings->dset_layout, &bindings->pipeline_layout);
