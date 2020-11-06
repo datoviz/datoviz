@@ -9,53 +9,6 @@ END_INCL_NO_WARN
 
 
 /*************************************************************************************************/
-/*  Macros                                                                                       */
-/*************************************************************************************************/
-
-#define INSTANCES_INIT(s, o, p, n, t)                                                             \
-    log_trace("init %d object(s) %s", n, #s);                                                     \
-    o->p = calloc(n, sizeof(s));                                                                  \
-    for (uint32_t i = 0; i < n; i++)                                                              \
-        obj_init(&o->p[i].obj, t);
-
-#define INSTANCE_NEW(s, o, instances, n) s* o = &instances[n++];
-
-/*
-#define INSTANCE_GET(s, o, n, instances)                                                          \
-    s* o = NULL;                                                                                  \
-    for (uint32_t i = 0; i < n; i++)                                                              \
-        if (instances[i].obj.status <= 1)                                                         \
-        {                                                                                         \
-            o = &instances[i];                                                                    \
-            o->obj.status = VKL_OBJECT_STATUS_INIT;                                               \
-        }                                                                                         \
-    if (o == NULL)                                                                                \
-        log_error("maximum number of %s instances reached", #s);                                  \
-    exit(1);
-*/
-
-#define INSTANCES_DESTROY(o)                                                                      \
-    log_trace("destroy objects %s", #o);                                                          \
-    FREE(o);
-
-
-/*************************************************************************************************/
-/*  Common                                                                                       */
-/*************************************************************************************************/
-
-static void obj_init(VklObject* obj, VklObjectType type)
-{
-    obj->type = type;
-    obj->status = VKL_OBJECT_STATUS_INIT;
-}
-
-static void obj_created(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_CREATED; }
-
-static void obj_destroyed(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_DESTROYED; }
-
-
-
-/*************************************************************************************************/
 /*  App                                                                                          */
 /*************************************************************************************************/
 
@@ -105,7 +58,6 @@ VklApp* vkl_app(VklBackend backend)
     }
 
     INSTANCES_INIT(VklWindow, app, windows, VKL_MAX_WINDOWS, VKL_OBJECT_TYPE_WINDOW)
-    INSTANCES_INIT(VklCanvas, app, canvases, VKL_MAX_WINDOWS, VKL_OBJECT_TYPE_CANVAS)
 
     return app;
 }
@@ -136,12 +88,11 @@ void vkl_app_destroy(VklApp* app)
 
 
     // Destroy the windows.
-    ASSERT(app->canvases != NULL);
-    for (uint32_t i = 0; i < app->canvas_count; i++)
+    if (app->canvases != NULL)
     {
-        vkl_canvas_destroy(&app->canvases[i]);
+        vkl_canvases_destroy(app->canvas_count, app->canvases);
+        INSTANCES_DESTROY(app->canvases)
     }
-    INSTANCES_DESTROY(app->canvases)
 
 
     // Destroy the debug messenger.
@@ -333,73 +284,6 @@ void vkl_swapchain_destroy(VklSwapchain* swapchain)
 
     FREE(swapchain);
     log_trace("swapchain destroyed");
-}
-
-
-
-/*************************************************************************************************/
-/*  Canvas                                                                                       */
-/*************************************************************************************************/
-
-VklCanvas* vkl_canvas(VklApp* app, uint32_t width, uint32_t height)
-{
-    INSTANCE_NEW(VklCanvas, canvas, app->canvases, app->canvas_count)
-    canvas->app = app;
-    canvas->width = width;
-    canvas->height = height;
-
-    return canvas;
-}
-
-
-
-void vkl_canvas_swapchain(VklCanvas* canvas, VklSwapchain* swapchain)
-{
-    // TODO
-    // obtain swapchain images
-    // update image_count
-    // create depth image and image view
-}
-
-
-
-void vkl_canvas_offscreen(VklCanvas* canvas, VklGpu* gpu)
-{
-    // TODO
-    // create 1 image, image view, depth image, depth image view
-}
-
-
-
-VklImage* vkl_canvas_acquire_image(VklCanvas* canvas, VklSyncGpu* sync_gpu, VklSyncCpu* sync_cpu)
-{
-    // TODO
-    return NULL;
-}
-
-
-
-void vkl_canvas_create(VklCanvas* canvas)
-{
-    // must call offscreen or swapchain before
-    // create renderpass, sync, predefined command buffers
-    // if swapchain
-    // create framebuffers
-    // event system
-}
-
-
-
-void vkl_canvas_destroy(VklCanvas* canvas)
-{
-    if (canvas == NULL || canvas->obj.status == VKL_OBJECT_STATUS_DESTROYED)
-    {
-        log_trace("skip destruction of already-destroyed canvas");
-        return;
-    }
-    // TODO
-
-    obj_destroyed(&canvas->obj);
 }
 
 

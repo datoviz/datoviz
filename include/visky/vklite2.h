@@ -135,7 +135,40 @@ typedef enum
 
 
 /*************************************************************************************************/
-/*  Structs                                                                                      */
+/*  Macros                                                                                       */
+/*************************************************************************************************/
+
+#define INSTANCES_INIT(s, o, p, n, t)                                                             \
+    log_trace("init %d object(s) %s", n, #s);                                                     \
+    o->p = calloc(n, sizeof(s));                                                                  \
+    for (uint32_t i = 0; i < n; i++)                                                              \
+        obj_init(&o->p[i].obj, t);
+
+#define INSTANCE_NEW(s, o, instances, n) s* o = &instances[n++];
+
+/*
+#define INSTANCE_GET(s, o, n, instances)                                                          \
+    s* o = NULL;                                                                                  \
+    for (uint32_t i = 0; i < n; i++)                                                              \
+        if (instances[i].obj.status <= 1)                                                         \
+        {                                                                                         \
+            o = &instances[i];                                                                    \
+            o->obj.status = VKL_OBJECT_STATUS_INIT;                                               \
+        }                                                                                         \
+    if (o == NULL)                                                                                \
+        log_error("maximum number of %s instances reached", #s);                                  \
+    exit(1);
+*/
+
+#define INSTANCES_DESTROY(o)                                                                      \
+    log_trace("destroy objects %s", #o);                                                          \
+    FREE(o);                                                                                      \
+    o = NULL;
+
+
+
+/*************************************************************************************************/
+/*  Common                                                                                       */
 /*************************************************************************************************/
 
 struct VklObject
@@ -145,6 +178,22 @@ struct VklObject
 };
 
 
+
+static void obj_init(VklObject* obj, VklObjectType type)
+{
+    obj->type = type;
+    obj->status = VKL_OBJECT_STATUS_INIT;
+}
+
+static void obj_created(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_CREATED; }
+
+static void obj_destroyed(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_DESTROYED; }
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
 
 struct VklApp
 {
@@ -229,31 +278,6 @@ struct VklSwapchain
 
     uint32_t img_count;
     VkSwapchainKHR swapchain;
-};
-
-
-
-struct VklCanvas
-{
-    VklObject obj;
-    VklApp* app;
-
-    VklWindow* window;
-    uint32_t width, height;
-
-    VklSwapchain* swapchain;
-    VklImage* images[VKL_MAX_SWAPCHAIN_IMAGES]; // swapchain images
-    VklImage* depth_image;
-
-    VklRenderpass* renderpass;
-    // TODO: rename to SyncDevice/SyncHost
-    VklSyncGpu* sync_image_acquired; // NOTE: wraps one VkSemaphore per image in flight
-    VklSyncGpu* sync_image_rendered;
-    VklSyncCpu* sync_render_finished;
-
-    VklCommands* commands[4]; // transfer, graphics, compute, gui
-
-    // TODO: event system
 };
 
 
@@ -407,6 +431,10 @@ VKY_EXPORT VklWindow* vkl_window(VklApp* app, uint32_t width, uint32_t height);
 // NOTE: to be called AFTER vkl_swapchain_destroy()
 VKY_EXPORT void vkl_window_destroy(VklWindow* window);
 
+VKY_EXPORT void vkl_canvas_destroy(VklCanvas* canvas);
+
+VKY_EXPORT void vkl_canvases_destroy(uint32_t canvas_count, VklCanvas* canvases);
+
 
 
 /*************************************************************************************************/
@@ -420,25 +448,6 @@ vkl_swapchain_create(VklSwapchain* swapchain, VkFormat format, VkPresentModeKHR 
 
 // NOTE: to be called BEFORE vkl_window_destroy()
 VKY_EXPORT void vkl_swapchain_destroy(VklSwapchain* swapchain);
-
-
-
-/*************************************************************************************************/
-/*  Canvas                                                                                       */
-/*************************************************************************************************/
-
-VKY_EXPORT VklCanvas* vkl_canvas(VklApp* app, uint32_t width, uint32_t height);
-
-VKY_EXPORT void vkl_canvas_swapchain(VklCanvas* canvas, VklSwapchain* swapchain);
-
-VKY_EXPORT void vkl_canvas_offscreen(VklCanvas* canvas, VklGpu* gpu);
-
-VKY_EXPORT void vkl_canvas_create(VklCanvas* canvas);
-
-VKY_EXPORT VklImage*
-vkl_canvas_acquire_image(VklCanvas* canvas, VklSyncGpu* sync_gpu, VklSyncCpu* sync_cpu);
-
-VKY_EXPORT void vkl_canvas_destroy(VklCanvas* canvas);
 
 
 
