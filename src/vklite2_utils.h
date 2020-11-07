@@ -868,6 +868,35 @@ static void create_image_view2(
 /*  Sampler                                                                                      */
 /*************************************************************************************************/
 
+static void create_texture_sampler2(
+    VkDevice device, VkFilter mag_filter, VkFilter min_filter, //
+    VkSamplerAddressMode* address_modes, bool anisotropy, VkSampler* sampler)
+{
+    log_trace("create texture sampler");
+    VkSamplerCreateInfo sampler_info = {0};
+    sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+
+    sampler_info.magFilter = mag_filter;
+    sampler_info.minFilter = min_filter;
+
+    sampler_info.addressModeU = address_modes[0];
+    sampler_info.addressModeV = address_modes[1];
+    sampler_info.addressModeW = address_modes[2];
+
+    sampler_info.anisotropyEnable = anisotropy;
+    sampler_info.maxAnisotropy = 16;
+    sampler_info.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+    sampler_info.unnormalizedCoordinates = VK_FALSE;
+    sampler_info.compareEnable = VK_FALSE;
+    sampler_info.compareOp = VK_COMPARE_OP_ALWAYS;
+    sampler_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    sampler_info.mipLodBias = 0.0f;
+    sampler_info.minLod = 0.0f;
+    sampler_info.maxLod = 0.0f;
+
+    VK_CHECK_RESULT(vkCreateSampler(device, &sampler_info, NULL, sampler));
+}
+
 
 
 /*************************************************************************************************/
@@ -990,8 +1019,9 @@ static bool is_descriptor_type_image(VkDescriptorType binding_type)
 
 
 static void update_descriptor_set(
-    VkDevice device, uint32_t binding_count, VkDescriptorType* types,     //
-    VklBufferRegions* buffer_regions, uint32_t idx, VkDescriptorSet dset) // TODO: add textures
+    VkDevice device, uint32_t binding_count, VkDescriptorType* types,            //
+    VklBufferRegions* buffer_regions, VklImages** images, VklSampler** samplers, //
+    uint32_t idx, VkDescriptorSet dset)
 {
     log_trace("update descriptor set #%d", idx);
     VkWriteDescriptorSet* descriptor_writes = calloc(binding_count, sizeof(VkWriteDescriptorSet));
@@ -1018,10 +1048,9 @@ static void update_descriptor_set(
         else if (is_descriptor_type_image(binding_type))
         {
             log_trace("bind texture for binding point %d", i);
-            // TODO
-            // image_infos[j].imageLayout = texture->params.layout;
-            // image_infos[j].imageView = texture->image_view;
-            // image_infos[j].sampler = texture->sampler;
+            image_infos[i].imageLayout = images[i]->layout;
+            image_infos[i].imageView = images[i]->image_views[idx];
+            image_infos[i].sampler = samplers[i]->sampler;
         }
         else
         {

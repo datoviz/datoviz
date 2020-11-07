@@ -137,6 +137,7 @@ VklGpu* vkl_gpu(VklApp* app, uint32_t idx)
     INSTANCES_INIT(VklCommands, gpu, commands, VKL_MAX_COMMANDS, VKL_OBJECT_TYPE_COMMANDS)
     INSTANCES_INIT(VklBuffer, gpu, buffers, VKL_MAX_BUFFERS, VKL_OBJECT_TYPE_BUFFER)
     INSTANCES_INIT(VklImages, gpu, images, VKL_MAX_IMAGES, VKL_OBJECT_TYPE_IMAGES)
+    INSTANCES_INIT(VklSampler, gpu, samplers, VKL_MAX_BINDINGS, VKL_OBJECT_TYPE_SAMPLER)
     INSTANCES_INIT(VklBindings, gpu, bindings, VKL_MAX_BINDINGS, VKL_OBJECT_TYPE_BINDINGS)
     INSTANCES_INIT(VklCompute, gpu, computes, VKL_MAX_COMPUTES, VKL_OBJECT_TYPE_COMPUTE)
 
@@ -240,6 +241,12 @@ void vkl_gpu_destroy(VklGpu* gpu)
         vkl_images_destroy(&gpu->images[i]);
     }
 
+    log_trace("destroy %d samplers", gpu->sampler_count);
+    for (uint32_t i = 0; i < gpu->sampler_count; i++)
+    {
+        vkl_sampler_destroy(&gpu->samplers[i]);
+    }
+
     log_trace("destroy %d bindings", gpu->bindings_count);
     for (uint32_t i = 0; i < gpu->bindings_count; i++)
     {
@@ -266,6 +273,7 @@ void vkl_gpu_destroy(VklGpu* gpu)
     INSTANCES_DESTROY(gpu->commands)
     INSTANCES_DESTROY(gpu->buffers)
     INSTANCES_DESTROY(gpu->images)
+    INSTANCES_DESTROY(gpu->samplers)
     INSTANCES_DESTROY(gpu->bindings)
     INSTANCES_DESTROY(gpu->computes)
 
@@ -791,6 +799,77 @@ void vkl_images_destroy(VklImages* images)
 /*  Sampler                                                                                      */
 /*************************************************************************************************/
 
+VklSampler* vkl_sampler(VklGpu* gpu)
+{
+    ASSERT(gpu != NULL);
+    ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
+
+    INSTANCE_NEW(VklSampler, samplers, gpu->samplers, gpu->sampler_count)
+
+    samplers->gpu = gpu;
+
+    return samplers;
+}
+
+
+
+void vkl_sampler_min_filter(VklSampler* sampler, VkFilter filter)
+{
+    ASSERT(sampler != NULL);
+    sampler->min_filter = filter;
+}
+
+
+
+void vkl_sampler_mag_filter(VklSampler* sampler, VkFilter filter)
+{
+    ASSERT(sampler != NULL);
+    sampler->mag_filter = filter;
+}
+
+
+
+void vkl_sampler_address_mode(
+    VklSampler* sampler, VklTextureAxis axis, VkSamplerAddressMode address_mode)
+{
+    ASSERT(sampler != NULL);
+    ASSERT(axis <= 2);
+    sampler->address_modes[axis] = address_mode;
+}
+
+
+
+void vkl_sampler_create(VklSampler* sampler)
+{
+    ASSERT(sampler != NULL);
+    ASSERT(sampler->gpu != NULL);
+    ASSERT(sampler->gpu->device != 0);
+
+    log_trace("starting creation of sampler...");
+
+    create_texture_sampler2(
+        sampler->gpu->device, sampler->mag_filter, sampler->min_filter, //
+        sampler->address_modes, false, &sampler->sampler);
+
+    obj_created(&sampler->obj);
+    log_trace("sampler created");
+}
+
+
+
+void vkl_sampler_destroy(VklSampler* sampler)
+{
+    ASSERT(sampler != NULL);
+    if (sampler->obj.status < VKL_OBJECT_STATUS_CREATED)
+    {
+        log_trace("skip destruction of already-destroyed sampler");
+        return;
+    }
+    log_trace("destroy sampler");
+    vkDestroySampler(sampler->gpu->device, sampler->sampler, NULL);
+    obj_destroyed(&sampler->obj);
+}
+
 
 
 /*************************************************************************************************/
@@ -860,9 +939,15 @@ void vkl_bindings_buffer(VklBindings* bindings, uint32_t idx, VklBufferRegions* 
 
 
 void vkl_bindings_texture(
-    VklBindings* bindings, uint32_t idx, VklImages* imagess, VklSampler* sampler)
+    VklBindings* bindings, uint32_t idx, VklImages* images, VklSampler* sampler)
 {
-    // TODO
+    ASSERT(bindings != NULL);
+    ASSERT(images != NULL);
+    ASSERT(sampler != NULL);
+    ASSERT(images->count == 1 || images->count == bindings->dset_count);
+
+    bindings->images[idx] = images;
+    bindings->samplers[idx] = sampler;
 
     if (bindings->obj.status == VKL_OBJECT_STATUS_CREATED)
         bindings->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
@@ -878,7 +963,8 @@ void vkl_bindings_update(VklBindings* bindings)
     {
         update_descriptor_set(
             bindings->gpu->device, bindings->bindings_count, bindings->types,
-            bindings->buffer_regions, i, bindings->dsets[i]);
+            bindings->buffer_regions, bindings->images, bindings->samplers, //
+            i, bindings->dsets[i]);
     }
 }
 

@@ -192,6 +192,23 @@ static int vklite2_images(VkyTestContext* context)
     return 0;
 }
 
+static int vklite2_sampler(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
+    vkl_gpu_create(gpu, 0);
+
+    VklSampler* sampler = vkl_sampler(gpu);
+    vkl_sampler_min_filter(sampler, VK_FILTER_LINEAR);
+    vkl_sampler_mag_filter(sampler, VK_FILTER_LINEAR);
+    vkl_sampler_address_mode(sampler, VKL_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    vkl_sampler_create(sampler);
+
+    vkl_app_destroy(app);
+    return 0;
+}
+
 
 
 static int vklite2_test_compute_only(VkyTestContext* context)

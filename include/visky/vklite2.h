@@ -151,13 +151,12 @@ typedef enum
 } VklCommandBufferType;
 
 
-// typedef enum
-// {
-//     VKL_IMAGE_NONE,
-//     VKL_IMAGE_1D,
-//     VKL_IMAGE_2D,
-//     VKL_IMAGE_3D,
-// } VklImageDim;
+typedef enum
+{
+    VKL_TEXTURE_AXIS_U,
+    VKL_TEXTURE_AXIS_V,
+    VKL_TEXTURE_AXIS_W,
+} VklTextureAxis;
 
 
 
@@ -306,6 +305,9 @@ struct VklGpu
     uint32_t images_count;
     VklImages* images;
 
+    uint32_t sampler_count;
+    VklSampler* samplers;
+
     uint32_t bindings_count;
     VklBindings* bindings;
 
@@ -413,6 +415,11 @@ struct VklSampler
 {
     VklObject obj;
     VklGpu* gpu;
+
+    VkFilter min_filter;
+    VkFilter mag_filter;
+    VkSamplerAddressMode address_modes[3];
+    VkSampler sampler;
 };
 
 
@@ -434,7 +441,8 @@ struct VklBindings
     VkDescriptorSet dsets[VKL_MAX_SWAPCHAIN_IMAGES];
 
     VklBufferRegions buffer_regions[VKL_MAX_BINDINGS_SIZE];
-    // TODO: textures
+    VklImages* images[VKL_MAX_BINDINGS_SIZE];
+    VklSampler* samplers[VKL_MAX_BINDINGS_SIZE];
 };
 
 
@@ -660,6 +668,19 @@ VKY_EXPORT void vkl_images_destroy(VklImages* images);
 /*************************************************************************************************/
 /*  Sampler                                                                                      */
 /*************************************************************************************************/
+
+VKY_EXPORT VklSampler* vkl_sampler(VklGpu* gpu);
+
+VKY_EXPORT void vkl_sampler_min_filter(VklSampler* sampler, VkFilter filter);
+
+VKY_EXPORT void vkl_sampler_mag_filter(VklSampler* sampler, VkFilter filter);
+
+VKY_EXPORT void vkl_sampler_address_mode(
+    VklSampler* sampler, VklTextureAxis axis, VkSamplerAddressMode address_mode);
+
+VKY_EXPORT void vkl_sampler_create(VklSampler* sampler);
+
+VKY_EXPORT void vkl_sampler_destroy(VklSampler* sampler);
 
 
 
