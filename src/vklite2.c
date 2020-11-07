@@ -139,6 +139,8 @@ VklGpu* vkl_gpu(VklApp* app, uint32_t idx)
     INSTANCES_INIT(VklImages, gpu, images, VKL_MAX_IMAGES, VKL_OBJECT_TYPE_IMAGES)
     INSTANCES_INIT(VklSampler, gpu, samplers, VKL_MAX_BINDINGS, VKL_OBJECT_TYPE_SAMPLER)
     INSTANCES_INIT(VklBindings, gpu, bindings, VKL_MAX_BINDINGS, VKL_OBJECT_TYPE_BINDINGS)
+    INSTANCES_INIT(VklSemaphores, gpu, semaphores, VKL_MAX_SEMAPHORES, VKL_OBJECT_TYPE_SEMAPHORES)
+    INSTANCES_INIT(VklFences, gpu, fences, VKL_MAX_FENCES, VKL_OBJECT_TYPE_FENCES)
     INSTANCES_INIT(VklCompute, gpu, computes, VKL_MAX_COMPUTES, VKL_OBJECT_TYPE_COMPUTE)
     INSTANCES_INIT(VklBarrier, gpu, barriers, VKL_MAX_BARRIERS, VKL_OBJECT_TYPE_BARRIER)
 
@@ -1208,8 +1210,95 @@ void vkl_barrier_destroy(VklBarrier* barrier)
 
 
 /*************************************************************************************************/
-/*  Sync                                                                                         */
+/*  Semaphores                                                                                   */
 /*************************************************************************************************/
+
+VklSemaphores* vkl_semaphores(VklGpu* gpu, uint32_t count)
+{
+    ASSERT(gpu != NULL);
+    ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
+
+    INSTANCE_NEW(VklSemaphores, semaphores, gpu->semaphores, gpu->semaphores_count)
+
+    semaphores->gpu = gpu;
+
+    VkSemaphoreCreateInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    for (uint32_t i = 0; i < count; i++)
+        VK_CHECK_RESULT(vkCreateSemaphore(gpu->device, &info, NULL, &semaphores->semaphores[i]));
+
+    return semaphores;
+}
+
+
+
+void vkl_semaphores_destroy(VklSemaphores* semaphores)
+{
+    ASSERT(semaphores != NULL);
+    if (semaphores->obj.status < VKL_OBJECT_STATUS_CREATED)
+    {
+        log_trace("skip destruction of already-destroyed semaphores");
+        return;
+    }
+    for (uint32_t i = 0; i < semaphores->count; i++)
+        vkDestroySemaphore(semaphores->gpu->device, semaphores->semaphores[i], NULL);
+    obj_destroyed(&semaphores->obj);
+}
+
+
+
+/*************************************************************************************************/
+/*  Fences                                                                                       */
+/*************************************************************************************************/
+
+VklFences* vkl_fences(VklGpu* gpu, uint32_t count)
+{
+    ASSERT(gpu != NULL);
+    ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
+
+    INSTANCE_NEW(VklFences, fences, gpu->fences, gpu->fences_count)
+
+    fences->gpu = gpu;
+
+    VkFenceCreateInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+    for (uint32_t i = 0; i < count; i++)
+        VK_CHECK_RESULT(vkCreateFence(gpu->device, &info, NULL, &fences->fences[i]));
+
+    return fences;
+}
+
+
+
+void vkl_fences_wait(VklFences* fences, uint32_t idx)
+{
+    ASSERT(fences != NULL);
+    vkWaitForFences(fences->gpu->device, 1, &fences->fences[idx], VK_TRUE, UINT64_MAX);
+}
+
+
+
+void vkl_fences_reset(VklFences* fences, uint32_t idx)
+{
+    ASSERT(fences != NULL);
+    vkResetFences(fences->gpu->device, 1, &fences->fences[idx]);
+}
+
+
+
+void vkl_fences_destroy(VklFences* fences)
+{
+    ASSERT(fences != NULL);
+    if (fences->obj.status < VKL_OBJECT_STATUS_CREATED)
+    {
+        log_trace("skip destruction of already-destroyed fences");
+        return;
+    }
+    for (uint32_t i = 0; i < fences->count; i++)
+        vkDestroyFence(fences->gpu->device, fences->fences[i], NULL);
+    obj_destroyed(&fences->obj);
+}
 
 
 

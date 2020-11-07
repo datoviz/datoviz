@@ -49,10 +49,14 @@ TODO later
 #define VKL_MAX_COMPUTES         256
 #define VKL_MAX_BARRIERS         256
 #define VKL_MAX_BINDINGS_SIZE    32
+#define VKL_MAX_SEMAPHORES       256
+#define VKL_MAX_FENCES           256
 // Maximum number of command buffers per VklCommands struct
 #define VKL_MAX_COMMAND_BUFFERS_PER_SET VKL_MAX_SWAPCHAIN_IMAGES
 #define VKL_MAX_BUFFER_REGIONS_PER_SET  VKL_MAX_SWAPCHAIN_IMAGES
 #define VKL_MAX_IMAGES_PER_SET          VKL_MAX_SWAPCHAIN_IMAGES
+#define VKL_MAX_SEMAPHORES_PER_SET      VKL_MAX_SWAPCHAIN_IMAGES
+#define VKL_MAX_FENCES_PER_SET          VKL_MAX_SWAPCHAIN_IMAGES
 #define VKL_MAX_BARRIERS_PER_SET        16
 
 
@@ -79,8 +83,8 @@ typedef struct VklPipeline VklPipeline;
 typedef struct VklBarrierBuffer VklBarrierBuffer;
 typedef struct VklBarrierImage VklBarrierImage;
 typedef struct VklBarrier VklBarrier;
-typedef struct VklFences VklFences;
 typedef struct VklSemaphores VklSemaphores;
+typedef struct VklFences VklFences;
 typedef struct VklRenderpass VklRenderpass;
 typedef struct VklSubmit VklSubmit;
 
@@ -328,6 +332,12 @@ struct VklGpu
     uint32_t compute_count;
     VklCompute* computes;
 
+    uint32_t semaphores_count;
+    VklSemaphores* semaphores;
+
+    uint32_t fences_count;
+    VklFences* fences;
+
     uint32_t barrier_count;
     VklBarrier* barriers;
 };
@@ -532,6 +542,9 @@ struct VklFences
 {
     VklObject obj;
     VklGpu* gpu;
+
+    uint32_t count;
+    VkFence fences[VKL_MAX_FENCES_PER_SET];
 };
 
 
@@ -540,6 +553,9 @@ struct VklSemaphores
 {
     VklObject obj;
     VklGpu* gpu;
+
+    uint32_t count;
+    VkSemaphore semaphores[VKL_MAX_SEMAPHORES_PER_SET];
 };
 
 
@@ -808,8 +824,26 @@ VKY_EXPORT void vkl_barrier_destroy(VklBarrier* barrier);
 
 
 /*************************************************************************************************/
-/*  Sync                                                                                         */
+/*  Semaphores                                                                                   */
 /*************************************************************************************************/
+
+VKY_EXPORT VklSemaphores* vkl_semaphores(VklGpu* gpu, uint32_t count);
+
+VKY_EXPORT void vkl_semaphores_destroy(VklSemaphores* semaphores);
+
+
+
+/*************************************************************************************************/
+/*  Fences                                                                                       */
+/*************************************************************************************************/
+
+VKY_EXPORT VklFences* vkl_fences(VklGpu* gpu, uint32_t count);
+
+VKY_EXPORT void vkl_fences_wait(VklFences* fences, uint32_t idx);
+
+VKY_EXPORT void vkl_fences_reset(VklFences* fences, uint32_t idx);
+
+VKY_EXPORT void vkl_fences_destroy(VklFences* fences);
 
 
 
