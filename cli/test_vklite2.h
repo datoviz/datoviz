@@ -83,6 +83,7 @@ static int vklite2_buffer(VkyTestContext* context)
     VklGpu* gpu = vkl_gpu(app, 0);
     vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
     vkl_gpu_create(gpu, 0);
+
     VklBuffer* buffer = vkl_buffer(gpu);
     const VkDeviceSize size = 256;
     vkl_buffer_size(buffer, size, 0);
@@ -204,6 +205,59 @@ static int vklite2_sampler(VkyTestContext* context)
     vkl_sampler_mag_filter(sampler, VK_FILTER_LINEAR);
     vkl_sampler_address_mode(sampler, VKL_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
     vkl_sampler_create(sampler);
+
+    vkl_app_destroy(app);
+    return 0;
+}
+
+static int vklite2_barrier(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
+    vkl_gpu_create(gpu, 0);
+
+    // Image.
+    const uint32_t img_size = 16;
+    VklImages* images = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
+    vkl_images_format(images, VK_FORMAT_R8G8B8A8_UINT);
+    vkl_images_size(images, img_size, img_size, 1);
+    vkl_images_tiling(images, VK_IMAGE_TILING_OPTIMAL);
+    vkl_images_usage(images, VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT);
+    vkl_images_memory(images, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    vkl_images_queue_access(images, 0);
+    vkl_images_create(images);
+
+    // Staging buffer.
+    VklBuffer* buffer = vkl_buffer(gpu);
+    const VkDeviceSize size = img_size * img_size * 4;
+    vkl_buffer_size(buffer, size, 0);
+    vkl_buffer_usage(buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    vkl_buffer_memory(
+        buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vkl_buffer_queue_access(buffer, 0);
+    vkl_buffer_create(buffer);
+
+    // Send some data to the staging buffer.
+    uint8_t* data = calloc(size, 1);
+    for (uint32_t i = 0; i < size; i++)
+        data[i] = i % 256;
+    vkl_buffer_upload(buffer, 0, size, data);
+
+    // Image transition.
+    VklBarrier* barrier = vkl_barrier(gpu);
+    vkl_barrier_stages(barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    vkl_barrier_images(barrier, images);
+    vkl_barrier_images_layout(
+        barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+
+    // Transfer the data from the staging buffer to the image.
+    VklCommands* cmds = vkl_commands(gpu, 0, 1);
+    vkl_cmd_begin(cmds);
+    vkl_cmd_barrier(cmds, barrier);
+    vkl_cmd_copy_buffer_to_image(cmds, buffer, images);
+    vkl_cmd_end(cmds);
+    vkl_cmd_submit_sync(cmds, 0);
 
     vkl_app_destroy(app);
     return 0;

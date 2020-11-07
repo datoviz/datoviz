@@ -140,6 +140,7 @@ VklGpu* vkl_gpu(VklApp* app, uint32_t idx)
     INSTANCES_INIT(VklSampler, gpu, samplers, VKL_MAX_BINDINGS, VKL_OBJECT_TYPE_SAMPLER)
     INSTANCES_INIT(VklBindings, gpu, bindings, VKL_MAX_BINDINGS, VKL_OBJECT_TYPE_BINDINGS)
     INSTANCES_INIT(VklCompute, gpu, computes, VKL_MAX_COMPUTES, VKL_OBJECT_TYPE_COMPUTE)
+    INSTANCES_INIT(VklBarrier, gpu, barriers, VKL_MAX_BARRIERS, VKL_OBJECT_TYPE_BARRIER)
 
     return gpu;
 }
@@ -259,6 +260,12 @@ void vkl_gpu_destroy(VklGpu* gpu)
         vkl_compute_destroy(&gpu->computes[i]);
     }
 
+    log_trace("destroy %d barriers", gpu->barrier_count);
+    for (uint32_t i = 0; i < gpu->barrier_count; i++)
+    {
+        vkl_barrier_destroy(&gpu->barriers[i]);
+    }
+
     if (gpu->dset_pool != 0)
     {
         log_trace("destroy descriptor pool");
@@ -276,6 +283,7 @@ void vkl_gpu_destroy(VklGpu* gpu)
     INSTANCES_DESTROY(gpu->samplers)
     INSTANCES_DESTROY(gpu->bindings)
     INSTANCES_DESTROY(gpu->computes)
+    INSTANCES_DESTROY(gpu->barriers)
 
     obj_destroyed(&gpu->obj);
     log_trace("GPU #%d destroyed", gpu->idx);
@@ -1072,6 +1080,131 @@ void vkl_compute_destroy(VklCompute* compute)
 /*  Barrier                                                                                      */
 /*************************************************************************************************/
 
+VklBarrier* vkl_barrier(VklGpu* gpu)
+{
+    ASSERT(gpu != NULL);
+    ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
+
+    INSTANCE_NEW(VklBarrier, barrier, gpu->barriers, gpu->barrier_count)
+
+    barrier->gpu = gpu;
+
+    return barrier;
+}
+
+
+
+void vkl_barrier_stages(
+    VklBarrier* barrier, VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage)
+{
+    ASSERT(barrier != NULL);
+    barrier->src_stage = src_stage;
+    barrier->dst_stage = dst_stage;
+}
+
+
+
+void vkl_barrier_buffer(VklBarrier* barrier, VklBufferRegions* buffer_regions)
+{
+    ASSERT(barrier != NULL);
+
+    VklBarrierBuffer* b = &barrier->buffer_barriers[barrier->buffer_barrier_count++];
+
+    b->buffer_regions = *buffer_regions;
+}
+
+
+
+void vkl_barrier_buffer_queue(VklBarrier* barrier, uint32_t src_queue, uint32_t dst_queue)
+{
+    ASSERT(barrier != NULL);
+
+    VklBarrierBuffer* b = &barrier->buffer_barriers[barrier->buffer_barrier_count - 1];
+    ASSERT(b->buffer_regions.buffer != NULL);
+
+    b->src_queue = src_queue;
+    b->dst_queue = dst_queue;
+}
+
+
+
+void vkl_barrier_buffer_access(
+    VklBarrier* barrier, VkAccessFlags src_access, VkAccessFlags dst_access)
+{
+    ASSERT(barrier != NULL);
+
+    VklBarrierBuffer* b = &barrier->buffer_barriers[barrier->buffer_barrier_count - 1];
+    ASSERT(b->buffer_regions.buffer != NULL);
+
+    b->src_access = src_access;
+    b->dst_access = dst_access;
+}
+
+
+
+void vkl_barrier_images(VklBarrier* barrier, VklImages* images)
+{
+    ASSERT(barrier != NULL);
+
+    VklBarrierImage* b = &barrier->image_barriers[barrier->image_barrier_count++];
+
+    b->images = images;
+}
+
+
+
+void vkl_barrier_images_layout(
+    VklBarrier* barrier, VkImageLayout src_layout, VkImageLayout dst_layout)
+{
+    ASSERT(barrier != NULL);
+
+    VklBarrierImage* b = &barrier->image_barriers[barrier->image_barrier_count - 1];
+    ASSERT(b->images != NULL);
+
+    b->src_layout = src_layout;
+    b->dst_layout = dst_layout;
+}
+
+
+
+void vkl_barrier_images_access(
+    VklBarrier* barrier, VkAccessFlags src_access, VkAccessFlags dst_access)
+{
+    ASSERT(barrier != NULL);
+
+    VklBarrierImage* b = &barrier->image_barriers[barrier->image_barrier_count - 1];
+    ASSERT(b->images != NULL);
+
+    b->src_access = src_access;
+    b->dst_access = dst_access;
+}
+
+
+
+void vkl_barrier_images_queue(VklBarrier* barrier, uint32_t src_queue, uint32_t dst_queue)
+{
+    ASSERT(barrier != NULL);
+
+    VklBarrierImage* b = &barrier->image_barriers[barrier->image_barrier_count - 1];
+    ASSERT(b->images != NULL);
+
+    b->src_queue = src_queue;
+    b->dst_queue = dst_queue;
+}
+
+
+
+void vkl_barrier_destroy(VklBarrier* barrier)
+{
+    ASSERT(barrier != NULL);
+    if (barrier->obj.status < VKL_OBJECT_STATUS_CREATED)
+    {
+        log_trace("skip destruction of already-destroyed barrier");
+        return;
+    }
+    obj_destroyed(&barrier->obj);
+}
+
 
 
 /*************************************************************************************************/
@@ -1098,14 +1231,109 @@ void vkl_compute_destroy(VklCompute* compute)
 
 void vkl_cmd_compute(VklCommands* cmds, VklCompute* compute, uvec3 size)
 {
-    VkCommandBuffer cb = {0};
-    for (uint32_t i = 0; i < cmds->count; i++)
+    CMD_START
+    vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_COMPUTE, compute->pipeline);
+    vkCmdBindDescriptorSets(
+        cb, VK_PIPELINE_BIND_POINT_COMPUTE, compute->bindings->pipeline_layout, 0, 1,
+        compute->bindings->dsets, 0, 0);
+    vkCmdDispatch(cb, size[0], size[1], size[2]);
+    CMD_END
+}
+
+
+
+void vkl_cmd_barrier(VklCommands* cmds, VklBarrier* barrier)
+{
+    ASSERT(barrier != NULL);
+    VklQueues* q = &cmds->gpu->queues;
+    CMD_START
+
+    // Buffer barriers
+    VkBufferMemoryBarrier buffer_barriers[VKL_MAX_BARRIERS_PER_SET] = {0};
+    VkBufferMemoryBarrier* buffer_barrier = NULL;
+    VklBarrierBuffer* buffer_info = NULL;
+
+    for (uint32_t j = 0; j < barrier->buffer_barrier_count; j++)
     {
-        cb = cmds->cmds[i];
-        vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_COMPUTE, compute->pipeline);
-        vkCmdBindDescriptorSets(
-            cb, VK_PIPELINE_BIND_POINT_COMPUTE, compute->bindings->pipeline_layout, 0, 1,
-            compute->bindings->dsets, 0, 0);
-        vkCmdDispatch(cb, size[0], size[1], size[2]);
+        buffer_barrier = &buffer_barriers[j];
+        buffer_info = &barrier->buffer_barriers[j];
+
+        buffer_barrier->sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        buffer_barrier->buffer = buffer_info->buffer_regions.buffer->buffer;
+        buffer_barrier->size = buffer_info->buffer_regions.size;
+        ASSERT(i < buffer_info->buffer_regions.count);
+        buffer_barrier->offset = buffer_info->buffer_regions.offsets[i];
+
+        buffer_barrier->srcAccessMask = buffer_info->src_access;
+        buffer_barrier->srcQueueFamilyIndex = q->queue_families[buffer_info->src_queue];
+
+        buffer_barrier->dstAccessMask = buffer_info->dst_access;
+        buffer_barrier->dstQueueFamilyIndex = q->queue_families[buffer_info->dst_queue];
     }
+
+    // Image barriers
+    VkImageMemoryBarrier image_barriers[VKL_MAX_BARRIERS_PER_SET] = {0};
+    VkImageMemoryBarrier* image_barrier = NULL;
+    VklBarrierImage* image_info = NULL;
+
+    for (uint32_t j = 0; j < barrier->image_barrier_count; j++)
+    {
+        image_barrier = &image_barriers[j];
+        image_info = &barrier->image_barriers[j];
+
+        image_barrier->sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        ASSERT(i < image_info->images->count);
+        image_barrier->image = image_info->images->images[i];
+        image_barrier->oldLayout = image_info->src_layout;
+        image_barrier->newLayout = image_info->dst_layout;
+
+        image_barrier->srcAccessMask = image_info->src_access;
+        image_barrier->srcQueueFamilyIndex = q->queue_families[image_info->src_queue];
+
+        image_barrier->dstAccessMask = image_info->dst_access;
+        image_barrier->dstQueueFamilyIndex = q->queue_families[image_info->dst_queue];
+
+        image_barrier->subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        image_barrier->subresourceRange.baseMipLevel = 0;
+        image_barrier->subresourceRange.levelCount = 1;
+        image_barrier->subresourceRange.baseArrayLayer = 0;
+        image_barrier->subresourceRange.layerCount = 1;
+    }
+
+    vkCmdPipelineBarrier(
+        cb, barrier->src_stage, barrier->dst_stage, 0, 0, NULL, //
+        barrier->buffer_barrier_count, buffer_barriers,         //
+        barrier->image_barrier_count, image_barriers);          //
+
+    CMD_END
+}
+
+
+
+void vkl_cmd_copy_buffer_to_image(VklCommands* cmds, VklBuffer* buffer, VklImages* images)
+{
+    CMD_START
+
+    VkBufferImageCopy region = {0};
+    region.bufferOffset = 0;
+    region.bufferRowLength = 0;
+    region.bufferImageHeight = 0;
+
+    region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    region.imageSubresource.mipLevel = 0;
+    region.imageSubresource.baseArrayLayer = 0;
+    region.imageSubresource.layerCount = 1;
+
+    region.imageOffset.x = 0;
+    region.imageOffset.y = 0;
+    region.imageOffset.z = 0;
+
+    region.imageExtent.width = images->width;
+    region.imageExtent.height = images->height;
+    region.imageExtent.depth = images->depth;
+
+    vkCmdCopyBufferToImage(
+        cb, buffer->buffer, images->images[i], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+
+    CMD_END
 }

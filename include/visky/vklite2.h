@@ -47,11 +47,13 @@ TODO later
 #define VKL_MAX_QUEUES           16
 #define VKL_MAX_DESCRIPTOR_SETS  256
 #define VKL_MAX_COMPUTES         256
+#define VKL_MAX_BARRIERS         256
 #define VKL_MAX_BINDINGS_SIZE    32
 // Maximum number of command buffers per VklCommands struct
 #define VKL_MAX_COMMAND_BUFFERS_PER_SET VKL_MAX_SWAPCHAIN_IMAGES
 #define VKL_MAX_BUFFER_REGIONS_PER_SET  VKL_MAX_SWAPCHAIN_IMAGES
 #define VKL_MAX_IMAGES_PER_SET          VKL_MAX_SWAPCHAIN_IMAGES
+#define VKL_MAX_BARRIERS_PER_SET        16
 
 
 
@@ -74,6 +76,8 @@ typedef struct VklSampler VklSampler;
 typedef struct VklBindings VklBindings;
 typedef struct VklCompute VklCompute;
 typedef struct VklPipeline VklPipeline;
+typedef struct VklBarrierBuffer VklBarrierBuffer;
+typedef struct VklBarrierImage VklBarrierImage;
 typedef struct VklBarrier VklBarrier;
 typedef struct VklFences VklFences;
 typedef struct VklSemaphores VklSemaphores;
@@ -190,6 +194,16 @@ typedef enum
     log_trace("destroy objects %s", #o);                                                          \
     FREE(o);                                                                                      \
     o = NULL;
+
+
+#define CMD_START                                                                                 \
+    ASSERT(cmds != NULL);                                                                         \
+    VkCommandBuffer cb = {0};                                                                     \
+    for (uint32_t i = 0; i < cmds->count; i++)                                                    \
+    {                                                                                             \
+        cb = cmds->cmds[i];
+
+#define CMD_END }
 
 
 
@@ -313,6 +327,9 @@ struct VklGpu
 
     uint32_t compute_count;
     VklCompute* computes;
+
+    uint32_t barrier_count;
+    VklBarrier* barriers;
 };
 
 
@@ -468,11 +485,45 @@ struct VklPipeline
 };
 
 
+struct VklBarrierBuffer
+{
+    VklBufferRegions buffer_regions;
+
+    VkAccessFlags src_access;
+    uint32_t src_queue;
+
+    VkAccessFlags dst_access;
+    uint32_t dst_queue;
+};
+
+struct VklBarrierImage
+{
+    VklImages* images;
+
+    VkAccessFlags src_access;
+    uint32_t src_queue;
+    VkImageLayout src_layout;
+
+    VkAccessFlags dst_access;
+    uint32_t dst_queue;
+    VkImageLayout dst_layout;
+};
 
 struct VklBarrier
 {
     VklObject obj;
     VklGpu* gpu;
+
+    // uint32_t idx; // index within the buffer regions or images
+
+    VkPipelineStageFlagBits src_stage;
+    VkPipelineStageFlagBits dst_stage;
+
+    uint32_t buffer_barrier_count;
+    VklBarrierBuffer buffer_barriers[VKL_MAX_BARRIERS_PER_SET];
+
+    uint32_t image_barrier_count;
+    VklBarrierImage image_barriers[VKL_MAX_BARRIERS_PER_SET];
 };
 
 
@@ -728,6 +779,32 @@ VKY_EXPORT void vkl_compute_destroy(VklCompute* compute);
 /*  Barrier                                                                                      */
 /*************************************************************************************************/
 
+VKY_EXPORT VklBarrier* vkl_barrier(VklGpu* gpu);
+
+VKY_EXPORT void vkl_barrier_stages(
+    VklBarrier* barrier, VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage);
+
+VKY_EXPORT void vkl_barrier_buffer(VklBarrier* barrier, VklBufferRegions* buffer_regions);
+
+VKY_EXPORT void
+vkl_barrier_buffer_queue(VklBarrier* barrier, uint32_t src_queue, uint32_t dst_queue);
+
+VKY_EXPORT void
+vkl_barrier_buffer_access(VklBarrier* barrier, VkAccessFlags src_access, VkAccessFlags dst_access);
+
+VKY_EXPORT void vkl_barrier_images(VklBarrier* barrier, VklImages* images);
+
+VKY_EXPORT void
+vkl_barrier_images_layout(VklBarrier* barrier, VkImageLayout src_layout, VkImageLayout dst_layout);
+
+VKY_EXPORT void
+vkl_barrier_images_queue(VklBarrier* barrier, uint32_t src_queue, uint32_t dst_queue);
+
+VKY_EXPORT void
+vkl_barrier_images_access(VklBarrier* barrier, VkAccessFlags src_access, VkAccessFlags dst_access);
+
+VKY_EXPORT void vkl_barrier_destroy(VklBarrier* barrier);
+
 
 
 /*************************************************************************************************/
@@ -754,6 +831,10 @@ VKY_EXPORT void vkl_compute_destroy(VklCompute* compute);
 
 VKY_EXPORT void vkl_cmd_compute(VklCommands* cmds, VklCompute* compute, uvec3 size);
 
+VKY_EXPORT void vkl_cmd_barrier(VklCommands* cmds, VklBarrier* barrier);
+
+VKY_EXPORT void
+vkl_cmd_copy_buffer_to_image(VklCommands* cmds, VklBuffer* buffer, VklImages* images);
 
 
 #endif
