@@ -93,29 +93,20 @@ static int vklite2_buffer(VkyTestContext* context)
     vkl_buffer_create(buffer);
 
     // Send some data to the GPU.
-    VklBufferRegions br = {0};
-    br.buffer = buffer;
-    br.count = 1;
-    br.offsets[0] = 0;
-    br.sizes[0] = size;
-    void* mapped = vkl_buffer_regions_map(&br, 0);
-    ASSERT(mapped != NULL);
     uint8_t* data = calloc(size, 1);
     for (uint32_t i = 0; i < size; i++)
         data[i] = i;
-    memcpy(mapped, data, size);
-    vkl_buffer_regions_unmap(&br, 0);
+    vkl_buffer_upload(buffer, 0, size, data);
 
     // Recover the data.
-    mapped = vkl_buffer_regions_map(&br, 0);
     void* data2 = calloc(size, 1);
-    memcpy(data2, mapped, size);
-    vkl_buffer_regions_unmap(&br, 0);
+    vkl_buffer_download(buffer, 0, size, data2);
 
     // Check that the data downloaded from the GPU is the same.
     ASSERT(memcmp(data2, data, size) == 0);
 
     FREE(data);
+    FREE(data2);
     vkl_app_destroy(app);
     return 0;
 }
@@ -146,23 +137,16 @@ static int vklite2_compute(VkyTestContext* context)
     vkl_buffer_create(buffer);
 
     // Send some data to the GPU.
-    VklBufferRegions br = {0};
-    br.buffer = buffer;
-    br.count = 1;
-    br.offsets[0] = 0;
-    br.sizes[0] = size;
-    void* mapped = vkl_buffer_regions_map(&br, 0);
-    ASSERT(mapped != NULL);
     float* data = calloc(n, sizeof(float));
     for (uint32_t i = 0; i < n; i++)
         data[i] = (float)i;
-    memcpy(mapped, data, size);
-    vkl_buffer_regions_unmap(&br, 0);
+    vkl_buffer_upload(buffer, 0, size, data);
 
     // Create the bindings.
     VklBindings* bindings = vkl_bindings(gpu);
     vkl_bindings_slot(bindings, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
     vkl_bindings_create(bindings, 1);
+    VklBufferRegions br = {.buffer = buffer, .size = size, .count = 1};
     vkl_bindings_buffer(bindings, 0, &br);
 
     // TODO: should be called automatically and transparently. The implementation should keep track
@@ -182,10 +166,8 @@ static int vklite2_compute(VkyTestContext* context)
     vkl_cmd_submit_sync(cmds, 0);
 
     // Get back the data.
-    mapped = vkl_buffer_regions_map(&br, 0);
     float* data2 = calloc(n, sizeof(float));
-    memcpy(data2, mapped, size);
-    vkl_buffer_regions_unmap(&br, 0);
+    vkl_buffer_download(buffer, 0, size, data2);
     for (uint32_t i = 0; i < n; i++)
         ASSERT(data2[i] == 2 * data[i]);
 

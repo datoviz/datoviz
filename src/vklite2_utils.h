@@ -919,7 +919,7 @@ static void update_descriptor_set(
             ASSERT(buffer_regions[i].buffer != NULL);
             buffer_infos[i].buffer = br->buffer->buffer;
             buffer_infos[i].offset = br->offsets[idx];
-            buffer_infos[i].range = br->sizes[idx];
+            buffer_infos[i].range = br->size;
         }
         else if (is_descriptor_type_image(binding_type))
         {

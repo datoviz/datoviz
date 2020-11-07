@@ -553,7 +553,7 @@ static int test(int argc, char** argv)
     {
         // Run a test only if all tests are requested, or if the requested test matches
         // the current test.
-        if (argc == 1 || strcmp(TEST_CASES[i].name, argv[1]) == 0)
+        if (argc == 1 || strstr(TEST_CASES[i].name, argv[1]) != NULL)
         {
             res += launcher(&context, TEST_CASES[i].name);
             print_case(index, TEST_CASES[i].name, res);

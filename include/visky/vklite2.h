@@ -363,8 +363,8 @@ struct VklBufferRegions
 {
     VklBuffer* buffer;
     uint32_t count;
+    VkDeviceSize size;
     VkDeviceSize offsets[VKL_MAX_BUFFER_REGIONS_PER_SET];
-    VkDeviceSize sizes[VKL_MAX_BUFFER_REGIONS_PER_SET];
 };
 
 
@@ -581,12 +581,18 @@ VKY_EXPORT void vkl_buffer_queue_access(VklBuffer* buffer, uint32_t queues);
 
 VKY_EXPORT void vkl_buffer_create(VklBuffer* buffer);
 
+VKY_EXPORT VklBufferRegions
+vkl_buffer_regions(VklBuffer* buffer, uint32_t count, VkDeviceSize size, VkDeviceSize* offsets);
+
 VKY_EXPORT void* vkl_buffer_regions_map(VklBufferRegions* buffer_regions, uint32_t idx);
 
 VKY_EXPORT void vkl_buffer_regions_unmap(VklBufferRegions* buffer_regions, uint32_t idx);
 
-VKY_EXPORT VklBufferRegions
-vkl_buffer_regions(VklBuffer* buffer, uint32_t count, VkDeviceSize* offsets, VkDeviceSize* sizes);
+VKY_EXPORT void
+vkl_buffer_download(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, void* data);
+
+VKY_EXPORT void
+vkl_buffer_upload(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, const void* data);
 
 VKY_EXPORT void vkl_buffer_destroy(VklBuffer* buffer);
 

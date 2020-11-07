@@ -536,6 +536,27 @@ void vkl_buffer_create(VklBuffer* buffer)
 
 
 
+VklBufferRegions
+vkl_buffer_regions(VklBuffer* buffer, uint32_t count, VkDeviceSize size, VkDeviceSize* offsets)
+{
+    ASSERT(buffer != NULL);
+    ASSERT(buffer->gpu != NULL);
+    ASSERT(buffer->gpu->device != 0);
+    ASSERT(buffer->obj.status >= VKL_OBJECT_STATUS_CREATED);
+    ASSERT(count <= VKL_MAX_BUFFER_REGIONS_PER_SET);
+
+    VklBufferRegions regions = {0};
+    regions.buffer = buffer;
+    regions.count = count;
+    regions.size = size;
+    if (offsets != NULL)
+        memcpy(regions.offsets, offsets, count * sizeof(VkDeviceSize));
+
+    return regions;
+}
+
+
+
 void* vkl_buffer_regions_map(VklBufferRegions* buffer_regions, uint32_t idx)
 {
     ASSERT(buffer_regions != NULL);
@@ -555,7 +576,7 @@ void* vkl_buffer_regions_map(VklBufferRegions* buffer_regions, uint32_t idx)
     void* cdata = NULL;
     VK_CHECK_RESULT(vkMapMemory(
         buffer->gpu->device, buffer->device_memory, //
-        buffer_regions->offsets[idx], buffer_regions->sizes[idx], 0, &cdata));
+        buffer_regions->offsets[idx], buffer_regions->size, 0, &cdata));
     return cdata;
 }
 
@@ -581,22 +602,33 @@ void vkl_buffer_regions_unmap(VklBufferRegions* buffer_regions, uint32_t idx)
 
 
 
-VklBufferRegions
-vkl_buffer_regions(VklBuffer* buffer, uint32_t count, VkDeviceSize* offsets, VkDeviceSize* sizes)
+void vkl_buffer_upload(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, const void* data)
 {
-    ASSERT(buffer != NULL);
-    ASSERT(buffer->gpu != NULL);
-    ASSERT(buffer->gpu->device != 0);
-    ASSERT(buffer->obj.status >= VKL_OBJECT_STATUS_CREATED);
-    ASSERT(count <= VKL_MAX_BUFFER_REGIONS_PER_SET);
+    log_trace("uploading %d bytes to GPU buffer", size);
+    VklBufferRegions br = {0};
+    br.buffer = buffer;
+    br.count = 1;
+    br.offsets[0] = offset;
+    br.size = size;
+    void* mapped = vkl_buffer_regions_map(&br, 0);
+    ASSERT(mapped != NULL);
+    memcpy(mapped, data, size);
+    vkl_buffer_regions_unmap(&br, 0);
+}
 
-    VklBufferRegions regions = {0};
-    regions.buffer = buffer;
-    regions.count = count;
-    memcpy(regions.offsets, offsets, count * sizeof(VkDeviceSize));
-    memcpy(regions.sizes, sizes, count * sizeof(VkDeviceSize));
 
-    return regions;
+
+void vkl_buffer_download(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, void* data)
+{
+    log_trace("downloading %d bytes from GPU buffer", size);
+    VklBufferRegions br = {0};
+    br.buffer = buffer;
+    br.count = 1;
+    br.offsets[0] = offset;
+    br.size = size;
+    void* mapped = vkl_buffer_regions_map(&br, 0);
+    memcpy(data, mapped, size);
+    vkl_buffer_regions_unmap(&br, 0);
 }
 
 
@@ -722,7 +754,6 @@ void vkl_bindings_destroy(VklBindings* bindings)
 /*************************************************************************************************/
 /*  Compute                                                                                      */
 /*************************************************************************************************/
-
 
 VklCompute* vkl_compute(VklGpu* gpu, const char* shader_path)
 {
