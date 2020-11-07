@@ -895,18 +895,18 @@ static bool is_descriptor_type_image(VkDescriptorType binding_type)
 
 
 
-static void update_descriptor_sets(
-    VkDevice device, uint32_t binding_count, VkDescriptorType* types, //
-    VklBufferRegion* buffer_regions, VkDescriptorSet* dsets)          // TODO: add textures
+static void update_descriptor_set(
+    VkDevice device, uint32_t binding_count, VkDescriptorType* types,     //
+    VklBufferRegions* buffer_regions, uint32_t idx, VkDescriptorSet dset) // TODO: add textures
 {
-    log_trace("update descriptor sets");
+    log_trace("update descriptor set #%d", idx);
     VkWriteDescriptorSet* descriptor_writes = calloc(binding_count, sizeof(VkWriteDescriptorSet));
 
     VkDescriptorBufferInfo buffer_infos[VKL_MAX_BINDINGS_SIZE] = {0};
     VkDescriptorImageInfo image_infos[VKL_MAX_BINDINGS_SIZE] = {0};
 
     VkDescriptorType binding_type = {0};
-    VklBufferRegion* br = NULL;
+    VklBufferRegions* br = NULL;
 
     for (uint32_t i = 0; i < binding_count; i++)
     {
@@ -916,10 +916,10 @@ static void update_descriptor_sets(
         {
             log_trace("bind buffer for binding point %d", i);
             br = &buffer_regions[i];
-            ASSERT(buffer_regions[i].buffers != NULL);
-            buffer_infos[i].buffer = br->buffers->buffers[br->idx];
-            buffer_infos[i].offset = br->offset;
-            buffer_infos[i].range = br->size;
+            ASSERT(buffer_regions[i].buffer != NULL);
+            buffer_infos[i].buffer = br->buffer->buffer;
+            buffer_infos[i].offset = br->offsets[idx];
+            buffer_infos[i].range = br->sizes[idx];
         }
         else if (is_descriptor_type_image(binding_type))
         {
@@ -936,7 +936,7 @@ static void update_descriptor_sets(
         }
         descriptor_writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         descriptor_writes[i].pNext = VK_NULL_HANDLE;
-        descriptor_writes[i].dstSet = dsets[i];
+        descriptor_writes[i].dstSet = dset;
         descriptor_writes[i].dstBinding = i;
         descriptor_writes[i].dstArrayElement = 0;
         descriptor_writes[i].descriptorCount = 1;
@@ -954,23 +954,14 @@ static void update_descriptor_sets(
 
 static void update_bindings(VklBindings* bindings)
 {
-    VklBufferRegion regions[VKL_MAX_SWAPCHAIN_IMAGES] = {0};
+    log_trace("update bindings");
     ASSERT(bindings->dset_count <= VKL_MAX_SWAPCHAIN_IMAGES);
     for (uint32_t i = 0; i < bindings->dset_count; i++)
     {
-        if (is_descriptor_type_buffer(bindings->types[i]))
-        {
-            // TODO: fix
-            regions[i].buffers = bindings->buffers[i];
-            regions[i].size = bindings->buffers[i]->size;
-        }
-        else if (is_descriptor_type_image(bindings->types[i]))
-        {
-            // TODO
-        }
+        update_descriptor_set(
+            bindings->gpu->device, bindings->bindings_count, bindings->types,
+            bindings->buffer_regions, i, bindings->dsets[i]);
     }
-    update_descriptor_sets(
-        bindings->gpu->device, bindings->dset_count, bindings->types, regions, bindings->dsets);
 }
 
 

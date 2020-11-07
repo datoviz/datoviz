@@ -77,38 +77,40 @@ static int vklite2_commands(VkyTestContext* context)
     return 0;
 }
 
-static int vklite2_buffers(VkyTestContext* context)
+static int vklite2_buffer(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
     vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
     vkl_gpu_create(gpu, 0);
-    VklBuffers* buffers = vkl_buffers(gpu, 3);
+    VklBuffer* buffer = vkl_buffer(gpu);
     const VkDeviceSize size = 256;
-    vkl_buffers_size(buffers, size, 0);
-    vkl_buffers_usage(
-        buffers, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
-    vkl_buffers_memory(
-        buffers, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    vkl_buffers_queue_access(buffers, 0);
-    vkl_buffers_create(buffers);
-
-    ASSERT(vkl_buffers_region(buffers, 0, 0, size).buffers == buffers);
+    vkl_buffer_size(buffer, size, 0);
+    vkl_buffer_usage(buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    vkl_buffer_memory(
+        buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vkl_buffer_queue_access(buffer, 0);
+    vkl_buffer_create(buffer);
 
     // Send some data to the GPU.
-    void* buffer = vkl_buffers_map(buffers, 0, 0, size);
-    ASSERT(buffer != NULL);
-    void* data = calloc(size, 1);
+    VklBufferRegions br = {0};
+    br.buffer = buffer;
+    br.count = 1;
+    br.offsets[0] = 0;
+    br.sizes[0] = size;
+    void* mapped = vkl_buffer_regions_map(&br, 0);
+    ASSERT(mapped != NULL);
+    uint8_t* data = calloc(size, 1);
     for (uint32_t i = 0; i < size; i++)
-        ((uint8_t*)data)[i] = i;
-    memcpy(buffer, data, size);
-    vkl_buffers_unmap(buffers, 0);
+        data[i] = i;
+    memcpy(mapped, data, size);
+    vkl_buffer_regions_unmap(&br, 0);
 
     // Recover the data.
-    buffer = vkl_buffers_map(buffers, 0, 0, size);
+    mapped = vkl_buffer_regions_map(&br, 0);
     void* data2 = calloc(size, 1);
-    memcpy(data2, buffer, size);
-    vkl_buffers_unmap(buffers, 0);
+    memcpy(data2, mapped, size);
+    vkl_buffer_regions_unmap(&br, 0);
 
     // Check that the data downloaded from the GPU is the same.
     ASSERT(memcmp(data2, data, size) == 0);
@@ -131,34 +133,37 @@ static int vklite2_compute(VkyTestContext* context)
     VklCompute* compute = vkl_compute(gpu, path);
 
     // Create the buffers
-    VklBuffers* buffers = vkl_buffers(gpu, 1);
+    VklBuffer* buffer = vkl_buffer(gpu);
     const uint32_t n = 20;
     const VkDeviceSize size = n * sizeof(float);
-    vkl_buffers_size(buffers, size, 0);
-    vkl_buffers_usage(
-        buffers,
-        VK_BUFFER_USAGE_TRANSFER_SRC_BIT |     //
-            VK_BUFFER_USAGE_TRANSFER_DST_BIT | //
-            VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
-    vkl_buffers_memory(
-        buffers, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    vkl_buffers_queue_access(buffers, 0);
-    vkl_buffers_create(buffers);
+    vkl_buffer_size(buffer, size, 0);
+    vkl_buffer_usage(
+        buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                    VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+    vkl_buffer_memory(
+        buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vkl_buffer_queue_access(buffer, 0);
+    vkl_buffer_create(buffer);
 
     // Send some data to the GPU.
-    void* buffer = vkl_buffers_map(buffers, 0, 0, size);
-    ASSERT(buffer != NULL);
+    VklBufferRegions br = {0};
+    br.buffer = buffer;
+    br.count = 1;
+    br.offsets[0] = 0;
+    br.sizes[0] = size;
+    void* mapped = vkl_buffer_regions_map(&br, 0);
+    ASSERT(mapped != NULL);
     float* data = calloc(n, sizeof(float));
     for (uint32_t i = 0; i < n; i++)
-        data[i] = i;
-    memcpy(buffer, data, size);
-    vkl_buffers_unmap(buffers, 0);
+        data[i] = (float)i;
+    memcpy(mapped, data, size);
+    vkl_buffer_regions_unmap(&br, 0);
 
     // Create the bindings.
     VklBindings* bindings = vkl_bindings(gpu);
     vkl_bindings_slot(bindings, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
     vkl_bindings_create(bindings, 1);
-    vkl_bindings_buffers(bindings, 0, buffers);
+    vkl_bindings_buffer(bindings, 0, &br);
 
     // TODO: should be called automatically and transparently. The implementation should keep track
     // of binding changes and update the bindings before cmd dset binding.
@@ -177,10 +182,10 @@ static int vklite2_compute(VkyTestContext* context)
     vkl_cmd_submit_sync(cmds, 0);
 
     // Get back the data.
-    buffer = vkl_buffers_map(buffers, 0, 0, size);
+    mapped = vkl_buffer_regions_map(&br, 0);
     float* data2 = calloc(n, sizeof(float));
-    memcpy(data2, buffer, size);
-    vkl_buffers_unmap(buffers, 0);
+    memcpy(data2, mapped, size);
+    vkl_buffer_regions_unmap(&br, 0);
     for (uint32_t i = 0; i < n; i++)
         ASSERT(data2[i] == 2 * data[i]);
 

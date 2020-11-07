@@ -49,7 +49,7 @@ TODO later
 #define VKL_MAX_BINDINGS_SIZE    32
 // Maximum number of command buffers per VklCommands struct
 #define VKL_MAX_COMMAND_BUFFERS_PER_SET VKL_MAX_SWAPCHAIN_IMAGES
-#define VKL_MAX_BUFFERS_PER_SET         VKL_MAX_SWAPCHAIN_IMAGES
+#define VKL_MAX_BUFFER_REGIONS_PER_SET  VKL_MAX_SWAPCHAIN_IMAGES
 
 
 
@@ -65,8 +65,8 @@ typedef struct VklWindow VklWindow;
 typedef struct VklSwapchain VklSwapchain;
 typedef struct VklCanvas VklCanvas;
 typedef struct VklCommands VklCommands;
-typedef struct VklBuffers VklBuffers;
-typedef struct VklBufferRegion VklBufferRegion;
+typedef struct VklBuffer VklBuffer;
+typedef struct VklBufferRegions VklBufferRegions;
 typedef struct VklImages VklImages;
 typedef struct VklSampler VklSampler;
 typedef struct VklBindings VklBindings;
@@ -84,6 +84,7 @@ typedef struct VklSubmit VklSubmit;
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
+
 typedef enum
 {
     VKL_OBJECT_TYPE_UNDEFINED,
@@ -93,7 +94,7 @@ typedef enum
     VKL_OBJECT_TYPE_SWAPCHAIN,
     VKL_OBJECT_TYPE_CANVAS,
     VKL_OBJECT_TYPE_COMMANDS,
-    VKL_OBJECT_TYPE_BUFFERS,
+    VKL_OBJECT_TYPE_BUFFER,
     VKL_OBJECT_TYPE_IMAGES,
     VKL_OBJECT_TYPE_SAMPLER,
     VKL_OBJECT_TYPE_BINDINGS,
@@ -289,7 +290,7 @@ struct VklGpu
     VklCommands* commands;
 
     uint32_t buffers_count;
-    VklBuffers* buffers;
+    VklBuffer* buffers;
 
     uint32_t bindings_count;
     VklBindings* bindings;
@@ -338,14 +339,13 @@ struct VklCommands
 
 
 
-struct VklBuffers
+struct VklBuffer
 {
     VklObject obj;
     VklGpu* gpu;
 
-    uint32_t count;
-    VkBuffer buffers[VKL_MAX_BUFFERS_PER_SET];
-    VkDeviceMemory memories[VKL_MAX_BUFFERS_PER_SET];
+    VkBuffer buffer;
+    VkDeviceMemory device_memory;
 
     // Queues that need access to the buffer.
     uint32_t queue_count;
@@ -359,12 +359,12 @@ struct VklBuffers
 
 
 
-struct VklBufferRegion
+struct VklBufferRegions
 {
-    VklBuffers* buffers;
-    uint32_t idx;
-    VkDeviceSize offset;
-    VkDeviceSize size;
+    VklBuffer* buffer;
+    uint32_t count;
+    VkDeviceSize offsets[VKL_MAX_BUFFER_REGIONS_PER_SET];
+    VkDeviceSize sizes[VKL_MAX_BUFFER_REGIONS_PER_SET];
 };
 
 
@@ -397,11 +397,11 @@ struct VklBindings
     VkDescriptorSetLayout dset_layout;
 
     // a Bindings struct holds multiple almost-identical copies of descriptor sets
-    // with the same layout, but possibly with the different idx in the VklBuffers
+    // with the same layout, but possibly with the different idx in the VklBuffer
     uint32_t dset_count;
     VkDescriptorSet dsets[VKL_MAX_SWAPCHAIN_IMAGES];
 
-    VklBuffers* buffers[VKL_MAX_BINDINGS_SIZE];
+    VklBufferRegions buffer_regions[VKL_MAX_BINDINGS_SIZE];
     // TODO: textures
 };
 
@@ -569,27 +569,26 @@ VKY_EXPORT void vkl_cmd_submit_sync(VklCommands* cmds, uint32_t queue_idx);
 /*  Buffers                                                                                      */
 /*************************************************************************************************/
 
-VKY_EXPORT VklBuffers* vkl_buffers(VklGpu* gpu, uint32_t count);
+VKY_EXPORT VklBuffer* vkl_buffer(VklGpu* gpu);
 
-VKY_EXPORT void vkl_buffers_size(VklBuffers* buffers, VkDeviceSize size, VkDeviceSize item_size);
+VKY_EXPORT void vkl_buffer_size(VklBuffer* buffer, VkDeviceSize size, VkDeviceSize item_size);
 
-VKY_EXPORT void vkl_buffers_usage(VklBuffers* buffers, VkBufferUsageFlags usage);
+VKY_EXPORT void vkl_buffer_usage(VklBuffer* buffer, VkBufferUsageFlags usage);
 
-VKY_EXPORT void vkl_buffers_memory(VklBuffers* buffers, VkMemoryPropertyFlags memory);
+VKY_EXPORT void vkl_buffer_memory(VklBuffer* buffer, VkMemoryPropertyFlags memory);
 
-VKY_EXPORT void vkl_buffers_queue_access(VklBuffers* buffers, uint32_t queues);
+VKY_EXPORT void vkl_buffer_queue_access(VklBuffer* buffer, uint32_t queues);
 
-VKY_EXPORT void vkl_buffers_create(VklBuffers* buffers);
+VKY_EXPORT void vkl_buffer_create(VklBuffer* buffer);
 
-VKY_EXPORT void*
-vkl_buffers_map(VklBuffers* buffers, uint32_t idx, VkDeviceSize offset, VkDeviceSize size);
+VKY_EXPORT void* vkl_buffer_regions_map(VklBufferRegions* buffer_regions, uint32_t idx);
 
-VKY_EXPORT void vkl_buffers_unmap(VklBuffers* buffers, uint32_t idx);
+VKY_EXPORT void vkl_buffer_regions_unmap(VklBufferRegions* buffer_regions, uint32_t idx);
 
-VKY_EXPORT VklBufferRegion
-vkl_buffers_region(VklBuffers* buffers, uint32_t idx, VkDeviceSize offset, VkDeviceSize size);
+VKY_EXPORT VklBufferRegions
+vkl_buffer_regions(VklBuffer* buffer, uint32_t count, VkDeviceSize* offsets, VkDeviceSize* sizes);
 
-VKY_EXPORT void vkl_buffers_destroy(VklBuffers* buffers);
+VKY_EXPORT void vkl_buffer_destroy(VklBuffer* buffer);
 
 
 
@@ -615,7 +614,8 @@ VKY_EXPORT void vkl_bindings_slot(VklBindings* bindings, uint32_t idx, VkDescrip
 
 VKY_EXPORT void vkl_bindings_create(VklBindings* bindings, uint32_t dset_count);
 
-VKY_EXPORT void vkl_bindings_buffers(VklBindings* bindings, uint32_t idx, VklBuffers* buffers);
+VKY_EXPORT void
+vkl_bindings_buffer(VklBindings* bindings, uint32_t idx, VklBufferRegions* buffer_regions);
 
 VKY_EXPORT void
 vkl_bindings_texture(VklBindings* bindings, uint32_t idx, VklImages* images, VklSampler* sampler);
