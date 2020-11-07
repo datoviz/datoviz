@@ -594,6 +594,8 @@ vkl_buffer_download(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, v
 VKY_EXPORT void
 vkl_buffer_upload(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, const void* data);
 
+VKY_EXPORT void vkl_bindings_update(VklBindings* bindings);
+
 VKY_EXPORT void vkl_buffer_destroy(VklBuffer* buffer);
 
 

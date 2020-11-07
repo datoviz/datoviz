@@ -149,10 +149,7 @@ static int vklite2_compute(VkyTestContext* context)
     VklBufferRegions br = {.buffer = buffer, .size = size, .count = 1};
     vkl_bindings_buffer(bindings, 0, &br);
 
-    // TODO: should be called automatically and transparently. The implementation should keep track
-    // of binding changes and update the bindings before cmd dset binding.
-    // For now in this test, calling this manually.
-    update_bindings(bindings);
+    vkl_bindings_update(bindings);
 
     // Link the bindings to the compute pipeline and create it.
     vkl_compute_bindings(compute, bindings);

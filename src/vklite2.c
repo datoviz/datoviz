@@ -721,6 +721,8 @@ void vkl_bindings_buffer(VklBindings* bindings, uint32_t idx, VklBufferRegions* 
     ASSERT(buffer_regions->count == 1 || buffer_regions->count == bindings->dset_count);
 
     bindings->buffer_regions[idx] = *buffer_regions;
+    if (bindings->obj.status == VKL_OBJECT_STATUS_CREATED)
+        bindings->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
 }
 
 
@@ -729,6 +731,23 @@ void vkl_bindings_texture(
     VklBindings* bindings, uint32_t idx, VklImages* images, VklSampler* sampler)
 {
     // TODO
+
+    if (bindings->obj.status == VKL_OBJECT_STATUS_CREATED)
+        bindings->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+}
+
+
+
+void vkl_bindings_update(VklBindings* bindings)
+{
+    log_trace("update bindings");
+    ASSERT(bindings->dset_count <= VKL_MAX_SWAPCHAIN_IMAGES);
+    for (uint32_t i = 0; i < bindings->dset_count; i++)
+    {
+        update_descriptor_set(
+            bindings->gpu->device, bindings->bindings_count, bindings->types,
+            bindings->buffer_regions, i, bindings->dsets[i]);
+    }
 }
 
 

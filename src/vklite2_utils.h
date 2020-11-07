@@ -952,20 +952,6 @@ static void update_descriptor_set(
 
 
 
-static void update_bindings(VklBindings* bindings)
-{
-    log_trace("update bindings");
-    ASSERT(bindings->dset_count <= VKL_MAX_SWAPCHAIN_IMAGES);
-    for (uint32_t i = 0; i < bindings->dset_count; i++)
-    {
-        update_descriptor_set(
-            bindings->gpu->device, bindings->bindings_count, bindings->types,
-            bindings->buffer_regions, i, bindings->dsets[i]);
-    }
-}
-
-
-
 /*************************************************************************************************/
 /*  Shaders                                                                                      */
 /*************************************************************************************************/
