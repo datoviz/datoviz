@@ -136,6 +136,7 @@ VklGpu* vkl_gpu(VklApp* app, uint32_t idx)
 
     INSTANCES_INIT(VklCommands, gpu, commands, VKL_MAX_COMMANDS, VKL_OBJECT_TYPE_COMMANDS)
     INSTANCES_INIT(VklBuffer, gpu, buffers, VKL_MAX_BUFFERS, VKL_OBJECT_TYPE_BUFFER)
+    INSTANCES_INIT(VklImages, gpu, images, VKL_MAX_IMAGES, VKL_OBJECT_TYPE_IMAGES)
     INSTANCES_INIT(VklBindings, gpu, bindings, VKL_MAX_BINDINGS, VKL_OBJECT_TYPE_BINDINGS)
     INSTANCES_INIT(VklCompute, gpu, computes, VKL_MAX_COMPUTES, VKL_OBJECT_TYPE_COMPUTE)
 
@@ -227,10 +228,16 @@ void vkl_gpu_destroy(VklGpu* gpu)
         }
     }
 
-    log_trace("destroy %d buffers sets", gpu->buffers_count);
+    log_trace("destroy %d buffers", gpu->buffers_count);
     for (uint32_t i = 0; i < gpu->buffers_count; i++)
     {
         vkl_buffer_destroy(&gpu->buffers[i]);
+    }
+
+    log_trace("destroy %d sets of images", gpu->images_count);
+    for (uint32_t i = 0; i < gpu->images_count; i++)
+    {
+        vkl_images_destroy(&gpu->images[i]);
     }
 
     log_trace("destroy %d bindings", gpu->bindings_count);
@@ -258,6 +265,7 @@ void vkl_gpu_destroy(VklGpu* gpu)
 
     INSTANCES_DESTROY(gpu->commands)
     INSTANCES_DESTROY(gpu->buffers)
+    INSTANCES_DESTROY(gpu->images)
     INSTANCES_DESTROY(gpu->bindings)
     INSTANCES_DESTROY(gpu->computes)
 
@@ -653,6 +661,130 @@ void vkl_buffer_destroy(VklBuffer* buffer)
 /*  Images                                                                                       */
 /*************************************************************************************************/
 
+VklImages* vkl_images(VklGpu* gpu, VkImageType type, uint32_t count)
+{
+    ASSERT(gpu != NULL);
+    ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
+
+    INSTANCE_NEW(VklImages, images, gpu->images, gpu->images_count)
+
+    images->gpu = gpu;
+    images->image_type = type;
+    images->count = count;
+
+    // Default options.
+    images->tiling = VK_IMAGE_TILING_OPTIMAL;
+    images->memory = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+
+    return images;
+}
+
+
+
+void vkl_images_format(VklImages* images, VkFormat format)
+{
+    ASSERT(images != NULL);
+    images->format = format;
+}
+
+
+
+void vkl_images_size(VklImages* images, uint32_t width, uint32_t height, uint32_t depth)
+{
+    ASSERT(images != NULL);
+
+    check_dims(images->image_type, width, height, depth);
+
+    images->width = width;
+    images->height = height;
+    images->depth = depth;
+}
+
+
+
+void vkl_images_tiling(VklImages* images, VkImageTiling tiling)
+{
+    ASSERT(images != NULL);
+    images->tiling = tiling;
+}
+
+
+
+void vkl_images_usage(VklImages* images, VkImageUsageFlags usage)
+{
+    ASSERT(images != NULL);
+    images->usage = usage;
+}
+
+
+
+void vkl_images_memory(VklImages* images, VkMemoryPropertyFlags memory)
+{
+    ASSERT(images != NULL);
+    images->memory = memory;
+}
+
+
+
+void vkl_images_queue_access(VklImages* images, uint32_t queue)
+{
+    ASSERT(images != NULL);
+    ASSERT(queue < images->gpu->queues.queue_count);
+    images->queues[images->queue_count++] = queue;
+}
+
+
+
+void vkl_images_create(VklImages* images)
+{
+    ASSERT(images != NULL);
+    ASSERT(images->gpu != NULL);
+    ASSERT(images->gpu->device != 0);
+
+    check_dims(images->image_type, images->width, images->height, images->depth);
+    VklGpu* gpu = images->gpu;
+
+    log_trace("starting creation of %d images...", images->count);
+
+    for (uint32_t i = 0; i < images->count; i++)
+    {
+        create_image2(
+            gpu->device, &gpu->queues, images->queue_count, images->queues, images->image_type,
+            images->width, images->height, images->depth, images->format, images->tiling,
+            images->usage, images->memory, gpu->memory_properties, &images->images[i],
+            &images->memories[i]);
+
+        create_image_view2(
+            gpu->device, images->images[i], images->image_type, images->format,
+            VK_IMAGE_ASPECT_COLOR_BIT, &images->image_views[i]);
+    }
+
+    obj_created(&images->obj);
+    log_trace("%d images created", images->count);
+}
+
+
+
+void vkl_images_destroy(VklImages* images)
+{
+    ASSERT(images != NULL);
+    if (images->obj.status < VKL_OBJECT_STATUS_CREATED)
+    {
+        log_trace("skip destruction of already-destroyed images");
+        return;
+    }
+    log_trace("destroy %d images", images->count);
+
+    for (uint32_t i = 0; i < images->count; i++)
+    {
+        vkDestroyImageView(images->gpu->device, images->image_views[i], NULL);
+        vkDestroyImage(images->gpu->device, images->images[i], NULL);
+        vkFreeMemory(images->gpu->device, images->memories[i], NULL);
+    }
+
+    obj_destroyed(&images->obj);
+}
+
 
 
 /*************************************************************************************************/
@@ -728,7 +860,7 @@ void vkl_bindings_buffer(VklBindings* bindings, uint32_t idx, VklBufferRegions* 
 
 
 void vkl_bindings_texture(
-    VklBindings* bindings, uint32_t idx, VklImages* images, VklSampler* sampler)
+    VklBindings* bindings, uint32_t idx, VklImages* imagess, VklSampler* sampler)
 {
     // TODO
 

@@ -172,6 +172,26 @@ static int vklite2_compute(VkyTestContext* context)
     return 0;
 }
 
+static int vklite2_images(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
+    vkl_gpu_create(gpu, 0);
+
+    VklImages* images = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
+    vkl_images_format(images, VK_FORMAT_R8G8B8A8_UINT);
+    vkl_images_size(images, 16, 16, 1);
+    vkl_images_tiling(images, VK_IMAGE_TILING_OPTIMAL);
+    vkl_images_usage(images, VK_IMAGE_USAGE_STORAGE_BIT);
+    vkl_images_memory(images, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    vkl_images_queue_access(images, 0);
+    vkl_images_create(images);
+
+    vkl_app_destroy(app);
+    return 0;
+}
+
 
 
 static int vklite2_test_compute_only(VkyTestContext* context)

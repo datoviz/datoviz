@@ -768,6 +768,100 @@ static void create_buffer2(
 /*  Images                                                                                       */
 /*************************************************************************************************/
 
+static void check_dims(VkImageType image_type, uint32_t width, uint32_t height, uint32_t depth)
+{
+    ASSERT(width != 0);
+    if (image_type == VK_IMAGE_TYPE_1D)
+    {
+        ASSERT(height == 1);
+        ASSERT(depth == 1);
+    }
+    else if (image_type == VK_IMAGE_TYPE_2D)
+    {
+        ASSERT(height != 0);
+        ASSERT(depth == 1);
+    }
+    else if (image_type == VK_IMAGE_TYPE_3D)
+    {
+        ASSERT(depth != 0);
+    }
+    else
+    {
+        log_error("unknown image type %d", image_type);
+    }
+}
+
+
+
+static void create_image2(
+    VkDevice device, VklQueues* queues, uint32_t queue_count, uint32_t* queue_indices,        //
+    VkImageType image_type, uint32_t width, uint32_t height, uint32_t depth, VkFormat format, //
+    VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties,          //
+    VkPhysicalDeviceMemoryProperties memory_properties,                                       //
+    VkImage* image, VkDeviceMemory* imageMemory)                                              //
+{
+    log_trace("create image %dD %dx%dx%d", image_type + 1, width, height, depth);
+    ASSERT(width > 0);
+
+    VkImageCreateInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    info.imageType = image_type;
+    info.extent.width = width;
+    info.extent.height = height;
+    info.extent.depth = depth;
+    info.mipLevels = 1;
+    info.arrayLayers = 1;
+    info.format = format;
+    info.tiling = tiling;
+    info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    info.usage = usage;
+    info.samples = VK_SAMPLE_COUNT_1_BIT;
+
+    // Sharing mode, depending on the queues that need to access the image.
+    uint32_t queue_families[VKL_MAX_QUEUE_FAMILIES];
+    make_shared(
+        queues, queue_count, queue_indices, //
+        &info.sharingMode, &info.queueFamilyIndexCount, queue_families);
+    info.pQueueFamilyIndices = queue_families;
+
+    VK_CHECK_RESULT(vkCreateImage(device, &info, NULL, image));
+
+    VkMemoryRequirements memRequirements = {0};
+    vkGetImageMemoryRequirements(device, *image, &memRequirements);
+
+    VkMemoryAllocateInfo alloc_info = {0};
+    alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    alloc_info.allocationSize = memRequirements.size;
+    alloc_info.memoryTypeIndex =
+        find_memory_type(memRequirements.memoryTypeBits, properties, memory_properties);
+
+    VK_CHECK_RESULT(vkAllocateMemory(device, &alloc_info, NULL, imageMemory));
+
+    vkBindImageMemory(device, *image, *imageMemory, 0);
+}
+
+
+
+static void create_image_view2(
+    VkDevice device, VkImage image, VkImageViewType image_type, VkFormat format,
+    VkImageAspectFlags aspect_flags, VkImageView* image_view)
+{
+    log_trace("create image view %dD", image_type + 1);
+    VkImageViewCreateInfo viewInfo = {0};
+    viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    viewInfo.image = image;
+    viewInfo.viewType = image_type;
+    viewInfo.format = format;
+    viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    viewInfo.subresourceRange.baseMipLevel = 0;
+    viewInfo.subresourceRange.levelCount = 1;
+    viewInfo.subresourceRange.baseArrayLayer = 0;
+    viewInfo.subresourceRange.layerCount = 1;
+    viewInfo.subresourceRange.aspectMask = aspect_flags;
+
+    VK_CHECK_RESULT(vkCreateImageView(device, &viewInfo, NULL, image_view));
+}
+
 
 
 /*************************************************************************************************/

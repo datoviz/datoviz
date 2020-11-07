@@ -41,6 +41,7 @@ TODO later
 #define VKL_MAX_SWAPCHAIN_IMAGES 8
 #define VKL_MAX_COMMANDS         256
 #define VKL_MAX_BUFFERS          256
+#define VKL_MAX_IMAGES           256
 #define VKL_MAX_BINDINGS         256
 #define VKL_MAX_QUEUE_FAMILIES   16
 #define VKL_MAX_QUEUES           16
@@ -50,6 +51,7 @@ TODO later
 // Maximum number of command buffers per VklCommands struct
 #define VKL_MAX_COMMAND_BUFFERS_PER_SET VKL_MAX_SWAPCHAIN_IMAGES
 #define VKL_MAX_BUFFER_REGIONS_PER_SET  VKL_MAX_SWAPCHAIN_IMAGES
+#define VKL_MAX_IMAGES_PER_SET          VKL_MAX_SWAPCHAIN_IMAGES
 
 
 
@@ -147,6 +149,15 @@ typedef enum
     VKL_COMMAND_COMPUTE,
     VKL_COMMAND_GUI,
 } VklCommandBufferType;
+
+
+// typedef enum
+// {
+//     VKL_IMAGE_NONE,
+//     VKL_IMAGE_1D,
+//     VKL_IMAGE_2D,
+//     VKL_IMAGE_3D,
+// } VklImageDim;
 
 
 
@@ -292,6 +303,9 @@ struct VklGpu
     uint32_t buffers_count;
     VklBuffer* buffers;
 
+    uint32_t images_count;
+    VklImages* images;
+
     uint32_t bindings_count;
     VklBindings* bindings;
 
@@ -373,6 +387,24 @@ struct VklImages
 {
     VklObject obj;
     VklGpu* gpu;
+
+    uint32_t count;
+
+    // Queues that need access to the buffer.
+    uint32_t queue_count;
+    uint32_t queues[VKL_MAX_QUEUES];
+
+    VkImageType image_type;
+    uint32_t width, height, depth;
+    VkFormat format;
+    VkImageLayout layout;
+    VkImageTiling tiling;
+    VkImageUsageFlags usage;
+    VkMemoryPropertyFlags memory;
+
+    VkImage images[VKL_MAX_IMAGES_PER_SET];
+    VkDeviceMemory memories[VKL_MAX_IMAGES_PER_SET];
+    VkImageView image_views[VKL_MAX_IMAGES_PER_SET];
 };
 
 
@@ -604,6 +636,25 @@ VKY_EXPORT void vkl_buffer_destroy(VklBuffer* buffer);
 /*  Images                                                                                       */
 /*************************************************************************************************/
 
+VKY_EXPORT VklImages* vkl_images(VklGpu* gpu, VkImageType type, uint32_t count);
+
+VKY_EXPORT void vkl_images_format(VklImages* images, VkFormat format);
+
+VKY_EXPORT void
+vkl_images_size(VklImages* images, uint32_t width, uint32_t height, uint32_t depth);
+
+VKY_EXPORT void vkl_images_tiling(VklImages* images, VkImageTiling tiling);
+
+VKY_EXPORT void vkl_images_usage(VklImages* images, VkImageUsageFlags usage);
+
+VKY_EXPORT void vkl_images_memory(VklImages* images, VkMemoryPropertyFlags memory);
+
+VKY_EXPORT void vkl_images_queue_access(VklImages* images, uint32_t queue);
+
+VKY_EXPORT void vkl_images_create(VklImages* images);
+
+VKY_EXPORT void vkl_images_destroy(VklImages* images);
+
 
 
 /*************************************************************************************************/
@@ -626,7 +677,7 @@ VKY_EXPORT void
 vkl_bindings_buffer(VklBindings* bindings, uint32_t idx, VklBufferRegions* buffer_regions);
 
 VKY_EXPORT void
-vkl_bindings_texture(VklBindings* bindings, uint32_t idx, VklImages* images, VklSampler* sampler);
+vkl_bindings_texture(VklBindings* bindings, uint32_t idx, VklImages* imagess, VklSampler* sampler);
 
 VKY_EXPORT void vkl_bindings_destroy(VklBindings* bindings);
 
