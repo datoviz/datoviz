@@ -47,11 +47,9 @@ TODO later
 #define VKL_MAX_QUEUES           16
 #define VKL_MAX_DESCRIPTOR_SETS  256
 #define VKL_MAX_COMPUTES         256
-#define VKL_MAX_BARRIERS         256
 #define VKL_MAX_BINDINGS_SIZE    32
 #define VKL_MAX_SEMAPHORES       256
 #define VKL_MAX_FENCES           256
-#define VKL_MAX_SUBMITS          256
 // Maximum number of command buffers per VklCommands struct
 #define VKL_MAX_COMMAND_BUFFERS_PER_SET VKL_MAX_SWAPCHAIN_IMAGES
 #define VKL_MAX_BUFFER_REGIONS_PER_SET  VKL_MAX_SWAPCHAIN_IMAGES
@@ -341,11 +339,11 @@ struct VklGpu
     uint32_t fences_count;
     VklFences* fences;
 
-    uint32_t barrier_count;
-    VklBarrier* barriers;
+    // uint32_t barrier_count;
+    // VklBarrier* barriers;
 
-    uint32_t submit_count;
-    VklSubmit* submits;
+    // uint32_t submit_count;
+    // VklSubmit* submits;
 };
 
 
@@ -822,7 +820,7 @@ VKY_EXPORT void vkl_compute_destroy(VklCompute* compute);
 /*  Barrier                                                                                      */
 /*************************************************************************************************/
 
-VKY_EXPORT VklBarrier* vkl_barrier(VklGpu* gpu);
+VKY_EXPORT VklBarrier vkl_barrier(VklGpu* gpu);
 
 VKY_EXPORT void vkl_barrier_stages(
     VklBarrier* barrier, VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage);
@@ -845,8 +843,6 @@ vkl_barrier_images_queue(VklBarrier* barrier, uint32_t src_queue, uint32_t dst_q
 
 VKY_EXPORT void
 vkl_barrier_images_access(VklBarrier* barrier, VkAccessFlags src_access, VkAccessFlags dst_access);
-
-VKY_EXPORT void vkl_barrier_destroy(VklBarrier* barrier);
 
 
 
@@ -884,7 +880,7 @@ VKY_EXPORT void vkl_fences_destroy(VklFences* fences);
 /*  Submit                                                                                       */
 /*************************************************************************************************/
 
-VKY_EXPORT VklSubmit* vkl_submit(VklGpu* gpu);
+VKY_EXPORT VklSubmit vkl_submit(VklGpu* gpu);
 
 VKY_EXPORT void vkl_submit_commands(VklSubmit* submit, VklCommands* commands, int32_t idx);
 
@@ -896,8 +892,6 @@ vkl_submit_signal_semaphores(VklSubmit* submit, VklSemaphores* semaphores, int32
 
 VKY_EXPORT void
 vkl_submit_send(VklSubmit* submit, uint32_t queue_idx, VklFences* fence, uint32_t fence_idx);
-
-VKY_EXPORT void vkl_submit_destroy(VklSubmit* submit);
 
 
 

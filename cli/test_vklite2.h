@@ -247,16 +247,16 @@ static int vklite2_barrier(VkyTestContext* context)
     vkl_buffer_upload(buffer, 0, size, data);
 
     // Image transition.
-    VklBarrier* barrier = vkl_barrier(gpu);
-    vkl_barrier_stages(barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
-    vkl_barrier_images(barrier, images);
+    VklBarrier barrier = vkl_barrier(gpu);
+    vkl_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    vkl_barrier_images(&barrier, images);
     vkl_barrier_images_layout(
-        barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        &barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
     // Transfer the data from the staging buffer to the image.
     VklCommands* cmds = vkl_commands(gpu, 0, 1);
     vkl_cmd_begin(cmds);
-    vkl_cmd_barrier(cmds, barrier);
+    vkl_cmd_barrier(cmds, &barrier);
     vkl_cmd_copy_buffer_to_image(cmds, buffer, images);
     vkl_cmd_end(cmds);
     vkl_cmd_submit_sync(cmds, 0);
@@ -340,15 +340,15 @@ static int vklite2_submit(VkyTestContext* context)
     VklSemaphores* semaphores = vkl_semaphores(gpu, 1);
 
     // Submit.
-    VklSubmit* submit1 = vkl_submit(gpu);
-    vkl_submit_commands(submit1, cmds1, 0);
-    vkl_submit_signal_semaphores(submit1, semaphores, 0);
-    vkl_submit_send(submit1, 0, NULL, 0);
+    VklSubmit submit1 = vkl_submit(gpu);
+    vkl_submit_commands(&submit1, cmds1, 0);
+    vkl_submit_signal_semaphores(&submit1, semaphores, 0);
+    vkl_submit_send(&submit1, 0, NULL, 0);
 
-    VklSubmit* submit2 = vkl_submit(gpu);
-    vkl_submit_commands(submit2, cmds2, 0);
-    vkl_submit_wait_semaphores(submit2, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, semaphores, 0);
-    vkl_submit_send(submit2, 0, NULL, 0);
+    VklSubmit submit2 = vkl_submit(gpu);
+    vkl_submit_commands(&submit2, cmds2, 0);
+    vkl_submit_wait_semaphores(&submit2, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, semaphores, 0);
+    vkl_submit_send(&submit2, 0, NULL, 0);
 
     vkl_gpu_wait(gpu);
 

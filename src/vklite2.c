@@ -142,8 +142,6 @@ VklGpu* vkl_gpu(VklApp* app, uint32_t idx)
     INSTANCES_INIT(VklSemaphores, gpu, semaphores, VKL_MAX_SEMAPHORES, VKL_OBJECT_TYPE_SEMAPHORES)
     INSTANCES_INIT(VklFences, gpu, fences, VKL_MAX_FENCES, VKL_OBJECT_TYPE_FENCES)
     INSTANCES_INIT(VklCompute, gpu, computes, VKL_MAX_COMPUTES, VKL_OBJECT_TYPE_COMPUTE)
-    INSTANCES_INIT(VklBarrier, gpu, barriers, VKL_MAX_BARRIERS, VKL_OBJECT_TYPE_BARRIER)
-    INSTANCES_INIT(VklSubmit, gpu, submits, VKL_MAX_SUBMITS, VKL_OBJECT_TYPE_SUBMIT)
 
     return gpu;
 }
@@ -282,12 +280,6 @@ void vkl_gpu_destroy(VklGpu* gpu)
         vkl_compute_destroy(&gpu->computes[i]);
     }
 
-    log_trace("GPU destroy %d barriers", gpu->barrier_count);
-    for (uint32_t i = 0; i < gpu->barrier_count; i++)
-    {
-        vkl_barrier_destroy(&gpu->barriers[i]);
-    }
-
     log_trace("GPU destroy %d semaphores", gpu->semaphores_count);
     for (uint32_t i = 0; i < gpu->semaphores_count; i++)
     {
@@ -298,12 +290,6 @@ void vkl_gpu_destroy(VklGpu* gpu)
     for (uint32_t i = 0; i < gpu->fences_count; i++)
     {
         vkl_fences_destroy(&gpu->fences[i]);
-    }
-
-    log_trace("GPU destroy %d submits", gpu->submit_count);
-    for (uint32_t i = 0; i < gpu->submit_count; i++)
-    {
-        vkl_submit_destroy(&gpu->submits[i]);
     }
 
     if (gpu->dset_pool != 0)
@@ -323,8 +309,6 @@ void vkl_gpu_destroy(VklGpu* gpu)
     INSTANCES_DESTROY(gpu->samplers)
     INSTANCES_DESTROY(gpu->bindings)
     INSTANCES_DESTROY(gpu->computes)
-    INSTANCES_DESTROY(gpu->barriers)
-    INSTANCES_DESTROY(gpu->submits)
 
     obj_destroyed(&gpu->obj);
     log_trace("GPU #%d destroyed", gpu->idx);
@@ -1121,15 +1105,13 @@ void vkl_compute_destroy(VklCompute* compute)
 /*  Barrier                                                                                      */
 /*************************************************************************************************/
 
-VklBarrier* vkl_barrier(VklGpu* gpu)
+VklBarrier vkl_barrier(VklGpu* gpu)
 {
     ASSERT(gpu != NULL);
     ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
 
-    INSTANCE_NEW(VklBarrier, barrier, gpu->barriers, gpu->barrier_count)
-
-    barrier->gpu = gpu;
-
+    VklBarrier barrier = {0};
+    barrier.gpu = gpu;
     return barrier;
 }
 
@@ -1231,19 +1213,6 @@ void vkl_barrier_images_queue(VklBarrier* barrier, uint32_t src_queue, uint32_t 
 
     b->src_queue = src_queue;
     b->dst_queue = dst_queue;
-}
-
-
-
-void vkl_barrier_destroy(VklBarrier* barrier)
-{
-    ASSERT(barrier != NULL);
-    if (barrier->obj.status < VKL_OBJECT_STATUS_CREATED)
-    {
-        log_trace("skip destruction of already-destroyed barrier");
-        return;
-    }
-    obj_destroyed(&barrier->obj);
 }
 
 
@@ -1371,14 +1340,15 @@ void vkl_fences_destroy(VklFences* fences)
 /*  Submit                                                                                       */
 /*************************************************************************************************/
 
-VklSubmit* vkl_submit(VklGpu* gpu)
+VklSubmit vkl_submit(VklGpu* gpu)
 {
     ASSERT(gpu != NULL);
     ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
 
-    INSTANCE_NEW(VklSubmit, submit, gpu->submits, gpu->submit_count)
+    // INSTANCE_NEW(VklSubmit, submit, gpu->submits, gpu->submit_count)
 
-    submit->gpu = gpu;
+    VklSubmit submit = {0};
+    submit.gpu = gpu;
 
     return submit;
 }
@@ -1482,19 +1452,6 @@ void vkl_submit_send(VklSubmit* submit, uint32_t queue_idx, VklFences* fence, ui
     VK_CHECK_RESULT(vkQueueSubmit(submit->gpu->queues.queues[queue_idx], 1, &submit_info, vfence));
 
     log_trace("submit done");
-}
-
-
-
-void vkl_submit_destroy(VklSubmit* submit)
-{
-    ASSERT(submit != NULL);
-    if (submit->obj.status < VKL_OBJECT_STATUS_CREATED)
-    {
-        log_trace("skip destruction of already-destroyed submits");
-        return;
-    }
-    obj_destroyed(&submit->obj);
 }
 
 
