@@ -1242,3 +1242,36 @@ create_dynamic_states(uint32_t count, VkDynamicState* dynamic_states)
     dynamic_state.dynamicStateCount = count;
     return dynamic_state;
 }
+
+
+
+/*************************************************************************************************/
+/*  Renderpass                                                                                   */
+/*************************************************************************************************/
+
+static VkAttachmentDescription create_attachment(
+    VkFormat format, VkAttachmentLoadOp load_op, VkAttachmentStoreOp store_op,
+    VkImageLayout src_layout, VkImageLayout dst_layout)
+{
+    VkAttachmentDescription attachment = {0};
+    attachment.format = format;
+    attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+    attachment.loadOp = load_op;
+    attachment.storeOp = store_op;
+    attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attachment.initialLayout = src_layout;
+    attachment.finalLayout = dst_layout;
+
+    return attachment;
+}
+
+
+
+static VkAttachmentReference create_attachment_ref(uint32_t attachment, VkImageLayout ref_layout)
+{
+    VkAttachmentReference attachment_ref = {0};
+    attachment_ref.attachment = attachment;
+    attachment_ref.layout = ref_layout;
+    return attachment_ref;
+}

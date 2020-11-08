@@ -51,19 +51,23 @@ TODO later
 #define VKL_MAX_BINDINGS_SIZE    32
 #define VKL_MAX_SEMAPHORES       1024
 #define VKL_MAX_FENCES           1024
+#define VKL_MAX_RENDERPASSES     32
 
 // Maximum number of command buffers per VklCommands struct
-#define VKL_MAX_COMMAND_BUFFERS_PER_SET VKL_MAX_SWAPCHAIN_IMAGES
-#define VKL_MAX_BUFFER_REGIONS_PER_SET  VKL_MAX_SWAPCHAIN_IMAGES
-#define VKL_MAX_IMAGES_PER_SET          VKL_MAX_SWAPCHAIN_IMAGES
-#define VKL_MAX_SEMAPHORES_PER_SET      VKL_MAX_SWAPCHAIN_IMAGES
-#define VKL_MAX_FENCES_PER_SET          VKL_MAX_SWAPCHAIN_IMAGES
-#define VKL_MAX_COMMANDS_PER_SUBMIT     16
-#define VKL_MAX_BARRIERS_PER_SET        16
-#define VKL_MAX_SEMAPHORES_PER_SUBMIT   16
-#define VKL_MAX_SHADERS_PER_GRAPHICS    8
-#define VKL_MAX_VERTEX_BINDINGS         16
-#define VKL_MAX_VERTEX_ATTRS            32
+#define VKL_MAX_COMMAND_BUFFERS_PER_SET     VKL_MAX_SWAPCHAIN_IMAGES
+#define VKL_MAX_BUFFER_REGIONS_PER_SET      VKL_MAX_SWAPCHAIN_IMAGES
+#define VKL_MAX_IMAGES_PER_SET              VKL_MAX_SWAPCHAIN_IMAGES
+#define VKL_MAX_SEMAPHORES_PER_SET          VKL_MAX_SWAPCHAIN_IMAGES
+#define VKL_MAX_FENCES_PER_SET              VKL_MAX_SWAPCHAIN_IMAGES
+#define VKL_MAX_COMMANDS_PER_SUBMIT         16
+#define VKL_MAX_BARRIERS_PER_SET            16
+#define VKL_MAX_SEMAPHORES_PER_SUBMIT       16
+#define VKL_MAX_SHADERS_PER_GRAPHICS        8
+#define VKL_MAX_ATTACHMENTS_PER_RENDERPASS  16
+#define VKL_MAX_SUBPASSES_PER_RENDERPASS    16
+#define VKL_MAX_DEPENDENCIES_PER_RENDERPASS 16
+#define VKL_MAX_VERTEX_BINDINGS             16
+#define VKL_MAX_VERTEX_ATTRS                32
 
 
 
@@ -94,6 +98,9 @@ typedef struct VklBarrier VklBarrier;
 typedef struct VklSemaphores VklSemaphores;
 typedef struct VklFences VklFences;
 typedef struct VklRenderpass VklRenderpass;
+typedef struct VklRenderpassAttachment VklRenderpassAttachment;
+typedef struct VklRenderpassSubpass VklRenderpassSubpass;
+typedef struct VklRenderpassDependency VklRenderpassDependency;
 typedef struct VklSubmit VklSubmit;
 
 
@@ -117,7 +124,7 @@ typedef enum
     VKL_OBJECT_TYPE_SAMPLER,
     VKL_OBJECT_TYPE_BINDINGS,
     VKL_OBJECT_TYPE_COMPUTE,
-    VKL_OBJECT_TYPE_PIPELINE,
+    VKL_OBJECT_TYPE_GRAPHICS,
     VKL_OBJECT_TYPE_BARRIER,
     VKL_OBJECT_TYPE_FENCES,
     VKL_OBJECT_TYPE_SEMAPHORES,
@@ -187,6 +194,13 @@ typedef enum
     VKL_DEPTH_TEST_DISABLE,
     VKL_DEPTH_TEST_ENABLE,
 } VklDepthTest;
+
+
+typedef enum
+{
+    VKL_RENDERPASS_ATTACHMENT_COLOR,
+    VKL_RENDERPASS_ATTACHMENT_DEPTH,
+} VklRenderpassAttachmentType;
 
 
 
@@ -357,17 +371,14 @@ struct VklGpu
     uint32_t graphics_count;
     VklGraphics* graphics;
 
+    uint32_t renderpass_count;
+    VklRenderpass* renderpasses;
+
     uint32_t semaphores_count;
     VklSemaphores* semaphores;
 
     uint32_t fences_count;
     VklFences* fences;
-
-    // uint32_t barrier_count;
-    // VklBarrier* barriers;
-
-    // uint32_t submit_count;
-    // VklSubmit* submits;
 };
 
 
@@ -636,10 +647,55 @@ struct VklSemaphores
 
 
 
+struct VklRenderpassAttachment
+{
+    VkImageLayout ref_layout;
+    VklRenderpassAttachmentType type;
+    VkFormat format;
+
+    VkImageLayout src_layout;
+    VkImageLayout dst_layout;
+
+    VkAttachmentLoadOp load_op;
+    VkAttachmentStoreOp store_op;
+};
+
+
+
+struct VklRenderpassSubpass
+{
+    uint32_t attachment_count;
+    uint32_t attachments[VKL_MAX_ATTACHMENTS_PER_RENDERPASS];
+};
+
+
+
+struct VklRenderpassDependency
+{
+    uint32_t src_subpass;
+    VkPipelineStageFlags src_stage;
+    VkAccessFlags src_access;
+
+    uint32_t dst_subpass;
+    VkPipelineStageFlags dst_stage;
+    VkAccessFlags dst_access;
+};
+
+
+
 struct VklRenderpass
 {
     VklObject obj;
     VklGpu* gpu;
+
+    uint32_t attachment_count;
+    VklRenderpassAttachment attachments[VKL_MAX_ATTACHMENTS_PER_RENDERPASS];
+
+    uint32_t subpass_count;
+    VklRenderpassSubpass subpasses[VKL_MAX_SUBPASSES_PER_RENDERPASS];
+
+    uint32_t dependency_count;
+    VklRenderpassDependency dependencies[VKL_MAX_DEPENDENCIES_PER_RENDERPASS];
 
     // TODO: framebuffers
     VkRenderPass renderpass;
@@ -975,6 +1031,32 @@ VKY_EXPORT void vkl_fences_destroy(VklFences* fences);
 /*************************************************************************************************/
 /*  Renderpass                                                                                   */
 /*************************************************************************************************/
+
+VKY_EXPORT VklRenderpass* vkl_renderpass(VklGpu* gpu);
+
+VKY_EXPORT void vkl_renderpass_attachment(
+    VklRenderpass* renderpass, uint32_t idx, VklRenderpassAttachmentType type, VkFormat format,
+    VkImageLayout ref_layout);
+
+VKY_EXPORT void vkl_renderpass_attachment_layout(
+    VklRenderpass* renderpass, uint32_t idx, VkImageLayout src_layout, VkImageLayout dst_layout);
+
+VKY_EXPORT void vkl_renderpass_attachment_ops(
+    VklRenderpass* renderpass, uint32_t idx, //
+    VkAttachmentLoadOp load_op, VkAttachmentStoreOp store_op);
+
+VKY_EXPORT void vkl_renderpass_subpass_attachment(
+    VklRenderpass* renderpass, uint32_t subpass_idx, uint32_t attachment_idx);
+
+VKY_EXPORT void vkl_renderpass_subpass_dependency(
+    VklRenderpass* renderpass, uint32_t dependency_idx,       //
+    uint32_t src_subpass, uint32_t dst_subpass,               //
+    VkPipelineStageFlags src_stage, VkAccessFlags src_access, //
+    VkPipelineStageFlags dst_stage, VkAccessFlags dst_access);
+
+VKY_EXPORT void vkl_renderpass_create(VklRenderpass* renderpass);
+
+VKY_EXPORT void vkl_renderpass_destroy(VklRenderpass* renderpass);
 
 
 

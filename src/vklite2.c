@@ -142,6 +142,7 @@ VklGpu* vkl_gpu(VklApp* app, uint32_t idx)
     INSTANCES_INIT(VklSemaphores, gpu, semaphores, VKL_MAX_SEMAPHORES, VKL_OBJECT_TYPE_SEMAPHORES)
     INSTANCES_INIT(VklFences, gpu, fences, VKL_MAX_FENCES, VKL_OBJECT_TYPE_FENCES)
     INSTANCES_INIT(VklCompute, gpu, computes, VKL_MAX_COMPUTES, VKL_OBJECT_TYPE_COMPUTE)
+    INSTANCES_INIT(VklGraphics, gpu, graphics, VKL_MAX_GRAPHICS, VKL_OBJECT_TYPE_GRAPHICS)
 
     return gpu;
 }
@@ -280,6 +281,12 @@ void vkl_gpu_destroy(VklGpu* gpu)
         vkl_compute_destroy(&gpu->computes[i]);
     }
 
+    log_trace("GPU destroy %d graphics", gpu->graphics_count);
+    for (uint32_t i = 0; i < gpu->graphics_count; i++)
+    {
+        vkl_graphics_destroy(&gpu->graphics[i]);
+    }
+
     log_trace("GPU destroy %d semaphores", gpu->semaphores_count);
     for (uint32_t i = 0; i < gpu->semaphores_count; i++)
     {
@@ -309,6 +316,8 @@ void vkl_gpu_destroy(VklGpu* gpu)
     INSTANCES_DESTROY(gpu->samplers)
     INSTANCES_DESTROY(gpu->bindings)
     INSTANCES_DESTROY(gpu->computes)
+    INSTANCES_DESTROY(gpu->graphics)
+    INSTANCES_DESTROY(gpu->renderpasses)
 
     obj_destroyed(&gpu->obj);
     log_trace("GPU #%d destroyed", gpu->idx);
@@ -1548,6 +1557,181 @@ void vkl_fences_destroy(VklFences* fences)
 /*************************************************************************************************/
 /*  Renderpass                                                                                   */
 /*************************************************************************************************/
+
+VklRenderpass* vkl_renderpass(VklGpu* gpu)
+{
+    ASSERT(gpu != NULL);
+    ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
+
+    INSTANCE_NEW(VklRenderpass, renderpass, gpu->renderpasses, gpu->renderpass_count)
+
+    renderpass->gpu = gpu;
+
+    return renderpass;
+}
+
+
+
+void vkl_renderpass_attachment(
+    VklRenderpass* renderpass, uint32_t idx, VklRenderpassAttachmentType type, VkFormat format,
+    VkImageLayout ref_layout)
+{
+    ASSERT(renderpass != NULL);
+    renderpass->attachments[idx].ref_layout = ref_layout;
+    renderpass->attachments[idx].type = type;
+    renderpass->attachments[idx].format = format;
+    renderpass->attachment_count = MAX(renderpass->attachment_count, idx + 1);
+}
+
+
+
+void vkl_renderpass_attachment_layout(
+    VklRenderpass* renderpass, uint32_t idx, VkImageLayout src_layout, VkImageLayout dst_layout)
+{
+    ASSERT(renderpass != NULL);
+    renderpass->attachments[idx].src_layout = src_layout;
+    renderpass->attachments[idx].dst_layout = dst_layout;
+    renderpass->attachment_count = MAX(renderpass->attachment_count, idx + 1);
+}
+
+
+
+void vkl_renderpass_attachment_ops(
+    VklRenderpass* renderpass, uint32_t idx, //
+    VkAttachmentLoadOp load_op, VkAttachmentStoreOp store_op)
+{
+    ASSERT(renderpass != NULL);
+    renderpass->attachments[idx].load_op = load_op;
+    renderpass->attachments[idx].store_op = store_op;
+    renderpass->attachment_count = MAX(renderpass->attachment_count, idx + 1);
+}
+
+
+
+void vkl_renderpass_subpass_attachment(
+    VklRenderpass* renderpass, uint32_t subpass_idx, uint32_t attachment_idx)
+{
+    ASSERT(renderpass != NULL);
+    renderpass->subpasses[subpass_idx]
+        .attachments[renderpass->subpasses[subpass_idx].attachment_count++] = attachment_idx;
+    renderpass->subpass_count = MAX(renderpass->subpass_count, subpass_idx + 1);
+}
+
+
+
+void vkl_renderpass_subpass_dependency(
+    VklRenderpass* renderpass, uint32_t dependency_idx,       //
+    uint32_t src_subpass, uint32_t dst_subpass,               //
+    VkPipelineStageFlags src_stage, VkAccessFlags src_access, //
+    VkPipelineStageFlags dst_stage, VkAccessFlags dst_access)
+{
+    ASSERT(renderpass != NULL);
+    renderpass->dependencies[dependency_idx].src_subpass = src_subpass;
+    renderpass->dependencies[dependency_idx].dst_subpass = dst_subpass;
+    renderpass->dependencies[dependency_idx].src_stage = src_stage;
+    renderpass->dependencies[dependency_idx].src_access = src_access;
+    renderpass->dependencies[dependency_idx].dst_stage = dst_stage;
+    renderpass->dependencies[dependency_idx].dst_access = dst_access;
+    renderpass->dependency_count = MAX(renderpass->dependency_count, dependency_idx + 1);
+}
+
+
+
+void vkl_renderpass_create(VklRenderpass* renderpass)
+{
+    ASSERT(renderpass != NULL);
+
+    log_trace("starting creation of render pass...");
+
+    // Attachments.
+    VkAttachmentDescription attachments[VKL_MAX_ATTACHMENTS_PER_RENDERPASS] = {0};
+    VkAttachmentReference attachment_refs[VKL_MAX_ATTACHMENTS_PER_RENDERPASS] = {0};
+    for (uint32_t i = 0; i < renderpass->attachment_count; i++)
+    {
+        attachments[i] = create_attachment(
+            renderpass->attachments[i].format,                                           //
+            renderpass->attachments[i].load_op, renderpass->attachments[i].store_op,     //
+            renderpass->attachments[i].src_layout, renderpass->attachments[i].dst_layout //
+        );
+        attachment_refs[i] = create_attachment_ref(i, renderpass->attachments[i].ref_layout);
+    }
+
+    // Subpasses.
+    VkSubpassDescription subpasses[VKL_MAX_SUBPASSES_PER_RENDERPASS] = {0};
+    VkAttachmentReference attachment_refs_matrix[VKL_MAX_ATTACHMENTS_PER_RENDERPASS]
+                                                [VKL_MAX_ATTACHMENTS_PER_RENDERPASS] = {0};
+    uint32_t attachment = 0;
+    uint32_t k = 0;
+    // bool has_depth_attachment = false;
+    for (uint32_t i = 0; i < renderpass->subpass_count; i++)
+    {
+        k = 0;
+        subpasses[i].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        for (uint32_t j = 0; j < renderpass->subpasses[i].attachment_count; j++)
+        {
+            attachment = renderpass->subpasses[i].attachments[j];
+            ASSERT(attachment < renderpass->attachment_count);
+            if (renderpass->attachments[attachment].type == VKL_RENDERPASS_ATTACHMENT_DEPTH)
+            {
+                subpasses[i].pDepthStencilAttachment = &attachment_refs[j];
+            }
+            else
+            {
+                attachment_refs_matrix[i][k++] =
+                    create_attachment_ref(i, renderpass->attachments[i].ref_layout);
+            }
+        }
+        subpasses[i].colorAttachmentCount = k;
+        subpasses[i].pColorAttachments = attachment_refs_matrix[i];
+    }
+
+    // Dependencies.
+    VkSubpassDependency dependencies[VKL_MAX_DEPENDENCIES_PER_RENDERPASS] = {0};
+    for (uint32_t i = 0; i < renderpass->dependency_count; i++)
+    {
+        dependencies[i].srcSubpass = renderpass->dependencies[i].src_subpass;
+        dependencies[i].srcAccessMask = renderpass->dependencies[i].src_access;
+        dependencies[i].srcStageMask = renderpass->dependencies[i].src_stage;
+
+        dependencies[i].dstSubpass = renderpass->dependencies[i].dst_subpass;
+        dependencies[i].dstAccessMask = renderpass->dependencies[i].dst_access;
+        dependencies[i].dstStageMask = renderpass->dependencies[i].dst_stage;
+    }
+
+    // Create render pass.
+    VkRenderPassCreateInfo render_pass_info = {0};
+    render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+
+    render_pass_info.attachmentCount = renderpass->attachment_count;
+    render_pass_info.pAttachments = attachments;
+
+    render_pass_info.subpassCount = renderpass->subpass_count;
+    render_pass_info.pSubpasses = subpasses;
+
+    render_pass_info.dependencyCount = renderpass->dependency_count;
+    render_pass_info.pDependencies = dependencies;
+
+    VK_CHECK_RESULT(vkCreateRenderPass(
+        renderpass->gpu->device, &render_pass_info, NULL, &renderpass->renderpass));
+
+    log_trace("render pass created");
+}
+
+
+
+void vkl_renderpass_destroy(VklRenderpass* renderpass)
+{
+    ASSERT(renderpass != NULL);
+    if (renderpass->obj.status < VKL_OBJECT_STATUS_CREATED)
+    {
+        log_trace("skip destruction of already-destroyed renderpass");
+        return;
+    }
+
+    log_trace("destroy renderpass");
+    // TODO
+    obj_destroyed(&renderpass->obj);
+}
 
 
 
