@@ -94,7 +94,8 @@ static VkResult create_debug_utils_messenger_EXT(
     }
 }
 
-
+// Keep track of the total num
+static uint32_t n_errors = 0;
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -105,7 +106,10 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
     // validation layer: /usr/lib/i386-linux-gnu/libvulkan_radeon.so: wrong ELF class: ELFCLASS32
     if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT &&
         strstr(pCallbackData->pMessage, "ELFCLASS32") == NULL)
+    {
         log_error("validation layer: %s", pCallbackData->pMessage);
+        n_errors++;
+    }
     return VK_FALSE;
 }
 
