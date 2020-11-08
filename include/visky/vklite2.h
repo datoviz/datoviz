@@ -62,6 +62,8 @@ TODO later
 #define VKL_MAX_BARRIERS_PER_SET        16
 #define VKL_MAX_SEMAPHORES_PER_SUBMIT   16
 #define VKL_MAX_SHADERS_PER_GRAPHICS    8
+#define VKL_MAX_VERTEX_BINDINGS         16
+#define VKL_MAX_VERTEX_ATTRS            32
 
 
 
@@ -83,6 +85,8 @@ typedef struct VklImages VklImages;
 typedef struct VklSampler VklSampler;
 typedef struct VklBindings VklBindings;
 typedef struct VklCompute VklCompute;
+typedef struct VklVertexBinding VklVertexBinding;
+typedef struct VklVertexAttr VklVertexAttr;
 typedef struct VklGraphics VklGraphics;
 typedef struct VklBarrierBuffer VklBarrierBuffer;
 typedef struct VklBarrierImage VklBarrierImage;
@@ -512,10 +516,31 @@ struct VklCompute
 
 
 
+struct VklVertexBinding
+{
+    uint32_t binding;
+    VkDeviceSize stride;
+};
+
+
+
+struct VklVertexAttr
+{
+    uint32_t binding;
+    uint32_t location;
+    VkFormat format;
+    VkDeviceSize offset;
+};
+
+
+
 struct VklGraphics
 {
     VklObject obj;
     VklGpu* gpu;
+
+    VklRenderpass* renderpass;
+    uint32_t subpass;
 
     char shader_path[1024];
 
@@ -529,7 +554,14 @@ struct VklGraphics
     VkPipeline pipeline;
     VklBindings* bindings;
 
+    uint32_t vertex_binding_count;
+    VklVertexBinding vertex_bindings[VKL_MAX_VERTEX_BINDINGS];
+
+    uint32_t vertex_attr_count;
+    VklVertexAttr vertex_attrs[VKL_MAX_VERTEX_ATTRS];
+
     uint32_t shader_count;
+    VkShaderStageFlagBits shader_stages[VKL_MAX_SHADERS_PER_GRAPHICS];
     VkShaderModule shader_modules[VKL_MAX_SHADERS_PER_GRAPHICS];
 };
 
@@ -610,6 +642,7 @@ struct VklRenderpass
     VklGpu* gpu;
 
     // TODO: framebuffers
+    VkRenderPass renderpass;
 };
 
 
@@ -852,16 +885,20 @@ VKY_EXPORT void vkl_compute_destroy(VklCompute* compute);
 
 VKY_EXPORT VklGraphics* vkl_graphics(VklGpu* gpu);
 
+VKY_EXPORT void
+vkl_graphics_renderpass(VklGraphics* graphics, VklRenderpass* renderpass, uint32_t subpass);
+
 VKY_EXPORT void vkl_graphics_topology(VklGraphics* graphics, VkPrimitiveTopology topology);
 
 VKY_EXPORT void
 vkl_graphics_shader(VklGraphics* graphics, VkShaderStageFlagBits stage, const char* shader_path);
 
 VKY_EXPORT void
-vkl_graphics_vertex_binding(VklGraphics* graphics, uint32_t binding, size_t stride);
+vkl_graphics_vertex_binding(VklGraphics* graphics, uint32_t binding, VkDeviceSize stride);
 
 VKY_EXPORT void vkl_graphics_vertex_attr(
-    VklGraphics* graphics, uint32_t binding, uint32_t idx, VkFormat format, size_t offset);
+    VklGraphics* graphics, uint32_t binding, uint32_t location, VkFormat format,
+    VkDeviceSize offset);
 
 VKY_EXPORT void vkl_graphics_blend(VklGraphics* graphics, VklBlendType blend_type);
 

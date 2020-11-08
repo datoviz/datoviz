@@ -1113,6 +1113,14 @@ VklGraphics* vkl_graphics(VklGpu* gpu)
 }
 
 
+void vkl_graphics_renderpass(VklGraphics* graphics, VklRenderpass* renderpass, uint32_t subpass)
+{
+    ASSERT(graphics != NULL);
+    graphics->renderpass = renderpass;
+    graphics->subpass = subpass;
+}
+
+
 
 void vkl_graphics_topology(VklGraphics* graphics, VkPrimitiveTopology topology)
 {
@@ -1136,19 +1144,25 @@ void vkl_graphics_shader(
 
 
 
-void vkl_graphics_vertex_binding(VklGraphics* graphics, uint32_t binding, size_t stride)
+void vkl_graphics_vertex_binding(VklGraphics* graphics, uint32_t binding, VkDeviceSize stride)
 {
     ASSERT(graphics != NULL);
-    // TODO
+    VklVertexBinding* vb = &graphics->vertex_bindings[graphics->vertex_binding_count++];
+    vb->binding = binding;
+    vb->stride = stride;
 }
 
 
 
 void vkl_graphics_vertex_attr(
-    VklGraphics* graphics, uint32_t binding, uint32_t idx, VkFormat format, size_t offset)
+    VklGraphics* graphics, uint32_t binding, uint32_t location, VkFormat format,
+    VkDeviceSize offset)
 {
     ASSERT(graphics != NULL);
-    // TODO
+    VklVertexAttr* va = &graphics->vertex_attrs[graphics->vertex_attr_count++];
+    va->binding = binding;
+    va->location = location;
+    va->format = format;
 }
 
 
@@ -1196,7 +1210,79 @@ void vkl_graphics_front_face(VklGraphics* graphics, VkFrontFace front_face)
 void vkl_graphics_create(VklGraphics* graphics)
 {
     ASSERT(graphics != NULL);
-    // TODO
+    log_trace("starting creation of graphics pipeline...");
+
+    VkPipelineVertexInputStateCreateInfo vertex_input_info = {0};
+    vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+
+    // Vertex bindings.
+    VkVertexInputBindingDescription bindings_info[VKL_MAX_VERTEX_BINDINGS] = {0};
+    for (uint32_t i = 0; i < graphics->vertex_binding_count; i++)
+    {
+        bindings_info[i].binding = graphics->vertex_bindings[i].binding;
+        bindings_info[i].stride = graphics->vertex_bindings[i].stride;
+        bindings_info[i].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    }
+    vertex_input_info.vertexBindingDescriptionCount = graphics->vertex_binding_count;
+    vertex_input_info.pVertexBindingDescriptions = bindings_info;
+
+    // Vertex attributes.
+    VkVertexInputAttributeDescription attrs_info[VKL_MAX_VERTEX_ATTRS] = {0};
+    for (uint32_t i = 0; i < graphics->vertex_attr_count; i++)
+    {
+        attrs_info[i].binding = graphics->vertex_attrs[i].binding;
+        attrs_info[i].location = graphics->vertex_attrs[i].location;
+        attrs_info[i].format = graphics->vertex_attrs[i].format;
+        attrs_info[i].offset = graphics->vertex_attrs[i].offset;
+    }
+    vertex_input_info.vertexAttributeDescriptionCount = graphics->vertex_attr_count;
+    vertex_input_info.pVertexAttributeDescriptions = attrs_info;
+
+    // Shaders.
+    VkPipelineShaderStageCreateInfo shader_stages[VKL_MAX_SHADERS_PER_GRAPHICS] = {0};
+    for (uint32_t i = 0; i < graphics->shader_count; i++)
+    {
+        shader_stages[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        shader_stages[i].stage = graphics->shader_stages[i];
+        shader_stages[i].module = graphics->shader_modules[i];
+        shader_stages[i].pName = "main";
+    }
+
+    // Pipeline.
+    VkPipelineInputAssemblyStateCreateInfo input_assembly =
+        create_input_assembly(graphics->topology);
+    VkPipelineRasterizationStateCreateInfo rasterizer = create_rasterizer();
+    VkPipelineMultisampleStateCreateInfo multisampling = create_multisampling();
+    VkPipelineColorBlendAttachmentState color_blend_attachment = create_color_blend_attachment();
+    VkPipelineColorBlendStateCreateInfo color_blending =
+        create_color_blending(&color_blend_attachment);
+    VkPipelineDepthStencilStateCreateInfo depth_stencil =
+        create_depth_stencil((bool)graphics->depth_test);
+    VkPipelineViewportStateCreateInfo viewport_state = create_viewport_state();
+    VkPipelineDynamicStateCreateInfo dynamic_state = create_dynamic_states(
+        2, (VkDynamicState[]){VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR});
+
+    // Finally create the pipeline.
+    VkGraphicsPipelineCreateInfo pipelineInfo = {0};
+    pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    pipelineInfo.stageCount = graphics->shader_count;
+    pipelineInfo.pStages = shader_stages;
+    pipelineInfo.pVertexInputState = &vertex_input_info;
+    pipelineInfo.pInputAssemblyState = &input_assembly;
+    pipelineInfo.pViewportState = &viewport_state;
+    pipelineInfo.pDynamicState = &dynamic_state;
+    pipelineInfo.pRasterizationState = &rasterizer;
+    pipelineInfo.pMultisampleState = &multisampling;
+    pipelineInfo.pColorBlendState = &color_blending;
+    pipelineInfo.pDepthStencilState = &depth_stencil;
+    pipelineInfo.layout = graphics->bindings->pipeline_layout;
+    pipelineInfo.renderPass = graphics->renderpass->renderpass;
+    pipelineInfo.subpass = graphics->subpass;
+    pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+
+    VK_CHECK_RESULT(vkCreateGraphicsPipelines(
+        graphics->gpu->device, VK_NULL_HANDLE, 1, &pipelineInfo, NULL, &graphics->pipeline));
+    log_trace("graphics pipeline created");
 }
 
 
