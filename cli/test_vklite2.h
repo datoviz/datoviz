@@ -361,6 +361,38 @@ static int vklite2_submit(VkyTestContext* context)
     TEST_END
 }
 
+static int vklite2_renderpass(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
+    vkl_gpu_create(gpu, 0);
+
+    VklRenderpass* renderpass = vkl_renderpass(gpu);
+    vkl_renderpass_attachment(
+        renderpass, 0, //
+        VKL_RENDERPASS_ATTACHMENT_COLOR, VK_FORMAT_B8G8R8A8_UNORM,
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    vkl_renderpass_attachment_layout(
+        renderpass, 0, //
+        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    vkl_renderpass_attachment_ops(
+        renderpass, 0, //
+        VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+    vkl_renderpass_subpass_attachment(renderpass, 0, 0);
+    vkl_renderpass_subpass_dependency(renderpass, 0, VK_SUBPASS_EXTERNAL, 0);
+    vkl_renderpass_subpass_dependency_stage(
+        renderpass, 0, //
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+    vkl_renderpass_subpass_dependency_access(
+        renderpass, 0, 0,
+        VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+    vkl_renderpass_create(renderpass);
+
+    TEST_END
+}
+
 
 
 static int vklite2_test_compute_only(VkyTestContext* context)

@@ -1049,10 +1049,16 @@ VKY_EXPORT void vkl_renderpass_subpass_attachment(
     VklRenderpass* renderpass, uint32_t subpass_idx, uint32_t attachment_idx);
 
 VKY_EXPORT void vkl_renderpass_subpass_dependency(
-    VklRenderpass* renderpass, uint32_t dependency_idx,       //
-    uint32_t src_subpass, uint32_t dst_subpass,               //
-    VkPipelineStageFlags src_stage, VkAccessFlags src_access, //
-    VkPipelineStageFlags dst_stage, VkAccessFlags dst_access);
+    VklRenderpass* renderpass, uint32_t dependency_idx, //
+    uint32_t src_subpass, uint32_t dst_subpass);
+
+VKY_EXPORT void vkl_renderpass_subpass_dependency_access(
+    VklRenderpass* renderpass, uint32_t dependency_idx, //
+    VkAccessFlags src_access, VkAccessFlags dst_access);
+
+VKY_EXPORT void vkl_renderpass_subpass_dependency_stage(
+    VklRenderpass* renderpass, uint32_t dependency_idx, //
+    VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage);
 
 VKY_EXPORT void vkl_renderpass_create(VklRenderpass* renderpass);
 

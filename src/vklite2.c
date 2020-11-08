@@ -143,6 +143,8 @@ VklGpu* vkl_gpu(VklApp* app, uint32_t idx)
     INSTANCES_INIT(VklFences, gpu, fences, VKL_MAX_FENCES, VKL_OBJECT_TYPE_FENCES)
     INSTANCES_INIT(VklCompute, gpu, computes, VKL_MAX_COMPUTES, VKL_OBJECT_TYPE_COMPUTE)
     INSTANCES_INIT(VklGraphics, gpu, graphics, VKL_MAX_GRAPHICS, VKL_OBJECT_TYPE_GRAPHICS)
+    INSTANCES_INIT(
+        VklRenderpass, gpu, renderpasses, VKL_MAX_RENDERPASSES, VKL_OBJECT_TYPE_RENDERPASS)
 
     return gpu;
 }
@@ -297,6 +299,12 @@ void vkl_gpu_destroy(VklGpu* gpu)
     for (uint32_t i = 0; i < gpu->fences_count; i++)
     {
         vkl_fences_destroy(&gpu->fences[i]);
+    }
+
+    log_trace("GPU destroy %d renderpasses", gpu->renderpass_count);
+    for (uint32_t i = 0; i < gpu->renderpass_count; i++)
+    {
+        vkl_renderpass_destroy(&gpu->renderpasses[i]);
     }
 
     if (gpu->dset_pool != 0)
@@ -1219,6 +1227,9 @@ void vkl_graphics_front_face(VklGraphics* graphics, VkFrontFace front_face)
 void vkl_graphics_create(VklGraphics* graphics)
 {
     ASSERT(graphics != NULL);
+    ASSERT(graphics->gpu != NULL);
+    ASSERT(graphics->gpu->device != 0);
+
     log_trace("starting creation of graphics pipeline...");
 
     VkPipelineVertexInputStateCreateInfo vertex_input_info = {0};
@@ -1292,6 +1303,7 @@ void vkl_graphics_create(VklGraphics* graphics)
     VK_CHECK_RESULT(vkCreateGraphicsPipelines(
         graphics->gpu->device, VK_NULL_HANDLE, 1, &pipelineInfo, NULL, &graphics->pipeline));
     log_trace("graphics pipeline created");
+    obj_created(&graphics->obj);
 }
 
 
@@ -1565,6 +1577,7 @@ VklRenderpass* vkl_renderpass(VklGpu* gpu)
 
     INSTANCE_NEW(VklRenderpass, renderpass, gpu->renderpasses, gpu->renderpass_count)
 
+    ASSERT(renderpass != NULL);
     renderpass->gpu = gpu;
 
     return renderpass;
@@ -1620,19 +1633,35 @@ void vkl_renderpass_subpass_attachment(
 
 
 void vkl_renderpass_subpass_dependency(
-    VklRenderpass* renderpass, uint32_t dependency_idx,       //
-    uint32_t src_subpass, uint32_t dst_subpass,               //
-    VkPipelineStageFlags src_stage, VkAccessFlags src_access, //
-    VkPipelineStageFlags dst_stage, VkAccessFlags dst_access)
+    VklRenderpass* renderpass, uint32_t dependency_idx, //
+    uint32_t src_subpass, uint32_t dst_subpass)
 {
     ASSERT(renderpass != NULL);
     renderpass->dependencies[dependency_idx].src_subpass = src_subpass;
     renderpass->dependencies[dependency_idx].dst_subpass = dst_subpass;
-    renderpass->dependencies[dependency_idx].src_stage = src_stage;
-    renderpass->dependencies[dependency_idx].src_access = src_access;
-    renderpass->dependencies[dependency_idx].dst_stage = dst_stage;
-    renderpass->dependencies[dependency_idx].dst_access = dst_access;
     renderpass->dependency_count = MAX(renderpass->dependency_count, dependency_idx + 1);
+}
+
+
+
+void vkl_renderpass_subpass_dependency_access(
+    VklRenderpass* renderpass, uint32_t dependency_idx, //
+    VkAccessFlags src_access, VkAccessFlags dst_access)
+{
+    ASSERT(renderpass != NULL);
+    renderpass->dependencies[dependency_idx].src_access = src_access;
+    renderpass->dependencies[dependency_idx].dst_access = dst_access;
+}
+
+
+
+void vkl_renderpass_subpass_dependency_stage(
+    VklRenderpass* renderpass, uint32_t dependency_idx, //
+    VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage)
+{
+    ASSERT(renderpass != NULL);
+    renderpass->dependencies[dependency_idx].src_stage = src_stage;
+    renderpass->dependencies[dependency_idx].dst_stage = dst_stage;
 }
 
 
@@ -1641,7 +1670,9 @@ void vkl_renderpass_create(VklRenderpass* renderpass)
 {
     ASSERT(renderpass != NULL);
 
-    log_trace("starting creation of render pass...");
+    ASSERT(renderpass->gpu != NULL);
+    ASSERT(renderpass->gpu->device != 0);
+    log_trace("starting creation of renderpass...");
 
     // Attachments.
     VkAttachmentDescription attachments[VKL_MAX_ATTACHMENTS_PER_RENDERPASS] = {0};
@@ -1698,7 +1729,7 @@ void vkl_renderpass_create(VklRenderpass* renderpass)
         dependencies[i].dstStageMask = renderpass->dependencies[i].dst_stage;
     }
 
-    // Create render pass.
+    // Create renderpass.
     VkRenderPassCreateInfo render_pass_info = {0};
     render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 
@@ -1714,7 +1745,8 @@ void vkl_renderpass_create(VklRenderpass* renderpass)
     VK_CHECK_RESULT(vkCreateRenderPass(
         renderpass->gpu->device, &render_pass_info, NULL, &renderpass->renderpass));
 
-    log_trace("render pass created");
+    log_trace("renderpass created");
+    obj_created(&renderpass->obj);
 }
 
 
@@ -1729,7 +1761,7 @@ void vkl_renderpass_destroy(VklRenderpass* renderpass)
     }
 
     log_trace("destroy renderpass");
-    // TODO
+    vkDestroyRenderPass(renderpass->gpu->device, renderpass->renderpass, NULL);
     obj_destroyed(&renderpass->obj);
 }
 
