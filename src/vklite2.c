@@ -208,6 +208,25 @@ void vkl_gpu_create(VklGpu* gpu, VkSurfaceKHR surface)
 
 
 
+void vkl_gpu_queue_wait(VklGpu* gpu, uint32_t queue_idx)
+{
+    ASSERT(gpu != NULL);
+    ASSERT(queue_idx < VKL_MAX_QUEUES);
+    log_trace("waiting for queue #%d", queue_idx);
+    vkQueueWaitIdle(gpu->queues.queues[queue_idx]);
+}
+
+
+
+void vkl_gpu_wait(VklGpu* gpu)
+{
+    ASSERT(gpu != NULL);
+    log_trace("waiting for device");
+    vkDeviceWaitIdle(gpu->device);
+}
+
+
+
 void vkl_gpu_destroy(VklGpu* gpu)
 {
     log_trace("starting destruction of GPU #%d...", gpu->idx);
@@ -223,7 +242,7 @@ void vkl_gpu_destroy(VklGpu* gpu)
     ASSERT(device != 0);
 
     // Destroy the command pool.
-    log_trace("destroy %d command pool(s)", gpu->queues.queue_family_count);
+    log_trace("GPU destroy %d command pool(s)", gpu->queues.queue_family_count);
     for (uint32_t i = 0; i < gpu->queues.queue_family_count; i++)
     {
         if (gpu->queues.cmd_pools[i] != 0)
@@ -233,43 +252,55 @@ void vkl_gpu_destroy(VklGpu* gpu)
         }
     }
 
-    log_trace("destroy %d buffers", gpu->buffers_count);
+    log_trace("GPU destroy %d buffers", gpu->buffers_count);
     for (uint32_t i = 0; i < gpu->buffers_count; i++)
     {
         vkl_buffer_destroy(&gpu->buffers[i]);
     }
 
-    log_trace("destroy %d sets of images", gpu->images_count);
+    log_trace("GPU destroy %d sets of images", gpu->images_count);
     for (uint32_t i = 0; i < gpu->images_count; i++)
     {
         vkl_images_destroy(&gpu->images[i]);
     }
 
-    log_trace("destroy %d samplers", gpu->sampler_count);
+    log_trace("GPU destroy %d samplers", gpu->sampler_count);
     for (uint32_t i = 0; i < gpu->sampler_count; i++)
     {
         vkl_sampler_destroy(&gpu->samplers[i]);
     }
 
-    log_trace("destroy %d bindings", gpu->bindings_count);
+    log_trace("GPU destroy %d bindings", gpu->bindings_count);
     for (uint32_t i = 0; i < gpu->bindings_count; i++)
     {
         vkl_bindings_destroy(&gpu->bindings[i]);
     }
 
-    log_trace("destroy %d computes", gpu->compute_count);
+    log_trace("GPU destroy %d computes", gpu->compute_count);
     for (uint32_t i = 0; i < gpu->compute_count; i++)
     {
         vkl_compute_destroy(&gpu->computes[i]);
     }
 
-    log_trace("destroy %d barriers", gpu->barrier_count);
+    log_trace("GPU destroy %d barriers", gpu->barrier_count);
     for (uint32_t i = 0; i < gpu->barrier_count; i++)
     {
         vkl_barrier_destroy(&gpu->barriers[i]);
     }
 
-    log_trace("destroy %d submits", gpu->submit_count);
+    log_trace("GPU destroy %d semaphores", gpu->semaphores_count);
+    for (uint32_t i = 0; i < gpu->semaphores_count; i++)
+    {
+        vkl_semaphores_destroy(&gpu->semaphores[i]);
+    }
+
+    log_trace("GPU destroy %d fences", gpu->fences_count);
+    for (uint32_t i = 0; i < gpu->fences_count; i++)
+    {
+        vkl_fences_destroy(&gpu->fences[i]);
+    }
+
+    log_trace("GPU destroy %d submits", gpu->submit_count);
     for (uint32_t i = 0; i < gpu->submit_count; i++)
     {
         vkl_submit_destroy(&gpu->submits[i]);
@@ -1018,7 +1049,7 @@ VklCompute* vkl_compute(VklGpu* gpu, const char* shader_path)
     INSTANCE_NEW(VklCompute, compute, gpu->computes, gpu->compute_count)
 
     compute->gpu = gpu;
-    compute->shader_path = shader_path;
+    strcpy(compute->shader_path, shader_path);
 
     return compute;
 }
@@ -1228,12 +1259,18 @@ VklSemaphores* vkl_semaphores(VklGpu* gpu, uint32_t count)
 
     INSTANCE_NEW(VklSemaphores, semaphores, gpu->semaphores, gpu->semaphores_count)
 
+    ASSERT(count > 0);
+    log_trace("create set of %d semaphore(s)", count);
+
     semaphores->gpu = gpu;
+    semaphores->count = count;
 
     VkSemaphoreCreateInfo info = {0};
     info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
     for (uint32_t i = 0; i < count; i++)
         VK_CHECK_RESULT(vkCreateSemaphore(gpu->device, &info, NULL, &semaphores->semaphores[i]));
+
+    obj_created(&semaphores->obj);
 
     return semaphores;
 }
@@ -1248,6 +1285,10 @@ void vkl_semaphores_destroy(VklSemaphores* semaphores)
         log_trace("skip destruction of already-destroyed semaphores");
         return;
     }
+
+    ASSERT(semaphores->count > 0);
+    log_trace("destroy set of %d semaphore(s)", semaphores->count);
+
     for (uint32_t i = 0; i < semaphores->count; i++)
         vkDestroySemaphore(semaphores->gpu->device, semaphores->semaphores[i], NULL);
     obj_destroyed(&semaphores->obj);
@@ -1266,13 +1307,19 @@ VklFences* vkl_fences(VklGpu* gpu, uint32_t count)
 
     INSTANCE_NEW(VklFences, fences, gpu->fences, gpu->fences_count)
 
+    ASSERT(count > 0);
+    log_trace("create set of %d fences(s)", count);
+
     fences->gpu = gpu;
+    fences->count = count;
 
     VkFenceCreateInfo info = {0};
     info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
     for (uint32_t i = 0; i < count; i++)
         VK_CHECK_RESULT(vkCreateFence(gpu->device, &info, NULL, &fences->fences[i]));
+
+    obj_created(&fences->obj);
 
     return fences;
 }
@@ -1303,6 +1350,10 @@ void vkl_fences_destroy(VklFences* fences)
         log_trace("skip destruction of already-destroyed fences");
         return;
     }
+
+    ASSERT(fences->count > 0);
+    log_trace("destroy set of %d fences(s)", fences->count);
+
     for (uint32_t i = 0; i < fences->count; i++)
         vkDestroyFence(fences->gpu->device, fences->fences[i], NULL);
     obj_destroyed(&fences->obj);
@@ -1387,6 +1438,7 @@ void vkl_submit_signal_semaphores(VklSubmit* submit, VklSemaphores* semaphores, 
 void vkl_submit_send(VklSubmit* submit, uint32_t queue_idx, VklFences* fence, uint32_t fence_idx)
 {
     ASSERT(submit != NULL);
+    log_trace("starting command buffer submission...");
 
     VkSubmitInfo submit_info = {0};
     submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -1396,6 +1448,7 @@ void vkl_submit_send(VklSubmit* submit, uint32_t queue_idx, VklFences* fence, ui
     {
         wait_semaphores[i] =
             submit->wait_semaphores[i]->semaphores[submit->wait_semaphores_idx[i]];
+        ASSERT(submit->wait_stages[i] != 0);
     }
 
     VkSemaphore signal_semaphores[VKL_MAX_SEMAPHORES_PER_SUBMIT] = {0};
@@ -1421,9 +1474,14 @@ void vkl_submit_send(VklSubmit* submit, uint32_t queue_idx, VklFences* fence, ui
     submit_info.signalSemaphoreCount = submit->signal_semaphores_count;
     submit_info.pSignalSemaphores = signal_semaphores;
 
-    VK_CHECK_RESULT(vkResetFences(submit->gpu->device, 1, &fence->fences[fence_idx]));
-    VK_CHECK_RESULT(vkQueueSubmit(
-        submit->gpu->queues.queues[queue_idx], 1, &submit_info, fence->fences[fence_idx]));
+    VkFence vfence = fence == NULL ? 0 : fence->fences[fence_idx];
+    uint32_t fence_count = fence == NULL ? 0 : 1;
+
+    if (fence != NULL)
+        VK_CHECK_RESULT(vkResetFences(submit->gpu->device, fence_count, &vfence));
+    VK_CHECK_RESULT(vkQueueSubmit(submit->gpu->queues.queues[queue_idx], 1, &submit_info, vfence));
+
+    log_trace("submit done");
 }
 
 

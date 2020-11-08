@@ -264,6 +264,103 @@ static int vklite2_barrier(VkyTestContext* context)
     TEST_END
 }
 
+static int vklite2_submit(VkyTestContext* context)
+{
+
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    vkl_gpu_queue(gpu, VKL_QUEUE_COMPUTE, 0);
+    vkl_gpu_queue(gpu, VKL_QUEUE_COMPUTE, 1);
+    vkl_gpu_create(gpu, 0);
+
+    // Create the compute pipeline.
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/spirv/pow2.comp.spv", DATA_DIR);
+    VklCompute* compute1 = vkl_compute(gpu, path);
+
+    snprintf(path, sizeof(path), "%s/spirv/sum.comp.spv", DATA_DIR);
+    VklCompute* compute2 = vkl_compute(gpu, path);
+
+    // Create the buffer
+    VklBuffer* buffer = vkl_buffer(gpu);
+    const uint32_t n = 20;
+    const VkDeviceSize size = n * sizeof(float);
+    vkl_buffer_size(buffer, size, 0);
+    vkl_buffer_usage(
+        buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                    VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+    vkl_buffer_memory(
+        buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vkl_buffer_queue_access(buffer, 0);
+    vkl_buffer_queue_access(buffer, 1);
+    vkl_buffer_create(buffer);
+
+    // Send some data to the GPU.
+    float* data = calloc(n, sizeof(float));
+    for (uint32_t i = 0; i < n; i++)
+        data[i] = (float)i;
+    vkl_buffer_upload(buffer, 0, size, data);
+
+    // Create the bindings.
+    VklBindings* bindings1 = vkl_bindings(gpu);
+    vkl_bindings_slot(bindings1, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+    vkl_bindings_create(bindings1, 1);
+    VklBufferRegions br1 = {.buffer = buffer, .size = size, .count = 1};
+    vkl_bindings_buffer(bindings1, 0, &br1);
+
+    VklBindings* bindings2 = vkl_bindings(gpu);
+    vkl_bindings_slot(bindings2, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+    vkl_bindings_create(bindings2, 1);
+    VklBufferRegions br2 = {.buffer = buffer, .size = size, .count = 1};
+    vkl_bindings_buffer(bindings2, 0, &br2);
+
+    vkl_bindings_update(bindings1);
+    vkl_bindings_update(bindings2);
+
+    // Link the bindings1 to the compute1 pipeline and create it.
+    vkl_compute_bindings(compute1, bindings1);
+    vkl_compute_create(compute1);
+
+    // Link the bindings1 to the compute2 pipeline and create it.
+    vkl_compute_bindings(compute2, bindings2);
+    vkl_compute_create(compute2);
+
+    // Command buffers.
+    VklCommands* cmds1 = vkl_commands(gpu, 0, 1);
+    vkl_cmd_begin(cmds1);
+    vkl_cmd_compute(cmds1, compute1, (uvec3){20, 1, 1});
+    vkl_cmd_end(cmds1);
+
+    VklCommands* cmds2 = vkl_commands(gpu, 0, 1);
+    vkl_cmd_begin(cmds2);
+    vkl_cmd_compute(cmds2, compute2, (uvec3){20, 1, 1});
+    vkl_cmd_end(cmds2);
+
+    // Semaphores
+    VklSemaphores* semaphores = vkl_semaphores(gpu, 1);
+
+    // Submit.
+    VklSubmit* submit1 = vkl_submit(gpu);
+    vkl_submit_commands(submit1, cmds1, 0);
+    vkl_submit_signal_semaphores(submit1, semaphores, 0);
+    vkl_submit_send(submit1, 0, NULL, 0);
+
+    VklSubmit* submit2 = vkl_submit(gpu);
+    vkl_submit_commands(submit2, cmds2, 0);
+    vkl_submit_wait_semaphores(submit2, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, semaphores, 0);
+    vkl_submit_send(submit2, 0, NULL, 0);
+
+    vkl_gpu_wait(gpu);
+
+    // Get back the data.
+    float* data2 = calloc(n, sizeof(float));
+    vkl_buffer_download(buffer, 0, size, data2);
+    for (uint32_t i = 0; i < n; i++)
+        ASSERT(data2[i] == 2 * i + 1);
+
+    TEST_END
+}
+
 
 
 static int vklite2_test_compute_only(VkyTestContext* context)

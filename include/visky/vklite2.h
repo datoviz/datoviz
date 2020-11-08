@@ -485,7 +485,7 @@ struct VklCompute
     VklObject obj;
     VklGpu* gpu;
 
-    const char* shader_path;
+    char shader_path[1024];
 
     VkPipeline pipeline;
     VklBindings* bindings;
@@ -640,6 +640,10 @@ VKY_EXPORT void vkl_gpu_request_features(VklGpu* gpu, VkPhysicalDeviceFeatures r
 VKY_EXPORT void vkl_gpu_queue(VklGpu* gpu, VklQueueType type, uint32_t idx);
 
 VKY_EXPORT void vkl_gpu_create(VklGpu* gpu, VkSurfaceKHR surface);
+
+VKY_EXPORT void vkl_gpu_queue_wait(VklGpu* gpu, uint32_t queue_idx);
+
+VKY_EXPORT void vkl_gpu_wait(VklGpu* gpu);
 
 VKY_EXPORT void vkl_gpu_destroy(VklGpu* gpu);
 
