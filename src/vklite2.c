@@ -143,6 +143,7 @@ VklGpu* vkl_gpu(VklApp* app, uint32_t idx)
     INSTANCES_INIT(VklFences, gpu, fences, VKL_MAX_FENCES, VKL_OBJECT_TYPE_FENCES)
     INSTANCES_INIT(VklCompute, gpu, computes, VKL_MAX_COMPUTES, VKL_OBJECT_TYPE_COMPUTE)
     INSTANCES_INIT(VklBarrier, gpu, barriers, VKL_MAX_BARRIERS, VKL_OBJECT_TYPE_BARRIER)
+    INSTANCES_INIT(VklSubmit, gpu, submits, VKL_MAX_SUBMITS, VKL_OBJECT_TYPE_SUBMIT)
 
     return gpu;
 }
@@ -268,6 +269,12 @@ void vkl_gpu_destroy(VklGpu* gpu)
         vkl_barrier_destroy(&gpu->barriers[i]);
     }
 
+    log_trace("destroy %d submits", gpu->submit_count);
+    for (uint32_t i = 0; i < gpu->submit_count; i++)
+    {
+        vkl_submit_destroy(&gpu->submits[i]);
+    }
+
     if (gpu->dset_pool != 0)
     {
         log_trace("destroy descriptor pool");
@@ -286,6 +293,7 @@ void vkl_gpu_destroy(VklGpu* gpu)
     INSTANCES_DESTROY(gpu->bindings)
     INSTANCES_DESTROY(gpu->computes)
     INSTANCES_DESTROY(gpu->barriers)
+    INSTANCES_DESTROY(gpu->submits)
 
     obj_destroyed(&gpu->obj);
     log_trace("GPU #%d destroyed", gpu->idx);
@@ -1311,6 +1319,125 @@ void vkl_fences_destroy(VklFences* fences)
 /*************************************************************************************************/
 /*  Submit                                                                                       */
 /*************************************************************************************************/
+
+VklSubmit* vkl_submit(VklGpu* gpu)
+{
+    ASSERT(gpu != NULL);
+    ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
+
+    INSTANCE_NEW(VklSubmit, submit, gpu->submits, gpu->submit_count)
+
+    submit->gpu = gpu;
+
+    return submit;
+}
+
+
+
+void vkl_submit_commands(VklSubmit* submit, VklCommands* commands, int32_t idx)
+{
+    ASSERT(submit != NULL);
+    ASSERT(commands != NULL);
+
+    uint32_t n = submit->commands_count;
+    ASSERT(n < VKL_MAX_COMMANDS_PER_SUBMIT);
+    submit->commands[n] = commands;
+    submit->commands_idx[n] = idx;
+    submit->commands_count++;
+}
+
+
+
+void vkl_submit_wait_semaphores(
+    VklSubmit* submit, VkPipelineStageFlags stage, VklSemaphores* semaphores, int32_t idx)
+{
+    ASSERT(submit != NULL);
+
+    ASSERT(idx >= 0); // TODO: support idx=-1 <==> all semaphores
+    ASSERT(idx < VKL_MAX_SEMAPHORES_PER_SET);
+    uint32_t n = submit->wait_semaphores_count;
+    ASSERT(n < VKL_MAX_SEMAPHORES_PER_SUBMIT);
+
+    submit->wait_semaphores[n] = semaphores;
+    submit->wait_stages[n] = stage;
+    submit->wait_semaphores_idx[n] = idx;
+
+    submit->wait_semaphores_count++;
+}
+
+
+
+void vkl_submit_signal_semaphores(VklSubmit* submit, VklSemaphores* semaphores, int32_t idx)
+{
+    ASSERT(submit != NULL);
+
+    ASSERT(idx >= 0); // TODO: support idx=-1 <==> all semaphores
+    ASSERT(idx < VKL_MAX_SEMAPHORES_PER_SET);
+    uint32_t n = submit->signal_semaphores_count;
+    ASSERT(n < VKL_MAX_SEMAPHORES_PER_SUBMIT);
+
+    submit->signal_semaphores[n] = semaphores;
+    submit->signal_semaphores_idx[n] = idx;
+
+    submit->signal_semaphores_count++;
+}
+
+
+
+void vkl_submit_send(VklSubmit* submit, uint32_t queue_idx, VklFences* fence, uint32_t fence_idx)
+{
+    ASSERT(submit != NULL);
+
+    VkSubmitInfo submit_info = {0};
+    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+    VkSemaphore wait_semaphores[VKL_MAX_SEMAPHORES_PER_SUBMIT] = {0};
+    for (uint32_t i = 0; i < submit->wait_semaphores_count; i++)
+    {
+        wait_semaphores[i] =
+            submit->wait_semaphores[i]->semaphores[submit->wait_semaphores_idx[i]];
+    }
+
+    VkSemaphore signal_semaphores[VKL_MAX_SEMAPHORES_PER_SUBMIT] = {0};
+    for (uint32_t i = 0; i < submit->signal_semaphores_count; i++)
+    {
+        signal_semaphores[i] =
+            submit->signal_semaphores[i]->semaphores[submit->signal_semaphores_idx[i]];
+    }
+
+    VkCommandBuffer cmd_bufs[VKL_MAX_COMMANDS_PER_SUBMIT] = {0};
+    for (uint32_t i = 0; i < submit->commands_count; i++)
+    {
+        cmd_bufs[i] = submit->commands[i]->cmds[submit->commands_idx[i]];
+    }
+
+    submit_info.commandBufferCount = submit->commands_count;
+    submit_info.pCommandBuffers = cmd_bufs;
+
+    submit_info.waitSemaphoreCount = submit->wait_semaphores_count;
+    submit_info.pWaitSemaphores = wait_semaphores;
+    submit_info.pWaitDstStageMask = submit->wait_stages;
+
+    submit_info.signalSemaphoreCount = submit->signal_semaphores_count;
+    submit_info.pSignalSemaphores = signal_semaphores;
+
+    VK_CHECK_RESULT(vkResetFences(submit->gpu->device, 1, &fence->fences[fence_idx]));
+    VK_CHECK_RESULT(vkQueueSubmit(
+        submit->gpu->queues.queues[queue_idx], 1, &submit_info, fence->fences[fence_idx]));
+}
+
+
+
+void vkl_submit_destroy(VklSubmit* submit)
+{
+    ASSERT(submit != NULL);
+    if (submit->obj.status < VKL_OBJECT_STATUS_CREATED)
+    {
+        log_trace("skip destruction of already-destroyed submits");
+        return;
+    }
+    obj_destroyed(&submit->obj);
+}
 
 
 
