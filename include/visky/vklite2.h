@@ -37,19 +37,21 @@ TODO later
 /*************************************************************************************************/
 
 #define VKL_MAX_GPUS             64
-#define VKL_MAX_WINDOWS          256
-#define VKL_MAX_SWAPCHAIN_IMAGES 8
-#define VKL_MAX_COMMANDS         256
-#define VKL_MAX_BUFFERS          256
-#define VKL_MAX_IMAGES           256
-#define VKL_MAX_BINDINGS         256
+#define VKL_MAX_WINDOWS          1024
+#define VKL_MAX_SWAPCHAIN_IMAGES 16
+#define VKL_MAX_COMMANDS         1024
+#define VKL_MAX_BUFFERS          1024
+#define VKL_MAX_IMAGES           1024
+#define VKL_MAX_BINDINGS         1024
 #define VKL_MAX_QUEUE_FAMILIES   16
 #define VKL_MAX_QUEUES           16
-#define VKL_MAX_DESCRIPTOR_SETS  256
-#define VKL_MAX_COMPUTES         256
+#define VKL_MAX_DESCRIPTOR_SETS  1024
+#define VKL_MAX_COMPUTES         1024
+#define VKL_MAX_GRAPHICS         1024
 #define VKL_MAX_BINDINGS_SIZE    32
-#define VKL_MAX_SEMAPHORES       256
-#define VKL_MAX_FENCES           256
+#define VKL_MAX_SEMAPHORES       1024
+#define VKL_MAX_FENCES           1024
+
 // Maximum number of command buffers per VklCommands struct
 #define VKL_MAX_COMMAND_BUFFERS_PER_SET VKL_MAX_SWAPCHAIN_IMAGES
 #define VKL_MAX_BUFFER_REGIONS_PER_SET  VKL_MAX_SWAPCHAIN_IMAGES
@@ -59,6 +61,7 @@ TODO later
 #define VKL_MAX_COMMANDS_PER_SUBMIT     16
 #define VKL_MAX_BARRIERS_PER_SET        16
 #define VKL_MAX_SEMAPHORES_PER_SUBMIT   16
+#define VKL_MAX_SHADERS_PER_GRAPHICS    8
 
 
 
@@ -80,7 +83,7 @@ typedef struct VklImages VklImages;
 typedef struct VklSampler VklSampler;
 typedef struct VklBindings VklBindings;
 typedef struct VklCompute VklCompute;
-typedef struct VklPipeline VklPipeline;
+typedef struct VklGraphics VklGraphics;
 typedef struct VklBarrierBuffer VklBarrierBuffer;
 typedef struct VklBarrierImage VklBarrierImage;
 typedef struct VklBarrier VklBarrier;
@@ -166,6 +169,20 @@ typedef enum
     VKL_TEXTURE_AXIS_V,
     VKL_TEXTURE_AXIS_W,
 } VklTextureAxis;
+
+
+typedef enum
+{
+    VKL_BLEND_DISABLE,
+    VKL_BLEND_ENABLE,
+} VklBlendType;
+
+
+typedef enum
+{
+    VKL_DEPTH_TEST_DISABLE,
+    VKL_DEPTH_TEST_ENABLE,
+} VklDepthTest;
 
 
 
@@ -333,6 +350,9 @@ struct VklGpu
     uint32_t compute_count;
     VklCompute* computes;
 
+    uint32_t graphics_count;
+    VklGraphics* graphics;
+
     uint32_t semaphores_count;
     VklSemaphores* semaphores;
 
@@ -492,11 +512,27 @@ struct VklCompute
 
 
 
-struct VklPipeline
+struct VklGraphics
 {
     VklObject obj;
     VklGpu* gpu;
+
+    char shader_path[1024];
+
+    VkPrimitiveTopology topology;
+    VklBlendType blend_type;
+    VklDepthTest depth_test;
+    VkPolygonMode polygon_mode;
+    VkCullModeFlags cull_mode;
+    VkFrontFace front_face;
+
+    VkPipeline pipeline;
+    VklBindings* bindings;
+
+    uint32_t shader_count;
+    VkShaderModule shader_modules[VKL_MAX_SHADERS_PER_GRAPHICS];
 };
+
 
 
 struct VklBarrierBuffer
@@ -813,6 +849,35 @@ VKY_EXPORT void vkl_compute_destroy(VklCompute* compute);
 /*************************************************************************************************/
 /*  Pipeline                                                                                     */
 /*************************************************************************************************/
+
+VKY_EXPORT VklGraphics* vkl_graphics(VklGpu* gpu);
+
+VKY_EXPORT void vkl_graphics_topology(VklGraphics* graphics, VkPrimitiveTopology topology);
+
+VKY_EXPORT void
+vkl_graphics_shader(VklGraphics* graphics, VkShaderStageFlagBits stage, const char* shader_path);
+
+VKY_EXPORT void
+vkl_graphics_vertex_binding(VklGraphics* graphics, uint32_t binding, size_t stride);
+
+VKY_EXPORT void vkl_graphics_vertex_attr(
+    VklGraphics* graphics, uint32_t binding, uint32_t idx, VkFormat format, size_t offset);
+
+VKY_EXPORT void vkl_graphics_blend(VklGraphics* graphics, VklBlendType blend_type);
+
+VKY_EXPORT void vkl_graphics_depth_test(VklGraphics* graphics, VklDepthTest depth_test);
+
+VKY_EXPORT void vkl_graphics_polygon_mode(VklGraphics* graphics, VkPolygonMode polygon_mode);
+
+VKY_EXPORT void vkl_graphics_cull_mode(VklGraphics* graphics, VkCullModeFlags cull_mode);
+
+VKY_EXPORT void vkl_graphics_front_face(VklGraphics* graphics, VkFrontFace front_face);
+
+VKY_EXPORT void vkl_graphics_create(VklGraphics* graphics);
+
+VKY_EXPORT void vkl_graphics_bindings(VklGraphics* graphics, VklBindings* bindings);
+
+VKY_EXPORT void vkl_graphics_destroy(VklGraphics* graphics);
 
 
 

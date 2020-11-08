@@ -1042,6 +1042,7 @@ VklCompute* vkl_compute(VklGpu* gpu, const char* shader_path)
 
 void vkl_compute_bindings(VklCompute* compute, VklBindings* bindings)
 {
+    ASSERT(compute != NULL);
     compute->bindings = bindings;
 }
 
@@ -1096,8 +1097,136 @@ void vkl_compute_destroy(VklCompute* compute)
 
 
 /*************************************************************************************************/
-/*  Pipeline                                                                                     */
+/*  Graphics                                                                                     */
 /*************************************************************************************************/
+
+VklGraphics* vkl_graphics(VklGpu* gpu)
+{
+    ASSERT(gpu != NULL);
+    ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
+
+    INSTANCE_NEW(VklGraphics, graphics, gpu->graphics, gpu->graphics_count)
+
+    graphics->gpu = gpu;
+
+    return graphics;
+}
+
+
+
+void vkl_graphics_topology(VklGraphics* graphics, VkPrimitiveTopology topology)
+{
+    ASSERT(graphics != NULL);
+    graphics->topology = topology;
+}
+
+
+
+void vkl_graphics_shader(
+    VklGraphics* graphics, VkShaderStageFlagBits stage, const char* shader_path)
+{
+    ASSERT(graphics != NULL);
+    ASSERT(graphics->gpu != NULL);
+    ASSERT(graphics->gpu->device != 0);
+    strcpy(graphics->shader_path, shader_path);
+
+    graphics->shader_modules[graphics->shader_count++] =
+        create_shader_module_from_file(graphics->gpu->device, graphics->shader_path);
+}
+
+
+
+void vkl_graphics_vertex_binding(VklGraphics* graphics, uint32_t binding, size_t stride)
+{
+    ASSERT(graphics != NULL);
+    // TODO
+}
+
+
+
+void vkl_graphics_vertex_attr(
+    VklGraphics* graphics, uint32_t binding, uint32_t idx, VkFormat format, size_t offset)
+{
+    ASSERT(graphics != NULL);
+    // TODO
+}
+
+
+
+void vkl_graphics_blend(VklGraphics* graphics, VklBlendType blend_type)
+{
+    ASSERT(graphics != NULL);
+    graphics->blend_type = blend_type;
+}
+
+
+
+void vkl_graphics_depth_test(VklGraphics* graphics, VklDepthTest depth_test)
+{
+    ASSERT(graphics != NULL);
+    graphics->depth_test = depth_test;
+}
+
+
+
+void vkl_graphics_polygon_mode(VklGraphics* graphics, VkPolygonMode polygon_mode)
+{
+    ASSERT(graphics != NULL);
+    graphics->polygon_mode = polygon_mode;
+}
+
+
+
+void vkl_graphics_cull_mode(VklGraphics* graphics, VkCullModeFlags cull_mode)
+{
+    ASSERT(graphics != NULL);
+    graphics->cull_mode = cull_mode;
+}
+
+
+
+void vkl_graphics_front_face(VklGraphics* graphics, VkFrontFace front_face)
+{
+    ASSERT(graphics != NULL);
+    graphics->front_face = front_face;
+}
+
+
+
+void vkl_graphics_create(VklGraphics* graphics)
+{
+    ASSERT(graphics != NULL);
+    // TODO
+}
+
+
+
+void vkl_graphics_bindings(VklGraphics* graphics, VklBindings* bindings)
+{
+    ASSERT(graphics != NULL);
+    graphics->bindings = bindings;
+}
+
+
+
+void vkl_graphics_destroy(VklGraphics* graphics)
+{
+    ASSERT(graphics != NULL);
+    ASSERT(graphics->gpu != NULL);
+    if (graphics->obj.status < VKL_OBJECT_STATUS_CREATED)
+    {
+        log_trace("skip destruction of already-destroyed graphics");
+        return;
+    }
+    log_trace("destroy graphics");
+
+    VkDevice device = graphics->gpu->device;
+    for (uint32_t i = 0; i < graphics->shader_count; i++)
+        vkDestroyShaderModule(device, graphics->shader_modules[i], NULL);
+    vkDestroyPipeline(device, graphics->pipeline, NULL);
+
+    obj_destroyed(&graphics->obj);
+}
 
 
 
