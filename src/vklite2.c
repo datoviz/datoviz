@@ -898,7 +898,7 @@ void vkl_images_create(VklImages* images)
 
 
 
-void vkl_images_download(VklImages* staging, uint32_t idx, bool swizzle, uint8_t* rgba)
+void vkl_images_download(VklImages* staging, uint32_t idx, bool swizzle, uint8_t* rgb)
 {
     VkImageSubresource subResource = {0};
     subResource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -936,24 +936,24 @@ void vkl_images_download(VklImages* staging, uint32_t idx, bool swizzle, uint8_t
         {
             if (swizzle)
             {
-                rgba[dst_offset + 0] = image[src_offset + 2];
-                rgba[dst_offset + 1] = image[src_offset + 1];
-                rgba[dst_offset + 2] = image[src_offset + 0];
-                rgba[dst_offset + 3] = image[src_offset + 3];
+                rgb[dst_offset + 0] = image[src_offset + 2];
+                rgb[dst_offset + 1] = image[src_offset + 1];
+                rgb[dst_offset + 2] = image[src_offset + 0];
+                // rgba[dst_offset + 3] = image[src_offset + 3];
             }
             else
             {
-                rgba[dst_offset + 0] = image[src_offset + 0];
-                rgba[dst_offset + 1] = image[src_offset + 1];
-                rgba[dst_offset + 2] = image[src_offset + 2];
-                rgba[dst_offset + 3] = image[src_offset + 3];
+                rgb[dst_offset + 0] = image[src_offset + 0];
+                rgb[dst_offset + 1] = image[src_offset + 1];
+                rgb[dst_offset + 2] = image[src_offset + 2];
+                // rgba[dst_offset + 3] = image[src_offset + 3];
             }
             src_offset += 4;
-            dst_offset += 4;
+            dst_offset += 3;
         }
         image += row_pitch;
     }
-    ASSERT(dst_offset == w * h * 4);
+    ASSERT(dst_offset == w * h * 3);
     FREE(image_orig);
 }
 

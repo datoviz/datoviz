@@ -13,6 +13,7 @@
 #define TEST_WIDTH  640
 #define TEST_HEIGHT 480
 
+static VkClearColorValue bgcolor = {{.4f, .6f, .8f, 1.0f}};
 
 
 static VklRenderpass* offscreen_renderpass(VklGpu* gpu)
@@ -22,9 +23,7 @@ static VklRenderpass* offscreen_renderpass(VklGpu* gpu)
     VklRenderpass* renderpass = vkl_renderpass(gpu, TEST_WIDTH, TEST_HEIGHT);
 
     VkClearValue clear_color = {0};
-    clear_color.color.float32[0] = 1;
-    clear_color.color.float32[1] = 1;
-    clear_color.color.float32[3] = 1;
+    clear_color.color = bgcolor;
 
     VkClearValue clear_depth = {0};
     clear_depth.depthStencil.depth = 1.0f;
@@ -117,7 +116,7 @@ static uint8_t* screenshot(VklImages* images)
     vkl_cmd_submit_sync(cmds, 0);
 
     // Now, copy the staging image into CPU memory.
-    uint8_t* rgba = calloc(images->width * images->height, 4);
+    uint8_t* rgba = calloc(images->width * images->height, 3);
     vkl_images_download(staging, 0, true, rgba);
 
     return rgba;
@@ -523,7 +522,8 @@ static int vklite2_blank(VkyTestContext* context)
 
     uint8_t* rgba = screenshot(renderpass->framebuffer_info[0].images);
 
-    DBG(memcmp(rgba, calloc(TEST_WIDTH * TEST_HEIGHT * 4, 1), TEST_WIDTH * TEST_HEIGHT * 4));
+    for (uint32_t i = 0; i < TEST_WIDTH * TEST_HEIGHT * 3; i++)
+        ASSERT(rgba[i] >= 100);
 
     FREE(rgba);
     TEST_END
@@ -602,7 +602,7 @@ static int vklite2_graphics(VkyTestContext* context)
 
     uint8_t* rgba = screenshot(renderpass->framebuffer_info[0].images);
 
-    DBG(memcmp(rgba, calloc(TEST_WIDTH * TEST_HEIGHT * 4, 1), TEST_WIDTH * TEST_HEIGHT * 4));
+    write_ppm("a.ppm", TEST_WIDTH, TEST_HEIGHT, rgba);
 
     FREE(rgba);
     TEST_END
@@ -637,7 +637,7 @@ static int vklite2_canvas_basic(VkyTestContext* context)
         VKL_RENDERPASS_ATTACHMENT_COLOR, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     vkl_renderpass_attachment_layout(
         renderpass, 0, //
-        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
     vkl_renderpass_attachment_ops(
         renderpass, 0, //
         VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
