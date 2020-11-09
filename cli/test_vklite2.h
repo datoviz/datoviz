@@ -545,15 +545,17 @@ static int vklite2_graphics(VkyTestContext* context)
 
     vkl_graphics_renderpass(graphics, renderpass, 0);
     vkl_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    vkl_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
 
     char path[1024];
     snprintf(path, sizeof(path), "%s/spirv/default.vert.spv", DATA_DIR);
     vkl_graphics_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
     snprintf(path, sizeof(path), "%s/spirv/default.frag.spv", DATA_DIR);
     vkl_graphics_shader(graphics, VK_SHADER_STAGE_FRAGMENT_BIT, path);
-    vkl_graphics_vertex_binding(graphics, 0, sizeof(vec3) + sizeof(vec4));
-    vkl_graphics_vertex_attr(graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0);
-    vkl_graphics_vertex_attr(graphics, 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, sizeof(vec3));
+    vkl_graphics_vertex_binding(graphics, 0, sizeof(VklVertex));
+    vkl_graphics_vertex_attr(graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VklVertex, pos));
+    vkl_graphics_vertex_attr(
+        graphics, 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(VklVertex, color));
 
     // Create the bindings.
     VklBindings* bindings = vkl_bindings(gpu);
@@ -566,7 +568,7 @@ static int vklite2_graphics(VkyTestContext* context)
 
     // Create the buffer.
     VklBuffer* buffer = vkl_buffer(gpu);
-    VkDeviceSize size = 3 * (sizeof(vec3) + sizeof(vec4));
+    VkDeviceSize size = 3 * sizeof(VklVertex);
     vkl_buffer_size(buffer, size, 0);
     vkl_buffer_usage(buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     vkl_buffer_memory(
@@ -577,6 +579,7 @@ static int vklite2_graphics(VkyTestContext* context)
     VklVertex data[3] = {
         {{-1, +1, 0}, {1, 0, 0, 1}},
         {{+1, +1, 0}, {0, 1, 0, 1}},
+        {{+0, -1, 0}, {0, 0, 1, 1}},
     };
     vkl_buffer_upload(buffer, 0, size, data);
 
