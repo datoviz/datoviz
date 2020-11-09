@@ -1257,10 +1257,10 @@ void vkl_graphics_shader(
     ASSERT(graphics != NULL);
     ASSERT(graphics->gpu != NULL);
     ASSERT(graphics->gpu->device != 0);
-    strcpy(graphics->shader_path, shader_path);
 
+    graphics->shader_stages[graphics->shader_count] = stage;
     graphics->shader_modules[graphics->shader_count++] =
-        create_shader_module_from_file(graphics->gpu->device, graphics->shader_path);
+        create_shader_module_from_file(graphics->gpu->device, shader_path);
 }
 
 
@@ -1369,6 +1369,8 @@ void vkl_graphics_create(VklGraphics* graphics)
         shader_stages[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         shader_stages[i].stage = graphics->shader_stages[i];
         shader_stages[i].module = graphics->shader_modules[i];
+        ASSERT(graphics->shader_stages[i] != 0);
+        ASSERT(graphics->shader_modules[i] != NULL);
         shader_stages[i].pName = "main";
     }
 
@@ -1386,6 +1388,7 @@ void vkl_graphics_create(VklGraphics* graphics)
     VkPipelineDynamicStateCreateInfo dynamic_state = create_dynamic_states(
         2, (VkDynamicState[]){VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR});
 
+
     // Finally create the pipeline.
     VkGraphicsPipelineCreateInfo pipelineInfo = {0};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -1399,6 +1402,7 @@ void vkl_graphics_create(VklGraphics* graphics)
     pipelineInfo.pMultisampleState = &multisampling;
     pipelineInfo.pColorBlendState = &color_blending;
     pipelineInfo.pDepthStencilState = &depth_stencil;
+    ASSERT(graphics->bindings != NULL);
     pipelineInfo.layout = graphics->bindings->pipeline_layout;
     pipelineInfo.renderPass = graphics->renderpass->renderpass;
     pipelineInfo.subpass = graphics->subpass;
@@ -2252,23 +2256,26 @@ void vkl_cmd_bind_graphics(VklCommands* cmds, VklGraphics* graphics, uint32_t dy
 
 
 
-void vkl_cmd_bind_vertex_buffer(VklCommands* cmds, VklBufferRegions buffer, VkDeviceSize offset)
+void vkl_cmd_bind_vertex_buffer(
+    VklCommands* cmds, VklBufferRegions* buffer_regions, VkDeviceSize offset)
 {
-    CMD_START_CLIP(buffer.count)
-    VkBuffer vertex_buffers[] = {buffer.buffer->buffer};
+    CMD_START_CLIP(buffer_regions->count)
+    VkBuffer vertex_buffers[] = {buffer_regions->buffer->buffer};
     // NOTE: we must take into account the offset of the buffer within the underlying buffer.
-    VkDeviceSize offsets[] = {buffer.offsets[iclip] + offset};
+    VkDeviceSize offsets[] = {buffer_regions->offsets[iclip] + offset};
     vkCmdBindVertexBuffers(cb, 0, 1, vertex_buffers, offsets);
     CMD_END
 }
 
 
 
-void vkl_cmd_bind_index_buffer(VklCommands* cmds, VklBufferRegions buffer, VkDeviceSize offset)
+void vkl_cmd_bind_index_buffer(
+    VklCommands* cmds, VklBufferRegions* buffer_regions, VkDeviceSize offset)
 {
-    CMD_START_CLIP(buffer.count)
+    CMD_START_CLIP(buffer_regions->count)
     vkCmdBindIndexBuffer(
-        cb, buffer.buffer->buffer, buffer.offsets[iclip] + offset, VK_INDEX_TYPE_UINT32);
+        cb, buffer_regions->buffer->buffer, buffer_regions->offsets[iclip] + offset,
+        VK_INDEX_TYPE_UINT32);
     CMD_END
 }
 
@@ -2293,40 +2300,40 @@ void vkl_cmd_draw_indexed(
 
 
 
-void vkl_cmd_draw_indirect(VklCommands* cmds, VklBufferRegions indirect)
+void vkl_cmd_draw_indirect(VklCommands* cmds, VklBufferRegions* indirect)
 {
-    CMD_START_CLIP(indirect.count)
-    vkCmdDrawIndirect(cb, indirect.buffer->buffer, indirect.offsets[iclip], 1, 0);
+    CMD_START_CLIP(indirect->count)
+    vkCmdDrawIndirect(cb, indirect->buffer->buffer, indirect->offsets[iclip], 1, 0);
     CMD_END
 }
 
 
 
-void vkl_cmd_draw_indexed_indirect(VklCommands* cmds, VklBufferRegions indirect)
+void vkl_cmd_draw_indexed_indirect(VklCommands* cmds, VklBufferRegions* indirect)
 {
-    CMD_START_CLIP(indirect.count)
-    vkCmdDrawIndexedIndirect(cb, indirect.buffer->buffer, indirect.offsets[iclip], 1, 0);
+    CMD_START_CLIP(indirect->count)
+    vkCmdDrawIndexedIndirect(cb, indirect->buffer->buffer, indirect->offsets[iclip], 1, 0);
     CMD_END
 }
 
 
 
 void vkl_cmd_copy_buffer(
-    VklCommands* cmds,                                 //
-    VklBufferRegions src_buf, VkDeviceSize src_offset, //
-    VklBufferRegions dst_buf, VkDeviceSize dst_offset, //
+    VklCommands* cmds,                                  //
+    VklBufferRegions* src_buf, VkDeviceSize src_offset, //
+    VklBufferRegions* dst_buf, VkDeviceSize dst_offset, //
     VkDeviceSize size)
 {
     VkBufferCopy copy_region = {0};
     copy_region.size = size;
 
-    ASSERT(src_buf.count == dst_buf.count);
+    ASSERT(src_buf->count == dst_buf->count);
 
-    CMD_START_CLIP(src_buf.count)
-    copy_region.srcOffset = src_buf.offsets[iclip] + src_offset;
-    copy_region.dstOffset = dst_buf.offsets[iclip] + dst_offset;
+    CMD_START_CLIP(src_buf->count)
+    copy_region.srcOffset = src_buf->offsets[iclip] + src_offset;
+    copy_region.dstOffset = dst_buf->offsets[iclip] + dst_offset;
 
-    vkCmdCopyBuffer(cb, src_buf.buffer->buffer, dst_buf.buffer->buffer, 1, &copy_region);
+    vkCmdCopyBuffer(cb, src_buf->buffer->buffer, dst_buf->buffer->buffer, 1, &copy_region);
     CMD_END
 }
 

@@ -10,6 +10,10 @@
     return app->n_errors != 0;
 
 
+#define TEST_WIDTH  640
+#define TEST_HEIGHT 480
+
+
 
 static VklRenderpass* default_renderpass(VklGpu* gpu)
 {
@@ -27,6 +31,7 @@ static VklRenderpass* default_renderpass(VklGpu* gpu)
 
     vkl_renderpass_clear(renderpass, clear_color);
     vkl_renderpass_clear(renderpass, clear_depth);
+
     vkl_renderpass_attachment(
         renderpass, 0, //
         VKL_RENDERPASS_ATTACHMENT_COLOR, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -36,7 +41,9 @@ static VklRenderpass* default_renderpass(VklGpu* gpu)
     vkl_renderpass_attachment_ops(
         renderpass, 0, //
         VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+
     vkl_renderpass_subpass_attachment(renderpass, 0, 0);
+
     vkl_renderpass_subpass_dependency(renderpass, 0, VK_SUBPASS_EXTERNAL, 0);
     vkl_renderpass_subpass_dependency_stage(
         renderpass, 0, //
@@ -49,7 +56,7 @@ static VklRenderpass* default_renderpass(VklGpu* gpu)
     // Framebuffer images.
     VklImages* images = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
     vkl_images_format(images, format);
-    vkl_images_size(images, 640, 480, 1);
+    vkl_images_size(images, TEST_WIDTH, TEST_HEIGHT, 1);
     vkl_images_tiling(images, VK_IMAGE_TILING_OPTIMAL);
     vkl_images_usage(
         images, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
@@ -115,6 +122,14 @@ static uint8_t* screenshot(VklImages* images)
 
     return rgba;
 }
+
+
+
+typedef struct
+{
+    vec3 pos;
+    vec4 color;
+} VklVertex;
 
 
 
@@ -380,7 +395,6 @@ static int vklite2_barrier(VkyTestContext* context)
 
 static int vklite2_submit(VkyTestContext* context)
 {
-
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
     vkl_gpu_queue(gpu, VKL_QUEUE_COMPUTE, 0);
@@ -509,7 +523,7 @@ static int vklite2_blank(VkyTestContext* context)
 
     uint8_t* rgba = screenshot(renderpass->framebuffer_info[0].images);
 
-    DBG(memcmp(rgba, calloc(640 * 480 * 4, 1), 640 * 480 * 4));
+    DBG(memcmp(rgba, calloc(TEST_WIDTH * TEST_HEIGHT * 4, 1), TEST_WIDTH * TEST_HEIGHT * 4));
 
     FREE(rgba);
     TEST_END
@@ -528,20 +542,66 @@ static int vklite2_graphics(VkyTestContext* context)
 
     VklGraphics* graphics = vkl_graphics(gpu);
     ASSERT(graphics != NULL);
-    // TODO
-    // vkl_graphics_renderpass(graphics);
-    // vkl_graphics_topology(graphics);
-    // vkl_graphics_shader(graphics);
-    // vkl_graphics_vertex_binding(graphics);
-    // vkl_graphics_vertex_attr(graphics);
-    // vkl_graphics_blend(graphics);
-    // vkl_graphics_depth_test(graphics);
-    // vkl_graphics_polygon_mode(graphics);
-    // vkl_graphics_cull_mode(graphics);
-    // vkl_graphics_front_face(graphics);
-    // vkl_graphics_create(graphics);
-    // vkl_graphics_bindings(graphics);
 
+    vkl_graphics_renderpass(graphics, renderpass, 0);
+    vkl_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/spirv/default.vert.spv", DATA_DIR);
+    vkl_graphics_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
+    snprintf(path, sizeof(path), "%s/spirv/default.frag.spv", DATA_DIR);
+    vkl_graphics_shader(graphics, VK_SHADER_STAGE_FRAGMENT_BIT, path);
+    vkl_graphics_vertex_binding(graphics, 0, sizeof(vec3) + sizeof(vec4));
+    vkl_graphics_vertex_attr(graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0);
+    vkl_graphics_vertex_attr(graphics, 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, sizeof(vec3));
+
+    // Create the bindings.
+    VklBindings* bindings = vkl_bindings(gpu);
+    vkl_bindings_create(bindings, 1);
+    vkl_bindings_update(bindings);
+    vkl_graphics_bindings(graphics, bindings);
+
+    // Create the graphics pipeline.
+    vkl_graphics_create(graphics);
+
+    // Create the buffer.
+    VklBuffer* buffer = vkl_buffer(gpu);
+    VkDeviceSize size = 3 * (sizeof(vec3) + sizeof(vec4));
+    vkl_buffer_size(buffer, size, 0);
+    vkl_buffer_usage(buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    vkl_buffer_memory(
+        buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vkl_buffer_create(buffer);
+
+    // Upload the triangle data.
+    VklVertex data[3] = {
+        {{-1, +1, 0}, {1, 0, 0, 1}},
+        {{+1, +1, 0}, {0, 1, 0, 1}},
+    };
+    vkl_buffer_upload(buffer, 0, size, data);
+
+    VklBufferRegions br = {0};
+    br.buffer = buffer;
+    br.size = size;
+    br.count = 1;
+
+    // Commands.
+    VklCommands* commands = vkl_commands(gpu, 0, 1);
+    vkl_cmd_begin(commands);
+    vkl_cmd_begin_renderpass(commands, renderpass);
+    vkl_cmd_viewport(commands, (VkViewport){0, 0, TEST_WIDTH, TEST_HEIGHT, 0, 1});
+    vkl_cmd_bind_vertex_buffer(commands, &br, 0);
+    vkl_cmd_bind_graphics(commands, graphics, 0);
+    vkl_cmd_draw(commands, 0, 3);
+    vkl_cmd_end_renderpass(commands);
+    vkl_cmd_end(commands);
+    vkl_cmd_submit_sync(commands, 0);
+
+    uint8_t* rgba = screenshot(renderpass->framebuffer_info[0].images);
+
+    DBG(memcmp(rgba, calloc(TEST_WIDTH * TEST_HEIGHT * 4, 1), TEST_WIDTH * TEST_HEIGHT * 4));
+
+    FREE(rgba);
     TEST_END
 }
 
