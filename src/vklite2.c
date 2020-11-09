@@ -24,7 +24,8 @@ VklApp* vkl_app(VklBackend backend)
 
     // Create the instance.
     create_instance(
-        required_extension_count, required_extensions, &app->instance, &app->debug_messenger);
+        required_extension_count, required_extensions, &app->instance, &app->debug_messenger,
+        &app->n_errors);
     // debug_messenger != 0 means validation enabled
     obj_created(&app->obj);
 
@@ -301,7 +302,7 @@ void vkl_gpu_destroy(VklGpu* gpu)
         vkl_fences_destroy(&gpu->fences[i]);
     }
 
-    log_trace("GPU destroy %d renderpasses", gpu->renderpass_count);
+    log_trace("GPU destroy %d renderpass(es)", gpu->renderpass_count);
     for (uint32_t i = 0; i < gpu->renderpass_count; i++)
     {
         vkl_renderpass_destroy(&gpu->renderpasses[i]);
@@ -1666,6 +1667,22 @@ void vkl_renderpass_subpass_dependency_stage(
 
 
 
+void vkl_renderpass_framebuffers(
+    VklRenderpass* renderpass, uint32_t attachment_idx, VklImages* images)
+{
+    ASSERT(renderpass != NULL);
+    renderpass->framebuffer_count = MAX(renderpass->framebuffer_count, images->count);
+    ASSERT(renderpass->framebuffer_count > 0);
+
+    ASSERT(attachment_idx < renderpass->attachment_count);
+    VklRenderpassFramebuffer* info =
+        &renderpass->framebuffer_info[renderpass->framebuffer_attachment_count++];
+    info->attachment = attachment_idx;
+    info->images = images;
+}
+
+
+
 void vkl_renderpass_create(VklRenderpass* renderpass)
 {
     ASSERT(renderpass != NULL);
@@ -1745,6 +1762,32 @@ void vkl_renderpass_create(VklRenderpass* renderpass)
     VK_CHECK_RESULT(vkCreateRenderPass(
         renderpass->gpu->device, &render_pass_info, NULL, &renderpass->renderpass));
 
+    // Create the framebuffers.
+    log_trace("creating %d framebuffers", renderpass->framebuffer_count);
+    for (uint32_t i = 0; i < renderpass->framebuffer_count; i++)
+    {
+        VkImageView framebuffer_attachments[VKL_MAX_ATTACHMENTS_PER_RENDERPASS] = {0};
+        VklImages* images = NULL;
+        ASSERT(renderpass->framebuffer_attachment_count <= VKL_MAX_ATTACHMENTS_PER_RENDERPASS);
+        for (uint32_t j = 0; j < renderpass->framebuffer_attachment_count; j++)
+        {
+            images = renderpass->framebuffer_info[j].images;
+            framebuffer_attachments[j] = images->image_views[MIN(i, images->count - 1)];
+        }
+        ASSERT(images != NULL);
+        VkFramebufferCreateInfo info = {0};
+        info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        info.renderPass = renderpass->renderpass;
+        info.attachmentCount = renderpass->framebuffer_attachment_count;
+        info.pAttachments = framebuffer_attachments;
+        info.width = images->width;
+        info.height = images->height;
+        info.layers = 1;
+
+        VK_CHECK_RESULT(vkCreateFramebuffer(
+            renderpass->gpu->device, &info, NULL, &renderpass->framebuffers[i]));
+    }
+
     log_trace("renderpass created");
     obj_created(&renderpass->obj);
 }
@@ -1762,6 +1805,10 @@ void vkl_renderpass_destroy(VklRenderpass* renderpass)
 
     log_trace("destroy renderpass");
     vkDestroyRenderPass(renderpass->gpu->device, renderpass->renderpass, NULL);
+    for (uint32_t i = 0; i < renderpass->framebuffer_count; i++)
+    {
+        vkDestroyFramebuffer(renderpass->gpu->device, renderpass->framebuffers[i], NULL);
+    }
     obj_destroyed(&renderpass->obj);
 }
 

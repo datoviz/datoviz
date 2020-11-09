@@ -94,8 +94,7 @@ static VkResult create_debug_utils_messenger_EXT(
     }
 }
 
-// Keep track of the total num
-static uint32_t n_errors = 0;
+
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -108,7 +107,12 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
         strstr(pCallbackData->pMessage, "ELFCLASS32") == NULL)
     {
         log_error("validation layer: %s", pCallbackData->pMessage);
-        n_errors++;
+        if (pUserData != NULL)
+        {
+            uint32_t* n_errors = NULL;
+            n_errors = (uint32_t*)pUserData;
+            (*n_errors)++;
+        }
     }
     return VK_FALSE;
 }
@@ -251,7 +255,7 @@ backend_window_destroy(VkInstance instance, VklBackend backend, void* window, Vk
 
 static void create_instance(
     uint32_t required_extension_count, const char** required_extensions, //
-    VkInstance* instance, VkDebugUtilsMessengerEXT* debug_messenger)
+    VkInstance* instance, VkDebugUtilsMessengerEXT* debug_messenger, void* debug_data)
 {
     log_trace("starting creation of instance...");
 
@@ -309,6 +313,7 @@ static void create_instance(
                                     VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
                                     VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
     debug_create_info.pfnUserCallback = debug_callback;
+    debug_create_info.pUserData = debug_data;
 
     if (has_validation)
     {

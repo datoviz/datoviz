@@ -72,7 +72,7 @@ TODO later
 
 
 /*************************************************************************************************/
-/*  Type definitions                                                                             */
+/*  Type definitions */
 /*************************************************************************************************/
 
 typedef struct VklObject VklObject;
@@ -101,6 +101,7 @@ typedef struct VklRenderpass VklRenderpass;
 typedef struct VklRenderpassAttachment VklRenderpassAttachment;
 typedef struct VklRenderpassSubpass VklRenderpassSubpass;
 typedef struct VklRenderpassDependency VklRenderpassDependency;
+typedef struct VklRenderpassFramebuffer VklRenderpassFramebuffer;
 typedef struct VklSubmit VklSubmit;
 
 
@@ -278,6 +279,7 @@ static void obj_destroyed(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_DEST
 struct VklApp
 {
     VklObject obj;
+    uint32_t n_errors;
 
     // Backend
     VklBackend backend;
@@ -683,6 +685,14 @@ struct VklRenderpassDependency
 
 
 
+struct VklRenderpassFramebuffer
+{
+    uint32_t attachment;
+    VklImages* images;
+};
+
+
+
 struct VklRenderpass
 {
     VklObject obj;
@@ -697,8 +707,12 @@ struct VklRenderpass
     uint32_t dependency_count;
     VklRenderpassDependency dependencies[VKL_MAX_DEPENDENCIES_PER_RENDERPASS];
 
-    // TODO: framebuffers
     VkRenderPass renderpass;
+
+    uint32_t framebuffer_count;
+    uint32_t framebuffer_attachment_count;
+    VklRenderpassFramebuffer framebuffer_info[VKL_MAX_SWAPCHAIN_IMAGES];
+    VkFramebuffer framebuffers[VKL_MAX_SWAPCHAIN_IMAGES];
 };
 
 
@@ -1059,6 +1073,9 @@ VKY_EXPORT void vkl_renderpass_subpass_dependency_access(
 VKY_EXPORT void vkl_renderpass_subpass_dependency_stage(
     VklRenderpass* renderpass, uint32_t dependency_idx, //
     VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage);
+
+VKY_EXPORT void
+vkl_renderpass_framebuffers(VklRenderpass* renderpass, uint32_t attachment_idx, VklImages* images);
 
 VKY_EXPORT void vkl_renderpass_create(VklRenderpass* renderpass);
 

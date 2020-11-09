@@ -4,7 +4,7 @@
 
 #define TEST_END                                                                                  \
     vkl_app_destroy(app);                                                                         \
-    return n_errors != 0;
+    return app->n_errors != 0;
 
 
 
@@ -368,11 +368,12 @@ static int vklite2_renderpass(VkyTestContext* context)
     vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
     vkl_gpu_create(gpu, 0);
 
+    VkFormat format = VK_FORMAT_B8G8R8A8_UNORM;
+
     VklRenderpass* renderpass = vkl_renderpass(gpu);
     vkl_renderpass_attachment(
         renderpass, 0, //
-        VKL_RENDERPASS_ATTACHMENT_COLOR, VK_FORMAT_B8G8R8A8_UNORM,
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        VKL_RENDERPASS_ATTACHMENT_COLOR, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     vkl_renderpass_attachment_layout(
         renderpass, 0, //
         VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
@@ -388,6 +389,19 @@ static int vklite2_renderpass(VkyTestContext* context)
     vkl_renderpass_subpass_dependency_access(
         renderpass, 0, 0,
         VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+
+    // Framebuffer images.
+    VklImages* images = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
+    vkl_images_format(images, format);
+    vkl_images_size(images, 640, 480, 1);
+    vkl_images_tiling(images, VK_IMAGE_TILING_OPTIMAL);
+    vkl_images_usage(images, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+    vkl_images_memory(images, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    vkl_images_queue_access(images, 0);
+    vkl_images_create(images);
+
+    // Create renderpass.
+    vkl_renderpass_framebuffers(renderpass, 0, images);
     vkl_renderpass_create(renderpass);
 
     TEST_END
