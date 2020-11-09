@@ -1132,6 +1132,33 @@ VKY_EXPORT void vkl_cmd_copy_image(VklCommands* cmds, VklImages* src_img, VklIma
 
 VKY_EXPORT void vkl_cmd_viewport(VklCommands* cmds, VkViewport viewport);
 
+VKY_EXPORT void
+vkl_cmd_bind_pipeline(VklCommands* cmds, VklGraphics* graphics, uint32_t dynamic_idx);
+
+VKY_EXPORT void
+vkl_cmd_bind_vertex_buffer(VklCommands* cmds, VklBufferRegions buffer, VkDeviceSize offset);
+
+VKY_EXPORT void
+vkl_cmd_bind_index_buffer(VklCommands* cmds, VklBufferRegions buffer, VkDeviceSize offset);
+
+VKY_EXPORT void vkl_cmd_draw(VklCommands* cmds, uint32_t first_vertex, uint32_t vertex_count);
+
+VKY_EXPORT void vkl_cmd_draw_indexed(
+    VklCommands* cmds, uint32_t first_index, uint32_t vertex_offset, uint32_t index_count);
+
+VKY_EXPORT void vkl_cmd_draw_indirect(VklCommands* cmds, VklBufferRegions indirect);
+
+VKY_EXPORT void vkl_cmd_draw_indexed_indirect(VklCommands* cmds, VklBufferRegions indirect);
+
+VKY_EXPORT void vkl_cmd_copy_buffer(
+    VklCommands* cmds,                                 //
+    VklBufferRegions src_buf, VkDeviceSize src_offset, //
+    VklBufferRegions dst_buf, VkDeviceSize dst_offset, //
+    VkDeviceSize size);
+
+VKY_EXPORT void vkl_cmd_push_constants(
+    VklCommands* cmds, VklBindings* bindings, VkDeviceSize size, const void* data);
+
 
 
 #endif

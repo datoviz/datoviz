@@ -2187,3 +2187,113 @@ void vkl_cmd_viewport(VklCommands* cmds, VkViewport viewport)
     vkCmdSetScissor(cb, 0, 1, &scissor);
     CMD_END
 }
+
+
+
+void vkl_cmd_bind_pipeline(VklCommands* cmds, VklGraphics* graphics, uint32_t dynamic_idx)
+{
+    CMD_START
+    vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, graphics->pipeline);
+    CMD_END
+}
+
+
+
+void vkl_cmd_bind_vertex_buffer(VklCommands* cmds, VklBufferRegions buffer, VkDeviceSize offset)
+{
+    // TODO: no support for multiple buffer regions yet.
+    ASSERT(buffer.count == 1);
+
+    CMD_START
+    VkBuffer vertex_buffers[] = {buffer.buffer->buffer};
+    // NOTE: we must take into account the offset of the buffer within the underlying buffer.
+    VkDeviceSize offsets[] = {buffer.offsets[0] + offset};
+    vkCmdBindVertexBuffers(cb, 0, 1, vertex_buffers, offsets);
+    CMD_END
+}
+
+
+
+void vkl_cmd_bind_index_buffer(VklCommands* cmds, VklBufferRegions buffer, VkDeviceSize offset)
+{
+    // TODO: no support for multiple buffer regions yet.
+    ASSERT(buffer.count == 1);
+
+    CMD_START
+    vkCmdBindIndexBuffer(
+        cb, buffer.buffer->buffer, buffer.offsets[0] + offset, VK_INDEX_TYPE_UINT32);
+    CMD_END
+}
+
+
+
+void vkl_cmd_draw(VklCommands* cmds, uint32_t first_vertex, uint32_t vertex_count)
+{
+    CMD_START
+    vkCmdDraw(cb, vertex_count, 1, first_vertex, 0);
+    CMD_END
+}
+
+
+
+void vkl_cmd_draw_indexed(
+    VklCommands* cmds, uint32_t first_index, uint32_t vertex_offset, uint32_t index_count)
+{
+    CMD_START
+    vkCmdDrawIndexed(cb, index_count, 1, first_index, (int32_t)vertex_offset, 0);
+    CMD_END
+}
+
+
+
+void vkl_cmd_draw_indirect(VklCommands* cmds, VklBufferRegions indirect)
+{
+    // TODO: no support for multiple buffer regions yet.
+    ASSERT(indirect.count == 1);
+
+    CMD_START
+    vkCmdDrawIndirect(cb, indirect.buffer->buffer, indirect.offsets[0], 1, 0);
+    CMD_END
+}
+
+
+
+void vkl_cmd_draw_indexed_indirect(VklCommands* cmds, VklBufferRegions indirect)
+{
+    // TODO: no support for multiple buffer regions yet.
+    ASSERT(indirect.count == 1);
+
+    CMD_START
+    vkCmdDrawIndexedIndirect(cb, indirect.buffer->buffer, indirect.offsets[0], 1, 0);
+    CMD_END
+}
+
+
+
+void vkl_cmd_copy_buffer(
+    VklCommands* cmds,                                 //
+    VklBufferRegions src_buf, VkDeviceSize src_offset, //
+    VklBufferRegions dst_buf, VkDeviceSize dst_offset, //
+    VkDeviceSize size)
+{
+    ASSERT(src_buf.count == 1);
+
+    VkBufferCopy copy_region = {0};
+    copy_region.srcOffset = src_buf.offsets[0] + src_offset;
+    copy_region.dstOffset = dst_buf.offsets[0] + dst_offset;
+    copy_region.size = size;
+
+    CMD_START
+    vkCmdCopyBuffer(cb, src_buf.buffer->buffer, dst_buf.buffer->buffer, 1, &copy_region);
+    CMD_END
+}
+
+
+
+void vkl_cmd_push_constants(
+    VklCommands* cmds, VklBindings* bindings, VkDeviceSize size, const void* data)
+{
+    CMD_START
+    vkCmdPushConstants(cb, bindings->pipeline_layout, VK_SHADER_STAGE_ALL, 0, size, data);
+    CMD_END
+}
