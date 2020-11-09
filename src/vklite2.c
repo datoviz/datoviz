@@ -2335,10 +2335,8 @@ void vkl_cmd_bind_vertex_buffer(
     VklCommands* cmds, VklBufferRegions* buffer_regions, VkDeviceSize offset)
 {
     CMD_START_CLIP(buffer_regions->count)
-    VkBuffer vertex_buffers[] = {buffer_regions->buffer->buffer};
-    // NOTE: we must take into account the offset of the buffer within the underlying buffer.
     VkDeviceSize offsets[] = {buffer_regions->offsets[iclip] + offset};
-    vkCmdBindVertexBuffers(cb, 0, 1, vertex_buffers, offsets);
+    vkCmdBindVertexBuffers(cb, 0, 1, &buffer_regions->buffer->buffer, offsets);
     CMD_END
 }
 
