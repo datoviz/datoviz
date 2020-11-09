@@ -1743,7 +1743,7 @@ void vkl_fences_destroy(VklFences* fences)
 /*  Renderpass                                                                                   */
 /*************************************************************************************************/
 
-VklRenderpass* vkl_renderpass(VklGpu* gpu)
+VklRenderpass* vkl_renderpass(VklGpu* gpu, uint32_t width, uint32_t height)
 {
     ASSERT(gpu != NULL);
     ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
@@ -1751,7 +1751,12 @@ VklRenderpass* vkl_renderpass(VklGpu* gpu)
     INSTANCE_NEW(VklRenderpass, renderpass, gpu->renderpasses, gpu->renderpass_count)
 
     ASSERT(renderpass != NULL);
+    ASSERT(width > 0);
+    ASSERT(height > 0);
+
     renderpass->gpu = gpu;
+    renderpass->width = width;
+    renderpass->height = height;
 
     return renderpass;
 }
@@ -1853,8 +1858,10 @@ void vkl_renderpass_framebuffers(
     ASSERT(renderpass != NULL);
     renderpass->framebuffer_count = MAX(renderpass->framebuffer_count, images->count);
     ASSERT(renderpass->framebuffer_count > 0);
-
     ASSERT(attachment_idx < renderpass->attachment_count);
+    ASSERT(images->width == renderpass->width);
+    ASSERT(images->height == renderpass->height);
+
     VklRenderpassFramebuffer* info =
         &renderpass->framebuffer_info[renderpass->framebuffer_attachment_count++];
     info->attachment = attachment_idx;
@@ -1955,6 +1962,9 @@ void vkl_renderpass_create(VklRenderpass* renderpass)
             framebuffer_attachments[j] = images->image_views[MIN(i, images->count - 1)];
         }
         ASSERT(images != NULL);
+        ASSERT(images->width == renderpass->width);
+        ASSERT(images->height == renderpass->height);
+
         VkFramebufferCreateInfo info = {0};
         info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         info.renderPass = renderpass->renderpass;

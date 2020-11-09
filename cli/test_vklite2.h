@@ -19,7 +19,7 @@ static VklRenderpass* offscreen_renderpass(VklGpu* gpu)
 {
     VkFormat format = VK_FORMAT_B8G8R8A8_UNORM;
 
-    VklRenderpass* renderpass = vkl_renderpass(gpu);
+    VklRenderpass* renderpass = vkl_renderpass(gpu, TEST_WIDTH, TEST_HEIGHT);
 
     VkClearValue clear_color = {0};
     clear_color.color.uint32[0] = 255;
@@ -619,7 +619,7 @@ static int vklite2_canvas_basic(VkyTestContext* context)
 
     VkFormat format = VK_FORMAT_B8G8R8A8_UNORM;
 
-    VklRenderpass* renderpass = vkl_renderpass(gpu);
+    VklRenderpass* renderpass = vkl_renderpass(gpu, TEST_WIDTH, TEST_HEIGHT);
 
     VkClearValue clear_color = {0};
     clear_color.color.uint32[0] = 255;
