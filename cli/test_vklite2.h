@@ -15,7 +15,7 @@
 
 
 
-static VklRenderpass* default_renderpass(VklGpu* gpu)
+static VklRenderpass* offscreen_renderpass(VklGpu* gpu)
 {
     VkFormat format = VK_FORMAT_B8G8R8A8_UNORM;
 
@@ -496,7 +496,7 @@ static int vklite2_renderpass(VkyTestContext* context)
     vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
     vkl_gpu_create(gpu, 0);
 
-    VklRenderpass* renderpass = default_renderpass(gpu);
+    VklRenderpass* renderpass = offscreen_renderpass(gpu);
     ASSERT(renderpass != NULL);
     ASSERT(renderpass->obj.status == VKL_OBJECT_STATUS_CREATED);
 
@@ -510,7 +510,7 @@ static int vklite2_blank(VkyTestContext* context)
     vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
     vkl_gpu_create(gpu, 0);
 
-    VklRenderpass* renderpass = default_renderpass(gpu);
+    VklRenderpass* renderpass = offscreen_renderpass(gpu);
     ASSERT(renderpass != NULL);
     ASSERT(renderpass->obj.status == VKL_OBJECT_STATUS_CREATED);
 
@@ -536,7 +536,7 @@ static int vklite2_graphics(VkyTestContext* context)
     vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
     vkl_gpu_create(gpu, 0);
 
-    VklRenderpass* renderpass = default_renderpass(gpu);
+    VklRenderpass* renderpass = offscreen_renderpass(gpu);
     ASSERT(renderpass != NULL);
     ASSERT(renderpass->obj.status == VKL_OBJECT_STATUS_CREATED);
 
@@ -605,6 +605,89 @@ static int vklite2_graphics(VkyTestContext* context)
     DBG(memcmp(rgba, calloc(TEST_WIDTH * TEST_HEIGHT * 4, 1), TEST_WIDTH * TEST_HEIGHT * 4));
 
     FREE(rgba);
+    TEST_END
+}
+
+static int vklite2_canvas_basic(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklWindow* window = vkl_window(app, TEST_WIDTH, TEST_HEIGHT);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
+    vkl_gpu_queue(gpu, VKL_QUEUE_PRESENT, 1);
+    vkl_gpu_create(gpu, window->surface);
+
+    VkFormat format = VK_FORMAT_B8G8R8A8_UNORM;
+
+    VklRenderpass* renderpass = vkl_renderpass(gpu);
+
+    VkClearValue clear_color = {0};
+    clear_color.color.uint32[0] = 255;
+    clear_color.color.uint32[1] = 255;
+    clear_color.color.uint32[3] = 255;
+
+    VkClearValue clear_depth = {0};
+    clear_depth.depthStencil.depth = 1.0f;
+
+    vkl_renderpass_clear(renderpass, clear_color);
+    vkl_renderpass_clear(renderpass, clear_depth);
+
+    vkl_renderpass_attachment(
+        renderpass, 0, //
+        VKL_RENDERPASS_ATTACHMENT_COLOR, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    vkl_renderpass_attachment_layout(
+        renderpass, 0, //
+        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    vkl_renderpass_attachment_ops(
+        renderpass, 0, //
+        VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+
+    vkl_renderpass_subpass_attachment(renderpass, 0, 0);
+
+    vkl_renderpass_subpass_dependency(renderpass, 0, VK_SUBPASS_EXTERNAL, 0);
+    vkl_renderpass_subpass_dependency_stage(
+        renderpass, 0, //
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+    vkl_renderpass_subpass_dependency_access(
+        renderpass, 0, 0,
+        VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+
+    VklSwapchain* swapchain = vkl_swapchain(gpu, window, 3);
+    vkl_swapchain_create(swapchain, VK_FORMAT_B8G8R8A8_UNORM, VK_PRESENT_MODE_FIFO_KHR);
+
+    // Create renderpass.
+    vkl_renderpass_framebuffers(renderpass, 0, swapchain->images);
+    vkl_renderpass_create(renderpass);
+
+    VklSemaphores* semaphores = vkl_semaphores(gpu, 2); // image available, render finished
+    VklFences* fences = vkl_fences(gpu, 1);
+    ASSERT(fences != NULL);
+
+    VklCommands* commands = vkl_commands(gpu, 0, swapchain->img_count);
+    vkl_cmd_begin(commands);
+    vkl_cmd_begin_renderpass(commands, renderpass);
+    vkl_cmd_end_renderpass(commands);
+    vkl_cmd_end(commands);
+
+    // First, we acquire an image.
+    vkl_swapchain_acquire(swapchain, semaphores, 0, NULL, 0);
+
+    // Then, we submit the commands on that image
+    VklSubmit submit = vkl_submit(gpu);
+    vkl_submit_commands(&submit, commands, (int32_t)swapchain->img_idx);
+    vkl_submit_wait_semaphores(
+        &submit, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, semaphores, 0);
+    // Once the render is finished, we signal another semaphore.
+    vkl_submit_signal_semaphores(&submit, semaphores, 1);
+    vkl_submit_send(&submit, 0, NULL, 0);
+
+    // Once the image is rendered, we present the swapchain image.
+    vkl_swapchain_present(swapchain, 1, semaphores, 1);
+
+    vkl_gpu_wait(gpu);
+    vkl_swapchain_destroy(swapchain);
+    vkl_window_destroy(window);
     TEST_END
 }
 

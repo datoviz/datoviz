@@ -418,7 +418,9 @@ struct VklSwapchain
     VklWindow* window;
 
     uint32_t img_count;
+    uint32_t img_idx;
     VkSwapchainKHR swapchain;
+    VklImages* images;
 };
 
 
@@ -471,6 +473,7 @@ struct VklImages
     VklGpu* gpu;
 
     uint32_t count;
+    bool is_swapchain;
 
     // Queues that need access to the buffer.
     uint32_t queue_count;
@@ -826,8 +829,13 @@ VKY_EXPORT VklSwapchain* vkl_swapchain(VklGpu* gpu, VklWindow* window, uint32_t 
 VKY_EXPORT void
 vkl_swapchain_create(VklSwapchain* swapchain, VkFormat format, VkPresentModeKHR present_mode);
 
+VKY_EXPORT void vkl_swapchain_acquire(
+    VklSwapchain* swapchain, VklSemaphores* semaphores, uint32_t semaphore_idx, VklFences* fences,
+    uint32_t fence_idx);
+
 VKY_EXPORT void vkl_swapchain_present(
-    VklSwapchain* swapchain, VklSemaphores* wait, uint32_t semaphore_idx, uint32_t image_idx);
+    VklSwapchain* swapchain, uint32_t queue_idx, VklSemaphores* semaphores,
+    uint32_t semaphore_idx);
 
 // NOTE: to be called BEFORE vkl_window_destroy()
 VKY_EXPORT void vkl_swapchain_destroy(VklSwapchain* swapchain);

@@ -404,8 +404,71 @@ void vkl_swapchain_create(VklSwapchain* swapchain, VkFormat format, VkPresentMod
         swapchain->img_count, format, present_mode, &swapchain->gpu->queues,
         &swapchain->window->caps, &swapchain->swapchain);
 
+    // Get the number of swapchain images.
+    vkGetSwapchainImagesKHR(
+        swapchain->gpu->device, swapchain->swapchain, &swapchain->img_count, NULL);
+    log_trace("get %d swapchain images", swapchain->img_count);
+    swapchain->images = vkl_images(swapchain->gpu, VK_IMAGE_TYPE_2D, swapchain->img_count);
+    swapchain->images->is_swapchain = true;
+    vkl_images_format(swapchain->images, format);
+    vkl_images_size(swapchain->images, swapchain->window->width, swapchain->window->height, 1);
+    vkGetSwapchainImagesKHR(
+        swapchain->gpu->device, swapchain->swapchain, &swapchain->img_count,
+        swapchain->images->images);
+
+    // Create the swap chain image views.
+    vkl_images_create(swapchain->images);
+
+    obj_created(&swapchain->images->obj);
     obj_created(&swapchain->obj);
     log_trace("swapchain created");
+}
+
+
+
+void vkl_swapchain_acquire(
+    VklSwapchain* swapchain, VklSemaphores* semaphores, uint32_t semaphore_idx, VklFences* fences,
+    uint32_t fence_idx)
+{
+    ASSERT(swapchain != NULL);
+    log_trace("acquiring swapchain image...");
+
+    VkSemaphore semaphore = {0};
+    if (semaphores != NULL)
+        semaphore = semaphores->semaphores[semaphore_idx];
+
+    VkFence fence = {0};
+    if (fences != NULL)
+        fence = fences->fences[fence_idx];
+
+    VK_CHECK_RESULT(vkAcquireNextImageKHR(
+        swapchain->gpu->device, swapchain->swapchain, UINT64_MAX, //
+        semaphore, fence, &swapchain->img_idx));
+    log_trace("acquired swapchain image #%d", swapchain->img_idx);
+}
+
+
+
+void vkl_swapchain_present(
+    VklSwapchain* swapchain, uint32_t queue_idx, VklSemaphores* semaphores, uint32_t semaphore_idx)
+{
+    ASSERT(swapchain != NULL);
+    log_trace("present swapchain image #%d", swapchain->img_idx);
+
+    // Present the buffer to the surface.
+    VkPresentInfoKHR info = {0};
+    info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    if (semaphores != NULL)
+    {
+        info.waitSemaphoreCount = 1;
+        info.pWaitSemaphores = &semaphores->semaphores[semaphore_idx];
+    }
+
+    info.swapchainCount = 1;
+    info.pSwapchains = &swapchain->swapchain;
+    info.pImageIndices = &swapchain->img_idx;
+
+    VK_CHECK_RESULT(vkQueuePresentKHR(swapchain->gpu->queues.queues[queue_idx], &info));
 }
 
 
@@ -815,11 +878,12 @@ void vkl_images_create(VklImages* images)
 
     for (uint32_t i = 0; i < images->count; i++)
     {
-        create_image2(
-            gpu->device, &gpu->queues, images->queue_count, images->queues, images->image_type,
-            images->width, images->height, images->depth, images->format, images->tiling,
-            images->usage, images->memory, gpu->memory_properties, &images->images[i],
-            &images->memories[i]);
+        if (!images->is_swapchain)
+            create_image2(
+                gpu->device, &gpu->queues, images->queue_count, images->queues, images->image_type,
+                images->width, images->height, images->depth, images->format, images->tiling,
+                images->usage, images->memory, gpu->memory_properties, &images->images[i],
+                &images->memories[i]);
 
         // HACK: staging images do not require an image view
         if (images->tiling != VK_IMAGE_TILING_LINEAR)
@@ -908,7 +972,8 @@ void vkl_images_destroy(VklImages* images)
     for (uint32_t i = 0; i < images->count; i++)
     {
         vkDestroyImageView(images->gpu->device, images->image_views[i], NULL);
-        vkDestroyImage(images->gpu->device, images->images[i], NULL);
+        if (!images->is_swapchain)
+            vkDestroyImage(images->gpu->device, images->images[i], NULL);
         vkFreeMemory(images->gpu->device, images->memories[i], NULL);
     }
 
@@ -2057,7 +2122,7 @@ void vkl_cmd_begin_renderpass(VklCommands* cmds, VklRenderpass* renderpass)
 {
     CMD_START_CLIP(renderpass->framebuffer_count)
     begin_render_pass(
-        renderpass->renderpass, cb, renderpass->framebuffers[i], renderpass->width,
+        renderpass->renderpass, cb, renderpass->framebuffers[iclip], renderpass->width,
         renderpass->height, renderpass->clear_count, renderpass->clear_values);
     CMD_END
 }

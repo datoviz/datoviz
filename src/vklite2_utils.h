@@ -1342,6 +1342,8 @@ static void begin_render_pass(
 {
     VkRenderPassBeginInfo render_pass_info = {0};
     render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    ASSERT(renderpass != 0);
+    ASSERT(framebuffer != 0);
     render_pass_info.renderPass = renderpass;
     render_pass_info.framebuffer = framebuffer;
     VkRect2D renderArea = {{0, 0}, {width, height}};
