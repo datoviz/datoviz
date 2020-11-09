@@ -1586,6 +1586,14 @@ VklRenderpass* vkl_renderpass(VklGpu* gpu)
 
 
 
+void vkl_renderpass_clear(VklRenderpass* renderpass, VkClearValue value)
+{
+    ASSERT(renderpass != NULL);
+    renderpass->clear_values[renderpass->clear_count++] = value;
+}
+
+
+
 void vkl_renderpass_attachment(
     VklRenderpass* renderpass, uint32_t idx, VklRenderpassAttachmentType type, VkFormat format,
     VkImageLayout ref_layout)
@@ -1938,6 +1946,25 @@ void vkl_submit_send(VklSubmit* submit, uint32_t queue_idx, VklFences* fence, ui
 /*  Command buffer filling                                                                       */
 /*************************************************************************************************/
 
+void vkl_cmd_begin_renderpass(VklCommands* cmds, VklRenderpass* renderpass)
+{
+    CMD_START
+    begin_render_pass(
+        renderpass->renderpass, cb, renderpass->framebuffers[i], renderpass->width,
+        renderpass->height, renderpass->clear_count, renderpass->clear_values);
+    CMD_END
+}
+
+
+
+void vkl_cmd_end_renderpass(VklCommands* cmds)
+{
+    CMD_START
+    vkCmdEndRenderPass(cb);
+    CMD_END
+}
+
+
 void vkl_cmd_compute(VklCommands* cmds, VklCompute* compute, uvec3 size)
 {
     CMD_START
@@ -2044,5 +2071,17 @@ void vkl_cmd_copy_buffer_to_image(VklCommands* cmds, VklBuffer* buffer, VklImage
     vkCmdCopyBufferToImage(
         cb, buffer->buffer, images->images[i], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
+    CMD_END
+}
+
+
+
+void vkl_cmd_viewport(VklCommands* cmds, VkViewport viewport)
+{
+    CMD_START
+    vkCmdSetViewport(cb, 0, 1, &viewport);
+    VkRect2D scissor = {
+        {viewport.x, viewport.y}, {(uint32_t)viewport.width, (uint32_t)viewport.height}};
+    vkCmdSetScissor(cb, 0, 1, &scissor);
     CMD_END
 }

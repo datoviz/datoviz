@@ -361,16 +361,21 @@ static int vklite2_submit(VkyTestContext* context)
     TEST_END
 }
 
-static int vklite2_renderpass(VkyTestContext* context)
+static VklRenderpass* default_renderpass(VklGpu* gpu)
 {
-    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
-    VklGpu* gpu = vkl_gpu(app, 0);
-    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
-    vkl_gpu_create(gpu, 0);
-
     VkFormat format = VK_FORMAT_B8G8R8A8_UNORM;
 
     VklRenderpass* renderpass = vkl_renderpass(gpu);
+
+    VkClearValue clear_color = {0};
+    clear_color.color.float32[0] = 1;
+    clear_color.color.float32[3] = 1;
+
+    VkClearValue clear_depth = {0};
+    clear_depth.depthStencil.depth = 1.0f;
+
+    vkl_renderpass_clear(renderpass, clear_color);
+    vkl_renderpass_clear(renderpass, clear_depth);
     vkl_renderpass_attachment(
         renderpass, 0, //
         VKL_RENDERPASS_ATTACHMENT_COLOR, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -403,6 +408,73 @@ static int vklite2_renderpass(VkyTestContext* context)
     // Create renderpass.
     vkl_renderpass_framebuffers(renderpass, 0, images);
     vkl_renderpass_create(renderpass);
+
+    return renderpass;
+}
+
+static int vklite2_renderpass(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
+    vkl_gpu_create(gpu, 0);
+
+    VklRenderpass* renderpass = default_renderpass(gpu);
+    ASSERT(renderpass != NULL);
+    ASSERT(renderpass->obj.status == VKL_OBJECT_STATUS_CREATED);
+
+    TEST_END
+}
+
+static int vklite2_blank(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
+    vkl_gpu_create(gpu, 0);
+
+    VklRenderpass* renderpass = default_renderpass(gpu);
+    ASSERT(renderpass != NULL);
+    ASSERT(renderpass->obj.status == VKL_OBJECT_STATUS_CREATED);
+
+    VklCommands* commands = vkl_commands(gpu, 0, 1);
+    vkl_cmd_begin(commands);
+    vkl_cmd_begin_renderpass(commands, renderpass);
+    vkl_cmd_end_renderpass(commands);
+    vkl_cmd_end(commands);
+    vkl_cmd_submit_sync(commands, 0);
+
+
+
+    TEST_END
+}
+
+static int vklite2_graphics(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
+    vkl_gpu_create(gpu, 0);
+
+    VklRenderpass* renderpass = default_renderpass(gpu);
+    ASSERT(renderpass != NULL);
+    ASSERT(renderpass->obj.status == VKL_OBJECT_STATUS_CREATED);
+
+    VklGraphics* graphics = vkl_graphics(gpu);
+    ASSERT(graphics != NULL);
+    // TODO
+    // vkl_graphics_renderpass(graphics);
+    // vkl_graphics_topology(graphics);
+    // vkl_graphics_shader(graphics);
+    // vkl_graphics_vertex_binding(graphics);
+    // vkl_graphics_vertex_attr(graphics);
+    // vkl_graphics_blend(graphics);
+    // vkl_graphics_depth_test(graphics);
+    // vkl_graphics_polygon_mode(graphics);
+    // vkl_graphics_cull_mode(graphics);
+    // vkl_graphics_front_face(graphics);
+    // vkl_graphics_create(graphics);
+    // vkl_graphics_bindings(graphics);
 
     TEST_END
 }

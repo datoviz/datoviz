@@ -1280,3 +1280,20 @@ static VkAttachmentReference create_attachment_ref(uint32_t attachment, VkImageL
     attachment_ref.layout = ref_layout;
     return attachment_ref;
 }
+
+
+
+static void begin_render_pass(
+    VkRenderPass renderpass, VkCommandBuffer cmd_buf, VkFramebuffer framebuffer, uint32_t width,
+    uint32_t height, uint32_t clear_count, VkClearValue* clear_colors)
+{
+    VkRenderPassBeginInfo render_pass_info = {0};
+    render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    render_pass_info.renderPass = renderpass;
+    render_pass_info.framebuffer = framebuffer;
+    VkRect2D renderArea = {{0, 0}, {width, height}};
+    render_pass_info.renderArea = renderArea;
+    render_pass_info.clearValueCount = clear_count;
+    render_pass_info.pClearValues = clear_colors;
+    vkCmdBeginRenderPass(cmd_buf, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+}

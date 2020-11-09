@@ -698,8 +698,13 @@ struct VklRenderpass
     VklObject obj;
     VklGpu* gpu;
 
+    uint32_t width, height;
+
     uint32_t attachment_count;
     VklRenderpassAttachment attachments[VKL_MAX_ATTACHMENTS_PER_RENDERPASS];
+
+    uint32_t clear_count;
+    VkClearValue clear_values[VKL_MAX_ATTACHMENTS_PER_RENDERPASS];
 
     uint32_t subpass_count;
     VklRenderpassSubpass subpasses[VKL_MAX_SUBPASSES_PER_RENDERPASS];
@@ -1048,6 +1053,8 @@ VKY_EXPORT void vkl_fences_destroy(VklFences* fences);
 
 VKY_EXPORT VklRenderpass* vkl_renderpass(VklGpu* gpu);
 
+VKY_EXPORT void vkl_renderpass_clear(VklRenderpass* renderpass, VkClearValue value);
+
 VKY_EXPORT void vkl_renderpass_attachment(
     VklRenderpass* renderpass, uint32_t idx, VklRenderpassAttachmentType type, VkFormat format,
     VkImageLayout ref_layout);
@@ -1106,12 +1113,19 @@ vkl_submit_send(VklSubmit* submit, uint32_t queue_idx, VklFences* fence, uint32_
 /*  Command buffer filling                                                                       */
 /*************************************************************************************************/
 
+VKY_EXPORT void vkl_cmd_begin_renderpass(VklCommands* cmds, VklRenderpass* renderpass);
+
+VKY_EXPORT void vkl_cmd_end_renderpass(VklCommands* cmds);
+
 VKY_EXPORT void vkl_cmd_compute(VklCommands* cmds, VklCompute* compute, uvec3 size);
 
 VKY_EXPORT void vkl_cmd_barrier(VklCommands* cmds, VklBarrier* barrier);
 
 VKY_EXPORT void
 vkl_cmd_copy_buffer_to_image(VklCommands* cmds, VklBuffer* buffer, VklImages* images);
+
+VKY_EXPORT void vkl_cmd_viewport(VklCommands* cmds, VkViewport viewport);
+
 
 
 #endif
