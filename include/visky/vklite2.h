@@ -244,6 +244,18 @@ typedef enum
     {                                                                                             \
         cb = cmds->cmds[i];
 
+
+#define CMD_START_CLIP(cnt)                                                                       \
+    ASSERT(cmds != NULL);                                                                         \
+    ASSERT((cnt) == 1 || (cnt) == cmds->count);                                                   \
+    VkCommandBuffer cb = {0};                                                                     \
+    uint32_t iclip = 0;                                                                           \
+    for (uint32_t i = 0; i < cmds->count; i++)                                                    \
+    {                                                                                             \
+        iclip = (cnt) == 1 ? 0 : (MIN(i, (cnt)-1));                                               \
+        ASSERT(iclip < (cnt));                                                                    \
+        cb = cmds->cmds[i];
+
 #define CMD_END }
 
 

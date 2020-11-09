@@ -2019,7 +2019,7 @@ void vkl_submit_send(VklSubmit* submit, uint32_t queue_idx, VklFences* fence, ui
 
 void vkl_cmd_begin_renderpass(VklCommands* cmds, VklRenderpass* renderpass)
 {
-    CMD_START
+    CMD_START_CLIP(renderpass->framebuffer_count)
     begin_render_pass(
         renderpass->renderpass, cb, renderpass->framebuffers[i], renderpass->width,
         renderpass->height, renderpass->clear_count, renderpass->clear_values);
@@ -2120,7 +2120,7 @@ void vkl_cmd_barrier(VklCommands* cmds, VklBarrier* barrier)
 
 void vkl_cmd_copy_buffer_to_image(VklCommands* cmds, VklBuffer* buffer, VklImages* images)
 {
-    CMD_START
+    CMD_START_CLIP(images->count)
 
     VkBufferImageCopy region = {0};
     region.bufferOffset = 0;
@@ -2141,7 +2141,8 @@ void vkl_cmd_copy_buffer_to_image(VklCommands* cmds, VklBuffer* buffer, VklImage
     region.imageExtent.depth = images->depth;
 
     vkCmdCopyBufferToImage(
-        cb, buffer->buffer, images->images[i], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+        cb, buffer->buffer, images->images[iclip], //
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
     CMD_END
 }
@@ -2156,12 +2157,11 @@ void vkl_cmd_copy_image(VklCommands* cmds, VklImages* src_img, VklImages* dst_im
     ASSERT(src_img->width = dst_img->width);
     ASSERT(src_img->height = dst_img->height);
 
-    ASSERT(cmds->count == src_img->count);
-    ASSERT(cmds->count == dst_img->count);
+    ASSERT(src_img->count == dst_img->count);
 
     ASSERT(src_img->layout != 0);
 
-    CMD_START
+    CMD_START_CLIP(src_img->count)
     VkImageCopy imageCopyRegion = {0};
     imageCopyRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     imageCopyRegion.srcSubresource.layerCount = 1;
@@ -2171,8 +2171,8 @@ void vkl_cmd_copy_image(VklCommands* cmds, VklImages* src_img, VklImages* dst_im
     imageCopyRegion.extent.height = src_img->height;
     imageCopyRegion.extent.depth = 1;
     vkCmdCopyImage(
-        cb, src_img->images[i], src_img->layout, dst_img->images[i], dst_img->layout, 1,
-        &imageCopyRegion);
+        cb, src_img->images[iclip], src_img->layout, //
+        dst_img->images[iclip], dst_img->layout, 1, &imageCopyRegion);
     CMD_END
 }
 
@@ -2201,13 +2201,10 @@ void vkl_cmd_bind_pipeline(VklCommands* cmds, VklGraphics* graphics, uint32_t dy
 
 void vkl_cmd_bind_vertex_buffer(VklCommands* cmds, VklBufferRegions buffer, VkDeviceSize offset)
 {
-    // TODO: no support for multiple buffer regions yet.
-    ASSERT(buffer.count == 1);
-
-    CMD_START
+    CMD_START_CLIP(buffer.count)
     VkBuffer vertex_buffers[] = {buffer.buffer->buffer};
     // NOTE: we must take into account the offset of the buffer within the underlying buffer.
-    VkDeviceSize offsets[] = {buffer.offsets[0] + offset};
+    VkDeviceSize offsets[] = {buffer.offsets[iclip] + offset};
     vkCmdBindVertexBuffers(cb, 0, 1, vertex_buffers, offsets);
     CMD_END
 }
@@ -2216,12 +2213,9 @@ void vkl_cmd_bind_vertex_buffer(VklCommands* cmds, VklBufferRegions buffer, VkDe
 
 void vkl_cmd_bind_index_buffer(VklCommands* cmds, VklBufferRegions buffer, VkDeviceSize offset)
 {
-    // TODO: no support for multiple buffer regions yet.
-    ASSERT(buffer.count == 1);
-
-    CMD_START
+    CMD_START_CLIP(buffer.count)
     vkCmdBindIndexBuffer(
-        cb, buffer.buffer->buffer, buffer.offsets[0] + offset, VK_INDEX_TYPE_UINT32);
+        cb, buffer.buffer->buffer, buffer.offsets[iclip] + offset, VK_INDEX_TYPE_UINT32);
     CMD_END
 }
 
@@ -2248,11 +2242,8 @@ void vkl_cmd_draw_indexed(
 
 void vkl_cmd_draw_indirect(VklCommands* cmds, VklBufferRegions indirect)
 {
-    // TODO: no support for multiple buffer regions yet.
-    ASSERT(indirect.count == 1);
-
-    CMD_START
-    vkCmdDrawIndirect(cb, indirect.buffer->buffer, indirect.offsets[0], 1, 0);
+    CMD_START_CLIP(indirect.count)
+    vkCmdDrawIndirect(cb, indirect.buffer->buffer, indirect.offsets[iclip], 1, 0);
     CMD_END
 }
 
@@ -2260,11 +2251,8 @@ void vkl_cmd_draw_indirect(VklCommands* cmds, VklBufferRegions indirect)
 
 void vkl_cmd_draw_indexed_indirect(VklCommands* cmds, VklBufferRegions indirect)
 {
-    // TODO: no support for multiple buffer regions yet.
-    ASSERT(indirect.count == 1);
-
-    CMD_START
-    vkCmdDrawIndexedIndirect(cb, indirect.buffer->buffer, indirect.offsets[0], 1, 0);
+    CMD_START_CLIP(indirect.count)
+    vkCmdDrawIndexedIndirect(cb, indirect.buffer->buffer, indirect.offsets[iclip], 1, 0);
     CMD_END
 }
 
@@ -2276,14 +2264,15 @@ void vkl_cmd_copy_buffer(
     VklBufferRegions dst_buf, VkDeviceSize dst_offset, //
     VkDeviceSize size)
 {
-    ASSERT(src_buf.count == 1);
-
     VkBufferCopy copy_region = {0};
-    copy_region.srcOffset = src_buf.offsets[0] + src_offset;
-    copy_region.dstOffset = dst_buf.offsets[0] + dst_offset;
     copy_region.size = size;
 
-    CMD_START
+    ASSERT(src_buf.count == dst_buf.count);
+
+    CMD_START_CLIP(src_buf.count)
+    copy_region.srcOffset = src_buf.offsets[iclip] + src_offset;
+    copy_region.dstOffset = dst_buf.offsets[iclip] + dst_offset;
+
     vkCmdCopyBuffer(cb, src_buf.buffer->buffer, dst_buf.buffer->buffer, 1, &copy_region);
     CMD_END
 }
