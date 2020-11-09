@@ -22,9 +22,9 @@ static VklRenderpass* offscreen_renderpass(VklGpu* gpu)
     VklRenderpass* renderpass = vkl_renderpass(gpu, TEST_WIDTH, TEST_HEIGHT);
 
     VkClearValue clear_color = {0};
-    clear_color.color.uint32[0] = 255;
-    clear_color.color.uint32[1] = 255;
-    clear_color.color.uint32[3] = 255;
+    clear_color.color.float32[0] = 1;
+    clear_color.color.float32[1] = 1;
+    clear_color.color.float32[3] = 1;
 
     VkClearValue clear_depth = {0};
     clear_depth.depthStencil.depth = 1.0f;
