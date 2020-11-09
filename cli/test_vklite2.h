@@ -264,7 +264,7 @@ static int vklite2_compute(VkyTestContext* context)
 
     // Create the bindings.
     VklBindings* bindings = vkl_bindings(gpu);
-    vkl_bindings_slot(bindings, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+    vkl_bindings_slot(bindings, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 0);
     vkl_bindings_create(bindings, 1);
     VklBufferRegions br = {.buffer = buffer, .size = size, .count = 1};
     vkl_bindings_buffer(bindings, 0, &br);
@@ -417,13 +417,13 @@ static int vklite2_submit(VkyTestContext* context)
 
     // Create the bindings.
     VklBindings* bindings1 = vkl_bindings(gpu);
-    vkl_bindings_slot(bindings1, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+    vkl_bindings_slot(bindings1, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 0);
     vkl_bindings_create(bindings1, 1);
     VklBufferRegions br1 = {.buffer = buffer, .size = size, .count = 1};
     vkl_bindings_buffer(bindings1, 0, &br1);
 
     VklBindings* bindings2 = vkl_bindings(gpu);
-    vkl_bindings_slot(bindings2, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+    vkl_bindings_slot(bindings2, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 0);
     vkl_bindings_create(bindings2, 1);
     VklBufferRegions br2 = {.buffer = buffer, .size = size, .count = 1};
     vkl_bindings_buffer(bindings2, 0, &br2);

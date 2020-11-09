@@ -74,6 +74,59 @@ static inline void check_result(VkResult res)
 
 
 /*************************************************************************************************/
+/*  Utils                                                                                        */
+/*************************************************************************************************/
+
+static uint64_t next_pow2(uint64_t x)
+{
+    uint64_t p = 1;
+    while (p < x)
+        p *= 2;
+    return p;
+}
+
+
+static VkDeviceSize
+compute_dynamic_alignment(VkDeviceSize dynamic_alignment, VkDeviceSize min_ubo_alignment)
+{
+    if (min_ubo_alignment > 0)
+    {
+        dynamic_alignment = (dynamic_alignment + min_ubo_alignment - 1) & ~(min_ubo_alignment - 1);
+    }
+    dynamic_alignment = next_pow2(dynamic_alignment);
+    return dynamic_alignment;
+}
+
+
+
+static void* allocate_aligned(VkDeviceSize size, VkDeviceSize alignment)
+{
+    void* data = NULL;
+    // Allocate the aligned buffer.
+#if OS_MACOS
+    posix_memalign((void**)&data, alignment, size);
+#elif OS_WIN32
+    data = _aligned_malloc(size, alignment);
+#else
+    data = aligned_alloc(alignment, size);
+#endif
+
+    if (data == NULL)
+        log_error("failed making the aligned allocation of the dynamic uniform buffer");
+    return data;
+}
+
+
+
+static void* get_aligned_pointer(const void* data, VkDeviceSize alignment, uint32_t idx)
+{
+    // Get a pointer to a given item in the dynamic uniform buffer, to update it.
+    return (void*)(((uint64_t)data + (idx * alignment)));
+}
+
+
+
+/*************************************************************************************************/
 /*  Validation layers                                                                            */
 /*************************************************************************************************/
 

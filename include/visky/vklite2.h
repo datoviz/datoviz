@@ -511,6 +511,7 @@ struct VklBindings
 
     uint32_t bindings_count;
     VkDescriptorType types[VKL_MAX_BINDINGS_SIZE];
+    VkDeviceSize alignments[VKL_MAX_BINDINGS_SIZE]; // dynamic uniform alignments
 
     VkPipelineLayout pipeline_layout;
     VkDescriptorSetLayout dset_layout;
@@ -942,7 +943,14 @@ VKY_EXPORT void vkl_sampler_destroy(VklSampler* sampler);
 
 VKY_EXPORT VklBindings* vkl_bindings(VklGpu* gpu);
 
-VKY_EXPORT void vkl_bindings_slot(VklBindings* bindings, uint32_t idx, VkDescriptorType type);
+VKY_EXPORT void vkl_bindings_slot(
+    VklBindings* bindings, uint32_t idx, VkDescriptorType type, VkDeviceSize item_size);
+
+VKY_EXPORT void*
+vkl_bindings_dynamic_allocate(VklBindings* bindings, uint32_t idx, VkDeviceSize size);
+
+VKY_EXPORT void* vkl_bindings_dynamic_pointer(
+    VklBindings* bindings, uint32_t idx, uint32_t item_idx, const void* data);
 
 VKY_EXPORT void vkl_bindings_create(VklBindings* bindings, uint32_t dset_count);
 
@@ -1145,7 +1153,7 @@ VKY_EXPORT void vkl_cmd_copy_image(VklCommands* cmds, VklImages* src_img, VklIma
 VKY_EXPORT void vkl_cmd_viewport(VklCommands* cmds, VkViewport viewport);
 
 VKY_EXPORT void
-vkl_cmd_bind_pipeline(VklCommands* cmds, VklGraphics* graphics, uint32_t dynamic_idx);
+vkl_cmd_bind_graphics(VklCommands* cmds, VklGraphics* graphics, uint32_t dynamic_idx);
 
 VKY_EXPORT void
 vkl_cmd_bind_vertex_buffer(VklCommands* cmds, VklBufferRegions buffer, VkDeviceSize offset);

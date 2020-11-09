@@ -1012,12 +1012,44 @@ VklBindings* vkl_bindings(VklGpu* gpu)
 
 
 
-void vkl_bindings_slot(VklBindings* bindings, uint32_t idx, VkDescriptorType type)
+void vkl_bindings_slot(
+    VklBindings* bindings, uint32_t idx, VkDescriptorType type, VkDeviceSize item_size)
 {
     ASSERT(bindings != NULL);
     ASSERT(idx == bindings->bindings_count);
     ASSERT(idx < VKL_MAX_BINDINGS_SIZE);
     bindings->types[bindings->bindings_count++] = type;
+
+    if (type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
+    {
+        log_trace("computing alignment for dynamic uniform buffer of size %d", item_size);
+        ASSERT(item_size > 0);
+        ASSERT(item_size <= 256);
+        bindings->alignments[idx] = compute_dynamic_alignment(
+            item_size, bindings->gpu->device_properties.limits.minUniformBufferOffsetAlignment);
+        ASSERT(bindings->alignments[idx] >= 256);
+    }
+}
+
+
+
+void* vkl_bindings_dynamic_allocate(VklBindings* bindings, uint32_t idx, VkDeviceSize size)
+{
+    ASSERT(bindings != NULL);
+    ASSERT(bindings->types[idx] == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC);
+    ASSERT(bindings->alignments[idx] > 0);
+    return allocate_aligned(size, bindings->alignments[idx]);
+}
+
+
+
+void* vkl_bindings_dynamic_pointer(
+    VklBindings* bindings, uint32_t idx, uint32_t item_idx, const void* data)
+{
+    ASSERT(bindings != NULL);
+    ASSERT(bindings->types[idx] == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC);
+    ASSERT(bindings->alignments[idx] > 0);
+    return get_aligned_pointer(data, bindings->alignments[idx], item_idx);
 }
 
 
@@ -2190,10 +2222,31 @@ void vkl_cmd_viewport(VklCommands* cmds, VkViewport viewport)
 
 
 
-void vkl_cmd_bind_pipeline(VklCommands* cmds, VklGraphics* graphics, uint32_t dynamic_idx)
+void vkl_cmd_bind_graphics(VklCommands* cmds, VklGraphics* graphics, uint32_t dynamic_idx)
 {
-    CMD_START
+    ASSERT(graphics != NULL);
+    VklBindings* bindings = graphics->bindings;
+    ASSERT(bindings != NULL);
+
+    // Count the number of dynamic uniforms.
+    uint32_t dynamic_binding_count = 0;
+    uint32_t dynamic_offsets[VKL_MAX_BINDINGS_SIZE] = {0};
+    ASSERT(bindings->bindings_count <= VKL_MAX_BINDINGS_SIZE);
+    for (uint32_t i = 0; i < bindings->bindings_count; i++)
+    {
+        if (bindings->types[i] == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
+        {
+            ASSERT(bindings->alignments[i] > 0);
+            dynamic_offsets[dynamic_binding_count] = dynamic_idx * bindings->alignments[i];
+            dynamic_binding_count++;
+        }
+    }
+
+    CMD_START_CLIP(bindings->dset_count)
     vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, graphics->pipeline);
+    vkCmdBindDescriptorSets(
+        cb, VK_PIPELINE_BIND_POINT_GRAPHICS, bindings->pipeline_layout, 0, 1,
+        &bindings->dsets[iclip], dynamic_binding_count, dynamic_offsets);
     CMD_END
 }
 
