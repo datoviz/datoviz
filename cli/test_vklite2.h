@@ -1,12 +1,126 @@
 #include "../src/vklite2_utils.h"
 
 
+/*************************************************************************************************/
+/*  Utils                                                                                        */
+/*************************************************************************************************/
 
 #define TEST_END                                                                                  \
     vkl_app_destroy(app);                                                                         \
     return app->n_errors != 0;
 
 
+
+static VklRenderpass* default_renderpass(VklGpu* gpu)
+{
+    VkFormat format = VK_FORMAT_B8G8R8A8_UNORM;
+
+    VklRenderpass* renderpass = vkl_renderpass(gpu);
+
+    VkClearValue clear_color = {0};
+    clear_color.color.uint32[0] = 255;
+    clear_color.color.uint32[1] = 255;
+    clear_color.color.uint32[3] = 255;
+
+    VkClearValue clear_depth = {0};
+    clear_depth.depthStencil.depth = 1.0f;
+
+    vkl_renderpass_clear(renderpass, clear_color);
+    vkl_renderpass_clear(renderpass, clear_depth);
+    vkl_renderpass_attachment(
+        renderpass, 0, //
+        VKL_RENDERPASS_ATTACHMENT_COLOR, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    vkl_renderpass_attachment_layout(
+        renderpass, 0, //
+        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    vkl_renderpass_attachment_ops(
+        renderpass, 0, //
+        VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+    vkl_renderpass_subpass_attachment(renderpass, 0, 0);
+    vkl_renderpass_subpass_dependency(renderpass, 0, VK_SUBPASS_EXTERNAL, 0);
+    vkl_renderpass_subpass_dependency_stage(
+        renderpass, 0, //
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+    vkl_renderpass_subpass_dependency_access(
+        renderpass, 0, 0,
+        VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+
+    // Framebuffer images.
+    VklImages* images = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
+    vkl_images_format(images, format);
+    vkl_images_size(images, 640, 480, 1);
+    vkl_images_tiling(images, VK_IMAGE_TILING_OPTIMAL);
+    vkl_images_usage(
+        images, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
+    vkl_images_memory(images, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    vkl_images_layout(images, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    vkl_images_queue_access(images, 0);
+    vkl_images_create(images);
+
+    // Create renderpass.
+    vkl_renderpass_framebuffers(renderpass, 0, images);
+    vkl_renderpass_create(renderpass);
+
+    return renderpass;
+}
+
+
+
+static uint8_t* screenshot(VklImages* images)
+{
+    // NOTE: the caller must free the output
+
+    VklGpu* gpu = images->gpu;
+
+    // Create the staging image.
+    log_debug("starting creation of staging image");
+    VklImages* staging = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
+    vkl_images_format(staging, images->format);
+    vkl_images_size(staging, images->width, images->height, images->depth);
+    vkl_images_tiling(staging, VK_IMAGE_TILING_LINEAR);
+    vkl_images_usage(staging, VK_IMAGE_USAGE_TRANSFER_DST_BIT);
+    vkl_images_layout(staging, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    vkl_images_memory(
+        staging, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vkl_images_create(staging);
+
+    // Start the image transition command buffers.
+    VklCommands* cmds = vkl_commands(gpu, 0, 1);
+    vkl_cmd_begin(cmds);
+
+    VklBarrier barrier = vkl_barrier(gpu);
+    vkl_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    vkl_barrier_images(&barrier, staging);
+    vkl_barrier_images_layout(
+        &barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    vkl_barrier_images_access(&barrier, 0, VK_ACCESS_TRANSFER_WRITE_BIT);
+    vkl_cmd_barrier(cmds, &barrier);
+
+    // Copy the image to the staging image.
+    vkl_cmd_copy_image(cmds, images, staging);
+
+    vkl_barrier_images_layout(
+        &barrier, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
+    vkl_barrier_images_access(&barrier, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_MEMORY_READ_BIT);
+    vkl_cmd_barrier(cmds, &barrier);
+
+    // End the commands and submit them.
+    vkl_cmd_end(cmds);
+    vkl_cmd_submit_sync(cmds, 0);
+
+    // Now, copy the staging image into CPU memory.
+    uint8_t* rgba = calloc(images->width * images->height, 4);
+    vkl_images_download(staging, 0, true, rgba);
+
+    return rgba;
+}
+
+
+
+/*************************************************************************************************/
+/*  Unit tests                                                                                   */
+/*************************************************************************************************/
 
 static int vklite2_app(VkyTestContext* context)
 {
@@ -361,57 +475,6 @@ static int vklite2_submit(VkyTestContext* context)
     TEST_END
 }
 
-static VklRenderpass* default_renderpass(VklGpu* gpu)
-{
-    VkFormat format = VK_FORMAT_B8G8R8A8_UNORM;
-
-    VklRenderpass* renderpass = vkl_renderpass(gpu);
-
-    VkClearValue clear_color = {0};
-    clear_color.color.float32[0] = 1;
-    clear_color.color.float32[3] = 1;
-
-    VkClearValue clear_depth = {0};
-    clear_depth.depthStencil.depth = 1.0f;
-
-    vkl_renderpass_clear(renderpass, clear_color);
-    vkl_renderpass_clear(renderpass, clear_depth);
-    vkl_renderpass_attachment(
-        renderpass, 0, //
-        VKL_RENDERPASS_ATTACHMENT_COLOR, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-    vkl_renderpass_attachment_layout(
-        renderpass, 0, //
-        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-    vkl_renderpass_attachment_ops(
-        renderpass, 0, //
-        VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
-    vkl_renderpass_subpass_attachment(renderpass, 0, 0);
-    vkl_renderpass_subpass_dependency(renderpass, 0, VK_SUBPASS_EXTERNAL, 0);
-    vkl_renderpass_subpass_dependency_stage(
-        renderpass, 0, //
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-    vkl_renderpass_subpass_dependency_access(
-        renderpass, 0, 0,
-        VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
-
-    // Framebuffer images.
-    VklImages* images = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
-    vkl_images_format(images, format);
-    vkl_images_size(images, 640, 480, 1);
-    vkl_images_tiling(images, VK_IMAGE_TILING_OPTIMAL);
-    vkl_images_usage(images, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
-    vkl_images_memory(images, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    vkl_images_queue_access(images, 0);
-    vkl_images_create(images);
-
-    // Create renderpass.
-    vkl_renderpass_framebuffers(renderpass, 0, images);
-    vkl_renderpass_create(renderpass);
-
-    return renderpass;
-}
-
 static int vklite2_renderpass(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
@@ -444,8 +507,11 @@ static int vklite2_blank(VkyTestContext* context)
     vkl_cmd_end(commands);
     vkl_cmd_submit_sync(commands, 0);
 
+    uint8_t* rgba = screenshot(renderpass->framebuffer_info[0].images);
 
+    DBG(memcmp(rgba, calloc(640 * 480 * 4, 1), 640 * 480 * 4));
 
+    FREE(rgba);
     TEST_END
 }
 

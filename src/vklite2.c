@@ -748,6 +748,14 @@ void vkl_images_format(VklImages* images, VkFormat format)
 
 
 
+void vkl_images_layout(VklImages* images, VkImageLayout layout)
+{
+    ASSERT(images != NULL);
+    images->layout = layout;
+}
+
+
+
 void vkl_images_size(VklImages* images, uint32_t width, uint32_t height, uint32_t depth)
 {
     ASSERT(images != NULL);
@@ -813,13 +821,76 @@ void vkl_images_create(VklImages* images)
             images->usage, images->memory, gpu->memory_properties, &images->images[i],
             &images->memories[i]);
 
-        create_image_view2(
-            gpu->device, images->images[i], images->image_type, images->format,
-            VK_IMAGE_ASPECT_COLOR_BIT, &images->image_views[i]);
+        // HACK: staging images do not require an image view
+        if (images->tiling != VK_IMAGE_TILING_LINEAR)
+            create_image_view2(
+                gpu->device, images->images[i], images->image_type, images->format,
+                VK_IMAGE_ASPECT_COLOR_BIT, &images->image_views[i]);
     }
 
     obj_created(&images->obj);
     log_trace("%d images created", images->count);
+}
+
+
+
+void vkl_images_download(VklImages* staging, uint32_t idx, bool swizzle, uint8_t* rgba)
+{
+    VkImageSubresource subResource = {0};
+    subResource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    VkSubresourceLayout subResourceLayout = {0};
+    vkGetImageSubresourceLayout(
+        staging->gpu->device, staging->images[idx], &subResource, &subResourceLayout);
+
+    // Map image memory so we can start copying from it
+    void* data = NULL;
+    vkMapMemory(staging->gpu->device, staging->memories[idx], 0, VK_WHOLE_SIZE, 0, &data);
+    ASSERT(data != NULL);
+    VkDeviceSize offset = subResourceLayout.offset;
+    VkDeviceSize row_pitch = subResourceLayout.rowPitch;
+    ASSERT(row_pitch > 0);
+
+    uint32_t w = staging->width;
+    uint32_t h = staging->height;
+    ASSERT(w > 0);
+    ASSERT(h > 0);
+
+    // First, memcopy from the GPU to the CPU.
+    uint8_t* image = calloc(w * h, 4);
+    uint8_t* image_orig = image;
+    memcpy(image, data, w * h * 4);
+    vkUnmapMemory(staging->gpu->device, staging->memories[idx]);
+
+    // Then, swizzle.
+    image += offset;
+    uint32_t src_offset = 0;
+    uint32_t dst_offset = 0;
+    for (uint32_t y = 0; y < h; y++)
+    {
+        src_offset = 0;
+        for (uint32_t x = 0; x < w; x++)
+        {
+            if (swizzle)
+            {
+                rgba[dst_offset + 0] = image[src_offset + 2];
+                rgba[dst_offset + 1] = image[src_offset + 1];
+                rgba[dst_offset + 2] = image[src_offset + 0];
+                rgba[dst_offset + 3] = image[src_offset + 3];
+            }
+            else
+            {
+                rgba[dst_offset + 0] = image[src_offset + 0];
+                rgba[dst_offset + 1] = image[src_offset + 1];
+                rgba[dst_offset + 2] = image[src_offset + 2];
+                rgba[dst_offset + 3] = image[src_offset + 3];
+            }
+            src_offset += 4;
+            dst_offset += 4;
+        }
+        image += row_pitch;
+    }
+    ASSERT(dst_offset == w * h * 4);
+    FREE(image_orig);
 }
 
 
@@ -1965,6 +2036,7 @@ void vkl_cmd_end_renderpass(VklCommands* cmds)
 }
 
 
+
 void vkl_cmd_compute(VklCommands* cmds, VklCompute* compute, uvec3 size)
 {
     CMD_START
@@ -2071,6 +2143,36 @@ void vkl_cmd_copy_buffer_to_image(VklCommands* cmds, VklBuffer* buffer, VklImage
     vkCmdCopyBufferToImage(
         cb, buffer->buffer, images->images[i], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
+    CMD_END
+}
+
+
+
+void vkl_cmd_copy_image(VklCommands* cmds, VklImages* src_img, VklImages* dst_img)
+{
+    ASSERT(src_img != NULL);
+    ASSERT(dst_img != NULL);
+
+    ASSERT(src_img->width = dst_img->width);
+    ASSERT(src_img->height = dst_img->height);
+
+    ASSERT(cmds->count == src_img->count);
+    ASSERT(cmds->count == dst_img->count);
+
+    ASSERT(src_img->layout != 0);
+
+    CMD_START
+    VkImageCopy imageCopyRegion = {0};
+    imageCopyRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    imageCopyRegion.srcSubresource.layerCount = 1;
+    imageCopyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    imageCopyRegion.dstSubresource.layerCount = 1;
+    imageCopyRegion.extent.width = src_img->width;
+    imageCopyRegion.extent.height = src_img->height;
+    imageCopyRegion.extent.depth = 1;
+    vkCmdCopyImage(
+        cb, src_img->images[i], src_img->layout, dst_img->images[i], dst_img->layout, 1,
+        &imageCopyRegion);
     CMD_END
 }
 

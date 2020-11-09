@@ -884,6 +884,8 @@ VKY_EXPORT VklImages* vkl_images(VklGpu* gpu, VkImageType type, uint32_t count);
 
 VKY_EXPORT void vkl_images_format(VklImages* images, VkFormat format);
 
+VKY_EXPORT void vkl_images_layout(VklImages* images, VkImageLayout layout);
+
 VKY_EXPORT void
 vkl_images_size(VklImages* images, uint32_t width, uint32_t height, uint32_t depth);
 
@@ -896,6 +898,8 @@ VKY_EXPORT void vkl_images_memory(VklImages* images, VkMemoryPropertyFlags memor
 VKY_EXPORT void vkl_images_queue_access(VklImages* images, uint32_t queue);
 
 VKY_EXPORT void vkl_images_create(VklImages* images);
+
+VKY_EXPORT void vkl_images_download(VklImages* staging, uint32_t idx, bool swizzle, uint8_t* rgba);
 
 VKY_EXPORT void vkl_images_destroy(VklImages* images);
 
@@ -1123,6 +1127,8 @@ VKY_EXPORT void vkl_cmd_barrier(VklCommands* cmds, VklBarrier* barrier);
 
 VKY_EXPORT void
 vkl_cmd_copy_buffer_to_image(VklCommands* cmds, VklBuffer* buffer, VklImages* images);
+
+VKY_EXPORT void vkl_cmd_copy_image(VklCommands* cmds, VklImages* src_img, VklImages* dst_img);
 
 VKY_EXPORT void vkl_cmd_viewport(VklCommands* cmds, VkViewport viewport);
 
