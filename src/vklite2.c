@@ -246,7 +246,7 @@ void vkl_gpu_destroy(VklGpu* gpu)
     VkDevice device = gpu->device;
     ASSERT(device != 0);
 
-    log_trace("GPU destroy %d swapchains", gpu->swapchains);
+    log_trace("GPU destroy %d swapchains", gpu->swapchain_count);
     for (uint32_t i = 0; i < gpu->swapchain_count; i++)
     {
         vkl_swapchain_destroy(&gpu->swapchains[i]);
@@ -497,7 +497,7 @@ void vkl_swapchain_acquire(
     else if (res != VK_SUCCESS)
     {
         log_error("failed acquiring the swapchain image");
-        swapchain->obj.status = VKL_OBJECT_STATUS_NEED_RECREATE;
+        swapchain->obj.status = VKL_OBJECT_STATUS_INVALID;
     }
 }
 
@@ -532,8 +532,7 @@ void vkl_swapchain_present(
     else if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR)
     {
         log_error("failed presenting the swapchain image");
-        swapchain->obj.status = VKL_OBJECT_STATUS_NEED_RECREATE;
-        swapchain->obj.status = VKL_OBJECT_STATUS_NEED_RECREATE;
+        swapchain->obj.status = VKL_OBJECT_STATUS_INVALID;
     }
 }
 
@@ -2141,7 +2140,7 @@ void vkl_framebuffers_create(VklFramebuffers* framebuffers, VklRenderpass* rende
             attachments[j] = images->image_views[MIN(i, images->count - 1)];
         }
         ASSERT(images != NULL);
-        log_info("%d %d", images->width, renderpass->width);
+        // log_info("%d %d", images->width, renderpass->width);
         ASSERT(images->width == renderpass->width);
         ASSERT(images->height == renderpass->height);
 

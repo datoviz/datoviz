@@ -766,7 +766,7 @@ static int vklite2_canvas_basic(VkyTestContext* context)
     uint32_t cur_frame = 0;
     VklBackend backend = VKL_BACKEND_GLFW;
 
-    const uint32_t n_frames = 1000;
+    const uint32_t n_frames = 5;
     for (uint32_t frame = 0; frame < n_frames; frame++)
     {
         log_info("iteration %d", frame);
@@ -782,30 +782,12 @@ static int vklite2_canvas_basic(VkyTestContext* context)
 
         // We acquire the next swapchain image.
         vkl_swapchain_acquire(swapchain, sem_img_available, cur_frame, NULL, 0);
-        if (swapchain->obj.status != VKL_OBJECT_STATUS_NEED_RECREATE)
+        if (swapchain->obj.status == VKL_OBJECT_STATUS_INVALID)
         {
-            // Wait for previous fence if needed.
-            vkl_fences_wait(bak_fences, swapchain->img_idx);
-            vkl_fences_copy(fences, cur_frame, bak_fences, swapchain->img_idx);
-
-            // Then, we submit the commands on that image
-            VklSubmit submit = vkl_submit(gpu);
-            vkl_submit_commands(&submit, commands, (int32_t)swapchain->img_idx);
-            vkl_submit_wait_semaphores(
-                &submit, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, sem_img_available,
-                (int32_t)cur_frame);
-            // Once the render is finished, we signal another semaphore.
-            vkl_submit_signal_semaphores(&submit, sem_render_finished, (int32_t)cur_frame);
-            vkl_submit_send(&submit, 0, fences, cur_frame);
-
-            // Once the image is rendered, we present the swapchain image.
-            vkl_swapchain_present(swapchain, 1, sem_render_finished, cur_frame);
-
-            cur_frame = (cur_frame + 1) % VKY_MAX_FRAMES_IN_FLIGHT;
+            break;
         }
-
         // Handle resizing.
-        else
+        else if (swapchain->obj.status == VKL_OBJECT_STATUS_NEED_RECREATE)
         {
             log_trace("recreating the swapchain");
 
@@ -831,6 +813,27 @@ static int vklite2_canvas_basic(VkyTestContext* context)
             // Need to refill the command buffers.
             vkl_cmd_reset(commands);
             empty_commands(commands, renderpass, framebuffers);
+        }
+        else
+        {
+            // Wait for previous fence if needed.
+            vkl_fences_wait(bak_fences, swapchain->img_idx);
+            vkl_fences_copy(fences, cur_frame, bak_fences, swapchain->img_idx);
+
+            // Then, we submit the commands on that image
+            VklSubmit submit = vkl_submit(gpu);
+            vkl_submit_commands(&submit, commands, (int32_t)swapchain->img_idx);
+            vkl_submit_wait_semaphores(
+                &submit, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, sem_img_available,
+                (int32_t)cur_frame);
+            // Once the render is finished, we signal another semaphore.
+            vkl_submit_signal_semaphores(&submit, sem_render_finished, (int32_t)cur_frame);
+            vkl_submit_send(&submit, 0, fences, cur_frame);
+
+            // Once the image is rendered, we present the swapchain image.
+            vkl_swapchain_present(swapchain, 1, sem_render_finished, cur_frame);
+
+            cur_frame = (cur_frame + 1) % VKY_MAX_FRAMES_IN_FLIGHT;
         }
     }
     vkl_gpu_wait(gpu);
