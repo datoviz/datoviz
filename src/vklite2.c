@@ -721,6 +721,25 @@ void vkl_buffer_queue_access(VklBuffer* buffer, uint32_t queue)
 
 
 
+static void _buffer_create(VklBuffer* buffer)
+{
+    create_buffer2(
+        buffer->gpu->device,                                           //
+        &buffer->gpu->queues, buffer->queue_count, buffer->queues,     //
+        buffer->usage, buffer->memory, buffer->gpu->memory_properties, //
+        buffer->size, &buffer->buffer, &buffer->device_memory);
+}
+
+
+
+static void _buffer_destroy(VklBuffer* buffer)
+{
+    vkDestroyBuffer(buffer->gpu->device, buffer->buffer, NULL);
+    vkFreeMemory(buffer->gpu->device, buffer->device_memory, NULL);
+}
+
+
+
 void vkl_buffer_create(VklBuffer* buffer)
 {
     ASSERT(buffer != NULL);
@@ -731,14 +750,21 @@ void vkl_buffer_create(VklBuffer* buffer)
     ASSERT(buffer->memory != 0);
 
     log_trace("starting creation of buffer...");
-    create_buffer2(
-        buffer->gpu->device,                                           //
-        &buffer->gpu->queues, buffer->queue_count, buffer->queues,     //
-        buffer->usage, buffer->memory, buffer->gpu->memory_properties, //
-        buffer->size, &buffer->buffer, &buffer->device_memory);
+    _buffer_create(buffer);
 
     obj_created(&buffer->obj);
     log_trace("buffer created");
+}
+
+
+
+void vkl_buffer_resize(VklBuffer* buffer, VkDeviceSize size)
+{
+    ASSERT(buffer != NULL);
+    log_debug("[SLOW] resize buffer to size %d, losing the data in it", size);
+    _buffer_destroy(buffer);
+    buffer->size = size;
+    _buffer_create(buffer);
 }
 
 
@@ -849,8 +875,7 @@ void vkl_buffer_destroy(VklBuffer* buffer)
         return;
     }
     log_trace("destroy buffer");
-    vkDestroyBuffer(buffer->gpu->device, buffer->buffer, NULL);
-    vkFreeMemory(buffer->gpu->device, buffer->device_memory, NULL);
+    _buffer_destroy(buffer);
     obj_destroyed(&buffer->obj);
 }
 

@@ -766,7 +766,7 @@ static int vklite2_canvas_basic(VkyTestContext* context)
     uint32_t cur_frame = 0;
     VklBackend backend = VKL_BACKEND_GLFW;
 
-    const uint32_t n_frames = 5;
+    const uint32_t n_frames = 0;
     for (uint32_t frame = 0; frame < n_frames; frame++)
     {
         log_info("iteration %d", frame);
