@@ -417,6 +417,9 @@ struct VklSwapchain
     VklGpu* gpu;
     VklWindow* window;
 
+    VkFormat format;
+    VkPresentModeKHR present_mode;
+
     uint32_t img_count;
     uint32_t img_idx;
     VkSwapchainKHR swapchain;
@@ -826,8 +829,11 @@ VKY_EXPORT void vkl_canvases_destroy(uint32_t canvas_count, VklCanvas* canvases)
 
 VKY_EXPORT VklSwapchain* vkl_swapchain(VklGpu* gpu, VklWindow* window, uint32_t min_img_count);
 
-VKY_EXPORT void
-vkl_swapchain_create(VklSwapchain* swapchain, VkFormat format, VkPresentModeKHR present_mode);
+VKY_EXPORT void vkl_swapchain_format(VklSwapchain* swapchain, VkFormat format);
+
+VKY_EXPORT void vkl_swapchain_present_mode(VklSwapchain* swapchain, VkPresentModeKHR present_mode);
+
+VKY_EXPORT void vkl_swapchain_create(VklSwapchain* swapchain);
 
 VKY_EXPORT void vkl_swapchain_acquire(
     VklSwapchain* swapchain, VklSemaphores* semaphores, uint32_t semaphore_idx, VklFences* fences,

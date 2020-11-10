@@ -391,7 +391,23 @@ VklSwapchain* vkl_swapchain(VklGpu* gpu, VklWindow* window, uint32_t min_img_cou
 
 
 
-void vkl_swapchain_create(VklSwapchain* swapchain, VkFormat format, VkPresentModeKHR present_mode)
+void vkl_swapchain_format(VklSwapchain* swapchain, VkFormat format)
+{
+    ASSERT(swapchain != NULL);
+    swapchain->format = format;
+}
+
+
+
+void vkl_swapchain_present_mode(VklSwapchain* swapchain, VkPresentModeKHR present_mode)
+{
+    ASSERT(swapchain != NULL);
+    swapchain->present_mode = present_mode;
+}
+
+
+
+void vkl_swapchain_create(VklSwapchain* swapchain)
 {
     ASSERT(swapchain != NULL);
     ASSERT(swapchain->gpu != NULL);
@@ -401,7 +417,7 @@ void vkl_swapchain_create(VklSwapchain* swapchain, VkFormat format, VkPresentMod
     // Create swapchain
     create_swapchain(
         swapchain->gpu->device, swapchain->gpu->physical_device, swapchain->window->surface,
-        swapchain->img_count, format, present_mode, &swapchain->gpu->queues,
+        swapchain->img_count, swapchain->format, swapchain->present_mode, &swapchain->gpu->queues,
         &swapchain->window->caps, &swapchain->swapchain);
 
     // Get the number of swapchain images.
@@ -410,7 +426,7 @@ void vkl_swapchain_create(VklSwapchain* swapchain, VkFormat format, VkPresentMod
     log_trace("get %d swapchain images", swapchain->img_count);
     swapchain->images = vkl_images(swapchain->gpu, VK_IMAGE_TYPE_2D, swapchain->img_count);
     swapchain->images->is_swapchain = true;
-    vkl_images_format(swapchain->images, format);
+    vkl_images_format(swapchain->images, swapchain->format);
     vkl_images_size(swapchain->images, swapchain->window->width, swapchain->window->height, 1);
     vkGetSwapchainImagesKHR(
         swapchain->gpu->device, swapchain->swapchain, &swapchain->img_count,
@@ -499,6 +515,8 @@ void vkl_swapchain_present(
 void vkl_swapchain_destroy(VklSwapchain* swapchain)
 {
     log_trace("starting destruction of swapchain...");
+
+    vkl_images_destroy(swapchain->images);
 
     if (swapchain->swapchain != 0)
         vkDestroySwapchainKHR(swapchain->gpu->device, swapchain->swapchain, NULL);

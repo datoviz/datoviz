@@ -188,7 +188,9 @@ static int vklite2_swapchain(VkyTestContext* context)
     vkl_gpu_queue(gpu, VKL_QUEUE_PRESENT, 1);
     vkl_gpu_create(gpu, window->surface);
     VklSwapchain* swapchain = vkl_swapchain(gpu, window, 3);
-    vkl_swapchain_create(swapchain, VK_FORMAT_B8G8R8A8_UNORM, VK_PRESENT_MODE_FIFO_KHR);
+    vkl_swapchain_format(swapchain, VK_FORMAT_B8G8R8A8_UNORM);
+    vkl_swapchain_present_mode(swapchain, VK_PRESENT_MODE_FIFO_KHR);
+    vkl_swapchain_create(swapchain);
     vkl_swapchain_destroy(swapchain);
     vkl_window_destroy(window);
 
@@ -654,7 +656,9 @@ static int vklite2_canvas_basic(VkyTestContext* context)
         VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
 
     VklSwapchain* swapchain = vkl_swapchain(gpu, window, 3);
-    vkl_swapchain_create(swapchain, VK_FORMAT_B8G8R8A8_UNORM, VK_PRESENT_MODE_FIFO_KHR);
+    vkl_swapchain_format(swapchain, VK_FORMAT_B8G8R8A8_UNORM);
+    vkl_swapchain_present_mode(swapchain, VK_PRESENT_MODE_FIFO_KHR);
+    vkl_swapchain_create(swapchain);
 
     // Create renderpass.
     vkl_renderpass_framebuffers(renderpass, 0, swapchain->images);
@@ -679,7 +683,7 @@ static int vklite2_canvas_basic(VkyTestContext* context)
     uint32_t cur_frame = 0;
 
 
-    for (uint32_t frame = 0; frame < 60 * 5; frame++)
+    for (uint32_t frame = 0; frame < 30; frame++)
     {
         log_info("iteration %d", frame);
 
@@ -715,6 +719,8 @@ static int vklite2_canvas_basic(VkyTestContext* context)
         if (swapchain->obj.status == VKL_OBJECT_STATUS_NEED_RECREATE)
         {
             log_debug("recreating the swapchain");
+            vkl_swapchain_destroy(swapchain);
+            vkl_swapchain_create(swapchain);
         }
     }
 
