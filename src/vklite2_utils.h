@@ -302,6 +302,55 @@ backend_window_destroy(VkInstance instance, VklBackend backend, void* window, Vk
 
 
 
+static void backend_window_get_size(
+    VklBackend backend, void* window, //
+    uint32_t* window_width, uint32_t* window_height, uint32_t* framebuffer_width,
+    uint32_t* framebuffer_height)
+{
+    log_trace("determining the size of backend window...");
+
+    switch (backend)
+    {
+    case VKL_BACKEND_GLFW:;
+
+        int w, h;
+
+        // Get window size.
+        glfwGetWindowSize(window, &w, &h);
+        while (w == 0 || h == 0)
+        {
+            log_trace("waiting for end of window resize event");
+            glfwGetWindowSize(window, &w, &h);
+            glfwWaitEvents();
+        }
+        ASSERT(w > 0);
+        ASSERT(h > 0);
+        *window_width = (uint32_t)w;
+        *window_height = (uint32_t)h;
+        log_trace("window size is %dx%d", w, h);
+
+        // Get framebuffer size.
+        glfwGetFramebufferSize(window, &w, &h);
+        while (w == 0 || h == 0)
+        {
+            log_trace("waiting for end of framebuffer resize event");
+            glfwGetFramebufferSize(window, &w, &h);
+            glfwWaitEvents();
+        }
+        ASSERT(w > 0);
+        ASSERT(h > 0);
+        *framebuffer_width = (uint32_t)w;
+        *framebuffer_height = (uint32_t)h;
+        log_trace("framebuffer size is %dx%d", w, h);
+
+        break;
+    default:
+        break;
+    }
+}
+
+
+
 /*************************************************************************************************/
 /*  Instance and devices                                                                         */
 /*************************************************************************************************/

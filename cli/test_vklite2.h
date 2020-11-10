@@ -719,30 +719,16 @@ static int vklite2_canvas_basic(VkyTestContext* context)
         {
             log_debug("recreating the swapchain");
 
-
             // Wait until the device is ready and the window fully resized.
-            int w, h;
-            glfwWaitEvents();
-            glfwGetFramebufferSize((GLFWwindow*)window->backend_window, &w, &h);
-            while (w == 0 || h == 0)
-            {
-                log_trace("waiting for end of resize event");
-                glfwGetFramebufferSize((GLFWwindow*)window->backend_window, &w, &h);
-                glfwWaitEvents();
-            }
-            ASSERT((w > 0) && (h > 0));
+            backend_window_get_size(
+                VKL_BACKEND_GLFW, window->backend_window, //
+                &window->width, &window->height,          //
+                &renderpass->width, &renderpass->height);
             vkl_gpu_wait(gpu);
-
 
             vkl_renderpass_framebuffers_destroy(renderpass);
             vkl_swapchain_destroy(swapchain);
             vkl_gpu_wait(gpu);
-
-            // Distinction between window size and framebuffer size
-            window->width = renderpass->width = w;
-            window->height = renderpass->height = h;
-
-
 
             vkl_swapchain_create(swapchain);
             vkl_renderpass_framebuffers(renderpass, 0, swapchain->images);
@@ -752,9 +738,6 @@ static int vklite2_canvas_basic(VkyTestContext* context)
             empty_commands(commands, renderpass);
         }
     }
-
-
-
     vkl_gpu_wait(gpu);
     vkl_swapchain_destroy(swapchain);
     vkl_window_destroy(window);
