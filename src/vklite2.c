@@ -358,6 +358,18 @@ VklWindow* vkl_window(VklApp* app, uint32_t width, uint32_t height)
 
 
 
+void vkl_window_get_size(
+    VklWindow* window, uint32_t* framebuffer_width, uint32_t* framebuffer_height)
+{
+    ASSERT(window != NULL);
+    backend_window_get_size(
+        window->app->backend, window->backend_window, //
+        &window->width, &window->height,              //
+        framebuffer_width, framebuffer_height);
+}
+
+
+
 void vkl_window_destroy(VklWindow* window)
 {
     if (window == NULL || window->obj.status == VKL_OBJECT_STATUS_DESTROYED)

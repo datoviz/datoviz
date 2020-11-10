@@ -815,6 +815,9 @@ VKY_EXPORT void vkl_gpu_destroy(VklGpu* gpu);
 
 VKY_EXPORT VklWindow* vkl_window(VklApp* app, uint32_t width, uint32_t height);
 
+VKY_EXPORT void
+vkl_window_get_size(VklWindow* window, uint32_t* framebuffer_width, uint32_t* framebuffer_height);
+
 // NOTE: to be called AFTER vkl_swapchain_destroy()
 VKY_EXPORT void vkl_window_destroy(VklWindow* window);
 

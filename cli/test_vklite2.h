@@ -628,7 +628,12 @@ static int vklite2_canvas_basic(VkyTestContext* context)
 
     VkFormat format = VK_FORMAT_B8G8R8A8_UNORM;
 
-    VklRenderpass* renderpass = vkl_renderpass(gpu, TEST_WIDTH, TEST_HEIGHT);
+    uint32_t framebuffer_width, framebuffer_height;
+    vkl_window_get_size(window, &framebuffer_width, &framebuffer_height);
+    ASSERT(framebuffer_width > 0);
+    ASSERT(framebuffer_height > 0);
+
+    VklRenderpass* renderpass = vkl_renderpass(gpu, framebuffer_width, framebuffer_height);
 
     VkClearValue clear_depth = {0};
     clear_depth.depthStencil.depth = 1.0f;
@@ -722,9 +727,9 @@ static int vklite2_canvas_basic(VkyTestContext* context)
         }
 
         // Handle resizing.
-        if (swapchain->obj.status == VKL_OBJECT_STATUS_NEED_RECREATE)
+        else
         {
-            log_debug("recreating the swapchain");
+            log_trace("recreating the swapchain");
 
             // Wait until the device is ready and the window fully resized.
             backend_window_get_size(
