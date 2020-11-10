@@ -33,6 +33,7 @@ static VklRenderpass* default_renderpass(
     vkl_renderpass_clear(renderpass, clear_color);
     vkl_renderpass_clear(renderpass, clear_depth);
 
+    // Color attachment.
     vkl_renderpass_attachment(
         renderpass, 0, //
         VKL_RENDERPASS_ATTACHMENT_COLOR, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -40,8 +41,20 @@ static VklRenderpass* default_renderpass(
     vkl_renderpass_attachment_ops(
         renderpass, 0, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
 
-    vkl_renderpass_subpass_attachment(renderpass, 0, 0);
+    // Depth attachment.
+    vkl_renderpass_attachment(
+        renderpass, 1, //
+        VKL_RENDERPASS_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT,
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    vkl_renderpass_attachment_layout(
+        renderpass, 1, VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    vkl_renderpass_attachment_ops(
+        renderpass, 1, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
 
+    // Subpass.
+    vkl_renderpass_subpass_attachment(renderpass, 0, 0);
+    vkl_renderpass_subpass_attachment(renderpass, 0, 1);
     vkl_renderpass_subpass_dependency(renderpass, 0, VK_SUBPASS_EXTERNAL, 0);
     vkl_renderpass_subpass_dependency_stage(
         renderpass, 0, //
@@ -56,24 +69,47 @@ static VklRenderpass* default_renderpass(
 
 
 
+static VklImages* depth_image(VklRenderpass* renderpass)
+{
+    // Depth attachment
+    VklImages* depth_images = vkl_images(renderpass->gpu, VK_IMAGE_TYPE_2D, 1);
+    vkl_images_format(depth_images, renderpass->attachments[1].format);
+    vkl_images_size(depth_images, renderpass->width, renderpass->height, 1);
+    vkl_images_tiling(depth_images, VK_IMAGE_TILING_OPTIMAL);
+    vkl_images_usage(depth_images, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+    vkl_images_memory(depth_images, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    vkl_images_layout(depth_images, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    vkl_images_aspect(depth_images, VK_IMAGE_ASPECT_DEPTH_BIT);
+    vkl_images_queue_access(depth_images, 0);
+    vkl_images_create(depth_images);
+    return depth_images;
+}
+
+
+
 static void make_renderpass_offscreen(VklRenderpass* renderpass)
 {
     ASSERT(renderpass != NULL);
-    // Framebuffer images.
+
+    // Color attachment
     VklImages* images = vkl_images(renderpass->gpu, VK_IMAGE_TYPE_2D, 1);
-    // first attachment is color attachment
     vkl_images_format(images, renderpass->attachments[0].format);
     vkl_images_size(images, renderpass->width, renderpass->height, 1);
     vkl_images_tiling(images, VK_IMAGE_TILING_OPTIMAL);
     vkl_images_usage(
         images, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
     vkl_images_memory(images, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    vkl_images_aspect(images, VK_IMAGE_ASPECT_COLOR_BIT);
     vkl_images_layout(images, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
     vkl_images_queue_access(images, 0);
     vkl_images_create(images);
 
+    // Depth attachment.
+    VklImages* depth = depth_image(renderpass);
+
     // Create renderpass.
     vkl_renderpass_framebuffers(renderpass, 0, images);
+    vkl_renderpass_framebuffers(renderpass, 1, depth);
     vkl_renderpass_create(renderpass);
 }
 
@@ -98,8 +134,13 @@ static void make_renderpass_window(VklRenderpass* renderpass, VklWindow* window)
     vkl_swapchain_present_mode(swapchain, VK_PRESENT_MODE_FIFO_KHR);
     vkl_swapchain_create(swapchain);
 
+    // Depth attachment.
+    VklImages* depth = depth_image(renderpass);
+
     // Create renderpass.
     vkl_renderpass_framebuffers(renderpass, 0, swapchain->images);
+    vkl_renderpass_framebuffers(renderpass, 1, depth);
+
     vkl_renderpass_create(renderpass);
 }
 
@@ -168,6 +209,17 @@ static uint8_t* screenshot(VklImages* images)
     vkl_images_download(staging, 0, true, rgba);
 
     return rgba;
+}
+
+
+
+static void save_screenshot(VklRenderpass* renderpass, const char* path)
+{
+    log_debug("saving screenshot to %s", path);
+    // Make a screenshot of the color attachment.
+    uint8_t* rgba = screenshot(renderpass->framebuffer_info[0].images);
+    write_ppm(path, renderpass->width, renderpass->height, rgba);
+    FREE(rgba);
 }
 
 
@@ -657,11 +709,8 @@ static int vklite2_graphics(VkyTestContext* context)
     vkl_cmd_end(commands);
     vkl_cmd_submit_sync(commands, 0);
 
-    uint8_t* rgba = screenshot(renderpass->framebuffer_info[0].images);
+    save_screenshot(renderpass, "screenshot.ppm");
 
-    write_ppm("a.ppm", TEST_WIDTH, TEST_HEIGHT, rgba);
-
-    FREE(rgba);
     TEST_END
 }
 
@@ -691,7 +740,8 @@ static int vklite2_canvas_basic(VkyTestContext* context)
     uint32_t cur_frame = 0;
     VklBackend backend = VKL_BACKEND_GLFW;
 
-    for (uint32_t frame = 0; frame < 5 * 60; frame++)
+    const uint32_t n_frames = 1000;
+    for (uint32_t frame = 0; frame < n_frames; frame++)
     {
         log_info("iteration %d", frame);
 

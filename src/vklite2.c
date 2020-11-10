@@ -867,6 +867,7 @@ VklImages* vkl_images(VklGpu* gpu, VkImageType type, uint32_t count)
     // Default options.
     images->tiling = VK_IMAGE_TILING_OPTIMAL;
     images->memory = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    images->aspect = VK_IMAGE_ASPECT_COLOR_BIT;
 
     return images;
 }
@@ -926,6 +927,14 @@ void vkl_images_memory(VklImages* images, VkMemoryPropertyFlags memory)
 
 
 
+void vkl_images_aspect(VklImages* images, VkImageAspectFlags aspect)
+{
+    ASSERT(images != NULL);
+    images->aspect = aspect;
+}
+
+
+
 void vkl_images_queue_access(VklImages* images, uint32_t queue)
 {
     ASSERT(images != NULL);
@@ -958,8 +967,8 @@ void vkl_images_create(VklImages* images)
         // HACK: staging images do not require an image view
         if (images->tiling != VK_IMAGE_TILING_LINEAR)
             create_image_view2(
-                gpu->device, images->images[i], images->image_type, images->format,
-                VK_IMAGE_ASPECT_COLOR_BIT, &images->image_views[i]);
+                gpu->device, images->images[i], images->image_type, images->format, images->aspect,
+                &images->image_views[i]);
     }
 
     obj_created(&images->obj);

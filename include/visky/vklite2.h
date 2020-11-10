@@ -493,6 +493,7 @@ struct VklImages
     VkImageTiling tiling;
     VkImageUsageFlags usage;
     VkMemoryPropertyFlags memory;
+    VkImageAspectFlags aspect;
 
     VkImage images[VKL_MAX_IMAGES_PER_SET];
     VkDeviceMemory memories[VKL_MAX_IMAGES_PER_SET];
@@ -926,6 +927,8 @@ VKY_EXPORT void vkl_images_tiling(VklImages* images, VkImageTiling tiling);
 VKY_EXPORT void vkl_images_usage(VklImages* images, VkImageUsageFlags usage);
 
 VKY_EXPORT void vkl_images_memory(VklImages* images, VkMemoryPropertyFlags memory);
+
+VKY_EXPORT void vkl_images_aspect(VklImages* images, VkImageAspectFlags aspect);
 
 VKY_EXPORT void vkl_images_queue_access(VklImages* images, uint32_t queue);
 

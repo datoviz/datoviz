@@ -999,12 +999,16 @@ static void create_image_view2(
     VkImageAspectFlags aspect_flags, VkImageView* image_view)
 {
     log_trace("create image view %dD", image_type + 1);
+
+    ASSERT(aspect_flags != 0);
+    ASSERT(image != 0);
+    ASSERT(format != 0);
+
     VkImageViewCreateInfo viewInfo = {0};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewInfo.image = image;
     viewInfo.viewType = image_type;
     viewInfo.format = format;
-    viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     viewInfo.subresourceRange.baseMipLevel = 0;
     viewInfo.subresourceRange.levelCount = 1;
     viewInfo.subresourceRange.baseArrayLayer = 0;
