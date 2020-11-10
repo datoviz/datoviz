@@ -124,6 +124,16 @@ static uint8_t* screenshot(VklImages* images)
 
 
 
+static void empty_commands(VklCommands* commands, VklRenderpass* renderpass)
+{
+    vkl_cmd_begin(commands);
+    vkl_cmd_begin_renderpass(commands, renderpass);
+    vkl_cmd_end_renderpass(commands);
+    vkl_cmd_end(commands);
+}
+
+
+
 typedef struct
 {
     vec3 pos;
@@ -516,10 +526,7 @@ static int vklite2_blank(VkyTestContext* context)
     ASSERT(renderpass->obj.status == VKL_OBJECT_STATUS_CREATED);
 
     VklCommands* commands = vkl_commands(gpu, 0, 1);
-    vkl_cmd_begin(commands);
-    vkl_cmd_begin_renderpass(commands, renderpass);
-    vkl_cmd_end_renderpass(commands);
-    vkl_cmd_end(commands);
+    empty_commands(commands, renderpass);
     vkl_cmd_submit_sync(commands, 0);
 
     uint8_t* rgba = screenshot(renderpass->framebuffer_info[0].images);
@@ -623,15 +630,10 @@ static int vklite2_canvas_basic(VkyTestContext* context)
 
     VklRenderpass* renderpass = vkl_renderpass(gpu, TEST_WIDTH, TEST_HEIGHT);
 
-    VkClearValue clear_color = {0};
-    clear_color.color.float32[0] = 1;
-    clear_color.color.float32[1] = 1;
-    clear_color.color.float32[3] = 1;
-
     VkClearValue clear_depth = {0};
     clear_depth.depthStencil.depth = 1.0f;
 
-    vkl_renderpass_clear(renderpass, clear_color);
+    vkl_renderpass_clear(renderpass, (VkClearValue){.color = bgcolor});
     vkl_renderpass_clear(renderpass, clear_depth);
 
     vkl_renderpass_attachment(
@@ -665,10 +667,7 @@ static int vklite2_canvas_basic(VkyTestContext* context)
     vkl_renderpass_create(renderpass);
 
     VklCommands* commands = vkl_commands(gpu, 0, swapchain->img_count);
-    vkl_cmd_begin(commands);
-    vkl_cmd_begin_renderpass(commands, renderpass);
-    vkl_cmd_end_renderpass(commands);
-    vkl_cmd_end(commands);
+    empty_commands(commands, renderpass);
 
 
 
@@ -683,7 +682,7 @@ static int vklite2_canvas_basic(VkyTestContext* context)
     uint32_t cur_frame = 0;
 
 
-    for (uint32_t frame = 0; frame < 30; frame++)
+    for (uint32_t frame = 0; frame < 120; frame++)
     {
         log_info("iteration %d", frame);
 
@@ -719,8 +718,38 @@ static int vklite2_canvas_basic(VkyTestContext* context)
         if (swapchain->obj.status == VKL_OBJECT_STATUS_NEED_RECREATE)
         {
             log_debug("recreating the swapchain");
+
+
+            // Wait until the device is ready and the window fully resized.
+            int w, h;
+            glfwWaitEvents();
+            glfwGetFramebufferSize((GLFWwindow*)window->backend_window, &w, &h);
+            while (w == 0 || h == 0)
+            {
+                log_trace("waiting for end of resize event");
+                glfwGetFramebufferSize((GLFWwindow*)window->backend_window, &w, &h);
+                glfwWaitEvents();
+            }
+            ASSERT((w > 0) && (h > 0));
+            vkl_gpu_wait(gpu);
+
+
+            vkl_renderpass_framebuffers_destroy(renderpass);
             vkl_swapchain_destroy(swapchain);
+            vkl_gpu_wait(gpu);
+
+            // Distinction between window size and framebuffer size
+            window->width = renderpass->width = w;
+            window->height = renderpass->height = h;
+
+
+
             vkl_swapchain_create(swapchain);
+            vkl_renderpass_framebuffers(renderpass, 0, swapchain->images);
+            vkl_renderpass_framebuffers_create(renderpass);
+
+            vkl_cmd_reset(commands);
+            empty_commands(commands, renderpass);
         }
     }
 

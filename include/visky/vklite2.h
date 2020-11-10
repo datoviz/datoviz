@@ -1122,6 +1122,10 @@ vkl_renderpass_framebuffers(VklRenderpass* renderpass, uint32_t attachment_idx, 
 
 VKY_EXPORT void vkl_renderpass_create(VklRenderpass* renderpass);
 
+VKY_EXPORT void vkl_renderpass_framebuffers_create(VklRenderpass* renderpass);
+
+VKY_EXPORT void vkl_renderpass_framebuffers_destroy(VklRenderpass* renderpass);
+
 VKY_EXPORT void vkl_renderpass_destroy(VklRenderpass* renderpass);
 
 

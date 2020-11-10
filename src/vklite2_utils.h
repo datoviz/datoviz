@@ -645,6 +645,10 @@ static void create_swapchain(
     VklQueues* queues,                              //
     VkSurfaceCapabilitiesKHR* caps, VkSwapchainKHR* swapchain)
 {
+    ASSERT(surface != 0);
+    ASSERT(format != 0);
+    ASSERT(image_count > 0);
+
     // Swap chain.
     VkSwapchainCreateInfoKHR screateInfo = {0};
     screateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -653,6 +657,8 @@ static void create_swapchain(
     screateInfo.imageFormat = format;
     screateInfo.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 
+    ASSERT(pdevice != 0);
+    ASSERT(caps != NULL);
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(pdevice, surface, caps);
 
     screateInfo.imageExtent = caps->currentExtent;
