@@ -766,7 +766,7 @@ static int vklite2_canvas_basic(VkyTestContext* context)
     uint32_t cur_frame = 0;
     VklBackend backend = VKL_BACKEND_GLFW;
 
-    const uint32_t n_frames = 0;
+    const uint32_t n_frames = 1;
     for (uint32_t frame = 0; frame < n_frames; frame++)
     {
         log_info("iteration %d", frame);
@@ -784,6 +784,7 @@ static int vklite2_canvas_basic(VkyTestContext* context)
         vkl_swapchain_acquire(swapchain, sem_img_available, cur_frame, NULL, 0);
         if (swapchain->obj.status == VKL_OBJECT_STATUS_INVALID)
         {
+            vkl_gpu_wait(gpu);
             break;
         }
         // Handle resizing.
@@ -798,17 +799,12 @@ static int vklite2_canvas_basic(VkyTestContext* context)
                 &renderpass->width, &renderpass->height);
             vkl_gpu_wait(gpu);
 
-            // Recreate the framebuffers and swapchain.
-            vkl_framebuffers_destroy(framebuffers);
+            // Recreate swapchain.
             vkl_swapchain_destroy(swapchain);
-            vkl_images_destroy(canvas.depth);
-            canvas.depth = depth_image(renderpass);
-            vkl_images_create(canvas.depth);
-
             vkl_swapchain_create(swapchain);
-            vkl_framebuffers_attachment(framebuffers, 0, swapchain->images);
-            vkl_framebuffers_attachment(framebuffers, 1, canvas.depth);
-            vkl_framebuffers_create(framebuffers, renderpass);
+
+            // Recreate the framebuffers and attachments.
+            vkl_framebuffers_resize(framebuffers);
 
             // Need to refill the command buffers.
             vkl_cmd_reset(commands);
@@ -836,9 +832,9 @@ static int vklite2_canvas_basic(VkyTestContext* context)
             cur_frame = (cur_frame + 1) % VKY_MAX_FRAMES_IN_FLIGHT;
         }
     }
-    vkl_gpu_wait(gpu);
+    // vkl_gpu_wait(gpu);
+    // vkl_images_destroy(canvas.depth);
     vkl_swapchain_destroy(swapchain);
-    vkl_images_destroy(canvas.depth);
     vkl_window_destroy(window);
     TEST_END
 }

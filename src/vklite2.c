@@ -2151,28 +2151,10 @@ void vkl_framebuffers_attachment(
 
 
 
-void vkl_framebuffers_create(VklFramebuffers* framebuffers, VklRenderpass* renderpass)
+static void _framebuffers_create(VklFramebuffers* framebuffers)
 {
-    ASSERT(framebuffers != NULL);
-
-    ASSERT(framebuffers->gpu != NULL);
-    ASSERT(framebuffers->gpu->device != 0);
-    log_trace("starting creation of framebuffers...");
-
+    VklRenderpass* renderpass = framebuffers->renderpass;
     ASSERT(renderpass != NULL);
-    ASSERT(renderpass->obj.status >= VKL_OBJECT_STATUS_CREATED);
-
-    ASSERT(renderpass->width > 0);
-    ASSERT(renderpass->height > 0);
-
-    ASSERT(framebuffers->attachment_count > 0);
-    ASSERT(framebuffers->framebuffer_count > 0);
-
-    ASSERT(renderpass->attachment_count > 0);
-    ASSERT(renderpass->attachment_count == framebuffers->attachment_count);
-
-    // Create the framebuffers.
-    log_trace("creating %d framebuffers", framebuffers->framebuffer_count);
 
     // Loop first over the framebuffers (swapchain images).
     for (uint32_t i = 0; i < framebuffers->framebuffer_count; i++)
@@ -2204,9 +2186,61 @@ void vkl_framebuffers_create(VklFramebuffers* framebuffers, VklRenderpass* rende
         VK_CHECK_RESULT(vkCreateFramebuffer(
             framebuffers->gpu->device, &info, NULL, &framebuffers->framebuffers[i]));
     }
+}
 
+
+
+static void _framebuffers_destroy(VklFramebuffers* framebuffers)
+{
+    for (uint32_t i = 0; i < framebuffers->framebuffer_count; i++)
+        vkDestroyFramebuffer(framebuffers->gpu->device, framebuffers->framebuffers[i], NULL);
+}
+
+
+
+void vkl_framebuffers_create(VklFramebuffers* framebuffers, VklRenderpass* renderpass)
+{
+    ASSERT(framebuffers != NULL);
+
+    ASSERT(framebuffers->gpu != NULL);
+    ASSERT(framebuffers->gpu->device != 0);
+
+    ASSERT(renderpass != NULL);
+    ASSERT(renderpass->obj.status >= VKL_OBJECT_STATUS_CREATED);
+
+    framebuffers->renderpass = renderpass;
+
+    ASSERT(renderpass->width > 0);
+    ASSERT(renderpass->height > 0);
+
+    ASSERT(framebuffers->attachment_count > 0);
+    ASSERT(framebuffers->framebuffer_count > 0);
+
+    ASSERT(renderpass->attachment_count > 0);
+    ASSERT(renderpass->attachment_count == framebuffers->attachment_count);
+
+    // Create the framebuffers.
+    log_trace("starting creation of %d framebuffer(s)", framebuffers->framebuffer_count);
+    _framebuffers_create(framebuffers);
     log_trace("framebuffers created");
     obj_created(&framebuffers->obj);
+}
+
+
+
+void vkl_framebuffers_resize(VklFramebuffers* framebuffers)
+{
+    ASSERT(framebuffers != NULL);
+    uint32_t width = framebuffers->renderpass->width;
+    uint32_t height = framebuffers->renderpass->height;
+
+    log_trace("resize framebuffers and attachments to new size %dx%d", width, height);
+    _framebuffers_destroy(framebuffers);
+    _framebuffers_create(framebuffers);
+    for (uint32_t i = 0; i < framebuffers->attachment_count; i++)
+    {
+        vkl_images_resize(framebuffers->attachments[i], width, height, 1);
+    }
 }
 
 
@@ -2221,9 +2255,7 @@ void vkl_framebuffers_destroy(VklFramebuffers* framebuffers)
     }
 
     log_trace("destroying %d framebuffers", framebuffers->framebuffer_count);
-    for (uint32_t i = 0; i < framebuffers->framebuffer_count; i++)
-        vkDestroyFramebuffer(framebuffers->gpu->device, framebuffers->framebuffers[i], NULL);
-
+    _framebuffers_destroy(framebuffers);
     obj_destroyed(&framebuffers->obj);
 }
 

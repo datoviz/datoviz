@@ -717,6 +717,7 @@ struct VklFramebuffers
 {
     VklObject obj;
     VklGpu* gpu;
+    VklRenderpass* renderpass;
 
     uint32_t attachment_count;
     VklImages* attachments[VKL_MAX_ATTACHMENTS_PER_RENDERPASS];
@@ -747,10 +748,6 @@ struct VklRenderpass
     VklRenderpassDependency dependencies[VKL_MAX_DEPENDENCIES_PER_RENDERPASS];
 
     VkRenderPass renderpass;
-
-    // uint32_t framebuffer_count;
-    // uint32_t framebuffer_attachment_count;
-    // VklFramebuffers framebuffers;
 };
 
 
@@ -1164,6 +1161,8 @@ VKY_EXPORT void vkl_framebuffers_attachment(
     VklFramebuffers* framebuffers, uint32_t attachment_idx, VklImages* images);
 
 VKY_EXPORT void vkl_framebuffers_create(VklFramebuffers* framebuffers, VklRenderpass* renderpass);
+
+VKY_EXPORT void vkl_framebuffers_resize(VklFramebuffers* framebuffers);
 
 VKY_EXPORT void vkl_framebuffers_destroy(VklFramebuffers* framebuffers);
 
