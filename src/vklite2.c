@@ -1405,6 +1405,7 @@ void vkl_graphics_vertex_attr(
     va->binding = binding;
     va->location = location;
     va->format = format;
+    va->offset = offset;
 }
 
 
