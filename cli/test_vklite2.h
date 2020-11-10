@@ -108,9 +108,13 @@ static void make_renderpass_offscreen(VklRenderpass* renderpass)
     VklImages* depth = depth_image(renderpass);
 
     // Create renderpass.
-    vkl_renderpass_framebuffers(renderpass, 0, images);
-    vkl_renderpass_framebuffers(renderpass, 1, depth);
     vkl_renderpass_create(renderpass);
+
+    // Create framebuffers.
+    VklFramebuffers* framebuffers = vkl_framebuffers(renderpass->gpu);
+    vkl_framebuffers_attachment(framebuffers, 0, images);
+    vkl_framebuffers_attachment(framebuffers, 1, depth);
+    vkl_framebuffers_create(framebuffers, renderpass);
 }
 
 
@@ -138,10 +142,13 @@ static void make_renderpass_window(VklRenderpass* renderpass, VklWindow* window)
     VklImages* depth = depth_image(renderpass);
 
     // Create renderpass.
-    vkl_renderpass_framebuffers(renderpass, 0, swapchain->images);
-    vkl_renderpass_framebuffers(renderpass, 1, depth);
-
     vkl_renderpass_create(renderpass);
+
+    // Create framebuffers.
+    VklFramebuffers* framebuffers = vkl_framebuffers(renderpass->gpu);
+    vkl_framebuffers_attachment(framebuffers, 0, swapchain->images);
+    vkl_framebuffers_attachment(framebuffers, 1, depth);
+    vkl_framebuffers_create(framebuffers, renderpass);
 }
 
 
@@ -213,21 +220,23 @@ static uint8_t* screenshot(VklImages* images)
 
 
 
-static void save_screenshot(VklRenderpass* renderpass, const char* path)
+static void save_screenshot(VklFramebuffers* framebuffers, const char* path)
 {
     log_debug("saving screenshot to %s", path);
     // Make a screenshot of the color attachment.
-    uint8_t* rgba = screenshot(renderpass->framebuffer_info[0].images);
-    write_ppm(path, renderpass->width, renderpass->height, rgba);
+    VklImages* images = framebuffers->attachments[0];
+    uint8_t* rgba = screenshot(images);
+    write_ppm(path, images->width, images->height, rgba);
     FREE(rgba);
 }
 
 
 
-static void empty_commands(VklCommands* commands, VklRenderpass* renderpass)
+static void
+empty_commands(VklCommands* commands, VklRenderpass* renderpass, VklFramebuffers* framebuffers)
 {
     vkl_cmd_begin(commands);
-    vkl_cmd_begin_renderpass(commands, renderpass);
+    vkl_cmd_begin_renderpass(commands, renderpass, framebuffers);
     vkl_cmd_end_renderpass(commands);
     vkl_cmd_end(commands);
 }
@@ -625,11 +634,14 @@ static int vklite2_blank(VkyTestContext* context)
     ASSERT(renderpass != NULL);
     ASSERT(renderpass->obj.status == VKL_OBJECT_STATUS_CREATED);
 
+    // HACK
+    VklFramebuffers* framebuffers = &gpu->framebuffers[0];
+
     VklCommands* commands = vkl_commands(gpu, 0, 1);
-    empty_commands(commands, renderpass);
+    empty_commands(commands, renderpass, framebuffers);
     vkl_cmd_submit_sync(commands, 0);
 
-    uint8_t* rgba = screenshot(renderpass->framebuffer_info[0].images);
+    uint8_t* rgba = screenshot(framebuffers->attachments[0]);
 
     for (uint32_t i = 0; i < TEST_WIDTH * TEST_HEIGHT * 3; i++)
         ASSERT(rgba[i] >= 100);
@@ -648,6 +660,9 @@ static int vklite2_graphics(VkyTestContext* context)
     VklRenderpass* renderpass = offscreen_renderpass(gpu);
     ASSERT(renderpass != NULL);
     ASSERT(renderpass->obj.status == VKL_OBJECT_STATUS_CREATED);
+
+    // HACK
+    VklFramebuffers* framebuffers = &gpu->framebuffers[0];
 
     VklGraphics* graphics = vkl_graphics(gpu);
     ASSERT(graphics != NULL);
@@ -700,7 +715,7 @@ static int vklite2_graphics(VkyTestContext* context)
     // Commands.
     VklCommands* commands = vkl_commands(gpu, 0, 1);
     vkl_cmd_begin(commands);
-    vkl_cmd_begin_renderpass(commands, renderpass);
+    vkl_cmd_begin_renderpass(commands, renderpass, framebuffers);
     vkl_cmd_viewport(commands, (VkViewport){0, 0, TEST_WIDTH, TEST_HEIGHT, 0, 1});
     vkl_cmd_bind_vertex_buffer(commands, &br, 0);
     vkl_cmd_bind_graphics(commands, graphics, 0);
@@ -709,7 +724,7 @@ static int vklite2_graphics(VkyTestContext* context)
     vkl_cmd_end(commands);
     vkl_cmd_submit_sync(commands, 0);
 
-    save_screenshot(renderpass, "screenshot.ppm");
+    save_screenshot(framebuffers, "screenshot.ppm");
 
     TEST_END
 }
@@ -727,9 +742,10 @@ static int vklite2_canvas_basic(VkyTestContext* context)
 
     // HACK
     VklSwapchain* swapchain = &gpu->swapchains[0];
+    VklFramebuffers* framebuffers = &gpu->framebuffers[0];
 
     VklCommands* commands = vkl_commands(gpu, 0, swapchain->img_count);
-    empty_commands(commands, renderpass);
+    empty_commands(commands, renderpass, framebuffers);
 
     // Sync objects.
     VklSemaphores* sem_img_available = vkl_semaphores(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
@@ -791,16 +807,17 @@ static int vklite2_canvas_basic(VkyTestContext* context)
             vkl_gpu_wait(gpu);
 
             // Recreate the framebuffers and swapchain.
-            vkl_renderpass_framebuffers_destroy(renderpass);
+            vkl_framebuffers_destroy(framebuffers);
             vkl_swapchain_destroy(swapchain);
 
             vkl_swapchain_create(swapchain);
-            vkl_renderpass_framebuffers(renderpass, 0, swapchain->images);
-            vkl_renderpass_framebuffers_create(renderpass);
+            // vkl_renderpass_framebuffers(renderpass, 0, swapchain->images);
+            // vkl_renderpass_framebuffers(renderpass, 1, swapchain->images);
+            vkl_framebuffers_create(framebuffers, renderpass);
 
             // Need to refill the command buffers.
             vkl_cmd_reset(commands);
-            empty_commands(commands, renderpass);
+            empty_commands(commands, renderpass, framebuffers);
         }
     }
     vkl_gpu_wait(gpu);
