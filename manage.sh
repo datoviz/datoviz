@@ -68,9 +68,13 @@ fi
 
 if [ $1 == "test" ]
 then
-    if [ $3 == "dump" ]
+    dump=""
+    if [ ! -z "$3" ]
     then
-        dump="VK_LAYER_LUNARG_api_dump"
+        if [ $3 == "dump" ]
+        then
+            dump="VK_LAYER_LUNARG_api_dump"
+        fi
     fi
     VK_INSTANCE_LAYERS=$dump ./build/visky test $2
 fi

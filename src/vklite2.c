@@ -976,17 +976,9 @@ void vkl_images_queue_access(VklImages* images, uint32_t queue)
 
 
 
-void vkl_images_create(VklImages* images)
+static void _images_create(VklImages* images)
 {
-    ASSERT(images != NULL);
-    ASSERT(images->gpu != NULL);
-    ASSERT(images->gpu->device != 0);
-
-    check_dims(images->image_type, images->width, images->height, images->depth);
     VklGpu* gpu = images->gpu;
-
-    log_trace("starting creation of %d images...", images->count);
-
     for (uint32_t i = 0; i < images->count; i++)
     {
         if (!images->is_swapchain)
@@ -1002,9 +994,47 @@ void vkl_images_create(VklImages* images)
                 gpu->device, images->images[i], images->image_type, images->format, images->aspect,
                 &images->image_views[i]);
     }
+}
 
+
+
+static void _images_destroy(VklImages* images)
+{
+    for (uint32_t i = 0; i < images->count; i++)
+    {
+        vkDestroyImageView(images->gpu->device, images->image_views[i], NULL);
+        if (!images->is_swapchain)
+            vkDestroyImage(images->gpu->device, images->images[i], NULL);
+        vkFreeMemory(images->gpu->device, images->memories[i], NULL);
+    }
+}
+
+
+
+void vkl_images_create(VklImages* images)
+{
+    ASSERT(images != NULL);
+    ASSERT(images->gpu != NULL);
+    ASSERT(images->gpu->device != 0);
+
+    check_dims(images->image_type, images->width, images->height, images->depth);
+
+    log_trace("starting creation of %d images...", images->count);
+    _images_create(images);
     obj_created(&images->obj);
     log_trace("%d images created", images->count);
+}
+
+
+
+void vkl_images_resize(VklImages* images, uint32_t width, uint32_t height, uint32_t depth)
+{
+    ASSERT(images != NULL);
+    log_debug(
+        "[SLOW] resize images to size %dx%dx%d, losing the data in it", width, height, depth);
+    _images_destroy(images);
+    vkl_images_size(images, width, height, depth);
+    _images_create(images);
 }
 
 
@@ -1079,15 +1109,7 @@ void vkl_images_destroy(VklImages* images)
         return;
     }
     log_trace("destroy %d images", images->count);
-
-    for (uint32_t i = 0; i < images->count; i++)
-    {
-        vkDestroyImageView(images->gpu->device, images->image_views[i], NULL);
-        if (!images->is_swapchain)
-            vkDestroyImage(images->gpu->device, images->images[i], NULL);
-        vkFreeMemory(images->gpu->device, images->memories[i], NULL);
-    }
-
+    _images_destroy(images);
     obj_destroyed(&images->obj);
 }
 
