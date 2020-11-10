@@ -441,10 +441,21 @@ void vkl_swapchain_acquire(
     if (fences != NULL)
         fence = fences->fences[fence_idx];
 
-    VK_CHECK_RESULT(vkAcquireNextImageKHR(
+    VkResult res = vkAcquireNextImageKHR(
         swapchain->gpu->device, swapchain->swapchain, UINT64_MAX, //
-        semaphore, fence, &swapchain->img_idx));
+        semaphore, fence, &swapchain->img_idx);
     log_trace("acquired swapchain image #%d", swapchain->img_idx);
+
+    if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR)
+    {
+        log_trace("out of date swapchain, need to recreate it");
+        swapchain->obj.status = VKL_OBJECT_STATUS_NEED_RECREATE;
+    }
+    else if (res != VK_SUCCESS)
+    {
+        log_error("failed acquiring the swapchain image");
+        swapchain->obj.status = VKL_OBJECT_STATUS_NEED_RECREATE;
+    }
 }
 
 
@@ -468,7 +479,19 @@ void vkl_swapchain_present(
     info.pSwapchains = &swapchain->swapchain;
     info.pImageIndices = &swapchain->img_idx;
 
-    VK_CHECK_RESULT(vkQueuePresentKHR(swapchain->gpu->queues.queues[queue_idx], &info));
+    VkResult res = vkQueuePresentKHR(swapchain->gpu->queues.queues[queue_idx], &info);
+
+    if (res == VK_ERROR_OUT_OF_DATE_KHR)
+    {
+        log_trace("out of date swapchain, need to recreate it");
+        swapchain->obj.status = VKL_OBJECT_STATUS_NEED_RECREATE;
+    }
+    else if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR)
+    {
+        log_error("failed presenting the swapchain image");
+        swapchain->obj.status = VKL_OBJECT_STATUS_NEED_RECREATE;
+        swapchain->obj.status = VKL_OBJECT_STATUS_NEED_RECREATE;
+    }
 }
 
 
