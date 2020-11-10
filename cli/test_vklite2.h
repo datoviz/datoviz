@@ -819,6 +819,9 @@ static int vklite2_canvas_basic(VkyTestContext* context)
             // Recreate the framebuffers and swapchain.
             vkl_framebuffers_destroy(framebuffers);
             vkl_swapchain_destroy(swapchain);
+            vkl_images_destroy(canvas.depth);
+            canvas.depth = depth_image(renderpass);
+            vkl_images_create(canvas.depth);
 
             vkl_swapchain_create(swapchain);
             vkl_framebuffers_attachment(framebuffers, 0, swapchain->images);
@@ -832,6 +835,7 @@ static int vklite2_canvas_basic(VkyTestContext* context)
     }
     vkl_gpu_wait(gpu);
     vkl_swapchain_destroy(swapchain);
+    vkl_images_destroy(canvas.depth);
     vkl_window_destroy(window);
     TEST_END
 }
