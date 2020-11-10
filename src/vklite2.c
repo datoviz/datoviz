@@ -135,6 +135,7 @@ VklGpu* vkl_gpu(VklApp* app, uint32_t idx)
     }
     VklGpu* gpu = &app->gpus[idx];
 
+    INSTANCES_INIT(VklCommands, gpu, swapchains, VKL_MAX_WINDOWS, VKL_OBJECT_TYPE_SWAPCHAIN)
     INSTANCES_INIT(VklCommands, gpu, commands, VKL_MAX_COMMANDS, VKL_OBJECT_TYPE_COMMANDS)
     INSTANCES_INIT(VklBuffer, gpu, buffers, VKL_MAX_BUFFERS, VKL_OBJECT_TYPE_BUFFER)
     INSTANCES_INIT(VklImages, gpu, images, VKL_MAX_IMAGES, VKL_OBJECT_TYPE_IMAGES)
@@ -243,7 +244,12 @@ void vkl_gpu_destroy(VklGpu* gpu)
     VkDevice device = gpu->device;
     ASSERT(device != 0);
 
-    // Destroy the command pool.
+    log_trace("GPU destroy %d swapchains", gpu->swapchains);
+    for (uint32_t i = 0; i < gpu->swapchain_count; i++)
+    {
+        vkl_swapchain_destroy(&gpu->swapchains[i]);
+    }
+
     log_trace("GPU destroy %d command pool(s)", gpu->queues.queue_family_count);
     for (uint32_t i = 0; i < gpu->queues.queue_family_count; i++)
     {
@@ -391,9 +397,10 @@ void vkl_window_destroy(VklWindow* window)
 VklSwapchain* vkl_swapchain(VklGpu* gpu, VklWindow* window, uint32_t min_img_count)
 {
     ASSERT(gpu != NULL);
+    ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
     ASSERT(window != NULL);
 
-    VklSwapchain* swapchain = calloc(1, sizeof(VklSwapchain));
+    INSTANCE_NEW(VklSwapchain, swapchain, gpu->swapchains, gpu->swapchain_count)
 
     swapchain->gpu = gpu;
     swapchain->window = window;
@@ -526,6 +533,13 @@ void vkl_swapchain_present(
 
 void vkl_swapchain_destroy(VklSwapchain* swapchain)
 {
+    ASSERT(swapchain != NULL);
+    if (swapchain->obj.status < VKL_OBJECT_STATUS_CREATED)
+    {
+        log_trace("skip destruction of already-destroyed swapchain");
+        return;
+    }
+
     log_trace("starting destruction of swapchain...");
 
     vkl_images_destroy(swapchain->images);
@@ -1916,6 +1930,12 @@ void vkl_renderpass_framebuffers(
     renderpass->framebuffer_count = MAX(renderpass->framebuffer_count, images->count);
     ASSERT(renderpass->framebuffer_count > 0);
     ASSERT(attachment_idx < renderpass->attachment_count);
+
+    ASSERT(images->width > 0);
+    ASSERT(renderpass->width > 0);
+    ASSERT(images->height > 0);
+    ASSERT(renderpass->height > 0);
+
     ASSERT(images->width == renderpass->width);
     ASSERT(images->height == renderpass->height);
 

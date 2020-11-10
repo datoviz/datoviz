@@ -20,7 +20,7 @@ static const VkClearColorValue bgcolor = {{.4f, .6f, .8f, 1.0f}};
 
 static VklRenderpass* default_renderpass(
     VklGpu* gpu, VkClearColorValue clear_color_value, uint32_t width, uint32_t height,
-    VkFormat format)
+    VkFormat format, VkImageLayout layout)
 {
     VklRenderpass* renderpass = vkl_renderpass(gpu, width, height);
 
@@ -36,12 +36,9 @@ static VklRenderpass* default_renderpass(
     vkl_renderpass_attachment(
         renderpass, 0, //
         VKL_RENDERPASS_ATTACHMENT_COLOR, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-    vkl_renderpass_attachment_layout(
-        renderpass, 0, //
-        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    vkl_renderpass_attachment_layout(renderpass, 0, VK_IMAGE_LAYOUT_UNDEFINED, layout);
     vkl_renderpass_attachment_ops(
-        renderpass, 0, //
-        VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+        renderpass, 0, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
 
     vkl_renderpass_subpass_attachment(renderpass, 0, 0);
 
@@ -61,6 +58,7 @@ static VklRenderpass* default_renderpass(
 
 static void make_renderpass_offscreen(VklRenderpass* renderpass)
 {
+    ASSERT(renderpass != NULL);
     // Framebuffer images.
     VklImages* images = vkl_images(renderpass->gpu, VK_IMAGE_TYPE_2D, 1);
     // first attachment is color attachment
@@ -83,9 +81,41 @@ static void make_renderpass_offscreen(VklRenderpass* renderpass)
 
 static VklRenderpass* offscreen_renderpass(VklGpu* gpu)
 {
-    VklRenderpass* renderpass =
-        default_renderpass(gpu, bgcolor, TEST_WIDTH, TEST_HEIGHT, TEST_FORMAT);
+    VklRenderpass* renderpass = default_renderpass(
+        gpu, bgcolor, TEST_WIDTH, TEST_HEIGHT, TEST_FORMAT, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
     make_renderpass_offscreen(renderpass);
+    return renderpass;
+}
+
+
+
+static void make_renderpass_window(VklRenderpass* renderpass, VklWindow* window)
+{
+    ASSERT(renderpass != NULL);
+    ASSERT(window != NULL);
+    VklSwapchain* swapchain = vkl_swapchain(renderpass->gpu, window, 3);
+    vkl_swapchain_format(swapchain, VK_FORMAT_B8G8R8A8_UNORM);
+    vkl_swapchain_present_mode(swapchain, VK_PRESENT_MODE_FIFO_KHR);
+    vkl_swapchain_create(swapchain);
+
+    // Create renderpass.
+    vkl_renderpass_framebuffers(renderpass, 0, swapchain->images);
+    vkl_renderpass_create(renderpass);
+}
+
+
+
+static VklRenderpass* window_renderpass(VklGpu* gpu, VklWindow* window)
+{
+    uint32_t framebuffer_width, framebuffer_height;
+    vkl_window_get_size(window, &framebuffer_width, &framebuffer_height);
+    ASSERT(framebuffer_width > 0);
+    ASSERT(framebuffer_height > 0);
+
+    VklRenderpass* renderpass = default_renderpass(
+        gpu, bgcolor, framebuffer_width, framebuffer_height, //
+        TEST_FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    make_renderpass_window(renderpass, window);
     return renderpass;
 }
 
@@ -644,67 +674,24 @@ static int vklite2_canvas_basic(VkyTestContext* context)
     vkl_gpu_queue(gpu, VKL_QUEUE_PRESENT, 1);
     vkl_gpu_create(gpu, window->surface);
 
-    VkFormat format = VK_FORMAT_B8G8R8A8_UNORM;
+    VklRenderpass* renderpass = window_renderpass(gpu, window);
 
-    uint32_t framebuffer_width, framebuffer_height;
-    vkl_window_get_size(window, &framebuffer_width, &framebuffer_height);
-    ASSERT(framebuffer_width > 0);
-    ASSERT(framebuffer_height > 0);
-
-    VklRenderpass* renderpass = vkl_renderpass(gpu, framebuffer_width, framebuffer_height);
-
-    VkClearValue clear_depth = {0};
-    clear_depth.depthStencil.depth = 1.0f;
-
-    vkl_renderpass_clear(renderpass, (VkClearValue){.color = bgcolor});
-    vkl_renderpass_clear(renderpass, clear_depth);
-
-    vkl_renderpass_attachment(
-        renderpass, 0, //
-        VKL_RENDERPASS_ATTACHMENT_COLOR, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-    vkl_renderpass_attachment_layout(
-        renderpass, 0, //
-        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-    vkl_renderpass_attachment_ops(
-        renderpass, 0, //
-        VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
-
-    vkl_renderpass_subpass_attachment(renderpass, 0, 0);
-
-    vkl_renderpass_subpass_dependency(renderpass, 0, VK_SUBPASS_EXTERNAL, 0);
-    vkl_renderpass_subpass_dependency_stage(
-        renderpass, 0, //
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-    vkl_renderpass_subpass_dependency_access(
-        renderpass, 0, 0,
-        VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
-
-    VklSwapchain* swapchain = vkl_swapchain(gpu, window, 3);
-    vkl_swapchain_format(swapchain, VK_FORMAT_B8G8R8A8_UNORM);
-    vkl_swapchain_present_mode(swapchain, VK_PRESENT_MODE_FIFO_KHR);
-    vkl_swapchain_create(swapchain);
-
-    // Create renderpass.
-    vkl_renderpass_framebuffers(renderpass, 0, swapchain->images);
-    vkl_renderpass_create(renderpass);
+    // HACK
+    VklSwapchain* swapchain = &gpu->swapchains[0];
 
     VklCommands* commands = vkl_commands(gpu, 0, swapchain->img_count);
     empty_commands(commands, renderpass);
-
-
 
     // Sync objects.
     VklSemaphores* sem_img_available = vkl_semaphores(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
     VklSemaphores* sem_render_finished = vkl_semaphores(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
     VklFences* fences = vkl_fences(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
     VklFences bak_fences = {0};
-    bak_fences.count = swapchain->img_count;
+    bak_fences.count = commands->count;
     bak_fences.gpu = gpu;
     bak_fences.obj = fences->obj;
     uint32_t cur_frame = 0;
     VklBackend backend = VKL_BACKEND_GLFW;
-
 
     for (uint32_t frame = 0; frame < 5 * 60; frame++)
     {

@@ -365,6 +365,9 @@ struct VklGpu
     VkPhysicalDeviceFeatures requested_features;
     VkDevice device;
 
+    uint32_t swapchain_count;
+    VklSwapchain* swapchains;
+
     uint32_t commands_count;
     VklCommands* commands;
 
