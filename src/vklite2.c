@@ -2141,6 +2141,7 @@ void vkl_framebuffers_create(VklFramebuffers* framebuffers, VklRenderpass* rende
             attachments[j] = images->image_views[MIN(i, images->count - 1)];
         }
         ASSERT(images != NULL);
+        log_info("%d %d", images->width, renderpass->width);
         ASSERT(images->width == renderpass->width);
         ASSERT(images->height == renderpass->height);
 

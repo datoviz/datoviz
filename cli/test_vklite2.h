@@ -10,6 +10,11 @@
     return app->n_errors != 0;
 
 
+
+/*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
 #define TEST_WIDTH  640
 #define TEST_HEIGHT 480
 
@@ -17,6 +22,37 @@ static const VkClearColorValue bgcolor = {{.4f, .6f, .8f, 1.0f}};
 #define TEST_FORMAT VK_FORMAT_B8G8R8A8_UNORM
 
 
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+typedef struct
+{
+    vec3 pos;
+    vec4 color;
+} VklVertex;
+
+
+
+typedef struct
+{
+    VklGpu* gpu;
+
+    VklRenderpass* renderpass;
+    VklImages* images;
+    VklImages* depth;
+    VklFramebuffers* framebuffers;
+
+    VklWindow* window;
+    VklSwapchain* swapchain;
+} BasicCanvas;
+
+
+
+/*************************************************************************************************/
+/*  Utils                                                                                        */
+/*************************************************************************************************/
 
 static VklRenderpass* default_renderpass(
     VklGpu* gpu, VkClearColorValue clear_color_value, uint32_t width, uint32_t height,
@@ -87,9 +123,14 @@ static VklImages* depth_image(VklRenderpass* renderpass)
 
 
 
-static void make_renderpass_offscreen(VklRenderpass* renderpass)
+static BasicCanvas offscreen(VklGpu* gpu)
 {
-    ASSERT(renderpass != NULL);
+    BasicCanvas canvas = {0};
+    canvas.gpu = gpu;
+
+    VklRenderpass* renderpass = default_renderpass(
+        gpu, bgcolor, TEST_WIDTH, TEST_HEIGHT, TEST_FORMAT, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    canvas.renderpass = renderpass;
 
     // Color attachment
     VklImages* images = vkl_images(renderpass->gpu, VK_IMAGE_TYPE_2D, 1);
@@ -103,9 +144,11 @@ static void make_renderpass_offscreen(VklRenderpass* renderpass)
     vkl_images_layout(images, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
     vkl_images_queue_access(images, 0);
     vkl_images_create(images);
+    canvas.images = images;
 
     // Depth attachment.
     VklImages* depth = depth_image(renderpass);
+    canvas.depth = depth;
 
     // Create renderpass.
     vkl_renderpass_create(renderpass);
@@ -115,31 +158,38 @@ static void make_renderpass_offscreen(VklRenderpass* renderpass)
     vkl_framebuffers_attachment(framebuffers, 0, images);
     vkl_framebuffers_attachment(framebuffers, 1, depth);
     vkl_framebuffers_create(framebuffers, renderpass);
+    canvas.framebuffers = framebuffers;
+
+    return canvas;
 }
 
 
 
-static VklRenderpass* offscreen_renderpass(VklGpu* gpu)
+static BasicCanvas glfw_canvas(VklGpu* gpu, VklWindow* window)
 {
+    BasicCanvas canvas = {0};
+    canvas.gpu = gpu;
+
+    uint32_t framebuffer_width, framebuffer_height;
+    vkl_window_get_size(window, &framebuffer_width, &framebuffer_height);
+    ASSERT(framebuffer_width > 0);
+    ASSERT(framebuffer_height > 0);
+
     VklRenderpass* renderpass = default_renderpass(
-        gpu, bgcolor, TEST_WIDTH, TEST_HEIGHT, TEST_FORMAT, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-    make_renderpass_offscreen(renderpass);
-    return renderpass;
-}
+        gpu, bgcolor, framebuffer_width, framebuffer_height, //
+        TEST_FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    canvas.renderpass = renderpass;
 
-
-
-static void make_renderpass_window(VklRenderpass* renderpass, VklWindow* window)
-{
-    ASSERT(renderpass != NULL);
-    ASSERT(window != NULL);
     VklSwapchain* swapchain = vkl_swapchain(renderpass->gpu, window, 3);
     vkl_swapchain_format(swapchain, VK_FORMAT_B8G8R8A8_UNORM);
     vkl_swapchain_present_mode(swapchain, VK_PRESENT_MODE_FIFO_KHR);
     vkl_swapchain_create(swapchain);
+    canvas.swapchain = swapchain;
+    canvas.images = swapchain->images;
 
     // Depth attachment.
     VklImages* depth = depth_image(renderpass);
+    canvas.depth = depth;
 
     // Create renderpass.
     vkl_renderpass_create(renderpass);
@@ -149,22 +199,9 @@ static void make_renderpass_window(VklRenderpass* renderpass, VklWindow* window)
     vkl_framebuffers_attachment(framebuffers, 0, swapchain->images);
     vkl_framebuffers_attachment(framebuffers, 1, depth);
     vkl_framebuffers_create(framebuffers, renderpass);
-}
+    canvas.framebuffers = framebuffers;
 
-
-
-static VklRenderpass* window_renderpass(VklGpu* gpu, VklWindow* window)
-{
-    uint32_t framebuffer_width, framebuffer_height;
-    vkl_window_get_size(window, &framebuffer_width, &framebuffer_height);
-    ASSERT(framebuffer_width > 0);
-    ASSERT(framebuffer_height > 0);
-
-    VklRenderpass* renderpass = default_renderpass(
-        gpu, bgcolor, framebuffer_width, framebuffer_height, //
-        TEST_FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-    make_renderpass_window(renderpass, window);
-    return renderpass;
+    return canvas;
 }
 
 
@@ -240,14 +277,6 @@ empty_commands(VklCommands* commands, VklRenderpass* renderpass, VklFramebuffers
     vkl_cmd_end_renderpass(commands);
     vkl_cmd_end(commands);
 }
-
-
-
-typedef struct
-{
-    vec3 pos;
-    vec4 color;
-} VklVertex;
 
 
 
@@ -609,20 +638,6 @@ static int vklite2_submit(VkyTestContext* context)
     TEST_END
 }
 
-static int vklite2_renderpass(VkyTestContext* context)
-{
-    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
-    VklGpu* gpu = vkl_gpu(app, 0);
-    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
-    vkl_gpu_create(gpu, 0);
-
-    VklRenderpass* renderpass = offscreen_renderpass(gpu);
-    ASSERT(renderpass != NULL);
-    ASSERT(renderpass->obj.status == VKL_OBJECT_STATUS_CREATED);
-
-    TEST_END
-}
-
 static int vklite2_blank(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
@@ -630,12 +645,9 @@ static int vklite2_blank(VkyTestContext* context)
     vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
     vkl_gpu_create(gpu, 0);
 
-    VklRenderpass* renderpass = offscreen_renderpass(gpu);
-    ASSERT(renderpass != NULL);
-    ASSERT(renderpass->obj.status == VKL_OBJECT_STATUS_CREATED);
-
-    // HACK
-    VklFramebuffers* framebuffers = &gpu->framebuffers[0];
+    BasicCanvas canvas = offscreen(gpu);
+    VklRenderpass* renderpass = canvas.renderpass;
+    VklFramebuffers* framebuffers = canvas.framebuffers;
 
     VklCommands* commands = vkl_commands(gpu, 0, 1);
     empty_commands(commands, renderpass, framebuffers);
@@ -657,12 +669,9 @@ static int vklite2_graphics(VkyTestContext* context)
     vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
     vkl_gpu_create(gpu, 0);
 
-    VklRenderpass* renderpass = offscreen_renderpass(gpu);
-    ASSERT(renderpass != NULL);
-    ASSERT(renderpass->obj.status == VKL_OBJECT_STATUS_CREATED);
-
-    // HACK
-    VklFramebuffers* framebuffers = &gpu->framebuffers[0];
+    BasicCanvas canvas = offscreen(gpu);
+    VklRenderpass* renderpass = canvas.renderpass;
+    VklFramebuffers* framebuffers = canvas.framebuffers;
 
     VklGraphics* graphics = vkl_graphics(gpu);
     ASSERT(graphics != NULL);
@@ -738,11 +747,12 @@ static int vklite2_canvas_basic(VkyTestContext* context)
     vkl_gpu_queue(gpu, VKL_QUEUE_PRESENT, 1);
     vkl_gpu_create(gpu, window->surface);
 
-    VklRenderpass* renderpass = window_renderpass(gpu, window);
-
-    // HACK
-    VklSwapchain* swapchain = &gpu->swapchains[0];
-    VklFramebuffers* framebuffers = &gpu->framebuffers[0];
+    BasicCanvas canvas = glfw_canvas(gpu, window);
+    VklRenderpass* renderpass = canvas.renderpass;
+    VklFramebuffers* framebuffers = canvas.framebuffers;
+    VklSwapchain* swapchain = canvas.swapchain;
+    ASSERT(swapchain != NULL);
+    ASSERT(swapchain->img_count > 0);
 
     VklCommands* commands = vkl_commands(gpu, 0, swapchain->img_count);
     empty_commands(commands, renderpass, framebuffers);
@@ -811,8 +821,8 @@ static int vklite2_canvas_basic(VkyTestContext* context)
             vkl_swapchain_destroy(swapchain);
 
             vkl_swapchain_create(swapchain);
-            // vkl_renderpass_framebuffers(renderpass, 0, swapchain->images);
-            // vkl_renderpass_framebuffers(renderpass, 1, swapchain->images);
+            vkl_framebuffers_attachment(framebuffers, 0, swapchain->images);
+            vkl_framebuffers_attachment(framebuffers, 1, canvas.depth);
             vkl_framebuffers_create(framebuffers, renderpass);
 
             // Need to refill the command buffers.
