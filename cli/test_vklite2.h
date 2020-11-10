@@ -171,8 +171,8 @@ static int vklite2_surface(VkyTestContext* context)
 
     // Create a GLFW window and surface.
     VkSurfaceKHR surface = 0;
-    GLFWwindow* window =
-        (GLFWwindow*)backend_window(app->instance, VKL_BACKEND_GLFW, 100, 100, &surface);
+    GLFWwindow* window = (GLFWwindow*)backend_window(
+        app->instance, VKL_BACKEND_GLFW, 100, 100, true, NULL, &surface);
     vkl_gpu_create(gpu, surface);
 
     backend_window_destroy(app->instance, VKL_BACKEND_GLFW, window, surface);
@@ -680,11 +680,18 @@ static int vklite2_canvas_basic(VkyTestContext* context)
     bak_fences.gpu = gpu;
     bak_fences.obj = fences->obj;
     uint32_t cur_frame = 0;
+    VklBackend backend = VKL_BACKEND_GLFW;
 
 
-    for (uint32_t frame = 0; frame < 120; frame++)
+    for (uint32_t frame = 0; frame < 5 * 60; frame++)
     {
         log_info("iteration %d", frame);
+
+        glfwPollEvents();
+
+        if (backend_window_show_close(backend, window->backend_window) ||
+            window->obj.status == VKL_OBJECT_STATUS_NEED_DESTROY)
+            break;
 
         // Wait for fence.
         vkl_fences_wait(fences, cur_frame);
@@ -721,19 +728,20 @@ static int vklite2_canvas_basic(VkyTestContext* context)
 
             // Wait until the device is ready and the window fully resized.
             backend_window_get_size(
-                VKL_BACKEND_GLFW, window->backend_window, //
-                &window->width, &window->height,          //
+                backend, window->backend_window, //
+                &window->width, &window->height, //
                 &renderpass->width, &renderpass->height);
             vkl_gpu_wait(gpu);
 
+            // Recreate the framebuffers and swapchain.
             vkl_renderpass_framebuffers_destroy(renderpass);
             vkl_swapchain_destroy(swapchain);
-            vkl_gpu_wait(gpu);
 
             vkl_swapchain_create(swapchain);
             vkl_renderpass_framebuffers(renderpass, 0, swapchain->images);
             vkl_renderpass_framebuffers_create(renderpass);
 
+            // Need to refill the command buffers.
             vkl_cmd_reset(commands);
             empty_commands(commands, renderpass);
         }

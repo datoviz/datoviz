@@ -248,9 +248,23 @@ static const char** backend_extensions(VklBackend backend, uint32_t* required_ex
 
 
 
+static void
+_glfw_key_callback(GLFWwindow* backend_window, int key, int scancode, int action, int mods)
+{
+    VklWindow* window = (VklWindow*)glfwGetWindowUserPointer(backend_window);
+    ASSERT(window != NULL);
+    if (action == GLFW_PRESS && key == GLFW_KEY_ESCAPE)
+    {
+        log_trace("window set to be destroyed");
+        window->obj.status = VKL_OBJECT_STATUS_NEED_DESTROY;
+    }
+}
+
+
+
 static void* backend_window(
-    VkInstance instance, VklBackend backend, uint32_t width, uint32_t height,
-    VkSurfaceKHR* surface)
+    VkInstance instance, VklBackend backend, uint32_t width, uint32_t height, bool close_on_esc,
+    VklWindow* window, VkSurfaceKHR* surface)
 {
     log_trace("create canvas with size %dx%d", width, height);
 
@@ -258,12 +272,18 @@ static void* backend_window(
     {
     case VKL_BACKEND_GLFW:
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        GLFWwindow* window =
+        GLFWwindow* backend_window =
             glfwCreateWindow((int)width, (int)height, APPLICATION_NAME, NULL, NULL);
-        ASSERT(window != NULL);
-        if (glfwCreateWindowSurface(instance, window, NULL, surface) != VK_SUCCESS)
+        ASSERT(backend_window != NULL);
+        if (glfwCreateWindowSurface(instance, backend_window, NULL, surface) != VK_SUCCESS)
             log_error("error creating the GLFW surface");
-        return window;
+
+        glfwSetWindowUserPointer(backend_window, window);
+
+        if (close_on_esc)
+            glfwSetKeyCallback(backend_window, _glfw_key_callback);
+
+        return backend_window;
         break;
     default:
         break;
@@ -347,6 +367,21 @@ static void backend_window_get_size(
     default:
         break;
     }
+}
+
+
+
+static bool backend_window_show_close(VklBackend backend, void* window)
+{
+    switch (backend)
+    {
+    case VKL_BACKEND_GLFW:;
+        return glfwWindowShouldClose(window);
+        break;
+    default:
+        break;
+    }
+    return false;
 }
 
 
