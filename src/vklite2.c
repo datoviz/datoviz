@@ -2084,6 +2084,7 @@ void vkl_submit_send(VklSubmit* submit, uint32_t queue_idx, VklFences* fence, ui
     VkSemaphore wait_semaphores[VKL_MAX_SEMAPHORES_PER_SUBMIT] = {0};
     for (uint32_t i = 0; i < submit->wait_semaphores_count; i++)
     {
+        log_trace("wait for semaphore #%d", submit->wait_semaphores_idx[i]);
         wait_semaphores[i] =
             submit->wait_semaphores[i]->semaphores[submit->wait_semaphores_idx[i]];
         ASSERT(submit->wait_stages[i] != 0);
@@ -2092,6 +2093,7 @@ void vkl_submit_send(VklSubmit* submit, uint32_t queue_idx, VklFences* fence, ui
     VkSemaphore signal_semaphores[VKL_MAX_SEMAPHORES_PER_SUBMIT] = {0};
     for (uint32_t i = 0; i < submit->signal_semaphores_count; i++)
     {
+        log_trace("signal semaphore #%d", submit->signal_semaphores_idx[i]);
         signal_semaphores[i] =
             submit->signal_semaphores[i]->semaphores[submit->signal_semaphores_idx[i]];
     }
