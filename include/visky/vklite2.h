@@ -1082,6 +1082,11 @@ VKY_EXPORT void vkl_semaphores_destroy(VklSemaphores* semaphores);
 
 VKY_EXPORT VklFences* vkl_fences(VklGpu* gpu, uint32_t count);
 
+VKY_EXPORT void vkl_fences_create(VklFences* fences);
+
+VKY_EXPORT void
+vkl_fences_copy(VklFences* src_fences, uint32_t src_idx, VklFences* dst_fences, uint32_t dst_idx);
+
 VKY_EXPORT void vkl_fences_wait(VklFences* fences, uint32_t idx);
 
 VKY_EXPORT void vkl_fences_reset(VklFences* fences, uint32_t idx);

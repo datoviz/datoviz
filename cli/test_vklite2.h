@@ -686,10 +686,8 @@ static int vklite2_canvas_basic(VkyTestContext* context)
     VklSemaphores* sem_img_available = vkl_semaphores(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
     VklSemaphores* sem_render_finished = vkl_semaphores(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
     VklFences* fences = vkl_fences(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
-    VklFences bak_fences = {0};
-    bak_fences.count = commands->count;
-    bak_fences.gpu = gpu;
-    bak_fences.obj = fences->obj;
+    vkl_fences_create(fences);
+    VklFences* bak_fences = vkl_fences(gpu, swapchain->img_count);
     uint32_t cur_frame = 0;
     VklBackend backend = VKL_BACKEND_GLFW;
 
@@ -711,9 +709,8 @@ static int vklite2_canvas_basic(VkyTestContext* context)
         if (swapchain->obj.status != VKL_OBJECT_STATUS_NEED_RECREATE)
         {
             // Wait for previous fence if needed.
-            if (bak_fences.fences[swapchain->img_idx] != 0)
-                vkl_fences_wait(&bak_fences, swapchain->img_idx);
-            bak_fences.fences[swapchain->img_idx] = fences->fences[cur_frame];
+            vkl_fences_wait(bak_fences, swapchain->img_idx);
+            vkl_fences_copy(fences, cur_frame, bak_fences, swapchain->img_idx);
 
             // Then, we submit the commands on that image
             VklSubmit submit = vkl_submit(gpu);
