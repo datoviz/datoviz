@@ -13,17 +13,19 @@
 #define TEST_WIDTH  640
 #define TEST_HEIGHT 480
 
-static VkClearColorValue bgcolor = {{.4f, .6f, .8f, 1.0f}};
+static const VkClearColorValue bgcolor = {{.4f, .6f, .8f, 1.0f}};
+#define TEST_FORMAT VK_FORMAT_B8G8R8A8_UNORM
 
 
-static VklRenderpass* offscreen_renderpass(VklGpu* gpu)
+
+static VklRenderpass* default_renderpass(
+    VklGpu* gpu, VkClearColorValue clear_color_value, uint32_t width, uint32_t height,
+    VkFormat format)
 {
-    VkFormat format = VK_FORMAT_B8G8R8A8_UNORM;
-
-    VklRenderpass* renderpass = vkl_renderpass(gpu, TEST_WIDTH, TEST_HEIGHT);
+    VklRenderpass* renderpass = vkl_renderpass(gpu, width, height);
 
     VkClearValue clear_color = {0};
-    clear_color.color = bgcolor;
+    clear_color.color = clear_color_value;
 
     VkClearValue clear_depth = {0};
     clear_depth.depthStencil.depth = 1.0f;
@@ -52,10 +54,18 @@ static VklRenderpass* offscreen_renderpass(VklGpu* gpu)
         renderpass, 0, 0,
         VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
 
+    return renderpass;
+}
+
+
+
+static void make_renderpass_offscreen(VklRenderpass* renderpass)
+{
     // Framebuffer images.
-    VklImages* images = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
-    vkl_images_format(images, format);
-    vkl_images_size(images, TEST_WIDTH, TEST_HEIGHT, 1);
+    VklImages* images = vkl_images(renderpass->gpu, VK_IMAGE_TYPE_2D, 1);
+    // first attachment is color attachment
+    vkl_images_format(images, renderpass->attachments[0].format);
+    vkl_images_size(images, renderpass->width, renderpass->height, 1);
     vkl_images_tiling(images, VK_IMAGE_TILING_OPTIMAL);
     vkl_images_usage(
         images, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
@@ -67,7 +77,15 @@ static VklRenderpass* offscreen_renderpass(VklGpu* gpu)
     // Create renderpass.
     vkl_renderpass_framebuffers(renderpass, 0, images);
     vkl_renderpass_create(renderpass);
+}
 
+
+
+static VklRenderpass* offscreen_renderpass(VklGpu* gpu)
+{
+    VklRenderpass* renderpass =
+        default_renderpass(gpu, bgcolor, TEST_WIDTH, TEST_HEIGHT, TEST_FORMAT);
+    make_renderpass_offscreen(renderpass);
     return renderpass;
 }
 
