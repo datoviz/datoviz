@@ -509,15 +509,21 @@ void vkl_swapchain_acquire(
         semaphore, fence, &swapchain->img_idx);
     log_trace("acquired swapchain image #%d", swapchain->img_idx);
 
-    if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR)
+    switch (res)
     {
+    case VK_SUCCESS:
+        // do nothing
+        break;
+    case VK_ERROR_OUT_OF_DATE_KHR:
         log_trace("out of date swapchain, need to recreate it");
         swapchain->obj.status = VKL_OBJECT_STATUS_NEED_RECREATE;
-    }
-    else if (res != VK_SUCCESS)
-    {
+        break;
+    case VK_SUBOPTIMAL_KHR:
+        log_warn("suboptimal frame, but do nothing");
+        break;
+    default:
         log_error("failed acquiring the swapchain image");
-        swapchain->obj.status = VKL_OBJECT_STATUS_INVALID;
+        break;
     }
 }
 
@@ -544,15 +550,19 @@ void vkl_swapchain_present(
 
     VkResult res = vkQueuePresentKHR(swapchain->gpu->queues.queues[queue_idx], &info);
 
-    if (res == VK_ERROR_OUT_OF_DATE_KHR)
+    switch (res)
     {
+    case VK_SUCCESS:
+        // do nothing
+        break;
+    case VK_ERROR_OUT_OF_DATE_KHR:
+    case VK_SUBOPTIMAL_KHR:
         log_trace("out of date swapchain, need to recreate it");
         swapchain->obj.status = VKL_OBJECT_STATUS_NEED_RECREATE;
-    }
-    else if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR)
-    {
+        break;
+    default:
         log_error("failed presenting the swapchain image");
-        swapchain->obj.status = VKL_OBJECT_STATUS_INVALID;
+        break;
     }
 }
 
@@ -1877,8 +1887,10 @@ void vkl_fences_copy(
     ASSERT(src_idx < src_fences->count);
     ASSERT(dst_idx < dst_fences->count);
 
-    // log_trace("copy fence %d #%d to %d #%d", src_fences, src_idx, dst_fences, dst_idx);
-    log_trace("copy fence %d <- %d", dst_fences->fences[dst_idx], src_fences->fences[src_idx]);
+    // Wait for the destination fence first (if it is not null).
+    vkl_fences_wait(dst_fences, dst_idx);
+
+    log_trace("copy fence %d to %d", src_fences->fences[src_idx], dst_fences->fences[dst_idx]);
     dst_fences->fences[dst_idx] = src_fences->fences[src_idx];
 }
 
@@ -1890,7 +1902,6 @@ void vkl_fences_wait(VklFences* fences, uint32_t idx)
     ASSERT(idx < fences->count);
     if (fences->fences[idx] != 0)
     {
-        // log_trace("wait for fence %d #%d", fences, idx);
         log_trace("wait for fence %d", fences->fences[idx]);
         vkWaitForFences(fences->gpu->device, 1, &fences->fences[idx], VK_TRUE, UINT64_MAX);
     }

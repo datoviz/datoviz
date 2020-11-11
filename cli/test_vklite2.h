@@ -830,9 +830,6 @@ static int vklite2_canvas_basic(VkyTestContext* context)
         }
         else
         {
-            // Wait for previous fence if needed.
-            vkl_fences_wait(fences, cur_frame);
-            // vkl_fences_wait(bak_fences, swapchain->img_idx);
             vkl_fences_copy(fences, cur_frame, bak_fences, swapchain->img_idx);
 
             // Then, we submit the commands on that image
