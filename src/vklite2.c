@@ -2401,11 +2401,11 @@ void vkl_submit_send(VklSubmit* submit, uint32_t queue_idx, VklFences* fence, ui
 
     VkFence vfence = fence == NULL ? 0 : fence->fences[fence_idx];
 
-    // if (vfence != 0)
-    // {
-    //     vkl_fences_wait(fence, fence_idx);
-    //     vkl_fences_reset(fence, fence_idx);
-    // }
+    if (vfence != 0)
+    {
+        vkl_fences_wait(fence, fence_idx);
+        vkl_fences_reset(fence, fence_idx);
+    }
     log_trace("submit queue and signal fence %d", vfence);
     VK_CHECK_RESULT(vkQueueSubmit(submit->gpu->queues.queues[queue_idx], 1, &submit_info, vfence));
 

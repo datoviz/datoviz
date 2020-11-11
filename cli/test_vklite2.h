@@ -180,7 +180,7 @@ static BasicCanvas glfw_canvas(VklGpu* gpu, VklWindow* window)
 
     VklSwapchain* swapchain = vkl_swapchain(renderpass->gpu, window, 3);
     vkl_swapchain_format(swapchain, VK_FORMAT_B8G8R8A8_UNORM);
-    vkl_swapchain_present_mode(swapchain, VK_PRESENT_MODE_FIFO_KHR);
+    vkl_swapchain_present_mode(swapchain, VK_PRESENT_MODE_IMMEDIATE_KHR);
     vkl_swapchain_create(swapchain);
     canvas.swapchain = swapchain;
     canvas.images = swapchain->images;
@@ -336,7 +336,7 @@ static int vklite2_swapchain(VkyTestContext* context)
     vkl_gpu_create(gpu, window->surface);
     VklSwapchain* swapchain = vkl_swapchain(gpu, window, 3);
     vkl_swapchain_format(swapchain, VK_FORMAT_B8G8R8A8_UNORM);
-    vkl_swapchain_present_mode(swapchain, VK_PRESENT_MODE_FIFO_KHR);
+    vkl_swapchain_present_mode(swapchain, VK_PRESENT_MODE_IMMEDIATE_KHR);
     vkl_swapchain_create(swapchain);
     vkl_swapchain_destroy(swapchain);
     vkl_window_destroy(window);
@@ -765,7 +765,7 @@ static int vklite2_canvas_basic(VkyTestContext* context)
     uint32_t cur_frame = 0;
     VklBackend backend = VKL_BACKEND_GLFW;
 
-    const uint32_t n_frames = 60 * 10;
+    const uint32_t n_frames = 100;
     for (uint32_t frame = 0; frame < n_frames; frame++)
     {
         log_info("iteration %d", frame);
@@ -847,6 +847,11 @@ static int vklite2_canvas_basic(VkyTestContext* context)
 
             cur_frame = (cur_frame + 1) % VKY_MAX_FRAMES_IN_FLIGHT;
         }
+
+        // IMPORTANT: we need to fait for the present queue to be idle, otherwise the GPU hangs
+        // when waiting for fences (not sure why). The problem only arises when using different
+        // queues for command bufer submission and swapchain present.
+        vkQueueWaitIdle(gpu->queues.queues[1]);
     }
     log_trace("end of main loop");
     vkl_gpu_wait(gpu);
