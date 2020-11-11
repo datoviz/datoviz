@@ -216,7 +216,7 @@ void vkl_gpu_create(VklGpu* gpu, VkSurfaceKHR surface)
 void vkl_gpu_queue_wait(VklGpu* gpu, uint32_t queue_idx)
 {
     ASSERT(gpu != NULL);
-    ASSERT(queue_idx < VKL_MAX_QUEUES);
+    ASSERT(queue_idx < gpu->queues.queue_count);
     log_trace("waiting for queue #%d", queue_idx);
     vkQueueWaitIdle(gpu->queues.queues[queue_idx]);
 }
@@ -534,6 +534,7 @@ void vkl_swapchain_present(
 {
     ASSERT(swapchain != NULL);
     log_trace("present swapchain image #%d", swapchain->img_idx);
+    ASSERT(queue_idx < swapchain->gpu->queues.queue_count);
 
     // Present the buffer to the surface.
     VkPresentInfoKHR info = {0};
@@ -605,7 +606,7 @@ VklCommands* vkl_commands(VklGpu* gpu, uint32_t queue, uint32_t count)
     INSTANCE_NEW(VklCommands, commands, gpu->commands, gpu->commands_count)
 
     ASSERT(count <= VKL_MAX_COMMAND_BUFFERS_PER_SET);
-    ASSERT(queue <= gpu->queues.queue_count);
+    ASSERT(queue < gpu->queues.queue_count);
     ASSERT(count > 0);
     ASSERT(gpu->queues.cmd_pools[queue] != 0);
 
@@ -2357,6 +2358,7 @@ void vkl_submit_send(VklSubmit* submit, uint32_t queue_idx, VklFences* fence, ui
 {
     ASSERT(submit != NULL);
     log_trace("starting command buffer submission...");
+    ASSERT(queue_idx < submit->gpu->queues.queue_count);
 
     VkSubmitInfo submit_info = {0};
     submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
