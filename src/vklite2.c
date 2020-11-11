@@ -494,7 +494,8 @@ void vkl_swapchain_acquire(
     uint32_t fence_idx)
 {
     ASSERT(swapchain != NULL);
-    log_trace("acquiring swapchain image with semaphore %d #%d...", semaphores, semaphore_idx);
+    log_trace(
+        "acquiring swapchain image with semaphore %d...", semaphores->semaphores[semaphore_idx]);
 
     VkSemaphore semaphore = {0};
     if (semaphores != NULL)
@@ -533,7 +534,9 @@ void vkl_swapchain_present(
     VklSwapchain* swapchain, uint32_t queue_idx, VklSemaphores* semaphores, uint32_t semaphore_idx)
 {
     ASSERT(swapchain != NULL);
-    log_trace("present swapchain image #%d", swapchain->img_idx);
+    log_trace(
+        "present swapchain image #%d and wait for semaphore %d", swapchain->img_idx,
+        semaphores->semaphores[semaphore_idx]);
     ASSERT(queue_idx < swapchain->gpu->queues.queue_count);
 
     // Present the buffer to the surface.
@@ -1889,7 +1892,7 @@ void vkl_fences_copy(
     ASSERT(dst_idx < dst_fences->count);
 
     // Wait for the destination fence first (if it is not null).
-    vkl_fences_wait(dst_fences, dst_idx);
+    // vkl_fences_wait(dst_fences, dst_idx);
 
     log_trace("copy fence %d to %d", src_fences->fences[src_idx], dst_fences->fences[dst_idx]);
     dst_fences->fences[dst_idx] = src_fences->fences[src_idx];
@@ -2366,21 +2369,18 @@ void vkl_submit_send(VklSubmit* submit, uint32_t queue_idx, VklFences* fence, ui
     VkSemaphore wait_semaphores[VKL_MAX_SEMAPHORES_PER_SUBMIT] = {0};
     for (uint32_t i = 0; i < submit->wait_semaphores_count; i++)
     {
-        log_trace(
-            "wait for semaphore %d #%d", submit->wait_semaphores, submit->wait_semaphores_idx[i]);
         wait_semaphores[i] =
             submit->wait_semaphores[i]->semaphores[submit->wait_semaphores_idx[i]];
+        log_trace("wait for semaphore %d", wait_semaphores[i]);
         ASSERT(submit->wait_stages[i] != 0);
     }
 
     VkSemaphore signal_semaphores[VKL_MAX_SEMAPHORES_PER_SUBMIT] = {0};
     for (uint32_t i = 0; i < submit->signal_semaphores_count; i++)
     {
-        log_trace(
-            "signal semaphore %d #%d", submit->signal_semaphores,
-            submit->signal_semaphores_idx[i]);
         signal_semaphores[i] =
             submit->signal_semaphores[i]->semaphores[submit->signal_semaphores_idx[i]];
+        log_trace("signal semaphore %d", signal_semaphores[i]);
     }
 
     VkCommandBuffer cmd_bufs[VKL_MAX_COMMANDS_PER_SUBMIT] = {0};
@@ -2401,11 +2401,11 @@ void vkl_submit_send(VklSubmit* submit, uint32_t queue_idx, VklFences* fence, ui
 
     VkFence vfence = fence == NULL ? 0 : fence->fences[fence_idx];
 
-    if (vfence != 0)
-    {
-        vkl_fences_wait(fence, fence_idx);
-        vkl_fences_reset(fence, fence_idx);
-    }
+    // if (vfence != 0)
+    // {
+    //     vkl_fences_wait(fence, fence_idx);
+    //     vkl_fences_reset(fence, fence_idx);
+    // }
     log_trace("submit queue and signal fence %d", vfence);
     VK_CHECK_RESULT(vkQueueSubmit(submit->gpu->queues.queues[queue_idx], 1, &submit_info, vfence));
 
