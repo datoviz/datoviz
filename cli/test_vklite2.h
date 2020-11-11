@@ -46,7 +46,14 @@ typedef struct
 
     VklWindow* window;
     VklSwapchain* swapchain;
+
+    VklGraphics* graphics;
+    VklBufferRegions buffer_regions;
 } BasicCanvas;
+
+
+
+typedef void (*FillCallback)(BasicCanvas*, VklCommands*);
 
 
 
@@ -168,6 +175,7 @@ static BasicCanvas glfw_canvas(VklGpu* gpu, VklWindow* window)
 {
     BasicCanvas canvas = {0};
     canvas.gpu = gpu;
+    canvas.window = window;
 
     uint32_t framebuffer_width, framebuffer_height;
     vkl_window_get_size(window, &framebuffer_width, &framebuffer_height);
@@ -180,7 +188,7 @@ static BasicCanvas glfw_canvas(VklGpu* gpu, VklWindow* window)
 
     VklSwapchain* swapchain = vkl_swapchain(renderpass->gpu, window, 3);
     vkl_swapchain_format(swapchain, VK_FORMAT_B8G8R8A8_UNORM);
-    vkl_swapchain_present_mode(swapchain, VK_PRESENT_MODE_IMMEDIATE_KHR);
+    vkl_swapchain_present_mode(swapchain, VK_PRESENT_MODE_FIFO_KHR);
     vkl_swapchain_create(swapchain);
     canvas.swapchain = swapchain;
     canvas.images = swapchain->images;
@@ -268,11 +276,151 @@ static void save_screenshot(VklFramebuffers* framebuffers, const char* path)
 
 
 
-static void
-empty_commands(VklCommands* commands, VklRenderpass* renderpass, VklFramebuffers* framebuffers)
+static void show_canvas(BasicCanvas canvas, FillCallback fill_commands, uint32_t n_frames)
+{
+    VklGpu* gpu = canvas.gpu;
+    VklWindow* window = canvas.window;
+    VklRenderpass* renderpass = canvas.renderpass;
+    VklFramebuffers* framebuffers = canvas.framebuffers;
+    VklSwapchain* swapchain = canvas.swapchain;
+
+    ASSERT(swapchain != NULL);
+    ASSERT(swapchain->img_count > 0);
+
+    VklCommands* commands = vkl_commands(gpu, 0, swapchain->img_count);
+    fill_commands(&canvas, commands);
+
+    // Sync objects.
+    VklSemaphores* sem_img_available = vkl_semaphores(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
+    VklSemaphores* sem_render_finished = vkl_semaphores(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
+    VklFences* fences = vkl_fences(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
+    vkl_fences_create(fences);
+    VklFences* bak_fences = vkl_fences(gpu, swapchain->img_count);
+    uint32_t cur_frame = 0;
+    VklBackend backend = VKL_BACKEND_GLFW;
+
+    for (uint32_t frame = 0; frame < n_frames; frame++)
+    {
+        log_info("iteration %d", frame);
+
+        glfwPollEvents();
+
+        if (backend_window_show_close(backend, window->backend_window) ||
+            window->obj.status == VKL_OBJECT_STATUS_NEED_DESTROY)
+            break;
+
+        // Wait for fence.
+        vkl_fences_wait(fences, cur_frame);
+
+        // We acquire the next swapchain image.
+        vkl_swapchain_acquire(swapchain, sem_img_available, cur_frame, NULL, 0);
+        if (swapchain->obj.status == VKL_OBJECT_STATUS_INVALID)
+        {
+            vkl_gpu_wait(gpu);
+            break;
+        }
+        // Handle resizing.
+        else if (swapchain->obj.status == VKL_OBJECT_STATUS_NEED_RECREATE)
+        {
+            log_trace("recreating the swapchain");
+
+            // Wait until the device is ready and the window fully resized.
+            // Framebuffer new size.
+            uint32_t width, height;
+            backend_window_get_size(
+                backend, window->backend_window, //
+                &window->width, &window->height, //
+                &width, &height);
+            vkl_gpu_wait(gpu);
+
+            // Destroy swapchain resources.
+            vkl_framebuffers_destroy(framebuffers);
+            vkl_images_destroy(canvas.depth);
+            vkl_images_destroy(canvas.images);
+            vkl_swapchain_destroy(swapchain);
+
+            // Recreate the swapchain. This will automatically set the swapchain->images new
+            // size.
+            vkl_swapchain_create(swapchain);
+            // Find the new framebuffer size as determined by the swapchain recreation.
+            width = swapchain->images->width;
+            height = swapchain->images->height;
+
+            // The instance should be the same.
+            ASSERT(swapchain->images == canvas.images);
+
+            // Need to recreate the depth image with the new size.
+            vkl_images_size(canvas.depth, width, height, 1);
+            vkl_images_create(canvas.depth);
+
+            // Recreate the framebuffers with the new size.
+            ASSERT(framebuffers->attachments[0]->width == width);
+            ASSERT(framebuffers->attachments[0]->height == height);
+            vkl_framebuffers_create(framebuffers, renderpass);
+
+            // Need to refill the command buffers.
+            vkl_cmd_reset(commands);
+            fill_commands(&canvas, commands);
+        }
+        else
+        {
+            vkl_fences_copy(fences, cur_frame, bak_fences, swapchain->img_idx);
+
+            // Then, we submit the commands on that image
+            VklSubmit submit = vkl_submit(gpu);
+            vkl_submit_commands(&submit, commands, (int32_t)swapchain->img_idx);
+            vkl_submit_wait_semaphores(
+                &submit, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, sem_img_available,
+                (int32_t)cur_frame);
+            // Once the render is finished, we signal another semaphore.
+            vkl_submit_signal_semaphores(&submit, sem_render_finished, (int32_t)cur_frame);
+            vkl_submit_send(&submit, 0, fences, cur_frame);
+
+            // Once the image is rendered, we present the swapchain image.
+            vkl_swapchain_present(swapchain, 1, sem_render_finished, cur_frame);
+
+            cur_frame = (cur_frame + 1) % VKY_MAX_FRAMES_IN_FLIGHT;
+        }
+
+        // IMPORTANT: we need to fait for the present queue to be idle, otherwise the GPU hangs
+        // when waiting for fences (not sure why). The problem only arises when using different
+        // queues for command bufer submission and swapchain present.
+        vkQueueWaitIdle(gpu->queues.queues[1]);
+    }
+    log_trace("end of main loop");
+    vkl_gpu_wait(gpu);
+    vkl_swapchain_destroy(swapchain);
+    vkl_window_destroy(window);
+}
+
+
+
+/*************************************************************************************************/
+/*  Commands filling                                                                             */
+/*************************************************************************************************/
+
+static void empty_commands(BasicCanvas* canvas, VklCommands* commands)
 {
     vkl_cmd_begin(commands);
-    vkl_cmd_begin_renderpass(commands, renderpass, framebuffers);
+    vkl_cmd_begin_renderpass(commands, canvas->renderpass, canvas->framebuffers);
+    vkl_cmd_end_renderpass(commands);
+    vkl_cmd_end(commands);
+}
+
+
+
+static void triangle_commands(BasicCanvas* canvas, VklCommands* commands)
+{
+    // Commands.
+    vkl_cmd_begin(commands);
+    vkl_cmd_begin_renderpass(commands, canvas->renderpass, canvas->framebuffers);
+    vkl_cmd_viewport(
+        commands, (VkViewport){
+                      0, 0, canvas->framebuffers->attachments[0]->width,
+                      canvas->framebuffers->attachments[0]->height, 0, 1});
+    vkl_cmd_bind_vertex_buffer(commands, &canvas->buffer_regions, 0);
+    vkl_cmd_bind_graphics(commands, canvas->graphics, 0);
+    vkl_cmd_draw(commands, 0, 3);
     vkl_cmd_end_renderpass(commands);
     vkl_cmd_end(commands);
 }
@@ -645,11 +793,10 @@ static int vklite2_blank(VkyTestContext* context)
     vkl_gpu_create(gpu, 0);
 
     BasicCanvas canvas = offscreen(gpu);
-    VklRenderpass* renderpass = canvas.renderpass;
     VklFramebuffers* framebuffers = canvas.framebuffers;
 
     VklCommands* commands = vkl_commands(gpu, 0, 1);
-    empty_commands(commands, renderpass, framebuffers);
+    empty_commands(&canvas, commands);
     vkl_cmd_submit_sync(commands, 0);
 
     uint8_t* rgba = screenshot(framebuffers->attachments[0]);
@@ -740,7 +887,26 @@ static int vklite2_graphics(VkyTestContext* context)
 static int vklite2_canvas_basic(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+
     VklWindow* window = vkl_window(app, TEST_WIDTH, TEST_HEIGHT);
+
+    VklGpu* gpu = vkl_gpu(app, 0);
+    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
+    vkl_gpu_queue(gpu, VKL_QUEUE_PRESENT, 1);
+    vkl_gpu_create(gpu, window->surface);
+
+    BasicCanvas canvas = glfw_canvas(gpu, window);
+
+    show_canvas(canvas, empty_commands, 10);
+    TEST_END
+}
+
+static int vklite2_canvas_triangle(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+
+    VklWindow* window = vkl_window(app, TEST_WIDTH, TEST_HEIGHT);
+
     VklGpu* gpu = vkl_gpu(app, 0);
     vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
     vkl_gpu_queue(gpu, VKL_QUEUE_PRESENT, 1);
@@ -748,115 +914,58 @@ static int vklite2_canvas_basic(VkyTestContext* context)
 
     BasicCanvas canvas = glfw_canvas(gpu, window);
     VklRenderpass* renderpass = canvas.renderpass;
-    VklFramebuffers* framebuffers = canvas.framebuffers;
-    VklSwapchain* swapchain = canvas.swapchain;
-    ASSERT(swapchain != NULL);
-    ASSERT(swapchain->img_count > 0);
 
-    VklCommands* commands = vkl_commands(gpu, 0, swapchain->img_count);
-    empty_commands(commands, renderpass, framebuffers);
+    VklGraphics* graphics = vkl_graphics(gpu);
+    canvas.graphics = graphics;
+    ASSERT(graphics != NULL);
 
-    // Sync objects.
-    VklSemaphores* sem_img_available = vkl_semaphores(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
-    VklSemaphores* sem_render_finished = vkl_semaphores(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
-    VklFences* fences = vkl_fences(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
-    vkl_fences_create(fences);
-    VklFences* bak_fences = vkl_fences(gpu, swapchain->img_count);
-    uint32_t cur_frame = 0;
-    VklBackend backend = VKL_BACKEND_GLFW;
+    vkl_graphics_renderpass(graphics, renderpass, 0);
+    vkl_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    vkl_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
 
-    const uint32_t n_frames = 100;
-    for (uint32_t frame = 0; frame < n_frames; frame++)
-    {
-        log_info("iteration %d", frame);
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/spirv/default.vert.spv", DATA_DIR);
+    vkl_graphics_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
+    snprintf(path, sizeof(path), "%s/spirv/default.frag.spv", DATA_DIR);
+    vkl_graphics_shader(graphics, VK_SHADER_STAGE_FRAGMENT_BIT, path);
+    vkl_graphics_vertex_binding(graphics, 0, sizeof(VklVertex));
+    vkl_graphics_vertex_attr(graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VklVertex, pos));
+    vkl_graphics_vertex_attr(
+        graphics, 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(VklVertex, color));
 
-        glfwPollEvents();
+    // Create the bindings.
+    VklBindings* bindings = vkl_bindings(gpu);
+    vkl_bindings_create(bindings, 1);
+    vkl_bindings_update(bindings);
+    vkl_graphics_bindings(graphics, bindings);
 
-        if (backend_window_show_close(backend, window->backend_window) ||
-            window->obj.status == VKL_OBJECT_STATUS_NEED_DESTROY)
-            break;
+    // Create the graphics pipeline.
+    vkl_graphics_create(graphics);
 
-        // Wait for fence.
-        vkl_fences_wait(fences, cur_frame);
+    // Create the buffer.
+    VklBuffer* buffer = vkl_buffer(gpu);
+    VkDeviceSize size = 3 * sizeof(VklVertex);
+    vkl_buffer_size(buffer, size, 0);
+    vkl_buffer_usage(buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    vkl_buffer_memory(
+        buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vkl_buffer_create(buffer);
 
-        // We acquire the next swapchain image.
-        vkl_swapchain_acquire(swapchain, sem_img_available, cur_frame, NULL, 0);
-        if (swapchain->obj.status == VKL_OBJECT_STATUS_INVALID)
-        {
-            vkl_gpu_wait(gpu);
-            break;
-        }
-        // Handle resizing.
-        else if (swapchain->obj.status == VKL_OBJECT_STATUS_NEED_RECREATE)
-        {
-            log_trace("recreating the swapchain");
+    // Upload the triangle data.
+    VklVertex data[3] = {
+        {{-1, +1, 0}, {1, 0, 0, 1}},
+        {{+1, +1, 0}, {0, 1, 0, 1}},
+        {{+0, -1, 0}, {0, 0, 1, 1}},
+    };
+    vkl_buffer_upload(buffer, 0, size, data);
 
-            // Wait until the device is ready and the window fully resized.
-            // Framebuffer new size.
-            uint32_t width, height;
-            backend_window_get_size(
-                backend, window->backend_window, //
-                &window->width, &window->height, //
-                &width, &height);
-            vkl_gpu_wait(gpu);
+    VklBufferRegions br = {0};
+    br.buffer = buffer;
+    br.size = size;
+    br.count = 1;
+    canvas.buffer_regions = br;
 
-            // Destroy swapchain resources.
-            vkl_framebuffers_destroy(framebuffers);
-            vkl_images_destroy(canvas.depth);
-            vkl_images_destroy(canvas.images);
-            vkl_swapchain_destroy(swapchain);
-
-            // Recreate the swapchain. This will automatically set the swapchain->images new size.
-            vkl_swapchain_create(swapchain);
-            // Find the new framebuffer size as determined by the swapchain recreation.
-            width = swapchain->images->width;
-            height = swapchain->images->height;
-
-            // The instance should be the same.
-            ASSERT(swapchain->images == canvas.images);
-
-            // Need to recreate the depth image with the new size.
-            vkl_images_size(canvas.depth, width, height, 1);
-            vkl_images_create(canvas.depth);
-
-            // Recreate the framebuffers with the new size.
-            ASSERT(framebuffers->attachments[0]->width == width);
-            ASSERT(framebuffers->attachments[0]->height == height);
-            vkl_framebuffers_create(framebuffers, renderpass);
-
-            // Need to refill the command buffers.
-            vkl_cmd_reset(commands);
-            empty_commands(commands, renderpass, framebuffers);
-        }
-        else
-        {
-            vkl_fences_copy(fences, cur_frame, bak_fences, swapchain->img_idx);
-
-            // Then, we submit the commands on that image
-            VklSubmit submit = vkl_submit(gpu);
-            vkl_submit_commands(&submit, commands, (int32_t)swapchain->img_idx);
-            vkl_submit_wait_semaphores(
-                &submit, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, sem_img_available,
-                (int32_t)cur_frame);
-            // Once the render is finished, we signal another semaphore.
-            vkl_submit_signal_semaphores(&submit, sem_render_finished, (int32_t)cur_frame);
-            vkl_submit_send(&submit, 0, fences, cur_frame);
-
-            // Once the image is rendered, we present the swapchain image.
-            vkl_swapchain_present(swapchain, 1, sem_render_finished, cur_frame);
-
-            cur_frame = (cur_frame + 1) % VKY_MAX_FRAMES_IN_FLIGHT;
-        }
-
-        // IMPORTANT: we need to fait for the present queue to be idle, otherwise the GPU hangs
-        // when waiting for fences (not sure why). The problem only arises when using different
-        // queues for command bufer submission and swapchain present.
-        vkQueueWaitIdle(gpu->queues.queues[1]);
-    }
-    log_trace("end of main loop");
-    vkl_gpu_wait(gpu);
-    vkl_swapchain_destroy(swapchain);
-    vkl_window_destroy(window);
+    show_canvas(canvas, triangle_commands, 60 * 5);
     TEST_END
 }
 
