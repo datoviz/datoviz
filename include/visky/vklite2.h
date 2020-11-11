@@ -413,10 +413,10 @@ struct VklWindow
     VklApp* app;
 
     void* backend_window;
-    uint32_t width, height;
+    uint32_t width, height; // in screen coordinates
 
     VkSurfaceKHR surface;
-    VkSurfaceCapabilitiesKHR caps;
+    VkSurfaceCapabilitiesKHR caps; // current extent in pixel coordinates (framebuffers)
 };
 
 
@@ -430,9 +430,14 @@ struct VklSwapchain
     VkFormat format;
     VkPresentModeKHR present_mode;
 
+    // extent in pixel coordinates if caps.currentExtent is not available
+    uint32_t requested_width, requested_height;
+
     uint32_t img_count;
     uint32_t img_idx;
     VkSwapchainKHR swapchain;
+
+    // The actual framebuffer size in pixels is found in the images size
     VklImages* images;
 };
 
@@ -720,6 +725,7 @@ struct VklFramebuffers
     VklRenderpass* renderpass;
 
     uint32_t attachment_count;
+    // by definition, the framebuffers size = the first attachment's size
     VklImages* attachments[VKL_MAX_ATTACHMENTS_PER_RENDERPASS];
 
     uint32_t framebuffer_count;
@@ -732,8 +738,6 @@ struct VklRenderpass
 {
     VklObject obj;
     VklGpu* gpu;
-
-    uint32_t width, height;
 
     uint32_t attachment_count;
     VklRenderpassAttachment attachments[VKL_MAX_ATTACHMENTS_PER_RENDERPASS];
@@ -848,6 +852,9 @@ VKY_EXPORT VklSwapchain* vkl_swapchain(VklGpu* gpu, VklWindow* window, uint32_t 
 VKY_EXPORT void vkl_swapchain_format(VklSwapchain* swapchain, VkFormat format);
 
 VKY_EXPORT void vkl_swapchain_present_mode(VklSwapchain* swapchain, VkPresentModeKHR present_mode);
+
+VKY_EXPORT void
+vkl_swapchain_requested_size(VklSwapchain* swapchain, uint32_t width, uint32_t height);
 
 VKY_EXPORT void vkl_swapchain_create(VklSwapchain* swapchain);
 
@@ -1115,7 +1122,7 @@ VKY_EXPORT void vkl_fences_destroy(VklFences* fences);
 /*  Renderpass                                                                                   */
 /*************************************************************************************************/
 
-VKY_EXPORT VklRenderpass* vkl_renderpass(VklGpu* gpu, uint32_t width, uint32_t height);
+VKY_EXPORT VklRenderpass* vkl_renderpass(VklGpu* gpu);
 
 VKY_EXPORT void vkl_renderpass_clear(VklRenderpass* renderpass, VkClearValue value);
 
@@ -1161,8 +1168,6 @@ VKY_EXPORT void vkl_framebuffers_attachment(
     VklFramebuffers* framebuffers, uint32_t attachment_idx, VklImages* images);
 
 VKY_EXPORT void vkl_framebuffers_create(VklFramebuffers* framebuffers, VklRenderpass* renderpass);
-
-VKY_EXPORT void vkl_framebuffers_resize(VklFramebuffers* framebuffers);
 
 VKY_EXPORT void vkl_framebuffers_destroy(VklFramebuffers* framebuffers);
 

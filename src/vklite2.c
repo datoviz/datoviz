@@ -434,6 +434,15 @@ void vkl_swapchain_present_mode(VklSwapchain* swapchain, VkPresentModeKHR presen
 
 
 
+void vkl_swapchain_requested_size(VklSwapchain* swapchain, uint32_t width, uint32_t height)
+{
+    ASSERT(swapchain != NULL);
+    swapchain->requested_width = width;
+    swapchain->requested_height = height;
+}
+
+
+
 void vkl_swapchain_create(VklSwapchain* swapchain)
 {
     ASSERT(swapchain != NULL);
@@ -442,24 +451,35 @@ void vkl_swapchain_create(VklSwapchain* swapchain)
     log_trace("starting creation of swapchain...");
 
     // Create swapchain
+    uint32_t width, height;
     create_swapchain(
         swapchain->gpu->device, swapchain->gpu->physical_device, swapchain->window->surface,
         swapchain->img_count, swapchain->format, swapchain->present_mode, &swapchain->gpu->queues,
-        &swapchain->window->caps, &swapchain->swapchain);
+        swapchain->requested_width, swapchain->requested_height, //
+        &swapchain->window->caps, &swapchain->swapchain, &width, &height);
+
+    // Actual framebuffer size in pixels, as determined by the swapchain creation process.
+    ASSERT(width > 0);
+    ASSERT(height > 0);
 
     // Get the number of swapchain images.
     vkGetSwapchainImagesKHR(
         swapchain->gpu->device, swapchain->swapchain, &swapchain->img_count, NULL);
     log_trace("get %d swapchain images", swapchain->img_count);
-    swapchain->images = vkl_images(swapchain->gpu, VK_IMAGE_TYPE_2D, swapchain->img_count);
+
+    if (swapchain->images == NULL)
+        swapchain->images = vkl_images(swapchain->gpu, VK_IMAGE_TYPE_2D, swapchain->img_count);
+
     swapchain->images->is_swapchain = true;
     vkl_images_format(swapchain->images, swapchain->format);
-    vkl_images_size(swapchain->images, swapchain->window->width, swapchain->window->height, 1);
+    // The actual framebuffer size is set here.
+    vkl_images_size(swapchain->images, width, height, 1);
     vkGetSwapchainImagesKHR(
         swapchain->gpu->device, swapchain->swapchain, &swapchain->img_count,
         swapchain->images->images);
 
-    // Create the swap chain image views.
+    // Create the swap chain image views (will skip the image creation as they are given by the
+    // swapchain directly).
     vkl_images_create(swapchain->images);
 
     obj_created(&swapchain->images->obj);
@@ -474,7 +494,7 @@ void vkl_swapchain_acquire(
     uint32_t fence_idx)
 {
     ASSERT(swapchain != NULL);
-    log_trace("acquiring swapchain image...");
+    log_trace("acquiring swapchain image with semaphore %d #%d...", semaphores, semaphore_idx);
 
     VkSemaphore semaphore = {0};
     if (semaphores != NULL)
@@ -926,6 +946,7 @@ void vkl_images_size(VklImages* images, uint32_t width, uint32_t height, uint32_
 {
     ASSERT(images != NULL);
 
+    log_trace("set image size %dx%d", width, height);
     check_dims(images->image_type, width, height, depth);
 
     images->width = width;
@@ -1108,7 +1129,7 @@ void vkl_images_destroy(VklImages* images)
         log_trace("skip destruction of already-destroyed images");
         return;
     }
-    log_trace("destroy %d images", images->count);
+    log_trace("destroy %d image(s) and image view(s)", images->count);
     _images_destroy(images);
     obj_destroyed(&images->obj);
 }
@@ -1856,6 +1877,8 @@ void vkl_fences_copy(
     ASSERT(src_idx < src_fences->count);
     ASSERT(dst_idx < dst_fences->count);
 
+    // log_trace("copy fence %d #%d to %d #%d", src_fences, src_idx, dst_fences, dst_idx);
+    log_trace("copy fence %d <- %d", dst_fences->fences[dst_idx], src_fences->fences[src_idx]);
     dst_fences->fences[dst_idx] = src_fences->fences[src_idx];
 }
 
@@ -1864,8 +1887,13 @@ void vkl_fences_copy(
 void vkl_fences_wait(VklFences* fences, uint32_t idx)
 {
     ASSERT(fences != NULL);
+    ASSERT(idx < fences->count);
     if (fences->fences[idx] != 0)
+    {
+        // log_trace("wait for fence %d #%d", fences, idx);
+        log_trace("wait for fence %d", fences->fences[idx]);
         vkWaitForFences(fences->gpu->device, 1, &fences->fences[idx], VK_TRUE, UINT64_MAX);
+    }
 }
 
 
@@ -1873,7 +1901,11 @@ void vkl_fences_wait(VklFences* fences, uint32_t idx)
 void vkl_fences_reset(VklFences* fences, uint32_t idx)
 {
     ASSERT(fences != NULL);
-    vkResetFences(fences->gpu->device, 1, &fences->fences[idx]);
+    if (fences->fences[idx] != NULL)
+    {
+        log_trace("reset fence %d", fences->fences[idx]);
+        vkResetFences(fences->gpu->device, 1, &fences->fences[idx]);
+    }
 }
 
 
@@ -1901,7 +1933,7 @@ void vkl_fences_destroy(VklFences* fences)
 /*  Renderpass                                                                                   */
 /*************************************************************************************************/
 
-VklRenderpass* vkl_renderpass(VklGpu* gpu, uint32_t width, uint32_t height)
+VklRenderpass* vkl_renderpass(VklGpu* gpu)
 {
     ASSERT(gpu != NULL);
     ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
@@ -1909,12 +1941,8 @@ VklRenderpass* vkl_renderpass(VklGpu* gpu, uint32_t width, uint32_t height)
     INSTANCE_NEW(VklRenderpass, renderpass, gpu->renderpasses, gpu->renderpass_count)
 
     ASSERT(renderpass != NULL);
-    ASSERT(width > 0);
-    ASSERT(height > 0);
 
     renderpass->gpu = gpu;
-    renderpass->width = width;
-    renderpass->height = height;
 
     return renderpass;
 }
@@ -2156,6 +2184,15 @@ static void _framebuffers_create(VklFramebuffers* framebuffers)
     VklRenderpass* renderpass = framebuffers->renderpass;
     ASSERT(renderpass != NULL);
 
+    // The actual framebuffer size in pixels is determined by the first attachment (color images)
+    // as these images are created by the swapchain.
+    ASSERT(framebuffers->attachment_count > 0);
+    uint32_t width = framebuffers->attachments[0]->width;
+    uint32_t height = framebuffers->attachments[0]->height;
+    log_trace(
+        "create %d framebuffer(s) with size %dx%d", framebuffers->framebuffer_count, width,
+        height);
+
     // Loop first over the framebuffers (swapchain images).
     for (uint32_t i = 0; i < framebuffers->framebuffer_count; i++)
     {
@@ -2169,20 +2206,16 @@ static void _framebuffers_create(VklFramebuffers* framebuffers)
             attachments[j] = images->image_views[MIN(i, images->count - 1)];
         }
         ASSERT(images != NULL);
-        // log_info("%d %d", images->width, renderpass->width);
-        ASSERT(images->width == renderpass->width);
-        ASSERT(images->height == renderpass->height);
 
         VkFramebufferCreateInfo info = {0};
         info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         info.renderPass = renderpass->renderpass;
         info.attachmentCount = renderpass->attachment_count;
         info.pAttachments = attachments;
-        info.width = renderpass->width;
-        info.height = renderpass->height;
+        info.width = width;
+        info.height = height;
         info.layers = 1;
 
-        log_trace("create framebuffer #%d", i);
         VK_CHECK_RESULT(vkCreateFramebuffer(
             framebuffers->gpu->device, &info, NULL, &framebuffers->framebuffers[i]));
     }
@@ -2210,9 +2243,6 @@ void vkl_framebuffers_create(VklFramebuffers* framebuffers, VklRenderpass* rende
 
     framebuffers->renderpass = renderpass;
 
-    ASSERT(renderpass->width > 0);
-    ASSERT(renderpass->height > 0);
-
     ASSERT(framebuffers->attachment_count > 0);
     ASSERT(framebuffers->framebuffer_count > 0);
 
@@ -2228,23 +2258,6 @@ void vkl_framebuffers_create(VklFramebuffers* framebuffers, VklRenderpass* rende
 
 
 
-void vkl_framebuffers_resize(VklFramebuffers* framebuffers)
-{
-    ASSERT(framebuffers != NULL);
-    uint32_t width = framebuffers->renderpass->width;
-    uint32_t height = framebuffers->renderpass->height;
-
-    log_trace("resize framebuffers and attachments to new size %dx%d", width, height);
-    _framebuffers_destroy(framebuffers);
-    _framebuffers_create(framebuffers);
-    for (uint32_t i = 0; i < framebuffers->attachment_count; i++)
-    {
-        vkl_images_resize(framebuffers->attachments[i], width, height, 1);
-    }
-}
-
-
-
 void vkl_framebuffers_destroy(VklFramebuffers* framebuffers)
 {
     ASSERT(framebuffers != NULL);
@@ -2253,7 +2266,6 @@ void vkl_framebuffers_destroy(VklFramebuffers* framebuffers)
         log_trace("skip destruction of already-destroyed framebuffers");
         return;
     }
-
     log_trace("destroying %d framebuffers", framebuffers->framebuffer_count);
     _framebuffers_destroy(framebuffers);
     obj_destroyed(&framebuffers->obj);
@@ -2341,7 +2353,8 @@ void vkl_submit_send(VklSubmit* submit, uint32_t queue_idx, VklFences* fence, ui
     VkSemaphore wait_semaphores[VKL_MAX_SEMAPHORES_PER_SUBMIT] = {0};
     for (uint32_t i = 0; i < submit->wait_semaphores_count; i++)
     {
-        log_trace("wait for semaphore #%d", submit->wait_semaphores_idx[i]);
+        log_trace(
+            "wait for semaphore %d #%d", submit->wait_semaphores, submit->wait_semaphores_idx[i]);
         wait_semaphores[i] =
             submit->wait_semaphores[i]->semaphores[submit->wait_semaphores_idx[i]];
         ASSERT(submit->wait_stages[i] != 0);
@@ -2350,7 +2363,9 @@ void vkl_submit_send(VklSubmit* submit, uint32_t queue_idx, VklFences* fence, ui
     VkSemaphore signal_semaphores[VKL_MAX_SEMAPHORES_PER_SUBMIT] = {0};
     for (uint32_t i = 0; i < submit->signal_semaphores_count; i++)
     {
-        log_trace("signal semaphore #%d", submit->signal_semaphores_idx[i]);
+        log_trace(
+            "signal semaphore %d #%d", submit->signal_semaphores,
+            submit->signal_semaphores_idx[i]);
         signal_semaphores[i] =
             submit->signal_semaphores[i]->semaphores[submit->signal_semaphores_idx[i]];
     }
@@ -2372,10 +2387,13 @@ void vkl_submit_send(VklSubmit* submit, uint32_t queue_idx, VklFences* fence, ui
     submit_info.pSignalSemaphores = signal_semaphores;
 
     VkFence vfence = fence == NULL ? 0 : fence->fences[fence_idx];
-    uint32_t fence_count = fence == NULL ? 0 : 1;
 
-    if (fence != NULL)
-        VK_CHECK_RESULT(vkResetFences(submit->gpu->device, fence_count, &vfence));
+    if (vfence != 0)
+    {
+        vkl_fences_wait(fence, fence_idx);
+        vkl_fences_reset(fence, fence_idx);
+    }
+    log_trace("submit queue and signal fence %d", vfence);
     VK_CHECK_RESULT(vkQueueSubmit(submit->gpu->queues.queues[queue_idx], 1, &submit_info, vfence));
 
     log_trace("submit done");
@@ -2393,11 +2411,16 @@ void vkl_cmd_begin_renderpass(
     ASSERT(renderpass->obj.status >= VKL_OBJECT_STATUS_CREATED);
     ASSERT(framebuffers->obj.status >= VKL_OBJECT_STATUS_CREATED);
 
+    // Find the framebuffer size.
+    ASSERT(framebuffers->attachment_count > 0);
+    uint32_t width = framebuffers->attachments[0]->width;
+    uint32_t height = framebuffers->attachments[0]->height;
+    log_trace("begin renderpass with size %dx%d", width, height);
+
     CMD_START_CLIP(cmds->count)
     begin_render_pass(
         renderpass->renderpass, cb, framebuffers->framebuffers[iclip], //
-        renderpass->width, renderpass->height,                         //
-        renderpass->clear_count, renderpass->clear_values);
+        width, height, renderpass->clear_count, renderpass->clear_values);
     CMD_END
 }
 

@@ -723,11 +723,12 @@ static void create_device(VklGpu* gpu, VkSurfaceKHR surface)
 /*************************************************************************************************/
 
 static void create_swapchain(
-    VkDevice device, VkPhysicalDevice pdevice,      //
-    VkSurfaceKHR surface, uint32_t image_count,     //
-    VkFormat format, VkPresentModeKHR present_mode, //
-    VklQueues* queues,                              //
-    VkSurfaceCapabilitiesKHR* caps, VkSwapchainKHR* swapchain)
+    VkDevice device, VkPhysicalDevice pdevice,                              //
+    VkSurfaceKHR surface, uint32_t image_count,                             //
+    VkFormat format, VkPresentModeKHR present_mode,                         //
+    VklQueues* queues, uint32_t requested_width, uint32_t requested_height, //
+    VkSurfaceCapabilitiesKHR* caps, VkSwapchainKHR* swapchain,              //
+    uint32_t* width, uint32_t* height) // final actual swapchain size in pixels
 {
     ASSERT(surface != 0);
     ASSERT(format != 0);
@@ -745,7 +746,24 @@ static void create_swapchain(
     ASSERT(caps != NULL);
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(pdevice, surface, caps);
 
-    screateInfo.imageExtent = caps->currentExtent;
+    // Handle special case where glfw should give the framebuffer size here as image extent.
+    if (caps->currentExtent.width == UINT32_MAX)
+    {
+        screateInfo.imageExtent.width =
+            CLIP(requested_width, caps->minImageExtent.width, caps->maxImageExtent.width);
+        screateInfo.imageExtent.height =
+            CLIP(requested_height, caps->minImageExtent.height, caps->maxImageExtent.height);
+        log_trace(
+            "set swapchain extent to %dx%d", //
+            screateInfo.imageExtent.width, screateInfo.imageExtent.height);
+    }
+    else
+    {
+        screateInfo.imageExtent = caps->currentExtent;
+    }
+    // We return the final actual swapchain size.
+    *width = screateInfo.imageExtent.width;
+    *height = screateInfo.imageExtent.height;
     screateInfo.imageArrayLayers = 1;
     screateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
     screateInfo.preTransform = caps->currentTransform;
@@ -1431,8 +1449,8 @@ static VkAttachmentReference create_attachment_ref(uint32_t attachment, VkImageL
 
 
 static void begin_render_pass(
-    VkRenderPass renderpass, VkCommandBuffer cmd_buf, VkFramebuffer framebuffer, uint32_t width,
-    uint32_t height, uint32_t clear_count, VkClearValue* clear_colors)
+    VkRenderPass renderpass, VkCommandBuffer cmd_buf, VkFramebuffer framebuffer, //
+    uint32_t width, uint32_t height, uint32_t clear_count, VkClearValue* clear_colors)
 {
     ASSERT(renderpass != 0);
     ASSERT(framebuffer != 0);
