@@ -745,13 +745,12 @@ void vkl_cmd_free(VklCommands* cmds)
 
 
 
-void vkl_cmd_submit_sync(VklCommands* cmds, uint32_t queue_idx)
+void vkl_cmd_submit_sync(VklCommands* cmds)
 {
     log_debug("[SLOW] submit %d command buffer(s)", cmds->count);
 
     VklQueues* q = &cmds->gpu->queues;
-    ASSERT(queue_idx < q->queue_count);
-    VkQueue queue = q->queues[queue_idx];
+    VkQueue queue = q->queues[cmds->queue_idx];
 
     vkQueueWaitIdle(queue);
     VkSubmitInfo info = {0};
@@ -2432,12 +2431,10 @@ void vkl_submit_signal_semaphores(VklSubmit* submit, VklSemaphores* semaphores, 
 
 
 
-void vkl_submit_send(
-    VklSubmit* submit, uint32_t queue_idx, uint32_t img_idx, VklFences* fence, uint32_t fence_idx)
+void vkl_submit_send(VklSubmit* submit, uint32_t img_idx, VklFences* fence, uint32_t fence_idx)
 {
     ASSERT(submit != NULL);
     log_trace("starting command buffer submission...");
-    ASSERT(queue_idx < submit->gpu->queues.queue_count);
 
     VkSubmitInfo submit_info = {0};
     submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -2460,9 +2457,17 @@ void vkl_submit_send(
     }
 
     VkCommandBuffer cmd_bufs[VKL_MAX_COMMANDS_PER_SUBMIT] = {0};
+
+    // Find the queue to submit to.
+    ASSERT(submit->commands_count > 0);
+    uint32_t queue_idx = submit->commands[0]->queue_idx;
     for (uint32_t i = 0; i < submit->commands_count; i++)
     {
-        cmd_bufs[i] = submit->commands[i]->cmds[img_idx];
+        // All commands should belong to the same queue.
+        if (submit->commands[i]->queue_idx == queue_idx)
+            cmd_bufs[i] = submit->commands[i]->cmds[img_idx];
+        else
+            log_error("all submitted commands should belong to the same queue #%d", queue_idx);
     }
 
     submit_info.commandBufferCount = submit->commands_count;

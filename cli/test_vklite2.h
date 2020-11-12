@@ -253,7 +253,7 @@ static uint8_t* screenshot(VklImages* images)
 
     // End the commands and submit them.
     vkl_cmd_end(cmds);
-    vkl_cmd_submit_sync(cmds, 0);
+    vkl_cmd_submit_sync(cmds);
 
     // Now, copy the staging image into CPU memory.
     uint8_t* rgba = calloc(images->width * images->height, 3);
@@ -374,7 +374,7 @@ static void show_canvas(BasicCanvas canvas, FillCallback fill_commands, uint32_t
                 cur_frame);
             // Once the render is finished, we signal another semaphore.
             vkl_submit_signal_semaphores(&submit, sem_render_finished, cur_frame);
-            vkl_submit_send(&submit, 0, swapchain->img_idx, fences, cur_frame);
+            vkl_submit_send(&submit, swapchain->img_idx, fences, cur_frame);
 
             // Once the image is rendered, we present the swapchain image.
             vkl_swapchain_present(swapchain, 1, sem_render_finished, cur_frame);
@@ -591,7 +591,7 @@ static int vklite2_compute(VkyTestContext* context)
     vkl_cmd_begin(cmds);
     vkl_cmd_compute(cmds, compute, (uvec3){20, 1, 1});
     vkl_cmd_end(cmds);
-    vkl_cmd_submit_sync(cmds, 0);
+    vkl_cmd_submit_sync(cmds);
 
     // Get back the data.
     float* data2 = calloc(n, sizeof(float));
@@ -684,7 +684,7 @@ static int vklite2_barrier(VkyTestContext* context)
     vkl_cmd_barrier(cmds, &barrier);
     vkl_cmd_copy_buffer_to_image(cmds, buffer, images);
     vkl_cmd_end(cmds);
-    vkl_cmd_submit_sync(cmds, 0);
+    vkl_cmd_submit_sync(cmds);
 
     TEST_END
 }
@@ -767,12 +767,12 @@ static int vklite2_submit(VkyTestContext* context)
     VklSubmit submit1 = vkl_submit(gpu);
     vkl_submit_commands(&submit1, cmds1);
     vkl_submit_signal_semaphores(&submit1, semaphores, 0);
-    vkl_submit_send(&submit1, 0, 0, NULL, 0);
+    vkl_submit_send(&submit1, 0, NULL, 0);
 
     VklSubmit submit2 = vkl_submit(gpu);
     vkl_submit_commands(&submit2, cmds2);
     vkl_submit_wait_semaphores(&submit2, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, semaphores, 0);
-    vkl_submit_send(&submit2, 0, 0, NULL, 0);
+    vkl_submit_send(&submit2, 0, NULL, 0);
 
     vkl_gpu_wait(gpu);
 
@@ -797,7 +797,7 @@ static int vklite2_blank(VkyTestContext* context)
 
     VklCommands* commands = vkl_commands(gpu, 0, 1);
     empty_commands(&canvas, commands);
-    vkl_cmd_submit_sync(commands, 0);
+    vkl_cmd_submit_sync(commands);
 
     uint8_t* rgba = screenshot(framebuffers->attachments[0]);
 
@@ -877,7 +877,7 @@ static int vklite2_graphics(VkyTestContext* context)
     vkl_cmd_draw(commands, 0, 3);
     vkl_cmd_end_renderpass(commands);
     vkl_cmd_end(commands);
-    vkl_cmd_submit_sync(commands, 0);
+    vkl_cmd_submit_sync(commands);
 
     save_screenshot(framebuffers, "screenshot.ppm");
 

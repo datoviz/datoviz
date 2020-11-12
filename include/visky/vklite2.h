@@ -883,7 +883,7 @@ VKY_EXPORT void vkl_cmd_reset(VklCommands* cmds);
 
 VKY_EXPORT void vkl_cmd_free(VklCommands* cmds);
 
-VKY_EXPORT void vkl_cmd_submit_sync(VklCommands* cmds, uint32_t queue_idx);
+VKY_EXPORT void vkl_cmd_submit_sync(VklCommands* cmds);
 
 VKY_EXPORT void vkl_commands_destroy(VklCommands* commands);
 
@@ -1187,8 +1187,8 @@ VKY_EXPORT void vkl_submit_wait_semaphores(
 VKY_EXPORT void
 vkl_submit_signal_semaphores(VklSubmit* submit, VklSemaphores* semaphores, uint32_t idx);
 
-VKY_EXPORT void vkl_submit_send(
-    VklSubmit* submit, uint32_t queue_idx, uint32_t img_idx, VklFences* fence, uint32_t fence_idx);
+VKY_EXPORT void
+vkl_submit_send(VklSubmit* submit, uint32_t img_idx, VklFences* fence, uint32_t fence_idx);
 
 
 
