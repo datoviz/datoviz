@@ -140,14 +140,14 @@ typedef enum
 // NOTE: the order is important, status >= CREATED means the object has been created
 typedef enum
 {
-    VKL_OBJECT_STATUS_UNDEFINED,     // invalid state
+    VKL_OBJECT_STATUS_NONE,          // after allocation
     VKL_OBJECT_STATUS_DESTROYED,     // after destruction
-    VKL_OBJECT_STATUS_INIT,          // after memory allocation
+    VKL_OBJECT_STATUS_INIT,          // after struct initialization but before Vulkan creation
     VKL_OBJECT_STATUS_CREATED,       // after proper creation on the GPU
     VKL_OBJECT_STATUS_NEED_RECREATE, // need to be recreated
     VKL_OBJECT_STATUS_NEED_UPDATE,   // need to be updated
     VKL_OBJECT_STATUS_NEED_DESTROY,  // need to be destroyed
-    VKL_OBJECT_STATUS_INVALID,       // need to be destroyed
+    VKL_OBJECT_STATUS_INVALID,       // invalid
 } VklObjectStatus;
 
 
@@ -213,27 +213,29 @@ typedef enum
 /*  Macros                                                                                       */
 /*************************************************************************************************/
 
-#define INSTANCES_INIT(s, o, p, n, t)                                                             \
+#define INSTANCES_INIT(s, o, p, c, n, t)                                                          \
     log_trace("init %d object(s) %s", n, #s);                                                     \
     o->p = calloc(n, sizeof(s));                                                                  \
     for (uint32_t i = 0; i < n; i++)                                                              \
-        obj_init(&o->p[i].obj, t);
+    {                                                                                             \
+        o->p[i].obj.type = t;                                                                     \
+    }                                                                                             \
+    o->c = n;
 
-#define INSTANCE_NEW(s, o, instances, n) s* o = &instances[n++];
-
-/*
-#define INSTANCE_GET(s, o, n, instances)                                                          \
+#define INSTANCE_NEW(s, o, instances, n)                                                          \
     s* o = NULL;                                                                                  \
     for (uint32_t i = 0; i < n; i++)                                                              \
-        if (instances[i].obj.status <= 1)                                                         \
+        if (instances[i].obj.status < VKL_OBJECT_STATUS_INIT)                                     \
         {                                                                                         \
             o = &instances[i];                                                                    \
             o->obj.status = VKL_OBJECT_STATUS_INIT;                                               \
+            break;                                                                                \
         }                                                                                         \
     if (o == NULL)                                                                                \
+    {                                                                                             \
         log_error("maximum number of %s instances reached", #s);                                  \
-    exit(1);
-*/
+        exit(1);                                                                                  \
+    }
 
 #define INSTANCES_DESTROY(o)                                                                      \
     log_trace("destroy objects %s", #o);                                                          \
@@ -276,11 +278,7 @@ struct VklObject
 
 
 
-static void obj_init(VklObject* obj, VklObjectType type)
-{
-    obj->type = type;
-    obj->status = VKL_OBJECT_STATUS_INIT;
-}
+static void obj_init(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_INIT; }
 
 static void obj_created(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_CREATED; }
 
@@ -305,15 +303,16 @@ struct VklApp
     VkDebugUtilsMessengerEXT debug_messenger;
 
     // GPUs.
+    uint32_t max_gpus;
     uint32_t gpu_count;
     VklGpu* gpus;
 
     // Windows.
-    uint32_t window_count;
+    uint32_t max_windows;
     VklWindow* windows;
 
     // Canvas.
-    uint32_t canvas_count;
+    uint32_t max_canvases;
     VklCanvas* canvases;
 };
 
@@ -368,40 +367,40 @@ struct VklGpu
     VkPhysicalDeviceFeatures requested_features;
     VkDevice device;
 
-    uint32_t swapchain_count;
+    uint32_t max_swapchains;
     VklSwapchain* swapchains;
 
-    uint32_t commands_count;
+    uint32_t max_commands;
     VklCommands* commands;
 
-    uint32_t buffers_count;
+    uint32_t max_buffers;
     VklBuffer* buffers;
 
-    uint32_t images_count;
+    uint32_t max_images;
     VklImages* images;
 
-    uint32_t sampler_count;
+    uint32_t max_samplers;
     VklSampler* samplers;
 
-    uint32_t bindings_count;
+    uint32_t max_bindings;
     VklBindings* bindings;
 
-    uint32_t compute_count;
+    uint32_t max_computes;
     VklCompute* computes;
 
-    uint32_t graphics_count;
+    uint32_t max_graphics;
     VklGraphics* graphics;
 
-    uint32_t renderpass_count;
+    uint32_t max_renderpasses;
     VklRenderpass* renderpasses;
 
-    uint32_t framebuffer_count;
+    uint32_t max_framebuffers;
     VklFramebuffers* framebuffers;
 
-    uint32_t semaphores_count;
+    uint32_t max_semaphores;
     VklSemaphores* semaphores;
 
-    uint32_t fences_count;
+    uint32_t max_fences;
     VklFences* fences;
 };
 
@@ -886,6 +885,8 @@ VKY_EXPORT void vkl_cmd_reset(VklCommands* cmds);
 VKY_EXPORT void vkl_cmd_free(VklCommands* cmds);
 
 VKY_EXPORT void vkl_cmd_submit_sync(VklCommands* cmds, uint32_t queue_idx);
+
+VKY_EXPORT void vkl_commands_destroy(VklCommands* commands);
 
 
 

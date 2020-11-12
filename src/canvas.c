@@ -18,10 +18,11 @@ VklCanvas* vkl_canvas(VklApp* app, uint32_t width, uint32_t height)
     ASSERT(app != NULL);
     if (app->canvases == NULL)
     {
-        INSTANCES_INIT(VklCanvas, app, canvases, VKL_MAX_WINDOWS, VKL_OBJECT_TYPE_CANVAS)
+        INSTANCES_INIT(
+            VklCanvas, app, canvases, max_canvases, VKL_MAX_WINDOWS, VKL_OBJECT_TYPE_CANVAS)
     }
 
-    INSTANCE_NEW(VklCanvas, canvas, app->canvases, app->canvas_count)
+    INSTANCE_NEW(VklCanvas, canvas, app->canvases, app->max_canvases)
     canvas->app = app;
     canvas->width = width;
     canvas->height = height;
@@ -87,6 +88,8 @@ void vkl_canvases_destroy(uint32_t canvas_count, VklCanvas* canvases)
 {
     for (uint32_t i = 0; i < canvas_count; i++)
     {
+        if (canvases[i].obj.status == VKL_OBJECT_STATUS_NONE)
+            break;
         vkl_canvas_destroy(&canvases[i]);
     }
 }

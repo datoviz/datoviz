@@ -965,7 +965,7 @@ static int vklite2_canvas_triangle(VkyTestContext* context)
     br.count = 1;
     canvas.buffer_regions = br;
 
-    show_canvas(canvas, triangle_commands, 60 * 5);
+    show_canvas(canvas, triangle_commands, 30);
     TEST_END
 }
 
