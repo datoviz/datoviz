@@ -761,16 +761,15 @@ struct VklSubmit
     VklGpu* gpu;
 
     uint32_t commands_count;
-    int32_t commands_idx[VKL_MAX_COMMANDS_PER_SUBMIT];
     VklCommands* commands[VKL_MAX_COMMANDS_PER_SUBMIT];
 
     uint32_t wait_semaphores_count;
-    int32_t wait_semaphores_idx[VKL_MAX_SEMAPHORES_PER_SUBMIT];
+    uint32_t wait_semaphores_idx[VKL_MAX_SEMAPHORES_PER_SUBMIT];
     VklSemaphores* wait_semaphores[VKL_MAX_SEMAPHORES_PER_SUBMIT];
     VkPipelineStageFlags wait_stages[VKL_MAX_SEMAPHORES_PER_SUBMIT];
 
     uint32_t signal_semaphores_count;
-    int32_t signal_semaphores_idx[VKL_MAX_SEMAPHORES_PER_SUBMIT];
+    uint32_t signal_semaphores_idx[VKL_MAX_SEMAPHORES_PER_SUBMIT];
     VklSemaphores* signal_semaphores[VKL_MAX_SEMAPHORES_PER_SUBMIT];
 };
 
@@ -1180,16 +1179,16 @@ VKY_EXPORT void vkl_framebuffers_destroy(VklFramebuffers* framebuffers);
 
 VKY_EXPORT VklSubmit vkl_submit(VklGpu* gpu);
 
-VKY_EXPORT void vkl_submit_commands(VklSubmit* submit, VklCommands* commands, int32_t idx);
+VKY_EXPORT void vkl_submit_commands(VklSubmit* submit, VklCommands* commands);
 
 VKY_EXPORT void vkl_submit_wait_semaphores(
-    VklSubmit* submit, VkPipelineStageFlags stage, VklSemaphores* semaphores, int32_t idx);
+    VklSubmit* submit, VkPipelineStageFlags stage, VklSemaphores* semaphores, uint32_t idx);
 
 VKY_EXPORT void
-vkl_submit_signal_semaphores(VklSubmit* submit, VklSemaphores* semaphores, int32_t idx);
+vkl_submit_signal_semaphores(VklSubmit* submit, VklSemaphores* semaphores, uint32_t idx);
 
-VKY_EXPORT void
-vkl_submit_send(VklSubmit* submit, uint32_t queue_idx, VklFences* fence, uint32_t fence_idx);
+VKY_EXPORT void vkl_submit_send(
+    VklSubmit* submit, uint32_t queue_idx, uint32_t img_idx, VklFences* fence, uint32_t fence_idx);
 
 
 

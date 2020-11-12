@@ -2385,7 +2385,7 @@ VklSubmit vkl_submit(VklGpu* gpu)
 
 
 
-void vkl_submit_commands(VklSubmit* submit, VklCommands* commands, int32_t idx)
+void vkl_submit_commands(VklSubmit* submit, VklCommands* commands)
 {
     ASSERT(submit != NULL);
     ASSERT(commands != NULL);
@@ -2393,18 +2393,16 @@ void vkl_submit_commands(VklSubmit* submit, VklCommands* commands, int32_t idx)
     uint32_t n = submit->commands_count;
     ASSERT(n < VKL_MAX_COMMANDS_PER_SUBMIT);
     submit->commands[n] = commands;
-    submit->commands_idx[n] = idx;
     submit->commands_count++;
 }
 
 
 
 void vkl_submit_wait_semaphores(
-    VklSubmit* submit, VkPipelineStageFlags stage, VklSemaphores* semaphores, int32_t idx)
+    VklSubmit* submit, VkPipelineStageFlags stage, VklSemaphores* semaphores, uint32_t idx)
 {
     ASSERT(submit != NULL);
 
-    ASSERT(idx >= 0); // TODO: support idx=-1 <==> all semaphores
     ASSERT(idx < VKL_MAX_SEMAPHORES_PER_SET);
     uint32_t n = submit->wait_semaphores_count;
     ASSERT(n < VKL_MAX_SEMAPHORES_PER_SUBMIT);
@@ -2418,11 +2416,10 @@ void vkl_submit_wait_semaphores(
 
 
 
-void vkl_submit_signal_semaphores(VklSubmit* submit, VklSemaphores* semaphores, int32_t idx)
+void vkl_submit_signal_semaphores(VklSubmit* submit, VklSemaphores* semaphores, uint32_t idx)
 {
     ASSERT(submit != NULL);
 
-    ASSERT(idx >= 0); // TODO: support idx=-1 <==> all semaphores
     ASSERT(idx < VKL_MAX_SEMAPHORES_PER_SET);
     uint32_t n = submit->signal_semaphores_count;
     ASSERT(n < VKL_MAX_SEMAPHORES_PER_SUBMIT);
@@ -2435,7 +2432,8 @@ void vkl_submit_signal_semaphores(VklSubmit* submit, VklSemaphores* semaphores, 
 
 
 
-void vkl_submit_send(VklSubmit* submit, uint32_t queue_idx, VklFences* fence, uint32_t fence_idx)
+void vkl_submit_send(
+    VklSubmit* submit, uint32_t queue_idx, uint32_t img_idx, VklFences* fence, uint32_t fence_idx)
 {
     ASSERT(submit != NULL);
     log_trace("starting command buffer submission...");
@@ -2464,7 +2462,7 @@ void vkl_submit_send(VklSubmit* submit, uint32_t queue_idx, VklFences* fence, ui
     VkCommandBuffer cmd_bufs[VKL_MAX_COMMANDS_PER_SUBMIT] = {0};
     for (uint32_t i = 0; i < submit->commands_count; i++)
     {
-        cmd_bufs[i] = submit->commands[i]->cmds[submit->commands_idx[i]];
+        cmd_bufs[i] = submit->commands[i]->cmds[img_idx];
     }
 
     submit_info.commandBufferCount = submit->commands_count;

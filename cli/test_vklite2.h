@@ -368,13 +368,13 @@ static void show_canvas(BasicCanvas canvas, FillCallback fill_commands, uint32_t
 
             // Then, we submit the commands on that image
             VklSubmit submit = vkl_submit(gpu);
-            vkl_submit_commands(&submit, commands, (int32_t)swapchain->img_idx);
+            vkl_submit_commands(&submit, commands);
             vkl_submit_wait_semaphores(
                 &submit, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, sem_img_available,
-                (int32_t)cur_frame);
+                cur_frame);
             // Once the render is finished, we signal another semaphore.
-            vkl_submit_signal_semaphores(&submit, sem_render_finished, (int32_t)cur_frame);
-            vkl_submit_send(&submit, 0, fences, cur_frame);
+            vkl_submit_signal_semaphores(&submit, sem_render_finished, cur_frame);
+            vkl_submit_send(&submit, 0, swapchain->img_idx, fences, cur_frame);
 
             // Once the image is rendered, we present the swapchain image.
             vkl_swapchain_present(swapchain, 1, sem_render_finished, cur_frame);
@@ -765,14 +765,14 @@ static int vklite2_submit(VkyTestContext* context)
 
     // Submit.
     VklSubmit submit1 = vkl_submit(gpu);
-    vkl_submit_commands(&submit1, cmds1, 0);
+    vkl_submit_commands(&submit1, cmds1);
     vkl_submit_signal_semaphores(&submit1, semaphores, 0);
-    vkl_submit_send(&submit1, 0, NULL, 0);
+    vkl_submit_send(&submit1, 0, 0, NULL, 0);
 
     VklSubmit submit2 = vkl_submit(gpu);
-    vkl_submit_commands(&submit2, cmds2, 0);
+    vkl_submit_commands(&submit2, cmds2);
     vkl_submit_wait_semaphores(&submit2, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, semaphores, 0);
-    vkl_submit_send(&submit2, 0, NULL, 0);
+    vkl_submit_send(&submit2, 0, 0, NULL, 0);
 
     vkl_gpu_wait(gpu);
 
@@ -968,26 +968,3 @@ static int vklite2_canvas_triangle(VkyTestContext* context)
     show_canvas(canvas, triangle_commands, 30);
     TEST_END
 }
-
-
-
-static int vklite2_test_compute_only(VkyTestContext* context)
-{
-    // VkyApp* app = vky_app();
-    // VkyCompute* compute = vky_compute(app->gpu, "compute.spv");
-    // VkyBuffer* buffer =
-    // VkyCommands* commands = vky_commands(app->gpu, VKY_COMMAND_COMPUTE);
-    // vky_cmd_begin(commands);
-    // vky_cmd_compute(commands, compute, uvec3 size);
-    // vky_cmd_end(commands);
-    // VkySubmit* sub = vky_submit(app-> gpu, VKY_QUEUE_COMPUTE);
-    // vky_submit_send(sub, NULL);
-    // vky_app_destroy(app);
-    return 0;
-}
-
-static int vklite2_test_offscreen(VkyTestContext* context) { return 0; }
-
-static int vklite2_test_offscreen_gui(VkyTestContext* context) { return 0; }
-
-static int vklite2_test_offscreen_compute(VkyTestContext* context) { return 0; }
