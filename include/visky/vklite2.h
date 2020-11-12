@@ -222,6 +222,7 @@ typedef enum
     }                                                                                             \
     o->c = n;
 
+
 #define INSTANCE_NEW(s, o, instances, n)                                                          \
     s* o = NULL;                                                                                  \
     for (uint32_t i = 0; i < n; i++)                                                              \
@@ -237,6 +238,7 @@ typedef enum
         exit(1);                                                                                  \
     }
 
+
 #define INSTANCES_DESTROY(o)                                                                      \
     log_trace("destroy objects %s", #o);                                                          \
     FREE(o);                                                                                      \
@@ -246,9 +248,8 @@ typedef enum
 #define CMD_START                                                                                 \
     ASSERT(cmds != NULL);                                                                         \
     VkCommandBuffer cb = {0};                                                                     \
-    for (uint32_t i = 0; i < cmds->count; i++)                                                    \
-    {                                                                                             \
-        cb = cmds->cmds[i];
+    uint32_t i = idx;                                                                             \
+    cb = cmds->cmds[i];
 
 
 #define CMD_START_CLIP(cnt)                                                                       \
@@ -256,13 +257,13 @@ typedef enum
     ASSERT((cnt) == 1 || (cnt) == cmds->count);                                                   \
     VkCommandBuffer cb = {0};                                                                     \
     uint32_t iclip = 0;                                                                           \
-    for (uint32_t i = 0; i < cmds->count; i++)                                                    \
-    {                                                                                             \
-        iclip = (cnt) == 1 ? 0 : (MIN(i, (cnt)-1));                                               \
-        ASSERT(iclip < (cnt));                                                                    \
-        cb = cmds->cmds[i];
+    uint32_t i = idx;                                                                             \
+    iclip = (cnt) == 1 ? 0 : (MIN(i, (cnt)-1));                                                   \
+    ASSERT(iclip < (cnt));                                                                        \
+    cb = cmds->cmds[i];
 
-#define CMD_END }
+
+#define CMD_END //
 
 
 
@@ -875,17 +876,17 @@ VKY_EXPORT void vkl_swapchain_destroy(VklSwapchain* swapchain);
 
 VKY_EXPORT VklCommands* vkl_commands(VklGpu* gpu, uint32_t queue, uint32_t count);
 
-VKY_EXPORT void vkl_cmd_begin(VklCommands* cmds);
+VKY_EXPORT void vkl_cmd_begin(VklCommands* cmds, uint32_t idx);
 
-VKY_EXPORT void vkl_cmd_end(VklCommands* cmds);
+VKY_EXPORT void vkl_cmd_end(VklCommands* cmds, uint32_t idx);
 
 VKY_EXPORT void vkl_cmd_reset(VklCommands* cmds);
 
 VKY_EXPORT void vkl_cmd_free(VklCommands* cmds);
 
-VKY_EXPORT void vkl_cmd_submit_sync(VklCommands* cmds);
+VKY_EXPORT void vkl_cmd_submit_sync(VklCommands* cmds, uint32_t idx);
 
-VKY_EXPORT void vkl_commands_destroy(VklCommands* commands);
+VKY_EXPORT void vkl_commands_destroy(VklCommands* cmds);
 
 
 
@@ -1197,47 +1198,51 @@ vkl_submit_send(VklSubmit* submit, uint32_t img_idx, VklFences* fence, uint32_t 
 /*************************************************************************************************/
 
 VKY_EXPORT void vkl_cmd_begin_renderpass(
-    VklCommands* cmds, VklRenderpass* renderpass, VklFramebuffers* framebuffers);
+    VklCommands* cmds, uint32_t idx, VklRenderpass* renderpass, VklFramebuffers* framebuffers);
 
-VKY_EXPORT void vkl_cmd_end_renderpass(VklCommands* cmds);
+VKY_EXPORT void vkl_cmd_end_renderpass(VklCommands* cmds, uint32_t idx);
 
-VKY_EXPORT void vkl_cmd_compute(VklCommands* cmds, VklCompute* compute, uvec3 size);
+VKY_EXPORT void vkl_cmd_compute(VklCommands* cmds, uint32_t idx, VklCompute* compute, uvec3 size);
 
-VKY_EXPORT void vkl_cmd_barrier(VklCommands* cmds, VklBarrier* barrier);
+VKY_EXPORT void vkl_cmd_barrier(VklCommands* cmds, uint32_t idx, VklBarrier* barrier);
 
-VKY_EXPORT void
-vkl_cmd_copy_buffer_to_image(VklCommands* cmds, VklBuffer* buffer, VklImages* images);
-
-VKY_EXPORT void vkl_cmd_copy_image(VklCommands* cmds, VklImages* src_img, VklImages* dst_img);
-
-VKY_EXPORT void vkl_cmd_viewport(VklCommands* cmds, VkViewport viewport);
+VKY_EXPORT void vkl_cmd_copy_buffer_to_image(
+    VklCommands* cmds, uint32_t idx, VklBuffer* buffer, VklImages* images);
 
 VKY_EXPORT void
-vkl_cmd_bind_graphics(VklCommands* cmds, VklGraphics* graphics, uint32_t dynamic_idx);
+vkl_cmd_copy_image(VklCommands* cmds, uint32_t idx, VklImages* src_img, VklImages* dst_img);
+
+VKY_EXPORT void vkl_cmd_viewport(VklCommands* cmds, uint32_t idx, VkViewport viewport);
+
+VKY_EXPORT void vkl_cmd_bind_graphics(
+    VklCommands* cmds, uint32_t idx, VklGraphics* graphics, uint32_t dynamic_idx);
 
 VKY_EXPORT void vkl_cmd_bind_vertex_buffer(
-    VklCommands* cmds, VklBufferRegions* buffer_regions, VkDeviceSize offset);
+    VklCommands* cmds, uint32_t idx, VklBufferRegions* buffer_regions, VkDeviceSize offset);
 
 VKY_EXPORT void vkl_cmd_bind_index_buffer(
-    VklCommands* cmds, VklBufferRegions* buffer_regions, VkDeviceSize offset);
+    VklCommands* cmds, uint32_t idx, VklBufferRegions* buffer_regions, VkDeviceSize offset);
 
-VKY_EXPORT void vkl_cmd_draw(VklCommands* cmds, uint32_t first_vertex, uint32_t vertex_count);
+VKY_EXPORT void
+vkl_cmd_draw(VklCommands* cmds, uint32_t idx, uint32_t first_vertex, uint32_t vertex_count);
 
 VKY_EXPORT void vkl_cmd_draw_indexed(
-    VklCommands* cmds, uint32_t first_index, uint32_t vertex_offset, uint32_t index_count);
+    VklCommands* cmds, uint32_t idx, uint32_t first_index, uint32_t vertex_offset,
+    uint32_t index_count);
 
-VKY_EXPORT void vkl_cmd_draw_indirect(VklCommands* cmds, VklBufferRegions* indirect);
+VKY_EXPORT void vkl_cmd_draw_indirect(VklCommands* cmds, uint32_t idx, VklBufferRegions* indirect);
 
-VKY_EXPORT void vkl_cmd_draw_indexed_indirect(VklCommands* cmds, VklBufferRegions* indirect);
+VKY_EXPORT void
+vkl_cmd_draw_indexed_indirect(VklCommands* cmds, uint32_t idx, VklBufferRegions* indirect);
 
 VKY_EXPORT void vkl_cmd_copy_buffer(
-    VklCommands* cmds,                                  //
+    VklCommands* cmds, uint32_t idx,                    //
     VklBufferRegions* src_buf, VkDeviceSize src_offset, //
     VklBufferRegions* dst_buf, VkDeviceSize dst_offset, //
     VkDeviceSize size);
 
 VKY_EXPORT void vkl_cmd_push_constants(
-    VklCommands* cmds, VklBindings* bindings, VkDeviceSize size, const void* data);
+    VklCommands* cmds, uint32_t idx, VklBindings* bindings, VkDeviceSize size, const void* data);
 
 
 

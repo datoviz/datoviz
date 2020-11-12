@@ -689,28 +689,25 @@ VklCommands* vkl_commands(VklGpu* gpu, uint32_t queue, uint32_t count)
 
 
 
-void vkl_cmd_begin(VklCommands* cmds)
+void vkl_cmd_begin(VklCommands* cmds, uint32_t idx)
 {
     ASSERT(cmds != NULL);
     ASSERT(cmds->count > 0);
-
-    log_trace("begin %d command buffer(s)", cmds->count);
+    log_trace("begin command buffer");
     VkCommandBufferBeginInfo begin_info = {0};
     begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    for (uint32_t i = 0; i < cmds->count; i++)
-        VK_CHECK_RESULT(vkBeginCommandBuffer(cmds->cmds[i], &begin_info));
+    VK_CHECK_RESULT(vkBeginCommandBuffer(cmds->cmds[idx], &begin_info));
 }
 
 
 
-void vkl_cmd_end(VklCommands* cmds)
+void vkl_cmd_end(VklCommands* cmds, uint32_t idx)
 {
     ASSERT(cmds != NULL);
     ASSERT(cmds->count > 0);
 
-    log_trace("end %d command buffer(s)", cmds->count);
-    for (uint32_t i = 0; i < cmds->count; i++)
-        VK_CHECK_RESULT(vkEndCommandBuffer(cmds->cmds[i]));
+    log_trace("end command buffer");
+    VK_CHECK_RESULT(vkEndCommandBuffer(cmds->cmds[idx]));
 }
 
 
@@ -745,7 +742,7 @@ void vkl_cmd_free(VklCommands* cmds)
 
 
 
-void vkl_cmd_submit_sync(VklCommands* cmds)
+void vkl_cmd_submit_sync(VklCommands* cmds, uint32_t idx)
 {
     log_debug("[SLOW] submit %d command buffer(s)", cmds->count);
 
@@ -763,16 +760,16 @@ void vkl_cmd_submit_sync(VklCommands* cmds)
 
 
 
-void vkl_commands_destroy(VklCommands* commands)
+void vkl_commands_destroy(VklCommands* cmds)
 {
-    ASSERT(commands != NULL);
-    if (commands->obj.status < VKL_OBJECT_STATUS_CREATED)
+    ASSERT(cmds != NULL);
+    if (cmds->obj.status < VKL_OBJECT_STATUS_CREATED)
     {
         log_trace("skip destruction of already-destroyed commands");
         return;
     }
     log_trace("destroy commands");
-    obj_destroyed(&commands->obj);
+    obj_destroyed(&cmds->obj);
 }
 
 
@@ -2500,7 +2497,7 @@ void vkl_submit_send(VklSubmit* submit, uint32_t img_idx, VklFences* fence, uint
 /*************************************************************************************************/
 
 void vkl_cmd_begin_renderpass(
-    VklCommands* cmds, VklRenderpass* renderpass, VklFramebuffers* framebuffers)
+    VklCommands* cmds, uint32_t idx, VklRenderpass* renderpass, VklFramebuffers* framebuffers)
 {
     ASSERT(renderpass->obj.status >= VKL_OBJECT_STATUS_CREATED);
     ASSERT(framebuffers->obj.status >= VKL_OBJECT_STATUS_CREATED);
@@ -2520,7 +2517,7 @@ void vkl_cmd_begin_renderpass(
 
 
 
-void vkl_cmd_end_renderpass(VklCommands* cmds)
+void vkl_cmd_end_renderpass(VklCommands* cmds, uint32_t idx)
 {
     CMD_START
     vkCmdEndRenderPass(cb);
@@ -2529,7 +2526,7 @@ void vkl_cmd_end_renderpass(VklCommands* cmds)
 
 
 
-void vkl_cmd_compute(VklCommands* cmds, VklCompute* compute, uvec3 size)
+void vkl_cmd_compute(VklCommands* cmds, uint32_t idx, VklCompute* compute, uvec3 size)
 {
     CMD_START
     vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_COMPUTE, compute->pipeline);
@@ -2542,7 +2539,7 @@ void vkl_cmd_compute(VklCommands* cmds, VklCompute* compute, uvec3 size)
 
 
 
-void vkl_cmd_barrier(VklCommands* cmds, VklBarrier* barrier)
+void vkl_cmd_barrier(VklCommands* cmds, uint32_t idx, VklBarrier* barrier)
 {
     ASSERT(barrier != NULL);
     VklQueues* q = &cmds->gpu->queues;
@@ -2610,7 +2607,8 @@ void vkl_cmd_barrier(VklCommands* cmds, VklBarrier* barrier)
 
 
 
-void vkl_cmd_copy_buffer_to_image(VklCommands* cmds, VklBuffer* buffer, VklImages* images)
+void vkl_cmd_copy_buffer_to_image(
+    VklCommands* cmds, uint32_t idx, VklBuffer* buffer, VklImages* images)
 {
     CMD_START_CLIP(images->count)
 
@@ -2641,7 +2639,7 @@ void vkl_cmd_copy_buffer_to_image(VklCommands* cmds, VklBuffer* buffer, VklImage
 
 
 
-void vkl_cmd_copy_image(VklCommands* cmds, VklImages* src_img, VklImages* dst_img)
+void vkl_cmd_copy_image(VklCommands* cmds, uint32_t idx, VklImages* src_img, VklImages* dst_img)
 {
     ASSERT(src_img != NULL);
     ASSERT(dst_img != NULL);
@@ -2670,7 +2668,7 @@ void vkl_cmd_copy_image(VklCommands* cmds, VklImages* src_img, VklImages* dst_im
 
 
 
-void vkl_cmd_viewport(VklCommands* cmds, VkViewport viewport)
+void vkl_cmd_viewport(VklCommands* cmds, uint32_t idx, VkViewport viewport)
 {
     CMD_START
     vkCmdSetViewport(cb, 0, 1, &viewport);
@@ -2682,7 +2680,8 @@ void vkl_cmd_viewport(VklCommands* cmds, VkViewport viewport)
 
 
 
-void vkl_cmd_bind_graphics(VklCommands* cmds, VklGraphics* graphics, uint32_t dynamic_idx)
+void vkl_cmd_bind_graphics(
+    VklCommands* cmds, uint32_t idx, VklGraphics* graphics, uint32_t dynamic_idx)
 {
     ASSERT(graphics != NULL);
     VklBindings* bindings = graphics->bindings;
@@ -2713,7 +2712,7 @@ void vkl_cmd_bind_graphics(VklCommands* cmds, VklGraphics* graphics, uint32_t dy
 
 
 void vkl_cmd_bind_vertex_buffer(
-    VklCommands* cmds, VklBufferRegions* buffer_regions, VkDeviceSize offset)
+    VklCommands* cmds, uint32_t idx, VklBufferRegions* buffer_regions, VkDeviceSize offset)
 {
     CMD_START_CLIP(buffer_regions->count)
     VkDeviceSize offsets[] = {buffer_regions->offsets[iclip] + offset};
@@ -2724,7 +2723,7 @@ void vkl_cmd_bind_vertex_buffer(
 
 
 void vkl_cmd_bind_index_buffer(
-    VklCommands* cmds, VklBufferRegions* buffer_regions, VkDeviceSize offset)
+    VklCommands* cmds, uint32_t idx, VklBufferRegions* buffer_regions, VkDeviceSize offset)
 {
     CMD_START_CLIP(buffer_regions->count)
     vkCmdBindIndexBuffer(
@@ -2735,7 +2734,7 @@ void vkl_cmd_bind_index_buffer(
 
 
 
-void vkl_cmd_draw(VklCommands* cmds, uint32_t first_vertex, uint32_t vertex_count)
+void vkl_cmd_draw(VklCommands* cmds, uint32_t idx, uint32_t first_vertex, uint32_t vertex_count)
 {
     CMD_START
     vkCmdDraw(cb, vertex_count, 1, first_vertex, 0);
@@ -2745,7 +2744,8 @@ void vkl_cmd_draw(VklCommands* cmds, uint32_t first_vertex, uint32_t vertex_coun
 
 
 void vkl_cmd_draw_indexed(
-    VklCommands* cmds, uint32_t first_index, uint32_t vertex_offset, uint32_t index_count)
+    VklCommands* cmds, uint32_t idx, uint32_t first_index, uint32_t vertex_offset,
+    uint32_t index_count)
 {
     CMD_START
     vkCmdDrawIndexed(cb, index_count, 1, first_index, (int32_t)vertex_offset, 0);
@@ -2754,7 +2754,7 @@ void vkl_cmd_draw_indexed(
 
 
 
-void vkl_cmd_draw_indirect(VklCommands* cmds, VklBufferRegions* indirect)
+void vkl_cmd_draw_indirect(VklCommands* cmds, uint32_t idx, VklBufferRegions* indirect)
 {
     CMD_START_CLIP(indirect->count)
     vkCmdDrawIndirect(cb, indirect->buffer->buffer, indirect->offsets[iclip], 1, 0);
@@ -2763,7 +2763,7 @@ void vkl_cmd_draw_indirect(VklCommands* cmds, VklBufferRegions* indirect)
 
 
 
-void vkl_cmd_draw_indexed_indirect(VklCommands* cmds, VklBufferRegions* indirect)
+void vkl_cmd_draw_indexed_indirect(VklCommands* cmds, uint32_t idx, VklBufferRegions* indirect)
 {
     CMD_START_CLIP(indirect->count)
     vkCmdDrawIndexedIndirect(cb, indirect->buffer->buffer, indirect->offsets[iclip], 1, 0);
@@ -2773,7 +2773,7 @@ void vkl_cmd_draw_indexed_indirect(VklCommands* cmds, VklBufferRegions* indirect
 
 
 void vkl_cmd_copy_buffer(
-    VklCommands* cmds,                                  //
+    VklCommands* cmds, uint32_t idx,                    //
     VklBufferRegions* src_buf, VkDeviceSize src_offset, //
     VklBufferRegions* dst_buf, VkDeviceSize dst_offset, //
     VkDeviceSize size)
@@ -2794,7 +2794,7 @@ void vkl_cmd_copy_buffer(
 
 
 void vkl_cmd_push_constants(
-    VklCommands* cmds, VklBindings* bindings, VkDeviceSize size, const void* data)
+    VklCommands* cmds, uint32_t idx, VklBindings* bindings, VkDeviceSize size, const void* data)
 {
     CMD_START
     vkCmdPushConstants(cb, bindings->pipeline_layout, VK_SHADER_STAGE_ALL, 0, size, data);

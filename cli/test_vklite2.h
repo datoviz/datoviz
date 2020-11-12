@@ -53,7 +53,7 @@ typedef struct
 
 
 
-typedef void (*FillCallback)(BasicCanvas*, VklCommands*);
+typedef void (*FillCallback)(BasicCanvas*, VklCommands*, uint32_t);
 
 
 
@@ -233,7 +233,7 @@ static uint8_t* screenshot(VklImages* images)
 
     // Start the image transition command buffers.
     VklCommands* cmds = vkl_commands(gpu, 0, 1);
-    vkl_cmd_begin(cmds);
+    vkl_cmd_begin(cmds, 0);
 
     VklBarrier barrier = vkl_barrier(gpu);
     vkl_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
@@ -241,19 +241,19 @@ static uint8_t* screenshot(VklImages* images)
     vkl_barrier_images_layout(
         &barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
     vkl_barrier_images_access(&barrier, 0, VK_ACCESS_TRANSFER_WRITE_BIT);
-    vkl_cmd_barrier(cmds, &barrier);
+    vkl_cmd_barrier(cmds, 0, &barrier);
 
     // Copy the image to the staging image.
-    vkl_cmd_copy_image(cmds, images, staging);
+    vkl_cmd_copy_image(cmds, 0, images, staging);
 
     vkl_barrier_images_layout(
         &barrier, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
     vkl_barrier_images_access(&barrier, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_MEMORY_READ_BIT);
-    vkl_cmd_barrier(cmds, &barrier);
+    vkl_cmd_barrier(cmds, 0, &barrier);
 
     // End the commands and submit them.
-    vkl_cmd_end(cmds);
-    vkl_cmd_submit_sync(cmds);
+    vkl_cmd_end(cmds, 0);
+    vkl_cmd_submit_sync(cmds, 0);
 
     // Now, copy the staging image into CPU memory.
     uint8_t* rgba = calloc(images->width * images->height, 3);
@@ -288,7 +288,8 @@ static void show_canvas(BasicCanvas canvas, FillCallback fill_commands, uint32_t
     ASSERT(swapchain->img_count > 0);
 
     VklCommands* commands = vkl_commands(gpu, 0, swapchain->img_count);
-    fill_commands(&canvas, commands);
+    for (uint32_t i = 0; i < commands->count; i++)
+        fill_commands(&canvas, commands, i);
 
     // Sync objects.
     VklSemaphores* sem_img_available = vkl_semaphores(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
@@ -360,7 +361,8 @@ static void show_canvas(BasicCanvas canvas, FillCallback fill_commands, uint32_t
 
             // Need to refill the command buffers.
             vkl_cmd_reset(commands);
-            fill_commands(&canvas, commands);
+            for (uint32_t i = 0; i < commands->count; i++)
+                fill_commands(&canvas, commands, i);
         }
         else
         {
@@ -399,30 +401,31 @@ static void show_canvas(BasicCanvas canvas, FillCallback fill_commands, uint32_t
 /*  Commands filling                                                                             */
 /*************************************************************************************************/
 
-static void empty_commands(BasicCanvas* canvas, VklCommands* commands)
+static void empty_commands(BasicCanvas* canvas, VklCommands* commands, uint32_t idx)
 {
-    vkl_cmd_begin(commands);
-    vkl_cmd_begin_renderpass(commands, canvas->renderpass, canvas->framebuffers);
-    vkl_cmd_end_renderpass(commands);
-    vkl_cmd_end(commands);
+    vkl_cmd_begin(commands, idx);
+    vkl_cmd_begin_renderpass(commands, idx, canvas->renderpass, canvas->framebuffers);
+    vkl_cmd_end_renderpass(commands, idx);
+    vkl_cmd_end(commands, idx);
 }
 
 
 
-static void triangle_commands(BasicCanvas* canvas, VklCommands* commands)
+static void triangle_commands(BasicCanvas* canvas, VklCommands* commands, uint32_t idx)
 {
     // Commands.
-    vkl_cmd_begin(commands);
-    vkl_cmd_begin_renderpass(commands, canvas->renderpass, canvas->framebuffers);
+    vkl_cmd_begin(commands, idx);
+    vkl_cmd_begin_renderpass(commands, idx, canvas->renderpass, canvas->framebuffers);
     vkl_cmd_viewport(
-        commands, (VkViewport){
-                      0, 0, canvas->framebuffers->attachments[0]->width,
-                      canvas->framebuffers->attachments[0]->height, 0, 1});
-    vkl_cmd_bind_vertex_buffer(commands, &canvas->buffer_regions, 0);
-    vkl_cmd_bind_graphics(commands, canvas->graphics, 0);
-    vkl_cmd_draw(commands, 0, 3);
-    vkl_cmd_end_renderpass(commands);
-    vkl_cmd_end(commands);
+        commands, idx,
+        (VkViewport){
+            0, 0, canvas->framebuffers->attachments[0]->width,
+            canvas->framebuffers->attachments[0]->height, 0, 1});
+    vkl_cmd_bind_vertex_buffer(commands, idx, &canvas->buffer_regions, 0);
+    vkl_cmd_bind_graphics(commands, idx, canvas->graphics, 0);
+    vkl_cmd_draw(commands, idx, 0, 3);
+    vkl_cmd_end_renderpass(commands, idx);
+    vkl_cmd_end(commands, idx);
 }
 
 
@@ -499,8 +502,8 @@ static int vklite2_commands(VkyTestContext* context)
     vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
     vkl_gpu_create(gpu, 0);
     VklCommands* commands = vkl_commands(gpu, 0, 3);
-    vkl_cmd_begin(commands);
-    vkl_cmd_end(commands);
+    vkl_cmd_begin(commands, 0);
+    vkl_cmd_end(commands, 0);
     vkl_cmd_reset(commands);
     vkl_cmd_free(commands);
 
@@ -588,10 +591,10 @@ static int vklite2_compute(VkyTestContext* context)
 
     // Command buffers.
     VklCommands* cmds = vkl_commands(gpu, 0, 1);
-    vkl_cmd_begin(cmds);
-    vkl_cmd_compute(cmds, compute, (uvec3){20, 1, 1});
-    vkl_cmd_end(cmds);
-    vkl_cmd_submit_sync(cmds);
+    vkl_cmd_begin(cmds, 0);
+    vkl_cmd_compute(cmds, 0, compute, (uvec3){20, 1, 1});
+    vkl_cmd_end(cmds, 0);
+    vkl_cmd_submit_sync(cmds, 0);
 
     // Get back the data.
     float* data2 = calloc(n, sizeof(float));
@@ -680,11 +683,11 @@ static int vklite2_barrier(VkyTestContext* context)
 
     // Transfer the data from the staging buffer to the image.
     VklCommands* cmds = vkl_commands(gpu, 0, 1);
-    vkl_cmd_begin(cmds);
-    vkl_cmd_barrier(cmds, &barrier);
-    vkl_cmd_copy_buffer_to_image(cmds, buffer, images);
-    vkl_cmd_end(cmds);
-    vkl_cmd_submit_sync(cmds);
+    vkl_cmd_begin(cmds, 0);
+    vkl_cmd_barrier(cmds, 0, &barrier);
+    vkl_cmd_copy_buffer_to_image(cmds, 0, buffer, images);
+    vkl_cmd_end(cmds, 0);
+    vkl_cmd_submit_sync(cmds, 0);
 
     TEST_END
 }
@@ -751,14 +754,14 @@ static int vklite2_submit(VkyTestContext* context)
 
     // Command buffers.
     VklCommands* cmds1 = vkl_commands(gpu, 0, 1);
-    vkl_cmd_begin(cmds1);
-    vkl_cmd_compute(cmds1, compute1, (uvec3){20, 1, 1});
-    vkl_cmd_end(cmds1);
+    vkl_cmd_begin(cmds1, 0);
+    vkl_cmd_compute(cmds1, 0, compute1, (uvec3){20, 1, 1});
+    vkl_cmd_end(cmds1, 0);
 
     VklCommands* cmds2 = vkl_commands(gpu, 0, 1);
-    vkl_cmd_begin(cmds2);
-    vkl_cmd_compute(cmds2, compute2, (uvec3){20, 1, 1});
-    vkl_cmd_end(cmds2);
+    vkl_cmd_begin(cmds2, 0);
+    vkl_cmd_compute(cmds2, 0, compute2, (uvec3){20, 1, 1});
+    vkl_cmd_end(cmds2, 0);
 
     // Semaphores
     VklSemaphores* semaphores = vkl_semaphores(gpu, 1);
@@ -796,8 +799,8 @@ static int vklite2_blank(VkyTestContext* context)
     VklFramebuffers* framebuffers = canvas.framebuffers;
 
     VklCommands* commands = vkl_commands(gpu, 0, 1);
-    empty_commands(&canvas, commands);
-    vkl_cmd_submit_sync(commands);
+    empty_commands(&canvas, commands, 0);
+    vkl_cmd_submit_sync(commands, 0);
 
     uint8_t* rgba = screenshot(framebuffers->attachments[0]);
 
@@ -869,15 +872,15 @@ static int vklite2_graphics(VkyTestContext* context)
 
     // Commands.
     VklCommands* commands = vkl_commands(gpu, 0, 1);
-    vkl_cmd_begin(commands);
-    vkl_cmd_begin_renderpass(commands, renderpass, framebuffers);
-    vkl_cmd_viewport(commands, (VkViewport){0, 0, TEST_WIDTH, TEST_HEIGHT, 0, 1});
-    vkl_cmd_bind_vertex_buffer(commands, &br, 0);
-    vkl_cmd_bind_graphics(commands, graphics, 0);
-    vkl_cmd_draw(commands, 0, 3);
-    vkl_cmd_end_renderpass(commands);
-    vkl_cmd_end(commands);
-    vkl_cmd_submit_sync(commands);
+    vkl_cmd_begin(commands, 0);
+    vkl_cmd_begin_renderpass(commands, 0, renderpass, framebuffers);
+    vkl_cmd_viewport(commands, 0, (VkViewport){0, 0, TEST_WIDTH, TEST_HEIGHT, 0, 1});
+    vkl_cmd_bind_vertex_buffer(commands, 0, &br, 0);
+    vkl_cmd_bind_graphics(commands, 0, graphics, 0);
+    vkl_cmd_draw(commands, 0, 0, 3);
+    vkl_cmd_end_renderpass(commands, 0);
+    vkl_cmd_end(commands, 0);
+    vkl_cmd_submit_sync(commands, 0);
 
     save_screenshot(framebuffers, "screenshot.ppm");
 
