@@ -604,57 +604,73 @@ static void create_device(VklGpu* gpu, VkSurfaceKHR surface)
         queue_family_score[i] += (int)q->support_compute[i];
         queue_family_score[i] += (int)q->support_present[i];
     }
+
+
     // Then, for each requested queue, we find the matching queue family with the lowest score.
-    bool qf_match;
-    uint32_t lowest_score;
-    ASSERT(q->queue_count <= VKL_MAX_QUEUES);
-    for (uint32_t i = 0; i < q->queue_count; i++)
     {
-        log_trace("starting search of queue family for requested queue #%d", i);
-        lowest_score = 1000;
-        // For each possible queue family, determine whether it would fit for the current requested
-        // queue.
-        uint32_t qf = 0;
-        for (uint32_t qfi = 0; qfi < q->queue_family_count; qfi++)
+        bool qf_match;
+        uint32_t lowest_score;
+        uint32_t queues_per_family[VKL_MAX_QUEUE_FAMILIES] = {0};
+        ASSERT(q->queue_count <= VKL_MAX_QUEUES);
+        for (uint32_t i = 0; i < q->queue_count; i++)
         {
-            // NOTE: go through queue families in reversed order so that, if multiple matching
-            // queues have the same score, we take the *first* one instead of the last.
-            qf = q->queue_family_count - qfi - 1;
-            qf_match = true;
-            log_trace("looking at queue family %d with score %d", qf, queue_family_score[qf]);
-            if ((q->queue_types[i] & VKL_QUEUE_TRANSFER) && !q->support_transfer[qf])
-                qf_match = false;
-            if ((q->queue_types[i] & VKL_QUEUE_GRAPHICS) && !q->support_graphics[qf])
-                qf_match = false;
-            if ((q->queue_types[i] & VKL_QUEUE_COMPUTE) && !q->support_compute[qf])
-                qf_match = false;
-            if ((q->queue_types[i] & VKL_QUEUE_PRESENT) && !q->support_present[qf])
-                qf_match = false;
-            // This queue family does not match, skipping.
-            if (!qf_match)
+            log_trace("starting search of queue family for requested queue #%d", i);
+            lowest_score = 1000;
+            // For each possible queue family, determine whether it would fit for the current
+            // requested queue.
+            uint32_t qf = 0;
+            for (uint32_t qfi = 0; qfi < q->queue_family_count; qfi++)
             {
-                log_trace("queue family #%d does not match", qf);
-                continue;
+                // NOTE: go through queue families in reversed order so that, if multiple matching
+                // queues have the same score, we take the *first* one instead of the last.
+                qf = q->queue_family_count - qfi - 1;
+                qf_match = true;
+                log_trace("looking at queue family %d with score %d", qf, queue_family_score[qf]);
+                if ((q->queue_types[i] & VKL_QUEUE_TRANSFER) && !q->support_transfer[qf])
+                    qf_match = false;
+                if ((q->queue_types[i] & VKL_QUEUE_GRAPHICS) && !q->support_graphics[qf])
+                    qf_match = false;
+                if ((q->queue_types[i] & VKL_QUEUE_COMPUTE) && !q->support_compute[qf])
+                    qf_match = false;
+                if ((q->queue_types[i] & VKL_QUEUE_PRESENT) && !q->support_present[qf])
+                    qf_match = false;
+                // The current queue family doesn't match because it is full.
+                if (queues_per_family[qf] >= q->max_queue_count[qf])
+                    qf_match = false;
+
+                // This queue family does not match, skipping.
+                if (!qf_match)
+                {
+                    log_trace("queue family #%d does not match", qf);
+                    continue;
+                }
+                // The current queue family matches, what is its score?
+                if (queue_family_score[qf] <= lowest_score)
+                {
+                    // The best matching queue family so far for the current queue, saving it for
+                    // now.
+                    lowest_score = queue_family_score[qf];
+                    q->queue_families[i] = qf;
+                    log_trace("queue family #%d matches requested queue #%d", qf, i);
+                }
+                else
+                {
+                    log_trace(
+                        "queue family #%d would match but its score %d is larger than %d", qf,
+                        queue_family_score[qf], lowest_score);
+                }
             }
-            // The current queue family matches, what is its score?
-            if (queue_family_score[qf] <= lowest_score)
+            // Here, qfis the best matching family for the current queue, and qf is saved in
+            // queue_families[i].
+            queues_per_family[qf]++;
+            // At the next iteration, we will take this queue family assignment into account
+            // when finding the best queue family for the next queue, so that we don't exceed the
+            // max number of queues per family.
+            if (lowest_score == 1000)
             {
-                // The best matching queue family so far for the current queue, saving it for now.
-                lowest_score = queue_family_score[qf];
-                q->queue_families[i] = qf;
-                log_trace("queue family #%d matches requested queue #%d", qf, i);
+                log_error("could not find a matching queue family for requested queue #%d", i);
+                exit(1);
             }
-            else
-            {
-                log_trace(
-                    "queue family #%d would match but its score %d is larger than %d", qf,
-                    queue_family_score[qf], lowest_score);
-            }
-        }
-        if (lowest_score == 1000)
-        {
-            log_error("could not find a matching queue family for requested queue #%d", i);
-            exit(1);
         }
     }
 
