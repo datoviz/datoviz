@@ -20,7 +20,8 @@
 
 static const VkClearColorValue bgcolor = {{.4f, .6f, .8f, 1.0f}};
 #define TEST_FORMAT VK_FORMAT_B8G8R8A8_UNORM
-
+// #define TEST_PRESENT_MODE VK_PRESENT_MODE_FIFO_KHR
+#define TEST_PRESENT_MODE VK_PRESENT_MODE_IMMEDIATE_KHR
 
 
 /*************************************************************************************************/
@@ -188,7 +189,7 @@ static BasicCanvas glfw_canvas(VklGpu* gpu, VklWindow* window)
 
     VklSwapchain* swapchain = vkl_swapchain(renderpass->gpu, window, 3);
     vkl_swapchain_format(swapchain, VK_FORMAT_B8G8R8A8_UNORM);
-    vkl_swapchain_present_mode(swapchain, VK_PRESENT_MODE_FIFO_KHR);
+    vkl_swapchain_present_mode(swapchain, TEST_PRESENT_MODE);
     vkl_swapchain_create(swapchain);
     canvas.swapchain = swapchain;
     canvas.images = swapchain->images;

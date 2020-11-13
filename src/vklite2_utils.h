@@ -614,8 +614,12 @@ static void create_device(VklGpu* gpu, VkSurfaceKHR surface)
         lowest_score = 1000;
         // For each possible queue family, determine whether it would fit for the current requested
         // queue.
-        for (uint32_t qf = 0; qf < q->queue_family_count; qf++)
+        uint32_t qf = 0;
+        for (uint32_t qfi = 0; qfi < q->queue_family_count; qfi++)
         {
+            // NOTE: go through queue families in reversed order so that, if multiple matching
+            // queues have the same score, we take the *first* one instead of the last.
+            qf = q->queue_family_count - qfi - 1;
             qf_match = true;
             log_trace("looking at queue family %d with score %d", qf, queue_family_score[qf]);
             if ((q->queue_types[i] & VKL_QUEUE_TRANSFER) && !q->support_transfer[qf])
