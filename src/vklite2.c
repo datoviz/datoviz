@@ -1002,6 +1002,9 @@ VklImages* vkl_images(VklGpu* gpu, VkImageType type, uint32_t count)
 
     images->gpu = gpu;
     images->image_type = type;
+    ASSERT(type <= VK_IMAGE_TYPE_3D);
+    // HACK: find the matching view type.
+    images->view_type = (VkImageViewType)type;
     images->count = count;
 
     // Default options.
@@ -1100,7 +1103,7 @@ static void _images_create(VklImages* images)
         // HACK: staging images do not require an image view
         if (images->tiling != VK_IMAGE_TILING_LINEAR)
             create_image_view2(
-                gpu->device, images->images[i], images->image_type, images->format, images->aspect,
+                gpu->device, images->images[i], images->view_type, images->format, images->aspect,
                 &images->image_views[i]);
     }
 }

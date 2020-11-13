@@ -499,6 +499,7 @@ struct VklImages
     uint32_t queues[VKL_MAX_QUEUES];
 
     VkImageType image_type;
+    VkImageViewType view_type;
     uint32_t width, height, depth;
     VkFormat format;
     VkImageLayout layout;

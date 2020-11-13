@@ -599,10 +599,10 @@ static void create_device(VklGpu* gpu, VkSurfaceKHR surface)
     ASSERT(q->queue_family_count <= VKL_MAX_QUEUE_FAMILIES);
     for (uint32_t i = 0; i < q->queue_family_count; i++)
     {
-        queue_family_score[i] += (int)q->support_transfer[i];
-        queue_family_score[i] += (int)q->support_graphics[i];
-        queue_family_score[i] += (int)q->support_compute[i];
-        queue_family_score[i] += (int)q->support_present[i];
+        queue_family_score[i] += (uint32_t)q->support_transfer[i];
+        queue_family_score[i] += (uint32_t)q->support_graphics[i];
+        queue_family_score[i] += (uint32_t)q->support_compute[i];
+        queue_family_score[i] += (uint32_t)q->support_present[i];
     }
 
 
@@ -1050,10 +1050,10 @@ static void create_image2(
 
 
 static void create_image_view2(
-    VkDevice device, VkImage image, VkImageViewType image_type, VkFormat format,
+    VkDevice device, VkImage image, VkImageViewType view_type, VkFormat format,
     VkImageAspectFlags aspect_flags, VkImageView* image_view)
 {
-    log_trace("create image view %dD", image_type + 1);
+    log_trace("create image view %dD", view_type + 1);
 
     ASSERT(aspect_flags != 0);
     ASSERT(image != 0);
@@ -1062,7 +1062,7 @@ static void create_image_view2(
     VkImageViewCreateInfo viewInfo = {0};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewInfo.image = image;
-    viewInfo.viewType = image_type;
+    viewInfo.viewType = view_type;
     viewInfo.format = format;
     viewInfo.subresourceRange.baseMipLevel = 0;
     viewInfo.subresourceRange.levelCount = 1;
