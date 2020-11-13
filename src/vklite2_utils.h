@@ -520,8 +520,10 @@ static void find_queue_families(VkPhysicalDevice device, VklQueues* queues)
         queues->support_transfer[i] = queue_families[i].queueFlags & VK_QUEUE_TRANSFER_BIT;
         queues->support_graphics[i] = queue_families[i].queueFlags & VK_QUEUE_GRAPHICS_BIT;
         queues->support_compute[i] = queue_families[i].queueFlags & VK_QUEUE_COMPUTE_BIT;
+        queues->max_queue_count[i] = queue_families[i].queueCount;
         log_trace(
-            "queue family #%d: transfer %d, graphics %d, compute %d", i,
+            "queue family #%d (max %d): transfer %d, graphics %d, compute %d", //
+            i, queues->max_queue_count[i],                                     //
             queues->support_transfer[i], queues->support_graphics[i], queues->support_compute[i]);
     }
 }
@@ -658,29 +660,44 @@ static void create_device(VklGpu* gpu, VkSurfaceKHR surface)
     // Count the number of queues requested, for each queue family.
     log_trace("counting the number of requested queues for each queue family");
     uint32_t queues_per_family[VKL_MAX_QUEUE_FAMILIES] = {0};
+    uint32_t qf = 0;         // queue family of the current queue
+    uint32_t max_queues = 0; // max number of queues in the family of the current queue
     for (uint32_t i = 0; i < q->queue_count; i++)
     {
-        ASSERT(q->queue_families[i] < q->queue_family_count);
-        ASSERT(q->queue_families[i] < VKL_MAX_QUEUE_FAMILIES);
-        // Also determine the queue index of each requested queue within its queue family.
-        q->queue_indices[i] = queues_per_family[q->queue_families[i]];
-        // Count the number of queues in each family.
-        queues_per_family[q->queue_families[i]]++;
+        qf = q->queue_families[i]; // the queue family of the current queue
+        max_queues = q->max_queue_count[qf];
+        ASSERT(qf < q->queue_family_count);
+        ASSERT(qf < VKL_MAX_QUEUE_FAMILIES);
+        if (queues_per_family[qf] < max_queues)
+        {
+            // Also determine the queue index of each requested queue within its queue family.
+            q->queue_indices[i] = queues_per_family[qf];
+            // Count the number of queues in each family.
+            queues_per_family[qf]++;
+        }
+        else
+        {
+            log_debug(
+                "maximum number of queues (%d) reached for queue #%d in family %d", //
+                max_queues, i, qf);
+            q->queue_indices[i] = max_queues - 1;
+        }
     }
 
     // Count the number of queue families with at least 1 queue to create.
     log_trace("determining the queue families to create and the number of queues in each");
     uint32_t queue_family_count = 0;
     uint32_t queues_per_family_to_create[VKL_MAX_QUEUE_FAMILIES] = {0};
-    uint32_t queue_indices[VKL_MAX_QUEUE_FAMILIES] = {0};
-    for (uint32_t i = 0; i < q->queue_family_count; i++)
+    // the queue family index of each queue family to create
+    uint32_t queue_family_indices[VKL_MAX_QUEUE_FAMILIES] = {0};
+    for (qf = 0; qf < q->queue_family_count; qf++)
     {
-        if (queues_per_family[i] > 0)
+        if (queues_per_family[qf] > 0)
         {
-            queues_per_family_to_create[queue_family_count] = queues_per_family[i];
-            queue_indices[queue_family_count] = i;
+            queues_per_family_to_create[queue_family_count] = queues_per_family[qf];
+            queue_family_indices[queue_family_count] = qf;
             queue_family_count++;
-            log_trace("will create queue family #%d with %d queue(s)", i, queues_per_family[i]);
+            log_trace("will create queue family #%d with %d queue(s)", qf, queues_per_family[qf]);
         }
     }
 
@@ -693,7 +710,7 @@ static void create_device(VklGpu* gpu, VkSurfaceKHR surface)
         queue_families_info[i].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         queue_families_info[i].queueCount = queues_per_family_to_create[i];
         queue_families_info[i].pQueuePriorities = &queue_priority;
-        queue_families_info[i].queueFamilyIndex = queue_indices[i];
+        queue_families_info[i].queueFamilyIndex = queue_family_indices[i];
     }
 
     VkDeviceCreateInfo device_info = {0};

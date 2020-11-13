@@ -333,16 +333,17 @@ struct VklQueues
     bool support_graphics[VKL_MAX_QUEUE_FAMILIES];
     bool support_compute[VKL_MAX_QUEUE_FAMILIES];
     bool support_present[VKL_MAX_QUEUE_FAMILIES];
+    uint32_t max_queue_count[VKL_MAX_QUEUE_FAMILIES]; // for each queue family, the max # of queues
 
     // Requested queues
     // ----------------
     // Number of requested queues
     uint32_t queue_count;
     // Requested queue types.
-    VklQueueType queue_types[VKL_MAX_QUEUES];
+    VklQueueType queue_types[VKL_MAX_QUEUES]; // the VKL type of each queue
     // Queues and associated command pools
-    uint32_t queue_families[VKL_MAX_QUEUES];
-    uint32_t queue_indices[VKL_MAX_QUEUES];
+    uint32_t queue_families[VKL_MAX_QUEUES]; // for each family, the # of queues
+    uint32_t queue_indices[VKL_MAX_QUEUES];  // for each requested queue, its # within its family
     VkQueue queues[VKL_MAX_QUEUES];
     VkCommandPool cmd_pools[VKL_MAX_QUEUES];
 };
