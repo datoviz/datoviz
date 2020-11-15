@@ -38,16 +38,12 @@ TODO later
 
 #define VKL_MAX_BINDINGS         1024
 #define VKL_MAX_BINDINGS_SIZE    32
-#define VKL_MAX_BUFFERS          1024
 #define VKL_MAX_COMMANDS         1024
-#define VKL_MAX_COMPUTES         1024
 #define VKL_MAX_DESCRIPTOR_SETS  1024
 #define VKL_MAX_FENCES           1024
 #define VKL_MAX_FRAMEBUFFERS     32
 #define VKL_MAX_GPUS             64
 #define VKL_MAX_GRAPHICS         1024
-#define VKL_MAX_IMAGES           1024
-#define VKL_MAX_TEXTURES         1024
 #define VKL_MAX_PRESENT_MODES    16
 #define VKL_MAX_QUEUE_FAMILIES   16
 #define VKL_MAX_QUEUES           16
@@ -1244,6 +1240,14 @@ VKY_EXPORT void vkl_cmd_copy_buffer(
 
 VKY_EXPORT void vkl_cmd_push_constants(
     VklCommands* cmds, uint32_t idx, VklBindings* bindings, VkDeviceSize size, const void* data);
+
+
+
+/*************************************************************************************************/
+/*  Context                                                                                      */
+/*************************************************************************************************/
+
+VKY_EXPORT void vkl_context_destroy(VklContext* context);
 
 
 

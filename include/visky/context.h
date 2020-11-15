@@ -9,6 +9,19 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
+#define VKL_MAX_BUFFERS  16
+#define VKL_MAX_COMPUTES 256
+#define VKL_MAX_TEXTURES 256
+
+#define VKL_DEFAULT_WIDTH  800
+#define VKL_DEFAULT_HEIGHT 600
+
+#define VKL_DEFAULT_BUFFER_STAGING_SIZE (16 * 1024 * 1024)
+#define VKL_DEFAULT_BUFFER_VERTEX_SIZE  (16 * 1024 * 1024)
+#define VKL_DEFAULT_BUFFER_INDEX_SIZE   (16 * 1024 * 1024)
+#define VKL_DEFAULT_BUFFER_STORAGE_SIZE (16 * 1024 * 1024)
+#define VKL_DEFAULT_BUFFER_UNIFORM_SIZE (4 * 1024 * 1024)
+
 
 
 /*************************************************************************************************/
@@ -36,6 +49,29 @@ typedef enum
 
 typedef enum
 {
+    VKL_DEFAULT_BUFFER_STAGING,
+    VKL_DEFAULT_BUFFER_VERTEX,
+    VKL_DEFAULT_BUFFER_INDEX,
+    VKL_DEFAULT_BUFFER_STORAGE,
+    VKL_DEFAULT_BUFFER_UNIFORM,
+    VKL_DEFAULT_BUFFER_COUNT,
+} VklDefaultBuffer;
+
+
+
+typedef enum
+{
+    VKL_DEFAULT_QUEUE_DATA,
+    VKL_DEFAULT_QUEUE_COMPUTE,
+    VKL_DEFAULT_QUEUE_RENDER,
+    VKL_DEFAULT_QUEUE_PRESENT,
+    VKL_DEFAULT_QUEUE_COUNT,
+} VklDefaultQueue;
+
+
+
+typedef enum
+{
     VKL_FILTER_MIN,
     VKL_FILTER_MAX,
 } VklFilterType;
@@ -50,7 +86,6 @@ struct VklContext
 {
     VklObject obj;
     VklGpu* gpu;
-
 
     uint32_t max_buffers;
     VklBuffer* buffers;
@@ -86,9 +121,9 @@ struct VklTexture
 /*  Context                                                                                      */
 /*************************************************************************************************/
 
-VKY_EXPORT VklContext* vkl_context(VklGpu* gpu);
+VKY_EXPORT VklApp* vkl_default_app(uint32_t gpu_idx, bool offscreen);
 
-VKY_EXPORT void vkl_context_destroy(VklContext* context);
+VKY_EXPORT VklContext vkl_context(VklGpu* gpu);
 
 VKY_EXPORT VklBufferRegions
 vkl_alloc_buffer(VklContext* context, VklBufferType type, VkDeviceSize size);

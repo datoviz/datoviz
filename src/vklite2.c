@@ -260,6 +260,13 @@ void vkl_gpu_destroy(VklGpu* gpu)
     VkDevice device = gpu->device;
     ASSERT(device != 0);
 
+    if (gpu->context != NULL)
+    {
+        vkl_context_destroy(gpu->context);
+        FREE(gpu->context);
+        gpu->context = NULL;
+    }
+
     log_trace("GPU destroy swapchains");
     for (uint32_t i = 0; i < gpu->max_swapchains; i++)
     {

@@ -1066,9 +1066,15 @@ static int vklite2_context(VkyTestContext* context)
     vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
     vkl_gpu_create(gpu, 0);
 
-    VklContext* ctx = vkl_context(gpu);
+    VklContext ctx = vkl_context(gpu);
 
-    vkl_context_destroy(ctx);
+    vkl_context_destroy(&ctx);
+    TEST_END
+}
+
+static int vklite2_default_app(VkyTestContext* context)
+{
+    VklApp* app = vkl_default_app(0, true);
 
     TEST_END
 }
