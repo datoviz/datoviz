@@ -36,23 +36,24 @@ TODO later
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define VKL_MAX_GPUS             64
-#define VKL_MAX_WINDOWS          1024
-#define VKL_MAX_SWAPCHAIN_IMAGES 16
-#define VKL_MAX_COMMANDS         1024
-#define VKL_MAX_BUFFERS          1024
-#define VKL_MAX_IMAGES           1024
 #define VKL_MAX_BINDINGS         1024
+#define VKL_MAX_BINDINGS_SIZE    32
+#define VKL_MAX_BUFFERS          1024
+#define VKL_MAX_COMMANDS         1024
+#define VKL_MAX_COMPUTES         1024
+#define VKL_MAX_DESCRIPTOR_SETS  1024
+#define VKL_MAX_FENCES           1024
+#define VKL_MAX_FRAMEBUFFERS     32
+#define VKL_MAX_GPUS             64
+#define VKL_MAX_GRAPHICS         1024
+#define VKL_MAX_IMAGES           1024
+#define VKL_MAX_PRESENT_MODES    16
 #define VKL_MAX_QUEUE_FAMILIES   16
 #define VKL_MAX_QUEUES           16
-#define VKL_MAX_DESCRIPTOR_SETS  1024
-#define VKL_MAX_COMPUTES         1024
-#define VKL_MAX_GRAPHICS         1024
-#define VKL_MAX_BINDINGS_SIZE    32
-#define VKL_MAX_SEMAPHORES       1024
-#define VKL_MAX_FENCES           1024
 #define VKL_MAX_RENDERPASSES     32
-#define VKL_MAX_FRAMEBUFFERS     32
+#define VKL_MAX_SEMAPHORES       1024
+#define VKL_MAX_SWAPCHAIN_IMAGES 16
+#define VKL_MAX_WINDOWS          1024
 
 // Maximum number of command buffers per VklCommands struct
 #define VKL_MAX_COMMAND_BUFFERS_PER_SET     VKL_MAX_SWAPCHAIN_IMAGES
@@ -362,6 +363,9 @@ struct VklGpu
     VkPhysicalDeviceProperties device_properties;
     VkPhysicalDeviceFeatures device_features;
     VkPhysicalDeviceMemoryProperties memory_properties;
+
+    uint32_t present_mode_count;
+    VkPresentModeKHR present_modes[VKL_MAX_PRESENT_MODES];
 
     VklQueues queues;
     VkDescriptorPool dset_pool;

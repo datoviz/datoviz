@@ -585,6 +585,15 @@ static void create_device(VklGpu* gpu, VkSurfaceKHR surface)
     bool has_surface = surface != NULL;
     bool has_validation = gpu->app->debug_messenger != NULL;
 
+    // Find the supported present modes.
+    if (surface != NULL)
+    {
+        vkGetPhysicalDeviceSurfacePresentModesKHR(
+            gpu->physical_device, surface, &gpu->present_mode_count, NULL);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(
+            gpu->physical_device, surface, &gpu->present_mode_count, gpu->present_modes);
+    }
+
     // NOTE: we needed to wait until we had a handle to the surface in order to find
     // the queue families supporting PRESENT.
     find_present_queue_family(gpu->physical_device, surface, &gpu->queues);

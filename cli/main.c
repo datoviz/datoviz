@@ -534,7 +534,7 @@ static int launcher(VkyTestContext* context, const char* name)
 
     // Tear down the fixture (mainly resetting the canvas or destroying the scene).
     _teardown(context, test_case.fixture);
-    
+
     return res;
 }
 
@@ -554,6 +554,7 @@ static int test(int argc, char** argv)
     VkyTestContext context = _create_context(is_live);
 
     // Start the tests.
+    int cur_res = 0;
     int res = 0;
     int index = 0;
     // Loop over all possible tests.
@@ -563,8 +564,9 @@ static int test(int argc, char** argv)
         // the current test.
         if (argc == 1 || strstr(TEST_CASES[i].name, argv[1]) != NULL)
         {
-            res += launcher(&context, TEST_CASES[i].name);
-            print_case(index, TEST_CASES[i].name, res);
+            cur_res = launcher(&context, TEST_CASES[i].name);
+            print_case(index, TEST_CASES[i].name, cur_res);
+            res += cur_res;
             index++;
         }
     }

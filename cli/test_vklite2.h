@@ -20,7 +20,7 @@
 #define TEST_HEIGHT 480
 
 static const VkClearColorValue bgcolor = {{.4f, .6f, .8f, 1.0f}};
-#define TEST_FORMAT VK_FORMAT_B8G8R8A8_UNORM
+#define TEST_FORMAT       VK_FORMAT_B8G8R8A8_UNORM
 #define TEST_PRESENT_MODE VK_PRESENT_MODE_FIFO_KHR
 // #define TEST_PRESENT_MODE VK_PRESENT_MODE_IMMEDIATE_KHR
 
@@ -304,7 +304,7 @@ static void show_canvas(BasicCanvas canvas, FillCallback fill_commands, uint32_t
 
     for (uint32_t frame = 0; frame < n_frames; frame++)
     {
-        log_info("iteration %d", frame);
+        log_debug("iteration %d", frame);
 
         glfwPollEvents();
 
@@ -970,6 +970,6 @@ static int vklite2_canvas_triangle(VkyTestContext* context)
     br.count = 1;
     canvas.buffer_regions = br;
 
-    show_canvas(canvas, triangle_commands, 30);
+    show_canvas(canvas, triangle_commands, 10);
     TEST_END
 }

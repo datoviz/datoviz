@@ -493,7 +493,17 @@ void vkl_swapchain_format(VklSwapchain* swapchain, VkFormat format)
 void vkl_swapchain_present_mode(VklSwapchain* swapchain, VkPresentModeKHR present_mode)
 {
     ASSERT(swapchain != NULL);
-    swapchain->present_mode = present_mode;
+    ASSERT(swapchain->gpu != NULL);
+    ASSERT(swapchain->gpu->present_mode_count > 0);
+    for (uint32_t i = 0; i < swapchain->gpu->present_mode_count; i++)
+    {
+        if (swapchain->gpu->present_modes[i] == present_mode)
+        {
+            swapchain->present_mode = present_mode;
+            return;
+        }
+    }
+    log_error("unsupported swapchain present mode VkPresentModeKHR #%02d", present_mode);
 }
 
 
