@@ -1061,16 +1061,13 @@ static int vklite2_canvas_triangle(VkyTestContext* context)
 static int vklite2_context(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
-
     VklGpu* gpu = vkl_gpu(app, 0);
-    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
-    vkl_gpu_create(gpu, 0);
-
-    VklContext ctx = vkl_context(gpu);
+    VklContext* ctx = vkl_context(gpu);
 
     // Create a buffer.
-    ctx.buffers[0] = vkl_buffer(gpu);
-    VklBuffer* buffer = &ctx.buffers[0];
+    VklBuffer buffer_struct = vkl_buffer(gpu);
+    ctx->buffers[VKL_DEFAULT_BUFFER_COUNT] = buffer_struct;
+    VklBuffer* buffer = &ctx->buffers[VKL_DEFAULT_BUFFER_COUNT];
     vkl_buffer_queue_access(buffer, 0);
     vkl_buffer_size(buffer, 256, 0);
     vkl_buffer_usage(buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
@@ -1085,7 +1082,7 @@ static int vklite2_context(VkyTestContext* context)
     vkl_buffer_upload(buffer, 0, 256, data);
 
     // Allocate buffer regions.
-    VklBufferRegions br = vkl_alloc_buffers(&ctx, 0, 3, 64);
+    VklBufferRegions br = vkl_alloc_buffers(ctx, VKL_DEFAULT_BUFFER_COUNT, 3, 64);
     AT(br.count == 3);
     AT(br.offsets[0] == 0);
     AT(br.offsets[1] == 64);
@@ -1094,7 +1091,7 @@ static int vklite2_context(VkyTestContext* context)
     AT(buffer->size == 256);
 
     // This allocation will trigger a buffer resize.
-    br = vkl_alloc_buffers(&ctx, 0, 2, 64);
+    br = vkl_alloc_buffers(ctx, VKL_DEFAULT_BUFFER_COUNT, 2, 64);
     AT(br.count == 2);
     AT(br.offsets[0] == 192);
     AT(br.offsets[1] == 256);
@@ -1110,9 +1107,10 @@ static int vklite2_context(VkyTestContext* context)
     // buffer during reallocation
     AT(memcmp(data2, data, 256) == 0);
 
+    vkl_buffer_destroy(buffer);
+
     FREE(data);
     FREE(data2);
-    vkl_context_destroy(&ctx);
     TEST_END
 }
 
@@ -1120,8 +1118,9 @@ static int vklite2_context(VkyTestContext* context)
 
 static int vklite2_default_app(VkyTestContext* context)
 {
-    VklApp* app = vkl_default_app(0, true);
-    VklContext* ctx = app->gpus[0].context;
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    VklContext* ctx = vkl_context(gpu);
 
     char path[1024];
     snprintf(path, sizeof(path), "%s/spirv/pow2.comp.spv", DATA_DIR);

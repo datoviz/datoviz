@@ -113,9 +113,7 @@ struct VklTexture
 /*  Context                                                                                      */
 /*************************************************************************************************/
 
-VKY_EXPORT VklApp* vkl_default_app(uint32_t gpu_idx, bool offscreen);
-
-VKY_EXPORT VklContext vkl_context(VklGpu* gpu);
+VKY_EXPORT VklContext* vkl_context(VklGpu* gpu);
 
 VKY_EXPORT VklBufferRegions vkl_alloc_buffers(
     VklContext* context, uint32_t buffer_idx, uint32_t buffer_count, VkDeviceSize size);
