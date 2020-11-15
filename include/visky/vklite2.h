@@ -83,7 +83,6 @@ typedef struct VklQueues VklQueues;
 typedef struct VklGpu VklGpu;
 typedef struct VklWindow VklWindow;
 typedef struct VklSwapchain VklSwapchain;
-typedef struct VklCanvas VklCanvas;
 typedef struct VklCommands VklCommands;
 typedef struct VklBuffer VklBuffer;
 typedef struct VklBufferRegions VklBufferRegions;
@@ -105,6 +104,10 @@ typedef struct VklRenderpassSubpass VklRenderpassSubpass;
 typedef struct VklRenderpassDependency VklRenderpassDependency;
 typedef struct VklFramebuffers VklFramebuffers;
 typedef struct VklSubmit VklSubmit;
+
+// Forward declarations.
+typedef struct VklCanvas VklCanvas;
+typedef struct VklContext VklContext;
 
 
 
@@ -373,6 +376,8 @@ struct VklGpu
     VkPhysicalDeviceFeatures requested_features;
     VkDevice device;
 
+    VklContext* context;
+
     uint32_t max_swapchains;
     VklSwapchain* swapchains;
 
@@ -560,6 +565,7 @@ struct VklCompute
 {
     VklObject obj;
     VklGpu* gpu;
+    VklContext* context;
 
     char shader_path[1024];
 

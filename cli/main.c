@@ -151,6 +151,8 @@ static VkyTestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(vklite2_canvas_basic),    //
     CASE_FIXTURE_NONE(vklite2_canvas_triangle), //
 
+    CASE_FIXTURE_NONE(vklite2_context), //
+
 
     // Visual props.
     CASE_FIXTURE_NONE(visuals_props_1), //

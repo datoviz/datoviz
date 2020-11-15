@@ -1,3 +1,4 @@
+#include "../include/visky/context.h"
 #include "../src/vklite2_utils.h"
 
 
@@ -433,7 +434,7 @@ static void triangle_commands(BasicCanvas* canvas, VklCommands* commands, uint32
 
 
 /*************************************************************************************************/
-/*  Unit tests                                                                                   */
+/*  vklite2                                                                                      */
 /*************************************************************************************************/
 
 static int vklite2_app(VkyTestContext* context)
@@ -971,5 +972,26 @@ static int vklite2_canvas_triangle(VkyTestContext* context)
     canvas.buffer_regions = br;
 
     show_canvas(canvas, triangle_commands, 10);
+    TEST_END
+}
+
+
+
+/*************************************************************************************************/
+/*  Context                                                                                   */
+/*************************************************************************************************/
+
+static int vklite2_context(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+
+    VklGpu* gpu = vkl_gpu(app, 0);
+    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
+    vkl_gpu_create(gpu, 0);
+
+    VklContext* ctx = vkl_context(gpu);
+
+    vkl_context_destroy(ctx);
+
     TEST_END
 }
