@@ -1073,7 +1073,7 @@ static int vklite2_context(VkyTestContext* context)
     VklBuffer* buffer = &ctx.buffers[0];
     vkl_buffer_queue_access(buffer, 0);
     vkl_buffer_size(buffer, 256, 0);
-    vkl_buffer_usage(buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    vkl_buffer_usage(buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
     vkl_buffer_memory(
         buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
     vkl_buffer_create(buffer);
@@ -1093,6 +1093,7 @@ static int vklite2_context(VkyTestContext* context)
     AT(br.size == 64);
     AT(buffer->size == 256);
 
+    // This allocation will trigger a buffer resize.
     br = vkl_alloc_buffers(&ctx, 0, 2, 64);
     AT(br.count == 2);
     AT(br.offsets[0] == 192);
@@ -1105,6 +1106,8 @@ static int vklite2_context(VkyTestContext* context)
     vkl_buffer_download(buffer, 0, 256, data2);
 
     // Check that the data downloaded from the GPU is the same.
+    // This also checks that the data on the initial buffer was successfully copied to the new
+    // buffer during reallocation
     AT(memcmp(data2, data, 256) == 0);
 
     FREE(data);

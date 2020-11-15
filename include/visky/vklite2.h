@@ -903,7 +903,8 @@ VKY_EXPORT void vkl_buffer_queue_access(VklBuffer* buffer, uint32_t queues);
 
 VKY_EXPORT void vkl_buffer_create(VklBuffer* buffer);
 
-VKY_EXPORT void vkl_buffer_resize(VklBuffer* buffer, VkDeviceSize size);
+VKY_EXPORT void
+vkl_buffer_resize(VklBuffer* buffer, VkDeviceSize size, uint32_t queue_idx, VklCommands* cmds);
 
 VKY_EXPORT VklBufferRegions
 vkl_buffer_regions(VklBuffer* buffer, uint32_t count, VkDeviceSize size, VkDeviceSize* offsets);
@@ -1233,9 +1234,9 @@ VKY_EXPORT void
 vkl_cmd_draw_indexed_indirect(VklCommands* cmds, uint32_t idx, VklBufferRegions* indirect);
 
 VKY_EXPORT void vkl_cmd_copy_buffer(
-    VklCommands* cmds, uint32_t idx,                    //
-    VklBufferRegions* src_buf, VkDeviceSize src_offset, //
-    VklBufferRegions* dst_buf, VkDeviceSize dst_offset, //
+    VklCommands* cmds, uint32_t idx,             //
+    VklBuffer* src_buf, VkDeviceSize src_offset, //
+    VklBuffer* dst_buf, VkDeviceSize dst_offset, //
     VkDeviceSize size);
 
 VKY_EXPORT void vkl_cmd_push_constants(

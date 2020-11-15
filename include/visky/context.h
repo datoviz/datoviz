@@ -50,7 +50,7 @@ typedef enum
 
 typedef enum
 {
-    VKL_DEFAULT_QUEUE_DATA,
+    VKL_DEFAULT_QUEUE_TRANSFER,
     VKL_DEFAULT_QUEUE_COMPUTE,
     VKL_DEFAULT_QUEUE_RENDER,
     VKL_DEFAULT_QUEUE_PRESENT,
@@ -79,6 +79,8 @@ struct VklContext
     uint32_t max_buffers;
     VklBuffer* buffers;
     VkDeviceSize* allocated_sizes; // for each buffer, how much is already allocated
+
+    VklCommands* transfer_cmd;
 
     uint32_t max_images;
     VklImages* images;

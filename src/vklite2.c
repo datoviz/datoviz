@@ -826,6 +826,24 @@ static void _buffer_destroy(VklBuffer* buffer)
 {
     vkDestroyBuffer(buffer->gpu->device, buffer->buffer, NULL);
     vkFreeMemory(buffer->gpu->device, buffer->device_memory, NULL);
+
+    buffer->buffer = 0;
+    buffer->device_memory = 0;
+}
+
+
+
+static void _buffer_copy(VklBuffer* buffer0, VklBuffer* buffer1)
+{
+    // Copy the parameters of a buffer.
+    buffer1->gpu = buffer0->gpu;
+    buffer1->obj = buffer0->obj;
+    buffer1->queue_count = buffer0->queue_count;
+    memcpy(buffer1->queues, buffer0->queues, sizeof(buffer0->queues));
+    buffer1->size = buffer0->size;
+    buffer1->item_size = buffer0->item_size;
+    buffer1->usage = buffer0->usage;
+    buffer1->memory = buffer0->memory;
 }
 
 
@@ -848,13 +866,56 @@ void vkl_buffer_create(VklBuffer* buffer)
 
 
 
-void vkl_buffer_resize(VklBuffer* buffer, VkDeviceSize size)
+void vkl_buffer_resize(VklBuffer* buffer, VkDeviceSize size, uint32_t queue_idx, VklCommands* cmds)
 {
     ASSERT(buffer != NULL);
-    log_debug("[SLOW] resize buffer to size %d, losing the data in it", size);
+    log_debug("[SLOW] resize buffer to size %d", size);
+    VklGpu* gpu = buffer->gpu;
+
+    // Create the new buffer with the new size.
+    VklBuffer new_buffer = vkl_buffer(gpu);
+    _buffer_copy(buffer, &new_buffer);
+    // Make sure we can copy to the new buffer.
+    if ((new_buffer.usage & VK_BUFFER_USAGE_TRANSFER_DST_BIT) == 0)
+    {
+        log_warn("buffer was not created with VK_BUFFER_USAGE_TRANSFER_DST_BIT and therefore the "
+                 "data cannot be kept while resizing it");
+        cmds = NULL;
+    }
+    new_buffer.size = size;
+    _buffer_create(&new_buffer);
+    // At this point, the new buffer is empty.
+
+    // If a VklCommands object was passed for the data transfer, transfer the data from the
+    // old buffer to the new, by flushing the corresponding queue and waiting for completion.
+    if (cmds != NULL)
+    {
+        log_debug("copying data from the old buffer to the new one before destroying the old one");
+        ASSERT(queue_idx < gpu->queues.queue_count);
+        ASSERT(size >= buffer->size);
+
+        vkl_cmd_reset(cmds);
+        vkl_cmd_begin(cmds, 0);
+        vkl_cmd_copy_buffer(cmds, 0, buffer, 0, &new_buffer, 0, buffer->size);
+        vkl_cmd_end(cmds, 0);
+
+        VkQueue queue = gpu->queues.queues[queue_idx];
+        vkl_cmd_submit_sync(cmds, 0);
+        vkQueueWaitIdle(queue);
+    }
+
+    // Delete the old buffer after the transfer has finished.
     _buffer_destroy(buffer);
-    buffer->size = size;
-    _buffer_create(buffer);
+
+    // Update the existing buffer's size.
+    buffer->size = new_buffer.size;
+    ASSERT(buffer->size == size);
+
+    // Update the existing VklBuffer struct with the newly-created Vulkan objects.
+    buffer->buffer = new_buffer.buffer;
+    buffer->device_memory = new_buffer.device_memory;
+    ASSERT(buffer->buffer != 0);
+    ASSERT(buffer->device_memory != 0);
 }
 
 
@@ -2760,22 +2821,25 @@ void vkl_cmd_draw_indexed_indirect(VklCommands* cmds, uint32_t idx, VklBufferReg
 
 
 void vkl_cmd_copy_buffer(
-    VklCommands* cmds, uint32_t idx,                    //
-    VklBufferRegions* src_buf, VkDeviceSize src_offset, //
-    VklBufferRegions* dst_buf, VkDeviceSize dst_offset, //
+    VklCommands* cmds, uint32_t idx,             //
+    VklBuffer* src_buf, VkDeviceSize src_offset, //
+    VklBuffer* dst_buf, VkDeviceSize dst_offset, //
     VkDeviceSize size)
 {
+    ASSERT(cmds != NULL);
+    ASSERT(src_buf != NULL);
+    ASSERT(dst_buf != NULL);
+    ASSERT(size > 0);
+    ASSERT(src_offset + size <= src_buf->size);
+    ASSERT(dst_offset + size <= dst_buf->size);
+
     VkBufferCopy copy_region = {0};
     copy_region.size = size;
 
-    ASSERT(src_buf->count == dst_buf->count);
-
-    CMD_START_CLIP(src_buf->count)
-    copy_region.srcOffset = src_buf->offsets[iclip] + src_offset;
-    copy_region.dstOffset = dst_buf->offsets[iclip] + dst_offset;
-
-    vkCmdCopyBuffer(cb, src_buf->buffer->buffer, dst_buf->buffer->buffer, 1, &copy_region);
-    CMD_END
+    VkCommandBuffer cb = cmds->cmds[idx];
+    copy_region.srcOffset = src_offset;
+    copy_region.dstOffset = dst_offset;
+    vkCmdCopyBuffer(cb, src_buf->buffer, dst_buf->buffer, 1, &copy_region);
 }
 
 

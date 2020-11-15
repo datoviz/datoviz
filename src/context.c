@@ -22,6 +22,8 @@ VklContext vkl_context(VklGpu* gpu)
     VklContext* context = &context_struct;
     context->gpu = gpu;
 
+    context->transfer_cmd = vkl_commands(gpu, VKL_DEFAULT_QUEUE_TRANSFER, 1);
+
     // Allocate memory for buffers, textures, and computes.
     INSTANCES_INIT(
         VklBuffer, context, buffers, max_buffers, VKL_MAX_BUFFERS, VKL_OBJECT_TYPE_IMAGES)
@@ -120,8 +122,8 @@ VklBufferRegions vkl_alloc_buffers(
     {
         VkDeviceSize new_size = regions.buffer->size * 2;
         log_info("reallocating buffer #%d to %.3f KB", buffer_idx, TO_KB(new_size));
-        // WARNING: the command below loses the data.
-        vkl_buffer_resize(regions.buffer, new_size);
+        vkl_buffer_resize(
+            regions.buffer, new_size, VKL_DEFAULT_QUEUE_TRANSFER, context->transfer_cmd);
     }
 
     log_trace("allocating %d buffers with size %.3f KB", buffer_count, TO_KB(size));
@@ -194,7 +196,7 @@ VklApp* vkl_default_app(uint32_t gpu_idx, bool offscreen)
 
     // Default queues.
     {
-        vkl_gpu_queue(gpu, VKL_QUEUE_TRANSFER, VKL_DEFAULT_QUEUE_DATA);
+        vkl_gpu_queue(gpu, VKL_QUEUE_TRANSFER, VKL_DEFAULT_QUEUE_TRANSFER);
         vkl_gpu_queue(gpu, VKL_QUEUE_COMPUTE, VKL_DEFAULT_QUEUE_COMPUTE);
         vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, VKL_DEFAULT_QUEUE_RENDER);
     }
@@ -228,7 +230,7 @@ VklApp* vkl_default_app(uint32_t gpu_idx, bool offscreen)
         buffer = &context->buffers[i];
 
         // All buffers may be accessed from these queues.
-        vkl_buffer_queue_access(buffer, VKL_DEFAULT_QUEUE_DATA);
+        vkl_buffer_queue_access(buffer, VKL_DEFAULT_QUEUE_TRANSFER);
         vkl_buffer_queue_access(buffer, VKL_DEFAULT_QUEUE_COMPUTE);
         vkl_buffer_queue_access(buffer, VKL_DEFAULT_QUEUE_RENDER);
     }
