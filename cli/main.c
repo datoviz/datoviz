@@ -568,7 +568,7 @@ static int test(int argc, char** argv)
         {
             cur_res = launcher(&context, TEST_CASES[i].name);
             print_case(index, TEST_CASES[i].name, cur_res);
-            res += cur_res;
+            res += cur_res == 0 ? 0 : 1;
             index++;
         }
     }

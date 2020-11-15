@@ -162,8 +162,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
         log_error("validation layer: %s", pCallbackData->pMessage);
         if (pUserData != NULL)
         {
-            uint32_t* n_errors = NULL;
-            n_errors = (uint32_t*)pUserData;
+            uint32_t* n_errors = (uint32_t*)pUserData;
             (*n_errors)++;
         }
     }

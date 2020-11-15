@@ -47,6 +47,7 @@ TODO later
 #define VKL_MAX_GPUS             64
 #define VKL_MAX_GRAPHICS         1024
 #define VKL_MAX_IMAGES           1024
+#define VKL_MAX_TEXTURES         1024
 #define VKL_MAX_PRESENT_MODES    16
 #define VKL_MAX_QUEUE_FAMILIES   16
 #define VKL_MAX_QUEUES           16
@@ -384,20 +385,8 @@ struct VklGpu
     uint32_t max_commands;
     VklCommands* commands;
 
-    uint32_t max_buffers;
-    VklBuffer* buffers;
-
-    uint32_t max_images;
-    VklImages* images;
-
-    uint32_t max_samplers;
-    VklSampler* samplers;
-
     uint32_t max_bindings;
     VklBindings* bindings;
-
-    uint32_t max_computes;
-    VklCompute* computes;
 
     uint32_t max_graphics;
     VklGraphics* graphics;
@@ -812,7 +801,7 @@ VKY_EXPORT VklApp* vkl_app(VklBackend backend);
  *
  * @param app the application to destroy
  */
-VKY_EXPORT void vkl_app_destroy(VklApp* app);
+VKY_EXPORT int vkl_app_destroy(VklApp* app);
 
 
 
@@ -906,7 +895,7 @@ VKY_EXPORT void vkl_commands_destroy(VklCommands* cmds);
 /*  Buffers                                                                                      */
 /*************************************************************************************************/
 
-VKY_EXPORT VklBuffer* vkl_buffer(VklGpu* gpu);
+VKY_EXPORT VklBuffer vkl_buffer(VklGpu* gpu);
 
 VKY_EXPORT void vkl_buffer_size(VklBuffer* buffer, VkDeviceSize size, VkDeviceSize item_size);
 
@@ -943,7 +932,7 @@ VKY_EXPORT void vkl_buffer_destroy(VklBuffer* buffer);
 /*  Images                                                                                       */
 /*************************************************************************************************/
 
-VKY_EXPORT VklImages* vkl_images(VklGpu* gpu, VkImageType type, uint32_t count);
+VKY_EXPORT VklImages vkl_images(VklGpu* gpu, VkImageType type, uint32_t count);
 
 VKY_EXPORT void vkl_images_format(VklImages* images, VkFormat format);
 
@@ -977,7 +966,7 @@ VKY_EXPORT void vkl_images_destroy(VklImages* images);
 /*  Sampler                                                                                      */
 /*************************************************************************************************/
 
-VKY_EXPORT VklSampler* vkl_sampler(VklGpu* gpu);
+VKY_EXPORT VklSampler vkl_sampler(VklGpu* gpu);
 
 VKY_EXPORT void vkl_sampler_min_filter(VklSampler* sampler, VkFilter filter);
 
@@ -1023,7 +1012,7 @@ VKY_EXPORT void vkl_bindings_destroy(VklBindings* bindings);
 /*  Compute                                                                                      */
 /*************************************************************************************************/
 
-VKY_EXPORT VklCompute* vkl_compute(VklGpu* gpu, const char* shader_path);
+VKY_EXPORT VklCompute vkl_compute(VklGpu* gpu, const char* shader_path);
 
 VKY_EXPORT void vkl_compute_create(VklCompute* compute);
 

@@ -6,10 +6,7 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-#define TEST_END                                                                                  \
-    int res = (int)app->n_errors;                                                                 \
-    vkl_app_destroy(app);                                                                         \
-    return res;
+#define TEST_END return vkl_app_destroy(app);
 
 
 
@@ -41,6 +38,7 @@ typedef struct
 typedef struct
 {
     VklGpu* gpu;
+    bool is_offscreen;
 
     VklRenderpass* renderpass;
     VklImages* images;
@@ -135,13 +133,16 @@ static BasicCanvas offscreen(VklGpu* gpu)
 {
     BasicCanvas canvas = {0};
     canvas.gpu = gpu;
+    canvas.is_offscreen = true;
 
     VklRenderpass* renderpass =
         default_renderpass(gpu, bgcolor, TEST_FORMAT, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
     canvas.renderpass = renderpass;
 
     // Color attachment
-    VklImages* images = vkl_images(renderpass->gpu, VK_IMAGE_TYPE_2D, 1);
+    VklImages images_struct = vkl_images(renderpass->gpu, VK_IMAGE_TYPE_2D, 1);
+    VklImages* images = calloc(1, sizeof(VklImages));
+    *images = images_struct;
     vkl_images_format(images, renderpass->attachments[0].format);
     vkl_images_size(images, TEST_WIDTH, TEST_HEIGHT, 1);
     vkl_images_tiling(images, VK_IMAGE_TILING_OPTIMAL);
@@ -155,7 +156,9 @@ static BasicCanvas offscreen(VklGpu* gpu)
     canvas.images = images;
 
     // Depth attachment.
-    VklImages* depth = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
+    VklImages depth_struct = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
+    VklImages* depth = calloc(1, sizeof(VklImages));
+    *depth = depth_struct;
     depth_image(depth, renderpass, TEST_WIDTH, TEST_HEIGHT);
     canvas.depth = depth;
 
@@ -177,6 +180,7 @@ static BasicCanvas offscreen(VklGpu* gpu)
 static BasicCanvas glfw_canvas(VklGpu* gpu, VklWindow* window)
 {
     BasicCanvas canvas = {0};
+    canvas.is_offscreen = false;
     canvas.gpu = gpu;
     canvas.window = window;
 
@@ -197,7 +201,9 @@ static BasicCanvas glfw_canvas(VklGpu* gpu, VklWindow* window)
     canvas.images = swapchain->images;
 
     // Depth attachment.
-    VklImages* depth = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
+    VklImages depth_struct = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
+    VklImages* depth = calloc(1, sizeof(VklImages));
+    *depth = depth_struct;
     depth_image(depth, renderpass, canvas.images->width, canvas.images->height);
     canvas.depth = depth;
 
@@ -224,7 +230,9 @@ static uint8_t* screenshot(VklImages* images)
 
     // Create the staging image.
     log_debug("starting creation of staging image");
-    VklImages* staging = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
+    VklImages staging_struct = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
+    VklImages* staging = calloc(1, sizeof(VklImages));
+    *staging = staging_struct;
     vkl_images_format(staging, images->format);
     vkl_images_size(staging, images->width, images->height, images->depth);
     vkl_images_tiling(staging, VK_IMAGE_TILING_LINEAR);
@@ -261,6 +269,8 @@ static uint8_t* screenshot(VklImages* images)
     // Now, copy the staging image into CPU memory.
     uint8_t* rgba = calloc(images->width * images->height, 3);
     vkl_images_download(staging, 0, true, rgba);
+
+    vkl_images_destroy(staging);
 
     return rgba;
 }
@@ -400,6 +410,17 @@ static void show_canvas(BasicCanvas canvas, FillCallback fill_commands, uint32_t
 
 
 
+static void destroy_canvas(BasicCanvas* canvas)
+{
+    if (canvas->is_offscreen)
+    {
+        vkl_images_destroy(canvas->images);
+    }
+    vkl_images_destroy(canvas->depth);
+}
+
+
+
 /*************************************************************************************************/
 /*  Commands filling                                                                             */
 /*************************************************************************************************/
@@ -454,6 +475,8 @@ static int vklite2_app(VkyTestContext* context)
     TEST_END
 }
 
+
+
 static int vklite2_surface(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
@@ -471,6 +494,8 @@ static int vklite2_surface(VkyTestContext* context)
     TEST_END
 }
 
+
+
 static int vklite2_window(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
@@ -479,6 +504,8 @@ static int vklite2_window(VkyTestContext* context)
 
     TEST_END
 }
+
+
 
 static int vklite2_swapchain(VkyTestContext* context)
 {
@@ -498,6 +525,8 @@ static int vklite2_swapchain(VkyTestContext* context)
     TEST_END
 }
 
+
+
 static int vklite2_commands(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
@@ -513,6 +542,8 @@ static int vklite2_commands(VkyTestContext* context)
     TEST_END
 }
 
+
+
 static int vklite2_buffer(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
@@ -520,24 +551,24 @@ static int vklite2_buffer(VkyTestContext* context)
     vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
     vkl_gpu_create(gpu, 0);
 
-    VklBuffer* buffer = vkl_buffer(gpu);
+    VklBuffer buffer = vkl_buffer(gpu);
     const VkDeviceSize size = 256;
-    vkl_buffer_size(buffer, size, 0);
-    vkl_buffer_usage(buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    vkl_buffer_size(&buffer, size, 0);
+    vkl_buffer_usage(&buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
     vkl_buffer_memory(
-        buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    vkl_buffer_queue_access(buffer, 0);
-    vkl_buffer_create(buffer);
+        &buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vkl_buffer_queue_access(&buffer, 0);
+    vkl_buffer_create(&buffer);
 
     // Send some data to the GPU.
     uint8_t* data = calloc(size, 1);
     for (uint32_t i = 0; i < size; i++)
         data[i] = i;
-    vkl_buffer_upload(buffer, 0, size, data);
+    vkl_buffer_upload(&buffer, 0, size, data);
 
     // Recover the data.
     void* data2 = calloc(size, 1);
-    vkl_buffer_download(buffer, 0, size, data2);
+    vkl_buffer_download(&buffer, 0, size, data2);
 
     // Check that the data downloaded from the GPU is the same.
     ASSERT(memcmp(data2, data, size) == 0);
@@ -545,8 +576,12 @@ static int vklite2_buffer(VkyTestContext* context)
     FREE(data);
     FREE(data2);
 
+    vkl_buffer_destroy(&buffer);
+
     TEST_END
 }
+
+
 
 static int vklite2_compute(VkyTestContext* context)
 {
@@ -558,55 +593,60 @@ static int vklite2_compute(VkyTestContext* context)
     // Create the compute pipeline.
     char path[1024];
     snprintf(path, sizeof(path), "%s/spirv/pow2.comp.spv", DATA_DIR);
-    VklCompute* compute = vkl_compute(gpu, path);
+    VklCompute compute = vkl_compute(gpu, path);
 
     // Create the buffers
-    VklBuffer* buffer = vkl_buffer(gpu);
+    VklBuffer buffer = vkl_buffer(gpu);
     const uint32_t n = 20;
     const VkDeviceSize size = n * sizeof(float);
-    vkl_buffer_size(buffer, size, 0);
+    vkl_buffer_size(&buffer, size, 0);
     vkl_buffer_usage(
-        buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-                    VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+        &buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                     VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
     vkl_buffer_memory(
-        buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    vkl_buffer_queue_access(buffer, 0);
-    vkl_buffer_create(buffer);
+        &buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vkl_buffer_queue_access(&buffer, 0);
+    vkl_buffer_create(&buffer);
 
     // Send some data to the GPU.
     float* data = calloc(n, sizeof(float));
     for (uint32_t i = 0; i < n; i++)
         data[i] = (float)i;
-    vkl_buffer_upload(buffer, 0, size, data);
+    vkl_buffer_upload(&buffer, 0, size, data);
 
     // Create the bindings.
     VklBindings* bindings = vkl_bindings(gpu);
     vkl_bindings_slot(bindings, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 0);
     vkl_bindings_create(bindings, 1);
-    VklBufferRegions br = {.buffer = buffer, .size = size, .count = 1};
+    VklBufferRegions br = {.buffer = &buffer, .size = size, .count = 1};
     vkl_bindings_buffer(bindings, 0, &br);
 
     vkl_bindings_update(bindings);
 
     // Link the bindings to the compute pipeline and create it.
-    vkl_compute_bindings(compute, bindings);
-    vkl_compute_create(compute);
+    vkl_compute_bindings(&compute, bindings);
+    vkl_compute_create(&compute);
 
     // Command buffers.
     VklCommands* cmds = vkl_commands(gpu, 0, 1);
     vkl_cmd_begin(cmds, 0);
-    vkl_cmd_compute(cmds, 0, compute, (uvec3){20, 1, 1});
+    vkl_cmd_compute(cmds, 0, &compute, (uvec3){20, 1, 1});
     vkl_cmd_end(cmds, 0);
     vkl_cmd_submit_sync(cmds, 0);
 
     // Get back the data.
     float* data2 = calloc(n, sizeof(float));
-    vkl_buffer_download(buffer, 0, size, data2);
+    vkl_buffer_download(&buffer, 0, size, data2);
     for (uint32_t i = 0; i < n; i++)
         ASSERT(data2[i] == 2 * data[i]);
 
+    vkl_compute_destroy(&compute);
+    vkl_buffer_destroy(&buffer);
+
     TEST_END
 }
+
+
 
 static int vklite2_images(VkyTestContext* context)
 {
@@ -615,17 +655,21 @@ static int vklite2_images(VkyTestContext* context)
     vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
     vkl_gpu_create(gpu, 0);
 
-    VklImages* images = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
-    vkl_images_format(images, VK_FORMAT_R8G8B8A8_UINT);
-    vkl_images_size(images, 16, 16, 1);
-    vkl_images_tiling(images, VK_IMAGE_TILING_OPTIMAL);
-    vkl_images_usage(images, VK_IMAGE_USAGE_STORAGE_BIT);
-    vkl_images_memory(images, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    vkl_images_queue_access(images, 0);
-    vkl_images_create(images);
+    VklImages images = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
+    vkl_images_format(&images, VK_FORMAT_R8G8B8A8_UINT);
+    vkl_images_size(&images, 16, 16, 1);
+    vkl_images_tiling(&images, VK_IMAGE_TILING_OPTIMAL);
+    vkl_images_usage(&images, VK_IMAGE_USAGE_STORAGE_BIT);
+    vkl_images_memory(&images, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    vkl_images_queue_access(&images, 0);
+    vkl_images_create(&images);
+
+    vkl_images_destroy(&images);
 
     TEST_END
 }
+
+
 
 static int vklite2_sampler(VkyTestContext* context)
 {
@@ -634,14 +678,18 @@ static int vklite2_sampler(VkyTestContext* context)
     vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
     vkl_gpu_create(gpu, 0);
 
-    VklSampler* sampler = vkl_sampler(gpu);
-    vkl_sampler_min_filter(sampler, VK_FILTER_LINEAR);
-    vkl_sampler_mag_filter(sampler, VK_FILTER_LINEAR);
-    vkl_sampler_address_mode(sampler, VKL_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-    vkl_sampler_create(sampler);
+    VklSampler sampler = vkl_sampler(gpu);
+    vkl_sampler_min_filter(&sampler, VK_FILTER_LINEAR);
+    vkl_sampler_mag_filter(&sampler, VK_FILTER_LINEAR);
+    vkl_sampler_address_mode(&sampler, VKL_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    vkl_sampler_create(&sampler);
+
+    vkl_sampler_destroy(&sampler);
 
     TEST_END
 }
+
+
 
 static int vklite2_barrier(VkyTestContext* context)
 {
@@ -652,35 +700,35 @@ static int vklite2_barrier(VkyTestContext* context)
 
     // Image.
     const uint32_t img_size = 16;
-    VklImages* images = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
-    vkl_images_format(images, VK_FORMAT_R8G8B8A8_UINT);
-    vkl_images_size(images, img_size, img_size, 1);
-    vkl_images_tiling(images, VK_IMAGE_TILING_OPTIMAL);
-    vkl_images_usage(images, VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT);
-    vkl_images_memory(images, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    vkl_images_queue_access(images, 0);
-    vkl_images_create(images);
+    VklImages images = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
+    vkl_images_format(&images, VK_FORMAT_R8G8B8A8_UINT);
+    vkl_images_size(&images, img_size, img_size, 1);
+    vkl_images_tiling(&images, VK_IMAGE_TILING_OPTIMAL);
+    vkl_images_usage(&images, VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT);
+    vkl_images_memory(&images, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    vkl_images_queue_access(&images, 0);
+    vkl_images_create(&images);
 
     // Staging buffer.
-    VklBuffer* buffer = vkl_buffer(gpu);
+    VklBuffer buffer = vkl_buffer(gpu);
     const VkDeviceSize size = img_size * img_size * 4;
-    vkl_buffer_size(buffer, size, 0);
-    vkl_buffer_usage(buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    vkl_buffer_size(&buffer, size, 0);
+    vkl_buffer_usage(&buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
     vkl_buffer_memory(
-        buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    vkl_buffer_queue_access(buffer, 0);
-    vkl_buffer_create(buffer);
+        &buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vkl_buffer_queue_access(&buffer, 0);
+    vkl_buffer_create(&buffer);
 
     // Send some data to the staging buffer.
     uint8_t* data = calloc(size, 1);
     for (uint32_t i = 0; i < size; i++)
         data[i] = i % 256;
-    vkl_buffer_upload(buffer, 0, size, data);
+    vkl_buffer_upload(&buffer, 0, size, data);
 
     // Image transition.
     VklBarrier barrier = vkl_barrier(gpu);
     vkl_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
-    vkl_barrier_images(&barrier, images);
+    vkl_barrier_images(&barrier, &images);
     vkl_barrier_images_layout(
         &barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
@@ -688,12 +736,17 @@ static int vklite2_barrier(VkyTestContext* context)
     VklCommands* cmds = vkl_commands(gpu, 0, 1);
     vkl_cmd_begin(cmds, 0);
     vkl_cmd_barrier(cmds, 0, &barrier);
-    vkl_cmd_copy_buffer_to_image(cmds, 0, buffer, images);
+    vkl_cmd_copy_buffer_to_image(cmds, 0, &buffer, &images);
     vkl_cmd_end(cmds, 0);
     vkl_cmd_submit_sync(cmds, 0);
 
+    vkl_buffer_destroy(&buffer);
+    vkl_images_destroy(&images);
+
     TEST_END
 }
+
+
 
 static int vklite2_submit(VkyTestContext* context)
 {
@@ -706,64 +759,64 @@ static int vklite2_submit(VkyTestContext* context)
     // Create the compute pipeline.
     char path[1024];
     snprintf(path, sizeof(path), "%s/spirv/pow2.comp.spv", DATA_DIR);
-    VklCompute* compute1 = vkl_compute(gpu, path);
+    VklCompute compute1 = vkl_compute(gpu, path);
 
     snprintf(path, sizeof(path), "%s/spirv/sum.comp.spv", DATA_DIR);
-    VklCompute* compute2 = vkl_compute(gpu, path);
+    VklCompute compute2 = vkl_compute(gpu, path);
 
     // Create the buffer
-    VklBuffer* buffer = vkl_buffer(gpu);
+    VklBuffer buffer = vkl_buffer(gpu);
     const uint32_t n = 20;
     const VkDeviceSize size = n * sizeof(float);
-    vkl_buffer_size(buffer, size, 0);
+    vkl_buffer_size(&buffer, size, 0);
     vkl_buffer_usage(
-        buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-                    VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+        &buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                     VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
     vkl_buffer_memory(
-        buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    vkl_buffer_queue_access(buffer, 0);
-    vkl_buffer_queue_access(buffer, 1);
-    vkl_buffer_create(buffer);
+        &buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vkl_buffer_queue_access(&buffer, 0);
+    vkl_buffer_queue_access(&buffer, 1);
+    vkl_buffer_create(&buffer);
 
     // Send some data to the GPU.
     float* data = calloc(n, sizeof(float));
     for (uint32_t i = 0; i < n; i++)
         data[i] = (float)i;
-    vkl_buffer_upload(buffer, 0, size, data);
+    vkl_buffer_upload(&buffer, 0, size, data);
 
     // Create the bindings.
     VklBindings* bindings1 = vkl_bindings(gpu);
     vkl_bindings_slot(bindings1, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 0);
     vkl_bindings_create(bindings1, 1);
-    VklBufferRegions br1 = {.buffer = buffer, .size = size, .count = 1};
+    VklBufferRegions br1 = {.buffer = &buffer, .size = size, .count = 1};
     vkl_bindings_buffer(bindings1, 0, &br1);
 
     VklBindings* bindings2 = vkl_bindings(gpu);
     vkl_bindings_slot(bindings2, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 0);
     vkl_bindings_create(bindings2, 1);
-    VklBufferRegions br2 = {.buffer = buffer, .size = size, .count = 1};
+    VklBufferRegions br2 = {.buffer = &buffer, .size = size, .count = 1};
     vkl_bindings_buffer(bindings2, 0, &br2);
 
     vkl_bindings_update(bindings1);
     vkl_bindings_update(bindings2);
 
     // Link the bindings1 to the compute1 pipeline and create it.
-    vkl_compute_bindings(compute1, bindings1);
-    vkl_compute_create(compute1);
+    vkl_compute_bindings(&compute1, bindings1);
+    vkl_compute_create(&compute1);
 
     // Link the bindings1 to the compute2 pipeline and create it.
-    vkl_compute_bindings(compute2, bindings2);
-    vkl_compute_create(compute2);
+    vkl_compute_bindings(&compute2, bindings2);
+    vkl_compute_create(&compute2);
 
     // Command buffers.
     VklCommands* cmds1 = vkl_commands(gpu, 0, 1);
     vkl_cmd_begin(cmds1, 0);
-    vkl_cmd_compute(cmds1, 0, compute1, (uvec3){20, 1, 1});
+    vkl_cmd_compute(cmds1, 0, &compute1, (uvec3){20, 1, 1});
     vkl_cmd_end(cmds1, 0);
 
     VklCommands* cmds2 = vkl_commands(gpu, 0, 1);
     vkl_cmd_begin(cmds2, 0);
-    vkl_cmd_compute(cmds2, 0, compute2, (uvec3){20, 1, 1});
+    vkl_cmd_compute(cmds2, 0, &compute2, (uvec3){20, 1, 1});
     vkl_cmd_end(cmds2, 0);
 
     // Semaphores
@@ -784,12 +837,18 @@ static int vklite2_submit(VkyTestContext* context)
 
     // Get back the data.
     float* data2 = calloc(n, sizeof(float));
-    vkl_buffer_download(buffer, 0, size, data2);
+    vkl_buffer_download(&buffer, 0, size, data2);
     for (uint32_t i = 0; i < n; i++)
         ASSERT(data2[i] == 2 * i + 1);
 
+    vkl_buffer_destroy(&buffer);
+    vkl_compute_destroy(&compute1);
+    vkl_compute_destroy(&compute2);
+
     TEST_END
 }
+
+
 
 static int vklite2_blank(VkyTestContext* context)
 {
@@ -811,8 +870,13 @@ static int vklite2_blank(VkyTestContext* context)
         ASSERT(rgba[i] >= 100);
 
     FREE(rgba);
+
+    destroy_canvas(&canvas);
+
     TEST_END
 }
+
+
 
 static int vklite2_graphics(VkyTestContext* context)
 {
@@ -824,7 +888,6 @@ static int vklite2_graphics(VkyTestContext* context)
     BasicCanvas canvas = offscreen(gpu);
     VklRenderpass* renderpass = canvas.renderpass;
     VklFramebuffers* framebuffers = canvas.framebuffers;
-
     VklGraphics* graphics = vkl_graphics(gpu);
     ASSERT(graphics != NULL);
 
@@ -852,13 +915,13 @@ static int vklite2_graphics(VkyTestContext* context)
     vkl_graphics_create(graphics);
 
     // Create the buffer.
-    VklBuffer* buffer = vkl_buffer(gpu);
+    VklBuffer buffer = vkl_buffer(gpu);
     VkDeviceSize size = 3 * sizeof(VklVertex);
-    vkl_buffer_size(buffer, size, 0);
-    vkl_buffer_usage(buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    vkl_buffer_size(&buffer, size, 0);
+    vkl_buffer_usage(&buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     vkl_buffer_memory(
-        buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    vkl_buffer_create(buffer);
+        &buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vkl_buffer_create(&buffer);
 
     // Upload the triangle data.
     VklVertex data[3] = {
@@ -866,10 +929,10 @@ static int vklite2_graphics(VkyTestContext* context)
         {{+1, +1, 0}, {0, 1, 0, 1}},
         {{+0, -1, 0}, {0, 0, 1, 1}},
     };
-    vkl_buffer_upload(buffer, 0, size, data);
+    vkl_buffer_upload(&buffer, 0, size, data);
 
     VklBufferRegions br = {0};
-    br.buffer = buffer;
+    br.buffer = &buffer;
     br.size = size;
     br.count = 1;
 
@@ -887,8 +950,13 @@ static int vklite2_graphics(VkyTestContext* context)
 
     save_screenshot(framebuffers, "screenshot.ppm");
 
+    vkl_buffer_destroy(&buffer);
+    destroy_canvas(&canvas);
+
     TEST_END
 }
+
+
 
 static int vklite2_canvas_basic(VkyTestContext* context)
 {
@@ -904,8 +972,13 @@ static int vklite2_canvas_basic(VkyTestContext* context)
     BasicCanvas canvas = glfw_canvas(gpu, window);
 
     show_canvas(canvas, empty_commands, 10);
+
+    destroy_canvas(&canvas);
+
     TEST_END
 }
+
+
 
 static int vklite2_canvas_triangle(VkyTestContext* context)
 {
@@ -949,13 +1022,13 @@ static int vklite2_canvas_triangle(VkyTestContext* context)
     vkl_graphics_create(graphics);
 
     // Create the buffer.
-    VklBuffer* buffer = vkl_buffer(gpu);
+    VklBuffer buffer = vkl_buffer(gpu);
     VkDeviceSize size = 3 * sizeof(VklVertex);
-    vkl_buffer_size(buffer, size, 0);
-    vkl_buffer_usage(buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    vkl_buffer_size(&buffer, size, 0);
+    vkl_buffer_usage(&buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     vkl_buffer_memory(
-        buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    vkl_buffer_create(buffer);
+        &buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vkl_buffer_create(&buffer);
 
     // Upload the triangle data.
     VklVertex data[3] = {
@@ -963,15 +1036,19 @@ static int vklite2_canvas_triangle(VkyTestContext* context)
         {{+1, +1, 0}, {0, 1, 0, 1}},
         {{+0, -1, 0}, {0, 0, 1, 1}},
     };
-    vkl_buffer_upload(buffer, 0, size, data);
+    vkl_buffer_upload(&buffer, 0, size, data);
 
     VklBufferRegions br = {0};
-    br.buffer = buffer;
+    br.buffer = &buffer;
     br.size = size;
     br.count = 1;
     canvas.buffer_regions = br;
 
     show_canvas(canvas, triangle_commands, 10);
+
+    vkl_buffer_destroy(&buffer);
+    destroy_canvas(&canvas);
+
     TEST_END
 }
 

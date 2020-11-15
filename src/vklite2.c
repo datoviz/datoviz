@@ -72,7 +72,7 @@ VklApp* vkl_app(VklBackend backend)
 
 
 
-void vkl_app_destroy(VklApp* app)
+int vkl_app_destroy(VklApp* app)
 {
     log_trace("starting destruction of app...");
 
@@ -123,8 +123,11 @@ void vkl_app_destroy(VklApp* app)
 
 
     // Free the App memory.
+    int res = (int)app->n_errors;
     FREE(app);
     log_trace("app destroyed");
+
+    return res;
 }
 
 
@@ -146,18 +149,12 @@ VklGpu* vkl_gpu(VklApp* app, uint32_t idx)
         VklSwapchain, gpu, swapchains, max_swapchains, VKL_MAX_WINDOWS, VKL_OBJECT_TYPE_SWAPCHAIN)
     INSTANCES_INIT(
         VklCommands, gpu, commands, max_commands, VKL_MAX_COMMANDS, VKL_OBJECT_TYPE_COMMANDS)
-    INSTANCES_INIT(VklBuffer, gpu, buffers, max_buffers, VKL_MAX_BUFFERS, VKL_OBJECT_TYPE_BUFFER)
-    INSTANCES_INIT(VklImages, gpu, images, max_images, VKL_MAX_IMAGES, VKL_OBJECT_TYPE_IMAGES)
-    INSTANCES_INIT(
-        VklSampler, gpu, samplers, max_samplers, VKL_MAX_BINDINGS, VKL_OBJECT_TYPE_SAMPLER)
     INSTANCES_INIT(
         VklBindings, gpu, bindings, max_bindings, VKL_MAX_BINDINGS, VKL_OBJECT_TYPE_BINDINGS)
     INSTANCES_INIT(
         VklSemaphores, gpu, semaphores, max_semaphores, VKL_MAX_SEMAPHORES,
         VKL_OBJECT_TYPE_SEMAPHORES)
     INSTANCES_INIT(VklFences, gpu, fences, max_fences, VKL_MAX_FENCES, VKL_OBJECT_TYPE_FENCES)
-    INSTANCES_INIT(
-        VklCompute, gpu, computes, max_computes, VKL_MAX_COMPUTES, VKL_OBJECT_TYPE_COMPUTE)
     INSTANCES_INIT(
         VklGraphics, gpu, graphics, max_graphics, VKL_MAX_GRAPHICS, VKL_OBJECT_TYPE_GRAPHICS)
     INSTANCES_INIT(
@@ -293,36 +290,6 @@ void vkl_gpu_destroy(VklGpu* gpu)
     INSTANCES_DESTROY(gpu->commands)
 
 
-    log_trace("GPU destroy buffers");
-    for (uint32_t i = 0; i < gpu->max_buffers; i++)
-    {
-        if (gpu->buffers[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_buffer_destroy(&gpu->buffers[i]);
-    }
-    INSTANCES_DESTROY(gpu->buffers)
-
-
-    log_trace("GPU destroy sets of images");
-    for (uint32_t i = 0; i < gpu->max_images; i++)
-    {
-        if (gpu->images[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_images_destroy(&gpu->images[i]);
-    }
-    INSTANCES_DESTROY(gpu->images)
-
-
-    log_trace("GPU destroy samplers");
-    for (uint32_t i = 0; i < gpu->max_samplers; i++)
-    {
-        if (gpu->samplers[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_sampler_destroy(&gpu->samplers[i]);
-    }
-    INSTANCES_DESTROY(gpu->samplers)
-
-
     log_trace("GPU destroy bindings");
     for (uint32_t i = 0; i < gpu->max_bindings; i++)
     {
@@ -331,16 +298,6 @@ void vkl_gpu_destroy(VklGpu* gpu)
         vkl_bindings_destroy(&gpu->bindings[i]);
     }
     INSTANCES_DESTROY(gpu->bindings)
-
-
-    log_trace("GPU destroy computes");
-    for (uint32_t i = 0; i < gpu->max_computes; i++)
-    {
-        if (gpu->computes[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_compute_destroy(&gpu->computes[i]);
-    }
-    INSTANCES_DESTROY(gpu->computes)
 
 
     log_trace("GPU destroy graphics");
@@ -542,7 +499,11 @@ void vkl_swapchain_create(VklSwapchain* swapchain)
     log_trace("get %d swapchain images", swapchain->img_count);
 
     if (swapchain->images == NULL)
-        swapchain->images = vkl_images(swapchain->gpu, VK_IMAGE_TYPE_2D, swapchain->img_count);
+    {
+        VklImages images = vkl_images(swapchain->gpu, VK_IMAGE_TYPE_2D, swapchain->img_count);
+        swapchain->images = calloc(1, sizeof(VklImages));
+        *swapchain->images = images;
+    }
 
     swapchain->images->is_swapchain = true;
     vkl_images_format(swapchain->images, swapchain->format);
@@ -657,7 +618,11 @@ void vkl_swapchain_destroy(VklSwapchain* swapchain)
 
     log_trace("starting destruction of swapchain...");
 
-    vkl_images_destroy(swapchain->images);
+    if (swapchain->images != NULL)
+    {
+        vkl_images_destroy(swapchain->images);
+        FREE(swapchain->images);
+    }
 
     if (swapchain->swapchain != 0)
     {
@@ -788,17 +753,17 @@ void vkl_commands_destroy(VklCommands* cmds)
 /*  Buffers                                                                                      */
 /*************************************************************************************************/
 
-VklBuffer* vkl_buffer(VklGpu* gpu)
+VklBuffer vkl_buffer(VklGpu* gpu)
 {
     ASSERT(gpu != NULL);
     ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
 
-    INSTANCE_NEW(VklBuffer, buffer, gpu->buffers, gpu->max_buffers)
-
-    buffer->gpu = gpu;
+    VklBuffer buffer = {0};
+    buffer.obj.status = VKL_OBJECT_STATUS_INIT;
+    buffer.gpu = gpu;
 
     // Default values.
-    buffer->memory = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    buffer.memory = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
     return buffer;
 }
@@ -1003,24 +968,25 @@ void vkl_buffer_destroy(VklBuffer* buffer)
 /*  Images                                                                                       */
 /*************************************************************************************************/
 
-VklImages* vkl_images(VklGpu* gpu, VkImageType type, uint32_t count)
+VklImages vkl_images(VklGpu* gpu, VkImageType type, uint32_t count)
 {
     ASSERT(gpu != NULL);
     ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
 
-    INSTANCE_NEW(VklImages, images, gpu->images, gpu->max_images)
+    VklImages images = {0};
+    images.obj.status = VKL_OBJECT_STATUS_INIT;
 
-    images->gpu = gpu;
-    images->image_type = type;
+    images.gpu = gpu;
+    images.image_type = type;
     ASSERT(type <= VK_IMAGE_TYPE_3D);
     // HACK: find the matching view type.
-    images->view_type = (VkImageViewType)type;
-    images->count = count;
+    images.view_type = (VkImageViewType)type;
+    images.count = count;
 
     // Default options.
-    images->tiling = VK_IMAGE_TILING_OPTIMAL;
-    images->memory = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-    images->aspect = VK_IMAGE_ASPECT_COLOR_BIT;
+    images.tiling = VK_IMAGE_TILING_OPTIMAL;
+    images.memory = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    images.aspect = VK_IMAGE_ASPECT_COLOR_BIT;
 
     return images;
 }
@@ -1241,16 +1207,16 @@ void vkl_images_destroy(VklImages* images)
 /*  Sampler                                                                                      */
 /*************************************************************************************************/
 
-VklSampler* vkl_sampler(VklGpu* gpu)
+VklSampler vkl_sampler(VklGpu* gpu)
 {
     ASSERT(gpu != NULL);
     ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
 
-    INSTANCE_NEW(VklSampler, samplers, gpu->samplers, gpu->max_samplers)
+    VklSampler sampler = {0};
+    sampler.obj.status = VKL_OBJECT_STATUS_INIT;
+    sampler.gpu = gpu;
 
-    samplers->gpu = gpu;
-
-    return samplers;
+    return sampler;
 }
 
 
@@ -1466,15 +1432,16 @@ void vkl_bindings_destroy(VklBindings* bindings)
 /*  Compute                                                                                      */
 /*************************************************************************************************/
 
-VklCompute* vkl_compute(VklGpu* gpu, const char* shader_path)
+VklCompute vkl_compute(VklGpu* gpu, const char* shader_path)
 {
     ASSERT(gpu != NULL);
     ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
 
-    INSTANCE_NEW(VklCompute, compute, gpu->computes, gpu->max_computes)
+    VklCompute compute = {0};
+    compute.obj.status = VKL_OBJECT_STATUS_INIT;
 
-    compute->gpu = gpu;
-    strcpy(compute->shader_path, shader_path);
+    compute.gpu = gpu;
+    strcpy(compute.shader_path, shader_path);
 
     return compute;
 }

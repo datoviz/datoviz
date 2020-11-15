@@ -50,15 +50,34 @@ struct VklContext
 {
     VklObject obj;
     VklGpu* gpu;
+
+
+    uint32_t max_buffers;
+    VklBuffer* buffers;
+
+    uint32_t max_images;
+    VklImages* images;
+
+    uint32_t max_samplers;
+    VklSampler* samplers;
+
+    uint32_t max_textures;
+    VklTexture* textures;
+
+    uint32_t max_computes;
+    VklCompute* computes;
 };
 
 
 
 struct VklTexture
 {
-    VklObject obj;
-    VklGpu* gpu;
+    // VklObject obj;
+    // VklGpu* gpu;
     VklContext* context;
+
+    VklImages* image;
+    VklSampler* sampler;
 };
 
 
@@ -86,6 +105,7 @@ VKY_EXPORT void vkl_texture_filter(VklTexture* texture, VklFilterType type, VkFi
 VKY_EXPORT void vkl_texture_address_mode(
     VklTexture* texture, VklTextureAxis axis, VkSamplerAddressMode address_mode);
 
+VKY_EXPORT void vkl_texture_destroy(VklTexture* texture);
 
 
 #endif
