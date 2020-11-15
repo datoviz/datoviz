@@ -1121,6 +1121,11 @@ static int vklite2_context(VkyTestContext* context)
 static int vklite2_default_app(VkyTestContext* context)
 {
     VklApp* app = vkl_default_app(0, true);
+    VklContext* ctx = app->gpus[0].context;
+
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/spirv/pow2.comp.spv", DATA_DIR);
+    vkl_new_compute(ctx, path);
 
     TEST_END
 }

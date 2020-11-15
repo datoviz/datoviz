@@ -98,6 +98,10 @@ void vkl_context_destroy(VklContext* context)
 
 
 
+/*************************************************************************************************/
+/*  Buffer allocation                                                                            */
+/*************************************************************************************************/
+
 VklBufferRegions vkl_alloc_buffers(
     VklContext* context, uint32_t buffer_idx, uint32_t buffer_count, VkDeviceSize size)
 {
@@ -140,12 +144,27 @@ VklBufferRegions vkl_alloc_buffers(
 
 
 
+/*************************************************************************************************/
+/*  Compute                                                                                      */
+/*************************************************************************************************/
+
 VklCompute* vkl_new_compute(VklContext* context, const char* shader_path)
 {
-    // TODO
+    ASSERT(context != NULL);
+    ASSERT(shader_path != NULL);
+
+    INSTANCE_NEW(VklCompute, compute, context->computes, context->max_computes);
+
+    *compute = vkl_compute(context->gpu, shader_path);
+
+    return compute;
 }
 
 
+
+/*************************************************************************************************/
+/*  Texture                                                                                      */
+/*************************************************************************************************/
 
 VklTexture* vkl_new_texture(VklContext* context, uint32_t dims, uvec3 size, VkFormat format)
 {
