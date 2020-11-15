@@ -38,17 +38,6 @@ typedef struct VklTexture VklTexture;
 
 typedef enum
 {
-    VKL_BUFFER_STAGING,
-    VKL_BUFFER_VERTEX,
-    VKL_BUFFER_INDEX,
-    VKL_BUFFER_STORAGE,
-    VKL_BUFFER_UNIFORM,
-} VklBufferType;
-
-
-
-typedef enum
-{
     VKL_DEFAULT_BUFFER_STAGING,
     VKL_DEFAULT_BUFFER_VERTEX,
     VKL_DEFAULT_BUFFER_INDEX,
@@ -89,6 +78,7 @@ struct VklContext
 
     uint32_t max_buffers;
     VklBuffer* buffers;
+    VkDeviceSize* allocated_sizes; // for each buffer, how much is already allocated
 
     uint32_t max_images;
     VklImages* images;
@@ -125,8 +115,8 @@ VKY_EXPORT VklApp* vkl_default_app(uint32_t gpu_idx, bool offscreen);
 
 VKY_EXPORT VklContext vkl_context(VklGpu* gpu);
 
-VKY_EXPORT VklBufferRegions
-vkl_alloc_buffer(VklContext* context, VklBufferType type, VkDeviceSize size);
+VKY_EXPORT VklBufferRegions vkl_alloc_buffers(
+    VklContext* context, uint32_t buffer_idx, uint32_t buffer_count, VkDeviceSize size);
 
 VKY_EXPORT VklCompute* vkl_new_compute(VklContext* context, const char* shader_path);
 

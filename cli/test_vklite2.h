@@ -461,10 +461,10 @@ static void triangle_commands(BasicCanvas* canvas, VklCommands* commands, uint32
 static int vklite2_app(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
-    ASSERT(app->obj.status == VKL_OBJECT_STATUS_CREATED);
-    ASSERT(app->gpu_count >= 1);
-    ASSERT(app->gpus[0].name != NULL);
-    ASSERT(app->gpus[0].obj.status == VKL_OBJECT_STATUS_INIT);
+    AT(app->obj.status == VKL_OBJECT_STATUS_CREATED);
+    AT(app->gpu_count >= 1);
+    AT(app->gpus[0].name != NULL);
+    AT(app->gpus[0].obj.status == VKL_OBJECT_STATUS_INIT);
 
     VklGpu* gpu = vkl_gpu(app, 0);
     vkl_gpu_queue(gpu, VKL_QUEUE_TRANSFER, 0);
@@ -500,7 +500,7 @@ static int vklite2_window(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklWindow* window = vkl_window(app, 100, 100);
-    ASSERT(window != NULL);
+    AT(window != NULL);
 
     TEST_END
 }
@@ -571,7 +571,7 @@ static int vklite2_buffer(VkyTestContext* context)
     vkl_buffer_download(&buffer, 0, size, data2);
 
     // Check that the data downloaded from the GPU is the same.
-    ASSERT(memcmp(data2, data, size) == 0);
+    AT(memcmp(data2, data, size) == 0);
 
     FREE(data);
     FREE(data2);
@@ -638,7 +638,7 @@ static int vklite2_compute(VkyTestContext* context)
     float* data2 = calloc(n, sizeof(float));
     vkl_buffer_download(&buffer, 0, size, data2);
     for (uint32_t i = 0; i < n; i++)
-        ASSERT(data2[i] == 2 * data[i]);
+        AT(data2[i] == 2 * data[i]);
 
     vkl_compute_destroy(&compute);
     vkl_buffer_destroy(&buffer);
@@ -839,7 +839,7 @@ static int vklite2_submit(VkyTestContext* context)
     float* data2 = calloc(n, sizeof(float));
     vkl_buffer_download(&buffer, 0, size, data2);
     for (uint32_t i = 0; i < n; i++)
-        ASSERT(data2[i] == 2 * i + 1);
+        AT(data2[i] == 2 * i + 1);
 
     vkl_buffer_destroy(&buffer);
     vkl_compute_destroy(&compute1);
@@ -867,7 +867,7 @@ static int vklite2_blank(VkyTestContext* context)
     uint8_t* rgba = screenshot(framebuffers->attachments[0]);
 
     for (uint32_t i = 0; i < TEST_WIDTH * TEST_HEIGHT * 3; i++)
-        ASSERT(rgba[i] >= 100);
+        AT(rgba[i] >= 100);
 
     FREE(rgba);
 
@@ -889,7 +889,7 @@ static int vklite2_graphics(VkyTestContext* context)
     VklRenderpass* renderpass = canvas.renderpass;
     VklFramebuffers* framebuffers = canvas.framebuffers;
     VklGraphics* graphics = vkl_graphics(gpu);
-    ASSERT(graphics != NULL);
+    AT(graphics != NULL);
 
     vkl_graphics_renderpass(graphics, renderpass, 0);
     vkl_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
@@ -996,7 +996,7 @@ static int vklite2_canvas_triangle(VkyTestContext* context)
 
     VklGraphics* graphics = vkl_graphics(gpu);
     canvas.graphics = graphics;
-    ASSERT(graphics != NULL);
+    AT(graphics != NULL);
 
     vkl_graphics_renderpass(graphics, renderpass, 0);
     vkl_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
@@ -1068,9 +1068,52 @@ static int vklite2_context(VkyTestContext* context)
 
     VklContext ctx = vkl_context(gpu);
 
+    // Create a buffer.
+    ctx.buffers[0] = vkl_buffer(gpu);
+    VklBuffer* buffer = &ctx.buffers[0];
+    vkl_buffer_queue_access(buffer, 0);
+    vkl_buffer_size(buffer, 256, 0);
+    vkl_buffer_usage(buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    vkl_buffer_memory(
+        buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vkl_buffer_create(buffer);
+
+    // Send some data to the GPU.
+    uint8_t* data = calloc(256, 1);
+    for (uint32_t i = 0; i < 256; i++)
+        data[i] = i;
+    vkl_buffer_upload(buffer, 0, 256, data);
+
+    // Allocate buffer regions.
+    VklBufferRegions br = vkl_alloc_buffers(&ctx, 0, 3, 64);
+    AT(br.count == 3);
+    AT(br.offsets[0] == 0);
+    AT(br.offsets[1] == 64);
+    AT(br.offsets[2] == 128);
+    AT(br.size == 64);
+    AT(buffer->size == 256);
+
+    br = vkl_alloc_buffers(&ctx, 0, 2, 64);
+    AT(br.count == 2);
+    AT(br.offsets[0] == 192);
+    AT(br.offsets[1] == 256);
+    AT(br.size == 64);
+    AT(buffer->size == 512);
+
+    // Recover the data.
+    void* data2 = calloc(256, 1);
+    vkl_buffer_download(buffer, 0, 256, data2);
+
+    // Check that the data downloaded from the GPU is the same.
+    AT(memcmp(data2, data, 256) == 0);
+
+    FREE(data);
+    FREE(data2);
     vkl_context_destroy(&ctx);
     TEST_END
 }
+
+
 
 static int vklite2_default_app(VkyTestContext* context)
 {

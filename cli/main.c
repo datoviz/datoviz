@@ -109,7 +109,10 @@ struct VkyTestCase
 
 #define AT(x)                                                                                     \
     if (!(x))                                                                                     \
-        return 1;
+    {                                                                                             \
+        log_error("assertion '%s' failed", #x);                                                   \
+        return 1;                                                                                 \
+    }
 
 #define AIN(x, m, M) AT((m) <= (x) && (x) <= (M))
 

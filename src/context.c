@@ -7,6 +7,8 @@
 /*  Macros                                                                                       */
 /*************************************************************************************************/
 
+#define TO_KB(x) ((x) / (1024.0))
+
 
 
 /*************************************************************************************************/
@@ -23,6 +25,7 @@ VklContext vkl_context(VklGpu* gpu)
     // Allocate memory for buffers, textures, and computes.
     INSTANCES_INIT(
         VklBuffer, context, buffers, max_buffers, VKL_MAX_BUFFERS, VKL_OBJECT_TYPE_IMAGES)
+    context->allocated_sizes = calloc(context->max_buffers, sizeof(VkDeviceSize));
 
     INSTANCES_INIT(
         VklImages, context, images, max_images, VKL_MAX_TEXTURES, VKL_OBJECT_TYPE_IMAGES)
@@ -58,6 +61,7 @@ void vkl_context_destroy(VklContext* context)
         vkl_buffer_destroy(&context->buffers[i]);
     }
     INSTANCES_DESTROY(context->buffers)
+    FREE(context->allocated_sizes);
 
 
     log_trace("context destroy sets of images");
@@ -92,29 +96,78 @@ void vkl_context_destroy(VklContext* context)
 
 
 
-VklBufferRegions vkl_alloc_buffer(VklContext* context, VklBufferType type, VkDeviceSize size) {}
+VklBufferRegions vkl_alloc_buffers(
+    VklContext* context, uint32_t buffer_idx, uint32_t buffer_count, VkDeviceSize size)
+{
+    ASSERT(context != NULL);
+    ASSERT(context->gpu != NULL);
+
+    VklBufferRegions regions = {0};
+
+    if (buffer_idx >= context->max_buffers ||
+        context->buffers[buffer_idx].obj.status < VKL_OBJECT_STATUS_CREATED)
+    {
+        log_error("invalid buffer #%d", buffer_idx);
+        return regions;
+    }
+
+    regions.buffer = &context->buffers[buffer_idx];
+    regions.count = buffer_count;
+    regions.size = size;
+
+    // Need to reallocate?
+    if (context->allocated_sizes[buffer_idx] + size * buffer_count > regions.buffer->size)
+    {
+        VkDeviceSize new_size = regions.buffer->size * 2;
+        log_info("reallocating buffer #%d to %.3f KB", buffer_idx, TO_KB(new_size));
+        // WARNING: the command below loses the data.
+        vkl_buffer_resize(regions.buffer, new_size);
+    }
+
+    log_trace("allocating %d buffers with size %.3f KB", buffer_count, TO_KB(size));
+    ASSERT(context->allocated_sizes[buffer_idx] + size * buffer_count <= regions.buffer->size);
+    for (uint32_t i = 0; i < buffer_count; i++)
+    {
+        regions.offsets[i] = context->allocated_sizes[buffer_idx] + i * size;
+    }
+    context->allocated_sizes[buffer_idx] += size * buffer_count;
+    ASSERT(regions.offsets[buffer_count - 1] + size == context->allocated_sizes[buffer_idx]);
+
+    return regions;
+}
 
 
 
-VklCompute* vkl_new_compute(VklContext* context, const char* shader_path) {}
+VklCompute* vkl_new_compute(VklContext* context, const char* shader_path)
+{
+    // TODO
+}
 
 
 
-VklTexture* vkl_new_texture(VklContext* context, uint32_t dims, uvec3 size, VkFormat format) {}
+VklTexture* vkl_new_texture(VklContext* context, uint32_t dims, uvec3 size, VkFormat format)
+{
+    // TODO
+}
 
 
 
-void vkl_texture_resize(VklTexture* texture, uvec3 size) {}
+void vkl_texture_resize(VklTexture* texture, uvec3 size)
+{ // TODO
+}
 
 
 
-void vkl_texture_filter(VklTexture* texture, VklFilterType type, VkFilter filter) {}
+void vkl_texture_filter(VklTexture* texture, VklFilterType type, VkFilter filter)
+{ // TODO
+}
 
 
 
 void vkl_texture_address_mode(
     VklTexture* texture, VklTextureAxis axis, VkSamplerAddressMode address_mode)
 {
+    // TODO
 }
 
 
@@ -131,7 +184,7 @@ void vkl_texture_destroy(VklTexture* texture)
 
 
 /*************************************************************************************************/
-/*  Default app                                                                                  */
+/*  Default app */
 /*************************************************************************************************/
 
 VklApp* vkl_default_app(uint32_t gpu_idx, bool offscreen)
