@@ -6,8 +6,9 @@
 /*************************************************************************************************/
 
 #define TEST_END                                                                                  \
+    int res = (int)app->n_errors;                                                                 \
     vkl_app_destroy(app);                                                                         \
-    return app->n_errors != 0;
+    return res;
 
 
 
@@ -20,8 +21,8 @@
 
 static const VkClearColorValue bgcolor = {{.4f, .6f, .8f, 1.0f}};
 #define TEST_FORMAT VK_FORMAT_B8G8R8A8_UNORM
-// #define TEST_PRESENT_MODE VK_PRESENT_MODE_FIFO_KHR
-#define TEST_PRESENT_MODE VK_PRESENT_MODE_IMMEDIATE_KHR
+#define TEST_PRESENT_MODE VK_PRESENT_MODE_FIFO_KHR
+// #define TEST_PRESENT_MODE VK_PRESENT_MODE_IMMEDIATE_KHR
 
 
 /*************************************************************************************************/
@@ -488,7 +489,7 @@ static int vklite2_swapchain(VkyTestContext* context)
     vkl_gpu_create(gpu, window->surface);
     VklSwapchain* swapchain = vkl_swapchain(gpu, window, 3);
     vkl_swapchain_format(swapchain, VK_FORMAT_B8G8R8A8_UNORM);
-    vkl_swapchain_present_mode(swapchain, VK_PRESENT_MODE_IMMEDIATE_KHR);
+    vkl_swapchain_present_mode(swapchain, TEST_PRESENT_MODE);
     vkl_swapchain_create(swapchain);
     vkl_swapchain_destroy(swapchain);
     vkl_window_destroy(window);

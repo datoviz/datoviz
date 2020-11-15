@@ -534,7 +534,7 @@ static int launcher(VkyTestContext* context, const char* name)
 
     // Tear down the fixture (mainly resetting the canvas or destroying the scene).
     _teardown(context, test_case.fixture);
-
+    
     return res;
 }
 
