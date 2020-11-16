@@ -1,6 +1,8 @@
 #ifndef VKL_CONTEXT_HEADER
 #define VKL_CONTEXT_HEADER
 
+#include <pthread.h>
+
 #include "vklite2.h"
 
 
@@ -44,14 +46,6 @@ typedef union VklTransferUnion VklTransferUnion;
 
 typedef enum
 {
-    VKL_CONTEXT_TRANSFER_SYNC,
-    VKL_CONTEXT_TRANSFER_ASYNC,
-} VklTransferMode;
-
-
-
-typedef enum
-{
     VKL_DEFAULT_BUFFER_STAGING,
     VKL_DEFAULT_BUFFER_VERTEX,
     VKL_DEFAULT_BUFFER_INDEX,
@@ -83,6 +77,15 @@ typedef enum
 
 typedef enum
 {
+    VKL_TRANSFER_MODE_SYNC,
+    VKL_TRANSFER_MODE_ASYNC,
+} VklTransferMode;
+
+
+
+typedef enum
+{
+    VKL_TRANSFER_NULL,
     VKL_TRANSFER_BUFFER_UPLOAD,
     VKL_TRANSFER_BUFFER_DOWNLOAD,
     VKL_TRANSFER_TEXTURE_UPLOAD,
@@ -131,8 +134,9 @@ struct VklTransfer
 
 struct VklTransferFifo
 {
-    uint32_t head, tail;
+    int32_t head, tail;
     VklTransfer transfers[VKL_MAX_TRANSFERS];
+    pthread_mutex_t lock;
 };
 
 
@@ -231,15 +235,14 @@ VKY_EXPORT void vkl_texture_destroy(VklTexture* texture);
 /*************************************************************************************************/
 
 VKY_EXPORT void vkl_texture_upload_region(
-    VklTexture* texture, uvec3 offset, uvec3 shape, //
-    VkDeviceSize size, const void* data);
+    VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, const void* data);
 
 VKY_EXPORT void vkl_texture_upload(VklTexture* texture, VkDeviceSize size, const void* data);
 
-VKY_EXPORT void
-vkl_texture_download_region(VklTexture* texture, uvec3 offset, uvec3 shape, void* data);
+VKY_EXPORT void vkl_texture_download_region(
+    VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data);
 
-VKY_EXPORT void vkl_texture_download(VklTexture* texture, void* data);
+VKY_EXPORT void vkl_texture_download(VklTexture* texture, VkDeviceSize size, void* data);
 
 VKY_EXPORT void vkl_context_transfer(VklContext* context);
 

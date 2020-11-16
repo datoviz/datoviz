@@ -119,9 +119,20 @@ VklContext* vkl_context(VklGpu* gpu)
 
     context->transfer_cmd = vkl_commands(gpu, VKL_DEFAULT_QUEUE_TRANSFER, 1);
 
+    if (pthread_mutex_init(&context->transfer_fifo.lock, NULL) != 0)
+        log_error("mutex creation failed");
+
     gpu->context = context;
 
     return context;
+}
+
+
+
+void vkl_context_transfer_mode(VklContext* context, VklTransferMode mode)
+{
+    ASSERT(context != NULL);
+    context->transfer_mode = mode;
 }
 
 
@@ -177,6 +188,8 @@ void vkl_context_destroy(VklContext* context)
         vkl_compute_destroy(&context->computes[i]);
     }
     INSTANCES_DESTROY(context->computes)
+
+    pthread_mutex_destroy(&context->transfer_fifo.lock);
 }
 
 
@@ -360,22 +373,6 @@ void vkl_texture_address_mode(
 
 
 
-void vkl_texture_upload_region(
-    VklTexture* texture, uvec3 offset, uvec3 shape, //
-    VkDeviceSize size, const void* data)
-{
-    ASSERT(texture != NULL);
-}
-
-
-
-void vkl_texture_download_region(VklTexture* texture, uvec3 offset, uvec3 shape, void* data)
-{
-    ASSERT(texture != NULL);
-}
-
-
-
 void vkl_texture_destroy(VklTexture* texture)
 {
     ASSERT(texture != NULL);
@@ -385,4 +382,112 @@ void vkl_texture_destroy(VklTexture* texture)
     texture->image = NULL;
     texture->sampler = NULL;
     obj_destroyed(&texture->obj);
+}
+
+
+
+/*************************************************************************************************/
+/*  Data transfers                                                                               */
+/*************************************************************************************************/
+
+static void fifo_enqueue(VklTransferFifo* fifo, VklTransfer transfer)
+{
+    ASSERT(fifo != NULL);
+    pthread_mutex_lock(&fifo->lock);
+
+    fifo->transfers[fifo->head] = transfer;
+
+    fifo->head++;
+    if (fifo->head >= VKL_MAX_TRANSFERS)
+        fifo->head -= VKL_MAX_TRANSFERS;
+
+    ASSERT(0 <= fifo->head && fifo->head < VKL_MAX_TRANSFERS);
+    pthread_mutex_unlock(&fifo->lock);
+}
+
+
+
+static VklTransfer fifo_dequeue(VklTransferFifo* fifo)
+{
+    ASSERT(fifo != NULL);
+    pthread_mutex_lock(&fifo->lock);
+
+    // Empty queue.
+    if (fifo->head == fifo->tail)
+        return (VklTransfer){VKL_TRANSFER_NULL, {{{0}}}};
+
+    ASSERT(0 <= fifo->tail && fifo->tail < VKL_MAX_TRANSFERS);
+
+    VklTransfer tr = fifo->transfers[fifo->tail];
+
+    fifo->tail++;
+    if (fifo->tail >= VKL_MAX_TRANSFERS)
+        fifo->tail -= VKL_MAX_TRANSFERS;
+
+    ASSERT(0 <= fifo->tail && fifo->tail < VKL_MAX_TRANSFERS);
+    pthread_mutex_unlock(&fifo->lock);
+
+    return tr;
+}
+
+
+
+void vkl_texture_upload_region(
+    VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, const void* data)
+{
+    ASSERT(texture != NULL);
+    ASSERT(texture->context != NULL);
+    VklContext* context = texture->context;
+    if (context->transfer_mode == VKL_TRANSFER_MODE_ASYNC)
+    {
+        log_trace("upload in ASYNC mode");
+        // context->transfer_fifo.head
+    }
+    else
+    {
+        log_trace("upload in SYNC mode");
+        // TODO
+    }
+}
+
+
+
+void vkl_texture_upload(VklTexture* texture, VkDeviceSize size, const void* data)
+{
+    ASSERT(texture != NULL);
+    uvec3 shape = {0};
+    shape[0] = texture->image->width;
+    shape[1] = texture->image->height;
+    shape[2] = texture->image->depth;
+    vkl_texture_upload_region(texture, (uvec3){0, 0, 0}, shape, size, data);
+}
+
+
+
+void vkl_texture_download_region(
+    VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data)
+{
+    ASSERT(texture != NULL);
+    ASSERT(texture->context != NULL);
+    // TODO
+}
+
+
+
+void vkl_texture_download(VklTexture* texture, VkDeviceSize size, void* data)
+{
+    ASSERT(texture != NULL);
+    uvec3 shape = {0};
+    shape[0] = texture->image->width;
+    shape[1] = texture->image->height;
+    shape[2] = texture->image->depth;
+    vkl_texture_download_region(texture, (uvec3){0, 0, 0}, shape, size, data);
+}
+
+
+
+void vkl_context_transfer(VklContext* context)
+{
+    ASSERT(context != NULL);
+    // TODO
 }
