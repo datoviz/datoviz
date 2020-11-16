@@ -401,7 +401,7 @@ static void show_canvas(BasicCanvas canvas, FillCallback fill_commands, uint32_t
         // IMPORTANT: we need to fait for the present queue to be idle, otherwise the GPU hangs
         // when waiting for fences (not sure why). The problem only arises when using different
         // queues for command bufer submission and swapchain present.
-        vkQueueWaitIdle(gpu->queues.queues[1]);
+        vkl_gpu_queue_wait(gpu, 1);
     }
     log_trace("end of main loop");
     vkl_gpu_wait(gpu);
@@ -1225,6 +1225,26 @@ static int vklite2_context_texture(VkyTestContext* context)
     VklContext* ctx = vkl_context(gpu);
 
     vkl_new_texture(ctx, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+
+    TEST_END
+}
+
+
+
+static int vklite2_context_transfer(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    VklContext* ctx = vkl_context(gpu);
+
+    VklBufferRegions br = vkl_alloc_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, 16);
+    uint8_t data[16] = {0};
+    memset(data, 12, 16);
+    vkl_buffer_regions_upload(ctx, &br, 0, 16, data);
+
+    uint8_t data2[16] = {0};
+    vkl_buffer_regions_download(ctx, &br, 0, 16, data2);
+    AT(memcmp(data, data2, 16) == 0);
 
     TEST_END
 }

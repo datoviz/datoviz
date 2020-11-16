@@ -110,7 +110,8 @@ struct VklTransferBuffer
 struct VklTransferTexture
 {
     VklTexture* texture;
-    uvec3 offset, size;
+    uvec3 offset, shape;
+    VkDeviceSize size;
     void* data;
 };
 
@@ -136,7 +137,9 @@ struct VklTransferFifo
 {
     int32_t head, tail;
     VklTransfer transfers[VKL_MAX_TRANSFERS];
+
     pthread_mutex_t lock;
+    pthread_cond_t cond;
 };
 
 
@@ -235,16 +238,28 @@ VKY_EXPORT void vkl_texture_destroy(VklTexture* texture);
 /*************************************************************************************************/
 
 VKY_EXPORT void vkl_texture_upload_region(
-    VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, const void* data);
+    VklContext* context, VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size,
+    void* data);
 
-VKY_EXPORT void vkl_texture_upload(VklTexture* texture, VkDeviceSize size, const void* data);
+VKY_EXPORT void
+vkl_texture_upload(VklContext* context, VklTexture* texture, VkDeviceSize size, void* data);
 
 VKY_EXPORT void vkl_texture_download_region(
-    VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data);
+    VklContext* context, VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size,
+    void* data);
 
-VKY_EXPORT void vkl_texture_download(VklTexture* texture, VkDeviceSize size, void* data);
+VKY_EXPORT void
+vkl_texture_download(VklContext* context, VklTexture* texture, VkDeviceSize size, void* data);
 
-VKY_EXPORT void vkl_context_transfer(VklContext* context);
+VKY_EXPORT void vkl_buffer_regions_upload(
+    VklContext* context, VklBufferRegions* regions, VkDeviceSize offset, VkDeviceSize size,
+    void* data);
+
+VKY_EXPORT void vkl_buffer_regions_download(
+    VklContext* context, VklBufferRegions* regions, VkDeviceSize offset, VkDeviceSize size,
+    void* data);
+
+VKY_EXPORT void vkl_context_transfer_loop(VklContext* context);
 
 
 

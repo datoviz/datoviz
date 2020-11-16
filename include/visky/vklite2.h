@@ -1219,7 +1219,7 @@ VKY_EXPORT void
 vkl_submit_signal_semaphores(VklSubmit* submit, VklSemaphores* semaphores, uint32_t idx);
 
 VKY_EXPORT void
-vkl_submit_send(VklSubmit* submit, uint32_t img_idx, VklFences* fence, uint32_t fence_idx);
+vkl_submit_send(VklSubmit* submit, uint32_t cmd_idx, VklFences* fence, uint32_t fence_idx);
 
 
 

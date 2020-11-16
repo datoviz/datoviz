@@ -39,16 +39,16 @@ static void _context_default_buffers(VklContext* context)
         vkl_buffer_queue_access(buffer, VKL_DEFAULT_QUEUE_RENDER);
     }
 
+    VkBufferUsageFlagBits transferable =
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+
     // Staging buffer
     buffer = &context->buffers[VKL_DEFAULT_BUFFER_STAGING];
     vkl_buffer_size(buffer, VKL_DEFAULT_BUFFER_STAGING_SIZE);
-    vkl_buffer_usage(buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    vkl_buffer_usage(buffer, transferable);
     vkl_buffer_memory(
         buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
     vkl_buffer_create(buffer);
-
-    VkBufferUsageFlagBits transferable =
-        VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
     // Vertex buffer
     buffer = &context->buffers[VKL_DEFAULT_BUFFER_VERTEX];
@@ -402,15 +402,23 @@ static void fifo_enqueue(VklTransferFifo* fifo, VklTransfer transfer)
         fifo->head -= VKL_MAX_TRANSFERS;
 
     ASSERT(0 <= fifo->head && fifo->head < VKL_MAX_TRANSFERS);
+    pthread_cond_signal(&fifo->cond);
     pthread_mutex_unlock(&fifo->lock);
 }
 
 
 
-static VklTransfer fifo_dequeue(VklTransferFifo* fifo)
+static VklTransfer fifo_dequeue(VklTransferFifo* fifo, bool wait)
 {
     ASSERT(fifo != NULL);
     pthread_mutex_lock(&fifo->lock);
+
+    // Wait until the queue is not empty.
+    if (wait)
+    {
+        while (fifo->head == fifo->tail)
+            pthread_cond_wait(&fifo->cond, &fifo->lock);
+    }
 
     // Empty queue.
     if (fifo->head == fifo->tail)
@@ -432,62 +440,355 @@ static VklTransfer fifo_dequeue(VklTransferFifo* fifo)
 
 
 
+static VklTransfer enqueue_texture_transfer(
+    VklTransferFifo* fifo, VklDataTransferType type, VklTexture* texture, uvec3 offset,
+    uvec3 shape, VkDeviceSize size, void* data)
+{
+    // Create the transfer object.
+    VklTransfer tr = {0};
+    tr.type = type;
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        tr.u.tex.shape[i] = shape[i];
+        tr.u.tex.offset[i] = offset[i];
+    }
+    tr.u.tex.size = size;
+    tr.u.tex.data = data;
+
+    fifo_enqueue(fifo, tr);
+
+    return tr;
+}
+
+
+
+static VklTransfer enqueue_regions_transfer(
+    VklTransferFifo* fifo, VklDataTransferType type, VklBufferRegions regions, VkDeviceSize offset,
+    VkDeviceSize size, void* data)
+{
+    // Create the transfer object.
+    VklTransfer tr = {0};
+    tr.type = type;
+    tr.u.buf.regions = regions;
+    tr.u.buf.offset = offset;
+    tr.u.buf.size = size;
+    tr.u.buf.data = data;
+
+    fifo_enqueue(fifo, tr);
+
+    return tr;
+}
+
+
+
+static void process_texture_upload(VklContext* context, VklTransfer tr)
+{
+    ASSERT(context != NULL);
+
+    VklGpu* gpu = context->gpu;
+    ASSERT(gpu != NULL);
+
+    ASSERT(tr.type == VKL_TRANSFER_TEXTURE_UPLOAD);
+
+    // Wait for the transfer queue to be idle.
+    vkl_gpu_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
+
+    // TODO
+    // Map/unmap (CPU->GPU data transfer) to the staging buffer
+
+    // take transfer cmd buf
+    // cmd memory barrier
+    // cmd copy to staging buffer
+    // cmd memory barrier
+    // wait render queue idle
+    // queue submit
+    // wait transfer queue idle
+}
+
+
+
+static void process_texture_download(VklContext* context, VklTransfer tr)
+{
+    ASSERT(context != NULL);
+    // TODO
+}
+
+
+
+static void process_buffer_upload(VklContext* context, VklTransfer tr)
+{
+    ASSERT(context != NULL);
+
+    VklGpu* gpu = context->gpu;
+    ASSERT(gpu != NULL);
+
+    ASSERT(tr.type == VKL_TRANSFER_BUFFER_UPLOAD);
+
+    // Wait for the transfer queue to be idle.
+    vkl_gpu_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
+
+    // Take the staging buffer.
+    VklBuffer* staging = &context->buffers[VKL_DEFAULT_BUFFER_STAGING];
+
+    // Size of the buffer to transfer.
+    VkDeviceSize size = tr.u.buf.size;
+
+    // Transfer from the CPU to the GPU staging buffer.
+    vkl_buffer_upload(staging, 0, size, (const void*)tr.u.buf.data);
+
+    // Take transfer cmd buf.
+    VklCommands* cmds = context->transfer_cmd;
+    vkl_cmd_reset(cmds);
+    vkl_cmd_begin(cmds, 0);
+
+    // // Memory barrier.
+    // VklBarrier barrier = vkl_barrier(gpu);
+    // vkl_barrier_buffer(&barrier, &tr.u.buf.regions);
+    // vkl_barrier_buffer_access(&barrier, VK_ACCESS_TRANSFER_WRITE_BIT, 0);
+    // vkl_barrier_buffer_queue(&barrier, VKL_DEFAULT_QUEUE_RENDER, VKL_DEFAULT_QUEUE_TRANSFER);
+    // vkl_barrier_stages(
+    //     &barrier, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
+    // vkl_cmd_barrier(cmds, 0, &barrier);
+
+    // Determine the offset in the target buffer.
+    // Should be consecutive offsets.
+    VkDeviceSize offset = tr.u.buf.regions.offsets[0];
+    uint32_t n_regions = tr.u.buf.regions.count;
+    for (uint32_t i = 1; i < n_regions; i++)
+    {
+        ASSERT(tr.u.buf.regions.offsets[i] == offset + i * size);
+    }
+    // Take into account the transfer offset.
+    offset += tr.u.buf.offset;
+
+    // Copy to staging buffer
+    ASSERT(tr.u.buf.regions.buffer != 0);
+    vkl_cmd_copy_buffer(cmds, 0, staging, 0, tr.u.buf.regions.buffer, offset, size * n_regions);
+    vkl_cmd_end(cmds, 0);
+
+    // Wait for the render queue to be idle.
+    vkl_gpu_queue_wait(gpu, VKL_DEFAULT_QUEUE_RENDER);
+
+    // Submit the commands to the transfer queue.
+    VklSubmit submit = vkl_submit(gpu);
+    vkl_submit_commands(&submit, cmds);
+    vkl_submit_send(&submit, 0, NULL, 0);
+
+    // Wait for the transfer queue to be idle.
+    vkl_gpu_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
+}
+
+
+
+static void process_buffer_download(VklContext* context, VklTransfer tr)
+{
+    ASSERT(context != NULL);
+
+    VklGpu* gpu = context->gpu;
+    ASSERT(gpu != NULL);
+
+    ASSERT(tr.type == VKL_TRANSFER_BUFFER_DOWNLOAD);
+
+    // Take the staging buffer.
+    VklBuffer* staging = &context->buffers[VKL_DEFAULT_BUFFER_STAGING];
+
+    // Take transfer cmd buf.
+    VklCommands* cmds = context->transfer_cmd;
+    vkl_cmd_reset(cmds);
+    vkl_cmd_begin(cmds, 0);
+
+    // Size of the buffer to transfer.
+    VkDeviceSize size = tr.u.buf.size;
+
+    // Determine the offset in the source buffer.
+    // Should be consecutive offsets.
+    VkDeviceSize offset = tr.u.buf.regions.offsets[0];
+    uint32_t n_regions = tr.u.buf.regions.count;
+    for (uint32_t i = 1; i < n_regions; i++)
+    {
+        ASSERT(tr.u.buf.regions.offsets[i] == offset + i * size);
+    }
+    // Take into account the transfer offset.
+    offset += tr.u.buf.offset;
+
+    // Copy to staging buffer
+    ASSERT(tr.u.buf.regions.buffer != 0);
+    vkl_cmd_copy_buffer(cmds, 0, tr.u.buf.regions.buffer, offset, staging, 0, size * n_regions);
+    vkl_cmd_end(cmds, 0);
+
+    // Wait for the render queue to be idle.
+    vkl_gpu_queue_wait(gpu, VKL_DEFAULT_QUEUE_RENDER);
+
+    // Submit the commands to the transfer queue.
+    VklSubmit submit = vkl_submit(gpu);
+    vkl_submit_commands(&submit, cmds);
+    vkl_submit_send(&submit, 0, NULL, 0);
+
+    // Wait for the transfer queue to be idle.
+    vkl_gpu_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
+
+    // Transfer from the CPU to the GPU staging buffer.
+    vkl_buffer_download(staging, 0, size, tr.u.buf.data);
+}
+
+
+
+static int process_transfer(VklContext* context, VklTransfer tr)
+{
+    ASSERT(context != NULL);
+    switch (tr.type)
+    {
+    case VKL_TRANSFER_NULL:
+        return 1;
+        break;
+    case VKL_TRANSFER_TEXTURE_UPLOAD:
+        process_texture_upload(context, tr);
+        break;
+    case VKL_TRANSFER_TEXTURE_DOWNLOAD:
+        process_texture_download(context, tr);
+        break;
+    case VKL_TRANSFER_BUFFER_UPLOAD:
+        process_buffer_upload(context, tr);
+        break;
+    case VKL_TRANSFER_BUFFER_DOWNLOAD:
+        process_buffer_download(context, tr);
+        break;
+    default:
+        log_error("unknown transfer type %d", tr.type);
+        break;
+    }
+    return 0;
+}
+
+
+
 void vkl_texture_upload_region(
-    VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, const void* data)
+    VklContext* context, VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size,
+    void* data)
 {
     ASSERT(texture != NULL);
-    ASSERT(texture->context != NULL);
-    VklContext* context = texture->context;
+    ASSERT(context != NULL);
+
+    VklTransfer tr = enqueue_texture_transfer(
+        &context->transfer_fifo, VKL_TRANSFER_TEXTURE_UPLOAD, //
+        texture, offset, shape, size, data);
+
     if (context->transfer_mode == VKL_TRANSFER_MODE_ASYNC)
     {
-        log_trace("upload in ASYNC mode");
-        // context->transfer_fifo.head
+        log_trace("upload texture in ASYNC mode");
     }
     else
     {
-        log_trace("upload in SYNC mode");
-        // TODO
+        log_trace("upload texture in SYNC mode");
+        process_transfer(context, tr);
     }
 }
 
 
 
-void vkl_texture_upload(VklTexture* texture, VkDeviceSize size, const void* data)
+void vkl_texture_upload(VklContext* context, VklTexture* texture, VkDeviceSize size, void* data)
 {
     ASSERT(texture != NULL);
+    ASSERT(context != NULL);
+
     uvec3 shape = {0};
     shape[0] = texture->image->width;
     shape[1] = texture->image->height;
     shape[2] = texture->image->depth;
-    vkl_texture_upload_region(texture, (uvec3){0, 0, 0}, shape, size, data);
+    vkl_texture_upload_region(context, texture, (uvec3){0, 0, 0}, shape, size, data);
 }
 
 
 
 void vkl_texture_download_region(
-    VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data)
+    VklContext* context, VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size,
+    void* data)
 {
     ASSERT(texture != NULL);
-    ASSERT(texture->context != NULL);
-    // TODO
+    ASSERT(context != NULL);
+
+    VklTransfer tr = enqueue_texture_transfer(
+        &context->transfer_fifo, VKL_TRANSFER_TEXTURE_DOWNLOAD, //
+        texture, offset, shape, size, data);
+
+    if (context->transfer_mode == VKL_TRANSFER_MODE_ASYNC)
+    {
+        log_trace("download texture in ASYNC mode");
+    }
+    else
+    {
+        log_trace("download texture in SYNC mode");
+        process_transfer(context, tr);
+    }
 }
 
 
 
-void vkl_texture_download(VklTexture* texture, VkDeviceSize size, void* data)
+void vkl_texture_download(VklContext* context, VklTexture* texture, VkDeviceSize size, void* data)
 {
     ASSERT(texture != NULL);
+    ASSERT(context != NULL);
+
     uvec3 shape = {0};
     shape[0] = texture->image->width;
     shape[1] = texture->image->height;
     shape[2] = texture->image->depth;
-    vkl_texture_download_region(texture, (uvec3){0, 0, 0}, shape, size, data);
+    vkl_texture_download_region(context, texture, (uvec3){0, 0, 0}, shape, size, data);
 }
 
 
 
-void vkl_context_transfer(VklContext* context)
+void vkl_buffer_regions_upload(
+    VklContext* context, VklBufferRegions* regions, VkDeviceSize offset, VkDeviceSize size,
+    void* data)
+{
+    ASSERT(regions != NULL);
+    ASSERT(context != NULL);
+
+    VklTransfer tr = enqueue_regions_transfer(
+        &context->transfer_fifo, VKL_TRANSFER_BUFFER_UPLOAD, *regions, offset, size, data);
+
+    if (context->transfer_mode == VKL_TRANSFER_MODE_ASYNC)
+    {
+        log_trace("upload buffer regions in ASYNC mode");
+    }
+    else
+    {
+        log_trace("upload buffer regions in SYNC mode");
+        process_transfer(context, tr);
+    }
+}
+
+
+
+void vkl_buffer_regions_download(
+    VklContext* context, VklBufferRegions* regions, VkDeviceSize offset, VkDeviceSize size,
+    void* data)
+{
+    ASSERT(regions != NULL);
+    ASSERT(context != NULL);
+
+    VklTransfer tr = enqueue_regions_transfer(
+        &context->transfer_fifo, VKL_TRANSFER_BUFFER_DOWNLOAD, *regions, offset, size, data);
+
+    if (context->transfer_mode == VKL_TRANSFER_MODE_ASYNC)
+    {
+        log_trace("download buffer regions in ASYNC mode");
+    }
+    else
+    {
+        log_trace("download buffer regions in SYNC mode");
+        process_transfer(context, tr);
+    }
+}
+
+
+
+void vkl_context_transfer_loop(VklContext* context)
 {
     ASSERT(context != NULL);
-    // TODO
+    VklTransfer tr = fifo_dequeue(&context->transfer_fifo, true);
+    int res = 0;
+    while (res == 0)
+        res = process_transfer(context, tr);
 }

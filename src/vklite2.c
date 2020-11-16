@@ -2564,7 +2564,7 @@ void vkl_submit_signal_semaphores(VklSubmit* submit, VklSemaphores* semaphores, 
 
 
 
-void vkl_submit_send(VklSubmit* submit, uint32_t img_idx, VklFences* fence, uint32_t fence_idx)
+void vkl_submit_send(VklSubmit* submit, uint32_t cmd_idx, VklFences* fence, uint32_t fence_idx)
 {
     ASSERT(submit != NULL);
     log_trace("starting command buffer submission...");
@@ -2598,7 +2598,7 @@ void vkl_submit_send(VklSubmit* submit, uint32_t img_idx, VklFences* fence, uint
     {
         // All commands should belong to the same queue.
         if (submit->commands[i]->queue_idx == queue_idx)
-            cmd_bufs[i] = submit->commands[i]->cmds[img_idx];
+            cmd_bufs[i] = submit->commands[i]->cmds[cmd_idx];
         else
             log_error("all submitted commands should belong to the same queue #%d", queue_idx);
     }
