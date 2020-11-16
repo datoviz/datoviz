@@ -304,7 +304,10 @@ VklTexture* vkl_new_texture(VklContext* context, uint32_t dims, uvec3 size, VkFo
     vkl_images_format(image, format);
     vkl_images_size(image, size[0], size[1], size[2]);
     vkl_images_tiling(image, VK_IMAGE_TILING_OPTIMAL);
-    vkl_images_usage(image, VK_IMAGE_USAGE_STORAGE_BIT);
+    vkl_images_layout(image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    vkl_images_usage(
+        image, VK_IMAGE_USAGE_STORAGE_BIT | //
+                   VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT);
     vkl_images_memory(image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     vkl_images_queue_access(image, VKL_DEFAULT_QUEUE_TRANSFER);
     vkl_images_queue_access(image, VKL_DEFAULT_QUEUE_COMPUTE);
@@ -454,6 +457,7 @@ static VklTransfer enqueue_texture_transfer(
     }
     tr.u.tex.size = size;
     tr.u.tex.data = data;
+    tr.u.tex.texture = texture;
 
     fifo_enqueue(fifo, tr);
 
@@ -493,16 +497,52 @@ static void process_texture_upload(VklContext* context, VklTransfer tr)
     // Wait for the transfer queue to be idle.
     vkl_gpu_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
 
-    // TODO
-    // Map/unmap (CPU->GPU data transfer) to the staging buffer
+    // Take the staging buffer.
+    VklBuffer* staging = &context->buffers[VKL_DEFAULT_BUFFER_STAGING];
 
-    // take transfer cmd buf
-    // cmd memory barrier
-    // cmd copy to staging buffer
-    // cmd memory barrier
-    // wait render queue idle
-    // queue submit
-    // wait transfer queue idle
+    // Size of the buffer to transfer.
+    VkDeviceSize size = tr.u.tex.size;
+
+    // Transfer from the CPU to the GPU staging buffer.
+    vkl_buffer_upload(staging, 0, size, (const void*)tr.u.tex.data);
+
+    // Take transfer cmd buf.
+    VklCommands* cmds = context->transfer_cmd;
+    vkl_cmd_reset(cmds);
+    vkl_cmd_begin(cmds, 0);
+
+    // Image transition.
+    VklBarrier barrier = vkl_barrier(gpu);
+    vkl_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    ASSERT(tr.u.tex.texture != NULL);
+    ASSERT(tr.u.tex.texture->image != NULL);
+    vkl_barrier_images(&barrier, tr.u.tex.texture->image);
+    vkl_barrier_images_layout(
+        &barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    vkl_barrier_images_access(&barrier, 0, VK_ACCESS_TRANSFER_WRITE_BIT);
+    vkl_cmd_barrier(cmds, 0, &barrier);
+
+    // Copy to staging buffer
+    vkl_cmd_copy_buffer_to_image(cmds, 0, staging, tr.u.tex.texture->image);
+
+    // Image transition.
+    vkl_barrier_images_layout(
+        &barrier, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, tr.u.tex.texture->image->layout);
+    vkl_barrier_images_access(&barrier, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_MEMORY_READ_BIT);
+    vkl_cmd_barrier(cmds, 0, &barrier);
+
+    vkl_cmd_end(cmds, 0);
+
+    // Wait for the render queue to be idle.
+    vkl_gpu_queue_wait(gpu, VKL_DEFAULT_QUEUE_RENDER);
+
+    // Submit the commands to the transfer queue.
+    VklSubmit submit = vkl_submit(gpu);
+    vkl_submit_commands(&submit, cmds);
+    vkl_submit_send(&submit, 0, NULL, 0);
+
+    // Wait for the transfer queue to be idle.
+    vkl_gpu_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
 }
 
 
@@ -540,15 +580,6 @@ static void process_buffer_upload(VklContext* context, VklTransfer tr)
     VklCommands* cmds = context->transfer_cmd;
     vkl_cmd_reset(cmds);
     vkl_cmd_begin(cmds, 0);
-
-    // // Memory barrier.
-    // VklBarrier barrier = vkl_barrier(gpu);
-    // vkl_barrier_buffer(&barrier, &tr.u.buf.regions);
-    // vkl_barrier_buffer_access(&barrier, VK_ACCESS_TRANSFER_WRITE_BIT, 0);
-    // vkl_barrier_buffer_queue(&barrier, VKL_DEFAULT_QUEUE_RENDER, VKL_DEFAULT_QUEUE_TRANSFER);
-    // vkl_barrier_stages(
-    //     &barrier, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
-    // vkl_cmd_barrier(cmds, 0, &barrier);
 
     // Determine the offset in the target buffer.
     // Should be consecutive offsets.

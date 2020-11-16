@@ -1933,6 +1933,7 @@ void vkl_barrier_buffer_queue(VklBarrier* barrier, uint32_t src_queue, uint32_t 
     VklBarrierBuffer* b = &barrier->buffer_barriers[barrier->buffer_barrier_count - 1];
     ASSERT(b->buffer_regions.buffer != NULL);
 
+    b->queue_transfer = true;
     b->src_queue = src_queue;
     b->dst_queue = dst_queue;
 }
@@ -1999,6 +2000,7 @@ void vkl_barrier_images_queue(VklBarrier* barrier, uint32_t src_queue, uint32_t 
     VklBarrierImage* b = &barrier->image_barriers[barrier->image_barrier_count - 1];
     ASSERT(b->images != NULL);
 
+    b->queue_transfer = true;
     b->src_queue = src_queue;
     b->dst_queue = dst_queue;
 }
@@ -2702,10 +2704,18 @@ void vkl_cmd_barrier(VklCommands* cmds, uint32_t idx, VklBarrier* barrier)
         buffer_barrier->offset = buffer_info->buffer_regions.offsets[i];
 
         buffer_barrier->srcAccessMask = buffer_info->src_access;
-        buffer_barrier->srcQueueFamilyIndex = q->queue_families[buffer_info->src_queue];
-
         buffer_barrier->dstAccessMask = buffer_info->dst_access;
-        buffer_barrier->dstQueueFamilyIndex = q->queue_families[buffer_info->dst_queue];
+
+        if (buffer_info->queue_transfer)
+        {
+            buffer_barrier->srcQueueFamilyIndex = q->queue_families[buffer_info->src_queue];
+            buffer_barrier->dstQueueFamilyIndex = q->queue_families[buffer_info->dst_queue];
+        }
+        else
+        {
+            buffer_barrier->srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            buffer_barrier->dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        }
     }
 
     // Image barriers
@@ -2725,11 +2735,18 @@ void vkl_cmd_barrier(VklCommands* cmds, uint32_t idx, VklBarrier* barrier)
         image_barrier->newLayout = image_info->dst_layout;
 
         image_barrier->srcAccessMask = image_info->src_access;
-        image_barrier->srcQueueFamilyIndex = q->queue_families[image_info->src_queue];
-
         image_barrier->dstAccessMask = image_info->dst_access;
-        image_barrier->dstQueueFamilyIndex = q->queue_families[image_info->dst_queue];
 
+        if (image_info->queue_transfer)
+        {
+            image_barrier->srcQueueFamilyIndex = q->queue_families[image_info->src_queue];
+            image_barrier->dstQueueFamilyIndex = q->queue_families[image_info->dst_queue];
+        }
+        else
+        {
+            image_barrier->srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            image_barrier->dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        }
         image_barrier->subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         image_barrier->subresourceRange.baseMipLevel = 0;
         image_barrier->subresourceRange.levelCount = 1;

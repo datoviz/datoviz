@@ -1246,6 +1246,11 @@ static int vklite2_context_transfer(VkyTestContext* context)
     vkl_buffer_regions_download(ctx, &br, 0, 16, data2);
     AT(memcmp(data, data2, 16) == 0);
 
+    uint8_t* img_data = calloc(16 * 16 * 4, sizeof(uint8_t));
+    VklTexture* tex = vkl_new_texture(ctx, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+    vkl_texture_upload(ctx, tex, 16 * 16 * 4, img_data);
+
+    FREE(img_data);
     TEST_END
 }
 

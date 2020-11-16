@@ -926,6 +926,8 @@ static void make_shared(
         "requested %d queue(s), corresponding to %d distinct queue families", queue_count, n);
     *queue_family_count = n;
 
+    // DEBUG: always use exclusive for now (require queue owernship transfer with barriers)
+    // if (true || n <= 1)
     if (n <= 1)
     {
         *sharing_mode = VK_SHARING_MODE_EXCLUSIVE;

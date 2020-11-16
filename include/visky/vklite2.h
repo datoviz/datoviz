@@ -628,6 +628,7 @@ struct VklGraphics
 struct VklBarrierBuffer
 {
     VklBufferRegions buffer_regions;
+    bool queue_transfer;
 
     VkAccessFlags src_access;
     uint32_t src_queue;
@@ -641,6 +642,7 @@ struct VklBarrierBuffer
 struct VklBarrierImage
 {
     VklImages* images;
+    bool queue_transfer;
 
     VkAccessFlags src_access;
     uint32_t src_queue;
