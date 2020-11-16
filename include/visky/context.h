@@ -9,9 +9,10 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define VKL_MAX_BUFFERS  16
-#define VKL_MAX_COMPUTES 256
-#define VKL_MAX_TEXTURES 256
+#define VKL_MAX_BUFFERS   16
+#define VKL_MAX_COMPUTES  256
+#define VKL_MAX_TEXTURES  256
+#define VKL_MAX_TRANSFERS 256
 
 #define VKL_DEFAULT_WIDTH  800
 #define VKL_DEFAULT_HEIGHT 600
@@ -29,12 +30,25 @@
 /*************************************************************************************************/
 
 typedef struct VklTexture VklTexture;
+typedef struct VklTransfer VklTransfer;
+typedef struct VklTransferFifo VklTransferFifo;
+typedef struct VklTransferBuffer VklTransferBuffer;
+typedef struct VklTransferTexture VklTransferTexture;
+typedef union VklTransferUnion VklTransferUnion;
 
 
 
 /*************************************************************************************************/
 /*  Enums                                                                                      */
 /*************************************************************************************************/
+
+typedef enum
+{
+    VKL_CONTEXT_TRANSFER_SYNC,
+    VKL_CONTEXT_TRANSFER_ASYNC,
+} VklTransferMode;
+
+
 
 typedef enum
 {
@@ -67,6 +81,62 @@ typedef enum
 
 
 
+typedef enum
+{
+    VKL_TRANSFER_BUFFER_UPLOAD,
+    VKL_TRANSFER_BUFFER_DOWNLOAD,
+    VKL_TRANSFER_TEXTURE_UPLOAD,
+    VKL_TRANSFER_TEXTURE_DOWNLOAD,
+} VklDataTransferType;
+
+
+
+/*************************************************************************************************/
+/*  Transfer structs                                                                             */
+/*************************************************************************************************/
+
+struct VklTransferBuffer
+{
+    VklBufferRegions regions;
+    VkDeviceSize offset, size;
+    void* data;
+};
+
+
+
+struct VklTransferTexture
+{
+    VklTexture* texture;
+    uvec3 offset, size;
+    void* data;
+};
+
+
+
+union VklTransferUnion
+{
+    VklTransferBuffer buf;
+    VklTransferTexture tex;
+};
+
+
+
+struct VklTransfer
+{
+    VklDataTransferType type;
+    VklTransferUnion u;
+};
+
+
+
+struct VklTransferFifo
+{
+    uint32_t head, tail;
+    VklTransfer transfers[VKL_MAX_TRANSFERS];
+};
+
+
+
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
@@ -76,11 +146,13 @@ struct VklContext
     VklObject obj;
     VklGpu* gpu;
 
+    VklTransferMode transfer_mode;
+    VklCommands* transfer_cmd;
+    VklTransferFifo transfer_fifo;
+
     uint32_t max_buffers;
     VklBuffer* buffers;
     VkDeviceSize* allocated_sizes; // for each buffer, how much is already allocated
-
-    VklCommands* transfer_cmd;
 
     uint32_t max_images;
     VklImages* images;
@@ -115,6 +187,8 @@ struct VklTexture
 
 VKY_EXPORT VklContext* vkl_context(VklGpu* gpu);
 
+VKY_EXPORT void vkl_context_transfer_mode(VklContext* context, VklTransferMode mode);
+
 
 
 /*************************************************************************************************/
@@ -148,14 +222,26 @@ VKY_EXPORT void vkl_texture_filter(VklTexture* texture, VklFilterType type, VkFi
 VKY_EXPORT void vkl_texture_address_mode(
     VklTexture* texture, VklTextureAxis axis, VkSamplerAddressMode address_mode);
 
-VKY_EXPORT void vkl_texture_upload_partial(
+VKY_EXPORT void vkl_texture_destroy(VklTexture* texture);
+
+
+
+/*************************************************************************************************/
+/*  Data transfers                                                                               */
+/*************************************************************************************************/
+
+VKY_EXPORT void vkl_texture_upload_region(
     VklTexture* texture, uvec3 offset, uvec3 shape, //
     VkDeviceSize size, const void* data);
 
-VKY_EXPORT void
-vkl_texture_download_partial(VklTexture* texture, uvec3 offset, uvec3 shape, void* data);
+VKY_EXPORT void vkl_texture_upload(VklTexture* texture, VkDeviceSize size, const void* data);
 
-VKY_EXPORT void vkl_texture_destroy(VklTexture* texture);
+VKY_EXPORT void
+vkl_texture_download_region(VklTexture* texture, uvec3 offset, uvec3 shape, void* data);
+
+VKY_EXPORT void vkl_texture_download(VklTexture* texture, void* data);
+
+VKY_EXPORT void vkl_context_transfer(VklContext* context);
 
 
 

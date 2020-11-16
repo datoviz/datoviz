@@ -360,7 +360,7 @@ void vkl_texture_address_mode(
 
 
 
-void vkl_texture_upload_partial(
+void vkl_texture_upload_region(
     VklTexture* texture, uvec3 offset, uvec3 shape, //
     VkDeviceSize size, const void* data)
 {
@@ -369,7 +369,7 @@ void vkl_texture_upload_partial(
 
 
 
-void vkl_texture_download_partial(VklTexture* texture, uvec3 offset, uvec3 shape, void* data)
+void vkl_texture_download_region(VklTexture* texture, uvec3 offset, uvec3 shape, void* data)
 {
     ASSERT(texture != NULL);
 }
