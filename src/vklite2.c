@@ -1373,6 +1373,23 @@ void vkl_slots_binding(
 
 
 
+void vkl_slots_push_constant(
+    VklSlots* slots, uint32_t idx, //
+    VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders)
+{
+    ASSERT(slots != NULL);
+    ASSERT(idx == slots->push_count);
+    ASSERT(idx < VKL_MAX_PUSH_CONSTANTS);
+
+    slots->push_offsets[idx] = offset;
+    slots->push_sizes[idx] = size;
+    slots->push_shaders[idx] = shaders;
+
+    slots->push_count++;
+}
+
+
+
 void* vkl_slots_dynamic_allocate(VklSlots* slots, uint32_t idx, VkDeviceSize size)
 {
     ASSERT(slots != NULL);
@@ -1404,7 +1421,19 @@ void vkl_slots_create(VklSlots* slots)
     create_descriptor_set_layout(
         slots->gpu->device, slots->slot_count, slots->types, &slots->dset_layout);
 
-    create_pipeline_layout(slots->gpu->device, &slots->dset_layout, &slots->pipeline_layout);
+    // Push constants.
+    VkPushConstantRange push_constants[VKL_MAX_PUSH_CONSTANTS] = {0};
+    for (uint32_t i = 0; i < slots->push_count; i++)
+    {
+        push_constants[i].offset = slots->push_offsets[i];
+        push_constants[i].size = slots->push_sizes[i];
+        push_constants[i].stageFlags = slots->push_shaders[i];
+    }
+
+    // Create the pipeline layout.
+    create_pipeline_layout(
+        slots->gpu->device, slots->push_count, push_constants, //
+        &slots->dset_layout, &slots->pipeline_layout);
 
     obj_created(&slots->obj);
     log_trace("slots created");

@@ -45,6 +45,7 @@ TODO later
 #define VKL_MAX_GPUS             64
 #define VKL_MAX_GRAPHICS         1024
 #define VKL_MAX_PRESENT_MODES    16
+#define VKL_MAX_PUSH_CONSTANTS   16
 #define VKL_MAX_QUEUE_FAMILIES   16
 #define VKL_MAX_QUEUES           16
 #define VKL_MAX_RENDERPASSES     32
@@ -528,6 +529,11 @@ struct VklSlots
     VkDescriptorType types[VKL_MAX_BINDINGS_SIZE];
     VkDeviceSize alignments[VKL_MAX_BINDINGS_SIZE]; // dynamic uniform alignments
 
+    uint32_t push_count;
+    VkDeviceSize push_offsets[VKL_MAX_PUSH_CONSTANTS];
+    VkDeviceSize push_sizes[VKL_MAX_PUSH_CONSTANTS];
+    VkShaderStageFlags push_shaders[VKL_MAX_PUSH_CONSTANTS];
+
     VkPipelineLayout pipeline_layout;
     VkDescriptorSetLayout dset_layout;
 };
@@ -992,6 +998,10 @@ VKY_EXPORT VklSlots vkl_slots(VklGpu* gpu);
 
 VKY_EXPORT void
 vkl_slots_binding(VklSlots* slots, uint32_t idx, VkDescriptorType type, VkDeviceSize item_size);
+
+VKY_EXPORT void vkl_slots_push_constant(
+    VklSlots* slots, uint32_t idx, //
+    VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders);
 
 VKY_EXPORT void* vkl_slots_dynamic_allocate(VklSlots* slots, uint32_t idx, VkDeviceSize size);
 

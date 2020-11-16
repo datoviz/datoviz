@@ -1152,13 +1152,17 @@ static void create_descriptor_pool(VkDevice device, VkDescriptorPool* dset_pool)
 
 
 static void create_pipeline_layout(
-    VkDevice device, VkDescriptorSetLayout* dset_layout, VkPipelineLayout* pipeline_layout)
+    VkDevice device,                                                    //
+    uint32_t push_constants_count, VkPushConstantRange* push_constants, //
+    VkDescriptorSetLayout* dset_layout, VkPipelineLayout* pipeline_layout)
 {
     // Pipeline layout.
     VkPipelineLayoutCreateInfo info = {0};
     info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     info.setLayoutCount = dset_layout != NULL ? 1 : 0;
     info.pSetLayouts = dset_layout;
+    info.pushConstantRangeCount = push_constants_count;
+    info.pPushConstantRanges = push_constants;
 
     VK_CHECK_RESULT(vkCreatePipelineLayout(device, &info, NULL, pipeline_layout));
 }

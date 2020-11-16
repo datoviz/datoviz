@@ -325,6 +325,9 @@ file(GLOB shader_sources
     "examples/shaders/*.geom"
     "examples/shaders/*.comp"
     "examples/shaders/*.frag"
+    "cli/shaders/*.vert"
+    "cli/shaders/*.comp"
+    "cli/shaders/*.frag"
 )
 foreach(shader_source ${shader_sources})
     get_filename_component(shader_name ${shader_source} NAME)
