@@ -1272,7 +1272,7 @@ VKY_EXPORT void vkl_cmd_copy_buffer(
     VkDeviceSize size);
 
 VKY_EXPORT void vkl_cmd_push_constants(
-    VklCommands* cmds, uint32_t idx, VklSlots* slots, //
+    VklCommands* cmds, uint32_t idx, VklSlots* slots, VkShaderStageFlagBits shaders, //
     VkDeviceSize offset, VkDeviceSize size, const void* data);
 
 

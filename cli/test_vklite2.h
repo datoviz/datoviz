@@ -655,6 +655,80 @@ static int vklite2_compute(VkyTestContext* context)
 
 
 
+static int vklite2_push(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    vkl_gpu_queue(gpu, VKL_QUEUE_COMPUTE, 0);
+    vkl_gpu_create(gpu, 0);
+
+    // Create the compute pipeline.
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/spirv/test_pow.comp.spv", DATA_DIR);
+    VklCompute compute = vkl_compute(gpu, path);
+
+    // Create the buffers
+    VklBuffer buffer = vkl_buffer(gpu);
+    const uint32_t n = 20;
+    const VkDeviceSize size = n * sizeof(float);
+    vkl_buffer_size(&buffer, size);
+    vkl_buffer_usage(
+        &buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                     VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+    vkl_buffer_memory(
+        &buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vkl_buffer_queue_access(&buffer, 0);
+    vkl_buffer_create(&buffer);
+
+    // Send some data to the GPU.
+    float* data = calloc(n, sizeof(float));
+    for (uint32_t i = 0; i < n; i++)
+        data[i] = (float)i;
+    vkl_buffer_upload(&buffer, 0, size, data);
+
+    // Create the slots.
+    VklSlots slots = vkl_slots(gpu);
+    vkl_slots_binding(&slots, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 0);
+    vkl_slots_push_constant(&slots, 0, 0, sizeof(float), VK_SHADER_STAGE_COMPUTE_BIT);
+    vkl_slots_create(&slots);
+    vkl_compute_slots(&compute, &slots);
+
+    // Create the bindings.
+    VklBindings bindings = vkl_bindings(&slots);
+    VklBufferRegions br = {.buffer = &buffer, .size = size, .count = 1};
+    vkl_bindings_buffer(&bindings, 0, &br);
+    vkl_bindings_create(&bindings, 1);
+    vkl_bindings_update(&bindings);
+
+    // Link the bindings to the compute pipeline and create it.
+    vkl_compute_bindings(&compute, &bindings);
+    vkl_compute_create(&compute);
+
+    // Command buffers.
+    VklCommands* cmds = vkl_commands(gpu, 0, 1);
+    vkl_cmd_begin(cmds, 0);
+    float power = 2.0f;
+    vkl_cmd_push_constants(cmds, 0, &slots, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(float), &power);
+    vkl_cmd_compute(cmds, 0, &compute, (uvec3){20, 1, 1});
+    vkl_cmd_end(cmds, 0);
+    vkl_cmd_submit_sync(cmds, 0);
+
+    // Get back the data.
+    float* data2 = calloc(n, sizeof(float));
+    vkl_buffer_download(&buffer, 0, size, data2);
+    for (uint32_t i = 0; i < n; i++)
+        AT(fabs(data2[i] - pow(data[i], power)) < .01);
+
+    vkl_slots_destroy(&slots);
+    vkl_bindings_destroy(&bindings);
+    vkl_compute_destroy(&compute);
+    vkl_buffer_destroy(&buffer);
+
+    TEST_END
+}
+
+
+
 static int vklite2_images(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);

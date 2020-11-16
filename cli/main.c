@@ -145,6 +145,7 @@ static VkyTestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(vklite2_commands),        //
     CASE_FIXTURE_NONE(vklite2_buffer),          //
     CASE_FIXTURE_NONE(vklite2_compute),         //
+    CASE_FIXTURE_NONE(vklite2_push),            //
     CASE_FIXTURE_NONE(vklite2_images),          //
     CASE_FIXTURE_NONE(vklite2_sampler),         //
     CASE_FIXTURE_NONE(vklite2_barrier),         //
