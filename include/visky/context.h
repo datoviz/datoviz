@@ -99,8 +99,8 @@ struct VklContext
 
 struct VklTexture
 {
-    // VklObject obj;
-    // VklGpu* gpu;
+    VklObject obj;
+
     VklContext* context;
 
     VklImages* image;
@@ -115,10 +115,28 @@ struct VklTexture
 
 VKY_EXPORT VklContext* vkl_context(VklGpu* gpu);
 
+
+
+/*************************************************************************************************/
+/*  Buffer allocation                                                                            */
+/*************************************************************************************************/
+
 VKY_EXPORT VklBufferRegions vkl_alloc_buffers(
     VklContext* context, uint32_t buffer_idx, uint32_t buffer_count, VkDeviceSize size);
 
+
+
+/*************************************************************************************************/
+/*  Compute                                                                                      */
+/*************************************************************************************************/
+
 VKY_EXPORT VklCompute* vkl_new_compute(VklContext* context, const char* shader_path);
+
+
+
+/*************************************************************************************************/
+/*  Texture                                                                                      */
+/*************************************************************************************************/
 
 VKY_EXPORT VklTexture*
 vkl_new_texture(VklContext* context, uint32_t dims, uvec3 size, VkFormat format);
@@ -130,7 +148,15 @@ VKY_EXPORT void vkl_texture_filter(VklTexture* texture, VklFilterType type, VkFi
 VKY_EXPORT void vkl_texture_address_mode(
     VklTexture* texture, VklTextureAxis axis, VkSamplerAddressMode address_mode);
 
+VKY_EXPORT void vkl_texture_upload_partial(
+    VklTexture* texture, uvec3 offset, uvec3 shape, //
+    VkDeviceSize size, const void* data);
+
+VKY_EXPORT void
+vkl_texture_download_partial(VklTexture* texture, uvec3 offset, uvec3 shape, void* data);
+
 VKY_EXPORT void vkl_texture_destroy(VklTexture* texture);
+
 
 
 #endif

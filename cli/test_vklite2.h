@@ -1160,7 +1160,7 @@ static int vklite2_canvas_triangle(VkyTestContext* context)
 /*  Context                                                                                   */
 /*************************************************************************************************/
 
-static int vklite2_context(VkyTestContext* context)
+static int vklite2_context_buffer(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -1213,6 +1213,19 @@ static int vklite2_context(VkyTestContext* context)
 
     FREE(data);
     FREE(data2);
+    TEST_END
+}
+
+
+
+static int vklite2_context_texture(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    VklContext* ctx = vkl_context(gpu);
+
+    vkl_new_texture(ctx, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+
     TEST_END
 }
 

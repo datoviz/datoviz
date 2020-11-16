@@ -92,8 +92,11 @@ VklContext* vkl_context(VklGpu* gpu)
 
     // Allocate memory for buffers, textures, and computes.
     INSTANCES_INIT(
-        VklBuffer, context, buffers, max_buffers, VKL_MAX_BUFFERS, VKL_OBJECT_TYPE_IMAGES)
+        VklBuffer, context, buffers, max_buffers, VKL_MAX_BUFFERS, VKL_OBJECT_TYPE_BUFFER)
     context->allocated_sizes = calloc(context->max_buffers, sizeof(VkDeviceSize));
+
+    INSTANCES_INIT(
+        VklTexture, context, textures, max_textures, VKL_MAX_TEXTURES, VKL_OBJECT_TYPE_TEXTURE)
 
     INSTANCES_INIT(
         VklImages, context, images, max_images, VKL_MAX_TEXTURES, VKL_OBJECT_TYPE_IMAGES)
@@ -246,22 +249,99 @@ VklCompute* vkl_new_compute(VklContext* context, const char* shader_path)
 /*  Texture                                                                                      */
 /*************************************************************************************************/
 
+static VkImageType image_type_from_dims(uint32_t dims)
+{
+    switch (dims)
+    {
+    case 1:
+        return VK_IMAGE_TYPE_1D;
+        break;
+    case 2:
+        return VK_IMAGE_TYPE_2D;
+        break;
+    case 3:
+        return VK_IMAGE_TYPE_3D;
+        break;
+
+    default:
+        break;
+    }
+    log_error("invalid image dimensions %d", dims);
+    return VK_IMAGE_TYPE_2D;
+}
+
+
+
 VklTexture* vkl_new_texture(VklContext* context, uint32_t dims, uvec3 size, VkFormat format)
 {
-    // TODO
-    return NULL;
+    ASSERT(context != NULL);
+
+    INSTANCE_NEW(VklTexture, texture, context->textures, context->max_textures);
+    INSTANCE_NEW(VklImages, image, context->images, context->max_images);
+    INSTANCE_NEW(VklSampler, sampler, context->samplers, context->max_samplers);
+
+    texture->context = context;
+    *image = vkl_images(context->gpu, image_type_from_dims(dims), 1);
+    *sampler = vkl_sampler(context->gpu);
+
+    texture->image = image;
+    texture->sampler = sampler;
+
+    // Create the image.
+    vkl_images_format(image, format);
+    vkl_images_size(image, size[0], size[1], size[2]);
+    vkl_images_tiling(image, VK_IMAGE_TILING_OPTIMAL);
+    vkl_images_usage(image, VK_IMAGE_USAGE_STORAGE_BIT);
+    vkl_images_memory(image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    vkl_images_queue_access(image, VKL_DEFAULT_QUEUE_TRANSFER);
+    vkl_images_queue_access(image, VKL_DEFAULT_QUEUE_COMPUTE);
+    vkl_images_queue_access(image, VKL_DEFAULT_QUEUE_RENDER);
+    vkl_images_create(image);
+
+    // Create the sampler.
+    vkl_sampler_min_filter(sampler, VK_FILTER_NEAREST);
+    vkl_sampler_mag_filter(sampler, VK_FILTER_NEAREST);
+    vkl_sampler_address_mode(sampler, VKL_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    vkl_sampler_address_mode(sampler, VKL_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    vkl_sampler_address_mode(sampler, VKL_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    vkl_sampler_create(sampler);
+
+    obj_created(&texture->obj);
+
+    return texture;
 }
 
 
 
 void vkl_texture_resize(VklTexture* texture, uvec3 size)
-{ // TODO
+{
+    ASSERT(texture != NULL);
+    ASSERT(texture->image != NULL);
+
+    vkl_images_resize(texture->image, size[0], size[1], size[2]);
 }
 
 
 
 void vkl_texture_filter(VklTexture* texture, VklFilterType type, VkFilter filter)
-{ // TODO
+{
+    ASSERT(texture != NULL);
+    ASSERT(texture->sampler != NULL);
+
+    switch (type)
+    {
+    case VKL_FILTER_MIN:
+        vkl_sampler_min_filter(texture->sampler, filter);
+        break;
+    case VKL_FILTER_MAX:
+        vkl_sampler_mag_filter(texture->sampler, filter);
+        break;
+    default:
+        log_error("invalid filter type %d", type);
+        break;
+    }
+    vkl_sampler_destroy(texture->sampler);
+    vkl_sampler_create(texture->sampler);
 }
 
 
@@ -269,16 +349,40 @@ void vkl_texture_filter(VklTexture* texture, VklFilterType type, VkFilter filter
 void vkl_texture_address_mode(
     VklTexture* texture, VklTextureAxis axis, VkSamplerAddressMode address_mode)
 {
-    // TODO
+    ASSERT(texture != NULL);
+    ASSERT(texture->sampler != NULL);
+
+    vkl_sampler_address_mode(texture->sampler, axis, address_mode);
+
+    vkl_sampler_destroy(texture->sampler);
+    vkl_sampler_create(texture->sampler);
+}
+
+
+
+void vkl_texture_upload_partial(
+    VklTexture* texture, uvec3 offset, uvec3 shape, //
+    VkDeviceSize size, const void* data)
+{
+    ASSERT(texture != NULL);
+}
+
+
+
+void vkl_texture_download_partial(VklTexture* texture, uvec3 offset, uvec3 shape, void* data)
+{
+    ASSERT(texture != NULL);
 }
 
 
 
 void vkl_texture_destroy(VklTexture* texture)
 {
-    if (texture != NULL)
-    {
-        vkl_images_destroy(texture->image);
-        vkl_sampler_destroy(texture->sampler);
-    }
+    ASSERT(texture != NULL);
+    vkl_images_destroy(texture->image);
+    vkl_sampler_destroy(texture->sampler);
+
+    texture->image = NULL;
+    texture->sampler = NULL;
+    obj_destroyed(&texture->obj);
 }
