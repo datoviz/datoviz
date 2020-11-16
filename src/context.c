@@ -41,7 +41,7 @@ static void _context_default_buffers(VklContext* context)
 
     // Staging buffer
     buffer = &context->buffers[VKL_DEFAULT_BUFFER_STAGING];
-    vkl_buffer_size(buffer, VKL_DEFAULT_BUFFER_STAGING_SIZE, 0);
+    vkl_buffer_size(buffer, VKL_DEFAULT_BUFFER_STAGING_SIZE);
     vkl_buffer_usage(buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
     vkl_buffer_memory(
         buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
@@ -52,28 +52,28 @@ static void _context_default_buffers(VklContext* context)
 
     // Vertex buffer
     buffer = &context->buffers[VKL_DEFAULT_BUFFER_VERTEX];
-    vkl_buffer_size(buffer, VKL_DEFAULT_BUFFER_VERTEX_SIZE, 0);
+    vkl_buffer_size(buffer, VKL_DEFAULT_BUFFER_VERTEX_SIZE);
     vkl_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     vkl_buffer_memory(buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     vkl_buffer_create(buffer);
 
     // Index buffer
     buffer = &context->buffers[VKL_DEFAULT_BUFFER_INDEX];
-    vkl_buffer_size(buffer, VKL_DEFAULT_BUFFER_INDEX_SIZE, 0);
+    vkl_buffer_size(buffer, VKL_DEFAULT_BUFFER_INDEX_SIZE);
     vkl_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
     vkl_buffer_memory(buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     vkl_buffer_create(buffer);
 
     // Storage buffer
     buffer = &context->buffers[VKL_DEFAULT_BUFFER_STORAGE];
-    vkl_buffer_size(buffer, VKL_DEFAULT_BUFFER_STORAGE_SIZE, 0);
+    vkl_buffer_size(buffer, VKL_DEFAULT_BUFFER_STORAGE_SIZE);
     vkl_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
     vkl_buffer_memory(buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     vkl_buffer_create(buffer);
 
     // Uniform buffer
     buffer = &context->buffers[VKL_DEFAULT_BUFFER_UNIFORM];
-    vkl_buffer_size(buffer, VKL_DEFAULT_BUFFER_UNIFORM_SIZE, 0);
+    vkl_buffer_size(buffer, VKL_DEFAULT_BUFFER_UNIFORM_SIZE);
     vkl_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
     vkl_buffer_memory(buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     vkl_buffer_create(buffer);

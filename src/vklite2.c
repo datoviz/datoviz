@@ -777,11 +777,10 @@ VklBuffer vkl_buffer(VklGpu* gpu)
 
 
 
-void vkl_buffer_size(VklBuffer* buffer, VkDeviceSize size, VkDeviceSize item_size)
+void vkl_buffer_size(VklBuffer* buffer, VkDeviceSize size)
 {
     ASSERT(buffer != NULL);
     buffer->size = size;
-    buffer->item_size = item_size;
 }
 
 
@@ -841,7 +840,6 @@ static void _buffer_copy(VklBuffer* buffer0, VklBuffer* buffer1)
     buffer1->queue_count = buffer0->queue_count;
     memcpy(buffer1->queues, buffer0->queues, sizeof(buffer0->queues));
     buffer1->size = buffer0->size;
-    buffer1->item_size = buffer0->item_size;
     buffer1->usage = buffer0->usage;
     buffer1->memory = buffer0->memory;
 }

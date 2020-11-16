@@ -463,7 +463,6 @@ struct VklBuffer
     uint32_t queues[VKL_MAX_QUEUES];
 
     VkDeviceSize size;
-    VkDeviceSize item_size; // stride, must be aligned, used in dynamic uniform buffer objects
     VkBufferUsageFlags usage;
     VkMemoryPropertyFlags memory;
 };
@@ -893,7 +892,7 @@ VKY_EXPORT void vkl_commands_destroy(VklCommands* cmds);
 
 VKY_EXPORT VklBuffer vkl_buffer(VklGpu* gpu);
 
-VKY_EXPORT void vkl_buffer_size(VklBuffer* buffer, VkDeviceSize size, VkDeviceSize item_size);
+VKY_EXPORT void vkl_buffer_size(VklBuffer* buffer, VkDeviceSize size);
 
 VKY_EXPORT void vkl_buffer_usage(VklBuffer* buffer, VkBufferUsageFlags usage);
 

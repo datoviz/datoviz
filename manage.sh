@@ -8,12 +8,9 @@ fi
 
 if [ $1 == "build" ]
 then
-    # if [ ! -L "data" ]; then
-    #     ln -s $(pwd)/../visky-data/data data
-    # fi
     mkdir -p build &&
     cd build && \
-    cmake .. -GNinja && \
+    cmake .. -GNinja -DVISKY_WITH_CYTHON=0 && \
     VKY_EXAMPLE= ninja && \
     cd ..
 fi

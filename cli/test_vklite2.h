@@ -553,7 +553,7 @@ static int vklite2_buffer(VkyTestContext* context)
 
     VklBuffer buffer = vkl_buffer(gpu);
     const VkDeviceSize size = 256;
-    vkl_buffer_size(&buffer, size, 0);
+    vkl_buffer_size(&buffer, size);
     vkl_buffer_usage(&buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
     vkl_buffer_memory(
         &buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
@@ -599,7 +599,7 @@ static int vklite2_compute(VkyTestContext* context)
     VklBuffer buffer = vkl_buffer(gpu);
     const uint32_t n = 20;
     const VkDeviceSize size = n * sizeof(float);
-    vkl_buffer_size(&buffer, size, 0);
+    vkl_buffer_size(&buffer, size);
     vkl_buffer_usage(
         &buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
                      VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
@@ -712,7 +712,7 @@ static int vklite2_barrier(VkyTestContext* context)
     // Staging buffer.
     VklBuffer buffer = vkl_buffer(gpu);
     const VkDeviceSize size = img_size * img_size * 4;
-    vkl_buffer_size(&buffer, size, 0);
+    vkl_buffer_size(&buffer, size);
     vkl_buffer_usage(&buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
     vkl_buffer_memory(
         &buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
@@ -768,7 +768,7 @@ static int vklite2_submit(VkyTestContext* context)
     VklBuffer buffer = vkl_buffer(gpu);
     const uint32_t n = 20;
     const VkDeviceSize size = n * sizeof(float);
-    vkl_buffer_size(&buffer, size, 0);
+    vkl_buffer_size(&buffer, size);
     vkl_buffer_usage(
         &buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
                      VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
@@ -917,7 +917,7 @@ static int vklite2_graphics(VkyTestContext* context)
     // Create the buffer.
     VklBuffer buffer = vkl_buffer(gpu);
     VkDeviceSize size = 3 * sizeof(VklVertex);
-    vkl_buffer_size(&buffer, size, 0);
+    vkl_buffer_size(&buffer, size);
     vkl_buffer_usage(&buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     vkl_buffer_memory(
         &buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
@@ -1024,7 +1024,7 @@ static int vklite2_canvas_triangle(VkyTestContext* context)
     // Create the buffer.
     VklBuffer buffer = vkl_buffer(gpu);
     VkDeviceSize size = 3 * sizeof(VklVertex);
-    vkl_buffer_size(&buffer, size, 0);
+    vkl_buffer_size(&buffer, size);
     vkl_buffer_usage(&buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     vkl_buffer_memory(
         &buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
@@ -1069,7 +1069,7 @@ static int vklite2_context(VkyTestContext* context)
     ctx->buffers[VKL_DEFAULT_BUFFER_COUNT] = buffer_struct;
     VklBuffer* buffer = &ctx->buffers[VKL_DEFAULT_BUFFER_COUNT];
     vkl_buffer_queue_access(buffer, 0);
-    vkl_buffer_size(buffer, 256, 0);
+    vkl_buffer_size(buffer, 256);
     vkl_buffer_usage(buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
     vkl_buffer_memory(
         buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
