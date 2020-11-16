@@ -50,6 +50,7 @@ typedef struct
 
     VklGraphics* graphics;
     VklBufferRegions buffer_regions;
+    VklBindings* bindings;
 } BasicCanvas;
 
 
@@ -446,7 +447,7 @@ static void triangle_commands(BasicCanvas* canvas, VklCommands* commands, uint32
             0, 0, canvas->framebuffers->attachments[0]->width,
             canvas->framebuffers->attachments[0]->height, 0, 1});
     vkl_cmd_bind_vertex_buffer(commands, idx, &canvas->buffer_regions, 0);
-    vkl_cmd_bind_graphics(commands, idx, canvas->graphics, 0);
+    vkl_cmd_bind_graphics(commands, idx, canvas->graphics, canvas->bindings, 0);
     vkl_cmd_draw(commands, idx, 0, 3);
     vkl_cmd_end_renderpass(commands, idx);
     vkl_cmd_end(commands, idx);
@@ -614,17 +615,21 @@ static int vklite2_compute(VkyTestContext* context)
         data[i] = (float)i;
     vkl_buffer_upload(&buffer, 0, size, data);
 
-    // Create the bindings.
-    VklBindings* bindings = vkl_bindings(gpu);
-    vkl_bindings_slot(bindings, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 0);
-    vkl_bindings_create(bindings, 1);
-    VklBufferRegions br = {.buffer = &buffer, .size = size, .count = 1};
-    vkl_bindings_buffer(bindings, 0, &br);
+    // Create the slots.
+    VklSlots slots = vkl_slots(gpu);
+    vkl_slots_binding(&slots, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 0);
+    vkl_slots_create(&slots);
+    vkl_compute_slots(&compute, &slots);
 
-    vkl_bindings_update(bindings);
+    // Create the bindings.
+    VklBindings bindings = vkl_bindings(&slots);
+    VklBufferRegions br = {.buffer = &buffer, .size = size, .count = 1};
+    vkl_bindings_buffer(&bindings, 0, &br);
+    vkl_bindings_create(&bindings, 1);
+    vkl_bindings_update(&bindings);
 
     // Link the bindings to the compute pipeline and create it.
-    vkl_compute_bindings(&compute, bindings);
+    vkl_compute_bindings(&compute, &bindings);
     vkl_compute_create(&compute);
 
     // Command buffers.
@@ -640,6 +645,8 @@ static int vklite2_compute(VkyTestContext* context)
     for (uint32_t i = 0; i < n; i++)
         AT(data2[i] == 2 * data[i]);
 
+    vkl_slots_destroy(&slots);
+    vkl_bindings_destroy(&bindings);
     vkl_compute_destroy(&compute);
     vkl_buffer_destroy(&buffer);
 
@@ -784,28 +791,33 @@ static int vklite2_submit(VkyTestContext* context)
         data[i] = (float)i;
     vkl_buffer_upload(&buffer, 0, size, data);
 
+    // Create the slots.
+    VklSlots slots = vkl_slots(gpu);
+    vkl_slots_binding(&slots, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 0);
+    vkl_slots_create(&slots);
+    vkl_compute_slots(&compute1, &slots);
+    vkl_compute_slots(&compute2, &slots);
+
     // Create the bindings.
-    VklBindings* bindings1 = vkl_bindings(gpu);
-    vkl_bindings_slot(bindings1, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 0);
-    vkl_bindings_create(bindings1, 1);
+    VklBindings bindings1 = vkl_bindings(&slots);
+    vkl_bindings_create(&bindings1, 1);
     VklBufferRegions br1 = {.buffer = &buffer, .size = size, .count = 1};
-    vkl_bindings_buffer(bindings1, 0, &br1);
+    vkl_bindings_buffer(&bindings1, 0, &br1);
 
-    VklBindings* bindings2 = vkl_bindings(gpu);
-    vkl_bindings_slot(bindings2, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 0);
-    vkl_bindings_create(bindings2, 1);
+    VklBindings bindings2 = vkl_bindings(&slots);
+    vkl_bindings_create(&bindings2, 1);
     VklBufferRegions br2 = {.buffer = &buffer, .size = size, .count = 1};
-    vkl_bindings_buffer(bindings2, 0, &br2);
+    vkl_bindings_buffer(&bindings2, 0, &br2);
 
-    vkl_bindings_update(bindings1);
-    vkl_bindings_update(bindings2);
+    vkl_bindings_update(&bindings1);
+    vkl_bindings_update(&bindings2);
 
     // Link the bindings1 to the compute1 pipeline and create it.
-    vkl_compute_bindings(&compute1, bindings1);
+    vkl_compute_bindings(&compute1, &bindings1);
     vkl_compute_create(&compute1);
 
     // Link the bindings1 to the compute2 pipeline and create it.
-    vkl_compute_bindings(&compute2, bindings2);
+    vkl_compute_bindings(&compute2, &bindings2);
     vkl_compute_create(&compute2);
 
     // Command buffers.
@@ -841,6 +853,9 @@ static int vklite2_submit(VkyTestContext* context)
     for (uint32_t i = 0; i < n; i++)
         AT(data2[i] == 2 * i + 1);
 
+    vkl_slots_destroy(&slots);
+    vkl_bindings_destroy(&bindings1);
+    vkl_bindings_destroy(&bindings2);
     vkl_buffer_destroy(&buffer);
     vkl_compute_destroy(&compute1);
     vkl_compute_destroy(&compute2);
@@ -905,11 +920,15 @@ static int vklite2_graphics(VkyTestContext* context)
     vkl_graphics_vertex_attr(
         graphics, 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(VklVertex, color));
 
+    // Create the slots.
+    VklSlots slots = vkl_slots(gpu);
+    vkl_slots_create(&slots);
+    vkl_graphics_slots(graphics, &slots);
+
     // Create the bindings.
-    VklBindings* bindings = vkl_bindings(gpu);
-    vkl_bindings_create(bindings, 1);
-    vkl_bindings_update(bindings);
-    vkl_graphics_bindings(graphics, bindings);
+    VklBindings bindings = vkl_bindings(&slots);
+    vkl_bindings_create(&bindings, 1);
+    vkl_bindings_update(&bindings);
 
     // Create the graphics pipeline.
     vkl_graphics_create(graphics);
@@ -942,7 +961,7 @@ static int vklite2_graphics(VkyTestContext* context)
     vkl_cmd_begin_renderpass(commands, 0, renderpass, framebuffers);
     vkl_cmd_viewport(commands, 0, (VkViewport){0, 0, TEST_WIDTH, TEST_HEIGHT, 0, 1});
     vkl_cmd_bind_vertex_buffer(commands, 0, &br, 0);
-    vkl_cmd_bind_graphics(commands, 0, graphics, 0);
+    vkl_cmd_bind_graphics(commands, 0, graphics, &bindings, 0);
     vkl_cmd_draw(commands, 0, 0, 3);
     vkl_cmd_end_renderpass(commands, 0);
     vkl_cmd_end(commands, 0);
@@ -950,6 +969,8 @@ static int vklite2_graphics(VkyTestContext* context)
 
     save_screenshot(framebuffers, "screenshot.ppm");
 
+    vkl_bindings_destroy(&bindings);
+    vkl_slots_destroy(&slots);
     vkl_buffer_destroy(&buffer);
     destroy_canvas(&canvas);
 
@@ -1012,11 +1033,16 @@ static int vklite2_canvas_triangle(VkyTestContext* context)
     vkl_graphics_vertex_attr(
         graphics, 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(VklVertex, color));
 
+    // Create the slots.
+    VklSlots slots = vkl_slots(gpu);
+    vkl_slots_create(&slots);
+    vkl_graphics_slots(graphics, &slots);
+
     // Create the bindings.
-    VklBindings* bindings = vkl_bindings(gpu);
-    vkl_bindings_create(bindings, 1);
-    vkl_bindings_update(bindings);
-    vkl_graphics_bindings(graphics, bindings);
+    VklBindings bindings = vkl_bindings(&slots);
+    vkl_bindings_create(&bindings, 1);
+    vkl_bindings_update(&bindings);
+    canvas.bindings = &bindings;
 
     // Create the graphics pipeline.
     vkl_graphics_create(graphics);
@@ -1046,6 +1072,8 @@ static int vklite2_canvas_triangle(VkyTestContext* context)
 
     show_canvas(canvas, triangle_commands, 10);
 
+    vkl_bindings_destroy(&bindings);
+    vkl_slots_destroy(&slots);
     vkl_buffer_destroy(&buffer);
     destroy_canvas(&canvas);
 

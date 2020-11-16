@@ -85,6 +85,7 @@ typedef struct VklBuffer VklBuffer;
 typedef struct VklBufferRegions VklBufferRegions;
 typedef struct VklImages VklImages;
 typedef struct VklSampler VklSampler;
+typedef struct VklSlots VklSlots;
 typedef struct VklBindings VklBindings;
 typedef struct VklCompute VklCompute;
 typedef struct VklVertexBinding VklVertexBinding;
@@ -381,9 +382,6 @@ struct VklGpu
     uint32_t max_commands;
     VklCommands* commands;
 
-    uint32_t max_bindings;
-    VklBindings* bindings;
-
     uint32_t max_graphics;
     VklGraphics* graphics;
 
@@ -521,17 +519,27 @@ struct VklSampler
 
 
 
-struct VklBindings
+struct VklSlots
 {
     VklObject obj;
     VklGpu* gpu;
 
-    uint32_t bindings_count;
+    uint32_t slot_count;
     VkDescriptorType types[VKL_MAX_BINDINGS_SIZE];
     VkDeviceSize alignments[VKL_MAX_BINDINGS_SIZE]; // dynamic uniform alignments
 
     VkPipelineLayout pipeline_layout;
     VkDescriptorSetLayout dset_layout;
+};
+
+
+
+struct VklBindings
+{
+    VklObject obj;
+    VklGpu* gpu;
+
+    VklSlots* slots;
 
     // a Bindings struct holds multiple almost-identical copies of descriptor sets
     // with the same layout, but possibly with the different idx in the VklBuffer
@@ -554,6 +562,7 @@ struct VklCompute
     char shader_path[1024];
 
     VkPipeline pipeline;
+    VklSlots* slots;
     VklBindings* bindings;
     VkShaderModule shader_module;
 };
@@ -594,7 +603,7 @@ struct VklGraphics
     VkFrontFace front_face;
 
     VkPipeline pipeline;
-    VklBindings* bindings;
+    VklSlots* slots;
 
     uint32_t vertex_binding_count;
     VklVertexBinding vertex_bindings[VKL_MAX_VERTEX_BINDINGS];
@@ -918,8 +927,6 @@ vkl_buffer_download(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, v
 VKY_EXPORT void
 vkl_buffer_upload(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, const void* data);
 
-VKY_EXPORT void vkl_bindings_update(VklBindings* bindings);
-
 VKY_EXPORT void vkl_buffer_destroy(VklBuffer* buffer);
 
 
@@ -978,19 +985,30 @@ VKY_EXPORT void vkl_sampler_destroy(VklSampler* sampler);
 
 
 /*************************************************************************************************/
+/*  Slots                                                                                        */
+/*************************************************************************************************/
+
+VKY_EXPORT VklSlots vkl_slots(VklGpu* gpu);
+
+VKY_EXPORT void
+vkl_slots_binding(VklSlots* slots, uint32_t idx, VkDescriptorType type, VkDeviceSize item_size);
+
+VKY_EXPORT void* vkl_slots_dynamic_allocate(VklSlots* slots, uint32_t idx, VkDeviceSize size);
+
+VKY_EXPORT void*
+vkl_slots_dynamic_pointer(VklSlots* slots, uint32_t idx, uint32_t item_idx, const void* data);
+
+VKY_EXPORT void vkl_slots_create(VklSlots* slots);
+
+VKY_EXPORT void vkl_slots_destroy(VklSlots* slots);
+
+
+
+/*************************************************************************************************/
 /*  Bindings                                                                                     */
 /*************************************************************************************************/
 
-VKY_EXPORT VklBindings* vkl_bindings(VklGpu* gpu);
-
-VKY_EXPORT void vkl_bindings_slot(
-    VklBindings* bindings, uint32_t idx, VkDescriptorType type, VkDeviceSize item_size);
-
-VKY_EXPORT void*
-vkl_bindings_dynamic_allocate(VklBindings* bindings, uint32_t idx, VkDeviceSize size);
-
-VKY_EXPORT void* vkl_bindings_dynamic_pointer(
-    VklBindings* bindings, uint32_t idx, uint32_t item_idx, const void* data);
+VKY_EXPORT VklBindings vkl_bindings(VklSlots* slots);
 
 VKY_EXPORT void vkl_bindings_create(VklBindings* bindings, uint32_t dset_count);
 
@@ -999,6 +1017,8 @@ vkl_bindings_buffer(VklBindings* bindings, uint32_t idx, VklBufferRegions* buffe
 
 VKY_EXPORT void
 vkl_bindings_texture(VklBindings* bindings, uint32_t idx, VklImages* imagess, VklSampler* sampler);
+
+VKY_EXPORT void vkl_bindings_update(VklBindings* bindings);
 
 VKY_EXPORT void vkl_bindings_destroy(VklBindings* bindings);
 
@@ -1011,6 +1031,8 @@ VKY_EXPORT void vkl_bindings_destroy(VklBindings* bindings);
 VKY_EXPORT VklCompute vkl_compute(VklGpu* gpu, const char* shader_path);
 
 VKY_EXPORT void vkl_compute_create(VklCompute* compute);
+
+VKY_EXPORT void vkl_compute_slots(VklCompute* compute, VklSlots* slots);
 
 VKY_EXPORT void vkl_compute_bindings(VklCompute* compute, VklBindings* bindings);
 
@@ -1051,7 +1073,7 @@ VKY_EXPORT void vkl_graphics_front_face(VklGraphics* graphics, VkFrontFace front
 
 VKY_EXPORT void vkl_graphics_create(VklGraphics* graphics);
 
-VKY_EXPORT void vkl_graphics_bindings(VklGraphics* graphics, VklBindings* bindings);
+VKY_EXPORT void vkl_graphics_slots(VklGraphics* graphics, VklSlots* slots);
 
 VKY_EXPORT void vkl_graphics_destroy(VklGraphics* graphics);
 
@@ -1212,7 +1234,8 @@ vkl_cmd_copy_image(VklCommands* cmds, uint32_t idx, VklImages* src_img, VklImage
 VKY_EXPORT void vkl_cmd_viewport(VklCommands* cmds, uint32_t idx, VkViewport viewport);
 
 VKY_EXPORT void vkl_cmd_bind_graphics(
-    VklCommands* cmds, uint32_t idx, VklGraphics* graphics, uint32_t dynamic_idx);
+    VklCommands* cmds, uint32_t idx, VklGraphics* graphics, //
+    VklBindings* bindings, uint32_t dynamic_idx);
 
 VKY_EXPORT void vkl_cmd_bind_vertex_buffer(
     VklCommands* cmds, uint32_t idx, VklBufferRegions* buffer_regions, VkDeviceSize offset);
@@ -1239,7 +1262,7 @@ VKY_EXPORT void vkl_cmd_copy_buffer(
     VkDeviceSize size);
 
 VKY_EXPORT void vkl_cmd_push_constants(
-    VklCommands* cmds, uint32_t idx, VklBindings* bindings, VkDeviceSize size, const void* data);
+    VklCommands* cmds, uint32_t idx, VklSlots* slots, VkDeviceSize size, const void* data);
 
 
 

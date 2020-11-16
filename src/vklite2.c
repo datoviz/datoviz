@@ -150,8 +150,6 @@ VklGpu* vkl_gpu(VklApp* app, uint32_t idx)
     INSTANCES_INIT(
         VklCommands, gpu, commands, max_commands, VKL_MAX_COMMANDS, VKL_OBJECT_TYPE_COMMANDS)
     INSTANCES_INIT(
-        VklBindings, gpu, bindings, max_bindings, VKL_MAX_BINDINGS, VKL_OBJECT_TYPE_BINDINGS)
-    INSTANCES_INIT(
         VklSemaphores, gpu, semaphores, max_semaphores, VKL_MAX_SEMAPHORES,
         VKL_OBJECT_TYPE_SEMAPHORES)
     INSTANCES_INIT(VklFences, gpu, fences, max_fences, VKL_MAX_FENCES, VKL_OBJECT_TYPE_FENCES)
@@ -295,16 +293,6 @@ void vkl_gpu_destroy(VklGpu* gpu)
         vkl_commands_destroy(&gpu->commands[i]);
     }
     INSTANCES_DESTROY(gpu->commands)
-
-
-    log_trace("GPU destroy bindings");
-    for (uint32_t i = 0; i < gpu->max_bindings; i++)
-    {
-        if (gpu->bindings[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_bindings_destroy(&gpu->bindings[i]);
-    }
-    INSTANCES_DESTROY(gpu->bindings)
 
 
     log_trace("GPU destroy graphics");
@@ -1347,61 +1335,119 @@ void vkl_sampler_destroy(VklSampler* sampler)
 
 
 /*************************************************************************************************/
-/*  Bindings                                                                                     */
+/*  Slots                                                                                        */
 /*************************************************************************************************/
 
-VklBindings* vkl_bindings(VklGpu* gpu)
+VklSlots vkl_slots(VklGpu* gpu)
 {
     ASSERT(gpu != NULL);
     ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
 
-    INSTANCE_NEW(VklBindings, bindings, gpu->bindings, gpu->max_bindings)
+    VklSlots slots = {0};
+    slots.gpu = gpu;
+    obj_init(&slots.obj);
 
-    bindings->gpu = gpu;
-
-    return bindings;
+    return slots;
 }
 
 
 
-void vkl_bindings_slot(
-    VklBindings* bindings, uint32_t idx, VkDescriptorType type, VkDeviceSize item_size)
+void vkl_slots_binding(
+    VklSlots* slots, uint32_t idx, VkDescriptorType type, VkDeviceSize item_size)
 {
-    ASSERT(bindings != NULL);
-    ASSERT(idx == bindings->bindings_count);
+    ASSERT(slots != NULL);
+    ASSERT(idx == slots->slot_count);
     ASSERT(idx < VKL_MAX_BINDINGS_SIZE);
-    bindings->types[bindings->bindings_count++] = type;
+    slots->types[slots->slot_count++] = type;
 
     if (type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
     {
         log_trace("computing alignment for dynamic uniform buffer of size %d", item_size);
         ASSERT(item_size > 0);
         ASSERT(item_size <= 256);
-        bindings->alignments[idx] = compute_dynamic_alignment(
-            item_size, bindings->gpu->device_properties.limits.minUniformBufferOffsetAlignment);
-        ASSERT(bindings->alignments[idx] >= 256);
+        slots->alignments[idx] = compute_dynamic_alignment(
+            item_size, slots->gpu->device_properties.limits.minUniformBufferOffsetAlignment);
+        ASSERT(slots->alignments[idx] >= 256);
     }
 }
 
 
 
-void* vkl_bindings_dynamic_allocate(VklBindings* bindings, uint32_t idx, VkDeviceSize size)
+void* vkl_slots_dynamic_allocate(VklSlots* slots, uint32_t idx, VkDeviceSize size)
 {
-    ASSERT(bindings != NULL);
-    ASSERT(bindings->types[idx] == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC);
-    ASSERT(bindings->alignments[idx] > 0);
-    return allocate_aligned(size, bindings->alignments[idx]);
+    ASSERT(slots != NULL);
+    ASSERT(slots->types[idx] == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC);
+    ASSERT(slots->alignments[idx] > 0);
+    return allocate_aligned(size, slots->alignments[idx]);
 }
 
 
 
-void* vkl_bindings_dynamic_pointer(
-    VklBindings* bindings, uint32_t idx, uint32_t item_idx, const void* data)
+void* vkl_slots_dynamic_pointer(VklSlots* slots, uint32_t idx, uint32_t item_idx, const void* data)
 {
-    ASSERT(bindings != NULL);
-    ASSERT(bindings->types[idx] == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC);
-    ASSERT(bindings->alignments[idx] > 0);
-    return get_aligned_pointer(data, bindings->alignments[idx], item_idx);
+    ASSERT(slots != NULL);
+    ASSERT(slots->types[idx] == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC);
+    ASSERT(slots->alignments[idx] > 0);
+    return get_aligned_pointer(data, slots->alignments[idx], item_idx);
+}
+
+
+
+void vkl_slots_create(VklSlots* slots)
+{
+    ASSERT(slots != NULL);
+    ASSERT(slots->gpu != NULL);
+    ASSERT(slots->gpu->device != 0);
+
+    log_trace("starting creation of slots...");
+
+    create_descriptor_set_layout(
+        slots->gpu->device, slots->slot_count, slots->types, &slots->dset_layout);
+
+    create_pipeline_layout(slots->gpu->device, &slots->dset_layout, &slots->pipeline_layout);
+
+    obj_created(&slots->obj);
+    log_trace("slots created");
+}
+
+
+
+void vkl_slots_destroy(VklSlots* slots)
+{
+    ASSERT(slots != NULL);
+    ASSERT(slots->gpu != NULL);
+    if (slots->obj.status < VKL_OBJECT_STATUS_CREATED)
+    {
+        log_trace("skip destruction of already-destroyed slots");
+        return;
+    }
+    log_trace("destroy slots");
+    VkDevice device = slots->gpu->device;
+    vkDestroyPipelineLayout(device, slots->pipeline_layout, NULL);
+    vkDestroyDescriptorSetLayout(device, slots->dset_layout, NULL);
+    obj_destroyed(&slots->obj);
+}
+
+
+
+/*************************************************************************************************/
+/*  Bindings                                                                                     */
+/*************************************************************************************************/
+
+VklBindings vkl_bindings(VklSlots* slots)
+{
+    ASSERT(slots != NULL);
+    VklGpu* gpu = slots->gpu;
+    ASSERT(gpu != NULL);
+    ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
+
+    VklBindings bindings = {0};
+    bindings.slots = slots;
+    bindings.gpu = gpu;
+
+    obj_init(&bindings.obj);
+
+    return bindings;
 }
 
 
@@ -1411,18 +1457,15 @@ void vkl_bindings_create(VklBindings* bindings, uint32_t dset_count)
     ASSERT(bindings != NULL);
     ASSERT(bindings->gpu != NULL);
     ASSERT(bindings->gpu->device != 0);
+    ASSERT(bindings->slots != NULL);
+    ASSERT(bindings->slots->obj.status >= VKL_OBJECT_STATUS_CREATED);
+    ASSERT(bindings->slots->dset_layout != 0);
 
     log_trace("starting creation of bindings...");
     bindings->dset_count = dset_count;
 
-    create_descriptor_set_layout(
-        bindings->gpu->device, bindings->bindings_count, bindings->types, &bindings->dset_layout);
-
-    create_pipeline_layout(
-        bindings->gpu->device, &bindings->dset_layout, &bindings->pipeline_layout);
-
     allocate_descriptor_sets(
-        bindings->gpu->device, bindings->gpu->dset_pool, bindings->dset_layout,
+        bindings->gpu->device, bindings->gpu->dset_pool, bindings->slots->dset_layout,
         bindings->dset_count, bindings->dsets);
 
     obj_created(&bindings->obj);
@@ -1464,11 +1507,15 @@ void vkl_bindings_texture(
 void vkl_bindings_update(VklBindings* bindings)
 {
     log_trace("update bindings");
+    ASSERT(bindings->slots != NULL);
+    ASSERT(bindings->slots->obj.status >= VKL_OBJECT_STATUS_CREATED);
+    ASSERT(bindings->slots->dset_layout != 0);
     ASSERT(bindings->dset_count <= VKL_MAX_SWAPCHAIN_IMAGES);
+
     for (uint32_t i = 0; i < bindings->dset_count; i++)
     {
         update_descriptor_set(
-            bindings->gpu->device, bindings->bindings_count, bindings->types,
+            bindings->gpu->device, bindings->slots->slot_count, bindings->slots->types,
             bindings->buffer_regions, bindings->images, bindings->samplers, //
             i, bindings->dsets[i]);
     }
@@ -1486,9 +1533,6 @@ void vkl_bindings_destroy(VklBindings* bindings)
         return;
     }
     log_trace("destroy bindings");
-    VkDevice device = bindings->gpu->device;
-    vkDestroyPipelineLayout(device, bindings->pipeline_layout, NULL);
-    vkDestroyDescriptorSetLayout(device, bindings->dset_layout, NULL);
     obj_destroyed(&bindings->obj);
 }
 
@@ -1514,9 +1558,19 @@ VklCompute vkl_compute(VklGpu* gpu, const char* shader_path)
 
 
 
+void vkl_compute_slots(VklCompute* compute, VklSlots* slots)
+{
+    ASSERT(compute != NULL);
+    ASSERT(slots != NULL);
+    compute->slots = slots;
+}
+
+
+
 void vkl_compute_bindings(VklCompute* compute, VklBindings* bindings)
 {
     ASSERT(compute != NULL);
+    ASSERT(bindings != NULL);
     compute->bindings = bindings;
 }
 
@@ -1529,10 +1583,15 @@ void vkl_compute_create(VklCompute* compute)
     ASSERT(compute->gpu->device != 0);
     ASSERT(compute->shader_path != NULL);
 
+    if (compute->slots == NULL)
+    {
+        log_error("vkl_compute_slots() must be called before creating the compute");
+        return;
+    }
     if (compute->bindings == NULL)
     {
         log_error("vkl_compute_bindings() must be called before creating the compute");
-        exit(1);
+        return;
     }
 
     log_trace("starting creation of compute...");
@@ -1542,7 +1601,7 @@ void vkl_compute_create(VklCompute* compute)
 
     create_compute_pipeline(
         compute->gpu->device, compute->shader_module, //
-        compute->bindings->pipeline_layout, &compute->pipeline);
+        compute->slots->pipeline_layout, &compute->pipeline);
 
     obj_created(&compute->obj);
     log_trace("compute created");
@@ -1585,6 +1644,7 @@ VklGraphics* vkl_graphics(VklGpu* gpu)
 
     return graphics;
 }
+
 
 
 void vkl_graphics_renderpass(VklGraphics* graphics, VklRenderpass* renderpass, uint32_t subpass)
@@ -1682,6 +1742,15 @@ void vkl_graphics_front_face(VklGraphics* graphics, VkFrontFace front_face)
 
 
 
+void vkl_graphics_slots(VklGraphics* graphics, VklSlots* slots)
+{
+    ASSERT(graphics != NULL);
+    ASSERT(slots != NULL);
+    graphics->slots = slots;
+}
+
+
+
 void vkl_graphics_create(VklGraphics* graphics)
 {
     ASSERT(graphics != NULL);
@@ -1756,8 +1825,8 @@ void vkl_graphics_create(VklGraphics* graphics)
     pipelineInfo.pMultisampleState = &multisampling;
     pipelineInfo.pColorBlendState = &color_blending;
     pipelineInfo.pDepthStencilState = &depth_stencil;
-    ASSERT(graphics->bindings != NULL);
-    pipelineInfo.layout = graphics->bindings->pipeline_layout;
+    ASSERT(graphics->slots != NULL);
+    pipelineInfo.layout = graphics->slots->pipeline_layout;
     pipelineInfo.renderPass = graphics->renderpass->renderpass;
     pipelineInfo.subpass = graphics->subpass;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
@@ -1766,14 +1835,6 @@ void vkl_graphics_create(VklGraphics* graphics)
         graphics->gpu->device, VK_NULL_HANDLE, 1, &pipelineInfo, NULL, &graphics->pipeline));
     log_trace("graphics pipeline created");
     obj_created(&graphics->obj);
-}
-
-
-
-void vkl_graphics_bindings(VklGraphics* graphics, VklBindings* bindings)
-{
-    ASSERT(graphics != NULL);
-    graphics->bindings = bindings;
 }
 
 
@@ -2574,10 +2635,14 @@ void vkl_cmd_end_renderpass(VklCommands* cmds, uint32_t idx)
 
 void vkl_cmd_compute(VklCommands* cmds, uint32_t idx, VklCompute* compute, uvec3 size)
 {
+    ASSERT(compute->slots != NULL);
+    ASSERT(compute->bindings != NULL);
+    ASSERT(compute->bindings->dsets != NULL);
+
     CMD_START
     vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_COMPUTE, compute->pipeline);
     vkCmdBindDescriptorSets(
-        cb, VK_PIPELINE_BIND_POINT_COMPUTE, compute->bindings->pipeline_layout, 0, 1,
+        cb, VK_PIPELINE_BIND_POINT_COMPUTE, compute->slots->pipeline_layout, 0, 1,
         compute->bindings->dsets, 0, 0);
     vkCmdDispatch(cb, size[0], size[1], size[2]);
     CMD_END
@@ -2727,22 +2792,24 @@ void vkl_cmd_viewport(VklCommands* cmds, uint32_t idx, VkViewport viewport)
 
 
 void vkl_cmd_bind_graphics(
-    VklCommands* cmds, uint32_t idx, VklGraphics* graphics, uint32_t dynamic_idx)
+    VklCommands* cmds, uint32_t idx, VklGraphics* graphics, //
+    VklBindings* bindings, uint32_t dynamic_idx)
 {
     ASSERT(graphics != NULL);
-    VklBindings* bindings = graphics->bindings;
+    VklSlots* slots = graphics->slots;
+    ASSERT(slots != NULL);
     ASSERT(bindings != NULL);
 
     // Count the number of dynamic uniforms.
     uint32_t dynamic_binding_count = 0;
     uint32_t dynamic_offsets[VKL_MAX_BINDINGS_SIZE] = {0};
-    ASSERT(bindings->bindings_count <= VKL_MAX_BINDINGS_SIZE);
-    for (uint32_t i = 0; i < bindings->bindings_count; i++)
+    ASSERT(slots->slot_count <= VKL_MAX_BINDINGS_SIZE);
+    for (uint32_t i = 0; i < slots->slot_count; i++)
     {
-        if (bindings->types[i] == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
+        if (slots->types[i] == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
         {
-            ASSERT(bindings->alignments[i] > 0);
-            dynamic_offsets[dynamic_binding_count] = dynamic_idx * bindings->alignments[i];
+            ASSERT(slots->alignments[i] > 0);
+            dynamic_offsets[dynamic_binding_count] = dynamic_idx * slots->alignments[i];
             dynamic_binding_count++;
         }
     }
@@ -2750,8 +2817,8 @@ void vkl_cmd_bind_graphics(
     CMD_START_CLIP(bindings->dset_count)
     vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, graphics->pipeline);
     vkCmdBindDescriptorSets(
-        cb, VK_PIPELINE_BIND_POINT_GRAPHICS, bindings->pipeline_layout, 0, 1,
-        &bindings->dsets[iclip], dynamic_binding_count, dynamic_offsets);
+        cb, VK_PIPELINE_BIND_POINT_GRAPHICS, slots->pipeline_layout, //
+        0, 1, &bindings->dsets[iclip], dynamic_binding_count, dynamic_offsets);
     CMD_END
 }
 
@@ -2843,9 +2910,9 @@ void vkl_cmd_copy_buffer(
 
 
 void vkl_cmd_push_constants(
-    VklCommands* cmds, uint32_t idx, VklBindings* bindings, VkDeviceSize size, const void* data)
+    VklCommands* cmds, uint32_t idx, VklSlots* slots, VkDeviceSize size, const void* data)
 {
     CMD_START
-    vkCmdPushConstants(cb, bindings->pipeline_layout, VK_SHADER_STAGE_ALL, 0, size, data);
+    vkCmdPushConstants(cb, slots->pipeline_layout, VK_SHADER_STAGE_ALL, 0, size, data);
     CMD_END
 }
