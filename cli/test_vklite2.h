@@ -1285,6 +1285,8 @@ static int vklite2_context_buffer(VkyTestContext* context)
 
     vkl_buffer_destroy(buffer);
 
+    vkl_context_reset(ctx);
+
     FREE(data);
     FREE(data2);
     TEST_END

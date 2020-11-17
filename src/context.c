@@ -172,6 +172,45 @@ static void _context_default_buffers(VklContext* context)
 
 
 
+static void _destroy_resources(VklContext* context)
+{
+    ASSERT(context != NULL);
+
+    log_trace("context destroy buffers");
+    for (uint32_t i = 0; i < context->max_buffers; i++)
+    {
+        if (context->buffers[i].obj.status == VKL_OBJECT_STATUS_NONE)
+            break;
+        vkl_buffer_destroy(&context->buffers[i]);
+    }
+
+    log_trace("context destroy sets of images");
+    for (uint32_t i = 0; i < context->max_images; i++)
+    {
+        if (context->images[i].obj.status == VKL_OBJECT_STATUS_NONE)
+            break;
+        vkl_images_destroy(&context->images[i]);
+    }
+
+    log_trace("context destroy samplers");
+    for (uint32_t i = 0; i < context->max_samplers; i++)
+    {
+        if (context->samplers[i].obj.status == VKL_OBJECT_STATUS_NONE)
+            break;
+        vkl_sampler_destroy(&context->samplers[i]);
+    }
+
+    log_trace("context destroy computes");
+    for (uint32_t i = 0; i < context->max_computes; i++)
+    {
+        if (context->computes[i].obj.status == VKL_OBJECT_STATUS_NONE)
+            break;
+        vkl_compute_destroy(&context->computes[i]);
+    }
+}
+
+
+
 VklContext* vkl_context(VklGpu* gpu)
 {
     ASSERT(gpu != NULL);
@@ -223,6 +262,16 @@ VklContext* vkl_context(VklGpu* gpu)
 
 
 
+void vkl_context_reset(VklContext* context)
+{
+    ASSERT(context != NULL);
+    log_trace("reset the context");
+    _destroy_resources(context);
+    _context_default_buffers(context);
+}
+
+
+
 void vkl_context_destroy(VklContext* context)
 {
     if (context == NULL)
@@ -234,46 +283,16 @@ void vkl_context_destroy(VklContext* context)
     ASSERT(context != NULL);
     ASSERT(context->gpu != NULL);
 
+    // Destroy the buffers, images, samplers, textures, computes.
+    _destroy_resources(context);
 
-    log_trace("context destroy buffers");
-    for (uint32_t i = 0; i < context->max_buffers; i++)
-    {
-        if (context->buffers[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_buffer_destroy(&context->buffers[i]);
-    }
+    // Free the allocated memory.
     INSTANCES_DESTROY(context->buffers)
-    FREE(context->allocated_sizes);
-
-
-    log_trace("context destroy sets of images");
-    for (uint32_t i = 0; i < context->max_images; i++)
-    {
-        if (context->images[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_images_destroy(&context->images[i]);
-    }
     INSTANCES_DESTROY(context->images)
-
-
-    log_trace("context destroy samplers");
-    for (uint32_t i = 0; i < context->max_samplers; i++)
-    {
-        if (context->samplers[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_sampler_destroy(&context->samplers[i]);
-    }
     INSTANCES_DESTROY(context->samplers)
-
-
-    log_trace("context destroy computes");
-    for (uint32_t i = 0; i < context->max_computes; i++)
-    {
-        if (context->computes[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_compute_destroy(&context->computes[i]);
-    }
     INSTANCES_DESTROY(context->computes)
+    INSTANCES_DESTROY(context->textures);
+    FREE(context->allocated_sizes);
 
     pthread_mutex_destroy(&context->transfer_fifo.queue.lock);
     pthread_cond_destroy(&context->transfer_fifo.queue.cond);
