@@ -406,15 +406,13 @@ static void show_canvas(BasicCanvas canvas, FillCallback fill_commands, uint32_t
     vkl_semaphores_destroy(&sem_img_available);
     vkl_semaphores_destroy(&sem_render_finished);
     vkl_fences_destroy(&fences);
-
-    vkl_swapchain_destroy(swapchain);
-    vkl_window_destroy(window);
 }
 
 
 
 static void destroy_canvas(BasicCanvas* canvas)
 {
+    log_trace("destroy canvas");
     if (canvas->is_offscreen)
     {
         vkl_images_destroy(canvas->images);
@@ -424,6 +422,7 @@ static void destroy_canvas(BasicCanvas* canvas)
     vkl_renderpass_destroy(&canvas->renderpass);
     vkl_swapchain_destroy(&canvas->swapchain);
     vkl_framebuffers_destroy(&canvas->framebuffers);
+    vkl_window_destroy(canvas->window);
 }
 
 

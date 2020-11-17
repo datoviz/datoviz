@@ -30,7 +30,7 @@ VklApp* vkl_app(VklBackend backend)
     create_instance(
         required_extension_count, required_extensions, &app->instance, &app->debug_messenger,
         &app->n_errors);
-    // debug_messenger != 0 means validation enabled
+    // debug_messenger != VK_NULL_HANDLE means validation enabled
     obj_created(&app->obj);
 
     // Count the number of devices.
@@ -115,7 +115,7 @@ int vkl_app_destroy(VklApp* app)
 
     // Destroy the instance.
     log_trace("destroy Vulkan instance");
-    if (app->instance != 0)
+    if (app->instance != VK_NULL_HANDLE)
     {
         vkDestroyInstance(app->instance, NULL);
         app->instance = 0;
@@ -182,7 +182,8 @@ void vkl_gpu_create(VklGpu* gpu, VkSurfaceKHR surface)
         exit(1);
     }
     log_trace(
-        "starting creation of GPU #%d WITH%s surface...", gpu->idx, surface != 0 ? "" : "OUT");
+        "starting creation of GPU #%d WITH%s surface...", gpu->idx,
+        surface != VK_NULL_HANDLE ? "" : "OUT");
     create_device(gpu, surface);
 
     VklQueues* q = &gpu->queues;
@@ -242,7 +243,7 @@ void vkl_gpu_destroy(VklGpu* gpu)
         return;
     }
     VkDevice device = gpu->device;
-    ASSERT(device != 0);
+    ASSERT(device != VK_NULL_HANDLE);
 
     if (gpu->context != NULL)
     {
@@ -254,10 +255,10 @@ void vkl_gpu_destroy(VklGpu* gpu)
     log_trace("GPU destroy %d command pool(s)", gpu->queues.queue_family_count);
     for (uint32_t i = 0; i < gpu->queues.queue_family_count; i++)
     {
-        if (gpu->queues.cmd_pools[i] != 0)
+        if (gpu->queues.cmd_pools[i] != VK_NULL_HANDLE)
         {
             vkDestroyCommandPool(device, gpu->queues.cmd_pools[i], NULL);
-            gpu->queues.cmd_pools[i] = 0;
+            gpu->queues.cmd_pools[i] = VK_NULL_HANDLE;
         }
     }
 
@@ -272,17 +273,21 @@ void vkl_gpu_destroy(VklGpu* gpu)
     INSTANCES_DESTROY(gpu->graphics)
 
 
-    if (gpu->dset_pool != 0)
+    if (gpu->dset_pool != VK_NULL_HANDLE)
     {
         log_trace("destroy descriptor pool");
         vkDestroyDescriptorPool(gpu->device, gpu->dset_pool, NULL);
+        gpu->dset_pool = VK_NULL_HANDLE;
     }
 
 
     // Destroy the device.
     log_trace("destroy device");
-    vkDestroyDevice(gpu->device, NULL);
-    gpu->device = 0;
+    if (gpu->device != VK_NULL_HANDLE)
+    {
+        vkDestroyDevice(gpu->device, NULL);
+        gpu->device = VK_NULL_HANDLE;
+    }
 
 
     obj_destroyed(&gpu->obj);
@@ -543,13 +548,14 @@ void vkl_swapchain_destroy(VklSwapchain* swapchain)
     if (swapchain->images != NULL)
     {
         vkl_images_destroy(swapchain->images);
+        swapchain->images = VK_NULL_HANDLE;
         FREE(swapchain->images);
     }
 
-    if (swapchain->swapchain != 0)
+    if (swapchain->swapchain != VK_NULL_HANDLE)
     {
         vkDestroySwapchainKHR(swapchain->gpu->device, swapchain->swapchain, NULL);
-        swapchain->swapchain = 0;
+        swapchain->swapchain = VK_NULL_HANDLE;
     }
 
     obj_destroyed(&swapchain->obj);
@@ -570,7 +576,7 @@ VklCommands vkl_commands(VklGpu* gpu, uint32_t queue, uint32_t count)
     ASSERT(count <= VKL_MAX_COMMAND_BUFFERS_PER_SET);
     ASSERT(queue < gpu->queues.queue_count);
     ASSERT(count > 0);
-    ASSERT(gpu->queues.cmd_pools[queue] != 0);
+    ASSERT(gpu->queues.cmd_pools[queue] != VK_NULL_HANDLE);
 
     VklCommands commands = {0};
     commands.gpu = gpu;
@@ -616,7 +622,7 @@ void vkl_cmd_reset(VklCommands* cmds)
     log_trace("reset %d command buffer(s)", cmds->count);
     for (uint32_t i = 0; i < cmds->count; i++)
     {
-        ASSERT(cmds->cmds[i] != 0);
+        ASSERT(cmds->cmds[i] != VK_NULL_HANDLE);
         VK_CHECK_RESULT(vkResetCommandBuffer(cmds->cmds[i], 0));
     }
 }
@@ -628,7 +634,7 @@ void vkl_cmd_free(VklCommands* cmds)
     ASSERT(cmds != NULL);
     ASSERT(cmds->count > 0);
     ASSERT(cmds->gpu != NULL);
-    ASSERT(cmds->gpu->device != 0);
+    ASSERT(cmds->gpu->device != VK_NULL_HANDLE);
 
     log_trace("free %d command buffer(s)", cmds->count);
     vkFreeCommandBuffers(
@@ -737,11 +743,19 @@ static void _buffer_create(VklBuffer* buffer)
 
 static void _buffer_destroy(VklBuffer* buffer)
 {
-    vkDestroyBuffer(buffer->gpu->device, buffer->buffer, NULL);
-    vkFreeMemory(buffer->gpu->device, buffer->device_memory, NULL);
+    if (buffer->buffer != VK_NULL_HANDLE)
+    {
+        vkDestroyBuffer(buffer->gpu->device, buffer->buffer, NULL);
+        buffer->buffer = VK_NULL_HANDLE;
+    }
+    if (buffer->device_memory != VK_NULL_HANDLE)
+    {
+        vkFreeMemory(buffer->gpu->device, buffer->device_memory, NULL);
+        buffer->device_memory = VK_NULL_HANDLE;
+    }
 
-    buffer->buffer = 0;
-    buffer->device_memory = 0;
+    buffer->buffer = VK_NULL_HANDLE;
+    buffer->device_memory = VK_NULL_HANDLE;
 }
 
 
@@ -764,10 +778,10 @@ void vkl_buffer_create(VklBuffer* buffer)
 {
     ASSERT(buffer != NULL);
     ASSERT(buffer->gpu != NULL);
-    ASSERT(buffer->gpu->device != 0);
+    ASSERT(buffer->gpu->device != VK_NULL_HANDLE);
     ASSERT(buffer->size > 0);
-    ASSERT(buffer->usage != 0);
-    ASSERT(buffer->memory != 0);
+    ASSERT(buffer->usage != VK_NULL_HANDLE);
+    ASSERT(buffer->memory != VK_NULL_HANDLE);
 
     log_trace("starting creation of buffer...");
     _buffer_create(buffer);
@@ -826,8 +840,8 @@ void vkl_buffer_resize(VklBuffer* buffer, VkDeviceSize size, uint32_t queue_idx,
     // Update the existing VklBuffer struct with the newly-created Vulkan objects.
     buffer->buffer = new_buffer.buffer;
     buffer->device_memory = new_buffer.device_memory;
-    ASSERT(buffer->buffer != 0);
-    ASSERT(buffer->device_memory != 0);
+    ASSERT(buffer->buffer != VK_NULL_HANDLE);
+    ASSERT(buffer->device_memory != VK_NULL_HANDLE);
 }
 
 
@@ -837,7 +851,7 @@ vkl_buffer_regions(VklBuffer* buffer, uint32_t count, VkDeviceSize size, VkDevic
 {
     ASSERT(buffer != NULL);
     ASSERT(buffer->gpu != NULL);
-    ASSERT(buffer->gpu->device != 0);
+    ASSERT(buffer->gpu->device != VK_NULL_HANDLE);
     ASSERT(buffer->obj.status >= VKL_OBJECT_STATUS_CREATED);
     ASSERT(count <= VKL_MAX_BUFFER_REGIONS_PER_SET);
 
@@ -860,7 +874,7 @@ void* vkl_buffer_regions_map(VklBufferRegions* buffer_regions, uint32_t idx)
 
     ASSERT(buffer != NULL);
     ASSERT(buffer->gpu != NULL);
-    ASSERT(buffer->gpu->device != 0);
+    ASSERT(buffer->gpu->device != VK_NULL_HANDLE);
     ASSERT(buffer->obj.status >= VKL_OBJECT_STATUS_CREATED);
     ASSERT(idx < buffer_regions->count);
 
@@ -885,7 +899,7 @@ void vkl_buffer_regions_unmap(VklBufferRegions* buffer_regions, uint32_t idx)
     ASSERT(buffer != NULL);
 
     ASSERT(buffer->gpu != NULL);
-    ASSERT(buffer->gpu->device != 0);
+    ASSERT(buffer->gpu->device != VK_NULL_HANDLE);
     ASSERT(buffer->obj.status >= VKL_OBJECT_STATUS_CREATED);
 
     ASSERT(
@@ -1070,12 +1084,21 @@ static void _images_destroy(VklImages* images)
 {
     for (uint32_t i = 0; i < images->count; i++)
     {
-        if (images->image_views[i] != 0)
+        if (images->image_views[i] != VK_NULL_HANDLE)
+        {
             vkDestroyImageView(images->gpu->device, images->image_views[i], NULL);
-        if (!images->is_swapchain && images->images[i] != 0)
+            images->image_views[i] = VK_NULL_HANDLE;
+        }
+        if (!images->is_swapchain && images->images[i] != VK_NULL_HANDLE)
+        {
             vkDestroyImage(images->gpu->device, images->images[i], NULL);
-        if (images->memories[i] != 0)
+            images->images[i] = VK_NULL_HANDLE;
+        }
+        if (images->memories[i] != VK_NULL_HANDLE)
+        {
             vkFreeMemory(images->gpu->device, images->memories[i], NULL);
+            images->memories[i] = VK_NULL_HANDLE;
+        }
     }
 }
 
@@ -1085,7 +1108,7 @@ void vkl_images_create(VklImages* images)
 {
     ASSERT(images != NULL);
     ASSERT(images->gpu != NULL);
-    ASSERT(images->gpu->device != 0);
+    ASSERT(images->gpu->device != VK_NULL_HANDLE);
 
     check_dims(images->image_type, images->width, images->height, images->depth);
 
@@ -1233,7 +1256,7 @@ void vkl_sampler_create(VklSampler* sampler)
 {
     ASSERT(sampler != NULL);
     ASSERT(sampler->gpu != NULL);
-    ASSERT(sampler->gpu->device != 0);
+    ASSERT(sampler->gpu->device != VK_NULL_HANDLE);
 
     log_trace("starting creation of sampler...");
 
@@ -1256,7 +1279,11 @@ void vkl_sampler_destroy(VklSampler* sampler)
         return;
     }
     log_trace("destroy sampler");
-    vkDestroySampler(sampler->gpu->device, sampler->sampler, NULL);
+    if (sampler->sampler != VK_NULL_HANDLE)
+    {
+        vkDestroySampler(sampler->gpu->device, sampler->sampler, NULL);
+        sampler->sampler = VK_NULL_HANDLE;
+    }
     obj_destroyed(&sampler->obj);
 }
 
@@ -1342,7 +1369,7 @@ void vkl_slots_create(VklSlots* slots)
 {
     ASSERT(slots != NULL);
     ASSERT(slots->gpu != NULL);
-    ASSERT(slots->gpu->device != 0);
+    ASSERT(slots->gpu->device != VK_NULL_HANDLE);
 
     log_trace("starting creation of slots...");
 
@@ -1380,8 +1407,16 @@ void vkl_slots_destroy(VklSlots* slots)
     }
     log_trace("destroy slots");
     VkDevice device = slots->gpu->device;
-    vkDestroyPipelineLayout(device, slots->pipeline_layout, NULL);
-    vkDestroyDescriptorSetLayout(device, slots->dset_layout, NULL);
+    if (slots->pipeline_layout != VK_NULL_HANDLE)
+    {
+        vkDestroyPipelineLayout(device, slots->pipeline_layout, NULL);
+        slots->pipeline_layout = VK_NULL_HANDLE;
+    }
+    if (slots->dset_layout != VK_NULL_HANDLE)
+    {
+        vkDestroyDescriptorSetLayout(device, slots->dset_layout, NULL);
+        slots->dset_layout = VK_NULL_HANDLE;
+    }
     obj_destroyed(&slots->obj);
 }
 
@@ -1413,10 +1448,10 @@ void vkl_bindings_create(VklBindings* bindings, uint32_t dset_count)
 {
     ASSERT(bindings != NULL);
     ASSERT(bindings->gpu != NULL);
-    ASSERT(bindings->gpu->device != 0);
+    ASSERT(bindings->gpu->device != VK_NULL_HANDLE);
     ASSERT(bindings->slots != NULL);
     ASSERT(bindings->slots->obj.status >= VKL_OBJECT_STATUS_CREATED);
-    ASSERT(bindings->slots->dset_layout != 0);
+    ASSERT(bindings->slots->dset_layout != VK_NULL_HANDLE);
 
     log_trace("starting creation of bindings...");
     bindings->dset_count = dset_count;
@@ -1466,7 +1501,7 @@ void vkl_bindings_update(VklBindings* bindings)
     log_trace("update bindings");
     ASSERT(bindings->slots != NULL);
     ASSERT(bindings->slots->obj.status >= VKL_OBJECT_STATUS_CREATED);
-    ASSERT(bindings->slots->dset_layout != 0);
+    ASSERT(bindings->slots->dset_layout != VK_NULL_HANDLE);
     ASSERT(bindings->dset_count <= VKL_MAX_SWAPCHAIN_IMAGES);
 
     for (uint32_t i = 0; i < bindings->dset_count; i++)
@@ -1537,7 +1572,7 @@ void vkl_compute_create(VklCompute* compute)
 {
     ASSERT(compute != NULL);
     ASSERT(compute->gpu != NULL);
-    ASSERT(compute->gpu->device != 0);
+    ASSERT(compute->gpu->device != VK_NULL_HANDLE);
     ASSERT(compute->shader_path != NULL);
 
     if (compute->slots == NULL)
@@ -1578,8 +1613,16 @@ void vkl_compute_destroy(VklCompute* compute)
     log_trace("destroy compute");
 
     VkDevice device = compute->gpu->device;
-    vkDestroyShaderModule(device, compute->shader_module, NULL);
-    vkDestroyPipeline(device, compute->pipeline, NULL);
+    if (compute->shader_module != VK_NULL_HANDLE)
+    {
+        vkDestroyShaderModule(device, compute->shader_module, NULL);
+        compute->shader_module = VK_NULL_HANDLE;
+    }
+    if (compute->pipeline != VK_NULL_HANDLE)
+    {
+        vkDestroyPipeline(device, compute->pipeline, NULL);
+        compute->pipeline = VK_NULL_HANDLE;
+    }
 
     obj_destroyed(&compute->obj);
 }
@@ -1626,7 +1669,7 @@ void vkl_graphics_shader(
 {
     ASSERT(graphics != NULL);
     ASSERT(graphics->gpu != NULL);
-    ASSERT(graphics->gpu->device != 0);
+    ASSERT(graphics->gpu->device != VK_NULL_HANDLE);
 
     graphics->shader_stages[graphics->shader_count] = stage;
     graphics->shader_modules[graphics->shader_count++] =
@@ -1712,7 +1755,7 @@ void vkl_graphics_create(VklGraphics* graphics)
 {
     ASSERT(graphics != NULL);
     ASSERT(graphics->gpu != NULL);
-    ASSERT(graphics->gpu->device != 0);
+    ASSERT(graphics->gpu->device != VK_NULL_HANDLE);
 
     log_trace("starting creation of graphics pipeline...");
 
@@ -1749,7 +1792,7 @@ void vkl_graphics_create(VklGraphics* graphics)
         shader_stages[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         shader_stages[i].stage = graphics->shader_stages[i];
         shader_stages[i].module = graphics->shader_modules[i];
-        ASSERT(graphics->shader_stages[i] != 0);
+        ASSERT(graphics->shader_stages[i] != VK_NULL_HANDLE);
         ASSERT(graphics->shader_modules[i] != NULL);
         shader_stages[i].pName = "main";
     }
@@ -1809,8 +1852,18 @@ void vkl_graphics_destroy(VklGraphics* graphics)
 
     VkDevice device = graphics->gpu->device;
     for (uint32_t i = 0; i < graphics->shader_count; i++)
-        vkDestroyShaderModule(device, graphics->shader_modules[i], NULL);
-    vkDestroyPipeline(device, graphics->pipeline, NULL);
+    {
+        if (graphics->shader_modules[i] != VK_NULL_HANDLE)
+        {
+            vkDestroyShaderModule(device, graphics->shader_modules[i], NULL);
+            graphics->shader_modules[i] = VK_NULL_HANDLE;
+        }
+    }
+    if (graphics->pipeline != VK_NULL_HANDLE)
+    {
+        vkDestroyPipeline(device, graphics->pipeline, NULL);
+        graphics->pipeline = VK_NULL_HANDLE;
+    }
 
     obj_destroyed(&graphics->obj);
 }
@@ -1976,8 +2029,13 @@ void vkl_semaphores_destroy(VklSemaphores* semaphores)
     log_trace("destroy set of %d semaphore(s)", semaphores->count);
 
     for (uint32_t i = 0; i < semaphores->count; i++)
-        if (semaphores->semaphores[i] != 0)
+    {
+        if (semaphores->semaphores[i] != VK_NULL_HANDLE)
+        {
             vkDestroySemaphore(semaphores->gpu->device, semaphores->semaphores[i], NULL);
+            semaphores->semaphores[i] = VK_NULL_HANDLE;
+        }
+    }
     obj_destroyed(&semaphores->obj);
 }
 
@@ -2078,8 +2136,13 @@ void vkl_fences_destroy(VklFences* fences)
     log_trace("destroy set of %d fences(s)", fences->count);
 
     for (uint32_t i = 0; i < fences->count; i++)
-        if (fences->fences[i] != 0)
+    {
+        if (fences->fences[i] != VK_NULL_HANDLE)
+        {
             vkDestroyFence(fences->gpu->device, fences->fences[i], NULL);
+            fences->fences[i] = VK_NULL_HANDLE;
+        }
+    }
     obj_destroyed(&fences->obj);
 }
 
@@ -2196,7 +2259,7 @@ void vkl_renderpass_create(VklRenderpass* renderpass)
     ASSERT(renderpass != NULL);
 
     ASSERT(renderpass->gpu != NULL);
-    ASSERT(renderpass->gpu->device != 0);
+    ASSERT(renderpass->gpu->device != VK_NULL_HANDLE);
     log_trace("starting creation of renderpass...");
 
     // Attachments.
@@ -2286,8 +2349,11 @@ void vkl_renderpass_destroy(VklRenderpass* renderpass)
     }
 
     log_trace("destroy renderpass");
-    if (renderpass->renderpass != 0)
+    if (renderpass->renderpass != VK_NULL_HANDLE)
+    {
         vkDestroyRenderPass(renderpass->gpu->device, renderpass->renderpass, NULL);
+        renderpass->renderpass = VK_NULL_HANDLE;
+    }
 
     obj_destroyed(&renderpass->obj);
 }
@@ -2377,8 +2443,13 @@ static void _framebuffers_create(VklFramebuffers* framebuffers)
 static void _framebuffers_destroy(VklFramebuffers* framebuffers)
 {
     for (uint32_t i = 0; i < framebuffers->framebuffer_count; i++)
-        if (framebuffers->framebuffers[i] != 0)
+    {
+        if (framebuffers->framebuffers[i] != VK_NULL_HANDLE)
+        {
             vkDestroyFramebuffer(framebuffers->gpu->device, framebuffers->framebuffers[i], NULL);
+            framebuffers->framebuffers[i] = VK_NULL_HANDLE;
+        }
+    }
 }
 
 
@@ -2388,7 +2459,7 @@ void vkl_framebuffers_create(VklFramebuffers* framebuffers, VklRenderpass* rende
     ASSERT(framebuffers != NULL);
 
     ASSERT(framebuffers->gpu != NULL);
-    ASSERT(framebuffers->gpu->device != 0);
+    ASSERT(framebuffers->gpu->device != VK_NULL_HANDLE);
 
     ASSERT(renderpass != NULL);
     ASSERT(renderpass->obj.status >= VKL_OBJECT_STATUS_CREATED);
@@ -2505,7 +2576,7 @@ void vkl_submit_send(VklSubmit* submit, uint32_t cmd_idx, VklFences* fence, uint
         wait_semaphores[i] =
             submit->wait_semaphores[i]->semaphores[submit->wait_semaphores_idx[i]];
         log_trace("wait for semaphore %d", wait_semaphores[i]);
-        ASSERT(submit->wait_stages[i] != 0);
+        ASSERT(submit->wait_stages[i] != VK_NULL_HANDLE);
     }
 
     VkSemaphore signal_semaphores[VKL_MAX_SEMAPHORES_PER_SUBMIT] = {0};
@@ -2542,7 +2613,7 @@ void vkl_submit_send(VklSubmit* submit, uint32_t cmd_idx, VklFences* fence, uint
 
     VkFence vfence = fence == NULL ? 0 : fence->fences[fence_idx];
 
-    if (vfence != 0)
+    if (vfence != VK_NULL_HANDLE)
     {
         vkl_fences_wait(fence, fence_idx);
         vkl_fences_reset(fence, fence_idx);
@@ -2763,7 +2834,7 @@ void vkl_cmd_copy_image(VklCommands* cmds, uint32_t idx, VklImages* src_img, Vkl
 
     ASSERT(src_img->count == dst_img->count);
 
-    ASSERT(src_img->layout != 0);
+    ASSERT(src_img->layout != VK_NULL_HANDLE);
 
     CMD_START_CLIP(src_img->count)
     VkImageCopy imageCopyRegion = {0};

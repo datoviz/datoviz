@@ -310,7 +310,7 @@ backend_window_destroy(VkInstance instance, VklBackend backend, void* window, Vk
         break;
     }
 
-    if (surface != 0)
+    if (surface != VK_NULL_HANDLE)
     {
         log_trace("destroy surface");
         vkDestroySurfaceKHR(instance, surface, NULL);
@@ -489,10 +489,10 @@ static void destroy_instance(VklApp* app)
 
     // Destroy the instance.
     log_trace("destroy instance");
-    if (app->instance != 0)
+    if (app->instance != VK_NULL_HANDLE)
     {
         vkDestroyInstance(app->instance, NULL);
-        app->instance = 0;
+        app->instance = VK_NULL_HANDLE;
     }
 
     log_trace("instance destroyed");
@@ -502,7 +502,7 @@ static void destroy_instance(VklApp* app)
 
 static void find_queue_families(VkPhysicalDevice device, VklQueues* queues)
 {
-    ASSERT(device != 0);
+    ASSERT(device != VK_NULL_HANDLE);
     ASSERT(queues != NULL);
 
     // Get the queue family properties.
@@ -775,8 +775,8 @@ static void create_swapchain(
     VkSurfaceCapabilitiesKHR* caps, VkSwapchainKHR* swapchain,              //
     uint32_t* width, uint32_t* height) // final actual swapchain size in pixels
 {
-    ASSERT(surface != 0);
-    ASSERT(format != 0);
+    ASSERT(surface != VK_NULL_HANDLE);
+    ASSERT(format != VK_NULL_HANDLE);
     ASSERT(image_count > 0);
 
     // Swap chain.
@@ -787,7 +787,7 @@ static void create_swapchain(
     screateInfo.imageFormat = format;
     screateInfo.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 
-    ASSERT(pdevice != 0);
+    ASSERT(pdevice != VK_NULL_HANDLE);
     ASSERT(caps != NULL);
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(pdevice, surface, caps);
 
@@ -861,7 +861,7 @@ static void allocate_command_buffers(
 {
     ASSERT(count > 0);
     log_trace("allocate %d command buffer(s)", count);
-    ASSERT(command_pool != 0);
+    ASSERT(command_pool != VK_NULL_HANDLE);
     ASSERT(count > 0);
 
     VkCommandBufferAllocateInfo alloc_info = {0};
@@ -1066,8 +1066,8 @@ static void create_image_view2(
     log_trace("create image view %dD", view_type + 1);
 
     ASSERT(aspect_flags != 0);
-    ASSERT(image != 0);
-    ASSERT(format != 0);
+    ASSERT(image != VK_NULL_HANDLE);
+    ASSERT(format != VK_NULL_HANDLE);
 
     VkImageViewCreateInfo viewInfo = {0};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -1213,7 +1213,7 @@ static void allocate_descriptor_sets(
 
     VkDescriptorSetAllocateInfo alloc_info = {0};
     alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    ASSERT(dset_pool != 0);
+    ASSERT(dset_pool != VK_NULL_HANDLE);
     alloc_info.descriptorPool = dset_pool;
     alloc_info.descriptorSetCount = count;
     alloc_info.pSetLayouts = layouts;
@@ -1503,8 +1503,8 @@ static void begin_render_pass(
     VkRenderPass renderpass, VkCommandBuffer cmd_buf, VkFramebuffer framebuffer, //
     uint32_t width, uint32_t height, uint32_t clear_count, VkClearValue* clear_colors)
 {
-    ASSERT(renderpass != 0);
-    ASSERT(framebuffer != 0);
+    ASSERT(renderpass != VK_NULL_HANDLE);
+    ASSERT(framebuffer != VK_NULL_HANDLE);
     ASSERT(width > 0);
     ASSERT(height > 0);
 
