@@ -17,6 +17,7 @@
 
 VklFifo vkl_fifo(int32_t capacity)
 {
+    log_trace("creating generic FIFO queue with a capacity of %d items", capacity);
     ASSERT(capacity >= 2);
     VklFifo fifo = {0};
     ASSERT(capacity <= VKL_MAX_FIFO_CAPACITY);
@@ -33,6 +34,7 @@ void vkl_fifo_enqueue(VklFifo* fifo, void* item)
 
     if ((fifo->head + 1) % fifo->capacity != fifo->tail)
     {
+        log_trace("enqueue item, head %d, tail %d", fifo->head, fifo->tail);
         fifo->items[fifo->head] = item;
         fifo->head++;
         if (fifo->head >= fifo->capacity)
@@ -58,16 +60,21 @@ void* vkl_fifo_dequeue(VklFifo* fifo, bool wait)
     // Wait until the queue is not empty.
     if (wait)
     {
+        log_trace("waiting for the queue to be non-empty");
         while (fifo->head == fifo->tail)
             pthread_cond_wait(&fifo->cond, &fifo->lock);
     }
 
     // Empty queue.
     if (fifo->head == fifo->tail)
+    {
+        log_trace("FIFO queue was empty");
         return NULL;
+    }
 
     ASSERT(0 <= fifo->tail && fifo->tail < fifo->capacity);
 
+    log_trace("dequeue item, head %d, tail %d", fifo->head, fifo->tail);
     void* item = fifo->items[fifo->tail];
 
     fifo->tail++;

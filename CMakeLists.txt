@@ -116,7 +116,7 @@ set(CMAKE_BUILD_TYPE Debug)
 
 
 set(INCL_DIRS ${CMAKE_SOURCE_DIR}/external ${CMAKE_SOURCE_DIR}/external/imgui ${CMAKE_SOURCE_DIR}/external/imgui/backends ${CMAKE_SOURCE_DIR}/include/)
-set(LINK_LIBS m glfw cglm Vulkan::Vulkan)
+set(LINK_LIBS m glfw cglm Vulkan::Vulkan pthread)
 if(NOT ${WIN32})
     set(LINK_LIBS dl ${LINK_LIBS})
 endif()

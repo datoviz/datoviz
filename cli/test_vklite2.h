@@ -1160,6 +1160,43 @@ static int vklite2_canvas_triangle(VkyTestContext* context)
 /*  Context                                                                                   */
 /*************************************************************************************************/
 
+static void* _fifo_thread(void* arg)
+{
+    VklFifo* fifo = arg;
+    uint8_t* data = vkl_fifo_dequeue(fifo, true);
+    ASSERT(*data == 12);
+    // Signal to the caller thread that the dequeue was successfull.
+    fifo->user_data = data;
+    return NULL;
+}
+
+
+
+static int vklite2_fifo(VkyTestContext* context)
+{
+    VklFifo fifo = vkl_fifo(5);
+    uint8_t item = 12;
+
+    vkl_fifo_enqueue(&fifo, &item);
+    ASSERT(fifo.head == 1);
+    ASSERT(fifo.tail == 0);
+
+    uint8_t* data = vkl_fifo_dequeue(&fifo, true);
+    ASSERT(*data = item);
+
+    pthread_t thread = {0};
+    ASSERT(fifo.user_data == NULL);
+    pthread_create(&thread, NULL, _fifo_thread, &fifo);
+    vkl_fifo_enqueue(&fifo, &item);
+    pthread_join(thread, NULL);
+    ASSERT(fifo.user_data != NULL);
+    ASSERT(fifo.user_data == &item);
+
+    return 0;
+}
+
+
+
 static int vklite2_context_buffer(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
