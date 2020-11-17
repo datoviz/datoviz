@@ -1160,7 +1160,7 @@ static int vklite2_canvas_triangle(VkyTestContext* context)
 /*  Context                                                                                   */
 /*************************************************************************************************/
 
-static void* _fifo_thread(void* arg)
+static void* _fifo_thread_1(void* arg)
 {
     VklFifo* fifo = arg;
     uint8_t* data = vkl_fifo_dequeue(fifo, true);
@@ -1172,11 +1172,28 @@ static void* _fifo_thread(void* arg)
 
 
 
+static void* _fifo_thread_2(void* arg)
+{
+    VklFifo* fifo = arg;
+    uint8_t* numbers = calloc(5, sizeof(uint8_t));
+    fifo->user_data = numbers;
+    for (uint32_t i = 0; i < 5; i++)
+    {
+        numbers[i] = i;
+        vkl_fifo_enqueue(fifo, &numbers[i]);
+    }
+    vkl_fifo_enqueue(fifo, NULL);
+    return NULL;
+}
+
+
+
 static int vklite2_fifo(VkyTestContext* context)
 {
-    VklFifo fifo = vkl_fifo(5);
+    VklFifo fifo = vkl_fifo(8);
     uint8_t item = 12;
 
+    // First, enqueue + dequeue in the same thread.
     vkl_fifo_enqueue(&fifo, &item);
     ASSERT(fifo.head == 1);
     ASSERT(fifo.tail == 0);
@@ -1184,13 +1201,30 @@ static int vklite2_fifo(VkyTestContext* context)
     uint8_t* data = vkl_fifo_dequeue(&fifo, true);
     ASSERT(*data = item);
 
+    // Enqueue in the main thread, dequeue in a background thread.
     pthread_t thread = {0};
     ASSERT(fifo.user_data == NULL);
-    pthread_create(&thread, NULL, _fifo_thread, &fifo);
+
+    pthread_create(&thread, NULL, _fifo_thread_1, &fifo);
     vkl_fifo_enqueue(&fifo, &item);
     pthread_join(thread, NULL);
     ASSERT(fifo.user_data != NULL);
     ASSERT(fifo.user_data == &item);
+
+    // Multiple enqueues in the background thread, dequeue in the main thread.
+    pthread_create(&thread, NULL, _fifo_thread_2, &fifo);
+    uint8_t* dequeued = NULL;
+    uint32_t i = 0;
+    do
+    {
+        dequeued = vkl_fifo_dequeue(&fifo, true);
+        if (dequeued == NULL)
+            break;
+        AT(*dequeued == i);
+        i++;
+    } while (dequeued != NULL);
+    pthread_join(thread, NULL);
+    FREE(fifo.user_data);
 
     return 0;
 }

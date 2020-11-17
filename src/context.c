@@ -42,7 +42,9 @@ void vkl_fifo_enqueue(VklFifo* fifo, void* item)
     }
     else
     {
-        log_error("FIFO queue is full, skipping enqueue");
+        log_error("FIFO queue is full, reseting it");
+        fifo->head = 0;
+        fifo->tail = 0;
     }
 
     ASSERT(0 <= fifo->head && fifo->head < fifo->capacity);
@@ -85,6 +87,17 @@ void* vkl_fifo_dequeue(VklFifo* fifo, bool wait)
     pthread_mutex_unlock(&fifo->lock);
 
     return item;
+}
+
+
+
+void vkl_fifo_reset(VklFifo* fifo)
+{
+    pthread_mutex_lock(&fifo->lock);
+    fifo->head = 0;
+    fifo->tail = 0;
+    pthread_cond_signal(&fifo->cond);
+    pthread_mutex_unlock(&fifo->lock);
 }
 
 

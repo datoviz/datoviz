@@ -8,6 +8,20 @@
 
 
 /*************************************************************************************************/
+/*  Utils                                                                                        */
+/*************************************************************************************************/
+
+#ifdef _WINDOWS
+#include <windows.h>
+#define vkl_sleep(x) Sleep(x)
+#else
+#include <unistd.h>
+#define vkl_sleep(x) usleep((x)*1000)
+#endif
+
+
+
+/*************************************************************************************************/
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
@@ -213,6 +227,8 @@ VKY_EXPORT VklFifo vkl_fifo(int32_t capacity);
 VKY_EXPORT void vkl_fifo_enqueue(VklFifo* fifo, void* item);
 
 VKY_EXPORT void* vkl_fifo_dequeue(VklFifo* fifo, bool wait);
+
+VKY_EXPORT void vkl_fifo_reset(VklFifo* fifo);
 
 
 
