@@ -395,9 +395,9 @@ static void show_canvas(BasicCanvas canvas, FillCallback fill_commands, uint32_t
             cur_frame = (cur_frame + 1) % VKY_MAX_FRAMES_IN_FLIGHT;
         }
 
-        // IMPORTANT: we need to fait for the present queue to be idle, otherwise the GPU hangs
+        // IMPORTANT: we need to wait for the present queue to be idle, otherwise the GPU hangs
         // when waiting for fences (not sure why). The problem only arises when using different
-        // queues for command bufer submission and swapchain present.
+        // queues for command buffer submission and swapchain present.
         vkl_gpu_queue_wait(gpu, 1);
     }
     log_trace("end of main loop");

@@ -416,6 +416,9 @@ void vkl_swapchain_create(VklSwapchain* swapchain)
         swapchain->requested_width, swapchain->requested_height, //
         &swapchain->window->caps, &swapchain->swapchain, &width, &height);
 
+    swapchain->support_transfer =
+        (swapchain->window->caps.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_SRC_BIT) != 0;
+
     // Actual framebuffer size in pixels, as determined by the swapchain creation process.
     ASSERT(width > 0);
     ASSERT(height > 0);

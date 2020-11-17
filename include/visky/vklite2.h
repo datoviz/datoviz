@@ -408,6 +408,7 @@ struct VklSwapchain
 
     VkFormat format;
     VkPresentModeKHR present_mode;
+    bool support_transfer; // whether the swapchain supports copying the image to another
 
     // extent in pixel coordinates if caps.currentExtent is not available
     uint32_t requested_width, requested_height;
