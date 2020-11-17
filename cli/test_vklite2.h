@@ -1181,6 +1181,7 @@ static void* _fifo_thread_2(void* arg)
     {
         numbers[i] = i;
         vkl_fifo_enqueue(fifo, &numbers[i]);
+        vkl_sleep(50);
     }
     vkl_fifo_enqueue(fifo, NULL);
     return NULL;
@@ -1193,18 +1194,16 @@ static int vklite2_fifo(VkyTestContext* context)
     VklFifo fifo = vkl_fifo(8);
     uint8_t item = 12;
 
-    // First, enqueue + dequeue in the same thread.
+    // Enqueue + dequeue in the same thread.
     vkl_fifo_enqueue(&fifo, &item);
     ASSERT(fifo.head == 1);
     ASSERT(fifo.tail == 0);
-
     uint8_t* data = vkl_fifo_dequeue(&fifo, true);
     ASSERT(*data = item);
 
     // Enqueue in the main thread, dequeue in a background thread.
     pthread_t thread = {0};
     ASSERT(fifo.user_data == NULL);
-
     pthread_create(&thread, NULL, _fifo_thread_1, &fifo);
     vkl_fifo_enqueue(&fifo, &item);
     pthread_join(thread, NULL);

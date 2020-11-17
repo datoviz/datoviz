@@ -11,13 +11,17 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-#ifdef _WINDOWS
-#include <windows.h>
-#define vkl_sleep(x) Sleep(x)
+static inline void vkl_sleep(int milliseconds)
+{
+#ifdef WIN32
+    Sleep(milliseconds);
 #else
-#include <unistd.h>
-#define vkl_sleep(x) usleep((x)*1000)
+    struct timespec ts;
+    ts.tv_sec = milliseconds / 1000;
+    ts.tv_nsec = (milliseconds % 1000) * 1000000;
+    nanosleep(&ts, NULL);
 #endif
+}
 
 
 
