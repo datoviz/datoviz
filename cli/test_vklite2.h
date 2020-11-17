@@ -1305,7 +1305,7 @@ static int vklite2_context_texture(VkyTestContext* context)
 
 
 
-static int vklite2_context_transfer(VkyTestContext* context)
+static int vklite2_context_transfer_sync(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -1330,6 +1330,74 @@ static int vklite2_context_transfer(VkyTestContext* context)
 
     FREE(img_data2);
     FREE(img_data);
+    TEST_END
+}
+
+
+
+typedef struct _TestTransfer _TestTransfer;
+struct _TestTransfer
+{
+    VklContext* ctx;
+
+    VklBufferRegions br;
+    VklTexture* tex;
+
+    uint8_t data[16];
+    uint8_t img_data[16 * 16 * 4];
+};
+
+
+
+static void* _thread_enqueue(void* arg)
+{
+    _TestTransfer* tt = arg;
+
+    // Upload data from a background thread.
+    vkl_buffer_regions_upload(tt->ctx, &tt->br, 0, 16, tt->data);
+    vkl_texture_upload(tt->ctx, tt->tex, 16 * 16 * 4, tt->img_data);
+
+    // Cause the transfer loop to end.
+    vkl_transfer_end(tt->ctx);
+
+    return NULL;
+}
+
+
+
+static int vklite2_context_transfer_async(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    VklContext* ctx = vkl_context(gpu);
+    vkl_transfer_mode(ctx, VKL_TRANSFER_MODE_ASYNC);
+
+    // Resources.
+    _TestTransfer tt = {0};
+    tt.ctx = ctx;
+    tt.br = vkl_alloc_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, 16);
+    memset(tt.data, 12, 16);
+    memset(tt.img_data, 23, 16);
+    tt.tex = vkl_new_texture(ctx, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+
+    // Background thread.
+    pthread_t thread = {0};
+    // Launch the thread that enqueues transfer tasks.
+    pthread_create(&thread, NULL, _thread_enqueue, &tt);
+    // Run the transfer task dequeuing loop in the main thread.
+    vkl_transfer_loop(ctx);
+    pthread_join(thread, NULL);
+
+    // Check.
+    vkl_transfer_mode(ctx, VKL_TRANSFER_MODE_SYNC);
+    uint8_t data2[16] = {0};
+    vkl_buffer_regions_download(ctx, &tt.br, 0, 16, data2);
+    AT(memcmp(tt.data, data2, 16) == 0);
+
+    uint8_t img_data2[16 * 16 * 4];
+    vkl_texture_download(ctx, tt.tex, 16 * 16 * 4, img_data2);
+    AT(memcmp(tt.img_data, img_data2, 16 * 16 * 4) == 0);
+
     TEST_END
 }
 

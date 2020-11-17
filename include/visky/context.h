@@ -242,7 +242,17 @@ VKY_EXPORT void vkl_fifo_reset(VklFifo* fifo);
 
 VKY_EXPORT VklContext* vkl_context(VklGpu* gpu);
 
-VKY_EXPORT void vkl_context_transfer_mode(VklContext* context, VklTransferMode mode);
+
+
+/*************************************************************************************************/
+/*  Transfer queue                                                                               */
+/*************************************************************************************************/
+
+VKY_EXPORT void vkl_transfer_mode(VklContext* context, VklTransferMode mode);
+
+VKY_EXPORT void vkl_transfer_loop(VklContext* context);
+
+VKY_EXPORT void vkl_transfer_end(VklContext* context);
 
 
 
@@ -306,8 +316,6 @@ VKY_EXPORT void vkl_buffer_regions_upload(
 VKY_EXPORT void vkl_buffer_regions_download(
     VklContext* context, VklBufferRegions* regions, VkDeviceSize offset, VkDeviceSize size,
     void* data);
-
-VKY_EXPORT void vkl_context_transfer_loop(VklContext* context);
 
 
 

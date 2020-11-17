@@ -223,14 +223,6 @@ VklContext* vkl_context(VklGpu* gpu)
 
 
 
-void vkl_context_transfer_mode(VklContext* context, VklTransferMode mode)
-{
-    ASSERT(context != NULL);
-    context->transfer_mode = mode;
-}
-
-
-
 void vkl_context_destroy(VklContext* context)
 {
     if (context == NULL)
@@ -486,72 +478,8 @@ void vkl_texture_destroy(VklTexture* texture)
 
 
 /*************************************************************************************************/
-/*  Data transfers                                                                               */
+/*  Data transfers utils                                                                         */
 /*************************************************************************************************/
-
-static void fifo_enqueue(VklTransferFifo* fifo, VklTransfer transfer)
-{
-    ASSERT(fifo != NULL);
-    ASSERT(0 <= fifo->queue.head && fifo->queue.head < fifo->queue.capacity);
-    fifo->transfers[fifo->queue.head] = transfer;
-    vkl_fifo_enqueue(&fifo->queue, &fifo->transfers[fifo->queue.head]);
-}
-
-
-
-static VklTransfer fifo_dequeue(VklTransferFifo* fifo, bool wait)
-{
-    ASSERT(fifo != NULL);
-    VklTransfer* item = vkl_fifo_dequeue(&fifo->queue, wait);
-    if (item == NULL)
-        return (VklTransfer){0};
-    ASSERT(item != NULL);
-    return *item;
-}
-
-
-
-static VklTransfer enqueue_texture_transfer(
-    VklTransferFifo* fifo, VklDataTransferType type, VklTexture* texture, uvec3 offset,
-    uvec3 shape, VkDeviceSize size, void* data)
-{
-    // Create the transfer object.
-    VklTransfer tr = {0};
-    tr.type = type;
-    for (uint32_t i = 0; i < 3; i++)
-    {
-        tr.u.tex.shape[i] = shape[i];
-        tr.u.tex.offset[i] = offset[i];
-    }
-    tr.u.tex.size = size;
-    tr.u.tex.data = data;
-    tr.u.tex.texture = texture;
-
-    fifo_enqueue(fifo, tr);
-
-    return tr;
-}
-
-
-
-static VklTransfer enqueue_regions_transfer(
-    VklTransferFifo* fifo, VklDataTransferType type, VklBufferRegions regions, VkDeviceSize offset,
-    VkDeviceSize size, void* data)
-{
-    // Create the transfer object.
-    VklTransfer tr = {0};
-    tr.type = type;
-    tr.u.buf.regions = regions;
-    tr.u.buf.offset = offset;
-    tr.u.buf.size = size;
-    tr.u.buf.data = data;
-
-    fifo_enqueue(fifo, tr);
-
-    return tr;
-}
-
-
 
 static void process_texture_upload(VklContext* context, VklTransfer tr)
 {
@@ -809,6 +737,115 @@ static int process_transfer(VklContext* context, VklTransfer tr)
 
 
 
+/*************************************************************************************************/
+/*  Transfer queue                                                                               */
+/*************************************************************************************************/
+
+static void fifo_enqueue(VklTransferFifo* fifo, VklTransfer transfer)
+{
+    ASSERT(fifo != NULL);
+    ASSERT(0 <= fifo->queue.head && fifo->queue.head < fifo->queue.capacity);
+    fifo->transfers[fifo->queue.head] = transfer;
+    vkl_fifo_enqueue(&fifo->queue, &fifo->transfers[fifo->queue.head]);
+}
+
+
+
+static VklTransfer fifo_dequeue(VklTransferFifo* fifo, bool wait)
+{
+    ASSERT(fifo != NULL);
+    VklTransfer* item = vkl_fifo_dequeue(&fifo->queue, wait);
+    if (item == NULL)
+        return (VklTransfer){0};
+    ASSERT(item != NULL);
+    return *item;
+}
+
+
+
+static VklTransfer enqueue_texture_transfer(
+    VklTransferFifo* fifo, VklDataTransferType type, VklTexture* texture, uvec3 offset,
+    uvec3 shape, VkDeviceSize size, void* data)
+{
+    // Create the transfer object.
+    VklTransfer tr = {0};
+    tr.type = type;
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        tr.u.tex.shape[i] = shape[i];
+        tr.u.tex.offset[i] = offset[i];
+    }
+    tr.u.tex.size = size;
+    tr.u.tex.data = data;
+    tr.u.tex.texture = texture;
+
+    fifo_enqueue(fifo, tr);
+
+    return tr;
+}
+
+
+
+static VklTransfer enqueue_regions_transfer(
+    VklTransferFifo* fifo, VklDataTransferType type, VklBufferRegions regions, VkDeviceSize offset,
+    VkDeviceSize size, void* data)
+{
+    // Create the transfer object.
+    VklTransfer tr = {0};
+    tr.type = type;
+    tr.u.buf.regions = regions;
+    tr.u.buf.offset = offset;
+    tr.u.buf.size = size;
+    tr.u.buf.data = data;
+
+    fifo_enqueue(fifo, tr);
+
+    return tr;
+}
+
+
+
+void vkl_transfer_mode(VklContext* context, VklTransferMode mode)
+{
+    ASSERT(context != NULL);
+    context->transfer_mode = mode;
+}
+
+
+
+void vkl_transfer_loop(VklContext* context)
+{
+    ASSERT(context != NULL);
+    VklTransfer tr = {0};
+    int res = 0;
+    while (res == 0)
+    {
+        log_trace("transfer loop awaits for transfer task...");
+        // wait until a transfer task is available
+        tr = fifo_dequeue(&context->transfer_fifo, true);
+        log_trace("transfer task dequeued, processing it...");
+        // process the dequeued task
+        res = process_transfer(context, tr);
+    }
+}
+
+
+
+void vkl_transfer_end(VklContext* context)
+{
+    ASSERT(context != NULL);
+    // Enqueue a special object that causes the dequeue loop to end.
+    VklTransfer tr = {0};
+    tr.type = VKL_TRANSFER_NULL;
+    fifo_enqueue(&context->transfer_fifo, tr);
+}
+
+
+
+/*************************************************************************************************/
+/*  Data transfers                                                                               */
+/*************************************************************************************************/
+
 void vkl_texture_upload_region(
     VklContext* context, VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size,
     void* data)
@@ -927,15 +964,4 @@ void vkl_buffer_regions_download(
         log_trace("download buffer regions in SYNC mode");
         process_transfer(context, tr);
     }
-}
-
-
-
-void vkl_context_transfer_loop(VklContext* context)
-{
-    ASSERT(context != NULL);
-    VklTransfer tr = fifo_dequeue(&context->transfer_fifo, true);
-    int res = 0;
-    while (res == 0)
-        res = process_transfer(context, tr);
 }
