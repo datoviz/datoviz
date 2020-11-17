@@ -1338,6 +1338,29 @@ static int vklite2_context_transfer_sync(VkyTestContext* context)
 
 
 
+static int vklite2_context_transfer_async_nothread(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    VklContext* ctx = vkl_context(gpu);
+    vkl_transfer_mode(ctx, VKL_TRANSFER_MODE_ASYNC);
+
+    VklBufferRegions br = vkl_alloc_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, 16);
+    uint8_t data[16] = {0};
+    memset(data, 12, 16);
+    vkl_buffer_regions_upload(ctx, &br, 0, 16, data);
+    vkl_transfer_loop(ctx, false);
+
+    uint8_t data2[16] = {0};
+    vkl_buffer_regions_download(ctx, &br, 0, 16, data2);
+    vkl_transfer_loop(ctx, false);
+    AT(memcmp(data, data2, 16) == 0);
+
+    TEST_END
+}
+
+
+
 typedef struct _TestTransfer _TestTransfer;
 struct _TestTransfer
 {
@@ -1368,7 +1391,7 @@ static void* _thread_enqueue(void* arg)
 
 
 
-static int vklite2_context_transfer_async(VkyTestContext* context)
+static int vklite2_context_transfer_async_thread(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -1388,7 +1411,7 @@ static int vklite2_context_transfer_async(VkyTestContext* context)
     // Launch the thread that enqueues transfer tasks.
     pthread_create(&thread, NULL, _thread_enqueue, &tt);
     // Run the transfer task dequeuing loop in the main thread.
-    vkl_transfer_loop(ctx);
+    vkl_transfer_loop(ctx, true);
     pthread_join(thread, NULL);
 
     // Check.

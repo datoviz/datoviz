@@ -71,6 +71,8 @@ void* vkl_fifo_dequeue(VklFifo* fifo, bool wait)
     if (fifo->head == fifo->tail)
     {
         log_trace("FIFO queue was empty");
+        // Don't forget to unlock the mutex before exiting this function.
+        pthread_mutex_unlock(&fifo->lock);
         return NULL;
     }
 
@@ -832,7 +834,7 @@ void vkl_transfer_mode(VklContext* context, VklTransferMode mode)
 
 
 
-void vkl_transfer_loop(VklContext* context)
+void vkl_transfer_loop(VklContext* context, bool wait)
 {
     ASSERT(context != NULL);
     VklTransfer tr = {0};
@@ -841,11 +843,12 @@ void vkl_transfer_loop(VklContext* context)
     {
         log_trace("transfer loop awaits for transfer task...");
         // wait until a transfer task is available
-        tr = fifo_dequeue(&context->transfer_fifo, true);
+        tr = fifo_dequeue(&context->transfer_fifo, wait);
         log_trace("transfer task dequeued, processing it...");
         // process the dequeued task
         res = process_transfer(context, tr);
     }
+    log_trace("end transfer loop");
 }
 
 
