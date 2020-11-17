@@ -146,16 +146,7 @@ VklGpu* vkl_gpu(VklApp* app, uint32_t idx)
     VklGpu* gpu = &app->gpus[idx];
 
     INSTANCES_INIT(
-        VklSwapchain, gpu, swapchains, max_swapchains, VKL_MAX_WINDOWS, VKL_OBJECT_TYPE_SWAPCHAIN)
-    INSTANCES_INIT(
-        VklSemaphores, gpu, semaphores, max_semaphores, VKL_MAX_SEMAPHORES,
-        VKL_OBJECT_TYPE_SEMAPHORES)
-    INSTANCES_INIT(VklFences, gpu, fences, max_fences, VKL_MAX_FENCES, VKL_OBJECT_TYPE_FENCES)
-    INSTANCES_INIT(
         VklGraphics, gpu, graphics, max_graphics, VKL_MAX_GRAPHICS, VKL_OBJECT_TYPE_GRAPHICS)
-    INSTANCES_INIT(
-        VklFramebuffers, gpu, framebuffers, max_framebuffers, VKL_MAX_FRAMEBUFFERS,
-        VKL_OBJECT_TYPE_FRAMEBUFFER)
 
     return gpu;
 }
@@ -260,15 +251,6 @@ void vkl_gpu_destroy(VklGpu* gpu)
         gpu->context = NULL;
     }
 
-    log_trace("GPU destroy swapchains");
-    for (uint32_t i = 0; i < gpu->max_swapchains; i++)
-    {
-        if (gpu->swapchains[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_swapchain_destroy(&gpu->swapchains[i]);
-    }
-    INSTANCES_DESTROY(gpu->swapchains)
-
     log_trace("GPU destroy %d command pool(s)", gpu->queues.queue_family_count);
     for (uint32_t i = 0; i < gpu->queues.queue_family_count; i++)
     {
@@ -288,36 +270,6 @@ void vkl_gpu_destroy(VklGpu* gpu)
         vkl_graphics_destroy(&gpu->graphics[i]);
     }
     INSTANCES_DESTROY(gpu->graphics)
-
-
-    log_trace("GPU destroy semaphores");
-    for (uint32_t i = 0; i < gpu->max_semaphores; i++)
-    {
-        if (gpu->semaphores[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_semaphores_destroy(&gpu->semaphores[i]);
-    }
-    INSTANCES_DESTROY(gpu->semaphores)
-
-
-    log_trace("GPU destroy fences");
-    for (uint32_t i = 0; i < gpu->max_fences; i++)
-    {
-        if (gpu->fences[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_fences_destroy(&gpu->fences[i]);
-    }
-    INSTANCES_DESTROY(gpu->fences)
-
-
-    log_trace("GPU destroy framebuffers");
-    for (uint32_t i = 0; i < gpu->max_framebuffers; i++)
-    {
-        if (gpu->framebuffers[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_framebuffers_destroy(&gpu->framebuffers[i]);
-    }
-    INSTANCES_DESTROY(gpu->framebuffers)
 
 
     if (gpu->dset_pool != 0)
@@ -393,17 +345,17 @@ void vkl_window_destroy(VklWindow* window)
 /*  Swapchain                                                                                    */
 /*************************************************************************************************/
 
-VklSwapchain* vkl_swapchain(VklGpu* gpu, VklWindow* window, uint32_t min_img_count)
+VklSwapchain vkl_swapchain(VklGpu* gpu, VklWindow* window, uint32_t min_img_count)
 {
     ASSERT(gpu != NULL);
     ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
     ASSERT(window != NULL);
 
-    INSTANCE_NEW(VklSwapchain, swapchain, gpu->swapchains, gpu->max_swapchains)
+    VklSwapchain swapchain = {0};
 
-    swapchain->gpu = gpu;
-    swapchain->window = window;
-    swapchain->img_count = min_img_count;
+    swapchain.gpu = gpu;
+    swapchain.window = window;
+    swapchain.img_count = min_img_count;
     return swapchain;
 }
 
@@ -1118,10 +1070,12 @@ static void _images_destroy(VklImages* images)
 {
     for (uint32_t i = 0; i < images->count; i++)
     {
-        vkDestroyImageView(images->gpu->device, images->image_views[i], NULL);
-        if (!images->is_swapchain)
+        if (images->image_views[i] != 0)
+            vkDestroyImageView(images->gpu->device, images->image_views[i], NULL);
+        if (!images->is_swapchain && images->images[i] != 0)
             vkDestroyImage(images->gpu->device, images->images[i], NULL);
-        vkFreeMemory(images->gpu->device, images->memories[i], NULL);
+        if (images->memories[i] != 0)
+            vkFreeMemory(images->gpu->device, images->memories[i], NULL);
     }
 }
 
@@ -1985,25 +1939,24 @@ void vkl_barrier_images_queue(VklBarrier* barrier, uint32_t src_queue, uint32_t 
 /*  Semaphores                                                                                   */
 /*************************************************************************************************/
 
-VklSemaphores* vkl_semaphores(VklGpu* gpu, uint32_t count)
+VklSemaphores vkl_semaphores(VklGpu* gpu, uint32_t count)
 {
     ASSERT(gpu != NULL);
     ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
 
-    INSTANCE_NEW(VklSemaphores, semaphores, gpu->semaphores, gpu->max_semaphores)
-
     ASSERT(count > 0);
     log_trace("create set of %d semaphore(s)", count);
 
-    semaphores->gpu = gpu;
-    semaphores->count = count;
+    VklSemaphores semaphores = {0};
+    semaphores.gpu = gpu;
+    semaphores.count = count;
 
     VkSemaphoreCreateInfo info = {0};
     info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
     for (uint32_t i = 0; i < count; i++)
-        VK_CHECK_RESULT(vkCreateSemaphore(gpu->device, &info, NULL, &semaphores->semaphores[i]));
+        VK_CHECK_RESULT(vkCreateSemaphore(gpu->device, &info, NULL, &semaphores.semaphores[i]));
 
-    obj_created(&semaphores->obj);
+    obj_created(&semaphores.obj);
 
     return semaphores;
 }
@@ -2023,7 +1976,8 @@ void vkl_semaphores_destroy(VklSemaphores* semaphores)
     log_trace("destroy set of %d semaphore(s)", semaphores->count);
 
     for (uint32_t i = 0; i < semaphores->count; i++)
-        vkDestroySemaphore(semaphores->gpu->device, semaphores->semaphores[i], NULL);
+        if (semaphores->semaphores[i] != 0)
+            vkDestroySemaphore(semaphores->gpu->device, semaphores->semaphores[i], NULL);
     obj_destroyed(&semaphores->obj);
 }
 
@@ -2033,18 +1987,18 @@ void vkl_semaphores_destroy(VklSemaphores* semaphores)
 /*  Fences                                                                                       */
 /*************************************************************************************************/
 
-VklFences* vkl_fences(VklGpu* gpu, uint32_t count)
+VklFences vkl_fences(VklGpu* gpu, uint32_t count)
 {
     ASSERT(gpu != NULL);
     ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
 
-    INSTANCE_NEW(VklFences, fences, gpu->fences, gpu->max_fences)
+    VklFences fences = {0};
 
     ASSERT(count > 0);
     log_trace("create set of %d fences(s)", count);
 
-    fences->gpu = gpu;
-    fences->count = count;
+    fences.gpu = gpu;
+    fences.count = count;
 
     return fences;
 }
@@ -2124,7 +2078,8 @@ void vkl_fences_destroy(VklFences* fences)
     log_trace("destroy set of %d fences(s)", fences->count);
 
     for (uint32_t i = 0; i < fences->count; i++)
-        vkDestroyFence(fences->gpu->device, fences->fences[i], NULL);
+        if (fences->fences[i] != 0)
+            vkDestroyFence(fences->gpu->device, fences->fences[i], NULL);
     obj_destroyed(&fences->obj);
 }
 
@@ -2331,7 +2286,8 @@ void vkl_renderpass_destroy(VklRenderpass* renderpass)
     }
 
     log_trace("destroy renderpass");
-    vkDestroyRenderPass(renderpass->gpu->device, renderpass->renderpass, NULL);
+    if (renderpass->renderpass != 0)
+        vkDestroyRenderPass(renderpass->gpu->device, renderpass->renderpass, NULL);
 
     obj_destroyed(&renderpass->obj);
 }
@@ -2342,16 +2298,13 @@ void vkl_renderpass_destroy(VklRenderpass* renderpass)
 /*  Framebuffers                                                                                 */
 /*************************************************************************************************/
 
-VklFramebuffers* vkl_framebuffers(VklGpu* gpu)
+VklFramebuffers vkl_framebuffers(VklGpu* gpu)
 {
     ASSERT(gpu != NULL);
     ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
 
-    INSTANCE_NEW(VklFramebuffers, framebuffers, gpu->framebuffers, gpu->max_framebuffers)
-
-    ASSERT(framebuffers != NULL);
-
-    framebuffers->gpu = gpu;
+    VklFramebuffers framebuffers = {0};
+    framebuffers.gpu = gpu;
 
     return framebuffers;
 }
@@ -2424,7 +2377,8 @@ static void _framebuffers_create(VklFramebuffers* framebuffers)
 static void _framebuffers_destroy(VklFramebuffers* framebuffers)
 {
     for (uint32_t i = 0; i < framebuffers->framebuffer_count; i++)
-        vkDestroyFramebuffer(framebuffers->gpu->device, framebuffers->framebuffers[i], NULL);
+        if (framebuffers->framebuffers[i] != 0)
+            vkDestroyFramebuffer(framebuffers->gpu->device, framebuffers->framebuffers[i], NULL);
 }
 
 

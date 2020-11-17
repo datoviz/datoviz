@@ -35,6 +35,17 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
     INSTANCES_INIT(
         VklRenderpass, canvas, renderpasses, max_renderpasses, VKL_MAX_RENDERPASSES,
         VKL_OBJECT_TYPE_RENDERPASS)
+    INSTANCES_INIT(
+        VklSemaphores, canvas, semaphores, max_semaphores, VKL_MAX_SEMAPHORES,
+        VKL_OBJECT_TYPE_SEMAPHORES)
+    INSTANCES_INIT(VklFences, canvas, fences, max_fences, VKL_MAX_FENCES, VKL_OBJECT_TYPE_FENCES)
+    INSTANCES_INIT(
+        VklSwapchain, canvas, swapchains, max_swapchains, VKL_MAX_WINDOWS,
+        VKL_OBJECT_TYPE_SWAPCHAIN)
+    INSTANCES_INIT(
+        VklFramebuffers, canvas, framebuffers, max_framebuffers, VKL_MAX_FRAMEBUFFERS,
+        VKL_OBJECT_TYPE_FRAMEBUFFER)
+
 
     // TODO: create semaphores, fences, swap chain, renderpass, etc.
 
@@ -76,6 +87,46 @@ void vkl_canvas_destroy(VklCanvas* canvas)
         vkl_renderpass_destroy(&canvas->renderpasses[i]);
     }
     INSTANCES_DESTROY(canvas->renderpasses)
+
+
+    log_trace("canvas destroy semaphores");
+    for (uint32_t i = 0; i < canvas->max_semaphores; i++)
+    {
+        if (canvas->semaphores[i].obj.status == VKL_OBJECT_STATUS_NONE)
+            break;
+        vkl_semaphores_destroy(&canvas->semaphores[i]);
+    }
+    INSTANCES_DESTROY(canvas->semaphores)
+
+
+    log_trace("canvas destroy fences");
+    for (uint32_t i = 0; i < canvas->max_fences; i++)
+    {
+        if (canvas->fences[i].obj.status == VKL_OBJECT_STATUS_NONE)
+            break;
+        vkl_fences_destroy(&canvas->fences[i]);
+    }
+    INSTANCES_DESTROY(canvas->fences)
+
+
+    log_trace("canvas destroy swapchains");
+    for (uint32_t i = 0; i < canvas->max_swapchains; i++)
+    {
+        if (canvas->swapchains[i].obj.status == VKL_OBJECT_STATUS_NONE)
+            break;
+        vkl_swapchain_destroy(&canvas->swapchains[i]);
+    }
+    INSTANCES_DESTROY(canvas->swapchains)
+
+
+    log_trace("canvas destroy framebuffers");
+    for (uint32_t i = 0; i < canvas->max_framebuffers; i++)
+    {
+        if (canvas->framebuffers[i].obj.status == VKL_OBJECT_STATUS_NONE)
+            break;
+        vkl_framebuffers_destroy(&canvas->framebuffers[i]);
+    }
+    INSTANCES_DESTROY(canvas->framebuffers)
 
 
     obj_destroyed(&canvas->obj);

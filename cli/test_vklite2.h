@@ -40,13 +40,14 @@ typedef struct
     VklGpu* gpu;
     bool is_offscreen;
 
+    VklWindow* window;
+
     VklRenderpass renderpass;
+    VklFramebuffers framebuffers;
+    VklSwapchain swapchain;
+
     VklImages* images;
     VklImages* depth;
-    VklFramebuffers* framebuffers;
-
-    VklWindow* window;
-    VklSwapchain* swapchain;
 
     VklGraphics* graphics;
     VklBufferRegions buffer_regions;
@@ -136,15 +137,14 @@ static BasicCanvas offscreen(VklGpu* gpu)
     canvas.gpu = gpu;
     canvas.is_offscreen = true;
 
-    VklRenderpass renderpass =
+    canvas.renderpass =
         default_renderpass(gpu, bgcolor, TEST_FORMAT, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-    canvas.renderpass = renderpass;
 
     // Color attachment
-    VklImages images_struct = vkl_images(renderpass.gpu, VK_IMAGE_TYPE_2D, 1);
+    VklImages images_struct = vkl_images(canvas.renderpass.gpu, VK_IMAGE_TYPE_2D, 1);
     VklImages* images = calloc(1, sizeof(VklImages));
     *images = images_struct;
-    vkl_images_format(images, renderpass.attachments[0].format);
+    vkl_images_format(images, canvas.renderpass.attachments[0].format);
     vkl_images_size(images, TEST_WIDTH, TEST_HEIGHT, 1);
     vkl_images_tiling(images, VK_IMAGE_TILING_OPTIMAL);
     vkl_images_usage(
@@ -167,11 +167,10 @@ static BasicCanvas offscreen(VklGpu* gpu)
     vkl_renderpass_create(&canvas.renderpass);
 
     // Create framebuffers.
-    VklFramebuffers* framebuffers = vkl_framebuffers(canvas.renderpass.gpu);
-    vkl_framebuffers_attachment(framebuffers, 0, images);
-    vkl_framebuffers_attachment(framebuffers, 1, depth);
-    vkl_framebuffers_create(framebuffers, &canvas.renderpass);
-    canvas.framebuffers = framebuffers;
+    canvas.framebuffers = vkl_framebuffers(canvas.renderpass.gpu);
+    vkl_framebuffers_attachment(&canvas.framebuffers, 0, images);
+    vkl_framebuffers_attachment(&canvas.framebuffers, 1, depth);
+    vkl_framebuffers_create(&canvas.framebuffers, &canvas.renderpass);
 
     return canvas;
 }
@@ -194,12 +193,11 @@ static BasicCanvas glfw_canvas(VklGpu* gpu, VklWindow* window)
         default_renderpass(gpu, bgcolor, TEST_FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
     canvas.renderpass = renderpass;
 
-    VklSwapchain* swapchain = vkl_swapchain(canvas.renderpass.gpu, window, 3);
-    vkl_swapchain_format(swapchain, VK_FORMAT_B8G8R8A8_UNORM);
-    vkl_swapchain_present_mode(swapchain, TEST_PRESENT_MODE);
-    vkl_swapchain_create(swapchain);
-    canvas.swapchain = swapchain;
-    canvas.images = swapchain->images;
+    canvas.swapchain = vkl_swapchain(canvas.renderpass.gpu, window, 3);
+    vkl_swapchain_format(&canvas.swapchain, VK_FORMAT_B8G8R8A8_UNORM);
+    vkl_swapchain_present_mode(&canvas.swapchain, TEST_PRESENT_MODE);
+    vkl_swapchain_create(&canvas.swapchain);
+    canvas.images = canvas.swapchain.images;
 
     // Depth attachment.
     VklImages depth_struct = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
@@ -212,11 +210,10 @@ static BasicCanvas glfw_canvas(VklGpu* gpu, VklWindow* window)
     vkl_renderpass_create(&canvas.renderpass);
 
     // Create framebuffers.
-    VklFramebuffers* framebuffers = vkl_framebuffers(canvas.renderpass.gpu);
-    vkl_framebuffers_attachment(framebuffers, 0, swapchain->images);
-    vkl_framebuffers_attachment(framebuffers, 1, depth);
-    vkl_framebuffers_create(framebuffers, &canvas.renderpass);
-    canvas.framebuffers = framebuffers;
+    canvas.framebuffers = vkl_framebuffers(canvas.renderpass.gpu);
+    vkl_framebuffers_attachment(&canvas.framebuffers, 0, canvas.swapchain.images);
+    vkl_framebuffers_attachment(&canvas.framebuffers, 1, depth);
+    vkl_framebuffers_create(&canvas.framebuffers, &canvas.renderpass);
 
     return canvas;
 }
@@ -295,8 +292,8 @@ static void show_canvas(BasicCanvas canvas, FillCallback fill_commands, uint32_t
     VklGpu* gpu = canvas.gpu;
     VklWindow* window = canvas.window;
     VklRenderpass* renderpass = &canvas.renderpass;
-    VklFramebuffers* framebuffers = canvas.framebuffers;
-    VklSwapchain* swapchain = canvas.swapchain;
+    VklFramebuffers* framebuffers = &canvas.framebuffers;
+    VklSwapchain* swapchain = &canvas.swapchain;
 
     ASSERT(swapchain != NULL);
     ASSERT(swapchain->img_count > 0);
@@ -306,11 +303,11 @@ static void show_canvas(BasicCanvas canvas, FillCallback fill_commands, uint32_t
         fill_commands(&canvas, &cmds, i);
 
     // Sync objects.
-    VklSemaphores* sem_img_available = vkl_semaphores(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
-    VklSemaphores* sem_render_finished = vkl_semaphores(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
-    VklFences* fences = vkl_fences(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
-    vkl_fences_create(fences);
-    VklFences* bak_fences = vkl_fences(gpu, swapchain->img_count);
+    VklSemaphores sem_img_available = vkl_semaphores(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
+    VklSemaphores sem_render_finished = vkl_semaphores(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
+    VklFences fences = vkl_fences(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
+    vkl_fences_create(&fences);
+    VklFences bak_fences = vkl_fences(gpu, swapchain->img_count);
     uint32_t cur_frame = 0;
     VklBackend backend = VKL_BACKEND_GLFW;
 
@@ -325,10 +322,10 @@ static void show_canvas(BasicCanvas canvas, FillCallback fill_commands, uint32_t
             break;
 
         // Wait for fence.
-        vkl_fences_wait(fences, cur_frame);
+        vkl_fences_wait(&fences, cur_frame);
 
         // We acquire the next swapchain image.
-        vkl_swapchain_acquire(swapchain, sem_img_available, cur_frame, NULL, 0);
+        vkl_swapchain_acquire(swapchain, &sem_img_available, cur_frame, NULL, 0);
         if (swapchain->obj.status == VKL_OBJECT_STATUS_INVALID)
         {
             vkl_gpu_wait(gpu);
@@ -380,20 +377,20 @@ static void show_canvas(BasicCanvas canvas, FillCallback fill_commands, uint32_t
         }
         else
         {
-            vkl_fences_copy(fences, cur_frame, bak_fences, swapchain->img_idx);
+            vkl_fences_copy(&fences, cur_frame, &bak_fences, swapchain->img_idx);
 
             // Then, we submit the cmds on that image
             VklSubmit submit = vkl_submit(gpu);
             vkl_submit_commands(&submit, &cmds);
             vkl_submit_wait_semaphores(
-                &submit, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, sem_img_available,
+                &submit, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, &sem_img_available,
                 cur_frame);
             // Once the render is finished, we signal another semaphore.
-            vkl_submit_signal_semaphores(&submit, sem_render_finished, cur_frame);
-            vkl_submit_send(&submit, swapchain->img_idx, fences, cur_frame);
+            vkl_submit_signal_semaphores(&submit, &sem_render_finished, cur_frame);
+            vkl_submit_send(&submit, swapchain->img_idx, &fences, cur_frame);
 
             // Once the image is rendered, we present the swapchain image.
-            vkl_swapchain_present(swapchain, 1, sem_render_finished, cur_frame);
+            vkl_swapchain_present(swapchain, 1, &sem_render_finished, cur_frame);
 
             cur_frame = (cur_frame + 1) % VKY_MAX_FRAMES_IN_FLIGHT;
         }
@@ -405,6 +402,11 @@ static void show_canvas(BasicCanvas canvas, FillCallback fill_commands, uint32_t
     }
     log_trace("end of main loop");
     vkl_gpu_wait(gpu);
+
+    vkl_semaphores_destroy(&sem_img_available);
+    vkl_semaphores_destroy(&sem_render_finished);
+    vkl_fences_destroy(&fences);
+
     vkl_swapchain_destroy(swapchain);
     vkl_window_destroy(window);
 }
@@ -420,6 +422,8 @@ static void destroy_canvas(BasicCanvas* canvas)
     vkl_images_destroy(canvas->depth);
 
     vkl_renderpass_destroy(&canvas->renderpass);
+    vkl_swapchain_destroy(&canvas->swapchain);
+    vkl_framebuffers_destroy(&canvas->framebuffers);
 }
 
 
@@ -431,7 +435,7 @@ static void destroy_canvas(BasicCanvas* canvas)
 static void empty_commands(BasicCanvas* canvas, VklCommands* cmds, uint32_t idx)
 {
     vkl_cmd_begin(cmds, idx);
-    vkl_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, canvas->framebuffers);
+    vkl_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, &canvas->framebuffers);
     vkl_cmd_end_renderpass(cmds, idx);
     vkl_cmd_end(cmds, idx);
 }
@@ -442,12 +446,12 @@ static void triangle_commands(BasicCanvas* canvas, VklCommands* cmds, uint32_t i
 {
     // Commands.
     vkl_cmd_begin(cmds, idx);
-    vkl_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, canvas->framebuffers);
+    vkl_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, &canvas->framebuffers);
     vkl_cmd_viewport(
         cmds, idx,
         (VkViewport){
-            0, 0, canvas->framebuffers->attachments[0]->width,
-            canvas->framebuffers->attachments[0]->height, 0, 1});
+            0, 0, canvas->framebuffers.attachments[0]->width,
+            canvas->framebuffers.attachments[0]->height, 0, 1});
     vkl_cmd_bind_vertex_buffer(cmds, idx, &canvas->buffer_regions, 0);
     vkl_cmd_bind_graphics(cmds, idx, canvas->graphics, canvas->bindings, 0);
     vkl_cmd_draw(cmds, idx, 0, 3);
@@ -518,11 +522,11 @@ static int vklite2_swapchain(VkyTestContext* context)
     vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
     vkl_gpu_queue(gpu, VKL_QUEUE_PRESENT, 1);
     vkl_gpu_create(gpu, window->surface);
-    VklSwapchain* swapchain = vkl_swapchain(gpu, window, 3);
-    vkl_swapchain_format(swapchain, VK_FORMAT_B8G8R8A8_UNORM);
-    vkl_swapchain_present_mode(swapchain, TEST_PRESENT_MODE);
-    vkl_swapchain_create(swapchain);
-    vkl_swapchain_destroy(swapchain);
+    VklSwapchain swapchain = vkl_swapchain(gpu, window, 3);
+    vkl_swapchain_format(&swapchain, VK_FORMAT_B8G8R8A8_UNORM);
+    vkl_swapchain_present_mode(&swapchain, TEST_PRESENT_MODE);
+    vkl_swapchain_create(&swapchain);
+    vkl_swapchain_destroy(&swapchain);
     vkl_window_destroy(window);
 
     TEST_END
@@ -909,17 +913,17 @@ static int vklite2_submit(VkyTestContext* context)
     vkl_cmd_end(&cmds2, 0);
 
     // Semaphores
-    VklSemaphores* semaphores = vkl_semaphores(gpu, 1);
+    VklSemaphores semaphores = vkl_semaphores(gpu, 1);
 
     // Submit.
     VklSubmit submit1 = vkl_submit(gpu);
     vkl_submit_commands(&submit1, &cmds1);
-    vkl_submit_signal_semaphores(&submit1, semaphores, 0);
+    vkl_submit_signal_semaphores(&submit1, &semaphores, 0);
     vkl_submit_send(&submit1, 0, NULL, 0);
 
     VklSubmit submit2 = vkl_submit(gpu);
     vkl_submit_commands(&submit2, &cmds2);
-    vkl_submit_wait_semaphores(&submit2, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, semaphores, 0);
+    vkl_submit_wait_semaphores(&submit2, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, &semaphores, 0);
     vkl_submit_send(&submit2, 0, NULL, 0);
 
     vkl_gpu_wait(gpu);
@@ -930,6 +934,8 @@ static int vklite2_submit(VkyTestContext* context)
     for (uint32_t i = 0; i < n; i++)
         AT(data2[i] == 2 * i + 1);
 
+
+    vkl_semaphores_destroy(&semaphores);
     vkl_slots_destroy(&slots);
     vkl_bindings_destroy(&bindings1);
     vkl_bindings_destroy(&bindings2);
@@ -950,7 +956,7 @@ static int vklite2_blank(VkyTestContext* context)
     vkl_gpu_create(gpu, 0);
 
     BasicCanvas canvas = offscreen(gpu);
-    VklFramebuffers* framebuffers = canvas.framebuffers;
+    VklFramebuffers* framebuffers = &canvas.framebuffers;
 
     VklCommands cmds = vkl_commands(gpu, 0, 1);
     empty_commands(&canvas, &cmds, 0);
@@ -979,7 +985,7 @@ static int vklite2_graphics(VkyTestContext* context)
 
     BasicCanvas canvas = offscreen(gpu);
     VklRenderpass* renderpass = &canvas.renderpass;
-    VklFramebuffers* framebuffers = canvas.framebuffers;
+    VklFramebuffers* framebuffers = &canvas.framebuffers;
     VklGraphics* graphics = vkl_graphics(gpu);
     AT(graphics != NULL);
 

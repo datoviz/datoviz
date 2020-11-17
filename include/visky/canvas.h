@@ -219,9 +219,17 @@ struct VklCanvas
     uint32_t max_renderpasses;
     VklRenderpass* renderpasses;
 
-    VklSemaphores* sync_image_acquired; // NOTE: wraps one VkSemaphore per image in flight
-    VklSemaphores* sync_image_rendered;
-    VklFences* sync_render_finished;
+    uint32_t max_swapchains;
+    VklSwapchain* swapchains;
+
+    uint32_t max_framebuffers;
+    VklFramebuffers* framebuffers;
+
+    uint32_t max_semaphores;
+    VklSemaphores* semaphores;
+
+    uint32_t max_fences;
+    VklFences* fences;
 
     // TODO: event system
 };

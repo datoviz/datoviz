@@ -380,20 +380,8 @@ struct VklGpu
 
     VklContext* context;
 
-    uint32_t max_swapchains;
-    VklSwapchain* swapchains;
-
     uint32_t max_graphics;
     VklGraphics* graphics;
-
-    uint32_t max_framebuffers;
-    VklFramebuffers* framebuffers;
-
-    uint32_t max_semaphores;
-    VklSemaphores* semaphores;
-
-    uint32_t max_fences;
-    VklFences* fences;
 };
 
 
@@ -856,7 +844,7 @@ VKY_EXPORT void vkl_canvases_destroy(uint32_t canvas_count, VklCanvas* canvases)
 /*  Swapchain                                                                                    */
 /*************************************************************************************************/
 
-VKY_EXPORT VklSwapchain* vkl_swapchain(VklGpu* gpu, VklWindow* window, uint32_t min_img_count);
+VKY_EXPORT VklSwapchain vkl_swapchain(VklGpu* gpu, VklWindow* window, uint32_t min_img_count);
 
 VKY_EXPORT void vkl_swapchain_format(VklSwapchain* swapchain, VkFormat format);
 
@@ -1122,7 +1110,7 @@ vkl_barrier_images_access(VklBarrier* barrier, VkAccessFlags src_access, VkAcces
 /*  Semaphores                                                                                   */
 /*************************************************************************************************/
 
-VKY_EXPORT VklSemaphores* vkl_semaphores(VklGpu* gpu, uint32_t count);
+VKY_EXPORT VklSemaphores vkl_semaphores(VklGpu* gpu, uint32_t count);
 
 VKY_EXPORT void vkl_semaphores_destroy(VklSemaphores* semaphores);
 
@@ -1132,7 +1120,7 @@ VKY_EXPORT void vkl_semaphores_destroy(VklSemaphores* semaphores);
 /*  Fences                                                                                       */
 /*************************************************************************************************/
 
-VKY_EXPORT VklFences* vkl_fences(VklGpu* gpu, uint32_t count);
+VKY_EXPORT VklFences vkl_fences(VklGpu* gpu, uint32_t count);
 
 VKY_EXPORT void vkl_fences_create(VklFences* fences);
 
@@ -1191,7 +1179,7 @@ VKY_EXPORT void vkl_renderpass_destroy(VklRenderpass* renderpass);
 /*  Framebuffers                                                                                 */
 /*************************************************************************************************/
 
-VKY_EXPORT VklFramebuffers* vkl_framebuffers(VklGpu* gpu);
+VKY_EXPORT VklFramebuffers vkl_framebuffers(VklGpu* gpu);
 
 VKY_EXPORT void vkl_framebuffers_attachment(
     VklFramebuffers* framebuffers, uint32_t attachment_idx, VklImages* images);
