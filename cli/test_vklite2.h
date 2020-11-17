@@ -40,7 +40,7 @@ typedef struct
     VklGpu* gpu;
     bool is_offscreen;
 
-    VklRenderpass* renderpass;
+    VklRenderpass renderpass;
     VklImages* images;
     VklImages* depth;
     VklFramebuffers* framebuffers;
@@ -63,10 +63,10 @@ typedef void (*FillCallback)(BasicCanvas*, VklCommands*, uint32_t);
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static VklRenderpass* default_renderpass(
+static VklRenderpass default_renderpass(
     VklGpu* gpu, VkClearColorValue clear_color_value, VkFormat format, VkImageLayout layout)
 {
-    VklRenderpass* renderpass = vkl_renderpass(gpu);
+    VklRenderpass renderpass = vkl_renderpass(gpu);
 
     VkClearValue clear_color = {0};
     clear_color.color = clear_color_value;
@@ -74,38 +74,38 @@ static VklRenderpass* default_renderpass(
     VkClearValue clear_depth = {0};
     clear_depth.depthStencil.depth = 1.0f;
 
-    vkl_renderpass_clear(renderpass, clear_color);
-    vkl_renderpass_clear(renderpass, clear_depth);
+    vkl_renderpass_clear(&renderpass, clear_color);
+    vkl_renderpass_clear(&renderpass, clear_depth);
 
     // Color attachment.
     vkl_renderpass_attachment(
-        renderpass, 0, //
+        &renderpass, 0, //
         VKL_RENDERPASS_ATTACHMENT_COLOR, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-    vkl_renderpass_attachment_layout(renderpass, 0, VK_IMAGE_LAYOUT_UNDEFINED, layout);
+    vkl_renderpass_attachment_layout(&renderpass, 0, VK_IMAGE_LAYOUT_UNDEFINED, layout);
     vkl_renderpass_attachment_ops(
-        renderpass, 0, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+        &renderpass, 0, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
 
     // Depth attachment.
     vkl_renderpass_attachment(
-        renderpass, 1, //
+        &renderpass, 1, //
         VKL_RENDERPASS_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT,
         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     vkl_renderpass_attachment_layout(
-        renderpass, 1, VK_IMAGE_LAYOUT_UNDEFINED,
+        &renderpass, 1, VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     vkl_renderpass_attachment_ops(
-        renderpass, 1, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
+        &renderpass, 1, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
 
     // Subpass.
-    vkl_renderpass_subpass_attachment(renderpass, 0, 0);
-    vkl_renderpass_subpass_attachment(renderpass, 0, 1);
-    vkl_renderpass_subpass_dependency(renderpass, 0, VK_SUBPASS_EXTERNAL, 0);
+    vkl_renderpass_subpass_attachment(&renderpass, 0, 0);
+    vkl_renderpass_subpass_attachment(&renderpass, 0, 1);
+    vkl_renderpass_subpass_dependency(&renderpass, 0, VK_SUBPASS_EXTERNAL, 0);
     vkl_renderpass_subpass_dependency_stage(
-        renderpass, 0, //
+        &renderpass, 0, //
         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
     vkl_renderpass_subpass_dependency_access(
-        renderpass, 0, 0,
+        &renderpass, 0, 0,
         VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
 
     return renderpass;
@@ -136,15 +136,15 @@ static BasicCanvas offscreen(VklGpu* gpu)
     canvas.gpu = gpu;
     canvas.is_offscreen = true;
 
-    VklRenderpass* renderpass =
+    VklRenderpass renderpass =
         default_renderpass(gpu, bgcolor, TEST_FORMAT, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
     canvas.renderpass = renderpass;
 
     // Color attachment
-    VklImages images_struct = vkl_images(renderpass->gpu, VK_IMAGE_TYPE_2D, 1);
+    VklImages images_struct = vkl_images(renderpass.gpu, VK_IMAGE_TYPE_2D, 1);
     VklImages* images = calloc(1, sizeof(VklImages));
     *images = images_struct;
-    vkl_images_format(images, renderpass->attachments[0].format);
+    vkl_images_format(images, renderpass.attachments[0].format);
     vkl_images_size(images, TEST_WIDTH, TEST_HEIGHT, 1);
     vkl_images_tiling(images, VK_IMAGE_TILING_OPTIMAL);
     vkl_images_usage(
@@ -160,17 +160,17 @@ static BasicCanvas offscreen(VklGpu* gpu)
     VklImages depth_struct = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
     VklImages* depth = calloc(1, sizeof(VklImages));
     *depth = depth_struct;
-    depth_image(depth, renderpass, TEST_WIDTH, TEST_HEIGHT);
+    depth_image(depth, &canvas.renderpass, TEST_WIDTH, TEST_HEIGHT);
     canvas.depth = depth;
 
     // Create renderpass.
-    vkl_renderpass_create(renderpass);
+    vkl_renderpass_create(&canvas.renderpass);
 
     // Create framebuffers.
-    VklFramebuffers* framebuffers = vkl_framebuffers(renderpass->gpu);
+    VklFramebuffers* framebuffers = vkl_framebuffers(canvas.renderpass.gpu);
     vkl_framebuffers_attachment(framebuffers, 0, images);
     vkl_framebuffers_attachment(framebuffers, 1, depth);
-    vkl_framebuffers_create(framebuffers, renderpass);
+    vkl_framebuffers_create(framebuffers, &canvas.renderpass);
     canvas.framebuffers = framebuffers;
 
     return canvas;
@@ -190,11 +190,11 @@ static BasicCanvas glfw_canvas(VklGpu* gpu, VklWindow* window)
     ASSERT(framebuffer_width > 0);
     ASSERT(framebuffer_height > 0);
 
-    VklRenderpass* renderpass =
+    VklRenderpass renderpass =
         default_renderpass(gpu, bgcolor, TEST_FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
     canvas.renderpass = renderpass;
 
-    VklSwapchain* swapchain = vkl_swapchain(renderpass->gpu, window, 3);
+    VklSwapchain* swapchain = vkl_swapchain(canvas.renderpass.gpu, window, 3);
     vkl_swapchain_format(swapchain, VK_FORMAT_B8G8R8A8_UNORM);
     vkl_swapchain_present_mode(swapchain, TEST_PRESENT_MODE);
     vkl_swapchain_create(swapchain);
@@ -205,17 +205,17 @@ static BasicCanvas glfw_canvas(VklGpu* gpu, VklWindow* window)
     VklImages depth_struct = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
     VklImages* depth = calloc(1, sizeof(VklImages));
     *depth = depth_struct;
-    depth_image(depth, renderpass, canvas.images->width, canvas.images->height);
+    depth_image(depth, &canvas.renderpass, canvas.images->width, canvas.images->height);
     canvas.depth = depth;
 
     // Create renderpass.
-    vkl_renderpass_create(renderpass);
+    vkl_renderpass_create(&canvas.renderpass);
 
     // Create framebuffers.
-    VklFramebuffers* framebuffers = vkl_framebuffers(renderpass->gpu);
+    VklFramebuffers* framebuffers = vkl_framebuffers(canvas.renderpass.gpu);
     vkl_framebuffers_attachment(framebuffers, 0, swapchain->images);
     vkl_framebuffers_attachment(framebuffers, 1, depth);
-    vkl_framebuffers_create(framebuffers, renderpass);
+    vkl_framebuffers_create(framebuffers, &canvas.renderpass);
     canvas.framebuffers = framebuffers;
 
     return canvas;
@@ -294,7 +294,7 @@ static void show_canvas(BasicCanvas canvas, FillCallback fill_commands, uint32_t
 {
     VklGpu* gpu = canvas.gpu;
     VklWindow* window = canvas.window;
-    VklRenderpass* renderpass = canvas.renderpass;
+    VklRenderpass* renderpass = &canvas.renderpass;
     VklFramebuffers* framebuffers = canvas.framebuffers;
     VklSwapchain* swapchain = canvas.swapchain;
 
@@ -418,6 +418,8 @@ static void destroy_canvas(BasicCanvas* canvas)
         vkl_images_destroy(canvas->images);
     }
     vkl_images_destroy(canvas->depth);
+
+    vkl_renderpass_destroy(&canvas->renderpass);
 }
 
 
@@ -429,7 +431,7 @@ static void destroy_canvas(BasicCanvas* canvas)
 static void empty_commands(BasicCanvas* canvas, VklCommands* cmds, uint32_t idx)
 {
     vkl_cmd_begin(cmds, idx);
-    vkl_cmd_begin_renderpass(cmds, idx, canvas->renderpass, canvas->framebuffers);
+    vkl_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, canvas->framebuffers);
     vkl_cmd_end_renderpass(cmds, idx);
     vkl_cmd_end(cmds, idx);
 }
@@ -440,7 +442,7 @@ static void triangle_commands(BasicCanvas* canvas, VklCommands* cmds, uint32_t i
 {
     // Commands.
     vkl_cmd_begin(cmds, idx);
-    vkl_cmd_begin_renderpass(cmds, idx, canvas->renderpass, canvas->framebuffers);
+    vkl_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, canvas->framebuffers);
     vkl_cmd_viewport(
         cmds, idx,
         (VkViewport){
@@ -976,7 +978,7 @@ static int vklite2_graphics(VkyTestContext* context)
     vkl_gpu_create(gpu, 0);
 
     BasicCanvas canvas = offscreen(gpu);
-    VklRenderpass* renderpass = canvas.renderpass;
+    VklRenderpass* renderpass = &canvas.renderpass;
     VklFramebuffers* framebuffers = canvas.framebuffers;
     VklGraphics* graphics = vkl_graphics(gpu);
     AT(graphics != NULL);
@@ -1088,7 +1090,7 @@ static int vklite2_canvas_triangle(VkyTestContext* context)
     vkl_gpu_create(gpu, window->surface);
 
     BasicCanvas canvas = glfw_canvas(gpu, window);
-    VklRenderpass* renderpass = canvas.renderpass;
+    VklRenderpass* renderpass = &canvas.renderpass;
 
     VklGraphics* graphics = vkl_graphics(gpu);
     canvas.graphics = graphics;

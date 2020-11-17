@@ -216,8 +216,8 @@ struct VklCanvas
     VklImages* images[VKL_MAX_SWAPCHAIN_IMAGES]; // swapchain images
     VklImages* depth_image;
 
-    VklRenderpass* renderpass;
-    VklRenderpass* renderpass_gui;
+    uint32_t max_renderpasses;
+    VklRenderpass* renderpasses;
 
     VklSemaphores* sync_image_acquired; // NOTE: wraps one VkSemaphore per image in flight
     VklSemaphores* sync_image_rendered;

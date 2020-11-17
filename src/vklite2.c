@@ -154,9 +154,6 @@ VklGpu* vkl_gpu(VklApp* app, uint32_t idx)
     INSTANCES_INIT(
         VklGraphics, gpu, graphics, max_graphics, VKL_MAX_GRAPHICS, VKL_OBJECT_TYPE_GRAPHICS)
     INSTANCES_INIT(
-        VklRenderpass, gpu, renderpasses, max_renderpasses, VKL_MAX_RENDERPASSES,
-        VKL_OBJECT_TYPE_RENDERPASS)
-    INSTANCES_INIT(
         VklFramebuffers, gpu, framebuffers, max_framebuffers, VKL_MAX_FRAMEBUFFERS,
         VKL_OBJECT_TYPE_FRAMEBUFFER)
 
@@ -311,16 +308,6 @@ void vkl_gpu_destroy(VklGpu* gpu)
         vkl_fences_destroy(&gpu->fences[i]);
     }
     INSTANCES_DESTROY(gpu->fences)
-
-
-    log_trace("GPU destroy renderpass(es)");
-    for (uint32_t i = 0; i < gpu->max_renderpasses; i++)
-    {
-        if (gpu->renderpasses[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_renderpass_destroy(&gpu->renderpasses[i]);
-    }
-    INSTANCES_DESTROY(gpu->renderpasses)
 
 
     log_trace("GPU destroy framebuffers");
@@ -2147,16 +2134,13 @@ void vkl_fences_destroy(VklFences* fences)
 /*  Renderpass                                                                                   */
 /*************************************************************************************************/
 
-VklRenderpass* vkl_renderpass(VklGpu* gpu)
+VklRenderpass vkl_renderpass(VklGpu* gpu)
 {
     ASSERT(gpu != NULL);
     ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
 
-    INSTANCE_NEW(VklRenderpass, renderpass, gpu->renderpasses, gpu->max_renderpasses)
-
-    ASSERT(renderpass != NULL);
-
-    renderpass->gpu = gpu;
+    VklRenderpass renderpass = {0};
+    renderpass.gpu = gpu;
 
     return renderpass;
 }

@@ -386,9 +386,6 @@ struct VklGpu
     uint32_t max_graphics;
     VklGraphics* graphics;
 
-    uint32_t max_renderpasses;
-    VklRenderpass* renderpasses;
-
     uint32_t max_framebuffers;
     VklFramebuffers* framebuffers;
 
@@ -1154,7 +1151,7 @@ VKY_EXPORT void vkl_fences_destroy(VklFences* fences);
 /*  Renderpass                                                                                   */
 /*************************************************************************************************/
 
-VKY_EXPORT VklRenderpass* vkl_renderpass(VklGpu* gpu);
+VKY_EXPORT VklRenderpass vkl_renderpass(VklGpu* gpu);
 
 VKY_EXPORT void vkl_renderpass_clear(VklRenderpass* renderpass, VkClearValue value);
 

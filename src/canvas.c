@@ -32,6 +32,9 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
 
     INSTANCES_INIT(
         VklCommands, canvas, commands, max_commands, VKL_MAX_COMMANDS, VKL_OBJECT_TYPE_COMMANDS)
+    INSTANCES_INIT(
+        VklRenderpass, canvas, renderpasses, max_renderpasses, VKL_MAX_RENDERPASSES,
+        VKL_OBJECT_TYPE_RENDERPASS)
 
     // TODO: create semaphores, fences, swap chain, renderpass, etc.
 
@@ -51,6 +54,7 @@ void vkl_canvas_destroy(VklCanvas* canvas)
         log_trace("skip destruction of already-destroyed canvas");
         return;
     }
+
     // TODO
     // join the background thread
 
@@ -62,6 +66,16 @@ void vkl_canvas_destroy(VklCanvas* canvas)
         vkl_commands_destroy(&canvas->commands[i]);
     }
     INSTANCES_DESTROY(canvas->commands)
+
+
+    log_trace("canvas destroy renderpass(es)");
+    for (uint32_t i = 0; i < canvas->max_renderpasses; i++)
+    {
+        if (canvas->renderpasses[i].obj.status == VKL_OBJECT_STATUS_NONE)
+            break;
+        vkl_renderpass_destroy(&canvas->renderpasses[i]);
+    }
+    INSTANCES_DESTROY(canvas->renderpasses)
 
 
     obj_destroyed(&canvas->obj);
