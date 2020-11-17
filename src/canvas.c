@@ -10,11 +10,14 @@
 
 
 /*************************************************************************************************/
-/*  Canvas                                                                                       */
+/*  Canvas creation                                                                              */
 /*************************************************************************************************/
 
-VklCanvas* vkl_canvas(VklApp* app, uint32_t width, uint32_t height)
+VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
 {
+    ASSERT(gpu != NULL);
+    VklApp* app = gpu->app;
+
     ASSERT(app != NULL);
     if (app->canvases == NULL)
     {
@@ -30,48 +33,16 @@ VklCanvas* vkl_canvas(VklApp* app, uint32_t width, uint32_t height)
     INSTANCES_INIT(
         VklCommands, canvas, commands, max_commands, VKL_MAX_COMMANDS, VKL_OBJECT_TYPE_COMMANDS)
 
+    // TODO: create semaphores, fences, swap chain, renderpass, etc.
+
     return canvas;
 }
 
 
 
-void vkl_canvas_swapchain(VklCanvas* canvas, VklSwapchain* swapchain)
-{
-    // TODO
-    // obtain swapchain images
-    // update image_count
-    // create depth image and image view
-}
-
-
-
-void vkl_canvas_offscreen(VklCanvas* canvas, VklGpu* gpu)
-{
-    // TODO
-    // create 1 image, image view, depth image, depth image view
-}
-
-
-
-VklImages*
-vkl_canvas_acquire_image(VklCanvas* canvas, VklSemaphores* semaphores, VklFences* fences)
-{
-    // TODO
-    return NULL;
-}
-
-
-
-void vkl_canvas_create(VklCanvas* canvas)
-{
-    // must call offscreen or swapchain before
-    // create renderpass, sync, predefined command buffers
-    // if swapchain
-    // create framebuffers
-    // event system
-}
-
-
+/*************************************************************************************************/
+/*  Canvas destruction                                                                           */
+/*************************************************************************************************/
 
 void vkl_canvas_destroy(VklCanvas* canvas)
 {
@@ -81,7 +52,7 @@ void vkl_canvas_destroy(VklCanvas* canvas)
         return;
     }
     // TODO
-
+    // join the background thread
 
     log_trace("canvas destroy commands");
     for (uint32_t i = 0; i < canvas->max_commands; i++)

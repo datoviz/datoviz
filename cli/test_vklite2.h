@@ -1361,7 +1361,7 @@ static void* _thread_enqueue(void* arg)
     vkl_texture_upload(tt->ctx, tt->tex, 16 * 16 * 4, tt->img_data);
 
     // Cause the transfer loop to end.
-    vkl_transfer_end(tt->ctx);
+    vkl_transfer_stop(tt->ctx);
 
     return NULL;
 }

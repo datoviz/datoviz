@@ -732,7 +732,7 @@ static int process_transfer(VklContext* context, VklTransfer tr)
     ASSERT(context != NULL);
     switch (tr.type)
     {
-    case VKL_TRANSFER_NULL:
+    case VKL_TRANSFER_NONE:
         return 1;
         break;
     case VKL_TRANSFER_TEXTURE_UPLOAD:
@@ -850,12 +850,12 @@ void vkl_transfer_loop(VklContext* context)
 
 
 
-void vkl_transfer_end(VklContext* context)
+void vkl_transfer_stop(VklContext* context)
 {
     ASSERT(context != NULL);
     // Enqueue a special object that causes the dequeue loop to end.
     VklTransfer tr = {0};
-    tr.type = VKL_TRANSFER_NULL;
+    tr.type = VKL_TRANSFER_NONE;
     fifo_enqueue(&context->transfer_fifo, tr);
 }
 

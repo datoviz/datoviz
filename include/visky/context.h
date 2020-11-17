@@ -105,7 +105,7 @@ typedef enum
 
 typedef enum
 {
-    VKL_TRANSFER_NULL,
+    VKL_TRANSFER_NONE,
     VKL_TRANSFER_BUFFER_UPLOAD,
     VKL_TRANSFER_BUFFER_DOWNLOAD,
     VKL_TRANSFER_TEXTURE_UPLOAD,
@@ -254,7 +254,7 @@ VKY_EXPORT void vkl_transfer_mode(VklContext* context, VklTransferMode mode);
 
 VKY_EXPORT void vkl_transfer_loop(VklContext* context);
 
-VKY_EXPORT void vkl_transfer_end(VklContext* context);
+VKY_EXPORT void vkl_transfer_stop(VklContext* context);
 
 
 
