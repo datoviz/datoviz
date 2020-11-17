@@ -11,10 +11,11 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define VKL_MAX_BUFFERS   16
-#define VKL_MAX_COMPUTES  256
-#define VKL_MAX_TEXTURES  256
-#define VKL_MAX_TRANSFERS 256
+#define VKL_MAX_BUFFERS       16
+#define VKL_MAX_COMPUTES      256
+#define VKL_MAX_TEXTURES      256
+#define VKL_MAX_FIFO_CAPACITY 256
+#define VKL_MAX_TRANSFERS     VKL_MAX_FIFO_CAPACITY
 
 #define VKL_DEFAULT_WIDTH  800
 #define VKL_DEFAULT_HEIGHT 600
@@ -31,6 +32,7 @@
 /*  Type definitions                                                                             */
 /*************************************************************************************************/
 
+typedef struct VklFifo VklFifo;
 typedef struct VklTexture VklTexture;
 typedef struct VklTransfer VklTransfer;
 typedef struct VklTransferFifo VklTransferFifo;
@@ -95,6 +97,22 @@ typedef enum
 
 
 /*************************************************************************************************/
+/*  FIFO queue                                                                                   */
+/*************************************************************************************************/
+
+struct VklFifo
+{
+    int32_t head, tail;
+    int32_t capacity;
+    void* items[VKL_MAX_FIFO_CAPACITY];
+
+    pthread_mutex_t lock;
+    pthread_cond_t cond;
+};
+
+
+
+/*************************************************************************************************/
 /*  Transfer structs                                                                             */
 /*************************************************************************************************/
 
@@ -135,11 +153,8 @@ struct VklTransfer
 
 struct VklTransferFifo
 {
-    int32_t head, tail;
+    VklFifo queue;
     VklTransfer transfers[VKL_MAX_TRANSFERS];
-
-    pthread_mutex_t lock;
-    pthread_cond_t cond;
 };
 
 
@@ -185,6 +200,18 @@ struct VklTexture
     VklImages* image;
     VklSampler* sampler;
 };
+
+
+
+/*************************************************************************************************/
+/*  FIFO queue                                                                                   */
+/*************************************************************************************************/
+
+VKY_EXPORT VklFifo vkl_fifo(int32_t capacity);
+
+VKY_EXPORT void vkl_fifo_enqueue(VklFifo* fifo, void* item);
+
+VKY_EXPORT void* vkl_fifo_dequeue(VklFifo* fifo, bool wait);
 
 
 

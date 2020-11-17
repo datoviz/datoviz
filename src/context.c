@@ -12,6 +12,77 @@
 
 
 /*************************************************************************************************/
+/*  Thread-safe FIFO queue                                                                       */
+/*************************************************************************************************/
+
+VklFifo vkl_fifo(int32_t capacity)
+{
+    ASSERT(capacity >= 2);
+    VklFifo fifo = {0};
+    ASSERT(capacity <= VKL_MAX_FIFO_CAPACITY);
+    fifo.capacity = capacity;
+    return fifo;
+}
+
+
+
+void vkl_fifo_enqueue(VklFifo* fifo, void* item)
+{
+    ASSERT(fifo != NULL);
+    pthread_mutex_lock(&fifo->lock);
+
+    if ((fifo->head + 1) % fifo->capacity != fifo->tail)
+    {
+        fifo->items[fifo->head] = item;
+        fifo->head++;
+        if (fifo->head >= fifo->capacity)
+            fifo->head -= fifo->capacity;
+    }
+    else
+    {
+        log_error("FIFO queue is full, skipping enqueue");
+    }
+
+    ASSERT(0 <= fifo->head && fifo->head < fifo->capacity);
+    pthread_cond_signal(&fifo->cond);
+    pthread_mutex_unlock(&fifo->lock);
+}
+
+
+
+void* vkl_fifo_dequeue(VklFifo* fifo, bool wait)
+{
+    ASSERT(fifo != NULL);
+    pthread_mutex_lock(&fifo->lock);
+
+    // Wait until the queue is not empty.
+    if (wait)
+    {
+        while (fifo->head == fifo->tail)
+            pthread_cond_wait(&fifo->cond, &fifo->lock);
+    }
+
+    // Empty queue.
+    if (fifo->head == fifo->tail)
+        return NULL;
+
+    ASSERT(0 <= fifo->tail && fifo->tail < fifo->capacity);
+
+    void* item = fifo->items[fifo->tail];
+
+    fifo->tail++;
+    if (fifo->tail >= fifo->capacity)
+        fifo->tail -= fifo->capacity;
+
+    ASSERT(0 <= fifo->tail && fifo->tail < fifo->capacity);
+    pthread_mutex_unlock(&fifo->lock);
+
+    return item;
+}
+
+
+
+/*************************************************************************************************/
 /*  Context                                                                                      */
 /*************************************************************************************************/
 
@@ -118,9 +189,12 @@ VklContext* vkl_context(VklGpu* gpu)
     _context_default_buffers(context);
 
     context->transfer_cmd = vkl_commands(gpu, VKL_DEFAULT_QUEUE_TRANSFER, 1);
+    context->transfer_fifo.queue = vkl_fifo(VKL_MAX_FIFO_CAPACITY);
 
-    if (pthread_mutex_init(&context->transfer_fifo.lock, NULL) != 0)
+    if (pthread_mutex_init(&context->transfer_fifo.queue.lock, NULL) != 0)
         log_error("mutex creation failed");
+    if (pthread_cond_init(&context->transfer_fifo.queue.cond, NULL) != 0)
+        log_error("cond creation failed");
 
     gpu->context = context;
 
@@ -189,7 +263,8 @@ void vkl_context_destroy(VklContext* context)
     }
     INSTANCES_DESTROY(context->computes)
 
-    pthread_mutex_destroy(&context->transfer_fifo.lock);
+    pthread_mutex_destroy(&context->transfer_fifo.queue.lock);
+    pthread_cond_destroy(&context->transfer_fifo.queue.cond);
 }
 
 
@@ -396,17 +471,9 @@ void vkl_texture_destroy(VklTexture* texture)
 static void fifo_enqueue(VklTransferFifo* fifo, VklTransfer transfer)
 {
     ASSERT(fifo != NULL);
-    pthread_mutex_lock(&fifo->lock);
-
-    fifo->transfers[fifo->head] = transfer;
-
-    fifo->head++;
-    if (fifo->head >= VKL_MAX_TRANSFERS)
-        fifo->head -= VKL_MAX_TRANSFERS;
-
-    ASSERT(0 <= fifo->head && fifo->head < VKL_MAX_TRANSFERS);
-    pthread_cond_signal(&fifo->cond);
-    pthread_mutex_unlock(&fifo->lock);
+    ASSERT(0 <= fifo->queue.head && fifo->queue.head < fifo->queue.capacity);
+    fifo->transfers[fifo->queue.head] = transfer;
+    vkl_fifo_enqueue(&fifo->queue, &fifo->transfers[fifo->queue.head]);
 }
 
 
@@ -414,31 +481,11 @@ static void fifo_enqueue(VklTransferFifo* fifo, VklTransfer transfer)
 static VklTransfer fifo_dequeue(VklTransferFifo* fifo, bool wait)
 {
     ASSERT(fifo != NULL);
-    pthread_mutex_lock(&fifo->lock);
-
-    // Wait until the queue is not empty.
-    if (wait)
-    {
-        while (fifo->head == fifo->tail)
-            pthread_cond_wait(&fifo->cond, &fifo->lock);
-    }
-
-    // Empty queue.
-    if (fifo->head == fifo->tail)
-        return (VklTransfer){VKL_TRANSFER_NULL, {{{0}}}};
-
-    ASSERT(0 <= fifo->tail && fifo->tail < VKL_MAX_TRANSFERS);
-
-    VklTransfer tr = fifo->transfers[fifo->tail];
-
-    fifo->tail++;
-    if (fifo->tail >= VKL_MAX_TRANSFERS)
-        fifo->tail -= VKL_MAX_TRANSFERS;
-
-    ASSERT(0 <= fifo->tail && fifo->tail < VKL_MAX_TRANSFERS);
-    pthread_mutex_unlock(&fifo->lock);
-
-    return tr;
+    VklTransfer* item = vkl_fifo_dequeue(&fifo->queue, wait);
+    if (item == NULL)
+        return (VklTransfer){0};
+    ASSERT(item != NULL);
+    return *item;
 }
 
 
