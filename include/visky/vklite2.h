@@ -1243,6 +1243,9 @@ VKY_EXPORT void vkl_cmd_barrier(VklCommands* cmds, uint32_t idx, VklBarrier* bar
 VKY_EXPORT void vkl_cmd_copy_buffer_to_image(
     VklCommands* cmds, uint32_t idx, VklBuffer* buffer, VklImages* images);
 
+VKY_EXPORT void vkl_cmd_copy_image_to_buffer(
+    VklCommands* cmds, uint32_t idx, VklImages* images, VklBuffer* buffer);
+
 VKY_EXPORT void
 vkl_cmd_copy_image(VklCommands* cmds, uint32_t idx, VklImages* src_img, VklImages* dst_img);
 

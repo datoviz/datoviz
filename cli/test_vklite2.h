@@ -1157,7 +1157,7 @@ static int vklite2_canvas_triangle(VkyTestContext* context)
 
 
 /*************************************************************************************************/
-/*  Context                                                                                   */
+/*  FIFO queue                                                                                   */
 /*************************************************************************************************/
 
 static void* _fifo_thread_1(void* arg)
@@ -1181,7 +1181,7 @@ static void* _fifo_thread_2(void* arg)
     {
         numbers[i] = i;
         vkl_fifo_enqueue(fifo, &numbers[i]);
-        vkl_sleep(50);
+        vkl_sleep(10);
     }
     vkl_fifo_enqueue(fifo, NULL);
     return NULL;
@@ -1229,6 +1229,10 @@ static int vklite2_fifo(VkyTestContext* context)
 }
 
 
+
+/*************************************************************************************************/
+/*  Context                                                                                   */
+/*************************************************************************************************/
 
 static int vklite2_context_buffer(VkyTestContext* context)
 {
@@ -1320,6 +1324,11 @@ static int vklite2_context_transfer(VkyTestContext* context)
     VklTexture* tex = vkl_new_texture(ctx, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
     vkl_texture_upload(ctx, tex, 16 * 16 * 4, img_data);
 
+    uint8_t* img_data2 = calloc(16 * 16 * 4, sizeof(uint8_t));
+    vkl_texture_download(ctx, tex, 16 * 16 * 4, img_data2);
+    AT(memcmp(img_data, img_data2, 16 * 16 * 4) == 0);
+
+    FREE(img_data2);
     FREE(img_data);
     TEST_END
 }

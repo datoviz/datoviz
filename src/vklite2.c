@@ -2796,6 +2796,38 @@ void vkl_cmd_copy_buffer_to_image(
 
 
 
+void vkl_cmd_copy_image_to_buffer(
+    VklCommands* cmds, uint32_t idx, VklImages* images, VklBuffer* buffer)
+{
+    CMD_START_CLIP(images->count)
+
+    VkBufferImageCopy region = {0};
+    region.bufferOffset = 0;
+    region.bufferRowLength = 0;
+    region.bufferImageHeight = 0;
+
+    region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    region.imageSubresource.mipLevel = 0;
+    region.imageSubresource.baseArrayLayer = 0;
+    region.imageSubresource.layerCount = 1;
+
+    region.imageOffset.x = 0;
+    region.imageOffset.y = 0;
+    region.imageOffset.z = 0;
+
+    region.imageExtent.width = images->width;
+    region.imageExtent.height = images->height;
+    region.imageExtent.depth = images->depth;
+
+    vkCmdCopyImageToBuffer(
+        cb, images->images[iclip], VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, //
+        buffer->buffer, 1, &region);
+
+    CMD_END
+}
+
+
+
 void vkl_cmd_copy_image(VklCommands* cmds, uint32_t idx, VklImages* src_img, VklImages* dst_img)
 {
     ASSERT(src_img != NULL);
