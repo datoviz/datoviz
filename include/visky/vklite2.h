@@ -383,9 +383,6 @@ struct VklGpu
     uint32_t max_swapchains;
     VklSwapchain* swapchains;
 
-    uint32_t max_commands;
-    VklCommands* commands;
-
     uint32_t max_graphics;
     VklGraphics* graphics;
 
@@ -890,7 +887,7 @@ VKY_EXPORT void vkl_swapchain_destroy(VklSwapchain* swapchain);
 /*  Commands                                                                                     */
 /*************************************************************************************************/
 
-VKY_EXPORT VklCommands* vkl_commands(VklGpu* gpu, uint32_t queue, uint32_t count);
+VKY_EXPORT VklCommands vkl_commands(VklGpu* gpu, uint32_t queue, uint32_t count);
 
 VKY_EXPORT void vkl_cmd_begin(VklCommands* cmds, uint32_t idx);
 

@@ -27,6 +27,9 @@ VklCanvas* vkl_canvas(VklApp* app, uint32_t width, uint32_t height)
     canvas->width = width;
     canvas->height = height;
 
+    INSTANCES_INIT(
+        VklCommands, canvas, commands, max_commands, VKL_MAX_COMMANDS, VKL_OBJECT_TYPE_COMMANDS)
+
     return canvas;
 }
 
@@ -78,6 +81,17 @@ void vkl_canvas_destroy(VklCanvas* canvas)
         return;
     }
     // TODO
+
+
+    log_trace("canvas destroy commands");
+    for (uint32_t i = 0; i < canvas->max_commands; i++)
+    {
+        if (canvas->commands[i].obj.status == VKL_OBJECT_STATUS_NONE)
+            break;
+        vkl_commands_destroy(&canvas->commands[i]);
+    }
+    INSTANCES_DESTROY(canvas->commands)
+
 
     obj_destroyed(&canvas->obj);
 }

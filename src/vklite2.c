@@ -148,8 +148,6 @@ VklGpu* vkl_gpu(VklApp* app, uint32_t idx)
     INSTANCES_INIT(
         VklSwapchain, gpu, swapchains, max_swapchains, VKL_MAX_WINDOWS, VKL_OBJECT_TYPE_SWAPCHAIN)
     INSTANCES_INIT(
-        VklCommands, gpu, commands, max_commands, VKL_MAX_COMMANDS, VKL_OBJECT_TYPE_COMMANDS)
-    INSTANCES_INIT(
         VklSemaphores, gpu, semaphores, max_semaphores, VKL_MAX_SEMAPHORES,
         VKL_OBJECT_TYPE_SEMAPHORES)
     INSTANCES_INIT(VklFences, gpu, fences, max_fences, VKL_MAX_FENCES, VKL_OBJECT_TYPE_FENCES)
@@ -283,16 +281,6 @@ void vkl_gpu_destroy(VklGpu* gpu)
             gpu->queues.cmd_pools[i] = 0;
         }
     }
-
-
-    log_trace("GPU destroy commands");
-    for (uint32_t i = 0; i < gpu->max_commands; i++)
-    {
-        if (gpu->commands[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_commands_destroy(&gpu->commands[i]);
-    }
-    INSTANCES_DESTROY(gpu->commands)
 
 
     log_trace("GPU destroy graphics");
@@ -635,24 +623,23 @@ void vkl_swapchain_destroy(VklSwapchain* swapchain)
 /*  Commands */
 /*************************************************************************************************/
 
-VklCommands* vkl_commands(VklGpu* gpu, uint32_t queue, uint32_t count)
+VklCommands vkl_commands(VklGpu* gpu, uint32_t queue, uint32_t count)
 {
     ASSERT(gpu != NULL);
     ASSERT(gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
-
-    INSTANCE_NEW(VklCommands, commands, gpu->commands, gpu->max_commands)
 
     ASSERT(count <= VKL_MAX_COMMAND_BUFFERS_PER_SET);
     ASSERT(queue < gpu->queues.queue_count);
     ASSERT(count > 0);
     ASSERT(gpu->queues.cmd_pools[queue] != 0);
 
-    commands->gpu = gpu;
-    commands->queue_idx = queue;
-    commands->count = count;
-    allocate_command_buffers(gpu->device, gpu->queues.cmd_pools[queue], count, commands->cmds);
+    VklCommands commands = {0};
+    commands.gpu = gpu;
+    commands.queue_idx = queue;
+    commands.count = count;
+    allocate_command_buffers(gpu->device, gpu->queues.cmd_pools[queue], count, commands.cmds);
 
-    obj_created(&commands->obj);
+    obj_created(&commands.obj);
 
     return commands;
 }

@@ -25,9 +25,14 @@ struct VklCanvas
 {
     VklObject obj;
     VklApp* app;
+    VklGpu* gpu;
+    VklContext* ctx;
 
     VklWindow* window;
     uint32_t width, height;
+
+    uint32_t max_commands;
+    VklCommands* commands;
 
     VklSwapchain* swapchain;
     VklImages* images[VKL_MAX_SWAPCHAIN_IMAGES]; // swapchain images

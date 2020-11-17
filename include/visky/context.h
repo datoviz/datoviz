@@ -188,7 +188,7 @@ struct VklContext
     VklGpu* gpu;
 
     VklTransferMode transfer_mode;
-    VklCommands* transfer_cmd;
+    VklCommands transfer_cmd;
     VklTransferFifo transfer_fifo;
 
     uint32_t max_buffers;

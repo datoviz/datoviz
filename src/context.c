@@ -329,7 +329,7 @@ VklBufferRegions vkl_alloc_buffers(
         VkDeviceSize new_size = regions.buffer->size * 2;
         log_info("reallocating buffer #%d to %.3f KB", buffer_idx, TO_KB(new_size));
         vkl_buffer_resize(
-            regions.buffer, new_size, VKL_DEFAULT_QUEUE_TRANSFER, context->transfer_cmd);
+            regions.buffer, new_size, VKL_DEFAULT_QUEUE_TRANSFER, &context->transfer_cmd);
     }
 
     log_trace("allocating %d buffers with size %.3f KB", buffer_count, TO_KB(size));
@@ -522,7 +522,7 @@ static void process_texture_upload(VklContext* context, VklTransfer tr)
     vkl_buffer_upload(staging, 0, size, (const void*)tr.u.tex.data);
 
     // Take transfer cmd buf.
-    VklCommands* cmds = context->transfer_cmd;
+    VklCommands* cmds = &context->transfer_cmd;
     vkl_cmd_reset(cmds);
     vkl_cmd_begin(cmds, 0);
 
@@ -575,7 +575,7 @@ static void process_texture_download(VklContext* context, VklTransfer tr)
     VklBuffer* staging = &context->buffers[VKL_DEFAULT_BUFFER_STAGING];
 
     // Take transfer cmd buf.
-    VklCommands* cmds = context->transfer_cmd;
+    VklCommands* cmds = &context->transfer_cmd;
     vkl_cmd_reset(cmds);
     vkl_cmd_begin(cmds, 0);
 
@@ -640,7 +640,7 @@ static void process_buffer_upload(VklContext* context, VklTransfer tr)
     vkl_buffer_upload(staging, 0, size, (const void*)tr.u.buf.data);
 
     // Take transfer cmd buf.
-    VklCommands* cmds = context->transfer_cmd;
+    VklCommands* cmds = &context->transfer_cmd;
     vkl_cmd_reset(cmds);
     vkl_cmd_begin(cmds, 0);
 
@@ -687,7 +687,7 @@ static void process_buffer_download(VklContext* context, VklTransfer tr)
     VklBuffer* staging = &context->buffers[VKL_DEFAULT_BUFFER_STAGING];
 
     // Take transfer cmd buf.
-    VklCommands* cmds = context->transfer_cmd;
+    VklCommands* cmds = &context->transfer_cmd;
     vkl_cmd_reset(cmds);
     vkl_cmd_begin(cmds, 0);
 
