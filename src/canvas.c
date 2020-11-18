@@ -14,6 +14,83 @@
 /*  Canvas creation                                                                              */
 /*************************************************************************************************/
 
+static VklRenderpass default_renderpass(
+    VklGpu* gpu, VkClearColorValue clear_color_value, VkFormat format, VkImageLayout layout)
+{
+    VklRenderpass renderpass = vkl_renderpass(gpu);
+
+    VkClearValue clear_color = {0};
+    clear_color.color = clear_color_value;
+
+    VkClearValue clear_depth = {0};
+    clear_depth.depthStencil.depth = 1.0f;
+
+    vkl_renderpass_clear(&renderpass, clear_color);
+    vkl_renderpass_clear(&renderpass, clear_depth);
+
+    // Color attachment.
+    vkl_renderpass_attachment(
+        &renderpass, 0, //
+        VKL_RENDERPASS_ATTACHMENT_COLOR, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    vkl_renderpass_attachment_layout(&renderpass, 0, VK_IMAGE_LAYOUT_UNDEFINED, layout);
+    vkl_renderpass_attachment_ops(
+        &renderpass, 0, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+
+    // Depth attachment.
+    vkl_renderpass_attachment(
+        &renderpass, 1, //
+        VKL_RENDERPASS_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT,
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    vkl_renderpass_attachment_layout(
+        &renderpass, 1, VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    vkl_renderpass_attachment_ops(
+        &renderpass, 1, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
+
+    // Subpass.
+    vkl_renderpass_subpass_attachment(&renderpass, 0, 0);
+    vkl_renderpass_subpass_attachment(&renderpass, 0, 1);
+    vkl_renderpass_subpass_dependency(&renderpass, 0, VK_SUBPASS_EXTERNAL, 0);
+    vkl_renderpass_subpass_dependency_stage(
+        &renderpass, 0, //
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+    vkl_renderpass_subpass_dependency_access(
+        &renderpass, 0, 0,
+        VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+
+    return renderpass;
+}
+
+
+
+static void
+depth_image(VklImages* depth_images, VklRenderpass* renderpass, uint32_t width, uint32_t height)
+{
+    // Depth attachment
+    vkl_images_format(depth_images, renderpass->attachments[1].format);
+    vkl_images_size(depth_images, width, height, 1);
+    vkl_images_tiling(depth_images, VK_IMAGE_TILING_OPTIMAL);
+    vkl_images_usage(depth_images, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+    vkl_images_memory(depth_images, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    vkl_images_layout(depth_images, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    vkl_images_aspect(depth_images, VK_IMAGE_ASPECT_DEPTH_BIT);
+    vkl_images_queue_access(depth_images, 0);
+    vkl_images_create(depth_images);
+}
+
+
+
+static const VkClearColorValue bgcolor = {{.4f, .6f, .8f, 1.0f}};
+#define VKL_DEFAULT_IMAGE_FORMAT      VK_FORMAT_B8G8R8A8_UNORM
+#define VKL_DEFAULT_PRESENT_MODE      VK_PRESENT_MODE_FIFO_KHR
+#define VKL_MIN_SWAPCHAIN_IMAGE_COUNT 3
+#define VKL_SEMAPHORE_IMG_AVAILABLE   0
+#define VKL_SEMAPHORE_RENDER_FINISHED 1
+#define VKL_FENCE_RENDER_FINISHED     0
+#define VKL_FENCES_FLIGHT             1
+
+
 VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
 {
     ASSERT(gpu != NULL);
@@ -31,6 +108,7 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
     canvas->width = width;
     canvas->height = height;
 
+    // Allocate memory for canvas objects.
     INSTANCES_INIT(
         VklCommands, canvas, commands, max_commands, VKL_MAX_COMMANDS, VKL_OBJECT_TYPE_COMMANDS)
     INSTANCES_INIT(
@@ -40,15 +118,54 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
         VklSemaphores, canvas, semaphores, max_semaphores, VKL_MAX_SEMAPHORES,
         VKL_OBJECT_TYPE_SEMAPHORES)
     INSTANCES_INIT(VklFences, canvas, fences, max_fences, VKL_MAX_FENCES, VKL_OBJECT_TYPE_FENCES)
-    INSTANCES_INIT(
-        VklSwapchain, canvas, swapchains, max_swapchains, VKL_MAX_WINDOWS,
-        VKL_OBJECT_TYPE_SWAPCHAIN)
-    INSTANCES_INIT(
-        VklFramebuffers, canvas, framebuffers, max_framebuffers, VKL_MAX_FRAMEBUFFERS,
-        VKL_OBJECT_TYPE_FRAMEBUFFER)
 
+    // Create the window.
+    VklWindow* window = vkl_window(app, width, height);
+    uint32_t framebuffer_width, framebuffer_height;
+    vkl_window_get_size(window, &framebuffer_width, &framebuffer_height);
+    ASSERT(framebuffer_width > 0);
+    ASSERT(framebuffer_height > 0);
 
-    // TODO: create semaphores, fences, swap chain, renderpass, etc.
+    if (gpu->context == NULL || gpu->context->obj.status < VKL_OBJECT_STATUS_CREATED)
+    {
+        log_trace("canvas automatically create the GPU context");
+        gpu->context = vkl_context(gpu, window);
+    }
+
+    // Create default renderpass.
+    INSTANCE_NEW(VklRenderpass, renderpass, canvas->renderpasses, canvas->max_renderpasses)
+    *renderpass = default_renderpass(
+        gpu, bgcolor, VKL_DEFAULT_IMAGE_FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+
+    // Create swapchain
+    canvas->swapchain = vkl_swapchain(gpu, window, VKL_MIN_SWAPCHAIN_IMAGE_COUNT);
+    vkl_swapchain_format(&canvas->swapchain, VKL_DEFAULT_IMAGE_FORMAT);
+    vkl_swapchain_present_mode(&canvas->swapchain, VKL_DEFAULT_PRESENT_MODE);
+    vkl_swapchain_create(&canvas->swapchain);
+
+    // Depth attachment.
+    canvas->depth_image = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
+    depth_image(
+        &canvas->depth_image, renderpass, //
+        canvas->swapchain.images->width, canvas->swapchain.images->height);
+
+    // Create renderpass.
+    vkl_renderpass_create(renderpass);
+
+    // Create framebuffers.
+    canvas->framebuffers = vkl_framebuffers(gpu);
+    vkl_framebuffers_attachment(&canvas->framebuffers, 0, canvas->swapchain.images);
+    vkl_framebuffers_attachment(&canvas->framebuffers, 1, &canvas->depth_image);
+    vkl_framebuffers_create(&canvas->framebuffers, renderpass);
+
+    // Create synchronization objects.
+    canvas->semaphores[VKL_SEMAPHORE_IMG_AVAILABLE] =
+        vkl_semaphores(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
+    canvas->semaphores[VKL_SEMAPHORE_RENDER_FINISHED] =
+        vkl_semaphores(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
+    canvas->fences[VKL_FENCE_RENDER_FINISHED] = vkl_fences(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
+    vkl_fences_create(&canvas->fences[VKL_FENCE_RENDER_FINISHED]);
+    canvas->fences[VKL_FENCES_FLIGHT] = vkl_fences(gpu, canvas->swapchain.img_count);
 
     return canvas;
 }
@@ -209,16 +326,32 @@ void vkl_canvas_destroy(VklCanvas* canvas)
         log_trace("skip destruction of already-destroyed canvas");
         return;
     }
+    log_trace("destroying canvas");
 
-    // Destroy the window
-    if (canvas->window != NULL)
+    // Destroy the depth image.
+    vkl_images_destroy(&canvas->depth_image);
+
+    // Destroy the renderpasses.
+    log_trace("canvas destroy renderpass(es)");
+    for (uint32_t i = 0; i < canvas->max_renderpasses; i++)
     {
-        vkl_window_destroy(canvas->window);
+        if (canvas->renderpasses[i].obj.status == VKL_OBJECT_STATUS_NONE)
+            break;
+        vkl_renderpass_destroy(&canvas->renderpasses[i]);
     }
+    INSTANCES_DESTROY(canvas->renderpasses)
+
+    // Destroy the swapchain.
+    vkl_swapchain_destroy(&canvas->swapchain);
+
+    // Destroy the framebuffers.
+    vkl_framebuffers_destroy(&canvas->framebuffers);
+
+    // Destroy the window.
+    vkl_window_destroy(canvas->window);
 
     // TODO
     // join the background thread
-
 
     log_trace("canvas destroy commands");
     for (uint32_t i = 0; i < canvas->max_commands; i++)
@@ -228,16 +361,6 @@ void vkl_canvas_destroy(VklCanvas* canvas)
         vkl_commands_destroy(&canvas->commands[i]);
     }
     INSTANCES_DESTROY(canvas->commands)
-
-
-    log_trace("canvas destroy renderpass(es)");
-    for (uint32_t i = 0; i < canvas->max_renderpasses; i++)
-    {
-        if (canvas->renderpasses[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_renderpass_destroy(&canvas->renderpasses[i]);
-    }
-    INSTANCES_DESTROY(canvas->renderpasses)
 
 
     log_trace("canvas destroy semaphores");
@@ -258,27 +381,6 @@ void vkl_canvas_destroy(VklCanvas* canvas)
         vkl_fences_destroy(&canvas->fences[i]);
     }
     INSTANCES_DESTROY(canvas->fences)
-
-
-    log_trace("canvas destroy swapchains");
-    for (uint32_t i = 0; i < canvas->max_swapchains; i++)
-    {
-        if (canvas->swapchains[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_swapchain_destroy(&canvas->swapchains[i]);
-    }
-    INSTANCES_DESTROY(canvas->swapchains)
-
-
-    log_trace("canvas destroy framebuffers");
-    for (uint32_t i = 0; i < canvas->max_framebuffers; i++)
-    {
-        if (canvas->framebuffers[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_framebuffers_destroy(&canvas->framebuffers[i]);
-    }
-    INSTANCES_DESTROY(canvas->framebuffers)
-
 
     obj_destroyed(&canvas->obj);
 }

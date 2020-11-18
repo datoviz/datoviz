@@ -277,20 +277,17 @@ struct VklCanvas
     VklWindow* window;
     uint32_t width, height;
 
+    // Swapchain
+    VklSwapchain swapchain;
+    VklImages depth_image;
+    VklFramebuffers framebuffers;
+
     uint32_t max_commands;
     VklCommands* commands;
 
-    VklSwapchain* swapchain;
-    VklImages* depth_image;
-
+    // Synchronization events.
     uint32_t max_renderpasses;
     VklRenderpass* renderpasses;
-
-    uint32_t max_swapchains;
-    VklSwapchain* swapchains;
-
-    uint32_t max_framebuffers;
-    VklFramebuffers* framebuffers;
 
     uint32_t max_semaphores;
     VklSemaphores* semaphores;

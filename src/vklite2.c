@@ -77,6 +77,14 @@ int vkl_app_destroy(VklApp* app)
     log_trace("starting destruction of app...");
 
 
+    // Destroy the windows.
+    if (app->canvases != NULL)
+    {
+        vkl_canvases_destroy(app->max_canvases, app->canvases);
+        INSTANCES_DESTROY(app->canvases)
+    }
+
+
     // Destroy the GPUs.
     ASSERT(app->gpus != NULL);
     for (uint32_t i = 0; i < app->gpu_count; i++)
@@ -84,14 +92,6 @@ int vkl_app_destroy(VklApp* app)
         vkl_gpu_destroy(&app->gpus[i]);
     }
     INSTANCES_DESTROY(app->gpus);
-
-
-    // Destroy the windows.
-    if (app->canvases != NULL)
-    {
-        vkl_canvases_destroy(app->max_canvases, app->canvases);
-        INSTANCES_DESTROY(app->canvases)
-    }
 
 
     // Destroy the windows.
@@ -391,7 +391,7 @@ void vkl_swapchain_present_mode(VklSwapchain* swapchain, VkPresentModeKHR presen
 {
     ASSERT(swapchain != NULL);
     ASSERT(swapchain->gpu != NULL);
-    ASSERT(swapchain->gpu->present_mode_count > 0);
+    ASSERT(swapchain->gpu->obj.status >= VKL_OBJECT_STATUS_CREATED);
     for (uint32_t i = 0; i < swapchain->gpu->present_mode_count; i++)
     {
         if (swapchain->gpu->present_modes[i] == present_mode)
