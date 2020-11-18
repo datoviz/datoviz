@@ -581,7 +581,7 @@ void vkl_swapchain_destroy(VklSwapchain* swapchain)
 
 
 /*************************************************************************************************/
-/*  Commands */
+/*  Commands                                                                                     */
 /*************************************************************************************************/
 
 VklCommands vkl_commands(VklGpu* gpu, uint32_t queue, uint32_t count)
