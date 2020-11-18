@@ -272,6 +272,7 @@ struct VklCanvas
     VklApp* app;
     VklGpu* gpu;
     VklContext* ctx;
+    void* user_data;
 
     VklWindow* window;
     uint32_t width, height;
@@ -280,7 +281,6 @@ struct VklCanvas
     VklCommands* commands;
 
     VklSwapchain* swapchain;
-    VklImages* images[VKL_MAX_SWAPCHAIN_IMAGES]; // swapchain images
     VklImages* depth_image;
 
     uint32_t max_renderpasses;
@@ -508,6 +508,12 @@ VKY_EXPORT void vkl_canvas_frame(VklCanvas* canvas);
 // between send and present, call POST_SEND callback
 VKY_EXPORT void vkl_canvas_frame_submit(VklCanvas* canvas);
 
+
+
+VKY_EXPORT void vkl_app_begin(VklApp* app);
+
+VKY_EXPORT void vkl_app_end(VklApp* app);
+
 // main loop over frames
 // in each iteration, loop over the canvas
 // for each canvas, call canvas_frame and frame_submit
@@ -515,7 +521,7 @@ VKY_EXPORT void vkl_canvas_frame_submit(VklCanvas* canvas);
 // if present queue different from render queue, present queue wait
 // close canvases to close
 // if no canvases remaining, exit the loop
-VKY_EXPORT void vkl_app_run(VklApp* app, uint32_t frame_count);
+VKY_EXPORT void vkl_app_run(VklApp* app, uint64_t frame_count);
 
 
 

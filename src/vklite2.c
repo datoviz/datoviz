@@ -87,6 +87,14 @@ int vkl_app_destroy(VklApp* app)
 
 
     // Destroy the windows.
+    if (app->canvases != NULL)
+    {
+        vkl_canvases_destroy(app->max_canvases, app->canvases);
+        INSTANCES_DESTROY(app->canvases)
+    }
+
+
+    // Destroy the windows.
     ASSERT(app->windows != NULL);
     for (uint32_t i = 0; i < app->max_windows; i++)
     {
@@ -95,14 +103,6 @@ int vkl_app_destroy(VklApp* app)
         vkl_window_destroy(&app->windows[i]);
     }
     INSTANCES_DESTROY(app->windows)
-
-
-    // Destroy the windows.
-    if (app->canvases != NULL)
-    {
-        vkl_canvases_destroy(app->max_canvases, app->canvases);
-        INSTANCES_DESTROY(app->canvases)
-    }
 
 
     // Destroy the debug messenger.
@@ -227,6 +227,19 @@ void vkl_gpu_wait(VklGpu* gpu)
     ASSERT(gpu != NULL);
     log_trace("waiting for device");
     vkDeviceWaitIdle(gpu->device);
+}
+
+
+
+void vkl_app_wait(VklApp* app)
+{
+    log_trace("fait for all GPUs to be idle");
+    for (uint32_t i = 0; i < app->max_gpus; i++)
+    {
+        if (app->gpus[i].obj.status == VKL_OBJECT_STATUS_NONE)
+            break;
+        vkl_gpu_wait(&app->gpus[i]);
+    }
 }
 
 
