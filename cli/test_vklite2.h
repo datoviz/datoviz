@@ -1,3 +1,4 @@
+#include "../include/visky/canvas.h"
 #include "../include/visky/context.h"
 #include "../src/vklite2_utils.h"
 
@@ -317,7 +318,7 @@ static void show_canvas(BasicCanvas canvas, FillCallback fill_commands, uint32_t
 
         glfwPollEvents();
 
-        if (backend_window_show_close(backend, window->backend_window) ||
+        if (backend_window_should_close(backend, window->backend_window) ||
             window->obj.status == VKL_OBJECT_STATUS_NEED_DESTROY)
             break;
 
@@ -1061,7 +1062,7 @@ static int vklite2_graphics(VkyTestContext* context)
 
 
 
-static int vklite2_canvas_basic(VkyTestContext* context)
+static int vklite2_basic_canvas(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
 
@@ -1083,7 +1084,7 @@ static int vklite2_canvas_basic(VkyTestContext* context)
 
 
 
-static int vklite2_canvas_triangle(VkyTestContext* context)
+static int vklite2_basic_canvas_triangle(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
 
@@ -1246,7 +1247,7 @@ static int vklite2_context_buffer(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklContext* ctx = vkl_context(gpu);
+    VklContext* ctx = vkl_context(gpu, NULL);
 
     // Create a buffer.
     VklBuffer buffer_struct = vkl_buffer(gpu);
@@ -1306,7 +1307,7 @@ static int vklite2_context_texture(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklContext* ctx = vkl_context(gpu);
+    VklContext* ctx = vkl_context(gpu, NULL);
 
     vkl_new_texture(ctx, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
 
@@ -1319,7 +1320,7 @@ static int vklite2_context_transfer_sync(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklContext* ctx = vkl_context(gpu);
+    VklContext* ctx = vkl_context(gpu, NULL);
 
     VklBufferRegions br = vkl_alloc_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, 16);
     uint8_t data[16] = {0};
@@ -1349,7 +1350,7 @@ static int vklite2_context_transfer_async_nothread(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklContext* ctx = vkl_context(gpu);
+    VklContext* ctx = vkl_context(gpu, NULL);
     vkl_transfer_mode(ctx, VKL_TRANSFER_MODE_ASYNC);
 
     VklBufferRegions br = vkl_alloc_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, 16);
@@ -1402,7 +1403,7 @@ static int vklite2_context_transfer_async_thread(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklContext* ctx = vkl_context(gpu);
+    VklContext* ctx = vkl_context(gpu, NULL);
     vkl_transfer_mode(ctx, VKL_TRANSFER_MODE_ASYNC);
 
     // Resources.
@@ -1440,11 +1441,27 @@ static int vklite2_default_app(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklContext* ctx = vkl_context(gpu);
+    VklContext* ctx = vkl_context(gpu, NULL);
 
     char path[1024];
     snprintf(path, sizeof(path), "%s/spirv/pow2.comp.spv", DATA_DIR);
     vkl_new_compute(ctx, path);
+
+    TEST_END
+}
+
+
+
+/*************************************************************************************************/
+/*  Canvas                                                                                   */
+/*************************************************************************************************/
+
+static int vklite2_canvas(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+
 
     TEST_END
 }

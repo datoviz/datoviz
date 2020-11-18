@@ -240,7 +240,7 @@ VKY_EXPORT void vkl_fifo_reset(VklFifo* fifo);
 /*  Context                                                                                      */
 /*************************************************************************************************/
 
-VKY_EXPORT VklContext* vkl_context(VklGpu* gpu);
+VKY_EXPORT VklContext* vkl_context(VklGpu* gpu, VklWindow* window);
 
 VKY_EXPORT void vkl_context_reset(VklContext* context);
 

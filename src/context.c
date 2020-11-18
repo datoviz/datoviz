@@ -213,7 +213,7 @@ static void _destroy_resources(VklContext* context)
 
 
 
-VklContext* vkl_context(VklGpu* gpu)
+VklContext* vkl_context(VklGpu* gpu, VklWindow* window)
 {
     ASSERT(gpu != NULL);
     ASSERT(gpu->obj.status < VKL_OBJECT_STATUS_CREATED);
@@ -244,7 +244,12 @@ VklContext* vkl_context(VklGpu* gpu)
 
     // Create the GPU after the default queues have been set.
     if (gpu->obj.status < VKL_OBJECT_STATUS_CREATED)
-        vkl_gpu_create(gpu, 0);
+    {
+        VkSurfaceKHR surface = VK_NULL_HANDLE;
+        if (window != NULL)
+            surface = window->surface;
+        vkl_gpu_create(gpu, surface);
+    }
 
     // Create the default buffers.
     _context_default_buffers(context);

@@ -370,7 +370,7 @@ static void backend_window_get_size(
 
 
 
-static bool backend_window_show_close(VklBackend backend, void* window)
+static bool backend_window_should_close(VklBackend backend, void* window)
 {
     switch (backend)
     {

@@ -14,15 +14,23 @@
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
+/**
+ * Private event types.
+ *
+ * Private events are emitted and consumed in the main thread, typically by the canvas itself.
+ * They are rarely used by end-users.
+ *
+ */
 typedef enum
 {
-    VKL_CANVAS_CALLBACK_INIT,      // called before the first frame
-    VKL_CANVAS_CALLBACK_EVENT,     // called at every frame, before event enqueue
-    VKL_CANVAS_CALLBACK_FRAME,     // called at every frame, after event enqueue
-    VKL_CANVAS_CALLBACK_RESIZE,    // called at every resize
-    VKL_CANVAS_CALLBACK_POST_SEND, // called after sending the commands buffers
-    VKL_CANVAS_CALLBACK_DESTROY,   // called before destruction
-} VklCanvasCallbackType;
+    VKL_PRIVATE_EVENT_INIT,      // called before the first frame
+    VKL_PRIVATE_EVENT_INTERACT,  // called at every frame, before event enqueue
+    VKL_PRIVATE_EVENT_FRAME,     // called at every frame, after event enqueue
+    VKL_PRIVATE_EVENT_TIMER,     // called every X ms in the main thread, just after FRAME
+    VKL_PRIVATE_EVENT_RESIZE,    // called at every resize
+    VKL_PRIVATE_EVENT_POST_SEND, // called after sending the commands buffers
+    VKL_PRIVATE_EVENT_DESTROY,   // called before destruction
+} VklPrivateEventType;
 
 
 
@@ -38,13 +46,21 @@ typedef enum
 /*  Event system                                                                                 */
 /*************************************************************************************************/
 
+/**
+ * Public event types.
+ *
+ * Public events (also just called "events") are emitted in the main thread and consumed in the
+ * background thread by user callbacks.
+ */
 typedef enum
 {
     VKL_EVENT_NONE,
     VKL_EVENT_MOUSE,
     VKL_EVENT_KEY,
     VKL_EVENT_FRAME,
-    VKL_EVENT_TIMER
+    VKL_EVENT_TIMER,
+    VKL_EVENT_ONESHOT,
+    VKL_EVENT_SCREENCAST,
 } VklEventType;
 
 
@@ -103,15 +119,22 @@ typedef enum
 /*  Type definitions */
 /*************************************************************************************************/
 
-typedef struct VklFrame VklFrame;
-typedef struct VklMouse VklMouse;
-typedef struct VklMouseState VklMouseState;
-typedef struct VklKey VklKey;
-typedef struct VklKeyState VklKeyState;
+typedef struct VklKeyEvent VklKeyEvent;
+typedef struct VklMouseEvent VklMouseEvent;
+typedef struct VklScreencastEvent VklScreencastEvent;
+typedef struct VklFrameEvent VklFrameEvent;
+typedef struct VklTimerEvent VklTimerEvent;
 typedef struct VklEvent VklEvent;
 
-typedef void (*VklCanvasCallback)(VklCanvas*, VklCanvasCallbackType, void*);
-typedef void (*VklEventCallback)(VklCanvas*, VklEventType, void*);
+typedef struct VklResizeEvent VklResizeEvent;
+typedef struct VklPrivateEvent VklPrivateEvent;
+
+typedef struct VklMouseState VklMouseState;
+typedef struct VklKeyState VklKeyState;
+
+typedef void (*VklCanvasCallback)(VklCanvas*, VklPrivateEvent);
+typedef void (*VklEventCallback)(VklCanvas*, VklEvent);
+
 typedef void (*VklCanvasRefill)(VklCanvas*, VklCommands*, uint32_t idx, void*);
 
 
@@ -120,7 +143,7 @@ typedef void (*VklCanvasRefill)(VklCanvas*, VklCommands*, uint32_t idx, void*);
 /*  Event structs                                                                                */
 /*************************************************************************************************/
 
-struct VklMouse
+struct VklMouseEvent
 {
     uint64_t idx;
     VklMouseButton button;
@@ -129,7 +152,7 @@ struct VklMouse
 
 
 
-struct VklKey
+struct VklKeyEvent
 {
     uint64_t idx;
     VklKeyType type;
@@ -139,11 +162,52 @@ struct VklKey
 
 
 
-struct VklFrame
+struct VklFrameEvent
+{
+    uint64_t idx;    // frame index
+    double time;     // current time
+    double interval; // interval since last event
+};
+
+
+
+struct VklTimerEvent
+{
+    uint64_t idx;    // event index
+    double time;     // current time
+    double interval; // interval since last event
+};
+
+
+
+struct VklScreencastEvent
 {
     uint64_t idx;
     double time;
     double interval;
+    uint8_t* rgb;
+};
+
+
+
+struct VklResizeEvent
+{
+    uvec2 size_screen;
+    uvec2 size_framebuffer;
+};
+
+
+
+struct VklPrivateEvent
+{
+    VklPrivateEventType type;
+    void* user_data;
+    union
+    {
+        VklResizeEvent r; // for RESIZE private events
+        VklFrameEvent t;  // for FRAME private events
+        VklFrameEvent f;  // for TIMER private events
+    } u;
 };
 
 
@@ -151,11 +215,14 @@ struct VklFrame
 struct VklEvent
 {
     VklEventType type;
+    void* user_data;
     union
     {
-        VklMouse m;
-        VklKey k;
-        VklFrame f;
+        VklMouseEvent m;      // for MOUSE public events
+        VklKeyEvent k;        // for KEY public events
+        VklFrameEvent f;      // for FRAME public event
+        VklTimerEvent t;      // for TIMER, ONESHOT public events
+        VklScreencastEvent s; // for SCREENCAST public events
     } u;
 };
 
@@ -205,25 +272,22 @@ struct VklCanvas
     VklApp* app;
     VklGpu* gpu;
     VklContext* ctx;
+    void* user_data;
 
     VklWindow* window;
     uint32_t width, height;
 
+    // Swapchain
+    VklSwapchain swapchain;
+    VklImages depth_image;
+    VklFramebuffers framebuffers;
+
     uint32_t max_commands;
     VklCommands* commands;
 
-    VklSwapchain* swapchain;
-    VklImages* images[VKL_MAX_SWAPCHAIN_IMAGES]; // swapchain images
-    VklImages* depth_image;
-
+    // Synchronization events.
     uint32_t max_renderpasses;
     VklRenderpass* renderpasses;
-
-    uint32_t max_swapchains;
-    VklSwapchain* swapchains;
-
-    uint32_t max_framebuffers;
-    VklFramebuffers* framebuffers;
 
     uint32_t max_semaphores;
     VklSemaphores* semaphores;
@@ -266,15 +330,38 @@ VKY_EXPORT void vkl_canvas_close_on_esc(VklCanvas* canvas, bool value);
 /*  Callbacks                                                                                    */
 /*************************************************************************************************/
 
+/**
+ * Register a callback for private events.
+ */
 VKY_EXPORT void vkl_canvas_callback(
-    VklCanvas* canvas, VklCanvasCallbackType type, VklCanvasCallback* callback, void* user_data);
+    VklCanvas* canvas, VklPrivateEventType type, double param, //
+    VklCanvasCallback* callback, void* user_data);
+
+
 
 VKY_EXPORT void vkl_canvas_refill(VklCanvas* canvas, VklCanvasRefill* callback, void* user_data);
 
-// these callbacks are called in the background thread
-// they can access VklMouse and VklKeyboard which are owned by the background thread
+
+
+/**
+ * Register a callback for public events.
+ *
+ * These user callbacks run in the background thread and can access the VklMouse and VklKeyboard
+ * structures with the current state of the mouse and keyboard.
+ *
+ *
+ * @par TIMER public events:
+ *
+ * Callbacks registered with TIMER public events need to specify as `param` the delay, in seconds,
+ * between successive TIMER events.
+ *
+ * TIMER public events are raised by a special thread and enqueued in the Canvas event queue.
+ * They are consumed in the background thread (which is a different thread than the TIMER thread).
+ *
+ */
 VKY_EXPORT void vkl_event_callback(
-    VklCanvas* canvas, VklEventType type, VklEventCallback* callback, void* user_data);
+    VklCanvas* canvas, VklEventType type, double param, //
+    VklEventCallback* callback, void* user_data);
 
 
 
@@ -289,24 +376,93 @@ VKY_EXPORT void vkl_canvas_to_close(VklCanvas* canvas, bool value);
 
 
 /*************************************************************************************************/
-/*  Screenshot                                                                                   */
+/*  Screencast                                                                                   */
 /*************************************************************************************************/
 
-VKY_EXPORT void vkl_screenshot(VklCanvas* canvas, void* data);
+/**
+ * Prepare the canvas for a screencast.
+ *
+ * A **screencast** is a live record of one or several frames of the canvas during the interactive
+ * execution of the app. Creating a screencast is required for:
+ * - screenshots,
+ * - video records (requires ffmpeg)
+ *
+ * @param canvas
+ * @param interval If non-zero, the Canvas will raise periodic SCREENCAST private events every
+ *      `interval` seconds. The private event payload will contain a pointer to the grabbed
+ *      framebuffer image.
+ * @param rgb If NULL, the Canvas will create a CPU buffer with the appropriate size. Otherwise,
+ *      the images will be copied to the provided buffer. The caller must ensure the buffer is
+ *      allocated with enough memory to store the image. Providing a pointer disables resize
+ *      support (the swapchain and GPU images will not be recreated upon resize).
+ *
+ * This command creates a host-coherent GPU image with the same size as the current framebuffer
+ * size.
+ *
+ */
 
-VKY_EXPORT void vkl_screenshot_file(VklCanvas* canvas, const char* filepath);
+/*
+ Implementation details:
+
+- need a VklCommands*, a VklSemaphores*, and a VklFences*
+
+- register a TIMER private event callback with the following:
+take special screencast cmd buf
+    constructed once, when creating the screencast
+    transition to SRC layout
+    copy image to screencast image
+    transition to previous image layout
+new submit object
+wait for "image_ready" semaphore
+signal screencast_finished semaphore
+send screencast cmd buf to transfer queue
+signal screencast fence when submitting
+present must wait for that semaphore instead of the image_ready semaphore
+
+- register a FRAME private event callback with the following:
+check screencast fence state
+if screencast fence is signaled:
+map/unmap the screencast image and copy to the user-provided CPU buffer
+enqueue a special SCREENCAST public event with a pointer to the CPU buffer
+user callbacks registered for SCREENCAST public events and running in the background thread have
+access to the framebuffer RGB image
+
+*/
+
+VKY_EXPORT void vkl_screencast(VklCanvas* canvas, double interval, uint8_t* rgb);
 
 
 
-/*************************************************************************************************/
-/*  Prompt                                                                                       */
-/*************************************************************************************************/
+/**
+ * Make a screenshot.
+ *
+ * This function creates a screencast if there isn't one already. It is implemented with hard
+ * synchronization commands so this command should *not* be used for creating many successive
+ * screenshots. For that, one should register a SCREENCAST private event callback.
+ *
+ * @param canvas
+ * @return A pointer to the 24-bit RGB framebuffer.
+ *
+ */
+VKY_EXPORT uint8_t* vkl_screenshot(VklCanvas* canvas);
 
-VKY_EXPORT void vkl_prompt(VklCanvas* canvas);
 
-VKY_EXPORT char* vkl_prompt_get(VklCanvas* canvas);
 
-VKY_EXPORT void vkl_prompt_hide(VklCanvas* canvas);
+/**
+ * Make a screenshot and save it to a PNG or PPM file.
+ *
+ * @param canvas
+ * @param filename Path to the screenshot image.
+ *
+ */
+VKY_EXPORT void vkl_screenshot_file(VklCanvas* canvas, const char* filename);
+
+
+
+/**
+ * Destroy the screencast.
+ */
+VKY_EXPORT void vkl_screencast_destroy(VklCanvas* canvas);
 
 
 
@@ -318,7 +474,8 @@ VKY_EXPORT void vkl_event_enqueue(VklCanvas* canvas, VklEvent event);
 
 VKY_EXPORT void vkl_event_mouse(VklCanvas* canvas, VklMouseButton button, uvec2 pos);
 
-VKY_EXPORT void vkl_event_key(VklCanvas* canvas, VklKeyType type, VklKey key_code, char key_char);
+VKY_EXPORT void
+vkl_event_key(VklCanvas* canvas, VklKeyType type, VklKeyEvent key_code, char key_char);
 
 VKY_EXPORT void vkl_event_frame(VklCanvas* canvas, uint64_t idx, double time, double interval);
 
@@ -348,6 +505,12 @@ VKY_EXPORT void vkl_canvas_frame(VklCanvas* canvas);
 // between send and present, call POST_SEND callback
 VKY_EXPORT void vkl_canvas_frame_submit(VklCanvas* canvas);
 
+
+
+VKY_EXPORT void vkl_app_begin(VklApp* app);
+
+VKY_EXPORT void vkl_app_end(VklApp* app);
+
 // main loop over frames
 // in each iteration, loop over the canvas
 // for each canvas, call canvas_frame and frame_submit
@@ -355,7 +518,7 @@ VKY_EXPORT void vkl_canvas_frame_submit(VklCanvas* canvas);
 // if present queue different from render queue, present queue wait
 // close canvases to close
 // if no canvases remaining, exit the loop
-VKY_EXPORT void vkl_app_run(VklApp* app, uint32_t frame_count);
+VKY_EXPORT void vkl_app_run(VklApp* app, uint64_t frame_count);
 
 
 
