@@ -284,6 +284,176 @@ void vkl_canvas_recreate(VklCanvas* canvas)
 
 
 /*************************************************************************************************/
+/*  Offscreen                                                                                    */
+/*************************************************************************************************/
+
+VklCanvas* vkl_canvas_offscreen(VklGpu* gpu, uint32_t width, uint32_t height)
+{
+    // TODO
+    return NULL;
+}
+
+
+
+/*************************************************************************************************/
+/*  Canvas misc                                                                                  */
+/*************************************************************************************************/
+
+void vkl_canvas_size(VklCanvas* canvas, VklCanvasSizeType type, uvec2 size)
+{
+    ASSERT(canvas != NULL);
+    // TODO
+}
+
+
+
+void vkl_canvas_close_on_esc(VklCanvas* canvas, bool value)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(canvas->window != NULL);
+    canvas->window->close_on_esc = value;
+}
+
+
+
+/*************************************************************************************************/
+/*  Callbacks                                                                                    */
+/*************************************************************************************************/
+
+void vkl_canvas_callback(
+    VklCanvas* canvas, VklPrivateEventType type, double param, //
+    VklCanvasCallback* callback, void* user_data)
+{
+    ASSERT(canvas != NULL);
+    // TODO
+}
+
+
+
+void vkl_canvas_refill(VklCanvas* canvas, VklCanvasRefill* callback, void* user_data)
+{
+    ASSERT(canvas != NULL);
+    // TODO
+}
+
+
+
+void vkl_event_callback(
+    VklCanvas* canvas, VklEventType type, double param, //
+    VklEventCallback* callback, void* user_data)
+{
+    ASSERT(canvas != NULL);
+    // TODO
+}
+
+
+
+/*************************************************************************************************/
+/*  State changes                                                                                */
+/*************************************************************************************************/
+
+void vkl_canvas_to_refill(VklCanvas* canvas, bool value)
+{
+    ASSERT(canvas != NULL);
+    canvas->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+}
+
+
+
+void vkl_canvas_to_close(VklCanvas* canvas, bool value)
+{
+    ASSERT(canvas != NULL);
+    canvas->obj.status = VKL_OBJECT_STATUS_NEED_DESTROY;
+}
+
+
+
+/*************************************************************************************************/
+/*  Event system                                                                                 */
+/*************************************************************************************************/
+
+void vkl_event_mouse(VklCanvas* canvas, VklMouseButton button, uvec2 pos)
+{
+    ASSERT(canvas != NULL);
+
+    VklEvent event = {0};
+    event.type = VKL_EVENT_MOUSE;
+    event.u.m.button = button;
+    event.u.m.pos[0] = pos[0];
+    event.u.m.pos[1] = pos[1];
+    vkl_event_enqueue(canvas, event);
+}
+
+
+
+void vkl_event_key(VklCanvas* canvas, VklKeyType type, VklKeyCode key_code)
+{
+    ASSERT(canvas != NULL);
+
+    VklEvent event = {0};
+    event.type = VKL_EVENT_KEY;
+    event.u.k.type = type;
+    event.u.k.key_code = key_code;
+    vkl_event_enqueue(canvas, event);
+}
+
+
+
+void vkl_event_frame(VklCanvas* canvas, uint64_t idx, double time, double interval)
+{
+    ASSERT(canvas != NULL);
+
+    VklEvent event = {0};
+    event.type = VKL_EVENT_FRAME;
+    event.u.f.idx = idx;
+    event.u.f.time = time;
+    event.u.f.interval = interval;
+    vkl_event_enqueue(canvas, event);
+}
+
+
+
+void vkl_event_timer(VklCanvas* canvas, uint64_t idx, double time, double interval)
+{
+    ASSERT(canvas != NULL);
+
+    VklEvent event = {0};
+    event.type = VKL_EVENT_TIMER;
+    event.u.t.idx = idx;
+    event.u.t.time = time;
+    event.u.t.interval = interval;
+    vkl_event_enqueue(canvas, event);
+}
+
+
+
+void vkl_event_enqueue(VklCanvas* canvas, VklEvent event)
+{
+    ASSERT(canvas != NULL);
+    // TODO
+}
+
+
+
+VklEvent vkl_event_dequeue(VklCanvas* canvas, bool wait)
+{
+    ASSERT(canvas != NULL);
+    // TODO
+    return (VklEvent){0};
+}
+
+
+
+void vkl_event_stop(VklCanvas* canvas)
+{
+    ASSERT(canvas != NULL);
+    // Send a null event to the queue which causes the dequeue awaiting thread to end.
+    vkl_event_enqueue(canvas, (VklEvent){0});
+}
+
+
+
+/*************************************************************************************************/
 /*  Event loop                                                                                   */
 /*************************************************************************************************/
 

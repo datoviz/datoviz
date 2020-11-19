@@ -492,8 +492,8 @@ static int vklite2_surface(VkyTestContext* context)
 
     // Create a GLFW window and surface.
     VkSurfaceKHR surface = 0;
-    GLFWwindow* window = (GLFWwindow*)backend_window(
-        app->instance, VKL_BACKEND_GLFW, 100, 100, true, NULL, &surface);
+    GLFWwindow* window =
+        (GLFWwindow*)backend_window(app->instance, VKL_BACKEND_GLFW, 100, 100, NULL, &surface);
     vkl_gpu_create(gpu, surface);
 
     backend_window_destroy(app->instance, VKL_BACKEND_GLFW, window, surface);

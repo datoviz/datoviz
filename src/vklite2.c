@@ -323,10 +323,11 @@ VklWindow* vkl_window(VklApp* app, uint32_t width, uint32_t height)
 
     window->width = width;
     window->height = height;
+    window->close_on_esc = true;
 
     // Create the window, depending on the backend.
     window->backend_window =
-        backend_window(app->instance, app->backend, width, height, true, window, &window->surface);
+        backend_window(app->instance, app->backend, width, height, window, &window->surface);
 
     return window;
 }

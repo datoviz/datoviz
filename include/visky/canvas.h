@@ -145,7 +145,7 @@ typedef void (*VklCanvasRefill)(VklCanvas*, VklCommands*, uint32_t idx, void*);
 
 struct VklMouseEvent
 {
-    uint64_t idx;
+    // uint64_t idx;
     VklMouseButton button;
     uvec2 pos;
 };
@@ -154,10 +154,10 @@ struct VklMouseEvent
 
 struct VklKeyEvent
 {
-    uint64_t idx;
+    // uint64_t idx;
     VklKeyType type;
     VklKeyCode key_code;
-    char key_char;
+    // char key_char;
 };
 
 
@@ -271,6 +271,7 @@ struct VklCanvas
     VklObject obj;
     VklApp* app;
     VklGpu* gpu;
+
     void* user_data;
 
     VklWindow* window;
@@ -477,8 +478,7 @@ VKY_EXPORT void vkl_event_enqueue(VklCanvas* canvas, VklEvent event);
 
 VKY_EXPORT void vkl_event_mouse(VklCanvas* canvas, VklMouseButton button, uvec2 pos);
 
-VKY_EXPORT void
-vkl_event_key(VklCanvas* canvas, VklKeyType type, VklKeyEvent key_code, char key_char);
+VKY_EXPORT void vkl_event_key(VklCanvas* canvas, VklKeyType type, VklKeyCode key_code);
 
 VKY_EXPORT void vkl_event_frame(VklCanvas* canvas, uint64_t idx, double time, double interval);
 

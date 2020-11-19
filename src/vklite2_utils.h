@@ -252,7 +252,7 @@ _glfw_key_callback(GLFWwindow* backend_window, int key, int scancode, int action
 {
     VklWindow* window = (VklWindow*)glfwGetWindowUserPointer(backend_window);
     ASSERT(window != NULL);
-    if (action == GLFW_PRESS && key == GLFW_KEY_ESCAPE)
+    if (window->close_on_esc && action == GLFW_PRESS && key == GLFW_KEY_ESCAPE)
     {
         window->obj.status = VKL_OBJECT_STATUS_NEED_DESTROY;
     }
@@ -261,7 +261,7 @@ _glfw_key_callback(GLFWwindow* backend_window, int key, int scancode, int action
 
 
 static void* backend_window(
-    VkInstance instance, VklBackend backend, uint32_t width, uint32_t height, bool close_on_esc,
+    VkInstance instance, VklBackend backend, uint32_t width, uint32_t height, //
     VklWindow* window, VkSurfaceKHR* surface)
 {
     log_trace("create canvas with size %dx%d", width, height);
@@ -278,8 +278,9 @@ static void* backend_window(
 
         glfwSetWindowUserPointer(backend_window, window);
 
-        if (close_on_esc)
-            glfwSetKeyCallback(backend_window, _glfw_key_callback);
+        // Callback that marks the window to close if ESC is pressed, but only if
+        // VklWindow.close_on_esc=true
+        glfwSetKeyCallback(backend_window, _glfw_key_callback);
 
         return backend_window;
         break;

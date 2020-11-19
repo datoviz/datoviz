@@ -395,6 +395,7 @@ struct VklWindow
     void* backend_window;
     uint32_t width, height; // in screen coordinates
 
+    bool close_on_esc;
     VkSurfaceKHR surface;
     VkSurfaceCapabilitiesKHR caps; // current extent in pixel coordinates (framebuffers)
 };
