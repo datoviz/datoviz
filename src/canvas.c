@@ -117,6 +117,10 @@ static void blank_commands(VklCanvas* canvas, VklCommands* cmds)
 
 
 
+/*************************************************************************************************/
+/*  Private event sending                                                                        */
+/*************************************************************************************************/
+
 static int _canvas_callbacks(VklCanvas* canvas, VklPrivateEvent event)
 {
     int n_callbacks = 0;
@@ -158,26 +162,6 @@ static int _frame_callbacks(VklCanvas* canvas)
 
 
 
-static int _event_callbacks(VklCanvas* canvas, VklEvent event)
-{
-    int n_callbacks = 0;
-    for (uint32_t i = 0; i < canvas->event_callbacks_count; i++)
-    {
-        // Will pass the user_data that was registered, to the callback function.
-        event.user_data = canvas->event_callbacks[i].user_data;
-
-        // Only call the callbacks registered for the specified type.
-        if (canvas->event_callbacks[i].type == event.type)
-        {
-            canvas->event_callbacks[i].callback(canvas, event);
-            n_callbacks++;
-        }
-    }
-    return n_callbacks;
-}
-
-
-
 static void _refill_canvas(VklCanvas* canvas)
 {
     log_trace("refill canvas");
@@ -215,6 +199,50 @@ static void _refill_canvas(VklCanvas* canvas)
 
 
 
+static int _resize_callbacks(VklCanvas* canvas)
+{
+    VklPrivateEvent ev = {0};
+    ev.type = VKL_PRIVATE_EVENT_RESIZE;
+    vkl_canvas_size(canvas, VKL_CANVAS_SIZE_SCREEN, ev.u.r.size_screen);
+    vkl_canvas_size(canvas, VKL_CANVAS_SIZE_FRAMEBUFFER, ev.u.r.size_framebuffer);
+    return _canvas_callbacks(canvas, ev);
+}
+
+
+
+static int _post_send_callbacks(VklCanvas* canvas)
+{
+    VklPrivateEvent ev = {0};
+    ev.type = VKL_PRIVATE_EVENT_POST_SEND;
+    return _canvas_callbacks(canvas, ev);
+}
+
+
+
+/*************************************************************************************************/
+/*  Public event sending                                                                         */
+/*************************************************************************************************/
+
+static int _event_callbacks(VklCanvas* canvas, VklEvent event)
+{
+    int n_callbacks = 0;
+    for (uint32_t i = 0; i < canvas->event_callbacks_count; i++)
+    {
+        // Will pass the user_data that was registered, to the callback function.
+        event.user_data = canvas->event_callbacks[i].user_data;
+
+        // Only call the callbacks registered for the specified type.
+        if (canvas->event_callbacks[i].type == event.type)
+        {
+            canvas->event_callbacks[i].callback(canvas, event);
+            n_callbacks++;
+        }
+    }
+    return n_callbacks;
+}
+
+
+
 /*************************************************************************************************/
 /*  Canvas creation                                                                              */
 /*************************************************************************************************/
@@ -234,8 +262,6 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
     INSTANCE_NEW(VklCanvas, canvas, app->canvases, app->max_canvases)
     canvas->app = app;
     canvas->gpu = gpu;
-    canvas->width = width;
-    canvas->height = height;
 
     // Initialize the canvas local clock.
     _clock_init(&canvas->clock);
@@ -689,8 +715,8 @@ void vkl_canvas_frame_submit(VklCanvas* canvas)
     // Send the Submit instance.
     vkl_submit_send(s, img_idx, &canvas->fences[VKL_FENCE_RENDER_FINISHED], f);
 
-    // TODO
-    // call POST_SEND callback
+    // Call POST_SEND callbacks
+    _post_send_callbacks(canvas);
 
     // Once the image is rendered, we present the swapchain image.
     vkl_swapchain_present(
@@ -752,11 +778,13 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             if (canvas->swapchain.obj.status == VKL_OBJECT_STATUS_NEED_RECREATE)
             {
                 log_trace("swapchain image acquisition failed, recreating the canvas");
-                // TODO
-                // call RESIZE callback
 
                 // Recreate the canvas.
                 vkl_canvas_recreate(canvas);
+
+                // Call RESIZE callbacks.
+                _resize_callbacks(canvas);
+
                 n_canvas_active++;
                 continue;
             }

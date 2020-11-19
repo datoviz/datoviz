@@ -316,7 +316,7 @@ struct VklCanvas
     _Atomic VklObjectStatus next_status;
 
     VklWindow* window;
-    uint32_t width, height;
+    // uint32_t width, height;
 
     // Swapchain
     VklSwapchain swapchain;
