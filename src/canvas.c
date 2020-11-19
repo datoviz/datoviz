@@ -302,7 +302,21 @@ VklCanvas* vkl_canvas_offscreen(VklGpu* gpu, uint32_t width, uint32_t height)
 void vkl_canvas_size(VklCanvas* canvas, VklCanvasSizeType type, uvec2 size)
 {
     ASSERT(canvas != NULL);
-    // TODO
+    ASSERT(canvas->window != NULL);
+    switch (type)
+    {
+    case VKL_CANVAS_SIZE_SCREEN:
+        size[0] = canvas->window->width;
+        size[1] = canvas->window->height;
+        break;
+    case VKL_CANVAS_SIZE_FRAMEBUFFER:
+        size[0] = canvas->framebuffers.attachments[0]->width;
+        size[1] = canvas->framebuffers.attachments[0]->height;
+        break;
+    default:
+        log_warn("unknown size type %d", type);
+        break;
+    }
 }
 
 

@@ -1462,7 +1462,21 @@ static int vklite2_canvas(VkyTestContext* context)
     VklGpu* gpu = vkl_gpu(app, 0);
     VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
 
-    vkl_app_run(app, 100);
+    uvec2 size = {0};
+
+    // Framebuffer size.
+    vkl_canvas_size(canvas, VKL_CANVAS_SIZE_FRAMEBUFFER, size);
+    log_debug("canvas framebuffer size is %dx%d", size[0], size[1]);
+    ASSERT(size[0] > 0);
+    ASSERT(size[1] > 0);
+
+    // Screen size.
+    vkl_canvas_size(canvas, VKL_CANVAS_SIZE_SCREEN, size);
+    log_debug("canvas screen size is %dx%d", size[0], size[1]);
+    ASSERT(size[0] > 0);
+    ASSERT(size[1] > 0);
+
+    vkl_app_run(app, 10);
 
     TEST_END
 }
