@@ -22,6 +22,12 @@ VklFifo vkl_fifo(int32_t capacity)
     VklFifo fifo = {0};
     ASSERT(capacity <= VKL_MAX_FIFO_CAPACITY);
     fifo.capacity = capacity;
+
+    if (pthread_mutex_init(&fifo.lock, NULL) != 0)
+        log_error("mutex creation failed");
+    if (pthread_cond_init(&fifo.cond, NULL) != 0)
+        log_error("cond creation failed");
+
     return fifo;
 }
 
@@ -100,6 +106,15 @@ void vkl_fifo_reset(VklFifo* fifo)
     fifo->tail = 0;
     pthread_cond_signal(&fifo->cond);
     pthread_mutex_unlock(&fifo->lock);
+}
+
+
+
+void vkl_fifo_destroy(VklFifo* fifo)
+{
+    ASSERT(fifo != NULL);
+    pthread_mutex_destroy(&fifo->lock);
+    pthread_cond_destroy(&fifo->cond);
 }
 
 
@@ -259,11 +274,6 @@ VklContext* vkl_context(VklGpu* gpu, VklWindow* window)
     context->transfer_cmd = vkl_commands(gpu, VKL_DEFAULT_QUEUE_TRANSFER, 1);
     context->transfer_fifo.queue = vkl_fifo(VKL_MAX_FIFO_CAPACITY);
 
-    if (pthread_mutex_init(&context->transfer_fifo.queue.lock, NULL) != 0)
-        log_error("mutex creation failed");
-    if (pthread_cond_init(&context->transfer_fifo.queue.cond, NULL) != 0)
-        log_error("cond creation failed");
-
     gpu->context = context;
     obj_created(&context->obj);
 
@@ -304,8 +314,7 @@ void vkl_context_destroy(VklContext* context)
     INSTANCES_DESTROY(context->textures);
     FREE(context->allocated_sizes);
 
-    pthread_mutex_destroy(&context->transfer_fifo.queue.lock);
-    pthread_cond_destroy(&context->transfer_fifo.queue.cond);
+    vkl_fifo_destroy(&context->transfer_fifo.queue);
 }
 
 

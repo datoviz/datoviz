@@ -234,6 +234,8 @@ VKY_EXPORT void* vkl_fifo_dequeue(VklFifo* fifo, bool wait);
 
 VKY_EXPORT void vkl_fifo_reset(VklFifo* fifo);
 
+VKY_EXPORT void vkl_fifo_destroy(VklFifo* fifo);
+
 
 
 /*************************************************************************************************/
