@@ -348,6 +348,7 @@ struct VklThread
 {
     VklObject obj;
     pthread_t thread;
+    pthread_mutex_t lock;
 };
 
 
@@ -870,6 +871,10 @@ VKY_EXPORT int vkl_app_destroy(VklApp* app);
 /*************************************************************************************************/
 
 VKY_EXPORT VklThread vkl_thread(VklThreadCallback callback, void* user_data);
+
+VKY_EXPORT void vkl_thread_lock(VklThread*);
+
+VKY_EXPORT void vkl_thread_unlock(VklThread*);
 
 VKY_EXPORT void vkl_thread_join(VklThread* thread);
 

@@ -225,7 +225,10 @@ static int _post_send_callbacks(VklCanvas* canvas)
 
 static int _event_callbacks(VklCanvas* canvas, VklEvent event)
 {
+    // NOTE: no need for thread synchronization as long as only the event thread manipulates
+    // the event callbacks.
     int n_callbacks = 0;
+    vkl_thread_lock(&canvas->event_thread);
     for (uint32_t i = 0; i < canvas->event_callbacks_count; i++)
     {
         // Will pass the user_data that was registered, to the callback function.
@@ -238,6 +241,7 @@ static int _event_callbacks(VklCanvas* canvas, VklEvent event)
             n_callbacks++;
         }
     }
+    vkl_thread_unlock(&canvas->event_thread);
     return n_callbacks;
 }
 
@@ -541,7 +545,9 @@ void vkl_event_callback(
     r.user_data = user_data;
     r.param = param;
 
+    vkl_thread_lock(&canvas->event_thread);
     canvas->event_callbacks[canvas->event_callbacks_count++] = r;
+    vkl_thread_unlock(&canvas->event_thread);
 }
 
 

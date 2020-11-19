@@ -142,7 +142,10 @@ int vkl_app_destroy(VklApp* app)
 VklThread vkl_thread(VklThreadCallback callback, void* user_data)
 {
     VklThread thread = {0};
-    pthread_create(&thread.thread, NULL, callback, user_data);
+    if (pthread_create(&thread.thread, NULL, callback, user_data) != 0)
+        log_error("thread creation failed");
+    if (pthread_mutex_init(&thread.lock, NULL) != 0)
+        log_error("mutex creation failed");
     obj_created(&thread.obj);
     return thread;
 }
@@ -153,7 +156,24 @@ void vkl_thread_join(VklThread* thread)
 {
     ASSERT(thread != NULL);
     pthread_join(thread->thread, NULL);
+    pthread_mutex_destroy(&thread->lock);
     obj_destroyed(&thread->obj);
+}
+
+
+
+void vkl_thread_lock(VklThread* thread)
+{
+    ASSERT(thread != NULL);
+    pthread_mutex_lock(&thread->lock);
+}
+
+
+
+void vkl_thread_unlock(VklThread* thread)
+{
+    ASSERT(thread != NULL);
+    pthread_mutex_unlock(&thread->lock);
 }
 
 
