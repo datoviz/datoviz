@@ -254,7 +254,6 @@ _glfw_key_callback(GLFWwindow* backend_window, int key, int scancode, int action
     ASSERT(window != NULL);
     if (action == GLFW_PRESS && key == GLFW_KEY_ESCAPE)
     {
-        log_trace("window set to be destroyed");
         window->obj.status = VKL_OBJECT_STATUS_NEED_DESTROY;
     }
 }

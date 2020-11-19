@@ -453,6 +453,8 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             // Destroy the canvas if needed.
             if (backend_window_should_close(app->backend, canvas->window->backend_window))
                 canvas->window->obj.status = VKL_OBJECT_STATUS_NEED_DESTROY;
+            if (canvas->window->obj.status == VKL_OBJECT_STATUS_NEED_DESTROY)
+                canvas->obj.status = VKL_OBJECT_STATUS_NEED_DESTROY;
             if (canvas->obj.status == VKL_OBJECT_STATUS_NEED_DESTROY)
             {
                 log_trace("destroying canvas #%d", canvas_idx);
