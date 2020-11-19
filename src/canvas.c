@@ -137,6 +137,27 @@ static int _canvas_callbacks(VklCanvas* canvas, VklPrivateEvent event)
 
 
 
+static int _interact_callbacks(VklCanvas* canvas)
+{
+    VklPrivateEvent ev = {0};
+    ev.type = VKL_PRIVATE_EVENT_INTERACT;
+    return _canvas_callbacks(canvas, ev);
+}
+
+
+
+static int _frame_callbacks(VklCanvas* canvas)
+{
+    VklPrivateEvent ev = {0};
+    ev.type = VKL_PRIVATE_EVENT_FRAME;
+    ev.u.f.idx = canvas->frame_idx;
+    ev.u.f.interval = canvas->clock.interval;
+    ev.u.f.time = canvas->clock.elapsed;
+    return _canvas_callbacks(canvas, ev);
+}
+
+
+
 static int _event_callbacks(VklCanvas* canvas, VklEvent event)
 {
     int n_callbacks = 0;
@@ -216,6 +237,12 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
     canvas->width = width;
     canvas->height = height;
 
+    // Initialize the canvas local clock.
+    _clock_init(&canvas->clock);
+
+    // Initialize the atomic variables used to communicate state changes from a background thread
+    // to the main thread (REFILL or CLOSE events).
+    atomic_init(&canvas->cur_status, VKL_OBJECT_STATUS_NONE);
     atomic_init(&canvas->next_status, VKL_OBJECT_STATUS_NONE);
 
     // Allocate memory for canvas objects.
@@ -578,12 +605,20 @@ void vkl_canvas_frame(VklCanvas* canvas)
     ASSERT(canvas->window != NULL);
     ASSERT(canvas->app != NULL);
 
+    // Update the global and local clocks.
+    // These calls update canvas->clock.elapsed and canvas->clock.interval, the latter is
+    // the delay since the last frame.
+    _clock_set(&canvas->app->clock); // global clock
+    _clock_set(&canvas->clock);      // canvas-local clock
+
     // Update cur_status
     atomic_store(&canvas->cur_status, canvas->obj.status);
 
-    // TODO
-    // call EVENT callbacks (for backends only), which may enqueue some events
-    // FRAME callbacks (rarely used)
+    // Call INTERACT callbacks (for backends only), which may enqueue some events
+    _interact_callbacks(canvas);
+
+    // Call FRAME callbacks (rarely used)
+    _frame_callbacks(canvas);
 
     // Get the next status.
     VklObjectStatus next_status = atomic_load(&canvas->next_status);

@@ -155,7 +155,6 @@ typedef struct VklEventCallbackRegister VklEventCallbackRegister;
 
 struct VklMouseEvent
 {
-    // uint64_t idx;
     VklMouseButton button;
     uvec2 pos;
 };
@@ -164,10 +163,8 @@ struct VklMouseEvent
 
 struct VklKeyEvent
 {
-    // uint64_t idx;
     VklKeyType type;
     VklKeyCode key_code;
-    // char key_char;
 };
 
 
@@ -326,8 +323,10 @@ struct VklCanvas
     VklImages depth_image;
     VklFramebuffers framebuffers;
     VklSubmit submit;
-    uint64_t frame_idx;
+
     uint32_t cur_frame; // current frame within the images in flight
+    uint64_t frame_idx;
+    VklClock clock;
 
     uint32_t max_commands;
     VklCommands* commands;

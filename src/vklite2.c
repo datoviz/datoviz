@@ -19,6 +19,9 @@ VklApp* vkl_app(VklBackend backend)
     app->obj.type = VKL_OBJECT_TYPE_APP;
     app->backend = backend;
 
+    // Initialize the global clock.
+    _clock_init(&app->clock);
+
     INSTANCES_INIT(VklGpu, app, gpus, max_gpus, VKL_MAX_GPUS, VKL_OBJECT_TYPE_GPU)
     INSTANCES_INIT(VklWindow, app, windows, max_windows, VKL_MAX_WINDOWS, VKL_OBJECT_TYPE_WINDOW)
 

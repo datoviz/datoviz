@@ -79,6 +79,7 @@ TODO later
 
 typedef struct VklObject VklObject;
 typedef struct VklApp VklApp;
+typedef struct VklClock VklClock;
 typedef struct VklQueues VklQueues;
 typedef struct VklGpu VklGpu;
 typedef struct VklWindow VklWindow;
@@ -302,6 +303,38 @@ static inline bool is_obj_created(VklObject* obj)
 
 
 /*************************************************************************************************/
+/*  Clock                                                                                        */
+/*************************************************************************************************/
+
+struct VklClock
+{
+    double elapsed;  // time in seconds elapsed since calling _start_time(clock)
+    double interval; // interval since the last clock update
+
+    struct timeval start, current;
+    double checkpoint_time;
+    uint64_t checkpoint_value;
+};
+
+
+
+static inline void _clock_init(VklClock* clock) { gettimeofday(&clock->start, NULL); }
+
+
+
+static inline void _clock_set(VklClock* clock)
+{
+    // Typically called at every frame.
+    gettimeofday(&clock->current, NULL);
+    double elapsed = (clock->current.tv_sec - clock->start.tv_sec) +
+                     (clock->current.tv_usec - clock->start.tv_usec) / 1000000.0;
+    clock->interval = elapsed - clock->elapsed;
+    clock->elapsed = elapsed;
+}
+
+
+
+/*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
@@ -312,6 +345,9 @@ struct VklApp
 
     // Backend
     VklBackend backend;
+
+    // Global clock
+    VklClock clock;
 
     // Vulkan objects.
     VkInstance instance;

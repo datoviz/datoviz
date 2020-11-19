@@ -1480,6 +1480,10 @@ static int vklite2_canvas(VkyTestContext* context)
     vkl_app_run(app, 8);
     vkl_canvas_clear_color(canvas, (VkClearColorValue){{1, 0, 0, 1}});
 
+    log_debug("global clock elapsed %.6f interval %.6f", app->clock.elapsed, app->clock.interval);
+    log_debug(
+        "local clock elapsed %.6f interval %.6f", canvas->clock.elapsed, canvas->clock.interval);
+
     // Second canvas.
     VklCanvas* canvas2 = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
     vkl_canvas_clear_color(canvas2, (VkClearColorValue){{0, 1, 0, 1}});
