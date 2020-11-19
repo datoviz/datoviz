@@ -352,6 +352,9 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
     // Default submit instance.
     canvas->submit = vkl_submit(gpu);
 
+    // Event queue.
+    canvas->event_queue = vkl_fifo(VKL_MAX_FIFO_CAPACITY);
+
     _refill_canvas(canvas);
 
     obj_created(&canvas->obj);
@@ -598,7 +601,10 @@ void vkl_event_timer(VklCanvas* canvas, uint64_t idx, double time, double interv
 void vkl_event_enqueue(VklCanvas* canvas, VklEvent event)
 {
     ASSERT(canvas != NULL);
-    // TODO
+    VklFifo* fifo = &canvas->event_queue;
+    ASSERT(0 <= fifo->head && fifo->head < fifo->capacity);
+    canvas->events[fifo->head] = event;
+    vkl_fifo_enqueue(fifo, &canvas->events[fifo->head]);
 }
 
 
@@ -606,8 +612,12 @@ void vkl_event_enqueue(VklCanvas* canvas, VklEvent event)
 VklEvent vkl_event_dequeue(VklCanvas* canvas, bool wait)
 {
     ASSERT(canvas != NULL);
-    // TODO
-    return (VklEvent){0};
+    VklFifo* fifo = &canvas->event_queue;
+    VklEvent* event = vkl_fifo_dequeue(fifo, wait);
+    if (event == NULL)
+        return (VklEvent){0};
+    ASSERT(event != NULL);
+    return *event;
 }
 
 
@@ -921,6 +931,8 @@ void vkl_canvas_destroy(VklCanvas* canvas)
         vkl_fences_destroy(&canvas->fences[i]);
     }
     INSTANCES_DESTROY(canvas->fences)
+
+    vkl_fifo_destroy(&canvas->event_queue);
 
     obj_destroyed(&canvas->obj);
 }

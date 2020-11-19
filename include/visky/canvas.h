@@ -5,6 +5,7 @@
 #include <stdatomic.h>
 #endif
 
+#include "../include/visky/context.h"
 #include "keycode.h"
 #include "vklite2.h"
 
@@ -14,7 +15,6 @@
 /*************************************************************************************************/
 
 #define VKL_MAX_EVENT_CALLBACKS 256
-
 
 
 /*************************************************************************************************/
@@ -345,6 +345,10 @@ struct VklCanvas
 
     uint32_t event_callbacks_count;
     VklEventCallbackRegister event_callbacks[VKL_MAX_EVENT_CALLBACKS];
+
+    // Event queue.
+    VklFifo event_queue;
+    VklEvent events[VKL_MAX_FIFO_CAPACITY];
 };
 
 
