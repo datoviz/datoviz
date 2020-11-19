@@ -91,6 +91,7 @@ typedef enum
 
 
 
+// NOTE: must match GLFW values!
 typedef enum
 {
     VKL_KEY_MODIFIER_NONE = 0x00000000,
@@ -169,6 +170,7 @@ struct VklMouseButtonEvent
 {
     VklMouseButton button;
     VklMouseButtonType type;
+    int modifiers;
 };
 
 
@@ -558,8 +560,8 @@ VKY_EXPORT void vkl_screencast_destroy(VklCanvas* canvas);
 
 VKY_EXPORT void vkl_event_enqueue(VklCanvas* canvas, VklEvent event);
 
-VKY_EXPORT void
-vkl_event_mouse_button(VklCanvas* canvas, VklMouseButtonType type, VklMouseButton button);
+VKY_EXPORT void vkl_event_mouse_button(
+    VklCanvas* canvas, VklMouseButtonType type, VklMouseButton button, int modifiers);
 
 VKY_EXPORT void vkl_event_mouse_move(VklCanvas* canvas, dvec2 pos);
 

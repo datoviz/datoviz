@@ -344,9 +344,8 @@ static void _glfw_button_callback(GLFWwindow* window, int button, int action, in
     if (button == GLFW_MOUSE_BUTTON_MIDDLE)
         b = VKL_MOUSE_BUTTON_MIDDLE;
 
-    // TODO: modifiers
-
-    vkl_event_mouse_button(canvas, type, b);
+    // NOTE: Visky modifiers code must match GLFW
+    vkl_event_mouse_button(canvas, type, b, mods);
 }
 
 static void _glfw_move_callback(GLFWwindow* window, double xpos, double ypos)
@@ -695,7 +694,8 @@ void vkl_canvas_to_close(VklCanvas* canvas, bool value)
 /*  Event system                                                                                 */
 /*************************************************************************************************/
 
-void vkl_event_mouse_button(VklCanvas* canvas, VklMouseButtonType type, VklMouseButton button)
+void vkl_event_mouse_button(
+    VklCanvas* canvas, VklMouseButtonType type, VklMouseButton button, int modifiers)
 {
     ASSERT(canvas != NULL);
 
@@ -703,6 +703,7 @@ void vkl_event_mouse_button(VklCanvas* canvas, VklMouseButtonType type, VklMouse
     event.type = VKL_EVENT_MOUSE_BUTTON;
     event.u.b.button = button;
     event.u.b.type = type;
+    event.u.b.modifiers = modifiers;
     vkl_event_enqueue(canvas, event);
 }
 

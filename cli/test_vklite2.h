@@ -1477,7 +1477,7 @@ static void _wheel_callback(VklCanvas* canvas, VklEvent ev)
 static void _button_callback(VklCanvas* canvas, VklEvent ev)
 {
     if (ev.u.b.type == VKL_MOUSE_PRESS)
-        log_debug("clicked %d", ev.u.b.button);
+        log_debug("clicked %d mods %d", ev.u.b.button, ev.u.b.modifiers);
 }
 
 static void _cursor_callback(VklCanvas* canvas, VklEvent ev)
