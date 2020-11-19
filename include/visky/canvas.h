@@ -64,6 +64,7 @@ typedef enum
 {
     VKL_EVENT_NONE,
     VKL_EVENT_MOUSE,
+    VKL_EVENT_WHEEL,
     VKL_EVENT_KEY,
     VKL_EVENT_FRAME,
     VKL_EVENT_TIMER,
@@ -129,6 +130,7 @@ typedef enum
 
 typedef struct VklKeyEvent VklKeyEvent;
 typedef struct VklMouseEvent VklMouseEvent;
+typedef struct VklWheelEvent VklWheelEvent;
 typedef struct VklScreencastEvent VklScreencastEvent;
 typedef struct VklFrameEvent VklFrameEvent;
 typedef struct VklTimerEvent VklTimerEvent;
@@ -157,6 +159,13 @@ struct VklMouseEvent
 {
     VklMouseButton button;
     uvec2 pos;
+};
+
+
+
+struct VklWheelEvent
+{
+    dvec2 dir;
 };
 
 
@@ -235,6 +244,7 @@ struct VklEvent
     union
     {
         VklMouseEvent m;      // for MOUSE public events
+        VklWheelEvent w;      // for WHEEL public events
         VklKeyEvent k;        // for KEY public events
         VklFrameEvent f;      // for FRAME public event
         VklTimerEvent t;      // for TIMER, ONESHOT public events
@@ -531,6 +541,8 @@ VKY_EXPORT void vkl_screencast_destroy(VklCanvas* canvas);
 VKY_EXPORT void vkl_event_enqueue(VklCanvas* canvas, VklEvent event);
 
 VKY_EXPORT void vkl_event_mouse(VklCanvas* canvas, VklMouseButton button, uvec2 pos);
+
+VKY_EXPORT void vkl_event_wheel(VklCanvas* canvas, dvec2 dir);
 
 VKY_EXPORT void vkl_event_key(VklCanvas* canvas, VklKeyType type, VklKeyCode key_code);
 

@@ -314,6 +314,12 @@ static void _glfw_key_callback(GLFWwindow* window, int key, int scancode, int ac
     vkl_event_key(canvas, type, key_code);
 }
 
+static void _glfw_wheel_callback(GLFWwindow* window, double dx, double dy)
+{
+    VklCanvas* canvas = (VklCanvas*)glfwGetWindowUserPointer(window);
+    vkl_event_wheel(canvas, (dvec2){dx, dy});
+}
+
 static void backend_event_callbacks(VklCanvas* canvas)
 {
     ASSERT(canvas != NULL);
@@ -321,13 +327,17 @@ static void backend_event_callbacks(VklCanvas* canvas)
     ASSERT(canvas->window != NULL);
     switch (canvas->app->backend)
     {
-    case VKL_BACKEND_GLFW:
+    case VKL_BACKEND_GLFW:;
+        GLFWwindow* w = canvas->window->backend_window;
 
         // The canvas pointer will be available to callback functions.
-        glfwSetWindowUserPointer(canvas->window->backend_window, canvas);
+        glfwSetWindowUserPointer(w, canvas);
 
         // Register the key callback.
-        glfwSetKeyCallback(canvas->window->backend_window, _glfw_key_callback);
+        glfwSetKeyCallback(w, _glfw_key_callback);
+
+        // Register the mouse wheel callback.
+        glfwSetScrollCallback(w, _glfw_wheel_callback);
 
         break;
     default:
@@ -650,6 +660,19 @@ void vkl_event_mouse(VklCanvas* canvas, VklMouseButton button, uvec2 pos)
     event.u.m.button = button;
     event.u.m.pos[0] = pos[0];
     event.u.m.pos[1] = pos[1];
+    vkl_event_enqueue(canvas, event);
+}
+
+
+
+void vkl_event_wheel(VklCanvas* canvas, dvec2 dir)
+{
+    ASSERT(canvas != NULL);
+
+    VklEvent event = {0};
+    event.type = VKL_EVENT_WHEEL;
+    event.u.w.dir[0] = dir[0];
+    event.u.w.dir[1] = dir[1];
     vkl_event_enqueue(canvas, event);
 }
 
