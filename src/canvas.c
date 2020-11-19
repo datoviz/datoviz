@@ -9,9 +9,25 @@
 /*************************************************************************************************/
 
 
+/*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+static const VkClearColorValue bgcolor = {{.4f, .6f, .8f, 1.0f}};
+#define VKL_DEFAULT_IMAGE_FORMAT      VK_FORMAT_B8G8R8A8_UNORM
+#define VKL_DEFAULT_PRESENT_MODE      VK_PRESENT_MODE_FIFO_KHR
+#define VKL_MIN_SWAPCHAIN_IMAGE_COUNT 3
+#define VKL_SEMAPHORE_IMG_AVAILABLE   0
+#define VKL_SEMAPHORE_RENDER_FINISHED 1
+#define VKL_FENCE_RENDER_FINISHED     0
+#define VKL_FENCES_FLIGHT             1
+#define VKL_DEFAULT_COMMANDS_TRANSFER 0
+#define VKL_DEFAULT_COMMANDS_RENDER   1
+
+
 
 /*************************************************************************************************/
-/*  Canvas creation                                                                              */
+/*  Utils                                                                                        */
 /*************************************************************************************************/
 
 static VklRenderpass default_renderpass(
@@ -81,15 +97,9 @@ depth_image(VklImages* depth_images, VklRenderpass* renderpass, uint32_t width, 
 
 
 
-static const VkClearColorValue bgcolor = {{.4f, .6f, .8f, 1.0f}};
-#define VKL_DEFAULT_IMAGE_FORMAT      VK_FORMAT_B8G8R8A8_UNORM
-#define VKL_DEFAULT_PRESENT_MODE      VK_PRESENT_MODE_FIFO_KHR
-#define VKL_MIN_SWAPCHAIN_IMAGE_COUNT 3
-#define VKL_SEMAPHORE_IMG_AVAILABLE   0
-#define VKL_SEMAPHORE_RENDER_FINISHED 1
-#define VKL_FENCE_RENDER_FINISHED     0
-#define VKL_FENCES_FLIGHT             1
-
+/*************************************************************************************************/
+/*  Canvas creation                                                                              */
+/*************************************************************************************************/
 
 VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
 {
@@ -166,6 +176,25 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
     canvas->fences[VKL_FENCE_RENDER_FINISHED] = vkl_fences(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
     vkl_fences_create(&canvas->fences[VKL_FENCE_RENDER_FINISHED]);
     canvas->fences[VKL_FENCES_FLIGHT] = vkl_fences(gpu, canvas->swapchain.img_count);
+
+    // Default transfer commands.
+    {
+        INSTANCE_NEW(VklCommands, cmds, canvas->commands, canvas->max_commands)
+        *cmds = vkl_commands(gpu, VKL_DEFAULT_QUEUE_TRANSFER, 1);
+    }
+
+    // Default render commands.
+    {
+        INSTANCE_NEW(VklCommands, cmds, canvas->commands, canvas->max_commands)
+        *cmds = vkl_commands(gpu, VKL_DEFAULT_QUEUE_RENDER, canvas->swapchain.img_count);
+        for (uint32_t i = 0; i < cmds->count; i++)
+        {
+            vkl_cmd_begin(cmds, i);
+            vkl_cmd_begin_renderpass(cmds, i, &canvas->renderpasses[0], &canvas->framebuffers);
+            vkl_cmd_end_renderpass(cmds, i);
+            vkl_cmd_end(cmds, i);
+        }
+    }
 
     return canvas;
 }
