@@ -1,8 +1,6 @@
 #ifndef VKL_CONTEXT_HEADER
 #define VKL_CONTEXT_HEADER
 
-#include <pthread.h>
-
 #include "vklite2.h"
 
 

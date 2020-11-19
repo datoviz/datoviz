@@ -349,6 +349,9 @@ struct VklCanvas
     // Event queue.
     VklFifo event_queue;
     VklEvent events[VKL_MAX_FIFO_CAPACITY];
+
+    // Threads.
+    VklThread event_thread;
 };
 
 

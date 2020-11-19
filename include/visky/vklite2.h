@@ -6,6 +6,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <pthread.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -79,6 +80,7 @@ TODO later
 
 typedef struct VklObject VklObject;
 typedef struct VklApp VklApp;
+typedef struct VklThread VklThread;
 typedef struct VklClock VklClock;
 typedef struct VklQueues VklQueues;
 typedef struct VklGpu VklGpu;
@@ -111,12 +113,14 @@ typedef struct VklSubmit VklSubmit;
 typedef struct VklCanvas VklCanvas;
 typedef struct VklContext VklContext;
 
+// Callback definitions
+typedef void* (*VklThreadCallback)(void*);
+
 
 
 /*************************************************************************************************/
 /*  Enums                                                                                        */
 /*************************************************************************************************/
-
 
 typedef enum
 {
@@ -340,6 +344,14 @@ static inline void _clock_set(VklClock* clock)
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+struct VklThread
+{
+    VklObject obj;
+    pthread_t thread;
+};
+
+
+
 struct VklApp
 {
     VklObject obj;
@@ -367,6 +379,9 @@ struct VklApp
     // Canvas.
     uint32_t max_canvases;
     VklCanvas* canvases;
+
+    // Threads.
+    VklThread timer_thread;
 };
 
 
@@ -847,6 +862,16 @@ VKY_EXPORT VklApp* vkl_app(VklBackend backend);
  * @param app the application to destroy
  */
 VKY_EXPORT int vkl_app_destroy(VklApp* app);
+
+
+
+/*************************************************************************************************/
+/*  Thread                                                                                       */
+/*************************************************************************************************/
+
+VKY_EXPORT VklThread vkl_thread(VklThreadCallback callback, void* user_data);
+
+VKY_EXPORT void vkl_thread_join(VklThread* thread);
 
 
 

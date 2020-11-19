@@ -136,6 +136,29 @@ int vkl_app_destroy(VklApp* app)
 
 
 /*************************************************************************************************/
+/*  Thread                                                                                       */
+/*************************************************************************************************/
+
+VklThread vkl_thread(VklThreadCallback callback, void* user_data)
+{
+    VklThread thread = {0};
+    pthread_create(&thread.thread, NULL, callback, user_data);
+    obj_created(&thread.obj);
+    return thread;
+}
+
+
+
+void vkl_thread_join(VklThread* thread)
+{
+    ASSERT(thread != NULL);
+    pthread_join(thread->thread, NULL);
+    obj_destroyed(&thread->obj);
+}
+
+
+
+/*************************************************************************************************/
 /*  GPU                                                                                          */
 /*************************************************************************************************/
 
