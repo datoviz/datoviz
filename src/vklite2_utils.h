@@ -248,8 +248,10 @@ static const char** backend_extensions(VklBackend backend, uint32_t* required_ex
 
 
 static void
-_glfw_key_callback(GLFWwindow* backend_window, int key, int scancode, int action, int mods)
+_glfw_esc_callback(GLFWwindow* backend_window, int key, int scancode, int action, int mods)
 {
+    // WARNING: this callback is only valid for VklWindows that are not wrapped inside a VklCanvas
+    // This is because the VklCanvas has its own glfw keyboard callback, and there can be only 1.
     VklWindow* window = (VklWindow*)glfwGetWindowUserPointer(backend_window);
     ASSERT(window != NULL);
     if (window->close_on_esc && action == GLFW_PRESS && key == GLFW_KEY_ESCAPE)
@@ -280,7 +282,7 @@ static void* backend_window(
 
         // Callback that marks the window to close if ESC is pressed, but only if
         // VklWindow.close_on_esc=true
-        glfwSetKeyCallback(backend_window, _glfw_key_callback);
+        glfwSetKeyCallback(backend_window, _glfw_esc_callback);
 
         return backend_window;
         break;

@@ -260,21 +260,79 @@ static void* _event_thread(void* p_canvas)
     VklEvent ev = {0};
     while (true)
     {
-        log_debug("event thread awaits for events...");
+        log_trace("event thread awaits for events...");
         // Wait until an event is available
         ev = vkl_event_dequeue(canvas, true);
         if (ev.type == VKL_EVENT_NONE)
         {
-            log_debug("received empty event, stopping the event thread");
+            log_trace("received empty event, stopping the event thread");
             break;
         }
-        log_trace("event dequeued, processing it...");
+        log_trace("event dequeued type %d, processing it...", ev.type);
         // process the dequeued task
         _event_callbacks(canvas, ev);
     }
-    log_trace("end event thread");
+    log_debug("end event thread");
 
     return NULL;
+}
+
+
+
+/*************************************************************************************************/
+/*  Backend-specific event callbacks                                                             */
+/*************************************************************************************************/
+
+static void _glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    VklCanvas* canvas = (VklCanvas*)glfwGetWindowUserPointer(window);
+
+    ASSERT(canvas != NULL);
+    ASSERT(canvas->window != NULL);
+
+    // Special handling of ESC key.
+    if (canvas->window->close_on_esc && action == GLFW_PRESS && key == GLFW_KEY_ESCAPE)
+    {
+        canvas->window->obj.status = VKL_OBJECT_STATUS_NEED_DESTROY;
+        return;
+    }
+
+    VklKeyType type = {0};
+    VklKeyCode key_code = {0};
+
+    // Find the key event type.
+    if (action == GLFW_PRESS || action == GLFW_REPEAT)
+        type = VKL_KEY_PRESS;
+    else
+        type = VKL_KEY_RELEASE;
+
+    // NOTE: we use the GLFW key codes here, should actually do a proper mapping between GLFW
+    // key codes and Visky key codes.
+    key_code = key;
+
+    // Enqueue the key event.
+    vkl_event_key(canvas, type, key_code);
+}
+
+static void backend_event_callbacks(VklCanvas* canvas)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(canvas->app != NULL);
+    ASSERT(canvas->window != NULL);
+    switch (canvas->app->backend)
+    {
+    case VKL_BACKEND_GLFW:
+
+        // The canvas pointer will be available to callback functions.
+        glfwSetWindowUserPointer(canvas->window->backend_window, canvas);
+
+        // Register the key callback.
+        glfwSetKeyCallback(canvas->window->backend_window, _glfw_key_callback);
+
+        break;
+    default:
+        break;
+    }
 }
 
 
@@ -391,6 +449,7 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
     // Event queue.
     canvas->event_queue = vkl_fifo(VKL_MAX_FIFO_CAPACITY);
     canvas->event_thread = vkl_thread(_event_thread, canvas);
+    backend_event_callbacks(canvas);
 
     _refill_canvas(canvas);
 

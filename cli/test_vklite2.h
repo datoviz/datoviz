@@ -1465,7 +1465,8 @@ static void _frame_callback(VklCanvas* canvas, VklPrivateEvent ev)
 
 static void _key_callback(VklCanvas* canvas, VklEvent ev)
 {
-    log_debug("key code %d", ev.u.k.key_code);
+    if (ev.u.k.type == VKL_KEY_PRESS)
+        log_debug("key code %d", ev.u.k.key_code);
 }
 
 static int vklite2_canvas_1(VkyTestContext* context)
@@ -1515,6 +1516,9 @@ static int vklite2_canvas_2(VkyTestContext* context)
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
     VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+
+    vkl_event_callback(canvas, VKL_EVENT_KEY, 0, _key_callback, NULL);
+
     vkl_app_run(app, 0);
     TEST_END
 }
