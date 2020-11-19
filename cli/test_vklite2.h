@@ -1463,7 +1463,7 @@ static void _frame_callback(VklCanvas* canvas, VklPrivateEvent ev)
         canvas->obj.idx, ev.u.f.idx, ev.u.f.time, ev.u.f.interval);
 }
 
-static int vklite2_canvas(VkyTestContext* context)
+static int vklite2_canvas_1(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -1499,5 +1499,14 @@ static int vklite2_canvas(VkyTestContext* context)
     vkl_canvas_clear_color(canvas2, (VkClearColorValue){{0, 1, 0, 1}});
     vkl_app_run(app, 5);
 
+    TEST_END
+}
+
+static int vklite2_canvas_2(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    vkl_app_run(app, 0);
     TEST_END
 }

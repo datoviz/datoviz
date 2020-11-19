@@ -741,7 +741,8 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
     uint32_t n_canvas_active = 0;
     for (uint64_t iter = 0; iter < frame_count; iter++)
     {
-        log_trace("frame iteration %d/%d", iter, frame_count);
+        if (frame_count > 0)
+            log_trace("frame iteration %d/%d", iter, frame_count);
         n_canvas_active = 0;
 
         // Loop over the canvases.
