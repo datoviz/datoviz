@@ -547,46 +547,21 @@ void vkl_canvas_frame_submit(VklCanvas* canvas)
 
 
 
-void vkl_app_begin(VklApp* app)
-{
-    ASSERT(app != NULL);
-    // TODO
-    // start timer
-    // start timer thread
-}
-
-
-
-void vkl_app_end(VklApp* app)
-{
-    ASSERT(app != NULL);
-
-    vkl_app_wait(app);
-
-    // TODO
-    // stop timer
-    // stop timer thread and join it
-    // destroy app
-}
-
-
-
 void vkl_app_run(VklApp* app, uint64_t frame_count)
 {
+    log_trace("run app");
     ASSERT(app != NULL);
     if (frame_count == 0)
         frame_count = UINT64_MAX;
     ASSERT(frame_count > 0);
 
-    vkl_app_begin(app);
-
     VklCanvas* canvas = NULL;
 
     // Main loop.
     uint32_t n_canvas_active = 0;
-    for (uint64_t frame_idx = 0; frame_idx < frame_count; frame_idx++)
+    for (uint64_t iter = 0; iter < frame_count; iter++)
     {
-        log_trace("frame %d/%d", frame_idx, frame_count);
+        log_trace("frame iteration %d/%d", iter, frame_count);
         n_canvas_active = 0;
 
         // Loop over the canvases.
@@ -594,15 +569,13 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
         {
             // Get the current canvas.
             canvas = &app->canvases[canvas_idx];
-            {
-                ASSERT(canvas != NULL);
-                if (canvas->obj.status == VKL_OBJECT_STATUS_NONE)
-                    break;
-                if (canvas->obj.status < VKL_OBJECT_STATUS_CREATED)
-                    continue;
-                ASSERT(canvas->obj.status >= VKL_OBJECT_STATUS_CREATED);
-                log_trace("processing frame for canvas #%d", canvas_idx);
-            }
+            ASSERT(canvas != NULL);
+            if (canvas->obj.status == VKL_OBJECT_STATUS_NONE)
+                break;
+            if (canvas->obj.status < VKL_OBJECT_STATUS_CREATED)
+                continue;
+            ASSERT(canvas->obj.status >= VKL_OBJECT_STATUS_CREATED);
+            log_trace("processing frame #%d for canvas #%d", canvas->frame_idx, canvas_idx);
 
             // Poll events.
             ASSERT(canvas->window != NULL);
@@ -654,6 +627,7 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             // Submit the command buffers and swapchain logic.
             log_trace("submitting frame for canvas #%d", canvas_idx);
             vkl_canvas_frame_submit(canvas);
+            canvas->frame_idx++;
             n_canvas_active++;
         }
 
@@ -693,7 +667,7 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
     }
     log_trace("end main loop");
 
-    vkl_app_end(app);
+    vkl_app_wait(app);
 }
 
 

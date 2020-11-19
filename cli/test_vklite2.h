@@ -1476,6 +1476,8 @@ static int vklite2_canvas(VkyTestContext* context)
     ASSERT(size[0] > 0);
     ASSERT(size[1] > 0);
 
+    // Multiple consecutive runs can be done.
+    vkl_app_run(app, 10);
     vkl_app_run(app, 10);
 
     TEST_END

@@ -282,6 +282,7 @@ struct VklCanvas
     VklImages depth_image;
     VklFramebuffers framebuffers;
     VklSubmit submit;
+    uint64_t frame_idx;
     uint32_t cur_frame; // current frame within the images in flight
 
     uint32_t max_commands;
@@ -486,7 +487,6 @@ VKY_EXPORT void vkl_event_timer(VklCanvas* canvas, uint64_t idx, double time, do
 
 VKY_EXPORT VklEvent vkl_event_dequeue(VklCanvas* canvas, bool wait);
 
-// send a null event to the queue which causes the dequeue awaiting thread to end
 VKY_EXPORT void vkl_event_stop(VklCanvas* canvas);
 
 
@@ -495,32 +495,10 @@ VKY_EXPORT void vkl_event_stop(VklCanvas* canvas);
 /*  Event loop                                                                                   */
 /*************************************************************************************************/
 
-// call EVENT callbacks (for backends only), which may enqueue some events
-// FRAME callbacks (rarely used)
-// check canvas.need_refill (atomic)
-// if refill needed, wait for current fence, and call the refill callbacks
 VKY_EXPORT void vkl_canvas_frame(VklCanvas* canvas);
 
-// loop over all canvas commands on the RENDER queue (skip inactive ones)
-// add them to a new Submit
-// send the command associated to the current swapchain image
-// if resize, call RESIZE callback before cmd_reset
-// between send and present, call POST_SEND callback
 VKY_EXPORT void vkl_canvas_frame_submit(VklCanvas* canvas);
 
-
-
-VKY_EXPORT void vkl_app_begin(VklApp* app);
-
-VKY_EXPORT void vkl_app_end(VklApp* app);
-
-// main loop over frames
-// in each iteration, loop over the canvas
-// for each canvas, call canvas_frame and frame_submit
-// vkl_context_transfer_loop(no wait)
-// if present queue different from render queue, present queue wait
-// close canvases to close
-// if no canvases remaining, exit the loop
 VKY_EXPORT void vkl_app_run(VklApp* app, uint64_t frame_count);
 
 
