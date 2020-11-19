@@ -216,6 +216,8 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
     canvas->width = width;
     canvas->height = height;
 
+    atomic_init(&canvas->next_status, VKL_OBJECT_STATUS_NONE);
+
     // Allocate memory for canvas objects.
     INSTANCES_INIT(
         VklCommands, canvas, commands, max_commands, VKL_MAX_COMMANDS, VKL_OBJECT_TYPE_COMMANDS)
@@ -456,21 +458,27 @@ void vkl_event_callback(
 
 
 /*************************************************************************************************/
-/*  State changes                                                                                */
+/*  Thread-safe state changes                                                                    */
 /*************************************************************************************************/
+
+void vkl_canvas_set_status(VklCanvas* canvas, VklObjectStatus status)
+{
+    ASSERT(canvas != NULL);
+    atomic_store(&canvas->next_status, status);
+}
+
+
 
 void vkl_canvas_to_refill(VklCanvas* canvas, bool value)
 {
-    ASSERT(canvas != NULL);
-    canvas->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+    vkl_canvas_set_status(canvas, value ? VKL_OBJECT_STATUS_NEED_UPDATE : canvas->cur_status);
 }
 
 
 
 void vkl_canvas_to_close(VklCanvas* canvas, bool value)
 {
-    ASSERT(canvas != NULL);
-    canvas->obj.status = VKL_OBJECT_STATUS_NEED_DESTROY;
+    vkl_canvas_set_status(canvas, value ? VKL_OBJECT_STATUS_NEED_DESTROY : canvas->cur_status);
 }
 
 
@@ -570,9 +578,24 @@ void vkl_canvas_frame(VklCanvas* canvas)
     ASSERT(canvas->window != NULL);
     ASSERT(canvas->app != NULL);
 
+    // Update cur_status
+    atomic_store(&canvas->cur_status, canvas->obj.status);
+
     // TODO
     // call EVENT callbacks (for backends only), which may enqueue some events
     // FRAME callbacks (rarely used)
+
+    // Get the next status.
+    VklObjectStatus next_status = atomic_load(&canvas->next_status);
+    // If the next status is set, update the actual canvas status.
+    if (next_status != VKL_OBJECT_STATUS_NONE)
+    {
+        canvas->obj.status = next_status;
+        // Reset the next_status atomic variable.
+        atomic_store(&canvas->next_status, VKL_OBJECT_STATUS_NONE);
+        // Now, the canvas actual status has been updated with the value set by a background
+        // thread. This may cause a REFILL or CLOSE or other.
+    }
 
     // Wait for fence.
     vkl_fences_wait(&canvas->fences[VKL_FENCE_RENDER_FINISHED], canvas->cur_frame);

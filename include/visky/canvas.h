@@ -1,6 +1,10 @@
 #ifndef VKL_CANVAS_HEADER
 #define VKL_CANVAS_HEADER
 
+#ifndef __STDC_NO_ATOMICS__
+#include <stdatomic.h>
+#endif
+
 #include "keycode.h"
 #include "vklite2.h"
 
@@ -309,6 +313,11 @@ struct VklCanvas
 
     void* user_data;
 
+    // This thread-safe variable is used by the background thread to
+    // safely communicate a status change of the canvas
+    _Atomic VklObjectStatus cur_status;
+    _Atomic VklObjectStatus next_status;
+
     VklWindow* window;
     uint32_t width, height;
 
@@ -410,6 +419,8 @@ VKY_EXPORT void vkl_event_callback(
 /*************************************************************************************************/
 /*  State changes                                                                                */
 /*************************************************************************************************/
+
+VKY_EXPORT void vkl_canvas_set_status(VklCanvas* canvas, VklObjectStatus status);
 
 VKY_EXPORT void vkl_canvas_to_refill(VklCanvas* canvas, bool value);
 
