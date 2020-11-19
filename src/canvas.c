@@ -358,14 +358,6 @@ void vkl_canvas_callback(
 
 
 
-void vkl_canvas_refill(VklCanvas* canvas, VklCanvasRefill* callback, void* user_data)
-{
-    ASSERT(canvas != NULL);
-    // TODO
-}
-
-
-
 void vkl_event_callback(
     VklCanvas* canvas, VklEventType type, double param, //
     VklEventCallback* callback, void* user_data)

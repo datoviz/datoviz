@@ -24,6 +24,7 @@
 typedef enum
 {
     VKL_PRIVATE_EVENT_INIT,      // called before the first frame
+    VKL_PRIVATE_EVENT_REFILL,    // called every time the command buffers need to be recreated
     VKL_PRIVATE_EVENT_INTERACT,  // called at every frame, before event enqueue
     VKL_PRIVATE_EVENT_FRAME,     // called at every frame, after event enqueue
     VKL_PRIVATE_EVENT_TIMER,     // called every X ms in the main thread, just after FRAME
@@ -127,6 +128,7 @@ typedef struct VklTimerEvent VklTimerEvent;
 typedef struct VklEvent VklEvent;
 
 typedef struct VklResizeEvent VklResizeEvent;
+typedef struct VklRefillEvent VklRefillEvent;
 typedef struct VklPrivateEvent VklPrivateEvent;
 
 typedef struct VklMouseState VklMouseState;
@@ -135,7 +137,7 @@ typedef struct VklKeyState VklKeyState;
 typedef void (*VklCanvasCallback)(VklCanvas*, VklPrivateEvent);
 typedef void (*VklEventCallback)(VklCanvas*, VklEvent);
 
-typedef void (*VklCanvasRefill)(VklCanvas*, VklCommands*, uint32_t idx, void*);
+// typedef void (*VklCanvasRefill)(VklCanvas*, VklCommands*, uint32_t idx, void*);
 
 
 
@@ -190,6 +192,14 @@ struct VklScreencastEvent
 
 
 
+struct VklRefillEvent
+{
+    uint32_t img_idx;
+    VklCommands* cmds[VKL_MAX_COMMANDS];
+};
+
+
+
 struct VklResizeEvent
 {
     uvec2 size_screen;
@@ -204,9 +214,10 @@ struct VklPrivateEvent
     void* user_data;
     union
     {
-        VklResizeEvent r; // for RESIZE private events
-        VklFrameEvent t;  // for FRAME private events
-        VklFrameEvent f;  // for TIMER private events
+        VklRefillEvent rf; // for REFILL private events
+        VklResizeEvent r;  // for RESIZE private events
+        VklFrameEvent t;   // for FRAME private events
+        VklFrameEvent f;   // for TIMER private events
     } u;
 };
 
@@ -343,10 +354,6 @@ VKY_EXPORT void vkl_canvas_close_on_esc(VklCanvas* canvas, bool value);
 VKY_EXPORT void vkl_canvas_callback(
     VklCanvas* canvas, VklPrivateEventType type, double param, //
     VklCanvasCallback* callback, void* user_data);
-
-
-
-VKY_EXPORT void vkl_canvas_refill(VklCanvas* canvas, VklCanvasRefill* callback, void* user_data);
 
 
 
