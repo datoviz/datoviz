@@ -9,6 +9,9 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
+#define VKL_MAX_EVENT_CALLBACKS 256
+
+
 
 /*************************************************************************************************/
 /*  Enums                                                                                        */
@@ -137,7 +140,8 @@ typedef struct VklKeyState VklKeyState;
 typedef void (*VklCanvasCallback)(VklCanvas*, VklPrivateEvent);
 typedef void (*VklEventCallback)(VklCanvas*, VklEvent);
 
-// typedef void (*VklCanvasRefill)(VklCanvas*, VklCommands*, uint32_t idx, void*);
+typedef struct VklCanvasCallbackRegister VklCanvasCallbackRegister;
+typedef struct VklEventCallbackRegister VklEventCallbackRegister;
 
 
 
@@ -239,6 +243,26 @@ struct VklEvent
 
 
 
+struct VklCanvasCallbackRegister
+{
+    VklPrivateEventType type;
+    double param;
+    void* user_data;
+    VklCanvasCallback callback;
+};
+
+
+
+struct VklEventCallbackRegister
+{
+    VklEventType type;
+    double param;
+    void* user_data;
+    VklEventCallback callback;
+};
+
+
+
 /*************************************************************************************************/
 /*  Mouse and keyboard states                                                                    */
 /*************************************************************************************************/
@@ -309,7 +333,11 @@ struct VklCanvas
     uint32_t max_fences;
     VklFences* fences;
 
-    // TODO: event system
+    uint32_t canvas_callbacks_count;
+    VklCanvasCallbackRegister canvas_callbacks[VKL_MAX_EVENT_CALLBACKS];
+
+    uint32_t event_callbacks_count;
+    VklEventCallbackRegister event_callbacks[VKL_MAX_EVENT_CALLBACKS];
 };
 
 
@@ -353,7 +381,7 @@ VKY_EXPORT void vkl_canvas_close_on_esc(VklCanvas* canvas, bool value);
  */
 VKY_EXPORT void vkl_canvas_callback(
     VklCanvas* canvas, VklPrivateEventType type, double param, //
-    VklCanvasCallback* callback, void* user_data);
+    VklCanvasCallback callback, void* user_data);
 
 
 
@@ -375,7 +403,7 @@ VKY_EXPORT void vkl_canvas_callback(
  */
 VKY_EXPORT void vkl_event_callback(
     VklCanvas* canvas, VklEventType type, double param, //
-    VklEventCallback* callback, void* user_data);
+    VklEventCallback callback, void* user_data);
 
 
 

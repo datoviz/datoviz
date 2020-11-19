@@ -117,6 +117,83 @@ static void blank_commands(VklCanvas* canvas, VklCommands* cmds)
 
 
 
+static int _canvas_callbacks(VklCanvas* canvas, VklPrivateEvent event)
+{
+    int n_callbacks = 0;
+    for (uint32_t i = 0; i < canvas->canvas_callbacks_count; i++)
+    {
+        // Will pass the user_data that was registered, to the callback function.
+        event.user_data = canvas->canvas_callbacks[i].user_data;
+
+        // Only call the callbacks registered for the specified type.
+        if (canvas->canvas_callbacks[i].type == event.type)
+        {
+            canvas->canvas_callbacks[i].callback(canvas, event);
+            n_callbacks++;
+        }
+    }
+    return n_callbacks;
+}
+
+
+
+static int _event_callbacks(VklCanvas* canvas, VklEvent event)
+{
+    int n_callbacks = 0;
+    for (uint32_t i = 0; i < canvas->event_callbacks_count; i++)
+    {
+        // Will pass the user_data that was registered, to the callback function.
+        event.user_data = canvas->event_callbacks[i].user_data;
+
+        // Only call the callbacks registered for the specified type.
+        if (canvas->event_callbacks[i].type == event.type)
+        {
+            canvas->event_callbacks[i].callback(canvas, event);
+            n_callbacks++;
+        }
+    }
+    return n_callbacks;
+}
+
+
+
+static void _refill_canvas(VklCanvas* canvas)
+{
+    log_trace("refill canvas");
+
+    VklPrivateEvent ev = {0};
+    ev.type = VKL_PRIVATE_EVENT_REFILL;
+
+    // Fill the active command buffers for the RENDER queue.
+    uint32_t k = 0;
+    VklCommands* cmds = NULL;
+    for (uint32_t i = 0; i < canvas->max_commands; i++)
+    {
+        cmds = &canvas->commands[i];
+        if (cmds->obj.status == VKL_OBJECT_STATUS_NONE)
+            break;
+        if (cmds->queue_idx == VKL_DEFAULT_QUEUE_RENDER &&
+            cmds->obj.status >= VKL_OBJECT_STATUS_INIT)
+            ev.u.rf.cmds[k++] = &canvas->commands[i];
+    }
+    ASSERT(k > 0);
+
+    // Current swapchain image index. This is the index of the VklCommands object that will
+    // need to be refilled.
+    ev.u.rf.img_idx = canvas->swapchain.img_idx;
+    if (_canvas_callbacks(canvas, ev) == 0)
+    {
+        log_debug("no REFILL callback registered, filling command buffers with blank screen");
+        // NOTE: empty command buffers if no REFILL callback was registered.
+        for (uint32_t i = 0; i < k; i++)
+        {
+            blank_commands(canvas, ev.u.rf.cmds[i]);
+        }
+    }
+}
+
+
+
 /*************************************************************************************************/
 /*  Canvas creation                                                                              */
 /*************************************************************************************************/
@@ -215,14 +292,12 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
     {
         INSTANCE_NEW(VklCommands, cmds, canvas->commands, canvas->max_commands)
         *cmds = vkl_commands(gpu, VKL_DEFAULT_QUEUE_RENDER, canvas->swapchain.img_count);
-
-        // TODO
-        // use REFILL event instead
-        blank_commands(canvas, cmds);
     }
 
     // Default submit instance.
     canvas->submit = vkl_submit(gpu);
+
+    _refill_canvas(canvas);
 
     obj_created(&canvas->obj);
 
@@ -281,9 +356,7 @@ void vkl_canvas_recreate(VklCanvas* canvas)
     ASSERT(framebuffers->attachments[0]->height == height);
     vkl_framebuffers_create(framebuffers, renderpass);
 
-    // TODO
-    // use REFILL
-    blank_commands(canvas, &canvas->commands[VKL_DEFAULT_COMMANDS_RENDER]);
+    _refill_canvas(canvas);
 }
 
 
@@ -350,20 +423,34 @@ void vkl_canvas_close_on_esc(VklCanvas* canvas, bool value)
 
 void vkl_canvas_callback(
     VklCanvas* canvas, VklPrivateEventType type, double param, //
-    VklCanvasCallback* callback, void* user_data)
+    VklCanvasCallback callback, void* user_data)
 {
     ASSERT(canvas != NULL);
-    // TODO
+
+    VklCanvasCallbackRegister r = {0};
+    r.callback = callback;
+    r.type = type;
+    r.user_data = user_data;
+    r.param = param;
+
+    canvas->canvas_callbacks[canvas->canvas_callbacks_count++] = r;
 }
 
 
 
 void vkl_event_callback(
     VklCanvas* canvas, VklEventType type, double param, //
-    VklEventCallback* callback, void* user_data)
+    VklEventCallback callback, void* user_data)
 {
     ASSERT(canvas != NULL);
-    // TODO
+
+    VklEventCallbackRegister r = {0};
+    r.callback = callback;
+    r.type = type;
+    r.user_data = user_data;
+    r.param = param;
+
+    canvas->event_callbacks[canvas->event_callbacks_count++] = r;
 }
 
 
@@ -490,9 +577,9 @@ void vkl_canvas_frame(VklCanvas* canvas)
     // Wait for fence.
     vkl_fences_wait(&canvas->fences[VKL_FENCE_RENDER_FINISHED], canvas->cur_frame);
 
-    // TODO
-    // check canvas.need_refill (atomic)
-    // if refill needed, and call the refill callbacks
+    // Refill if needed.
+    if (canvas->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE)
+        _refill_canvas(canvas);
 
     // We acquire the next swapchain image.
     vkl_swapchain_acquire(
