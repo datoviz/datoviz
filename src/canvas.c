@@ -256,14 +256,16 @@ void vkl_canvas_recreate(VklCanvas* canvas)
     vkl_framebuffers_destroy(&canvas->framebuffers);
     vkl_images_destroy(&canvas->depth_image);
     vkl_images_destroy(canvas->swapchain.images);
-    vkl_swapchain_destroy(swapchain);
 
-    // Recreate the swapchain. This will automatically set the swapchain->images new
-    // size.
-    vkl_swapchain_create(swapchain);
+    // Recreate the swapchain. This will automatically set the swapchain->images new size.
+    vkl_swapchain_recreate(swapchain);
+
     // Find the new framebuffer size as determined by the swapchain recreation.
     width = swapchain->images->width;
     height = swapchain->images->height;
+
+    // Check that we use the same VklImages struct here.
+    ASSERT(swapchain->images == framebuffers->attachments[0]);
 
     // Need to recreate the depth image with the new size.
     vkl_images_size(&canvas->depth_image, width, height, 1);

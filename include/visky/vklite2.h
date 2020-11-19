@@ -861,6 +861,8 @@ vkl_swapchain_requested_size(VklSwapchain* swapchain, uint32_t width, uint32_t h
 
 VKY_EXPORT void vkl_swapchain_create(VklSwapchain* swapchain);
 
+VKY_EXPORT void vkl_swapchain_recreate(VklSwapchain* swapchain);
+
 VKY_EXPORT void vkl_swapchain_acquire(
     VklSwapchain* swapchain, VklSemaphores* semaphores, uint32_t semaphore_idx, VklFences* fences,
     uint32_t fence_idx);

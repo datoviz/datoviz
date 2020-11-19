@@ -372,6 +372,48 @@ void vkl_window_destroy(VklWindow* window)
 /*  Swapchain                                                                                    */
 /*************************************************************************************************/
 
+static void _swapchain_create(VklSwapchain* swapchain)
+{
+    uint32_t width, height;
+    create_swapchain(
+        swapchain->gpu->device, swapchain->gpu->physical_device, swapchain->window->surface,
+        swapchain->img_count, swapchain->format, swapchain->present_mode, &swapchain->gpu->queues,
+        swapchain->requested_width, swapchain->requested_height, //
+        &swapchain->window->caps, &swapchain->swapchain, &width, &height);
+
+    swapchain->support_transfer =
+        (swapchain->window->caps.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_SRC_BIT) != 0;
+
+    // Actual framebuffer size in pixels, as determined by the swapchain creation process.
+    ASSERT(width > 0);
+    ASSERT(height > 0);
+    vkl_images_size(swapchain->images, width, height, 1);
+
+    // Get the number of swapchain images.
+    vkGetSwapchainImagesKHR(
+        swapchain->gpu->device, swapchain->swapchain, &swapchain->img_count, NULL);
+    log_trace("get %d swapchain images", swapchain->img_count);
+    vkGetSwapchainImagesKHR(
+        swapchain->gpu->device, swapchain->swapchain, &swapchain->img_count,
+        swapchain->images->images);
+
+    // Create the swap chain image views (will skip the image creation as they are given by the
+    // swapchain directly).
+    vkl_images_create(swapchain->images);
+}
+
+
+
+static void _swapchain_destroy(VklSwapchain* swapchain)
+{
+    if (swapchain->images != NULL)
+        vkl_images_destroy(swapchain->images);
+    if (swapchain->swapchain != VK_NULL_HANDLE)
+        vkDestroySwapchainKHR(swapchain->gpu->device, swapchain->swapchain, NULL);
+}
+
+
+
 VklSwapchain vkl_swapchain(VklGpu* gpu, VklWindow* window, uint32_t min_img_count)
 {
     ASSERT(gpu != NULL);
@@ -430,48 +472,29 @@ void vkl_swapchain_create(VklSwapchain* swapchain)
 
     log_trace("starting creation of swapchain...");
 
-    // Create swapchain
-    uint32_t width, height;
-    create_swapchain(
-        swapchain->gpu->device, swapchain->gpu->physical_device, swapchain->window->surface,
-        swapchain->img_count, swapchain->format, swapchain->present_mode, &swapchain->gpu->queues,
-        swapchain->requested_width, swapchain->requested_height, //
-        &swapchain->window->caps, &swapchain->swapchain, &width, &height);
-
-    swapchain->support_transfer =
-        (swapchain->window->caps.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_SRC_BIT) != 0;
-
-    // Actual framebuffer size in pixels, as determined by the swapchain creation process.
-    ASSERT(width > 0);
-    ASSERT(height > 0);
-
-    // Get the number of swapchain images.
-    vkGetSwapchainImagesKHR(
-        swapchain->gpu->device, swapchain->swapchain, &swapchain->img_count, NULL);
-    log_trace("get %d swapchain images", swapchain->img_count);
-
-    if (swapchain->images == NULL)
+    // Create the VklImages struct.
     {
-        VklImages images = vkl_images(swapchain->gpu, VK_IMAGE_TYPE_2D, swapchain->img_count);
         swapchain->images = calloc(1, sizeof(VklImages));
-        *swapchain->images = images;
+        *swapchain->images = vkl_images(swapchain->gpu, VK_IMAGE_TYPE_2D, swapchain->img_count);
+        swapchain->images->is_swapchain = true;
+        vkl_images_format(swapchain->images, swapchain->format);
     }
 
-    swapchain->images->is_swapchain = true;
-    vkl_images_format(swapchain->images, swapchain->format);
-    // The actual framebuffer size is set here.
-    vkl_images_size(swapchain->images, width, height, 1);
-    vkGetSwapchainImagesKHR(
-        swapchain->gpu->device, swapchain->swapchain, &swapchain->img_count,
-        swapchain->images->images);
-
-    // Create the swap chain image views (will skip the image creation as they are given by the
-    // swapchain directly).
-    vkl_images_create(swapchain->images);
+    // Create swapchain
+    _swapchain_create(swapchain);
 
     obj_created(&swapchain->images->obj);
     obj_created(&swapchain->obj);
     log_trace("swapchain created");
+}
+
+
+
+void vkl_swapchain_recreate(VklSwapchain* swapchain)
+{
+    ASSERT(swapchain != NULL);
+    _swapchain_destroy(swapchain);
+    _swapchain_create(swapchain);
 }
 
 
@@ -572,18 +595,16 @@ void vkl_swapchain_destroy(VklSwapchain* swapchain)
 
     log_trace("starting destruction of swapchain...");
 
+    _swapchain_destroy(swapchain);
+
     if (swapchain->images != NULL)
     {
-        vkl_images_destroy(swapchain->images);
-        swapchain->images = VK_NULL_HANDLE;
         FREE(swapchain->images);
+        swapchain->images = VK_NULL_HANDLE;
     }
 
     if (swapchain->swapchain != VK_NULL_HANDLE)
-    {
-        vkDestroySwapchainKHR(swapchain->gpu->device, swapchain->swapchain, NULL);
         swapchain->swapchain = VK_NULL_HANDLE;
-    }
 
     obj_destroyed(&swapchain->obj);
     log_trace("swapchain destroyed");
