@@ -63,7 +63,8 @@ typedef enum
 typedef enum
 {
     VKL_EVENT_NONE,
-    VKL_EVENT_MOUSE,
+    VKL_EVENT_MOUSE_BUTTON,
+    VKL_EVENT_MOUSE_MOVE,
     VKL_EVENT_WHEEL,
     VKL_EVENT_KEY,
     VKL_EVENT_FRAME,
@@ -79,6 +80,14 @@ typedef enum
     VKL_KEY_RELEASE,
     VKL_KEY_PRESS,
 } VklKeyType;
+
+
+
+typedef enum
+{
+    VKL_MOUSE_RELEASE,
+    VKL_MOUSE_PRESS,
+} VklMouseButtonType;
 
 
 
@@ -129,7 +138,8 @@ typedef enum
 /*************************************************************************************************/
 
 typedef struct VklKeyEvent VklKeyEvent;
-typedef struct VklMouseEvent VklMouseEvent;
+typedef struct VklMouseButtonEvent VklMouseButtonEvent;
+typedef struct VklMouseMoveEvent VklMouseMoveEvent;
 typedef struct VklWheelEvent VklWheelEvent;
 typedef struct VklScreencastEvent VklScreencastEvent;
 typedef struct VklFrameEvent VklFrameEvent;
@@ -155,10 +165,17 @@ typedef struct VklEventCallbackRegister VklEventCallbackRegister;
 /*  Event structs                                                                                */
 /*************************************************************************************************/
 
-struct VklMouseEvent
+struct VklMouseButtonEvent
 {
     VklMouseButton button;
-    uvec2 pos;
+    VklMouseButtonType type;
+};
+
+
+
+struct VklMouseMoveEvent
+{
+    dvec2 pos;
 };
 
 
@@ -243,12 +260,13 @@ struct VklEvent
     void* user_data;
     union
     {
-        VklMouseEvent m;      // for MOUSE public events
-        VklWheelEvent w;      // for WHEEL public events
-        VklKeyEvent k;        // for KEY public events
-        VklFrameEvent f;      // for FRAME public event
-        VklTimerEvent t;      // for TIMER, ONESHOT public events
-        VklScreencastEvent s; // for SCREENCAST public events
+        VklMouseButtonEvent b; // for MOUSE_BUTTON public events
+        VklMouseMoveEvent m;   // for MOUSE_MOVE public events
+        VklWheelEvent w;       // for WHEEL public events
+        VklKeyEvent k;         // for KEY public events
+        VklFrameEvent f;       // for FRAME public event
+        VklTimerEvent t;       // for TIMER, ONESHOT public events
+        VklScreencastEvent s;  // for SCREENCAST public events
     } u;
 };
 
@@ -540,7 +558,10 @@ VKY_EXPORT void vkl_screencast_destroy(VklCanvas* canvas);
 
 VKY_EXPORT void vkl_event_enqueue(VklCanvas* canvas, VklEvent event);
 
-VKY_EXPORT void vkl_event_mouse(VklCanvas* canvas, VklMouseButton button, uvec2 pos);
+VKY_EXPORT void
+vkl_event_mouse_button(VklCanvas* canvas, VklMouseButtonType type, VklMouseButton button);
+
+VKY_EXPORT void vkl_event_mouse_move(VklCanvas* canvas, dvec2 pos);
 
 VKY_EXPORT void vkl_event_wheel(VklCanvas* canvas, dvec2 dir);
 

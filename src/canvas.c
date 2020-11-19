@@ -286,7 +286,6 @@ static void* _event_thread(void* p_canvas)
 static void _glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     VklCanvas* canvas = (VklCanvas*)glfwGetWindowUserPointer(window);
-
     ASSERT(canvas != NULL);
     ASSERT(canvas->window != NULL);
 
@@ -317,7 +316,46 @@ static void _glfw_key_callback(GLFWwindow* window, int key, int scancode, int ac
 static void _glfw_wheel_callback(GLFWwindow* window, double dx, double dy)
 {
     VklCanvas* canvas = (VklCanvas*)glfwGetWindowUserPointer(window);
+    ASSERT(canvas != NULL);
+    ASSERT(canvas->window != NULL);
+
     vkl_event_wheel(canvas, (dvec2){dx, dy});
+}
+
+static void _glfw_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    VklCanvas* canvas = (VklCanvas*)glfwGetWindowUserPointer(window);
+    ASSERT(canvas != NULL);
+    ASSERT(canvas->window != NULL);
+
+    // Find mouse button action type
+    VklMouseButtonType type = {0};
+    if (action == GLFW_PRESS)
+        type = VKL_MOUSE_PRESS;
+    else
+        type = VKL_MOUSE_RELEASE;
+
+    // Map mouse button.
+    VklMouseButton b = {0};
+    if (button == GLFW_MOUSE_BUTTON_LEFT)
+        b = VKL_MOUSE_BUTTON_LEFT;
+    if (button == GLFW_MOUSE_BUTTON_RIGHT)
+        b = VKL_MOUSE_BUTTON_RIGHT;
+    if (button == GLFW_MOUSE_BUTTON_MIDDLE)
+        b = VKL_MOUSE_BUTTON_MIDDLE;
+
+    // TODO: modifiers
+
+    vkl_event_mouse_button(canvas, type, b);
+}
+
+static void _glfw_move_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    VklCanvas* canvas = (VklCanvas*)glfwGetWindowUserPointer(window);
+    ASSERT(canvas != NULL);
+    ASSERT(canvas->window != NULL);
+
+    vkl_event_mouse_move(canvas, (dvec2){xpos, ypos});
 }
 
 static void backend_event_callbacks(VklCanvas* canvas)
@@ -338,6 +376,12 @@ static void backend_event_callbacks(VklCanvas* canvas)
 
         // Register the mouse wheel callback.
         glfwSetScrollCallback(w, _glfw_wheel_callback);
+
+        // Register the mouse button callback.
+        glfwSetMouseButtonCallback(w, _glfw_button_callback);
+
+        // Register the mouse move callback.
+        glfwSetCursorPosCallback(w, _glfw_move_callback);
 
         break;
     default:
@@ -651,13 +695,25 @@ void vkl_canvas_to_close(VklCanvas* canvas, bool value)
 /*  Event system                                                                                 */
 /*************************************************************************************************/
 
-void vkl_event_mouse(VklCanvas* canvas, VklMouseButton button, uvec2 pos)
+void vkl_event_mouse_button(VklCanvas* canvas, VklMouseButtonType type, VklMouseButton button)
 {
     ASSERT(canvas != NULL);
 
     VklEvent event = {0};
-    event.type = VKL_EVENT_MOUSE;
-    event.u.m.button = button;
+    event.type = VKL_EVENT_MOUSE_BUTTON;
+    event.u.b.button = button;
+    event.u.b.type = type;
+    vkl_event_enqueue(canvas, event);
+}
+
+
+
+void vkl_event_mouse_move(VklCanvas* canvas, dvec2 pos)
+{
+    ASSERT(canvas != NULL);
+
+    VklEvent event = {0};
+    event.type = VKL_EVENT_MOUSE_MOVE;
     event.u.m.pos[0] = pos[0];
     event.u.m.pos[1] = pos[1];
     vkl_event_enqueue(canvas, event);

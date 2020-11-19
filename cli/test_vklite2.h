@@ -1474,6 +1474,17 @@ static void _wheel_callback(VklCanvas* canvas, VklEvent ev)
     log_debug("wheel %.3f", ev.u.w.dir[1]);
 }
 
+static void _button_callback(VklCanvas* canvas, VklEvent ev)
+{
+    if (ev.u.b.type == VKL_MOUSE_PRESS)
+        log_debug("clicked %d", ev.u.b.button);
+}
+
+static void _cursor_callback(VklCanvas* canvas, VklEvent ev)
+{
+    log_debug("mouse move %.3f %.3f", ev.u.m.pos[0], ev.u.m.pos[1]);
+}
+
 static int vklite2_canvas_1(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
@@ -1524,6 +1535,8 @@ static int vklite2_canvas_2(VkyTestContext* context)
 
     vkl_event_callback(canvas, VKL_EVENT_KEY, 0, _key_callback, NULL);
     vkl_event_callback(canvas, VKL_EVENT_WHEEL, 0, _wheel_callback, NULL);
+    vkl_event_callback(canvas, VKL_EVENT_MOUSE_BUTTON, 0, _button_callback, NULL);
+    vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _cursor_callback, NULL);
 
     vkl_app_run(app, 0);
     TEST_END
