@@ -218,7 +218,7 @@ static void _destroy_resources(VklContext* context)
 VklContext* vkl_context(VklGpu* gpu, VklWindow* window)
 {
     ASSERT(gpu != NULL);
-    ASSERT(gpu->obj.status < VKL_OBJECT_STATUS_CREATED);
+    ASSERT(!is_obj_created(&gpu->obj));
     log_trace("creating context");
 
     VklContext* context = calloc(1, sizeof(VklContext));
@@ -245,7 +245,7 @@ VklContext* vkl_context(VklGpu* gpu, VklWindow* window)
     _context_default_queues(gpu, window);
 
     // Create the GPU after the default queues have been set.
-    if (gpu->obj.status < VKL_OBJECT_STATUS_CREATED)
+    if (!is_obj_created(&gpu->obj))
     {
         VkSurfaceKHR surface = VK_NULL_HANDLE;
         if (window != NULL)
@@ -322,8 +322,7 @@ VklBufferRegions vkl_alloc_buffers(
 
     VklBufferRegions regions = {0};
 
-    if (buffer_idx >= context->max_buffers ||
-        context->buffers[buffer_idx].obj.status < VKL_OBJECT_STATUS_CREATED)
+    if (buffer_idx >= context->max_buffers || !is_obj_created(&context->buffers[buffer_idx].obj))
     {
         log_error("invalid buffer #%d", buffer_idx);
         return regions;

@@ -286,11 +286,18 @@ struct VklObject
 
 
 
-static void obj_init(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_INIT; }
+static inline void obj_init(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_INIT; }
 
-static void obj_created(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_CREATED; }
+static inline void obj_created(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_CREATED; }
 
-static void obj_destroyed(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_DESTROYED; }
+static inline void obj_destroyed(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_DESTROYED; }
+
+
+
+static inline bool is_obj_created(VklObject* obj)
+{
+    return obj != NULL && obj->status >= VKL_OBJECT_STATUS_CREATED;
+}
 
 
 

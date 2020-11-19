@@ -235,7 +235,7 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
     ASSERT(framebuffer_width > 0);
     ASSERT(framebuffer_height > 0);
 
-    if (gpu->context == NULL || gpu->context->obj.status < VKL_OBJECT_STATUS_CREATED)
+    if (gpu->context == NULL || !is_obj_created(&gpu->context->obj))
     {
         log_trace("canvas automatically create the GPU context");
         gpu->context = vkl_context(gpu, window);
@@ -733,12 +733,12 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
         for (uint32_t gpu_idx = 0; gpu_idx < app->gpu_count; gpu_idx++)
         {
             gpu = &app->gpus[gpu_idx];
-            if (gpu->obj.status < VKL_OBJECT_STATUS_CREATED)
+            if (!is_obj_created(&gpu->obj))
                 break;
             ctx = gpu->context;
 
             // Process the pending transfer tasks.
-            if (ctx->obj.status >= VKL_OBJECT_STATUS_CREATED)
+            if (is_obj_created(&ctx->obj))
             {
                 log_trace("processing transfers for GPU #%d", gpu_idx);
                 vkl_transfer_loop(ctx, false);
