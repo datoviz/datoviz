@@ -1478,6 +1478,9 @@ static int vklite2_canvas(VkyTestContext* context)
 
     // Multiple consecutive runs can be done.
     vkl_app_run(app, 10);
+
+    VklCanvas* canvas2 = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+
     vkl_app_run(app, 10);
 
     TEST_END

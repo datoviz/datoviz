@@ -265,6 +265,7 @@ VklContext* vkl_context(VklGpu* gpu, VklWindow* window)
         log_error("cond creation failed");
 
     gpu->context = context;
+    obj_created(&context->obj);
 
     return context;
 }

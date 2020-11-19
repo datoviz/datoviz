@@ -794,6 +794,17 @@ static void create_swapchain(
     ASSERT(format != VK_NULL_HANDLE);
     ASSERT(image_count > 0);
 
+    // NOTE: this call is necessary when creating multiple canvases, otherwise we get the message
+    // below:
+    //
+    // MessageID = 0xa183744d | vkCreateSwapchainKHR(): pCreateInfo->surface is not known at
+    // this time to be supported for presentation by this device. The
+    // vkGetPhysicalDeviceSurfaceSupportKHR() must be called beforehand, and it must return VK_TRUE
+    // support with this surface for at least one queue family of this device. The Vulkan spec
+    // states: surface must be a surface that is supported by the device as determined using
+    // vkGetPhysicalDeviceSurfaceSupportKHR
+    find_present_queue_family(pdevice, surface, queues);
+
     // Swap chain.
     VkSwapchainCreateInfoKHR screateInfo = {0};
     screateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
