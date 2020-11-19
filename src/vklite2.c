@@ -234,22 +234,21 @@ void vkl_gpu_create(VklGpu* gpu, VkSurfaceKHR surface)
 
     VklQueues* q = &gpu->queues;
 
-    // Create queues and command pools.
+    // Create queues.
     uint32_t qf = 0;
-    uint32_t nqf = 0;
-    bool cmd_pool_created[VKL_MAX_QUEUE_FAMILIES] = {0};
     for (uint32_t i = 0; i < q->queue_count; i++)
     {
         qf = q->queue_families[i];
         vkGetDeviceQueue(gpu->device, qf, q->queue_indices[i], &q->queues[i]);
-        // Only create 1 command pool per used queue family.
-        if (!cmd_pool_created[qf])
-        {
-            create_command_pool(gpu->device, qf, &q->cmd_pools[nqf++]);
-            cmd_pool_created[qf] = true;
-        }
     }
 
+    // Create command pool.
+    for (uint32_t i = 0; i < q->queue_family_count; i++)
+    {
+        create_command_pool(gpu->device, i, &q->cmd_pools[i]);
+    }
+
+    // Create descriptor pool.
     create_descriptor_pool(gpu->device, &gpu->dset_pool);
 
     obj_created(&gpu->obj);
@@ -676,13 +675,16 @@ VklCommands vkl_commands(VklGpu* gpu, uint32_t queue, uint32_t count)
     ASSERT(count <= VKL_MAX_COMMAND_BUFFERS_PER_SET);
     ASSERT(queue < gpu->queues.queue_count);
     ASSERT(count > 0);
-    ASSERT(gpu->queues.cmd_pools[queue] != VK_NULL_HANDLE);
+    uint32_t qf = gpu->queues.queue_families[queue];
+    ASSERT(qf < gpu->queues.queue_family_count);
+    ASSERT(gpu->queues.cmd_pools[qf] != VK_NULL_HANDLE);
+    log_trace("creating commands on queue #%d, queue family #%d", queue, qf);
 
     VklCommands commands = {0};
     commands.gpu = gpu;
     commands.queue_idx = queue;
     commands.count = count;
-    allocate_command_buffers(gpu->device, gpu->queues.cmd_pools[queue], count, commands.cmds);
+    allocate_command_buffers(gpu->device, gpu->queues.cmd_pools[qf], count, commands.cmds);
 
     obj_init(&commands.obj);
 

@@ -413,7 +413,7 @@ struct VklQueues
     uint32_t queue_families[VKL_MAX_QUEUES]; // for each family, the # of queues
     uint32_t queue_indices[VKL_MAX_QUEUES];  // for each requested queue, its # within its family
     VkQueue queues[VKL_MAX_QUEUES];
-    VkCommandPool cmd_pools[VKL_MAX_QUEUES];
+    VkCommandPool cmd_pools[VKL_MAX_QUEUE_FAMILIES];
 };
 
 

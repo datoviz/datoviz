@@ -581,13 +581,12 @@ find_present_queue_family(VkPhysicalDevice device, VkSurfaceKHR surface, VklQueu
 static void
 create_command_pool(VkDevice device, uint32_t queue_family_index, VkCommandPool* cmd_pool)
 {
-    log_trace("starting creation of command pool...");
+    log_trace("create command pool for queue family index #%d", queue_family_index);
     VkCommandPoolCreateInfo command_pool_info = {0};
     command_pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     command_pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     command_pool_info.queueFamilyIndex = queue_family_index;
     VK_CHECK_RESULT(vkCreateCommandPool(device, &command_pool_info, NULL, cmd_pool));
-    log_trace("command pool created");
 }
 
 
