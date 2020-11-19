@@ -511,6 +511,8 @@ void vkl_swapchain_acquire(
         break;
     default:
         log_error("failed acquiring the swapchain image");
+        // TODO: is that correct? destroying the object if we failed acquiring the swapchain image?
+        swapchain->obj.status = VKL_OBJECT_STATUS_NEED_DESTROY;
         break;
     }
 }

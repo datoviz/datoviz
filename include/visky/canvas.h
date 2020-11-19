@@ -315,6 +315,8 @@ VKY_EXPORT VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height);
 
 VKY_EXPORT VklCanvas* vkl_canvas_offscreen(VklGpu* gpu, uint32_t width, uint32_t height);
 
+VKY_EXPORT void vkl_canvas_recreate(VklCanvas* canvas);
+
 
 
 /*************************************************************************************************/

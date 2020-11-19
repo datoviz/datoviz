@@ -98,6 +98,20 @@ depth_image(VklImages* depth_images, VklRenderpass* renderpass, uint32_t width, 
 
 
 
+static void blank_commands(VklCanvas* canvas, VklCommands* cmds)
+{
+    vkl_cmd_reset(cmds);
+    for (uint32_t i = 0; i < cmds->count; i++)
+    {
+        vkl_cmd_begin(cmds, i);
+        vkl_cmd_begin_renderpass(cmds, i, &canvas->renderpasses[0], &canvas->framebuffers);
+        vkl_cmd_end_renderpass(cmds, i);
+        vkl_cmd_end(cmds, i);
+    }
+}
+
+
+
 /*************************************************************************************************/
 /*  Canvas creation                                                                              */
 /*************************************************************************************************/
@@ -196,13 +210,10 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
     {
         INSTANCE_NEW(VklCommands, cmds, canvas->commands, canvas->max_commands)
         *cmds = vkl_commands(gpu, VKL_DEFAULT_QUEUE_RENDER, canvas->swapchain.img_count);
-        for (uint32_t i = 0; i < cmds->count; i++)
-        {
-            vkl_cmd_begin(cmds, i);
-            vkl_cmd_begin_renderpass(cmds, i, &canvas->renderpasses[0], &canvas->framebuffers);
-            vkl_cmd_end_renderpass(cmds, i);
-            vkl_cmd_end(cmds, i);
-        }
+
+        // TODO
+        // use REFILL event instead
+        blank_commands(canvas, cmds);
     }
 
     // Default submit instance.
@@ -211,6 +222,61 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
     obj_created(&canvas->obj);
 
     return canvas;
+}
+
+
+
+void vkl_canvas_recreate(VklCanvas* canvas)
+{
+    ASSERT(canvas != NULL);
+    VklBackend backend = canvas->app->backend;
+    VklWindow* window = canvas->window;
+    VklGpu* gpu = canvas->gpu;
+    VklSwapchain* swapchain = &canvas->swapchain;
+    VklFramebuffers* framebuffers = &canvas->framebuffers;
+    VklRenderpass* renderpass = &canvas->renderpasses[0];
+
+    ASSERT(window != NULL);
+    ASSERT(gpu != NULL);
+    ASSERT(swapchain != NULL);
+    ASSERT(framebuffers != NULL);
+
+    log_trace("recreate canvas after resize");
+
+    // Wait until the device is ready and the window fully resized.
+    // Framebuffer new size.
+    uint32_t width, height;
+    backend_window_get_size(
+        backend, window->backend_window, //
+        &window->width, &window->height, //
+        &width, &height);
+    vkl_gpu_wait(gpu);
+
+    // Destroy swapchain resources.
+    vkl_framebuffers_destroy(&canvas->framebuffers);
+    vkl_images_destroy(&canvas->depth_image);
+    vkl_images_destroy(canvas->swapchain.images);
+    vkl_swapchain_destroy(swapchain);
+
+    // Recreate the swapchain. This will automatically set the swapchain->images new
+    // size.
+    vkl_swapchain_create(swapchain);
+    // Find the new framebuffer size as determined by the swapchain recreation.
+    width = swapchain->images->width;
+    height = swapchain->images->height;
+
+    // Need to recreate the depth image with the new size.
+    vkl_images_size(&canvas->depth_image, width, height, 1);
+    vkl_images_create(&canvas->depth_image);
+
+    // Recreate the framebuffers with the new size.
+    ASSERT(framebuffers->attachments[0]->width == width);
+    ASSERT(framebuffers->attachments[0]->height == height);
+    vkl_framebuffers_create(framebuffers, renderpass);
+
+    // TODO
+    // use REFILL
+    blank_commands(canvas, &canvas->commands[VKL_DEFAULT_COMMANDS_RENDER]);
 }
 
 
@@ -232,8 +298,9 @@ void vkl_canvas_frame(VklCanvas* canvas)
     // Wait for fence.
     vkl_fences_wait(&canvas->fences[VKL_FENCE_RENDER_FINISHED], canvas->cur_frame);
 
+    // TODO
     // check canvas.need_refill (atomic)
-    // if refill needed, wait for current fence, and call the refill callbacks
+    // if refill needed, and call the refill callbacks
 
     // We acquire the next swapchain image.
     vkl_swapchain_acquire(
@@ -283,8 +350,7 @@ void vkl_canvas_frame_submit(VklCanvas* canvas)
     vkl_submit_send(s, img_idx, &canvas->fences[VKL_FENCE_RENDER_FINISHED], f);
 
     // TODO
-    // if resize, call RESIZE callback before cmd_reset
-    // between send and present, call POST_SEND callback
+    // call POST_SEND callback
 
     // Once the image is rendered, we present the swapchain image.
     vkl_swapchain_present(
@@ -342,13 +408,15 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
         {
             // Get the current canvas.
             canvas = &app->canvases[canvas_idx];
-            ASSERT(canvas != NULL);
-            if (canvas->obj.status == VKL_OBJECT_STATUS_NONE)
-                break;
-            if (canvas->obj.status < VKL_OBJECT_STATUS_CREATED)
-                continue;
-            ASSERT(canvas->obj.status >= VKL_OBJECT_STATUS_CREATED);
-            log_trace("processing frame for canvas #%d", canvas_idx);
+            {
+                ASSERT(canvas != NULL);
+                if (canvas->obj.status == VKL_OBJECT_STATUS_NONE)
+                    break;
+                if (canvas->obj.status < VKL_OBJECT_STATUS_CREATED)
+                    continue;
+                ASSERT(canvas->obj.status >= VKL_OBJECT_STATUS_CREATED);
+                log_trace("processing frame for canvas #%d", canvas_idx);
+            }
 
             // Poll events.
             ASSERT(canvas->window != NULL);
@@ -356,20 +424,42 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
 
             // Frame logic.
             log_trace("frame logic for canvas #%d", canvas_idx);
+            // Swapchain image acquisition happens here:
             vkl_canvas_frame(canvas);
 
-            // Destroy the canvas if needed.
-            if (backend_window_should_close(app->backend, canvas->window->backend_window))
-                canvas->window->obj.status = VKL_OBJECT_STATUS_NEED_DESTROY;
-            if (canvas->obj.status == VKL_OBJECT_STATUS_NEED_DESTROY)
+            // If there is a problem with swapchain image acquisition, wait and try again later.
+            if (canvas->swapchain.obj.status == VKL_OBJECT_STATUS_INVALID)
             {
-                log_trace("destroying canvas #%d", canvas_idx);
-                // Wait for all GPUs to be idle.
-                vkl_app_wait(app);
+                vkl_gpu_wait(canvas->gpu);
+                break;
+            }
 
-                // Destroy the canvas.
-                vkl_canvas_destroy(canvas);
+            // If the swapchain needs to be recreated (for example, after a resize), do it.
+            if (canvas->swapchain.obj.status == VKL_OBJECT_STATUS_NEED_RECREATE)
+            {
+                log_trace("swapchain image acquisition failed, recreating the canvas");
+                // TODO
+                // call RESIZE callback
+
+                // Recreate the canvas.
+                vkl_canvas_recreate(canvas);
                 continue;
+            }
+
+            // Destroy the canvas if needed.
+            {
+                if (backend_window_should_close(app->backend, canvas->window->backend_window))
+                    canvas->window->obj.status = VKL_OBJECT_STATUS_NEED_DESTROY;
+                if (canvas->obj.status == VKL_OBJECT_STATUS_NEED_DESTROY)
+                {
+                    log_trace("destroying canvas #%d", canvas_idx);
+                    // Wait for all GPUs to be idle.
+                    vkl_app_wait(app);
+
+                    // Destroy the canvas.
+                    vkl_canvas_destroy(canvas);
+                    continue;
+                }
             }
 
             // Submit the command buffers and swapchain logic.
