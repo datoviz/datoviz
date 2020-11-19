@@ -579,7 +579,10 @@ void vkl_canvas_frame(VklCanvas* canvas)
 
     // Refill if needed.
     if (canvas->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE)
+    {
         _refill_canvas(canvas);
+        canvas->obj.status = VKL_OBJECT_STATUS_CREATED;
+    }
 
     // We acquire the next swapchain image.
     vkl_swapchain_acquire(

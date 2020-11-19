@@ -1478,9 +1478,11 @@ static int vklite2_canvas(VkyTestContext* context)
 
     // Multiple consecutive runs can be done.
     vkl_app_run(app, 8);
+    vkl_canvas_clear_color(canvas, (VkClearColorValue){{1, 0, 0, 1}});
 
+    // Second canvas.
     VklCanvas* canvas2 = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
-
+    vkl_canvas_clear_color(canvas2, (VkClearColorValue){{0, 1, 0, 1}});
     vkl_app_run(app, 5);
 
     TEST_END

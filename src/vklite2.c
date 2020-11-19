@@ -75,6 +75,7 @@ VklApp* vkl_app(VklBackend backend)
 int vkl_app_destroy(VklApp* app)
 {
     log_trace("starting destruction of app...");
+    vkl_app_wait(app);
 
     // Destroy the windows.
     if (app->canvases != NULL)
