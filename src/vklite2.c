@@ -2656,6 +2656,17 @@ void vkl_submit_send(VklSubmit* submit, uint32_t cmd_idx, VklFences* fence, uint
 
 
 
+void vkl_submit_reset(VklSubmit* submit)
+{
+    ASSERT(submit != NULL);
+    log_trace("reset Submit instance");
+    submit->commands_count = 0;
+    submit->wait_semaphores_count = 0;
+    submit->signal_semaphores_count = 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Command buffer filling                                                                       */
 /*************************************************************************************************/

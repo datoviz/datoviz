@@ -258,7 +258,10 @@ void vkl_canvas_frame_submit(VklCanvas* canvas)
         &canvas->fences[VKL_FENCE_RENDER_FINISHED], f, //
         &canvas->fences[VKL_FENCES_FLIGHT], img_idx);
 
-    // Loop over all canvas commands on the RENDER queue (skip inactive ones).
+    // Reset the Submit instance before adding the command buffers.
+    vkl_submit_reset(s);
+
+    // Add the command buffers to the submit instance.
     for (uint32_t i = 0; i < canvas->max_commands; i++)
     {
         if (canvas->commands[i].obj.status == VKL_OBJECT_STATUS_NONE)
@@ -268,13 +271,14 @@ void vkl_canvas_frame_submit(VklCanvas* canvas)
         if (canvas->commands[i].queue_idx == VKL_DEFAULT_QUEUE_RENDER)
         {
             vkl_submit_commands(s, &canvas->commands[i]);
-            vkl_submit_wait_semaphores(
-                s, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, //
-                &canvas->semaphores[VKL_SEMAPHORE_IMG_AVAILABLE], f);
-            // Once the render is finished, we signal another semaphore.
-            vkl_submit_signal_semaphores(s, &canvas->semaphores[VKL_SEMAPHORE_RENDER_FINISHED], f);
         }
     }
+
+    vkl_submit_wait_semaphores(
+        s, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, //
+        &canvas->semaphores[VKL_SEMAPHORE_IMG_AVAILABLE], f);
+    // Once the render is finished, we signal another semaphore.
+    vkl_submit_signal_semaphores(s, &canvas->semaphores[VKL_SEMAPHORE_RENDER_FINISHED], f);
     // Send the Submit instance.
     vkl_submit_send(s, img_idx, &canvas->fences[VKL_FENCE_RENDER_FINISHED], f);
 

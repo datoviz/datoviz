@@ -1462,7 +1462,7 @@ static int vklite2_canvas(VkyTestContext* context)
     VklGpu* gpu = vkl_gpu(app, 0);
     VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
 
-    vkl_app_run(app, 1);
+    vkl_app_run(app, 100);
 
     TEST_END
 }
