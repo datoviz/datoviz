@@ -244,6 +244,38 @@ static int _event_callbacks(VklCanvas* canvas, VklEvent event)
 
 
 /*************************************************************************************************/
+/*  Event thread                                                                                 */
+/*************************************************************************************************/
+
+static void* _event_thread(void* p_canvas)
+{
+    VklCanvas* canvas = (VklCanvas*)p_canvas;
+    ASSERT(canvas != NULL);
+    log_debug("starting event thread");
+
+    VklEvent ev = {0};
+    while (true)
+    {
+        log_debug("event thread awaits for events...");
+        // Wait until an event is available
+        ev = vkl_event_dequeue(canvas, true);
+        if (ev.type == VKL_EVENT_NONE)
+        {
+            log_debug("received empty event, stopping the event thread");
+            break;
+        }
+        log_trace("event dequeued, processing it...");
+        // process the dequeued task
+        _event_callbacks(canvas, ev);
+    }
+    log_trace("end event thread");
+
+    return NULL;
+}
+
+
+
+/*************************************************************************************************/
 /*  Canvas creation                                                                              */
 /*************************************************************************************************/
 
@@ -354,6 +386,7 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
 
     // Event queue.
     canvas->event_queue = vkl_fifo(VKL_MAX_FIFO_CAPACITY);
+    canvas->event_thread = vkl_thread(_event_thread, canvas);
 
     _refill_canvas(canvas);
 
@@ -932,6 +965,9 @@ void vkl_canvas_destroy(VklCanvas* canvas)
     }
     INSTANCES_DESTROY(canvas->fences)
 
+    // Stop the vent thread.
+    vkl_event_stop(canvas);
+    vkl_thread_join(&canvas->event_thread);
     vkl_fifo_destroy(&canvas->event_queue);
 
     obj_destroyed(&canvas->obj);
