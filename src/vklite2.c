@@ -495,6 +495,9 @@ void vkl_swapchain_recreate(VklSwapchain* swapchain)
     ASSERT(swapchain != NULL);
     _swapchain_destroy(swapchain);
     _swapchain_create(swapchain);
+
+    obj_created(&swapchain->images->obj);
+    obj_created(&swapchain->obj);
 }
 
 

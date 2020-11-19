@@ -432,8 +432,9 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             // If there is a problem with swapchain image acquisition, wait and try again later.
             if (canvas->swapchain.obj.status == VKL_OBJECT_STATUS_INVALID)
             {
+                log_trace("swapchain image acquisition failed, waiting and skipping this frame");
                 vkl_gpu_wait(canvas->gpu);
-                break;
+                continue;
             }
 
             // If the swapchain needs to be recreated (for example, after a resize), do it.
@@ -445,23 +446,23 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
 
                 // Recreate the canvas.
                 vkl_canvas_recreate(canvas);
+                n_canvas_active++;
                 continue;
             }
 
             // Destroy the canvas if needed.
+            if (backend_window_should_close(app->backend, canvas->window->backend_window))
+                canvas->window->obj.status = VKL_OBJECT_STATUS_NEED_DESTROY;
+            if (canvas->obj.status == VKL_OBJECT_STATUS_NEED_DESTROY)
             {
-                if (backend_window_should_close(app->backend, canvas->window->backend_window))
-                    canvas->window->obj.status = VKL_OBJECT_STATUS_NEED_DESTROY;
-                if (canvas->obj.status == VKL_OBJECT_STATUS_NEED_DESTROY)
-                {
-                    log_trace("destroying canvas #%d", canvas_idx);
-                    // Wait for all GPUs to be idle.
-                    vkl_app_wait(app);
+                log_trace("destroying canvas #%d", canvas_idx);
 
-                    // Destroy the canvas.
-                    vkl_canvas_destroy(canvas);
-                    continue;
-                }
+                // Wait for all GPUs to be idle.
+                vkl_app_wait(app);
+
+                // Destroy the canvas.
+                vkl_canvas_destroy(canvas);
+                continue;
             }
 
             // Submit the command buffers and swapchain logic.
