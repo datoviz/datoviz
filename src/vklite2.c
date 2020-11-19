@@ -240,12 +240,10 @@ void vkl_gpu_create(VklGpu* gpu, VkSurfaceKHR surface)
     {
         qf = q->queue_families[i];
         vkGetDeviceQueue(gpu->device, qf, q->queue_indices[i], &q->queues[i]);
-    }
 
-    // Create command pool.
-    for (uint32_t i = 0; i < q->queue_family_count; i++)
-    {
-        create_command_pool(gpu->device, i, &q->cmd_pools[i]);
+        // Create command pool only for the queue families that appear in the requested queues.
+        if (q->cmd_pools[qf] == VK_NULL_HANDLE)
+            create_command_pool(gpu->device, qf, &q->cmd_pools[qf]);
     }
 
     // Create descriptor pool.
