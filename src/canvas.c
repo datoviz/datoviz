@@ -628,11 +628,94 @@ void vkl_canvas_close_on_esc(VklCanvas* canvas, bool value)
 /*  Callbacks                                                                                    */
 /*************************************************************************************************/
 
+static inline uint32_t compute_gcd(uint32_t a, uint32_t b)
+{
+    uint32_t temp;
+    while (b != 0)
+    {
+        temp = a % b;
+        a = b;
+        b = temp;
+    }
+    return a;
+}
+
+static void* _timer_thread(void* p_app)
+{
+    ASSERT(p_app != NULL);
+    VklApp* app = (VklApp*)p_app;
+
+    VklThread* thread = &app->timer_thread;
+
+    // All intervals from all timer callbacks.
+    // uint32_t intervals[VKL_MAX_TIMER_CALLBACKS];
+    uint32_t gcd = 0;
+    uint32_t k = 0;
+    double interval = 0;
+    uint32_t interval_int = 0;
+    const uint32_t mult = 10000; // Tenths of milliseconds
+    VklCanvasCallbackRegister* cb = NULL;
+    VklCanvasCallbackRegister* cbs[VKL_MAX_TIMER_CALLBACKS];
+
+    // Go through all canvases and gather all private TIMER callbacks.
+    vkl_thread_lock(thread);
+    for (uint32_t i = 0; i < app->max_canvases; i++)
+    {
+        if (app->canvases[i].obj.status == VKL_OBJECT_STATUS_NONE)
+            break;
+        if (is_obj_created(&app->canvases[i].obj))
+        {
+            for (uint32_t j = 0; j < app->canvases[i].canvas_callbacks_count; j++)
+            {
+                cb = &app->canvases[i].canvas_callbacks[j];
+                interval = cb->param;
+                if (cb->type == VKL_PRIVATE_EVENT_TIMER && interval > 0)
+                {
+                    interval_int = (uint32_t)round(mult * interval);
+                    // Compute the GCD of all integer intervals.
+                    if (gcd == 0)
+                        gcd = interval_int;
+                    else
+                        gcd = compute_gcd(gcd, interval_int);
+                    // Keep track of the callback registers.
+                    cbs[k++] = cb;
+                }
+            }
+        }
+    }
+    vkl_thread_unlock(thread);
+
+    if (k == 0)
+    {
+        log_trace("no timer callbacks, timer thread ends");
+        return NULL;
+    }
+
+    ASSERT(k > 0);
+    ASSERT(gcd > 0);
+
+    // Get back the interval for the timer thread loop.
+    interval = gcd / (double)mult;
+    log_debug("interval for timer thread loop is %.3f ms", interval * 1000);
+
+    // TODO: timer thread loop
+    // TODO: special FIFO queue for this thread to enqueue private TIMER events and the main loop
+    // to dequeue them and process them
+    // TODO: regularly check if there are new callbacks, in which case the GCD must be recomputed
+    // Also check special atomic variable in app that the main loop sets when it is ending, to end
+    // the timer thread loop.
+
+    return NULL;
+}
+
+
+
 void vkl_canvas_callback(
     VklCanvas* canvas, VklPrivateEventType type, double param, //
     VklCanvasCallback callback, void* user_data)
 {
     ASSERT(canvas != NULL);
+    ASSERT(canvas->app != NULL);
 
     VklCanvasCallbackRegister r = {0};
     r.callback = callback;
@@ -640,7 +723,15 @@ void vkl_canvas_callback(
     r.user_data = user_data;
     r.param = param;
 
+    VklThread* thread = &canvas->app->timer_thread;
+    vkl_thread_lock(thread);
     canvas->canvas_callbacks[canvas->canvas_callbacks_count++] = r;
+    vkl_thread_unlock(thread);
+
+    if (type == VKL_PRIVATE_EVENT_TIMER && thread->obj.status == VKL_OBJECT_STATUS_NONE)
+    {
+        *thread = vkl_thread(_timer_thread, canvas->app);
+    }
 }
 
 
@@ -657,9 +748,15 @@ void vkl_event_callback(
     r.user_data = user_data;
     r.param = param;
 
-    vkl_thread_lock(&canvas->event_thread);
+    VklThread* thread = &canvas->event_thread;
+    vkl_thread_lock(thread);
     canvas->event_callbacks[canvas->event_callbacks_count++] = r;
-    vkl_thread_unlock(&canvas->event_thread);
+    vkl_thread_unlock(thread);
+
+    if (type == VKL_EVENT_TIMER && thread->obj.status == VKL_OBJECT_STATUS_NONE)
+    {
+        *thread = vkl_thread(_timer_thread, canvas->app);
+    }
 }
 
 
@@ -1002,7 +1099,7 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             n_canvas_active++;
         }
 
-        // TODO: this has never been tested with multiple GPUs yet.
+        // NOTE: this has never been tested with multiple GPUs yet.
         VklGpu* gpu = NULL;
         VklContext* ctx = NULL;
         for (uint32_t gpu_idx = 0; gpu_idx < app->gpu_count; gpu_idx++)
@@ -1077,9 +1174,6 @@ void vkl_canvas_destroy(VklCanvas* canvas)
 
     // Destroy the window.
     vkl_window_destroy(canvas->window);
-
-    // TODO
-    // join the background thread
 
     log_trace("canvas destroy commands");
     for (uint32_t i = 0; i < canvas->max_commands; i++)
