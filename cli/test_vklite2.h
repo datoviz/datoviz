@@ -1456,6 +1456,13 @@ static int vklite2_default_app(VkyTestContext* context)
 /*  Canvas                                                                                       */
 /*************************************************************************************************/
 
+static void _frame_callback(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    log_debug(
+        "canvas #%d, frame callback #%d, time %.6f, interval %.6f", //
+        canvas->obj.idx, ev.u.f.idx, ev.u.f.time, ev.u.f.interval);
+}
+
 static int vklite2_canvas(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
@@ -1476,16 +1483,19 @@ static int vklite2_canvas(VkyTestContext* context)
     ASSERT(size[0] > 0);
     ASSERT(size[1] > 0);
 
-    // Multiple consecutive runs can be done.
-    vkl_app_run(app, 8);
-    vkl_canvas_clear_color(canvas, (VkClearColorValue){{1, 0, 0, 1}});
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _frame_callback, NULL);
 
+    vkl_app_run(app, 8);
+
+
+    // Second canvas.
     log_debug("global clock elapsed %.6f interval %.6f", app->clock.elapsed, app->clock.interval);
     log_debug(
         "local clock elapsed %.6f interval %.6f", canvas->clock.elapsed, canvas->clock.interval);
 
     // Second canvas.
     VklCanvas* canvas2 = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    vkl_canvas_clear_color(canvas, (VkClearColorValue){{1, 0, 0, 1}});
     vkl_canvas_clear_color(canvas2, (VkClearColorValue){{0, 1, 0, 1}});
     vkl_app_run(app, 5);
 
