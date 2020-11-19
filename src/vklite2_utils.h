@@ -292,6 +292,21 @@ static void* backend_window(
 }
 
 
+
+static void backend_poll_events(VklBackend backend, VklWindow* window)
+{
+    switch (backend)
+    {
+    case VKL_BACKEND_GLFW:
+        glfwPollEvents();
+        break;
+    default:
+        break;
+    }
+}
+
+
+
 static void
 backend_window_destroy(VkInstance instance, VklBackend backend, void* window, VkSurfaceKHR surface)
 {
@@ -322,9 +337,9 @@ backend_window_destroy(VkInstance instance, VklBackend backend, void* window, Vk
 
 
 static void backend_window_get_size(
-    VklBackend backend, void* window, //
-    uint32_t* window_width, uint32_t* window_height, uint32_t* framebuffer_width,
-    uint32_t* framebuffer_height)
+    VklBackend backend, void* window,                //
+    uint32_t* window_width, uint32_t* window_height, //
+    uint32_t* framebuffer_width, uint32_t* framebuffer_height)
 {
     log_trace("determining the size of backend window...");
 

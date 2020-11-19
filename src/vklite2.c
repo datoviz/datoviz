@@ -345,6 +345,15 @@ void vkl_window_get_size(
 
 
 
+void vkl_window_poll_events(VklWindow* window)
+{
+    ASSERT(window != NULL);
+    ASSERT(window->app != NULL);
+    backend_poll_events(window->app->backend, window);
+}
+
+
+
 void vkl_window_destroy(VklWindow* window)
 {
     if (window == NULL || window->obj.status == VKL_OBJECT_STATUS_DESTROYED)
@@ -600,7 +609,7 @@ VklCommands vkl_commands(VklGpu* gpu, uint32_t queue, uint32_t count)
     commands.count = count;
     allocate_command_buffers(gpu->device, gpu->queues.cmd_pools[queue], count, commands.cmds);
 
-    obj_created(&commands.obj);
+    obj_init(&commands.obj);
 
     return commands;
 }
@@ -626,6 +635,8 @@ void vkl_cmd_end(VklCommands* cmds, uint32_t idx)
 
     log_trace("end command buffer");
     VK_CHECK_RESULT(vkEndCommandBuffer(cmds->cmds[idx]));
+
+    obj_created(&cmds->obj);
 }
 
 
@@ -656,6 +667,8 @@ void vkl_cmd_free(VklCommands* cmds)
     vkFreeCommandBuffers(
         cmds->gpu->device, cmds->gpu->queues.cmd_pools[cmds->queue_idx], //
         cmds->count, cmds->cmds);
+
+    obj_init(&cmds->obj);
 }
 
 
@@ -2538,6 +2551,7 @@ void vkl_submit_commands(VklSubmit* submit, VklCommands* commands)
 
     uint32_t n = submit->commands_count;
     ASSERT(n < VKL_MAX_COMMANDS_PER_SUBMIT);
+    log_trace("adding commands #%d to submit", n);
     submit->commands[n] = commands;
     submit->commands_count++;
 }

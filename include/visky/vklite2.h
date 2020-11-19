@@ -153,6 +153,7 @@ typedef enum
     VKL_OBJECT_STATUS_NEED_RECREATE, // need to be recreated
     VKL_OBJECT_STATUS_NEED_UPDATE,   // need to be updated
     VKL_OBJECT_STATUS_NEED_DESTROY,  // need to be destroyed
+    VKL_OBJECT_STATUS_INACTIVE,      // inactive
     VKL_OBJECT_STATUS_INVALID,       // invalid
 } VklObjectStatus;
 
@@ -833,6 +834,8 @@ VKY_EXPORT VklWindow* vkl_window(VklApp* app, uint32_t width, uint32_t height);
 
 VKY_EXPORT void
 vkl_window_get_size(VklWindow* window, uint32_t* framebuffer_width, uint32_t* framebuffer_height);
+
+VKY_EXPORT void vkl_window_poll_events(VklWindow* window);
 
 // NOTE: to be called AFTER vkl_swapchain_destroy()
 VKY_EXPORT void vkl_window_destroy(VklWindow* window);

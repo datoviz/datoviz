@@ -108,11 +108,13 @@ void vkl_fifo_reset(VklFifo* fifo)
 /*  Context                                                                                      */
 /*************************************************************************************************/
 
-static void _context_default_queues(VklGpu* gpu)
+static void _context_default_queues(VklGpu* gpu, VklWindow* window)
 {
     vkl_gpu_queue(gpu, VKL_QUEUE_TRANSFER, VKL_DEFAULT_QUEUE_TRANSFER);
     vkl_gpu_queue(gpu, VKL_QUEUE_COMPUTE, VKL_DEFAULT_QUEUE_COMPUTE);
     vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, VKL_DEFAULT_QUEUE_RENDER);
+    if (window != NULL)
+        vkl_gpu_queue(gpu, VKL_QUEUE_PRESENT, VKL_DEFAULT_QUEUE_PRESENT);
 }
 
 
@@ -240,7 +242,7 @@ VklContext* vkl_context(VklGpu* gpu, VklWindow* window)
         VklCompute, context, computes, max_computes, VKL_MAX_COMPUTES, VKL_OBJECT_TYPE_COMPUTE)
 
     // Specify the default queues.
-    _context_default_queues(gpu);
+    _context_default_queues(gpu, window);
 
     // Create the GPU after the default queues have been set.
     if (gpu->obj.status < VKL_OBJECT_STATUS_CREATED)

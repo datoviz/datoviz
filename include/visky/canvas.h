@@ -271,7 +271,6 @@ struct VklCanvas
     VklObject obj;
     VklApp* app;
     VklGpu* gpu;
-    VklContext* ctx;
     void* user_data;
 
     VklWindow* window;
@@ -281,6 +280,8 @@ struct VklCanvas
     VklSwapchain swapchain;
     VklImages depth_image;
     VklFramebuffers framebuffers;
+    VklSubmit submit;
+    uint32_t cur_frame; // current frame within the images in flight
 
     uint32_t max_commands;
     VklCommands* commands;
