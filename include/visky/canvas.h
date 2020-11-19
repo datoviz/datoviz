@@ -325,6 +325,8 @@ VKY_EXPORT void vkl_canvas_recreate(VklCanvas* canvas);
 /*  Canvas misc                                                                                  */
 /*************************************************************************************************/
 
+VKY_EXPORT void vkl_canvas_clear_color(VklCanvas* canvas, VkClearColorValue color);
+
 VKY_EXPORT void vkl_canvas_size(VklCanvas* canvas, VklCanvasSizeType type, uvec2 size);
 
 VKY_EXPORT void vkl_canvas_close_on_esc(VklCanvas* canvas, bool value);

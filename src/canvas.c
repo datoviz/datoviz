@@ -13,7 +13,13 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-static const VkClearColorValue bgcolor = {{.4f, .6f, .8f, 1.0f}};
+#define VKL_DEFAULT_BACKGROUND                                                                    \
+    (VkClearColorValue)                                                                           \
+    {                                                                                             \
+        {                                                                                         \
+            0, .03, .07, 1.0f                                                                     \
+        }                                                                                         \
+    }
 #define VKL_DEFAULT_IMAGE_FORMAT      VK_FORMAT_B8G8R8A8_UNORM
 #define VKL_DEFAULT_PRESENT_MODE      VK_PRESENT_MODE_FIFO_KHR
 #define VKL_MIN_SWAPCHAIN_IMAGE_COUNT 3
@@ -24,7 +30,6 @@ static const VkClearColorValue bgcolor = {{.4f, .6f, .8f, 1.0f}};
 #define VKL_DEFAULT_COMMANDS_TRANSFER 0
 #define VKL_DEFAULT_COMMANDS_RENDER   1
 #define VKL_MAX_FRAMES_IN_FLIGHT      2
-
 
 
 /*************************************************************************************************/
@@ -162,7 +167,7 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
     // Create default renderpass.
     INSTANCE_NEW(VklRenderpass, renderpass, canvas->renderpasses, canvas->max_renderpasses)
     *renderpass = default_renderpass(
-        gpu, bgcolor, VKL_DEFAULT_IMAGE_FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+        gpu, VKL_DEFAULT_BACKGROUND, VKL_DEFAULT_IMAGE_FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
     // Create swapchain
     {
@@ -298,6 +303,15 @@ VklCanvas* vkl_canvas_offscreen(VklGpu* gpu, uint32_t width, uint32_t height)
 /*************************************************************************************************/
 /*  Canvas misc                                                                                  */
 /*************************************************************************************************/
+
+void vkl_canvas_clear_color(VklCanvas* canvas, VkClearColorValue color)
+{
+    ASSERT(canvas != NULL);
+    canvas->renderpasses[0].clear_values->color = color;
+    canvas->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+}
+
+
 
 void vkl_canvas_size(VklCanvas* canvas, VklCanvasSizeType type, uvec2 size)
 {
