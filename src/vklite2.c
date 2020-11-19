@@ -226,14 +226,16 @@ void vkl_gpu_wait(VklGpu* gpu)
 {
     ASSERT(gpu != NULL);
     log_trace("waiting for device");
-    vkDeviceWaitIdle(gpu->device);
+    if (gpu->device != VK_NULL_HANDLE)
+        vkDeviceWaitIdle(gpu->device);
 }
 
 
 
 void vkl_app_wait(VklApp* app)
 {
-    log_trace("fait for all GPUs to be idle");
+    ASSERT(app != NULL);
+    log_trace("wait for all GPUs to be idle");
     for (uint32_t i = 0; i < app->max_gpus; i++)
     {
         if (app->gpus[i].obj.status == VKL_OBJECT_STATUS_NONE)
