@@ -319,7 +319,7 @@ static void _glfw_wheel_callback(GLFWwindow* window, double dx, double dy)
     ASSERT(canvas != NULL);
     ASSERT(canvas->window != NULL);
 
-    vkl_event_wheel(canvas, (dvec2){dx, dy});
+    vkl_event_mouse_wheel(canvas, (dvec2){dx, dy});
 }
 
 static void _glfw_button_callback(GLFWwindow* window, int button, int action, int mods)
@@ -721,12 +721,12 @@ void vkl_event_mouse_move(VklCanvas* canvas, dvec2 pos)
 
 
 
-void vkl_event_wheel(VklCanvas* canvas, dvec2 dir)
+void vkl_event_mouse_wheel(VklCanvas* canvas, dvec2 dir)
 {
     ASSERT(canvas != NULL);
 
     VklEvent event = {0};
-    event.type = VKL_EVENT_WHEEL;
+    event.type = VKL_EVENT_MOUSE_WHEEL;
     event.u.w.dir[0] = dir[0];
     event.u.w.dir[1] = dir[1];
     vkl_event_enqueue(canvas, event);

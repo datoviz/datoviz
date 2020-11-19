@@ -1534,7 +1534,7 @@ static int vklite2_canvas_2(VkyTestContext* context)
     VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
 
     vkl_event_callback(canvas, VKL_EVENT_KEY, 0, _key_callback, NULL);
-    vkl_event_callback(canvas, VKL_EVENT_WHEEL, 0, _wheel_callback, NULL);
+    vkl_event_callback(canvas, VKL_EVENT_MOUSE_WHEEL, 0, _wheel_callback, NULL);
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_BUTTON, 0, _button_callback, NULL);
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _cursor_callback, NULL);
 
