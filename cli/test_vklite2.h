@@ -1463,6 +1463,11 @@ static void _frame_callback(VklCanvas* canvas, VklPrivateEvent ev)
         canvas->obj.idx, ev.u.f.idx, ev.u.f.time, ev.u.f.interval);
 }
 
+static void _key_callback(VklCanvas* canvas, VklEvent ev)
+{
+    log_debug("key code %d", ev.u.k.key_code);
+}
+
 static int vklite2_canvas_1(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
@@ -1487,6 +1492,9 @@ static int vklite2_canvas_1(VkyTestContext* context)
 
     vkl_app_run(app, 8);
 
+    // Send a mock key press event.
+    vkl_event_callback(canvas, VKL_EVENT_KEY, 0, _key_callback, NULL);
+    vkl_event_key(canvas, VKL_KEY_PRESS, VKL_KEY_A);
 
     // Second canvas.
     log_debug("global clock elapsed %.6f interval %.6f", app->clock.elapsed, app->clock.interval);
