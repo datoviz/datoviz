@@ -53,11 +53,23 @@ typedef struct
     VklGraphics* graphics;
     VklBufferRegions buffer_regions;
     VklBindings* bindings;
-} BasicCanvas;
+} TestCanvas;
 
 
 
-typedef void (*FillCallback)(BasicCanvas*, VklCommands*, uint32_t);
+typedef struct
+{
+    VklGraphics* graphics;
+    VklSlots slots;
+    VklBindings bindings;
+    VklBuffer buffer;
+    VklBufferRegions br;
+    VklCommands cmds;
+} TestVisual;
+
+
+
+typedef void (*FillCallback)(TestCanvas*, VklCommands*, uint32_t);
 
 
 
@@ -132,9 +144,9 @@ depth_image(VklImages* depth_images, VklRenderpass* renderpass, uint32_t width, 
 
 
 
-static BasicCanvas offscreen(VklGpu* gpu)
+static TestCanvas offscreen(VklGpu* gpu)
 {
-    BasicCanvas canvas = {0};
+    TestCanvas canvas = {0};
     canvas.gpu = gpu;
     canvas.is_offscreen = true;
 
@@ -178,9 +190,9 @@ static BasicCanvas offscreen(VklGpu* gpu)
 
 
 
-static BasicCanvas glfw_canvas(VklGpu* gpu, VklWindow* window)
+static TestCanvas glfw_canvas(VklGpu* gpu, VklWindow* window)
 {
-    BasicCanvas canvas = {0};
+    TestCanvas canvas = {0};
     canvas.is_offscreen = false;
     canvas.gpu = gpu;
     canvas.window = window;
@@ -288,7 +300,7 @@ static void save_screenshot(VklFramebuffers* framebuffers, const char* path)
 
 
 
-static void show_canvas(BasicCanvas canvas, FillCallback fill_commands, uint32_t n_frames)
+static void show_canvas(TestCanvas canvas, FillCallback fill_commands, uint32_t n_frames)
 {
     VklGpu* gpu = canvas.gpu;
     VklWindow* window = canvas.window;
@@ -413,7 +425,7 @@ static void show_canvas(BasicCanvas canvas, FillCallback fill_commands, uint32_t
 
 
 
-static void destroy_canvas(BasicCanvas* canvas)
+static void destroy_canvas(TestCanvas* canvas)
 {
     log_trace("destroy canvas");
     if (canvas->is_offscreen)
@@ -430,11 +442,93 @@ static void destroy_canvas(BasicCanvas* canvas)
 
 
 
+static TestVisual test_triangle(TestCanvas* canvas)
+{
+    TestVisual visual = {0};
+    VklGpu* gpu = canvas->gpu;
+    VklGraphics* graphics = vkl_graphics(gpu);
+    visual.graphics = graphics;
+
+    vkl_graphics_renderpass(graphics, &canvas->renderpass, 0);
+    vkl_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    vkl_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
+
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/spirv/default.vert.spv", DATA_DIR);
+    vkl_graphics_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
+    snprintf(path, sizeof(path), "%s/spirv/default.frag.spv", DATA_DIR);
+    vkl_graphics_shader(graphics, VK_SHADER_STAGE_FRAGMENT_BIT, path);
+    vkl_graphics_vertex_binding(graphics, 0, sizeof(VklVertex));
+    vkl_graphics_vertex_attr(graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VklVertex, pos));
+    vkl_graphics_vertex_attr(
+        graphics, 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(VklVertex, color));
+
+    // Create the slots.
+    visual.slots = vkl_slots(gpu);
+    vkl_slots_create(&visual.slots);
+    vkl_graphics_slots(graphics, &visual.slots);
+
+    // Create the bindings.
+    visual.bindings = vkl_bindings(&visual.slots);
+    vkl_bindings_create(&visual.bindings, 1);
+    vkl_bindings_update(&visual.bindings);
+
+    // Create the graphics pipeline.
+    vkl_graphics_create(visual.graphics);
+
+    // Create the buffer.
+    visual.buffer = vkl_buffer(gpu);
+    VkDeviceSize size = 3 * sizeof(VklVertex);
+    vkl_buffer_size(&visual.buffer, size);
+    vkl_buffer_usage(&visual.buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    vkl_buffer_memory(
+        &visual.buffer,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vkl_buffer_create(&visual.buffer);
+
+    // Upload the triangle data.
+    VklVertex data[3] = {
+        {{-1, +1, 0}, {1, 0, 0, 1}},
+        {{+1, +1, 0}, {0, 1, 0, 1}},
+        {{+0, -1, 0}, {0, 0, 1, 1}},
+    };
+    vkl_buffer_upload(&visual.buffer, 0, size, data);
+
+    visual.br.buffer = &visual.buffer;
+    visual.br.size = size;
+    visual.br.count = 1;
+
+    // Commands.
+    VklCommands cmds = vkl_commands(gpu, 0, 1);
+    vkl_cmd_begin(&cmds, 0);
+    vkl_cmd_begin_renderpass(&cmds, 0, &canvas->renderpass, &canvas->framebuffers);
+    vkl_cmd_viewport(&cmds, 0, (VkViewport){0, 0, TEST_WIDTH, TEST_HEIGHT, 0, 1});
+    vkl_cmd_bind_vertex_buffer(&cmds, 0, &visual.br, 0);
+    vkl_cmd_bind_graphics(&cmds, 0, graphics, &visual.bindings, 0);
+    vkl_cmd_draw(&cmds, 0, 0, 3);
+    vkl_cmd_end_renderpass(&cmds, 0);
+    vkl_cmd_end(&cmds, 0);
+    vkl_cmd_submit_sync(&cmds, 0);
+
+    return visual;
+}
+
+
+
+static void destroy_visual(TestVisual* visual)
+{
+    vkl_bindings_destroy(&visual->bindings);
+    vkl_slots_destroy(&visual->slots);
+    vkl_buffer_destroy(&visual->buffer);
+}
+
+
+
 /*************************************************************************************************/
 /*  Commands filling                                                                             */
 /*************************************************************************************************/
 
-static void empty_commands(BasicCanvas* canvas, VklCommands* cmds, uint32_t idx)
+static void empty_commands(TestCanvas* canvas, VklCommands* cmds, uint32_t idx)
 {
     vkl_cmd_begin(cmds, idx);
     vkl_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, &canvas->framebuffers);
@@ -444,7 +538,7 @@ static void empty_commands(BasicCanvas* canvas, VklCommands* cmds, uint32_t idx)
 
 
 
-static void triangle_commands(BasicCanvas* canvas, VklCommands* cmds, uint32_t idx)
+static void triangle_commands(TestCanvas* canvas, VklCommands* cmds, uint32_t idx)
 {
     // Commands.
     vkl_cmd_begin(cmds, idx);
@@ -957,7 +1051,7 @@ static int vklite2_blank(VkyTestContext* context)
     vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
     vkl_gpu_create(gpu, 0);
 
-    BasicCanvas canvas = offscreen(gpu);
+    TestCanvas canvas = offscreen(gpu);
     VklFramebuffers* framebuffers = &canvas.framebuffers;
 
     VklCommands cmds = vkl_commands(gpu, 0, 1);
@@ -985,80 +1079,15 @@ static int vklite2_graphics(VkyTestContext* context)
     vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
     vkl_gpu_create(gpu, 0);
 
-    BasicCanvas canvas = offscreen(gpu);
-    VklRenderpass* renderpass = &canvas.renderpass;
+    TestCanvas canvas = offscreen(gpu);
     VklFramebuffers* framebuffers = &canvas.framebuffers;
-    VklGraphics* graphics = vkl_graphics(gpu);
-    AT(graphics != NULL);
 
-    vkl_graphics_renderpass(graphics, renderpass, 0);
-    vkl_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-    vkl_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
-
-    char path[1024];
-    snprintf(path, sizeof(path), "%s/spirv/default.vert.spv", DATA_DIR);
-    vkl_graphics_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
-    snprintf(path, sizeof(path), "%s/spirv/default.frag.spv", DATA_DIR);
-    vkl_graphics_shader(graphics, VK_SHADER_STAGE_FRAGMENT_BIT, path);
-    vkl_graphics_vertex_binding(graphics, 0, sizeof(VklVertex));
-    vkl_graphics_vertex_attr(graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VklVertex, pos));
-    vkl_graphics_vertex_attr(
-        graphics, 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(VklVertex, color));
-
-    // Create the slots.
-    VklSlots slots = vkl_slots(gpu);
-    vkl_slots_create(&slots);
-    vkl_graphics_slots(graphics, &slots);
-
-    // Create the bindings.
-    VklBindings bindings = vkl_bindings(&slots);
-    vkl_bindings_create(&bindings, 1);
-    vkl_bindings_update(&bindings);
-
-    // Create the graphics pipeline.
-    vkl_graphics_create(graphics);
-
-    // Create the buffer.
-    VklBuffer buffer = vkl_buffer(gpu);
-    VkDeviceSize size = 3 * sizeof(VklVertex);
-    vkl_buffer_size(&buffer, size);
-    vkl_buffer_usage(&buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-    vkl_buffer_memory(
-        &buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    vkl_buffer_create(&buffer);
-
-    // Upload the triangle data.
-    VklVertex data[3] = {
-        {{-1, +1, 0}, {1, 0, 0, 1}},
-        {{+1, +1, 0}, {0, 1, 0, 1}},
-        {{+0, -1, 0}, {0, 0, 1, 1}},
-    };
-    vkl_buffer_upload(&buffer, 0, size, data);
-
-    VklBufferRegions br = {0};
-    br.buffer = &buffer;
-    br.size = size;
-    br.count = 1;
-
-    // Commands.
-    VklCommands cmds = vkl_commands(gpu, 0, 1);
-    vkl_cmd_begin(&cmds, 0);
-    vkl_cmd_begin_renderpass(&cmds, 0, renderpass, framebuffers);
-    vkl_cmd_viewport(&cmds, 0, (VkViewport){0, 0, TEST_WIDTH, TEST_HEIGHT, 0, 1});
-    vkl_cmd_bind_vertex_buffer(&cmds, 0, &br, 0);
-    vkl_cmd_bind_graphics(&cmds, 0, graphics, &bindings, 0);
-    vkl_cmd_draw(&cmds, 0, 0, 3);
-    vkl_cmd_end_renderpass(&cmds, 0);
-    vkl_cmd_end(&cmds, 0);
-    vkl_cmd_submit_sync(&cmds, 0);
+    TestVisual visual = test_triangle(&canvas);
 
     save_screenshot(framebuffers, "screenshot.ppm");
 
-    vkl_bindings_destroy(&bindings);
-    vkl_slots_destroy(&slots);
-    vkl_buffer_destroy(&buffer);
+    destroy_visual(&visual);
     destroy_canvas(&canvas);
-
     TEST_END
 }
 
@@ -1075,7 +1104,7 @@ static int vklite2_basic_canvas(VkyTestContext* context)
     vkl_gpu_queue(gpu, VKL_QUEUE_PRESENT, 1);
     vkl_gpu_create(gpu, window->surface);
 
-    BasicCanvas canvas = glfw_canvas(gpu, window);
+    TestCanvas canvas = glfw_canvas(gpu, window);
 
     show_canvas(canvas, empty_commands, 10);
 
@@ -1097,7 +1126,7 @@ static int vklite2_basic_canvas_triangle(VkyTestContext* context)
     vkl_gpu_queue(gpu, VKL_QUEUE_PRESENT, 1);
     vkl_gpu_create(gpu, window->surface);
 
-    BasicCanvas canvas = glfw_canvas(gpu, window);
+    TestCanvas canvas = glfw_canvas(gpu, window);
     VklRenderpass* renderpass = &canvas.renderpass;
 
     VklGraphics* graphics = vkl_graphics(gpu);
@@ -1568,3 +1597,13 @@ static int vklite2_canvas_2(VkyTestContext* context)
 /*************************************************************************************************/
 /*  Canvas 3                                                                                     */
 /*************************************************************************************************/
+
+static int vklite2_canvas_3(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+
+    vkl_app_run(app, 0);
+    TEST_END
+}
