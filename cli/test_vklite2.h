@@ -53,6 +53,8 @@ typedef struct
     VklGraphics* graphics;
     VklBufferRegions buffer_regions;
     VklBindings* bindings;
+
+    void* data;
 } TestCanvas;
 
 
@@ -1596,6 +1598,10 @@ static int vklite2_canvas_3(VkyTestContext* context)
 
 
 
+/*************************************************************************************************/
+/*  Canvas triangle with push constant                                                           */
+/*************************************************************************************************/
+
 static vec3 push_vec; // NOTE: not thread-safe
 
 static void _triangle_push_refill(VklCanvas* canvas, VklPrivateEvent ev)
@@ -1642,7 +1648,6 @@ static void _push_cursor_callback(VklCanvas* canvas, VklEvent ev)
     vkl_canvas_to_refill(canvas, true);
 }
 
-// Triangle canvas
 static int vklite2_canvas_4(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
@@ -1706,5 +1711,87 @@ static int vklite2_canvas_4(VkyTestContext* context)
 
     vkl_app_run(app, 0);
     destroy_visual(&visual);
+    TEST_END
+}
+
+
+
+/*************************************************************************************************/
+/*  Canvas triangle with vertex buffer update                                                    */
+/*************************************************************************************************/
+
+static void _vertex_cursor_callback(VklCanvas* canvas, VklEvent ev)
+{
+    uvec2 size = {0};
+    vkl_canvas_size(canvas, VKL_CANVAS_SIZE_SCREEN, size);
+    double x = ev.u.m.pos[0] / (double)size[0];
+    double y = ev.u.m.pos[1] / (double)size[1];
+
+    TestCanvas* c = ev.user_data;
+    VklVertex* data = (VklVertex*)c->data;
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        data[i].color[0] = x;
+        data[i].color[1] = y;
+    }
+    vkl_buffer_regions_upload(
+        canvas->gpu->context, &c->buffer_regions, 0, 3 * sizeof(VklVertex), data);
+}
+
+static int vklite2_canvas_5(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    AT(canvas != NULL);
+
+    TestVisual visual = {0};
+    TestCanvas c = {0};
+    c.gpu = gpu;
+    c.data = calloc(3, sizeof(VklVertex));
+
+    // HACK: 2 copies of the renderpass
+    c.renderpass = canvas->renderpasses[0];
+    c.framebuffers = canvas->framebuffers;
+
+    // Triangle graphics.
+    _triangle_graphics(&c, &visual, "");
+
+    // Create the slots.
+    visual.slots = vkl_slots(gpu);
+    vkl_slots_create(&visual.slots);
+    vkl_graphics_slots(visual.graphics, &visual.slots);
+
+    // Create the bindings.
+    visual.bindings = vkl_bindings(&visual.slots);
+    vkl_bindings_create(&visual.bindings, 1);
+    vkl_bindings_update(&visual.bindings);
+    c.bindings = &visual.bindings;
+
+    // Create the graphics pipeline.
+    vkl_graphics_create(visual.graphics);
+
+    // Triangle buffer.
+    VkDeviceSize size = 3 * sizeof(VklVertex);
+    c.buffer_regions = vkl_alloc_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, size);
+
+    // Upload the triangle data.
+    VklVertex data[3] = {
+        {{-1, +1, 0}, {1, 0, 0, 1}},
+        {{+1, +1, 0}, {0, 1, 0, 1}},
+        {{+0, -1, 0}, {0, 0, 1, 1}},
+    };
+    memcpy(c.data, data, sizeof(data));
+    vkl_buffer_regions_upload(canvas->gpu->context, &c.buffer_regions, 0, size, data);
+
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_refill, &c);
+
+    // Cursor callback.
+    vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _vertex_cursor_callback, &c);
+
+    vkl_app_run(app, 0);
+
+    destroy_visual(&visual);
+    FREE(c.data);
     TEST_END
 }

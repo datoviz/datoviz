@@ -328,6 +328,7 @@ VklBufferRegions vkl_alloc_buffers(
 {
     ASSERT(context != NULL);
     ASSERT(context->gpu != NULL);
+    ASSERT(buffer_count > 0);
 
     VklBufferRegions regions = {0};
 
