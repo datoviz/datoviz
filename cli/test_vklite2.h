@@ -1453,7 +1453,7 @@ static int vklite2_default_app(VkyTestContext* context)
 
 
 /*************************************************************************************************/
-/*  Canvas callbacks                                                                             */
+/*  Canvas                                                                                       */
 /*************************************************************************************************/
 
 static void _frame_callback(VklCanvas* canvas, VklPrivateEvent ev)
@@ -1484,17 +1484,6 @@ static void _cursor_callback(VklCanvas* canvas, VklEvent ev)
 {
     log_debug("mouse move %.3f %.3f", ev.u.m.pos[0], ev.u.m.pos[1]);
 }
-
-static void _timer_callback(VklCanvas* canvas, VklPrivateEvent ev)
-{
-    log_debug("timer event at time %.3f", ev.u.t.time);
-}
-
-
-
-/*************************************************************************************************/
-/*  Canvas                                                                                       */
-/*************************************************************************************************/
 
 static int vklite2_canvas_1(VkyTestContext* context)
 {
@@ -1543,9 +1532,6 @@ static int vklite2_canvas_2(VkyTestContext* context)
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
     VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
-
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 0.2, _timer_callback, NULL);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 0.3, _timer_callback, NULL);
 
     vkl_event_callback(canvas, VKL_EVENT_KEY, 0, _key_callback, NULL);
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_WHEEL, 0, _wheel_callback, NULL);

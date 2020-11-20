@@ -80,10 +80,6 @@ int vkl_app_destroy(VklApp* app)
     log_trace("starting destruction of app...");
     vkl_app_wait(app);
 
-    // Join the timer thread if it was launched.
-    if (app->timer_thread.obj.status > VKL_OBJECT_STATUS_NONE)
-        vkl_thread_join(&app->timer_thread);
-
     // Destroy the windows.
     if (app->canvases != NULL)
     {
@@ -169,8 +165,7 @@ void vkl_thread_join(VklThread* thread)
 void vkl_thread_lock(VklThread* thread)
 {
     ASSERT(thread != NULL);
-    if (is_obj_created(&thread->obj))
-        pthread_mutex_lock(&thread->lock);
+    pthread_mutex_lock(&thread->lock);
 }
 
 
@@ -178,8 +173,7 @@ void vkl_thread_lock(VklThread* thread)
 void vkl_thread_unlock(VklThread* thread)
 {
     ASSERT(thread != NULL);
-    if (is_obj_created(&thread->obj))
-        pthread_mutex_unlock(&thread->lock);
+    pthread_mutex_unlock(&thread->lock);
 }
 
 
