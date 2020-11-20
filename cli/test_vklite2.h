@@ -1596,7 +1596,7 @@ static int vklite2_canvas_3(VkyTestContext* context)
 
 
 
-static vec2 push_vec; // NOTE: not thread-safe
+static vec3 push_vec; // NOTE: not thread-safe
 
 static void _triangle_push_refill(VklCanvas* canvas, VklPrivateEvent ev)
 {
@@ -1623,7 +1623,7 @@ static void _triangle_push_refill(VklCanvas* canvas, VklPrivateEvent ev)
 
     // Push constants.
     vkl_cmd_push_constants(
-        cmds, idx, c->graphics->slots, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vec2), push_vec);
+        cmds, idx, c->graphics->slots, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vec3), push_vec);
 
     vkl_cmd_draw(cmds, idx, 0, 3);
     vkl_cmd_end_renderpass(cmds, idx);
@@ -1638,6 +1638,7 @@ static void _push_cursor_callback(VklCanvas* canvas, VklEvent ev)
     double y = ev.u.m.pos[1] / (double)size[1];
     push_vec[0] = x;
     push_vec[1] = y;
+    push_vec[2] = 1;
     vkl_canvas_to_refill(canvas, true);
 }
 
@@ -1662,7 +1663,7 @@ static int vklite2_canvas_4(VkyTestContext* context)
 
     // Create the slots.
     visual.slots = vkl_slots(gpu);
-    vkl_slots_push_constant(&visual.slots, 0, sizeof(vec2), VK_SHADER_STAGE_VERTEX_BIT);
+    vkl_slots_push_constant(&visual.slots, 0, sizeof(vec3), VK_SHADER_STAGE_VERTEX_BIT);
     vkl_slots_create(&visual.slots);
     vkl_graphics_slots(visual.graphics, &visual.slots);
 
