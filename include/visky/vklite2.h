@@ -522,6 +522,7 @@ struct VklBufferRegions
     uint32_t count;
     VkDeviceSize size;
     VkDeviceSize aligned_size;
+    VkDeviceSize alignment;
     VkDeviceSize offsets[VKL_MAX_BUFFER_REGIONS_PER_SET];
 };
 
@@ -576,7 +577,6 @@ struct VklSlots
 
     uint32_t slot_count;
     VkDescriptorType types[VKL_MAX_BINDINGS_SIZE];
-    VkDeviceSize alignments[VKL_MAX_BINDINGS_SIZE]; // dynamic uniform alignments
 
     uint32_t push_count;
     VkDeviceSize push_offsets[VKL_MAX_PUSH_CONSTANTS];
@@ -991,8 +991,9 @@ VKY_EXPORT void vkl_buffer_create(VklBuffer* buffer);
 VKY_EXPORT void
 vkl_buffer_resize(VklBuffer* buffer, VkDeviceSize size, uint32_t queue_idx, VklCommands* cmds);
 
-VKY_EXPORT VklBufferRegions
-vkl_buffer_regions(VklBuffer* buffer, uint32_t count, VkDeviceSize size, VkDeviceSize* offsets);
+VKY_EXPORT VklBufferRegions vkl_buffer_regions(
+    VklBuffer* buffer, uint32_t count, //
+    VkDeviceSize offset, VkDeviceSize size, VkDeviceSize alignment);
 
 VKY_EXPORT void* vkl_buffer_regions_map(VklBufferRegions* buffer_regions, uint32_t idx);
 
@@ -1067,8 +1068,7 @@ VKY_EXPORT void vkl_sampler_destroy(VklSampler* sampler);
 
 VKY_EXPORT VklSlots vkl_slots(VklGpu* gpu);
 
-VKY_EXPORT void
-vkl_slots_binding(VklSlots* slots, uint32_t idx, VkDescriptorType type, VkDeviceSize item_size);
+VKY_EXPORT void vkl_slots_binding(VklSlots* slots, uint32_t idx, VkDescriptorType type);
 
 VKY_EXPORT void vkl_slots_push_constant(
     VklSlots* slots, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders);

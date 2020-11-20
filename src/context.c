@@ -330,9 +330,24 @@ VklBufferRegions vkl_alloc_buffers(
     ASSERT(context != NULL);
     ASSERT(context->gpu != NULL);
     ASSERT(buffer_count > 0);
+    ASSERT(size > 0);
+
+    VkDeviceSize alignment = 0;
+    VkDeviceSize offset = context->allocated_sizes[buffer_idx];
+    if (buffer_idx == VKL_DEFAULT_BUFFER_UNIFORM)
+    {
+        // alignment = get_alignment(
+        //     size, context->gpu->device_properties.limits.minUniformBufferOffsetAlignment);
+        alignment = context->gpu->device_properties.limits.minUniformBufferOffsetAlignment;
+        ASSERT(offset % alignment == 0); // offset should be already aligned
+    }
 
     VklBufferRegions regions =
-        vkl_buffer_regions(&context->buffers[buffer_idx], buffer_count, size, NULL);
+        vkl_buffer_regions(&context->buffers[buffer_idx], buffer_count, offset, size, alignment);
+    VkDeviceSize alsize = regions.aligned_size;
+    if (alsize == 0)
+        alsize = size;
+    ASSERT(alsize > 0);
 
     if (buffer_idx >= context->max_buffers || !is_obj_created(&context->buffers[buffer_idx].obj))
     {
@@ -340,27 +355,17 @@ VklBufferRegions vkl_alloc_buffers(
         return regions;
     }
 
-    // Alignment for uniform buffers.
+    // Check alignment for uniform buffers.
     if (buffer_idx == VKL_DEFAULT_BUFFER_UNIFORM)
     {
-        // Alignment of offset.
-        VkDeviceSize offset = _align(context->gpu, context->allocated_sizes[buffer_idx]);
-        log_debug(
-            "make sure buffer allocation is aligned, add %d extra bytes",
-            context->allocated_sizes[buffer_idx] - offset);
-        context->allocated_sizes[buffer_idx] = offset;
-
-        // Alignment of size.
-        VkDeviceSize requested_size = size;
-        size = _align(context->gpu, requested_size);
-        log_debug(
-            "make sure buffer allocation is aligned, add %d extra bytes", size - requested_size);
-        regions.aligned_size = size;
-        ASSERT(regions.aligned_size >= regions.size);
+        ASSERT(alignment > 0);
+        ASSERT(alsize % alignment == 0);
+        for (uint32_t i = 0; i < buffer_count; i++)
+            ASSERT(regions.offsets[i] % alignment == 0);
     }
 
     // Need to reallocate?
-    if (context->allocated_sizes[buffer_idx] + size * buffer_count > regions.buffer->size)
+    if (offset + alsize * buffer_count > regions.buffer->size)
     {
         VkDeviceSize new_size = regions.buffer->size * 2;
         log_info("reallocating buffer #%d to %.3f KB", buffer_idx, TO_KB(new_size));
@@ -368,15 +373,13 @@ VklBufferRegions vkl_alloc_buffers(
             regions.buffer, new_size, VKL_DEFAULT_QUEUE_TRANSFER, &context->transfer_cmd);
     }
 
-    log_trace("allocating %d buffers with size %.3f KB", buffer_count, TO_KB(size));
-    ASSERT(context->allocated_sizes[buffer_idx] + size * buffer_count <= regions.buffer->size);
-    for (uint32_t i = 0; i < buffer_count; i++)
-    {
-        regions.offsets[i] = context->allocated_sizes[buffer_idx] + i * size;
-    }
-    context->allocated_sizes[buffer_idx] += size * buffer_count;
-    ASSERT(regions.offsets[buffer_count - 1] + size == context->allocated_sizes[buffer_idx]);
+    log_trace(
+        "allocating %d buffers with size %d bytes (aligned size %d bytes)", //
+        buffer_count, size, alsize);
+    ASSERT(offset + alsize * buffer_count <= regions.buffer->size);
+    context->allocated_sizes[buffer_idx] += alsize * buffer_count;
 
+    ASSERT(regions.offsets[buffer_count - 1] + alsize == context->allocated_sizes[buffer_idx]);
     return regions;
 }
 
@@ -670,10 +673,23 @@ static void process_buffer_upload(VklContext* context, VklTransfer tr)
     VklBuffer* staging = &context->buffers[VKL_DEFAULT_BUFFER_STAGING];
 
     // Size of the buffer to transfer.
-    VkDeviceSize size = tr.u.buf.size;
+    VkDeviceSize region_size = tr.u.buf.size;
+    ASSERT(region_size > 0);
 
+    VkDeviceSize alsize = tr.u.buf.regions.aligned_size;
+    if (alsize == 0)
+        alsize = region_size;
+    ASSERT(alsize > 0);
+
+    uint32_t n = tr.u.buf.regions.count;
+
+    // Copy the data as many times as there are buffer regions, and make sure the array is
+    // aligned if using a UNIFORM buffer.
+    void* repeated = aligned_repeat(region_size, tr.u.buf.data, n, tr.u.buf.regions.alignment);
     // Transfer from the CPU to the GPU staging buffer.
-    vkl_buffer_upload(staging, 0, size, (const void*)tr.u.buf.data);
+    VkDeviceSize total_size = alsize * n;
+    vkl_buffer_upload(staging, 0, total_size, repeated);
+    FREE(repeated);
 
     // Take transfer cmd buf.
     VklCommands* cmds = &context->transfer_cmd;
@@ -681,23 +697,21 @@ static void process_buffer_upload(VklContext* context, VklTransfer tr)
     vkl_cmd_begin(cmds, 0);
 
     // Determine the offset in the target buffer.
-    // Should be consecutive offsets.
-    VkDeviceSize offset = tr.u.buf.regions.offsets[0];
-    uint32_t n_regions = tr.u.buf.regions.count;
+    VkDeviceSize init_offset = tr.u.buf.regions.offsets[0];
+    VkDeviceSize sub_offset = tr.u.buf.offset;
+    ASSERT(tr.u.buf.regions.buffer != VK_NULL_HANDLE);
+    VkBufferCopy* regions = calloc(n, sizeof(VkBufferCopy));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        regions[i].size = region_size;
+        regions[i].srcOffset = sub_offset + i * alsize;
+        regions[i].dstOffset = init_offset + sub_offset + i * alsize;
+    }
+    vkCmdCopyBuffer(
+        cmds->cmds[0], staging->buffer, tr.u.buf.regions.buffer->buffer, //
+        tr.u.buf.regions.count, regions);
+    FREE(regions);
 
-    // WARNING TODO: we assume here that the passed data and size represent all regions at once.
-    // The library should take care of alignment and data repeat automatically.
-
-    // for (uint32_t i = 1; i < n_regions; i++)
-    // {
-    //     ASSERT(tr.u.buf.regions.offsets[i] == offset + i * size);
-    // }
-    // Take into account the transfer offset.
-    offset += tr.u.buf.offset;
-
-    // Copy to staging buffer
-    ASSERT(tr.u.buf.regions.buffer != 0);
-    vkl_cmd_copy_buffer(cmds, 0, staging, 0, tr.u.buf.regions.buffer, offset, size);
     vkl_cmd_end(cmds, 0);
 
     // Wait for the render queue to be idle.

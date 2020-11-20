@@ -726,7 +726,7 @@ static int vklite2_compute(VkyTestContext* context)
 
     // Create the slots.
     VklSlots slots = vkl_slots(gpu);
-    vkl_slots_binding(&slots, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 0);
+    vkl_slots_binding(&slots, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
     vkl_slots_create(&slots);
     vkl_compute_slots(&compute, &slots);
 
@@ -797,7 +797,7 @@ static int vklite2_push(VkyTestContext* context)
 
     // Create the slots.
     VklSlots slots = vkl_slots(gpu);
-    vkl_slots_binding(&slots, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 0);
+    vkl_slots_binding(&slots, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
     vkl_slots_push_constant(&slots, 0, sizeof(float), VK_SHADER_STAGE_COMPUTE_BIT);
     vkl_slots_create(&slots);
     vkl_compute_slots(&compute, &slots);
@@ -977,7 +977,7 @@ static int vklite2_submit(VkyTestContext* context)
 
     // Create the slots.
     VklSlots slots = vkl_slots(gpu);
-    vkl_slots_binding(&slots, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 0);
+    vkl_slots_binding(&slots, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
     vkl_slots_create(&slots);
     vkl_compute_slots(&compute1, &slots);
     vkl_compute_slots(&compute2, &slots);
@@ -1804,26 +1804,22 @@ static int vklite2_canvas_5(VkyTestContext* context)
 /*  Canvas triangle with uniform buffer update                                                   */
 /*************************************************************************************************/
 
+vec4 vec = {1, 0, 1, 1};
+
 static void _uniform_cursor_callback(VklCanvas* canvas, VklEvent ev)
 {
     uvec2 size = {0};
     vkl_canvas_size(canvas, VKL_CANVAS_SIZE_SCREEN, size);
     double x = ev.u.m.pos[0] / (double)size[0];
     double y = ev.u.m.pos[1] / (double)size[1];
-
     TestCanvas* c = ev.user_data;
-    vec4 vec = {x, y, 1, 1};
 
-    VkDeviceSize bsize = canvas->swapchain.img_count * c->uniform_buffer_regions.aligned_size;
-    void* data = calloc(canvas->swapchain.img_count, c->uniform_buffer_regions.aligned_size);
-
-    for (uint32_t i = 0; i < canvas->swapchain.img_count; i++)
-    {
-        void* pointer = get_aligned_pointer(data, c->uniform_buffer_regions.aligned_size, i);
-        memcpy(pointer, vec, sizeof(vec4));
-    }
-    vkl_buffer_regions_upload(canvas->gpu->context, &c->uniform_buffer_regions, 0, bsize, data);
-    FREE(data);
+    vec[0] = x;
+    vec[1] = y;
+    vec[2] = 1;
+    vec[3] = 1;
+    vkl_buffer_regions_upload(
+        canvas->gpu->context, &c->uniform_buffer_regions, 0, sizeof(vec4), vec);
 }
 
 static int vklite2_canvas_6(VkyTestContext* context)
@@ -1849,7 +1845,7 @@ static int vklite2_canvas_6(VkyTestContext* context)
 
     // Create the slots.
     visual.slots = vkl_slots(gpu);
-    vkl_slots_binding(&visual.slots, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 0);
+    vkl_slots_binding(&visual.slots, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
     vkl_slots_create(&visual.slots);
     vkl_graphics_slots(visual.graphics, &visual.slots);
 
@@ -1857,6 +1853,8 @@ static int vklite2_canvas_6(VkyTestContext* context)
     c.uniform_buffer_regions =
         vkl_alloc_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, img_count, sizeof(vec4));
     ASSERT(c.uniform_buffer_regions.aligned_size >= c.uniform_buffer_regions.size);
+    vkl_buffer_regions_upload(
+        canvas->gpu->context, &c.uniform_buffer_regions, 0, sizeof(vec4), vec);
 
     // Create the bindings.
     visual.bindings = vkl_bindings(&visual.slots);

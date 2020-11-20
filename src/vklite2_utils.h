@@ -86,20 +86,19 @@ static uint64_t next_pow2(uint64_t x)
 }
 
 
-static VkDeviceSize
-compute_dynamic_alignment(VkDeviceSize dynamic_alignment, VkDeviceSize min_ubo_alignment)
+
+static VkDeviceSize get_alignment(VkDeviceSize alignment, VkDeviceSize min_alignment)
 {
-    if (min_ubo_alignment > 0)
-    {
-        dynamic_alignment = (dynamic_alignment + min_ubo_alignment - 1) & ~(min_ubo_alignment - 1);
-    }
-    dynamic_alignment = next_pow2(dynamic_alignment);
-    return dynamic_alignment;
+    if (min_alignment > 0)
+        alignment = (alignment + min_alignment - 1) & ~(min_alignment - 1);
+    alignment = next_pow2(alignment);
+    ASSERT(alignment >= min_alignment);
+    return alignment;
 }
 
 
 
-static void* allocate_aligned(VkDeviceSize size, VkDeviceSize alignment)
+static void* aligned_malloc(VkDeviceSize size, VkDeviceSize alignment)
 {
     void* data = NULL;
     // Allocate the aligned buffer.
@@ -118,7 +117,7 @@ static void* allocate_aligned(VkDeviceSize size, VkDeviceSize alignment)
 
 
 
-static void* get_aligned_pointer(const void* data, VkDeviceSize alignment, uint32_t idx)
+static void* aligned_pointer(const void* data, VkDeviceSize alignment, uint32_t idx)
 {
     // Get a pointer to a given item in the dynamic uniform buffer, to update it.
     return (void*)(((uint64_t)data + (idx * alignment)));
@@ -126,14 +125,40 @@ static void* get_aligned_pointer(const void* data, VkDeviceSize alignment, uint3
 
 
 
-static VkDeviceSize _align(VklGpu* gpu, VkDeviceSize s)
+static VkDeviceSize aligned_size(VkDeviceSize size, VkDeviceSize alignment)
 {
-    VkDeviceSize alignment = gpu->device_properties.limits.minUniformBufferOffsetAlignment;
+    if (alignment == 0)
+        return size;
     ASSERT(alignment > 0);
-    if (s % alignment != 0)
-        s += (alignment - s % alignment);
-    ASSERT(s % alignment == 0);
-    return s;
+    if (size % alignment == 0)
+        return size;
+    ASSERT(size % alignment < alignment);
+    size += (alignment - (size % alignment));
+    ASSERT(size % alignment == 0);
+    return size;
+}
+
+
+
+static void*
+aligned_repeat(VkDeviceSize size, const void* data, uint32_t count, VkDeviceSize alignment)
+{
+    // Take any buffer and make `count` consecutive aligned copies of it.
+    // The caller must free the result.
+    VkDeviceSize alsize = alignment > 0 ? get_alignment(size, alignment) : size;
+    VkDeviceSize rep_size = alsize * count;
+    void* repeated = NULL;
+    if (alignment > 0)
+        repeated = aligned_malloc(rep_size, alignment);
+    else
+        repeated = malloc(rep_size);
+    ASSERT(repeated != NULL);
+    memset(repeated, 0, rep_size);
+    for (uint32_t i = 0; i < count; i++)
+    {
+        memcpy((void*)(((int64_t)repeated) + (int64_t)(i * alsize)), data, size);
+    }
+    return repeated;
 }
 
 
