@@ -44,7 +44,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(cglm)
 
 # glfw3 dependency on Windows
-if (WIN32)
+if (WIN32 OR APPLE)
     set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
     set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
     set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
@@ -52,7 +52,6 @@ if (WIN32)
     FetchContent_Declare(
     glfw
     GIT_REPOSITORY https://github.com/glfw/glfw/
-    GIT_TAG        3.3.2
     )
     FetchContent_MakeAvailable(glfw)
 
