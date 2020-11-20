@@ -1812,9 +1812,18 @@ static void _uniform_cursor_callback(VklCanvas* canvas, VklEvent ev)
     double y = ev.u.m.pos[1] / (double)size[1];
 
     TestCanvas* c = ev.user_data;
-    vec4 data = {x, y, 1, 1};
-    // vkl_buffer_regions_upload(
-    //     canvas->gpu->context, &c->uniform_buffer_regions, 0, sizeof(vec4), data);
+    vec4 vec = {x, y, 1, 1};
+
+    VkDeviceSize bsize = canvas->swapchain.img_count * c->uniform_buffer_regions.aligned_size;
+    void* data = calloc(canvas->swapchain.img_count, c->uniform_buffer_regions.aligned_size);
+
+    for (uint32_t i = 0; i < canvas->swapchain.img_count; i++)
+    {
+        void* pointer = get_aligned_pointer(data, c->uniform_buffer_regions.aligned_size, i);
+        memcpy(pointer, vec, sizeof(vec4));
+    }
+    vkl_buffer_regions_upload(canvas->gpu->context, &c->uniform_buffer_regions, 0, bsize, data);
+    FREE(data);
 }
 
 static int vklite2_canvas_6(VkyTestContext* context)
@@ -1823,6 +1832,8 @@ static int vklite2_canvas_6(VkyTestContext* context)
     VklGpu* gpu = vkl_gpu(app, 0);
     VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
     AT(canvas != NULL);
+    uint32_t img_count = canvas->swapchain.img_count;
+    ASSERT(img_count > 0);
 
     TestVisual visual = {0};
     TestCanvas c = {0};
@@ -1834,7 +1845,7 @@ static int vklite2_canvas_6(VkyTestContext* context)
     c.framebuffers = canvas->framebuffers;
 
     // Triangle graphics.
-    _triangle_graphics(&c, &visual, "");
+    _triangle_graphics(&c, &visual, "_ubo");
 
     // Create the slots.
     visual.slots = vkl_slots(gpu);
@@ -1844,13 +1855,13 @@ static int vklite2_canvas_6(VkyTestContext* context)
 
     // Uniform buffer.
     c.uniform_buffer_regions =
-        vkl_alloc_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 3, sizeof(vec4));
+        vkl_alloc_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, img_count, sizeof(vec4));
     ASSERT(c.uniform_buffer_regions.aligned_size >= c.uniform_buffer_regions.size);
 
     // Create the bindings.
     visual.bindings = vkl_bindings(&visual.slots);
     ASSERT(c.uniform_buffer_regions.buffer != VK_NULL_HANDLE);
-    vkl_bindings_create(&visual.bindings, 3);
+    vkl_bindings_create(&visual.bindings, img_count);
     vkl_bindings_buffer(&visual.bindings, 0, &c.uniform_buffer_regions);
     vkl_bindings_update(&visual.bindings);
     c.bindings = &visual.bindings;

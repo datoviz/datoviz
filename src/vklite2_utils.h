@@ -1305,6 +1305,8 @@ static void update_descriptor_set(
             log_trace("bind buffer for binding point %d", i);
             br = &buffer_regions[i];
             ASSERT(buffer_regions[i].buffer != NULL);
+            ASSERT(br->size > 0);
+
             buffer_infos[i].buffer = br->buffer->buffer;
             buffer_infos[i].offset = br->offsets[idx];
             buffer_infos[i].range = br->size;

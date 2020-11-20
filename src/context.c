@@ -324,16 +324,6 @@ void vkl_context_destroy(VklContext* context)
 /*  Buffer allocation                                                                            */
 /*************************************************************************************************/
 
-// static VkDeviceSize _align_offset(VklGpu* gpu, VkDeviceSize offset)
-// {
-//     VkDeviceSize alignment = gpu->device_properties.limits.minUniformBufferOffsetAlignment;
-//     ASSERT(alignment > 0);
-//     if (offset % alignment != 0)
-//         offset += (alignment - offset % alignment);
-//     ASSERT(offset % alignment == 0);
-//     return offset;
-// }
-
 VklBufferRegions vkl_alloc_buffers(
     VklContext* context, uint32_t buffer_idx, uint32_t buffer_count, VkDeviceSize size)
 {
@@ -694,16 +684,20 @@ static void process_buffer_upload(VklContext* context, VklTransfer tr)
     // Should be consecutive offsets.
     VkDeviceSize offset = tr.u.buf.regions.offsets[0];
     uint32_t n_regions = tr.u.buf.regions.count;
-    for (uint32_t i = 1; i < n_regions; i++)
-    {
-        ASSERT(tr.u.buf.regions.offsets[i] == offset + i * size);
-    }
+
+    // WARNING TODO: we assume here that the passed data and size represent all regions at once.
+    // The library should take care of alignment and data repeat automatically.
+
+    // for (uint32_t i = 1; i < n_regions; i++)
+    // {
+    //     ASSERT(tr.u.buf.regions.offsets[i] == offset + i * size);
+    // }
     // Take into account the transfer offset.
     offset += tr.u.buf.offset;
 
     // Copy to staging buffer
     ASSERT(tr.u.buf.regions.buffer != 0);
-    vkl_cmd_copy_buffer(cmds, 0, staging, 0, tr.u.buf.regions.buffer, offset, size * n_regions);
+    vkl_cmd_copy_buffer(cmds, 0, staging, 0, tr.u.buf.regions.buffer, offset, size);
     vkl_cmd_end(cmds, 0);
 
     // Wait for the render queue to be idle.
