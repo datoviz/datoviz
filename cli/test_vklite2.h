@@ -63,7 +63,7 @@ typedef struct
     VklSlots slots;
     VklBindings bindings;
     VklBuffer buffer;
-    VklCommands cmds;
+    // VklCommands cmds;
 } TestVisual;
 
 
@@ -497,9 +497,6 @@ static void test_triangle(TestCanvas* canvas, TestVisual* visual)
     canvas->buffer_regions.buffer = &visual->buffer;
     canvas->buffer_regions.size = size;
     canvas->buffer_regions.count = 1;
-
-    // Commands.
-    visual->cmds = vkl_commands(gpu, 0, 1);
 }
 
 
@@ -1073,8 +1070,9 @@ static int vklite2_graphics(VkyTestContext* context)
 
     TestVisual visual = {0};
     test_triangle(&canvas, &visual);
-    triangle_commands(&canvas, &visual.cmds, 0);
-    vkl_cmd_submit_sync(&visual.cmds, 0);
+    VklCommands cmds = vkl_commands(gpu, 0, 1);
+    triangle_commands(&canvas, &cmds, 0);
+    vkl_cmd_submit_sync(&cmds, 0);
 
     save_screenshot(framebuffers, "screenshot.ppm");
 
@@ -1119,68 +1117,16 @@ static int vklite2_basic_canvas_triangle(VkyTestContext* context)
     vkl_gpu_create(gpu, window->surface);
 
     TestCanvas canvas = glfw_canvas(gpu, window);
-    VklRenderpass* renderpass = &canvas.renderpass;
 
-    VklGraphics* graphics = vkl_graphics(gpu);
-    canvas.graphics = graphics;
-    AT(graphics != NULL);
-
-    vkl_graphics_renderpass(graphics, renderpass, 0);
-    vkl_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-    vkl_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
-
-    char path[1024];
-    snprintf(path, sizeof(path), "%s/spirv/default.vert.spv", DATA_DIR);
-    vkl_graphics_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
-    snprintf(path, sizeof(path), "%s/spirv/default.frag.spv", DATA_DIR);
-    vkl_graphics_shader(graphics, VK_SHADER_STAGE_FRAGMENT_BIT, path);
-    vkl_graphics_vertex_binding(graphics, 0, sizeof(VklVertex));
-    vkl_graphics_vertex_attr(graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VklVertex, pos));
-    vkl_graphics_vertex_attr(
-        graphics, 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(VklVertex, color));
-
-    // Create the slots.
-    VklSlots slots = vkl_slots(gpu);
-    vkl_slots_create(&slots);
-    vkl_graphics_slots(graphics, &slots);
-
-    // Create the bindings.
-    VklBindings bindings = vkl_bindings(&slots);
-    vkl_bindings_create(&bindings, 1);
-    vkl_bindings_update(&bindings);
-    canvas.bindings = &bindings;
-
-    // Create the graphics pipeline.
-    vkl_graphics_create(graphics);
-
-    // Create the buffer.
-    VklBuffer buffer = vkl_buffer(gpu);
-    VkDeviceSize size = 3 * sizeof(VklVertex);
-    vkl_buffer_size(&buffer, size);
-    vkl_buffer_usage(&buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-    vkl_buffer_memory(
-        &buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    vkl_buffer_create(&buffer);
-
-    // Upload the triangle data.
-    VklVertex data[3] = {
-        {{-1, +1, 0}, {1, 0, 0, 1}},
-        {{+1, +1, 0}, {0, 1, 0, 1}},
-        {{+0, -1, 0}, {0, 0, 1, 1}},
-    };
-    vkl_buffer_upload(&buffer, 0, size, data);
-
-    VklBufferRegions br = {0};
-    br.buffer = &buffer;
-    br.size = size;
-    br.count = 1;
-    canvas.buffer_regions = br;
+    TestVisual visual = {0};
+    test_triangle(&canvas, &visual);
+    VklCommands cmds = vkl_commands(gpu, 0, 1);
+    triangle_commands(&canvas, &cmds, 0);
+    vkl_cmd_submit_sync(&cmds, 0);
 
     show_canvas(canvas, triangle_commands, 10);
 
-    vkl_bindings_destroy(&bindings);
-    vkl_slots_destroy(&slots);
-    vkl_buffer_destroy(&buffer);
+    destroy_visual(&visual);
     destroy_canvas(&canvas);
 
     TEST_END
@@ -1590,6 +1536,21 @@ static int vklite2_canvas_2(VkyTestContext* context)
 /*  Canvas 3                                                                                     */
 /*************************************************************************************************/
 
+static void _triangle_refill(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(ev.u.rf.cmd_count == 1);
+    VklCommands* cmds = ev.u.rf.cmds[0];
+    ASSERT(cmds->queue_idx == VKL_DEFAULT_QUEUE_RENDER);
+    TestCanvas* c = ev.user_data;
+
+    // HACK
+    c->renderpass = canvas->renderpasses[0];
+    c->framebuffers = canvas->framebuffers;
+
+    triangle_commands(c, cmds, ev.u.rf.img_idx);
+}
+
 static int vklite2_canvas_3(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
@@ -1597,6 +1558,19 @@ static int vklite2_canvas_3(VkyTestContext* context)
     VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
     AT(canvas != NULL);
 
+    TestVisual visual = {0};
+    TestCanvas c = {0};
+    c.gpu = gpu;
+
+    // HACK: 2 copies of the renderpass
+    c.renderpass = canvas->renderpasses[0];
+    c.framebuffers = canvas->framebuffers;
+
+    test_triangle(&c, &visual);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_refill, &c);
+
     vkl_app_run(app, 0);
+
+    destroy_visual(&visual);
     TEST_END
 }

@@ -106,7 +106,6 @@ depth_image(VklImages* depth_images, VklRenderpass* renderpass, uint32_t width, 
 
 static void blank_commands(VklCanvas* canvas, VklCommands* cmds, uint32_t cmd_idx)
 {
-    vkl_cmd_reset(cmds, cmd_idx);
     vkl_cmd_begin(cmds, cmd_idx);
     vkl_cmd_begin_renderpass(cmds, cmd_idx, &canvas->renderpasses[0], &canvas->framebuffers);
     vkl_cmd_end_renderpass(cmds, cmd_idx);
@@ -166,6 +165,10 @@ static void _refill_callbacks(VklCanvas* canvas, VklPrivateEvent ev, uint32_t im
     ASSERT(ev.u.rf.cmd_count > 0);
     ev.u.rf.img_idx = img_idx;
 
+    // Reset all command buffers before calling the REFILL callbacks.
+    for (uint32_t i = 0; i < ev.u.rf.cmd_count; i++)
+        vkl_cmd_reset(ev.u.rf.cmds[i], img_idx);
+
     int res = _canvas_callbacks(canvas, ev);
     if (res == 0)
     {
@@ -208,7 +211,7 @@ static void _refill_canvas(VklCanvas* canvas, uint32_t img_idx)
     // refill)
     if (img_idx == UINT32_MAX)
     {
-        log_trace("complete refill of the canvas");
+        log_debug("complete refill of the canvas");
         for (img_idx = 0; img_idx < img_count; img_idx++)
         {
             _refill_callbacks(canvas, ev, img_idx);
@@ -284,7 +287,7 @@ static void* _event_thread(void* p_canvas)
     VklEvent ev = {0};
     while (true)
     {
-        log_trace("event thread awaits for events...");
+        // log_trace("event thread awaits for events...");
         // Wait until an event is available
         ev = vkl_event_dequeue(canvas, true);
         if (ev.type == VKL_EVENT_NONE)
@@ -292,7 +295,7 @@ static void* _event_thread(void* p_canvas)
             log_trace("received empty event, stopping the event thread");
             break;
         }
-        log_trace("event dequeued type %d, processing it...", ev.type);
+        // log_trace("event dequeued type %d, processing it...", ev.type);
         // process the dequeued task
         _event_callbacks(canvas, ev);
     }
@@ -528,7 +531,7 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
     canvas->event_thread = vkl_thread(_event_thread, canvas);
     backend_event_callbacks(canvas);
 
-    _refill_canvas(canvas, UINT32_MAX);
+    // _refill_canvas(canvas, UINT32_MAX);
 
     obj_created(&canvas->obj);
 
@@ -904,6 +907,15 @@ void vkl_canvas_frame(VklCanvas* canvas)
 
     // Call TIMER private callbacks, in the main thread.
     _timer_callbacks(canvas);
+
+    // Refill all command buffers at the first iteration.
+    if (canvas->frame_idx == 0)
+    {
+        log_debug("fill the command buffers at the first frame");
+        vkl_gpu_wait(canvas->gpu);
+        _refill_canvas(canvas, UINT32_MAX);
+        canvas->obj.status = VKL_OBJECT_STATUS_CREATED;
+    }
 
     // Get the next status.
     VklObjectStatus next_status = atomic_load(&canvas->next_status);
