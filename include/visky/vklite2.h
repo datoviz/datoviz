@@ -1070,8 +1070,7 @@ VKY_EXPORT void
 vkl_slots_binding(VklSlots* slots, uint32_t idx, VkDescriptorType type, VkDeviceSize item_size);
 
 VKY_EXPORT void vkl_slots_push_constant(
-    VklSlots* slots, uint32_t idx, //
-    VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders);
+    VklSlots* slots, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders);
 
 VKY_EXPORT void* vkl_slots_dynamic_allocate(VklSlots* slots, uint32_t idx, VkDeviceSize size);
 

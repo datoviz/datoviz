@@ -1432,11 +1432,10 @@ void vkl_slots_binding(
 
 
 void vkl_slots_push_constant(
-    VklSlots* slots, uint32_t idx, //
-    VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders)
+    VklSlots* slots, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders)
 {
     ASSERT(slots != NULL);
-    ASSERT(idx == slots->push_count);
+    uint32_t idx = slots->push_count;
     ASSERT(idx < VKL_MAX_PUSH_CONSTANTS);
 
     slots->push_offsets[idx] = offset;

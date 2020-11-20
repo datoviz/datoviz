@@ -795,7 +795,7 @@ static int vklite2_push(VkyTestContext* context)
     // Create the slots.
     VklSlots slots = vkl_slots(gpu);
     vkl_slots_binding(&slots, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 0);
-    vkl_slots_push_constant(&slots, 0, 0, sizeof(float), VK_SHADER_STAGE_COMPUTE_BIT);
+    vkl_slots_push_constant(&slots, 0, sizeof(float), VK_SHADER_STAGE_COMPUTE_BIT);
     vkl_slots_create(&slots);
     vkl_compute_slots(&compute, &slots);
 
@@ -1596,6 +1596,8 @@ static int vklite2_canvas_3(VkyTestContext* context)
 
 
 
+static vec2 push_vec; // NOTE: not thread-safe
+
 static void _triangle_push_refill(VklCanvas* canvas, VklPrivateEvent ev)
 {
     ASSERT(canvas != NULL);
@@ -1603,12 +1605,40 @@ static void _triangle_push_refill(VklCanvas* canvas, VklPrivateEvent ev)
     VklCommands* cmds = ev.u.rf.cmds[0];
     ASSERT(cmds->queue_idx == VKL_DEFAULT_QUEUE_RENDER);
     TestCanvas* c = ev.user_data;
+    uint32_t idx = ev.u.rf.img_idx;
 
     // HACK
     c->renderpass = canvas->renderpasses[0];
     c->framebuffers = canvas->framebuffers;
 
-    triangle_commands(c, cmds, ev.u.rf.img_idx);
+    vkl_cmd_begin(cmds, idx);
+    vkl_cmd_begin_renderpass(cmds, idx, &c->renderpass, &canvas->framebuffers);
+    vkl_cmd_viewport(
+        cmds, idx,
+        (VkViewport){
+            0, 0, c->framebuffers.attachments[0]->width, c->framebuffers.attachments[0]->height, 0,
+            1});
+    vkl_cmd_bind_vertex_buffer(cmds, idx, &c->buffer_regions, 0);
+    vkl_cmd_bind_graphics(cmds, idx, c->graphics, c->bindings, 0);
+
+    // Push constants.
+    vkl_cmd_push_constants(
+        cmds, idx, c->graphics->slots, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vec2), push_vec);
+
+    vkl_cmd_draw(cmds, idx, 0, 3);
+    vkl_cmd_end_renderpass(cmds, idx);
+    vkl_cmd_end(cmds, idx);
+}
+
+static void _push_cursor_callback(VklCanvas* canvas, VklEvent ev)
+{
+    uvec2 size = {0};
+    vkl_canvas_size(canvas, VKL_CANVAS_SIZE_SCREEN, size);
+    double x = ev.u.m.pos[0] / (double)size[0];
+    double y = ev.u.m.pos[1] / (double)size[1];
+    push_vec[0] = x;
+    push_vec[1] = y;
+    vkl_canvas_to_refill(canvas, true);
 }
 
 // Triangle canvas
@@ -1632,6 +1662,7 @@ static int vklite2_canvas_4(VkyTestContext* context)
 
     // Create the slots.
     visual.slots = vkl_slots(gpu);
+    vkl_slots_push_constant(&visual.slots, 0, sizeof(vec2), VK_SHADER_STAGE_VERTEX_BIT);
     vkl_slots_create(&visual.slots);
     vkl_graphics_slots(visual.graphics, &visual.slots);
 
@@ -1645,10 +1676,32 @@ static int vklite2_canvas_4(VkyTestContext* context)
     vkl_graphics_create(visual.graphics);
 
     // Triangle buffer.
-    _triangle_buffer(&c, &visual);
+    visual.buffer = vkl_buffer(gpu);
+    VkDeviceSize size = 3 * sizeof(VklVertex);
+    vkl_buffer_size(&visual.buffer, size);
+    vkl_buffer_usage(&visual.buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    vkl_buffer_memory(
+        &visual.buffer,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vkl_buffer_create(&visual.buffer);
+
+    // Upload the triangle data.
+    VklVertex data[3] = {
+        {{-1, +1, 0}, {1, 0, 0, 1}},
+        {{+1, +1, 0}, {0, 1, 0, 1}},
+        {{+0, -1, 0}, {0, 0, 1, 1}},
+    };
+    vkl_buffer_upload(&visual.buffer, 0, size, data);
+
+    c.buffer_regions.buffer = &visual.buffer;
+    c.buffer_regions.size = size;
+    c.buffer_regions.count = 1;
 
     // Refill callback
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_push_refill, &c);
+
+    // Cursor callback.
+    vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _push_cursor_callback, NULL);
 
     vkl_app_run(app, 0);
     destroy_visual(&visual);
