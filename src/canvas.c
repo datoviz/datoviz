@@ -21,7 +21,7 @@
         }                                                                                         \
     }
 #define VKL_DEFAULT_IMAGE_FORMAT VK_FORMAT_B8G8R8A8_UNORM
-// #define VKL_DEFAULT_PRESENT_MODE      VK_PRESENT_MODE_FIFO_KHR
+// #define VKL_DEFAULT_PRESENT_MODE VK_PRESENT_MODE_FIFO_KHR
 #define VKL_DEFAULT_PRESENT_MODE      VK_PRESENT_MODE_IMMEDIATE_KHR
 #define VKL_MIN_SWAPCHAIN_IMAGE_COUNT 3
 #define VKL_SEMAPHORE_IMG_AVAILABLE   0
@@ -468,6 +468,9 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
     {
         log_trace("canvas automatically create the GPU context");
         gpu->context = vkl_context(gpu, window);
+        // Important: the transfer mode must be async as we will be dealing with a swapchain
+        // and multiple threads.
+        vkl_transfer_mode(gpu->context, VKL_TRANSFER_MODE_ASYNC);
     }
 
     // Create default renderpass.
@@ -530,8 +533,6 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
     canvas->event_queue = vkl_fifo(VKL_MAX_FIFO_CAPACITY);
     canvas->event_thread = vkl_thread(_event_thread, canvas);
     backend_event_callbacks(canvas);
-
-    // _refill_canvas(canvas, UINT32_MAX);
 
     obj_created(&canvas->obj);
 

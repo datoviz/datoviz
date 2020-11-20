@@ -1733,6 +1733,7 @@ static void _vertex_cursor_callback(VklCanvas* canvas, VklEvent ev)
     {
         data[i].color[0] = x;
         data[i].color[1] = y;
+        data[i].color[2] = 1;
     }
     vkl_buffer_regions_upload(
         canvas->gpu->context, &c->buffer_regions, 0, 3 * sizeof(VklVertex), data);
