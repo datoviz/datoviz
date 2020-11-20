@@ -962,6 +962,8 @@ vkl_buffer_regions(VklBuffer* buffer, uint32_t count, VkDeviceSize size, VkDevic
     regions.buffer = buffer;
     regions.count = count;
     regions.size = size;
+    // Aligned size for uniform buffers.
+    regions.aligned_size = _align(buffer->gpu, size);
     if (offsets != NULL)
         memcpy(regions.offsets, offsets, count * sizeof(VkDeviceSize));
 

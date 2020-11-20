@@ -1,4 +1,5 @@
 #include "../include/visky/context.h"
+#include "vklite2_utils.h"
 #include <stdlib.h>
 
 
@@ -323,16 +324,15 @@ void vkl_context_destroy(VklContext* context)
 /*  Buffer allocation                                                                            */
 /*************************************************************************************************/
 
-static VkDeviceSize _align_offset(VklGpu* gpu, VkDeviceSize offset)
-{
-    VkDeviceSize alignment = gpu->device_properties.limits.minUniformBufferOffsetAlignment;
-    ASSERT(alignment > 0);
-    if (offset % alignment != 0)
-        offset += (alignment - offset % alignment);
-    ASSERT(offset % alignment == 0);
-    return offset;
-}
-
+// static VkDeviceSize _align_offset(VklGpu* gpu, VkDeviceSize offset)
+// {
+//     VkDeviceSize alignment = gpu->device_properties.limits.minUniformBufferOffsetAlignment;
+//     ASSERT(alignment > 0);
+//     if (offset % alignment != 0)
+//         offset += (alignment - offset % alignment);
+//     ASSERT(offset % alignment == 0);
+//     return offset;
+// }
 
 VklBufferRegions vkl_alloc_buffers(
     VklContext* context, uint32_t buffer_idx, uint32_t buffer_count, VkDeviceSize size)
@@ -341,7 +341,8 @@ VklBufferRegions vkl_alloc_buffers(
     ASSERT(context->gpu != NULL);
     ASSERT(buffer_count > 0);
 
-    VklBufferRegions regions = {0};
+    VklBufferRegions regions =
+        vkl_buffer_regions(&context->buffers[buffer_idx], buffer_count, size, NULL);
 
     if (buffer_idx >= context->max_buffers || !is_obj_created(&context->buffers[buffer_idx].obj))
     {
@@ -349,15 +350,11 @@ VklBufferRegions vkl_alloc_buffers(
         return regions;
     }
 
-    regions.buffer = &context->buffers[buffer_idx];
-    regions.count = buffer_count;
-    regions.size = size;
-
     // Alignment for uniform buffers.
     if (buffer_idx == VKL_DEFAULT_BUFFER_UNIFORM)
     {
         // Alignment of offset.
-        VkDeviceSize offset = _align_offset(context->gpu, context->allocated_sizes[buffer_idx]);
+        VkDeviceSize offset = _align(context->gpu, context->allocated_sizes[buffer_idx]);
         log_debug(
             "make sure buffer allocation is aligned, add %d extra bytes",
             context->allocated_sizes[buffer_idx] - offset);
@@ -365,9 +362,11 @@ VklBufferRegions vkl_alloc_buffers(
 
         // Alignment of size.
         VkDeviceSize requested_size = size;
-        size = _align_offset(context->gpu, requested_size);
+        size = _align(context->gpu, requested_size);
         log_debug(
             "make sure buffer allocation is aligned, add %d extra bytes", size - requested_size);
+        regions.aligned_size = size;
+        ASSERT(regions.aligned_size >= regions.size);
     }
 
     // Need to reallocate?

@@ -126,6 +126,18 @@ static void* get_aligned_pointer(const void* data, VkDeviceSize alignment, uint3
 
 
 
+static VkDeviceSize _align(VklGpu* gpu, VkDeviceSize s)
+{
+    VkDeviceSize alignment = gpu->device_properties.limits.minUniformBufferOffsetAlignment;
+    ASSERT(alignment > 0);
+    if (s % alignment != 0)
+        s += (alignment - s % alignment);
+    ASSERT(s % alignment == 0);
+    return s;
+}
+
+
+
 /*************************************************************************************************/
 /*  Validation layers                                                                            */
 /*************************************************************************************************/

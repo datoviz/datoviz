@@ -1813,8 +1813,8 @@ static void _uniform_cursor_callback(VklCanvas* canvas, VklEvent ev)
 
     TestCanvas* c = ev.user_data;
     vec4 data = {x, y, 1, 1};
-    vkl_buffer_regions_upload(
-        canvas->gpu->context, &c->uniform_buffer_regions, 0, sizeof(vec4), data);
+    // vkl_buffer_regions_upload(
+    //     canvas->gpu->context, &c->uniform_buffer_regions, 0, sizeof(vec4), data);
 }
 
 static int vklite2_canvas_6(VkyTestContext* context)
@@ -1845,6 +1845,7 @@ static int vklite2_canvas_6(VkyTestContext* context)
     // Uniform buffer.
     c.uniform_buffer_regions =
         vkl_alloc_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 3, sizeof(vec4));
+    ASSERT(c.uniform_buffer_regions.aligned_size >= c.uniform_buffer_regions.size);
 
     // Create the bindings.
     visual.bindings = vkl_bindings(&visual.slots);

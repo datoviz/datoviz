@@ -521,6 +521,7 @@ struct VklBufferRegions
     VklBuffer* buffer;
     uint32_t count;
     VkDeviceSize size;
+    VkDeviceSize aligned_size;
     VkDeviceSize offsets[VKL_MAX_BUFFER_REGIONS_PER_SET];
 };
 
