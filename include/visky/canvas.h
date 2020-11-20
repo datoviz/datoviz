@@ -230,6 +230,7 @@ struct VklScreencastEvent
 struct VklRefillEvent
 {
     uint32_t img_idx;
+    uint32_t cmd_count;
     VklCommands* cmds[VKL_MAX_COMMANDS];
 };
 
@@ -363,6 +364,9 @@ struct VklCanvas
 
     uint32_t max_commands;
     VklCommands* commands;
+    // when refilling command buffers, keep track of which img_idx were updated until we stop
+    // calling the REFILL callbackks
+    bool img_updated[VKL_MAX_SWAPCHAIN_IMAGES];
 
     // Synchronization events.
     uint32_t max_renderpasses;

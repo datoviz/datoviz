@@ -103,16 +103,13 @@ depth_image(VklImages* depth_images, VklRenderpass* renderpass, uint32_t width, 
 
 
 
-static void blank_commands(VklCanvas* canvas, VklCommands* cmds)
+static void blank_commands(VklCanvas* canvas, VklCommands* cmds, uint32_t cmd_idx)
 {
-    vkl_cmd_reset(cmds);
-    for (uint32_t i = 0; i < cmds->count; i++)
-    {
-        vkl_cmd_begin(cmds, i);
-        vkl_cmd_begin_renderpass(cmds, i, &canvas->renderpasses[0], &canvas->framebuffers);
-        vkl_cmd_end_renderpass(cmds, i);
-        vkl_cmd_end(cmds, i);
-    }
+    vkl_cmd_reset(cmds, cmd_idx);
+    vkl_cmd_begin(cmds, cmd_idx);
+    vkl_cmd_begin_renderpass(cmds, cmd_idx, &canvas->renderpasses[0], &canvas->framebuffers);
+    vkl_cmd_end_renderpass(cmds, cmd_idx);
+    vkl_cmd_end(cmds, cmd_idx);
 }
 
 
@@ -162,16 +159,34 @@ static int _frame_callbacks(VklCanvas* canvas)
 
 
 
-static void _refill_canvas(VklCanvas* canvas)
+static void _refill_callbacks(VklCanvas* canvas, VklPrivateEvent ev, uint32_t img_idx)
 {
-    log_trace("refill canvas");
+    ASSERT(canvas != NULL);
+    ASSERT(ev.u.rf.cmd_count > 0);
+    ev.u.rf.img_idx = img_idx;
 
+    int res = _canvas_callbacks(canvas, ev);
+    if (res == 0)
+    {
+        log_trace("no REFILL callback registered, filling command buffers with blank screen");
+        for (uint32_t i = 0; i < ev.u.rf.cmd_count; i++)
+        {
+            blank_commands(canvas, ev.u.rf.cmds[i], img_idx);
+        }
+    }
+}
+
+
+
+static void _refill_canvas(VklCanvas* canvas, uint32_t img_idx)
+{
     VklPrivateEvent ev = {0};
     ev.type = VKL_PRIVATE_EVENT_REFILL;
 
     // Fill the active command buffers for the RENDER queue.
     uint32_t k = 0;
     VklCommands* cmds = NULL;
+    uint32_t img_count = 0;
     for (uint32_t i = 0; i < canvas->max_commands; i++)
     {
         cmds = &canvas->commands[i];
@@ -179,21 +194,29 @@ static void _refill_canvas(VklCanvas* canvas)
             break;
         if (cmds->queue_idx == VKL_DEFAULT_QUEUE_RENDER &&
             cmds->obj.status >= VKL_OBJECT_STATUS_INIT)
+        {
             ev.u.rf.cmds[k++] = &canvas->commands[i];
+            img_count = canvas->commands[i].count;
+        }
     }
     ASSERT(k > 0);
+    ASSERT(img_count > 0);
+    ev.u.rf.cmd_count = k;
 
-    // Current swapchain image index. This is the index of the VklCommands object that will
-    // need to be refilled.
-    ev.u.rf.img_idx = canvas->swapchain.img_idx;
-    if (_canvas_callbacks(canvas, ev) == 0)
+    // Refill aither all commands in each VklCommand (init and resize), or just one (custom
+    // refill)
+    if (img_idx == UINT32_MAX)
     {
-        log_debug("no REFILL callback registered, filling command buffers with blank screen");
-        // NOTE: empty command buffers if no REFILL callback was registered.
-        for (uint32_t i = 0; i < k; i++)
+        log_trace("complete refill of the canvas");
+        for (img_idx = 0; img_idx < img_count; img_idx++)
         {
-            blank_commands(canvas, ev.u.rf.cmds[i]);
+            _refill_callbacks(canvas, ev, img_idx);
         }
+    }
+    else
+    {
+        log_trace("refill of the canvas for image idx #%d", img_idx);
+        _refill_callbacks(canvas, ev, img_idx);
     }
 }
 
@@ -504,7 +527,7 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
     canvas->event_thread = vkl_thread(_event_thread, canvas);
     backend_event_callbacks(canvas);
 
-    _refill_canvas(canvas);
+    _refill_canvas(canvas, UINT32_MAX);
 
     obj_created(&canvas->obj);
 
@@ -563,7 +586,7 @@ void vkl_canvas_recreate(VklCanvas* canvas)
     ASSERT(framebuffers->attachments[0]->height == height);
     vkl_framebuffers_create(framebuffers, renderpass);
 
-    _refill_canvas(canvas);
+    _refill_canvas(canvas, UINT32_MAX);
 }
 
 
@@ -904,9 +927,35 @@ void vkl_canvas_frame(VklCanvas* canvas)
     // Refill if needed.
     if (canvas->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE)
     {
-        vkl_queue_wait(canvas->gpu, VKL_DEFAULT_QUEUE_RENDER);
-        _refill_canvas(canvas);
-        canvas->obj.status = VKL_OBJECT_STATUS_CREATED;
+        log_trace("need to update canvas, will refill the command buffers");
+
+        // Wait for command buffer to be ready for update.
+        vkl_fences_wait(&canvas->fences[VKL_FENCES_FLIGHT], canvas->swapchain.img_idx);
+        // vkl_queue_wait(canvas->gpu, VKL_DEFAULT_QUEUE_RENDER); // DEBUG
+
+        // Refill the command buffer for the current swapchain image.
+        _refill_canvas(canvas, canvas->swapchain.img_idx);
+
+        // Mark that command buffer as updated.
+        canvas->img_updated[canvas->swapchain.img_idx] = true;
+
+        // We move away from NEED_UPDATE status only if all swapchain images have been updated.
+        bool all_updated = true;
+        for (uint32_t i = 0; i < canvas->swapchain.img_count; i++)
+        {
+            if (!canvas->img_updated[i])
+            {
+                all_updated = false;
+                break;
+            }
+        }
+        if (all_updated)
+        {
+            log_trace("all command buffers updated, no longer need to update");
+            canvas->obj.status = VKL_OBJECT_STATUS_CREATED;
+            // Reset the img_updated bool array.
+            memset(canvas->img_updated, 0, VKL_MAX_SWAPCHAIN_IMAGES);
+        }
     }
 }
 

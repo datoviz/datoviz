@@ -242,7 +242,6 @@ typedef enum
         {                                                                                         \
             o = &instances[i];                                                                    \
             o->obj.status = VKL_OBJECT_STATUS_INIT;                                               \
-            o->obj.idx = i;                                                                       \
             break;                                                                                \
         }                                                                                         \
     if (o == NULL)                                                                                \
@@ -288,7 +287,7 @@ struct VklObject
 {
     VklObjectType type;
     VklObjectStatus status;
-    uint32_t idx; // index of the object among all objects of the same type
+    uint32_t id; // unique identifier among the objects of the same type
 };
 
 
@@ -962,7 +961,7 @@ VKY_EXPORT void vkl_cmd_begin(VklCommands* cmds, uint32_t idx);
 
 VKY_EXPORT void vkl_cmd_end(VklCommands* cmds, uint32_t idx);
 
-VKY_EXPORT void vkl_cmd_reset(VklCommands* cmds);
+VKY_EXPORT void vkl_cmd_reset(VklCommands* cmds, uint32_t idx);
 
 VKY_EXPORT void vkl_cmd_free(VklCommands* cmds);
 

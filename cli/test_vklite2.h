@@ -372,9 +372,11 @@ static void show_canvas(BasicCanvas canvas, FillCallback fill_commands, uint32_t
             vkl_framebuffers_create(framebuffers, renderpass);
 
             // Need to refill the command buffers.
-            vkl_cmd_reset(&cmds);
             for (uint32_t i = 0; i < cmds.count; i++)
+            {
+                vkl_cmd_reset(&cmds, i);
                 fill_commands(&canvas, &cmds, i);
+            }
         }
         else
         {
@@ -543,7 +545,7 @@ static int vklite2_commands(VkyTestContext* context)
     VklCommands cmds = vkl_commands(gpu, 0, 3);
     vkl_cmd_begin(&cmds, 0);
     vkl_cmd_end(&cmds, 0);
-    vkl_cmd_reset(&cmds);
+    vkl_cmd_reset(&cmds, 0);
     vkl_cmd_free(&cmds);
 
     TEST_END
@@ -1460,7 +1462,7 @@ static void _frame_callback(VklCanvas* canvas, VklPrivateEvent ev)
 {
     log_debug(
         "canvas #%d, frame callback #%d, time %.6f, interval %.6f", //
-        canvas->obj.idx, ev.u.f.idx, ev.u.f.time, ev.u.f.interval);
+        canvas->obj.id, ev.u.f.idx, ev.u.f.time, ev.u.f.interval);
 }
 
 static void _key_callback(VklCanvas* canvas, VklEvent ev)
@@ -1487,8 +1489,9 @@ static void _cursor_callback(VklCanvas* canvas, VklEvent ev)
 
 static void _timer_callback(VklCanvas* canvas, VklPrivateEvent ev)
 {
-    log_debug("timer callback #%d time %.3f", ev.u.t.idx, ev.u.t.time);
-    vkl_canvas_clear_color(canvas, (VkClearColorValue){{fmod(ev.u.t.time, 1), 0, 0, 1}});
+    log_trace("timer callback #%d time %.3f", ev.u.t.idx, ev.u.t.time);
+    float x = exp(-.025 * (float)ev.u.t.idx);
+    vkl_canvas_clear_color(canvas, (VkClearColorValue){{x, 0, 1 - x, 1}});
 }
 
 
@@ -1546,7 +1549,7 @@ static int vklite2_canvas_2(VkyTestContext* context)
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_BUTTON, 0, _button_callback, NULL);
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _cursor_callback, NULL);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, .1, _timer_callback, NULL);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, .05, _timer_callback, NULL);
 
     vkl_app_run(app, 0);
     TEST_END

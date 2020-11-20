@@ -718,17 +718,14 @@ void vkl_cmd_end(VklCommands* cmds, uint32_t idx)
 
 
 
-void vkl_cmd_reset(VklCommands* cmds)
+void vkl_cmd_reset(VklCommands* cmds, uint32_t idx)
 {
     ASSERT(cmds != NULL);
     ASSERT(cmds->count > 0);
 
     log_trace("reset %d command buffer(s)", cmds->count);
-    for (uint32_t i = 0; i < cmds->count; i++)
-    {
-        ASSERT(cmds->cmds[i] != VK_NULL_HANDLE);
-        VK_CHECK_RESULT(vkResetCommandBuffer(cmds->cmds[i], 0));
-    }
+    ASSERT(cmds->cmds[idx] != VK_NULL_HANDLE);
+    VK_CHECK_RESULT(vkResetCommandBuffer(cmds->cmds[idx], 0));
 }
 
 
@@ -926,7 +923,7 @@ void vkl_buffer_resize(VklBuffer* buffer, VkDeviceSize size, uint32_t queue_idx,
         ASSERT(queue_idx < gpu->queues.queue_count);
         ASSERT(size >= buffer->size);
 
-        vkl_cmd_reset(cmds);
+        vkl_cmd_reset(cmds, 0);
         vkl_cmd_begin(cmds, 0);
         vkl_cmd_copy_buffer(cmds, 0, buffer, 0, &new_buffer, 0, buffer->size);
         vkl_cmd_end(cmds, 0);

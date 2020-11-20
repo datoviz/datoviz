@@ -541,7 +541,7 @@ static void process_texture_upload(VklContext* context, VklTransfer tr)
 
     // Take transfer cmd buf.
     VklCommands* cmds = &context->transfer_cmd;
-    vkl_cmd_reset(cmds);
+    vkl_cmd_reset(cmds, 0);
     vkl_cmd_begin(cmds, 0);
 
     // Image transition.
@@ -594,7 +594,7 @@ static void process_texture_download(VklContext* context, VklTransfer tr)
 
     // Take transfer cmd buf.
     VklCommands* cmds = &context->transfer_cmd;
-    vkl_cmd_reset(cmds);
+    vkl_cmd_reset(cmds, 0);
     vkl_cmd_begin(cmds, 0);
 
     // Image transition.
@@ -659,7 +659,7 @@ static void process_buffer_upload(VklContext* context, VklTransfer tr)
 
     // Take transfer cmd buf.
     VklCommands* cmds = &context->transfer_cmd;
-    vkl_cmd_reset(cmds);
+    vkl_cmd_reset(cmds, 0);
     vkl_cmd_begin(cmds, 0);
 
     // Determine the offset in the target buffer.
@@ -706,7 +706,7 @@ static void process_buffer_download(VklContext* context, VklTransfer tr)
 
     // Take transfer cmd buf.
     VklCommands* cmds = &context->transfer_cmd;
-    vkl_cmd_reset(cmds);
+    vkl_cmd_reset(cmds, 0);
     vkl_cmd_begin(cmds, 0);
 
     // Size of the buffer to transfer.
