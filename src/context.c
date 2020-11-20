@@ -528,7 +528,7 @@ static void process_texture_upload(VklContext* context, VklTransfer tr)
     ASSERT(tr.type == VKL_TRANSFER_TEXTURE_UPLOAD);
 
     // Wait for the transfer queue to be idle.
-    vkl_gpu_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
 
     // Take the staging buffer.
     VklBuffer* staging = &context->buffers[VKL_DEFAULT_BUFFER_STAGING];
@@ -567,7 +567,7 @@ static void process_texture_upload(VklContext* context, VklTransfer tr)
     vkl_cmd_end(cmds, 0);
 
     // Wait for the render queue to be idle.
-    vkl_gpu_queue_wait(gpu, VKL_DEFAULT_QUEUE_RENDER);
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_RENDER);
 
     // Submit the commands to the transfer queue.
     VklSubmit submit = vkl_submit(gpu);
@@ -575,7 +575,7 @@ static void process_texture_upload(VklContext* context, VklTransfer tr)
     vkl_submit_send(&submit, 0, NULL, 0);
 
     // Wait for the transfer queue to be idle.
-    vkl_gpu_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
 }
 
 
@@ -620,7 +620,7 @@ static void process_texture_download(VklContext* context, VklTransfer tr)
     vkl_cmd_end(cmds, 0);
 
     // Wait for the render queue to be idle.
-    vkl_gpu_queue_wait(gpu, VKL_DEFAULT_QUEUE_RENDER);
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_RENDER);
 
     // Submit the commands to the transfer queue.
     VklSubmit submit = vkl_submit(gpu);
@@ -628,7 +628,7 @@ static void process_texture_download(VklContext* context, VklTransfer tr)
     vkl_submit_send(&submit, 0, NULL, 0);
 
     // Wait for the transfer queue to be idle.
-    vkl_gpu_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
 
     // Transfer from the CPU to the GPU staging buffer.
     vkl_buffer_download(staging, 0, tr.u.tex.size, tr.u.tex.data);
@@ -646,7 +646,7 @@ static void process_buffer_upload(VklContext* context, VklTransfer tr)
     ASSERT(tr.type == VKL_TRANSFER_BUFFER_UPLOAD);
 
     // Wait for the transfer queue to be idle.
-    vkl_gpu_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
 
     // Take the staging buffer.
     VklBuffer* staging = &context->buffers[VKL_DEFAULT_BUFFER_STAGING];
@@ -679,7 +679,7 @@ static void process_buffer_upload(VklContext* context, VklTransfer tr)
     vkl_cmd_end(cmds, 0);
 
     // Wait for the render queue to be idle.
-    vkl_gpu_queue_wait(gpu, VKL_DEFAULT_QUEUE_RENDER);
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_RENDER);
 
     // Submit the commands to the transfer queue.
     VklSubmit submit = vkl_submit(gpu);
@@ -687,7 +687,7 @@ static void process_buffer_upload(VklContext* context, VklTransfer tr)
     vkl_submit_send(&submit, 0, NULL, 0);
 
     // Wait for the transfer queue to be idle.
-    vkl_gpu_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
 }
 
 
@@ -729,7 +729,7 @@ static void process_buffer_download(VklContext* context, VklTransfer tr)
     vkl_cmd_end(cmds, 0);
 
     // Wait for the render queue to be idle.
-    vkl_gpu_queue_wait(gpu, VKL_DEFAULT_QUEUE_RENDER);
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_RENDER);
 
     // Submit the commands to the transfer queue.
     VklSubmit submit = vkl_submit(gpu);
@@ -737,7 +737,7 @@ static void process_buffer_download(VklContext* context, VklTransfer tr)
     vkl_submit_send(&submit, 0, NULL, 0);
 
     // Wait for the transfer queue to be idle.
-    vkl_gpu_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
 
     // Transfer from the CPU to the GPU staging buffer.
     vkl_buffer_download(staging, 0, size, tr.u.buf.data);

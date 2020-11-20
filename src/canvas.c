@@ -588,7 +588,7 @@ void vkl_canvas_clear_color(VklCanvas* canvas, VkClearColorValue color)
 {
     ASSERT(canvas != NULL);
     canvas->renderpasses[0].clear_values->color = color;
-    canvas->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+    vkl_canvas_to_refill(canvas, true);
 }
 
 
@@ -861,6 +861,7 @@ void vkl_canvas_frame(VklCanvas* canvas)
     ASSERT(canvas != NULL);
     ASSERT(canvas->window != NULL);
     ASSERT(canvas->app != NULL);
+    ASSERT(canvas->gpu != NULL);
 
     // Update the global and local clocks.
     // These calls update canvas->clock.elapsed and canvas->clock.interval, the latter is
@@ -871,13 +872,13 @@ void vkl_canvas_frame(VklCanvas* canvas)
     // Update cur_status
     atomic_store(&canvas->cur_status, canvas->obj.status);
 
-    // Call INTERACT callbacks (for backends only), which may enqueue some events
+    // Call INTERACT callbacks (for backends only), which may enqueue some events.
     _interact_callbacks(canvas);
 
-    // Call FRAME callbacks (rarely used)
+    // Call FRAME callbacks (rarely used).
     _frame_callbacks(canvas);
 
-    // Call TIMER callbacks, both public and private events
+    // Call TIMER private callbacks, in the main thread.
     _timer_callbacks(canvas);
 
     // Get the next status.
@@ -895,17 +896,18 @@ void vkl_canvas_frame(VklCanvas* canvas)
     // Wait for fence.
     vkl_fences_wait(&canvas->fences[VKL_FENCE_RENDER_FINISHED], canvas->cur_frame);
 
-    // Refill if needed.
-    if (canvas->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE)
-    {
-        _refill_canvas(canvas);
-        canvas->obj.status = VKL_OBJECT_STATUS_CREATED;
-    }
-
     // We acquire the next swapchain image.
     vkl_swapchain_acquire(
         &canvas->swapchain, &canvas->semaphores[VKL_SEMAPHORE_IMG_AVAILABLE], //
         canvas->cur_frame, NULL, 0);
+
+    // Refill if needed.
+    if (canvas->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE)
+    {
+        vkl_queue_wait(canvas->gpu, VKL_DEFAULT_QUEUE_RENDER);
+        _refill_canvas(canvas);
+        canvas->obj.status = VKL_OBJECT_STATUS_CREATED;
+    }
 }
 
 
@@ -1048,7 +1050,8 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             n_canvas_active++;
         }
 
-        // TODO: this has never been tested with multiple GPUs yet.
+        // Process the pending transfer tasks.
+        // NOTE: this has never been tested with multiple GPUs yet.
         VklGpu* gpu = NULL;
         VklContext* ctx = NULL;
         for (uint32_t gpu_idx = 0; gpu_idx < app->gpu_count; gpu_idx++)
@@ -1058,7 +1061,6 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
                 break;
             ctx = gpu->context;
 
-            // Process the pending transfer tasks.
             if (is_obj_created(&ctx->obj))
             {
                 log_trace("processing transfers for GPU #%d", gpu_idx);
@@ -1071,7 +1073,7 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             if (gpu->queues.queues[VKL_DEFAULT_QUEUE_PRESENT] !=
                 gpu->queues.queues[VKL_DEFAULT_QUEUE_RENDER])
             {
-                vkl_gpu_queue_wait(gpu, VKL_DEFAULT_QUEUE_PRESENT);
+                vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_PRESENT);
             }
         }
 
@@ -1123,9 +1125,6 @@ void vkl_canvas_destroy(VklCanvas* canvas)
 
     // Destroy the window.
     vkl_window_destroy(canvas->window);
-
-    // TODO
-    // join the background thread
 
     log_trace("canvas destroy commands");
     for (uint32_t i = 0; i < canvas->max_commands; i++)

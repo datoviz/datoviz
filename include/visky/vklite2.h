@@ -892,7 +892,7 @@ VKY_EXPORT void vkl_gpu_queue(VklGpu* gpu, VklQueueType type, uint32_t idx);
 
 VKY_EXPORT void vkl_gpu_create(VklGpu* gpu, VkSurfaceKHR surface);
 
-VKY_EXPORT void vkl_gpu_queue_wait(VklGpu* gpu, uint32_t queue_idx);
+VKY_EXPORT void vkl_queue_wait(VklGpu* gpu, uint32_t queue_idx);
 
 VKY_EXPORT void vkl_app_wait(VklApp* app);
 

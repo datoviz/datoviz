@@ -399,7 +399,7 @@ static void show_canvas(BasicCanvas canvas, FillCallback fill_commands, uint32_t
         // IMPORTANT: we need to wait for the present queue to be idle, otherwise the GPU hangs
         // when waiting for fences (not sure why). The problem only arises when using different
         // queues for command buffer submission and swapchain present.
-        vkl_gpu_queue_wait(gpu, 1);
+        vkl_queue_wait(gpu, 1);
     }
     log_trace("end of main loop");
     vkl_gpu_wait(gpu);
@@ -1488,7 +1488,10 @@ static void _cursor_callback(VklCanvas* canvas, VklEvent ev)
 static void _timer_callback(VklCanvas* canvas, VklPrivateEvent ev)
 {
     log_debug("timer callback #%d time %.3f", ev.u.t.idx, ev.u.t.time);
+    vkl_canvas_clear_color(canvas, (VkClearColorValue){{fmod(ev.u.t.time, 1), 0, 0, 1}});
 }
+
+
 
 static int vklite2_canvas_1(VkyTestContext* context)
 {

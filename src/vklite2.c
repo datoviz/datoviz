@@ -257,7 +257,7 @@ void vkl_gpu_create(VklGpu* gpu, VkSurfaceKHR surface)
 
 
 
-void vkl_gpu_queue_wait(VklGpu* gpu, uint32_t queue_idx)
+void vkl_queue_wait(VklGpu* gpu, uint32_t queue_idx)
 {
     ASSERT(gpu != NULL);
     ASSERT(queue_idx < gpu->queues.queue_count);
