@@ -813,6 +813,59 @@ void vkl_event_stop(VklCanvas* canvas)
 /*  Event loop                                                                                   */
 /*************************************************************************************************/
 
+static void _timer_callbacks(VklCanvas* canvas)
+{
+    ASSERT(canvas != NULL);
+    // Go through all private TIMER callbacks
+    double last_time = 0;
+    double expected_time = 0;
+    double cur_time = canvas->clock.elapsed;
+    double interval = 0;
+    VklPrivateEvent ev = {0};
+    ev.type = VKL_PRIVATE_EVENT_TIMER;
+    for (uint32_t i = 0; i < canvas->canvas_callbacks_count; i++)
+    {
+        if (canvas->canvas_callbacks[i].type == VKL_PRIVATE_EVENT_TIMER)
+        {
+            interval = canvas->canvas_callbacks[i].param;
+
+            // At what time was the last TIMER event for this callback?
+            last_time = canvas->canvas_callbacks[i].idx * interval;
+            ASSERT(cur_time >= last_time);
+
+            // What is the next expected time?
+            expected_time = (canvas->canvas_callbacks[i].idx + 1) * interval;
+
+            // If we reached the expected time, we raise the TIMER event immediately.
+            if (cur_time > expected_time)
+            {
+                ev.user_data = canvas->canvas_callbacks[i].user_data;
+                canvas->canvas_callbacks[i].idx++;
+                ev.u.t.idx = canvas->canvas_callbacks[i].idx;
+                ev.u.t.time = cur_time;
+                // NOTE: this is the time since the last *expected* time of the previous TIMER
+                // event, not the actual time.
+                ev.u.t.interval = cur_time - last_time;
+
+                // Call this TIMER callback.
+                canvas->canvas_callbacks[i].callback(canvas, ev);
+            }
+        }
+    }
+
+    // TODO later
+    // // Go through all public TIMER callbacks
+    // for (uint32_t i = 0; i < canvas->canvas_callbacks_count; i++)
+    // {
+    //     if (canvas->event_callbacks[i].type == VKL_EVENT_TIMER)
+    //     {
+    //         // Determine whether  at this frame.
+    //     }
+    // }
+}
+
+
+
 void vkl_canvas_frame(VklCanvas* canvas)
 {
     ASSERT(canvas != NULL);
@@ -833,6 +886,9 @@ void vkl_canvas_frame(VklCanvas* canvas)
 
     // Call FRAME callbacks (rarely used)
     _frame_callbacks(canvas);
+
+    // Call TIMER callbacks, both public and private events
+    _timer_callbacks(canvas);
 
     // Get the next status.
     VklObjectStatus next_status = atomic_load(&canvas->next_status);

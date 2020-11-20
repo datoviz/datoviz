@@ -165,7 +165,8 @@ void vkl_thread_join(VklThread* thread)
 void vkl_thread_lock(VklThread* thread)
 {
     ASSERT(thread != NULL);
-    pthread_mutex_lock(&thread->lock);
+    if (is_obj_created(&thread->obj))
+        pthread_mutex_lock(&thread->lock);
 }
 
 
@@ -173,7 +174,8 @@ void vkl_thread_lock(VklThread* thread)
 void vkl_thread_unlock(VklThread* thread)
 {
     ASSERT(thread != NULL);
-    pthread_mutex_unlock(&thread->lock);
+    if (is_obj_created(&thread->obj))
+        pthread_mutex_unlock(&thread->lock);
 }
 
 

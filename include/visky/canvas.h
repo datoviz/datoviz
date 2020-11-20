@@ -68,8 +68,8 @@ typedef enum
     VKL_EVENT_MOUSE_WHEEL,
     VKL_EVENT_KEY,
     VKL_EVENT_FRAME,
-    VKL_EVENT_TIMER,
-    VKL_EVENT_ONESHOT,
+    VKL_EVENT_TIMER,   // TODO later
+    VKL_EVENT_ONESHOT, // TODO later
     VKL_EVENT_SCREENCAST,
 } VklEventType;
 
@@ -277,6 +277,7 @@ struct VklEvent
 struct VklCanvasCallbackRegister
 {
     VklPrivateEventType type;
+    uint64_t idx; // used by TIMER events: increases every time the TIMER event is raised
     double param;
     void* user_data;
     VklCanvasCallback callback;
@@ -287,6 +288,7 @@ struct VklCanvasCallbackRegister
 struct VklEventCallbackRegister
 {
     VklEventType type;
+    uint64_t idx; // used by TIMER events: increases every time the TIMER event is raised
     double param;
     void* user_data;
     VklEventCallback callback;
