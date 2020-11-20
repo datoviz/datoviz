@@ -63,7 +63,7 @@ typedef struct
     VklSlots slots;
     VklBindings bindings;
     VklBuffer buffer;
-    VklBufferRegions br;
+    // VklBufferRegions br;
     VklCommands cmds;
 } TestVisual;
 
@@ -448,6 +448,7 @@ static TestVisual test_triangle(TestCanvas* canvas)
     VklGpu* gpu = canvas->gpu;
     VklGraphics* graphics = vkl_graphics(gpu);
     visual.graphics = graphics;
+    canvas->graphics = graphics;
 
     vkl_graphics_renderpass(graphics, &canvas->renderpass, 0);
     vkl_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
@@ -472,6 +473,7 @@ static TestVisual test_triangle(TestCanvas* canvas)
     visual.bindings = vkl_bindings(&visual.slots);
     vkl_bindings_create(&visual.bindings, 1);
     vkl_bindings_update(&visual.bindings);
+    canvas->bindings = &visual.bindings;
 
     // Create the graphics pipeline.
     vkl_graphics_create(visual.graphics);
@@ -494,17 +496,17 @@ static TestVisual test_triangle(TestCanvas* canvas)
     };
     vkl_buffer_upload(&visual.buffer, 0, size, data);
 
-    visual.br.buffer = &visual.buffer;
-    visual.br.size = size;
-    visual.br.count = 1;
+    canvas->buffer_regions.buffer = &visual.buffer;
+    canvas->buffer_regions.size = size;
+    canvas->buffer_regions.count = 1;
 
     // Commands.
     VklCommands cmds = vkl_commands(gpu, 0, 1);
     vkl_cmd_begin(&cmds, 0);
     vkl_cmd_begin_renderpass(&cmds, 0, &canvas->renderpass, &canvas->framebuffers);
     vkl_cmd_viewport(&cmds, 0, (VkViewport){0, 0, TEST_WIDTH, TEST_HEIGHT, 0, 1});
-    vkl_cmd_bind_vertex_buffer(&cmds, 0, &visual.br, 0);
-    vkl_cmd_bind_graphics(&cmds, 0, graphics, &visual.bindings, 0);
+    vkl_cmd_bind_vertex_buffer(&cmds, 0, &canvas->buffer_regions, 0);
+    vkl_cmd_bind_graphics(&cmds, 0, canvas->graphics, canvas->bindings, 0);
     vkl_cmd_draw(&cmds, 0, 0, 3);
     vkl_cmd_end_renderpass(&cmds, 0);
     vkl_cmd_end(&cmds, 0);
@@ -1603,6 +1605,7 @@ static int vklite2_canvas_3(VkyTestContext* context)
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
     VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    AT(canvas != NULL);
 
     vkl_app_run(app, 0);
     TEST_END
