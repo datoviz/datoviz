@@ -1487,8 +1487,7 @@ static void _cursor_callback(VklCanvas* canvas, VklEvent ev)
 
 static void _timer_callback(VklCanvas* canvas, VklPrivateEvent ev)
 {
-    log_debug("timer callback");
-    //
+    log_debug("timer callback #%d time %.3f", ev.u.t.idx, ev.u.t.time);
 }
 
 static int vklite2_canvas_1(VkyTestContext* context)
@@ -1544,7 +1543,7 @@ static int vklite2_canvas_2(VkyTestContext* context)
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_BUTTON, 0, _button_callback, NULL);
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _cursor_callback, NULL);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _timer_callback, NULL);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, .1, _timer_callback, NULL);
 
     vkl_app_run(app, 0);
     TEST_END

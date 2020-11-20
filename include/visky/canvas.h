@@ -68,8 +68,8 @@ typedef enum
     VKL_EVENT_MOUSE_WHEEL,
     VKL_EVENT_KEY,
     VKL_EVENT_FRAME,
-    VKL_EVENT_TIMER,   // TODO later
-    VKL_EVENT_ONESHOT, // TODO later
+    // VKL_EVENT_TIMER,   // TODO later
+    // VKL_EVENT_ONESHOT, // TODO later
     VKL_EVENT_SCREENCAST,
 } VklEventType;
 
@@ -138,15 +138,17 @@ typedef enum
 /*  Type definitions                                                                             */
 /*************************************************************************************************/
 
+// Public events (background thread).
 typedef struct VklKeyEvent VklKeyEvent;
 typedef struct VklMouseButtonEvent VklMouseButtonEvent;
 typedef struct VklMouseMoveEvent VklMouseMoveEvent;
 typedef struct VklMouseWheelEvent VklMouseWheelEvent;
 typedef struct VklScreencastEvent VklScreencastEvent;
 typedef struct VklFrameEvent VklFrameEvent;
-typedef struct VklTimerEvent VklTimerEvent;
 typedef struct VklEvent VklEvent;
 
+// Private events (main thread).
+typedef struct VklTimerEvent VklTimerEvent;
 typedef struct VklResizeEvent VklResizeEvent;
 typedef struct VklRefillEvent VklRefillEvent;
 typedef struct VklPrivateEvent VklPrivateEvent;
@@ -267,8 +269,8 @@ struct VklEvent
         VklMouseWheelEvent w;  // for WHEEL public events
         VklKeyEvent k;         // for KEY public events
         VklFrameEvent f;       // for FRAME public event
-        VklTimerEvent t;       // for TIMER, ONESHOT public events
-        VklScreencastEvent s;  // for SCREENCAST public events
+        // VklTimerEvent t;       // for TIMER, ONESHOT public events
+        VklScreencastEvent s; // for SCREENCAST public events
     } u;
 };
 
@@ -288,7 +290,7 @@ struct VklCanvasCallbackRegister
 struct VklEventCallbackRegister
 {
     VklEventType type;
-    uint64_t idx; // used by TIMER events: increases every time the TIMER event is raised
+    // uint64_t idx; // used by TIMER events: increases every time the TIMER event is raised
     double param;
     void* user_data;
     VklEventCallback callback;

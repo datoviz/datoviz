@@ -762,17 +762,17 @@ void vkl_event_frame(VklCanvas* canvas, uint64_t idx, double time, double interv
 
 
 
-void vkl_event_timer(VklCanvas* canvas, uint64_t idx, double time, double interval)
-{
-    ASSERT(canvas != NULL);
+// void vkl_event_timer(VklCanvas* canvas, uint64_t idx, double time, double interval)
+// {
+//     ASSERT(canvas != NULL);
 
-    VklEvent event = {0};
-    event.type = VKL_EVENT_TIMER;
-    event.u.t.idx = idx;
-    event.u.t.time = time;
-    event.u.t.interval = interval;
-    vkl_event_enqueue(canvas, event);
-}
+//     VklEvent event = {0};
+//     event.type = VKL_EVENT_TIMER;
+//     event.u.t.idx = idx;
+//     event.u.t.time = time;
+//     event.u.t.interval = interval;
+//     vkl_event_enqueue(canvas, event);
+// }
 
 
 
@@ -837,7 +837,7 @@ static void _timer_callbacks(VklCanvas* canvas)
             expected_time = (canvas->canvas_callbacks[i].idx + 1) * interval;
 
             // If we reached the expected time, we raise the TIMER event immediately.
-            if (cur_time > expected_time)
+            if (cur_time >= expected_time)
             {
                 ev.user_data = canvas->canvas_callbacks[i].user_data;
                 canvas->canvas_callbacks[i].idx++;
@@ -852,16 +852,6 @@ static void _timer_callbacks(VklCanvas* canvas)
             }
         }
     }
-
-    // TODO later
-    // // Go through all public TIMER callbacks
-    // for (uint32_t i = 0; i < canvas->canvas_callbacks_count; i++)
-    // {
-    //     if (canvas->event_callbacks[i].type == VKL_EVENT_TIMER)
-    //     {
-    //         // Determine whether  at this frame.
-    //     }
-    // }
 }
 
 
