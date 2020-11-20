@@ -20,8 +20,9 @@
             0, .03, .07, 1.0f                                                                     \
         }                                                                                         \
     }
-#define VKL_DEFAULT_IMAGE_FORMAT      VK_FORMAT_B8G8R8A8_UNORM
-#define VKL_DEFAULT_PRESENT_MODE      VK_PRESENT_MODE_FIFO_KHR
+#define VKL_DEFAULT_IMAGE_FORMAT VK_FORMAT_B8G8R8A8_UNORM
+// #define VKL_DEFAULT_PRESENT_MODE      VK_PRESENT_MODE_FIFO_KHR
+#define VKL_DEFAULT_PRESENT_MODE      VK_PRESENT_MODE_IMMEDIATE_KHR
 #define VKL_MIN_SWAPCHAIN_IMAGE_COUNT 3
 #define VKL_SEMAPHORE_IMG_AVAILABLE   0
 #define VKL_SEMAPHORE_RENDER_FINISHED 1
