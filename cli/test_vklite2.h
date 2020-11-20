@@ -63,7 +63,6 @@ typedef struct
     VklSlots slots;
     VklBindings bindings;
     VklBuffer buffer;
-    // VklBufferRegions br;
     VklCommands cmds;
 } TestVisual;
 
@@ -442,12 +441,11 @@ static void destroy_canvas(TestCanvas* canvas)
 
 
 
-static TestVisual test_triangle(TestCanvas* canvas)
+static void test_triangle(TestCanvas* canvas, TestVisual* visual)
 {
-    TestVisual visual = {0};
     VklGpu* gpu = canvas->gpu;
     VklGraphics* graphics = vkl_graphics(gpu);
-    visual.graphics = graphics;
+    visual->graphics = graphics;
     canvas->graphics = graphics;
 
     vkl_graphics_renderpass(graphics, &canvas->renderpass, 0);
@@ -465,28 +463,28 @@ static TestVisual test_triangle(TestCanvas* canvas)
         graphics, 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(VklVertex, color));
 
     // Create the slots.
-    visual.slots = vkl_slots(gpu);
-    vkl_slots_create(&visual.slots);
-    vkl_graphics_slots(graphics, &visual.slots);
+    visual->slots = vkl_slots(gpu);
+    vkl_slots_create(&visual->slots);
+    vkl_graphics_slots(graphics, &visual->slots);
 
     // Create the bindings.
-    visual.bindings = vkl_bindings(&visual.slots);
-    vkl_bindings_create(&visual.bindings, 1);
-    vkl_bindings_update(&visual.bindings);
-    canvas->bindings = &visual.bindings;
+    visual->bindings = vkl_bindings(&visual->slots);
+    vkl_bindings_create(&visual->bindings, 1);
+    vkl_bindings_update(&visual->bindings);
+    canvas->bindings = &visual->bindings;
 
     // Create the graphics pipeline.
-    vkl_graphics_create(visual.graphics);
+    vkl_graphics_create(visual->graphics);
 
     // Create the buffer.
-    visual.buffer = vkl_buffer(gpu);
+    visual->buffer = vkl_buffer(gpu);
     VkDeviceSize size = 3 * sizeof(VklVertex);
-    vkl_buffer_size(&visual.buffer, size);
-    vkl_buffer_usage(&visual.buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+    vkl_buffer_size(&visual->buffer, size);
+    vkl_buffer_usage(&visual->buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     vkl_buffer_memory(
-        &visual.buffer,
+        &visual->buffer,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    vkl_buffer_create(&visual.buffer);
+    vkl_buffer_create(&visual->buffer);
 
     // Upload the triangle data.
     VklVertex data[3] = {
@@ -494,25 +492,14 @@ static TestVisual test_triangle(TestCanvas* canvas)
         {{+1, +1, 0}, {0, 1, 0, 1}},
         {{+0, -1, 0}, {0, 0, 1, 1}},
     };
-    vkl_buffer_upload(&visual.buffer, 0, size, data);
+    vkl_buffer_upload(&visual->buffer, 0, size, data);
 
-    canvas->buffer_regions.buffer = &visual.buffer;
+    canvas->buffer_regions.buffer = &visual->buffer;
     canvas->buffer_regions.size = size;
     canvas->buffer_regions.count = 1;
 
     // Commands.
-    VklCommands cmds = vkl_commands(gpu, 0, 1);
-    vkl_cmd_begin(&cmds, 0);
-    vkl_cmd_begin_renderpass(&cmds, 0, &canvas->renderpass, &canvas->framebuffers);
-    vkl_cmd_viewport(&cmds, 0, (VkViewport){0, 0, TEST_WIDTH, TEST_HEIGHT, 0, 1});
-    vkl_cmd_bind_vertex_buffer(&cmds, 0, &canvas->buffer_regions, 0);
-    vkl_cmd_bind_graphics(&cmds, 0, canvas->graphics, canvas->bindings, 0);
-    vkl_cmd_draw(&cmds, 0, 0, 3);
-    vkl_cmd_end_renderpass(&cmds, 0);
-    vkl_cmd_end(&cmds, 0);
-    vkl_cmd_submit_sync(&cmds, 0);
-
-    return visual;
+    visual->cmds = vkl_commands(gpu, 0, 1);
 }
 
 
@@ -1084,7 +1071,10 @@ static int vklite2_graphics(VkyTestContext* context)
     TestCanvas canvas = offscreen(gpu);
     VklFramebuffers* framebuffers = &canvas.framebuffers;
 
-    TestVisual visual = test_triangle(&canvas);
+    TestVisual visual = {0};
+    test_triangle(&canvas, &visual);
+    triangle_commands(&canvas, &visual.cmds, 0);
+    vkl_cmd_submit_sync(&visual.cmds, 0);
 
     save_screenshot(framebuffers, "screenshot.ppm");
 
