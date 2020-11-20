@@ -443,7 +443,10 @@ static void destroy_canvas(TestCanvas* canvas)
 
 static void _triangle_graphics(TestCanvas* canvas, TestVisual* visual, const char* suffix)
 {
-    VklGraphics* graphics = visual->graphics;
+    VklGpu* gpu = canvas->gpu;
+    VklGraphics* graphics = vkl_graphics(gpu);
+    visual->graphics = graphics;
+    canvas->graphics = graphics;
 
     vkl_graphics_renderpass(graphics, &canvas->renderpass, 0);
     vkl_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
@@ -494,16 +497,13 @@ static void _triangle_buffer(TestCanvas* canvas, TestVisual* visual)
 static void test_triangle(TestCanvas* canvas, TestVisual* visual, const char* suffix)
 {
     VklGpu* gpu = canvas->gpu;
-    VklGraphics* graphics = vkl_graphics(gpu);
-    visual->graphics = graphics;
-    canvas->graphics = graphics;
 
     _triangle_graphics(canvas, visual, suffix);
 
     // Create the slots.
     visual->slots = vkl_slots(gpu);
     vkl_slots_create(&visual->slots);
-    vkl_graphics_slots(graphics, &visual->slots);
+    vkl_graphics_slots(visual->graphics, &visual->slots);
 
     // Create the bindings.
     visual->bindings = vkl_bindings(&visual->slots);
@@ -1594,6 +1594,23 @@ static int vklite2_canvas_3(VkyTestContext* context)
     TEST_END
 }
 
+
+
+static void _triangle_push_refill(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(ev.u.rf.cmd_count == 1);
+    VklCommands* cmds = ev.u.rf.cmds[0];
+    ASSERT(cmds->queue_idx == VKL_DEFAULT_QUEUE_RENDER);
+    TestCanvas* c = ev.user_data;
+
+    // HACK
+    c->renderpass = canvas->renderpasses[0];
+    c->framebuffers = canvas->framebuffers;
+
+    triangle_commands(c, cmds, ev.u.rf.img_idx);
+}
+
 // Triangle canvas
 static int vklite2_canvas_4(VkyTestContext* context)
 {
@@ -1610,11 +1627,30 @@ static int vklite2_canvas_4(VkyTestContext* context)
     c.renderpass = canvas->renderpasses[0];
     c.framebuffers = canvas->framebuffers;
 
-    test_triangle(&c, &visual, "_push");
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_refill, &c);
+    // Triangle graphics.
+    _triangle_graphics(&c, &visual, "_push");
+
+    // Create the slots.
+    visual.slots = vkl_slots(gpu);
+    vkl_slots_create(&visual.slots);
+    vkl_graphics_slots(visual.graphics, &visual.slots);
+
+    // Create the bindings.
+    visual.bindings = vkl_bindings(&visual.slots);
+    vkl_bindings_create(&visual.bindings, 1);
+    vkl_bindings_update(&visual.bindings);
+    c.bindings = &visual.bindings;
+
+    // Create the graphics pipeline.
+    vkl_graphics_create(visual.graphics);
+
+    // Triangle buffer.
+    _triangle_buffer(&c, &visual);
+
+    // Refill callback
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_push_refill, &c);
 
     vkl_app_run(app, 0);
-
     destroy_visual(&visual);
     TEST_END
 }
