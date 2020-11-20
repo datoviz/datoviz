@@ -1168,6 +1168,14 @@ void vkl_canvas_destroy(VklCanvas* canvas)
     }
     log_trace("destroying canvas");
 
+    // Stop the vent thread.
+    ASSERT(canvas!=NULL);
+    ASSERT(canvas->gpu!=NULL);
+    vkl_gpu_wait(canvas->gpu);
+    vkl_event_stop(canvas);
+    vkl_thread_join(&canvas->event_thread);
+    vkl_fifo_destroy(&canvas->event_queue);
+
     // Destroy the depth image.
     vkl_images_destroy(&canvas->depth_image);
 
@@ -1218,11 +1226,6 @@ void vkl_canvas_destroy(VklCanvas* canvas)
         vkl_fences_destroy(&canvas->fences[i]);
     }
     INSTANCES_DESTROY(canvas->fences)
-
-    // Stop the vent thread.
-    vkl_event_stop(canvas);
-    vkl_thread_join(&canvas->event_thread);
-    vkl_fifo_destroy(&canvas->event_queue);
 
     obj_destroyed(&canvas->obj);
 }
