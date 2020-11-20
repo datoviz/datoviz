@@ -342,6 +342,18 @@ VklBufferRegions vkl_alloc_buffers(
     regions.count = buffer_count;
     regions.size = size;
 
+    // Alignment for uniform buffers.
+    if (buffer_idx == VKL_DEFAULT_BUFFER_UNIFORM)
+    {
+        VkDeviceSize offset = 0;
+        VkDeviceSize alignment =
+            context->gpu->device_properties.limits.minUniformBufferOffsetAlignment;
+        if (context->allocated_sizes[buffer_idx] % alignment != 0)
+            offset = alignment - (context->allocated_sizes[buffer_idx] % alignment);
+        ASSERT((context->allocated_sizes[buffer_idx] + offset % alignment) == 0);
+        context->allocated_sizes[buffer_idx] += offset;
+    }
+
     // Need to reallocate?
     if (context->allocated_sizes[buffer_idx] + size * buffer_count > regions.buffer->size)
     {
@@ -352,6 +364,7 @@ VklBufferRegions vkl_alloc_buffers(
     }
 
     log_trace("allocating %d buffers with size %.3f KB", buffer_count, TO_KB(size));
+
     ASSERT(context->allocated_sizes[buffer_idx] + size * buffer_count <= regions.buffer->size);
     for (uint32_t i = 0; i < buffer_count; i++)
     {
