@@ -1573,6 +1573,8 @@ void vkl_bindings_buffer(VklBindings* bindings, uint32_t idx, VklBufferRegions* 
     ASSERT(bindings != NULL);
     ASSERT(buffer_regions != NULL);
     ASSERT(buffer_regions->count == 1 || buffer_regions->count == bindings->dset_count);
+    ASSERT(buffer_regions->buffer != VK_NULL_HANDLE);
+    log_trace("set bindings with buffer for binding #%d", idx);
 
     bindings->buffer_regions[idx] = *buffer_regions;
     if (bindings->obj.status == VKL_OBJECT_STATUS_CREATED)

@@ -323,6 +323,17 @@ void vkl_context_destroy(VklContext* context)
 /*  Buffer allocation                                                                            */
 /*************************************************************************************************/
 
+static VkDeviceSize _align_offset(VklGpu* gpu, VkDeviceSize offset)
+{
+    VkDeviceSize alignment = gpu->device_properties.limits.minUniformBufferOffsetAlignment;
+    ASSERT(alignment > 0);
+    if (offset % alignment != 0)
+        offset += (alignment - offset % alignment);
+    ASSERT(offset % alignment == 0);
+    return offset;
+}
+
+
 VklBufferRegions vkl_alloc_buffers(
     VklContext* context, uint32_t buffer_idx, uint32_t buffer_count, VkDeviceSize size)
 {
@@ -345,13 +356,18 @@ VklBufferRegions vkl_alloc_buffers(
     // Alignment for uniform buffers.
     if (buffer_idx == VKL_DEFAULT_BUFFER_UNIFORM)
     {
-        VkDeviceSize offset = 0;
-        VkDeviceSize alignment =
-            context->gpu->device_properties.limits.minUniformBufferOffsetAlignment;
-        if (context->allocated_sizes[buffer_idx] % alignment != 0)
-            offset = alignment - (context->allocated_sizes[buffer_idx] % alignment);
-        ASSERT((context->allocated_sizes[buffer_idx] + offset % alignment) == 0);
-        context->allocated_sizes[buffer_idx] += offset;
+        // Alignment of offset.
+        VkDeviceSize offset = _align_offset(context->gpu, context->allocated_sizes[buffer_idx]);
+        log_debug(
+            "make sure buffer allocation is aligned, add %d extra bytes",
+            context->allocated_sizes[buffer_idx] - offset);
+        context->allocated_sizes[buffer_idx] = offset;
+
+        // Alignment of size.
+        VkDeviceSize requested_size = size;
+        size = _align_offset(context->gpu, requested_size);
+        log_debug(
+            "make sure buffer allocation is aligned, add %d extra bytes", size - requested_size);
     }
 
     // Need to reallocate?
@@ -364,7 +380,6 @@ VklBufferRegions vkl_alloc_buffers(
     }
 
     log_trace("allocating %d buffers with size %.3f KB", buffer_count, TO_KB(size));
-
     ASSERT(context->allocated_sizes[buffer_idx] + size * buffer_count <= regions.buffer->size);
     for (uint32_t i = 0; i < buffer_count; i++)
     {
