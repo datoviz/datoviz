@@ -5,6 +5,8 @@
 #include <stdatomic.h>
 #endif
 
+#include <stdatomic.h>
+
 #include "../include/visky/context.h"
 #include "keycode.h"
 #include "vklite2.h"
@@ -391,9 +393,8 @@ struct VklCanvas
     // Event queue.
     VklFifo event_queue;
     VklEvent events[VKL_MAX_FIFO_CAPACITY];
-
-    // Threads.
     VklThread event_thread;
+    _Atomic VklEventType event_processing;
 };
 
 
@@ -522,6 +523,8 @@ present must wait for that semaphore instead of the image_ready semaphore
 - register a FRAME private event callback with the following:
 check screencast fence state
 if screencast fence is signaled:
+if vkl_event_pending(SCREENCAST) is >0, discard this frame because the callback is not ready to
+process the current frame
 map/unmap the screencast image and copy to the user-provided CPU buffer
 enqueue a special SCREENCAST public event with a pointer to the CPU buffer
 user callbacks registered for SCREENCAST public events and running in the background thread have
@@ -530,6 +533,13 @@ access to the framebuffer RGB image
 */
 
 VKY_EXPORT void vkl_screencast(VklCanvas* canvas, double interval, uint8_t* rgb);
+
+
+
+/**
+ * Destroy the screencast.
+ */
+VKY_EXPORT void vkl_screencast_destroy(VklCanvas* canvas);
 
 
 
@@ -559,13 +569,6 @@ VKY_EXPORT void vkl_screenshot_file(VklCanvas* canvas, const char* filename);
 
 
 
-/**
- * Destroy the screencast.
- */
-VKY_EXPORT void vkl_screencast_destroy(VklCanvas* canvas);
-
-
-
 /*************************************************************************************************/
 /*  Event system                                                                                 */
 /*************************************************************************************************/
@@ -585,7 +588,11 @@ VKY_EXPORT void vkl_event_frame(VklCanvas* canvas, uint64_t idx, double time, do
 
 VKY_EXPORT void vkl_event_timer(VklCanvas* canvas, uint64_t idx, double time, double interval);
 
-VKY_EXPORT VklEvent vkl_event_dequeue(VklCanvas* canvas, bool wait);
+VKY_EXPORT VklEvent* vkl_event_dequeue(VklCanvas* canvas, bool wait);
+
+// Return the number of events of the given type that are still being processed or pending in the
+// queue.
+VKY_EXPORT int vkl_event_pending(VklCanvas* canvas, VklEventType type);
 
 VKY_EXPORT void vkl_event_stop(VklCanvas* canvas);
 

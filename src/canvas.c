@@ -251,7 +251,7 @@ static int _post_send_callbacks(VklCanvas* canvas)
 /*  Public event sending                                                                         */
 /*************************************************************************************************/
 
-static int _event_callbacks(VklCanvas* canvas, VklEvent event)
+static int _event_callbacks(VklCanvas* canvas, VklEvent* event)
 {
     // NOTE: no need for thread synchronization as long as only the event thread manipulates
     // the event callbacks.
@@ -260,12 +260,12 @@ static int _event_callbacks(VklCanvas* canvas, VklEvent event)
     for (uint32_t i = 0; i < canvas->event_callbacks_count; i++)
     {
         // Will pass the user_data that was registered, to the callback function.
-        event.user_data = canvas->event_callbacks[i].user_data;
+        event->user_data = canvas->event_callbacks[i].user_data;
 
         // Only call the callbacks registered for the specified type.
-        if (canvas->event_callbacks[i].type == event.type)
+        if (canvas->event_callbacks[i].type == event->type)
         {
-            canvas->event_callbacks[i].callback(canvas, event);
+            canvas->event_callbacks[i].callback(canvas, *event);
             n_callbacks++;
         }
     }
@@ -285,7 +285,7 @@ static void* _event_thread(void* p_canvas)
     ASSERT(canvas != NULL);
     log_debug("starting event thread");
 
-    VklEvent ev = {0};
+    VklEvent* ev = NULL;
     double avg_event_time = 0; // average event callback time across all event types
     double elapsed = 0;        // average time of the event callbacks in the current iteration
     int n_callbacks = 0;       // number of event callbacks in the current event loop iteration
@@ -297,7 +297,8 @@ static void* _event_thread(void* p_canvas)
         // log_trace("event thread awaits for events...");
         // Wait until an event is available
         ev = vkl_event_dequeue(canvas, true);
-        if (ev.type == VKL_EVENT_NONE)
+        canvas->event_processing = ev->type; // type of the event being processed
+        if (ev->type == VKL_EVENT_NONE)
         {
             log_trace("received empty event, stopping the event thread");
             break;
@@ -332,6 +333,7 @@ static void* _event_thread(void* p_canvas)
         // queue doesn't keep filling up.
         vkl_fifo_discard(&canvas->event_queue, events_to_keep);
 
+        canvas->event_processing = VKL_EVENT_NONE;
         counter++;
     }
     log_debug("end event thread");
@@ -836,15 +838,47 @@ void vkl_event_enqueue(VklCanvas* canvas, VklEvent event)
 
 
 
-VklEvent vkl_event_dequeue(VklCanvas* canvas, bool wait)
+VklEvent* vkl_event_dequeue(VklCanvas* canvas, bool wait)
 {
     ASSERT(canvas != NULL);
     VklFifo* fifo = &canvas->event_queue;
-    VklEvent* event = vkl_fifo_dequeue(fifo, wait);
-    if (event == NULL)
-        return (VklEvent){0};
-    ASSERT(event != NULL);
-    return *event;
+    return vkl_fifo_dequeue(fifo, wait);
+}
+
+
+
+int vkl_event_pending(VklCanvas* canvas, VklEventType type)
+{
+    ASSERT(canvas != NULL);
+    VklFifo* fifo = &canvas->event_queue;
+    pthread_mutex_lock(&fifo->lock);
+    int i, j;
+    if (fifo->tail <= fifo->head)
+    {
+        i = fifo->tail;
+        j = fifo->head;
+    }
+    else
+    {
+        i = fifo->head;
+        j = fifo->tail;
+    }
+    ASSERT(i <= j);
+    // Count the pending events with the given type.
+    int count = 0;
+    for (int k = i; k <= j; k++)
+    {
+        if (((VklEvent*)fifo->items[k])->type == type)
+            count++;
+    }
+
+    // Add 1 if the event being processed in the event thread has the requested type.
+    if (canvas->event_processing == type)
+        count++;
+
+    pthread_mutex_unlock(&fifo->lock);
+    ASSERT(count >= 0);
+    return count;
 }
 
 
