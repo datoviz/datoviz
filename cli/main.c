@@ -161,6 +161,7 @@ static VkyTestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(vklite2_context_transfer_sync),           //
     CASE_FIXTURE_NONE(vklite2_context_transfer_async_nothread), //
     CASE_FIXTURE_NONE(vklite2_context_transfer_async_thread),   //
+    CASE_FIXTURE_NONE(vklite2_context_download),                //
     CASE_FIXTURE_NONE(vklite2_default_app),                     //
 
     CASE_FIXTURE_NONE(vklite2_canvas_1), //

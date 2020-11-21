@@ -264,6 +264,8 @@ VKY_EXPORT void vkl_transfer_loop(VklContext* context, bool wait);
 
 VKY_EXPORT void vkl_transfer_wait(VklContext* context, int poll_period);
 
+VKY_EXPORT void vkl_transfer_reset(VklContext* context);
+
 VKY_EXPORT void vkl_transfer_stop(VklContext* context);
 
 

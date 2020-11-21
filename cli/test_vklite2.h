@@ -1369,6 +1369,7 @@ struct _TestTransfer
 
     uint8_t data[16];
     uint8_t img_data[16 * 16 * 4];
+    int status;
 };
 
 
@@ -1386,8 +1387,6 @@ static void* _thread_enqueue(void* arg)
 
     return NULL;
 }
-
-
 
 static int vklite2_context_transfer_async_thread(VkyTestContext* context)
 {
@@ -1421,6 +1420,55 @@ static int vklite2_context_transfer_async_thread(VkyTestContext* context)
     uint8_t img_data2[16 * 16 * 4];
     vkl_texture_download(ctx, tt.tex, 16 * 16 * 4, img_data2);
     AT(memcmp(tt.img_data, img_data2, 16 * 16 * 4) == 0);
+
+    TEST_END
+}
+
+
+
+static void* _thread_download(void* arg)
+{
+    _TestTransfer* tt = arg;
+    VklContext* ctx = tt->ctx;
+    uint8_t data3[16] = {0};
+    vkl_buffer_regions_download(ctx, &tt->br, 0, 16, data3);
+    if (memcmp(tt->data, data3, 16) != 0)
+        tt->status = 1;
+    vkl_transfer_wait(ctx, 10);
+    if (memcmp(tt->data, data3, 16) == 0)
+        tt->status = 1;
+    tt->status = 0;
+
+    vkl_transfer_stop(ctx);
+
+    return NULL;
+}
+
+static int vklite2_context_download(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    VklContext* ctx = vkl_context(gpu, NULL);
+    vkl_transfer_mode(ctx, VKL_TRANSFER_MODE_ASYNC);
+
+    // Resources.
+    _TestTransfer tt = {0};
+    tt.status = -1;
+    tt.ctx = ctx;
+    tt.br = vkl_alloc_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, 16);
+    memset(tt.data, 12, 16);
+    memset(tt.img_data, 23, 16);
+    tt.tex = vkl_new_texture(ctx, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+
+    // Background thread.
+    pthread_t thread = {0};
+    ASSERT(tt.status == -1);
+    // The thread will launch a download task and wait until the download has finished.
+    pthread_create(&thread, NULL, _thread_download, &tt);
+    // The download task will be processed in the main thread.
+    vkl_transfer_loop(tt.ctx, true);
+    pthread_join(thread, NULL);
+    ASSERT(tt.status == 0);
 
     TEST_END
 }

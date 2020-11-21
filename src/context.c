@@ -104,6 +104,7 @@ int vkl_fifo_size(VklFifo* fifo)
 {
     ASSERT(fifo != NULL);
     pthread_mutex_lock(&fifo->lock);
+    log_debug("head %d tail %d", fifo->head, fifo->tail);
     int size = fifo->head - fifo->tail;
     if (size < 0)
         size += fifo->capacity;
@@ -929,14 +930,16 @@ void vkl_transfer_loop(VklContext* context, bool wait)
     ASSERT(context != NULL);
     VklTransfer tr = {0};
     int res = 0;
+    uint64_t counter = 0;
     while (res == 0)
     {
-        log_trace("transfer loop awaits for transfer task...");
+        log_trace("transfer loop awaits for transfer task, iteration %d...", counter);
         // wait until a transfer task is available
         tr = fifo_dequeue(&context->transfer_fifo, wait);
         log_trace("transfer task dequeued, processing it...");
         // process the dequeued task
         res = process_transfer(context, tr);
+        counter++;
     }
     log_trace("end transfer loop");
 }
@@ -961,6 +964,14 @@ void vkl_transfer_wait(VklContext* context, int poll_period)
         vkl_sleep(poll_period);
     }
     log_trace("the transfer queue is empty, stop waiting");
+}
+
+
+
+void vkl_transfer_reset(VklContext* context)
+{
+    ASSERT(context != NULL);
+    vkl_fifo_reset(&context->transfer_fifo.queue);
 }
 
 
