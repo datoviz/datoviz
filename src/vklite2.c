@@ -1564,8 +1564,9 @@ void vkl_bindings_buffer(VklBindings* bindings, uint32_t idx, VklBufferRegions* 
 {
     ASSERT(bindings != NULL);
     ASSERT(buffer_regions != NULL);
-    ASSERT(buffer_regions->count == 1 || buffer_regions->count == bindings->dset_count);
     ASSERT(buffer_regions->buffer != VK_NULL_HANDLE);
+    ASSERT(buffer_regions->count > 0);
+    ASSERT(buffer_regions->count == 1 || buffer_regions->count == bindings->dset_count);
     log_trace("set bindings with buffer for binding #%d", idx);
 
     bindings->buffer_regions[idx] = *buffer_regions;
@@ -2773,6 +2774,8 @@ void vkl_cmd_compute(VklCommands* cmds, uint32_t idx, VklCompute* compute, uvec3
     ASSERT(compute->slots != NULL);
     ASSERT(compute->bindings != NULL);
     ASSERT(compute->bindings->dsets != NULL);
+    ASSERT(compute->pipeline != VK_NULL_HANDLE);
+    ASSERT(compute->slots->pipeline_layout != VK_NULL_HANDLE);
 
     CMD_START
     vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_COMPUTE, compute->pipeline);
