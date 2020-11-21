@@ -886,6 +886,8 @@ int vkl_event_pending(VklCanvas* canvas, VklEventType type)
 void vkl_event_stop(VklCanvas* canvas)
 {
     ASSERT(canvas != NULL);
+    VklFifo* fifo = &canvas->event_queue;
+    vkl_fifo_reset(fifo);
     // Send a null event to the queue which causes the dequeue awaiting thread to end.
     vkl_event_enqueue(canvas, (VklEvent){0});
 }
@@ -1160,6 +1162,10 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             if (canvas->obj.status == VKL_OBJECT_STATUS_NEED_DESTROY)
             {
                 log_trace("destroying canvas #%d", canvas_idx);
+
+                // Stop the transfer queue.
+                vkl_transfer_stop(canvas->gpu->context);
+                vkl_event_stop(canvas);
 
                 // Wait for all GPUs to be idle.
                 vkl_app_wait(app);
