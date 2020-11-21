@@ -943,6 +943,28 @@ void vkl_transfer_loop(VklContext* context, bool wait)
 
 
 
+// Safe wait on a background thread until the transfer queue is empty. Periodically check the queue
+// size.
+void vkl_transfer_wait(VklContext* context, int poll_period)
+{
+    ASSERT(context != NULL);
+    if (poll_period == 0)
+        poll_period = VKL_TRANSFER_POLL_PERIOD;
+    ASSERT(poll_period > 0);
+    int size = 0;
+    log_trace("waiting until the transfer queue is empty...");
+    while (true)
+    {
+        size = vkl_fifo_size(&context->transfer_fifo.queue);
+        if (size == 0)
+            break;
+        vkl_sleep(poll_period);
+    }
+    log_trace("the transfer queue is empty, stop waiting");
+}
+
+
+
 void vkl_transfer_stop(VklContext* context)
 {
     ASSERT(context != NULL);

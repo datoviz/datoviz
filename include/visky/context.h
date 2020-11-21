@@ -33,6 +33,9 @@ static inline void vkl_sleep(int milliseconds)
 #define VKL_MAX_FIFO_CAPACITY 256
 #define VKL_MAX_TRANSFERS     VKL_MAX_FIFO_CAPACITY
 
+// Poll period in ms when using vkl_transfer_wait()
+#define VKL_TRANSFER_POLL_PERIOD 1
+
 #define VKL_DEFAULT_WIDTH  800
 #define VKL_DEFAULT_HEIGHT 600
 
@@ -258,6 +261,8 @@ VKY_EXPORT void vkl_context_reset(VklContext* context);
 VKY_EXPORT void vkl_transfer_mode(VklContext* context, VklTransferMode mode);
 
 VKY_EXPORT void vkl_transfer_loop(VklContext* context, bool wait);
+
+VKY_EXPORT void vkl_transfer_wait(VklContext* context, int poll_period);
 
 VKY_EXPORT void vkl_transfer_stop(VklContext* context);
 
