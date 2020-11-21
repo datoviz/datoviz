@@ -16,6 +16,10 @@
 
 #define VKL_MAX_EVENT_CALLBACKS 256
 
+// Maximum acceptable duration for the pending events in the event queue, in seconds
+#define VKL_MAX_EVENT_DURATION .5
+
+
 
 /*************************************************************************************************/
 /*  Enums                                                                                        */

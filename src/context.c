@@ -100,8 +100,46 @@ void* vkl_fifo_dequeue(VklFifo* fifo, bool wait)
 
 
 
+int vkl_fifo_size(VklFifo* fifo)
+{
+    ASSERT(fifo != NULL);
+    pthread_mutex_lock(&fifo->lock);
+    int size = fifo->head - fifo->tail;
+    if (size < 0)
+        size += fifo->capacity;
+    ASSERT(0 <= size && size <= fifo->capacity);
+    pthread_mutex_unlock(&fifo->lock);
+    return size;
+}
+
+
+
+void vkl_fifo_discard(VklFifo* fifo, int max_size)
+{
+    ASSERT(fifo != NULL);
+    if (max_size == 0)
+        return;
+    pthread_mutex_lock(&fifo->lock);
+    int size = fifo->head - fifo->tail;
+    if (size < 0)
+        size += fifo->capacity;
+    ASSERT(0 <= size && size <= fifo->capacity);
+    if (size > max_size)
+    {
+        log_debug(
+            "discarding %d items in the FIFO queue which is getting overloaded", size - max_size);
+        fifo->tail = fifo->head - max_size;
+        if (fifo->tail < 0)
+            fifo->tail += fifo->capacity;
+    }
+    pthread_mutex_unlock(&fifo->lock);
+}
+
+
+
 void vkl_fifo_reset(VklFifo* fifo)
 {
+    ASSERT(fifo != NULL);
     pthread_mutex_lock(&fifo->lock);
     fifo->head = 0;
     fifo->tail = 0;

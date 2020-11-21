@@ -230,6 +230,11 @@ VKY_EXPORT void vkl_fifo_enqueue(VklFifo* fifo, void* item);
 
 VKY_EXPORT void* vkl_fifo_dequeue(VklFifo* fifo, bool wait);
 
+VKY_EXPORT int vkl_fifo_size(VklFifo* fifo);
+
+// Discard all but max_size items in the queue (only keep the most recent ones)
+VKY_EXPORT void vkl_fifo_discard(VklFifo* fifo, int max_size);
+
 VKY_EXPORT void vkl_fifo_reset(VklFifo* fifo);
 
 VKY_EXPORT void vkl_fifo_destroy(VklFifo* fifo);

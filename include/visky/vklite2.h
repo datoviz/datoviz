@@ -327,12 +327,20 @@ static inline void _clock_init(VklClock* clock) { gettimeofday(&clock->start, NU
 
 
 
-static inline void _clock_set(VklClock* clock)
+static inline double _clock_get(VklClock* clock)
 {
-    // Typically called at every frame.
     gettimeofday(&clock->current, NULL);
     double elapsed = (clock->current.tv_sec - clock->start.tv_sec) +
                      (clock->current.tv_usec - clock->start.tv_usec) / 1000000.0;
+    return elapsed;
+}
+
+
+
+static inline void _clock_set(VklClock* clock)
+{
+    // Typically called at every frame.
+    double elapsed = _clock_get(clock);
     clock->interval = elapsed - clock->elapsed;
     clock->elapsed = elapsed;
 }

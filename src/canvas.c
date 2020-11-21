@@ -286,6 +286,12 @@ static void* _event_thread(void* p_canvas)
     log_debug("starting event thread");
 
     VklEvent ev = {0};
+    double avg_event_time = 0; // average event callback time across all event types
+    double elapsed = 0;        // average time of the event callbacks in the current iteration
+    int n_callbacks = 0;       // number of event callbacks in the current event loop iteration
+    int counter = 0;           // number of iterations in the event loop
+    int events_to_keep = 0;    // maximum number of pending events to keep in the queue
+
     while (true)
     {
         // log_trace("event thread awaits for events...");
@@ -296,9 +302,37 @@ static void* _event_thread(void* p_canvas)
             log_trace("received empty event, stopping the event thread");
             break;
         }
+
+        // Logic to discard some events if the queue is getting overloaded because of long-running
+        // callbacks.
+
+        // TODO: there are ways to improve the mechanism dropping events from the queue when the
+        // queue is getting overloaded. Doing it on a per-type basis, better estimating the avg
+        // time taken by each callback, etc.
+
         // log_trace("event dequeued type %d, processing it...", ev.type);
         // process the dequeued task
-        _event_callbacks(canvas, ev);
+        elapsed = _clock_get(&canvas->clock);
+        n_callbacks = _event_callbacks(canvas, ev);
+        elapsed = _clock_get(&canvas->clock) - elapsed;
+        elapsed /= n_callbacks; // average duration of the events
+
+        // Update the average event time.
+        avg_event_time = ((avg_event_time * counter) + elapsed) / (counter + 1);
+        if (avg_event_time > 0)
+        {
+            events_to_keep =
+                CLIP(VKL_MAX_EVENT_DURATION / avg_event_time, 1, VKL_MAX_FIFO_CAPACITY);
+            if (events_to_keep == VKL_MAX_FIFO_CAPACITY)
+                events_to_keep = 0;
+        }
+
+        // Handle event queue overloading: if events are enqueued faster than
+        // they are consumed, we should discard the older events so that the
+        // queue doesn't keep filling up.
+        vkl_fifo_discard(&canvas->event_queue, events_to_keep);
+
+        counter++;
     }
     log_debug("end event thread");
 
@@ -791,20 +825,6 @@ void vkl_event_frame(VklCanvas* canvas, uint64_t idx, double time, double interv
 
 
 
-// void vkl_event_timer(VklCanvas* canvas, uint64_t idx, double time, double interval)
-// {
-//     ASSERT(canvas != NULL);
-
-//     VklEvent event = {0};
-//     event.type = VKL_EVENT_TIMER;
-//     event.u.t.idx = idx;
-//     event.u.t.time = time;
-//     event.u.t.interval = interval;
-//     vkl_event_enqueue(canvas, event);
-// }
-
-
-
 void vkl_event_enqueue(VklCanvas* canvas, VklEvent event)
 {
     ASSERT(canvas != NULL);
@@ -1169,8 +1189,8 @@ void vkl_canvas_destroy(VklCanvas* canvas)
     log_trace("destroying canvas");
 
     // Stop the vent thread.
-    ASSERT(canvas!=NULL);
-    ASSERT(canvas->gpu!=NULL);
+    ASSERT(canvas != NULL);
+    ASSERT(canvas->gpu != NULL);
     vkl_gpu_wait(canvas->gpu);
     vkl_event_stop(canvas);
     vkl_thread_join(&canvas->event_thread);
