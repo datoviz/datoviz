@@ -69,6 +69,7 @@ typedef enum
 typedef enum
 {
     VKL_EVENT_NONE,
+    VKL_EVENT_INIT,
     VKL_EVENT_MOUSE_BUTTON,
     VKL_EVENT_MOUSE_MOVE,
     VKL_EVENT_MOUSE_WHEEL,

@@ -1555,6 +1555,8 @@ static int vklite2_canvas_1(VkyTestContext* context)
 /*  Canvas 2                                                                                     */
 /*************************************************************************************************/
 
+static void _init_callback(VklCanvas* canvas, VklEvent ev) { log_debug("init event for canvas"); }
+
 static void _wheel_callback(VklCanvas* canvas, VklEvent ev)
 {
     log_debug("wheel %.3f", ev.u.w.dir[1]);
@@ -1588,6 +1590,7 @@ static int vklite2_canvas_2(VkyTestContext* context)
     VklGpu* gpu = vkl_gpu(app, 0);
     VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
 
+    vkl_event_callback(canvas, VKL_EVENT_INIT, 0, _init_callback, NULL);
     vkl_event_callback(canvas, VKL_EVENT_KEY, 0, _key_callback, NULL);
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_WHEEL, 0, _wheel_callback, NULL);
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_BUTTON, 0, _button_callback, NULL);

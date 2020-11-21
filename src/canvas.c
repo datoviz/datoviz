@@ -1112,6 +1112,14 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             ASSERT(canvas->obj.status >= VKL_OBJECT_STATUS_CREATED);
             log_trace("processing frame #%d for canvas #%d", canvas->frame_idx, canvas_idx);
 
+            // INIT event at the first frame
+            if (canvas->frame_idx == 0)
+            {
+                VklEvent ev = {0};
+                ev.type = VKL_EVENT_INIT;
+                vkl_event_enqueue(canvas, ev);
+            }
+
             // Poll events.
             ASSERT(canvas->window != NULL);
             vkl_window_poll_events(canvas->window);
