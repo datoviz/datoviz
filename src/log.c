@@ -28,6 +28,10 @@
 
 #include <visky/log.h>
 
+#ifdef _WIN32
+#include "ansicolor-w32.h"
+#endif
+
 static struct
 {
     void* udata;
