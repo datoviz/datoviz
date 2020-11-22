@@ -1,0 +1,110 @@
+{
+   ignore_unversioned_libs
+   Memcheck:Leak
+   ...
+   obj:*X11*
+}
+{
+   ignore_versioned_libs
+   Memcheck:Leak
+   ...
+   obj:*X11*
+}
+
+
+{
+   ignore_unversioned_libs
+   Memcheck:Leak
+   ...
+   obj:*libg*
+}
+{
+   ignore_versioned_libs
+   Memcheck:Leak
+   ...
+   obj:*libg*
+}
+
+
+{
+   ignore_unversioned_libs
+   Memcheck:Leak
+   ...
+   obj:*libpixman*
+}
+{
+   ignore_versioned_libs
+   Memcheck:Leak
+   ...
+   obj:*libpixman*
+}
+
+
+{
+   ignore_unversioned_libs
+   Memcheck:Leak
+   ...
+   obj:*libLLVM*
+}
+{
+   ignore_versioned_libs
+   Memcheck:Leak
+   ...
+   obj:*libLLVM*
+}
+
+
+{
+   ignore_unversioned_libs
+   Memcheck:Leak
+   ...
+   obj:*libnvidia*
+}
+{
+   ignore_versioned_libs
+   Memcheck:Leak
+   ...
+   obj:*libnvidia*
+}
+
+
+{
+   ignore_unversioned_libs
+   Memcheck:Leak
+   ...
+   obj:*vulkan_layer_chassis*
+}
+{
+   ignore_versioned_libs
+   Memcheck:Leak
+   ...
+   obj:*vulkan_layer_chassis*
+}
+
+
+{
+   ignore_unversioned_libs
+   Memcheck:Leak
+   ...
+   src:*loader.c
+}
+{
+   ignore_versioned_libs
+   Memcheck:Leak
+   ...
+   src:*loader.c
+}
+
+
+{
+   ignore_unversioned_libs
+   Memcheck:Leak
+   ...
+   src:*dl*.c
+}
+{
+   ignore_versioned_libs
+   Memcheck:Leak
+   ...
+   src:*dl*.c
+}

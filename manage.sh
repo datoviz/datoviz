@@ -60,7 +60,7 @@ then
          --verbose \
          --suppressions=.valgrind.exceptions.txt \
          --log-file=.valgrind.out.txt \
-         ./build/$2
+         ${@:2}
 fi
 
 if [ $1 == "test" ]
