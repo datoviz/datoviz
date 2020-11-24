@@ -133,6 +133,8 @@ struct VkyTestCase
 #include "test_basic.h"
 #include "test_demo.h"
 #include "test_visuals.h"
+
+#include "test_canvas.h"
 #include "test_vklite2.h"
 
 static VkyTestCase TEST_CASES[] = {
@@ -152,9 +154,10 @@ static VkyTestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(vklite2_submit),                //
     CASE_FIXTURE_NONE(vklite2_blank),                 //
     CASE_FIXTURE_NONE(vklite2_graphics),              //
-    CASE_FIXTURE_NONE(vklite2_basic_canvas),          //
+    CASE_FIXTURE_NONE(vklite2_basic_canvas_1),        //
     CASE_FIXTURE_NONE(vklite2_basic_canvas_triangle), //
 
+    // context
     CASE_FIXTURE_NONE(vklite2_fifo),                            //
     CASE_FIXTURE_NONE(vklite2_context_buffer),                  //
     CASE_FIXTURE_NONE(vklite2_context_texture),                 //
@@ -164,15 +167,18 @@ static VkyTestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(vklite2_context_download),                //
     CASE_FIXTURE_NONE(vklite2_default_app),                     //
 
-    CASE_FIXTURE_NONE(vklite2_canvas_1), //
-    CASE_FIXTURE_NONE(vklite2_canvas_2), //
-    CASE_FIXTURE_NONE(vklite2_canvas_3), //
-    CASE_FIXTURE_NONE(vklite2_canvas_4), //
-    CASE_FIXTURE_NONE(vklite2_canvas_5), //
-    CASE_FIXTURE_NONE(vklite2_canvas_6), //
-    CASE_FIXTURE_NONE(vklite2_canvas_7), //
+    // canvas
+    // CASE_FIXTURE_NONE(vklite2_canvas_1), //
+    // CASE_FIXTURE_NONE(vklite2_canvas_2), //
+    // CASE_FIXTURE_NONE(vklite2_canvas_3), //
+    // CASE_FIXTURE_NONE(vklite2_canvas_4), //
+    // CASE_FIXTURE_NONE(vklite2_canvas_5), //
+    // CASE_FIXTURE_NONE(vklite2_canvas_6), //
+    // CASE_FIXTURE_NONE(vklite2_canvas_7), //
 
 
+
+    // OLD CODE BELOW
 
     // Visual props.
     CASE_FIXTURE_NONE(visuals_props_1), //

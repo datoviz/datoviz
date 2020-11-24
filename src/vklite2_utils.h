@@ -1,3 +1,7 @@
+#ifndef VKL_VKLITE_UTILS_HEADER
+#define VKL_VKLITE_UTILS_HEADER
+
+
 #include "../include/visky/vklite2.h"
 
 
@@ -1584,3 +1588,5 @@ static void begin_render_pass(
     render_pass_info.pClearValues = clear_colors;
     vkCmdBeginRenderPass(cmd_buf, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
 }
+
+#endif

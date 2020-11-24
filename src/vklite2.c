@@ -1840,6 +1840,8 @@ void vkl_graphics_create(VklGraphics* graphics)
     ASSERT(graphics != NULL);
     ASSERT(graphics->gpu != NULL);
     ASSERT(graphics->gpu->device != VK_NULL_HANDLE);
+    ASSERT(graphics->slots != NULL);
+    ASSERT(graphics->renderpass != NULL);
 
     log_trace("starting creation of graphics pipeline...");
 
@@ -2729,8 +2731,12 @@ void vkl_submit_reset(VklSubmit* submit)
 void vkl_cmd_begin_renderpass(
     VklCommands* cmds, uint32_t idx, VklRenderpass* renderpass, VklFramebuffers* framebuffers)
 {
+    ASSERT(renderpass != NULL);
+    ASSERT(framebuffers != NULL);
+
     ASSERT(is_obj_created(&renderpass->obj));
     ASSERT(is_obj_created(&framebuffers->obj));
+    ASSERT(renderpass->renderpass != VK_NULL_HANDLE);
 
     // Find the framebuffer size.
     ASSERT(framebuffers->attachment_count > 0);
@@ -2739,6 +2745,7 @@ void vkl_cmd_begin_renderpass(
     log_trace("begin renderpass with size %dx%d", width, height);
 
     CMD_START_CLIP(cmds->count)
+    ASSERT(framebuffers->framebuffers[iclip] != VK_NULL_HANDLE);
     begin_render_pass(
         renderpass->renderpass, cb, framebuffers->framebuffers[iclip], //
         width, height, renderpass->clear_count, renderpass->clear_values);
