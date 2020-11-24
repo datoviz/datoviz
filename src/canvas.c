@@ -492,6 +492,8 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
         VklSemaphores, canvas, semaphores, max_semaphores, VKL_MAX_SEMAPHORES,
         VKL_OBJECT_TYPE_SEMAPHORES)
     INSTANCES_INIT(VklFences, canvas, fences, max_fences, VKL_MAX_FENCES, VKL_OBJECT_TYPE_FENCES)
+    INSTANCES_INIT(
+        VklGraphics, canvas, graphics, max_graphics, VKL_MAX_GRAPHICS, VKL_OBJECT_TYPE_GRAPHICS)
 
     // Create the window.
     VklWindow* window = vkl_window(app, width, height);
@@ -1244,6 +1246,16 @@ void vkl_canvas_destroy(VklCanvas* canvas)
     vkl_thread_join(&canvas->event_thread);
     vkl_fifo_destroy(&canvas->event_queue);
 
+    // Destroy the graphics.
+    log_trace("canvas destroy graphics pipelines");
+    for (uint32_t i = 0; i < canvas->max_graphics; i++)
+    {
+        if (canvas->graphics[i].obj.status == VKL_OBJECT_STATUS_NONE)
+            break;
+        vkl_graphics_destroy(&canvas->graphics[i]);
+    }
+    INSTANCES_DESTROY(canvas->graphics)
+
     // Destroy the depth image.
     vkl_images_destroy(&canvas->depth_image);
 
@@ -1275,7 +1287,7 @@ void vkl_canvas_destroy(VklCanvas* canvas)
     }
     INSTANCES_DESTROY(canvas->commands)
 
-
+    // Destroy the semaphores.
     log_trace("canvas destroy semaphores");
     for (uint32_t i = 0; i < canvas->max_semaphores; i++)
     {
@@ -1285,7 +1297,7 @@ void vkl_canvas_destroy(VklCanvas* canvas)
     }
     INSTANCES_DESTROY(canvas->semaphores)
 
-
+    // Destroy the fences.
     log_trace("canvas destroy fences");
     for (uint32_t i = 0; i < canvas->max_fences; i++)
     {

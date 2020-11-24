@@ -385,6 +385,9 @@ struct VklCanvas
     uint32_t max_fences;
     VklFences* fences;
 
+    uint32_t max_graphics;
+    VklGraphics* graphics;
+
     uint32_t canvas_callbacks_count;
     VklCanvasCallbackRegister canvas_callbacks[VKL_MAX_EVENT_CALLBACKS];
 
