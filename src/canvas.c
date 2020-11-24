@@ -238,10 +238,21 @@ static int _resize_callbacks(VklCanvas* canvas)
 
 
 
+static int _pre_send_callbacks(VklCanvas* canvas)
+{
+    VklPrivateEvent ev = {0};
+    ev.type = VKL_PRIVATE_EVENT_PRE_SEND;
+    ev.u.s.submit = &canvas->submit;
+    return _canvas_callbacks(canvas, ev);
+}
+
+
+
 static int _post_send_callbacks(VklCanvas* canvas)
 {
     VklPrivateEvent ev = {0};
     ev.type = VKL_PRIVATE_EVENT_POST_SEND;
+    ev.u.s.submit = &canvas->submit;
     return _canvas_callbacks(canvas, ev);
 }
 
@@ -1068,13 +1079,21 @@ void vkl_canvas_frame_submit(VklCanvas* canvas)
     vkl_submit_wait_semaphores(
         s, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, //
         &canvas->semaphores[VKL_SEMAPHORE_IMG_AVAILABLE], f);
+
     // Once the render is finished, we signal another semaphore.
     vkl_submit_signal_semaphores(s, &canvas->semaphores[VKL_SEMAPHORE_RENDER_FINISHED], f);
-    // Send the Submit instance.
-    vkl_submit_send(s, img_idx, &canvas->fences[VKL_FENCE_RENDER_FINISHED], f);
 
-    // Call POST_SEND callbacks
-    _post_send_callbacks(canvas);
+    // SEND callbacks and send the Submit instance.
+    {
+        // Call PRE_SEND callbacks
+        _pre_send_callbacks(canvas);
+
+        // Send the Submit instance.
+        vkl_submit_send(s, img_idx, &canvas->fences[VKL_FENCE_RENDER_FINISHED], f);
+
+        // Call POST_SEND callbacks
+        _post_send_callbacks(canvas);
+    }
 
     // Once the image is rendered, we present the swapchain image.
     vkl_swapchain_present(

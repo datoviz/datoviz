@@ -42,6 +42,7 @@ typedef enum
     VKL_PRIVATE_EVENT_FRAME,     // called at every frame, after event enqueue
     VKL_PRIVATE_EVENT_TIMER,     // called every X ms in the main thread, just after FRAME
     VKL_PRIVATE_EVENT_RESIZE,    // called at every resize
+    VKL_PRIVATE_EVENT_PRE_SEND,  // called before sending the commands buffers
     VKL_PRIVATE_EVENT_POST_SEND, // called after sending the commands buffers
     VKL_PRIVATE_EVENT_DESTROY,   // called before destruction
 } VklPrivateEventType;
@@ -158,6 +159,7 @@ typedef struct VklEvent VklEvent;
 typedef struct VklTimerEvent VklTimerEvent;
 typedef struct VklResizeEvent VklResizeEvent;
 typedef struct VklRefillEvent VklRefillEvent;
+typedef struct VklSubmitEvent VklSubmitEvent;
 typedef struct VklPrivateEvent VklPrivateEvent;
 
 typedef struct VklMouseState VklMouseState;
@@ -251,6 +253,13 @@ struct VklResizeEvent
 
 
 
+struct VklSubmitEvent
+{
+    VklSubmit* submit;
+};
+
+
+
 struct VklPrivateEvent
 {
     VklPrivateEventType type;
@@ -261,6 +270,7 @@ struct VklPrivateEvent
         VklResizeEvent r;  // for RESIZE private events
         VklFrameEvent t;   // for FRAME private events
         VklFrameEvent f;   // for TIMER private events
+        VklSubmitEvent s;  // for SUBMIT private events
     } u;
 };
 
