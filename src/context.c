@@ -127,7 +127,7 @@ void vkl_fifo_discard(VklFifo* fifo, int max_size)
     ASSERT(0 <= size && size <= fifo->capacity);
     if (size > max_size)
     {
-        log_debug(
+        log_trace(
             "discarding %d items in the FIFO queue which is getting overloaded", size - max_size);
         fifo->tail = fifo->head - max_size;
         if (fifo->tail < 0)

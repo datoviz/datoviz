@@ -193,9 +193,6 @@ VklGpu* vkl_gpu(VklApp* app, uint32_t idx)
     }
     VklGpu* gpu = &app->gpus[idx];
 
-    INSTANCES_INIT(
-        VklGraphics, gpu, graphics, max_graphics, VKL_MAX_GRAPHICS, VKL_OBJECT_TYPE_GRAPHICS)
-
     return gpu;
 }
 
@@ -321,16 +318,6 @@ void vkl_gpu_destroy(VklGpu* gpu)
             gpu->queues.cmd_pools[i] = VK_NULL_HANDLE;
         }
     }
-
-
-    log_trace("GPU destroy graphics");
-    for (uint32_t i = 0; i < gpu->max_graphics; i++)
-    {
-        if (gpu->graphics[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_graphics_destroy(&gpu->graphics[i]);
-    }
-    INSTANCES_DESTROY(gpu->graphics)
 
 
     if (gpu->dset_pool != VK_NULL_HANDLE)
@@ -1730,14 +1717,14 @@ void vkl_compute_destroy(VklCompute* compute)
 /*  Graphics                                                                                     */
 /*************************************************************************************************/
 
-VklGraphics* vkl_graphics(VklGpu* gpu)
+VklGraphics vkl_graphics(VklGpu* gpu)
 {
     ASSERT(gpu != NULL);
     ASSERT(is_obj_created(&gpu->obj));
 
-    INSTANCE_NEW(VklGraphics, graphics, gpu->graphics, gpu->max_graphics)
-
-    graphics->gpu = gpu;
+    VklGraphics graphics = {0};
+    graphics.gpu = gpu;
+    obj_init(&graphics.obj);
 
     return graphics;
 }
@@ -1939,12 +1926,12 @@ void vkl_graphics_create(VklGraphics* graphics)
 void vkl_graphics_destroy(VklGraphics* graphics)
 {
     ASSERT(graphics != NULL);
-    ASSERT(graphics->gpu != NULL);
     if (!is_obj_created(&graphics->obj))
     {
         log_trace("skip destruction of already-destroyed graphics");
         return;
     }
+    ASSERT(graphics->gpu != NULL);
     log_trace("destroy graphics");
 
     VkDevice device = graphics->gpu->device;

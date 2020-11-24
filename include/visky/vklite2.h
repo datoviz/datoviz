@@ -448,9 +448,6 @@ struct VklGpu
     VkDevice device;
 
     VklContext* context;
-
-    uint32_t max_graphics;
-    VklGraphics* graphics;
 };
 
 
@@ -1132,7 +1129,7 @@ VKY_EXPORT void vkl_compute_destroy(VklCompute* compute);
 /*  Pipeline                                                                                     */
 /*************************************************************************************************/
 
-VKY_EXPORT VklGraphics* vkl_graphics(VklGpu* gpu);
+VKY_EXPORT VklGraphics vkl_graphics(VklGpu* gpu);
 
 VKY_EXPORT void
 vkl_graphics_renderpass(VklGraphics* graphics, VklRenderpass* renderpass, uint32_t subpass);

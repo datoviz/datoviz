@@ -50,7 +50,7 @@ typedef struct
     VklImages* images;
     VklImages* depth;
 
-    VklGraphics* graphics;
+    VklGraphics graphics;
     VklCompute* compute;
     VklBufferRegions buffer_regions;
     VklBufferRegions uniform_buffer_regions;
@@ -437,6 +437,7 @@ static void destroy_canvas(TestCanvas* canvas)
     }
     vkl_images_destroy(canvas->depth);
 
+    vkl_graphics_destroy(&canvas->graphics);
     vkl_renderpass_destroy(&canvas->renderpass);
     vkl_swapchain_destroy(&canvas->swapchain);
     vkl_framebuffers_destroy(&canvas->framebuffers);
@@ -448,9 +449,9 @@ static void destroy_canvas(TestCanvas* canvas)
 static void _triangle_graphics(TestCanvas* canvas, TestVisual* visual, const char* suffix)
 {
     VklGpu* gpu = canvas->gpu;
-    VklGraphics* graphics = vkl_graphics(gpu);
-    visual->graphics = graphics;
-    canvas->graphics = graphics;
+    canvas->graphics = vkl_graphics(gpu);
+    visual->graphics = &canvas->graphics;
+    VklGraphics* graphics = &canvas->graphics;
 
     vkl_graphics_renderpass(graphics, &canvas->renderpass, 0);
     vkl_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
@@ -558,7 +559,7 @@ static void triangle_commands(TestCanvas* canvas, VklCommands* cmds, uint32_t id
             0, 0, canvas->framebuffers.attachments[0]->width,
             canvas->framebuffers.attachments[0]->height, 0, 1});
     vkl_cmd_bind_vertex_buffer(cmds, idx, &canvas->buffer_regions, 0);
-    vkl_cmd_bind_graphics(cmds, idx, canvas->graphics, canvas->bindings, 0);
+    vkl_cmd_bind_graphics(cmds, idx, &canvas->graphics, canvas->bindings, 0);
     vkl_cmd_draw(cmds, idx, 0, 3);
     vkl_cmd_end_renderpass(cmds, idx);
     vkl_cmd_end(cmds, idx);
@@ -1646,6 +1647,7 @@ static int vklite2_canvas_3(VkyTestContext* context)
 
     vkl_app_run(app, 0);
 
+    vkl_graphics_destroy(&c.graphics);
     destroy_visual(&visual);
     TEST_END
 }
@@ -1679,11 +1681,11 @@ static void _triangle_push_refill(VklCanvas* canvas, VklPrivateEvent ev)
             0, 0, c->framebuffers.attachments[0]->width, c->framebuffers.attachments[0]->height, 0,
             1});
     vkl_cmd_bind_vertex_buffer(cmds, idx, &c->buffer_regions, 0);
-    vkl_cmd_bind_graphics(cmds, idx, c->graphics, c->bindings, 0);
+    vkl_cmd_bind_graphics(cmds, idx, &c->graphics, c->bindings, 0);
 
     // Push constants.
     vkl_cmd_push_constants(
-        cmds, idx, c->graphics->slots, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vec3), push_vec);
+        cmds, idx, c->graphics.slots, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vec3), push_vec);
 
     vkl_cmd_draw(cmds, idx, 0, 3);
     vkl_cmd_end_renderpass(cmds, idx);
@@ -1764,6 +1766,8 @@ static int vklite2_canvas_4(VkyTestContext* context)
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _push_cursor_callback, NULL);
 
     vkl_app_run(app, 0);
+
+    vkl_graphics_destroy(&c.graphics);
     destroy_visual(&visual);
     TEST_END
 }
@@ -1846,6 +1850,7 @@ static int vklite2_canvas_5(VkyTestContext* context)
 
     vkl_app_run(app, 0);
 
+    vkl_graphics_destroy(&c.graphics);
     destroy_visual(&visual);
     FREE(c.data);
     TEST_END
@@ -1940,6 +1945,7 @@ static int vklite2_canvas_6(VkyTestContext* context)
 
     vkl_app_run(app, 0);
 
+    vkl_graphics_destroy(&c.graphics);
     destroy_visual(&visual);
     FREE(c.data);
     TEST_END
@@ -1975,7 +1981,7 @@ static void _triangle_compute_refill(VklCanvas* canvas, VklPrivateEvent ev)
             0, 0, canvas->framebuffers.attachments[0]->width,
             canvas->framebuffers.attachments[0]->height, 0, 1});
     vkl_cmd_bind_vertex_buffer(cmds, idx, &c->buffer_regions, 0);
-    vkl_cmd_bind_graphics(cmds, idx, c->graphics, c->bindings, 0);
+    vkl_cmd_bind_graphics(cmds, idx, &c->graphics, c->bindings, 0);
     vkl_cmd_draw(cmds, idx, 0, 3);
     vkl_cmd_end_renderpass(cmds, idx);
     vkl_cmd_end(cmds, idx);
@@ -2021,6 +2027,7 @@ static int vklite2_canvas_7(VkyTestContext* context)
 
     vkl_app_run(app, 0);
 
+    vkl_graphics_destroy(&c.graphics);
     vkl_bindings_destroy(&bindings);
     vkl_slots_destroy(&slots);
     destroy_visual(&visual);
