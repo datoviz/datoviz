@@ -242,6 +242,8 @@ typedef enum
         {                                                                                         \
             o = &instances[i];                                                                    \
             o->obj.status = VKL_OBJECT_STATUS_INIT;                                               \
+            o->obj.id = i;                                                                        \
+            log_trace("new instance %s idx #%d", #s, i);                                          \
             break;                                                                                \
         }                                                                                         \
     if (o == NULL)                                                                                \

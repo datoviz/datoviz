@@ -483,7 +483,6 @@ static void _triangle_compute_refill(VklCanvas* canvas, VklPrivateEvent ev)
     vkl_cmd_end(cmds, idx);
 }
 
-// Triangle canvas
 static int vklite2_canvas_7(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
@@ -513,6 +512,79 @@ static int vklite2_canvas_7(VkyTestContext* context)
     }
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_compute_refill, &visual);
+
+    vkl_app_run(app, 0);
+
+    vkl_graphics_destroy(&visual.graphics);
+    vkl_bindings_destroy(&bindings);
+    vkl_slots_destroy(&slots);
+    destroy_visual(&visual);
+    TEST_END
+}
+
+
+
+/*************************************************************************************************/
+/*  Canvas triangle with compute                                                                 */
+/*************************************************************************************************/
+
+static void _triangle_compute(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(canvas->gpu != NULL);
+    VklGpu* gpu = canvas->gpu;
+    VklCommands* cmds = (VklCommands*)ev.user_data;
+    ASSERT(is_obj_created(&cmds->obj));
+
+    VklSubmit submit = vkl_submit(canvas->gpu);
+    vkl_submit_commands(&submit, cmds);
+
+    // HACK: hard synchronization barrier for testing purposes.
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_RENDER);
+    vkl_submit_send(&submit, 0, NULL, 0);
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_COMPUTE);
+}
+
+static int vklite2_canvas_8(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    AT(canvas != NULL);
+
+    TestVisual visual = {0};
+    _make_triangle2(canvas, &visual, "");
+    canvas->user_data = &visual;
+
+    // Create compute object.
+    VklSlots slots = vkl_slots(gpu);
+    VklBindings bindings = vkl_bindings(&slots);
+    {
+        char path[1024];
+        snprintf(path, sizeof(path), "%s/spirv/test_triangle.comp.spv", DATA_DIR);
+        visual.compute = vkl_new_compute(gpu->context, path);
+        vkl_slots_binding(&slots, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+        vkl_slots_create(&slots);
+        vkl_compute_slots(visual.compute, &slots);
+        vkl_bindings_create(&bindings, 1);
+        vkl_bindings_buffer(&bindings, 0, &visual.br);
+        vkl_bindings_update(&bindings);
+        vkl_compute_bindings(visual.compute, &bindings);
+        vkl_compute_create(visual.compute);
+    }
+
+    INSTANCE_NEW(VklSemaphores, compute_finished, canvas->semaphores, canvas->max_semaphores)
+    *compute_finished = vkl_semaphores(gpu, 2);
+
+    INSTANCE_NEW(VklCommands, cmds, canvas->commands, canvas->max_commands)
+    *cmds = vkl_commands(gpu, VKL_DEFAULT_QUEUE_COMPUTE, 1);
+    vkl_cmd_begin(cmds, 0);
+    vkl_cmd_compute(cmds, 0, visual.compute, (uvec3){3, 1, 1});
+    vkl_cmd_end(cmds, 0);
+    ASSERT(is_obj_created(&cmds->obj));
+
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_refill, &visual);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _triangle_compute, cmds);
 
     vkl_app_run(app, 0);
 

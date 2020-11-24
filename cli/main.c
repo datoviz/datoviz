@@ -175,6 +175,7 @@ static VkyTestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(vklite2_canvas_5), //
     CASE_FIXTURE_NONE(vklite2_canvas_6), //
     CASE_FIXTURE_NONE(vklite2_canvas_7), //
+    CASE_FIXTURE_NONE(vklite2_canvas_8), //
 
 
 

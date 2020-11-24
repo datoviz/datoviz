@@ -554,7 +554,7 @@ void vkl_swapchain_acquire(
         fence = fences->fences[fence_idx];
 
     VkResult res = vkAcquireNextImageKHR(
-        swapchain->gpu->device, swapchain->swapchain, UINT64_MAX, //
+        swapchain->gpu->device, swapchain->swapchain, 1000000000, //
         semaphore, fence, &swapchain->img_idx);
     log_trace("acquired swapchain image #%d", swapchain->img_idx);
 
@@ -2191,7 +2191,7 @@ void vkl_fences_wait(VklFences* fences, uint32_t idx)
     if (fences->fences[idx] != 0)
     {
         log_trace("wait for fence %d", fences->fences[idx]);
-        vkWaitForFences(fences->gpu->device, 1, &fences->fences[idx], VK_TRUE, UINT64_MAX);
+        vkWaitForFences(fences->gpu->device, 1, &fences->fences[idx], VK_TRUE, 1000000000);
     }
 }
 
@@ -2619,10 +2619,14 @@ void vkl_submit_wait_semaphores(
     VklSubmit* submit, VkPipelineStageFlags stage, VklSemaphores* semaphores, uint32_t idx)
 {
     ASSERT(submit != NULL);
+    ASSERT(semaphores != NULL);
 
+    ASSERT(idx < semaphores->count);
     ASSERT(idx < VKL_MAX_SEMAPHORES_PER_SET);
     uint32_t n = submit->wait_semaphores_count;
     ASSERT(n < VKL_MAX_SEMAPHORES_PER_SUBMIT);
+
+    ASSERT(semaphores->semaphores[idx] != VK_NULL_HANDLE);
 
     submit->wait_semaphores[n] = semaphores;
     submit->wait_stages[n] = stage;
