@@ -124,6 +124,15 @@ static int vklite2_canvas_2(VkyTestContext* context)
 /*  Canvas triangle                                                                              */
 /*************************************************************************************************/
 
+static void _make_triangle2(VklCanvas* canvas, TestVisual* visual, const char* suffix)
+{
+    visual->gpu = canvas->gpu;
+    visual->renderpass = &canvas->renderpasses[0];
+    visual->framebuffers = &canvas->framebuffers;
+    test_triangle(visual, suffix);
+    canvas->user_data = visual;
+}
+
 static void _triangle_refill(VklCanvas* canvas, VklPrivateEvent ev)
 {
     ASSERT(canvas != NULL);
@@ -156,8 +165,7 @@ static int vklite2_canvas_3(VkyTestContext* context)
     AT(canvas != NULL);
 
     TestVisual visual = {0};
-
-    test_triangle(&visual, "");
+    _make_triangle2(canvas, &visual, "");
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_refill, &visual);
 
     vkl_app_run(app, 0);
@@ -225,7 +233,11 @@ static int vklite2_canvas_4(VkyTestContext* context)
     AT(canvas != NULL);
 
     TestVisual visual = {0};
+    visual.gpu = canvas->gpu;
+    visual.renderpass = &canvas->renderpasses[0];
+    visual.framebuffers = &canvas->framebuffers;
     _triangle_graphics(&visual, "_push");
+    canvas->user_data = &visual;
 
     // Create the slots.
     visual.slots = vkl_slots(gpu);
@@ -271,7 +283,6 @@ static int vklite2_canvas_4(VkyTestContext* context)
 
     vkl_app_run(app, 0);
 
-    vkl_graphics_destroy(&visual.graphics);
     destroy_visual(&visual);
     TEST_END
 }
@@ -308,11 +319,12 @@ static int vklite2_canvas_5(VkyTestContext* context)
     AT(canvas != NULL);
 
     TestVisual visual = {0};
-    visual.gpu = gpu;
-    visual.data = calloc(3, sizeof(VklVertex));
-
-    // Triangle graphics.
+    visual.gpu = canvas->gpu;
+    visual.renderpass = &canvas->renderpasses[0];
+    visual.framebuffers = &canvas->framebuffers;
     _triangle_graphics(&visual, "");
+    canvas->user_data = &visual;
+    visual.data = calloc(3, sizeof(VklVertex));
 
     // Create the slots.
     visual.slots = vkl_slots(gpu);
@@ -347,7 +359,6 @@ static int vklite2_canvas_5(VkyTestContext* context)
 
     vkl_app_run(app, 0);
 
-    vkl_graphics_destroy(&visual.graphics);
     destroy_visual(&visual);
     FREE(visual.data);
     TEST_END
@@ -386,11 +397,12 @@ static int vklite2_canvas_6(VkyTestContext* context)
     ASSERT(img_count > 0);
 
     TestVisual visual = {0};
-    visual.gpu = gpu;
-    visual.data = calloc(3, sizeof(VklVertex));
-
-    // Triangle graphics.
+    visual.gpu = canvas->gpu;
+    visual.renderpass = &canvas->renderpasses[0];
+    visual.framebuffers = &canvas->framebuffers;
     _triangle_graphics(&visual, "_ubo");
+    canvas->user_data = &visual;
+    visual.data = calloc(3, sizeof(VklVertex));
 
     // Create the slots.
     visual.slots = vkl_slots(gpu);
@@ -434,7 +446,6 @@ static int vklite2_canvas_6(VkyTestContext* context)
 
     vkl_app_run(app, 0);
 
-    vkl_graphics_destroy(&visual.graphics);
     destroy_visual(&visual);
     FREE(visual.data);
     TEST_END
@@ -481,9 +492,8 @@ static int vklite2_canvas_7(VkyTestContext* context)
     AT(canvas != NULL);
 
     TestVisual visual = {0};
-    visual.gpu = gpu;
-
-    test_triangle(&visual, "");
+    _make_triangle2(canvas, &visual, "");
+    canvas->user_data = &visual;
 
     // Create compute object.
     VklSlots slots = vkl_slots(gpu);
