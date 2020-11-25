@@ -822,6 +822,106 @@ static void process_buffer_download(VklContext* context, VklTransfer tr)
 
 
 
+static void process_buffer_copy(VklContext* context, VklTransfer tr)
+{
+    ASSERT(context != NULL);
+
+    VklGpu* gpu = context->gpu;
+    ASSERT(gpu != NULL);
+
+    ASSERT(tr.type == VKL_TRANSFER_BUFFER_COPY);
+    VklBufferRegions* src = &tr.u.buf_copy.src;
+    VklBufferRegions* dst = &tr.u.buf_copy.dst;
+    ASSERT(src->count == dst->count);
+
+    VkDeviceSize size = tr.u.buf_copy.size;
+    VkDeviceSize src_offset = tr.u.buf_copy.src_offset;
+    VkDeviceSize dst_offset = tr.u.buf_copy.dst_offset;
+
+    // Take transfer cmd buf.
+    VklCommands* cmds = &context->transfer_cmd;
+    vkl_cmd_reset(cmds, 0);
+    vkl_cmd_begin(cmds, 0);
+
+    // Copy buffer command.
+    VkBufferCopy* regions = (VkBufferCopy*)calloc(src->count, sizeof(VkBufferCopy));
+    for (uint32_t i = 0; i < src->count; i++)
+    {
+        regions[i].size = size;
+        regions[i].srcOffset = src->offsets[i] + src_offset;
+        regions[i].dstOffset = dst->offsets[i] + dst_offset;
+    }
+    vkCmdCopyBuffer(cmds->cmds[0], src->buffer->buffer, dst->buffer->buffer, src->count, regions);
+
+    vkl_cmd_end(cmds, 0);
+    FREE(regions);
+
+    // Wait for the render queue to be idle.
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_RENDER);
+
+    // Submit the commands to the transfer queue.
+    VklSubmit submit = vkl_submit(gpu);
+    vkl_submit_commands(&submit, cmds);
+    vkl_submit_send(&submit, 0, NULL, 0);
+
+    // Wait for the transfer queue to be idle.
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
+}
+
+
+
+static void process_texture_copy(VklContext* context, VklTransfer tr)
+{
+    ASSERT(context != NULL);
+
+    VklGpu* gpu = context->gpu;
+    ASSERT(gpu != NULL);
+
+    ASSERT(tr.type == VKL_TRANSFER_TEXTURE_COPY);
+    VklTexture* src = tr.u.tex_copy.src;
+    VklTexture* dst = tr.u.tex_copy.dst;
+
+    // Take transfer cmd buf.
+    VklCommands* cmds = &context->transfer_cmd;
+    vkl_cmd_reset(cmds, 0);
+    vkl_cmd_begin(cmds, 0);
+
+    // Copy texture command.
+    VkImageCopy copy = {0};
+    copy.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    copy.srcSubresource.layerCount = 1;
+    copy.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    copy.dstSubresource.layerCount = 1;
+    copy.extent.width = tr.u.tex_copy.shape[0];
+    copy.extent.height = tr.u.tex_copy.shape[1];
+    copy.extent.depth = tr.u.tex_copy.shape[2];
+    copy.srcOffset.x = (int32_t)tr.u.tex_copy.src_offset[0];
+    copy.srcOffset.y = (int32_t)tr.u.tex_copy.src_offset[1];
+    copy.srcOffset.z = (int32_t)tr.u.tex_copy.src_offset[2];
+    copy.dstOffset.x = (int32_t)tr.u.tex_copy.dst_offset[0];
+    copy.dstOffset.y = (int32_t)tr.u.tex_copy.dst_offset[1];
+    copy.dstOffset.z = (int32_t)tr.u.tex_copy.dst_offset[2];
+    vkCmdCopyImage(
+        cmds->cmds[0],                             //
+        src->image->images[0], src->image->layout, //
+        dst->image->images[0], dst->image->layout, 1, &copy);
+
+    vkl_cmd_end(cmds, 0);
+
+    // Wait for the render queue to be idle.
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_RENDER);
+
+    // Submit the commands to the transfer queue.
+    VklSubmit submit = vkl_submit(gpu);
+    vkl_submit_commands(&submit, cmds);
+    vkl_submit_send(&submit, 0, NULL, 0);
+
+    // Wait for the transfer queue to be idle.
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
+}
+
+
+
 static int process_transfer(VklContext* context, VklTransfer tr)
 {
     ASSERT(context != NULL);
@@ -841,6 +941,12 @@ static int process_transfer(VklContext* context, VklTransfer tr)
         break;
     case VKL_TRANSFER_BUFFER_DOWNLOAD:
         process_buffer_download(context, tr);
+        break;
+    case VKL_TRANSFER_BUFFER_COPY:
+        process_buffer_copy(context, tr);
+        break;
+    case VKL_TRANSFER_TEXTURE_COPY:
+        process_texture_copy(context, tr);
         break;
     default:
         log_error("unknown transfer type %d", tr.type);
@@ -1069,4 +1175,54 @@ void vkl_buffer_regions_download(
     ASSERT(regions != NULL);
     ASSERT(context != NULL);
     enqueue_regions_transfer(context, VKL_TRANSFER_BUFFER_DOWNLOAD, *regions, offset, size, data);
+}
+
+
+
+void vkl_buffer_regions_copy(
+    VklContext* context,                           //
+    VklBufferRegions src, VkDeviceSize src_offset, //
+    VklBufferRegions dst, VkDeviceSize dst_offset, //
+    VkDeviceSize size)
+{
+    ASSERT(context != NULL);
+    ASSERT(src.buffer != NULL);
+    ASSERT(dst.buffer != NULL);
+
+    // Create the transfer object.
+    VklTransfer tr = {0};
+    tr.type = VKL_TRANSFER_BUFFER_COPY;
+    tr.u.buf_copy.src = src;
+    tr.u.buf_copy.dst = dst;
+    tr.u.buf_copy.src_offset = src_offset;
+    tr.u.buf_copy.dst_offset = dst_offset;
+    tr.u.buf_copy.size = size;
+
+    fifo_enqueue(context, tr);
+    if (context->transfer_mode == VKL_TRANSFER_MODE_SYNC)
+        process_transfer(context, tr);
+}
+
+
+
+void vkl_texture_copy(
+    VklContext* context, VklTexture* src, uvec3 src_offset, VklTexture* dst, uvec3 dst_offset,
+    uvec3 shape)
+{
+    ASSERT(context != NULL);
+    ASSERT(src != NULL);
+    ASSERT(dst != NULL);
+
+    // Create the transfer object.
+    VklTransfer tr = {0};
+    tr.type = VKL_TRANSFER_TEXTURE_COPY;
+    tr.u.tex_copy.src = src;
+    tr.u.tex_copy.dst = dst;
+    memcpy(tr.u.tex_copy.src_offset, src_offset, sizeof(uvec3));
+    memcpy(tr.u.tex_copy.dst_offset, dst_offset, sizeof(uvec3));
+    memcpy(tr.u.tex_copy.shape, shape, sizeof(uvec3));
+
+    fifo_enqueue(context, tr);
+    if (context->transfer_mode == VKL_TRANSFER_MODE_SYNC)
+        process_transfer(context, tr);
 }

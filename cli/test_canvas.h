@@ -5,6 +5,8 @@
 #include "utils.h"
 
 
+#define N_FRAMES 10
+
 
 /*************************************************************************************************/
 /*  Canvas 1                                                                                     */
@@ -114,7 +116,7 @@ static int vklite2_canvas_2(VkyTestContext* context)
 
     // vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, .05, _timer_callback, NULL);
 
-    vkl_app_run(app, 0);
+    vkl_app_run(app, N_FRAMES);
     TEST_END
 }
 
@@ -168,7 +170,7 @@ static int vklite2_canvas_3(VkyTestContext* context)
     _make_triangle2(canvas, &visual, "");
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_refill, &visual);
 
-    vkl_app_run(app, 0);
+    vkl_app_run(app, N_FRAMES);
 
     vkl_graphics_destroy(&visual.graphics);
     destroy_visual(&visual);
@@ -281,7 +283,7 @@ static int vklite2_canvas_4(VkyTestContext* context)
     // Cursor callback.
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _push_cursor_callback, NULL);
 
-    vkl_app_run(app, 0);
+    vkl_app_run(app, N_FRAMES);
 
     destroy_visual(&visual);
     TEST_END
@@ -357,7 +359,7 @@ static int vklite2_canvas_5(VkyTestContext* context)
     // Cursor callback.
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _vertex_cursor_callback, &visual);
 
-    vkl_app_run(app, 0);
+    vkl_app_run(app, N_FRAMES);
 
     destroy_visual(&visual);
     FREE(visual.data);
@@ -444,7 +446,7 @@ static int vklite2_canvas_6(VkyTestContext* context)
     // Cursor callback.
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _uniform_cursor_callback, &visual);
 
-    vkl_app_run(app, 0);
+    vkl_app_run(app, N_FRAMES);
 
     destroy_visual(&visual);
     FREE(visual.data);
@@ -513,7 +515,7 @@ static int vklite2_canvas_7(VkyTestContext* context)
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_compute_refill, &visual);
 
-    vkl_app_run(app, 0);
+    vkl_app_run(app, N_FRAMES);
 
     vkl_graphics_destroy(&visual.graphics);
     vkl_bindings_destroy(&bindings);
@@ -586,7 +588,7 @@ static int vklite2_canvas_8(VkyTestContext* context)
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_refill, &visual);
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _triangle_compute, cmds);
 
-    vkl_app_run(app, 0);
+    vkl_app_run(app, N_FRAMES);
 
     vkl_graphics_destroy(&visual.graphics);
     vkl_bindings_destroy(&bindings);

@@ -53,10 +53,12 @@ static inline void vkl_sleep(int milliseconds)
 
 typedef struct VklFifo VklFifo;
 typedef struct VklTexture VklTexture;
+
 typedef struct VklTransfer VklTransfer;
 typedef struct VklTransferBuffer VklTransferBuffer;
+typedef struct VklTransferBufferCopy VklTransferBufferCopy;
 typedef struct VklTransferTexture VklTransferTexture;
-typedef union VklTransferUnion VklTransferUnion;
+typedef struct VklTransferTextureCopy VklTransferTextureCopy;
 
 
 
@@ -108,8 +110,10 @@ typedef enum
     VKL_TRANSFER_NONE,
     VKL_TRANSFER_BUFFER_UPLOAD,
     VKL_TRANSFER_BUFFER_DOWNLOAD,
+    VKL_TRANSFER_BUFFER_COPY,
     VKL_TRANSFER_TEXTURE_UPLOAD,
     VKL_TRANSFER_TEXTURE_DOWNLOAD,
+    VKL_TRANSFER_TEXTURE_COPY,
 } VklDataTransferType;
 
 
@@ -144,6 +148,14 @@ struct VklTransferBuffer
 
 
 
+struct VklTransferBufferCopy
+{
+    VklBufferRegions src, dst;
+    VkDeviceSize src_offset, dst_offset, size;
+};
+
+
+
 struct VklTransferTexture
 {
     VklTexture* texture;
@@ -154,10 +166,10 @@ struct VklTransferTexture
 
 
 
-union VklTransferUnion
+struct VklTransferTextureCopy
 {
-    VklTransferBuffer buf;
-    VklTransferTexture tex;
+    VklTexture *src, *dst;
+    uvec3 src_offset, dst_offset, shape;
 };
 
 
@@ -165,7 +177,13 @@ union VklTransferUnion
 struct VklTransfer
 {
     VklDataTransferType type;
-    VklTransferUnion u;
+    union
+    {
+        VklTransferBuffer buf;
+        VklTransferTexture tex;
+        VklTransferBufferCopy buf_copy;
+        VklTransferTextureCopy tex_copy;
+    } u;
 };
 
 
@@ -323,6 +341,16 @@ VKY_EXPORT void vkl_buffer_regions_upload(
 VKY_EXPORT void vkl_buffer_regions_download(
     VklContext* context, VklBufferRegions* regions, VkDeviceSize offset, VkDeviceSize size,
     void* data);
+
+VKY_EXPORT void vkl_buffer_regions_copy(
+    VklContext* context,                           //
+    VklBufferRegions src, VkDeviceSize src_offset, //
+    VklBufferRegions dst, VkDeviceSize dst_offset, //
+    VkDeviceSize size);
+
+VKY_EXPORT void vkl_texture_copy(
+    VklContext* context, VklTexture* src, uvec3 src_offset, //
+    VklTexture* dst, uvec3 dst_offset, uvec3 shape);
 
 
 
