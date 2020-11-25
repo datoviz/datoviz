@@ -878,8 +878,8 @@ static VklTransfer fifo_dequeue(VklTransferFifo* fifo, bool wait)
 
 
 static VklTransfer enqueue_texture_transfer(
-    VklTransferFifo* fifo, VklDataTransferType type, VklTexture* texture, uvec3 offset,
-    uvec3 shape, VkDeviceSize size, void* data)
+    VklContext* ctx, VklTransferFifo* fifo, VklDataTransferType type, VklTexture* texture,
+    uvec3 offset, uvec3 shape, VkDeviceSize size, void* data)
 {
     // Create the transfer object.
     VklTransfer tr = {0};
@@ -894,6 +894,8 @@ static VklTransfer enqueue_texture_transfer(
     tr.u.tex.texture = texture;
 
     fifo_enqueue(fifo, tr);
+    if (ctx->transfer_mode == VKL_TRANSFER_MODE_SYNC)
+        process_transfer(ctx, tr);
 
     return tr;
 }
@@ -901,8 +903,8 @@ static VklTransfer enqueue_texture_transfer(
 
 
 static VklTransfer enqueue_regions_transfer(
-    VklTransferFifo* fifo, VklDataTransferType type, VklBufferRegions regions, VkDeviceSize offset,
-    VkDeviceSize size, void* data)
+    VklContext* ctx, VklTransferFifo* fifo, VklDataTransferType type, VklBufferRegions regions,
+    VkDeviceSize offset, VkDeviceSize size, void* data)
 {
     // Create the transfer object.
     VklTransfer tr = {0};
@@ -913,6 +915,8 @@ static VklTransfer enqueue_regions_transfer(
     tr.u.buf.data = data;
 
     fifo_enqueue(fifo, tr);
+    if (ctx->transfer_mode == VKL_TRANSFER_MODE_SYNC)
+        process_transfer(ctx, tr);
 
     return tr;
 }
@@ -999,20 +1003,9 @@ void vkl_texture_upload_region(
 {
     ASSERT(texture != NULL);
     ASSERT(context != NULL);
-
-    VklTransfer tr = enqueue_texture_transfer(
-        &context->transfer_fifo, VKL_TRANSFER_TEXTURE_UPLOAD, //
+    enqueue_texture_transfer(
+        context, &context->transfer_fifo, VKL_TRANSFER_TEXTURE_UPLOAD, //
         texture, offset, shape, size, data);
-
-    if (context->transfer_mode == VKL_TRANSFER_MODE_ASYNC)
-    {
-        log_trace("upload texture in ASYNC mode");
-    }
-    else
-    {
-        log_trace("upload texture in SYNC mode");
-        process_transfer(context, tr);
-    }
 }
 
 
@@ -1037,20 +1030,9 @@ void vkl_texture_download_region(
 {
     ASSERT(texture != NULL);
     ASSERT(context != NULL);
-
-    VklTransfer tr = enqueue_texture_transfer(
-        &context->transfer_fifo, VKL_TRANSFER_TEXTURE_DOWNLOAD, //
+    enqueue_texture_transfer(
+        context, &context->transfer_fifo, VKL_TRANSFER_TEXTURE_DOWNLOAD, //
         texture, offset, shape, size, data);
-
-    if (context->transfer_mode == VKL_TRANSFER_MODE_ASYNC)
-    {
-        log_trace("download texture in ASYNC mode");
-    }
-    else
-    {
-        log_trace("download texture in SYNC mode");
-        process_transfer(context, tr);
-    }
 }
 
 
@@ -1075,19 +1057,9 @@ void vkl_buffer_regions_upload(
 {
     ASSERT(regions != NULL);
     ASSERT(context != NULL);
-
-    VklTransfer tr = enqueue_regions_transfer(
-        &context->transfer_fifo, VKL_TRANSFER_BUFFER_UPLOAD, *regions, offset, size, data);
-
-    if (context->transfer_mode == VKL_TRANSFER_MODE_ASYNC)
-    {
-        log_trace("upload buffer regions in ASYNC mode");
-    }
-    else
-    {
-        log_trace("upload buffer regions in SYNC mode");
-        process_transfer(context, tr);
-    }
+    enqueue_regions_transfer(
+        context, &context->transfer_fifo, VKL_TRANSFER_BUFFER_UPLOAD, *regions, offset, size,
+        data);
 }
 
 
@@ -1098,17 +1070,7 @@ void vkl_buffer_regions_download(
 {
     ASSERT(regions != NULL);
     ASSERT(context != NULL);
-
-    VklTransfer tr = enqueue_regions_transfer(
-        &context->transfer_fifo, VKL_TRANSFER_BUFFER_DOWNLOAD, *regions, offset, size, data);
-
-    if (context->transfer_mode == VKL_TRANSFER_MODE_ASYNC)
-    {
-        log_trace("download buffer regions in ASYNC mode");
-    }
-    else
-    {
-        log_trace("download buffer regions in SYNC mode");
-        process_transfer(context, tr);
-    }
+    enqueue_regions_transfer(
+        context, &context->transfer_fifo, VKL_TRANSFER_BUFFER_DOWNLOAD, *regions, offset, size,
+        data);
 }
