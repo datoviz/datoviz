@@ -614,6 +614,19 @@ static int vklite2_canvas_8(VkyTestContext* context)
 /*  Canvas with particles                                                                        */
 /*************************************************************************************************/
 
+static void _fps(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    log_debug("FPS: %d", canvas->frame_idx - canvas->clock.checkpoint_value);
+    canvas->clock.checkpoint_value = canvas->frame_idx;
+}
+
+static void _particle_frame(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    TestVisual* visual = (TestVisual*)ev.user_data;
+    visual->dt = (float)canvas->clock.interval;
+    vkl_buffer_regions_upload(canvas->gpu->context, &visual->br_u, 0, sizeof(float), &visual->dt);
+}
+
 static void _particle_refill(VklCanvas* canvas, VklPrivateEvent ev)
 {
     ASSERT(canvas != NULL);
@@ -625,6 +638,9 @@ static void _particle_refill(VklCanvas* canvas, VklPrivateEvent ev)
     uint32_t idx = ev.u.rf.img_idx;
     vkl_cmd_begin(cmds, idx);
 
+    int32_t nn = (int32_t)visual->n_vertices;
+    vkl_cmd_push_constants(
+        cmds, idx, visual->compute->slots, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(int32_t), &nn);
     vkl_cmd_compute(cmds, idx, visual->compute, (uvec3){visual->n_vertices, 1, 1});
 
     vkl_cmd_begin_renderpass(cmds, idx, &canvas->renderpasses[0], &canvas->framebuffers);
@@ -719,26 +735,36 @@ static int vklite2_canvas_particles(VkyTestContext* context)
     VklBindings bindings = vkl_bindings(&slots);
     snprintf(path, sizeof(path), "%s/spirv/test_particle.comp.spv", DATA_DIR);
     visual->compute = vkl_new_compute(gpu->context, path);
-    vkl_slots_binding(&slots, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+
+
+    // Uniform buffer.
+    visual->br_u = vkl_alloc_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(float));
+    vkl_buffer_regions_upload(
+        gpu->context, &visual->br_u, 0, sizeof(float), &canvas->clock.interval);
+
+    // Create the bindings.
+    vkl_slots_binding(&slots, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER); // vertex buffer
+    vkl_slots_binding(&slots, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // UBO
+    vkl_slots_push_constant(&slots, 0, sizeof(int32_t), VK_SHADER_STAGE_COMPUTE_BIT);
     vkl_slots_create(&slots);
     vkl_compute_slots(visual->compute, &slots);
+
     vkl_bindings_create(&bindings, 1);
     vkl_bindings_buffer(&bindings, 0, &visual->br);
+    vkl_bindings_buffer(&bindings, 1, &visual->br_u);
     vkl_bindings_update(&bindings);
     vkl_compute_bindings(visual->compute, &bindings);
     vkl_compute_create(visual->compute);
 
     INSTANCE_NEW(VklCommands, cmds, canvas->commands, canvas->max_commands)
     *cmds = vkl_commands(gpu, VKL_DEFAULT_QUEUE_COMPUTE, 1);
-    vkl_cmd_begin(cmds, 0);
-    vkl_cmd_compute(cmds, 0, visual->compute, (uvec3){n, 1, 1});
-    vkl_cmd_end(cmds, 0);
-    ASSERT(is_obj_created(&cmds->obj));
 
 
 
     canvas->user_data = visual;
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _particle_refill, visual);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _particle_frame, visual);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, visual);
 
     vkl_transfer_mode(canvas->gpu->context, VKL_TRANSFER_MODE_ASYNC);
     vkl_app_run(app, 0); // DEBUG: N_FRAMES

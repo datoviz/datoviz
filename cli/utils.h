@@ -76,6 +76,7 @@ typedef struct
     VklBufferRegions br;
     VklBufferRegions br_u;
     uint32_t n_vertices;
+    float dt;
     void* data;
 } TestVisual;
 
