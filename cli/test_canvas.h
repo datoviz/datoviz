@@ -613,6 +613,9 @@ static void _particle_refill(VklCanvas* canvas, VklPrivateEvent ev)
     TestVisual* visual = (TestVisual*)ev.user_data;
     uint32_t idx = ev.u.rf.img_idx;
     vkl_cmd_begin(cmds, idx);
+
+    vkl_cmd_compute(cmds, idx, visual->compute, (uvec3){visual->n_vertices, 1, 1});
+
     vkl_cmd_begin_renderpass(cmds, idx, &canvas->renderpasses[0], &canvas->framebuffers);
     vkl_cmd_viewport(
         cmds, idx,
@@ -685,7 +688,7 @@ static int vklite2_canvas_particles(VkyTestContext* context)
     vkl_slots_create(&visual->slots);
     vkl_graphics_slots(&visual->graphics, &visual->slots);
 
-    // Create the bindings.
+    // Create the bindings.vkl_slots_destroy(&slots);
     visual->bindings = vkl_bindings(&visual->slots);
     vkl_bindings_create(&visual->bindings, 1);
     vkl_bindings_update(&visual->bindings);
@@ -693,12 +696,38 @@ static int vklite2_canvas_particles(VkyTestContext* context)
     // Create the graphics pipeline.
     vkl_graphics_create(&visual->graphics);
 
+
+
+    // Create compute object.
+    VklSlots slots = vkl_slots(gpu);
+    VklBindings bindings = vkl_bindings(&slots);
+    snprintf(path, sizeof(path), "%s/spirv/test_particle.comp.spv", DATA_DIR);
+    visual->compute = vkl_new_compute(gpu->context, path);
+    vkl_slots_binding(&slots, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+    vkl_slots_create(&slots);
+    vkl_compute_slots(visual->compute, &slots);
+    vkl_bindings_create(&bindings, 1);
+    vkl_bindings_buffer(&bindings, 0, &visual->br);
+    vkl_bindings_update(&bindings);
+    vkl_compute_bindings(visual->compute, &bindings);
+    vkl_compute_create(visual->compute);
+
+    INSTANCE_NEW(VklCommands, cmds, canvas->commands, canvas->max_commands)
+    *cmds = vkl_commands(gpu, VKL_DEFAULT_QUEUE_COMPUTE, 1);
+    vkl_cmd_begin(cmds, 0);
+    vkl_cmd_compute(cmds, 0, visual->compute, (uvec3){n, 1, 1});
+    vkl_cmd_end(cmds, 0);
+    ASSERT(is_obj_created(&cmds->obj));
+
+
+
     canvas->user_data = visual;
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _particle_refill, visual);
 
     vkl_transfer_mode(canvas->gpu->context, VKL_TRANSFER_MODE_ASYNC);
     vkl_app_run(app, 0); // DEBUG: N_FRAMES
 
+    vkl_slots_destroy(&slots);
     destroy_visual(visual);
     TEST_END
 }

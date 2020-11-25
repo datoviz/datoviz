@@ -1,0 +1,23 @@
+#version 450
+
+#define WORKGROUP_SIZE 32
+
+layout (local_size_x=WORKGROUP_SIZE, local_size_y=1, local_size_z=1) in;
+
+struct Vertex{
+    vec3 pos;
+    vec4 color;
+};
+
+layout(binding = 0) buffer buf {
+   Vertex vertex[];
+};
+
+void main() {
+    if(gl_GlobalInvocationID.x >= 1000)
+        return;
+    // f=ma
+    // v += dt * m * G * \sum 1/d2
+    // x += dt * v
+    vertex[gl_GlobalInvocationID.x].pos *= .99;
+}
