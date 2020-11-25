@@ -1001,21 +1001,21 @@ static int process_transfer(VklContext* context, VklTransfer tr)
 /*  Transfer queue                                                                               */
 /*************************************************************************************************/
 
-static void fifo_enqueue(VklContext* ctx, VklTransfer transfer)
+static void fifo_enqueue(VklContext* context, VklTransfer transfer)
 {
-    ASSERT(ctx != NULL);
-    VklFifo* fifo = &ctx->fifo;
+    ASSERT(context != NULL);
+    VklFifo* fifo = &context->fifo;
     ASSERT(0 <= fifo->head && fifo->head < fifo->capacity);
-    ctx->transfers[fifo->head] = transfer;
-    vkl_fifo_enqueue(fifo, &ctx->transfers[fifo->head]);
+    context->transfers[fifo->head] = transfer;
+    vkl_fifo_enqueue(fifo, &context->transfers[fifo->head]);
 }
 
 
 
-static VklTransfer fifo_dequeue(VklContext* ctx, bool wait)
+static VklTransfer fifo_dequeue(VklContext* context, bool wait)
 {
-    ASSERT(ctx != NULL);
-    VklFifo* fifo = &ctx->fifo;
+    ASSERT(context != NULL);
+    VklFifo* fifo = &context->fifo;
     VklTransfer* item = vkl_fifo_dequeue(fifo, wait);
     if (item == NULL)
         return (VklTransfer){0};
@@ -1026,7 +1026,7 @@ static VklTransfer fifo_dequeue(VklContext* ctx, bool wait)
 
 
 static VklTransfer enqueue_texture_transfer(
-    VklContext* ctx, VklDataTransferType type, VklTexture* texture, uvec3 offset, uvec3 shape,
+    VklContext* context, VklDataTransferType type, VklTexture* texture, uvec3 offset, uvec3 shape,
     VkDeviceSize size, void* data)
 {
     // Create the transfer object.
@@ -1041,9 +1041,10 @@ static VklTransfer enqueue_texture_transfer(
     tr.u.tex.data = data;
     tr.u.tex.texture = texture;
 
-    fifo_enqueue(ctx, tr);
-    if (ctx->transfer_mode == VKL_TRANSFER_MODE_SYNC)
-        process_transfer(ctx, tr);
+    if (context->transfer_mode == VKL_TRANSFER_MODE_SYNC)
+        process_transfer(context, tr);
+    else
+        fifo_enqueue(context, tr);
 
     return tr;
 }
@@ -1051,7 +1052,7 @@ static VklTransfer enqueue_texture_transfer(
 
 
 static VklTransfer enqueue_regions_transfer(
-    VklContext* ctx, VklDataTransferType type, VklBufferRegions regions, VkDeviceSize offset,
+    VklContext* context, VklDataTransferType type, VklBufferRegions regions, VkDeviceSize offset,
     VkDeviceSize size, void* data)
 {
     // Create the transfer object.
@@ -1062,9 +1063,10 @@ static VklTransfer enqueue_regions_transfer(
     tr.u.buf.size = size;
     tr.u.buf.data = data;
 
-    fifo_enqueue(ctx, tr);
-    if (ctx->transfer_mode == VKL_TRANSFER_MODE_SYNC)
-        process_transfer(ctx, tr);
+    if (context->transfer_mode == VKL_TRANSFER_MODE_SYNC)
+        process_transfer(context, tr);
+    else
+        fifo_enqueue(context, tr);
 
     return tr;
 }
@@ -1090,7 +1092,8 @@ void vkl_transfer_loop(VklContext* context, bool wait)
         log_trace("transfer loop awaits for transfer task, iteration %d...", counter);
         // wait until a transfer task is available
         tr = fifo_dequeue(context, wait);
-        log_trace("transfer task dequeued, processing it...");
+        if (wait)
+            log_debug("transfer task dequeued, processing it...");
         // process the dequeued task
         res = process_transfer(context, tr);
         counter++;
@@ -1238,9 +1241,10 @@ void vkl_buffer_regions_copy(
     tr.u.buf_copy.dst_offset = dst_offset;
     tr.u.buf_copy.size = size;
 
-    fifo_enqueue(context, tr);
     if (context->transfer_mode == VKL_TRANSFER_MODE_SYNC)
         process_transfer(context, tr);
+    else
+        fifo_enqueue(context, tr);
 }
 
 
@@ -1262,7 +1266,8 @@ void vkl_texture_copy(
     memcpy(tr.u.tex_copy.dst_offset, dst_offset, sizeof(uvec3));
     memcpy(tr.u.tex_copy.shape, shape, sizeof(uvec3));
 
-    fifo_enqueue(context, tr);
     if (context->transfer_mode == VKL_TRANSFER_MODE_SYNC)
         process_transfer(context, tr);
+    else
+        fifo_enqueue(context, tr);
 }

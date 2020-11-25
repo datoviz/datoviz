@@ -1182,18 +1182,18 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
         // Process the pending transfer tasks.
         // NOTE: this has never been tested with multiple GPUs yet.
         VklGpu* gpu = NULL;
-        VklContext* ctx = NULL;
+        VklContext* context = NULL;
         for (uint32_t gpu_idx = 0; gpu_idx < app->gpu_count; gpu_idx++)
         {
             gpu = &app->gpus[gpu_idx];
             if (!is_obj_created(&gpu->obj))
                 break;
-            ctx = gpu->context;
+            context = gpu->context;
 
-            if (is_obj_created(&ctx->obj))
+            if (is_obj_created(&context->obj))
             {
                 log_trace("processing transfers for GPU #%d", gpu_idx);
-                vkl_transfer_loop(ctx, false);
+                vkl_transfer_loop(context, false);
             }
 
             // IMPORTANT: we need to wait for the present queue to be idle, otherwise the GPU hangs

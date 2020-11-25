@@ -596,3 +596,109 @@ static int vklite2_canvas_8(VkyTestContext* context)
     destroy_visual(&visual);
     TEST_END
 }
+
+
+
+/*************************************************************************************************/
+/*  Canvas with particles                                                                        */
+/*************************************************************************************************/
+
+static void _particle_refill(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(ev.u.rf.cmd_count == 1);
+    VklCommands* cmds = ev.u.rf.cmds[0];
+    ASSERT(cmds->queue_idx == VKL_DEFAULT_QUEUE_RENDER);
+
+    TestVisual* visual = (TestVisual*)ev.user_data;
+    uint32_t idx = ev.u.rf.img_idx;
+    vkl_cmd_begin(cmds, idx);
+    vkl_cmd_begin_renderpass(cmds, idx, &canvas->renderpasses[0], &canvas->framebuffers);
+    vkl_cmd_viewport(
+        cmds, idx,
+        (VkViewport){
+            0, 0, //
+            canvas->framebuffers.attachments[0]->width,
+            canvas->framebuffers.attachments[0]->height, 0, 1});
+    vkl_cmd_bind_vertex_buffer(cmds, idx, &visual->br, 0);
+    vkl_cmd_bind_graphics(cmds, idx, &visual->graphics, &visual->bindings, 0);
+    vkl_cmd_draw(cmds, idx, 0, visual->n_vertices);
+    vkl_cmd_end_renderpass(cmds, idx);
+    vkl_cmd_end(cmds, idx);
+}
+
+static int vklite2_canvas_particles(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    AT(canvas != NULL);
+
+    // Sync mode only to set things up.
+    vkl_transfer_mode(canvas->gpu->context, VKL_TRANSFER_MODE_SYNC);
+
+    TestVisual* visual = calloc(1, sizeof(TestVisual));
+    visual->gpu = canvas->gpu;
+    visual->renderpass = &canvas->renderpasses[0];
+    visual->framebuffers = &canvas->framebuffers;
+
+    visual->graphics = vkl_graphics(gpu);
+    ASSERT(visual->renderpass != NULL);
+    VklGraphics* graphics = &visual->graphics;
+
+    vkl_graphics_renderpass(graphics, visual->renderpass, 0);
+    vkl_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
+    vkl_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
+
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/spirv/test_marker.vert.spv", DATA_DIR);
+    vkl_graphics_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
+    snprintf(path, sizeof(path), "%s/spirv/test_marker.frag.spv", DATA_DIR);
+    vkl_graphics_shader(graphics, VK_SHADER_STAGE_FRAGMENT_BIT, path);
+    vkl_graphics_vertex_binding(graphics, 0, sizeof(VklVertex));
+    vkl_graphics_vertex_attr(graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VklVertex, pos));
+    vkl_graphics_vertex_attr(
+        graphics, 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(VklVertex, color));
+
+    // Create the buffer.
+    const uint32_t n = 1000;
+    visual->n_vertices = n;
+    VkDeviceSize size = n * sizeof(VklVertex);
+    visual->br = vkl_alloc_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, size);
+
+    // Upload the triangle data.
+    visual->data = calloc(n, sizeof(VklVertex));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        ((VklVertex*)visual->data)[i].pos[0] = .25 * randn();
+        ((VklVertex*)visual->data)[i].pos[1] = .25 * randn();
+        ((VklVertex*)visual->data)[i].color[0] = rand_float();
+        ((VklVertex*)visual->data)[i].color[1] = rand_float();
+        ((VklVertex*)visual->data)[i].color[2] = rand_float();
+        ((VklVertex*)visual->data)[i].color[3] = 1;
+    }
+    vkl_buffer_regions_upload(canvas->gpu->context, &visual->br, 0, size, visual->data);
+    FREE(visual->data);
+
+    // Create the slots.
+    visual->slots = vkl_slots(gpu);
+    vkl_slots_create(&visual->slots);
+    vkl_graphics_slots(&visual->graphics, &visual->slots);
+
+    // Create the bindings.
+    visual->bindings = vkl_bindings(&visual->slots);
+    vkl_bindings_create(&visual->bindings, 1);
+    vkl_bindings_update(&visual->bindings);
+
+    // Create the graphics pipeline.
+    vkl_graphics_create(&visual->graphics);
+
+    canvas->user_data = visual;
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _particle_refill, visual);
+
+    vkl_transfer_mode(canvas->gpu->context, VKL_TRANSFER_MODE_ASYNC);
+    vkl_app_run(app, 0); // DEBUG: N_FRAMES
+
+    destroy_visual(visual);
+    TEST_END
+}

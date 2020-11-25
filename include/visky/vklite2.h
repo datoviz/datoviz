@@ -268,6 +268,7 @@ typedef enum
 
 #define CMD_START_CLIP(cnt)                                                                       \
     ASSERT(cmds != NULL);                                                                         \
+    ASSERT(cnt > 0);                                                                              \
     ASSERT((cnt) == 1 || (cnt) == cmds->count);                                                   \
     VkCommandBuffer cb = {0};                                                                     \
     uint32_t iclip = 0;                                                                           \

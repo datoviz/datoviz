@@ -169,14 +169,15 @@ static VkyTestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(vklite2_default_app),                     //
 
     // canvas
-    CASE_FIXTURE_NONE(vklite2_canvas_1), //
-    CASE_FIXTURE_NONE(vklite2_canvas_2), //
-    CASE_FIXTURE_NONE(vklite2_canvas_3), //
-    CASE_FIXTURE_NONE(vklite2_canvas_4), //
-    CASE_FIXTURE_NONE(vklite2_canvas_5), //
-    CASE_FIXTURE_NONE(vklite2_canvas_6), //
-    CASE_FIXTURE_NONE(vklite2_canvas_7), //
-    CASE_FIXTURE_NONE(vklite2_canvas_8), //
+    CASE_FIXTURE_NONE(vklite2_canvas_1),         //
+    CASE_FIXTURE_NONE(vklite2_canvas_2),         //
+    CASE_FIXTURE_NONE(vklite2_canvas_3),         //
+    CASE_FIXTURE_NONE(vklite2_canvas_4),         //
+    CASE_FIXTURE_NONE(vklite2_canvas_5),         //
+    CASE_FIXTURE_NONE(vklite2_canvas_6),         //
+    CASE_FIXTURE_NONE(vklite2_canvas_7),         //
+    CASE_FIXTURE_NONE(vklite2_canvas_8),         //
+    CASE_FIXTURE_NONE(vklite2_canvas_particles), //
 
 
 
