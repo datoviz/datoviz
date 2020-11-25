@@ -886,6 +886,30 @@ static void process_texture_copy(VklContext* context, VklTransfer tr)
     vkl_cmd_reset(cmds, 0);
     vkl_cmd_begin(cmds, 0);
 
+    VklBarrier src_barrier = vkl_barrier(gpu);
+    VklBarrier dst_barrier = vkl_barrier(gpu);
+
+    // Source image transition.
+    if (src->image->layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+    {
+        vkl_barrier_stages(
+            &src_barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+        vkl_barrier_images(&src_barrier, src->image);
+        vkl_barrier_images_layout(
+            &src_barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+        vkl_cmd_barrier(cmds, 0, &src_barrier);
+    }
+
+    // Destination image transition.
+    {
+        vkl_barrier_stages(
+            &dst_barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+        vkl_barrier_images(&dst_barrier, dst->image);
+        vkl_barrier_images_layout(
+            &dst_barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        vkl_cmd_barrier(cmds, 0, &dst_barrier);
+    }
+
     // Copy texture command.
     VkImageCopy copy = {0};
     copy.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -902,9 +926,25 @@ static void process_texture_copy(VklContext* context, VklTransfer tr)
     copy.dstOffset.y = (int32_t)tr.u.tex_copy.dst_offset[1];
     copy.dstOffset.z = (int32_t)tr.u.tex_copy.dst_offset[2];
     vkCmdCopyImage(
-        cmds->cmds[0],                             //
-        src->image->images[0], src->image->layout, //
+        cmds->cmds[0],                                               //
+        src->image->images[0], VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, //
         dst->image->images[0], dst->image->layout, 1, &copy);
+
+    // Source image transition.
+    if (src->image->layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+    {
+        vkl_barrier_images_layout(
+            &src_barrier, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, src->image->layout);
+        vkl_cmd_barrier(cmds, 0, &src_barrier);
+    }
+
+    // Destination image transition.
+    if (dst->image->layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+    {
+        vkl_barrier_images_layout(
+            &dst_barrier, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, dst->image->layout);
+        vkl_cmd_barrier(cmds, 0, &dst_barrier);
+    }
 
     vkl_cmd_end(cmds, 0);
 
