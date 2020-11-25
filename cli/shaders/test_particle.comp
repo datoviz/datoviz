@@ -1,11 +1,16 @@
 #version 450
 
+#define N 10000
 #define WORKGROUP_SIZE 32
+#define G .01
+#define m 1
+#define dt .001
 
 layout (local_size_x=WORKGROUP_SIZE, local_size_y=1, local_size_z=1) in;
 
 struct Vertex{
     vec3 pos;
+    vec3 vel;
     vec4 color;
 };
 
@@ -14,10 +19,21 @@ layout(binding = 0) buffer buf {
 };
 
 void main() {
-    if(gl_GlobalInvocationID.x >= 1000)
+    if(gl_GlobalInvocationID.x >= N)
         return;
-    // f=ma
-    // v += dt * m * G * \sum 1/d2
-    // x += dt * v
-    vertex[gl_GlobalInvocationID.x].pos *= .99;
+    Vertex v = vertex[gl_GlobalInvocationID.x];
+
+    float s = 0;
+    vec3 d = vec3(0);
+    for (int i = 0; i < N; i++)
+    {
+        d = vertex[i].pos - v.pos;
+        s = i != gl_GlobalInvocationID.x ? 1.0 / dot(d, d) : 0;
+        v.vel += dt * m * G * d * s;
+    }
+
+    v.pos += dt * v.vel;
+
+    vertex[gl_GlobalInvocationID.x].pos = v.pos;
+    vertex[gl_GlobalInvocationID.x].vel = v.vel;
 }

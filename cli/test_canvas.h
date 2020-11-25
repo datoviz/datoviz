@@ -7,6 +7,17 @@
 
 #define N_FRAMES 10
 
+typedef struct TestParticle TestParticle;
+
+
+struct TestParticle
+{
+    vec3 pos;
+    vec3 vel;
+    vec4 color;
+};
+
+
 
 /*************************************************************************************************/
 /*  Canvas 1                                                                                     */
@@ -658,27 +669,32 @@ static int vklite2_canvas_particles(VkyTestContext* context)
     vkl_graphics_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
     snprintf(path, sizeof(path), "%s/spirv/test_marker.frag.spv", DATA_DIR);
     vkl_graphics_shader(graphics, VK_SHADER_STAGE_FRAGMENT_BIT, path);
-    vkl_graphics_vertex_binding(graphics, 0, sizeof(VklVertex));
-    vkl_graphics_vertex_attr(graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VklVertex, pos));
+    vkl_graphics_vertex_binding(graphics, 0, sizeof(TestParticle));
     vkl_graphics_vertex_attr(
-        graphics, 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(VklVertex, color));
+        graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(TestParticle, pos));
+    vkl_graphics_vertex_attr(
+        graphics, 0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(TestParticle, vel));
+    vkl_graphics_vertex_attr(
+        graphics, 0, 2, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(TestParticle, color));
 
     // Create the buffer.
-    const uint32_t n = 1000;
+    const uint32_t n = 10000;
     visual->n_vertices = n;
-    VkDeviceSize size = n * sizeof(VklVertex);
+    VkDeviceSize size = n * sizeof(TestParticle);
     visual->br = vkl_alloc_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, size);
 
     // Upload the triangle data.
-    visual->data = calloc(n, sizeof(VklVertex));
+    visual->data = calloc(n, sizeof(TestParticle));
     for (uint32_t i = 0; i < n; i++)
     {
-        ((VklVertex*)visual->data)[i].pos[0] = .25 * randn();
-        ((VklVertex*)visual->data)[i].pos[1] = .25 * randn();
-        ((VklVertex*)visual->data)[i].color[0] = rand_float();
-        ((VklVertex*)visual->data)[i].color[1] = rand_float();
-        ((VklVertex*)visual->data)[i].color[2] = rand_float();
-        ((VklVertex*)visual->data)[i].color[3] = 1;
+        ((TestParticle*)visual->data)[i].pos[0] = .25 * randn();
+        ((TestParticle*)visual->data)[i].pos[1] = .25 * randn();
+        ((TestParticle*)visual->data)[i].vel[0] = .25 * randn();
+        ((TestParticle*)visual->data)[i].vel[1] = .25 * randn();
+        ((TestParticle*)visual->data)[i].color[0] = rand_float();
+        ((TestParticle*)visual->data)[i].color[1] = rand_float();
+        ((TestParticle*)visual->data)[i].color[2] = rand_float();
+        ((TestParticle*)visual->data)[i].color[3] = 1;
     }
     vkl_buffer_regions_upload(canvas->gpu->context, &visual->br, 0, size, visual->data);
     FREE(visual->data);
