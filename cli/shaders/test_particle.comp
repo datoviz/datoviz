@@ -1,7 +1,7 @@
 #version 450
 
 #define WORKGROUP_SIZE 32
-#define G .001
+#define G .01
 #define m .1
 
 layout (local_size_x=WORKGROUP_SIZE, local_size_y=1, local_size_z=1) in;

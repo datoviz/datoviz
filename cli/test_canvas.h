@@ -710,7 +710,7 @@ static int vklite2_canvas_particles(VkyTestContext* context)
         ((TestParticle*)visual->data)[i].color[0] = rand_float();
         ((TestParticle*)visual->data)[i].color[1] = rand_float();
         ((TestParticle*)visual->data)[i].color[2] = rand_float();
-        ((TestParticle*)visual->data)[i].color[3] = 1;
+        ((TestParticle*)visual->data)[i].color[3] = .5;
     }
     vkl_buffer_regions_upload(canvas->gpu->context, &visual->br, 0, size, visual->data);
     FREE(visual->data);
