@@ -54,7 +54,6 @@ static inline void vkl_sleep(int milliseconds)
 typedef struct VklFifo VklFifo;
 typedef struct VklTexture VklTexture;
 typedef struct VklTransfer VklTransfer;
-typedef struct VklTransferFifo VklTransferFifo;
 typedef struct VklTransferBuffer VklTransferBuffer;
 typedef struct VklTransferTexture VklTransferTexture;
 typedef union VklTransferUnion VklTransferUnion;
@@ -171,14 +170,6 @@ struct VklTransfer
 
 
 
-struct VklTransferFifo
-{
-    VklFifo queue;
-    VklTransfer transfers[VKL_MAX_TRANSFERS];
-};
-
-
-
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
@@ -190,7 +181,9 @@ struct VklContext
 
     VklTransferMode transfer_mode;
     VklCommands transfer_cmd;
-    VklTransferFifo transfer_fifo;
+
+    VklFifo fifo; // task queue
+    VklTransfer transfers[VKL_MAX_TRANSFERS];
 
     uint32_t max_buffers;
     VklBuffer* buffers;

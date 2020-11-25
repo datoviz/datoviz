@@ -314,7 +314,7 @@ VklContext* vkl_context(VklGpu* gpu, VklWindow* window)
     _context_default_buffers(context);
 
     context->transfer_cmd = vkl_commands(gpu, VKL_DEFAULT_QUEUE_TRANSFER, 1);
-    context->transfer_fifo.queue = vkl_fifo(VKL_MAX_FIFO_CAPACITY);
+    context->fifo = vkl_fifo(VKL_MAX_FIFO_CAPACITY);
 
     gpu->context = context;
     obj_created(&context->obj);
@@ -356,7 +356,7 @@ void vkl_context_destroy(VklContext* context)
     INSTANCES_DESTROY(context->textures);
     FREE(context->allocated_sizes);
 
-    vkl_fifo_destroy(&context->transfer_fifo.queue);
+    vkl_fifo_destroy(&context->fifo);
 }
 
 
@@ -855,20 +855,22 @@ static int process_transfer(VklContext* context, VklTransfer tr)
 /*  Transfer queue                                                                               */
 /*************************************************************************************************/
 
-static void fifo_enqueue(VklTransferFifo* fifo, VklTransfer transfer)
+static void fifo_enqueue(VklContext* ctx, VklTransfer transfer)
 {
-    ASSERT(fifo != NULL);
-    ASSERT(0 <= fifo->queue.head && fifo->queue.head < fifo->queue.capacity);
-    fifo->transfers[fifo->queue.head] = transfer;
-    vkl_fifo_enqueue(&fifo->queue, &fifo->transfers[fifo->queue.head]);
+    ASSERT(ctx != NULL);
+    VklFifo* fifo = &ctx->fifo;
+    ASSERT(0 <= fifo->head && fifo->head < fifo->capacity);
+    ctx->transfers[fifo->head] = transfer;
+    vkl_fifo_enqueue(fifo, &ctx->transfers[fifo->head]);
 }
 
 
 
-static VklTransfer fifo_dequeue(VklTransferFifo* fifo, bool wait)
+static VklTransfer fifo_dequeue(VklContext* ctx, bool wait)
 {
-    ASSERT(fifo != NULL);
-    VklTransfer* item = vkl_fifo_dequeue(&fifo->queue, wait);
+    ASSERT(ctx != NULL);
+    VklFifo* fifo = &ctx->fifo;
+    VklTransfer* item = vkl_fifo_dequeue(fifo, wait);
     if (item == NULL)
         return (VklTransfer){0};
     ASSERT(item != NULL);
@@ -878,8 +880,8 @@ static VklTransfer fifo_dequeue(VklTransferFifo* fifo, bool wait)
 
 
 static VklTransfer enqueue_texture_transfer(
-    VklContext* ctx, VklTransferFifo* fifo, VklDataTransferType type, VklTexture* texture,
-    uvec3 offset, uvec3 shape, VkDeviceSize size, void* data)
+    VklContext* ctx, VklDataTransferType type, VklTexture* texture, uvec3 offset, uvec3 shape,
+    VkDeviceSize size, void* data)
 {
     // Create the transfer object.
     VklTransfer tr = {0};
@@ -893,7 +895,7 @@ static VklTransfer enqueue_texture_transfer(
     tr.u.tex.data = data;
     tr.u.tex.texture = texture;
 
-    fifo_enqueue(fifo, tr);
+    fifo_enqueue(ctx, tr);
     if (ctx->transfer_mode == VKL_TRANSFER_MODE_SYNC)
         process_transfer(ctx, tr);
 
@@ -903,8 +905,8 @@ static VklTransfer enqueue_texture_transfer(
 
 
 static VklTransfer enqueue_regions_transfer(
-    VklContext* ctx, VklTransferFifo* fifo, VklDataTransferType type, VklBufferRegions regions,
-    VkDeviceSize offset, VkDeviceSize size, void* data)
+    VklContext* ctx, VklDataTransferType type, VklBufferRegions regions, VkDeviceSize offset,
+    VkDeviceSize size, void* data)
 {
     // Create the transfer object.
     VklTransfer tr = {0};
@@ -914,7 +916,7 @@ static VklTransfer enqueue_regions_transfer(
     tr.u.buf.size = size;
     tr.u.buf.data = data;
 
-    fifo_enqueue(fifo, tr);
+    fifo_enqueue(ctx, tr);
     if (ctx->transfer_mode == VKL_TRANSFER_MODE_SYNC)
         process_transfer(ctx, tr);
 
@@ -941,7 +943,7 @@ void vkl_transfer_loop(VklContext* context, bool wait)
     {
         log_trace("transfer loop awaits for transfer task, iteration %d...", counter);
         // wait until a transfer task is available
-        tr = fifo_dequeue(&context->transfer_fifo, wait);
+        tr = fifo_dequeue(context, wait);
         log_trace("transfer task dequeued, processing it...");
         // process the dequeued task
         res = process_transfer(context, tr);
@@ -964,7 +966,7 @@ void vkl_transfer_wait(VklContext* context, int poll_period)
     log_trace("waiting until the transfer queue is empty...");
     while (true)
     {
-        size = vkl_fifo_size(&context->transfer_fifo.queue);
+        size = vkl_fifo_size(&context->fifo);
         if (size == 0)
             break;
         vkl_sleep(poll_period);
@@ -977,7 +979,7 @@ void vkl_transfer_wait(VklContext* context, int poll_period)
 void vkl_transfer_reset(VklContext* context)
 {
     ASSERT(context != NULL);
-    vkl_fifo_reset(&context->transfer_fifo.queue);
+    vkl_fifo_reset(&context->fifo);
 }
 
 
@@ -988,7 +990,7 @@ void vkl_transfer_stop(VklContext* context)
     // Enqueue a special object that causes the dequeue loop to end.
     VklTransfer tr = {0};
     tr.type = VKL_TRANSFER_NONE;
-    fifo_enqueue(&context->transfer_fifo, tr);
+    fifo_enqueue(context, tr);
 }
 
 
@@ -1004,8 +1006,7 @@ void vkl_texture_upload_region(
     ASSERT(texture != NULL);
     ASSERT(context != NULL);
     enqueue_texture_transfer(
-        context, &context->transfer_fifo, VKL_TRANSFER_TEXTURE_UPLOAD, //
-        texture, offset, shape, size, data);
+        context, VKL_TRANSFER_TEXTURE_UPLOAD, texture, offset, shape, size, data);
 }
 
 
@@ -1031,8 +1032,7 @@ void vkl_texture_download_region(
     ASSERT(texture != NULL);
     ASSERT(context != NULL);
     enqueue_texture_transfer(
-        context, &context->transfer_fifo, VKL_TRANSFER_TEXTURE_DOWNLOAD, //
-        texture, offset, shape, size, data);
+        context, VKL_TRANSFER_TEXTURE_DOWNLOAD, texture, offset, shape, size, data);
 }
 
 
@@ -1057,9 +1057,7 @@ void vkl_buffer_regions_upload(
 {
     ASSERT(regions != NULL);
     ASSERT(context != NULL);
-    enqueue_regions_transfer(
-        context, &context->transfer_fifo, VKL_TRANSFER_BUFFER_UPLOAD, *regions, offset, size,
-        data);
+    enqueue_regions_transfer(context, VKL_TRANSFER_BUFFER_UPLOAD, *regions, offset, size, data);
 }
 
 
@@ -1070,7 +1068,5 @@ void vkl_buffer_regions_download(
 {
     ASSERT(regions != NULL);
     ASSERT(context != NULL);
-    enqueue_regions_transfer(
-        context, &context->transfer_fifo, VKL_TRANSFER_BUFFER_DOWNLOAD, *regions, offset, size,
-        data);
+    enqueue_regions_transfer(context, VKL_TRANSFER_BUFFER_DOWNLOAD, *regions, offset, size, data);
 }
