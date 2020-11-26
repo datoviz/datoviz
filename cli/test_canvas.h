@@ -653,7 +653,7 @@ static void _particle_frame(VklCanvas* canvas, VklPrivateEvent ev)
     // directly in the main event loop, but there are as many copies as there are swapchain
     // images. Only the buffer region corresponding to the current swapchain image is
     // updated, because we're sure that region is not being used by the RENDER queue.
-    vkl_buffer_regions_upload_fast(
+    vkl_upload_buffers_fast(
         canvas, &visual->br_u, false, 0, sizeof(TestParticleUniform), visual->data_u);
 
     // Here we submit tasks to the compute queue independently of the main render loop.
@@ -868,7 +868,7 @@ static int vklite2_canvas_particles(VkyTestContext* context)
     }
 
     vkl_transfer_mode(canvas->gpu->context, VKL_TRANSFER_MODE_ASYNC);
-    vkl_app_run(app, 0); // DEBUG: N_FRAMES
+    vkl_app_run(app, N_FRAMES);
 
     FREE(visual->data_u);
     FREE(visual->user_data);

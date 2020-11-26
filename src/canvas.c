@@ -855,7 +855,7 @@ void vkl_canvas_to_close(VklCanvas* canvas, bool value)
 /*  Fast transfers                                                                               */
 /*************************************************************************************************/
 
-void vkl_buffer_regions_upload_fast(
+void vkl_upload_buffers_fast(
     VklCanvas* canvas, VklBufferRegions* regions, bool update_all_regions, //
     VkDeviceSize offset, VkDeviceSize size, void* data)
 {
