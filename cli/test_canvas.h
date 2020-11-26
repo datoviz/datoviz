@@ -631,9 +631,7 @@ struct TestParticleUniform
 
 struct TestParticleCompute
 {
-    // VklCompute* compute;
     VklCommands* cmds;
-    // VklSubmit submit;
     VklFences fence;
     VklBufferRegions br;
     bool is_running;
@@ -658,8 +656,10 @@ static void _particle_frame(VklCanvas* canvas, VklPrivateEvent ev)
     vkl_buffer_regions_upload_fast(
         canvas, &visual->br_u, false, 0, sizeof(TestParticleUniform), visual->data_u);
 
-
+    // Here we submit tasks to the compute queue independently of the main render loop.
+    // We submit a new task as soon as the old one finishes.
     TestParticleCompute* tpc = visual->user_data;
+    log_trace("frame #%d running %d", canvas->frame_idx, tpc->is_running);
     if (tpc->is_running && vkl_fences_ready(&tpc->fence, 0))
     {
         log_trace("compute task finished");
@@ -676,6 +676,7 @@ static void _particle_frame(VklCanvas* canvas, VklPrivateEvent ev)
         VklSubmit submit = vkl_submit(visual->gpu);
         vkl_submit_commands(&submit, tpc->cmds);
         vkl_submit_send(&submit, 0, &tpc->fence, 0);
+        ASSERT(!vkl_fences_ready(&tpc->fence, 0));
         tpc->is_running = true;
     }
 }
@@ -739,129 +740,139 @@ static int vklite2_canvas_particles(VkyTestContext* context)
     visual->renderpass = &canvas->renderpasses[0];
     visual->framebuffers = &canvas->framebuffers;
 
+    // Create graphics pipeline.
+
     visual->graphics = vkl_graphics(gpu);
     ASSERT(visual->renderpass != NULL);
     VklGraphics* graphics = &visual->graphics;
-
-    vkl_graphics_renderpass(graphics, visual->renderpass, 0);
-    vkl_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
-    vkl_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
-
     char path[1024];
-    snprintf(path, sizeof(path), "%s/spirv/test_marker.vert.spv", DATA_DIR);
-    vkl_graphics_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
-    snprintf(path, sizeof(path), "%s/spirv/test_marker.frag.spv", DATA_DIR);
-    vkl_graphics_shader(graphics, VK_SHADER_STAGE_FRAGMENT_BIT, path);
-    vkl_graphics_vertex_binding(graphics, 0, sizeof(TestParticle));
-    vkl_graphics_vertex_attr(
-        graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(TestParticle, pos));
-    vkl_graphics_vertex_attr(
-        graphics, 0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(TestParticle, vel));
-    vkl_graphics_vertex_attr(
-        graphics, 0, 2, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(TestParticle, color));
+
+    {
+        vkl_graphics_renderpass(graphics, visual->renderpass, 0);
+        vkl_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
+        vkl_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
+        snprintf(path, sizeof(path), "%s/spirv/test_marker.vert.spv", DATA_DIR);
+        vkl_graphics_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
+        snprintf(path, sizeof(path), "%s/spirv/test_marker.frag.spv", DATA_DIR);
+        vkl_graphics_shader(graphics, VK_SHADER_STAGE_FRAGMENT_BIT, path);
+        vkl_graphics_vertex_binding(graphics, 0, sizeof(TestParticle));
+        vkl_graphics_vertex_attr(
+            graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(TestParticle, pos));
+        vkl_graphics_vertex_attr(
+            graphics, 0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(TestParticle, vel));
+        vkl_graphics_vertex_attr(
+            graphics, 0, 2, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(TestParticle, color));
+    }
 
     // Create the buffer.
     const uint32_t n = 20000;
     visual->n_vertices = n;
     VkDeviceSize size = n * sizeof(TestParticle);
+    // Vertex buffer.
     visual->br = vkl_alloc_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, size);
 
-
     TestParticleCompute tpc = {0};
-    // tpc.compute = visual->compute;
-    // tpc.submit = vkl_submit(gpu);
-    tpc.br = vkl_alloc_buffers(gpu->context, VKL_DEFAULT_BUFFER_STORAGE, 1, size);
-    tpc.fence = vkl_fences(gpu, 1);
-    vkl_fences_create(&tpc.fence);
-    visual->user_data = calloc(1, sizeof(TestParticleCompute));
-
-
-    // Upload the triangle data.
-    visual->data = calloc(n, sizeof(TestParticle));
-    for (uint32_t i = 0; i < n; i++)
+    // Struct holding some pointers for compute command buffer submission.
     {
-        ((TestParticle*)visual->data)[i].pos[0] = .2 * randn();
-        ((TestParticle*)visual->data)[i].pos[1] = .2 * randn();
-        ((TestParticle*)visual->data)[i].vel[0] = .05 * randn();
-        ((TestParticle*)visual->data)[i].vel[1] = .05 * randn();
-        ((TestParticle*)visual->data)[i].color[0] = rand_float();
-        ((TestParticle*)visual->data)[i].color[1] = rand_float();
-        ((TestParticle*)visual->data)[i].color[2] = rand_float();
-        ((TestParticle*)visual->data)[i].color[3] = .5;
+        tpc.br = vkl_alloc_buffers(gpu->context, VKL_DEFAULT_BUFFER_STORAGE, 1, size);
+        tpc.fence = vkl_fences(gpu, 1);
+        vkl_fences_create(&tpc.fence);
+        visual->user_data = calloc(1, sizeof(TestParticleCompute));
     }
-    // Vertex buffer
-    vkl_buffer_regions_upload(canvas->gpu->context, &visual->br, 0, size, visual->data);
-    // Copy in the storage buffer
-    vkl_buffer_regions_upload(canvas->gpu->context, &tpc.br, 0, size, visual->data);
-    FREE(visual->data);
 
-    // Create the slots.
-    visual->slots = vkl_slots(gpu);
-    vkl_slots_create(&visual->slots);
-    vkl_graphics_slots(&visual->graphics, &visual->slots);
+    // Generate some data.
+    {
+        visual->data = calloc(n, sizeof(TestParticle));
+        for (uint32_t i = 0; i < n; i++)
+        {
+            ((TestParticle*)visual->data)[i].pos[0] = .2 * randn();
+            ((TestParticle*)visual->data)[i].pos[1] = .2 * randn();
+            ((TestParticle*)visual->data)[i].vel[0] = .05 * randn();
+            ((TestParticle*)visual->data)[i].vel[1] = .05 * randn();
+            ((TestParticle*)visual->data)[i].color[0] = rand_float();
+            ((TestParticle*)visual->data)[i].color[1] = rand_float();
+            ((TestParticle*)visual->data)[i].color[2] = rand_float();
+            ((TestParticle*)visual->data)[i].color[3] = .5;
+        }
+        // Vertex buffer
+        vkl_buffer_regions_upload(canvas->gpu->context, &visual->br, 0, size, visual->data);
+        // Copy in the storage buffer
+        vkl_buffer_regions_upload(canvas->gpu->context, &tpc.br, 0, size, visual->data);
+        FREE(visual->data);
+    }
 
-    // Create the bindings.vkl_slots_destroy(&slots);
-    visual->bindings = vkl_bindings(&visual->slots);
-    vkl_bindings_create(&visual->bindings, 1);
-    vkl_bindings_update(&visual->bindings);
+    // Create the graphics slots and bindings.
+    {
+        visual->slots = vkl_slots(gpu);
+        vkl_slots_create(&visual->slots);
+        vkl_graphics_slots(&visual->graphics, &visual->slots);
 
-    // Create the graphics pipeline.
-    vkl_graphics_create(&visual->graphics);
+        // Create the bindings.vkl_slots_destroy(&slots);
+        visual->bindings = vkl_bindings(&visual->slots);
+        vkl_bindings_create(&visual->bindings, 1);
+        vkl_bindings_update(&visual->bindings);
 
+        // Create the graphics pipeline.
+        vkl_graphics_create(&visual->graphics);
+    }
 
-
-    // Create compute object.
+    // Compute resources.
     VklSlots slots = vkl_slots(gpu);
     VklBindings bindings = vkl_bindings(&slots);
-    snprintf(path, sizeof(path), "%s/spirv/test_particle.comp.spv", DATA_DIR);
-    visual->compute = vkl_new_compute(gpu->context, path);
+    {
+        // Create compute object.
+        snprintf(path, sizeof(path), "%s/spirv/test_particle.comp.spv", DATA_DIR);
+        visual->compute = vkl_new_compute(gpu->context, path);
 
+        // Uniform buffer.
+        visual->br_u = vkl_alloc_buffers(
+            gpu->context, VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE, canvas->swapchain.img_count,
+            sizeof(TestParticleUniform));
+        visual->data_u = calloc(1, sizeof(TestParticleUniform));
 
-    // Uniform buffer.
-    visual->br_u = vkl_alloc_buffers(
-        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE, canvas->swapchain.img_count,
-        sizeof(TestParticleUniform));
-    visual->data_u = calloc(1, sizeof(TestParticleUniform));
+        // Create the bindings.
+        vkl_slots_binding(&slots, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER); // vertex buffer
+        vkl_slots_binding(&slots, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // UBO
+        vkl_slots_push_constant(&slots, 0, sizeof(int32_t), VK_SHADER_STAGE_COMPUTE_BIT);
+        vkl_slots_create(&slots);
+        vkl_compute_slots(visual->compute, &slots);
 
-    // Create the bindings.
-    vkl_slots_binding(&slots, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER); // vertex buffer
-    vkl_slots_binding(&slots, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // UBO
-    vkl_slots_push_constant(&slots, 0, sizeof(int32_t), VK_SHADER_STAGE_COMPUTE_BIT);
-    vkl_slots_create(&slots);
-    vkl_compute_slots(visual->compute, &slots);
+        vkl_bindings_create(&bindings, canvas->swapchain.img_count);
+        vkl_bindings_buffer(&bindings, 0, &tpc.br);
+        vkl_bindings_buffer(&bindings, 1, &visual->br_u);
+        vkl_bindings_update(&bindings);
+        vkl_compute_bindings(visual->compute, &bindings);
+        vkl_compute_create(visual->compute);
+    }
 
-    vkl_bindings_create(&bindings, canvas->swapchain.img_count);
-    vkl_bindings_buffer(&bindings, 0, &tpc.br);
-    vkl_bindings_buffer(&bindings, 1, &visual->br_u);
-    vkl_bindings_update(&bindings);
-    vkl_compute_bindings(visual->compute, &bindings);
-    vkl_compute_create(visual->compute);
-
+    // Compute command buffer?
     INSTANCE_NEW(VklCommands, cmds, canvas->commands, canvas->max_commands)
-    *cmds = vkl_commands(gpu, VKL_DEFAULT_QUEUE_COMPUTE, 1);
     int32_t nn = (int32_t)visual->n_vertices;
-    vkl_cmd_begin(cmds, 0);
-    vkl_cmd_push_constants(
-        cmds, 0, visual->compute->slots, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(int32_t), &nn);
-    vkl_cmd_compute(cmds, 0, visual->compute, (uvec3){visual->n_vertices, 1, 1});
-    vkl_cmd_end(cmds, 0);
-    tpc.cmds = cmds;
-    memcpy(visual->user_data, &tpc, sizeof(TestParticleCompute));
+    {
+        *cmds = vkl_commands(gpu, VKL_DEFAULT_QUEUE_COMPUTE, 1);
+        vkl_cmd_begin(cmds, 0);
+        vkl_cmd_push_constants(
+            cmds, 0, visual->compute->slots, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(int32_t), &nn);
+        vkl_cmd_compute(cmds, 0, visual->compute, (uvec3){visual->n_vertices, 1, 1});
+        vkl_cmd_end(cmds, 0);
+        tpc.cmds = cmds;
+        memcpy(visual->user_data, &tpc, sizeof(TestParticleCompute));
+    }
 
-
-    canvas->user_data = visual;
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _particle_refill, visual);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _particle_frame, visual);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, visual);
-
-    vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _particle_cursor, visual);
+    // Callbacks.
+    {
+        canvas->user_data = visual;
+        vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _particle_refill, visual);
+        vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _particle_frame, visual);
+        vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, visual);
+        vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _particle_cursor, visual);
+    }
 
     vkl_transfer_mode(canvas->gpu->context, VKL_TRANSFER_MODE_ASYNC);
     vkl_app_run(app, 0); // DEBUG: N_FRAMES
 
     FREE(visual->data_u);
     FREE(visual->user_data);
-
     vkl_fences_destroy(&tpc.fence);
     vkl_slots_destroy(&slots);
     destroy_visual(visual);
