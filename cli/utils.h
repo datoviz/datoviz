@@ -334,7 +334,6 @@ static void show_canvas(TestCanvas canvas, FillCallback fill_commands, uint32_t 
     VklSemaphores sem_img_available = vkl_semaphores(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
     VklSemaphores sem_render_finished = vkl_semaphores(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
     VklFences fences = vkl_fences(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
-    vkl_fences_create(&fences);
     VklFences bak_fences = vkl_fences(gpu, swapchain->img_count);
     uint32_t cur_frame = 0;
     VklBackend backend = VKL_BACKEND_GLFW;

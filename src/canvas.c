@@ -641,8 +641,8 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
         canvas->semaphores[VKL_SEMAPHORE_RENDER_FINISHED] =
             vkl_semaphores(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
         canvas->fences[VKL_FENCE_RENDER_FINISHED] = vkl_fences(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
-        vkl_fences_create(&canvas->fences[VKL_FENCE_RENDER_FINISHED]);
-        canvas->fences[VKL_FENCES_FLIGHT] = vkl_fences(gpu, canvas->swapchain.img_count);
+        canvas->fences[VKL_FENCES_FLIGHT].gpu = gpu;
+        canvas->fences[VKL_FENCES_FLIGHT].count = canvas->swapchain.img_count;
     }
 
     // Default transfer commands.

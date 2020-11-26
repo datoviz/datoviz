@@ -776,7 +776,6 @@ static int vklite2_canvas_particles(VkyTestContext* context)
     {
         tpc.br = vkl_alloc_buffers(gpu->context, VKL_DEFAULT_BUFFER_STORAGE, 1, size);
         tpc.fence = vkl_fences(gpu, 1);
-        vkl_fences_create(&tpc.fence);
         visual->user_data = calloc(1, sizeof(TestParticleCompute));
     }
 

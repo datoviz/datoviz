@@ -2144,24 +2144,15 @@ VklFences vkl_fences(VklGpu* gpu, uint32_t count)
     fences.gpu = gpu;
     fences.count = count;
 
-    return fences;
-}
-
-
-
-void vkl_fences_create(VklFences* fences)
-{
-    ASSERT(fences != NULL);
-    ASSERT(fences->gpu != NULL);
-
     VkFenceCreateInfo info = {0};
     info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    for (uint32_t i = 0; i < fences->count; i++)
-        VK_CHECK_RESULT(vkCreateFence(fences->gpu->device, &info, NULL, &fences->fences[i]));
+    for (uint32_t i = 0; i < fences.count; i++)
+        VK_CHECK_RESULT(vkCreateFence(fences.gpu->device, &info, NULL, &fences.fences[i]));
 
-    obj_created(&fences->obj);
+    obj_created(&fences.obj);
+    return fences;
 }
 
 
