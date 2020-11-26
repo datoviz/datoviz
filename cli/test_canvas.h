@@ -877,3 +877,26 @@ static int vklite2_canvas_particles(VkyTestContext* context)
     destroy_visual(visual);
     TEST_END
 }
+
+
+
+/*************************************************************************************************/
+/*  Canvas offscreen                                                                             */
+/*************************************************************************************************/
+
+static int vklite2_canvas_offscreen(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_OFFSCREEN);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _frame_callback, NULL);
+
+    vkl_app_run(app, 1);
+
+    // // Send a mock key press event.
+    // vkl_event_callback(canvas, VKL_EVENT_KEY, 0, _key_callback, NULL);
+    // vkl_event_key(canvas, VKL_KEY_PRESS, VKL_KEY_A);
+
+    TEST_END
+}

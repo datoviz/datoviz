@@ -453,7 +453,6 @@ VklSwapchain vkl_swapchain(VklGpu* gpu, VklWindow* window, uint32_t min_img_coun
 {
     ASSERT(gpu != NULL);
     ASSERT(is_obj_created(&gpu->obj));
-    ASSERT(window != NULL);
 
     VklSwapchain swapchain = {0};
 
@@ -584,6 +583,7 @@ void vkl_swapchain_present(
     VklSwapchain* swapchain, uint32_t queue_idx, VklSemaphores* semaphores, uint32_t semaphore_idx)
 {
     ASSERT(swapchain != NULL);
+    ASSERT(swapchain->swapchain != VK_NULL_HANDLE);
     log_trace(
         "present swapchain image #%d and wait for semaphore %d", swapchain->img_idx,
         semaphores->semaphores[semaphore_idx]);

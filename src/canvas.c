@@ -517,10 +517,10 @@ static void backend_event_callbacks(VklCanvas* canvas)
 {
     ASSERT(canvas != NULL);
     ASSERT(canvas->app != NULL);
-    ASSERT(canvas->window != NULL);
     switch (canvas->app->backend)
     {
     case VKL_BACKEND_GLFW:;
+        ASSERT(canvas->window != NULL);
         GLFWwindow* w = canvas->window->backend_window;
 
         // The canvas pointer will be available to callback functions.
@@ -550,7 +550,7 @@ static void backend_event_callbacks(VklCanvas* canvas)
 /*  Canvas creation                                                                              */
 /*************************************************************************************************/
 
-VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
+static VklCanvas* _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool offscreen)
 {
     ASSERT(gpu != NULL);
     VklApp* app = gpu->app;
@@ -565,6 +565,7 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
     INSTANCE_NEW(VklCanvas, canvas, app->canvases, app->max_canvases)
     canvas->app = app;
     canvas->gpu = gpu;
+    canvas->offscreen = offscreen;
 
     // Initialize the canvas local clock.
     _clock_init(&canvas->clock);
@@ -588,12 +589,16 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
         VklGraphics, canvas, graphics, max_graphics, VKL_MAX_GRAPHICS, VKL_OBJECT_TYPE_GRAPHICS)
 
     // Create the window.
-    VklWindow* window = vkl_window(app, width, height);
-    canvas->window = window;
-    uint32_t framebuffer_width, framebuffer_height;
-    vkl_window_get_size(window, &framebuffer_width, &framebuffer_height);
-    ASSERT(framebuffer_width > 0);
-    ASSERT(framebuffer_height > 0);
+    VklWindow* window = NULL;
+    if (!offscreen)
+    {
+        window = vkl_window(app, width, height);
+        canvas->window = window;
+        uint32_t framebuffer_width, framebuffer_height;
+        vkl_window_get_size(window, &framebuffer_width, &framebuffer_height);
+        ASSERT(framebuffer_width > 0);
+        ASSERT(framebuffer_height > 0);
+    }
 
     if (gpu->context == NULL || !is_obj_created(&gpu->context->obj))
     {
@@ -611,10 +616,36 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
 
     // Create swapchain
     {
-        canvas->swapchain = vkl_swapchain(gpu, window, VKL_MIN_SWAPCHAIN_IMAGE_COUNT);
+        uint32_t min_img_count = offscreen ? 1 : VKL_MIN_SWAPCHAIN_IMAGE_COUNT;
+        canvas->swapchain = vkl_swapchain(gpu, window, min_img_count);
         vkl_swapchain_format(&canvas->swapchain, VKL_DEFAULT_IMAGE_FORMAT);
-        vkl_swapchain_present_mode(&canvas->swapchain, VKL_DEFAULT_PRESENT_MODE);
-        vkl_swapchain_create(&canvas->swapchain);
+
+        if (!offscreen)
+        {
+            vkl_swapchain_present_mode(&canvas->swapchain, VKL_DEFAULT_PRESENT_MODE);
+            vkl_swapchain_create(&canvas->swapchain);
+        }
+        else
+        {
+            canvas->swapchain.images = calloc(1, sizeof(VklImages));
+            ASSERT(canvas->swapchain.img_count == 1);
+            *canvas->swapchain.images = vkl_images(canvas->swapchain.gpu, VK_IMAGE_TYPE_2D, 1);
+            VklImages* images = canvas->swapchain.images;
+
+            // Color attachment
+            vkl_images_format(images, renderpass->attachments[0].format);
+            vkl_images_size(images, width, height, 1);
+            vkl_images_tiling(images, VK_IMAGE_TILING_OPTIMAL);
+            vkl_images_usage(
+                images, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
+            vkl_images_memory(images, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+            vkl_images_aspect(images, VK_IMAGE_ASPECT_COLOR_BIT);
+            vkl_images_layout(images, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+            vkl_images_queue_access(images, VKL_DEFAULT_QUEUE_RENDER);
+            vkl_images_create(images);
+
+            obj_created(&canvas->swapchain.obj);
+        }
 
         // Depth attachment.
         canvas->depth_image = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
@@ -670,6 +701,15 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
     obj_created(&canvas->obj);
 
     return canvas;
+}
+
+
+
+VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
+{
+    ASSERT(gpu != NULL);
+    bool offscreen = gpu->app->backend == VKL_BACKEND_GLFW ? false : true;
+    return _canvas(gpu, width, height, offscreen);
 }
 
 
@@ -735,8 +775,7 @@ void vkl_canvas_recreate(VklCanvas* canvas)
 
 VklCanvas* vkl_canvas_offscreen(VklGpu* gpu, uint32_t width, uint32_t height)
 {
-    // TODO
-    return NULL;
+    return _canvas(gpu, width, height, true);
 }
 
 
@@ -1066,7 +1105,6 @@ static void _timer_callbacks(VklCanvas* canvas)
 void vkl_canvas_frame(VklCanvas* canvas)
 {
     ASSERT(canvas != NULL);
-    ASSERT(canvas->window != NULL);
     ASSERT(canvas->app != NULL);
     ASSERT(canvas->gpu != NULL);
 
@@ -1185,9 +1223,10 @@ void vkl_canvas_frame_submit(VklCanvas* canvas)
         }
     }
 
-    vkl_submit_wait_semaphores(
-        s, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, //
-        &canvas->semaphores[VKL_SEMAPHORE_IMG_AVAILABLE], f);
+    if (!canvas->offscreen)
+        vkl_submit_wait_semaphores(
+            s, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, //
+            &canvas->semaphores[VKL_SEMAPHORE_IMG_AVAILABLE], f);
 
     // Once the render is finished, we signal another semaphore.
     vkl_submit_signal_semaphores(s, &canvas->semaphores[VKL_SEMAPHORE_RENDER_FINISHED], f);
@@ -1254,8 +1293,8 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             }
 
             // Poll events.
-            ASSERT(canvas->window != NULL);
-            vkl_window_poll_events(canvas->window);
+            if (canvas->window != NULL)
+                vkl_window_poll_events(canvas->window);
 
             // Frame logic.
             log_trace("frame logic for canvas #%d", canvas_idx);
