@@ -91,6 +91,22 @@ static void blank_commands(VklCanvas* canvas, VklCommands* cmds, uint32_t cmd_id
 
 
 
+static inline bool _all_true(uint32_t n, bool* arr)
+{
+    bool all_updated = true;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        if (!arr[i])
+        {
+            all_updated = false;
+            break;
+        }
+    }
+    return all_updated;
+}
+
+
+
 /*************************************************************************************************/
 /*  Private event sending                                                                        */
 /*************************************************************************************************/
@@ -334,17 +350,11 @@ static void* _event_thread(void* p_canvas)
 /*  Canvas-specific transfers                                                                    */
 /*************************************************************************************************/
 
-static void fast_buffer_upload(VklCanvas* canvas, VklTransfer tr, uint32_t img_idx)
+static void process_buffer_upload_fast(VklCanvas* canvas, VklTransfer tr, uint32_t img_idx)
 {
     // Must be called by the main event loop, just after the fence for the current frame
     // so we're sure the buffer region corresponding to the current swapchain image is not being
     // used and we can update the buffer safely.
-
-    ASSERT(canvas != NULL);
-
-    VklGpu* gpu = canvas->gpu;
-    ASSERT(gpu != NULL);
-
     ASSERT(tr.type == VKL_TRANSFER_BUFFER_UPLOAD_FAST);
 
     // Size of the buffer to transfer.
@@ -356,10 +366,9 @@ static void fast_buffer_upload(VklCanvas* canvas, VklTransfer tr, uint32_t img_i
     if (alsize == 0)
         alsize = region_size;
     ASSERT(alsize > 0);
-    ASSERT(alsize > region_size);
+    ASSERT(alsize >= region_size);
 
-    uint32_t n = br->count;
-    ASSERT(n == canvas->swapchain.img_count);
+    ASSERT(tr.u.buf.regions.count > 0);
 
     // We only upload to the buffer region that corresponds to the current swapchain image, to
     // avoid having to deal with synchronization.
@@ -374,18 +383,54 @@ static void fast_buffer_upload(VklCanvas* canvas, VklTransfer tr, uint32_t img_i
 
 
 
-static void _process_fast_transfers(VklCanvas* canvas)
+static void _fast_transfers(VklCanvas* canvas)
 {
-    // VklTransfer tr = {0};
-    // int res = 0;
-    // while (res == 0)
-    // {
-    //     tr = fifo_dequeue(canvas->context, wait);
-    //     if (tr.type != VKL_TRANSFER_NONE)
-    //         log_debug("transfer task dequeued, processing it...");
-    //     res = process_transfer(context, tr);
-    // }
-    // fast_buffer_upload(VklCanvas * canvas, VklTransfer tr, uint32_t img_idx)
+    ASSERT(canvas != NULL);
+    // Special FIFO queue for FAST transfers.
+    VklFifo* fifo = &canvas->fifo_fast;
+    ASSERT(fifo != NULL);
+
+    // See if there is a current fast transfer going on.
+    VklTransfer* tr = canvas->cur_transfer_fast;
+    // If not, dequeue.
+    if (tr == NULL)
+    {
+        tr = vkl_fifo_dequeue(fifo, false);
+    }
+    // Here, we have nothing to do.
+    if (tr == NULL)
+        return;
+    // Here we have a FAST transfer to process, as many times as there are swap chain images.
+    ASSERT(tr != NULL);
+
+    // Current swapchain image.
+    uint32_t n = tr->u.buf.update_count; // number of buffer regions to update
+
+    // 2 cases: only 1 region to update (any swapchain image), or 1 per swapchain image.
+    ASSERT(n == 1 || n == canvas->swapchain.img_count);
+    uint32_t img_idx = CLIP(canvas->swapchain.img_idx, 0, tr->u.buf.regions.count - 1);
+    ASSERT(img_idx < tr->u.buf.regions.count);
+    ASSERT(img_idx < VKL_MAX_SWAPCHAIN_IMAGES);
+
+    // Skip the update if this swapchain image has already been processed.
+    if (canvas->cur_transfer_updated[img_idx])
+        return;
+
+    // Mark the dequeued transfer as being currently processed.
+    canvas->cur_transfer_fast = tr;
+
+    // Process it.
+    process_buffer_upload_fast(canvas, *tr, img_idx);
+
+    // Mark the buffer region corresponding to the current swapchain image as done.
+    canvas->cur_transfer_updated[img_idx] = true;
+
+    // If all regions corresponding to all swapchain images have been updated, reset.
+    if (n == 1 || _all_true(n, canvas->cur_transfer_updated))
+    {
+        memset(canvas->cur_transfer_updated, 0, n * sizeof(bool));
+        canvas->cur_transfer_fast = NULL;
+    }
 }
 
 
@@ -615,6 +660,8 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
     // Default submit instance.
     canvas->submit = vkl_submit(gpu);
 
+    canvas->fifo_fast = vkl_fifo(VKL_MAX_FIFO_CAPACITY);
+
     // Event queue.
     canvas->event_queue = vkl_fifo(VKL_MAX_FIFO_CAPACITY);
     canvas->event_thread = vkl_thread(_event_thread, canvas);
@@ -800,6 +847,32 @@ void vkl_canvas_to_refill(VklCanvas* canvas, bool value)
 void vkl_canvas_to_close(VklCanvas* canvas, bool value)
 {
     vkl_canvas_set_status(canvas, value ? VKL_OBJECT_STATUS_NEED_DESTROY : canvas->cur_status);
+}
+
+
+
+/*************************************************************************************************/
+/*  Fast transfers                                                                               */
+/*************************************************************************************************/
+
+void vkl_buffer_regions_upload_fast(
+    VklCanvas* canvas, VklBufferRegions* regions, bool update_all_regions, //
+    VkDeviceSize offset, VkDeviceSize size, void* data)
+{
+    ASSERT(canvas != NULL);
+    VklFifo* fifo = &canvas->fifo_fast;
+    ASSERT(0 <= fifo->head && fifo->head < fifo->capacity);
+
+    VklTransfer tr = {0};
+    tr.type = VKL_TRANSFER_BUFFER_UPLOAD_FAST;
+    tr.u.buf.regions = *regions;
+    tr.u.buf.offset = offset;
+    tr.u.buf.size = size;
+    tr.u.buf.data = data;
+    tr.u.buf.update_count = update_all_regions ? canvas->swapchain.img_count : 1;
+
+    canvas->transfers_fast[fifo->head] = tr;
+    vkl_fifo_enqueue(fifo, &canvas->transfers_fast[fifo->head]);
 }
 
 
@@ -1042,7 +1115,7 @@ void vkl_canvas_frame(VklCanvas* canvas)
     // Process FAST buffer transfers (used by uniform buffers that exist in multiple copies
     // to avoid GPU synchronization by making it such that each swapchain image has its own
     // buffer region)
-    _process_fast_transfers(canvas);
+    _fast_transfers(canvas);
 
     // We acquire the next swapchain image.
     vkl_swapchain_acquire(
@@ -1065,16 +1138,7 @@ void vkl_canvas_frame(VklCanvas* canvas)
         canvas->img_updated[canvas->swapchain.img_idx] = true;
 
         // We move away from NEED_UPDATE status only if all swapchain images have been updated.
-        bool all_updated = true;
-        for (uint32_t i = 0; i < canvas->swapchain.img_count; i++)
-        {
-            if (!canvas->img_updated[i])
-            {
-                all_updated = false;
-                break;
-            }
-        }
-        if (all_updated)
+        if (_all_true(canvas->swapchain.img_count, canvas->img_updated))
         {
             log_trace("all command buffers updated, no longer need to update");
             canvas->obj.status = VKL_OBJECT_STATUS_CREATED;
@@ -1305,6 +1369,9 @@ void vkl_canvas_destroy(VklCanvas* canvas)
     vkl_event_stop(canvas);
     vkl_thread_join(&canvas->event_thread);
     vkl_fifo_destroy(&canvas->event_queue);
+
+    // Fast transfers.
+    vkl_fifo_destroy(&canvas->fifo_fast);
 
     // Destroy the graphics.
     log_trace("canvas destroy graphics pipelines");

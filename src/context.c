@@ -229,6 +229,14 @@ static void _context_default_buffers(VklContext* context)
     vkl_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
     vkl_buffer_memory(buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     vkl_buffer_create(buffer);
+
+    // Mappable niform buffer
+    buffer = &context->buffers[VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE];
+    vkl_buffer_size(buffer, VKL_DEFAULT_BUFFER_UNIFORM_SIZE);
+    vkl_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+    vkl_buffer_memory(
+        buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vkl_buffer_create(buffer);
 }
 
 
@@ -375,7 +383,9 @@ VklBufferRegions vkl_alloc_buffers(
 
     VkDeviceSize alignment = 0;
     VkDeviceSize offset = context->allocated_sizes[buffer_idx];
-    if (buffer_idx == VKL_DEFAULT_BUFFER_UNIFORM)
+    bool needs_align = buffer_idx == VKL_DEFAULT_BUFFER_UNIFORM ||
+                       buffer_idx == VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE;
+    if (needs_align)
     {
         // alignment = get_alignment(
         //     size, context->gpu->device_properties.limits.minUniformBufferOffsetAlignment);
@@ -397,7 +407,7 @@ VklBufferRegions vkl_alloc_buffers(
     }
 
     // Check alignment for uniform buffers.
-    if (buffer_idx == VKL_DEFAULT_BUFFER_UNIFORM)
+    if (needs_align)
     {
         ASSERT(alignment > 0);
         ASSERT(alsize % alignment == 0);

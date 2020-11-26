@@ -73,6 +73,7 @@ typedef enum
     VKL_DEFAULT_BUFFER_INDEX,
     VKL_DEFAULT_BUFFER_STORAGE,
     VKL_DEFAULT_BUFFER_UNIFORM,
+    VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE,
     VKL_DEFAULT_BUFFER_COUNT,
 } VklDefaultBuffer;
 
@@ -144,7 +145,7 @@ struct VklTransferBuffer
 {
     VklBufferRegions regions;
     VkDeviceSize offset, size;
-    VklCanvas* canvas; // only used with VKL_TRANSFER_BUFFER_UPLOAD_FAST
+    uint32_t update_count;
     void* data;
 };
 
@@ -202,7 +203,7 @@ struct VklContext
     VklTransferMode transfer_mode;
     VklCommands transfer_cmd;
 
-    VklFifo fifo; // task queue
+    VklFifo fifo; // transfer queue
     VklTransfer transfers[VKL_MAX_TRANSFERS];
 
     uint32_t max_buffers;

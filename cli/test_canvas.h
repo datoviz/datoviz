@@ -624,7 +624,17 @@ static void _particle_frame(VklCanvas* canvas, VklPrivateEvent ev)
 {
     TestVisual* visual = (TestVisual*)ev.user_data;
     visual->dt = (float)canvas->clock.interval;
-    vkl_buffer_regions_upload(canvas->gpu->context, &visual->br_u, 0, sizeof(float), &visual->dt);
+
+    // This command is slower as it causes a full GPU wait every time we update the uniform buffer
+    // because there is only one.
+    // vkl_buffer_regions_upload(canvas->gpu->context, &visual->br_u, 0, sizeof(float),
+    // &visual->dt);
+
+    // This command is slighty faster as there are no waits, the uniform buffer is updated
+    // directly in the main event loop, but there are as many copies as there are swapchain
+    // images. Only the buffer region corresponding to the current swapchain image is
+    // updated, because we're sure that region is not being used by the RENDER queue.
+    vkl_buffer_regions_upload_fast(canvas, &visual->br_u, false, 0, sizeof(float), &visual->dt);
 }
 
 static void _particle_refill(VklCanvas* canvas, VklPrivateEvent ev)
@@ -738,7 +748,9 @@ static int vklite2_canvas_particles(VkyTestContext* context)
 
 
     // Uniform buffer.
-    visual->br_u = vkl_alloc_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(float));
+    visual->br_u = vkl_alloc_buffers(
+        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE, canvas->swapchain.img_count,
+        sizeof(float));
     vkl_buffer_regions_upload(
         gpu->context, &visual->br_u, 0, sizeof(float), &canvas->clock.interval);
 
@@ -749,7 +761,7 @@ static int vklite2_canvas_particles(VkyTestContext* context)
     vkl_slots_create(&slots);
     vkl_compute_slots(visual->compute, &slots);
 
-    vkl_bindings_create(&bindings, 1);
+    vkl_bindings_create(&bindings, canvas->swapchain.img_count);
     vkl_bindings_buffer(&bindings, 0, &visual->br);
     vkl_bindings_buffer(&bindings, 1, &visual->br_u);
     vkl_bindings_update(&bindings);
