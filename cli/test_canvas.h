@@ -620,21 +620,43 @@ static void _fps(VklCanvas* canvas, VklPrivateEvent ev)
     canvas->clock.checkpoint_value = canvas->frame_idx;
 }
 
+typedef struct TestParticleUniform TestParticleUniform;
+struct TestParticleUniform
+{
+    vec4 pos;
+    float dt;
+};
+
 static void _particle_frame(VklCanvas* canvas, VklPrivateEvent ev)
 {
     TestVisual* visual = (TestVisual*)ev.user_data;
-    visual->dt = (float)canvas->clock.interval;
+    TestParticleUniform* data_u = visual->data_u;
+    data_u->dt = (float)canvas->clock.interval;
 
     // This command is slower as it causes a full GPU wait every time we update the uniform buffer
     // because there is only one.
-    // vkl_buffer_regions_upload(canvas->gpu->context, &visual->br_u, 0, sizeof(float),
-    // &visual->dt);
+    // vkl_buffer_regions_upload(
+    //     canvas->gpu->context, &visual->br_u, 0, sizeof(TestParticleUniform), visual->data_u);
 
     // This command is slighty faster as there are no waits, the uniform buffer is updated
     // directly in the main event loop, but there are as many copies as there are swapchain
     // images. Only the buffer region corresponding to the current swapchain image is
     // updated, because we're sure that region is not being used by the RENDER queue.
-    vkl_buffer_regions_upload_fast(canvas, &visual->br_u, false, 0, sizeof(float), &visual->dt);
+    vkl_buffer_regions_upload_fast(
+        canvas, &visual->br_u, false, 0, sizeof(TestParticleUniform), visual->data_u);
+}
+
+static void _particle_cursor(VklCanvas* canvas, VklEvent ev)
+{
+    TestVisual* visual = (TestVisual*)ev.user_data;
+    TestParticleUniform* data_u = visual->data_u;
+    uvec2 size = {0};
+    vkl_canvas_size(canvas, VKL_CANVAS_SIZE_SCREEN, size);
+    double x = -1 + 2 * ev.u.m.pos[0] / (double)size[0];
+    double y = -1 + 2 * ev.u.m.pos[1] / (double)size[1];
+
+    data_u->pos[0] = x;
+    data_u->pos[1] = y;
 }
 
 static void _particle_refill(VklCanvas* canvas, VklPrivateEvent ev)
@@ -704,7 +726,7 @@ static int vklite2_canvas_particles(VkyTestContext* context)
         graphics, 0, 2, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(TestParticle, color));
 
     // Create the buffer.
-    const uint32_t n = 10000;
+    const uint32_t n = 20000;
     visual->n_vertices = n;
     VkDeviceSize size = n * sizeof(TestParticle);
     visual->br = vkl_alloc_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, size);
@@ -713,14 +735,14 @@ static int vklite2_canvas_particles(VkyTestContext* context)
     visual->data = calloc(n, sizeof(TestParticle));
     for (uint32_t i = 0; i < n; i++)
     {
-        ((TestParticle*)visual->data)[i].pos[0] = .25 * randn();
-        ((TestParticle*)visual->data)[i].pos[1] = .25 * randn();
-        ((TestParticle*)visual->data)[i].vel[0] = .25 * randn();
-        ((TestParticle*)visual->data)[i].vel[1] = .25 * randn();
+        ((TestParticle*)visual->data)[i].pos[0] = .2 * randn();
+        ((TestParticle*)visual->data)[i].pos[1] = .2 * randn();
+        ((TestParticle*)visual->data)[i].vel[0] = .05 * randn();
+        ((TestParticle*)visual->data)[i].vel[1] = .05 * randn();
         ((TestParticle*)visual->data)[i].color[0] = rand_float();
         ((TestParticle*)visual->data)[i].color[1] = rand_float();
         ((TestParticle*)visual->data)[i].color[2] = rand_float();
-        ((TestParticle*)visual->data)[i].color[3] = .5;
+        ((TestParticle*)visual->data)[i].color[3] = .25;
     }
     vkl_buffer_regions_upload(canvas->gpu->context, &visual->br, 0, size, visual->data);
     FREE(visual->data);
@@ -750,9 +772,8 @@ static int vklite2_canvas_particles(VkyTestContext* context)
     // Uniform buffer.
     visual->br_u = vkl_alloc_buffers(
         gpu->context, VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE, canvas->swapchain.img_count,
-        sizeof(float));
-    vkl_buffer_regions_upload(
-        gpu->context, &visual->br_u, 0, sizeof(float), &canvas->clock.interval);
+        sizeof(TestParticleUniform));
+    visual->data_u = calloc(1, sizeof(TestParticleUniform));
 
     // Create the bindings.
     vkl_slots_binding(&slots, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER); // vertex buffer
@@ -778,9 +799,12 @@ static int vklite2_canvas_particles(VkyTestContext* context)
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _particle_frame, visual);
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, visual);
 
+    vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _particle_cursor, visual);
+
     vkl_transfer_mode(canvas->gpu->context, VKL_TRANSFER_MODE_ASYNC);
     vkl_app_run(app, 0); // DEBUG: N_FRAMES
 
+    FREE(visual->data_u);
     vkl_slots_destroy(&slots);
     destroy_visual(visual);
     TEST_END

@@ -78,6 +78,7 @@ typedef struct
     uint32_t n_vertices;
     float dt;
     void* data;
+    void* data_u;
 } TestVisual;
 
 

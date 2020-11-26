@@ -1,8 +1,9 @@
 #version 450
 
 #define WORKGROUP_SIZE 32
-#define G .01
-#define m .1
+#define G .00001
+#define m 10
+#define M 10000
 
 layout (local_size_x=WORKGROUP_SIZE, local_size_y=1, local_size_z=1) in;
 
@@ -21,6 +22,7 @@ layout(binding = 0) buffer buf {
 };
 
 layout (std140, binding = 1) uniform UBO {
+    vec4 pos;
     float dt;
 } ubo;
 
@@ -37,6 +39,11 @@ void main() {
         s = i != gl_GlobalInvocationID.x ? 1.0 / dot(d, d) : 0;
         v.vel += ubo.dt * m * G * d * s;
     }
+
+    // Mouse attractor.
+    d = ubo.pos.xyz - v.pos;
+    s = 1.0 / dot(d, d);
+    v.vel += ubo.dt * M * G * d * s;
 
     v.pos += ubo.dt * v.vel;
 
