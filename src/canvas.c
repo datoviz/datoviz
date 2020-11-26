@@ -1131,6 +1131,9 @@ void vkl_canvas_frame(VklCanvas* canvas)
         vkl_fences_wait(&canvas->fences[VKL_FENCES_FLIGHT], canvas->swapchain.img_idx);
         // vkl_queue_wait(canvas->gpu, VKL_DEFAULT_QUEUE_RENDER); // DEBUG
 
+        // HACK: avoid edge effects when the resize takes some time and the dt becomes too large
+        canvas->clock.interval = 0;
+
         // Refill the command buffer for the current swapchain image.
         _refill_canvas(canvas, canvas->swapchain.img_idx);
 
