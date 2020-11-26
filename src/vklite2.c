@@ -2179,9 +2179,15 @@ void vkl_fences_wait(VklFences* fences, uint32_t idx)
 {
     ASSERT(fences != NULL);
     ASSERT(idx < fences->count);
-    ASSERT(fences->fences[idx] != VK_NULL_HANDLE);
-    log_trace("wait for fence %d", fences->fences[idx]);
-    vkWaitForFences(fences->gpu->device, 1, &fences->fences[idx], VK_TRUE, 1000000000);
+    if (fences->fences[idx] != VK_NULL_HANDLE)
+    {
+        log_trace("wait for fence %d", fences->fences[idx]);
+        vkWaitForFences(fences->gpu->device, 1, &fences->fences[idx], VK_TRUE, 1000000000);
+    }
+    else
+    {
+        log_trace("skip wait for fence");
+    }
 }
 
 
