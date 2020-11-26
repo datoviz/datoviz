@@ -707,7 +707,7 @@ static int vklite2_context_buffer(VkyTestContext* context)
     vkl_buffer_upload(buffer, 0, 256, data);
 
     // Allocate buffer regions.
-    VklBufferRegions br = vkl_alloc_buffers(ctx, VKL_DEFAULT_BUFFER_COUNT, 3, 64);
+    VklBufferRegions br = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_COUNT, 3, 64);
     AT(br.count == 3);
     AT(br.offsets[0] == 0);
     AT(br.offsets[1] == 64);
@@ -716,7 +716,7 @@ static int vklite2_context_buffer(VkyTestContext* context)
     AT(buffer->size == 256);
 
     // This allocation will trigger a buffer resize.
-    br = vkl_alloc_buffers(ctx, VKL_DEFAULT_BUFFER_COUNT, 2, 64);
+    br = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_COUNT, 2, 64);
     AT(br.count == 2);
     AT(br.offsets[0] == 192);
     AT(br.offsets[1] == 256);
@@ -749,7 +749,7 @@ static int vklite2_context_texture(VkyTestContext* context)
     VklGpu* gpu = vkl_gpu(app, 0);
     VklContext* ctx = vkl_context(gpu, NULL);
 
-    vkl_new_texture(ctx, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+    vkl_ctx_texture(ctx, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
 
     TEST_END
 }
@@ -762,21 +762,21 @@ static int vklite2_context_transfer_sync(VkyTestContext* context)
     VklGpu* gpu = vkl_gpu(app, 0);
     VklContext* ctx = vkl_context(gpu, NULL);
 
-    VklBufferRegions br = vkl_alloc_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, 16);
+    VklBufferRegions br = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, 16);
     uint8_t data[16] = {0};
     memset(data, 12, 16);
-    vkl_buffer_regions_upload(ctx, &br, 0, 16, data);
+    vkl_upload_buffers(ctx, &br, 0, 16, data);
 
     uint8_t data2[16] = {0};
-    vkl_buffer_regions_download(ctx, &br, 0, 16, data2);
+    vkl_download_buffers(ctx, &br, 0, 16, data2);
     AT(memcmp(data, data2, 16) == 0);
 
     uint8_t* img_data = calloc(16 * 16 * 4, sizeof(uint8_t));
-    VklTexture* tex = vkl_new_texture(ctx, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
-    vkl_texture_upload(ctx, tex, 16 * 16 * 4, img_data);
+    VklTexture* tex = vkl_ctx_texture(ctx, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+    vkl_upload_texture(ctx, tex, 16 * 16 * 4, img_data);
 
     uint8_t* img_data2 = calloc(16 * 16 * 4, sizeof(uint8_t));
-    vkl_texture_download(ctx, tex, 16 * 16 * 4, img_data2);
+    vkl_download_texture(ctx, tex, 16 * 16 * 4, img_data2);
     AT(memcmp(img_data, img_data2, 16 * 16 * 4) == 0);
 
     FREE(img_data2);
@@ -794,32 +794,32 @@ static int vklite2_context_copy(VkyTestContext* context)
 
 
     // Upload.
-    VklBufferRegions br = vkl_alloc_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, 16);
+    VklBufferRegions br = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, 16);
     uint8_t data[16] = {0};
     memset(data, 12, 16);
-    vkl_buffer_regions_upload(ctx, &br, 0, 16, data);
+    vkl_upload_buffers(ctx, &br, 0, 16, data);
 
     uint8_t* img_data = calloc(16 * 16 * 4, sizeof(uint8_t));
     memset(img_data, 12, 16);
-    VklTexture* tex = vkl_new_texture(ctx, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
-    vkl_texture_upload(ctx, tex, 16 * 16 * 4, img_data);
+    VklTexture* tex = vkl_ctx_texture(ctx, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+    vkl_upload_texture(ctx, tex, 16 * 16 * 4, img_data);
 
 
     // Copy
-    VklBufferRegions br2 = vkl_alloc_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, 16);
-    vkl_buffer_regions_copy(ctx, br, 0, br2, 0, 16);
+    VklBufferRegions br2 = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, 16);
+    vkl_copy_buffers(ctx, br, 0, br2, 0, 16);
 
-    VklTexture* tex2 = vkl_new_texture(ctx, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
-    vkl_texture_copy(ctx, tex, (uvec3){0}, tex2, (uvec3){0}, (uvec3){16, 16, 1});
+    VklTexture* tex2 = vkl_ctx_texture(ctx, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+    vkl_copy_textures(ctx, tex, (uvec3){0}, tex2, (uvec3){0}, (uvec3){16, 16, 1});
 
 
     // Download.
     uint8_t data2[16] = {0};
-    vkl_buffer_regions_download(ctx, &br2, 0, 16, data2);
+    vkl_download_buffers(ctx, &br2, 0, 16, data2);
     AT(memcmp(data, data2, 16) == 0);
 
     uint8_t* img_data2 = calloc(16 * 16 * 4, sizeof(uint8_t));
-    vkl_texture_download(ctx, tex2, 16 * 16 * 4, img_data2);
+    vkl_download_texture(ctx, tex2, 16 * 16 * 4, img_data2);
     AT(memcmp(img_data, img_data2, 16 * 16 * 4) == 0);
 
 
@@ -837,14 +837,14 @@ static int vklite2_context_transfer_async_nothread(VkyTestContext* context)
     VklContext* ctx = vkl_context(gpu, NULL);
     vkl_transfer_mode(ctx, VKL_TRANSFER_MODE_ASYNC);
 
-    VklBufferRegions br = vkl_alloc_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, 16);
+    VklBufferRegions br = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, 16);
     uint8_t data[16] = {0};
     memset(data, 12, 16);
-    vkl_buffer_regions_upload(ctx, &br, 0, 16, data);
+    vkl_upload_buffers(ctx, &br, 0, 16, data);
     vkl_transfer_loop(ctx, false);
 
     uint8_t data2[16] = {0};
-    vkl_buffer_regions_download(ctx, &br, 0, 16, data2);
+    vkl_download_buffers(ctx, &br, 0, 16, data2);
     vkl_transfer_loop(ctx, false);
     AT(memcmp(data, data2, 16) == 0);
 
@@ -873,8 +873,8 @@ static void* _thread_enqueue(void* arg)
     _TestTransfer* tt = arg;
 
     // Upload data from a background thread.
-    vkl_buffer_regions_upload(tt->ctx, &tt->br, 0, 16, tt->data);
-    vkl_texture_upload(tt->ctx, tt->tex, 16 * 16 * 4, tt->img_data);
+    vkl_upload_buffers(tt->ctx, &tt->br, 0, 16, tt->data);
+    vkl_upload_texture(tt->ctx, tt->tex, 16 * 16 * 4, tt->img_data);
 
     // Cause the transfer loop to end.
     vkl_transfer_stop(tt->ctx);
@@ -892,10 +892,10 @@ static int vklite2_context_transfer_async_thread(VkyTestContext* context)
     // Resources.
     _TestTransfer tt = {0};
     tt.ctx = ctx;
-    tt.br = vkl_alloc_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, 16);
+    tt.br = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, 16);
     memset(tt.data, 12, 16);
     memset(tt.img_data, 23, 16);
-    tt.tex = vkl_new_texture(ctx, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+    tt.tex = vkl_ctx_texture(ctx, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
 
     // Background thread.
     pthread_t thread = {0};
@@ -908,11 +908,11 @@ static int vklite2_context_transfer_async_thread(VkyTestContext* context)
     // Check.
     vkl_transfer_mode(ctx, VKL_TRANSFER_MODE_SYNC);
     uint8_t data2[16] = {0};
-    vkl_buffer_regions_download(ctx, &tt.br, 0, 16, data2);
+    vkl_download_buffers(ctx, &tt.br, 0, 16, data2);
     AT(memcmp(tt.data, data2, 16) == 0);
 
     uint8_t img_data2[16 * 16 * 4];
-    vkl_texture_download(ctx, tt.tex, 16 * 16 * 4, img_data2);
+    vkl_download_texture(ctx, tt.tex, 16 * 16 * 4, img_data2);
     AT(memcmp(tt.img_data, img_data2, 16 * 16 * 4) == 0);
 
     TEST_END
@@ -925,7 +925,7 @@ static void* _thread_download(void* arg)
     _TestTransfer* tt = arg;
     VklContext* ctx = tt->ctx;
     uint8_t data3[16] = {0};
-    vkl_buffer_regions_download(ctx, &tt->br, 0, 16, data3);
+    vkl_download_buffers(ctx, &tt->br, 0, 16, data3);
     if (memcmp(tt->data, data3, 16) != 0)
         tt->status = 1;
     vkl_transfer_wait(ctx, 10);
@@ -949,10 +949,10 @@ static int vklite2_context_download(VkyTestContext* context)
     _TestTransfer tt = {0};
     tt.status = -1;
     tt.ctx = ctx;
-    tt.br = vkl_alloc_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, 16);
+    tt.br = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, 16);
     memset(tt.data, 12, 16);
     memset(tt.img_data, 23, 16);
-    tt.tex = vkl_new_texture(ctx, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+    tt.tex = vkl_ctx_texture(ctx, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
 
     // Background thread.
     pthread_t thread = {0};
@@ -977,7 +977,7 @@ static int vklite2_default_app(VkyTestContext* context)
 
     char path[1024];
     snprintf(path, sizeof(path), "%s/spirv/pow2.comp.spv", DATA_DIR);
-    vkl_new_compute(ctx, path);
+    vkl_ctx_compute(ctx, path);
 
     TEST_END
 }

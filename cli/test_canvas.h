@@ -321,7 +321,7 @@ static void _vertex_cursor_callback(VklCanvas* canvas, VklEvent ev)
         data[i].color[1] = y;
         data[i].color[2] = 1;
     }
-    vkl_buffer_regions_upload(canvas->gpu->context, &visual->br, 0, 3 * sizeof(VklVertex), data);
+    vkl_upload_buffers(canvas->gpu->context, &visual->br, 0, 3 * sizeof(VklVertex), data);
 }
 
 static int vklite2_canvas_5(VkyTestContext* context)
@@ -354,7 +354,7 @@ static int vklite2_canvas_5(VkyTestContext* context)
 
     // Triangle buffer.
     VkDeviceSize size = 3 * sizeof(VklVertex);
-    visual.br = vkl_alloc_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, size);
+    visual.br = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, size);
 
     // Upload the triangle data.
     VklVertex data[3] = {
@@ -363,7 +363,7 @@ static int vklite2_canvas_5(VkyTestContext* context)
         {{+0, -1, 0}, {0, 0, 1, 1}},
     };
     memcpy(visual.data, data, sizeof(data));
-    vkl_buffer_regions_upload(canvas->gpu->context, &visual.br, 0, size, data);
+    vkl_upload_buffers(canvas->gpu->context, &visual.br, 0, size, data);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_refill, &visual);
 
@@ -397,7 +397,7 @@ static void _uniform_cursor_callback(VklCanvas* canvas, VklEvent ev)
     vec[1] = y;
     vec[2] = 1;
     vec[3] = 1;
-    vkl_buffer_regions_upload(canvas->gpu->context, &visual->br_u, 0, sizeof(vec4), vec);
+    vkl_upload_buffers(canvas->gpu->context, &visual->br_u, 0, sizeof(vec4), vec);
 }
 
 static int vklite2_canvas_6(VkyTestContext* context)
@@ -425,9 +425,9 @@ static int vklite2_canvas_6(VkyTestContext* context)
 
     // Uniform buffer.
     visual.br_u =
-        vkl_alloc_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, img_count, sizeof(vec4));
+        vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, img_count, sizeof(vec4));
     ASSERT(visual.br_u.aligned_size >= visual.br_u.size);
-    vkl_buffer_regions_upload(canvas->gpu->context, &visual.br_u, 0, sizeof(vec4), vec);
+    vkl_upload_buffers(canvas->gpu->context, &visual.br_u, 0, sizeof(vec4), vec);
 
     // Create the bindings.
     visual.bindings = vkl_bindings(&visual.slots);
@@ -441,7 +441,7 @@ static int vklite2_canvas_6(VkyTestContext* context)
 
     // Triangle buffer.
     VkDeviceSize size = 3 * sizeof(VklVertex);
-    visual.br = vkl_alloc_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, size);
+    visual.br = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, size);
 
     // Upload the triangle data.
     VklVertex data[3] = {
@@ -450,7 +450,7 @@ static int vklite2_canvas_6(VkyTestContext* context)
         {{+0, -1, 0}, {0, 0, 1, 1}},
     };
     memcpy(visual.data, data, sizeof(data));
-    vkl_buffer_regions_upload(canvas->gpu->context, &visual.br, 0, size, data);
+    vkl_upload_buffers(canvas->gpu->context, &visual.br, 0, size, data);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_refill, &visual);
 
@@ -513,7 +513,7 @@ static int vklite2_canvas_7(VkyTestContext* context)
     {
         char path[1024];
         snprintf(path, sizeof(path), "%s/spirv/test_triangle.comp.spv", DATA_DIR);
-        visual.compute = vkl_new_compute(gpu->context, path);
+        visual.compute = vkl_ctx_compute(gpu->context, path);
         vkl_slots_binding(&slots, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
         vkl_slots_create(&slots);
         vkl_compute_slots(visual.compute, &slots);
@@ -575,7 +575,7 @@ static int vklite2_canvas_8(VkyTestContext* context)
     {
         char path[1024];
         snprintf(path, sizeof(path), "%s/spirv/test_triangle.comp.spv", DATA_DIR);
-        visual.compute = vkl_new_compute(gpu->context, path);
+        visual.compute = vkl_ctx_compute(gpu->context, path);
         vkl_slots_binding(&slots, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
         vkl_slots_create(&slots);
         vkl_compute_slots(visual.compute, &slots);
@@ -669,7 +669,7 @@ static void _particle_frame(VklCanvas* canvas, VklPrivateEvent ev)
     {
         // Copy storage buffer to vertex buffer.
         log_trace("enqueue copy from storage buffer to vertex buffer");
-        vkl_buffer_regions_copy(ctx, tpc->br, 0, visual->br, 0, visual->br.size);
+        vkl_copy_buffers(ctx, tpc->br, 0, visual->br, 0, visual->br.size);
 
         // Send the command buffer.
         log_trace("submit new compute command");
@@ -769,12 +769,12 @@ static int vklite2_canvas_particles(VkyTestContext* context)
     visual->n_vertices = n;
     VkDeviceSize size = n * sizeof(TestParticle);
     // Vertex buffer.
-    visual->br = vkl_alloc_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, size);
+    visual->br = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, size);
 
     TestParticleCompute tpc = {0};
     // Struct holding some pointers for compute command buffer submission.
     {
-        tpc.br = vkl_alloc_buffers(gpu->context, VKL_DEFAULT_BUFFER_STORAGE, 1, size);
+        tpc.br = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_STORAGE, 1, size);
         tpc.fence = vkl_fences(gpu, 1);
         visual->user_data = calloc(1, sizeof(TestParticleCompute));
     }
@@ -794,9 +794,9 @@ static int vklite2_canvas_particles(VkyTestContext* context)
             ((TestParticle*)visual->data)[i].color[3] = .5;
         }
         // Vertex buffer
-        vkl_buffer_regions_upload(canvas->gpu->context, &visual->br, 0, size, visual->data);
+        vkl_upload_buffers(canvas->gpu->context, &visual->br, 0, size, visual->data);
         // Copy in the storage buffer
-        vkl_buffer_regions_upload(canvas->gpu->context, &tpc.br, 0, size, visual->data);
+        vkl_upload_buffers(canvas->gpu->context, &tpc.br, 0, size, visual->data);
         FREE(visual->data);
     }
 
@@ -821,10 +821,10 @@ static int vklite2_canvas_particles(VkyTestContext* context)
     {
         // Create compute object.
         snprintf(path, sizeof(path), "%s/spirv/test_particle.comp.spv", DATA_DIR);
-        visual->compute = vkl_new_compute(gpu->context, path);
+        visual->compute = vkl_ctx_compute(gpu->context, path);
 
         // Uniform buffer.
-        visual->br_u = vkl_alloc_buffers(
+        visual->br_u = vkl_ctx_buffers(
             gpu->context, VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE, canvas->swapchain.img_count,
             sizeof(TestParticleUniform));
         visual->data_u = calloc(1, sizeof(TestParticleUniform));

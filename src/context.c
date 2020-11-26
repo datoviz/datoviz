@@ -373,8 +373,8 @@ void vkl_context_destroy(VklContext* context)
 /*  Buffer allocation                                                                            */
 /*************************************************************************************************/
 
-VklBufferRegions vkl_alloc_buffers(
-    VklContext* context, uint32_t buffer_idx, uint32_t buffer_count, VkDeviceSize size)
+VklBufferRegions
+vkl_ctx_buffers(VklContext* context, uint32_t buffer_idx, uint32_t buffer_count, VkDeviceSize size)
 {
     ASSERT(context != NULL);
     ASSERT(context->gpu != NULL);
@@ -440,7 +440,7 @@ VklBufferRegions vkl_alloc_buffers(
 /*  Compute                                                                                      */
 /*************************************************************************************************/
 
-VklCompute* vkl_new_compute(VklContext* context, const char* shader_path)
+VklCompute* vkl_ctx_compute(VklContext* context, const char* shader_path)
 {
     ASSERT(context != NULL);
     ASSERT(shader_path != NULL);
@@ -481,7 +481,7 @@ static VkImageType image_type_from_dims(uint32_t dims)
 
 
 
-VklTexture* vkl_new_texture(VklContext* context, uint32_t dims, uvec3 size, VkFormat format)
+VklTexture* vkl_ctx_texture(VklContext* context, uint32_t dims, uvec3 size, VkFormat format)
 {
     ASSERT(context != NULL);
 
@@ -1156,7 +1156,7 @@ void vkl_transfer_stop(VklContext* context)
 /*  Data transfers                                                                               */
 /*************************************************************************************************/
 
-void vkl_texture_upload_region(
+void vkl_upload_texture_region(
     VklContext* context, VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size,
     void* data)
 {
@@ -1168,7 +1168,7 @@ void vkl_texture_upload_region(
 
 
 
-void vkl_texture_upload(VklContext* context, VklTexture* texture, VkDeviceSize size, void* data)
+void vkl_upload_texture(VklContext* context, VklTexture* texture, VkDeviceSize size, void* data)
 {
     ASSERT(texture != NULL);
     ASSERT(context != NULL);
@@ -1177,12 +1177,12 @@ void vkl_texture_upload(VklContext* context, VklTexture* texture, VkDeviceSize s
     shape[0] = texture->image->width;
     shape[1] = texture->image->height;
     shape[2] = texture->image->depth;
-    vkl_texture_upload_region(context, texture, (uvec3){0, 0, 0}, shape, size, data);
+    vkl_upload_texture_region(context, texture, (uvec3){0, 0, 0}, shape, size, data);
 }
 
 
 
-void vkl_texture_download_region(
+void vkl_download_texture_region(
     VklContext* context, VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size,
     void* data)
 {
@@ -1194,7 +1194,7 @@ void vkl_texture_download_region(
 
 
 
-void vkl_texture_download(VklContext* context, VklTexture* texture, VkDeviceSize size, void* data)
+void vkl_download_texture(VklContext* context, VklTexture* texture, VkDeviceSize size, void* data)
 {
     ASSERT(texture != NULL);
     ASSERT(context != NULL);
@@ -1203,12 +1203,12 @@ void vkl_texture_download(VklContext* context, VklTexture* texture, VkDeviceSize
     shape[0] = texture->image->width;
     shape[1] = texture->image->height;
     shape[2] = texture->image->depth;
-    vkl_texture_download_region(context, texture, (uvec3){0, 0, 0}, shape, size, data);
+    vkl_download_texture_region(context, texture, (uvec3){0, 0, 0}, shape, size, data);
 }
 
 
 
-void vkl_buffer_regions_upload(
+void vkl_upload_buffers(
     VklContext* context, VklBufferRegions* regions, VkDeviceSize offset, VkDeviceSize size,
     void* data)
 {
@@ -1219,7 +1219,7 @@ void vkl_buffer_regions_upload(
 
 
 
-void vkl_buffer_regions_download(
+void vkl_download_buffers(
     VklContext* context, VklBufferRegions* regions, VkDeviceSize offset, VkDeviceSize size,
     void* data)
 {
@@ -1230,7 +1230,7 @@ void vkl_buffer_regions_download(
 
 
 
-void vkl_buffer_regions_copy(
+void vkl_copy_buffers(
     VklContext* context,                           //
     VklBufferRegions src, VkDeviceSize src_offset, //
     VklBufferRegions dst, VkDeviceSize dst_offset, //
@@ -1257,7 +1257,7 @@ void vkl_buffer_regions_copy(
 
 
 
-void vkl_texture_copy(
+void vkl_copy_textures(
     VklContext* context, VklTexture* src, uvec3 src_offset, VklTexture* dst, uvec3 dst_offset,
     uvec3 shape)
 {
