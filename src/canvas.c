@@ -331,6 +331,66 @@ static void* _event_thread(void* p_canvas)
 
 
 /*************************************************************************************************/
+/*  Canvas-specific transfers                                                                    */
+/*************************************************************************************************/
+
+static void fast_buffer_upload(VklCanvas* canvas, VklTransfer tr, uint32_t img_idx)
+{
+    // Must be called by the main event loop, just after the fence for the current frame
+    // so we're sure the buffer region corresponding to the current swapchain image is not being
+    // used and we can update the buffer safely.
+
+    ASSERT(canvas != NULL);
+
+    VklGpu* gpu = canvas->gpu;
+    ASSERT(gpu != NULL);
+
+    ASSERT(tr.type == VKL_TRANSFER_BUFFER_UPLOAD_FAST);
+
+    // Size of the buffer to transfer.
+    VkDeviceSize region_size = tr.u.buf.size;
+    ASSERT(region_size > 0);
+
+    VklBufferRegions* br = &tr.u.buf.regions;
+    VkDeviceSize alsize = br->aligned_size;
+    if (alsize == 0)
+        alsize = region_size;
+    ASSERT(alsize > 0);
+    ASSERT(alsize > region_size);
+
+    uint32_t n = br->count;
+    ASSERT(n == canvas->swapchain.img_count);
+
+    // We only upload to the buffer region that corresponds to the current swapchain image, to
+    // avoid having to deal with synchronization.
+
+    // Copy the data as many times as there are buffer regions, and make sure the array is
+    // aligned if using a UNIFORM buffer.
+    void* aligned = aligned_repeat(region_size, tr.u.buf.data, 1, br->alignment);
+    // Transfer from the CPU to the GPU staging buffer.
+    vkl_buffer_upload(br->buffer, br->offsets[img_idx] + tr.u.buf.offset, alsize, aligned);
+    FREE(aligned);
+}
+
+
+
+static void _process_fast_transfers(VklCanvas* canvas)
+{
+    // VklTransfer tr = {0};
+    // int res = 0;
+    // while (res == 0)
+    // {
+    //     tr = fifo_dequeue(canvas->context, wait);
+    //     if (tr.type != VKL_TRANSFER_NONE)
+    //         log_debug("transfer task dequeued, processing it...");
+    //     res = process_transfer(context, tr);
+    // }
+    // fast_buffer_upload(VklCanvas * canvas, VklTransfer tr, uint32_t img_idx)
+}
+
+
+
+/*************************************************************************************************/
 /*  Backend-specific event callbacks                                                             */
 /*************************************************************************************************/
 
@@ -978,6 +1038,11 @@ void vkl_canvas_frame(VklCanvas* canvas)
 
     // Wait for fence.
     vkl_fences_wait(&canvas->fences[VKL_FENCE_RENDER_FINISHED], canvas->cur_frame);
+
+    // Process FAST buffer transfers (used by uniform buffers that exist in multiple copies
+    // to avoid GPU synchronization by making it such that each swapchain image has its own
+    // buffer region)
+    _process_fast_transfers(canvas);
 
     // We acquire the next swapchain image.
     vkl_swapchain_acquire(

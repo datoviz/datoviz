@@ -109,6 +109,7 @@ typedef enum
 {
     VKL_TRANSFER_NONE,
     VKL_TRANSFER_BUFFER_UPLOAD,
+    VKL_TRANSFER_BUFFER_UPLOAD_FAST,
     VKL_TRANSFER_BUFFER_DOWNLOAD,
     VKL_TRANSFER_BUFFER_COPY,
     VKL_TRANSFER_TEXTURE_UPLOAD,
@@ -143,6 +144,7 @@ struct VklTransferBuffer
 {
     VklBufferRegions regions;
     VkDeviceSize offset, size;
+    VklCanvas* canvas; // only used with VKL_TRANSFER_BUFFER_UPLOAD_FAST
     void* data;
 };
 

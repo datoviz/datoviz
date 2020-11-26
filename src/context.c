@@ -1092,8 +1092,6 @@ void vkl_transfer_loop(VklContext* context, bool wait)
         log_trace("transfer loop awaits for transfer task, iteration %d...", counter);
         // wait until a transfer task is available
         tr = fifo_dequeue(context, wait);
-        if (wait)
-            log_debug("transfer task dequeued, processing it...");
         // process the dequeued task
         res = process_transfer(context, tr);
         counter++;
