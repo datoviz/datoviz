@@ -667,11 +667,10 @@ static VklCanvas* _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool off
 
     // Create synchronization objects.
     {
-        canvas->semaphores[VKL_SEMAPHORE_IMG_AVAILABLE] =
-            vkl_semaphores(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
-        canvas->semaphores[VKL_SEMAPHORE_RENDER_FINISHED] =
-            vkl_semaphores(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
-        canvas->fences[VKL_FENCE_RENDER_FINISHED] = vkl_fences(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
+        uint32_t frames_in_flight = offscreen ? 1 : VKY_MAX_FRAMES_IN_FLIGHT;
+        canvas->semaphores[VKL_SEMAPHORE_IMG_AVAILABLE] = vkl_semaphores(gpu, frames_in_flight);
+        canvas->semaphores[VKL_SEMAPHORE_RENDER_FINISHED] = vkl_semaphores(gpu, frames_in_flight);
+        canvas->fences[VKL_FENCE_RENDER_FINISHED] = vkl_fences(gpu, frames_in_flight);
         canvas->fences[VKL_FENCES_FLIGHT].gpu = gpu;
         canvas->fences[VKL_FENCES_FLIGHT].count = canvas->swapchain.img_count;
     }
@@ -1224,12 +1223,14 @@ void vkl_canvas_frame_submit(VklCanvas* canvas)
     }
 
     if (!canvas->offscreen)
+    {
         vkl_submit_wait_semaphores(
             s, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, //
             &canvas->semaphores[VKL_SEMAPHORE_IMG_AVAILABLE], f);
 
-    // Once the render is finished, we signal another semaphore.
-    vkl_submit_signal_semaphores(s, &canvas->semaphores[VKL_SEMAPHORE_RENDER_FINISHED], f);
+        // Once the render is finished, we signal another semaphore.
+        vkl_submit_signal_semaphores(s, &canvas->semaphores[VKL_SEMAPHORE_RENDER_FINISHED], f);
+    }
 
     // SEND callbacks and send the Submit instance.
     {
@@ -1248,7 +1249,7 @@ void vkl_canvas_frame_submit(VklCanvas* canvas)
         vkl_swapchain_present(
             &canvas->swapchain, 1, &canvas->semaphores[VKL_SEMAPHORE_RENDER_FINISHED], f);
 
-    canvas->cur_frame = (f + 1) % VKL_MAX_FRAMES_IN_FLIGHT;
+    canvas->cur_frame = (f + 1) % canvas->fences[VKL_FENCE_RENDER_FINISHED].count;
 }
 
 

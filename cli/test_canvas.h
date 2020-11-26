@@ -892,7 +892,7 @@ static int vklite2_canvas_offscreen(VkyTestContext* context)
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _frame_callback, NULL);
 
-    vkl_app_run(app, 1);
+    vkl_app_run(app, N_FRAMES);
 
     // // Send a mock key press event.
     // vkl_event_callback(canvas, VKL_EVENT_KEY, 0, _key_callback, NULL);
