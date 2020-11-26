@@ -74,13 +74,27 @@ Automatically-handled dependencies are (statically bundled or managed by the bui
 
 ### macOS
 
-**Help needed to fill in the details**.
+#### Install the dependencies
 
-1. Install the latest graphics drivers for your system and hardware.
-2. Install xcode, brew, ninja, glfw3
-3. Install the Vulkan SDK for macOS (it uses MoltenVK to map the Vulkan API to the native Apple Metal API).
-4. Clone the repository and do `./manage.sh build` to build the library and the examples.
-5. Use `./manage.sh run app_triangle` to run an example.
+1. Type `git` in a terminal to install it.
+2. Install Xcode
+3. Install [Homebrew](https://brew.sh/) if you don't have it already
+4. Type `brew install cmake ninja`
+
+
+#### Install Vulkan
+
+1. Install [the latest Vulkan SDK](https://vulkan.lunarg.com/sdk/home#mac)
+2. `cd /Volumes/vulkansdk-macos-1.2.154.0` (replace by appropriate version)
+3. `./install_vulkan.py`
+
+
+#### Install Visky
+
+1. `git clone --recursive git@github.com:viskydev/visky.git` (you need to set up an SSH key). Checkout the relevant branch.
+2. `cd visky`
+3. `./manage.sh build`
+4. `./manage.sh test`
 
 
 
