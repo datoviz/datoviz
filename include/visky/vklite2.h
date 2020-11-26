@@ -1220,6 +1220,8 @@ vkl_fences_copy(VklFences* src_fences, uint32_t src_idx, VklFences* dst_fences, 
 
 VKY_EXPORT void vkl_fences_wait(VklFences* fences, uint32_t idx);
 
+VKY_EXPORT bool vkl_fences_ready(VklFences* fences, uint32_t idx);
+
 VKY_EXPORT void vkl_fences_reset(VklFences* fences, uint32_t idx);
 
 VKY_EXPORT void vkl_fences_destroy(VklFences* fences);

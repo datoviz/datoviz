@@ -2188,11 +2188,22 @@ void vkl_fences_wait(VklFences* fences, uint32_t idx)
 {
     ASSERT(fences != NULL);
     ASSERT(idx < fences->count);
-    if (fences->fences[idx] != 0)
-    {
-        log_trace("wait for fence %d", fences->fences[idx]);
-        vkWaitForFences(fences->gpu->device, 1, &fences->fences[idx], VK_TRUE, 1000000000);
-    }
+    ASSERT(fences->fences[idx] != VK_NULL_HANDLE);
+    log_trace("wait for fence %d", fences->fences[idx]);
+    vkWaitForFences(fences->gpu->device, 1, &fences->fences[idx], VK_TRUE, 1000000000);
+}
+
+
+
+bool vkl_fences_ready(VklFences* fences, uint32_t idx)
+{
+    ASSERT(fences != NULL);
+    ASSERT(idx < fences->count);
+    ASSERT(fences->fences[idx] != VK_NULL_HANDLE);
+    VkResult res = vkGetFenceStatus(fences->gpu->device, fences->fences[idx]);
+    if (res == VK_SUCCESS)
+        return true;
+    return false;
 }
 
 

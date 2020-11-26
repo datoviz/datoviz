@@ -621,15 +621,28 @@ static void _fps(VklCanvas* canvas, VklPrivateEvent ev)
 }
 
 typedef struct TestParticleUniform TestParticleUniform;
+typedef struct TestParticleCompute TestParticleCompute;
+
 struct TestParticleUniform
 {
     vec4 pos;
     float dt;
 };
 
+struct TestParticleCompute
+{
+    // VklCompute* compute;
+    VklCommands* cmds;
+    // VklSubmit submit;
+    VklFences fence;
+    VklBufferRegions br;
+    bool is_running;
+};
+
 static void _particle_frame(VklCanvas* canvas, VklPrivateEvent ev)
 {
     TestVisual* visual = (TestVisual*)ev.user_data;
+    VklContext* ctx = visual->gpu->context;
     TestParticleUniform* data_u = visual->data_u;
     data_u->dt = (float)canvas->clock.interval;
 
@@ -644,6 +657,27 @@ static void _particle_frame(VklCanvas* canvas, VklPrivateEvent ev)
     // updated, because we're sure that region is not being used by the RENDER queue.
     vkl_buffer_regions_upload_fast(
         canvas, &visual->br_u, false, 0, sizeof(TestParticleUniform), visual->data_u);
+
+
+    TestParticleCompute* tpc = visual->user_data;
+    if (tpc->is_running && vkl_fences_ready(&tpc->fence, 0))
+    {
+        log_trace("compute task finished");
+        tpc->is_running = false;
+    }
+    if (!tpc->is_running)
+    {
+        // Copy storage buffer to vertex buffer.
+        log_trace("enqueue copy from storage buffer to vertex buffer");
+        vkl_buffer_regions_copy(ctx, tpc->br, 0, visual->br, 0, visual->br.size);
+
+        // Send the command buffer.
+        log_trace("submit new compute command");
+        VklSubmit submit = vkl_submit(visual->gpu);
+        vkl_submit_commands(&submit, tpc->cmds);
+        vkl_submit_send(&submit, 0, &tpc->fence, 0);
+        tpc->is_running = true;
+    }
 }
 
 static void _particle_cursor(VklCanvas* canvas, VklEvent ev)
@@ -670,10 +704,11 @@ static void _particle_refill(VklCanvas* canvas, VklPrivateEvent ev)
     uint32_t idx = ev.u.rf.img_idx;
     vkl_cmd_begin(cmds, idx);
 
-    int32_t nn = (int32_t)visual->n_vertices;
-    vkl_cmd_push_constants(
-        cmds, idx, visual->compute->slots, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(int32_t), &nn);
-    vkl_cmd_compute(cmds, idx, visual->compute, (uvec3){visual->n_vertices, 1, 1});
+    // int32_t nn = (int32_t)visual->n_vertices;
+    // vkl_cmd_push_constants(
+    //     cmds, idx, visual->compute->slots, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(int32_t),
+    //     &nn);
+    // vkl_cmd_compute(cmds, idx, visual->compute, (uvec3){visual->n_vertices, 1, 1});
 
     vkl_cmd_begin_renderpass(cmds, idx, &canvas->renderpasses[0], &canvas->framebuffers);
     vkl_cmd_viewport(
@@ -731,6 +766,16 @@ static int vklite2_canvas_particles(VkyTestContext* context)
     VkDeviceSize size = n * sizeof(TestParticle);
     visual->br = vkl_alloc_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, size);
 
+
+    TestParticleCompute tpc = {0};
+    // tpc.compute = visual->compute;
+    // tpc.submit = vkl_submit(gpu);
+    tpc.br = vkl_alloc_buffers(gpu->context, VKL_DEFAULT_BUFFER_STORAGE, 1, size);
+    tpc.fence = vkl_fences(gpu, 1);
+    vkl_fences_create(&tpc.fence);
+    visual->user_data = calloc(1, sizeof(TestParticleCompute));
+
+
     // Upload the triangle data.
     visual->data = calloc(n, sizeof(TestParticle));
     for (uint32_t i = 0; i < n; i++)
@@ -742,9 +787,12 @@ static int vklite2_canvas_particles(VkyTestContext* context)
         ((TestParticle*)visual->data)[i].color[0] = rand_float();
         ((TestParticle*)visual->data)[i].color[1] = rand_float();
         ((TestParticle*)visual->data)[i].color[2] = rand_float();
-        ((TestParticle*)visual->data)[i].color[3] = .25;
+        ((TestParticle*)visual->data)[i].color[3] = .5;
     }
+    // Vertex buffer
     vkl_buffer_regions_upload(canvas->gpu->context, &visual->br, 0, size, visual->data);
+    // Copy in the storage buffer
+    vkl_buffer_regions_upload(canvas->gpu->context, &tpc.br, 0, size, visual->data);
     FREE(visual->data);
 
     // Create the slots.
@@ -783,7 +831,7 @@ static int vklite2_canvas_particles(VkyTestContext* context)
     vkl_compute_slots(visual->compute, &slots);
 
     vkl_bindings_create(&bindings, canvas->swapchain.img_count);
-    vkl_bindings_buffer(&bindings, 0, &visual->br);
+    vkl_bindings_buffer(&bindings, 0, &tpc.br);
     vkl_bindings_buffer(&bindings, 1, &visual->br_u);
     vkl_bindings_update(&bindings);
     vkl_compute_bindings(visual->compute, &bindings);
@@ -791,7 +839,14 @@ static int vklite2_canvas_particles(VkyTestContext* context)
 
     INSTANCE_NEW(VklCommands, cmds, canvas->commands, canvas->max_commands)
     *cmds = vkl_commands(gpu, VKL_DEFAULT_QUEUE_COMPUTE, 1);
-
+    int32_t nn = (int32_t)visual->n_vertices;
+    vkl_cmd_begin(cmds, 0);
+    vkl_cmd_push_constants(
+        cmds, 0, visual->compute->slots, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(int32_t), &nn);
+    vkl_cmd_compute(cmds, 0, visual->compute, (uvec3){visual->n_vertices, 1, 1});
+    vkl_cmd_end(cmds, 0);
+    tpc.cmds = cmds;
+    memcpy(visual->user_data, &tpc, sizeof(TestParticleCompute));
 
 
     canvas->user_data = visual;
@@ -805,6 +860,9 @@ static int vklite2_canvas_particles(VkyTestContext* context)
     vkl_app_run(app, 0); // DEBUG: N_FRAMES
 
     FREE(visual->data_u);
+    FREE(visual->user_data);
+
+    vkl_fences_destroy(&tpc.fence);
     vkl_slots_destroy(&slots);
     destroy_visual(visual);
     TEST_END

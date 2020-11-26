@@ -79,6 +79,7 @@ typedef struct
     float dt;
     void* data;
     void* data_u;
+    void* user_data;
 } TestVisual;
 
 
