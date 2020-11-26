@@ -416,10 +416,10 @@ struct VklCanvas
     VklGraphics* graphics;
 
     // FAST transfers
-    VklFifo fifo_fast; // fast transfers queue
-    VklTransfer transfers_fast[VKL_MAX_TRANSFERS];
-    VklTransfer* cur_transfer_fast;
-    bool cur_transfer_updated[VKL_MAX_SWAPCHAIN_IMAGES];
+    VklFifo fast_queue; // fast transfers queue
+    VklTransfer fast_transfers[VKL_MAX_TRANSFERS];
+    VklTransfer* fast_transfer_cur;
+    bool fast_transfer_updated[VKL_MAX_SWAPCHAIN_IMAGES];
 
     uint32_t canvas_callbacks_count;
     VklCanvasCallbackRegister canvas_callbacks[VKL_MAX_EVENT_CALLBACKS];

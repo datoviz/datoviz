@@ -387,11 +387,11 @@ static void _fast_transfers(VklCanvas* canvas)
 {
     ASSERT(canvas != NULL);
     // Special FIFO queue for FAST transfers.
-    VklFifo* fifo = &canvas->fifo_fast;
+    VklFifo* fifo = &canvas->fast_queue;
     ASSERT(fifo != NULL);
 
     // See if there is a current fast transfer going on.
-    VklTransfer* tr = canvas->cur_transfer_fast;
+    VklTransfer* tr = canvas->fast_transfer_cur;
     // If not, dequeue.
     if (tr == NULL)
     {
@@ -413,23 +413,23 @@ static void _fast_transfers(VklCanvas* canvas)
     ASSERT(img_idx < VKL_MAX_SWAPCHAIN_IMAGES);
 
     // Skip the update if this swapchain image has already been processed.
-    if (canvas->cur_transfer_updated[img_idx])
+    if (canvas->fast_transfer_updated[img_idx])
         return;
 
     // Mark the dequeued transfer as being currently processed.
-    canvas->cur_transfer_fast = tr;
+    canvas->fast_transfer_cur = tr;
 
     // Process it.
     process_buffer_upload_fast(canvas, *tr, img_idx);
 
     // Mark the buffer region corresponding to the current swapchain image as done.
-    canvas->cur_transfer_updated[img_idx] = true;
+    canvas->fast_transfer_updated[img_idx] = true;
 
     // If all regions corresponding to all swapchain images have been updated, reset.
-    if (n == 1 || _all_true(n, canvas->cur_transfer_updated))
+    if (n == 1 || _all_true(n, canvas->fast_transfer_updated))
     {
-        memset(canvas->cur_transfer_updated, 0, n * sizeof(bool));
-        canvas->cur_transfer_fast = NULL;
+        memset(canvas->fast_transfer_updated, 0, n * sizeof(bool));
+        canvas->fast_transfer_cur = NULL;
     }
 }
 
@@ -660,7 +660,7 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
     // Default submit instance.
     canvas->submit = vkl_submit(gpu);
 
-    canvas->fifo_fast = vkl_fifo(VKL_MAX_FIFO_CAPACITY);
+    canvas->fast_queue = vkl_fifo(VKL_MAX_FIFO_CAPACITY);
 
     // Event queue.
     canvas->event_queue = vkl_fifo(VKL_MAX_FIFO_CAPACITY);
@@ -860,7 +860,7 @@ void vkl_upload_buffers_fast(
     VkDeviceSize offset, VkDeviceSize size, void* data)
 {
     ASSERT(canvas != NULL);
-    VklFifo* fifo = &canvas->fifo_fast;
+    VklFifo* fifo = &canvas->fast_queue;
     ASSERT(0 <= fifo->head && fifo->head < fifo->capacity);
 
     VklTransfer tr = {0};
@@ -871,8 +871,8 @@ void vkl_upload_buffers_fast(
     tr.u.buf.data = data;
     tr.u.buf.update_count = update_all_regions ? canvas->swapchain.img_count : 1;
 
-    canvas->transfers_fast[fifo->head] = tr;
-    vkl_fifo_enqueue(fifo, &canvas->transfers_fast[fifo->head]);
+    canvas->fast_transfers[fifo->head] = tr;
+    vkl_fifo_enqueue(fifo, &canvas->fast_transfers[fifo->head]);
 }
 
 
@@ -1374,7 +1374,7 @@ void vkl_canvas_destroy(VklCanvas* canvas)
     vkl_fifo_destroy(&canvas->event_queue);
 
     // Fast transfers.
-    vkl_fifo_destroy(&canvas->fifo_fast);
+    vkl_fifo_destroy(&canvas->fast_queue);
 
     // Destroy the graphics.
     log_trace("canvas destroy graphics pipelines");
