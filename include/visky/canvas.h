@@ -377,6 +377,7 @@ struct VklCanvas
     VklApp* app;
     VklGpu* gpu;
 
+    bool offscreen;
     void* user_data;
 
     // This thread-safe variable is used by the background thread to

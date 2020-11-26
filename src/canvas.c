@@ -1118,9 +1118,10 @@ void vkl_canvas_frame(VklCanvas* canvas)
     _fast_transfers(canvas);
 
     // We acquire the next swapchain image.
-    vkl_swapchain_acquire(
-        &canvas->swapchain, &canvas->semaphores[VKL_SEMAPHORE_IMG_AVAILABLE], //
-        canvas->cur_frame, NULL, 0);
+    if (!canvas->offscreen)
+        vkl_swapchain_acquire(
+            &canvas->swapchain, &canvas->semaphores[VKL_SEMAPHORE_IMG_AVAILABLE], //
+            canvas->cur_frame, NULL, 0);
 
     // Refill if needed.
     if (canvas->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE)
@@ -1204,8 +1205,9 @@ void vkl_canvas_frame_submit(VklCanvas* canvas)
     }
 
     // Once the image is rendered, we present the swapchain image.
-    vkl_swapchain_present(
-        &canvas->swapchain, 1, &canvas->semaphores[VKL_SEMAPHORE_RENDER_FINISHED], f);
+    if (!canvas->offscreen)
+        vkl_swapchain_present(
+            &canvas->swapchain, 1, &canvas->semaphores[VKL_SEMAPHORE_RENDER_FINISHED], f);
 
     canvas->cur_frame = (f + 1) % VKL_MAX_FRAMES_IN_FLIGHT;
 }
@@ -1284,10 +1286,13 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             }
 
             // Destroy the canvas if needed.
-            if (backend_window_should_close(app->backend, canvas->window->backend_window))
-                canvas->window->obj.status = VKL_OBJECT_STATUS_NEED_DESTROY;
-            if (canvas->window->obj.status == VKL_OBJECT_STATUS_NEED_DESTROY)
-                canvas->obj.status = VKL_OBJECT_STATUS_NEED_DESTROY;
+            if (canvas->window != NULL)
+            {
+                if (backend_window_should_close(app->backend, canvas->window->backend_window))
+                    canvas->window->obj.status = VKL_OBJECT_STATUS_NEED_DESTROY;
+                if (canvas->window->obj.status == VKL_OBJECT_STATUS_NEED_DESTROY)
+                    canvas->obj.status = VKL_OBJECT_STATUS_NEED_DESTROY;
+            }
             if (canvas->obj.status == VKL_OBJECT_STATUS_NEED_DESTROY)
             {
                 log_trace("destroying canvas #%d", canvas_idx);
@@ -1331,8 +1336,9 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             // IMPORTANT: we need to wait for the present queue to be idle, otherwise the GPU hangs
             // when waiting for fences (not sure why). The problem only arises when using different
             // queues for command buffer submission and swapchain present.
-            if (gpu->queues.queues[VKL_DEFAULT_QUEUE_PRESENT] !=
-                gpu->queues.queues[VKL_DEFAULT_QUEUE_RENDER])
+            if (gpu->queues.queues[VKL_DEFAULT_QUEUE_PRESENT] != VK_NULL_HANDLE &&
+                gpu->queues.queues[VKL_DEFAULT_QUEUE_PRESENT] !=
+                    gpu->queues.queues[VKL_DEFAULT_QUEUE_RENDER])
             {
                 vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_PRESENT);
             }
