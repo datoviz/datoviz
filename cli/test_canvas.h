@@ -909,6 +909,7 @@ static int vklite2_canvas_offscreen(VkyTestContext* context)
 static void _screencast_callback(VklCanvas* canvas, VklEvent ev)
 {
     log_trace("screencast frame #%d %d", ev.u.s.idx, ev.u.s.rgba[0]);
+    // write_ppm("screenshot.ppm", ev.u.s.width, ev.u.s.height, ev.u.s.rgba);
     FREE(ev.u.s.rgba);
 }
 
@@ -925,6 +926,6 @@ static int vklite2_canvas_screencast(VkyTestContext* context)
 
     vkl_screencast(canvas, 1. / 30);
 
-    vkl_app_run(app, 10);
+    vkl_app_run(app, 0);
     TEST_END
 }

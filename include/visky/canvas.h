@@ -260,6 +260,7 @@ struct VklScreencastEvent
     uint64_t idx;
     double time;
     double interval;
+    uint32_t width, height;
     uint8_t* rgba;
 };
 

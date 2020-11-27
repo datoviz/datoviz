@@ -1067,14 +1067,10 @@ static void _screencast_cmds(VklScreencast* screencast)
     vkl_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
     vkl_barrier_images(&barrier, images);
 
-    screencast->cmds =
-        vkl_commands(screencast->canvas->gpu, VKL_DEFAULT_QUEUE_TRANSFER, img_count);
-
     for (uint32_t i = 0; i < img_count; i++)
     {
+        vkl_cmd_reset(&screencast->cmds, i);
         vkl_cmd_begin(&screencast->cmds, i);
-
-        // TODO: transition staging image too
 
         // Transition to SRC layout
         vkl_barrier_images_layout(
@@ -1182,6 +1178,8 @@ static void _screencast_post_send(VklCanvas* canvas, VklPrivateEvent ev)
         sev.u.s.idx = screencast->frame_idx;
         sev.u.s.interval = screencast->clock.interval;
         sev.u.s.rgba = rgba;
+        sev.u.s.width = screencast->staging.width;
+        sev.u.s.height = screencast->staging.height;
         log_trace("send SCREENCAST event");
         vkl_event_enqueue(canvas, sev);
 
@@ -1190,6 +1188,26 @@ static void _screencast_post_send(VklCanvas* canvas, VklPrivateEvent ev)
         screencast->status = VKL_SCREENCAST_IDLE;
         screencast->frame_idx++;
     }
+}
+
+
+
+static void _screencast_resize(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    ASSERT(canvas != NULL);
+    VklScreencast* screencast = (VklScreencast*)ev.user_data;
+
+    ASSERT(screencast != NULL);
+    ASSERT(screencast->canvas != NULL);
+    ASSERT(screencast->canvas->gpu != NULL);
+
+    screencast->status = VKL_SCREENCAST_NONE;
+    vkl_images_resize(
+        &screencast->staging, canvas->swapchain.images->width, canvas->swapchain.images->height,
+        canvas->swapchain.images->depth);
+    vkl_images_transition(&screencast->staging);
+
+    _screencast_cmds(screencast);
 }
 
 
@@ -1221,13 +1239,16 @@ void vkl_screencast(VklCanvas* canvas, double interval)
     sc->fence = vkl_fences(gpu, 1);
     sc->semaphore = vkl_semaphores(gpu, 1);
 
+    sc->cmds =
+        vkl_commands(canvas->gpu, VKL_DEFAULT_QUEUE_TRANSFER, canvas->swapchain.images->count);
     _screencast_cmds(sc);
     sc->submit = vkl_submit(canvas->gpu);
 
     _clock_init(&sc->clock);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, interval, _screencast_timer_callback, sc);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_POST_SEND, interval, _screencast_post_send, sc);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_POST_SEND, 0, _screencast_post_send, sc);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_RESIZE, 0, _screencast_resize, sc);
 
     sc->obj.type = VKL_OBJECT_TYPE_SCREENCAST;
     obj_created(&sc->obj);
