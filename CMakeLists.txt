@@ -17,6 +17,7 @@ option(VISKY_WITH_PNG "Build Visky with PNG support" ON)
 option(VISKY_WITH_QT "Build Visky with QT support" ON)
 option(VISKY_WITH_FREETYPE "Build Visky with Freetype support" ON)
 option(VISKY_WITH_ASSIMP "Build Visky with ASSIMP support" OFF)
+option(VISKY_WITH_GLSLANG "Build Visky with glslang support" ON)
 
 option(VISKY_WITH_CLI "Build Visky command-line interface with tests and demos" ON)
 option(VISKY_WITH_EXAMPLES "Build Visky (old) examples" OFF)
@@ -54,8 +55,18 @@ if (WIN32 OR APPLE)
     GIT_REPOSITORY https://github.com/glfw/glfw/
     )
     FetchContent_MakeAvailable(glfw)
-
 endif()
+
+
+if (VISKY_WITH_GLSLANG)
+    FetchContent_Declare(
+    glslang
+    GIT_REPOSITORY https://github.com/KhronosGroup/glslang
+    GIT_TAG        master-tot
+    )
+    FetchContent_MakeAvailable(glslang)
+endif()
+
 
 # HACK: ensure correct version of glfw3 >= 3.3
 set(GLFW_GT_33 1)
@@ -126,6 +137,11 @@ set(INCL_DIRS ${CMAKE_SOURCE_DIR}/external ${CMAKE_SOURCE_DIR}/external/imgui ${
 set(LINK_LIBS m glfw cglm Vulkan::Vulkan pthread)
 if(NOT ${WIN32})
     set(LINK_LIBS dl ${LINK_LIBS})
+endif()
+
+if (VISKY_WITH_GLSLANG)
+    set(INCL_DIRS ${INCL_DIRS} ${glslang_SOURCE_DIR})
+    set(LINK_LIBS ${LINK_LIBS} glslang)
 endif()
 
 # macOS-specific
