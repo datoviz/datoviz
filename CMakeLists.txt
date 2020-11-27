@@ -17,7 +17,7 @@ option(VISKY_WITH_PNG "Build Visky with PNG support" ON)
 option(VISKY_WITH_QT "Build Visky with QT support" ON)
 option(VISKY_WITH_FREETYPE "Build Visky with Freetype support" ON)
 option(VISKY_WITH_ASSIMP "Build Visky with ASSIMP support" OFF)
-option(VISKY_WITH_GLSLANG "Build Visky with glslang support" ON)
+option(VISKY_WITH_GLSLANG "Build Visky with glslang support" OFF)
 
 option(VISKY_WITH_CLI "Build Visky command-line interface with tests and demos" ON)
 option(VISKY_WITH_EXAMPLES "Build Visky (old) examples" OFF)
@@ -70,6 +70,7 @@ if (WIN32 OR APPLE)
 endif()
 
 
+set(HAS_GLSLANG 0)
 if (VISKY_WITH_GLSLANG)
     FetchContent_Declare(
     glslang
@@ -77,6 +78,7 @@ if (VISKY_WITH_GLSLANG)
     GIT_TAG        master-tot
     )
     FetchContent_MakeAvailable(glslang)
+    set(HAS_GLSLANG 1)
 endif()
 
 
@@ -318,6 +320,7 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
     HAS_VNC=${HAS_VNC}
     HAS_QT=${HAS_QT}
     HAS_ASSIMP=${HAS_ASSIMP}
+    HAS_GLSLANG=${HAS_GLSLANG}
 
     OS_MACOS=${OS_MACOS}
     OS_WIN32=${OS_WIN32}

@@ -1,12 +1,18 @@
 #include "spirv.h"
 #include "../include/visky/vklite2.h"
+
+
+#if HAS_GLSLANG
 #include <StandAlone/resource_limits_c.h>
 #include <glslang/Include/glslang_c_interface.h>
-
+#endif
 
 
 VkShaderModule vkl_shader_compile(VklGpu* gpu, const char* code, VkShaderStageFlagBits stage)
 {
+    VkShaderModule module = {0};
+
+#if HAS_GLSLANG
     glslang_stage_t glslang_stage = GLSLANG_STAGE_VERTEX;
     switch (stage)
     {
@@ -84,7 +90,6 @@ VkShaderModule vkl_shader_compile(VklGpu* gpu, const char* code, VkShaderStageFl
     createInfo.codeSize = glslang_program_SPIRV_get_size(program) * sizeof(unsigned int);
     createInfo.pCode = glslang_program_SPIRV_get_ptr(program);
 
-    VkShaderModule module = {0};
     VkResult res = vkCreateShaderModule(gpu->device, &createInfo, NULL, &module);
     if (res != VK_SUCCESS)
     {
@@ -92,6 +97,10 @@ VkShaderModule vkl_shader_compile(VklGpu* gpu, const char* code, VkShaderStageFl
     }
 
     glslang_program_delete(program);
+
+#else
+    log_error("unable to compile shader to SPIRV, Visky was not built with glslang support");
+#endif
 
     return module;
 }
