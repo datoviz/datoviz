@@ -252,6 +252,15 @@ static int _post_send_callbacks(VklCanvas* canvas)
 
 
 
+static int _destroy_callbacks(VklCanvas* canvas)
+{
+    VklPrivateEvent ev = {0};
+    ev.type = VKL_PRIVATE_EVENT_DESTROY;
+    return _canvas_callbacks(canvas, ev);
+}
+
+
+
 /*************************************************************************************************/
 /*  Public event sending                                                                         */
 /*************************************************************************************************/
@@ -1212,6 +1221,14 @@ static void _screencast_resize(VklCanvas* canvas, VklPrivateEvent ev)
 
 
 
+static void _screencast_destroy(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    ASSERT(canvas != NULL);
+    vkl_screencast_destroy(canvas);
+}
+
+
+
 void vkl_screencast(VklCanvas* canvas, double interval)
 {
     ASSERT(canvas != NULL);
@@ -1220,8 +1237,9 @@ void vkl_screencast(VklCanvas* canvas, double interval)
     VklGpu* gpu = canvas->gpu;
     VklImages* images = canvas->swapchain.images;
 
-    canvas->screencast.canvas = canvas;
-    VklScreencast* sc = &canvas->screencast;
+    canvas->screencast = calloc(1, sizeof(VklScreencast));
+    VklScreencast* sc = canvas->screencast;
+    sc->canvas = canvas;
 
     sc->staging = vkl_images(canvas->gpu, VK_IMAGE_TYPE_2D, 1);
     vkl_images_format(&sc->staging, images->format);
@@ -1249,6 +1267,7 @@ void vkl_screencast(VklCanvas* canvas, double interval)
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, interval, _screencast_timer_callback, sc);
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_POST_SEND, 0, _screencast_post_send, sc);
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_RESIZE, 0, _screencast_resize, sc);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_DESTROY, 0, _screencast_destroy, sc);
 
     sc->obj.type = VKL_OBJECT_TYPE_SCREENCAST;
     obj_created(&sc->obj);
@@ -1259,7 +1278,9 @@ void vkl_screencast(VklCanvas* canvas, double interval)
 void vkl_screencast_destroy(VklCanvas* canvas)
 {
     ASSERT(canvas != NULL);
-    VklScreencast* screencast = &canvas->screencast;
+    VklScreencast* screencast = canvas->screencast;
+    if (screencast == NULL)
+        return;
     ASSERT(screencast != NULL);
     if (!is_obj_created(&screencast->obj))
         return;
@@ -1269,6 +1290,8 @@ void vkl_screencast_destroy(VklCanvas* canvas)
     vkl_images_destroy(&screencast->staging);
 
     obj_destroyed(&screencast->obj);
+    FREE(screencast);
+    canvas->screencast = NULL;
 }
 
 
@@ -1656,8 +1679,8 @@ void vkl_canvas_destroy(VklCanvas* canvas)
     // Fast transfers.
     vkl_fifo_destroy(&canvas->fast_queue);
 
-    // Destroy the screencast if there is one.
-    vkl_screencast_destroy(canvas);
+    // Destroy callbacks.
+    _destroy_callbacks(canvas);
 
     // Destroy the graphics.
     log_trace("canvas destroy graphics pipelines");

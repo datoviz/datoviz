@@ -472,7 +472,7 @@ struct VklCanvas
     VklThread event_thread;
     _Atomic VklEventType event_processing;
 
-    VklScreencast screencast;
+    VklScreencast* screencast;
 };
 
 

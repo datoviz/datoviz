@@ -926,6 +926,6 @@ static int vklite2_canvas_screencast(VkyTestContext* context)
 
     vkl_screencast(canvas, 1. / 30);
 
-    vkl_app_run(app, 0);
+    vkl_app_run(app, N_FRAMES);
     TEST_END
 }
