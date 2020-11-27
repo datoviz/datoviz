@@ -156,6 +156,7 @@ static VkyTestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(vklite2_graphics),              //
     CASE_FIXTURE_NONE(vklite2_basic_canvas_1),        //
     CASE_FIXTURE_NONE(vklite2_basic_canvas_triangle), //
+    CASE_FIXTURE_NONE(vklite2_shader_compile),        //
 
     // context
     CASE_FIXTURE_NONE(vklite2_fifo),                            //

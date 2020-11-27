@@ -32,14 +32,13 @@ VkShaderModule vkl_shader_compile(VklGpu* gpu, const char* code, VkShaderStageFl
         log_error("unsupported shader stage");
         break;
     }
-    ASSERT(glslang_stage != 0);
     const glslang_input_t input = {
         .language = GLSLANG_SOURCE_GLSL,
         .stage = glslang_stage,
         .client = GLSLANG_CLIENT_VULKAN,
-        .client_version = GLSLANG_TARGET_VULKAN_1_1,
+        .client_version = GLSLANG_TARGET_VULKAN_1_0,
         .target_language = GLSLANG_TARGET_SPV,
-        .target_language_version = GLSLANG_TARGET_SPV_1_3,
+        .target_language_version = GLSLANG_TARGET_SPV_1_0,
         .code = code,
         .default_version = 100,
         .default_profile = GLSLANG_NO_PROFILE,
@@ -80,7 +79,7 @@ VkShaderModule vkl_shader_compile(VklGpu* gpu, const char* code, VkShaderStageFl
 
     glslang_shader_delete(shader);
 
-    VkShaderModuleCreateInfo createInfo;
+    VkShaderModuleCreateInfo createInfo = {0};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     createInfo.codeSize = glslang_program_SPIRV_get_size(program) * sizeof(unsigned int);
     createInfo.pCode = glslang_program_SPIRV_get_ptr(program);

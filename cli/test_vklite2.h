@@ -1,4 +1,5 @@
 #include "../include/visky/context.h"
+#include "../src/spirv.h"
 #include "../src/vklite2_utils.h"
 
 #include "utils.h"
@@ -599,6 +600,32 @@ static int vklite2_basic_canvas_triangle(VkyTestContext* context)
 
     destroy_visual(&visual);
     destroy_canvas(&canvas);
+
+    TEST_END
+}
+
+
+
+static int vklite2_shader_compile(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_OFFSCREEN);
+
+    VklGpu* gpu = vkl_gpu(app, 0);
+    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
+    vkl_gpu_create(gpu, VK_NULL_HANDLE);
+
+    VkShaderModule module = vkl_shader_compile(
+        gpu,
+        "#version 450\n"
+        "layout (location = 0) in vec3 pos;\n"
+        "layout (location = 1) in vec4 color;\n"
+        "layout (location = 0) out vec4 out_color;\n"
+        "void main() {\n"
+        "    gl_Position = vec4(pos, 1.0);\n"
+        "    out_color = color;\n"
+        "}",
+        VK_SHADER_STAGE_VERTEX_BIT);
+    vkDestroyShaderModule(gpu->device, module, NULL);
 
     TEST_END
 }
