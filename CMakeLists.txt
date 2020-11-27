@@ -28,6 +28,18 @@ option(VISKY_WITH_CYTHON "Build Cython bindings" OFF)
 set(VISKY_VERSION 0.0.1)
 project(visky VERSION ${VISKY_VERSION} DESCRIPTION "visky")
 
+
+# DEBUG
+set(DEBUG 1)
+set(CMAKE_BUILD_TYPE Debug)
+# if (NOT CMAKE_BUILD_TYPE)
+#    set(CMAKE_BUILD_TYPE Debug)
+# endif()
+# if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+#     set(DEBUG 1)
+# endif ()
+
+
 # Vulkan dependency
 find_package(Vulkan)
 if (Vulkan_FOUND)
@@ -122,17 +134,6 @@ set(COMMON_FLAGS_VISIBLE "${COMMON_FLAGS}")
 set(COMMON_FLAGS "${COMMON_FLAGS} -fvisibility=hidden")
 
 
-# DEBUG
-set(DEBUG 1)
-set(CMAKE_BUILD_TYPE Debug)
-# if (NOT CMAKE_BUILD_TYPE)
-#    set(CMAKE_BUILD_TYPE Debug)
-# endif()
-# if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
-#     set(DEBUG 1)
-# endif ()
-
-
 set(INCL_DIRS ${CMAKE_SOURCE_DIR}/external ${CMAKE_SOURCE_DIR}/external/imgui ${CMAKE_SOURCE_DIR}/external/imgui/backends ${CMAKE_SOURCE_DIR}/include/)
 set(LINK_LIBS m glfw cglm Vulkan::Vulkan pthread)
 if(NOT ${WIN32})
@@ -141,7 +142,7 @@ endif()
 
 if (VISKY_WITH_GLSLANG)
     set(INCL_DIRS ${INCL_DIRS} ${glslang_SOURCE_DIR})
-    set(LINK_LIBS ${LINK_LIBS} glslang)
+    set(LINK_LIBS ${LINK_LIBS} glslang SPIRV glslang-default-resource-limits)
 endif()
 
 # macOS-specific
