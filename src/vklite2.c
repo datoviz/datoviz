@@ -1,4 +1,5 @@
 #include "../include/visky/vklite2.h"
+#include "spirv.h"
 #include "vklite2_utils.h"
 #include <stdlib.h>
 
@@ -1634,6 +1635,14 @@ VklCompute vkl_compute(VklGpu* gpu, const char* shader_path)
 
 
 
+void vkl_compute_code(VklCompute* compute, const char* code)
+{
+    ASSERT(compute != NULL);
+    compute->shader_code = code;
+}
+
+
+
 void vkl_compute_slots(VklCompute* compute, VklSlots* slots)
 {
     ASSERT(compute != NULL);
@@ -1672,8 +1681,16 @@ void vkl_compute_create(VklCompute* compute)
 
     log_trace("starting creation of compute...");
 
-    compute->shader_module =
-        create_shader_module_from_file(compute->gpu->device, compute->shader_path);
+    if (compute->shader_code != NULL)
+    {
+        compute->shader_module =
+            vkl_shader_compile(compute->gpu, compute->shader_code, VK_SHADER_STAGE_COMPUTE_BIT);
+    }
+    else
+    {
+        compute->shader_module =
+            create_shader_module_from_file(compute->gpu->device, compute->shader_path);
+    }
 
     create_compute_pipeline(
         compute->gpu->device, compute->shader_module, //

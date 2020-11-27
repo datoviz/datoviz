@@ -623,6 +623,7 @@ struct VklCompute
     VklContext* context;
 
     char shader_path[1024];
+    const char* shader_code;
 
     VkPipeline pipeline;
     VklSlots* slots;
@@ -1119,6 +1120,8 @@ VKY_EXPORT void vkl_bindings_destroy(VklBindings* bindings);
 VKY_EXPORT VklCompute vkl_compute(VklGpu* gpu, const char* shader_path);
 
 VKY_EXPORT void vkl_compute_create(VklCompute* compute);
+
+VKY_EXPORT void vkl_compute_code(VklCompute* compute, const char* code);
 
 VKY_EXPORT void vkl_compute_slots(VklCompute* compute, VklSlots* slots);
 
