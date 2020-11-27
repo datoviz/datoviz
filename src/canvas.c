@@ -84,7 +84,7 @@ depth_image(VklImages* depth_images, VklRenderpass* renderpass, uint32_t width, 
 static void blank_commands(VklCanvas* canvas, VklCommands* cmds, uint32_t cmd_idx)
 {
     vkl_cmd_begin(cmds, cmd_idx);
-    vkl_cmd_begin_renderpass(cmds, cmd_idx, &canvas->renderpasses[0], &canvas->framebuffers);
+    vkl_cmd_begin_renderpass(cmds, cmd_idx, &canvas->renderpass, &canvas->framebuffers);
     vkl_cmd_end_renderpass(cmds, cmd_idx);
     vkl_cmd_end(cmds, cmd_idx);
 }
@@ -181,9 +181,11 @@ static void _refill_canvas(VklCanvas* canvas, uint32_t img_idx)
     ev.type = VKL_PRIVATE_EVENT_REFILL;
 
     // Fill the active command buffers for the RENDER queue.
-    uint32_t k = 0;
     VklCommands* cmds = NULL;
-    uint32_t img_count = 0;
+    // First commands passed is the default cmds_render VklCommands instance used for rendering.
+    uint32_t k = 1;
+    ev.u.rf.cmds[0] = &canvas->cmds_render;
+    uint32_t img_count = canvas->cmds_render.count;
     for (uint32_t i = 0; i < canvas->max_commands; i++)
     {
         cmds = &canvas->commands[i];
@@ -579,13 +581,6 @@ static VklCanvas* _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool off
     INSTANCES_INIT(
         VklCommands, canvas, commands, max_commands, VKL_MAX_COMMANDS, VKL_OBJECT_TYPE_COMMANDS)
     INSTANCES_INIT(
-        VklRenderpass, canvas, renderpasses, max_renderpasses, VKL_MAX_RENDERPASSES,
-        VKL_OBJECT_TYPE_RENDERPASS)
-    INSTANCES_INIT(
-        VklSemaphores, canvas, semaphores, max_semaphores, VKL_MAX_SEMAPHORES,
-        VKL_OBJECT_TYPE_SEMAPHORES)
-    INSTANCES_INIT(VklFences, canvas, fences, max_fences, VKL_MAX_FENCES, VKL_OBJECT_TYPE_FENCES)
-    INSTANCES_INIT(
         VklGraphics, canvas, graphics, max_graphics, VKL_MAX_GRAPHICS, VKL_OBJECT_TYPE_GRAPHICS)
 
     // Create the window.
@@ -610,8 +605,7 @@ static VklCanvas* _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool off
     }
 
     // Create default renderpass.
-    INSTANCE_NEW(VklRenderpass, renderpass, canvas->renderpasses, canvas->max_renderpasses)
-    *renderpass = default_renderpass(
+    canvas->renderpass = default_renderpass(
         gpu, VKL_DEFAULT_BACKGROUND, VKL_DEFAULT_IMAGE_FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
     // Create swapchain
@@ -633,7 +627,7 @@ static VklCanvas* _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool off
             VklImages* images = canvas->swapchain.images;
 
             // Color attachment
-            vkl_images_format(images, renderpass->attachments[0].format);
+            vkl_images_format(images, canvas->renderpass.attachments[0].format);
             vkl_images_size(images, width, height, 1);
             vkl_images_tiling(images, VK_IMAGE_TILING_OPTIMAL);
             vkl_images_usage(
@@ -650,41 +644,40 @@ static VklCanvas* _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool off
         // Depth attachment.
         canvas->depth_image = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
         depth_image(
-            &canvas->depth_image, renderpass, //
+            &canvas->depth_image, &canvas->renderpass, //
             canvas->swapchain.images->width, canvas->swapchain.images->height);
     }
 
     // Create renderpass.
-    vkl_renderpass_create(renderpass);
+    vkl_renderpass_create(&canvas->renderpass);
 
     // Create framebuffers.
     {
         canvas->framebuffers = vkl_framebuffers(gpu);
         vkl_framebuffers_attachment(&canvas->framebuffers, 0, canvas->swapchain.images);
         vkl_framebuffers_attachment(&canvas->framebuffers, 1, &canvas->depth_image);
-        vkl_framebuffers_create(&canvas->framebuffers, renderpass);
+        vkl_framebuffers_create(&canvas->framebuffers, &canvas->renderpass);
     }
 
     // Create synchronization objects.
     {
         uint32_t frames_in_flight = offscreen ? 1 : VKY_MAX_FRAMES_IN_FLIGHT;
-        canvas->semaphores[VKL_SEMAPHORE_IMG_AVAILABLE] = vkl_semaphores(gpu, frames_in_flight);
-        canvas->semaphores[VKL_SEMAPHORE_RENDER_FINISHED] = vkl_semaphores(gpu, frames_in_flight);
-        canvas->fences[VKL_FENCE_RENDER_FINISHED] = vkl_fences(gpu, frames_in_flight);
-        canvas->fences[VKL_FENCES_FLIGHT].gpu = gpu;
-        canvas->fences[VKL_FENCES_FLIGHT].count = canvas->swapchain.img_count;
+        canvas->sem_img_available = vkl_semaphores(gpu, frames_in_flight);
+        canvas->sem_render_finished = vkl_semaphores(gpu, frames_in_flight);
+        canvas->fences_render_finished = vkl_fences(gpu, frames_in_flight);
+        canvas->fences_flight.gpu = gpu;
+        canvas->fences_flight.count = canvas->swapchain.img_count;
     }
 
     // Default transfer commands.
     {
-        INSTANCE_NEW(VklCommands, cmds, canvas->commands, canvas->max_commands)
-        *cmds = vkl_commands(gpu, VKL_DEFAULT_QUEUE_TRANSFER, 1);
+        canvas->cmds_transfer = vkl_commands(gpu, VKL_DEFAULT_QUEUE_TRANSFER, 1);
     }
 
     // Default render commands.
     {
-        INSTANCE_NEW(VklCommands, cmds, canvas->commands, canvas->max_commands)
-        *cmds = vkl_commands(gpu, VKL_DEFAULT_QUEUE_RENDER, canvas->swapchain.img_count);
+        canvas->cmds_render =
+            vkl_commands(gpu, VKL_DEFAULT_QUEUE_RENDER, canvas->swapchain.img_count);
     }
 
     // Default submit instance.
@@ -721,7 +714,7 @@ void vkl_canvas_recreate(VklCanvas* canvas)
     VklGpu* gpu = canvas->gpu;
     VklSwapchain* swapchain = &canvas->swapchain;
     VklFramebuffers* framebuffers = &canvas->framebuffers;
-    VklRenderpass* renderpass = &canvas->renderpasses[0];
+    VklRenderpass* renderpass = &canvas->renderpass;
 
     ASSERT(window != NULL);
     ASSERT(gpu != NULL);
@@ -786,7 +779,7 @@ VklCanvas* vkl_canvas_offscreen(VklGpu* gpu, uint32_t width, uint32_t height)
 void vkl_canvas_clear_color(VklCanvas* canvas, VkClearColorValue color)
 {
     ASSERT(canvas != NULL);
-    canvas->renderpasses[0].clear_values->color = color;
+    canvas->renderpass.clear_values->color = color;
     vkl_canvas_to_refill(canvas, true);
 }
 
@@ -1147,7 +1140,7 @@ void vkl_canvas_frame(VklCanvas* canvas)
     }
 
     // Wait for fence.
-    vkl_fences_wait(&canvas->fences[VKL_FENCE_RENDER_FINISHED], canvas->cur_frame);
+    vkl_fences_wait(&canvas->fences_render_finished, canvas->cur_frame);
 
     // Process FAST buffer transfers (used by uniform buffers that exist in multiple copies
     // to avoid GPU synchronization by making it such that each swapchain image has its own
@@ -1157,7 +1150,7 @@ void vkl_canvas_frame(VklCanvas* canvas)
     // We acquire the next swapchain image.
     if (!canvas->offscreen)
         vkl_swapchain_acquire(
-            &canvas->swapchain, &canvas->semaphores[VKL_SEMAPHORE_IMG_AVAILABLE], //
+            &canvas->swapchain, &canvas->sem_img_available, //
             canvas->cur_frame, NULL, 0);
 
     // Refill if needed.
@@ -1166,7 +1159,7 @@ void vkl_canvas_frame(VklCanvas* canvas)
         log_trace("need to update canvas, will refill the command buffers");
 
         // Wait for command buffer to be ready for update.
-        vkl_fences_wait(&canvas->fences[VKL_FENCES_FLIGHT], canvas->swapchain.img_idx);
+        vkl_fences_wait(&canvas->fences_flight, canvas->swapchain.img_idx);
         // vkl_queue_wait(canvas->gpu, VKL_DEFAULT_QUEUE_RENDER); // DEBUG
 
         // HACK: avoid edge effects when the resize takes some time and the dt becomes too large
@@ -1203,13 +1196,17 @@ void vkl_canvas_frame_submit(VklCanvas* canvas)
 
     // Keep track of the fence associated to the current swapchain image.
     vkl_fences_copy(
-        &canvas->fences[VKL_FENCE_RENDER_FINISHED], f, //
-        &canvas->fences[VKL_FENCES_FLIGHT], img_idx);
+        &canvas->fences_render_finished, f, //
+        &canvas->fences_flight, img_idx);
 
     // Reset the Submit instance before adding the command buffers.
     vkl_submit_reset(s);
 
     // Add the command buffers to the submit instance.
+    // Default render commands.
+    if (canvas->cmds_render.obj.status != VKL_OBJECT_STATUS_INACTIVE)
+        vkl_submit_commands(s, &canvas->cmds_render);
+    // Extra render commands.
     for (uint32_t i = 0; i < canvas->max_commands; i++)
     {
         if (canvas->commands[i].obj.status == VKL_OBJECT_STATUS_NONE)
@@ -1226,10 +1223,10 @@ void vkl_canvas_frame_submit(VklCanvas* canvas)
     {
         vkl_submit_wait_semaphores(
             s, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, //
-            &canvas->semaphores[VKL_SEMAPHORE_IMG_AVAILABLE], f);
+            &canvas->sem_img_available, f);
 
         // Once the render is finished, we signal another semaphore.
-        vkl_submit_signal_semaphores(s, &canvas->semaphores[VKL_SEMAPHORE_RENDER_FINISHED], f);
+        vkl_submit_signal_semaphores(s, &canvas->sem_render_finished, f);
     }
 
     // SEND callbacks and send the Submit instance.
@@ -1238,7 +1235,7 @@ void vkl_canvas_frame_submit(VklCanvas* canvas)
         _pre_send_callbacks(canvas);
 
         // Send the Submit instance.
-        vkl_submit_send(s, img_idx, &canvas->fences[VKL_FENCE_RENDER_FINISHED], f);
+        vkl_submit_send(s, img_idx, &canvas->fences_render_finished, f);
 
         // Call POST_SEND callbacks
         _post_send_callbacks(canvas);
@@ -1246,10 +1243,9 @@ void vkl_canvas_frame_submit(VklCanvas* canvas)
 
     // Once the image is rendered, we present the swapchain image.
     if (!canvas->offscreen)
-        vkl_swapchain_present(
-            &canvas->swapchain, 1, &canvas->semaphores[VKL_SEMAPHORE_RENDER_FINISHED], f);
+        vkl_swapchain_present(&canvas->swapchain, 1, &canvas->sem_render_finished, f);
 
-    canvas->cur_frame = (f + 1) % canvas->fences[VKL_FENCE_RENDER_FINISHED].count;
+    canvas->cur_frame = (f + 1) % canvas->fences_render_finished.count;
 }
 
 
@@ -1437,13 +1433,7 @@ void vkl_canvas_destroy(VklCanvas* canvas)
 
     // Destroy the renderpasses.
     log_trace("canvas destroy renderpass(es)");
-    for (uint32_t i = 0; i < canvas->max_renderpasses; i++)
-    {
-        if (canvas->renderpasses[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_renderpass_destroy(&canvas->renderpasses[i]);
-    }
-    INSTANCES_DESTROY(canvas->renderpasses)
+    vkl_renderpass_destroy(&canvas->renderpass);
 
     // Destroy the swapchain.
     vkl_swapchain_destroy(&canvas->swapchain);
@@ -1465,23 +1455,12 @@ void vkl_canvas_destroy(VklCanvas* canvas)
 
     // Destroy the semaphores.
     log_trace("canvas destroy semaphores");
-    for (uint32_t i = 0; i < canvas->max_semaphores; i++)
-    {
-        if (canvas->semaphores[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_semaphores_destroy(&canvas->semaphores[i]);
-    }
-    INSTANCES_DESTROY(canvas->semaphores)
+    vkl_semaphores_destroy(&canvas->sem_img_available);
+    vkl_semaphores_destroy(&canvas->sem_render_finished);
 
     // Destroy the fences.
     log_trace("canvas destroy fences");
-    for (uint32_t i = 0; i < canvas->max_fences; i++)
-    {
-        if (canvas->fences[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_fences_destroy(&canvas->fences[i]);
-    }
-    INSTANCES_DESTROY(canvas->fences)
+    vkl_fences_destroy(&canvas->fences_render_finished);
 
     obj_destroyed(&canvas->obj);
 }

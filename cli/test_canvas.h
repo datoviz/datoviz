@@ -140,7 +140,7 @@ static int vklite2_canvas_2(VkyTestContext* context)
 static void _make_triangle2(VklCanvas* canvas, TestVisual* visual, const char* suffix)
 {
     visual->gpu = canvas->gpu;
-    visual->renderpass = &canvas->renderpasses[0];
+    visual->renderpass = &canvas->renderpass;
     visual->framebuffers = &canvas->framebuffers;
     test_triangle(visual, suffix);
     canvas->user_data = visual;
@@ -156,7 +156,7 @@ static void _triangle_refill(VklCanvas* canvas, VklPrivateEvent ev)
     TestVisual* visual = (TestVisual*)ev.user_data;
     uint32_t idx = ev.u.rf.img_idx;
     vkl_cmd_begin(cmds, idx);
-    vkl_cmd_begin_renderpass(cmds, idx, &canvas->renderpasses[0], &canvas->framebuffers);
+    vkl_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, &canvas->framebuffers);
     vkl_cmd_viewport(
         cmds, idx,
         (VkViewport){
@@ -247,7 +247,7 @@ static int vklite2_canvas_4(VkyTestContext* context)
 
     TestVisual visual = {0};
     visual.gpu = canvas->gpu;
-    visual.renderpass = &canvas->renderpasses[0];
+    visual.renderpass = &canvas->renderpass;
     visual.framebuffers = &canvas->framebuffers;
     _triangle_graphics(&visual, "_push");
     canvas->user_data = &visual;
@@ -333,7 +333,7 @@ static int vklite2_canvas_5(VkyTestContext* context)
 
     TestVisual visual = {0};
     visual.gpu = canvas->gpu;
-    visual.renderpass = &canvas->renderpasses[0];
+    visual.renderpass = &canvas->renderpass;
     visual.framebuffers = &canvas->framebuffers;
     _triangle_graphics(&visual, "");
     canvas->user_data = &visual;
@@ -411,7 +411,7 @@ static int vklite2_canvas_6(VkyTestContext* context)
 
     TestVisual visual = {0};
     visual.gpu = canvas->gpu;
-    visual.renderpass = &canvas->renderpasses[0];
+    visual.renderpass = &canvas->renderpass;
     visual.framebuffers = &canvas->framebuffers;
     _triangle_graphics(&visual, "_ubo");
     canvas->user_data = &visual;
@@ -586,8 +586,7 @@ static int vklite2_canvas_8(VkyTestContext* context)
         vkl_compute_create(visual.compute);
     }
 
-    INSTANCE_NEW(VklSemaphores, compute_finished, canvas->semaphores, canvas->max_semaphores)
-    *compute_finished = vkl_semaphores(gpu, 2);
+    // VklSemaphores compute_finished = vkl_semaphores(gpu, 2);
 
     INSTANCE_NEW(VklCommands, cmds, canvas->commands, canvas->max_commands)
     *cmds = vkl_commands(gpu, VKL_DEFAULT_QUEUE_COMPUTE, 1);
@@ -711,7 +710,7 @@ static void _particle_refill(VklCanvas* canvas, VklPrivateEvent ev)
     //     &nn);
     // vkl_cmd_compute(cmds, idx, visual->compute, (uvec3){visual->n_vertices, 1, 1});
 
-    vkl_cmd_begin_renderpass(cmds, idx, &canvas->renderpasses[0], &canvas->framebuffers);
+    vkl_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, &canvas->framebuffers);
     vkl_cmd_viewport(
         cmds, idx,
         (VkViewport){
@@ -737,7 +736,7 @@ static int vklite2_canvas_particles(VkyTestContext* context)
 
     TestVisual* visual = calloc(1, sizeof(TestVisual));
     visual->gpu = canvas->gpu;
-    visual->renderpass = &canvas->renderpasses[0];
+    visual->renderpass = &canvas->renderpass;
     visual->framebuffers = &canvas->framebuffers;
 
     // Create graphics pipeline.

@@ -397,21 +397,24 @@ struct VklCanvas
     uint64_t frame_idx;
     VklClock clock;
 
-    uint32_t max_commands;
-    VklCommands* commands;
     // when refilling command buffers, keep track of which img_idx were updated until we stop
     // calling the REFILL callbackks
     bool img_updated[VKL_MAX_SWAPCHAIN_IMAGES];
 
     // Synchronization events.
-    uint32_t max_renderpasses;
-    VklRenderpass* renderpasses;
+    VklRenderpass renderpass;
+    VklSemaphores sem_img_available;
+    VklSemaphores sem_render_finished;
+    VklFences fences_render_finished;
+    VklFences fences_flight;
 
-    uint32_t max_semaphores;
-    VklSemaphores* semaphores;
+    // Default commands.
+    VklCommands cmds_transfer;
+    VklCommands cmds_render;
 
-    uint32_t max_fences;
-    VklFences* fences;
+    // Extra commands.
+    uint32_t max_commands;
+    VklCommands* commands;
 
     uint32_t max_graphics;
     VklGraphics* graphics;
