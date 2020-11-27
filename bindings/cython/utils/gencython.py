@@ -272,7 +272,7 @@ if __name__ == '__main__':
         read_file(CYTHON_OUTPUT), is_output=True)
 
     for filename in iter_header_files():
-        if filename.name not in ('vklite2.h', 'context.h', 'canvas.h', 'keycode.h'):
+        if filename.name not in ('vklite2.h', 'context.h', 'canvas.h', 'keycode.h', 'log.h'):
             continue
         text = read_file(filename)
 
@@ -314,6 +314,7 @@ if __name__ == '__main__':
             funcs_to_insert += '\n'
 
     if already_defined_funcs.keys():
+        print(already_defined_funcs)
         raise RuntimeError(
             "Some Cython function bindings are missing, check gencython.py")
 

@@ -466,12 +466,13 @@ cdef extern from "../include/visky/visky2.h":
     void vkl_canvas_to_close(VklCanvas* canvas, bint value)
     void vkl_app_run(VklApp* app, uint64_t frame_count)
 
+    # from file: log.h
+    void log_set_level_env()
+
     # from file: vklite2.h
     VklApp* vkl_app(VklBackend backend)
     int vkl_app_destroy(VklApp* app)
     VklGpu* vkl_gpu(VklApp* app, uint32_t idx)
-
-    void log_set_level_env()
 
 
     # FUNCTION END
