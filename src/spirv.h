@@ -4,9 +4,12 @@
 #include "../include/visky/common.h"
 #include <vulkan/vulkan.h>
 
+typedef struct VklGpu VklGpu;
 
 
-VKY_EXPORT VkShaderModule vkl_shader_compile(const char* glsl_path);
+
+VKY_EXPORT VkShaderModule
+vkl_shader_compile(VklGpu* gpu, const char* code, VkShaderStageFlagBits stage);
 
 
 
