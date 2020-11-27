@@ -662,8 +662,11 @@ static VklCanvas* _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool off
     // Create synchronization objects.
     {
         uint32_t frames_in_flight = offscreen ? 1 : VKY_MAX_FRAMES_IN_FLIGHT;
+
         canvas->sem_img_available = vkl_semaphores(gpu, frames_in_flight);
         canvas->sem_render_finished = vkl_semaphores(gpu, frames_in_flight);
+        canvas->present_semaphores = &canvas->sem_render_finished;
+
         canvas->fences_render_finished = vkl_fences(gpu, frames_in_flight);
         canvas->fences_flight.gpu = gpu;
         canvas->fences_flight.count = canvas->swapchain.img_count;
@@ -1048,6 +1051,178 @@ void vkl_event_stop(VklCanvas* canvas)
 
 
 /*************************************************************************************************/
+/*  Screencast                                                                                   */
+/*************************************************************************************************/
+
+static void _screencast_cmds(VklScreencast* screencast)
+{
+    ASSERT(screencast != NULL);
+    ASSERT(screencast->canvas != NULL);
+    ASSERT(screencast->canvas->gpu != NULL);
+
+    VklImages* images = screencast->canvas->swapchain.images;
+    uint32_t img_count = images->count;
+
+    VklBarrier barrier = vkl_barrier(screencast->canvas->gpu);
+    vkl_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    vkl_barrier_images(&barrier, images);
+    vkl_barrier_images_layout(
+        &barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+
+    screencast->cmds =
+        vkl_commands(screencast->canvas->gpu, VKL_DEFAULT_QUEUE_TRANSFER, img_count);
+
+    for (uint32_t i = 0; i < img_count; i++)
+    {
+        vkl_cmd_begin(&screencast->cmds, i);
+
+        // TODO: transition staging image too
+
+        // Transition to SRC layout
+        vkl_cmd_barrier(&screencast->cmds, i, &barrier);
+
+        // Copy swapchain image to screencast image
+        vkl_cmd_copy_image(&screencast->cmds, i, images, &screencast->staging);
+
+        // Transition back to previous layout
+        vkl_barrier_images_layout(&barrier, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, images->layout);
+        vkl_cmd_barrier(&screencast->cmds, i, &barrier);
+
+        vkl_cmd_end(&screencast->cmds, i);
+    }
+}
+
+
+
+static void _screencast_timer_callback(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    ASSERT(canvas != NULL);
+    VklScreencast* screencast = (VklScreencast*)ev.user_data;
+
+    ASSERT(screencast != NULL);
+    ASSERT(screencast->canvas != NULL);
+    ASSERT(screencast->canvas->gpu != NULL);
+
+    uint32_t img_idx = canvas->swapchain.img_idx;
+
+    VklSubmit* submit = &screencast->submit;
+    vkl_submit_reset(submit);
+    vkl_submit_commands(submit, &screencast->cmds);
+
+    // Wait for "image_ready" semaphore
+    vkl_submit_wait_semaphores(
+        submit, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, //
+        &canvas->sem_render_finished, canvas->cur_frame);
+
+    // Signal screencast_finished semaphore
+    vkl_submit_signal_semaphores(submit, &screencast->semaphore, 0);
+
+    // Send screencast cmd buf to transfer queue and signal screencast fence when submitting.
+    screencast->is_submitting = true;
+    vkl_submit_send(submit, img_idx, &screencast->fence, 0);
+}
+
+
+
+static void _screencast_post_send(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    ASSERT(canvas != NULL);
+    VklScreencast* screencast = (VklScreencast*)ev.user_data;
+
+    ASSERT(screencast != NULL);
+    ASSERT(screencast->canvas != NULL);
+    ASSERT(screencast->canvas->gpu != NULL);
+
+    // Do nothing if the screencast image is not ready.
+    if (!screencast->is_submitting)
+        return;
+    if (!vkl_fences_ready(&screencast->fence, 0))
+        return;
+
+    // To be freed by the SCREENCAST event callback.
+    uint8_t* rgba =
+        calloc(screencast->staging.width * screencast->staging.height, sizeof(uint8_t));
+
+    // Copy the image from the staging image to the CPU.
+    vkl_images_download(&screencast->staging, 0, true, rgba);
+
+    // Enqueue a special SCREENCAST public event with a pointer to the CPU buffer user
+    VklEvent sev = {0};
+    sev.type = VKL_EVENT_SCREENCAST;
+    sev.u.s.idx = screencast->frame_idx;
+    sev.u.s.interval = screencast->clock.interval;
+    sev.u.s.rgba = rgba;
+    vkl_event_enqueue(canvas, sev);
+
+    _clock_set(&screencast->clock);
+    screencast->is_submitting = false;
+    screencast->frame_idx++;
+}
+
+
+
+void vkl_screencast(VklCanvas* canvas, double interval)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(canvas->gpu != NULL);
+
+    VklGpu* gpu = canvas->gpu;
+    VklImages* images = canvas->swapchain.images;
+
+    canvas->screencast.canvas = canvas;
+    VklScreencast* sc = &canvas->screencast;
+
+    sc->staging = vkl_images(canvas->gpu, VK_IMAGE_TYPE_2D, 1);
+    vkl_images_format(&sc->staging, images->format);
+    vkl_images_size(&sc->staging, images->width, images->height, images->depth);
+    vkl_images_tiling(&sc->staging, VK_IMAGE_TILING_LINEAR);
+    vkl_images_usage(&sc->staging, VK_IMAGE_USAGE_TRANSFER_DST_BIT);
+    vkl_images_layout(&sc->staging, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    vkl_images_memory(
+        &sc->staging, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vkl_images_create(&sc->staging);
+
+    sc->fence = vkl_fences(gpu, 1);
+    sc->semaphore = vkl_semaphores(gpu, 1);
+
+    _screencast_cmds(sc);
+    sc->submit = vkl_submit(canvas->gpu);
+
+    _clock_init(&sc->clock);
+
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, interval, _screencast_timer_callback, sc);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_POST_SEND, interval, _screencast_post_send, sc);
+
+    sc->obj.type = VKL_OBJECT_TYPE_SCREENCAST;
+    obj_created(&sc->obj);
+}
+
+
+
+void vkl_screencast_destroy(VklCanvas* canvas)
+{
+    ASSERT(canvas != NULL);
+    VklScreencast* screencast = &canvas->screencast;
+    ASSERT(screencast != NULL);
+
+    vkl_fences_destroy(&screencast->fence);
+    vkl_semaphores_destroy(&screencast->semaphore);
+    vkl_images_destroy(&screencast->staging);
+
+    obj_destroyed(&screencast->obj);
+}
+
+
+
+uint8_t* vkl_screenshot(VklCanvas* canvas) { return NULL; }
+
+
+
+void vkl_screenshot_file(VklCanvas* canvas, const char* filename) {}
+
+
+
+/*************************************************************************************************/
 /*  Event loop                                                                                   */
 /*************************************************************************************************/
 
@@ -1242,8 +1417,12 @@ void vkl_canvas_frame_submit(VklCanvas* canvas)
     }
 
     // Once the image is rendered, we present the swapchain image.
+    // The semaphore used for waiting during presentation may be changed by the canvas
+    // callbacks.
     if (!canvas->offscreen)
-        vkl_swapchain_present(&canvas->swapchain, 1, &canvas->sem_render_finished, f);
+        vkl_swapchain_present(
+            &canvas->swapchain, 1, //
+            canvas->present_semaphores, CLIP(f, 0, canvas->present_semaphores->count - 1));
 
     canvas->cur_frame = (f + 1) % canvas->fences_render_finished.count;
 }

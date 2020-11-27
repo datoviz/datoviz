@@ -188,6 +188,8 @@ typedef void (*VklEventCallback)(VklCanvas*, VklEvent);
 typedef struct VklCanvasCallbackRegister VklCanvasCallbackRegister;
 typedef struct VklEventCallbackRegister VklEventCallbackRegister;
 
+typedef struct VklScreencast VklScreencast;
+
 
 
 /*************************************************************************************************/
@@ -248,7 +250,7 @@ struct VklScreencastEvent
     uint64_t idx;
     double time;
     double interval;
-    uint8_t* rgb;
+    uint8_t* rgba;
 };
 
 
@@ -368,6 +370,27 @@ struct VklKeyState
 
 
 /*************************************************************************************************/
+/*  Screencast struct                                                                            */
+/*************************************************************************************************/
+
+struct VklScreencast
+{
+    VklObject obj;
+
+    VklCanvas* canvas;
+    VklCommands cmds;
+    VklSemaphores semaphore;
+    VklFences fence;
+    VklImages staging;
+    VklSubmit submit;
+    uint64_t frame_idx;
+    VklClock clock;
+    bool is_submitting;
+};
+
+
+
+/*************************************************************************************************/
 /*  Canvas struct                                                                                */
 /*************************************************************************************************/
 
@@ -405,6 +428,7 @@ struct VklCanvas
     VklRenderpass renderpass;
     VklSemaphores sem_img_available;
     VklSemaphores sem_render_finished;
+    VklSemaphores* present_semaphores;
     VklFences fences_render_finished;
     VklFences fences_flight;
 
@@ -436,6 +460,8 @@ struct VklCanvas
     VklEvent events[VKL_MAX_FIFO_CAPACITY];
     VklThread event_thread;
     _Atomic VklEventType event_processing;
+
+    VklScreencast screencast;
 };
 
 
@@ -552,38 +578,7 @@ VKY_EXPORT void vkl_upload_buffers_fast(
  * size.
  *
  */
-
-/*
- Implementation details:
-
-- need a VklCommands*, a VklSemaphores*, and a VklFences*
-
-- register a TIMER private event callback with the following:
-take special screencast cmd buf
-    constructed once, when creating the screencast
-    transition to SRC layout
-    copy image to screencast image
-    transition to previous image layout
-new submit object
-wait for "image_ready" semaphore
-signal screencast_finished semaphore
-send screencast cmd buf to transfer queue
-signal screencast fence when submitting
-present must wait for that semaphore instead of the image_ready semaphore
-
-- register a FRAME private event callback with the following:
-check screencast fence state
-if screencast fence is signaled:
-if vkl_event_pending(SCREENCAST) is >0, discard this frame because the callback is not ready to
-process the current frame
-map/unmap the screencast image and copy to the user-provided CPU buffer
-enqueue a special SCREENCAST public event with a pointer to the CPU buffer
-user callbacks registered for SCREENCAST public events and running in the background thread have
-access to the framebuffer RGB image
-
-*/
-
-VKY_EXPORT void vkl_screencast(VklCanvas* canvas, double interval, uint8_t* rgb);
+VKY_EXPORT void vkl_screencast(VklCanvas* canvas, double interval);
 
 
 
