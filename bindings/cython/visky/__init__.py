@@ -96,7 +96,6 @@ def inputhook(context):
     if _APP is None:
         logger.debug("automatically creating a Visky app")
         _APP = app()
-        _APP.run_begin()
     assert _APP is not None
     while not context.input_is_ready():
         _APP.run_process()

@@ -79,9 +79,7 @@ def parse_defines(text):
     return defines
 
 
-COLOR_CONSTANTS = parse_defines(read_file(HEADER_DIR / 'colormaps.h'))
-
-_STRUCT_NAMES = ('VkyMouse', 'VkyKeyboard', 'VkyPick')
+_STRUCT_NAMES = ()
 
 
 def _parse_enum(text):
@@ -102,16 +100,12 @@ def _parse_enum(text):
         enumList("names") + RBRACE + identifier("enum") + SEMICOLON
 
     for item, start, stop in enum.scanString(text):
-        if item.enum == 'VkyConstantName':
-            continue
         l = []
         for i, entry in enumerate(item.names):
             if entry.value.isdigit():
                 entry.value = int(entry.value)
             elif not entry.value:
                 entry.value = i
-            elif entry.value in COLOR_CONSTANTS:
-                entry.value = COLOR_CONSTANTS[entry.value]
             elif entry.value in ('false', 'true'):
                 entry.value = entry.value.capitalize()
             l.append((entry.name, entry.value))
@@ -152,8 +146,6 @@ def _parse_struct(text):
 def _gen_struct(structs):
     out = ''
     for name, l in structs.items():
-        if 'Axes' in name or 'Colorbar' in name:
-            continue
         if name.endswith('Params') or name in _STRUCT_NAMES:
             out += f'ctypedef struct {name}:\n'
             for dtype, identifier in l:
@@ -170,7 +162,6 @@ def _parse_func(text, is_output=False):
     LPAR, RPAR, LBRACE, RBRACE, COMMA, SEMICOLON = map(Suppress, "(){},;")
     const = Keyword("const")
     dtype = Word(alphanums + "_*")
-    # dtype = Group(Optional(const("const")) + dtype("dtype"))
     identifier = Word(alphanums + "_")
     argDecl = Group(
         Optional(const("const")) +
@@ -224,13 +215,15 @@ def _gen_cython_func(name, func):
                 argname = 'value'
             elif dtype == 'size_t':
                 argname = 'size'
-            elif 'Vky' in dtype:
+            elif 'Vkl' in dtype:
                 argname = _camel_to_snake(
-                    dtype.replace('Vky', '')).replace('*', '')
+                    dtype.replace('Vkl', '')).replace('*', '')
             else:
                 raise ValueError(dtype)
         if const:
             dtype = "const " + dtype
+        if dtype == 'bool':
+            dtype = 'bint'
         args_s.append(f'{dtype} {argname}')
     args = ', '.join(args_s)
     return f'{out} {name}({args})'
@@ -246,6 +239,8 @@ if __name__ == '__main__':
         read_file(CYTHON_OUTPUT), is_output=True)
 
     for filename in iter_header_files():
+        if filename.name not in ('vklite2.h', 'context.h', 'canvas.h'):
+            continue
         text = read_file(filename)
 
         # Parse the enums
@@ -256,12 +251,11 @@ if __name__ == '__main__':
             enums_to_insert += f'# from file: {filename.name}\n\n{generated}'
 
         # Parse the structs
-        if filename.name in ('visuals.h', 'app.h', 'gui.h', 'scene.h'):
-            structs = _parse_struct(text)
-            # Generate the Cython enum definitions
-            generated = _gen_struct(structs)
-            if generated:
-                structs_to_insert += f'# from file: {filename.name}\n\n{generated}'
+        structs = _parse_struct(text)
+        # Generate the Cython enum definitions
+        generated = _gen_struct(structs)
+        if generated:
+            structs_to_insert += f'# from file: {filename.name}\n\n{generated}'
 
         # Parse the functions
         funcs = _parse_func(text)
