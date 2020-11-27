@@ -159,6 +159,16 @@ typedef enum
 
 
 
+typedef enum
+{
+    VKL_SCREENCAST_NONE,
+    VKL_SCREENCAST_IDLE,
+    VKL_SCREENCAST_AWAIT_COPY,
+    VKL_SCREENCAST_AWAIT_TRANSFER,
+} VklScreencastStatus;
+
+
+
 /*************************************************************************************************/
 /*  Type definitions                                                                             */
 /*************************************************************************************************/
@@ -385,7 +395,7 @@ struct VklScreencast
     VklSubmit submit;
     uint64_t frame_idx;
     VklClock clock;
-    bool is_submitting;
+    VklScreencastStatus status;
 };
 
 

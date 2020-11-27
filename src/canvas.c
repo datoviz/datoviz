@@ -1087,7 +1087,8 @@ static void _screencast_cmds(VklScreencast* screencast)
         vkl_cmd_copy_image(&screencast->cmds, i, images, &screencast->staging);
 
         // Transition back to previous layout
-        vkl_barrier_images_layout(&barrier, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, images->layout);
+        vkl_barrier_images_layout(
+            &barrier, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
         vkl_barrier_images_access(
             &barrier, VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_TRANSFER_WRITE_BIT);
         vkl_cmd_barrier(&screencast->cmds, i, &barrier);
@@ -1107,7 +1108,7 @@ static void _screencast_timer_callback(VklCanvas* canvas, VklPrivateEvent ev)
     ASSERT(screencast->canvas != NULL);
     ASSERT(screencast->canvas->gpu != NULL);
 
-    uint32_t img_idx = canvas->swapchain.img_idx;
+    log_trace("screencast timer frame #%d", screencast->frame_idx);
 
     VklSubmit* submit = &screencast->submit;
     vkl_submit_reset(submit);
@@ -1122,8 +1123,7 @@ static void _screencast_timer_callback(VklCanvas* canvas, VklPrivateEvent ev)
     vkl_submit_signal_semaphores(submit, &screencast->semaphore, 0);
 
     // Send screencast cmd buf to transfer queue and signal screencast fence when submitting.
-    screencast->is_submitting = true;
-    vkl_submit_send(submit, img_idx, &screencast->fence, 0);
+    screencast->status = VKL_SCREENCAST_AWAIT_COPY;
 }
 
 
@@ -1137,30 +1137,59 @@ static void _screencast_post_send(VklCanvas* canvas, VklPrivateEvent ev)
     ASSERT(screencast->canvas != NULL);
     ASSERT(screencast->canvas->gpu != NULL);
 
+    uint32_t img_idx = canvas->swapchain.img_idx;
+    // Always make sure the present semaphore is reset to its original value.
+    canvas->present_semaphores = &canvas->sem_render_finished;
+
     // Do nothing if the screencast image is not ready.
-    if (!screencast->is_submitting)
-        return;
-    if (!vkl_fences_ready(&screencast->fence, 0))
+    if (screencast->status <= VKL_SCREENCAST_IDLE)
         return;
 
-    // To be freed by the SCREENCAST event callback.
-    uint8_t* rgba =
-        calloc(screencast->staging.width * screencast->staging.height, sizeof(uint8_t));
+    log_trace("screencast event #%d", screencast->frame_idx);
 
-    // Copy the image from the staging image to the CPU.
-    vkl_images_download(&screencast->staging, 0, true, rgba);
+    // Send the copy job
+    if (screencast->status == VKL_SCREENCAST_AWAIT_COPY)
+    {
+        log_trace("screencast await copy");
+        // The copy job waits for the current image to be ready.
+        // It signals the screencast semaphore when the copy is done.
+        // The present swapchain command must wait for the screencast semaphore rather than
+        // the render_finished semaphore.
+        vkl_submit_send(&screencast->submit, img_idx, &screencast->fence, 0);
 
-    // Enqueue a special SCREENCAST public event with a pointer to the CPU buffer user
-    VklEvent sev = {0};
-    sev.type = VKL_EVENT_SCREENCAST;
-    sev.u.s.idx = screencast->frame_idx;
-    sev.u.s.interval = screencast->clock.interval;
-    sev.u.s.rgba = rgba;
-    vkl_event_enqueue(canvas, sev);
+        canvas->present_semaphores = &screencast->semaphore;
+        screencast->status = VKL_SCREENCAST_AWAIT_TRANSFER;
+    }
 
-    _clock_set(&screencast->clock);
-    screencast->is_submitting = false;
-    screencast->frame_idx++;
+    else if (screencast->status == VKL_SCREENCAST_AWAIT_TRANSFER)
+    {
+        log_trace("screencast await transfer but fence not ready");
+        if (!vkl_fences_ready(&screencast->fence, 0))
+            return;
+        log_trace("screencast await transfer and fence ready");
+
+        // To be freed by the SCREENCAST event callback.
+        uint8_t* rgba =
+            calloc(screencast->staging.width * screencast->staging.height, 4 * sizeof(uint8_t));
+
+        // Copy the image from the staging image to the CPU.
+        log_trace("screencast CPU download");
+        vkl_images_download(&screencast->staging, 0, true, rgba);
+
+        // Enqueue a special SCREENCAST public event with a pointer to the CPU buffer user
+        VklEvent sev = {0};
+        sev.type = VKL_EVENT_SCREENCAST;
+        sev.u.s.idx = screencast->frame_idx;
+        sev.u.s.interval = screencast->clock.interval;
+        sev.u.s.rgba = rgba;
+        log_debug("send SCREENCAST event");
+        vkl_event_enqueue(canvas, sev);
+
+        // Reset screencast status.
+        _clock_set(&screencast->clock);
+        screencast->status = VKL_SCREENCAST_IDLE;
+        screencast->frame_idx++;
+    }
 }
 
 
