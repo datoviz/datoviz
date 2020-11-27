@@ -180,6 +180,7 @@ typedef struct VklMouseMoveEvent VklMouseMoveEvent;
 typedef struct VklMouseWheelEvent VklMouseWheelEvent;
 typedef struct VklScreencastEvent VklScreencastEvent;
 typedef struct VklFrameEvent VklFrameEvent;
+typedef union VklEventUnion VklEventUnion;
 typedef struct VklEvent VklEvent;
 
 // Private events (main thread).
@@ -188,6 +189,7 @@ typedef struct VklResizeEvent VklResizeEvent;
 typedef struct VklRefillEvent VklRefillEvent;
 typedef struct VklSubmitEvent VklSubmitEvent;
 typedef struct VklPrivateEvent VklPrivateEvent;
+typedef union VklPrivateEventUnion VklPrivateEventUnion;
 
 typedef struct VklMouseState VklMouseState;
 typedef struct VklKeyState VklKeyState;
@@ -260,7 +262,8 @@ struct VklScreencastEvent
     uint64_t idx;
     double time;
     double interval;
-    uint32_t width, height;
+    uint32_t width;
+    uint32_t height;
     uint8_t* rgba;
 };
 
@@ -290,18 +293,36 @@ struct VklSubmitEvent
 
 
 
+union VklPrivateEventUnion
+{
+    VklRefillEvent rf; // for REFILL private events
+    VklResizeEvent r;  // for RESIZE private events
+    VklFrameEvent t;   // for FRAME private events
+    VklFrameEvent f;   // for TIMER private events
+    VklSubmitEvent s;  // for SUBMIT private events
+};
+
+
+
 struct VklPrivateEvent
 {
     VklPrivateEventType type;
     void* user_data;
-    union
-    {
-        VklRefillEvent rf; // for REFILL private events
-        VklResizeEvent r;  // for RESIZE private events
-        VklFrameEvent t;   // for FRAME private events
-        VklFrameEvent f;   // for TIMER private events
-        VklSubmitEvent s;  // for SUBMIT private events
-    } u;
+    VklPrivateEventUnion u;
+};
+
+
+
+union VklEventUnion
+{
+
+    VklMouseButtonEvent b; // for MOUSE_BUTTON public events
+    VklMouseMoveEvent m;   // for MOUSE_MOVE public events
+    VklMouseWheelEvent w;  // for WHEEL public events
+    VklKeyEvent k;         // for KEY public events
+    VklFrameEvent f;       // for FRAME public event
+    // VklTimerEvent t;       // for TIMER, ONESHOT public events
+    VklScreencastEvent s; // for SCREENCAST public events
 };
 
 
@@ -310,16 +331,7 @@ struct VklEvent
 {
     VklEventType type;
     void* user_data;
-    union
-    {
-        VklMouseButtonEvent b; // for MOUSE_BUTTON public events
-        VklMouseMoveEvent m;   // for MOUSE_MOVE public events
-        VklMouseWheelEvent w;  // for WHEEL public events
-        VklKeyEvent k;         // for KEY public events
-        VklFrameEvent f;       // for FRAME public event
-        // VklTimerEvent t;       // for TIMER, ONESHOT public events
-        VklScreencastEvent s; // for SCREENCAST public events
-    } u;
+    VklEventUnion u;
 };
 
 

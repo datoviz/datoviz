@@ -74,6 +74,7 @@ cdef class App:
     _canvases = []
 
     def __cinit__(self):
+        cv.log_set_level_env()
         self._c_app = cv.vkl_app(cv.VKL_BACKEND_GLFW)
         if self._c_app is NULL:
             raise MemoryError()
@@ -107,38 +108,31 @@ cdef class App:
         cv.vkl_app_run(self._c_app, 1)
 
 
+cdef _wrapped_callback(cv.VklCanvas* c_canvas, cv.VklEvent c_ev):
+    cdef object tup
+    if c_ev.user_data != NULL:
+        tup = <object>c_ev.user_data
+        pos = (<int>c_ev.u.m.pos[0], <int>c_ev.u.m.pos[1])
+        f, args = tup
+        try:
+            f(pos)
+        except Exception as e:
+            print("Error: %s" % e)
 
 
-# cdef _wrapped_callback(cv.VklCanvas* c_canvas, void* data):
-#     cdef object tup
-#     if data != NULL:
-#         tup = <object>data
-#         f, args = tup
-#         try:
-#             f(*args)
-#         except Exception as e:
-#             print("Error: %s" % e)
 
+cdef _add_event_callback(cv.VklCanvas* c_canvas, cv.VklEventType evtype, f, args):
+    cdef void* ptr_to_obj
+    tup = (f, args)
 
-# cdef _add_frame_callback(cv.VklCanvas* c_canvas, f, args):
-#     cdef void* ptr_to_obj
-#     tup = (f, args)
+    # IMPORTANT: need to either keep a reference of this tuple object somewhere in the class,
+    # or increase the ref, otherwise this tuple will be deleted by the time we call it in the
+    # C callback function.
+    Py_INCREF(tup)
 
-#     # IMPORTANT: need to either keep a reference of this tuple object somewhere in the class,
-#     # or increase the ref, otherwise this tuple will be deleted by the time we call it in the
-#     # C callback function.
-#     Py_INCREF(tup)
+    ptr_to_obj = <void*>tup
+    cv.vkl_event_callback(c_canvas, evtype, 0, <cv.VklEventCallback>_wrapped_callback, ptr_to_obj)
 
-#     ptr_to_obj = <void*>tup
-#     cv.vkl_add_frame_callback(c_canvas, <cv.VklFrameCallback>_wrapped_callback, ptr_to_obj)
-
-
-# cdef _add_close_callback(cv.VklCanvas* c_canvas, f, args):
-#     cdef void* ptr_to_obj
-#     tup = (f, args)
-#     Py_INCREF(tup)
-#     ptr_to_obj = <void*>tup
-#     cv.vkl_add_close_callback(c_canvas, <cv.VklCloseCallback>_wrapped_callback, ptr_to_obj)
 
 
 cdef class Canvas:
@@ -173,8 +167,11 @@ cdef class Canvas:
             cv.vkl_canvas_to_close(self._c_canvas, True)
             self._c_canvas = NULL
 
-    # def on_frame(self, f):
-    #     _add_frame_callback(self._c_canvas, f, ())
+    def connect(self, evtype_py, f):
+        cdef cv.VklEventType evtype
+        if evtype_py == 'mouse':
+            evtype = cv.VKL_EVENT_MOUSE_MOVE
+        _add_event_callback(self._c_canvas, evtype, f, ())
 
     # def _wrap_keyboard(self, f):
     #     @wraps(f)
