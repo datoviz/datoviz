@@ -1182,7 +1182,7 @@ static void _screencast_post_send(VklCanvas* canvas, VklPrivateEvent ev)
         sev.u.s.idx = screencast->frame_idx;
         sev.u.s.interval = screencast->clock.interval;
         sev.u.s.rgba = rgba;
-        log_debug("send SCREENCAST event");
+        log_trace("send SCREENCAST event");
         vkl_event_enqueue(canvas, sev);
 
         // Reset screencast status.
