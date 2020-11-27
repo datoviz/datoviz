@@ -1066,8 +1066,6 @@ static void _screencast_cmds(VklScreencast* screencast)
     VklBarrier barrier = vkl_barrier(screencast->canvas->gpu);
     vkl_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
     vkl_barrier_images(&barrier, images);
-    vkl_barrier_images_layout(
-        &barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
     screencast->cmds =
         vkl_commands(screencast->canvas->gpu, VKL_DEFAULT_QUEUE_TRANSFER, img_count);
@@ -1079,6 +1077,10 @@ static void _screencast_cmds(VklScreencast* screencast)
         // TODO: transition staging image too
 
         // Transition to SRC layout
+        vkl_barrier_images_layout(
+            &barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+        vkl_barrier_images_access(
+            &barrier, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT);
         vkl_cmd_barrier(&screencast->cmds, i, &barrier);
 
         // Copy swapchain image to screencast image
@@ -1086,6 +1088,8 @@ static void _screencast_cmds(VklScreencast* screencast)
 
         // Transition back to previous layout
         vkl_barrier_images_layout(&barrier, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, images->layout);
+        vkl_barrier_images_access(
+            &barrier, VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_TRANSFER_WRITE_BIT);
         vkl_cmd_barrier(&screencast->cmds, i, &barrier);
 
         vkl_cmd_end(&screencast->cmds, i);
@@ -1182,6 +1186,9 @@ void vkl_screencast(VklCanvas* canvas, double interval)
         &sc->staging, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
     vkl_images_create(&sc->staging);
 
+    // Transition the staging image to its layout.
+    vkl_images_transition(&sc->staging);
+
     sc->fence = vkl_fences(gpu, 1);
     sc->semaphore = vkl_semaphores(gpu, 1);
 
@@ -1204,6 +1211,8 @@ void vkl_screencast_destroy(VklCanvas* canvas)
     ASSERT(canvas != NULL);
     VklScreencast* screencast = &canvas->screencast;
     ASSERT(screencast != NULL);
+    if (!is_obj_created(&screencast->obj))
+        return;
 
     vkl_fences_destroy(&screencast->fence);
     vkl_semaphores_destroy(&screencast->semaphore);
@@ -1596,6 +1605,9 @@ void vkl_canvas_destroy(VklCanvas* canvas)
 
     // Fast transfers.
     vkl_fifo_destroy(&canvas->fast_queue);
+
+    // Destroy the screencast if there is one.
+    vkl_screencast_destroy(canvas);
 
     // Destroy the graphics.
     log_trace("canvas destroy graphics pipelines");

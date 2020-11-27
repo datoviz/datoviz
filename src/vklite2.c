@@ -433,6 +433,8 @@ static void _swapchain_create(VklSwapchain* swapchain)
         swapchain->gpu->device, swapchain->swapchain, &swapchain->img_count,
         swapchain->images->images);
 
+    vkl_images_layout(swapchain->images, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
     // Create the swap chain image views (will skip the image creation as they are given by the
     // swapchain directly).
     vkl_images_create(swapchain->images);
@@ -1230,6 +1232,30 @@ void vkl_images_create(VklImages* images)
     _images_create(images);
     obj_created(&images->obj);
     log_trace("%d images created", images->count);
+}
+
+
+
+void vkl_images_transition(VklImages* images)
+{
+    ASSERT(images != NULL);
+    VklGpu* gpu = images->gpu;
+    ASSERT(gpu != NULL);
+
+    // Start the image transition command buffer.
+    VklCommands cmds = vkl_commands(gpu, 0, 1);
+    VklBarrier barrier = vkl_barrier(gpu);
+
+    vkl_cmd_begin(&cmds, 0);
+    vkl_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    vkl_barrier_images(&barrier, images);
+    vkl_barrier_images_layout(&barrier, VK_IMAGE_LAYOUT_UNDEFINED, images->layout);
+    // vkl_barrier_images_access(&barrier, 0, VK_ACCESS_TRANSFER_WRITE_BIT);
+    vkl_cmd_barrier(&cmds, 0, &barrier);
+    vkl_cmd_end(&cmds, 0);
+
+    vkl_gpu_wait(gpu);
+    vkl_cmd_submit_sync(&cmds, 0);
 }
 
 
@@ -2980,11 +3006,17 @@ void vkl_cmd_copy_image(VklCommands* cmds, uint32_t idx, VklImages* src_img, Vkl
     ASSERT(src_img->width = dst_img->width);
     ASSERT(src_img->height = dst_img->height);
 
-    ASSERT(src_img->count == dst_img->count);
-
-    ASSERT(src_img->layout != VK_NULL_HANDLE);
-
     CMD_START_CLIP(src_img->count)
+
+    uint32_t i0 = 0;
+    uint32_t i1 = 0;
+
+    i0 = CLIP(i, 0, src_img->count - 1);
+    i1 = CLIP(i, 0, dst_img->count - 1);
+
+    ASSERT(src_img->images[i0] != VK_NULL_HANDLE);
+    ASSERT(dst_img->images[i1] != VK_NULL_HANDLE);
+
     VkImageCopy imageCopyRegion = {0};
     imageCopyRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     imageCopyRegion.srcSubresource.layerCount = 1;
@@ -2994,8 +3026,10 @@ void vkl_cmd_copy_image(VklCommands* cmds, uint32_t idx, VklImages* src_img, Vkl
     imageCopyRegion.extent.height = src_img->height;
     imageCopyRegion.extent.depth = 1;
     vkCmdCopyImage(
-        cb, src_img->images[iclip], src_img->layout, //
-        dst_img->images[iclip], dst_img->layout, 1, &imageCopyRegion);
+        cb,                                                        //
+        src_img->images[i0], VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, //
+        dst_img->images[i1], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, //
+        1, &imageCopyRegion);
     CMD_END
 }
 

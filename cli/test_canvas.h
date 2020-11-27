@@ -899,3 +899,24 @@ static int vklite2_canvas_offscreen(VkyTestContext* context)
 
     TEST_END
 }
+
+
+
+/*************************************************************************************************/
+/*  Canvas screencast                                                                            */
+/*************************************************************************************************/
+
+static int vklite2_canvas_screencast(VkyTestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+
+    vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _cursor_callback, NULL);
+    // vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, .05, _timer_callback, NULL);
+
+    vkl_screencast(canvas, 1);
+
+    vkl_app_run(app, 0);
+    TEST_END
+}
