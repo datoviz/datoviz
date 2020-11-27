@@ -1765,6 +1765,20 @@ void vkl_graphics_topology(VklGraphics* graphics, VkPrimitiveTopology topology)
 
 
 
+void vkl_graphics_shader_code(VklGraphics* graphics, VkShaderStageFlagBits stage, const char* code)
+{
+    ASSERT(graphics != NULL);
+    ASSERT(graphics->gpu != NULL);
+    ASSERT(graphics->gpu->device != VK_NULL_HANDLE);
+
+    graphics->shader_stages[graphics->shader_count] = stage;
+    graphics->shader_modules[graphics->shader_count] =
+        vkl_shader_compile(graphics->gpu, code, stage);
+    graphics->shader_count++;
+}
+
+
+
 void vkl_graphics_shader(
     VklGraphics* graphics, VkShaderStageFlagBits stage, const char* shader_path)
 {
