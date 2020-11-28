@@ -218,8 +218,8 @@ static void _triangle_push_refill(VklCanvas* canvas, VklPrivateEvent ev)
     vkl_cmd_bind_graphics(cmds, idx, &visual->graphics, &visual->bindings, 0);
 
     // Push constants.
-    vkl_cmd_push_constants(
-        cmds, idx, visual->graphics.slots, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vec3), push_vec);
+    vkl_cmd_push(
+        cmds, idx, &visual->graphics.slots, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vec3), push_vec);
 
     vkl_cmd_draw(cmds, idx, 0, 3);
     vkl_cmd_end_renderpass(cmds, idx);
@@ -253,13 +253,10 @@ static int vklite2_canvas_4(VkyTestContext* context)
     canvas->user_data = &visual;
 
     // Create the slots.
-    visual.slots = vkl_slots(gpu);
-    vkl_slots_push_constant(&visual.slots, 0, sizeof(vec3), VK_SHADER_STAGE_VERTEX_BIT);
-    vkl_slots_create(&visual.slots);
-    vkl_graphics_slots(&visual.graphics, &visual.slots);
+    vkl_graphics_push(&visual.graphics, 0, sizeof(vec3), VK_SHADER_STAGE_VERTEX_BIT);
 
     // Create the bindings.
-    visual.bindings = vkl_bindings(&visual.slots);
+    visual.bindings = vkl_bindings(&visual.graphics.slots);
     vkl_bindings_create(&visual.bindings, 1);
     vkl_bindings_update(&visual.bindings);
 
@@ -339,13 +336,8 @@ static int vklite2_canvas_5(VkyTestContext* context)
     canvas->user_data = &visual;
     visual.data = calloc(3, sizeof(TestVertex));
 
-    // Create the slots.
-    visual.slots = vkl_slots(gpu);
-    vkl_slots_create(&visual.slots);
-    vkl_graphics_slots(&visual.graphics, &visual.slots);
-
     // Create the bindings.
-    visual.bindings = vkl_bindings(&visual.slots);
+    visual.bindings = vkl_bindings(&visual.graphics.slots);
     vkl_bindings_create(&visual.bindings, 1);
     vkl_bindings_update(&visual.bindings);
 
@@ -418,10 +410,7 @@ static int vklite2_canvas_6(VkyTestContext* context)
     visual.data = calloc(3, sizeof(TestVertex));
 
     // Create the slots.
-    visual.slots = vkl_slots(gpu);
-    vkl_slots_binding(&visual.slots, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-    vkl_slots_create(&visual.slots);
-    vkl_graphics_slots(&visual.graphics, &visual.slots);
+    vkl_graphics_slot(&visual.graphics, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
     // Uniform buffer.
     visual.br_u =
@@ -430,7 +419,7 @@ static int vklite2_canvas_6(VkyTestContext* context)
     vkl_upload_buffers(canvas->gpu->context, &visual.br_u, 0, sizeof(vec4), vec);
 
     // Create the bindings.
-    visual.bindings = vkl_bindings(&visual.slots);
+    visual.bindings = vkl_bindings(&visual.graphics.slots);
     ASSERT(visual.br_u.buffer != VK_NULL_HANDLE);
     vkl_bindings_create(&visual.bindings, img_count);
     vkl_bindings_buffer(&visual.bindings, 0, &visual.br_u);
@@ -508,15 +497,13 @@ static int vklite2_canvas_7(VkyTestContext* context)
     canvas->user_data = &visual;
 
     // Create compute object.
-    VklSlots slots = vkl_slots(gpu);
-    VklBindings bindings = vkl_bindings(&slots);
+    VklBindings bindings = {0};
     {
         char path[1024];
         snprintf(path, sizeof(path), "%s/spirv/test_triangle.comp.spv", DATA_DIR);
         visual.compute = vkl_ctx_compute(gpu->context, path);
-        vkl_slots_binding(&slots, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-        vkl_slots_create(&slots);
-        vkl_compute_slots(visual.compute, &slots);
+        vkl_compute_slot(visual.compute, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+        bindings = vkl_bindings(&visual.compute->slots);
         vkl_bindings_create(&bindings, 1);
         vkl_bindings_buffer(&bindings, 0, &visual.br);
         vkl_bindings_update(&bindings);
@@ -530,7 +517,6 @@ static int vklite2_canvas_7(VkyTestContext* context)
 
     vkl_graphics_destroy(&visual.graphics);
     vkl_bindings_destroy(&bindings);
-    vkl_slots_destroy(&slots);
     destroy_visual(&visual);
     TEST_END
 }
@@ -570,15 +556,13 @@ static int vklite2_canvas_8(VkyTestContext* context)
     canvas->user_data = &visual;
 
     // Create compute object.
-    VklSlots slots = vkl_slots(gpu);
-    VklBindings bindings = vkl_bindings(&slots);
+    VklBindings bindings = {0};
     {
         char path[1024];
         snprintf(path, sizeof(path), "%s/spirv/test_triangle.comp.spv", DATA_DIR);
         visual.compute = vkl_ctx_compute(gpu->context, path);
-        vkl_slots_binding(&slots, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-        vkl_slots_create(&slots);
-        vkl_compute_slots(visual.compute, &slots);
+        bindings = vkl_bindings(&visual.compute->slots);
+        vkl_compute_slot(visual.compute, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
         vkl_bindings_create(&bindings, 1);
         vkl_bindings_buffer(&bindings, 0, &visual.br);
         vkl_bindings_update(&bindings);
@@ -602,7 +586,6 @@ static int vklite2_canvas_8(VkyTestContext* context)
 
     vkl_graphics_destroy(&visual.graphics);
     vkl_bindings_destroy(&bindings);
-    vkl_slots_destroy(&slots);
     destroy_visual(&visual);
     TEST_END
 }
@@ -799,14 +782,10 @@ static int vklite2_canvas_particles(VkyTestContext* context)
         FREE(visual->data);
     }
 
-    // Create the graphics slots and bindings.
+    // Create the graphics bindings.
     {
-        visual->slots = vkl_slots(gpu);
-        vkl_slots_create(&visual->slots);
-        vkl_graphics_slots(&visual->graphics, &visual->slots);
-
-        // Create the bindings.vkl_slots_destroy(&slots);
-        visual->bindings = vkl_bindings(&visual->slots);
+        // Create the bindings.
+        visual->bindings = vkl_bindings(&visual->graphics.slots);
         vkl_bindings_create(&visual->bindings, 1);
         vkl_bindings_update(&visual->bindings);
 
@@ -815,12 +794,12 @@ static int vklite2_canvas_particles(VkyTestContext* context)
     }
 
     // Compute resources.
-    VklSlots slots = vkl_slots(gpu);
-    VklBindings bindings = vkl_bindings(&slots);
+    VklBindings bindings = {0};
     {
         // Create compute object.
         snprintf(path, sizeof(path), "%s/spirv/test_particle.comp.spv", DATA_DIR);
         visual->compute = vkl_ctx_compute(gpu->context, path);
+        bindings = vkl_bindings(&visual->compute->slots);
 
         // Uniform buffer.
         visual->br_u = vkl_ctx_buffers(
@@ -829,11 +808,9 @@ static int vklite2_canvas_particles(VkyTestContext* context)
         visual->data_u = calloc(1, sizeof(TestParticleUniform));
 
         // Create the bindings.
-        vkl_slots_binding(&slots, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER); // vertex buffer
-        vkl_slots_binding(&slots, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // UBO
-        vkl_slots_push_constant(&slots, 0, sizeof(int32_t), VK_SHADER_STAGE_COMPUTE_BIT);
-        vkl_slots_create(&slots);
-        vkl_compute_slots(visual->compute, &slots);
+        vkl_compute_slot(visual->compute, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER); // vertex buffer
+        vkl_compute_slot(visual->compute, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // UBO
+        vkl_compute_push(visual->compute, 0, sizeof(int32_t), VK_SHADER_STAGE_COMPUTE_BIT);
 
         vkl_bindings_create(&bindings, canvas->swapchain.img_count);
         vkl_bindings_buffer(&bindings, 0, &tpc.br);
@@ -849,8 +826,9 @@ static int vklite2_canvas_particles(VkyTestContext* context)
     {
         *cmds = vkl_commands(gpu, VKL_DEFAULT_QUEUE_COMPUTE, 1);
         vkl_cmd_begin(cmds, 0);
-        vkl_cmd_push_constants(
-            cmds, 0, visual->compute->slots, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(int32_t), &nn);
+        vkl_cmd_push(
+            cmds, 0, &visual->compute->slots, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(int32_t),
+            &nn);
         vkl_cmd_compute(cmds, 0, visual->compute, (uvec3){visual->n_vertices, 1, 1});
         vkl_cmd_end(cmds, 0);
         tpc.cmds = cmds;
@@ -872,7 +850,6 @@ static int vklite2_canvas_particles(VkyTestContext* context)
     FREE(visual->data_u);
     FREE(visual->user_data);
     vkl_fences_destroy(&tpc.fence);
-    vkl_slots_destroy(&slots);
     destroy_visual(visual);
     TEST_END
 }
@@ -919,13 +896,13 @@ static int vklite2_canvas_screencast(VkyTestContext* context)
     VklGpu* gpu = vkl_gpu(app, 0);
     VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
 
-    vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _cursor_callback, NULL);
-    vkl_event_callback(canvas, VKL_EVENT_SCREENCAST, 0, _screencast_callback, NULL);
+    // vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _cursor_callback, NULL);
+    // vkl_event_callback(canvas, VKL_EVENT_SCREENCAST, 0, _screencast_callback, NULL);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1., _fps, NULL);
+    // vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1., _fps, NULL);
 
-    vkl_screencast(canvas, 1. / 30);
+    // vkl_screencast(canvas, 1. / 30);
 
-    vkl_app_run(app, N_FRAMES);
+    // vkl_app_run(app, N_FRAMES);
     TEST_END
 }

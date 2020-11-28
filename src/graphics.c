@@ -3,13 +3,16 @@
 
 
 /*************************************************************************************************/
-/*  Macros                                                                                       */
+/*  Constants                                                                                    */
 /*************************************************************************************************/
 
 extern const unsigned char* VKL_BINARY_SHADER_graphics_points_vert;
 extern const unsigned char* VKL_BINARY_SHADER_graphics_points_frag;
 
 
+/*************************************************************************************************/
+/*  Utils                                                                                       */
+/*************************************************************************************************/
 
 static inline void _load_shader(
     VklGraphics* graphics, VkShaderStageFlagBits stage, //
@@ -22,8 +25,6 @@ static inline void _load_shader(
     FREE(code);
 }
 
-
-
 #define SHADER(x)                                                                                 \
     _load_shader(                                                                                 \
         graphics, VK_SHADER_STAGE_VERTEX_BIT, sizeof(VKL_BINARY_SHADER_graphics_##x##_vert),      \
@@ -32,40 +33,36 @@ static inline void _load_shader(
         graphics, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(VKL_BINARY_SHADER_graphics_##x##_frag),    \
         (const unsigned char*)VKL_BINARY_SHADER_graphics_##x##_frag);
 
+#define PRIMITIVE(x)                                                                              \
+    vkl_graphics_renderpass(graphics, &canvas->renderpass, 0);                                    \
+    vkl_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_##x);                                   \
+    vkl_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
+
+// TODO: common bindings
+#define CREATE vkl_graphics_create(graphics);
+
 
 
 /*************************************************************************************************/
-/*  Points */
+/*  Points                                                                                       */
 /*************************************************************************************************/
 
 static void _graphics_points(VklCanvas* canvas, VklGraphics* graphics)
 {
-    ASSERT(canvas != NULL);
-    ASSERT(graphics != NULL);
-
     SHADER(points)
-
-    vkl_graphics_renderpass(graphics, &canvas->renderpass, 0);
-    vkl_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
-    vkl_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
+    PRIMITIVE(POINT_LIST)
 
     vkl_graphics_vertex_binding(graphics, 0, sizeof(VklVertex));
     vkl_graphics_vertex_attr(graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VklVertex, pos));
     vkl_graphics_vertex_attr(graphics, 0, 1, VK_FORMAT_R8G8B8A8_UNORM, offsetof(VklVertex, color));
 
-    // Create the slots.
-    visual->slots = vkl_slots(gpu);
-    vkl_slots_create(&visual->slots);
-    vkl_graphics_slots(&visual->graphics, &visual->slots);
-
-    // Create the graphics pipeline.
-    vkl_graphics_create(&visual->graphics);
+    CREATE
 }
 
 
 
 /*************************************************************************************************/
-/*  Graphics */
+/*  Graphics                                                                                     */
 /*************************************************************************************************/
 
 VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type)
