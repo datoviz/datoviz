@@ -10,7 +10,7 @@ if [ $1 == "build" ]
 then
     mkdir -p build &&
     cd build && \
-    cmake .. -GNinja && \
+    cmake .. -GNinja -DVISKY_WITH_CYTHON=OFF && \
     VKY_EXAMPLE= ninja && \
     cd ..
 fi
