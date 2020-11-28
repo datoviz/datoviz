@@ -1686,8 +1686,6 @@ void vkl_canvas_destroy(VklCanvas* canvas)
     log_trace("canvas destroy graphics pipelines");
     for (uint32_t i = 0; i < canvas->max_graphics; i++)
     {
-        if (canvas->graphics[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
         vkl_graphics_destroy(&canvas->graphics[i]);
     }
     INSTANCES_DESTROY(canvas->graphics)

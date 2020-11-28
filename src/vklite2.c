@@ -1457,7 +1457,7 @@ void vkl_slots_binding(VklSlots* slots, uint32_t idx, VkDescriptorType type)
 
 
 
-void vkl_slots_push_constant(
+void vkl_slots_push(
     VklSlots* slots, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders)
 {
     ASSERT(slots != NULL);
@@ -1558,7 +1558,8 @@ void vkl_bindings_create(VklBindings* bindings, uint32_t dset_count)
     ASSERT(bindings->gpu != NULL);
     ASSERT(bindings->gpu->device != VK_NULL_HANDLE);
     ASSERT(bindings->slots != NULL);
-    ASSERT(is_obj_created(&bindings->slots->obj));
+    if (!is_obj_created(&bindings->slots->obj))
+        vkl_slots_create(bindings->slots);
     ASSERT(bindings->slots->dset_layout != VK_NULL_HANDLE);
 
     log_trace("starting creation of bindings...");
@@ -1656,6 +1657,8 @@ VklCompute vkl_compute(VklGpu* gpu, const char* shader_path)
     compute.gpu = gpu;
     strcpy(compute.shader_path, shader_path);
 
+    compute.slots = vkl_slots(gpu);
+
     return compute;
 }
 
@@ -1669,11 +1672,19 @@ void vkl_compute_code(VklCompute* compute, const char* code)
 
 
 
-void vkl_compute_slots(VklCompute* compute, VklSlots* slots)
+void vkl_compute_slot(VklCompute* compute, uint32_t idx, VkDescriptorType type)
 {
     ASSERT(compute != NULL);
-    ASSERT(slots != NULL);
-    compute->slots = slots;
+    vkl_slots_binding(&compute->slots, idx, type);
+}
+
+
+
+void vkl_compute_push(
+    VklCompute* compute, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders)
+{
+    ASSERT(compute != NULL);
+    vkl_slots_push(&compute->slots, offset, size, shaders);
 }
 
 
@@ -1693,12 +1704,9 @@ void vkl_compute_create(VklCompute* compute)
     ASSERT(compute->gpu != NULL);
     ASSERT(compute->gpu->device != VK_NULL_HANDLE);
     ASSERT(compute->shader_path != NULL);
+    if (!is_obj_created(&compute->slots.obj))
+        vkl_slots_create(&compute->slots);
 
-    if (compute->slots == NULL)
-    {
-        log_error("vkl_compute_slots() must be called before creating the compute");
-        return;
-    }
     if (compute->bindings == NULL)
     {
         log_error("vkl_compute_bindings() must be called before creating the compute");
@@ -1720,7 +1728,7 @@ void vkl_compute_create(VklCompute* compute)
 
     create_compute_pipeline(
         compute->gpu->device, compute->shader_module, //
-        compute->slots->pipeline_layout, &compute->pipeline);
+        compute->slots.pipeline_layout, &compute->pipeline);
 
     obj_created(&compute->obj);
     log_trace("compute created");
@@ -1738,6 +1746,10 @@ void vkl_compute_destroy(VklCompute* compute)
         return;
     }
     log_trace("destroy compute");
+
+    // Destroy the compute slots.
+    if (is_obj_created(&compute->slots.obj))
+        vkl_slots_destroy(&compute->slots);
 
     VkDevice device = compute->gpu->device;
     if (compute->shader_module != VK_NULL_HANDLE)
@@ -1768,6 +1780,8 @@ VklGraphics vkl_graphics(VklGpu* gpu)
     VklGraphics graphics = {0};
     graphics.gpu = gpu;
     obj_init(&graphics.obj);
+
+    graphics.slots = vkl_slots(gpu);
 
     return graphics;
 }
@@ -1898,11 +1912,19 @@ void vkl_graphics_front_face(VklGraphics* graphics, VkFrontFace front_face)
 
 
 
-void vkl_graphics_slots(VklGraphics* graphics, VklSlots* slots)
+void vkl_graphics_slot(VklGraphics* graphics, uint32_t idx, VkDescriptorType type)
 {
     ASSERT(graphics != NULL);
-    ASSERT(slots != NULL);
-    graphics->slots = slots;
+    vkl_slots_binding(&graphics->slots, idx, type);
+}
+
+
+
+void vkl_graphics_push(
+    VklGraphics* graphics, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders)
+{
+    ASSERT(graphics != NULL);
+    vkl_slots_push(&graphics->slots, offset, size, shaders);
 }
 
 
@@ -1912,8 +1934,9 @@ void vkl_graphics_create(VklGraphics* graphics)
     ASSERT(graphics != NULL);
     ASSERT(graphics->gpu != NULL);
     ASSERT(graphics->gpu->device != VK_NULL_HANDLE);
-    ASSERT(graphics->slots != NULL);
     ASSERT(graphics->renderpass != NULL);
+    if (!is_obj_created(&graphics->slots.obj))
+        vkl_slots_create(&graphics->slots);
 
     log_trace("starting creation of graphics pipeline...");
 
@@ -1983,8 +2006,8 @@ void vkl_graphics_create(VklGraphics* graphics)
     pipelineInfo.pMultisampleState = &multisampling;
     pipelineInfo.pColorBlendState = &color_blending;
     pipelineInfo.pDepthStencilState = &depth_stencil;
-    ASSERT(graphics->slots != NULL);
-    pipelineInfo.layout = graphics->slots->pipeline_layout;
+    ASSERT(graphics->slots.pipeline_layout != VK_NULL_HANDLE);
+    pipelineInfo.layout = graphics->slots.pipeline_layout;
     pipelineInfo.renderPass = graphics->renderpass->renderpass;
     pipelineInfo.subpass = graphics->subpass;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
@@ -2022,6 +2045,10 @@ void vkl_graphics_destroy(VklGraphics* graphics)
         vkDestroyPipeline(device, graphics->pipeline, NULL);
         graphics->pipeline = VK_NULL_HANDLE;
     }
+
+    // Destroy slots.
+    if (is_obj_created(&graphics->slots.obj))
+        vkl_slots_destroy(&graphics->slots);
 
     obj_destroyed(&graphics->obj);
 }
@@ -2849,16 +2876,15 @@ void vkl_cmd_end_renderpass(VklCommands* cmds, uint32_t idx)
 
 void vkl_cmd_compute(VklCommands* cmds, uint32_t idx, VklCompute* compute, uvec3 size)
 {
-    ASSERT(compute->slots != NULL);
     ASSERT(compute->bindings != NULL);
     ASSERT(compute->bindings->dsets != NULL);
     ASSERT(compute->pipeline != VK_NULL_HANDLE);
-    ASSERT(compute->slots->pipeline_layout != VK_NULL_HANDLE);
+    ASSERT(compute->slots.pipeline_layout != VK_NULL_HANDLE);
 
     CMD_START
     vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_COMPUTE, compute->pipeline);
     vkCmdBindDescriptorSets(
-        cb, VK_PIPELINE_BIND_POINT_COMPUTE, compute->slots->pipeline_layout, 0, 1,
+        cb, VK_PIPELINE_BIND_POINT_COMPUTE, compute->slots.pipeline_layout, 0, 1,
         compute->bindings->dsets, 0, 0);
     vkCmdDispatch(cb, size[0], size[1], size[2]);
     CMD_END
@@ -3067,7 +3093,7 @@ void vkl_cmd_bind_graphics(
     VklBindings* bindings, uint32_t dynamic_idx)
 {
     ASSERT(graphics != NULL);
-    VklSlots* slots = graphics->slots;
+    VklSlots* slots = &graphics->slots;
     ASSERT(slots != NULL);
     ASSERT(bindings != NULL);
 
@@ -3179,7 +3205,7 @@ void vkl_cmd_copy_buffer(
 
 
 
-void vkl_cmd_push_constants(
+void vkl_cmd_push(
     VklCommands* cmds, uint32_t idx, VklSlots* slots, VkShaderStageFlagBits shaders, //
     VkDeviceSize offset, VkDeviceSize size, const void* data)
 {

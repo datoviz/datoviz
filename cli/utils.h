@@ -70,7 +70,6 @@ typedef struct
     VklFramebuffers* framebuffers;
     VklGraphics graphics;
     VklCompute* compute;
-    VklSlots slots;
     VklBindings bindings;
     VklBuffer buffer;
     VklBufferRegions br;
@@ -515,17 +514,10 @@ static void _triangle_buffer(TestVisual* visual)
 
 static void test_triangle(TestVisual* visual, const char* suffix)
 {
-    VklGpu* gpu = visual->gpu;
-
     _triangle_graphics(visual, suffix);
 
-    // Create the slots.
-    visual->slots = vkl_slots(gpu);
-    vkl_slots_create(&visual->slots);
-    vkl_graphics_slots(&visual->graphics, &visual->slots);
-
     // Create the bindings.
-    visual->bindings = vkl_bindings(&visual->slots);
+    visual->bindings = vkl_bindings(&visual->graphics.slots);
     vkl_bindings_create(&visual->bindings, 1);
     vkl_bindings_update(&visual->bindings);
 
@@ -541,7 +533,6 @@ static void destroy_visual(TestVisual* visual)
 {
     vkl_graphics_destroy(&visual->graphics);
     vkl_bindings_destroy(&visual->bindings);
-    vkl_slots_destroy(&visual->slots);
     vkl_buffer_destroy(&visual->buffer);
 }
 

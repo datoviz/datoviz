@@ -627,7 +627,7 @@ struct VklCompute
     const char* shader_code;
 
     VkPipeline pipeline;
-    VklSlots* slots;
+    VklSlots slots;
     VklBindings* bindings;
     VkShaderModule shader_module;
 };
@@ -668,7 +668,7 @@ struct VklGraphics
     VkFrontFace front_face;
 
     VkPipeline pipeline;
-    VklSlots* slots;
+    VklSlots slots;
 
     uint32_t vertex_binding_count;
     VklVertexBinding vertex_bindings[VKL_MAX_VERTEX_BINDINGS];
@@ -1082,13 +1082,8 @@ VKY_EXPORT VklSlots vkl_slots(VklGpu* gpu);
 
 VKY_EXPORT void vkl_slots_binding(VklSlots* slots, uint32_t idx, VkDescriptorType type);
 
-VKY_EXPORT void vkl_slots_push_constant(
+VKY_EXPORT void vkl_slots_push(
     VklSlots* slots, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders);
-
-VKY_EXPORT void* vkl_slots_dynamic_allocate(VklSlots* slots, uint32_t idx, VkDeviceSize size);
-
-VKY_EXPORT void*
-vkl_slots_dynamic_pointer(VklSlots* slots, uint32_t idx, uint32_t item_idx, const void* data);
 
 VKY_EXPORT void vkl_slots_create(VklSlots* slots);
 
@@ -1126,7 +1121,10 @@ VKY_EXPORT void vkl_compute_create(VklCompute* compute);
 
 VKY_EXPORT void vkl_compute_code(VklCompute* compute, const char* code);
 
-VKY_EXPORT void vkl_compute_slots(VklCompute* compute, VklSlots* slots);
+VKY_EXPORT void vkl_compute_slot(VklCompute* compute, uint32_t idx, VkDescriptorType type);
+
+VKY_EXPORT void vkl_compute_push(
+    VklCompute* compute, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders);
 
 VKY_EXPORT void vkl_compute_bindings(VklCompute* compute, VklBindings* bindings);
 
@@ -1174,7 +1172,10 @@ VKY_EXPORT void vkl_graphics_front_face(VklGraphics* graphics, VkFrontFace front
 
 VKY_EXPORT void vkl_graphics_create(VklGraphics* graphics);
 
-VKY_EXPORT void vkl_graphics_slots(VklGraphics* graphics, VklSlots* slots);
+VKY_EXPORT void vkl_graphics_slot(VklGraphics* graphics, uint32_t idx, VkDescriptorType type);
+
+VKY_EXPORT void vkl_graphics_push(
+    VklGraphics* graphics, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders);
 
 VKY_EXPORT void vkl_graphics_destroy(VklGraphics* graphics);
 
@@ -1367,7 +1368,7 @@ VKY_EXPORT void vkl_cmd_copy_buffer(
     VklBuffer* dst_buf, VkDeviceSize dst_offset, //
     VkDeviceSize size);
 
-VKY_EXPORT void vkl_cmd_push_constants(
+VKY_EXPORT void vkl_cmd_push(
     VklCommands* cmds, uint32_t idx, VklSlots* slots, VkShaderStageFlagBits shaders, //
     VkDeviceSize offset, VkDeviceSize size, const void* data);
 

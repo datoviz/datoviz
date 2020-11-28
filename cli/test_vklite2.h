@@ -167,13 +167,10 @@ static int vklite2_compute(VkyTestContext* context)
     vkl_buffer_upload(&buffer, 0, size, data);
 
     // Create the slots.
-    VklSlots slots = vkl_slots(gpu);
-    vkl_slots_binding(&slots, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-    vkl_slots_create(&slots);
-    vkl_compute_slots(&compute, &slots);
+    vkl_compute_slot(&compute, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 
     // Create the bindings.
-    VklBindings bindings = vkl_bindings(&slots);
+    VklBindings bindings = vkl_bindings(&compute.slots);
     VklBufferRegions br = {.buffer = &buffer, .size = size, .count = 1};
     vkl_bindings_buffer(&bindings, 0, &br);
     vkl_bindings_create(&bindings, 1);
@@ -196,7 +193,6 @@ static int vklite2_compute(VkyTestContext* context)
     for (uint32_t i = 0; i < n; i++)
         AT(data2[i] == 2 * data[i]);
 
-    vkl_slots_destroy(&slots);
     vkl_bindings_destroy(&bindings);
     vkl_compute_destroy(&compute);
     vkl_buffer_destroy(&buffer);
@@ -238,14 +234,11 @@ static int vklite2_push(VkyTestContext* context)
     vkl_buffer_upload(&buffer, 0, size, data);
 
     // Create the slots.
-    VklSlots slots = vkl_slots(gpu);
-    vkl_slots_binding(&slots, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-    vkl_slots_push_constant(&slots, 0, sizeof(float), VK_SHADER_STAGE_COMPUTE_BIT);
-    vkl_slots_create(&slots);
-    vkl_compute_slots(&compute, &slots);
+    vkl_compute_slot(&compute, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+    vkl_compute_push(&compute, 0, sizeof(float), VK_SHADER_STAGE_COMPUTE_BIT);
 
     // Create the bindings.
-    VklBindings bindings = vkl_bindings(&slots);
+    VklBindings bindings = vkl_bindings(&compute.slots);
     VklBufferRegions br = {.buffer = &buffer, .size = size, .count = 1};
     vkl_bindings_buffer(&bindings, 0, &br);
     vkl_bindings_create(&bindings, 1);
@@ -259,8 +252,7 @@ static int vklite2_push(VkyTestContext* context)
     VklCommands cmds = vkl_commands(gpu, 0, 1);
     vkl_cmd_begin(&cmds, 0);
     float power = 2.0f;
-    vkl_cmd_push_constants(
-        &cmds, 0, &slots, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(float), &power);
+    vkl_cmd_push(&cmds, 0, &compute.slots, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(float), &power);
     vkl_cmd_compute(&cmds, 0, &compute, (uvec3){20, 1, 1});
     vkl_cmd_end(&cmds, 0);
     vkl_cmd_submit_sync(&cmds, 0);
@@ -271,7 +263,6 @@ static int vklite2_push(VkyTestContext* context)
     for (uint32_t i = 0; i < n; i++)
         AT(fabs(data2[i] - pow(data[i], power)) < .01);
 
-    vkl_slots_destroy(&slots);
     vkl_bindings_destroy(&bindings);
     vkl_compute_destroy(&compute);
     vkl_buffer_destroy(&buffer);
@@ -418,19 +409,16 @@ static int vklite2_submit(VkyTestContext* context)
     vkl_buffer_upload(&buffer, 0, size, data);
 
     // Create the slots.
-    VklSlots slots = vkl_slots(gpu);
-    vkl_slots_binding(&slots, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-    vkl_slots_create(&slots);
-    vkl_compute_slots(&compute1, &slots);
-    vkl_compute_slots(&compute2, &slots);
+    vkl_compute_slot(&compute1, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+    vkl_compute_slot(&compute2, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 
     // Create the bindings.
-    VklBindings bindings1 = vkl_bindings(&slots);
+    VklBindings bindings1 = vkl_bindings(&compute1.slots);
     vkl_bindings_create(&bindings1, 1);
     VklBufferRegions br1 = {.buffer = &buffer, .size = size, .count = 1};
     vkl_bindings_buffer(&bindings1, 0, &br1);
 
-    VklBindings bindings2 = vkl_bindings(&slots);
+    VklBindings bindings2 = vkl_bindings(&compute2.slots);
     vkl_bindings_create(&bindings2, 1);
     VklBufferRegions br2 = {.buffer = &buffer, .size = size, .count = 1};
     vkl_bindings_buffer(&bindings2, 0, &br2);
@@ -481,7 +469,6 @@ static int vklite2_submit(VkyTestContext* context)
 
 
     vkl_semaphores_destroy(&semaphores);
-    vkl_slots_destroy(&slots);
     vkl_bindings_destroy(&bindings1);
     vkl_bindings_destroy(&bindings2);
     vkl_buffer_destroy(&buffer);
