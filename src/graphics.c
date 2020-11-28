@@ -54,12 +54,12 @@ static void _graphics_points(VklCanvas* canvas, VklGraphics* graphics)
     vkl_graphics_vertex_attr(graphics, 0, 1, VK_FORMAT_R8G8B8A8_UNORM, offsetof(VklVertex, color));
 
     // Create the slots.
-    visual->slots = vkl_slots(gpu);
-    vkl_slots_create(&visual->slots);
-    vkl_graphics_slots(&visual->graphics, &visual->slots);
+    VklSlots slots = vkl_slots(canvas->gpu);
+    vkl_slots_create(&slots);
+    vkl_graphics_slots(graphics, &slots);
 
     // Create the graphics pipeline.
-    vkl_graphics_create(&visual->graphics);
+    vkl_graphics_create(graphics);
 }
 
 
