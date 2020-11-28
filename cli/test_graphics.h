@@ -17,9 +17,9 @@ static int vklite2_graphics_points(VkyTestContext* context)
     VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
 
     VklGraphics* graphics = vkl_graphics_builtin(canvas, VKL_GRAPHICS_POINTS);
-    ASSERT(graphics != NULL);
+    // ASSERT(graphics != NULL);
 
-    vkl_app_run(app, 5);
+    // vkl_app_run(app, 5);
 
     TEST_END
 }

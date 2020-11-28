@@ -6,8 +6,10 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-extern const unsigned char* VKL_BINARY_SHADER_graphics_points_vert;
-extern const unsigned char* VKL_BINARY_SHADER_graphics_points_frag;
+extern const unsigned char VKL_BINARY_SHADER_graphics_points_vert[];
+extern const unsigned long VKL_BINARY_SHADER_graphics_points_vert_size;
+extern const unsigned char VKL_BINARY_SHADER_graphics_points_frag[];
+extern const unsigned long VKL_BINARY_SHADER_graphics_points_frag_size;
 
 
 /*************************************************************************************************/
@@ -18,19 +20,20 @@ static inline void _load_shader(
     VklGraphics* graphics, VkShaderStageFlagBits stage, //
     VkDeviceSize size, const unsigned char* buffer)
 {
+    ASSERT(buffer != NULL);
     uint32_t* code = (uint32_t*)calloc(size, 1);
     memcpy(code, buffer, size);
     ASSERT(size % 4 == 0);
-    vkl_graphics_shader_spirv(graphics, stage, size / 4, code);
+    vkl_graphics_shader_spirv(graphics, stage, size, code);
     FREE(code);
 }
 
 #define SHADER(x)                                                                                 \
     _load_shader(                                                                                 \
-        graphics, VK_SHADER_STAGE_VERTEX_BIT, sizeof(VKL_BINARY_SHADER_graphics_##x##_vert),      \
+        graphics, VK_SHADER_STAGE_VERTEX_BIT, VKL_BINARY_SHADER_graphics_##x##_vert_size,         \
         (const unsigned char*)VKL_BINARY_SHADER_graphics_##x##_vert);                             \
     _load_shader(                                                                                 \
-        graphics, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(VKL_BINARY_SHADER_graphics_##x##_frag),    \
+        graphics, VK_SHADER_STAGE_FRAGMENT_BIT, VKL_BINARY_SHADER_graphics_##x##_frag_size,       \
         (const unsigned char*)VKL_BINARY_SHADER_graphics_##x##_frag);
 
 #define PRIMITIVE(x)                                                                              \

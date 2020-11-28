@@ -371,46 +371,27 @@ foreach(shader_source ${shader_sources})
         )
     list(APPEND shader_outputs ${shader_output})
 endforeach()
-add_custom_target(shaders DEPENDS ${shader_outputs})
-
+add_custom_target(shaders_spirv DEPENDS ${shader_outputs})
 
 # TODO: separate between builtin shaders and example/test visuals
 
-# Creates C resources file from files in given directory
-# from: https://stackoverflow.com/a/27206982
-function(create_resources dir prefix output)
-    # Create empty output file
-    file(WRITE ${output} "")
-    # Collect input files
-    file(GLOB bins ${dir}/*)
-    # Iterate through input files
-    foreach(bin ${bins})
-        # Get short filename
-        string(REGEX MATCH "([^/]+)$" filename ${bin})
-        # Remove the file extension
-        string(REGEX REPLACE "\\.[^.]*$" "" filename ${filename})
-        # Replace filename spaces & extension separator for C compatibility
-        string(REGEX REPLACE "\\.| |-" "_" filename ${filename})
-        # To uppercase
-        # string(TOUPPER ${filename} filename)
-        # Read hex data from file
-        file(READ ${bin} filedata HEX)
-        # Convert hex data for C compatibility
-        string(REGEX REPLACE "([0-9a-f][0-9a-f])" "0x\\1," filedata ${filedata})
-        # Append data to output file
-        file(APPEND ${output} "const unsigned char VKL_BINARY_${prefix}${filename}[] = {${filedata}};\n")
-    endforeach()
-endfunction()
-
-set(SHADERS_COMPILED "${CMAKE_BINARY_DIR}/_shaders.c")
-create_resources(${SPIRV_DIR} "SHADER_" ${SHADERS_COMPILED})
-
+set(path_shadersc "${CMAKE_BINARY_DIR}/_shaders.c")
+add_custom_command(
+    OUTPUT ${path_shadersc}
+    COMMAND ${CMAKE_COMMAND}
+    -D SPIRV_DIR=${SPIRV_DIR}
+    -D SHADERC_PATH=${path_shadersc}
+    -P "${CMAKE_SOURCE_DIR}/cmake/embed_shaders.cmake"
+    DEPENDS shaders_spirv ${shader_sources}
+    IMPLICIT_DEPENDS shaders_spirv ${shader_sources}
+)
+add_custom_target(shaders DEPENDS ${path_shadersc})
 
 
 
 # Define the visky library target
 file(GLOB sources
-    ${SHADERS_COMPILED}
+    ${path_shadersc}
     "include/*.h*"
     "src/*.h*" "src/*.c*"
     "external/*.h*" "external/*.c*"
