@@ -1148,6 +1148,10 @@ VKY_EXPORT void vkl_graphics_topology(VklGraphics* graphics, VkPrimitiveTopology
 VKY_EXPORT void
 vkl_graphics_shader_code(VklGraphics* graphics, VkShaderStageFlagBits stage, const char* code);
 
+VKY_EXPORT void vkl_graphics_shader_spirv(
+    VklGraphics* graphics, VkShaderStageFlagBits stage, //
+    VkDeviceSize size, const uint32_t* buffer);
+
 VKY_EXPORT void
 vkl_graphics_shader(VklGraphics* graphics, VkShaderStageFlagBits stage, const char* shader_path);
 

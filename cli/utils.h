@@ -35,7 +35,7 @@ typedef struct
 {
     vec3 pos;
     vec4 color;
-} VklVertex;
+} TestVertex;
 
 
 
@@ -474,10 +474,11 @@ static void _triangle_graphics(TestVisual* visual, const char* suffix)
     vkl_graphics_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
     snprintf(path, sizeof(path), "%s/spirv/test_triangle%s.frag.spv", DATA_DIR, suffix);
     vkl_graphics_shader(graphics, VK_SHADER_STAGE_FRAGMENT_BIT, path);
-    vkl_graphics_vertex_binding(graphics, 0, sizeof(VklVertex));
-    vkl_graphics_vertex_attr(graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VklVertex, pos));
+    vkl_graphics_vertex_binding(graphics, 0, sizeof(TestVertex));
     vkl_graphics_vertex_attr(
-        graphics, 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(VklVertex, color));
+        graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(TestVertex, pos));
+    vkl_graphics_vertex_attr(
+        graphics, 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(TestVertex, color));
 }
 
 
@@ -488,7 +489,7 @@ static void _triangle_buffer(TestVisual* visual)
 
     // Create the buffer.
     visual->buffer = vkl_buffer(gpu);
-    VkDeviceSize size = 3 * sizeof(VklVertex);
+    VkDeviceSize size = 3 * sizeof(TestVertex);
     vkl_buffer_size(&visual->buffer, size);
     vkl_buffer_usage(
         &visual->buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
@@ -498,7 +499,7 @@ static void _triangle_buffer(TestVisual* visual)
     vkl_buffer_create(&visual->buffer);
 
     // Upload the triangle data.
-    VklVertex data[3] = {
+    TestVertex data[3] = {
         {{-1, +1, 0}, {1, 0, 0, 1}},
         {{+1, +1, 0}, {0, 1, 0, 1}},
         {{+0, -1, 0}, {0, 0, 1, 1}},

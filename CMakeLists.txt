@@ -333,10 +333,11 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
 )
 
 
-# set(QT5_INC /usr/local/qt5/include)
-set(SPIRV_DIR ${CMAKE_SOURCE_DIR}/data/spirv/)
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR})
+set(SPIRV_DIR ${CMAKE_BINARY_DIR}/spirv/)
 file(MAKE_DIRECTORY ${SPIRV_DIR})
+
+
 
 # -------------------------------------------------------------------------------------------------
 # Shaders compilation
@@ -344,6 +345,7 @@ file(MAKE_DIRECTORY ${SPIRV_DIR})
 
 find_program(GLSLC glslc)
 file(GLOB shader_sources
+    "src/glsl/*.*"
     "src/shaders/*.vert"
     "src/shaders/*.geom"
     "src/shaders/*.comp"
@@ -371,25 +373,8 @@ foreach(shader_source ${shader_sources})
 endforeach()
 add_custom_target(shaders DEPENDS ${shader_outputs})
 
-# Define the visky library target
-file(GLOB sources
-    "include/*.h*"
-    "src/*.h*" "src/*.c*"
-    "external/*.h*" "external/*.c*"
-    "external/imgui/*.h*" "external/imgui/*.c*"
-    "external/imgui/backends/imgui_impl_glfw.*"
-    "external/imgui/backends/imgui_impl_vulkan.*"
-)
 
-file(GLOB imgui_sources
-    "external/imgui/*.h*" "external/imgui/*.c*"
-    "external/imgui/backends/imgui_impl_glfw.*"
-    "external/imgui/backends/imgui_impl_vulkan.*"
-)
-
-set_source_files_properties(${imgui_sources} PROPERTIES COMPILE_FLAGS -w)
-
-add_library(visky SHARED ${sources})
+# TODO: separate between builtin shaders and example/test visuals
 
 # Creates C resources file from files in given directory
 # from: https://stackoverflow.com/a/27206982
@@ -407,17 +392,42 @@ function(create_resources dir prefix output)
         # Replace filename spaces & extension separator for C compatibility
         string(REGEX REPLACE "\\.| |-" "_" filename ${filename})
         # To uppercase
-        string(TOUPPER ${filename} filename)
+        # string(TOUPPER ${filename} filename)
         # Read hex data from file
         file(READ ${bin} filedata HEX)
         # Convert hex data for C compatibility
         string(REGEX REPLACE "([0-9a-f][0-9a-f])" "0x\\1," filedata ${filedata})
         # Append data to output file
-        file(APPEND ${output} "const unsigned char ${prefix}${filename}[] = {${filedata}};\n")
+        file(APPEND ${output} "const unsigned char VKL_BINARY_${prefix}${filename}[] = {${filedata}};\n")
     endforeach()
 endfunction()
 
-# create_resources("${SPIRV_DIR}" "VKY_RESOURCE_SHADER_" "src/_shaders.h")
+set(SHADERS_COMPILED "${CMAKE_BINARY_DIR}/_shaders.c")
+create_resources(${SPIRV_DIR} "SHADER_" ${SHADERS_COMPILED})
+
+
+
+
+# Define the visky library target
+file(GLOB sources
+    ${SHADERS_COMPILED}
+    "include/*.h*"
+    "src/*.h*" "src/*.c*"
+    "external/*.h*" "external/*.c*"
+    "external/imgui/*.h*" "external/imgui/*.c*"
+    "external/imgui/backends/imgui_impl_glfw.*"
+    "external/imgui/backends/imgui_impl_vulkan.*"
+)
+
+file(GLOB imgui_sources
+    "external/imgui/*.h*" "external/imgui/*.c*"
+    "external/imgui/backends/imgui_impl_glfw.*"
+    "external/imgui/backends/imgui_impl_vulkan.*"
+)
+
+set_source_files_properties(${imgui_sources} PROPERTIES COMPILE_FLAGS -w)
+
+add_library(visky SHARED ${sources})
 
 
 # -------------------------------------------------------------------------------------------------

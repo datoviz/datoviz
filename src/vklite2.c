@@ -1819,6 +1819,21 @@ void vkl_graphics_shader(
 
 
 
+void vkl_graphics_shader_spirv(
+    VklGraphics* graphics, VkShaderStageFlagBits stage, //
+    VkDeviceSize size, const uint32_t* buffer)
+{
+    ASSERT(graphics != NULL);
+    ASSERT(graphics->gpu != NULL);
+    ASSERT(graphics->gpu->device != VK_NULL_HANDLE);
+
+    graphics->shader_stages[graphics->shader_count] = stage;
+    graphics->shader_modules[graphics->shader_count++] =
+        create_shader_module(graphics->gpu->device, size, buffer);
+}
+
+
+
 void vkl_graphics_vertex_binding(VklGraphics* graphics, uint32_t binding, VkDeviceSize stride)
 {
     ASSERT(graphics != NULL);

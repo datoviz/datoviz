@@ -1374,11 +1374,12 @@ static void update_descriptor_set(
 /*  Shaders                                                                                      */
 /*************************************************************************************************/
 
-static VkShaderModule create_shader_module(VkDevice device, uint32_t size, const uint32_t* buffer)
+static VkShaderModule
+create_shader_module(VkDevice device, VkDeviceSize size, const uint32_t* buffer)
 {
     VkShaderModuleCreateInfo createInfo = {0};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    createInfo.codeSize = size;
+    createInfo.codeSize = (size_t)size;
     createInfo.pCode = buffer;
 
     VkShaderModule module = {0};

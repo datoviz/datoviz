@@ -268,7 +268,7 @@ static int vklite2_canvas_4(VkyTestContext* context)
 
     // Triangle buffer.
     visual.buffer = vkl_buffer(gpu);
-    VkDeviceSize size = 3 * sizeof(VklVertex);
+    VkDeviceSize size = 3 * sizeof(TestVertex);
     vkl_buffer_size(&visual.buffer, size);
     vkl_buffer_usage(&visual.buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
     vkl_buffer_memory(
@@ -277,7 +277,7 @@ static int vklite2_canvas_4(VkyTestContext* context)
     vkl_buffer_create(&visual.buffer);
 
     // Upload the triangle data.
-    VklVertex data[3] = {
+    TestVertex data[3] = {
         {{-1, +1, 0}, {1, 0, 0, 1}},
         {{+1, +1, 0}, {0, 1, 0, 1}},
         {{+0, -1, 0}, {0, 0, 1, 1}},
@@ -314,14 +314,14 @@ static void _vertex_cursor_callback(VklCanvas* canvas, VklEvent ev)
     double y = ev.u.m.pos[1] / (double)size[1];
 
     TestVisual* visual = ev.user_data;
-    VklVertex* data = (VklVertex*)visual->data;
+    TestVertex* data = (TestVertex*)visual->data;
     for (uint32_t i = 0; i < 3; i++)
     {
         data[i].color[0] = x;
         data[i].color[1] = y;
         data[i].color[2] = 1;
     }
-    vkl_upload_buffers(canvas->gpu->context, &visual->br, 0, 3 * sizeof(VklVertex), data);
+    vkl_upload_buffers(canvas->gpu->context, &visual->br, 0, 3 * sizeof(TestVertex), data);
 }
 
 static int vklite2_canvas_5(VkyTestContext* context)
@@ -337,7 +337,7 @@ static int vklite2_canvas_5(VkyTestContext* context)
     visual.framebuffers = &canvas->framebuffers;
     _triangle_graphics(&visual, "");
     canvas->user_data = &visual;
-    visual.data = calloc(3, sizeof(VklVertex));
+    visual.data = calloc(3, sizeof(TestVertex));
 
     // Create the slots.
     visual.slots = vkl_slots(gpu);
@@ -353,11 +353,11 @@ static int vklite2_canvas_5(VkyTestContext* context)
     vkl_graphics_create(&visual.graphics);
 
     // Triangle buffer.
-    VkDeviceSize size = 3 * sizeof(VklVertex);
+    VkDeviceSize size = 3 * sizeof(TestVertex);
     visual.br = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, size);
 
     // Upload the triangle data.
-    VklVertex data[3] = {
+    TestVertex data[3] = {
         {{-1, +1, 0}, {1, 0, 0, 1}},
         {{+1, +1, 0}, {0, 1, 0, 1}},
         {{+0, -1, 0}, {0, 0, 1, 1}},
@@ -415,7 +415,7 @@ static int vklite2_canvas_6(VkyTestContext* context)
     visual.framebuffers = &canvas->framebuffers;
     _triangle_graphics(&visual, "_ubo");
     canvas->user_data = &visual;
-    visual.data = calloc(3, sizeof(VklVertex));
+    visual.data = calloc(3, sizeof(TestVertex));
 
     // Create the slots.
     visual.slots = vkl_slots(gpu);
@@ -440,11 +440,11 @@ static int vklite2_canvas_6(VkyTestContext* context)
     vkl_graphics_create(&visual.graphics);
 
     // Triangle buffer.
-    VkDeviceSize size = 3 * sizeof(VklVertex);
+    VkDeviceSize size = 3 * sizeof(TestVertex);
     visual.br = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, size);
 
     // Upload the triangle data.
-    VklVertex data[3] = {
+    TestVertex data[3] = {
         {{-1, +1, 0}, {1, 0, 0, 1}},
         {{+1, +1, 0}, {0, 1, 0, 1}},
         {{+0, -1, 0}, {0, 0, 1, 1}},
