@@ -27,9 +27,7 @@ static inline void _load_shader(
 #define SHADER(stage, x)                                                                          \
     {                                                                                             \
         unsigned long size = 0;                                                                   \
-        char s[1024];                                                                             \
-        snprintf(s, 1024, "graphics_%s", #x);                                                     \
-        const unsigned char* buffer = vkl_binary_shader_load(s, &size);                           \
+        const unsigned char* buffer = vkl_binary_shader_load(x, &size);                           \
         ASSERT(size > 0);                                                                         \
         ASSERT(buffer != NULL);                                                                   \
         _load_shader(graphics, VK_SHADER_STAGE_##stage##_BIT, size, buffer);                      \
@@ -51,7 +49,8 @@ static inline void _load_shader(
 
 static void _graphics_points(VklCanvas* canvas, VklGraphics* graphics)
 {
-    SHADER(VERTEX, points_vert)
+    SHADER(VERTEX, "graphics_points_vert")
+    SHADER(FRAGMENT, "graphics_points_frag")
     PRIMITIVE(POINT_LIST)
 
     vkl_graphics_vertex_binding(graphics, 0, sizeof(VklVertex));
@@ -72,6 +71,12 @@ VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type)
     ASSERT(canvas != NULL);
     ASSERT(canvas->gpu != NULL);
     ASSERT(type != VKL_GRAPHICS_NONE);
+
+    for (uint32_t i = 0; i < VKL_GRAPHICS_COUNT; i++) 
+    {
+        if (canvas->graphics[i].obj.status == VKL_OBJECT_STATUS_NONE)
+            canvas->graphics[i].obj.status = VKL_OBJECT_STATUS_INIT;
+    }
 
     int32_t idx = (int32_t)type;
     ASSERT(idx > 0);

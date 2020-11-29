@@ -30,6 +30,7 @@ typedef enum
     VKL_GRAPHICS_MESH_SHADED,
     VKL_GRAPHICS_FAKE_SPHERE,
     VKL_GRAPHICS_VOLUME,
+    VKL_GRAPHICS_COUNT,
 } VklGraphicsBuiltin;
 
 

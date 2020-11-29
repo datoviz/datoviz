@@ -29,7 +29,7 @@ function(create_resources dir prefix output)
     # Loading function.
     file(APPEND ${output} "const unsigned char* vkl_binary_${prefix}load(const char* name, unsigned long* size)\n")
     file(APPEND ${output} "{\n")
-    file(APPEND ${output} "printf(\"%s\\n\", name);\n")
+    #file(APPEND ${output} "printf(\"%s\\n\", name);\n")
     # Iterate through input files
     foreach(bin ${bins})
         string(REGEX MATCH "([^/]+)$" filename ${bin})

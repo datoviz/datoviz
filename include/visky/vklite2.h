@@ -46,7 +46,7 @@ TODO later
 #define VKL_MAX_FENCES           1024
 #define VKL_MAX_FRAMEBUFFERS     32
 #define VKL_MAX_GPUS             64
-#define VKL_MAX_GRAPHICS         1024
+#define VKL_MAX_GRAPHICS         256
 #define VKL_MAX_PRESENT_MODES    16
 #define VKL_MAX_PUSH_CONSTANTS   16
 #define VKL_MAX_QUEUE_FAMILIES   16
