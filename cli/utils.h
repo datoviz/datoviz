@@ -469,9 +469,9 @@ static void _triangle_graphics(TestVisual* visual, const char* suffix)
     vkl_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
 
     char path[1024];
-    snprintf(path, sizeof(path), "%s/spirv/test_triangle%s.vert.spv", DATA_DIR, suffix);
+    snprintf(path, sizeof(path), "%s/test_triangle%s.vert.spv", SPIRV_DIR, suffix);
     vkl_graphics_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
-    snprintf(path, sizeof(path), "%s/spirv/test_triangle%s.frag.spv", DATA_DIR, suffix);
+    snprintf(path, sizeof(path), "%s/test_triangle%s.frag.spv", SPIRV_DIR, suffix);
     vkl_graphics_shader(graphics, VK_SHADER_STAGE_FRAGMENT_BIT, path);
     vkl_graphics_vertex_binding(graphics, 0, sizeof(TestVertex));
     vkl_graphics_vertex_attr(

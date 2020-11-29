@@ -144,7 +144,7 @@ static int vklite2_compute(VkyTestContext* context)
 
     // Create the compute pipeline.
     char path[1024];
-    snprintf(path, sizeof(path), "%s/spirv/test_square.comp.spv", DATA_DIR);
+    snprintf(path, sizeof(path), "%s/test_square.comp.spv", SPIRV_DIR);
     VklCompute compute = vkl_compute(gpu, path);
 
     // Create the buffers
@@ -211,7 +211,7 @@ static int vklite2_push(VkyTestContext* context)
 
     // Create the compute pipeline.
     char path[1024];
-    snprintf(path, sizeof(path), "%s/spirv/test_pow.comp.spv", DATA_DIR);
+    snprintf(path, sizeof(path), "%s/test_pow.comp.spv", SPIRV_DIR);
     VklCompute compute = vkl_compute(gpu, path);
 
     // Create the buffers
@@ -382,10 +382,10 @@ static int vklite2_submit(VkyTestContext* context)
 
     // Create the compute pipeline.
     char path[1024];
-    snprintf(path, sizeof(path), "%s/spirv/test_square.comp.spv", DATA_DIR);
+    snprintf(path, sizeof(path), "%s/test_square.comp.spv", SPIRV_DIR);
     VklCompute compute1 = vkl_compute(gpu, path);
 
-    snprintf(path, sizeof(path), "%s/spirv/test_sum.comp.spv", DATA_DIR);
+    snprintf(path, sizeof(path), "%s/test_sum.comp.spv", SPIRV_DIR);
     VklCompute compute2 = vkl_compute(gpu, path);
 
     // Create the buffer
@@ -990,7 +990,7 @@ static int vklite2_default_app(VkyTestContext* context)
     VklContext* ctx = vkl_context(gpu, NULL);
 
     char path[1024];
-    snprintf(path, sizeof(path), "%s/spirv/pow2.comp.spv", DATA_DIR);
+    snprintf(path, sizeof(path), "%s/pow2.comp.spv", SPIRV_DIR);
     vkl_ctx_compute(ctx, path);
 
     TEST_END

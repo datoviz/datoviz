@@ -500,7 +500,7 @@ static int vklite2_canvas_7(VkyTestContext* context)
     VklBindings bindings = {0};
     {
         char path[1024];
-        snprintf(path, sizeof(path), "%s/spirv/test_triangle.comp.spv", DATA_DIR);
+        snprintf(path, sizeof(path), "%s/test_triangle.comp.spv", SPIRV_DIR);
         visual.compute = vkl_ctx_compute(gpu->context, path);
         vkl_compute_slot(visual.compute, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
         bindings = vkl_bindings(&visual.compute->slots);
@@ -559,7 +559,7 @@ static int vklite2_canvas_8(VkyTestContext* context)
     VklBindings bindings = {0};
     {
         char path[1024];
-        snprintf(path, sizeof(path), "%s/spirv/test_triangle.comp.spv", DATA_DIR);
+        snprintf(path, sizeof(path), "%s/test_triangle.comp.spv", SPIRV_DIR);
         visual.compute = vkl_ctx_compute(gpu->context, path);
         bindings = vkl_bindings(&visual.compute->slots);
         vkl_compute_slot(visual.compute, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
@@ -733,9 +733,9 @@ static int vklite2_canvas_particles(VkyTestContext* context)
         vkl_graphics_renderpass(graphics, visual->renderpass, 0);
         vkl_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
         vkl_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
-        snprintf(path, sizeof(path), "%s/spirv/test_marker.vert.spv", DATA_DIR);
+        snprintf(path, sizeof(path), "%s/test_marker.vert.spv", SPIRV_DIR);
         vkl_graphics_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
-        snprintf(path, sizeof(path), "%s/spirv/test_marker.frag.spv", DATA_DIR);
+        snprintf(path, sizeof(path), "%s/test_marker.frag.spv", SPIRV_DIR);
         vkl_graphics_shader(graphics, VK_SHADER_STAGE_FRAGMENT_BIT, path);
         vkl_graphics_vertex_binding(graphics, 0, sizeof(TestParticle));
         vkl_graphics_vertex_attr(
@@ -797,7 +797,7 @@ static int vklite2_canvas_particles(VkyTestContext* context)
     VklBindings bindings = {0};
     {
         // Create compute object.
-        snprintf(path, sizeof(path), "%s/spirv/test_particle.comp.spv", DATA_DIR);
+        snprintf(path, sizeof(path), "%s/test_particle.comp.spv", SPIRV_DIR);
         visual->compute = vkl_ctx_compute(gpu->context, path);
         bindings = vkl_bindings(&visual->compute->slots);
 
