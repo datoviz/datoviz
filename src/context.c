@@ -1103,7 +1103,9 @@ void vkl_transfer_loop(VklContext* context, bool wait)
         // wait until a transfer task is available
         tr = fifo_dequeue(context, wait);
         // process the dequeued task
+        context->fifo.is_processing = true;
         res = process_transfer(context, tr);
+        context->fifo.is_processing = false;
         counter++;
     }
     log_trace("end transfer loop");
@@ -1124,7 +1126,7 @@ void vkl_transfer_wait(VklContext* context, int poll_period)
     while (true)
     {
         size = vkl_fifo_size(&context->fifo);
-        if (size == 0)
+        if (size == 0 && !context->fifo.is_processing)
             break;
         vkl_sleep(poll_period);
     }

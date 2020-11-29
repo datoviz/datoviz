@@ -11,6 +11,7 @@
 
 static inline void vkl_sleep(int milliseconds)
 {
+    log_trace("sleep for %d ms", milliseconds);
 #ifdef WIN32
     Sleep(milliseconds);
 #else
@@ -133,6 +134,8 @@ struct VklFifo
 
     pthread_mutex_t lock;
     pthread_cond_t cond;
+
+    _Atomic bool is_processing;
 };
 
 
