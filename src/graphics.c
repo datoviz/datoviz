@@ -6,10 +6,6 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-extern const unsigned char VKL_BINARY_SHADER_graphics_points_vert[];
-extern const unsigned long VKL_BINARY_SHADER_graphics_points_vert_size;
-extern const unsigned char VKL_BINARY_SHADER_graphics_points_frag[];
-extern const unsigned long VKL_BINARY_SHADER_graphics_points_frag_size;
 
 
 /*************************************************************************************************/
@@ -28,13 +24,16 @@ static inline void _load_shader(
     FREE(code);
 }
 
-#define SHADER(x)                                                                                 \
-    _load_shader(                                                                                 \
-        graphics, VK_SHADER_STAGE_VERTEX_BIT, VKL_BINARY_SHADER_graphics_##x##_vert_size,         \
-        (const unsigned char*)VKL_BINARY_SHADER_graphics_##x##_vert);                             \
-    _load_shader(                                                                                 \
-        graphics, VK_SHADER_STAGE_FRAGMENT_BIT, VKL_BINARY_SHADER_graphics_##x##_frag_size,       \
-        (const unsigned char*)VKL_BINARY_SHADER_graphics_##x##_frag);
+#define SHADER(stage, x)                                                                          \
+    {                                                                                             \
+        unsigned long size = 0;                                                                   \
+        char s[1024];                                                                             \
+        snprintf(s, 1024, "graphics_%s", #x);                                                     \
+        const unsigned char* buffer = vkl_binary_shader_load(s, &size);                           \
+        ASSERT(size > 0);                                                                         \
+        ASSERT(buffer != NULL);                                                                   \
+        _load_shader(graphics, VK_SHADER_STAGE_##stage##_BIT, size, buffer);                      \
+    }
 
 #define PRIMITIVE(x)                                                                              \
     vkl_graphics_renderpass(graphics, &canvas->renderpass, 0);                                    \
@@ -52,7 +51,7 @@ static inline void _load_shader(
 
 static void _graphics_points(VklCanvas* canvas, VklGraphics* graphics)
 {
-    SHADER(points)
+    SHADER(VERTEX, points_vert)
     PRIMITIVE(POINT_LIST)
 
     vkl_graphics_vertex_binding(graphics, 0, sizeof(VklVertex));
