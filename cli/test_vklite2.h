@@ -174,7 +174,6 @@ static int vklite2_compute(VkyTestContext* context)
     VklBufferRegions br = {.buffer = &buffer, .size = size, .count = 1};
     vkl_bindings_buffer(&bindings, 0, &br);
     vkl_bindings_create(&bindings, 1);
-    vkl_bindings_update(&bindings);
 
     // Link the bindings to the compute pipeline and create it.
     vkl_compute_bindings(&compute, &bindings);
@@ -242,7 +241,6 @@ static int vklite2_push(VkyTestContext* context)
     VklBufferRegions br = {.buffer = &buffer, .size = size, .count = 1};
     vkl_bindings_buffer(&bindings, 0, &br);
     vkl_bindings_create(&bindings, 1);
-    vkl_bindings_update(&bindings);
 
     // Link the bindings to the compute pipeline and create it.
     vkl_compute_bindings(&compute, &bindings);
@@ -414,17 +412,14 @@ static int vklite2_submit(VkyTestContext* context)
 
     // Create the bindings.
     VklBindings bindings1 = vkl_bindings(&compute1.slots);
-    vkl_bindings_create(&bindings1, 1);
     VklBufferRegions br1 = {.buffer = &buffer, .size = size, .count = 1};
     vkl_bindings_buffer(&bindings1, 0, &br1);
+    vkl_bindings_create(&bindings1, 1);
 
     VklBindings bindings2 = vkl_bindings(&compute2.slots);
-    vkl_bindings_create(&bindings2, 1);
     VklBufferRegions br2 = {.buffer = &buffer, .size = size, .count = 1};
     vkl_bindings_buffer(&bindings2, 0, &br2);
-
-    vkl_bindings_update(&bindings1);
-    vkl_bindings_update(&bindings2);
+    vkl_bindings_create(&bindings2, 1);
 
     // Link the bindings1 to the compute1 pipeline and create it.
     vkl_compute_bindings(&compute1, &bindings1);

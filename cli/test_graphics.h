@@ -147,7 +147,6 @@ static int vklite2_graphics_dynamic(VkyTestContext* context)
     vkl_bindings_buffer(&tg.bindings, 2, &tg.br_params);
     
     vkl_bindings_create(&tg.bindings, 1);
-    vkl_bindings_update(&tg.bindings);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _graphics_refill, &tg);
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
@@ -171,7 +170,7 @@ static void _common_bindings(TestGraphics* tg) {
 
     // Binding resources.
     tg->br_mvp = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklMVP));
-    tg->br_viewport = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
+    tg->br_viewport = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklViewport));
     tg->br_params = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointsParams));
     tg->texture = vkl_ctx_texture(gpu->context, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
 
@@ -200,7 +199,6 @@ static int vklite2_graphics_points(VkyTestContext* context)
     _common_bindings(&tg);
     vkl_bindings_buffer(&tg.bindings, 2, &tg.br_params);
     vkl_bindings_create(&tg.bindings, 1);
-    vkl_bindings_update(&tg.bindings);
 
     // Upload params.
     tg.param = 5.0f;
