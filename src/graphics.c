@@ -36,10 +36,24 @@ static inline void _load_shader(
 #define PRIMITIVE(x)                                                                              \
     vkl_graphics_renderpass(graphics, &canvas->renderpass, 0);                                    \
     vkl_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_##x);                                   \
-    vkl_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
+    vkl_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);                                    \
+    _common_bindings(graphics);
 
 // TODO: common bindings
 #define CREATE vkl_graphics_create(graphics);
+
+
+
+/*************************************************************************************************/
+/*  Common                                                                                       */
+/*************************************************************************************************/
+
+static void _common_bindings(VklGraphics* graphics)
+{
+    vkl_graphics_slot(graphics, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // MVP
+    vkl_graphics_slot(graphics, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // viewport
+    // vkl_graphics_slot(graphics, 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER); // color texture
+}
 
 
 
@@ -72,7 +86,7 @@ VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type)
     ASSERT(canvas->gpu != NULL);
     ASSERT(type != VKL_GRAPHICS_NONE);
 
-    for (uint32_t i = 0; i < VKL_GRAPHICS_COUNT; i++) 
+    for (uint32_t i = 0; i < VKL_GRAPHICS_COUNT; i++)
     {
         if (canvas->graphics[i].obj.status == VKL_OBJECT_STATUS_NONE)
             canvas->graphics[i].obj.status = VKL_OBJECT_STATUS_INIT;

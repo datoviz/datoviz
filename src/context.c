@@ -500,11 +500,12 @@ VklTexture* vkl_ctx_texture(VklContext* context, uint32_t dims, uvec3 size, VkFo
     vkl_images_format(image, format);
     vkl_images_size(image, size[0], size[1], size[2]);
     vkl_images_tiling(image, VK_IMAGE_TILING_OPTIMAL);
+    // TODO: VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
     vkl_images_layout(image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
     vkl_images_usage(
-        image, //
-        VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
-            VK_IMAGE_USAGE_TRANSFER_DST_BIT);
+        image,                       //
+        VK_IMAGE_USAGE_STORAGE_BIT | // TODO: VK_IMAGE_USAGE_SAMPLED_BIT | //
+            VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT);
     vkl_images_memory(image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     vkl_images_queue_access(image, VKL_DEFAULT_QUEUE_TRANSFER);
     vkl_images_queue_access(image, VKL_DEFAULT_QUEUE_COMPUTE);

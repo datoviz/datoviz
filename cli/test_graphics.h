@@ -15,7 +15,11 @@ typedef struct TestGraphics TestGraphics;
 struct TestGraphics
 {
     VklGraphics* graphics;
-    VklBufferRegions br;
+    VklBufferRegions br_vert;
+    VklBufferRegions br_mvp;
+    VklBufferRegions br_viewport;
+    VklBufferRegions br_params;
+    VklTexture* texture;
     VklBindings bindings;
 
     uint32_t vertex_count;
@@ -27,7 +31,7 @@ static void _graphics_refill(VklCanvas* canvas, VklPrivateEvent ev)
 {
     TestGraphics* tg = (TestGraphics*)ev.user_data;
     VklCommands* cmds = ev.u.rf.cmds[0];
-    VklBufferRegions* br = &tg->br;
+    VklBufferRegions* br = &tg->br_vert;
     VklBindings* bindings = &tg->bindings;
     VklGraphics* graphics = tg->graphics;
     uint32_t idx = ev.u.rf.img_idx;
@@ -63,14 +67,14 @@ static void _graphics_refill(VklCanvas* canvas, VklPrivateEvent ev)
     TestGraphics tg = {.graphics = graphics};                                                     \
     tg.vertex_count = (n);                                                                        \
     VkDeviceSize size = tg.vertex_count * sizeof(type);                                           \
-    tg.br = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, size);                    \
+    tg.br_vert = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, size);               \
     type* data = calloc(tg.vertex_count, sizeof(type));                                           \
     for (uint32_t i = 0; i < tg.vertex_count; i++)                                                \
     {
 
 #define END_DATA                                                                                  \
     }                                                                                             \
-    vkl_upload_buffers(gpu->context, &tg.br, 0, size, data);
+    vkl_upload_buffers(gpu->context, &tg.br_vert, 0, size, data);
 
 #define RANDN_POS(x)                                                                              \
     x[0] = .25 * randn();                                                                         \
@@ -99,6 +103,16 @@ static int vklite2_graphics_points(VkyTestContext* context)
 
     // Create the bindings.
     tg.bindings = vkl_bindings(&graphics->slots);
+
+    // TODO: ubos
+    tg.br_mvp = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
+    tg.br_viewport = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
+    tg.texture = vkl_ctx_texture(gpu->context, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+
+    vkl_bindings_buffer(&tg.bindings, 0, &tg.br_mvp);
+    vkl_bindings_buffer(&tg.bindings, 1, &tg.br_viewport);
+    // TODO: color
+    // vkl_bindings_texture(&tg.bindings, 2, tg.texture->image, tg.texture->sampler);
     vkl_bindings_create(&tg.bindings, 1);
     vkl_bindings_update(&tg.bindings);
 

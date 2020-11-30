@@ -1805,7 +1805,7 @@ void vkl_graphics_topology(VklGraphics* graphics, VkPrimitiveTopology topology)
 
 
 
-void vkl_graphics_shader_code(VklGraphics* graphics, VkShaderStageFlagBits stage, const char* code)
+void vkl_graphics_shader_glsl(VklGraphics* graphics, VkShaderStageFlagBits stage, const char* code)
 {
     ASSERT(graphics != NULL);
     ASSERT(graphics->gpu != NULL);

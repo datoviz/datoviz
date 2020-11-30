@@ -1144,7 +1144,7 @@ vkl_graphics_renderpass(VklGraphics* graphics, VklRenderpass* renderpass, uint32
 VKY_EXPORT void vkl_graphics_topology(VklGraphics* graphics, VkPrimitiveTopology topology);
 
 VKY_EXPORT void
-vkl_graphics_shader_code(VklGraphics* graphics, VkShaderStageFlagBits stage, const char* code);
+vkl_graphics_shader_glsl(VklGraphics* graphics, VkShaderStageFlagBits stage, const char* code);
 
 VKY_EXPORT void vkl_graphics_shader_spirv(
     VklGraphics* graphics, VkShaderStageFlagBits stage, //

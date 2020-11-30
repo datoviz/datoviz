@@ -346,7 +346,10 @@ file(MAKE_DIRECTORY ${SPIRV_DIR})
 
 find_program(GLSLC glslc)
 file(GLOB shader_sources
-    "src/glsl/*.*"
+    "src/glsl/*.vert"
+    "src/glsl/*.geom"
+    "src/glsl/*.comp"
+    "src/glsl/*.frag"
     "src/shaders/*.vert"
     "src/shaders/*.geom"
     "src/shaders/*.comp"
