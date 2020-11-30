@@ -500,11 +500,10 @@ VklTexture* vkl_ctx_texture(VklContext* context, uint32_t dims, uvec3 size, VkFo
     vkl_images_format(image, format);
     vkl_images_size(image, size[0], size[1], size[2]);
     vkl_images_tiling(image, VK_IMAGE_TILING_OPTIMAL);
-    // TODO: VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-    vkl_images_layout(image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    vkl_images_layout(image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     vkl_images_usage(
         image,                       //
-        VK_IMAGE_USAGE_STORAGE_BIT | // TODO: VK_IMAGE_USAGE_SAMPLED_BIT | //
+        VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | //
             VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT);
     vkl_images_memory(image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     vkl_images_queue_access(image, VKL_DEFAULT_QUEUE_TRANSFER);
@@ -898,14 +897,18 @@ static void process_texture_copy(VklContext* context, VklTransfer tr)
     vkl_cmd_begin(cmds, 0);
 
     VklBarrier src_barrier = vkl_barrier(gpu);
+    vkl_barrier_stages(
+        &src_barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    vkl_barrier_images(&src_barrier, src->image);
+
     VklBarrier dst_barrier = vkl_barrier(gpu);
+    vkl_barrier_stages(
+        &dst_barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    vkl_barrier_images(&dst_barrier, dst->image);
 
     // Source image transition.
     if (src->image->layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
     {
-        vkl_barrier_stages(
-            &src_barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
-        vkl_barrier_images(&src_barrier, src->image);
         vkl_barrier_images_layout(
             &src_barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
         vkl_cmd_barrier(cmds, 0, &src_barrier);
@@ -913,9 +916,7 @@ static void process_texture_copy(VklContext* context, VklTransfer tr)
 
     // Destination image transition.
     {
-        vkl_barrier_stages(
-            &dst_barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
-        vkl_barrier_images(&dst_barrier, dst->image);
+        log_trace("destination image transition");
         vkl_barrier_images_layout(
             &dst_barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         vkl_cmd_barrier(cmds, 0, &dst_barrier);
@@ -939,7 +940,8 @@ static void process_texture_copy(VklContext* context, VklTransfer tr)
     vkCmdCopyImage(
         cmds->cmds[0],                                               //
         src->image->images[0], VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, //
-        dst->image->images[0], dst->image->layout, 1, &copy);
+        dst->image->images[0], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, //
+        1, &copy);
 
     // Source image transition.
     if (src->image->layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
@@ -952,6 +954,7 @@ static void process_texture_copy(VklContext* context, VklTransfer tr)
     // Destination image transition.
     if (dst->image->layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
     {
+        log_trace("destination image transition back");
         vkl_barrier_images_layout(
             &dst_barrier, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, dst->image->layout);
         vkl_cmd_barrier(cmds, 0, &dst_barrier);

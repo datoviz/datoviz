@@ -16,9 +16,9 @@ layout (std140, binding = 1) uniform Viewport {
     float dpi_scaling; // DPI  scaling
 } viewport;
 
-// layout (binding = 2) uniform sampler2D color_tex;
+layout (binding = 2) uniform sampler2D color_tex;
 
-#define USER_BINDING 2
+#define USER_BINDING 3
 
 vec4 transform(vec3 pos) {
     return (mvp.proj * mvp.view * mvp.model) * vec4(pos, 1.0);

@@ -48,13 +48,13 @@ static inline void _load_shader(
 /*************************************************************************************************/
 
 // Number of common bindings
-#define USER_BINDING 2
+#define USER_BINDING 3
 
 static void _common_bindings(VklGraphics* graphics)
 {
     vkl_graphics_slot(graphics, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // MVP
     vkl_graphics_slot(graphics, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // viewport
-    // vkl_graphics_slot(graphics, 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER); // color texture
+    vkl_graphics_slot(graphics, 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER); // color texture
 }
 
 
