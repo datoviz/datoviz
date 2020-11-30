@@ -24,6 +24,7 @@ struct TestGraphics
 
     uint32_t vertex_count;
     VkDeviceSize size;
+    float param;
     void* data;
 };
 
@@ -93,6 +94,15 @@ static void _graphics_refill(VklCanvas* canvas, VklPrivateEvent ev)
 /*  Graphics tests                                                                               */
 /*************************************************************************************************/
 
+static void _graphics_points_wheel_callback(VklCanvas* canvas, VklEvent ev)
+{
+    VklGpu* gpu = canvas->gpu;
+    TestGraphics* tg = ev.user_data;
+    tg->param += ev.u.w.dir[1] * .1;
+    tg->param = CLIP(tg->param, 1, 100);
+    vkl_upload_buffers(gpu->context, &tg->br_params, 0, sizeof(VklGraphicsPointsParams), &tg->param);
+}
+
 static int vklite2_graphics_points(VkyTestContext* context)
 {
     INIT_GRAPHICS(VKL_GRAPHICS_POINTS)
@@ -110,7 +120,8 @@ static int vklite2_graphics_points(VkyTestContext* context)
     tg.br_params = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointsParams));
     tg.texture = vkl_ctx_texture(gpu->context, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
 
-    VklGraphicsPointsParams params = {.point_size = 5.0f};
+    tg.param = 5.0f;
+    VklGraphicsPointsParams params = {.point_size = tg.param};
     vkl_upload_buffers(gpu->context, &tg.br_params, 0, sizeof(VklGraphicsPointsParams), &params);
 
     vkl_bindings_buffer(&tg.bindings, 0, &tg.br_mvp);
@@ -123,6 +134,9 @@ static int vklite2_graphics_points(VkyTestContext* context)
     vkl_bindings_update(&tg.bindings);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _graphics_refill, &tg);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
+
+    vkl_event_callback(canvas, VKL_EVENT_MOUSE_WHEEL, 0, _graphics_points_wheel_callback, &tg);
 
     vkl_app_run(app, 0);
 

@@ -840,7 +840,7 @@ static int vklite2_canvas_particles(VkyTestContext* context)
         canvas->user_data = visual;
         vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _particle_refill, visual);
         vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _particle_frame, visual);
-        vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, visual);
+        vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
         vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _particle_cursor, visual);
     }
 
