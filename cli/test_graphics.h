@@ -23,7 +23,7 @@ struct TestGraphics
     void* data;
 };
 
-static void _graphics_points_refill(VklCanvas* canvas, VklPrivateEvent ev)
+static void _graphics_refill(VklCanvas* canvas, VklPrivateEvent ev)
 {
     TestGraphics* tg = (TestGraphics*)ev.user_data;
     VklCommands* cmds = ev.u.rf.cmds[0];
@@ -50,44 +50,61 @@ static void _graphics_points_refill(VklCanvas* canvas, VklPrivateEvent ev)
 
 
 /*************************************************************************************************/
+/*  Macros                                                                                       */
+/*************************************************************************************************/
+
+#define INIT_GRAPHICS(type)                                                                       \
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);                                                      \
+    VklGpu* gpu = vkl_gpu(app, 0);                                                                \
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);                                 \
+    VklGraphics* graphics = vkl_graphics_builtin(canvas, VKL_GRAPHICS_POINTS);
+
+#define BEGIN_DATA(type, n)                                                                       \
+    TestGraphics tg = {.graphics = graphics};                                                     \
+    tg.vertex_count = (n);                                                                        \
+    VkDeviceSize size = tg.vertex_count * sizeof(type);                                           \
+    tg.br = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, size);                    \
+    type* data = calloc(tg.vertex_count, sizeof(type));                                           \
+    for (uint32_t i = 0; i < tg.vertex_count; i++)                                                \
+    {
+
+#define END_DATA                                                                                  \
+    }                                                                                             \
+    vkl_upload_buffers(gpu->context, &tg.br, 0, size, data);
+
+#define RANDN_POS(x)                                                                              \
+    x[0] = .25 * randn();                                                                         \
+    x[1] = .25 * randn();                                                                         \
+    x[2] = 0;
+
+#define RAND_COLOR(x)                                                                             \
+    x[0] = rand_byte();                                                                           \
+    x[1] = rand_byte();                                                                           \
+    x[2] = rand_byte();                                                                           \
+    x[3] = 255;
+
+
+
+/*************************************************************************************************/
 /*  Graphics tests                                                                               */
 /*************************************************************************************************/
 
 static int vklite2_graphics_points(VkyTestContext* context)
 {
-    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
-    VklGpu* gpu = vkl_gpu(app, 0);
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
-
-    VklGraphics* graphics = vkl_graphics_builtin(canvas, VKL_GRAPHICS_POINTS);
-    ASSERT(graphics != NULL);
-
-    TestGraphics tg = {0};
-    tg.graphics = graphics;
-    tg.vertex_count = 10000;
-    VkDeviceSize size = tg.vertex_count * sizeof(VklVertex);
-    tg.br = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, size);
-    VklVertex* data = calloc(tg.vertex_count, sizeof(VklVertex));
-    for (uint32_t i = 0; i < tg.vertex_count; i++)
-    {
-        data[i].pos[0] = .25 * randn();
-        data[i].pos[1] = .25 * randn();
-        data[i].pos[2] = 0;
-        data[i].color[0] = rand_byte();
-        data[i].color[1] = rand_byte();
-        data[i].color[2] = rand_byte();
-        data[i].color[3] = 128;
-    }
-    vkl_upload_buffers(gpu->context, &tg.br, 0, size, data);
+    INIT_GRAPHICS(VKL_GRAPHICS_POINTS)
+    BEGIN_DATA(VklVertex, 10000)
+    RANDN_POS(data[i].pos)
+    RAND_COLOR(data[i].color)
+    END_DATA
 
     // Create the bindings.
     tg.bindings = vkl_bindings(&graphics->slots);
     vkl_bindings_create(&tg.bindings, 1);
     vkl_bindings_update(&tg.bindings);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _graphics_points_refill, &tg);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _graphics_refill, &tg);
 
-    vkl_app_run(app, N_FRAMES);
+    vkl_app_run(app, 0);
 
     FREE(data);
     TEST_END
