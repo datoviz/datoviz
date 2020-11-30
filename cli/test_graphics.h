@@ -21,6 +21,7 @@ struct TestGraphics
     VklBufferRegions br_params;
     VklTexture* texture;
     VklBindings bindings;
+    VklMVP mvp;
 
     uint32_t vertex_count;
     VkDeviceSize size;
@@ -80,7 +81,7 @@ static void _graphics_refill(VklCanvas* canvas, VklPrivateEvent ev)
 #define RANDN_POS(x)                                                                              \
     x[0] = .25 * randn();                                                                         \
     x[1] = .25 * randn();                                                                         \
-    x[2] = 0;
+    x[2] = .25 * randn();
 
 #define RAND_COLOR(x)                                                                             \
     x[0] = rand_byte();                                                                           \
@@ -98,9 +99,16 @@ static void _graphics_points_wheel_callback(VklCanvas* canvas, VklEvent ev)
 {
     VklGpu* gpu = canvas->gpu;
     TestGraphics* tg = ev.user_data;
+
+    // Update point size.
     tg->param += ev.u.w.dir[1] * .1;
     tg->param = CLIP(tg->param, 1, 100);
     vkl_upload_buffers(gpu->context, &tg->br_params, 0, sizeof(VklGraphicsPointsParams), &tg->param);
+
+    // Update MVP.
+    tg->mvp.model[0][0] = .1 * tg->param;
+    tg->mvp.model[1][1] = .1 * tg->param;
+    vkl_upload_buffers(gpu->context, &tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
 }
 
 static int vklite2_graphics_points(VkyTestContext* context)
@@ -114,12 +122,19 @@ static int vklite2_graphics_points(VkyTestContext* context)
     // Create the bindings.
     tg.bindings = vkl_bindings(&graphics->slots);
 
-    // TODO: ubos
-    tg.br_mvp = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
+    // Binding resources.
+    tg.br_mvp = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklMVP));
     tg.br_viewport = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
     tg.br_params = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointsParams));
     tg.texture = vkl_ctx_texture(gpu->context, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
 
+    // Upload MVP.
+    glm_mat4_identity(tg.mvp.model);
+    glm_mat4_identity(tg.mvp.view);
+    glm_mat4_identity(tg.mvp.proj);
+    vkl_upload_buffers(gpu->context, &tg.br_mvp, 0, sizeof(VklMVP), &tg.mvp);
+
+    // Upload params.
     tg.param = 5.0f;
     VklGraphicsPointsParams params = {.point_size = tg.param};
     vkl_upload_buffers(gpu->context, &tg.br_params, 0, sizeof(VklGraphicsPointsParams), &params);

@@ -11,7 +11,7 @@ layout (location = 1) in vec4 color;
 layout (location = 0) out vec4 out_color;
 
 void main() {
-    gl_Position = vec4(pos, 1.0);
+    gl_Position = transform(pos);
     out_color = color;
     gl_PointSize = params.point_size;
 }

@@ -49,6 +49,7 @@ typedef enum
 typedef struct VklVertex VklVertex;
 typedef struct VklViewport VklViewport;
 typedef struct VklDataCoords VklDataCoords;
+typedef struct VklMVP VklMVP;
 typedef struct VklGraphicsPointsParams VklGraphicsPointsParams;
 
 
@@ -81,6 +82,15 @@ struct VklDataCoords
 {
     dvec4 data; // (tlx, tly, brx, bry)
     vec4 gpu; // (tlx, tly, brx, bry)
+};
+
+
+
+struct VklMVP
+{
+    mat4 model;
+    mat4 view;
+    mat4 proj;
 };
 
 
