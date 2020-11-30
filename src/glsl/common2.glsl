@@ -13,9 +13,9 @@ layout (std140, binding = 1) uniform Viewport {
     vec4 margins;
     uvec4 screen; // (tlx, tly, w, h)
     uvec4 framebuffer; // (tlx, tly, w, h)
-    dvec4 data; // (tlx, tly, brx, bry)
-    vec4 gpu; // (tlx, tly, brx, bry)
     float dpi_scaling; // DPI  scaling
 } viewport;
 
 // layout (binding = 2) uniform sampler2D color_tex;
+
+#define USER_BINDING 2

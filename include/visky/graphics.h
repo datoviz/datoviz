@@ -48,6 +48,8 @@ typedef enum
 
 typedef struct VklVertex VklVertex;
 typedef struct VklViewport VklViewport;
+typedef struct VklDataCoords VklDataCoords;
+typedef struct VklGraphicsPointsParams VklGraphicsPointsParams;
 
 
 
@@ -69,9 +71,23 @@ struct VklViewport
     vec4 margins;
     uvec4 screen; // (tlx, tly, w, h)
     uvec4 framebuffer; // (tlx, tly, w, h)
+    float dpi_scaling; // DPI  scaling
+};
+
+
+
+// TODO
+struct VklDataCoords
+{
     dvec4 data; // (tlx, tly, brx, bry)
     vec4 gpu; // (tlx, tly, brx, bry)
-    float dpi_scaling; // DPI  scaling
+};
+
+
+
+struct VklGraphicsPointsParams 
+{
+    float point_size;
 };
 
 

@@ -37,7 +37,6 @@ static inline void _load_shader(
     vkl_graphics_renderpass(graphics, &canvas->renderpass, 0);                                    \
     vkl_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_##x);                                   \
     vkl_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);                                    \
-    _common_bindings(graphics);
 
 // TODO: common bindings
 #define CREATE vkl_graphics_create(graphics);
@@ -47,6 +46,9 @@ static inline void _load_shader(
 /*************************************************************************************************/
 /*  Common                                                                                       */
 /*************************************************************************************************/
+
+// Number of common bindings
+#define USER_BINDING 2
 
 static void _common_bindings(VklGraphics* graphics)
 {
@@ -70,6 +72,9 @@ static void _graphics_points(VklCanvas* canvas, VklGraphics* graphics)
     vkl_graphics_vertex_binding(graphics, 0, sizeof(VklVertex));
     vkl_graphics_vertex_attr(graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VklVertex, pos));
     vkl_graphics_vertex_attr(graphics, 0, 1, VK_FORMAT_R8G8B8A8_UNORM, offsetof(VklVertex, color));
+
+    _common_bindings(graphics);
+    vkl_graphics_slot(graphics, USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
     CREATE
 }
