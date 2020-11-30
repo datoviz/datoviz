@@ -4,10 +4,18 @@ layout (std140, binding = 0) uniform MVP {
     mat4 proj;
 } mvp;
 
+struct VkViewport {
+    float x, y, w, h, dmin, dmax;
+};
+
 layout (std140, binding = 1) uniform Viewport {
-    vec4 viewport;          // in pixels: x, y, w, h, top left origin, margins excluded
-    vec4 margins;           // top right bottom left (=CSS order), in pixels
-    vec4 framebuffer_size;  // in pixels, w, h, top left origin, followed by aspect ratio in z component
+    VkViewport viewport; // Vulkan viewport
+    vec4 margins;
+    uvec4 screen; // (tlx, tly, w, h)
+    uvec4 framebuffer; // (tlx, tly, w, h)
+    dvec4 data; // (tlx, tly, brx, bry)
+    vec4 gpu; // (tlx, tly, brx, bry)
+    float dpi_scaling; // DPI  scaling
 } viewport;
 
 // layout (binding = 2) uniform sampler2D color_tex;

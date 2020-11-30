@@ -47,6 +47,7 @@ typedef enum
 /*************************************************************************************************/
 
 typedef struct VklVertex VklVertex;
+typedef struct VklViewport VklViewport;
 
 
 
@@ -58,6 +59,19 @@ struct VklVertex
 {
     vec3 pos;
     cvec4 color;
+};
+
+
+
+struct VklViewport
+{
+    VkViewport viewport; // Vulkan viewport
+    vec4 margins;
+    uvec4 screen; // (tlx, tly, w, h)
+    uvec4 framebuffer; // (tlx, tly, w, h)
+    dvec4 data; // (tlx, tly, brx, bry)
+    vec4 gpu; // (tlx, tly, brx, bry)
+    float dpi_scaling; // DPI  scaling
 };
 
 
