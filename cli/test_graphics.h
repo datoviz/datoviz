@@ -22,6 +22,7 @@ struct TestGraphics
     VklTexture* texture;
     VklBindings bindings;
     VklMVP mvp;
+    vec3 eye, center, up;
 
     uint32_t vertex_count;
     VkDeviceSize size;
@@ -158,6 +159,15 @@ static int vklite2_graphics_dynamic(VkyTestContext* context)
 }
 
 
+static void _graphics_3D_callback(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    VklGpu* gpu = canvas->gpu;
+    TestGraphics* tg = ev.user_data;
+    vec3 axis;
+    axis[1] = 1;
+    glm_rotate_make(tg->mvp.model, .5 * ev.u.t.time, axis);
+    vkl_upload_buffers(gpu->context, &tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
+}
 
 static int vklite2_graphics_3D(VkyTestContext* context)
 {
@@ -197,6 +207,13 @@ static int vklite2_graphics_3D(VkyTestContext* context)
     glm_mat4_identity(tg.mvp.model);
     glm_mat4_identity(tg.mvp.view);
     glm_mat4_identity(tg.mvp.proj);
+
+    tg.eye[2] = 2;
+    tg.up[1] = 1;
+    glm_lookat(tg.eye, tg.center, tg.up, tg.mvp.view);
+    float ratio = 1; // TODO: viewport.w / viewport.h;
+    glm_perspective(GLM_PI_4, ratio, 0.1f, 10.0f, tg.mvp.proj);
+
     vkl_upload_buffers(gpu->context, &tg.br_mvp, 0, sizeof(VklMVP), &tg.mvp);
 
     // Upload params.
@@ -213,7 +230,8 @@ static int vklite2_graphics_3D(VkyTestContext* context)
     vkl_bindings_create(&tg.bindings, 1);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _graphics_refill, &tg);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
+    //vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1.0 / 60, _graphics_3D_callback, &tg);
 
     vkl_app_run(app, 0);
     FREE(data);
