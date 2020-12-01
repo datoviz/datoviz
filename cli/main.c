@@ -187,6 +187,7 @@ static VkyTestCase TEST_CASES[] = {
 
     // graphics
     CASE_FIXTURE_NONE(vklite2_graphics_dynamic), //
+    CASE_FIXTURE_NONE(vklite2_graphics_3D), //
     CASE_FIXTURE_NONE(vklite2_graphics_points),  //
 
 

@@ -71,11 +71,8 @@ static void _graphics_refill(VklCanvas* canvas, VklPrivateEvent ev)
     VkDeviceSize size = tg.vertex_count * sizeof(type);                                           \
     tg.br_vert = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, size);               \
     type* data = calloc(tg.vertex_count, sizeof(type));                                           \
-    for (uint32_t i = 0; i < tg.vertex_count; i++)                                                \
-    {
 
 #define END_DATA                                                                                  \
-    }                                                                                             \
     vkl_upload_buffers(gpu->context, &tg.br_vert, 0, size, data);
 
 #define RANDN_POS(x)                                                                              \
@@ -115,8 +112,11 @@ static int vklite2_graphics_dynamic(VkyTestContext* context)
 {
     INIT_GRAPHICS(VKL_GRAPHICS_POINTS)
     BEGIN_DATA(VklVertex, 10000)
-    RANDN_POS(data[i].pos)
-    RAND_COLOR(data[i].color)
+    for (uint32_t i = 0; i < tg.vertex_count; i++)
+    {
+        RANDN_POS(data[i].pos)
+        RAND_COLOR(data[i].color)
+    }
     END_DATA
 
     // Create the bindings.
@@ -142,9 +142,8 @@ static int vklite2_graphics_dynamic(VkyTestContext* context)
     // Bindings
     vkl_bindings_buffer(&tg.bindings, 0, &tg.br_mvp);
     vkl_bindings_buffer(&tg.bindings, 1, &tg.br_viewport);
-    // TODO: color
-    // vkl_bindings_texture(&tg.bindings, 2, tg.texture->image, tg.texture->sampler);
-    vkl_bindings_buffer(&tg.bindings, 2, &tg.br_params);
+    vkl_bindings_texture(&tg.bindings, 2, tg.texture->image, tg.texture->sampler);
+    vkl_bindings_buffer(&tg.bindings, 3, &tg.br_params);
     
     vkl_bindings_create(&tg.bindings, 1);
 
@@ -157,6 +156,70 @@ static int vklite2_graphics_dynamic(VkyTestContext* context)
     FREE(data);
     TEST_END
 }
+
+
+
+static int vklite2_graphics_3D(VkyTestContext* context)
+{
+    INIT_GRAPHICS(VKL_GRAPHICS_POINTS)
+    BEGIN_DATA(VklVertex, 3)
+
+    // Top red
+    data[0].pos[0] = 0;
+    data[0].pos[1] = .5;
+    data[0].color[0] = 255;
+    data[0].color[3] = 255;
+
+    // Bottom left green
+    data[1].pos[0] = -.5;
+    data[1].pos[1] = -.5;
+    data[1].color[1] = 255;
+    data[1].color[3] = 255;
+
+    // Bottom right blue
+    data[2].pos[0] = +.5;
+    data[2].pos[1] = -.5;
+    data[2].color[2] = 255;
+    data[2].color[3] = 255;
+
+    END_DATA
+
+    // Create the bindings.
+    tg.bindings = vkl_bindings(&graphics->slots);
+
+    // Binding resources.
+    tg.br_mvp = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklMVP));
+    tg.br_viewport = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
+    tg.br_params = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointsParams));
+    tg.texture = vkl_ctx_texture(gpu->context, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+
+    // Upload MVP.
+    glm_mat4_identity(tg.mvp.model);
+    glm_mat4_identity(tg.mvp.view);
+    glm_mat4_identity(tg.mvp.proj);
+    vkl_upload_buffers(gpu->context, &tg.br_mvp, 0, sizeof(VklMVP), &tg.mvp);
+
+    // Upload params.
+    tg.param = 50.0f;
+    VklGraphicsPointsParams params = {.point_size = tg.param};
+    vkl_upload_buffers(gpu->context, &tg.br_params, 0, sizeof(VklGraphicsPointsParams), &params);
+
+    // Bindings
+    vkl_bindings_buffer(&tg.bindings, 0, &tg.br_mvp);
+    vkl_bindings_buffer(&tg.bindings, 1, &tg.br_viewport);
+    vkl_bindings_texture(&tg.bindings, 2, tg.texture->image, tg.texture->sampler);
+    vkl_bindings_buffer(&tg.bindings, 3, &tg.br_params);
+    
+    vkl_bindings_create(&tg.bindings, 1);
+
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _graphics_refill, &tg);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
+
+    vkl_app_run(app, 0);
+    FREE(data);
+    TEST_END
+}
+
 
 
 
@@ -190,8 +253,11 @@ static int vklite2_graphics_points(VkyTestContext* context)
 {
     INIT_GRAPHICS(VKL_GRAPHICS_POINTS)
     BEGIN_DATA(VklVertex, 10000)
-    RANDN_POS(data[i].pos)
-    RAND_COLOR(data[i].color)
+    for (uint32_t i = 0; i < tg.vertex_count; i++)
+    {
+        RANDN_POS(data[i].pos)
+        RAND_COLOR(data[i].color)
+    }
     END_DATA
 
     // Bindings and uniform buffers.

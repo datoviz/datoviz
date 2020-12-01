@@ -21,5 +21,7 @@ layout (binding = 2) uniform sampler2D color_tex;
 #define USER_BINDING 3
 
 vec4 transform(vec3 pos) {
-    return (mvp.proj * mvp.view * mvp.model) * vec4(pos, 1.0);
+    vec4 tr = (mvp.proj * mvp.view * mvp.model) * vec4(pos, 1.0);
+    tr.y = -tr.y; // Vulkan swaps top and bottom in its device coordinate system.
+    return tr;
 }

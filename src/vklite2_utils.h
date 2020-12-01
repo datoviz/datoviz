@@ -1343,6 +1343,7 @@ static void update_descriptor_set(
         else if (is_descriptor_type_image(binding_type))
         {
             log_trace("bind texture for binding point %d", i);
+            ASSERT(images[i] != NULL);
             image_infos[i].imageLayout = images[i]->layout;
             image_infos[i].imageView = images[i]->image_views[idx];
             image_infos[i].sampler = samplers[i]->sampler;
