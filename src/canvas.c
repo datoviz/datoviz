@@ -1326,7 +1326,8 @@ static void _timer_callbacks(VklCanvas* canvas)
 
             // At what time was the last TIMER event for this callback?
             last_time = canvas->canvas_callbacks[i].idx * interval;
-            ASSERT(cur_time >= last_time);
+            if (cur_time < last_time)
+                log_warn("%.3f %.3f", cur_time, last_time);
 
             // What is the next expected time?
             expected_time = (canvas->canvas_callbacks[i].idx + 1) * interval;
