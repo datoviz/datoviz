@@ -156,37 +156,8 @@ enqueue data transfers
 
 
 /*************************************************************************************************/
-/*  Structs                                                                                      */
+/*  Source structs                                                                               */
 /*************************************************************************************************/
-
-struct VklVisual {
-    VklCanvas* canvas;
-
-    uint32_t graphics_count;
-    VklGraphics* graphics[VKL_MAX_GRAPHICS_PER_VISUAL];
-
-    uint32_t compute_count;
-    VklCompute* computes[VKL_MAX_COMPUTES_PER_VISUAL];
-
-    VklVisualFillCallback fill_callback;
-    VklVisualDataCallback data_callback;
-
-    // User data
-    uint32_t item_count;
-    uint32_t group_count;
-    uint32_t group_sizes[VKL_MAX_VISUAL_GROUPS];
-    uint32_t source_count;
-    VklSource sources[VKL_MAX_VISUAL_SOURCES];
-
-    // GPU data
-    uint32_t vertex_count, index_count;
-    VklBufferRegions vertex_buf;
-    VklBufferRegions index_buf;
-    VklBindings gbindings[VKL_MAX_GRAPHICS_PER_VISUAL];
-    VklBindings cbindings[VKL_MAX_GRAPHICS_PER_VISUAL];
-};
-
-
 
 struct VklVisualDataArray {
     VkDeviceSize size;
@@ -231,6 +202,43 @@ struct VklSource {// Identifier of the prop
 };
 
 
+
+/*************************************************************************************************/
+/*  Visual struct                                                                                */
+/*************************************************************************************************/
+
+struct VklVisual {
+    VklCanvas* canvas;
+
+    uint32_t graphics_count;
+    VklGraphics* graphics[VKL_MAX_GRAPHICS_PER_VISUAL];
+
+    uint32_t compute_count;
+    VklCompute* computes[VKL_MAX_COMPUTES_PER_VISUAL];
+
+    VklVisualFillCallback fill_callback;
+    VklVisualDataCallback data_callback;
+
+    // User data
+    uint32_t item_count;
+    uint32_t group_count;
+    uint32_t group_sizes[VKL_MAX_VISUAL_GROUPS];
+    uint32_t source_count;
+    VklSource sources[VKL_MAX_VISUAL_SOURCES];
+
+    // GPU data
+    uint32_t vertex_count, index_count;
+    VklBufferRegions vertex_buf;
+    VklBufferRegions index_buf;
+    VklBindings gbindings[VKL_MAX_GRAPHICS_PER_VISUAL];
+    VklBindings cbindings[VKL_MAX_GRAPHICS_PER_VISUAL];
+};
+
+
+
+/*************************************************************************************************/
+/*  Event structs                                                                                */
+/*************************************************************************************************/
 
 // passed to visual callback when it needs to refill the command buffers
 struct VklVisualFillEvent { 
@@ -287,7 +295,7 @@ VKY_EXPORT void vkl_visual_size(VklVisual* visual, uint32_t item_count, uint32_t
 
 VKY_EXPORT void vkl_visual_group(VklVisual* visual, uint32_t group_idx, uint32_t size);
 
-VKY_EXPORT void vkl_visual_data(VklVisual* visual, VklPropType type, uint32_t idx, VklDeviceSize size, const void* data);
+VKY_EXPORT void vkl_visual_data(VklVisual* visual, VklPropType type, uint32_t idx, VkDeviceSize size, const void* data);
 
 VKY_EXPORT void vkl_visual_data_buffer(VklVisual* visual, VklPropType type, uint32_t idx, VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size);
 
