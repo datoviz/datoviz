@@ -295,7 +295,6 @@ VKY_EXPORT void vkl_visual_prop(
     VklVisual* visual, VklPropType prop, uint32_t idx, VklDataType dtype, VklPropLoc loc,
     uint32_t binding_idx, uint32_t field_idx, VkDeviceSize offset);
 
-// check graphics has been created
 VKY_EXPORT void vkl_visual_graphics(VklVisual* visual, VklGraphics* graphics);
 
 VKY_EXPORT void vkl_visual_compute(VklVisual* visual, VklCompute* compute);
