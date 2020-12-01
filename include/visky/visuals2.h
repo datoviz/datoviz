@@ -2,6 +2,19 @@
 #define VKL_VISUALS_HEADER
 
 #include "vklite2.h"
+#include "graphics.h"
+#include "context.h"
+
+
+
+/*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define VKL_MAX_GRAPHICS_PER_VISUAL 256
+#define VKL_MAX_COMPUTES_PER_VISUAL 256
+#define VKL_MAX_VISUAL_GROUPS 1024
+#define VKL_MAX_VISUAL_SOURCES 256
 
 
 
@@ -76,8 +89,6 @@ typedef enum {
 } VklVisualVariant;
 
 
-
-
 typedef enum {
     VKL_VISUAL_NONE,
 
@@ -105,15 +116,42 @@ typedef enum {
 
 
 
-
-
-
-
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
+typedef struct VklVisual VklVisual;
+typedef struct VklSource VklSource;
 
+typedef struct VklVisualDataArray VklVisualDataArray;
+typedef struct VklVisualDataBuffer VklVisualDataBuffer;
+typedef struct VklVisualDataTexture VklVisualDataTexture;
+typedef union VklVisualData VklVisualData;
+
+typedef struct VklVisualFillEvent VklVisualFillEvent;
+typedef struct VklVisualDataEvent VklVisualDataEvent;
+
+
+
+/*************************************************************************************************/
+/*  Callbacks                                                                                    */
+/*************************************************************************************************/
+
+typedef void (*VklVisualFillCallback)(VklVisual* visual, VklVisualFillEvent ev);
+/*
+called by the scene event callback in response to a REFILL event
+default fill callback: viewport, bind vbuf, ibuf, etc. bind the first graphics only and no compute...
+*/
+
+
+
+typedef void (*VklVisualDataCallback)(VklVisual* visual, VklVisualDataEvent ev);
+/*
+called by the scene event callback in response to a DATA event
+baking process
+visual data sources, item count, groups ==> bindings, vertex buffer, index buffer
+enqueue data transfers
+*/
 
 
 
@@ -121,7 +159,95 @@ typedef enum {
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+struct VklVisual {
+    VklCanvas* canvas;
 
+    uint32_t graphics_count;
+    VklGraphics* graphics[VKL_MAX_GRAPHICS_PER_VISUAL];
+
+    uint32_t compute_count;
+    VklCompute* computes[VKL_MAX_COMPUTES_PER_VISUAL];
+
+    VklVisualFillCallback fill_callback;
+    VklVisualDataCallback data_callback;
+
+    // User data
+    uint32_t item_count;
+    uint32_t group_count;
+    uint32_t group_sizes[VKL_MAX_VISUAL_GROUPS];
+    uint32_t source_count;
+    VklSource sources[VKL_MAX_VISUAL_SOURCES];
+
+    // GPU data
+    uint32_t vertex_count, index_count;
+    VklBufferRegions vertex_buf;
+    VklBufferRegions index_buf;
+    VklBindings gbindings[VKL_MAX_GRAPHICS_PER_VISUAL];
+    VklBindings cbindings[VKL_MAX_GRAPHICS_PER_VISUAL];
+};
+
+
+
+struct VklVisualDataArray {
+    VkDeviceSize size;
+    const void* data;
+};
+
+struct VklVisualDataBuffer {
+    VklBufferRegions br;
+    VkDeviceSize offset;
+    VkDeviceSize size;
+};
+
+struct VklVisualDataTexture {
+    VklTexture* texture;
+    uvec2 offset;
+    uvec2 shape;
+};
+
+union VklVisualData
+{
+    VklVisualDataArray a;
+    VklVisualDataBuffer b;
+    VklVisualDataTexture t;
+};
+
+
+
+struct VklSource {// Identifier of the prop
+    VklPropType prop;
+    uint32_t prop_idx;
+
+    // Visual characteristics of the prop
+    VklDataType dtype;
+    VklPropLoc loc;
+    uint32_t binding_idx;
+    uint32_t field_idx;
+    VkDeviceSize offset;
+
+    // Specified by the user
+    VklPropBinding binding; // initially, NONE, filled when the user specifies the visual's data
+    VklVisualData u;
+};
+
+
+
+// passed to visual callback when it needs to refill the command buffers
+struct VklVisualFillEvent { 
+    VklCommands* cmds;
+    uint32_t idx;
+    VkClearColorValue clear_color;
+    VklViewport viewport;
+    void* user_data;
+};
+
+
+
+struct VklVisualDataEvent { // passed to visual callback when it needs to update its data
+    VklViewport viewport;
+    // const void* data; // only used with CPU prop binding
+    const void* user_data;
+};
 
 
 
@@ -129,6 +255,43 @@ typedef enum {
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+VKY_EXPORT VklVisual vkl_visual(VklCanvas* canvas);
+
+VKY_EXPORT void vkl_visual_create(VklVisual* visual);
+
+VKY_EXPORT void vkl_visual_destroy(VklVisual* visual);
+
+// Builtin visuals
+VKY_EXPORT void vkl_visual_builtin(VklVisual* visual, VklVisualBuiltin builtin);
+
+VKY_EXPORT void vkl_visual_variant(VklVisual*visual, VklVisualVariant variant);
+
+VKY_EXPORT void vkl_visual_transform(VklVisual* visual, VklTransformAxis transform_axis);
+
+// Custom visuals
+VKY_EXPORT void vkl_visual_prop(
+    VklVisual* visual, VklPropType prop, uint32_t idx,
+    VklDataType dtype, VklPropLoc loc,
+    uint32_t binding_idx, uint32_t field_idx, VkDeviceSize offset);
+
+// check graphics has been created
+VKY_EXPORT void vkl_visual_graphics(VklVisual* visual, VklGraphics* graphics);
+
+VKY_EXPORT void vkl_visual_compute(VklVisual* visual, VklCompute* compute);
+
+VKY_EXPORT void vkl_visual_bake(VklVisual* visual, VklVisualDataCallback callback);
+
+VKY_EXPORT void vkl_visual_fill(VklVisual* visual, VklVisualFillCallback callback);
+
+VKY_EXPORT void vkl_visual_size(VklVisual* visual, uint32_t item_count, uint32_t group_count);
+
+VKY_EXPORT void vkl_visual_group(VklVisual* visual, uint32_t group_idx, uint32_t size);
+
+VKY_EXPORT void vkl_visual_data(VklVisual* visual, VklPropType type, uint32_t idx, VklDeviceSize size, const void* data);
+
+VKY_EXPORT void vkl_visual_data_buffer(VklVisual* visual, VklPropType type, uint32_t idx, VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size);
+
+VKY_EXPORT void vkl_visual_data_texture(VklVisual* visual, VklPropType type, uint32_t idx, VklTexture* texture, uvec2 offset, uvec2 shape);
 
 
 
