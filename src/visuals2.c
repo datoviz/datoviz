@@ -26,25 +26,6 @@ void vkl_visual_destroy(VklVisual* visual) { ASSERT(visual != NULL); }
 
 
 /*************************************************************************************************/
-/*  Builtin visuals                                                                              */
-/*************************************************************************************************/
-
-void vkl_visual_builtin(VklVisual* visual, VklVisualBuiltin builtin) { ASSERT(visual != NULL); }
-
-
-
-void vkl_visual_variant(VklVisual* visual, VklVisualVariant variant) { ASSERT(visual != NULL); }
-
-
-
-void vkl_visual_transform(VklVisual* visual, VklTransformAxis transform_axis)
-{
-    ASSERT(visual != NULL);
-}
-
-
-
-/*************************************************************************************************/
 /*  Custom visuals                                                                               */
 /*************************************************************************************************/
 
