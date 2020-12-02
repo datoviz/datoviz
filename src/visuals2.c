@@ -17,10 +17,6 @@ VklVisual vkl_visual(VklCanvas* canvas)
 
 
 
-void vkl_visual_create(VklVisual* visual) { ASSERT(visual != NULL); }
-
-
-
 void vkl_visual_destroy(VklVisual* visual) { ASSERT(visual != NULL); }
 
 
@@ -71,6 +67,8 @@ void vkl_visual_fill(VklVisual* visual, VklVisualFillCallback callback) { ASSERT
 void vkl_visual_size(VklVisual* visual, uint32_t item_count, uint32_t group_count)
 {
     ASSERT(visual != NULL);
+    visual->item_count = item_count;
+    visual->group_count = group_count;
 }
 
 
@@ -78,14 +76,25 @@ void vkl_visual_size(VklVisual* visual, uint32_t item_count, uint32_t group_coun
 void vkl_visual_group(VklVisual* visual, uint32_t group_idx, uint32_t size)
 {
     ASSERT(visual != NULL);
+    // TODO
 }
 
 
 
-void vkl_visual_data(
-    VklVisual* visual, VklPropType type, uint32_t idx, VkDeviceSize size, const void* data)
+void vkl_visual_data(VklVisual* visual, VklPropType type, uint32_t idx, const void* data)
 {
     ASSERT(visual != NULL);
+    vkl_visual_data_partial(visual, type, idx, 0, visual->item_count, data);
+}
+
+
+
+void vkl_visual_data_partial(
+    VklVisual* visual, VklPropType type, uint32_t idx, uint32_t first_item, uint32_t item_count,
+    const void* data)
+{
+    ASSERT(visual != NULL);
+    // TODO
 }
 
 
@@ -95,6 +104,7 @@ void vkl_visual_data_buffer(
     VkDeviceSize size)
 {
     ASSERT(visual != NULL);
+    // TODO
 }
 
 
@@ -104,4 +114,5 @@ void vkl_visual_data_texture(
     uvec2 shape)
 {
     ASSERT(visual != NULL);
+    // TODO
 }

@@ -93,6 +93,6 @@ struct VklScene
 
 VKY_EXPORT VklScene vkl_scene(VklCanvas* canvas);
 
-VKY_EXPORT VklVisual* vkl_visual_builtin(VklScene* scene, VklVisualBuiltin builtin, int flags);
+VKY_EXPORT VklVisual* vkl_visual_builtin(VklScene* scene, VklVisualBuiltin type, int flags);
 
 VKY_EXPORT void vkl_scene_destroy(VklScene* scene);

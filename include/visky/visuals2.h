@@ -242,7 +242,7 @@ struct VklVisualDataEvent
 
 VKY_EXPORT VklVisual vkl_visual(VklCanvas* canvas);
 
-VKY_EXPORT void vkl_visual_create(VklVisual* visual);
+// VKY_EXPORT void vkl_visual_create(VklVisual* visual);
 
 VKY_EXPORT void vkl_visual_destroy(VklVisual* visual);
 
@@ -263,8 +263,12 @@ VKY_EXPORT void vkl_visual_size(VklVisual* visual, uint32_t item_count, uint32_t
 
 VKY_EXPORT void vkl_visual_group(VklVisual* visual, uint32_t group_idx, uint32_t size);
 
-VKY_EXPORT void vkl_visual_data(
-    VklVisual* visual, VklPropType type, uint32_t idx, VkDeviceSize size, const void* data);
+VKY_EXPORT void
+vkl_visual_data(VklVisual* visual, VklPropType type, uint32_t idx, const void* data);
+
+VKY_EXPORT void vkl_visual_data_partial(
+    VklVisual* visual, VklPropType type, uint32_t idx, uint32_t first_item, uint32_t item_count,
+    const void* data);
 
 VKY_EXPORT void vkl_visual_data_buffer(
     VklVisual* visual, VklPropType type, uint32_t idx, VklBufferRegions br, VkDeviceSize offset,
