@@ -235,7 +235,7 @@ static int vklite2_graphics_3D(VkyTestContext* context)
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1.0 / 60, _graphics_3D_callback, &tg);
 
-    vkl_app_run(app, 0);
+    vkl_app_run(app, N_FRAMES);
     FREE(data);
     TEST_END
 }

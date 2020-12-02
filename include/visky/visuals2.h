@@ -13,7 +13,7 @@
 
 #define VKL_MAX_GRAPHICS_PER_VISUAL 256
 #define VKL_MAX_COMPUTES_PER_VISUAL 256
-#define VKL_MAX_VISUAL_GROUPS       1024
+#define VKL_MAX_VISUAL_GROUPS       16384
 #define VKL_MAX_VISUAL_SOURCES      256
 
 
@@ -35,6 +35,21 @@ typedef enum
 {
     VKL_DTYPE_NONE,
 
+    VKL_DTYPE_CHAR, // 8 bits, unsigned
+    VKL_DTYPE_CVEC2,
+    VKL_DTYPE_CVEC3,
+    VKL_DTYPE_CVEC4,
+
+    VKL_DTYPE_UINT, // 32 bits, unsigned
+    VKL_DTYPE_UVEC2,
+    VKL_DTYPE_UVEC3,
+    VKL_DTYPE_UVEC4,
+
+    VKL_DTYPE_INT, // 32 bits, signed
+    VKL_DTYPE_IVEC2,
+    VKL_DTYPE_IVEC3,
+    VKL_DTYPE_IVEC4,
+
     VKL_DTYPE_FLOAT, // 32 bits
     VKL_DTYPE_VEC2,
     VKL_DTYPE_VEC3,
@@ -44,21 +59,6 @@ typedef enum
     VKL_DTYPE_DVEC2,
     VKL_DTYPE_DVEC3,
     VKL_DTYPE_DVEC4,
-
-    VKL_DTYPE_UINT, // 32 bits, unsigned
-    VKL_DTYPE_UVEC2,
-    VKL_DTYPE_UVEC3,
-    VKL_DTYPE_UVEC4,
-
-    VKL_DTYPE_CHAR, // 8 bits, unsigned
-    VKL_DTYPE_CVEC2,
-    VKL_DTYPE_CVEC3,
-    VKL_DTYPE_CVEC4,
-
-    VKL_DTYPE_INT, // 32 bits, signed
-    VKL_DTYPE_IVEC2,
-    VKL_DTYPE_IVEC3,
-    VKL_DTYPE_IVEC4,
 } VklDataType;
 
 
@@ -130,6 +130,7 @@ enqueue data transfers
 
 struct VklVisualDataArray
 {
+    VkDeviceSize offset;
     VkDeviceSize size;
     const void* data;
 };
@@ -164,10 +165,11 @@ struct VklSource
 
     // Visual characteristics of the prop
     VklDataType dtype;
+    VkDeviceSize dtype_size;
     VklPropLoc loc;
     uint32_t binding_idx;
     uint32_t field_idx;
-    VkDeviceSize offset;
+    VkDeviceSize offset; // used by vertex attributes
 
     // Specified by the user
     VklPropBinding binding; // initially, NONE, filled when the user specifies the visual's data
