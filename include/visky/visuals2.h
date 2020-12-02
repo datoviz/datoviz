@@ -182,6 +182,7 @@ struct VklSource
 
 struct VklVisual
 {
+    VklObject obj;
     VklCanvas* canvas;
 
     uint32_t graphics_count;

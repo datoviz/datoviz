@@ -64,7 +64,7 @@ static void _graphics_refill(VklCanvas* canvas, VklPrivateEvent ev)
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);                                                      \
     VklGpu* gpu = vkl_gpu(app, 0);                                                                \
     VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);                                 \
-    VklGraphics* graphics = vkl_graphics_builtin(canvas, VKL_GRAPHICS_POINTS);
+    VklGraphics* graphics = vkl_graphics_builtin(canvas, VKL_GRAPHICS_POINTS, 0);
 
 #define BEGIN_DATA(type, n)                                                                       \
     TestGraphics tg = {.graphics = graphics};                                                     \

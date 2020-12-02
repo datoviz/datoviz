@@ -12,6 +12,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
+#define VKL_MAX_VISUALS 1024
+
 
 
 /*************************************************************************************************/
@@ -53,6 +55,7 @@ typedef enum
     VKL_VISUAL_SURFACE,
     VKL_VISUAL_VOLUME,
     VKL_VISUAL_FAKE_SPHERE,
+    VKL_VISUAL_COUNT,
 } VklVisualBuiltin;
 
 
@@ -62,11 +65,34 @@ typedef enum
 
 
 /*************************************************************************************************/
+/*  Typedefs                                                                                     */
+/*************************************************************************************************/
+
+typedef struct VklScene VklScene;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+struct VklScene
+{
+    VklObject obj;
+    VklCanvas* canvas;
+
+    uint32_t max_visuals;
+    VklVisual* visuals;
+};
+
+
+
+/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-VKY_EXPORT void vkl_visual_builtin(VklVisual* visual, VklVisualBuiltin builtin);
+VKY_EXPORT VklScene vkl_scene(VklCanvas* canvas);
 
-VKY_EXPORT void vkl_visual_variant(VklVisual* visual, VklVisualVariant variant);
+VKY_EXPORT VklVisual* vkl_visual_builtin(VklScene* scene, VklVisualBuiltin builtin, int flags);
 
-VKY_EXPORT void vkl_visual_transform(VklVisual* visual, VklTransformAxis transform_axis);
+VKY_EXPORT void vkl_scene_destroy(VklScene* scene);

@@ -85,7 +85,7 @@ static void _graphics_points(VklCanvas* canvas, VklGraphics* graphics)
 /*  Graphics                                                                                     */
 /*************************************************************************************************/
 
-VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type)
+VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type, int flags)
 {
     ASSERT(canvas != NULL);
     ASSERT(canvas->gpu != NULL);

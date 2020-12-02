@@ -117,7 +117,8 @@ struct VklGraphicsPointsParams
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-VKY_EXPORT VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type);
+VKY_EXPORT VklGraphics*
+vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type, int flags);
 
 
 
