@@ -27,7 +27,10 @@
 /*  Graphics tests                                                                               */
 /*************************************************************************************************/
 
-static void _visual_fill() {}
+static void _visual_fill(VklVisual* visual, VklVisualFillEvent ev)
+{
+    //
+}
 
 static int vklite2_visuals_1(VkyTestContext* context)
 {
@@ -46,7 +49,7 @@ static int vklite2_visuals_1(VkyTestContext* context)
         &visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_PROP_LOC_ATTRIBUTE, 0, 1,
         offsetof(VklVertex, color));
 
-    // Grpahics.
+    // Graphics.
     vkl_visual_graphics(&visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_POINTS, 0));
     vkl_visual_fill(&visual, _visual_fill);
 
@@ -66,7 +69,7 @@ static int vklite2_visuals_1(VkyTestContext* context)
     vkl_visual_data(&visual, VKL_PROP_COLOR, 0, color);
 
     // Run and end.
-    vkl_app_run(app, 0);
+    vkl_app_run(app, N_FRAMES);
     vkl_visual_destroy(&visual);
     FREE(pos);
     FREE(color);

@@ -12,12 +12,19 @@ VklVisual vkl_visual(VklCanvas* canvas)
 {
     VklVisual visual = {0};
 
+    // TODO
+
+    obj_created(&visual.obj);
     return visual;
 }
 
 
 
-void vkl_visual_destroy(VklVisual* visual) { ASSERT(visual != NULL); }
+void vkl_visual_destroy(VklVisual* visual)
+{
+    ASSERT(visual != NULL);
+    // TODO
+}
 
 
 
@@ -30,6 +37,20 @@ void vkl_visual_prop(
     uint32_t binding_idx, uint32_t field_idx, VkDeviceSize offset)
 {
     ASSERT(visual != NULL);
+    if (visual->source_count >= VKL_MAX_VISUAL_SOURCES)
+    {
+        log_error("maximum number of props per visual reached");
+        return;
+    }
+    VklSource source = {0};
+    source.prop = prop;
+    source.prop_idx = idx;
+    source.dtype = dtype;
+    source.loc = loc;
+    source.binding_idx = binding_idx;
+    source.field_idx = field_idx;
+    source.offset = offset;
+    visual->sources[visual->source_count++] = source;
 }
 
 
@@ -39,6 +60,12 @@ void vkl_visual_graphics(VklVisual* visual, VklGraphics* graphics)
     ASSERT(visual != NULL);
     ASSERT(graphics != NULL);
     ASSERT(is_obj_created(&graphics->obj));
+    if (visual->graphics_count >= VKL_MAX_GRAPHICS_PER_VISUAL)
+    {
+        log_error("maximum number of graphics per visual reached");
+        return;
+    }
+    visual->graphics[visual->graphics_count++] = graphics;
 }
 
 
@@ -48,15 +75,29 @@ void vkl_visual_compute(VklVisual* visual, VklCompute* compute)
     ASSERT(visual != NULL);
     ASSERT(compute != NULL);
     ASSERT(is_obj_created(&compute->obj));
+    if (visual->compute_count >= VKL_MAX_COMPUTES_PER_VISUAL)
+    {
+        log_error("maximum number of computes per visual reached");
+        return;
+    }
+    visual->computes[visual->compute_count++] = compute;
 }
 
 
 
-void vkl_visual_bake(VklVisual* visual, VklVisualDataCallback callback) { ASSERT(visual != NULL); }
+void vkl_visual_bake(VklVisual* visual, VklVisualDataCallback callback)
+{
+    ASSERT(visual != NULL);
+    visual->data_callback = callback;
+}
 
 
 
-void vkl_visual_fill(VklVisual* visual, VklVisualFillCallback callback) { ASSERT(visual != NULL); }
+void vkl_visual_fill(VklVisual* visual, VklVisualFillCallback callback)
+{
+    ASSERT(visual != NULL);
+    visual->fill_callback = callback;
+}
 
 
 
