@@ -15,6 +15,7 @@
 #define VKL_MAX_COMPUTES_PER_VISUAL 256
 #define VKL_MAX_VISUAL_GROUPS       16384
 #define VKL_MAX_VISUAL_SOURCES      256
+#define VKL_MAX_VISUAL_RESOURCES    256
 
 
 
@@ -207,6 +208,8 @@ struct VklVisual
     uint32_t vertex_count, index_count;
     VklBufferRegions vertex_buf;
     VklBufferRegions index_buf;
+    VklBufferRegions buffers[VKL_MAX_VISUAL_RESOURCES];
+    VklTexture* textures[VKL_MAX_VISUAL_RESOURCES];
     VklBindings gbindings[VKL_MAX_GRAPHICS_PER_VISUAL];
     VklBindings cbindings[VKL_MAX_GRAPHICS_PER_VISUAL];
 };
@@ -221,7 +224,7 @@ struct VklVisual
 struct VklVisualFillEvent
 {
     VklCommands* cmds;
-    uint32_t idx;
+    uint32_t cmd_idx;
     VkClearColorValue clear_color;
     VklViewport viewport;
     void* user_data;
@@ -239,7 +242,7 @@ struct VklVisualDataEvent
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Visual creation                                                                              */
 /*************************************************************************************************/
 
 VKY_EXPORT VklVisual vkl_visual(VklCanvas* canvas);
@@ -257,9 +260,11 @@ VKY_EXPORT void vkl_visual_graphics(VklVisual* visual, VklGraphics* graphics);
 
 VKY_EXPORT void vkl_visual_compute(VklVisual* visual, VklCompute* compute);
 
-VKY_EXPORT void vkl_visual_bake(VklVisual* visual, VklVisualDataCallback callback);
 
-VKY_EXPORT void vkl_visual_fill(VklVisual* visual, VklVisualFillCallback callback);
+
+/*************************************************************************************************/
+/*  User-facing functions                                                                        */
+/*************************************************************************************************/
 
 VKY_EXPORT void vkl_visual_size(VklVisual* visual, uint32_t item_count, uint32_t group_count);
 
@@ -279,6 +284,22 @@ VKY_EXPORT void vkl_visual_data_buffer(
 VKY_EXPORT void vkl_visual_data_texture(
     VklVisual* visual, VklPropType type, uint32_t idx, //
     VklTexture* texture, uvec3 offset, uvec3 shape);
+
+
+
+/*************************************************************************************************/
+/*  Visual events                                                                                */
+/*************************************************************************************************/
+
+VKY_EXPORT void vkl_visual_data_callback(VklVisual* visual, VklVisualDataCallback callback);
+
+VKY_EXPORT void vkl_visual_fill_callback(VklVisual* visual, VklVisualFillCallback callback);
+
+VKY_EXPORT void vkl_visual_data_event(VklVisual* visual);
+
+VKY_EXPORT void vkl_visual_fill_event(
+    VklVisual* visual, VkClearColorValue clear_color, VklCommands* cmds, uint32_t cmd_idx,
+    VklViewport viewport, void* user_data);
 
 
 

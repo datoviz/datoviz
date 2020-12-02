@@ -122,3 +122,34 @@ VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type, in
     ASSERT(is_obj_created(&graphics->obj));
     return graphics;
 }
+
+
+
+/*************************************************************************************************/
+/*  Viewpor                                                                                      */
+/*************************************************************************************************/
+
+VklViewport vkl_viewport_full(VklCanvas* canvas)
+{
+    ASSERT(canvas != NULL);
+    VklViewport viewport = {0};
+    viewport.viewport.x = 0;
+    viewport.viewport.y = 0;
+
+    viewport.viewport.width = (float)canvas->swapchain.images->width;
+    viewport.viewport.height = (float)canvas->swapchain.images->height;
+
+    viewport.size_framebuffer[2] = viewport.viewport.width;
+    viewport.size_framebuffer[3] = viewport.viewport.height;
+
+    viewport.size_screen[2] = canvas->window->width;
+    viewport.size_screen[3] = canvas->window->height;
+
+
+    // TODO
+    viewport.viewport.minDepth = 0;
+    viewport.viewport.maxDepth = 1;
+    viewport.dpi_scaling = 1.0;
+
+    return viewport;
+}

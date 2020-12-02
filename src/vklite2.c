@@ -1603,6 +1603,7 @@ void vkl_bindings_texture(
     ASSERT(sampler != NULL);
     ASSERT(images->count == 1 || images->count == bindings->dset_count);
 
+    log_trace("set bindings with texture for binding #%d", idx);
     bindings->images[idx] = images;
     bindings->samplers[idx] = sampler;
 

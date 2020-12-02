@@ -29,7 +29,85 @@
 
 static void _visual_fill(VklVisual* visual, VklVisualFillEvent ev)
 {
-    //
+    ASSERT(visual != NULL);
+    VklCanvas* canvas = visual->canvas;
+    ASSERT(canvas != NULL);
+
+    VklCommands* cmds = ev.cmds;
+    uint32_t idx = ev.cmd_idx;
+    VkViewport viewport = ev.viewport.viewport;
+
+    ASSERT(viewport.width > 0);
+    ASSERT(viewport.height > 0);
+    ASSERT(is_obj_created(&visual->graphics[0]->obj));
+    ASSERT(is_obj_created(&visual->gbindings[0].obj));
+    ASSERT(visual->vertex_buf.size > 0);
+    ASSERT(visual->vertex_count > 0);
+
+    vkl_cmd_begin(cmds, idx);
+    vkl_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, &canvas->framebuffers);
+    vkl_cmd_viewport(cmds, idx, viewport);
+    vkl_cmd_bind_vertex_buffer(cmds, idx, &visual->vertex_buf, 0);
+    vkl_cmd_bind_graphics(cmds, idx, visual->graphics[0], &visual->gbindings[0], 0);
+    vkl_cmd_draw(cmds, idx, 0, visual->vertex_count);
+    vkl_cmd_end_renderpass(cmds, idx);
+    vkl_cmd_end(cmds, idx);
+}
+
+static void _canvas_fill(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(ev.user_data != NULL);
+    VklVisual* visual = (VklVisual*)ev.user_data;
+    VklViewport viewport = vkl_viewport_full(canvas);
+
+    // TODO: choose which of all canvas command buffers need to be filled with the visual
+    // For now, update all of them.
+    for (uint32_t i = 0; i < ev.u.rf.cmd_count; i++)
+    {
+        vkl_visual_fill_event(
+            visual, ev.u.rf.clear_color, ev.u.rf.cmds[i], ev.u.rf.img_idx, viewport, NULL);
+    }
+}
+
+static void _bindings(VklVisual* visual, uint32_t idx, VklMVP* mvp)
+{
+    ASSERT(visual != NULL);
+    ASSERT(mvp != NULL);
+    VklGpu* gpu = visual->canvas->gpu;
+
+    // Create the bindings.
+    visual->gbindings[idx] = vkl_bindings(&visual->graphics[idx]->slots);
+    VklBindings* bindings = &visual->gbindings[idx];
+
+    // Binding resources.
+    visual->buffers[0] =
+        vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklMVP));
+    visual->buffers[1] = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
+    visual->buffers[2] = vkl_ctx_buffers(
+        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointsParams));
+    visual->textures[0] =
+        vkl_ctx_texture(gpu->context, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+
+    // Upload MVP.
+    glm_mat4_identity(mvp->model);
+    glm_mat4_identity(mvp->view);
+    glm_mat4_identity(mvp->proj);
+    vkl_upload_buffers(gpu->context, &visual->buffers[0], 0, sizeof(VklMVP), mvp);
+
+    // Upload params.
+    float param = 5.0f;
+    VklGraphicsPointsParams params = {.point_size = param};
+    vkl_upload_buffers(
+        gpu->context, &visual->buffers[2], 0, sizeof(VklGraphicsPointsParams), &params);
+
+    // Bindings
+    vkl_bindings_buffer(bindings, 0, &visual->buffers[0]);
+    vkl_bindings_buffer(bindings, 1, &visual->buffers[1]);
+    vkl_bindings_texture(bindings, 2, visual->textures[0]->image, visual->textures[0]->sampler);
+    vkl_bindings_buffer(bindings, 3, &visual->buffers[2]);
+
+    vkl_bindings_create(bindings, 1);
 }
 
 static int vklite2_visuals_1(VkyTestContext* context)
@@ -51,10 +129,20 @@ static int vklite2_visuals_1(VkyTestContext* context)
 
     // Graphics.
     vkl_visual_graphics(&visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_POINTS, 0));
-    vkl_visual_fill(&visual, _visual_fill);
+    VklMVP mvp = {0};
+    glm_mat4_identity(mvp.model);
+    glm_mat4_identity(mvp.view);
+    glm_mat4_identity(mvp.proj);
+
+    vkl_transfer_mode(gpu->context, VKL_TRANSFER_MODE_SYNC);
+    _bindings(&visual, 0, &mvp);
+    vkl_transfer_mode(gpu->context, VKL_TRANSFER_MODE_ASYNC);
+
+    // Callbacks.
+    vkl_visual_fill_callback(&visual, _visual_fill);
 
     // Generate data.
-    const uint32_t N = 1000;
+    const uint32_t N = 10000;
     vec3* pos = calloc(N, sizeof(vec3));
     cvec4* color = calloc(N, sizeof(cvec4));
     for (uint32_t i = 0; i < N; i++)
@@ -68,8 +156,24 @@ static int vklite2_visuals_1(VkyTestContext* context)
     vkl_visual_data(&visual, VKL_PROP_POS, 0, pos);
     vkl_visual_data(&visual, VKL_PROP_COLOR, 0, color);
 
+    // TODO
+    // for now, create the buffer manually.
+    visual.vertex_buf =
+        vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, N * sizeof(VklVertex));
+    VklVertex* data = calloc(N, sizeof(VklVertex));
+    for (uint32_t i = 0; i < N; i++)
+    {
+        memcpy(data[i].pos, pos[i], sizeof(vec3));
+        memcpy(data[i].color, color[i], sizeof(cvec4));
+    }
+    vkl_upload_buffers(gpu->context, &visual.vertex_buf, 0, N * sizeof(VklVertex), data);
+    visual.vertex_count = N;
+
+    // TODO: custom canvas callback
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _canvas_fill, &visual);
+
     // Run and end.
-    vkl_app_run(app, N_FRAMES);
+    vkl_app_run(app, 0);
     vkl_visual_destroy(&visual);
     FREE(pos);
     FREE(color);

@@ -136,22 +136,6 @@ void vkl_visual_compute(VklVisual* visual, VklCompute* compute)
 
 
 
-void vkl_visual_bake(VklVisual* visual, VklVisualDataCallback callback)
-{
-    ASSERT(visual != NULL);
-    visual->data_callback = callback;
-}
-
-
-
-void vkl_visual_fill(VklVisual* visual, VklVisualFillCallback callback)
-{
-    ASSERT(visual != NULL);
-    visual->fill_callback = callback;
-}
-
-
-
 /*************************************************************************************************/
 /*  User-facing functions                                                                        */
 /*************************************************************************************************/
@@ -252,4 +236,57 @@ void vkl_visual_data_texture(
         source->u.t.offset[i] = offset[i];
         source->u.t.shape[i] = shape[i];
     }
+}
+
+
+
+/*************************************************************************************************/
+/*  Visual events                                                                                */
+/*************************************************************************************************/
+
+void vkl_visual_data_callback(VklVisual* visual, VklVisualDataCallback callback)
+{
+    ASSERT(visual != NULL);
+    visual->data_callback = callback;
+}
+
+
+
+void vkl_visual_data_event(VklVisual* visual)
+{
+    ASSERT(visual != NULL);
+    ASSERT(visual->data_callback != NULL);
+    // TODO
+}
+
+
+
+void vkl_visual_fill_callback(VklVisual* visual, VklVisualFillCallback callback)
+{
+    ASSERT(visual != NULL);
+    VklCanvas* canvas = visual->canvas;
+    ASSERT(canvas != NULL);
+    visual->fill_callback = callback;
+}
+
+
+
+void vkl_visual_fill_event(
+    VklVisual* visual, VkClearColorValue clear_color, VklCommands* cmds, uint32_t cmd_idx,
+    VklViewport viewport, void* user_data)
+{
+    // Called in a REFILL canvas callback.
+
+    ASSERT(visual != NULL);
+    ASSERT(visual->fill_callback != NULL);
+
+    VklVisualFillEvent ev = {0};
+    ev.clear_color = clear_color;
+    ev.cmds = cmds;
+    ev.cmd_idx = cmd_idx;
+    ev.viewport = viewport;
+    ev.user_data = user_data;
+
+    visual->fill_callback(visual, ev);
+    visual->canvas->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
 }

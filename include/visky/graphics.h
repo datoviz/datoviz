@@ -1,6 +1,7 @@
 #ifndef VKL_GRAPHICS_HEADER
 #define VKL_GRAPHICS_HEADER
 
+#include "canvas.h"
 #include "vklite2.h"
 
 
@@ -58,7 +59,6 @@ typedef enum
 /*************************************************************************************************/
 
 typedef struct VklVertex VklVertex;
-typedef struct VklViewport VklViewport;
 typedef struct VklDataCoords VklDataCoords;
 typedef struct VklMVP VklMVP;
 typedef struct VklGraphicsPointsParams VklGraphicsPointsParams;
@@ -73,17 +73,6 @@ struct VklVertex
 {
     vec3 pos;
     cvec4 color;
-};
-
-
-
-struct VklViewport
-{
-    VkViewport viewport; // Vulkan viewport
-    vec4 margins;
-    uvec4 screen;      // (tlx, tly, w, h)
-    uvec4 framebuffer; // (tlx, tly, w, h)
-    float dpi_scaling; // DPI  scaling
 };
 
 
@@ -119,6 +108,8 @@ struct VklGraphicsPointsParams
 
 VKY_EXPORT VklGraphics*
 vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type, int flags);
+
+VKY_EXPORT VklViewport vkl_viewport_full(VklCanvas* canvas);
 
 
 

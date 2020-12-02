@@ -202,7 +202,7 @@ static void _refill_canvas(VklCanvas* canvas, uint32_t img_idx)
     ASSERT(img_count > 0);
     ev.u.rf.cmd_count = k;
 
-    // Refill aither all commands in each VklCommand (init and resize), or just one (custom
+    // Refill either all commands in each VklCommand (init and resize), or just one (custom
     // refill)
     if (img_idx == UINT32_MAX)
     {
