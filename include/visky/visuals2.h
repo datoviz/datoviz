@@ -273,12 +273,12 @@ VKY_EXPORT void vkl_visual_data_partial(
     const void* data);
 
 VKY_EXPORT void vkl_visual_data_buffer(
-    VklVisual* visual, VklPropType type, uint32_t idx, VklBufferRegions br, VkDeviceSize offset,
-    VkDeviceSize size);
+    VklVisual* visual, VklPropType type, uint32_t idx, //
+    VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size);
 
 VKY_EXPORT void vkl_visual_data_texture(
-    VklVisual* visual, VklPropType type, uint32_t idx, VklTexture* texture, uvec2 offset,
-    uvec2 shape);
+    VklVisual* visual, VklPropType type, uint32_t idx, //
+    VklTexture* texture, uvec3 offset, uvec3 shape);
 
 
 

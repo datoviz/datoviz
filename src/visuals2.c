@@ -11,9 +11,7 @@
 VklVisual vkl_visual(VklCanvas* canvas)
 {
     VklVisual visual = {0};
-
-    // TODO
-
+    visual.canvas = canvas;
     obj_created(&visual.obj);
     return visual;
 }
@@ -23,13 +21,13 @@ VklVisual vkl_visual(VklCanvas* canvas)
 void vkl_visual_destroy(VklVisual* visual)
 {
     ASSERT(visual != NULL);
-    // TODO
+    obj_destroyed(&visual->obj);
 }
 
 
 
 /*************************************************************************************************/
-/*  Custom visuals                                                                               */
+/*  Visual creation                                                                              */
 /*************************************************************************************************/
 
 static VkDeviceSize _get_dtype_size(VklDataType dtype)
@@ -220,19 +218,38 @@ void vkl_visual_data_partial(
 
 
 void vkl_visual_data_buffer(
-    VklVisual* visual, VklPropType type, uint32_t idx, VklBufferRegions br, VkDeviceSize offset,
-    VkDeviceSize size)
+    VklVisual* visual, VklPropType type, uint32_t idx, //
+    VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size)
 {
     ASSERT(visual != NULL);
-    // TODO
+    ASSERT(visual != NULL);
+    VklSource* source = _get_source(visual, type, idx);
+    ASSERT(source != NULL);
+    ASSERT(source->dtype_size > 0);
+
+    source->binding = VKL_PROP_BINDING_BUFFER;
+    source->u.b.br = br;
+    source->u.b.offset = offset;
+    source->u.b.size = size;
 }
 
 
 
 void vkl_visual_data_texture(
-    VklVisual* visual, VklPropType type, uint32_t idx, VklTexture* texture, uvec2 offset,
-    uvec2 shape)
+    VklVisual* visual, VklPropType type, uint32_t idx, //
+    VklTexture* texture, uvec3 offset, uvec3 shape)
 {
     ASSERT(visual != NULL);
-    // TODO
+    ASSERT(visual != NULL);
+    VklSource* source = _get_source(visual, type, idx);
+    ASSERT(source != NULL);
+    ASSERT(source->dtype_size > 0);
+
+    source->binding = VKL_PROP_BINDING_TEXTURE;
+    source->u.t.texture = texture;
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        source->u.t.offset[i] = offset[i];
+        source->u.t.shape[i] = shape[i];
+    }
 }
