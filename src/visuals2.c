@@ -5,6 +5,39 @@
 
 
 /*************************************************************************************************/
+/*  Utils                                                                                        */
+/*************************************************************************************************/
+
+static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
+{
+    ASSERT(visual != NULL);
+    VklCanvas* canvas = visual->canvas;
+    ASSERT(canvas != NULL);
+
+    VklCommands* cmds = ev.cmds;
+    uint32_t idx = ev.cmd_idx;
+    VkViewport viewport = ev.viewport.viewport;
+
+    ASSERT(viewport.width > 0);
+    ASSERT(viewport.height > 0);
+    ASSERT(is_obj_created(&visual->graphics[0]->obj));
+    ASSERT(is_obj_created(&visual->gbindings[0].obj));
+    ASSERT(visual->vertex_buf.size > 0);
+    ASSERT(visual->vertex_count > 0);
+
+    vkl_cmd_begin(cmds, idx);
+    vkl_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, &canvas->framebuffers);
+    vkl_cmd_viewport(cmds, idx, viewport);
+    vkl_cmd_bind_vertex_buffer(cmds, idx, &visual->vertex_buf, 0);
+    vkl_cmd_bind_graphics(cmds, idx, visual->graphics[0], &visual->gbindings[0], 0);
+    vkl_cmd_draw(cmds, idx, 0, visual->vertex_count);
+    vkl_cmd_end_renderpass(cmds, idx);
+    vkl_cmd_end(cmds, idx);
+}
+
+
+
+/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
@@ -12,6 +45,8 @@ VklVisual vkl_visual(VklCanvas* canvas)
 {
     VklVisual visual = {0};
     visual.canvas = canvas;
+    // Default fill callback.
+    visual.fill_callback = _default_visual_fill;
     obj_created(&visual.obj);
     return visual;
 }
