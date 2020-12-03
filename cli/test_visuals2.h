@@ -83,6 +83,36 @@ static void _bindings(VklVisual* visual, uint32_t idx, VklMVP* mvp)
     vkl_bindings_update(bindings);
 }
 
+static void _visual_bake(VklVisual* visual, VklVisualDataEvent ev)
+{
+    ASSERT(visual != NULL);
+    uint32_t item_count = visual->item_count;
+    if (visual->item_count_triangulated != 0)
+        item_count = visual->item_count_triangulated;
+
+    VklSource* source = NULL;
+    void* src = NULL;
+    void* dst = visual->vertex_data;
+    for (uint32_t s = 0; s < visual->source_count; s++)
+    {
+        source = &visual->sources[s];
+        if (source->loc == VKL_PROP_LOC_VERTEX_ATTR)
+        {
+            src = source->u.a.data_original;
+            if (source->u.a.data_transformed != NULL)
+                src = source->u.a.data_transformed;
+            if (source->u.a.data_triangulated != NULL)
+                src = source->u.a.data_triangulated;
+
+            for (uint32_t i = 0; i < item_count; i++)
+            {
+                // TODO: add offset and also item offset
+                memcpy(dst, src, source->dtype_size);
+            }
+        }
+    }
+}
+
 static int vklite2_visuals_1(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
