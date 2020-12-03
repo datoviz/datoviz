@@ -514,46 +514,51 @@ void vkl_visual_data_update(
         vkl_upload_buffers(ctx, &visual->index_buf, 0, index_buf_size, visual->index_data);
     }
 
-    // Bindings.
+    // Update the bindings.
     // NOTE: only UNIFORM/TEXTURE for now, not CPU
-    VklSource* source = NULL;
-    for (uint32_t i = 0; i < visual->source_count; i++)
     {
-        source = &visual->sources[i];
-
-        // Get the associated VklBinding struct.
-        VklBindings* bindings = NULL;
-        if (source->pipeline_type == VKL_PIPELINE_GRAPHICS)
-            bindings = &visual->gbindings[source->pipeline_idx];
-        else if (source->pipeline_type == VKL_PIPELINE_COMPUTE)
-            bindings = &visual->cbindings[source->pipeline_idx];
-        ASSERT(bindings != NULL);
-
-        if (source->loc == VKL_PROP_LOC_UNIFORM || source->loc == VKL_PROP_LOC_STORAGE)
+        VklSource* source = NULL;
+        for (uint32_t i = 0; i < visual->source_count; i++)
         {
-            // TODO: support CPU too
-            ASSERT(source->binding == VKL_PROP_BINDING_BUFFER);
-            vkl_bindings_buffer(bindings, source->binding_idx, &source->u.b.br);
-        }
+            source = &visual->sources[i];
 
-        if (source->loc == VKL_PROP_LOC_SAMPLER)
-        {
-            // TODO: support CPU too
-            ASSERT(source->binding == VKL_PROP_BINDING_TEXTURE);
-            vkl_bindings_texture(
-                bindings, source->binding_idx, //
-                source->u.t.texture->image, source->u.t.texture->sampler);
-        }
+            // Get the associated VklBinding struct.
+            VklBindings* bindings = NULL;
+            if (source->pipeline_type == VKL_PIPELINE_GRAPHICS)
+                bindings = &visual->gbindings[source->pipeline_idx];
+            else if (source->pipeline_type == VKL_PIPELINE_COMPUTE)
+                bindings = &visual->cbindings[source->pipeline_idx];
+            ASSERT(bindings != NULL);
+            ASSERT(is_obj_created(&bindings->obj));
 
-        if (source->loc == VKL_PROP_LOC_PUSH)
-        {
-            ASSERT(source->binding == VKL_PROP_BINDING_CPU);
-            log_error("not implemented yet");
+            if (source->loc == VKL_PROP_LOC_UNIFORM || source->loc == VKL_PROP_LOC_STORAGE)
+            {
+                // TODO: support CPU too
+                ASSERT(source->binding == VKL_PROP_BINDING_BUFFER);
+                vkl_bindings_buffer(bindings, source->binding_idx, &source->u.b.br);
+            }
+
+            if (source->loc == VKL_PROP_LOC_SAMPLER)
+            {
+                // TODO: support CPU too
+                ASSERT(source->binding == VKL_PROP_BINDING_TEXTURE);
+                vkl_bindings_texture(
+                    bindings, source->binding_idx, //
+                    source->u.t.texture->image, source->u.t.texture->sampler);
+            }
+
+            if (source->loc == VKL_PROP_LOC_PUSH)
+            {
+                ASSERT(source->binding == VKL_PROP_BINDING_CPU);
+                log_error("not implemented yet");
+            }
         }
+        // Update the bindings.
+        for (uint32_t i = 0; i < visual->graphics_count; i++)
+            vkl_bindings_update(&visual->gbindings[i]);
+        for (uint32_t i = 0; i < visual->compute_count; i++)
+            vkl_bindings_update(&visual->cbindings[i]);
     }
-    // Create the bindings.
-    // TODO: create/update the bindings
-    // vkl_bindings_create(bindings, 1);
 }
 
 
