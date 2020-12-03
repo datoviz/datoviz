@@ -91,6 +91,13 @@ typedef enum
 } VklPropBinding;
 
 
+typedef enum
+{
+    VKL_PIPELINE_GRAPHICS,
+    VKL_PIPELINE_COMPUTE,
+} VklPipelineType;
+
+
 
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */
@@ -185,13 +192,15 @@ struct VklSource
     VklPropType prop;
     uint32_t prop_idx;
 
-    // Visual characteristics of the prop
-    VklDataType dtype;
-    VklPropLoc loc;
-    uint32_t binding_idx;
-    uint32_t field_idx;
-    VkDeviceSize offset;     // used by vertex attributes
-    VkDeviceSize dtype_size; // rename into size
+    // Characteristics of the prop
+    VklPipelineType pipeline_type; // graphics or compute pipeline?
+    uint32_t pipeline_idx;         // idx of the pipeline within the graphics or compute pipelines
+    VklDataType dtype;             // data type of the prop
+    VklPropLoc loc;                // prop location
+    uint32_t binding_idx;          // binding idx
+    uint32_t field_idx;            // field index within the binding (ATTR and uniform struct)
+    VkDeviceSize offset;           // used by vertex attributes
+    VkDeviceSize dtype_size;       // rename into size
 
     // Specified by the user
     VklPropBinding binding; // initially, NONE, filled when the user specifies the visual's data

@@ -475,36 +475,85 @@ void vkl_visual_data_update(
         (visual->index_count == 0 && visual->index_data == NULL));
 
     // Allocate a vertex buffer if needed.
-    if (visual->vertex_buf.buffer == NULL)
     {
-        log_trace("allocating vertex buffer with %d vertices", visual->vertex_count);
-        visual->vertex_buf = vkl_ctx_buffers(
-            ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, visual->vertex_size * visual->vertex_count);
-    }
-    // Need to reallocate the vertex buffer if there are more vertices.
-    else if (visual->vertex_buf.size < visual->vertex_count * visual->vertex_size)
-    {
-        log_trace("reallocating vertex buffer with %d vertices", visual->vertex_count);
-        // NOTE: we waste some space as the previous buffer region with the old vertices is lost.
-        visual->vertex_buf = vkl_ctx_buffers(
-            ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, visual->vertex_size * visual->vertex_count);
+        VkDeviceSize vertex_buf_size = visual->vertex_count * visual->vertex_size;
+        if (visual->vertex_buf.buffer == NULL)
+        {
+            log_trace("allocating vertex buffer with %d vertices", visual->vertex_count);
+            visual->vertex_buf =
+                vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, vertex_buf_size);
+        }
+        // Need to reallocate the vertex buffer if there are more vertices.
+        else if (visual->vertex_buf.size < vertex_buf_size)
+        {
+            log_trace("reallocating vertex buffer with %d vertices", visual->vertex_count);
+            // NOTE: we waste some space as the previous buffer region with the old vertices is
+            // lost.
+            visual->vertex_buf =
+                vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, vertex_buf_size);
+        }
+        vkl_upload_buffers(ctx, &visual->vertex_buf, 0, vertex_buf_size, visual->vertex_data);
     }
 
     // Allocate an index buffer if needed.
-    if (visual->index_buf.buffer == NULL)
     {
-        log_trace("allocating index buffer with %d vertices", visual->index_count);
-        visual->index_buf = vkl_ctx_buffers(
-            ctx, VKL_DEFAULT_BUFFER_INDEX, 1, visual->index_count * sizeof(VklIndex));
+        VkDeviceSize index_buf_size = visual->index_count * sizeof(VklIndex);
+        if (visual->index_buf.buffer == NULL)
+        {
+            log_trace("allocating index buffer with %d vertices", visual->index_count);
+            visual->index_buf = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_INDEX, 1, index_buf_size);
+        }
+        // Need to reallocate the vertex buffer if there are more vertices.
+        else if (visual->index_buf.size < index_buf_size)
+        {
+            log_trace("reallocating index buffer with %d indices", visual->index_count);
+            // NOTE: we waste some space as the previous buffer region with the old indices is
+            // lost.
+            visual->index_buf = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_INDEX, 1, index_buf_size);
+        }
+        vkl_upload_buffers(ctx, &visual->index_buf, 0, index_buf_size, visual->index_data);
     }
-    // Need to reallocate the vertex buffer if there are more vertices.
-    else if (visual->index_buf.size < visual->index_count * sizeof(VklIndex))
+
+    // Bindings.
+    // NOTE: only UNIFORM/TEXTURE for now, not CPU
+    VklSource* source = NULL;
+    for (uint32_t i = 0; i < visual->source_count; i++)
     {
-        log_trace("reallocating index buffer with %d indices", visual->index_count);
-        // NOTE: we waste some space as the previous buffer region with the old indices is lost.
-        visual->index_buf = vkl_ctx_buffers(
-            ctx, VKL_DEFAULT_BUFFER_INDEX, 1, visual->index_count * sizeof(VklIndex));
+        source = &visual->sources[i];
+
+        // Get the associated VklBinding struct.
+        VklBindings* bindings = NULL;
+        if (source->pipeline_type == VKL_PIPELINE_GRAPHICS)
+            bindings = &visual->gbindings[source->pipeline_idx];
+        else if (source->pipeline_type == VKL_PIPELINE_COMPUTE)
+            bindings = &visual->cbindings[source->pipeline_idx];
+        ASSERT(bindings != NULL);
+
+        if (source->loc == VKL_PROP_LOC_UNIFORM || source->loc == VKL_PROP_LOC_STORAGE)
+        {
+            // TODO: support CPU too
+            ASSERT(source->binding == VKL_PROP_BINDING_BUFFER);
+            vkl_bindings_buffer(bindings, source->binding_idx, &source->u.b.br);
+        }
+
+        if (source->loc == VKL_PROP_LOC_SAMPLER)
+        {
+            // TODO: support CPU too
+            ASSERT(source->binding == VKL_PROP_BINDING_TEXTURE);
+            vkl_bindings_texture(
+                bindings, source->binding_idx, //
+                source->u.t.texture->image, source->u.t.texture->sampler);
+        }
+
+        if (source->loc == VKL_PROP_LOC_PUSH)
+        {
+            ASSERT(source->binding == VKL_PROP_BINDING_CPU);
+            log_error("not implemented yet");
+        }
     }
+    // Create the bindings.
+    // TODO: create/update the bindings
+    // vkl_bindings_create(bindings, 1);
 }
 
 
