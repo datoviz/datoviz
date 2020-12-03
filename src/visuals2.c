@@ -477,7 +477,8 @@ void vkl_visual_data_update(
     // Allocate a vertex buffer if needed.
     {
         VkDeviceSize vertex_buf_size = visual->vertex_count * visual->vertex_size;
-        if (visual->vertex_buf.buffer == NULL)
+        ASSERT(vertex_buf_size > 0);
+        if (visual->vertex_buf.count == 0)
         {
             log_trace("allocating vertex buffer with %d vertices", visual->vertex_count);
             visual->vertex_buf =
@@ -492,15 +493,20 @@ void vkl_visual_data_update(
             visual->vertex_buf =
                 vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, vertex_buf_size);
         }
+        log_trace("uploading vertex data");
+        ASSERT(visual->vertex_buf.count > 0);
+        ASSERT(visual->vertex_buf.buffer != VK_NULL_HANDLE);
         vkl_upload_buffers(ctx, &visual->vertex_buf, 0, vertex_buf_size, visual->vertex_data);
     }
 
     // Allocate an index buffer if needed.
+    if (visual->index_count > 0)
     {
         VkDeviceSize index_buf_size = visual->index_count * sizeof(VklIndex);
+        ASSERT(index_buf_size > 0);
         if (visual->index_buf.buffer == NULL)
         {
-            log_trace("allocating index buffer with %d vertices", visual->index_count);
+            log_trace("allocating index buffer with %d indices", visual->index_count);
             visual->index_buf = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_INDEX, 1, index_buf_size);
         }
         // Need to reallocate the vertex buffer if there are more vertices.
@@ -511,6 +517,9 @@ void vkl_visual_data_update(
             // lost.
             visual->index_buf = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_INDEX, 1, index_buf_size);
         }
+        log_trace("uploading index data");
+        ASSERT(visual->index_buf.count > 0);
+        ASSERT(visual->index_buf.buffer != VK_NULL_HANDLE);
         vkl_upload_buffers(ctx, &visual->index_buf, 0, index_buf_size, visual->index_data);
     }
 

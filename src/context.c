@@ -502,7 +502,7 @@ VklTexture* vkl_ctx_texture(VklContext* context, uint32_t dims, uvec3 size, VkFo
     vkl_images_tiling(image, VK_IMAGE_TILING_OPTIMAL);
     vkl_images_layout(image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     vkl_images_usage(
-        image,                       //
+        image,                                                    //
         VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | //
             VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT);
     vkl_images_memory(image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
@@ -733,6 +733,7 @@ static void process_buffer_upload(VklContext* context, VklTransfer tr)
     ASSERT(alsize > 0);
 
     uint32_t n = tr.u.buf.regions.count;
+    ASSERT(n > 0);
 
     // Copy the data as many times as there are buffer regions, and make sure the array is
     // aligned if using a UNIFORM buffer.
@@ -1043,6 +1044,10 @@ static VklTransfer enqueue_texture_transfer(
     VklContext* context, VklDataTransferType type, VklTexture* texture, uvec3 offset, uvec3 shape,
     VkDeviceSize size, void* data)
 {
+    ASSERT(context != NULL);
+    ASSERT(size > 0);
+    ASSERT(data != NULL);
+
     // Create the transfer object.
     VklTransfer tr = {0};
     tr.type = type;
@@ -1069,6 +1074,10 @@ static VklTransfer enqueue_regions_transfer(
     VklContext* context, VklDataTransferType type, VklBufferRegions regions, VkDeviceSize offset,
     VkDeviceSize size, void* data)
 {
+    ASSERT(context != NULL);
+    ASSERT(size > 0);
+    ASSERT(data != NULL);
+
     // Create the transfer object.
     VklTransfer tr = {0};
     tr.type = type;
@@ -1204,6 +1213,8 @@ void vkl_download_texture(VklContext* context, VklTexture* texture, VkDeviceSize
 {
     ASSERT(texture != NULL);
     ASSERT(context != NULL);
+    ASSERT(size > 0);
+    ASSERT(data != NULL);
 
     uvec3 shape = {0};
     shape[0] = texture->image->width;
@@ -1220,6 +1231,11 @@ void vkl_upload_buffers(
 {
     ASSERT(regions != NULL);
     ASSERT(context != NULL);
+    ASSERT(size > 0);
+    ASSERT(data != NULL);
+    ASSERT(regions->count > 0);
+    ASSERT(regions->buffer != VK_NULL_HANDLE);
+
     enqueue_regions_transfer(context, VKL_TRANSFER_BUFFER_UPLOAD, *regions, offset, size, data);
 }
 
@@ -1231,6 +1247,9 @@ void vkl_download_buffers(
 {
     ASSERT(regions != NULL);
     ASSERT(context != NULL);
+    ASSERT(size > 0);
+    ASSERT(data != NULL);
+
     enqueue_regions_transfer(context, VKL_TRANSFER_BUFFER_DOWNLOAD, *regions, offset, size, data);
 }
 

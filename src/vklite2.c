@@ -1030,6 +1030,10 @@ void vkl_buffer_regions_unmap(VklBufferRegions* buffer_regions, uint32_t idx)
 
 void vkl_buffer_upload(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, const void* data)
 {
+    ASSERT(buffer != NULL);
+    ASSERT(size != 0);
+    ASSERT(data != NULL);
+
     log_trace("uploading %d bytes to GPU buffer", size);
     VklBufferRegions br = {0};
     br.buffer = buffer;

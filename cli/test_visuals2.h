@@ -102,18 +102,19 @@ static int vklite2_visuals_1(VkyTestContext* context)
 
     // Graphics.
     vkl_visual_graphics(&visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_POINTS, 0));
+
+    // Transform data.
     VklMVP mvp = {0};
     glm_mat4_identity(mvp.model);
     glm_mat4_identity(mvp.view);
     glm_mat4_identity(mvp.proj);
-
     // HACK: make sure the transfer are sync so that transient pointers like parameters
     // exist by the time they are uploaded to the GPU.
     vkl_transfer_mode(gpu->context, VKL_TRANSFER_MODE_SYNC);
     _bindings(&visual, 0, &mvp);
     vkl_transfer_mode(gpu->context, VKL_TRANSFER_MODE_ASYNC);
 
-    // Generate data.
+    // Vertex data.
     const uint32_t N = 10000;
     vec3* pos = calloc(N, sizeof(vec3));
     cvec4* color = calloc(N, sizeof(cvec4));
@@ -130,16 +131,21 @@ static int vklite2_visuals_1(VkyTestContext* context)
 
     // TODO
     // for now, create the buffer manually.
-    visual.vertex_buf =
-        vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, N * sizeof(VklVertex));
+    // visual.vertex_buf =
+    //     vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, N * sizeof(VklVertex));
     VklVertex* data = calloc(N, sizeof(VklVertex));
     for (uint32_t i = 0; i < N; i++)
     {
         memcpy(data[i].pos, pos[i], sizeof(vec3));
         memcpy(data[i].color, color[i], sizeof(cvec4));
     }
-    vkl_upload_buffers(gpu->context, &visual.vertex_buf, 0, N * sizeof(VklVertex), data);
+    // vkl_upload_buffers(gpu->context, &visual.vertex_buf, 0, N * sizeof(VklVertex), data);
     visual.vertex_count = N;
+    visual.vertex_data = data;
+
+    // Update visual data.
+    VklViewport viewport = vkl_viewport_full(canvas);
+    vkl_visual_data_update(&visual, viewport, (VklDataCoords){0}, NULL);
 
     // TODO: custom canvas callback
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _canvas_fill, &visual);
