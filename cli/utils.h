@@ -517,8 +517,8 @@ static void test_triangle(TestVisual* visual, const char* suffix)
     _triangle_graphics(visual, suffix);
 
     // Create the bindings.
-    visual->bindings = vkl_bindings(&visual->graphics.slots);
-    vkl_bindings_create(&visual->bindings, 1);
+    visual->bindings = vkl_bindings(&visual->graphics.slots, 1);
+    vkl_bindings_update(&visual->bindings);
 
     // Create the graphics pipeline.
     vkl_graphics_create(&visual->graphics);

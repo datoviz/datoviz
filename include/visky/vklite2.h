@@ -1097,9 +1097,9 @@ VKY_EXPORT void vkl_slots_destroy(VklSlots* slots);
 /*  Bindings                                                                                     */
 /*************************************************************************************************/
 
-VKY_EXPORT VklBindings vkl_bindings(VklSlots* slots);
+VKY_EXPORT VklBindings vkl_bindings(VklSlots* slots, uint32_t dset_count);
 
-VKY_EXPORT void vkl_bindings_create(VklBindings* bindings, uint32_t dset_count);
+// VKY_EXPORT void vkl_bindings_create(VklBindings* bindings, uint32_t dset_count);
 
 VKY_EXPORT void
 vkl_bindings_buffer(VklBindings* bindings, uint32_t idx, VklBufferRegions* buffer_regions);

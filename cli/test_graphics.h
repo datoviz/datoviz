@@ -121,7 +121,7 @@ static int vklite2_graphics_dynamic(VkyTestContext* context)
     END_DATA
 
     // Create the bindings.
-    tg.bindings = vkl_bindings(&graphics->slots);
+    tg.bindings = vkl_bindings(&graphics->slots, 1);
 
     // Binding resources.
     tg.br_mvp = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklMVP));
@@ -147,7 +147,7 @@ static int vklite2_graphics_dynamic(VkyTestContext* context)
     vkl_bindings_texture(&tg.bindings, 2, tg.texture->image, tg.texture->sampler);
     vkl_bindings_buffer(&tg.bindings, 3, &tg.br_params);
 
-    vkl_bindings_create(&tg.bindings, 1);
+    vkl_bindings_update(&tg.bindings);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _graphics_refill, &tg);
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
@@ -196,7 +196,7 @@ static int vklite2_graphics_3D(VkyTestContext* context)
     END_DATA
 
     // Create the bindings.
-    tg.bindings = vkl_bindings(&graphics->slots);
+    tg.bindings = vkl_bindings(&graphics->slots, 1);
 
     // Binding resources.
     tg.br_mvp = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklMVP));
@@ -229,7 +229,7 @@ static int vklite2_graphics_3D(VkyTestContext* context)
     vkl_bindings_texture(&tg.bindings, 2, tg.texture->image, tg.texture->sampler);
     vkl_bindings_buffer(&tg.bindings, 3, &tg.br_params);
 
-    vkl_bindings_create(&tg.bindings, 1);
+    vkl_bindings_update(&tg.bindings);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _graphics_refill, &tg);
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
@@ -248,7 +248,7 @@ static void _common_bindings(TestGraphics* tg)
     VklGraphics* graphics = tg->graphics;
 
     // Create the bindings.
-    tg->bindings = vkl_bindings(&graphics->slots);
+    tg->bindings = vkl_bindings(&graphics->slots, 1);
 
     // Binding resources.
     tg->br_mvp = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklMVP));
@@ -285,7 +285,7 @@ static int vklite2_graphics_points(VkyTestContext* context)
     // Bindings and uniform buffers.
     _common_bindings(&tg);
     vkl_bindings_buffer(&tg.bindings, 3, &tg.br_params);
-    vkl_bindings_create(&tg.bindings, 1);
+    vkl_bindings_update(&tg.bindings);
 
     // Upload params.
     tg.param = 5.0f;

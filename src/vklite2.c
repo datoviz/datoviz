@@ -1534,7 +1534,7 @@ void vkl_slots_destroy(VklSlots* slots)
 /*  Bindings                                                                                     */
 /*************************************************************************************************/
 
-VklBindings vkl_bindings(VklSlots* slots)
+VklBindings vkl_bindings(VklSlots* slots, uint32_t dset_count)
 {
     ASSERT(slots != NULL);
     VklGpu* gpu = slots->gpu;
@@ -1547,34 +1547,48 @@ VklBindings vkl_bindings(VklSlots* slots)
 
     obj_init(&bindings.obj);
 
+    if (!is_obj_created(&slots->obj))
+        vkl_slots_create(slots);
+    ASSERT(dset_count > 0);
+    ASSERT(slots->dset_layout != VK_NULL_HANDLE);
+
+    log_trace("starting creation of bindings with %d descriptor sets...", dset_count);
+    bindings.dset_count = dset_count;
+
+    allocate_descriptor_sets(
+        gpu->device, gpu->dset_pool, slots->dset_layout, bindings.dset_count, bindings.dsets);
+
+    obj_created(&bindings.obj);
+    log_trace("bindings created");
+
     return bindings;
 }
 
 
 
-void vkl_bindings_create(VklBindings* bindings, uint32_t dset_count)
-{
-    ASSERT(bindings != NULL);
-    ASSERT(bindings->gpu != NULL);
-    ASSERT(bindings->gpu->device != VK_NULL_HANDLE);
-    ASSERT(bindings->slots != NULL);
-    if (!is_obj_created(&bindings->slots->obj))
-        vkl_slots_create(bindings->slots);
-    ASSERT(dset_count > 0);
-    ASSERT(bindings->slots->dset_layout != VK_NULL_HANDLE);
+// void vkl_bindings_create(VklBindings* bindings, uint32_t dset_count)
+// {
+//     ASSERT(bindings != NULL);
+//     ASSERT(bindings->gpu != NULL);
+//     ASSERT(bindings->gpu->device != VK_NULL_HANDLE);
+//     ASSERT(bindings->slots != NULL);
+//     if (!is_obj_created(&bindings->slots->obj))
+//         vkl_slots_create(bindings->slots);
+//     ASSERT(dset_count > 0);
+//     ASSERT(bindings->slots->dset_layout != VK_NULL_HANDLE);
 
-    log_trace("starting creation of bindings with %d descriptor sets...", dset_count);
-    bindings->dset_count = dset_count;
+//     log_trace("starting creation of bindings with %d descriptor sets...", dset_count);
+//     bindings->dset_count = dset_count;
 
-    allocate_descriptor_sets(
-        bindings->gpu->device, bindings->gpu->dset_pool, bindings->slots->dset_layout,
-        bindings->dset_count, bindings->dsets);
+//     allocate_descriptor_sets(
+//         bindings->gpu->device, bindings->gpu->dset_pool, bindings->slots->dset_layout,
+//         bindings->dset_count, bindings->dsets);
 
-    vkl_bindings_update(bindings);
+//     vkl_bindings_update(bindings);
 
-    obj_created(&bindings->obj);
-    log_trace("bindings created");
-}
+//     obj_created(&bindings->obj);
+//     log_trace("bindings created");
+// }
 
 
 
@@ -1584,8 +1598,8 @@ void vkl_bindings_buffer(VklBindings* bindings, uint32_t idx, VklBufferRegions* 
     ASSERT(buffer_regions != NULL);
     ASSERT(buffer_regions->buffer != VK_NULL_HANDLE);
     ASSERT(buffer_regions->count > 0);
-    // ASSERT(bindings->dset_count > 0);
-    // ASSERT(buffer_regions->count == 1 || buffer_regions->count == bindings->dset_count);
+    ASSERT(bindings->dset_count > 0);
+    ASSERT(buffer_regions->count == 1 || buffer_regions->count == bindings->dset_count);
     log_trace("set bindings with buffer for binding #%d", idx);
 
     bindings->buffer_regions[idx] = *buffer_regions;
@@ -1619,6 +1633,7 @@ void vkl_bindings_update(VklBindings* bindings)
     ASSERT(bindings->slots != NULL);
     ASSERT(is_obj_created(&bindings->slots->obj));
     ASSERT(bindings->slots->dset_layout != VK_NULL_HANDLE);
+    ASSERT(bindings->dset_count > 0);
     ASSERT(bindings->dset_count <= VKL_MAX_SWAPCHAIN_IMAGES);
 
     for (uint32_t i = 0; i < bindings->dset_count; i++)

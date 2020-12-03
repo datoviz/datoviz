@@ -50,7 +50,7 @@ static void _bindings(VklVisual* visual, uint32_t idx, VklMVP* mvp)
     VklGpu* gpu = visual->canvas->gpu;
 
     // Create the bindings.
-    visual->gbindings[idx] = vkl_bindings(&visual->graphics[idx]->slots);
+    visual->gbindings[idx] = vkl_bindings(&visual->graphics[idx]->slots, 1);
     VklBindings* bindings = &visual->gbindings[idx];
 
     // Binding resources.
@@ -80,7 +80,7 @@ static void _bindings(VklVisual* visual, uint32_t idx, VklMVP* mvp)
     vkl_bindings_texture(bindings, 2, visual->textures[0]->image, visual->textures[0]->sampler);
     vkl_bindings_buffer(bindings, 3, &visual->buffers[2]);
 
-    vkl_bindings_create(bindings, 1);
+    vkl_bindings_update(bindings);
 }
 
 static int vklite2_visuals_1(VkyTestContext* context)
