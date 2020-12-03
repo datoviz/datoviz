@@ -152,7 +152,7 @@ struct VklVisualDataArray
     VkDeviceSize offset;
     VkDeviceSize size;
 
-    const void* data_original;
+    void* data_original;
     void* data_transformed;
     void* data_triangulated;
 };

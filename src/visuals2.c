@@ -56,10 +56,26 @@ VklVisual vkl_visual(VklCanvas* canvas)
 void vkl_visual_destroy(VklVisual* visual)
 {
     ASSERT(visual != NULL);
-    if (visual->vertex_data != NULL)
-        FREE(visual->vertex_data);
-    if (visual->index_data != NULL)
-        FREE(visual->index_data);
+
+    // Free the data sources.
+    VklSource* source = NULL;
+    for (uint32_t i = 0; i < visual->source_count; i++)
+    {
+        source = &visual->sources[i];
+        if (source->binding == VKL_PROP_BINDING_CPU)
+        {
+            FREE(source->u.a.data_original)
+            FREE(source->u.a.data_transformed)
+            FREE(source->u.a.data_triangulated)
+        }
+    }
+
+    // Free the vertex buffer data.
+    FREE(visual->vertex_data);
+
+    // Free the index buffer data.
+    FREE(visual->index_data);
+
     obj_destroyed(&visual->obj);
 }
 
@@ -182,8 +198,40 @@ void vkl_visual_compute(VklVisual* visual, VklCompute* compute)
 void vkl_visual_size(VklVisual* visual, uint32_t item_count, uint32_t group_count)
 {
     ASSERT(visual != NULL);
+    bool to_realloc = item_count > visual->item_count;
     visual->item_count = item_count;
     visual->group_count = group_count;
+    if (!to_realloc)
+        return;
+    // Resize all CPU sources that are already allocated.
+    VklSource* source = NULL;
+    for (uint32_t i = 0; i < visual->source_count; i++)
+    {
+        source = &visual->sources[i];
+        if (source->binding == VKL_PROP_BINDING_CPU)
+        {
+            // Reallocate data_original.
+            if (source->u.a.data_original != NULL)
+            {
+                log_trace("realloc data_original source #%d to %d items", i, item_count);
+                REALLOC(source->u.a.data_original, item_count * source->dtype_size);
+            }
+
+            // Reallocate data_transformed.
+            if (source->u.a.data_transformed != NULL)
+            {
+                log_trace("realloc data_transformed source #%d to %d items", i, item_count);
+                REALLOC(source->u.a.data_transformed, item_count * source->dtype_size);
+            }
+
+            // Reallocate data_triangulated.
+            if (source->u.a.data_triangulated != NULL)
+            {
+                log_trace("realloc data_triangulated source #%d to %d items", i, item_count);
+                REALLOC(source->u.a.data_triangulated, item_count * source->dtype_size);
+            }
+        }
+    }
 }
 
 
@@ -223,6 +271,14 @@ static VklSource* _get_source(VklVisual* visual, VklPropType type, uint32_t idx)
 
 
 
+static void
+_copy_array(void* dst, const void* src, uint32_t offset, uint32_t count, VkDeviceSize item_size)
+{
+    memcpy((void*)((int64_t)dst + (int64_t)(offset * item_size)), src, count * item_size);
+}
+
+
+
 void vkl_visual_data_partial(
     VklVisual* visual, VklPropType type, uint32_t idx, uint32_t first_item, uint32_t item_count,
     const void* data)
@@ -235,7 +291,17 @@ void vkl_visual_data_partial(
     source->binding = VKL_PROP_BINDING_CPU;
     source->u.a.offset = first_item * source->dtype_size;
     source->u.a.size = item_count * source->dtype_size;
-    source->u.a.data_original = data;
+
+    // Ensure the source data_original array is allocated.
+    if (source->u.a.data_original == NULL)
+    {
+        log_trace("allocating data_original for source");
+        source->u.a.data_original = malloc(visual->item_count * source->dtype_size);
+    }
+    // Make a copy of the user-provided data.
+    ASSERT(source->u.a.data_original != NULL);
+    ASSERT(item_count * source->dtype_size <= visual->item_count * source->dtype_size);
+    _copy_array(source->u.a.data_original, data, first_item, item_count, source->dtype_size);
 }
 
 
@@ -303,6 +369,7 @@ void vkl_visual_bake_callback(VklVisual* visual, VklVisualDataCallback callback)
 
 
 
+// To be called by the baking callbacks.
 void vkl_visual_data_alloc(VklVisual* visual, uint32_t vertex_count, uint32_t index_count)
 {
     // Allocate the vertex data and index data CPU arrays of the visual.
@@ -330,7 +397,7 @@ void vkl_visual_data_alloc(VklVisual* visual, uint32_t vertex_count, uint32_t in
     // Reallocate.
     else if (vertex_count > visual->vertex_count)
     {
-        visual->vertex_data = realloc(visual->vertex_data, vertex_count * vertex_size);
+        REALLOC(visual->vertex_data, vertex_count * vertex_size);
     }
 
     // Allocate the index data.
@@ -341,7 +408,7 @@ void vkl_visual_data_alloc(VklVisual* visual, uint32_t vertex_count, uint32_t in
     // Reallocate.
     else if (index_count > visual->index_count)
     {
-        visual->index_data = realloc(visual->index_data, index_count * sizeof(VklIndex));
+        REALLOC(visual->index_data, index_count * sizeof(VklIndex));
     }
 }
 

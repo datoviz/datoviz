@@ -144,6 +144,16 @@ END_INCL_NO_WARN
         (x) = NULL;                                                                               \
     }
 
+#define REALLOC(x, s)                                                                             \
+    {                                                                                             \
+        void* _new = realloc(x, s);                                                               \
+        if (_new == NULL)                                                                         \
+            log_error("error reallocating %s to %d bytes", #x, s);                                \
+        else                                                                                      \
+            x = _new;                                                                             \
+    }
+
+
 
 /*************************************************************************************************/
 /*  8-bit integers                                                                               */
