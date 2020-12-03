@@ -26,6 +26,11 @@
 typedef enum
 {
     VKL_PROP_NONE,
+
+    VKL_PROP_VERTEX,
+    VKL_PROP_UNIFORM,
+    VKL_PROP_TEXTURE,
+
     VKL_PROP_POS,
     VKL_PROP_COLOR,
     VKL_PROP_TYPE,
@@ -66,12 +71,14 @@ typedef enum
 typedef enum
 {
     VKL_PROP_LOC_NONE,
-
-    VKL_PROP_LOC_ATTRIBUTE,
-    VKL_PROP_LOC_UNIFORM,
-    VKL_PROP_LOC_STORAGE,
-    VKL_PROP_LOC_SAMPLER,
-    VKL_PROP_LOC_PUSH,
+    VKL_PROP_LOC_VERTEX_ATTR,  // only compatible with CPU binding
+    VKL_PROP_LOC_VERTEX,       // only compatible with BUFFER binding
+    VKL_PROP_LOC_INDEX,        // only compatible with CPU and BUFFER binding
+    VKL_PROP_LOC_UNIFORM,      // only compatible with BUFFER binding
+    VKL_PROP_LOC_UNIFORM_ATTR, // only compatible with CPU binding
+    VKL_PROP_LOC_STORAGE,      // only compatible with BUFFER binding
+    VKL_PROP_LOC_SAMPLER,      // only compatible with CPU and TEXTURE binding
+    VKL_PROP_LOC_PUSH,         // only compatible with CPU binding
 } VklPropLoc;
 
 
@@ -91,6 +98,7 @@ typedef enum
 
 typedef struct VklVisual VklVisual;
 typedef struct VklSource VklSource;
+typedef struct VklDataCoords VklDataCoords;
 
 typedef struct VklVisualDataArray VklVisualDataArray;
 typedef struct VklVisualDataBuffer VklVisualDataBuffer;
@@ -99,6 +107,8 @@ typedef union VklVisualData VklVisualData;
 
 typedef struct VklVisualFillEvent VklVisualFillEvent;
 typedef struct VklVisualDataEvent VklVisualDataEvent;
+
+typedef uint32_t VklIndex;
 
 
 
@@ -129,11 +139,22 @@ enqueue data transfers
 /*  Source structs                                                                               */
 /*************************************************************************************************/
 
+struct VklDataCoords
+{
+    dvec4 data; // (blx, bly, trx, try)
+    vec4 gpu;   // (blx, bly, trx, try)
+};
+
+
+
 struct VklVisualDataArray
 {
     VkDeviceSize offset;
     VkDeviceSize size;
-    const void* data;
+
+    const void* data_original;
+    void* data_transformed;
+    void* data_triangulated;
 };
 
 struct VklVisualDataBuffer
@@ -166,11 +187,11 @@ struct VklSource
 
     // Visual characteristics of the prop
     VklDataType dtype;
-    VkDeviceSize dtype_size;
     VklPropLoc loc;
     uint32_t binding_idx;
     uint32_t field_idx;
-    VkDeviceSize offset; // used by vertex attributes
+    VkDeviceSize offset;     // used by vertex attributes
+    VkDeviceSize dtype_size; // rename into size
 
     // Specified by the user
     VklPropBinding binding; // initially, NONE, filled when the user specifies the visual's data
@@ -195,7 +216,11 @@ struct VklVisual
     VklCompute* computes[VKL_MAX_COMPUTES_PER_VISUAL];
 
     VklVisualFillCallback fill_callback;
-    VklVisualDataCallback data_callback;
+
+    // Data callbacks.
+    VklVisualDataCallback transform_callback;
+    VklVisualDataCallback triangulation_callback;
+    VklVisualDataCallback bake_callback;
 
     // User data
     uint32_t item_count;
@@ -205,7 +230,12 @@ struct VklVisual
     VklSource sources[VKL_MAX_VISUAL_SOURCES];
 
     // GPU data
-    uint32_t vertex_count, index_count;
+    uint32_t vertex_count;
+    uint32_t index_count;
+    void* vertex_data;
+    void* index_data;
+
+    // GPU objects
     VklBufferRegions vertex_buf;
     VklBufferRegions index_buf;
     VklBufferRegions buffers[VKL_MAX_VISUAL_RESOURCES];
@@ -233,9 +263,9 @@ struct VklVisualFillEvent
 
 
 struct VklVisualDataEvent
-{ // passed to visual callback when it needs to update its data
+{
     VklViewport viewport;
-    // const void* data; // only used with CPU prop binding
+    VklDataCoords coords;
     const void* user_data;
 };
 
@@ -291,15 +321,26 @@ VKY_EXPORT void vkl_visual_data_texture(
 /*  Visual events                                                                                */
 /*************************************************************************************************/
 
-VKY_EXPORT void vkl_visual_data_callback(VklVisual* visual, VklVisualDataCallback callback);
-
 VKY_EXPORT void vkl_visual_fill_callback(VklVisual* visual, VklVisualFillCallback callback);
-
-VKY_EXPORT void vkl_visual_data_event(VklVisual* visual);
 
 VKY_EXPORT void vkl_visual_fill_event(
     VklVisual* visual, VkClearColorValue clear_color, VklCommands* cmds, uint32_t cmd_idx,
     VklViewport viewport, void* user_data);
+
+
+
+VKY_EXPORT void vkl_visual_transform_callback(VklVisual* visual, VklVisualDataCallback callback);
+
+VKY_EXPORT void
+vkl_visual_triangulation_callback(VklVisual* visual, VklVisualDataCallback callback);
+
+VKY_EXPORT void vkl_visual_bake_callback(VklVisual* visual, VklVisualDataCallback callback);
+
+VKY_EXPORT void
+vkl_visual_data_alloc(VklVisual* visual, uint32_t vertex_count, uint32_t index_count);
+
+VKY_EXPORT void vkl_visual_data_update(
+    VklVisual* visual, VklViewport viewport, VklDataCoords coords, const void* user_data);
 
 
 

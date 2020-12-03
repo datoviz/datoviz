@@ -93,11 +93,13 @@ static int vklite2_visuals_1(VkyTestContext* context)
 
     // Props.
     vkl_visual_prop(
-        &visual, VKL_PROP_POS, 0, VKL_DTYPE_VEC3, VKL_PROP_LOC_ATTRIBUTE, 0, 0,
+        &visual, VKL_PROP_POS, 0, VKL_DTYPE_VEC3, VKL_PROP_LOC_VERTEX_ATTR, 0, 0,
         offsetof(VklVertex, pos));
-
     vkl_visual_prop(
-        &visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_PROP_LOC_ATTRIBUTE, 0, 1,
+        &visual, VKL_PROP_POS, 0, VKL_DTYPE_VEC3, VKL_PROP_LOC_VERTEX_ATTR, 0, 0,
+        offsetof(VklVertex, pos));
+    vkl_visual_prop(
+        &visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_PROP_LOC_VERTEX_ATTR, 0, 1,
         offsetof(VklVertex, color));
 
     // Graphics.

@@ -56,6 +56,10 @@ VklVisual vkl_visual(VklCanvas* canvas)
 void vkl_visual_destroy(VklVisual* visual)
 {
     ASSERT(visual != NULL);
+    if (visual->vertex_data != NULL)
+        FREE(visual->vertex_data);
+    if (visual->index_data != NULL)
+        FREE(visual->index_data);
     obj_destroyed(&visual->obj);
 }
 
@@ -231,7 +235,7 @@ void vkl_visual_data_partial(
     source->binding = VKL_PROP_BINDING_CPU;
     source->u.a.offset = first_item * source->dtype_size;
     source->u.a.size = item_count * source->dtype_size;
-    source->u.a.data = data;
+    source->u.a.data_original = data;
 }
 
 
@@ -279,19 +283,99 @@ void vkl_visual_data_texture(
 /*  Visual events                                                                                */
 /*************************************************************************************************/
 
-void vkl_visual_data_callback(VklVisual* visual, VklVisualDataCallback callback)
+void vkl_visual_transform_callback(VklVisual* visual, VklVisualDataCallback callback)
 {
     ASSERT(visual != NULL);
-    visual->data_callback = callback;
+    visual->transform_callback = callback;
+}
+
+void vkl_visual_triangulation_callback(VklVisual* visual, VklVisualDataCallback callback)
+{
+    ASSERT(visual != NULL);
+    visual->triangulation_callback = callback;
+}
+
+void vkl_visual_bake_callback(VklVisual* visual, VklVisualDataCallback callback)
+{
+    ASSERT(visual != NULL);
+    visual->bake_callback = callback;
 }
 
 
 
-void vkl_visual_data_event(VklVisual* visual)
+void vkl_visual_data_alloc(VklVisual* visual, uint32_t vertex_count, uint32_t index_count)
+{
+    // Allocate the vertex data and index data CPU arrays of the visual.
+
+    ASSERT(visual != NULL);
+    ASSERT(vertex_count > 0);
+
+    // Determine the vertex size.
+    VkDeviceSize vertex_size = 0;
+    VklSource* source = _get_source(visual, VKL_PROP_VERTEX, 0);
+    if (source == NULL)
+    {
+        log_error("the PROP_VERTEX prop is mandatory");
+        return;
+    }
+    ASSERT(source != NULL);
+    vertex_size = source->dtype_size;
+    ASSERT(vertex_size > 0);
+
+    // Allocate the vertex data.
+    if (visual->vertex_data == NULL)
+    {
+        visual->vertex_data = calloc(vertex_count, vertex_size);
+    }
+    // Reallocate.
+    else if (vertex_count > visual->vertex_count)
+    {
+        visual->vertex_data = realloc(visual->vertex_data, vertex_count * vertex_size);
+    }
+
+    // Allocate the index data.
+    if (visual->index_data == NULL && index_count > 0)
+    {
+        visual->index_data = calloc(index_count, sizeof(VklIndex));
+    }
+    // Reallocate.
+    else if (index_count > visual->index_count)
+    {
+        visual->index_data = realloc(visual->index_data, index_count * sizeof(VklIndex));
+    }
+}
+
+
+
+void vkl_visual_data_update(
+    VklVisual* visual, VklViewport viewport, VklDataCoords coords, const void* user_data)
 {
     ASSERT(visual != NULL);
-    ASSERT(visual->data_callback != NULL);
-    // TODO
+    VklVisualDataEvent ev = {0};
+    ev.viewport = viewport;
+    ev.coords = coords;
+    ev.user_data = user_data;
+
+    if (visual->transform_callback != NULL)
+    {
+        log_trace("visual transform callback");
+        // This callback updates VklDataSource.data_transformed
+        visual->transform_callback(visual, ev);
+    }
+
+    if (visual->triangulation_callback != NULL)
+    {
+        log_trace("visual triangulation callback");
+        // This callback updates VklDataSource.data_triangulated
+        visual->triangulation_callback(visual, ev);
+    }
+
+    if (visual->bake_callback != NULL)
+    {
+        log_trace("visual bake callback");
+        // This callback allocates and updates VklDataSource.vertex_data/index_data
+        visual->bake_callback(visual, ev);
+    }
 }
 
 

@@ -59,7 +59,6 @@ typedef enum
 /*************************************************************************************************/
 
 typedef struct VklVertex VklVertex;
-typedef struct VklDataCoords VklDataCoords;
 typedef struct VklMVP VklMVP;
 typedef struct VklGraphicsPointsParams VklGraphicsPointsParams;
 
@@ -73,15 +72,6 @@ struct VklVertex
 {
     vec3 pos;
     cvec4 color;
-};
-
-
-
-// TODO
-struct VklDataCoords
-{
-    dvec4 data; // (tlx, tly, brx, bry)
-    vec4 gpu;   // (tlx, tly, brx, bry)
 };
 
 
