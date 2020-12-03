@@ -92,9 +92,7 @@ static int vklite2_visuals_1(VkyTestContext* context)
     VklVisual visual = vkl_visual(canvas);
 
     // Props.
-    vkl_visual_prop(
-        &visual, VKL_PROP_POS, 0, VKL_DTYPE_VEC3, VKL_PROP_LOC_VERTEX_ATTR, 0, 0,
-        offsetof(VklVertex, pos));
+    vkl_visual_vertex(&visual, sizeof(VklVertex));
     vkl_visual_prop(
         &visual, VKL_PROP_POS, 0, VKL_DTYPE_VEC3, VKL_PROP_LOC_VERTEX_ATTR, 0, 0,
         offsetof(VklVertex, pos));

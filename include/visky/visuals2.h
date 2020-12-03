@@ -224,6 +224,7 @@ struct VklVisual
 
     // User data
     uint32_t item_count;
+    uint32_t item_count_triangulated; // set by the triangulation callback
     uint32_t group_count;
     uint32_t group_sizes[VKL_MAX_VISUAL_GROUPS];
     uint32_t source_count;
@@ -232,6 +233,7 @@ struct VklVisual
     // GPU data
     uint32_t vertex_count;
     uint32_t index_count;
+    VkDeviceSize vertex_size;
     void* vertex_data;
     void* index_data;
 
@@ -277,11 +279,10 @@ struct VklVisualDataEvent
 
 VKY_EXPORT VklVisual vkl_visual(VklCanvas* canvas);
 
-// VKY_EXPORT void vkl_visual_create(VklVisual* visual);
-
 VKY_EXPORT void vkl_visual_destroy(VklVisual* visual);
 
-// Custom visuals
+VKY_EXPORT void vkl_visual_vertex(VklVisual* visual, VkDeviceSize vertex_size);
+
 VKY_EXPORT void vkl_visual_prop(
     VklVisual* visual, VklPropType prop, uint32_t idx, VklDataType dtype, VklPropLoc loc,
     uint32_t binding_idx, uint32_t field_idx, VkDeviceSize offset);

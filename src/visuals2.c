@@ -137,6 +137,23 @@ static VkDeviceSize _get_dtype_size(VklDataType dtype)
     return 0;
 }
 
+void vkl_visual_vertex(VklVisual* visual, VkDeviceSize vertex_size)
+{
+    ASSERT(visual != NULL);
+    ASSERT(vertex_size > 0);
+    visual->vertex_size = vertex_size;
+
+    VklSource source = {0};
+    source.prop = VKL_PROP_VERTEX;
+    source.prop_idx = 0;
+    source.dtype = VKL_DTYPE_NONE;
+    source.dtype_size = vertex_size;
+    source.loc = VKL_PROP_LOC_VERTEX;
+    visual->sources[visual->source_count++] = source;
+}
+
+
+
 void vkl_visual_prop(
     VklVisual* visual, VklPropType prop, uint32_t idx, VklDataType dtype, VklPropLoc loc,
     uint32_t binding_idx, uint32_t field_idx, VkDeviceSize offset)
@@ -418,11 +435,13 @@ void vkl_visual_data_update(
     VklVisual* visual, VklViewport viewport, VklDataCoords coords, const void* user_data)
 {
     ASSERT(visual != NULL);
+    VklContext* ctx = visual->canvas->gpu->context;
     VklVisualDataEvent ev = {0};
     ev.viewport = viewport;
     ev.coords = coords;
     ev.user_data = user_data;
 
+    // uint32_t initial_vertex_count = visual->vertex_count;
     if (visual->transform_callback != NULL)
     {
         log_trace("visual transform callback");
@@ -433,15 +452,58 @@ void vkl_visual_data_update(
     if (visual->triangulation_callback != NULL)
     {
         log_trace("visual triangulation callback");
-        // This callback updates VklDataSource.data_triangulated
+        // This callback updates VklDataSource.data_triangulated and
+        // VklVisual.item_count_triangulated. It also updates all CPU data sources (not just POS)
+        // with new values in data_triangulated
         visual->triangulation_callback(visual, ev);
     }
 
     if (visual->bake_callback != NULL)
     {
         log_trace("visual bake callback");
-        // This callback allocates and updates VklDataSource.vertex_data/index_data
+        // This callback allocates and updates VklVisual.vertex_data/index_data
+        // TODO: baking callback should reuse functions to copy data into the vertex data array etc
+        // NOTE: must take item_count_triangulated into account
         visual->bake_callback(visual, ev);
+    }
+
+    // Vertex and index buffer.
+    ASSERT(visual->vertex_data != NULL);
+    ASSERT(visual->vertex_count > 0);
+    ASSERT(
+        (visual->index_count > 0 && visual->index_data != NULL) ||
+        (visual->index_count == 0 && visual->index_data == NULL));
+
+    // Allocate a vertex buffer if needed.
+    if (visual->vertex_buf.buffer == NULL)
+    {
+        log_trace("allocating vertex buffer with %d vertices", visual->vertex_count);
+        visual->vertex_buf = vkl_ctx_buffers(
+            ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, visual->vertex_size * visual->vertex_count);
+    }
+    // Need to reallocate the vertex buffer if there are more vertices.
+    else if (visual->vertex_buf.size < visual->vertex_count * visual->vertex_size)
+    {
+        log_trace("reallocating vertex buffer with %d vertices", visual->vertex_count);
+        // NOTE: we waste some space as the previous buffer region with the old vertices is lost.
+        visual->vertex_buf = vkl_ctx_buffers(
+            ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, visual->vertex_size * visual->vertex_count);
+    }
+
+    // Allocate an index buffer if needed.
+    if (visual->index_buf.buffer == NULL)
+    {
+        log_trace("allocating index buffer with %d vertices", visual->index_count);
+        visual->index_buf = vkl_ctx_buffers(
+            ctx, VKL_DEFAULT_BUFFER_INDEX, 1, visual->index_count * sizeof(VklIndex));
+    }
+    // Need to reallocate the vertex buffer if there are more vertices.
+    else if (visual->index_buf.size < visual->index_count * sizeof(VklIndex))
+    {
+        log_trace("reallocating index buffer with %d indices", visual->index_count);
+        // NOTE: we waste some space as the previous buffer region with the old indices is lost.
+        visual->index_buf = vkl_ctx_buffers(
+            ctx, VKL_DEFAULT_BUFFER_INDEX, 1, visual->index_count * sizeof(VklIndex));
     }
 }
 
