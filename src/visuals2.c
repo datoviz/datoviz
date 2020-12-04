@@ -175,6 +175,42 @@ static void _copy_strided(
 
 
 
+static void _check_loc_binding(VklPropLoc loc, VklPropBinding binding)
+{
+    bool compatible = true;
+    switch (loc)
+    {
+    case VKL_PROP_LOC_VERTEX_BUFFER:
+    case VKL_PROP_LOC_INDEX_BUFFER:
+    case VKL_PROP_LOC_UNIFORM:
+    case VKL_PROP_LOC_STORAGE:
+        if (binding != VKL_PROP_BINDING_BUFFER)
+            compatible = false;
+        break;
+
+    case VKL_PROP_LOC_VERTEX_ATTR:
+    case VKL_PROP_LOC_INDEX:
+    case VKL_PROP_LOC_UNIFORM_ATTR:
+    case VKL_PROP_LOC_PUSH:
+        if (binding != VKL_PROP_BINDING_CPU)
+            compatible = false;
+        break;
+
+    case VKL_PROP_LOC_SAMPLER:
+        if (binding != VKL_PROP_BINDING_BUFFER && binding != VKL_PROP_BINDING_CPU)
+            compatible = false;
+        break;
+
+    default:
+        break;
+    }
+
+    if (!compatible)
+        log_error("prop loc %d and binding %d incompatible", loc, binding);
+}
+
+
+
 static void _visual_data(
     VklVisual* visual, VklPropType type, uint32_t idx, //
     uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data)
@@ -190,6 +226,8 @@ static void _visual_data(
     source->binding = VKL_PROP_BINDING_CPU;
     source->u.a.offset = first_item * source->dtype_size;
     source->u.a.size = item_count * source->dtype_size;
+
+    _check_loc_binding(source->loc, source->binding);
 
     // Ensure the source data_original array is allocated.
     if (source->u.a.data_original == NULL)
@@ -300,7 +338,7 @@ void vkl_visual_vertex(VklVisual* visual, VkDeviceSize vertex_size)
     source.prop_idx = 0;
     source.dtype = VKL_DTYPE_NONE;
     source.dtype_size = vertex_size;
-    source.loc = VKL_PROP_LOC_VERTEX;
+    source.loc = VKL_PROP_LOC_VERTEX_BUFFER;
     source.binding = VKL_PROP_BINDING_BUFFER;
     source.is_set = true;
     visual->sources[visual->source_count++] = source;
@@ -319,7 +357,7 @@ void vkl_visual_index(VklVisual* visual)
     source.prop_idx = 0;
     source.dtype = VKL_DTYPE_UINT;
     source.dtype_size = _get_dtype_size(source.dtype);
-    source.loc = VKL_PROP_LOC_INDEX;
+    source.loc = VKL_PROP_LOC_INDEX_BUFFER;
     source.binding = VKL_PROP_BINDING_BUFFER;
     source.is_set = true;
     visual->index_buf = &source.u.b.br;
