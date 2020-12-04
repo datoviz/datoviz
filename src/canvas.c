@@ -899,7 +899,7 @@ void vkl_canvas_to_close(VklCanvas* canvas, bool value)
 /*************************************************************************************************/
 
 void vkl_upload_buffers_fast(
-    VklCanvas* canvas, VklBufferRegions* regions, bool update_all_regions, //
+    VklCanvas* canvas, VklBufferRegions regions, bool update_all_regions, //
     VkDeviceSize offset, VkDeviceSize size, void* data)
 {
     ASSERT(canvas != NULL);
@@ -908,7 +908,7 @@ void vkl_upload_buffers_fast(
 
     VklTransfer tr = {0};
     tr.type = VKL_TRANSFER_BUFFER_UPLOAD_FAST;
-    tr.u.buf.regions = *regions;
+    tr.u.buf.regions = regions;
     tr.u.buf.offset = offset;
     tr.u.buf.size = size;
     tr.u.buf.data = data;

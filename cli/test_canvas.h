@@ -317,7 +317,7 @@ static void _vertex_cursor_callback(VklCanvas* canvas, VklEvent ev)
         data[i].color[1] = y;
         data[i].color[2] = 1;
     }
-    vkl_upload_buffers(canvas->gpu->context, &visual->br, 0, 3 * sizeof(TestVertex), data);
+    vkl_upload_buffers(canvas->gpu->context, visual->br, 0, 3 * sizeof(TestVertex), data);
 }
 
 static int vklite2_canvas_5(VkyTestContext* context)
@@ -353,7 +353,7 @@ static int vklite2_canvas_5(VkyTestContext* context)
         {{+0, -1, 0}, {0, 0, 1, 1}},
     };
     memcpy(visual.data, data, sizeof(data));
-    vkl_upload_buffers(canvas->gpu->context, &visual.br, 0, size, data);
+    vkl_upload_buffers(canvas->gpu->context, visual.br, 0, size, data);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_refill, &visual);
 
@@ -387,7 +387,7 @@ static void _uniform_cursor_callback(VklCanvas* canvas, VklEvent ev)
     vec[1] = y;
     vec[2] = 1;
     vec[3] = 1;
-    vkl_upload_buffers(canvas->gpu->context, &visual->br_u, 0, sizeof(vec4), vec);
+    vkl_upload_buffers(canvas->gpu->context, visual->br_u, 0, sizeof(vec4), vec);
 }
 
 static int vklite2_canvas_6(VkyTestContext* context)
@@ -414,7 +414,7 @@ static int vklite2_canvas_6(VkyTestContext* context)
     visual.br_u =
         vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, img_count, sizeof(vec4));
     ASSERT(visual.br_u.aligned_size >= visual.br_u.size);
-    vkl_upload_buffers(canvas->gpu->context, &visual.br_u, 0, sizeof(vec4), vec);
+    vkl_upload_buffers(canvas->gpu->context, visual.br_u, 0, sizeof(vec4), vec);
 
     // Create the bindings.
     ASSERT(img_count > 0);
@@ -437,7 +437,7 @@ static int vklite2_canvas_6(VkyTestContext* context)
         {{+0, -1, 0}, {0, 0, 1, 1}},
     };
     memcpy(visual.data, data, sizeof(data));
-    vkl_upload_buffers(canvas->gpu->context, &visual.br, 0, size, data);
+    vkl_upload_buffers(canvas->gpu->context, visual.br, 0, size, data);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_refill, &visual);
 
@@ -633,7 +633,7 @@ static void _particle_frame(VklCanvas* canvas, VklPrivateEvent ev)
     // images. Only the buffer region corresponding to the current swapchain image is
     // updated, because we're sure that region is not being used by the RENDER queue.
     vkl_upload_buffers_fast(
-        canvas, &visual->br_u, false, 0, sizeof(TestParticleUniform), visual->data_u);
+        canvas, visual->br_u, false, 0, sizeof(TestParticleUniform), visual->data_u);
 
     // Here we submit tasks to the compute queue independently of the main render loop.
     // We submit a new task as soon as the old one finishes.
@@ -773,9 +773,9 @@ static int vklite2_canvas_particles(VkyTestContext* context)
             ((TestParticle*)visual->data)[i].color[3] = .5;
         }
         // Vertex buffer
-        vkl_upload_buffers(canvas->gpu->context, &visual->br, 0, size, visual->data);
+        vkl_upload_buffers(canvas->gpu->context, visual->br, 0, size, visual->data);
         // Copy in the storage buffer
-        vkl_upload_buffers(canvas->gpu->context, &tpc.br, 0, size, visual->data);
+        vkl_upload_buffers(canvas->gpu->context, tpc.br, 0, size, visual->data);
         FREE(visual->data);
     }
 

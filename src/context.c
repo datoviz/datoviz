@@ -1226,31 +1226,31 @@ void vkl_download_texture(VklContext* context, VklTexture* texture, VkDeviceSize
 
 
 void vkl_upload_buffers(
-    VklContext* context, VklBufferRegions* regions, VkDeviceSize offset, VkDeviceSize size,
+    VklContext* context, VklBufferRegions regions, VkDeviceSize offset, VkDeviceSize size,
     void* data)
 {
-    ASSERT(regions != NULL);
     ASSERT(context != NULL);
     ASSERT(size > 0);
     ASSERT(data != NULL);
-    ASSERT(regions->count > 0);
-    ASSERT(regions->buffer != VK_NULL_HANDLE);
+    ASSERT(regions.count > 0);
+    ASSERT(regions.buffer != VK_NULL_HANDLE);
 
-    enqueue_regions_transfer(context, VKL_TRANSFER_BUFFER_UPLOAD, *regions, offset, size, data);
+    enqueue_regions_transfer(context, VKL_TRANSFER_BUFFER_UPLOAD, regions, offset, size, data);
 }
 
 
 
 void vkl_download_buffers(
-    VklContext* context, VklBufferRegions* regions, VkDeviceSize offset, VkDeviceSize size,
+    VklContext* context, VklBufferRegions regions, VkDeviceSize offset, VkDeviceSize size,
     void* data)
 {
-    ASSERT(regions != NULL);
     ASSERT(context != NULL);
     ASSERT(size > 0);
     ASSERT(data != NULL);
+    ASSERT(regions.count > 0);
+    ASSERT(regions.buffer != VK_NULL_HANDLE);
 
-    enqueue_regions_transfer(context, VKL_TRANSFER_BUFFER_DOWNLOAD, *regions, offset, size, data);
+    enqueue_regions_transfer(context, VKL_TRANSFER_BUFFER_DOWNLOAD, regions, offset, size, data);
 }
 
 

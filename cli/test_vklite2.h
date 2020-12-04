@@ -774,10 +774,10 @@ static int vklite2_context_transfer_sync(VkyTestContext* context)
     VklBufferRegions br = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, 16);
     uint8_t data[16] = {0};
     memset(data, 12, 16);
-    vkl_upload_buffers(ctx, &br, 0, 16, data);
+    vkl_upload_buffers(ctx, br, 0, 16, data);
 
     uint8_t data2[16] = {0};
-    vkl_download_buffers(ctx, &br, 0, 16, data2);
+    vkl_download_buffers(ctx, br, 0, 16, data2);
     AT(memcmp(data, data2, 16) == 0);
 
     uint8_t* img_data = calloc(16 * 16 * 4, sizeof(uint8_t));
@@ -806,7 +806,7 @@ static int vklite2_context_copy(VkyTestContext* context)
     VklBufferRegions br = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, 16);
     uint8_t data[16] = {0};
     memset(data, 12, 16);
-    vkl_upload_buffers(ctx, &br, 0, 16, data);
+    vkl_upload_buffers(ctx, br, 0, 16, data);
 
     uint8_t* img_data = calloc(16 * 16 * 4, sizeof(uint8_t));
     memset(img_data, 12, 16);
@@ -824,7 +824,7 @@ static int vklite2_context_copy(VkyTestContext* context)
 
     // Download.
     uint8_t data2[16] = {0};
-    vkl_download_buffers(ctx, &br2, 0, 16, data2);
+    vkl_download_buffers(ctx, br2, 0, 16, data2);
     AT(memcmp(data, data2, 16) == 0);
 
     uint8_t* img_data2 = calloc(16 * 16 * 4, sizeof(uint8_t));
@@ -849,11 +849,11 @@ static int vklite2_context_transfer_async_nothread(VkyTestContext* context)
     VklBufferRegions br = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, 16);
     uint8_t data[16] = {0};
     memset(data, 12, 16);
-    vkl_upload_buffers(ctx, &br, 0, 16, data);
+    vkl_upload_buffers(ctx, br, 0, 16, data);
     vkl_transfer_loop(ctx, false);
 
     uint8_t data2[16] = {0};
-    vkl_download_buffers(ctx, &br, 0, 16, data2);
+    vkl_download_buffers(ctx, br, 0, 16, data2);
     vkl_transfer_loop(ctx, false);
     AT(memcmp(data, data2, 16) == 0);
 
@@ -882,7 +882,7 @@ static void* _thread_enqueue(void* arg)
     _TestTransfer* tt = arg;
 
     // Upload data from a background thread.
-    vkl_upload_buffers(tt->ctx, &tt->br, 0, 16, tt->data);
+    vkl_upload_buffers(tt->ctx, tt->br, 0, 16, tt->data);
     vkl_upload_texture(tt->ctx, tt->tex, 16 * 16 * 4, tt->img_data);
 
     // Cause the transfer loop to end.
@@ -917,7 +917,7 @@ static int vklite2_context_transfer_async_thread(VkyTestContext* context)
     // Check.
     vkl_transfer_mode(ctx, VKL_TRANSFER_MODE_SYNC);
     uint8_t data2[16] = {0};
-    vkl_download_buffers(ctx, &tt.br, 0, 16, data2);
+    vkl_download_buffers(ctx, tt.br, 0, 16, data2);
     AT(memcmp(tt.data, data2, 16) == 0);
 
     uint8_t img_data2[16 * 16 * 4];
@@ -934,7 +934,7 @@ static void* _thread_download(void* arg)
     _TestTransfer* tt = arg;
     VklContext* ctx = tt->ctx;
     uint8_t data3[16] = {0};
-    vkl_download_buffers(ctx, &tt->br, 0, 16, data3);
+    vkl_download_buffers(ctx, tt->br, 0, 16, data3);
     if (memcmp(tt->data, data3, 16) != 0)
         tt->status = 1;
     vkl_transfer_wait(ctx, 10);

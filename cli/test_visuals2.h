@@ -120,11 +120,11 @@ static int vklite2_visuals_1(VkyTestContext* context)
         glm_mat4_identity(mvp.model);
         glm_mat4_identity(mvp.view);
         glm_mat4_identity(mvp.proj);
-        vkl_upload_buffers(gpu->context, &visual.buffers[0], 0, sizeof(VklMVP), &mvp);
+        vkl_upload_buffers(gpu->context, visual.buffers[0], 0, sizeof(VklMVP), &mvp);
 
         // Upload params.
         vkl_upload_buffers(
-            gpu->context, &visual.buffers[2], 0, sizeof(VklGraphicsPointsParams), &params);
+            gpu->context, visual.buffers[2], 0, sizeof(VklGraphicsPointsParams), &params);
     }
 
     // Vertex data.

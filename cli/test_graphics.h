@@ -73,7 +73,7 @@ static void _graphics_refill(VklCanvas* canvas, VklPrivateEvent ev)
     tg.br_vert = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, size);               \
     type* data = calloc(tg.vertex_count, sizeof(type));
 
-#define END_DATA vkl_upload_buffers(gpu->context, &tg.br_vert, 0, size, data);
+#define END_DATA vkl_upload_buffers(gpu->context, tg.br_vert, 0, size, data);
 
 #define RANDN_POS(x)                                                                              \
     x[0] = .25 * randn();                                                                         \
@@ -101,12 +101,12 @@ static void _graphics_points_wheel_callback(VklCanvas* canvas, VklEvent ev)
     tg->param += ev.u.w.dir[1] * .1;
     tg->param = CLIP(tg->param, 1, 100);
     vkl_upload_buffers(
-        gpu->context, &tg->br_params, 0, sizeof(VklGraphicsPointsParams), &tg->param);
+        gpu->context, tg->br_params, 0, sizeof(VklGraphicsPointsParams), &tg->param);
 
     // Update MVP.
     tg->mvp.model[0][0] = .1 * tg->param;
     tg->mvp.model[1][1] = .1 * tg->param;
-    vkl_upload_buffers(gpu->context, &tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
+    vkl_upload_buffers(gpu->context, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
 }
 
 static int vklite2_graphics_dynamic(VkyTestContext* context)
@@ -134,12 +134,12 @@ static int vklite2_graphics_dynamic(VkyTestContext* context)
     glm_mat4_identity(tg.mvp.model);
     glm_mat4_identity(tg.mvp.view);
     glm_mat4_identity(tg.mvp.proj);
-    vkl_upload_buffers(gpu->context, &tg.br_mvp, 0, sizeof(VklMVP), &tg.mvp);
+    vkl_upload_buffers(gpu->context, tg.br_mvp, 0, sizeof(VklMVP), &tg.mvp);
 
     // Upload params.
     tg.param = 5.0f;
     VklGraphicsPointsParams params = {.point_size = tg.param};
-    vkl_upload_buffers(gpu->context, &tg.br_params, 0, sizeof(VklGraphicsPointsParams), &params);
+    vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsPointsParams), &params);
 
     // Bindings
     vkl_bindings_buffer(&tg.bindings, 0, &tg.br_mvp);
@@ -167,7 +167,7 @@ static void _graphics_3D_callback(VklCanvas* canvas, VklPrivateEvent ev)
     vec3 axis;
     axis[1] = 1;
     glm_rotate_make(tg->mvp.model, .5 * ev.u.t.time, axis);
-    vkl_upload_buffers(gpu->context, &tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
+    vkl_upload_buffers(gpu->context, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
 }
 
 static int vklite2_graphics_3D(VkyTestContext* context)
@@ -216,12 +216,12 @@ static int vklite2_graphics_3D(VkyTestContext* context)
     float ratio = 1; // TODO: viewport.w / viewport.h;
     glm_perspective(GLM_PI_4, ratio, 0.1f, 10.0f, tg.mvp.proj);
 
-    vkl_upload_buffers(gpu->context, &tg.br_mvp, 0, sizeof(VklMVP), &tg.mvp);
+    vkl_upload_buffers(gpu->context, tg.br_mvp, 0, sizeof(VklMVP), &tg.mvp);
 
     // Upload params.
     tg.param = 50.0f;
     VklGraphicsPointsParams params = {.point_size = tg.param};
-    vkl_upload_buffers(gpu->context, &tg.br_params, 0, sizeof(VklGraphicsPointsParams), &params);
+    vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsPointsParams), &params);
 
     // Bindings
     vkl_bindings_buffer(&tg.bindings, 0, &tg.br_mvp);
@@ -262,7 +262,7 @@ static void _common_bindings(TestGraphics* tg)
     glm_mat4_identity(tg->mvp.model);
     glm_mat4_identity(tg->mvp.view);
     glm_mat4_identity(tg->mvp.proj);
-    vkl_upload_buffers(gpu->context, &tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
+    vkl_upload_buffers(gpu->context, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
 
     // Bindings
     vkl_bindings_buffer(&tg->bindings, 0, &tg->br_mvp);
@@ -290,7 +290,7 @@ static int vklite2_graphics_points(VkyTestContext* context)
     // Upload params.
     tg.param = 5.0f;
     VklGraphicsPointsParams params = {.point_size = tg.param};
-    vkl_upload_buffers(gpu->context, &tg.br_params, 0, sizeof(VklGraphicsPointsParams), &params);
+    vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsPointsParams), &params);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _graphics_refill, &tg);
     vkl_app_run(app, N_FRAMES);

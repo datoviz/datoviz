@@ -677,7 +677,7 @@ void vkl_visual_data_update(
         log_trace("uploading vertex data");
         ASSERT(visual->vertex_buf.count > 0);
         ASSERT(visual->vertex_buf.buffer != VK_NULL_HANDLE);
-        vkl_upload_buffers(ctx, &visual->vertex_buf, 0, vertex_buf_size, visual->vertex_data);
+        vkl_upload_buffers(ctx, visual->vertex_buf, 0, vertex_buf_size, visual->vertex_data);
     }
 
     // Allocate an index buffer if needed.
@@ -701,7 +701,7 @@ void vkl_visual_data_update(
         log_trace("uploading index data");
         ASSERT(visual->index_buf.count > 0);
         ASSERT(visual->index_buf.buffer != VK_NULL_HANDLE);
-        vkl_upload_buffers(ctx, &visual->index_buf, 0, index_buf_size, visual->index_data);
+        vkl_upload_buffers(ctx, visual->index_buf, 0, index_buf_size, visual->index_data);
     }
 
     // Update the bindings.

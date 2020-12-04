@@ -327,7 +327,7 @@ VKY_EXPORT void vkl_texture_destroy(VklTexture* texture);
 /*************************************************************************************************/
 
 VKY_EXPORT void vkl_upload_buffers(
-    VklContext* context, VklBufferRegions* regions, VkDeviceSize offset, VkDeviceSize size,
+    VklContext* context, VklBufferRegions regions, VkDeviceSize offset, VkDeviceSize size,
     void* data);
 
 VKY_EXPORT void vkl_upload_texture_region(
@@ -340,7 +340,7 @@ vkl_upload_texture(VklContext* context, VklTexture* texture, VkDeviceSize size, 
 
 
 VKY_EXPORT void vkl_download_buffers(
-    VklContext* context, VklBufferRegions* regions, VkDeviceSize offset, VkDeviceSize size,
+    VklContext* context, VklBufferRegions regions, VkDeviceSize offset, VkDeviceSize size,
     void* data);
 
 VKY_EXPORT void vkl_download_texture_region(

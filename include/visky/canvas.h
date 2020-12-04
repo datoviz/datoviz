@@ -585,7 +585,7 @@ VKY_EXPORT void vkl_canvas_to_close(VklCanvas* canvas, bool value);
 /*************************************************************************************************/
 
 VKY_EXPORT void vkl_upload_buffers_fast(
-    VklCanvas* canvas, VklBufferRegions* regions, bool update_all_regions, //
+    VklCanvas* canvas, VklBufferRegions regions, bool update_all_regions, //
     VkDeviceSize offset, VkDeviceSize size, void* data);
 
 
