@@ -171,6 +171,7 @@ struct VklVisualDataBuffer
     VklBufferRegions br;
     VkDeviceSize offset;
     VkDeviceSize size;
+    void* data;
 };
 
 struct VklVisualDataTexture
@@ -178,6 +179,7 @@ struct VklVisualDataTexture
     VklTexture* texture;
     uvec2 offset;
     uvec2 shape;
+    void* data;
 };
 
 union VklVisualData
@@ -250,10 +252,13 @@ struct VklVisual
     void* index_data;
 
     // GPU objects
-    VklBufferRegions vertex_buf;
-    VklBufferRegions index_buf;
+    VklBufferRegions* vertex_buf;
+    VklBufferRegions* index_buf;
+
+    // TODO: remove?
     VklBufferRegions buffers[VKL_MAX_VISUAL_RESOURCES];
     VklTexture* textures[VKL_MAX_VISUAL_RESOURCES];
+
     VklBindings gbindings[VKL_MAX_GRAPHICS_PER_VISUAL];
     VklBindings cbindings[VKL_MAX_GRAPHICS_PER_VISUAL];
 };
@@ -294,6 +299,8 @@ VKY_EXPORT VklVisual vkl_visual(VklCanvas* canvas);
 VKY_EXPORT void vkl_visual_destroy(VklVisual* visual);
 
 VKY_EXPORT void vkl_visual_vertex(VklVisual* visual, VkDeviceSize vertex_size);
+
+VKY_EXPORT void vkl_visual_index(VklVisual* visual);
 
 VKY_EXPORT void vkl_visual_prop(
     VklVisual* visual, VklPropType prop, uint32_t idx, //

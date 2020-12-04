@@ -22,13 +22,15 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
     ASSERT(viewport.height > 0);
     ASSERT(is_obj_created(&visual->graphics[0]->obj));
     ASSERT(is_obj_created(&visual->gbindings[0].obj));
-    ASSERT(visual->vertex_buf.size > 0);
+    ASSERT(visual->vertex_buf != NULL);
+    ASSERT(visual->vertex_buf->count == 1);
+    ASSERT(visual->vertex_buf->size > 0);
     ASSERT(visual->vertex_count > 0);
 
     vkl_cmd_begin(cmds, idx);
     vkl_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, &canvas->framebuffers);
     vkl_cmd_viewport(cmds, idx, viewport);
-    vkl_cmd_bind_vertex_buffer(cmds, idx, &visual->vertex_buf, 0);
+    vkl_cmd_bind_vertex_buffer(cmds, idx, visual->vertex_buf, 0);
     vkl_cmd_bind_graphics(cmds, idx, visual->graphics[0], &visual->gbindings[0], 0);
     vkl_cmd_draw(cmds, idx, 0, visual->vertex_count);
     vkl_cmd_end_renderpass(cmds, idx);
@@ -151,6 +153,36 @@ static void _copy_strided(
 
 
 
+static void _upload_buffer(
+    VklVisual* visual, VklBufferRegions* br, VklDefaultBuffer type, //
+    uint32_t count, VkDeviceSize item_size, void* data)
+{
+    ASSERT(visual != NULL);
+    VklContext* ctx = visual->canvas->gpu->context;
+    ASSERT(ctx != NULL);
+    VkDeviceSize buf_size = count * item_size;
+    ASSERT(buf_size > 0);
+
+    if (br->count == 0 || br->size < buf_size)
+    {
+        log_trace("allocating buffer with %d items", count);
+        // Need to reallocate the vertex buffer if there are more vertices.
+        // NOTE: we waste some space as the previous buffer region with the old vertices is lost.
+        *br = vkl_ctx_buffers(ctx, type, 1, buf_size);
+    }
+
+    if (data != NULL)
+    {
+        ASSERT(br->count > 0);
+        ASSERT(br->size > 0);
+        ASSERT(br->buffer != VK_NULL_HANDLE);
+        log_trace("uploading vertex data");
+        vkl_upload_buffers(ctx, *br, 0, buf_size, data);
+    }
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -208,13 +240,35 @@ void vkl_visual_vertex(VklVisual* visual, VkDeviceSize vertex_size)
     ASSERT(vertex_size > 0);
     visual->vertex_size = vertex_size;
 
+    // Create the data source corresponding to the vertex buffer.
     VklSource source = {0};
     source.prop = VKL_PROP_VERTEX;
     source.prop_idx = 0;
     source.dtype = VKL_DTYPE_NONE;
     source.dtype_size = vertex_size;
     source.loc = VKL_PROP_LOC_VERTEX;
+    source.binding = VKL_PROP_BINDING_BUFFER;
     source.is_set = true;
+    visual->sources[visual->source_count++] = source;
+    visual->vertex_buf = &visual->sources[visual->source_count - 1].u.b.br;
+}
+
+
+
+void vkl_visual_index(VklVisual* visual)
+{
+    ASSERT(visual != NULL);
+
+    // Create the data source corresponding to the index buffer.
+    VklSource source = {0};
+    source.prop = VKL_PROP_INDEX;
+    source.prop_idx = 0;
+    source.dtype = VKL_DTYPE_UINT;
+    source.dtype_size = _get_dtype_size(source.dtype);
+    source.loc = VKL_PROP_LOC_INDEX;
+    source.binding = VKL_PROP_BINDING_BUFFER;
+    source.is_set = true;
+    visual->index_buf = &source.u.b.br;
     visual->sources[visual->source_count++] = source;
 }
 
@@ -616,7 +670,6 @@ void vkl_visual_data_update(
     VklVisual* visual, VklViewport viewport, VklDataCoords coords, const void* user_data)
 {
     ASSERT(visual != NULL);
-    VklContext* ctx = visual->canvas->gpu->context;
     VklVisualDataEvent ev = {0};
     ev.viewport = viewport;
     ev.coords = coords;
@@ -648,60 +701,30 @@ void vkl_visual_data_update(
         visual->bake_callback(visual, ev);
     }
 
-    // Vertex and index buffer.
-    ASSERT(visual->vertex_data != NULL);
-    ASSERT(visual->vertex_count > 0);
+    // Upload the vertex data to the vertex buffer (allocate one if needed).
+    {
+        ASSERT(visual->vertex_data != NULL);
+        ASSERT(visual->vertex_count > 0);
+        VklSource* source = _get_source(visual, VKL_PROP_VERTEX, 0);
+        ASSERT(source != NULL);
+        ASSERT(source->binding == VKL_PROP_BINDING_BUFFER);
+        _upload_buffer(
+            visual, &source->u.b.br, VKL_DEFAULT_BUFFER_VERTEX, //
+            visual->vertex_count, visual->vertex_size, visual->vertex_data);
+        ASSERT(source->u.b.br.count == 1);
+    }
+
+    // Upload the index data to the index buffer (allocate one if needed).
     ASSERT(
         (visual->index_count > 0 && visual->index_data != NULL) ||
         (visual->index_count == 0 && visual->index_data == NULL));
-
-    // Allocate a vertex buffer if needed.
-    {
-        VkDeviceSize vertex_buf_size = visual->vertex_count * visual->vertex_size;
-        ASSERT(vertex_buf_size > 0);
-        if (visual->vertex_buf.count == 0)
-        {
-            log_trace("allocating vertex buffer with %d vertices", visual->vertex_count);
-            visual->vertex_buf =
-                vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, vertex_buf_size);
-        }
-        // Need to reallocate the vertex buffer if there are more vertices.
-        else if (visual->vertex_buf.size < vertex_buf_size)
-        {
-            log_trace("reallocating vertex buffer with %d vertices", visual->vertex_count);
-            // NOTE: we waste some space as the previous buffer region with the old vertices is
-            // lost.
-            visual->vertex_buf =
-                vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, vertex_buf_size);
-        }
-        log_trace("uploading vertex data");
-        ASSERT(visual->vertex_buf.count > 0);
-        ASSERT(visual->vertex_buf.buffer != VK_NULL_HANDLE);
-        vkl_upload_buffers(ctx, visual->vertex_buf, 0, vertex_buf_size, visual->vertex_data);
-    }
-
-    // Allocate an index buffer if needed.
     if (visual->index_count > 0)
     {
-        VkDeviceSize index_buf_size = visual->index_count * sizeof(VklIndex);
-        ASSERT(index_buf_size > 0);
-        if (visual->index_buf.buffer == NULL)
-        {
-            log_trace("allocating index buffer with %d indices", visual->index_count);
-            visual->index_buf = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_INDEX, 1, index_buf_size);
-        }
-        // Need to reallocate the vertex buffer if there are more vertices.
-        else if (visual->index_buf.size < index_buf_size)
-        {
-            log_trace("reallocating index buffer with %d indices", visual->index_count);
-            // NOTE: we waste some space as the previous buffer region with the old indices is
-            // lost.
-            visual->index_buf = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_INDEX, 1, index_buf_size);
-        }
-        log_trace("uploading index data");
-        ASSERT(visual->index_buf.count > 0);
-        ASSERT(visual->index_buf.buffer != VK_NULL_HANDLE);
-        vkl_upload_buffers(ctx, visual->index_buf, 0, index_buf_size, visual->index_data);
+        VklSource* source = _get_source(visual, VKL_PROP_INDEX, 0);
+        ASSERT(source->binding == VKL_PROP_BINDING_BUFFER);
+        _upload_buffer(
+            visual, &source->u.b.br, VKL_DEFAULT_BUFFER_INDEX, //
+            visual->index_count, sizeof(VklIndex), visual->index_data);
     }
 
     // Update the bindings.
