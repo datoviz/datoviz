@@ -329,6 +329,10 @@ VKY_EXPORT void vkl_visual_data_partial(
     VklVisual* visual, VklPropType type, uint32_t idx, uint32_t first_item, uint32_t item_count,
     const void* data);
 
+VKY_EXPORT void vkl_visual_data_const(
+    VklVisual* visual, VklPropType type, uint32_t idx, uint32_t first_item, uint32_t item_count,
+    const void* data);
+
 VKY_EXPORT void
 vkl_visual_buffer(VklVisual* visual, VklPropType type, uint32_t idx, VklBufferRegions br);
 

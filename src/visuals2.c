@@ -118,9 +118,31 @@ static VklSource* _get_source(VklVisual* visual, VklPropType type, uint32_t idx)
 
 
 static void _copy_contiguous(
-    void* dst, const void* src, uint32_t offset, uint32_t count, VkDeviceSize item_size)
+    void* dst, uint32_t data_item_count, const void* src, uint32_t offset, uint32_t count,
+    VkDeviceSize item_size)
 {
-    memcpy((void*)((int64_t)dst + (int64_t)(offset * item_size)), src, count * item_size);
+    ASSERT(data_item_count > 0);
+    ASSERT(dst != NULL);
+    ASSERT(src != NULL);
+    ASSERT(count > 0);
+    ASSERT(item_size > 0);
+
+    memcpy(
+        (void*)((int64_t)dst + (int64_t)(offset * item_size)), src,
+        MIN(count, data_item_count) * item_size);
+
+    // If the source data array is smaller than the destination array, repeat the last value.
+    if (data_item_count < count)
+    {
+        log_trace("repeat last data value %d times", count - data_item_count);
+        offset += data_item_count;
+        // Last element of the source data array..
+        void* rep = (void*)((int64_t)src + (int64_t)((data_item_count - 1) * item_size));
+        for (uint32_t i = data_item_count; i < count; i++)
+        {
+            memcpy((void*)((int64_t)dst + (int64_t)((offset + i) * item_size)), rep, item_size);
+        }
+    }
 }
 
 
@@ -149,6 +171,38 @@ static void _copy_strided(
         src_byte += (int64_t)src_stride;
         dst_byte += (int64_t)dst_stride;
     }
+}
+
+
+
+static void _visual_data(
+    VklVisual* visual, VklPropType type, uint32_t idx, //
+    uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data)
+{
+    ASSERT(visual != NULL);
+    VklSource* source = _get_source(visual, type, idx);
+    if (source == NULL)
+        log_error("Data source for prop %d #%d could not be found", type, idx);
+    ASSERT(source != NULL);
+    ASSERT(source->dtype_size > 0);
+
+    source->is_set = true;
+    source->binding = VKL_PROP_BINDING_CPU;
+    source->u.a.offset = first_item * source->dtype_size;
+    source->u.a.size = item_count * source->dtype_size;
+
+    // Ensure the source data_original array is allocated.
+    if (source->u.a.data_original == NULL)
+    {
+        log_trace("allocating data_original for source");
+        source->u.a.data_original = malloc(visual->item_count * source->dtype_size);
+    }
+    // Make a copy of the user-provided data.
+    ASSERT(source->u.a.data_original != NULL);
+    ASSERT(item_count * source->dtype_size <= visual->item_count * source->dtype_size);
+    _copy_contiguous(
+        source->u.a.data_original, data_item_count, data, first_item, item_count,
+        source->dtype_size);
 }
 
 
@@ -410,28 +464,17 @@ void vkl_visual_data_partial(
     VklVisual* visual, VklPropType type, uint32_t idx, //
     uint32_t first_item, uint32_t item_count, const void* data)
 {
-    ASSERT(visual != NULL);
-    VklSource* source = _get_source(visual, type, idx);
-    if (source == NULL)
-        log_error("Data source for prop %d #%d could not be found", type, idx);
-    ASSERT(source != NULL);
-    ASSERT(source->dtype_size > 0);
+    _visual_data(visual, type, idx, first_item, item_count, item_count, data);
+}
 
-    source->is_set = true;
-    source->binding = VKL_PROP_BINDING_CPU;
-    source->u.a.offset = first_item * source->dtype_size;
-    source->u.a.size = item_count * source->dtype_size;
 
-    // Ensure the source data_original array is allocated.
-    if (source->u.a.data_original == NULL)
-    {
-        log_trace("allocating data_original for source");
-        source->u.a.data_original = malloc(visual->item_count * source->dtype_size);
-    }
-    // Make a copy of the user-provided data.
-    ASSERT(source->u.a.data_original != NULL);
-    ASSERT(item_count * source->dtype_size <= visual->item_count * source->dtype_size);
-    _copy_contiguous(source->u.a.data_original, data, first_item, item_count, source->dtype_size);
+
+// Only difference here is that the input buffer data has only 1 element, which should be repeated
+void vkl_visual_data_const(
+    VklVisual* visual, VklPropType type, uint32_t idx, //
+    uint32_t first_item, uint32_t item_count, const void* data)
+{
+    _visual_data(visual, type, idx, first_item, item_count, 1, data);
 }
 
 
