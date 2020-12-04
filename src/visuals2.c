@@ -94,9 +94,9 @@ static VkDeviceSize _get_dtype_size(VklDataType dtype)
     case VKL_DTYPE_CVEC2:
         return 1 * 2;
     case VKL_DTYPE_CVEC3:
-        return 2 * 3;
+        return 1 * 3;
     case VKL_DTYPE_CVEC4:
-        return 3 * 4;
+        return 1 * 4;
 
 
     case VKL_DTYPE_FLOAT:
@@ -393,6 +393,9 @@ void vkl_visual_data_alloc(VklVisual* visual, uint32_t vertex_count, uint32_t in
 
     ASSERT(visual != NULL);
     ASSERT(vertex_count > 0);
+    log_trace(
+        "allocate vertex and index buffers with %d vertices and % indices", vertex_count,
+        index_count);
 
     // Determine the vertex size.
     VkDeviceSize vertex_size = 0;
@@ -427,6 +430,9 @@ void vkl_visual_data_alloc(VklVisual* visual, uint32_t vertex_count, uint32_t in
     {
         REALLOC(visual->index_data, index_count * sizeof(VklIndex));
     }
+
+    visual->vertex_count = vertex_count;
+    visual->index_count = index_count;
 }
 
 

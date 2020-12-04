@@ -145,10 +145,10 @@ VklViewport vkl_viewport_full(VklCanvas* canvas)
     viewport.size_screen[2] = canvas->window->width;
     viewport.size_screen[3] = canvas->window->height;
 
+    viewport.viewport.minDepth = +0;
+    viewport.viewport.maxDepth = +1;
 
     // TODO
-    viewport.viewport.minDepth = 0;
-    viewport.viewport.maxDepth = 1;
     viewport.dpi_scaling = 1.0;
 
     return viewport;
