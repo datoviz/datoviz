@@ -5,7 +5,7 @@
 
 
 /*************************************************************************************************/
-/*  Utils                                                                                        */
+/*  Default callbacks                                                                            */
 /*************************************************************************************************/
 
 static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
@@ -40,6 +40,113 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
 static void _default_visual_bake(VklVisual* visual, VklVisualDataEvent ev)
 {
     vkl_bake_vertex_attr(visual);
+}
+
+
+
+/*************************************************************************************************/
+/*  Utils                                                                                        */
+/*************************************************************************************************/
+
+static VkDeviceSize _get_dtype_size(VklDataType dtype)
+{
+    switch (dtype)
+    {
+    case VKL_DTYPE_CHAR:
+        return 1;
+    case VKL_DTYPE_CVEC2:
+        return 1 * 2;
+    case VKL_DTYPE_CVEC3:
+        return 1 * 3;
+    case VKL_DTYPE_CVEC4:
+        return 1 * 4;
+
+
+    case VKL_DTYPE_FLOAT:
+    case VKL_DTYPE_UINT:
+    case VKL_DTYPE_INT:
+        return 4;
+
+    case VKL_DTYPE_VEC2:
+    case VKL_DTYPE_UVEC2:
+    case VKL_DTYPE_IVEC2:
+        return 4 * 2;
+
+    case VKL_DTYPE_VEC3:
+    case VKL_DTYPE_UVEC3:
+    case VKL_DTYPE_IVEC3:
+        return 4 * 3;
+
+    case VKL_DTYPE_VEC4:
+    case VKL_DTYPE_UVEC4:
+    case VKL_DTYPE_IVEC4:
+        return 4 * 4;
+
+
+    case VKL_DTYPE_DOUBLE:
+        return 8;
+    case VKL_DTYPE_DVEC2:
+        return 8 * 2;
+    case VKL_DTYPE_DVEC3:
+        return 8 * 3;
+    case VKL_DTYPE_DVEC4:
+        return 8 * 4;
+
+    default:
+        break;
+    }
+
+    if (dtype != VKL_DTYPE_NONE)
+        log_error("could not find the size of dtype %d", dtype);
+    return 0;
+}
+
+
+
+static VklSource* _get_source(VklVisual* visual, VklPropType type, uint32_t idx)
+{
+    for (uint32_t i = 0; i < visual->source_count; i++)
+    {
+        if (visual->sources[i].prop == type && visual->sources[i].prop_idx == idx)
+            return &visual->sources[i];
+    }
+    return NULL;
+}
+
+
+
+static void _copy_contiguous(
+    void* dst, const void* src, uint32_t offset, uint32_t count, VkDeviceSize item_size)
+{
+    memcpy((void*)((int64_t)dst + (int64_t)(offset * item_size)), src, count * item_size);
+}
+
+
+
+static void _copy_strided(
+    const void* src, VkDeviceSize src_offset, VkDeviceSize src_stride, //
+    void* dst, VkDeviceSize dst_offset, VkDeviceSize dst_stride,       //
+    VkDeviceSize item_size, uint32_t item_count)
+{
+    ASSERT(src != NULL);
+    ASSERT(dst != NULL);
+    ASSERT(src_stride > 0);
+    ASSERT(dst_stride > 0);
+    ASSERT(item_size > 0);
+    ASSERT(item_count > 0);
+
+    log_trace(
+        "copy src offset %d stride %d, dst offset %d stride %d, item size %d count %d", src_offset,
+        src_stride, dst_offset, dst_stride, item_size, item_count);
+
+    int64_t src_byte = (int64_t)src + (int64_t)src_offset;
+    int64_t dst_byte = (int64_t)dst + (int64_t)dst_offset;
+    for (uint32_t i = 0; i < item_count; i++)
+    {
+        memcpy((void*)dst_byte, (void*)src_byte, item_size);
+        src_byte += (int64_t)src_stride;
+        dst_byte += (int64_t)dst_stride;
+    }
 }
 
 
@@ -95,58 +202,6 @@ void vkl_visual_destroy(VklVisual* visual)
 /*  Visual creation                                                                              */
 /*************************************************************************************************/
 
-static VkDeviceSize _get_dtype_size(VklDataType dtype)
-{
-    switch (dtype)
-    {
-    case VKL_DTYPE_CHAR:
-        return 1;
-    case VKL_DTYPE_CVEC2:
-        return 1 * 2;
-    case VKL_DTYPE_CVEC3:
-        return 1 * 3;
-    case VKL_DTYPE_CVEC4:
-        return 1 * 4;
-
-
-    case VKL_DTYPE_FLOAT:
-    case VKL_DTYPE_UINT:
-    case VKL_DTYPE_INT:
-        return 4;
-
-    case VKL_DTYPE_VEC2:
-    case VKL_DTYPE_UVEC2:
-    case VKL_DTYPE_IVEC2:
-        return 4 * 2;
-
-    case VKL_DTYPE_VEC3:
-    case VKL_DTYPE_UVEC3:
-    case VKL_DTYPE_IVEC3:
-        return 4 * 3;
-
-    case VKL_DTYPE_VEC4:
-    case VKL_DTYPE_UVEC4:
-    case VKL_DTYPE_IVEC4:
-        return 4 * 4;
-
-
-    case VKL_DTYPE_DOUBLE:
-        return 8;
-    case VKL_DTYPE_DVEC2:
-        return 8 * 2;
-    case VKL_DTYPE_DVEC3:
-        return 8 * 3;
-    case VKL_DTYPE_DVEC4:
-        return 8 * 4;
-
-    default:
-        break;
-    }
-
-    log_error("could not find the size of dtype %d", dtype);
-    return 0;
-}
-
 void vkl_visual_vertex(VklVisual* visual, VkDeviceSize vertex_size)
 {
     ASSERT(visual != NULL);
@@ -159,13 +214,16 @@ void vkl_visual_vertex(VklVisual* visual, VkDeviceSize vertex_size)
     source.dtype = VKL_DTYPE_NONE;
     source.dtype_size = vertex_size;
     source.loc = VKL_PROP_LOC_VERTEX;
+    source.is_set = true;
     visual->sources[visual->source_count++] = source;
 }
 
 
 
 void vkl_visual_prop(
-    VklVisual* visual, VklPropType prop, uint32_t idx, VklDataType dtype, VklPropLoc loc,
+    VklVisual* visual, VklPropType prop, uint32_t idx, //
+    VklPipelineType pipeline, uint32_t pipeline_idx,   //
+    VklDataType dtype, VklPropLoc loc,                 //
     uint32_t binding_idx, uint32_t field_idx, VkDeviceSize offset)
 {
     ASSERT(visual != NULL);
@@ -174,9 +232,16 @@ void vkl_visual_prop(
         log_error("maximum number of props per visual reached");
         return;
     }
+    if (_get_source(visual, prop, idx) != NULL)
+    {
+        log_error("visual prop %d #%d already exists", prop, idx);
+        return;
+    }
     VklSource source = {0};
     source.prop = prop;
     source.prop_idx = idx;
+    source.pipeline_type = pipeline;
+    source.pipeline_idx = pipeline_idx;
     source.dtype = dtype;
     source.dtype_size = _get_dtype_size(dtype);
     source.loc = loc;
@@ -198,7 +263,9 @@ void vkl_visual_graphics(VklVisual* visual, VklGraphics* graphics)
         log_error("maximum number of graphics per visual reached");
         return;
     }
-    visual->graphics[visual->graphics_count++] = graphics;
+    visual->graphics[visual->graphics_count] = graphics;
+    visual->gbindings[visual->graphics_count] = vkl_bindings(&graphics->slots, 1);
+    visual->graphics_count++;
 }
 
 
@@ -285,36 +352,18 @@ void vkl_visual_data(VklVisual* visual, VklPropType type, uint32_t idx, const vo
 
 
 
-static VklSource* _get_source(VklVisual* visual, VklPropType type, uint32_t idx)
-{
-    for (uint32_t i = 0; i < visual->source_count; i++)
-    {
-        if (visual->sources[i].prop == type && visual->sources[i].prop_idx == idx)
-            return &visual->sources[i];
-    }
-    log_error("Data source for prop %d #%d could not be found", type, idx);
-    return NULL;
-}
-
-
-
-static void _copy_contiguous(
-    void* dst, const void* src, uint32_t offset, uint32_t count, VkDeviceSize item_size)
-{
-    memcpy((void*)((int64_t)dst + (int64_t)(offset * item_size)), src, count * item_size);
-}
-
-
-
 void vkl_visual_data_partial(
-    VklVisual* visual, VklPropType type, uint32_t idx, uint32_t first_item, uint32_t item_count,
-    const void* data)
+    VklVisual* visual, VklPropType type, uint32_t idx, //
+    uint32_t first_item, uint32_t item_count, const void* data)
 {
     ASSERT(visual != NULL);
     VklSource* source = _get_source(visual, type, idx);
+    if (source == NULL)
+        log_error("Data source for prop %d #%d could not be found", type, idx);
     ASSERT(source != NULL);
     ASSERT(source->dtype_size > 0);
 
+    source->is_set = true;
     source->binding = VKL_PROP_BINDING_CPU;
     source->u.a.offset = first_item * source->dtype_size;
     source->u.a.size = item_count * source->dtype_size;
@@ -333,16 +382,29 @@ void vkl_visual_data_partial(
 
 
 
-void vkl_visual_data_buffer(
+void vkl_visual_buffer(
+    VklVisual* visual, VklPropType type, uint32_t idx, //
+    VklBufferRegions br)
+{
+    vkl_visual_buffer_partial(visual, type, idx, br, 0, br.size);
+}
+
+
+
+void vkl_visual_buffer_partial(
     VklVisual* visual, VklPropType type, uint32_t idx, //
     VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size)
 {
     ASSERT(visual != NULL);
     ASSERT(visual != NULL);
     VklSource* source = _get_source(visual, type, idx);
+    if (source == NULL)
+        log_error("Data source for prop %d #%d could not be found", type, idx);
     ASSERT(source != NULL);
-    ASSERT(source->dtype_size > 0);
+    if (size == 0)
+        size = br.size;
 
+    source->is_set = true;
     source->binding = VKL_PROP_BINDING_BUFFER;
     source->u.b.br = br;
     source->u.b.offset = offset;
@@ -351,16 +413,31 @@ void vkl_visual_data_buffer(
 
 
 
-void vkl_visual_data_texture(
+void vkl_visual_texture(VklVisual* visual, VklPropType type, uint32_t idx, VklTexture* texture)
+{
+    vkl_visual_texture_partial(visual, type, idx, texture, (uvec3){0}, (uvec3){0});
+}
+
+
+
+void vkl_visual_texture_partial(
     VklVisual* visual, VklPropType type, uint32_t idx, //
     VklTexture* texture, uvec3 offset, uvec3 shape)
 {
     ASSERT(visual != NULL);
     ASSERT(visual != NULL);
     VklSource* source = _get_source(visual, type, idx);
+    if (source == NULL)
+        log_error("Data source for prop %d #%d could not be found", type, idx);
     ASSERT(source != NULL);
-    ASSERT(source->dtype_size > 0);
+    if (shape[0] == 0)
+        shape[0] = texture->image->width;
+    if (shape[1] == 0)
+        shape[1] = texture->image->height;
+    if (shape[2] == 0)
+        shape[2] = texture->image->depth;
 
+    source->is_set = true;
     source->binding = VKL_PROP_BINDING_TEXTURE;
     source->u.t.texture = texture;
     for (uint32_t i = 0; i < 3; i++)
@@ -487,32 +564,6 @@ void vkl_bake_alloc(VklVisual* visual, uint32_t vertex_count, uint32_t index_cou
 
 
 
-static void _copy_strided(
-    const void* src, VkDeviceSize src_offset, VkDeviceSize src_stride, //
-    void* dst, VkDeviceSize dst_offset, VkDeviceSize dst_stride,       //
-    VkDeviceSize item_size, uint32_t item_count)
-{
-    ASSERT(src != NULL);
-    ASSERT(dst != NULL);
-    ASSERT(src_stride > 0);
-    ASSERT(dst_stride > 0);
-    ASSERT(item_size > 0);
-    ASSERT(item_count > 0);
-
-    log_debug(
-        "copy src offset %d stride %d, dst offset %d stride %d, item size %d count %d", src_offset,
-        src_stride, dst_offset, dst_stride, item_size, item_count);
-
-    int64_t src_byte = (int64_t)src + (int64_t)src_offset;
-    int64_t dst_byte = (int64_t)dst + (int64_t)dst_offset;
-    for (uint32_t i = 0; i < item_count; i++)
-    {
-        memcpy((void*)dst_byte, (void*)src_byte, item_size);
-        src_byte += (int64_t)src_stride;
-        dst_byte += (int64_t)dst_stride;
-    }
-}
-
 void vkl_bake_vertex_attr(VklVisual* visual)
 {
     ASSERT(visual != NULL);
@@ -538,6 +589,13 @@ void vkl_bake_vertex_attr(VklVisual* visual)
                 src = source->u.a.data_transformed;
             if (source->u.a.data_triangulated != NULL)
                 src = source->u.a.data_triangulated;
+            if (src == NULL)
+            {
+                log_error("vertex attr #%d not set, skipping", source->field_idx);
+                continue;
+            }
+            ASSERT(src != NULL);
+            ASSERT(visual->vertex_data != NULL);
 
             // Item size.
             item_size = source->dtype_size;
@@ -662,6 +720,12 @@ void vkl_visual_data_update(
                 bindings = &visual->cbindings[source->pipeline_idx];
             ASSERT(bindings != NULL);
             ASSERT(is_obj_created(&bindings->obj));
+
+            if (!source->is_set)
+            {
+                log_error("binding #%d not set, skipping", source->binding_idx);
+                continue;
+            }
 
             if (source->loc == VKL_PROP_LOC_UNIFORM || source->loc == VKL_PROP_LOC_STORAGE)
             {

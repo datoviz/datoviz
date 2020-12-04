@@ -26,14 +26,16 @@
 typedef enum
 {
     VKL_PROP_NONE,
-
-    VKL_PROP_VERTEX,
-    VKL_PROP_UNIFORM,
-    VKL_PROP_TEXTURE,
-
     VKL_PROP_POS,
     VKL_PROP_COLOR,
     VKL_PROP_TYPE,
+
+    VKL_PROP_VERTEX,
+    VKL_PROP_INDEX,
+    VKL_PROP_TRANSFORM,
+    VKL_PROP_PARAMS,
+    VKL_PROP_VIEWPORT,
+    VKL_PROP_COLOR_TEXTURE,
 } VklPropType;
 
 
@@ -205,6 +207,7 @@ struct VklSource
     // Specified by the user
     VklPropBinding binding; // initially, NONE, filled when the user specifies the visual's data
     VklVisualData u;
+    bool is_set;
 };
 
 
@@ -293,7 +296,9 @@ VKY_EXPORT void vkl_visual_destroy(VklVisual* visual);
 VKY_EXPORT void vkl_visual_vertex(VklVisual* visual, VkDeviceSize vertex_size);
 
 VKY_EXPORT void vkl_visual_prop(
-    VklVisual* visual, VklPropType prop, uint32_t idx, VklDataType dtype, VklPropLoc loc,
+    VklVisual* visual, VklPropType prop, uint32_t idx, //
+    VklPipelineType pipeline, uint32_t pipeline_idx,   //
+    VklDataType dtype, VklPropLoc loc,                 //
     uint32_t binding_idx, uint32_t field_idx, VkDeviceSize offset);
 
 VKY_EXPORT void vkl_visual_graphics(VklVisual* visual, VklGraphics* graphics);
@@ -317,11 +322,17 @@ VKY_EXPORT void vkl_visual_data_partial(
     VklVisual* visual, VklPropType type, uint32_t idx, uint32_t first_item, uint32_t item_count,
     const void* data);
 
-VKY_EXPORT void vkl_visual_data_buffer(
+VKY_EXPORT void
+vkl_visual_buffer(VklVisual* visual, VklPropType type, uint32_t idx, VklBufferRegions br);
+
+VKY_EXPORT void vkl_visual_buffer_partial(
     VklVisual* visual, VklPropType type, uint32_t idx, //
     VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size);
 
-VKY_EXPORT void vkl_visual_data_texture(
+VKY_EXPORT void
+vkl_visual_texture(VklVisual* visual, VklPropType type, uint32_t idx, VklTexture* texture);
+
+VKY_EXPORT void vkl_visual_texture_partial(
     VklVisual* visual, VklPropType type, uint32_t idx, //
     VklTexture* texture, uvec3 offset, uvec3 shape);
 

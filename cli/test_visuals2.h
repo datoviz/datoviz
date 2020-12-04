@@ -53,9 +53,8 @@ static void _bindings(VklVisual* visual, uint32_t idx, VklMVP* mvp)
     ASSERT(mvp != NULL);
     VklGpu* gpu = visual->canvas->gpu;
 
-    // Create the bindings.
-    visual->gbindings[idx] = vkl_bindings(&visual->graphics[idx]->slots, 1);
     VklBindings* bindings = &visual->gbindings[idx];
+    ASSERT(is_obj_created(&bindings->obj));
 
     // Binding resources.
     visual->buffers[0] =
@@ -100,23 +99,69 @@ static int vklite2_visuals_1(VkyTestContext* context)
 
     // Props.
     vkl_visual_vertex(&visual, sizeof(VklVertex));
-    vkl_visual_prop(
-        &visual, VKL_PROP_POS, 0, VKL_DTYPE_VEC3, VKL_PROP_LOC_VERTEX_ATTR, 0, 0,
-        offsetof(VklVertex, pos));
-    vkl_visual_prop(
-        &visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_PROP_LOC_VERTEX_ATTR, 0, 1,
-        offsetof(VklVertex, color));
 
-    // Transform data.
+    // Vertex attributex.
+    {
+        vkl_visual_prop(
+            &visual, VKL_PROP_POS, 0, VKL_PIPELINE_GRAPHICS, 0, //
+            VKL_DTYPE_VEC3, VKL_PROP_LOC_VERTEX_ATTR, 0, 0, offsetof(VklVertex, pos));
+
+        vkl_visual_prop(
+            &visual, VKL_PROP_COLOR, 0, VKL_PIPELINE_GRAPHICS, 0, //
+            VKL_DTYPE_CVEC4, VKL_PROP_LOC_VERTEX_ATTR, 0, 1, offsetof(VklVertex, color));
+    }
+
+    // Binding props.
+    {
+        // Binding #0: MVP
+        vkl_visual_prop(
+            &visual, VKL_PROP_TRANSFORM, 0, VKL_PIPELINE_GRAPHICS, 0, //
+            VKL_DTYPE_NONE, VKL_PROP_LOC_UNIFORM, 0, 0, sizeof(VklMVP));
+
+        // Binding #1: viewport
+        vkl_visual_prop(
+            &visual, VKL_PROP_VIEWPORT, 0, VKL_PIPELINE_GRAPHICS, 0, //
+            VKL_DTYPE_NONE, VKL_PROP_LOC_UNIFORM, 1, 0, 16);
+
+        // Binding #2: color texture
+        vkl_visual_prop(
+            &visual, VKL_PROP_COLOR_TEXTURE, 0, VKL_PIPELINE_GRAPHICS, 0, //
+            VKL_DTYPE_NONE, VKL_PROP_LOC_SAMPLER, 2, 0, 0);
+
+        // Binding #3: params
+        vkl_visual_prop(
+            &visual, VKL_PROP_PARAMS, 0, VKL_PIPELINE_GRAPHICS, 0, //
+            VKL_DTYPE_NONE, VKL_PROP_LOC_UNIFORM, 3, 0, 0);
+    }
+
+    // Binding resources.
+    visual.buffers[0] =
+        vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklMVP));
+    visual.buffers[1] = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
+    visual.buffers[2] = vkl_ctx_buffers(
+        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointsParams));
+    visual.textures[0] =
+        vkl_ctx_texture(gpu->context, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+
+    // Binding data.
     VklMVP mvp = {0};
-    glm_mat4_identity(mvp.model);
-    glm_mat4_identity(mvp.view);
-    glm_mat4_identity(mvp.proj);
-    // HACK: make sure the transfer are sync so that transient pointers like parameters
-    // exist by the time they are uploaded to the GPU.
-    vkl_transfer_mode(gpu->context, VKL_TRANSFER_MODE_SYNC);
-    _bindings(&visual, 0, &mvp);
-    vkl_transfer_mode(gpu->context, VKL_TRANSFER_MODE_ASYNC);
+    float param = 5.0f;
+    VklGraphicsPointsParams params = {.point_size = param};
+    {
+        glm_mat4_identity(mvp.model);
+        glm_mat4_identity(mvp.view);
+        glm_mat4_identity(mvp.proj);
+
+        // Upload MVP.
+        glm_mat4_identity(mvp.model);
+        glm_mat4_identity(mvp.view);
+        glm_mat4_identity(mvp.proj);
+        vkl_upload_buffers(gpu->context, &visual.buffers[0], 0, sizeof(VklMVP), &mvp);
+
+        // Upload params.
+        vkl_upload_buffers(
+            gpu->context, &visual.buffers[2], 0, sizeof(VklGraphicsPointsParams), &params);
+    }
 
     // Vertex data.
     const uint32_t N = 10000;
@@ -132,6 +177,10 @@ static int vklite2_visuals_1(VkyTestContext* context)
     vkl_visual_size(&visual, N, 0);
     vkl_visual_data(&visual, VKL_PROP_POS, 0, pos);
     vkl_visual_data(&visual, VKL_PROP_COLOR, 0, color);
+    vkl_visual_buffer(&visual, VKL_PROP_TRANSFORM, 0, visual.buffers[0]);
+    vkl_visual_buffer(&visual, VKL_PROP_VIEWPORT, 0, visual.buffers[1]);
+    vkl_visual_texture(&visual, VKL_PROP_COLOR_TEXTURE, 0, visual.textures[0]);
+    vkl_visual_buffer(&visual, VKL_PROP_PARAMS, 0, visual.buffers[2]);
 
     // Upload the data to the GPU..
     VklViewport viewport = vkl_viewport_full(canvas);
