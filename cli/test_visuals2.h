@@ -87,71 +87,6 @@ static void _bindings(VklVisual* visual, uint32_t idx, VklMVP* mvp)
     vkl_bindings_update(bindings);
 }
 
-static void _copy_array(
-    const void* src, VkDeviceSize src_offset, VkDeviceSize src_stride, //
-    void* dst, VkDeviceSize dst_offset, VkDeviceSize dst_stride,       //
-    VkDeviceSize item_size, uint32_t item_count)
-{
-    ASSERT(src != NULL);
-    ASSERT(dst != NULL);
-    ASSERT(src_stride > 0);
-    ASSERT(dst_stride > 0);
-    ASSERT(item_size > 0);
-    ASSERT(item_count > 0);
-
-    log_debug(
-        "copy src offset %d stride %d, dst offset %d stride %d, item size %d count %d", src_offset,
-        src_stride, dst_offset, dst_stride, item_size, item_count);
-
-    int64_t src_byte = (int64_t)src + (int64_t)src_offset;
-    int64_t dst_byte = (int64_t)dst + (int64_t)dst_offset;
-    for (uint32_t i = 0; i < item_count; i++)
-    {
-        memcpy((void*)dst_byte, (void*)src_byte, item_size);
-        src_byte += (int64_t)src_stride;
-        dst_byte += (int64_t)dst_stride;
-    }
-}
-
-static void _visual_bake(VklVisual* visual, VklVisualDataEvent ev)
-{
-    ASSERT(visual != NULL);
-    uint32_t item_count = visual->item_count;
-    if (visual->item_count_triangulated != 0)
-        item_count = visual->item_count_triangulated;
-    ASSERT(item_count > 0);
-    VkDeviceSize item_size = 0;
-
-    log_debug("bake visual");
-    vkl_visual_data_alloc(visual, item_count, 0);
-
-    VklSource* source = NULL;
-    void* src = NULL;
-    for (uint32_t s = 0; s < visual->source_count; s++)
-    {
-        source = &visual->sources[s];
-        if (source->loc == VKL_PROP_LOC_VERTEX_ATTR)
-        {
-            // Source data array.
-            src = source->u.a.data_original;
-            if (source->u.a.data_transformed != NULL)
-                src = source->u.a.data_transformed;
-            if (source->u.a.data_triangulated != NULL)
-                src = source->u.a.data_triangulated;
-
-            // Item size.
-            item_size = source->dtype_size;
-            ASSERT(item_size > 0);
-
-            // Copy the source data array to the vertex data.
-            _copy_array(
-                src, 0, item_size,                                        //
-                visual->vertex_data, source->offset, visual->vertex_size, //
-                item_size, item_count);
-        }
-    }
-}
-
 static int vklite2_visuals_1(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
@@ -159,6 +94,9 @@ static int vklite2_visuals_1(VkyTestContext* context)
     VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
 
     VklVisual visual = vkl_visual(canvas);
+
+    // Graphics.
+    vkl_visual_graphics(&visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_POINTS, 0));
 
     // Props.
     vkl_visual_vertex(&visual, sizeof(VklVertex));
@@ -168,9 +106,6 @@ static int vklite2_visuals_1(VkyTestContext* context)
     vkl_visual_prop(
         &visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_PROP_LOC_VERTEX_ATTR, 0, 1,
         offsetof(VklVertex, color));
-
-    // Graphics.
-    vkl_visual_graphics(&visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_POINTS, 0));
 
     // Transform data.
     VklMVP mvp = {0};
@@ -198,9 +133,7 @@ static int vklite2_visuals_1(VkyTestContext* context)
     vkl_visual_data(&visual, VKL_PROP_POS, 0, pos);
     vkl_visual_data(&visual, VKL_PROP_COLOR, 0, color);
 
-    vkl_visual_bake_callback(&visual, _visual_bake);
-
-    // Update visual data.
+    // Upload the data to the GPU..
     VklViewport viewport = vkl_viewport_full(canvas);
     vkl_visual_data_update(&visual, viewport, (VklDataCoords){0}, NULL);
 

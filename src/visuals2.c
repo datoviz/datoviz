@@ -37,6 +37,13 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
 
 
 
+static void _default_visual_bake(VklVisual* visual, VklVisualDataEvent ev)
+{
+    vkl_bake_vertex_attr(visual);
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -45,8 +52,11 @@ VklVisual vkl_visual(VklCanvas* canvas)
 {
     VklVisual visual = {0};
     visual.canvas = canvas;
-    // Default fill callback.
+
+    // Default callbacks.
     visual.fill_callback = _default_visual_fill;
+    visual.bake_callback = _default_visual_bake;
+
     obj_created(&visual.obj);
     return visual;
 }
@@ -288,8 +298,8 @@ static VklSource* _get_source(VklVisual* visual, VklPropType type, uint32_t idx)
 
 
 
-static void
-_copy_array(void* dst, const void* src, uint32_t offset, uint32_t count, VkDeviceSize item_size)
+static void _copy_contiguous(
+    void* dst, const void* src, uint32_t offset, uint32_t count, VkDeviceSize item_size)
 {
     memcpy((void*)((int64_t)dst + (int64_t)(offset * item_size)), src, count * item_size);
 }
@@ -318,7 +328,7 @@ void vkl_visual_data_partial(
     // Make a copy of the user-provided data.
     ASSERT(source->u.a.data_original != NULL);
     ASSERT(item_count * source->dtype_size <= visual->item_count * source->dtype_size);
-    _copy_array(source->u.a.data_original, data, first_item, item_count, source->dtype_size);
+    _copy_contiguous(source->u.a.data_original, data, first_item, item_count, source->dtype_size);
 }
 
 
@@ -372,11 +382,15 @@ void vkl_visual_transform_callback(VklVisual* visual, VklVisualDataCallback call
     visual->transform_callback = callback;
 }
 
+
+
 void vkl_visual_triangulation_callback(VklVisual* visual, VklVisualDataCallback callback)
 {
     ASSERT(visual != NULL);
     visual->triangulation_callback = callback;
 }
+
+
 
 void vkl_visual_bake_callback(VklVisual* visual, VklVisualDataCallback callback)
 {
@@ -386,8 +400,44 @@ void vkl_visual_bake_callback(VklVisual* visual, VklVisualDataCallback callback)
 
 
 
+void vkl_visual_fill_callback(VklVisual* visual, VklVisualFillCallback callback)
+{
+    ASSERT(visual != NULL);
+    VklCanvas* canvas = visual->canvas;
+    ASSERT(canvas != NULL);
+    visual->fill_callback = callback;
+}
+
+
+
+void vkl_visual_fill_event(
+    VklVisual* visual, VkClearColorValue clear_color, VklCommands* cmds, uint32_t cmd_idx,
+    VklViewport viewport, void* user_data)
+{
+    // Called in a REFILL canvas callback.
+
+    ASSERT(visual != NULL);
+    ASSERT(visual->fill_callback != NULL);
+
+    VklVisualFillEvent ev = {0};
+    ev.clear_color = clear_color;
+    ev.cmds = cmds;
+    ev.cmd_idx = cmd_idx;
+    ev.viewport = viewport;
+    ev.user_data = user_data;
+
+    visual->fill_callback(visual, ev);
+    visual->canvas->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+}
+
+
+
+/*************************************************************************************************/
+/*  Data update and baking                                                                       */
+/*************************************************************************************************/
+
 // To be called by the baking callbacks.
-void vkl_visual_data_alloc(VklVisual* visual, uint32_t vertex_count, uint32_t index_count)
+void vkl_bake_alloc(VklVisual* visual, uint32_t vertex_count, uint32_t index_count)
 {
     // Allocate the vertex data and index data CPU arrays of the visual.
 
@@ -433,6 +483,73 @@ void vkl_visual_data_alloc(VklVisual* visual, uint32_t vertex_count, uint32_t in
 
     visual->vertex_count = vertex_count;
     visual->index_count = index_count;
+}
+
+
+
+static void _copy_strided(
+    const void* src, VkDeviceSize src_offset, VkDeviceSize src_stride, //
+    void* dst, VkDeviceSize dst_offset, VkDeviceSize dst_stride,       //
+    VkDeviceSize item_size, uint32_t item_count)
+{
+    ASSERT(src != NULL);
+    ASSERT(dst != NULL);
+    ASSERT(src_stride > 0);
+    ASSERT(dst_stride > 0);
+    ASSERT(item_size > 0);
+    ASSERT(item_count > 0);
+
+    log_debug(
+        "copy src offset %d stride %d, dst offset %d stride %d, item size %d count %d", src_offset,
+        src_stride, dst_offset, dst_stride, item_size, item_count);
+
+    int64_t src_byte = (int64_t)src + (int64_t)src_offset;
+    int64_t dst_byte = (int64_t)dst + (int64_t)dst_offset;
+    for (uint32_t i = 0; i < item_count; i++)
+    {
+        memcpy((void*)dst_byte, (void*)src_byte, item_size);
+        src_byte += (int64_t)src_stride;
+        dst_byte += (int64_t)dst_stride;
+    }
+}
+
+void vkl_bake_vertex_attr(VklVisual* visual)
+{
+    ASSERT(visual != NULL);
+    uint32_t item_count = visual->item_count;
+    if (visual->item_count_triangulated != 0)
+        item_count = visual->item_count_triangulated;
+    ASSERT(item_count > 0);
+    VkDeviceSize item_size = 0;
+
+    log_debug("bake visual");
+    vkl_bake_alloc(visual, item_count, 0);
+
+    VklSource* source = NULL;
+    void* src = NULL;
+    for (uint32_t s = 0; s < visual->source_count; s++)
+    {
+        source = &visual->sources[s];
+        if (source->loc == VKL_PROP_LOC_VERTEX_ATTR)
+        {
+            // Source data array.
+            src = source->u.a.data_original;
+            if (source->u.a.data_transformed != NULL)
+                src = source->u.a.data_transformed;
+            if (source->u.a.data_triangulated != NULL)
+                src = source->u.a.data_triangulated;
+
+            // Item size.
+            item_size = source->dtype_size;
+            ASSERT(item_size > 0);
+
+            // Copy the source data array to the vertex data.
+            _copy_strided(
+                src, 0, item_size,                                        //
+                visual->vertex_data, source->offset, visual->vertex_size, //
+                item_size, item_count);
+        }
+    }
 }
 
 
@@ -574,36 +691,4 @@ void vkl_visual_data_update(
         for (uint32_t i = 0; i < visual->compute_count; i++)
             vkl_bindings_update(&visual->cbindings[i]);
     }
-}
-
-
-
-void vkl_visual_fill_callback(VklVisual* visual, VklVisualFillCallback callback)
-{
-    ASSERT(visual != NULL);
-    VklCanvas* canvas = visual->canvas;
-    ASSERT(canvas != NULL);
-    visual->fill_callback = callback;
-}
-
-
-
-void vkl_visual_fill_event(
-    VklVisual* visual, VkClearColorValue clear_color, VklCommands* cmds, uint32_t cmd_idx,
-    VklViewport viewport, void* user_data)
-{
-    // Called in a REFILL canvas callback.
-
-    ASSERT(visual != NULL);
-    ASSERT(visual->fill_callback != NULL);
-
-    VklVisualFillEvent ev = {0};
-    ev.clear_color = clear_color;
-    ev.cmds = cmds;
-    ev.cmd_idx = cmd_idx;
-    ev.viewport = viewport;
-    ev.user_data = user_data;
-
-    visual->fill_callback(visual, ev);
-    visual->canvas->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
 }
