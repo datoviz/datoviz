@@ -142,10 +142,10 @@ static int vklite2_graphics_dynamic(VkyTestContext* context)
     vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsPointsParams), &params);
 
     // Bindings
-    vkl_bindings_buffer(&tg.bindings, 0, &tg.br_mvp);
-    vkl_bindings_buffer(&tg.bindings, 1, &tg.br_viewport);
+    vkl_bindings_buffer(&tg.bindings, 0, tg.br_mvp);
+    vkl_bindings_buffer(&tg.bindings, 1, tg.br_viewport);
     vkl_bindings_texture(&tg.bindings, 2, tg.texture->image, tg.texture->sampler);
-    vkl_bindings_buffer(&tg.bindings, 3, &tg.br_params);
+    vkl_bindings_buffer(&tg.bindings, 3, tg.br_params);
 
     vkl_bindings_update(&tg.bindings);
 
@@ -224,10 +224,10 @@ static int vklite2_graphics_3D(VkyTestContext* context)
     vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsPointsParams), &params);
 
     // Bindings
-    vkl_bindings_buffer(&tg.bindings, 0, &tg.br_mvp);
-    vkl_bindings_buffer(&tg.bindings, 1, &tg.br_viewport);
+    vkl_bindings_buffer(&tg.bindings, 0, tg.br_mvp);
+    vkl_bindings_buffer(&tg.bindings, 1, tg.br_viewport);
     vkl_bindings_texture(&tg.bindings, 2, tg.texture->image, tg.texture->sampler);
-    vkl_bindings_buffer(&tg.bindings, 3, &tg.br_params);
+    vkl_bindings_buffer(&tg.bindings, 3, tg.br_params);
 
     vkl_bindings_update(&tg.bindings);
 
@@ -265,8 +265,8 @@ static void _common_bindings(TestGraphics* tg)
     vkl_upload_buffers(gpu->context, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
 
     // Bindings
-    vkl_bindings_buffer(&tg->bindings, 0, &tg->br_mvp);
-    vkl_bindings_buffer(&tg->bindings, 1, &tg->br_viewport);
+    vkl_bindings_buffer(&tg->bindings, 0, tg->br_mvp);
+    vkl_bindings_buffer(&tg->bindings, 1, tg->br_viewport);
     vkl_bindings_texture(&tg->bindings, 2, tg->texture->image, tg->texture->sampler);
     // TODO: color
 }
@@ -284,7 +284,7 @@ static int vklite2_graphics_points(VkyTestContext* context)
 
     // Bindings and uniform buffers.
     _common_bindings(&tg);
-    vkl_bindings_buffer(&tg.bindings, 3, &tg.br_params);
+    vkl_bindings_buffer(&tg.bindings, 3, tg.br_params);
     vkl_bindings_update(&tg.bindings);
 
     // Upload params.

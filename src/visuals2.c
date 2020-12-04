@@ -731,7 +731,7 @@ void vkl_visual_data_update(
             {
                 // TODO: support CPU too
                 ASSERT(source->binding == VKL_PROP_BINDING_BUFFER);
-                vkl_bindings_buffer(bindings, source->binding_idx, &source->u.b.br);
+                vkl_bindings_buffer(bindings, source->binding_idx, source->u.b.br);
             }
 
             if (source->loc == VKL_PROP_LOC_SAMPLER)

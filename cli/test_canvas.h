@@ -420,7 +420,7 @@ static int vklite2_canvas_6(VkyTestContext* context)
     ASSERT(img_count > 0);
     visual.bindings = vkl_bindings(&visual.graphics.slots, img_count);
     ASSERT(visual.br_u.buffer != VK_NULL_HANDLE);
-    vkl_bindings_buffer(&visual.bindings, 0, &visual.br_u);
+    vkl_bindings_buffer(&visual.bindings, 0, visual.br_u);
     vkl_bindings_update(&visual.bindings);
 
     // Create the graphics pipeline.
@@ -502,7 +502,7 @@ static int vklite2_canvas_7(VkyTestContext* context)
         visual.compute = vkl_ctx_compute(gpu->context, path);
         vkl_compute_slot(visual.compute, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
         bindings = vkl_bindings(&visual.compute->slots, 1);
-        vkl_bindings_buffer(&bindings, 0, &visual.br);
+        vkl_bindings_buffer(&bindings, 0, visual.br);
         vkl_bindings_update(&bindings);
         vkl_compute_bindings(visual.compute, &bindings);
         vkl_compute_create(visual.compute);
@@ -561,7 +561,7 @@ static int vklite2_canvas_8(VkyTestContext* context)
         vkl_compute_slot(visual.compute, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 
         bindings = vkl_bindings(&visual.compute->slots, 1);
-        vkl_bindings_buffer(&bindings, 0, &visual.br);
+        vkl_bindings_buffer(&bindings, 0, visual.br);
         vkl_bindings_update(&bindings);
         vkl_compute_bindings(visual.compute, &bindings);
         vkl_compute_create(visual.compute);
@@ -809,8 +809,8 @@ static int vklite2_canvas_particles(VkyTestContext* context)
 
         // Create the bindings.
         bindings = vkl_bindings(&visual->compute->slots, canvas->swapchain.img_count);
-        vkl_bindings_buffer(&bindings, 0, &tpc.br);
-        vkl_bindings_buffer(&bindings, 1, &visual->br_u);
+        vkl_bindings_buffer(&bindings, 0, tpc.br);
+        vkl_bindings_buffer(&bindings, 1, visual->br_u);
         vkl_bindings_update(&bindings);
 
         vkl_compute_bindings(visual->compute, &bindings);

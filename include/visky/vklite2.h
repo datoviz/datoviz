@@ -1102,7 +1102,7 @@ VKY_EXPORT VklBindings vkl_bindings(VklSlots* slots, uint32_t dset_count);
 // VKY_EXPORT void vkl_bindings_create(VklBindings* bindings, uint32_t dset_count);
 
 VKY_EXPORT void
-vkl_bindings_buffer(VklBindings* bindings, uint32_t idx, VklBufferRegions* buffer_regions);
+vkl_bindings_buffer(VklBindings* bindings, uint32_t idx, VklBufferRegions buffer_regions);
 
 VKY_EXPORT void
 vkl_bindings_texture(VklBindings* bindings, uint32_t idx, VklImages* imagess, VklSampler* sampler);
