@@ -47,43 +47,27 @@ static void _canvas_fill(VklCanvas* canvas, VklPrivateEvent ev)
     }
 }
 
-static void _bindings(VklVisual* visual, uint32_t idx, VklMVP* mvp)
+static void _common_binding_props(VklVisual* visual)
 {
-    ASSERT(visual != NULL);
-    ASSERT(mvp != NULL);
-    VklGpu* gpu = visual->canvas->gpu;
+    // Binding #0: MVP
+    vkl_visual_prop(
+        visual, VKL_PROP_TRANSFORM, 0, VKL_PIPELINE_GRAPHICS, 0, //
+        VKL_DTYPE_NONE, VKL_PROP_LOC_UNIFORM, 0, 0, sizeof(VklMVP));
 
-    VklBindings* bindings = &visual->gbindings[idx];
-    ASSERT(is_obj_created(&bindings->obj));
+    // Binding #1: viewport
+    vkl_visual_prop(
+        visual, VKL_PROP_VIEWPORT, 0, VKL_PIPELINE_GRAPHICS, 0, //
+        VKL_DTYPE_NONE, VKL_PROP_LOC_UNIFORM, 1, 0, 16);
 
-    // Binding resources.
-    visual->buffers[0] =
-        vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklMVP));
-    visual->buffers[1] = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
-    visual->buffers[2] = vkl_ctx_buffers(
-        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointsParams));
-    visual->textures[0] =
-        vkl_ctx_texture(gpu->context, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+    // Binding #2: color texture
+    vkl_visual_prop(
+        visual, VKL_PROP_COLOR_TEXTURE, 0, VKL_PIPELINE_GRAPHICS, 0, //
+        VKL_DTYPE_NONE, VKL_PROP_LOC_SAMPLER, 2, 0, 0);
 
-    // Upload MVP.
-    glm_mat4_identity(mvp->model);
-    glm_mat4_identity(mvp->view);
-    glm_mat4_identity(mvp->proj);
-    vkl_upload_buffers(gpu->context, &visual->buffers[0], 0, sizeof(VklMVP), mvp);
-
-    // Upload params.
-    float param = 5.0f;
-    VklGraphicsPointsParams params = {.point_size = param};
-    vkl_upload_buffers(
-        gpu->context, &visual->buffers[2], 0, sizeof(VklGraphicsPointsParams), &params);
-
-    // Bindings
-    vkl_bindings_buffer(bindings, 0, &visual->buffers[0]);
-    vkl_bindings_buffer(bindings, 1, &visual->buffers[1]);
-    vkl_bindings_texture(bindings, 2, visual->textures[0]->image, visual->textures[0]->sampler);
-    vkl_bindings_buffer(bindings, 3, &visual->buffers[2]);
-
-    vkl_bindings_update(bindings);
+    // Binding #3: params
+    vkl_visual_prop(
+        visual, VKL_PROP_PARAMS, 0, VKL_PIPELINE_GRAPHICS, 0, //
+        VKL_DTYPE_NONE, VKL_PROP_LOC_UNIFORM, 3, 0, 0);
 }
 
 static int vklite2_visuals_1(VkyTestContext* context)
@@ -112,27 +96,7 @@ static int vklite2_visuals_1(VkyTestContext* context)
     }
 
     // Binding props.
-    {
-        // Binding #0: MVP
-        vkl_visual_prop(
-            &visual, VKL_PROP_TRANSFORM, 0, VKL_PIPELINE_GRAPHICS, 0, //
-            VKL_DTYPE_NONE, VKL_PROP_LOC_UNIFORM, 0, 0, sizeof(VklMVP));
-
-        // Binding #1: viewport
-        vkl_visual_prop(
-            &visual, VKL_PROP_VIEWPORT, 0, VKL_PIPELINE_GRAPHICS, 0, //
-            VKL_DTYPE_NONE, VKL_PROP_LOC_UNIFORM, 1, 0, 16);
-
-        // Binding #2: color texture
-        vkl_visual_prop(
-            &visual, VKL_PROP_COLOR_TEXTURE, 0, VKL_PIPELINE_GRAPHICS, 0, //
-            VKL_DTYPE_NONE, VKL_PROP_LOC_SAMPLER, 2, 0, 0);
-
-        // Binding #3: params
-        vkl_visual_prop(
-            &visual, VKL_PROP_PARAMS, 0, VKL_PIPELINE_GRAPHICS, 0, //
-            VKL_DTYPE_NONE, VKL_PROP_LOC_UNIFORM, 3, 0, 0);
-    }
+    _common_binding_props(&visual);
 
     // Binding resources.
     visual.buffers[0] =
