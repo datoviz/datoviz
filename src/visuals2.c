@@ -777,7 +777,6 @@ void vkl_visual_data_update(
     {
         log_trace("visual bake callback");
         // This callback allocates and updates VklVisual.vertex_data/index_data
-        // TODO: baking callback should reuse functions to copy data into the vertex data array etc
         // NOTE: must take item_count_triangulated into account
         visual->bake_callback(visual, ev);
     }
@@ -831,26 +830,64 @@ void vkl_visual_data_update(
                 continue;
             }
 
-            if (source->loc == VKL_PROP_LOC_UNIFORM || source->loc == VKL_PROP_LOC_STORAGE)
+            switch (source->loc)
             {
-                // TODO: support CPU too
+
+                // Uniform and storage buffers.
+            case VKL_PROP_LOC_UNIFORM:
+            case VKL_PROP_LOC_STORAGE:
                 ASSERT(source->binding == VKL_PROP_BINDING_BUFFER);
                 vkl_bindings_buffer(bindings, source->binding_idx, source->u.b.br);
-            }
+                break;
 
-            if (source->loc == VKL_PROP_LOC_SAMPLER)
-            {
-                // TODO: support CPU too
-                ASSERT(source->binding == VKL_PROP_BINDING_TEXTURE);
-                vkl_bindings_texture(
-                    bindings, source->binding_idx, //
-                    source->u.t.texture->image, source->u.t.texture->sampler);
-            }
+                // Texture sampler.
+            case VKL_PROP_LOC_SAMPLER:
+                ASSERT(
+                    source->binding == VKL_PROP_BINDING_TEXTURE ||
+                    source->binding == VKL_PROP_BINDING_CPU);
 
-            if (source->loc == VKL_PROP_LOC_PUSH)
-            {
+                if (source->binding == VKL_PROP_BINDING_TEXTURE)
+                {
+                    vkl_bindings_texture(
+                        bindings, source->binding_idx, //
+                        source->u.t.texture->image, source->u.t.texture->sampler);
+                }
+                else if (source->binding == VKL_PROP_BINDING_CPU)
+                {
+                    // TODO: create texture and upload the data
+                }
+
+                break;
+
+            case VKL_PROP_LOC_VERTEX_BUFFER:
+            case VKL_PROP_LOC_INDEX_BUFFER:
+            case VKL_PROP_LOC_VERTEX_ATTR:
+                // do nothing, already taken care of above.
+                break;
+
+            case VKL_PROP_LOC_INDEX:
                 ASSERT(source->binding == VKL_PROP_BINDING_CPU);
-                log_error("not implemented yet");
+                log_error("loc index not implemented yet");
+                // _upload_buffer(
+                //     visual, visual->index_buf, VKL_DEFAULT_BUFFER_INDEX, //
+                //     visual->index_count, sizeof(VklIndex), visual->index_data);
+                break;
+
+            case VKL_PROP_LOC_UNIFORM_ATTR:
+                ASSERT(source->binding == VKL_PROP_BINDING_CPU);
+                _upload_buffer(
+                    visual, &source->u.b.br, VKL_DEFAULT_BUFFER_VERTEX, //
+                    visual->vertex_count, visual->vertex_size, visual->vertex_data);
+                break;
+
+            case VKL_PROP_LOC_PUSH:
+                // TODO
+                log_error("push constant support not yet implemented");
+                break;
+
+            default:
+                log_error("unknown prop loc %d", source->loc);
+                break;
             }
         }
         // Update the bindings.
