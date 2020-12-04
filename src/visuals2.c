@@ -699,6 +699,7 @@ void vkl_bake_alloc(VklVisual* visual, uint32_t vertex_count, uint32_t index_cou
 
 
 
+// Fill vertex data array from the VERTEX_ATTR sources
 void vkl_bake_vertex_attr(VklVisual* visual)
 {
     ASSERT(visual != NULL);
