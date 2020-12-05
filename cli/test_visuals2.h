@@ -52,12 +52,12 @@ static void _common_binding_props(VklVisual* visual)
     // Binding #0: MVP
     vkl_visual_prop(
         visual, VKL_PROP_TRANSFORM, 0, VKL_PIPELINE_GRAPHICS, 0, //
-        VKL_DTYPE_NONE, VKL_PROP_LOC_UNIFORM, 0, 0, sizeof(VklMVP));
+        VKL_DTYPE_NONE, VKL_PROP_LOC_UNIFORM_BUFFER, 0, 0, sizeof(VklMVP));
 
     // Binding #1: viewport
     vkl_visual_prop(
         visual, VKL_PROP_VIEWPORT, 0, VKL_PIPELINE_GRAPHICS, 0, //
-        VKL_DTYPE_NONE, VKL_PROP_LOC_UNIFORM, 1, 0, 16);
+        VKL_DTYPE_NONE, VKL_PROP_LOC_UNIFORM_BUFFER, 1, 0, 16);
 
     // Binding #2: color texture
     vkl_visual_prop(
@@ -67,7 +67,7 @@ static void _common_binding_props(VklVisual* visual)
     // Binding #3: params
     vkl_visual_prop(
         visual, VKL_PROP_PARAMS, 0, VKL_PIPELINE_GRAPHICS, 0, //
-        VKL_DTYPE_NONE, VKL_PROP_LOC_UNIFORM, 3, 0, 0);
+        VKL_DTYPE_NONE, VKL_PROP_LOC_UNIFORM_BUFFER, 3, 0, 0);
 }
 
 static int vklite2_visuals_1(VkyTestContext* context)

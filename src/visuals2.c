@@ -182,8 +182,8 @@ static void _check_loc_binding(VklPropLoc loc, VklPropBinding binding)
     {
     case VKL_PROP_LOC_VERTEX_BUFFER:
     case VKL_PROP_LOC_INDEX_BUFFER:
-    case VKL_PROP_LOC_UNIFORM:
-    case VKL_PROP_LOC_STORAGE:
+    case VKL_PROP_LOC_UNIFORM_BUFFER:
+    case VKL_PROP_LOC_STORAGE_BUFFER:
         if (binding != VKL_PROP_BINDING_BUFFER)
             compatible = false;
         break;
@@ -419,7 +419,7 @@ void vkl_visual_prop_uniform_attr(
     {
         vkl_visual_prop(
             visual, prop, idx, VKL_PIPELINE_GRAPHICS, 0, VKL_DTYPE_NONE, //
-            VKL_PROP_LOC_UNIFORM, binding_idx, 0, 0);
+            VKL_PROP_LOC_UNIFORM_BUFFER, binding_idx, 0, 0);
     }
     vkl_visual_prop(
         visual, prop, idx, VKL_PIPELINE_GRAPHICS, 0, dtype, //
@@ -546,9 +546,9 @@ void vkl_visual_data_const(
 
 
 
-void vkl_visual_buffer(
-    VklVisual* visual, VklPropType type, uint32_t idx, //
-    VklBufferRegions br)
+// Means that no data updates will be done by visky, it is up to the user to update the bound
+// buffer
+void vkl_visual_buffer(VklVisual* visual, VklPropType type, uint32_t idx, VklBufferRegions br)
 {
     vkl_visual_buffer_partial(visual, type, idx, br, 0, br.size);
 }
@@ -567,6 +567,16 @@ void vkl_visual_buffer_partial(
     ASSERT(source != NULL);
     if (size == 0)
         size = br.size;
+
+    if (source->loc != VKL_PROP_LOC_VERTEX_BUFFER &&  //
+        source->loc != VKL_PROP_LOC_INDEX_BUFFER &&   //
+        source->loc != VKL_PROP_LOC_UNIFORM_BUFFER && //
+        source->loc != VKL_PROP_LOC_STORAGE_BUFFER    //
+    )
+    {
+        log_error("vkl_visual_buffer() can only be called on props with buffer locations");
+        return;
+    }
 
     source->is_set = true;
     source->binding = VKL_PROP_BINDING_BUFFER;
@@ -864,8 +874,8 @@ void vkl_visual_data_update(
             {
 
                 // Uniform and storage buffers.
-            case VKL_PROP_LOC_UNIFORM:
-            case VKL_PROP_LOC_STORAGE:
+            case VKL_PROP_LOC_UNIFORM_BUFFER:
+            case VKL_PROP_LOC_STORAGE_BUFFER:
                 ASSERT(source->binding == VKL_PROP_BINDING_BUFFER);
                 vkl_bindings_buffer(bindings, source->binding_idx, source->u.b.br);
                 break;

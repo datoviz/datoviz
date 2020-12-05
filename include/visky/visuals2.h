@@ -23,6 +23,7 @@
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
+// Props
 typedef enum
 {
     VKL_PROP_NONE,
@@ -39,6 +40,7 @@ typedef enum
 } VklPropType;
 
 
+// Dtypes
 typedef enum
 {
     VKL_DTYPE_NONE,
@@ -70,21 +72,27 @@ typedef enum
 } VklDataType;
 
 
+// Prop locs
 typedef enum
 {
     VKL_PROP_LOC_NONE,
-    VKL_PROP_LOC_VERTEX_BUFFER, // only compatible with BUFFER binding
-    VKL_PROP_LOC_VERTEX_ATTR,   // only compatible with CPU binding
-    VKL_PROP_LOC_INDEX_BUFFER,  // only compatible with BUFFER binding
-    VKL_PROP_LOC_INDEX,         // only compatible with CPU binding
-    VKL_PROP_LOC_UNIFORM,       // only compatible with BUFFER binding
-    VKL_PROP_LOC_UNIFORM_ATTR,  // only compatible with CPU binding
-    VKL_PROP_LOC_STORAGE,       // only compatible with BUFFER binding
-    VKL_PROP_LOC_SAMPLER,       // only compatible with CPU and TEXTURE binding
-    VKL_PROP_LOC_PUSH,          // only compatible with CPU binding
+
+    VKL_PROP_LOC_VERTEX_BUFFER,  // only compatible with BUFFER binding
+    VKL_PROP_LOC_VERTEX_ATTR,    // only compatible with CPU binding
+                                 //
+    VKL_PROP_LOC_INDEX_BUFFER,   // only compatible with BUFFER binding
+    VKL_PROP_LOC_INDEX,          // only compatible with CPU binding
+                                 //
+    VKL_PROP_LOC_UNIFORM_BUFFER, // only compatible with BUFFER binding
+    VKL_PROP_LOC_UNIFORM_ATTR,   // only compatible with CPU binding
+                                 //
+    VKL_PROP_LOC_STORAGE_BUFFER, // only compatible with BUFFER binding
+    VKL_PROP_LOC_SAMPLER,        // only compatible with CPU and TEXTURE binding
+    VKL_PROP_LOC_PUSH,           // only compatible with CPU binding
 } VklPropLoc;
 
 
+// Prop bindings
 typedef enum
 {
     VKL_PROP_BINDING_NONE,
@@ -94,6 +102,7 @@ typedef enum
 } VklPropBinding;
 
 
+// Pipeline types
 typedef enum
 {
     VKL_PIPELINE_GRAPHICS,
