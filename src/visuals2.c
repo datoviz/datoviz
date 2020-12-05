@@ -41,7 +41,7 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
 
 static void _default_visual_bake(VklVisual* visual, VklVisualDataEvent ev)
 {
-    vkl_bake_vertex_attr(visual);
+    // vkl_bake_vertex_attr(visual);
 }
 
 
@@ -105,11 +105,81 @@ static VkDeviceSize _get_dtype_size(VklDataType dtype)
 
 
 
+static void _check_loc_binding(VklPropLoc loc, VklPropBinding binding)
+{
+    bool compatible = true;
+    switch (loc)
+    {
+    case VKL_PROP_LOC_VERTEX_BUFFER:
+    case VKL_PROP_LOC_INDEX_BUFFER:
+    case VKL_PROP_LOC_UNIFORM_BUFFER:
+    case VKL_PROP_LOC_STORAGE_BUFFER:
+        if (binding != VKL_PROP_BINDING_BUFFER)
+            compatible = false;
+        break;
+
+    case VKL_PROP_LOC_VERTEX_ATTR:
+    case VKL_PROP_LOC_INDEX:
+    case VKL_PROP_LOC_UNIFORM_ATTR:
+    case VKL_PROP_LOC_PUSH:
+        if (binding != VKL_PROP_BINDING_CPU)
+            compatible = false;
+        break;
+
+    case VKL_PROP_LOC_SAMPLER:
+        if (binding != VKL_PROP_BINDING_BUFFER && binding != VKL_PROP_BINDING_CPU)
+            compatible = false;
+        break;
+
+    default:
+        break;
+    }
+
+    if (!compatible)
+        log_error("prop loc %d and binding %d incompatible", loc, binding);
+}
+
+
+
+static bool _is_buffer_loc(VklPropLoc loc)
+{
+    return loc == VKL_PROP_LOC_VERTEX_BUFFER ||  //
+           loc == VKL_PROP_LOC_INDEX_BUFFER ||   //
+           loc == VKL_PROP_LOC_UNIFORM_BUFFER || //
+           loc == VKL_PROP_LOC_STORAGE_BUFFER;   //
+}
+
+
+
+static bool _is_attr_loc(VklPropLoc loc)
+{
+    return loc == VKL_PROP_LOC_VERTEX_ATTR || //
+           loc == VKL_PROP_LOC_UNIFORM_ATTR;  //
+}
+
+
+
 static VklSource* _get_source(VklVisual* visual, VklPropType type, uint32_t idx)
 {
     for (uint32_t i = 0; i < visual->source_count; i++)
     {
         if (visual->sources[i].prop == type && visual->sources[i].prop_idx == idx)
+            return &visual->sources[i];
+    }
+    return NULL;
+}
+
+
+
+// Find the BUFFER data source that corresponds to an ATTR data source (same binding idx).
+static VklSource* _get_buffer_source(VklVisual* visual, VklPropLoc loc, uint32_t binding_idx)
+{
+    ASSERT(_is_attr_loc(loc));
+    VklPropLoc find_loc =
+        loc == VKL_PROP_LOC_VERTEX_ATTR ? VKL_PROP_LOC_VERTEX_BUFFER : VKL_PROP_LOC_UNIFORM_BUFFER;
+    for (uint32_t i = 0; i < visual->source_count; i++)
+    {
+        if (visual->sources[i].loc == find_loc && visual->sources[i].binding_idx == binding_idx)
             return &visual->sources[i];
     }
     return NULL;
@@ -148,8 +218,8 @@ static void _copy_contiguous(
 
 
 static void _copy_strided(
-    const void* src, VkDeviceSize src_offset, VkDeviceSize src_stride, //
     void* dst, VkDeviceSize dst_offset, VkDeviceSize dst_stride,       //
+    const void* src, VkDeviceSize src_offset, VkDeviceSize src_stride, //
     VkDeviceSize item_size, uint32_t item_count)
 {
     ASSERT(src != NULL);
@@ -175,42 +245,6 @@ static void _copy_strided(
 
 
 
-static void _check_loc_binding(VklPropLoc loc, VklPropBinding binding)
-{
-    bool compatible = true;
-    switch (loc)
-    {
-    case VKL_PROP_LOC_VERTEX_BUFFER:
-    case VKL_PROP_LOC_INDEX_BUFFER:
-    case VKL_PROP_LOC_UNIFORM_BUFFER:
-    case VKL_PROP_LOC_STORAGE_BUFFER:
-        if (binding != VKL_PROP_BINDING_BUFFER)
-            compatible = false;
-        break;
-
-    case VKL_PROP_LOC_VERTEX_ATTR:
-    case VKL_PROP_LOC_INDEX:
-    case VKL_PROP_LOC_UNIFORM_ATTR:
-    case VKL_PROP_LOC_PUSH:
-        if (binding != VKL_PROP_BINDING_CPU)
-            compatible = false;
-        break;
-
-    case VKL_PROP_LOC_SAMPLER:
-        if (binding != VKL_PROP_BINDING_BUFFER && binding != VKL_PROP_BINDING_CPU)
-            compatible = false;
-        break;
-
-    default:
-        break;
-    }
-
-    if (!compatible)
-        log_error("prop loc %d and binding %d incompatible", loc, binding);
-}
-
-
-
 static void _visual_data(
     VklVisual* visual, VklPropType type, uint32_t idx, //
     uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data)
@@ -229,18 +263,51 @@ static void _visual_data(
 
     _check_loc_binding(source->loc, source->binding);
 
-    // Ensure the source data_original array is allocated.
-    if (source->u.a.data_original == NULL)
+    // If the prop is a full buffer, then copy the data to the buffer data source.
+    if (_is_buffer_loc(source->loc))
     {
-        log_trace("allocating data_original for source");
-        source->u.a.data_original = malloc(visual->item_count * source->dtype_size);
+        // Ensure the source data array is allocated.
+        void* cpy = source->u.b.data;
+        if (cpy == NULL)
+        {
+            log_trace("allocating data for source");
+            cpy = source->u.b.data = malloc(visual->item_count * source->dtype_size);
+        }
+        // Make a copy of the user-provided data.
+        ASSERT(cpy != NULL);
+        ASSERT(item_count <= visual->item_count);
+        _copy_contiguous(cpy, data_item_count, data, first_item, item_count, source->dtype_size);
     }
-    // Make a copy of the user-provided data.
-    ASSERT(source->u.a.data_original != NULL);
-    ASSERT(item_count * source->dtype_size <= visual->item_count * source->dtype_size);
-    _copy_contiguous(
-        source->u.a.data_original, data_item_count, data, first_item, item_count,
-        source->dtype_size);
+
+    // If the prop is an attr, we find the corresponding buffer source, and we copy the provided
+    // data to the corresponding column in the buffer source.
+    else if (_is_attr_loc(source->loc))
+    {
+        // Item size.
+        VkDeviceSize item_size = source->dtype_size;
+        ASSERT(item_size > 0);
+
+        // Find the associated BUFFER source
+        VklSource* buffer_source = _get_buffer_source(visual, source->loc, source->binding_idx);
+        ASSERT(buffer_source != NULL);
+        ASSERT(buffer_source->binding_idx == source->binding_idx);
+        ASSERT(_is_buffer_loc(buffer_source->loc));
+
+        // Copy the source data array to the corresponding BUFFER data source.
+        void* cpy = buffer_source->u.b.data;
+        if (cpy == NULL)
+        {
+            log_trace("allocating data for source");
+            cpy = buffer_source->u.b.data = malloc(visual->item_count * buffer_source->dtype_size);
+        }
+        _copy_strided(
+            cpy, source->offset, buffer_source->dtype_size, //
+            data, 0, item_size, item_size, item_count);
+
+        source = buffer_source;
+    }
+    ASSERT(_is_buffer_loc(source->loc));
+    ASSERT(source->u.b.data != NULL);
 }
 
 
@@ -568,11 +635,7 @@ void vkl_visual_buffer_partial(
     if (size == 0)
         size = br.size;
 
-    if (source->loc != VKL_PROP_LOC_VERTEX_BUFFER &&  //
-        source->loc != VKL_PROP_LOC_INDEX_BUFFER &&   //
-        source->loc != VKL_PROP_LOC_UNIFORM_BUFFER && //
-        source->loc != VKL_PROP_LOC_STORAGE_BUFFER    //
-    )
+    if (!_is_buffer_loc(source->loc))
     {
         log_error("vkl_visual_buffer() can only be called on props with buffer locations");
         return;
@@ -738,52 +801,52 @@ void vkl_bake_alloc(VklVisual* visual, uint32_t vertex_count, uint32_t index_cou
 
 
 
-// Fill vertex data array from the VERTEX_ATTR sources
-void vkl_bake_vertex_attr(VklVisual* visual)
-{
-    ASSERT(visual != NULL);
-    uint32_t item_count = visual->item_count;
-    if (visual->item_count_triangulated != 0)
-        item_count = visual->item_count_triangulated;
-    ASSERT(item_count > 0);
-    VkDeviceSize item_size = 0;
+// // Fill vertex data array from the VERTEX_ATTR sources
+// void vkl_bake_vertex_attr(VklVisual* visual)
+// {
+//     ASSERT(visual != NULL);
+//     uint32_t item_count = visual->item_count;
+//     if (visual->item_count_triangulated != 0)
+//         item_count = visual->item_count_triangulated;
+//     ASSERT(item_count > 0);
+//     VkDeviceSize item_size = 0;
 
-    log_debug("bake visual");
-    vkl_bake_alloc(visual, item_count, 0);
+//     log_debug("bake visual");
+//     vkl_bake_alloc(visual, item_count, 0);
 
-    VklSource* source = NULL;
-    void* src = NULL;
-    for (uint32_t s = 0; s < visual->source_count; s++)
-    {
-        source = &visual->sources[s];
-        if (source->loc == VKL_PROP_LOC_VERTEX_ATTR)
-        {
-            // Source data array.
-            src = source->u.a.data_original;
-            if (source->u.a.data_transformed != NULL)
-                src = source->u.a.data_transformed;
-            if (source->u.a.data_triangulated != NULL)
-                src = source->u.a.data_triangulated;
-            if (src == NULL)
-            {
-                log_error("vertex attr #%d not set, skipping", source->field_idx);
-                continue;
-            }
-            ASSERT(src != NULL);
-            ASSERT(visual->vertex_data != NULL);
+//     VklSource* source = NULL;
+//     void* src = NULL;
+//     for (uint32_t s = 0; s < visual->source_count; s++)
+//     {
+//         source = &visual->sources[s];
+//         if (source->loc == VKL_PROP_LOC_VERTEX_ATTR)
+//         {
+//             // Source data array.
+//             src = source->u.a.data_original;
+//             if (source->u.a.data_transformed != NULL)
+//                 src = source->u.a.data_transformed;
+//             if (source->u.a.data_triangulated != NULL)
+//                 src = source->u.a.data_triangulated;
+//             if (src == NULL)
+//             {
+//                 log_error("vertex attr #%d not set, skipping", source->field_idx);
+//                 continue;
+//             }
+//             ASSERT(src != NULL);
+//             ASSERT(visual->vertex_data != NULL);
 
-            // Item size.
-            item_size = source->dtype_size;
-            ASSERT(item_size > 0);
+//             // Item size.
+//             item_size = source->dtype_size;
+//             ASSERT(item_size > 0);
 
-            // Copy the source data array to the vertex data.
-            _copy_strided(
-                src, 0, item_size,                                        //
-                visual->vertex_data, source->offset, visual->vertex_size, //
-                item_size, item_count);
-        }
-    }
-}
+//             // Copy the source data array to the vertex data.
+//             _copy_strided(
+//                 src, 0, item_size,                                        //
+//                 visual->vertex_data, source->offset, visual->vertex_size, //
+//                 item_size, item_count);
+//         }
+//     }
+// }
 
 
 

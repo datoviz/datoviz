@@ -394,7 +394,7 @@ VKY_EXPORT void vkl_visual_bake_callback(VklVisual* visual, VklVisualDataCallbac
 
 VKY_EXPORT void vkl_bake_alloc(VklVisual* visual, uint32_t vertex_count, uint32_t index_count);
 
-VKY_EXPORT void vkl_bake_vertex_attr(VklVisual* visual);
+// VKY_EXPORT void vkl_bake_vertex_attr(VklVisual* visual);
 
 VKY_EXPORT void vkl_visual_data_update(
     VklVisual* visual, VklViewport viewport, VklDataCoords coords, const void* user_data);
