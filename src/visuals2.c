@@ -399,6 +399,35 @@ void vkl_visual_prop(
 
 
 
+void vkl_visual_prop_attr(
+    VklVisual* visual, VklPropType prop, uint32_t idx, //
+    VklDataType dtype, uint32_t field_idx, VkDeviceSize offset)
+{
+    vkl_visual_prop(
+        visual, prop, idx, VKL_PIPELINE_GRAPHICS, 0, dtype, VKL_PROP_LOC_VERTEX_ATTR, 0, field_idx,
+        offset);
+}
+
+
+
+void vkl_visual_prop_uniform_attr(
+    VklVisual* visual, VklPropType prop, uint32_t idx, VklDataType dtype, //
+    uint32_t binding_idx, uint32_t field_idx, VkDeviceSize offset)
+{
+    // Make sure the corresponding data source for the corresponding uniform buffer is set.
+    if (field_idx == 0)
+    {
+        vkl_visual_prop(
+            visual, prop, idx, VKL_PIPELINE_GRAPHICS, 0, VKL_DTYPE_NONE, //
+            VKL_PROP_LOC_UNIFORM, binding_idx, 0, 0);
+    }
+    vkl_visual_prop(
+        visual, prop, idx, VKL_PIPELINE_GRAPHICS, 0, dtype, //
+        VKL_PROP_LOC_UNIFORM_ATTR, binding_idx, field_idx, offset);
+}
+
+
+
 void vkl_visual_graphics(VklVisual* visual, VklGraphics* graphics)
 {
     ASSERT(visual != NULL);

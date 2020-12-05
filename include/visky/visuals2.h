@@ -309,6 +309,14 @@ VKY_EXPORT void vkl_visual_prop(
     VklDataType dtype, VklPropLoc loc,                 //
     uint32_t binding_idx, uint32_t field_idx, VkDeviceSize offset);
 
+VKY_EXPORT void vkl_visual_prop_attr(
+    VklVisual* visual, VklPropType prop, uint32_t idx, //
+    VklDataType dtype, uint32_t field_idx, VkDeviceSize offset);
+
+VKY_EXPORT void vkl_visual_prop_uniform_attr(
+    VklVisual* visual, VklPropType prop, uint32_t idx, VklDataType dtype, //
+    uint32_t binding_idx, uint32_t field_idx, VkDeviceSize offset);
+
 VKY_EXPORT void vkl_visual_graphics(VklVisual* visual, VklGraphics* graphics);
 
 VKY_EXPORT void vkl_visual_compute(VklVisual* visual, VklCompute* compute);

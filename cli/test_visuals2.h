@@ -85,15 +85,10 @@ static int vklite2_visuals_1(VkyTestContext* context)
     vkl_visual_vertex(&visual, sizeof(VklVertex));
 
     // Vertex attributex.
-    {
-        vkl_visual_prop(
-            &visual, VKL_PROP_POS, 0, VKL_PIPELINE_GRAPHICS, 0, //
-            VKL_DTYPE_VEC3, VKL_PROP_LOC_VERTEX_ATTR, 0, 0, offsetof(VklVertex, pos));
+    vkl_visual_prop_attr(&visual, VKL_PROP_POS, 0, VKL_DTYPE_VEC3, 0, offsetof(VklVertex, pos));
 
-        vkl_visual_prop(
-            &visual, VKL_PROP_COLOR, 0, VKL_PIPELINE_GRAPHICS, 0, //
-            VKL_DTYPE_CVEC4, VKL_PROP_LOC_VERTEX_ATTR, 0, 1, offsetof(VklVertex, color));
-    }
+    vkl_visual_prop_attr(
+        &visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, 1, offsetof(VklVertex, color));
 
     // Binding props.
     _common_binding_props(&visual);
