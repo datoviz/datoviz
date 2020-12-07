@@ -134,6 +134,7 @@ struct VkyTestCase
 #include "test_demo.h"
 #include "test_visuals.h"
 
+#include "test_array.h"
 #include "test_canvas.h"
 #include "test_graphics.h"
 #include "test_visuals2.h"
@@ -190,6 +191,9 @@ static VkyTestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(vklite2_graphics_dynamic), //
     CASE_FIXTURE_NONE(vklite2_graphics_3D),      //
     CASE_FIXTURE_NONE(vklite2_graphics_points),  //
+
+    // array
+    CASE_FIXTURE_NONE(vklite2_array_1), //
 
     // visuals
     CASE_FIXTURE_NONE(vklite2_visuals_1), //

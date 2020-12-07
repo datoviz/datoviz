@@ -1,6 +1,7 @@
 #ifndef VKL_VISUALS_HEADER
 #define VKL_VISUALS_HEADER
 
+#include "array.h"
 #include "context.h"
 #include "graphics.h"
 #include "vklite2.h"
@@ -40,55 +41,26 @@ typedef enum
 } VklPropType;
 
 
-// Dtypes
-typedef enum
-{
-    VKL_DTYPE_NONE,
-
-    VKL_DTYPE_CHAR, // 8 bits, unsigned
-    VKL_DTYPE_CVEC2,
-    VKL_DTYPE_CVEC3,
-    VKL_DTYPE_CVEC4,
-
-    VKL_DTYPE_UINT, // 32 bits, unsigned
-    VKL_DTYPE_UVEC2,
-    VKL_DTYPE_UVEC3,
-    VKL_DTYPE_UVEC4,
-
-    VKL_DTYPE_INT, // 32 bits, signed
-    VKL_DTYPE_IVEC2,
-    VKL_DTYPE_IVEC3,
-    VKL_DTYPE_IVEC4,
-
-    VKL_DTYPE_FLOAT, // 32 bits
-    VKL_DTYPE_VEC2,
-    VKL_DTYPE_VEC3,
-    VKL_DTYPE_VEC4,
-
-    VKL_DTYPE_DOUBLE, // 64 bits
-    VKL_DTYPE_DVEC2,
-    VKL_DTYPE_DVEC3,
-    VKL_DTYPE_DVEC4,
-} VklDataType;
-
 
 // Prop locs
 typedef enum
 {
     VKL_PROP_LOC_NONE,
 
-    VKL_PROP_LOC_VERTEX_BUFFER,  // only compatible with BUFFER binding
+    VKL_PROP_LOC_VERTEX_BUFFER,  // only compatible with BUFFER and CPU bindings
     VKL_PROP_LOC_VERTEX_ATTR,    // only compatible with CPU binding
                                  //
-    VKL_PROP_LOC_INDEX_BUFFER,   // only compatible with BUFFER binding
+    VKL_PROP_LOC_INDEX_BUFFER,   // only compatible with BUFFER and CPU bindings
     VKL_PROP_LOC_INDEX,          // only compatible with CPU binding
                                  //
-    VKL_PROP_LOC_UNIFORM_BUFFER, // only compatible with BUFFER binding
+    VKL_PROP_LOC_UNIFORM_BUFFER, // only compatible with BUFFER and CPU bindings
     VKL_PROP_LOC_UNIFORM_ATTR,   // only compatible with CPU binding
                                  //
     VKL_PROP_LOC_STORAGE_BUFFER, // only compatible with BUFFER binding
     VKL_PROP_LOC_SAMPLER,        // only compatible with CPU and TEXTURE binding
     VKL_PROP_LOC_PUSH,           // only compatible with CPU binding
+                                 //
+    VKL_PROP_LOC_ABSTRACT,       // no direct correspondance to GPU data, need custom bake
 } VklPropLoc;
 
 
