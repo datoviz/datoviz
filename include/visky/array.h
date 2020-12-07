@@ -219,6 +219,15 @@ static void vkl_array_data(
 
 
 
+static inline void* vkl_array_item(VklArray* array, uint32_t idx)
+{
+    ASSERT(array != NULL);
+    idx = CLIP(idx, 0, array->item_count);
+    return (void*)((int64_t)array->data + (int64_t)(idx * array->item_size));
+}
+
+
+
 static void vkl_array_resize(VklArray* array, uint32_t item_count)
 {
     ASSERT(array != NULL);
@@ -273,8 +282,10 @@ static void vkl_array_column(
     int64_t dst_byte = (int64_t)dst + (int64_t)(first_item * dst_stride) + (int64_t)dst_offset;
     for (uint32_t i = 0; i < item_count; i++)
     {
+        // log_trace("copy from %d to %d", src_byte, dst_byte);
         memcpy((void*)dst_byte, (void*)src_byte, col_size);
-        src_byte += (int64_t)src_stride;
+        if (i < data_item_count - 1)
+            src_byte += (int64_t)src_stride;
         dst_byte += (int64_t)dst_stride;
     }
 }

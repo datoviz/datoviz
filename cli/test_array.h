@@ -70,24 +70,47 @@ static int vklite2_array_2(VkyTestContext* context)
 
 
 
+typedef struct _TestDtype _TestDtype;
+struct _TestDtype
+{
+    uint8_t a;
+    float b;
+};
+
 static int vklite2_array_3(VkyTestContext* context)
 {
-    float values[] = {1, 2, 3, 4, 5, 6};
+    // uint8, float32
+    VklArray arr = vkl_array_struct(3, sizeof(_TestDtype));
 
-    VklArray arr = vkl_array(6, VKL_DTYPE_FLOAT);
+    _TestDtype value = {1, 2};
+    vkl_array_data(&arr, 0, 3, 1, &value);
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        AT(((_TestDtype*)(vkl_array_item(&arr, i)))->a == 1);
+        AT(((_TestDtype*)(vkl_array_item(&arr, i)))->b == 2);
+    }
 
-    // 1:6
-    vkl_array_data(&arr, 0, 6, 6, values);
-    AT(memcmp(arr.data, values, sizeof(values)) == 0);
+    // Copy data to the second column.
+    float b = 20.0f;
+    vkl_array_column(&arr, offsetof(_TestDtype, b), sizeof(float), 1, 2, 1, &b);
 
-    // Partial copy of data.
-    vkl_array_data(&arr, 2, 3, 3, values); // put [1, 2, 3] in arr[2:5]
-    AT(memcmp(arr.data, (float[]){1, 2, 1, 2, 3, 6}, sizeof(values)) == 0);
+    // Row #0.
+    AT(((_TestDtype*)(vkl_array_item(&arr, 0)))->a == 1);
+    AT(((_TestDtype*)(vkl_array_item(&arr, 0)))->b == 2);
 
-    // for (uint32_t i = 0; i < 9; i++)
-    // {
-    //     DBGF(((float*)arr.data)[i]);
-    // }
+    // Row #1.
+    AT(((_TestDtype*)(vkl_array_item(&arr, 1)))->a == 1);
+    AT(((_TestDtype*)(vkl_array_item(&arr, 1)))->b == 20);
+
+    // Row #2.
+    AT(((_TestDtype*)(vkl_array_item(&arr, 2)))->a == 1);
+    AT(((_TestDtype*)(vkl_array_item(&arr, 2)))->b == 20);
+
+    // Resize.
+    vkl_array_resize(&arr, 4);
+    // Row #3
+    AT(((_TestDtype*)(vkl_array_item(&arr, 3)))->a == 1);
+    AT(((_TestDtype*)(vkl_array_item(&arr, 3)))->b == 20);
 
     vkl_array_destroy(&arr);
     return 0;
