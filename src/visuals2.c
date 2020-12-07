@@ -50,58 +50,58 @@ static void _default_visual_bake(VklVisual* visual, VklVisualDataEvent ev)
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static VkDeviceSize _get_dtype_size(VklDataType dtype)
-{
-    switch (dtype)
-    {
-    case VKL_DTYPE_CHAR:
-        return 1;
-    case VKL_DTYPE_CVEC2:
-        return 1 * 2;
-    case VKL_DTYPE_CVEC3:
-        return 1 * 3;
-    case VKL_DTYPE_CVEC4:
-        return 1 * 4;
+// static VkDeviceSize _get_dtype_size(VklDataType dtype)
+// {
+//     switch (dtype)
+//     {
+//     case VKL_DTYPE_CHAR:
+//         return 1;
+//     case VKL_DTYPE_CVEC2:
+//         return 1 * 2;
+//     case VKL_DTYPE_CVEC3:
+//         return 1 * 3;
+//     case VKL_DTYPE_CVEC4:
+//         return 1 * 4;
 
 
-    case VKL_DTYPE_FLOAT:
-    case VKL_DTYPE_UINT:
-    case VKL_DTYPE_INT:
-        return 4;
+//     case VKL_DTYPE_FLOAT:
+//     case VKL_DTYPE_UINT:
+//     case VKL_DTYPE_INT:
+//         return 4;
 
-    case VKL_DTYPE_VEC2:
-    case VKL_DTYPE_UVEC2:
-    case VKL_DTYPE_IVEC2:
-        return 4 * 2;
+//     case VKL_DTYPE_VEC2:
+//     case VKL_DTYPE_UVEC2:
+//     case VKL_DTYPE_IVEC2:
+//         return 4 * 2;
 
-    case VKL_DTYPE_VEC3:
-    case VKL_DTYPE_UVEC3:
-    case VKL_DTYPE_IVEC3:
-        return 4 * 3;
+//     case VKL_DTYPE_VEC3:
+//     case VKL_DTYPE_UVEC3:
+//     case VKL_DTYPE_IVEC3:
+//         return 4 * 3;
 
-    case VKL_DTYPE_VEC4:
-    case VKL_DTYPE_UVEC4:
-    case VKL_DTYPE_IVEC4:
-        return 4 * 4;
+//     case VKL_DTYPE_VEC4:
+//     case VKL_DTYPE_UVEC4:
+//     case VKL_DTYPE_IVEC4:
+//         return 4 * 4;
 
 
-    case VKL_DTYPE_DOUBLE:
-        return 8;
-    case VKL_DTYPE_DVEC2:
-        return 8 * 2;
-    case VKL_DTYPE_DVEC3:
-        return 8 * 3;
-    case VKL_DTYPE_DVEC4:
-        return 8 * 4;
+//     case VKL_DTYPE_DOUBLE:
+//         return 8;
+//     case VKL_DTYPE_DVEC2:
+//         return 8 * 2;
+//     case VKL_DTYPE_DVEC3:
+//         return 8 * 3;
+//     case VKL_DTYPE_DVEC4:
+//         return 8 * 4;
 
-    default:
-        break;
-    }
+//     default:
+//         break;
+//     }
 
-    if (dtype != VKL_DTYPE_NONE)
-        log_error("could not find the size of dtype %d", dtype);
-    return 0;
-}
+//     if (dtype != VKL_DTYPE_NONE)
+//         log_error("could not find the size of dtype %d", dtype);
+//     return 0;
+// }
 
 
 

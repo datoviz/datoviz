@@ -194,6 +194,7 @@ static VkyTestCase TEST_CASES[] = {
 
     // array
     CASE_FIXTURE_NONE(vklite2_array_1), //
+    CASE_FIXTURE_NONE(vklite2_array_2), //
 
     // visuals
     CASE_FIXTURE_NONE(vklite2_visuals_1), //
