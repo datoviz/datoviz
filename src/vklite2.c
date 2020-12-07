@@ -1580,6 +1580,7 @@ void vkl_bindings_buffer(VklBindings* bindings, uint32_t idx, VklBufferRegions b
     log_trace("set bindings with buffer for binding #%d", idx);
 
     bindings->buffer_regions[idx] = buffer_regions;
+
     if (bindings->obj.status == VKL_OBJECT_STATUS_CREATED)
         bindings->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
 }
@@ -1620,6 +1621,9 @@ void vkl_bindings_update(VklBindings* bindings)
             bindings->buffer_regions, bindings->images, bindings->samplers, //
             i, bindings->dsets[i]);
     }
+
+    if (bindings->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE)
+        bindings->obj.status = VKL_OBJECT_STATUS_CREATED;
 }
 
 

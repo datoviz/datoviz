@@ -145,7 +145,8 @@ static VklArray vkl_array(uint32_t item_count, VklDataType dtype)
     arr.item_size = _get_dtype_size(dtype);
     arr.item_count = item_count;
     arr.buffer_size = item_count * arr.item_size;
-    arr.data = calloc(item_count, arr.item_size);
+    if (item_count > 0)
+        arr.data = calloc(item_count, arr.item_size);
     obj_created(&arr.obj);
     return arr;
 }
@@ -195,11 +196,15 @@ static void vkl_array_data(
     ASSERT(array->data != NULL);
     ASSERT(data != NULL);
     ASSERT(item_count > 0);
+    ASSERT(first_item + item_count <= array->item_count);
 
     VkDeviceSize item_size = array->item_size;
     ASSERT(item_size > 0);
 
     void* dst = array->data;
+    // Allocate the array if needed.
+    if (dst == NULL)
+        dst = array->data = calloc(first_item + array->item_count, array->item_size);
     ASSERT(dst != NULL);
     const void* src = data;
     ASSERT(src != NULL);
@@ -231,10 +236,28 @@ static inline void* vkl_array_item(VklArray* array, uint32_t idx)
 static void vkl_array_resize(VklArray* array, uint32_t item_count)
 {
     ASSERT(array != NULL);
+
     uint32_t old_item_count = array->item_count;
+
+    // Do nothing if the size is the same.
+    if (item_count == old_item_count)
+        return;
+
+    // If the array was not allocated, allocate it with the specified size.
+    if (array->data == NULL)
+    {
+        array->data = calloc(item_count, array->item_size);
+        array->item_count = item_count;
+        array->buffer_size = item_count * array->item_size;
+        return;
+    }
+
+    // Here, the array was already allocated, and the requested size is different.
     VkDeviceSize old_size = array->buffer_size;
     VkDeviceSize new_size = item_count * array->item_size;
+    ASSERT(array->data != NULL);
 
+    // Only reallocate if the existing buffer is not large enough for the new item_count.
     if (new_size > old_size)
     {
         log_trace("resize array from %d to %d items", old_item_count, item_count);
@@ -258,6 +281,7 @@ static void vkl_array_column(
     ASSERT(array->data != NULL);
     ASSERT(data != NULL);
     ASSERT(item_count > 0);
+    ASSERT(first_item + item_count <= array->item_count);
 
     VkDeviceSize src_offset = 0;
     VkDeviceSize src_stride = col_size;
@@ -295,6 +319,8 @@ static void vkl_array_column(
 static void vkl_array_destroy(VklArray* array)
 {
     ASSERT(array != NULL);
+    if (!is_obj_created(&array->obj))
+        return;
     obj_destroyed(&array->obj);
     FREE(array->data) //
 }

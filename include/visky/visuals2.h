@@ -17,62 +17,13 @@
 #define VKL_MAX_VISUAL_GROUPS       16384
 #define VKL_MAX_VISUAL_SOURCES      256
 #define VKL_MAX_VISUAL_RESOURCES    256
+#define VKL_MAX_VISUAL_PROPS        256
 
 
 
 /*************************************************************************************************/
 /*  Enums                                                                                        */
 /*************************************************************************************************/
-
-// Props
-typedef enum
-{
-    VKL_PROP_NONE,
-    VKL_PROP_POS,
-    VKL_PROP_COLOR,
-    VKL_PROP_TYPE,
-
-    VKL_PROP_VERTEX,
-    VKL_PROP_INDEX,
-    VKL_PROP_TRANSFORM,
-    VKL_PROP_PARAMS,
-    VKL_PROP_VIEWPORT,
-    VKL_PROP_COLOR_TEXTURE,
-} VklPropType;
-
-
-
-// Prop locs
-typedef enum
-{
-    VKL_PROP_LOC_NONE,
-
-    VKL_PROP_LOC_VERTEX_BUFFER,  // only compatible with BUFFER and CPU bindings
-    VKL_PROP_LOC_VERTEX_ATTR,    // only compatible with CPU binding
-                                 //
-    VKL_PROP_LOC_INDEX_BUFFER,   // only compatible with BUFFER and CPU bindings
-    VKL_PROP_LOC_INDEX,          // only compatible with CPU binding
-                                 //
-    VKL_PROP_LOC_UNIFORM_BUFFER, // only compatible with BUFFER and CPU bindings
-    VKL_PROP_LOC_UNIFORM_ATTR,   // only compatible with CPU binding
-                                 //
-    VKL_PROP_LOC_STORAGE_BUFFER, // only compatible with BUFFER binding
-    VKL_PROP_LOC_SAMPLER,        // only compatible with CPU and TEXTURE binding
-    VKL_PROP_LOC_PUSH,           // only compatible with CPU binding
-                                 //
-    VKL_PROP_LOC_ABSTRACT,       // no direct correspondance to GPU data, need custom bake
-} VklPropLoc;
-
-
-// Prop bindings
-typedef enum
-{
-    VKL_PROP_BINDING_NONE,
-    VKL_PROP_BINDING_CPU,
-    VKL_PROP_BINDING_BUFFER,  // only compatible with prop loc attribute, uniform, storage
-    VKL_PROP_BINDING_TEXTURE, // only compatible with prop loc sampler
-} VklPropBinding;
-
 
 // Pipeline types
 typedef enum
@@ -83,18 +34,41 @@ typedef enum
 
 
 
+// Props
+typedef enum
+{
+    VKL_PROP_NONE,
+    VKL_PROP_POS,
+    VKL_PROP_COLOR,
+    VKL_PROP_TYPE,
+} VklPropType;
+
+
+
+typedef enum
+{
+    VKL_SOURCE_NONE,
+    VKL_SOURCE_VERTEX,
+    VKL_SOURCE_INDEX,
+    VKL_SOURCE_UNIFORM,
+    VKL_SOURCE_STORAGE,
+    VKL_SOURCE_TEXTURE,
+} VklSourceType;
+
+
+
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
 typedef struct VklVisual VklVisual;
+typedef struct VklProp VklProp;
+
+typedef struct VklSourceBuffer VklSourceBuffer;
+typedef struct VklSourceTexture VklSourceTexture;
+typedef union VklSourceUnion VklSourceUnion;
 typedef struct VklSource VklSource;
 typedef struct VklDataCoords VklDataCoords;
-
-typedef struct VklVisualDataArray VklVisualDataArray;
-typedef struct VklVisualDataBuffer VklVisualDataBuffer;
-typedef struct VklVisualDataTexture VklVisualDataTexture;
-typedef union VklVisualData VklVisualData;
 
 typedef struct VklVisualFillEvent VklVisualFillEvent;
 typedef struct VklVisualDataEvent VklVisualDataEvent;
@@ -138,60 +112,59 @@ struct VklDataCoords
 
 
 
-struct VklVisualDataArray
-{
-    VkDeviceSize offset;
-    VkDeviceSize size;
-
-    void* data_original;
-    void* data_transformed;
-    void* data_triangulated;
-};
-
-struct VklVisualDataBuffer
+struct VklSourceBuffer
 {
     VklBufferRegions br;
     VkDeviceSize offset;
     VkDeviceSize size;
-    void* data;
 };
 
-struct VklVisualDataTexture
+struct VklSourceTexture
 {
     VklTexture* texture;
-    uvec2 offset;
-    uvec2 shape;
-    void* data;
+
+    // TODO: not implemented yet:
+    uvec3 offset;
+    uvec3 shape;
 };
 
-union VklVisualData
+union VklSourceUnion
 {
-    VklVisualDataArray a;
-    VklVisualDataBuffer b;
-    VklVisualDataTexture t;
+    VklSourceBuffer b;
+    VklSourceTexture t;
 };
-
-
 
 struct VklSource
-{ // Identifier of the prop
-    VklPropType prop;
-    uint32_t prop_idx;
+{
+    // Identifier of the prop
+    VklPipelineType pipeline; // graphics or compute pipeline?
+    uint32_t pipeline_idx;    // idx of the pipeline within the graphics or compute pipelines
+    VklSourceType source;     // Vertex, index, uniform, storage, or texture
+    uint32_t source_idx;      // idx among all sources of the same type
+    uint32_t slot_idx;        // Binding slot, or 0 for vertex/index
+    VklArray arr;             // array to be uploaded to that source
 
-    // Characteristics of the prop
-    VklPipelineType pipeline_type; // graphics or compute pipeline?
-    uint32_t pipeline_idx;         // idx of the pipeline within the graphics or compute pipelines
-    VklDataType dtype;             // data type of the prop
-    VklPropLoc loc;                // prop location
-    uint32_t binding_idx;          // binding idx
-    uint32_t field_idx;            // field index within the binding (ATTR and uniform struct)
-    VkDeviceSize offset;           // used by vertex attributes
-    VkDeviceSize dtype_size;       // rename into size
+    VklSourceUnion u;
+};
 
-    // Specified by the user
-    VklPropBinding binding; // initially, NONE, filled when the user specifies the visual's data
-    VklVisualData u;
-    bool is_set;
+
+
+struct VklProp
+{
+    VklPropType prop;     // prop type
+    uint32_t prop_idx;    // index within all props of that type
+    VklSourceType source; // Vertex, index, uniform, storage, or texture
+    uint32_t source_idx;  // Binding slot, or 0 for vertex/index
+
+    uint32_t field_idx;
+    VklDataType dtype;
+    VkDeviceSize offset;
+
+    VklArray arr_orig;   // original data array
+    VklArray arr_trans;  // transformed data array
+    VklArray arr_triang; // triangulated data array
+
+    bool is_set; // whether the user has set this prop
 };
 
 
@@ -205,44 +178,40 @@ struct VklVisual
     VklObject obj;
     VklCanvas* canvas;
 
+    // Graphics.
     uint32_t graphics_count;
     VklGraphics* graphics[VKL_MAX_GRAPHICS_PER_VISUAL];
 
+    // Computes.
     uint32_t compute_count;
     VklCompute* computes[VKL_MAX_COMPUTES_PER_VISUAL];
 
-    VklVisualFillCallback fill_callback;
+    // Fill callbacks.
+    VklVisualFillCallback callback_fill;
 
     // Data callbacks.
-    VklVisualDataCallback transform_callback;
-    VklVisualDataCallback triangulation_callback;
-    VklVisualDataCallback bake_callback;
+    VklVisualDataCallback callback_transform;
+    VklVisualDataCallback callback_triangulation;
+    VklVisualDataCallback callback_bake;
+
+    // Sources.
+    uint32_t source_count; // VERTEX source is mandatory
+    VklSource sources[VKL_MAX_VISUAL_SOURCES];
+
+    // Props.
+    uint32_t prop_count;
+    VklProp props[VKL_MAX_VISUAL_PROPS];
 
     // User data
-    uint32_t item_count;
-    uint32_t item_count_triangulated; // set by the triangulation callback
     uint32_t group_count;
     uint32_t group_sizes[VKL_MAX_VISUAL_GROUPS];
-    uint32_t source_count;
-    VklSource sources[VKL_MAX_VISUAL_SOURCES];
 
     // GPU data
     uint32_t vertex_count;
     uint32_t index_count;
-    VkDeviceSize vertex_size;
-    void* vertex_data;
-    void* index_data;
 
-    // GPU objects
-    VklBufferRegions* vertex_buf;
-    VklBufferRegions* index_buf;
-
-    // TODO: remove?
-    VklBufferRegions buffers[VKL_MAX_VISUAL_RESOURCES];
-    VklTexture* textures[VKL_MAX_VISUAL_RESOURCES];
-
-    VklBindings gbindings[VKL_MAX_GRAPHICS_PER_VISUAL];
-    VklBindings cbindings[VKL_MAX_GRAPHICS_PER_VISUAL];
+    VklBindings bindings[VKL_MAX_GRAPHICS_PER_VISUAL];
+    VklBindings bindings_comp[VKL_MAX_COMPUTES_PER_VISUAL];
 };
 
 
@@ -280,23 +249,26 @@ VKY_EXPORT VklVisual vkl_visual(VklCanvas* canvas);
 
 VKY_EXPORT void vkl_visual_destroy(VklVisual* visual);
 
-VKY_EXPORT void vkl_visual_vertex(VklVisual* visual, VkDeviceSize vertex_size);
 
-VKY_EXPORT void vkl_visual_index(VklVisual* visual);
+
+// Define a new source. (source, source_idx) completely identifies a source within all pipelines
+VKY_EXPORT void vkl_visual_source(
+    VklVisual* visual, VklSourceType source, uint32_t source_idx, //
+    VklPipelineType pipeline, uint32_t pipeline_idx, uint32_t slot_idx, VkDeviceSize item_size);
+
+// Vertex source.
+// TODO: different vertex attribute bindings
+// VKY_EXPORT void vkl_visual_vertex(VklVisual* visual, VkDeviceSize vertex_size);
+
+// Index source.
+// VKY_EXPORT void vkl_visual_index(VklVisual* visual);
+
+
 
 VKY_EXPORT void vkl_visual_prop(
-    VklVisual* visual, VklPropType prop, uint32_t idx, //
-    VklPipelineType pipeline, uint32_t pipeline_idx,   //
-    VklDataType dtype, VklPropLoc loc,                 //
-    uint32_t binding_idx, uint32_t field_idx, VkDeviceSize offset);
-
-VKY_EXPORT void vkl_visual_prop_attr(
-    VklVisual* visual, VklPropType prop, uint32_t idx, //
-    VklDataType dtype, uint32_t field_idx, VkDeviceSize offset);
-
-VKY_EXPORT void vkl_visual_prop_uniform_attr(
-    VklVisual* visual, VklPropType prop, uint32_t idx, VklDataType dtype, //
-    uint32_t binding_idx, uint32_t field_idx, VkDeviceSize offset);
+    VklVisual* visual, VklPropType prop, uint32_t idx,           //
+    VklSourceType source, uint32_t source_idx,                   //
+    uint32_t field_idx, VklDataType dtype, VkDeviceSize offset); //
 
 VKY_EXPORT void vkl_visual_graphics(VklVisual* visual, VklGraphics* graphics);
 
@@ -308,34 +280,33 @@ VKY_EXPORT void vkl_visual_compute(VklVisual* visual, VklCompute* compute);
 /*  User-facing functions                                                                        */
 /*************************************************************************************************/
 
-VKY_EXPORT void vkl_visual_size(VklVisual* visual, uint32_t item_count, uint32_t group_count);
+// VKY_EXPORT void vkl_visual_size(VklVisual* visual, uint32_t item_count, uint32_t group_count);
 
 VKY_EXPORT void vkl_visual_group(VklVisual* visual, uint32_t group_idx, uint32_t size);
 
-VKY_EXPORT void
-vkl_visual_data(VklVisual* visual, VklPropType type, uint32_t idx, const void* data);
+VKY_EXPORT void vkl_visual_data(
+    VklVisual* visual, VklPropType type, uint32_t idx, uint32_t count, const void* data);
 
 VKY_EXPORT void vkl_visual_data_partial(
-    VklVisual* visual, VklPropType type, uint32_t idx, uint32_t first_item, uint32_t item_count,
-    const void* data);
+    VklVisual* visual, VklPropType type, uint32_t idx, //
+    uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data);
 
-VKY_EXPORT void vkl_visual_data_const(
-    VklVisual* visual, VklPropType type, uint32_t idx, uint32_t first_item, uint32_t item_count,
-    const void* data);
 
-VKY_EXPORT void
-vkl_visual_buffer(VklVisual* visual, VklPropType type, uint32_t idx, VklBufferRegions br);
+
+VKY_EXPORT void vkl_visual_buffer(
+    VklVisual* visual, VklSourceType source, uint32_t source_idx, VklBufferRegions br);
 
 VKY_EXPORT void vkl_visual_buffer_partial(
-    VklVisual* visual, VklPropType type, uint32_t idx, //
+    VklVisual* visual, VklSourceType source, uint32_t source_idx, //
     VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size);
 
-VKY_EXPORT void
-vkl_visual_texture(VklVisual* visual, VklPropType type, uint32_t idx, VklTexture* texture);
+VKY_EXPORT void vkl_visual_texture(
+    VklVisual* visual, VklSourceType source, uint32_t source_idx, VklTexture* texture);
 
-VKY_EXPORT void vkl_visual_texture_partial(
-    VklVisual* visual, VklPropType type, uint32_t idx, //
-    VklTexture* texture, uvec3 offset, uvec3 shape);
+// NOTE: not implemented yet, would need binding to partial texture
+// VKY_EXPORT void vkl_visual_texture_partial(
+//     VklVisual* visual, VklPropType type, uint32_t idx, //
+//     VklTexture* texture, uvec3 offset, uvec3 shape);
 
 
 
@@ -351,12 +322,12 @@ VKY_EXPORT void vkl_visual_fill_event(
 
 
 
-VKY_EXPORT void vkl_visual_transform_callback(VklVisual* visual, VklVisualDataCallback callback);
+VKY_EXPORT void vkl_visual_callback_transform(VklVisual* visual, VklVisualDataCallback callback);
 
 VKY_EXPORT void
-vkl_visual_triangulation_callback(VklVisual* visual, VklVisualDataCallback callback);
+vkl_visual_callback_triangulation(VklVisual* visual, VklVisualDataCallback callback);
 
-VKY_EXPORT void vkl_visual_bake_callback(VklVisual* visual, VklVisualDataCallback callback);
+VKY_EXPORT void vkl_visual_callback_bake(VklVisual* visual, VklVisualDataCallback callback);
 
 
 
@@ -364,11 +335,7 @@ VKY_EXPORT void vkl_visual_bake_callback(VklVisual* visual, VklVisualDataCallbac
 /*  Data update and baking                                                                       */
 /*************************************************************************************************/
 
-VKY_EXPORT void vkl_bake_alloc(VklVisual* visual, uint32_t vertex_count, uint32_t index_count);
-
-// VKY_EXPORT void vkl_bake_vertex_attr(VklVisual* visual);
-
-VKY_EXPORT void vkl_visual_data_update(
+VKY_EXPORT void vkl_visual_update(
     VklVisual* visual, VklViewport viewport, VklDataCoords coords, const void* user_data);
 
 
