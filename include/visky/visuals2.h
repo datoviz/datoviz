@@ -69,9 +69,11 @@ typedef enum
 // Data source origin.
 typedef enum
 {
-    VKL_SOURCE_ORIGIN_NONE, // not set
-    VKL_SOURCE_ORIGIN_LIB,  // the GPU buffer or texture is handled by visky's visual module
-    VKL_SOURCE_ORIGIN_USER, // the GPU buffer or texture is handled by the user
+    VKL_SOURCE_ORIGIN_NONE,   // not set
+    VKL_SOURCE_ORIGIN_LIB,    // the GPU buffer or texture is handled by visky's visual module
+    VKL_SOURCE_ORIGIN_USER,   // the GPU buffer or texture is handled by the user
+    VKL_SOURCE_ORIGIN_NOBAKE, // the GPU buffer or texture is handled by the library, but the user
+                              // provides the baked data directly
 } VklSourceOrigin;
 
 
@@ -284,7 +286,11 @@ VKY_EXPORT void vkl_visual_data_partial(
     VklVisual* visual, VklPropType type, uint32_t idx, //
     uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data);
 
-VKY_EXPORT void vkl_visual_data_3D(
+VKY_EXPORT void vkl_visual_data_buffer(
+    VklVisual* visual, VklSourceType type, uint32_t idx, //
+    uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data);
+
+VKY_EXPORT void vkl_visual_data_texture(
     VklVisual* visual, VklPropType type, uint32_t idx, //
     uint32_t width, uint32_t height, uint32_t depth, const void* data);
 

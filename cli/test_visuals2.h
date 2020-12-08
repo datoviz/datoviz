@@ -171,16 +171,25 @@ static int vklite2_visuals_1(VkyTestContext* context)
     }
 
     // Set visual data.
-    vkl_upload_buffers(ctx, br_vert, 0, N * sizeof(VklVertex), vertices);
-    visual.vertex_count = N;
-    vkl_visual_buffer(&visual, VKL_SOURCE_VERTEX, 0, br_vert);
+    {
+        // Via a buffer.
+        vkl_upload_buffers(ctx, br_vert, 0, N * sizeof(VklVertex), vertices);
+        visual.vertex_count = N;
+        vkl_visual_buffer(&visual, VKL_SOURCE_VERTEX, 0, br_vert);
+
+        // Via data buffer.
+        // TODO: make it work
+        // vkl_visual_data_buffer(&visual, VKL_SOURCE_VERTEX, 0, 0, N, N, vertices);
+    }
+
+    // Set uniform buffers.
     vkl_visual_buffer(&visual, VKL_SOURCE_UNIFORM, 0, br_mvp);
     vkl_visual_buffer(&visual, VKL_SOURCE_UNIFORM, 1, br_viewport);
     vkl_visual_buffer(&visual, VKL_SOURCE_UNIFORM, 2, br_params);
 
     vkl_visual_texture(&visual, VKL_SOURCE_TEXTURE_2D, 0, tex_color);
 
-    // Upload the data to the GPU..
+    // Upload the data to the GPU.
     VklViewport viewport = vkl_viewport_full(canvas);
     vkl_visual_update(&visual, viewport, (VklDataCoords){0}, NULL);
 
@@ -244,7 +253,7 @@ static int vklite2_visuals_2(VkyTestContext* context)
             colormaps[16 * i + j][1] = j * 16;
             colormaps[16 * i + j][3] = 255;
         }
-    vkl_visual_data_3D(&visual, VKL_PROP_COLOR_TEXTURE, 0, 16, 16, 1, colormaps);
+    vkl_visual_data_texture(&visual, VKL_PROP_COLOR_TEXTURE, 0, 16, 16, 1, colormaps);
 
     // GPU bindings.
     vkl_visual_buffer(&visual, VKL_SOURCE_UNIFORM, 1, br_viewport);

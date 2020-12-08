@@ -214,21 +214,9 @@ static void _bake_source(VklVisual* visual, VklSource* source)
 
 
 
-static void _default_visual_bake(VklVisual* visual, VklVisualDataEvent ev)
+static void _bake_uniforms(VklVisual* visual)
 {
-    // The default baking function assumes all props have the same number of items, which
-    // also corresponds to the number of vertices.
-
-    ASSERT(visual != NULL);
-
-    // VERTEX source.
-    VklSource* source = vkl_bake_source(visual, VKL_SOURCE_VERTEX, 0);
-    _bake_source(visual, source);
-
-    // INDEX source.
-    source = vkl_bake_source(visual, VKL_SOURCE_INDEX, 0);
-    _bake_source(visual, source);
-
+    VklSource* source = NULL;
     // UNIFORM sources.
     for (uint32_t i = 0; i < visual->source_count; i++)
     {
@@ -244,6 +232,27 @@ static void _default_visual_bake(VklVisual* visual, VklVisualDataEvent ev)
             vkl_bake_source_fill(visual, source);
         }
     }
+}
+
+
+
+static void _default_visual_bake(VklVisual* visual, VklVisualDataEvent ev)
+{
+    // The default baking function assumes all props have the same number of items, which
+    // also corresponds to the number of vertices.
+
+    ASSERT(visual != NULL);
+
+    // VERTEX source.
+    VklSource* source = vkl_bake_source(visual, VKL_SOURCE_VERTEX, 0);
+    _bake_source(visual, source);
+
+    // INDEX source.
+    source = vkl_bake_source(visual, VKL_SOURCE_INDEX, 0);
+    _bake_source(visual, source);
+
+    // // UNIFORM sources.
+    // _bake_uniforms(visual);
 }
 
 
@@ -437,7 +446,37 @@ void vkl_visual_data_partial(
 
 
 
-void vkl_visual_data_3D(
+void vkl_visual_data_buffer(
+    VklVisual* visual, VklSourceType type, uint32_t idx, //
+    uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data)
+{
+    ASSERT(visual != NULL);
+    uint32_t count = first_item + item_count;
+    ASSERT(count > 0);
+    ASSERT(data_item_count > 0);
+
+    // Get the associated source.
+    VklSource* source = vkl_bake_source(visual, type, idx);
+    ASSERT(source != NULL);
+
+    // When setting the vertex buffer directly, update the visual's vertex count.
+    if (source->source_type == VKL_SOURCE_VERTEX)
+        visual->vertex_count = count;
+    if (source->source_type == VKL_SOURCE_INDEX)
+        visual->index_count = count;
+
+    // Make sure the array has the right size.
+    vkl_array_resize(&source->arr, count);
+
+    // Copy the specified array to the prop array.
+    vkl_array_data(&source->arr, first_item, item_count, data_item_count, data);
+
+    source->origin = VKL_SOURCE_ORIGIN_NOBAKE;
+}
+
+
+
+void vkl_visual_data_texture(
     VklVisual* visual, VklPropType type, uint32_t idx, //
     uint32_t width, uint32_t height, uint32_t depth, const void* data)
 {
@@ -460,7 +499,7 @@ void vkl_visual_data_3D(
     // Copy the specified array to the prop array.
     vkl_array_data(&source->arr, 0, count, count, data);
 
-    source->origin = VKL_SOURCE_ORIGIN_LIB;
+    source->origin = VKL_SOURCE_ORIGIN_NOBAKE;
 }
 
 
@@ -799,13 +838,6 @@ void vkl_visual_update(
         visual->callback_transform(visual, ev);
     }
 
-    // if (visual->callback_triangulation != NULL)
-    // {
-    //     log_trace("visual triangulation callback");
-    //     // This callback updates some props data_triang
-    //     visual->callback_triangulation(visual, ev);
-    // }
-
     if (visual->callback_bake != NULL)
     {
         log_trace("visual bake callback");
@@ -817,6 +849,9 @@ void vkl_visual_update(
         // 4. Take the props and fill the array sources.
         visual->callback_bake(visual, ev);
     }
+    // NOTE: we bake the UNIFORM sources here.
+    _bake_uniforms(visual);
+
 
     // Here, we assume that all sources are correctly allocated, which includes VERTEX and INDEX
     // arrays, and that they have their data ready for upload.
@@ -835,7 +870,8 @@ void vkl_visual_update(
         {
             // Only upload if the library is managing the GPU object, otherwise the user
             // is expected to do it manually
-            if (source->origin == VKL_SOURCE_ORIGIN_LIB)
+            if (source->origin == VKL_SOURCE_ORIGIN_LIB ||
+                source->origin == VKL_SOURCE_ORIGIN_NOBAKE)
             {
                 // Make sure the GPU texture exists and is allocated with the right shape.
                 vkl_visual_texture_alloc(visual, source);
@@ -864,7 +900,8 @@ void vkl_visual_update(
 
             // Only upload if the library is managing the GPU object, otherwise the user
             // is expected to do it manually
-            if (source->origin == VKL_SOURCE_ORIGIN_LIB)
+            if (source->origin == VKL_SOURCE_ORIGIN_LIB ||
+                source->origin == VKL_SOURCE_ORIGIN_NOBAKE)
             {
                 // NOTE: the source array MUST have been allocated by the baking function
                 ASSERT(arr->item_count > 0);
