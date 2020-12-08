@@ -8,30 +8,6 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static VklSource* _get_source(VklVisual* visual, VklSourceType type, uint32_t idx)
-{
-    for (uint32_t i = 0; i < visual->source_count; i++)
-    {
-        if (visual->sources[i].source_type == type && visual->sources[i].source_idx == idx)
-            return &visual->sources[i];
-    }
-    return NULL;
-}
-
-
-
-static VklProp* _get_prop(VklVisual* visual, VklPropType type, uint32_t idx)
-{
-    for (uint32_t i = 0; i < visual->prop_count; i++)
-    {
-        if (visual->props[i].prop_type == type && visual->props[i].prop_idx == idx)
-            return &visual->props[i];
-    }
-    return NULL;
-}
-
-
-
 static VklBindings* _get_bindings(VklVisual* visual, VklSource* source)
 {
     ASSERT(source != NULL);
@@ -63,7 +39,7 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
     ASSERT(is_obj_created(&visual->graphics[0]->obj));
     ASSERT(is_obj_created(&visual->bindings[0].obj));
 
-    VklSource* vertex_source = _get_source(visual, VKL_SOURCE_VERTEX, 0);
+    VklSource* vertex_source = vkl_bake_source(visual, VKL_SOURCE_VERTEX, 0);
     VklBufferRegions* vertex_buf = &vertex_source->u.b.br;
     ASSERT(vertex_buf != NULL);
     ASSERT(vertex_buf->count > 0);
@@ -84,26 +60,6 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
 
 
 
-static void vkl_prop_copy(VklProp* prop, VklSource* source, uint32_t reps)
-{
-    ASSERT(prop != NULL);
-    ASSERT(source != NULL);
-    ASSERT(reps > 0);
-
-    VkDeviceSize col_size = _get_dtype_size(prop->dtype);
-    ASSERT(col_size > 0);
-
-    ASSERT(prop->arr_orig.data != NULL);
-    ASSERT(source->arr.data != NULL);
-    ASSERT(prop->arr_orig.item_count <= source->arr.item_count);
-    uint32_t item_count = prop->arr_orig.item_count;
-
-    vkl_array_column(
-        &source->arr, prop->offset, col_size, 0, item_count, item_count, prop->arr_orig.data);
-}
-
-
-
 static void _default_visual_bake(VklVisual* visual, VklVisualDataEvent ev)
 {
     // The default baking function assumes all props have the same number of items, which
@@ -112,7 +68,7 @@ static void _default_visual_bake(VklVisual* visual, VklVisualDataEvent ev)
     ASSERT(visual != NULL);
 
     // VERTEX source.
-    VklSource* source = _get_source(visual, VKL_SOURCE_VERTEX, 0);
+    VklSource* source = vkl_bake_source(visual, VKL_SOURCE_VERTEX, 0);
 
     // The baking function doesn't run if the VERTEX source is handled by the user.
     if (source->origin != VKL_SOURCE_ORIGIN_LIB)
@@ -152,7 +108,7 @@ static void _default_visual_bake(VklVisual* visual, VklVisualDataEvent ev)
         // TODO: multiple VERTEX sources
         if (prop->source_type == VKL_SOURCE_VERTEX && prop->source_idx == 0)
         {
-            vkl_prop_copy(prop, source, 1);
+            vkl_bake_prop_copy(visual, prop, 1);
         }
     }
 }
@@ -209,7 +165,7 @@ void vkl_visual_source(
 {
     ASSERT(visual != NULL);
     ASSERT(visual->source_count < VKL_MAX_VISUAL_SOURCES);
-    ASSERT(_get_source(visual, source, source_idx) == NULL);
+    ASSERT(vkl_bake_source(visual, source, source_idx) == NULL);
 
     VklSource src = {0};
     src.source_type = source;
@@ -327,11 +283,11 @@ void vkl_visual_data_partial(
     uint32_t count = first_item + item_count;
 
     // Get the associated prop.
-    VklProp* prop = _get_prop(visual, type, idx);
+    VklProp* prop = vkl_bake_prop(visual, type, idx);
     ASSERT(prop != NULL);
 
     // Get the associated source.
-    VklSource* source = _get_source(visual, prop->source_type, prop->source_idx);
+    VklSource* source = vkl_bake_source(visual, prop->source_type, prop->source_idx);
     ASSERT(source != NULL);
 
     // Make sure the array has the right size.
@@ -361,7 +317,7 @@ void vkl_visual_buffer_partial(
 {
     ASSERT(visual != NULL);
     ASSERT(visual != NULL);
-    VklSource* src = _get_source(visual, source, idx);
+    VklSource* src = vkl_bake_source(visual, source, idx);
     if (src == NULL)
     {
         log_error("Data source for source %d #%d could not be found", source, idx);
@@ -389,7 +345,7 @@ void vkl_visual_texture(VklVisual* visual, VklSourceType source, uint32_t idx, V
 {
     ASSERT(visual != NULL);
     ASSERT(visual != NULL);
-    VklSource* src = _get_source(visual, source, idx);
+    VklSource* src = vkl_bake_source(visual, source, idx);
     if (src == NULL)
     {
         log_error("Data source for source %d #%d could not be found", source, idx);
@@ -415,7 +371,7 @@ void vkl_visual_texture(VklVisual* visual, VklSourceType source, uint32_t idx, V
 // {
 // ASSERT(visual != NULL);
 // ASSERT(visual != NULL);
-// VklSource* source = _get_source(visual, type, idx);
+// VklSource* source = vkl_bake_source(visual, type, idx);
 // if (source == NULL)
 //     log_error("Data source for prop %d #%d could not be found", type, idx);
 // ASSERT(source != NULL);
@@ -448,14 +404,6 @@ void vkl_visual_callback_transform(VklVisual* visual, VklVisualDataCallback call
     ASSERT(visual != NULL);
     visual->callback_transform = callback;
 }
-
-
-
-// void vkl_visual_callback_triangulation(VklVisual* visual, VklVisualDataCallback callback)
-// {
-//     ASSERT(visual != NULL);
-//     visual->callback_triangulation = callback;
-// }
 
 
 
@@ -500,7 +448,125 @@ void vkl_visual_fill_event(
 
 
 /*************************************************************************************************/
-/*  Data update and baking                                                                       */
+/*  Baking helpers                                                                               */
+/*************************************************************************************************/
+
+VklSource* vkl_bake_source(VklVisual* visual, VklSourceType source_type, uint32_t idx)
+{
+    ASSERT(visual != NULL);
+    for (uint32_t i = 0; i < visual->source_count; i++)
+    {
+        if (visual->sources[i].source_type == source_type && visual->sources[i].source_idx == idx)
+            return &visual->sources[i];
+    }
+    return NULL;
+}
+
+
+
+VklProp* vkl_bake_prop(VklVisual* visual, VklPropType prop_type, uint32_t idx)
+{
+    ASSERT(visual != NULL);
+    for (uint32_t i = 0; i < visual->prop_count; i++)
+    {
+        if (visual->props[i].prop_type == prop_type && visual->props[i].prop_idx == idx)
+            return &visual->props[i];
+    }
+    log_error("prop with type %d #%d not found", prop_type, idx);
+    return NULL;
+}
+
+
+
+VklSource* vkl_bake_prop_source(VklVisual* visual, VklProp* prop)
+{
+    ASSERT(visual != NULL);
+    ASSERT(prop != NULL);
+
+    return vkl_bake_source(visual, prop->source_type, prop->source_idx);
+}
+
+
+
+uint32_t vkl_bake_max_prop_size(VklVisual* visual, VklSource* source)
+{
+    ASSERT(visual != NULL);
+    ASSERT(source != NULL);
+
+    VklProp* prop = NULL;
+    VklArray* arr = NULL;
+    uint32_t item_count = 0;
+    for (uint32_t i = 0; i < visual->prop_count; i++)
+    {
+        prop = &visual->props[i];
+        if (prop->source_type == source->source_type && prop->source_idx == source->source_idx)
+        {
+            arr = &prop->arr_orig;
+            ASSERT(arr != NULL);
+            item_count = MAX(item_count, arr->item_count);
+        }
+    }
+    ASSERT(item_count > 0);
+    return item_count;
+}
+
+
+
+void vkl_bake_prop_copy(VklVisual* visual, VklProp* prop, uint32_t reps)
+{
+    ASSERT(prop != NULL);
+
+    VklSource* source = vkl_bake_source(visual, prop->source_type, prop->source_idx);
+    ASSERT(source != NULL);
+
+    VkDeviceSize col_size = _get_dtype_size(prop->dtype);
+    ASSERT(col_size > 0);
+
+    ASSERT(prop->arr_orig.data != NULL);
+    ASSERT(source->arr.data != NULL);
+    ASSERT(prop->arr_orig.item_count <= source->arr.item_count);
+    uint32_t item_count = prop->arr_orig.item_count;
+
+    vkl_array_column(
+        &source->arr, prop->offset, col_size, 0, item_count, item_count, prop->arr_orig.data);
+}
+
+
+
+void vkl_bake_source_alloc(VklVisual* visual, VklSource* source, uint32_t count)
+{
+    ASSERT(visual != NULL);
+    ASSERT(source != NULL);
+
+    // Resize the source source.
+    VklArray* arr = &source->arr;
+    ASSERT(is_obj_created(&arr->obj));
+    vkl_array_resize(arr, count);
+}
+
+
+
+void vkl_bake_source_fill(VklVisual* visual, VklSource* source)
+{
+    ASSERT(visual != NULL);
+    ASSERT(source != NULL);
+
+    VklProp* prop = NULL;
+    // Copy all associated props to the source array.
+    for (uint32_t i = 0; i < visual->prop_count; i++)
+    {
+        prop = &visual->props[i];
+        if (prop->source_type == source->source_type && prop->source_idx == source->source_idx)
+        {
+            vkl_bake_prop_copy(visual, prop, 1);
+        }
+    }
+}
+
+
+
+/*************************************************************************************************/
+/*  Data update                                                                                  */
 /*************************************************************************************************/
 
 void vkl_visual_update(

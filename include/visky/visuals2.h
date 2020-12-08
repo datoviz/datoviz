@@ -268,15 +268,6 @@ VKY_EXPORT void vkl_visual_source(
     VklVisual* visual, VklSourceType source, uint32_t source_idx, //
     VklPipelineType pipeline, uint32_t pipeline_idx, uint32_t slot_idx, VkDeviceSize item_size);
 
-// Vertex source.
-// TODO: different vertex attribute bindings
-// VKY_EXPORT void vkl_visual_vertex(VklVisual* visual, VkDeviceSize vertex_size);
-
-// Index source.
-// VKY_EXPORT void vkl_visual_index(VklVisual* visual);
-
-
-
 VKY_EXPORT void vkl_visual_prop(
     VklVisual* visual, VklPropType prop, uint32_t idx,           //
     VklSourceType source, uint32_t source_idx,                   //
@@ -291,8 +282,6 @@ VKY_EXPORT void vkl_visual_compute(VklVisual* visual, VklCompute* compute);
 /*************************************************************************************************/
 /*  User-facing functions                                                                        */
 /*************************************************************************************************/
-
-// VKY_EXPORT void vkl_visual_size(VklVisual* visual, uint32_t item_count, uint32_t group_count);
 
 VKY_EXPORT void vkl_visual_group(VklVisual* visual, uint32_t group_idx, uint32_t size);
 
@@ -336,15 +325,32 @@ VKY_EXPORT void vkl_visual_fill_event(
 
 VKY_EXPORT void vkl_visual_callback_transform(VklVisual* visual, VklVisualDataCallback callback);
 
-// VKY_EXPORT void
-// vkl_visual_callback_triangulation(VklVisual* visual, VklVisualDataCallback callback);
-
 VKY_EXPORT void vkl_visual_callback_bake(VklVisual* visual, VklVisualDataCallback callback);
 
 
 
 /*************************************************************************************************/
-/*  Data update and baking                                                                       */
+/*  Baking helpers                                                                               */
+/*************************************************************************************************/
+
+VKY_EXPORT VklSource* vkl_bake_source(VklVisual* visual, VklSourceType source_type, uint32_t idx);
+
+VKY_EXPORT VklProp* vkl_bake_prop(VklVisual* visual, VklPropType prop_type, uint32_t idx);
+
+VKY_EXPORT VklSource* vkl_bake_prop_source(VklVisual* visual, VklProp* prop);
+
+VKY_EXPORT uint32_t vkl_bake_max_prop_size(VklVisual* visual, VklSource* source);
+
+VKY_EXPORT void vkl_bake_prop_copy(VklVisual* visual, VklProp* prop, uint32_t reps);
+
+VKY_EXPORT void vkl_bake_source_alloc(VklVisual* visual, VklSource* source, uint32_t count);
+
+VKY_EXPORT void vkl_bake_source_fill(VklVisual* visual, VklSource* source);
+
+
+
+/*************************************************************************************************/
+/*  Data update                                                                                  */
 /*************************************************************************************************/
 
 VKY_EXPORT void vkl_visual_update(
