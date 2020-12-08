@@ -354,9 +354,9 @@ VKY_EXPORT void vkl_bake_source_alloc(VklVisual* visual, VklSource* source, uint
 
 VKY_EXPORT void vkl_bake_source_fill(VklVisual* visual, VklSource* source);
 
-VKY_EXPORT void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source, uint32_t count);
+VKY_EXPORT void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source);
 
-VKY_EXPORT void vkl_visual_texture_alloc(VklVisual* visual, VklSource* source, uvec3 shape);
+VKY_EXPORT void vkl_visual_texture_alloc(VklVisual* visual, VklSource* source);
 
 
 

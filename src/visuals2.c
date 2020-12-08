@@ -656,8 +656,7 @@ void vkl_bake_source_fill(VklVisual* visual, VklSource* source)
 
 
 
-// TODO: remove count param, take it from source->arr
-void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source, uint32_t count)
+void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source)
 {
     ASSERT(visual != NULL);
     ASSERT(source != NULL);
@@ -666,6 +665,7 @@ void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source, uint32_t coun
     ASSERT(source->source_type < VKL_SOURCE_TEXTURE_1D);
     ASSERT(source->arr.item_size > 0);
 
+    uint32_t count = source->arr.item_count;
     ASSERT(count > 0);
 
     // Allocate the buffer if it doesn't exist yet, or if it is not large enough.
@@ -692,8 +692,7 @@ void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source, uint32_t coun
 
 
 
-// TODO: remove shape param, take it from source->arr3D
-void vkl_visual_texture_alloc(VklVisual* visual, VklSource* source, uvec3 shape)
+void vkl_visual_texture_alloc(VklVisual* visual, VklSource* source)
 {
     ASSERT(visual != NULL);
     ASSERT(source != NULL);
@@ -703,6 +702,7 @@ void vkl_visual_texture_alloc(VklVisual* visual, VklSource* source, uvec3 shape)
 
     // Find the numbe of dimensions.
     uint32_t ndims = _get_texture_ndims(source->source_type);
+    uvec3 shape = {source->arr.shape[0], source->arr.shape[1], source->arr.shape[2]};
     ASSERT(shape[0] > 0);
     ASSERT(shape[1] > 0);
     ASSERT(shape[2] > 0);
@@ -800,8 +800,8 @@ void vkl_visual_update(
             // is expected to do it manually
             if (source->origin == VKL_SOURCE_ORIGIN_LIB)
             {
-                // TODO: use array 3D to get the texture shape from the array shape
-                // vkl_visual_texture_alloc(visual, source, shape);
+                // Make sure the GPU texture exists and is allocated with the right shape.
+                vkl_visual_texture_alloc(visual, source);
 
                 ASSERT(texture != NULL);
                 ASSERT(is_obj_created(&texture->obj));
@@ -828,7 +828,7 @@ void vkl_visual_update(
                 ASSERT(arr->item_size > 0);
 
                 // Make sure the GPU buffer exists and is allocated with the right size.
-                vkl_visual_buffer_alloc(visual, source, arr->item_count);
+                vkl_visual_buffer_alloc(visual, source);
 
                 ASSERT(source->u.b.size > 0);
                 ASSERT(br->buffer != VK_NULL_HANDLE);

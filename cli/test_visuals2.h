@@ -181,7 +181,7 @@ static int vklite2_visuals_1(VkyTestContext* context)
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _canvas_fill, &visual);
 
     // Run and end.
-    vkl_app_run(app, 0);
+    vkl_app_run(app, N_FRAMES);
 
     vkl_visual_destroy(&visual);
     FREE(vertices);
@@ -241,7 +241,7 @@ static int vklite2_visuals_2(VkyTestContext* context)
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _canvas_fill, &visual);
 
     // Run and end.
-    vkl_app_run(app, 0);
+    vkl_app_run(app, N_FRAMES);
 
     vkl_visual_destroy(&visual);
     FREE(pos);
