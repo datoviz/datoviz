@@ -132,9 +132,11 @@ static int vklite2_visuals_1(VkyTestContext* context)
     visual.vertex_count = N;
 
     vkl_visual_buffer(&visual, VKL_SOURCE_VERTEX, 0, br_vert);
+
     vkl_visual_buffer(&visual, VKL_SOURCE_UNIFORM, 0, br_mvp);
     vkl_visual_buffer(&visual, VKL_SOURCE_UNIFORM, 1, br_viewport);
     vkl_visual_buffer(&visual, VKL_SOURCE_UNIFORM, 2, br_params);
+
     vkl_visual_texture(&visual, VKL_SOURCE_TEXTURE, 0, tex_color);
 
     // Upload the data to the GPU..

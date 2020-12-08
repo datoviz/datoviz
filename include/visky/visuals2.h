@@ -34,7 +34,7 @@ typedef enum
 
 
 
-// Props
+// Prop types.
 typedef enum
 {
     VKL_PROP_NONE,
@@ -45,6 +45,7 @@ typedef enum
 
 
 
+// Source types.
 typedef enum
 {
     VKL_SOURCE_NONE,
@@ -54,6 +55,16 @@ typedef enum
     VKL_SOURCE_STORAGE,
     VKL_SOURCE_TEXTURE,
 } VklSourceType;
+
+
+
+// Data source origin.
+typedef enum
+{
+    VKL_SOURCE_ORIGIN_NONE, // not set
+    VKL_SOURCE_ORIGIN_LIB,  // the GPU buffer or texture is handled by visky's visual module
+    VKL_SOURCE_ORIGIN_USER, // the GPU buffer or texture is handled by the user
+} VklSourceOrigin;
 
 
 
@@ -144,6 +155,7 @@ struct VklSource
     uint32_t slot_idx;         // Binding slot, or 0 for vertex/index
     VklArray arr;              // array to be uploaded to that source
 
+    VklSourceOrigin origin; // whether the underlying GPU object is handled by the user or visky
     VklSourceUnion u;
 };
 
@@ -164,7 +176,7 @@ struct VklProp
     VklArray arr_trans; // transformed data array
     // VklArray arr_triang; // triangulated data array
 
-    bool is_set; // whether the user has set this prop
+    // bool is_set; // whether the user has set this prop
 };
 
 

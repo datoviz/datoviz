@@ -155,6 +155,7 @@ void vkl_visual_source(
     src.pipeline_idx = pipeline_idx;
     src.slot_idx = slot_idx;
     src.arr = vkl_array_struct(0, item_size);
+    src.origin = VKL_SOURCE_ORIGIN_NONE; // source origin (GPU object) not set yet
     visual->sources[visual->source_count++] = src;
 
     // source.
@@ -276,7 +277,8 @@ void vkl_visual_data_partial(
     // Copy the specified array to the prop array.
     vkl_array_data(&prop->arr_orig, first_item, item_count, data_item_count, data);
 
-    prop->is_set = true;
+    source->origin = VKL_SOURCE_ORIGIN_LIB;
+    // prop->is_set = true;
 }
 
 
@@ -311,6 +313,7 @@ void vkl_visual_buffer_partial(
     src->u.b.br = br;
     src->u.b.offset = offset;
     src->u.b.size = size;
+    src->origin = VKL_SOURCE_ORIGIN_USER;
 
     VklBindings* bindings = _get_bindings(visual, src);
     ASSERT(br.buffer != VK_NULL_HANDLE);
@@ -333,6 +336,7 @@ void vkl_visual_texture(VklVisual* visual, VklSourceType source, uint32_t idx, V
     ASSERT(texture != NULL);
 
     src->u.t.texture = texture;
+    src->origin = VKL_SOURCE_ORIGIN_USER;
 
     VklBindings* bindings = _get_bindings(visual, src);
     ASSERT(texture->image != NULL);
@@ -486,18 +490,26 @@ void vkl_visual_update(
         if (source->source_type == VKL_SOURCE_TEXTURE)
         {
             texture = source->u.t.texture;
-            // TODO: allocate texture if needed
-            // TODO: resize the texture if needed.
-            // TODO: only upload if source was updated by baking
-            // vkl_upload_texture(ctx, texture, arr->item_count * arr->item_size, arr->data);
+
+            // Only upload if the library is managing the GPU object, otherwise the user
+            // is expected to do it manually
+            if (source->origin == VKL_SOURCE_ORIGIN_LIB)
+            {
+                // TODO: create or resize as a function of the data array size
+                vkl_upload_texture(ctx, texture, arr->item_count * arr->item_size, arr->data);
+            }
         }
         else
         {
             br = &source->u.b.br;
-            // TODO: allocate buffer if needed
-            // TODO: resize the buffer if needed.
-            // TODO: only upload if source was updated by baking
-            // vkl_upload_buffers(ctx, *br, source->u.b.offset, source->u.b.size, arr->data);
+
+            // Only upload if the library is managing the GPU object, otherwise the user
+            // is expected to do it manually
+            if (source->origin == VKL_SOURCE_ORIGIN_LIB)
+            {
+                // TODO: create or resize as a function of the data array size
+                vkl_upload_buffers(ctx, *br, source->u.b.offset, source->u.b.size, arr->data);
+            }
         }
     }
 
