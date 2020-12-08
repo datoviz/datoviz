@@ -31,6 +31,39 @@
 /*  Graphics tests                                                                               */
 /*************************************************************************************************/
 
+static void _marker_visual(VklVisual* visual)
+{
+    VklCanvas* canvas = visual->canvas;
+
+    // Graphics.
+    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_POINTS, 0));
+
+    // Sources.
+    {
+        vkl_visual_source( //
+            visual, VKL_SOURCE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklVertex));
+        vkl_visual_source( //
+            visual, VKL_SOURCE_UNIFORM, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklMVP));
+        vkl_visual_source(
+            visual, VKL_SOURCE_UNIFORM, 1, VKL_PIPELINE_GRAPHICS, 0, 1, sizeof(VklViewport));
+        vkl_visual_source( //
+            visual, VKL_SOURCE_TEXTURE, 0, VKL_PIPELINE_GRAPHICS, 0, 2, 0);
+        vkl_visual_source(
+            visual, VKL_SOURCE_UNIFORM, 2, VKL_PIPELINE_GRAPHICS, 0, 3,
+            sizeof(VklGraphicsPointsParams));
+    }
+
+    // Props.
+    {
+        vkl_visual_prop(                                     //
+            visual, VKL_PROP_POS, 0, VKL_SOURCE_VERTEX, 0,   //
+            0, VKL_DTYPE_VEC3, offsetof(VklVertex, pos));    //
+        vkl_visual_prop(                                     //
+            visual, VKL_PROP_COLOR, 0, VKL_SOURCE_VERTEX, 0, //
+            1, VKL_DTYPE_CVEC4, offsetof(VklVertex, color)); //
+    }
+}
+
 static void _canvas_fill(VklCanvas* canvas, VklPrivateEvent ev)
 {
     ASSERT(canvas != NULL);
@@ -55,29 +88,12 @@ static int vklite2_visuals_1(VkyTestContext* context)
     VklContext* ctx = gpu->context;
     ASSERT(ctx != NULL);
     VklVisual visual = vkl_visual(canvas);
+    _marker_visual(&visual);
 
-    // Graphics.
-    vkl_visual_graphics(&visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_POINTS, 0));
-
-    // Sources.
-    vkl_visual_source(
-        &visual, VKL_SOURCE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklVertex));
-
-    vkl_visual_source(&visual, VKL_SOURCE_UNIFORM, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklMVP));
-    vkl_visual_source(
-        &visual, VKL_SOURCE_UNIFORM, 1, VKL_PIPELINE_GRAPHICS, 0, 1, sizeof(VklViewport));
-    vkl_visual_source(&visual, VKL_SOURCE_TEXTURE, 0, VKL_PIPELINE_GRAPHICS, 0, 2, 0);
-    vkl_visual_source(
-        &visual, VKL_SOURCE_UNIFORM, 2, VKL_PIPELINE_GRAPHICS, 0, 3,
-        sizeof(VklGraphicsPointsParams));
-
-    // Props.
-    vkl_visual_prop(
-        &visual, VKL_PROP_POS, 0, VKL_SOURCE_VERTEX, 0, 0, VKL_DTYPE_VEC3,
-        offsetof(VklVertex, pos));
-    vkl_visual_prop(
-        &visual, VKL_PROP_COLOR, 0, VKL_SOURCE_VERTEX, 0, 1, VKL_DTYPE_CVEC4,
-        offsetof(VklVertex, color));
+    // GPU sources.
+    const uint32_t N = 10000;
+    VklBufferRegions br_vert =
+        vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, N * sizeof(VklVertex));
 
     // Binding resources.
     VklBufferRegions br_mvp = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklMVP));
@@ -106,7 +122,6 @@ static int vklite2_visuals_1(VkyTestContext* context)
     }
 
     // Vertex data.
-    const uint32_t N = 10000;
     vec3* pos = calloc(N, sizeof(vec3));
     cvec4* color = calloc(N, sizeof(cvec4));
     // TODO: remove below
@@ -119,8 +134,6 @@ static int vklite2_visuals_1(VkyTestContext* context)
         memcpy(vertices[i].pos, pos[i], sizeof(pos[i]));
         memcpy(vertices[i].color, color[i], sizeof(color[i]));
     }
-    VklBufferRegions br_vert =
-        vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, N * sizeof(VklVertex));
 
     // Set visual data.
     // TODO
