@@ -171,3 +171,36 @@ static int vklite2_array_mvp(VkyTestContext* context)
     vkl_array_destroy(&arr);
     return 0;
 }
+
+
+
+static int vklite2_array_3D(VkyTestContext* context)
+{
+    VklArray arr = vkl_array_3D(2, 2, 3, 1, VKL_DTYPE_CHAR);
+
+    uint8_t value = 12;
+    vkl_array_data(&arr, 0, 6, 1, &value);
+
+    void* data = arr.data;
+    VkDeviceSize size = arr.buffer_size;
+    uint8_t* item = vkl_array_item(&arr, 5);
+    AT(*item == value);
+
+    // Reshaping deletes the data.
+    vkl_array_reshape(&arr, 3, 2, 1);
+    item = vkl_array_item(&arr, 5);
+    AT(*item == 0);
+    // If the total size is the same, the data pointer doesn't change.
+    AT(arr.data == data);
+    AT(arr.buffer_size == size);
+
+    // Reshaping deletes the data.
+    vkl_array_reshape(&arr, 4, 3, 1);
+    item = vkl_array_item(&arr, 5);
+    AT(*item == 0);
+    // If the total size is different, the data buffer is reallocated.
+    AT(arr.buffer_size != size);
+
+    vkl_array_destroy(&arr);
+    return 0;
+}

@@ -83,6 +83,10 @@ struct VklArray
     uint32_t item_count;
     VkDeviceSize buffer_size;
     void* data;
+
+    // 3D arrays
+    uint32_t ndims; // 1, 2, or 3
+    uvec3 shape;    // only for 3D arrays
 };
 
 
@@ -169,14 +173,12 @@ static VkDeviceSize _get_dtype_size(VklDataType dtype)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-static VklArray vkl_array(uint32_t item_count, VklDataType dtype)
+static VklArray _create_array(uint32_t item_count, VklDataType dtype, VkDeviceSize item_size)
 {
     VklArray arr = {0};
     arr.obj.type = VKL_OBJECT_TYPE_ARRAY;
     arr.dtype = dtype;
-    ASSERT(dtype != VKL_DTYPE_NONE);
-    ASSERT(dtype != VKL_DTYPE_CUSTOM);
-    arr.item_size = _get_dtype_size(dtype);
+    arr.item_size = item_size;
     arr.item_count = item_count;
     arr.buffer_size = item_count * arr.item_size;
     if (item_count > 0)
@@ -187,17 +189,44 @@ static VklArray vkl_array(uint32_t item_count, VklDataType dtype)
 
 
 
+static VklArray vkl_array(uint32_t item_count, VklDataType dtype)
+{
+    ASSERT(dtype != VKL_DTYPE_NONE);
+    ASSERT(dtype != VKL_DTYPE_CUSTOM);
+    return _create_array(item_count, dtype, _get_dtype_size(dtype));
+}
+
+
+
 static VklArray vkl_array_struct(uint32_t item_count, VkDeviceSize item_size)
 {
     ASSERT(item_size > 0);
-    VklArray arr = {0};
-    arr.obj.type = VKL_OBJECT_TYPE_ARRAY;
-    arr.dtype = VKL_DTYPE_CUSTOM;
-    arr.item_size = item_size;
-    arr.item_count = item_count;
-    arr.buffer_size = item_count * arr.item_size;
-    arr.data = calloc(item_count, arr.item_size);
-    obj_created(&arr.obj);
+    return _create_array(item_count, VKL_DTYPE_CUSTOM, item_size);
+}
+
+
+
+static VklArray
+vkl_array_3D(uint32_t ndims, uint32_t width, uint32_t height, uint32_t depth, VklDataType dtype)
+{
+    ASSERT(width > 0);
+    ASSERT(height > 0);
+    ASSERT(depth > 0);
+    ASSERT(ndims > 0);
+    ASSERT(ndims <= 3);
+
+    if (ndims == 1)
+        ASSERT(height == 1 && depth == 1);
+    if (ndims == 2)
+        ASSERT(depth == 1);
+
+    uint32_t item_count = width * height * depth;
+
+    VklArray arr = _create_array(item_count, VKL_DTYPE_CUSTOM, _get_dtype_size(dtype));
+    arr.ndims = ndims;
+    arr.shape[0] = width;
+    arr.shape[1] = height;
+    arr.shape[2] = depth;
     return arr;
 }
 
@@ -257,6 +286,33 @@ static void vkl_array_resize(VklArray* array, uint32_t item_count)
         array->buffer_size = new_size;
     }
     array->item_count = item_count;
+}
+
+
+
+// WARNING: this command currently loses all the data in the array.
+static void vkl_array_reshape(VklArray* array, uint32_t width, uint32_t height, uint32_t depth)
+{
+    ASSERT(array != NULL);
+    ASSERT(width > 0);
+    ASSERT(height > 0);
+    ASSERT(depth > 0);
+    uint32_t item_count = width * height * depth;
+
+    // If the shape is the same, do nothing.
+    if (width == array->shape[0] && height == array->shape[1] && depth == array->shape[2])
+        return;
+
+    // Resize the underlying buffer.
+    vkl_array_resize(array, item_count);
+
+    // HACK: reset to 0 the array instead of having to deal with reshaping.
+    log_trace("clearing the 3D array while reshaping it to %dx%dx%d", width, height, depth);
+    memset(array->data, 0, array->buffer_size);
+
+    array->shape[0] = width;
+    array->shape[1] = height;
+    array->shape[2] = depth;
 }
 
 
