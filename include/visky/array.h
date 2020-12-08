@@ -23,32 +23,43 @@ typedef struct VklArray VklArray;
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
+// Data types.
 typedef enum
 {
     VKL_DTYPE_NONE,
-    VKL_DTYPE_CUSTOM,
+    VKL_DTYPE_CUSTOM, // used for structured arrays (aka record arrays)
 
-    VKL_DTYPE_CHAR, // 8 bits, unsigned
+    VKL_DTYPE_CHAR, // 8 bits, unsigned int
     VKL_DTYPE_CVEC2,
     VKL_DTYPE_CVEC3,
     VKL_DTYPE_CVEC4,
 
-    VKL_DTYPE_UINT, // 32 bits, unsigned
+    VKL_DTYPE_USHORT, // 16 bits, unsigned int
+    VKL_DTYPE_USVEC2,
+    VKL_DTYPE_USVEC3,
+    VKL_DTYPE_USVEC4,
+
+    VKL_DTYPE_SHORT, // 16 bits, signed int
+    VKL_DTYPE_SVEC2,
+    VKL_DTYPE_SVEC3,
+    VKL_DTYPE_SVEC4,
+
+    VKL_DTYPE_UINT, // 32 bits, unsigned int
     VKL_DTYPE_UVEC2,
     VKL_DTYPE_UVEC3,
     VKL_DTYPE_UVEC4,
 
-    VKL_DTYPE_INT, // 32 bits, signed
+    VKL_DTYPE_INT, // 32 bits, signed int
     VKL_DTYPE_IVEC2,
     VKL_DTYPE_IVEC3,
     VKL_DTYPE_IVEC4,
 
-    VKL_DTYPE_FLOAT, // 32 bits
+    VKL_DTYPE_FLOAT, // 32 bits float
     VKL_DTYPE_VEC2,
     VKL_DTYPE_VEC3,
     VKL_DTYPE_VEC4,
 
-    VKL_DTYPE_DOUBLE, // 64 bits
+    VKL_DTYPE_DOUBLE, // 64 bits double
     VKL_DTYPE_DVEC2,
     VKL_DTYPE_DVEC3,
     VKL_DTYPE_DVEC4,
@@ -155,6 +166,7 @@ static VklArray vkl_array(uint32_t item_count, VklDataType dtype)
 
 static VklArray vkl_array_struct(uint32_t item_count, VkDeviceSize item_size)
 {
+    ASSERT(item_size > 0);
     VklArray arr = {0};
     arr.obj.type = VKL_OBJECT_TYPE_ARRAY;
     arr.dtype = VKL_DTYPE_CUSTOM;
@@ -190,6 +202,7 @@ _repeat_last(uint32_t old_item_count, VkDeviceSize item_size, void* data, uint32
 static void vkl_array_resize(VklArray* array, uint32_t item_count)
 {
     ASSERT(array != NULL);
+    ASSERT(item_count > 0);
 
     uint32_t old_item_count = array->item_count;
 

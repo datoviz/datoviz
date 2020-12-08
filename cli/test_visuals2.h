@@ -47,7 +47,7 @@ static void _marker_visual(VklVisual* visual)
         vkl_visual_source(
             visual, VKL_SOURCE_UNIFORM, 1, VKL_PIPELINE_GRAPHICS, 0, 1, sizeof(VklViewport));
         vkl_visual_source( //
-            visual, VKL_SOURCE_TEXTURE, 0, VKL_PIPELINE_GRAPHICS, 0, 2, 0);
+            visual, VKL_SOURCE_TEXTURE_2D, 0, VKL_PIPELINE_GRAPHICS, 0, 2, sizeof(uint8_t));
         vkl_visual_source(
             visual, VKL_SOURCE_UNIFORM, 2, VKL_PIPELINE_GRAPHICS, 0, 3,
             sizeof(VklGraphicsPointsParams));
@@ -92,8 +92,8 @@ static int vklite2_visuals_1(VkyTestContext* context)
 
     // GPU sources.
     const uint32_t N = 10000;
-    VklBufferRegions br_vert =
-        vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, N * sizeof(VklVertex));
+    // VklBufferRegions br_vert =
+    //     vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, N * sizeof(VklVertex));
 
     // Binding resources.
     VklBufferRegions br_mvp = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklMVP));
@@ -125,32 +125,31 @@ static int vklite2_visuals_1(VkyTestContext* context)
     vec3* pos = calloc(N, sizeof(vec3));
     cvec4* color = calloc(N, sizeof(cvec4));
     // TODO: remove below
-    VklVertex* vertices = calloc(N, sizeof(VklVertex));
+    // VklVertex* vertices = calloc(N, sizeof(VklVertex));
     for (uint32_t i = 0; i < N; i++)
     {
         RANDN_POS(pos[i])
         RAND_COLOR(color[i])
 
-        memcpy(vertices[i].pos, pos[i], sizeof(pos[i]));
-        memcpy(vertices[i].color, color[i], sizeof(color[i]));
+        // memcpy(vertices[i].pos, pos[i], sizeof(pos[i]));
+        // memcpy(vertices[i].color, color[i], sizeof(color[i]));
     }
 
     // Set visual data.
-    // TODO
-    // vkl_visual_data(&visual, VKL_PROP_POS, 0, N, pos);
-    // vkl_visual_data(&visual, VKL_PROP_COLOR, 0, N, color);
 
-    vkl_upload_buffers(ctx, br_vert, 0, N * sizeof(VklVertex), vertices);
-    // HACK:
-    visual.vertex_count = N;
+    vkl_visual_data(&visual, VKL_PROP_POS, 0, N, pos);
+    vkl_visual_data(&visual, VKL_PROP_COLOR, 0, N, color);
 
-    vkl_visual_buffer(&visual, VKL_SOURCE_VERTEX, 0, br_vert);
+    // vkl_upload_buffers(ctx, br_vert, 0, N * sizeof(VklVertex), vertices);
+    // visual.vertex_count = N;
+    // vkl_visual_buffer(&visual, VKL_SOURCE_VERTEX, 0, br_vert);
+
 
     vkl_visual_buffer(&visual, VKL_SOURCE_UNIFORM, 0, br_mvp);
     vkl_visual_buffer(&visual, VKL_SOURCE_UNIFORM, 1, br_viewport);
     vkl_visual_buffer(&visual, VKL_SOURCE_UNIFORM, 2, br_params);
 
-    vkl_visual_texture(&visual, VKL_SOURCE_TEXTURE, 0, tex_color);
+    vkl_visual_texture(&visual, VKL_SOURCE_TEXTURE_2D, 0, tex_color);
 
     // Upload the data to the GPU..
     VklViewport viewport = vkl_viewport_full(canvas);
@@ -164,6 +163,6 @@ static int vklite2_visuals_1(VkyTestContext* context)
     vkl_visual_destroy(&visual);
     FREE(pos);
     FREE(color);
-    FREE(vertices);
+    // FREE(vertices);
     TEST_END
 }

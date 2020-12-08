@@ -20,6 +20,114 @@ static VklBindings* _get_bindings(VklVisual* visual, VklSource* source)
 
 
 
+static uint32_t _get_buffer_idx(VklSourceType source_type)
+{
+    switch (source_type)
+    {
+    case VKL_SOURCE_VERTEX:
+        return VKL_DEFAULT_BUFFER_VERTEX;
+    case VKL_SOURCE_INDEX:
+        return VKL_DEFAULT_BUFFER_INDEX;
+    case VKL_SOURCE_UNIFORM:
+        return VKL_DEFAULT_BUFFER_UNIFORM;
+    case VKL_SOURCE_STORAGE:
+        return VKL_DEFAULT_BUFFER_STORAGE;
+    default:
+        log_error("buffer idx not found");
+        break;
+    }
+    return 0;
+}
+
+
+
+static uint32_t _get_texture_ndims(VklSourceType source_type)
+{
+    uint32_t ndims = 1;
+    if (source_type == VKL_SOURCE_TEXTURE_2D)
+        ndims = 2;
+    if (source_type == VKL_SOURCE_TEXTURE_3D)
+        ndims = 3;
+    return ndims;
+}
+
+
+
+static VkFormat _get_texture_format(VklVisual* visual, VklSource* source)
+{
+    ASSERT(source != NULL);
+    ASSERT(source->source_type >= VKL_SOURCE_TEXTURE_1D);
+    VklDataType dtype = VKL_DTYPE_NONE;
+
+    for (uint32_t i = 0; i < visual->prop_count; i++)
+    {
+        if (visual->props[i].source_type == source->source_type &&
+            visual->props[i].source_idx == source->source_idx)
+        {
+            // Check that there is only 1 prop associated to the texture source.
+            if (dtype != VKL_DTYPE_NONE)
+                log_error("multiple texture props not supported");
+            dtype = visual->props[i].dtype;
+        }
+    }
+
+    ASSERT(dtype != VKL_DTYPE_NONE);
+    VkFormat format = VK_FORMAT_UNDEFINED;
+    switch (dtype)
+    {
+
+    // 8 bit
+    case VKL_DTYPE_CHAR:
+        format = VK_FORMAT_R8_UNORM;
+        break;
+
+    case VKL_DTYPE_CVEC3:
+        format = VK_FORMAT_R8G8B8_UNORM;
+        break;
+
+    case VKL_DTYPE_CVEC4:
+        format = VK_FORMAT_R8G8B8A8_UNORM;
+        break;
+
+
+    // 16 bit signed
+    case VKL_DTYPE_SHORT:
+        format = VK_FORMAT_R16_SNORM;
+        break;
+
+    case VKL_DTYPE_SVEC3:
+        format = VK_FORMAT_R16G16B16_SNORM;
+        break;
+
+    case VKL_DTYPE_SVEC4:
+        format = VK_FORMAT_R16G16B16A16_SNORM;
+        break;
+
+
+    // 16 bit unsigned
+    case VKL_DTYPE_USHORT:
+        format = VK_FORMAT_R16_UNORM;
+        break;
+
+    case VKL_DTYPE_USVEC3:
+        format = VK_FORMAT_R16G16B16_UNORM;
+        break;
+
+    case VKL_DTYPE_USVEC4:
+        format = VK_FORMAT_R16G16B16A16_UNORM;
+        break;
+
+
+    default:
+        break;
+    }
+    if (format == VK_FORMAT_UNDEFINED)
+        log_error("unsupported texture format for dtype %d", dtype);
+    return format;
+}
+
+
+
 /*************************************************************************************************/
 /*  Default callbacks                                                                            */
 /*************************************************************************************************/
@@ -133,34 +241,22 @@ void vkl_visual_destroy(VklVisual* visual)
 /*************************************************************************************************/
 
 void vkl_visual_source(
-    VklVisual* visual, VklSourceType source, uint32_t source_idx, //
+    VklVisual* visual, VklSourceType source_type, uint32_t source_idx, //
     VklPipelineType pipeline, uint32_t pipeline_idx, uint32_t slot_idx, VkDeviceSize item_size)
 {
     ASSERT(visual != NULL);
     ASSERT(visual->source_count < VKL_MAX_VISUAL_SOURCES);
-    ASSERT(vkl_bake_source(visual, source, source_idx) == NULL);
+    ASSERT(vkl_bake_source(visual, source_type, source_idx) == NULL);
 
-    VklSource src = {0};
-    src.source_type = source;
-    src.source_idx = source_idx;
-    src.pipeline = pipeline;
-    src.pipeline_idx = pipeline_idx;
-    src.slot_idx = slot_idx;
-    src.arr = vkl_array_struct(0, item_size);
-    src.origin = VKL_SOURCE_ORIGIN_NONE; // source origin (GPU object) not set yet
-    visual->sources[visual->source_count++] = src;
-
-    // source.
-    // source.prop = VKL_PROP_VERTEX;
-    // source.prop_idx = 0;
-    // source.dtype = VKL_DTYPE_CUSTOM;
-    // source.dtype_size = vertex_size;
-    // source.loc = VKL_PROP_LOC_VERTEX_BUFFER;
-    // source.binding = VKL_PROP_BINDING_BUFFER;
-    // source.is_set = true;
-    // visual->vertex_buf = &visual->sources[visual->source_count].u.b.br;
-    // visual->source_count++;
-    // vkl_visual_source(visual, VKL_SOURCE_VERTEX, 0)
+    VklSource source = {0};
+    source.source_type = source_type;
+    source.source_idx = source_idx;
+    source.pipeline = pipeline;
+    source.pipeline_idx = pipeline_idx;
+    source.slot_idx = slot_idx;
+    source.arr = vkl_array_struct(0, item_size);
+    source.origin = VKL_SOURCE_ORIGIN_NONE; // source origin (GPU object) not set yet
+    visual->sources[visual->source_count++] = source;
 }
 
 
@@ -183,6 +279,8 @@ void vkl_visual_prop(
     pr.field_idx = field_idx;
     pr.dtype = dtype;
     pr.offset = offset;
+
+    pr.arr_orig = vkl_array(0, dtype);
 
     visual->props[visual->prop_count++] = pr;
 }
@@ -538,6 +636,78 @@ void vkl_bake_source_fill(VklVisual* visual, VklSource* source)
 
 
 
+// TODO: remove count param, take it from source->arr
+void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source, uint32_t count)
+{
+    ASSERT(visual != NULL);
+    ASSERT(source != NULL);
+    VklContext* ctx = visual->canvas->gpu->context;
+
+    ASSERT(source->source_type < VKL_SOURCE_TEXTURE_1D);
+    ASSERT(source->arr.item_size > 0);
+
+    ASSERT(count > 0);
+
+    // Allocate the buffer if it doesn't exist yet, or if it is not large enough.
+    if (source->u.b.br.buffer == VK_NULL_HANDLE || source->u.b.size < count)
+    {
+        if (source->u.b.size > 0)
+            log_debug("need to reallocate new buffer region to fit %d elements", count);
+        else
+            log_debug("need to allocate new buffer region to fit %d elements", count);
+        VkDeviceSize size = count * source->arr.item_size;
+
+        source->u.b.br = vkl_ctx_buffers(ctx, _get_buffer_idx(source->source_type), 1, size);
+        source->u.b.offset = 0;
+        source->u.b.size = size;
+    }
+    ASSERT(source->u.b.br.buffer != VK_NULL_HANDLE);
+}
+
+
+
+// TODO: remove shape param, take it from source->arr3D
+void vkl_visual_texture_alloc(VklVisual* visual, VklSource* source, uvec3 shape)
+{
+    ASSERT(visual != NULL);
+    ASSERT(source != NULL);
+    VklContext* ctx = visual->canvas->gpu->context;
+
+    ASSERT(source->source_type >= VKL_SOURCE_TEXTURE_1D);
+
+    // Find the numbe of dimensions.
+    uint32_t ndims = _get_texture_ndims(source->source_type);
+    ASSERT(shape[0] > 0);
+    ASSERT(shape[1] > 0);
+    ASSERT(shape[2] > 0);
+
+    // Find the texture format.
+    VkFormat format = _get_texture_format(visual, source);
+    ASSERT(format != VK_FORMAT_UNDEFINED);
+
+    // Allocate the texture if it doesn't exist yet, or if it is not large enough.
+    VklTexture* tex = source->u.t.texture;
+    if (tex == NULL ||                   //
+        tex->image->width < shape[0] ||  //
+        tex->image->height < shape[1] || //
+        tex->image->depth < shape[2])    //
+    {
+        if (source->u.b.size > 0)
+            log_debug(
+                "need to create new texture with shape %dx%dx%d", //
+                shape[0], shape[1], shape[2]);
+        else
+            log_debug(
+                "need to reallocate texture with new shape %dx%dx%d", //
+                shape[0], shape[1], shape[2]);
+
+        tex = source->u.t.texture = vkl_ctx_texture(ctx, ndims, shape, format);
+    }
+    ASSERT(source->u.t.texture != NULL);
+}
+
+
+
 /*************************************************************************************************/
 /*  Data update                                                                                  */
 /*************************************************************************************************/
@@ -589,7 +759,7 @@ void vkl_visual_update(
     {
         source = &visual->sources[i];
         arr = &source->arr;
-        if (source->source_type == VKL_SOURCE_TEXTURE)
+        if (source->source_type >= VKL_SOURCE_TEXTURE_1D)
         {
             texture = source->u.t.texture;
 
@@ -597,7 +767,14 @@ void vkl_visual_update(
             // is expected to do it manually
             if (source->origin == VKL_SOURCE_ORIGIN_LIB)
             {
-                // TODO: create or resize as a function of the data array size
+                // TODO: use array 3D to get the texture shape from the array shape
+                // vkl_visual_texture_alloc(visual, source, shape);
+
+                ASSERT(texture != NULL);
+                ASSERT(is_obj_created(&texture->obj));
+                ASSERT(arr->item_count > 0);
+                ASSERT(arr->item_size > 0);
+
                 vkl_upload_texture(ctx, texture, arr->item_count * arr->item_size, arr->data);
             }
         }
@@ -609,7 +786,15 @@ void vkl_visual_update(
             // is expected to do it manually
             if (source->origin == VKL_SOURCE_ORIGIN_LIB)
             {
-                // TODO: create or resize as a function of the data array size
+                ASSERT(arr->item_count > 0);
+                ASSERT(arr->item_size > 0);
+
+                // Make sure the GPU buffer exists and is allocated with the right size.
+                vkl_visual_buffer_alloc(visual, source, arr->item_count);
+
+                ASSERT(source->u.b.size > 0);
+                ASSERT(br->buffer != VK_NULL_HANDLE);
+
                 vkl_upload_buffers(ctx, *br, source->u.b.offset, source->u.b.size, arr->data);
             }
         }

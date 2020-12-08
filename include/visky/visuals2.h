@@ -53,7 +53,9 @@ typedef enum
     VKL_SOURCE_INDEX,
     VKL_SOURCE_UNIFORM,
     VKL_SOURCE_STORAGE,
-    VKL_SOURCE_TEXTURE,
+    VKL_SOURCE_TEXTURE_1D,
+    VKL_SOURCE_TEXTURE_2D,
+    VKL_SOURCE_TEXTURE_3D,
 } VklSourceType;
 
 
@@ -346,6 +348,10 @@ VKY_EXPORT void vkl_bake_prop_copy(VklVisual* visual, VklProp* prop, uint32_t re
 VKY_EXPORT void vkl_bake_source_alloc(VklVisual* visual, VklSource* source, uint32_t count);
 
 VKY_EXPORT void vkl_bake_source_fill(VklVisual* visual, VklSource* source);
+
+VKY_EXPORT void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source, uint32_t count);
+
+VKY_EXPORT void vkl_visual_texture_alloc(VklVisual* visual, VklSource* source, uvec3 shape);
 
 
 
