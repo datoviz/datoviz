@@ -155,15 +155,61 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
     uint32_t vertex_count = visual->vertex_count;
     ASSERT(vertex_count > 0);
 
+    uint32_t index_count = visual->index_count;
+
     vkl_cmd_begin(cmds, idx);
     vkl_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, &canvas->framebuffers);
     vkl_cmd_viewport(cmds, idx, viewport);
+
+    // Bind the vertex buffer.
     vkl_cmd_bind_vertex_buffer(cmds, idx, vertex_buf, 0);
-    // TODO: index buffer
+
+    // Bind the index buffer if there is one.
+    if (index_count > 0)
+    {
+        VklSource* index_source = vkl_bake_source(visual, VKL_SOURCE_INDEX, 0);
+        VklBufferRegions* index_buf = &index_source->u.b.br;
+        ASSERT(index_buf != NULL);
+        ASSERT(index_buf->count > 0);
+        vkl_cmd_bind_index_buffer(cmds, idx, index_buf, 0);
+    }
+
+    // Draw command.
     vkl_cmd_bind_graphics(cmds, idx, visual->graphics[0], &visual->bindings[0], 0);
-    vkl_cmd_draw(cmds, idx, 0, vertex_count);
+
+    if (index_count == 0)
+        vkl_cmd_draw(cmds, idx, 0, vertex_count);
+    else
+        vkl_cmd_draw_indexed(cmds, idx, 0, 0, index_count);
+
     vkl_cmd_end_renderpass(cmds, idx);
     vkl_cmd_end(cmds, idx);
+}
+
+
+
+static void _bake_source(VklVisual* visual, VklSource* source)
+{
+    ASSERT(visual != NULL);
+    if (source == NULL)
+        return;
+
+    // The baking function doesn't run if the VERTEX source is handled by the user.
+    if (source->origin != VKL_SOURCE_ORIGIN_LIB)
+        return;
+
+    // Check that all props for the source source have the same number of items.
+    uint32_t count = vkl_bake_max_prop_size(visual, source);
+    if (source->source_type == VKL_SOURCE_VERTEX)
+        visual->vertex_count = count;
+    else if (source->source_type == VKL_SOURCE_INDEX)
+        visual->index_count = count;
+
+    // Allocate the source array.
+    vkl_bake_source_alloc(visual, source, count);
+
+    // Copy all corresponding props to the array.
+    vkl_bake_source_fill(visual, source);
 }
 
 
@@ -177,22 +223,13 @@ static void _default_visual_bake(VklVisual* visual, VklVisualDataEvent ev)
 
     // VERTEX source.
     VklSource* source = vkl_bake_source(visual, VKL_SOURCE_VERTEX, 0);
+    _bake_source(visual, source);
 
-    // The baking function doesn't run if the VERTEX source is handled by the user.
-    if (source->origin != VKL_SOURCE_ORIGIN_LIB)
-        return;
+    // INDEX source.
+    source = vkl_bake_source(visual, VKL_SOURCE_INDEX, 0);
+    _bake_source(visual, source);
 
-    // Check that all props for VERTEX buffer source have the same number of items.
-    // TODO: or take the MAX?
-    visual->vertex_count = vkl_bake_max_prop_size(visual, source);
-    visual->index_count = 0; // TODO
-
-    // Allocate the VERTEX source array.
-    vkl_bake_source_alloc(visual, source, visual->vertex_count);
-
-    // Copy all corresponding props to the array.
-    vkl_bake_source_fill(visual, source);
-
+    // UNIFORM sources.
     for (uint32_t i = 0; i < visual->source_count; i++)
     {
         source = &visual->sources[i];
