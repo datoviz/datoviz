@@ -76,41 +76,14 @@ static void _default_visual_bake(VklVisual* visual, VklVisualDataEvent ev)
 
     // Check that all props for VERTEX buffer source have the same number of items.
     // TODO: or take the MAX?
-    VklProp* prop = NULL;
-    VklArray* arr = NULL;
-    uint32_t item_count = 0;
-    for (uint32_t i = 0; i < visual->prop_count; i++)
-    {
-        prop = &visual->props[i];
-        if (prop->source_type == VKL_SOURCE_VERTEX)
-        {
-            arr = &prop->arr_orig;
-            ASSERT(arr != NULL);
-            if (item_count == 0)
-                item_count = arr->item_count;
-            ASSERT(arr->item_count == item_count);
-        }
-    }
-    visual->vertex_count = item_count;
+    visual->vertex_count = vkl_bake_max_prop_size(visual, source);
+    visual->index_count = 0; // TODO
 
-    // TODO: INDEX source
-    visual->index_count = 0;
+    // Allocate the VERTEX source array.
+    vkl_bake_source_alloc(visual, source, visual->vertex_count);
 
-    // Resize the vertex source.
-    arr = &source->arr;
-    ASSERT(is_obj_created(&arr->obj));
-    vkl_array_resize(arr, item_count);
-
-    // Copy all associated props to the VERTEX source array.
-    for (uint32_t i = 0; i < visual->prop_count; i++)
-    {
-        prop = &visual->props[i];
-        // TODO: multiple VERTEX sources
-        if (prop->source_type == VKL_SOURCE_VERTEX && prop->source_idx == 0)
-        {
-            vkl_bake_prop_copy(visual, prop, 1);
-        }
-    }
+    // Copy all corresponding props to the array.
+    vkl_bake_source_fill(visual, source);
 }
 
 
