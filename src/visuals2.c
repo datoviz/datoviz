@@ -484,7 +484,7 @@ void vkl_visual_texture(VklVisual* visual, VklSourceType source, uint32_t idx, V
     VklBindings* bindings = _get_bindings(visual, src);
     ASSERT(texture->image != NULL);
     ASSERT(texture->sampler != NULL);
-    vkl_bindings_texture(bindings, src->slot_idx, texture->image, texture->sampler);
+    vkl_bindings_texture(bindings, src->slot_idx, texture);
 }
 
 // vkl_visual_texture_partial(visual, type, idx, texture, (uvec3){0}, (uvec3){0});
@@ -768,7 +768,7 @@ void vkl_visual_texture_alloc(VklVisual* visual, VklSource* source)
 
         // Set bindings.
         VklBindings* bindings = _get_bindings(visual, source);
-        vkl_bindings_texture(bindings, source->slot_idx, tex->image, tex->sampler);
+        vkl_bindings_texture(bindings, source->slot_idx, tex);
     }
     ASSERT(source->u.t.texture != NULL);
 }

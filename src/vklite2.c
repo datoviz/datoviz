@@ -1587,10 +1587,14 @@ void vkl_bindings_buffer(VklBindings* bindings, uint32_t idx, VklBufferRegions b
 
 
 
-void vkl_bindings_texture(
-    VklBindings* bindings, uint32_t idx, VklImages* images, VklSampler* sampler)
+void vkl_bindings_texture(VklBindings* bindings, uint32_t idx, VklTexture* texture)
 {
     ASSERT(bindings != NULL);
+    ASSERT(texture != NULL);
+
+    VklImages* images = texture->image;
+    VklSampler* sampler = texture->sampler;
+
     ASSERT(images != NULL);
     ASSERT(sampler != NULL);
     ASSERT(images->count == 1 || images->count == bindings->dset_count);

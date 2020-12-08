@@ -112,6 +112,7 @@ typedef struct VklSubmit VklSubmit;
 // Forward declarations.
 typedef struct VklCanvas VklCanvas;
 typedef struct VklContext VklContext;
+typedef struct VklTexture VklTexture;
 
 // Callback definitions
 typedef void* (*VklThreadCallback)(void*);
@@ -851,6 +852,18 @@ struct VklSubmit
 
 
 
+struct VklTexture
+{
+    VklObject obj;
+
+    VklContext* context;
+
+    VklImages* image;
+    VklSampler* sampler;
+};
+
+
+
 /*************************************************************************************************/
 /*  App                                                                                          */
 /*************************************************************************************************/
@@ -1105,8 +1118,7 @@ VKY_EXPORT VklBindings vkl_bindings(VklSlots* slots, uint32_t dset_count);
 VKY_EXPORT void
 vkl_bindings_buffer(VklBindings* bindings, uint32_t idx, VklBufferRegions buffer_regions);
 
-VKY_EXPORT void
-vkl_bindings_texture(VklBindings* bindings, uint32_t idx, VklImages* images, VklSampler* sampler);
+VKY_EXPORT void vkl_bindings_texture(VklBindings* bindings, uint32_t idx, VklTexture* texture);
 
 VKY_EXPORT void vkl_bindings_update(VklBindings* bindings);
 

@@ -53,7 +53,6 @@ static inline void vkl_sleep(int milliseconds)
 /*************************************************************************************************/
 
 typedef struct VklFifo VklFifo;
-typedef struct VklTexture VklTexture;
 
 typedef struct VklTransfer VklTransfer;
 typedef struct VklTransferBuffer VklTransferBuffer;
@@ -229,18 +228,6 @@ struct VklContext
 
     uint32_t max_computes;
     VklCompute* computes;
-};
-
-
-
-struct VklTexture
-{
-    VklObject obj;
-
-    VklContext* context;
-
-    VklImages* image;
-    VklSampler* sampler;
 };
 
 

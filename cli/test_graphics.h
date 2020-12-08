@@ -144,7 +144,7 @@ static int vklite2_graphics_dynamic(VkyTestContext* context)
     // Bindings
     vkl_bindings_buffer(&tg.bindings, 0, tg.br_mvp);
     vkl_bindings_buffer(&tg.bindings, 1, tg.br_viewport);
-    vkl_bindings_texture(&tg.bindings, 2, tg.texture->image, tg.texture->sampler);
+    vkl_bindings_texture(&tg.bindings, 2, tg.texture);
     vkl_bindings_buffer(&tg.bindings, 3, tg.br_params);
 
     vkl_bindings_update(&tg.bindings);
@@ -226,7 +226,7 @@ static int vklite2_graphics_3D(VkyTestContext* context)
     // Bindings
     vkl_bindings_buffer(&tg.bindings, 0, tg.br_mvp);
     vkl_bindings_buffer(&tg.bindings, 1, tg.br_viewport);
-    vkl_bindings_texture(&tg.bindings, 2, tg.texture->image, tg.texture->sampler);
+    vkl_bindings_texture(&tg.bindings, 2, tg.texture);
     vkl_bindings_buffer(&tg.bindings, 3, tg.br_params);
 
     vkl_bindings_update(&tg.bindings);
@@ -267,7 +267,7 @@ static void _common_bindings(TestGraphics* tg)
     // Bindings
     vkl_bindings_buffer(&tg->bindings, 0, tg->br_mvp);
     vkl_bindings_buffer(&tg->bindings, 1, tg->br_viewport);
-    vkl_bindings_texture(&tg->bindings, 2, tg->texture->image, tg->texture->sampler);
+    vkl_bindings_texture(&tg->bindings, 2, tg->texture);
     // TODO: color
 }
 
