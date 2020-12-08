@@ -148,7 +148,7 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
     ASSERT(is_obj_created(&visual->bindings[0].obj));
 
     VklSource* vertex_source = vkl_bake_source(visual, VKL_SOURCE_VERTEX, 0);
-    VklBufferRegions* vertex_buf = &vertex_source->u.b.br;
+    VklBufferRegions* vertex_buf = &vertex_source->u.br;
     ASSERT(vertex_buf != NULL);
     ASSERT(vertex_buf->count > 0);
 
@@ -168,7 +168,7 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
     if (index_count > 0)
     {
         VklSource* index_source = vkl_bake_source(visual, VKL_SOURCE_INDEX, 0);
-        VklBufferRegions* index_buf = &index_source->u.b.br;
+        VklBufferRegions* index_buf = &index_source->u.br;
         ASSERT(index_buf != NULL);
         ASSERT(index_buf->count > 0);
         vkl_cmd_bind_index_buffer(cmds, idx, index_buf, 0);
@@ -430,15 +430,6 @@ void vkl_visual_data_partial(
 // buffer
 void vkl_visual_buffer(VklVisual* visual, VklSourceType source, uint32_t idx, VklBufferRegions br)
 {
-    vkl_visual_buffer_partial(visual, source, idx, br, 0, br.size);
-}
-
-
-
-void vkl_visual_buffer_partial(
-    VklVisual* visual, VklSourceType source, uint32_t idx, //
-    VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size)
-{
     ASSERT(visual != NULL);
     ASSERT(visual != NULL);
     VklSource* src = vkl_bake_source(visual, source, idx);
@@ -448,19 +439,17 @@ void vkl_visual_buffer_partial(
         return;
     }
     ASSERT(src != NULL);
-    if (size == 0)
-        size = br.size;
+
+    VkDeviceSize size = br.size;
     ASSERT(size > 0);
     ASSERT(br.buffer != VK_NULL_HANDLE);
 
-    src->u.b.br = br;
-    src->u.b.offset = offset;
-    src->u.b.size = size;
+    src->u.br = br;
     src->origin = VKL_SOURCE_ORIGIN_USER;
 
     VklBindings* bindings = _get_bindings(visual, src);
     ASSERT(br.buffer != VK_NULL_HANDLE);
-    vkl_bindings_buffer(bindings, src->slot_idx, src->u.b.br);
+    vkl_bindings_buffer(bindings, src->slot_idx, src->u.br);
 }
 
 
@@ -478,7 +467,7 @@ void vkl_visual_texture(VklVisual* visual, VklSourceType source, uint32_t idx, V
     ASSERT(src != NULL);
     ASSERT(texture != NULL);
 
-    src->u.t.texture = texture;
+    src->u.tex = texture;
     src->origin = VKL_SOURCE_ORIGIN_USER;
 
     VklBindings* bindings = _get_bindings(visual, src);
@@ -486,35 +475,6 @@ void vkl_visual_texture(VklVisual* visual, VklSourceType source, uint32_t idx, V
     ASSERT(texture->sampler != NULL);
     vkl_bindings_texture(bindings, src->slot_idx, texture);
 }
-
-// vkl_visual_texture_partial(visual, type, idx, texture, (uvec3){0}, (uvec3){0});
-// }
-// void vkl_visual_texture_partial(
-//     VklVisual* visual, VklPropType type, uint32_t idx, //
-//     VklTexture* texture, uvec3 offset, uvec3 shape)
-// {
-// ASSERT(visual != NULL);
-// ASSERT(visual != NULL);
-// VklSource* source = vkl_bake_source(visual, type, idx);
-// if (source == NULL)
-//     log_error("Data source for prop %d #%d could not be found", type, idx);
-// ASSERT(source != NULL);
-// if (shape[0] == 0)
-//     shape[0] = texture->image->width;
-// if (shape[1] == 0)
-//     shape[1] = texture->image->height;
-// if (shape[2] == 0)
-//     shape[2] = texture->image->depth;
-
-// source->binding = VKL_PROP_BINDING_TEXTURE;
-// source->u.t.texture = texture;
-// TODO: partial texture binding
-
-// for (uint32_t i = 0; i < 3; i++)
-// {
-//     source->u.t.offset[i] = offset[i];
-//     source->u.t.shape[i] = shape[i];
-// }
 
 
 
@@ -706,25 +666,23 @@ void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source)
     ASSERT(count > 0);
 
     // Allocate the buffer if it doesn't exist yet, or if it is not large enough.
-    if (source->u.b.br.buffer == VK_NULL_HANDLE || source->u.b.size < count)
+    if (source->u.br.buffer == VK_NULL_HANDLE || source->u.br.size < count)
     {
         VkDeviceSize size = count * source->arr.item_size;
-        if (source->u.b.size > 0)
+        if (source->u.br.size > 0)
             log_debug(
                 "need to reallocate new buffer region to fit %d elements (%d bytes)", count, size);
         else
             log_debug(
                 "need to allocate new buffer region to fit %d elements (%d bytes)", count, size);
 
-        source->u.b.br = vkl_ctx_buffers(ctx, _get_buffer_idx(source->source_type), 1, size);
-        source->u.b.offset = 0;
-        source->u.b.size = size;
+        source->u.br = vkl_ctx_buffers(ctx, _get_buffer_idx(source->source_type), 1, size);
 
         // Set bindings.
         VklBindings* bindings = _get_bindings(visual, source);
-        vkl_bindings_buffer(bindings, source->slot_idx, source->u.b.br);
+        vkl_bindings_buffer(bindings, source->slot_idx, source->u.br);
     }
-    ASSERT(source->u.b.br.buffer != VK_NULL_HANDLE);
+    ASSERT(source->u.br.buffer != VK_NULL_HANDLE);
 }
 
 
@@ -749,13 +707,13 @@ void vkl_visual_texture_alloc(VklVisual* visual, VklSource* source)
     ASSERT(format != VK_FORMAT_UNDEFINED);
 
     // Allocate the texture if it doesn't exist yet, or if it is not large enough.
-    VklTexture* tex = source->u.t.texture;
+    VklTexture* tex = source->u.tex;
     if (tex == NULL ||                   //
         tex->image->width < shape[0] ||  //
         tex->image->height < shape[1] || //
         tex->image->depth < shape[2])    //
     {
-        if (source->u.b.size > 0)
+        if (source->u.br.size > 0)
             log_debug(
                 "need to create new texture with shape %dx%dx%d", //
                 shape[0], shape[1], shape[2]);
@@ -764,13 +722,13 @@ void vkl_visual_texture_alloc(VklVisual* visual, VklSource* source)
                 "need to reallocate texture with new shape %dx%dx%d", //
                 shape[0], shape[1], shape[2]);
 
-        tex = source->u.t.texture = vkl_ctx_texture(ctx, ndims, shape, format);
+        tex = source->u.tex = vkl_ctx_texture(ctx, ndims, shape, format);
 
         // Set bindings.
         VklBindings* bindings = _get_bindings(visual, source);
         vkl_bindings_texture(bindings, source->slot_idx, tex);
     }
-    ASSERT(source->u.t.texture != NULL);
+    ASSERT(source->u.tex != NULL);
 }
 
 
@@ -831,7 +789,7 @@ void vkl_visual_update(
         arr = &source->arr;
         if (source->source_type >= VKL_SOURCE_TEXTURE_1D)
         {
-            texture = source->u.t.texture;
+            texture = source->u.tex;
 
             // Only upload if the library is managing the GPU object, otherwise the user
             // is expected to do it manually
@@ -854,7 +812,7 @@ void vkl_visual_update(
         }
         else
         {
-            br = &source->u.b.br;
+            br = &source->u.br;
 
             // Only upload if the library is managing the GPU object, otherwise the user
             // is expected to do it manually
@@ -867,13 +825,13 @@ void vkl_visual_update(
                 // Make sure the GPU buffer exists and is allocated with the right size.
                 vkl_visual_buffer_alloc(visual, source);
 
-                ASSERT(source->u.b.size > 0);
+                ASSERT(br->size > 0);
                 ASSERT(br->buffer != VK_NULL_HANDLE);
 
                 log_trace(
                     "upload buffer for automatically-handled source %d #%d", //
                     source->source_type, source->source_idx);
-                vkl_upload_buffers(ctx, *br, source->u.b.offset, source->u.b.size, arr->data);
+                vkl_upload_buffers(ctx, *br, 0, br->size, arr->data);
             }
         }
     }

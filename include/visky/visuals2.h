@@ -82,8 +82,8 @@ typedef enum
 typedef struct VklVisual VklVisual;
 typedef struct VklProp VklProp;
 
-typedef struct VklSourceBuffer VklSourceBuffer;
-typedef struct VklSourceTexture VklSourceTexture;
+// typedef struct VklSourceBuffer VklSourceBuffer;
+// typedef struct VklSourceTexture VklSourceTexture;
 typedef union VklSourceUnion VklSourceUnion;
 typedef struct VklSource VklSource;
 typedef struct VklDataCoords VklDataCoords;
@@ -130,26 +130,10 @@ struct VklDataCoords
 
 
 
-struct VklSourceBuffer
-{
-    VklBufferRegions br;
-    VkDeviceSize offset;
-    VkDeviceSize size;
-};
-
-struct VklSourceTexture
-{
-    VklTexture* texture;
-
-    // TODO: not implemented yet:
-    uvec3 offset;
-    uvec3 shape;
-};
-
 union VklSourceUnion
 {
-    VklSourceBuffer b;
-    VklSourceTexture t;
+    VklBufferRegions br;
+    VklTexture* tex;
 };
 
 struct VklSource
@@ -304,17 +288,8 @@ VKY_EXPORT void vkl_visual_data_partial(
 VKY_EXPORT void vkl_visual_buffer(
     VklVisual* visual, VklSourceType source, uint32_t source_idx, VklBufferRegions br);
 
-VKY_EXPORT void vkl_visual_buffer_partial(
-    VklVisual* visual, VklSourceType source, uint32_t source_idx, //
-    VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size);
-
 VKY_EXPORT void vkl_visual_texture(
     VklVisual* visual, VklSourceType source, uint32_t source_idx, VklTexture* texture);
-
-// NOTE: not implemented yet, would need binding to partial texture
-// VKY_EXPORT void vkl_visual_texture_partial(
-//     VklVisual* visual, VklPropType type, uint32_t idx, //
-//     VklTexture* texture, uvec3 offset, uvec3 shape);
 
 
 
