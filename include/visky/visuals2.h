@@ -41,6 +41,10 @@ typedef enum
     VKL_PROP_POS,
     VKL_PROP_COLOR,
     VKL_PROP_TYPE,
+
+    VKL_PROP_MODEL,
+    VKL_PROP_VIEW,
+    VKL_PROP_PROJ,
 } VklPropType;
 
 

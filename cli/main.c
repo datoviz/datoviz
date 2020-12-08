@@ -193,13 +193,15 @@ static VkyTestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(vklite2_graphics_points),  //
 
     // array
-    CASE_FIXTURE_NONE(vklite2_array_1), //
-    CASE_FIXTURE_NONE(vklite2_array_2), //
-    CASE_FIXTURE_NONE(vklite2_array_3), //
-    CASE_FIXTURE_NONE(vklite2_array_4), //
+    CASE_FIXTURE_NONE(vklite2_array_1),   //
+    CASE_FIXTURE_NONE(vklite2_array_2),   //
+    CASE_FIXTURE_NONE(vklite2_array_3),   //
+    CASE_FIXTURE_NONE(vklite2_array_4),   //
+    CASE_FIXTURE_NONE(vklite2_array_mvp), //
 
     // visuals
     CASE_FIXTURE_NONE(vklite2_visuals_1), //
+    CASE_FIXTURE_NONE(vklite2_visuals_2), //
 
 
 

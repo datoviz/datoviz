@@ -192,6 +192,21 @@ static void _default_visual_bake(VklVisual* visual, VklVisualDataEvent ev)
 
     // Copy all corresponding props to the array.
     vkl_bake_source_fill(visual, source);
+
+    for (uint32_t i = 0; i < visual->source_count; i++)
+    {
+        source = &visual->sources[i];
+
+        // Allocate the UNIFORM sources, using the number of items in the props, and fill them
+        // with the props.
+        if (source->source_type == VKL_SOURCE_UNIFORM && source->origin == VKL_SOURCE_ORIGIN_LIB)
+        {
+            uint32_t count = vkl_bake_max_prop_size(visual, source);
+            ASSERT(count > 0);
+            vkl_bake_source_alloc(visual, source, count);
+            vkl_bake_source_fill(visual, source);
+        }
+    }
 }
 
 
@@ -352,6 +367,8 @@ void vkl_visual_data_partial(
 {
     ASSERT(visual != NULL);
     uint32_t count = first_item + item_count;
+    ASSERT(count > 0);
+    ASSERT(data_item_count > 0);
 
     // Get the associated prop.
     VklProp* prop = vkl_bake_prop(visual, type, idx);
@@ -368,7 +385,6 @@ void vkl_visual_data_partial(
     vkl_array_data(&prop->arr_orig, first_item, item_count, data_item_count, data);
 
     source->origin = VKL_SOURCE_ORIGIN_LIB;
-    // prop->is_set = true;
 }
 
 
@@ -453,7 +469,6 @@ void vkl_visual_texture(VklVisual* visual, VklSourceType source, uint32_t idx, V
 // if (shape[2] == 0)
 //     shape[2] = texture->image->depth;
 
-// source->is_set = true;
 // source->binding = VKL_PROP_BINDING_TEXTURE;
 // source->u.t.texture = texture;
 // TODO: partial texture binding
@@ -577,7 +592,6 @@ uint32_t vkl_bake_max_prop_size(VklVisual* visual, VklSource* source)
             item_count = MAX(item_count, arr->item_count);
         }
     }
-    ASSERT(item_count > 0);
     return item_count;
 }
 
@@ -598,6 +612,9 @@ void vkl_bake_prop_copy(VklVisual* visual, VklProp* prop, uint32_t reps)
     ASSERT(prop->arr_orig.item_count <= source->arr.item_count);
     uint32_t item_count = prop->arr_orig.item_count;
 
+    // log_debug(
+    //     "copy %d prop offset %d size %d into source size %d", //
+    //     item_count, prop->offset, col_size, source->arr.item_size);
     vkl_array_column(
         &source->arr, prop->offset, col_size, 0, item_count, item_count, prop->arr_orig.data);
 }
@@ -610,6 +627,9 @@ void vkl_bake_source_alloc(VklVisual* visual, VklSource* source, uint32_t count)
     ASSERT(source != NULL);
 
     // Resize the source source.
+    // log_debug(
+    //     "source alloc type %d idx %d count %d", //
+    //     source->source_type, source->source_idx, count);
     VklArray* arr = &source->arr;
     ASSERT(is_obj_created(&arr->obj));
     vkl_array_resize(arr, count);
@@ -651,15 +671,21 @@ void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source, uint32_t coun
     // Allocate the buffer if it doesn't exist yet, or if it is not large enough.
     if (source->u.b.br.buffer == VK_NULL_HANDLE || source->u.b.size < count)
     {
-        if (source->u.b.size > 0)
-            log_debug("need to reallocate new buffer region to fit %d elements", count);
-        else
-            log_debug("need to allocate new buffer region to fit %d elements", count);
         VkDeviceSize size = count * source->arr.item_size;
+        if (source->u.b.size > 0)
+            log_debug(
+                "need to reallocate new buffer region to fit %d elements (%d bytes)", count, size);
+        else
+            log_debug(
+                "need to allocate new buffer region to fit %d elements (%d bytes)", count, size);
 
         source->u.b.br = vkl_ctx_buffers(ctx, _get_buffer_idx(source->source_type), 1, size);
         source->u.b.offset = 0;
         source->u.b.size = size;
+
+        // Set bindings.
+        VklBindings* bindings = _get_bindings(visual, source);
+        vkl_bindings_buffer(bindings, source->slot_idx, source->u.b.br);
     }
     ASSERT(source->u.b.br.buffer != VK_NULL_HANDLE);
 }
@@ -702,6 +728,10 @@ void vkl_visual_texture_alloc(VklVisual* visual, VklSource* source, uvec3 shape)
                 shape[0], shape[1], shape[2]);
 
         tex = source->u.t.texture = vkl_ctx_texture(ctx, ndims, shape, format);
+
+        // Set bindings.
+        VklBindings* bindings = _get_bindings(visual, source);
+        vkl_bindings_texture(bindings, source->slot_idx, tex->image, tex->sampler);
     }
     ASSERT(source->u.t.texture != NULL);
 }
@@ -716,6 +746,8 @@ void vkl_visual_update(
     VklVisual* visual, VklViewport viewport, VklDataCoords coords, const void* user_data)
 {
     ASSERT(visual != NULL);
+    log_trace("visual update");
+
     VklVisualDataEvent ev = {0};
     ev.viewport = viewport;
     ev.coords = coords;
@@ -738,6 +770,7 @@ void vkl_visual_update(
     if (visual->callback_bake != NULL)
     {
         log_trace("visual bake callback");
+
         // This callback does the following:
         // 1. Determine vertex count and index count
         // 2. Resize the VERTEX and INDEX array sources accordingly.
@@ -772,9 +805,13 @@ void vkl_visual_update(
 
                 ASSERT(texture != NULL);
                 ASSERT(is_obj_created(&texture->obj));
+                // NOTE: the source array MUST have been allocated by the baking function
                 ASSERT(arr->item_count > 0);
                 ASSERT(arr->item_size > 0);
 
+                log_trace(
+                    "upload texture for automatically-handled source %d #%d", //
+                    source->source_type, source->source_idx);
                 vkl_upload_texture(ctx, texture, arr->item_count * arr->item_size, arr->data);
             }
         }
@@ -786,6 +823,7 @@ void vkl_visual_update(
             // is expected to do it manually
             if (source->origin == VKL_SOURCE_ORIGIN_LIB)
             {
+                // NOTE: the source array MUST have been allocated by the baking function
                 ASSERT(arr->item_count > 0);
                 ASSERT(arr->item_size > 0);
 
@@ -795,6 +833,9 @@ void vkl_visual_update(
                 ASSERT(source->u.b.size > 0);
                 ASSERT(br->buffer != VK_NULL_HANDLE);
 
+                log_trace(
+                    "upload buffer for automatically-handled source %d #%d", //
+                    source->source_type, source->source_idx);
                 vkl_upload_buffers(ctx, *br, source->u.b.offset, source->u.b.size, arr->data);
             }
         }

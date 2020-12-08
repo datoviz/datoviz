@@ -425,8 +425,8 @@ vkl_ctx_buffers(VklContext* context, uint32_t buffer_idx, uint32_t buffer_count,
     }
 
     log_trace(
-        "allocating %d buffers with size %d bytes (aligned size %d bytes)", //
-        buffer_count, size, alsize);
+        "allocating %d buffers (type #%d) with size %d bytes (aligned size %d bytes)", //
+        buffer_count, buffer_idx, size, alsize);
     ASSERT(offset + alsize * buffer_count <= regions.buffer->size);
     context->allocated_sizes[buffer_idx] += alsize * buffer_count;
 

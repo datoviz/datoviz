@@ -63,6 +63,10 @@ typedef enum
     VKL_DTYPE_DVEC2,
     VKL_DTYPE_DVEC3,
     VKL_DTYPE_DVEC4,
+
+    VKL_DTYPE_MAT2, // matrices of floats
+    VKL_DTYPE_MAT3,
+    VKL_DTYPE_MAT4,
 } VklDataType;
 
 
@@ -91,6 +95,7 @@ static VkDeviceSize _get_dtype_size(VklDataType dtype)
 {
     switch (dtype)
     {
+    // 8 bits
     case VKL_DTYPE_CHAR:
         return 1;
     case VKL_DTYPE_CVEC2:
@@ -100,7 +105,18 @@ static VkDeviceSize _get_dtype_size(VklDataType dtype)
     case VKL_DTYPE_CVEC4:
         return 1 * 4;
 
+    // 16 bits
+    case VKL_DTYPE_USHORT:
+    case VKL_DTYPE_SHORT:
+        return 2;
+    case VKL_DTYPE_USVEC2:
+        return 2 * 2;
+    case VKL_DTYPE_USVEC3:
+        return 2 * 3;
+    case VKL_DTYPE_USVEC4:
+        return 2 * 4;
 
+    // 32 bits
     case VKL_DTYPE_FLOAT:
     case VKL_DTYPE_UINT:
     case VKL_DTYPE_INT:
@@ -121,7 +137,7 @@ static VkDeviceSize _get_dtype_size(VklDataType dtype)
     case VKL_DTYPE_IVEC4:
         return 4 * 4;
 
-
+    // 64 bits
     case VKL_DTYPE_DOUBLE:
         return 8;
     case VKL_DTYPE_DVEC2:
@@ -130,6 +146,13 @@ static VkDeviceSize _get_dtype_size(VklDataType dtype)
         return 8 * 3;
     case VKL_DTYPE_DVEC4:
         return 8 * 4;
+
+    case VKL_DTYPE_MAT2:
+        return 2 * 2 * 4;
+    case VKL_DTYPE_MAT3:
+        return 3 * 3 * 4;
+    case VKL_DTYPE_MAT4:
+        return 4 * 4 * 4;
 
     default:
         break;

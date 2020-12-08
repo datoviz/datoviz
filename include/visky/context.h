@@ -67,6 +67,7 @@ typedef struct VklTransferTextureCopy VklTransferTextureCopy;
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
+// Default buffer.
 typedef enum
 {
     VKL_DEFAULT_BUFFER_STAGING,
@@ -80,6 +81,7 @@ typedef enum
 
 
 
+// Default queue.
 typedef enum
 {
     VKL_DEFAULT_QUEUE_TRANSFER,
@@ -91,6 +93,7 @@ typedef enum
 
 
 
+// Filter type.
 typedef enum
 {
     VKL_FILTER_MIN,
@@ -99,6 +102,7 @@ typedef enum
 
 
 
+// Transfer mode.
 typedef enum
 {
     VKL_TRANSFER_MODE_SYNC,
@@ -107,6 +111,7 @@ typedef enum
 
 
 
+// Transfer type.
 typedef enum
 {
     VKL_TRANSFER_NONE,

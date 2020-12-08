@@ -133,3 +133,41 @@ static int vklite2_array_4(VkyTestContext* context)
     vkl_array_destroy(&arr);
     return 0;
 }
+
+
+
+typedef struct _mvp _mvp;
+struct _mvp
+{
+    mat4 model;
+    mat4 view;
+    mat4 proj;
+};
+
+static int vklite2_array_mvp(VkyTestContext* context)
+{
+    VklArray arr = vkl_array_struct(1, sizeof(_mvp));
+
+    _mvp id = {0};
+    glm_mat4_identity(id.model);
+    glm_mat4_identity(id.view);
+    glm_mat4_identity(id.proj);
+
+    vkl_array_column(&arr, offsetof(_mvp, model), sizeof(mat4), 0, 1, 1, id.model);
+    vkl_array_column(&arr, offsetof(_mvp, view), sizeof(mat4), 0, 1, 1, id.view);
+    vkl_array_column(&arr, offsetof(_mvp, proj), sizeof(mat4), 0, 1, 1, id.proj);
+
+    _mvp* mvp = vkl_array_item(&arr, 0);
+    for (uint32_t i = 0; i < 4; i++)
+    {
+        for (uint32_t j = 0; j < 4; j++)
+        {
+            AT(mvp->model[i][j] == (i == j ? 1 : 0));
+            AT(mvp->view[i][j] == (i == j ? 1 : 0));
+            AT(mvp->proj[i][j] == (i == j ? 1 : 0));
+        }
+    }
+
+    vkl_array_destroy(&arr);
+    return 0;
+}
