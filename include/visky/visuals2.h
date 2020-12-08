@@ -40,6 +40,7 @@ typedef enum
     VKL_PROP_NONE,
     VKL_PROP_POS,
     VKL_PROP_COLOR,
+    VKL_PROP_MARKER_SIZE,
     VKL_PROP_TYPE,
 
     VKL_PROP_MODEL,

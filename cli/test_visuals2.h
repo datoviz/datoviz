@@ -78,7 +78,6 @@ static void _marker_visual(VklVisual* visual)
 
 
         // MVP
-
         // Model.
         vkl_visual_prop(
             visual, VKL_PROP_MODEL, 0, VKL_SOURCE_UNIFORM, 0, //
@@ -93,6 +92,13 @@ static void _marker_visual(VklVisual* visual)
         vkl_visual_prop(
             visual, VKL_PROP_PROJ, 0, VKL_SOURCE_UNIFORM, 0, //
             2, VKL_DTYPE_MAT4, offsetof(VklMVP, proj));
+
+
+
+        // Param: marker size.
+        vkl_visual_prop(
+            visual, VKL_PROP_MARKER_SIZE, 0, VKL_SOURCE_UNIFORM, 2, //
+            0, VKL_DTYPE_FLOAT, offsetof(VklGraphicsPointsParams, point_size));
     }
 }
 
@@ -198,25 +204,8 @@ static int vklite2_visuals_2(VkyTestContext* context)
     const uint32_t N = 10000;
 
     // Binding resources.
-    // VklBufferRegions br_mvp = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1,
-    // sizeof(VklMVP));
     VklBufferRegions br_viewport = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
-    VklBufferRegions br_params =
-        vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointsParams));
     VklTexture* tex_color = vkl_ctx_texture(ctx, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
-
-    // Binding data.
-    VklMVP mvp = {0};
-    float param = 5.0f;
-    VklGraphicsPointsParams params = {.point_size = param};
-    {
-        glm_mat4_identity(mvp.model);
-        glm_mat4_identity(mvp.view);
-        glm_mat4_identity(mvp.proj);
-
-        // Upload params.
-        vkl_upload_buffers(ctx, br_params, 0, sizeof(VklGraphicsPointsParams), &params);
-    }
 
     // Vertex data.
     vec3* pos = calloc(N, sizeof(vec3));
@@ -231,14 +220,18 @@ static int vklite2_visuals_2(VkyTestContext* context)
     vkl_visual_data(&visual, VKL_PROP_POS, 0, N, pos);
     vkl_visual_data(&visual, VKL_PROP_COLOR, 0, N, color);
 
-    // vkl_visual_buffer(&visual, VKL_SOURCE_UNIFORM, 0, br_mvp);
-    vkl_visual_data(&visual, VKL_PROP_MODEL, 0, 1, mvp.model);
-    vkl_visual_data(&visual, VKL_PROP_VIEW, 0, 1, mvp.view);
-    vkl_visual_data(&visual, VKL_PROP_PROJ, 0, 1, mvp.proj);
+    // MVP.
+    mat4 id = GLM_MAT4_IDENTITY_INIT;
+    vkl_visual_data(&visual, VKL_PROP_MODEL, 0, 1, id);
+    vkl_visual_data(&visual, VKL_PROP_VIEW, 0, 1, id);
+    vkl_visual_data(&visual, VKL_PROP_PROJ, 0, 1, id);
 
+    // Param.
+    float param = 5.0f;
+    vkl_visual_data(&visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
+
+    // GPU bindings.
     vkl_visual_buffer(&visual, VKL_SOURCE_UNIFORM, 1, br_viewport);
-    vkl_visual_buffer(&visual, VKL_SOURCE_UNIFORM, 2, br_params);
-
     vkl_visual_texture(&visual, VKL_SOURCE_TEXTURE_2D, 0, tex_color);
 
     // Upload the data to the GPU..
