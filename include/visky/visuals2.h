@@ -43,6 +43,7 @@ typedef enum
     VKL_PROP_MARKER_SIZE,
     VKL_PROP_TYPE,
 
+    VKL_PROP_COLOR_TEXTURE,
     VKL_PROP_MODEL,
     VKL_PROP_VIEW,
     VKL_PROP_PROJ,
@@ -283,7 +284,9 @@ VKY_EXPORT void vkl_visual_data_partial(
     VklVisual* visual, VklPropType type, uint32_t idx, //
     uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data);
 
-
+VKY_EXPORT void vkl_visual_data_3D(
+    VklVisual* visual, VklPropType type, uint32_t idx, //
+    uint32_t width, uint32_t height, uint32_t depth, const void* data);
 
 VKY_EXPORT void vkl_visual_buffer(
     VklVisual* visual, VklSourceType source, uint32_t source_idx, VklBufferRegions br);

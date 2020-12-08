@@ -521,6 +521,26 @@ VklTexture* vkl_ctx_texture(VklContext* context, uint32_t dims, uvec3 size, VkFo
 
     obj_created(&texture->obj);
 
+    // Immediately transition the image to its layout.
+    {
+        VklGpu* gpu = context->gpu;
+        VklCommands* cmds = &context->transfer_cmd;
+
+        vkl_cmd_reset(cmds, 0);
+        vkl_cmd_begin(cmds, 0);
+
+        VklBarrier barrier = vkl_barrier(gpu);
+        vkl_barrier_stages(
+            &barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+        vkl_barrier_images(&barrier, image);
+        vkl_barrier_images_layout(&barrier, VK_IMAGE_LAYOUT_UNDEFINED, image->layout);
+        vkl_barrier_images_access(&barrier, 0, VK_ACCESS_TRANSFER_READ_BIT);
+        vkl_cmd_barrier(cmds, 0, &barrier);
+
+        vkl_cmd_end(cmds, 0);
+        vkl_cmd_submit_sync(cmds, 0);
+    }
+
     return texture;
 }
 

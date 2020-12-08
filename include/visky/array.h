@@ -206,23 +206,20 @@ static VklArray vkl_array_struct(uint32_t item_count, VkDeviceSize item_size)
 
 
 
-static VklArray
-vkl_array_3D(uint32_t ndims, uint32_t width, uint32_t height, uint32_t depth, VklDataType dtype)
+static VklArray vkl_array_3D(
+    uint32_t ndims, uint32_t width, uint32_t height, uint32_t depth, VkDeviceSize item_size)
 {
-    ASSERT(width > 0);
-    ASSERT(height > 0);
-    ASSERT(depth > 0);
     ASSERT(ndims > 0);
     ASSERT(ndims <= 3);
 
     if (ndims == 1)
-        ASSERT(height == 1 && depth == 1);
+        ASSERT(height <= 1 && depth <= 1);
     if (ndims == 2)
-        ASSERT(depth == 1);
+        ASSERT(depth <= 1);
 
     uint32_t item_count = width * height * depth;
 
-    VklArray arr = _create_array(item_count, VKL_DTYPE_CUSTOM, _get_dtype_size(dtype));
+    VklArray arr = _create_array(item_count, VKL_DTYPE_CUSTOM, item_size);
     arr.ndims = ndims;
     arr.shape[0] = width;
     arr.shape[1] = height;
@@ -279,7 +276,9 @@ static void vkl_array_resize(VklArray* array, uint32_t item_count)
     // Only reallocate if the existing buffer is not large enough for the new item_count.
     if (new_size > old_size)
     {
-        log_trace("resize array from %d to %d items", old_item_count, item_count);
+        log_debug(
+            "resize array from %d to %d items of size %d", old_item_count, item_count,
+            array->item_size);
         REALLOC(array->data, item_count * array->item_size);
         // Repeat the last element when resizing.
         _repeat_last(old_size / array->item_size, array->item_size, array->data, item_count);

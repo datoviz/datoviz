@@ -306,7 +306,16 @@ void vkl_visual_source(
     source.pipeline = pipeline;
     source.pipeline_idx = pipeline_idx;
     source.slot_idx = slot_idx;
-    source.arr = vkl_array_struct(0, item_size);
+
+    if (source_type < VKL_SOURCE_TEXTURE_1D)
+        source.arr = vkl_array_struct(0, item_size);
+    else
+    {
+        // Textures.
+        uint32_t ndims = _get_texture_ndims(source_type);
+        source.arr = vkl_array_3D(ndims, 0, 0, 0, item_size);
+    }
+
     source.origin = VKL_SOURCE_ORIGIN_NONE; // source origin (GPU object) not set yet
     visual->sources[visual->source_count++] = source;
 }
@@ -314,27 +323,29 @@ void vkl_visual_source(
 
 
 void vkl_visual_prop(
-    VklVisual* visual, VklPropType prop, uint32_t prop_idx, //
-    VklSourceType source, uint32_t source_idx,              //
+    VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, //
+    VklSourceType source_type, uint32_t source_idx,              //
     uint32_t field_idx, VklDataType dtype, VkDeviceSize offset)
 {
     ASSERT(visual != NULL);
     ASSERT(visual->prop_count < VKL_MAX_VISUAL_PROPS);
 
-    VklProp pr = {0};
+    VklProp prop = {0};
 
-    pr.prop_type = prop;
-    pr.prop_idx = prop_idx;
-    pr.source_type = source;
-    pr.source_idx = source_idx;
+    prop.prop_type = prop_type;
+    prop.prop_idx = prop_idx;
+    prop.source_type = source_type;
+    prop.source_idx = source_idx;
 
-    pr.field_idx = field_idx;
-    pr.dtype = dtype;
-    pr.offset = offset;
+    prop.field_idx = field_idx;
+    prop.dtype = dtype;
+    prop.offset = offset;
 
-    pr.arr_orig = vkl_array(0, dtype);
+    // NOTE: we do not use prop arrays for texture sources at the moment
+    if (source_type < VKL_SOURCE_TEXTURE_1D)
+        prop.arr_orig = vkl_array(0, dtype);
 
-    visual->props[visual->prop_count++] = pr;
+    visual->props[visual->prop_count++] = prop;
 }
 
 
@@ -420,6 +431,34 @@ void vkl_visual_data_partial(
 
     // Copy the specified array to the prop array.
     vkl_array_data(&prop->arr_orig, first_item, item_count, data_item_count, data);
+
+    source->origin = VKL_SOURCE_ORIGIN_LIB;
+}
+
+
+
+void vkl_visual_data_3D(
+    VklVisual* visual, VklPropType type, uint32_t idx, //
+    uint32_t width, uint32_t height, uint32_t depth, const void* data)
+{
+    ASSERT(visual != NULL);
+    uint32_t count = width * height * depth;
+    ASSERT(count > 0);
+
+    // Get the associated prop.
+    VklProp* prop = vkl_bake_prop(visual, type, idx);
+    ASSERT(prop != NULL);
+
+    // Get the associated source.
+    VklSource* source = vkl_bake_source(visual, prop->source_type, prop->source_idx);
+    ASSERT(source != NULL);
+
+    // NOTE: with array 3D props, the data is put directly to the source and not to the prop.
+    // Make sure the array has the right size.
+    vkl_array_reshape(&source->arr, width, height, depth);
+
+    // Copy the specified array to the prop array.
+    vkl_array_data(&source->arr, 0, count, count, data);
 
     source->origin = VKL_SOURCE_ORIGIN_LIB;
 }
@@ -713,16 +752,21 @@ void vkl_visual_texture_alloc(VklVisual* visual, VklSource* source)
         tex->image->height < shape[1] || //
         tex->image->depth < shape[2])    //
     {
-        if (source->u.br.size > 0)
+        if (tex == NULL)
+        {
             log_debug(
                 "need to create new texture with shape %dx%dx%d", //
                 shape[0], shape[1], shape[2]);
+            tex = source->u.tex = vkl_ctx_texture(ctx, ndims, shape, format);
+        }
         else
+        {
             log_debug(
-                "need to reallocate texture with new shape %dx%dx%d", //
+                "need to resize texture to new shape %dx%dx%d", //
                 shape[0], shape[1], shape[2]);
-
-        tex = source->u.tex = vkl_ctx_texture(ctx, ndims, shape, format);
+            vkl_texture_resize(source->u.tex, shape);
+        }
+        ASSERT(tex != NULL);
 
         // Set bindings.
         VklBindings* bindings = _get_bindings(visual, source);
@@ -789,24 +833,28 @@ void vkl_visual_update(
         arr = &source->arr;
         if (source->source_type >= VKL_SOURCE_TEXTURE_1D)
         {
-            texture = source->u.tex;
-
             // Only upload if the library is managing the GPU object, otherwise the user
             // is expected to do it manually
             if (source->origin == VKL_SOURCE_ORIGIN_LIB)
             {
                 // Make sure the GPU texture exists and is allocated with the right shape.
                 vkl_visual_texture_alloc(visual, source);
+                texture = source->u.tex;
 
                 ASSERT(texture != NULL);
                 ASSERT(is_obj_created(&texture->obj));
                 // NOTE: the source array MUST have been allocated by the baking function
                 ASSERT(arr->item_count > 0);
                 ASSERT(arr->item_size > 0);
+                ASSERT(arr->ndims >= 1);
+                ASSERT(arr->shape[0] > 0);
+                ASSERT(arr->shape[1] > 0);
+                ASSERT(arr->shape[2] > 0);
 
-                log_trace(
-                    "upload texture for automatically-handled source %d #%d", //
-                    source->source_type, source->source_idx);
+                log_debug(
+                    "upload texture for automatically-handled source %d #%d, shape %dx%dx%d", //
+                    source->source_type, source->source_idx,                                  //
+                    arr->shape[0], arr->shape[1], arr->shape[2]);
                 vkl_upload_texture(ctx, texture, arr->item_count * arr->item_size, arr->data);
             }
         }
