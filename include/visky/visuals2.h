@@ -137,12 +137,12 @@ union VklSourceUnion
 struct VklSource
 {
     // Identifier of the prop
-    VklPipelineType pipeline; // graphics or compute pipeline?
-    uint32_t pipeline_idx;    // idx of the pipeline within the graphics or compute pipelines
-    VklSourceType source;     // Vertex, index, uniform, storage, or texture
-    uint32_t source_idx;      // idx among all sources of the same type
-    uint32_t slot_idx;        // Binding slot, or 0 for vertex/index
-    VklArray arr;             // array to be uploaded to that source
+    VklPipelineType pipeline;  // graphics or compute pipeline?
+    uint32_t pipeline_idx;     // idx of the pipeline within the graphics or compute pipelines
+    VklSourceType source_type; // Vertex, index, uniform, storage, or texture
+    uint32_t source_idx;       // idx among all sources of the same type
+    uint32_t slot_idx;         // Binding slot, or 0 for vertex/index
+    VklArray arr;              // array to be uploaded to that source
 
     VklSourceUnion u;
 };
@@ -151,18 +151,18 @@ struct VklSource
 
 struct VklProp
 {
-    VklPropType prop;     // prop type
-    uint32_t prop_idx;    // index within all props of that type
-    VklSourceType source; // Vertex, index, uniform, storage, or texture
-    uint32_t source_idx;  // Binding slot, or 0 for vertex/index
+    VklPropType prop_type;     // prop type
+    uint32_t prop_idx;         // index within all props of that type
+    VklSourceType source_type; // Vertex, index, uniform, storage, or texture
+    uint32_t source_idx;       // Binding slot, or 0 for vertex/index
 
     uint32_t field_idx;
     VklDataType dtype;
     VkDeviceSize offset;
 
-    VklArray arr_orig;   // original data array
-    VklArray arr_trans;  // transformed data array
-    VklArray arr_triang; // triangulated data array
+    VklArray arr_orig;  // original data array
+    VklArray arr_trans; // transformed data array
+    // VklArray arr_triang; // triangulated data array
 
     bool is_set; // whether the user has set this prop
 };
@@ -191,7 +191,7 @@ struct VklVisual
 
     // Data callbacks.
     VklVisualDataCallback callback_transform;
-    VklVisualDataCallback callback_triangulation;
+    // VklVisualDataCallback callback_triangulation;
     VklVisualDataCallback callback_bake;
 
     // Sources.
@@ -324,8 +324,8 @@ VKY_EXPORT void vkl_visual_fill_event(
 
 VKY_EXPORT void vkl_visual_callback_transform(VklVisual* visual, VklVisualDataCallback callback);
 
-VKY_EXPORT void
-vkl_visual_callback_triangulation(VklVisual* visual, VklVisualDataCallback callback);
+// VKY_EXPORT void
+// vkl_visual_callback_triangulation(VklVisual* visual, VklVisualDataCallback callback);
 
 VKY_EXPORT void vkl_visual_callback_bake(VklVisual* visual, VklVisualDataCallback callback);
 

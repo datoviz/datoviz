@@ -187,52 +187,6 @@ _repeat_last(uint32_t old_item_count, VkDeviceSize item_size, void* data, uint32
 
 
 
-static void vkl_array_data(
-    VklArray* array, uint32_t first_item, uint32_t item_count, //
-    uint32_t data_item_count, const void* data)
-{
-    ASSERT(array != NULL);
-    ASSERT(data_item_count > 0);
-    ASSERT(array->data != NULL);
-    ASSERT(data != NULL);
-    ASSERT(item_count > 0);
-    ASSERT(first_item + item_count <= array->item_count);
-
-    VkDeviceSize item_size = array->item_size;
-    ASSERT(item_size > 0);
-
-    void* dst = array->data;
-    // Allocate the array if needed.
-    if (dst == NULL)
-        dst = array->data = calloc(first_item + array->item_count, array->item_size);
-    ASSERT(dst != NULL);
-    const void* src = data;
-    ASSERT(src != NULL);
-
-    VkDeviceSize copy_size = MIN(item_count, data_item_count) * item_size;
-    log_trace(
-        "copy %d elements (%d bytes) into array[%d:%d]", //
-        data_item_count, copy_size, first_item, first_item + item_count);
-    memcpy((void*)((int64_t)dst + (int64_t)(first_item * item_size)), src, copy_size);
-
-    // If the source data array is smaller than the destination array, repeat the last value.
-    if (data_item_count < item_count)
-    {
-        _repeat_last(data_item_count, array->item_size, array->data, item_count);
-    }
-}
-
-
-
-static inline void* vkl_array_item(VklArray* array, uint32_t idx)
-{
-    ASSERT(array != NULL);
-    idx = CLIP(idx, 0, array->item_count);
-    return (void*)((int64_t)array->data + (int64_t)(idx * array->item_size));
-}
-
-
-
 static void vkl_array_resize(VklArray* array, uint32_t item_count)
 {
     ASSERT(array != NULL);
@@ -267,6 +221,58 @@ static void vkl_array_resize(VklArray* array, uint32_t item_count)
         array->buffer_size = new_size;
     }
     array->item_count = item_count;
+}
+
+
+
+static void vkl_array_data(
+    VklArray* array, uint32_t first_item, uint32_t item_count, //
+    uint32_t data_item_count, const void* data)
+{
+    ASSERT(array != NULL);
+    ASSERT(data_item_count > 0);
+    ASSERT(array->data != NULL);
+    ASSERT(data != NULL);
+    ASSERT(item_count > 0);
+
+    // Resize if necessary.
+    if (first_item + item_count > array->item_count)
+    {
+        vkl_array_resize(array, first_item + item_count);
+    }
+    ASSERT(first_item + item_count <= array->item_count);
+
+    VkDeviceSize item_size = array->item_size;
+    ASSERT(item_size > 0);
+
+    void* dst = array->data;
+    // Allocate the array if needed.
+    if (dst == NULL)
+        dst = array->data = calloc(first_item + array->item_count, array->item_size);
+    ASSERT(dst != NULL);
+    const void* src = data;
+    ASSERT(src != NULL);
+
+    VkDeviceSize copy_size = MIN(item_count, data_item_count) * item_size;
+    log_trace(
+        "copy %d elements (%d bytes) into array[%d:%d]", //
+        data_item_count, copy_size, first_item, first_item + item_count);
+    memcpy((void*)((int64_t)dst + (int64_t)(first_item * item_size)), src, copy_size);
+
+    // If the source data array is smaller than the destination array, repeat the last value.
+    if (data_item_count < item_count)
+    {
+        _repeat_last(data_item_count, array->item_size, array->data, item_count);
+    }
+}
+
+
+
+static inline void* vkl_array_item(VklArray* array, uint32_t idx)
+{
+    ASSERT(array != NULL);
+    idx = CLIP(idx, 0, array->item_count);
+    return (void*)((int64_t)array->data + (int64_t)(idx * array->item_size));
 }
 
 

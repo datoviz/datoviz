@@ -12,7 +12,7 @@ static VklSource* _get_source(VklVisual* visual, VklSourceType type, uint32_t id
 {
     for (uint32_t i = 0; i < visual->source_count; i++)
     {
-        if (visual->sources[i].source == type && visual->sources[i].source_idx == idx)
+        if (visual->sources[i].source_type == type && visual->sources[i].source_idx == idx)
             return &visual->sources[i];
     }
     return NULL;
@@ -24,7 +24,7 @@ static VklProp* _get_prop(VklVisual* visual, VklPropType type, uint32_t idx)
 {
     for (uint32_t i = 0; i < visual->prop_count; i++)
     {
-        if (visual->props[i].prop == type && visual->props[i].prop_idx == idx)
+        if (visual->props[i].prop_type == type && visual->props[i].prop_idx == idx)
             return &visual->props[i];
     }
     return NULL;
@@ -39,6 +39,7 @@ static VklBindings* _get_bindings(VklVisual* visual, VklSource* source)
         return &visual->bindings[source->pipeline_idx];
     else if (source->pipeline == VKL_PIPELINE_COMPUTE)
         return &visual->bindings_comp[source->pipeline_idx];
+    return NULL;
 }
 
 
@@ -123,7 +124,7 @@ void vkl_visual_destroy(VklVisual* visual)
     {
         vkl_array_destroy(&visual->props[i].arr_orig);
         vkl_array_destroy(&visual->props[i].arr_trans);
-        vkl_array_destroy(&visual->props[i].arr_triang);
+        // vkl_array_destroy(&visual->props[i].arr_triang);
     }
 
     // Free the data sources.
@@ -148,7 +149,7 @@ void vkl_visual_source(
     ASSERT(_get_source(visual, source, source_idx) == NULL);
 
     VklSource src = {0};
-    src.source = source;
+    src.source_type = source;
     src.source_idx = source_idx;
     src.pipeline = pipeline;
     src.pipeline_idx = pipeline_idx;
@@ -181,9 +182,9 @@ void vkl_visual_prop(
 
     VklProp pr = {0};
 
-    pr.prop = prop;
+    pr.prop_type = prop;
     pr.prop_idx = prop_idx;
-    pr.source = source;
+    pr.source_type = source;
     pr.source_idx = source_idx;
 
     pr.field_idx = field_idx;
@@ -266,7 +267,7 @@ void vkl_visual_data_partial(
     ASSERT(prop != NULL);
 
     // Get the associated source.
-    VklSource* source = _get_source(visual, prop->source, prop->source_idx);
+    VklSource* source = _get_source(visual, prop->source_type, prop->source_idx);
     ASSERT(source != NULL);
 
     // Make sure the array has the right size.
@@ -383,11 +384,11 @@ void vkl_visual_callback_transform(VklVisual* visual, VklVisualDataCallback call
 
 
 
-void vkl_visual_callback_triangulation(VklVisual* visual, VklVisualDataCallback callback)
-{
-    ASSERT(visual != NULL);
-    visual->callback_triangulation = callback;
-}
+// void vkl_visual_callback_triangulation(VklVisual* visual, VklVisualDataCallback callback)
+// {
+//     ASSERT(visual != NULL);
+//     visual->callback_triangulation = callback;
+// }
 
 
 
@@ -451,12 +452,12 @@ void vkl_visual_update(
         visual->callback_transform(visual, ev);
     }
 
-    if (visual->callback_triangulation != NULL)
-    {
-        log_trace("visual triangulation callback");
-        // This callback updates some props data_triang
-        visual->callback_triangulation(visual, ev);
-    }
+    // if (visual->callback_triangulation != NULL)
+    // {
+    //     log_trace("visual triangulation callback");
+    //     // This callback updates some props data_triang
+    //     visual->callback_triangulation(visual, ev);
+    // }
 
     if (visual->callback_bake != NULL)
     {
@@ -482,7 +483,7 @@ void vkl_visual_update(
     {
         source = &visual->sources[i];
         arr = &source->arr;
-        if (source->source == VKL_SOURCE_TEXTURE)
+        if (source->source_type == VKL_SOURCE_TEXTURE)
         {
             texture = source->u.t.texture;
             // TODO: allocate texture if needed

@@ -115,3 +115,21 @@ static int vklite2_array_3(VkyTestContext* context)
     vkl_array_destroy(&arr);
     return 0;
 }
+
+
+
+static int vklite2_array_4(VkyTestContext* context)
+{
+    uint8_t values[] = {1, 2, 3, 4, 5, 6};
+
+    VklArray arr = vkl_array(3, VKL_DTYPE_CHAR);
+
+    // Check automatic resize when setting larger data array.
+    AT(arr.item_count == 3);
+    vkl_array_data(&arr, 0, 6, 6, values);
+    AT(arr.item_count == 6);
+    AT(memcmp(arr.data, values, sizeof(values)) == 0);
+
+    vkl_array_destroy(&arr);
+    return 0;
+}
