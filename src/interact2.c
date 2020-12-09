@@ -227,6 +227,7 @@ void vkl_keyboard_event(
 /*************************************************************************************************/
 /*  Panzoom                                                                                      */
 /*************************************************************************************************/
+
 /*
 VklPanzoom* vkl_panzoom_init()
 {
@@ -240,6 +241,22 @@ VklPanzoom* vkl_panzoom_init()
 
     return panzoom;
 }*/
+
+static VklPanzoom _panzoom()
+{
+    VklPanzoom p = {0};
+    // TODO
+    return p;
+}
+
+static void _panzoom_update(VklInteract* interact)
+{
+    ASSERT(interact != NULL);
+    ASSERT(interact->type == VKL_INTERACT_PANZOOM);
+    // TODO
+}
+
+
 
 /*************************************************************************************************/
 /*  Arcball                                                                                      */
@@ -463,6 +480,21 @@ void vkl_arcball_update(VklPanel* panel, VklArcball* arcball, VklViewportType vi
 }
 */
 
+static VklArcball _arcball()
+{
+    VklArcball a = {0};
+    // TODO
+    return a;
+}
+
+static void _arcball_update(VklInteract* interact)
+{
+    ASSERT(interact != NULL);
+    ASSERT(interact->type == VKL_INTERACT_ARCBALL);
+    // TODO
+}
+
+
 
 /*************************************************************************************************/
 /*  FPS camera                                                                                   */
@@ -620,3 +652,102 @@ void vkl_camera_update(VklPanel* panel, VklCamera* camera, VklViewportType viewp
     vkl_mvp_finalize(scene);
 }
 */
+
+static VklCamera _camera(VklInteractType type)
+{
+    VklCamera c = {0};
+    // TODO
+    return c;
+}
+
+static void _camera_update(VklInteract* interact)
+{
+    ASSERT(interact != NULL);
+    switch (interact->type)
+    {
+
+    case VKL_INTERACT_PANZOOM:
+        interact->u.p = _panzoom();
+        break;
+
+    case VKL_INTERACT_ARCBALL:
+        interact->u.a = _arcball();
+        break;
+
+    case VKL_INTERACT_FLY:
+    case VKL_INTERACT_FPS:
+    case VKL_INTERACT_TURNTABLE:
+        interact->u.c = _camera(interact->type);
+        break;
+    default:
+        break;
+    }
+}
+
+
+
+/*************************************************************************************************/
+/*  Interact                                                                                     */
+/*************************************************************************************************/
+
+VklInteract vkl_interact(VklCanvas* canvas, VklInteractType type)
+{
+    ASSERT(canvas != NULL);
+    VklInteract interact = {0};
+    interact.canvas = canvas;
+    interact.keyboard = vkl_keyboard();
+    interact.mouse = vkl_mouse();
+    interact.type = type;
+
+    switch (type)
+    {
+
+    case VKL_INTERACT_PANZOOM:
+        interact.u.p = _panzoom();
+        break;
+
+    case VKL_INTERACT_ARCBALL:
+        interact.u.a = _arcball();
+        break;
+
+    case VKL_INTERACT_FLY:
+    case VKL_INTERACT_FPS:
+    case VKL_INTERACT_TURNTABLE:
+        interact.u.c = _camera(type);
+        break;
+    default:
+        break;
+    }
+
+    return interact;
+}
+
+
+
+void vkl_interact_update(VklInteract* interact, VklViewport viewport, VklEvent ev)
+{
+    ASSERT(interact != NULL);
+    VklCanvas* canvas = interact->canvas;
+    ASSERT(canvas != NULL);
+
+    switch (interact->type)
+    {
+
+    case VKL_INTERACT_PANZOOM:
+        _panzoom_update(interact);
+        break;
+
+    case VKL_INTERACT_ARCBALL:
+        _arcball_update(interact);
+        break;
+
+    case VKL_INTERACT_FLY:
+    case VKL_INTERACT_FPS:
+    case VKL_INTERACT_TURNTABLE:
+        _camera_update(interact);
+        break;
+
+    default:
+        break;
+    }
+}

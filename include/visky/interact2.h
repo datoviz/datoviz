@@ -162,7 +162,7 @@ struct VklInteract
     VklCanvas* canvas;
     VklMouseState mouse;
     VklKeyboardState keyboard;
-    VklViewport viewport;
+    // VklViewport viewport;
     VklMVP mvp;
     VklInteractUnion u;
     void* user_data;
@@ -194,7 +194,7 @@ VKY_EXPORT void vkl_keyboard_event(
 
 VKY_EXPORT VklInteract vkl_interact(VklCanvas* canvas, VklInteractType type);
 
-VKY_EXPORT void vkl_interact_update(VklInteract* interact, VklEvent ev);
+VKY_EXPORT void vkl_interact_update(VklInteract* interact, VklViewport viewport, VklEvent ev);
 
 
 
