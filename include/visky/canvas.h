@@ -120,7 +120,7 @@ typedef enum
 
 
 // Key modifiers
-// NOTE: must match GLFW values!
+// NOTE: must match GLFW values! no mapping is done for now
 typedef enum
 {
     VKL_KEY_MODIFIER_NONE = 0x00000000,
@@ -217,6 +217,7 @@ struct VklKeyEvent
 {
     VklKeyType type;
     VklKeyCode key_code;
+    int modifiers;
 };
 
 
@@ -612,7 +613,8 @@ VKY_EXPORT void vkl_event_mouse_move(VklCanvas* canvas, vec2 pos);
 
 VKY_EXPORT void vkl_event_mouse_wheel(VklCanvas* canvas, vec2 dir);
 
-VKY_EXPORT void vkl_event_key(VklCanvas* canvas, VklKeyType type, VklKeyCode key_code);
+VKY_EXPORT void
+vkl_event_key(VklCanvas* canvas, VklKeyType type, VklKeyCode key_code, int modifiers);
 
 VKY_EXPORT void vkl_event_frame(VklCanvas* canvas, uint64_t idx, double time, double interval);
 

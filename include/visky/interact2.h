@@ -90,7 +90,7 @@ struct VklMouseState
 struct VklKeyboardState
 {
     VklKeyCode key_code;
-    uint32_t modifiers;
+    int modifiers;
 
     VklKeyboardStateType prev_state;
     VklKeyboardStateType cur_state;

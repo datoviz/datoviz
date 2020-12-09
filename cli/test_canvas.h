@@ -62,7 +62,7 @@ static int vklite2_canvas_1(VkyTestContext* context)
 
     // Send a mock key press event.
     vkl_event_callback(canvas, VKL_EVENT_KEY, 0, _key_callback, NULL);
-    vkl_event_key(canvas, VKL_KEY_PRESS, VKL_KEY_A);
+    vkl_event_key(canvas, VKL_KEY_PRESS, VKL_KEY_A, 0);
 
     // Second canvas.
     log_debug("global clock elapsed %.6f interval %.6f", app->clock.elapsed, app->clock.interval);

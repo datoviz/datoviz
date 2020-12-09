@@ -479,7 +479,7 @@ static void _glfw_key_callback(GLFWwindow* window, int key, int scancode, int ac
     key_code = key;
 
     // Enqueue the key event.
-    vkl_event_key(canvas, type, key_code);
+    vkl_event_key(canvas, type, key_code, mods);
 }
 
 static void _glfw_wheel_callback(GLFWwindow* window, double dx, double dy)
@@ -968,7 +968,7 @@ void vkl_event_mouse_wheel(VklCanvas* canvas, vec2 dir)
 
 
 
-void vkl_event_key(VklCanvas* canvas, VklKeyType type, VklKeyCode key_code)
+void vkl_event_key(VklCanvas* canvas, VklKeyType type, VklKeyCode key_code, int modifiers)
 {
     ASSERT(canvas != NULL);
 
@@ -976,6 +976,7 @@ void vkl_event_key(VklCanvas* canvas, VklKeyType type, VklKeyCode key_code)
     event.type = VKL_EVENT_KEY;
     event.u.k.type = type;
     event.u.k.key_code = key_code;
+    event.u.k.modifiers = modifiers;
     vkl_event_enqueue(canvas, event);
 }
 

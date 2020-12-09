@@ -10,6 +10,7 @@
 #define VKL_MOUSE_CLICK_MAX_DELAY        .5
 #define VKL_MOUSE_CLICK_MAX_SHIFT        10
 #define VKL_MOUSE_DOUBLE_CLICK_MAX_DELAY .2
+#define VKL_KEY_PRESS_DELAY              .05
 
 
 
@@ -189,9 +190,36 @@ void vkl_keyboard_reset(VklKeyboardState* keyboard)
 
 
 
+static bool _is_key_modifier(VklKeyCode key)
+{
+    return (
+        key == VKL_KEY_LEFT_SHIFT || key == VKL_KEY_RIGHT_SHIFT || key == VKL_KEY_LEFT_CONTROL ||
+        key == VKL_KEY_RIGHT_CONTROL || key == VKL_KEY_LEFT_ALT || key == VKL_KEY_RIGHT_ALT ||
+        key == VKL_KEY_LEFT_SUPER || key == VKL_KEY_RIGHT_SUPER);
+}
+
 void vkl_keyboard_event(
     VklKeyboardState* keyboard, VklCanvas* canvas, VklViewport viewport, VklEvent ev)
 {
+    double time = canvas->clock.elapsed;
+    VklKeyCode key = ev.u.k.key_code;
+
+    if (time - keyboard->press_time < VKL_KEY_PRESS_DELAY)
+        return;
+    if (ev.u.k.type == VKL_KEY_PRESS)
+    {
+        log_debug("key pressed %d mods %d", key, ev.u.k.modifiers);
+        keyboard->key_code = key;
+        keyboard->modifiers = ev.u.k.modifiers;
+        keyboard->press_time = time;
+        if (keyboard->cur_state == VKL_KEYBOARD_STATE_INACTIVE)
+            keyboard->cur_state = VKL_KEYBOARD_STATE_ACTIVE;
+    }
+    else
+    {
+        if (keyboard->cur_state == VKL_KEYBOARD_STATE_ACTIVE)
+            keyboard->cur_state = VKL_KEYBOARD_STATE_INACTIVE;
+    }
 }
 
 
