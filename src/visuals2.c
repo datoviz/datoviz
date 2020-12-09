@@ -8,6 +8,24 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
+static bool _source_needs_binding(VklSourceType source_type)
+{
+    return source_type == VKL_SOURCE_UNIFORM ||      //
+           source_type == VKL_SOURCE_UNIFORM_FAST || //
+           source_type == VKL_SOURCE_STORAGE;
+}
+
+
+
+static bool _source_is_texture(VklSourceType source_type)
+{
+    return source_type == VKL_SOURCE_TEXTURE_1D || //
+           source_type == VKL_SOURCE_TEXTURE_2D || //
+           source_type == VKL_SOURCE_TEXTURE_3D;
+}
+
+
+
 static VklBindings* _get_bindings(VklVisual* visual, VklSource* source)
 {
     ASSERT(source != NULL);
@@ -56,7 +74,7 @@ static uint32_t _get_texture_ndims(VklSourceType source_type)
 static VkFormat _get_texture_format(VklVisual* visual, VklSource* source)
 {
     ASSERT(source != NULL);
-    ASSERT(source->source_type >= VKL_SOURCE_TEXTURE_1D);
+    ASSERT(_source_is_texture(source->source_type));
     VklDataType dtype = VKL_DTYPE_NONE;
 
     for (uint32_t i = 0; i < visual->prop_count; i++)
@@ -528,7 +546,7 @@ void vkl_visual_buffer(
     src->origin = VKL_SOURCE_ORIGIN_USER;
 
     // Set the bindings except for VERTEX and INDEX sources.
-    if (source_type == VKL_SOURCE_UNIFORM || source_type == VKL_SOURCE_STORAGE)
+    if (_source_needs_binding(source_type))
     {
         VklBindings* bindings = _get_bindings(visual, src);
         ASSERT(br.buffer != VK_NULL_HANDLE);
@@ -764,7 +782,7 @@ void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source)
         source->u.br = vkl_ctx_buffers(ctx, _get_buffer_idx(source->source_type), 1, size);
 
         // Set bindings except for VERTEX and INDEX sources.
-        if (source->source_type == VKL_SOURCE_UNIFORM || source->source_type == VKL_SOURCE_STORAGE)
+        if (_source_needs_binding(source->source_type))
         {
             VklBindings* bindings = _get_bindings(visual, source);
             vkl_bindings_buffer(bindings, source->slot_idx, source->u.br);
@@ -781,7 +799,7 @@ void vkl_visual_texture_alloc(VklVisual* visual, VklSource* source)
     ASSERT(source != NULL);
     VklContext* ctx = visual->canvas->gpu->context;
 
-    ASSERT(source->source_type >= VKL_SOURCE_TEXTURE_1D);
+    ASSERT(_source_is_texture(source->source_type));
 
     // Find the numbe of dimensions.
     uint32_t ndims = _get_texture_ndims(source->source_type);
@@ -876,7 +894,7 @@ void vkl_visual_update(
     {
         source = &visual->sources[i];
         arr = &source->arr;
-        if (source->source_type >= VKL_SOURCE_TEXTURE_1D)
+        if (_source_is_texture(source->source_type))
         {
             // Only upload if the library is managing the GPU object, otherwise the user
             // is expected to do it manually
