@@ -10,9 +10,18 @@
 
 static bool _source_needs_binding(VklSourceType source_type)
 {
-    return source_type == VKL_SOURCE_UNIFORM ||      //
-           source_type == VKL_SOURCE_UNIFORM_FAST || //
+    return source_type == VKL_SOURCE_UNIFORM || //
            source_type == VKL_SOURCE_STORAGE;
+}
+
+
+
+static bool _uniform_source_is_fast(VklSource* source)
+{
+    ASSERT(source != NULL);
+    if (source->source_type != VKL_SOURCE_UNIFORM)
+        return false;
+    return (source->flags & VKL_SOURCE_FLAG_FAST) != 0;
 }
 
 
@@ -38,16 +47,17 @@ static VklBindings* _get_bindings(VklVisual* visual, VklSource* source)
 
 
 
-static uint32_t _get_buffer_idx(VklSourceType source_type)
+static uint32_t _get_buffer_idx(VklSource* source)
 {
-    switch (source_type)
+    switch (source->source_type)
     {
     case VKL_SOURCE_VERTEX:
         return VKL_DEFAULT_BUFFER_VERTEX;
     case VKL_SOURCE_INDEX:
         return VKL_DEFAULT_BUFFER_INDEX;
     case VKL_SOURCE_UNIFORM:
-        return VKL_DEFAULT_BUFFER_UNIFORM;
+        return (source->flags & VKL_SOURCE_FLAG_FAST) != 0 ? VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE
+                                                           : VKL_DEFAULT_BUFFER_UNIFORM;
     case VKL_SOURCE_STORAGE:
         return VKL_DEFAULT_BUFFER_STORAGE;
     default:
@@ -322,7 +332,8 @@ void vkl_visual_destroy(VklVisual* visual)
 
 void vkl_visual_source(
     VklVisual* visual, VklSourceType source_type, uint32_t source_idx, //
-    VklPipelineType pipeline, uint32_t pipeline_idx, uint32_t slot_idx, VkDeviceSize item_size)
+    VklPipelineType pipeline, uint32_t pipeline_idx, uint32_t slot_idx, VkDeviceSize item_size,
+    int flags)
 {
     ASSERT(visual != NULL);
     ASSERT(visual->source_count < VKL_MAX_VISUAL_SOURCES);
@@ -334,6 +345,7 @@ void vkl_visual_source(
     source.pipeline = pipeline;
     source.pipeline_idx = pipeline_idx;
     source.slot_idx = slot_idx;
+    source.flags = flags;
 
     if (source_type < VKL_SOURCE_TEXTURE_1D)
         source.arr = vkl_array_struct(0, item_size);
@@ -389,7 +401,8 @@ void vkl_visual_graphics(VklVisual* visual, VklGraphics* graphics)
         return;
     }
     visual->graphics[visual->graphics_count] = graphics;
-    visual->bindings[visual->graphics_count] = vkl_bindings(&graphics->slots, 1);
+    visual->bindings[visual->graphics_count] =
+        vkl_bindings(&graphics->slots, visual->canvas->swapchain.img_count);
     visual->graphics_count++;
 }
 
@@ -761,6 +774,7 @@ void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source)
     ASSERT(visual != NULL);
     ASSERT(source != NULL);
     VklContext* ctx = visual->canvas->gpu->context;
+    VklCanvas* canvas = visual->canvas;
 
     ASSERT(source->source_type < VKL_SOURCE_TEXTURE_1D);
     ASSERT(source->arr.item_size > 0);
@@ -779,7 +793,9 @@ void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source)
             log_debug(
                 "need to allocate new buffer region to fit %d elements (%d bytes)", count, size);
 
-        source->u.br = vkl_ctx_buffers(ctx, _get_buffer_idx(source->source_type), 1, size);
+        // Number of buffers: 1, unless using fast upload.
+        uint32_t buf_count = _uniform_source_is_fast(source) ? canvas->swapchain.img_count : 1;
+        source->u.br = vkl_ctx_buffers(ctx, _get_buffer_idx(source), buf_count, size);
 
         // Set bindings except for VERTEX and INDEX sources.
         if (_source_needs_binding(source->source_type))
@@ -888,6 +904,7 @@ void vkl_visual_update(
     VklSource* source = NULL;
     VklArray* arr = NULL;
     VklBufferRegions* br = NULL;
+    VklCanvas* canvas = visual->canvas;
     VklTexture* texture = NULL;
     VklContext* ctx = visual->canvas->gpu->context;
     for (uint32_t i = 0; i < visual->source_count; i++)
@@ -945,7 +962,11 @@ void vkl_visual_update(
                 log_trace(
                     "upload buffer for automatically-handled source %d #%d", //
                     source->source_type, source->source_idx);
-                vkl_upload_buffers(ctx, *br, 0, br->size, arr->data);
+
+                if (_uniform_source_is_fast(source))
+                    vkl_upload_buffers_fast(canvas, *br, true, 0, br->size, arr->data);
+                else
+                    vkl_upload_buffers(ctx, *br, 0, br->size, arr->data);
             }
         }
     }

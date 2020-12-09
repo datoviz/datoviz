@@ -42,26 +42,27 @@ static void _marker_visual(VklVisual* visual)
     {
         // Vertex buffer.
         vkl_visual_source( //
-            visual, VKL_SOURCE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklVertex));
+            visual, VKL_SOURCE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklVertex), 0);
 
 
 
         // Binding #0: uniform buffer MVP
         vkl_visual_source( //
-            visual, VKL_SOURCE_UNIFORM, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklMVP));
+            visual, VKL_SOURCE_UNIFORM, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklMVP),
+            VKL_SOURCE_FLAG_FAST);
 
         // Binding #1: uniform buffer viewport
         vkl_visual_source(
-            visual, VKL_SOURCE_UNIFORM, 1, VKL_PIPELINE_GRAPHICS, 0, 1, sizeof(VklViewport));
+            visual, VKL_SOURCE_UNIFORM, 1, VKL_PIPELINE_GRAPHICS, 0, 1, sizeof(VklViewport), 0);
 
         // Binding #2: color texture
         vkl_visual_source( //
-            visual, VKL_SOURCE_TEXTURE_2D, 0, VKL_PIPELINE_GRAPHICS, 0, 2, sizeof(cvec4));
+            visual, VKL_SOURCE_TEXTURE_2D, 0, VKL_PIPELINE_GRAPHICS, 0, 2, sizeof(cvec4), 0);
 
         // Binding #3: uniform buffer params
         vkl_visual_source(
             visual, VKL_SOURCE_UNIFORM, 2, VKL_PIPELINE_GRAPHICS, 0, 3,
-            sizeof(VklGraphicsPointsParams));
+            sizeof(VklGraphicsPointsParams), 0);
     }
 
     // Props.
@@ -138,11 +139,10 @@ static int vklite2_visuals_1(VkyTestContext* context)
 
     // GPU sources.
     const uint32_t N = 10000;
-    VklBufferRegions br_vert =
-        vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, N * sizeof(VklVertex));
 
     // Binding resources.
-    VklBufferRegions br_mvp = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklMVP));
+    VklBufferRegions br_mvp =
+        vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE, 1, sizeof(VklMVP));
     VklBufferRegions br_viewport = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
     VklBufferRegions br_params =
         vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointsParams));
@@ -173,6 +173,8 @@ static int vklite2_visuals_1(VkyTestContext* context)
     // Set visual data.
     {
         // Via a GPU buffer.
+        // VklBufferRegions br_vert =
+        //     vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, N * sizeof(VklVertex));
         // vkl_upload_buffers(ctx, br_vert, 0, N * sizeof(VklVertex), vertices);
         // visual.vertex_count = N;
         // vkl_visual_buffer(&visual, VKL_SOURCE_VERTEX, 0, br_vert);

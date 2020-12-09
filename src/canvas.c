@@ -905,6 +905,7 @@ void vkl_upload_buffers_fast(
     ASSERT(canvas != NULL);
     VklFifo* fifo = &canvas->fast_queue;
     ASSERT(0 <= fifo->head && fifo->head < fifo->capacity);
+    ASSERT(regions.count == canvas->swapchain.img_count);
 
     VklTransfer tr = {0};
     tr.type = VKL_TRANSFER_BUFFER_UPLOAD_FAST;

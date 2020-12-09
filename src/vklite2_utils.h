@@ -1336,16 +1336,19 @@ static void update_descriptor_set(
             ASSERT(buffer_regions[i].buffer != NULL);
             ASSERT(br->size > 0);
 
+            uint32_t idx_clip = MIN(idx, br->count - 1);
             buffer_infos[i].buffer = br->buffer->buffer;
-            buffer_infos[i].offset = br->offsets[idx];
+            buffer_infos[i].offset = br->offsets[idx_clip];
             buffer_infos[i].range = br->size;
         }
         else if (is_descriptor_type_image(binding_type))
         {
             log_trace("bind texture for binding point %d", i);
             ASSERT(images[i] != NULL);
+
+            uint32_t idx_clip = MIN(idx, images[i]->count - 1);
             image_infos[i].imageLayout = images[i]->layout;
-            image_infos[i].imageView = images[i]->image_views[idx];
+            image_infos[i].imageView = images[i]->image_views[idx_clip];
             image_infos[i].sampler = samplers[i]->sampler;
         }
         else

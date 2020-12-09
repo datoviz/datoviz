@@ -58,7 +58,6 @@ typedef enum
     VKL_SOURCE_VERTEX,
     VKL_SOURCE_INDEX,
     VKL_SOURCE_UNIFORM,
-    VKL_SOURCE_UNIFORM_FAST,
     VKL_SOURCE_STORAGE,
     VKL_SOURCE_TEXTURE_1D,
     VKL_SOURCE_TEXTURE_2D,
@@ -76,6 +75,14 @@ typedef enum
     VKL_SOURCE_ORIGIN_NOBAKE, // the GPU buffer or texture is handled by the library, but the user
                               // provides the baked data directly
 } VklSourceOrigin;
+
+
+
+// Source flags.
+typedef enum
+{
+    VKL_SOURCE_FLAG_FAST = 0x0001,
+} VklSourceFlags;
 
 
 
@@ -148,7 +155,8 @@ struct VklSource
     VklSourceType source_type; // Vertex, index, uniform, storage, or texture
     uint32_t source_idx;       // idx among all sources of the same type
     uint32_t slot_idx;         // Binding slot, or 0 for vertex/index
-    VklArray arr;              // array to be uploaded to that source
+    int flags;
+    VklArray arr; // array to be uploaded to that source
 
     VklSourceOrigin origin; // whether the underlying GPU object is handled by the user or visky
     VklSourceUnion u;
@@ -261,7 +269,8 @@ VKY_EXPORT void vkl_visual_destroy(VklVisual* visual);
 // Define a new source. (source, source_idx) completely identifies a source within all pipelines
 VKY_EXPORT void vkl_visual_source(
     VklVisual* visual, VklSourceType source, uint32_t source_idx, //
-    VklPipelineType pipeline, uint32_t pipeline_idx, uint32_t slot_idx, VkDeviceSize item_size);
+    VklPipelineType pipeline, uint32_t pipeline_idx, uint32_t slot_idx, VkDeviceSize item_size,
+    int flags);
 
 VKY_EXPORT void vkl_visual_prop(
     VklVisual* visual, VklPropType prop, uint32_t idx,           //
