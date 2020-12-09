@@ -197,6 +197,7 @@ static void _bake_source(VklVisual* visual, VklSource* source)
     // The baking function doesn't run if the VERTEX source is handled by the user.
     if (source->origin != VKL_SOURCE_ORIGIN_LIB)
         return;
+    log_debug("baking source %d", source->source_type);
 
     // Check that all props for the source source have the same number of items.
     uint32_t count = vkl_bake_max_prop_size(visual, source);
@@ -410,16 +411,16 @@ void vkl_visual_group(VklVisual* visual, uint32_t group_idx, uint32_t size)
 
 
 void vkl_visual_data(
-    VklVisual* visual, VklPropType type, uint32_t idx, uint32_t count, const void* data)
+    VklVisual* visual, VklPropType prop_type, uint32_t idx, uint32_t count, const void* data)
 {
     ASSERT(visual != NULL);
-    vkl_visual_data_partial(visual, type, idx, 0, count, count, data);
+    vkl_visual_data_partial(visual, prop_type, idx, 0, count, count, data);
 }
 
 
 
 void vkl_visual_data_partial(
-    VklVisual* visual, VklPropType type, uint32_t idx, //
+    VklVisual* visual, VklPropType prop_type, uint32_t idx, //
     uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data)
 {
     ASSERT(visual != NULL);
@@ -428,7 +429,7 @@ void vkl_visual_data_partial(
     ASSERT(data_item_count > 0);
 
     // Get the associated prop.
-    VklProp* prop = vkl_bake_prop(visual, type, idx);
+    VklProp* prop = vkl_bake_prop(visual, prop_type, idx);
     ASSERT(prop != NULL);
 
     // Get the associated source.
@@ -447,7 +448,7 @@ void vkl_visual_data_partial(
 
 
 void vkl_visual_data_buffer(
-    VklVisual* visual, VklSourceType type, uint32_t idx, //
+    VklVisual* visual, VklSourceType source_type, uint32_t idx, //
     uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data)
 {
     ASSERT(visual != NULL);
@@ -456,7 +457,7 @@ void vkl_visual_data_buffer(
     ASSERT(data_item_count > 0);
 
     // Get the associated source.
-    VklSource* source = vkl_bake_source(visual, type, idx);
+    VklSource* source = vkl_bake_source(visual, source_type, idx);
     ASSERT(source != NULL);
 
     // When setting the vertex buffer directly, update the visual's vertex count.
@@ -477,7 +478,7 @@ void vkl_visual_data_buffer(
 
 
 void vkl_visual_data_texture(
-    VklVisual* visual, VklPropType type, uint32_t idx, //
+    VklVisual* visual, VklPropType prop_type, uint32_t idx, //
     uint32_t width, uint32_t height, uint32_t depth, const void* data)
 {
     ASSERT(visual != NULL);
@@ -485,7 +486,7 @@ void vkl_visual_data_texture(
     ASSERT(count > 0);
 
     // Get the associated prop.
-    VklProp* prop = vkl_bake_prop(visual, type, idx);
+    VklProp* prop = vkl_bake_prop(visual, prop_type, idx);
     ASSERT(prop != NULL);
 
     // Get the associated source.
@@ -506,14 +507,15 @@ void vkl_visual_data_texture(
 
 // Means that no data updates will be done by visky, it is up to the user to update the bound
 // buffer
-void vkl_visual_buffer(VklVisual* visual, VklSourceType source, uint32_t idx, VklBufferRegions br)
+void vkl_visual_buffer(
+    VklVisual* visual, VklSourceType source_type, uint32_t idx, VklBufferRegions br)
 {
     ASSERT(visual != NULL);
     ASSERT(visual != NULL);
-    VklSource* src = vkl_bake_source(visual, source, idx);
+    VklSource* src = vkl_bake_source(visual, source_type, idx);
     if (src == NULL)
     {
-        log_error("Data source for source %d #%d could not be found", source, idx);
+        log_error("Data source for source %d #%d could not be found", source_type, idx);
         return;
     }
     ASSERT(src != NULL);
@@ -525,21 +527,26 @@ void vkl_visual_buffer(VklVisual* visual, VklSourceType source, uint32_t idx, Vk
     src->u.br = br;
     src->origin = VKL_SOURCE_ORIGIN_USER;
 
-    VklBindings* bindings = _get_bindings(visual, src);
-    ASSERT(br.buffer != VK_NULL_HANDLE);
-    vkl_bindings_buffer(bindings, src->slot_idx, src->u.br);
+    // Set the bindings except for VERTEX and INDEX sources.
+    if (source_type == VKL_SOURCE_UNIFORM || source_type == VKL_SOURCE_STORAGE)
+    {
+        VklBindings* bindings = _get_bindings(visual, src);
+        ASSERT(br.buffer != VK_NULL_HANDLE);
+        vkl_bindings_buffer(bindings, src->slot_idx, src->u.br);
+    }
 }
 
 
 
-void vkl_visual_texture(VklVisual* visual, VklSourceType source, uint32_t idx, VklTexture* texture)
+void vkl_visual_texture(
+    VklVisual* visual, VklSourceType source_type, uint32_t idx, VklTexture* texture)
 {
     ASSERT(visual != NULL);
     ASSERT(visual != NULL);
-    VklSource* src = vkl_bake_source(visual, source, idx);
+    VklSource* src = vkl_bake_source(visual, source_type, idx);
     if (src == NULL)
     {
-        log_error("Data source for source %d #%d could not be found", source, idx);
+        log_error("Data source for source %d #%d could not be found", source_type, idx);
         return;
     }
     ASSERT(src != NULL);
@@ -756,9 +763,12 @@ void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source)
 
         source->u.br = vkl_ctx_buffers(ctx, _get_buffer_idx(source->source_type), 1, size);
 
-        // Set bindings.
-        VklBindings* bindings = _get_bindings(visual, source);
-        vkl_bindings_buffer(bindings, source->slot_idx, source->u.br);
+        // Set bindings except for VERTEX and INDEX sources.
+        if (source->source_type == VKL_SOURCE_UNIFORM || source->source_type == VKL_SOURCE_STORAGE)
+        {
+            VklBindings* bindings = _get_bindings(visual, source);
+            vkl_bindings_buffer(bindings, source->slot_idx, source->u.br);
+        }
     }
     ASSERT(source->u.br.buffer != VK_NULL_HANDLE);
 }
@@ -903,7 +913,8 @@ void vkl_visual_update(
             if (source->origin == VKL_SOURCE_ORIGIN_LIB ||
                 source->origin == VKL_SOURCE_ORIGIN_NOBAKE)
             {
-                // NOTE: the source array MUST have been allocated by the baking function
+                // NOTE: the source array MUST have been allocated by the baking function,
+                // or directly by the user via vkl_visual_data_buffer() (NOBAKE origin)
                 ASSERT(arr->item_count > 0);
                 ASSERT(arr->item_size > 0);
 

@@ -173,13 +173,13 @@ static int vklite2_visuals_1(VkyTestContext* context)
     // Set visual data.
     {
         // Via a buffer.
-        vkl_upload_buffers(ctx, br_vert, 0, N * sizeof(VklVertex), vertices);
-        visual.vertex_count = N;
-        vkl_visual_buffer(&visual, VKL_SOURCE_VERTEX, 0, br_vert);
+        // vkl_upload_buffers(ctx, br_vert, 0, N * sizeof(VklVertex), vertices);
+        // visual.vertex_count = N;
+        // vkl_visual_buffer(&visual, VKL_SOURCE_VERTEX, 0, br_vert);
 
         // Via data buffer.
         // TODO: make it work
-        // vkl_visual_data_buffer(&visual, VKL_SOURCE_VERTEX, 0, 0, N, N, vertices);
+        vkl_visual_data_buffer(&visual, VKL_SOURCE_VERTEX, 0, 0, N, N, vertices);
     }
 
     // Set uniform buffers.
