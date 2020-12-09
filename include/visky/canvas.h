@@ -84,6 +84,7 @@ typedef enum
  * Public events (also just called "events") are emitted in the main thread and consumed in the
  * background thread by user callbacks.
  */
+// Event types
 typedef enum
 {
     VKL_EVENT_NONE,
@@ -100,6 +101,7 @@ typedef enum
 
 
 
+// Key type
 typedef enum
 {
     VKL_KEY_RELEASE,
@@ -108,6 +110,7 @@ typedef enum
 
 
 
+// Mouse button type
 typedef enum
 {
     VKL_MOUSE_RELEASE,
@@ -116,6 +119,7 @@ typedef enum
 
 
 
+// Key modifiers
 // NOTE: must match GLFW values!
 typedef enum
 {
@@ -128,6 +132,7 @@ typedef enum
 
 
 
+// Mouse button
 typedef enum
 {
     VKL_MOUSE_BUTTON_NONE,
@@ -135,27 +140,6 @@ typedef enum
     VKL_MOUSE_BUTTON_MIDDLE,
     VKL_MOUSE_BUTTON_RIGHT,
 } VklMouseButton;
-
-
-
-typedef enum
-{
-    VKL_MOUSE_STATE_INACTIVE,
-    VKL_MOUSE_STATE_DRAG,
-    VKL_MOUSE_STATE_WHEEL,
-    VKL_MOUSE_STATE_CLICK,
-    VKL_MOUSE_STATE_DOUBLE_CLICK,
-    VKL_MOUSE_STATE_CAPTURE,
-} VklMouseStateType;
-
-
-
-typedef enum
-{
-    VKL_KEYBOARD_STATE_INACTIVE,
-    VKL_KEYBOARD_STATE_ACTIVE,
-    VKL_KEYBOARD_STATE_CAPTURE,
-} VklKeyStateType;
 
 
 
@@ -192,9 +176,6 @@ typedef struct VklSubmitEvent VklSubmitEvent;
 typedef struct VklPrivateEvent VklPrivateEvent;
 typedef union VklPrivateEventUnion VklPrivateEventUnion;
 
-typedef struct VklMouseState VklMouseState;
-typedef struct VklKeyState VklKeyState;
-
 typedef void (*VklCanvasCallback)(VklCanvas*, VklPrivateEvent);
 typedef void (*VklEventCallback)(VklCanvas*, VklEvent);
 
@@ -220,14 +201,14 @@ struct VklMouseButtonEvent
 
 struct VklMouseMoveEvent
 {
-    dvec2 pos;
+    vec2 pos;
 };
 
 
 
 struct VklMouseWheelEvent
 {
-    dvec2 dir;
+    vec2 dir;
 };
 
 
@@ -368,40 +349,6 @@ struct VklEventCallbackRegister
     double param;
     void* user_data;
     VklEventCallback callback;
-};
-
-
-
-/*************************************************************************************************/
-/*  Mouse and keyboard states                                                                    */
-/*************************************************************************************************/
-
-struct VklMouseState
-{
-    VklMouseButton button;
-    vec2 press_pos;
-    vec2 last_pos;
-    vec2 cur_pos;
-    vec2 wheel_delta;
-
-    VklMouseStateType prev_state;
-    VklMouseStateType cur_state;
-
-    double press_time;
-    double click_time;
-};
-
-
-
-struct VklKeyState
-{
-    VklKeyCode key_code;
-    uint32_t modifiers;
-
-    VklKeyStateType prev_state;
-    VklKeyStateType cur_state;
-
-    double press_time;
 };
 
 
@@ -661,9 +608,9 @@ VKY_EXPORT void vkl_event_enqueue(VklCanvas* canvas, VklEvent event);
 VKY_EXPORT void vkl_event_mouse_button(
     VklCanvas* canvas, VklMouseButtonType type, VklMouseButton button, int modifiers);
 
-VKY_EXPORT void vkl_event_mouse_move(VklCanvas* canvas, dvec2 pos);
+VKY_EXPORT void vkl_event_mouse_move(VklCanvas* canvas, vec2 pos);
 
-VKY_EXPORT void vkl_event_mouse_wheel(VklCanvas* canvas, dvec2 dir);
+VKY_EXPORT void vkl_event_mouse_wheel(VklCanvas* canvas, vec2 dir);
 
 VKY_EXPORT void vkl_event_key(VklCanvas* canvas, VklKeyType type, VklKeyCode key_code);
 

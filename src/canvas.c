@@ -330,7 +330,9 @@ static void* _event_thread(void* p_canvas)
         elapsed = _clock_get(&canvas->clock);
         n_callbacks = _event_callbacks(canvas, ev);
         elapsed = _clock_get(&canvas->clock) - elapsed;
-        elapsed /= n_callbacks; // average duration of the events
+        // NOTE: avoid division by zero.
+        if (n_callbacks > 0)
+            elapsed /= n_callbacks; // average duration of the events
 
         // Update the average event time.
         avg_event_time = ((avg_event_time * counter) + elapsed) / (counter + 1);
@@ -486,7 +488,7 @@ static void _glfw_wheel_callback(GLFWwindow* window, double dx, double dy)
     ASSERT(canvas != NULL);
     ASSERT(canvas->window != NULL);
 
-    vkl_event_mouse_wheel(canvas, (dvec2){dx, dy});
+    vkl_event_mouse_wheel(canvas, (vec2){dx, dy});
 }
 
 static void _glfw_button_callback(GLFWwindow* window, int button, int action, int mods)
@@ -521,7 +523,7 @@ static void _glfw_move_callback(GLFWwindow* window, double xpos, double ypos)
     ASSERT(canvas != NULL);
     ASSERT(canvas->window != NULL);
 
-    vkl_event_mouse_move(canvas, (dvec2){xpos, ypos});
+    vkl_event_mouse_move(canvas, (vec2){xpos, ypos});
 }
 
 static void backend_event_callbacks(VklCanvas* canvas)
@@ -940,7 +942,7 @@ void vkl_event_mouse_button(
 
 
 
-void vkl_event_mouse_move(VklCanvas* canvas, dvec2 pos)
+void vkl_event_mouse_move(VklCanvas* canvas, vec2 pos)
 {
     ASSERT(canvas != NULL);
 
@@ -953,7 +955,7 @@ void vkl_event_mouse_move(VklCanvas* canvas, dvec2 pos)
 
 
 
-void vkl_event_mouse_wheel(VklCanvas* canvas, dvec2 dir)
+void vkl_event_mouse_wheel(VklCanvas* canvas, vec2 dir)
 {
     ASSERT(canvas != NULL);
 
