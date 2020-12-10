@@ -10,13 +10,14 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct VklMouseState VklMouseState;
-typedef struct VklKeyboardState VklKeyboardState;
+typedef struct VklMouse VklMouse;
+typedef struct VklKeyboard VklKeyboard;
 typedef struct VklPanzoom VklPanzoom;
 typedef struct VklArcball VklArcball;
 typedef struct VklCamera VklCamera;
 typedef struct VklInteract VklInteract;
 typedef union VklInteractUnion VklInteractUnion;
+typedef struct VklMouseLocal VklMouseLocal;
 
 
 
@@ -63,7 +64,7 @@ typedef enum
 // Interact callback.
 typedef void (*VklInteractCallback)(
     VklInteract* interact, VklViewport viewport, //
-    VklMouseState* mouse, VklKeyboardState* keyboard);
+    VklMouse* mouse, VklKeyboard* keyboard);
 
 
 
@@ -71,7 +72,7 @@ typedef void (*VklInteractCallback)(
 /*  Mouse and keyboard states                                                                    */
 /*************************************************************************************************/
 
-struct VklMouseState
+struct VklMouse
 {
     VklMouseButton button;
     vec2 press_pos;
@@ -89,7 +90,18 @@ struct VklMouseState
 
 
 
-struct VklKeyboardState
+// In normalize coordinates [-1, +1]
+struct VklMouseLocal
+{
+    vec2 press_pos;
+    vec2 last_pos;
+    vec2 cur_pos;
+    vec2 delta;
+};
+
+
+
+struct VklKeyboard
 {
     VklKeyCode key_code;
     int modifiers;
@@ -162,6 +174,7 @@ struct VklInteract
 {
     VklInteractType type;
     VklCanvas* canvas;
+    VklMouseLocal mouse_local;
     VklInteractCallback callback;
     VklMVP mvp;
     VklInteractUnion u;
@@ -174,21 +187,22 @@ struct VklInteract
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-VKY_EXPORT VklMouseState vkl_mouse(void);
+VKY_EXPORT VklMouse vkl_mouse(void);
 
-VKY_EXPORT void vkl_mouse_reset(VklMouseState* mouse);
+VKY_EXPORT void vkl_mouse_reset(VklMouse* mouse);
 
-VKY_EXPORT void
-vkl_mouse_event(VklMouseState* mouse, VklCanvas* canvas, VklViewport viewport, VklEvent ev);
+VKY_EXPORT void vkl_mouse_event(VklMouse* mouse, VklCanvas* canvas, VklEvent ev);
+
+VKY_EXPORT void vkl_mouse_local(
+    VklMouse* mouse, VklMouseLocal* mouse_local, VklCanvas* canvas, VklViewport viewport);
 
 
 
-VKY_EXPORT VklKeyboardState vkl_keyboard(void);
+VKY_EXPORT VklKeyboard vkl_keyboard(void);
 
-VKY_EXPORT void vkl_keyboard_reset(VklKeyboardState* keyboard);
+VKY_EXPORT void vkl_keyboard_reset(VklKeyboard* keyboard);
 
-VKY_EXPORT void vkl_keyboard_event(
-    VklKeyboardState* keyboard, VklCanvas* canvas, VklViewport viewport, VklEvent ev);
+VKY_EXPORT void vkl_keyboard_event(VklKeyboard* keyboard, VklCanvas* canvas, VklEvent ev);
 
 
 
@@ -199,7 +213,7 @@ VKY_EXPORT void vkl_interact_callback(VklInteract* interact, VklInteractCallback
 VKY_EXPORT VklInteract vkl_interact_builtin(VklCanvas* canvas, VklInteractType type);
 
 VKY_EXPORT void vkl_interact_update(
-    VklInteract* interact, VklViewport viewport, VklMouseState* mouse, VklKeyboardState* keyboard);
+    VklInteract* interact, VklViewport viewport, VklMouse* mouse, VklKeyboard* keyboard);
 
 
 #endif

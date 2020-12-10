@@ -20,19 +20,19 @@
 /*  Mouse                                                                                        */
 /*************************************************************************************************/
 
-VklMouseState vkl_mouse()
+VklMouse vkl_mouse()
 {
-    VklMouseState mouse = {0};
+    VklMouse mouse = {0};
     vkl_mouse_reset(&mouse);
     return mouse;
 }
 
 
 
-void vkl_mouse_reset(VklMouseState* mouse)
+void vkl_mouse_reset(VklMouse* mouse)
 {
     ASSERT(mouse != NULL);
-    memset(mouse, 0, sizeof(VklMouseState));
+    memset(mouse, 0, sizeof(VklMouse));
     // mouse->button = VKL_MOUSE_BUTTON_NONE;
     // glm_vec2_zero(mouse->cur_pos);
     // glm_vec2_zero(mouse->press_pos);
@@ -44,18 +44,9 @@ void vkl_mouse_reset(VklMouseState* mouse)
 
 
 
-static void _viewport_center(VklViewport viewport, vec2 pos)
-{
-    pos[0] = viewport.size_screen[0] + viewport.size_screen[2] / 2;
-    pos[1] = viewport.size_screen[1] + viewport.size_screen[3] / 2;
-}
-
-void vkl_mouse_event(VklMouseState* mouse, VklCanvas* canvas, VklViewport viewport, VklEvent ev)
+void vkl_mouse_event(VklMouse* mouse, VklCanvas* canvas, VklEvent ev)
 {
     double time = canvas->clock.elapsed;
-    // _viewport_center(viewport, mouse->cur_pos);
-    // vec2 pos = {0};
-    // VklMouseButton button = VKL_MOUSE_BUTTON_NONE;
 
     // Update the last pos.
     glm_vec2_copy(mouse->cur_pos, mouse->last_pos);
@@ -67,8 +58,6 @@ void vkl_mouse_event(VklMouseState* mouse, VklCanvas* canvas, VklViewport viewpo
         mouse->cur_state = VKL_MOUSE_STATE_INACTIVE;
         mouse->button = VKL_MOUSE_BUTTON_NONE;
     }
-
-    // bool pressed = button != VKL_MOUSE_BUTTON_NONE;
 
     // Net distance in pixels since the last press event.
     vec2 shift;
@@ -168,23 +157,62 @@ void vkl_mouse_event(VklMouseState* mouse, VklCanvas* canvas, VklViewport viewpo
 
 
 
+// From pixel coordinates (top left origin) to local coordinates (center origin)
+void vkl_mouse_local(
+    VklMouse* mouse, VklMouseLocal* mouse_local, VklCanvas* canvas, VklViewport viewport)
+{
+
+    // Window size in screen coordinates.
+    uvec2 size_screen = {0};
+    vkl_canvas_size(canvas, VKL_CANVAS_SIZE_SCREEN, size_screen);
+    ASSERT(size_screen[0] > 0);
+    ASSERT(size_screen[1] > 0);
+
+    // Viewport in framebuffer coordinates.
+    // float x = viewport.viewport.x;
+    // float y = viewport.viewport.y;
+    float width = viewport.viewport.width;
+    float height = viewport.viewport.height;
+
+    // Scaling from screen coordinates to framebuffer coordinates.
+    float ax = width / size_screen[0];
+    float ay = height / size_screen[1];
+
+    mouse_local->cur_pos[0] = -1 + 2 * (mouse->cur_pos[0] / size_screen[0]);
+    mouse_local->cur_pos[1] = +1 - 2 * (mouse->cur_pos[1] / size_screen[1]);
+
+    mouse_local->last_pos[1] = +1 - 2 * (mouse->last_pos[1] / size_screen[1]);
+    mouse_local->last_pos[1] = +1 - 2 * (mouse->last_pos[1] / size_screen[1]);
+
+    mouse_local->press_pos[0] = -1 + 2 * (mouse->press_pos[0] / size_screen[0]);
+    mouse_local->press_pos[0] = -1 + 2 * (mouse->press_pos[0] / size_screen[0]);
+
+    mouse_local->delta[0] = mouse_local->cur_pos[0] - mouse_local->last_pos[0];
+    mouse_local->delta[1] = mouse_local->cur_pos[1] - mouse_local->last_pos[1];
+
+    mouse_local->delta[0] *= ax;
+    mouse_local->delta[1] *= ay;
+}
+
+
+
 /*************************************************************************************************/
 /*  Keyboard                                                                                     */
 /*************************************************************************************************/
 
-VklKeyboardState vkl_keyboard()
+VklKeyboard vkl_keyboard()
 {
-    VklKeyboardState keyboard = {0};
+    VklKeyboard keyboard = {0};
     vkl_keyboard_reset(&keyboard);
     return keyboard;
 }
 
 
 
-void vkl_keyboard_reset(VklKeyboardState* keyboard)
+void vkl_keyboard_reset(VklKeyboard* keyboard)
 {
     ASSERT(keyboard != NULL);
-    memset(keyboard, 0, sizeof(VklKeyboardState));
+    memset(keyboard, 0, sizeof(VklKeyboard));
     // keyboard->key_code = VKL_KEY_NONE;
     // keyboard->modifiers = 0;
     keyboard->press_time = VKL_NEVER;
@@ -200,8 +228,7 @@ static bool _is_key_modifier(VklKeyCode key)
         key == VKL_KEY_LEFT_SUPER || key == VKL_KEY_RIGHT_SUPER);
 }
 
-void vkl_keyboard_event(
-    VklKeyboardState* keyboard, VklCanvas* canvas, VklViewport viewport, VklEvent ev)
+void vkl_keyboard_event(VklKeyboard* keyboard, VklCanvas* canvas, VklEvent ev)
 {
     double time = canvas->clock.elapsed;
     VklKeyCode key = ev.u.k.key_code;
@@ -227,72 +254,6 @@ void vkl_keyboard_event(
 
 
 /*************************************************************************************************/
-/*  Mouse normalization utils                                                                    */
-/*************************************************************************************************/
-
-static inline void _mouse_normalize(vec2 size, vec2 center, vec2 pos)
-{
-    pos[0] -= center[0];
-    pos[1] -= center[1];
-
-    pos[0] *= +2 / size[0];
-    pos[1] *= -2 / size[1];
-}
-
-static inline void _mouse_normalize_viewport(VklViewport viewport, vec2 pos)
-{
-    if (viewport.size_screen[0] == 0)
-    {
-        log_trace("skipping normalization as the canvas size has not been set yet");
-    }
-    else
-    {
-        pos[0] *= (viewport.size_framebuffer[0] / viewport.size_screen[0]);
-        pos[1] *= (viewport.size_framebuffer[1] / viewport.size_screen[1]);
-    }
-
-    // viewport center in pixels
-    vec2 center = {
-        viewport.viewport.x + viewport.viewport.width / 2,
-        viewport.viewport.y + viewport.viewport.height / 2};
-    vec2 size = {viewport.viewport.width, viewport.viewport.height};
-    _mouse_normalize(size, center, pos);
-}
-
-static inline void _mouse_move_delta(VklMouseState* mouse, VklViewport viewport, vec2 delta)
-{
-    vec2 delta_ = {
-        mouse->cur_pos[0] - mouse->last_pos[0],
-        mouse->cur_pos[1] - mouse->last_pos[1],
-    };
-    delta_[0] = +2 * delta_[0] / viewport.size_screen[0];
-    delta_[1] = -2 * delta_[1] / viewport.size_screen[1];
-    delta_[0] *= (viewport.size_framebuffer[0] / viewport.size_screen[0]);
-    delta_[1] *= (viewport.size_framebuffer[1] / viewport.size_screen[1]);
-    glm_vec2_copy(delta_, delta);
-}
-
-// in local normalized coordinates in the viewport
-static inline void _mouse_cur_pos(VklMouseState* mouse, VklViewport viewport, vec2 pos)
-{
-    // Mouse position in window coordinates.
-    glm_vec2_copy(mouse->cur_pos, pos);
-    // Mouse position in viewport normalized coordinates.
-    _mouse_normalize_viewport(viewport, pos);
-}
-
-// in local normalized coordinates in the viewport
-static inline void _mouse_press_pos(VklMouseState* mouse, VklViewport viewport, vec2 pos)
-{
-    // Mouse position in window coordinates.
-    glm_vec2_copy(mouse->press_pos, pos);
-    // Mouse position in viewport normalized coordinates.
-    _mouse_normalize_viewport(viewport, pos);
-}
-
-
-
-/*************************************************************************************************/
 /*  Panzoom                                                                                      */
 /*************************************************************************************************/
 
@@ -306,7 +267,7 @@ static VklPanzoom _panzoom()
 }
 
 static void _panzoom_callback(
-    VklInteract* interact, VklViewport viewport, VklMouseState* mouse, VklKeyboardState* keyboard)
+    VklInteract* interact, VklViewport viewport, VklMouse* mouse, VklKeyboard* keyboard)
 {
     ASSERT(interact != NULL);
     ASSERT(interact->type == VKL_INTERACT_PANZOOM);
@@ -337,8 +298,7 @@ static void _panzoom_callback(
         //     return;
         // panel->status = VKL_PANEL_STATUS_ACTIVE;
 
-        vec2 delta = {0};
-        _mouse_move_delta(mouse, viewport, delta);
+        vec2 delta = {interact->mouse_local.delta[0], interact->mouse_local.delta[1]};
 
         if (aspect_ratio == 1)
             delta[0] *= size_b[0] / size_b[1];
@@ -351,7 +311,8 @@ static void _panzoom_callback(
     if ((mouse->cur_state == VKL_MOUSE_STATE_DRAG && mouse->button == VKL_MOUSE_BUTTON_RIGHT) ||
         mouse->cur_state == VKL_MOUSE_STATE_WHEEL)
     {
-        vec2 pan, delta, zoom_old, zoom_new, center;
+        vec2 pan, delta, zoom_old, zoom_new;
+        // vec2 delta, zoom_old, zoom_new;
 
         // Right drag.
         if (mouse->cur_state == VKL_MOUSE_STATE_DRAG && mouse->button == VKL_MOUSE_BUTTON_RIGHT)
@@ -365,15 +326,14 @@ static void _panzoom_callback(
             // panel->status = VKL_PANEL_STATUS_ACTIVE;
 
             // Get the center position: mouse press position.
-            _mouse_press_pos(mouse, viewport, center);
+            // _mouse_press_pos(mouse, viewport, center);
 
             // Get the mouse move delta.
-            _mouse_move_delta(mouse, viewport, delta);
+            // _mouse_move_delta(mouse, viewport, delta);
             // Transform back the delta in pixels.
-            delta[0] *= size_b[0] / 2;
-            delta[1] *= size_b[1] / 2;
-            delta[0] *= .0025;
-            delta[1] *= .0025;
+            glm_vec2_copy(interact->mouse_local.delta, delta);
+            delta[0] *= .001 * size_b[0];
+            delta[1] *= .001 * size_b[1];
         }
         // Mouse wheel.
         else
@@ -386,7 +346,7 @@ static void _panzoom_callback(
             //     return;
             // panel->status = VKL_PANEL_STATUS_ACTIVE;
 
-            _mouse_cur_pos(mouse, viewport, center);
+            // _mouse_cur_pos(mouse, viewport, center);
             glm_vec2_copy(mouse->wheel_delta, delta);
             delta[0] *= wheel_factor;
             delta[1] *= wheel_factor;
@@ -398,7 +358,7 @@ static void _panzoom_callback(
             delta[0] = delta[1] = copysignf(1.0, delta[0] + delta[1]) *
                                   sqrt(delta[0] * delta[0] + delta[1] * delta[1]);
 
-            center[0] *= size_b[0] / size_b[1];
+            // center[0] *= size_b[0] / size_b[1];
         }
 
         // Update the zoom.
@@ -434,8 +394,10 @@ static void _panzoom_callback(
             panzoom->zoom[1] = zoom_new[1];
 
         // Update pan.
-        pan[0] = -center[0] * (1.0f / zoom_old[0] - 1.0f / zoom_new[0]) * zoom_new[0];
-        pan[1] = -center[1] * (1.0f / zoom_old[1] - 1.0f / zoom_new[1]) * zoom_new[1];
+        pan[0] = -interact->mouse_local.press_pos[0] * //
+                 (1.0f / zoom_old[0] - 1.0f / zoom_new[0]) * zoom_new[0];
+        pan[1] = -interact->mouse_local.press_pos[1] * //
+                 (1.0f / zoom_old[1] - 1.0f / zoom_new[1]) * zoom_new[1];
 
         if (!panzoom->lim_reached[0])
             panzoom->camera_pos[0] -= pan[0] / panzoom->zoom[0];
@@ -463,6 +425,27 @@ static void _panzoom_callback(
     {
         // panel->status = VKL_PANEL_STATUS_NONE;
     }
+
+    // TODO: update MVP struct
+    // log_debug("panzoom camera %.1f %.1f", panzoom->camera_pos[0], panzoom->camera_pos[1]);
+
+
+    // View matrix (depends on the pan).
+    vec3 center;
+    glm_vec3_copy(panzoom->camera_pos, center);
+    center[2] = 0.0f; // only the z coord changes between panel and center.
+    vec3 lookup = {0, 1, 0};
+    glm_lookat(panzoom->camera_pos, center, lookup, interact->mvp.view);
+
+    // Proj matrix (depends on the zoom).
+    float zx = panzoom->zoom[0];
+    float zy = panzoom->zoom[1];
+    // TODO: other aspect ratios
+    if (aspect_ratio == 1)
+    {
+        zx *= size_b[1] / (float)size_b[0];
+    }
+    glm_ortho(-1.0f / zx, +1.0f / zx, -1.0f / zy, 1.0f / zy, -10.0f, 10.0f, interact->mvp.proj);
 }
 
 
@@ -697,7 +680,7 @@ static VklArcball _arcball()
 }
 
 static void _arcball_callback(
-    VklInteract* interact, VklViewport viewport, VklMouseState* mouse, VklKeyboardState* keyboard)
+    VklInteract* interact, VklViewport viewport, VklMouse* mouse, VklKeyboard* keyboard)
 {
     ASSERT(interact != NULL);
     ASSERT(interact->type == VKL_INTERACT_ARCBALL);
@@ -871,7 +854,7 @@ static VklCamera _camera(VklInteractType type)
 }
 
 static void _camera_callback(
-    VklInteract* interact, VklViewport viewport, VklMouseState* mouse, VklKeyboardState* keyboard)
+    VklInteract* interact, VklViewport viewport, VklMouse* mouse, VklKeyboard* keyboard)
 {
     ASSERT(interact != NULL);
     switch (interact->type)
@@ -927,20 +910,20 @@ VklInteract vkl_interact_builtin(VklCanvas* canvas, VklInteractType type)
     switch (type)
     {
     case VKL_INTERACT_PANZOOM:
-        interact.callback = _panzoom_callback;
         interact.u.p = _panzoom();
+        interact.callback = _panzoom_callback;
         break;
 
     case VKL_INTERACT_ARCBALL:
-        interact.callback = _arcball_callback;
         interact.u.a = _arcball();
+        interact.callback = _arcball_callback;
         break;
 
     case VKL_INTERACT_FLY:
     case VKL_INTERACT_FPS:
     case VKL_INTERACT_TURNTABLE:
-        interact.callback = _camera_callback;
         interact.u.c = _camera(type);
+        interact.callback = _camera_callback;
         break;
 
     default:
@@ -952,9 +935,13 @@ VklInteract vkl_interact_builtin(VklCanvas* canvas, VklInteractType type)
 
 
 void vkl_interact_update(
-    VklInteract* interact, VklViewport viewport, VklMouseState* mouse, VklKeyboardState* keyboard)
+    VklInteract* interact, VklViewport viewport, VklMouse* mouse, VklKeyboard* keyboard)
 {
     ASSERT(interact != NULL);
+
+    // Update the local coordinates of the mouse before calling the interact callback.
+    vkl_mouse_local(mouse, &interact->mouse_local, interact->canvas, viewport);
+
     if (interact->callback != NULL)
         interact->callback(interact, viewport, mouse, keyboard);
 }

@@ -256,9 +256,9 @@ struct VklViewport
 {
     VkViewport viewport; // Vulkan viewport
     vec4 margins;
-    uvec4 size_screen;      // (tlx, tly, w, h)
-    uvec4 size_framebuffer; // (tlx, tly, w, h)
-    float dpi_scaling;      // DPI  scaling
+    // uvec4 xywh_screen;      // (tlx, tly, w, h)
+    // uvec4 size_framebuffer; // (tlx, tly, w, h)
+    float dpi_scaling; // DPI  scaling
 };
 
 

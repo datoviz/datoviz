@@ -292,6 +292,10 @@ static void _default_visual_bake(VklVisual* visual, VklVisualDataEvent ev)
 
 VklVisual vkl_visual(VklCanvas* canvas)
 {
+    DBG(0);
+
+    ASSERT(canvas != NULL);
+
     VklVisual visual = {0};
     visual.canvas = canvas;
 
