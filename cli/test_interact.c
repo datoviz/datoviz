@@ -62,11 +62,13 @@ static void _scene_mouse_callback(VklCanvas* canvas, VklEvent ev)
     vkl_mouse_event(&scene->mouse, canvas, ev);
     vkl_interact_update(&scene->interact, viewport, &scene->mouse, &scene->keyboard);
 
-    if (scene->interact.to_update)
+    if (scene->interact.to_update &&
+        canvas->clock.elapsed - scene->interact.last_update > VKY_INTERACT_MIN_DELAY)
     {
         vkl_visual_data(&scene->visual, VKL_PROP_VIEW, 0, 1, scene->interact.mvp.view);
         vkl_visual_data(&scene->visual, VKL_PROP_PROJ, 0, 1, scene->interact.mvp.proj);
         vkl_visual_update(&scene->visual, viewport, (VklDataCoords){0}, NULL);
+        scene->interact.last_update = canvas->clock.elapsed;
     }
 }
 
