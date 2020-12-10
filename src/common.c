@@ -20,8 +20,6 @@ END_INCL_NO_WARN
 /*  I/O                                                                                          */
 /*************************************************************************************************/
 
-static VkyClock VKY_CLOCK;
-
 int write_png(const char* filename, uint32_t width, uint32_t height, const uint8_t* image)
 {
 #if HAS_PNG
@@ -263,104 +261,6 @@ error:
 
 
 /*************************************************************************************************/
-/*  Misc                                                                                         */
-/*************************************************************************************************/
-
-void vky_start_timer() { gettimeofday(&VKY_CLOCK.start, NULL); }
-
-double vky_get_timer()
-{
-    gettimeofday(&VKY_CLOCK.current, NULL);
-    double elapsed = (VKY_CLOCK.current.tv_sec - VKY_CLOCK.start.tv_sec) +
-                     (VKY_CLOCK.current.tv_usec - VKY_CLOCK.start.tv_usec) / 1000000.0;
-    return elapsed;
-}
-
-uint64_t vky_get_fps(uint64_t frame_count)
-{
-    double current = vky_get_timer();
-    uint64_t fps = 0;
-    if (current - VKY_CLOCK.checkpoint_time > 1)
-    {
-        fps = frame_count - VKY_CLOCK.checkpoint_value;
-        VKY_CLOCK.checkpoint_value = frame_count;
-        VKY_CLOCK.checkpoint_time = current;
-    }
-    return fps;
-}
-
-
-
-/*************************************************************************************************/
-/*  Data normalization and coordinate transforms                                                 */
-/*************************************************************************************************/
-
-static void _project_lonlat(double lon, double lat, dvec2 out)
-{
-    // Web Mercator projection
-    double lonrad = lon / 180.0 * M_PI;
-    double latrad = lat / 180.0 * M_PI;
-
-    double x = 0, y = 0;
-    double zoom = 1;
-    double c = 256 / M_2PI * pow(2, zoom);
-    x = c * (lonrad + M_PI);
-    y = c * (M_PI - log(tan(M_PI / 4.0 + latrad / 2.0)));
-    // return (dvec2s){x, -y};
-    out[0] = x;
-    out[1] = -y;
-}
-
-
-static void _normalize_2D(uint32_t point_count, dvec2* points)
-{
-    double xmin = +DBL_MAX, ymin = +DBL_MAX, xmax = -DBL_MAX, ymax = -DBL_MAX;
-    for (uint32_t i = 0; i < point_count; i++)
-    {
-        xmin = fmin(xmin, points[i][0]);
-        ymin = fmin(ymin, points[i][1]);
-        xmax = fmax(xmax, points[i][0]);
-        ymax = fmax(ymax, points[i][1]);
-    }
-    double dx = 2.0 / (xmax - xmin);
-    double dy = 2.0 / (ymax - ymin);
-    for (uint32_t i = 0; i < point_count; i++)
-    {
-        if (xmin < xmax)
-            points[i][0] = -1 + dx * (points[i][0] - xmin);
-        if (ymin < ymax)
-            points[i][1] = -1 + dy * (points[i][1] - ymin);
-    }
-}
-
-
-dvec2s vky_min_max(uint32_t size, double* points)
-{
-    const double INF = 1e9;
-    double min = +INF, max = -INF;
-    for (uint32_t i = 0; i < size; i++)
-    {
-        if (points[i] < min)
-            min = points[i];
-        if (points[i] > max)
-            max = points[i];
-    }
-    return (dvec2s){min, max};
-}
-
-
-void vky_earth_to_pixels(uint32_t point_count, dvec2* points)
-{
-    for (uint32_t i = 0; i < point_count; i++)
-    {
-        _project_lonlat(points[i][0], points[i][1], points[i]);
-    }
-    _normalize_2D(point_count, points);
-}
-
-
-
-/*************************************************************************************************/
 /*  Random                                                                                       */
 /*************************************************************************************************/
 
@@ -369,56 +269,3 @@ uint8_t rand_byte() { return rand() % 256; }
 float rand_float() { return (float)rand() / (float)(RAND_MAX); }
 
 float randn() { return sqrt(-2.0 * log(rand_float())) * cos(2 * M_PI * rand_float()); }
-
-dvec4s rand_color()
-{
-    return (dvec4s){
-        .5f + .5f * rand_float(), .5f + .5f * rand_float(), .5f + .5f * rand_float(),
-        .5f + .5f * rand_float()};
-}
-
-
-
-/*************************************************************************************************/
-/*  Debug                                                                                        */
-/*************************************************************************************************/
-
-void printvec2(vec2 p)
-{
-    for (uint32_t i = 0; i < 2; i++)
-    {
-        printf("%04f ", p[i]);
-    }
-    printf("\n");
-}
-
-void printvec3(vec3 p)
-{
-    for (uint32_t i = 0; i < 3; i++)
-    {
-        printf("%04f ", p[i]);
-    }
-    printf("\n");
-}
-
-void printvec4(vec4 p)
-{
-    for (uint32_t i = 0; i < 4; i++)
-    {
-        printf("%04f ", p[i]);
-    }
-    printf("\n");
-}
-
-void printmat4(mat4 m)
-{
-    for (uint32_t i = 0; i < 4; i++)
-    {
-        for (uint32_t j = 0; j < 4; j++)
-        {
-            printf("%04f\t", m[j][i]);
-        }
-        printf("\n");
-    }
-    printf("\n");
-}

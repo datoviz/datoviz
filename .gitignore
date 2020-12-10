@@ -1,6 +1,6 @@
 .vscode
 build*
-*_old
+*_old*
 __pycache__
 *.egg-info
 experimental

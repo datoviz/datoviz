@@ -1,6 +1,7 @@
 // #include <visky/triangulation.h>
 
 #include <array>
+#include <cstring>
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
@@ -8,7 +9,6 @@
 #include <visky/common.h>
 
 #include <earcut.hpp>
-#include <visky/triangulation.h>
 
 
 

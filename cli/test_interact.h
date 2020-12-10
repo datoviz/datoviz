@@ -101,13 +101,13 @@ static int vklite2_interact_panzoom(VkyTestContext* context)
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_WHEEL, 0, _scene_mouse_callback, &scene);
     vkl_event_callback(canvas, VKL_EVENT_KEY, 0, _scene_keyboard_callback, &scene);
 
+
+#if 0
     const uint32_t N = 10000;
     mat4 id = GLM_MAT4_IDENTITY_INIT;
     float param = 5.0f;
     VklGraphicsPointsParams params = {.point_size = param};
     VklVertex* vertices = calloc(N, sizeof(VklVertex));
-
-#if 0
     {
         VklVisual* visual = &scene.visual;
         _marker_visual(visual);
@@ -147,6 +147,9 @@ static int vklite2_interact_panzoom(VkyTestContext* context)
 #endif
 
     // vkl_app_run(app, 0);
+
+#if 0
     FREE(vertices);
+#endif
     TEST_END
 }

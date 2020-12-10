@@ -113,8 +113,32 @@ BEGIN_INCL_NO_WARN
 #include <cglm/cglm.h>
 END_INCL_NO_WARN
 
-#include "constants.h"
 #include "log.h"
+
+
+
+/*************************************************************************************************/
+/*  Built-in fixed constants                                                                     */
+/*************************************************************************************************/
+
+#define ENGINE_NAME         "Visky"
+#define APPLICATION_NAME    "Visky prototype"
+#define APPLICATION_VERSION VK_MAKE_VERSION(1, 0, 0)
+
+#define VKY_MAX_FRAMES_IN_FLIGHT 2
+
+
+
+/*************************************************************************************************/
+/*  Math                                                                                         */
+/*************************************************************************************************/
+
+#ifndef M_PI
+#define M_PI 3.141592653589793
+#endif
+#define M_2PI 6.283185307179586
+
+#define VKY_NEVER -1000000
 
 
 
@@ -214,71 +238,6 @@ typedef vec4 fvec4;
 typedef double dvec2[2];
 typedef double dvec4[4];
 
-/* struct types */
-typedef struct dvec2s dvec2s;
-struct dvec2s
-{
-    double x, y;
-};
-
-typedef struct dvec4s dvec4s;
-struct dvec4s
-{
-    double x, y, z, t;
-};
-
-
-/*************************************************************************************************/
-/*  Colors                                                                                       */
-/*************************************************************************************************/
-
-// Normal RGBA color with 4 bytes.
-typedef struct VkyColor VkyColor;
-struct VkyColor
-{
-    cvec3 rgb;
-    uint8_t alpha;
-};
-
-
-/*************************************************************************************************/
-/*  Utils                                                                                        */
-/*************************************************************************************************/
-
-// Avoid warnings with const*
-VKY_INLINE void vec3_copy(const float* input, float* output)
-{
-    memcpy(output, input, sizeof(vec3));
-}
-
-VKY_INLINE void vec4_copy(const float* input, float* output)
-{
-    memcpy(output, input, sizeof(vec4));
-}
-
-VKY_INLINE void vec4_scale(const float* input, float s, float* output)
-{
-    for (uint32_t i = 0; i < 4; i++)
-    {
-        output[i] = s * input[i];
-    }
-}
-
-
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-typedef struct VkyClock VkyClock;
-struct VkyClock
-{
-    struct timeval start, current;
-    double checkpoint_time;
-    uint64_t checkpoint_value;
-};
-
-
 
 /*************************************************************************************************/
 /*  I/O                                                                                          */
@@ -302,34 +261,10 @@ VKY_EXPORT const unsigned char* vkl_binary_shader_load(const char* name, unsigne
 
 
 /*************************************************************************************************/
-/*  Misc utils                                                                                   */
-/*************************************************************************************************/
-
-VKY_EXPORT void vky_start_timer(void);
-
-VKY_EXPORT double vky_get_timer(void);
-
-VKY_EXPORT uint64_t vky_get_fps(uint64_t frame_count);
-
-
-
-/*************************************************************************************************/
-/*  Data normalization and coordinate transforms                                                 */
-/*************************************************************************************************/
-
-VKY_EXPORT void vky_earth_to_pixels(uint32_t point_count, dvec2* points);
-
-VKY_EXPORT dvec2s vky_min_max(uint32_t size, double* points);
-
-
-
-/*************************************************************************************************/
 /*  Random                                                                                       */
 /*************************************************************************************************/
 
 VKY_EXPORT uint8_t rand_byte(void);
-
-VKY_EXPORT dvec4s rand_color(void);
 
 VKY_EXPORT float rand_float(void);
 
@@ -352,14 +287,6 @@ VKY_EXPORT float randn(void);
 /*************************************************************************************************/
 /*  Debug                                                                                        */
 /*************************************************************************************************/
-
-void printvec2(vec2 p);
-
-void printvec3(vec3 p);
-
-void printvec4(vec4 p);
-
-void printmat4(mat4 m);
 
 
 
