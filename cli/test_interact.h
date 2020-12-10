@@ -94,7 +94,7 @@ static int vklite2_interact_panzoom(VkyTestContext* context)
     scene.mouse = vkl_mouse();
     scene.keyboard = vkl_keyboard();
     scene.interact = vkl_interact_builtin(canvas, VKL_INTERACT_PANZOOM);
-    scene.visual = vkl_visual(canvas);
+    // scene.visual = vkl_visual(canvas);
 
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _scene_mouse_callback, &scene);
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_BUTTON, 0, _scene_mouse_callback, &scene);
@@ -106,6 +106,8 @@ static int vklite2_interact_panzoom(VkyTestContext* context)
     float param = 5.0f;
     VklGraphicsPointsParams params = {.point_size = param};
     VklVertex* vertices = calloc(N, sizeof(VklVertex));
+
+#if 0
     {
         VklVisual* visual = &scene.visual;
         _marker_visual(visual);
@@ -142,6 +144,7 @@ static int vklite2_interact_panzoom(VkyTestContext* context)
 
         vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _canvas_fill, visual);
     }
+#endif
 
     // vkl_app_run(app, 0);
     FREE(vertices);
