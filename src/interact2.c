@@ -156,7 +156,7 @@ void vkl_mouse_event(VklMouseState* mouse, VklCanvas* canvas, VklViewport viewpo
 
     case VKL_EVENT_MOUSE_WHEEL:
         glm_vec2_copy(ev.u.w.dir, mouse->wheel_delta);
-        log_debug("mouse wheel %.1fx%.1f", mouse->wheel_delta[0], mouse->wheel_delta[1]);
+        log_debug("mouse wheel %.1f", mouse->wheel_delta[1]);
         break;
 
     default:
@@ -249,7 +249,8 @@ static VklPanzoom _panzoom()
     return p;
 }
 
-static void _panzoom_update(VklInteract* interact)
+static void _panzoom_callback(
+    VklInteract* interact, VklViewport* viewport, VklMouseState* mouse, VklKeyboardState* keyboard)
 {
     ASSERT(interact != NULL);
     ASSERT(interact->type == VKL_INTERACT_PANZOOM);
@@ -487,7 +488,8 @@ static VklArcball _arcball()
     return a;
 }
 
-static void _arcball_update(VklInteract* interact)
+static void _arcball_callback(
+    VklInteract* interact, VklViewport* viewport, VklMouseState* mouse, VklKeyboardState* keyboard)
 {
     ASSERT(interact != NULL);
     ASSERT(interact->type == VKL_INTERACT_ARCBALL);
@@ -660,7 +662,8 @@ static VklCamera _camera(VklInteractType type)
     return c;
 }
 
-static void _camera_update(VklInteract* interact)
+static void _camera_callback(
+    VklInteract* interact, VklViewport* viewport, VklMouseState* mouse, VklKeyboardState* keyboard)
 {
     ASSERT(interact != NULL);
     switch (interact->type)
@@ -690,64 +693,60 @@ static void _camera_update(VklInteract* interact)
 /*  Interact                                                                                     */
 /*************************************************************************************************/
 
-VklInteract vkl_interact(VklCanvas* canvas, VklInteractType type)
+VklInteract vkl_interact(VklCanvas* canvas, void* user_data)
 {
     ASSERT(canvas != NULL);
     VklInteract interact = {0};
     interact.canvas = canvas;
-    interact.keyboard = vkl_keyboard();
-    interact.mouse = vkl_mouse();
-    interact.type = type;
+    interact.user_data = user_data;
+    return interact;
+}
 
+
+
+void vkl_interact_callback(VklInteract* interact, VklInteractCallback callback)
+{
+    ASSERT(interact != NULL);
+    interact->callback = callback;
+}
+
+
+
+VklInteract vkl_interact_builtin(VklCanvas* canvas, VklInteractType type)
+{
+    VklInteract interact = vkl_interact(canvas, NULL);
+    interact.type = type;
     switch (type)
     {
-
     case VKL_INTERACT_PANZOOM:
+        interact.callback = _panzoom_callback;
         interact.u.p = _panzoom();
         break;
 
     case VKL_INTERACT_ARCBALL:
+        interact.callback = _arcball_callback;
         interact.u.a = _arcball();
         break;
 
     case VKL_INTERACT_FLY:
     case VKL_INTERACT_FPS:
     case VKL_INTERACT_TURNTABLE:
+        interact.callback = _camera_callback;
         interact.u.c = _camera(type);
         break;
+
     default:
         break;
     }
-
     return interact;
 }
 
 
 
-void vkl_interact_update(VklInteract* interact, VklViewport viewport, VklEvent ev)
+void vkl_interact_update(
+    VklInteract* interact, VklViewport* viewport, VklMouseState* mouse, VklKeyboardState* keyboard)
 {
     ASSERT(interact != NULL);
-    VklCanvas* canvas = interact->canvas;
-    ASSERT(canvas != NULL);
-
-    switch (interact->type)
-    {
-
-    case VKL_INTERACT_PANZOOM:
-        _panzoom_update(interact);
-        break;
-
-    case VKL_INTERACT_ARCBALL:
-        _arcball_update(interact);
-        break;
-
-    case VKL_INTERACT_FLY:
-    case VKL_INTERACT_FPS:
-    case VKL_INTERACT_TURNTABLE:
-        _camera_update(interact);
-        break;
-
-    default:
-        break;
-    }
+    if (interact->callback != NULL)
+        interact->callback(interact, viewport, mouse, keyboard);
 }
