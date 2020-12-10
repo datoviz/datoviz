@@ -1,7 +1,7 @@
 #include "test_interact.h"
-#include "../include/visky/interact2.h"
-#include "../include/visky/visuals2.h"
-#include "test_visuals2.h"
+#include "../include/visky/interact.h"
+#include "../include/visky/visuals.h"
+#include "test_visuals.h"
 #include "utils.h"
 
 

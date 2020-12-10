@@ -2,7 +2,7 @@
 #define VKL_VKLITE_UTILS_HEADER
 
 
-#include "../include/visky/vklite2.h"
+#include "../include/visky/vklite.h"
 
 
 

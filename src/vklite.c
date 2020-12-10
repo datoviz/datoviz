@@ -1,6 +1,6 @@
-#include "../include/visky/vklite2.h"
+#include "../include/visky/vklite.h"
 #include "spirv.h"
-#include "vklite2_utils.h"
+#include "vklite_utils.h"
 #include <stdlib.h>
 
 BEGIN_INCL_NO_WARN

@@ -1,5 +1,5 @@
-#include "test_visuals2.h"
-#include "../include/visky/visuals2.h"
+#include "../include/visky/visuals.h"
+#include "test_visuals.h"
 #include "utils.h"
 
 

@@ -1,7 +1,7 @@
 #ifndef VKY_TEST_VISUALS_HEADER
 #define VKY_TEST_VISUALS_HEADER
 
-#include "../include/visky/visuals2.h"
+#include "../include/visky/visuals.h"
 #include "utils.h"
 
 

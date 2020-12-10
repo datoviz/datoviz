@@ -1,7 +1,7 @@
-#include "test_vklite2.h"
+#include "test_vklite.h"
 #include "../include/visky/context.h"
 #include "../src/spirv.h"
-#include "../src/vklite2_utils.h"
+#include "../src/vklite_utils.h"
 #include "utils.h"
 
 

@@ -2,7 +2,7 @@
 #define VKL_GRAPHICS_HEADER
 
 #include "canvas.h"
-#include "vklite2.h"
+#include "vklite.h"
 
 
 

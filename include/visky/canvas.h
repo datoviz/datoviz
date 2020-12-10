@@ -9,7 +9,7 @@
 
 #include "../include/visky/context.h"
 #include "keycode.h"
-#include "vklite2.h"
+#include "vklite.h"
 
 
 /*************************************************************************************************/

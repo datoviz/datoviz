@@ -8,7 +8,7 @@ extern "C" {
 #include "canvas.h"
 #include "common.h"
 #include "context.h"
-#include "vklite2.h"
+#include "vklite.h"
 
 
 #ifdef __cplusplus

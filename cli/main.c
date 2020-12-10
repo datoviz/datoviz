@@ -1,12 +1,12 @@
 #include <unistd.h>
-#include <visky/visky2.h>
+#include <visky/visky.h>
 
 #include "test_array.h"
 #include "test_canvas.h"
 #include "test_graphics.h"
 #include "test_interact.h"
-#include "test_visuals2.h"
-#include "test_vklite2.h"
+#include "test_visuals.h"
+#include "test_vklite.h"
 #include "utils.h"
 
 

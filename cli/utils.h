@@ -1,8 +1,8 @@
 #ifndef VKL_TEST_UTILS_HEADER
 #define VKL_TEST_UTILS_HEADER
 
-#include "../include/visky/visky2.h"
-#include "../src/vklite2_utils.h"
+#include "../include/visky/visky.h"
+#include "../src/vklite_utils.h"
 
 
 

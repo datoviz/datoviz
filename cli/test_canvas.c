@@ -1,7 +1,7 @@
 #include "test_canvas.h"
 #include "../include/visky/canvas.h"
 #include "../include/visky/context.h"
-#include "../src/vklite2_utils.h"
+#include "../src/vklite_utils.h"
 #include "utils.h"
 
 

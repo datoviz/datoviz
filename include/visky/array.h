@@ -1,7 +1,7 @@
 #ifndef VKL_ARRAY_HEADER
 #define VKL_ARRAY_HEADER
 
-#include "vklite2.h"
+#include "vklite.h"
 
 
 

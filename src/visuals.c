@@ -1,6 +1,6 @@
-#include "../include/visky/visuals2.h"
 #include "../include/visky/canvas.h"
 #include "../include/visky/graphics.h"
+#include "../include/visky/visuals.h"
 
 
 

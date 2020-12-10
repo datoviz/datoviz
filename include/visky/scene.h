@@ -3,8 +3,8 @@
 
 #include "context.h"
 #include "graphics.h"
-#include "visuals2.h"
-#include "vklite2.h"
+#include "visuals.h"
+#include "vklite.h"
 
 
 

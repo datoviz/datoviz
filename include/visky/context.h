@@ -1,7 +1,7 @@
 #ifndef VKL_CONTEXT_HEADER
 #define VKL_CONTEXT_HEADER
 
-#include "vklite2.h"
+#include "vklite.h"
 
 
 

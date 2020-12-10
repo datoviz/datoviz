@@ -1,7 +1,7 @@
-#include "../include/visky/scene2.h"
+#include "../include/visky/scene.h"
 #include "../include/visky/canvas.h"
-#include "../include/visky/visuals2.h"
-#include "../include/visky/vklite2.h"
+#include "../include/visky/visuals.h"
+#include "../include/visky/vklite.h"
 
 
 

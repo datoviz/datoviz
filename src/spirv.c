@@ -1,5 +1,5 @@
 #include "spirv.h"
-#include "../include/visky/vklite2.h"
+#include "../include/visky/vklite.h"
 
 
 #if HAS_GLSLANG
