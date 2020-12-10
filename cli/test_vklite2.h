@@ -10,7 +10,7 @@
 /*  vklite2                                                                                      */
 /*************************************************************************************************/
 
-static int vklite2_app(VkyTestContext* context)
+static int test_app(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     AT(app->obj.status == VKL_OBJECT_STATUS_CREATED);
@@ -29,7 +29,7 @@ static int vklite2_app(VkyTestContext* context)
 
 
 
-static int vklite2_surface(VkyTestContext* context)
+static int test_surface(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -48,7 +48,7 @@ static int vklite2_surface(VkyTestContext* context)
 
 
 
-static int vklite2_window(VkyTestContext* context)
+static int test_window(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklWindow* window = vkl_window(app, 100, 100);
@@ -59,7 +59,7 @@ static int vklite2_window(VkyTestContext* context)
 
 
 
-static int vklite2_swapchain(VkyTestContext* context)
+static int test_swapchain(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklWindow* window = vkl_window(app, 100, 100);
@@ -79,7 +79,7 @@ static int vklite2_swapchain(VkyTestContext* context)
 
 
 
-static int vklite2_commands(VkyTestContext* context)
+static int test_commands(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -96,7 +96,7 @@ static int vklite2_commands(VkyTestContext* context)
 
 
 
-static int vklite2_buffer(VkyTestContext* context)
+static int test_buffer(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -135,7 +135,7 @@ static int vklite2_buffer(VkyTestContext* context)
 
 
 
-static int vklite2_compute(VkyTestContext* context)
+static int test_compute(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -201,7 +201,7 @@ static int vklite2_compute(VkyTestContext* context)
 
 
 
-static int vklite2_push(VkyTestContext* context)
+static int test_push(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -270,7 +270,7 @@ static int vklite2_push(VkyTestContext* context)
 
 
 
-static int vklite2_images(VkyTestContext* context)
+static int test_images(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -293,7 +293,7 @@ static int vklite2_images(VkyTestContext* context)
 
 
 
-static int vklite2_sampler(VkyTestContext* context)
+static int test_sampler(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -313,7 +313,7 @@ static int vklite2_sampler(VkyTestContext* context)
 
 
 
-static int vklite2_barrier(VkyTestContext* context)
+static int test_barrier(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -370,7 +370,7 @@ static int vklite2_barrier(VkyTestContext* context)
 
 
 
-static int vklite2_submit(VkyTestContext* context)
+static int test_submit(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -475,7 +475,7 @@ static int vklite2_submit(VkyTestContext* context)
 
 
 
-static int vklite2_blank(VkyTestContext* context)
+static int test_blank(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -517,7 +517,7 @@ static void _make_triangle(TestCanvas* canvas, TestVisual* visual)
 
 
 
-static int vklite2_graphics(VkyTestContext* context)
+static int test_graphics(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -541,7 +541,7 @@ static int vklite2_graphics(VkyTestContext* context)
 
 
 
-static int vklite2_basic_canvas_1(VkyTestContext* context)
+static int test_basic_canvas_1(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
 
@@ -563,7 +563,7 @@ static int vklite2_basic_canvas_1(VkyTestContext* context)
 
 
 
-static int vklite2_basic_canvas_triangle(VkyTestContext* context)
+static int test_basic_canvas_triangle(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
 
@@ -588,7 +588,7 @@ static int vklite2_basic_canvas_triangle(VkyTestContext* context)
 
 
 
-static int vklite2_shader_compile(VkyTestContext* context)
+static int test_shader_compile(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_OFFSCREEN);
 
@@ -647,7 +647,7 @@ static void* _fifo_thread_2(void* arg)
 
 
 
-static int vklite2_fifo(VkyTestContext* context)
+static int test_fifo(VkyTestContext* context)
 {
     VklFifo fifo = vkl_fifo(8);
     uint8_t item = 12;
@@ -692,7 +692,7 @@ static int vklite2_fifo(VkyTestContext* context)
 /*  Context                                                                                   */
 /*************************************************************************************************/
 
-static int vklite2_context_buffer(VkyTestContext* context)
+static int test_context_buffer(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -752,7 +752,7 @@ static int vklite2_context_buffer(VkyTestContext* context)
 
 
 
-static int vklite2_context_texture(VkyTestContext* context)
+static int test_context_texture(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -765,7 +765,7 @@ static int vklite2_context_texture(VkyTestContext* context)
 
 
 
-static int vklite2_context_transfer_sync(VkyTestContext* context)
+static int test_context_transfer_sync(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -795,7 +795,7 @@ static int vklite2_context_transfer_sync(VkyTestContext* context)
 
 
 
-static int vklite2_context_copy(VkyTestContext* context)
+static int test_context_copy(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -839,7 +839,7 @@ static int vklite2_context_copy(VkyTestContext* context)
 
 
 
-static int vklite2_context_transfer_async_nothread(VkyTestContext* context)
+static int test_context_transfer_async_nothread(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -891,7 +891,7 @@ static void* _thread_enqueue(void* arg)
     return NULL;
 }
 
-static int vklite2_context_transfer_async_thread(VkyTestContext* context)
+static int test_context_transfer_async_thread(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -947,7 +947,7 @@ static void* _thread_download(void* arg)
     return NULL;
 }
 
-static int vklite2_context_download(VkyTestContext* context)
+static int test_context_download(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -978,7 +978,7 @@ static int vklite2_context_download(VkyTestContext* context)
 
 
 
-static int vklite2_default_app(VkyTestContext* context)
+static int test_default_app(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);

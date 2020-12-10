@@ -39,7 +39,7 @@ static void _keyboard_callback(VklCanvas* canvas, VklEvent ev)
     vkl_keyboard_event(keyboard, canvas, ev);
 }
 
-static int vklite2_interact_1(VkyTestContext* context)
+static int test_interact_1(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -84,7 +84,7 @@ static void _scene_keyboard_callback(VklCanvas* canvas, VklEvent ev)
     vkl_interact_update(&scene->interact, viewport, &scene->mouse, &scene->keyboard);
 }
 
-static int vklite2_interact_panzoom(VkyTestContext* context)
+static int test_interact_panzoom(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -94,15 +94,13 @@ static int vklite2_interact_panzoom(VkyTestContext* context)
     scene.mouse = vkl_mouse();
     scene.keyboard = vkl_keyboard();
     scene.interact = vkl_interact_builtin(canvas, VKL_INTERACT_PANZOOM);
-    // scene.visual = vkl_visual(canvas);
+    scene.visual = vkl_visual(canvas);
 
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _scene_mouse_callback, &scene);
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_BUTTON, 0, _scene_mouse_callback, &scene);
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_WHEEL, 0, _scene_mouse_callback, &scene);
     vkl_event_callback(canvas, VKL_EVENT_KEY, 0, _scene_keyboard_callback, &scene);
 
-
-#if 0
     const uint32_t N = 10000;
     mat4 id = GLM_MAT4_IDENTITY_INIT;
     float param = 5.0f;
@@ -144,12 +142,9 @@ static int vklite2_interact_panzoom(VkyTestContext* context)
 
         vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _canvas_fill, visual);
     }
-#endif
 
-    // vkl_app_run(app, 0);
+    vkl_app_run(app, 0);
 
-#if 0
     FREE(vertices);
-#endif
     TEST_END
 }

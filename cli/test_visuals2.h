@@ -127,7 +127,7 @@ static void _canvas_fill(VklCanvas* canvas, VklPrivateEvent ev)
 
 
 
-static int vklite2_visuals_1(VkyTestContext* context)
+static int test_visuals_1(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -206,7 +206,7 @@ static int vklite2_visuals_1(VkyTestContext* context)
 
 
 
-static int vklite2_visuals_2(VkyTestContext* context)
+static int test_visuals_2(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);

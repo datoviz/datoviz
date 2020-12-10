@@ -36,7 +36,7 @@ static void _key_callback(VklCanvas* canvas, VklEvent ev)
         log_debug("key code %d", ev.u.k.key_code);
 }
 
-static int vklite2_canvas_1(VkyTestContext* context)
+static int test_canvas_1(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -113,7 +113,7 @@ static void _timer_callback(VklCanvas* canvas, VklPrivateEvent ev)
     vkl_canvas_clear_color(canvas, (VkClearColorValue){{x, 0, 0, 1}});
 }
 
-static int vklite2_canvas_2(VkyTestContext* context)
+static int test_canvas_2(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -170,7 +170,7 @@ static void _triangle_refill(VklCanvas* canvas, VklPrivateEvent ev)
 }
 
 // Triangle canvas
-static int vklite2_canvas_3(VkyTestContext* context)
+static int test_canvas_3(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -238,7 +238,7 @@ static void _push_cursor_callback(VklCanvas* canvas, VklEvent ev)
     vkl_canvas_to_refill(canvas, true);
 }
 
-static int vklite2_canvas_4(VkyTestContext* context)
+static int test_canvas_4(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -320,7 +320,7 @@ static void _vertex_cursor_callback(VklCanvas* canvas, VklEvent ev)
     vkl_upload_buffers(canvas->gpu->context, visual->br, 0, 3 * sizeof(TestVertex), data);
 }
 
-static int vklite2_canvas_5(VkyTestContext* context)
+static int test_canvas_5(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -390,7 +390,7 @@ static void _uniform_cursor_callback(VklCanvas* canvas, VklEvent ev)
     vkl_upload_buffers(canvas->gpu->context, visual->br_u, 0, sizeof(vec4), vec);
 }
 
-static int vklite2_canvas_6(VkyTestContext* context)
+static int test_canvas_6(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -483,7 +483,7 @@ static void _triangle_compute_refill(VklCanvas* canvas, VklPrivateEvent ev)
     vkl_cmd_end(cmds, idx);
 }
 
-static int vklite2_canvas_7(VkyTestContext* context)
+static int test_canvas_7(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -541,7 +541,7 @@ static void _triangle_compute(VklCanvas* canvas, VklPrivateEvent ev)
     vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_COMPUTE);
 }
 
-static int vklite2_canvas_8(VkyTestContext* context)
+static int test_canvas_8(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -704,7 +704,7 @@ static void _particle_refill(VklCanvas* canvas, VklPrivateEvent ev)
     vkl_cmd_end(cmds, idx);
 }
 
-static int vklite2_canvas_particles(VkyTestContext* context)
+static int test_canvas_particles(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -857,7 +857,7 @@ static int vklite2_canvas_particles(VkyTestContext* context)
 /*  Canvas offscreen                                                                             */
 /*************************************************************************************************/
 
-static int vklite2_canvas_offscreen(VkyTestContext* context)
+static int test_canvas_offscreen(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_OFFSCREEN);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -887,7 +887,7 @@ static void _screencast_callback(VklCanvas* canvas, VklEvent ev)
     FREE(ev.u.s.rgba);
 }
 
-static int vklite2_canvas_screencast(VkyTestContext* context)
+static int test_canvas_screencast(VkyTestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);

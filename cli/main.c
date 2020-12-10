@@ -148,68 +148,68 @@ struct VkyTestCase
 static VkyTestCase TEST_CASES[] = {
 
     // vklite2
-    CASE_FIXTURE_NONE(vklite2_app),                   //
-    CASE_FIXTURE_NONE(vklite2_surface),               //
-    CASE_FIXTURE_NONE(vklite2_window),                //
-    CASE_FIXTURE_NONE(vklite2_swapchain),             //
-    CASE_FIXTURE_NONE(vklite2_commands),              //
-    CASE_FIXTURE_NONE(vklite2_buffer),                //
-    CASE_FIXTURE_NONE(vklite2_compute),               //
-    CASE_FIXTURE_NONE(vklite2_push),                  //
-    CASE_FIXTURE_NONE(vklite2_images),                //
-    CASE_FIXTURE_NONE(vklite2_sampler),               //
-    CASE_FIXTURE_NONE(vklite2_barrier),               //
-    CASE_FIXTURE_NONE(vklite2_submit),                //
-    CASE_FIXTURE_NONE(vklite2_blank),                 //
-    CASE_FIXTURE_NONE(vklite2_graphics),              //
-    CASE_FIXTURE_NONE(vklite2_basic_canvas_1),        //
-    CASE_FIXTURE_NONE(vklite2_basic_canvas_triangle), //
-    CASE_FIXTURE_NONE(vklite2_shader_compile),        //
+    CASE_FIXTURE_NONE(test_app),                   //
+    CASE_FIXTURE_NONE(test_surface),               //
+    CASE_FIXTURE_NONE(test_window),                //
+    CASE_FIXTURE_NONE(test_swapchain),             //
+    CASE_FIXTURE_NONE(test_commands),              //
+    CASE_FIXTURE_NONE(test_buffer),                //
+    CASE_FIXTURE_NONE(test_compute),               //
+    CASE_FIXTURE_NONE(test_push),                  //
+    CASE_FIXTURE_NONE(test_images),                //
+    CASE_FIXTURE_NONE(test_sampler),               //
+    CASE_FIXTURE_NONE(test_barrier),               //
+    CASE_FIXTURE_NONE(test_submit),                //
+    CASE_FIXTURE_NONE(test_blank),                 //
+    CASE_FIXTURE_NONE(test_graphics),              //
+    CASE_FIXTURE_NONE(test_basic_canvas_1),        //
+    CASE_FIXTURE_NONE(test_basic_canvas_triangle), //
+    CASE_FIXTURE_NONE(test_shader_compile),        //
 
     // context
-    CASE_FIXTURE_NONE(vklite2_fifo),                            //
-    CASE_FIXTURE_NONE(vklite2_context_buffer),                  //
-    CASE_FIXTURE_NONE(vklite2_context_texture),                 //
-    CASE_FIXTURE_NONE(vklite2_context_copy),                    //
-    CASE_FIXTURE_NONE(vklite2_context_transfer_sync),           //
-    CASE_FIXTURE_NONE(vklite2_context_transfer_async_nothread), //
-    CASE_FIXTURE_NONE(vklite2_context_transfer_async_thread),   //
-    CASE_FIXTURE_NONE(vklite2_context_download),                //
-    CASE_FIXTURE_NONE(vklite2_default_app),                     //
+    CASE_FIXTURE_NONE(test_fifo),                            //
+    CASE_FIXTURE_NONE(test_context_buffer),                  //
+    CASE_FIXTURE_NONE(test_context_texture),                 //
+    CASE_FIXTURE_NONE(test_context_copy),                    //
+    CASE_FIXTURE_NONE(test_context_transfer_sync),           //
+    CASE_FIXTURE_NONE(test_context_transfer_async_nothread), //
+    CASE_FIXTURE_NONE(test_context_transfer_async_thread),   //
+    CASE_FIXTURE_NONE(test_context_download),                //
+    CASE_FIXTURE_NONE(test_default_app),                     //
 
     // canvas
-    CASE_FIXTURE_NONE(vklite2_canvas_1),          //
-    CASE_FIXTURE_NONE(vklite2_canvas_2),          //
-    CASE_FIXTURE_NONE(vklite2_canvas_3),          //
-    CASE_FIXTURE_NONE(vklite2_canvas_4),          //
-    CASE_FIXTURE_NONE(vklite2_canvas_5),          //
-    CASE_FIXTURE_NONE(vklite2_canvas_6),          //
-    CASE_FIXTURE_NONE(vklite2_canvas_7),          //
-    CASE_FIXTURE_NONE(vklite2_canvas_8),          //
-    CASE_FIXTURE_NONE(vklite2_canvas_particles),  //
-    CASE_FIXTURE_NONE(vklite2_canvas_offscreen),  //
-    CASE_FIXTURE_NONE(vklite2_canvas_screencast), //
+    CASE_FIXTURE_NONE(test_canvas_1),          //
+    CASE_FIXTURE_NONE(test_canvas_2),          //
+    CASE_FIXTURE_NONE(test_canvas_3),          //
+    CASE_FIXTURE_NONE(test_canvas_4),          //
+    CASE_FIXTURE_NONE(test_canvas_5),          //
+    CASE_FIXTURE_NONE(test_canvas_6),          //
+    CASE_FIXTURE_NONE(test_canvas_7),          //
+    CASE_FIXTURE_NONE(test_canvas_8),          //
+    CASE_FIXTURE_NONE(test_canvas_particles),  //
+    CASE_FIXTURE_NONE(test_canvas_offscreen),  //
+    CASE_FIXTURE_NONE(test_canvas_screencast), //
 
     // graphics
-    CASE_FIXTURE_NONE(vklite2_graphics_dynamic), //
-    CASE_FIXTURE_NONE(vklite2_graphics_3D),      //
-    CASE_FIXTURE_NONE(vklite2_graphics_points),  //
+    CASE_FIXTURE_NONE(test_graphics_dynamic), //
+    CASE_FIXTURE_NONE(test_graphics_3D),      //
+    CASE_FIXTURE_NONE(test_graphics_points),  //
 
     // array
-    CASE_FIXTURE_NONE(vklite2_array_1),   //
-    CASE_FIXTURE_NONE(vklite2_array_2),   //
-    CASE_FIXTURE_NONE(vklite2_array_3),   //
-    CASE_FIXTURE_NONE(vklite2_array_4),   //
-    CASE_FIXTURE_NONE(vklite2_array_mvp), //
-    CASE_FIXTURE_NONE(vklite2_array_3D),  //
+    CASE_FIXTURE_NONE(test_array_1),   //
+    CASE_FIXTURE_NONE(test_array_2),   //
+    CASE_FIXTURE_NONE(test_array_3),   //
+    CASE_FIXTURE_NONE(test_array_4),   //
+    CASE_FIXTURE_NONE(test_array_mvp), //
+    CASE_FIXTURE_NONE(test_array_3D),  //
 
     // visuals
-    CASE_FIXTURE_NONE(vklite2_visuals_1), //
-    CASE_FIXTURE_NONE(vklite2_visuals_2), //
+    CASE_FIXTURE_NONE(test_visuals_1), //
+    CASE_FIXTURE_NONE(test_visuals_2), //
 
     // interact
-    CASE_FIXTURE_NONE(vklite2_interact_1),       //
-    CASE_FIXTURE_NONE(vklite2_interact_panzoom), //
+    CASE_FIXTURE_NONE(test_interact_1),       //
+    CASE_FIXTURE_NONE(test_interact_panzoom), //
 
 
 

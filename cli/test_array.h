@@ -12,7 +12,7 @@
 /*  Graphics tests                                                                               */
 /*************************************************************************************************/
 
-static int vklite2_array_1(VkyTestContext* context)
+static int test_array_1(VkyTestContext* context)
 {
     uint8_t values[] = {1, 2, 3, 4, 5, 6};
 
@@ -32,7 +32,7 @@ static int vklite2_array_1(VkyTestContext* context)
 
 
 
-static int vklite2_array_2(VkyTestContext* context)
+static int test_array_2(VkyTestContext* context)
 {
     float values[] = {1, 2, 3, 4, 5, 6};
 
@@ -77,7 +77,7 @@ struct _TestDtype
     float b;
 };
 
-static int vklite2_array_3(VkyTestContext* context)
+static int test_array_3(VkyTestContext* context)
 {
     // uint8, float32
     VklArray arr = vkl_array_struct(3, sizeof(_TestDtype));
@@ -118,7 +118,7 @@ static int vklite2_array_3(VkyTestContext* context)
 
 
 
-static int vklite2_array_4(VkyTestContext* context)
+static int test_array_4(VkyTestContext* context)
 {
     uint8_t values[] = {1, 2, 3, 4, 5, 6};
 
@@ -144,7 +144,7 @@ struct _mvp
     mat4 proj;
 };
 
-static int vklite2_array_mvp(VkyTestContext* context)
+static int test_array_mvp(VkyTestContext* context)
 {
     VklArray arr = vkl_array_struct(1, sizeof(_mvp));
 
@@ -174,7 +174,7 @@ static int vklite2_array_mvp(VkyTestContext* context)
 
 
 
-static int vklite2_array_3D(VkyTestContext* context)
+static int test_array_3D(VkyTestContext* context)
 {
     VklArray arr = vkl_array_3D(2, 2, 3, 1, VKL_DTYPE_CHAR);
 
