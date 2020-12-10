@@ -62,7 +62,7 @@ typedef enum
 
 // Interact callback.
 typedef void (*VklInteractCallback)(
-    VklInteract* interact, VklViewport* viewport, //
+    VklInteract* interact, VklViewport viewport, //
     VklMouseState* mouse, VklKeyboardState* keyboard);
 
 
@@ -199,8 +199,7 @@ VKY_EXPORT void vkl_interact_callback(VklInteract* interact, VklInteractCallback
 VKY_EXPORT VklInteract vkl_interact_builtin(VklCanvas* canvas, VklInteractType type);
 
 VKY_EXPORT void vkl_interact_update(
-    VklInteract* interact, VklViewport* viewport, VklMouseState* mouse,
-    VklKeyboardState* keyboard);
+    VklInteract* interact, VklViewport viewport, VklMouseState* mouse, VklKeyboardState* keyboard);
 
 
 #endif

@@ -22,6 +22,9 @@ layout (binding = 2) uniform sampler2D color_tex;
 
 vec4 transform(vec3 pos) {
     vec4 tr = (mvp.proj * mvp.view * mvp.model) * vec4(pos, 1.0);
+    // HACK: we transform from OpenGL conventional coordinate system to Vulkan
+    // This allows us to use MVP matrices in OpenGL conventions.
     tr.y = -tr.y; // Vulkan swaps top and bottom in its device coordinate system.
+    tr.z = .5 * (1.0 - tr.z); // depth is [-1, 1] in OpenGL but [0, 1] in Vulkan
     return tr;
 }
