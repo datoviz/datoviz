@@ -12,12 +12,12 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define VKL_MAX_GRAPHICS_PER_VISUAL 256
-#define VKL_MAX_COMPUTES_PER_VISUAL 256
-#define VKL_MAX_VISUAL_GROUPS       16384
-#define VKL_MAX_VISUAL_SOURCES      256
-#define VKL_MAX_VISUAL_RESOURCES    256
-#define VKL_MAX_VISUAL_PROPS        256
+#define VKL_MAX_GRAPHICS_PER_VISUAL 64
+#define VKL_MAX_COMPUTES_PER_VISUAL 64
+#define VKL_MAX_VISUAL_GROUPS       1024
+#define VKL_MAX_VISUAL_SOURCES      64
+#define VKL_MAX_VISUAL_RESOURCES    64
+#define VKL_MAX_VISUAL_PROPS        64
 
 
 

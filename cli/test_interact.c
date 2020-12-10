@@ -62,8 +62,12 @@ static void _scene_mouse_callback(VklCanvas* canvas, VklEvent ev)
     vkl_mouse_event(&scene->mouse, canvas, ev);
     vkl_interact_update(&scene->interact, viewport, &scene->mouse, &scene->keyboard);
 
-    vkl_visual_data(&scene->visual, VKL_PROP_VIEW, 0, 1, scene->interact.mvp.view);
-    vkl_visual_data(&scene->visual, VKL_PROP_PROJ, 0, 1, scene->interact.mvp.proj);
+    if (scene->interact.to_update)
+    {
+        vkl_visual_data(&scene->visual, VKL_PROP_VIEW, 0, 1, scene->interact.mvp.view);
+        vkl_visual_data(&scene->visual, VKL_PROP_PROJ, 0, 1, scene->interact.mvp.proj);
+        vkl_visual_update(&scene->visual, viewport, (VklDataCoords){0}, NULL);
+    }
 }
 
 static void _scene_keyboard_callback(VklCanvas* canvas, VklEvent ev)

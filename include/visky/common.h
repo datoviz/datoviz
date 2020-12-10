@@ -110,6 +110,7 @@ int gettimeofday(struct timeval* tp, struct timezone* tzp)
 
 
 BEGIN_INCL_NO_WARN
+#define CGLM_DEFINE_PRINTS
 #include <cglm/cglm.h>
 END_INCL_NO_WARN
 

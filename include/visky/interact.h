@@ -178,6 +178,7 @@ struct VklInteract
     VklInteractCallback callback;
     VklMVP mvp;
     VklInteractUnion u;
+    bool to_update;
     void* user_data;
 };
 

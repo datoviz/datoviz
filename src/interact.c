@@ -81,7 +81,7 @@ void vkl_mouse_event(VklMouse* mouse, VklCanvas* canvas, VklEvent ev)
             // End drag.
             if (mouse->cur_state == VKL_MOUSE_STATE_DRAG)
             {
-                log_debug("end drag event");
+                log_trace("end drag event");
                 mouse->cur_state = VKL_MOUSE_STATE_INACTIVE;
                 mouse->button = VKL_MOUSE_BUTTON_NONE;
             }
@@ -91,7 +91,7 @@ void vkl_mouse_event(VklMouse* mouse, VklCanvas* canvas, VklEvent ev)
             {
                 // NOTE: when releasing, current button is NONE so we must use the previously set
                 // button in mouse->button.
-                log_debug("double click event on button %d", mouse->button);
+                log_trace("double click event on button %d", mouse->button);
                 mouse->cur_state = VKL_MOUSE_STATE_DOUBLE_CLICK;
                 mouse->click_time = time;
             }
@@ -101,7 +101,7 @@ void vkl_mouse_event(VklMouse* mouse, VklCanvas* canvas, VklEvent ev)
                 time - mouse->press_time < VKL_MOUSE_CLICK_MAX_DELAY &&
                 mouse->shift_length < VKL_MOUSE_CLICK_MAX_SHIFT)
             {
-                log_debug("click event on button %d", mouse->button);
+                log_trace("click event on button %d", mouse->button);
                 mouse->cur_state = VKL_MOUSE_STATE_CLICK;
                 mouse->click_time = time;
             }
@@ -116,7 +116,7 @@ void vkl_mouse_event(VklMouse* mouse, VklCanvas* canvas, VklEvent ev)
         mouse->shift_length = 0;
         // mouse->button = ev.u.b.button;
 
-        // log_debug("mouse button %d", mouse->button);
+        // log_trace("mouse button %d", mouse->button);
         break;
 
 
@@ -137,17 +137,17 @@ void vkl_mouse_event(VklMouse* mouse, VklCanvas* canvas, VklEvent ev)
             if (mouse->cur_state == VKL_MOUSE_STATE_INACTIVE &&
                 mouse->button != VKL_MOUSE_BUTTON_NONE)
             {
-                log_debug("drag event on button %d", mouse->button);
+                log_trace("drag event on button %d", mouse->button);
                 mouse->cur_state = VKL_MOUSE_STATE_DRAG;
             }
         }
-        // log_debug("mouse mouse %.1fx%.1f", mouse->cur_pos[0], mouse->cur_pos[1]);
+        // log_trace("mouse mouse %.1fx%.1f", mouse->cur_pos[0], mouse->cur_pos[1]);
         break;
 
 
     case VKL_EVENT_MOUSE_WHEEL:
         glm_vec2_copy(ev.u.w.dir, mouse->wheel_delta);
-        log_debug("mouse wheel %.1f", mouse->wheel_delta[1]);
+        log_trace("mouse wheel %.1f", mouse->wheel_delta[1]);
         break;
 
     default:
@@ -156,6 +156,12 @@ void vkl_mouse_event(VklMouse* mouse, VklCanvas* canvas, VklEvent ev)
 }
 
 
+
+static void _normalize(vec2 pos_out, vec2 pos_in, uvec2 size)
+{
+    pos_out[0] = -1 + 2 * (pos_in[0] / size[0]);
+    pos_out[1] = +1 - 2 * (pos_in[1] / size[1]);
+}
 
 // From pixel coordinates (top left origin) to local coordinates (center origin)
 void vkl_mouse_local(
@@ -168,30 +174,25 @@ void vkl_mouse_local(
     ASSERT(size_screen[0] > 0);
     ASSERT(size_screen[1] > 0);
 
-    // Viewport in framebuffer coordinates.
-    // float x = viewport.viewport.x;
-    // float y = viewport.viewport.y;
-    float width = viewport.viewport.width;
-    float height = viewport.viewport.height;
+    // // Viewport in framebuffer coordinates.
+    // // float x = viewport.viewport.x;
+    // // float y = viewport.viewport.y;
+    // float width = viewport.viewport.width;
+    // float height = viewport.viewport.height;
 
-    // Scaling from screen coordinates to framebuffer coordinates.
-    float ax = width / size_screen[0];
-    float ay = height / size_screen[1];
+    // // Scaling from screen coordinates to framebuffer coordinates.
+    // float ax = width / size_screen[0];
+    // float ay = height / size_screen[1];
 
-    mouse_local->cur_pos[0] = -1 + 2 * (mouse->cur_pos[0] / size_screen[0]);
-    mouse_local->cur_pos[1] = +1 - 2 * (mouse->cur_pos[1] / size_screen[1]);
-
-    mouse_local->last_pos[1] = +1 - 2 * (mouse->last_pos[1] / size_screen[1]);
-    mouse_local->last_pos[1] = +1 - 2 * (mouse->last_pos[1] / size_screen[1]);
-
-    mouse_local->press_pos[0] = -1 + 2 * (mouse->press_pos[0] / size_screen[0]);
-    mouse_local->press_pos[0] = -1 + 2 * (mouse->press_pos[0] / size_screen[0]);
+    _normalize(mouse_local->cur_pos, mouse->cur_pos, size_screen);
+    _normalize(mouse_local->last_pos, mouse->last_pos, size_screen);
+    _normalize(mouse_local->press_pos, mouse->press_pos, size_screen);
 
     mouse_local->delta[0] = mouse_local->cur_pos[0] - mouse_local->last_pos[0];
     mouse_local->delta[1] = mouse_local->cur_pos[1] - mouse_local->last_pos[1];
 
-    mouse_local->delta[0] *= ax;
-    mouse_local->delta[1] *= ay;
+    // mouse_local->delta[0] *= ax;
+    // mouse_local->delta[1] *= ay;
 }
 
 
@@ -237,7 +238,7 @@ void vkl_keyboard_event(VklKeyboard* keyboard, VklCanvas* canvas, VklEvent ev)
         return;
     if (ev.u.k.type == VKL_KEY_PRESS)
     {
-        log_debug("key pressed %d mods %d", key, ev.u.k.modifiers);
+        log_trace("key pressed %d mods %d", key, ev.u.k.modifiers);
         keyboard->key_code = key;
         keyboard->modifiers = ev.u.k.modifiers;
         keyboard->press_time = time;
@@ -273,6 +274,7 @@ static void _panzoom_callback(
     ASSERT(interact->type == VKL_INTERACT_PANZOOM);
     VklCanvas* canvas = interact->canvas;
     VklPanzoom* panzoom = &interact->u.p;
+    bool update = false;
 
     // TODO
     float aspect_ratio = 1;
@@ -300,11 +302,13 @@ static void _panzoom_callback(
 
         vec2 delta = {interact->mouse_local.delta[0], interact->mouse_local.delta[1]};
 
-        if (aspect_ratio == 1)
-            delta[0] *= size_b[0] / size_b[1];
+        // if (aspect_ratio == 1)
+        //     delta[0] *= size_b[0] / size_b[1];
 
         panzoom->camera_pos[0] -= delta[0] / panzoom->zoom[0];
         panzoom->camera_pos[1] -= delta[1] / panzoom->zoom[1];
+
+        update = true;
     } // end pan
 
     // Zoom.
@@ -403,12 +407,13 @@ static void _panzoom_callback(
             panzoom->camera_pos[0] -= pan[0] / panzoom->zoom[0];
         if (!panzoom->lim_reached[1])
             panzoom->camera_pos[1] -= pan[1] / panzoom->zoom[1];
+
+        update = true;
     } // end zoom
 
     // Reset on double-click.
     if (mouse->cur_state == VKL_MOUSE_STATE_DOUBLE_CLICK)
     {
-
         // TODO
         // // Restrict the panzoom updates to cases when the mouse press position was in the panel.
         // if (vkl_panel_from_mouse(scene, mouse->cur_pos) != panel)
@@ -419,33 +424,38 @@ static void _panzoom_callback(
         panzoom->camera_pos[1] = 0;
         panzoom->zoom[0] = 1;
         panzoom->zoom[1] = 1;
+
+        update = true;
     }
 
-    if (mouse->cur_state == VKL_MOUSE_STATE_INACTIVE)
+    // if (mouse->cur_state == VKL_MOUSE_STATE_INACTIVE)
+    // {
+    //     panel->status = VKL_PANEL_STATUS_NONE;
+    // }
+
+    if (update)
     {
-        // panel->status = VKL_PANEL_STATUS_NONE;
+        // Update the MVP struct.
+        // View matrix (depends on the pan).
+        vec3 center;
+        glm_vec3_copy(panzoom->camera_pos, center);
+        center[2] = 0.0f; // only the z coord changes between panel and center.
+        vec3 lookup = {0, 1, 0};
+        glm_lookat(panzoom->camera_pos, center, lookup, interact->mvp.view);
+
+        // Proj matrix (depends on the zoom).
+        float zx = panzoom->zoom[0];
+        float zy = panzoom->zoom[1];
+        // TODO: other aspect ratios
+        if (aspect_ratio == 1)
+        {
+            zx *= size_b[1] / (float)size_b[0];
+        }
+        glm_ortho(
+            -1.0f / zx, +1.0f / zx, -1.0f / zy, 1.0f / zy, -10.0f, 10.0f, interact->mvp.proj);
     }
 
-    // TODO: update MVP struct
-    // log_debug("panzoom camera %.1f %.1f", panzoom->camera_pos[0], panzoom->camera_pos[1]);
-
-
-    // View matrix (depends on the pan).
-    vec3 center;
-    glm_vec3_copy(panzoom->camera_pos, center);
-    center[2] = 0.0f; // only the z coord changes between panel and center.
-    vec3 lookup = {0, 1, 0};
-    glm_lookat(panzoom->camera_pos, center, lookup, interact->mvp.view);
-
-    // Proj matrix (depends on the zoom).
-    float zx = panzoom->zoom[0];
-    float zy = panzoom->zoom[1];
-    // TODO: other aspect ratios
-    if (aspect_ratio == 1)
-    {
-        zx *= size_b[1] / (float)size_b[0];
-    }
-    glm_ortho(-1.0f / zx, +1.0f / zx, -1.0f / zy, 1.0f / zy, -10.0f, 10.0f, interact->mvp.proj);
+    interact->to_update = update;
 }
 
 

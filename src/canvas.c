@@ -1407,7 +1407,9 @@ void vkl_canvas_frame(VklCanvas* canvas)
     // Process FAST buffer transfers (used by uniform buffers that exist in multiple copies
     // to avoid GPU synchronization by making it such that each swapchain image has its own
     // buffer region)
+    log_debug("start fast transfers");
     _fast_transfers(canvas);
+    log_debug("end fast transfers");
 
     // We acquire the next swapchain image.
     if (!canvas->offscreen)
@@ -1530,8 +1532,8 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
     uint32_t n_canvas_active = 0;
     for (uint64_t iter = 0; iter < frame_count; iter++)
     {
-        if (frame_count > 0)
-            log_trace("frame iteration %d/%d", iter, frame_count);
+        // if (frame_count > 0)
+        //     log_trace("frame iteration %d/%d", iter, frame_count);
         n_canvas_active = 0;
 
         // Loop over the canvases.
@@ -1545,7 +1547,7 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             if (canvas->obj.status < VKL_OBJECT_STATUS_CREATED)
                 continue;
             ASSERT(canvas->obj.status >= VKL_OBJECT_STATUS_CREATED);
-            log_trace("processing frame #%d for canvas #%d", canvas->frame_idx, canvas_idx);
+            // log_trace("processing frame #%d for canvas #%d", canvas->frame_idx, canvas_idx);
 
             // INIT event at the first frame
             if (canvas->frame_idx == 0)
@@ -1560,14 +1562,15 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
                 vkl_window_poll_events(canvas->window);
 
             // Frame logic.
-            log_trace("frame logic for canvas #%d", canvas_idx);
+            // log_trace("frame logic for canvas #%d", canvas_idx);
             // Swapchain image acquisition happens here:
             vkl_canvas_frame(canvas);
 
             // If there is a problem with swapchain image acquisition, wait and try again later.
             if (canvas->swapchain.obj.status == VKL_OBJECT_STATUS_INVALID)
             {
-                log_trace("swapchain image acquisition failed, waiting and skipping this frame");
+                // log_trace("swapchain image acquisition failed, waiting and skipping this
+                // frame");
                 vkl_gpu_wait(canvas->gpu);
                 continue;
             }
@@ -1575,7 +1578,7 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             // If the swapchain needs to be recreated (for example, after a resize), do it.
             if (canvas->swapchain.obj.status == VKL_OBJECT_STATUS_NEED_RECREATE)
             {
-                log_trace("swapchain image acquisition failed, recreating the canvas");
+                // log_trace("swapchain image acquisition failed, recreating the canvas");
 
                 // Recreate the canvas.
                 vkl_canvas_recreate(canvas);
@@ -1612,7 +1615,7 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             }
 
             // Submit the command buffers and swapchain logic.
-            log_trace("submitting frame for canvas #%d", canvas_idx);
+            // log_trace("submitting frame for canvas #%d", canvas_idx);
             vkl_canvas_frame_submit(canvas);
             canvas->frame_idx++;
             n_canvas_active++;
@@ -1631,7 +1634,7 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
 
             if (is_obj_created(&context->obj))
             {
-                log_trace("processing transfers for GPU #%d", gpu_idx);
+                // log_trace("processing transfers for GPU #%d", gpu_idx);
                 vkl_transfer_loop(context, false);
             }
 
