@@ -319,8 +319,7 @@ static void _panzoom_callback(
     if ((mouse->cur_state == VKL_MOUSE_STATE_DRAG && mouse->button == VKL_MOUSE_BUTTON_RIGHT) ||
         mouse->cur_state == VKL_MOUSE_STATE_WHEEL)
     {
-        vec2 pan, delta, zoom_old, zoom_new;
-        // vec2 delta, zoom_old, zoom_new;
+        vec2 pan, delta, zoom_old, zoom_new, center;
 
         // Right drag.
         if (mouse->cur_state == VKL_MOUSE_STATE_DRAG && mouse->button == VKL_MOUSE_BUTTON_RIGHT)
@@ -335,6 +334,8 @@ static void _panzoom_callback(
 
             // Get the center position: mouse press position.
             // _mouse_press_pos(mouse, viewport, center);
+            center[0] = interact->mouse_local.press_pos[0];
+            center[1] = interact->mouse_local.press_pos[1];
 
             // Get the mouse move delta.
             // _mouse_move_delta(mouse, viewport, delta);
@@ -353,10 +354,13 @@ static void _panzoom_callback(
             //     return;
             // panel->status = VKL_PANEL_STATUS_ACTIVE;
 
+            center[0] = interact->mouse_local.cur_pos[0];
+            center[1] = interact->mouse_local.cur_pos[1];
+
             // _mouse_cur_pos(mouse, viewport, center);
             // glm_vec2_copy(mouse->wheel_delta, delta);
-            delta[0] = mouse->wheel_delta[1] * wheel_factor;
-            delta[1] = mouse->wheel_delta[1] * wheel_factor;
+            delta[0] = -mouse->wheel_delta[1] * wheel_factor;
+            delta[1] = -mouse->wheel_delta[1] * wheel_factor;
         }
 
         // Fixed aspect ratio.
@@ -401,10 +405,8 @@ static void _panzoom_callback(
             panzoom->zoom[1] = zoom_new[1];
 
         // Update pan.
-        pan[0] = -interact->mouse_local.press_pos[0] * //
-                 (1.0f / zoom_old[0] - 1.0f / zoom_new[0]) * zoom_new[0];
-        pan[1] = -interact->mouse_local.press_pos[1] * //
-                 (1.0f / zoom_old[1] - 1.0f / zoom_new[1]) * zoom_new[1];
+        pan[0] = -center[0] * (1.0f / zoom_old[0] - 1.0f / zoom_new[0]) * zoom_new[0];
+        pan[1] = -center[1] * (1.0f / zoom_old[1] - 1.0f / zoom_new[1]) * zoom_new[1];
 
         if (!panzoom->lim_reached[0])
             panzoom->camera_pos[0] -= pan[0] / panzoom->zoom[0];

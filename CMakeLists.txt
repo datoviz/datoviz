@@ -64,7 +64,7 @@ if (WIN32 OR APPLE)
 
     FetchContent_Declare(
     glfw
-    #GIT_REPOSITORY https://github.com/glfw/glfw/
+    GIT_REPOSITORY https://github.com/glfw/glfw/
     )
     FetchContent_MakeAvailable(glfw)
 endif()
