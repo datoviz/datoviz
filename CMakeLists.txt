@@ -346,21 +346,10 @@ file(MAKE_DIRECTORY ${SPIRV_DIR})
 
 find_program(GLSLC glslc)
 file(GLOB shader_sources
-    "src/glsl/*.vert"
-    "src/glsl/*.geom"
-    "src/glsl/*.comp"
-    "src/glsl/*.frag"
-    "src/shaders/*.vert"
-    "src/shaders/*.geom"
-    "src/shaders/*.comp"
-    "src/shaders/*.frag"
-    "examples/shaders/*.vert"
-    "examples/shaders/*.geom"
-    "examples/shaders/*.comp"
-    "examples/shaders/*.frag"
-    "cli/shaders/*.vert"
-    "cli/shaders/*.comp"
-    "cli/shaders/*.frag"
+    "*/glsl/*.vert"
+    "*/glsl/*.geom"
+    "*/glsl/*.comp"
+    "*/glsl/*.frag"
 )
 foreach(shader_source ${shader_sources})
     get_filename_component(shader_name ${shader_source} NAME)
@@ -395,7 +384,6 @@ add_custom_target(shaders DEPENDS ${path_shadersc})
 
 # Define the visky library target
 file(GLOB sources
-    ${path_shadersc}
     "include/*.h*"
     "src/*.h*" "src/*.c*"
     "external/*.h*" "external/*.c*"
@@ -412,7 +400,7 @@ file(GLOB imgui_sources
 
 set_source_files_properties(${imgui_sources} PROPERTIES COMPILE_FLAGS -w)
 
-add_library(visky SHARED ${sources})
+add_library(visky SHARED ${sources} ${path_shadersc})
 
 
 # -------------------------------------------------------------------------------------------------
