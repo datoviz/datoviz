@@ -1,6 +1,6 @@
+#include "../include/visky/visuals.h"
 #include "../include/visky/canvas.h"
 #include "../include/visky/graphics.h"
-#include "../include/visky/visuals.h"
 
 
 
@@ -225,6 +225,12 @@ static void _bake_source(VklVisual* visual, VklSource* source)
     // The baking function doesn't run if the VERTEX source is handled by the user.
     if (source->origin != VKL_SOURCE_ORIGIN_LIB)
         return;
+    if (source->obj.status != VKL_OBJECT_STATUS_NEED_UPDATE)
+    {
+        log_trace(
+            "skip bake source for source %d that doesn't need updating", source->source_type);
+        return;
+    }
     log_debug("baking source %d", source->source_type);
 
     // Check that all props for the source source have the same number of items.
@@ -250,6 +256,11 @@ static void _bake_uniforms(VklVisual* visual)
     for (uint32_t i = 0; i < visual->source_count; i++)
     {
         source = &visual->sources[i];
+        if (source->obj.status != VKL_OBJECT_STATUS_NEED_UPDATE)
+        {
+            log_trace("skip bake source for uniform source that doesn't need updating");
+            continue;
+        }
 
         // Allocate the UNIFORM sources, using the number of items in the props, and fill them
         // with the props.
@@ -279,9 +290,6 @@ static void _default_visual_bake(VklVisual* visual, VklVisualDataEvent ev)
     // INDEX source.
     source = vkl_bake_source(visual, VKL_SOURCE_INDEX, 0);
     _bake_source(visual, source);
-
-    // // UNIFORM sources.
-    // _bake_uniforms(visual);
 }
 
 
@@ -342,6 +350,8 @@ void vkl_visual_source(
     ASSERT(vkl_bake_source(visual, source_type, source_idx) == NULL);
 
     VklSource source = {0};
+    source.obj.type = VKL_OBJECT_TYPE_SOURCE;
+    source.obj.status = VKL_OBJECT_STATUS_CREATED;
     source.source_type = source_type;
     source.source_idx = source_idx;
     source.pipeline = pipeline;
@@ -476,6 +486,7 @@ void vkl_visual_data_partial(
     vkl_array_data(&prop->arr_orig, first_item, item_count, data_item_count, data);
 
     source->origin = VKL_SOURCE_ORIGIN_LIB;
+    source->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
 }
 
 
@@ -506,6 +517,7 @@ void vkl_visual_data_buffer(
     vkl_array_data(&source->arr, first_item, item_count, data_item_count, data);
 
     source->origin = VKL_SOURCE_ORIGIN_NOBAKE;
+    source->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
 }
 
 
@@ -534,6 +546,7 @@ void vkl_visual_data_texture(
     vkl_array_data(&source->arr, 0, count, count, data);
 
     source->origin = VKL_SOURCE_ORIGIN_NOBAKE;
+    source->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
 }
 
 
@@ -545,27 +558,28 @@ void vkl_visual_buffer(
 {
     ASSERT(visual != NULL);
     ASSERT(visual != NULL);
-    VklSource* src = vkl_bake_source(visual, source_type, idx);
-    if (src == NULL)
+    VklSource* source = vkl_bake_source(visual, source_type, idx);
+    if (source == NULL)
     {
         log_error("Data source for source %d #%d could not be found", source_type, idx);
         return;
     }
-    ASSERT(src != NULL);
+    ASSERT(source != NULL);
 
     VkDeviceSize size = br.size;
     ASSERT(size > 0);
     ASSERT(br.buffer != VK_NULL_HANDLE);
 
-    src->u.br = br;
-    src->origin = VKL_SOURCE_ORIGIN_USER;
+    source->u.br = br;
+    source->origin = VKL_SOURCE_ORIGIN_USER;
+    source->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
 
     // Set the bindings except for VERTEX and INDEX sources.
     if (_source_needs_binding(source_type))
     {
-        VklBindings* bindings = _get_bindings(visual, src);
+        VklBindings* bindings = _get_bindings(visual, source);
         ASSERT(br.buffer != VK_NULL_HANDLE);
-        vkl_bindings_buffer(bindings, src->slot_idx, src->u.br);
+        vkl_bindings_buffer(bindings, source->slot_idx, source->u.br);
     }
 }
 
@@ -576,22 +590,23 @@ void vkl_visual_texture(
 {
     ASSERT(visual != NULL);
     ASSERT(visual != NULL);
-    VklSource* src = vkl_bake_source(visual, source_type, idx);
-    if (src == NULL)
+    VklSource* source = vkl_bake_source(visual, source_type, idx);
+    if (source == NULL)
     {
         log_error("Data source for source %d #%d could not be found", source_type, idx);
         return;
     }
-    ASSERT(src != NULL);
+    ASSERT(source != NULL);
     ASSERT(texture != NULL);
 
-    src->u.tex = texture;
-    src->origin = VKL_SOURCE_ORIGIN_USER;
+    source->u.tex = texture;
+    source->origin = VKL_SOURCE_ORIGIN_USER;
+    source->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
 
-    VklBindings* bindings = _get_bindings(visual, src);
+    VklBindings* bindings = _get_bindings(visual, source);
     ASSERT(texture->image != NULL);
     ASSERT(texture->sampler != NULL);
-    vkl_bindings_texture(bindings, src->slot_idx, texture);
+    vkl_bindings_texture(bindings, source->slot_idx, texture);
 }
 
 
@@ -912,6 +927,11 @@ void vkl_visual_update(
     for (uint32_t i = 0; i < visual->source_count; i++)
     {
         source = &visual->sources[i];
+        if (source->obj.status != VKL_OBJECT_STATUS_NEED_UPDATE)
+        {
+            log_trace("skip data upload for source that doesn't need to be updated");
+            continue;
+        }
         arr = &source->arr;
         if (_source_is_texture(source->source_type))
         {
@@ -939,6 +959,7 @@ void vkl_visual_update(
                     source->source_type, source->source_idx,                                  //
                     arr->shape[0], arr->shape[1], arr->shape[2]);
                 vkl_upload_texture(ctx, texture, arr->item_count * arr->item_size, arr->data);
+                source->obj.status = VKL_OBJECT_STATUS_CREATED;
             }
         }
         else
@@ -969,6 +990,7 @@ void vkl_visual_update(
                     vkl_upload_buffers_fast(canvas, *br, true, 0, br->size, arr->data);
                 else
                     vkl_upload_buffers(ctx, *br, 0, br->size, arr->data);
+                source->obj.status = VKL_OBJECT_STATUS_CREATED;
             }
         }
     }

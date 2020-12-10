@@ -59,6 +59,10 @@ void vkl_mouse_event(VklMouse* mouse, VklCanvas* canvas, VklEvent ev)
         mouse->button = VKL_MOUSE_BUTTON_NONE;
     }
 
+    // Reset wheel event.
+    if (mouse->cur_state == VKL_MOUSE_STATE_WHEEL)
+        mouse->cur_state = VKL_MOUSE_STATE_INACTIVE;
+
     // Net distance in pixels since the last press event.
     vec2 shift;
 
@@ -147,7 +151,7 @@ void vkl_mouse_event(VklMouse* mouse, VklCanvas* canvas, VklEvent ev)
 
     case VKL_EVENT_MOUSE_WHEEL:
         glm_vec2_copy(ev.u.w.dir, mouse->wheel_delta);
-        log_trace("mouse wheel %.1f", mouse->wheel_delta[1]);
+        mouse->cur_state = VKL_MOUSE_STATE_WHEEL;
         break;
 
     default:
@@ -188,8 +192,8 @@ void vkl_mouse_local(
     _normalize(mouse_local->last_pos, mouse->last_pos, size_screen);
     _normalize(mouse_local->press_pos, mouse->press_pos, size_screen);
 
-    mouse_local->delta[0] = mouse_local->cur_pos[0] - mouse_local->last_pos[0];
-    mouse_local->delta[1] = mouse_local->cur_pos[1] - mouse_local->last_pos[1];
+    mouse_local->delta[0] = (mouse_local->cur_pos[0] - mouse_local->last_pos[0]);
+    mouse_local->delta[1] = (mouse_local->cur_pos[1] - mouse_local->last_pos[1]);
 
     // mouse_local->delta[0] *= ax;
     // mouse_local->delta[1] *= ay;
@@ -277,9 +281,9 @@ static void _panzoom_callback(
     bool update = false;
 
     // TODO
-    float aspect_ratio = 1;
+    // float aspect_ratio = 1;
 
-    float wheel_factor = VKL_PANZOOM_MOUSE_WHEEL_FACTOR;
+    float wheel_factor = .1; // VKL_PANZOOM_MOUSE_WHEEL_FACTOR;
 
     // Window size.
     uvec2 size_w, size_b;
@@ -336,13 +340,12 @@ static void _panzoom_callback(
             // _mouse_move_delta(mouse, viewport, delta);
             // Transform back the delta in pixels.
             glm_vec2_copy(interact->mouse_local.delta, delta);
-            delta[0] *= .001 * size_b[0];
-            delta[1] *= .001 * size_b[1];
+            delta[0] *= .002 * size_b[0];
+            delta[1] *= .002 * size_b[1];
         }
         // Mouse wheel.
         else
         {
-
             // TODO
             // Restrict the panzoom updates to cases when the mouse press position was in the
             // panel.
@@ -351,19 +354,19 @@ static void _panzoom_callback(
             // panel->status = VKL_PANEL_STATUS_ACTIVE;
 
             // _mouse_cur_pos(mouse, viewport, center);
-            glm_vec2_copy(mouse->wheel_delta, delta);
-            delta[0] *= wheel_factor;
-            delta[1] *= wheel_factor;
+            // glm_vec2_copy(mouse->wheel_delta, delta);
+            delta[0] = mouse->wheel_delta[1] * wheel_factor;
+            delta[1] = mouse->wheel_delta[1] * wheel_factor;
         }
 
         // Fixed aspect ratio.
-        if (aspect_ratio == 1)
-        {
-            delta[0] = delta[1] = copysignf(1.0, delta[0] + delta[1]) *
-                                  sqrt(delta[0] * delta[0] + delta[1] * delta[1]);
+        // if (aspect_ratio == 1)
+        // {
+        //     delta[0] = delta[1] = copysignf(1.0, delta[0] + delta[1]) *
+        //                           sqrt(delta[0] * delta[0] + delta[1] * delta[1]);
 
-            // center[0] *= size_b[0] / size_b[1];
-        }
+        //    center[0] *= size_b[0] / size_b[1];
+        // }
 
         // Update the zoom.
         glm_vec2_copy(panzoom->zoom, zoom_old);
@@ -447,10 +450,10 @@ static void _panzoom_callback(
         float zx = panzoom->zoom[0];
         float zy = panzoom->zoom[1];
         // TODO: other aspect ratios
-        if (aspect_ratio == 1)
-        {
-            zx *= size_b[1] / (float)size_b[0];
-        }
+        // if (aspect_ratio == 1)
+        // {
+        //     zx *= size_b[1] / (float)size_b[0];
+        // }
         glm_ortho(
             -1.0f / zx, +1.0f / zx, -1.0f / zy, 1.0f / zy, -10.0f, 10.0f, interact->mvp.proj);
     }

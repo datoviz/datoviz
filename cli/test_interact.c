@@ -97,6 +97,7 @@ int test_interact_panzoom(TestContext* context)
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_BUTTON, 0, _scene_mouse_callback, &scene);
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_WHEEL, 0, _scene_mouse_callback, &scene);
     vkl_event_callback(canvas, VKL_EVENT_KEY, 0, _scene_keyboard_callback, &scene);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
 
     const uint32_t N = 10000;
     mat4 id = GLM_MAT4_IDENTITY_INIT;

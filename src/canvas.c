@@ -1407,9 +1407,7 @@ void vkl_canvas_frame(VklCanvas* canvas)
     // Process FAST buffer transfers (used by uniform buffers that exist in multiple copies
     // to avoid GPU synchronization by making it such that each swapchain image has its own
     // buffer region)
-    log_debug("start fast transfers");
     _fast_transfers(canvas);
-    log_debug("end fast transfers");
 
     // We acquire the next swapchain image.
     if (!canvas->offscreen)

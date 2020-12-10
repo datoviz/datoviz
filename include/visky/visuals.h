@@ -149,6 +149,8 @@ union VklSourceUnion
 
 struct VklSource
 {
+    VklObject obj;
+
     // Identifier of the prop
     VklPipelineType pipeline;  // graphics or compute pipeline?
     uint32_t pipeline_idx;     // idx of the pipeline within the graphics or compute pipelines
