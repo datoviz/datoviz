@@ -9,9 +9,9 @@
 /*  Graphics tests                                                                               */
 /*************************************************************************************************/
 
-int test_graphics_dynamic(VkyTestContext* context);
-int test_graphics_3D(VkyTestContext* context);
-int test_graphics_points(VkyTestContext* context);
+int test_graphics_dynamic(TestContext* context);
+int test_graphics_3D(TestContext* context);
+int test_graphics_points(TestContext* context);
 
 
 

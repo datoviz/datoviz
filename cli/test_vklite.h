@@ -10,31 +10,31 @@
 /*  vklite2                                                                                      */
 /*************************************************************************************************/
 
-int test_app(VkyTestContext* context);
-int test_surface(VkyTestContext* context);
-int test_window(VkyTestContext* context);
-int test_swapchain(VkyTestContext* context);
-int test_commands(VkyTestContext* context);
-int test_buffer(VkyTestContext* context);
-int test_compute(VkyTestContext* context);
-int test_push(VkyTestContext* context);
-int test_images(VkyTestContext* context);
-int test_sampler(VkyTestContext* context);
-int test_barrier(VkyTestContext* context);
-int test_submit(VkyTestContext* context);
-int test_blank(VkyTestContext* context);
-int test_graphics(VkyTestContext* context);
+int test_app(TestContext* context);
+int test_surface(TestContext* context);
+int test_window(TestContext* context);
+int test_swapchain(TestContext* context);
+int test_commands(TestContext* context);
+int test_buffer(TestContext* context);
+int test_compute(TestContext* context);
+int test_push(TestContext* context);
+int test_images(TestContext* context);
+int test_sampler(TestContext* context);
+int test_barrier(TestContext* context);
+int test_submit(TestContext* context);
+int test_blank(TestContext* context);
+int test_graphics(TestContext* context);
 
-int test_basic_canvas_1(VkyTestContext* context);
-int test_basic_canvas_triangle(VkyTestContext* context);
-int test_shader_compile(VkyTestContext* context);
+int test_basic_canvas_1(TestContext* context);
+int test_basic_canvas_triangle(TestContext* context);
+int test_shader_compile(TestContext* context);
 
 
 /*************************************************************************************************/
 /*  FIFO queue                                                                                   */
 /*************************************************************************************************/
 
-int test_fifo(VkyTestContext* context);
+int test_fifo(TestContext* context);
 
 
 
@@ -42,15 +42,15 @@ int test_fifo(VkyTestContext* context);
 /*  Context                                                                                   */
 /*************************************************************************************************/
 
-int test_context_buffer(VkyTestContext* context);
-int test_context_texture(VkyTestContext* context);
-int test_context_transfer_sync(VkyTestContext* context);
-int test_context_copy(VkyTestContext* context);
-int test_context_transfer_async_nothread(VkyTestContext* context);
-int test_context_transfer_async_thread(VkyTestContext* context);
-int test_context_download(VkyTestContext* context);
+int test_context_buffer(TestContext* context);
+int test_context_texture(TestContext* context);
+int test_context_transfer_sync(TestContext* context);
+int test_context_copy(TestContext* context);
+int test_context_transfer_async_nothread(TestContext* context);
+int test_context_transfer_async_thread(TestContext* context);
+int test_context_download(TestContext* context);
 
-int test_default_app(VkyTestContext* context);
+int test_default_app(TestContext* context);
 
 
 

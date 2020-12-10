@@ -99,7 +99,7 @@ static void _graphics_points_wheel_callback(VklCanvas* canvas, VklEvent ev)
     vkl_upload_buffers(gpu->context, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
 }
 
-int test_graphics_dynamic(VkyTestContext* context)
+int test_graphics_dynamic(TestContext* context)
 {
     INIT_GRAPHICS(VKL_GRAPHICS_POINTS)
     BEGIN_DATA(VklVertex, 10000)
@@ -160,7 +160,7 @@ static void _graphics_3D_callback(VklCanvas* canvas, VklPrivateEvent ev)
     vkl_upload_buffers(gpu->context, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
 }
 
-int test_graphics_3D(VkyTestContext* context)
+int test_graphics_3D(TestContext* context)
 {
     INIT_GRAPHICS(VKL_GRAPHICS_POINTS)
     BEGIN_DATA(VklVertex, 3)
@@ -261,7 +261,7 @@ static void _common_bindings(TestGraphics* tg)
     // TODO: color
 }
 
-int test_graphics_points(VkyTestContext* context)
+int test_graphics_points(TestContext* context)
 {
     INIT_GRAPHICS(VKL_GRAPHICS_POINTS)
     BEGIN_DATA(VklVertex, 10000)

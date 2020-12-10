@@ -217,7 +217,7 @@ typedef uint32_t uvec3[3];
 typedef uint32_t uvec4[4];
 
 /* Index */
-typedef uint32_t VkyIndex;
+typedef uint32_t VklIndex;
 
 
 

@@ -1,5 +1,5 @@
-#include "../include/visky/visuals.h"
 #include "test_visuals.h"
+#include "../include/visky/visuals.h"
 #include "utils.h"
 
 
@@ -32,7 +32,7 @@
 /*  Graphics tests                                                                               */
 /*************************************************************************************************/
 
-int test_visuals_1(VkyTestContext* context)
+int test_visuals_1(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -111,7 +111,7 @@ int test_visuals_1(VkyTestContext* context)
 
 
 
-int test_visuals_2(VkyTestContext* context)
+int test_visuals_2(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);

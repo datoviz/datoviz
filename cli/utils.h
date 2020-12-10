@@ -36,15 +36,16 @@ static const VkClearColorValue bgcolor = {{.4f, .6f, .8f, 1.0f}};
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct VkyTestCase VkyTestCase;
-typedef struct VkyTestContext VkyTestContext;
+typedef struct TestCase TestCase;
+typedef struct TestContext TestContext;
 
 typedef struct TestVertex TestVertex;
 typedef struct TestCanvas TestCanvas;
 typedef struct TestVisual TestVisual;
+typedef struct TestScene TestScene;
 
 // Test cases callbacks.
-typedef int (*VkyTestFunction)(VkyTestContext*);
+typedef int (*TestFunction)(TestContext*);
 
 
 
@@ -58,7 +59,7 @@ typedef enum
     VKY_TEST_FIXTURE_NONE,
     VKY_TEST_FIXTURE_CANVAS,
     VKY_TEST_FIXTURE_PANEL,
-} VkyTestFixture;
+} TestFixture;
 
 
 
@@ -118,7 +119,17 @@ struct TestVisual
 
 
 
-struct VkyTestContext
+struct TestScene
+{
+    VklMouse mouse;
+    VklKeyboard keyboard;
+    VklInteract interact;
+    VklVisual visual;
+};
+
+
+
+struct TestContext
 {
     VklApp* app;
     // VkyCanvas* canvas;
@@ -130,12 +141,12 @@ struct VkyTestContext
 
 
 
-struct VkyTestCase
+struct TestCase
 {
     const char* name;
-    VkyTestFixture fixture;
-    VkyTestFunction function;
-    VkyTestFunction destroy;
+    TestFixture fixture;
+    TestFunction function;
+    TestFunction destroy;
     bool save_screenshot;
 };
 
@@ -249,7 +260,7 @@ static bool is_blank(uint8_t* image)
     return false;
 }
 
-static uint8_t* make_screenshot(VkyTestContext* context)
+static uint8_t* make_screenshot(TestContext* context)
 {
     ASSERT(context != NULL);
     // ASSERT(context->canvas != NULL);
@@ -311,7 +322,7 @@ static void print_end(int index, int res)
 /*************************************************************************************************/
 
 #if 0
-static void _setup(VkyTestContext* context, VkyTestFixture fixture)
+static void _setup(TestContext* context, TestFixture fixture)
 {
     ASSERT(context != NULL);
 
@@ -355,7 +366,7 @@ static void _setup(VkyTestContext* context, VkyTestFixture fixture)
     }
 }
 
-static void _teardown(VkyTestContext* context, VkyTestFixture fixture)
+static void _teardown(TestContext* context, TestFixture fixture)
 {
     ASSERT(context != NULL);
     // NOTE: do not try to reset the canvas when is_live is true, because there is
@@ -379,14 +390,14 @@ static void _teardown(VkyTestContext* context, VkyTestFixture fixture)
     }
 }
 
-static VkyTestContext _create_context(bool is_live)
+static TestContext _create_context(bool is_live)
 {
-    VkyTestContext context = {0};
+    TestContext context = {0};
     context.is_live = is_live;
     return context;
 }
 
-static void _destroy_context(VkyTestContext* context)
+static void _destroy_context(TestContext* context)
 {
     ASSERT(context != NULL);
 

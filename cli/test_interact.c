@@ -10,15 +10,6 @@
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-typedef struct _TestScene _TestScene;
-struct _TestScene
-{
-    VklMouse mouse;
-    VklKeyboard keyboard;
-    VklInteract interact;
-    VklVisual visual;
-};
-
 
 
 /*************************************************************************************************/
@@ -41,7 +32,7 @@ static void _keyboard_callback(VklCanvas* canvas, VklEvent ev)
     vkl_keyboard_event(keyboard, canvas, ev);
 }
 
-int test_interact_1(VkyTestContext* context)
+int test_interact_1(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -65,7 +56,7 @@ int test_interact_1(VkyTestContext* context)
 static void _scene_mouse_callback(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
-    _TestScene* scene = (_TestScene*)ev.user_data;
+    TestScene* scene = (TestScene*)ev.user_data;
     ASSERT(scene != NULL);
     VklViewport viewport = vkl_viewport_full(canvas);
     vkl_mouse_event(&scene->mouse, canvas, ev);
@@ -79,20 +70,20 @@ static void _scene_keyboard_callback(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
     ASSERT(canvas != NULL);
-    _TestScene* scene = (_TestScene*)ev.user_data;
+    TestScene* scene = (TestScene*)ev.user_data;
     ASSERT(scene != NULL);
     VklViewport viewport = vkl_viewport_full(canvas);
     vkl_keyboard_event(&scene->keyboard, canvas, ev);
     vkl_interact_update(&scene->interact, viewport, &scene->mouse, &scene->keyboard);
 }
 
-int test_interact_panzoom(VkyTestContext* context)
+int test_interact_panzoom(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
     VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
 
-    _TestScene scene = {0};
+    TestScene scene = {0};
     scene.mouse = vkl_mouse();
     scene.keyboard = vkl_keyboard();
     scene.interact = vkl_interact_builtin(canvas, VKL_INTERACT_PANZOOM);

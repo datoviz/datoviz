@@ -110,8 +110,8 @@ static void _visual_canvas_fill(VklCanvas* canvas, VklPrivateEvent ev)
 /*  Visuals tests                                                                                */
 /*************************************************************************************************/
 
-int test_visuals_1(VkyTestContext* context);
-int test_visuals_2(VkyTestContext* context);
+int test_visuals_1(TestContext* context);
+int test_visuals_2(TestContext* context);
 
 
 

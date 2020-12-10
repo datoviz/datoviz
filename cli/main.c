@@ -15,7 +15,7 @@
 /*  List of tests                                                                                */
 /*************************************************************************************************/
 
-static VkyTestCase TEST_CASES[] = {
+static TestCase TEST_CASES[] = {
 
     // vklite2
     CASE_FIXTURE_NONE(test_app),                   //
@@ -78,8 +78,8 @@ static VkyTestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_visuals_2), //
 
     // interact
-    CASE_FIXTURE_NONE(test_interact_1), //
-    // CASE_FIXTURE_NONE(test_interact_panzoom), //
+    CASE_FIXTURE_NONE(test_interact_1),       //
+    CASE_FIXTURE_NONE(test_interact_panzoom), //
 
 
 
@@ -142,7 +142,7 @@ static VkyTestCase TEST_CASES[] = {
     // CASE_FIXTURE_PANEL(mandelbrot, true), //
 
 };
-static uint32_t N_TESTS = sizeof(TEST_CASES) / sizeof(VkyTestCase);
+static uint32_t N_TESTS = sizeof(TEST_CASES) / sizeof(TestCase);
 
 
 
@@ -150,7 +150,7 @@ static uint32_t N_TESTS = sizeof(TEST_CASES) / sizeof(VkyTestCase);
 /*  Tests utils                                                                                  */
 /*************************************************************************************************/
 
-static VkyTestCase get_test_case(const char* name)
+static TestCase get_test_case(const char* name)
 {
     for (uint32_t i = 0; i < N_TESTS; i++)
     {
@@ -160,14 +160,14 @@ static VkyTestCase get_test_case(const char* name)
         }
     }
     log_error("test case %s not found!", name);
-    return (VkyTestCase){0};
+    return (TestCase){0};
 }
 
-static int launcher(VkyTestContext* context, const char* name)
+static int launcher(TestContext* context, const char* name)
 {
     srand(0);
 
-    VkyTestCase test_case = get_test_case(name);
+    TestCase test_case = get_test_case(name);
     if (test_case.function == NULL)
         return 1;
 
@@ -238,7 +238,7 @@ static int test(int argc, char** argv)
     print_start();
 
     // Create the test context.
-    // VkyTestContext context = _create_context(is_live);
+    // TestContext context = _create_context(is_live);
 
     // Start the tests.
     int cur_res = 0;
@@ -280,7 +280,7 @@ static int demo(int argc, char** argv)
     //     log_error("please specify a demo name");
     //     return 1;
     // }
-    // VkyTestContext context = _create_context(true);
+    // TestContext context = _create_context(true);
     // launcher(&context, argv[1]);
     // _destroy_context(&context);
     return 0;

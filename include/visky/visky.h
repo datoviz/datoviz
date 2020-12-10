@@ -8,6 +8,10 @@ extern "C" {
 #include "canvas.h"
 #include "common.h"
 #include "context.h"
+#include "graphics.h"
+#include "interact.h"
+#include "scene.h"
+#include "visuals.h"
 #include "vklite.h"
 
 

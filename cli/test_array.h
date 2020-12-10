@@ -10,12 +10,12 @@
 /*  Array tests                                                                                  */
 /*************************************************************************************************/
 
-int test_array_1(VkyTestContext* context);
-int test_array_2(VkyTestContext* context);
-int test_array_3(VkyTestContext* context);
-int test_array_4(VkyTestContext* context);
-int test_array_mvp(VkyTestContext* context);
-int test_array_3D(VkyTestContext* context);
+int test_array_1(TestContext* context);
+int test_array_2(TestContext* context);
+int test_array_3(TestContext* context);
+int test_array_4(TestContext* context);
+int test_array_mvp(TestContext* context);
+int test_array_3D(TestContext* context);
 
 
 
