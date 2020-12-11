@@ -103,7 +103,8 @@ struct VklMouseLocal
     vec2 press_pos;
     vec2 last_pos;
     vec2 cur_pos;
-    vec2 delta;
+    // vec2 delta; // delta between the last and current pos
+    // vec2 press_delta; // delta between t
 };
 
 
@@ -128,7 +129,11 @@ struct VklKeyboard
 struct VklPanzoom
 {
     vec3 camera_pos;
+    vec3 last_camera_pos;
+
     vec2 zoom;
+    vec2 last_zoom;
+
     bool lim_reached[2];
 };
 
