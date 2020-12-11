@@ -11,7 +11,7 @@
 #define VKL_MOUSE_CLICK_MAX_SHIFT        10
 #define VKL_MOUSE_DOUBLE_CLICK_MAX_DELAY .2
 #define VKL_KEY_PRESS_DELAY              .05
-#define VKL_PANZOOM_MOUSE_WHEEL_FACTOR   2
+#define VKL_PANZOOM_MOUSE_WHEEL_FACTOR   .2
 #define VKL_PANZOOM_MIN_ZOOM             1e-6
 #define VKL_PANZOOM_MAX_ZOOM             1e+6
 
@@ -288,11 +288,26 @@ static void _panzoom_copy_prev_state(VklPanzoom* panzoom)
     glm_vec2_copy(panzoom->zoom, panzoom->last_zoom);
 }
 
+static void _panzoom_reset(VklPanzoom* panzoom)
+{
+    ASSERT(panzoom != NULL);
+    panzoom->camera_pos[0] = 0;
+    panzoom->camera_pos[1] = 0;
+    panzoom->last_camera_pos[0] = 0;
+    panzoom->last_camera_pos[1] = 0;
+    panzoom->zoom[0] = 1;
+    panzoom->zoom[1] = 1;
+    panzoom->last_zoom[0] = 0;
+    panzoom->last_zoom[1] = 0;
+}
+
 static void _panzoom_callback(
     VklInteract* interact, VklViewport viewport, VklMouse* mouse, VklKeyboard* keyboard)
 {
     ASSERT(interact != NULL);
-    ASSERT(interact->type == VKL_INTERACT_PANZOOM);
+    ASSERT(
+        interact->type == VKL_INTERACT_PANZOOM ||
+        interact->type == VKL_INTERACT_PANZOOM_FIXED_ASPECT);
     VklCanvas* canvas = interact->canvas;
     VklPanzoom* panzoom = &interact->u.p;
     bool update = false;
@@ -301,11 +316,7 @@ static void _panzoom_callback(
     if (mouse->prev_state == VKL_MOUSE_STATE_INACTIVE)
         _panzoom_copy_prev_state(panzoom);
 
-
-    // TODO
-    // float aspect_ratio = 1;
-
-    float wheel_factor = .2; // VKL_PANZOOM_MOUSE_WHEEL_FACTOR;
+    float wheel_factor = VKL_PANZOOM_MOUSE_WHEEL_FACTOR;
     vec2 delta = {0};
 
     // Window size.
@@ -328,9 +339,6 @@ static void _panzoom_callback(
         // panel->status = VKL_PANEL_STATUS_ACTIVE;
 
         glm_vec2_sub(interact->mouse_local.cur_pos, interact->mouse_local.press_pos, delta);
-
-        // if (aspect_ratio == 1)
-        //     delta[0] *= size_b[0] / size_b[1];
 
         panzoom->camera_pos[0] = panzoom->last_camera_pos[0] - delta[0] / panzoom->zoom[0];
         panzoom->camera_pos[1] = panzoom->last_camera_pos[1] - delta[1] / panzoom->zoom[1];
@@ -356,14 +364,9 @@ static void _panzoom_callback(
             // panel->status = VKL_PANEL_STATUS_ACTIVE;
 
             // Get the center position: mouse press position.
-            // _mouse_press_pos(mouse, viewport, center);
             center[0] = interact->mouse_local.press_pos[0];
             center[1] = interact->mouse_local.press_pos[1];
 
-            // Get the mouse move delta.
-            // _mouse_move_delta(mouse, viewport, delta);
-            // Transform back the delta in pixels.
-            // glm_vec2_copy(interact->mouse_local.delta, delta);
             glm_vec2_sub(interact->mouse_local.cur_pos, interact->mouse_local.press_pos, delta);
             glm_vec2_copy(panzoom->last_zoom, zoom_press);
             delta[0] *= .002 * size_b[0];
@@ -389,16 +392,12 @@ static void _panzoom_callback(
         }
 
         // Fixed aspect ratio.
-        // if (aspect_ratio == 1)
-        // {
-        //     delta[0] = delta[1] = copysignf(1.0, delta[0] + delta[1]) *
-        //                           sqrt(delta[0] * delta[0] + delta[1] * delta[1]);
-
-        //    center[0] *= size_b[0] / size_b[1];
-        // }
+        if (panzoom->fixed_aspect)
+        {
+            delta[0] = delta[1] = .5 * (delta[0] + delta[1]);
+        }
 
         // Update the zoom.
-        // glm_vec2_copy(panzoom->last_zoom, zoom_press);
         delta[0] = CLIP(delta[0], -10, +10);
         delta[1] = CLIP(delta[1], -10, +10);
         glm_vec2_mul(zoom_press, (vec2){exp(delta[0]), exp(delta[1])}, zoom_new);
@@ -445,16 +444,7 @@ static void _panzoom_callback(
         // if (vkl_panel_from_mouse(scene, mouse->cur_pos) != panel)
         //     return;
         // panel->status = VKL_PANEL_STATUS_RESET;
-
-        panzoom->camera_pos[0] = 0;
-        panzoom->camera_pos[1] = 0;
-        panzoom->last_camera_pos[0] = 0;
-        panzoom->last_camera_pos[1] = 0;
-        panzoom->zoom[0] = 1;
-        panzoom->zoom[1] = 1;
-        panzoom->last_zoom[0] = 0;
-        panzoom->last_zoom[1] = 0;
-
+        _panzoom_reset(panzoom);
         update = true;
     }
 
@@ -956,7 +946,10 @@ VklInteract vkl_interact_builtin(VklCanvas* canvas, VklInteractType type)
     switch (type)
     {
     case VKL_INTERACT_PANZOOM:
+    case VKL_INTERACT_PANZOOM_FIXED_ASPECT:
         interact.u.p = _panzoom();
+        if (type == VKL_INTERACT_PANZOOM_FIXED_ASPECT)
+            interact.u.p.fixed_aspect = true;
         interact.callback = _panzoom_callback;
         break;
 

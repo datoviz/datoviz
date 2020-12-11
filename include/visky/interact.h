@@ -60,6 +60,7 @@ typedef enum
 {
     VKL_INTERACT_NONE,
     VKL_INTERACT_PANZOOM,
+    VKL_INTERACT_PANZOOM_FIXED_ASPECT,
     VKL_INTERACT_ARCBALL,
     VKL_INTERACT_TURNTABLE,
     VKL_INTERACT_FLY,
@@ -135,6 +136,7 @@ struct VklPanzoom
     vec2 last_zoom;
 
     bool lim_reached[2];
+    bool fixed_aspect;
 };
 
 

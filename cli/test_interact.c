@@ -92,7 +92,7 @@ int test_interact_panzoom(TestContext* context)
     TestScene scene = {0};
     scene.mouse = vkl_mouse();
     scene.keyboard = vkl_keyboard();
-    scene.interact = vkl_interact_builtin(canvas, VKL_INTERACT_PANZOOM);
+    scene.interact = vkl_interact_builtin(canvas, VKL_INTERACT_PANZOOM_FIXED_ASPECT);
     scene.visual = vkl_visual(canvas);
 
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _scene_mouse_callback, &scene);
