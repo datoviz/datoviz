@@ -12,8 +12,8 @@
 #define VKL_MOUSE_DOUBLE_CLICK_MAX_DELAY .2
 #define VKL_KEY_PRESS_DELAY              .05
 #define VKL_PANZOOM_MOUSE_WHEEL_FACTOR   2
-#define VKL_PANZOOM_MIN_ZOOM             1e-4
-#define VKL_PANZOOM_MAX_ZOOM             1e+4
+#define VKL_PANZOOM_MIN_ZOOM             1e-6
+#define VKL_PANZOOM_MAX_ZOOM             1e+6
 
 
 /*************************************************************************************************/
@@ -399,6 +399,8 @@ static void _panzoom_callback(
 
         // Update the zoom.
         // glm_vec2_copy(panzoom->last_zoom, zoom_press);
+        delta[0] = CLIP(delta[0], -10, +10);
+        delta[1] = CLIP(delta[1], -10, +10);
         glm_vec2_mul(zoom_press, (vec2){exp(delta[0]), exp(delta[1])}, zoom_new);
 
         // Clip zoom x.
