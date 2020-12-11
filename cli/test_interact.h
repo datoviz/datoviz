@@ -12,6 +12,7 @@
 
 int test_interact_1(TestContext* context);
 int test_interact_panzoom(TestContext* context);
+int test_interact_arcball(TestContext* context);
 
 
 #endif
