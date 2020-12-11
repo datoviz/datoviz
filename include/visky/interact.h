@@ -142,21 +142,6 @@ struct VklPanzoom
 
 
 /*************************************************************************************************/
-/*  Arcball                                                                                      */
-/*************************************************************************************************/
-
-struct VklArcball
-{
-    mat4 center_translation, translation;
-    versor rotation;
-    mat4 mat;
-    mat4 mat_user;
-    vec3 eye_init;
-};
-
-
-
-/*************************************************************************************************/
 /*  Camera                                                                                       */
 /*************************************************************************************************/
 
@@ -167,6 +152,20 @@ struct VklCamera
     vec3 up;
     vec3 target; // requested eye position modified by mouse and keyboard, used for smooth move
     float speed;
+};
+
+
+
+/*************************************************************************************************/
+/*  Arcball                                                                                      */
+/*************************************************************************************************/
+
+struct VklArcball
+{
+    mat4 center_translation, translation;
+    versor rotation;
+    mat4 mat;
+    VklCamera camera;
 };
 
 
