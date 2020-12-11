@@ -428,11 +428,11 @@ struct VklCanvas
     uint32_t max_graphics;
     VklGraphics* graphics;
 
-    // FAST transfers
-    VklFifo fast_queue; // fast transfers queue
-    VklTransfer fast_transfers[VKL_MAX_TRANSFERS];
-    VklTransfer* fast_transfer_cur;
-    bool fast_transfer_updated[VKL_MAX_SWAPCHAIN_IMAGES];
+    // IMMEDIATE transfers
+    VklFifo immediate_queue; // _immediate transfers queue
+    VklTransfer immediate_transfers[VKL_MAX_TRANSFERS];
+    VklTransfer* immediate_transfer_cur;
+    bool immediate_transfer_updated[VKL_MAX_SWAPCHAIN_IMAGES];
 
     uint32_t canvas_callbacks_count;
     VklCanvasCallbackRegister canvas_callbacks[VKL_MAX_EVENT_CALLBACKS];
@@ -532,7 +532,7 @@ VKY_EXPORT void vkl_canvas_to_close(VklCanvas* canvas, bool value);
 /*  Fast transfers                                                                               */
 /*************************************************************************************************/
 
-VKY_EXPORT void vkl_upload_buffers_fast(
+VKY_EXPORT void vkl_upload_buffers_immediate(
     VklCanvas* canvas, VklBufferRegions regions, bool update_all_regions, //
     VkDeviceSize offset, VkDeviceSize size, void* data);
 

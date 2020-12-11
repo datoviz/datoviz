@@ -16,12 +16,12 @@ static bool _source_needs_binding(VklSourceType source_type)
 
 
 
-static bool _uniform_source_is_fast(VklSource* source)
+static bool _uniform_source_is_immediate(VklSource* source)
 {
     ASSERT(source != NULL);
     if (source->source_type != VKL_SOURCE_UNIFORM)
         return false;
-    return (source->flags & VKL_SOURCE_FLAG_FAST) != 0;
+    return (source->flags & VKL_SOURCE_FLAG_IMMEDIATE) != 0;
 }
 
 
@@ -56,8 +56,9 @@ static uint32_t _get_buffer_idx(VklSource* source)
     case VKL_SOURCE_INDEX:
         return VKL_DEFAULT_BUFFER_INDEX;
     case VKL_SOURCE_UNIFORM:
-        return (source->flags & VKL_SOURCE_FLAG_FAST) != 0 ? VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE
-                                                           : VKL_DEFAULT_BUFFER_UNIFORM;
+        return (source->flags & VKL_SOURCE_FLAG_IMMEDIATE) != 0
+                   ? VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE
+                   : VKL_DEFAULT_BUFFER_UNIFORM;
     case VKL_SOURCE_STORAGE:
         return VKL_DEFAULT_BUFFER_STORAGE;
     default:
@@ -810,8 +811,9 @@ void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source)
             log_debug(
                 "need to allocate new buffer region to fit %d elements (%d bytes)", count, size);
 
-        // Number of buffers: 1, unless using fast upload.
-        uint32_t buf_count = _uniform_source_is_fast(source) ? canvas->swapchain.img_count : 1;
+        // Number of buffers: 1, unless using _immediate upload.
+        uint32_t buf_count =
+            _uniform_source_is_immediate(source) ? canvas->swapchain.img_count : 1;
         source->u.br = vkl_ctx_buffers(ctx, _get_buffer_idx(source), buf_count, size);
 
         // Set bindings except for VERTEX and INDEX sources.
@@ -986,8 +988,8 @@ void vkl_visual_update(
                     "upload buffer for automatically-handled source %d #%d", //
                     source->source_type, source->source_idx);
 
-                if (_uniform_source_is_fast(source))
-                    vkl_upload_buffers_fast(canvas, *br, true, 0, br->size, arr->data);
+                if (_uniform_source_is_immediate(source))
+                    vkl_upload_buffers_immediate(canvas, *br, true, 0, br->size, arr->data);
                 else
                     vkl_upload_buffers(ctx, *br, 0, br->size, arr->data);
                 source->obj.status = VKL_OBJECT_STATUS_CREATED;
