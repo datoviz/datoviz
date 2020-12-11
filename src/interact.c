@@ -301,6 +301,74 @@ static void _panzoom_reset(VklPanzoom* panzoom)
     panzoom->last_zoom[1] = 0;
 }
 
+static void _panzoom_pan(VklPanzoom* panzoom, vec2 delta)
+{
+    ASSERT(panzoom != NULL);
+    panzoom->camera_pos[0] = panzoom->last_camera_pos[0] - delta[0] / panzoom->zoom[0];
+    panzoom->camera_pos[1] = panzoom->last_camera_pos[1] - delta[1] / panzoom->zoom[1];
+}
+
+static void _panzoom_zoom(VklPanzoom* panzoom, vec2 delta, vec2 center)
+{
+    ASSERT(panzoom != NULL);
+    vec2 pan, zoom_prev, zoom_new;
+
+    // Update the zoom.
+    delta[0] = CLIP(delta[0], -10, +10);
+    delta[1] = CLIP(delta[1], -10, +10);
+    glm_vec2_mul(panzoom->last_zoom, (vec2){exp(delta[0]), exp(delta[1])}, zoom_new);
+
+    // Clip zoom x.
+    double zx = zoom_new[0];
+    if (zx <= VKL_PANZOOM_MIN_ZOOM || zx >= VKL_PANZOOM_MAX_ZOOM)
+    {
+        zoom_new[0] = CLIP(zx, VKL_PANZOOM_MIN_ZOOM, VKL_PANZOOM_MAX_ZOOM);
+        panzoom->lim_reached[0] = true;
+    }
+    // Clip zoom y.
+    double zy = zoom_new[1];
+    if (zy <= VKL_PANZOOM_MIN_ZOOM || zy >= VKL_PANZOOM_MAX_ZOOM)
+    {
+        zoom_new[1] = CLIP(zy, VKL_PANZOOM_MIN_ZOOM, VKL_PANZOOM_MAX_ZOOM);
+        panzoom->lim_reached[1] = true;
+    }
+
+    // Update zoom.
+    glm_vec2_copy(panzoom->zoom, zoom_prev);
+    if (!panzoom->lim_reached[0])
+        panzoom->zoom[0] = zoom_new[0];
+    if (!panzoom->lim_reached[1])
+        panzoom->zoom[1] = zoom_new[1];
+
+    // Update pan.
+    pan[0] = -center[0] * (1.0f / zoom_prev[0] - 1.0f / zoom_new[0]) * zoom_new[0];
+    pan[1] = -center[1] * (1.0f / zoom_prev[1] - 1.0f / zoom_new[1]) * zoom_new[1];
+
+    if (!panzoom->lim_reached[0])
+        panzoom->camera_pos[0] -= pan[0] / panzoom->zoom[0];
+    if (!panzoom->lim_reached[1])
+        panzoom->camera_pos[1] -= pan[1] / panzoom->zoom[1];
+}
+
+static void _panzoom_update_mvp(VklPanzoom* panzoom, VklMVP* mvp)
+{
+    ASSERT(panzoom != NULL);
+    // View matrix (depends on the pan).
+    {
+        vec3 center;
+        glm_vec3_copy(panzoom->camera_pos, center);
+        center[2] = 0.0f; // only the z coord changes between panel and center.
+        vec3 lookup = {0, 1, 0};
+        glm_lookat(panzoom->camera_pos, center, lookup, mvp->view);
+    }
+    // Proj matrix (depends on the zoom).
+    {
+        float zx = panzoom->zoom[0];
+        float zy = panzoom->zoom[1];
+        glm_ortho(-1.0f / zx, +1.0f / zx, -1.0f / zy, 1.0f / zy, -10.0f, 10.0f, mvp->proj);
+    }
+}
+
 static void _panzoom_callback(
     VklInteract* interact, VklViewport viewport, VklMouse* mouse, VklKeyboard* keyboard)
 {
@@ -339,10 +407,7 @@ static void _panzoom_callback(
         // panel->status = VKL_PANEL_STATUS_ACTIVE;
 
         glm_vec2_sub(interact->mouse_local.cur_pos, interact->mouse_local.press_pos, delta);
-
-        panzoom->camera_pos[0] = panzoom->last_camera_pos[0] - delta[0] / panzoom->zoom[0];
-        panzoom->camera_pos[1] = panzoom->last_camera_pos[1] - delta[1] / panzoom->zoom[1];
-
+        _panzoom_pan(panzoom, delta);
         update = true;
     } // end pan
 
@@ -350,7 +415,7 @@ static void _panzoom_callback(
     if ((mouse->cur_state == VKL_MOUSE_STATE_DRAG && mouse->button == VKL_MOUSE_BUTTON_RIGHT) ||
         mouse->cur_state == VKL_MOUSE_STATE_WHEEL)
     {
-        vec2 pan, zoom_press, zoom_prev, zoom_new, center;
+        vec2 center = {0};
 
         // Right drag.
         if (mouse->cur_state == VKL_MOUSE_STATE_DRAG && mouse->button == VKL_MOUSE_BUTTON_RIGHT)
@@ -364,11 +429,9 @@ static void _panzoom_callback(
             // panel->status = VKL_PANEL_STATUS_ACTIVE;
 
             // Get the center position: mouse press position.
-            center[0] = interact->mouse_local.press_pos[0];
-            center[1] = interact->mouse_local.press_pos[1];
-
+            glm_vec2_copy(interact->mouse_local.press_pos, center);
             glm_vec2_sub(interact->mouse_local.cur_pos, interact->mouse_local.press_pos, delta);
-            glm_vec2_copy(panzoom->last_zoom, zoom_press);
+
             delta[0] *= .002 * size_b[0];
             delta[1] *= .002 * size_b[1];
         }
@@ -383,12 +446,9 @@ static void _panzoom_callback(
             // panel->status = VKL_PANEL_STATUS_ACTIVE;
 
             glm_vec2_copy(interact->mouse_local.cur_pos, center);
-            glm_vec2_copy(panzoom->zoom, zoom_press);
+            glm_vec2_copy(panzoom->zoom, panzoom->last_zoom);
 
-            // _mouse_cur_pos(mouse, viewport, center);
-            // glm_vec2_copy(mouse->wheel_delta, delta);
-            delta[0] = mouse->wheel_delta[1] * wheel_factor;
-            delta[1] = mouse->wheel_delta[1] * wheel_factor;
+            delta[0] = delta[1] = mouse->wheel_delta[1] * wheel_factor;
         }
 
         // Fixed aspect ratio.
@@ -397,42 +457,7 @@ static void _panzoom_callback(
             delta[0] = delta[1] = .5 * (delta[0] + delta[1]);
         }
 
-        // Update the zoom.
-        delta[0] = CLIP(delta[0], -10, +10);
-        delta[1] = CLIP(delta[1], -10, +10);
-        glm_vec2_mul(zoom_press, (vec2){exp(delta[0]), exp(delta[1])}, zoom_new);
-
-        // Clip zoom x.
-        double zx = zoom_new[0];
-        if (zx <= VKL_PANZOOM_MIN_ZOOM || zx >= VKL_PANZOOM_MAX_ZOOM)
-        {
-            zoom_new[0] = CLIP(zx, VKL_PANZOOM_MIN_ZOOM, VKL_PANZOOM_MAX_ZOOM);
-            panzoom->lim_reached[0] = true;
-        }
-        // Clip zoom y.
-        double zy = zoom_new[1];
-        if (zy <= VKL_PANZOOM_MIN_ZOOM || zy >= VKL_PANZOOM_MAX_ZOOM)
-        {
-            zoom_new[1] = CLIP(zy, VKL_PANZOOM_MIN_ZOOM, VKL_PANZOOM_MAX_ZOOM);
-            panzoom->lim_reached[1] = true;
-        }
-
-        // Update zoom.
-        glm_vec2_copy(panzoom->zoom, zoom_prev);
-        if (!panzoom->lim_reached[0])
-            panzoom->zoom[0] = zoom_new[0];
-        if (!panzoom->lim_reached[1])
-            panzoom->zoom[1] = zoom_new[1];
-
-        // Update pan.
-        pan[0] = -center[0] * (1.0f / zoom_prev[0] - 1.0f / zoom_new[0]) * zoom_new[0];
-        pan[1] = -center[1] * (1.0f / zoom_prev[1] - 1.0f / zoom_new[1]) * zoom_new[1];
-
-        if (!panzoom->lim_reached[0])
-            panzoom->camera_pos[0] -= pan[0] / panzoom->zoom[0];
-        if (!panzoom->lim_reached[1])
-            panzoom->camera_pos[1] -= pan[1] / panzoom->zoom[1];
-
+        _panzoom_zoom(panzoom, delta, center);
         update = true;
     } // end zoom
 
@@ -448,7 +473,6 @@ static void _panzoom_callback(
         update = true;
     }
 
-
     if (mouse->cur_state == VKL_MOUSE_STATE_INACTIVE)
     {
         // Reset the last camera/zoom variables.
@@ -460,27 +484,7 @@ static void _panzoom_callback(
     }
 
     if (update)
-    {
-        // Update the MVP struct.
-        // View matrix (depends on the pan).
-        vec3 center;
-        glm_vec3_copy(panzoom->camera_pos, center);
-        center[2] = 0.0f; // only the z coord changes between panel and center.
-        vec3 lookup = {0, 1, 0};
-        glm_lookat(panzoom->camera_pos, center, lookup, interact->mvp.view);
-
-        // Proj matrix (depends on the zoom).
-        float zx = panzoom->zoom[0];
-        float zy = panzoom->zoom[1];
-        // TODO: other aspect ratios
-        // if (aspect_ratio == 1)
-        // {
-        //     zx *= size_b[1] / (float)size_b[0];
-        // }
-        glm_ortho(
-            -1.0f / zx, +1.0f / zx, -1.0f / zy, 1.0f / zy, -10.0f, 10.0f, interact->mvp.proj);
-    }
-
+        _panzoom_update_mvp(panzoom, &interact->mvp);
     interact->to_update = update;
 }
 
