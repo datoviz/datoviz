@@ -149,7 +149,7 @@ struct VklArcball
 {
     mat4 center_translation, translation;
     versor rotation;
-    mat4 mat_arcball;
+    mat4 mat;
     mat4 mat_user;
     vec3 eye_init;
 };

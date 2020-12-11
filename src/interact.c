@@ -559,10 +559,72 @@ static void _screen_to_arcball(vec2 p, versor q)
     }
 }
 
+static void _arcball_rotate(VklArcball* arcball, vec2 cur_pos, vec2 last_pos)
+{
+    ASSERT(arcball != NULL);
+
+    // // NOTE: need to invert the mouse normalized coordinates if the standard 3D view matrix
+    // is
+    // // also applied.
+    // if (arcball->which_matrix == VKL_MVP_MODEL)
+    // {
+    //     cur_pos[0] *= -1;
+    //     cur_pos[1] *= -1;
+    //     last_pos[0] *= -1;
+    //     last_pos[1] *= -1;
+    // }
+
+    versor mouse_cur_ball = {0}, mouse_prev_ball = {0};
+    _screen_to_arcball(cur_pos, mouse_cur_ball);
+    _screen_to_arcball(last_pos, mouse_prev_ball);
+
+    glm_quat_mul(mouse_prev_ball, arcball->rotation, arcball->rotation);
+    glm_quat_mul(mouse_cur_ball, arcball->rotation, arcball->rotation);
+}
+
+static void _arcball_zoom(VklArcball* arcball, vec3 motion)
+{
+    ASSERT(arcball != NULL);
+
+    mat4 tr;
+    glm_translate_make(tr, motion);
+    glm_mat4_mul(tr, arcball->translation, arcball->translation);
+    // Zoom bound.
+    // float zoom_max = 1;
+    // if (arcball->translation[3][2] > -zoom_max)
+    //     arcball->translation[3][2] = -zoom_max;
+}
+
+static void _arcball_pan(VklArcball* arcball, vec2 delta)
+{
+    vec4 motion = {delta[0], delta[1], 0, 0};
+    // Find the panning amount in the world space
+    mat4 inv_panel;
+    glm_mat4_inv(arcball->mat, inv_panel);
+    glm_mat4_mulv(inv_panel, motion, motion);
+    mat4 tr;
+    glm_translate_make(tr, motion);
+    glm_mat4_mul(tr, arcball->center_translation, arcball->center_translation);
+
+    // Update the view matrix.
+    glm_quat_mat4(arcball->rotation, arcball->mat);
+    glm_mat4_mul(arcball->mat, arcball->center_translation, arcball->mat);
+    glm_mat4_mul(arcball->translation, arcball->mat, arcball->mat);
+}
+
 static void _arcball_update_mvp(VklArcball* arcball, VklMVP* mvp)
 {
     ASSERT(arcball != NULL);
-    glm_mat4_copy(arcball->mat_arcball, mvp->model);
+    glm_mat4_copy(arcball->mat, mvp->model);
+
+    // // NOTE: need to invert the mouse normalized coordinates if the standard 3D view matrix
+    // is
+    // // also applied.
+    // if (arcball->which_matrix == VKL_MVP_MODEL)
+    // {
+    //     delta[0] *= -1;
+    //     delta[1] *= -1;
+    // }
 
     vec3 center = {0};
     vec3 eye = {0, 0, 2.5};
@@ -590,47 +652,20 @@ static void _arcball_callback(
         // if (vkl_panel_from_mouse(scene, mouse->press_pos) != panel)
         //     return;
         // panel->status = VKL_PANEL_STATUS_ACTIVE;
-
-        // // NOTE: need to invert the mouse normalized coordinates if the standard 3D view matrix
-        // is
-        // // also applied.
-        // if (arcball->which_matrix == VKL_MVP_MODEL)
-        // {
-        //     cur_pos[0] *= -1;
-        //     cur_pos[1] *= -1;
-        //     last_pos[0] *= -1;
-        //     last_pos[1] *= -1;
-        // }
-
-        versor mouse_cur_ball = {0}, mouse_prev_ball = {0};
-        _screen_to_arcball(interact->mouse_local.cur_pos, mouse_cur_ball);
-        _screen_to_arcball(interact->mouse_local.last_pos, mouse_prev_ball);
-
-        glm_quat_mul(mouse_prev_ball, arcball->rotation, arcball->rotation);
-        glm_quat_mul(mouse_cur_ball, arcball->rotation, arcball->rotation);
-
+        _arcball_rotate(arcball, interact->mouse_local.cur_pos, interact->mouse_local.last_pos);
         update = true;
     }
 
     // Zoom.
     if (mouse->cur_state == VKL_MOUSE_STATE_WHEEL)
     {
-
         // // TODO
         // // Restrict the panzoom updates to cases when the mouse press position was in the panel.
         // if (vkl_panel_from_mouse(scene, mouse->cur_pos) != panel)
         //     return;
         // panel->status = VKL_PANEL_STATUS_ACTIVE;
-
         vec3 motion = {0, 0, +.2 * mouse->wheel_delta[1]};
-        mat4 tr;
-        glm_translate_make(tr, motion);
-        glm_mat4_mul(tr, arcball->translation, arcball->translation);
-        // Zoom bound.
-        // float zoom_max = 1;
-        // if (arcball->translation[3][2] > -zoom_max)
-        //     arcball->translation[3][2] = -zoom_max;
-
+        _arcball_zoom(arcball, motion);
         update = true;
     }
 
@@ -639,15 +674,13 @@ static void _arcball_callback(
     {
         _arcball_reset(arcball);
         // panel->status = VKL_PANEL_STATUS_RESET;
-
         update = true;
     }
 
     // Compute the View matrix.
-    mat4 arcball_mat;
-    glm_quat_mat4(arcball->rotation, arcball_mat);
-    glm_mat4_mul(arcball_mat, arcball->center_translation, arcball_mat);
-    glm_mat4_mul(arcball->translation, arcball_mat, arcball_mat);
+    glm_quat_mat4(arcball->rotation, arcball->mat);
+    glm_mat4_mul(arcball->mat, arcball->center_translation, arcball->mat);
+    glm_mat4_mul(arcball->translation, arcball->mat, arcball->mat);
 
     // Pan.
     if (mouse->cur_state == VKL_MOUSE_STATE_DRAG && mouse->button == VKL_MOUSE_BUTTON_RIGHT)
@@ -657,68 +690,24 @@ static void _arcball_callback(
         //     return;
         // panel->status = VKL_PANEL_STATUS_ACTIVE;
 
-        // float zoom_amount = 1;//abs(arcball->translation[3][2]);
-
-        // _mouse_move_delta(mouse, viewport, delta);
-
-        // // NOTE: need to invert the mouse normalized coordinates if the standard 3D view matrix
-        // is
-        // // also applied.
-        // if (arcball->which_matrix == VKL_MVP_MODEL)
-        // {
-        //     delta[0] *= -1;
-        //     delta[1] *= -1;
-        // }
-
         vec2 delta;
         glm_vec2_sub(interact->mouse_local.cur_pos, interact->mouse_local.last_pos, delta);
-        vec4 motion = {+.5 * delta[0], +.5 * delta[1], 0, 0};
-        // Find the panning amount in the world space
-        mat4 inv_panel;
-        glm_mat4_inv(arcball_mat, inv_panel);
-        glm_mat4_mulv(inv_panel, motion, motion);
-        mat4 tr;
-        glm_translate_make(tr, motion);
-        glm_mat4_mul(tr, arcball->center_translation, arcball->center_translation);
-
-        // Update the view matrix.
-        glm_quat_mat4(arcball->rotation, arcball_mat);
-        glm_mat4_mul(arcball_mat, arcball->center_translation, arcball_mat);
-        glm_mat4_mul(arcball->translation, arcball_mat, arcball_mat);
-
+        delta[0] *= .5;
+        delta[1] *= .5;
+        _arcball_pan(arcball, delta);
         update = true;
     }
 
     // Make a copy of the transformation matrix, if other controllers or the user want to modify
     // the model/view matrix.
-    glm_mat4_copy(arcball_mat, arcball->mat_arcball);
+    // glm_mat4_copy(arcball_mat, arcball->mat_arcball);
 
     // Take the user matrix into account.
-    glm_mat4_mul(arcball->mat_arcball, arcball->mat_user, arcball->mat_arcball);
+    glm_mat4_mul(arcball->mat, arcball->mat_user, arcball->mat);
 
     if (update)
         _arcball_update_mvp(arcball, &interact->mvp);
     interact->to_update = update;
-
-    // // Update the panels with the MVP matrices.
-    // if (arcball->which_matrix == VKL_MVP_MODEL)
-    // {
-    //     vkl_mvp_set_model(arcball->mat_arcball, &arcball->mvp);
-    // }
-    // else if (arcball->which_matrix == VKL_MVP_VIEW)
-    // {
-    //      vkl_mvp_set_view(arcball->mat_arcball, &arcball->mvp);
-    // }
-    // else
-    // {
-    //     log_error("the matrix passed to the arcball controller should be either the model or the
-    //     "
-    //               "view matrix");
-    // }
-    // vkl_mvp_set_proj_3D(panel, viewport_type, &arcball->mvp);
-    // vkl_mvp_upload(panel, viewport_type, &arcball->mvp);
-    // vkl_mvp_finalize(scene);
-
 
     // if (mouse->cur_state == VKL_MOUSE_STATE_INACTIVE)
     // {
