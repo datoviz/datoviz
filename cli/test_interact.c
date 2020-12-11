@@ -67,6 +67,7 @@ static void _scene_mouse_callback(VklCanvas* canvas, VklEvent ev)
     if (scene->interact.to_update &&
         canvas->clock.elapsed - scene->interact.last_update > VKY_INTERACT_MIN_DELAY)
     {
+        vkl_visual_data(&scene->visual, VKL_PROP_MODEL, 0, 1, scene->interact.mvp.model);
         vkl_visual_data(&scene->visual, VKL_PROP_VIEW, 0, 1, scene->interact.mvp.view);
         vkl_visual_data(&scene->visual, VKL_PROP_PROJ, 0, 1, scene->interact.mvp.proj);
         vkl_visual_update(&scene->visual, viewport, (VklDataCoords){0}, NULL);
@@ -107,15 +108,16 @@ static void _add_visual(
         RAND_COLOR(vertices[i].color)
     }
     vkl_visual_data_buffer(visual, VKL_SOURCE_VERTEX, 0, 0, N, N, vertices);
+
+    VklMVP mvp = {0};
+    glm_mat4_identity(mvp.model);
+    glm_mat4_identity(mvp.view);
+    glm_mat4_identity(mvp.proj);
+
+    vkl_visual_data_buffer(visual, VKL_SOURCE_UNIFORM, 0, 0, 1, 1, &mvp);
     vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 1, br_viewport);
     vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 2, br_params);
     vkl_visual_texture(visual, VKL_SOURCE_TEXTURE_2D, 0, tex_color);
-
-    // MVP.
-    mat4 id = GLM_MAT4_IDENTITY_INIT;
-    vkl_visual_data(visual, VKL_PROP_MODEL, 0, 1, id);
-    vkl_visual_data(visual, VKL_PROP_VIEW, 0, 1, id);
-    vkl_visual_data(visual, VKL_PROP_PROJ, 0, 1, id);
 
     // Upload the data to the GPU.
     VklViewport viewport = vkl_viewport_full(canvas);
@@ -164,7 +166,7 @@ int test_interact_arcball(TestContext* context)
     TestScene scene = {0};
     scene.mouse = vkl_mouse();
     scene.keyboard = vkl_keyboard();
-    scene.interact = vkl_interact_builtin(canvas, VKL_INTERACT_PANZOOM);
+    scene.interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
     scene.visual = vkl_visual(canvas);
 
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _scene_mouse_callback, &scene);
