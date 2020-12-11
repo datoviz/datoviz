@@ -81,6 +81,7 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_interact_1),       //
     CASE_FIXTURE_NONE(test_interact_panzoom), //
     CASE_FIXTURE_NONE(test_interact_arcball), //
+    CASE_FIXTURE_NONE(test_interact_camera),  //
 
 
 

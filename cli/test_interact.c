@@ -54,7 +54,6 @@ int test_interact_1(TestContext* context)
 }
 
 
-
 static void _scene_mouse_callback(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
@@ -84,6 +83,16 @@ static void _scene_keyboard_callback(VklCanvas* canvas, VklEvent ev)
     VklViewport viewport = vkl_viewport_full(canvas);
     vkl_keyboard_event(&scene->keyboard, canvas, ev);
     vkl_interact_update(&scene->interact, viewport, &scene->mouse, &scene->keyboard);
+
+    if (scene->interact.to_update &&
+        canvas->clock.elapsed - scene->interact.last_update > VKY_INTERACT_MIN_DELAY)
+    {
+        vkl_visual_data(&scene->visual, VKL_PROP_MODEL, 0, 1, scene->interact.mvp.model);
+        vkl_visual_data(&scene->visual, VKL_PROP_VIEW, 0, 1, scene->interact.mvp.view);
+        vkl_visual_data(&scene->visual, VKL_PROP_PROJ, 0, 1, scene->interact.mvp.proj);
+        vkl_visual_update(&scene->visual, viewport, (VklDataCoords){0}, NULL);
+        scene->interact.last_update = canvas->clock.elapsed;
+    }
 }
 
 static void _add_visual(
@@ -167,6 +176,37 @@ int test_interact_arcball(TestContext* context)
     scene.mouse = vkl_mouse();
     scene.keyboard = vkl_keyboard();
     scene.interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
+    scene.visual = vkl_visual(canvas);
+
+    vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _scene_mouse_callback, &scene);
+    vkl_event_callback(canvas, VKL_EVENT_MOUSE_BUTTON, 0, _scene_mouse_callback, &scene);
+    vkl_event_callback(canvas, VKL_EVENT_MOUSE_WHEEL, 0, _scene_mouse_callback, &scene);
+    vkl_event_callback(canvas, VKL_EVENT_KEY, 0, _scene_keyboard_callback, &scene);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
+
+    const uint32_t N = 10000;
+    float param = 5.0f;
+    VklGraphicsPointsParams params = {.point_size = param};
+    VklVertex* vertices = calloc(N, sizeof(VklVertex));
+    _add_visual(&scene, N, vertices, &params);
+    vkl_app_run(app, 0);
+
+    FREE(vertices);
+    TEST_END
+}
+
+
+
+int test_interact_camera(TestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+
+    TestScene scene = {0};
+    scene.mouse = vkl_mouse();
+    scene.keyboard = vkl_keyboard();
+    scene.interact = vkl_interact_builtin(canvas, VKL_INTERACT_FPS);
     scene.visual = vkl_visual(canvas);
 
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _scene_mouse_callback, &scene);

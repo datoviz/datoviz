@@ -510,12 +510,22 @@ static VklCamera _camera(VklInteractType type)
     return c;
 }
 
+static void _camera_update_mvp(VklCamera* camera, VklMVP* mvp)
+{
+    ASSERT(camera != NULL);
+    glm_lookat(camera->eye, camera->forward, camera->up, mvp->view);
+    float ratio = 1; // TODO: viewport.w / viewport.h;
+    glm_perspective(GLM_PI_4, ratio, -1, 1, mvp->proj);
+}
+
 static void _camera_callback(
     VklInteract* interact, VklViewport viewport, VklMouse* mouse, VklKeyboard* keyboard)
 {
     ASSERT(interact != NULL);
-
-
+    VklCanvas* canvas = interact->canvas;
+    VklCamera* camera = &interact->u.c;
+    VklMouseLocal* mouse_local = &interact->mouse_local;
+    bool is_fly = interact->type == VKL_INTERACT_FLY;
 
     const float increment = .35;
     const float max_pitch = .99;
@@ -528,21 +538,17 @@ static void _camera_callback(
     mat4 rot;
     float ymin = -10;
 
-    /*
-    switch (controller_type)
+    switch (interact->type)
     {
 
-    case VKL_CONTROLLER_FPS:
-    case VKL_CONTROLLER_FLY:
+    case VKL_INTERACT_FPS:
+    case VKL_INTERACT_FLY:
         if (mouse->cur_state == VKL_MOUSE_STATE_DRAG)
         {
             // Change the camera orientation with the mouse.
-            vec2 mouse_delta;
-            _mouse_move_delta(mouse, panel->viewport, mouse_delta);
-            camera->speed = VKL_CAMERA_SENSITIVITY;
-
-            float incrx = mouse_delta[0] * camera->speed;
-            float incry = mouse_delta[1] * camera->speed;
+            camera->speed = 1.0f;
+            float incrx = (mouse_local->cur_pos[0] - mouse_local->last_pos[0]) * camera->speed;
+            float incry = (mouse_local->cur_pos[1] - mouse_local->last_pos[1]) * camera->speed;
 
             glm_rotate_make(rot, incrx, yaw_axis);
             glm_mat4_mulv3(rot, camera->forward, 1, camera->forward);
@@ -567,77 +573,83 @@ static void _camera_callback(
         forward_plane[1] = camera->forward[2];
         glm_vec2_normalize(forward_plane);
 
-        if (keyboard->key == VKL_KEY_UP)
+        if (keyboard->cur_state == VKL_KEYBOARD_STATE_ACTIVE)
         {
-            if (controller_type == VKL_CONTROLLER_FPS)
+            if (keyboard->key_code == VKL_KEY_UP)
             {
-                camera->target[0] += increment * forward_plane[0];
-                camera->target[2] += increment * forward_plane[1];
+                if (!is_fly)
+                {
+                    camera->target[0] += increment * forward_plane[0];
+                    camera->target[2] += increment * forward_plane[1];
+                }
+                else
+                {
+                    camera->target[0] += increment * camera->forward[0];
+                    camera->target[1] += increment * camera->forward[1];
+                    camera->target[2] += increment * camera->forward[2];
+                }
             }
-            else if (controller_type == VKL_CONTROLLER_FLY)
+            else if (keyboard->key_code == VKL_KEY_DOWN)
             {
-                camera->target[0] += increment * camera->forward[0];
-                camera->target[1] += increment * camera->forward[1];
-                camera->target[2] += increment * camera->forward[2];
+                if (!is_fly)
+                {
+                    camera->target[0] -= increment * forward_plane[0];
+                    camera->target[2] -= increment * forward_plane[1];
+                }
+                else
+                {
+                    camera->target[0] -= increment * camera->forward[0];
+                    camera->target[1] -= increment * camera->forward[1];
+                    camera->target[2] -= increment * camera->forward[2];
+                }
+            }
+            else if (keyboard->key_code == VKL_KEY_RIGHT)
+            {
+                camera->target[0] -= -increment * camera->forward[2];
+                camera->target[2] -= increment * camera->forward[0];
+            }
+            else if (keyboard->key_code == VKL_KEY_LEFT)
+            {
+                camera->target[0] += -increment * camera->forward[2];
+                camera->target[2] += increment * camera->forward[0];
             }
         }
-        else if (keyboard->key == VKL_KEY_DOWN)
-        {
-            if (controller_type == VKL_CONTROLLER_FPS)
-            {
-                camera->target[0] -= increment * forward_plane[0];
-                camera->target[2] -= increment * forward_plane[1];
-            }
-            else if (controller_type == VKL_CONTROLLER_FLY)
-            {
-                camera->target[0] -= increment * camera->forward[0];
-                camera->target[1] -= increment * camera->forward[1];
-                camera->target[2] -= increment * camera->forward[2];
-            }
-        }
-        else if (keyboard->key == VKL_KEY_RIGHT)
-        {
-            camera->target[0] -= -increment * camera->forward[2];
-            camera->target[2] -= increment * camera->forward[0];
-        }
-        else if (keyboard->key == VKL_KEY_LEFT)
-        {
-            camera->target[0] += -increment * camera->forward[2];
-            camera->target[2] += increment * camera->forward[0];
-        }
-
         // Smooth move.
-        const double alpha = 10 * scene->canvas->dt;
+        const double alpha = 10 * canvas->clock.elapsed;
         camera->eye[0] += alpha * (camera->target[0] - camera->eye[0]);
         camera->eye[1] += alpha * (camera->target[1] - camera->eye[1]);
         camera->eye[2] += alpha * (camera->target[2] - camera->eye[2]);
         break;
 
-    case VKL_CONTROLLER_AUTOROTATE:
-        camera->speed = VKL_CAMERA_SPEED * scene->canvas->dt;
-        glm_rotate_make(rot, camera->speed, yaw_axis);
-        glm_mat4_mulv3(rot, camera->eye, 1, camera->eye);
-        glm_mat4_mulv3(rot, camera->forward, 1, camera->forward);
-        break;
+        // case VKL_CONTROLLER_AUTOROTATE:
+        //     camera->speed = VKL_CAMERA_SPEED * scene->canvas->dt;
+        //     glm_rotate_make(rot, camera->speed, yaw_axis);
+        //     glm_mat4_mulv3(rot, camera->eye, 1, camera->eye);
+        //     glm_mat4_mulv3(rot, camera->forward, 1, camera->forward);
+        //     break;
 
     default:
         break;
     }
 
     // Prevent going below y=0 plane.
-    if (controller_type == VKL_CONTROLLER_FPS)
+    if (!is_fly)
         ymin = 0;
 
-    camera->eye[1] = CLIP(camera->eye[1], ymin, VKL_CAMERA_YMAX);
-    camera->target[1] = CLIP(camera->target[1], ymin, VKL_CAMERA_YMAX);
+    camera->eye[1] = CLIP(camera->eye[1], ymin, 10);
+    camera->target[1] = CLIP(camera->target[1], ymin, 10);
 
     // Reset the camera on double click.
     if (mouse->cur_state == VKL_MOUSE_STATE_DOUBLE_CLICK)
     {
-        _reset_camera(camera);
-        panel->status = VKL_PANEL_STATUS_RESET;
+        _camera_reset(camera);
+        // panel->status = VKL_PANEL_STATUS_RESET;
     }
-    */
+
+    bool update = true; // TODO
+    if (update)
+        _camera_update_mvp(camera, &interact->mvp);
+    interact->to_update = update;
 }
 
 
