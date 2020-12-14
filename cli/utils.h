@@ -31,6 +31,9 @@ static const VkClearColorValue bgcolor = {{.4f, .6f, .8f, 1.0f}};
 #define TEST_PRESENT_MODE VK_PRESENT_MODE_FIFO_KHR
 // #define TEST_PRESENT_MODE VK_PRESENT_MODE_IMMEDIATE_KHR
 
+#define N_FRAMES (getenv("VKY_INTERACT") != NULL ? 0 : 10)
+
+
 
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */

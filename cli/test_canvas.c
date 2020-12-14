@@ -5,8 +5,6 @@
 #include "utils.h"
 
 
-#define N_FRAMES 10
-
 typedef struct TestParticle TestParticle;
 
 
