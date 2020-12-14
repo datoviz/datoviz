@@ -65,7 +65,7 @@ static void _common_props(VklVisual* visual)
 /*  Scatter raw                                                                                  */
 /*************************************************************************************************/
 
-static void _visual_scatter(VklVisual* visual, int flags)
+static void _visual_scatter_raw(VklVisual* visual)
 {
     // TODO: flags variant
 
@@ -79,7 +79,7 @@ static void _visual_scatter(VklVisual* visual, int flags)
     // Sources
     SOURCES(VklVertex, VklGraphicsPointsParams)
 
-    // Props!
+    // Props:
 
     // Vertex pos.
     vkl_visual_prop(                                   //
@@ -103,6 +103,44 @@ static void _visual_scatter(VklVisual* visual, int flags)
 
 
 /*************************************************************************************************/
+/*  Segment raw                                                                                  */
+/*************************************************************************************************/
+
+static void _visual_segment_raw(VklVisual* visual)
+{
+    // TODO: flags variant
+
+    ASSERT(visual != NULL);
+    VklCanvas* canvas = visual->canvas;
+    ASSERT(canvas != NULL);
+
+    // Graphics.
+    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_LINES, 0));
+
+    // Sources
+    vkl_visual_source(
+        visual, VKL_SOURCE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklVertex), 0);
+    _common_sources(visual);
+
+    // Props:
+
+    // Vertex pos.
+    vkl_visual_prop(                                   //
+        visual, VKL_PROP_POS, 0, VKL_SOURCE_VERTEX, 0, //
+        0, VKL_DTYPE_VEC3, offsetof(VklVertex, pos));  //
+
+    // Vertex color.
+    vkl_visual_prop(                                     //
+        visual, VKL_PROP_COLOR, 0, VKL_SOURCE_VERTEX, 0, //
+        1, VKL_DTYPE_CVEC4, offsetof(VklVertex, color)); //
+
+    // Common props.
+    _common_props(visual);
+}
+
+
+
+/*************************************************************************************************/
 /*  Main function                                                                                */
 /*************************************************************************************************/
 
@@ -112,8 +150,15 @@ VklVisual vkl_visual_builtin(VklCanvas* canvas, VklVisualType type, int flags)
     VklVisual visual = vkl_visual(canvas);
     switch (type)
     {
+
     case VKL_VISUAL_SCATTER:
-        _visual_scatter(&visual, flags);
+        // TODO: raw/agg
+        _visual_scatter_raw(&visual);
+        break;
+
+    case VKL_VISUAL_SEGMENT:
+        // TODO: raw/agg
+        _visual_segment_raw(&visual);
         break;
 
     case VKL_VISUAL_CUSTOM:

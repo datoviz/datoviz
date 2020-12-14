@@ -86,6 +86,7 @@ static TestCase TEST_CASES[] = {
 
     // builtin visuals
     CASE_FIXTURE_NONE(test_visuals_scatter_raw), //
+    CASE_FIXTURE_NONE(test_visuals_segment_raw), //
 
 
     // // OLD CODE BELOW

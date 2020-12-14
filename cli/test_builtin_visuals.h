@@ -17,6 +17,7 @@
 /*************************************************************************************************/
 
 int test_visuals_scatter_raw(TestContext* context);
+int test_visuals_segment_raw(TestContext* context);
 
 
 

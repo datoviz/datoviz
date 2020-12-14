@@ -15,6 +15,7 @@
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
+// Variants.
 typedef enum
 {
     VKL_VISUAL_VARIANT_NONE = 0,
@@ -30,6 +31,7 @@ typedef enum
 
 
 
+// Visual types.
 typedef enum
 {
     VKL_VISUAL_NONE,

@@ -37,6 +37,7 @@ function(create_resources dir prefix output)
         string(REGEX REPLACE "\\.| |-" "_" filename ${filename})
         file(APPEND ${output} "if (strcmp(name, \"${filename}\") == 0) {*size = VKL_BINARY_${prefix}${filename}_size; return VKL_BINARY_${prefix}${filename};}\n")
     endforeach()
+    file(APPEND ${output} "if (*size == 0) log_error(\"unable to find shader %s\", name);\n")
     file(APPEND ${output} "return NULL;}\n")
 
 endfunction()

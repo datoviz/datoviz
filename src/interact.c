@@ -506,7 +506,6 @@ static void _camera_callback(
     VklInteract* interact, VklViewport viewport, VklMouse* mouse, VklKeyboard* keyboard)
 {
     ASSERT(interact != NULL);
-    VklCanvas* canvas = interact->canvas;
     VklCamera* camera = &interact->u.c;
     VklMouseLocal* mouse_local = &interact->mouse_local;
     bool is_fly = interact->type == VKL_INTERACT_FLY;

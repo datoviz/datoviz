@@ -60,7 +60,7 @@ static void _common_bindings(VklGraphics* graphics)
 
 
 /*************************************************************************************************/
-/*  Points                                                                                       */
+/*  Basic graphics                                                                               */
 /*************************************************************************************************/
 
 static void _graphics_points(VklCanvas* canvas, VklGraphics* graphics)
@@ -75,6 +75,24 @@ static void _graphics_points(VklCanvas* canvas, VklGraphics* graphics)
 
     _common_bindings(graphics);
     vkl_graphics_slot(graphics, USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+
+    CREATE
+}
+
+static void _graphics_basic(VklCanvas* canvas, VklGraphics* graphics, VkPrimitiveTopology topology)
+{
+    SHADER(VERTEX, "graphics_basic_vert")
+    SHADER(FRAGMENT, "graphics_basic_frag")
+
+    vkl_graphics_renderpass(graphics, &canvas->renderpass, 0);
+    vkl_graphics_topology(graphics, topology);
+    vkl_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
+
+    vkl_graphics_vertex_binding(graphics, 0, sizeof(VklVertex));
+    vkl_graphics_vertex_attr(graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VklVertex, pos));
+    vkl_graphics_vertex_attr(graphics, 0, 1, VK_FORMAT_R8G8B8A8_UNORM, offsetof(VklVertex, color));
+
+    _common_bindings(graphics);
 
     CREATE
 }
@@ -114,6 +132,27 @@ VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type, in
     case VKL_GRAPHICS_POINTS:
         _graphics_points(canvas, graphics);
         break;
+
+    case VKL_GRAPHICS_LINES:
+        _graphics_basic(canvas, graphics, VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
+        break;
+
+    case VKL_GRAPHICS_LINE_STRIP:
+        _graphics_basic(canvas, graphics, VK_PRIMITIVE_TOPOLOGY_LINE_STRIP);
+        break;
+
+    case VKL_GRAPHICS_TRIANGLES:
+        _graphics_basic(canvas, graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+        break;
+
+    case VKL_GRAPHICS_TRIANGLE_STRIP:
+        _graphics_basic(canvas, graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP);
+        break;
+
+    case VKL_GRAPHICS_TRIANGLE_FAN:
+        _graphics_basic(canvas, graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN);
+        break;
+
     default:
         log_error("no graphics type specified");
         break;

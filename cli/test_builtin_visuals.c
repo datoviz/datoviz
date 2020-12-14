@@ -40,7 +40,6 @@ static void _common_data(VklVisual* visual)
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);                                                      \
     VklGpu* gpu = vkl_gpu(app, 0);                                                                \
     VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);                                 \
-    vkl_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});                            \
     VklContext* ctx = gpu->context;                                                               \
     ASSERT(ctx != NULL);
 
@@ -80,6 +79,43 @@ int test_visuals_scatter_raw(TestContext* context)
     // Params.
     float param = 20.0f;
     vkl_visual_data(&visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
+
+    RUN;
+    FREE(pos);
+    FREE(color);
+    END;
+}
+
+
+
+int test_visuals_segment_raw(TestContext* context)
+{
+    INIT;
+    // vkl_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});
+
+    VklVisual visual = vkl_visual_builtin(canvas, VKL_VISUAL_SEGMENT, 0);
+
+    const uint32_t N = 100;
+    vec3* pos = calloc(N, sizeof(vec3));
+    cvec4* color = calloc(N, sizeof(cvec4));
+    float t = 0;
+    for (uint32_t i = 0; i < N / 2; i++)
+    {
+        t = M_2PI * (float)i / (N / 2);
+
+        pos[2 * i + 0][0] = .25 * cos(t);
+        pos[2 * i + 0][1] = .25 * sin(t);
+
+        pos[2 * i + 1][0] = .75 * cos(t);
+        pos[2 * i + 1][1] = .75 * sin(t);
+
+        RAND_COLOR(color[2 * i + 0])
+        RAND_COLOR(color[2 * i + 1])
+    }
+
+    // Set visual data.
+    vkl_visual_data(&visual, VKL_PROP_POS, 0, N, pos);
+    vkl_visual_data(&visual, VKL_PROP_COLOR, 0, N, color);
 
     RUN;
     FREE(pos);
