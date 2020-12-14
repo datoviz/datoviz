@@ -124,15 +124,24 @@ static void _visual_segment_raw(VklVisual* visual)
 
     // Props:
 
-    // Vertex pos.
+    // Vertex pos, segment start.
     vkl_visual_prop(                                   //
         visual, VKL_PROP_POS, 0, VKL_SOURCE_VERTEX, 0, //
         0, VKL_DTYPE_VEC3, offsetof(VklVertex, pos));  //
+    vkl_visual_prop_copy(visual, VKL_PROP_POS, 0, VKL_ARRAY_COPY_SINGLE, 2);
+
+    // Vertex pos, segment end.
+    vkl_visual_prop(                                                      //
+        visual, VKL_PROP_POS, 1, VKL_SOURCE_VERTEX, 0,                    //
+        0, VKL_DTYPE_VEC3, sizeof(VklVertex) + offsetof(VklVertex, pos)); //
+    vkl_visual_prop_copy(visual, VKL_PROP_POS, 1, VKL_ARRAY_COPY_SINGLE, 2);
+
 
     // Vertex color.
     vkl_visual_prop(                                     //
         visual, VKL_PROP_COLOR, 0, VKL_SOURCE_VERTEX, 0, //
         1, VKL_DTYPE_CVEC4, offsetof(VklVertex, color)); //
+    vkl_visual_prop_copy(visual, VKL_PROP_COLOR, 0, VKL_ARRAY_COPY_REPEAT, 2);
 
     // Common props.
     _common_props(visual);

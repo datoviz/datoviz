@@ -96,29 +96,32 @@ int test_visuals_segment_raw(TestContext* context)
     VklVisual visual = vkl_visual_builtin(canvas, VKL_VISUAL_SEGMENT, 0);
 
     const uint32_t N = 100;
-    vec3* pos = calloc(N, sizeof(vec3));
+    vec3* pos0 = calloc(N, sizeof(vec3));
+    vec3* pos1 = calloc(N, sizeof(vec3));
     cvec4* color = calloc(N, sizeof(cvec4));
     float t = 0;
-    for (uint32_t i = 0; i < N / 2; i++)
+    for (uint32_t i = 0; i < N; i++)
     {
-        t = M_2PI * (float)i / (N / 2);
+        t = M_2PI * (float)i / N;
 
-        pos[2 * i + 0][0] = .25 * cos(t);
-        pos[2 * i + 0][1] = .25 * sin(t);
+        pos0[i][0] = .25 * cos(t);
+        pos0[i][1] = .25 * sin(t);
 
-        pos[2 * i + 1][0] = .75 * cos(t);
-        pos[2 * i + 1][1] = .75 * sin(t);
+        pos1[i][0] = .75 * cos(t);
+        pos1[i][1] = .75 * sin(t);
 
-        RAND_COLOR(color[2 * i + 0])
-        RAND_COLOR(color[2 * i + 1])
+        RAND_COLOR(color[i])
+        RAND_COLOR(color[i])
     }
 
     // Set visual data.
-    vkl_visual_data(&visual, VKL_PROP_POS, 0, N, pos);
+    vkl_visual_data(&visual, VKL_PROP_POS, 0, N, pos0);
+    vkl_visual_data(&visual, VKL_PROP_POS, 1, N, pos1);
     vkl_visual_data(&visual, VKL_PROP_COLOR, 0, N, color);
 
     RUN;
-    FREE(pos);
+    FREE(pos0);
+    FREE(pos1);
     FREE(color);
     END;
 }

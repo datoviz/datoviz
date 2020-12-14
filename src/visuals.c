@@ -734,7 +734,7 @@ uint32_t vkl_bake_max_prop_size(VklVisual* visual, VklSource* source)
         {
             arr = &prop->arr_orig;
             ASSERT(arr != NULL);
-            item_count = MAX(item_count, arr->item_count);
+            item_count = MAX(item_count, arr->item_count * MAX(1, prop->reps));
         }
     }
     return item_count;
@@ -752,17 +752,22 @@ void vkl_bake_prop_copy(VklVisual* visual, VklProp* prop)
     VkDeviceSize col_size = _get_dtype_size(prop->dtype);
     ASSERT(col_size > 0);
 
+    if (prop->arr_orig.data == NULL)
+    {
+        log_error("visual prop %d #%d not set", prop->prop_type, prop->prop_idx);
+        return;
+    }
+
     ASSERT(prop->arr_orig.data != NULL);
     ASSERT(source->arr.data != NULL);
     ASSERT(prop->arr_orig.item_count <= source->arr.item_count);
-    uint32_t item_count = prop->arr_orig.item_count;
 
     // log_debug(
     //     "copy %d prop offset %d size %d into source size %d", //
     //     item_count, prop->offset, col_size, source->arr.item_size);
     vkl_array_column(
-        &source->arr, prop->offset, col_size, 0, item_count, item_count, prop->arr_orig.data,
-        prop->copy_type, prop->reps);
+        &source->arr, prop->offset, col_size, 0, source->arr.item_count, //
+        prop->arr_orig.item_count, prop->arr_orig.data, prop->copy_type, prop->reps);
 }
 
 
@@ -776,6 +781,8 @@ void vkl_bake_source_alloc(VklVisual* visual, VklSource* source, uint32_t count)
     // log_debug(
     //     "source alloc type %d idx %d count %d", //
     //     source->source_type, source->source_idx, count);
+    log_debug(
+        "alloc %d elements for source %d #%d", count, source->source_type, source->source_idx);
     VklArray* arr = &source->arr;
     ASSERT(is_obj_created(&arr->obj));
     vkl_array_resize(arr, count);
