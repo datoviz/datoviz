@@ -85,7 +85,7 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_interact_camera),  //
 
     // builtin visuals
-    CASE_FIXTURE_NONE(test_visuals_scatter), //
+    CASE_FIXTURE_NONE(test_visuals_scatter_raw), //
 
 
     // // OLD CODE BELOW

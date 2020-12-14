@@ -36,25 +36,35 @@ static void _common_data(VklVisual* visual)
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _visual_canvas_fill, visual);
 }
 
-
-
-/*************************************************************************************************/
-/*  Graphics tests                                                                               */
-/*************************************************************************************************/
-
-int test_visuals_scatter(TestContext* context)
-{
-    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
-    VklGpu* gpu = vkl_gpu(app, 0);
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
-    VklContext* ctx = gpu->context;
+#define INIT                                                                                      \
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);                                                      \
+    VklGpu* gpu = vkl_gpu(app, 0);                                                                \
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);                                 \
+    vkl_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});                            \
+    VklContext* ctx = gpu->context;                                                               \
     ASSERT(ctx != NULL);
+
+#define RUN                                                                                       \
+    _common_data(&visual);                                                                        \
+    vkl_app_run(app, N_FRAMES);
+
+#define END                                                                                       \
+    vkl_visual_destroy(&visual);                                                                  \
+    TEST_END
+
+
+
+/*************************************************************************************************/
+/*  Builtin visual tests                                                                         */
+/*************************************************************************************************/
+
+int test_visuals_scatter_raw(TestContext* context)
+{
+    INIT;
+
     VklVisual visual = vkl_visual_builtin(canvas, VKL_VISUAL_SCATTER, 0);
 
-    // GPU sources.
-    const uint32_t N = 10000;
-
-    // Vertex data.
+    const uint32_t N = 1000;
     vec3* pos = calloc(N, sizeof(vec3));
     cvec4* color = calloc(N, sizeof(cvec4));
     for (uint32_t i = 0; i < N; i++)
@@ -68,16 +78,11 @@ int test_visuals_scatter(TestContext* context)
     vkl_visual_data(&visual, VKL_PROP_COLOR, 0, N, color);
 
     // Params.
-    float param = 5.0f;
+    float param = 20.0f;
     vkl_visual_data(&visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
 
-    _common_data(&visual);
-
-    // Run and end.
-    vkl_app_run(app, N_FRAMES);
-
-    vkl_visual_destroy(&visual);
+    RUN;
     FREE(pos);
     FREE(color);
-    TEST_END
+    END;
 }

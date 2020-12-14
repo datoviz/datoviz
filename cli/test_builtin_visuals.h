@@ -16,7 +16,7 @@
 /*  Visuals tests                                                                                */
 /*************************************************************************************************/
 
-int test_visuals_scatter(TestContext* context);
+int test_visuals_scatter_raw(TestContext* context);
 
 
 
