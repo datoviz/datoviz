@@ -2,6 +2,7 @@
 #include <visky/visky.h>
 
 #include "test_array.h"
+#include "test_builtin_visuals.h"
 #include "test_canvas.h"
 #include "test_graphics.h"
 #include "test_interact.h"
@@ -83,6 +84,8 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_interact_arcball), //
     CASE_FIXTURE_NONE(test_interact_camera),  //
 
+    // builtin visuals
+    CASE_FIXTURE_NONE(test_visuals_scatter), //
 
 
     // // OLD CODE BELOW

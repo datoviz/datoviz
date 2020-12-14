@@ -210,7 +210,7 @@ static void _update_camera(VklCanvas* canvas, VklPrivateEvent ev)
     VklViewport viewport = vkl_viewport_full(canvas);
     vkl_interact_update(&scene->interact, viewport, &scene->mouse, &scene->keyboard);
 
-    // HACK: make sure we update last_pos at every frame, not during a mouse event.
+    // HACK: make sure we update last_pos at every frame, not just during a mouse event.
     // Otherwise the last_pos will not be properly updated when ending a mouse move.
     glm_vec3_copy(scene->interact.mouse_local.cur_pos, scene->interact.mouse_local.last_pos);
 

@@ -1,10 +1,7 @@
-#ifndef VKL_SCENE_HEADER
-#define VKL_SCENE_HEADER
+#ifndef VKL_BUILTIN_VISUALS_HEADER
+#define VKL_BUILTIN_VISUALS_HEADER
 
-#include "context.h"
-#include "graphics.h"
 #include "visuals.h"
-#include "vklite.h"
 
 
 
@@ -12,13 +9,56 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define VKL_MAX_VISUALS 1024
-
 
 
 /*************************************************************************************************/
 /*  Enums                                                                                        */
 /*************************************************************************************************/
+
+typedef enum
+{
+    VKL_VISUAL_VARIANT_NONE = 0,
+
+    VKL_VISUAL_VARIANT_RAW = 0x0001,
+    VKL_VISUAL_VARIANT_AGG = 0x0002,
+    VKL_VISUAL_VARIANT_SHADED = 0x0004,
+
+    VKL_VISUAL_VARIANT_TEXTURED = 0x0010,
+    VKL_VISUAL_VARIANT_TEXTURED_MULTI = 0x0020,
+
+} VklVisualVariant;
+
+
+
+typedef enum
+{
+    VKL_VISUAL_NONE,
+
+    VKL_VISUAL_SCATTER,     // raw, agg
+    VKL_VISUAL_SEGMENT,     // raw, agg
+    VKL_VISUAL_ARROW,       //
+    VKL_VISUAL_PATH,        // raw, agg
+    VKL_VISUAL_TEXT,        // raw, agg
+    VKL_VISUAL_TRIANGLE,    //
+    VKL_VISUAL_RECTANGLE,   //
+    VKL_VISUAL_IMAGE,       // single, multi
+    VKL_VISUAL_DISC,        //
+    VKL_VISUAL_SECTOR,      //
+    VKL_VISUAL_MESH,        // raw, textured, textured_multi, shaded
+    VKL_VISUAL_POLYGON,     //
+    VKL_VISUAL_PSLG,        //
+    VKL_VISUAL_HISTOGRAM,   //
+    VKL_VISUAL_AREA,        //
+    VKL_VISUAL_CANDLE,      //
+    VKL_VISUAL_GRAPH,       //
+    VKL_VISUAL_SURFACE,     //
+    VKL_VISUAL_VOLUME,      //
+    VKL_VISUAL_FAKE_SPHERE, //
+
+    VKL_VISUAL_COUNT,
+
+    VKL_VISUAL_CUSTOM,
+} VklVisualType;
 
 
 
@@ -26,22 +66,11 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct VklScene VklScene;
-
 
 
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
-
-struct VklScene
-{
-    VklObject obj;
-    VklCanvas* canvas;
-
-    uint32_t max_visuals;
-    VklVisual* visuals;
-};
 
 
 
@@ -49,9 +78,7 @@ struct VklScene
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-VKY_EXPORT VklScene vkl_scene(VklCanvas* canvas);
-
-VKY_EXPORT void vkl_scene_destroy(VklScene* scene);
+VKY_EXPORT VklVisual vkl_visual_builtin(VklCanvas* canvas, VklVisualType type, int flags);
 
 
 

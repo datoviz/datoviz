@@ -323,7 +323,11 @@ static void vkl_array_data(
     ASSERT(array != NULL);
     ASSERT(data_item_count > 0);
     ASSERT(array->data != NULL);
-    ASSERT(data != NULL);
+    if (data == NULL)
+    {
+        log_debug("skipping vkl_array_data() with NULL data");
+        return;
+    }
     ASSERT(item_count > 0);
 
     // Resize if necessary.
