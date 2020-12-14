@@ -403,6 +403,20 @@ void vkl_visual_prop(
 
 
 
+void vkl_visual_prop_copy(
+    VklVisual* visual, VklPropType prop_type, uint32_t idx, VklArrayCopyType copy_type,
+    uint32_t reps)
+{
+    ASSERT(visual != NULL);
+    VklProp* prop = vkl_bake_prop(visual, prop_type, idx);
+    ASSERT(prop != NULL);
+
+    prop->copy_type = copy_type;
+    prop->reps = reps;
+}
+
+
+
 void vkl_visual_graphics(VklVisual* visual, VklGraphics* graphics)
 {
     ASSERT(visual != NULL);
@@ -728,7 +742,7 @@ uint32_t vkl_bake_max_prop_size(VklVisual* visual, VklSource* source)
 
 
 
-void vkl_bake_prop_copy(VklVisual* visual, VklProp* prop, uint32_t reps)
+void vkl_bake_prop_copy(VklVisual* visual, VklProp* prop)
 {
     ASSERT(prop != NULL);
 
@@ -747,7 +761,8 @@ void vkl_bake_prop_copy(VklVisual* visual, VklProp* prop, uint32_t reps)
     //     "copy %d prop offset %d size %d into source size %d", //
     //     item_count, prop->offset, col_size, source->arr.item_size);
     vkl_array_column(
-        &source->arr, prop->offset, col_size, 0, item_count, item_count, prop->arr_orig.data);
+        &source->arr, prop->offset, col_size, 0, item_count, item_count, prop->arr_orig.data,
+        prop->copy_type, prop->reps);
 }
 
 
@@ -780,7 +795,7 @@ void vkl_bake_source_fill(VklVisual* visual, VklSource* source)
         prop = &visual->props[i];
         if (prop->source_type == source->source_type && prop->source_idx == source->source_idx)
         {
-            vkl_bake_prop_copy(visual, prop, 1);
+            vkl_bake_prop_copy(visual, prop);
         }
     }
 }

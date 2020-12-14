@@ -71,6 +71,15 @@ typedef enum
 
 
 
+// Array copy types.
+typedef enum
+{
+    VKL_ARRAY_COPY_REPEAT,
+    VKL_ARRAY_COPY_SINGLE,
+} VklArrayCopyType;
+
+
+
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
@@ -289,6 +298,14 @@ static void vkl_array_resize(VklArray* array, uint32_t item_count)
 
 
 
+static void vkl_array_clear(VklArray* array)
+{
+    ASSERT(array != NULL);
+    memset(array->data, 0, array->buffer_size);
+}
+
+
+
 // WARNING: this command currently loses all the data in the array.
 static void vkl_array_reshape(VklArray* array, uint32_t width, uint32_t height, uint32_t depth)
 {
@@ -307,7 +324,7 @@ static void vkl_array_reshape(VklArray* array, uint32_t width, uint32_t height, 
 
     // HACK: reset to 0 the array instead of having to deal with reshaping.
     log_trace("clearing the 3D array while reshaping it to %dx%dx%d", width, height, depth);
-    memset(array->data, 0, array->buffer_size);
+    vkl_array_clear(array);
 
     array->shape[0] = width;
     array->shape[1] = height;
@@ -375,7 +392,8 @@ static inline void* vkl_array_item(VklArray* array, uint32_t idx)
 static void vkl_array_column(
     VklArray* array, VkDeviceSize offset, VkDeviceSize col_size, //
     uint32_t first_item, uint32_t item_count,                    //
-    uint32_t data_item_count, const void* data)
+    uint32_t data_item_count, const void* data,                  //
+    VklArrayCopyType copy_type, uint32_t reps)                   //
 {
     ASSERT(array != NULL);
     ASSERT(data_item_count > 0);
@@ -405,12 +423,29 @@ static void vkl_array_column(
 
     int64_t src_byte = (int64_t)src + (int64_t)src_offset;
     int64_t dst_byte = (int64_t)dst + (int64_t)(first_item * dst_stride) + (int64_t)dst_offset;
-    for (uint32_t i = 0; i < item_count; i++)
+
+    uint32_t j = 0; // j: src index
+    uint32_t m = 0;
+    bool skip = false;
+    for (uint32_t i = 0; i < item_count; i++) // i: dst index
     {
-        // log_trace("copy from %d to %d", src_byte, dst_byte);
-        memcpy((void*)dst_byte, (void*)src_byte, col_size);
-        if (i < data_item_count - 1)
+        if (reps > 1)
+            m = i % reps;
+        // Determine whether the current item copy should be skipped.
+        skip = copy_type == VKL_ARRAY_COPY_SINGLE && reps > 1 && m > 0;
+
+        // Copy the current item, unless we are in SINGLE copy mode
+        if (!skip)
+            memcpy((void*)dst_byte, (void*)src_byte, col_size);
+
+        // Advance the source pointer, unless we are in SINGLE copy mode
+        skip = reps > 1 && m < reps - 1;
+        if (j < data_item_count - 1 && !skip)
+        {
             src_byte += (int64_t)src_stride;
+            j++;
+        }
+
         dst_byte += (int64_t)dst_stride;
     }
 }

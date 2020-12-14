@@ -181,6 +181,8 @@ struct VklProp
     VklArray arr_trans; // transformed data array
     // VklArray arr_triang; // triangulated data array
 
+    VklArrayCopyType copy_type;
+    uint32_t reps; // number of repeats when copying
     // bool is_set; // whether the user has set this prop
 };
 
@@ -275,9 +277,13 @@ VKY_EXPORT void vkl_visual_source(
     int flags);
 
 VKY_EXPORT void vkl_visual_prop(
-    VklVisual* visual, VklPropType prop, uint32_t idx,           //
+    VklVisual* visual, VklPropType prop_type, uint32_t idx,      //
     VklSourceType source, uint32_t source_idx,                   //
     uint32_t field_idx, VklDataType dtype, VkDeviceSize offset); //
+
+VKY_EXPORT void vkl_visual_prop_copy(
+    VklVisual* visual, VklPropType prop_type, uint32_t idx, VklArrayCopyType copy_type,
+    uint32_t reps);
 
 VKY_EXPORT void vkl_visual_graphics(VklVisual* visual, VklGraphics* graphics);
 
@@ -344,7 +350,7 @@ VKY_EXPORT VklSource* vkl_bake_prop_source(VklVisual* visual, VklProp* prop);
 
 VKY_EXPORT uint32_t vkl_bake_max_prop_size(VklVisual* visual, VklSource* source);
 
-VKY_EXPORT void vkl_bake_prop_copy(VklVisual* visual, VklProp* prop, uint32_t reps);
+VKY_EXPORT void vkl_bake_prop_copy(VklVisual* visual, VklProp* prop);
 
 VKY_EXPORT void vkl_bake_source_alloc(VklVisual* visual, VklSource* source, uint32_t count);
 

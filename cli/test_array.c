@@ -72,6 +72,8 @@ struct TestDtype
     float b;
 };
 
+
+
 int test_array_3(TestContext* context)
 {
     // uint8, float32
@@ -87,7 +89,8 @@ int test_array_3(TestContext* context)
 
     // Copy data to the second column.
     float b = 20.0f;
-    vkl_array_column(&arr, offsetof(TestDtype, b), sizeof(float), 1, 2, 1, &b);
+    vkl_array_column(
+        &arr, offsetof(TestDtype, b), sizeof(float), 1, 2, 1, &b, VKL_ARRAY_COPY_SINGLE, 1);
 
     // Row #0.
     AT(((TestDtype*)(vkl_array_item(&arr, 0)))->a == 1);
@@ -114,6 +117,45 @@ int test_array_3(TestContext* context)
 
 
 int test_array_4(TestContext* context)
+{
+    // uint8, float32
+    VklArray arr = vkl_array_struct(4, sizeof(TestDtype));
+    TestDtype* item = NULL;
+    float b[] = {0.5f, 2.5f};
+
+    // Test single copy
+    {
+        vkl_array_column(
+            &arr, offsetof(TestDtype, b), sizeof(float), 0, 4, 2, &b, VKL_ARRAY_COPY_SINGLE, 2);
+
+        for (uint32_t i = 0; i < 4; i++)
+        {
+            item = vkl_array_item(&arr, i);
+            AT(item->b == (i % 2 == 0 ? i + .5f : 0));
+        }
+    }
+
+    vkl_array_clear(&arr);
+
+    // Test repeat copy
+    {
+        vkl_array_column(
+            &arr, offsetof(TestDtype, b), sizeof(float), 0, 4, 2, &b, VKL_ARRAY_COPY_REPEAT, 2);
+
+        for (uint32_t i = 0; i < 4; i++)
+        {
+            item = vkl_array_item(&arr, i);
+            AT(item->b == (i % 2 == 0 ? (i + .5f) : (i - .5f)));
+        }
+    }
+
+    vkl_array_destroy(&arr);
+    return 0;
+}
+
+
+
+int test_array_5(TestContext* context)
 {
     uint8_t values[] = {1, 2, 3, 4, 5, 6};
 
@@ -148,9 +190,14 @@ int test_array_mvp(TestContext* context)
     glm_mat4_identity(id.view);
     glm_mat4_identity(id.proj);
 
-    vkl_array_column(&arr, offsetof(_mvp, model), sizeof(mat4), 0, 1, 1, id.model);
-    vkl_array_column(&arr, offsetof(_mvp, view), sizeof(mat4), 0, 1, 1, id.view);
-    vkl_array_column(&arr, offsetof(_mvp, proj), sizeof(mat4), 0, 1, 1, id.proj);
+    vkl_array_column(
+        &arr, offsetof(_mvp, model), sizeof(mat4), 0, 1, 1, id.model, VKL_ARRAY_COPY_SINGLE, 1);
+
+    vkl_array_column(
+        &arr, offsetof(_mvp, view), sizeof(mat4), 0, 1, 1, id.view, VKL_ARRAY_COPY_SINGLE, 1);
+
+    vkl_array_column(
+        &arr, offsetof(_mvp, proj), sizeof(mat4), 0, 1, 1, id.proj, VKL_ARRAY_COPY_SINGLE, 1);
 
     _mvp* mvp = vkl_array_item(&arr, 0);
     for (uint32_t i = 0; i < 4; i++)
