@@ -9,8 +9,8 @@
 /*************************************************************************************************/
 
 #define VKL_NEVER                        -1000000
-#define VKL_MOUSE_CLICK_MAX_DELAY        .5
-#define VKL_MOUSE_CLICK_MAX_SHIFT        10
+#define VKL_MOUSE_CLICK_MAX_DELAY        .25
+#define VKL_MOUSE_CLICK_MAX_SHIFT        5
 #define VKL_MOUSE_DOUBLE_CLICK_MAX_DELAY .2
 #define VKL_KEY_PRESS_DELAY              .05
 
@@ -386,12 +386,24 @@ static void _glfw_frame_callback(VklCanvas* canvas, VklPrivateEvent ev)
 
     glm_vec2_copy(canvas->mouse.cur_pos, canvas->mouse.last_pos);
 
+    // log_debug("mouse event %d", canvas->frame_idx);
+    canvas->mouse.prev_state = canvas->mouse.cur_state;
+
     // Mouse move event.
     double xpos, ypos;
     glfwGetCursorPos(w, &xpos, &ypos);
     vec2 pos = {xpos, ypos};
     if (canvas->mouse.cur_pos[0] != pos[0] || canvas->mouse.cur_pos[1] != pos[1])
         vkl_event_mouse_move(canvas, pos);
+
+    // TODO
+    // // Reset click events as soon as the next loop iteration after they were raised.
+    // if (mouse->cur_state == VKL_MOUSE_STATE_CLICK ||
+    //     mouse->cur_state == VKL_MOUSE_STATE_DOUBLE_CLICK)
+    // {
+    //     mouse->cur_state = VKL_MOUSE_STATE_INACTIVE;
+    //     mouse->button = VKL_MOUSE_BUTTON_NONE;
+    // }
 }
 
 static void _backend_next_frame(VklCanvas* canvas)
@@ -1140,16 +1152,15 @@ void vkl_mouse_event(VklMouse* mouse, VklCanvas* canvas, VklEvent ev)
             mouse->shift_length = glm_vec2_norm(shift);
         }
 
-        // Mouse move event only if the shift length is larger than the click area.
-        if (mouse->shift_length > VKL_MOUSE_CLICK_MAX_SHIFT)
+        // Mouse move.
+        // NOTE: do not DRAG if we are clicking, with short press time and shift length
+        if (mouse->cur_state == VKL_MOUSE_STATE_INACTIVE &&
+            mouse->button != VKL_MOUSE_BUTTON_NONE &&
+            !(time - mouse->press_time < VKL_MOUSE_CLICK_MAX_DELAY &&
+              mouse->shift_length < VKL_MOUSE_CLICK_MAX_SHIFT))
         {
-            // Mouse move.
-            if (mouse->cur_state == VKL_MOUSE_STATE_INACTIVE &&
-                mouse->button != VKL_MOUSE_BUTTON_NONE)
-            {
-                log_trace("drag event on button %d", mouse->button);
-                mouse->cur_state = VKL_MOUSE_STATE_DRAG;
-            }
+            log_trace("drag event on button %d", mouse->button);
+            mouse->cur_state = VKL_MOUSE_STATE_DRAG;
         }
         // log_trace("mouse mouse %.1fx%.1f", mouse->cur_pos[0], mouse->cur_pos[1]);
         break;

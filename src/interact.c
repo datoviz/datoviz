@@ -28,7 +28,7 @@ static VklPanzoom _panzoom()
 static void _panzoom_copy_prev_state(VklPanzoom* panzoom)
 {
     ASSERT(panzoom != NULL);
-    glm_vec2_copy(panzoom->camera_pos, panzoom->last_camera_pos);
+    glm_vec2_copy(panzoom->camera_pos, panzoom->press_pos);
     glm_vec2_copy(panzoom->zoom, panzoom->last_zoom);
 }
 
@@ -37,8 +37,8 @@ static void _panzoom_reset(VklPanzoom* panzoom)
     ASSERT(panzoom != NULL);
     panzoom->camera_pos[0] = 0;
     panzoom->camera_pos[1] = 0;
-    panzoom->last_camera_pos[0] = 0;
-    panzoom->last_camera_pos[1] = 0;
+    panzoom->press_pos[0] = 0;
+    panzoom->press_pos[1] = 0;
     panzoom->zoom[0] = 1;
     panzoom->zoom[1] = 1;
     panzoom->last_zoom[0] = 0;
@@ -48,8 +48,8 @@ static void _panzoom_reset(VklPanzoom* panzoom)
 static void _panzoom_pan(VklPanzoom* panzoom, vec2 delta)
 {
     ASSERT(panzoom != NULL);
-    panzoom->camera_pos[0] = panzoom->last_camera_pos[0] - delta[0] / panzoom->zoom[0];
-    panzoom->camera_pos[1] = panzoom->last_camera_pos[1] - delta[1] / panzoom->zoom[1];
+    panzoom->camera_pos[0] = panzoom->press_pos[0] - delta[0] / panzoom->zoom[0];
+    panzoom->camera_pos[1] = panzoom->press_pos[1] - delta[1] / panzoom->zoom[1];
 }
 
 static void _panzoom_zoom(VklPanzoom* panzoom, vec2 delta, vec2 center)
@@ -125,16 +125,11 @@ static void _panzoom_callback(
     bool update = false;
 
     // Update the last camera/zoom variables.
-    if (mouse->prev_state == VKL_MOUSE_STATE_INACTIVE)
+    if (mouse->prev_state == VKL_MOUSE_STATE_INACTIVE && mouse->cur_state == VKL_MOUSE_STATE_DRAG)
         _panzoom_copy_prev_state(panzoom);
 
     float wheel_factor = VKL_PANZOOM_MOUSE_WHEEL_FACTOR;
     vec2 delta = {0};
-
-    // Window size.
-    uvec2 size_w, size_b;
-    vkl_canvas_size(canvas, VKL_CANVAS_SIZE_SCREEN, size_w);
-    vkl_canvas_size(canvas, VKL_CANVAS_SIZE_FRAMEBUFFER, size_b);
 
 #if OS_MACOS
     // HACK: touchpad wheel too sensitive on macOS
@@ -176,8 +171,13 @@ static void _panzoom_callback(
             glm_vec2_copy(interact->mouse_local.press_pos, center);
             glm_vec2_sub(interact->mouse_local.cur_pos, interact->mouse_local.press_pos, delta);
 
-            delta[0] *= .002 * size_b[0];
-            delta[1] *= .002 * size_b[1];
+            // // Window size.
+            // uvec2 size_w, size_b;
+            // vkl_canvas_size(canvas, VKL_CANVAS_SIZE_SCREEN, size_w);
+            // vkl_canvas_size(canvas, VKL_CANVAS_SIZE_FRAMEBUFFER, size_b);
+
+            delta[0] *= 1.5; // * size_b[0];
+            delta[1] *= 1.5; // * size_b[1];
         }
         // Mouse wheel.
         else
@@ -220,7 +220,7 @@ static void _panzoom_callback(
     if (mouse->cur_state == VKL_MOUSE_STATE_INACTIVE)
     {
         // Reset the last camera/zoom variables.
-        glm_vec2_zero(panzoom->last_camera_pos);
+        glm_vec2_zero(panzoom->press_pos);
         glm_vec2_zero(panzoom->last_zoom);
 
         // TODO
@@ -273,7 +273,9 @@ static void _camera_callback(
     bool is_fly = interact->type == VKL_INTERACT_FLY;
 
     const float dt = (float)interact->canvas->clock.interval;
-    const float dl = 10 * dt;
+    const float alpha = 10;
+    const float beta = 10;
+    const float dl = alpha * dt;
     const float max_pitch = .99;
 
     // Variables for the look-around camera with the mouse.
@@ -293,7 +295,7 @@ static void _camera_callback(
         if (mouse->cur_state == VKL_MOUSE_STATE_DRAG)
         {
             // Change the camera orientation with the mouse.
-            camera->speed = 1.0f;
+            camera->speed = 0.5f;
             float incrx = -(mouse_local->cur_pos[0] - mouse_local->last_pos[0]) * camera->speed;
             float incry = -(mouse_local->cur_pos[1] - mouse_local->last_pos[1]) * camera->speed;
 
@@ -370,7 +372,7 @@ static void _camera_callback(
     glm_vec3_sub(camera->target, camera->eye, u);
     if (glm_vec3_norm(u) > 1e-3)
     {
-        glm_vec3_scale(u, 10 * dt, u);
+        glm_vec3_scale(u, beta * dt, u);
         glm_vec3_add(camera->eye, u, camera->eye);
 
         // Prevent going below y=0 plane.

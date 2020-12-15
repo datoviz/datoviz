@@ -57,7 +57,7 @@ typedef void (*VklInteractCallback)(
 struct VklPanzoom
 {
     vec3 camera_pos;
-    vec3 last_camera_pos;
+    vec3 press_pos;
 
     vec2 zoom;
     vec2 last_zoom;
