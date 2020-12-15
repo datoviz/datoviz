@@ -68,8 +68,8 @@ static void _canvas_click(VklCanvas* canvas, VklEvent ev)
     vkl_canvas_size(canvas, VKL_CANVAS_SIZE_SCREEN, size);
     float x = ev.u.c.pos[0] / size[0];
     float y = ev.u.c.pos[1] / size[1];
-    int col = (int)(x * 2);
-    int row = (int)(y * 3);
+    uint32_t col = (uint32_t)(x * 2);
+    uint32_t row = (uint32_t)(y * 3);
     vkl_panel_cell(&grid->panels[0], row, col);
 }
 

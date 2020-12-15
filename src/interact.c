@@ -120,7 +120,6 @@ static void _panzoom_callback(
     ASSERT(
         interact->type == VKL_INTERACT_PANZOOM ||
         interact->type == VKL_INTERACT_PANZOOM_FIXED_ASPECT);
-    VklCanvas* canvas = interact->canvas;
     VklPanzoom* panzoom = &interact->u.p;
     bool update = false;
 
@@ -171,13 +170,8 @@ static void _panzoom_callback(
             glm_vec2_copy(interact->mouse_local.press_pos, center);
             glm_vec2_sub(interact->mouse_local.cur_pos, interact->mouse_local.press_pos, delta);
 
-            // // Window size.
-            // uvec2 size_w, size_b;
-            // vkl_canvas_size(canvas, VKL_CANVAS_SIZE_SCREEN, size_w);
-            // vkl_canvas_size(canvas, VKL_CANVAS_SIZE_FRAMEBUFFER, size_b);
-
-            delta[0] *= 1.5; // * size_b[0];
-            delta[1] *= 1.5; // * size_b[1];
+            delta[0] *= 1.5;
+            delta[1] *= 1.5;
         }
         // Mouse wheel.
         else

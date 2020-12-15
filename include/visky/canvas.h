@@ -185,6 +185,8 @@ typedef enum
 /*  Type definitions                                                                             */
 /*************************************************************************************************/
 
+typedef struct VklScene VklScene;
+
 typedef struct VklMouse VklMouse;
 typedef struct VklKeyboard VklKeyboard;
 typedef struct VklMouseLocal VklMouseLocal;
@@ -553,6 +555,8 @@ struct VklCanvas
     VklKeyboard keyboard;
 
     VklScreencast* screencast;
+
+    VklScene* scene;
 };
 
 
