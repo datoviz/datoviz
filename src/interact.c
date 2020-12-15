@@ -272,7 +272,8 @@ static void _camera_callback(
     VklMouseLocal* mouse_local = &interact->mouse_local;
     bool is_fly = interact->type == VKL_INTERACT_FLY;
 
-    const float dl = .075;
+    const float dt = (float)interact->canvas->clock.interval;
+    const float dl = 10 * dt;
     const float max_pitch = .99;
 
     // Variables for the look-around camera with the mouse.
@@ -310,7 +311,7 @@ static void _camera_callback(
         // Change the camera elevation with the mouse wheel.
         if (mouse->cur_state == VKL_MOUSE_STATE_WHEEL)
         {
-            camera->target[1] -= .1 * mouse->wheel_delta[1];
+            camera->target[1] += 100 * dl * mouse->wheel_delta[1];
         }
 
         // Arrow keys navigation.
@@ -369,7 +370,7 @@ static void _camera_callback(
     glm_vec3_sub(camera->target, camera->eye, u);
     if (glm_vec3_norm(u) > 1e-3)
     {
-        glm_vec3_scale(u, .25, u);
+        glm_vec3_scale(u, 10 * dt, u);
         glm_vec3_add(camera->eye, u, camera->eye);
 
         // Prevent going below y=0 plane.

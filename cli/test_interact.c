@@ -205,12 +205,14 @@ static void _update_camera(VklCanvas* canvas, VklPrivateEvent ev)
     // log_debug("camera callback %d", canvas->frame_idx);
     vkl_interact_update(&scene->interact, viewport, &canvas->mouse, &canvas->keyboard);
 
-    if (scene->interact.to_update)
+    if (scene->interact.to_update &&
+        canvas->clock.elapsed - scene->interact.last_update > VKY_INTERACT_MIN_DELAY)
     {
         vkl_visual_data(&scene->visual, VKL_PROP_MODEL, 0, 1, scene->interact.mvp.model);
         vkl_visual_data(&scene->visual, VKL_PROP_VIEW, 0, 1, scene->interact.mvp.view);
         vkl_visual_data(&scene->visual, VKL_PROP_PROJ, 0, 1, scene->interact.mvp.proj);
         vkl_visual_update(&scene->visual, viewport, (VklDataCoords){0}, NULL);
+        scene->interact.last_update = canvas->clock.elapsed;
     }
 }
 
