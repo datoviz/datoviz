@@ -1106,6 +1106,7 @@ void vkl_mouse_event(VklMouse* mouse, VklCanvas* canvas, VklEvent ev)
                 log_trace("end drag event");
                 mouse->cur_state = VKL_MOUSE_STATE_INACTIVE;
                 mouse->button = VKL_MOUSE_BUTTON_NONE;
+                vkl_event_mouse_drag_end(canvas, mouse->cur_pos, mouse->button);
             }
 
             // Double click event.
@@ -1116,6 +1117,7 @@ void vkl_mouse_event(VklMouse* mouse, VklCanvas* canvas, VklEvent ev)
                 log_trace("double click event on button %d", mouse->button);
                 mouse->cur_state = VKL_MOUSE_STATE_DOUBLE_CLICK;
                 mouse->click_time = time;
+                vkl_event_mouse_double_click(canvas, mouse->cur_pos, mouse->button);
             }
 
             // Click event.
@@ -1126,6 +1128,7 @@ void vkl_mouse_event(VklMouse* mouse, VklCanvas* canvas, VklEvent ev)
                 log_trace("click event on button %d", mouse->button);
                 mouse->cur_state = VKL_MOUSE_STATE_CLICK;
                 mouse->click_time = time;
+                vkl_event_mouse_click(canvas, mouse->cur_pos, mouse->button);
             }
 
             else
@@ -1161,6 +1164,7 @@ void vkl_mouse_event(VklMouse* mouse, VklCanvas* canvas, VklEvent ev)
         {
             log_trace("drag event on button %d", mouse->button);
             mouse->cur_state = VKL_MOUSE_STATE_DRAG;
+            vkl_event_mouse_drag(canvas, mouse->cur_pos, mouse->button);
         }
         // log_trace("mouse mouse %.1fx%.1f", mouse->cur_pos[0], mouse->cur_pos[1]);
         break;
@@ -1299,6 +1303,60 @@ void vkl_event_mouse_wheel(VklCanvas* canvas, vec2 dir)
     // Update the mouse state.
     vkl_mouse_event(&canvas->mouse, canvas, event);
 
+    vkl_event_enqueue(canvas, event);
+}
+
+
+
+void vkl_event_mouse_click(VklCanvas* canvas, vec2 pos, VklMouseButton button)
+{
+    ASSERT(canvas != NULL);
+    VklEvent event = {0};
+    event.type = VKL_EVENT_MOUSE_CLICK;
+    event.u.c.pos[0] = pos[0];
+    event.u.c.pos[1] = pos[1];
+    event.u.c.button = button;
+    event.u.c.double_click = false;
+    vkl_event_enqueue(canvas, event);
+}
+
+
+
+void vkl_event_mouse_double_click(VklCanvas* canvas, vec2 pos, VklMouseButton button)
+{
+    ASSERT(canvas != NULL);
+    VklEvent event = {0};
+    event.type = VKL_EVENT_MOUSE_DOUBLE_CLICK;
+    event.u.c.pos[0] = pos[0];
+    event.u.c.pos[1] = pos[1];
+    event.u.c.button = button;
+    event.u.c.double_click = true;
+    vkl_event_enqueue(canvas, event);
+}
+
+
+
+void vkl_event_mouse_drag(VklCanvas* canvas, vec2 pos, VklMouseButton button)
+{
+    ASSERT(canvas != NULL);
+    VklEvent event = {0};
+    event.type = VKL_EVENT_MOUSE_DRAG_BEGIN;
+    event.u.d.pos[0] = pos[0];
+    event.u.d.pos[1] = pos[1];
+    event.u.d.button = button;
+    vkl_event_enqueue(canvas, event);
+}
+
+
+
+void vkl_event_mouse_drag_end(VklCanvas* canvas, vec2 pos, VklMouseButton button)
+{
+    ASSERT(canvas != NULL);
+    VklEvent event = {0};
+    event.type = VKL_EVENT_MOUSE_DRAG_END;
+    event.u.d.pos[0] = pos[0];
+    event.u.d.pos[1] = pos[1];
+    event.u.d.button = button;
     vkl_event_enqueue(canvas, event);
 }
 

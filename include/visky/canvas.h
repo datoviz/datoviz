@@ -116,6 +116,10 @@ typedef enum
     VKL_EVENT_MOUSE_BUTTON,
     VKL_EVENT_MOUSE_MOVE,
     VKL_EVENT_MOUSE_WHEEL,
+    VKL_EVENT_MOUSE_DRAG_BEGIN,
+    VKL_EVENT_MOUSE_DRAG_END,
+    VKL_EVENT_MOUSE_CLICK,
+    VKL_EVENT_MOUSE_DOUBLE_CLICK,
     VKL_EVENT_KEY,
     VKL_EVENT_FRAME,
     // VKL_EVENT_TIMER,   // TODO later
@@ -190,6 +194,8 @@ typedef struct VklKeyEvent VklKeyEvent;
 typedef struct VklMouseButtonEvent VklMouseButtonEvent;
 typedef struct VklMouseMoveEvent VklMouseMoveEvent;
 typedef struct VklMouseWheelEvent VklMouseWheelEvent;
+typedef struct VklMouseDragEvent VklMouseDragEvent;
+typedef struct VklMouseClickEvent VklMouseClickEvent;
 typedef struct VklScreencastEvent VklScreencastEvent;
 typedef struct VklFrameEvent VklFrameEvent;
 typedef union VklEventUnion VklEventUnion;
@@ -284,6 +290,23 @@ struct VklMouseMoveEvent
 struct VklMouseWheelEvent
 {
     vec2 dir;
+};
+
+
+
+struct VklMouseDragEvent
+{
+    vec2 pos;
+    VklMouseButton button;
+};
+
+
+
+struct VklMouseClickEvent
+{
+    vec2 pos;
+    VklMouseButton button;
+    bool double_click;
 };
 
 
@@ -390,6 +413,8 @@ union VklEventUnion
     VklMouseButtonEvent b; // for MOUSE_BUTTON public events
     VklMouseMoveEvent m;   // for MOUSE_MOVE public events
     VklMouseWheelEvent w;  // for WHEEL public events
+    VklMouseDragEvent d;   // for DRAG public events
+    VklMouseClickEvent c;  // for DRAG public events
     VklKeyEvent k;         // for KEY public events
     VklFrameEvent f;       // for FRAME public event
     // VklTimerEvent t;       // for TIMER, ONESHOT public events
@@ -717,6 +742,14 @@ VKY_EXPORT void vkl_event_mouse_button(
 VKY_EXPORT void vkl_event_mouse_move(VklCanvas* canvas, vec2 pos);
 
 VKY_EXPORT void vkl_event_mouse_wheel(VklCanvas* canvas, vec2 dir);
+
+VKY_EXPORT void vkl_event_mouse_click(VklCanvas* canvas, vec2 pos, VklMouseButton button);
+
+VKY_EXPORT void vkl_event_mouse_double_click(VklCanvas* canvas, vec2 pos, VklMouseButton button);
+
+VKY_EXPORT void vkl_event_mouse_drag(VklCanvas* canvas, vec2 pos, VklMouseButton button);
+
+VKY_EXPORT void vkl_event_mouse_drag_end(VklCanvas* canvas, vec2 pos, VklMouseButton button);
 
 VKY_EXPORT void
 vkl_event_key(VklCanvas* canvas, VklKeyType type, VklKeyCode key_code, int modifiers);
