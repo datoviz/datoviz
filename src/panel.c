@@ -104,9 +104,9 @@ static VklPanel* _get_panel(VklGrid* grid, uint32_t row, uint32_t col)
     {
         panel = &grid->panels[i];
         if (panel->row == row && panel->col == col)
-            break;
+            return panel;
     }
-    return panel;
+    return NULL;
 }
 
 
@@ -139,7 +139,6 @@ VklPanel* vkl_panel(VklGrid* grid, uint32_t row, uint32_t col)
     if (panel != NULL)
         return panel;
 
-    log_trace("create panel %d,%d", row, col);
     panel = &grid->panels[grid->panel_count++];
 
     panel->obj.type = VKL_OBJECT_TYPE_PANEL;

@@ -10,6 +10,7 @@
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
+// Graphics builtins
 typedef enum
 {
     VKL_GRAPHICS_NONE,
@@ -42,6 +43,7 @@ typedef enum
 
 
 
+// Transform axis
 typedef enum
 {
     VKL_TRANSFORM_AXIS_NONE = 0x0000,
