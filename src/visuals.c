@@ -186,9 +186,9 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
 
     uint32_t index_count = visual->index_count;
 
-    vkl_cmd_begin(cmds, idx);
-    vkl_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, &canvas->framebuffers);
-    vkl_cmd_viewport(cmds, idx, viewport);
+    // vkl_cmd_begin(cmds, idx);
+    // vkl_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, &canvas->framebuffers);
+    // vkl_cmd_viewport(cmds, idx, viewport);
 
     // Bind the vertex buffer.
     vkl_cmd_bind_vertex_buffer(cmds, idx, vertex_buf, 0);
@@ -211,8 +211,8 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
     else
         vkl_cmd_draw_indexed(cmds, idx, 0, 0, index_count);
 
-    vkl_cmd_end_renderpass(cmds, idx);
-    vkl_cmd_end(cmds, idx);
+    // vkl_cmd_end_renderpass(cmds, idx);
+    // vkl_cmd_end(cmds, idx);
 }
 
 
@@ -674,6 +674,24 @@ void vkl_visual_fill_event(
 
     visual->callback_fill(visual, ev);
     visual->canvas->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+}
+
+
+
+void vkl_visual_fill_begin(VklCanvas* canvas, VklCommands* cmds, uint32_t idx)
+{
+    ASSERT(canvas != NULL);
+    vkl_cmd_begin(cmds, idx);
+    vkl_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, &canvas->framebuffers);
+}
+
+
+
+void vkl_visual_fill_end(VklCanvas* canvas, VklCommands* cmds, uint32_t idx)
+{
+    ASSERT(canvas != NULL);
+    vkl_cmd_end_renderpass(cmds, idx);
+    vkl_cmd_end(cmds, idx);
 }
 
 

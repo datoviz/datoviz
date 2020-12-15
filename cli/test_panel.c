@@ -18,11 +18,15 @@ static void _canvas_fill(VklCanvas* canvas, VklPrivateEvent ev)
     VklViewport viewport = {0};
     VklCommands* cmds = NULL;
     VklPanel* panel = NULL;
+    uint32_t img_idx = 0;
 
     // Go through all the current command buffers.
     for (uint32_t i = 0; i < ev.u.rf.cmd_count; i++)
     {
         cmds = ev.u.rf.cmds[i];
+        img_idx = ev.u.rf.img_idx;
+
+        vkl_visual_fill_begin(canvas, cmds, img_idx);
 
         // We only fill the PANEL command buffers.
         // if (cmds->obj.group_id == VKL_COMMANDS_GROUP_PANELS)
@@ -34,14 +38,17 @@ static void _canvas_fill(VklCanvas* canvas, VklPrivateEvent ev)
             ASSERT(is_obj_created(&panel->obj));
             // Find the panel viewport.
             viewport = vkl_panel_viewport(panel);
+            vkl_cmd_viewport(cmds, img_idx, viewport.viewport);
 
             // Go through all visuals in the panel.
             for (uint32_t k = 0; k < panel->visual_count; k++)
             {
                 vkl_visual_fill_event(
-                    panel->visuals[k], ev.u.rf.clear_color, cmds, ev.u.rf.img_idx, viewport, NULL);
+                    panel->visuals[k], ev.u.rf.clear_color, cmds, img_idx, viewport, NULL);
             }
         }
+
+        vkl_visual_fill_end(canvas, cmds, img_idx);
     }
 }
 

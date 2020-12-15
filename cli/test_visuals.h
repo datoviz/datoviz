@@ -95,12 +95,16 @@ static void _visual_canvas_fill(VklCanvas* canvas, VklPrivateEvent ev)
     VklVisual* visual = (VklVisual*)ev.user_data;
     VklViewport viewport = vkl_viewport_full(canvas);
 
+
     // TODO: choose which of all canvas command buffers need to be filled with the visual
     // For now, update all of them.
     for (uint32_t i = 0; i < ev.u.rf.cmd_count; i++)
     {
+        vkl_visual_fill_begin(canvas, ev.u.rf.cmds[i], ev.u.rf.img_idx);
+        vkl_cmd_viewport(ev.u.rf.cmds[i], ev.u.rf.img_idx, viewport.viewport);
         vkl_visual_fill_event(
             visual, ev.u.rf.clear_color, ev.u.rf.cmds[i], ev.u.rf.img_idx, viewport, NULL);
+        vkl_visual_fill_end(canvas, ev.u.rf.cmds[i], ev.u.rf.img_idx);
     }
 }
 
