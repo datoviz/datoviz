@@ -65,7 +65,7 @@ static void _common_props(VklVisual* visual)
 /*  Scatter raw                                                                                  */
 /*************************************************************************************************/
 
-static void _visual_scatter_raw(VklVisual* visual)
+static void _visual_marker_raw(VklVisual* visual)
 {
     // TODO: flags variant
 
@@ -160,9 +160,9 @@ VklVisual vkl_visual_builtin(VklCanvas* canvas, VklVisualType type, int flags)
     switch (type)
     {
 
-    case VKL_VISUAL_SCATTER:
+    case VKL_VISUAL_MARKER:
         // TODO: raw/agg
-        _visual_scatter_raw(&visual);
+        _visual_marker_raw(&visual);
         break;
 
     case VKL_VISUAL_SEGMENT:

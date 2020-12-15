@@ -36,7 +36,7 @@ typedef enum
 {
     VKL_VISUAL_NONE,
 
-    VKL_VISUAL_SCATTER,     // raw, agg
+    VKL_VISUAL_MARKER,      // raw, agg
     VKL_VISUAL_SEGMENT,     // raw, agg
     VKL_VISUAL_ARROW,       //
     VKL_VISUAL_PATH,        // raw, agg

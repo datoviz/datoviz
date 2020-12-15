@@ -90,7 +90,7 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_panel_1), //
 
     // builtin visuals
-    CASE_FIXTURE_NONE(test_visuals_scatter_raw), //
+    CASE_FIXTURE_NONE(test_visuals_marker_raw),  //
     CASE_FIXTURE_NONE(test_visuals_segment_raw), //
 
 

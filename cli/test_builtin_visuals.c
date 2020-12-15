@@ -57,11 +57,11 @@ static void _common_data(VklVisual* visual)
 /*  Builtin visual tests                                                                         */
 /*************************************************************************************************/
 
-int test_visuals_scatter_raw(TestContext* context)
+int test_visuals_marker_raw(TestContext* context)
 {
     INIT;
 
-    VklVisual visual = vkl_visual_builtin(canvas, VKL_VISUAL_SCATTER, 0);
+    VklVisual visual = vkl_visual_builtin(canvas, VKL_VISUAL_MARKER, 0);
 
     const uint32_t N = 1000;
     vec3* pos = calloc(N, sizeof(vec3));
