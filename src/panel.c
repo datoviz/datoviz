@@ -6,6 +6,24 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
+static void _update_panel(VklPanel* panel)
+{
+    ASSERT(panel != NULL);
+    VklGrid* grid = panel->grid;
+
+    if (panel->mode == VKL_PANEL_INSET)
+        return;
+
+    ASSERT(panel->mode == VKL_PANEL_GRID);
+
+    panel->x = grid->xs[panel->col];
+    panel->y = grid->ys[panel->row];
+    panel->width = grid->widths[panel->col];
+    panel->height = grid->heights[panel->row];
+}
+
+
+
 static void _update_grid_panels(VklGrid* grid, VklGridAxis axis)
 {
     ASSERT(grid != NULL);
@@ -13,9 +31,6 @@ static void _update_grid_panels(VklGrid* grid, VklGridAxis axis)
     bool h = axis == VKL_GRID_HORIZONTAL;
     uint32_t n = h ? grid->n_rows : grid->n_cols;
     float total = 0.0f;
-
-    float xs[VKL_GRID_MAX_COLS] = {0};
-    float ys[VKL_GRID_MAX_ROWS] = {0};
 
     for (uint32_t i = 0; i < n; i++)
     {
@@ -25,12 +40,12 @@ static void _update_grid_panels(VklGrid* grid, VklGridAxis axis)
         ASSERT(s > 0);
         if (h)
         {
-            xs[i] = total;
+            grid->xs[i] = total;
             grid->widths[i] = s;
         }
         else
         {
-            ys[i] = total;
+            grid->ys[i] = total;
             grid->heights[i] = s;
         }
         total += s;
@@ -45,18 +60,8 @@ static void _update_grid_panels(VklGrid* grid, VklGridAxis axis)
     }
 
     // Update the panel positions and sizes.
-    VklPanel* panel = NULL;
     for (uint32_t i = 0; i < grid->panel_count; i++)
-    {
-        panel = &grid->panels[i];
-        if (panel->mode == VKL_PANEL_INSET)
-            continue;
-        ASSERT(panel->mode == VKL_PANEL_GRID);
-        panel->x = xs[panel->col];
-        panel->y = ys[panel->row];
-        panel->width = grid->widths[panel->col];
-        panel->height = grid->heights[panel->row];
-    }
+        _update_panel(&grid->panels[i]);
 
     // TODO: hide panels that are overlapped by hspan/vspan-ed panels
     // by setting STATUS_INACTIVE (with log warn)
@@ -89,6 +94,21 @@ static float _to_normalized_unit(VklPanel* panel, VklGridAxis axis, float size)
 
 
 
+static VklPanel* _get_panel(VklGrid* grid, uint32_t row, uint32_t col)
+{
+    ASSERT(grid != NULL);
+    VklPanel* panel = NULL;
+    for (uint32_t i = 0; i < grid->panel_count; i++)
+    {
+        panel = &grid->panels[i];
+        if (panel->row == row && panel->col == col)
+            break;
+    }
+    return panel;
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -100,6 +120,10 @@ VklGrid vkl_grid(VklCanvas* canvas, uint32_t rows, uint32_t cols)
     grid.canvas = canvas;
     grid.n_rows = rows;
     grid.n_cols = cols;
+
+    _update_grid_panels(&grid, VKL_GRID_HORIZONTAL);
+    _update_grid_panels(&grid, VKL_GRID_VERTICAL);
+
     return grid;
 }
 
@@ -108,20 +132,28 @@ VklGrid vkl_grid(VklCanvas* canvas, uint32_t rows, uint32_t cols)
 VklPanel* vkl_panel(VklGrid* grid, uint32_t row, uint32_t col)
 {
     ASSERT(grid != NULL);
-    VklPanel panel = {0};
-    panel.grid = grid;
-    panel.row = row;
-    panel.col = col;
-    panel.cmds = vkl_commands(
-        grid->canvas->gpu, VKL_DEFAULT_QUEUE_RENDER, grid->canvas->swapchain.img_count);
+
+    VklPanel* panel = _get_panel(grid, row, col);
+    if (panel != NULL)
+        return panel;
+
+    log_trace("create panel %d,%d", row, col);
+    panel = &grid->panels[grid->panel_count++];
+
+    panel->obj.type = VKL_OBJECT_TYPE_PANEL;
+    obj_created(&panel->obj);
+
+    panel->grid = grid;
+    panel->row = row;
+    panel->col = col;
 
     // Tag the VklCommands instance with the panel index, so that the REFILL callback knows
     // which VklCommands corresponds to which panel.
-    panel.cmds.obj.group_id = VKL_COMMANDS_GROUP_PANELS;
-    panel.cmds.obj.id = grid->panel_count;
+    panel->cmds = vkl_canvas_commands(
+        grid->canvas, VKL_DEFAULT_QUEUE_RENDER, VKL_COMMANDS_GROUP_PANELS, grid->panel_count - 1);
 
-    grid->panels[grid->panel_count++] = panel;
-    return &grid->panels[grid->panel_count - 1];
+    _update_panel(panel);
+    return panel;
 }
 
 

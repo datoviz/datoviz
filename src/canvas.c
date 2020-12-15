@@ -182,9 +182,14 @@ static void _refill_canvas(VklCanvas* canvas, uint32_t img_idx)
 
     // Fill the active command buffers for the RENDER queue.
     VklCommands* cmds = NULL;
+
     // First commands passed is the default cmds_render VklCommands instance used for rendering.
-    uint32_t k = 1;
-    ev.u.rf.cmds[0] = &canvas->cmds_render;
+    uint32_t k = 0;
+    if (canvas->cmds_render.obj.status == VKL_OBJECT_STATUS_CREATED)
+    {
+        ev.u.rf.cmds[k++] = &canvas->cmds_render;
+    }
+
     uint32_t img_count = canvas->cmds_render.count;
     for (uint32_t i = 0; i < canvas->max_commands; i++)
     {
@@ -771,6 +776,19 @@ void vkl_canvas_recreate(VklCanvas* canvas)
     vkl_framebuffers_create(framebuffers, renderpass);
 
     _refill_canvas(canvas, UINT32_MAX);
+}
+
+
+
+VklCommands*
+vkl_canvas_commands(VklCanvas* canvas, uint32_t queue_idx, uint32_t group_id, uint32_t id)
+{
+    ASSERT(canvas != NULL);
+    INSTANCE_NEW(VklCommands, commands, canvas->commands, canvas->max_commands)
+    *commands = vkl_commands(canvas->gpu, queue_idx, canvas->swapchain.img_count);
+    commands->obj.group_id = group_id;
+    commands->obj.id = id;
+    return commands;
 }
 
 
@@ -1466,7 +1484,7 @@ void vkl_canvas_frame_submit(VklCanvas* canvas)
 
     // Add the command buffers to the submit instance.
     // Default render commands.
-    if (canvas->cmds_render.obj.status != VKL_OBJECT_STATUS_INACTIVE)
+    if (canvas->cmds_render.obj.status == VKL_OBJECT_STATUS_CREATED)
         vkl_submit_commands(s, &canvas->cmds_render);
     // Extra render commands.
     for (uint32_t i = 0; i < canvas->max_commands; i++)
@@ -1479,6 +1497,11 @@ void vkl_canvas_frame_submit(VklCanvas* canvas)
         {
             vkl_submit_commands(s, &canvas->commands[i]);
         }
+    }
+    if (s->commands_count == 0)
+    {
+        log_error("no recorded command buffers");
+        return;
     }
 
     if (!canvas->offscreen)

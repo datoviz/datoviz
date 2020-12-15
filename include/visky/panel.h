@@ -76,6 +76,8 @@ typedef struct VklController VklController;
 
 struct VklPanel
 {
+    VklObject obj;
+
     VklGrid* grid;
     VklPanelMode mode;
     VklPanelSizeUnit size_unit; // the unit x, y, width, height are in
@@ -93,7 +95,7 @@ struct VklPanel
     VklVisual* visuals[VKL_MAX_VISUALS_PER_PANEL];
 
     VklController* controller;
-    VklCommands cmds;
+    VklCommands* cmds;
 };
 
 
@@ -104,6 +106,8 @@ struct VklGrid
     uint32_t n_rows, n_cols;
 
     // In normalized coordinates (in [0, 1]):
+    float xs[VKL_GRID_MAX_COLS];
+    float ys[VKL_GRID_MAX_ROWS];
     double widths[VKL_GRID_MAX_COLS];
     double heights[VKL_GRID_MAX_ROWS];
 

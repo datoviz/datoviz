@@ -20,15 +20,34 @@ static void _canvas_fill(VklCanvas* canvas, VklPrivateEvent ev)
 {
     ASSERT(canvas != NULL);
     ASSERT(ev.user_data != NULL);
-    VklVisual* visual = (VklVisual*)ev.user_data;
-    VklViewport viewport = vkl_viewport_full(canvas);
+    VklGrid* grid = (VklGrid*)ev.user_data;
+    ASSERT(grid != NULL);
 
-    // TODO: choose which of all canvas command buffers need to be filled with the visual
-    // For now, update all of them.
+    VklViewport viewport = {0};
+    VklCommands* cmds = NULL;
+    VklPanel* panel = NULL;
+
+    // Go through all the current command buffers.
     for (uint32_t i = 0; i < ev.u.rf.cmd_count; i++)
     {
-        vkl_visual_fill_event(
-            visual, ev.u.rf.clear_color, ev.u.rf.cmds[i], ev.u.rf.img_idx, viewport, NULL);
+        cmds = ev.u.rf.cmds[i];
+
+        // We only fill the PANEL command buffers.
+        if (cmds->obj.group_id == VKL_COMMANDS_GROUP_PANELS)
+        {
+            panel = &grid->panels[cmds->obj.id];
+            ASSERT(is_obj_created(&panel->obj));
+
+            // Find the panel viewport.
+            viewport = vkl_panel_viewport(panel);
+
+            // Go through all visuals in the panel.
+            for (uint32_t j = 0; j < panel->visual_count; j++)
+            {
+                vkl_visual_fill_event(
+                    panel->visuals[j], ev.u.rf.clear_color, cmds, ev.u.rf.img_idx, viewport, NULL);
+            }
+        }
     }
 }
 
@@ -46,7 +65,11 @@ int test_panel_1(TestContext* context)
     VklContext* ctx = gpu->context;
     ASSERT(ctx != NULL);
 
+    VklGrid grid = vkl_grid(canvas, 1, 1);
+    VklPanel* panel = vkl_panel(&grid, 0, 0);
+
     VklVisual visual = vkl_visual_builtin(canvas, VKL_VISUAL_SCATTER, 0);
+    vkl_panel_visual(panel, &visual, VKL_VIEWPORT_INNER);
 
     const uint32_t N = 1000;
     vec3* pos = calloc(N, sizeof(vec3));
@@ -75,7 +98,7 @@ int test_panel_1(TestContext* context)
     vkl_visual_buffer(&visual, VKL_SOURCE_UNIFORM, 1, br_viewport);
     VklViewport viewport = vkl_viewport_full(canvas);
     vkl_visual_update(&visual, viewport, (VklDataCoords){0}, NULL);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _canvas_fill, &visual);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _canvas_fill, &grid);
 
     vkl_app_run(app, N_FRAMES);
     vkl_visual_destroy(&visual);
