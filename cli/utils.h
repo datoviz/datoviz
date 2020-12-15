@@ -128,6 +128,7 @@ struct TestScene
     VklKeyboard keyboard;
     VklInteract interact;
     VklVisual visual;
+    VklGrid* grid;
 };
 
 

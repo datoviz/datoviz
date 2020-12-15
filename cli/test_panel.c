@@ -16,6 +16,17 @@ static void _mouse_callback(VklCanvas* canvas, VklEvent ev)
     vkl_mouse_event(mouse, canvas, ev);
 }
 
+static void _frame_callback(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    ASSERT(canvas != NULL);
+    TestScene* scene = (TestScene*)ev.user_data;
+    ASSERT(scene != NULL);
+    if (scene->mouse.cur_state == VKL_MOUSE_STATE_CLICK)
+    {
+        log_debug("click");
+    }
+}
+
 static void _canvas_fill(VklCanvas* canvas, VklPrivateEvent ev)
 {
     ASSERT(canvas != NULL);
@@ -65,7 +76,7 @@ int test_panel_1(TestContext* context)
     VklContext* ctx = gpu->context;
     ASSERT(ctx != NULL);
 
-    VklGrid grid = vkl_grid(canvas, 1, 1);
+    VklGrid grid = vkl_grid(canvas, 2, 3);
     VklPanel* panel = vkl_panel(&grid, 0, 0);
 
     VklVisual visual = vkl_visual_builtin(canvas, VKL_VISUAL_SCATTER, 0);
@@ -99,6 +110,15 @@ int test_panel_1(TestContext* context)
     VklViewport viewport = vkl_viewport_full(canvas);
     vkl_visual_update(&visual, viewport, (VklDataCoords){0}, NULL);
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _canvas_fill, &grid);
+
+    TestScene scene = {
+        .grid = &grid,
+        .mouse = vkl_mouse(),
+    };
+    vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _mouse_callback, &scene.mouse);
+    vkl_event_callback(canvas, VKL_EVENT_MOUSE_BUTTON, 0, _mouse_callback, &scene.mouse);
+    vkl_event_callback(canvas, VKL_EVENT_MOUSE_WHEEL, 0, _mouse_callback, &scene.mouse);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _frame_callback, &scene);
 
     vkl_app_run(app, N_FRAMES);
     vkl_visual_destroy(&visual);

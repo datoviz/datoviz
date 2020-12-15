@@ -10,6 +10,7 @@ extern "C" {
 #include "context.h"
 #include "graphics.h"
 #include "interact.h"
+#include "panel.h"
 #include "scene.h"
 #include "visuals.h"
 #include "vklite.h"
