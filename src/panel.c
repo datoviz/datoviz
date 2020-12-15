@@ -20,6 +20,8 @@ static void _update_panel(VklPanel* panel)
     panel->y = grid->ys[panel->row];
     panel->width = grid->widths[panel->col];
     panel->height = grid->heights[panel->row];
+
+    vkl_canvas_to_refill(grid->canvas, true);
 }
 
 

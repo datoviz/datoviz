@@ -16,6 +16,29 @@
 #define VKL_PANZOOM_MAX_ZOOM             1e+6
 
 
+
+/*************************************************************************************************/
+/*  Utils                                                                                        */
+/*************************************************************************************************/
+
+static void _normalize(vec2 pos_out, vec2 pos_in, uvec2 size)
+{
+    pos_out[0] = -1 + 2 * (pos_in[0] / size[0]);
+    pos_out[1] = +1 - 2 * (pos_in[1] / size[1]);
+}
+
+
+
+static bool _is_key_modifier(VklKeyCode key)
+{
+    return (
+        key == VKL_KEY_LEFT_SHIFT || key == VKL_KEY_RIGHT_SHIFT || key == VKL_KEY_LEFT_CONTROL ||
+        key == VKL_KEY_RIGHT_CONTROL || key == VKL_KEY_LEFT_ALT || key == VKL_KEY_RIGHT_ALT ||
+        key == VKL_KEY_LEFT_SUPER || key == VKL_KEY_RIGHT_SUPER);
+}
+
+
+
 /*************************************************************************************************/
 /*  Mouse                                                                                        */
 /*************************************************************************************************/
@@ -166,12 +189,6 @@ void vkl_mouse_event(VklMouse* mouse, VklCanvas* canvas, VklEvent ev)
 
 
 
-static void _normalize(vec2 pos_out, vec2 pos_in, uvec2 size)
-{
-    pos_out[0] = -1 + 2 * (pos_in[0] / size[0]);
-    pos_out[1] = +1 - 2 * (pos_in[1] / size[1]);
-}
-
 // From pixel coordinates (top left origin) to local coordinates (center origin)
 void vkl_mouse_local(
     VklMouse* mouse, VklMouseLocal* mouse_local, VklCanvas* canvas, VklViewport viewport)
@@ -213,14 +230,6 @@ void vkl_keyboard_reset(VklKeyboard* keyboard)
 }
 
 
-
-static bool _is_key_modifier(VklKeyCode key)
-{
-    return (
-        key == VKL_KEY_LEFT_SHIFT || key == VKL_KEY_RIGHT_SHIFT || key == VKL_KEY_LEFT_CONTROL ||
-        key == VKL_KEY_RIGHT_CONTROL || key == VKL_KEY_LEFT_ALT || key == VKL_KEY_RIGHT_ALT ||
-        key == VKL_KEY_LEFT_SUPER || key == VKL_KEY_RIGHT_SUPER);
-}
 
 void vkl_keyboard_event(VklKeyboard* keyboard, VklCanvas* canvas, VklEvent ev)
 {

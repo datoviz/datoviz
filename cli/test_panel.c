@@ -21,10 +21,6 @@ static void _frame_callback(VklCanvas* canvas, VklPrivateEvent ev)
     ASSERT(canvas != NULL);
     TestScene* scene = (TestScene*)ev.user_data;
     ASSERT(scene != NULL);
-    if (scene->mouse.cur_state == VKL_MOUSE_STATE_CLICK)
-    {
-        log_debug("click");
-    }
 }
 
 static void _canvas_fill(VklCanvas* canvas, VklPrivateEvent ev)
