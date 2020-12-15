@@ -202,16 +202,8 @@ static void _update_camera(VklCanvas* canvas, VklPrivateEvent ev)
     ASSERT(scene != NULL);
 
     VklViewport viewport = vkl_viewport_full(canvas);
+    // log_debug("camera callback %d", canvas->frame_idx);
     vkl_interact_update(&scene->interact, viewport, &canvas->mouse, &canvas->keyboard);
-
-    // log_debug(
-    //     "cur %.5f, last %.5f", scene->interact.mouse_local.cur_pos[0],
-    //     scene->interact.mouse_local.last_pos[0]);
-
-    // HACK: make sure we update last_pos at every frame, not just during a mouse event.
-    // Otherwise the last_pos will not be properly updated when ending a mouse move.
-    // glm_vec2_copy(canvas->mouse.cur_pos, canvas->mouse.last_pos);
-    // glm_vec2_copy(scene->interact.mouse_local.cur_pos, scene->interact.mouse_local.last_pos);
 
     if (scene->interact.to_update)
     {
@@ -232,7 +224,7 @@ int test_interact_camera(TestContext* context)
     scene.interact = vkl_interact_builtin(canvas, VKL_INTERACT_FLY);
     scene.visual = vkl_visual(canvas);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1.0 / 60, _update_camera, &scene);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _update_camera, &scene);
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
 
     const uint32_t N = 10000;

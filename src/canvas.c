@@ -378,6 +378,34 @@ static void _glfw_move_callback(GLFWwindow* window, double xpos, double ypos)
     vkl_event_mouse_move(canvas, (vec2){xpos, ypos});
 }
 
+static void _glfw_frame_callback(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    ASSERT(canvas != NULL);
+    GLFWwindow* w = canvas->window->backend_window;
+    ASSERT(w != NULL);
+
+    glm_vec2_copy(canvas->mouse.cur_pos, canvas->mouse.last_pos);
+
+    // Mouse move event.
+    double xpos, ypos;
+    glfwGetCursorPos(w, &xpos, &ypos);
+    vec2 pos = {xpos, ypos};
+    if (canvas->mouse.cur_pos[0] != pos[0] || canvas->mouse.cur_pos[1] != pos[1])
+        vkl_event_mouse_move(canvas, pos);
+}
+
+static void _backend_next_frame(VklCanvas* canvas)
+{
+    ASSERT(canvas != NULL);
+
+    // Reset wheel event.
+    if (canvas->mouse.cur_state == VKL_MOUSE_STATE_WHEEL)
+    {
+        // log_debug("reset wheel state %d", canvas->frame_idx);
+        canvas->mouse.cur_state = VKL_MOUSE_STATE_INACTIVE;
+    }
+}
+
 static void backend_event_callbacks(VklCanvas* canvas)
 {
     ASSERT(canvas != NULL);
@@ -403,34 +431,8 @@ static void backend_event_callbacks(VklCanvas* canvas)
         // Register the mouse move callback.
         // glfwSetCursorPosCallback(w, _glfw_move_callback);
 
-        break;
-    default:
-        break;
-    }
-}
-
-static void backend_frame_callback(VklCanvas* canvas)
-{
-    ASSERT(canvas != NULL);
-    ASSERT(canvas->app != NULL);
-    switch (canvas->app->backend)
-    {
-    case VKL_BACKEND_GLFW:;
-        ASSERT(canvas->window != NULL);
-        GLFWwindow* w = canvas->window->backend_window;
-
-        glm_vec2_copy(canvas->mouse.cur_pos, canvas->mouse.last_pos);
-
-        // // Reset wheel event.
-        // if (canvas->mouse.cur_state == VKL_MOUSE_STATE_WHEEL)
-        //     canvas->mouse.cur_state = VKL_MOUSE_STATE_INACTIVE;
-
-        // Mouse move event.
-        double xpos, ypos;
-        glfwGetCursorPos(w, &xpos, &ypos);
-        vec2 pos = {xpos, ypos};
-        if (canvas->mouse.cur_pos[0] != pos[0] || canvas->mouse.cur_pos[1] != pos[1])
-            vkl_event_mouse_move(canvas, pos);
+        // Register a function called at every frame, after event polling and state update
+        vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_INTERACT, 0, _glfw_frame_callback, NULL);
 
         break;
     default:
@@ -473,48 +475,8 @@ static int _interact_callbacks(VklCanvas* canvas)
 
 
 
-// static void _mouse_next_frame(VklCanvas* canvas)
-// {
-//     // NOTE: this is called AFTER the mouse/keyboard callbacks.
-//     ASSERT(canvas != NULL);
-//     VklMouse* mouse = &canvas->mouse;
-
-//     log_debug("mouse next frame %d", canvas->frame_idx);
-//     // glm_vec2_copy(canvas->mouse.cur_pos, canvas->mouse.last_pos);
-//     // mouse->prev_state = mouse->cur_state;
-
-//     // // Update the last pos.
-//     // glm_vec2_copy(mouse->cur_pos, mouse->last_pos);
-
-//     // // Reset click events as soon as the next loop iteration after they were raised.
-//     // if (mouse->cur_state == VKL_MOUSE_STATE_CLICK ||
-//     //     mouse->cur_state == VKL_MOUSE_STATE_DOUBLE_CLICK)
-//     // {
-//     //     mouse->cur_state = VKL_MOUSE_STATE_INACTIVE;
-//     //     mouse->button = VKL_MOUSE_BUTTON_NONE;
-//     // }
-
-//     // // Reset wheel event.
-//     // if (mouse->cur_state == VKL_MOUSE_STATE_WHEEL)
-//     // {
-//     //     mouse->cur_state = VKL_MOUSE_STATE_INACTIVE;
-//     // }
-// }
-
-
-
-// static void _keyboard_next_frame(VklCanvas* canvas)
-// {
-//     ASSERT(canvas != NULL);
-//     //
-// }
-
-
-
 static int _frame_callbacks(VklCanvas* canvas)
 {
-    backend_frame_callback(canvas);
-
     ASSERT(canvas != NULL);
     VklPrivateEvent ev = {0};
     ev.type = VKL_PRIVATE_EVENT_FRAME;
@@ -627,6 +589,19 @@ static int _post_send_callbacks(VklCanvas* canvas)
     ev.type = VKL_PRIVATE_EVENT_POST_SEND;
     ev.u.s.submit = &canvas->submit;
     return _canvas_callbacks(canvas, ev);
+}
+
+
+
+static bool _has_event_callbacks(VklCanvas* canvas, VklEventType type)
+{
+    ASSERT(canvas != NULL);
+    if (type == VKL_EVENT_NONE || type == VKL_EVENT_INIT)
+        return true;
+    for (uint32_t i = 0; i < canvas->event_callbacks_count; i++)
+        if (canvas->event_callbacks[i].type == type)
+            return true;
+    return false;
 }
 
 
@@ -1094,10 +1069,6 @@ void vkl_mouse_event(VklMouse* mouse, VklCanvas* canvas, VklEvent ev)
         mouse->button = VKL_MOUSE_BUTTON_NONE;
     }
 
-    // Reset wheel event.
-    if (mouse->cur_state == VKL_MOUSE_STATE_WHEEL)
-        mouse->cur_state = VKL_MOUSE_STATE_INACTIVE;
-
     // Net distance in pixels since the last press event.
     vec2 shift = {0};
 
@@ -1358,6 +1329,8 @@ void vkl_event_frame(VklCanvas* canvas, uint64_t idx, double time, double interv
 void vkl_event_enqueue(VklCanvas* canvas, VklEvent event)
 {
     ASSERT(canvas != NULL);
+    if (!_has_event_callbacks(canvas, event.type))
+        return;
     VklFifo* fifo = &canvas->event_queue;
     ASSERT(0 <= fifo->head && fifo->head < fifo->capacity);
     canvas->events[fifo->head] = event;
@@ -1733,8 +1706,11 @@ void vkl_canvas_frame(VklCanvas* canvas)
     // Call INTERACT callbacks (for backends only), which may enqueue some events.
     _interact_callbacks(canvas);
 
-    // Call FRAME callbacks (rarely used).
+    // Call FRAME callbacks.
     _frame_callbacks(canvas);
+
+    // Give a chance to update event structures in the main loop, for example reset wheel.
+    _backend_next_frame(canvas);
 
     // Call TIMER private callbacks, in the main thread.
     _timer_callbacks(canvas);
