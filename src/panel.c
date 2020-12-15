@@ -148,10 +148,14 @@ VklPanel* vkl_panel(VklGrid* grid, uint32_t row, uint32_t col)
     panel->row = row;
     panel->col = col;
 
+    // NOTE: for now just use a single command buffer, as using multiple command buffers
+    // is complicated as need to use mupltiple render passes and framebuffers.
+    panel->cmds = grid->canvas->commands;
     // Tag the VklCommands instance with the panel index, so that the REFILL callback knows
     // which VklCommands corresponds to which panel.
-    panel->cmds = vkl_canvas_commands(
-        grid->canvas, VKL_DEFAULT_QUEUE_RENDER, VKL_COMMANDS_GROUP_PANELS, grid->panel_count - 1);
+    // panel->cmds = vkl_canvas_commands(
+    //     grid->canvas, VKL_DEFAULT_QUEUE_RENDER, VKL_COMMANDS_GROUP_PANELS, grid->panel_count -
+    //     1);
 
     _update_panel(panel);
     return panel;

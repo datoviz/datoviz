@@ -25,19 +25,21 @@ static void _canvas_fill(VklCanvas* canvas, VklPrivateEvent ev)
         cmds = ev.u.rf.cmds[i];
 
         // We only fill the PANEL command buffers.
-        if (cmds->obj.group_id == VKL_COMMANDS_GROUP_PANELS)
+        // if (cmds->obj.group_id == VKL_COMMANDS_GROUP_PANELS)
+        // {
+        //     panel = &grid->panels[cmds->obj.id];
+        for (uint32_t j = 0; j < grid->panel_count; j++)
         {
-            panel = &grid->panels[cmds->obj.id];
+            panel = &grid->panels[j];
             ASSERT(is_obj_created(&panel->obj));
-
             // Find the panel viewport.
             viewport = vkl_panel_viewport(panel);
 
             // Go through all visuals in the panel.
-            for (uint32_t j = 0; j < panel->visual_count; j++)
+            for (uint32_t k = 0; k < panel->visual_count; k++)
             {
                 vkl_visual_fill_event(
-                    panel->visuals[j], ev.u.rf.clear_color, cmds, ev.u.rf.img_idx, viewport, NULL);
+                    panel->visuals[k], ev.u.rf.clear_color, cmds, ev.u.rf.img_idx, viewport, NULL);
             }
         }
     }
