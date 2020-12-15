@@ -58,6 +58,21 @@ static void _canvas_fill(VklCanvas* canvas, VklPrivateEvent ev)
 /*  Builtin visual tests                                                                         */
 /*************************************************************************************************/
 
+static void _canvas_click(VklCanvas* canvas, VklEvent ev)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(ev.user_data != NULL);
+    VklGrid* grid = (VklGrid*)ev.user_data;
+    ASSERT(grid != NULL);
+    uvec2 size = {0};
+    vkl_canvas_size(canvas, VKL_CANVAS_SIZE_SCREEN, size);
+    float x = ev.u.c.pos[0] / size[0];
+    float y = ev.u.c.pos[1] / size[1];
+    int col = (int)(x * 2);
+    int row = (int)(y * 3);
+    vkl_panel_cell(&grid->panels[0], row, col);
+}
+
 int test_panel_1(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
@@ -102,6 +117,7 @@ int test_panel_1(TestContext* context)
     vkl_visual_update(&visual, viewport, (VklDataCoords){0}, NULL);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _canvas_fill, &grid);
+    vkl_event_callback(canvas, VKL_EVENT_MOUSE_CLICK, 0, _canvas_click, &grid);
 
     vkl_app_run(app, N_FRAMES);
     vkl_visual_destroy(&visual);
