@@ -6,6 +6,7 @@
 #include "test_canvas.h"
 #include "test_graphics.h"
 #include "test_interact.h"
+#include "test_panel.h"
 #include "test_visuals.h"
 #include "test_vklite.h"
 #include "utils.h"
@@ -85,68 +86,14 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_interact_arcball), //
     CASE_FIXTURE_NONE(test_interact_camera),  //
 
+    // panel
+    CASE_FIXTURE_NONE(test_panel_1), //
+
     // builtin visuals
     CASE_FIXTURE_NONE(test_visuals_scatter_raw), //
     CASE_FIXTURE_NONE(test_visuals_segment_raw), //
 
 
-    // // OLD CODE BELOW
-
-    // // Visual props.
-    // CASE_FIXTURE_NONE(visuals_props_1), //
-    // CASE_FIXTURE_NONE(visuals_props_2), //
-    // CASE_FIXTURE_NONE(visuals_props_3), //
-    // CASE_FIXTURE_NONE(visuals_props_4), //
-    // CASE_FIXTURE_NONE(visuals_props_5), //
-    // CASE_FIXTURE_NONE(visuals_props_6), //
-
-    // CASE_FIXTURE_NONE(transform_1), //
-
-    // // vklite tests.
-    // CASE_FIXTURE_CANVAS(vklite_compute, no_destroy, false),               //
-    // CASE_FIXTURE_CANVAS(vklite_blank, no_destroy, false),                 //
-    // CASE_FIXTURE_CANVAS(vklite_triangle, vklite_triangle_destroy, false), //
-    // CASE_FIXTURE_CANVAS(vklite_push, vklite_push_destroy, false),         //
-
-    // // Transforms.
-    // CASE_FIXTURE_PANEL(transform_2, false), //
-    // CASE_FIXTURE_PANEL(panzoom_1, false),   //
-    // CASE_FIXTURE_PANEL(axes_1, false),      //
-    // CASE_FIXTURE_PANEL(axes_2, false),      //
-
-    // // Basic tests.
-    // CASE_FIXTURE_PANEL(red_canvas, true),  //
-    // CASE_FIXTURE_PANEL(blue_canvas, true), //
-    // CASE_FIXTURE_PANEL(hello, true),       //
-    // CASE_FIXTURE_PANEL(triangle, true),    //
-
-    // // Visual tests
-    // CASE_FIXTURE_PANEL(mesh_raw, true),   //
-    // CASE_FIXTURE_PANEL(scatter, true),    //
-    // CASE_FIXTURE_PANEL(imshow, true),     //
-    // CASE_FIXTURE_PANEL(arrows, true),     //
-    // CASE_FIXTURE_PANEL(paths, true),      //
-    // CASE_FIXTURE_PANEL(segments, true),   //
-    // CASE_FIXTURE_PANEL(hist, true),       //
-    // CASE_FIXTURE_PANEL(area, true),       //
-    // CASE_FIXTURE_PANEL(axrect, true),     //
-    // CASE_FIXTURE_PANEL(raster, true),     //
-    // CASE_FIXTURE_PANEL(graph, true),      //
-    // CASE_FIXTURE_PANEL(image, true),      //
-    // CASE_FIXTURE_PANEL(image_cmap, true), //
-    // CASE_FIXTURE_PANEL(polygon, true),    //
-    // CASE_FIXTURE_PANEL(pslg_1, true),     //
-    // CASE_FIXTURE_PANEL(pslg_2, true),     //
-    // CASE_FIXTURE_PANEL(france, true),     //
-    // CASE_FIXTURE_PANEL(surface, true),    //
-    // CASE_FIXTURE_PANEL(spheres, true),    //
-    // CASE_FIXTURE_PANEL(volume, true),     //
-
-    // // Demo tests
-    // CASE_FIXTURE_PANEL(brain, true),      //
-    // CASE_FIXTURE_PANEL(axes_3D, true),    //
-    // CASE_FIXTURE_PANEL(raytracing, true), //
-    // CASE_FIXTURE_PANEL(mandelbrot, true), //
 
 };
 static uint32_t N_TESTS = sizeof(TEST_CASES) / sizeof(TestCase);

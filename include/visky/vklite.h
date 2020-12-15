@@ -296,7 +296,9 @@ struct VklObject
 {
     VklObjectType type;
     VklObjectStatus status;
-    uint32_t id; // unique identifier among the objects of the same type
+
+    uint32_t group_id; // group identifier
+    uint32_t id;       // unique identifier among the objects of the same type and group
 };
 
 

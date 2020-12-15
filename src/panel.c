@@ -114,6 +114,12 @@ VklPanel* vkl_panel(VklGrid* grid, uint32_t row, uint32_t col)
     panel.col = col;
     panel.cmds = vkl_commands(
         grid->canvas->gpu, VKL_DEFAULT_QUEUE_RENDER, grid->canvas->swapchain.img_count);
+
+    // Tag the VklCommands instance with the panel index, so that the REFILL callback knows
+    // which VklCommands corresponds to which panel.
+    panel.cmds.obj.group_id = VKL_COMMANDS_GROUP_PANELS;
+    panel.cmds.obj.id = grid->panel_count;
+
     grid->panels[grid->panel_count++] = panel;
     return &grid->panels[grid->panel_count - 1];
 }

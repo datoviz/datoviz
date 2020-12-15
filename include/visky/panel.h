@@ -14,6 +14,9 @@
 #define VKL_MAX_PANELS            1024
 #define VKL_MAX_VISUALS_PER_PANEL 64
 
+// Group index of the set of panel VklCommands objects.
+#define VKL_COMMANDS_GROUP_PANELS 1
+
 
 
 /*************************************************************************************************/
