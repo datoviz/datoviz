@@ -5,8 +5,14 @@
 
 
 /*************************************************************************************************/
-/*  Macros                                                                                       */
+/*  Constants                                                                                    */
 /*************************************************************************************************/
+
+#define VKL_NEVER                        -1000000
+#define VKL_MOUSE_CLICK_MAX_DELAY        .5
+#define VKL_MOUSE_CLICK_MAX_SHIFT        10
+#define VKL_MOUSE_DOUBLE_CLICK_MAX_DELAY .2
+#define VKL_KEY_PRESS_DELAY              .05
 
 
 
@@ -185,7 +191,7 @@ static void _refill_canvas(VklCanvas* canvas, uint32_t img_idx)
 
     // First commands passed is the default cmds_render VklCommands instance used for rendering.
     uint32_t k = 0;
-    if (canvas->cmds_render.obj.status == VKL_OBJECT_STATUS_CREATED)
+    if (canvas->cmds_render.obj.status >= VKL_OBJECT_STATUS_INIT)
     {
         ev.u.rf.cmds[k++] = &canvas->cmds_render;
     }
@@ -937,6 +943,248 @@ void vkl_upload_buffers_immediate(
 
     canvas->immediate_transfers[fifo->head] = tr;
     vkl_fifo_enqueue(fifo, &canvas->immediate_transfers[fifo->head]);
+}
+
+
+
+/*************************************************************************************************/
+/*  Utils                                                                                        */
+/*************************************************************************************************/
+
+static void _normalize(vec2 pos_out, vec2 pos_in, uvec2 size)
+{
+    pos_out[0] = -1 + 2 * (pos_in[0] / size[0]);
+    pos_out[1] = +1 - 2 * (pos_in[1] / size[1]);
+}
+
+
+
+static bool _is_key_modifier(VklKeyCode key)
+{
+    return (
+        key == VKL_KEY_LEFT_SHIFT || key == VKL_KEY_RIGHT_SHIFT || key == VKL_KEY_LEFT_CONTROL ||
+        key == VKL_KEY_RIGHT_CONTROL || key == VKL_KEY_LEFT_ALT || key == VKL_KEY_RIGHT_ALT ||
+        key == VKL_KEY_LEFT_SUPER || key == VKL_KEY_RIGHT_SUPER);
+}
+
+
+
+/*************************************************************************************************/
+/*  Mouse                                                                                        */
+/*************************************************************************************************/
+
+VklMouse vkl_mouse()
+{
+    VklMouse mouse = {0};
+    vkl_mouse_reset(&mouse);
+    return mouse;
+}
+
+
+
+void vkl_mouse_reset(VklMouse* mouse)
+{
+    ASSERT(mouse != NULL);
+    memset(mouse, 0, sizeof(VklMouse));
+    mouse->button = VKL_MOUSE_BUTTON_NONE;
+    glm_vec2_zero(mouse->cur_pos);
+    glm_vec2_zero(mouse->press_pos);
+    glm_vec2_zero(mouse->last_pos);
+    mouse->cur_state = VKL_MOUSE_STATE_INACTIVE;
+    mouse->press_time = VKL_NEVER;
+    mouse->click_time = VKL_NEVER;
+}
+
+
+
+void vkl_mouse_event(VklMouse* mouse, VklCanvas* canvas, VklEvent ev)
+{
+    ASSERT(mouse != NULL);
+    ASSERT(canvas != NULL);
+
+    mouse->prev_state = mouse->cur_state;
+
+    double time = canvas->clock.elapsed;
+
+    // Update the last pos.
+    glm_vec2_copy(mouse->cur_pos, mouse->last_pos);
+
+    // Reset click events as soon as the next loop iteration after they were raised.
+    if (mouse->cur_state == VKL_MOUSE_STATE_CLICK ||
+        mouse->cur_state == VKL_MOUSE_STATE_DOUBLE_CLICK)
+    {
+        mouse->cur_state = VKL_MOUSE_STATE_INACTIVE;
+        mouse->button = VKL_MOUSE_BUTTON_NONE;
+    }
+
+    // Reset wheel event.
+    if (mouse->cur_state == VKL_MOUSE_STATE_WHEEL)
+        mouse->cur_state = VKL_MOUSE_STATE_INACTIVE;
+
+    // Net distance in pixels since the last press event.
+    vec2 shift = {0};
+
+    switch (ev.type)
+    {
+
+    case VKL_EVENT_MOUSE_BUTTON:
+
+        // Press event.
+        if (ev.u.b.type == VKL_MOUSE_PRESS && mouse->press_time == VKL_NEVER)
+        {
+            glm_vec2_copy(mouse->cur_pos, mouse->press_pos);
+            mouse->press_time = time;
+            mouse->button = ev.u.b.button;
+        }
+
+        // Release event.
+        else if (ev.u.b.type == VKL_MOUSE_RELEASE)
+        {
+            // End drag.
+            if (mouse->cur_state == VKL_MOUSE_STATE_DRAG)
+            {
+                log_trace("end drag event");
+                mouse->cur_state = VKL_MOUSE_STATE_INACTIVE;
+                mouse->button = VKL_MOUSE_BUTTON_NONE;
+            }
+
+            // Double click event.
+            else if (time - mouse->click_time < VKL_MOUSE_DOUBLE_CLICK_MAX_DELAY)
+            {
+                // NOTE: when releasing, current button is NONE so we must use the previously set
+                // button in mouse->button.
+                log_trace("double click event on button %d", mouse->button);
+                mouse->cur_state = VKL_MOUSE_STATE_DOUBLE_CLICK;
+                mouse->click_time = time;
+            }
+
+            // Click event.
+            else if (
+                time - mouse->press_time < VKL_MOUSE_CLICK_MAX_DELAY &&
+                mouse->shift_length < VKL_MOUSE_CLICK_MAX_SHIFT)
+            {
+                log_trace("click event on button %d", mouse->button);
+                mouse->cur_state = VKL_MOUSE_STATE_CLICK;
+                mouse->click_time = time;
+            }
+
+            else
+            {
+                // Reset the mouse button state.
+                mouse->button = VKL_MOUSE_BUTTON_NONE;
+            }
+            mouse->press_time = VKL_NEVER;
+        }
+        mouse->shift_length = 0;
+        // mouse->button = ev.u.b.button;
+
+        // log_trace("mouse button %d", mouse->button);
+        break;
+
+
+    case VKL_EVENT_MOUSE_MOVE:
+        glm_vec2_copy(ev.u.m.pos, mouse->cur_pos);
+
+        // Update the distance since the last press position.
+        if (mouse->button != VKL_MOUSE_BUTTON_NONE)
+        {
+            glm_vec2_sub(mouse->cur_pos, mouse->press_pos, shift);
+            mouse->shift_length = glm_vec2_norm(shift);
+        }
+
+        // Mouse move event only if the shift length is larger than the click area.
+        if (mouse->shift_length > VKL_MOUSE_CLICK_MAX_SHIFT)
+        {
+            // Mouse move.
+            if (mouse->cur_state == VKL_MOUSE_STATE_INACTIVE &&
+                mouse->button != VKL_MOUSE_BUTTON_NONE)
+            {
+                log_trace("drag event on button %d", mouse->button);
+                mouse->cur_state = VKL_MOUSE_STATE_DRAG;
+            }
+        }
+        // log_trace("mouse mouse %.1fx%.1f", mouse->cur_pos[0], mouse->cur_pos[1]);
+        break;
+
+
+    case VKL_EVENT_MOUSE_WHEEL:
+        glm_vec2_copy(ev.u.w.dir, mouse->wheel_delta);
+        mouse->cur_state = VKL_MOUSE_STATE_WHEEL;
+        break;
+
+    default:
+        break;
+    }
+}
+
+
+
+// From pixel coordinates (top left origin) to local coordinates (center origin)
+void vkl_mouse_local(
+    VklMouse* mouse, VklMouseLocal* mouse_local, VklCanvas* canvas, VklViewport viewport)
+{
+
+    // Window size in screen coordinates.
+    uvec2 size_screen = {0};
+    vkl_canvas_size(canvas, VKL_CANVAS_SIZE_SCREEN, size_screen);
+    ASSERT(size_screen[0] > 0);
+    ASSERT(size_screen[1] > 0);
+
+    _normalize(mouse_local->cur_pos, mouse->cur_pos, size_screen);
+    _normalize(mouse_local->last_pos, mouse->last_pos, size_screen);
+    _normalize(mouse_local->press_pos, mouse->press_pos, size_screen);
+}
+
+
+
+/*************************************************************************************************/
+/*  Keyboard                                                                                     */
+/*************************************************************************************************/
+
+VklKeyboard vkl_keyboard()
+{
+    VklKeyboard keyboard = {0};
+    vkl_keyboard_reset(&keyboard);
+    return keyboard;
+}
+
+
+
+void vkl_keyboard_reset(VklKeyboard* keyboard)
+{
+    ASSERT(keyboard != NULL);
+    memset(keyboard, 0, sizeof(VklKeyboard));
+    // keyboard->key_code = VKL_KEY_NONE;
+    // keyboard->modifiers = 0;
+    keyboard->press_time = VKL_NEVER;
+}
+
+
+
+void vkl_keyboard_event(VklKeyboard* keyboard, VklCanvas* canvas, VklEvent ev)
+{
+    ASSERT(keyboard != NULL);
+    ASSERT(canvas != NULL);
+
+    keyboard->prev_state = keyboard->cur_state;
+
+    double time = canvas->clock.elapsed;
+    VklKeyCode key = ev.u.k.key_code;
+
+    if (ev.u.k.type == VKL_KEY_PRESS && time - keyboard->press_time > .025)
+    {
+        log_trace("key pressed %d mods %d", key, ev.u.k.modifiers);
+        keyboard->key_code = key;
+        keyboard->modifiers = ev.u.k.modifiers;
+        keyboard->press_time = time;
+        if (keyboard->cur_state == VKL_KEYBOARD_STATE_INACTIVE)
+            keyboard->cur_state = VKL_KEYBOARD_STATE_ACTIVE;
+    }
+    else
+    {
+        if (keyboard->cur_state == VKL_KEYBOARD_STATE_ACTIVE)
+            keyboard->cur_state = VKL_KEYBOARD_STATE_INACTIVE;
+    }
 }
 
 

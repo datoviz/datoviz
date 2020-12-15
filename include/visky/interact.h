@@ -17,43 +17,17 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct VklMouse VklMouse;
-typedef struct VklKeyboard VklKeyboard;
 typedef struct VklPanzoom VklPanzoom;
 typedef struct VklArcball VklArcball;
 typedef struct VklCamera VklCamera;
 typedef struct VklInteract VklInteract;
 typedef union VklInteractUnion VklInteractUnion;
-typedef struct VklMouseLocal VklMouseLocal;
 
 
 
 /*************************************************************************************************/
 /*  Enums                                                                                        */
 /*************************************************************************************************/
-
-// Mouse state type.
-typedef enum
-{
-    VKL_MOUSE_STATE_INACTIVE,
-    VKL_MOUSE_STATE_DRAG,
-    VKL_MOUSE_STATE_WHEEL,
-    VKL_MOUSE_STATE_CLICK,
-    VKL_MOUSE_STATE_DOUBLE_CLICK,
-    VKL_MOUSE_STATE_CAPTURE,
-} VklMouseStateType;
-
-
-
-// Key state type.
-typedef enum
-{
-    VKL_KEYBOARD_STATE_INACTIVE,
-    VKL_KEYBOARD_STATE_ACTIVE,
-    VKL_KEYBOARD_STATE_CAPTURE,
-} VklKeyboardStateType;
-
-
 
 // Interact type.
 typedef enum
@@ -73,53 +47,6 @@ typedef enum
 typedef void (*VklInteractCallback)(
     VklInteract* interact, VklViewport viewport, //
     VklMouse* mouse, VklKeyboard* keyboard);
-
-
-
-/*************************************************************************************************/
-/*  Mouse and keyboard states                                                                    */
-/*************************************************************************************************/
-
-struct VklMouse
-{
-    VklMouseButton button;
-    vec2 press_pos;
-    vec2 last_pos;
-    vec2 cur_pos;
-    vec2 wheel_delta;
-    float shift_length;
-
-    VklMouseStateType prev_state;
-    VklMouseStateType cur_state;
-
-    double press_time;
-    double click_time;
-};
-
-
-
-// In normalize coordinates [-1, +1]
-struct VklMouseLocal
-{
-    vec2 press_pos;
-    vec2 last_pos;
-    vec2 cur_pos;
-    // vec2 delta; // delta between the last and current pos
-    // vec2 press_delta; // delta between t
-};
-
-
-
-struct VklKeyboard
-{
-    VklKeyCode key_code;
-    int modifiers;
-
-    VklKeyboardStateType prev_state;
-    VklKeyboardStateType cur_state;
-
-    double press_time;
-};
 
 
 
@@ -201,25 +128,6 @@ struct VklInteract
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
-
-VKY_EXPORT VklMouse vkl_mouse(void);
-
-VKY_EXPORT void vkl_mouse_reset(VklMouse* mouse);
-
-VKY_EXPORT void vkl_mouse_event(VklMouse* mouse, VklCanvas* canvas, VklEvent ev);
-
-VKY_EXPORT void vkl_mouse_local(
-    VklMouse* mouse, VklMouseLocal* mouse_local, VklCanvas* canvas, VklViewport viewport);
-
-
-
-VKY_EXPORT VklKeyboard vkl_keyboard(void);
-
-VKY_EXPORT void vkl_keyboard_reset(VklKeyboard* keyboard);
-
-VKY_EXPORT void vkl_keyboard_event(VklKeyboard* keyboard, VklCanvas* canvas, VklEvent ev);
-
-
 
 VKY_EXPORT VklInteract vkl_interact(VklCanvas* canvas, void* user_data);
 

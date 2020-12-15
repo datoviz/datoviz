@@ -781,7 +781,7 @@ void vkl_bake_source_alloc(VklVisual* visual, VklSource* source, uint32_t count)
     // log_debug(
     //     "source alloc type %d idx %d count %d", //
     //     source->source_type, source->source_idx, count);
-    log_debug(
+    log_trace(
         "alloc %d elements for source %d #%d", count, source->source_type, source->source_idx);
     VklArray* arr = &source->arr;
     ASSERT(is_obj_created(&arr->obj));

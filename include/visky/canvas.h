@@ -51,6 +51,7 @@
  * They are rarely used by end-users.
  *
  */
+// Private event types
 typedef enum
 {
     VKL_PRIVATE_EVENT_INIT,      // called before the first frame
@@ -66,11 +67,34 @@ typedef enum
 
 
 
+// Canvas size type
 typedef enum
 {
     VKL_CANVAS_SIZE_SCREEN,
     VKL_CANVAS_SIZE_FRAMEBUFFER,
 } VklCanvasSizeType;
+
+
+// Mouse state type
+typedef enum
+{
+    VKL_MOUSE_STATE_INACTIVE,
+    VKL_MOUSE_STATE_DRAG,
+    VKL_MOUSE_STATE_WHEEL,
+    VKL_MOUSE_STATE_CLICK,
+    VKL_MOUSE_STATE_DOUBLE_CLICK,
+    VKL_MOUSE_STATE_CAPTURE,
+} VklMouseStateType;
+
+
+
+// Key state type
+typedef enum
+{
+    VKL_KEYBOARD_STATE_INACTIVE,
+    VKL_KEYBOARD_STATE_ACTIVE,
+    VKL_KEYBOARD_STATE_CAPTURE,
+} VklKeyboardStateType;
 
 
 
@@ -157,6 +181,10 @@ typedef enum
 /*  Type definitions                                                                             */
 /*************************************************************************************************/
 
+typedef struct VklMouse VklMouse;
+typedef struct VklKeyboard VklKeyboard;
+typedef struct VklMouseLocal VklMouseLocal;
+
 // Public events (background thread).
 typedef struct VklKeyEvent VklKeyEvent;
 typedef struct VklMouseButtonEvent VklMouseButtonEvent;
@@ -183,6 +211,53 @@ typedef struct VklCanvasCallbackRegister VklCanvasCallbackRegister;
 typedef struct VklEventCallbackRegister VklEventCallbackRegister;
 
 typedef struct VklScreencast VklScreencast;
+
+
+
+/*************************************************************************************************/
+/*  Mouse and keyboard structs                                                                   */
+/*************************************************************************************************/
+
+struct VklMouse
+{
+    VklMouseButton button;
+    vec2 press_pos;
+    vec2 last_pos;
+    vec2 cur_pos;
+    vec2 wheel_delta;
+    float shift_length;
+
+    VklMouseStateType prev_state;
+    VklMouseStateType cur_state;
+
+    double press_time;
+    double click_time;
+};
+
+
+
+// In normalize coordinates [-1, +1]
+struct VklMouseLocal
+{
+    vec2 press_pos;
+    vec2 last_pos;
+    vec2 cur_pos;
+    // vec2 delta; // delta between the last and current pos
+    // vec2 press_delta; // delta between t
+};
+
+
+
+struct VklKeyboard
+{
+    VklKeyCode key_code;
+    int modifiers;
+
+    VklKeyboardStateType prev_state;
+    VklKeyboardStateType cur_state;
+
+    double press_time;
+};
 
 
 
@@ -417,14 +492,15 @@ struct VklCanvas
     VklFences fences_render_finished;
     VklFences fences_flight;
 
-    // Default commands.
+    // Default command buffers.
     VklCommands cmds_transfer;
     VklCommands cmds_render;
 
-    // Extra commands.
+    // Other command buffers.
     uint32_t max_commands;
     VklCommands* commands;
 
+    // Graphics pipelines.
     uint32_t max_graphics;
     VklGraphics* graphics;
 
@@ -434,9 +510,12 @@ struct VklCanvas
     VklTransfer* immediate_transfer_cur;
     bool immediate_transfer_updated[VKL_MAX_SWAPCHAIN_IMAGES];
 
+    // Canvas callbacks, running in the main thread so should be fast to process, especially
+    // for internal usage.
     uint32_t canvas_callbacks_count;
     VklCanvasCallbackRegister canvas_callbacks[VKL_MAX_EVENT_CALLBACKS];
 
+    // Event callbacks, running in the background thread, may be slow, for end-users.
     uint32_t event_callbacks_count;
     VklEventCallbackRegister event_callbacks[VKL_MAX_EVENT_CALLBACKS];
 
@@ -469,6 +548,7 @@ VKY_EXPORT void vkl_canvas_recreate(VklCanvas* canvas);
 
 VKY_EXPORT VklCommands*
 vkl_canvas_commands(VklCanvas* canvas, uint32_t queue_idx, uint32_t group_id, uint32_t id);
+
 
 
 /*************************************************************************************************/
@@ -599,6 +679,27 @@ VKY_EXPORT uint8_t* vkl_screenshot(VklCanvas* canvas);
  *
  */
 VKY_EXPORT void vkl_screenshot_file(VklCanvas* canvas, const char* filename);
+
+
+
+/*************************************************************************************************/
+/*  Mouse and keyboard                                                                           */
+/*************************************************************************************************/
+
+VKY_EXPORT VklMouse vkl_mouse(void);
+
+VKY_EXPORT void vkl_mouse_reset(VklMouse* mouse);
+
+VKY_EXPORT void vkl_mouse_event(VklMouse* mouse, VklCanvas* canvas, VklEvent ev);
+
+VKY_EXPORT void vkl_mouse_local(
+    VklMouse* mouse, VklMouseLocal* mouse_local, VklCanvas* canvas, VklViewport viewport);
+
+VKY_EXPORT VklKeyboard vkl_keyboard(void);
+
+VKY_EXPORT void vkl_keyboard_reset(VklKeyboard* keyboard);
+
+VKY_EXPORT void vkl_keyboard_event(VklKeyboard* keyboard, VklCanvas* canvas, VklEvent ev);
 
 
 
