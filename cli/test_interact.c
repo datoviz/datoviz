@@ -65,8 +65,7 @@ static void _panzoom_mouse_callback(VklCanvas* canvas, VklEvent ev)
     TestScene* scene = (TestScene*)ev.user_data;
     ASSERT(scene != NULL);
     VklViewport viewport = vkl_viewport_full(canvas);
-    vkl_mouse_event(&scene->mouse, canvas, ev);
-    vkl_interact_update(&scene->interact, viewport, &scene->mouse, &scene->keyboard);
+    vkl_interact_update(&scene->interact, viewport, &canvas->mouse, &canvas->keyboard);
 
     if (scene->interact.to_update &&
         canvas->clock.elapsed - scene->interact.last_update > VKY_INTERACT_MIN_DELAY)
@@ -86,8 +85,7 @@ static void _panzoom_keyboard_callback(VklCanvas* canvas, VklEvent ev)
     TestScene* scene = (TestScene*)ev.user_data;
     ASSERT(scene != NULL);
     VklViewport viewport = vkl_viewport_full(canvas);
-    vkl_keyboard_event(&scene->keyboard, canvas, ev);
-    vkl_interact_update(&scene->interact, viewport, &scene->mouse, &scene->keyboard);
+    vkl_interact_update(&scene->interact, viewport, &canvas->mouse, &canvas->keyboard);
 }
 
 static void _add_visual(
@@ -137,8 +135,6 @@ int test_interact_panzoom(TestContext* context)
     VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
 
     TestScene scene = {0};
-    scene.mouse = vkl_mouse();
-    scene.keyboard = vkl_keyboard();
     scene.interact = vkl_interact_builtin(canvas, VKL_INTERACT_PANZOOM);
     scene.visual = vkl_visual(canvas);
 
@@ -172,8 +168,6 @@ int test_interact_arcball(TestContext* context)
     VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
 
     TestScene scene = {0};
-    scene.mouse = vkl_mouse();
-    scene.keyboard = vkl_keyboard();
     scene.interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
     scene.visual = vkl_visual(canvas);
 
@@ -208,11 +202,16 @@ static void _update_camera(VklCanvas* canvas, VklPrivateEvent ev)
     ASSERT(scene != NULL);
 
     VklViewport viewport = vkl_viewport_full(canvas);
-    vkl_interact_update(&scene->interact, viewport, &scene->mouse, &scene->keyboard);
+    vkl_interact_update(&scene->interact, viewport, &canvas->mouse, &canvas->keyboard);
+
+    // log_debug(
+    //     "cur %.5f, last %.5f", scene->interact.mouse_local.cur_pos[0],
+    //     scene->interact.mouse_local.last_pos[0]);
 
     // HACK: make sure we update last_pos at every frame, not just during a mouse event.
     // Otherwise the last_pos will not be properly updated when ending a mouse move.
-    glm_vec3_copy(scene->interact.mouse_local.cur_pos, scene->interact.mouse_local.last_pos);
+    // glm_vec2_copy(canvas->mouse.cur_pos, canvas->mouse.last_pos);
+    // glm_vec2_copy(scene->interact.mouse_local.cur_pos, scene->interact.mouse_local.last_pos);
 
     if (scene->interact.to_update)
     {
@@ -221,10 +220,6 @@ static void _update_camera(VklCanvas* canvas, VklPrivateEvent ev)
         vkl_visual_data(&scene->visual, VKL_PROP_PROJ, 0, 1, scene->interact.mvp.proj);
         vkl_visual_update(&scene->visual, viewport, (VklDataCoords){0}, NULL);
     }
-
-    // HACK: reset wheel event.
-    if (scene->mouse.cur_state == VKL_MOUSE_STATE_WHEEL)
-        scene->mouse.cur_state = VKL_MOUSE_STATE_INACTIVE;
 }
 
 int test_interact_camera(TestContext* context)
@@ -234,15 +229,8 @@ int test_interact_camera(TestContext* context)
     VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
 
     TestScene scene = {0};
-    scene.mouse = vkl_mouse();
-    scene.keyboard = vkl_keyboard();
     scene.interact = vkl_interact_builtin(canvas, VKL_INTERACT_FLY);
     scene.visual = vkl_visual(canvas);
-
-    vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _mouse_callback, &scene.mouse);
-    vkl_event_callback(canvas, VKL_EVENT_MOUSE_BUTTON, 0, _mouse_callback, &scene.mouse);
-    vkl_event_callback(canvas, VKL_EVENT_MOUSE_WHEEL, 0, _mouse_callback, &scene.mouse);
-    vkl_event_callback(canvas, VKL_EVENT_KEY, 0, _keyboard_callback, &scene.keyboard);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1.0 / 60, _update_camera, &scene);
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);

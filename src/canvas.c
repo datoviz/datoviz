@@ -114,165 +114,6 @@ static inline bool _all_true(uint32_t n, bool* arr)
 
 
 /*************************************************************************************************/
-/*  Private event sending                                                                        */
-/*************************************************************************************************/
-
-static int _canvas_callbacks(VklCanvas* canvas, VklPrivateEvent event)
-{
-    int n_callbacks = 0;
-    for (uint32_t i = 0; i < canvas->canvas_callbacks_count; i++)
-    {
-        // Will pass the user_data that was registered, to the callback function.
-        event.user_data = canvas->canvas_callbacks[i].user_data;
-
-        // Only call the callbacks registered for the specified type.
-        if (canvas->canvas_callbacks[i].type == event.type)
-        {
-            canvas->canvas_callbacks[i].callback(canvas, event);
-            n_callbacks++;
-        }
-    }
-    return n_callbacks;
-}
-
-
-
-static int _interact_callbacks(VklCanvas* canvas)
-{
-    VklPrivateEvent ev = {0};
-    ev.type = VKL_PRIVATE_EVENT_INTERACT;
-    return _canvas_callbacks(canvas, ev);
-}
-
-
-
-static int _frame_callbacks(VklCanvas* canvas)
-{
-    VklPrivateEvent ev = {0};
-    ev.type = VKL_PRIVATE_EVENT_FRAME;
-    ev.u.f.idx = canvas->frame_idx;
-    ev.u.f.interval = canvas->clock.interval;
-    ev.u.f.time = canvas->clock.elapsed;
-    return _canvas_callbacks(canvas, ev);
-}
-
-
-
-static void _refill_callbacks(VklCanvas* canvas, VklPrivateEvent ev, uint32_t img_idx)
-{
-    ASSERT(canvas != NULL);
-    ASSERT(ev.u.rf.cmd_count > 0);
-    ev.u.rf.img_idx = img_idx;
-
-    // Reset all command buffers before calling the REFILL callbacks.
-    for (uint32_t i = 0; i < ev.u.rf.cmd_count; i++)
-        vkl_cmd_reset(ev.u.rf.cmds[i], img_idx);
-
-    int res = _canvas_callbacks(canvas, ev);
-    if (res == 0)
-    {
-        log_trace("no REFILL callback registered, filling command buffers with blank screen");
-        for (uint32_t i = 0; i < ev.u.rf.cmd_count; i++)
-        {
-            blank_commands(canvas, ev.u.rf.cmds[i], img_idx);
-        }
-    }
-}
-
-
-
-static void _refill_canvas(VklCanvas* canvas, uint32_t img_idx)
-{
-    VklPrivateEvent ev = {0};
-    ev.type = VKL_PRIVATE_EVENT_REFILL;
-
-    // Fill the active command buffers for the RENDER queue.
-    VklCommands* cmds = NULL;
-
-    // First commands passed is the default cmds_render VklCommands instance used for rendering.
-    uint32_t k = 0;
-    if (canvas->cmds_render.obj.status >= VKL_OBJECT_STATUS_INIT)
-    {
-        ev.u.rf.cmds[k++] = &canvas->cmds_render;
-    }
-
-    uint32_t img_count = canvas->cmds_render.count;
-    for (uint32_t i = 0; i < canvas->max_commands; i++)
-    {
-        cmds = &canvas->commands[i];
-        if (cmds->obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        if (cmds->queue_idx == VKL_DEFAULT_QUEUE_RENDER &&
-            cmds->obj.status >= VKL_OBJECT_STATUS_INIT)
-        {
-            ev.u.rf.cmds[k++] = &canvas->commands[i];
-            img_count = canvas->commands[i].count;
-        }
-    }
-    ASSERT(k > 0);
-    ASSERT(img_count > 0);
-    ev.u.rf.cmd_count = k;
-
-    // Refill either all commands in each VklCommand (init and resize), or just one (custom
-    // refill)
-    if (img_idx == UINT32_MAX)
-    {
-        log_debug("complete refill of the canvas");
-        for (img_idx = 0; img_idx < img_count; img_idx++)
-        {
-            _refill_callbacks(canvas, ev, img_idx);
-        }
-    }
-    else
-    {
-        log_trace("refill of the canvas for image idx #%d", img_idx);
-        _refill_callbacks(canvas, ev, img_idx);
-    }
-}
-
-
-
-static int _resize_callbacks(VklCanvas* canvas)
-{
-    VklPrivateEvent ev = {0};
-    ev.type = VKL_PRIVATE_EVENT_RESIZE;
-    vkl_canvas_size(canvas, VKL_CANVAS_SIZE_SCREEN, ev.u.r.size_screen);
-    vkl_canvas_size(canvas, VKL_CANVAS_SIZE_FRAMEBUFFER, ev.u.r.size_framebuffer);
-    return _canvas_callbacks(canvas, ev);
-}
-
-
-
-static int _pre_send_callbacks(VklCanvas* canvas)
-{
-    VklPrivateEvent ev = {0};
-    ev.type = VKL_PRIVATE_EVENT_PRE_SEND;
-    ev.u.s.submit = &canvas->submit;
-    return _canvas_callbacks(canvas, ev);
-}
-
-
-
-static int _post_send_callbacks(VklCanvas* canvas)
-{
-    VklPrivateEvent ev = {0};
-    ev.type = VKL_PRIVATE_EVENT_POST_SEND;
-    ev.u.s.submit = &canvas->submit;
-    return _canvas_callbacks(canvas, ev);
-}
-
-
-
-static int _destroy_callbacks(VklCanvas* canvas)
-{
-    VklPrivateEvent ev = {0};
-    ev.type = VKL_PRIVATE_EVENT_DESTROY;
-    return _canvas_callbacks(canvas, ev);
-}
-
-
-
-/*************************************************************************************************/
 /*  Public event sending                                                                         */
 /*************************************************************************************************/
 
@@ -560,12 +401,241 @@ static void backend_event_callbacks(VklCanvas* canvas)
         glfwSetMouseButtonCallback(w, _glfw_button_callback);
 
         // Register the mouse move callback.
-        glfwSetCursorPosCallback(w, _glfw_move_callback);
+        // glfwSetCursorPosCallback(w, _glfw_move_callback);
 
         break;
     default:
         break;
     }
+}
+
+static void backend_frame_callback(VklCanvas* canvas)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(canvas->app != NULL);
+    switch (canvas->app->backend)
+    {
+    case VKL_BACKEND_GLFW:;
+        ASSERT(canvas->window != NULL);
+        GLFWwindow* w = canvas->window->backend_window;
+
+        glm_vec2_copy(canvas->mouse.cur_pos, canvas->mouse.last_pos);
+
+        // // Reset wheel event.
+        // if (canvas->mouse.cur_state == VKL_MOUSE_STATE_WHEEL)
+        //     canvas->mouse.cur_state = VKL_MOUSE_STATE_INACTIVE;
+
+        // Mouse move event.
+        double xpos, ypos;
+        glfwGetCursorPos(w, &xpos, &ypos);
+        vec2 pos = {xpos, ypos};
+        if (canvas->mouse.cur_pos[0] != pos[0] || canvas->mouse.cur_pos[1] != pos[1])
+            vkl_event_mouse_move(canvas, pos);
+
+        break;
+    default:
+        break;
+    }
+}
+
+
+
+/*************************************************************************************************/
+/*  Private event sending                                                                        */
+/*************************************************************************************************/
+
+static int _canvas_callbacks(VklCanvas* canvas, VklPrivateEvent event)
+{
+    int n_callbacks = 0;
+    for (uint32_t i = 0; i < canvas->canvas_callbacks_count; i++)
+    {
+        // Will pass the user_data that was registered, to the callback function.
+        event.user_data = canvas->canvas_callbacks[i].user_data;
+
+        // Only call the callbacks registered for the specified type.
+        if (canvas->canvas_callbacks[i].type == event.type)
+        {
+            canvas->canvas_callbacks[i].callback(canvas, event);
+            n_callbacks++;
+        }
+    }
+    return n_callbacks;
+}
+
+
+
+static int _interact_callbacks(VklCanvas* canvas)
+{
+    VklPrivateEvent ev = {0};
+    ev.type = VKL_PRIVATE_EVENT_INTERACT;
+    return _canvas_callbacks(canvas, ev);
+}
+
+
+
+// static void _mouse_next_frame(VklCanvas* canvas)
+// {
+//     // NOTE: this is called AFTER the mouse/keyboard callbacks.
+//     ASSERT(canvas != NULL);
+//     VklMouse* mouse = &canvas->mouse;
+
+//     log_debug("mouse next frame %d", canvas->frame_idx);
+//     // glm_vec2_copy(canvas->mouse.cur_pos, canvas->mouse.last_pos);
+//     // mouse->prev_state = mouse->cur_state;
+
+//     // // Update the last pos.
+//     // glm_vec2_copy(mouse->cur_pos, mouse->last_pos);
+
+//     // // Reset click events as soon as the next loop iteration after they were raised.
+//     // if (mouse->cur_state == VKL_MOUSE_STATE_CLICK ||
+//     //     mouse->cur_state == VKL_MOUSE_STATE_DOUBLE_CLICK)
+//     // {
+//     //     mouse->cur_state = VKL_MOUSE_STATE_INACTIVE;
+//     //     mouse->button = VKL_MOUSE_BUTTON_NONE;
+//     // }
+
+//     // // Reset wheel event.
+//     // if (mouse->cur_state == VKL_MOUSE_STATE_WHEEL)
+//     // {
+//     //     mouse->cur_state = VKL_MOUSE_STATE_INACTIVE;
+//     // }
+// }
+
+
+
+// static void _keyboard_next_frame(VklCanvas* canvas)
+// {
+//     ASSERT(canvas != NULL);
+//     //
+// }
+
+
+
+static int _frame_callbacks(VklCanvas* canvas)
+{
+    backend_frame_callback(canvas);
+
+    ASSERT(canvas != NULL);
+    VklPrivateEvent ev = {0};
+    ev.type = VKL_PRIVATE_EVENT_FRAME;
+    ev.u.f.idx = canvas->frame_idx;
+    ev.u.f.interval = canvas->clock.interval;
+    ev.u.f.time = canvas->clock.elapsed;
+    return _canvas_callbacks(canvas, ev);
+}
+
+
+
+static void _refill_callbacks(VklCanvas* canvas, VklPrivateEvent ev, uint32_t img_idx)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(ev.u.rf.cmd_count > 0);
+    ev.u.rf.img_idx = img_idx;
+
+    // Reset all command buffers before calling the REFILL callbacks.
+    for (uint32_t i = 0; i < ev.u.rf.cmd_count; i++)
+        vkl_cmd_reset(ev.u.rf.cmds[i], img_idx);
+
+    int res = _canvas_callbacks(canvas, ev);
+    if (res == 0)
+    {
+        log_trace("no REFILL callback registered, filling command buffers with blank screen");
+        for (uint32_t i = 0; i < ev.u.rf.cmd_count; i++)
+        {
+            blank_commands(canvas, ev.u.rf.cmds[i], img_idx);
+        }
+    }
+}
+
+
+
+static void _refill_canvas(VklCanvas* canvas, uint32_t img_idx)
+{
+    VklPrivateEvent ev = {0};
+    ev.type = VKL_PRIVATE_EVENT_REFILL;
+
+    // Fill the active command buffers for the RENDER queue.
+    VklCommands* cmds = NULL;
+
+    // First commands passed is the default cmds_render VklCommands instance used for rendering.
+    uint32_t k = 0;
+    if (canvas->cmds_render.obj.status >= VKL_OBJECT_STATUS_INIT)
+    {
+        ev.u.rf.cmds[k++] = &canvas->cmds_render;
+    }
+
+    uint32_t img_count = canvas->cmds_render.count;
+    for (uint32_t i = 0; i < canvas->max_commands; i++)
+    {
+        cmds = &canvas->commands[i];
+        if (cmds->obj.status == VKL_OBJECT_STATUS_NONE)
+            break;
+        if (cmds->queue_idx == VKL_DEFAULT_QUEUE_RENDER &&
+            cmds->obj.status >= VKL_OBJECT_STATUS_INIT)
+        {
+            ev.u.rf.cmds[k++] = &canvas->commands[i];
+            img_count = canvas->commands[i].count;
+        }
+    }
+    ASSERT(k > 0);
+    ASSERT(img_count > 0);
+    ev.u.rf.cmd_count = k;
+
+    // Refill either all commands in each VklCommand (init and resize), or just one (custom
+    // refill)
+    if (img_idx == UINT32_MAX)
+    {
+        log_debug("complete refill of the canvas");
+        for (img_idx = 0; img_idx < img_count; img_idx++)
+        {
+            _refill_callbacks(canvas, ev, img_idx);
+        }
+    }
+    else
+    {
+        log_trace("refill of the canvas for image idx #%d", img_idx);
+        _refill_callbacks(canvas, ev, img_idx);
+    }
+}
+
+
+
+static int _resize_callbacks(VklCanvas* canvas)
+{
+    VklPrivateEvent ev = {0};
+    ev.type = VKL_PRIVATE_EVENT_RESIZE;
+    vkl_canvas_size(canvas, VKL_CANVAS_SIZE_SCREEN, ev.u.r.size_screen);
+    vkl_canvas_size(canvas, VKL_CANVAS_SIZE_FRAMEBUFFER, ev.u.r.size_framebuffer);
+    return _canvas_callbacks(canvas, ev);
+}
+
+
+
+static int _pre_send_callbacks(VklCanvas* canvas)
+{
+    VklPrivateEvent ev = {0};
+    ev.type = VKL_PRIVATE_EVENT_PRE_SEND;
+    ev.u.s.submit = &canvas->submit;
+    return _canvas_callbacks(canvas, ev);
+}
+
+
+
+static int _post_send_callbacks(VklCanvas* canvas)
+{
+    VklPrivateEvent ev = {0};
+    ev.type = VKL_PRIVATE_EVENT_POST_SEND;
+    ev.u.s.submit = &canvas->submit;
+    return _canvas_callbacks(canvas, ev);
+}
+
+
+
+static int _destroy_callbacks(VklCanvas* canvas)
+{
+    VklPrivateEvent ev = {0};
+    ev.type = VKL_PRIVATE_EVENT_DESTROY;
+    return _canvas_callbacks(canvas, ev);
 }
 
 
@@ -710,10 +780,16 @@ static VklCanvas* _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool off
 
     canvas->immediate_queue = vkl_fifo(VKL_MAX_FIFO_CAPACITY);
 
-    // Event queue.
-    canvas->event_queue = vkl_fifo(VKL_MAX_FIFO_CAPACITY);
-    canvas->event_thread = vkl_thread(_event_thread, canvas);
-    backend_event_callbacks(canvas);
+    // Event system.
+    {
+        canvas->event_queue = vkl_fifo(VKL_MAX_FIFO_CAPACITY);
+        canvas->event_thread = vkl_thread(_event_thread, canvas);
+
+        canvas->mouse = vkl_mouse();
+        canvas->keyboard = vkl_keyboard();
+
+        backend_event_callbacks(canvas);
+    }
 
     obj_created(&canvas->obj);
 
@@ -1002,6 +1078,7 @@ void vkl_mouse_event(VklMouse* mouse, VklCanvas* canvas, VklEvent ev)
     ASSERT(mouse != NULL);
     ASSERT(canvas != NULL);
 
+    // log_debug("mouse event %d", canvas->frame_idx);
     mouse->prev_state = mouse->cur_state;
 
     double time = canvas->clock.elapsed;
@@ -1123,7 +1200,6 @@ void vkl_mouse_event(VklMouse* mouse, VklCanvas* canvas, VklEvent ev)
 void vkl_mouse_local(
     VklMouse* mouse, VklMouseLocal* mouse_local, VklCanvas* canvas, VklViewport viewport)
 {
-
     // Window size in screen coordinates.
     uvec2 size_screen = {0};
     vkl_canvas_size(canvas, VKL_CANVAS_SIZE_SCREEN, size_screen);
@@ -1203,6 +1279,10 @@ void vkl_event_mouse_button(
     event.u.b.button = button;
     event.u.b.type = type;
     event.u.b.modifiers = modifiers;
+
+    // Update the mouse state.
+    vkl_mouse_event(&canvas->mouse, canvas, event);
+
     vkl_event_enqueue(canvas, event);
 }
 
@@ -1216,6 +1296,10 @@ void vkl_event_mouse_move(VklCanvas* canvas, vec2 pos)
     event.type = VKL_EVENT_MOUSE_MOVE;
     event.u.m.pos[0] = pos[0];
     event.u.m.pos[1] = pos[1];
+
+    // Update the mouse state.
+    vkl_mouse_event(&canvas->mouse, canvas, event);
+
     vkl_event_enqueue(canvas, event);
 }
 
@@ -1229,6 +1313,10 @@ void vkl_event_mouse_wheel(VklCanvas* canvas, vec2 dir)
     event.type = VKL_EVENT_MOUSE_WHEEL;
     event.u.w.dir[0] = dir[0];
     event.u.w.dir[1] = dir[1];
+
+    // Update the mouse state.
+    vkl_mouse_event(&canvas->mouse, canvas, event);
+
     vkl_event_enqueue(canvas, event);
 }
 
@@ -1243,6 +1331,10 @@ void vkl_event_key(VklCanvas* canvas, VklKeyType type, VklKeyCode key_code, int 
     event.u.k.type = type;
     event.u.k.key_code = key_code;
     event.u.k.modifiers = modifiers;
+
+    // Update the keyboard state.
+    vkl_keyboard_event(&canvas->keyboard, canvas, event);
+
     vkl_event_enqueue(canvas, event);
 }
 
@@ -1257,6 +1349,7 @@ void vkl_event_frame(VklCanvas* canvas, uint64_t idx, double time, double interv
     event.u.f.idx = idx;
     event.u.f.time = time;
     event.u.f.interval = interval;
+
     vkl_event_enqueue(canvas, event);
 }
 
