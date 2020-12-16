@@ -22,7 +22,7 @@ int test_scene_1(TestContext* context)
     VklContext* ctx = gpu->context;
     ASSERT(ctx != NULL);
 
-    VklScene* scene = vkl_scene(canvas, 1, 1);
+    VklScene* scene = vkl_scene(canvas, 2, 3);
     VklPanel* panel = vkl_scene_panel(scene, 0, 0, VKL_CONTROLLER_PANZOOM, 0);
     VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_MARKER, 0);
 
@@ -37,20 +37,12 @@ int test_scene_1(TestContext* context)
         RAND_COLOR(color[i])
     }
 
-    {
-        vkl_visual_data(visual, VKL_PROP_POS, 0, N, pos);
-        vkl_visual_data(visual, VKL_PROP_COLOR, 0, N, color);
-        vkl_visual_data(visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
-
-        // vkl_visual_data(visual, VKL_PROP_MODEL, 0, 1, id);
-        // vkl_visual_data(visual, VKL_PROP_VIEW, 0, 1, id);
-        // vkl_visual_data(visual, VKL_PROP_PROJ, 0, 1, id);
-        // vkl_visual_data_texture(visual, VKL_PROP_COLOR_TEXTURE, 0, 1, 1, 1, NULL);
-        // vkl_visual_data_buffer(visual, VKL_SOURCE_UNIFORM, 1, 0, 1, 1, NULL);
-    }
+    vkl_visual_data(visual, VKL_PROP_POS, 0, N, pos);
+    vkl_visual_data(visual, VKL_PROP_COLOR, 0, N, color);
+    vkl_visual_data(visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
 
     vkl_app_run(app, N_FRAMES);
-    // vkl_visual_destroy(visual);
+    vkl_visual_destroy(visual);
     vkl_scene_destroy(scene);
     FREE(pos);
     FREE(color);

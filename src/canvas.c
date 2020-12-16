@@ -1188,15 +1188,9 @@ void vkl_mouse_event(VklMouse* mouse, VklCanvas* canvas, VklEvent ev)
 void vkl_mouse_local(
     VklMouse* mouse, VklMouseLocal* mouse_local, VklCanvas* canvas, VklViewport viewport)
 {
-    // Window size in screen coordinates.
-    uvec2 size_screen = {0};
-    vkl_canvas_size(canvas, VKL_CANVAS_SIZE_SCREEN, size_screen);
-    ASSERT(size_screen[0] > 0);
-    ASSERT(size_screen[1] > 0);
-
-    _normalize(mouse_local->cur_pos, mouse->cur_pos, size_screen);
-    _normalize(mouse_local->last_pos, mouse->last_pos, size_screen);
-    _normalize(mouse_local->press_pos, mouse->press_pos, size_screen);
+    _normalize(mouse_local->cur_pos, mouse->cur_pos, viewport.size_screen);
+    _normalize(mouse_local->last_pos, mouse->last_pos, viewport.size_screen);
+    _normalize(mouse_local->press_pos, mouse->press_pos, viewport.size_screen);
 }
 
 
