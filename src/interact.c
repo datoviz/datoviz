@@ -17,8 +17,9 @@
 /*************************************************************************************************/
 
 // screen coordinates
-static inline bool _pos_in_viewport(VklViewport viewport, vec2 pos)
+static bool _pos_in_viewport(VklViewport viewport, vec2 pos)
 {
+    ASSERT(viewport.size_screen[0] > 0);
     return (
         viewport.offset_screen[0] <= pos[0] &&                           //
         viewport.offset_screen[1] <= pos[1] &&                           //

@@ -178,11 +178,8 @@ VklViewport vkl_viewport_full(VklCanvas* canvas)
     viewport.viewport.width = (float)canvas->swapchain.images->width;
     viewport.viewport.height = (float)canvas->swapchain.images->height;
 
-    // viewport.size_framebuffer[2] = viewport.viewport.width;
-    // viewport.size_framebuffer[3] = viewport.viewport.height;
-
-    // viewport.xywh_screen[2] = canvas->window->width;
-    // viewport.xywh_screen[3] = canvas->window->height;
+    viewport.size_screen[0] = canvas->window->width;
+    viewport.size_screen[1] = canvas->window->height;
 
     viewport.viewport.minDepth = +0;
     viewport.viewport.maxDepth = +1;
