@@ -26,6 +26,10 @@ int test_scene_1(TestContext* context)
     VklPanel* panel = vkl_scene_panel(scene, 0, 0, VKL_CONTROLLER_PANZOOM, 0);
     VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_MARKER, 0);
 
+    // Second panel.
+    VklPanel* panel2 = vkl_scene_panel(scene, 1, 1, VKL_CONTROLLER_PANZOOM, 0);
+    vkl_panel_visual(panel2, visual, VKL_VIEWPORT_INNER);
+
     // Visual data.
     const uint32_t N = 1000;
     vec3* pos = calloc(N, sizeof(vec3));

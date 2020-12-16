@@ -107,18 +107,17 @@ static void _scene_frame(VklCanvas* canvas, VklPrivateEvent ev)
         }
 
         // Update all visuals in the panel, using the panel's viewport.
-        if (panel->obj.status != VKL_OBJECT_STATUS_NEED_UPDATE)
-            break;
-        log_debug("update data for visuals in panel %d,%d", panel->row, panel->col);
-        viewport = vkl_panel_viewport(panel);
-
-        for (uint32_t j = 0; j < panel->visual_count; j++)
+        if (panel->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE)
         {
-            // TODO: data coords
-            vkl_visual_update(panel->visuals[j], viewport, (VklDataCoords){0}, NULL);
+            log_debug("update data for visuals in panel %d,%d", panel->row, panel->col);
+            viewport = vkl_panel_viewport(panel);
+            for (uint32_t j = 0; j < panel->visual_count; j++)
+            {
+                // TODO: data coords
+                vkl_visual_update(panel->visuals[j], viewport, (VklDataCoords){0}, NULL);
+            }
+            panel->obj.status = VKL_OBJECT_STATUS_CREATED;
         }
-
-        panel->obj.status = VKL_OBJECT_STATUS_CREATED;
     }
     scene->obj.status = VKL_OBJECT_STATUS_CREATED;
 }
