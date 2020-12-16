@@ -9,7 +9,7 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static mat4 MAT4_IDENTITY;
+static const mat4 MAT4_IDENTITY = GLM_MAT4_IDENTITY_INIT;
 
 static void _common_data(VklVisual* visual)
 {
@@ -22,6 +22,16 @@ static void _common_data(VklVisual* visual)
 
     // TODO: viewport uniform
     vkl_visual_data_buffer(visual, VKL_SOURCE_UNIFORM, 1, 0, 1, 1, NULL);
+}
+
+
+
+static void _panel_to_update(VklPanel* panel)
+{
+    ASSERT(panel != NULL);
+    panel->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+    if (panel->scene != NULL)
+        panel->scene->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
 }
 
 
@@ -56,7 +66,7 @@ static void _scene_fill(VklCanvas* canvas, VklPrivateEvent ev)
             // Find the panel viewport.
             viewport = vkl_panel_viewport(panel);
             vkl_cmd_viewport(cmds, img_idx, viewport.viewport);
-
+            // log_debug("%d %d %d %d", cmds, i, j, img_idx);
             // Go through all visuals in the panel.
             for (uint32_t k = 0; k < panel->visual_count; k++)
             {
@@ -80,37 +90,28 @@ static void _scene_frame(VklCanvas* canvas, VklPrivateEvent ev)
     if (scene->obj.status != VKL_OBJECT_STATUS_NEED_UPDATE)
         return;
 
-    // Find the visuals to update.
-    // uint32_t k = 0;
-    // VklVisual* visuals[VKL_MAX_VISUALS] = {0};
     VklPanel* panel = NULL;
     VklViewport viewport = {0};
+
+    // Go through all panels that need to be updated.
     for (uint32_t i = 0; i < scene->grid.panel_count; i++)
     {
         panel = &scene->grid.panels[i];
         if (panel->obj.status != VKL_OBJECT_STATUS_NEED_UPDATE)
             break;
-        // Go through all panels that need to be updated.
+        log_debug("update data for visuals in panel %d,%d", panel->row, panel->col);
         viewport = vkl_panel_viewport(panel);
+
         // Update all visuals in the panel, using the panel's viewport.
         for (uint32_t j = 0; j < panel->visual_count; j++)
         {
             // TODO: data coords
             vkl_visual_update(panel->visuals[j], viewport, (VklDataCoords){0}, NULL);
         }
+
+        panel->obj.status = VKL_OBJECT_STATUS_CREATED;
     }
-    // for (uint32_t i = 0; i < scene->max_visuals; i++)
-    // {
-    //     if (scene->visuals[i].obj.status == VKL_OBJECT_STATUS_NONE)
-    //         break;
-    //     if (scene->visuals[i].obj.status == VKL_OBJECT_STATUS_NEED_UPDATE)
-    //     {
-    //         // Viewport.
-    //         VklViewport viewport = vkl_panel_viewport(panel);
-    //         // TODO: data coords
-    //         vkl_visual_update(visual, viewport, (VklDataCoords){0}, NULL);
-    //     }
-    // }
+    scene->obj.status = VKL_OBJECT_STATUS_CREATED;
 }
 
 
@@ -251,7 +252,8 @@ vkl_scene_panel(VklScene* scene, uint32_t row, uint32_t col, VklControllerType t
     vkl_panel_controller(panel, type, flags);
 
     // At initialization, must update all visuals data.
-    panel->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+    panel->scene = scene;
+    _panel_to_update(panel);
 
     return panel;
 }

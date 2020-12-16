@@ -77,6 +77,7 @@ typedef struct VklController VklController;
 struct VklPanel
 {
     VklObject obj;
+    VklScene* scene;
 
     VklGrid* grid;
     VklPanelMode mode;

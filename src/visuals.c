@@ -212,9 +212,15 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
     vkl_cmd_bind_graphics(cmds, idx, visual->graphics[0], &visual->bindings[0], 0);
 
     if (index_count == 0)
+    {
+        log_debug("draw %d vertices", vertex_count);
         vkl_cmd_draw(cmds, idx, 0, vertex_count);
+    }
     else
+    {
+        log_debug("draw %d indices", index_count);
         vkl_cmd_draw_indexed(cmds, idx, 0, 0, index_count);
+    }
 
     // vkl_cmd_end_renderpass(cmds, idx);
     // vkl_cmd_end(cmds, idx);
