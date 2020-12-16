@@ -141,7 +141,6 @@ static void _default_controller_callback(VklController* controller, VklEvent ev)
         // Update the interact using the current panel's viewport.
         VklViewport viewport = vkl_panel_viewport(controller->panel);
         vkl_interact_update(interact, viewport, &canvas->mouse, &canvas->keyboard);
-
         if (interact->to_update && delay > VKY_INTERACT_MIN_DELAY)
         {
             vkl_upload_buffers_immediate(
