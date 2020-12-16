@@ -621,6 +621,12 @@ VklInteract vkl_interact(VklCanvas* canvas, void* user_data)
     glm_mat4_identity(interact.mvp.model);
     glm_mat4_identity(interact.mvp.view);
     glm_mat4_identity(interact.mvp.proj);
+
+    // Create a uniform buffer holding the MVP.
+    interact.br = vkl_ctx_buffers(
+        canvas->gpu->context, VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE, //
+        canvas->swapchain.img_count, sizeof(VklMVP));
+
     interact.user_data = user_data;
     return interact;
 }

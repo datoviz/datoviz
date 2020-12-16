@@ -112,12 +112,17 @@ union VklInteractUnion
 
 struct VklInteract
 {
-    VklInteractType type;
     VklCanvas* canvas;
+    VklInteractType type;
+
     VklMouseLocal mouse_local;
     VklInteractCallback callback;
+
     VklMVP mvp;
+    VklBufferRegions br; // for the uniform buffer containing the MVP
+
     VklInteractUnion u;
+
     bool to_update;
     double last_update;
     void* user_data;
