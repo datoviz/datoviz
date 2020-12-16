@@ -525,6 +525,8 @@ static void _refill_callbacks(VklCanvas* canvas, VklPrivateEvent ev, uint32_t im
 
 static void _refill_canvas(VklCanvas* canvas, uint32_t img_idx)
 {
+    ASSERT(canvas != NULL);
+    log_debug("refill canvas %d", img_idx);
     VklPrivateEvent ev = {0};
     ev.type = VKL_PRIVATE_EVENT_REFILL;
 
@@ -1832,7 +1834,9 @@ void vkl_canvas_frame(VklCanvas* canvas)
         canvas->clock.interval = 0;
 
         // Refill the command buffer for the current swapchain image.
-        _refill_canvas(canvas, canvas->swapchain.img_idx);
+
+        // NOTE: might need to uncomment this!
+        // _refill_canvas(canvas, canvas->swapchain.img_idx);
 
         // Mark that command buffer as updated.
         canvas->img_updated[canvas->swapchain.img_idx] = true;
