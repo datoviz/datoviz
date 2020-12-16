@@ -27,8 +27,8 @@
         }                                                                                         \
     }
 #define VKL_DEFAULT_IMAGE_FORMAT VK_FORMAT_B8G8R8A8_UNORM
-// #define VKL_DEFAULT_PRESENT_MODE VK_PRESENT_MODE_FIFO_KHR
-#define VKL_DEFAULT_PRESENT_MODE      VK_PRESENT_MODE_IMMEDIATE_KHR
+#define VKL_DEFAULT_PRESENT_MODE VK_PRESENT_MODE_FIFO_KHR
+// #define VKL_DEFAULT_PRESENT_MODE      VK_PRESENT_MODE_IMMEDIATE_KHR
 #define VKL_MIN_SWAPCHAIN_IMAGE_COUNT 3
 #define VKL_SEMAPHORE_IMG_AVAILABLE   0
 #define VKL_SEMAPHORE_RENDER_FINISHED 1
@@ -356,6 +356,7 @@ struct VklViewport
 {
     VkViewport viewport; // Vulkan viewport
     vec4 margins;
+    uvec2 offset_screen;
     uvec2 size_screen;
     float dpi_scaling; // DPI  scaling
 };

@@ -13,6 +13,23 @@
 
 
 /*************************************************************************************************/
+/*  Utils                                                                                        */
+/*************************************************************************************************/
+
+// screen coordinates
+static inline bool _pos_in_viewport(VklViewport viewport, vec2 pos)
+{
+    return (
+        viewport.offset_screen[0] <= pos[0] &&                           //
+        viewport.offset_screen[1] <= pos[1] &&                           //
+        pos[0] <= viewport.offset_screen[0] + viewport.size_screen[0] && //
+        pos[1] <= viewport.offset_screen[1] + viewport.size_screen[1]    //
+    );
+}
+
+
+
+/*************************************************************************************************/
 /*  Panzoom                                                                                      */
 /*************************************************************************************************/
 
@@ -135,15 +152,18 @@ static void _panzoom_callback(
     wheel_factor *= -.1;
 #endif
 
+    bool cur_active = _pos_in_viewport(viewport, mouse->cur_pos);
+    bool press_active = _pos_in_viewport(viewport, mouse->press_pos);
+
     // Pan.
-    if (mouse->cur_state == VKL_MOUSE_STATE_DRAG && mouse->button == VKL_MOUSE_BUTTON_LEFT)
+    if (press_active && mouse->cur_state == VKL_MOUSE_STATE_DRAG &&
+        mouse->button == VKL_MOUSE_BUTTON_LEFT)
     {
         // TODO
         // Restrict the panzoom updates to cases when the mouse press position was in the panel.
         // if (vkl_panel_from_mouse(scene, mouse->press_pos) != panel)
         //     return;
         // panel->status = VKL_PANEL_STATUS_ACTIVE;
-
         glm_vec2_sub(interact->mouse_local.cur_pos, interact->mouse_local.press_pos, delta);
         _panzoom_pan(panzoom, delta);
         update = true;
@@ -156,9 +176,9 @@ static void _panzoom_callback(
         vec2 center = {0};
 
         // Right drag.
-        if (mouse->cur_state == VKL_MOUSE_STATE_DRAG && mouse->button == VKL_MOUSE_BUTTON_RIGHT)
+        if (press_active && mouse->cur_state == VKL_MOUSE_STATE_DRAG &&
+            mouse->button == VKL_MOUSE_BUTTON_RIGHT)
         {
-
             // TODO
             // Restrict the panzoom updates to cases when the mouse press position was in the
             // panel.
@@ -174,7 +194,7 @@ static void _panzoom_callback(
             delta[1] *= 1.5;
         }
         // Mouse wheel.
-        else
+        else if (cur_active)
         {
             // TODO
             // Restrict the panzoom updates to cases when the mouse press position was in the
@@ -200,13 +220,14 @@ static void _panzoom_callback(
     } // end zoom
 
     // Reset on double-click.
-    if (mouse->cur_state == VKL_MOUSE_STATE_DOUBLE_CLICK)
+    if (cur_active && mouse->cur_state == VKL_MOUSE_STATE_DOUBLE_CLICK)
     {
         // TODO
         // // Restrict the panzoom updates to cases when the mouse press position was in the panel.
         // if (vkl_panel_from_mouse(scene, mouse->cur_pos) != panel)
         //     return;
         // panel->status = VKL_PANEL_STATUS_RESET;
+
         _panzoom_reset(panzoom);
         update = true;
     }
@@ -536,20 +557,25 @@ static void _arcball_callback(
     VklArcball* arcball = &interact->u.a;
     bool update = false;
 
+    bool cur_active = _pos_in_viewport(viewport, mouse->cur_pos);
+    bool press_active = _pos_in_viewport(viewport, mouse->press_pos);
+
     // Rotate.
-    if (mouse->cur_state == VKL_MOUSE_STATE_DRAG && mouse->button == VKL_MOUSE_BUTTON_LEFT)
+    if (press_active && mouse->cur_state == VKL_MOUSE_STATE_DRAG &&
+        mouse->button == VKL_MOUSE_BUTTON_LEFT)
     {
         // // TODO
         // // Restrict the panzoom updates to cases when the mouse press position was in the panel.
         // if (vkl_panel_from_mouse(scene, mouse->press_pos) != panel)
         //     return;
         // panel->status = VKL_PANEL_STATUS_ACTIVE;
+
         _arcball_rotate(arcball, interact->mouse_local.cur_pos, interact->mouse_local.last_pos);
         update = true;
     }
 
     // Zoom.
-    if (mouse->cur_state == VKL_MOUSE_STATE_WHEEL)
+    if (cur_active && mouse->cur_state == VKL_MOUSE_STATE_WHEEL)
     {
         // // TODO
         // // Restrict the panzoom updates to cases when the mouse press position was in the panel.
@@ -575,7 +601,8 @@ static void _arcball_callback(
     glm_mat4_mul(arcball->translation, arcball->mat, arcball->mat);
 
     // Pan.
-    if (mouse->cur_state == VKL_MOUSE_STATE_DRAG && mouse->button == VKL_MOUSE_BUTTON_RIGHT)
+    if (press_active && mouse->cur_state == VKL_MOUSE_STATE_DRAG &&
+        mouse->button == VKL_MOUSE_BUTTON_RIGHT)
     {
         // // TODO
         // if (vkl_panel_from_mouse(scene, mouse->press_pos) != panel)

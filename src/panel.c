@@ -268,15 +268,41 @@ VklViewport vkl_panel_viewport(VklPanel* panel)
     ASSERT(panel != NULL);
     VklViewport viewport = {0};
     VklCanvas* canvas = panel->grid->canvas;
+
     float win_width = panel->grid->canvas->swapchain.images->width;
     float win_height = panel->grid->canvas->swapchain.images->height;
+
     viewport.size_screen[0] = panel->width * canvas->window->width;
     viewport.size_screen[1] = panel->height * canvas->window->height;
+
+    viewport.offset_screen[0] = panel->x * canvas->window->width;
+    viewport.offset_screen[1] = panel->y * canvas->window->height;
+
     viewport.viewport.x = panel->x * win_width;
     viewport.viewport.y = panel->y * win_height;
     viewport.viewport.width = panel->width * win_width;
     viewport.viewport.height = panel->height * win_height;
+
     return viewport;
+}
+
+
+VklPanel* vkl_panel_at(VklGrid* grid, vec2 pos)
+{
+    ASSERT(grid != NULL);
+    VklPanel* panel = NULL;
+    float x = pos[0];
+    float y = pos[1];
+
+    for (uint32_t i = 0; i < grid->panel_count; i++)
+    {
+        panel = &grid->panels[i];
+        if (panel->x <= x && x <= panel->x + panel->width && //
+            panel->y <= y && y <= panel->y + panel->height)
+            return panel;
+    }
+
+    return panel;
 }
 
 
