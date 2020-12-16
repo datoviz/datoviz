@@ -7,6 +7,7 @@
 #include "test_graphics.h"
 #include "test_interact.h"
 #include "test_panel.h"
+#include "test_scene.h"
 #include "test_visuals.h"
 #include "test_vklite.h"
 #include "utils.h"
@@ -93,7 +94,8 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_visuals_marker_raw),  //
     CASE_FIXTURE_NONE(test_visuals_segment_raw), //
 
-
+    // scene
+    CASE_FIXTURE_NONE(test_scene_1), //
 
 };
 static uint32_t N_TESTS = sizeof(TEST_CASES) / sizeof(TestCase);

@@ -179,6 +179,11 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
     VklSource* vertex_source = vkl_bake_source(visual, VKL_SOURCE_VERTEX, 0);
     VklBufferRegions* vertex_buf = &vertex_source->u.br;
     ASSERT(vertex_buf != NULL);
+    if (vertex_buf->count == 0)
+    {
+        log_warn("skip visual fill as the vertex buffer is empty");
+        return;
+    }
     ASSERT(vertex_buf->count > 0);
 
     uint32_t vertex_count = visual->vertex_count;

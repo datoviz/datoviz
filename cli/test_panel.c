@@ -55,7 +55,7 @@ static void _canvas_fill(VklCanvas* canvas, VklPrivateEvent ev)
 
 
 /*************************************************************************************************/
-/*  Builtin visual tests                                                                         */
+/*  Panel tests                                                                                  */
 /*************************************************************************************************/
 
 static void _canvas_click(VklCanvas* canvas, VklEvent ev)
@@ -88,31 +88,32 @@ int test_panel_1(TestContext* context)
     vkl_panel_visual(vkl_panel(&grid, 0, 0), &visual, VKL_VIEWPORT_INNER);
     vkl_panel_visual(vkl_panel(&grid, 1, 1), &visual, VKL_VIEWPORT_INNER);
 
+    // Visual data.
     const uint32_t N = 1000;
     vec3* pos = calloc(N, sizeof(vec3));
     cvec4* color = calloc(N, sizeof(cvec4));
+    float param = 10.0f;
+    mat4 id = GLM_MAT4_IDENTITY_INIT;
     for (uint32_t i = 0; i < N; i++)
     {
         RANDN_POS(pos[i])
         RAND_COLOR(color[i])
     }
 
-    // Set visual data.
-    vkl_visual_data(&visual, VKL_PROP_POS, 0, N, pos);
-    vkl_visual_data(&visual, VKL_PROP_COLOR, 0, N, color);
+    {
+        vkl_visual_data(&visual, VKL_PROP_POS, 0, N, pos);
+        vkl_visual_data(&visual, VKL_PROP_COLOR, 0, N, color);
 
-    // Params.
-    float param = 10.0f;
-    vkl_visual_data(&visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
+        vkl_visual_data(&visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
 
-    mat4 id = GLM_MAT4_IDENTITY_INIT;
-    vkl_visual_data(&visual, VKL_PROP_MODEL, 0, 1, id);
-    vkl_visual_data(&visual, VKL_PROP_VIEW, 0, 1, id);
-    vkl_visual_data(&visual, VKL_PROP_PROJ, 0, 1, id);
+        vkl_visual_data(&visual, VKL_PROP_MODEL, 0, 1, id);
+        vkl_visual_data(&visual, VKL_PROP_VIEW, 0, 1, id);
+        vkl_visual_data(&visual, VKL_PROP_PROJ, 0, 1, id);
 
-    vkl_visual_data_texture(&visual, VKL_PROP_COLOR_TEXTURE, 0, 1, 1, 1, NULL);
-    VklBufferRegions br_viewport = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
-    vkl_visual_buffer(&visual, VKL_SOURCE_UNIFORM, 1, br_viewport);
+        vkl_visual_data_texture(&visual, VKL_PROP_COLOR_TEXTURE, 0, 1, 1, 1, NULL);
+        vkl_visual_data_buffer(&visual, VKL_SOURCE_UNIFORM, 1, 0, 1, 1, NULL);
+    }
+
     VklViewport viewport = vkl_viewport_full(canvas);
     vkl_visual_update(&visual, viewport, (VklDataCoords){0}, NULL);
 
