@@ -95,6 +95,7 @@ struct VklPanel
     uint32_t visual_count;
     VklVisual* visuals[VKL_MAX_VISUALS_PER_PANEL];
 
+    VklViewport viewport;
     VklController* controller;
     VklCommands* cmds;
 };
@@ -130,7 +131,8 @@ VKY_EXPORT void vkl_panel_unit(VklPanel* panel, VklPanelSizeUnit unit);
 
 VKY_EXPORT void vkl_panel_mode(VklPanel* panel, VklPanelMode mode);
 
-VKY_EXPORT void vkl_panel_visual(VklPanel* panel, VklVisual* visual, VklViewportType viewport);
+VKY_EXPORT void
+vkl_panel_visual(VklPanel* panel, VklVisual* visual, VklViewportType viewport_type);
 
 VKY_EXPORT void vkl_panel_pos(VklPanel* panel, float x, float y);
 
