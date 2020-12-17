@@ -27,8 +27,8 @@ int test_scene_1(TestContext* context)
     VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_MARKER, 0);
 
     // Second panel.
-    VklPanel* panel2 = vkl_scene_panel(scene, 1, 1, VKL_CONTROLLER_PANZOOM, 0);
-    vkl_panel_visual(panel2, visual, VKL_VIEWPORT_INNER);
+    // VklPanel* panel2 = vkl_scene_panel(scene, 1, 1, VKL_CONTROLLER_PANZOOM, 0);
+    // vkl_panel_visual(panel2, visual, VKL_VIEWPORT_INNER);
 
     // Visual data.
     const uint32_t N = 1000;
@@ -44,6 +44,8 @@ int test_scene_1(TestContext* context)
     vkl_visual_data(visual, VKL_PROP_POS, 0, N, pos);
     vkl_visual_data(visual, VKL_PROP_COLOR, 0, N, color);
     vkl_visual_data(visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
+
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
 
     vkl_app_run(app, N_FRAMES);
     vkl_visual_destroy(visual);

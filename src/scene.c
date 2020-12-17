@@ -2,6 +2,7 @@
 #include "../include/visky/canvas.h"
 #include "../include/visky/visuals.h"
 #include "../include/visky/vklite.h"
+#include "vklite_utils.h"
 
 
 
@@ -9,17 +10,8 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-// static const mat4 MAT4_IDENTITY = GLM_MAT4_IDENTITY_INIT;
-
 static void _common_data(VklVisual* visual)
 {
-    // vkl_visual_data(visual, VKL_PROP_MODEL, 0, 1, MAT4_IDENTITY);
-    // vkl_visual_data(visual, VKL_PROP_VIEW, 0, 1, MAT4_IDENTITY);
-    // vkl_visual_data(visual, VKL_PROP_PROJ, 0, 1, MAT4_IDENTITY);
-
-    // vkl_upload_buffers_immediate(
-    //             visual->canvas, interact->br, true, 0, interact->br.size, &interact->mvp);
-
     // TODO: color texture
     vkl_visual_data_texture(visual, VKL_PROP_COLOR_TEXTURE, 0, 1, 1, 1, NULL);
 
@@ -136,16 +128,48 @@ static void _default_controller_callback(VklController* controller, VklEvent ev)
     for (uint32_t i = 0; i < controller->interact_count; i++)
     {
         interact = &controller->interacts[i];
-        float delay = canvas->clock.elapsed - interact->last_update;
+        // float delay = canvas->clock.elapsed - interact->last_update;
 
         // Update the interact using the current panel's viewport.
         VklViewport viewport = vkl_panel_viewport(controller->panel);
         vkl_interact_update(interact, viewport, &canvas->mouse, &canvas->keyboard);
-        if (interact->to_update && delay > VKY_INTERACT_MIN_DELAY)
+        // NOTE: the CPU->GPU transfer occurs at every frame, in another callback below
+    }
+}
+
+
+
+static void _upload_mvp(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(ev.user_data != NULL);
+    VklScene* scene = (VklScene*)ev.user_data;
+    ASSERT(scene != NULL);
+
+    VklPanel* panel = NULL;
+    // VklViewport viewport = {0};
+    VklInteract* interact = NULL;
+    VklController* controller = NULL;
+    VklBufferRegions* br = NULL;
+
+    // Go through all panels that need to be updated.
+    for (uint32_t i = 0; i < scene->grid.panel_count; i++)
+    {
+        panel = &scene->grid.panels[i];
+        if (panel->controller == NULL)
+            continue;
+        controller = panel->controller;
+
+        // Go through all interact of the controllers.
+        for (uint32_t j = 0; j < controller->interact_count; j++)
         {
-            vkl_upload_buffers_immediate(
-                canvas, interact->br, true, 0, interact->br.size, &interact->mvp);
-            interact->last_update = canvas->clock.elapsed;
+            interact = &controller->interacts[j];
+            // NOTE: we need to update the uniform buffer at every frame
+            br = &interact->br;
+            void* aligned = aligned_repeat(br->size, &interact->mvp, 1, br->alignment);
+            vkl_buffer_upload(
+                br->buffer, br->offsets[canvas->swapchain.img_idx], br->aligned_size, aligned);
+            FREE(aligned);
         }
     }
 }
@@ -313,7 +337,8 @@ VklVisual* vkl_scene_visual(VklPanel* panel, VklVisualType type, int flags)
     // MVP, viewport, color texture binding data.
     _common_data(visual);
 
-    // TODO: make sure the first interact exists before binding the buffer, otherwise create one?
+    // TODO: make sure the first interact exists before binding the buffer, otherwise create
+    // one?
     VklInteract* interact = &panel->controller->interacts[0];
     vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 0, interact->br);
     vkl_upload_buffers_immediate(
@@ -321,6 +346,7 @@ VklVisual* vkl_scene_visual(VklPanel* panel, VklVisualType type, int flags)
 
     vkl_canvas_callback(scene->canvas, VKL_PRIVATE_EVENT_REFILL, 0, _scene_fill, scene);
     vkl_canvas_callback(scene->canvas, VKL_PRIVATE_EVENT_FRAME, 0, _scene_frame, scene);
+    vkl_canvas_callback(scene->canvas, VKL_PRIVATE_EVENT_FRAME, 0, _upload_mvp, scene);
 
     return visual;
 }

@@ -274,7 +274,7 @@ static void _immediate_transfers(VklCanvas* canvas)
     // 2 cases: only 1 region to update (any swapchain image), or 1 per swapchain image.
     ASSERT(n == 1 || n == canvas->swapchain.img_count);
     uint32_t img_idx = CLIP(canvas->swapchain.img_idx, 0, tr->u.buf.regions.count - 1);
-    ASSERT(img_idx < tr->u.buf.regions.count);
+    // ASSERT(img_idx < tr->u.buf.regions.count);
     ASSERT(img_idx < VKL_MAX_SWAPCHAIN_IMAGES);
 
     // Skip the update if this swapchain image has already been processed.
@@ -1830,7 +1830,7 @@ void vkl_canvas_frame(VklCanvas* canvas)
         // Refill the command buffer for the current swapchain image.
 
         // NOTE: might need to uncomment this!
-        // _refill_canvas(canvas, canvas->swapchain.img_idx);
+        _refill_canvas(canvas, canvas->swapchain.img_idx);
 
         // Mark that command buffer as updated.
         canvas->img_updated[canvas->swapchain.img_idx] = true;

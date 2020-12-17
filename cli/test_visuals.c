@@ -161,3 +161,92 @@ int test_visuals_2(TestContext* context)
     FREE(colormaps);
     TEST_END
 }
+
+
+
+static VklMVP mvp;
+static VklBufferRegions br_mvp;
+
+static void _timer_callback(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    ASSERT(canvas != NULL);
+    VklVisual* visual = ev.user_data;
+    ASSERT(visual != NULL);
+    float t = .1 * ev.u.f.time;
+    mvp.view[0][0] = cos(t);
+    mvp.view[0][1] = sin(t);
+    mvp.view[1][0] = -sin(t);
+    mvp.view[1][1] = cos(t);
+    vkl_upload_buffers_immediate(canvas, br_mvp, true, 0, br_mvp.size, &mvp);
+}
+
+int test_visuals_3(TestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    VklContext* ctx = gpu->context;
+    ASSERT(ctx != NULL);
+    VklVisual visual = vkl_visual(canvas);
+    _marker_visual(&visual);
+
+    // GPU sources.
+    const uint32_t N = 10000;
+
+    // Binding resources.
+    VklBufferRegions br_viewport = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
+
+    // Vertex data.
+    vec3* pos = calloc(N, sizeof(vec3));
+    cvec4* color = calloc(N, sizeof(cvec4));
+    for (uint32_t i = 0; i < N; i++)
+    {
+        RANDN_POS(pos[i])
+        RAND_COLOR(color[i])
+    }
+
+    // Set visual data.
+    vkl_visual_data(&visual, VKL_PROP_POS, 0, N, pos);
+    vkl_visual_data(&visual, VKL_PROP_COLOR, 0, N, color);
+
+    br_mvp = vkl_ctx_buffers(
+        ctx, VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE, canvas->swapchain.img_count, sizeof(VklMVP));
+    vkl_visual_buffer(&visual, VKL_SOURCE_UNIFORM, 0, br_mvp);
+
+    // MVP.
+    mat4 id = GLM_MAT4_IDENTITY_INIT;
+    glm_mat4_identity(mvp.model);
+    glm_mat4_identity(mvp.view);
+    glm_mat4_identity(mvp.proj);
+    vkl_visual_data(&visual, VKL_PROP_MODEL, 0, 1, id);
+    vkl_visual_data(&visual, VKL_PROP_VIEW, 0, 1, id);
+    vkl_visual_data(&visual, VKL_PROP_PROJ, 0, 1, id);
+
+    // Param.
+    float param = 5.0f;
+    vkl_visual_data(&visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
+
+    // Color texture.
+    cvec4* colormaps = calloc(16 * 16, sizeof(cvec4));
+    vkl_visual_data_texture(&visual, VKL_PROP_COLOR_TEXTURE, 0, 16, 16, 1, colormaps);
+
+    // GPU bindings.
+    vkl_visual_buffer(&visual, VKL_SOURCE_UNIFORM, 1, br_viewport);
+
+    // Upload the data to the GPU.
+    VklViewport viewport = vkl_viewport_full(canvas);
+    vkl_visual_update(&visual, viewport, (VklDataCoords){0}, NULL);
+
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _visual_canvas_fill, &visual);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, .0001, _timer_callback, &visual);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
+
+    // Run and end.
+    vkl_app_run(app, N_FRAMES);
+
+    vkl_visual_destroy(&visual);
+    FREE(pos);
+    FREE(color);
+    FREE(colormaps);
+    TEST_END
+}

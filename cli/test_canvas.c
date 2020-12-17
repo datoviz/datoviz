@@ -647,7 +647,7 @@ static void _particle_frame(VklCanvas* canvas, VklPrivateEvent ev)
         VklSubmit submit = vkl_submit(visual->gpu);
         vkl_submit_commands(&submit, tpc->cmds);
         vkl_submit_send(&submit, 0, &tpc->fence, 0);
-        ASSERT(!vkl_fences_ready(&tpc->fence, 0));
+        // ASSERT(!vkl_fences_ready(&tpc->fence, 0));
         tpc->is_running = true;
     }
 }

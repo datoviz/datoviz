@@ -424,7 +424,7 @@ vkl_ctx_buffers(VklContext* context, uint32_t buffer_idx, uint32_t buffer_count,
             regions.buffer, new_size, VKL_DEFAULT_QUEUE_TRANSFER, &context->transfer_cmd);
     }
 
-    log_trace(
+    log_debug(
         "allocating %d buffers (type #%d) with size %d bytes (aligned size %d bytes)", //
         buffer_count, buffer_idx, size, alsize);
     ASSERT(offset + alsize * buffer_count <= regions.buffer->size);

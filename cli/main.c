@@ -80,6 +80,7 @@ static TestCase TEST_CASES[] = {
     // visuals
     CASE_FIXTURE_NONE(test_visuals_1), //
     CASE_FIXTURE_NONE(test_visuals_2), //
+    CASE_FIXTURE_NONE(test_visuals_3), //
 
     // interact
     CASE_FIXTURE_NONE(test_interact_1),       //

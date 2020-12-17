@@ -116,6 +116,7 @@ static void _visual_canvas_fill(VklCanvas* canvas, VklPrivateEvent ev)
 
 int test_visuals_1(TestContext* context);
 int test_visuals_2(TestContext* context);
+int test_visuals_3(TestContext* context);
 
 
 
