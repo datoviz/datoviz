@@ -1016,10 +1016,11 @@ void vkl_upload_buffers_immediate(
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static void _normalize(vec2 pos_out, vec2 pos_in, uvec2 size)
+static void _normalize(vec2 pos_out, vec2 pos_in, VklViewport viewport)
 {
-    pos_out[0] = -1 + 2 * (pos_in[0] / size[0]);
-    pos_out[1] = +1 - 2 * (pos_in[1] / size[1]);
+    // from screen coords to [-1, 1], normalized into the viewport
+    pos_out[0] = -1 + 2 * ((pos_in[0] - viewport.offset_screen[0]) / viewport.size_screen[0]);
+    pos_out[1] = +1 - 2 * ((pos_in[1] - viewport.offset_screen[1]) / viewport.size_screen[1]);
 }
 
 
@@ -1188,9 +1189,9 @@ void vkl_mouse_event(VklMouse* mouse, VklCanvas* canvas, VklEvent ev)
 void vkl_mouse_local(
     VklMouse* mouse, VklMouseLocal* mouse_local, VklCanvas* canvas, VklViewport viewport)
 {
-    _normalize(mouse_local->cur_pos, mouse->cur_pos, viewport.size_screen);
-    _normalize(mouse_local->last_pos, mouse->last_pos, viewport.size_screen);
-    _normalize(mouse_local->press_pos, mouse->press_pos, viewport.size_screen);
+    _normalize(mouse_local->cur_pos, mouse->cur_pos, viewport);
+    _normalize(mouse_local->last_pos, mouse->last_pos, viewport);
+    _normalize(mouse_local->press_pos, mouse->press_pos, viewport);
 }
 
 
