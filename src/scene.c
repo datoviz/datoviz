@@ -286,10 +286,14 @@ VklController vkl_controller_builtin(VklPanel* panel, VklControllerType type, in
 
     case VKL_CONTROLLER_PANZOOM:
         vkl_controller_interact(&controller, VKL_INTERACT_PANZOOM);
-        // TODO: default callback that just calls the callbacks of all interacts
+        break;
+
+    case VKL_CONTROLLER_ARCBALL:
+        vkl_controller_interact(&controller, VKL_INTERACT_ARCBALL);
         break;
 
     default:
+        log_error("unknown controller type");
         break;
     }
 
