@@ -189,6 +189,7 @@ static void _panzoom_callback(
 
             delta[0] *= 1.5;
             delta[1] *= 1.5;
+            update = true;
         }
         // Mouse wheel.
         else if (cur_active)
@@ -204,16 +205,16 @@ static void _panzoom_callback(
             glm_vec2_copy(panzoom->zoom, panzoom->last_zoom);
 
             delta[0] = delta[1] = mouse->wheel_delta[1] * wheel_factor;
+            update = true;
         }
 
         // Fixed aspect ratio.
-        if (panzoom->fixed_aspect)
+        if (update)
         {
-            delta[0] = delta[1] = .5 * (delta[0] + delta[1]);
+            if (panzoom->fixed_aspect)
+                delta[0] = delta[1] = .5 * (delta[0] + delta[1]);
+            _panzoom_zoom(panzoom, delta, center);
         }
-
-        _panzoom_zoom(panzoom, delta, center);
-        update = true;
     } // end zoom
 
     // Reset on double-click.
