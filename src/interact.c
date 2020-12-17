@@ -53,14 +53,10 @@ static void _panzoom_copy_prev_state(VklPanzoom* panzoom)
 static void _panzoom_reset(VklPanzoom* panzoom)
 {
     ASSERT(panzoom != NULL);
-    panzoom->camera_pos[0] = 0;
-    panzoom->camera_pos[1] = 0;
-    panzoom->press_pos[0] = 0;
-    panzoom->press_pos[1] = 0;
-    panzoom->zoom[0] = 1;
-    panzoom->zoom[1] = 1;
-    panzoom->last_zoom[0] = 0;
-    panzoom->last_zoom[1] = 0;
+    glm_vec2_zero(panzoom->camera_pos);
+    glm_vec2_zero(panzoom->press_pos);
+    glm_vec2_one(panzoom->zoom);
+    glm_vec2_one(panzoom->last_zoom);
 }
 
 static void _panzoom_pan(VklPanzoom* panzoom, vec2 delta)
@@ -237,7 +233,7 @@ static void _panzoom_callback(
     {
         // Reset the last camera/zoom variables.
         glm_vec2_zero(panzoom->press_pos);
-        glm_vec2_zero(panzoom->last_zoom);
+        glm_vec2_one(panzoom->last_zoom);
 
         // TODO
         //     panel->status = VKL_PANEL_STATUS_NONE;
