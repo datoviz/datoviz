@@ -35,12 +35,26 @@ typedef enum
 
 
 
+// Coordinate system
+typedef enum
+{
+    VKL_CDS_DATA = 1,       // data coordinate system
+    VKL_CDS_GPU = 2,        // data coordinates normalized to -1,+1 and sent to the GPU
+    VKL_CDS_PANZOOM = 3,    // normalized coords within the panel inner's viewport (w/ panzoom)
+    VKL_CDS_PANEL = 4,      // NDC coordinates within the outer panel viewport
+    VKL_CDS_CANVAS_NDC = 5, // normalized coords within the canvas
+    VKL_CDS_CANVAS_PX = 6,  // same but in pixels, origin at the upper left
+} VklCDS;
+
+
+
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
 typedef struct VklScene VklScene;
 typedef struct VklController VklController;
+typedef struct VklTransform VklTransform;
 
 
 typedef void (*VklControllerCallback)(VklController* controller, VklEvent ev);
@@ -85,6 +99,33 @@ struct VklScene
     uint32_t max_controllers;
     VklController* controllers;
 };
+
+
+
+/*************************************************************************************************/
+/*  Transform definitions                                                                        */
+/*************************************************************************************************/
+
+struct VklTransform
+{
+    dvec2 scale, shift;
+};
+
+
+
+/*************************************************************************************************/
+/*  Transform functions                                                                          */
+/*************************************************************************************************/
+
+VklTransform vkl_transform(VklPanel* panel, VklCDS source, VklCDS target);
+
+VklTransform vkl_transform_inv(VklTransform);
+
+VklTransform vkl_transform_mul(VklTransform, VklTransform);
+
+VklTransform vkl_transform_interp(dvec2 pin, dvec2 pout, dvec2 qin, dvec2 qout);
+
+void vkl_transform_apply(VklTransform*, dvec2 in, dvec2 out);
 
 
 
