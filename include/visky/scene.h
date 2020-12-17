@@ -125,7 +125,8 @@ vkl_controller_builtin(VklPanel* panel, VklControllerType type, int flags);
 /*  High-level functions                                                                         */
 /*************************************************************************************************/
 
-VKY_EXPORT VklController* vkl_panel_controller(VklPanel* panel, VklControllerType type, int flags);
+// VKY_EXPORT VklController* vkl_scene_controller(VklPanel* panel, VklControllerType type, int
+// flags);
 
 VKY_EXPORT VklVisual* vkl_scene_visual(VklPanel* panel, VklVisualType type, int flags);
 

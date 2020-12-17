@@ -101,7 +101,6 @@ static void _scene_frame(VklCanvas* canvas, VklPrivateEvent ev)
         // Update all visuals in the panel, using the panel's viewport.
         if (panel->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE)
         {
-            log_debug("update data for visuals in panel %d,%d", panel->row, panel->col);
             viewport = vkl_panel_viewport(panel);
             for (uint32_t j = 0; j < panel->visual_count; j++)
             {
@@ -167,14 +166,6 @@ static void _upload_mvp(VklCanvas* canvas, VklPrivateEvent ev)
             // NOTE: we need to update the uniform buffer at every frame
             br = &interact->br;
 
-            // We use the already-mapped buffer.
-            // ASSERT(interact->mmap != NULL);
-            // Find the pointer, inside the memmapped buffer, of the region corresponding to
-            // the current swapchain image.
-            // uint32_t offset = br->offsets[canvas->swapchain.img_idx];
-            // void* dst = (void*)((int64_t)(interact->mmap) + (int64_t)offset);
-            // memcpy(dst, aligned, br->size);
-
             // GPU transfer happens here:
             void* aligned = aligned_repeat(br->size, &interact->mvp, 1, br->alignment);
             vkl_buffer_regions_upload(br, canvas->swapchain.img_idx, aligned);
@@ -238,12 +229,6 @@ void vkl_controller_interact(VklController* controller, VklInteractType type)
     ASSERT(controller != NULL);
     VklCanvas* canvas = controller->panel->grid->canvas;
     controller->interacts[controller->interact_count++] = vkl_interact_builtin(canvas, type);
-    // VklInteract* interact = &controller->interacts[controller->interact_count - 1];
-
-    // VklBufferRegions* br = &interact->br;
-    // NOTE: permanent mmap
-    // uint32_t n = canvas->swapchain.img_count;
-    // interact->mmap = vkl_buffer_map(br->buffer, br->offsets[0], n * br->aligned_size);
 }
 
 
@@ -317,29 +302,17 @@ VklController vkl_controller_builtin(VklPanel* panel, VklControllerType type, in
 /*  High-level functions                                                                         */
 /*************************************************************************************************/
 
-VklController* vkl_panel_controller(VklPanel* panel, VklControllerType type, int flags)
-{
-    ASSERT(panel != NULL);
-    VklScene* scene = panel->grid->canvas->scene;
-    INSTANCE_NEW(VklController, controller, scene->controllers, scene->max_controllers)
-    *controller = vkl_controller_builtin(panel, type, flags);
-    panel->controller = controller;
-    return controller;
-}
-
-
-
 VklPanel*
 vkl_scene_panel(VklScene* scene, uint32_t row, uint32_t col, VklControllerType type, int flags)
 {
     ASSERT(scene != NULL);
     VklPanel* panel = vkl_panel(&scene->grid, row, col);
-    vkl_panel_controller(panel, type, flags);
-
-    // At initialization, must update all visuals data.
+    INSTANCE_NEW(VklController, controller, scene->controllers, scene->max_controllers)
+    *controller = vkl_controller_builtin(panel, type, flags);
+    panel->controller = controller;
     panel->scene = scene;
+    // At initialization, must update all visuals data.
     _panel_to_update(panel);
-
     return panel;
 }
 
