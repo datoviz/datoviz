@@ -1025,13 +1025,9 @@ VKY_EXPORT void vkl_buffer_create(VklBuffer* buffer);
 VKY_EXPORT void
 vkl_buffer_resize(VklBuffer* buffer, VkDeviceSize size, uint32_t queue_idx, VklCommands* cmds);
 
-VKY_EXPORT VklBufferRegions vkl_buffer_regions(
-    VklBuffer* buffer, uint32_t count, //
-    VkDeviceSize offset, VkDeviceSize size, VkDeviceSize alignment);
+VKY_EXPORT void* vkl_buffer_map(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size);
 
-VKY_EXPORT void* vkl_buffer_regions_map(VklBufferRegions* buffer_regions, uint32_t idx);
-
-VKY_EXPORT void vkl_buffer_regions_unmap(VklBufferRegions* buffer_regions, uint32_t idx);
+VKY_EXPORT void vkl_buffer_unmap(VklBuffer* buffer);
 
 VKY_EXPORT void
 vkl_buffer_download(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, void* data);
@@ -1040,6 +1036,18 @@ VKY_EXPORT void
 vkl_buffer_upload(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, const void* data);
 
 VKY_EXPORT void vkl_buffer_destroy(VklBuffer* buffer);
+
+
+
+VKY_EXPORT VklBufferRegions vkl_buffer_regions(
+    VklBuffer* buffer, uint32_t count, //
+    VkDeviceSize offset, VkDeviceSize size, VkDeviceSize alignment);
+
+VKY_EXPORT void* vkl_buffer_regions_map(VklBufferRegions* buffer_regions, uint32_t idx);
+
+VKY_EXPORT void vkl_buffer_regions_unmap(VklBufferRegions* buffer_regions);
+
+VKY_EXPORT void vkl_buffer_regions_upload(VklBufferRegions* br, uint32_t idx, const void* data);
 
 
 

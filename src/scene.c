@@ -166,9 +166,18 @@ static void _upload_mvp(VklCanvas* canvas, VklPrivateEvent ev)
             interact = &controller->interacts[j];
             // NOTE: we need to update the uniform buffer at every frame
             br = &interact->br;
+
+            // We use the already-mapped buffer.
+            // ASSERT(interact->mmap != NULL);
+            // Find the pointer, inside the memmapped buffer, of the region corresponding to
+            // the current swapchain image.
+            // uint32_t offset = br->offsets[canvas->swapchain.img_idx];
+            // void* dst = (void*)((int64_t)(interact->mmap) + (int64_t)offset);
+            // memcpy(dst, aligned, br->size);
+
+            // GPU transfer happens here:
             void* aligned = aligned_repeat(br->size, &interact->mvp, 1, br->alignment);
-            vkl_buffer_upload(
-                br->buffer, br->offsets[canvas->swapchain.img_idx], br->aligned_size, aligned);
+            vkl_buffer_regions_upload(br, canvas->swapchain.img_idx, aligned);
             FREE(aligned);
         }
     }
@@ -229,6 +238,12 @@ void vkl_controller_interact(VklController* controller, VklInteractType type)
     ASSERT(controller != NULL);
     VklCanvas* canvas = controller->panel->grid->canvas;
     controller->interacts[controller->interact_count++] = vkl_interact_builtin(canvas, type);
+    // VklInteract* interact = &controller->interacts[controller->interact_count - 1];
+
+    // VklBufferRegions* br = &interact->br;
+    // NOTE: permanent mmap
+    // uint32_t n = canvas->swapchain.img_count;
+    // interact->mmap = vkl_buffer_map(br->buffer, br->offsets[0], n * br->aligned_size);
 }
 
 
@@ -264,8 +279,14 @@ void vkl_controller_update(VklController* controller)
 
 void vkl_controller_destroy(VklController* controller)
 {
+    if (controller->obj.status == VKL_OBJECT_STATUS_DESTROYED)
+        return;
     ASSERT(controller != NULL);
-    //
+    for (uint32_t i = 0; i < controller->interact_count; i++)
+    {
+        vkl_interact_destroy(&controller->interacts[i]);
+    }
+    obj_destroyed(&controller->obj);
 }
 
 
@@ -360,6 +381,12 @@ VklVisual* vkl_scene_visual(VklPanel* panel, VklVisualType type, int flags)
 void vkl_scene_destroy(VklScene* scene)
 {
     ASSERT(scene != NULL);
+    for (uint32_t i = 0; i < scene->max_controllers; i++)
+    {
+        if (scene->controllers[i].obj.status == VKL_OBJECT_STATUS_NONE)
+            break;
+        vkl_controller_destroy(&scene->controllers[i]);
+    }
     INSTANCES_DESTROY(scene->visuals)
     obj_destroyed(&scene->obj);
     FREE(scene);

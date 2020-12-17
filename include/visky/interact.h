@@ -120,6 +120,7 @@ struct VklInteract
 
     VklMVP mvp;
     VklBufferRegions br; // for the uniform buffer containing the MVP
+    void* mmap;          // for permanent mapping
 
     VklInteractUnion u;
 
@@ -142,6 +143,8 @@ VKY_EXPORT VklInteract vkl_interact_builtin(VklCanvas* canvas, VklInteractType t
 
 VKY_EXPORT void vkl_interact_update(
     VklInteract* interact, VklViewport viewport, VklMouse* mouse, VklKeyboard* keyboard);
+
+VKY_EXPORT void vkl_interact_destroy(VklInteract* interact);
 
 
 #endif
