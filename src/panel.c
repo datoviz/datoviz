@@ -6,6 +6,30 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
+static VklViewport _get_viewport(VklPanel* panel)
+{
+    VklViewport viewport = {0};
+    VklCanvas* canvas = panel->grid->canvas;
+
+    float win_width = panel->grid->canvas->swapchain.images->width;
+    float win_height = panel->grid->canvas->swapchain.images->height;
+
+    viewport.size_screen[0] = panel->width * canvas->window->width;
+    viewport.size_screen[1] = panel->height * canvas->window->height;
+
+    viewport.offset_screen[0] = panel->x * canvas->window->width;
+    viewport.offset_screen[1] = panel->y * canvas->window->height;
+
+    viewport.viewport.x = panel->x * win_width;
+    viewport.viewport.y = panel->y * win_height;
+    viewport.viewport.width = panel->width * win_width;
+    viewport.viewport.height = panel->height * win_height;
+
+    return viewport;
+}
+
+
+
 static void _update_panel(VklPanel* panel)
 {
     ASSERT(panel != NULL);
@@ -20,6 +44,8 @@ static void _update_panel(VklPanel* panel)
     panel->y = grid->ys[panel->row];
     panel->width = grid->widths[panel->col];
     panel->height = grid->heights[panel->row];
+
+    panel->viewport = _get_viewport(panel);
 }
 
 
@@ -183,7 +209,7 @@ void vkl_panel_mode(VklPanel* panel, VklPanelMode mode)
 
 
 
-void vkl_panel_visual(VklPanel* panel, VklVisual* visual, VklViewportType viewport)
+void vkl_panel_visual(VklPanel* panel, VklVisual* visual, VklViewportType viewport_type)
 {
 
     ASSERT(panel != NULL);
@@ -264,26 +290,9 @@ void vkl_panel_cell(VklPanel* panel, uint32_t row, uint32_t col)
 
 VklViewport vkl_panel_viewport(VklPanel* panel)
 {
-
     ASSERT(panel != NULL);
-    VklViewport viewport = {0};
-    VklCanvas* canvas = panel->grid->canvas;
-
-    float win_width = panel->grid->canvas->swapchain.images->width;
-    float win_height = panel->grid->canvas->swapchain.images->height;
-
-    viewport.size_screen[0] = panel->width * canvas->window->width;
-    viewport.size_screen[1] = panel->height * canvas->window->height;
-
-    viewport.offset_screen[0] = panel->x * canvas->window->width;
-    viewport.offset_screen[1] = panel->y * canvas->window->height;
-
-    viewport.viewport.x = panel->x * win_width;
-    viewport.viewport.y = panel->y * win_height;
-    viewport.viewport.width = panel->width * win_width;
-    viewport.viewport.height = panel->height * win_height;
-
-    return viewport;
+    panel->viewport = _get_viewport(panel);
+    return panel->viewport;
 }
 
 

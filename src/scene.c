@@ -101,7 +101,7 @@ static void _scene_frame(VklCanvas* canvas, VklPrivateEvent ev)
         // Update all visuals in the panel, using the panel's viewport.
         if (panel->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE)
         {
-            viewport = vkl_panel_viewport(panel);
+            viewport = panel->viewport;
             for (uint32_t j = 0; j < panel->visual_count; j++)
             {
                 // TODO: data coords
@@ -130,7 +130,7 @@ static void _default_controller_callback(VklController* controller, VklEvent ev)
         // float delay = canvas->clock.elapsed - interact->last_update;
 
         // Update the interact using the current panel's viewport.
-        VklViewport viewport = vkl_panel_viewport(controller->panel);
+        VklViewport viewport = controller->panel->viewport;
         vkl_interact_update(interact, viewport, &canvas->mouse, &canvas->keyboard);
         // NOTE: the CPU->GPU transfer occurs at every frame, in another callback below
     }
