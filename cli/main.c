@@ -67,6 +67,7 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_graphics_dynamic), //
     CASE_FIXTURE_NONE(test_graphics_3D),      //
     CASE_FIXTURE_NONE(test_graphics_points),  //
+    CASE_FIXTURE_NONE(test_graphics_basic),   //
 
     // array
     CASE_FIXTURE_NONE(test_array_1),   //

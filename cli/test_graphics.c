@@ -62,7 +62,7 @@ static void _graphics_refill(VklCanvas* canvas, VklPrivateEvent ev)
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);                                                      \
     VklGpu* gpu = vkl_gpu(app, 0);                                                                \
     VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);                                 \
-    VklGraphics* graphics = vkl_graphics_builtin(canvas, VKL_GRAPHICS_POINTS, 0);
+    VklGraphics* graphics = vkl_graphics_builtin(canvas, type, 0);
 
 #define BEGIN_DATA(type, n)                                                                       \
     TestGraphics tg = {0};                                                                        \
@@ -74,6 +74,20 @@ static void _graphics_refill(VklCanvas* canvas, VklPrivateEvent ev)
 
 #define END_DATA vkl_upload_buffers(gpu->context, tg.br_vert, 0, size, data);
 
+#define BINDINGS_PARAMS                                                                           \
+    _common_bindings(&tg);                                                                        \
+    vkl_bindings_buffer(&tg.bindings, 3, tg.br_params);                                           \
+    vkl_bindings_update(&tg.bindings);
+
+#define BINDINGS_NO_PARAMS                                                                        \
+    _common_bindings(&tg);                                                                        \
+    vkl_bindings_update(&tg.bindings);
+
+#define RUN                                                                                       \
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _graphics_refill, &tg);              \
+    vkl_app_run(app, N_FRAMES);                                                                   \
+    FREE(data);                                                                                   \
+    TEST_END
 
 
 /*************************************************************************************************/
@@ -243,8 +257,6 @@ static void _common_bindings(TestGraphics* tg)
     tg->br_mvp = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklMVP));
     tg->br_viewport =
         vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklViewport));
-    tg->br_params = vkl_ctx_buffers(
-        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointsParams));
     tg->texture = vkl_ctx_texture(gpu->context, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
 
     // Upload MVP.
@@ -257,7 +269,6 @@ static void _common_bindings(TestGraphics* tg)
     vkl_bindings_buffer(&tg->bindings, 0, tg->br_mvp);
     vkl_bindings_buffer(&tg->bindings, 1, tg->br_viewport);
     vkl_bindings_texture(&tg->bindings, 2, tg->texture);
-    // TODO: color
 }
 
 int test_graphics_points(TestContext* context)
@@ -270,19 +281,31 @@ int test_graphics_points(TestContext* context)
         RAND_COLOR(data[i].color)
     }
     END_DATA
+    BINDINGS_PARAMS
 
-    // Bindings and uniform buffers.
-    _common_bindings(&tg);
-    vkl_bindings_buffer(&tg.bindings, 3, tg.br_params);
-    vkl_bindings_update(&tg.bindings);
-
-    // Upload params.
+    tg.br_params = vkl_ctx_buffers(
+        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointsParams));
     tg.param = 5.0f;
     VklGraphicsPointsParams params = {.point_size = tg.param};
     vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsPointsParams), &params);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _graphics_refill, &tg);
-    vkl_app_run(app, N_FRAMES);
-    FREE(data);
-    TEST_END
+    RUN
+}
+
+
+
+int test_graphics_basic(TestContext* context)
+{
+    INIT_GRAPHICS(VKL_GRAPHICS_LINES)
+    BEGIN_DATA(VklVertex, 50)
+    for (uint32_t i = 0; i < tg.vertex_count; i++)
+    {
+        float t = (float)(i / 2) / (float)tg.vertex_count;
+        data[i].pos[0] = .75 * (-1 + 4 * t);
+        data[i].pos[1] = .75 * (-1 + (i % 2 == 0 ? 0 : 2));
+        RAND_COLOR(data[i].color)
+    }
+    END_DATA
+    BINDINGS_NO_PARAMS
+    RUN
 }
