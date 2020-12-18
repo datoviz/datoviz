@@ -430,18 +430,6 @@ VKY_EXPORT float rand_float(void);
 
 VKY_EXPORT float randn(void);
 
-#define RAND_POS_2D                                                                               \
-    {                                                                                             \
-        .25f * randn(), .25f * randn(), 0.0f                                                      \
-    }
-
-#define RAND_POS_3D                                                                               \
-    {                                                                                             \
-        .25f * randn(), .25f * randn(), .25f * randn()                                            \
-    }
-
-#define RAND_MARKER_SIZE (5.0f + 20.0f * rand_float())
-
 
 
 #ifdef __cplusplus

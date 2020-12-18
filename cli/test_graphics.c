@@ -334,3 +334,38 @@ int test_graphics_line_strip(TestContext* context)
     BINDINGS_NO_PARAMS
     RUN
 }
+
+
+
+int test_graphics_triangles(TestContext* context)
+{
+    INIT_GRAPHICS(VKL_GRAPHICS_TRIANGLES)
+    const uint32_t N = 100;
+    BEGIN_DATA(VklVertex, N * 3)
+
+    for (uint32_t i = 0; i < N; i++)
+    {
+        RANDN_POS(data[3 * i].pos)
+        RAND_COLOR(data[3 * i].color)
+        data[3 * i].pos[2] = 0;
+        data[3 * i].color[3] = rand_byte();
+
+        // Copy the 2 other points per triangle.
+        glm_vec3_copy(data[3 * i].pos, data[3 * i + 1].pos);
+        glm_vec3_copy(data[3 * i].pos, data[3 * i + 2].pos);
+        memcpy(data[3 * i + 1].color, data[3 * i].color, sizeof(cvec4));
+        memcpy(data[3 * i + 2].color, data[3 * i].color, sizeof(cvec4));
+
+        // Shift the points.
+        float ms = .1 * rand_float();
+        data[3 * i + 0].pos[0] -= ms;
+        data[3 * i + 1].pos[0] += ms;
+        data[3 * i + 0].pos[1] -= ms;
+        data[3 * i + 1].pos[1] -= ms;
+        data[3 * i + 2].pos[1] += ms;
+    }
+
+    END_DATA
+    BINDINGS_NO_PARAMS
+    RUN
+}
