@@ -65,7 +65,8 @@ static void _graphics_refill(VklCanvas* canvas, VklPrivateEvent ev)
     VklGraphics* graphics = vkl_graphics_builtin(canvas, VKL_GRAPHICS_POINTS, 0);
 
 #define BEGIN_DATA(type, n)                                                                       \
-    TestGraphics tg = {.graphics = graphics};                                                     \
+    TestGraphics tg = {0};                                                                        \
+    tg.graphics = graphics;                                                                       \
     tg.vertex_count = (n);                                                                        \
     VkDeviceSize size = tg.vertex_count * sizeof(type);                                           \
     tg.br_vert = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, size);               \
@@ -85,7 +86,7 @@ static void _graphics_points_wheel_callback(VklCanvas* canvas, VklEvent ev)
     TestGraphics* tg = ev.user_data;
 
     // Update point size.
-    tg->param += ev.u.w.dir[1] * .1;
+    tg->param += ev.u.w.dir[1] * .5;
     tg->param = CLIP(tg->param, 1, 100);
     vkl_upload_buffers(
         gpu->context, tg->br_params, 0, sizeof(VklGraphicsPointsParams), &tg->param);
@@ -147,6 +148,7 @@ int test_graphics_dynamic(TestContext* context)
 }
 
 
+
 static void _graphics_3D_callback(VklCanvas* canvas, VklPrivateEvent ev)
 {
     VklGpu* gpu = canvas->gpu;
@@ -200,8 +202,8 @@ int test_graphics_3D(TestContext* context)
     tg.eye[2] = 2;
     tg.up[1] = 1;
     glm_lookat(tg.eye, tg.center, tg.up, tg.mvp.view);
-    float ratio = 1; // TODO: viewport.w / viewport.h;
-    glm_perspective(GLM_PI_4, ratio, 0.1f, 10.0f, tg.mvp.proj);
+    float ratio = canvas->swapchain.images->width / (float)canvas->swapchain.images->height;
+    glm_perspective(GLM_PI_4, ratio, -1.0f, 1.0f, tg.mvp.proj);
 
     vkl_upload_buffers(gpu->context, tg.br_mvp, 0, sizeof(VklMVP), &tg.mvp);
 
