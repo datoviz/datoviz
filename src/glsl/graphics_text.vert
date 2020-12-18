@@ -1,7 +1,7 @@
 #version 450
 #include "common.glsl"
 
-layout (binding = USER_BINDING) uniform TextParams {
+layout (std140, binding = USER_BINDING) uniform Params {
     ivec2 grid_size;  // (6, 16)
     ivec2 tex_size;  // (400, 200)
 } params;
@@ -22,8 +22,6 @@ layout (location = 3) out float out_str_index;
 
 
 void main() {
-    gl_PointSize = 10;
-
     vec4 pos_tr = transform(pos, shift);
 
     mat4 ortho = get_ortho_matrix(viewport.size);
