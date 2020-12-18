@@ -310,11 +310,12 @@ static void _load_colormap()
     unsigned long size = 0;
     VKL_COLOR_TEXTURE = vkl_resource_texture("color_texture", &size);
     ASSERT(size > 0);
+    ASSERT(VKL_COLOR_TEXTURE != NULL);
 }
 
 VKY_INLINE void vkl_colormap(VklColormap cmap, uint8_t value, cvec4 color)
 {
-    uint8_t row, col;
+    uint8_t row = 0, col = 0;
     if (cmap >= CPAL032_OFS)
     {
         // For 32-color palettes, we need to alter the cmap and value.
@@ -330,12 +331,14 @@ VKY_INLINE void vkl_colormap(VklColormap cmap, uint8_t value, cvec4 color)
     if (VKL_COLOR_TEXTURE == NULL)
     {
         _load_colormap();
-        return;
     }
     ASSERT(VKL_COLOR_TEXTURE != NULL);
-    color[0] = VKL_COLOR_TEXTURE[row * 256 * 4 + col * 4 + 0];
-    color[1] = VKL_COLOR_TEXTURE[row * 256 * 4 + col * 4 + 1];
-    color[2] = VKL_COLOR_TEXTURE[row * 256 * 4 + col * 4 + 2];
+
+    uint32_t offset = (uint32_t)row * 256 * 4 + (uint32_t)col * 4;
+    ASSERT(offset < 256 * 256 * 4 - 4);
+    color[0] = VKL_COLOR_TEXTURE[offset + 0];
+    color[1] = VKL_COLOR_TEXTURE[offset + 1];
+    color[2] = VKL_COLOR_TEXTURE[offset + 2];
     color[3] = 255;
 }
 
