@@ -71,7 +71,7 @@ static void _update_interact(VklCanvas* canvas, VklPrivateEvent ev)
     VklViewport viewport = vkl_viewport_full(canvas);
     vkl_interact_update(&scene->interact, viewport, &canvas->mouse, &canvas->keyboard);
 
-    if (scene->interact.to_update && delay > VKY_INTERACT_MIN_DELAY)
+    if (scene->interact.is_active && delay > VKY_INTERACT_MIN_DELAY)
     {
         vkl_visual_data(&scene->visual, VKL_PROP_MODEL, 0, 1, scene->interact.mvp.model);
         vkl_visual_data(&scene->visual, VKL_PROP_VIEW, 0, 1, scene->interact.mvp.view);

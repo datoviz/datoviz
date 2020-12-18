@@ -14,6 +14,24 @@
 /*  Scene tests                                                                                  */
 /*************************************************************************************************/
 
+static void _panzoom(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    ASSERT(canvas != NULL);
+    VklScene* scene = ev.user_data;
+    ASSERT(scene != NULL);
+    VklController* controller = NULL;
+    for (uint32_t i = 0; i < scene->max_controllers; i++)
+    {
+        controller = scene->grid.panels[i].controller;
+        if (controller == NULL || controller->obj.status == VKL_OBJECT_STATUS_NONE)
+            break;
+        if (controller->interacts[0].is_active)
+        {
+            // vkl_transform();
+        }
+    }
+}
+
 int test_scene_1(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
@@ -49,6 +67,7 @@ int test_scene_1(TestContext* context)
     vkl_visual_data(visual2, VKL_PROP_MARKER_SIZE, 0, 1, &param);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _panzoom, scene);
 
     vkl_app_run(app, N_FRAMES);
     vkl_visual_destroy(visual);

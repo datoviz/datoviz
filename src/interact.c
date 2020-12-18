@@ -135,7 +135,7 @@ static void _panzoom_callback(
         interact->type == VKL_INTERACT_PANZOOM ||
         interact->type == VKL_INTERACT_PANZOOM_FIXED_ASPECT);
     VklPanzoom* panzoom = &interact->u.p;
-    bool update = false;
+    bool is_active = false;
 
     // Update the last camera/zoom variables.
     if (mouse->prev_state == VKL_MOUSE_STATE_INACTIVE && mouse->cur_state == VKL_MOUSE_STATE_DRAG)
@@ -163,7 +163,7 @@ static void _panzoom_callback(
         // panel->status = VKL_PANEL_STATUS_ACTIVE;
         glm_vec2_sub(interact->mouse_local.cur_pos, interact->mouse_local.press_pos, delta);
         _panzoom_pan(panzoom, delta);
-        update = true;
+        is_active = true;
     } // end pan
 
     // Zoom.
@@ -189,7 +189,7 @@ static void _panzoom_callback(
 
             delta[0] *= 1.5;
             delta[1] *= 1.5;
-            update = true;
+            is_active = true;
         }
         // Mouse wheel.
         else if (cur_active && mouse->cur_state == VKL_MOUSE_STATE_WHEEL)
@@ -205,11 +205,11 @@ static void _panzoom_callback(
             glm_vec2_copy(panzoom->zoom, panzoom->last_zoom);
 
             delta[0] = delta[1] = mouse->wheel_delta[1] * wheel_factor;
-            update = true;
+            is_active = true;
         }
 
         // Fixed aspect ratio.
-        if (update)
+        if (is_active)
         {
             if (panzoom->fixed_aspect)
                 delta[0] = delta[1] = .5 * (delta[0] + delta[1]);
@@ -227,7 +227,7 @@ static void _panzoom_callback(
         // panel->status = VKL_PANEL_STATUS_RESET;
 
         _panzoom_reset(panzoom);
-        update = true;
+        is_active = true;
     }
 
     if (mouse->cur_state == VKL_MOUSE_STATE_INACTIVE)
@@ -240,9 +240,9 @@ static void _panzoom_callback(
         //     panel->status = VKL_PANEL_STATUS_NONE;
     }
 
-    if (update)
+    if (is_active)
         _panzoom_update_mvp(panzoom, &interact->mvp);
-    interact->to_update = update;
+    interact->is_active = is_active;
 }
 
 
@@ -284,6 +284,7 @@ static void _camera_callback(
     VklCamera* camera = &interact->u.c;
     VklMouseLocal* mouse_local = &interact->mouse_local;
     bool is_fly = interact->type == VKL_INTERACT_FLY;
+    bool is_active = false;
 
     const float dt = (float)interact->canvas->clock.interval;
     const float alpha = 10;
@@ -378,6 +379,7 @@ static void _camera_callback(
         glm_vec3_normalize(advance);
         glm_vec3_scale(advance, dl, advance);
         glm_vec3_add(camera->target, advance, camera->target);
+        is_active = true;
     }
 
     // Smooth move.
@@ -396,7 +398,7 @@ static void _camera_callback(
     }
 
     _camera_update_mvp(camera, &interact->mvp);
-    interact->to_update = true;
+    interact->is_active = is_active;
 }
 
 
@@ -553,7 +555,7 @@ static void _arcball_callback(
     ASSERT(interact != NULL);
     ASSERT(interact->type == VKL_INTERACT_ARCBALL);
     VklArcball* arcball = &interact->u.a;
-    bool update = false;
+    bool is_active = false;
 
     bool cur_active = _pos_in_viewport(viewport, mouse->cur_pos);
     bool press_active = _pos_in_viewport(viewport, mouse->press_pos);
@@ -569,7 +571,7 @@ static void _arcball_callback(
         // panel->status = VKL_PANEL_STATUS_ACTIVE;
 
         _arcball_rotate(arcball, interact->mouse_local.cur_pos, interact->mouse_local.last_pos);
-        update = true;
+        is_active = true;
     }
 
     // Zoom.
@@ -582,7 +584,7 @@ static void _arcball_callback(
         // panel->status = VKL_PANEL_STATUS_ACTIVE;
         vec3 motion = {0, 0, +.2 * mouse->wheel_delta[1]};
         _arcball_zoom(arcball, motion);
-        update = true;
+        is_active = true;
     }
 
     // Reset with double-click.
@@ -590,7 +592,7 @@ static void _arcball_callback(
     {
         _arcball_reset(arcball);
         // panel->status = VKL_PANEL_STATUS_RESET;
-        update = true;
+        is_active = true;
     }
 
     // Compute the View matrix.
@@ -612,7 +614,7 @@ static void _arcball_callback(
         delta[0] *= .5;
         delta[1] *= .5;
         _arcball_pan(arcball, delta);
-        update = true;
+        is_active = true;
     }
 
     // Make a copy of the transformation matrix, if other controllers or the user want to modify
@@ -622,9 +624,9 @@ static void _arcball_callback(
     // Take the user matrix into account.
     // glm_mat4_mul(arcball->mat, arcball->mat_user, arcball->mat);
 
-    if (update)
+    if (is_active)
         _arcball_update_mvp(arcball, &interact->mvp);
-    interact->to_update = update;
+    interact->is_active = is_active;
 
     // if (mouse->cur_state == VKL_MOUSE_STATE_INACTIVE)
     // {

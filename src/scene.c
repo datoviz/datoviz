@@ -388,6 +388,8 @@ VklTransform vkl_transform_inv(VklTransform tr)
     return tri;
 }
 
+
+
 VklTransform vkl_transform_mul(VklTransform tr0, VklTransform tr1)
 {
     VklTransform trm = {0};
@@ -397,6 +399,8 @@ VklTransform vkl_transform_mul(VklTransform tr0, VklTransform tr1)
     trm.shift[1] = tr0.shift[1] + tr1.shift[1] / tr0.scale[1];
     return trm;
 }
+
+
 
 VklTransform vkl_transform_interp(dvec2 pin, dvec2 pout, dvec2 qin, dvec2 qout)
 {
@@ -413,6 +417,8 @@ VklTransform vkl_transform_interp(dvec2 pin, dvec2 pout, dvec2 qin, dvec2 qout)
     return tr;
 }
 
+
+
 void vkl_transform_apply(VklTransform* tr, dvec2 in, dvec2 out)
 {
     ASSERT(tr != NULL);
@@ -421,6 +427,8 @@ void vkl_transform_apply(VklTransform* tr, dvec2 in, dvec2 out)
     if (tr->scale[1] != 0)
         out[1] = tr->scale[1] * (in[1] - tr->shift[1]);
 }
+
+
 
 VklTransform vkl_transform(VklPanel* panel, VklCDS source, VklCDS target)
 {
@@ -435,6 +443,7 @@ VklTransform vkl_transform(VklPanel* panel, VklCDS source, VklCDS target)
 
     if (panel->controller->type == VKL_CONTROLLER_AXES_2D)
     {
+        log_error("not implemented yet");
         // TODO
         // VklAxes* axes = (VklAxes*)panel->controller;
         // ll[0] = axes->xscale_orig.vmin;

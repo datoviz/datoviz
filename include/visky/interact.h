@@ -124,7 +124,7 @@ struct VklInteract
 
     VklInteractUnion u;
 
-    bool to_update;
+    bool is_active;
     double last_update;
     void* user_data;
 };
