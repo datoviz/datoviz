@@ -7,7 +7,13 @@ extern "C" {
 
 #include <assert.h>
 #include <math.h>
+#include <pthread.h>
+#include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
 
 
 
@@ -262,6 +268,24 @@ VKY_EXPORT const unsigned char* vkl_binary_shader_load(const char* name, unsigne
 
 
 /*************************************************************************************************/
+/*  Misc                                                                                         */
+/*************************************************************************************************/
+
+static inline void vkl_sleep(int milliseconds)
+{
+#ifdef WIN32
+    Sleep(milliseconds);
+#else
+    struct timespec ts;
+    ts.tv_sec = milliseconds / 1000;
+    ts.tv_nsec = (milliseconds % 1000) * 1000000;
+    nanosleep(&ts, NULL);
+#endif
+}
+
+
+
+/*************************************************************************************************/
 /*  Random                                                                                       */
 /*************************************************************************************************/
 
@@ -282,12 +306,6 @@ VKY_EXPORT float randn(void);
     }
 
 #define RAND_MARKER_SIZE (5.0f + 20.0f * rand_float())
-
-
-
-/*************************************************************************************************/
-/*  Debug                                                                                        */
-/*************************************************************************************************/
 
 
 

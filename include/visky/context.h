@@ -1,6 +1,7 @@
 #ifndef VKL_CONTEXT_HEADER
 #define VKL_CONTEXT_HEADER
 
+#include "common.h"
 #include "vklite.h"
 
 
@@ -8,19 +9,6 @@
 /*************************************************************************************************/
 /*  Utils                                                                                        */
 /*************************************************************************************************/
-
-static inline void vkl_sleep(int milliseconds)
-{
-    log_trace("sleep for %d ms", milliseconds);
-#ifdef WIN32
-    Sleep(milliseconds);
-#else
-    struct timespec ts;
-    ts.tv_sec = milliseconds / 1000;
-    ts.tv_nsec = (milliseconds % 1000) * 1000000;
-    nanosleep(&ts, NULL);
-#endif
-}
 
 
 
