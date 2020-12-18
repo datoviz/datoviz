@@ -23,12 +23,12 @@ typedef enum
     VKL_GRAPHICS_TRIANGLE_FAN,
 
     VKL_GRAPHICS_MARKER_RAW,
-    VKL_GRAPHICS_MARKER_AGG,
+    VKL_GRAPHICS_MARKER,
 
-    VKL_GRAPHICS_SEGMENT_AGG,
-    VKL_GRAPHICS_ARROW_AGG,
-    VKL_GRAPHICS_PATH_AGG,
-    VKL_GRAPHICS_TEXT_AGG,
+    VKL_GRAPHICS_SEGMENT,
+    VKL_GRAPHICS_ARROW,
+    VKL_GRAPHICS_PATH,
+    VKL_GRAPHICS_TEXT,
 
     VKL_GRAPHICS_MESH_RAW,
     VKL_GRAPHICS_MESH_TEXTURED,
@@ -88,7 +88,8 @@ typedef enum
     VKL_CAP_TRIANGLE_IN = 2,
     VKL_CAP_TRIANGLE_OUT = 3,
     VKL_CAP_SQUARE = 4,
-    VKL_CAP_BUTT = 5
+    VKL_CAP_BUTT = 5,
+    VKL_CAP_COUNT,
 } VklCapType;
 
 
@@ -172,8 +173,8 @@ struct VklGraphicsSegmentVertex
     vec4 shift;
     cvec4 color;
     float linewidth;
-    int32_t cap0;
-    int32_t cap1;
+    VklCapType cap0;
+    VklCapType cap1;
     // uint8_t transform_mode;
 };
 

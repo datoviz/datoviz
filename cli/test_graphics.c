@@ -422,9 +422,9 @@ int test_graphics_triangle_fan(TestContext* context)
 /*  Agg graphics tests                                                                           */
 /*************************************************************************************************/
 
-int test_graphics_marker_agg(TestContext* context)
+int test_graphics_marker(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_MARKER_AGG)
+    INIT_GRAPHICS(VKL_GRAPHICS_MARKER)
     BEGIN_DATA(VklGraphicsMarkerVertex, 1000)
     for (uint32_t i = 0; i < tg.vertex_count; i++)
     {
@@ -463,8 +463,8 @@ static void _segment_resize(VklCanvas* canvas, VklPrivateEvent ev)
 
 int test_graphics_segment(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_SEGMENT_AGG)
-    const uint32_t N = 25;
+    INIT_GRAPHICS(VKL_GRAPHICS_SEGMENT)
+    const uint32_t N = 16;
     BEGIN_DATA(VklGraphicsSegmentVertex, 4 * N)
 
     tg.index_count = 6 * N;
@@ -487,9 +487,8 @@ int test_graphics_segment(TestContext* context)
 
             vkl_colormap_scale(VKL_CMAP_RAINBOW, t, 0, 1, data[4 * i + j].color);
 
-            data[4 * i + j].cap0 = VKL_CAP_ROUND;
-            data[4 * i + j].cap1 = VKL_CAP_ROUND;
-            data[4 * i + j].linewidth = 1 + 20 * t;
+            data[4 * i + j].cap0 = data[4 * i + j].cap1 = i % VKL_CAP_COUNT;
+            data[4 * i + j].linewidth = 5 + 30 * t;
 
             ASSERT(4 * i + j < 4 * N);
         }

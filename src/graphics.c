@@ -97,10 +97,10 @@ static void _graphics_basic(VklCanvas* canvas, VklGraphics* graphics, VkPrimitiv
     CREATE
 }
 
-static void _graphics_marker_agg(VklCanvas* canvas, VklGraphics* graphics)
+static void _graphics_marker(VklCanvas* canvas, VklGraphics* graphics)
 {
-    SHADER(VERTEX, "graphics_marker_agg_vert")
-    SHADER(FRAGMENT, "graphics_marker_agg_frag")
+    SHADER(VERTEX, "graphics_marker_vert")
+    SHADER(FRAGMENT, "graphics_marker_frag")
     PRIMITIVE(POINT_LIST)
 
     vkl_graphics_vertex_binding(graphics, 0, sizeof(VklGraphicsMarkerVertex));
@@ -210,11 +210,11 @@ VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type, in
 
 
         // Agg graphics types.
-    case VKL_GRAPHICS_MARKER_AGG:
-        _graphics_marker_agg(canvas, graphics);
+    case VKL_GRAPHICS_MARKER:
+        _graphics_marker(canvas, graphics);
         break;
 
-    case VKL_GRAPHICS_SEGMENT_AGG:
+    case VKL_GRAPHICS_SEGMENT:
         _graphics_segment(canvas, graphics);
         break;
 
