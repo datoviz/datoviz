@@ -672,6 +672,7 @@ void vkl_visual_fill_event(
     VklViewport viewport, void* user_data)
 {
     // Called in a REFILL canvas callback.
+    // log_trace("visual %d fill event %d", visual, cmd_idx);
 
     ASSERT(visual != NULL);
     ASSERT(visual->callback_fill != NULL);
@@ -684,7 +685,7 @@ void vkl_visual_fill_event(
     ev.user_data = user_data;
 
     visual->callback_fill(visual, ev);
-    visual->canvas->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+    // visual->canvas->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
 }
 
 

@@ -22,6 +22,7 @@ static void _panzoom(VklCanvas* canvas, VklPrivateEvent ev)
     ASSERT(scene != NULL);
     VklPanel* panel = NULL;
     VklController* controller = NULL;
+    VklInteract* interact = NULL;
     VklTransform tr = {0};
     dvec2 ll = {-1, -1};
     dvec2 ur = {+1, +1};
@@ -35,10 +36,37 @@ static void _panzoom(VklCanvas* canvas, VklPrivateEvent ev)
             break;
         if (controller->interacts[0].is_active && controller->type == VKL_CONTROLLER_PANZOOM)
         {
+            // Get box of active panel.
             tr = vkl_transform(panel, VKL_CDS_PANZOOM, VKL_CDS_GPU);
             vkl_transform_apply(&tr, ll, pos_ll);
             vkl_transform_apply(&tr, ur, pos_ur);
             log_debug("(%.3f, %.3f) (%.3f, %.3f)", pos_ll[0], pos_ll[1], pos_ur[0], pos_ur[1]);
+
+            // Set box of other panel.
+            interact = &scene->grid.panels[1 - i].controller->interacts[0];
+            VklPanzoom* panzoom = &interact->u.p;
+            tr = vkl_transform_inv(tr);
+            panzoom->camera_pos[0] = tr.shift[0];
+            panzoom->camera_pos[1] = tr.shift[1];
+            panzoom->zoom[0] = tr.scale[0];
+            panzoom->zoom[1] = tr.scale[1];
+
+            // View matrix (depends on the pan).
+            {
+                vec3 center;
+                glm_vec3_copy(panzoom->camera_pos, center);
+                center[2] = 0.0f; // only the z coord changes between panel and center.
+                vec3 lookup = {0, 1, 0};
+                glm_lookat(panzoom->camera_pos, center, lookup, interact->mvp.view);
+            }
+            // Proj matrix (depends on the zoom).
+            {
+                float zx = panzoom->zoom[0];
+                float zy = panzoom->zoom[1];
+                glm_ortho(
+                    -1.0f / zx, +1.0f / zx, -1.0f / zy, 1.0f / zy, -10.0f, 10.0f,
+                    interact->mvp.proj);
+            }
         }
     }
 }
@@ -72,6 +100,8 @@ int test_scene_1(TestContext* context)
 
     // Second panel.
     VklPanel* panel2 = vkl_scene_panel(scene, 1, 1, VKL_CONTROLLER_PANZOOM, 0);
+    vkl_panel_span(panel2, VKL_GRID_VERTICAL, 2);
+
     VklVisual* visual2 = vkl_scene_visual(panel2, VKL_VISUAL_MARKER, 0);
     vkl_visual_data(visual2, VKL_PROP_POS, 0, N, pos);
     vkl_visual_data(visual2, VKL_PROP_COLOR, 0, N, color);

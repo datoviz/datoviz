@@ -469,6 +469,7 @@ static int _canvas_callbacks(VklCanvas* canvas, VklPrivateEvent event)
         // Only call the callbacks registered for the specified type.
         if (canvas->canvas_callbacks[i].type == event.type)
         {
+            // log_debug("canvas callback type %d number %d", event.type, i);
             canvas->canvas_callbacks[i].callback(canvas, event);
             n_callbacks++;
         }
@@ -502,6 +503,7 @@ static int _frame_callbacks(VklCanvas* canvas)
 
 static void _refill_callbacks(VklCanvas* canvas, VklPrivateEvent ev, uint32_t img_idx)
 {
+    log_debug("refill callbacks for image #%d", img_idx);
     ASSERT(canvas != NULL);
     ASSERT(ev.u.rf.cmd_count > 0);
     ev.u.rf.img_idx = img_idx;
@@ -1819,7 +1821,7 @@ void vkl_canvas_frame(VklCanvas* canvas)
     // Refill if needed.
     if (canvas->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE)
     {
-        log_trace("need to update canvas, will refill the command buffers");
+        log_debug("need to update canvas, will refill the command buffers");
 
         // Wait for command buffer to be ready for update.
         vkl_fences_wait(&canvas->fences_flight, canvas->swapchain.img_idx);

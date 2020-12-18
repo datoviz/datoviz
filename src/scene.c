@@ -33,6 +33,7 @@ static void _panel_to_update(VklPanel* panel)
 
 static void _scene_fill(VklCanvas* canvas, VklPrivateEvent ev)
 {
+    log_debug("scene fill");
     ASSERT(canvas != NULL);
     ASSERT(ev.user_data != NULL);
     VklScene* scene = (VklScene*)ev.user_data;
@@ -50,9 +51,9 @@ static void _scene_fill(VklCanvas* canvas, VklPrivateEvent ev)
         cmds = ev.u.rf.cmds[i];
         img_idx = ev.u.rf.img_idx;
 
+        log_trace("visual fill cmd %d begin %d", i, img_idx);
         vkl_visual_fill_begin(canvas, cmds, img_idx);
 
-        // We only fill the PANEL command buffers.
         for (uint32_t j = 0; j < grid->panel_count; j++)
         {
             panel = &grid->panels[j];
@@ -388,6 +389,10 @@ VklScene* vkl_scene(VklCanvas* canvas, uint32_t n_rows, uint32_t n_cols)
         VklController, canvas->scene, controllers, max_controllers, //
         VKL_MAX_CONTROLLERS, VKL_OBJECT_TYPE_CONTROLLER)
 
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _scene_fill, canvas->scene);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _scene_frame, canvas->scene);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _upload_mvp, canvas->scene);
+
     return canvas->scene;
 }
 
@@ -535,10 +540,6 @@ VklVisual* vkl_scene_visual(VklPanel* panel, VklVisualType type, int flags)
     vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 0, interact->br);
     vkl_upload_buffers_immediate(
         scene->canvas, interact->br, true, 0, interact->br.size, &interact->mvp);
-
-    vkl_canvas_callback(scene->canvas, VKL_PRIVATE_EVENT_REFILL, 0, _scene_fill, scene);
-    vkl_canvas_callback(scene->canvas, VKL_PRIVATE_EVENT_FRAME, 0, _scene_frame, scene);
-    vkl_canvas_callback(scene->canvas, VKL_PRIVATE_EVENT_FRAME, 0, _upload_mvp, scene);
 
     return visual;
 }

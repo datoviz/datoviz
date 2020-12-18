@@ -42,8 +42,8 @@ static void _update_panel(VklPanel* panel)
 
     panel->x = grid->xs[panel->col];
     panel->y = grid->ys[panel->row];
-    panel->width = grid->widths[panel->col];
-    panel->height = grid->heights[panel->row];
+    panel->width = grid->widths[panel->col] * panel->hspan;
+    panel->height = grid->heights[panel->row] * panel->vspan;
 
     panel->viewport = _get_viewport(panel);
 }
@@ -176,6 +176,8 @@ VklPanel* vkl_panel(VklGrid* grid, uint32_t row, uint32_t col)
     panel->grid = grid;
     panel->row = row;
     panel->col = col;
+    panel->hspan = 1;
+    panel->vspan = 1;
 
     // NOTE: for now just use a single command buffer, as using multiple command buffers
     // is complicated as need to use mupltiple render passes and framebuffers.
@@ -228,6 +230,7 @@ void vkl_panel_pos(VklPanel* panel, float x, float y)
 
     _update_grid_panels(panel->grid, VKL_GRID_HORIZONTAL);
     _update_grid_panels(panel->grid, VKL_GRID_VERTICAL);
+    // vkl_canvas_to_refill(panel->grid->canvas, true);
 }
 
 
@@ -259,6 +262,7 @@ void vkl_panel_size(VklPanel* panel, VklGridAxis axis, float size)
 
         _update_grid_panels(grid, axis);
     }
+    // vkl_canvas_to_refill(panel->grid->canvas, true);
 }
 
 
@@ -272,6 +276,7 @@ void vkl_panel_span(VklPanel* panel, VklGridAxis axis, uint32_t span)
         panel->vspan = span;
 
     _update_grid_panels(panel->grid, axis);
+    // vkl_canvas_to_refill(panel->grid->canvas, true);
 }
 
 
@@ -284,6 +289,7 @@ void vkl_panel_cell(VklPanel* panel, uint32_t row, uint32_t col)
 
     _update_grid_panels(panel->grid, VKL_GRID_HORIZONTAL);
     _update_grid_panels(panel->grid, VKL_GRID_VERTICAL);
+    // vkl_canvas_to_refill(panel->grid->canvas, true);
 }
 
 
