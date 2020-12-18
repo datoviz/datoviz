@@ -4,3 +4,5 @@ float alpha = get_alpha(tex_coords);
 alpha = supersample(alpha);
 out_color = color;
 out_color.a *= alpha;
+
+out_color.r = 1; // DEBUG

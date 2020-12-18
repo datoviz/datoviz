@@ -3,6 +3,11 @@
 #include "../include/visky/graphics.h"
 #include "utils.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+BEGIN_INCL_NO_WARN
+#include "../external/stb_image.h"
+END_INCL_NO_WARN
+
 
 
 /*************************************************************************************************/
@@ -524,29 +529,52 @@ int test_graphics_text(TestContext* context)
     BEGIN_DATA(VklGraphicsTextVertex, 4 * N)
     for (uint32_t i = 0; i < N; i++)
     {
-        // {text[i].pos[0], text[i].pos[1], text[i].pos[2]},
-        //     {text[i].shift[0] * dpi, text[i].shift[1] * dpi},
-        //     text[i].color,
-        //     {text[i].glyph_size / glyph_height * glyph_width * dpi, text[i].glyph_size * dpi},
-        //     {text[i].anchor[0], text[i].anchor[1]},
-        //     text[i].angle,
-        //     {ci, i - k, str_len, str_idx}, // char, charIdx, strLen, strIdx
+        for (uint32_t j = 0; j < 4; j++)
+        {
+            data[4 * i + j].color[0] = 255;
+            data[4 * i + j].color[3] = 255;
+            data[4 * i + j].glyph_size[0] = 20;
+            data[4 * i + j].glyph_size[1] = 20;
+            data[4 * i + j].glyph[0] = 10;
+            data[4 * i + j].glyph[1] = 0;
+            data[4 * i + j].glyph[2] = 1;
+            data[4 * i + j].glyph[3] = 0;
+        }
     }
     END_DATA
 
     tg.br_params = vkl_ctx_buffers(
         gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsTextParams));
+
+    // Font texture
+    int width, height, depth;
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/textures/%s", DATA_DIR, "font_roboto.png");
+    stbi_uc* font_map = stbi_load(path, &width, &height, &depth, STBI_rgb_alpha);
+    memset(font_map, 255, width * height * 4);
+    ASSERT(width > 0);
+    ASSERT(height > 0);
+    ASSERT(depth > 0);
+
+    tg.texture = vkl_ctx_texture(
+        gpu->context, 2, (uvec3){(uint32_t)width, (uint32_t)height, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+    vkl_upload_texture(gpu->context, tg.texture, (uint32_t)(width * height * 4), font_map);
+
     VklGraphicsTextParams params = {0};
-    // TODO: params
+    params.grid_size[0] = 6;
+    params.grid_size[1] = 16;
+    params.tex_size[0] = width;
+    params.tex_size[1] = height;
     vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsTextParams), &params);
 
     _common_bindings(&tg);
     vkl_bindings_buffer(&tg.bindings, 3, tg.br_params);
-    vkl_bindings_texture(&tg.bindings, 4, tg.texture); // TODO: font texture
+    vkl_bindings_texture(&tg.bindings, 4, tg.texture);
     vkl_bindings_update(&tg.bindings);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_RESIZE, 0, _resize, &tg);
 
     RUN;
+    stbi_image_free(font_map);
     TEST_END
 }

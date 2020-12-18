@@ -22,6 +22,8 @@ layout (location = 3) out float out_str_index;
 
 
 void main() {
+    gl_PointSize = 10;
+
     vec4 pos_tr = transform(pos, shift);
 
     mat4 ortho = get_ortho_matrix(viewport.size);

@@ -3,7 +3,7 @@
 
 layout (binding = USER_BINDING) uniform TextParams {
     ivec2 grid_size;  // (6, 16)
-    ivec2 tex_size;  // (400, 200)
+    ivec2 tex_size;  //
 } params;
 
 layout(binding = (USER_BINDING+1)) uniform sampler2D tex_sampler;
@@ -18,5 +18,7 @@ layout(location = 0) out vec4 out_color;
 #include "text_functions.glsl"
 
 void main() {
-    #include "text_frag.glsl"
+    out_color = vec4(1,texture(tex_sampler, vec2(.5,.5)).x,0,1);
+    // #include "text_frag.glsl"
+    // out_color = texture(tex_sampler, vec2(.5,.5));
 }

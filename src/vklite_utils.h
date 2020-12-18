@@ -15,10 +15,10 @@
 #endif
 
 // Validation layers.
-static const char* layers[] = {"VK_LAYER_KHRONOS_validation"};
+static const char* VKL_LAYERS[] = {"VK_LAYER_KHRONOS_validation"};
 
 // Required device extensions.
-static const char* device_extensions[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+static const char* VKL_DEVICE_EXTENSIONS[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
 
 
@@ -457,7 +457,7 @@ static void create_instance(
     bool has_validation = false;
     if (ENABLE_VALIDATION_LAYERS)
     {
-        has_validation = check_validation_layer_support(1, layers);
+        has_validation = check_validation_layer_support(1, VKL_LAYERS);
         if (!has_validation)
             log_error(
                 "validation layer support missing, make sure you have exported the environment "
@@ -512,7 +512,7 @@ static void create_instance(
     if (has_validation)
     {
         createInfo.enabledLayerCount = 1;
-        createInfo.ppEnabledLayerNames = layers;
+        createInfo.ppEnabledLayerNames = VKL_LAYERS;
         createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debug_create_info;
     }
     else
@@ -808,9 +808,9 @@ static void create_device(VklGpu* gpu, VkSurfaceKHR surface)
 
     // Device extensions and layers
     device_info.enabledExtensionCount = (uint32_t)has_surface;
-    device_info.ppEnabledExtensionNames = has_surface ? device_extensions : NULL;
+    device_info.ppEnabledExtensionNames = has_surface ? VKL_DEVICE_EXTENSIONS : NULL;
     device_info.enabledLayerCount = (uint32_t)has_validation;
-    device_info.ppEnabledLayerNames = has_validation ? layers : NULL;
+    device_info.ppEnabledLayerNames = has_validation ? VKL_LAYERS : NULL;
 
     // Create the device
     VK_CHECK_RESULT(vkCreateDevice(gpu->physical_device, &device_info, NULL, &gpu->device));
