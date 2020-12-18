@@ -379,10 +379,29 @@ int test_graphics_triangle_strip(TestContext* context)
     float m = .05;
     for (uint32_t i = 0; i < tg.vertex_count; i++)
     {
-        float t = (float)i / (float)tg.vertex_count;
+        float t = (float)i / (float)(tg.vertex_count - 1);
         float a = M_2PI * t;
         data[i].pos[0] = (.75 + (i % 2 == 0 ? +m : -m)) * cos(a);
         data[i].pos[1] = (.75 + (i % 2 == 0 ? +m : -m)) * sin(a);
+        vkl_colormap_scale(VKL_CMAP_HSV, t, 0, 1, data[i].color);
+    }
+    END_DATA
+    BINDINGS_NO_PARAMS
+    RUN
+}
+
+
+
+int test_graphics_triangle_fan(TestContext* context)
+{
+    INIT_GRAPHICS(VKL_GRAPHICS_TRIANGLE_FAN)
+    BEGIN_DATA(VklVertex, 20)
+    for (uint32_t i = 1; i < tg.vertex_count; i++)
+    {
+        float t = (float)i / (float)(tg.vertex_count - 1);
+        float a = M_2PI * t;
+        data[i].pos[0] = .75 * cos(a);
+        data[i].pos[1] = .75 * sin(a);
         vkl_colormap_scale(VKL_CMAP_HSV, t, 0, 1, data[i].color);
     }
     END_DATA
