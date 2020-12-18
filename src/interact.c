@@ -192,7 +192,7 @@ static void _panzoom_callback(
             update = true;
         }
         // Mouse wheel.
-        else if (cur_active)
+        else if (cur_active && mouse->cur_state == VKL_MOUSE_STATE_WHEEL)
         {
             // TODO
             // Restrict the panzoom updates to cases when the mouse press position was in the
