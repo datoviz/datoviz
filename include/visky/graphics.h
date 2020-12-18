@@ -81,15 +81,29 @@ typedef enum
 
 
 
+typedef enum
+{
+    VKL_CAP_TYPE_NONE = 0,
+    VKL_CAP_ROUND = 1,
+    VKL_CAP_TRIANGLE_IN = 2,
+    VKL_CAP_TRIANGLE_OUT = 3,
+    VKL_CAP_SQUARE = 4,
+    VKL_CAP_BUTT = 5
+} VklCapType;
+
+
+
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
 typedef struct VklVertex VklVertex;
 typedef struct VklMVP VklMVP;
+
 typedef struct VklGraphicsPointParams VklGraphicsPointParams;
 typedef struct VklGraphicsMarkerVertex VklGraphicsMarkerVertex;
 typedef struct VklGraphicsMarkerParams VklGraphicsMarkerParams;
+typedef struct VklGraphicsSegmentVertex VklGraphicsSegmentVertex;
 
 
 
@@ -144,6 +158,23 @@ struct VklGraphicsMarkerParams
     vec4 edge_color;
     float edge_width;
     int32_t enable_depth;
+};
+
+
+/*************************************************************************************************/
+/*  Graphics segment                                                                             */
+/*************************************************************************************************/
+
+struct VklGraphicsSegmentVertex
+{
+    vec3 P0;
+    vec3 P1;
+    vec4 shift;
+    cvec4 color;
+    float linewidth;
+    int32_t cap0;
+    int32_t cap1;
+    // uint8_t transform_mode;
 };
 
 

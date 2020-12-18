@@ -121,6 +121,35 @@ static void _graphics_marker_agg(VklCanvas* canvas, VklGraphics* graphics)
     CREATE
 }
 
+static void _graphics_segment(VklCanvas* canvas, VklGraphics* graphics)
+{
+    SHADER(VERTEX, "graphics_segment_vert")
+    SHADER(FRAGMENT, "graphics_segment_frag")
+    PRIMITIVE(TRIANGLE_LIST)
+
+    vkl_graphics_vertex_binding(graphics, 0, sizeof(VklGraphicsSegmentVertex));
+    vkl_graphics_vertex_attr(
+        graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VklGraphicsSegmentVertex, P0));
+    vkl_graphics_vertex_attr(
+        graphics, 0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VklGraphicsSegmentVertex, P1));
+    vkl_graphics_vertex_attr(
+        graphics, 0, 2, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(VklGraphicsSegmentVertex, shift));
+    vkl_graphics_vertex_attr(
+        graphics, 0, 3, VK_FORMAT_R8G8B8A8_UNORM, offsetof(VklGraphicsSegmentVertex, color));
+    vkl_graphics_vertex_attr(
+        graphics, 0, 4, VK_FORMAT_R32_SFLOAT, offsetof(VklGraphicsSegmentVertex, linewidth));
+    vkl_graphics_vertex_attr(
+        graphics, 0, 5, VK_FORMAT_R32_SINT, offsetof(VklGraphicsSegmentVertex, cap0));
+    vkl_graphics_vertex_attr(
+        graphics, 0, 6, VK_FORMAT_R32_SINT, offsetof(VklGraphicsSegmentVertex, cap1));
+    // vkl_graphics_vertex_attr(
+    //     graphics, 0, 7, VK_FORMAT_R8_UINT, offsetof(VklGraphicsSegmentVertex, transform_mode));
+
+    _common_bindings(graphics);
+
+    CREATE
+}
+
 
 
 /*************************************************************************************************/
@@ -181,9 +210,12 @@ VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type, in
 
 
         // Agg graphics types.
-
     case VKL_GRAPHICS_MARKER_AGG:
         _graphics_marker_agg(canvas, graphics);
+        break;
+
+    case VKL_GRAPHICS_SEGMENT_AGG:
+        _graphics_segment(canvas, graphics);
         break;
 
 
@@ -206,17 +238,19 @@ VklViewport vkl_viewport_full(VklCanvas* canvas)
 {
     ASSERT(canvas != NULL);
     VklViewport viewport = {0};
+
     viewport.viewport.x = 0;
     viewport.viewport.y = 0;
+    viewport.viewport.minDepth = +0;
+    viewport.viewport.maxDepth = +1;
 
-    viewport.viewport.width = (float)canvas->swapchain.images->width;
-    viewport.viewport.height = (float)canvas->swapchain.images->height;
+    viewport.size_framebuffer[0] = viewport.viewport.width =
+        (float)canvas->swapchain.images->width;
+    viewport.size_framebuffer[1] = viewport.viewport.height =
+        (float)canvas->swapchain.images->height;
 
     viewport.size_screen[0] = canvas->window->width;
     viewport.size_screen[1] = canvas->window->height;
-
-    viewport.viewport.minDepth = +0;
-    viewport.viewport.maxDepth = +1;
 
     // TODO
     viewport.dpi_scaling = 1.0;

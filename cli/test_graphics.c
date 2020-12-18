@@ -15,6 +15,7 @@ struct TestGraphics
 {
     VklGraphics* graphics;
     VklBufferRegions br_vert;
+    VklBufferRegions br_index;
     VklBufferRegions br_mvp;
     VklBufferRegions br_viewport;
     VklBufferRegions br_params;
@@ -23,7 +24,9 @@ struct TestGraphics
     VklMVP mvp;
     vec3 eye, center, up;
 
+    VklViewport viewport;
     uint32_t vertex_count;
+    uint32_t index_count;
     VkDeviceSize size;
     float param;
     void* data;
@@ -34,6 +37,7 @@ static void _graphics_refill(VklCanvas* canvas, VklPrivateEvent ev)
     TestGraphics* tg = (TestGraphics*)ev.user_data;
     VklCommands* cmds = ev.u.rf.cmds[0];
     VklBufferRegions* br = &tg->br_vert;
+    VklBufferRegions* br_index = &tg->br_index;
     VklBindings* bindings = &tg->bindings;
     VklGraphics* graphics = tg->graphics;
     uint32_t idx = ev.u.rf.img_idx;
@@ -47,8 +51,13 @@ static void _graphics_refill(VklCanvas* canvas, VklPrivateEvent ev)
             0, 0, canvas->framebuffers.attachments[0]->width,
             canvas->framebuffers.attachments[0]->height, 0, 1});
     vkl_cmd_bind_vertex_buffer(cmds, idx, br, 0);
+    if (br_index->buffer != NULL)
+        vkl_cmd_bind_index_buffer(cmds, idx, br_index, 0);
     vkl_cmd_bind_graphics(cmds, idx, graphics, bindings, 0);
-    vkl_cmd_draw(cmds, idx, 0, tg->vertex_count);
+    if (br_index->buffer != NULL)
+        vkl_cmd_draw_indexed(cmds, idx, 0, 0, tg->index_count);
+    else
+        vkl_cmd_draw(cmds, idx, 0, tg->vertex_count);
     vkl_cmd_end_renderpass(cmds, idx);
     vkl_cmd_end(cmds, idx);
 }
@@ -113,8 +122,7 @@ static void _common_bindings(TestGraphics* tg)
 #define RUN                                                                                       \
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _graphics_refill, &tg);              \
     vkl_app_run(app, N_FRAMES);                                                                   \
-    FREE(data);                                                                                   \
-    TEST_END
+    FREE(data);
 
 
 
@@ -295,7 +303,7 @@ int test_graphics_points(TestContext* context)
     VklGraphicsPointParams params = {.point_size = tg.param};
     vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsPointParams), &params);
 
-    RUN
+    RUN TEST_END
 }
 
 
@@ -313,7 +321,7 @@ int test_graphics_lines(TestContext* context)
     }
     END_DATA
     BINDINGS_NO_PARAMS
-    RUN
+    RUN TEST_END
 }
 
 
@@ -331,7 +339,7 @@ int test_graphics_line_strip(TestContext* context)
     }
     END_DATA
     BINDINGS_NO_PARAMS
-    RUN
+    RUN TEST_END
 }
 
 
@@ -366,7 +374,7 @@ int test_graphics_triangles(TestContext* context)
 
     END_DATA
     BINDINGS_NO_PARAMS
-    RUN
+    RUN TEST_END
 }
 
 
@@ -386,7 +394,7 @@ int test_graphics_triangle_strip(TestContext* context)
     }
     END_DATA
     BINDINGS_NO_PARAMS
-    RUN
+    RUN TEST_END
 }
 
 
@@ -405,13 +413,13 @@ int test_graphics_triangle_fan(TestContext* context)
     }
     END_DATA
     BINDINGS_NO_PARAMS
-    RUN
+    RUN TEST_END
 }
 
 
 
 /*************************************************************************************************/
-/*  Basic graphics tests                                                                         */
+/*  Agg graphics tests                                                                           */
 /*************************************************************************************************/
 
 int test_graphics_marker_agg(TestContext* context)
@@ -441,5 +449,70 @@ int test_graphics_marker_agg(TestContext* context)
     // params.enable_depth
     vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsMarkerParams), &params);
 
-    RUN
+    RUN TEST_END
+}
+
+
+static void _segment_resize(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    TestGraphics* tg = (TestGraphics*)ev.user_data;
+    tg->viewport = vkl_viewport_full(canvas);
+    vkl_upload_buffers(
+        canvas->gpu->context, tg->br_viewport, 0, sizeof(VklViewport), &tg->viewport);
+}
+
+int test_graphics_segment(TestContext* context)
+{
+    INIT_GRAPHICS(VKL_GRAPHICS_SEGMENT_AGG)
+    const uint32_t N = 25;
+    BEGIN_DATA(VklGraphicsSegmentVertex, 4 * N)
+
+    tg.index_count = 6 * N;
+    VklIndex* indices = calloc(6 * N, sizeof(VklIndex));
+    VkDeviceSize index_buf_size = 6 * N * sizeof(VklIndex);
+    tg.br_index = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_INDEX, 1, index_buf_size);
+
+    for (uint32_t i = 0; i < N; i++)
+    {
+        float t = (float)i / (float)N;
+        float x = .75 * (-1 + 2 * t);
+        float y = .75;
+
+        for (uint32_t j = 0; j < 4; j++)
+        {
+            data[4 * i + j].P0[0] = x;
+            data[4 * i + j].P0[1] = -y;
+            data[4 * i + j].P1[0] = x;
+            data[4 * i + j].P1[1] = +y;
+
+            vkl_colormap_scale(VKL_CMAP_RAINBOW, t, 0, 1, data[4 * i + j].color);
+
+            data[4 * i + j].cap0 = VKL_CAP_ROUND;
+            data[4 * i + j].cap1 = VKL_CAP_ROUND;
+            data[4 * i + j].linewidth = 1 + 20 * t;
+
+            ASSERT(4 * i + j < 4 * N);
+        }
+
+        indices[6 * i + 0] = 4 * i + 0;
+        indices[6 * i + 1] = 4 * i + 1;
+        indices[6 * i + 2] = 4 * i + 2;
+        indices[6 * i + 3] = 4 * i + 0;
+        indices[6 * i + 4] = 4 * i + 2;
+        indices[6 * i + 5] = 4 * i + 3;
+
+        ASSERT(6 * i + 5 < 6 * N);
+    }
+    END_DATA
+    BINDINGS_NO_PARAMS
+
+    vkl_upload_buffers(gpu->context, tg.br_index, 0, index_buf_size, indices);
+    tg.viewport = vkl_viewport_full(canvas);
+    vkl_upload_buffers(gpu->context, tg.br_viewport, 0, sizeof(VklViewport), &tg.viewport);
+
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_RESIZE, 0, _segment_resize, &tg);
+
+    RUN;
+    FREE(indices);
+    TEST_END
 }

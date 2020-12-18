@@ -359,6 +359,8 @@ struct VklViewport
     vec4 margins;
     uvec2 offset_screen;
     uvec2 size_screen;
+    uvec2 offset_framebuffer;
+    uvec2 size_framebuffer;
     float dpi_scaling; // DPI  scaling
 };
 
