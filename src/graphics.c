@@ -41,6 +41,16 @@ static inline void _load_shader(
 // TODO: common bindings
 #define CREATE vkl_graphics_create(graphics);
 
+#define ATTR_BEGIN(t)                                                                             \
+    vkl_graphics_vertex_binding(graphics, 0, sizeof(t));                                          \
+    uint32_t attr_idx = 0;
+
+#define ATTR(t, fmt, f) vkl_graphics_vertex_attr(graphics, 0, attr_idx++, fmt, offsetof(t, f));
+
+#define ATTR_POS(t, f) ATTR(t, VK_FORMAT_R32G32B32_SFLOAT, f)
+
+#define ATTR_COL(t, f) ATTR(t, VK_FORMAT_R8G8B8A8_UNORM, f)
+
 
 
 /*************************************************************************************************/
@@ -69,9 +79,9 @@ static void _graphics_points(VklCanvas* canvas, VklGraphics* graphics)
     SHADER(FRAGMENT, "graphics_point_frag")
     PRIMITIVE(POINT_LIST)
 
-    vkl_graphics_vertex_binding(graphics, 0, sizeof(VklVertex));
-    vkl_graphics_vertex_attr(graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VklVertex, pos));
-    vkl_graphics_vertex_attr(graphics, 0, 1, VK_FORMAT_R8G8B8A8_UNORM, offsetof(VklVertex, color));
+    ATTR_BEGIN(VklVertex)
+    ATTR_POS(VklVertex, pos)
+    ATTR_COL(VklVertex, color)
 
     _common_bindings(graphics);
     vkl_graphics_slot(graphics, USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
@@ -88,9 +98,9 @@ static void _graphics_basic(VklCanvas* canvas, VklGraphics* graphics, VkPrimitiv
     vkl_graphics_topology(graphics, topology);
     vkl_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
 
-    vkl_graphics_vertex_binding(graphics, 0, sizeof(VklVertex));
-    vkl_graphics_vertex_attr(graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VklVertex, pos));
-    vkl_graphics_vertex_attr(graphics, 0, 1, VK_FORMAT_R8G8B8A8_UNORM, offsetof(VklVertex, color));
+    ATTR_BEGIN(VklVertex)
+    ATTR_POS(VklVertex, pos)
+    ATTR_COL(VklVertex, color)
 
     _common_bindings(graphics);
 
@@ -103,17 +113,12 @@ static void _graphics_marker(VklCanvas* canvas, VklGraphics* graphics)
     SHADER(FRAGMENT, "graphics_marker_frag")
     PRIMITIVE(POINT_LIST)
 
-    vkl_graphics_vertex_binding(graphics, 0, sizeof(VklGraphicsMarkerVertex));
-    vkl_graphics_vertex_attr(
-        graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VklGraphicsMarkerVertex, pos));
-    vkl_graphics_vertex_attr(
-        graphics, 0, 1, VK_FORMAT_R8G8B8A8_UNORM, offsetof(VklGraphicsMarkerVertex, color));
-    vkl_graphics_vertex_attr(
-        graphics, 0, 2, VK_FORMAT_R32_SFLOAT, offsetof(VklGraphicsMarkerVertex, size));
-    vkl_graphics_vertex_attr(
-        graphics, 0, 3, VK_FORMAT_R8_UINT, offsetof(VklGraphicsMarkerVertex, marker));
-    vkl_graphics_vertex_attr(
-        graphics, 0, 4, VK_FORMAT_R8_UNORM, offsetof(VklGraphicsMarkerVertex, angle));
+    ATTR_BEGIN(VklGraphicsMarkerVertex)
+    ATTR_POS(VklGraphicsMarkerVertex, pos)
+    ATTR_COL(VklGraphicsMarkerVertex, color)
+    ATTR(VklGraphicsMarkerVertex, VK_FORMAT_R32_SFLOAT, size)
+    ATTR(VklGraphicsMarkerVertex, VK_FORMAT_R8_UINT, marker)
+    ATTR(VklGraphicsMarkerVertex, VK_FORMAT_R8_UNORM, angle)
 
     _common_bindings(graphics);
     vkl_graphics_slot(graphics, USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
@@ -127,23 +132,31 @@ static void _graphics_segment(VklCanvas* canvas, VklGraphics* graphics)
     SHADER(FRAGMENT, "graphics_segment_frag")
     PRIMITIVE(TRIANGLE_LIST)
 
-    vkl_graphics_vertex_binding(graphics, 0, sizeof(VklGraphicsSegmentVertex));
-    vkl_graphics_vertex_attr(
-        graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VklGraphicsSegmentVertex, P0));
-    vkl_graphics_vertex_attr(
-        graphics, 0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VklGraphicsSegmentVertex, P1));
-    vkl_graphics_vertex_attr(
-        graphics, 0, 2, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(VklGraphicsSegmentVertex, shift));
-    vkl_graphics_vertex_attr(
-        graphics, 0, 3, VK_FORMAT_R8G8B8A8_UNORM, offsetof(VklGraphicsSegmentVertex, color));
-    vkl_graphics_vertex_attr(
-        graphics, 0, 4, VK_FORMAT_R32_SFLOAT, offsetof(VklGraphicsSegmentVertex, linewidth));
-    vkl_graphics_vertex_attr(
-        graphics, 0, 5, VK_FORMAT_R32_SINT, offsetof(VklGraphicsSegmentVertex, cap0));
-    vkl_graphics_vertex_attr(
-        graphics, 0, 6, VK_FORMAT_R32_SINT, offsetof(VklGraphicsSegmentVertex, cap1));
+    ATTR_BEGIN(VklGraphicsSegmentVertex)
+    ATTR_POS(VklGraphicsSegmentVertex, P0)
+    ATTR_POS(VklGraphicsSegmentVertex, P1)
+    ATTR(VklGraphicsSegmentVertex, VK_FORMAT_R32G32B32A32_SFLOAT, shift)
+    ATTR_COL(VklGraphicsSegmentVertex, color)
+    ATTR(VklGraphicsSegmentVertex, VK_FORMAT_R32_SFLOAT, linewidth)
+    ATTR(VklGraphicsSegmentVertex, VK_FORMAT_R32_SINT, cap0)
+    ATTR(VklGraphicsSegmentVertex, VK_FORMAT_R32_SINT, cap1)
     // vkl_graphics_vertex_attr(
     //     graphics, 0, 7, VK_FORMAT_R8_UINT, offsetof(VklGraphicsSegmentVertex, transform_mode));
+
+    _common_bindings(graphics);
+
+    CREATE
+}
+
+static void _graphics_text(VklCanvas* canvas, VklGraphics* graphics)
+{
+    SHADER(VERTEX, "graphics_text_vert")
+    SHADER(FRAGMENT, "graphics_text_frag")
+    PRIMITIVE(TRIANGLE_LIST)
+
+    // vkl_graphics_vertex_binding(graphics, 0, sizeof(VklGraphicsSegmentVertex));
+    // vkl_graphics_vertex_attr(
+    //     graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VklGraphicsSegmentVertex, P0));
 
     _common_bindings(graphics);
 
@@ -216,6 +229,10 @@ VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type, in
 
     case VKL_GRAPHICS_SEGMENT:
         _graphics_segment(canvas, graphics);
+        break;
+
+    case VKL_GRAPHICS_TEXT:
+        _graphics_text(canvas, graphics);
         break;
 
 
