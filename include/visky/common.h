@@ -395,7 +395,10 @@ VKY_EXPORT char* read_npy(const char* filename, size_t* size);
 VKY_EXPORT uint8_t* read_ppm(const char* filename, int*, int*);
 
 // Defined in cmake-generated file build/_shaders.c
-VKY_EXPORT const unsigned char* vkl_binary_shader_load(const char* name, unsigned long* size);
+VKY_EXPORT const unsigned char* vkl_resource_shader(const char* name, unsigned long* size);
+
+// Defined in cmake-generated file build/_colortex.c
+VKY_EXPORT const unsigned char* vkl_resource_texture(const char* name, unsigned long* size);
 
 
 

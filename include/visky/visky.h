@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include "canvas.h"
+#include "colormaps.h"
 #include "common.h"
 #include "context.h"
 #include "graphics.h"

@@ -1,4 +1,5 @@
 #include "test_graphics.h"
+#include "../include/visky/colormaps.h"
 #include "../include/visky/graphics.h"
 #include "utils.h"
 
@@ -281,10 +282,11 @@ int test_graphics_points(TestContext* context)
         RAND_COLOR(data[i].color)
     }
     END_DATA
-    BINDINGS_PARAMS
 
     tg.br_params = vkl_ctx_buffers(
         gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointsParams));
+    BINDINGS_PARAMS
+
     tg.param = 5.0f;
     VklGraphicsPointsParams params = {.point_size = tg.param};
     vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsPointsParams), &params);
@@ -297,13 +299,13 @@ int test_graphics_points(TestContext* context)
 int test_graphics_basic(TestContext* context)
 {
     INIT_GRAPHICS(VKL_GRAPHICS_LINES)
-    BEGIN_DATA(VklVertex, 50)
+    BEGIN_DATA(VklVertex, 100)
     for (uint32_t i = 0; i < tg.vertex_count; i++)
     {
         float t = (float)(i / 2) / (float)tg.vertex_count;
         data[i].pos[0] = .75 * (-1 + 4 * t);
         data[i].pos[1] = .75 * (-1 + (i % 2 == 0 ? 0 : 2));
-        RAND_COLOR(data[i].color)
+        vkl_colormap_scale(VKL_CMAP_RAINBOW, t, 0, .5, data[i].color);
     }
     END_DATA
     BINDINGS_NO_PARAMS

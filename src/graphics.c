@@ -27,7 +27,7 @@ static inline void _load_shader(
 #define SHADER(stage, x)                                                                          \
     {                                                                                             \
         unsigned long size = 0;                                                                   \
-        const unsigned char* buffer = vkl_binary_shader_load(x, &size);                           \
+        const unsigned char* buffer = vkl_resource_shader(x, &size);                              \
         ASSERT(size > 0);                                                                         \
         ASSERT(buffer != NULL);                                                                   \
         _load_shader(graphics, VK_SHADER_STAGE_##stage##_BIT, size, buffer);                      \

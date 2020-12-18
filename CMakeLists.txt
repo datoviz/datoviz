@@ -372,13 +372,27 @@ set(path_shadersc "${CMAKE_BINARY_DIR}/_shaders.c")
 add_custom_command(
     OUTPUT ${path_shadersc}
     COMMAND ${CMAKE_COMMAND}
-    -D SPIRV_DIR=${SPIRV_DIR}
-    -D SHADERC_PATH=${path_shadersc}
-    -P "${CMAKE_SOURCE_DIR}/cmake/embed_shaders.cmake"
+    -D DIR="${SPIRV_DIR}/*"
+    -D PREFIX="shader"
+    -D OUTPUT=${path_shadersc}
+    -P "${CMAKE_SOURCE_DIR}/cmake/embed_resources.cmake"
     DEPENDS shaders_spirv ${shader_sources}
     IMPLICIT_DEPENDS shaders_spirv ${shader_sources}
 )
 add_custom_target(shaders DEPENDS ${path_shadersc})
+
+
+
+# Color texture.
+set(path_colortex "${CMAKE_BINARY_DIR}/_colortex.c")
+add_custom_command(
+    OUTPUT ${path_colortex}
+    COMMAND ${CMAKE_COMMAND}
+    -D DIR="${CMAKE_SOURCE_DIR}/data/textures/*.img"
+    -D PREFIX="texture"
+    -D OUTPUT=${path_colortex}
+    -P "${CMAKE_SOURCE_DIR}/cmake/embed_resources.cmake"
+)
 
 
 
@@ -400,7 +414,7 @@ file(GLOB imgui_sources
 
 set_source_files_properties(${imgui_sources} PROPERTIES COMPILE_FLAGS -w)
 
-add_library(visky SHARED ${sources} ${path_shadersc})
+add_library(visky SHARED ${sources} ${path_shadersc} ${path_colortex})
 
 
 # -------------------------------------------------------------------------------------------------
