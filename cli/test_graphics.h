@@ -19,6 +19,7 @@ int test_graphics_line_strip(TestContext* context);
 int test_graphics_triangles(TestContext* context);
 int test_graphics_triangle_strip(TestContext* context);
 int test_graphics_triangle_fan(TestContext* context);
+int test_graphics_marker_agg(TestContext* context);
 
 
 

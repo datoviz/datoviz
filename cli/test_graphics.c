@@ -274,7 +274,7 @@ int test_graphics_3D(TestContext* context)
 
 
 /*************************************************************************************************/
-/*  Systematic graphics tests                                                                    */
+/*  Basic graphics tests                                                                         */
 /*************************************************************************************************/
 
 int test_graphics_points(TestContext* context)
@@ -406,5 +406,41 @@ int test_graphics_triangle_fan(TestContext* context)
     }
     END_DATA
     BINDINGS_NO_PARAMS
+    RUN
+}
+
+
+
+/*************************************************************************************************/
+/*  Basic graphics tests                                                                         */
+/*************************************************************************************************/
+
+int test_graphics_marker_agg(TestContext* context)
+{
+    INIT_GRAPHICS(VKL_GRAPHICS_MARKER_AGG)
+    BEGIN_DATA(VklGraphicsMarkerVertex, 1000)
+    for (uint32_t i = 0; i < tg.vertex_count; i++)
+    {
+        RANDN_POS(data[i].pos)
+        RAND_COLOR(data[i].color)
+        data[i].color[3] = 196;
+        data[i].size = 20 + rand_float() * 50;
+        data[i].marker = VKL_MARKER_DISC;
+    }
+    END_DATA
+
+    tg.br_params = vkl_ctx_buffers(
+        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointsParams));
+    BINDINGS_PARAMS
+
+    VklGraphicsMarkerParams params = {0};
+    params.edge_color[0] = 1;
+    params.edge_color[1] = 1;
+    params.edge_color[2] = 1;
+    params.edge_color[3] = 1;
+    params.edge_width = 2;
+    // params.enable_depth
+    vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsMarkerParams), &params);
+
     RUN
 }

@@ -97,6 +97,30 @@ static void _graphics_basic(VklCanvas* canvas, VklGraphics* graphics, VkPrimitiv
     CREATE
 }
 
+static void _graphics_marker_agg(VklCanvas* canvas, VklGraphics* graphics)
+{
+    SHADER(VERTEX, "graphics_marker_agg_vert")
+    SHADER(FRAGMENT, "graphics_marker_agg_frag")
+    PRIMITIVE(POINT_LIST)
+
+    vkl_graphics_vertex_binding(graphics, 0, sizeof(VklGraphicsMarkerVertex));
+    vkl_graphics_vertex_attr(
+        graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VklGraphicsMarkerVertex, pos));
+    vkl_graphics_vertex_attr(
+        graphics, 0, 1, VK_FORMAT_R8G8B8A8_UNORM, offsetof(VklGraphicsMarkerVertex, color));
+    vkl_graphics_vertex_attr(
+        graphics, 0, 2, VK_FORMAT_R32_SFLOAT, offsetof(VklGraphicsMarkerVertex, size));
+    vkl_graphics_vertex_attr(
+        graphics, 0, 3, VK_FORMAT_R8_UINT, offsetof(VklGraphicsMarkerVertex, marker));
+    vkl_graphics_vertex_attr(
+        graphics, 0, 4, VK_FORMAT_R8_UNORM, offsetof(VklGraphicsMarkerVertex, angle));
+
+    _common_bindings(graphics);
+    vkl_graphics_slot(graphics, USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+
+    CREATE
+}
+
 
 
 /*************************************************************************************************/
@@ -129,6 +153,8 @@ VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type, in
 
     switch (type)
     {
+
+        // Basic graphics types.
     case VKL_GRAPHICS_POINTS:
         _graphics_points(canvas, graphics);
         break;
@@ -152,6 +178,14 @@ VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type, in
     case VKL_GRAPHICS_TRIANGLE_FAN:
         _graphics_basic(canvas, graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN);
         break;
+
+
+        // Agg graphics types.
+
+    case VKL_GRAPHICS_MARKER_AGG:
+        _graphics_marker_agg(canvas, graphics);
+        break;
+
 
     default:
         log_error("no graphics type specified");

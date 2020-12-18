@@ -64,14 +64,17 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_canvas_screencast), //
 
     // graphics
-    CASE_FIXTURE_NONE(test_graphics_dynamic),        //
-    CASE_FIXTURE_NONE(test_graphics_3D),             //
+    CASE_FIXTURE_NONE(test_graphics_dynamic), //
+    CASE_FIXTURE_NONE(test_graphics_3D),      //
+
     CASE_FIXTURE_NONE(test_graphics_points),         //
     CASE_FIXTURE_NONE(test_graphics_lines),          //
     CASE_FIXTURE_NONE(test_graphics_line_strip),     //
     CASE_FIXTURE_NONE(test_graphics_triangles),      //
     CASE_FIXTURE_NONE(test_graphics_triangle_strip), //
     CASE_FIXTURE_NONE(test_graphics_triangle_fan),   //
+
+    CASE_FIXTURE_NONE(test_graphics_marker_agg), //
 
     // array
     CASE_FIXTURE_NONE(test_array_1),   //

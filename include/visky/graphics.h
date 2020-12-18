@@ -55,6 +55,32 @@ typedef enum
 
 
 
+// NOTE: the numbers need to correspond to markers.glsl at the bottom.
+typedef enum
+{
+    VKL_MARKER_DISC = 0,
+    VKL_MARKER_ASTERISK = 1,
+    VKL_MARKER_CHEVRON = 2,
+    VKL_MARKER_CLOVER = 3,
+    VKL_MARKER_CLUB = 4,
+    VKL_MARKER_CROSS = 5,
+    VKL_MARKER_DIAMOND = 6,
+    VKL_MARKER_ARROW = 7,
+    VKL_MARKER_ELLIPSE = 8,
+    VKL_MARKER_HBAR = 9,
+    VKL_MARKER_HEART = 10,
+    VKL_MARKER_INFINITY = 11,
+    VKL_MARKER_PIN = 12,
+    VKL_MARKER_RING = 13,
+    VKL_MARKER_SPADE = 14,
+    VKL_MARKER_SQUARE = 15,
+    VKL_MARKER_TAG = 16,
+    VKL_MARKER_TRIANGLE = 17,
+    VKL_MARKER_VBAR = 18,
+} VkyMarkerType;
+
+
+
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
@@ -62,6 +88,8 @@ typedef enum
 typedef struct VklVertex VklVertex;
 typedef struct VklMVP VklMVP;
 typedef struct VklGraphicsPointsParams VklGraphicsPointsParams;
+typedef struct VklGraphicsMarkerVertex VklGraphicsMarkerVertex;
+typedef struct VklGraphicsMarkerParams VklGraphicsMarkerParams;
 
 
 
@@ -86,9 +114,36 @@ struct VklMVP
 
 
 
+/*************************************************************************************************/
+/*  Graphics points                                                                              */
+/*************************************************************************************************/
+
 struct VklGraphicsPointsParams
 {
     float point_size;
+};
+
+
+
+/*************************************************************************************************/
+/*  Graphics marker                                                                              */
+/*************************************************************************************************/
+
+struct VklGraphicsMarkerVertex
+{
+    vec3 pos;
+    cvec4 color;
+    float size;
+    // in fact a VklMarkerType but we should control the exact data type for the GPU
+    uint8_t marker;
+    uint8_t angle;
+};
+
+struct VklGraphicsMarkerParams
+{
+    vec4 edge_color;
+    float edge_width;
+    int32_t enable_depth;
 };
 
 
