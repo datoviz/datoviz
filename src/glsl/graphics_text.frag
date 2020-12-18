@@ -19,10 +19,4 @@ layout(location = 0) out vec4 out_color;
 
 void main() {
     #include "text_frag.glsl"
-
-    // out_color.g = tex_coords.y*2;
-    // float alpha = get_alpha(tex_coords);
-    // alpha = supersample(alpha);
-    // out_color = color;
-    // out_color.g = params.tex_size.x/700.;
 }

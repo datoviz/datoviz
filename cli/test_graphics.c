@@ -526,7 +526,7 @@ int test_graphics_segment(TestContext* context)
 int test_graphics_text(TestContext* context)
 {
     INIT_GRAPHICS(VKL_GRAPHICS_TEXT)
-    const uint32_t N = 2;
+    const uint32_t N = 26;
     BEGIN_DATA(VklGraphicsTextVertex, 4 * N)
 
 
@@ -549,21 +549,25 @@ int test_graphics_text(TestContext* context)
     float glyph_height = params.tex_size[1] / (float)params.grid_size[0];
 
 
+    float t = 0;
     for (uint32_t i = 0; i < N; i++)
     {
+        t = i / (float)N;
         for (uint32_t j = 0; j < 4; j++)
         {
-            data[4 * i + j].pos[0] = 0;
-            data[4 * i + j].pos[1] = 0;
+            data[4 * i + j].pos[0] = .5 * cos(M_2PI * t);
+            data[4 * i + j].pos[1] = .5 * sin(M_2PI * t);
             data[4 * i + j].pos[2] = 0;
-            data[4 * i + j].color[0] = 255;
-            data[4 * i + j].color[3] = 255;
-            data[4 * i + j].glyph_size[0] = 300 * glyph_width / glyph_height;
-            data[4 * i + j].glyph_size[1] = 300;
-            data[4 * i + j].glyph[0] = 36;
-            data[4 * i + j].glyph[1] = i;
-            data[4 * i + j].glyph[2] = 2;
-            data[4 * i + j].glyph[3] = 0;
+            vkl_colormap_scale(VKL_CMAP_HSV, t, 0, 1, data[4 * i + j].color);
+
+            data[4 * i + j].glyph_size[0] = 50 * glyph_width / glyph_height;
+            data[4 * i + j].glyph_size[1] = 50;
+            data[4 * i + j].glyph[0] = 33 + i; // char
+            data[4 * i + j].glyph[1] = 0;      // char idx
+            data[4 * i + j].glyph[2] = 1;      // str len
+            data[4 * i + j].glyph[3] = i;      // str idx
+            data[4 * i + j].anchor[0] = 0;
+            data[4 * i + j].anchor[1] = 0;
         }
     }
     END_DATA
@@ -574,6 +578,9 @@ int test_graphics_text(TestContext* context)
         tg.texture2 = vkl_ctx_texture(
             gpu->context, 2, (uvec3){(uint32_t)width, (uint32_t)height, 1},
             VK_FORMAT_R8G8B8A8_UNORM);
+        // NOTE: the font texture must have LINEAR filter! otherwise no antialiasing
+        vkl_texture_filter(tg.texture2, VKL_FILTER_MAX, VK_FILTER_LINEAR);
+        vkl_texture_filter(tg.texture2, VKL_FILTER_MIN, VK_FILTER_LINEAR);
         vkl_upload_texture(gpu->context, tg.texture2, (uint32_t)(width * height * 4), font_map);
         vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsTextParams), &params);
     }

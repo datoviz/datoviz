@@ -153,7 +153,6 @@ static void _graphics_text(VklCanvas* canvas, VklGraphics* graphics)
     SHADER(VERTEX, "graphics_text_vert")
     SHADER(FRAGMENT, "graphics_text_frag")
     PRIMITIVE(TRIANGLE_STRIP)
-    // PRIMITIVE(POINT_LIST)
 
     ATTR_BEGIN(VklGraphicsTextVertex)
     ATTR_POS(VklGraphicsTextVertex, pos)

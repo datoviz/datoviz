@@ -1,7 +1,7 @@
 
     // Size of one glyph in NDC.
-    float w = 2 * glyph_size.x;// / mvp.viewport.z;
-    float h = 2 * glyph_size.y;// / mvp.viewport.w;
+    float w = 2 * glyph_size.x;
+    float h = 2 * glyph_size.y;
 
     // Which vertex within the triangle strip forming the rectangle.
     int i = gl_VertexIndex % 4;
