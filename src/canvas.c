@@ -893,10 +893,18 @@ void vkl_canvas_clear_color(VklCanvas* canvas, VkClearColorValue color)
 void vkl_canvas_size(VklCanvas* canvas, VklCanvasSizeType type, uvec2 size)
 {
     ASSERT(canvas != NULL);
-    ASSERT(canvas->window != NULL);
+
+    if (canvas->window == NULL && type == VKL_CANVAS_SIZE_SCREEN)
+    {
+        ASSERT(canvas->offscreen);
+        log_trace("cannot determine window size in screen coordinates with offscreen canvas");
+        type = VKL_CANVAS_SIZE_FRAMEBUFFER;
+    }
+
     switch (type)
     {
     case VKL_CANVAS_SIZE_SCREEN:
+        ASSERT(canvas->window != NULL);
         size[0] = canvas->window->width;
         size[1] = canvas->window->height;
         break;
