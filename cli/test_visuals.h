@@ -41,7 +41,7 @@ static void _marker_visual(VklVisual* visual)
         // Binding #3: uniform buffer params
         vkl_visual_source(
             visual, VKL_SOURCE_UNIFORM, 2, VKL_PIPELINE_GRAPHICS, 0, 3,
-            sizeof(VklGraphicsPointsParams), 0);
+            sizeof(VklGraphicsPointParams), 0);
     }
 
     // Props.
@@ -78,7 +78,7 @@ static void _marker_visual(VklVisual* visual)
         // Param: marker size.
         vkl_visual_prop(
             visual, VKL_PROP_MARKER_SIZE, 0, VKL_SOURCE_UNIFORM, 2, //
-            0, VKL_DTYPE_FLOAT, offsetof(VklGraphicsPointsParams, point_size));
+            0, VKL_DTYPE_FLOAT, offsetof(VklGraphicsPointParams, point_size));
 
 
         // Colormap texture.

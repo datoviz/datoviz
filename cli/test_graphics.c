@@ -130,8 +130,7 @@ static void _graphics_points_wheel_callback(VklCanvas* canvas, VklEvent ev)
     // Update point size.
     tg->param += ev.u.w.dir[1] * .5;
     tg->param = CLIP(tg->param, 1, 100);
-    vkl_upload_buffers(
-        gpu->context, tg->br_params, 0, sizeof(VklGraphicsPointsParams), &tg->param);
+    vkl_upload_buffers(gpu->context, tg->br_params, 0, sizeof(VklGraphicsPointParams), &tg->param);
 
     // Update MVP.
     tg->mvp.model[0][0] = .1 * tg->param;
@@ -157,7 +156,7 @@ int test_graphics_dynamic(TestContext* context)
     tg.br_mvp = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklMVP));
     tg.br_viewport = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
     tg.br_params = vkl_ctx_buffers(
-        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointsParams));
+        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointParams));
     tg.texture = vkl_ctx_texture(gpu->context, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
 
     // Upload MVP.
@@ -168,8 +167,8 @@ int test_graphics_dynamic(TestContext* context)
 
     // Upload params.
     tg.param = 5.0f;
-    VklGraphicsPointsParams params = {.point_size = tg.param};
-    vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsPointsParams), &params);
+    VklGraphicsPointParams params = {.point_size = tg.param};
+    vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsPointParams), &params);
 
     // Bindings
     vkl_bindings_buffer(&tg.bindings, 0, tg.br_mvp);
@@ -233,7 +232,7 @@ int test_graphics_3D(TestContext* context)
     tg.br_mvp = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklMVP));
     tg.br_viewport = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
     tg.br_params = vkl_ctx_buffers(
-        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointsParams));
+        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointParams));
     tg.texture = vkl_ctx_texture(gpu->context, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
 
     // Upload MVP.
@@ -251,8 +250,8 @@ int test_graphics_3D(TestContext* context)
 
     // Upload params.
     tg.param = 50.0f;
-    VklGraphicsPointsParams params = {.point_size = tg.param};
-    vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsPointsParams), &params);
+    VklGraphicsPointParams params = {.point_size = tg.param};
+    vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsPointParams), &params);
 
     // Bindings
     vkl_bindings_buffer(&tg.bindings, 0, tg.br_mvp);
@@ -289,12 +288,12 @@ int test_graphics_points(TestContext* context)
     END_DATA
 
     tg.br_params = vkl_ctx_buffers(
-        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointsParams));
+        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointParams));
     BINDINGS_PARAMS
 
     tg.param = 5.0f;
-    VklGraphicsPointsParams params = {.point_size = tg.param};
-    vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsPointsParams), &params);
+    VklGraphicsPointParams params = {.point_size = tg.param};
+    vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsPointParams), &params);
 
     RUN
 }
@@ -430,7 +429,7 @@ int test_graphics_marker_agg(TestContext* context)
     END_DATA
 
     tg.br_params = vkl_ctx_buffers(
-        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointsParams));
+        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointParams));
     BINDINGS_PARAMS
 
     VklGraphicsMarkerParams params = {0};

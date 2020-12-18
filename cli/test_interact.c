@@ -82,7 +82,7 @@ static void _update_interact(VklCanvas* canvas, VklPrivateEvent ev)
 }
 
 static void _add_visual(
-    TestScene* scene, const uint32_t N, VklVertex* vertices, VklGraphicsPointsParams* params)
+    TestScene* scene, const uint32_t N, VklVertex* vertices, VklGraphicsPointParams* params)
 {
     VklVisual* visual = &scene->visual;
     _marker_visual(visual);
@@ -92,10 +92,10 @@ static void _add_visual(
 
     VklBufferRegions br_viewport = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
     VklBufferRegions br_params =
-        vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointsParams));
+        vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointParams));
     VklTexture* tex_color = vkl_ctx_texture(ctx, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
 
-    vkl_upload_buffers(ctx, br_params, 0, sizeof(VklGraphicsPointsParams), params);
+    vkl_upload_buffers(ctx, br_params, 0, sizeof(VklGraphicsPointParams), params);
 
     for (uint32_t i = 0; i < N; i++)
     {
@@ -142,7 +142,7 @@ int test_interact_panzoom(TestContext* context)
 
     const uint32_t N = 10000;
     float param = 5.0f;
-    VklGraphicsPointsParams params = {.point_size = param};
+    VklGraphicsPointParams params = {.point_size = param};
     VklVertex* vertices = calloc(N, sizeof(VklVertex));
     _add_visual(&scene, N, vertices, &params);
     vkl_app_run(app, N_FRAMES);
@@ -172,7 +172,7 @@ int test_interact_arcball(TestContext* context)
 
     const uint32_t N = 10000;
     float param = 5.0f;
-    VklGraphicsPointsParams params = {.point_size = param};
+    VklGraphicsPointParams params = {.point_size = param};
     VklVertex* vertices = calloc(N, sizeof(VklVertex));
     _add_visual(&scene, N, vertices, &params);
     vkl_app_run(app, N_FRAMES);
@@ -202,7 +202,7 @@ int test_interact_camera(TestContext* context)
 
     const uint32_t N = 10000;
     float param = 5.0f;
-    VklGraphicsPointsParams params = {.point_size = param};
+    VklGraphicsPointParams params = {.point_size = param};
     VklVertex* vertices = calloc(N, sizeof(VklVertex));
     _add_visual(&scene, N, vertices, &params);
     vkl_app_run(app, N_FRAMES);

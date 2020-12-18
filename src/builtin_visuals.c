@@ -77,7 +77,7 @@ static void _visual_marker_raw(VklVisual* visual)
     vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_POINTS, 0));
 
     // Sources
-    SOURCES(VklVertex, VklGraphicsPointsParams)
+    SOURCES(VklVertex, VklGraphicsPointParams)
 
     // Props:
 
@@ -97,7 +97,7 @@ static void _visual_marker_raw(VklVisual* visual)
     // Param: marker size.
     vkl_visual_prop(
         visual, VKL_PROP_MARKER_SIZE, 0, VKL_SOURCE_UNIFORM, 2, //
-        0, VKL_DTYPE_FLOAT, offsetof(VklGraphicsPointsParams, point_size));
+        0, VKL_DTYPE_FLOAT, offsetof(VklGraphicsPointParams, point_size));
 }
 
 

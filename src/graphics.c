@@ -65,8 +65,8 @@ static void _common_bindings(VklGraphics* graphics)
 
 static void _graphics_points(VklCanvas* canvas, VklGraphics* graphics)
 {
-    SHADER(VERTEX, "graphics_points_vert")
-    SHADER(FRAGMENT, "graphics_points_frag")
+    SHADER(VERTEX, "graphics_point_vert")
+    SHADER(FRAGMENT, "graphics_point_frag")
     PRIMITIVE(POINT_LIST)
 
     vkl_graphics_vertex_binding(graphics, 0, sizeof(VklVertex));

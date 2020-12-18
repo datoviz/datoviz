@@ -32,13 +32,13 @@ int test_visuals_1(TestContext* context)
         vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE, 1, sizeof(VklMVP));
     VklBufferRegions br_viewport = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
     VklBufferRegions br_params =
-        vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointsParams));
+        vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointParams));
     VklTexture* tex_color = vkl_ctx_texture(ctx, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
 
     // Binding data.
     VklMVP mvp = {0};
     float param = 5.0f;
-    VklGraphicsPointsParams params = {.point_size = param};
+    VklGraphicsPointParams params = {.point_size = param};
     {
         glm_mat4_identity(mvp.model);
         glm_mat4_identity(mvp.view);
@@ -46,7 +46,7 @@ int test_visuals_1(TestContext* context)
         vkl_upload_buffers(ctx, br_mvp, 0, sizeof(VklMVP), &mvp);
 
         // Upload params.
-        vkl_upload_buffers(ctx, br_params, 0, sizeof(VklGraphicsPointsParams), &params);
+        vkl_upload_buffers(ctx, br_params, 0, sizeof(VklGraphicsPointParams), &params);
     }
 
     // Vertex data.

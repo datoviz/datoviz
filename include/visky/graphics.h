@@ -87,7 +87,7 @@ typedef enum
 
 typedef struct VklVertex VklVertex;
 typedef struct VklMVP VklMVP;
-typedef struct VklGraphicsPointsParams VklGraphicsPointsParams;
+typedef struct VklGraphicsPointParams VklGraphicsPointParams;
 typedef struct VklGraphicsMarkerVertex VklGraphicsMarkerVertex;
 typedef struct VklGraphicsMarkerParams VklGraphicsMarkerParams;
 
@@ -118,7 +118,7 @@ struct VklMVP
 /*  Graphics points                                                                              */
 /*************************************************************************************************/
 
-struct VklGraphicsPointsParams
+struct VklGraphicsPointParams
 {
     float point_size;
 };
