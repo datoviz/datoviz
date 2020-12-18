@@ -1960,6 +1960,9 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             // INIT event at the first frame
             if (canvas->frame_idx == 0)
             {
+                // Call RESIZE callbacks at initialization.
+                _resize_callbacks(canvas);
+
                 VklEvent ev = {0};
                 ev.type = VKL_EVENT_INIT;
                 vkl_event_enqueue(canvas, ev);

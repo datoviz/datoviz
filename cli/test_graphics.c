@@ -506,8 +506,6 @@ int test_graphics_segment(TestContext* context)
     BINDINGS_NO_PARAMS
 
     vkl_upload_buffers(gpu->context, tg.br_index, 0, index_buf_size, indices);
-    tg.viewport = vkl_viewport_full(canvas);
-    vkl_upload_buffers(gpu->context, tg.br_viewport, 0, sizeof(VklViewport), &tg.viewport);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_RESIZE, 0, _segment_resize, &tg);
 
