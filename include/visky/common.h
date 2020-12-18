@@ -187,6 +187,45 @@ END_INCL_NO_WARN
 
 
 /*************************************************************************************************/
+/*  Object macros                                                                                */
+/*************************************************************************************************/
+
+#define INSTANCES_INIT(s, o, p, c, n, t)                                                          \
+    log_trace("init %d object(s) %s", n, #s);                                                     \
+    o->p = calloc(n, sizeof(s));                                                                  \
+    for (uint32_t i = 0; i < n; i++)                                                              \
+    {                                                                                             \
+        o->p[i].obj.type = t;                                                                     \
+    }                                                                                             \
+    o->c = n;
+
+
+#define INSTANCE_NEW(s, o, instances, n)                                                          \
+    s* o = NULL;                                                                                  \
+    for (uint32_t i = 0; i < n; i++)                                                              \
+        if (instances[i].obj.status < VKL_OBJECT_STATUS_INIT)                                     \
+        {                                                                                         \
+            o = &instances[i];                                                                    \
+            o->obj.status = VKL_OBJECT_STATUS_INIT;                                               \
+            o->obj.id = i;                                                                        \
+            log_trace("new instance %s idx #%d", #s, i);                                          \
+            break;                                                                                \
+        }                                                                                         \
+    if (o == NULL)                                                                                \
+    {                                                                                             \
+        log_error("maximum number of %s instances reached", #s);                                  \
+        exit(1);                                                                                  \
+    }
+
+
+#define INSTANCES_DESTROY(o)                                                                      \
+    log_trace("destroy objects %s", #o);                                                          \
+    FREE(o);                                                                                      \
+    o = NULL;
+
+
+
+/*************************************************************************************************/
 /*  8-bit integers                                                                               */
 /*************************************************************************************************/
 
@@ -244,6 +283,99 @@ typedef vec4 fvec4;
 /* Array types */
 typedef double dvec2[2];
 typedef double dvec4[4];
+
+
+
+/*************************************************************************************************/
+/*  Objects                                                                                      */
+/*************************************************************************************************/
+
+// Object types.
+typedef enum
+{
+    VKL_OBJECT_TYPE_UNDEFINED,
+    VKL_OBJECT_TYPE_APP,
+    VKL_OBJECT_TYPE_GPU,
+    VKL_OBJECT_TYPE_WINDOW,
+    VKL_OBJECT_TYPE_SWAPCHAIN,
+    VKL_OBJECT_TYPE_CANVAS,
+    VKL_OBJECT_TYPE_COMMANDS,
+    VKL_OBJECT_TYPE_BUFFER,
+    VKL_OBJECT_TYPE_TEXTURE,
+    VKL_OBJECT_TYPE_IMAGES,
+    VKL_OBJECT_TYPE_SAMPLER,
+    VKL_OBJECT_TYPE_BINDINGS,
+    VKL_OBJECT_TYPE_COMPUTE,
+    VKL_OBJECT_TYPE_GRAPHICS,
+    VKL_OBJECT_TYPE_BARRIER,
+    VKL_OBJECT_TYPE_FENCES,
+    VKL_OBJECT_TYPE_SEMAPHORES,
+    VKL_OBJECT_TYPE_RENDERPASS,
+    VKL_OBJECT_TYPE_FRAMEBUFFER,
+    VKL_OBJECT_TYPE_SUBMIT,
+    VKL_OBJECT_TYPE_SCREENCAST,
+    VKL_OBJECT_TYPE_ARRAY,
+    VKL_OBJECT_TYPE_VISUAL,
+    VKL_OBJECT_TYPE_SOURCE,
+    VKL_OBJECT_TYPE_SCENE,
+    VKL_OBJECT_TYPE_GRID,
+    VKL_OBJECT_TYPE_PANEL,
+    VKL_OBJECT_TYPE_CONTROLLER,
+    VKL_OBJECT_TYPE_AXES_2D,
+    VKL_OBJECT_TYPE_AXES_3D,
+    VKL_OBJECT_TYPE_CUSTOM,
+} VklObjectType;
+
+
+// Object status.
+// NOTE: the order is important, status >= CREATED means the object has been created
+typedef enum
+{
+    VKL_OBJECT_STATUS_NONE,          // after allocation
+    VKL_OBJECT_STATUS_DESTROYED,     // after destruction
+    VKL_OBJECT_STATUS_INIT,          // after struct initialization but before Vulkan creation
+    VKL_OBJECT_STATUS_CREATED,       // after proper creation on the GPU
+    VKL_OBJECT_STATUS_NEED_RECREATE, // need to be recreated
+    VKL_OBJECT_STATUS_NEED_UPDATE,   // need to be updated
+    VKL_OBJECT_STATUS_NEED_DESTROY,  // need to be destroyed
+    VKL_OBJECT_STATUS_INACTIVE,      // inactive
+    VKL_OBJECT_STATUS_INVALID,       // invalid
+} VklObjectStatus;
+
+typedef struct VklObject VklObject;
+
+
+
+/*************************************************************************************************/
+/*  Object structure                                                                             */
+/*************************************************************************************************/
+
+struct VklObject
+{
+    VklObjectType type;
+    VklObjectStatus status;
+
+    uint32_t group_id; // group identifier
+    uint32_t id;       // unique identifier among the objects of the same type and group
+};
+
+
+
+/*************************************************************************************************/
+/*  Object functions                                                                             */
+/*************************************************************************************************/
+
+static inline void obj_init(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_INIT; }
+
+static inline void obj_created(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_CREATED; }
+
+static inline void obj_destroyed(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_DESTROYED; }
+
+static inline bool is_obj_created(VklObject* obj)
+{
+    return obj != NULL && obj->status >= VKL_OBJECT_STATUS_CREATED;
+}
+
 
 
 /*************************************************************************************************/
