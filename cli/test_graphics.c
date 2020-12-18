@@ -53,6 +53,32 @@ static void _graphics_refill(VklCanvas* canvas, VklPrivateEvent ev)
     vkl_cmd_end(cmds, idx);
 }
 
+static void _common_bindings(TestGraphics* tg)
+{
+    VklGpu* gpu = tg->graphics->gpu;
+    VklGraphics* graphics = tg->graphics;
+
+    // Create the bindings.
+    tg->bindings = vkl_bindings(&graphics->slots, 1);
+
+    // Binding resources.
+    tg->br_mvp = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklMVP));
+    tg->br_viewport =
+        vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklViewport));
+    tg->texture = vkl_ctx_texture(gpu->context, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+
+    // Upload MVP.
+    glm_mat4_identity(tg->mvp.model);
+    glm_mat4_identity(tg->mvp.view);
+    glm_mat4_identity(tg->mvp.proj);
+    vkl_upload_buffers(gpu->context, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
+
+    // Bindings
+    vkl_bindings_buffer(&tg->bindings, 0, tg->br_mvp);
+    vkl_bindings_buffer(&tg->bindings, 1, tg->br_viewport);
+    vkl_bindings_texture(&tg->bindings, 2, tg->texture);
+}
+
 
 
 /*************************************************************************************************/
@@ -91,8 +117,9 @@ static void _graphics_refill(VklCanvas* canvas, VklPrivateEvent ev)
     TEST_END
 
 
+
 /*************************************************************************************************/
-/*  Graphics tests                                                                               */
+/*  Misc graphics tests                                                                          */
 /*************************************************************************************************/
 
 static void _graphics_points_wheel_callback(VklCanvas* canvas, VklEvent ev)
@@ -246,31 +273,9 @@ int test_graphics_3D(TestContext* context)
 
 
 
-static void _common_bindings(TestGraphics* tg)
-{
-    VklGpu* gpu = tg->graphics->gpu;
-    VklGraphics* graphics = tg->graphics;
-
-    // Create the bindings.
-    tg->bindings = vkl_bindings(&graphics->slots, 1);
-
-    // Binding resources.
-    tg->br_mvp = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklMVP));
-    tg->br_viewport =
-        vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklViewport));
-    tg->texture = vkl_ctx_texture(gpu->context, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
-
-    // Upload MVP.
-    glm_mat4_identity(tg->mvp.model);
-    glm_mat4_identity(tg->mvp.view);
-    glm_mat4_identity(tg->mvp.proj);
-    vkl_upload_buffers(gpu->context, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
-
-    // Bindings
-    vkl_bindings_buffer(&tg->bindings, 0, tg->br_mvp);
-    vkl_bindings_buffer(&tg->bindings, 1, tg->br_viewport);
-    vkl_bindings_texture(&tg->bindings, 2, tg->texture);
-}
+/*************************************************************************************************/
+/*  Systematic graphics tests                                                                    */
+/*************************************************************************************************/
 
 int test_graphics_points(TestContext* context)
 {
@@ -296,7 +301,7 @@ int test_graphics_points(TestContext* context)
 
 
 
-int test_graphics_basic(TestContext* context)
+int test_graphics_lines(TestContext* context)
 {
     INIT_GRAPHICS(VKL_GRAPHICS_LINES)
     BEGIN_DATA(VklVertex, 100)
@@ -306,6 +311,24 @@ int test_graphics_basic(TestContext* context)
         data[i].pos[0] = .75 * (-1 + 4 * t);
         data[i].pos[1] = .75 * (-1 + (i % 2 == 0 ? 0 : 2));
         vkl_colormap_scale(VKL_CMAP_RAINBOW, t, 0, .5, data[i].color);
+    }
+    END_DATA
+    BINDINGS_NO_PARAMS
+    RUN
+}
+
+
+
+int test_graphics_line_strip(TestContext* context)
+{
+    INIT_GRAPHICS(VKL_GRAPHICS_LINE_STRIP)
+    BEGIN_DATA(VklVertex, 1000)
+    for (uint32_t i = 0; i < tg.vertex_count; i++)
+    {
+        float t = (float)i / (float)tg.vertex_count;
+        data[i].pos[0] = -1 + 2 * t;
+        data[i].pos[1] = .5 * sin(8 * M_2PI * t);
+        vkl_colormap_scale(VKL_CMAP_RAINBOW, t, 0, 1, data[i].color);
     }
     END_DATA
     BINDINGS_NO_PARAMS
