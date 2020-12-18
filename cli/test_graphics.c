@@ -453,7 +453,8 @@ int test_graphics_marker(TestContext* context)
 }
 
 
-static void _segment_resize(VklCanvas* canvas, VklPrivateEvent ev)
+
+static void _resize(VklCanvas* canvas, VklPrivateEvent ev)
 {
     TestGraphics* tg = (TestGraphics*)ev.user_data;
     tg->viewport = vkl_viewport_full(canvas);
@@ -507,9 +508,45 @@ int test_graphics_segment(TestContext* context)
 
     vkl_upload_buffers(gpu->context, tg.br_index, 0, index_buf_size, indices);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_RESIZE, 0, _segment_resize, &tg);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_RESIZE, 0, _resize, &tg);
 
     RUN;
     FREE(indices);
+    TEST_END
+}
+
+
+
+int test_graphics_text(TestContext* context)
+{
+    INIT_GRAPHICS(VKL_GRAPHICS_TEXT)
+    const uint32_t N = 1;
+    BEGIN_DATA(VklGraphicsTextVertex, 4 * N)
+    for (uint32_t i = 0; i < N; i++)
+    {
+        // {text[i].pos[0], text[i].pos[1], text[i].pos[2]},
+        //     {text[i].shift[0] * dpi, text[i].shift[1] * dpi},
+        //     text[i].color,
+        //     {text[i].glyph_size / glyph_height * glyph_width * dpi, text[i].glyph_size * dpi},
+        //     {text[i].anchor[0], text[i].anchor[1]},
+        //     text[i].angle,
+        //     {ci, i - k, str_len, str_idx}, // char, charIdx, strLen, strIdx
+    }
+    END_DATA
+
+    tg.br_params = vkl_ctx_buffers(
+        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsTextParams));
+    VklGraphicsTextParams params = {0};
+    // TODO: params
+    vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsTextParams), &params);
+
+    _common_bindings(&tg);
+    vkl_bindings_buffer(&tg.bindings, 3, tg.br_params);
+    vkl_bindings_texture(&tg.bindings, 4, tg.texture); // TODO: font texture
+    vkl_bindings_update(&tg.bindings);
+
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_RESIZE, 0, _resize, &tg);
+
+    RUN;
     TEST_END
 }

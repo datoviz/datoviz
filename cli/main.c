@@ -76,6 +76,7 @@ static TestCase TEST_CASES[] = {
 
     CASE_FIXTURE_NONE(test_graphics_marker),  //
     CASE_FIXTURE_NONE(test_graphics_segment), //
+    CASE_FIXTURE_NONE(test_graphics_text),    //
 
     // array
     CASE_FIXTURE_NONE(test_array_1),   //

@@ -154,11 +154,18 @@ static void _graphics_text(VklCanvas* canvas, VklGraphics* graphics)
     SHADER(FRAGMENT, "graphics_text_frag")
     PRIMITIVE(TRIANGLE_LIST)
 
-    // vkl_graphics_vertex_binding(graphics, 0, sizeof(VklGraphicsSegmentVertex));
-    // vkl_graphics_vertex_attr(
-    //     graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VklGraphicsSegmentVertex, P0));
+    ATTR_BEGIN(VklGraphicsTextVertex)
+    ATTR_POS(VklGraphicsTextVertex, pos)
+    ATTR(VklGraphicsTextVertex, VK_FORMAT_R32G32B32A32_SFLOAT, shift)
+    ATTR_COL(VklGraphicsTextVertex, color)
+    ATTR(VklGraphicsTextVertex, VK_FORMAT_R32G32_SFLOAT, glyph_size)
+    ATTR(VklGraphicsTextVertex, VK_FORMAT_R32G32_SFLOAT, anchor)
+    ATTR(VklGraphicsTextVertex, VK_FORMAT_R32_SFLOAT, angle)
+    ATTR(VklGraphicsTextVertex, VK_FORMAT_R16G16B16A16_UINT, glyph)
 
     _common_bindings(graphics);
+    vkl_graphics_slot(graphics, USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    vkl_graphics_slot(graphics, USER_BINDING + 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
     CREATE
 }

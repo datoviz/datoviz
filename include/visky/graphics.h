@@ -105,6 +105,8 @@ typedef struct VklGraphicsPointParams VklGraphicsPointParams;
 typedef struct VklGraphicsMarkerVertex VklGraphicsMarkerVertex;
 typedef struct VklGraphicsMarkerParams VklGraphicsMarkerParams;
 typedef struct VklGraphicsSegmentVertex VklGraphicsSegmentVertex;
+typedef struct VklGraphicsTextParams VklGraphicsTextParams;
+typedef struct VklGraphicsTextVertex VklGraphicsTextVertex;
 
 
 
@@ -162,6 +164,7 @@ struct VklGraphicsMarkerParams
 };
 
 
+
 /*************************************************************************************************/
 /*  Graphics segment                                                                             */
 /*************************************************************************************************/
@@ -175,6 +178,30 @@ struct VklGraphicsSegmentVertex
     float linewidth;
     VklCapType cap0;
     VklCapType cap1;
+    // uint8_t transform_mode;
+};
+
+
+
+/*************************************************************************************************/
+/*  Graphics text                                                                                */
+/*************************************************************************************************/
+
+struct VklGraphicsTextParams
+{
+    ivec2 grid_size;
+    ivec2 tex_size;
+};
+
+struct VklGraphicsTextVertex
+{
+    vec3 pos;
+    vec2 shift;
+    cvec4 color;
+    vec2 glyph_size;
+    vec2 anchor;
+    float angle;
+    usvec4 glyph; // char, char_index, str_len, str_index
     // uint8_t transform_mode;
 };
 
