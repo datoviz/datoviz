@@ -208,6 +208,19 @@ struct VklGraphicsTextVertex
 
 
 /*************************************************************************************************/
+/*  Util functions                                                                               */
+/*************************************************************************************************/
+
+static void _graphics_text_string(VklGraphicsTextVertex* vertices, const char* str)
+{
+    // vertices must point to an array of at least 4*strlen Vertex structs.
+    ASSERT(vertices != NULL);
+    ASSERT(str != NULL);
+}
+
+
+
+/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 

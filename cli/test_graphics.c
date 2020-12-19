@@ -522,9 +522,69 @@ int test_graphics_segment(TestContext* context)
 }
 
 
-#define VKY_TEXT_CHARS                                                                            \
+#define VKL_FONT_ATLAS_STRING                                                                     \
     " !\"#$%&'()*+,-./"                                                                           \
     "0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7f"
+
+typedef struct VklFontAtlas VklFontAtlas;
+struct VklFontAtlas
+{
+    const char* name;
+    uint32_t width, height;
+    uint32_t cols, rows;
+    uint8_t* font_texture;
+    float glyph_width, glyph_height;
+    const char* font_str;
+};
+
+static size_t _font_atlas_glyph(VklFontAtlas* atlas, const char* str, uint32_t idx)
+{
+    ASSERT(atlas != NULL);
+    ASSERT(str != NULL);
+    ASSERT(idx < strlen(str));
+    ASSERT(atlas->font_str != NULL);
+
+    char c[2] = {str[idx], 0};
+    return strcspn(atlas->font_str, c);
+}
+
+static void _font_atlas_glyph_size(VklFontAtlas* atlas, float size, vec2 glyph_size)
+{
+    ASSERT(atlas != NULL);
+    glyph_size[0] = size * atlas->glyph_width / atlas->glyph_height;
+    glyph_size[1] = size;
+}
+
+static VklFontAtlas vkl_font_atlas(const char* img_path)
+{
+    ASSERT(img_path != NULL);
+
+    int width, height, depth;
+
+    VklFontAtlas atlas = {0};
+    atlas.font_texture = stbi_load(img_path, &width, &height, &depth, STBI_rgb_alpha);
+    ASSERT(width > 0);
+    ASSERT(height > 0);
+    ASSERT(depth > 0);
+
+    // TODO: parameters
+    atlas.font_str = VKL_FONT_ATLAS_STRING;
+    atlas.cols = 16;
+    atlas.rows = 6;
+
+    atlas.width = (uint32_t)width;
+    atlas.height = (uint32_t)height;
+    atlas.glyph_width = atlas.width / (float)atlas.cols;
+    atlas.glyph_height = atlas.height / (float)atlas.rows;
+
+    return atlas;
+}
+
+static void vkl_font_atlas_destroy(VklFontAtlas* atlas)
+{
+    ASSERT(atlas != NULL);
+    stbi_image_free(atlas->font_texture);
+}
 
 int test_graphics_text(TestContext* context)
 {
@@ -534,24 +594,16 @@ int test_graphics_text(TestContext* context)
     const uint32_t offset = strlen(str);
     BEGIN_DATA(VklGraphicsTextVertex, 4 * (N + offset))
 
-
     // Font texture
-    int width, height, depth;
     char path[1024];
     snprintf(path, sizeof(path), "%s/textures/%s", DATA_DIR, "font_inconsolata.png");
-    stbi_uc* font_map = stbi_load(path, &width, &height, &depth, STBI_rgb_alpha);
-    ASSERT(width > 0);
-    ASSERT(height > 0);
-    ASSERT(depth > 0);
+    VklFontAtlas atlas = vkl_font_atlas(path);
 
     VklGraphicsTextParams params = {0};
-    params.grid_size[0] = 6;
-    params.grid_size[1] = 16;
-    params.tex_size[0] = width;
-    params.tex_size[1] = height;
-
-    float glyph_width = params.tex_size[0] / (float)params.grid_size[1];
-    float glyph_height = params.tex_size[1] / (float)params.grid_size[0];
+    params.grid_size[0] = (int32_t)atlas.rows;
+    params.grid_size[1] = (int32_t)atlas.cols;
+    params.tex_size[0] = (int32_t)atlas.width;
+    params.tex_size[1] = (int32_t)atlas.height;
 
     float t = 0;
     for (uint32_t i = 0; i < N; i++)
@@ -561,11 +613,9 @@ int test_graphics_text(TestContext* context)
         {
             data[4 * i + j].pos[0] = .5 * cos(M_2PI * t);
             data[4 * i + j].pos[1] = .5 * sin(M_2PI * t);
-            data[4 * i + j].pos[2] = 0;
             vkl_colormap_scale(VKL_CMAP_HSV, t, 0, 1, data[4 * i + j].color);
 
-            data[4 * i + j].glyph_size[0] = 50 * glyph_width / glyph_height;
-            data[4 * i + j].glyph_size[1] = 50;
+            _font_atlas_glyph_size(&atlas, 50, data[4 * i + j].glyph_size);
             data[4 * i + j].glyph[0] = 33 + i; // char
             data[4 * i + j].glyph[1] = 0;      // char idx
             data[4 * i + j].glyph[2] = 1;      // str len
@@ -574,18 +624,15 @@ int test_graphics_text(TestContext* context)
     }
     for (uint32_t i = N; i < N + offset; i++)
     {
-        char c[2] = {str[i - N], 0};
-        size_t g = strcspn(VKY_TEXT_CHARS, c);
         for (uint32_t j = 0; j < 4; j++)
         {
             vkl_colormap_scale(VKL_CMAP_RAINBOW, i - N, 0, offset, data[4 * i + j].color);
 
-            data[4 * i + j].glyph_size[0] = 30 * glyph_width / glyph_height;
-            data[4 * i + j].glyph_size[1] = 30;
-            data[4 * i + j].glyph[0] = g;      // char
-            data[4 * i + j].glyph[1] = i - N;  // char idx
-            data[4 * i + j].glyph[2] = offset; // str len
-            data[4 * i + j].glyph[3] = N;      // str idx
+            _font_atlas_glyph_size(&atlas, 30, data[4 * i + j].glyph_size);
+            data[4 * i + j].glyph[0] = _font_atlas_glyph(&atlas, str, i - N); // char
+            data[4 * i + j].glyph[1] = i - N;                                 // char idx
+            data[4 * i + j].glyph[2] = offset;                                // str len
+            data[4 * i + j].glyph[3] = N;                                     // str idx
         }
     }
     END_DATA
@@ -594,12 +641,14 @@ int test_graphics_text(TestContext* context)
         tg.br_params = vkl_ctx_buffers(
             gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsTextParams));
         tg.texture2 = vkl_ctx_texture(
-            gpu->context, 2, (uvec3){(uint32_t)width, (uint32_t)height, 1},
+            gpu->context, 2, (uvec3){(uint32_t)atlas.width, (uint32_t)atlas.height, 1},
             VK_FORMAT_R8G8B8A8_UNORM);
         // NOTE: the font texture must have LINEAR filter! otherwise no antialiasing
         vkl_texture_filter(tg.texture2, VKL_FILTER_MAX, VK_FILTER_LINEAR);
         vkl_texture_filter(tg.texture2, VKL_FILTER_MIN, VK_FILTER_LINEAR);
-        vkl_upload_texture(gpu->context, tg.texture2, (uint32_t)(width * height * 4), font_map);
+        vkl_upload_texture(
+            gpu->context, tg.texture2, (uint32_t)(atlas.width * atlas.height * 4),
+            atlas.font_texture);
         vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsTextParams), &params);
     }
 
@@ -611,6 +660,6 @@ int test_graphics_text(TestContext* context)
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_RESIZE, 0, _resize, &tg);
 
     RUN;
-    stbi_image_free(font_map);
+    vkl_font_atlas_destroy(&atlas);
     TEST_END
 }
