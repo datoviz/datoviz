@@ -524,7 +524,6 @@ vkl_scene_panel(VklScene* scene, uint32_t row, uint32_t col, VklControllerType t
 VklVisual* vkl_scene_visual(VklPanel* panel, VklVisualType type, int flags)
 {
     ASSERT(panel != NULL);
-    // TODO
     ASSERT(panel->controller != NULL);
     VklScene* scene = panel->grid->canvas->scene;
     INSTANCE_NEW(VklVisual, visual, scene->visuals, scene->max_visuals)

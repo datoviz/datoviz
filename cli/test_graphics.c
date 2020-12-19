@@ -522,12 +522,17 @@ int test_graphics_segment(TestContext* context)
 }
 
 
+#define VKY_TEXT_CHARS                                                                            \
+    " !\"#$%&'()*+,-./"                                                                           \
+    "0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7f"
 
 int test_graphics_text(TestContext* context)
 {
     INIT_GRAPHICS(VKL_GRAPHICS_TEXT)
     const uint32_t N = 26;
-    BEGIN_DATA(VklGraphicsTextVertex, 4 * N)
+    const char str[] = "Hello world!";
+    const uint32_t offset = strlen(str);
+    BEGIN_DATA(VklGraphicsTextVertex, 4 * (N + offset))
 
 
     // Font texture
@@ -548,7 +553,6 @@ int test_graphics_text(TestContext* context)
     float glyph_width = params.tex_size[0] / (float)params.grid_size[1];
     float glyph_height = params.tex_size[1] / (float)params.grid_size[0];
 
-
     float t = 0;
     for (uint32_t i = 0; i < N; i++)
     {
@@ -566,8 +570,22 @@ int test_graphics_text(TestContext* context)
             data[4 * i + j].glyph[1] = 0;      // char idx
             data[4 * i + j].glyph[2] = 1;      // str len
             data[4 * i + j].glyph[3] = i;      // str idx
-            data[4 * i + j].anchor[0] = 0;
-            data[4 * i + j].anchor[1] = 0;
+        }
+    }
+    for (uint32_t i = N; i < N + offset; i++)
+    {
+        char c[2] = {str[i - N], 0};
+        size_t g = strcspn(VKY_TEXT_CHARS, c);
+        for (uint32_t j = 0; j < 4; j++)
+        {
+            vkl_colormap_scale(VKL_CMAP_RAINBOW, i - N, 0, offset, data[4 * i + j].color);
+
+            data[4 * i + j].glyph_size[0] = 30 * glyph_width / glyph_height;
+            data[4 * i + j].glyph_size[1] = 30;
+            data[4 * i + j].glyph[0] = g;      // char
+            data[4 * i + j].glyph[1] = i - N;  // char idx
+            data[4 * i + j].glyph[2] = offset; // str len
+            data[4 * i + j].glyph[3] = N;      // str idx
         }
     }
     END_DATA
