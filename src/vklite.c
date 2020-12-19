@@ -3,10 +3,6 @@
 #include "vklite_utils.h"
 #include <stdlib.h>
 
-BEGIN_INCL_NO_WARN
-#include <stb_image.h>
-END_INCL_NO_WARN
-
 
 
 /*************************************************************************************************/

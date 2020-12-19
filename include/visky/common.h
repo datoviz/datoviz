@@ -120,6 +120,8 @@ BEGIN_INCL_NO_WARN
 #include <cglm/cglm.h>
 END_INCL_NO_WARN
 
+// #define STB_IMAGE_IMPLEMENTATION
+
 #include "log.h"
 
 

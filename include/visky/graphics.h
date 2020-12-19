@@ -4,6 +4,11 @@
 #include "canvas.h"
 #include "vklite.h"
 
+// #define STB_IMAGE_IMPLEMENTATION
+BEGIN_INCL_NO_WARN
+#include "../external/stb_image.h"
+END_INCL_NO_WARN
+
 
 
 /*************************************************************************************************/
@@ -211,12 +216,107 @@ struct VklGraphicsTextVertex
 /*  Util functions                                                                               */
 /*************************************************************************************************/
 
-// static void _graphics_text_string(VklGraphicsTextVertex* vertices, const char* str)
-// {
-//     // vertices must point to an array of at least 4*strlen Vertex structs.
-//     ASSERT(vertices != NULL);
-//     ASSERT(str != NULL);
-// }
+#define VKL_FONT_ATLAS_STRING                                                                     \
+    " !\"#$%&'()*+,-./"                                                                           \
+    "0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7f"
+
+typedef struct VklFontAtlas VklFontAtlas;
+struct VklFontAtlas
+{
+    const char* name;
+    uint32_t width, height;
+    uint32_t cols, rows;
+    uint8_t* font_texture;
+    float glyph_width, glyph_height;
+    const char* font_str;
+};
+
+static size_t _font_atlas_glyph(VklFontAtlas* atlas, const char* str, uint32_t idx)
+{
+    ASSERT(atlas != NULL);
+    ASSERT(str != NULL);
+    ASSERT(idx < strlen(str));
+    ASSERT(atlas->font_str != NULL);
+
+    char c[2] = {str[idx], 0};
+    return strcspn(atlas->font_str, c);
+}
+
+static void _font_atlas_glyph_size(VklFontAtlas* atlas, float size, vec2 glyph_size)
+{
+    ASSERT(atlas != NULL);
+    glyph_size[0] = size * atlas->glyph_width / atlas->glyph_height;
+    glyph_size[1] = size;
+}
+
+static VklFontAtlas vkl_font_atlas(const char* img_path)
+{
+    ASSERT(img_path != NULL);
+
+    int width, height, depth;
+
+    VklFontAtlas atlas = {0};
+    atlas.font_texture = stbi_load(img_path, &width, &height, &depth, STBI_rgb_alpha);
+    ASSERT(width > 0);
+    ASSERT(height > 0);
+    ASSERT(depth > 0);
+
+    // TODO: parameters
+    atlas.font_str = VKL_FONT_ATLAS_STRING;
+    atlas.cols = 16;
+    atlas.rows = 6;
+
+    atlas.width = (uint32_t)width;
+    atlas.height = (uint32_t)height;
+    atlas.glyph_width = atlas.width / (float)atlas.cols;
+    atlas.glyph_height = atlas.height / (float)atlas.rows;
+
+    return atlas;
+}
+
+static void vkl_font_atlas_destroy(VklFontAtlas* atlas)
+{
+    ASSERT(atlas != NULL);
+    stbi_image_free(atlas->font_texture);
+}
+
+static void _graphics_text_string(
+    VklFontAtlas* atlas, uint32_t str_idx, const char* str,                                    //
+    vec3 pos, vec2 shift, vec2 anchor, float angle, float font_size, const cvec4* char_colors, //
+    VklGraphicsTextVertex* vertices)                                                           //
+{
+    // Append a string to a vertex array.
+
+    // vertices must point to an array of at least 4*strlen Vertex structs.
+    ASSERT(vertices != NULL);
+    ASSERT(str != NULL);
+    uint32_t n = strlen(str);
+    ASSERT(n > 0);
+    for (uint32_t i = 0; i < n; i++)
+    {
+        size_t g = _font_atlas_glyph(atlas, str, i);
+        for (uint32_t j = 0; j < 4; j++)
+        {
+            glm_vec3_copy(pos, vertices[4 * i + j].pos);
+            glm_vec3_copy(shift, vertices[4 * i + j].shift);
+            glm_vec3_copy(anchor, vertices[4 * i + j].anchor);
+            vertices[4 * i + j].angle = angle;
+
+            // Color.
+            if (char_colors != NULL)
+                memcpy(vertices[4 * i + j].color, char_colors[i], sizeof(cvec4));
+
+            // Glyph size.
+            _font_atlas_glyph_size(atlas, font_size, vertices[4 * i + j].glyph_size);
+
+            // Glyph.
+            vertices[4 * i + j].glyph[0] = g;       // char
+            vertices[4 * i + j].glyph[1] = i;       // char idx
+            vertices[4 * i + j].glyph[2] = n;       // str len
+            vertices[4 * i + j].glyph[3] = str_idx; // str idx
+        }
+    }
+}
 
 
 

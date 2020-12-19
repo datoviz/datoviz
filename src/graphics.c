@@ -1,3 +1,4 @@
+#define STB_IMAGE_IMPLEMENTATION
 #include "../include/visky/graphics.h"
 #include "../include/visky/canvas.h"
 
