@@ -586,6 +586,45 @@ static void vkl_font_atlas_destroy(VklFontAtlas* atlas)
     stbi_image_free(atlas->font_texture);
 }
 
+
+static void _graphics_text_string(
+    VklFontAtlas* atlas, uint32_t str_idx, const char* str,                                    //
+    vec3 pos, vec2 shift, vec2 anchor, float angle, float font_size, const cvec4* char_colors, //
+    VklGraphicsTextVertex* vertices)                                                           //
+{
+    // Append a string to a vertex array.
+
+    // vertices must point to an array of at least 4*strlen Vertex structs.
+    ASSERT(vertices != NULL);
+    ASSERT(str != NULL);
+    uint32_t n = strlen(str);
+    ASSERT(n > 0);
+    for (uint32_t i = 0; i < n; i++)
+    {
+        size_t g = _font_atlas_glyph(atlas, str, i);
+        for (uint32_t j = 0; j < 4; j++)
+        {
+            glm_vec3_copy(pos, vertices[4 * i + j].pos);
+            glm_vec3_copy(shift, vertices[4 * i + j].shift);
+            glm_vec3_copy(anchor, vertices[4 * i + j].anchor);
+            vertices[4 * i + j].angle = angle;
+
+            // Color.
+            if (char_colors != NULL)
+                memcpy(vertices[4 * i + j].color, char_colors[i], sizeof(cvec4));
+
+            // Glyph size.
+            _font_atlas_glyph_size(atlas, font_size, vertices[4 * i + j].glyph_size);
+
+            // Glyph.
+            vertices[4 * i + j].glyph[0] = g;       // char
+            vertices[4 * i + j].glyph[1] = i;       // char idx
+            vertices[4 * i + j].glyph[2] = n;       // str len
+            vertices[4 * i + j].glyph[3] = str_idx; // str idx
+        }
+    }
+}
+
 int test_graphics_text(TestContext* context)
 {
     INIT_GRAPHICS(VKL_GRAPHICS_TEXT)
@@ -605,36 +644,31 @@ int test_graphics_text(TestContext* context)
     params.tex_size[0] = (int32_t)atlas.width;
     params.tex_size[1] = (int32_t)atlas.height;
 
+    // 26 letters in a circle.
     float t = 0;
+    vec4 z = {0};
+    float a = 0, x = 0, y = 0;
     for (uint32_t i = 0; i < N; i++)
     {
         t = i / (float)N;
-        for (uint32_t j = 0; j < 4; j++)
-        {
-            data[4 * i + j].pos[0] = .5 * cos(M_2PI * t);
-            data[4 * i + j].pos[1] = .5 * sin(M_2PI * t);
-            vkl_colormap_scale(VKL_CMAP_HSV, t, 0, 1, data[4 * i + j].color);
+        a = M_2PI * t;
+        x = .75 * cos(a);
+        y = .75 * sin(a);
+        cvec4 c;
+        vkl_colormap_scale(VKL_CMAP_HSV, t, 0, 1, c);
 
-            _font_atlas_glyph_size(&atlas, 50, data[4 * i + j].glyph_size);
-            data[4 * i + j].glyph[0] = 33 + i; // char
-            data[4 * i + j].glyph[1] = 0;      // char idx
-            data[4 * i + j].glyph[2] = 1;      // str len
-            data[4 * i + j].glyph[3] = i;      // str idx
-        }
+        char s[2] = {0};
+        s[0] = (char)(65 + i);
+        _graphics_text_string(
+            &atlas, i, s, (vec3){x, y, 0}, z, z, -a, 40, (const cvec4*)c, &data[4 * i]);
     }
-    for (uint32_t i = N; i < N + offset; i++)
-    {
-        for (uint32_t j = 0; j < 4; j++)
-        {
-            vkl_colormap_scale(VKL_CMAP_RAINBOW, i - N, 0, offset, data[4 * i + j].color);
 
-            _font_atlas_glyph_size(&atlas, 30, data[4 * i + j].glyph_size);
-            data[4 * i + j].glyph[0] = _font_atlas_glyph(&atlas, str, i - N); // char
-            data[4 * i + j].glyph[1] = i - N;                                 // char idx
-            data[4 * i + j].glyph[2] = offset;                                // str len
-            data[4 * i + j].glyph[3] = N;                                     // str idx
-        }
-    }
+    // Hello world
+    cvec4 colors[128] = {0};
+    for (uint32_t i = 0; i < offset; i++)
+        vkl_colormap_scale(VKL_CMAP_RAINBOW, i, 0, offset, colors[i]);
+    _graphics_text_string(&atlas, 26, str, z, z, z, 0, 50, (const cvec4*)colors, &data[4 * 26]);
+
     END_DATA
 
     {
