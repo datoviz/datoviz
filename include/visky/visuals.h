@@ -281,14 +281,13 @@ VKY_EXPORT void vkl_visual_source(
     VklPipelineType pipeline, uint32_t pipeline_idx, uint32_t slot_idx, VkDeviceSize item_size,
     int flags);
 
-VKY_EXPORT void vkl_visual_prop(
-    VklVisual* visual, VklPropType prop_type, uint32_t idx,      //
-    VklSourceType source, uint32_t source_idx,                   //
-    uint32_t field_idx, VklDataType dtype, VkDeviceSize offset); //
+VKY_EXPORT void
+vkl_visual_prop(VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, VklDataType dtype);
 
 VKY_EXPORT void vkl_visual_prop_copy(
-    VklVisual* visual, VklPropType prop_type, uint32_t idx, VklArrayCopyType copy_type,
-    uint32_t reps);
+    VklVisual* visual, VklPropType prop_type, uint32_t prop_idx,                             //
+    VklSourceType source_type, uint32_t source_idx, uint32_t field_idx, VkDeviceSize offset, //
+    VklArrayCopyType copy_type, uint32_t reps);
 
 VKY_EXPORT void vkl_visual_graphics(VklVisual* visual, VklGraphics* graphics);
 

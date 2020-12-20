@@ -29,25 +29,28 @@ static void _common_props(VklVisual* visual)
 
     // MVP
     // Model.
-    vkl_visual_prop(
+    vkl_visual_prop(visual, VKL_PROP_MODEL, 0, VKL_DTYPE_MAT4);
+    vkl_visual_prop_copy(
         visual, VKL_PROP_MODEL, 0, VKL_SOURCE_UNIFORM, 0, //
-        0, VKL_DTYPE_MAT4, offsetof(VklMVP, model));
+        0, offsetof(VklMVP, model), VKL_ARRAY_COPY_SINGLE, 1);
 
     // View.
-    vkl_visual_prop(
+    vkl_visual_prop(visual, VKL_PROP_VIEW, 0, VKL_DTYPE_MAT4);
+    vkl_visual_prop_copy(
         visual, VKL_PROP_VIEW, 0, VKL_SOURCE_UNIFORM, 0, //
-        1, VKL_DTYPE_MAT4, offsetof(VklMVP, view));
+        1, offsetof(VklMVP, view), VKL_ARRAY_COPY_SINGLE, 1);
 
     // Proj.
-    vkl_visual_prop(
+    vkl_visual_prop(visual, VKL_PROP_PROJ, 0, VKL_DTYPE_MAT4);
+    vkl_visual_prop_copy(
         visual, VKL_PROP_PROJ, 0, VKL_SOURCE_UNIFORM, 0, //
-        2, VKL_DTYPE_MAT4, offsetof(VklMVP, proj));
-
+        2, offsetof(VklMVP, proj), VKL_ARRAY_COPY_SINGLE, 1);
 
     // Colormap texture.
-    vkl_visual_prop(
+    vkl_visual_prop(visual, VKL_PROP_COLOR_TEXTURE, 0, VKL_DTYPE_CVEC4);
+    vkl_visual_prop_copy(
         visual, VKL_PROP_COLOR_TEXTURE, 0, VKL_SOURCE_TEXTURE_2D, 0, //
-        0, VKL_DTYPE_CVEC4, 0);
+        0, 0, VKL_ARRAY_COPY_SINGLE, 1);
 }
 
 #define SOURCES(VERTEX_TYPE, PARAMS_TYPE)                                                         \
@@ -83,22 +86,25 @@ static void _visual_marker_raw(VklVisual* visual)
     // Props:
 
     // Vertex pos.
-    vkl_visual_prop(                                   //
+    vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_VEC3);
+    vkl_visual_prop_copy(
         visual, VKL_PROP_POS, 0, VKL_SOURCE_VERTEX, 0, //
-        0, VKL_DTYPE_VEC3, offsetof(VklVertex, pos));  //
+        0, offsetof(VklVertex, pos), VKL_ARRAY_COPY_SINGLE, 1);
 
     // Vertex color.
-    vkl_visual_prop(                                     //
+    vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4);
+    vkl_visual_prop_copy(
         visual, VKL_PROP_COLOR, 0, VKL_SOURCE_VERTEX, 0, //
-        1, VKL_DTYPE_CVEC4, offsetof(VklVertex, color)); //
+        1, offsetof(VklVertex, color), VKL_ARRAY_COPY_SINGLE, 1);
 
     // Common props.
     _common_props(visual);
 
     // Param: marker size.
-    vkl_visual_prop(
+    vkl_visual_prop(visual, VKL_PROP_MARKER_SIZE, 0, VKL_DTYPE_FLOAT);
+    vkl_visual_prop_copy(
         visual, VKL_PROP_MARKER_SIZE, 0, VKL_SOURCE_UNIFORM, 2, //
-        0, VKL_DTYPE_FLOAT, offsetof(VklGraphicsPointParams, point_size));
+        0, offsetof(VklGraphicsPointParams, point_size), VKL_ARRAY_COPY_SINGLE, 1);
 }
 
 
@@ -126,23 +132,23 @@ static void _visual_segment_raw(VklVisual* visual)
     // Props:
 
     // Vertex pos, segment start.
-    vkl_visual_prop(                                   //
+    vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_VEC3);
+    vkl_visual_prop_copy(
         visual, VKL_PROP_POS, 0, VKL_SOURCE_VERTEX, 0, //
-        0, VKL_DTYPE_VEC3, offsetof(VklVertex, pos));  //
-    vkl_visual_prop_copy(visual, VKL_PROP_POS, 0, VKL_ARRAY_COPY_SINGLE, 2);
+        0, offsetof(VklVertex, pos), VKL_ARRAY_COPY_SINGLE, 2);
 
     // Vertex pos, segment end.
-    vkl_visual_prop(                                                      //
-        visual, VKL_PROP_POS, 1, VKL_SOURCE_VERTEX, 0,                    //
-        0, VKL_DTYPE_VEC3, sizeof(VklVertex) + offsetof(VklVertex, pos)); //
-    vkl_visual_prop_copy(visual, VKL_PROP_POS, 1, VKL_ARRAY_COPY_SINGLE, 2);
+    vkl_visual_prop(visual, VKL_PROP_POS, 1, VKL_DTYPE_VEC3);
+    vkl_visual_prop_copy(
+        visual, VKL_PROP_POS, 1, VKL_SOURCE_VERTEX, 0, //
+        0, sizeof(VklVertex) + offsetof(VklVertex, pos), VKL_ARRAY_COPY_SINGLE, 2);
 
 
     // Vertex color.
-    vkl_visual_prop(                                     //
+    vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4);
+    vkl_visual_prop_copy(
         visual, VKL_PROP_COLOR, 0, VKL_SOURCE_VERTEX, 0, //
-        1, VKL_DTYPE_CVEC4, offsetof(VklVertex, color)); //
-    vkl_visual_prop_copy(visual, VKL_PROP_COLOR, 0, VKL_ARRAY_COPY_REPEAT, 2);
+        1, offsetof(VklVertex, color), VKL_ARRAY_COPY_REPEAT, 2);
 
     // Common props.
     _common_props(visual);
@@ -179,12 +185,12 @@ static void _visual_axes_2D(VklVisual* visual)
     // - length in px
 
     // xticks, yticks positions
-    vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_SOURCE_NONE, 0, 0, VKL_DTYPE_FLOAT, 0);
-    vkl_visual_prop(visual, VKL_PROP_POS, 1, VKL_SOURCE_NONE, 0, 0, VKL_DTYPE_FLOAT, 0);
+    // vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_SOURCE_NONE, 0, 0, VKL_DTYPE_FLOAT, 0);
+    // vkl_visual_prop(visual, VKL_PROP_POS, 1, VKL_SOURCE_NONE, 0, 0, VKL_DTYPE_FLOAT, 0);
 
     // Color
-    vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_SOURCE_VERTEX, 0, 1, VKL_DTYPE_CVEC4, 0);
-    vkl_visual_prop_copy(visual, VKL_PROP_COLOR, 0, VKL_ARRAY_COPY_REPEAT, 2);
+    // vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_SOURCE_VERTEX, 0, 1, VKL_DTYPE_CVEC4, 0);
+    // vkl_visual_prop_copy(visual, VKL_PROP_COLOR, 0, VKL_ARRAY_COPY_REPEAT, 2);
 
     // line width
 
