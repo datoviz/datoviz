@@ -56,7 +56,8 @@ static void _common_props(VklVisual* visual)
             visual, VKL_SOURCE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VERTEX_TYPE), 0);   \
         _common_sources(visual);                                                                  \
         vkl_visual_source(                                                                        \
-            visual, VKL_SOURCE_UNIFORM, 2, VKL_PIPELINE_GRAPHICS, 0, 3, sizeof(PARAMS_TYPE), 0);  \
+            visual, VKL_SOURCE_UNIFORM, 2, VKL_PIPELINE_GRAPHICS, 0, VKL_USER_BINDING,            \
+            sizeof(PARAMS_TYPE), 0);                                                              \
     }
 
 
@@ -150,6 +151,57 @@ static void _visual_segment_raw(VklVisual* visual)
 
 
 /*************************************************************************************************/
+/*  Axes 2D                                                                                      */
+/*************************************************************************************************/
+
+static void _visual_axes_2D(VklVisual* visual)
+{
+    ASSERT(visual != NULL);
+    VklCanvas* canvas = visual->canvas;
+    ASSERT(canvas != NULL);
+
+    // Graphics.
+    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_SEGMENT, 0));
+
+    // Sources
+    vkl_visual_source(
+        visual, VKL_SOURCE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, //
+        0, sizeof(VklGraphicsSegmentVertex), 0);
+    _common_sources(visual);
+
+    // Props:
+
+    // for each axis coord
+    // for each axis level:
+    // - position
+    // - color
+    // - line width
+    // - length in px
+
+    // Vertex pos, segment start.
+    vkl_visual_prop(                                                //
+        visual, VKL_PROP_POS, 0, VKL_SOURCE_VERTEX, 0,              //
+        0, VKL_DTYPE_VEC3, offsetof(VklGraphicsSegmentVertex, P0)); //
+
+    // Vertex pos, segment end.
+    vkl_visual_prop(                                                //
+        visual, VKL_PROP_POS, 1, VKL_SOURCE_VERTEX, 0,              //
+        0, VKL_DTYPE_VEC3, offsetof(VklGraphicsSegmentVertex, P1)); //
+
+
+    // Vertex color.
+    vkl_visual_prop(                                     //
+        visual, VKL_PROP_COLOR, 0, VKL_SOURCE_VERTEX, 0, //
+        1, VKL_DTYPE_CVEC4, offsetof(VklVertex, color)); //
+    vkl_visual_prop_copy(visual, VKL_PROP_COLOR, 0, VKL_ARRAY_COPY_REPEAT, 2);
+
+    // Common props.
+    _common_props(visual);
+}
+
+
+
+/*************************************************************************************************/
 /*  Main function                                                                                */
 /*************************************************************************************************/
 
@@ -168,6 +220,10 @@ VklVisual vkl_visual_builtin(VklCanvas* canvas, VklVisualType type, int flags)
     case VKL_VISUAL_SEGMENT:
         // TODO: raw/agg
         _visual_segment_raw(&visual);
+        break;
+
+    case VKL_VISUAL_AXES_2D:
+        _visual_axes_2D(&visual);
         break;
 
     case VKL_VISUAL_CUSTOM:

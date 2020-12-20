@@ -58,9 +58,6 @@ static inline void _load_shader(
 /*  Common                                                                                       */
 /*************************************************************************************************/
 
-// Number of common bindings
-#define USER_BINDING 3
-
 static void _common_bindings(VklGraphics* graphics)
 {
     vkl_graphics_slot(graphics, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);         // MVP
@@ -85,7 +82,7 @@ static void _graphics_points(VklCanvas* canvas, VklGraphics* graphics)
     ATTR_COL(VklVertex, color)
 
     _common_bindings(graphics);
-    vkl_graphics_slot(graphics, USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    vkl_graphics_slot(graphics, VKL_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
     CREATE
 }
@@ -122,7 +119,7 @@ static void _graphics_marker(VklCanvas* canvas, VklGraphics* graphics)
     ATTR(VklGraphicsMarkerVertex, VK_FORMAT_R8_UNORM, angle)
 
     _common_bindings(graphics);
-    vkl_graphics_slot(graphics, USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    vkl_graphics_slot(graphics, VKL_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
     CREATE
 }
@@ -165,8 +162,8 @@ static void _graphics_text(VklCanvas* canvas, VklGraphics* graphics)
     ATTR(VklGraphicsTextVertex, VK_FORMAT_R16G16B16A16_UINT, glyph)
 
     _common_bindings(graphics);
-    vkl_graphics_slot(graphics, USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-    vkl_graphics_slot(graphics, USER_BINDING + 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+    vkl_graphics_slot(graphics, VKL_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    vkl_graphics_slot(graphics, VKL_USER_BINDING + 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
     CREATE
 }

@@ -216,6 +216,9 @@ struct VklGraphicsTextVertex
 /*  Util functions                                                                               */
 /*************************************************************************************************/
 
+// Number of common bindings
+#define VKL_USER_BINDING 3
+
 #define VKL_FONT_ATLAS_STRING                                                                     \
     " !\"#$%&'()*+,-./"                                                                           \
     "0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7f"

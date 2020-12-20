@@ -1,6 +1,7 @@
 #ifndef VKL_BUILTIN_VISUALS_HEADER
 #define VKL_BUILTIN_VISUALS_HEADER
 
+#include "graphics.h"
 #include "visuals.h"
 
 
@@ -57,10 +58,25 @@ typedef enum
     VKL_VISUAL_VOLUME,      //
     VKL_VISUAL_FAKE_SPHERE, //
 
+    VKL_VISUAL_AXES_2D,  //
+    VKL_VISUAL_AXES_3D,  //
+    VKL_VISUAL_COLORMAP, //
+
     VKL_VISUAL_COUNT,
 
     VKL_VISUAL_CUSTOM,
 } VklVisualType;
+
+
+
+// Axis levels
+typedef enum
+{
+    VKY_AXES_LEVEL_MINOR,
+    VKY_AXES_LEVEL_MAJOR,
+    VKY_AXES_LEVEL_GRID,
+    VKY_AXES_LEVEL_LIM,
+} VklAxisLevel;
 
 
 
