@@ -415,8 +415,8 @@ void vkl_visual_prop(
 
 
 void vkl_visual_prop_copy(
-    VklVisual* visual, VklPropType prop_type, uint32_t idx, VklArrayCopyType copy_type,
-    uint32_t reps)
+    VklVisual* visual, VklPropType prop_type, uint32_t idx, //
+    VklArrayCopyType copy_type, uint32_t reps)
 {
     ASSERT(visual != NULL);
     VklProp* prop = vkl_bake_prop(visual, prop_type, idx);
@@ -501,18 +501,19 @@ void vkl_visual_data_partial(
     VklProp* prop = vkl_bake_prop(visual, prop_type, idx);
     ASSERT(prop != NULL);
 
-    // Get the associated source.
-    VklSource* source = vkl_bake_source(visual, prop->source_type, prop->source_idx);
-    ASSERT(source != NULL);
-
     // Make sure the array has the right size.
     vkl_array_resize(&prop->arr_orig, count);
 
     // Copy the specified array to the prop array.
     vkl_array_data(&prop->arr_orig, first_item, item_count, data_item_count, data);
 
-    source->origin = VKL_SOURCE_ORIGIN_LIB;
-    source->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+    // Get the associated source.
+    VklSource* source = vkl_bake_source(visual, prop->source_type, prop->source_idx);
+    if (source != NULL)
+    {
+        source->origin = VKL_SOURCE_ORIGIN_LIB;
+        source->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+    }
 }
 
 
