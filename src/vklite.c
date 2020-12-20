@@ -2053,7 +2053,6 @@ void vkl_graphics_create(VklGraphics* graphics)
     {
         graphics->obj.status = VKL_OBJECT_STATUS_INVALID;
     }
-    
 }
 
 
@@ -2061,7 +2060,7 @@ void vkl_graphics_create(VklGraphics* graphics)
 void vkl_graphics_destroy(VklGraphics* graphics)
 {
     ASSERT(graphics != NULL);
-    if (&graphics->obj <= VKL_OBJECT_STATUS_INIT || graphics->gpu == NULL)
+    if (graphics->obj.status <= VKL_OBJECT_STATUS_INIT || graphics->gpu == NULL)
     {
         log_trace("skip destruction of already-destroyed graphics");
         return;
@@ -2920,7 +2919,7 @@ void vkl_cmd_compute(VklCommands* cmds, uint32_t idx, VklCompute* compute, uvec3
     ASSERT(compute->slots.pipeline_layout != VK_NULL_HANDLE);
 
     CMD_START
-    
+
     vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_COMPUTE, compute->pipeline);
     vkCmdBindDescriptorSets(
         cb, VK_PIPELINE_BIND_POINT_COMPUTE, compute->slots.pipeline_layout, 0, 1,
