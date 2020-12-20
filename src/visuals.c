@@ -245,12 +245,12 @@ static void _bake_source(VklVisual* visual, VklSource* source)
     }
     log_debug("baking source %d", source->source_type);
 
-    // Check that all props for the source source have the same number of items.
+    // The number of vertices corresponds to the largest prop.
     uint32_t count = vkl_bake_max_prop_size(visual, source);
-    if (source->source_type == VKL_SOURCE_VERTEX)
-        visual->vertex_count = count;
-    else if (source->source_type == VKL_SOURCE_INDEX)
-        visual->index_count = count;
+    // if (source->source_type == VKL_SOURCE_VERTEX)
+    //     visual->vertex_count = count;
+    // else if (source->source_type == VKL_SOURCE_INDEX)
+    //     visual->index_count = count;
 
     // Allocate the source array.
     vkl_bake_source_alloc(visual, source, count);
@@ -820,6 +820,11 @@ void vkl_bake_source_alloc(VklVisual* visual, VklSource* source, uint32_t count)
     VklArray* arr = &source->arr;
     ASSERT(is_obj_created(&arr->obj));
     vkl_array_resize(arr, count);
+
+    if (source->source_type == VKL_SOURCE_VERTEX)
+        visual->vertex_count = count;
+    else if (source->source_type == VKL_SOURCE_INDEX)
+        visual->index_count = count;
 }
 
 

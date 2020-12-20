@@ -141,7 +141,7 @@ int test_visuals_axes_2D(TestContext* context)
     float t = 0;
     for (uint32_t i = 0; i < N; i++)
     {
-        t = -1 + 2 * (float)i / N;
+        t = -1 + 2 * (float)i / (N - 1);
         xticks[i] = t;
     }
 

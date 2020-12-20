@@ -163,17 +163,32 @@ static void _visual_segment_raw(VklVisual* visual)
 static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
 {
     ASSERT(visual != NULL);
-    VklSource* source = vkl_bake_source(visual, VKL_SOURCE_VERTEX, 0);
+    // segment graphics vertex buffer
+    VklSource* seg_vert_src = vkl_bake_source(visual, VKL_SOURCE_VERTEX, 0);
+    VklSource* seg_index_src = vkl_bake_source(visual, VKL_SOURCE_INDEX, 0);
 
     // TODO: multiple levels
     uint32_t level = 0;
-    VklProp* prop = vkl_bake_prop(visual, VKL_PROP_XPOS, level);
-    uint32_t xtick_count = prop->arr_orig.item_count; // number of ticks for this level.
+    VklProp* xpos = vkl_bake_prop(visual, VKL_PROP_XPOS, level);
+    uint32_t xtick_count = xpos->arr_orig.item_count; // number of ticks for this level.
 
-    vkl_bake_source_alloc(visual, source, xtick_count);
+    vkl_bake_source_alloc(visual, seg_vert_src, 4 * xtick_count);
+    vkl_bake_source_alloc(visual, seg_index_src, 6 * xtick_count);
 
-    // TODO: fill the vertex array
-    //
+    cvec4 color = {0, 0, 0, 255};
+    VklCapType cap = VKL_CAP_SQUARE;
+    float lw = 2; // TODO
+    float x = 0;
+    VklGraphicsSegmentVertex* vertices = seg_vert_src->arr.data;
+    VklIndex* indices = seg_index_src->arr.data;
+    for (uint32_t i = 0; i < xtick_count; i++)
+    {
+        // TODO: transformation
+        x = ((float*)xpos->arr_orig.data)[i];
+        // TODO: params
+        _graphics_segment_add(
+            vertices, indices, i, (vec3){x, -1, 0}, (vec3){x, +1, 0}, color, lw, cap, cap);
+    }
 }
 
 static void _visual_axes_2D(VklVisual* visual)
@@ -186,9 +201,15 @@ static void _visual_axes_2D(VklVisual* visual)
     vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_SEGMENT, 0));
 
     // Sources
+    // Segment graphics, vertex buffer.
     vkl_visual_source(
         visual, VKL_SOURCE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, //
         0, sizeof(VklGraphicsSegmentVertex), 0);
+    // Segment graphics, index buffer.
+    vkl_visual_source(
+        visual, VKL_SOURCE_INDEX, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklIndex), 0);
+
+    // Uniform buffers.
     _common_sources(visual);
 
     // Props
