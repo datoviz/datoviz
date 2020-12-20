@@ -380,7 +380,15 @@ void vkl_visual_source(
         source.arr = vkl_array_3D(ndims, 0, 0, 0, item_size);
     }
 
-    source.origin = VKL_SOURCE_ORIGIN_NONE; // source origin (GPU object) not set yet
+    // source origin (GPU object) not set yet
+    source.origin = VKL_SOURCE_ORIGIN_NONE;
+
+    // NOTE: exception for INDEX source, most frequently automatically handled by the library
+    if (source_type == VKL_SOURCE_INDEX)
+    {
+        source.origin = VKL_SOURCE_ORIGIN_LIB;
+        source.obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+    }
     visual->sources[visual->source_count++] = source;
 }
 
@@ -1040,9 +1048,17 @@ void vkl_visual_update(
                 ASSERT(br->size > 0);
                 ASSERT(br->buffer != VK_NULL_HANDLE);
 
-                log_trace(
+                log_debug(
                     "upload buffer for automatically-handled source %d #%d", //
                     source->source_type, source->source_idx);
+
+                // if (source->source_type == VKL_SOURCE_VERTEX)
+                // {
+                //     for (uint32_t i = 0; i < arr->item_count; i++)
+                //     {
+                //         DBGF(((VklGraphicsSegmentVertex*)arr->data)[i].linewidth);
+                //     }
+                // }
 
                 if (_uniform_source_is_immediate(source))
                     vkl_upload_buffers_immediate(canvas, *br, true, 0, br->size, arr->data);

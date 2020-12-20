@@ -166,12 +166,18 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
     vkl_bake_source_alloc(visual, seg_vert_src, 4 * xtick_count);
     vkl_bake_source_alloc(visual, seg_index_src, 6 * xtick_count);
 
+    // TODO: params
     cvec4 color = {0, 0, 0, 255};
     VklCapType cap = VKL_CAP_SQUARE;
-    float lw = 2; // TODO
+    float lw = 2;
     float x = 0;
+
     VklGraphicsSegmentVertex* vertices = seg_vert_src->arr.data;
+    ASSERT(seg_vert_src->arr.item_count == 4 * xtick_count);
+
     VklIndex* indices = seg_index_src->arr.data;
+    ASSERT(seg_index_src->arr.item_count == 6 * xtick_count);
+
     for (uint32_t i = 0; i < xtick_count; i++)
     {
         // TODO: transformation

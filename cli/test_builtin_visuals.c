@@ -10,6 +10,8 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
+static VklViewport viewport;
+
 static void _mouse_callback(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
@@ -31,7 +33,8 @@ static void _common_data(VklVisual* visual)
     vkl_visual_data_texture(visual, VKL_PROP_COLOR_TEXTURE, 0, 1, 1, 1, NULL);
     VklBufferRegions br_viewport = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
     vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 1, br_viewport);
-    VklViewport viewport = vkl_viewport_full(canvas);
+    viewport = vkl_viewport_full(canvas);
+    vkl_upload_buffers(ctx, br_viewport, 0, sizeof(VklViewport), &viewport);
     vkl_visual_update(visual, viewport, (VklDataCoords){0}, NULL);
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _visual_canvas_fill, visual);
 }
