@@ -118,3 +118,43 @@ int test_scene_1(TestContext* context)
     FREE(color);
     TEST_END
 }
+
+
+
+int test_scene_axes(TestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    vkl_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});
+    VklContext* ctx = gpu->context;
+    ASSERT(ctx != NULL);
+
+    VklScene* scene = vkl_scene(canvas, 1, 1);
+    VklPanel* panel = vkl_scene_panel(scene, 0, 0, VKL_CONTROLLER_PANZOOM, 0);
+    VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_AXES_2D, 0);
+
+    const uint32_t N = 10;
+    float* xticks = calloc(N, sizeof(float));
+    float* yticks = calloc(N, sizeof(float));
+    float t = 0;
+    for (uint32_t i = 0; i < N; i++)
+    {
+        t = -1 + 2 * (float)i / (N - 1);
+        xticks[i] = t;
+        yticks[i] = t;
+    }
+
+    // Set visual data.
+    vkl_visual_data(visual, VKL_PROP_XPOS, VKL_AXES_LEVEL_MINOR, N, xticks);
+    vkl_visual_data(visual, VKL_PROP_YPOS, VKL_AXES_LEVEL_MINOR, N, yticks);
+    cvec4 color = {0, 0, 0, 255};
+    vkl_visual_data(visual, VKL_PROP_COLOR, 0, 1, color);
+
+    vkl_app_run(app, N_FRAMES);
+    vkl_visual_destroy(visual);
+    vkl_scene_destroy(scene);
+    FREE(xticks);
+    FREE(yticks);
+    TEST_END
+}

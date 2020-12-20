@@ -161,30 +161,46 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
     // TODO: multiple levels
     uint32_t level = 0;
     VklProp* xpos = vkl_bake_prop(visual, VKL_PROP_XPOS, level);
+    VklProp* ypos = vkl_bake_prop(visual, VKL_PROP_YPOS, level);
     uint32_t xtick_count = xpos->arr_orig.item_count; // number of ticks for this level.
+    uint32_t ytick_count = ypos->arr_orig.item_count; // number of ticks for this level.
+    uint32_t count = xtick_count + ytick_count;
 
-    vkl_bake_source_alloc(visual, seg_vert_src, 4 * xtick_count);
-    vkl_bake_source_alloc(visual, seg_index_src, 6 * xtick_count);
+    vkl_bake_source_alloc(visual, seg_vert_src, 4 * count);
+    vkl_bake_source_alloc(visual, seg_index_src, 6 * count);
+
+    VklGraphicsSegmentVertex* vertices = seg_vert_src->arr.data;
+    ASSERT(seg_vert_src->arr.item_count == 4 * count);
+
+    VklIndex* indices = seg_index_src->arr.data;
+    ASSERT(seg_index_src->arr.item_count == 6 * count);
 
     // TODO: params
     cvec4 color = {0, 0, 0, 255};
     VklCapType cap = VKL_CAP_SQUARE;
     float lw = 2;
-    float x = 0;
+    float* x = NULL;
 
-    VklGraphicsSegmentVertex* vertices = seg_vert_src->arr.data;
-    ASSERT(seg_vert_src->arr.item_count == 4 * xtick_count);
-
-    VklIndex* indices = seg_index_src->arr.data;
-    ASSERT(seg_index_src->arr.item_count == 6 * xtick_count);
-
+    // xticks
+    uint32_t k = 0;
     for (uint32_t i = 0; i < xtick_count; i++)
     {
         // TODO: transformation
-        x = ((float*)xpos->arr_orig.data)[i];
+        x = vkl_array_item(&xpos->arr_orig, i);
         // TODO: params
         _graphics_segment_add(
-            vertices, indices, i, (vec3){x, -1, 0}, (vec3){x, +1, 0}, color, lw, cap, cap);
+            vertices, indices, i, (vec3){*x, -1, 0}, (vec3){*x, +1, 0}, color, lw, cap, cap);
+    }
+    k += xtick_count;
+
+    // yticks
+    for (uint32_t i = 0; i < ytick_count; i++)
+    {
+        // TODO: transformation
+        x = vkl_array_item(&ypos->arr_orig, i);
+        // TODO: params
+        _graphics_segment_add(
+            vertices, indices, i + k, (vec3){-1, *x, 0}, (vec3){+1, *x, 0}, color, lw, cap, cap);
     }
 }
 

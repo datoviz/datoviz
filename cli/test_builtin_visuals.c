@@ -11,6 +11,7 @@
 /*************************************************************************************************/
 
 static VklViewport viewport;
+static VklBufferRegions br_viewport;
 
 static void _mouse_callback(VklCanvas* canvas, VklEvent ev)
 {
@@ -18,6 +19,13 @@ static void _mouse_callback(VklCanvas* canvas, VklEvent ev)
     VklMouse* mouse = (VklMouse*)ev.user_data;
     ASSERT(mouse != NULL);
     vkl_mouse_event(mouse, canvas, ev);
+}
+
+static void _resize(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    VklContext* ctx = canvas->gpu->context;
+    viewport = vkl_viewport_full(canvas);
+    vkl_upload_buffers(ctx, br_viewport, 0, sizeof(VklViewport), &viewport);
 }
 
 static void _common_data(VklVisual* visual)
@@ -31,7 +39,7 @@ static void _common_data(VklVisual* visual)
     vkl_visual_data(visual, VKL_PROP_PROJ, 0, 1, id);
 
     vkl_visual_data_texture(visual, VKL_PROP_COLOR_TEXTURE, 0, 1, 1, 1, NULL);
-    VklBufferRegions br_viewport = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
+    br_viewport = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
     vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 1, br_viewport);
     viewport = vkl_viewport_full(canvas);
     vkl_upload_buffers(ctx, br_viewport, 0, sizeof(VklViewport), &viewport);
@@ -48,6 +56,7 @@ static void _common_data(VklVisual* visual)
 
 #define RUN                                                                                       \
     _common_data(&visual);                                                                        \
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _resize, NULL);                      \
     vkl_app_run(app, N_FRAMES);
 
 #define END                                                                                       \
@@ -146,12 +155,14 @@ int test_visuals_axes_2D(TestContext* context)
     {
         t = -1 + 2 * (float)i / (N - 1);
         xticks[i] = t;
+        yticks[i] = t;
     }
 
     // Set visual data.
     vkl_visual_data(&visual, VKL_PROP_XPOS, VKL_AXES_LEVEL_MINOR, N, xticks);
-    // vkl_visual_data(&visual, VKL_PROP_YPOS, VKL_AXES_LEVEL_MINOR, N, yticks);
-    // vkl_visual_data(&visual, VKL_PROP_COLOR, 0, N, color);
+    vkl_visual_data(&visual, VKL_PROP_YPOS, VKL_AXES_LEVEL_MINOR, N, yticks);
+    cvec4 color = {0, 0, 0, 255};
+    vkl_visual_data(&visual, VKL_PROP_COLOR, 0, 1, color);
 
     RUN;
     FREE(xticks);

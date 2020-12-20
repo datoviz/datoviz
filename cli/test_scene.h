@@ -10,6 +10,7 @@
 /*************************************************************************************************/
 
 int test_scene_1(TestContext* context);
+int test_scene_axes(TestContext* context);
 
 
 

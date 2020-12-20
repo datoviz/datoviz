@@ -10,13 +10,16 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
+static VklViewport g_viewport;
+
 static void _common_data(VklVisual* visual)
 {
     // TODO: color texture
     vkl_visual_data_texture(visual, VKL_PROP_COLOR_TEXTURE, 0, 1, 1, 1, NULL);
 
     // TODO: viewport uniform
-    vkl_visual_data_buffer(visual, VKL_SOURCE_UNIFORM, 1, 0, 1, 1, NULL);
+    g_viewport = vkl_viewport_full(visual->canvas);
+    vkl_visual_data_buffer(visual, VKL_SOURCE_UNIFORM, 1, 0, 1, 1, &g_viewport);
 }
 
 
