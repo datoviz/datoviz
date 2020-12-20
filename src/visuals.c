@@ -387,7 +387,8 @@ void vkl_visual_source(
 
 
 void vkl_visual_prop(
-    VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, VklDataType dtype)
+    VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, VklDataType dtype,
+    VklSourceType source_type, uint32_t source_idx)
 {
     ASSERT(visual != NULL);
     ASSERT(visual->prop_count < VKL_MAX_VISUAL_PROPS);
@@ -397,11 +398,12 @@ void vkl_visual_prop(
     prop.prop_type = prop_type;
     prop.prop_idx = prop_idx;
     prop.dtype = dtype;
+    prop.source_type = source_type;
+    prop.source_idx = source_idx;
 
-    // NOTE: one must call vkl_visual_prop_copy() in order to set a source
-    prop.source_type = VKL_SOURCE_NONE;
-
-    prop.arr_orig = vkl_array(0, prop.dtype);
+    // NOTE: we do not use prop arrays for texture sources at the moment
+    if (source_type < VKL_SOURCE_TEXTURE_1D)
+        prop.arr_orig = vkl_array(0, prop.dtype);
 
     visual->props[visual->prop_count++] = prop;
 }
@@ -409,20 +411,13 @@ void vkl_visual_prop(
 
 
 void vkl_visual_prop_copy(
-    VklVisual* visual, VklPropType prop_type, uint32_t prop_idx,                             //
-    VklSourceType source_type, uint32_t source_idx, uint32_t field_idx, VkDeviceSize offset, //
-    VklArrayCopyType copy_type, uint32_t reps)
+    VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, //
+    uint32_t field_idx, VkDeviceSize offset, VklArrayCopyType copy_type, uint32_t reps)
 {
     ASSERT(visual != NULL);
     VklProp* prop = vkl_bake_prop(visual, prop_type, prop_idx);
     ASSERT(prop != NULL);
 
-    // // NOTE: we do not use prop arrays for texture sources at the moment
-    // if (source_type < VKL_SOURCE_TEXTURE_1D)
-    //     prop->arr_orig = vkl_array(0, prop->dtype);
-
-    prop->source_type = source_type;
-    prop->source_idx = source_idx;
     prop->field_idx = field_idx;
     prop->offset = offset;
     prop->copy_type = copy_type;

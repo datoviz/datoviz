@@ -47,50 +47,44 @@ static void _marker_visual(VklVisual* visual)
     // Props.
     {
         // Vertex pos.
-        vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_VEC3);
+        vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_VEC3, VKL_SOURCE_VERTEX, 0);
         vkl_visual_prop_copy(
-            visual, VKL_PROP_POS, 0, VKL_SOURCE_VERTEX, 0, //
-            0, offsetof(VklVertex, pos), VKL_ARRAY_COPY_SINGLE, 1);
+            visual, VKL_PROP_POS, 0, 0, offsetof(VklVertex, pos), VKL_ARRAY_COPY_SINGLE, 1);
 
         // Vertex color.
-        vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4);
+        vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_VERTEX, 0);
         vkl_visual_prop_copy(
-            visual, VKL_PROP_COLOR, 0, VKL_SOURCE_VERTEX, 0,          //
-            1, offsetof(VklVertex, color), VKL_ARRAY_COPY_SINGLE, 1); //
+            visual, VKL_PROP_COLOR, 0, 1, offsetof(VklVertex, color), VKL_ARRAY_COPY_SINGLE, 1);
 
         // MVP
         // Model.
-        vkl_visual_prop(visual, VKL_PROP_MODEL, 0, VKL_DTYPE_MAT4);
+        vkl_visual_prop(visual, VKL_PROP_MODEL, 0, VKL_DTYPE_MAT4, VKL_SOURCE_UNIFORM, 0);
         vkl_visual_prop_copy(
-            visual, VKL_PROP_MODEL, 0, VKL_SOURCE_UNIFORM, 0, //
-            0, offsetof(VklMVP, model), VKL_ARRAY_COPY_SINGLE, 1);
+            visual, VKL_PROP_MODEL, 0, 0, offsetof(VklMVP, model), VKL_ARRAY_COPY_SINGLE, 1);
 
         // View.
-        vkl_visual_prop(visual, VKL_PROP_VIEW, 0, VKL_DTYPE_MAT4);
+        vkl_visual_prop(visual, VKL_PROP_VIEW, 0, VKL_DTYPE_MAT4, VKL_SOURCE_UNIFORM, 0);
         vkl_visual_prop_copy(
-            visual, VKL_PROP_VIEW, 0, VKL_SOURCE_UNIFORM, 0, //
-            1, offsetof(VklMVP, view), VKL_ARRAY_COPY_SINGLE, 1);
+            visual, VKL_PROP_VIEW, 0, 1, offsetof(VklMVP, view), VKL_ARRAY_COPY_SINGLE, 1);
 
         // Proj.
-        vkl_visual_prop(visual, VKL_PROP_PROJ, 0, VKL_DTYPE_MAT4);
+        vkl_visual_prop(visual, VKL_PROP_PROJ, 0, VKL_DTYPE_MAT4, VKL_SOURCE_UNIFORM, 0);
         vkl_visual_prop_copy(
-            visual, VKL_PROP_PROJ, 0, VKL_SOURCE_UNIFORM, 0, //
-            2, offsetof(VklMVP, proj), VKL_ARRAY_COPY_SINGLE, 1);
+            visual, VKL_PROP_PROJ, 0, 2, offsetof(VklMVP, proj), VKL_ARRAY_COPY_SINGLE, 1);
 
 
 
         // Param: marker size.
-        vkl_visual_prop(visual, VKL_PROP_MARKER_SIZE, 0, VKL_DTYPE_FLOAT);
+        vkl_visual_prop(visual, VKL_PROP_MARKER_SIZE, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_UNIFORM, 2);
         vkl_visual_prop_copy(
-            visual, VKL_PROP_MARKER_SIZE, 0, VKL_SOURCE_UNIFORM, 2, //
-            0, offsetof(VklGraphicsPointParams, point_size), VKL_ARRAY_COPY_SINGLE, 1);
+            visual, VKL_PROP_MARKER_SIZE, 0, 0, offsetof(VklGraphicsPointParams, point_size),
+            VKL_ARRAY_COPY_SINGLE, 1);
 
 
         // Colormap texture.
-        vkl_visual_prop(visual, VKL_PROP_COLOR_TEXTURE, 0, VKL_DTYPE_CVEC4);
-        vkl_visual_prop_copy(
-            visual, VKL_PROP_COLOR_TEXTURE, 0, VKL_SOURCE_TEXTURE_2D, 0, //
-            0, 0, VKL_ARRAY_COPY_SINGLE, 1);
+        vkl_visual_prop(
+            visual, VKL_PROP_COLOR_TEXTURE, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TEXTURE_2D, 0);
+        vkl_visual_prop_copy(visual, VKL_PROP_COLOR_TEXTURE, 0, 0, 0, VKL_ARRAY_COPY_SINGLE, 1);
     }
 }
 
