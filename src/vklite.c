@@ -2044,8 +2044,16 @@ void vkl_graphics_create(VklGraphics* graphics)
 
     VK_CHECK_RESULT(vkCreateGraphicsPipelines(
         graphics->gpu->device, VK_NULL_HANDLE, 1, &pipelineInfo, NULL, &graphics->pipeline));
-    log_trace("graphics pipeline created");
-    obj_created(&graphics->obj);
+    if (graphics->pipeline != VK_NULL_HANDLE)
+    {
+        log_trace("graphics pipeline created");
+        obj_created(&graphics->obj);
+    }
+    else
+    {
+        graphics->obj.status = VKL_OBJECT_STATUS_INVALID;
+    }
+    
 }
 
 
@@ -2053,7 +2061,7 @@ void vkl_graphics_create(VklGraphics* graphics)
 void vkl_graphics_destroy(VklGraphics* graphics)
 {
     ASSERT(graphics != NULL);
-    if (!is_obj_created(&graphics->obj))
+    if (&graphics->obj <= VKL_OBJECT_STATUS_INIT || graphics->gpu == NULL)
     {
         log_trace("skip destruction of already-destroyed graphics");
         return;
@@ -2912,6 +2920,7 @@ void vkl_cmd_compute(VklCommands* cmds, uint32_t idx, VklCompute* compute, uvec3
     ASSERT(compute->slots.pipeline_layout != VK_NULL_HANDLE);
 
     CMD_START
+    
     vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_COMPUTE, compute->pipeline);
     vkCmdBindDescriptorSets(
         cb, VK_PIPELINE_BIND_POINT_COMPUTE, compute->slots.pipeline_layout, 0, 1,
@@ -3141,7 +3150,8 @@ void vkl_cmd_bind_graphics(
     }
 
     CMD_START_CLIP(bindings->dset_count)
-    vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, graphics->pipeline);
+    if (is_obj_created(&graphics->obj))
+        vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, graphics->pipeline);
     vkCmdBindDescriptorSets(
         cb, VK_PIPELINE_BIND_POINT_GRAPHICS, slots->pipeline_layout, //
         0, 1, &bindings->dsets[iclip], dyn_count, dyn_offsets);

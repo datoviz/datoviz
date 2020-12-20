@@ -375,7 +375,7 @@ static inline void obj_destroyed(VklObject* obj) { obj->status = VKL_OBJECT_STAT
 
 static inline bool is_obj_created(VklObject* obj)
 {
-    return obj != NULL && obj->status >= VKL_OBJECT_STATUS_CREATED;
+    return obj != NULL && obj->status >= VKL_OBJECT_STATUS_CREATED && obj->status != VKL_OBJECT_STATUS_INVALID;
 }
 
 

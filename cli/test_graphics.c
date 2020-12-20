@@ -55,10 +55,13 @@ static void _graphics_refill(VklCanvas* canvas, VklPrivateEvent ev)
     if (br_index->buffer != NULL)
         vkl_cmd_bind_index_buffer(cmds, idx, br_index, 0);
     vkl_cmd_bind_graphics(cmds, idx, graphics, bindings, 0);
-    if (br_index->buffer != NULL)
-        vkl_cmd_draw_indexed(cmds, idx, 0, 0, tg->index_count);
-    else
-        vkl_cmd_draw(cmds, idx, 0, tg->vertex_count);
+    if (graphics->pipeline != VK_NULL_HANDLE)
+    {
+        if (br_index->buffer != NULL)
+            vkl_cmd_draw_indexed(cmds, idx, 0, 0, tg->index_count);
+        else
+            vkl_cmd_draw(cmds, idx, 0, tg->vertex_count);
+    }
     vkl_cmd_end_renderpass(cmds, idx);
     vkl_cmd_end(cmds, idx);
 }

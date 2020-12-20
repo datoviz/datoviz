@@ -249,7 +249,7 @@ VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type, in
         break;
     }
 
-    ASSERT(is_obj_created(&graphics->obj));
+    // ASSERT(is_obj_created(&graphics->obj));
     return graphics;
 }
 

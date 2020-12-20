@@ -32,7 +32,7 @@ static const char* VKL_DEVICE_EXTENSIONS[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
         break
 #define noop
 
-static inline void check_result(VkResult res)
+static inline int check_result(VkResult res)
 {
     char* str = "UNKNOWN_ERROR";
     switch (res)
@@ -65,8 +65,10 @@ static inline void check_result(VkResult res)
     }
     if (res != VK_SUCCESS)
     {
-        log_error("VkResult is %s in %s at line %s", str, __FILE__, __LINE__);
+        log_error("VkResult is %s in %s at line %d", str, __FILE__, __LINE__);
+        return 1;
     }
+    return 0;
 }
 
 #define VK_CHECK_RESULT(f)                                                                        \
