@@ -398,6 +398,11 @@ void vkl_visual_prop(
     prop.prop_idx = prop_idx;
     prop.dtype = dtype;
 
+    // NOTE: one must call vkl_visual_prop_copy() in order to set a source
+    prop.source_type = VKL_SOURCE_NONE;
+
+    prop.arr_orig = vkl_array(0, prop.dtype);
+
     visual->props[visual->prop_count++] = prop;
 }
 
@@ -412,9 +417,9 @@ void vkl_visual_prop_copy(
     VklProp* prop = vkl_bake_prop(visual, prop_type, prop_idx);
     ASSERT(prop != NULL);
 
-    // NOTE: we do not use prop arrays for texture sources at the moment
-    if (source_type < VKL_SOURCE_TEXTURE_1D)
-        prop->arr_orig = vkl_array(0, prop->dtype);
+    // // NOTE: we do not use prop arrays for texture sources at the moment
+    // if (source_type < VKL_SOURCE_TEXTURE_1D)
+    //     prop->arr_orig = vkl_array(0, prop->dtype);
 
     prop->source_type = source_type;
     prop->source_idx = source_idx;

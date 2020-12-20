@@ -39,6 +39,8 @@ typedef enum
 {
     VKL_PROP_NONE,
     VKL_PROP_POS,
+    VKL_PROP_XPOS,
+    VKL_PROP_YPOS,
     VKL_PROP_COLOR,
     VKL_PROP_MARKER_SIZE,
     VKL_PROP_TEXT_SIZE,

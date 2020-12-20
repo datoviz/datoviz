@@ -160,6 +160,21 @@ static void _visual_segment_raw(VklVisual* visual)
 /*  Axes 2D                                                                                      */
 /*************************************************************************************************/
 
+static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
+{
+    ASSERT(visual != NULL);
+    VklSource* source = vkl_bake_source(visual, VKL_SOURCE_VERTEX, 0);
+
+    // TODO: multiple levels
+    uint32_t level = 0;
+    VklProp* prop = vkl_bake_prop(visual, VKL_PROP_XPOS, level);
+    uint32_t xtick_count = prop->arr_orig.item_count; // number of ticks for this level.
+
+    vkl_bake_source_alloc(visual, source, xtick_count);
+
+    // TODO: fill the vertex array
+}
+
 static void _visual_axes_2D(VklVisual* visual)
 {
     ASSERT(visual != NULL);
@@ -175,30 +190,27 @@ static void _visual_axes_2D(VklVisual* visual)
         0, sizeof(VklGraphicsSegmentVertex), 0);
     _common_sources(visual);
 
-    // Props:
+    // Props
+    for (uint32_t level = 0; level < VKL_AXES_LEVEL_COUNT; level++)
+    {
+        vkl_visual_prop(visual, VKL_PROP_XPOS, level, VKL_DTYPE_FLOAT);       // xticks
+        vkl_visual_prop(visual, VKL_PROP_YPOS, level, VKL_DTYPE_FLOAT);       // yticks
+        vkl_visual_prop(visual, VKL_PROP_COLOR, level, VKL_DTYPE_CVEC4);      // color
+        vkl_visual_prop(visual, VKL_PROP_LINE_WIDTH, level, VKL_DTYPE_FLOAT); // line width
+    }
 
-    // for each axis coord
-    // for each axis level:
-    // - position
-    // - color
-    // - line width
-    // - length in px
+    vkl_visual_prop(visual, VKL_PROP_LENGTH, VKL_AXES_LEVEL_MINOR, VKL_DTYPE_FLOAT); // tick length
+    vkl_visual_prop(visual, VKL_PROP_LENGTH, VKL_AXES_LEVEL_MAJOR, VKL_DTYPE_FLOAT); // tick length
 
-    // xticks, yticks positions
-    // vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_SOURCE_NONE, 0, 0, VKL_DTYPE_FLOAT, 0);
-    // vkl_visual_prop(visual, VKL_PROP_POS, 1, VKL_SOURCE_NONE, 0, 0, VKL_DTYPE_FLOAT, 0);
+    vkl_visual_prop(visual, VKL_PROP_HMARGIN, 0, VKL_DTYPE_FLOAT); // tick h margin
+    vkl_visual_prop(visual, VKL_PROP_VMARGIN, 0, VKL_DTYPE_FLOAT); // tick v margin
 
-    // Color
-    // vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_SOURCE_VERTEX, 0, 1, VKL_DTYPE_CVEC4, 0);
-    // vkl_visual_prop_copy(visual, VKL_PROP_COLOR, 0, VKL_ARRAY_COPY_REPEAT, 2);
-
-    // line width
-
-    // tick length
-
+    vkl_visual_prop(visual, VKL_PROP_TEXT_SIZE, 0, VKL_DTYPE_FLOAT); // tick text size
 
     // Common props.
     _common_props(visual);
+
+    vkl_visual_callback_bake(visual, _visual_axes_2D_bake);
 }
 
 

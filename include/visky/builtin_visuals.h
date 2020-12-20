@@ -69,13 +69,23 @@ typedef enum
 
 
 
+// Axis coord.
+typedef enum
+{
+    VKL_AXES_COORD_X,
+    VKL_AXES_COORD_Y,
+} VklAxisCoord;
+
+
+
 // Axis levels
 typedef enum
 {
-    VKY_AXES_LEVEL_MINOR,
-    VKY_AXES_LEVEL_MAJOR,
-    VKY_AXES_LEVEL_GRID,
-    VKY_AXES_LEVEL_LIM,
+    VKL_AXES_LEVEL_MINOR,
+    VKL_AXES_LEVEL_MAJOR,
+    VKL_AXES_LEVEL_GRID,
+    VKL_AXES_LEVEL_LIM,
+    VKL_AXES_LEVEL_COUNT,
 } VklAxisLevel;
 
 
