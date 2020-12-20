@@ -477,34 +477,17 @@ int test_graphics_segment(TestContext* context)
     VkDeviceSize index_buf_size = 6 * N * sizeof(VklIndex);
     tg.br_index = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_INDEX, 1, index_buf_size);
 
+    cvec4 color = {0};
+    VklCapType cap = {0};
     for (uint32_t i = 0; i < N; i++)
     {
         float t = (float)i / (float)N;
         float x = .75 * (-1 + 2 * t);
         float y = .75;
-
-        for (uint32_t j = 0; j < 4; j++)
-        {
-            data[4 * i + j].P0[0] = x;
-            data[4 * i + j].P0[1] = -y;
-            data[4 * i + j].P1[0] = x;
-            data[4 * i + j].P1[1] = +y;
-
-            vkl_colormap_scale(VKL_CMAP_RAINBOW, t, 0, 1, data[4 * i + j].color);
-
-            data[4 * i + j].cap0 = data[4 * i + j].cap1 = i % VKL_CAP_COUNT;
-            data[4 * i + j].linewidth = 5 + 30 * t;
-
-            ASSERT(4 * i + j < 4 * N);
-        }
-
-        indices[6 * i + 0] = 4 * i + 0;
-        indices[6 * i + 1] = 4 * i + 1;
-        indices[6 * i + 2] = 4 * i + 2;
-        indices[6 * i + 3] = 4 * i + 0;
-        indices[6 * i + 4] = 4 * i + 2;
-        indices[6 * i + 5] = 4 * i + 3;
-
+        vkl_colormap_scale(VKL_CMAP_RAINBOW, t, 0, 1, color);
+        cap = i % VKL_CAP_COUNT;
+        _graphics_segment_add(
+            data, indices, i, (vec3){x, -y, 0}, (vec3){x, y, 0}, color, 5 + 30 * t, cap, cap);
         ASSERT(6 * i + 5 < 6 * N);
     }
     END_DATA

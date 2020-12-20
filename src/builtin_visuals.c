@@ -173,6 +173,7 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
     vkl_bake_source_alloc(visual, source, xtick_count);
 
     // TODO: fill the vertex array
+    //
 }
 
 static void _visual_axes_2D(VklVisual* visual)
