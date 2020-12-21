@@ -59,6 +59,8 @@ int test_interact_1(TestContext* context)
 /*  Interact utils                                                                               */
 /*************************************************************************************************/
 
+
+
 static void _update_interact(VklCanvas* canvas, VklPrivateEvent ev)
 {
     ASSERT(canvas != NULL);
@@ -69,16 +71,14 @@ static void _update_interact(VklCanvas* canvas, VklPrivateEvent ev)
     float delay = canvas->clock.elapsed - scene->interact.last_update;
 
     VklViewport viewport = vkl_viewport_full(canvas);
+
     vkl_interact_update(&scene->interact, viewport, &canvas->mouse, &canvas->keyboard);
 
-    if (scene->interact.is_active && delay > VKY_INTERACT_MIN_DELAY)
-    {
-        vkl_visual_data(&scene->visual, VKL_PROP_MODEL, 0, 1, scene->interact.mvp.model);
-        vkl_visual_data(&scene->visual, VKL_PROP_VIEW, 0, 1, scene->interact.mvp.view);
-        vkl_visual_data(&scene->visual, VKL_PROP_PROJ, 0, 1, scene->interact.mvp.proj);
-        vkl_visual_update(&scene->visual, viewport, (VklDataCoords){0}, NULL);
-        scene->interact.last_update = canvas->clock.elapsed;
-    }
+    VklSource* source = vkl_bake_source(&scene->visual, VKL_SOURCE_UNIFORM, 0);
+    VklBufferRegions* br = &source->u.br;
+    void* aligned = aligned_repeat(br->size, &scene->interact.mvp, 1, br->alignment);
+    vkl_buffer_regions_upload(br, canvas->swapchain.img_idx, aligned);
+    FREE(aligned);
 }
 
 static void _add_visual(
@@ -90,6 +90,8 @@ static void _add_visual(
     VklGpu* gpu = canvas->gpu;
     VklContext* ctx = gpu->context;
 
+    VklBufferRegions br_mvp = vkl_ctx_buffers(
+        ctx, VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE, canvas->swapchain.img_count, sizeof(VklMVP));
     VklBufferRegions br_viewport = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
     VklBufferRegions br_params =
         vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointParams));
@@ -109,7 +111,7 @@ static void _add_visual(
     glm_mat4_identity(mvp.view);
     glm_mat4_identity(mvp.proj);
 
-    vkl_visual_data_buffer(visual, VKL_SOURCE_UNIFORM, 0, 0, 1, 1, &mvp);
+    vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 0, br_mvp);
     vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 1, br_viewport);
     vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 2, br_params);
     vkl_visual_texture(visual, VKL_SOURCE_TEXTURE_2D, 0, tex_color);
