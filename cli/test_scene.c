@@ -132,6 +132,7 @@ int test_scene_axes(TestContext* context)
 
     VklScene* scene = vkl_scene(canvas, 1, 1);
     VklPanel* panel = vkl_scene_panel(scene, 0, 0, VKL_CONTROLLER_PANZOOM, 0);
+    vkl_panel_margins(panel, (vec4) {100, 100, 100, 100});
     VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_AXES_2D, 0);
 
     const uint32_t N = 10;

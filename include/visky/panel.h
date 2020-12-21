@@ -130,6 +130,8 @@ VKY_EXPORT VklPanel* vkl_panel(VklGrid* grid, uint32_t row, uint32_t col);
 
 VKY_EXPORT void vkl_panel_update(VklPanel* panel);
 
+VKY_EXPORT void vkl_panel_margins(VklPanel* panel, vec4 margins);
+
 VKY_EXPORT void vkl_panel_unit(VklPanel* panel, VklPanelSizeUnit unit);
 
 VKY_EXPORT void vkl_panel_mode(VklPanel* panel, VklPanelMode mode);

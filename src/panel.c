@@ -250,6 +250,15 @@ void vkl_panel_update(VklPanel* panel)
 
 
 
+void vkl_panel_margins(VklPanel* panel, vec4 margins) {
+    ASSERT(panel != NULL);
+    glm_vec4_copy(margins, panel->viewport_inner.margins);
+    glm_vec4_copy(margins, panel->viewport_outer.margins);
+    vkl_panel_update(panel);
+}
+
+
+
 void vkl_panel_unit(VklPanel* panel, VklPanelSizeUnit unit)
 {
     ASSERT(panel != NULL);
