@@ -54,37 +54,6 @@ static VklViewport _get_viewport(VklPanel* panel)
 
 
 
-static void _update_panel(VklPanel* panel)
-{
-    ASSERT(panel != NULL);
-    VklGrid* grid = panel->grid;
-    VklContext* ctx = grid->canvas->gpu->context;
-
-    if (panel->mode == VKL_PANEL_INSET)
-        return;
-
-    ASSERT(panel->mode == VKL_PANEL_GRID);
-
-    panel->x = grid->xs[panel->col];
-    panel->y = grid->ys[panel->row];
-    panel->width = grid->widths[panel->col] * panel->hspan;
-    panel->height = grid->heights[panel->row] * panel->vspan;
-
-    // Inner viewport.
-    panel->viewport_inner = _get_viewport(panel);
-    panel->viewport_inner.viewport_type = VKL_VIEWPORT_INNER;
-
-    // Outer viewport.
-    panel->viewport_outer = _get_viewport(panel);
-    panel->viewport_outer.viewport_type = VKL_VIEWPORT_OUTER;
-
-    // Update the viewport on the GPU as well.
-    vkl_upload_buffers(ctx, panel->br_inner, 0, sizeof(VklViewport), &panel->viewport_inner);
-    vkl_upload_buffers(ctx, panel->br_outer, 0, sizeof(VklViewport), &panel->viewport_outer);
-}
-
-
-
 static void _update_grid_panels(VklGrid* grid, VklGridAxis axis)
 {
     ASSERT(grid != NULL);
@@ -123,7 +92,7 @@ static void _update_grid_panels(VklGrid* grid, VklGridAxis axis)
 
     // Update the panel positions and sizes.
     for (uint32_t i = 0; i < grid->panel_count; i++)
-        _update_panel(&grid->panels[i]);
+        vkl_panel_update(&grid->panels[i]);
 
     // NOTE: not sure if this is needed? Decommenting causes the command buffers to be recorded
     // twice.
@@ -239,13 +208,44 @@ VklPanel* vkl_panel(VklGrid* grid, uint32_t row, uint32_t col)
     panel->br_outer = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklViewport));
 
     // Update the VklViewport structures.
-    _update_panel(panel);
+    vkl_panel_update(panel);
 
     // Upload them to the uniform buffers
     vkl_upload_buffers(ctx, panel->br_inner, 0, sizeof(VklViewport), &panel->viewport_inner);
     vkl_upload_buffers(ctx, panel->br_outer, 0, sizeof(VklViewport), &panel->viewport_outer);
 
     return panel;
+}
+
+
+
+void vkl_panel_update(VklPanel* panel)
+{
+    ASSERT(panel != NULL);
+    VklGrid* grid = panel->grid;
+    VklContext* ctx = grid->canvas->gpu->context;
+
+    if (panel->mode == VKL_PANEL_INSET)
+        return;
+
+    ASSERT(panel->mode == VKL_PANEL_GRID);
+
+    panel->x = grid->xs[panel->col];
+    panel->y = grid->ys[panel->row];
+    panel->width = grid->widths[panel->col] * panel->hspan;
+    panel->height = grid->heights[panel->row] * panel->vspan;
+
+    // Inner viewport.
+    panel->viewport_inner = _get_viewport(panel);
+    panel->viewport_inner.viewport_type = VKL_VIEWPORT_INNER;
+
+    // Outer viewport.
+    panel->viewport_outer = _get_viewport(panel);
+    panel->viewport_outer.viewport_type = VKL_VIEWPORT_OUTER;
+
+    // Update the viewport on the GPU as well.
+    vkl_upload_buffers(ctx, panel->br_inner, 0, sizeof(VklViewport), &panel->viewport_inner);
+    vkl_upload_buffers(ctx, panel->br_outer, 0, sizeof(VklViewport), &panel->viewport_outer);
 }
 
 

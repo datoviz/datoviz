@@ -66,6 +66,7 @@ static void _scene_fill(VklCanvas* canvas, VklPrivateEvent ev)
         for (uint32_t j = 0; j < grid->panel_count; j++)
         {
             panel = &grid->panels[j];
+            vkl_panel_update(panel);
             ASSERT(is_obj_created(&panel->obj));
 
             // Find the panel viewport.
