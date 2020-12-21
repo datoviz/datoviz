@@ -274,6 +274,7 @@ VklViewport vkl_viewport_full(VklCanvas* canvas)
 
     // TODO
     viewport.dpi_scaling = 1.0;
+    viewport.viewport_type = VKL_VIEWPORT_INNER;
 
     return viewport;
 }

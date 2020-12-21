@@ -12,6 +12,7 @@
 
 static VklViewport viewport;
 static VklBufferRegions br_viewport;
+static mat4 MAT4_ID = GLM_MAT4_IDENTITY_INIT;
 
 static void _mouse_callback(VklCanvas* canvas, VklEvent ev)
 {
@@ -33,17 +34,19 @@ static void _common_data(VklVisual* visual)
     VklCanvas* canvas = visual->canvas;
     VklContext* ctx = canvas->gpu->context;
 
-    mat4 id = GLM_MAT4_IDENTITY_INIT;
-    vkl_visual_data(visual, VKL_PROP_MODEL, 0, 1, id);
-    vkl_visual_data(visual, VKL_PROP_VIEW, 0, 1, id);
-    vkl_visual_data(visual, VKL_PROP_PROJ, 0, 1, id);
+    vkl_visual_data(visual, VKL_PROP_MODEL, 0, 1, MAT4_ID);
+    vkl_visual_data(visual, VKL_PROP_VIEW, 0, 1, MAT4_ID);
+    vkl_visual_data(visual, VKL_PROP_PROJ, 0, 1, MAT4_ID);
 
     vkl_visual_data_texture(visual, VKL_PROP_COLOR_TEXTURE, 0, 1, 1, 1, NULL);
-    br_viewport = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
+
+    br_viewport = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklViewport));
     vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 1, br_viewport);
     viewport = vkl_viewport_full(canvas);
     vkl_upload_buffers(ctx, br_viewport, 0, sizeof(VklViewport), &viewport);
+
     vkl_visual_update(visual, viewport, (VklDataCoords){0}, NULL);
+
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _visual_canvas_fill, visual);
 }
 
@@ -161,7 +164,7 @@ int test_visuals_axes_2D(TestContext* context)
     // Set visual data.
     vkl_visual_data(&visual, VKL_PROP_XPOS, VKL_AXES_LEVEL_MINOR, N, xticks);
     vkl_visual_data(&visual, VKL_PROP_YPOS, VKL_AXES_LEVEL_MINOR, N, yticks);
-    cvec4 color = {0, 0, 0, 255};
+    cvec4 color = {255, 0, 0, 255};
     vkl_visual_data(&visual, VKL_PROP_COLOR, 0, 1, color);
 
     RUN;
