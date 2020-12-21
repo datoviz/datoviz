@@ -173,6 +173,8 @@ static void _upload_mvp(VklCanvas* canvas, VklPrivateEvent ev)
         // TODO: only 1 interact to be supported?
         for (uint32_t j = 0; j < controller->interact_count; j++)
         {
+            // Multiple interacts not yet supported.
+            ASSERT(j == 0);
             interact = &controller->interacts[j];
             // NOTE: we need to update the uniform buffer at every frame
             br = &panel->br_mvp;

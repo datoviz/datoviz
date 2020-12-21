@@ -363,6 +363,7 @@ struct VklScreencastEvent
 
 
 
+// NOTE: must correspond to the shader structure in common.glsl
 struct VklViewport
 {
     VkViewport viewport; // Vulkan viewport

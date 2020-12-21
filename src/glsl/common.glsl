@@ -15,6 +15,7 @@ layout (std140, binding = 1) uniform Viewport {
     uvec2 size_screen;      // size
     uvec2 offset;           // framebuffer coordinates
     uvec2 size;             // framebuffer coordinates
+    int viewport_type;      // viewport type
     float dpi_scaling;      // DPI scaling
 } viewport;
 

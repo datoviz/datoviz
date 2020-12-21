@@ -129,6 +129,7 @@ static void _graphics_segment(VklCanvas* canvas, VklGraphics* graphics)
     SHADER(VERTEX, "graphics_segment_vert")
     SHADER(FRAGMENT, "graphics_segment_frag")
     PRIMITIVE(TRIANGLE_LIST)
+    // PRIMITIVE(POINT_LIST) // DEBUG
 
     ATTR_BEGIN(VklGraphicsSegmentVertex)
     ATTR_POS(VklGraphicsSegmentVertex, P0)

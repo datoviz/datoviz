@@ -13,24 +13,41 @@ static VklMVP MVP_ID = {
 
 
 
+static void _check_viewport(VklViewport* viewport)
+{
+    ASSERT(viewport != NULL);
+
+    ASSERT(viewport->size_screen[0] > 0);
+    ASSERT(viewport->size_screen[1] > 0);
+    ASSERT(viewport->size_framebuffer[0] > 0);
+    ASSERT(viewport->size_framebuffer[1] > 0);
+    ASSERT(viewport->viewport.width > 0);
+    ASSERT(viewport->viewport.height > 0);
+}
+
+
+
 static VklViewport _get_viewport(VklPanel* panel)
 {
     VklViewport viewport = {0};
     VklCanvas* canvas = panel->grid->canvas;
+    ASSERT(canvas != NULL);
 
-    float win_width = panel->grid->canvas->swapchain.images->width;
-    float win_height = panel->grid->canvas->swapchain.images->height;
-
+    // Size in screen coordinates.
     viewport.size_screen[0] = panel->width * canvas->window->width;
     viewport.size_screen[1] = panel->height * canvas->window->height;
-
     viewport.offset_screen[0] = panel->x * canvas->window->width;
     viewport.offset_screen[1] = panel->y * canvas->window->height;
 
+    // Size in framebuffer pixel coordinates.
+    float win_width = panel->grid->canvas->swapchain.images->width;
+    float win_height = panel->grid->canvas->swapchain.images->height;
     viewport.viewport.x = panel->x * win_width;
     viewport.viewport.y = panel->y * win_height;
-    viewport.viewport.width = panel->width * win_width;
-    viewport.viewport.height = panel->height * win_height;
+    viewport.size_framebuffer[0] = viewport.viewport.width = panel->width * win_width;
+    viewport.size_framebuffer[1] = viewport.viewport.height = panel->height * win_height;
+
+    _check_viewport(&viewport);
 
     return viewport;
 }
@@ -41,6 +58,7 @@ static void _update_panel(VklPanel* panel)
 {
     ASSERT(panel != NULL);
     VklGrid* grid = panel->grid;
+    VklContext* ctx = grid->canvas->gpu->context;
 
     if (panel->mode == VKL_PANEL_INSET)
         return;
@@ -52,13 +70,17 @@ static void _update_panel(VklPanel* panel)
     panel->width = grid->widths[panel->col] * panel->hspan;
     panel->height = grid->heights[panel->row] * panel->vspan;
 
+    // Inner viewport.
     panel->viewport_inner = _get_viewport(panel);
     panel->viewport_inner.viewport_type = VKL_VIEWPORT_INNER;
 
+    // Outer viewport.
     panel->viewport_outer = _get_viewport(panel);
     panel->viewport_outer.viewport_type = VKL_VIEWPORT_OUTER;
 
     // Update the viewport on the GPU as well.
+    vkl_upload_buffers(ctx, panel->br_inner, 0, sizeof(VklViewport), &panel->viewport_inner);
+    vkl_upload_buffers(ctx, panel->br_outer, 0, sizeof(VklViewport), &panel->viewport_outer);
 }
 
 
@@ -212,17 +234,17 @@ VklPanel* vkl_panel(VklGrid* grid, uint32_t row, uint32_t col)
     // frame.
     vkl_upload_buffers_immediate(canvas, panel->br_mvp, true, 0, panel->br_mvp.size, &MVP_ID);
 
-    // Inner viewport uniform buffer.
-    panel->br_inner =
-        vkl_ctx_buffers(canvas->gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklViewport));
-    vkl_upload_buffers(ctx, panel->br_inner, 0, sizeof(VklViewport), &panel->viewport_inner);
+    // Inner and outer viewport uniform buffers.
+    panel->br_inner = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklViewport));
+    panel->br_outer = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklViewport));
 
-    // Outer viewport uniform buffer.
-    panel->br_outer =
-        vkl_ctx_buffers(canvas->gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklViewport));
+    // Update the VklViewport structures.
+    _update_panel(panel);
+
+    // Upload them to the uniform buffers
+    vkl_upload_buffers(ctx, panel->br_inner, 0, sizeof(VklViewport), &panel->viewport_inner);
     vkl_upload_buffers(ctx, panel->br_outer, 0, sizeof(VklViewport), &panel->viewport_outer);
 
-    _update_panel(panel);
     return panel;
 }
 
