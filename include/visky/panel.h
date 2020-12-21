@@ -32,15 +32,6 @@ typedef enum
 
 
 
-// Viewport type.
-typedef enum
-{
-    VKL_VIEWPORT_INNER,
-    VKL_VIEWPORT_OUTER,
-} VklViewportType;
-
-
-
 // Grid axis.
 typedef enum
 {
@@ -92,10 +83,20 @@ struct VklPanel
     float x, y;
     float width, height;
 
+    // Visuals
     uint32_t visual_count;
     VklVisual* visuals[VKL_MAX_VISUALS_PER_PANEL];
 
-    VklViewport viewport;
+    // Viewports.
+    VklViewport viewport_inner;
+    VklViewport viewport_outer;
+
+    // GPU objects
+    VklBufferRegions br_mvp;   // for the uniform buffer containing the MVP
+    VklBufferRegions br_inner; // for the uniform buffer containing the inner viewport
+    VklBufferRegions br_outer; // for the uniform buffer containing the outer viewport
+    void* mvp_mmap;            // for permanent mapping of the MVP uniform buffer
+
     VklController* controller;
     VklCommands* cmds;
 };
@@ -131,8 +132,7 @@ VKY_EXPORT void vkl_panel_unit(VklPanel* panel, VklPanelSizeUnit unit);
 
 VKY_EXPORT void vkl_panel_mode(VklPanel* panel, VklPanelMode mode);
 
-VKY_EXPORT void
-vkl_panel_visual(VklPanel* panel, VklVisual* visual, VklViewportType viewport_type);
+VKY_EXPORT void vkl_panel_visual(VklPanel* panel, VklVisual* visual);
 
 VKY_EXPORT void vkl_panel_pos(VklPanel* panel, float x, float y);
 
@@ -146,7 +146,7 @@ VKY_EXPORT VklPanel* vkl_panel_at(VklGrid* grid, vec2 pos); // normalized coords
 
 VKY_EXPORT void vkl_panel_destroy(VklPanel* panel);
 
-VKY_EXPORT VklViewport vkl_panel_viewport(VklPanel* panel);
+VKY_EXPORT VklViewport vkl_panel_viewport(VklPanel* panel, VklViewportType viewport_type);
 
 
 

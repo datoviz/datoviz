@@ -6,6 +6,13 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
+static VklMVP MVP_ID = {
+    GLM_MAT4_IDENTITY_INIT, //
+    GLM_MAT4_IDENTITY_INIT, //
+    GLM_MAT4_IDENTITY_INIT};
+
+
+
 static VklViewport _get_viewport(VklPanel* panel)
 {
     VklViewport viewport = {0};
@@ -45,7 +52,13 @@ static void _update_panel(VklPanel* panel)
     panel->width = grid->widths[panel->col] * panel->hspan;
     panel->height = grid->heights[panel->row] * panel->vspan;
 
-    panel->viewport = _get_viewport(panel);
+    panel->viewport_inner = _get_viewport(panel);
+    panel->viewport_inner.viewport_type = VKL_VIEWPORT_INNER;
+
+    panel->viewport_outer = _get_viewport(panel);
+    panel->viewport_outer.viewport_type = VKL_VIEWPORT_OUTER;
+
+    // Update the viewport on the GPU as well.
 }
 
 
@@ -93,7 +106,7 @@ static void _update_grid_panels(VklGrid* grid, VklGridAxis axis)
     // NOTE: not sure if this is needed? Decommenting causes the command buffers to be recorded
     // twice.
     // vkl_canvas_to_refill(grid->canvas, true);
-
+    //
     // TODO: hide panels that are overlapped by hspan/vspan-ed panels
     // by setting STATUS_INACTIVE (with log warn)
 }
@@ -163,6 +176,9 @@ VklGrid vkl_grid(VklCanvas* canvas, uint32_t rows, uint32_t cols)
 VklPanel* vkl_panel(VklGrid* grid, uint32_t row, uint32_t col)
 {
     ASSERT(grid != NULL);
+    VklCanvas* canvas = grid->canvas;
+    ASSERT(canvas != NULL);
+    VklContext* ctx = canvas->gpu->context;
 
     VklPanel* panel = _get_panel(grid, row, col);
     if (panel != NULL)
@@ -188,6 +204,24 @@ VklPanel* vkl_panel(VklGrid* grid, uint32_t row, uint32_t col)
     //     grid->canvas, VKL_DEFAULT_QUEUE_RENDER, VKL_COMMANDS_GROUP_PANELS, grid->panel_count -
     //     1);
 
+    // MVP uniform buffer.
+    uint32_t n = canvas->swapchain.img_count;
+    panel->br_mvp = vkl_ctx_buffers(
+        canvas->gpu->context, VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE, n, sizeof(VklMVP));
+    // Initialize with identity matrices. Will be later updated by the scene controllers at every
+    // frame.
+    vkl_upload_buffers_immediate(canvas, panel->br_mvp, true, 0, panel->br_mvp.size, &MVP_ID);
+
+    // Inner viewport uniform buffer.
+    panel->br_inner =
+        vkl_ctx_buffers(canvas->gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklViewport));
+    vkl_upload_buffers(ctx, panel->br_inner, 0, sizeof(VklViewport), &panel->viewport_inner);
+
+    // Outer viewport uniform buffer.
+    panel->br_outer =
+        vkl_ctx_buffers(canvas->gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklViewport));
+    vkl_upload_buffers(ctx, panel->br_outer, 0, sizeof(VklViewport), &panel->viewport_outer);
+
     _update_panel(panel);
     return panel;
 }
@@ -211,7 +245,7 @@ void vkl_panel_mode(VklPanel* panel, VklPanelMode mode)
 
 
 
-void vkl_panel_visual(VklPanel* panel, VklVisual* visual, VklViewportType viewport_type)
+void vkl_panel_visual(VklPanel* panel, VklVisual* visual)
 {
 
     ASSERT(panel != NULL);
@@ -294,11 +328,11 @@ void vkl_panel_cell(VklPanel* panel, uint32_t row, uint32_t col)
 
 
 
-VklViewport vkl_panel_viewport(VklPanel* panel)
+VklViewport vkl_panel_viewport(VklPanel* panel, VklViewportType viewport_type)
 {
     ASSERT(panel != NULL);
-    panel->viewport = _get_viewport(panel);
-    return panel->viewport;
+    // panel->viewport = _get_viewport(panel);
+    return viewport_type == VKL_VIEWPORT_INNER ? panel->viewport_inner : panel->viewport_outer;
 }
 
 

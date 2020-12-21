@@ -76,6 +76,16 @@ typedef enum
 } VklCanvasSizeType;
 
 
+
+// Viewport type.
+typedef enum
+{
+    VKL_VIEWPORT_INNER,
+    VKL_VIEWPORT_OUTER,
+} VklViewportType;
+
+
+
 // Mouse state type
 typedef enum
 {
@@ -361,6 +371,7 @@ struct VklViewport
     uvec2 size_screen;
     uvec2 offset_framebuffer;
     uvec2 size_framebuffer;
+    VklViewportType viewport_type; // used by the GPU for viewport transform
     float dpi_scaling;
 };
 

@@ -10,16 +10,22 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static VklViewport g_viewport;
-
-static void _common_data(VklVisual* visual)
+static void _common_data(VklPanel* panel, VklVisual* visual, VklViewportType viewport_type)
 {
-    // TODO: color texture
-    vkl_visual_data_texture(visual, VKL_PROP_COLOR_TEXTURE, 0, 1, 1, 1, NULL);
+    ASSERT(panel != NULL);
+    ASSERT(visual != NULL);
 
-    // TODO: viewport uniform
-    g_viewport = vkl_viewport_full(visual->canvas);
-    vkl_visual_data_buffer(visual, VKL_SOURCE_UNIFORM, 1, 0, 1, 1, &g_viewport);
+    // Binding 0: MVP binding
+    vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 0, panel->br_mvp);
+
+    // Binding 1: viewport
+    VklBufferRegions br_viewport =
+        viewport_type == VKL_VIEWPORT_INNER ? panel->br_inner : panel->br_outer;
+    vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 1, br_viewport);
+
+    // Binding 2: color texture
+    // TODO
+    vkl_visual_data_texture(visual, VKL_PROP_COLOR_TEXTURE, 0, 1, 1, 1, NULL);
 }
 
 
@@ -63,7 +69,7 @@ static void _scene_fill(VklCanvas* canvas, VklPrivateEvent ev)
             ASSERT(is_obj_created(&panel->obj));
 
             // Find the panel viewport.
-            viewport = vkl_panel_viewport(panel);
+            viewport = vkl_panel_viewport(panel, VKL_VIEWPORT_INNER);
             vkl_cmd_viewport(cmds, img_idx, viewport.viewport);
             // log_debug("%d %d %d %d", cmds, i, j, img_idx);
             // Go through all visuals in the panel.
@@ -105,7 +111,7 @@ static void _scene_frame(VklCanvas* canvas, VklPrivateEvent ev)
         // Update all visuals in the panel, using the panel's viewport.
         if (panel->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE)
         {
-            viewport = panel->viewport;
+            viewport = panel->viewport_inner;
             for (uint32_t j = 0; j < panel->visual_count; j++)
             {
                 // TODO: data coords
@@ -134,7 +140,7 @@ static void _default_controller_callback(VklController* controller, VklEvent ev)
         // float delay = canvas->clock.elapsed - interact->last_update;
 
         // Update the interact using the current panel's viewport.
-        VklViewport viewport = controller->panel->viewport;
+        VklViewport viewport = controller->panel->viewport_inner;
         vkl_interact_update(interact, viewport, &canvas->mouse, &canvas->keyboard);
         // NOTE: the CPU->GPU transfer occurs at every frame, in another callback below
     }
@@ -164,11 +170,12 @@ static void _upload_mvp(VklCanvas* canvas, VklPrivateEvent ev)
         controller = panel->controller;
 
         // Go through all interact of the controllers.
+        // TODO: only 1 interact to be supported?
         for (uint32_t j = 0; j < controller->interact_count; j++)
         {
             interact = &controller->interacts[j];
             // NOTE: we need to update the uniform buffer at every frame
-            br = &interact->br;
+            br = &panel->br_mvp;
 
             // GPU transfer happens here:
             void* aligned = aligned_repeat(br->size, &interact->mvp, 1, br->alignment);
@@ -270,7 +277,7 @@ VklTransform vkl_transform(VklPanel* panel, VklCDS source, VklCDS target)
         return tr;
     }
 
-    VklViewport viewport = panel->viewport;
+    VklViewport viewport = panel->viewport_inner;
 
     if (source == target)
     {
@@ -530,18 +537,16 @@ VklVisual* vkl_scene_visual(VklPanel* panel, VklVisualType type, int flags)
     ASSERT(panel->controller != NULL);
     VklScene* scene = panel->grid->canvas->scene;
     INSTANCE_NEW(VklVisual, visual, scene->visuals, scene->max_visuals)
+
+    // Create the visual.
     *visual = vkl_visual_builtin(scene->canvas, type, flags);
-    vkl_panel_visual(panel, visual, VKL_VIEWPORT_INNER);
 
-    // MVP, viewport, color texture binding data.
-    _common_data(visual);
+    // Add it to the panel.
+    vkl_panel_visual(panel, visual);
 
-    // TODO: make sure the first interact exists before binding the buffer, otherwise create
-    // one?
-    VklInteract* interact = &panel->controller->interacts[0];
-    vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 0, interact->br);
-    vkl_upload_buffers_immediate(
-        scene->canvas, interact->br, true, 0, interact->br.size, &interact->mvp);
+    // Bind the common buffers (MVP, viewport, color texture).
+    // TODO: viewport type
+    _common_data(panel, visual, VKL_VIEWPORT_INNER);
 
     return visual;
 }

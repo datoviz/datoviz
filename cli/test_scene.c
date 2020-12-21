@@ -151,6 +151,7 @@ int test_scene_axes(TestContext* context)
     cvec4 color = {0, 0, 0, 255};
     vkl_visual_data(visual, VKL_PROP_COLOR, 0, 1, color);
 
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
     vkl_app_run(app, N_FRAMES);
     vkl_visual_destroy(visual);
     vkl_scene_destroy(scene);

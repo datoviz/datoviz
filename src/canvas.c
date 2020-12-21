@@ -1029,8 +1029,19 @@ void vkl_upload_buffers_immediate(
 static void _normalize(vec2 pos_out, vec2 pos_in, VklViewport viewport)
 {
     // from screen coords to [-1, 1], normalized into the viewport
-    pos_out[0] = -1 + 2 * ((pos_in[0] - viewport.offset_screen[0]) / viewport.size_screen[0]);
-    pos_out[1] = +1 - 2 * ((pos_in[1] - viewport.offset_screen[1]) / viewport.size_screen[1]);
+    float x = viewport.offset_screen[0];
+    float y = viewport.offset_screen[1];
+    float w = viewport.size_screen[0];
+    float h = viewport.size_screen[1];
+
+    // Take viewport margins into account for normalization.
+    x += viewport.margins[3];
+    y += viewport.margins[0];
+    w -= (viewport.margins[1] + viewport.margins[3]);
+    h -= (viewport.margins[0] + viewport.margins[2]);
+
+    pos_out[0] = -1 + 2 * ((pos_in[0] - x) / w);
+    pos_out[1] = +1 - 2 * ((pos_in[1] - y) / h);
 }
 
 

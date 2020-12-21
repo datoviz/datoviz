@@ -119,8 +119,6 @@ struct VklInteract
     VklInteractCallback callback;
 
     VklMVP mvp;
-    VklBufferRegions br; // for the uniform buffer containing the MVP
-    void* mmap;          // for permanent mapping
 
     VklInteractUnion u;
 

@@ -91,11 +91,15 @@ struct VklScene
 {
     VklObject obj;
     VklCanvas* canvas;
+
+    // The grid contains the panels.
     VklGrid grid;
 
+    // Visuals.
     uint32_t max_visuals;
     VklVisual* visuals;
 
+    // Controllers.
     uint32_t max_controllers;
     VklController* controllers;
 };

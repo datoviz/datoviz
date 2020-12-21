@@ -37,7 +37,7 @@ static void _canvas_fill(VklCanvas* canvas, VklPrivateEvent ev)
             panel = &grid->panels[j];
             ASSERT(is_obj_created(&panel->obj));
             // Find the panel viewport.
-            viewport = vkl_panel_viewport(panel);
+            viewport = vkl_panel_viewport(panel, VKL_VIEWPORT_INNER);
             vkl_cmd_viewport(cmds, img_idx, viewport.viewport);
 
             // Go through all visuals in the panel.
@@ -85,8 +85,7 @@ int test_panel_1(TestContext* context)
 
     VklVisual visual = vkl_visual_builtin(canvas, VKL_VISUAL_MARKER, 0);
 
-    vkl_panel_visual(vkl_panel(&grid, 0, 0), &visual, VKL_VIEWPORT_INNER);
-    // vkl_panel_visual(vkl_panel(&grid, 1, 1), &visual, VKL_VIEWPORT_INNER);
+    vkl_panel_visual(vkl_panel(&grid, 0, 0), &visual);
 
     // Visual data.
     const uint32_t N = 1000;
