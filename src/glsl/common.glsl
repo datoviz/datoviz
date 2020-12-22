@@ -51,11 +51,16 @@ struct VkViewport {
 layout (std140, binding = 1) uniform Viewport {
     VkViewport viewport;    // Vulkan viewport
     vec4 margins;           // margins
+
     uvec2 offset_screen;    // offset
     uvec2 size_screen;      // size
+
     uvec2 offset;           // framebuffer coordinates
     uvec2 size;             // framebuffer coordinates
+
+    // Options
     int clip;               // viewport clipping
+    int transform;
     float dpi_scaling;      // DPI scaling
 } viewport;
 
@@ -68,7 +73,25 @@ layout (binding = 2) uniform sampler2D color_tex;
 /*************************************************************************************************/
 
 vec4 transform(vec3 pos) {
-    vec4 tr = (mvp.proj * mvp.view * mvp.model) * vec4(pos, 1.0);
+    mat4 mvp = mvp.proj * mvp.view * mvp.model;
+    vec4 tr = vec4(pos, 1.0);
+
+    // Transform.
+    switch (viewport.transform) {
+        case VKL_TRANSFORM_AXIS_NONE:
+            break;
+        case VKL_TRANSFORM_AXIS_ALL:
+            tr = mvp * tr;
+            break;
+        case VKL_TRANSFORM_AXIS_X:
+            tr = mvp * tr;
+            tr.y = pos.y;
+            break;
+        case VKL_TRANSFORM_AXIS_Y:
+            tr = mvp * tr;
+            tr.x = pos.x;
+            break;
+    }
 
     // Margins
     float w = viewport.size.x;

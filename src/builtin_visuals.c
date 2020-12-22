@@ -177,7 +177,7 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
 
     // TODO: params
     cvec4 color = {0, 0, 0, 255};
-    VklCapType cap = VKL_CAP_SQUARE;
+    VklCapType cap = VKL_CAP_TYPE_NONE;
     float lw = 2;
     float* x = NULL;
 

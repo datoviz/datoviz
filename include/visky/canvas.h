@@ -391,6 +391,7 @@ struct VklViewport
     uvec2 offset_framebuffer;
     uvec2 size_framebuffer;
 
+    // Options
     // Viewport clipping.
     VklViewportClip clip; // used by the GPU for viewport clipping
 
