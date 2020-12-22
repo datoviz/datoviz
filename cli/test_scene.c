@@ -143,7 +143,7 @@ int test_scene_axes(TestContext* context)
     visualx->transform = VKL_TRANSFORM_AXIS_X;
     visualy->transform = VKL_TRANSFORM_AXIS_Y;
 
-    const uint32_t N = 4 * 10;
+    const uint32_t N = 4 * 10 + 1;
     float* xticks = calloc(N, sizeof(float));
     float* yticks = calloc(N, sizeof(float));
     float t = 0;

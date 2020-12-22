@@ -418,6 +418,17 @@ void vkl_visual_prop(
 
 
 
+void vkl_visual_prop_default(
+    VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, void* default_value)
+{
+    ASSERT(visual != NULL);
+    VklProp* prop = vkl_bake_prop(visual, prop_type, prop_idx);
+    ASSERT(prop != NULL);
+    prop->default_value = default_value;
+}
+
+
+
 void vkl_visual_prop_copy(
     VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, //
     uint32_t field_idx, VkDeviceSize offset, VklArrayCopyType copy_type, uint32_t reps)
@@ -746,6 +757,17 @@ VklProp* vkl_bake_prop(VklVisual* visual, VklPropType prop_type, uint32_t idx)
 
 
 
+void* vkl_bake_prop_item(VklProp* prop, uint32_t idx)
+{
+    ASSERT(prop != NULL);
+    void* res = prop->default_value;
+    if (idx < prop->arr_orig.item_count)
+        res = vkl_array_item(&prop->arr_orig, idx);
+    return res;
+}
+
+
+
 VklSource* vkl_bake_prop_source(VklVisual* visual, VklProp* prop)
 {
     ASSERT(visual != NULL);
@@ -1051,14 +1073,6 @@ void vkl_visual_update(
                 log_debug(
                     "upload buffer for automatically-handled source %d #%d", //
                     source->source_type, source->source_idx);
-
-                // if (source->source_type == VKL_SOURCE_VERTEX)
-                // {
-                //     for (uint32_t i = 0; i < arr->item_count; i++)
-                //     {
-                //         DBGF(((VklGraphicsSegmentVertex*)arr->data)[i].linewidth);
-                //     }
-                // }
 
                 if (_uniform_source_is_immediate(source))
                     vkl_upload_buffers_immediate(canvas, *br, true, 0, br->size, arr->data);

@@ -39,8 +39,6 @@ typedef enum
 {
     VKL_PROP_NONE,
     VKL_PROP_POS,
-    // VKL_PROP_XPOS,
-    // VKL_PROP_YPOS,
     VKL_PROP_COLOR,
     VKL_PROP_MARKER_SIZE,
     VKL_PROP_TEXT_SIZE,
@@ -48,8 +46,6 @@ typedef enum
     VKL_PROP_TYPE,
     VKL_PROP_LENGTH,
     VKL_PROP_MARGIN,
-    // VKL_PROP_HMARGIN,
-    // VKL_PROP_VMARGIN,
 
     VKL_PROP_COLOR_TEXTURE,
     VKL_PROP_MODEL,
@@ -185,6 +181,7 @@ struct VklProp
     VklDataType dtype;
     VkDeviceSize offset;
 
+    void* default_value;
     VklArray arr_orig;  // original data array
     VklArray arr_trans; // transformed data array
     // VklArray arr_triang; // triangulated data array
@@ -294,6 +291,9 @@ VKY_EXPORT void vkl_visual_prop(
     VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, VklDataType dtype,
     VklSourceType source_type, uint32_t source_idx);
 
+VKY_EXPORT void vkl_visual_prop_default(
+    VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, void* default_value);
+
 VKY_EXPORT void vkl_visual_prop_copy(
     VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, //
     uint32_t field_idx, VkDeviceSize offset,                     //
@@ -361,6 +361,8 @@ VKY_EXPORT void vkl_visual_callback_bake(VklVisual* visual, VklVisualDataCallbac
 VKY_EXPORT VklSource* vkl_bake_source(VklVisual* visual, VklSourceType source_type, uint32_t idx);
 
 VKY_EXPORT VklProp* vkl_bake_prop(VklVisual* visual, VklPropType prop_type, uint32_t idx);
+
+VKY_EXPORT void* vkl_bake_prop_item(VklProp* prop, uint32_t idx);
 
 VKY_EXPORT VklSource* vkl_bake_prop_source(VklVisual* visual, VklProp* prop);
 

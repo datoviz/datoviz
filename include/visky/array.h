@@ -383,7 +383,7 @@ static void vkl_array_data(
 static inline void* vkl_array_item(VklArray* array, uint32_t idx)
 {
     ASSERT(array != NULL);
-    idx = CLIP(idx, 0, array->item_count);
+    idx = CLIP(idx, 0, array->item_count - 1);
     return (void*)((int64_t)array->data + (int64_t)(idx * array->item_size));
 }
 
