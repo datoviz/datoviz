@@ -6,10 +6,11 @@
 #define VKL_VIEWPORT_INNER      1
 #define VKL_VIEWPORT_OUTER      2
 
-#define VKL_TRANSFORM_AXIS_ALL  0
-#define VKL_TRANSFORM_AXIS_X    1
-#define VKL_TRANSFORM_AXIS_Y    2
-#define VKL_TRANSFORM_AXIS_NONE 3
+#define VKL_TRANSFORM_AXIS_DEFAULT  0
+#define VKL_TRANSFORM_AXIS_ALL      1
+#define VKL_TRANSFORM_AXIS_X        2
+#define VKL_TRANSFORM_AXIS_Y        3
+#define VKL_TRANSFORM_AXIS_NONE     4
 
 #define USER_BINDING 3
 
@@ -72,12 +73,16 @@ layout (binding = 2) uniform sampler2D color_tex;
 /*  Viewport and transform functions                                                             */
 /*************************************************************************************************/
 
-vec4 transform(vec3 pos, vec2 shift) {
+vec4 transform(vec3 pos, vec2 shift, uint transform_mode) {
     mat4 mvp = mvp.proj * mvp.view * mvp.model;
     vec4 tr = vec4(pos, 1.0);
 
+    // By default, take the viewport transform.
+    if (transform_mode == 0)
+        transform_mode = uint(viewport.transform);
+
     // Transform.
-    switch (viewport.transform) {
+    switch (transform_mode) {
         case VKL_TRANSFORM_AXIS_NONE:
             break;
         case VKL_TRANSFORM_AXIS_ALL:
@@ -90,6 +95,8 @@ vec4 transform(vec3 pos, vec2 shift) {
         case VKL_TRANSFORM_AXIS_Y:
             tr = mvp * tr;
             tr.x = pos.x;
+            break;
+        default:
             break;
     }
 
@@ -120,6 +127,12 @@ vec4 transform(vec3 pos, vec2 shift) {
     tr.z = .5 * (1.0 - tr.z); // depth is [-1, 1] in OpenGL but [0, 1] in Vulkan
 
     return tr;
+}
+
+
+
+vec4 transform(vec3 pos, vec2 shift) {
+    return transform(pos, shift, 0);
 }
 
 

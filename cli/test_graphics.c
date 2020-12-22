@@ -489,7 +489,7 @@ int test_graphics_segment(TestContext* context)
         cap = i % VKL_CAP_COUNT;
         _graphics_segment_add(
             data, indices, i, (vec3){x, -y, 0}, (vec3){x, y, 0}, color, 5 + 30 * t, shift, cap,
-            cap);
+            cap, VKL_TRANSFORM_AXIS_DEFAULT);
         ASSERT(6 * i + 5 < 6 * N);
     }
     END_DATA

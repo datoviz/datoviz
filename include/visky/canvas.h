@@ -92,6 +92,7 @@ typedef enum
 // NOTE: must correspond to values in common.glsl
 typedef enum
 {
+    VKL_TRANSFORM_AXIS_DEFAULT,
     VKL_TRANSFORM_AXIS_ALL,  // normal transform
     VKL_TRANSFORM_AXIS_X,    // transform just on the X axis
     VKL_TRANSFORM_AXIS_Y,    // transform just on the Y axis

@@ -180,7 +180,7 @@ struct VklGraphicsSegmentVertex
     float linewidth;
     VklCapType cap0;
     VklCapType cap1;
-    // uint8_t transform_mode;
+    uint8_t transform;
 };
 
 
@@ -215,7 +215,8 @@ struct VklGraphicsTextVertex
 
 static void _graphics_segment_add(
     VklGraphicsSegmentVertex* data, VklIndex* indices, uint32_t i, //
-    vec3 P0, vec3 P1, cvec4 color, float linewidth, vec4 shift, VklCapType cap0, VklCapType cap1)
+    vec3 P0, vec3 P1, cvec4 color, float linewidth, vec4 shift, VklCapType cap0, VklCapType cap1,
+    VklTransformAxis transform)
 {
     ASSERT(data != NULL);
     ASSERT(indices != NULL);
@@ -230,6 +231,7 @@ static void _graphics_segment_add(
         data[4 * i + j].linewidth = linewidth;
         data[4 * i + j].cap0 = cap0;
         data[4 * i + j].cap1 = cap1;
+        data[4 * i + j].transform = transform;
     }
 
     indices[6 * i + 0] = 4 * i + 0;

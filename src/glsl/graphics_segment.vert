@@ -9,7 +9,7 @@ layout (location = 3) in vec4 color;
 layout (location = 4) in float linewidth;
 layout (location = 5) in int cap0;
 layout (location = 6) in int cap1;
-// layout (location = 7) in uint transform_mode; // TODO
+layout (location = 7) in uint transform_mode;
 
 layout (location = 0) out vec4  out_color;
 layout (location = 1) out vec2  out_texcoord;
@@ -24,8 +24,9 @@ void main (void)
 
     int index = gl_VertexIndex % 4;
 
-    vec4 P0_ = transform(P0, shift.xy);
-    vec4 P1_ = transform(P1, shift.zw);
+    vec4 P0_ = transform(P0, shift.xy, transform_mode);
+    vec4 P1_ = transform(P1, shift.zw, transform_mode);
+
 
     #include "segment.glsl"
 }

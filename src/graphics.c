@@ -139,6 +139,7 @@ static void _graphics_segment(VklCanvas* canvas, VklGraphics* graphics)
     ATTR(VklGraphicsSegmentVertex, VK_FORMAT_R32_SFLOAT, linewidth)
     ATTR(VklGraphicsSegmentVertex, VK_FORMAT_R32_SINT, cap0)
     ATTR(VklGraphicsSegmentVertex, VK_FORMAT_R32_SINT, cap1)
+    ATTR(VklGraphicsSegmentVertex, VK_FORMAT_R8_UINT, transform)
 
     _common_bindings(graphics);
 
