@@ -175,11 +175,17 @@ static void _add_ticks(
 
     vec3 P0 = {0};
     vec3 P1 = {0};
+    vec4 shift0 = {0};
+    glm_vec4_copy(shift, shift0);
 
     VklCapType cap = VKL_CAP_TYPE_NONE;
 
-    for (uint32_t i = 0; i < tick_prop->arr_orig.item_count; i++)
+    uint32_t n = tick_prop->arr_orig.item_count;
+    float s = 0 + .5 * lw;
+    for (uint32_t i = 0; i < n; i++)
     {
+        glm_vec4_copy(shift0, shift);
+
         // TODO: transformation
         x = vkl_array_item(&tick_prop->arr_orig, i);
 
@@ -189,6 +195,18 @@ static void _add_ticks(
             P1[0] = *x;
             P0[1] = lim[0];
             P1[1] = lim[1];
+
+            // Prevent half of the first and last lines to be cut off by viewport clipping.
+            if (i == 0)
+            {
+                shift[0] += s;
+                shift[2] += s;
+            }
+            else if (i == n - 1)
+            {
+                shift[0] -= s;
+                shift[2] -= s;
+            }
         }
         else if (coord == VKL_AXES_COORD_Y)
         {
@@ -196,6 +214,18 @@ static void _add_ticks(
             P1[1] = *x;
             P0[0] = lim[0];
             P1[0] = lim[1];
+
+            // Prevent half of the first and last lines to be cut off by viewport clipping.
+            if (i == 0)
+            {
+                shift[1] += s;
+                shift[3] += s;
+            }
+            else if (i == n - 1)
+            {
+                shift[1] -= s;
+                shift[3] -= s;
+            }
         }
 
         _graphics_segment_add(vertices, indices, offset + i, P0, P1, color, lw, shift, cap, cap);
@@ -231,21 +261,27 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
     vec4 shift = {0};
     vec2 lim = {-1, 1};
 
+    VklProp* xpos = NULL;
+    VklProp* ypos = NULL;
+    uint32_t xtick_count = 0;
+    uint32_t ytick_count = 0;
+
     uint32_t offset = 0; // tick offset
     for (uint32_t level = 0; level < 3; level++)
     {
         // Take the tick positions.
-        VklProp* xpos = vkl_bake_prop(visual, VKL_PROP_XPOS, level);
-        VklProp* ypos = vkl_bake_prop(visual, VKL_PROP_YPOS, level);
-
-        uint32_t xtick_count = xpos->arr_orig.item_count; // number of ticks for this level.
-        uint32_t ytick_count = ypos->arr_orig.item_count; // number of ticks for this level.
+        xpos = vkl_bake_prop(visual, VKL_PROP_XPOS, level);
+        ypos = vkl_bake_prop(visual, VKL_PROP_YPOS, level);
+        xtick_count = xpos->arr_orig.item_count; // number of ticks for this level.
+        ytick_count = ypos->arr_orig.item_count; // number of ticks for this level.
 
         // x ticks
+        glm_vec4_zero(shift);
         _add_ticks(xpos, vertices, indices, offset, VKL_AXES_COORD_X, lim, color, lw, shift);
         offset += xtick_count;
 
         // y ticks
+        glm_vec4_zero(shift);
         _add_ticks(ypos, vertices, indices, offset, VKL_AXES_COORD_Y, lim, color, lw, shift);
         offset += ytick_count;
     }

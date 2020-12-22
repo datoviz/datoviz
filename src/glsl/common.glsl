@@ -72,7 +72,7 @@ layout (binding = 2) uniform sampler2D color_tex;
 /*  Viewport and transform functions                                                             */
 /*************************************************************************************************/
 
-vec4 transform(vec3 pos) {
+vec4 transform(vec3 pos, vec2 shift) {
     mat4 mvp = mvp.proj * mvp.view * mvp.model;
     vec4 tr = vec4(pos, 1.0);
 
@@ -111,6 +111,9 @@ vec4 transform(vec3 pos) {
     b = (mb - mt) / h;
     tr.y = a * tr.y + b;
 
+    // pixel shift.
+    tr.xy += (2 * shift / viewport.size);
+
     // HACK: we transform from OpenGL conventional coordinate system to Vulkan
     // This allows us to use MVP matrices in OpenGL conventions.
     tr.y = -tr.y; // Vulkan swaps top and bottom in its device coordinate system.
@@ -121,9 +124,8 @@ vec4 transform(vec3 pos) {
 
 
 
-vec4 transform(vec3 pos, vec2 shift) {
-    vec4 pos_tr = transform(pos);
-    return pos_tr + vec4(2 * shift / viewport.size, 0, 0);
+vec4 transform(vec3 pos) {
+    return transform(pos, vec2(0, 0));
 }
 
 
