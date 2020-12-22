@@ -1,4 +1,5 @@
 #include "../include/visky/builtin_visuals.h"
+#include "../include/visky/scene.h"
 
 
 
@@ -174,6 +175,25 @@ static uint32_t _count_prop_items(
     return count;
 }
 
+static uint32_t _count_chars(VklVisual* visual)
+{
+    ASSERT(visual != NULL);
+    VklProp* prop = vkl_bake_prop(visual, VKL_PROP_TEXT, 0);
+    ASSERT(prop != NULL);
+    uint32_t n_text = prop->arr_orig.item_count;
+    uint32_t char_count = 0;
+    char* str = NULL;
+    uint32_t slen = 0;
+    for (uint32_t i = 0; i < n_text; i++)
+    {
+        str = ((char**)prop->arr_orig.data)[i];
+        slen = strlen(str);
+        ASSERT(slen > 0);
+        char_count += slen;
+    }
+    return char_count;
+}
+
 static void _add_ticks(
     VklProp* tick_prop, VklGraphicsSegmentVertex* vertices, VklIndex* indices, //
     VklAxisLevel level, uint32_t offset, VklAxisCoord coord, vec2 lim, cvec4 color, float lw,
@@ -258,10 +278,13 @@ static void _add_ticks(
 static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
 {
     ASSERT(visual != NULL);
+    VklScene* scene = visual->canvas->scene;
 
     // segment graphics vertex buffer
     VklSource* seg_vert_src = vkl_bake_source(visual, VKL_SOURCE_VERTEX, 0);
     VklSource* seg_index_src = vkl_bake_source(visual, VKL_SOURCE_INDEX, 0);
+    // text graphics vertex buffer
+    VklSource* text_vert_src = vkl_bake_source(visual, VKL_SOURCE_VERTEX, 1);
 
     // Count the total number of segments.
     uint32_t count =
@@ -271,14 +294,24 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
     vkl_bake_source_alloc(visual, seg_vert_src, 4 * count);
     vkl_bake_source_alloc(visual, seg_index_src, 6 * count);
 
-    // Vertices and indices arrays.
+    // Allocate the text vertex buffer.
+    uint32_t count_chars = _count_chars(visual);
+    if (count_chars > 0)
+        vkl_bake_source_alloc(visual, text_vert_src, 4 * count_chars);
+
+    // Vertices arrays.
     VklGraphicsSegmentVertex* vertices = seg_vert_src->arr.data;
     ASSERT(vertices != NULL);
     ASSERT(seg_vert_src->arr.item_count == 4 * count);
 
+    // Indices arrays.
     VklIndex* indices = seg_index_src->arr.data;
     ASSERT(indices != NULL);
     ASSERT(seg_index_src->arr.item_count == 6 * count);
+
+    // Text array.
+    VklGraphicsTextVertex* text_vertices = text_vert_src->arr.data;
+    ASSERT(text_vert_src->arr.item_count == 4 * count_chars);
 
     // Visual coordinate.
     VklAxisCoord coord = (VklAxisCoord)visual->flags;
@@ -292,15 +325,15 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
     vec4 shift = {0};
     vec2 lim = {0};
 
-    VklProp* pos = NULL;
+    VklProp* prop = NULL;
     uint32_t tick_count = 0;
     uint32_t offset = 0; // tick offset
     for (uint32_t level = 0; level < VKL_AXES_LEVEL_COUNT; level++)
     {
         // Take the tick positions.
-        pos = vkl_bake_prop(visual, VKL_PROP_POS, level);
-        ASSERT(pos != NULL);
-        tick_count = pos->arr_orig.item_count; // number of ticks for this level.
+        prop = vkl_bake_prop(visual, VKL_PROP_POS, level);
+        ASSERT(prop != NULL);
+        tick_count = prop->arr_orig.item_count; // number of ticks for this level.
         if (tick_count == 0)
             continue;
         ASSERT(tick_count > 0);
@@ -345,9 +378,28 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
 
         // ticks
         _add_ticks(
-            pos, vertices, indices, (VklAxisLevel)level, offset, coord, lim, color, lw, shift);
+            prop, vertices, indices, (VklAxisLevel)level, offset, coord, lim, color, lw, shift);
         offset += tick_count;
         ASSERT(offset <= count);
+    }
+
+    // Labels: one for each major tick.
+    prop = vkl_bake_prop(visual, VKL_PROP_TEXT, 0);
+    uint32_t slen = 0;
+    char* text = NULL;
+    vec2 anchor = {0};
+    vec3 pos = {0};
+    offset = 0;
+    for (uint32_t i = 0; i < prop->arr_orig.item_count; i++)
+    {
+        // Add text.
+        text = ((char**)prop->arr_orig.data)[i];
+        ASSERT(text != NULL);
+        slen = strlen(text);
+        _graphics_text_string(
+            &scene->font_atlas, i, text, pos, shift, anchor, 0, 50, (const cvec4*)color,
+            &text_vertices[offset]);
+        offset += 4 * slen;
     }
 }
 
@@ -361,22 +413,6 @@ static void _visual_axes_2D(VklVisual* visual)
     vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_SEGMENT, 0));
     vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_TEXT, 0));
 
-    {
-        // TODO
-
-        // VklGraphicsTextParams params = {0};
-        // params.grid_size[0] = (int32_t)scene->font_atlas.rows;
-        // params.grid_size[1] = (int32_t)scene->font_atlas.cols;
-        // params.tex_size[0] = (int32_t)scene->font_atlas.width;
-        // params.tex_size[1] = (int32_t)scene->font_atlas.height;
-
-        // cvec4 colors[128] = {0};
-        // for (uint32_t i = 0; i < offset; i++)
-        //     vkl_colormap_scale(VKL_CMAP_RAINBOW, i, 0, offset, colors[i]);
-        // _graphics_text_string(
-        //     &atlas, 26, str, z, z, z, 0, 50, (const cvec4*)colors, &data[4 * 26]);
-    }
-
     // Segment graphics.
     {
         // Vertex buffer.
@@ -387,6 +423,9 @@ static void _visual_axes_2D(VklVisual* visual)
         // Index buffer.
         vkl_visual_source(
             visual, VKL_SOURCE_INDEX, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklIndex), 0);
+
+        // Uniform buffers.
+        _common_sources(visual, 0, 0, 1, 0); // segment visual
     }
 
     // Text graphics.
@@ -395,11 +434,21 @@ static void _visual_axes_2D(VklVisual* visual)
         vkl_visual_source(
             visual, VKL_SOURCE_VERTEX, 1, VKL_PIPELINE_GRAPHICS, 1, //
             0, sizeof(VklGraphicsTextVertex), 0);
+
+        // Uniform buffers.
+        _common_sources(visual, 1, 2, 3, 1); // text visual
+
+        // Parameters.
+        vkl_visual_source(
+            visual, VKL_SOURCE_UNIFORM, 4, VKL_PIPELINE_GRAPHICS, 1, //
+            VKL_USER_BINDING, sizeof(VklGraphicsTextParams), 0);
+
+        // Font atlas texture.
+        vkl_visual_source(
+            visual, VKL_SOURCE_TEXTURE_2D, 2, VKL_PIPELINE_GRAPHICS, 1, //
+            VKL_USER_BINDING + 1, sizeof(cvec4), 0);
     }
 
-    // Uniform buffers.
-    _common_sources(visual, 0, 0, 1, 0); // segment visual
-    _common_sources(visual, 1, 2, 3, 1); // text visual
 
     // Segment graphics props.
     {
@@ -436,11 +485,11 @@ static void _visual_axes_2D(VklVisual* visual)
     // Text graphics props.
     {
         // tick text size
-        vkl_visual_prop(visual, VKL_PROP_TEXT, 0, VKL_DTYPE_STR, VKL_SOURCE_VERTEX, 0);
+        vkl_visual_prop(visual, VKL_PROP_TEXT, 0, VKL_DTYPE_STR, VKL_SOURCE_VERTEX, 1);
         // TODO: default
 
         // tick text size
-        vkl_visual_prop(visual, VKL_PROP_TEXT_SIZE, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_VERTEX, 0);
+        vkl_visual_prop(visual, VKL_PROP_TEXT_SIZE, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_VERTEX, 1);
     }
 
     // Common props.

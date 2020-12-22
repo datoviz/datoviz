@@ -161,7 +161,7 @@ static VkDeviceSize _get_dtype_size(VklDataType dtype)
     case VKL_DTYPE_DVEC4:
         return 8 * 4;
     case VKL_DTYPE_STR:
-        return 8;
+        return sizeof(char*);
 
     case VKL_DTYPE_MAT2:
         return 2 * 2 * 4;

@@ -363,7 +363,7 @@ void vkl_visual_source(
 
     VklSource source = {0};
     source.obj.type = VKL_OBJECT_TYPE_SOURCE;
-    source.obj.status = VKL_OBJECT_STATUS_CREATED;
+    source.obj.status = VKL_OBJECT_STATUS_INIT;
     source.source_type = source_type;
     source.source_idx = source_idx;
     source.pipeline = pipeline;
@@ -1019,7 +1019,12 @@ void vkl_visual_update(
     for (uint32_t i = 0; i < visual->source_count; i++)
     {
         source = &visual->sources[i];
-        if (source->obj.status != VKL_OBJECT_STATUS_NEED_UPDATE)
+        if (source->obj.status == VKL_OBJECT_STATUS_INIT)
+        {
+            log_error("data source %d #%d was never set", source->source_type, source->source_idx);
+            continue;
+        }
+        else if (source->obj.status != VKL_OBJECT_STATUS_NEED_UPDATE)
         {
             log_trace("skip data upload for source that doesn't need to be updated");
             continue;
