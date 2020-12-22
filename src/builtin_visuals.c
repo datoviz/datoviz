@@ -175,6 +175,10 @@ static void _add_ticks(
     VklAxisLevel level, uint32_t offset, VklAxisCoord coord, vec2 lim, cvec4 color, float lw,
     vec4 shift)
 {
+    ASSERT(tick_prop != NULL);
+    ASSERT(vertices != NULL);
+    ASSERT(indices != NULL);
+
     float* x = NULL;
 
     vec3 P0 = {0};
@@ -185,6 +189,7 @@ static void _add_ticks(
     VklCapType cap = VKL_CAP_TYPE_NONE;
 
     uint32_t n = tick_prop->arr_orig.item_count;
+    ASSERT(n > 0);
     float s = 0 + .5 * lw;
     for (uint32_t i = 0; i < n; i++)
     {
@@ -192,6 +197,7 @@ static void _add_ticks(
 
         // TODO: transformation
         x = vkl_bake_prop_item(tick_prop, i);
+        ASSERT(x != NULL);
 
         if (coord == VKL_AXES_COORD_X)
         {
@@ -260,33 +266,64 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
 
     // Vertices and indices arrays.
     VklGraphicsSegmentVertex* vertices = seg_vert_src->arr.data;
+    ASSERT(vertices != NULL);
     ASSERT(seg_vert_src->arr.item_count == 4 * count);
 
     VklIndex* indices = seg_index_src->arr.data;
+    ASSERT(indices != NULL);
     ASSERT(seg_index_src->arr.item_count == 6 * count);
 
     // TODO: params
     cvec4 color = {0, 0, 0, 255};
     float lw = 2;
     vec4 shift = {0};
-    vec2 lim = {-1, 1};
+    vec2 lim = {0};
 
     VklProp* pos = NULL;
     uint32_t tick_count = 0;
 
     uint32_t offset = 0; // tick offset
-    for (uint32_t level = 0; level < 3; level++)
+    for (uint32_t level = 0; level < VKL_AXES_LEVEL_COUNT; level++)
     {
         // Take the tick positions.
         pos = vkl_bake_prop(visual, VKL_PROP_POS, level);
+        ASSERT(pos != NULL);
         tick_count = pos->arr_orig.item_count; // number of ticks for this level.
+        if (tick_count == 0)
+            continue;
+        ASSERT(tick_count > 0);
 
-        // x ticks
         glm_vec4_zero(shift);
+        glm_vec2_zero(lim);
+
+        switch (level)
+        {
+
+        case VKL_AXES_LEVEL_MINOR:
+            // shift[0];
+            break;
+
+        case VKL_AXES_LEVEL_MAJOR:
+            break;
+
+        case VKL_AXES_LEVEL_GRID:
+            lim[0] = -1;
+            lim[1] = +1;
+            break;
+
+        case VKL_AXES_LEVEL_LIM:
+            break;
+
+        default:
+            break;
+        }
+
+        // ticks
         _add_ticks(
-            pos, vertices, indices, offset, (VklAxisLevel)level, //
+            pos, vertices, indices, (VklAxisLevel)level, offset, //
             (VklAxisCoord)visual->flags, lim, color, lw, shift);
         offset += tick_count;
+        ASSERT(offset <= count);
     }
 }
 

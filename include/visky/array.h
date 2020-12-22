@@ -261,6 +261,7 @@ static void vkl_array_resize(VklArray* array, uint32_t item_count)
 {
     ASSERT(array != NULL);
     ASSERT(item_count > 0);
+    ASSERT(array->item_size > 0);
 
     uint32_t old_item_count = array->item_count;
 
@@ -353,6 +354,8 @@ static void vkl_array_data(
         vkl_array_resize(array, first_item + item_count);
     }
     ASSERT(first_item + item_count <= array->item_count);
+    ASSERT(array->item_size > 0);
+    ASSERT(array->item_count > 0);
 
     VkDeviceSize item_size = array->item_size;
     ASSERT(item_size > 0);

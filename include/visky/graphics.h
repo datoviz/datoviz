@@ -217,6 +217,9 @@ static void _graphics_segment_add(
     VklGraphicsSegmentVertex* data, VklIndex* indices, uint32_t i, //
     vec3 P0, vec3 P1, cvec4 color, float linewidth, vec4 shift, VklCapType cap0, VklCapType cap1)
 {
+    ASSERT(data != NULL);
+    ASSERT(indices != NULL);
+
     for (uint32_t j = 0; j < 4; j++)
     {
         glm_vec3_copy(P0, data[4 * i + j].P0);
