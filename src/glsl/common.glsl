@@ -2,9 +2,14 @@
 /*  Constants and macros                                                                         */
 /*************************************************************************************************/
 
-#define VKL_VIEWPORT_NONE 0
-#define VKL_VIEWPORT_INNER 1
-#define VKL_VIEWPORT_OUTER 2
+#define VKL_VIEWPORT_NONE       0
+#define VKL_VIEWPORT_INNER      1
+#define VKL_VIEWPORT_OUTER      2
+
+#define VKL_TRANSFORM_AXIS_ALL  0
+#define VKL_TRANSFORM_AXIS_X    1
+#define VKL_TRANSFORM_AXIS_Y    2
+#define VKL_TRANSFORM_AXIS_NONE 3
 
 #define USER_BINDING 3
 

@@ -88,6 +88,18 @@ typedef enum
 
 
 
+// Transform axis
+// NOTE: must correspond to values in common.glsl
+typedef enum
+{
+    VKL_TRANSFORM_AXIS_ALL,  // normal transform
+    VKL_TRANSFORM_AXIS_X,    // transform just on the X axis
+    VKL_TRANSFORM_AXIS_Y,    // transform just on the Y axis
+    VKL_TRANSFORM_AXIS_NONE, // no transform
+} VklTransformAxis;
+
+
+
 // Mouse state type
 typedef enum
 {
@@ -370,12 +382,24 @@ struct VklViewport
 {
     VkViewport viewport; // Vulkan viewport
     vec4 margins;
+
+    // Position and size of the viewport in screen coordinates.
     uvec2 offset_screen;
     uvec2 size_screen;
+
+    // Position and size of the viewport in framebuffer coordinates.
     uvec2 offset_framebuffer;
     uvec2 size_framebuffer;
+
+    // Viewport clipping.
     VklViewportClip clip; // used by the GPU for viewport clipping
+
+    // Used to discard transform on one axis
+    VklTransformAxis transform;
+
     float dpi_scaling;
+
+    // TODO: aspect ratio
 };
 
 
