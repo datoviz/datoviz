@@ -151,24 +151,74 @@ static void _visual_segment_raw(VklVisual* visual)
 /*  Axes 2D                                                                                      */
 /*************************************************************************************************/
 
+static uint32_t _count_prop_items(
+    VklVisual* visual, uint32_t prop_count, VklPropType* prop_types, //
+    uint32_t idx_count, uint32_t* indices)
+{
+    ASSERT(visual != NULL);
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < prop_count; i++)
+    {
+        for (uint32_t j = 0; j < idx_count; j++)
+        {
+            count += vkl_bake_prop(visual, prop_types[i], j)->arr_orig.item_count;
+        }
+    }
+    return count;
+}
+
+static void _add_ticks(
+    VklProp* tick_prop, VklGraphicsSegmentVertex* vertices, VklIndex* indices, uint32_t offset,
+    VklAxisCoord coord, vec2 lim, cvec4 color, float lw, vec4 shift)
+{
+    float* x = NULL;
+
+    vec3 P0 = {0};
+    vec3 P1 = {0};
+
+    VklCapType cap = VKL_CAP_TYPE_NONE;
+
+    for (uint32_t i = 0; i < tick_prop->arr_orig.item_count; i++)
+    {
+        // TODO: transformation
+        x = vkl_array_item(&tick_prop->arr_orig, i);
+
+        if (coord == VKL_AXES_COORD_X)
+        {
+            P0[0] = *x;
+            P1[0] = *x;
+            P0[1] = lim[0];
+            P1[1] = lim[1];
+        }
+        else if (coord == VKL_AXES_COORD_Y)
+        {
+            P0[1] = *x;
+            P1[1] = *x;
+            P0[0] = lim[0];
+            P1[0] = lim[1];
+        }
+
+        _graphics_segment_add(vertices, indices, offset + i, P0, P1, color, lw, shift, cap, cap);
+    }
+}
+
 static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
 {
     ASSERT(visual != NULL);
+
     // segment graphics vertex buffer
     VklSource* seg_vert_src = vkl_bake_source(visual, VKL_SOURCE_VERTEX, 0);
     VklSource* seg_index_src = vkl_bake_source(visual, VKL_SOURCE_INDEX, 0);
 
-    // TODO: multiple levels
-    uint32_t level = 0;
-    VklProp* xpos = vkl_bake_prop(visual, VKL_PROP_XPOS, level);
-    VklProp* ypos = vkl_bake_prop(visual, VKL_PROP_YPOS, level);
-    uint32_t xtick_count = xpos->arr_orig.item_count; // number of ticks for this level.
-    uint32_t ytick_count = ypos->arr_orig.item_count; // number of ticks for this level.
-    uint32_t count = xtick_count + ytick_count;
+    // Count the total number of segments.
+    uint32_t count = _count_prop_items(
+        visual, 2, (VklPropType[]){VKL_PROP_XPOS, VKL_PROP_YPOS}, 4, (uint32_t[]){0, 1, 2, 3});
 
+    // Allocate the vertex and index buffer.
     vkl_bake_source_alloc(visual, seg_vert_src, 4 * count);
     vkl_bake_source_alloc(visual, seg_index_src, 6 * count);
 
+    // Vertices and indices arrays.
     VklGraphicsSegmentVertex* vertices = seg_vert_src->arr.data;
     ASSERT(seg_vert_src->arr.item_count == 4 * count);
 
@@ -177,30 +227,27 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
 
     // TODO: params
     cvec4 color = {0, 0, 0, 255};
-    VklCapType cap = VKL_CAP_TYPE_NONE;
     float lw = 2;
-    float* x = NULL;
+    vec4 shift = {0};
+    vec2 lim = {-1, 1};
 
-    // xticks
-    uint32_t k = 0;
-    for (uint32_t i = 0; i < xtick_count; i++)
+    uint32_t offset = 0; // tick offset
+    for (uint32_t level = 0; level < 3; level++)
     {
-        // TODO: transformation
-        x = vkl_array_item(&xpos->arr_orig, i);
-        // TODO: params
-        _graphics_segment_add(
-            vertices, indices, i, (vec3){*x, -1, 0}, (vec3){*x, +1, 0}, color, lw, cap, cap);
-    }
-    k += xtick_count;
+        // Take the tick positions.
+        VklProp* xpos = vkl_bake_prop(visual, VKL_PROP_XPOS, level);
+        VklProp* ypos = vkl_bake_prop(visual, VKL_PROP_YPOS, level);
 
-    // yticks
-    for (uint32_t i = 0; i < ytick_count; i++)
-    {
-        // TODO: transformation
-        x = vkl_array_item(&ypos->arr_orig, i);
-        // TODO: params
-        _graphics_segment_add(
-            vertices, indices, i + k, (vec3){-1, *x, 0}, (vec3){+1, *x, 0}, color, lw, cap, cap);
+        uint32_t xtick_count = xpos->arr_orig.item_count; // number of ticks for this level.
+        uint32_t ytick_count = ypos->arr_orig.item_count; // number of ticks for this level.
+
+        // x ticks
+        _add_ticks(xpos, vertices, indices, offset, VKL_AXES_COORD_X, lim, color, lw, shift);
+        offset += xtick_count;
+
+        // y ticks
+        _add_ticks(ypos, vertices, indices, offset, VKL_AXES_COORD_Y, lim, color, lw, shift);
+        offset += ytick_count;
     }
 }
 
@@ -244,10 +291,12 @@ static void _visual_axes_2D(VklVisual* visual)
     // tick length
     vkl_visual_prop(
         visual, VKL_PROP_LENGTH, VKL_AXES_LEVEL_MAJOR, VKL_DTYPE_FLOAT, VKL_SOURCE_VERTEX, 0);
+
     // tick h margin
     vkl_visual_prop(visual, VKL_PROP_HMARGIN, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_VERTEX, 0);
     // tick v margin
     vkl_visual_prop(visual, VKL_PROP_VMARGIN, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_VERTEX, 0);
+
     // tick text size
     vkl_visual_prop(visual, VKL_PROP_TEXT_SIZE, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_VERTEX, 0);
 

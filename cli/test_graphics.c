@@ -479,6 +479,7 @@ int test_graphics_segment(TestContext* context)
 
     cvec4 color = {0};
     VklCapType cap = {0};
+    vec4 shift = {0};
     for (uint32_t i = 0; i < N; i++)
     {
         float t = (float)i / (float)N;
@@ -487,7 +488,8 @@ int test_graphics_segment(TestContext* context)
         vkl_colormap_scale(VKL_CMAP_RAINBOW, t, 0, 1, color);
         cap = i % VKL_CAP_COUNT;
         _graphics_segment_add(
-            data, indices, i, (vec3){x, -y, 0}, (vec3){x, y, 0}, color, 5 + 30 * t, cap, cap);
+            data, indices, i, (vec3){x, -y, 0}, (vec3){x, y, 0}, color, 5 + 30 * t, shift, cap,
+            cap);
         ASSERT(6 * i + 5 < 6 * N);
     }
     END_DATA

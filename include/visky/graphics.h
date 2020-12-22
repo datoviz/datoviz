@@ -215,13 +215,15 @@ struct VklGraphicsTextVertex
 
 static void _graphics_segment_add(
     VklGraphicsSegmentVertex* data, VklIndex* indices, uint32_t i, //
-    vec3 P0, vec3 P1, cvec4 color, float linewidth, VklCapType cap0, VklCapType cap1)
+    vec3 P0, vec3 P1, cvec4 color, float linewidth, vec4 shift, VklCapType cap0, VklCapType cap1)
 {
     for (uint32_t j = 0; j < 4; j++)
     {
         glm_vec3_copy(P0, data[4 * i + j].P0);
         glm_vec3_copy(P1, data[4 * i + j].P1);
         memcpy(data[4 * i + j].color, color, sizeof(cvec4));
+        glm_vec4_copy(shift, data[4 * i + j].shift);
+
         data[4 * i + j].linewidth = linewidth;
         data[4 * i + j].cap0 = cap0;
         data[4 * i + j].cap1 = cap1;

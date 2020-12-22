@@ -32,13 +32,6 @@ static void _update_viewport(VklPanel* panel)
     VklCanvas* canvas = panel->grid->canvas;
     ASSERT(canvas != NULL);
 
-    // VklViewport* viewports[] = {
-    //     &panel->viewport_full, &panel->viewport_inner, &panel->viewport_outer};
-    // VklViewport* viewport = NULL;
-    // for (uint32_t i = 0; i < 3; i++)
-    // {
-    //     viewport = viewports[i];
-
     VklViewport* viewport = &panel->viewport;
 
     // Size in screen coordinates.
@@ -57,7 +50,6 @@ static void _update_viewport(VklPanel* panel)
     viewport->size_framebuffer[1] = viewport->viewport.height = panel->height * win_height;
 
     _check_viewport(viewport);
-    // }
 }
 
 
@@ -211,22 +203,8 @@ VklPanel* vkl_panel(VklGrid* grid, uint32_t row, uint32_t col)
     // frame.
     vkl_upload_buffers_immediate(canvas, panel->br_mvp, true, 0, panel->br_mvp.size, &MVP_ID);
 
-    // Inner and outer viewport uniform buffers.
-    // panel->br_full = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklViewport));
-    // panel->br_inner = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklViewport));
-    // panel->br_outer = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklViewport));
-
-    // Update the VklViewport structures.
-    // panel->viewport_full.clip = VKL_VIEWPORT_FULL;   // no clip
-    // panel->viewport_inner.clip = VKL_VIEWPORT_OUTER; // we clip the margins
-    // panel->viewport_outer.clip = VKL_VIEWPORT_INNER; // we clip the inner viewport
+    // Update the VklViewport.
     vkl_panel_update(panel);
-
-    // Upload them to the uniform buffers
-    // vkl_upload_buffers(ctx, panel->br_full, 0, sizeof(VklViewport), &panel->viewport_full);
-    // vkl_upload_buffers(ctx, panel->br_inner, 0, sizeof(VklViewport), &panel->viewport_inner);
-    // vkl_upload_buffers(ctx, panel->br_outer, 0, sizeof(VklViewport), &panel->viewport_outer);
-
     return panel;
 }
 
@@ -251,12 +229,7 @@ void vkl_panel_update(VklPanel* panel)
     // Update the viewport structures.
     _update_viewport(panel);
 
-    // Update the viewport on the GPU as well.
     // NOTE: it is up to the scene to update the VklViewport struct on the GPU, for each visual
-
-    // vkl_upload_buffers(ctx, panel->br_full, 0, sizeof(VklViewport), &panel->viewport_full);
-    // vkl_upload_buffers(ctx, panel->br_inner, 0, sizeof(VklViewport), &panel->viewport_inner);
-    // vkl_upload_buffers(ctx, panel->br_outer, 0, sizeof(VklViewport), &panel->viewport_outer);
 }
 
 
@@ -265,9 +238,6 @@ void vkl_panel_margins(VklPanel* panel, vec4 margins)
 {
     ASSERT(panel != NULL);
     glm_vec4_copy(margins, panel->viewport.margins);
-    // glm_vec4_copy(margins, panel->viewport_full.margins);
-    // glm_vec4_copy(margins, panel->viewport_inner.margins);
-    // glm_vec4_copy(margins, panel->viewport_outer.margins);
     vkl_panel_update(panel);
 }
 
@@ -377,18 +347,6 @@ VklViewport vkl_panel_viewport(VklPanel* panel, VklViewportClip viewport_type)
 {
     ASSERT(panel != NULL);
     return panel->viewport;
-    // switch (viewport_type)
-    // {
-    // case VKL_VIEWPORT_INNER:
-    //     return panel->viewport_inner;
-    // case VKL_VIEWPORT_OUTER:
-    //     return panel->viewport_outer;
-    // case VKL_VIEWPORT_FULL:
-    //     return panel->viewport_full;
-    // default:
-    //     log_warn("viewport type %d not yet implemented", viewport_type);
-    // }
-    // return (VklViewport){0};
 }
 
 
