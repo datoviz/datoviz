@@ -478,9 +478,9 @@ void vkl_swapchain_present_mode(VklSwapchain* swapchain, VkPresentModeKHR presen
     ASSERT(is_obj_created(&swapchain->gpu->obj));
     for (uint32_t i = 0; i < swapchain->gpu->present_mode_count; i++)
     {
-        if (swapchain->gpu->present_modes[i] == present_mode)
+        swapchain->present_mode = swapchain->gpu->present_modes[i];
+        if (swapchain->present_mode == present_mode)
         {
-            swapchain->present_mode = present_mode;
             return;
         }
     }
