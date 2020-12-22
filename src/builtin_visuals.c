@@ -273,15 +273,19 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
     ASSERT(indices != NULL);
     ASSERT(seg_index_src->arr.item_count == 6 * count);
 
+    // Visual coordinate.
+    VklAxisCoord coord = (VklAxisCoord)visual->flags;
+    ASSERT(coord < 2);
+
     // TODO: params
     cvec4 color = {0, 0, 0, 255};
     float lw = 2;
+    float tick_length = 10;
     vec4 shift = {0};
     vec2 lim = {0};
 
     VklProp* pos = NULL;
     uint32_t tick_count = 0;
-
     uint32_t offset = 0; // tick offset
     for (uint32_t level = 0; level < VKL_AXES_LEVEL_COUNT; level++)
     {
@@ -304,14 +308,22 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
             break;
 
         case VKL_AXES_LEVEL_MAJOR:
+            lim[0] = -1;
+            lim[1] = -1;
+            shift[3 - coord] = tick_length;
+            lw = 5;
             break;
 
         case VKL_AXES_LEVEL_GRID:
             lim[0] = -1;
             lim[1] = +1;
+            lw = 1;
             break;
 
         case VKL_AXES_LEVEL_LIM:
+            lim[0] = -1;
+            lim[1] = +1;
+            lw = 3;
             break;
 
         default:
@@ -320,8 +332,7 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
 
         // ticks
         _add_ticks(
-            pos, vertices, indices, (VklAxisLevel)level, offset, //
-            (VklAxisCoord)visual->flags, lim, color, lw, shift);
+            pos, vertices, indices, (VklAxisLevel)level, offset, coord, lim, color, lw, shift);
         offset += tick_count;
         ASSERT(offset <= count);
     }

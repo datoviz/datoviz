@@ -155,8 +155,15 @@ int test_scene_axes(TestContext* context)
     }
 
     // Set visual data.
+    vkl_visual_data(visualx, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR, N, xticks);
+    vkl_visual_data(visualy, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR, N, yticks);
+
     vkl_visual_data(visualx, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, xticks);
     vkl_visual_data(visualy, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, yticks);
+
+    float lim[] = {-1};
+    vkl_visual_data(visualx, VKL_PROP_POS, VKL_AXES_LEVEL_LIM, 1, lim);
+    vkl_visual_data(visualy, VKL_PROP_POS, VKL_AXES_LEVEL_LIM, 1, lim);
 
     cvec4 color = {0, 0, 0, 255};
     vkl_visual_data(visualx, VKL_PROP_COLOR, 0, 1, color);
