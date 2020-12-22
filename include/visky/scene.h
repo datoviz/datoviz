@@ -68,8 +68,8 @@ typedef void (*VklControllerCallback)(VklController* controller, VklEvent ev);
 struct VklController
 {
     VklObject obj;
-    // VklScene* scene;
     VklPanel* panel;
+    int flags;
 
     VklControllerType type;
 

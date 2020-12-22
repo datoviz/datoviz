@@ -148,7 +148,8 @@ int test_visuals_axes_2D(TestContext* context)
     INIT;
     vkl_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});
 
-    VklVisual visual = vkl_visual_builtin(canvas, VKL_VISUAL_AXES_2D, 0);
+    VklVisual visualx = vkl_visual_builtin(canvas, VKL_VISUAL_AXES_2D, 0);
+    VklVisual visualy = vkl_visual_builtin(canvas, VKL_VISUAL_AXES_2D, 1);
 
     const uint32_t N = 10;
     float* xticks = calloc(N, sizeof(float));
@@ -162,14 +163,19 @@ int test_visuals_axes_2D(TestContext* context)
     }
 
     // Set visual data.
-    vkl_visual_data(&visual, VKL_PROP_XPOS, VKL_AXES_LEVEL_MINOR, N, xticks);
-    vkl_visual_data(&visual, VKL_PROP_YPOS, VKL_AXES_LEVEL_MINOR, N, yticks);
+    vkl_visual_data(&visualx, VKL_PROP_POS, VKL_AXES_LEVEL_MINOR, N, xticks);
+    vkl_visual_data(&visualy, VKL_PROP_POS, VKL_AXES_LEVEL_MINOR, N, yticks);
     cvec4 color = {255, 0, 0, 255};
-    vkl_visual_data(&visual, VKL_PROP_COLOR, 0, 1, color);
+    vkl_visual_data(&visualx, VKL_PROP_COLOR, 0, 1, color);
+    vkl_visual_data(&visualy, VKL_PROP_COLOR, 0, 1, color);
 
-    RUN;
+    _common_data(&visualx);
+    _common_data(&visualy);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _resize, NULL);
+    vkl_app_run(app, N_FRAMES);
     FREE(xticks);
     FREE(yticks);
-    // FREE(color);
-    END;
+    vkl_visual_destroy(&visualx);
+    vkl_visual_destroy(&visualy);
+    TEST_END
 }

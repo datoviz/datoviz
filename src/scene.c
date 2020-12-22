@@ -553,6 +553,7 @@ vkl_scene_panel(VklScene* scene, uint32_t row, uint32_t col, VklControllerType t
     VklPanel* panel = vkl_panel(&scene->grid, row, col);
     INSTANCE_NEW(VklController, controller, scene->controllers, scene->max_controllers)
     *controller = vkl_controller_builtin(panel, type, flags);
+    controller->flags = flags;
     panel->controller = controller;
     panel->scene = scene;
     // At initialization, must update all visuals data.

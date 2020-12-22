@@ -39,16 +39,17 @@ typedef enum
 {
     VKL_PROP_NONE,
     VKL_PROP_POS,
-    VKL_PROP_XPOS,
-    VKL_PROP_YPOS,
+    // VKL_PROP_XPOS,
+    // VKL_PROP_YPOS,
     VKL_PROP_COLOR,
     VKL_PROP_MARKER_SIZE,
     VKL_PROP_TEXT_SIZE,
     VKL_PROP_LINE_WIDTH,
     VKL_PROP_TYPE,
     VKL_PROP_LENGTH,
-    VKL_PROP_HMARGIN,
-    VKL_PROP_VMARGIN,
+    VKL_PROP_MARGIN,
+    // VKL_PROP_HMARGIN,
+    // VKL_PROP_VMARGIN,
 
     VKL_PROP_COLOR_TEXTURE,
     VKL_PROP_MODEL,
@@ -203,6 +204,7 @@ struct VklVisual
 {
     VklObject obj;
     VklCanvas* canvas;
+    int flags;
 
     // Graphics.
     uint32_t graphics_count;

@@ -133,29 +133,39 @@ int test_scene_axes(TestContext* context)
     VklScene* scene = vkl_scene(canvas, 1, 1);
     VklPanel* panel = vkl_scene_panel(scene, 0, 0, VKL_CONTROLLER_PANZOOM, 0);
     vkl_panel_margins(panel, (vec4){100, 100, 100, 100});
-    VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_AXES_2D, 0);
-    visual->clip = VKL_VIEWPORT_INNER;
 
-    const uint32_t N = 10;
+    VklVisual* visualx = vkl_scene_visual(panel, VKL_VISUAL_AXES_2D, VKL_AXES_COORD_X);
+    VklVisual* visualy = vkl_scene_visual(panel, VKL_VISUAL_AXES_2D, VKL_AXES_COORD_Y);
+
+    visualx->clip = VKL_VIEWPORT_INNER;
+    visualy->clip = VKL_VIEWPORT_INNER;
+
+    visualx->transform = VKL_TRANSFORM_AXIS_X;
+    visualy->transform = VKL_TRANSFORM_AXIS_Y;
+
+    const uint32_t N = 4 * 10;
     float* xticks = calloc(N, sizeof(float));
     float* yticks = calloc(N, sizeof(float));
     float t = 0;
     for (uint32_t i = 0; i < N; i++)
     {
-        t = -1 + 2 * (float)i / (N - 1);
+        t = -2 + 4 * (float)i / (N - 1);
         xticks[i] = t;
         yticks[i] = t;
     }
 
     // Set visual data.
-    vkl_visual_data(visual, VKL_PROP_XPOS, VKL_AXES_LEVEL_MINOR, N, xticks);
-    vkl_visual_data(visual, VKL_PROP_YPOS, VKL_AXES_LEVEL_MINOR, N, yticks);
+    vkl_visual_data(visualx, VKL_PROP_POS, VKL_AXES_LEVEL_MINOR, N, xticks);
+    vkl_visual_data(visualy, VKL_PROP_POS, VKL_AXES_LEVEL_MINOR, N, yticks);
+
     cvec4 color = {0, 0, 0, 255};
-    vkl_visual_data(visual, VKL_PROP_COLOR, 0, 1, color);
+    vkl_visual_data(visualx, VKL_PROP_COLOR, 0, 1, color);
+    vkl_visual_data(visualy, VKL_PROP_COLOR, 0, 1, color);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
     vkl_app_run(app, N_FRAMES);
-    vkl_visual_destroy(visual);
+    vkl_visual_destroy(visualx);
+    vkl_visual_destroy(visualy);
     vkl_scene_destroy(scene);
     FREE(xticks);
     FREE(yticks);

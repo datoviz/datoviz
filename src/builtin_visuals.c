@@ -168,8 +168,9 @@ static uint32_t _count_prop_items(
 }
 
 static void _add_ticks(
-    VklProp* tick_prop, VklGraphicsSegmentVertex* vertices, VklIndex* indices, uint32_t offset,
-    VklAxisCoord coord, vec2 lim, cvec4 color, float lw, vec4 shift)
+    VklProp* tick_prop, VklGraphicsSegmentVertex* vertices, VklIndex* indices, //
+    VklAxisLevel level, uint32_t offset, VklAxisCoord coord, vec2 lim, cvec4 color, float lw,
+    vec4 shift)
 {
     float* x = NULL;
 
@@ -197,15 +198,18 @@ static void _add_ticks(
             P1[1] = lim[1];
 
             // Prevent half of the first and last lines to be cut off by viewport clipping.
-            if (i == 0)
+            if (level == VKL_AXES_LEVEL_LIM)
             {
-                shift[0] += s;
-                shift[2] += s;
-            }
-            else if (i == n - 1)
-            {
-                shift[0] -= s;
-                shift[2] -= s;
+                if (i == 0)
+                {
+                    shift[0] += s;
+                    shift[2] += s;
+                }
+                else if (i == n - 1)
+                {
+                    shift[0] -= s;
+                    shift[2] -= s;
+                }
             }
         }
         else if (coord == VKL_AXES_COORD_Y)
@@ -216,15 +220,18 @@ static void _add_ticks(
             P1[0] = lim[1];
 
             // Prevent half of the first and last lines to be cut off by viewport clipping.
-            if (i == 0)
+            if (level == VKL_AXES_LEVEL_LIM)
             {
-                shift[1] += s;
-                shift[3] += s;
-            }
-            else if (i == n - 1)
-            {
-                shift[1] -= s;
-                shift[3] -= s;
+                if (i == 0)
+                {
+                    shift[1] += s;
+                    shift[3] += s;
+                }
+                else if (i == n - 1)
+                {
+                    shift[1] -= s;
+                    shift[3] -= s;
+                }
             }
         }
 
@@ -241,8 +248,8 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
     VklSource* seg_index_src = vkl_bake_source(visual, VKL_SOURCE_INDEX, 0);
 
     // Count the total number of segments.
-    uint32_t count = _count_prop_items(
-        visual, 2, (VklPropType[]){VKL_PROP_XPOS, VKL_PROP_YPOS}, 4, (uint32_t[]){0, 1, 2, 3});
+    uint32_t count =
+        _count_prop_items(visual, 1, (VklPropType[]){VKL_PROP_POS}, 4, (uint32_t[]){0, 1, 2, 3});
 
     // Allocate the vertex and index buffer.
     vkl_bake_source_alloc(visual, seg_vert_src, 4 * count);
@@ -261,29 +268,22 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
     vec4 shift = {0};
     vec2 lim = {-1, 1};
 
-    VklProp* xpos = NULL;
-    VklProp* ypos = NULL;
-    uint32_t xtick_count = 0;
-    uint32_t ytick_count = 0;
+    VklProp* pos = NULL;
+    uint32_t tick_count = 0;
 
     uint32_t offset = 0; // tick offset
     for (uint32_t level = 0; level < 3; level++)
     {
         // Take the tick positions.
-        xpos = vkl_bake_prop(visual, VKL_PROP_XPOS, level);
-        ypos = vkl_bake_prop(visual, VKL_PROP_YPOS, level);
-        xtick_count = xpos->arr_orig.item_count; // number of ticks for this level.
-        ytick_count = ypos->arr_orig.item_count; // number of ticks for this level.
+        pos = vkl_bake_prop(visual, VKL_PROP_POS, level);
+        tick_count = pos->arr_orig.item_count; // number of ticks for this level.
 
         // x ticks
         glm_vec4_zero(shift);
-        _add_ticks(xpos, vertices, indices, offset, VKL_AXES_COORD_X, lim, color, lw, shift);
-        offset += xtick_count;
-
-        // y ticks
-        glm_vec4_zero(shift);
-        _add_ticks(ypos, vertices, indices, offset, VKL_AXES_COORD_Y, lim, color, lw, shift);
-        offset += ytick_count;
+        _add_ticks(
+            pos, vertices, indices, offset, (VklAxisLevel)level, //
+            (VklAxisCoord)visual->flags, lim, color, lw, shift);
+        offset += tick_count;
     }
 }
 
@@ -301,6 +301,7 @@ static void _visual_axes_2D(VklVisual* visual)
     vkl_visual_source(
         visual, VKL_SOURCE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, //
         0, sizeof(VklGraphicsSegmentVertex), 0);
+
     // Segment graphics, index buffer.
     vkl_visual_source(
         visual, VKL_SOURCE_INDEX, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklIndex), 0);
@@ -312,27 +313,21 @@ static void _visual_axes_2D(VklVisual* visual)
     for (uint32_t level = 0; level < VKL_AXES_LEVEL_COUNT; level++)
     {
         // xticks
-        vkl_visual_prop(visual, VKL_PROP_XPOS, level, VKL_DTYPE_FLOAT, VKL_SOURCE_VERTEX, 0);
-        // yticks
-        vkl_visual_prop(visual, VKL_PROP_YPOS, level, VKL_DTYPE_FLOAT, VKL_SOURCE_VERTEX, 0);
+        vkl_visual_prop(visual, VKL_PROP_POS, level, VKL_DTYPE_FLOAT, VKL_SOURCE_VERTEX, 0);
         // color
         vkl_visual_prop(visual, VKL_PROP_COLOR, level, VKL_DTYPE_CVEC4, VKL_SOURCE_VERTEX, 0);
         // line width
         vkl_visual_prop(visual, VKL_PROP_LINE_WIDTH, level, VKL_DTYPE_FLOAT, VKL_SOURCE_VERTEX, 0);
     }
 
-    // tick length
+    // minor tick length
     vkl_visual_prop(
         visual, VKL_PROP_LENGTH, VKL_AXES_LEVEL_MINOR, VKL_DTYPE_FLOAT, VKL_SOURCE_VERTEX, 0);
-    // tick length
+    // major tick length
     vkl_visual_prop(
         visual, VKL_PROP_LENGTH, VKL_AXES_LEVEL_MAJOR, VKL_DTYPE_FLOAT, VKL_SOURCE_VERTEX, 0);
-
     // tick h margin
-    vkl_visual_prop(visual, VKL_PROP_HMARGIN, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_VERTEX, 0);
-    // tick v margin
-    vkl_visual_prop(visual, VKL_PROP_VMARGIN, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_VERTEX, 0);
-
+    vkl_visual_prop(visual, VKL_PROP_MARGIN, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_VERTEX, 0);
     // tick text size
     vkl_visual_prop(visual, VKL_PROP_TEXT_SIZE, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_VERTEX, 0);
 
@@ -352,6 +347,7 @@ VklVisual vkl_visual_builtin(VklCanvas* canvas, VklVisualType type, int flags)
 {
     ASSERT(canvas != NULL);
     VklVisual visual = vkl_visual(canvas);
+    visual.flags = flags;
     switch (type)
     {
 
