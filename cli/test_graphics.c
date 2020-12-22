@@ -514,9 +514,7 @@ int test_graphics_text(TestContext* context)
     const uint32_t offset = strlen(str);
     BEGIN_DATA(VklGraphicsTextVertex, 4 * (N + offset))
 
-    // Font texture
-    // char path[1024];
-    // snprintf(path, sizeof(path), "%s/textures/%s", DATA_DIR, "font_inconsolata.png");
+    // Font atlas
     VklFontAtlas atlas = _font_texture(gpu->context);
 
     VklGraphicsTextParams params = {0};

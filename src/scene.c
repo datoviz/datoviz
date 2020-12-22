@@ -406,6 +406,8 @@ VklScene* vkl_scene(VklCanvas* canvas, uint32_t n_rows, uint32_t n_cols)
     canvas->scene = calloc(1, sizeof(VklScene));
     canvas->scene->canvas = canvas;
     canvas->scene->grid = vkl_grid(canvas, n_rows, n_cols);
+    // Initialize the font texture.
+    canvas->scene->font_atlas = _font_texture(canvas->gpu->context);
 
     INSTANCES_INIT(
         VklVisual, canvas->scene, visuals, max_visuals, //
@@ -418,6 +420,7 @@ VklScene* vkl_scene(VklCanvas* canvas, uint32_t n_rows, uint32_t n_cols)
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _scene_fill, canvas->scene);
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _scene_frame, canvas->scene);
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _upload_mvp, canvas->scene);
+
 
     return canvas->scene;
 }
