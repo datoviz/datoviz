@@ -1,5 +1,6 @@
-#define VKL_VIEWPORT_INNER 0
-#define VKL_VIEWPORT_OUTER 1
+#define VKL_VIEWPORT_NONE 0
+#define VKL_VIEWPORT_INNER 1
+#define VKL_VIEWPORT_OUTER 2
 
 layout (std140, binding = 0) uniform MVP {
     mat4 model;
@@ -18,7 +19,7 @@ layout (std140, binding = 1) uniform Viewport {
     uvec2 size_screen;      // size
     uvec2 offset;           // framebuffer coordinates
     uvec2 size;             // framebuffer coordinates
-    int viewport_type;      // viewport type
+    int clip;               // viewport clipping
     float dpi_scaling;      // DPI scaling
 } viewport;
 

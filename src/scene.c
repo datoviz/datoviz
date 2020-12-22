@@ -10,7 +10,7 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static void _common_data(VklPanel* panel, VklVisual* visual, VklViewportType viewport_type)
+static void _common_data(VklPanel* panel, VklVisual* visual, VklViewportClip clip)
 {
     ASSERT(panel != NULL);
     ASSERT(visual != NULL);
@@ -19,8 +19,23 @@ static void _common_data(VklPanel* panel, VklVisual* visual, VklViewportType vie
     vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 0, panel->br_mvp);
 
     // Binding 1: viewport
-    VklBufferRegions br_viewport =
-        viewport_type == VKL_VIEWPORT_INNER ? panel->br_inner : panel->br_outer;
+    VklBufferRegions br_viewport = {0};
+    switch (clip)
+    {
+    case VKL_VIEWPORT_INNER:
+        br_viewport = panel->br_inner;
+        break;
+    case VKL_VIEWPORT_OUTER:
+        br_viewport = panel->br_outer;
+        break;
+    case VKL_VIEWPORT_FULL:
+        br_viewport = panel->br_full;
+        break;
+    default:
+        log_warn("viewport type %d not implemented", clip);
+        break;
+    }
+
     vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 1, br_viewport);
 
     // Binding 2: color texture
@@ -70,7 +85,7 @@ static void _scene_fill(VklCanvas* canvas, VklPrivateEvent ev)
             ASSERT(is_obj_created(&panel->obj));
 
             // Find the panel viewport.
-            viewport = vkl_panel_viewport(panel, VKL_VIEWPORT_INNER);
+            viewport = vkl_panel_viewport(panel, VKL_VIEWPORT_FULL);
             vkl_cmd_viewport(cmds, img_idx, viewport.viewport);
             // log_debug("%d %d %d %d", cmds, i, j, img_idx);
             // Go through all visuals in the panel.
@@ -549,7 +564,7 @@ VklVisual* vkl_scene_visual(VklPanel* panel, VklVisualType type, int flags)
 
     // Bind the common buffers (MVP, viewport, color texture).
     // TODO: viewport type
-    _common_data(panel, visual, VKL_VIEWPORT_INNER);
+    _common_data(panel, visual, VKL_VIEWPORT_FULL);
 
     return visual;
 }

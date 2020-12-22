@@ -81,9 +81,10 @@ typedef enum
 // NOTE: must correspond to values in common.glsl
 typedef enum
 {
+    VKL_VIEWPORT_FULL,
     VKL_VIEWPORT_INNER,
     VKL_VIEWPORT_OUTER,
-} VklViewportType;
+} VklViewportClip;
 
 
 
@@ -373,7 +374,7 @@ struct VklViewport
     uvec2 size_screen;
     uvec2 offset_framebuffer;
     uvec2 size_framebuffer;
-    VklViewportType viewport_type; // used by the GPU for viewport transform
+    VklViewportClip clip; // used by the GPU for viewport clipping
     float dpi_scaling;
 };
 
