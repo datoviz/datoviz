@@ -87,17 +87,12 @@ struct VklPanel
     uint32_t visual_count;
     VklVisual* visuals[VKL_MAX_VISUALS_PER_PANEL];
 
-    // Viewports.
-    VklViewport viewport_full;
-    VklViewport viewport_inner;
-    VklViewport viewport_outer;
+    // Viewport.
+    VklViewport viewport;
 
     // GPU objects
-    VklBufferRegions br_mvp;   // for the uniform buffer containing the MVP
-    VklBufferRegions br_full;  // for the uniform buffer containing the full viewport
-    VklBufferRegions br_inner; // for the uniform buffer containing the inner viewport
-    VklBufferRegions br_outer; // for the uniform buffer containing the outer viewport
-    void* mvp_mmap;            // for permanent mapping of the MVP uniform buffer
+    VklBufferRegions br_mvp; // for the uniform buffer containing the MVP
+    void* mvp_mmap;          // for permanent mapping of the MVP uniform buffer
 
     VklController* controller;
     VklCommands* cmds;

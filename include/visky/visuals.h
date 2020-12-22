@@ -232,6 +232,11 @@ struct VklVisual
     uint32_t group_count;
     uint32_t group_sizes[VKL_MAX_VISUAL_GROUPS];
 
+    // Viewport.
+    VklTransformAxis transform;
+    VklViewportClip clip;
+    VklViewport viewport; // usually the visual's panel viewport, but may be customized
+
     // GPU data
     uint32_t vertex_count;
     uint32_t index_count;

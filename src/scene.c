@@ -19,24 +19,25 @@ static void _common_data(VklPanel* panel, VklVisual* visual, VklViewportClip cli
     vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 0, panel->br_mvp);
 
     // Binding 1: viewport
-    VklBufferRegions br_viewport = {0};
-    switch (clip)
-    {
-    case VKL_VIEWPORT_INNER:
-        br_viewport = panel->br_inner;
-        break;
-    case VKL_VIEWPORT_OUTER:
-        br_viewport = panel->br_outer;
-        break;
-    case VKL_VIEWPORT_FULL:
-        br_viewport = panel->br_full;
-        break;
-    default:
-        log_warn("viewport type %d not implemented", clip);
-        break;
-    }
-
-    vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 1, br_viewport);
+    visual->viewport = panel->viewport;
+    vkl_visual_data_buffer(visual, VKL_SOURCE_UNIFORM, 1, 0, 1, 1, &visual->viewport);
+    // VklBufferRegions br_viewport = {0};
+    // switch (clip)
+    // {
+    // case VKL_VIEWPORT_INNER:
+    //     br_viewport = panel->br_inner;
+    //     break;
+    // case VKL_VIEWPORT_OUTER:
+    //     br_viewport = panel->br_outer;
+    //     break;
+    // case VKL_VIEWPORT_FULL:
+    //     br_viewport = panel->br_full;
+    //     break;
+    // default:
+    //     log_warn("viewport type %d not implemented", clip);
+    //     break;
+    // }
+    // vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 1, br_viewport);
 
     // Binding 2: color texture
     // TODO
@@ -81,18 +82,30 @@ static void _scene_fill(VklCanvas* canvas, VklPrivateEvent ev)
         for (uint32_t j = 0; j < grid->panel_count; j++)
         {
             panel = &grid->panels[j];
+
+            // Update the panel.
             vkl_panel_update(panel);
             ASSERT(is_obj_created(&panel->obj));
 
             // Find the panel viewport.
             viewport = vkl_panel_viewport(panel, VKL_VIEWPORT_FULL);
             vkl_cmd_viewport(cmds, img_idx, viewport.viewport);
-            // log_debug("%d %d %d %d", cmds, i, j, img_idx);
+
             // Go through all visuals in the panel.
+            VklVisual* visual = NULL;
             for (uint32_t k = 0; k < panel->visual_count; k++)
             {
-                vkl_visual_fill_event(
-                    panel->visuals[k], ev.u.rf.clear_color, cmds, img_idx, viewport, NULL);
+                visual = panel->visuals[k];
+
+                // Update visual VklViewport struct and upload it.
+                visual->viewport = panel->viewport;
+                visual->viewport.transform = visual->transform;
+                visual->viewport.clip = visual->clip;
+
+                // Update the viewport struct of the visual
+                vkl_visual_data_buffer(visual, VKL_SOURCE_UNIFORM, 1, 0, 1, 1, &visual->viewport);
+
+                vkl_visual_fill_event(visual, ev.u.rf.clear_color, cmds, img_idx, viewport, NULL);
             }
         }
 
@@ -127,7 +140,7 @@ static void _scene_frame(VklCanvas* canvas, VklPrivateEvent ev)
         // Update all visuals in the panel, using the panel's viewport.
         if (panel->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE)
         {
-            viewport = panel->viewport_inner;
+            viewport = panel->viewport;
             for (uint32_t j = 0; j < panel->visual_count; j++)
             {
                 // TODO: data coords
@@ -156,7 +169,7 @@ static void _default_controller_callback(VklController* controller, VklEvent ev)
         // float delay = canvas->clock.elapsed - interact->last_update;
 
         // Update the interact using the current panel's viewport.
-        VklViewport viewport = controller->panel->viewport_inner;
+        VklViewport viewport = controller->panel->viewport;
         vkl_interact_update(interact, viewport, &canvas->mouse, &canvas->keyboard);
         // NOTE: the CPU->GPU transfer occurs at every frame, in another callback below
     }
@@ -295,7 +308,7 @@ VklTransform vkl_transform(VklPanel* panel, VklCDS source, VklCDS target)
         return tr;
     }
 
-    VklViewport viewport = panel->viewport_inner;
+    VklViewport viewport = panel->viewport;
 
     if (source == target)
     {
