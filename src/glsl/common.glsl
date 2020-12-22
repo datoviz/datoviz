@@ -1,3 +1,6 @@
+#define VKL_VIEWPORT_INNER 0
+#define VKL_VIEWPORT_OUTER 1
+
 layout (std140, binding = 0) uniform MVP {
     mat4 model;
     mat4 view;
@@ -25,10 +28,30 @@ layout (binding = 2) uniform sampler2D color_tex;
 
 vec4 transform(vec3 pos) {
     vec4 tr = (mvp.proj * mvp.view * mvp.model) * vec4(pos, 1.0);
+
+    // Margins
+    float w = viewport.size.x;
+    float h = viewport.size.y;
+    float mt = viewport.margins.x;
+    float mr = viewport.margins.y;
+    float mb = viewport.margins.z;
+    float ml = viewport.margins.w;
+
+    // horizontal margins
+    float a = 1 - (ml + mr) / w;
+    float b = (ml - mr) / w;
+    tr.x = a * tr.x + b;
+
+    // vertical margins
+    a = 1 - (mb + mt) / h;
+    b = (mb - mt) / h;
+    tr.y = a * tr.y + b;
+
     // HACK: we transform from OpenGL conventional coordinate system to Vulkan
     // This allows us to use MVP matrices in OpenGL conventions.
     tr.y = -tr.y; // Vulkan swaps top and bottom in its device coordinate system.
     tr.z = .5 * (1.0 - tr.z); // depth is [-1, 1] in OpenGL but [0, 1] in Vulkan
+
     return tr;
 }
 

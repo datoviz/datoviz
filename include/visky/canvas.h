@@ -78,6 +78,7 @@ typedef enum
 
 
 // Viewport type.
+// NOTE: must correspond to values in common.glsl
 typedef enum
 {
     VKL_VIEWPORT_INNER,

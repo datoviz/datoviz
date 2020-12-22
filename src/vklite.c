@@ -476,11 +476,14 @@ void vkl_swapchain_present_mode(VklSwapchain* swapchain, VkPresentModeKHR presen
     ASSERT(swapchain != NULL);
     ASSERT(swapchain->gpu != NULL);
     ASSERT(is_obj_created(&swapchain->gpu->obj));
+
+    swapchain->present_mode = VK_PRESENT_MODE_FIFO_KHR; // default present mode
+
     for (uint32_t i = 0; i < swapchain->gpu->present_mode_count; i++)
     {
-        swapchain->present_mode = swapchain->gpu->present_modes[i];
-        if (swapchain->present_mode == present_mode)
+        if (swapchain->gpu->present_modes[i] == present_mode)
         {
+            swapchain->present_mode = present_mode;
             return;
         }
     }

@@ -68,12 +68,8 @@ static void _update_interact(VklCanvas* canvas, VklPrivateEvent ev)
     TestScene* scene = (TestScene*)ev.user_data;
     ASSERT(scene != NULL);
 
-    float delay = canvas->clock.elapsed - scene->interact.last_update;
-
     VklViewport viewport = vkl_viewport_full(canvas);
-
     vkl_interact_update(&scene->interact, viewport, &canvas->mouse, &canvas->keyboard);
-
     VklSource* source = vkl_bake_source(&scene->visual, VKL_SOURCE_UNIFORM, 0);
     VklBufferRegions* br = &source->u.br;
     void* aligned = aligned_repeat(br->size, &scene->interact.mvp, 1, br->alignment);
