@@ -283,7 +283,8 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
     // TODO: params
     cvec4 color = {0, 0, 0, 255};
     float lw = 2;
-    float tick_length = 10;
+    float minor_tick_length = 20;
+    float major_tick_length = 10;
     vec4 shift = {0};
     vec2 lim = {0};
 
@@ -300,6 +301,7 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
             continue;
         ASSERT(tick_count > 0);
 
+        memset(color, 0, 3);
         glm_vec4_zero(shift);
         glm_vec2_zero(lim);
 
@@ -307,13 +309,17 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
         {
 
         case VKL_AXES_LEVEL_MINOR:
-            // shift[0];
+            color[0] = 255;
+            lim[0] = -1;
+            lim[1] = -1;
+            shift[3 - coord] = minor_tick_length;
+            lw = 2;
             break;
 
         case VKL_AXES_LEVEL_MAJOR:
             lim[0] = -1;
             lim[1] = -1;
-            shift[3 - coord] = tick_length;
+            shift[3 - coord] = major_tick_length;
             lw = 5;
             break;
 
