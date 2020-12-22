@@ -343,7 +343,7 @@ void vkl_panel_cell(VklPanel* panel, uint32_t row, uint32_t col)
 
 
 
-VklViewport vkl_panel_viewport(VklPanel* panel, VklViewportClip viewport_type)
+VklViewport vkl_panel_viewport(VklPanel* panel)
 {
     ASSERT(panel != NULL);
     return panel->viewport;

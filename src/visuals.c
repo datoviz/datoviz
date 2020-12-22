@@ -530,6 +530,7 @@ void vkl_visual_data_partial(
     {
         source->origin = VKL_SOURCE_ORIGIN_LIB;
         source->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+        visual->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
     }
 }
 
@@ -562,6 +563,7 @@ void vkl_visual_data_buffer(
 
     source->origin = VKL_SOURCE_ORIGIN_NOBAKE;
     source->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+    visual->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
 }
 
 
@@ -591,6 +593,7 @@ void vkl_visual_data_texture(
 
     source->origin = VKL_SOURCE_ORIGIN_NOBAKE;
     source->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+    visual->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
 }
 
 
@@ -617,6 +620,7 @@ void vkl_visual_buffer(
     source->u.br = br;
     source->origin = VKL_SOURCE_ORIGIN_USER;
     source->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+    visual->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
 
     // Set the bindings except for VERTEX and INDEX sources.
     if (_source_needs_binding(source_type))
@@ -646,6 +650,7 @@ void vkl_visual_texture(
     source->u.tex = texture;
     source->origin = VKL_SOURCE_ORIGIN_USER;
     source->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+    visual->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
 
     VklBindings* bindings = _get_bindings(visual, source);
     ASSERT(texture->image != NULL);
@@ -703,7 +708,6 @@ void vkl_visual_fill_event(
     ev.user_data = user_data;
 
     visual->callback_fill(visual, ev);
-    // visual->canvas->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
 }
 
 
@@ -1048,6 +1052,7 @@ void vkl_visual_update(
                     arr->shape[0], arr->shape[1], arr->shape[2]);
                 vkl_upload_texture(ctx, texture, arr->item_count * arr->item_size, arr->data);
                 source->obj.status = VKL_OBJECT_STATUS_CREATED;
+                visual->obj.status = VKL_OBJECT_STATUS_CREATED;
             }
         }
         else
@@ -1079,6 +1084,7 @@ void vkl_visual_update(
                 else
                     vkl_upload_buffers(ctx, *br, 0, br->size, arr->data);
                 source->obj.status = VKL_OBJECT_STATUS_CREATED;
+                visual->obj.status = VKL_OBJECT_STATUS_CREATED;
             }
         }
     }

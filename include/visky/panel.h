@@ -147,7 +147,7 @@ VKY_EXPORT VklPanel* vkl_panel_at(VklGrid* grid, vec2 pos); // normalized coords
 
 VKY_EXPORT void vkl_panel_destroy(VklPanel* panel);
 
-VKY_EXPORT VklViewport vkl_panel_viewport(VklPanel* panel, VklViewportClip viewport_type);
+VKY_EXPORT VklViewport vkl_panel_viewport(VklPanel* panel);
 
 
 
