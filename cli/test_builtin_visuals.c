@@ -163,8 +163,8 @@ int test_visuals_axes_2D(TestContext* context)
     }
 
     // Set visual data.
-    vkl_visual_data(&visualx, VKL_PROP_POS, VKL_AXES_LEVEL_MINOR, N, xticks);
-    vkl_visual_data(&visualy, VKL_PROP_POS, VKL_AXES_LEVEL_MINOR, N, yticks);
+    vkl_visual_data(&visualx, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, xticks);
+    vkl_visual_data(&visualy, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, yticks);
     cvec4 color = {255, 0, 0, 255};
     vkl_visual_data(&visualx, VKL_PROP_COLOR, 0, 1, color);
     vkl_visual_data(&visualy, VKL_PROP_COLOR, 0, 1, color);

@@ -117,6 +117,7 @@ static void _graphics_marker(VklCanvas* canvas, VklGraphics* graphics)
     ATTR(VklGraphicsMarkerVertex, VK_FORMAT_R32_SFLOAT, size)
     ATTR(VklGraphicsMarkerVertex, VK_FORMAT_R8_UINT, marker)
     ATTR(VklGraphicsMarkerVertex, VK_FORMAT_R8_UNORM, angle)
+    ATTR(VklGraphicsMarkerVertex, VK_FORMAT_R8_UINT, transform)
 
     _common_bindings(graphics);
     vkl_graphics_slot(graphics, VKL_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
@@ -160,6 +161,7 @@ static void _graphics_text(VklCanvas* canvas, VklGraphics* graphics)
     ATTR(VklGraphicsTextVertex, VK_FORMAT_R32G32_SFLOAT, anchor)
     ATTR(VklGraphicsTextVertex, VK_FORMAT_R32_SFLOAT, angle)
     ATTR(VklGraphicsTextVertex, VK_FORMAT_R16G16B16A16_UINT, glyph)
+    ATTR(VklGraphicsTextVertex, VK_FORMAT_R8_UINT, transform)
 
     _common_bindings(graphics);
     vkl_graphics_slot(graphics, VKL_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);

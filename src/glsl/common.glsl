@@ -80,6 +80,9 @@ vec4 transform(vec3 pos, vec2 shift, uint transform_mode) {
     // By default, take the viewport transform.
     if (transform_mode == 0)
         transform_mode = uint(viewport.transform);
+    // Default: transform all
+    if (transform_mode == 0)
+        transform_mode = VKL_TRANSFORM_AXIS_ALL;
 
     // Transform.
     switch (transform_mode) {
@@ -107,19 +110,26 @@ vec4 transform(vec3 pos, vec2 shift, uint transform_mode) {
     float mr = viewport.margins.y;
     float mb = viewport.margins.z;
     float ml = viewport.margins.w;
+    float a = 1;
+    float b = 0;
 
     // horizontal margins
-    float a = 1 - (ml + mr) / w;
-    float b = (ml - mr) / w;
-    tr.x = a * tr.x + b;
+    if (w > 0) {
+        a = 1 - (ml + mr) / w;
+        b = (ml - mr) / w;
+        tr.x = a * tr.x + b;
+    }
 
     // vertical margins
-    a = 1 - (mb + mt) / h;
-    b = (mb - mt) / h;
-    tr.y = a * tr.y + b;
+    if (h > 0) {
+        a = 1 - (mb + mt) / h;
+        b = (mb - mt) / h;
+        tr.y = a * tr.y + b;
+    }
 
     // pixel shift.
-    tr.xy += (2 * shift / viewport.size);
+    if (w > 0 && h > 0)
+        tr.xy += (2 * shift / viewport.size);
 
     // HACK: we transform from OpenGL conventional coordinate system to Vulkan
     // This allows us to use MVP matrices in OpenGL conventions.
@@ -137,8 +147,14 @@ vec4 transform(vec3 pos, vec2 shift) {
 
 
 
+vec4 transform(vec3 pos, uint transform_mode) {
+    return transform(pos, vec2(0, 0), transform_mode);
+}
+
+
+
 vec4 transform(vec3 pos) {
-    return transform(pos, vec2(0, 0));
+    return transform(pos, vec2(0, 0), 0);
 }
 
 

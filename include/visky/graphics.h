@@ -156,6 +156,7 @@ struct VklGraphicsMarkerVertex
     // in fact a VklMarkerType but we should control the exact data type for the GPU
     uint8_t marker;
     uint8_t angle;
+    uint8_t transform;
 };
 
 struct VklGraphicsMarkerParams
@@ -205,6 +206,7 @@ struct VklGraphicsTextVertex
     float angle;
     usvec4 glyph; // char, char_index, str_len, str_index
     // uint8_t transform_mode;
+    uint8_t transform;
 };
 
 
