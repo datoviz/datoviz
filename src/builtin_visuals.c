@@ -191,7 +191,7 @@ static void _add_ticks(
         glm_vec4_copy(shift0, shift);
 
         // TODO: transformation
-        x = vkl_array_item(&tick_prop->arr_orig, i);
+        x = vkl_bake_prop_item(tick_prop, i);
 
         if (coord == VKL_AXES_COORD_X)
         {
