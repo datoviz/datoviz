@@ -564,7 +564,7 @@ VklVisual* vkl_scene_visual(VklPanel* panel, VklVisualType type, int flags)
 
     // Bind the common buffers (MVP, viewport, color texture).
     // TODO: viewport type
-    _common_data(panel, visual, VKL_VIEWPORT_FULL);
+    _common_data(panel, visual, VKL_VIEWPORT_INNER);
 
     return visual;
 }

@@ -1,6 +1,37 @@
+/*************************************************************************************************/
+/*  Constants and macros                                                                         */
+/*************************************************************************************************/
+
 #define VKL_VIEWPORT_NONE 0
 #define VKL_VIEWPORT_INNER 1
 #define VKL_VIEWPORT_OUTER 2
+
+#define USER_BINDING 3
+
+// NOTE:needs to be a macro and not a function so that it can be safely included in both
+// vertex and fragment shaders (discard is forbidden in the vertex shader)
+#define CLIP \
+    switch (viewport.clip)                                                                      \
+    {                                                                                           \
+        case VKL_VIEWPORT_NONE:                                                                 \
+            break;                                                                              \
+        case VKL_VIEWPORT_INNER:                                                                \
+            if(!clip_viewport(gl_FragCoord.xy))                                                  \
+                discard;                                                                        \
+            break;                                                                              \
+        case VKL_VIEWPORT_OUTER:                                                                \
+            if(clip_viewport(gl_FragCoord.xy))                                                 \
+                discard;                                                                        \
+            break;                                                                              \
+        default:                                                                                \
+            break;                                                                              \
+    }
+
+
+
+/*************************************************************************************************/
+/*  Common bindings                                                                              */
+/*************************************************************************************************/
 
 layout (std140, binding = 0) uniform MVP {
     mat4 model;
@@ -25,7 +56,11 @@ layout (std140, binding = 1) uniform Viewport {
 
 layout (binding = 2) uniform sampler2D color_tex;
 
-#define USER_BINDING 3
+
+
+/*************************************************************************************************/
+/*  Viewport and transform functions                                                             */
+/*************************************************************************************************/
 
 vec4 transform(vec3 pos) {
     vec4 tr = (mvp.proj * mvp.view * mvp.model) * vec4(pos, 1.0);
@@ -56,9 +91,22 @@ vec4 transform(vec3 pos) {
     return tr;
 }
 
+
+
 vec4 transform(vec3 pos, vec2 shift) {
     vec4 pos_tr = transform(pos);
     return pos_tr + vec4(2 * shift / viewport.size, 0, 0);
+}
+
+
+
+bool clip_viewport(vec2 frag_coords) {
+    vec2 uv = frag_coords - viewport.offset;
+    return (uv.y < 0 + viewport.margins.x ||
+        uv.x > viewport.size.x - viewport.margins.y ||
+        uv.y > viewport.size.y - viewport.margins.z ||
+        uv.x < 0 + viewport.margins.w
+    );
 }
 
 

@@ -1,6 +1,6 @@
 #version 450
-#include "constants.glsl"
 #include "common.glsl"
+#include "constants.glsl"
 
 layout (location = 0) in vec3 P0;
 layout (location = 1) in vec3 P1;
