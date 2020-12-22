@@ -146,28 +146,37 @@ int test_scene_axes(TestContext* context)
     const uint32_t N = 4 * 10 + 1;
     float* xticks = calloc(N, sizeof(float));
     float* yticks = calloc(N, sizeof(float));
+    char** text = calloc(N, sizeof(char*));
     float t = 0;
     for (uint32_t i = 0; i < N; i++)
     {
         t = -2 + 4 * (float)i / (N - 1);
         xticks[i] = t;
         yticks[i] = t;
+        text[i] = "hello";
     }
 
-    // Set visual data.
+    // Minor ticks.
     vkl_visual_data(visualx, VKL_PROP_POS, VKL_AXES_LEVEL_MINOR, N, xticks);
     vkl_visual_data(visualy, VKL_PROP_POS, VKL_AXES_LEVEL_MINOR, N, yticks);
 
+    // Major ticks.
     vkl_visual_data(visualx, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR, N, xticks);
     vkl_visual_data(visualy, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR, N, yticks);
 
+    // Grid.
     vkl_visual_data(visualx, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, xticks);
     vkl_visual_data(visualy, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, yticks);
 
+    // Lim.
     float lim[] = {-1};
     vkl_visual_data(visualx, VKL_PROP_POS, VKL_AXES_LEVEL_LIM, 1, lim);
     vkl_visual_data(visualy, VKL_PROP_POS, VKL_AXES_LEVEL_LIM, 1, lim);
 
+    // Text.
+    vkl_visual_data(visualx, VKL_PROP_TEXT, 0, N, text);
+
+    // Color
     cvec4 color = {0, 0, 0, 255};
     vkl_visual_data(visualx, VKL_PROP_COLOR, 0, 1, color);
     vkl_visual_data(visualy, VKL_PROP_COLOR, 0, 1, color);

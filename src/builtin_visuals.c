@@ -396,6 +396,9 @@ static void _visual_axes_2D(VklVisual* visual)
     vkl_visual_prop(visual, VKL_PROP_MARGIN, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_VERTEX, 0);
 
     // tick text size
+    vkl_visual_prop(visual, VKL_PROP_TEXT, 0, VKL_DTYPE_STR, VKL_SOURCE_VERTEX, 0);
+
+    // tick text size
     vkl_visual_prop(visual, VKL_PROP_TEXT_SIZE, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_VERTEX, 0);
 
     // Common props.

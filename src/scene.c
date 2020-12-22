@@ -21,23 +21,6 @@ static void _common_data(VklPanel* panel, VklVisual* visual, VklViewportClip cli
     // Binding 1: viewport
     visual->viewport = panel->viewport;
     vkl_visual_data_buffer(visual, VKL_SOURCE_UNIFORM, 1, 0, 1, 1, &visual->viewport);
-    // VklBufferRegions br_viewport = {0};
-    // switch (clip)
-    // {
-    // case VKL_VIEWPORT_INNER:
-    //     br_viewport = panel->br_inner;
-    //     break;
-    // case VKL_VIEWPORT_OUTER:
-    //     br_viewport = panel->br_outer;
-    //     break;
-    // case VKL_VIEWPORT_FULL:
-    //     br_viewport = panel->br_full;
-    //     break;
-    // default:
-    //     log_warn("viewport type %d not implemented", clip);
-    //     break;
-    // }
-    // vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 1, br_viewport);
 
     // Binding 2: color texture
     // TODO

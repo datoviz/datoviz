@@ -20,7 +20,7 @@ struct TestGraphics
     VklBufferRegions br_viewport;
     VklBufferRegions br_params;
     VklTexture* texture;
-    VklTexture* texture2;
+    // VklTexture* texture2;
     VklBindings bindings;
     VklMVP mvp;
     vec3 eye, center, up;
@@ -515,9 +515,9 @@ int test_graphics_text(TestContext* context)
     BEGIN_DATA(VklGraphicsTextVertex, 4 * (N + offset))
 
     // Font texture
-    char path[1024];
-    snprintf(path, sizeof(path), "%s/textures/%s", DATA_DIR, "font_inconsolata.png");
-    VklFontAtlas atlas = vkl_font_atlas(path);
+    // char path[1024];
+    // snprintf(path, sizeof(path), "%s/textures/%s", DATA_DIR, "font_inconsolata.png");
+    VklFontAtlas atlas = _font_texture(gpu->context);
 
     VklGraphicsTextParams params = {0};
     params.grid_size[0] = (int32_t)atlas.rows;
@@ -552,24 +552,13 @@ int test_graphics_text(TestContext* context)
 
     END_DATA
 
-    {
-        tg.br_params = vkl_ctx_buffers(
-            gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsTextParams));
-        tg.texture2 = vkl_ctx_texture(
-            gpu->context, 2, (uvec3){(uint32_t)atlas.width, (uint32_t)atlas.height, 1},
-            VK_FORMAT_R8G8B8A8_UNORM);
-        // NOTE: the font texture must have LINEAR filter! otherwise no antialiasing
-        vkl_texture_filter(tg.texture2, VKL_FILTER_MAX, VK_FILTER_LINEAR);
-        vkl_texture_filter(tg.texture2, VKL_FILTER_MIN, VK_FILTER_LINEAR);
-        vkl_upload_texture(
-            gpu->context, tg.texture2, (uint32_t)(atlas.width * atlas.height * 4),
-            atlas.font_texture);
-        vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsTextParams), &params);
-    }
+    tg.br_params = vkl_ctx_buffers(
+        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsTextParams));
+    vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsTextParams), &params);
 
     _common_bindings(&tg);
     vkl_bindings_buffer(&tg.bindings, 3, tg.br_params);
-    vkl_bindings_texture(&tg.bindings, 4, tg.texture2);
+    vkl_bindings_texture(&tg.bindings, 4, atlas.texture);
     vkl_bindings_update(&tg.bindings);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_RESIZE, 0, _resize, &tg);

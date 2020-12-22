@@ -263,6 +263,7 @@ struct VklFontAtlas
     uint8_t* font_texture;
     float glyph_width, glyph_height;
     const char* font_str;
+    VklTexture* texture;
 };
 
 static size_t _font_atlas_glyph(VklFontAtlas* atlas, const char* str, uint32_t idx)
@@ -312,6 +313,28 @@ static void vkl_font_atlas_destroy(VklFontAtlas* atlas)
 {
     ASSERT(atlas != NULL);
     stbi_image_free(atlas->font_texture);
+}
+
+static VklFontAtlas _font_texture(VklContext* ctx)
+{
+    ASSERT(ctx != NULL);
+
+    // Font texture
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/textures/%s", DATA_DIR, "font_inconsolata.png");
+    VklFontAtlas atlas = vkl_font_atlas(path);
+
+    VklTexture* texture = vkl_ctx_texture(
+        ctx, 2, (uvec3){(uint32_t)atlas.width, (uint32_t)atlas.height, 1},
+        VK_FORMAT_R8G8B8A8_UNORM);
+    // NOTE: the font texture must have LINEAR filter! otherwise no antialiasing
+    vkl_texture_filter(texture, VKL_FILTER_MAX, VK_FILTER_LINEAR);
+    vkl_texture_filter(texture, VKL_FILTER_MIN, VK_FILTER_LINEAR);
+    vkl_upload_texture(
+        ctx, texture, (uint32_t)(atlas.width * atlas.height * 4), atlas.font_texture);
+    atlas.texture = texture;
+
+    return atlas;
 }
 
 static void _graphics_text_string(

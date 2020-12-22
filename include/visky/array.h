@@ -28,6 +28,7 @@ typedef enum
 {
     VKL_DTYPE_NONE,
     VKL_DTYPE_CUSTOM, // used for structured arrays (aka record arrays)
+    VKL_DTYPE_STR,    // 64 bits, pointer
 
     VKL_DTYPE_CHAR, // 8 bits, unsigned int
     VKL_DTYPE_CVEC2,
@@ -159,6 +160,8 @@ static VkDeviceSize _get_dtype_size(VklDataType dtype)
         return 8 * 3;
     case VKL_DTYPE_DVEC4:
         return 8 * 4;
+    case VKL_DTYPE_STR:
+        return 8;
 
     case VKL_DTYPE_MAT2:
         return 2 * 2 * 4;
