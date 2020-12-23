@@ -173,7 +173,60 @@ static void _graphics_text(VklCanvas* canvas, VklGraphics* graphics)
 
 
 /*************************************************************************************************/
-/*  Graphics                                                                                     */
+/*  Graphics data                                                                                */
+/*************************************************************************************************/
+
+// Used by graphics creator
+void vkl_graphics_callback(VklGraphics* graphics, VklGraphicsCallback callback)
+{
+    // The callback must make sure the VklArray* are not NULL and resize them
+    ASSERT(graphics != NULL);
+    graphics->callback = callback;
+}
+
+
+
+// Used in visual bake:
+VklGraphicsData vkl_graphics_data(VklGraphics* graphics, VklArray* vertices, VklArray* indices)
+{
+    ASSERT(graphics != NULL);
+    ASSERT(vertices != NULL);
+    ASSERT(indices != NULL);
+
+    VklGraphicsData data = {0};
+    data.graphics = graphics;
+    data.vertices = vertices;
+    data.indices = indices;
+    return data;
+}
+
+
+
+void vkl_graphics_alloc(VklGraphicsData* data, uint32_t item_count)
+{
+    ASSERT(data != NULL);
+    data->item_count = item_count;
+    VklGraphics* graphics = data->graphics;
+    ASSERT(graphics != NULL);
+    // The graphics callback should allocate the vertices and indices arrays.
+    graphics->callback(data, item_count, NULL);
+}
+
+
+
+void vkl_graphics_append(VklGraphicsData* data, const void* item)
+{
+    ASSERT(data != NULL);
+    VklGraphics* graphics = data->graphics;
+    ASSERT(graphics != NULL);
+    // call the callback with item_count and item
+    graphics->callback(data, data->item_count, item);
+}
+
+
+
+/*************************************************************************************************/
+/*  Graphics builtin                                                                             */
 /*************************************************************************************************/
 
 VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type, int flags)
@@ -255,7 +308,7 @@ VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type, in
 
 
 /*************************************************************************************************/
-/*  Viewpor                                                                                      */
+/*  Viewport                                                                                     */
 /*************************************************************************************************/
 
 VklViewport vkl_viewport_full(VklCanvas* canvas)

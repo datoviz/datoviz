@@ -530,6 +530,4 @@ void vkl_visual_builtin(VklVisual* visual, VklVisualType type, int flags)
         log_error("no builtin visual found for type %d", type);
         break;
     }
-
-    return visual;
 }

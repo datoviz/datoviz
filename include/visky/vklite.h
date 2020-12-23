@@ -112,9 +112,11 @@ typedef struct VklSubmit VklSubmit;
 typedef struct VklCanvas VklCanvas;
 typedef struct VklContext VklContext;
 typedef struct VklTexture VklTexture;
+typedef struct VklGraphicsData VklGraphicsData;
 
 // Callback definitions
 typedef void* (*VklThreadCallback)(void*);
+typedef void (*VklGraphicsCallback)(VklGraphicsData* data, uint32_t item_count, const void* item);
 
 
 
@@ -575,6 +577,8 @@ struct VklGraphics
     uint32_t shader_count;
     VkShaderStageFlagBits shader_stages[VKL_MAX_SHADERS_PER_GRAPHICS];
     VkShaderModule shader_modules[VKL_MAX_SHADERS_PER_GRAPHICS];
+
+    VklGraphicsCallback callback;
 };
 
 

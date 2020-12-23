@@ -1,6 +1,7 @@
 #ifndef VKL_GRAPHICS_HEADER
 #define VKL_GRAPHICS_HEADER
 
+#include "array.h"
 #include "canvas.h"
 #include "vklite.h"
 
@@ -110,6 +111,7 @@ typedef struct VklGraphicsMarkerParams VklGraphicsMarkerParams;
 typedef struct VklGraphicsSegmentVertex VklGraphicsSegmentVertex;
 typedef struct VklGraphicsTextParams VklGraphicsTextParams;
 typedef struct VklGraphicsTextVertex VklGraphicsTextVertex;
+typedef struct VklGraphicsData VklGraphicsData;
 
 
 
@@ -130,6 +132,16 @@ struct VklMVP
     mat4 model;
     mat4 view;
     mat4 proj;
+};
+
+
+
+struct VklGraphicsData
+{
+    VklGraphics* graphics;
+    VklArray* vertices;
+    VklArray* indices;
+    uint32_t item_count;
 };
 
 
@@ -381,6 +393,18 @@ static void _graphics_text_string(
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+VKY_EXPORT void vkl_graphics_callback(VklGraphics* graphics, VklGraphicsCallback callback);
+
+// Used in visual bake
+VKY_EXPORT VklGraphicsData
+vkl_graphics_data(VklGraphics* graphics, VklArray* vertices, VklArray* indices);
+
+VKY_EXPORT void vkl_graphics_alloc(VklGraphicsData* data, uint32_t item_count);
+
+VKY_EXPORT void vkl_graphics_append(VklGraphicsData* data, const void* item);
+
+
 
 VKY_EXPORT VklGraphics*
 vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type, int flags);
