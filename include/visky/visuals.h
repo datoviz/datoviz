@@ -67,7 +67,7 @@ typedef enum
     VKL_SOURCE_TEXTURE_1D, // 5
     VKL_SOURCE_TEXTURE_2D, // 6
     VKL_SOURCE_TEXTURE_3D, // 7
-} VklSourceType;
+} VklSourceKind;
 
 
 
@@ -159,7 +159,7 @@ struct VklSource
     // Identifier of the prop
     VklPipelineType pipeline;  // graphics or compute pipeline?
     uint32_t pipeline_idx;     // idx of the pipeline within the graphics or compute pipelines
-    VklSourceType source_type; // Vertex, index, uniform, storage, or texture
+    VklSourceKind source_kind; // Vertex, index, uniform, storage, or texture
     uint32_t source_idx;       // idx among all sources of the same type
     uint32_t slot_idx;         // Binding slot, or 0 for vertex/index
     int flags;
@@ -175,7 +175,7 @@ struct VklProp
 {
     VklPropType prop_type;     // prop type
     uint32_t prop_idx;         // index within all props of that type
-    VklSourceType source_type; // Vertex, index, uniform, storage, or texture
+    VklSourceKind source_kind; // Vertex, index, uniform, storage, or texture
     uint32_t source_idx;       // Binding slot, or 0 for vertex/index
 
     uint32_t field_idx;
@@ -284,13 +284,13 @@ VKY_EXPORT void vkl_visual_destroy(VklVisual* visual);
 
 // Define a new source. (source, source_idx) completely identifies a source within all pipelines
 VKY_EXPORT void vkl_visual_source(
-    VklVisual* visual, VklSourceType source, uint32_t source_idx, //
+    VklVisual* visual, VklSourceKind source, uint32_t source_idx, //
     VklPipelineType pipeline, uint32_t pipeline_idx, uint32_t slot_idx, VkDeviceSize item_size,
     int flags);
 
 VKY_EXPORT void vkl_visual_prop(
     VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, VklDataType dtype,
-    VklSourceType source_type, uint32_t source_idx);
+    VklSourceKind source_kind, uint32_t source_idx);
 
 VKY_EXPORT void vkl_visual_prop_default(
     VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, void* default_value);
@@ -320,7 +320,7 @@ VKY_EXPORT void vkl_visual_data_partial(
     uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data);
 
 VKY_EXPORT void vkl_visual_data_buffer(
-    VklVisual* visual, VklSourceType type, uint32_t idx, //
+    VklVisual* visual, VklSourceKind type, uint32_t idx, //
     uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data);
 
 VKY_EXPORT void vkl_visual_data_texture(
@@ -328,10 +328,10 @@ VKY_EXPORT void vkl_visual_data_texture(
     uint32_t width, uint32_t height, uint32_t depth, const void* data);
 
 VKY_EXPORT void vkl_visual_buffer(
-    VklVisual* visual, VklSourceType source, uint32_t source_idx, VklBufferRegions br);
+    VklVisual* visual, VklSourceKind source, uint32_t source_idx, VklBufferRegions br);
 
 VKY_EXPORT void vkl_visual_texture(
-    VklVisual* visual, VklSourceType source, uint32_t source_idx, VklTexture* texture);
+    VklVisual* visual, VklSourceKind source, uint32_t source_idx, VklTexture* texture);
 
 
 
@@ -359,7 +359,7 @@ VKY_EXPORT void vkl_visual_callback_bake(VklVisual* visual, VklVisualDataCallbac
 /*  Baking helpers                                                                               */
 /*************************************************************************************************/
 
-VKY_EXPORT VklSource* vkl_bake_source(VklVisual* visual, VklSourceType source_type, uint32_t idx);
+VKY_EXPORT VklSource* vkl_bake_source(VklVisual* visual, VklSourceKind source_kind, uint32_t idx);
 
 VKY_EXPORT VklProp* vkl_bake_prop(VklVisual* visual, VklPropType prop_type, uint32_t idx);
 
