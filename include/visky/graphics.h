@@ -109,8 +109,11 @@ typedef struct VklGraphicsPointParams VklGraphicsPointParams;
 typedef struct VklGraphicsMarkerVertex VklGraphicsMarkerVertex;
 typedef struct VklGraphicsMarkerParams VklGraphicsMarkerParams;
 typedef struct VklGraphicsSegmentVertex VklGraphicsSegmentVertex;
+
 typedef struct VklGraphicsTextParams VklGraphicsTextParams;
 typedef struct VklGraphicsTextVertex VklGraphicsTextVertex;
+typedef struct VklGraphicsTextItem VklGraphicsTextItem;
+
 typedef struct VklGraphicsData VklGraphicsData;
 
 
@@ -143,6 +146,7 @@ struct VklGraphicsData
     VklArray* indices;
     uint32_t item_count;
     uint32_t current_idx;
+    void* user_data;
 };
 
 
@@ -219,8 +223,14 @@ struct VklGraphicsTextVertex
     vec2 anchor;
     float angle;
     usvec4 glyph; // char, char_index, str_len, str_index
-    // uint8_t transform_mode;
     uint8_t transform;
+};
+
+struct VklGraphicsTextItem
+{
+    VklGraphicsTextVertex vertex;
+    float font_size;
+    const char* string;
 };
 
 
@@ -351,43 +361,43 @@ static VklFontAtlas _font_texture(VklContext* ctx)
     return atlas;
 }
 
-static void _graphics_text_string(
-    VklFontAtlas* atlas, uint32_t str_idx, const char* str,                                    //
-    vec3 pos, vec2 shift, vec2 anchor, float angle, float font_size, const cvec4* char_colors, //
-    VklGraphicsTextVertex* vertices)                                                           //
-{
-    // Append a string to a vertex array.
+// static void _graphics_text_string(
+//     VklFontAtlas* atlas, uint32_t str_idx, const char* str, // vec3 pos, vec2 shift, vec2
+//     anchor, float angle, float font_size, const cvec4* char_colors, // VklGraphicsTextVertex*
+//     vertices)                                                           //
+// {
+//     // Append a string to a vertex array.
 
-    // vertices must point to an array of at least 4*strlen Vertex structs.
-    ASSERT(vertices != NULL);
-    ASSERT(str != NULL);
-    uint32_t n = strlen(str);
-    ASSERT(n > 0);
-    for (uint32_t i = 0; i < n; i++)
-    {
-        size_t g = _font_atlas_glyph(atlas, str, i);
-        for (uint32_t j = 0; j < 4; j++)
-        {
-            glm_vec3_copy(pos, vertices[4 * i + j].pos);
-            glm_vec3_copy(shift, vertices[4 * i + j].shift);
-            glm_vec3_copy(anchor, vertices[4 * i + j].anchor);
-            vertices[4 * i + j].angle = angle;
+//     // vertices must point to an array of at least 4*strlen Vertex structs.
+//     ASSERT(vertices != NULL);
+//     ASSERT(str != NULL);
+//     uint32_t n = strlen(str);
+//     ASSERT(n > 0);
+//     for (uint32_t i = 0; i < n; i++)
+//     {
+//         size_t g = _font_atlas_glyph(atlas, str, i);
+//         for (uint32_t j = 0; j < 4; j++)
+//         {
+//             glm_vec3_copy(pos, vertices[4 * i + j].pos);
+//             glm_vec3_copy(shift, vertices[4 * i + j].shift);
+//             glm_vec3_copy(anchor, vertices[4 * i + j].anchor);
+//             vertices[4 * i + j].angle = angle;
 
-            // Color.
-            if (char_colors != NULL)
-                memcpy(vertices[4 * i + j].color, char_colors[i], sizeof(cvec4));
+//             // Color.
+//             if (char_colors != NULL)
+//                 memcpy(vertices[4 * i + j].color, char_colors[i], sizeof(cvec4));
 
-            // Glyph size.
-            _font_atlas_glyph_size(atlas, font_size, vertices[4 * i + j].glyph_size);
+//             // Glyph size.
+//             _font_atlas_glyph_size(atlas, font_size, vertices[4 * i + j].glyph_size);
 
-            // Glyph.
-            vertices[4 * i + j].glyph[0] = g;       // char
-            vertices[4 * i + j].glyph[1] = i;       // char idx
-            vertices[4 * i + j].glyph[2] = n;       // str len
-            vertices[4 * i + j].glyph[3] = str_idx; // str idx
-        }
-    }
-}
+//             // Glyph.
+//             vertices[4 * i + j].glyph[0] = g;       // char
+//             vertices[4 * i + j].glyph[1] = i;       // char idx
+//             vertices[4 * i + j].glyph[2] = n;       // str len
+//             vertices[4 * i + j].glyph[3] = str_idx; // str idx
+//         }
+//     }
+// }
 
 
 
@@ -399,7 +409,7 @@ VKY_EXPORT void vkl_graphics_callback(VklGraphics* graphics, VklGraphicsCallback
 
 // Used in visual bake
 VKY_EXPORT VklGraphicsData
-vkl_graphics_data(VklGraphics* graphics, VklArray* vertices, VklArray* indices);
+vkl_graphics_data(VklGraphics* graphics, VklArray* vertices, VklArray* indices, void* user_data);
 
 VKY_EXPORT void vkl_graphics_alloc(VklGraphicsData* data, uint32_t item_count);
 

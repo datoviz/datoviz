@@ -126,6 +126,11 @@ static void _graphics_marker(VklCanvas* canvas, VklGraphics* graphics)
 }
 
 
+
+/*************************************************************************************************/
+/*  Segment graphics                                                                             */
+/*************************************************************************************************/
+
 static void
 _graphics_segment_callback(VklGraphicsData* data, uint32_t item_count, const void* item)
 {
@@ -143,21 +148,6 @@ _graphics_segment_callback(VklGraphicsData* data, uint32_t item_count, const voi
 
     // Fill the vertices array by simply repeating them 4 times.
     vkl_array_data(data->vertices, 4 * data->current_idx, 4, 1, item);
-
-    // VklGraphicsSegmentVertex* src = (VklGraphicsSegmentVertex*)item;
-    // VklGraphicsSegmentVertex* dst = data->vertices
-    // for (uint32_t j = 0; j < 4; j++)
-    // {
-    //     glm_vec3_copy(P0, data[4 * i + j].P0);
-    //     glm_vec3_copy(P1, data[4 * i + j].P1);
-    //     memcpy(data[4 * i + j].color, color, sizeof(cvec4));
-    //     glm_vec4_copy(shift, data[4 * i + j].shift);
-
-    //     data[4 * i + j].linewidth = linewidth;
-    //     data[4 * i + j].cap0 = cap0;
-    //     data[4 * i + j].cap1 = cap1;
-    //     data[4 * i + j].transform = transform;
-    // }
 
     // Fill the indices array.
     VklIndex* indices = (VklIndex*)data->indices->data;
@@ -195,6 +185,55 @@ static void _graphics_segment(VklCanvas* canvas, VklGraphics* graphics)
     CREATE
 }
 
+
+
+/*************************************************************************************************/
+/*  Text graphics                                                                             */
+/*************************************************************************************************/
+
+static void _graphics_text_callback(VklGraphicsData* data, uint32_t item_count, const void* item)
+{
+    // NOTE: item_count is the total number of glyphs
+    // TODO: multiple colors
+
+    ASSERT(data != NULL);
+    ASSERT(data->vertices != NULL);
+    ASSERT(data->indices != NULL);
+
+    vkl_array_resize(data->vertices, 4 * item_count);
+    VklFontAtlas* atlas = data->user_data;
+    ASSERT(atlas != NULL);
+
+    if (item == NULL)
+        return;
+    ASSERT(item != NULL);
+    ASSERT(data->current_idx < item_count);
+
+    // const char* str = item;
+    const VklGraphicsTextItem* str_item = item;
+    uint32_t n = strlen(str_item->string);
+    VklGraphicsTextVertex vertex = {0};
+    vertex = str_item->vertex;
+    ASSERT(n > 0);
+    for (uint32_t i = 0; i < n; i++)
+    {
+        size_t g = _font_atlas_glyph(atlas, str_item->string, i);
+
+        // Glyph size.
+        _font_atlas_glyph_size(atlas, str_item->font_size, vertex.glyph_size);
+
+        // Glyph.
+        vertex.glyph[0] = g;                 // char
+        vertex.glyph[1] = i;                 // char idx
+        vertex.glyph[2] = n;                 // str len
+        vertex.glyph[3] = data->current_idx; // str idx
+
+        // Fill the vertices array by simply repeating them 4 times.
+        vkl_array_data(data->vertices, 4 * data->current_idx + 4 * i, 4, 1, &vertex);
+    }
+    data->current_idx++; // string index
+}
+
 static void _graphics_text(VklCanvas* canvas, VklGraphics* graphics)
 {
     SHADER(VERTEX, "graphics_text_vert")
@@ -215,6 +254,8 @@ static void _graphics_text(VklCanvas* canvas, VklGraphics* graphics)
     vkl_graphics_slot(graphics, VKL_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
     vkl_graphics_slot(graphics, VKL_USER_BINDING + 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
+    vkl_graphics_callback(graphics, _graphics_text_callback);
+
     CREATE
 }
 
@@ -223,6 +264,22 @@ static void _graphics_text(VklCanvas* canvas, VklGraphics* graphics)
 /*************************************************************************************************/
 /*  Graphics data                                                                                */
 /*************************************************************************************************/
+
+static void _default_callback(VklGraphicsData* data, uint32_t item_count, const void* item)
+{
+    ASSERT(data != NULL);
+    ASSERT(data->vertices != NULL);
+    ASSERT(data->indices != NULL);
+
+    vkl_array_resize(data->vertices, item_count);
+    if (item == NULL)
+        return;
+    ASSERT(item != NULL);
+    ASSERT(data->current_idx < item_count);
+
+    // Fill the vertices array by simply copying the current item (assumed to be a vertex).
+    vkl_array_data(data->vertices, data->current_idx++, 1, 1, item);
+}
 
 // Used by graphics creator
 void vkl_graphics_callback(VklGraphics* graphics, VklGraphicsCallback callback)
@@ -235,7 +292,8 @@ void vkl_graphics_callback(VklGraphics* graphics, VklGraphicsCallback callback)
 
 
 // Used in visual bake:
-VklGraphicsData vkl_graphics_data(VklGraphics* graphics, VklArray* vertices, VklArray* indices)
+VklGraphicsData
+vkl_graphics_data(VklGraphics* graphics, VklArray* vertices, VklArray* indices, void* user_data)
 {
     ASSERT(graphics != NULL);
     ASSERT(vertices != NULL);
@@ -245,6 +303,10 @@ VklGraphicsData vkl_graphics_data(VklGraphics* graphics, VklArray* vertices, Vkl
     data.graphics = graphics;
     data.vertices = vertices;
     data.indices = indices;
+    data.user_data = user_data;
+
+    if (graphics->callback == NULL)
+        graphics->callback = _default_callback;
     return data;
 }
 
@@ -256,7 +318,9 @@ void vkl_graphics_alloc(VklGraphicsData* data, uint32_t item_count)
     data->item_count = item_count;
     VklGraphics* graphics = data->graphics;
     ASSERT(graphics != NULL);
+
     // The graphics callback should allocate the vertices and indices arrays.
+    ASSERT(graphics->callback != NULL);
     graphics->callback(data, item_count, NULL);
 }
 
@@ -267,7 +331,9 @@ void vkl_graphics_append(VklGraphicsData* data, const void* item)
     ASSERT(data != NULL);
     VklGraphics* graphics = data->graphics;
     ASSERT(graphics != NULL);
+
     // call the callback with item_count and item
+    ASSERT(graphics->callback != NULL);
     graphics->callback(data, data->item_count, item);
 }
 

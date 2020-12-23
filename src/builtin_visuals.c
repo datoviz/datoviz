@@ -390,9 +390,10 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
         text = ((char**)prop->arr_orig.data)[i];
         ASSERT(text != NULL);
         slen = strlen(text);
-        _graphics_text_string(
-            &scene->font_atlas, i, text, pos, shift, anchor, 0, 50, (const cvec4*)color,
-            &text_vertices[offset]);
+        // TODO
+        // _graphics_text_string(
+        //     &scene->font_atlas, i, text, pos, shift, anchor, 0, 50, (const cvec4*)color,
+        //     &text_vertices[offset]);
         offset += 4 * slen;
     }
 }
