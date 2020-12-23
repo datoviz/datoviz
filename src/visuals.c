@@ -948,6 +948,15 @@ void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source)
         {
             VklBindings* bindings = _get_bindings(visual, source);
             vkl_bindings_buffer(bindings, source->slot_idx, source->u.br);
+
+            // HACK: copy the buffer to other pipelines
+            if (source->pipeline == VKL_PIPELINE_GRAPHICS)
+            {
+                for (uint32_t i = 0; i < visual->graphics_count; i++)
+                {
+                    vkl_bindings_buffer(&visual->bindings[i], source->slot_idx, source->u.br);
+                }
+            }
         }
     }
     ASSERT(source->u.br.buffer != VK_NULL_HANDLE);
