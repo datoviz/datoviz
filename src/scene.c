@@ -407,8 +407,6 @@ VklScene* vkl_scene(VklCanvas* canvas, uint32_t n_rows, uint32_t n_cols)
     canvas->scene = calloc(1, sizeof(VklScene));
     canvas->scene->canvas = canvas;
     canvas->scene->grid = vkl_grid(canvas, n_rows, n_cols);
-    // Initialize the font texture.
-    canvas->scene->font_atlas = _font_texture(canvas->gpu->context);
 
     INSTANCES_INIT(
         VklVisual, canvas->scene, visuals, max_visuals, //

@@ -179,11 +179,12 @@ int test_scene_axes(TestContext* context)
 
     // Text params.
     {
+        VklFontAtlas* atlas = vkl_font_atlas(ctx);
         VklGraphicsTextParams params = {0};
-        params.grid_size[0] = (int32_t)scene->font_atlas.rows;
-        params.grid_size[1] = (int32_t)scene->font_atlas.cols;
-        params.tex_size[0] = (int32_t)scene->font_atlas.width;
-        params.tex_size[1] = (int32_t)scene->font_atlas.height;
+        params.grid_size[0] = (int32_t)atlas->rows;
+        params.grid_size[1] = (int32_t)atlas->cols;
+        params.tex_size[0] = (int32_t)atlas->width;
+        params.tex_size[1] = (int32_t)atlas->height;
         vkl_visual_data_buffer(visualx, VKL_SOURCE_TYPE_PARAM, 1, 0, 1, 1, &params);
     }
 

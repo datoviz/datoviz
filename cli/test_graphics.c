@@ -524,16 +524,16 @@ int test_graphics_text(TestContext* context)
     const uint32_t offset = strlen(str);
 
     // Font atlas
-    VklFontAtlas atlas = _font_texture(gpu->context);
+    VklFontAtlas* atlas = vkl_font_atlas(gpu->context);
 
     VklGraphicsTextParams params = {0};
-    params.grid_size[0] = (int32_t)atlas.rows;
-    params.grid_size[1] = (int32_t)atlas.cols;
-    params.tex_size[0] = (int32_t)atlas.width;
-    params.tex_size[1] = (int32_t)atlas.height;
+    params.grid_size[0] = (int32_t)atlas->rows;
+    params.grid_size[1] = (int32_t)atlas->cols;
+    params.tex_size[0] = (int32_t)atlas->width;
+    params.tex_size[1] = (int32_t)atlas->height;
 
     // 26 letters in a circle.
-    BEGIN_DATA(VklGraphicsTextVertex, (N + offset), &atlas)
+    BEGIN_DATA(VklGraphicsTextVertex, (N + offset), atlas)
     float t = 0;
     float a = 0, x = 0, y = 0;
     VklGraphicsTextItem item = {0};
@@ -576,12 +576,12 @@ int test_graphics_text(TestContext* context)
 
     _common_bindings(&tg);
     vkl_bindings_buffer(&tg.bindings, VKL_USER_BINDING, tg.br_params);
-    vkl_bindings_texture(&tg.bindings, VKL_USER_BINDING + 1, atlas.texture);
+    vkl_bindings_texture(&tg.bindings, VKL_USER_BINDING + 1, atlas->texture);
     vkl_bindings_update(&tg.bindings);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_RESIZE, 0, _resize, &tg);
 
     RUN;
-    vkl_font_atlas_destroy(&atlas);
+    vkl_font_atlas_destroy(atlas);
     TEST_END
 }

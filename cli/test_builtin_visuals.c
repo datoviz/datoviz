@@ -152,14 +152,14 @@ int test_visuals_axes_2D(TestContext* context)
     INIT;
     vkl_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});
 
-    VklFontAtlas font_atlas = _font_texture(gpu->context);
-    ASSERT(strlen(font_atlas.font_str) > 0);
+    VklFontAtlas* atlas = vkl_font_atlas(gpu->context);
+    ASSERT(strlen(atlas->font_str) > 0);
 
     VklVisual visual = vkl_visual(canvas);
 
     vkl_visual_builtin(&visual, VKL_VISUAL_AXES_2D, 0);
 
-    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_FONT_ATLAS, 1, font_atlas.texture);
+    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_FONT_ATLAS, 1, atlas->texture);
 
     const uint32_t N = 10;
     float* xticks = calloc(N, sizeof(float));
@@ -185,10 +185,10 @@ int test_visuals_axes_2D(TestContext* context)
 
     // Text params.
     VklGraphicsTextParams params = {0};
-    params.grid_size[0] = (int32_t)font_atlas.rows;
-    params.grid_size[1] = (int32_t)font_atlas.cols;
-    params.tex_size[0] = (int32_t)font_atlas.width;
-    params.tex_size[1] = (int32_t)font_atlas.height;
+    params.grid_size[0] = (int32_t)atlas->rows;
+    params.grid_size[1] = (int32_t)atlas->cols;
+    params.tex_size[0] = (int32_t)atlas->width;
+    params.tex_size[1] = (int32_t)atlas->height;
     vkl_visual_data_buffer(&visual, VKL_SOURCE_TYPE_PARAM, 1, 0, 1, 1, &params);
 
     _common_data(&visual);

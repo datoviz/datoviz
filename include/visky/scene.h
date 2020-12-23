@@ -102,8 +102,6 @@ struct VklScene
     // Controllers.
     uint32_t max_controllers;
     VklController* controllers;
-
-    VklFontAtlas font_atlas;
 };
 
 
