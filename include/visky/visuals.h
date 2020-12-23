@@ -76,7 +76,7 @@ typedef enum
 typedef enum
 {
     VKL_SOURCE_TYPE_NONE,
-    VKL_SOURCE_TYPE_MVP,
+    VKL_SOURCE_TYPE_MVP,      // 1
     VKL_SOURCE_TYPE_VIEWPORT, // 2
     VKL_SOURCE_TYPE_PARAM,    // 3
     VKL_SOURCE_TYPE_VERTEX,   // 4

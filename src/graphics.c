@@ -198,7 +198,6 @@ static void _graphics_text_callback(VklGraphicsData* data, uint32_t item_count, 
 
     ASSERT(data != NULL);
     ASSERT(data->vertices != NULL);
-    ASSERT(data->indices != NULL);
 
     vkl_array_resize(data->vertices, 4 * item_count);
     VklFontAtlas* atlas = data->user_data;
@@ -269,7 +268,6 @@ static void _default_callback(VklGraphicsData* data, uint32_t item_count, const 
 {
     ASSERT(data != NULL);
     ASSERT(data->vertices != NULL);
-    ASSERT(data->indices != NULL);
 
     vkl_array_resize(data->vertices, item_count);
     if (item == NULL)
@@ -297,7 +295,6 @@ vkl_graphics_data(VklGraphics* graphics, VklArray* vertices, VklArray* indices, 
 {
     ASSERT(graphics != NULL);
     ASSERT(vertices != NULL);
-    ASSERT(indices != NULL);
 
     VklGraphicsData data = {0};
     data.graphics = graphics;
