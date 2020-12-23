@@ -236,47 +236,12 @@ struct VklGraphicsTextItem
 
 
 /*************************************************************************************************/
-/*  Segment utils                                                                                */
-/*************************************************************************************************/
-
-// static void _graphics_segment_add(
-//     VklGraphicsSegmentVertex* data, VklIndex* indices, uint32_t i, //
-//     vec3 P0, vec3 P1, cvec4 color, float linewidth, vec4 shift, VklCapType cap0, VklCapType
-//     cap1, VklTransformAxis transform)
-// {
-//     ASSERT(data != NULL);
-//     ASSERT(indices != NULL);
-
-//     for (uint32_t j = 0; j < 4; j++)
-//     {
-//         glm_vec3_copy(P0, data[4 * i + j].P0);
-//         glm_vec3_copy(P1, data[4 * i + j].P1);
-//         memcpy(data[4 * i + j].color, color, sizeof(cvec4));
-//         glm_vec4_copy(shift, data[4 * i + j].shift);
-
-//         data[4 * i + j].linewidth = linewidth;
-//         data[4 * i + j].cap0 = cap0;
-//         data[4 * i + j].cap1 = cap1;
-//         data[4 * i + j].transform = transform;
-//     }
-
-//     indices[6 * i + 0] = 4 * i + 0;
-//     indices[6 * i + 1] = 4 * i + 1;
-//     indices[6 * i + 2] = 4 * i + 2;
-//     indices[6 * i + 3] = 4 * i + 0;
-//     indices[6 * i + 4] = 4 * i + 2;
-//     indices[6 * i + 5] = 4 * i + 3;
-// }
-
-
-
-/*************************************************************************************************/
 /*  Text visual                                                                                  */
 /*************************************************************************************************/
 
-#define VKL_FONT_ATLAS_STRING                                                                     \
-    " !\"#$%&'()*+,-./"                                                                           \
-    "0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7f"
+static const char VKL_FONT_ATLAS_STRING[] =
+    " !\"#$%&'()*+,-./"
+    "0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7f";
 
 typedef struct VklFontAtlas VklFontAtlas;
 struct VklFontAtlas
@@ -294,8 +259,10 @@ static size_t _font_atlas_glyph(VklFontAtlas* atlas, const char* str, uint32_t i
 {
     ASSERT(atlas != NULL);
     ASSERT(str != NULL);
+    ASSERT(strlen(str) > 0);
     ASSERT(idx < strlen(str));
     ASSERT(atlas->font_str != NULL);
+    ASSERT(strlen(atlas->font_str) > 0);
 
     char c[2] = {str[idx], 0};
     return strcspn(atlas->font_str, c);
@@ -322,6 +289,7 @@ static VklFontAtlas vkl_font_atlas(const char* img_path)
 
     // TODO: parameters
     atlas.font_str = VKL_FONT_ATLAS_STRING;
+    ASSERT(strlen(atlas.font_str) > 0);
     atlas.cols = 16;
     atlas.rows = 6;
 
@@ -360,44 +328,6 @@ static VklFontAtlas _font_texture(VklContext* ctx)
 
     return atlas;
 }
-
-// static void _graphics_text_string(
-//     VklFontAtlas* atlas, uint32_t str_idx, const char* str, // vec3 pos, vec2 shift, vec2
-//     anchor, float angle, float font_size, const cvec4* char_colors, // VklGraphicsTextVertex*
-//     vertices)                                                           //
-// {
-//     // Append a string to a vertex array.
-
-//     // vertices must point to an array of at least 4*strlen Vertex structs.
-//     ASSERT(vertices != NULL);
-//     ASSERT(str != NULL);
-//     uint32_t n = strlen(str);
-//     ASSERT(n > 0);
-//     for (uint32_t i = 0; i < n; i++)
-//     {
-//         size_t g = _font_atlas_glyph(atlas, str, i);
-//         for (uint32_t j = 0; j < 4; j++)
-//         {
-//             glm_vec3_copy(pos, vertices[4 * i + j].pos);
-//             glm_vec3_copy(shift, vertices[4 * i + j].shift);
-//             glm_vec3_copy(anchor, vertices[4 * i + j].anchor);
-//             vertices[4 * i + j].angle = angle;
-
-//             // Color.
-//             if (char_colors != NULL)
-//                 memcpy(vertices[4 * i + j].color, char_colors[i], sizeof(cvec4));
-
-//             // Glyph size.
-//             _font_atlas_glyph_size(atlas, font_size, vertices[4 * i + j].glyph_size);
-
-//             // Glyph.
-//             vertices[4 * i + j].glyph[0] = g;       // char
-//             vertices[4 * i + j].glyph[1] = i;       // char idx
-//             vertices[4 * i + j].glyph[2] = n;       // str len
-//             vertices[4 * i + j].glyph[3] = str_idx; // str idx
-//         }
-//     }
-// }
 
 
 

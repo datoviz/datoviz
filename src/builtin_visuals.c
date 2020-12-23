@@ -1,5 +1,5 @@
 #include "../include/visky/builtin_visuals.h"
-#include "../include/visky/scene.h"
+// #include "../include/visky/scene.h"
 
 
 
@@ -263,7 +263,6 @@ static void _add_ticks(
 static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
 {
     ASSERT(visual != NULL);
-    // VklScene* scene = visual->canvas->scene;
 
     // segment graphics vertex buffer
     VklSource* seg_vert_src = vkl_bake_source(visual, VKL_SOURCE_TYPE_VERTEX, 0);
@@ -366,7 +365,7 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
         text = ((char**)prop->arr_orig.data)[i];
         ASSERT(text != NULL);
         ASSERT(strlen(text) > 0);
-        str_item.font_size = 20;
+        str_item.font_size = 30;
         str_item.string = text;
 
         // TODO

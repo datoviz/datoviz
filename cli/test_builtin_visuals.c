@@ -153,6 +153,7 @@ int test_visuals_axes_2D(TestContext* context)
     vkl_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});
 
     VklFontAtlas font_atlas = _font_texture(gpu->context);
+    ASSERT(strlen(font_atlas.font_str) > 0);
 
     VklVisual visual = vkl_visual(canvas);
 
