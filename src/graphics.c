@@ -202,7 +202,7 @@ static void _graphics_text_callback(VklGraphicsData* data, uint32_t item_count, 
 
     ASSERT(item_count > 0);
     vkl_array_resize(data->vertices, 4 * item_count);
-    VklFontAtlas* atlas = data->user_data;
+    VklFontAtlas* atlas = vkl_font_atlas(data->graphics->gpu->context);
     ASSERT(atlas != NULL);
 
     if (item == NULL)
