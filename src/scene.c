@@ -16,11 +16,11 @@ static void _common_data(VklPanel* panel, VklVisual* visual, VklViewportClip cli
     ASSERT(visual != NULL);
 
     // Binding 0: MVP binding
-    vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 0, panel->br_mvp);
+    vkl_visual_buffer(visual, VKL_SOURCE_TYPE_MVP, 0, panel->br_mvp);
 
     // Binding 1: viewport
     visual->viewport = panel->viewport;
-    vkl_visual_data_buffer(visual, VKL_SOURCE_UNIFORM, 1, 0, 1, 1, &visual->viewport);
+    vkl_visual_data_buffer(visual, VKL_SOURCE_TYPE_VIEWPORT, 0, 0, 1, 1, &visual->viewport);
 
     // // Binding 2: color texture
     // // TODO
@@ -86,7 +86,8 @@ static void _scene_fill(VklCanvas* canvas, VklPrivateEvent ev)
                 visual->viewport.clip = visual->clip;
 
                 // Update the viewport struct of the visual
-                vkl_visual_data_buffer(visual, VKL_SOURCE_UNIFORM, 1, 0, 1, 1, &visual->viewport);
+                vkl_visual_data_buffer(
+                    visual, VKL_SOURCE_TYPE_VIEWPORT, 0, 0, 1, 1, &visual->viewport);
 
                 vkl_visual_fill_event(visual, ev.u.rf.clear_color, cmds, img_idx, viewport, NULL);
             }
@@ -559,7 +560,8 @@ VklVisual* vkl_scene_visual(VklPanel* panel, VklVisualType type, int flags)
     INSTANCE_NEW(VklVisual, visual, scene->visuals, scene->max_visuals)
 
     // Create the visual.
-    *visual = vkl_visual_builtin(scene->canvas, type, flags);
+    *visual = vkl_visual(panel->grid->canvas);
+    vkl_visual_builtin(visual, type, flags);
 
     // Add it to the panel.
     vkl_panel_visual(panel, visual);

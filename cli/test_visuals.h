@@ -21,18 +21,18 @@ static void _marker_visual(VklVisual* visual)
     {
         // Vertex buffer.
         vkl_visual_source( //
-            visual, VKL_SOURCE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklVertex), 0);
+            visual, VKL_SOURCE_TYPE_VERTEX, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklVertex), 0);
 
 
 
         // Binding #0: uniform buffer MVP
         vkl_visual_source( //
-            visual, VKL_SOURCE_UNIFORM, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklMVP),
+            visual, VKL_SOURCE_TYPE_MVP, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklMVP),
             VKL_SOURCE_FLAG_IMMEDIATE);
 
         // Binding #1: uniform buffer viewport
         vkl_visual_source(
-            visual, VKL_SOURCE_UNIFORM, 1, VKL_PIPELINE_GRAPHICS, 0, 1, sizeof(VklViewport), 0);
+            visual, VKL_SOURCE_TYPE_VIEWPORT, VKL_PIPELINE_GRAPHICS, 0, 1, sizeof(VklViewport), 0);
 
         // // Binding #2: color texture
         // vkl_visual_source( //
@@ -40,42 +40,43 @@ static void _marker_visual(VklVisual* visual)
 
         // Binding #2: uniform buffer params
         vkl_visual_source(
-            visual, VKL_SOURCE_UNIFORM, 2, VKL_PIPELINE_GRAPHICS, 0, 2,
+            visual, VKL_SOURCE_TYPE_PARAM, VKL_PIPELINE_GRAPHICS, 0, 2,
             sizeof(VklGraphicsPointParams), 0);
     }
 
     // Props.
     {
         // Vertex pos.
-        vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_VEC3, VKL_SOURCE_VERTEX, 0);
+        vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_VEC3, VKL_SOURCE_TYPE_VERTEX, 0);
         vkl_visual_prop_copy(
             visual, VKL_PROP_POS, 0, 0, offsetof(VklVertex, pos), VKL_ARRAY_COPY_SINGLE, 1);
 
         // Vertex color.
-        vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_VERTEX, 0);
+        vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
         vkl_visual_prop_copy(
             visual, VKL_PROP_COLOR, 0, 1, offsetof(VklVertex, color), VKL_ARRAY_COPY_SINGLE, 1);
 
         // MVP
         // Model.
-        vkl_visual_prop(visual, VKL_PROP_MODEL, 0, VKL_DTYPE_MAT4, VKL_SOURCE_UNIFORM, 0);
+        vkl_visual_prop(visual, VKL_PROP_MODEL, 0, VKL_DTYPE_MAT4, VKL_SOURCE_TYPE_MVP, 0);
         vkl_visual_prop_copy(
             visual, VKL_PROP_MODEL, 0, 0, offsetof(VklMVP, model), VKL_ARRAY_COPY_SINGLE, 1);
 
         // View.
-        vkl_visual_prop(visual, VKL_PROP_VIEW, 0, VKL_DTYPE_MAT4, VKL_SOURCE_UNIFORM, 0);
+        vkl_visual_prop(visual, VKL_PROP_VIEW, 0, VKL_DTYPE_MAT4, VKL_SOURCE_TYPE_MVP, 0);
         vkl_visual_prop_copy(
             visual, VKL_PROP_VIEW, 0, 1, offsetof(VklMVP, view), VKL_ARRAY_COPY_SINGLE, 1);
 
         // Proj.
-        vkl_visual_prop(visual, VKL_PROP_PROJ, 0, VKL_DTYPE_MAT4, VKL_SOURCE_UNIFORM, 0);
+        vkl_visual_prop(visual, VKL_PROP_PROJ, 0, VKL_DTYPE_MAT4, VKL_SOURCE_TYPE_MVP, 0);
         vkl_visual_prop_copy(
             visual, VKL_PROP_PROJ, 0, 2, offsetof(VklMVP, proj), VKL_ARRAY_COPY_SINGLE, 1);
 
 
 
         // Param: marker size.
-        vkl_visual_prop(visual, VKL_PROP_MARKER_SIZE, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_UNIFORM, 2);
+        vkl_visual_prop(
+            visual, VKL_PROP_MARKER_SIZE, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_PARAM, 0);
         vkl_visual_prop_copy(
             visual, VKL_PROP_MARKER_SIZE, 0, 0, offsetof(VklGraphicsPointParams, point_size),
             VKL_ARRAY_COPY_SINGLE, 1);

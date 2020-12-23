@@ -70,7 +70,7 @@ static void _update_interact(VklCanvas* canvas, VklPrivateEvent ev)
 
     VklViewport viewport = vkl_viewport_full(canvas);
     vkl_interact_update(&scene->interact, viewport, &canvas->mouse, &canvas->keyboard);
-    VklSource* source = vkl_bake_source(&scene->visual, VKL_SOURCE_UNIFORM, 0);
+    VklSource* source = vkl_bake_source(&scene->visual, VKL_SOURCE_TYPE_MVP, 0);
     VklBufferRegions* br = &source->u.br;
     void* aligned = aligned_repeat(br->size, &scene->interact.mvp, 1, br->alignment);
     vkl_buffer_regions_upload(br, canvas->swapchain.img_idx, aligned);
@@ -101,16 +101,16 @@ static void _add_visual(
         RANDN_POS(vertices[i].pos)
         RAND_COLOR(vertices[i].color)
     }
-    vkl_visual_data_buffer(visual, VKL_SOURCE_VERTEX, 0, 0, N, N, vertices);
+    vkl_visual_data_buffer(visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, N, N, vertices);
 
     VklMVP mvp = {0};
     glm_mat4_identity(mvp.model);
     glm_mat4_identity(mvp.view);
     glm_mat4_identity(mvp.proj);
 
-    vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 0, br_mvp);
-    vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 1, br_viewport);
-    vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 2, br_params);
+    vkl_visual_buffer(visual, VKL_SOURCE_TYPE_MVP, 0, br_mvp);
+    vkl_visual_buffer(visual, VKL_SOURCE_TYPE_VIEWPORT, 0, br_viewport);
+    vkl_visual_buffer(visual, VKL_SOURCE_TYPE_PARAM, 0, br_params);
     // vkl_visual_texture(visual, VKL_SOURCE_TEXTURE_2D, 0, tex_color);
 
     // Upload the data to the GPU.

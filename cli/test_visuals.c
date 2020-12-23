@@ -33,8 +33,6 @@ int test_visuals_1(TestContext* context)
     VklBufferRegions br_viewport = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
     VklBufferRegions br_params =
         vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointParams));
-    // VklTexture* tex_color = vkl_ctx_texture(ctx, 2, (uvec3){16, 16, 1},
-    // VK_FORMAT_R8G8B8A8_UNORM);
 
     // Binding data.
     VklMVP mvp = {0};
@@ -65,18 +63,16 @@ int test_visuals_1(TestContext* context)
         //     vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, N * sizeof(VklVertex));
         // vkl_upload_buffers(ctx, br_vert, 0, N * sizeof(VklVertex), vertices);
         // visual.vertex_count = N;
-        // vkl_visual_buffer(&visual, VKL_SOURCE_VERTEX, 0, br_vert);
+        // vkl_visual_buffer(&visual, VKL_SOURCE_TYPE_VERTEX, 0, br_vert);
 
         // Via user-provided data (underlying vertex buffer created automatically).
-        vkl_visual_data_buffer(&visual, VKL_SOURCE_VERTEX, 0, 0, N, N, vertices);
+        vkl_visual_data_buffer(&visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, N, N, vertices);
     }
 
     // Set uniform buffers.
-    vkl_visual_buffer(&visual, VKL_SOURCE_UNIFORM, 0, br_mvp);
-    vkl_visual_buffer(&visual, VKL_SOURCE_UNIFORM, 1, br_viewport);
-    vkl_visual_buffer(&visual, VKL_SOURCE_UNIFORM, 2, br_params);
-
-    // vkl_visual_texture(&visual, VKL_SOURCE_TEXTURE_2D, 0, tex_color);
+    vkl_visual_buffer(&visual, VKL_SOURCE_TYPE_MVP, 0, br_mvp);
+    vkl_visual_buffer(&visual, VKL_SOURCE_TYPE_VIEWPORT, 0, br_viewport);
+    vkl_visual_buffer(&visual, VKL_SOURCE_TYPE_PARAM, 0, br_params);
 
     // Upload the data to the GPU.
     VklViewport viewport = vkl_viewport_full(canvas);
@@ -133,19 +129,8 @@ int test_visuals_2(TestContext* context)
     float param = 5.0f;
     vkl_visual_data(&visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
 
-    // // Color texture.
-    // cvec4* colormaps = calloc(16 * 16, sizeof(cvec4));
-    // for (uint32_t i = 0; i < 16; i++)
-    //     for (uint32_t j = 0; j < 16; j++)
-    //     {
-    //         colormaps[16 * i + j][0] = i * 16;
-    //         colormaps[16 * i + j][1] = j * 16;
-    //         colormaps[16 * i + j][3] = 255;
-    //     }
-    // vkl_visual_data_texture(&visual, VKL_PROP_COLOR_TEXTURE, 0, 16, 16, 1, colormaps);
-
     // GPU bindings.
-    vkl_visual_buffer(&visual, VKL_SOURCE_UNIFORM, 1, br_viewport);
+    vkl_visual_buffer(&visual, VKL_SOURCE_TYPE_VIEWPORT, 0, br_viewport);
 
     // Upload the data to the GPU..
     VklViewport viewport = vkl_viewport_full(canvas);
@@ -159,7 +144,6 @@ int test_visuals_2(TestContext* context)
     vkl_visual_destroy(&visual);
     FREE(pos);
     FREE(color);
-    // FREE(colormaps);
     TEST_END
 }
 
@@ -212,7 +196,7 @@ int test_visuals_3(TestContext* context)
 
     br_mvp = vkl_ctx_buffers(
         ctx, VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE, canvas->swapchain.img_count, sizeof(VklMVP));
-    vkl_visual_buffer(&visual, VKL_SOURCE_UNIFORM, 0, br_mvp);
+    vkl_visual_buffer(&visual, VKL_SOURCE_TYPE_MVP, 0, br_mvp);
 
     // MVP.
     mat4 id = GLM_MAT4_IDENTITY_INIT;
@@ -227,12 +211,8 @@ int test_visuals_3(TestContext* context)
     float param = 5.0f;
     vkl_visual_data(&visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
 
-    // // Color texture.
-    // cvec4* colormaps = calloc(16 * 16, sizeof(cvec4));
-    // vkl_visual_data_texture(&visual, VKL_PROP_COLOR_TEXTURE, 0, 16, 16, 1, colormaps);
-
     // GPU bindings.
-    vkl_visual_buffer(&visual, VKL_SOURCE_UNIFORM, 1, br_viewport);
+    vkl_visual_buffer(&visual, VKL_SOURCE_TYPE_VIEWPORT, 0, br_viewport);
 
     // Upload the data to the GPU.
     VklViewport viewport = vkl_viewport_full(canvas);

@@ -38,10 +38,8 @@ static void _common_data(VklVisual* visual)
     vkl_visual_data(visual, VKL_PROP_VIEW, 0, 1, MAT4_ID);
     vkl_visual_data(visual, VKL_PROP_PROJ, 0, 1, MAT4_ID);
 
-    // vkl_visual_data_texture(visual, VKL_PROP_COLOR_TEXTURE, 0, 1, 1, 1, NULL);
-
     br_viewport = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklViewport));
-    vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 1, br_viewport);
+    vkl_visual_buffer(visual, VKL_SOURCE_TYPE_VIEWPORT, 0, br_viewport);
     viewport = vkl_viewport_full(canvas);
     vkl_upload_buffers(ctx, br_viewport, 0, sizeof(VklViewport), &viewport);
 
@@ -76,7 +74,8 @@ int test_visuals_marker_raw(TestContext* context)
 {
     INIT;
 
-    VklVisual visual = vkl_visual_builtin(canvas, VKL_VISUAL_MARKER, 0);
+    VklVisual visual = vkl_visual(canvas);
+    vkl_visual_builtin(&visual, VKL_VISUAL_MARKER, 0);
 
     const uint32_t N = 1000;
     vec3* pos = calloc(N, sizeof(vec3));
@@ -108,7 +107,8 @@ int test_visuals_segment_raw(TestContext* context)
     INIT;
     // vkl_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});
 
-    VklVisual visual = vkl_visual_builtin(canvas, VKL_VISUAL_SEGMENT, 0);
+    VklVisual visual = vkl_visual(canvas);
+    vkl_visual_builtin(&visual, VKL_VISUAL_SEGMENT, 0);
 
     const uint32_t N = 100;
     vec3* pos0 = calloc(N, sizeof(vec3));
@@ -148,8 +148,12 @@ int test_visuals_axes_2D(TestContext* context)
     INIT;
     vkl_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});
 
-    VklVisual visualx = vkl_visual_builtin(canvas, VKL_VISUAL_AXES_2D, 0);
-    VklVisual visualy = vkl_visual_builtin(canvas, VKL_VISUAL_AXES_2D, 1);
+
+    VklVisual visualx = vkl_visual(canvas);
+    VklVisual visualy = vkl_visual(canvas);
+
+    vkl_visual_builtin(&visualx, VKL_VISUAL_AXES_2D, 0);
+    vkl_visual_builtin(&visualy, VKL_VISUAL_AXES_2D, 1);
 
     const uint32_t N = 10;
     float* xticks = calloc(N, sizeof(float));

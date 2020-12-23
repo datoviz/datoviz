@@ -106,7 +106,7 @@ typedef enum
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-VKY_EXPORT VklVisual vkl_visual_builtin(VklCanvas* canvas, VklVisualType type, int flags);
+VKY_EXPORT void vkl_visual_builtin(VklVisual* visual, VklVisualType type, int flags);
 
 
 

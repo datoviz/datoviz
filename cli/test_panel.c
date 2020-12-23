@@ -83,7 +83,8 @@ int test_panel_1(TestContext* context)
 
     VklGrid grid = vkl_grid(canvas, 2, 3);
 
-    VklVisual visual = vkl_visual_builtin(canvas, VKL_VISUAL_MARKER, 0);
+    VklVisual visual = vkl_visual(canvas);
+    vkl_visual_builtin(&visual, VKL_VISUAL_MARKER, 0);
 
     vkl_panel_visual(vkl_panel(&grid, 0, 0), &visual);
 
@@ -110,7 +111,7 @@ int test_panel_1(TestContext* context)
         vkl_visual_data(&visual, VKL_PROP_PROJ, 0, 1, id);
 
         // vkl_visual_data_texture(&visual, VKL_PROP_COLOR_TEXTURE, 0, 1, 1, 1, NULL);
-        vkl_visual_data_buffer(&visual, VKL_SOURCE_UNIFORM, 1, 0, 1, 1, NULL);
+        vkl_visual_data_buffer(&visual, VKL_SOURCE_TYPE_MVP, 0, 0, 1, 1, NULL);
     }
 
     VklViewport viewport = vkl_viewport_full(canvas);

@@ -184,7 +184,7 @@ int test_scene_axes(TestContext* context)
         params.grid_size[1] = (int32_t)scene->font_atlas.cols;
         params.tex_size[0] = (int32_t)scene->font_atlas.width;
         params.tex_size[1] = (int32_t)scene->font_atlas.height;
-        vkl_visual_data_buffer(visualx, VKL_SOURCE_UNIFORM, 4, 0, 1, 1, &params);
+        vkl_visual_data_buffer(visualx, VKL_SOURCE_TYPE_PARAM, 1, 0, 1, 1, &params);
     }
 
     // Tick color

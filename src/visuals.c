@@ -26,11 +26,52 @@ static bool _uniform_source_is_immediate(VklSource* source)
 
 
 
+static VklSourceKind _get_source_kind(VklSourceType type)
+{
+    switch (type)
+    {
+    case VKL_SOURCE_TYPE_MVP:
+    case VKL_SOURCE_TYPE_VIEWPORT:
+    case VKL_SOURCE_TYPE_PARAM:
+        return VKL_SOURCE_UNIFORM;
+        break;
+
+    case VKL_SOURCE_TYPE_VERTEX:
+        return VKL_SOURCE_VERTEX;
+
+    case VKL_SOURCE_TYPE_INDEX:
+        return VKL_SOURCE_INDEX;
+
+    case VKL_SOURCE_TYPE_IMAGE:
+    case VKL_SOURCE_TYPE_COLOR_TEXTURE:
+    case VKL_SOURCE_TYPE_FONT_ATLAS:
+        return VKL_SOURCE_TEXTURE_2D;
+
+    case VKL_SOURCE_TYPE_VOLUME:
+        return VKL_SOURCE_TEXTURE_3D;
+
+    default:
+        log_error("source type %d not yet supported", type);
+        return VKL_SOURCE_TYPE_NONE;
+        break;
+    }
+}
+
+
+
 static bool _source_is_texture(VklSourceKind source_kind)
 {
     return source_kind == VKL_SOURCE_TEXTURE_1D || //
            source_kind == VKL_SOURCE_TEXTURE_2D || //
            source_kind == VKL_SOURCE_TEXTURE_3D;
+}
+
+
+
+static bool _source_is_buffer(VklSourceKind source_kind)
+{
+    return source_kind == VKL_SOURCE_UNIFORM || source_kind == VKL_SOURCE_STORAGE ||
+           source_kind == VKL_SOURCE_VERTEX || source_kind == VKL_SOURCE_INDEX;
 }
 
 
@@ -90,8 +131,7 @@ static VkFormat _get_texture_format(VklVisual* visual, VklSource* source)
 
     for (uint32_t i = 0; i < visual->prop_count; i++)
     {
-        if (visual->props[i].source_kind == source->source_kind &&
-            visual->props[i].source_idx == source->source_idx)
+        if (visual->props[i].source == source)
         {
             // Check that there is only 1 prop associated to the texture source.
             if (dtype != VKL_DTYPE_NONE)
@@ -176,7 +216,7 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
     ASSERT(is_obj_created(&visual->graphics[0]->obj));
     ASSERT(is_obj_created(&visual->bindings[0].obj));
 
-    VklSource* vertex_source = vkl_bake_source(visual, VKL_SOURCE_VERTEX, 0);
+    VklSource* vertex_source = vkl_bake_source(visual, VKL_SOURCE_TYPE_VERTEX, 0);
     VklBufferRegions* vertex_buf = &vertex_source->u.br;
     ASSERT(vertex_buf != NULL);
     if (vertex_buf->count == 0)
@@ -201,7 +241,7 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
     // Bind the index buffer if there is one.
     if (index_count > 0)
     {
-        VklSource* index_source = vkl_bake_source(visual, VKL_SOURCE_INDEX, 0);
+        VklSource* index_source = vkl_bake_source(visual, VKL_SOURCE_TYPE_INDEX, 0);
         VklBufferRegions* index_buf = &index_source->u.br;
         ASSERT(index_buf != NULL);
         ASSERT(index_buf->count > 0);
@@ -296,11 +336,11 @@ static void _default_visual_bake(VklVisual* visual, VklVisualDataEvent ev)
     ASSERT(visual != NULL);
 
     // VERTEX source.
-    VklSource* source = vkl_bake_source(visual, VKL_SOURCE_VERTEX, 0);
+    VklSource* source = vkl_bake_source(visual, VKL_SOURCE_TYPE_VERTEX, 0);
     _bake_source(visual, source);
 
     // INDEX source.
-    source = vkl_bake_source(visual, VKL_SOURCE_INDEX, 0);
+    source = vkl_bake_source(visual, VKL_SOURCE_TYPE_INDEX, 0);
     _bake_source(visual, source);
 }
 
@@ -353,30 +393,29 @@ void vkl_visual_destroy(VklVisual* visual)
 /*************************************************************************************************/
 
 void vkl_visual_source(
-    VklVisual* visual, VklSourceKind source_kind, uint32_t source_idx, //
-    VklPipelineType pipeline, uint32_t pipeline_idx, uint32_t slot_idx, VkDeviceSize item_size,
-    int flags)
+    VklVisual* visual, VklSourceType source_type, VklPipelineType pipeline, uint32_t pipeline_idx,
+    uint32_t slot_idx, VkDeviceSize item_size, int flags)
 {
     ASSERT(visual != NULL);
     ASSERT(visual->source_count < VKL_MAX_VISUAL_SOURCES);
-    ASSERT(vkl_bake_source(visual, source_kind, source_idx) == NULL);
+    ASSERT(vkl_bake_source(visual, source_type, pipeline_idx) == NULL);
 
     VklSource source = {0};
     source.obj.type = VKL_OBJECT_TYPE_SOURCE;
     source.obj.status = VKL_OBJECT_STATUS_INIT;
-    source.source_kind = source_kind;
-    source.source_idx = source_idx;
+    source.source_type = source_type;
+    source.source_kind = _get_source_kind(source_type);
     source.pipeline = pipeline;
     source.pipeline_idx = pipeline_idx;
     source.slot_idx = slot_idx;
     source.flags = flags;
 
-    if (source_kind < VKL_SOURCE_TEXTURE_1D)
+    if (source.source_kind < VKL_SOURCE_TEXTURE_1D)
         source.arr = vkl_array_struct(0, item_size);
     else
     {
         // Textures.
-        uint32_t ndims = _get_texture_ndims(source_kind);
+        uint32_t ndims = _get_texture_ndims(source.source_kind);
         source.arr = vkl_array_3D(ndims, 0, 0, 0, item_size);
     }
 
@@ -384,7 +423,7 @@ void vkl_visual_source(
     source.origin = VKL_SOURCE_ORIGIN_NONE;
 
     // NOTE: exception for INDEX source, most frequently automatically handled by the library
-    if (source_kind == VKL_SOURCE_INDEX)
+    if (source.source_kind == VKL_SOURCE_INDEX)
     {
         source.origin = VKL_SOURCE_ORIGIN_LIB;
         source.obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
@@ -396,7 +435,7 @@ void vkl_visual_source(
 
 void vkl_visual_prop(
     VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, VklDataType dtype,
-    VklSourceKind source_kind, uint32_t source_idx)
+    VklSourceType source_type, uint32_t pipeline_idx)
 {
     ASSERT(visual != NULL);
     ASSERT(visual->prop_count < VKL_MAX_VISUAL_PROPS);
@@ -406,11 +445,15 @@ void vkl_visual_prop(
     prop.prop_type = prop_type;
     prop.prop_idx = prop_idx;
     prop.dtype = dtype;
-    prop.source_kind = source_kind;
-    prop.source_idx = source_idx;
+    prop.source = vkl_bake_source(visual, source_type, pipeline_idx);
+    if (prop.source == NULL)
+    {
+        log_error("source of type %d #%d not found", source_type, pipeline_idx);
+    }
+    ASSERT(prop.source != NULL);
 
     // NOTE: we do not use prop arrays for texture sources at the moment
-    if (source_kind < VKL_SOURCE_TEXTURE_1D)
+    if (prop.source->source_kind < VKL_SOURCE_TEXTURE_1D)
         prop.arr_orig = vkl_array(0, prop.dtype);
 
     visual->props[visual->prop_count++] = prop;
@@ -525,9 +568,11 @@ void vkl_visual_data_partial(
     vkl_array_data(&prop->arr_orig, first_item, item_count, data_item_count, data);
 
     // Get the associated source.
-    VklSource* source = vkl_bake_source(visual, prop->source_kind, prop->source_idx);
+    VklSource* source = prop->source;
+    ASSERT(source != NULL);
     if (source != NULL)
     {
+        log_debug("source type %d #%d handled by lib", source->source_type, source->pipeline_idx);
         source->origin = VKL_SOURCE_ORIGIN_LIB;
         source->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
         visual->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
@@ -536,8 +581,20 @@ void vkl_visual_data_partial(
 
 
 
+static VklSource* _assert_source_exists(VklVisual* visual, VklSourceType source_type, uint32_t idx)
+{
+    VklSource* source = vkl_bake_source(visual, source_type, idx);
+    if (source == NULL)
+    {
+        log_error("source of type %d #%d not found", source_type, idx);
+        return NULL;
+    }
+    ASSERT(source != NULL);
+    return source;
+}
+
 void vkl_visual_data_buffer(
-    VklVisual* visual, VklSourceKind source_kind, uint32_t idx, //
+    VklVisual* visual, VklSourceType source_type, uint32_t idx, //
     uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data)
 {
     ASSERT(visual != NULL);
@@ -546,8 +603,7 @@ void vkl_visual_data_buffer(
     ASSERT(data_item_count > 0);
 
     // Get the associated source.
-    VklSource* source = vkl_bake_source(visual, source_kind, idx);
-    ASSERT(source != NULL);
+    VklSource* source = _assert_source_exists(visual, source_type, idx);
 
     // When setting the vertex buffer directly, update the visual's vertex count.
     if (source->source_kind == VKL_SOURCE_VERTEX)
@@ -581,7 +637,7 @@ void vkl_visual_data_texture(
     ASSERT(prop != NULL);
 
     // Get the associated source.
-    VklSource* source = vkl_bake_source(visual, prop->source_kind, prop->source_idx);
+    VklSource* source = prop->source;
     ASSERT(source != NULL);
 
     // NOTE: with array 3D props, the data is put directly to the source and not to the prop.
@@ -601,16 +657,11 @@ void vkl_visual_data_texture(
 // Means that no data updates will be done by visky, it is up to the user to update the bound
 // buffer
 void vkl_visual_buffer(
-    VklVisual* visual, VklSourceKind source_kind, uint32_t idx, VklBufferRegions br)
+    VklVisual* visual, VklSourceType source_type, uint32_t idx, VklBufferRegions br)
 {
     ASSERT(visual != NULL);
     ASSERT(visual != NULL);
-    VklSource* source = vkl_bake_source(visual, source_kind, idx);
-    if (source == NULL)
-    {
-        log_error("Data source for source %d #%d could not be found", source_kind, idx);
-        return;
-    }
+    VklSource* source = _assert_source_exists(visual, source_type, idx);
     ASSERT(source != NULL);
 
     VkDeviceSize size = br.size;
@@ -623,7 +674,7 @@ void vkl_visual_buffer(
     visual->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
 
     // Set the bindings except for VERTEX and INDEX sources.
-    if (_source_needs_binding(source_kind))
+    if (_source_needs_binding(source->source_kind))
     {
         VklBindings* bindings = _get_bindings(visual, source);
         ASSERT(br.buffer != VK_NULL_HANDLE);
@@ -634,16 +685,11 @@ void vkl_visual_buffer(
 
 
 void vkl_visual_texture(
-    VklVisual* visual, VklSourceKind source_kind, uint32_t idx, VklTexture* texture)
+    VklVisual* visual, VklSourceType source_type, uint32_t idx, VklTexture* texture)
 {
     ASSERT(visual != NULL);
     ASSERT(visual != NULL);
-    VklSource* source = vkl_bake_source(visual, source_kind, idx);
-    if (source == NULL)
-    {
-        log_error("Data source for source %d #%d could not be found", source_kind, idx);
-        return;
-    }
+    VklSource* source = _assert_source_exists(visual, source_type, idx);
     ASSERT(source != NULL);
     ASSERT(texture != NULL);
 
@@ -734,15 +780,21 @@ void vkl_visual_fill_end(VklCanvas* canvas, VklCommands* cmds, uint32_t idx)
 /*  Baking helpers                                                                               */
 /*************************************************************************************************/
 
-VklSource* vkl_bake_source(VklVisual* visual, VklSourceKind source_kind, uint32_t idx)
+VklSource* vkl_bake_source(VklVisual* visual, VklSourceType source_type, uint32_t pipeline_idx)
 {
     ASSERT(visual != NULL);
+    VklSource* source = NULL;
+    VklSource* out = NULL;
     for (uint32_t i = 0; i < visual->source_count; i++)
     {
-        if (visual->sources[i].source_kind == source_kind && visual->sources[i].source_idx == idx)
-            return &visual->sources[i];
+        source = &visual->sources[i];
+        if (source->source_type == source_type && source->pipeline_idx == pipeline_idx)
+        {
+            ASSERT(out == NULL);
+            out = source;
+        }
     }
-    return NULL;
+    return out;
 }
 
 
@@ -772,16 +824,6 @@ void* vkl_bake_prop_item(VklProp* prop, uint32_t idx)
 
 
 
-VklSource* vkl_bake_prop_source(VklVisual* visual, VklProp* prop)
-{
-    ASSERT(visual != NULL);
-    ASSERT(prop != NULL);
-
-    return vkl_bake_source(visual, prop->source_kind, prop->source_idx);
-}
-
-
-
 uint32_t vkl_bake_max_prop_size(VklVisual* visual, VklSource* source)
 {
     ASSERT(visual != NULL);
@@ -793,7 +835,7 @@ uint32_t vkl_bake_max_prop_size(VklVisual* visual, VklSource* source)
     for (uint32_t i = 0; i < visual->prop_count; i++)
     {
         prop = &visual->props[i];
-        if (prop->source_kind == source->source_kind && prop->source_idx == source->source_idx)
+        if (prop->source == source)
         {
             arr = &prop->arr_orig;
             ASSERT(arr != NULL);
@@ -809,7 +851,7 @@ void vkl_bake_prop_copy(VklVisual* visual, VklProp* prop)
 {
     ASSERT(prop != NULL);
 
-    VklSource* source = vkl_bake_source(visual, prop->source_kind, prop->source_idx);
+    VklSource* source = prop->source;
     ASSERT(source != NULL);
 
     VkDeviceSize col_size = _get_dtype_size(prop->dtype);
@@ -845,7 +887,7 @@ void vkl_bake_source_alloc(VklVisual* visual, VklSource* source, uint32_t count)
     //     "source alloc type %d idx %d count %d", //
     //     source->source_kind, source->source_idx, count);
     log_trace(
-        "alloc %d elements for source %d #%d", count, source->source_kind, source->source_idx);
+        "alloc %d elements for source %d #%d", count, source->source_type, source->pipeline_idx);
     VklArray* arr = &source->arr;
     ASSERT(is_obj_created(&arr->obj));
     vkl_array_resize(arr, count);
@@ -868,10 +910,8 @@ void vkl_bake_source_fill(VklVisual* visual, VklSource* source)
     for (uint32_t i = 0; i < visual->prop_count; i++)
     {
         prop = &visual->props[i];
-        if (prop->source_kind == source->source_kind && prop->source_idx == source->source_idx)
-        {
+        if (prop->source == source)
             vkl_bake_prop_copy(visual, prop);
-        }
     }
 }
 
@@ -1016,12 +1056,30 @@ void vkl_visual_update(
     VklCanvas* canvas = visual->canvas;
     VklTexture* texture = NULL;
     VklContext* ctx = visual->canvas->gpu->context;
+    bool to_upload = false;
     for (uint32_t i = 0; i < visual->source_count; i++)
     {
         source = &visual->sources[i];
+        if (source->origin == VKL_SOURCE_ORIGIN_NONE)
+        {
+            log_error("source type %d #%d is not set", source->source_type, source->pipeline_idx);
+        }
+
+        // Upload only for sources manages by visky.
+        to_upload =
+            source->origin == VKL_SOURCE_ORIGIN_LIB || source->origin == VKL_SOURCE_ORIGIN_NOBAKE;
+        if (!to_upload)
+        {
+            log_debug(
+                "skip data upload for source type %d #%d, origin %d, that is handled by user", //
+                source->source_type, source->pipeline_idx, source->origin);
+            continue;
+        }
+
         if (source->obj.status == VKL_OBJECT_STATUS_INIT)
         {
-            log_error("data source %d #%d was never set", source->source_kind, source->source_idx);
+            log_error(
+                "data source %d #%d was never set", source->source_type, source->pipeline_idx);
             continue;
         }
         else if (source->obj.status != VKL_OBJECT_STATUS_NEED_UPDATE)
@@ -1029,68 +1087,61 @@ void vkl_visual_update(
             log_trace("skip data upload for source that doesn't need to be updated");
             continue;
         }
+
         arr = &source->arr;
-        if (_source_is_texture(source->source_kind))
-        {
-            // Only upload if the library is managing the GPU object, otherwise the user
-            // is expected to do it manually
-            if (source->origin == VKL_SOURCE_ORIGIN_LIB ||
-                source->origin == VKL_SOURCE_ORIGIN_NOBAKE)
-            {
-                // Make sure the GPU texture exists and is allocated with the right shape.
-                vkl_visual_texture_alloc(visual, source);
-                texture = source->u.tex;
 
-                ASSERT(texture != NULL);
-                ASSERT(is_obj_created(&texture->obj));
-                // NOTE: the source array MUST have been allocated by the baking function
-                ASSERT(arr->item_count > 0);
-                ASSERT(arr->item_size > 0);
-                ASSERT(arr->ndims >= 1);
-                ASSERT(arr->shape[0] > 0);
-                ASSERT(arr->shape[1] > 0);
-                ASSERT(arr->shape[2] > 0);
-
-                log_debug(
-                    "upload texture for automatically-handled source %d #%d, shape %dx%dx%d", //
-                    source->source_kind, source->source_idx,                                  //
-                    arr->shape[0], arr->shape[1], arr->shape[2]);
-                vkl_upload_texture(ctx, texture, arr->item_count * arr->item_size, arr->data);
-                source->obj.status = VKL_OBJECT_STATUS_CREATED;
-                visual->obj.status = VKL_OBJECT_STATUS_CREATED;
-            }
-        }
-        else
+        // Update buffer sources.
+        if (_source_is_buffer(source->source_kind))
         {
             br = &source->u.br;
 
-            // Only upload if the library is managing the GPU object, otherwise the user
-            // is expected to do it manually
-            if (source->origin == VKL_SOURCE_ORIGIN_LIB ||
-                source->origin == VKL_SOURCE_ORIGIN_NOBAKE)
-            {
-                // NOTE: the source array MUST have been allocated by the baking function,
-                // or directly by the user via vkl_visual_data_buffer() (NOBAKE origin)
-                ASSERT(arr->item_count > 0);
-                ASSERT(arr->item_size > 0);
+            // NOTE: the source array MUST have been allocated by the baking function,
+            // or directly by the user via vkl_visual_data_buffer() (NOBAKE origin)
+            ASSERT(arr->item_count > 0);
+            ASSERT(arr->item_size > 0);
 
-                // Make sure the GPU buffer exists and is allocated with the right size.
-                vkl_visual_buffer_alloc(visual, source);
+            // Make sure the GPU buffer exists and is allocated with the right size.
+            vkl_visual_buffer_alloc(visual, source);
 
-                ASSERT(br->size > 0);
-                ASSERT(br->buffer != VK_NULL_HANDLE);
+            ASSERT(br->size > 0);
+            ASSERT(br->buffer != VK_NULL_HANDLE);
 
-                log_debug(
-                    "upload buffer for automatically-handled source %d #%d", //
-                    source->source_kind, source->source_idx);
+            log_debug(
+                "upload buffer for automatically-handled source %d #%d", //
+                source->source_type, source->pipeline_idx);
 
-                if (_uniform_source_is_immediate(source))
-                    vkl_upload_buffers_immediate(canvas, *br, true, 0, br->size, arr->data);
-                else
-                    vkl_upload_buffers(ctx, *br, 0, br->size, arr->data);
-                source->obj.status = VKL_OBJECT_STATUS_CREATED;
-                visual->obj.status = VKL_OBJECT_STATUS_CREATED;
-            }
+            if (_uniform_source_is_immediate(source))
+                vkl_upload_buffers_immediate(canvas, *br, true, 0, br->size, arr->data);
+            else
+                vkl_upload_buffers(ctx, *br, 0, br->size, arr->data);
+            source->obj.status = VKL_OBJECT_STATUS_CREATED;
+            visual->obj.status = VKL_OBJECT_STATUS_CREATED;
+        }
+
+        // Update textures.
+        else if (_source_is_texture(source->source_kind))
+        {
+            // Make sure the GPU texture exists and is allocated with the right shape.
+            vkl_visual_texture_alloc(visual, source);
+            texture = source->u.tex;
+
+            ASSERT(texture != NULL);
+            ASSERT(is_obj_created(&texture->obj));
+            // NOTE: the source array MUST have been allocated by the baking function
+            ASSERT(arr->item_count > 0);
+            ASSERT(arr->item_size > 0);
+            ASSERT(arr->ndims >= 1);
+            ASSERT(arr->shape[0] > 0);
+            ASSERT(arr->shape[1] > 0);
+            ASSERT(arr->shape[2] > 0);
+
+            log_debug(
+                "upload texture for automatically-handled source %d #%d, shape %dx%dx%d", //
+                source->source_type, source->pipeline_idx,                                //
+                arr->shape[0], arr->shape[1], arr->shape[2]);
+            vkl_upload_texture(ctx, texture, arr->item_count * arr->item_size, arr->data);
+            source->obj.status = VKL_OBJECT_STATUS_CREATED;
+            visual->obj.status = VKL_OBJECT_STATUS_CREATED;
         }
     }
 
