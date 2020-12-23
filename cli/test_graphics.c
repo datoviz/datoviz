@@ -124,6 +124,10 @@ static void _common_bindings(TestGraphics* tg)
     type* vertices = tg.vertices.data;
 
 #define END_DATA                                                                                  \
+    ASSERT(item_count > 0);                                                                       \
+    ASSERT(vertex_count > 0);                                                                     \
+    ASSERT(index_count == 0 || index_count > 0);                                                  \
+    ASSERT(vertices != NULL);                                                                     \
     vkl_upload_buffers(                                                                           \
         gpu->context, tg.br_vert, 0, vertex_count* tg.vertices.item_size, tg.vertices.data);      \
     if (index_count > 0)                                                                          \
@@ -148,7 +152,7 @@ static void _common_bindings(TestGraphics* tg)
 
 
 /*************************************************************************************************/
-/*  Misc graphics tests                                                                          */
+/*  Misc graphics tests */
 /*************************************************************************************************/
 
 static void _graphics_points_wheel_callback(VklCanvas* canvas, VklEvent ev)
@@ -531,7 +535,6 @@ int test_graphics_text(TestContext* context)
     // 26 letters in a circle.
     BEGIN_DATA(VklGraphicsTextVertex, (N + offset), &atlas)
     float t = 0;
-    vec4 z = {0};
     float a = 0, x = 0, y = 0;
     VklGraphicsTextItem item = {0};
     for (uint32_t i = 0; i < N; i++)

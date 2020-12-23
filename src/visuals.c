@@ -88,6 +88,25 @@ static VklBindings* _get_bindings(VklVisual* visual, VklSource* source)
 
 
 
+static void _set_source_bindings(VklVisual* visual, VklSource* source)
+{
+    // Set bindings except for VERTEX and INDEX sources.
+    if (_source_needs_binding(source->source_kind))
+    {
+        VklBindings* bindings = _get_bindings(visual, source);
+        vkl_bindings_buffer(bindings, source->slot_idx, source->u.br);
+
+        // Share the source's buffer regions with other pipelines.
+        for (uint32_t i = 0; i < source->other_count; i++)
+        {
+            vkl_bindings_buffer(
+                &visual->bindings[source->other_idxs[i]], source->slot_idx, source->u.br);
+        }
+    }
+}
+
+
+
 static uint32_t _get_buffer_idx(VklSource* source)
 {
     switch (source->source_kind)
@@ -433,6 +452,17 @@ void vkl_visual_source(
 
 
 
+void vkl_visual_source_share(
+    VklVisual* visual, VklSourceType source_type, uint32_t pipeline_idx, uint32_t other_idx)
+{
+    ASSERT(visual != NULL);
+    VklSource* source = vkl_bake_source(visual, source_type, pipeline_idx);
+    ASSERT(source != NULL);
+    source->other_idxs[source->other_count++] = other_idx;
+}
+
+
+
 void vkl_visual_prop(
     VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, VklDataType dtype,
     VklSourceType source_type, uint32_t pipeline_idx)
@@ -673,13 +703,8 @@ void vkl_visual_buffer(
     source->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
     visual->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
 
-    // Set the bindings except for VERTEX and INDEX sources.
-    if (_source_needs_binding(source->source_kind))
-    {
-        VklBindings* bindings = _get_bindings(visual, source);
-        ASSERT(br.buffer != VK_NULL_HANDLE);
-        vkl_bindings_buffer(bindings, source->slot_idx, source->u.br);
-    }
+    // Set the pipeline bindings with the source buffer.
+    _set_source_bindings(visual, source);
 }
 
 
@@ -943,21 +968,8 @@ void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source)
             _uniform_source_is_immediate(source) ? canvas->swapchain.img_count : 1;
         source->u.br = vkl_ctx_buffers(ctx, _get_buffer_idx(source), buf_count, size);
 
-        // Set bindings except for VERTEX and INDEX sources.
-        if (_source_needs_binding(source->source_kind))
-        {
-            VklBindings* bindings = _get_bindings(visual, source);
-            vkl_bindings_buffer(bindings, source->slot_idx, source->u.br);
-
-            // HACK: copy the buffer to other pipelines
-            if (source->pipeline == VKL_PIPELINE_GRAPHICS)
-            {
-                for (uint32_t i = 0; i < visual->graphics_count; i++)
-                {
-                    vkl_bindings_buffer(&visual->bindings[i], source->slot_idx, source->u.br);
-                }
-            }
-        }
+        // Set the pipeline bindings with the source buffer.
+        _set_source_bindings(visual, source);
     }
     ASSERT(source->u.br.buffer != VK_NULL_HANDLE);
 }
