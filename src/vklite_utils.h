@@ -1334,6 +1334,10 @@ static void update_descriptor_set(
         if (is_descriptor_type_buffer(binding_type))
         {
             log_trace("bind buffer for binding point %d", i);
+            if (buffer_regions[i].buffer == NULL)
+            {
+                log_error("buffer of type %d #%d is not set", binding_type, i);
+            }
             br = &buffer_regions[i];
             ASSERT(buffer_regions[i].buffer != NULL);
             ASSERT(br->size > 0);

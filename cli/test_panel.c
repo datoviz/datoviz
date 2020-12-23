@@ -109,7 +109,7 @@ int test_panel_1(TestContext* context)
         vkl_visual_data(&visual, VKL_PROP_VIEW, 0, 1, id);
         vkl_visual_data(&visual, VKL_PROP_PROJ, 0, 1, id);
 
-        vkl_visual_data_texture(&visual, VKL_PROP_COLOR_TEXTURE, 0, 1, 1, 1, NULL);
+        // vkl_visual_data_texture(&visual, VKL_PROP_COLOR_TEXTURE, 0, 1, 1, 1, NULL);
         vkl_visual_data_buffer(&visual, VKL_SOURCE_UNIFORM, 1, 0, 1, 1, NULL);
     }
 

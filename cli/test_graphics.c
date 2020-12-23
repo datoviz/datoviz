@@ -78,7 +78,8 @@ static void _common_bindings(TestGraphics* tg)
     tg->br_mvp = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklMVP));
     tg->br_viewport =
         vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklViewport));
-    tg->texture = vkl_ctx_texture(gpu->context, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+    // tg->texture = vkl_ctx_texture(gpu->context, 2, (uvec3){16, 16, 1},
+    // VK_FORMAT_R8G8B8A8_UNORM);
 
     // Upload MVP.
     glm_mat4_identity(tg->mvp.model);
@@ -89,7 +90,7 @@ static void _common_bindings(TestGraphics* tg)
     // Bindings
     vkl_bindings_buffer(&tg->bindings, 0, tg->br_mvp);
     vkl_bindings_buffer(&tg->bindings, 1, tg->br_viewport);
-    vkl_bindings_texture(&tg->bindings, 2, tg->texture);
+    // vkl_bindings_texture(&tg->bindings, 2, tg->texture);
 }
 
 
@@ -116,7 +117,7 @@ static void _common_bindings(TestGraphics* tg)
 
 #define BINDINGS_PARAMS                                                                           \
     _common_bindings(&tg);                                                                        \
-    vkl_bindings_buffer(&tg.bindings, 3, tg.br_params);                                           \
+    vkl_bindings_buffer(&tg.bindings, VKL_USER_BINDING, tg.br_params);                            \
     vkl_bindings_update(&tg.bindings);
 
 #define BINDINGS_NO_PARAMS                                                                        \
@@ -169,7 +170,7 @@ int test_graphics_dynamic(TestContext* context)
     tg.br_viewport = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
     tg.br_params = vkl_ctx_buffers(
         gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointParams));
-    tg.texture = vkl_ctx_texture(gpu->context, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+    // tg.texture = vkl_ctx_texture(gpu->context, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
 
     // Upload MVP.
     glm_mat4_identity(tg.mvp.model);
@@ -185,8 +186,8 @@ int test_graphics_dynamic(TestContext* context)
     // Bindings
     vkl_bindings_buffer(&tg.bindings, 0, tg.br_mvp);
     vkl_bindings_buffer(&tg.bindings, 1, tg.br_viewport);
-    vkl_bindings_texture(&tg.bindings, 2, tg.texture);
-    vkl_bindings_buffer(&tg.bindings, 3, tg.br_params);
+    // vkl_bindings_texture(&tg.bindings, 2, tg.texture);
+    vkl_bindings_buffer(&tg.bindings, VKL_USER_BINDING, tg.br_params);
 
     vkl_bindings_update(&tg.bindings);
 
@@ -245,7 +246,7 @@ int test_graphics_3D(TestContext* context)
     tg.br_viewport = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
     tg.br_params = vkl_ctx_buffers(
         gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointParams));
-    tg.texture = vkl_ctx_texture(gpu->context, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+    // tg.texture = vkl_ctx_texture(gpu->context, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
 
     // Upload MVP.
     glm_mat4_identity(tg.mvp.model);
@@ -268,8 +269,8 @@ int test_graphics_3D(TestContext* context)
     // Bindings
     vkl_bindings_buffer(&tg.bindings, 0, tg.br_mvp);
     vkl_bindings_buffer(&tg.bindings, 1, tg.br_viewport);
-    vkl_bindings_texture(&tg.bindings, 2, tg.texture);
-    vkl_bindings_buffer(&tg.bindings, 3, tg.br_params);
+    // vkl_bindings_texture(&tg.bindings, 2, tg.texture);
+    vkl_bindings_buffer(&tg.bindings, VKL_USER_BINDING, tg.br_params);
 
     vkl_bindings_update(&tg.bindings);
 
@@ -555,8 +556,8 @@ int test_graphics_text(TestContext* context)
     vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsTextParams), &params);
 
     _common_bindings(&tg);
-    vkl_bindings_buffer(&tg.bindings, 3, tg.br_params);
-    vkl_bindings_texture(&tg.bindings, 4, atlas.texture);
+    vkl_bindings_buffer(&tg.bindings, VKL_USER_BINDING, tg.br_params);
+    vkl_bindings_texture(&tg.bindings, VKL_USER_BINDING + 1, atlas.texture);
     vkl_bindings_update(&tg.bindings);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_RESIZE, 0, _resize, &tg);

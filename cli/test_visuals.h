@@ -34,13 +34,13 @@ static void _marker_visual(VklVisual* visual)
         vkl_visual_source(
             visual, VKL_SOURCE_UNIFORM, 1, VKL_PIPELINE_GRAPHICS, 0, 1, sizeof(VklViewport), 0);
 
-        // Binding #2: color texture
-        vkl_visual_source( //
-            visual, VKL_SOURCE_TEXTURE_2D, 0, VKL_PIPELINE_GRAPHICS, 0, 2, sizeof(cvec4), 0);
+        // // Binding #2: color texture
+        // vkl_visual_source( //
+        //     visual, VKL_SOURCE_TEXTURE_2D, 0, VKL_PIPELINE_GRAPHICS, 0, 2, sizeof(cvec4), 0);
 
-        // Binding #3: uniform buffer params
+        // Binding #2: uniform buffer params
         vkl_visual_source(
-            visual, VKL_SOURCE_UNIFORM, 2, VKL_PIPELINE_GRAPHICS, 0, 3,
+            visual, VKL_SOURCE_UNIFORM, 2, VKL_PIPELINE_GRAPHICS, 0, 2,
             sizeof(VklGraphicsPointParams), 0);
     }
 
@@ -81,10 +81,10 @@ static void _marker_visual(VklVisual* visual)
             VKL_ARRAY_COPY_SINGLE, 1);
 
 
-        // Colormap texture.
-        vkl_visual_prop(
-            visual, VKL_PROP_COLOR_TEXTURE, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TEXTURE_2D, 0);
-        vkl_visual_prop_copy(visual, VKL_PROP_COLOR_TEXTURE, 0, 0, 0, VKL_ARRAY_COPY_SINGLE, 1);
+        // // Colormap texture.
+        // vkl_visual_prop(
+        //     visual, VKL_PROP_COLOR_TEXTURE, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TEXTURE_2D, 0);
+        // vkl_visual_prop_copy(visual, VKL_PROP_COLOR_TEXTURE, 0, 0, 0, VKL_ARRAY_COPY_SINGLE, 1);
     }
 }
 

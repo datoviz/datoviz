@@ -91,7 +91,8 @@ static void _add_visual(
     VklBufferRegions br_viewport = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
     VklBufferRegions br_params =
         vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointParams));
-    VklTexture* tex_color = vkl_ctx_texture(ctx, 2, (uvec3){16, 16, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+    // VklTexture* tex_color = vkl_ctx_texture(ctx, 2, (uvec3){16, 16, 1},
+    // VK_FORMAT_R8G8B8A8_UNORM);
 
     vkl_upload_buffers(ctx, br_params, 0, sizeof(VklGraphicsPointParams), params);
 
@@ -110,7 +111,7 @@ static void _add_visual(
     vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 0, br_mvp);
     vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 1, br_viewport);
     vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 2, br_params);
-    vkl_visual_texture(visual, VKL_SOURCE_TEXTURE_2D, 0, tex_color);
+    // vkl_visual_texture(visual, VKL_SOURCE_TEXTURE_2D, 0, tex_color);
 
     // Upload the data to the GPU.
     VklViewport viewport = vkl_viewport_full(canvas);

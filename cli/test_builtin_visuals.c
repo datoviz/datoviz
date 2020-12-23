@@ -38,7 +38,7 @@ static void _common_data(VklVisual* visual)
     vkl_visual_data(visual, VKL_PROP_VIEW, 0, 1, MAT4_ID);
     vkl_visual_data(visual, VKL_PROP_PROJ, 0, 1, MAT4_ID);
 
-    vkl_visual_data_texture(visual, VKL_PROP_COLOR_TEXTURE, 0, 1, 1, 1, NULL);
+    // vkl_visual_data_texture(visual, VKL_PROP_COLOR_TEXTURE, 0, 1, 1, 1, NULL);
 
     br_viewport = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklViewport));
     vkl_visual_buffer(visual, VKL_SOURCE_UNIFORM, 1, br_viewport);

@@ -12,7 +12,7 @@
 #define VKL_TRANSFORM_AXIS_Y        3
 #define VKL_TRANSFORM_AXIS_NONE     4
 
-#define USER_BINDING 3
+#define USER_BINDING 2
 
 // NOTE:needs to be a macro and not a function so that it can be safely included in both
 // vertex and fragment shaders (discard is forbidden in the vertex shader)
@@ -65,7 +65,7 @@ layout (std140, binding = 1) uniform Viewport {
     float dpi_scaling;      // DPI scaling
 } viewport;
 
-layout (binding = 2) uniform sampler2D color_tex;
+// layout (binding = 2) uniform sampler2D color_tex;
 
 
 

@@ -56,7 +56,7 @@ typedef enum
 
 
 
-// Source types.
+// Source kinds.
 typedef enum
 {
     VKL_SOURCE_NONE,
@@ -68,6 +68,23 @@ typedef enum
     VKL_SOURCE_TEXTURE_2D, // 6
     VKL_SOURCE_TEXTURE_3D, // 7
 } VklSourceKind;
+
+
+
+// Source types.
+typedef enum
+{
+    VKL_SOURCE_TYPE_NONE,
+    VKL_SOURCE_TYPE_MVP,
+    VKL_SOURCE_TYPE_VIEWPORT,
+    VKL_SOURCE_TYPE_PARAM,
+    VKL_SOURCE_TYPE_VERTEX,
+    VKL_SOURCE_TYPE_INDEX,
+    VKL_SOURCE_TYPE_TEXTURE,
+    VKL_SOURCE_TYPE_COLOR_TEXTURE,
+    VKL_SOURCE_TYPE_FONT_ATLAS,
+    VKL_SOURCE_TYPE_OTHER,
+} VklSourceType;
 
 
 

@@ -16,7 +16,8 @@ END_INCL_NO_WARN
 /*************************************************************************************************/
 
 // Number of common bindings
-#define VKL_USER_BINDING 3
+// NOTE: must correspond to the same constant in common.glsl
+#define VKL_USER_BINDING 2
 
 
 
