@@ -142,6 +142,7 @@ struct VklGraphicsData
     VklArray* vertices;
     VklArray* indices;
     uint32_t item_count;
+    uint32_t current_idx;
 };
 
 
@@ -228,34 +229,34 @@ struct VklGraphicsTextVertex
 /*  Segment utils                                                                                */
 /*************************************************************************************************/
 
-static void _graphics_segment_add(
-    VklGraphicsSegmentVertex* data, VklIndex* indices, uint32_t i, //
-    vec3 P0, vec3 P1, cvec4 color, float linewidth, vec4 shift, VklCapType cap0, VklCapType cap1,
-    VklTransformAxis transform)
-{
-    ASSERT(data != NULL);
-    ASSERT(indices != NULL);
+// static void _graphics_segment_add(
+//     VklGraphicsSegmentVertex* data, VklIndex* indices, uint32_t i, //
+//     vec3 P0, vec3 P1, cvec4 color, float linewidth, vec4 shift, VklCapType cap0, VklCapType
+//     cap1, VklTransformAxis transform)
+// {
+//     ASSERT(data != NULL);
+//     ASSERT(indices != NULL);
 
-    for (uint32_t j = 0; j < 4; j++)
-    {
-        glm_vec3_copy(P0, data[4 * i + j].P0);
-        glm_vec3_copy(P1, data[4 * i + j].P1);
-        memcpy(data[4 * i + j].color, color, sizeof(cvec4));
-        glm_vec4_copy(shift, data[4 * i + j].shift);
+//     for (uint32_t j = 0; j < 4; j++)
+//     {
+//         glm_vec3_copy(P0, data[4 * i + j].P0);
+//         glm_vec3_copy(P1, data[4 * i + j].P1);
+//         memcpy(data[4 * i + j].color, color, sizeof(cvec4));
+//         glm_vec4_copy(shift, data[4 * i + j].shift);
 
-        data[4 * i + j].linewidth = linewidth;
-        data[4 * i + j].cap0 = cap0;
-        data[4 * i + j].cap1 = cap1;
-        data[4 * i + j].transform = transform;
-    }
+//         data[4 * i + j].linewidth = linewidth;
+//         data[4 * i + j].cap0 = cap0;
+//         data[4 * i + j].cap1 = cap1;
+//         data[4 * i + j].transform = transform;
+//     }
 
-    indices[6 * i + 0] = 4 * i + 0;
-    indices[6 * i + 1] = 4 * i + 1;
-    indices[6 * i + 2] = 4 * i + 2;
-    indices[6 * i + 3] = 4 * i + 0;
-    indices[6 * i + 4] = 4 * i + 2;
-    indices[6 * i + 5] = 4 * i + 3;
-}
+//     indices[6 * i + 0] = 4 * i + 0;
+//     indices[6 * i + 1] = 4 * i + 1;
+//     indices[6 * i + 2] = 4 * i + 2;
+//     indices[6 * i + 3] = 4 * i + 0;
+//     indices[6 * i + 4] = 4 * i + 2;
+//     indices[6 * i + 5] = 4 * i + 3;
+// }
 
 
 

@@ -153,7 +153,7 @@ static float VKL_DEFAULT_AXES_LINE_WIDTH = 2.0f;
 
 static uint32_t _count_prop_items(
     VklVisual* visual, uint32_t prop_count, VklPropType* prop_types, //
-    uint32_t idx_count, uint32_t* indices)
+    uint32_t idx_count)
 {
     ASSERT(visual != NULL);
     uint32_t count = 0;
@@ -262,8 +262,9 @@ static void _add_ticks(
             }
         }
 
-        _graphics_segment_add(
-            vertices, indices, offset + i, P0, P1, color, lw, shift, cap, cap, transform);
+        // TODO
+        // _graphics_segment_add(
+        //     vertices, indices, offset + i, P0, P1, color, lw, shift, cap, cap, transform);
     }
 }
 
@@ -275,12 +276,12 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
     // segment graphics vertex buffer
     VklSource* seg_vert_src = vkl_bake_source(visual, VKL_SOURCE_TYPE_VERTEX, 0);
     VklSource* seg_index_src = vkl_bake_source(visual, VKL_SOURCE_TYPE_INDEX, 0);
+
     // text graphics vertex buffer
     VklSource* text_vert_src = vkl_bake_source(visual, VKL_SOURCE_TYPE_VERTEX, 1);
 
     // Count the total number of segments.
-    uint32_t count =
-        _count_prop_items(visual, 1, (VklPropType[]){VKL_PROP_POS}, 4, (uint32_t[]){0, 1, 2, 3});
+    uint32_t count = _count_prop_items(visual, 1, (VklPropType[]){VKL_PROP_POS}, 4);
 
     // Allocate the vertex and index buffer.
     vkl_bake_source_alloc(visual, seg_vert_src, 4 * count);
@@ -377,6 +378,7 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
 
     // Labels: one for each major tick.
     prop = vkl_bake_prop(visual, VKL_PROP_TEXT, 0);
+    ASSERT(prop != NULL);
     uint32_t slen = 0;
     char* text = NULL;
     vec2 anchor = {0};
@@ -475,7 +477,9 @@ static void _visual_axes_2D(VklVisual* visual)
 
         // tick h margin
         vkl_visual_prop(visual, VKL_PROP_MARGIN, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_VERTEX, 0);
+
         // TODO: default
+        _common_props(visual, 0); // segment graphics
     }
 
     // Text graphics props.
@@ -486,11 +490,10 @@ static void _visual_axes_2D(VklVisual* visual)
 
         // tick text size
         vkl_visual_prop(visual, VKL_PROP_TEXT_SIZE, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_VERTEX, 1);
-    }
 
-    // Common props.
-    _common_props(visual, 0); // segment graphics
-    _common_props(visual, 1); // text graphics
+        // Common props.
+        _common_props(visual, 1); // text graphics
+    }
 
     vkl_visual_callback_bake(visual, _visual_axes_2D_bake);
 }

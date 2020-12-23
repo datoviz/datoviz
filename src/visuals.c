@@ -883,9 +883,6 @@ void vkl_bake_source_alloc(VklVisual* visual, VklSource* source, uint32_t count)
     ASSERT(source != NULL);
 
     // Resize the source source.
-    // log_debug(
-    //     "source alloc type %d idx %d count %d", //
-    //     source->source_kind, source->source_idx, count);
     log_trace(
         "alloc %d elements for source %d #%d", count, source->source_type, source->pipeline_idx);
     VklArray* arr = &source->arr;
@@ -1048,7 +1045,6 @@ void vkl_visual_update(
 
     // Here, we assume that all sources are correctly allocated, which includes VERTEX and INDEX
     // arrays, and that they have their data ready for upload.
-
     // Upload the buffers and textures
     VklSource* source = NULL;
     VklArray* arr = NULL;

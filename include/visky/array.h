@@ -250,7 +250,6 @@ _repeat_last(uint32_t old_item_count, VkDeviceSize item_size, void* data, uint32
     int64_t src_offset = (int64_t)data + (int64_t)old_size - (int64_t)item_size;
     ASSERT(item_count > old_item_count);
     uint32_t repeat_count = item_count - old_item_count;
-    log_trace("repeat %d items in array", repeat_count);
     for (uint32_t i = 0; i < repeat_count; i++)
     {
         memcpy((void*)dst_offset, (void*)src_offset, item_size);
@@ -380,7 +379,9 @@ static void vkl_array_data(
     // If the source data array is smaller than the destination array, repeat the last value.
     if (data_item_count < item_count)
     {
-        _repeat_last(data_item_count, array->item_size, array->data, item_count);
+        _repeat_last(
+            data_item_count, array->item_size,
+            (void*)((int64_t)array->data + (int64_t)(first_item * item_size)), item_count);
     }
 }
 

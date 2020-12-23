@@ -58,9 +58,15 @@ static void _graphics_refill(VklCanvas* canvas, VklPrivateEvent ev)
     if (graphics->pipeline != VK_NULL_HANDLE)
     {
         if (br_index->buffer != NULL)
+        {
+            log_debug("draw indexed %d", tg->index_count);
             vkl_cmd_draw_indexed(cmds, idx, 0, 0, tg->index_count);
+        }
         else
+        {
+            log_debug("draw indexed %d", tg->vertex_count);
             vkl_cmd_draw(cmds, idx, 0, tg->vertex_count);
+        }
     }
     vkl_cmd_end_renderpass(cmds, idx);
     vkl_cmd_end(cmds, idx);
@@ -418,7 +424,8 @@ int test_graphics_triangle_fan(TestContext* context)
     }
     END_DATA
     BINDINGS_NO_PARAMS
-    RUN TEST_END
+    RUN;
+    TEST_END
 }
 
 
@@ -473,35 +480,43 @@ int test_graphics_segment(TestContext* context)
     const uint32_t N = 16;
     BEGIN_DATA(VklGraphicsSegmentVertex, 4 * N)
 
-    tg.index_count = 6 * N;
-    VklIndex* indices = calloc(6 * N, sizeof(VklIndex));
-    VkDeviceSize index_buf_size = 6 * N * sizeof(VklIndex);
-    tg.br_index = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_INDEX, 1, index_buf_size);
+    VklArray vertices = vkl_array_struct(0, sizeof(VklGraphicsSegmentVertex));
+    VklArray indices = vkl_array_struct(0, sizeof(VklIndex));
+    VklGraphicsData gdata = vkl_graphics_data(graphics, &vertices, &indices);
+    vkl_graphics_alloc(&gdata, N);
 
-    cvec4 color = {0};
-    VklCapType cap = {0};
-    vec4 shift = {0};
+    VklGraphicsSegmentVertex vertex = {0};
     for (uint32_t i = 0; i < N; i++)
     {
         float t = (float)i / (float)N;
         float x = .75 * (-1 + 2 * t);
         float y = .75;
-        vkl_colormap_scale(VKL_CMAP_RAINBOW, t, 0, 1, color);
-        cap = i % VKL_CAP_COUNT;
-        _graphics_segment_add(
-            data, indices, i, (vec3){x, -y, 0}, (vec3){x, y, 0}, color, 5 + 30 * t, shift, cap,
-            cap, VKL_TRANSFORM_AXIS_DEFAULT);
-        ASSERT(6 * i + 5 < 6 * N);
+        vertex.P0[0] = vertex.P1[0] = x;
+        vertex.P0[1] = y;
+        vertex.P1[1] = -y;
+        vertex.linewidth = 5 + 30 * t;
+        vkl_colormap_scale(VKL_CMAP_RAINBOW, t, 0, 1, vertex.color);
+        vertex.cap0 = vertex.cap1 = i % VKL_CAP_COUNT;
+        vkl_graphics_append(&gdata, &vertex);
     }
-    END_DATA
+    // END_DATA
+
+    tg.index_count = gdata.indices->item_count;
+    ASSERT(tg.index_count == 6 * N);
+    ASSERT(tg.vertex_count == 4 * N);
+    VkDeviceSize index_buf_size = gdata.vertices->item_count * sizeof(VklIndex);
+    tg.br_index = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_INDEX, 1, index_buf_size);
+
     BINDINGS_NO_PARAMS
 
-    vkl_upload_buffers(gpu->context, tg.br_index, 0, index_buf_size, indices);
+    vkl_upload_buffers(gpu->context, tg.br_vert, 0, size, vertices.data);
+    vkl_upload_buffers(gpu->context, tg.br_index, 0, index_buf_size, indices.data);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_RESIZE, 0, _resize, &tg);
 
     RUN;
-    FREE(indices);
+    vkl_array_destroy(&vertices);
+    vkl_array_destroy(&indices);
     TEST_END
 }
 

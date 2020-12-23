@@ -125,6 +125,53 @@ static void _graphics_marker(VklCanvas* canvas, VklGraphics* graphics)
     CREATE
 }
 
+
+static void
+_graphics_segment_callback(VklGraphicsData* data, uint32_t item_count, const void* item)
+{
+    ASSERT(data != NULL);
+    ASSERT(data->vertices != NULL);
+    ASSERT(data->indices != NULL);
+
+    vkl_array_resize(data->vertices, 4 * item_count);
+    vkl_array_resize(data->indices, 6 * item_count);
+
+    if (item == NULL)
+        return;
+    ASSERT(item != NULL);
+    ASSERT(data->current_idx < item_count);
+
+    // Fill the vertices array by simply repeating them 4 times.
+    vkl_array_data(data->vertices, 4 * data->current_idx, 4, 1, item);
+
+    // VklGraphicsSegmentVertex* src = (VklGraphicsSegmentVertex*)item;
+    // VklGraphicsSegmentVertex* dst = data->vertices
+    // for (uint32_t j = 0; j < 4; j++)
+    // {
+    //     glm_vec3_copy(P0, data[4 * i + j].P0);
+    //     glm_vec3_copy(P1, data[4 * i + j].P1);
+    //     memcpy(data[4 * i + j].color, color, sizeof(cvec4));
+    //     glm_vec4_copy(shift, data[4 * i + j].shift);
+
+    //     data[4 * i + j].linewidth = linewidth;
+    //     data[4 * i + j].cap0 = cap0;
+    //     data[4 * i + j].cap1 = cap1;
+    //     data[4 * i + j].transform = transform;
+    // }
+
+    // Fill the indices array.
+    VklIndex* indices = (VklIndex*)data->indices->data;
+    uint32_t i = data->current_idx;
+    indices[6 * i + 0] = 4 * i + 0;
+    indices[6 * i + 1] = 4 * i + 1;
+    indices[6 * i + 2] = 4 * i + 2;
+    indices[6 * i + 3] = 4 * i + 0;
+    indices[6 * i + 4] = 4 * i + 2;
+    indices[6 * i + 5] = 4 * i + 3;
+
+    data->current_idx++;
+}
+
 static void _graphics_segment(VklCanvas* canvas, VklGraphics* graphics)
 {
     SHADER(VERTEX, "graphics_segment_vert")
@@ -143,6 +190,7 @@ static void _graphics_segment(VklCanvas* canvas, VklGraphics* graphics)
     ATTR(VklGraphicsSegmentVertex, VK_FORMAT_R8_UINT, transform)
 
     _common_bindings(graphics);
+    vkl_graphics_callback(graphics, _graphics_segment_callback);
 
     CREATE
 }
