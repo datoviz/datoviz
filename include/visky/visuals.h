@@ -76,15 +76,15 @@ typedef enum
 typedef enum
 {
     VKL_SOURCE_TYPE_NONE,
-    VKL_SOURCE_TYPE_MVP,      // 1
-    VKL_SOURCE_TYPE_VIEWPORT, // 2
-    VKL_SOURCE_TYPE_PARAM,    // 3
-    VKL_SOURCE_TYPE_VERTEX,   // 4
-    VKL_SOURCE_TYPE_INDEX,    // 5
-    VKL_SOURCE_TYPE_IMAGE,    // 6
-    VKL_SOURCE_TYPE_VOLUME,   // 7
-    VKL_SOURCE_TYPE_COLOR_TEXTURE,
-    VKL_SOURCE_TYPE_FONT_ATLAS,
+    VKL_SOURCE_TYPE_MVP,           // 1
+    VKL_SOURCE_TYPE_VIEWPORT,      // 2
+    VKL_SOURCE_TYPE_PARAM,         // 3
+    VKL_SOURCE_TYPE_VERTEX,        // 4
+    VKL_SOURCE_TYPE_INDEX,         // 5
+    VKL_SOURCE_TYPE_IMAGE,         // 6
+    VKL_SOURCE_TYPE_VOLUME,        // 7
+    VKL_SOURCE_TYPE_COLOR_TEXTURE, // 8
+    VKL_SOURCE_TYPE_FONT_ATLAS,    // 9
     VKL_SOURCE_TYPE_OTHER,
 } VklSourceType;
 
@@ -264,8 +264,8 @@ struct VklVisual
     VklViewport viewport; // usually the visual's panel viewport, but may be customized
 
     // GPU data
-    uint32_t vertex_count;
-    uint32_t index_count;
+    // uint32_t vertex_count;
+    // uint32_t index_count;
 
     VklBindings bindings[VKL_MAX_GRAPHICS_PER_VISUAL];
     VklBindings bindings_comp[VKL_MAX_COMPUTES_PER_VISUAL];

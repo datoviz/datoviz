@@ -232,57 +232,55 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
 
     ASSERT(viewport.width > 0);
     ASSERT(viewport.height > 0);
-    ASSERT(is_obj_created(&visual->graphics[0]->obj));
-    ASSERT(is_obj_created(&visual->bindings[0].obj));
 
-    VklSource* vertex_source = vkl_bake_source(visual, VKL_SOURCE_TYPE_VERTEX, 0);
-    VklBufferRegions* vertex_buf = &vertex_source->u.br;
-    ASSERT(vertex_buf != NULL);
-    if (vertex_buf->count == 0)
+    // Draw all valid graphics pipelines.
+    for (uint32_t pipeline_idx = 0; pipeline_idx < visual->graphics_count; pipeline_idx++)
     {
-        log_warn("skip visual fill as the vertex buffer is empty");
-        return;
+        ASSERT(is_obj_created(&visual->graphics[pipeline_idx]->obj));
+        ASSERT(is_obj_created(&visual->bindings[pipeline_idx].obj));
+
+        VklSource* vertex_source = vkl_bake_source(visual, VKL_SOURCE_TYPE_VERTEX, pipeline_idx);
+        ASSERT(vertex_source != NULL);
+        uint32_t vertex_count = vertex_source->arr.item_count;
+        if (vertex_count == 0)
+        {
+            log_warn("skip this graphics pipeline as the vertex buffer is empty");
+            continue;
+        }
+        ASSERT(vertex_count > 0);
+
+        // Bind the vertex buffer.
+        VklBufferRegions* vertex_buf = &vertex_source->u.br;
+        ASSERT(vertex_buf != NULL);
+        vkl_cmd_bind_vertex_buffer(cmds, idx, vertex_buf, 0);
+
+        // Index buffer?
+        VklSource* index_source = vkl_bake_source(visual, VKL_SOURCE_TYPE_INDEX, pipeline_idx);
+        uint32_t index_count = 0;
+        if (index_source != NULL)
+        {
+            index_count = index_source->arr.item_count;
+            ASSERT(index_count > 0);
+            VklBufferRegions* index_buf = &index_source->u.br;
+            ASSERT(index_buf != NULL);
+            vkl_cmd_bind_index_buffer(cmds, idx, index_buf, 0);
+        }
+
+        // Draw command.
+        vkl_cmd_bind_graphics(
+            cmds, idx, visual->graphics[pipeline_idx], &visual->bindings[pipeline_idx], 0);
+
+        if (index_count == 0)
+        {
+            log_debug("draw %d vertices", vertex_count);
+            vkl_cmd_draw(cmds, idx, 0, vertex_count);
+        }
+        else
+        {
+            log_debug("draw %d indices", index_count);
+            vkl_cmd_draw_indexed(cmds, idx, 0, 0, index_count);
+        }
     }
-    ASSERT(vertex_buf->count > 0);
-
-    uint32_t vertex_count = visual->vertex_count;
-    ASSERT(vertex_count > 0);
-
-    uint32_t index_count = visual->index_count;
-
-    // vkl_cmd_begin(cmds, idx);
-    // vkl_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, &canvas->framebuffers);
-    // vkl_cmd_viewport(cmds, idx, viewport);
-
-    // Bind the vertex buffer.
-    vkl_cmd_bind_vertex_buffer(cmds, idx, vertex_buf, 0);
-
-    // Bind the index buffer if there is one.
-    if (index_count > 0)
-    {
-        VklSource* index_source = vkl_bake_source(visual, VKL_SOURCE_TYPE_INDEX, 0);
-        VklBufferRegions* index_buf = &index_source->u.br;
-        ASSERT(index_buf != NULL);
-        ASSERT(index_buf->count > 0);
-        vkl_cmd_bind_index_buffer(cmds, idx, index_buf, 0);
-    }
-
-    // Draw command.
-    vkl_cmd_bind_graphics(cmds, idx, visual->graphics[0], &visual->bindings[0], 0);
-
-    if (index_count == 0)
-    {
-        log_debug("draw %d vertices", vertex_count);
-        vkl_cmd_draw(cmds, idx, 0, vertex_count);
-    }
-    else
-    {
-        log_debug("draw %d indices", index_count);
-        vkl_cmd_draw_indexed(cmds, idx, 0, 0, index_count);
-    }
-
-    // vkl_cmd_end_renderpass(cmds, idx);
-    // vkl_cmd_end(cmds, idx);
 }
 
 
@@ -306,10 +304,6 @@ static void _bake_source(VklVisual* visual, VklSource* source)
 
     // The number of vertices corresponds to the largest prop.
     uint32_t count = vkl_bake_max_prop_size(visual, source);
-    // if (source->source_kind == VKL_SOURCE_VERTEX)
-    //     visual->vertex_count = count;
-    // else if (source->source_kind == VKL_SOURCE_INDEX)
-    //     visual->index_count = count;
 
     // Allocate the source array.
     vkl_bake_source_alloc(visual, source, count);
@@ -635,11 +629,11 @@ void vkl_visual_data_buffer(
     // Get the associated source.
     VklSource* source = _assert_source_exists(visual, source_type, idx);
 
-    // When setting the vertex buffer directly, update the visual's vertex count.
-    if (source->source_kind == VKL_SOURCE_VERTEX)
-        visual->vertex_count = count;
-    if (source->source_kind == VKL_SOURCE_INDEX)
-        visual->index_count = count;
+    // // When setting the vertex buffer directly, update the visual's vertex count.
+    // if (source->source_kind == VKL_SOURCE_VERTEX)
+    //     visual->vertex_count = count;
+    // if (source->source_kind == VKL_SOURCE_INDEX)
+    //     visual->index_count = count;
 
     // Make sure the array has the right size.
     vkl_array_resize(&source->arr, count);
@@ -914,10 +908,10 @@ void vkl_bake_source_alloc(VklVisual* visual, VklSource* source, uint32_t count)
     ASSERT(is_obj_created(&arr->obj));
     vkl_array_resize(arr, count);
 
-    if (source->source_kind == VKL_SOURCE_VERTEX)
-        visual->vertex_count = count;
-    else if (source->source_kind == VKL_SOURCE_INDEX)
-        visual->index_count = count;
+    // if (source->source_kind == VKL_SOURCE_VERTEX)
+    //     visual->vertex_count = count;
+    // else if (source->source_kind == VKL_SOURCE_INDEX)
+    //     visual->index_count = count;
 }
 
 
@@ -1079,7 +1073,18 @@ void vkl_visual_update(
         source = &visual->sources[i];
         if (source->origin == VKL_SOURCE_ORIGIN_NONE)
         {
-            log_error("source type %d #%d is not set", source->source_type, source->pipeline_idx);
+            log_error(
+                "source type %d #%d is not set, skip visual update", source->source_type,
+                source->pipeline_idx);
+
+            // NOTE: mark the binding corresponding to the source's pipeline as invalid.
+            visual->bindings[source->pipeline_idx].obj.status = VKL_OBJECT_STATUS_INVALID;
+            for (uint32_t j = 0; j < source->other_count; j++)
+            {
+                visual->bindings[source->other_idxs[j]].obj.status = VKL_OBJECT_STATUS_INVALID;
+            }
+
+            break;
         }
 
         // Upload only for sources manages by visky.

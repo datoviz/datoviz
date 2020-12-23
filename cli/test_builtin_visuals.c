@@ -41,11 +41,12 @@ static void _common_data(VklVisual* visual)
     vkl_visual_data(visual, VKL_PROP_VIEW, 0, 1, MAT4_ID);
     vkl_visual_data(visual, VKL_PROP_PROJ, 0, 1, MAT4_ID);
 
+    // Viewport.
     br_viewport = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklViewport));
-    vkl_visual_buffer(visual, VKL_SOURCE_TYPE_VIEWPORT, 0, br_viewport);
     viewport = vkl_viewport_full(canvas);
-    vkl_upload_buffers(ctx, br_viewport, 0, sizeof(VklViewport), &viewport);
 
+    vkl_visual_buffer(visual, VKL_SOURCE_TYPE_VIEWPORT, 0, br_viewport);
+    vkl_upload_buffers(ctx, br_viewport, 0, sizeof(VklViewport), &viewport);
     vkl_visual_update(visual, viewport, (VklDataCoords){0}, NULL);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _visual_canvas_fill, visual);
@@ -151,55 +152,58 @@ int test_visuals_axes_2D(TestContext* context)
     INIT;
     vkl_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});
 
-    VklFontAtlas font_atlas = _font_texture(gpu->context);
+    // VklFontAtlas font_atlas = _font_texture(gpu->context);
 
     VklVisual visualx = vkl_visual(canvas);
-    VklVisual visualy = vkl_visual(canvas);
+    // VklVisual visualy = vkl_visual(canvas);
 
     vkl_visual_builtin(&visualx, VKL_VISUAL_AXES_2D, 0);
-    vkl_visual_builtin(&visualy, VKL_VISUAL_AXES_2D, 1);
+    // vkl_visual_builtin(&visualy, VKL_VISUAL_AXES_2D, 1);
 
-    vkl_visual_texture(&visualx, VKL_SOURCE_TYPE_FONT_ATLAS, 1, font_atlas.texture);
+    // vkl_visual_texture(&visualx, VKL_SOURCE_TYPE_FONT_ATLAS, 1, font_atlas.texture);
+    // vkl_visual_texture(&visualy, VKL_SOURCE_TYPE_FONT_ATLAS, 1, font_atlas.texture);
 
     const uint32_t N = 10;
     float* xticks = calloc(N, sizeof(float));
     float* yticks = calloc(N, sizeof(float));
-    char* hello = "ABCDEF";
-    char** text = calloc(N, sizeof(char*));
+    // char* hello = "ABCDEF";
+    // char** text = calloc(N, sizeof(char*));
     float t = 0;
     for (uint32_t i = 0; i < N; i++)
     {
         t = -1 + 2 * (float)i / (N - 1);
         xticks[i] = t;
         yticks[i] = t;
-        text[i] = hello;
+        // text[i] = hello;
     }
 
     // Set visual data.
     vkl_visual_data(&visualx, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, xticks);
-    vkl_visual_data(&visualy, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, yticks);
+    // vkl_visual_data(&visualy, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, yticks);
     cvec4 color = {255, 0, 0, 255};
     vkl_visual_data(&visualx, VKL_PROP_COLOR, 0, 1, color);
-    vkl_visual_data(&visualy, VKL_PROP_COLOR, 0, 1, color);
+    // vkl_visual_data(&visualy, VKL_PROP_COLOR, 0, 1, color);
 
     // Text.
-    vkl_visual_data(&visualx, VKL_PROP_TEXT, 0, N, text);
+    // vkl_visual_data(&visualx, VKL_PROP_TEXT, 0, N, text);
+    // vkl_visual_data(&visualy, VKL_PROP_TEXT, 0, N, text);
 
-    // Text params.
-    VklGraphicsTextParams params = {0};
-    params.grid_size[0] = (int32_t)font_atlas.rows;
-    params.grid_size[1] = (int32_t)font_atlas.cols;
-    params.tex_size[0] = (int32_t)font_atlas.width;
-    params.tex_size[1] = (int32_t)font_atlas.height;
-    vkl_visual_data_buffer(&visualx, VKL_SOURCE_TYPE_PARAM, 1, 0, 1, 1, &params);
+    // // Text params.
+    // VklGraphicsTextParams params = {0};
+    // params.grid_size[0] = (int32_t)font_atlas.rows;
+    // params.grid_size[1] = (int32_t)font_atlas.cols;
+    // params.tex_size[0] = (int32_t)font_atlas.width;
+    // params.tex_size[1] = (int32_t)font_atlas.height;
+    // vkl_visual_data_buffer(&visualx, VKL_SOURCE_TYPE_PARAM, 1, 0, 1, 1, &params);
+    // vkl_visual_data_buffer(&visualy, VKL_SOURCE_TYPE_PARAM, 1, 0, 1, 1, &params);
 
     _common_data(&visualx);
-    _common_data(&visualy);
+    // _common_data(&visualy);
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _resize, NULL);
     vkl_app_run(app, N_FRAMES);
     FREE(xticks);
     FREE(yticks);
     vkl_visual_destroy(&visualx);
-    vkl_visual_destroy(&visualy);
+    // vkl_visual_destroy(&visualy);
     TEST_END
 }
