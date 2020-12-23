@@ -270,7 +270,7 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
     VklSource* seg_index_src = vkl_bake_source(visual, VKL_SOURCE_TYPE_INDEX, 0);
 
     // text graphics vertex buffer
-    // VklSource* text_vert_src = vkl_bake_source(visual, VKL_SOURCE_TYPE_VERTEX, 1);
+    VklSource* text_vert_src = vkl_bake_source(visual, VKL_SOURCE_TYPE_VERTEX, 1);
 
     // Count the total number of segments.
     uint32_t count = _count_prop_items(visual, 1, (VklPropType[]){VKL_PROP_POS}, 4);
@@ -293,7 +293,6 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
 
     VklProp* prop = NULL;
     uint32_t tick_count = 0;
-    // uint32_t offset = 0; // tick offset
     for (uint32_t level = 0; level < VKL_AXES_LEVEL_COUNT; level++)
     {
         // Take the tick positions.
@@ -344,43 +343,40 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
 
         // ticks
         _add_ticks(prop, &seg_data, (VklAxisLevel)level, coord, lim, color, lw, shift);
-        // offset += tick_count;
-        // ASSERT(offset <= count);
     }
 
-    // // Labels: one for each major tick.
-    // VklGraphicsData text_data =
-    //     vkl_graphics_data(visual->graphics[1], &text_vert_src->arr, NULL, visual);
-    // prop = vkl_bake_prop(visual, VKL_PROP_TEXT, 0);
-    // ASSERT(prop != NULL);
+    // Labels: one for each major tick.
+    VklGraphicsData text_data =
+        vkl_graphics_data(visual->graphics[1], &text_vert_src->arr, NULL, visual);
+    prop = vkl_bake_prop(visual, VKL_PROP_TEXT, 0);
+    ASSERT(prop != NULL);
 
-    // uint32_t count_chars = _count_chars(prop);
-    // // Skip text visual if no text.
-    // if (count_chars == 0)
-    //     return;
-    // ASSERT(count_chars > 0);
-    // vkl_graphics_alloc(&text_data, count_chars);
+    uint32_t count_chars = _count_chars(prop);
+    // Skip text visual if no text.
+    if (count_chars == 0)
+        return;
+    ASSERT(count_chars > 0);
+    vkl_graphics_alloc(&text_data, count_chars);
 
-    // char* text = NULL;
-    // offset = 0;
-    // VklGraphicsTextItem str_item = {0};
-    // for (uint32_t i = 0; i < prop->arr_orig.item_count; i++)
-    // {
-    //     // Add text.
-    //     text = ((char**)prop->arr_orig.data)[i];
-    //     ASSERT(text != NULL);
-    //     ASSERT(strlen(text) > 0);
-    //     str_item.font_size = 20;
-    //     str_item.string = text;
+    char* text = NULL;
+    VklGraphicsTextItem str_item = {0};
+    for (uint32_t i = 0; i < prop->arr_orig.item_count; i++)
+    {
+        // Add text.
+        text = ((char**)prop->arr_orig.data)[i];
+        ASSERT(text != NULL);
+        ASSERT(strlen(text) > 0);
+        str_item.font_size = 20;
+        str_item.string = text;
 
-    //     // TODO
-    //     // str_item.vertex.pos;
-    //     // str_item.vertex.shift;
-    //     // str_item.vertex.anchor;
-    //     str_item.vertex.color[3] = 255;
+        // TODO
+        // str_item.vertex.pos;
+        // str_item.vertex.shift;
+        // str_item.vertex.anchor;
+        str_item.vertex.color[3] = 255;
 
-    //     vkl_graphics_append(&text_data, &str_item);
-    // }
+        vkl_graphics_append(&text_data, &str_item);
+    }
 }
 
 static void _visual_axes_2D(VklVisual* visual)
@@ -391,7 +387,7 @@ static void _visual_axes_2D(VklVisual* visual)
 
     // Graphics.
     vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_SEGMENT, 0));
-    // vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_TEXT, 0));
+    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_TEXT, 0));
 
     // Segment graphics.
     {
@@ -406,29 +402,29 @@ static void _visual_axes_2D(VklVisual* visual)
     }
 
     // Text graphics.
-    // {
-    //     // Vertex buffer.
-    //     vkl_visual_source(
-    //         visual, VKL_SOURCE_TYPE_VERTEX, VKL_PIPELINE_GRAPHICS, 1, //
-    //         0, sizeof(VklGraphicsTextVertex), 0);
+    {
+        // Vertex buffer.
+        vkl_visual_source(
+            visual, VKL_SOURCE_TYPE_VERTEX, VKL_PIPELINE_GRAPHICS, 1, //
+            0, sizeof(VklGraphicsTextVertex), 0);
 
-    //     // Parameters.
-    //     vkl_visual_source(
-    //         visual, VKL_SOURCE_TYPE_PARAM, VKL_PIPELINE_GRAPHICS, 1, //
-    //         VKL_USER_BINDING, sizeof(VklGraphicsTextParams), 0);
+        // Parameters.
+        vkl_visual_source(
+            visual, VKL_SOURCE_TYPE_PARAM, VKL_PIPELINE_GRAPHICS, 1, //
+            VKL_USER_BINDING, sizeof(VklGraphicsTextParams), 0);
 
-    //     // Font atlas texture.
-    //     vkl_visual_source(
-    //         visual, VKL_SOURCE_TYPE_FONT_ATLAS, VKL_PIPELINE_GRAPHICS, 1, //
-    //         VKL_USER_BINDING + 1, sizeof(cvec4), 0);
-    // }
+        // Font atlas texture.
+        vkl_visual_source(
+            visual, VKL_SOURCE_TYPE_FONT_ATLAS, VKL_PIPELINE_GRAPHICS, 1, //
+            VKL_USER_BINDING + 1, sizeof(cvec4), 0);
+    }
 
     // Uniform buffers.
     _common_sources(visual);
 
     // Share the MVP and VIEWPORT sources with the second visual.
-    // vkl_visual_source_share(visual, VKL_SOURCE_TYPE_MVP, 0, 1);
-    // vkl_visual_source_share(visual, VKL_SOURCE_TYPE_VIEWPORT, 0, 1);
+    vkl_visual_source_share(visual, VKL_SOURCE_TYPE_MVP, 0, 1);
+    vkl_visual_source_share(visual, VKL_SOURCE_TYPE_VIEWPORT, 0, 1);
 
     // Segment graphics props.
     {
@@ -469,15 +465,14 @@ static void _visual_axes_2D(VklVisual* visual)
     _common_props(visual); // segment graphics
 
     // Text graphics props.
-    // {
-    //     // tick text size
-    //     vkl_visual_prop(visual, VKL_PROP_TEXT, 0, VKL_DTYPE_STR, VKL_SOURCE_TYPE_VERTEX, 1);
-    //     // TODO: default
+    {
+        // tick text size
+        vkl_visual_prop(visual, VKL_PROP_TEXT, 0, VKL_DTYPE_STR, VKL_SOURCE_TYPE_VERTEX, 1);
+        // TODO: default
 
-    //     // tick text size
-    //     vkl_visual_prop(visual, VKL_PROP_TEXT_SIZE, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_VERTEX,
-    //     1);
-    // }
+        // tick text size
+        vkl_visual_prop(visual, VKL_PROP_TEXT_SIZE, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_VERTEX, 1);
+    }
 
     vkl_visual_callback_bake(visual, _visual_axes_2D_bake);
 }
