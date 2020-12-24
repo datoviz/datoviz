@@ -452,7 +452,7 @@ void vkl_visual_data_partial(
     ASSERT(source != NULL);
     if (source != NULL)
     {
-        log_debug("source type %d #%d handled by lib", source->source_type, source->pipeline_idx);
+        log_trace("source type %d #%d handled by lib", source->source_type, source->pipeline_idx);
         source->origin = VKL_SOURCE_ORIGIN_LIB;
         source->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
         visual->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
@@ -814,7 +814,7 @@ void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source)
     ASSERT(count > 0);
 
     // Allocate the buffer if it doesn't exist yet, or if it is not large enough.
-    if (source->u.br.buffer == VK_NULL_HANDLE || source->u.br.size < count)
+    if (source->u.br.buffer == VK_NULL_HANDLE || source->u.br.size < count * source->arr.item_size)
     {
         VkDeviceSize size = count * source->arr.item_size;
         if (source->u.br.size > 0)
@@ -959,7 +959,7 @@ void vkl_visual_update(
             source->origin == VKL_SOURCE_ORIGIN_LIB || source->origin == VKL_SOURCE_ORIGIN_NOBAKE;
         if (!to_upload)
         {
-            log_debug(
+            log_trace(
                 "skip data upload for source type %d #%d, origin %d, that is handled by user", //
                 source->source_type, source->pipeline_idx, source->origin);
             continue;
@@ -995,7 +995,7 @@ void vkl_visual_update(
             ASSERT(br->size > 0);
             ASSERT(br->buffer != VK_NULL_HANDLE);
 
-            log_debug(
+            log_trace(
                 "upload buffer for automatically-handled source %d #%d", //
                 source->source_type, source->pipeline_idx);
 

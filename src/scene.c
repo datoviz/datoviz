@@ -92,8 +92,6 @@ static void _scene_fill(VklCanvas* canvas, VklPrivateEvent ev)
                     if (visual->priority != priority)
                         continue;
 
-                    DBG(k);
-
                     // Update visual VklViewport struct and upload it.
                     _update_visual_viewport(panel, visual);
 
@@ -241,11 +239,12 @@ static void _axes_ticks(VklController* controller, VklAxisCoord coord)
     double vmax0 = vmax + vlen;
     ASSERT(vmin0 < vmax0);
 
-    // TODO: determine the dv
-    double dv = .25;
-    int32_t N = (int32_t)ceil((vmax0 - vmin0) / dv);
+    // TODO: determine the dv with Wilkinson
+    // double dv = .5;
+    // int32_t N = (int32_t)ceil((vmax0 - vmin0) / dv);
+    int32_t N = 12;
+    double dv = (vmax0 - vmin0) / (double)N;
     ASSERT(N > 0);
-    DBG(N);
     vkl_array_resize(arr, (uint32_t)N);
     vkl_array_resize(text, (uint32_t)N);
 
@@ -253,6 +252,7 @@ static void _axes_ticks(VklController* controller, VklAxisCoord coord)
     for (uint32_t i = 0; i < (uint32_t)N; i++)
     {
         v = vmin0 + dv * i;
+        // log_info("%.3f", v);
         ((float*)arr->data)[i] = v;
         ((char**)text->data)[i] = &buf[16 * i];
         _tick_format(v, &buf[16 * i]);
@@ -273,11 +273,14 @@ static void _axes_upload(VklController* controller, VklAxisCoord coord)
     uint32_t N = arr->item_count;
     float* ticks = arr->data;
     char** text = axes->text[coord].data;
+    ASSERT(axes->text[coord].item_count == N);
 
     // TODO: more minor ticks between the major ticks.
+    float lim[] = {-1};
     vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_MINOR, N, ticks);
     vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR, N, ticks);
     vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, ticks);
+    vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_LIM, 1, lim);
     vkl_visual_data(visual, VKL_PROP_TEXT, 0, N, text);
 }
 
@@ -288,11 +291,10 @@ static void _axes_ticks_init(VklController* controller)
     VklAxes2D* axes = &controller->u.axes_2D;
     ASSERT(axes != NULL);
 
-    // TODO: customizable
-    float lim[] = {-1};
     for (uint32_t coord = 0; coord < 2; coord++)
     {
         // Init structures.
+        // TODO: constants
         axes->buf[coord] = calloc(128 * 16, sizeof(char)); // max ticks * max glyphs per tick
         axes->ticks[coord] = vkl_array(0, VKL_DTYPE_FLOAT);
         axes->text[coord] = vkl_array(0, VKL_DTYPE_STR);
@@ -303,9 +305,6 @@ static void _axes_ticks_init(VklController* controller)
 
         // Compute the ticks for these ranges.
         _axes_ticks(controller, coord);
-
-        // Lim.
-        vkl_visual_data(controller->visuals[coord], VKL_PROP_POS, VKL_AXES_LEVEL_LIM, 1, lim);
 
         // Upload the data.
         _axes_upload(controller, coord);
@@ -319,8 +318,11 @@ static void _axes_collision(VklController* controller, bool* update)
     VklAxes2D* axes = &controller->u.axes_2D;
     ASSERT(axes != NULL);
     ASSERT(update != NULL);
+
     // TODO
-    // set axes[0] and axes[1] depending on whether there is a collision on the labels on that axis
+    // set update depending on whether there is a collision on the labels on that axis
+    update[0] = (controller->panel->grid->canvas->frame_idx % 5000) == 0;
+    update[1] = (controller->panel->grid->canvas->frame_idx % 5000) == 0;
 }
 
 static void _axes_range(VklController* controller, VklAxisCoord coord)
@@ -329,8 +331,19 @@ static void _axes_range(VklController* controller, VklAxisCoord coord)
     ASSERT(controller->type == VKL_CONTROLLER_AXES_2D);
     VklAxes2D* axes = &controller->u.axes_2D;
     ASSERT(axes != NULL);
-    // TODO
-    // set axes->xrange or axes->yrange depending on coord
+
+    // set axes->range depending on coord
+    VklTransform tr = {0};
+    dvec2 ll = {-1, -1};
+    dvec2 ur = {+1, +1};
+    dvec2 pos_ll = {0};
+    dvec2 pos_ur = {0};
+    tr = vkl_transform(controller->panel, VKL_CDS_PANZOOM, VKL_CDS_GPU);
+    vkl_transform_apply(&tr, ll, pos_ll);
+    vkl_transform_apply(&tr, ur, pos_ur);
+    axes->range[coord][0] = pos_ll[coord];
+    axes->range[coord][1] = pos_ur[coord];
+    // log_info("%.3f %.3f", axes->range[coord][0], axes->range[coord][1]);
 }
 
 static void _axes_callback(VklController* controller, VklEvent ev)
@@ -339,6 +352,7 @@ static void _axes_callback(VklController* controller, VklEvent ev)
     _default_controller_callback(controller, ev);
     if (!controller->interacts[0].is_active)
         return;
+    VklCanvas* canvas = controller->panel->grid->canvas;
     // Check label collision
     bool update[2] = {false, false}; // whether X and Y axes must be updated or not
     _axes_collision(controller, update);
@@ -351,6 +365,7 @@ static void _axes_callback(VklController* controller, VklEvent ev)
         _axes_range(controller, coord);
         _axes_ticks(controller, coord);
         _axes_upload(controller, coord);
+        canvas->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
     }
 }
 
@@ -482,13 +497,14 @@ VklTransform vkl_transform(VklPanel* panel, VklCDS source, VklCDS target)
 
     if (panel->controller->type == VKL_CONTROLLER_AXES_2D)
     {
-        log_error("not implemented yet");
+        // log_error("not implemented yet");
         // TODO
         // ll[0] = axes->xscale_orig.vmin;
         // ll[1] = axes->yscale_orig.vmin;
         // ur[0] = axes->xscale_orig.vmax;
         // ur[1] = axes->yscale_orig.vmax;
         // panzoom = axes->panzoom_inner;
+        panzoom = &panel->controller->interacts[0].u.p;
     }
     else if (panel->controller->type == VKL_CONTROLLER_PANZOOM)
     {
