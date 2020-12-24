@@ -21,10 +21,6 @@ static void _common_data(VklPanel* panel, VklVisual* visual, VklViewportClip cli
     // Binding 1: viewport
     visual->viewport = panel->viewport;
     vkl_visual_data_buffer(visual, VKL_SOURCE_TYPE_VIEWPORT, 0, 0, 1, 1, &visual->viewport);
-
-    // // Binding 2: color texture
-    // // TODO
-    // vkl_visual_data_texture(visual, VKL_PROP_COLOR_TEXTURE, 0, 1, 1, 1, NULL);
 }
 
 

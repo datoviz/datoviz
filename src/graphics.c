@@ -39,7 +39,6 @@ static inline void _load_shader(
     vkl_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_##x);                                   \
     vkl_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
 
-// TODO: common bindings
 #define CREATE vkl_graphics_create(graphics);
 
 #define ATTR_BEGIN(t)                                                                             \
@@ -233,7 +232,6 @@ static void _graphics_text_callback(VklGraphicsData* data, uint32_t item_count, 
             memcpy(vertex.color, str_item->glyph_colors[i], sizeof(cvec4));
 
         // Fill the vertices array by simply repeating them 4 times.
-        log_debug("%d %d %d", data->current_idx, i, 4 * data->current_idx + 4 * i);
         vkl_array_data(data->vertices, 4 * data->current_idx, 4, 1, &vertex);
         data->current_idx++; // glyph index
     }

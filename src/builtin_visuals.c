@@ -377,10 +377,15 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
     VklProp* prop_major = vkl_bake_prop(visual, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR);
     vec3 P = {0};
     if (coord == VKL_AXES_COORD_X)
+    {
         str_item.vertex.anchor[1] = 1;
+        str_item.vertex.shift[1] = -10;
+    }
     else if (coord == VKL_AXES_COORD_Y)
+    {
         str_item.vertex.anchor[0] = -1;
-    // str_item.vertex.shift;
+        str_item.vertex.shift[0] = -10;
+    }
     str_item.vertex.color[3] = 255;
     for (uint32_t i = 0; i < prop->arr_orig.item_count; i++)
     {
@@ -388,7 +393,7 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
         text = ((char**)prop->arr_orig.data)[i];
         ASSERT(text != NULL);
         ASSERT(strlen(text) > 0);
-        str_item.font_size = 20;
+        str_item.font_size = 12;
         str_item.string = text;
 
         // Position of the text corresponds to position of the major tick.

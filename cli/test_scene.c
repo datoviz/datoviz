@@ -121,6 +121,8 @@ int test_scene_1(TestContext* context)
 
 
 
+static void _tick_format(double value, char* out_text) { snprintf(out_text, 16, "%.1f", value); }
+
 int test_scene_axes(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
@@ -143,10 +145,11 @@ int test_scene_axes(TestContext* context)
     visualx->transform = VKL_TRANSFORM_AXIS_X;
     visualy->transform = VKL_TRANSFORM_AXIS_Y;
 
-    const uint32_t N = 4 * 10 + 1;
+    const uint32_t N = 4 * 5 + 1;
     float* xticks = calloc(N, sizeof(float));
     float* yticks = calloc(N, sizeof(float));
-    char* hello = "ABCDEF";
+    // char* hello = "ABCDEF";
+    char* str_buf = calloc(N * 16, sizeof(char));
     char** text = calloc(N, sizeof(char*));
     float t = 0;
     for (uint32_t i = 0; i < N; i++)
@@ -154,7 +157,8 @@ int test_scene_axes(TestContext* context)
         t = -2 + 4 * (float)i / (N - 1);
         xticks[i] = t;
         yticks[i] = t;
-        text[i] = hello;
+        text[i] = &str_buf[16 * i];
+        _tick_format(t, text[i]);
     }
 
     // Minor ticks.
@@ -176,16 +180,22 @@ int test_scene_axes(TestContext* context)
 
     // Text.
     vkl_visual_data(visualx, VKL_PROP_TEXT, 0, N, text);
+    vkl_visual_data(visualy, VKL_PROP_TEXT, 0, N, text);
 
     // Text params.
     {
         VklFontAtlas* atlas = vkl_font_atlas(ctx);
+        ASSERT(strlen(atlas->font_str) > 0);
+        vkl_visual_texture(visualx, VKL_SOURCE_TYPE_FONT_ATLAS, 1, atlas->texture);
+        vkl_visual_texture(visualy, VKL_SOURCE_TYPE_FONT_ATLAS, 1, atlas->texture);
+
         VklGraphicsTextParams params = {0};
         params.grid_size[0] = (int32_t)atlas->rows;
         params.grid_size[1] = (int32_t)atlas->cols;
         params.tex_size[0] = (int32_t)atlas->width;
         params.tex_size[1] = (int32_t)atlas->height;
         vkl_visual_data_buffer(visualx, VKL_SOURCE_TYPE_PARAM, 1, 0, 1, 1, &params);
+        vkl_visual_data_buffer(visualy, VKL_SOURCE_TYPE_PARAM, 1, 0, 1, 1, &params);
     }
 
     // Tick color
@@ -201,5 +211,6 @@ int test_scene_axes(TestContext* context)
     FREE(xticks);
     FREE(yticks);
     FREE(text);
+    FREE(str_buf);
     TEST_END
 }
