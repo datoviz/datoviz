@@ -72,8 +72,11 @@ struct VklAxes2D
     VklArray xticks;
     VklArray yticks;
 
-    char* str_buf;
-    char** text;
+    char* xbuf;
+    char* ybuf;
+
+    char** xtext;
+    char** ytext;
 };
 
 

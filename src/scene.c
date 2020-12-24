@@ -218,13 +218,27 @@ static void _upload_mvp(VklCanvas* canvas, VklPrivateEvent ev)
 /*  Axes functions                                                                               */
 /*************************************************************************************************/
 
+static uint32_t n_ticks = 4 * 5 + 1;
+
 static void _tick_format(double value, char* out_text) { snprintf(out_text, 16, "%.1f", value); }
+
+static void _axes_ticks(VklController* controller, VklAxisCoord coord)
+{
+    ASSERT(controller != NULL);
+    ASSERT(controller->type == VKL_CONTROLLER_AXES_2D);
+    VklAxes2D* axes = &controller->u.axes_2D;
+    ASSERT(axes != NULL);
+    // TODO
+    // recompute xticks or yticks depending on coord, and range
+}
 
 static void _axes_upload(VklController* controller, VklAxisCoord coord)
 {
     ASSERT(controller != NULL);
-    ASSERT(controller->visual_count == 2);
+    ASSERT(controller->type == VKL_CONTROLLER_AXES_2D);
     VklAxes2D* axes = &controller->u.axes_2D;
+    ASSERT(axes != NULL);
+    ASSERT(controller->visual_count == 2);
 
     VklVisual* visualx = controller->visuals[0];
     VklVisual* visualy = controller->visuals[1];
@@ -234,6 +248,7 @@ static void _axes_upload(VklController* controller, VklAxisCoord coord)
     float* yticks = axes->yticks.data;
 
     // Minor ticks.
+    // TODO: more minor ticks between the major ticks.
     vkl_visual_data(visualx, VKL_PROP_POS, VKL_AXES_LEVEL_MINOR, N, xticks);
     vkl_visual_data(visualy, VKL_PROP_POS, VKL_AXES_LEVEL_MINOR, N, yticks);
 
@@ -246,32 +261,39 @@ static void _axes_upload(VklController* controller, VklAxisCoord coord)
     vkl_visual_data(visualy, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, yticks);
 
     // Text.
-    vkl_visual_data(visualx, VKL_PROP_TEXT, 0, N, axes->text);
-    vkl_visual_data(visualy, VKL_PROP_TEXT, 0, N, axes->text);
+    vkl_visual_data(visualx, VKL_PROP_TEXT, 0, N, axes->xtext);
+    vkl_visual_data(visualy, VKL_PROP_TEXT, 0, N, axes->ytext);
 }
 
 static void _axes_ticks_init(VklController* controller)
 {
     ASSERT(controller != NULL);
+    ASSERT(controller->type == VKL_CONTROLLER_AXES_2D);
     VklAxes2D* axes = &controller->u.axes_2D;
     ASSERT(axes != NULL);
 
     // TODO: customizable
-    const uint32_t N = 4 * 5 + 1;
+    const uint32_t N = n_ticks;
 
     axes->xticks = vkl_array(N, VKL_DTYPE_FLOAT);
     axes->yticks = vkl_array(N, VKL_DTYPE_FLOAT);
 
-    axes->str_buf = calloc(N * 16, sizeof(char));
-    axes->text = calloc(N, sizeof(char*));
+    axes->xbuf = calloc(N * 16, sizeof(char));
+    axes->xtext = calloc(N, sizeof(char*));
+
+    axes->ybuf = calloc(N * 16, sizeof(char));
+    axes->ytext = calloc(N, sizeof(char*));
+
     float t = 0;
     for (uint32_t i = 0; i < N; i++)
     {
         t = -2 + 4 * (float)i / (N - 1);
         ((float*)axes->xticks.data)[i] = t;
         ((float*)axes->yticks.data)[i] = t;
-        axes->text[i] = &axes->str_buf[16 * i];
-        _tick_format(t, axes->text[i]);
+        axes->xtext[i] = &axes->xbuf[16 * i];
+        axes->ytext[i] = &axes->ybuf[16 * i];
+        _tick_format(t, axes->xtext[i]);
+        _tick_format(t, axes->ytext[i]);
     }
 
     // Lim.
@@ -284,9 +306,13 @@ static void _axes_ticks_init(VklController* controller)
     _axes_upload(controller, VKL_AXES_COORD_Y);
 }
 
-static void _axes_collision(VklController* controller, bool* axes)
+static void _axes_collision(VklController* controller, bool* update)
 {
     ASSERT(controller != NULL);
+    ASSERT(controller->type == VKL_CONTROLLER_AXES_2D);
+    VklAxes2D* axes = &controller->u.axes_2D;
+    ASSERT(axes != NULL);
+    ASSERT(update != NULL);
     // TODO
     // set axes[0] and axes[1] depending on whether there is a collision on the labels on that axis
 }
@@ -294,15 +320,11 @@ static void _axes_collision(VklController* controller, bool* axes)
 static void _axes_range(VklController* controller, VklAxisCoord coord)
 {
     ASSERT(controller != NULL);
+    ASSERT(controller->type == VKL_CONTROLLER_AXES_2D);
+    VklAxes2D* axes = &controller->u.axes_2D;
+    ASSERT(axes != NULL);
     // TODO
     // set axes->xrange or axes->yrange depending on coord
-}
-
-static void _axes_ticks(VklController* controller, VklAxisCoord coord)
-{
-    ASSERT(controller != NULL);
-    // TODO
-    // recompute xticks or yticks depending on coord
 }
 
 static void _axes_callback(VklController* controller, VklEvent ev)
@@ -379,14 +401,15 @@ static void _add_axes(VklController* controller)
 static void _axes_destroy(VklController* controller)
 {
     ASSERT(controller != NULL);
+    ASSERT(controller->type == VKL_CONTROLLER_AXES_2D);
     VklAxes2D* axes = &controller->u.axes_2D;
     ASSERT(axes != NULL);
 
     vkl_array_destroy(&axes->xticks);
     vkl_array_destroy(&axes->yticks);
 
-    FREE(axes->text);
-    FREE(axes->str_buf);
+    FREE(axes->xtext);
+    FREE(axes->xbuf);
 }
 
 
