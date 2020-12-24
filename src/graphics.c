@@ -224,15 +224,17 @@ static void _graphics_text_callback(VklGraphicsData* data, uint32_t item_count, 
         _font_atlas_glyph_size(atlas, str_item->font_size, vertex.glyph_size);
 
         // Glyph.
-        vertex.glyph[0] = g;                 // char
-        vertex.glyph[1] = i;                 // char idx
-        vertex.glyph[2] = n;                 // str len
-        vertex.glyph[3] = data->current_idx; // str idx
+        vertex.glyph[0] = g;                   // char
+        vertex.glyph[1] = i;                   // char idx
+        vertex.glyph[2] = n;                   // str len
+        vertex.glyph[3] = data->current_group; // str idx
 
         // Fill the vertices array by simply repeating them 4 times.
-        vkl_array_data(data->vertices, 4 * data->current_idx + 4 * i, 4, 1, &vertex);
+        log_debug("%d %d %d", data->current_idx, i, 4 * data->current_idx + 4 * i);
+        vkl_array_data(data->vertices, 4 * data->current_idx, 4, 1, &vertex);
+        data->current_idx++; // glyph index
     }
-    data->current_idx++; // string index
+    data->current_group++; // glyph index
 }
 
 static void _graphics_text(VklCanvas* canvas, VklGraphics* graphics)

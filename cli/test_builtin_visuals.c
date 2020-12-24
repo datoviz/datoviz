@@ -26,6 +26,10 @@ static void _resize(VklCanvas* canvas, VklPrivateEvent ev)
 {
     VklContext* ctx = canvas->gpu->context;
     viewport = vkl_viewport_full(canvas);
+    viewport.margins[0] = 100;
+    viewport.margins[1] = 100;
+    viewport.margins[2] = 100;
+    viewport.margins[3] = 100;
     vkl_upload_buffers(ctx, br_viewport, 0, sizeof(VklViewport), &viewport);
 }
 
@@ -157,14 +161,14 @@ int test_visuals_axes_2D(TestContext* context)
 
     VklVisual visual = vkl_visual(canvas);
 
-    vkl_visual_builtin(&visual, VKL_VISUAL_AXES_2D, 0);
+    vkl_visual_builtin(&visual, VKL_VISUAL_AXES_2D, VKL_AXES_COORD_X);
 
     vkl_visual_texture(&visual, VKL_SOURCE_TYPE_FONT_ATLAS, 1, atlas->texture);
 
     const uint32_t N = 10;
     float* xticks = calloc(N, sizeof(float));
     float* yticks = calloc(N, sizeof(float));
-    char* hello = "ABCDEF";
+    char* hello = "ABC";
     char** text = calloc(N, sizeof(char*));
     float t = 0;
     for (uint32_t i = 0; i < N; i++)
@@ -176,6 +180,7 @@ int test_visuals_axes_2D(TestContext* context)
     }
 
     // Set visual data.
+    vkl_visual_data(&visual, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR, N, xticks);
     vkl_visual_data(&visual, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, xticks);
     cvec4 color = {255, 0, 0, 255};
     vkl_visual_data(&visual, VKL_PROP_COLOR, 0, 1, color);

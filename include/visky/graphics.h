@@ -141,6 +141,7 @@ struct VklGraphicsData
     VklArray* indices;
     uint32_t item_count;
     uint32_t current_idx;
+    uint32_t current_group;
     void* user_data;
 };
 

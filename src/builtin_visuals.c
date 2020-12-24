@@ -174,9 +174,44 @@ static uint32_t _count_chars(VklProp* prop)
     return char_count;
 }
 
+static void _tick_pos(float x, VklAxisLevel level, VklAxisCoord coord, vec3 P0, vec3 P1)
+{
+    vec2 lim = {0};
+    lim[0] = -1;
+
+    switch (level)
+    {
+    case VKL_AXES_LEVEL_MINOR:
+    case VKL_AXES_LEVEL_MAJOR:
+        lim[1] = -1;
+        break;
+    case VKL_AXES_LEVEL_GRID:
+    case VKL_AXES_LEVEL_LIM:
+        lim[1] = +1;
+        break;
+    default:
+        break;
+    }
+
+    if (coord == VKL_AXES_COORD_X)
+    {
+        P0[0] = x;
+        P0[1] = lim[0];
+        P1[0] = x;
+        P1[1] = lim[1];
+    }
+    else if (coord == VKL_AXES_COORD_Y)
+    {
+        P0[1] = x;
+        P0[0] = lim[0];
+        P1[1] = x;
+        P1[0] = lim[1];
+    }
+}
+
 static void _add_ticks(
-    VklProp* tick_prop, VklGraphicsData* data, VklAxisLevel level, VklAxisCoord coord, vec2 lim,
-    cvec4 color, float lw, vec4 shift)
+    VklProp* tick_prop, VklGraphicsData* data, VklAxisLevel level, VklAxisCoord coord, cvec4 color,
+    float lw, vec4 shift)
 {
     ASSERT(tick_prop != NULL);
     ASSERT(data != NULL);
@@ -204,16 +239,11 @@ static void _add_ticks(
         x = vkl_bake_prop_item(tick_prop, i);
         ASSERT(x != NULL);
 
-        if (coord == VKL_AXES_COORD_X)
+        if (level == VKL_AXES_LEVEL_LIM)
         {
-            P0[0] = *x;
-            P1[0] = *x;
-            P0[1] = lim[0];
-            P1[1] = lim[1];
-
-            // Prevent half of the first and last lines to be cut off by viewport clipping.
-            if (level == VKL_AXES_LEVEL_LIM)
+            if (coord == VKL_AXES_COORD_X)
             {
+                // Prevent half of the first and last lines to be cut off by viewport clipping.
                 if (i == 0)
                 {
                     shift[0] += s;
@@ -225,17 +255,9 @@ static void _add_ticks(
                     shift[2] -= s;
                 }
             }
-        }
-        else if (coord == VKL_AXES_COORD_Y)
-        {
-            P0[1] = *x;
-            P1[1] = *x;
-            P0[0] = lim[0];
-            P1[0] = lim[1];
-
-            // Prevent half of the first and last lines to be cut off by viewport clipping.
-            if (level == VKL_AXES_LEVEL_LIM)
+            else if (coord == VKL_AXES_COORD_Y)
             {
+                // Prevent half of the first and last lines to be cut off by viewport clipping.
                 if (i == 0)
                 {
                     shift[1] += s;
@@ -248,6 +270,8 @@ static void _add_ticks(
                 }
             }
         }
+
+        _tick_pos(*x, level, coord, P0, P1);
 
         glm_vec3_copy(P0, vertex.P0);
         glm_vec3_copy(P1, vertex.P1);
@@ -288,7 +312,6 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
     float minor_tick_length = 20;
     float major_tick_length = 10;
     vec4 shift = {0};
-    vec2 lim = {0};
 
     VklProp* prop = NULL;
     uint32_t tick_count = 0;
@@ -304,35 +327,26 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
 
         memset(color, 0, 3);
         glm_vec4_zero(shift);
-        glm_vec2_zero(lim);
 
         switch (level)
         {
 
         case VKL_AXES_LEVEL_MINOR:
             color[0] = 255;
-            lim[0] = -1;
-            lim[1] = -1;
             shift[3 - coord] = minor_tick_length;
             lw = 2;
             break;
 
         case VKL_AXES_LEVEL_MAJOR:
-            lim[0] = -1;
-            lim[1] = -1;
             shift[3 - coord] = major_tick_length;
             lw = 5;
             break;
 
         case VKL_AXES_LEVEL_GRID:
-            lim[0] = -1;
-            lim[1] = +1;
             lw = 1;
             break;
 
         case VKL_AXES_LEVEL_LIM:
-            lim[0] = -1;
-            lim[1] = +1;
             lw = 3;
             break;
 
@@ -341,7 +355,7 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
         }
 
         // ticks
-        _add_ticks(prop, &seg_data, (VklAxisLevel)level, coord, lim, color, lw, shift);
+        _add_ticks(prop, &seg_data, (VklAxisLevel)level, coord, color, lw, shift);
     }
 
     // Labels: one for each major tick.
@@ -359,20 +373,28 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
 
     char* text = NULL;
     VklGraphicsTextItem str_item = {0};
+    float* x = NULL;
+    VklProp* prop_major = vkl_bake_prop(visual, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR);
+    vec3 P = {0};
+    if (coord == VKL_AXES_COORD_X)
+        str_item.vertex.anchor[1] = 1;
+    else if (coord == VKL_AXES_COORD_Y)
+        str_item.vertex.anchor[0] = -1;
+    // str_item.vertex.shift;
+    str_item.vertex.color[3] = 255;
     for (uint32_t i = 0; i < prop->arr_orig.item_count; i++)
     {
         // Add text.
         text = ((char**)prop->arr_orig.data)[i];
         ASSERT(text != NULL);
         ASSERT(strlen(text) > 0);
-        str_item.font_size = 30;
+        str_item.font_size = 20;
         str_item.string = text;
 
-        // TODO
-        // str_item.vertex.pos;
-        // str_item.vertex.shift;
-        // str_item.vertex.anchor;
-        str_item.vertex.color[3] = 255;
+        // Position of the text corresponds to position of the major tick.
+        x = vkl_bake_prop_item(prop_major, i);
+        ASSERT(x != NULL);
+        _tick_pos(*x, VKL_AXES_LEVEL_MAJOR, coord, str_item.vertex.pos, P);
 
         vkl_graphics_append(&text_data, &str_item);
     }
