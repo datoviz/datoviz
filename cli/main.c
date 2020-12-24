@@ -91,6 +91,7 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_visuals_1), //
     CASE_FIXTURE_NONE(test_visuals_2), //
     CASE_FIXTURE_NONE(test_visuals_3), //
+    CASE_FIXTURE_NONE(test_visuals_4), //
 
     // interact
     CASE_FIXTURE_NONE(test_interact_1),       //

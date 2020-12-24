@@ -231,3 +231,76 @@ int test_visuals_3(TestContext* context)
     // FREE(colormaps);
     TEST_END
 }
+
+
+static void _visual_update(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    ASSERT(canvas != NULL);
+    VklVisual* visual = ev.user_data;
+    ASSERT(visual != NULL);
+
+    const uint32_t N = 2 + (ev.u.t.idx % 10);
+    vec3* pos = calloc(N, sizeof(vec3));
+    for (uint32_t i = 0; i < N; i++)
+    {
+        pos[i][0] = -.75 + 1.5 / (N - 1) * i;
+    }
+    vkl_visual_data(visual, VKL_PROP_POS, 0, N, pos);
+
+    VklViewport viewport = vkl_viewport_full(canvas);
+    vkl_visual_update(visual, viewport, (VklDataCoords){0}, NULL);
+
+    vkl_canvas_to_refill(visual->canvas, true);
+}
+
+int test_visuals_4(TestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    VklContext* ctx = gpu->context;
+    ASSERT(ctx != NULL);
+    VklVisual visual = vkl_visual(canvas);
+    _marker_visual(&visual);
+
+    // Vertex data.
+    const uint32_t N = 5;
+    vec3* pos = calloc(N, sizeof(vec3));
+    cvec4* color = calloc(N, sizeof(cvec4));
+    for (uint32_t i = 0; i < N; i++)
+    {
+        pos[i][0] = -.75 + 1.5 / (N - 1) * i;
+        color[i][0] = 255;
+        color[i][3] = 255;
+    }
+
+    // Set visual data.
+    vkl_visual_data(&visual, VKL_PROP_POS, 0, N, pos);
+    vkl_visual_data(&visual, VKL_PROP_COLOR, 0, N, color);
+
+    // MVP.
+    mat4 id = GLM_MAT4_IDENTITY_INIT;
+    vkl_visual_data(&visual, VKL_PROP_MODEL, 0, 1, id);
+    vkl_visual_data(&visual, VKL_PROP_VIEW, 0, 1, id);
+    vkl_visual_data(&visual, VKL_PROP_PROJ, 0, 1, id);
+
+    // Param.
+    float param = 50.0f;
+    vkl_visual_data(&visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
+
+    // Upload the data to the GPU..
+    VklViewport viewport = vkl_viewport_full(canvas);
+    vkl_visual_data_buffer(&visual, VKL_SOURCE_TYPE_VIEWPORT, 0, 0, 1, 1, &viewport);
+    vkl_visual_update(&visual, viewport, (VklDataCoords){0}, NULL);
+
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, .25, _visual_update, &visual);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _visual_canvas_fill, &visual);
+
+    // Run and end.
+    vkl_app_run(app, N_FRAMES);
+
+    vkl_visual_destroy(&visual);
+    FREE(pos);
+    FREE(color);
+    TEST_END
+}
