@@ -69,14 +69,10 @@ typedef void (*VklControllerCallback)(VklController* controller, VklEvent ev);
 
 struct VklAxes2D
 {
-    VklArray xticks;
-    VklArray yticks;
-
-    char* xbuf;
-    char* ybuf;
-
-    char** xtext;
-    char** ytext;
+    dvec2 range[2];
+    VklArray ticks[2];
+    char* buf[2];
+    char** text[2];
 };
 
 

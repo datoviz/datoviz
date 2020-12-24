@@ -228,8 +228,20 @@ static void _axes_ticks(VklController* controller, VklAxisCoord coord)
     ASSERT(controller->type == VKL_CONTROLLER_AXES_2D);
     VklAxes2D* axes = &controller->u.axes_2D;
     ASSERT(axes != NULL);
-    // TODO
-    // recompute xticks or yticks depending on coord, and range
+
+    VklArray* arr = &axes->ticks[coord];
+    char* buf = axes->buf[coord];
+    char** text = axes->text[coord];
+
+    uint32_t N = arr->item_count;
+    float t = 0;
+    for (uint32_t i = 0; i < N; i++)
+    {
+        t = -2 + 4 * (float)i / (N - 1);
+        ((float*)arr->data)[i] = t;
+        text[i] = &buf[16 * i];
+        _tick_format(t, text[i]);
+    }
 }
 
 static void _axes_upload(VklController* controller, VklAxisCoord coord)
@@ -240,29 +252,18 @@ static void _axes_upload(VklController* controller, VklAxisCoord coord)
     ASSERT(axes != NULL);
     ASSERT(controller->visual_count == 2);
 
-    VklVisual* visualx = controller->visuals[0];
-    VklVisual* visualy = controller->visuals[1];
+    VklVisual* visual = controller->visuals[coord];
+    VklArray* arr = &axes->ticks[coord];
 
-    uint32_t N = axes->xticks.item_count;
-    float* xticks = axes->xticks.data;
-    float* yticks = axes->yticks.data;
+    uint32_t N = arr->item_count;
+    float* ticks = arr->data;
+    char** text = axes->text[coord];
 
-    // Minor ticks.
     // TODO: more minor ticks between the major ticks.
-    vkl_visual_data(visualx, VKL_PROP_POS, VKL_AXES_LEVEL_MINOR, N, xticks);
-    vkl_visual_data(visualy, VKL_PROP_POS, VKL_AXES_LEVEL_MINOR, N, yticks);
-
-    // Major ticks.
-    vkl_visual_data(visualx, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR, N, xticks);
-    vkl_visual_data(visualy, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR, N, yticks);
-
-    // Grid.
-    vkl_visual_data(visualx, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, xticks);
-    vkl_visual_data(visualy, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, yticks);
-
-    // Text.
-    vkl_visual_data(visualx, VKL_PROP_TEXT, 0, N, axes->xtext);
-    vkl_visual_data(visualy, VKL_PROP_TEXT, 0, N, axes->ytext);
+    vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_MINOR, N, ticks);
+    vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR, N, ticks);
+    vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, ticks);
+    vkl_visual_data(visual, VKL_PROP_TEXT, 0, N, text);
 }
 
 static void _axes_ticks_init(VklController* controller)
@@ -275,35 +276,27 @@ static void _axes_ticks_init(VklController* controller)
     // TODO: customizable
     const uint32_t N = n_ticks;
 
-    axes->xticks = vkl_array(N, VKL_DTYPE_FLOAT);
-    axes->yticks = vkl_array(N, VKL_DTYPE_FLOAT);
-
-    axes->xbuf = calloc(N * 16, sizeof(char));
-    axes->xtext = calloc(N, sizeof(char*));
-
-    axes->ybuf = calloc(N * 16, sizeof(char));
-    axes->ytext = calloc(N, sizeof(char*));
-
-    float t = 0;
-    for (uint32_t i = 0; i < N; i++)
-    {
-        t = -2 + 4 * (float)i / (N - 1);
-        ((float*)axes->xticks.data)[i] = t;
-        ((float*)axes->yticks.data)[i] = t;
-        axes->xtext[i] = &axes->xbuf[16 * i];
-        axes->ytext[i] = &axes->ybuf[16 * i];
-        _tick_format(t, axes->xtext[i]);
-        _tick_format(t, axes->ytext[i]);
-    }
-
-    // Lim.
     float lim[] = {-1};
-    vkl_visual_data(controller->visuals[0], VKL_PROP_POS, VKL_AXES_LEVEL_LIM, 1, lim);
-    vkl_visual_data(controller->visuals[1], VKL_PROP_POS, VKL_AXES_LEVEL_LIM, 1, lim);
+    for (uint32_t coord = 0; coord < 2; coord++)
+    {
+        // Init structures.
+        axes->ticks[coord] = vkl_array(N, VKL_DTYPE_FLOAT);
+        axes->buf[coord] = calloc(N * 16, sizeof(char));
+        axes->text[coord] = calloc(N, sizeof(char*));
 
-    // Upload the data.
-    _axes_upload(controller, VKL_AXES_COORD_X);
-    _axes_upload(controller, VKL_AXES_COORD_Y);
+        // Set the initial range.
+        axes->range[coord][0] = -1;
+        axes->range[coord][1] = +1;
+
+        // Compute the ticks for these ranges.
+        _axes_ticks(controller, coord);
+
+        // Lim.
+        vkl_visual_data(controller->visuals[coord], VKL_PROP_POS, VKL_AXES_LEVEL_LIM, 1, lim);
+
+        // Upload the data.
+        _axes_upload(controller, coord);
+    }
 }
 
 static void _axes_collision(VklController* controller, bool* update)
@@ -359,41 +352,30 @@ static void _add_axes(VklController* controller)
 
     vkl_panel_margins(panel, (vec4){25, 25, 100, 100});
 
-    VklVisual* visualx = vkl_scene_visual(panel, VKL_VISUAL_AXES_2D, VKL_AXES_COORD_X);
-    VklVisual* visualy = vkl_scene_visual(panel, VKL_VISUAL_AXES_2D, VKL_AXES_COORD_Y);
+    for (uint32_t coord = 0; coord < 2; coord++)
+    {
+        VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_AXES_2D, (int)coord);
+        vkl_controller_visual(controller, visual);
+        visual->priority = VKL_MAX_VISUAL_PRIORITY;
 
-    vkl_controller_visual(controller, visualx);
-    vkl_controller_visual(controller, visualy);
+        visual->clip[0] = VKL_VIEWPORT_OUTER;
+        visual->clip[1] = coord == 0 ? VKL_VIEWPORT_OUTER_BOTTOM : VKL_VIEWPORT_OUTER_LEFT;
 
-    visualx->priority = VKL_MAX_VISUAL_PRIORITY;
-    visualy->priority = VKL_MAX_VISUAL_PRIORITY;
+        visual->transform[0] = visual->transform[1] =
+            coord == 0 ? VKL_TRANSFORM_AXIS_X : VKL_TRANSFORM_AXIS_Y;
 
-    visualx->clip[0] = VKL_VIEWPORT_OUTER;
-    visualy->clip[0] = VKL_VIEWPORT_OUTER;
+        // Text params.
+        VklFontAtlas* atlas = vkl_font_atlas(ctx);
+        ASSERT(strlen(atlas->font_str) > 0);
+        vkl_visual_texture(visual, VKL_SOURCE_TYPE_FONT_ATLAS, 1, atlas->texture);
 
-    visualx->clip[1] = VKL_VIEWPORT_OUTER_BOTTOM;
-    visualy->clip[1] = VKL_VIEWPORT_OUTER_LEFT;
-
-    visualx->transform[0] = VKL_TRANSFORM_AXIS_X;
-    visualx->transform[1] = VKL_TRANSFORM_AXIS_X;
-
-    visualy->transform[0] = VKL_TRANSFORM_AXIS_Y;
-    visualy->transform[1] = VKL_TRANSFORM_AXIS_Y;
-
-    // Text params.
-    VklFontAtlas* atlas = vkl_font_atlas(ctx);
-    ASSERT(strlen(atlas->font_str) > 0);
-    vkl_visual_texture(visualx, VKL_SOURCE_TYPE_FONT_ATLAS, 1, atlas->texture);
-    vkl_visual_texture(visualy, VKL_SOURCE_TYPE_FONT_ATLAS, 1, atlas->texture);
-
-    VklGraphicsTextParams params = {0};
-    params.grid_size[0] = (int32_t)atlas->rows;
-    params.grid_size[1] = (int32_t)atlas->cols;
-    params.tex_size[0] = (int32_t)atlas->width;
-    params.tex_size[1] = (int32_t)atlas->height;
-    vkl_visual_data_buffer(visualx, VKL_SOURCE_TYPE_PARAM, 1, 0, 1, 1, &params);
-    vkl_visual_data_buffer(visualy, VKL_SOURCE_TYPE_PARAM, 1, 0, 1, 1, &params);
-
+        VklGraphicsTextParams params = {0};
+        params.grid_size[0] = (int32_t)atlas->rows;
+        params.grid_size[1] = (int32_t)atlas->cols;
+        params.tex_size[0] = (int32_t)atlas->width;
+        params.tex_size[1] = (int32_t)atlas->height;
+        vkl_visual_data_buffer(visual, VKL_SOURCE_TYPE_PARAM, 1, 0, 1, 1, &params);
+    }
     // Add the axes data.
     _axes_ticks_init(controller);
 }
@@ -405,11 +387,12 @@ static void _axes_destroy(VklController* controller)
     VklAxes2D* axes = &controller->u.axes_2D;
     ASSERT(axes != NULL);
 
-    vkl_array_destroy(&axes->xticks);
-    vkl_array_destroy(&axes->yticks);
-
-    FREE(axes->xtext);
-    FREE(axes->xbuf);
+    for (uint32_t i = 0; i < 2; i++)
+    {
+        vkl_array_destroy(&axes->ticks[i]);
+        FREE(axes->text[i]);
+        FREE(axes->buf[i]);
+    }
 }
 
 
