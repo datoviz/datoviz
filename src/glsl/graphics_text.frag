@@ -20,5 +20,11 @@ layout(location = 0) out vec4 out_color;
 void main() {
     CLIP
 
-    #include "text_frag.glsl"
+    if (fract(str_index + eps) > 2 * eps)
+        discard;
+
+    float alpha = get_alpha(tex_coords);
+    alpha = supersample(alpha);
+    out_color = color;
+    out_color.a *= alpha;
 }
