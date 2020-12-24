@@ -448,8 +448,7 @@ VklViewport vkl_viewport_full(VklCanvas* canvas)
     viewport.size_screen[0] = canvas->window->width;
     viewport.size_screen[1] = canvas->window->height;
 
-    // TODO
-    viewport.dpi_scaling = 1.0;
+    viewport.dpi_scaling = VKL_DEFAULT_DPI_SCALING;
     viewport.clip = VKL_VIEWPORT_FULL;
 
     return viewport;

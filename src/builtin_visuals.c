@@ -140,7 +140,7 @@ static void _visual_segment_raw(VklVisual* visual)
 
 static cvec4 VKL_DEFAULT_AXES_COLOR[] = {
     {0, 0, 0, 255}, {0, 0, 0, 255}, {128, 128, 128, 255}, {0, 0, 0, 255}};
-static vec4 VKL_DEFAULT_AXES_LINE_WIDTH = {2.0f, 4.0f, 1.0f, 4.0f};
+static vec4 VKL_DEFAULT_AXES_LINE_WIDTH = {2.0f, 5.0f, 1.0f, 3.0f};
 static vec2 VKL_DEFAULT_AXES_TICK_LENGTH = {20.0f, 10.0f};
 static float VKL_DEFAULT_AXES_FONT_SIZE = 14.0f;
 
@@ -252,32 +252,6 @@ static void _tick_shift(
     }
 }
 
-static void _tick_linewidth(VklAxisLevel level, float* lw)
-{
-    switch (level)
-    {
-
-    case VKL_AXES_LEVEL_MINOR:
-        *lw = 2;
-        break;
-
-    case VKL_AXES_LEVEL_MAJOR:
-        *lw = 5;
-        break;
-
-    case VKL_AXES_LEVEL_GRID:
-        *lw = 1;
-        break;
-
-    case VKL_AXES_LEVEL_LIM:
-        *lw = 3;
-        break;
-
-    default:
-        break;
-    }
-}
-
 static void _add_ticks(
     VklProp* tick_prop, VklGraphicsData* data, VklAxisLevel level, VklAxisCoord coord, cvec4 color,
     float lw, vec2 tick_length)
@@ -322,6 +296,10 @@ static void _add_ticks(
             memcpy(&x, item, sizeof(t));                                                          \
     }
 
+#define DPI_SCALE(x)                                                                              \
+    ASSERT(ev.viewport.dpi_scaling > 0);                                                          \
+    x *= ev.viewport.dpi_scaling;
+
 static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
 {
     ASSERT(visual != NULL);
@@ -349,9 +327,13 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
     // Params
     cvec4 color = {0};
     float lw = 0;
+
     float tick_length_minor = 0, tick_length_major = 0;
     PARAM(float, tick_length_minor, LENGTH, VKL_AXES_LEVEL_MINOR)
     PARAM(float, tick_length_major, LENGTH, VKL_AXES_LEVEL_MAJOR)
+    DPI_SCALE(tick_length_minor)
+    DPI_SCALE(tick_length_major)
+
     vec2 tick_length = {tick_length_minor, tick_length_major};
 
     VklProp* prop = NULL;
@@ -368,9 +350,8 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
 
         PARAM(cvec4, color, COLOR, level)
         PARAM(float, lw, LINE_WIDTH, level)
+        DPI_SCALE(lw)
 
-        // ticks
-        _tick_linewidth(level, &lw);
         _add_ticks(prop, &seg_data, (VklAxisLevel)level, coord, color, lw, tick_length);
     }
 
@@ -411,6 +392,11 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
     VklGraphicsTextItem str_item = {0};
     float* x = NULL;
     vec3 P = {0};
+    float font_size = 0;
+
+    PARAM(float, font_size, TEXT_SIZE, 0)
+    DPI_SCALE(font_size)
+
     if (coord == VKL_AXES_COORD_X)
     {
         str_item.vertex.anchor[1] = 1;
@@ -428,7 +414,7 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
         text = ((char**)prop->arr_orig.data)[i];
         ASSERT(text != NULL);
         ASSERT(strlen(text) > 0);
-        str_item.font_size = 12;
+        str_item.font_size = font_size;
         str_item.string = text;
 
         // Position of the text corresponds to position of the major tick.

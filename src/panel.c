@@ -23,6 +23,7 @@ static void _check_viewport(VklViewport* viewport)
     ASSERT(viewport->size_framebuffer[1] > 0);
     ASSERT(viewport->viewport.width > 0);
     ASSERT(viewport->viewport.height > 0);
+    ASSERT(viewport->dpi_scaling > 0);
 }
 
 
@@ -186,6 +187,8 @@ VklPanel* vkl_panel(VklGrid* grid, uint32_t row, uint32_t col)
     panel->hspan = 1;
     panel->vspan = 1;
 
+    panel->viewport.dpi_scaling = VKL_DEFAULT_DPI_SCALING;
+
     // NOTE: for now just use a single command buffer, as using multiple command buffers
     // is complicated as need to use mupltiple render passes and framebuffers.
     panel->cmds = grid->canvas->commands;
@@ -230,6 +233,17 @@ void vkl_panel_update(VklPanel* panel)
     _update_viewport(panel);
 
     // NOTE: it is up to the scene to update the VklViewport struct on the GPU, for each visual
+}
+
+
+
+void vkl_panel_dpi_scaling(VklPanel* panel, float scaling)
+{
+    ASSERT(panel != NULL);
+    scaling = CLIP(scaling, .1, 100);
+    ASSERT(scaling > 0);
+    panel->viewport.dpi_scaling = scaling;
+    vkl_panel_update(panel);
 }
 
 

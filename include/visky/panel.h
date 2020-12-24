@@ -129,6 +129,8 @@ VKY_EXPORT void vkl_panel_update(VklPanel* panel);
 
 VKY_EXPORT void vkl_panel_margins(VklPanel* panel, vec4 margins);
 
+VKY_EXPORT void vkl_panel_dpi_scaling(VklPanel* panel, float scaling);
+
 VKY_EXPORT void vkl_panel_unit(VklPanel* panel, VklPanelSizeUnit unit);
 
 VKY_EXPORT void vkl_panel_mode(VklPanel* panel, VklPanelMode mode);

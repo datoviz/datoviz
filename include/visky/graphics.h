@@ -15,6 +15,7 @@
 // NOTE: must correspond to the same constant in common.glsl
 #define VKL_USER_BINDING 2
 
+#define VKL_DEFAULT_DPI_SCALING 1.0f
 #define VKL_MAX_GLYPHS_PER_TEXT 256
 
 
