@@ -121,122 +121,6 @@ int test_scene_1(TestContext* context)
 
 
 
-typedef struct VklAxes2D VklAxes2D;
-struct VklAxes2D
-{
-    VklPanel* panel;
-    VklVisual* visualx;
-    VklVisual* visualy;
-    float* xticks;
-    float* yticks;
-    char* str_buf;
-    char** text;
-};
-
-static void _tick_format(double value, char* out_text) { snprintf(out_text, 16, "%.1f", value); }
-
-static void _axes_data(VklAxes2D* axes)
-{
-    ASSERT(axes != NULL);
-    const uint32_t N = 4 * 5 + 1;
-    axes->xticks = calloc(N, sizeof(float));
-    axes->yticks = calloc(N, sizeof(float));
-    axes->str_buf = calloc(N * 16, sizeof(char));
-    axes->text = calloc(N, sizeof(char*));
-    float t = 0;
-    for (uint32_t i = 0; i < N; i++)
-    {
-        t = -2 + 4 * (float)i / (N - 1);
-        axes->xticks[i] = t;
-        axes->yticks[i] = t;
-        axes->text[i] = &axes->str_buf[16 * i];
-        _tick_format(t, axes->text[i]);
-    }
-
-    VklVisual* visualx = axes->visualx;
-    VklVisual* visualy = axes->visualy;
-    float* xticks = axes->xticks;
-    float* yticks = axes->yticks;
-
-    // Minor ticks.
-    vkl_visual_data(visualx, VKL_PROP_POS, VKL_AXES_LEVEL_MINOR, N, xticks);
-    vkl_visual_data(visualy, VKL_PROP_POS, VKL_AXES_LEVEL_MINOR, N, yticks);
-
-    // Major ticks.
-    vkl_visual_data(visualx, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR, N, xticks);
-    vkl_visual_data(visualy, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR, N, yticks);
-
-    // Grid.
-    vkl_visual_data(visualx, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, xticks);
-    vkl_visual_data(visualy, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, yticks);
-
-    // Lim.
-    float lim[] = {-1};
-    vkl_visual_data(visualx, VKL_PROP_POS, VKL_AXES_LEVEL_LIM, 1, lim);
-    vkl_visual_data(visualy, VKL_PROP_POS, VKL_AXES_LEVEL_LIM, 1, lim);
-
-    // Text.
-    vkl_visual_data(visualx, VKL_PROP_TEXT, 0, N, axes->text);
-    vkl_visual_data(visualy, VKL_PROP_TEXT, 0, N, axes->text);
-}
-
-static VklAxes2D _add_axes(VklPanel* panel)
-{
-    ASSERT(panel != NULL);
-    VklContext* ctx = panel->grid->canvas->gpu->context;
-    ASSERT(ctx != NULL);
-
-    vkl_panel_margins(panel, (vec4){25, 25, 100, 100});
-
-    VklVisual* visualx = vkl_scene_visual(panel, VKL_VISUAL_AXES_2D, VKL_AXES_COORD_X);
-    VklVisual* visualy = vkl_scene_visual(panel, VKL_VISUAL_AXES_2D, VKL_AXES_COORD_Y);
-
-    visualx->clip[0] = VKL_VIEWPORT_OUTER;
-    visualy->clip[0] = VKL_VIEWPORT_OUTER;
-
-    visualx->clip[1] = VKL_VIEWPORT_OUTER_BOTTOM;
-    visualy->clip[1] = VKL_VIEWPORT_OUTER_LEFT;
-
-    visualx->transform[0] = VKL_TRANSFORM_AXIS_X;
-    visualx->transform[1] = VKL_TRANSFORM_AXIS_X;
-
-    visualy->transform[0] = VKL_TRANSFORM_AXIS_Y;
-    visualy->transform[1] = VKL_TRANSFORM_AXIS_Y;
-
-    // Text params.
-    VklFontAtlas* atlas = vkl_font_atlas(ctx);
-    ASSERT(strlen(atlas->font_str) > 0);
-    vkl_visual_texture(visualx, VKL_SOURCE_TYPE_FONT_ATLAS, 1, atlas->texture);
-    vkl_visual_texture(visualy, VKL_SOURCE_TYPE_FONT_ATLAS, 1, atlas->texture);
-
-    VklGraphicsTextParams params = {0};
-    params.grid_size[0] = (int32_t)atlas->rows;
-    params.grid_size[1] = (int32_t)atlas->cols;
-    params.tex_size[0] = (int32_t)atlas->width;
-    params.tex_size[1] = (int32_t)atlas->height;
-    vkl_visual_data_buffer(visualx, VKL_SOURCE_TYPE_PARAM, 1, 0, 1, 1, &params);
-    vkl_visual_data_buffer(visualy, VKL_SOURCE_TYPE_PARAM, 1, 0, 1, 1, &params);
-
-    VklAxes2D axes = {0};
-    axes.panel = panel;
-    axes.visualx = visualx;
-    axes.visualy = visualy;
-    _axes_data(&axes);
-    return axes;
-}
-
-static void _axes_destroy(VklAxes2D* axes)
-{
-    ASSERT(axes != NULL);
-    vkl_visual_destroy(axes->visualx);
-    vkl_visual_destroy(axes->visualy);
-
-    FREE(axes->xticks);
-    FREE(axes->yticks);
-    FREE(axes->text);
-    FREE(axes->str_buf);
-}
-
 int test_scene_axes(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
@@ -247,7 +131,7 @@ int test_scene_axes(TestContext* context)
     ASSERT(ctx != NULL);
 
     VklScene* scene = vkl_scene(canvas, 1, 1);
-    VklPanel* panel = vkl_scene_panel(scene, 0, 0, VKL_CONTROLLER_PANZOOM, 0);
+    VklPanel* panel = vkl_scene_panel(scene, 0, 0, VKL_CONTROLLER_AXES_2D, 0);
 
     // Markers.
     VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_MARKER, 0);
@@ -269,8 +153,6 @@ int test_scene_axes(TestContext* context)
         vkl_visual_data(visual, VKL_PROP_COLOR, 0, N, color);
         vkl_visual_data(visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
     }
-
-    _add_axes(panel);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
     vkl_app_run(app, N_FRAMES);

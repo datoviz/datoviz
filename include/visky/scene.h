@@ -55,7 +55,7 @@ typedef enum
 typedef struct VklScene VklScene;
 typedef struct VklController VklController;
 typedef struct VklTransform VklTransform;
-
+typedef struct VklAxes2D VklAxes2D;
 
 typedef void (*VklControllerCallback)(VklController* controller, VklEvent ev);
 
@@ -83,6 +83,19 @@ struct VklController
     // may call vkl_visual_update() on all visuals in the panel
     VklControllerCallback callback;
     // union; // axes
+};
+
+
+
+struct VklAxes2D
+{
+    VklPanel* panel;
+    VklVisual* visualx;
+    VklVisual* visualy;
+    float* xticks;
+    float* yticks;
+    char* str_buf;
+    char** text;
 };
 
 

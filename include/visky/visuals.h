@@ -18,6 +18,7 @@
 #define VKL_MAX_VISUAL_SOURCES      64
 #define VKL_MAX_VISUAL_RESOURCES    64
 #define VKL_MAX_VISUAL_PROPS        64
+#define VKL_MAX_VISUAL_PRIORITY     4
 
 
 
