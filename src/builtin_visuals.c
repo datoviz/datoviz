@@ -138,8 +138,11 @@ static void _visual_segment_raw(VklVisual* visual)
 /*  Axes 2D                                                                                      */
 /*************************************************************************************************/
 
-static cvec4 VKL_DEFAULT_AXES_COLOR = {0, 0, 0, 255};
-static float VKL_DEFAULT_AXES_LINE_WIDTH = 2.0f;
+static cvec4 VKL_DEFAULT_AXES_COLOR[] = {
+    {0, 0, 0, 255}, {0, 0, 0, 255}, {128, 128, 128, 255}, {0, 0, 0, 255}};
+static vec4 VKL_DEFAULT_AXES_LINE_WIDTH = {2.0f, 4.0f, 1.0f, 4.0f};
+static vec2 VKL_DEFAULT_AXES_TICK_LENGTH = {20.0f, 10.0f};
+static float VKL_DEFAULT_AXES_FONT_SIZE = 14.0f;
 
 static uint32_t _count_prop_items(
     VklVisual* visual, uint32_t prop_count, VklPropType* prop_types, //
@@ -312,6 +315,13 @@ static void _add_ticks(
     }
 }
 
+#define PARAM(t, x, n, i)                                                                         \
+    {                                                                                             \
+        t* item = vkl_bake_prop_item(vkl_bake_prop(visual, VKL_PROP_##n, i), 0);                  \
+        if (item != NULL)                                                                         \
+            memcpy(&x, item, sizeof(t));                                                          \
+    }
+
 static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
 {
     ASSERT(visual != NULL);
@@ -336,10 +346,13 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
     VklAxisCoord coord = (VklAxisCoord)visual->flags;
     ASSERT(coord < 2);
 
-    // TODO: params
-    cvec4 color = {0, 0, 0, 255};
-    float lw = 2;
-    vec2 tick_length = {20, 10};
+    // Params
+    cvec4 color = {0};
+    float lw = 0;
+    float tick_length_minor = 0, tick_length_major = 0;
+    PARAM(float, tick_length_minor, LENGTH, VKL_AXES_LEVEL_MINOR)
+    PARAM(float, tick_length_major, LENGTH, VKL_AXES_LEVEL_MAJOR)
+    vec2 tick_length = {tick_length_minor, tick_length_major};
 
     VklProp* prop = NULL;
     uint32_t tick_count = 0;
@@ -353,7 +366,8 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
             continue;
         ASSERT(tick_count > 0);
 
-        memset(color, 0, 3);
+        PARAM(cvec4, color, COLOR, level)
+        PARAM(float, lw, LINE_WIDTH, level)
 
         // ticks
         _tick_linewidth(level, &lw);
@@ -487,28 +501,31 @@ static void _visual_axes_2D(VklVisual* visual)
             // color
             vkl_visual_prop(
                 visual, VKL_PROP_COLOR, level, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
-            vkl_visual_prop_default(visual, VKL_PROP_COLOR, level, VKL_DEFAULT_AXES_COLOR);
+            vkl_visual_prop_default(visual, VKL_PROP_COLOR, level, &VKL_DEFAULT_AXES_COLOR[level]);
 
             // line width
             vkl_visual_prop(
                 visual, VKL_PROP_LINE_WIDTH, level, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_VERTEX, 0);
-            vkl_visual_prop_default(visual, VKL_PROP_COLOR, level, &VKL_DEFAULT_AXES_LINE_WIDTH);
+            vkl_visual_prop_default(
+                visual, VKL_PROP_LINE_WIDTH, level, &VKL_DEFAULT_AXES_LINE_WIDTH[level]);
         }
 
         // minor tick length
         vkl_visual_prop(
             visual, VKL_PROP_LENGTH, VKL_AXES_LEVEL_MINOR, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_VERTEX,
             0);
-        // TODO: default
+        vkl_visual_prop_default(
+            visual, VKL_PROP_LENGTH, VKL_AXES_LEVEL_MINOR, &VKL_DEFAULT_AXES_TICK_LENGTH[0]);
 
         // major tick length
         vkl_visual_prop(
             visual, VKL_PROP_LENGTH, VKL_AXES_LEVEL_MAJOR, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_VERTEX,
             0);
-        // TODO: default
+        vkl_visual_prop_default(
+            visual, VKL_PROP_LENGTH, VKL_AXES_LEVEL_MAJOR, &VKL_DEFAULT_AXES_TICK_LENGTH[1]);
 
         // tick h margin
-        vkl_visual_prop(visual, VKL_PROP_MARGIN, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_VERTEX, 0);
+        // vkl_visual_prop(visual, VKL_PROP_MARGIN, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_VERTEX, 0);
         // TODO: default
     }
 
@@ -516,12 +533,12 @@ static void _visual_axes_2D(VklVisual* visual)
 
     // Text graphics props.
     {
-        // tick text size
+        // tick text
         vkl_visual_prop(visual, VKL_PROP_TEXT, 0, VKL_DTYPE_STR, VKL_SOURCE_TYPE_VERTEX, 1);
-        // TODO: default
 
         // tick text size
         vkl_visual_prop(visual, VKL_PROP_TEXT_SIZE, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_VERTEX, 1);
+        vkl_visual_prop_default(visual, VKL_PROP_TEXT_SIZE, 0, &VKL_DEFAULT_AXES_FONT_SIZE);
     }
 
     vkl_visual_callback_bake(visual, _visual_axes_2D_bake);
