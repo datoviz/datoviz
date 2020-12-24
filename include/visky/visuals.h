@@ -229,6 +229,7 @@ struct VklVisual
     VklObject obj;
     VklCanvas* canvas;
     int flags;
+    int priority;
 
     // Graphics.
     uint32_t graphics_count;
@@ -243,7 +244,6 @@ struct VklVisual
 
     // Data callbacks.
     VklVisualDataCallback callback_transform;
-    // VklVisualDataCallback callback_triangulation;
     VklVisualDataCallback callback_bake;
 
     // Sources.
@@ -264,9 +264,6 @@ struct VklVisual
     VklViewport viewport; // usually the visual's panel viewport, but may be customized
 
     // GPU data
-    // uint32_t vertex_count;
-    // uint32_t index_count;
-
     VklBindings bindings[VKL_MAX_GRAPHICS_PER_VISUAL];
     VklBindings bindings_comp[VKL_MAX_COMPUTES_PER_VISUAL];
 };

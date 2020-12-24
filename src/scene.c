@@ -83,14 +83,20 @@ static void _scene_fill(VklCanvas* canvas, VklPrivateEvent ev)
 
             // Go through all visuals in the panel.
             VklVisual* visual = NULL;
-            for (uint32_t k = 0; k < panel->visual_count; k++)
+            for (int priority = 0; priority <= panel->prority_max; priority++)
             {
-                visual = panel->visuals[k];
+                for (uint32_t k = 0; k < panel->visual_count; k++)
+                {
+                    visual = panel->visuals[k];
+                    if (visual->priority != priority)
+                        continue;
 
-                // Update visual VklViewport struct and upload it.
-                _update_visual_viewport(panel, visual);
+                    // Update visual VklViewport struct and upload it.
+                    _update_visual_viewport(panel, visual);
 
-                vkl_visual_fill_event(visual, ev.u.rf.clear_color, cmds, img_idx, viewport, NULL);
+                    vkl_visual_fill_event(
+                        visual, ev.u.rf.clear_color, cmds, img_idx, viewport, NULL);
+                }
             }
         }
 

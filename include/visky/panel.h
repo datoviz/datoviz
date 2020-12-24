@@ -96,6 +96,7 @@ struct VklPanel
 
     VklController* controller;
     VklCommands* cmds;
+    int prority_max;
 };
 
 
