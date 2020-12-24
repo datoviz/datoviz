@@ -443,7 +443,7 @@ int test_graphics_triangle_fan(TestContext* context)
 
 
 /*************************************************************************************************/
-/*  Agg graphics tests                                                                           */
+/*  Agg marker tests                                                                             */
 /*************************************************************************************************/
 
 int test_graphics_marker(TestContext* context)
@@ -478,6 +478,10 @@ int test_graphics_marker(TestContext* context)
 }
 
 
+
+/*************************************************************************************************/
+/*  Agg segment tests                                                                            */
+/*************************************************************************************************/
 
 static void _resize(VklCanvas* canvas, VklPrivateEvent ev)
 {
@@ -515,6 +519,10 @@ int test_graphics_segment(TestContext* context)
 }
 
 
+
+/*************************************************************************************************/
+/*  Text tests                                                                                   */
+/*************************************************************************************************/
 
 int test_graphics_text(TestContext* context)
 {
@@ -556,17 +564,18 @@ int test_graphics_text(TestContext* context)
     }
 
     // Hello world
-    // for (uint32_t i = 0; i < offset; i++)
-    // {
-    //     vkl_colormap_scale(VKL_CMAP_RAINBOW, i, 0, offset, item.vertex.color);
-    // }
-    // _graphics_text_string(&atlas, 26, str, z, z, z, 0, 50, (const cvec4*)colors, &data[4 * 26]);
+    item.glyph_colors = calloc(offset, sizeof(cvec4));
+    for (uint32_t i = 0; i < offset; i++)
+    {
+        vkl_colormap_scale(VKL_CMAP_RAINBOW, i, 0, offset, item.glyph_colors[i]);
+    }
     item.vertex.pos[0] = 0;
     item.vertex.pos[1] = 0;
     item.vertex.angle = 0;
     item.font_size = 50;
     item.string = str;
     vkl_graphics_append(&data, &item);
+    FREE(item.glyph_colors);
 
     END_DATA
 

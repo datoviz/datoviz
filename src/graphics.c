@@ -195,7 +195,6 @@ static void _graphics_segment(VklCanvas* canvas, VklGraphics* graphics)
 static void _graphics_text_callback(VklGraphicsData* data, uint32_t item_count, const void* item)
 {
     // NOTE: item_count is the total number of glyphs
-    // TODO: multiple colors
 
     ASSERT(data != NULL);
     ASSERT(data->vertices != NULL);
@@ -228,6 +227,10 @@ static void _graphics_text_callback(VklGraphicsData* data, uint32_t item_count, 
         vertex.glyph[1] = i;                   // char idx
         vertex.glyph[2] = n;                   // str len
         vertex.glyph[3] = data->current_group; // str idx
+
+        // Glyph colors.
+        if (str_item->glyph_colors != NULL)
+            memcpy(vertex.color, str_item->glyph_colors[i], sizeof(cvec4));
 
         // Fill the vertices array by simply repeating them 4 times.
         log_debug("%d %d %d", data->current_idx, i, 4 * data->current_idx + 4 * i);
