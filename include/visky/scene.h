@@ -72,7 +72,7 @@ struct VklAxes2D
     dvec2 range[2];
     VklArray ticks[2];
     char* buf[2];
-    char** text[2];
+    VklArray text[2];
 };
 
 

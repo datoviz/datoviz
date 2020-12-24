@@ -218,8 +218,6 @@ static void _upload_mvp(VklCanvas* canvas, VklPrivateEvent ev)
 /*  Axes functions                                                                               */
 /*************************************************************************************************/
 
-static uint32_t n_ticks = 4 * 5 + 1;
-
 static void _tick_format(double value, char* out_text) { snprintf(out_text, 16, "%.1f", value); }
 
 static void _axes_ticks(VklController* controller, VklAxisCoord coord)
@@ -230,17 +228,34 @@ static void _axes_ticks(VklController* controller, VklAxisCoord coord)
     ASSERT(axes != NULL);
 
     VklArray* arr = &axes->ticks[coord];
+    VklArray* text = &axes->text[coord];
     char* buf = axes->buf[coord];
-    char** text = axes->text[coord];
 
-    uint32_t N = arr->item_count;
-    float t = 0;
-    for (uint32_t i = 0; i < N; i++)
+    // Find the ticks given the range.
+    double vmin = axes->range[coord][0];
+    double vmax = axes->range[coord][1];
+    double vlen = vmax - vmin;
+    ASSERT(vlen > 0);
+
+    double vmin0 = vmin - vlen;
+    double vmax0 = vmax + vlen;
+    ASSERT(vmin0 < vmax0);
+
+    // TODO: determine the dv
+    double dv = .25;
+    int32_t N = (int32_t)ceil((vmax0 - vmin0) / dv);
+    ASSERT(N > 0);
+    DBG(N);
+    vkl_array_resize(arr, (uint32_t)N);
+    vkl_array_resize(text, (uint32_t)N);
+
+    double v = 0;
+    for (uint32_t i = 0; i < (uint32_t)N; i++)
     {
-        t = -2 + 4 * (float)i / (N - 1);
-        ((float*)arr->data)[i] = t;
-        text[i] = &buf[16 * i];
-        _tick_format(t, text[i]);
+        v = vmin0 + dv * i;
+        ((float*)arr->data)[i] = v;
+        ((char**)text->data)[i] = &buf[16 * i];
+        _tick_format(v, &buf[16 * i]);
     }
 }
 
@@ -257,7 +272,7 @@ static void _axes_upload(VklController* controller, VklAxisCoord coord)
 
     uint32_t N = arr->item_count;
     float* ticks = arr->data;
-    char** text = axes->text[coord];
+    char** text = axes->text[coord].data;
 
     // TODO: more minor ticks between the major ticks.
     vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_MINOR, N, ticks);
@@ -274,15 +289,13 @@ static void _axes_ticks_init(VklController* controller)
     ASSERT(axes != NULL);
 
     // TODO: customizable
-    const uint32_t N = n_ticks;
-
     float lim[] = {-1};
     for (uint32_t coord = 0; coord < 2; coord++)
     {
         // Init structures.
-        axes->ticks[coord] = vkl_array(N, VKL_DTYPE_FLOAT);
-        axes->buf[coord] = calloc(N * 16, sizeof(char));
-        axes->text[coord] = calloc(N, sizeof(char*));
+        axes->buf[coord] = calloc(128 * 16, sizeof(char)); // max ticks * max glyphs per tick
+        axes->ticks[coord] = vkl_array(0, VKL_DTYPE_FLOAT);
+        axes->text[coord] = vkl_array(0, VKL_DTYPE_STR);
 
         // Set the initial range.
         axes->range[coord][0] = -1;
@@ -390,7 +403,7 @@ static void _axes_destroy(VklController* controller)
     for (uint32_t i = 0; i < 2; i++)
     {
         vkl_array_destroy(&axes->ticks[i]);
-        FREE(axes->text[i]);
+        vkl_array_destroy(&axes->text[i]);
         FREE(axes->buf[i]);
     }
 }
