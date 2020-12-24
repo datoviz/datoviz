@@ -135,28 +135,23 @@ int test_scene_axes(TestContext* context)
 
     // Markers.
     VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_MARKER, 0);
-    visual->clip[0] = VKL_VIEWPORT_INNER;
-
+    const uint32_t N = 10000;
+    vec3* pos = calloc(N, sizeof(vec3));
+    cvec4* color = calloc(N, sizeof(cvec4));
+    float param = 10.0f;
+    for (uint32_t i = 0; i < N; i++)
     {
-        const uint32_t N = 10000;
-        vec3* pos = calloc(N, sizeof(vec3));
-        cvec4* color = calloc(N, sizeof(cvec4));
-        float param = 10.0f;
-        for (uint32_t i = 0; i < N; i++)
-        {
-            RANDN_POS(pos[i])
-            RAND_COLOR(color[i])
-            color[i][3] = 200;
-        }
-
-        vkl_visual_data(visual, VKL_PROP_POS, 0, N, pos);
-        vkl_visual_data(visual, VKL_PROP_COLOR, 0, N, color);
-        vkl_visual_data(visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
+        RANDN_POS(pos[i])
+        RAND_COLOR(color[i])
+        color[i][3] = 200;
     }
+
+    vkl_visual_data(visual, VKL_PROP_POS, 0, N, pos);
+    vkl_visual_data(visual, VKL_PROP_COLOR, 0, N, color);
+    vkl_visual_data(visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
     vkl_app_run(app, N_FRAMES);
-
     vkl_scene_destroy(scene);
     TEST_END
 }

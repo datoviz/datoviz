@@ -246,7 +246,6 @@ void vkl_visual_destroy(VklVisual* visual)
     {
         vkl_array_destroy(&visual->props[i].arr_orig);
         vkl_array_destroy(&visual->props[i].arr_trans);
-        // vkl_array_destroy(&visual->props[i].arr_triang);
     }
 
     // Free the data sources.

@@ -220,8 +220,10 @@ static void _upload_mvp(VklCanvas* canvas, VklPrivateEvent ev)
 
 static void _tick_format(double value, char* out_text) { snprintf(out_text, 16, "%.1f", value); }
 
-static void _axes_data(VklAxes2D* axes)
+static void _axes_data(VklController* controller)
 {
+    ASSERT(controller != NULL);
+    VklAxes2D* axes = &controller->u.axes_2D;
     ASSERT(axes != NULL);
     const uint32_t N = 4 * 5 + 1;
     axes->xticks = calloc(N, sizeof(float));
@@ -238,8 +240,9 @@ static void _axes_data(VklAxes2D* axes)
         _tick_format(t, axes->text[i]);
     }
 
-    VklVisual* visualx = axes->visualx;
-    VklVisual* visualy = axes->visualy;
+    ASSERT(controller->visual_count == 2);
+    VklVisual* visualx = controller->visuals[0];
+    VklVisual* visualy = controller->visuals[1];
     float* xticks = axes->xticks;
     float* yticks = axes->yticks;
 
@@ -265,7 +268,7 @@ static void _axes_data(VklAxes2D* axes)
     vkl_visual_data(visualy, VKL_PROP_TEXT, 0, N, axes->text);
 }
 
-static VklAxes2D _add_axes(VklController* controller)
+static void _add_axes(VklController* controller)
 {
     ASSERT(controller != NULL);
     VklPanel* panel = controller->panel;
@@ -278,6 +281,9 @@ static VklAxes2D _add_axes(VklController* controller)
 
     VklVisual* visualx = vkl_scene_visual(panel, VKL_VISUAL_AXES_2D, VKL_AXES_COORD_X);
     VklVisual* visualy = vkl_scene_visual(panel, VKL_VISUAL_AXES_2D, VKL_AXES_COORD_Y);
+
+    vkl_controller_visual(controller, visualx);
+    vkl_controller_visual(controller, visualy);
 
     visualx->priority = VKL_MAX_VISUAL_PRIORITY;
     visualy->priority = VKL_MAX_VISUAL_PRIORITY;
@@ -308,20 +314,15 @@ static VklAxes2D _add_axes(VklController* controller)
     vkl_visual_data_buffer(visualx, VKL_SOURCE_TYPE_PARAM, 1, 0, 1, 1, &params);
     vkl_visual_data_buffer(visualy, VKL_SOURCE_TYPE_PARAM, 1, 0, 1, 1, &params);
 
-    VklAxes2D axes = {0};
-    axes.panel = panel;
-    axes.visualx = visualx;
-    axes.visualy = visualy;
-    _axes_data(&axes);
-    return axes;
+    // Add the axes data.
+    _axes_data(controller);
 }
 
-static void _axes_destroy(VklAxes2D* axes)
+static void _axes_destroy(VklController* controller)
 {
+    ASSERT(controller != NULL);
+    VklAxes2D* axes = &controller->u.axes_2D;
     ASSERT(axes != NULL);
-    vkl_visual_destroy(axes->visualx);
-    vkl_visual_destroy(axes->visualy);
-
     FREE(axes->xticks);
     FREE(axes->yticks);
     FREE(axes->text);
@@ -619,6 +620,20 @@ void vkl_controller_destroy(VklController* controller)
     if (controller->obj.status == VKL_OBJECT_STATUS_DESTROYED)
         return;
     ASSERT(controller != NULL);
+
+    // TODO: controller destruction callback
+    switch (controller->type)
+    {
+    case VKL_CONTROLLER_AXES_2D:
+        _axes_destroy(controller);
+        break;
+
+    default:
+        log_error("unknown controller type");
+        break;
+    }
+
+    // Destroy the interacts.
     for (uint32_t i = 0; i < controller->interact_count; i++)
     {
         vkl_interact_destroy(&controller->interacts[i]);
@@ -699,6 +714,10 @@ VklVisual* vkl_scene_visual(VklPanel* panel, VklVisualType type, int flags)
     // Bind the common buffers (MVP, viewport, color texture).
     _common_data(panel, visual);
 
+    // Put all graphics pipeline in the inner viewport by default.
+    for (uint32_t pidx = 0; pidx < visual->graphics_count; pidx++)
+        visual->clip[pidx] = VKL_VIEWPORT_INNER;
+
     return visual;
 }
 
@@ -711,6 +730,17 @@ VklVisual* vkl_scene_visual(VklPanel* panel, VklVisualType type, int flags)
 void vkl_scene_destroy(VklScene* scene)
 {
     ASSERT(scene != NULL);
+
+    // Destroy all panels.
+    for (uint32_t i = 0; i < scene->grid.panel_count; i++)
+    {
+        if (scene->grid.panels[i].obj.status == VKL_OBJECT_STATUS_NONE)
+            break;
+        // Destroy all visuals in the panel.
+        vkl_panel_destroy(&scene->grid.panels[i]);
+    }
+
+    // Destroy all controllers.
     for (uint32_t i = 0; i < scene->max_controllers; i++)
     {
         if (scene->controllers[i].obj.status == VKL_OBJECT_STATUS_NONE)

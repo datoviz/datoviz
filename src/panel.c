@@ -387,7 +387,9 @@ VklPanel* vkl_panel_at(VklGrid* grid, vec2 pos)
 
 void vkl_panel_destroy(VklPanel* panel)
 {
-
     ASSERT(panel != NULL);
-    // TODO
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        vkl_visual_destroy(panel->visuals[i]);
+    }
 }
