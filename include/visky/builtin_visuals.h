@@ -7,8 +7,19 @@
 
 
 /*************************************************************************************************/
-/*  Constants                                                                                    */
+/*  Macros                                                                                       */
 /*************************************************************************************************/
+
+#define PARAM(t, x, n, i)                                                                         \
+    {                                                                                             \
+        t* item = vkl_bake_prop_item(vkl_bake_prop(visual, VKL_PROP_##n, i), 0);                  \
+        if (item != NULL)                                                                         \
+            memcpy(&x, item, sizeof(t));                                                          \
+    }
+
+#define DPI_SCALE(x)                                                                              \
+    ASSERT(ev.viewport.dpi_scaling > 0);                                                          \
+    x *= ev.viewport.dpi_scaling;
 
 
 

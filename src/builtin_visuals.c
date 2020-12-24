@@ -1,5 +1,4 @@
 #include "../include/visky/builtin_visuals.h"
-// #include "../include/visky/scene.h"
 
 
 
@@ -288,17 +287,6 @@ static void _add_ticks(
         vkl_graphics_append(data, &vertex);
     }
 }
-
-#define PARAM(t, x, n, i)                                                                         \
-    {                                                                                             \
-        t* item = vkl_bake_prop_item(vkl_bake_prop(visual, VKL_PROP_##n, i), 0);                  \
-        if (item != NULL)                                                                         \
-            memcpy(&x, item, sizeof(t));                                                          \
-    }
-
-#define DPI_SCALE(x)                                                                              \
-    ASSERT(ev.viewport.dpi_scaling > 0);                                                          \
-    x *= ev.viewport.dpi_scaling;
 
 static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
 {
