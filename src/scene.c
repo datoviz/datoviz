@@ -1,4 +1,5 @@
 #include "../include/visky/scene.h"
+#include "../external/exwilk.h"
 #include "../include/visky/canvas.h"
 #include "../include/visky/panel.h"
 #include "../include/visky/visuals.h"
@@ -224,6 +225,7 @@ static void _axes_ticks(VklController* controller, VklAxisCoord coord)
     ASSERT(controller->type == VKL_CONTROLLER_AXES_2D);
     VklAxes2D* axes = &controller->u.axes_2D;
     ASSERT(axes != NULL);
+    VklCanvas* canvas = controller->panel->grid->canvas;
 
     VklArray* arr = &axes->ticks[coord];
     VklArray* text = &axes->text[coord];
@@ -239,11 +241,21 @@ static void _axes_ticks(VklController* controller, VklAxisCoord coord)
     double vmax0 = vmax + vlen;
     ASSERT(vmin0 < vmax0);
 
-    // TODO: determine the dv with Wilkinson
-    // double dv = .5;
-    // int32_t N = (int32_t)ceil((vmax0 - vmin0) / dv);
-    int32_t N = 12;
-    double dv = (vmax0 - vmin0) / (double)N;
+    // TODO: improve
+    int32_t N = 3 * 12;
+    VklAxesContext context = {0};
+    context.glyph_size[0] = 12;
+    context.glyph_size[1] = 12;
+    context.coord = coord;
+    uvec2 size = {0};
+    vkl_canvas_size(canvas, VKL_CANVAS_SIZE_FRAMEBUFFER, size);
+    context.viewport_size[0] = size[0];
+    context.viewport_size[1] = size[1];
+    R r = wilk_ext(vmin0, vmax0, N, false, context);
+    vmin0 = r.lmin;
+    vmax0 = r.lmax;
+    double dv = r.lstep;
+    N = (int32_t)ceil((vmax0 - vmin0) / dv);
     ASSERT(N > 0);
     vkl_array_resize(arr, (uint32_t)N);
     vkl_array_resize(text, (uint32_t)N);
@@ -252,7 +264,6 @@ static void _axes_ticks(VklController* controller, VklAxisCoord coord)
     for (uint32_t i = 0; i < (uint32_t)N; i++)
     {
         v = vmin0 + dv * i;
-        // log_info("%.3f", v);
         ((float*)arr->data)[i] = v;
         ((char**)text->data)[i] = &buf[16 * i];
         _tick_format(v, &buf[16 * i]);
@@ -353,11 +364,15 @@ static void _axes_callback(VklController* controller, VklEvent ev)
     if (!controller->interacts[0].is_active)
         return;
     VklCanvas* canvas = controller->panel->grid->canvas;
+
     // Check label collision
-    bool update[2] = {false, false}; // whether X and Y axes must be updated or not
-    _axes_collision(controller, update);
-    if (!update[0] && !update[1])
-        return;
+    // DEBUG
+    bool update[2] = {true, true}; // whether X and Y axes must be updated or not
+    // bool update[2] = {false, false}; // whether X and Y axes must be updated or not
+    // _axes_collision(controller, update);
+    // if (!update[0] && !update[1])
+    //     return;
+
     for (uint32_t coord = 0; coord < 2; coord++)
     {
         if (!update[coord])
