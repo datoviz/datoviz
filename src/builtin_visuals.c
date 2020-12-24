@@ -209,9 +209,13 @@ static void _tick_pos(float x, VklAxisLevel level, VklAxisCoord coord, vec3 P0, 
     }
 }
 
-static void
-_tick_shift(uint32_t i, uint32_t n, float s, VklAxisLevel level, VklAxisCoord coord, vec4 shift)
+static void _tick_shift(
+    uint32_t i, uint32_t n, float s, vec2 tick_length, VklAxisLevel level, VklAxisCoord coord,
+    vec4 shift)
 {
+    if (level <= VKL_AXES_LEVEL_MAJOR)
+        shift[3 - coord] = tick_length[level];
+
     if (level == VKL_AXES_LEVEL_LIM)
     {
         if (coord == VKL_AXES_COORD_X)
@@ -245,20 +249,42 @@ _tick_shift(uint32_t i, uint32_t n, float s, VklAxisLevel level, VklAxisCoord co
     }
 }
 
+static void _tick_linewidth(VklAxisLevel level, float* lw)
+{
+    switch (level)
+    {
+
+    case VKL_AXES_LEVEL_MINOR:
+        *lw = 2;
+        break;
+
+    case VKL_AXES_LEVEL_MAJOR:
+        *lw = 5;
+        break;
+
+    case VKL_AXES_LEVEL_GRID:
+        *lw = 1;
+        break;
+
+    case VKL_AXES_LEVEL_LIM:
+        *lw = 3;
+        break;
+
+    default:
+        break;
+    }
+}
+
 static void _add_ticks(
     VklProp* tick_prop, VklGraphicsData* data, VklAxisLevel level, VklAxisCoord coord, cvec4 color,
-    float lw, vec4 shift)
+    float lw, vec2 tick_length)
 {
     ASSERT(tick_prop != NULL);
     ASSERT(data != NULL);
 
     float* x = NULL;
-
     vec3 P0 = {0};
     vec3 P1 = {0};
-    vec4 shift0 = {0};
-    glm_vec4_copy(shift, shift0);
-
     VklCapType cap = VKL_CAP_TYPE_NONE;
     VklTransformAxis transform =
         level == VKL_AXES_LEVEL_LIM ? VKL_TRANSFORM_AXIS_NONE : VKL_TRANSFORM_AXIS_DEFAULT;
@@ -269,18 +295,15 @@ static void _add_ticks(
     VklGraphicsSegmentVertex vertex = {0};
     for (uint32_t i = 0; i < n; i++)
     {
-        glm_vec4_copy(shift0, shift);
-
         // TODO: transformation
         x = vkl_bake_prop_item(tick_prop, i);
         ASSERT(x != NULL);
 
-        _tick_shift(i, n, s, level, coord, shift);
+        _tick_shift(i, n, s, tick_length, level, coord, vertex.shift);
         _tick_pos(*x, level, coord, P0, P1);
 
         glm_vec3_copy(P0, vertex.P0);
         glm_vec3_copy(P1, vertex.P1);
-        glm_vec4_copy(shift, vertex.shift);
         memcpy(vertex.color, color, sizeof(cvec4));
         vertex.cap0 = vertex.cap1 = cap;
         vertex.linewidth = lw;
@@ -316,9 +339,7 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
     // TODO: params
     cvec4 color = {0, 0, 0, 255};
     float lw = 2;
-    float minor_tick_length = 20;
-    float major_tick_length = 10;
-    vec4 shift = {0};
+    vec2 tick_length = {20, 10};
 
     VklProp* prop = NULL;
     uint32_t tick_count = 0;
@@ -333,36 +354,10 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
         ASSERT(tick_count > 0);
 
         memset(color, 0, 3);
-        glm_vec4_zero(shift);
-
-        switch (level)
-        {
-
-        case VKL_AXES_LEVEL_MINOR:
-            color[0] = 255;
-            shift[3 - coord] = minor_tick_length;
-            lw = 2;
-            break;
-
-        case VKL_AXES_LEVEL_MAJOR:
-            shift[3 - coord] = major_tick_length;
-            lw = 5;
-            break;
-
-        case VKL_AXES_LEVEL_GRID:
-            lw = 1;
-            break;
-
-        case VKL_AXES_LEVEL_LIM:
-            lw = 3;
-            break;
-
-        default:
-            break;
-        }
 
         // ticks
-        _add_ticks(prop, &seg_data, (VklAxisLevel)level, coord, color, lw, shift);
+        _tick_linewidth(level, &lw);
+        _add_ticks(prop, &seg_data, (VklAxisLevel)level, coord, color, lw, tick_length);
     }
 
     // Labels: one for each major tick.
