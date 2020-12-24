@@ -118,7 +118,6 @@ int test_visuals_marker_raw(TestContext* context)
 int test_visuals_segment_raw(TestContext* context)
 {
     INIT;
-    // vkl_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});
 
     VklVisual visual = vkl_visual(canvas);
     vkl_visual_builtin(&visual, VKL_VISUAL_SEGMENT, 0);
@@ -156,6 +155,40 @@ int test_visuals_segment_raw(TestContext* context)
 
 
 
+static void _visual_update(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    ASSERT(canvas != NULL);
+    VklVisual* visual = ev.user_data;
+    ASSERT(visual != NULL);
+
+    const uint32_t N = 2 + (ev.u.t.idx % 10);
+    float* xticks = calloc(N, sizeof(float));
+    float* yticks = calloc(N, sizeof(float));
+    char* hello = "ABC";
+    char** text = calloc(N, sizeof(char*));
+    float t = 0;
+    for (uint32_t i = 0; i < N; i++)
+    {
+        t = -1 + 2 * (float)i / (N - 1);
+        xticks[i] = t;
+        yticks[i] = t;
+        text[i] = hello;
+    }
+
+    // Set visual data.
+    vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR, N, xticks);
+    vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, xticks);
+    vkl_visual_data(visual, VKL_PROP_TEXT, 0, N, text);
+
+    viewport = vkl_viewport_full(canvas);
+    vkl_visual_update(visual, viewport, (VklDataCoords){0}, NULL);
+    vkl_canvas_to_refill(visual->canvas, true);
+
+    FREE(xticks);
+    FREE(yticks);
+    FREE(text);
+}
+
 int test_visuals_axes_2D(TestContext* context)
 {
     INIT;
@@ -170,7 +203,7 @@ int test_visuals_axes_2D(TestContext* context)
 
     vkl_visual_texture(&visual, VKL_SOURCE_TYPE_FONT_ATLAS, 1, atlas->texture);
 
-    const uint32_t N = 10;
+    const uint32_t N = 5;
     float* xticks = calloc(N, sizeof(float));
     float* yticks = calloc(N, sizeof(float));
     char* hello = "ABC";
@@ -187,11 +220,18 @@ int test_visuals_axes_2D(TestContext* context)
     // Set visual data.
     vkl_visual_data(&visual, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR, N, xticks);
     vkl_visual_data(&visual, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, xticks);
-    cvec4 color = {255, 0, 0, 255};
-    vkl_visual_data(&visual, VKL_PROP_COLOR, 0, 1, color);
-
-    // Text.
     vkl_visual_data(&visual, VKL_PROP_TEXT, 0, N, text);
+
+    cvec4 color = {255, 0, 0, 255};
+    vkl_visual_data(&visual, VKL_PROP_COLOR, VKL_AXES_LEVEL_MAJOR, 1, color);
+    color[0] = 0;
+    color[1] = 255;
+    vkl_visual_data(&visual, VKL_PROP_COLOR, VKL_AXES_LEVEL_GRID, 1, color);
+
+    float lw = 10;
+    vkl_visual_data(&visual, VKL_PROP_LINE_WIDTH, VKL_AXES_LEVEL_MAJOR, 1, &lw);
+    lw = 5;
+    vkl_visual_data(&visual, VKL_PROP_LINE_WIDTH, VKL_AXES_LEVEL_GRID, 1, &lw);
 
     // Text params.
     VklGraphicsTextParams params = {0};
@@ -202,10 +242,13 @@ int test_visuals_axes_2D(TestContext* context)
     vkl_visual_data_buffer(&visual, VKL_SOURCE_TYPE_PARAM, 1, 0, 1, 1, &params);
 
     _common_data(&visual);
+
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, .25, _visual_update, &visual);
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _resize, NULL);
     vkl_app_run(app, N_FRAMES);
     FREE(xticks);
     FREE(yticks);
+    FREE(text);
     vkl_visual_destroy(&visual);
     TEST_END
 }
