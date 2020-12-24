@@ -10,7 +10,19 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static void _common_data(VklPanel* panel, VklVisual* visual, VklViewportClip clip)
+static void _update_visual_viewport(VklPanel* panel, VklVisual* visual)
+{
+    visual->viewport = panel->viewport;
+    // Each graphics pipeline in the visual has its own transform/clip viewport options
+    for (uint32_t pidx = 0; pidx < visual->graphics_count; pidx++)
+    {
+        visual->viewport.transform = visual->transform[pidx];
+        visual->viewport.clip = visual->clip[pidx];
+        vkl_visual_data_buffer(visual, VKL_SOURCE_TYPE_VIEWPORT, pidx, 0, 1, 1, &visual->viewport);
+    }
+}
+
+static void _common_data(VklPanel* panel, VklVisual* visual)
 {
     ASSERT(panel != NULL);
     ASSERT(visual != NULL);
@@ -19,8 +31,7 @@ static void _common_data(VklPanel* panel, VklVisual* visual, VklViewportClip cli
     vkl_visual_buffer(visual, VKL_SOURCE_TYPE_MVP, 0, panel->br_mvp);
 
     // Binding 1: viewport
-    visual->viewport = panel->viewport;
-    vkl_visual_data_buffer(visual, VKL_SOURCE_TYPE_VIEWPORT, 0, 0, 1, 1, &visual->viewport);
+    _update_visual_viewport(panel, visual);
 }
 
 
@@ -77,13 +88,7 @@ static void _scene_fill(VklCanvas* canvas, VklPrivateEvent ev)
                 visual = panel->visuals[k];
 
                 // Update visual VklViewport struct and upload it.
-                visual->viewport = panel->viewport;
-                visual->viewport.transform = visual->transform;
-                visual->viewport.clip = visual->clip;
-
-                // Update the viewport struct of the visual
-                vkl_visual_data_buffer(
-                    visual, VKL_SOURCE_TYPE_VIEWPORT, 0, 0, 1, 1, &visual->viewport);
+                _update_visual_viewport(panel, visual);
 
                 vkl_visual_fill_event(visual, ev.u.rf.clear_color, cmds, img_idx, viewport, NULL);
             }
@@ -561,8 +566,7 @@ VklVisual* vkl_scene_visual(VklPanel* panel, VklVisualType type, int flags)
     vkl_panel_visual(panel, visual);
 
     // Bind the common buffers (MVP, viewport, color texture).
-    // TODO: viewport type
-    _common_data(panel, visual, VKL_VIEWPORT_INNER);
+    _common_data(panel, visual);
 
     return visual;
 }

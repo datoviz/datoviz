@@ -124,6 +124,7 @@ typedef void (*VklGraphicsCallback)(VklGraphicsData* data, uint32_t item_count, 
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
+// Backend.
 typedef enum
 {
     VKL_BACKEND_NONE,
@@ -132,6 +133,7 @@ typedef enum
 } VklBackend;
 
 
+// Queue type.
 typedef enum
 {
     VKL_QUEUE_TRANSFER = 0x01,
@@ -143,6 +145,7 @@ typedef enum
 } VklQueueType;
 
 
+// Command buffer type.
 typedef enum
 {
     VKL_COMMAND_TRANSFERS,
@@ -152,6 +155,7 @@ typedef enum
 } VklCommandBufferType;
 
 
+// Texture axis.
 typedef enum
 {
     VKL_TEXTURE_AXIS_U,
@@ -160,6 +164,7 @@ typedef enum
 } VklTextureAxis;
 
 
+// Blend type.
 typedef enum
 {
     VKL_BLEND_DISABLE,
@@ -167,6 +172,7 @@ typedef enum
 } VklBlendType;
 
 
+// Depth test.
 typedef enum
 {
     VKL_DEPTH_TEST_DISABLE,
@@ -174,6 +180,7 @@ typedef enum
 } VklDepthTest;
 
 
+// Render pass attachment type.
 typedef enum
 {
     VKL_RENDERPASS_ATTACHMENT_COLOR,

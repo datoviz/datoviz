@@ -469,9 +469,12 @@ static void _visual_axes_2D(VklVisual* visual)
     // Uniform buffers.
     _common_sources(visual);
 
-    // Share the MVP and VIEWPORT sources with the second visual.
+    // Share the MVP source with the second visual.
     vkl_visual_source_share(visual, VKL_SOURCE_TYPE_MVP, 0, 1);
-    vkl_visual_source_share(visual, VKL_SOURCE_TYPE_VIEWPORT, 0, 1);
+
+    // NOTE: the viewport source is not shared, as we want different clipping for both graphics.
+    vkl_visual_source(
+        visual, VKL_SOURCE_TYPE_VIEWPORT, VKL_PIPELINE_GRAPHICS, 1, 1, sizeof(VklViewport), 0);
 
     // Segment graphics props.
     {

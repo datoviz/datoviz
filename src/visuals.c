@@ -608,6 +608,23 @@ void vkl_visual_data_partial(
 static VklSource* _assert_source_exists(VklVisual* visual, VklSourceType source_type, uint32_t idx)
 {
     VklSource* source = vkl_bake_source(visual, source_type, idx);
+
+    // Check if the requested source is not a shared source.
+    if (source == NULL)
+    {
+        for (uint32_t i = 0; i < visual->source_count; i++)
+        {
+            for (uint32_t j = 0; j < visual->sources[i].other_count; j++)
+            {
+                if (visual->sources[i].other_idxs[j] == idx)
+                {
+                    source = &visual->sources[i];
+                    break;
+                }
+            }
+        }
+    }
+
     if (source == NULL)
     {
         log_error("source of type %d #%d not found", source_type, idx);
@@ -628,12 +645,6 @@ void vkl_visual_data_buffer(
 
     // Get the associated source.
     VklSource* source = _assert_source_exists(visual, source_type, idx);
-
-    // // When setting the vertex buffer directly, update the visual's vertex count.
-    // if (source->source_kind == VKL_SOURCE_VERTEX)
-    //     visual->vertex_count = count;
-    // if (source->source_kind == VKL_SOURCE_INDEX)
-    //     visual->index_count = count;
 
     // Make sure the array has the right size.
     vkl_array_resize(&source->arr, count);

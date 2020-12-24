@@ -49,7 +49,12 @@ static void _common_data(VklVisual* visual)
     br_viewport = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklViewport));
     viewport = vkl_viewport_full(canvas);
 
-    vkl_visual_buffer(visual, VKL_SOURCE_TYPE_VIEWPORT, 0, br_viewport);
+    // For the tests, share the same viewport buffer region among all graphics pipelines of the
+    // visual.
+    for (uint32_t pidx = 0; pidx < visual->graphics_count; pidx++)
+    {
+        vkl_visual_buffer(visual, VKL_SOURCE_TYPE_VIEWPORT, pidx, br_viewport);
+    }
     vkl_upload_buffers(ctx, br_viewport, 0, sizeof(VklViewport), &viewport);
     vkl_visual_update(visual, viewport, (VklDataCoords){0}, NULL);
 

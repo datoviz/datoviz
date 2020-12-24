@@ -18,5 +18,7 @@ layout(location = 0) out vec4 out_color;
 #include "text_functions.glsl"
 
 void main() {
+    CLIP
+
     #include "text_frag.glsl"
 }

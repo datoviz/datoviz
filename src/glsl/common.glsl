@@ -2,9 +2,11 @@
 /*  Constants and macros                                                                         */
 /*************************************************************************************************/
 
-#define VKL_VIEWPORT_NONE       0
-#define VKL_VIEWPORT_INNER      1
-#define VKL_VIEWPORT_OUTER      2
+#define VKL_VIEWPORT_NONE           0
+#define VKL_VIEWPORT_INNER          1
+#define VKL_VIEWPORT_OUTER          2
+#define VKL_VIEWPORT_OUTER_BOTTOM   3
+#define VKL_VIEWPORT_OUTER_LEFT     4
 
 #define VKL_TRANSFORM_AXIS_DEFAULT  0
 #define VKL_TRANSFORM_AXIS_ALL      1
@@ -21,14 +23,29 @@
     {                                                                                           \
         case VKL_VIEWPORT_NONE:                                                                 \
             break;                                                                              \
+                                                                                                \
         case VKL_VIEWPORT_INNER:                                                                \
-            if(clip_viewport(gl_FragCoord.xy))                                                  \
+            if(!clip_viewport(gl_FragCoord.xy))                                                  \
                 discard;                                                                        \
             break;                                                                              \
+                                                                                                \
         case VKL_VIEWPORT_OUTER:                                                                \
-            if(!clip_viewport(gl_FragCoord.xy))                                                 \
+            if(clip_viewport(gl_FragCoord.xy))                                                 \
                 discard;                                                                        \
             break;                                                                              \
+                                                                                                \
+            break;                                                                              \
+                                                                                                \
+        case VKL_VIEWPORT_OUTER_BOTTOM:                                                         \
+            if(clip_viewport(gl_FragCoord.xy, 0))                                              \
+                discard;                                                                        \
+            break;                                                                              \
+                                                                                                \
+        case VKL_VIEWPORT_OUTER_LEFT:                                                           \
+            if(clip_viewport(gl_FragCoord.xy, 1))                                              \
+                discard;                                                                        \
+            break;                                                                              \
+                                                                                                \
         default:                                                                                \
             break;                                                                              \
     }
@@ -64,8 +81,6 @@ layout (std140, binding = 1) uniform Viewport {
     int transform;
     float dpi_scaling;      // DPI scaling
 } viewport;
-
-// layout (binding = 2) uniform sampler2D color_tex;
 
 
 
@@ -166,6 +181,36 @@ bool clip_viewport(vec2 frag_coords) {
         uv.y > viewport.size.y - viewport.margins.z ||
         uv.x < 0 + viewport.margins.w
     );
+}
+
+
+
+bool clip_viewport(vec2 frag_coords, int coord) {
+    vec2 uv = frag_coords - viewport.offset;
+
+    float w = viewport.size.x;
+    float h = viewport.size.y;
+
+    float top = viewport.margins.x;
+    float right = viewport.margins.y;
+    float bottom = viewport.margins.z;
+    float left = viewport.margins.w;
+
+    // Discard top and right edges.
+    // NOTE: extra margin: 10, 30px
+    // if (uv.y < top - 10.0 || uv.x > w - right + 30.0)
+    //     discard;
+
+    // Bottom-left corner: discard along the diagonal
+    if (uv.x < left && uv.y > h - bottom) {
+        vec2 q0 = vec2(left, bottom);
+        vec2 q1 = vec2(uv.x, h - uv.y);
+        float s = (q0.x * q1.y - q0.y * q1.x);
+        float eps = left * 5;
+        if ((s > -eps && coord < .5) || (s < eps && coord > .5))
+            return true;
+    }
+    return false;
 }
 
 

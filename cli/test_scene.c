@@ -134,16 +134,22 @@ int test_scene_axes(TestContext* context)
 
     VklScene* scene = vkl_scene(canvas, 1, 1);
     VklPanel* panel = vkl_scene_panel(scene, 0, 0, VKL_CONTROLLER_PANZOOM, 0);
-    vkl_panel_margins(panel, (vec4){100, 100, 100, 100});
+    vkl_panel_margins(panel, (vec4){25, 25, 100, 100});
 
     VklVisual* visualx = vkl_scene_visual(panel, VKL_VISUAL_AXES_2D, VKL_AXES_COORD_X);
     VklVisual* visualy = vkl_scene_visual(panel, VKL_VISUAL_AXES_2D, VKL_AXES_COORD_Y);
 
-    visualx->clip = VKL_VIEWPORT_INNER;
-    visualy->clip = VKL_VIEWPORT_INNER;
+    visualx->clip[0] = VKL_VIEWPORT_OUTER;
+    visualy->clip[0] = VKL_VIEWPORT_OUTER;
 
-    visualx->transform = VKL_TRANSFORM_AXIS_X;
-    visualy->transform = VKL_TRANSFORM_AXIS_Y;
+    visualx->clip[1] = VKL_VIEWPORT_OUTER_BOTTOM;
+    visualy->clip[1] = VKL_VIEWPORT_OUTER_LEFT;
+
+    visualx->transform[0] = VKL_TRANSFORM_AXIS_X;
+    visualx->transform[1] = VKL_TRANSFORM_AXIS_X;
+
+    visualy->transform[0] = VKL_TRANSFORM_AXIS_Y;
+    visualy->transform[1] = VKL_TRANSFORM_AXIS_Y;
 
     const uint32_t N = 4 * 5 + 1;
     float* xticks = calloc(N, sizeof(float));
