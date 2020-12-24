@@ -220,31 +220,18 @@ static void _upload_mvp(VklCanvas* canvas, VklPrivateEvent ev)
 
 static void _tick_format(double value, char* out_text) { snprintf(out_text, 16, "%.1f", value); }
 
-static void _axes_data(VklController* controller)
+static void _axes_upload(VklController* controller, VklAxisCoord coord)
 {
     ASSERT(controller != NULL);
-    VklAxes2D* axes = &controller->u.axes_2D;
-    ASSERT(axes != NULL);
-    const uint32_t N = 4 * 5 + 1;
-    axes->xticks = calloc(N, sizeof(float));
-    axes->yticks = calloc(N, sizeof(float));
-    axes->str_buf = calloc(N * 16, sizeof(char));
-    axes->text = calloc(N, sizeof(char*));
-    float t = 0;
-    for (uint32_t i = 0; i < N; i++)
-    {
-        t = -2 + 4 * (float)i / (N - 1);
-        axes->xticks[i] = t;
-        axes->yticks[i] = t;
-        axes->text[i] = &axes->str_buf[16 * i];
-        _tick_format(t, axes->text[i]);
-    }
-
     ASSERT(controller->visual_count == 2);
+    VklAxes2D* axes = &controller->u.axes_2D;
+
     VklVisual* visualx = controller->visuals[0];
     VklVisual* visualy = controller->visuals[1];
-    float* xticks = axes->xticks;
-    float* yticks = axes->yticks;
+
+    uint32_t N = axes->xticks.item_count;
+    float* xticks = axes->xticks.data;
+    float* yticks = axes->yticks.data;
 
     // Minor ticks.
     vkl_visual_data(visualx, VKL_PROP_POS, VKL_AXES_LEVEL_MINOR, N, xticks);
@@ -258,14 +245,85 @@ static void _axes_data(VklController* controller)
     vkl_visual_data(visualx, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, xticks);
     vkl_visual_data(visualy, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, yticks);
 
-    // Lim.
-    float lim[] = {-1};
-    vkl_visual_data(visualx, VKL_PROP_POS, VKL_AXES_LEVEL_LIM, 1, lim);
-    vkl_visual_data(visualy, VKL_PROP_POS, VKL_AXES_LEVEL_LIM, 1, lim);
-
     // Text.
     vkl_visual_data(visualx, VKL_PROP_TEXT, 0, N, axes->text);
     vkl_visual_data(visualy, VKL_PROP_TEXT, 0, N, axes->text);
+}
+
+static void _axes_ticks_init(VklController* controller)
+{
+    ASSERT(controller != NULL);
+    VklAxes2D* axes = &controller->u.axes_2D;
+    ASSERT(axes != NULL);
+
+    // TODO: customizable
+    const uint32_t N = 4 * 5 + 1;
+
+    axes->xticks = vkl_array(N, VKL_DTYPE_FLOAT);
+    axes->yticks = vkl_array(N, VKL_DTYPE_FLOAT);
+
+    axes->str_buf = calloc(N * 16, sizeof(char));
+    axes->text = calloc(N, sizeof(char*));
+    float t = 0;
+    for (uint32_t i = 0; i < N; i++)
+    {
+        t = -2 + 4 * (float)i / (N - 1);
+        ((float*)axes->xticks.data)[i] = t;
+        ((float*)axes->yticks.data)[i] = t;
+        axes->text[i] = &axes->str_buf[16 * i];
+        _tick_format(t, axes->text[i]);
+    }
+
+    // Lim.
+    float lim[] = {-1};
+    vkl_visual_data(controller->visuals[0], VKL_PROP_POS, VKL_AXES_LEVEL_LIM, 1, lim);
+    vkl_visual_data(controller->visuals[1], VKL_PROP_POS, VKL_AXES_LEVEL_LIM, 1, lim);
+
+    // Upload the data.
+    _axes_upload(controller, VKL_AXES_COORD_X);
+    _axes_upload(controller, VKL_AXES_COORD_Y);
+}
+
+static void _axes_collision(VklController* controller, bool* axes)
+{
+    ASSERT(controller != NULL);
+    // TODO
+    // set axes[0] and axes[1] depending on whether there is a collision on the labels on that axis
+}
+
+static void _axes_range(VklController* controller, VklAxisCoord coord)
+{
+    ASSERT(controller != NULL);
+    // TODO
+    // set axes->xrange or axes->yrange depending on coord
+}
+
+static void _axes_ticks(VklController* controller, VklAxisCoord coord)
+{
+    ASSERT(controller != NULL);
+    // TODO
+    // recompute xticks or yticks depending on coord
+}
+
+static void _axes_callback(VklController* controller, VklEvent ev)
+{
+    ASSERT(controller != NULL);
+    _default_controller_callback(controller, ev);
+    if (!controller->interacts[0].is_active)
+        return;
+    // Check label collision
+    bool update[2] = {false, false}; // whether X and Y axes must be updated or not
+    _axes_collision(controller, update);
+    if (!update[0] && !update[1])
+        return;
+    for (uint32_t coord = 0; coord < 2; coord++)
+    {
+        if (!update[coord])
+            continue;
+        _axes_range(controller, coord);
+        _axes_ticks(controller, coord);
+        _axes_upload(controller, coord);
+    }
 }
 
 static void _add_axes(VklController* controller)
@@ -315,7 +373,7 @@ static void _add_axes(VklController* controller)
     vkl_visual_data_buffer(visualy, VKL_SOURCE_TYPE_PARAM, 1, 0, 1, 1, &params);
 
     // Add the axes data.
-    _axes_data(controller);
+    _axes_ticks_init(controller);
 }
 
 static void _axes_destroy(VklController* controller)
@@ -323,8 +381,10 @@ static void _axes_destroy(VklController* controller)
     ASSERT(controller != NULL);
     VklAxes2D* axes = &controller->u.axes_2D;
     ASSERT(axes != NULL);
-    FREE(axes->xticks);
-    FREE(axes->yticks);
+
+    vkl_array_destroy(&axes->xticks);
+    vkl_array_destroy(&axes->yticks);
+
     FREE(axes->text);
     FREE(axes->str_buf);
 }
@@ -629,7 +689,6 @@ void vkl_controller_destroy(VklController* controller)
         break;
 
     default:
-        log_error("unknown controller type");
         break;
     }
 
@@ -662,6 +721,7 @@ VklController vkl_controller_builtin(VklPanel* panel, VklControllerType type, in
 
     case VKL_CONTROLLER_AXES_2D:
         vkl_controller_interact(&controller, VKL_INTERACT_PANZOOM);
+        vkl_controller_callback(&controller, _axes_callback);
         _add_axes(&controller);
         break;
 
