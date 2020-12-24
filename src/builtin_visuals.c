@@ -282,9 +282,9 @@ static void _add_ticks(
         glm_vec3_copy(P1, vertex.P1);
         glm_vec4_copy(shift, vertex.shift);
         memcpy(vertex.color, color, sizeof(cvec4));
-        vertex.cap0 = vertex.cap1 = 0;
+        vertex.cap0 = vertex.cap1 = cap;
         vertex.linewidth = lw;
-        vertex.transform = 0;
+        vertex.transform = transform;
         vkl_graphics_append(data, &vertex);
     }
 }
