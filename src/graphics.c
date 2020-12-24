@@ -214,6 +214,7 @@ static void _graphics_text_callback(VklGraphicsData* data, uint32_t item_count, 
     VklGraphicsTextVertex vertex = {0};
     vertex = str_item->vertex;
     ASSERT(n > 0);
+    ASSERT(data->current_idx + n <= item_count);
     for (uint32_t i = 0; i < n; i++)
     {
         size_t g = _font_atlas_glyph(atlas, str_item->string, i);
