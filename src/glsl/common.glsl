@@ -19,35 +19,35 @@
 // NOTE:needs to be a macro and not a function so that it can be safely included in both
 // vertex and fragment shaders (discard is forbidden in the vertex shader)
 #define CLIP \
-    switch (viewport.clip)                                                                      \
-    {                                                                                           \
-        case VKL_VIEWPORT_NONE:                                                                 \
-            break;                                                                              \
-                                                                                                \
-        case VKL_VIEWPORT_INNER:                                                                \
-            if(!clip_viewport(gl_FragCoord.xy))                                                  \
-                discard;                                                                        \
-            break;                                                                              \
-                                                                                                \
-        case VKL_VIEWPORT_OUTER:                                                                \
-            if(clip_viewport(gl_FragCoord.xy))                                                 \
-                discard;                                                                        \
-            break;                                                                              \
-                                                                                                \
-            break;                                                                              \
-                                                                                                \
-        case VKL_VIEWPORT_OUTER_BOTTOM:                                                         \
-            if(clip_viewport(gl_FragCoord.xy, 0))                                              \
-                discard;                                                                        \
-            break;                                                                              \
-                                                                                                \
-        case VKL_VIEWPORT_OUTER_LEFT:                                                           \
-            if(clip_viewport(gl_FragCoord.xy, 1))                                              \
-                discard;                                                                        \
-            break;                                                                              \
-                                                                                                \
-        default:                                                                                \
-            break;                                                                              \
+    switch (viewport.clip)                                                                        \
+    {                                                                                             \
+        case VKL_VIEWPORT_NONE:                                                                   \
+            break;                                                                                \
+                                                                                                  \
+        case VKL_VIEWPORT_INNER:                                                                  \
+            if(!clip_viewport(gl_FragCoord.xy))                                                   \
+                discard;                                                                          \
+            break;                                                                                \
+                                                                                                  \
+        case VKL_VIEWPORT_OUTER:                                                                  \
+            if(clip_viewport(gl_FragCoord.xy))                                                    \
+                discard;                                                                          \
+            break;                                                                                \
+                                                                                                  \
+            break;                                                                                \
+                                                                                                  \
+        case VKL_VIEWPORT_OUTER_BOTTOM:                                                           \
+            if(clip_viewport(gl_FragCoord.xy, 0))                                                 \
+                discard;                                                                          \
+            break;                                                                                \
+                                                                                                  \
+        case VKL_VIEWPORT_OUTER_LEFT:                                                             \
+            if(clip_viewport(gl_FragCoord.xy, 1))                                                 \
+                discard;                                                                          \
+            break;                                                                                \
+                                                                                                  \
+        default:                                                                                  \
+            break;                                                                                \
     }
 
 
