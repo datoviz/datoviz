@@ -705,6 +705,10 @@ void* vkl_bake_prop_item(VklProp* prop, uint32_t idx)
     void* res = prop->default_value;
     if (idx < prop->arr_orig.item_count)
         res = vkl_array_item(&prop->arr_orig, idx);
+    if (res == NULL)
+    {
+        log_debug("no default value for prop %d #%d", prop->prop_type, prop->prop_idx);
+    }
     return res;
 }
 
@@ -970,7 +974,6 @@ void vkl_visual_update(
                 source->source_type, source->pipeline_idx, source->origin);
             continue;
         }
-
         if (source->obj.status == VKL_OBJECT_STATUS_INIT)
         {
             log_error(
@@ -999,16 +1002,21 @@ void vkl_visual_update(
             vkl_visual_buffer_alloc(visual, source);
 
             ASSERT(br->size > 0);
+            VkDeviceSize size = arr->item_count * arr->item_size;
+            ASSERT(br->size >= size);
+            ASSERT(arr->buffer_size >= size);
+
             ASSERT(br->buffer != VK_NULL_HANDLE);
 
             log_trace(
-                "upload buffer for automatically-handled source %d #%d", //
-                source->source_type, source->pipeline_idx);
+                "upload buffer (%d items, buffer size %d bytes) for automatically-handled source "
+                "%d #%d", //
+                arr->item_count, br->size, source->source_type, source->pipeline_idx);
 
             if (_uniform_source_is_immediate(source))
-                vkl_upload_buffers_immediate(canvas, *br, true, 0, br->size, arr->data);
+                vkl_upload_buffers_immediate(canvas, *br, true, 0, size, arr->data);
             else
-                vkl_upload_buffers(ctx, *br, 0, br->size, arr->data);
+                vkl_upload_buffers(ctx, *br, 0, size, arr->data);
             source->obj.status = VKL_OBJECT_STATUS_CREATED;
             visual->obj.status = VKL_OBJECT_STATUS_CREATED;
         }

@@ -297,7 +297,11 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
     VklSource* seg_index_src = vkl_bake_source(visual, VKL_SOURCE_TYPE_INDEX, 0);
     VklSource* text_vert_src = vkl_bake_source(visual, VKL_SOURCE_TYPE_VERTEX, 1);
 
+    // HACK: mark the index buffer to be updated.
+    seg_index_src->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+
     // Count the total number of segments.
+    // NOTE: the number of segments is determined by the POS prop.
     uint32_t count = _count_prop_items(visual, 1, (VklPropType[]){VKL_PROP_POS}, 4);
 
 

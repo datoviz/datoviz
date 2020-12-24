@@ -457,11 +457,12 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
         // Index buffer?
         VklSource* index_source = vkl_bake_source(visual, VKL_SOURCE_TYPE_INDEX, pipeline_idx);
         uint32_t index_count = 0;
+        VklBufferRegions* index_buf = NULL;
         if (index_source != NULL)
         {
             index_count = index_source->arr.item_count;
             ASSERT(index_count > 0);
-            VklBufferRegions* index_buf = &index_source->u.br;
+            index_buf = &index_source->u.br;
             ASSERT(index_buf != NULL);
             vkl_cmd_bind_index_buffer(cmds, idx, index_buf, 0);
         }
@@ -473,11 +474,15 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
         if (index_count == 0)
         {
             log_debug("draw %d vertices", vertex_count);
+            // Make sure the bound vertex buffer is large enough.
+            ASSERT(vertex_buf->size >= vertex_count * vertex_source->arr.item_size);
             vkl_cmd_draw(cmds, idx, 0, vertex_count);
         }
         else
         {
             log_debug("draw %d indices", index_count);
+            // Make sure the bound index buffer is large enough.
+            ASSERT(index_buf->size >= index_count * sizeof(VklIndex));
             vkl_cmd_draw_indexed(cmds, idx, 0, 0, index_count);
         }
     }

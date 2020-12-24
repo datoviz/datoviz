@@ -161,7 +161,7 @@ static void _visual_update(VklCanvas* canvas, VklPrivateEvent ev)
     VklVisual* visual = ev.user_data;
     ASSERT(visual != NULL);
 
-    const uint32_t N = 2 + (ev.u.t.idx % 10);
+    const uint32_t N = 2 + (ev.u.t.idx % 16);
     float* xticks = calloc(N, sizeof(float));
     float* yticks = calloc(N, sizeof(float));
     char* hello = "ABC";
