@@ -18,6 +18,8 @@ layout(location = 0) out vec4 out_color;
 
 
 void main() {
+    CLIP
+
     vec2 P = gl_PointCoord.xy - vec2(0.5, 0.5);
     mat2 rot = mat2(cos(angle), sin(angle), -sin(angle), cos(angle));
     P = rot * P;

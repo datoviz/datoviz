@@ -6,5 +6,7 @@ layout (location = 0) out vec4 out_color;
 
 void main()
 {
+    CLIP
+
     out_color = in_color;
 }

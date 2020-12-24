@@ -25,15 +25,9 @@
             break;                                                                                \
                                                                                                   \
         case VKL_VIEWPORT_INNER:                                                                  \
-            if(!clip_viewport(gl_FragCoord.xy))                                                   \
-                discard;                                                                          \
-            break;                                                                                \
-                                                                                                  \
         case VKL_VIEWPORT_OUTER:                                                                  \
             if(clip_viewport(gl_FragCoord.xy))                                                    \
                 discard;                                                                          \
-            break;                                                                                \
-                                                                                                  \
             break;                                                                                \
                                                                                                   \
         case VKL_VIEWPORT_OUTER_BOTTOM:                                                           \
