@@ -206,7 +206,7 @@ static void _upload_mvp(VklCanvas* canvas, VklPrivateEvent ev)
             // GPU transfer happens here:
             void* aligned = aligned_repeat(br->size, &interact->mvp, 1, br->alignment);
             vkl_buffer_regions_upload(br, canvas->swapchain.img_idx, aligned);
-            FREE(aligned);
+            aligned_free(aligned);
         }
     }
 }
@@ -367,8 +367,8 @@ static void _axes_callback(VklController* controller, VklEvent ev)
 
     // Check label collision
     // DEBUG
-    bool update[2] = {true, true}; // whether X and Y axes must be updated or not
-    // bool update[2] = {false, false}; // whether X and Y axes must be updated or not
+    // bool update[2] = {true, true}; // whether X and Y axes must be updated or not
+    bool update[2] = {false, false}; // whether X and Y axes must be updated or not
     // _axes_collision(controller, update);
     // if (!update[0] && !update[1])
     //     return;

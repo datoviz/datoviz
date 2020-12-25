@@ -761,7 +761,7 @@ static void process_buffer_upload(VklContext* context, VklTransfer tr)
     // Transfer from the CPU to the GPU staging buffer.
     VkDeviceSize total_size = alsize * n;
     vkl_buffer_upload(staging, 0, total_size, repeated);
-    FREE(repeated);
+    aligned_free(repeated);
 
     // Take transfer cmd buf.
     VklCommands* cmds = &context->transfer_cmd;

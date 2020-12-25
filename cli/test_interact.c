@@ -74,7 +74,7 @@ static void _update_interact(VklCanvas* canvas, VklPrivateEvent ev)
     VklBufferRegions* br = &source->u.br;
     void* aligned = aligned_repeat(br->size, &scene->interact.mvp, 1, br->alignment);
     vkl_buffer_regions_upload(br, canvas->swapchain.img_idx, aligned);
-    FREE(aligned);
+    aligned_free(aligned);
 }
 
 static void _add_visual(

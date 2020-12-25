@@ -243,7 +243,7 @@ static void process_buffer_upload_immediate(VklCanvas* canvas, VklTransfer tr, u
     void* aligned = aligned_repeat(region_size, tr.u.buf.data, 1, br->alignment);
     // Transfer from the CPU to the GPU staging buffer.
     vkl_buffer_upload(br->buffer, br->offsets[img_idx] + tr.u.buf.offset, alsize, aligned);
-    FREE(aligned);
+    aligned_free(aligned);
 }
 
 

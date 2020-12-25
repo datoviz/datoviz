@@ -104,6 +104,10 @@ static VkDeviceSize get_alignment(VkDeviceSize alignment, VkDeviceSize min_align
 
 
 
+/*
+BIG FAT WARNING: never FREE a pointer returned by aligned_malloc(), use aligned_free() instead.
+Otherwise direct crash on Windows.
+*/
 static void* aligned_malloc(VkDeviceSize size, VkDeviceSize alignment)
 {
     void* data = NULL;
@@ -119,6 +123,17 @@ static void* aligned_malloc(VkDeviceSize size, VkDeviceSize alignment)
     if (data == NULL)
         log_error("failed making the aligned allocation of the dynamic uniform buffer");
     return data;
+}
+
+
+
+static void aligned_free(void* pointer)
+{
+#if OS_WIN32
+    _aligned_free(pointer);
+#else
+    FREE(pointer)
+#endif
 }
 
 
