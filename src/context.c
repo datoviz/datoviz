@@ -757,11 +757,11 @@ static void process_buffer_upload(VklContext* context, VklTransfer tr)
 
     // Copy the data as many times as there are buffer regions, and make sure the array is
     // aligned if using a UNIFORM buffer.
-    void* repeated = aligned_repeat(region_size, tr.u.buf.data, n, tr.u.buf.regions.alignment);
+    VklPointer pointer = aligned_repeat(region_size, tr.u.buf.data, n, tr.u.buf.regions.alignment);
     // Transfer from the CPU to the GPU staging buffer.
     VkDeviceSize total_size = alsize * n;
-    vkl_buffer_upload(staging, 0, total_size, repeated);
-    aligned_free(repeated);
+    vkl_buffer_upload(staging, 0, total_size, pointer.pointer);
+    ALIGNED_FREE(pointer)
 
     // Take transfer cmd buf.
     VklCommands* cmds = &context->transfer_cmd;

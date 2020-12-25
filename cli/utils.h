@@ -302,10 +302,15 @@ static void print_start()
     printf("--- Starting tests -------------------------------\n"); //
 }
 
-static void print_case(int index, const char* name, int res)
+static void print_case(int index, const char* name)
 {
-    printf("- Test #%03d %28s : ", index, name);
-    printf("\x1b[%dm%s\x1b[0m\n", res == 0 ? 32 : 31, res == 0 ? "passed" : "FAILED");
+    printf("- Launching test #%03d %28s\n", index, name);
+}
+
+static void print_res(int index, const char* name, int res)
+{
+    printf("%50s", name);
+    printf("\x1b[%dm %s\x1b[0m\n", res == 0 ? 32 : 31, res == 0 ? "passed!" : "FAILED!");
 }
 
 static void print_end(int index, int res)

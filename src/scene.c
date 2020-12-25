@@ -204,9 +204,9 @@ static void _upload_mvp(VklCanvas* canvas, VklPrivateEvent ev)
             br = &panel->br_mvp;
 
             // GPU transfer happens here:
-            void* aligned = aligned_repeat(br->size, &interact->mvp, 1, br->alignment);
-            vkl_buffer_regions_upload(br, canvas->swapchain.img_idx, aligned);
-            aligned_free(aligned);
+            VklPointer pointer = aligned_repeat(br->size, &interact->mvp, 1, br->alignment);
+            vkl_buffer_regions_upload(br, canvas->swapchain.img_idx, pointer.pointer);
+            ALIGNED_FREE(pointer)
         }
     }
 }

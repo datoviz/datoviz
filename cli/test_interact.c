@@ -72,9 +72,9 @@ static void _update_interact(VklCanvas* canvas, VklPrivateEvent ev)
     vkl_interact_update(&scene->interact, viewport, &canvas->mouse, &canvas->keyboard);
     VklSource* source = vkl_bake_source(&scene->visual, VKL_SOURCE_TYPE_MVP, 0);
     VklBufferRegions* br = &source->u.br;
-    void* aligned = aligned_repeat(br->size, &scene->interact.mvp, 1, br->alignment);
-    vkl_buffer_regions_upload(br, canvas->swapchain.img_idx, aligned);
-    aligned_free(aligned);
+    VklPointer pointer = aligned_repeat(br->size, &scene->interact.mvp, 1, br->alignment);
+    vkl_buffer_regions_upload(br, canvas->swapchain.img_idx, pointer.pointer);
+    ALIGNED_FREE(pointer)
 }
 
 static void _add_visual(

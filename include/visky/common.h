@@ -114,6 +114,11 @@ int gettimeofday(struct timeval* tp, struct timezone* tzp)
 #include <sys/time.h>
 #endif
 
+// Used for Sleep()
+#if OS_WIN32
+#include <Windows.h>
+#endif
+
 
 BEGIN_INCL_NO_WARN
 #define CGLM_DEFINE_PRINTS
@@ -176,6 +181,12 @@ END_INCL_NO_WARN
         free((x));                                                                                \
         (x) = NULL;                                                                               \
     }
+
+#define ALIGNED_FREE(x)                                                                           \
+    if (x.aligned)                                                                                \
+        aligned_free(x.pointer);                                                                  \
+    else                                                                                          \
+        FREE(x.pointer)
 
 #define REALLOC(x, s)                                                                             \
     {                                                                                             \
@@ -412,7 +423,7 @@ VKY_EXPORT const unsigned char* vkl_resource_texture(const char* name, unsigned 
 static inline void vkl_sleep(int milliseconds)
 {
 #ifdef WIN32
-    Sleep(milliseconds);
+    Sleep((uint32_t)milliseconds);
 #else
     struct timespec ts;
     ts.tv_sec = milliseconds / 1000;

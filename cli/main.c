@@ -221,8 +221,9 @@ static int test(int argc, char** argv)
         // the current test.
         if (argc == 1 || strstr(TEST_CASES[i].name, argv[1]) != NULL)
         {
+            print_case(index, TEST_CASES[i].name);
             cur_res = launcher(NULL, TEST_CASES[i].name);
-            print_case(index, TEST_CASES[i].name, cur_res);
+            print_res(index, TEST_CASES[i].name, cur_res);
             res += cur_res == 0 ? 0 : 1;
             index++;
         }

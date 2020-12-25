@@ -127,6 +127,8 @@ static void* aligned_malloc(VkDeviceSize size, VkDeviceSize alignment)
 
 
 
+/*
+WARNING : on Windows, only works on aligned pointers. */
 static void aligned_free(void* pointer)
 {
 #if OS_WIN32
@@ -161,7 +163,20 @@ static VkDeviceSize aligned_size(VkDeviceSize size, VkDeviceSize alignment)
 
 
 
-static void*
+typedef struct VklPointer VklPointer;
+struct VklPointer
+{
+    void* pointer;
+    bool aligned;
+};
+
+/*
+WARNING: returns a wrapped pointer specifiying whether the pointer was aligned or not.
+This is needed on Windows because aligned pointers must be freed with _aligned_free(), whereas
+normal pointers must be freed with free(). Without a wrapper VklPointer struct, this function
+wouldn't be able to say whether its returned pointer was aligned-allocated or normally allocated.
+*/
+static VklPointer
 aligned_repeat(VkDeviceSize size, const void* data, uint32_t count, VkDeviceSize alignment)
 {
     // Take any buffer and make `count` consecutive aligned copies of it.
@@ -179,7 +194,7 @@ aligned_repeat(VkDeviceSize size, const void* data, uint32_t count, VkDeviceSize
     {
         memcpy((void*)(((int64_t)repeated) + (int64_t)(i * alsize)), data, size);
     }
-    return repeated;
+    return (VklPointer){repeated, alignment > 0};
 }
 
 

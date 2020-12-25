@@ -240,10 +240,10 @@ static void process_buffer_upload_immediate(VklCanvas* canvas, VklTransfer tr, u
 
     // Copy the data as many times as there are buffer regions, and make sure the array is
     // aligned if using a UNIFORM buffer.
-    void* aligned = aligned_repeat(region_size, tr.u.buf.data, 1, br->alignment);
+    VklPointer pointer = aligned_repeat(region_size, tr.u.buf.data, 1, br->alignment);
     // Transfer from the CPU to the GPU staging buffer.
-    vkl_buffer_upload(br->buffer, br->offsets[img_idx] + tr.u.buf.offset, alsize, aligned);
-    aligned_free(aligned);
+    vkl_buffer_upload(br->buffer, br->offsets[img_idx] + tr.u.buf.offset, alsize, pointer.pointer);
+    ALIGNED_FREE(pointer)
 }
 
 
