@@ -83,16 +83,6 @@ static inline int check_result(VkResult res)
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static uint64_t next_pow2(uint64_t x)
-{
-    uint64_t p = 1;
-    while (p < x)
-        p *= 2;
-    return p;
-}
-
-
-
 static VkDeviceSize get_alignment(VkDeviceSize alignment, VkDeviceSize min_alignment)
 {
     if (min_alignment > 0)

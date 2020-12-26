@@ -356,6 +356,7 @@ typedef enum
 } VklObjectStatus;
 
 typedef struct VklObject VklObject;
+typedef struct VklContainer VklContainer;
 
 
 
@@ -374,6 +375,16 @@ struct VklObject
 
 
 
+struct VklContainer
+{
+    uint32_t count;
+    uint32_t capacity;
+    void* items;
+    size_t item_size;
+};
+
+
+
 /*************************************************************************************************/
 /*  Object functions                                                                             */
 /*************************************************************************************************/
@@ -388,6 +399,61 @@ static inline bool is_obj_created(VklObject* obj)
 {
     return obj != NULL && obj->status >= VKL_OBJECT_STATUS_CREATED &&
            obj->status != VKL_OBJECT_STATUS_INVALID;
+}
+
+
+
+static uint64_t next_pow2(uint64_t x)
+{
+    uint64_t p = 1;
+    while (p < x)
+        p *= 2;
+    return p;
+}
+
+static inline VklContainer vkl_container(uint32_t count, size_t item_size)
+{
+    VklContainer container = {0};
+    container.count = count;
+    container.item_size = item_size;
+    container.capacity = next_pow2(count);
+    container.items = calloc(count, item_size);
+    return container;
+}
+
+static inline void* vkl_container_alloc(VklContainer* container)
+{
+    ASSERT(container != NULL);
+    ASSERT(container->items != NULL);
+    // int64_t address = (int64_t)container->items;
+    // void* available_slot = NULL;
+
+    // Free the memory for destroyed objects.
+    for (uint32_t i = 0; i < container->count; i++)
+    {
+        // Free destroyed objects.
+        // NOTE: assume that all struct objects have a VklObject struct as a first field, which
+        // allows us to do a cast.
+        // if (((VklObject*)address)->status == VKL_OBJECT_STATUS_DESTROYED)
+        //     FREE((void*)address);
+        // address += (int64_t)container->item_size;
+    }
+    // calloc and store pointer in first available slot
+    // if there is none, realloc 2x larger
+    // update count
+
+    return NULL;
+}
+
+static inline void vkl_container_destroy(VklContainer* container)
+{
+    ASSERT(container != NULL);
+    for (uint32_t i = 0; i < container->count; i++)
+    {
+    }
+    // Check all elements have been destroyed
+    // Cast every object to VklObject and check status. Only work if first struct field is always
+    FREE(container->items);
 }
 
 
