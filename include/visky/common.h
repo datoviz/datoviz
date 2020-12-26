@@ -237,6 +237,20 @@ END_INCL_NO_WARN
     o = NULL;
 
 
+/*
+#define CONTAINER_LOOP(container, type)                                                           \
+    {\
+    type
+    for (uint32_t i = 0; i < (container).capacity; i++) \
+    { \
+        if ((container).items[i] != NULL) \
+    } \
+\
+    type* item = NULL;\
+    } \
+*/
+
+
 
 /*************************************************************************************************/
 /*  8-bit integers                                                                               */
@@ -381,6 +395,7 @@ struct VklContainer
     uint32_t capacity;
     void** items;
     size_t item_size;
+    uint32_t _loop_idx;
 };
 
 
@@ -417,6 +432,9 @@ static uint64_t next_pow2(uint64_t x)
 
 static VklContainer vkl_container(uint32_t count, size_t item_size)
 {
+    ASSERT(count > 0);
+    ASSERT(item_size > 0);
+    log_trace("create container");
     VklContainer container = {0};
     container.count = 0;
     container.item_size = item_size;
@@ -432,44 +450,47 @@ static VklContainer vkl_container(uint32_t count, size_t item_size)
     return container;
 }
 
+static void vkl_container_delete_if_destroyed(VklContainer* container, uint32_t idx)
+{
+    log_trace("enter delete if destroyed %d", idx);
+    ASSERT(container != NULL);
+    ASSERT(container->capacity > 0);
+    ASSERT(container->items != NULL);
+    ASSERT(idx < container->capacity);
+    if (container->items[idx] == NULL)
+        return;
+    log_trace("delete if destroyed %d", idx);
+    if (((VklObject*)container->items[idx])->status == VKL_OBJECT_STATUS_DESTROYED)
+    {
+        FREE(container->items[idx]);
+        container->items[idx] = NULL;
+        container->count--;
+        ASSERT(container->count < UINT32_MAX);
+    }
+    log_trace("delete if destroyed succeed");
+}
+
 static void* vkl_container_alloc(VklContainer* container)
 {
     ASSERT(container != NULL);
     ASSERT(container->capacity > 0);
     ASSERT(container->items != NULL);
-    void* current_item = NULL;
+    log_trace("container allocate");
     uint32_t available_slot = UINT32_MAX;
 
     // Free the memory of destroyed objects and find the first available slot.
     for (uint32_t i = 0; i < container->capacity; i++)
     {
-        current_item = container->items[i];
-
-        // Free destroyed objects.
-        if (current_item != NULL)
-        {
-            // NOTE: assume that all struct objects have a VklObject struct as a first field, which
-            // allows us to do a cast.
-            //log_trace("dangerous: check status of object by casting to VklObject");
-            if (((VklObject*)current_item)->status == VKL_OBJECT_STATUS_DESTROYED)
-            {
-                //log_trace("deallocate already-destroyed object");
-                FREE(current_item);
-                container->items[i] = NULL;
-                current_item = NULL;
-                container->count--;
-                ASSERT(container->count < UINT32_MAX);
-            }
-        }
-
+        vkl_container_delete_if_destroyed(container, i);
         // Find first slot with empty pointer, to use for new allocation.
-        if (current_item == NULL && available_slot == UINT32_MAX)
+        if (container->items[i] == NULL && available_slot == UINT32_MAX)
             available_slot = i;
     }
 
     // If no slot, need to reallocate container.
     if (available_slot == UINT32_MAX)
     {
+        log_trace("reallocate container");
         void** _new = (void**)realloc(container->items, 2 * container->capacity);
         ASSERT(_new != NULL);
         container->items = _new;
@@ -497,25 +518,48 @@ static void* vkl_container_alloc(VklContainer* container)
     return container->items[available_slot];
 }
 
+static void* vkl_container_iter(VklContainer* container)
+{
+    ASSERT(container != NULL);
+    log_trace("container iterate");
+    if (container->_loop_idx >= container->capacity - 1)
+        return NULL;
+    ASSERT(container->_loop_idx < container->capacity - 1);
+    for (uint32_t i = container->_loop_idx + 1; i < container->capacity; i++)
+    {
+        vkl_container_delete_if_destroyed(container, i);
+        if (container->items[i] != NULL)
+        {
+            container->_loop_idx = i;
+            return container->items[i];
+        }
+    }
+    return NULL;
+}
+
 static void vkl_container_destroy(VklContainer* container)
 {
     ASSERT(container != NULL);
+    ASSERT(container->items != NULL);
+    log_trace("container destroy");
     // Check all elements have been destroyed, and free them if necessary.
     for (uint32_t i = 0; i < container->capacity; i++)
     {
+        DBG(i);
         if (container->items[i] != NULL)
         {
             // When destroying the container, ensure that all objects have been destroyed first.
             // NOTE: only works if every item has a VklObject as first struct field.
+            log_trace("check object status %d", i);
             ASSERT(((VklObject*)container->items[i])->status == VKL_OBJECT_STATUS_DESTROYED);
-            //log_trace("free container element #%d", i);
-            FREE(container->items[i]);
-            container->count--;
+            vkl_container_delete_if_destroyed(container, i);
+            ASSERT(container->items[i] == NULL);
         }
     }
     ASSERT(container->count == 0);
-    //log_trace("free container items");
+    log_trace("free container items");
     FREE(container->items);
+    container->capacity = 0;
 }
 
 
