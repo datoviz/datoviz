@@ -379,7 +379,7 @@ struct VklContainer
 {
     uint32_t count;
     uint32_t capacity;
-    void* items;
+    void** items;
     size_t item_size;
 };
 
@@ -403,6 +403,10 @@ static inline bool is_obj_created(VklObject* obj)
 
 
 
+/*************************************************************************************************/
+/*  Container                                                                                    */
+/*************************************************************************************************/
+
 static uint64_t next_pow2(uint64_t x)
 {
     uint64_t p = 1;
@@ -411,48 +415,86 @@ static uint64_t next_pow2(uint64_t x)
     return p;
 }
 
-static inline VklContainer vkl_container(uint32_t count, size_t item_size)
+static VklContainer vkl_container(uint32_t count, size_t item_size)
 {
     VklContainer container = {0};
     container.count = count;
     container.item_size = item_size;
     container.capacity = next_pow2(count);
-    container.items = calloc(count, item_size);
+    container.items = (void**)calloc(count, sizeof(void*));
     return container;
 }
 
-static inline void* vkl_container_alloc(VklContainer* container)
+static void* vkl_container_alloc(VklContainer* container)
 {
     ASSERT(container != NULL);
     ASSERT(container->items != NULL);
-    // int64_t address = (int64_t)container->items;
-    // void* available_slot = NULL;
+    void* current_item = NULL;
+    uint32_t available_slot = UINT32_MAX;
 
-    // Free the memory for destroyed objects.
+    // Free the memory of destroyed objects and find the first available slot.
     for (uint32_t i = 0; i < container->count; i++)
     {
-        // Free destroyed objects.
-        // NOTE: assume that all struct objects have a VklObject struct as a first field, which
-        // allows us to do a cast.
-        // if (((VklObject*)address)->status == VKL_OBJECT_STATUS_DESTROYED)
-        //     FREE((void*)address);
-        // address += (int64_t)container->item_size;
-    }
-    // calloc and store pointer in first available slot
-    // if there is none, realloc 2x larger
-    // update count
+        current_item = container->items[i];
 
-    return NULL;
+        // Free destroyed objects.
+        if (current_item != NULL)
+        {
+            // NOTE: assume that all struct objects have a VklObject struct as a first field, which
+            // allows us to do a cast.
+            //log_trace("dangerous: check status of object by casting to VklObject");
+            if (((VklObject*)current_item)->status == VKL_OBJECT_STATUS_DESTROYED)
+            {
+                //log_trace("deallocate already-destroyed object");
+                FREE(current_item);
+                container->items[i] = NULL;
+                current_item = NULL;
+            }
+        }
+
+        // Find first slot with empty pointer, to use for new allocation.
+        if (current_item == NULL && available_slot == UINT32_MAX)
+            available_slot = i;
+    }
+
+    // If no slot, need to reallocate container.
+    if (available_slot == UINT32_MAX)
+    {
+        void** _new = (void**)realloc(container->items, 2 * container->capacity);
+        ASSERT(_new != NULL);
+        container->items = _new;
+
+        ASSERT(container->items[container->capacity] == NULL);
+        ASSERT(container->items[2 * container->capacity - 1] == NULL);
+        // Return the first empty slot of the newly-allocated container.
+        available_slot = container->capacity;
+        // Update the container capacity.
+        container->capacity *= 2;
+    }
+    ASSERT(available_slot < UINT32_MAX);
+    ASSERT(container->items[available_slot] == NULL);
+
+    // Memory allocation on the heap and store the pointer in the container.
+    container->items[available_slot] = calloc(1, container->item_size);
+    ASSERT(container->items[available_slot] != NULL);
+    return container->items[available_slot];
 }
 
-static inline void vkl_container_destroy(VklContainer* container)
+static void vkl_container_destroy(VklContainer* container)
 {
     ASSERT(container != NULL);
+    // Check all elements have been destroyed, and free them if necessary.
     for (uint32_t i = 0; i < container->count; i++)
     {
+        if (container->items[i] != NULL)
+        {
+            // NOTE: only works if every item has a VklObject as first struct field.
+            ASSERT(((VklObject*)container->items[i])->status == VKL_OBJECT_STATUS_DESTROYED);
+            //log_trace("free container element #%d", i);
+            FREE(container->items[i]);
+        }
     }
-    // Check all elements have been destroyed
-    // Cast every object to VklObject and check status. Only work if first struct field is always
+    //log_trace("free container items");
     FREE(container->items);
 }
 

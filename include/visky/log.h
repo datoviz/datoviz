@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-#include "../include/visky/common.h"
+//#include "../include/visky/common.h"
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -52,9 +52,9 @@ void log_set_fp(FILE* fp);
 void log_set_level(int level);
 void log_set_quiet(int enable);
 
-VKY_EXPORT void log_log(int level, const char* file, int line, const char* fmt, ...);
+void log_log(int level, const char* file, int line, const char* fmt, ...);
 
-VKY_EXPORT void log_set_level_env(void);
+void log_set_level_env(void);
 
 #ifdef __cplusplus
 }
