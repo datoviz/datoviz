@@ -460,7 +460,7 @@ static void vkl_container_delete_if_destroyed(VklContainer* container, uint32_t 
     if (container->items[idx] == NULL)
         return;
     log_trace("delete if destroyed %d", idx);
-    if (((VklObject*)container->items[idx])->status == VKL_OBJECT_STATUS_DESTROYED)
+    if (((VklObject*)(container->items[idx]))->status == VKL_OBJECT_STATUS_DESTROYED)
     {
         FREE(container->items[idx]);
         container->items[idx] = NULL;
@@ -551,7 +551,7 @@ static void vkl_container_destroy(VklContainer* container)
             // When destroying the container, ensure that all objects have been destroyed first.
             // NOTE: only works if every item has a VklObject as first struct field.
             log_trace("check object status %d", i);
-            ASSERT(((VklObject*)container->items[i])->status == VKL_OBJECT_STATUS_DESTROYED);
+            ASSERT(((VklObject*)(container->items[i]))->status == VKL_OBJECT_STATUS_DESTROYED);
             vkl_container_delete_if_destroyed(container, i);
             ASSERT(container->items[i] == NULL);
         }
