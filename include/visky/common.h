@@ -439,7 +439,7 @@ static VklContainer vkl_container(uint32_t count, size_t item_size)
     container.count = 0;
     container.item_size = item_size;
     container.capacity = next_pow2(count);
-    container.items = (void**)calloc(count, sizeof(void*));
+    container.items = (void**)calloc(container.capacity, sizeof(void*));
     // NOTE: we shouldn't rely on calloc() initializing pointer values to NULL as it is not
     // guaranteed that NULL is represented by 0 bits.
     // https://stackoverflow.com/a/22624643/1595060
@@ -452,22 +452,20 @@ static VklContainer vkl_container(uint32_t count, size_t item_size)
 
 static void vkl_container_delete_if_destroyed(VklContainer* container, uint32_t idx)
 {
-    log_trace("enter delete if destroyed %d", idx);
     ASSERT(container != NULL);
     ASSERT(container->capacity > 0);
     ASSERT(container->items != NULL);
     ASSERT(idx < container->capacity);
     if (container->items[idx] == NULL)
         return;
-    log_trace("delete if destroyed %d", idx);
     if (((VklObject*)(container->items[idx]))->status == VKL_OBJECT_STATUS_DESTROYED)
     {
+        log_trace("delete container item #%d", idx);
         FREE(container->items[idx]);
         container->items[idx] = NULL;
         container->count--;
         ASSERT(container->count < UINT32_MAX);
     }
-    log_trace("delete if destroyed succeed");
 }
 
 static void* vkl_container_alloc(VklContainer* container)
@@ -475,7 +473,6 @@ static void* vkl_container_alloc(VklContainer* container)
     ASSERT(container != NULL);
     ASSERT(container->capacity > 0);
     ASSERT(container->items != NULL);
-    log_trace("container allocate");
     uint32_t available_slot = UINT32_MAX;
 
     // Free the memory of destroyed objects and find the first available slot.
@@ -490,8 +487,8 @@ static void* vkl_container_alloc(VklContainer* container)
     // If no slot, need to reallocate container.
     if (available_slot == UINT32_MAX)
     {
-        log_trace("reallocate container");
-        void** _new = (void**)realloc(container->items, 2 * container->capacity);
+        log_trace("reallocate container up to %d items", 2 * container->capacity);
+        void** _new = (void**)realloc(container->items, 2 * container->capacity * container->item_size);
         ASSERT(_new != NULL);
         container->items = _new;
 
@@ -512,9 +509,12 @@ static void* vkl_container_alloc(VklContainer* container)
     ASSERT(container->items[available_slot] == NULL);
 
     // Memory allocation on the heap and store the pointer in the container.
+    log_trace("container allocates new item #%d", available_slot);
     container->items[available_slot] = calloc(1, container->item_size);
     container->count++;
     ASSERT(container->items[available_slot] != NULL);
+    VklObject* obj = (VklObject*)container->items[available_slot];
+    obj->status = VKL_OBJECT_STATUS_INIT;
     return container->items[available_slot];
 }
 
@@ -534,7 +534,15 @@ static void* vkl_container_iter(VklContainer* container)
             return container->items[i];
         }
     }
+    // End the outer loop, reset the internal idx.
+    container->_loop_idx = 0;
     return NULL;
+}
+
+static void* vkl_container_iter_get(VklContainer* container) {
+    ASSERT(container != NULL);
+    ASSERT(container->_loop_idx< container->capacity);
+    return container->items[container->_loop_idx];
 }
 
 static void vkl_container_destroy(VklContainer* container)
@@ -543,15 +551,15 @@ static void vkl_container_destroy(VklContainer* container)
     ASSERT(container->items != NULL);
     log_trace("container destroy");
     // Check all elements have been destroyed, and free them if necessary.
+    VklObject* item = NULL;
     for (uint32_t i = 0; i < container->capacity; i++)
     {
-        DBG(i);
         if (container->items[i] != NULL)
         {
             // When destroying the container, ensure that all objects have been destroyed first.
             // NOTE: only works if every item has a VklObject as first struct field.
-            log_trace("check object status %d", i);
-            ASSERT(((VklObject*)(container->items[i]))->status == VKL_OBJECT_STATUS_DESTROYED);
+            item = (VklObject*)container->items[i];
+            ASSERT(item->status == VKL_OBJECT_STATUS_DESTROYED);
             vkl_container_delete_if_destroyed(container, i);
             ASSERT(container->items[i] == NULL);
         }

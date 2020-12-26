@@ -15,10 +15,12 @@ struct TestObject {
 
 int test_container(TestContext* context)
 {
-    VklContainer container = vkl_container(2, sizeof(TestObject));
+    uint32_t capacity = 2;
+
+    VklContainer container = vkl_container(capacity, sizeof(TestObject));
     AT(container.items != NULL);
     AT(container.item_size == sizeof(TestObject));
-    AT(container.capacity == 2);
+    AT(container.capacity == capacity);
     AT(container.count == 0);
 
     // Allocate one object.
@@ -29,7 +31,7 @@ int test_container(TestContext* context)
     AT(container.items[0] != NULL);
     AT(container.items[0] == a);
     AT(container.items[1] == NULL);
-    AT(container.capacity == 2);
+    AT(container.capacity == capacity);
     AT(container.count == 1);
 
     // Allocate another one.
@@ -39,7 +41,7 @@ int test_container(TestContext* context)
     obj_created(&b->obj);
     AT(container.items[1] != NULL);
     AT(container.items[1] == b);
-    AT(container.capacity == 2);
+    AT(container.capacity == capacity);
     AT(container.count == 2);
 
     // Destroy the first object.
@@ -52,7 +54,7 @@ int test_container(TestContext* context)
     obj_created(&c->obj);
     AT(container.items[0] != NULL);
     AT(container.items[0] == c);
-    AT(container.capacity == 2);
+    AT(container.capacity == capacity);
     AT(container.count == 2);
 
     // Allocate another one.
@@ -65,10 +67,14 @@ int test_container(TestContext* context)
     AT(container.count == 3);
     AT(container.items[2] != NULL);
     AT(container.items[2] == d);
+    AT(container.items[3] == NULL);
 
-    for (uint32_t i = 0; i < 3; i++)
+    // Iterate through items.
+    TestObject* item = NULL;
+    uint32_t i = 0;
+    do
     {
-        TestObject* item = (TestObject*)container.items[i];
+        item = vkl_container_iter_get(&container);
         AT(item != NULL);
         if (i == 0)
             AT(item->x == 3);
@@ -76,8 +82,10 @@ int test_container(TestContext* context)
             AT(item->x == 2);
         if (i == 2)
             AT(item->x == 4);
+        i++;
     }
-    AT(container.items[3] == NULL);
+    while (vkl_container_iter(&container));
+    ASSERT(i == 3);
 
     // Destroy all objects.
     obj_destroyed(&b->obj);
