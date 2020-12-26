@@ -4,6 +4,7 @@
 #include "test_array.h"
 #include "test_builtin_visuals.h"
 #include "test_canvas.h"
+#include "test_common.h"
 #include "test_graphics.h"
 #include "test_interact.h"
 #include "test_panel.h"
@@ -19,6 +20,8 @@
 /*************************************************************************************************/
 
 static TestCase TEST_CASES[] = {
+
+    CASE_FIXTURE_NONE(test_container),
 
     // vklite2
     CASE_FIXTURE_NONE(test_app),                   //

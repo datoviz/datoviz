@@ -418,22 +418,30 @@ static uint64_t next_pow2(uint64_t x)
 static VklContainer vkl_container(uint32_t count, size_t item_size)
 {
     VklContainer container = {0};
-    container.count = count;
+    container.count = 0;
     container.item_size = item_size;
     container.capacity = next_pow2(count);
     container.items = (void**)calloc(count, sizeof(void*));
+    // NOTE: we shouldn't rely on calloc() initializing pointer values to NULL as it is not
+    // guaranteed that NULL is represented by 0 bits.
+    // https://stackoverflow.com/a/22624643/1595060
+    for (uint32_t i = 0; i < container.capacity; i++)
+    {
+        container.items[i] = NULL;
+    }
     return container;
 }
 
 static void* vkl_container_alloc(VklContainer* container)
 {
     ASSERT(container != NULL);
+    ASSERT(container->capacity > 0);
     ASSERT(container->items != NULL);
     void* current_item = NULL;
     uint32_t available_slot = UINT32_MAX;
 
     // Free the memory of destroyed objects and find the first available slot.
-    for (uint32_t i = 0; i < container->count; i++)
+    for (uint32_t i = 0; i < container->capacity; i++)
     {
         current_item = container->items[i];
 
@@ -449,6 +457,8 @@ static void* vkl_container_alloc(VklContainer* container)
                 FREE(current_item);
                 container->items[i] = NULL;
                 current_item = NULL;
+                container->count--;
+                ASSERT(container->count < UINT32_MAX);
             }
         }
 
@@ -464,6 +474,12 @@ static void* vkl_container_alloc(VklContainer* container)
         ASSERT(_new != NULL);
         container->items = _new;
 
+        ASSERT(container->items != NULL);
+        // Initialize newly-allocated pointers to NULL.
+        for (uint32_t i = container->capacity; i < 2 * container->capacity; i++)
+        {
+            container->items[i] = NULL;
+        }
         ASSERT(container->items[container->capacity] == NULL);
         ASSERT(container->items[2 * container->capacity - 1] == NULL);
         // Return the first empty slot of the newly-allocated container.
@@ -476,6 +492,7 @@ static void* vkl_container_alloc(VklContainer* container)
 
     // Memory allocation on the heap and store the pointer in the container.
     container->items[available_slot] = calloc(1, container->item_size);
+    container->count++;
     ASSERT(container->items[available_slot] != NULL);
     return container->items[available_slot];
 }
@@ -484,16 +501,19 @@ static void vkl_container_destroy(VklContainer* container)
 {
     ASSERT(container != NULL);
     // Check all elements have been destroyed, and free them if necessary.
-    for (uint32_t i = 0; i < container->count; i++)
+    for (uint32_t i = 0; i < container->capacity; i++)
     {
         if (container->items[i] != NULL)
         {
+            // When destroying the container, ensure that all objects have been destroyed first.
             // NOTE: only works if every item has a VklObject as first struct field.
             ASSERT(((VklObject*)container->items[i])->status == VKL_OBJECT_STATUS_DESTROYED);
             //log_trace("free container element #%d", i);
             FREE(container->items[i]);
+            container->count--;
         }
     }
+    ASSERT(container->count == 0);
     //log_trace("free container items");
     FREE(container->items);
 }
