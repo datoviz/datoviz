@@ -92,6 +92,7 @@ int test_container(TestContext* context)
     obj_destroyed(&c->obj);
     obj_destroyed(&d->obj);
 
+    // Free all memory. This function will fail if there is at least one object not destroyed.
     vkl_container_destroy(&container);
     return 0;
 }
