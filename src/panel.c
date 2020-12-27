@@ -190,8 +190,8 @@ VklPanel* vkl_panel(VklGrid* grid, uint32_t row, uint32_t col)
     panel->viewport.dpi_scaling = VKL_DEFAULT_DPI_SCALING;
 
     // NOTE: for now just use a single command buffer, as using multiple command buffers
-    // is complicated as need to use mupltiple render passes and framebuffers.
-    panel->cmds = grid->canvas->commands;
+    // is complicated since we need to use multiple render passes and framebuffers.
+    panel->cmds = &grid->canvas->cmds_render;
     // Tag the VklCommands instance with the panel index, so that the REFILL callback knows
     // which VklCommands corresponds to which panel.
     // panel->cmds = vkl_canvas_commands(

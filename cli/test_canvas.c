@@ -574,7 +574,7 @@ int test_canvas_8(TestContext* context)
 
     // VklSemaphores compute_finished = vkl_semaphores(gpu, 2);
 
-    INSTANCE_NEW(VklCommands, cmds, canvas->commands, canvas->max_commands)
+    VklCommands* cmds = vkl_container_alloc(&canvas->commands);
     *cmds = vkl_commands(gpu, VKL_DEFAULT_QUEUE_COMPUTE, 1);
     vkl_cmd_begin(cmds, 0);
     vkl_cmd_compute(cmds, 0, visual.compute, (uvec3){3, 1, 1});
@@ -817,7 +817,7 @@ int test_canvas_particles(TestContext* context)
     }
 
     // Compute command buffer?
-    INSTANCE_NEW(VklCommands, cmds, canvas->commands, canvas->max_commands)
+    VklCommands* cmds = vkl_container_alloc(&canvas->commands);
     int32_t nn = (int32_t)visual->n_vertices;
     {
         *cmds = vkl_commands(gpu, VKL_DEFAULT_QUEUE_COMPUTE, 1);

@@ -569,12 +569,10 @@ struct VklCanvas
     VklCommands cmds_render;
 
     // Other command buffers.
-    uint32_t max_commands;
-    VklCommands* commands;
+    VklContainer commands;
 
     // Graphics pipelines.
-    uint32_t max_graphics;
-    VklGraphics* graphics;
+    VklContainer graphics;
 
     // IMMEDIATE transfers
     VklFifo immediate_queue; // _immediate transfers queue

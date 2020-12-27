@@ -543,18 +543,20 @@ static void _refill_canvas(VklCanvas* canvas, uint32_t img_idx)
     }
 
     uint32_t img_count = canvas->cmds_render.count;
-    for (uint32_t i = 0; i < canvas->max_commands; i++)
+    do
     {
-        cmds = &canvas->commands[i];
+        cmds = vkl_container_iter_get(&canvas->commands);
+        ASSERT(cmds != NULL);
         if (cmds->obj.status == VKL_OBJECT_STATUS_NONE)
             break;
         if (cmds->queue_idx == VKL_DEFAULT_QUEUE_RENDER &&
             cmds->obj.status >= VKL_OBJECT_STATUS_INIT)
         {
-            ev.u.rf.cmds[k++] = &canvas->commands[i];
-            img_count = canvas->commands[i].count;
+            ev.u.rf.cmds[k++] = cmds;
+            img_count = cmds->count;
         }
-    }
+    } while (vkl_container_iter(&canvas->commands));
+
     ASSERT(k > 0);
     ASSERT(img_count > 0);
     ev.u.rf.cmd_count = k;
@@ -662,10 +664,10 @@ static VklCanvas* _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool off
     atomic_init(&canvas->next_status, VKL_OBJECT_STATUS_NONE);
 
     // Allocate memory for canvas objects.
-    INSTANCES_INIT(
-        VklCommands, canvas, commands, max_commands, VKL_MAX_COMMANDS, VKL_OBJECT_TYPE_COMMANDS)
-    INSTANCES_INIT(
-        VklGraphics, canvas, graphics, max_graphics, VKL_MAX_GRAPHICS, VKL_OBJECT_TYPE_GRAPHICS)
+    canvas->commands =
+        vkl_container(VKL_MAX_COMMANDS, sizeof(VklCommands), VKL_OBJECT_TYPE_COMMANDS);
+    canvas->graphics =
+        vkl_container(VKL_MAX_GRAPHICS, sizeof(VklGraphics), VKL_OBJECT_TYPE_GRAPHICS);
 
     // Create the window.
     VklWindow* window = NULL;
@@ -860,7 +862,7 @@ VklCommands*
 vkl_canvas_commands(VklCanvas* canvas, uint32_t queue_idx, uint32_t group_id, uint32_t id)
 {
     ASSERT(canvas != NULL);
-    INSTANCE_NEW(VklCommands, commands, canvas->commands, canvas->max_commands)
+    VklCommands* commands = vkl_container_alloc(&canvas->commands);
     *commands = vkl_commands(canvas->gpu, queue_idx, canvas->swapchain.img_count);
     commands->obj.group_id = group_id;
     commands->obj.id = id;
@@ -1896,17 +1898,19 @@ void vkl_canvas_frame_submit(VklCanvas* canvas)
     if (canvas->cmds_render.obj.status == VKL_OBJECT_STATUS_CREATED)
         vkl_submit_commands(s, &canvas->cmds_render);
     // Extra render commands.
-    for (uint32_t i = 0; i < canvas->max_commands; i++)
+    VklCommands* commands = NULL;
+    do
     {
-        if (canvas->commands[i].obj.status == VKL_OBJECT_STATUS_NONE)
+        commands = vkl_container_iter_get(&canvas->commands);
+        if (commands->obj.status == VKL_OBJECT_STATUS_NONE)
             break;
-        if (canvas->commands[i].obj.status == VKL_OBJECT_STATUS_INACTIVE)
+        if (commands->obj.status == VKL_OBJECT_STATUS_INACTIVE)
             continue;
-        if (canvas->commands[i].queue_idx == VKL_DEFAULT_QUEUE_RENDER)
+        if (commands->queue_idx == VKL_DEFAULT_QUEUE_RENDER)
         {
-            vkl_submit_commands(s, &canvas->commands[i]);
+            vkl_submit_commands(s, commands);
         }
-    }
+    } while (vkl_container_iter(&canvas->commands));
     if (s->commands_count == 0)
     {
         log_error("no recorded command buffers");
@@ -2132,13 +2136,10 @@ void vkl_canvas_destroy(VklCanvas* canvas)
 
     // Destroy the graphics.
     log_trace("canvas destroy graphics pipelines");
-    for (uint32_t i = 0; i < canvas->max_graphics; i++)
-    {
-        if (canvas->graphics[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_graphics_destroy(&canvas->graphics[i]);
-    }
-    INSTANCES_DESTROY(canvas->graphics)
+    do
+        vkl_graphics_destroy(vkl_container_iter_get(&canvas->graphics));
+    while (vkl_container_iter(&canvas->graphics));
+    vkl_container_destroy(&canvas->graphics);
 
     // Destroy the depth image.
     vkl_images_destroy(&canvas->depth_image);
@@ -2164,13 +2165,10 @@ void vkl_canvas_destroy(VklCanvas* canvas)
     }
 
     log_trace("canvas destroy commands");
-    for (uint32_t i = 0; i < canvas->max_commands; i++)
-    {
-        if (canvas->commands[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_commands_destroy(&canvas->commands[i]);
-    }
-    INSTANCES_DESTROY(canvas->commands)
+    do
+        vkl_commands_destroy(vkl_container_iter_get(&canvas->commands));
+    while (vkl_container_iter(&canvas->commands));
+    vkl_container_destroy(&canvas->commands);
 
     // Destroy the semaphores.
     log_trace("canvas destroy semaphores");

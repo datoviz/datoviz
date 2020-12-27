@@ -354,16 +354,18 @@ VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type, in
     ASSERT(canvas->gpu != NULL);
     ASSERT(type != VKL_GRAPHICS_NONE);
 
-    for (uint32_t i = 0; i < VKL_GRAPHICS_COUNT; i++)
+    // HACK: ensure all GRAPHICS_COUNT graphics are allocated, and create them on demand.
+    // Only 1 graphics per graphics type.
+    if (canvas->graphics.items[0] == NULL)
     {
-        if (canvas->graphics[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            canvas->graphics[i].obj.status = VKL_OBJECT_STATUS_INIT;
+        for (uint32_t i = 0; i < VKL_GRAPHICS_COUNT; i++)
+            vkl_container_alloc(&canvas->graphics);
     }
+    ASSERT(canvas->graphics.items[0] != NULL);
+    ASSERT(canvas->graphics.items[VKL_GRAPHICS_COUNT - 1] != NULL);
 
-    int32_t idx = (int32_t)type;
-    ASSERT(idx > 0);
-
-    VklGraphics* graphics = &canvas->graphics[idx];
+    ASSERT((uint32_t)type < VKL_GRAPHICS_COUNT);
+    VklGraphics* graphics = vkl_container_get(&canvas->graphics, (uint32_t)type);
     ASSERT(graphics != NULL);
     if (is_obj_created(&graphics->obj))
         return graphics;

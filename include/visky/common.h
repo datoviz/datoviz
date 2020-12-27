@@ -513,6 +513,14 @@ static void* vkl_container_alloc(VklContainer* container)
     return container->items[available_slot];
 }
 
+static void* vkl_container_get(VklContainer* container, uint32_t idx)
+{
+    ASSERT(container != NULL);
+    ASSERT(container->items != NULL);
+    ASSERT(idx < container->capacity);
+    return container->items[idx];
+}
+
 static void* vkl_container_iter(VklContainer* container)
 {
     ASSERT(container != NULL);
@@ -541,8 +549,11 @@ static void* vkl_container_iter_get(VklContainer* container)
     ASSERT(container != NULL);
     if (container->capacity == 0)
         return NULL;
+    if (container->_loop_idx == 0 && (container->items == NULL || container->items[0] == NULL))
+        return NULL;
     ASSERT(container->capacity > 0);
     ASSERT(container->_loop_idx < container->capacity);
+    ASSERT(container->items[container->_loop_idx] != NULL);
     return container->items[container->_loop_idx];
 }
 
