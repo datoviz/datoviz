@@ -12,8 +12,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define VKL_MAX_VISUALS                1024
-#define VKL_MAX_CONTROLLERS            1024
+#define VKL_MAX_VISUALS                64
+#define VKL_MAX_CONTROLLERS            64
 #define VKL_MAX_VISUALS_PER_CONTROLLER 64
 
 
@@ -115,8 +115,7 @@ struct VklScene
     VklGrid grid;
 
     // Visuals.
-    uint32_t max_visuals;
-    VklVisual* visuals;
+    VklContainer visuals;
 
     // Controllers.
     uint32_t max_controllers;

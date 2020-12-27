@@ -393,6 +393,7 @@ struct VklContainer
 {
     uint32_t count;
     uint32_t capacity;
+    VklObjectType type;
     void** items;
     size_t item_size;
     uint32_t _loop_idx;
@@ -430,7 +431,7 @@ static uint64_t next_pow2(uint64_t x)
     return p;
 }
 
-static VklContainer vkl_container(uint32_t count, size_t item_size)
+static VklContainer vkl_container(uint32_t count, size_t item_size, VklObjectType type)
 {
     ASSERT(count > 0);
     ASSERT(item_size > 0);
@@ -439,6 +440,7 @@ static VklContainer vkl_container(uint32_t count, size_t item_size)
     container.count = 0;
     container.item_size = item_size;
     container.capacity = next_pow2(count);
+    container.type = type;
     container.items = (void**)calloc(container.capacity, sizeof(void*));
     // NOTE: we shouldn't rely on calloc() initializing pointer values to NULL as it is not
     // guaranteed that NULL is represented by 0 bits.
@@ -488,7 +490,8 @@ static void* vkl_container_alloc(VklContainer* container)
     if (available_slot == UINT32_MAX)
     {
         log_trace("reallocate container up to %d items", 2 * container->capacity);
-        void** _new = (void**)realloc(container->items, 2 * container->capacity * container->item_size);
+        void** _new =
+            (void**)realloc(container->items, 2 * container->capacity * container->item_size);
         ASSERT(_new != NULL);
         container->items = _new;
 
@@ -539,9 +542,10 @@ static void* vkl_container_iter(VklContainer* container)
     return NULL;
 }
 
-static void* vkl_container_iter_get(VklContainer* container) {
+static void* vkl_container_iter_get(VklContainer* container)
+{
     ASSERT(container != NULL);
-    ASSERT(container->_loop_idx< container->capacity);
+    ASSERT(container->_loop_idx < container->capacity);
     return container->items[container->_loop_idx];
 }
 

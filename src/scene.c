@@ -645,9 +645,8 @@ VklScene* vkl_scene(VklCanvas* canvas, uint32_t n_rows, uint32_t n_cols)
     canvas->scene->canvas = canvas;
     canvas->scene->grid = vkl_grid(canvas, n_rows, n_cols);
 
-    INSTANCES_INIT(
-        VklVisual, canvas->scene, visuals, max_visuals, //
-        VKL_MAX_VISUALS, VKL_OBJECT_TYPE_VISUAL)
+    canvas->scene->visuals =
+        vkl_container(VKL_MAX_VISUALS, sizeof(VklVisual), VKL_OBJECT_TYPE_VISUAL);
 
     INSTANCES_INIT(
         VklController, canvas->scene, controllers, max_controllers, //
@@ -812,7 +811,8 @@ VklVisual* vkl_scene_visual(VklPanel* panel, VklVisualType type, int flags)
     ASSERT(panel != NULL);
     ASSERT(panel->controller != NULL);
     VklScene* scene = panel->grid->canvas->scene;
-    INSTANCE_NEW(VklVisual, visual, scene->visuals, scene->max_visuals)
+    VklVisual* visual = vkl_container_alloc(&scene->visuals);
+    visual->obj.type = VKL_OBJECT_TYPE_VISUAL;
 
     // Create the visual.
     *visual = vkl_visual(panel->grid->canvas);
@@ -846,7 +846,7 @@ void vkl_scene_destroy(VklScene* scene)
     {
         if (scene->grid.panels[i].obj.status == VKL_OBJECT_STATUS_NONE)
             break;
-        // Destroy all visuals in the panel.
+        // This also destroys all visuals in the panel.
         vkl_panel_destroy(&scene->grid.panels[i]);
     }
 
@@ -857,7 +857,8 @@ void vkl_scene_destroy(VklScene* scene)
             break;
         vkl_controller_destroy(&scene->controllers[i]);
     }
-    INSTANCES_DESTROY(scene->visuals)
+
+    vkl_container_destroy(&scene->visuals);
     obj_destroyed(&scene->obj);
     FREE(scene);
 }

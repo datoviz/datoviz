@@ -1,5 +1,5 @@
-#include "../include/visky/common.h"
 #include "test_common.h"
+#include "../include/visky/common.h"
 
 
 
@@ -8,7 +8,8 @@
 /*************************************************************************************************/
 
 typedef struct TestObject TestObject;
-struct TestObject {
+struct TestObject
+{
     VklObject obj;
     float x;
 };
@@ -17,7 +18,7 @@ int test_container(TestContext* context)
 {
     uint32_t capacity = 2;
 
-    VklContainer container = vkl_container(capacity, sizeof(TestObject));
+    VklContainer container = vkl_container(capacity, sizeof(TestObject), 0);
     AT(container.items != NULL);
     AT(container.item_size == sizeof(TestObject));
     AT(container.capacity == capacity);
@@ -83,8 +84,7 @@ int test_container(TestContext* context)
         if (i == 2)
             AT(item->x == 4);
         i++;
-    }
-    while (vkl_container_iter(&container));
+    } while (vkl_container_iter(&container));
     ASSERT(i == 3);
 
     // Destroy all objects.
