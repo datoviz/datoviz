@@ -2110,8 +2110,11 @@ void vkl_canvas_destroy(VklCanvas* canvas)
     log_trace("destroying canvas");
 
     // DEBUG: only in non offscreen mode
-    ASSERT(canvas->window != NULL);
-    ASSERT(canvas->window->app != NULL);
+    if (!canvas->offscreen)
+    {
+        ASSERT(canvas->window != NULL);
+        ASSERT(canvas->window->app != NULL);
+    }
 
     // Stop the vent thread.
     ASSERT(canvas != NULL);
@@ -2192,7 +2195,8 @@ void vkl_canvases_destroy(VklContainer* canvases)
     do
     {
         canvas = vkl_container_iter_get(canvases);
-        ASSERT(canvas->window->app != NULL);
+        if (!canvas->offscreen)
+            ASSERT(canvas->window->app != NULL);
         vkl_canvas_destroy(canvas);
     } while (vkl_container_iter(canvases));
     vkl_container_destroy(canvases);

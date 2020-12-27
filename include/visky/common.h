@@ -518,7 +518,7 @@ static void* vkl_container_iter(VklContainer* container)
     ASSERT(container != NULL);
     if (container->items == NULL || container->count == 0)
         return NULL;
-    log_trace("container iterate");
+    // log_trace("container iterate");
     if (container->_loop_idx >= container->capacity - 1)
         return NULL;
     ASSERT(container->_loop_idx < container->capacity - 1);
