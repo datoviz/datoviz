@@ -10,20 +10,20 @@
 /*  vklite2                                                                                      */
 /*************************************************************************************************/
 
-int test_app(TestContext* context);
-int test_surface(TestContext* context);
-int test_window(TestContext* context);
-int test_swapchain(TestContext* context);
-int test_commands(TestContext* context);
-int test_buffer(TestContext* context);
-int test_compute(TestContext* context);
-int test_push(TestContext* context);
-int test_images(TestContext* context);
-int test_sampler(TestContext* context);
-int test_barrier(TestContext* context);
-int test_submit(TestContext* context);
-int test_blank(TestContext* context);
-int test_graphics(TestContext* context);
+int test_vklite_app(TestContext* context);
+int test_vklite_surface(TestContext* context);
+int test_vklite_window(TestContext* context);
+int test_vklite_swapchain(TestContext* context);
+int test_vklite_commands(TestContext* context);
+int test_vklite_buffer(TestContext* context);
+int test_vklite_compute(TestContext* context);
+int test_vklite_push(TestContext* context);
+int test_vklite_images(TestContext* context);
+int test_vklite_sampler(TestContext* context);
+int test_vklite_barrier(TestContext* context);
+int test_vklite_submit(TestContext* context);
+int test_vklite_blank(TestContext* context);
+int test_vklite_graphics(TestContext* context);
 
 int test_basic_canvas_1(TestContext* context);
 int test_basic_canvas_triangle(TestContext* context);

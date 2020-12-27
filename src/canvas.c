@@ -643,7 +643,10 @@ static VklCanvas* _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool off
     ASSERT(app != NULL);
     // HACK: create the canvas container here because vklite.c does not know the size of VklCanvas.
     if (app->canvases.capacity == 0)
+    {
+        log_debug("create canvases container");
         app->canvases = vkl_container(VKL_MAX_WINDOWS, sizeof(VklCanvas), VKL_OBJECT_TYPE_CANVAS);
+    }
 
     VklCanvas* canvas = vkl_container_alloc(&app->canvases);
     canvas->app = app;
@@ -669,6 +672,8 @@ static VklCanvas* _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool off
     if (!offscreen)
     {
         window = vkl_window(app, width, height);
+        ASSERT(window->app == app);
+        ASSERT(window->app != NULL);
         canvas->window = window;
         uint32_t framebuffer_width, framebuffer_height;
         vkl_window_get_size(window, &framebuffer_width, &framebuffer_height);
@@ -2104,6 +2109,10 @@ void vkl_canvas_destroy(VklCanvas* canvas)
     }
     log_trace("destroying canvas");
 
+    // DEBUG: only in non offscreen mode
+    ASSERT(canvas->window != NULL);
+    ASSERT(canvas->window->app != NULL);
+
     // Stop the vent thread.
     ASSERT(canvas != NULL);
     ASSERT(canvas->gpu != NULL);
@@ -2132,17 +2141,24 @@ void vkl_canvas_destroy(VklCanvas* canvas)
     vkl_images_destroy(&canvas->depth_image);
 
     // Destroy the renderpasses.
-    log_trace("canvas destroy renderpass(es)");
+    log_trace("canvas destroy renderpass");
     vkl_renderpass_destroy(&canvas->renderpass);
 
     // Destroy the swapchain.
+    log_trace("canvas destroy swapchain");
     vkl_swapchain_destroy(&canvas->swapchain);
 
     // Destroy the framebuffers.
+    log_trace("canvas destroy framebuffers");
     vkl_framebuffers_destroy(&canvas->framebuffers);
 
     // Destroy the window.
-    vkl_window_destroy(canvas->window);
+    log_trace("canvas destroy window");
+    if (canvas->window != NULL)
+    {
+        ASSERT(canvas->window->app != NULL);
+        vkl_window_destroy(canvas->window);
+    }
 
     log_trace("canvas destroy commands");
     for (uint32_t i = 0; i < canvas->max_commands; i++)
@@ -2169,8 +2185,15 @@ void vkl_canvas_destroy(VklCanvas* canvas)
 
 void vkl_canvases_destroy(VklContainer* canvases)
 {
+    if (canvases == NULL || canvases->capacity == 0)
+        return;
+    log_trace("destroy all canvases");
+    VklCanvas* canvas = NULL;
     do
-        vkl_canvas_destroy(vkl_container_iter_get(canvases));
-    while (vkl_container_iter(canvases));
+    {
+        canvas = vkl_container_iter_get(canvases);
+        ASSERT(canvas->window->app != NULL);
+        vkl_canvas_destroy(canvas);
+    } while (vkl_container_iter(canvases));
     vkl_container_destroy(canvases);
 }

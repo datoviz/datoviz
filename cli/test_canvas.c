@@ -39,6 +39,9 @@ int test_canvas_1(TestContext* context)
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
     VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    ASSERT(canvas->window != NULL);
+    ASSERT(canvas->app != NULL);
+    ASSERT(canvas->window->app != NULL);
 
     uvec2 size = {0};
 
@@ -68,7 +71,11 @@ int test_canvas_1(TestContext* context)
         "local clock elapsed %.6f interval %.6f", canvas->clock.elapsed, canvas->clock.interval);
 
     // Second canvas.
+    ASSERT(canvas->window->app != NULL);
     VklCanvas* canvas2 = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    ASSERT(canvas->window->app != NULL);
+    ASSERT(canvas2->window != NULL);
+    ASSERT(canvas2->app != NULL);
     vkl_canvas_clear_color(canvas, (VkClearColorValue){{1, 0, 0, 1}});
     vkl_canvas_clear_color(canvas2, (VkClearColorValue){{0, 1, 0, 1}});
     vkl_app_run(app, 5);

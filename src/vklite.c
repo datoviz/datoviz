@@ -64,10 +64,6 @@ VklApp* vkl_app(VklBackend backend)
         FREE(physical_devices);
     }
 
-    // INSTANCES_INIT(VklWindow, app, windows, max_windows, VKL_MAX_WINDOWS,
-    // VKL_OBJECT_TYPE_WINDOW) NOTE: init canvas in canvas.c instead, as the struct is defined
-    // there and not here
-
     return app;
 }
 
@@ -328,10 +324,13 @@ void vkl_gpu_destroy(VklGpu* gpu)
 
 VklWindow* vkl_window(VklApp* app, uint32_t width, uint32_t height)
 {
+    ASSERT(app != NULL);
+
     VklWindow* window = vkl_container_alloc(&app->windows);
+    ASSERT(window != NULL);
 
     ASSERT(window->obj.type == VKL_OBJECT_TYPE_WINDOW);
-    ASSERT(window->obj.status == VKL_OBJECT_STATUS_INIT);
+    ASSERT(window->obj.status == VKL_OBJECT_STATUS_NONE);
     window->app = app;
 
     window->width = width;
@@ -375,6 +374,9 @@ void vkl_window_destroy(VklWindow* window)
         log_trace("skip destruction of already-destroyed window");
         return;
     }
+    ASSERT(window != NULL);
+    ASSERT(window->app != NULL);
+    ASSERT(window->surface != NULL);
     backend_window_destroy(
         window->app->instance, window->app->backend, window->backend_window, window->surface);
     obj_destroyed(&window->obj);

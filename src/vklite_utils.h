@@ -329,7 +329,7 @@ static void* backend_window(
     VkInstance instance, VklBackend backend, uint32_t width, uint32_t height, //
     VklWindow* window, VkSurfaceKHR* surface)
 {
-    log_trace("create canvas with size %dx%d", width, height);
+    log_trace("create window with size %dx%d", width, height);
 
     switch (backend)
     {

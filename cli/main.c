@@ -24,20 +24,20 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_container),
 
     // vklite2
-    CASE_FIXTURE_NONE(test_app),                   //
-    CASE_FIXTURE_NONE(test_surface),               //
-    CASE_FIXTURE_NONE(test_window),                //
-    CASE_FIXTURE_NONE(test_swapchain),             //
-    CASE_FIXTURE_NONE(test_commands),              //
-    CASE_FIXTURE_NONE(test_buffer),                //
-    CASE_FIXTURE_NONE(test_compute),               //
-    CASE_FIXTURE_NONE(test_push),                  //
-    CASE_FIXTURE_NONE(test_images),                //
-    CASE_FIXTURE_NONE(test_sampler),               //
-    CASE_FIXTURE_NONE(test_barrier),               //
-    CASE_FIXTURE_NONE(test_submit),                //
-    CASE_FIXTURE_NONE(test_blank),                 //
-    CASE_FIXTURE_NONE(test_graphics),              //
+    CASE_FIXTURE_NONE(test_vklite_app),            //
+    CASE_FIXTURE_NONE(test_vklite_surface),        //
+    CASE_FIXTURE_NONE(test_vklite_window),         //
+    CASE_FIXTURE_NONE(test_vklite_swapchain),      //
+    CASE_FIXTURE_NONE(test_vklite_commands),       //
+    CASE_FIXTURE_NONE(test_vklite_buffer),         //
+    CASE_FIXTURE_NONE(test_vklite_compute),        //
+    CASE_FIXTURE_NONE(test_vklite_push),           //
+    CASE_FIXTURE_NONE(test_vklite_images),         //
+    CASE_FIXTURE_NONE(test_vklite_sampler),        //
+    CASE_FIXTURE_NONE(test_vklite_barrier),        //
+    CASE_FIXTURE_NONE(test_vklite_submit),         //
+    CASE_FIXTURE_NONE(test_vklite_blank),          //
+    CASE_FIXTURE_NONE(test_vklite_graphics),       //
     CASE_FIXTURE_NONE(test_basic_canvas_1),        //
     CASE_FIXTURE_NONE(test_basic_canvas_triangle), //
     CASE_FIXTURE_NONE(test_shader_compile),        //

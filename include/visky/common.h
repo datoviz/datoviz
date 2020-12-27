@@ -507,7 +507,7 @@ static void* vkl_container_alloc(VklContainer* container)
 
     // Initialize the VklObject field.
     VklObject* obj = (VklObject*)container->items[available_slot];
-    obj->status = VKL_OBJECT_STATUS_INIT;
+    obj->status = VKL_OBJECT_STATUS_NONE; // TODO: new status ALLOC?
     obj->type = container->type;
 
     return container->items[available_slot];
