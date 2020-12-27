@@ -293,7 +293,7 @@ int test_visuals_4(TestContext* context)
     vkl_visual_data_buffer(&visual, VKL_SOURCE_TYPE_VIEWPORT, 0, 0, 1, 1, &viewport);
     vkl_visual_update(&visual, viewport, (VklDataCoords){0}, NULL);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, .25, _visual_update, &visual);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, .1, _visual_update, &visual);
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _visual_canvas_fill, &visual);
 
     // Run and end.

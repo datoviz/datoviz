@@ -59,8 +59,6 @@ int test_interact_1(TestContext* context)
 /*  Interact utils                                                                               */
 /*************************************************************************************************/
 
-
-
 static void _update_interact(VklCanvas* canvas, VklPrivateEvent ev)
 {
     ASSERT(canvas != NULL);

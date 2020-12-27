@@ -12,13 +12,13 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define VKL_MAX_GRAPHICS_PER_VISUAL 64
-#define VKL_MAX_COMPUTES_PER_VISUAL 64
+#define VKL_MAX_GRAPHICS_PER_VISUAL 16
+#define VKL_MAX_COMPUTES_PER_VISUAL 32
 #define VKL_MAX_VISUAL_GROUPS       1024
-#define VKL_MAX_VISUAL_SOURCES      64
-#define VKL_MAX_VISUAL_RESOURCES    64
-#define VKL_MAX_VISUAL_PROPS        64
-#define VKL_MAX_VISUAL_PRIORITY     4
+// #define VKL_MAX_VISUAL_SOURCES      64
+// #define VKL_MAX_VISUAL_RESOURCES    64
+// #define VKL_MAX_VISUAL_PROPS        64
+#define VKL_MAX_VISUAL_PRIORITY 4
 
 
 
@@ -200,6 +200,8 @@ struct VklSource
 
 struct VklProp
 {
+    VklObject obj;
+
     VklPropType prop_type; // prop type
     uint32_t prop_idx;     // index within all props of that type
 
@@ -248,12 +250,10 @@ struct VklVisual
     VklVisualDataCallback callback_bake;
 
     // Sources.
-    uint32_t source_count; // VERTEX source is mandatory
-    VklSource sources[VKL_MAX_VISUAL_SOURCES];
+    VklContainer sources;
 
     // Props.
-    uint32_t prop_count;
-    VklProp props[VKL_MAX_VISUAL_PROPS];
+    VklContainer props;
 
     // User data
     uint32_t group_count;
@@ -265,8 +265,8 @@ struct VklVisual
     VklViewport viewport; // usually the visual's panel viewport, but may be customized
 
     // GPU data
-    VklBindings bindings[VKL_MAX_GRAPHICS_PER_VISUAL];
-    VklBindings bindings_comp[VKL_MAX_COMPUTES_PER_VISUAL];
+    VklContainer bindings;
+    VklContainer bindings_comp;
 };
 
 
@@ -434,10 +434,13 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
     ASSERT(viewport.height > 0);
 
     // Draw all valid graphics pipelines.
+    VklBindings* bindings = NULL;
     for (uint32_t pipeline_idx = 0; pipeline_idx < visual->graphics_count; pipeline_idx++)
     {
         ASSERT(is_obj_created(&visual->graphics[pipeline_idx]->obj));
-        ASSERT(is_obj_created(&visual->bindings[pipeline_idx].obj));
+
+        bindings = vkl_container_get(&visual->bindings, pipeline_idx);
+        ASSERT(is_obj_created(&bindings->obj));
 
         VklSource* vertex_source = vkl_bake_source(visual, VKL_SOURCE_TYPE_VERTEX, pipeline_idx);
         ASSERT(vertex_source != NULL);
@@ -468,8 +471,7 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
         }
 
         // Draw command.
-        vkl_cmd_bind_graphics(
-            cmds, idx, visual->graphics[pipeline_idx], &visual->bindings[pipeline_idx], 0);
+        vkl_cmd_bind_graphics(cmds, idx, visual->graphics[pipeline_idx], bindings, 0);
 
         if (index_count == 0)
         {
@@ -521,14 +523,15 @@ static void _bake_source(VklVisual* visual, VklSource* source)
 
 static void _bake_uniforms(VklVisual* visual)
 {
-    VklSource* source = NULL;
+    VklSource* source = vkl_container_iter(&visual->sources);
     // UNIFORM sources.
-    for (uint32_t i = 0; i < visual->source_count; i++)
+
+    while (source != NULL)
     {
-        source = &visual->sources[i];
         if (source->obj.status != VKL_OBJECT_STATUS_NEED_UPDATE)
         {
             log_trace("skip bake source for uniform source that doesn't need updating");
+            source = vkl_container_iter(&visual->sources);
             continue;
         }
 
@@ -541,6 +544,7 @@ static void _bake_uniforms(VklVisual* visual)
             vkl_bake_source_alloc(visual, source, count);
             vkl_bake_source_fill(visual, source);
         }
+        source = vkl_container_iter(&visual->sources);
     }
 }
 

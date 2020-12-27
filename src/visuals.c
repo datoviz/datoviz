@@ -80,9 +80,9 @@ static VklBindings* _get_bindings(VklVisual* visual, VklSource* source)
 {
     ASSERT(source != NULL);
     if (source->pipeline == VKL_PIPELINE_GRAPHICS)
-        return &visual->bindings[source->pipeline_idx];
+        return vkl_container_get(&visual->bindings, source->pipeline_idx);
     else if (source->pipeline == VKL_PIPELINE_COMPUTE)
-        return &visual->bindings_comp[source->pipeline_idx];
+        return vkl_container_get(&visual->bindings_comp, source->pipeline_idx);
     return NULL;
 }
 
@@ -97,10 +97,12 @@ static void _set_source_bindings(VklVisual* visual, VklSource* source)
         vkl_bindings_buffer(bindings, source->slot_idx, source->u.br);
 
         // Share the source's buffer regions with other pipelines.
+        VklBindings* other = NULL;
         for (uint32_t i = 0; i < source->other_count; i++)
         {
-            vkl_bindings_buffer(
-                &visual->bindings[source->other_idxs[i]], source->slot_idx, source->u.br);
+            other = vkl_container_get(&visual->bindings, source->other_idxs[i]);
+            ASSERT(other != NULL);
+            vkl_bindings_buffer(other, source->slot_idx, source->u.br);
         }
     }
 }
@@ -148,15 +150,17 @@ static VkFormat _get_texture_format(VklVisual* visual, VklSource* source)
     ASSERT(_source_is_texture(source->source_kind));
     VklDataType dtype = VKL_DTYPE_NONE;
 
-    for (uint32_t i = 0; i < visual->prop_count; i++)
+    VklProp* prop = vkl_container_iter(&visual->props);
+    while (prop != NULL)
     {
-        if (visual->props[i].source == source)
+        if (prop->source == source)
         {
             // Check that there is only 1 prop associated to the texture source.
             if (dtype != VKL_DTYPE_NONE)
                 log_error("multiple texture props not supported");
-            dtype = visual->props[i].dtype;
+            dtype = prop->dtype;
         }
+        prop = vkl_container_iter(&visual->props);
     }
 
     ASSERT(dtype != VKL_DTYPE_NONE);
@@ -226,6 +230,14 @@ VklVisual vkl_visual(VklCanvas* canvas)
 
     VklVisual visual = {0};
     visual.canvas = canvas;
+    visual.props =
+        vkl_container(VKL_CONTAINER_DEFAULT_COUNT, sizeof(VklProp), VKL_OBJECT_TYPE_PROP);
+    visual.sources =
+        vkl_container(VKL_CONTAINER_DEFAULT_COUNT, sizeof(VklSource), VKL_OBJECT_TYPE_SOURCE);
+    visual.bindings =
+        vkl_container(VKL_CONTAINER_DEFAULT_COUNT, sizeof(VklBindings), VKL_OBJECT_TYPE_BINDINGS);
+    visual.bindings_comp =
+        vkl_container(VKL_CONTAINER_DEFAULT_COUNT, sizeof(VklBindings), VKL_OBJECT_TYPE_BINDINGS);
 
     // Default callbacks.
     visual.callback_fill = _default_visual_fill;
@@ -242,15 +254,28 @@ void vkl_visual_destroy(VklVisual* visual)
     ASSERT(visual != NULL);
 
     // Free the props.
-    for (uint32_t i = 0; i < visual->prop_count; i++)
+    VklProp* prop = vkl_container_iter(&visual->props);
+    while (prop != NULL)
     {
-        vkl_array_destroy(&visual->props[i].arr_orig);
-        vkl_array_destroy(&visual->props[i].arr_trans);
+        vkl_array_destroy(&prop->arr_orig);
+        vkl_array_destroy(&prop->arr_trans);
+        obj_destroyed(&prop->obj);
+        prop = vkl_container_iter(&visual->props);
     }
+    vkl_container_destroy(&visual->props);
 
     // Free the data sources.
-    for (uint32_t i = 0; i < visual->source_count; i++)
-        vkl_array_destroy(&visual->sources[i].arr);
+    VklSource* source = vkl_container_iter(&visual->sources);
+    while (source != NULL)
+    {
+        vkl_array_destroy(&source->arr);
+        obj_destroyed(&source->obj);
+        source = vkl_container_iter(&visual->sources);
+    }
+    vkl_container_destroy(&visual->sources);
+
+    CONTAINER_DESTROY_ITEMS(VklBindings, visual->bindings, vkl_bindings_destroy)
+    CONTAINER_DESTROY_ITEMS(VklBindings, visual->bindings_comp, vkl_bindings_destroy)
 
     obj_destroyed(&visual->obj);
 }
@@ -266,38 +291,35 @@ void vkl_visual_source(
     uint32_t slot_idx, VkDeviceSize item_size, int flags)
 {
     ASSERT(visual != NULL);
-    ASSERT(visual->source_count < VKL_MAX_VISUAL_SOURCES);
     ASSERT(vkl_bake_source(visual, source_type, pipeline_idx) == NULL);
 
-    VklSource source = {0};
-    source.obj.type = VKL_OBJECT_TYPE_SOURCE;
-    source.obj.status = VKL_OBJECT_STATUS_INIT;
-    source.source_type = source_type;
-    source.source_kind = _get_source_kind(source_type);
-    source.pipeline = pipeline;
-    source.pipeline_idx = pipeline_idx;
-    source.slot_idx = slot_idx;
-    source.flags = flags;
+    VklSource* source = vkl_container_alloc(&visual->sources);
+    obj_init(&source->obj);
+    source->source_type = source_type;
+    source->source_kind = _get_source_kind(source_type);
+    source->pipeline = pipeline;
+    source->pipeline_idx = pipeline_idx;
+    source->slot_idx = slot_idx;
+    source->flags = flags;
 
-    if (source.source_kind < VKL_SOURCE_TEXTURE_1D)
-        source.arr = vkl_array_struct(0, item_size);
+    if (source->source_kind < VKL_SOURCE_TEXTURE_1D)
+        source->arr = vkl_array_struct(0, item_size);
     else
     {
         // Textures.
-        uint32_t ndims = _get_texture_ndims(source.source_kind);
-        source.arr = vkl_array_3D(ndims, 0, 0, 0, item_size);
+        uint32_t ndims = _get_texture_ndims(source->source_kind);
+        source->arr = vkl_array_3D(ndims, 0, 0, 0, item_size);
     }
 
     // source origin (GPU object) not set yet
-    source.origin = VKL_SOURCE_ORIGIN_NONE;
+    source->origin = VKL_SOURCE_ORIGIN_NONE;
 
     // NOTE: exception for INDEX source, most frequently automatically handled by the library
-    if (source.source_kind == VKL_SOURCE_INDEX)
+    if (source->source_kind == VKL_SOURCE_INDEX)
     {
-        source.origin = VKL_SOURCE_ORIGIN_LIB;
-        source.obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+        source->origin = VKL_SOURCE_ORIGIN_LIB;
+        source->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
     }
-    visual->sources[visual->source_count++] = source;
 }
 
 
@@ -318,25 +340,23 @@ void vkl_visual_prop(
     VklSourceType source_type, uint32_t pipeline_idx)
 {
     ASSERT(visual != NULL);
-    ASSERT(visual->prop_count < VKL_MAX_VISUAL_PROPS);
 
-    VklProp prop = {0};
+    VklProp* prop = vkl_container_alloc(&visual->props);
+    obj_init(&prop->obj);
 
-    prop.prop_type = prop_type;
-    prop.prop_idx = prop_idx;
-    prop.dtype = dtype;
-    prop.source = vkl_bake_source(visual, source_type, pipeline_idx);
-    if (prop.source == NULL)
+    prop->prop_type = prop_type;
+    prop->prop_idx = prop_idx;
+    prop->dtype = dtype;
+    prop->source = vkl_bake_source(visual, source_type, pipeline_idx);
+    if (prop->source == NULL)
     {
         log_error("source of type %d #%d not found", source_type, pipeline_idx);
     }
-    ASSERT(prop.source != NULL);
+    ASSERT(prop->source != NULL);
 
     // NOTE: we do not use prop arrays for texture sources at the moment
-    if (prop.source->source_kind < VKL_SOURCE_TEXTURE_1D)
-        prop.arr_orig = vkl_array(0, prop.dtype);
-
-    visual->props[visual->prop_count++] = prop;
+    if (prop->source->source_kind < VKL_SOURCE_TEXTURE_1D)
+        prop->arr_orig = vkl_array(0, prop->dtype);
 }
 
 
@@ -379,8 +399,10 @@ void vkl_visual_graphics(VklVisual* visual, VklGraphics* graphics)
         return;
     }
     visual->graphics[visual->graphics_count] = graphics;
-    visual->bindings[visual->graphics_count] =
-        vkl_bindings(&graphics->slots, visual->canvas->swapchain.img_count);
+
+    VklBindings* bindings = vkl_container_alloc(&visual->bindings);
+    ASSERT(visual->bindings.count == visual->graphics_count + 1);
+    *bindings = vkl_bindings(&graphics->slots, visual->canvas->swapchain.img_count);
     visual->graphics_count++;
 }
 
@@ -396,7 +418,12 @@ void vkl_visual_compute(VklVisual* visual, VklCompute* compute)
         log_error("maximum number of computes per visual reached");
         return;
     }
-    visual->computes[visual->compute_count++] = compute;
+    visual->computes[visual->compute_count] = compute;
+
+    VklBindings* bindings = vkl_container_alloc(&visual->bindings);
+    ASSERT(visual->bindings.count == visual->compute_count + 1);
+    *bindings = vkl_bindings(&compute->slots, visual->canvas->swapchain.img_count);
+    visual->compute_count++;
 }
 
 
@@ -468,16 +495,18 @@ static VklSource* _assert_source_exists(VklVisual* visual, VklSourceType source_
     // Check if the requested source is not a shared source.
     if (source == NULL)
     {
-        for (uint32_t i = 0; i < visual->source_count; i++)
+        VklSource* src = vkl_container_iter(&visual->sources);
+        while (src != NULL)
         {
-            for (uint32_t j = 0; j < visual->sources[i].other_count; j++)
+            for (uint32_t j = 0; j < src->other_count; j++)
             {
-                if (visual->sources[i].other_idxs[j] == idx)
+                if (src->other_idxs[j] == idx)
                 {
-                    source = &visual->sources[i];
+                    source = src;
                     break;
                 }
             }
+            src = vkl_container_iter(&visual->sources);
         }
     }
 
@@ -673,16 +702,16 @@ void vkl_visual_fill_end(VklCanvas* canvas, VklCommands* cmds, uint32_t idx)
 VklSource* vkl_bake_source(VklVisual* visual, VklSourceType source_type, uint32_t pipeline_idx)
 {
     ASSERT(visual != NULL);
-    VklSource* source = NULL;
+    VklSource* source = vkl_container_iter(&visual->sources);
     VklSource* out = NULL;
-    for (uint32_t i = 0; i < visual->source_count; i++)
+    while (source != NULL)
     {
-        source = &visual->sources[i];
         if (source->source_type == source_type && source->pipeline_idx == pipeline_idx)
         {
             ASSERT(out == NULL);
             out = source;
         }
+        source = vkl_container_iter(&visual->sources);
     }
     return out;
 }
@@ -692,13 +721,21 @@ VklSource* vkl_bake_source(VklVisual* visual, VklSourceType source_type, uint32_
 VklProp* vkl_bake_prop(VklVisual* visual, VklPropType prop_type, uint32_t idx)
 {
     ASSERT(visual != NULL);
-    for (uint32_t i = 0; i < visual->prop_count; i++)
+    VklProp* prop = vkl_container_iter(&visual->props);
+    VklProp* out = NULL;
+    while (prop != NULL)
     {
-        if (visual->props[i].prop_type == prop_type && visual->props[i].prop_idx == idx)
-            return &visual->props[i];
+        if (prop->prop_type == prop_type && prop->prop_idx == idx)
+        {
+            ASSERT(out == NULL);
+            out = prop;
+        }
+        prop = vkl_container_iter(&visual->props);
     }
-    log_error("prop with type %d #%d not found", prop_type, idx);
-    return NULL;
+    if (out == NULL)
+        log_error("prop with type %d #%d not found", prop_type, idx);
+    ASSERT(out != NULL);
+    return out;
 }
 
 
@@ -723,18 +760,19 @@ uint32_t vkl_bake_max_prop_size(VklVisual* visual, VklSource* source)
     ASSERT(visual != NULL);
     ASSERT(source != NULL);
 
-    VklProp* prop = NULL;
     VklArray* arr = NULL;
     uint32_t item_count = 0;
-    for (uint32_t i = 0; i < visual->prop_count; i++)
+
+    VklProp* prop = vkl_container_iter(&visual->props);
+    while (prop != NULL)
     {
-        prop = &visual->props[i];
         if (prop->source == source)
         {
             arr = &prop->arr_orig;
             ASSERT(arr != NULL);
             item_count = MAX(item_count, arr->item_count * MAX(1, prop->reps));
         }
+        prop = vkl_container_iter(&visual->props);
     }
     return item_count;
 }
@@ -796,13 +834,13 @@ void vkl_bake_source_fill(VklVisual* visual, VklSource* source)
     ASSERT(visual != NULL);
     ASSERT(source != NULL);
 
-    VklProp* prop = NULL;
     // Copy all associated props to the source array.
-    for (uint32_t i = 0; i < visual->prop_count; i++)
+    VklProp* prop = vkl_container_iter(&visual->props);
+    while (prop != NULL)
     {
-        prop = &visual->props[i];
         if (prop->source == source)
             vkl_bake_prop_copy(visual, prop);
+        prop = vkl_container_iter(&visual->props);
     }
 }
 
@@ -942,16 +980,17 @@ void vkl_visual_update(
     // Here, we assume that all sources are correctly allocated, which includes VERTEX and INDEX
     // arrays, and that they have their data ready for upload.
     // Upload the buffers and textures
-    VklSource* source = NULL;
     VklArray* arr = NULL;
     VklBufferRegions* br = NULL;
     VklCanvas* canvas = visual->canvas;
     VklTexture* texture = NULL;
     VklContext* ctx = visual->canvas->gpu->context;
     bool to_upload = false;
-    for (uint32_t i = 0; i < visual->source_count; i++)
+
+    VklSource* source = vkl_container_iter(&visual->sources);
+    VklBindings* bindings = NULL;
+    while (source != NULL)
     {
-        source = &visual->sources[i];
         if (source->origin == VKL_SOURCE_ORIGIN_NONE)
         {
             log_error(
@@ -959,10 +998,14 @@ void vkl_visual_update(
                 source->pipeline_idx);
 
             // NOTE: mark the binding corresponding to the source's pipeline as invalid.
-            visual->bindings[source->pipeline_idx].obj.status = VKL_OBJECT_STATUS_INVALID;
+            bindings = vkl_container_get(&visual->bindings, source->pipeline_idx);
+            ASSERT(bindings != NULL);
+            bindings->obj.status = VKL_OBJECT_STATUS_INVALID;
             for (uint32_t j = 0; j < source->other_count; j++)
             {
-                visual->bindings[source->other_idxs[j]].obj.status = VKL_OBJECT_STATUS_INVALID;
+                bindings = vkl_container_get(&visual->bindings, source->other_idxs[j]);
+                ASSERT(bindings != NULL);
+                bindings->obj.status = VKL_OBJECT_STATUS_INVALID;
             }
 
             break;
@@ -976,17 +1019,20 @@ void vkl_visual_update(
             log_trace(
                 "skip data upload for source type %d #%d, origin %d, that is handled by user", //
                 source->source_type, source->pipeline_idx, source->origin);
+            source = vkl_container_iter(&visual->sources);
             continue;
         }
         if (source->obj.status == VKL_OBJECT_STATUS_INIT)
         {
             log_error(
                 "data source %d #%d was never set", source->source_type, source->pipeline_idx);
+            source = vkl_container_iter(&visual->sources);
             continue;
         }
         else if (source->obj.status != VKL_OBJECT_STATUS_NEED_UPDATE)
         {
             log_trace("skip data upload for source that doesn't need to be updated");
+            source = vkl_container_iter(&visual->sources);
             continue;
         }
 
@@ -1050,13 +1096,23 @@ void vkl_visual_update(
             source->obj.status = VKL_OBJECT_STATUS_CREATED;
             visual->obj.status = VKL_OBJECT_STATUS_CREATED;
         }
+
+        source = vkl_container_iter(&visual->sources);
     }
 
     // Update the bindings that need to be updated.
     for (uint32_t i = 0; i < visual->graphics_count; i++)
-        if (visual->bindings[i].obj.status == VKL_OBJECT_STATUS_NEED_UPDATE)
-            vkl_bindings_update(&visual->bindings[i]);
+    {
+        bindings = vkl_container_get(&visual->bindings, i);
+        ASSERT(bindings != NULL);
+        if (bindings->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE)
+            vkl_bindings_update(bindings);
+    }
     for (uint32_t i = 0; i < visual->compute_count; i++)
-        if (visual->bindings_comp[i].obj.status == VKL_OBJECT_STATUS_NEED_UPDATE)
-            vkl_bindings_update(&visual->bindings_comp[i]);
+    {
+        bindings = vkl_container_get(&visual->bindings_comp, i);
+        ASSERT(bindings != NULL);
+        if (bindings->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE)
+            vkl_bindings_update(bindings);
+    }
 }
