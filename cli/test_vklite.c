@@ -14,9 +14,9 @@ int test_app(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     AT(app->obj.status == VKL_OBJECT_STATUS_CREATED);
-    AT(app->gpu_count >= 1);
-    AT(app->gpus[0].name != NULL);
-    AT(app->gpus[0].obj.status == VKL_OBJECT_STATUS_INIT);
+    AT(app->gpus.count >= 1);
+    AT(((VklGpu*)(app->gpus.items[0]))->name != NULL);
+    AT(((VklGpu*)(app->gpus.items[0]))->obj.status == VKL_OBJECT_STATUS_INIT);
 
     VklGpu* gpu = vkl_gpu(app, 0);
     vkl_gpu_queue(gpu, VKL_QUEUE_TRANSFER, 0);

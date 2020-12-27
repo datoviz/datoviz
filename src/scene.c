@@ -24,6 +24,8 @@ static void _update_visual_viewport(VklPanel* panel, VklVisual* visual)
     }
 }
 
+
+
 static void _common_data(VklPanel* panel, VklVisual* visual)
 {
     ASSERT(panel != NULL);
@@ -92,7 +94,6 @@ static void _scene_fill(VklCanvas* canvas, VklPrivateEvent ev)
                     visual = panel->visuals[k];
                     if (visual->priority != priority)
                         continue;
-
                     // Update visual VklViewport struct and upload it.
                     _update_visual_viewport(panel, visual);
 

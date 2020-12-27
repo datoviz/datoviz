@@ -285,17 +285,20 @@ struct VklApp
     VkDebugUtilsMessengerEXT debug_messenger;
 
     // GPUs.
-    uint32_t max_gpus;
-    uint32_t gpu_count;
-    VklGpu* gpus;
+    // uint32_t max_gpus;
+    // uint32_t gpu_count;
+    // VklGpu* gpus;
+    VklContainer gpus;
 
     // Windows.
-    uint32_t max_windows;
-    VklWindow* windows;
+    // uint32_t max_windows;
+    // VklWindow* windows;
+    VklContainer windows;
 
     // Canvas.
-    uint32_t max_canvases;
-    VklCanvas* canvases;
+    // uint32_t max_canvases;
+    // VklCanvas* canvases;
+    VklContainer canvases;
 
     // Threads.
     VklThread timer_thread;
@@ -847,7 +850,7 @@ VKY_EXPORT void vkl_window_destroy(VklWindow* window);
 
 VKY_EXPORT void vkl_canvas_destroy(VklCanvas* canvas);
 
-VKY_EXPORT void vkl_canvases_destroy(uint32_t canvas_count, VklCanvas* canvases);
+VKY_EXPORT void vkl_canvases_destroy(VklContainer* canvases);
 
 
 

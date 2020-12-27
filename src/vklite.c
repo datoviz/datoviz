@@ -19,8 +19,8 @@ VklApp* vkl_app(VklBackend backend)
     // Initialize the global clock.
     _clock_init(&app->clock);
 
-    INSTANCES_INIT(VklGpu, app, gpus, max_gpus, VKL_MAX_GPUS, VKL_OBJECT_TYPE_GPU)
-    INSTANCES_INIT(VklWindow, app, windows, max_windows, VKL_MAX_WINDOWS, VKL_OBJECT_TYPE_WINDOW)
+    app->gpus = vkl_container(VKL_MAX_GPUS, sizeof(VklGpu), VKL_OBJECT_TYPE_GPU);
+    app->windows = vkl_container(VKL_MAX_WINDOWS, sizeof(VklWindow), VKL_OBJECT_TYPE_WINDOW);
 
     // Which extensions are required? Depends on the backend.
     uint32_t required_extension_count = 0;
@@ -34,9 +34,10 @@ VklApp* vkl_app(VklBackend backend)
     obj_created(&app->obj);
 
     // Count the number of devices.
-    VK_CHECK_RESULT(vkEnumeratePhysicalDevices(app->instance, &app->gpu_count, NULL));
-    log_trace("found %d GPU(s)", app->gpu_count);
-    if (app->gpu_count == 0)
+    uint32_t gpu_count = 0;
+    VK_CHECK_RESULT(vkEnumeratePhysicalDevices(app->instance, &gpu_count, NULL));
+    log_trace("found %d GPU(s)", gpu_count);
+    if (gpu_count == 0)
     {
         log_error("no compatible device found! aborting");
         exit(1);
@@ -46,18 +47,18 @@ VklApp* vkl_app(VklBackend backend)
     // ----------------------------
     {
         // Initialize the GPU(s).
-        VkPhysicalDevice* physical_devices = calloc(app->gpu_count, sizeof(VkPhysicalDevice));
-        VK_CHECK_RESULT(
-            vkEnumeratePhysicalDevices(app->instance, &app->gpu_count, physical_devices));
-        ASSERT(app->gpu_count <= VKL_MAX_GPUS);
-        // app->gpus = calloc(app->gpu_count, sizeof(VklGpu));
-        for (uint32_t i = 0; i < app->gpu_count; i++)
+        VkPhysicalDevice* physical_devices = calloc(gpu_count, sizeof(VkPhysicalDevice));
+        VK_CHECK_RESULT(vkEnumeratePhysicalDevices(app->instance, &gpu_count, physical_devices));
+        ASSERT(gpu_count <= VKL_MAX_GPUS);
+        VklGpu* gpu = NULL;
+        for (uint32_t i = 0; i < gpu_count; i++)
         {
-            obj_init(&app->gpus[i].obj);
-            app->gpus[i].app = app;
-            app->gpus[i].idx = i;
-            discover_gpu(physical_devices[i], &app->gpus[i]);
-            log_debug("found device #%d: %s", app->gpus[i].idx, app->gpus[i].name);
+            gpu = vkl_container_alloc(&app->gpus);
+            obj_init(&gpu->obj);
+            gpu->app = app;
+            gpu->idx = i;
+            discover_gpu(physical_devices[i], gpu);
+            log_debug("found device #%d: %s", gpu->idx, gpu->name);
         }
 
         FREE(physical_devices);
@@ -77,33 +78,20 @@ int vkl_app_destroy(VklApp* app)
     log_trace("starting destruction of app...");
     vkl_app_wait(app);
 
-    // Destroy the windows.
-    if (app->canvases != NULL)
-    {
-        vkl_canvases_destroy(app->max_canvases, app->canvases);
-        INSTANCES_DESTROY(app->canvases)
-    }
-
+    // Destroy the canvases.
+    vkl_canvases_destroy(&app->canvases);
 
     // Destroy the GPUs.
-    ASSERT(app->gpus != NULL);
-    for (uint32_t i = 0; i < app->gpu_count; i++)
-    {
-        vkl_gpu_destroy(&app->gpus[i]);
-    }
-    INSTANCES_DESTROY(app->gpus);
-
+    do
+        vkl_gpu_destroy(vkl_container_iter_get(&app->gpus));
+    while (vkl_container_iter(&app->gpus));
+    vkl_container_destroy(&app->gpus);
 
     // Destroy the windows.
-    ASSERT(app->windows != NULL);
-    for (uint32_t i = 0; i < app->max_windows; i++)
-    {
-        if (app->windows[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_window_destroy(&app->windows[i]);
-    }
-    INSTANCES_DESTROY(app->windows)
-
+    do
+        vkl_window_destroy(vkl_container_iter_get(&app->windows));
+    while (vkl_container_iter(&app->windows));
+    vkl_container_destroy(&app->windows);
 
     // Destroy the debug messenger.
     if (app->debug_messenger)
@@ -112,7 +100,6 @@ int vkl_app_destroy(VklApp* app)
         app->debug_messenger = NULL;
     }
 
-
     // Destroy the instance.
     log_trace("destroy Vulkan instance");
     if (app->instance != VK_NULL_HANDLE)
@@ -120,7 +107,6 @@ int vkl_app_destroy(VklApp* app)
         vkDestroyInstance(app->instance, NULL);
         app->instance = 0;
     }
-
 
     // Free the App memory.
     int res = (int)app->n_errors;
@@ -183,13 +169,12 @@ void vkl_thread_unlock(VklThread* thread)
 
 VklGpu* vkl_gpu(VklApp* app, uint32_t idx)
 {
-    if (idx >= app->gpu_count)
+    if (idx >= app->gpus.count)
     {
-        log_error("GPU index %d higher than number of GPUs %d", idx, app->gpu_count);
+        log_error("GPU index %d higher than number of GPUs %d", idx, app->gpus.count);
         idx = 0;
     }
-    VklGpu* gpu = &app->gpus[idx];
-
+    VklGpu* gpu = app->gpus.items[idx];
     return gpu;
 }
 
@@ -275,12 +260,9 @@ void vkl_app_wait(VklApp* app)
 {
     ASSERT(app != NULL);
     log_trace("wait for all GPUs to be idle");
-    for (uint32_t i = 0; i < app->max_gpus; i++)
-    {
-        if (app->gpus[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_gpu_wait(&app->gpus[i]);
-    }
+    do
+        vkl_gpu_wait(vkl_container_iter_get(&app->gpus));
+    while (vkl_container_iter(&app->gpus));
 }
 
 
@@ -346,7 +328,7 @@ void vkl_gpu_destroy(VklGpu* gpu)
 
 VklWindow* vkl_window(VklApp* app, uint32_t width, uint32_t height)
 {
-    INSTANCE_NEW(VklWindow, window, app->windows, app->max_windows)
+    VklWindow* window = vkl_container_alloc(&app->windows);
 
     ASSERT(window->obj.type == VKL_OBJECT_TYPE_WINDOW);
     ASSERT(window->obj.status == VKL_OBJECT_STATUS_INIT);

@@ -627,7 +627,11 @@ void vkl_visual_fill_event(
     VklViewport viewport, void* user_data)
 {
     // Called in a REFILL canvas callback.
-    // log_trace("visual %d fill event %d", visual, cmd_idx);
+    // log_info(
+    //     "visual %d fill event %d, viewport %.0fx%.0f %.0fx%.0f", visual, cmd_idx, //
+    //     viewport.viewport.x, viewport.viewport.y,                                 //
+    //     viewport.viewport.width, viewport.viewport.height                         //
+    // );
 
     ASSERT(visual != NULL);
     ASSERT(visual->callback_fill != NULL);

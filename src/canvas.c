@@ -641,13 +641,11 @@ static VklCanvas* _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool off
     VklApp* app = gpu->app;
 
     ASSERT(app != NULL);
-    if (app->canvases == NULL)
-    {
-        INSTANCES_INIT(
-            VklCanvas, app, canvases, max_canvases, VKL_MAX_WINDOWS, VKL_OBJECT_TYPE_CANVAS)
-    }
+    // HACK: create the canvas container here because vklite.c does not know the size of VklCanvas.
+    if (app->canvases.capacity == 0)
+        app->canvases = vkl_container(VKL_MAX_WINDOWS, sizeof(VklCanvas), VKL_OBJECT_TYPE_CANVAS);
 
-    INSTANCE_NEW(VklCanvas, canvas, app->canvases, app->max_canvases)
+    VklCanvas* canvas = vkl_container_alloc(&app->canvases);
     canvas->app = app;
     canvas->gpu = gpu;
     canvas->offscreen = offscreen;
@@ -1964,10 +1962,10 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
         n_canvas_active = 0;
 
         // Loop over the canvases.
-        for (uint32_t canvas_idx = 0; canvas_idx < app->max_canvases; canvas_idx++)
+        do
         {
             // Get the current canvas.
-            canvas = &app->canvases[canvas_idx];
+            canvas = vkl_container_iter_get(&app->canvases);
             ASSERT(canvas != NULL);
             if (canvas->obj.status == VKL_OBJECT_STATUS_NONE)
                 break;
@@ -2030,7 +2028,7 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             }
             if (canvas->obj.status == VKL_OBJECT_STATUS_NEED_DESTROY)
             {
-                log_trace("destroying canvas #%d", canvas_idx);
+                log_trace("destroying canvas");
 
                 // Stop the transfer queue.
                 vkl_transfer_stop(canvas->gpu->context);
@@ -2049,15 +2047,15 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             vkl_canvas_frame_submit(canvas);
             canvas->frame_idx++;
             n_canvas_active++;
-        }
+        } while (vkl_container_iter(&app->canvases));
 
         // Process the pending transfer tasks.
         // NOTE: this has never been tested with multiple GPUs yet.
         VklGpu* gpu = NULL;
         VklContext* context = NULL;
-        for (uint32_t gpu_idx = 0; gpu_idx < app->gpu_count; gpu_idx++)
+        do
         {
-            gpu = &app->gpus[gpu_idx];
+            gpu = vkl_container_iter_get(&app->gpus);
             if (!is_obj_created(&gpu->obj))
                 break;
             context = gpu->context;
@@ -2077,7 +2075,7 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             {
                 vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_PRESENT);
             }
-        }
+        } while (vkl_container_iter(&app->gpus));
 
         // Close the application if all canvases have been closed.
         if (n_canvas_active == 0)
@@ -2169,12 +2167,10 @@ void vkl_canvas_destroy(VklCanvas* canvas)
 
 
 
-void vkl_canvases_destroy(uint32_t canvas_count, VklCanvas* canvases)
+void vkl_canvases_destroy(VklContainer* canvases)
 {
-    for (uint32_t i = 0; i < canvas_count; i++)
-    {
-        if (canvases[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_canvas_destroy(&canvases[i]);
-    }
+    do
+        vkl_canvas_destroy(vkl_container_iter_get(canvases));
+    while (vkl_container_iter(canvases));
+    vkl_container_destroy(canvases);
 }
