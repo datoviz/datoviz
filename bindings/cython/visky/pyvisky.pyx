@@ -91,17 +91,17 @@ cdef class App:
             cv.vkl_app_destroy(self._c_app)
             self._c_app = NULL
 
-    def canvas(self, int width=DEFAULT_WIDTH, int height=DEFAULT_HEIGHT):
+    def canvas(self, int width=DEFAULT_WIDTH, int height=DEFAULT_HEIGHT, int rows=1, int cols=1):
         c_canvas = cv.vkl_canvas(self._c_gpu, width, height)
         if c_canvas is NULL:
             raise MemoryError()
         c = Canvas()
-        c.create(self, c_canvas)
+        c.create(self, c_canvas, rows, cols)
         self._canvases.append(c)
         return c
 
-    def run(self):
-        cv.vkl_app_run(self._c_app, 0)
+    def run(self, int n_frames=0):
+        cv.vkl_app_run(self._c_app, n_frames)
 
     def run_one_frame(self):
         cv.vkl_app_run(self._c_app, 1)
@@ -137,12 +137,26 @@ cdef _add_event_callback(cv.VklCanvas* c_canvas, cv.VklEventType evtype, f, args
 cdef class Canvas:
 
     cdef cv.VklCanvas* _c_canvas
+    cdef cv.VklScene* _c_scene
     cdef object _app
 
-    cdef create(self, app, cv.VklCanvas* c_canvas):
+    _panels = []
+
+    cdef create(self, app, cv.VklCanvas* c_canvas, int rows, int cols):
         self._c_canvas = c_canvas
+        self._c_scene = cv.vkl_scene(c_canvas, rows, cols)
         self._app = app
         # _add_close_callback(self._c_canvas, self._destroy_wrapper, ())
+
+    def panel(self, int row=0, int col=0):
+        # TODO: controller
+        c_panel = cv.vkl_scene_panel(self._c_scene, row, col, cv.VKL_CONTROLLER_PANZOOM, 0)
+        if c_panel is NULL:
+            raise MemoryError()
+        p = Panel()
+        p.create(self._c_scene, c_panel)
+        self._panels.append(p)
+        return p
 
     def __dealloc__(self):
         self.destroy()
@@ -162,6 +176,8 @@ cdef class Canvas:
         # destroy the Python via the close callback, which is called when the C library
         # is about to destroy the canvas, to give Python a chance to destroy the Python wrapper
         # as well.
+        if self._c_scene is not NULL:
+            cv.vkl_scene_destroy(self._c_scene)
         if self._c_canvas is not NULL:
             cv.vkl_canvas_to_close(self._c_canvas, True)
             self._c_canvas = NULL
@@ -200,3 +216,50 @@ cdef class Canvas:
 
     # def on_mouse(self, f):
     #     _add_frame_callback(self._c_canvas, self._wrap_mouse(f), (self,))
+
+
+cdef class Panel:
+
+    cdef cv.VklScene* _c_scene
+    cdef cv.VklPanel* _c_panel
+
+    _visuals = []
+
+    cdef create(self, cv.VklScene* c_scene, cv.VklPanel* c_panel):
+        self._c_panel = c_panel
+        self._c_scene = c_scene
+
+    def visual(self, vtype):
+        # TODO: visual type
+        c_visual = cv.vkl_scene_visual(self._c_panel, cv.VKL_VISUAL_MARKER, 0)
+        if c_visual is NULL:
+            raise MemoryError()
+        v = Visual()
+        v.create(self._c_panel, c_visual)
+        self._visuals.append(v)
+        return v
+
+
+_PROPS = {
+    'pos': cv.VKL_PROP_POS,
+    'color': cv.VKL_PROP_COLOR,
+    'ms': cv.VKL_PROP_MARKER_SIZE,
+}
+
+def _get_prop(name):
+    return _PROPS[name]
+
+
+cdef class Visual:
+    cdef cv.VklPanel* _c_panel
+    cdef cv.VklVisual* _c_visual
+
+    cdef create(self, cv.VklPanel* c_panel, cv.VklVisual* c_visual):
+        self._c_panel = c_panel
+        self._c_visual = c_visual
+
+    def data(self, name, np.ndarray value):
+        prop = _get_prop(name)
+        # TODO: props
+        N = value.size
+        cv.vkl_visual_data(self._c_visual, prop, 0, N, &value.data[0]);

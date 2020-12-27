@@ -43,6 +43,18 @@ cdef extern from "../include/visky/visky.h":
     ctypedef struct VklCanvas:
         VklApp* app
 
+    ctypedef struct VklScene:
+        VklCanvas* canvas
+
+    ctypedef struct VklGrid:
+        VklCanvas* canvas
+
+    ctypedef struct VklPanel:
+        VklGrid* grid
+
+    ctypedef struct VklVisual:
+        VklPanel* panel
+
     ctypedef struct VklSubmit:
         pass
 
@@ -68,6 +80,55 @@ cdef extern from "../include/visky/visky.h":
 
 
     # ENUM START
+    # from file: builtin_visuals.h
+
+    ctypedef enum VklVisualVariant:
+        VKL_VISUAL_VARIANT_NONE = 0
+        VKL_VISUAL_VARIANT_RAW = 0x0001
+        VKL_VISUAL_VARIANT_AGG = 0x0002
+        VKL_VISUAL_VARIANT_SHADED = 0x0004
+        VKL_VISUAL_VARIANT_TEXTURED = 0x0010
+        VKL_VISUAL_VARIANT_TEXTURED_MULTI = 0x0020
+
+    ctypedef enum VklVisualType:
+        VKL_VISUAL_NONE = 0
+        VKL_VISUAL_MARKER = 1
+        VKL_VISUAL_SEGMENT = 2
+        VKL_VISUAL_ARROW = 3
+        VKL_VISUAL_PATH = 4
+        VKL_VISUAL_TEXT = 5
+        VKL_VISUAL_TRIANGLE = 6
+        VKL_VISUAL_RECTANGLE = 7
+        VKL_VISUAL_IMAGE = 8
+        VKL_VISUAL_DISC = 9
+        VKL_VISUAL_SECTOR = 10
+        VKL_VISUAL_MESH = 11
+        VKL_VISUAL_POLYGON = 12
+        VKL_VISUAL_PSLG = 13
+        VKL_VISUAL_HISTOGRAM = 14
+        VKL_VISUAL_AREA = 15
+        VKL_VISUAL_CANDLE = 16
+        VKL_VISUAL_GRAPH = 17
+        VKL_VISUAL_SURFACE = 18
+        VKL_VISUAL_VOLUME = 19
+        VKL_VISUAL_FAKE_SPHERE = 20
+        VKL_VISUAL_AXES_2D = 21
+        VKL_VISUAL_AXES_3D = 22
+        VKL_VISUAL_COLORMAP = 23
+        VKL_VISUAL_COUNT = 24
+        VKL_VISUAL_CUSTOM = 25
+
+    ctypedef enum VklAxisCoord:
+        VKL_AXES_COORD_X = 0
+        VKL_AXES_COORD_Y = 1
+
+    ctypedef enum VklAxisLevel:
+        VKL_AXES_LEVEL_MINOR = 0
+        VKL_AXES_LEVEL_MAJOR = 1
+        VKL_AXES_LEVEL_GRID = 2
+        VKL_AXES_LEVEL_LIM = 3
+        VKL_AXES_LEVEL_COUNT = 4
+
     # from file: canvas.h
 
     ctypedef enum VklPrivateEventType:
@@ -188,6 +249,60 @@ cdef extern from "../include/visky/visky.h":
         VKL_TRANSFER_TEXTURE_UPLOAD = 5
         VKL_TRANSFER_TEXTURE_DOWNLOAD = 6
         VKL_TRANSFER_TEXTURE_COPY = 7
+
+    # from file: graphics.h
+
+    ctypedef enum VklGraphicsBuiltin:
+        VKL_GRAPHICS_NONE = 0
+        VKL_GRAPHICS_POINTS = 1
+        VKL_GRAPHICS_LINES = 2
+        VKL_GRAPHICS_LINE_STRIP = 3
+        VKL_GRAPHICS_TRIANGLES = 4
+        VKL_GRAPHICS_TRIANGLE_STRIP = 5
+        VKL_GRAPHICS_TRIANGLE_FAN = 6
+        VKL_GRAPHICS_MARKER_RAW = 7
+        VKL_GRAPHICS_MARKER = 8
+        VKL_GRAPHICS_SEGMENT = 9
+        VKL_GRAPHICS_ARROW = 10
+        VKL_GRAPHICS_PATH = 11
+        VKL_GRAPHICS_TEXT = 12
+        VKL_GRAPHICS_MESH_RAW = 13
+        VKL_GRAPHICS_MESH_TEXTURED = 14
+        VKL_GRAPHICS_MESH_MULTI_TEXTURED = 15
+        VKL_GRAPHICS_MESH_SHADED = 16
+        VKL_GRAPHICS_FAKE_SPHERE = 17
+        VKL_GRAPHICS_VOLUME = 18
+        VKL_GRAPHICS_COUNT = 19
+
+    ctypedef enum VkyMarkerType:
+        VKL_MARKER_DISC = 0
+        VKL_MARKER_ASTERISK = 1
+        VKL_MARKER_CHEVRON = 2
+        VKL_MARKER_CLOVER = 3
+        VKL_MARKER_CLUB = 4
+        VKL_MARKER_CROSS = 5
+        VKL_MARKER_DIAMOND = 6
+        VKL_MARKER_ARROW = 7
+        VKL_MARKER_ELLIPSE = 8
+        VKL_MARKER_HBAR = 9
+        VKL_MARKER_HEART = 10
+        VKL_MARKER_INFINITY = 11
+        VKL_MARKER_PIN = 12
+        VKL_MARKER_RING = 13
+        VKL_MARKER_SPADE = 14
+        VKL_MARKER_SQUARE = 15
+        VKL_MARKER_TAG = 16
+        VKL_MARKER_TRIANGLE = 17
+        VKL_MARKER_VBAR = 18
+
+    ctypedef enum VklCapType:
+        VKL_CAP_TYPE_NONE = 0
+        VKL_CAP_ROUND = 1
+        VKL_CAP_TRIANGLE_IN = 2
+        VKL_CAP_TRIANGLE_OUT = 3
+        VKL_CAP_SQUARE = 4
+        VKL_CAP_BUTT = 5
+        VKL_CAP_COUNT = 6
 
     # from file: keycode.h
 
@@ -531,6 +646,15 @@ cdef extern from "../include/visky/visky.h":
     void vkl_event_callback(VklCanvas* canvas, VklEventType type, double param, VklEventCallback callback, void* user_data)
     void vkl_canvas_to_close(VklCanvas* canvas, bint value)
     void vkl_app_run(VklApp* app, uint64_t frame_count)
+
+    # from file: scene.h
+    VklScene* vkl_scene(VklCanvas* canvas, uint32_t n_rows, uint32_t n_cols)
+    void vkl_scene_destroy(VklScene* scene)
+    VklVisual* vkl_scene_visual(VklPanel* panel, VklVisualType type, int flags)
+    VklPanel* vkl_scene_panel(VklScene* scene, uint32_t row, uint32_t col, VklControllerType type, int flags)
+
+    # from file: visuals.h
+    void vkl_visual_data(VklVisual* visual, VklPropType type, uint32_t prop_idx, uint32_t count, const void* data)
 
     # from file: vklite.h
     VklApp* vkl_app(VklBackend backend)

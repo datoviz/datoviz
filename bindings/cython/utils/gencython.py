@@ -19,7 +19,7 @@ EXTERNAL_HEADER_DIR = HEADER_DIR / '../../external'
 CYTHON_OUTPUT = (Path(__file__).parent / '../visky/cyvisky.pxd').resolve()
 HEADER_FILES = (
     'vklite.h', 'context.h', 'canvas.h', 'keycode.h',
-    'panel.h', 'visuals.h', 'scene.h')
+    'graphics.h', 'builtin_visuals.h', 'panel.h', 'visuals.h', 'scene.h')
 STRUCTS = (
     'VklViewport',
     'VklMouseButtonEvent',
@@ -283,7 +283,6 @@ def _gen_cython_func(name, func):
 if __name__ == '__main__':
     enums_to_insert = ''
     structs_to_insert = ''
-    # unions_to_insert = ''
     funcs_to_insert = ''
 
     # Parse already-defined functions in the pxd
@@ -308,13 +307,6 @@ if __name__ == '__main__':
         generated = _gen_struct(structs)
         if generated:
             structs_to_insert += f'# from file: {filename.name}\n\n{generated}'
-
-        # # Parse the unions
-        # unions = _parse_union(text)
-        # # Generate the Cython enum definitions
-        # generated = _gen_union(unions)
-        # if generated:
-        #     unions_to_insert += f'# from file: {filename.name}\n\n{generated}'
 
         # Parse the functions
         funcs = _parse_func(text)

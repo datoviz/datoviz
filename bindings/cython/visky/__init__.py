@@ -98,7 +98,7 @@ def inputhook(context):
         _APP = app()
     assert _APP is not None
     while not context.input_is_ready():
-        _APP.run_process()
+        _APP.run_one_frame()
 
 
 register('visky', inputhook)
