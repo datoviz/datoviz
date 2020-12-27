@@ -39,22 +39,14 @@ TODO later
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define VKL_MAX_BINDINGS         64
 #define VKL_MAX_BINDINGS_SIZE    32
-#define VKL_MAX_COMMANDS         64
+#define VKL_MAX_COMMANDS         32
 #define VKL_MAX_DESCRIPTOR_SETS  64
-#define VKL_MAX_FENCES           64
-#define VKL_MAX_FRAMEBUFFERS     32
-#define VKL_MAX_GPUS             64
-#define VKL_MAX_GRAPHICS         64
 #define VKL_MAX_PRESENT_MODES    16
 #define VKL_MAX_PUSH_CONSTANTS   16
 #define VKL_MAX_QUEUE_FAMILIES   16
 #define VKL_MAX_QUEUES           16
-#define VKL_MAX_RENDERPASSES     32
-#define VKL_MAX_SEMAPHORES       64
 #define VKL_MAX_SWAPCHAIN_IMAGES 16
-#define VKL_MAX_WINDOWS          64
 
 // Maximum number of command buffers per VklCommands struct
 #define VKL_MAX_COMMAND_BUFFERS_PER_SET     VKL_MAX_SWAPCHAIN_IMAGES

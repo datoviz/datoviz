@@ -19,8 +19,9 @@ VklApp* vkl_app(VklBackend backend)
     // Initialize the global clock.
     _clock_init(&app->clock);
 
-    app->gpus = vkl_container(VKL_MAX_GPUS, sizeof(VklGpu), VKL_OBJECT_TYPE_GPU);
-    app->windows = vkl_container(VKL_MAX_WINDOWS, sizeof(VklWindow), VKL_OBJECT_TYPE_WINDOW);
+    app->gpus = vkl_container(VKL_CONTAINER_DEFAULT_COUNT, sizeof(VklGpu), VKL_OBJECT_TYPE_GPU);
+    app->windows =
+        vkl_container(VKL_CONTAINER_DEFAULT_COUNT, sizeof(VklWindow), VKL_OBJECT_TYPE_WINDOW);
 
     // Which extensions are required? Depends on the backend.
     uint32_t required_extension_count = 0;
@@ -49,7 +50,7 @@ VklApp* vkl_app(VklBackend backend)
         // Initialize the GPU(s).
         VkPhysicalDevice* physical_devices = calloc(gpu_count, sizeof(VkPhysicalDevice));
         VK_CHECK_RESULT(vkEnumeratePhysicalDevices(app->instance, &gpu_count, physical_devices));
-        ASSERT(gpu_count <= VKL_MAX_GPUS);
+        ASSERT(gpu_count <= VKL_CONTAINER_DEFAULT_COUNT);
         VklGpu* gpu = NULL;
         for (uint32_t i = 0; i < gpu_count; i++)
         {
@@ -2721,8 +2722,6 @@ VklSubmit vkl_submit(VklGpu* gpu)
 {
     ASSERT(gpu != NULL);
     ASSERT(is_obj_created(&gpu->obj));
-
-    // INSTANCE_NEW(VklSubmit, submit, gpu->submits, gpu->submit_count)
 
     VklSubmit submit = {0};
     submit.gpu = gpu;

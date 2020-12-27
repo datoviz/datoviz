@@ -741,9 +741,9 @@ static void show_canvas(TestCanvas canvas, FillCallback fill_commands, uint32_t 
         fill_commands(&canvas, &cmds, i);
 
     // Sync objects.
-    VklSemaphores sem_img_available = vkl_semaphores(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
-    VklSemaphores sem_render_finished = vkl_semaphores(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
-    VklFences fences = vkl_fences(gpu, VKY_MAX_FRAMES_IN_FLIGHT);
+    VklSemaphores sem_img_available = vkl_semaphores(gpu, VKL_MAX_FRAMES_IN_FLIGHT);
+    VklSemaphores sem_render_finished = vkl_semaphores(gpu, VKL_MAX_FRAMES_IN_FLIGHT);
+    VklFences fences = vkl_fences(gpu, VKL_MAX_FRAMES_IN_FLIGHT);
     VklFences bak_fences = {0};
     bak_fences.gpu = gpu;
     bak_fences.count = swapchain->img_count;
@@ -833,7 +833,7 @@ static void show_canvas(TestCanvas canvas, FillCallback fill_commands, uint32_t 
             // Once the image is rendered, we present the swapchain image.
             vkl_swapchain_present(swapchain, 1, &sem_render_finished, cur_frame);
 
-            cur_frame = (cur_frame + 1) % VKY_MAX_FRAMES_IN_FLIGHT;
+            cur_frame = (cur_frame + 1) % VKL_MAX_FRAMES_IN_FLIGHT;
         }
 
         // IMPORTANT: we need to wait for the present queue to be idle, otherwise the GPU hangs

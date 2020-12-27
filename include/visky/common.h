@@ -139,8 +139,8 @@ END_INCL_NO_WARN
 #define APPLICATION_NAME    "Visky prototype"
 #define APPLICATION_VERSION VK_MAKE_VERSION(1, 0, 0)
 
-#define VKY_MAX_FRAMES_IN_FLIGHT 2
-
+#define VKL_MAX_FRAMES_IN_FLIGHT    2
+#define VKL_CONTAINER_DEFAULT_COUNT 64
 
 
 /*************************************************************************************************/
@@ -196,45 +196,6 @@ END_INCL_NO_WARN
         else                                                                                      \
             x = _new;                                                                             \
     }
-
-
-
-/*************************************************************************************************/
-/*  Object macros                                                                                */
-/*************************************************************************************************/
-
-#define INSTANCES_INIT(s, o, p, c, n, t)                                                          \
-    log_trace("init %d object(s) %s", n, #s);                                                     \
-    o->p = calloc(n, sizeof(s));                                                                  \
-    for (uint32_t i = 0; i < n; i++)                                                              \
-    {                                                                                             \
-        o->p[i].obj.type = t;                                                                     \
-    }                                                                                             \
-    o->c = n;
-
-
-#define INSTANCE_NEW(s, o, instances, n)                                                          \
-    s* o = NULL;                                                                                  \
-    for (uint32_t i = 0; i < n; i++)                                                              \
-        if (instances[i].obj.status < VKL_OBJECT_STATUS_INIT)                                     \
-        {                                                                                         \
-            o = &instances[i];                                                                    \
-            o->obj.status = VKL_OBJECT_STATUS_INIT;                                               \
-            o->obj.id = i;                                                                        \
-            log_trace("new instance %s idx #%d", #s, i);                                          \
-            break;                                                                                \
-        }                                                                                         \
-    if (o == NULL)                                                                                \
-    {                                                                                             \
-        log_error("maximum number of %s instances reached", #s);                                  \
-        exit(1);                                                                                  \
-    }
-
-
-#define INSTANCES_DESTROY(o)                                                                      \
-    log_trace("destroy objects %s", #o);                                                          \
-    FREE(o);                                                                                      \
-    o = NULL;
 
 
 

@@ -282,14 +282,16 @@ VklContext* vkl_context(VklGpu* gpu, VklWindow* window)
     context->gpu = gpu;
 
     // Allocate memory for buffers, textures, and computes.
-    context->buffers = vkl_container(VKL_MAX_BUFFERS, sizeof(VklBuffer), VKL_OBJECT_TYPE_BUFFER);
-    context->images = vkl_container(VKL_MAX_TEXTURES, sizeof(VklImages), VKL_OBJECT_TYPE_IMAGES);
+    context->buffers =
+        vkl_container(VKL_CONTAINER_DEFAULT_COUNT, sizeof(VklBuffer), VKL_OBJECT_TYPE_BUFFER);
+    context->images =
+        vkl_container(VKL_CONTAINER_DEFAULT_COUNT, sizeof(VklImages), VKL_OBJECT_TYPE_IMAGES);
     context->samplers =
-        vkl_container(VKL_MAX_TEXTURES, sizeof(VklSampler), VKL_OBJECT_TYPE_SAMPLER);
+        vkl_container(VKL_CONTAINER_DEFAULT_COUNT, sizeof(VklSampler), VKL_OBJECT_TYPE_SAMPLER);
     context->textures =
-        vkl_container(VKL_MAX_TEXTURES, sizeof(VklTexture), VKL_OBJECT_TYPE_TEXTURE);
+        vkl_container(VKL_CONTAINER_DEFAULT_COUNT, sizeof(VklTexture), VKL_OBJECT_TYPE_TEXTURE);
     context->computes =
-        vkl_container(VKL_MAX_COMPUTES, sizeof(VklCompute), VKL_OBJECT_TYPE_COMPUTE);
+        vkl_container(VKL_CONTAINER_DEFAULT_COUNT, sizeof(VklCompute), VKL_OBJECT_TYPE_COMPUTE);
 
     // Specify the default queues.
     _context_default_queues(gpu, window);

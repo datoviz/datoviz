@@ -12,8 +12,6 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define VKL_MAX_VISUALS                64
-#define VKL_MAX_CONTROLLERS            64
 #define VKL_MAX_VISUALS_PER_CONTROLLER 64
 
 

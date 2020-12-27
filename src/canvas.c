@@ -646,7 +646,8 @@ static VklCanvas* _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool off
     if (app->canvases.capacity == 0)
     {
         log_debug("create canvases container");
-        app->canvases = vkl_container(VKL_MAX_WINDOWS, sizeof(VklCanvas), VKL_OBJECT_TYPE_CANVAS);
+        app->canvases =
+            vkl_container(VKL_CONTAINER_DEFAULT_COUNT, sizeof(VklCanvas), VKL_OBJECT_TYPE_CANVAS);
     }
 
     VklCanvas* canvas = vkl_container_alloc(&app->canvases);
@@ -664,9 +665,9 @@ static VklCanvas* _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool off
 
     // Allocate memory for canvas objects.
     canvas->commands =
-        vkl_container(VKL_MAX_COMMANDS, sizeof(VklCommands), VKL_OBJECT_TYPE_COMMANDS);
+        vkl_container(VKL_CONTAINER_DEFAULT_COUNT, sizeof(VklCommands), VKL_OBJECT_TYPE_COMMANDS);
     canvas->graphics =
-        vkl_container(VKL_MAX_GRAPHICS, sizeof(VklGraphics), VKL_OBJECT_TYPE_GRAPHICS);
+        vkl_container(VKL_CONTAINER_DEFAULT_COUNT, sizeof(VklGraphics), VKL_OBJECT_TYPE_GRAPHICS);
 
     // Create the window.
     VklWindow* window = NULL;
@@ -748,7 +749,7 @@ static VklCanvas* _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool off
 
     // Create synchronization objects.
     {
-        uint32_t frames_in_flight = offscreen ? 1 : VKY_MAX_FRAMES_IN_FLIGHT;
+        uint32_t frames_in_flight = offscreen ? 1 : VKL_MAX_FRAMES_IN_FLIGHT;
 
         canvas->sem_img_available = vkl_semaphores(gpu, frames_in_flight);
         canvas->sem_render_finished = vkl_semaphores(gpu, frames_in_flight);

@@ -647,9 +647,9 @@ VklScene* vkl_scene(VklCanvas* canvas, uint32_t n_rows, uint32_t n_cols)
     canvas->scene->grid = vkl_grid(canvas, n_rows, n_cols);
 
     canvas->scene->visuals =
-        vkl_container(VKL_MAX_VISUALS, sizeof(VklVisual), VKL_OBJECT_TYPE_VISUAL);
-    canvas->scene->controllers =
-        vkl_container(VKL_MAX_CONTROLLERS, sizeof(VklController), VKL_OBJECT_TYPE_CONTROLLER);
+        vkl_container(VKL_CONTAINER_DEFAULT_COUNT, sizeof(VklVisual), VKL_OBJECT_TYPE_VISUAL);
+    canvas->scene->controllers = vkl_container(
+        VKL_CONTAINER_DEFAULT_COUNT, sizeof(VklController), VKL_OBJECT_TYPE_CONTROLLER);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _scene_fill, canvas->scene);
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _scene_frame, canvas->scene);

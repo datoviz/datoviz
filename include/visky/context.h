@@ -21,9 +21,6 @@ END_INCL_NO_WARN
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define VKL_MAX_BUFFERS       16
-#define VKL_MAX_COMPUTES      256
-#define VKL_MAX_TEXTURES      256
 #define VKL_MAX_FIFO_CAPACITY 128
 #define VKL_MAX_TRANSFERS     VKL_MAX_FIFO_CAPACITY
 
