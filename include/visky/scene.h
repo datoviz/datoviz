@@ -118,8 +118,7 @@ struct VklScene
     VklContainer visuals;
 
     // Controllers.
-    uint32_t max_controllers;
-    VklController* controllers;
+    VklContainer controllers;
 };
 
 

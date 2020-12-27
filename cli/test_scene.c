@@ -28,7 +28,7 @@ static void _panzoom(VklCanvas* canvas, VklPrivateEvent ev)
     dvec2 ur = {+1, +1};
     dvec2 pos_ll = {0};
     dvec2 pos_ur = {0};
-    for (uint32_t i = 0; i < scene->max_controllers; i++)
+    for (uint32_t i = 0; i < scene->grid.panel_count; i++)
     {
         panel = &scene->grid.panels[i];
         controller = panel->controller;

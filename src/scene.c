@@ -647,10 +647,8 @@ VklScene* vkl_scene(VklCanvas* canvas, uint32_t n_rows, uint32_t n_cols)
 
     canvas->scene->visuals =
         vkl_container(VKL_MAX_VISUALS, sizeof(VklVisual), VKL_OBJECT_TYPE_VISUAL);
-
-    INSTANCES_INIT(
-        VklController, canvas->scene, controllers, max_controllers, //
-        VKL_MAX_CONTROLLERS, VKL_OBJECT_TYPE_CONTROLLER)
+    canvas->scene->controllers =
+        vkl_container(VKL_MAX_CONTROLLERS, sizeof(VklController), VKL_OBJECT_TYPE_CONTROLLER);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _scene_fill, canvas->scene);
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _scene_frame, canvas->scene);
@@ -793,7 +791,7 @@ vkl_scene_panel(VklScene* scene, uint32_t row, uint32_t col, VklControllerType t
 {
     ASSERT(scene != NULL);
     VklPanel* panel = vkl_panel(&scene->grid, row, col);
-    INSTANCE_NEW(VklController, controller, scene->controllers, scene->max_controllers)
+    VklController* controller = vkl_container_alloc(&scene->controllers);
     *controller = vkl_controller_builtin(panel, type, flags);
     controller->flags = flags;
     panel->controller = controller;
@@ -812,7 +810,6 @@ VklVisual* vkl_scene_visual(VklPanel* panel, VklVisualType type, int flags)
     ASSERT(panel->controller != NULL);
     VklScene* scene = panel->grid->canvas->scene;
     VklVisual* visual = vkl_container_alloc(&scene->visuals);
-    visual->obj.type = VKL_OBJECT_TYPE_VISUAL;
 
     // Create the visual.
     *visual = vkl_visual(panel->grid->canvas);
@@ -851,12 +848,9 @@ void vkl_scene_destroy(VklScene* scene)
     }
 
     // Destroy all controllers.
-    for (uint32_t i = 0; i < scene->max_controllers; i++)
-    {
-        if (scene->controllers[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_controller_destroy(&scene->controllers[i]);
-    }
+    do
+        vkl_controller_destroy(vkl_container_iter_get(&scene->controllers));
+    while (vkl_container_iter(&scene->controllers));
 
     vkl_container_destroy(&scene->visuals);
     obj_destroyed(&scene->obj);
