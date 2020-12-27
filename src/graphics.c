@@ -356,16 +356,21 @@ VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type, in
 
     // HACK: ensure all GRAPHICS_COUNT graphics are allocated, and create them on demand.
     // Only 1 graphics per graphics type.
+    VklGraphics* graphics = NULL;
     if (canvas->graphics.items[0] == NULL)
     {
         for (uint32_t i = 0; i < VKL_GRAPHICS_COUNT; i++)
-            vkl_container_alloc(&canvas->graphics);
+        {
+            graphics = vkl_container_alloc(&canvas->graphics);
+            ASSERT(graphics != NULL);
+            graphics->obj.status = VKL_OBJECT_STATUS_INIT; // will only be created when requested
+        }
     }
     ASSERT(canvas->graphics.items[0] != NULL);
     ASSERT(canvas->graphics.items[VKL_GRAPHICS_COUNT - 1] != NULL);
 
     ASSERT((uint32_t)type < VKL_GRAPHICS_COUNT);
-    VklGraphics* graphics = vkl_container_get(&canvas->graphics, (uint32_t)type);
+    graphics = vkl_container_get(&canvas->graphics, (uint32_t)type);
     ASSERT(graphics != NULL);
     if (is_obj_created(&graphics->obj))
         return graphics;

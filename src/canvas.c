@@ -532,9 +532,6 @@ static void _refill_canvas(VklCanvas* canvas, uint32_t img_idx)
     VklPrivateEvent ev = {0};
     ev.type = VKL_PRIVATE_EVENT_REFILL;
 
-    // Fill the active command buffers for the RENDER queue.
-    VklCommands* cmds = NULL;
-
     // First commands passed is the default cmds_render VklCommands instance used for rendering.
     uint32_t k = 0;
     if (canvas->cmds_render.obj.status >= VKL_OBJECT_STATUS_INIT)
@@ -542,10 +539,11 @@ static void _refill_canvas(VklCanvas* canvas, uint32_t img_idx)
         ev.u.rf.cmds[k++] = &canvas->cmds_render;
     }
 
+    // Fill the active command buffers for the RENDER queue.
     uint32_t img_count = canvas->cmds_render.count;
-    do
+    VklCommands* cmds = vkl_container_iter(&canvas->commands);
+    while (cmds != NULL)
     {
-        cmds = vkl_container_iter_get(&canvas->commands);
         ASSERT(cmds != NULL);
         if (cmds->obj.status == VKL_OBJECT_STATUS_NONE)
             break;
@@ -555,7 +553,8 @@ static void _refill_canvas(VklCanvas* canvas, uint32_t img_idx)
             ev.u.rf.cmds[k++] = cmds;
             img_count = cmds->count;
         }
-    } while (vkl_container_iter(&canvas->commands));
+        cmds = vkl_container_iter(&canvas->commands);
+    }
 
     ASSERT(k > 0);
     ASSERT(img_count > 0);
@@ -1897,20 +1896,19 @@ void vkl_canvas_frame_submit(VklCanvas* canvas)
     // Default render commands.
     if (canvas->cmds_render.obj.status == VKL_OBJECT_STATUS_CREATED)
         vkl_submit_commands(s, &canvas->cmds_render);
+
     // Extra render commands.
-    VklCommands* commands = NULL;
-    do
+    VklCommands* cmds = vkl_container_iter(&canvas->commands);
+    while (cmds != NULL)
     {
-        commands = vkl_container_iter_get(&canvas->commands);
-        if (commands->obj.status == VKL_OBJECT_STATUS_NONE)
+        if (cmds->obj.status == VKL_OBJECT_STATUS_NONE)
             break;
-        if (commands->obj.status == VKL_OBJECT_STATUS_INACTIVE)
+        if (cmds->obj.status == VKL_OBJECT_STATUS_INACTIVE)
             continue;
-        if (commands->queue_idx == VKL_DEFAULT_QUEUE_RENDER)
-        {
-            vkl_submit_commands(s, commands);
-        }
-    } while (vkl_container_iter(&canvas->commands));
+        if (cmds->queue_idx == VKL_DEFAULT_QUEUE_RENDER)
+            vkl_submit_commands(s, cmds);
+        cmds = vkl_container_iter(&canvas->commands);
+    }
     if (s->commands_count == 0)
     {
         log_error("no recorded command buffers");
@@ -1960,7 +1958,7 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
         frame_count = UINT64_MAX;
     ASSERT(frame_count > 0);
 
-    VklCanvas* canvas = NULL;
+    VklCanvas* canvas = vkl_container_iter(&app->canvases);
 
     // Main loop.
     uint32_t n_canvas_active = 0;
@@ -1971,10 +1969,8 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
         n_canvas_active = 0;
 
         // Loop over the canvases.
-        do
+        while (canvas != NULL)
         {
-            // Get the current canvas.
-            canvas = vkl_container_iter_get(&app->canvases);
             ASSERT(canvas != NULL);
             if (canvas->obj.status == VKL_OBJECT_STATUS_NONE)
                 break;
@@ -2056,15 +2052,16 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             vkl_canvas_frame_submit(canvas);
             canvas->frame_idx++;
             n_canvas_active++;
-        } while (vkl_container_iter(&app->canvases));
+
+            canvas = vkl_container_iter(&app->canvases);
+        }
 
         // Process the pending transfer tasks.
         // NOTE: this has never been tested with multiple GPUs yet.
-        VklGpu* gpu = NULL;
         VklContext* context = NULL;
-        do
+        VklGpu* gpu = vkl_container_iter(&app->gpus);
+        while (gpu != NULL)
         {
-            gpu = vkl_container_iter_get(&app->gpus);
             if (!is_obj_created(&gpu->obj))
                 break;
             context = gpu->context;
@@ -2084,7 +2081,9 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             {
                 vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_PRESENT);
             }
-        } while (vkl_container_iter(&app->gpus));
+
+            gpu = vkl_container_iter(&app->gpus);
+        }
 
         // Close the application if all canvases have been closed.
         if (n_canvas_active == 0)
@@ -2136,9 +2135,12 @@ void vkl_canvas_destroy(VklCanvas* canvas)
 
     // Destroy the graphics.
     log_trace("canvas destroy graphics pipelines");
-    do
-        vkl_graphics_destroy(vkl_container_iter_get(&canvas->graphics));
-    while (vkl_container_iter(&canvas->graphics));
+    VklGraphics* graphics = vkl_container_iter(&canvas->graphics);
+    while (graphics != NULL)
+    {
+        vkl_graphics_destroy(graphics);
+        graphics = vkl_container_iter(&canvas->graphics);
+    }
     vkl_container_destroy(&canvas->graphics);
 
     // Destroy the depth image.
@@ -2165,9 +2167,12 @@ void vkl_canvas_destroy(VklCanvas* canvas)
     }
 
     log_trace("canvas destroy commands");
-    do
-        vkl_commands_destroy(vkl_container_iter_get(&canvas->commands));
-    while (vkl_container_iter(&canvas->commands));
+    VklCommands* cmds = vkl_container_iter(&canvas->commands);
+    while (cmds != NULL)
+    {
+        vkl_commands_destroy(cmds);
+        cmds = vkl_container_iter(&canvas->commands);
+    }
     vkl_container_destroy(&canvas->commands);
 
     // Destroy the semaphores.
@@ -2189,13 +2194,13 @@ void vkl_canvases_destroy(VklContainer* canvases)
     if (canvases == NULL || canvases->capacity == 0)
         return;
     log_trace("destroy all canvases");
-    VklCanvas* canvas = NULL;
-    do
+    VklCanvas* canvas = vkl_container_iter(canvases);
+    while (canvas != NULL)
     {
-        canvas = vkl_container_iter_get(canvases);
         if (!canvas->offscreen)
             ASSERT(canvas->window->app != NULL);
         vkl_canvas_destroy(canvas);
-    } while (vkl_container_iter(canvases));
+        canvas = vkl_container_iter(canvases);
+    }
     vkl_container_destroy(canvases);
 }

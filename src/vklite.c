@@ -78,15 +78,21 @@ int vkl_app_destroy(VklApp* app)
     vkl_canvases_destroy(&app->canvases);
 
     // Destroy the GPUs.
-    do
-        vkl_gpu_destroy(vkl_container_iter_get(&app->gpus));
-    while (vkl_container_iter(&app->gpus));
+    VklGpu* gpu = vkl_container_iter(&app->gpus);
+    while (gpu != NULL)
+    {
+        vkl_gpu_destroy(gpu);
+        gpu = vkl_container_iter(&app->gpus);
+    }
     vkl_container_destroy(&app->gpus);
 
     // Destroy the windows.
-    do
-        vkl_window_destroy(vkl_container_iter_get(&app->windows));
-    while (vkl_container_iter(&app->windows));
+    VklWindow* window = vkl_container_iter(&app->windows);
+    while (window != NULL)
+    {
+        vkl_window_destroy(window);
+        window = vkl_container_iter(&app->windows);
+    }
     vkl_container_destroy(&app->windows);
 
     // Destroy the debug messenger.
@@ -256,9 +262,12 @@ void vkl_app_wait(VklApp* app)
 {
     ASSERT(app != NULL);
     log_trace("wait for all GPUs to be idle");
-    do
-        vkl_gpu_wait(vkl_container_iter_get(&app->gpus));
-    while (vkl_container_iter(&app->gpus));
+    VklGpu* gpu = vkl_container_iter(&app->gpus);
+    while (gpu != NULL)
+    {
+        vkl_gpu_wait(gpu);
+        gpu = vkl_container_iter(&app->gpus);
+    }
 }
 
 
@@ -330,7 +339,7 @@ VklWindow* vkl_window(VklApp* app, uint32_t width, uint32_t height)
     ASSERT(window != NULL);
 
     ASSERT(window->obj.type == VKL_OBJECT_TYPE_WINDOW);
-    ASSERT(window->obj.status == VKL_OBJECT_STATUS_NONE);
+    ASSERT(window->obj.status == VKL_OBJECT_STATUS_ALLOC);
     window->app = app;
 
     window->width = width;

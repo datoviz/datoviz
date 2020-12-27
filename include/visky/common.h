@@ -344,7 +344,8 @@ typedef enum
 // NOTE: the order is important, status >= CREATED means the object has been created
 typedef enum
 {
-    VKL_OBJECT_STATUS_NONE,          // after allocation
+    VKL_OBJECT_STATUS_NONE,          //
+    VKL_OBJECT_STATUS_ALLOC,         // after allocation
     VKL_OBJECT_STATUS_DESTROYED,     // after destruction
     VKL_OBJECT_STATUS_INIT,          // after struct initialization but before Vulkan creation
     VKL_OBJECT_STATUS_CREATED,       // after proper creation on the GPU
@@ -448,7 +449,7 @@ static void vkl_container_delete_if_destroyed(VklContainer* container, uint32_t 
     if (container->items[idx] == NULL)
         return;
     VklObject* object = (VklObject*)container->items[idx];
-    if (object->status == VKL_OBJECT_STATUS_DESTROYED || object->status == VKL_OBJECT_STATUS_INIT)
+    if (object->status == VKL_OBJECT_STATUS_DESTROYED)
     {
         log_trace("delete container item #%d", idx);
         FREE(container->items[idx]);
@@ -507,7 +508,7 @@ static void* vkl_container_alloc(VklContainer* container)
 
     // Initialize the VklObject field.
     VklObject* obj = (VklObject*)container->items[available_slot];
-    obj->status = VKL_OBJECT_STATUS_NONE; // TODO: new status ALLOC?
+    obj->status = VKL_OBJECT_STATUS_ALLOC;
     obj->type = container->type;
 
     return container->items[available_slot];
@@ -524,37 +525,23 @@ static void* vkl_container_get(VklContainer* container, uint32_t idx)
 static void* vkl_container_iter(VklContainer* container)
 {
     ASSERT(container != NULL);
-    if (container->items == NULL || container->count == 0)
+    if (container->items == NULL || container->capacity == 0 || container->count == 0)
         return NULL;
-    // log_trace("container iterate");
-    if (container->_loop_idx >= container->capacity - 1)
+    if (container->_loop_idx >= container->capacity)
         return NULL;
-    ASSERT(container->_loop_idx < container->capacity - 1);
-    for (uint32_t i = container->_loop_idx + 1; i < container->capacity; i++)
+    ASSERT(container->_loop_idx <= container->capacity - 1);
+    for (uint32_t i = container->_loop_idx; i < container->capacity; i++)
     {
         vkl_container_delete_if_destroyed(container, i);
         if (container->items[i] != NULL)
         {
-            container->_loop_idx = i;
+            container->_loop_idx = i + 1;
             return container->items[i];
         }
     }
     // End the outer loop, reset the internal idx.
     container->_loop_idx = 0;
     return NULL;
-}
-
-static void* vkl_container_iter_get(VklContainer* container)
-{
-    ASSERT(container != NULL);
-    if (container->capacity == 0)
-        return NULL;
-    if (container->_loop_idx == 0 && (container->items == NULL || container->items[0] == NULL))
-        return NULL;
-    ASSERT(container->capacity > 0);
-    ASSERT(container->_loop_idx < container->capacity);
-    ASSERT(container->items[container->_loop_idx] != NULL);
-    return container->items[container->_loop_idx];
 }
 
 static void vkl_container_destroy(VklContainer* container)
@@ -574,10 +561,17 @@ static void vkl_container_destroy(VklContainer* container)
             // When destroying the container, ensure that all objects have been destroyed first.
             // NOTE: only works if every item has a VklObject as first struct field.
             item = (VklObject*)container->items[i];
-            ASSERT(
-                item->status == VKL_OBJECT_STATUS_DESTROYED ||
-                item->status == VKL_OBJECT_STATUS_INIT);
             vkl_container_delete_if_destroyed(container, i);
+            // Also deallocate objects allocated/initialized, but not created/destroyed.
+            if (container->items[i] != NULL)
+            {
+                ASSERT(item->status <= VKL_OBJECT_STATUS_INIT);
+                ASSERT(item->status != VKL_OBJECT_STATUS_DESTROYED);
+                FREE(container->items[i]);
+                container->items[i] = NULL;
+                container->count--;
+                ASSERT(container->count < UINT32_MAX);
+            }
             ASSERT(container->items[i] == NULL);
         }
     }
