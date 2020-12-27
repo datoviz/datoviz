@@ -71,21 +71,24 @@ int test_container(TestContext* context)
     AT(container.items[3] == NULL);
 
     // Iterate through items.
-    TestObject* item = vkl_container_iter(&container);
-    uint32_t i = 0;
-    while (item != NULL)
+    for (uint32_t k = 0; k < 10; k++)
     {
-        AT(item != NULL);
-        if (i == 0)
-            AT(item->x == 3);
-        if (i == 1)
-            AT(item->x == 2);
-        if (i == 2)
-            AT(item->x == 4);
-        i++;
-        item = vkl_container_iter(&container);
+        TestObject* item = vkl_container_iter(&container);
+        uint32_t i = 0;
+        while (item != NULL)
+        {
+            AT(item != NULL);
+            if (i == 0)
+                AT(item->x == 3);
+            if (i == 1)
+                AT(item->x == 2);
+            if (i == 2)
+                AT(item->x == 4);
+            i++;
+            item = vkl_container_iter(&container);
+        }
+        ASSERT(i == 3);
     }
-    ASSERT(i == 3);
 
     // Destroy all objects.
     obj_destroyed(&b->obj);

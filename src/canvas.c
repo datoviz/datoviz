@@ -1958,7 +1958,7 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
         frame_count = UINT64_MAX;
     ASSERT(frame_count > 0);
 
-    VklCanvas* canvas = vkl_container_iter(&app->canvases);
+    VklCanvas* canvas = NULL;
 
     // Main loop.
     uint32_t n_canvas_active = 0;
@@ -1969,13 +1969,17 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
         n_canvas_active = 0;
 
         // Loop over the canvases.
+        canvas = vkl_container_iter(&app->canvases);
         while (canvas != NULL)
         {
             ASSERT(canvas != NULL);
-            if (canvas->obj.status == VKL_OBJECT_STATUS_NONE)
-                break;
+            // if (canvas->obj.status == VKL_OBJECT_STATUS_NONE)
+            //     break;
             if (canvas->obj.status < VKL_OBJECT_STATUS_CREATED)
+            {
+                canvas = vkl_container_iter(&app->canvases);
                 continue;
+            }
             ASSERT(canvas->obj.status >= VKL_OBJECT_STATUS_CREATED);
             // log_trace("processing frame #%d for canvas #%d", canvas->frame_idx, canvas_idx);
 
@@ -2005,6 +2009,7 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
                 // log_trace("swapchain image acquisition failed, waiting and skipping this
                 // frame");
                 vkl_gpu_wait(canvas->gpu);
+                canvas = vkl_container_iter(&app->canvases);
                 continue;
             }
 
@@ -2020,6 +2025,7 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
                 _resize_callbacks(canvas);
 
                 n_canvas_active++;
+                canvas = vkl_container_iter(&app->canvases);
                 continue;
             }
 
@@ -2044,6 +2050,7 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
 
                 // Destroy the canvas.
                 vkl_canvas_destroy(canvas);
+                canvas = vkl_container_iter(&app->canvases);
                 continue;
             }
 
