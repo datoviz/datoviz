@@ -404,7 +404,7 @@ vkl_ctx_buffers(VklContext* context, uint32_t buffer_idx, uint32_t buffer_count,
     // Need to reallocate?
     if (offset + alsize * buffer_count > regions.buffer->size)
     {
-        VkDeviceSize new_size = regions.buffer->size * 2;
+        VkDeviceSize new_size = next_pow2(offset + alsize * buffer_count);
         log_info("reallocating buffer #%d to %.3f KB", buffer_idx, TO_KB(new_size));
         vkl_buffer_resize(
             regions.buffer, new_size, VKL_DEFAULT_QUEUE_TRANSFER, &context->transfer_cmd);

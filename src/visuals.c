@@ -862,12 +862,7 @@ void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source)
     // Allocate the buffer if it doesn't exist yet, or if it is not large enough.
     if (source->u.br.buffer == VK_NULL_HANDLE || source->u.br.size < count * source->arr.item_size)
     {
-        VkDeviceSize size = source->u.br.size * 2;
-        if (size > 0)
-            while (size < count * source->arr.item_size)
-                size *= 2;
-        else
-            size = count * source->arr.item_size;
+        VkDeviceSize size = next_pow2(count * source->arr.item_size);
         ASSERT(size >= count * source->arr.item_size);
         if (source->u.br.size > 0)
             log_debug(
