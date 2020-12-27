@@ -237,20 +237,6 @@ END_INCL_NO_WARN
     o = NULL;
 
 
-/*
-#define CONTAINER_LOOP(container, type)                                                           \
-    {\
-    type
-    for (uint32_t i = 0; i < (container).capacity; i++) \
-    { \
-        if ((container).items[i] != NULL) \
-    } \
-\
-    type* item = NULL;\
-    } \
-*/
-
-
 
 /*************************************************************************************************/
 /*  8-bit integers                                                                               */
@@ -518,8 +504,12 @@ static void* vkl_container_alloc(VklContainer* container)
     container->items[available_slot] = calloc(1, container->item_size);
     container->count++;
     ASSERT(container->items[available_slot] != NULL);
+
+    // Initialize the VklObject field.
     VklObject* obj = (VklObject*)container->items[available_slot];
     obj->status = VKL_OBJECT_STATUS_INIT;
+    obj->type = container->type;
+
     return container->items[available_slot];
 }
 
