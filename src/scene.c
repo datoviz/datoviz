@@ -849,12 +849,7 @@ void vkl_scene_destroy(VklScene* scene)
     }
 
     // Destroy all controllers.
-    VklController* controller = vkl_container_iter(&scene->controllers);
-    while (controller != NULL)
-    {
-        vkl_controller_destroy(controller);
-        controller = vkl_container_iter(&scene->controllers);
-    }
+    CONTAINER_DESTROY_ITEMS(VklController, scene->controllers, vkl_controller_destroy)
     vkl_container_destroy(&scene->controllers);
 
     vkl_container_destroy(&scene->visuals);

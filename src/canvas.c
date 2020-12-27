@@ -2142,12 +2142,7 @@ void vkl_canvas_destroy(VklCanvas* canvas)
 
     // Destroy the graphics.
     log_trace("canvas destroy graphics pipelines");
-    VklGraphics* graphics = vkl_container_iter(&canvas->graphics);
-    while (graphics != NULL)
-    {
-        vkl_graphics_destroy(graphics);
-        graphics = vkl_container_iter(&canvas->graphics);
-    }
+    CONTAINER_DESTROY_ITEMS(VklGraphics, canvas->graphics, vkl_graphics_destroy)
     vkl_container_destroy(&canvas->graphics);
 
     // Destroy the depth image.
@@ -2174,12 +2169,7 @@ void vkl_canvas_destroy(VklCanvas* canvas)
     }
 
     log_trace("canvas destroy commands");
-    VklCommands* cmds = vkl_container_iter(&canvas->commands);
-    while (cmds != NULL)
-    {
-        vkl_commands_destroy(cmds);
-        cmds = vkl_container_iter(&canvas->commands);
-    }
+    CONTAINER_DESTROY_ITEMS(VklCommands, canvas->commands, vkl_commands_destroy)
     vkl_container_destroy(&canvas->commands);
 
     // Destroy the semaphores.
@@ -2201,13 +2191,6 @@ void vkl_canvases_destroy(VklContainer* canvases)
     if (canvases == NULL || canvases->capacity == 0)
         return;
     log_trace("destroy all canvases");
-    VklCanvas* canvas = vkl_container_iter(canvases);
-    while (canvas != NULL)
-    {
-        if (!canvas->offscreen)
-            ASSERT(canvas->window->app != NULL);
-        vkl_canvas_destroy(canvas);
-        canvas = vkl_container_iter(canvases);
-    }
+    CONTAINER_DESTROY_ITEMS(VklCanvas, (*canvases), vkl_canvas_destroy)
     vkl_container_destroy(canvases);
 }

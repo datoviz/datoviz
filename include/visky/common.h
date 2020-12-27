@@ -581,6 +581,16 @@ static void vkl_container_destroy(VklContainer* container)
     container->capacity = 0;
 }
 
+#define CONTAINER_DESTROY_ITEMS(t, c, f)                                                          \
+    {                                                                                             \
+        t* o = vkl_container_iter(&c);                                                            \
+        while (o != NULL)                                                                         \
+        {                                                                                         \
+            f(o);                                                                                 \
+            o = vkl_container_iter(&c);                                                           \
+        }                                                                                         \
+    }
+
 
 
 /*************************************************************************************************/

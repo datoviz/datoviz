@@ -176,12 +176,15 @@ static void _context_default_queues(VklGpu* gpu, VklWindow* window)
 
 static void _context_default_buffers(VklContext* context)
 {
+    ASSERT(context != NULL);
+    ASSERT(context->gpu != NULL);
     // Create a predetermined set of buffers.
     VklBuffer* buffer = NULL;
     for (uint32_t i = 0; i < VKL_DEFAULT_BUFFER_COUNT; i++)
     {
-        context->buffers[i] = vkl_buffer(context->gpu);
-        buffer = &context->buffers[i];
+        buffer = vkl_container_alloc(&context->buffers);
+        *buffer = vkl_buffer(context->gpu);
+        ASSERT(buffer != NULL);
 
         // All buffers may be accessed from these queues.
         vkl_buffer_queue_access(buffer, VKL_DEFAULT_QUEUE_TRANSFER);
@@ -193,7 +196,8 @@ static void _context_default_buffers(VklContext* context)
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
     // Staging buffer
-    buffer = &context->buffers[VKL_DEFAULT_BUFFER_STAGING];
+    buffer = vkl_container_get(&context->buffers, VKL_DEFAULT_BUFFER_STAGING);
+    ASSERT(buffer != NULL);
     vkl_buffer_size(buffer, VKL_DEFAULT_BUFFER_STAGING_SIZE);
     vkl_buffer_usage(buffer, transferable);
     vkl_buffer_memory(
@@ -201,7 +205,8 @@ static void _context_default_buffers(VklContext* context)
     vkl_buffer_create(buffer);
 
     // Vertex buffer
-    buffer = &context->buffers[VKL_DEFAULT_BUFFER_VERTEX];
+    buffer = vkl_container_get(&context->buffers, VKL_DEFAULT_BUFFER_VERTEX);
+    ASSERT(buffer != NULL);
     vkl_buffer_size(buffer, VKL_DEFAULT_BUFFER_VERTEX_SIZE);
     vkl_buffer_usage(
         buffer,
@@ -210,28 +215,32 @@ static void _context_default_buffers(VklContext* context)
     vkl_buffer_create(buffer);
 
     // Index buffer
-    buffer = &context->buffers[VKL_DEFAULT_BUFFER_INDEX];
+    buffer = vkl_container_get(&context->buffers, VKL_DEFAULT_BUFFER_INDEX);
+    ASSERT(buffer != NULL);
     vkl_buffer_size(buffer, VKL_DEFAULT_BUFFER_INDEX_SIZE);
     vkl_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
     vkl_buffer_memory(buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     vkl_buffer_create(buffer);
 
     // Storage buffer
-    buffer = &context->buffers[VKL_DEFAULT_BUFFER_STORAGE];
+    buffer = vkl_container_get(&context->buffers, VKL_DEFAULT_BUFFER_STORAGE);
+    ASSERT(buffer != NULL);
     vkl_buffer_size(buffer, VKL_DEFAULT_BUFFER_STORAGE_SIZE);
     vkl_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
     vkl_buffer_memory(buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     vkl_buffer_create(buffer);
 
     // Uniform buffer
-    buffer = &context->buffers[VKL_DEFAULT_BUFFER_UNIFORM];
+    buffer = vkl_container_get(&context->buffers, VKL_DEFAULT_BUFFER_UNIFORM);
+    ASSERT(buffer != NULL);
     vkl_buffer_size(buffer, VKL_DEFAULT_BUFFER_UNIFORM_SIZE);
     vkl_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
     vkl_buffer_memory(buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     vkl_buffer_create(buffer);
 
-    // Mappable niform buffer
-    buffer = &context->buffers[VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE];
+    // Mappable uniform buffer
+    buffer = vkl_container_get(&context->buffers, VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE);
+    ASSERT(buffer != NULL);
     vkl_buffer_size(buffer, VKL_DEFAULT_BUFFER_UNIFORM_SIZE);
     vkl_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
     vkl_buffer_memory(
@@ -246,36 +255,19 @@ static void _destroy_resources(VklContext* context)
     ASSERT(context != NULL);
 
     log_trace("context destroy buffers");
-    for (uint32_t i = 0; i < context->max_buffers; i++)
-    {
-        if (context->buffers[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_buffer_destroy(&context->buffers[i]);
-    }
+    CONTAINER_DESTROY_ITEMS(VklBuffer, context->buffers, vkl_buffer_destroy)
 
     log_trace("context destroy sets of images");
-    for (uint32_t i = 0; i < context->max_images; i++)
-    {
-        if (context->images[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_images_destroy(&context->images[i]);
-    }
+    CONTAINER_DESTROY_ITEMS(VklImages, context->images, vkl_images_destroy)
 
     log_trace("context destroy samplers");
-    for (uint32_t i = 0; i < context->max_samplers; i++)
-    {
-        if (context->samplers[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_sampler_destroy(&context->samplers[i]);
-    }
+    CONTAINER_DESTROY_ITEMS(VklSampler, context->samplers, vkl_sampler_destroy)
+
+    log_trace("context destroy textures");
+    CONTAINER_DESTROY_ITEMS(VklTexture, context->textures, vkl_texture_destroy)
 
     log_trace("context destroy computes");
-    for (uint32_t i = 0; i < context->max_computes; i++)
-    {
-        if (context->computes[i].obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        vkl_compute_destroy(&context->computes[i]);
-    }
+    CONTAINER_DESTROY_ITEMS(VklCompute, context->computes, vkl_compute_destroy)
 }
 
 
@@ -290,21 +282,14 @@ VklContext* vkl_context(VklGpu* gpu, VklWindow* window)
     context->gpu = gpu;
 
     // Allocate memory for buffers, textures, and computes.
-    INSTANCES_INIT(
-        VklBuffer, context, buffers, max_buffers, VKL_MAX_BUFFERS, VKL_OBJECT_TYPE_BUFFER)
-    context->allocated_sizes = calloc(context->max_buffers, sizeof(VkDeviceSize));
-
-    INSTANCES_INIT(
-        VklTexture, context, textures, max_textures, VKL_MAX_TEXTURES, VKL_OBJECT_TYPE_TEXTURE)
-
-    INSTANCES_INIT(
-        VklImages, context, images, max_images, VKL_MAX_TEXTURES, VKL_OBJECT_TYPE_IMAGES)
-
-    INSTANCES_INIT(
-        VklSampler, context, samplers, max_samplers, VKL_MAX_TEXTURES, VKL_OBJECT_TYPE_SAMPLER)
-
-    INSTANCES_INIT(
-        VklCompute, context, computes, max_computes, VKL_MAX_COMPUTES, VKL_OBJECT_TYPE_COMPUTE)
+    context->buffers = vkl_container(VKL_MAX_BUFFERS, sizeof(VklBuffer), VKL_OBJECT_TYPE_BUFFER);
+    context->images = vkl_container(VKL_MAX_TEXTURES, sizeof(VklImages), VKL_OBJECT_TYPE_IMAGES);
+    context->samplers =
+        vkl_container(VKL_MAX_TEXTURES, sizeof(VklSampler), VKL_OBJECT_TYPE_SAMPLER);
+    context->textures =
+        vkl_container(VKL_MAX_TEXTURES, sizeof(VklTexture), VKL_OBJECT_TYPE_TEXTURE);
+    context->computes =
+        vkl_container(VKL_MAX_COMPUTES, sizeof(VklCompute), VKL_OBJECT_TYPE_COMPUTE);
 
     // Specify the default queues.
     _context_default_queues(gpu, window);
@@ -357,12 +342,11 @@ void vkl_context_destroy(VklContext* context)
     _destroy_resources(context);
 
     // Free the allocated memory.
-    INSTANCES_DESTROY(context->buffers)
-    INSTANCES_DESTROY(context->images)
-    INSTANCES_DESTROY(context->samplers)
-    INSTANCES_DESTROY(context->computes)
-    INSTANCES_DESTROY(context->textures);
-    FREE(context->allocated_sizes);
+    vkl_container_destroy(&context->buffers);
+    vkl_container_destroy(&context->images);
+    vkl_container_destroy(&context->samplers);
+    vkl_container_destroy(&context->textures);
+    vkl_container_destroy(&context->computes);
 
     vkl_fifo_destroy(&context->fifo);
 }
@@ -379,28 +363,28 @@ vkl_ctx_buffers(VklContext* context, uint32_t buffer_idx, uint32_t buffer_count,
     ASSERT(context != NULL);
     ASSERT(context->gpu != NULL);
     ASSERT(buffer_count > 0);
+    ASSERT(buffer_idx < context->buffers.capacity);
     ASSERT(size > 0);
 
     VkDeviceSize alignment = 0;
-    VkDeviceSize offset = context->allocated_sizes[buffer_idx];
+    VklBuffer* buffer = vkl_container_get(&context->buffers, buffer_idx);
+    ASSERT(buffer != NULL);
+    VkDeviceSize offset = buffer->allocated_size;
     bool needs_align = buffer_idx == VKL_DEFAULT_BUFFER_UNIFORM ||
                        buffer_idx == VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE;
     if (needs_align)
     {
-        // alignment = get_alignment(
-        //     size, context->gpu->device_properties.limits.minUniformBufferOffsetAlignment);
         alignment = context->gpu->device_properties.limits.minUniformBufferOffsetAlignment;
         ASSERT(offset % alignment == 0); // offset should be already aligned
     }
 
-    VklBufferRegions regions =
-        vkl_buffer_regions(&context->buffers[buffer_idx], buffer_count, offset, size, alignment);
+    VklBufferRegions regions = vkl_buffer_regions(buffer, buffer_count, offset, size, alignment);
     VkDeviceSize alsize = regions.aligned_size;
     if (alsize == 0)
         alsize = size;
     ASSERT(alsize > 0);
 
-    if (buffer_idx >= context->max_buffers || !is_obj_created(&context->buffers[buffer_idx].obj))
+    if (!is_obj_created(&buffer->obj))
     {
         log_error("invalid buffer #%d", buffer_idx);
         return regions;
@@ -428,9 +412,9 @@ vkl_ctx_buffers(VklContext* context, uint32_t buffer_idx, uint32_t buffer_count,
         "allocating %d buffers (type #%d) with size %d bytes (aligned size %d bytes)", //
         buffer_count, buffer_idx, size, alsize);
     ASSERT(offset + alsize * buffer_count <= regions.buffer->size);
-    context->allocated_sizes[buffer_idx] += alsize * buffer_count;
+    buffer->allocated_size += alsize * buffer_count;
 
-    ASSERT(regions.offsets[buffer_count - 1] + alsize == context->allocated_sizes[buffer_idx]);
+    ASSERT(regions.offsets[buffer_count - 1] + alsize == buffer->allocated_size);
     return regions;
 }
 
@@ -445,10 +429,8 @@ VklCompute* vkl_ctx_compute(VklContext* context, const char* shader_path)
     ASSERT(context != NULL);
     ASSERT(shader_path != NULL);
 
-    INSTANCE_NEW(VklCompute, compute, context->computes, context->max_computes);
-
+    VklCompute* compute = vkl_container_alloc(&context->computes);
     *compute = vkl_compute(context->gpu, shader_path);
-
     return compute;
 }
 
@@ -485,9 +467,9 @@ VklTexture* vkl_ctx_texture(VklContext* context, uint32_t dims, uvec3 size, VkFo
 {
     ASSERT(context != NULL);
 
-    INSTANCE_NEW(VklTexture, texture, context->textures, context->max_textures);
-    INSTANCE_NEW(VklImages, image, context->images, context->max_images);
-    INSTANCE_NEW(VklSampler, sampler, context->samplers, context->max_samplers);
+    VklTexture* texture = vkl_container_alloc(&context->textures);
+    VklImages* image = vkl_container_alloc(&context->images);
+    VklSampler* sampler = vkl_container_alloc(&context->samplers);
 
     texture->context = context;
     *image = vkl_images(context->gpu, image_type_from_dims(dims), 1);
@@ -610,6 +592,16 @@ void vkl_texture_destroy(VklTexture* texture)
 /*  Data transfers utils                                                                         */
 /*************************************************************************************************/
 
+static VklBuffer* staging_buffer(VklContext* context)
+{
+    VklBuffer* staging = vkl_container_get(&context->buffers, VKL_DEFAULT_BUFFER_STAGING);
+    ASSERT(staging != NULL);
+    ASSERT(staging->buffer != VK_NULL_HANDLE);
+    return staging;
+}
+
+
+
 static void process_texture_upload(VklContext* context, VklTransfer tr)
 {
     ASSERT(context != NULL);
@@ -623,7 +615,7 @@ static void process_texture_upload(VklContext* context, VklTransfer tr)
     vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
 
     // Take the staging buffer.
-    VklBuffer* staging = &context->buffers[VKL_DEFAULT_BUFFER_STAGING];
+    VklBuffer* staging = staging_buffer(context);
 
     // Size of the buffer to transfer.
     VkDeviceSize size = tr.u.tex.size;
@@ -682,7 +674,7 @@ static void process_texture_download(VklContext* context, VklTransfer tr)
     ASSERT(tr.type == VKL_TRANSFER_TEXTURE_DOWNLOAD);
 
     // Take the staging buffer.
-    VklBuffer* staging = &context->buffers[VKL_DEFAULT_BUFFER_STAGING];
+    VklBuffer* staging = staging_buffer(context);
 
     // Take transfer cmd buf.
     VklCommands* cmds = &context->transfer_cmd;
@@ -741,7 +733,7 @@ static void process_buffer_upload(VklContext* context, VklTransfer tr)
     vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
 
     // Take the staging buffer.
-    VklBuffer* staging = &context->buffers[VKL_DEFAULT_BUFFER_STAGING];
+    VklBuffer* staging = staging_buffer(context);
 
     // Size of the buffer to transfer.
     VkDeviceSize region_size = tr.u.buf.size;
@@ -810,7 +802,7 @@ static void process_buffer_download(VklContext* context, VklTransfer tr)
     ASSERT(tr.type == VKL_TRANSFER_BUFFER_DOWNLOAD);
 
     // Take the staging buffer.
-    VklBuffer* staging = &context->buffers[VKL_DEFAULT_BUFFER_STAGING];
+    VklBuffer* staging = staging_buffer(context);
 
     // Take transfer cmd buf.
     VklCommands* cmds = &context->transfer_cmd;

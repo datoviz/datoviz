@@ -704,9 +704,8 @@ int test_context_buffer(TestContext* context)
     VklContext* ctx = vkl_context(gpu, NULL);
 
     // Create a buffer.
-    VklBuffer buffer_struct = vkl_buffer(gpu);
-    ctx->buffers[VKL_DEFAULT_BUFFER_COUNT] = buffer_struct;
-    VklBuffer* buffer = &ctx->buffers[VKL_DEFAULT_BUFFER_COUNT];
+    VklBuffer* buffer = vkl_container_alloc(&ctx->buffers);
+    *buffer = vkl_buffer(gpu);
     vkl_buffer_queue_access(buffer, 0);
     vkl_buffer_size(buffer, 256);
     vkl_buffer_usage(buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);

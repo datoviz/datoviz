@@ -78,21 +78,11 @@ int vkl_app_destroy(VklApp* app)
     vkl_canvases_destroy(&app->canvases);
 
     // Destroy the GPUs.
-    VklGpu* gpu = vkl_container_iter(&app->gpus);
-    while (gpu != NULL)
-    {
-        vkl_gpu_destroy(gpu);
-        gpu = vkl_container_iter(&app->gpus);
-    }
+    CONTAINER_DESTROY_ITEMS(VklGpu, app->gpus, vkl_gpu_destroy)
     vkl_container_destroy(&app->gpus);
 
     // Destroy the windows.
-    VklWindow* window = vkl_container_iter(&app->windows);
-    while (window != NULL)
-    {
-        vkl_window_destroy(window);
-        window = vkl_container_iter(&app->windows);
-    }
+    CONTAINER_DESTROY_ITEMS(VklWindow, app->windows, vkl_window_destroy)
     vkl_container_destroy(&app->windows);
 
     // Destroy the debug messenger.
@@ -810,6 +800,7 @@ void vkl_buffer_memory(VklBuffer* buffer, VkMemoryPropertyFlags memory)
 void vkl_buffer_queue_access(VklBuffer* buffer, uint32_t queue)
 {
     ASSERT(buffer != NULL);
+    ASSERT(buffer->gpu != NULL);
     ASSERT(queue < buffer->gpu->queues.queue_count);
     buffer->queues[buffer->queue_count++] = queue;
 }

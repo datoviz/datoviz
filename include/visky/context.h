@@ -225,21 +225,11 @@ struct VklContext
     VklFifo fifo; // transfer queue
     VklTransfer transfers[VKL_MAX_TRANSFERS];
 
-    uint32_t max_buffers;
-    VklBuffer* buffers;
-    VkDeviceSize* allocated_sizes; // for each buffer, how much is already allocated
-
-    uint32_t max_images;
-    VklImages* images;
-
-    uint32_t max_samplers;
-    VklSampler* samplers;
-
-    uint32_t max_textures;
-    VklTexture* textures;
-
-    uint32_t max_computes;
-    VklCompute* computes;
+    VklContainer buffers;
+    VklContainer images;
+    VklContainer samplers;
+    VklContainer textures;
+    VklContainer computes;
 };
 
 

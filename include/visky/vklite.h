@@ -427,6 +427,7 @@ struct VklBuffer
     uint32_t queues[VKL_MAX_QUEUES];
 
     VkDeviceSize size;
+    VkDeviceSize allocated_size;
     VkBufferUsageFlags usage;
     VkMemoryPropertyFlags memory;
 };
