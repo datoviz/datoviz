@@ -9,7 +9,7 @@ from textwrap import indent
 import pyparsing as pp
 from pyparsing import (
     Suppress, Word, alphas, alphanums, nums, Optional, Group, ZeroOrMore, empty, restOfLine,
-    Keyword, cStyleComment, Empty,
+    Keyword, cStyleComment, Empty, Literal
 )
 
 
@@ -17,6 +17,23 @@ HEADER_DIR = (Path(__file__).parent / '../../../include/visky').resolve()
 INTERNAL_HEADER_DIR = (Path(__file__).parent / '../../../src').resolve()
 EXTERNAL_HEADER_DIR = HEADER_DIR / '../../external'
 CYTHON_OUTPUT = (Path(__file__).parent / '../visky/cyvisky.pxd').resolve()
+HEADER_FILES = (
+    'vklite.h', 'context.h', 'canvas.h', 'keycode.h',
+    'panel.h', 'visuals.h', 'scene.h')
+STRUCTS = (
+    'VklViewport',
+    'VklMouseButtonEvent',
+    'VklMouseMoveEvent',
+    'VklMouseWheelEvent',
+    'VklMouseDragEvent',
+    'VklMouseClickEvent',
+    'VklKeyEvent',
+    'VklFrameEvent',
+    'VklTimerEvent',
+    'VklScreencastEvent',
+    'VklEvent',
+    'VklEventUnion',
+)
 
 ENUM_START = '# ENUM START'
 ENUM_END = '# ENUM END'
@@ -129,61 +146,63 @@ def _parse_struct(text):
     structs = {}
     # syntax we don't want to see in the final parse tree
     LBRACE, RBRACE, COMMA, SEMICOLON = map(Suppress, "{},;")
-    _struct = Suppress("struct")
+    _struct = Literal("struct") ^ Literal("union")
     dtype = Word(alphanums + "_*")
     identifier = Word(alphanums + "_[]")
     structDecl = Group(dtype("dtype") + identifier("name") + SEMICOLON)
     structList = Group(structDecl + ZeroOrMore(structDecl))
-    struct = _struct + identifier("struct_name") + LBRACE + \
+    struct = _struct('struct') + identifier("struct_name") + LBRACE + \
         structList("names") + RBRACE + SEMICOLON
 
     for item, start, stop in struct.scanString(text):
         l = []
         for i, entry in enumerate(item.names):
             l.append((entry.dtype, entry.name))
-        structs[item.struct_name] = l
+        structs[item.struct_name] = (item.struct, l)
     return structs
 
 
 def _gen_struct(structs):
     out = ''
-    for name, l in structs.items():
-        if 'Event' in name:
-            out += f'ctypedef struct {name}:\n'
+    for name, (struct, l) in structs.items():
+        if name in STRUCTS:
+            out += f'ctypedef {struct} {name}:\n'
             for dtype, identifier in l:
+                if dtype == 'bool':
+                    dtype = 'bint'
                 out += f'    {dtype} {identifier}\n'
             out += '\n'
     return out
 
 
-def _parse_union(text):
-    unions = {}
-    # syntax we don't want to see in the final parse tree
-    LBRACE, RBRACE, COMMA, SEMICOLON = map(Suppress, "{},;")
-    _union = Suppress("union")
-    dtype = Word(alphanums + "_*")
-    identifier = Word(alphanums + "_")
-    unionDecl = Group(dtype("dtype") + identifier("name") + SEMICOLON)
-    unionList = Group(unionDecl + ZeroOrMore(unionDecl))
-    union = _union + identifier("union_name") + LBRACE + \
-        unionList("names") + RBRACE + SEMICOLON
+# def _parse_union(text):
+#     unions = {}
+#     # syntax we don't want to see in the final parse tree
+#     LBRACE, RBRACE, COMMA, SEMICOLON = map(Suppress, "{},;")
+#     _union = Suppress("union")
+#     dtype = Word(alphanums + "_*")
+#     identifier = Word(alphanums + "_")
+#     unionDecl = Group(dtype("dtype") + identifier("name") + SEMICOLON)
+#     unionList = Group(unionDecl + ZeroOrMore(unionDecl))
+#     union = _union + identifier("union_name") + LBRACE + \
+#         unionList("names") + RBRACE + SEMICOLON
 
-    for item, start, stop in union.scanString(text):
-        l = []
-        for i, entry in enumerate(item.names):
-            l.append((entry.dtype, entry.name))
-        unions[item.union_name] = l
-    return unions
+#     for item, start, stop in union.scanString(text):
+#         l = []
+#         for i, entry in enumerate(item.names):
+#             l.append((entry.dtype, entry.name))
+#         unions[item.union_name] = l
+#     return unions
 
 
-def _gen_union(unions):
-    out = ''
-    for name, l in unions.items():
-        out += f'ctypedef union {name}:\n'
-        for dtype, identifier in l:
-            out += f'    {dtype} {identifier}\n'
-        out += '\n'
-    return out
+# def _gen_union(unions):
+#     out = ''
+#     for name, l in unions.items():
+#         out += f'ctypedef union {name}:\n'
+#         for dtype, identifier in l:
+#             out += f'    {dtype} {identifier}\n'
+#         out += '\n'
+#     return out
 
 
 def _parse_func(text, is_output=False):
@@ -264,15 +283,15 @@ def _gen_cython_func(name, func):
 if __name__ == '__main__':
     enums_to_insert = ''
     structs_to_insert = ''
-    unions_to_insert = ''
+    # unions_to_insert = ''
     funcs_to_insert = ''
 
-    # Parse already-defined functinos in the pxd
+    # Parse already-defined functions in the pxd
     already_defined_funcs = _parse_func(
         read_file(CYTHON_OUTPUT), is_output=True)
 
     for filename in iter_header_files():
-        if filename.name not in ('vklite2.h', 'context.h', 'canvas.h', 'keycode.h', 'log.h'):
+        if filename.name not in HEADER_FILES:
             continue
         text = read_file(filename)
 
@@ -290,12 +309,12 @@ if __name__ == '__main__':
         if generated:
             structs_to_insert += f'# from file: {filename.name}\n\n{generated}'
 
-        # Parse the unions
-        unions = _parse_union(text)
-        # Generate the Cython enum definitions
-        generated = _gen_union(unions)
-        if generated:
-            unions_to_insert += f'# from file: {filename.name}\n\n{generated}'
+        # # Parse the unions
+        # unions = _parse_union(text)
+        # # Generate the Cython enum definitions
+        # generated = _gen_union(unions)
+        # if generated:
+        #     unions_to_insert += f'# from file: {filename.name}\n\n{generated}'
 
         # Parse the functions
         funcs = _parse_func(text)
@@ -323,7 +342,7 @@ if __name__ == '__main__':
         CYTHON_OUTPUT, ENUM_START, ENUM_END, enums_to_insert)
     insert_into_file(
         CYTHON_OUTPUT, STRUCT_START, STRUCT_END, structs_to_insert)
-    insert_into_file(
-        CYTHON_OUTPUT, UNION_START, UNION_END, unions_to_insert)
+    # insert_into_file(
+    #     CYTHON_OUTPUT, UNION_START, UNION_END, unions_to_insert)
     insert_into_file(
         CYTHON_OUTPUT, FUNCTION_START, FUNCTION_END, funcs_to_insert)

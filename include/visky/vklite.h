@@ -40,7 +40,6 @@ TODO later
 /*************************************************************************************************/
 
 #define VKL_MAX_BINDINGS_SIZE    32
-#define VKL_MAX_COMMANDS         32
 #define VKL_MAX_DESCRIPTOR_SETS  64
 #define VKL_MAX_PRESENT_MODES    16
 #define VKL_MAX_PUSH_CONSTANTS   16

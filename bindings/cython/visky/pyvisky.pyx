@@ -74,7 +74,6 @@ cdef class App:
     _canvases = []
 
     def __cinit__(self):
-        cv.log_set_level_env()
         self._c_app = cv.vkl_app(cv.VKL_BACKEND_GLFW)
         if self._c_app is NULL:
             raise MemoryError()

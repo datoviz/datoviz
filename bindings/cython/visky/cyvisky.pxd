@@ -1,6 +1,6 @@
 # WARNING: parts of this file are auto-generated
 
-cdef extern from "../include/visky/visky2.h":
+cdef extern from "../include/visky/visky.h":
 
     # Numerical types
     ctypedef long int32_t
@@ -49,6 +49,14 @@ cdef extern from "../include/visky/visky2.h":
     ctypedef struct VklCommands:
         pass
 
+    ctypedef struct VkViewport:
+        float x
+        float y
+        float width
+        float height
+        float minDepth
+        float maxDepth
+
 
 
 
@@ -77,15 +85,46 @@ cdef extern from "../include/visky/visky2.h":
         VKL_CANVAS_SIZE_SCREEN = 0
         VKL_CANVAS_SIZE_FRAMEBUFFER = 1
 
+    ctypedef enum VklViewportClip:
+        VKL_VIEWPORT_FULL = 0
+        VKL_VIEWPORT_INNER = 1
+        VKL_VIEWPORT_OUTER = 2
+        VKL_VIEWPORT_OUTER_BOTTOM = 3
+        VKL_VIEWPORT_OUTER_LEFT = 4
+
+    ctypedef enum VklTransformAxis:
+        VKL_TRANSFORM_AXIS_DEFAULT = 0
+        VKL_TRANSFORM_AXIS_ALL = 1
+        VKL_TRANSFORM_AXIS_X = 2
+        VKL_TRANSFORM_AXIS_Y = 3
+        VKL_TRANSFORM_AXIS_NONE = 4
+
+    ctypedef enum VklMouseStateType:
+        VKL_MOUSE_STATE_INACTIVE = 0
+        VKL_MOUSE_STATE_DRAG = 1
+        VKL_MOUSE_STATE_WHEEL = 2
+        VKL_MOUSE_STATE_CLICK = 3
+        VKL_MOUSE_STATE_DOUBLE_CLICK = 4
+        VKL_MOUSE_STATE_CAPTURE = 5
+
+    ctypedef enum VklKeyboardStateType:
+        VKL_KEYBOARD_STATE_INACTIVE = 0
+        VKL_KEYBOARD_STATE_ACTIVE = 1
+        VKL_KEYBOARD_STATE_CAPTURE = 2
+
     ctypedef enum VklEventType:
         VKL_EVENT_NONE = 0
         VKL_EVENT_INIT = 1
         VKL_EVENT_MOUSE_BUTTON = 2
         VKL_EVENT_MOUSE_MOVE = 3
         VKL_EVENT_MOUSE_WHEEL = 4
-        VKL_EVENT_KEY = 5
-        VKL_EVENT_FRAME = 6
-        VKL_EVENT_SCREENCAST = 7
+        VKL_EVENT_MOUSE_DRAG_BEGIN = 5
+        VKL_EVENT_MOUSE_DRAG_END = 6
+        VKL_EVENT_MOUSE_CLICK = 7
+        VKL_EVENT_MOUSE_DOUBLE_CLICK = 8
+        VKL_EVENT_KEY = 9
+        VKL_EVENT_FRAME = 10
+        VKL_EVENT_SCREENCAST = 11
 
     ctypedef enum VklKeyType:
         VKL_KEY_RELEASE = 0
@@ -108,19 +147,6 @@ cdef extern from "../include/visky/visky2.h":
         VKL_MOUSE_BUTTON_MIDDLE = 2
         VKL_MOUSE_BUTTON_RIGHT = 3
 
-    ctypedef enum VklMouseStateType:
-        VKL_MOUSE_STATE_INACTIVE = 0
-        VKL_MOUSE_STATE_DRAG = 1
-        VKL_MOUSE_STATE_WHEEL = 2
-        VKL_MOUSE_STATE_CLICK = 3
-        VKL_MOUSE_STATE_DOUBLE_CLICK = 4
-        VKL_MOUSE_STATE_CAPTURE = 5
-
-    ctypedef enum VklKeyStateType:
-        VKL_KEYBOARD_STATE_INACTIVE = 0
-        VKL_KEYBOARD_STATE_ACTIVE = 1
-        VKL_KEYBOARD_STATE_CAPTURE = 2
-
     ctypedef enum VklScreencastStatus:
         VKL_SCREENCAST_NONE = 0
         VKL_SCREENCAST_IDLE = 1
@@ -133,8 +159,8 @@ cdef extern from "../include/visky/visky2.h":
         VKL_DEFAULT_BUFFER_STAGING = 0
         VKL_DEFAULT_BUFFER_VERTEX = 1
         VKL_DEFAULT_BUFFER_INDEX = 2
-        VKL_DEFAULT_BUFFER_STORAGE = 3
-        VKL_DEFAULT_BUFFER_UNIFORM = 4
+        VKL_DEFAULT_BUFFER_UNIFORM = 3
+        VKL_DEFAULT_BUFFER_STORAGE = 4
         VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE = 5
         VKL_DEFAULT_BUFFER_COUNT = 6
 
@@ -156,7 +182,7 @@ cdef extern from "../include/visky/visky2.h":
     ctypedef enum VklDataTransferType:
         VKL_TRANSFER_NONE = 0
         VKL_TRANSFER_BUFFER_UPLOAD = 1
-        VKL_TRANSFER_BUFFER_UPLOAD_FAST = 2
+        VKL_TRANSFER_BUFFER_UPLOAD_IMMEDIATE = 2
         VKL_TRANSFER_BUFFER_DOWNLOAD = 3
         VKL_TRANSFER_BUFFER_COPY = 4
         VKL_TRANSFER_TEXTURE_UPLOAD = 5
@@ -290,42 +316,94 @@ cdef extern from "../include/visky/visky2.h":
         VKL_KEY_MENU = 348
         VKL_KEY_LAST = 348
 
-    # from file: vklite2.h
+    # from file: panel.h
 
-    ctypedef enum VklObjectType:
-        VKL_OBJECT_TYPE_UNDEFINED = 0
-        VKL_OBJECT_TYPE_APP = 1
-        VKL_OBJECT_TYPE_GPU = 2
-        VKL_OBJECT_TYPE_WINDOW = 3
-        VKL_OBJECT_TYPE_SWAPCHAIN = 4
-        VKL_OBJECT_TYPE_CANVAS = 5
-        VKL_OBJECT_TYPE_COMMANDS = 6
-        VKL_OBJECT_TYPE_BUFFER = 7
-        VKL_OBJECT_TYPE_TEXTURE = 8
-        VKL_OBJECT_TYPE_IMAGES = 9
-        VKL_OBJECT_TYPE_SAMPLER = 10
-        VKL_OBJECT_TYPE_BINDINGS = 11
-        VKL_OBJECT_TYPE_COMPUTE = 12
-        VKL_OBJECT_TYPE_GRAPHICS = 13
-        VKL_OBJECT_TYPE_BARRIER = 14
-        VKL_OBJECT_TYPE_FENCES = 15
-        VKL_OBJECT_TYPE_SEMAPHORES = 16
-        VKL_OBJECT_TYPE_RENDERPASS = 17
-        VKL_OBJECT_TYPE_FRAMEBUFFER = 18
-        VKL_OBJECT_TYPE_SUBMIT = 19
-        VKL_OBJECT_TYPE_SCREENCAST = 20
-        VKL_OBJECT_TYPE_CUSTOM = 21
+    ctypedef enum VklPanelMode:
+        VKL_PANEL_GRID = 0
+        VKL_PANEL_INSET = 1
 
-    ctypedef enum VklObjectStatus:
-        VKL_OBJECT_STATUS_NONE = 0
-        VKL_OBJECT_STATUS_DESTROYED = 1
-        VKL_OBJECT_STATUS_INIT = 2
-        VKL_OBJECT_STATUS_CREATED = 3
-        VKL_OBJECT_STATUS_NEED_RECREATE = 4
-        VKL_OBJECT_STATUS_NEED_UPDATE = 5
-        VKL_OBJECT_STATUS_NEED_DESTROY = 6
-        VKL_OBJECT_STATUS_INACTIVE = 7
-        VKL_OBJECT_STATUS_INVALID = 8
+    ctypedef enum VklGridAxis:
+        VKL_GRID_HORIZONTAL = 0
+        VKL_GRID_VERTICAL = 1
+
+    ctypedef enum VklPanelSizeUnit:
+        VKL_PANEL_UNIT_NORMALIZED = 0
+        VKL_PANEL_UNIT_FRAMEBUFFER = 1
+        VKL_PANEL_UNIT_SCREEN = 2
+
+    # from file: scene.h
+
+    ctypedef enum VklControllerType:
+        VKL_CONTROLLER_NONE = 0
+        VKL_CONTROLLER_PANZOOM = 1
+        VKL_CONTROLLER_AXES_2D = 2
+        VKL_CONTROLLER_ARCBALL = 3
+        VKL_CONTROLLER_CAMERA = 4
+        VKL_CONTROLLER_AXES_3D = 5
+
+    ctypedef enum VklCDS:
+        VKL_CDS_DATA = 1
+        VKL_CDS_GPU = 2
+        VKL_CDS_PANZOOM = 3
+        VKL_CDS_PANEL = 4
+        VKL_CDS_CANVAS_NDC = 5
+        VKL_CDS_CANVAS_PX = 6
+
+    # from file: visuals.h
+
+    ctypedef enum VklPipelineType:
+        VKL_PIPELINE_GRAPHICS = 0
+        VKL_PIPELINE_COMPUTE = 1
+
+    ctypedef enum VklPropType:
+        VKL_PROP_NONE = 0
+        VKL_PROP_POS = 1
+        VKL_PROP_COLOR = 2
+        VKL_PROP_MARKER_SIZE = 3
+        VKL_PROP_TEXT = 4
+        VKL_PROP_TEXT_SIZE = 5
+        VKL_PROP_LINE_WIDTH = 6
+        VKL_PROP_TYPE = 7
+        VKL_PROP_LENGTH = 8
+        VKL_PROP_MARGIN = 9
+        VKL_PROP_COLOR_TEXTURE = 10
+        VKL_PROP_MODEL = 11
+        VKL_PROP_VIEW = 12
+        VKL_PROP_PROJ = 13
+
+    ctypedef enum VklSourceKind:
+        VKL_SOURCE_NONE = 0
+        VKL_SOURCE_VERTEX = 1
+        VKL_SOURCE_INDEX = 2
+        VKL_SOURCE_UNIFORM = 3
+        VKL_SOURCE_STORAGE = 4
+        VKL_SOURCE_TEXTURE_1D = 5
+        VKL_SOURCE_TEXTURE_2D = 6
+        VKL_SOURCE_TEXTURE_3D = 7
+
+    ctypedef enum VklSourceType:
+        VKL_SOURCE_TYPE_NONE = 0
+        VKL_SOURCE_TYPE_MVP = 1
+        VKL_SOURCE_TYPE_VIEWPORT = 2
+        VKL_SOURCE_TYPE_PARAM = 3
+        VKL_SOURCE_TYPE_VERTEX = 4
+        VKL_SOURCE_TYPE_INDEX = 5
+        VKL_SOURCE_TYPE_IMAGE = 6
+        VKL_SOURCE_TYPE_VOLUME = 7
+        VKL_SOURCE_TYPE_COLOR_TEXTURE = 8
+        VKL_SOURCE_TYPE_FONT_ATLAS = 9
+        VKL_SOURCE_TYPE_OTHER = 10
+
+    ctypedef enum VklSourceOrigin:
+        VKL_SOURCE_ORIGIN_NONE = 0
+        VKL_SOURCE_ORIGIN_LIB = 1
+        VKL_SOURCE_ORIGIN_USER = 2
+        VKL_SOURCE_ORIGIN_NOBAKE = 3
+
+    ctypedef enum VklSourceFlags:
+        VKL_SOURCE_FLAG_IMMEDIATE = 0x0001
+
+    # from file: vklite.h
 
     ctypedef enum VklBackend:
         VKL_BACKEND_NONE = 0
@@ -367,17 +445,6 @@ cdef extern from "../include/visky/visky2.h":
     # ENUM END
 
 
-
-
-    # UNION START
-    # from file: canvas.h
-
-
-    # UNION END
-
-
-
-
     # STRUCT START
     # from file: canvas.h
 
@@ -387,14 +454,24 @@ cdef extern from "../include/visky/visky2.h":
         int modifiers
 
     ctypedef struct VklMouseMoveEvent:
-        dvec2 pos
+        vec2 pos
 
     ctypedef struct VklMouseWheelEvent:
-        dvec2 dir
+        vec2 dir
+
+    ctypedef struct VklMouseDragEvent:
+        vec2 pos
+        VklMouseButton button
+
+    ctypedef struct VklMouseClickEvent:
+        vec2 pos
+        VklMouseButton button
+        bint double_click
 
     ctypedef struct VklKeyEvent:
         VklKeyType type
         VklKeyCode key_code
+        int modifiers
 
     ctypedef struct VklFrameEvent:
         uint64_t idx
@@ -414,37 +491,26 @@ cdef extern from "../include/visky/visky2.h":
         uint32_t height
         uint8_t* rgba
 
-    ctypedef struct VklRefillEvent:
-        uint32_t img_idx
-        uint32_t cmd_count
-        VklCommands* cmds[1024]
-
-    ctypedef struct VklResizeEvent:
+    ctypedef struct VklViewport:
+        VkViewport viewport
+        vec4 margins
+        uvec2 offset_screen
         uvec2 size_screen
+        uvec2 offset_framebuffer
         uvec2 size_framebuffer
-
-    ctypedef struct VklSubmitEvent:
-        VklSubmit* submit
-
-    ctypedef union VklPrivateEventUnion:
-        VklRefillEvent rf
-        VklResizeEvent r
-        VklFrameEvent t
-        VklFrameEvent f
-        VklSubmitEvent s
+        VklViewportClip clip
+        VklTransformAxis transform
+        float dpi_scaling
 
     ctypedef union VklEventUnion:
         VklMouseButtonEvent b
         VklMouseMoveEvent m
         VklMouseWheelEvent w
+        VklMouseDragEvent d
+        VklMouseClickEvent c
         VklKeyEvent k
         VklFrameEvent f
         VklScreencastEvent s
-
-    ctypedef struct VklPrivateEvent:
-        VklPrivateEventType type
-        void* user_data
-        VklPrivateEventUnion u
 
     ctypedef struct VklEvent:
         VklEventType type
@@ -466,10 +532,7 @@ cdef extern from "../include/visky/visky2.h":
     void vkl_canvas_to_close(VklCanvas* canvas, bint value)
     void vkl_app_run(VklApp* app, uint64_t frame_count)
 
-    # from file: log.h
-    void log_set_level_env()
-
-    # from file: vklite2.h
+    # from file: vklite.h
     VklApp* vkl_app(VklBackend backend)
     int vkl_app_destroy(VklApp* app)
     VklGpu* vkl_gpu(VklApp* app, uint32_t idx)

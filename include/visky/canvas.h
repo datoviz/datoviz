@@ -412,7 +412,7 @@ struct VklRefillEvent
 {
     uint32_t img_idx;
     uint32_t cmd_count;
-    VklCommands* cmds[VKL_MAX_COMMANDS];
+    VklCommands* cmds[32];
     VklViewport viewport;
     VkClearColorValue clear_color;
 };

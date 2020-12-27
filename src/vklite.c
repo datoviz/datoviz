@@ -11,6 +11,8 @@
 
 VklApp* vkl_app(VklBackend backend)
 {
+    log_set_level_env();
+
     VklApp* app = calloc(1, sizeof(VklApp));
     obj_init(&app->obj);
     app->obj.type = VKL_OBJECT_TYPE_APP;

@@ -15,14 +15,19 @@ then
     cd ..
 fi
 
+if [ $1 == "gencython" ]
+then
+    cd bindings/cython && \
+    python3 utils/gencython.py
+fi
+
 if [ $1 == "cython" ]
 then
     cd build && \
-    # cmake .. -GNinja -DVISKY_WITH_CYTHON=ON && \
-    # VKY_EXAMPLE= ninja && \
+    cmake .. -GNinja -DVISKY_WITH_CYTHON=ON && \
+    VKY_EXAMPLE= ninja && \
     cd ../bindings/cython && \
-    python3 utils/gencython.py && \
-    # ./build.sh # && \
+    ./build.sh # && \
     if [ ! -L "$(pwd)/visky/pyvisky.so" ]; then
         ln -s $(pwd)/../../build/pyvisky.*.so $(pwd)/visky/pyvisky.so
     fi
