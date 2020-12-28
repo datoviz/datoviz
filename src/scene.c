@@ -123,6 +123,8 @@ static void _scene_frame(VklCanvas* canvas, VklPrivateEvent ev)
     bool to_update = false;
 
     VklPanel* panel = vkl_container_iter(&grid->panels);
+    VklVisual* visual = NULL;
+    VklSource* source = NULL;
     while (panel != NULL)
     {
         // Interactivity.
@@ -137,10 +139,54 @@ static void _scene_frame(VklCanvas* canvas, VklPrivateEvent ev)
         viewport = panel->viewport;
         for (uint32_t j = 0; j < panel->visual_count; j++)
         {
-            if (to_update || panel->visuals[j]->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE)
+            visual = panel->visuals[j];
+
+            // First frame: initialize prev_vertex_count and prev_index_count.
+            if (canvas->frame_idx == 0)
+            {
+                for (uint32_t pidx = 0; pidx < visual->graphics_count; pidx++)
+                {
+                    source = vkl_bake_source(visual, VKL_SOURCE_TYPE_VERTEX, pidx);
+                    visual->prev_vertex_count[pidx] = source->arr.item_count;
+
+                    source = vkl_bake_source(visual, VKL_SOURCE_TYPE_INDEX, pidx);
+                    if (source != NULL)
+                        visual->prev_index_count[pidx] = source->arr.item_count;
+                }
+            }
+
+            if (to_update || visual->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE)
             {
                 // TODO: data coords
-                vkl_visual_update(panel->visuals[j], viewport, (VklDataCoords){0}, NULL);
+                vkl_visual_update(visual, viewport, (VklDataCoords){0}, NULL);
+
+                // Detect whether the vertex/index count has changed, in which case we'll need a
+                // full refill in the same frame as the data upload. To signal this to the canvas
+                // we'll set it to the NEED_FULL_UPDATE status. At the end of the frame, after the
+                // pending transfer tasks have completed, we'll trigger a full refill of the canvas
+                // with full GPU wait on the RENDER queue.
+                for (uint32_t pidx = 0; pidx < visual->graphics_count; pidx++)
+                {
+                    // Detect a change in vertex_count.
+                    source = vkl_bake_source(visual, VKL_SOURCE_TYPE_VERTEX, pidx);
+                    if (source->arr.item_count != visual->prev_vertex_count[pidx])
+                    {
+                        log_info("automatic detection of a change in vertex count, will trigger "
+                                 "full refill");
+                        canvas->obj.status = VKL_OBJECT_STATUS_NEED_FULL_UPDATE;
+                        visual->prev_vertex_count[pidx] = source->arr.item_count;
+                    }
+
+                    // Detect a change in index_count.
+                    source = vkl_bake_source(visual, VKL_SOURCE_TYPE_INDEX, pidx);
+                    if (source != NULL && source->arr.item_count != visual->prev_index_count[pidx])
+                    {
+                        log_info("automatic detection of a change in index count, will trigger "
+                                 "full refill");
+                        canvas->obj.status = VKL_OBJECT_STATUS_NEED_FULL_UPDATE;
+                        visual->prev_index_count[pidx] = source->arr.item_count;
+                    }
+                }
             }
         }
         panel->obj.status = VKL_OBJECT_STATUS_CREATED;
@@ -655,7 +701,13 @@ VklScene* vkl_scene(VklCanvas* canvas, uint32_t n_rows, uint32_t n_cols)
         VKL_CONTAINER_DEFAULT_COUNT, sizeof(VklController), VKL_OBJECT_TYPE_CONTROLLER);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _scene_fill, canvas->scene);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _scene_frame, canvas->scene);
+
+    // HACK: we use a param of 1 here as a way of putting a lower priority, so that the
+    // _scene_frame callback is called *after* the user FRAME callbacks. If the user callbacks call
+    // vkl_visual_data(), the _scene_frame() callback will be called directly afterwards, in the
+    // same frame.
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 1, _scene_frame, canvas->scene);
+
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _upload_mvp, canvas->scene);
 
 

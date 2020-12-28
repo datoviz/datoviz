@@ -270,6 +270,7 @@ struct VklApp
 
     // Global clock
     VklClock clock;
+    bool is_running;
 
     // Vulkan objects.
     VkInstance instance;

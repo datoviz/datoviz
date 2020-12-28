@@ -182,12 +182,16 @@ static void _visual_update(VklCanvas* canvas, VklPrivateEvent ev)
 
     viewport = vkl_viewport_full(canvas);
     vkl_visual_update(visual, viewport, (VklDataCoords){0}, NULL);
-    vkl_canvas_to_refill(visual->canvas, true);
+    // Manual trigger of full refill in canvas main loop. Normally this is automatically handled
+    // by the scene API, which is not used in this test.
+    canvas->obj.status = VKL_OBJECT_STATUS_NEED_FULL_UPDATE;
 
     FREE(xticks);
     FREE(yticks);
     FREE(text);
 }
+
+// static void _wait(VklCanvas* canvas, VklPrivateEvent ev) { vkl_sleep(50); }
 
 int test_visuals_axes_2D(TestContext* context)
 {
@@ -245,6 +249,7 @@ int test_visuals_axes_2D(TestContext* context)
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, .25, _visual_update, &visual);
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _resize, NULL);
+    // vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _wait, NULL);
     vkl_app_run(app, N_FRAMES);
     FREE(xticks);
     FREE(yticks);

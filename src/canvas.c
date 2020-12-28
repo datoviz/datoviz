@@ -461,17 +461,24 @@ static void backend_event_callbacks(VklCanvas* canvas)
 static int _canvas_callbacks(VklCanvas* canvas, VklPrivateEvent event)
 {
     int n_callbacks = 0;
-    for (uint32_t i = 0; i < canvas->canvas_callbacks_count; i++)
+    // HACK: we first call the callbacks with no param, then we call the callbacks with a non-zero
+    // param. This is a way to use the param as a priority value. This is used by the scene FRAME
+    // callback so that it occurs after the user callbacks.
+    for (uint32_t pass = 0; pass < 2; pass++)
     {
-        // Will pass the user_data that was registered, to the callback function.
-        event.user_data = canvas->canvas_callbacks[i].user_data;
-
-        // Only call the callbacks registered for the specified type.
-        if (canvas->canvas_callbacks[i].type == event.type)
+        for (uint32_t i = 0; i < canvas->canvas_callbacks_count; i++)
         {
-            // log_debug("canvas callback type %d number %d", event.type, i);
-            canvas->canvas_callbacks[i].callback(canvas, event);
-            n_callbacks++;
+            // Will pass the user_data that was registered, to the callback function.
+            event.user_data = canvas->canvas_callbacks[i].user_data;
+
+            // Only call the callbacks registered for the specified type.
+            if (canvas->canvas_callbacks[i].type == event.type &&
+                (pass == 0 || canvas->canvas_callbacks[i].param > 0))
+            {
+                // log_debug("canvas callback type %d number %d", event.type, i);
+                canvas->canvas_callbacks[i].callback(canvas, event);
+                n_callbacks++;
+            }
         }
     }
     return n_callbacks;
@@ -1842,7 +1849,7 @@ void vkl_canvas_frame(VklCanvas* canvas)
             &canvas->swapchain, &canvas->sem_img_available, //
             canvas->cur_frame, NULL, 0);
 
-    // Refill if needed.
+    // Refill if needed, only 1 swapchain command buffer per frame to avoid waiting on the device.
     if (canvas->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE)
     {
         log_debug("need to update canvas, will refill the command buffers");
@@ -1855,8 +1862,6 @@ void vkl_canvas_frame(VklCanvas* canvas)
         canvas->clock.interval = 0;
 
         // Refill the command buffer for the current swapchain image.
-
-        // NOTE: might need to uncomment this!
         _refill_canvas(canvas, canvas->swapchain.img_idx);
 
         // Mark that command buffer as updated.
@@ -1953,8 +1958,9 @@ void vkl_canvas_frame_submit(VklCanvas* canvas)
 
 void vkl_app_run(VklApp* app, uint64_t frame_count)
 {
-    log_trace("run app");
+    log_trace("start main loop");
     ASSERT(app != NULL);
+    app->is_running = true;
     if (frame_count == 0)
         frame_count = UINT64_MAX;
     ASSERT(frame_count > 0);
@@ -2093,6 +2099,25 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             gpu = vkl_container_iter(&app->gpus);
         }
 
+        // Full update: complete refill of all swapchain command buffers after data transfers
+        // that changed the number of items in VERTEX or INDEX sources, which means the number
+        // of vertices/indices to draw (fixed in the command buffer) has to change.
+        canvas = vkl_container_iter(&app->canvases);
+        while (canvas != NULL)
+        {
+            ASSERT(canvas != NULL);
+            if (canvas->obj.status == VKL_OBJECT_STATUS_NEED_FULL_UPDATE)
+            {
+                log_info("full update requested on canvas, triggering full refill");
+                // We need to stop the rendering because we'll update all command buffers at once.
+                vkl_queue_wait(canvas->gpu, VKL_DEFAULT_QUEUE_RENDER);
+                // Complete refill of the canvas that require a full update.
+                _refill_canvas(canvas, UINT32_MAX);
+                canvas->obj.status = VKL_OBJECT_STATUS_CREATED;
+            }
+            canvas = vkl_container_iter(&app->canvases);
+        }
+
         // Close the application if all canvases have been closed.
         if (n_canvas_active == 0)
         {
@@ -2103,6 +2128,7 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
     log_trace("end main loop");
 
     vkl_app_wait(app);
+    app->is_running = false;
 }
 
 

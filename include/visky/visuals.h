@@ -238,6 +238,12 @@ struct VklVisual
     uint32_t graphics_count;
     VklGraphics* graphics[VKL_MAX_GRAPHICS_PER_VISUAL];
 
+    // Keep track of the previous number of vertices/indices in each graphics pipeline, so that
+    // we can automatically detect changes in vetex_count/index_count and trigger a full REFILL
+    // in this case.
+    uint32_t prev_vertex_count[VKL_MAX_GRAPHICS_PER_VISUAL];
+    uint32_t prev_index_count[VKL_MAX_GRAPHICS_PER_VISUAL];
+
     // Computes.
     uint32_t compute_count;
     VklCompute* computes[VKL_MAX_COMPUTES_PER_VISUAL];
