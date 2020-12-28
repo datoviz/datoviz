@@ -20,7 +20,9 @@ static void _panzoom(VklCanvas* canvas, VklPrivateEvent ev)
     ASSERT(canvas != NULL);
     VklScene* scene = ev.user_data;
     ASSERT(scene != NULL);
-    VklPanel* panel = NULL;
+    VklGrid* grid = &scene->grid;
+    ASSERT(grid != NULL);
+
     VklController* controller = NULL;
     VklInteract* interact = NULL;
     VklTransform tr = {0};
@@ -28,9 +30,13 @@ static void _panzoom(VklCanvas* canvas, VklPrivateEvent ev)
     dvec2 ur = {+1, +1};
     dvec2 pos_ll = {0};
     dvec2 pos_ur = {0};
-    for (uint32_t i = 0; i < scene->grid.panel_count; i++)
+
+
+    VklPanel* panel = vkl_container_iter(&grid->panels);
+    VklPanel* other = NULL;
+    uint32_t i = 0;
+    while (panel != NULL)
     {
-        panel = &scene->grid.panels[i];
         controller = panel->controller;
         if (controller == NULL || controller->obj.status == VKL_OBJECT_STATUS_NONE)
             break;
@@ -43,7 +49,8 @@ static void _panzoom(VklCanvas* canvas, VklPrivateEvent ev)
             log_debug("(%.3f, %.3f) (%.3f, %.3f)", pos_ll[0], pos_ll[1], pos_ur[0], pos_ur[1]);
 
             // Set box of other panel.
-            interact = &scene->grid.panels[1 - i].controller->interacts[0];
+            other = (VklPanel*)grid->panels.items[1 - i];
+            interact = &other->controller->interacts[0];
             VklPanzoom* panzoom = &interact->u.p;
             tr = vkl_transform_inv(tr);
             panzoom->camera_pos[0] = tr.shift[0];
@@ -68,6 +75,9 @@ static void _panzoom(VklCanvas* canvas, VklPrivateEvent ev)
                     interact->mvp.proj);
             }
         }
+
+        panel = vkl_container_iter(&grid->panels);
+        i++;
     }
 }
 
@@ -108,7 +118,7 @@ int test_scene_1(TestContext* context)
     vkl_visual_data(visual2, VKL_PROP_MARKER_SIZE, 0, 1, &param);
 
     // vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _panzoom, scene);
+    // vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _panzoom, scene);
 
     vkl_app_run(app, N_FRAMES);
     vkl_visual_destroy(visual);

@@ -112,8 +112,7 @@ struct VklGrid
     double widths[VKL_GRID_MAX_COLS];
     double heights[VKL_GRID_MAX_ROWS];
 
-    uint32_t panel_count;
-    VklPanel panels[VKL_MAX_PANELS];
+    VklContainer panels;
 };
 
 
@@ -123,6 +122,8 @@ struct VklGrid
 /*************************************************************************************************/
 
 VKY_EXPORT VklGrid vkl_grid(VklCanvas* canvas, uint32_t rows, uint32_t cols);
+
+VKY_EXPORT void vkl_grid_destroy(VklGrid* grid);
 
 VKY_EXPORT VklPanel* vkl_panel(VklGrid* grid, uint32_t row, uint32_t col);
 

@@ -92,9 +92,12 @@ static void _update_grid_panels(VklGrid* grid, VklGridAxis axis)
     }
 
     // Update the panel positions and sizes.
-    for (uint32_t i = 0; i < grid->panel_count; i++)
-        vkl_panel_update(&grid->panels[i]);
-
+    VklPanel* panel = vkl_container_iter(&grid->panels);
+    while (panel != NULL)
+    {
+        vkl_panel_update(panel);
+        panel = vkl_container_iter(&grid->panels);
+    }
     // NOTE: not sure if this is needed? Decommenting causes the command buffers to be recorded
     // twice.
     // vkl_canvas_to_refill(grid->canvas, true);
@@ -133,12 +136,12 @@ static float _to_normalized_unit(VklPanel* panel, VklGridAxis axis, float size)
 static VklPanel* _get_panel(VklGrid* grid, uint32_t row, uint32_t col)
 {
     ASSERT(grid != NULL);
-    VklPanel* panel = NULL;
-    for (uint32_t i = 0; i < grid->panel_count; i++)
+    VklPanel* panel = vkl_container_iter(&grid->panels);
+    while (panel != NULL)
     {
-        panel = &grid->panels[i];
         if (panel->row == row && panel->col == col)
             return panel;
+        panel = vkl_container_iter(&grid->panels);
     }
     return NULL;
 }
@@ -156,11 +159,20 @@ VklGrid vkl_grid(VklCanvas* canvas, uint32_t rows, uint32_t cols)
     grid.canvas = canvas;
     grid.n_rows = rows;
     grid.n_cols = cols;
+    grid.panels = vkl_container(VKL_MAX_PANELS, sizeof(VklPanel), VKL_OBJECT_TYPE_PANEL);
 
     _update_grid_panels(&grid, VKL_GRID_HORIZONTAL);
     _update_grid_panels(&grid, VKL_GRID_VERTICAL);
 
     return grid;
+}
+
+
+
+void vkl_grid_destroy(VklGrid* grid)
+{
+    ASSERT(grid != NULL);
+    vkl_container_destroy(&grid->panels);
 }
 
 
@@ -176,9 +188,7 @@ VklPanel* vkl_panel(VklGrid* grid, uint32_t row, uint32_t col)
     if (panel != NULL)
         return panel;
 
-    panel = &grid->panels[grid->panel_count++];
-
-    panel->obj.type = VKL_OBJECT_TYPE_PANEL;
+    panel = vkl_container_alloc(&grid->panels);
     obj_created(&panel->obj);
 
     panel->grid = grid;
@@ -368,19 +378,18 @@ VklViewport vkl_panel_viewport(VklPanel* panel)
 VklPanel* vkl_panel_at(VklGrid* grid, vec2 pos)
 {
     ASSERT(grid != NULL);
-    VklPanel* panel = NULL;
     float x = pos[0];
     float y = pos[1];
 
-    for (uint32_t i = 0; i < grid->panel_count; i++)
+    VklPanel* panel = vkl_container_iter(&grid->panels);
+    while (panel != NULL)
     {
-        panel = &grid->panels[i];
         if (panel->x <= x && x <= panel->x + panel->width && //
             panel->y <= y && y <= panel->y + panel->height)
             return panel;
+        panel = vkl_container_iter(&grid->panels);
     }
-
-    return panel;
+    return NULL;
 }
 
 
@@ -392,4 +401,5 @@ void vkl_panel_destroy(VklPanel* panel)
     {
         vkl_visual_destroy(panel->visuals[i]);
     }
+    obj_destroyed(&panel->obj);
 }

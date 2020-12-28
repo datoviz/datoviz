@@ -28,13 +28,9 @@ static void _canvas_fill(VklCanvas* canvas, VklPrivateEvent ev)
 
         vkl_visual_fill_begin(canvas, cmds, img_idx);
 
-        // We only fill the PANEL command buffers.
-        // if (cmds->obj.group_id == VKL_COMMANDS_GROUP_PANELS)
-        // {
-        //     panel = &grid->panels[cmds->obj.id];
-        for (uint32_t j = 0; j < grid->panel_count; j++)
+        VklPanel* panel = vkl_container_iter(&grid->panels);
+        while (panel != NULL)
         {
-            panel = &grid->panels[j];
             ASSERT(is_obj_created(&panel->obj));
             // Find the panel viewport.
             viewport = vkl_panel_viewport(panel);
@@ -46,6 +42,7 @@ static void _canvas_fill(VklCanvas* canvas, VklPrivateEvent ev)
                 vkl_visual_fill_event(
                     panel->visuals[k], ev.u.rf.clear_color, cmds, img_idx, viewport, NULL);
             }
+            panel = vkl_container_iter(&grid->panels);
         }
 
         vkl_visual_fill_end(canvas, cmds, img_idx);
@@ -70,7 +67,7 @@ static void _canvas_click(VklCanvas* canvas, VklEvent ev)
     float y = ev.u.c.pos[1] / size[1];
     uint32_t col = (uint32_t)(x * 2);
     uint32_t row = (uint32_t)(y * 3);
-    vkl_panel_cell(&grid->panels[0], row, col);
+    vkl_panel_cell((VklPanel*)grid->panels.items[0], row, col);
 }
 
 int test_panel_1(TestContext* context)
