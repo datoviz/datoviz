@@ -45,8 +45,8 @@ static void _update_viewport(VklPanel* panel)
     float win_width = panel->grid->canvas->swapchain.images->width;
     float win_height = panel->grid->canvas->swapchain.images->height;
 
-    viewport->viewport.x = panel->x * win_width;
-    viewport->viewport.y = panel->y * win_height;
+    viewport->offset_framebuffer[0] = viewport->viewport.x = panel->x * win_width;
+    viewport->offset_framebuffer[1] = viewport->viewport.y = panel->y * win_height;
     viewport->size_framebuffer[0] = viewport->viewport.width = panel->width * win_width;
     viewport->size_framebuffer[1] = viewport->viewport.height = panel->height * win_height;
 
