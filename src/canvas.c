@@ -70,6 +70,46 @@ static VklRenderpass default_renderpass(
 
 
 
+static VklRenderpass overlay_renderpass(VklGpu* gpu, VkFormat format, VkImageLayout layout)
+{
+    VklRenderpass renderpass = vkl_renderpass(gpu);
+
+    // Color attachment.
+    vkl_renderpass_attachment(
+        &renderpass, 0, //
+        VKL_RENDERPASS_ATTACHMENT_COLOR, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    vkl_renderpass_attachment_layout(
+        &renderpass, 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, layout);
+    vkl_renderpass_attachment_ops(
+        &renderpass, 0, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE);
+
+    // Depth attachment.
+    vkl_renderpass_attachment(
+        &renderpass, 1, //
+        VKL_RENDERPASS_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT,
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    vkl_renderpass_attachment_layout(
+        &renderpass, 1, VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    vkl_renderpass_attachment_ops(
+        &renderpass, 1, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE);
+
+    // Subpass.
+    vkl_renderpass_subpass_attachment(&renderpass, 0, 0);
+    vkl_renderpass_subpass_attachment(&renderpass, 0, 1);
+    vkl_renderpass_subpass_dependency(&renderpass, 0, VK_SUBPASS_EXTERNAL, 0);
+    vkl_renderpass_subpass_dependency_stage(
+        &renderpass, 0, //
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+    vkl_renderpass_subpass_dependency_access(
+        &renderpass, 0, 0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+
+    return renderpass;
+}
+
+
+
 static void
 depth_image(VklImages* depth_images, VklRenderpass* renderpass, uint32_t width, uint32_t height)
 {
@@ -701,7 +741,10 @@ static VklCanvas* _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool off
 
     // Create default renderpass.
     canvas->renderpass = default_renderpass(
-        gpu, VKL_DEFAULT_BACKGROUND, VKL_DEFAULT_IMAGE_FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+        gpu, VKL_DEFAULT_BACKGROUND, VKL_DEFAULT_IMAGE_FORMAT,
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    canvas->overlay_renderpass =
+        overlay_renderpass(gpu, VKL_DEFAULT_IMAGE_FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
     // Create swapchain
     {
@@ -745,6 +788,7 @@ static VklCanvas* _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool off
 
     // Create renderpass.
     vkl_renderpass_create(&canvas->renderpass);
+    vkl_renderpass_create(&canvas->overlay_renderpass);
 
     // Create framebuffers.
     {
@@ -752,6 +796,11 @@ static VklCanvas* _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool off
         vkl_framebuffers_attachment(&canvas->framebuffers, 0, canvas->swapchain.images);
         vkl_framebuffers_attachment(&canvas->framebuffers, 1, &canvas->depth_image);
         vkl_framebuffers_create(&canvas->framebuffers, &canvas->renderpass);
+
+        canvas->overlay_framebuffers = vkl_framebuffers(gpu);
+        vkl_framebuffers_attachment(&canvas->overlay_framebuffers, 0, canvas->swapchain.images);
+        vkl_framebuffers_attachment(&canvas->overlay_framebuffers, 1, &canvas->depth_image);
+        vkl_framebuffers_create(&canvas->overlay_framebuffers, &canvas->overlay_renderpass);
     }
 
     // Create synchronization objects.
@@ -819,11 +868,16 @@ void vkl_canvas_recreate(VklCanvas* canvas)
     VklSwapchain* swapchain = &canvas->swapchain;
     VklFramebuffers* framebuffers = &canvas->framebuffers;
     VklRenderpass* renderpass = &canvas->renderpass;
+    VklFramebuffers* overlay_framebuffers = &canvas->overlay_framebuffers;
+    VklRenderpass* overlay_renderpass = &canvas->overlay_renderpass;
 
     ASSERT(window != NULL);
     ASSERT(gpu != NULL);
     ASSERT(swapchain != NULL);
     ASSERT(framebuffers != NULL);
+    ASSERT(overlay_framebuffers != NULL);
+    ASSERT(renderpass != NULL);
+    ASSERT(overlay_renderpass != NULL);
 
     log_trace("recreate canvas after resize");
 
@@ -838,6 +892,7 @@ void vkl_canvas_recreate(VklCanvas* canvas)
 
     // Destroy swapchain resources.
     vkl_framebuffers_destroy(&canvas->framebuffers);
+    vkl_framebuffers_destroy(&canvas->overlay_framebuffers);
     vkl_images_destroy(&canvas->depth_image);
     vkl_images_destroy(canvas->swapchain.images);
 
@@ -859,6 +914,7 @@ void vkl_canvas_recreate(VklCanvas* canvas)
     ASSERT(framebuffers->attachments[0]->width == width);
     ASSERT(framebuffers->attachments[0]->height == height);
     vkl_framebuffers_create(framebuffers, renderpass);
+    vkl_framebuffers_create(overlay_framebuffers, overlay_renderpass);
 
     _refill_canvas(canvas, UINT32_MAX);
 }
@@ -2178,6 +2234,7 @@ void vkl_canvas_destroy(VklCanvas* canvas)
     // Destroy the renderpasses.
     log_trace("canvas destroy renderpass");
     vkl_renderpass_destroy(&canvas->renderpass);
+    vkl_renderpass_destroy(&canvas->overlay_renderpass);
 
     // Destroy the swapchain.
     log_trace("canvas destroy swapchain");
@@ -2186,6 +2243,7 @@ void vkl_canvas_destroy(VklCanvas* canvas)
     // Destroy the framebuffers.
     log_trace("canvas destroy framebuffers");
     vkl_framebuffers_destroy(&canvas->framebuffers);
+    vkl_framebuffers_destroy(&canvas->overlay_framebuffers);
 
     // Destroy the window.
     log_trace("canvas destroy window");

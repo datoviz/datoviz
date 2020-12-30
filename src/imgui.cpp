@@ -101,7 +101,7 @@ void vkl_imgui_frame(VklCanvas* canvas, VklCommands* cmds, uint32_t cmd_idx)
     // ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(),
     // ImGuiDockNodeFlags_PassthruCentralNode);
 
-    ImGuiIO& io = ImGui::GetIO();
+    // ImGuiIO& io = ImGui::GetIO();
     int flags = 0;
 
     ImGui::Begin("Hello", NULL, flags);

@@ -185,7 +185,8 @@ static void _presend(VklCanvas* canvas, VklPrivateEvent ev)
     // log_debug("canvas frame %d, swapchain idx %d", canvas->frame_idx, idx);
 
     vkl_cmd_begin(cmds, idx);
-    vkl_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, &canvas->framebuffers);
+    vkl_cmd_begin_renderpass(
+        cmds, idx, &canvas->overlay_renderpass, &canvas->overlay_framebuffers);
     vkl_imgui_frame(canvas, cmds, idx);
     vkl_cmd_end_renderpass(cmds, idx);
     vkl_cmd_end(cmds, idx);

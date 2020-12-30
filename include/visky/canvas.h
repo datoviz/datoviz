@@ -545,6 +545,7 @@ struct VklCanvas
     VklSwapchain swapchain;
     VklImages depth_image;
     VklFramebuffers framebuffers;
+    VklFramebuffers overlay_framebuffers;
     VklSubmit submit;
 
     uint32_t cur_frame; // current frame within the images in flight
@@ -557,6 +558,7 @@ struct VklCanvas
 
     // Synchronization events.
     VklRenderpass renderpass;
+    VklRenderpass overlay_renderpass;
     VklSemaphores sem_img_available;
     VklSemaphores sem_render_finished;
     VklSemaphores* present_semaphores;
