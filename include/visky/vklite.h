@@ -25,6 +25,9 @@ BEGIN_INCL_NO_WARN
 #include <cglm/struct.h>
 END_INCL_NO_WARN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
 TODO later
@@ -1301,5 +1304,8 @@ VKY_EXPORT void vkl_cmd_push(
 VKY_EXPORT void vkl_context_destroy(VklContext* context);
 
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

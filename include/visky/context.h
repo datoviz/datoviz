@@ -9,6 +9,10 @@ BEGIN_INCL_NO_WARN
 #include "../external/stb_image.h"
 END_INCL_NO_WARN
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 
 /*************************************************************************************************/
@@ -131,7 +135,7 @@ struct VklFifo
     pthread_mutex_t lock;
     pthread_cond_t cond;
 
-    _Atomic bool is_processing;
+    atomic(bool, is_processing);
 };
 
 
@@ -393,9 +397,8 @@ static VklTexture* _font_texture(VklContext* ctx, VklFontAtlas* atlas)
     ASSERT(atlas != NULL);
     ASSERT(atlas->font_texture != NULL);
 
-    VklTexture* texture = vkl_ctx_texture(
-        ctx, 2, (uvec3){(uint32_t)atlas->width, (uint32_t)atlas->height, 1},
-        VK_FORMAT_R8G8B8A8_UNORM);
+    uvec3 shape = {(uint32_t)atlas->width, (uint32_t)atlas->height, 1};
+    VklTexture* texture = vkl_ctx_texture(ctx, 2, shape, VK_FORMAT_R8G8B8A8_UNORM);
     // NOTE: the font texture must have LINEAR filter! otherwise no antialiasing
     vkl_texture_filter(texture, VKL_FILTER_MAX, VK_FILTER_LINEAR);
     vkl_texture_filter(texture, VKL_FILTER_MIN, VK_FILTER_LINEAR);
@@ -447,5 +450,9 @@ static void vkl_font_atlas_destroy(VklFontAtlas* atlas)
 }
 
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

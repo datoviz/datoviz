@@ -546,22 +546,22 @@ static void _refill_canvas(VklCanvas* canvas, uint32_t img_idx)
         ev.u.rf.cmds[k++] = &canvas->cmds_render;
     }
 
-    // Fill the active command buffers for the RENDER queue.
+    // // Fill the active command buffers for the RENDER queue.
     uint32_t img_count = canvas->cmds_render.count;
-    VklCommands* cmds = vkl_container_iter(&canvas->commands);
-    while (cmds != NULL)
-    {
-        ASSERT(cmds != NULL);
-        if (cmds->obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        if (cmds->queue_idx == VKL_DEFAULT_QUEUE_RENDER &&
-            cmds->obj.status >= VKL_OBJECT_STATUS_INIT)
-        {
-            ev.u.rf.cmds[k++] = cmds;
-            img_count = cmds->count;
-        }
-        cmds = vkl_container_iter(&canvas->commands);
-    }
+    // VklCommands* cmds = vkl_container_iter(&canvas->commands);
+    // while (cmds != NULL)
+    // {
+    //     ASSERT(cmds != NULL);
+    //     if (cmds->obj.status == VKL_OBJECT_STATUS_NONE)
+    //         break;
+    //     if (cmds->queue_idx == VKL_DEFAULT_QUEUE_RENDER &&
+    //         cmds->obj.status >= VKL_OBJECT_STATUS_INIT)
+    //     {
+    //         ev.u.rf.cmds[k++] = cmds;
+    //         img_count = cmds->count;
+    //     }
+    //     cmds = vkl_container_iter(&canvas->commands);
+    // }
 
     ASSERT(k > 0);
     ASSERT(img_count > 0);
@@ -1903,18 +1903,18 @@ void vkl_canvas_frame_submit(VklCanvas* canvas)
     if (canvas->cmds_render.obj.status == VKL_OBJECT_STATUS_CREATED)
         vkl_submit_commands(s, &canvas->cmds_render);
 
-    // Extra render commands.
-    VklCommands* cmds = vkl_container_iter(&canvas->commands);
-    while (cmds != NULL)
-    {
-        if (cmds->obj.status == VKL_OBJECT_STATUS_NONE)
-            break;
-        if (cmds->obj.status == VKL_OBJECT_STATUS_INACTIVE)
-            continue;
-        if (cmds->queue_idx == VKL_DEFAULT_QUEUE_RENDER)
-            vkl_submit_commands(s, cmds);
-        cmds = vkl_container_iter(&canvas->commands);
-    }
+    // // Extra render commands.
+    // VklCommands* cmds = vkl_container_iter(&canvas->commands);
+    // while (cmds != NULL)
+    // {
+    //     if (cmds->obj.status == VKL_OBJECT_STATUS_NONE)
+    //         break;
+    //     if (cmds->obj.status == VKL_OBJECT_STATUS_INACTIVE)
+    //         continue;
+    //     if (cmds->queue_idx == VKL_DEFAULT_QUEUE_RENDER)
+    //         vkl_submit_commands(s, cmds);
+    //     cmds = vkl_container_iter(&canvas->commands);
+    // }
     if (s->commands_count == 0)
     {
         log_error("no recorded command buffers");

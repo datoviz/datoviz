@@ -1,6 +1,15 @@
 #ifndef VKY_COMMON_HEADER
 #define VKY_COMMON_HEADER
 
+// Atomic macro, for both C++ and C
+#ifndef __cplusplus
+#include <stdatomic.h>
+#define atomic(t, x) _Atomic t x
+#else
+#include <atomic>
+#define atomic(t, x) std::atomic<t> x
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

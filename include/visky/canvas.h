@@ -1,15 +1,14 @@
 #ifndef VKL_CANVAS_HEADER
 #define VKL_CANVAS_HEADER
 
-#ifndef __STDC_NO_ATOMICS__
-#include <stdatomic.h>
-#endif
-
-#include <stdatomic.h>
-
 #include "../include/visky/context.h"
 #include "keycode.h"
 #include "vklite.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 
 /*************************************************************************************************/
@@ -537,8 +536,8 @@ struct VklCanvas
 
     // This thread-safe variable is used by the background thread to
     // safely communicate a status change of the canvas
-    _Atomic VklObjectStatus cur_status;
-    _Atomic VklObjectStatus next_status;
+    atomic(VklObjectStatus, cur_status);
+    atomic(VklObjectStatus, next_status);
 
     VklWindow* window;
 
@@ -593,7 +592,7 @@ struct VklCanvas
     VklFifo event_queue;
     VklEvent events[VKL_MAX_FIFO_CAPACITY];
     VklThread event_thread;
-    _Atomic VklEventType event_processing;
+    atomic(VklEventType, event_processing);
     VklMouse mouse;
     VklKeyboard keyboard;
 
@@ -826,5 +825,23 @@ VKY_EXPORT void vkl_canvas_frame_submit(VklCanvas* canvas);
 VKY_EXPORT void vkl_app_run(VklApp* app, uint64_t frame_count);
 
 
+
+/*************************************************************************************************/
+/*  GUI                                                                                          */
+/*************************************************************************************************/
+
+// TODO: move in new gui.h/c
+
+VKY_EXPORT void vkl_imgui_init(VklCanvas* canvas);
+
+VKY_EXPORT void vkl_imgui_frame(VklCanvas* canvas, VklCommands* cmds, uint32_t cmd_idx);
+
+VKY_EXPORT void vkl_imgui_destroy();
+
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
