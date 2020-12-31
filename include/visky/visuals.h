@@ -53,6 +53,7 @@ typedef enum
     VKL_PROP_MODEL,
     VKL_PROP_VIEW,
     VKL_PROP_PROJ,
+    VKL_PROP_TIME,
 } VklPropType;
 
 

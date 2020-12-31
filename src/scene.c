@@ -249,6 +249,10 @@ static void _upload_mvp(VklCanvas* canvas, VklPrivateEvent ev)
             // Multiple interacts not yet supported.
             ASSERT(j == 0);
             interact = &controller->interacts[j];
+
+            // NOTE: update MVP.time here.
+            interact->mvp.time = canvas->clock.elapsed;
+
             // NOTE: we need to update the uniform buffer at every frame
             br = &panel->br_mvp;
 

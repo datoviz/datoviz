@@ -132,6 +132,7 @@ struct VklMVP
     mat4 model;
     mat4 view;
     mat4 proj;
+    float time;
 };
 
 
