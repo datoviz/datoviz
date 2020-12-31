@@ -846,6 +846,9 @@ _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
     {
         canvas->fps = 60;
         vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, .25, _fps, NULL);
+
+        if (((canvas->flags >> 1) & VKL_CANVAS_FLAGS_FPS) != 0)
+            vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_IMGUI, 0, vkl_imgui_callback_fps, NULL);
     }
 
     return canvas;

@@ -48,6 +48,7 @@ typedef enum
 {
     VKL_CANVAS_FLAGS_NONE = 0x0000,
     VKL_CANVAS_FLAGS_IMGUI = 0x0001,
+    VKL_CANVAS_FLAGS_FPS = 0x0003, // NOTE: 1 bit for ImGUI, 1 bit for FPS
 } VklCanvasFlags;
 
 

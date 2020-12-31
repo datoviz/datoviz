@@ -132,7 +132,7 @@ int test_scene_axes(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, VKL_CANVAS_FLAGS_FPS);
     vkl_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});
     VklContext* ctx = gpu->context;
     ASSERT(ctx != NULL);

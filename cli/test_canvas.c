@@ -182,15 +182,12 @@ int test_canvas_3(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, VKL_CANVAS_FLAGS_IMGUI);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     AT(canvas != NULL);
 
     TestVisual visual = {0};
     _make_triangle2(canvas, &visual, "");
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_refill, &visual);
-
-    // ImGUI callback.
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_IMGUI, 0, vkl_imgui_callback_fps, NULL);
 
     vkl_app_run(app, N_FRAMES);
     vkl_graphics_destroy(&visual.graphics);
