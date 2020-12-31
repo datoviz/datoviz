@@ -662,8 +662,7 @@ VKY_EXPORT VklCanvas* vkl_canvas_offscreen(VklGpu* gpu, uint32_t width, uint32_t
 
 VKY_EXPORT void vkl_canvas_recreate(VklCanvas* canvas);
 
-VKY_EXPORT VklCommands*
-vkl_canvas_commands(VklCanvas* canvas, uint32_t queue_idx, uint32_t group_id, uint32_t id);
+VKY_EXPORT VklCommands* vkl_canvas_commands(VklCanvas* canvas, uint32_t queue_idx, uint32_t count);
 
 
 

@@ -159,5 +159,79 @@ int test_scene_axes(TestContext* context)
 
     vkl_app_run(app, N_FRAMES);
     vkl_scene_destroy(scene);
+    FREE(pos);
+    FREE(color);
+    TEST_END
+}
+
+
+
+static void _logistic(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    ASSERT(canvas != NULL);
+    VklCommands* cmds = ev.user_data;
+    ASSERT(cmds != NULL);
+    vkl_queue_wait(canvas->gpu, VKL_DEFAULT_QUEUE_RENDER);
+    vkl_cmd_submit_sync(cmds, 0);
+    vkl_queue_wait(canvas->gpu, VKL_DEFAULT_QUEUE_COMPUTE);
+}
+
+int test_scene_logistic(TestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, VKL_CANVAS_FLAGS_FPS);
+    vkl_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});
+    VklContext* ctx = gpu->context;
+    ASSERT(ctx != NULL);
+
+    VklScene* scene = vkl_scene(canvas, 1, 1);
+    VklPanel* panel = vkl_scene_panel(scene, 0, 0, VKL_CONTROLLER_PANZOOM, 0);
+
+    // Markers.
+    VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_MARKER, 0);
+
+    const uint32_t N = 1000000;
+    vec3* pos = calloc(N, sizeof(vec3));
+    cvec4* color = calloc(N, sizeof(cvec4));
+    for (uint32_t i = 0; i < N; i++)
+    {
+        pos[i][0] = -1 + 2 * i / (float)(N - 1);
+        pos[i][1] = -1 + 2 * rand_float();
+        vkl_colormap_scale(VKL_CMAP_HSV, i, 0, N, color[i]);
+        color[i][3] = 20;
+    }
+
+    vkl_visual_data(visual, VKL_PROP_POS, 0, N, pos);
+    vkl_visual_data(visual, VKL_PROP_COLOR, 0, N, color);
+    float param = 2.0f;
+    vkl_visual_data(visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
+
+    // Create compute object.
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/test_logistic.comp.spv", SPIRV_DIR);
+    VklCompute* compute = vkl_ctx_compute(gpu->context, path);
+    vkl_compute_slot(compute, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+    vkl_compute_push(compute, 0, sizeof(N), VK_SHADER_STAGE_COMPUTE_BIT);
+
+    VklBindings bindings = vkl_bindings(&compute->slots, 1);
+    VklSource* source = vkl_bake_source(visual, VKL_SOURCE_TYPE_VERTEX, 0);
+    vkl_visual_update(visual, panel->viewport, (VklDataCoords){0}, NULL);
+    vkl_bindings_buffer(&bindings, 0, source->u.br);
+    vkl_bindings_update(&bindings);
+    vkl_compute_bindings(compute, &bindings);
+    vkl_compute_create(compute);
+
+    VklCommands* cmds = vkl_canvas_commands(canvas, VKL_DEFAULT_QUEUE_COMPUTE, 1);
+    vkl_cmd_begin(cmds, 0);
+    vkl_cmd_push(cmds, 0, &compute->slots, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(N), &N);
+    vkl_cmd_compute(cmds, 0, compute, (uvec3){N, 1, 1});
+    vkl_cmd_end(cmds, 0);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1. / 30, _logistic, cmds);
+
+    vkl_app_run(app, N_FRAMES);
+    vkl_compute_destroy(compute);
+    vkl_bindings_destroy(&bindings);
+    vkl_scene_destroy(scene);
     TEST_END
 }

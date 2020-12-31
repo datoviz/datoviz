@@ -154,7 +154,8 @@ void vkl_imgui_init(VklCanvas* canvas)
     vkl_commands_destroy(&cmd);
 
     // PRE_SEND callback that will call the IMGUI callbacks.
-    VklCommands* cmds = vkl_canvas_commands(canvas, VKL_DEFAULT_QUEUE_RENDER, 0, 0);
+    VklCommands* cmds =
+        vkl_canvas_commands(canvas, VKL_DEFAULT_QUEUE_RENDER, canvas->swapchain.img_count);
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_PRE_SEND, 0, _presend, cmds);
 }
 

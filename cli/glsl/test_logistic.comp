@@ -1,0 +1,22 @@
+#version 450
+
+#define WORKGROUP_SIZE 32
+
+layout (local_size_x=WORKGROUP_SIZE, local_size_y=1, local_size_z=1) in;
+
+layout(push_constant) uniform push {
+    int count;
+} u_item_count;
+
+layout(binding = 0) buffer buf {
+   vec3 vert[];
+};
+
+void main() {
+    if(gl_GlobalInvocationID.x >= u_item_count.count)
+        return;
+    vec3 pos = vert[gl_GlobalInvocationID.x];
+    float r = 2.5 + 1.5 * .5 * (1 + pos.x);
+    float v = .5 * (1 + pos.y);
+    vert[gl_GlobalInvocationID.x].y = - 1 + 2 * r * v * (1 - v);
+}

@@ -814,6 +814,9 @@ VklController vkl_controller_builtin(VklPanel* panel, VklControllerType type, in
     switch (type)
     {
 
+    case VKL_CONTROLLER_NONE:
+        break;
+
     case VKL_CONTROLLER_PANZOOM:
         vkl_controller_interact(&controller, VKL_INTERACT_PANZOOM);
         break;

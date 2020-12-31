@@ -111,8 +111,9 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_visuals_axes_2D),     //
 
     // scene
-    CASE_FIXTURE_NONE(test_scene_1),    //
-    CASE_FIXTURE_NONE(test_scene_axes), //
+    CASE_FIXTURE_NONE(test_scene_1),        //
+    CASE_FIXTURE_NONE(test_scene_axes),     //
+    CASE_FIXTURE_NONE(test_scene_logistic), //
 
 };
 static uint32_t N_TESTS = sizeof(TEST_CASES) / sizeof(TestCase);

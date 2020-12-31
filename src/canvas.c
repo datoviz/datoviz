@@ -930,14 +930,11 @@ void vkl_canvas_recreate(VklCanvas* canvas)
 
 
 
-VklCommands*
-vkl_canvas_commands(VklCanvas* canvas, uint32_t queue_idx, uint32_t group_id, uint32_t id)
+VklCommands* vkl_canvas_commands(VklCanvas* canvas, uint32_t queue_idx, uint32_t count)
 {
     ASSERT(canvas != NULL);
     VklCommands* commands = vkl_container_alloc(&canvas->commands);
-    *commands = vkl_commands(canvas->gpu, queue_idx, canvas->swapchain.img_count);
-    commands->obj.group_id = group_id;
-    commands->obj.id = id;
+    *commands = vkl_commands(canvas->gpu, queue_idx, count);
     return commands;
 }
 
