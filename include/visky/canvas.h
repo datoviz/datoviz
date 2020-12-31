@@ -44,6 +44,14 @@ extern "C" {
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
+typedef enum
+{
+    VKL_CANVAS_FLAGS_NONE = 0x0000,
+    VKL_CANVAS_FLAGS_IMGUI = 0x0001,
+} VklCanvasFlags;
+
+
+
 /**
  * Private event types.
  *
@@ -533,6 +541,7 @@ struct VklCanvas
 
     bool offscreen;
     bool overlay;
+    int flags;
     void* user_data;
 
     // This thread-safe variable is used by the background thread to

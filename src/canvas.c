@@ -687,7 +687,7 @@ static int _destroy_callbacks(VklCanvas* canvas)
 /*************************************************************************************************/
 
 static VklCanvas*
-_canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overlay)
+_canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overlay, int flags)
 {
     ASSERT(gpu != NULL);
     VklApp* app = gpu->app;
@@ -706,6 +706,7 @@ _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
     canvas->gpu = gpu;
     canvas->offscreen = offscreen;
     canvas->overlay = overlay;
+    canvas->flags = flags;
 
     // Initialize the canvas local clock.
     _clock_init(&canvas->clock);
@@ -864,8 +865,8 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height, int flags)
 {
     ASSERT(gpu != NULL);
     bool offscreen = gpu->app->backend == VKL_BACKEND_GLFW ? false : true;
-    bool overlay = false; // TODO
-    return _canvas(gpu, width, height, offscreen, overlay);
+    bool overlay = (flags & VKL_CANVAS_FLAGS_IMGUI) > 0;
+    return _canvas(gpu, width, height, offscreen, overlay, flags);
 }
 
 
@@ -954,7 +955,7 @@ vkl_canvas_commands(VklCanvas* canvas, uint32_t queue_idx, uint32_t group_id, ui
 VklCanvas* vkl_canvas_offscreen(VklGpu* gpu, uint32_t width, uint32_t height)
 {
     // NOTE: no overlay for now in offscreen canvas
-    return _canvas(gpu, width, height, true, false);
+    return _canvas(gpu, width, height, true, false, 0);
 }
 
 
