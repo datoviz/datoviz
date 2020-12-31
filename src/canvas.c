@@ -20,8 +20,8 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static VklRenderpass default_renderpass(
-    VklGpu* gpu, VkClearColorValue clear_color_value, VkFormat format, bool has_overlay)
+static VklRenderpass
+default_renderpass(VklGpu* gpu, VkClearColorValue clear_color_value, VkFormat format, bool overlay)
 {
     VklRenderpass renderpass = vkl_renderpass(gpu);
 
@@ -35,14 +35,12 @@ static VklRenderpass default_renderpass(
     vkl_renderpass_clear(&renderpass, clear_depth);
 
     VkImageLayout layout =
-        has_overlay ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        overlay ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
     // Color attachment.
     vkl_renderpass_attachment(
         &renderpass, 0, //
         VKL_RENDERPASS_ATTACHMENT_COLOR, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-    // has_overlay ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-    //             : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     vkl_renderpass_attachment_layout(&renderpass, 0, VK_IMAGE_LAYOUT_UNDEFINED, layout);
     vkl_renderpass_attachment_ops(
         &renderpass, 0, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
@@ -707,6 +705,7 @@ _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
     canvas->app = app;
     canvas->gpu = gpu;
     canvas->offscreen = offscreen;
+    canvas->overlay = overlay;
 
     // Initialize the canvas local clock.
     _clock_init(&canvas->clock);
@@ -861,11 +860,11 @@ _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
 
 
 
-VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
+VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height, int flags)
 {
     ASSERT(gpu != NULL);
     bool offscreen = gpu->app->backend == VKL_BACKEND_GLFW ? false : true;
-    bool overlay = gpu->app->has_overlay;
+    bool overlay = false; // TODO
     return _canvas(gpu, width, height, offscreen, overlay);
 }
 
@@ -877,7 +876,6 @@ void vkl_canvas_recreate(VklCanvas* canvas)
     VklBackend backend = canvas->app->backend;
     VklWindow* window = canvas->window;
     VklGpu* gpu = canvas->gpu;
-    VklApp* app = gpu->app;
     VklSwapchain* swapchain = &canvas->swapchain;
     VklFramebuffers* framebuffers = &canvas->framebuffers;
     VklRenderpass* renderpass = &canvas->renderpass;
@@ -905,7 +903,7 @@ void vkl_canvas_recreate(VklCanvas* canvas)
 
     // Destroy swapchain resources.
     vkl_framebuffers_destroy(&canvas->framebuffers);
-    if (app->has_overlay)
+    if (canvas->overlay)
         vkl_framebuffers_destroy(&canvas->framebuffers_overlay);
     vkl_images_destroy(&canvas->depth_image);
     vkl_images_destroy(canvas->swapchain.images);
@@ -928,7 +926,7 @@ void vkl_canvas_recreate(VklCanvas* canvas)
     ASSERT(framebuffers->attachments[0]->width == width);
     ASSERT(framebuffers->attachments[0]->height == height);
     vkl_framebuffers_create(framebuffers, renderpass);
-    if (app->has_overlay)
+    if (canvas->overlay)
         vkl_framebuffers_create(framebuffers_overlay, renderpass_overlay);
 
     _refill_canvas(canvas, UINT32_MAX);
@@ -2216,7 +2214,6 @@ void vkl_canvas_destroy(VklCanvas* canvas)
         log_trace("skip destruction of already-destroyed canvas");
         return;
     }
-    VklApp* app = canvas->app;
     log_trace("destroying canvas");
 
     // DEBUG: only in non offscreen mode
@@ -2251,7 +2248,7 @@ void vkl_canvas_destroy(VklCanvas* canvas)
     // Destroy the renderpasses.
     log_trace("canvas destroy renderpass");
     vkl_renderpass_destroy(&canvas->renderpass);
-    if (app->has_overlay)
+    if (canvas->overlay)
         vkl_renderpass_destroy(&canvas->renderpass_overlay);
 
     // Destroy the swapchain.
@@ -2261,7 +2258,7 @@ void vkl_canvas_destroy(VklCanvas* canvas)
     // Destroy the framebuffers.
     log_trace("canvas destroy framebuffers");
     vkl_framebuffers_destroy(&canvas->framebuffers);
-    if (app->has_overlay)
+    if (canvas->overlay)
         vkl_framebuffers_destroy(&canvas->framebuffers_overlay);
 
     // Destroy the window.

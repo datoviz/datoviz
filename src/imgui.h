@@ -16,7 +16,7 @@ VKY_EXPORT void vkl_imgui_init(VklCanvas* canvas);
 
 VKY_EXPORT void vkl_imgui_frame(VklCanvas* canvas, VklCommands* cmds, uint32_t cmd_idx);
 
-VKY_EXPORT void vkl_imgui_destroy(VklApp* app);
+VKY_EXPORT void vkl_imgui_destroy();
 
 
 

@@ -103,7 +103,7 @@ static void _common_bindings(TestGraphics* tg)
 #define INIT_GRAPHICS(type)                                                                       \
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);                                                      \
     VklGpu* gpu = vkl_gpu(app, 0);                                                                \
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);                                 \
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);                              \
     VklGraphics* graphics = vkl_graphics_builtin(canvas, type, 0);
 
 #define BEGIN_DATA(type, n, user_data)                                                            \

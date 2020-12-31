@@ -38,7 +38,7 @@ int test_interact_1(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
 
     VklMouse mouse = vkl_mouse();
     VklKeyboard keyboard = vkl_keyboard();
@@ -128,7 +128,7 @@ int test_interact_panzoom(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
 
     TestScene scene = {0};
     scene.interact = vkl_interact_builtin(canvas, VKL_INTERACT_PANZOOM);
@@ -158,7 +158,7 @@ int test_interact_arcball(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
 
     TestScene scene = {0};
     scene.interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
@@ -188,7 +188,7 @@ int test_interact_camera(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
 
     TestScene scene = {0};
     scene.interact = vkl_interact_builtin(canvas, VKL_INTERACT_FLY);

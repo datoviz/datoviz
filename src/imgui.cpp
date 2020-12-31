@@ -64,6 +64,8 @@ static void _imgui_init(VklCanvas* canvas)
 
 static void _imgui_destroy()
 {
+    if (ImGui::GetCurrentContext() == NULL)
+        return;
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
@@ -73,7 +75,7 @@ static void _imgui_destroy()
 
 void vkl_imgui_init(VklCanvas* canvas)
 {
-    if (!canvas->app->has_overlay)
+    if (!canvas->overlay)
         return;
     _imgui_init(canvas);
     ImGuiIO& io = ImGui::GetIO();
@@ -100,7 +102,7 @@ void vkl_imgui_init(VklCanvas* canvas)
 
 void vkl_imgui_frame(VklCanvas* canvas, VklCommands* cmds, uint32_t cmd_idx)
 {
-    if (!canvas->app->has_overlay)
+    if (!canvas->overlay)
         return;
     // Start the Dear ImGui frame
     ImGui_ImplVulkan_NewFrame();
@@ -122,9 +124,4 @@ void vkl_imgui_frame(VklCanvas* canvas, VklCommands* cmds, uint32_t cmd_idx)
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmds->cmds[cmd_idx]);
 }
 
-void vkl_imgui_destroy(VklApp* app)
-{
-    if (!app->has_overlay)
-        return;
-    _imgui_destroy();
-}
+void vkl_imgui_destroy() { _imgui_destroy(); }

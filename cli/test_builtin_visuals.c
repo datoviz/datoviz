@@ -64,7 +64,7 @@ static void _common_data(VklVisual* visual)
 #define INIT                                                                                      \
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);                                                      \
     VklGpu* gpu = vkl_gpu(app, 0);                                                                \
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);                                 \
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);                              \
     VklContext* ctx = gpu->context;                                                               \
     ASSERT(ctx != NULL);
 

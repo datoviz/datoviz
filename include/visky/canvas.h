@@ -532,6 +532,7 @@ struct VklCanvas
     VklGpu* gpu;
 
     bool offscreen;
+    bool overlay;
     void* user_data;
 
     // This thread-safe variable is used by the background thread to
@@ -617,7 +618,7 @@ struct VklCanvas
 // - dequeue event queue (wait)
 // - switch the event type
 // - call the relevant event callbacks
-VKY_EXPORT VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height);
+VKY_EXPORT VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height, int flags);
 
 VKY_EXPORT VklCanvas* vkl_canvas_offscreen(VklGpu* gpu, uint32_t width, uint32_t height);
 

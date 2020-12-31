@@ -39,7 +39,7 @@ int test_canvas_1(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     ASSERT(canvas->window != NULL);
     ASSERT(canvas->app != NULL);
     ASSERT(canvas->window->app != NULL);
@@ -73,7 +73,7 @@ int test_canvas_1(TestContext* context)
 
     // Second canvas.
     ASSERT(canvas->window->app != NULL);
-    VklCanvas* canvas2 = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    VklCanvas* canvas2 = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     ASSERT(canvas->window->app != NULL);
     ASSERT(canvas2->window != NULL);
     ASSERT(canvas2->app != NULL);
@@ -123,7 +123,7 @@ int test_canvas_2(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
 
     vkl_event_callback(canvas, VKL_EVENT_INIT, 0, _init_callback, NULL);
     vkl_event_callback(canvas, VKL_EVENT_KEY, 0, _key_callback, NULL);
@@ -180,7 +180,7 @@ static void _triangle_refill(VklCanvas* canvas, VklPrivateEvent ev)
 static void _presend(VklCanvas* canvas, VklPrivateEvent ev)
 {
     ASSERT(canvas != NULL);
-    if (!canvas->app->has_overlay)
+    if (!canvas->overlay)
         return;
     VklCommands* cmds = ev.user_data;
     ASSERT(cmds != NULL);
@@ -202,9 +202,8 @@ static void _presend(VklCanvas* canvas, VklPrivateEvent ev)
 int test_canvas_3(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
-    app->has_overlay = true;
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     AT(canvas != NULL);
 
     TestVisual visual = {0};
@@ -278,7 +277,7 @@ int test_canvas_4(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     AT(canvas != NULL);
 
     TestVisual visual = {0};
@@ -360,7 +359,7 @@ int test_canvas_5(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     AT(canvas != NULL);
 
     TestVisual visual = {0};
@@ -430,7 +429,7 @@ int test_canvas_6(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     AT(canvas != NULL);
     uint32_t img_count = canvas->swapchain.img_count;
     ASSERT(img_count > 0);
@@ -523,7 +522,7 @@ int test_canvas_7(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     AT(canvas != NULL);
 
     TestVisual visual = {0};
@@ -581,7 +580,7 @@ int test_canvas_8(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     AT(canvas != NULL);
 
     TestVisual visual = {0};
@@ -738,7 +737,7 @@ int test_canvas_particles(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     AT(canvas != NULL);
 
     // Sync mode only to set things up.
@@ -891,7 +890,7 @@ int test_canvas_offscreen(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_OFFSCREEN);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _frame_callback, NULL);
 
@@ -921,7 +920,7 @@ int test_canvas_screencast(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
 
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _cursor_callback, NULL);
     vkl_event_callback(canvas, VKL_EVENT_SCREENCAST, 0, _screencast_callback, NULL);

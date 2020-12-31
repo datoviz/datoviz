@@ -18,7 +18,7 @@ int test_visuals_1(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     VklContext* ctx = gpu->context;
     ASSERT(ctx != NULL);
     VklVisual visual = vkl_visual(canvas);
@@ -94,7 +94,7 @@ int test_visuals_2(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     VklContext* ctx = gpu->context;
     ASSERT(ctx != NULL);
     VklVisual visual = vkl_visual(canvas);
@@ -169,7 +169,7 @@ int test_visuals_3(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     VklContext* ctx = gpu->context;
     ASSERT(ctx != NULL);
     VklVisual visual = vkl_visual(canvas);
@@ -257,7 +257,7 @@ int test_visuals_4(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     VklContext* ctx = gpu->context;
     ASSERT(ctx != NULL);
     VklVisual visual = vkl_visual(canvas);
