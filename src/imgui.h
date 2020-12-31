@@ -3,18 +3,25 @@
 
 #include "../include/visky/canvas.h"
 
-BEGIN_INCL_NO_WARN
-#include "../external/imgui/backends/imgui_impl_glfw.h"
-#include "../external/imgui/backends/imgui_impl_vulkan.h"
-#include "../external/imgui/imgui.h"
-END_INCL_NO_WARN
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 /*************************************************************************************************/
 /*  ImGUI                                                                                        */
 /*************************************************************************************************/
 
+VKY_EXPORT void vkl_imgui_init(VklCanvas* canvas);
 
+VKY_EXPORT void vkl_imgui_frame(VklCanvas* canvas, VklCommands* cmds, uint32_t cmd_idx);
+
+VKY_EXPORT void vkl_imgui_destroy();
+
+
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -545,7 +545,7 @@ struct VklCanvas
     VklSwapchain swapchain;
     VklImages depth_image;
     VklFramebuffers framebuffers;
-    VklFramebuffers overlay_framebuffers;
+    VklFramebuffers framebuffers_overlay; // used by the overlay renderpass
     VklSubmit submit;
 
     uint32_t cur_frame; // current frame within the images in flight
@@ -556,9 +556,11 @@ struct VklCanvas
     // calling the REFILL callbackks
     bool img_updated[VKL_MAX_SWAPCHAIN_IMAGES];
 
+    // Renderpasses.
+    VklRenderpass renderpass;         // default renderpass
+    VklRenderpass renderpass_overlay; // GUI overlay renderpass
+
     // Synchronization events.
-    VklRenderpass renderpass;
-    VklRenderpass overlay_renderpass;
     VklSemaphores sem_img_available;
     VklSemaphores sem_render_finished;
     VklSemaphores* present_semaphores;
@@ -825,20 +827,6 @@ VKY_EXPORT void vkl_canvas_frame(VklCanvas* canvas);
 VKY_EXPORT void vkl_canvas_frame_submit(VklCanvas* canvas);
 
 VKY_EXPORT void vkl_app_run(VklApp* app, uint64_t frame_count);
-
-
-
-/*************************************************************************************************/
-/*  GUI                                                                                          */
-/*************************************************************************************************/
-
-// TODO: move in new gui.h/c
-
-VKY_EXPORT void vkl_imgui_init(VklCanvas* canvas);
-
-VKY_EXPORT void vkl_imgui_frame(VklCanvas* canvas, VklCommands* cmds, uint32_t cmd_idx);
-
-VKY_EXPORT void vkl_imgui_destroy();
 
 
 

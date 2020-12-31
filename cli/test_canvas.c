@@ -1,6 +1,7 @@
 #include "test_canvas.h"
 #include "../include/visky/canvas.h"
 #include "../include/visky/context.h"
+#include "../src/imgui.h"
 #include "../src/vklite_utils.h"
 #include "utils.h"
 
@@ -186,7 +187,7 @@ static void _presend(VklCanvas* canvas, VklPrivateEvent ev)
 
     vkl_cmd_begin(cmds, idx);
     vkl_cmd_begin_renderpass(
-        cmds, idx, &canvas->overlay_renderpass, &canvas->overlay_framebuffers);
+        cmds, idx, &canvas->renderpass_overlay, &canvas->framebuffers_overlay);
     vkl_imgui_frame(canvas, cmds, idx);
     vkl_cmd_end_renderpass(cmds, idx);
     vkl_cmd_end(cmds, idx);
