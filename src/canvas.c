@@ -657,7 +657,7 @@ static int _destroy_callbacks(VklCanvas* canvas)
 
 static void _fps(VklCanvas* canvas, VklPrivateEvent ev)
 {
-    canvas->fps = canvas->frame_idx - canvas->clock.checkpoint_value;
+    canvas->fps = (canvas->frame_idx - canvas->clock.checkpoint_value) / ev.u.t.interval;
     canvas->clock.checkpoint_value = canvas->frame_idx;
 }
 
@@ -843,7 +843,10 @@ _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
     }
 
     // FPS callback.
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
+    {
+        canvas->fps = 60;
+        vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, .25, _fps, NULL);
+    }
 
     return canvas;
 }

@@ -158,12 +158,78 @@ void vkl_imgui_init(VklCanvas* canvas)
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_PRE_SEND, 0, _presend, cmds);
 }
 
+void vkl_imgui_begin(const char* title, VklGuiStyle style)
+{
+    ASSERT(title != NULL);
+    ASSERT(strlen(title) > 0);
+
+    ImGuiIO& io = ImGui::GetIO();
+    int flags = 0;
+
+    switch (style)
+    {
+
+    case VKL_GUI_STANDARD:
+        flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
+        break;
+
+    case VKL_GUI_PROMPT:
+    {
+        flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar |
+                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNav |
+                ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNavInputs |
+                ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
+                ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing;
+        ImGui::SetNextWindowBgAlpha(0.25f);
+
+        ImVec2 window_pos = ImVec2(0, io.DisplaySize.y);
+        ImVec2 window_pos_pivot = ImVec2(0, 1);
+        ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+
+        // ImVec2 size = ImVec2(io.DisplaySize.x, 30);
+        // ImGui::SetNextWindowSize(size);
+
+        break;
+    }
+
+    case VKL_GUI_FIXED_TL:
+    case VKL_GUI_FIXED_TR:
+    case VKL_GUI_FIXED_LL:
+    case VKL_GUI_FIXED_LR:
+    {
+        flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar |
+                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNav |
+                ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNavInputs |
+                ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
+                ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing;
+        ImGui::SetNextWindowBgAlpha(0.5f);
+
+        float distance = 0;
+        int corner = (int32_t)style - 10; // 0 = TL, 1 = TR, 2 = LL, 3 = LR
+        ASSERT(corner >= 0);
+        ImVec2 window_pos = ImVec2(
+            (corner & 1) ? io.DisplaySize.x - distance : distance,
+            (corner & 2) ? io.DisplaySize.y - distance : distance);
+        ImVec2 window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
+        ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+        break;
+    }
+    default:
+        log_error("unknown GUI style");
+        break;
+    }
+
+    ImGui::Begin(title, NULL, flags);
+}
+
+void vkl_imgui_end() { ImGui::End(); }
+
 void vkl_imgui_callback_fps(VklCanvas* canvas, VklPrivateEvent)
 {
     ASSERT(canvas != NULL);
-    ImGui::Begin("FPS", NULL, 0);
+    vkl_imgui_begin("FPS", VKL_GUI_FIXED_TR);
     ImGui::Text("FPS: %.1f", canvas->fps);
-    ImGui::End();
+    vkl_imgui_end();
 }
 
 void vkl_imgui_destroy()
