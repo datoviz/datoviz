@@ -211,15 +211,12 @@ int test_canvas_3(TestContext* context)
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_refill, &visual);
 
     // ImGUI.
-    vkl_imgui_init(canvas);
     VklCommands* cmds = vkl_canvas_commands(canvas, VKL_DEFAULT_QUEUE_RENDER, 0, 0);
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_PRE_SEND, 0, _presend, cmds);
 
     vkl_app_run(app, N_FRAMES);
-
     vkl_graphics_destroy(&visual.graphics);
     destroy_visual(&visual);
-    vkl_imgui_destroy(app);
     TEST_END
 }
 

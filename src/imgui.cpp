@@ -27,8 +27,9 @@ static void _imgui_dpi(float dpi_factor)
     style.ScaleAllSizes(dpi_factor);
 }
 
-static void _imgui_init(VklCanvas* canvas)
+static void _imgui_init_context()
 {
+    log_debug("initializing Dear ImGui");
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
@@ -37,7 +38,10 @@ static void _imgui_init(VklCanvas* canvas)
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     io.ConfigDockingWithShift = false;
     ImGui::StyleColorsDark();
+}
 
+static void _imgui_enable(VklCanvas* canvas)
+{
     ASSERT(canvas != NULL);
     VklGpu* gpu = canvas->gpu;
     ASSERT(gpu != NULL);
@@ -64,20 +68,52 @@ static void _imgui_init(VklCanvas* canvas)
 
 static void _imgui_destroy()
 {
-    if (ImGui::GetCurrentContext() == NULL)
-        return;
+    log_debug("shutting down Dear ImGui");
     ImGui_ImplVulkan_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 }
 
+/*
+static void _presend(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    ASSERT(canvas != NULL);
+    if (!canvas->overlay)
+        return;
+    VklCommands* cmds = ev.user_data;
+    ASSERT(cmds != NULL);
+    uint32_t idx = canvas->swapchain.img_idx;
+    // log_debug("canvas frame %d, swapchain idx %d", canvas->frame_idx, idx);
 
+    vkl_cmd_begin(cmds, idx);
+    vkl_cmd_begin_renderpass(
+        cmds, idx, &canvas->renderpass_overlay, &canvas->framebuffers_overlay);
+    vkl_imgui_frame(canvas, cmds, idx);
+    vkl_cmd_end_renderpass(cmds, idx);
+    vkl_cmd_end(cmds, idx);
+
+    ASSERT(canvas != NULL);
+    vkl_submit_commands(&canvas->submit, ev.user_data);
+}
+
+
+    // ImGUI.
+    VklCommands* cmds = vkl_canvas_commands(canvas, VKL_DEFAULT_QUEUE_RENDER, 0, 0);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_PRE_SEND, 0, _presend, cmds);
+*/
+
+
+/*************************************************************************************************/
+/*  Dear ImGui functions                                                                         */
+/*************************************************************************************************/
 
 void vkl_imgui_init(VklCanvas* canvas)
 {
-    if (!canvas->overlay)
-        return;
-    _imgui_init(canvas);
+    if (ImGui::GetCurrentContext() == NULL)
+        _imgui_init_context();
+    ASSERT(canvas->overlay);
+
+    _imgui_enable(canvas);
     ImGuiIO& io = ImGui::GetIO();
 
     // TODO: dpi scaling factor
@@ -124,4 +160,9 @@ void vkl_imgui_frame(VklCanvas* canvas, VklCommands* cmds, uint32_t cmd_idx)
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmds->cmds[cmd_idx]);
 }
 
-void vkl_imgui_destroy() { _imgui_destroy(); }
+void vkl_imgui_destroy()
+{
+    if (ImGui::GetCurrentContext() == NULL)
+        return;
+    _imgui_destroy();
+}

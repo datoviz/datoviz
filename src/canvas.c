@@ -1,5 +1,6 @@
 #include "../include/visky/canvas.h"
 #include "../include/visky/context.h"
+#include "../src/imgui.h"
 #include "../src/vklite_utils.h"
 #include <stdlib.h>
 
@@ -696,7 +697,7 @@ _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
     // HACK: create the canvas container here because vklite.c does not know the size of VklCanvas.
     if (app->canvases.capacity == 0)
     {
-        log_debug("create canvases container");
+        log_trace("create canvases container");
         app->canvases =
             vkl_container(VKL_CONTAINER_DEFAULT_COUNT, sizeof(VklCanvas), VKL_OBJECT_TYPE_CANVAS);
     }
@@ -855,6 +856,11 @@ _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
     }
 
     obj_created(&canvas->obj);
+
+    if (overlay)
+    {
+        vkl_imgui_init(canvas);
+    }
 
     return canvas;
 }
@@ -2282,6 +2288,9 @@ void vkl_canvas_destroy(VklCanvas* canvas)
     // Destroy the fences.
     log_trace("canvas destroy fences");
     vkl_fences_destroy(&canvas->fences_render_finished);
+
+    if (canvas->overlay)
+        vkl_imgui_destroy();
 
     obj_destroyed(&canvas->obj);
 }
