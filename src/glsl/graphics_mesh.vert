@@ -23,8 +23,9 @@ layout (location = 3) out vec3 out_triangle;
 void main() {
     gl_Position = transform(pos);
 
-    out_pos = (mvp.model * vec4(pos, 1.0)).xyz;
-    out_normal = (transpose(inverse(mvp.model)) * vec4(normal, 1.0)).xyz;
+    out_pos = to_vulkan((mvp.model * vec4(pos, 1.0))).xyz;
+    out_normal = to_vulkan((transpose(inverse(mvp.model)) * vec4(normal, 1.0))).xyz;
+
     out_uv = uv;
     out_triangle = triangle_coords();
 }

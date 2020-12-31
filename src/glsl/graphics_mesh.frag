@@ -4,16 +4,17 @@
 
 layout (std140, binding = USER_BINDING) uniform Params {
     mat4 lights_pos_0; // lights 0-3
-    mat4 lights_pos_1; // lights 4-7
-    mat4 lights_params_0;
-    mat4 lights_params_1;
+    mat4 lights_params_0; // for each light, coefs for ambient, diffuse, specular
 
     vec4 view_pos;
+    vec4 tex_coefs; // blending coefficients for the textures
 
-    ivec2 tex_size_0;
-    ivec2 tex_size_1;
-    ivec2 tex_size_2;
-    ivec2 tex_size_3;
+    // mat4 lights_pos_1; // TODO: lights 4-7
+    // mat4 lights_params_1;
+    // ivec2 tex_size_0;
+    // ivec2 tex_size_1;
+    // ivec2 tex_size_2;
+    // ivec2 tex_size_3;
 } params;
 
 layout(binding = (USER_BINDING+1)) uniform sampler2D tex_0;
@@ -29,25 +30,45 @@ layout (location = 3) in vec3 in_triangle;
 layout (location = 0) out vec4 out_color;
 
 void main() {
-    vec3 normal = normalize(in_normal);
-    vec3 light_pos = params.lights_pos_0[0].xyz;
-    vec3 light_dir = normalize(light_pos - in_pos);
 
-    // ambient
-    vec3 ambient = vec3(.1);
+    vec3 normal, light_dir, ambient, diffuse, view_dir, reflect_dir, specular, color;
+    vec3 lpar, lpos;
+    vec3 light_color = vec3(1); // TODO
+    float diff, spec;
 
-    // diffuse
-    // if (!gl_FrontFacing) normal = -normal;
-    float diff = max(dot(light_dir, normal), 0.0);
-    vec3 diffuse = diff * vec3(1); // TODO: customizable light color, here white only
+    normal = normalize(in_normal);
+    out_color = vec4(0, 0, 0, 1);
 
-    // specular
-    vec3 view_dir = normalize(params.view_pos.xyz - in_pos);
-    vec3 reflect_dir = reflect(-light_dir, normal);
-    float spec = pow(max(dot(view_dir, reflect_dir), 0.0), 32.0);
-    vec3 specular = spec * vec3(1);
+    // Color.
+    color = vec3(0);
+    color += params.tex_coefs.x * texture(tex_0, in_uv).xyz;
+    color += params.tex_coefs.y * texture(tex_1, in_uv).xyz;
+    color += params.tex_coefs.z * texture(tex_2, in_uv).xyz;
+    color += params.tex_coefs.t * texture(tex_3, in_uv).xyz;
 
-    // total
-    vec3 color = texture(tex_0, in_uv).xyz;
-    out_color = vec4((ambient + diffuse + specular) * color, 1);
+    // Light position and params.
+    for (int i = 0; i < 3; i++) {
+        lpos = params.lights_pos_0[i].xyz;
+        lpar = params.lights_params_0[i].xyz;
+
+        // Light direction.
+        light_dir = normalize(lpos - in_pos);
+
+        // Ambient component.
+        ambient = light_color;
+
+        // Diffuse component.
+        // if (!gl_FrontFacing) normal = -normal;
+        diff = max(dot(light_dir, normal), 0.0);
+        diffuse = diff * light_color;
+
+        // Specular component.
+        view_dir = normalize(params.view_pos.xyz - in_pos);
+        reflect_dir = reflect(-light_dir, normal);
+        spec = pow(max(dot(view_dir, reflect_dir), 0.0), 32.0);
+        specular = spec * light_color;
+
+        // Total color.
+        out_color.xyz += (lpar.x * ambient + lpar.y * diffuse + lpar.z * specular) * color;
+    }
 }

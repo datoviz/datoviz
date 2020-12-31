@@ -595,11 +595,63 @@ int test_graphics_text(TestContext* context)
 /*  Mesh tests                                                                                   */
 /*************************************************************************************************/
 
+static void _graphics_mesh_callback(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    VklGpu* gpu = canvas->gpu;
+    TestGraphics* tg = ev.user_data;
+    vec3 axis;
+    axis[1] = 1;
+    glm_rotate_make(tg->mvp.model, ev.u.t.time, axis);
+    vkl_upload_buffers(gpu->context, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
+}
+
 int test_graphics_mesh(TestContext* context)
 {
     INIT_GRAPHICS(VKL_GRAPHICS_MESH)
 
-    uint32_t nv = 3; // number of vertices
+    // Vertices and indices.
+    float x = .5;
+    // TODO: uv
+    VklGraphicsMeshVertex cube[] = {
+        {{-x, -x, +x}, {0, 0, +1}, {0, 0}}, // front
+        {{+x, -x, +x}, {0, 0, +1}, {0, 0}}, //
+        {{+x, +x, +x}, {0, 0, +1}, {0, 0}}, //
+        {{+x, +x, +x}, {0, 0, +1}, {0, 0}}, //
+        {{-x, +x, +x}, {0, 0, +1}, {0, 0}}, //
+        {{-x, -x, +x}, {0, 0, +1}, {0, 0}}, //
+        {{+x, -x, +x}, {+1, 0, 0}, {0, 0}}, // right
+        {{+x, -x, -x}, {+1, 0, 0}, {0, 0}}, //
+        {{+x, +x, -x}, {+1, 0, 0}, {0, 0}}, //
+        {{+x, +x, -x}, {+1, 0, 0}, {0, 0}}, //
+        {{+x, +x, +x}, {+1, 0, 0}, {0, 0}}, //
+        {{+x, -x, +x}, {+1, 0, 0}, {0, 0}}, //
+        {{-x, +x, -x}, {0, 0, -1}, {0, 0}}, // back
+        {{+x, +x, -x}, {0, 0, -1}, {0, 0}}, //
+        {{+x, -x, -x}, {0, 0, -1}, {0, 0}}, //
+        {{+x, -x, -x}, {0, 0, -1}, {0, 0}}, //
+        {{-x, -x, -x}, {0, 0, -1}, {0, 0}}, //
+        {{-x, +x, -x}, {0, 0, -1}, {0, 0}}, //
+        {{-x, -x, -x}, {-1, 0, 0}, {0, 0}}, // left
+        {{-x, -x, +x}, {-1, 0, 0}, {0, 0}}, //
+        {{-x, +x, +x}, {-1, 0, 0}, {0, 0}}, //
+        {{-x, +x, +x}, {-1, 0, 0}, {0, 0}}, //
+        {{-x, +x, -x}, {-1, 0, 0}, {0, 0}}, //
+        {{-x, -x, -x}, {-1, 0, 0}, {0, 0}}, //
+        {{-x, -x, -x}, {0, -1, 0}, {0, 0}}, // bottom
+        {{+x, -x, -x}, {0, -1, 0}, {0, 0}}, //
+        {{+x, -x, +x}, {0, -1, 0}, {0, 0}}, //
+        {{+x, -x, +x}, {0, -1, 0}, {0, 0}}, //
+        {{-x, -x, +x}, {0, -1, 0}, {0, 0}}, //
+        {{-x, -x, -x}, {0, -1, 0}, {0, 0}}, //
+        {{-x, +x, +x}, {0, +1, 0}, {0, 0}}, // top
+        {{+x, +x, +x}, {0, +1, 0}, {0, 0}}, //
+        {{+x, +x, -x}, {0, +1, 0}, {0, 0}}, //
+        {{+x, +x, -x}, {0, +1, 0}, {0, 0}}, //
+        {{-x, +x, -x}, {0, +1, 0}, {0, 0}}, //
+        {{-x, +x, +x}, {0, +1, 0}, {0, 0}}, //
+    };
+
+    uint32_t nv = sizeof(cube) / sizeof(VklGraphicsMeshVertex);
     uint32_t ni = nv;
 
     TestGraphics tg = {0};
@@ -615,11 +667,9 @@ int test_graphics_mesh(TestContext* context)
     VklGraphicsMeshVertex* vertices = tg.vertices.data;
     VklIndex* indices = tg.indices.data;
 
-    // Vertices and indices.
+    memcpy(vertices, cube, sizeof(cube));
     for (uint32_t i = 0; i < vertex_count; i++)
     {
-        RANDN_POS(vertices[i].pos)
-        // TODO: normal and uv
         indices[i] = i;
     }
     vkl_upload_buffers(
@@ -627,24 +677,56 @@ int test_graphics_mesh(TestContext* context)
     vkl_upload_buffers(
         gpu->context, tg.br_index, 0, index_count * tg.indices.item_size, tg.indices.data);
 
-    // Parameters.
-    VklGraphicsMeshParams params = {0};
-    // TODO: params
-    tg.br_params = vkl_ctx_buffers(
-        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsMeshParams));
-    vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsMeshParams), &params);
-
     // Texture.
     VklTexture* texture =
         vkl_ctx_texture(gpu->context, 2, (uvec3){1, 1, 1}, VK_FORMAT_R8G8B8A8_UNORM);
     cvec4 tex_data[] = {{255, 0, 0, 255}};
     vkl_upload_texture(gpu->context, texture, sizeof(tex_data), tex_data);
 
-    _common_bindings(&tg);
+    // Create the bindings.
+    tg.bindings = vkl_bindings(&graphics->slots, 1);
+
+    // Binding resources.
+    tg.br_mvp = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklMVP));
+    tg.br_viewport =
+        vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklViewport));
+
+    // Upload MVP.
+    glm_mat4_identity(tg.mvp.model);
+    glm_mat4_identity(tg.mvp.view);
+    glm_mat4_identity(tg.mvp.proj);
+    tg.eye[2] = 3;
+    tg.up[1] = 1;
+    glm_lookat(tg.eye, tg.center, tg.up, tg.mvp.view);
+    float ratio = canvas->swapchain.images->width / (float)canvas->swapchain.images->height;
+    glm_perspective(GLM_PI_4, ratio, -1.0f, 1.0f, tg.mvp.proj);
+    vkl_upload_buffers(gpu->context, tg.br_mvp, 0, sizeof(VklMVP), &tg.mvp);
+
+    // Parameters.
+    VklGraphicsMeshParams params = {0};
+    params.lights_params_0[0][0] = .3;
+    params.lights_params_0[0][1] = .3;
+    params.lights_params_0[0][2] = .3;
+    params.lights_pos_0[0][0] = 1;
+    params.lights_pos_0[0][1] = 1;
+    params.lights_pos_0[0][2] = 1;
+    params.tex_coefs[0] = 1;
+    glm_vec3_copy(tg.eye, params.view_pos);
+
+    tg.br_params = vkl_ctx_buffers(
+        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsMeshParams));
+    vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsMeshParams), &params);
+
+    // Bindings
+    vkl_bindings_buffer(&tg.bindings, 0, tg.br_mvp);
+    vkl_bindings_buffer(&tg.bindings, 1, tg.br_viewport);
     vkl_bindings_buffer(&tg.bindings, VKL_USER_BINDING, tg.br_params);
     for (uint32_t i = 1; i <= 4; i++)
         vkl_bindings_texture(&tg.bindings, VKL_USER_BINDING + i, texture);
     vkl_bindings_update(&tg.bindings);
+
+    // Callback.
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1.0 / 60, _graphics_mesh_callback, &tg);
 
     RUN;
     TEST_END

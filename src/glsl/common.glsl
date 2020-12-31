@@ -83,6 +83,14 @@ layout (std140, binding = 1) uniform Viewport {
 /*  Viewport and transform functions                                                             */
 /*************************************************************************************************/
 
+vec4 to_vulkan(vec4 tr) {
+    // HACK: we transform from OpenGL conventional coordinate system to Vulkan
+    // This allows us to use MVP matrices in OpenGL conventions.
+    tr.y = -tr.y; // Vulkan swaps top and bottom in its device coordinate system.
+    tr.z = .5 * (1.0 - tr.z); // depth is [-1, 1] in OpenGL but [0, 1] in Vulkan
+    return tr;
+}
+
 vec4 transform(vec3 pos, vec2 shift, uint transform_mode) {
     mat4 mvp = mvp.proj * mvp.view * mvp.model;
     vec4 tr = vec4(pos, 1.0);
@@ -141,11 +149,7 @@ vec4 transform(vec3 pos, vec2 shift, uint transform_mode) {
     if (w > 0 && h > 0)
         tr.xy += (2 * shift / viewport.size);
 
-    // HACK: we transform from OpenGL conventional coordinate system to Vulkan
-    // This allows us to use MVP matrices in OpenGL conventions.
-    tr.y = -tr.y; // Vulkan swaps top and bottom in its device coordinate system.
-    tr.z = .5 * (1.0 - tr.z); // depth is [-1, 1] in OpenGL but [0, 1] in Vulkan
-
+    tr = to_vulkan(tr);
     return tr;
 }
 

@@ -37,7 +37,8 @@ static inline void _load_shader(
 #define PRIMITIVE(x)                                                                              \
     vkl_graphics_renderpass(graphics, &canvas->renderpass, 0);                                    \
     vkl_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_##x);                                   \
-    vkl_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
+    vkl_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);                                    \
+    vkl_graphics_depth_test(graphics, VKL_DEPTH_TEST_ENABLE);
 
 #define CREATE vkl_graphics_create(graphics);
 
