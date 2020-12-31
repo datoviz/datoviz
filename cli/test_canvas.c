@@ -177,27 +177,6 @@ static void _triangle_refill(VklCanvas* canvas, VklPrivateEvent ev)
     vkl_cmd_end(cmds, idx);
 }
 
-static void _presend(VklCanvas* canvas, VklPrivateEvent ev)
-{
-    ASSERT(canvas != NULL);
-    if (!canvas->overlay)
-        return;
-    VklCommands* cmds = ev.user_data;
-    ASSERT(cmds != NULL);
-    uint32_t idx = canvas->swapchain.img_idx;
-    // log_debug("canvas frame %d, swapchain idx %d", canvas->frame_idx, idx);
-
-    vkl_cmd_begin(cmds, idx);
-    vkl_cmd_begin_renderpass(
-        cmds, idx, &canvas->renderpass_overlay, &canvas->framebuffers_overlay);
-    vkl_imgui_frame(canvas, cmds, idx);
-    vkl_cmd_end_renderpass(cmds, idx);
-    vkl_cmd_end(cmds, idx);
-
-    ASSERT(canvas != NULL);
-    vkl_submit_commands(&canvas->submit, ev.user_data);
-}
-
 // Triangle canvas
 int test_canvas_3(TestContext* context)
 {
@@ -210,9 +189,8 @@ int test_canvas_3(TestContext* context)
     _make_triangle2(canvas, &visual, "");
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_refill, &visual);
 
-    // ImGUI.
-    VklCommands* cmds = vkl_canvas_commands(canvas, VKL_DEFAULT_QUEUE_RENDER, 0, 0);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_PRE_SEND, 0, _presend, cmds);
+    // ImGUI callback.
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_IMGUI, 0, vkl_imgui_callback_fps, NULL);
 
     vkl_app_run(app, N_FRAMES);
     vkl_graphics_destroy(&visual.graphics);

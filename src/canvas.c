@@ -502,34 +502,6 @@ static void backend_event_callbacks(VklCanvas* canvas)
 /*  Private event sending                                                                        */
 /*************************************************************************************************/
 
-static int _canvas_callbacks(VklCanvas* canvas, VklPrivateEvent event)
-{
-    int n_callbacks = 0;
-    // HACK: we first call the callbacks with no param, then we call the callbacks with a non-zero
-    // param. This is a way to use the param as a priority value. This is used by the scene FRAME
-    // callback so that it occurs after the user callbacks.
-    for (uint32_t pass = 0; pass < 2; pass++)
-    {
-        for (uint32_t i = 0; i < canvas->canvas_callbacks_count; i++)
-        {
-            // Will pass the user_data that was registered, to the callback function.
-            event.user_data = canvas->canvas_callbacks[i].user_data;
-
-            // Only call the callbacks registered for the specified type.
-            if (canvas->canvas_callbacks[i].type == event.type &&
-                (pass == 0 || canvas->canvas_callbacks[i].param > 0))
-            {
-                // log_debug("canvas callback type %d number %d", event.type, i);
-                canvas->canvas_callbacks[i].callback(canvas, event);
-                n_callbacks++;
-            }
-        }
-    }
-    return n_callbacks;
-}
-
-
-
 static int _interact_callbacks(VklCanvas* canvas)
 {
     VklPrivateEvent ev = {0};

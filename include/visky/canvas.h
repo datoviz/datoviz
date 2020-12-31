@@ -66,6 +66,7 @@ typedef enum
     VKL_PRIVATE_EVENT_REFILL,    // called every time the command buffers need to be recreated
     VKL_PRIVATE_EVENT_INTERACT,  // called at every frame, before event enqueue
     VKL_PRIVATE_EVENT_FRAME,     // called at every frame, after event enqueue
+    VKL_PRIVATE_EVENT_IMGUI,     // called at every frame, after event enqueue
     VKL_PRIVATE_EVENT_TIMER,     // called every X ms in the main thread, just after FRAME
     VKL_PRIVATE_EVENT_RESIZE,    // called at every resize
     VKL_PRIVATE_EVENT_PRE_SEND,  // called before sending the commands buffers
@@ -620,6 +621,32 @@ struct VklCanvas
 /*************************************************************************************************/
 /*  Canvas                                                                                       */
 /*************************************************************************************************/
+
+static int _canvas_callbacks(VklCanvas* canvas, VklPrivateEvent event)
+{
+    int n_callbacks = 0;
+    // HACK: we first call the callbacks with no param, then we call the callbacks with a non-zero
+    // param. This is a way to use the param as a priority value. This is used by the scene FRAME
+    // callback so that it occurs after the user callbacks.
+    for (uint32_t pass = 0; pass < 2; pass++)
+    {
+        for (uint32_t i = 0; i < canvas->canvas_callbacks_count; i++)
+        {
+            // Will pass the user_data that was registered, to the callback function.
+            event.user_data = canvas->canvas_callbacks[i].user_data;
+
+            // Only call the callbacks registered for the specified type.
+            if (canvas->canvas_callbacks[i].type == event.type &&
+                (pass == 0 || canvas->canvas_callbacks[i].param > 0))
+            {
+                // log_debug("canvas callback type %d number %d", event.type, i);
+                canvas->canvas_callbacks[i].callback(canvas, event);
+                n_callbacks++;
+            }
+        }
+    }
+    return n_callbacks;
+}
 
 // adds callbacks as a function of the backend
 // GLFW ex: init_canvas_glfw(VklCanvas* canvas);

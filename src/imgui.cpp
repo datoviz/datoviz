@@ -74,33 +74,49 @@ static void _imgui_destroy()
     ImGui::DestroyContext();
 }
 
-/*
 static void _presend(VklCanvas* canvas, VklPrivateEvent ev)
 {
     ASSERT(canvas != NULL);
     if (!canvas->overlay)
         return;
-    VklCommands* cmds = ev.user_data;
+    VklCommands* cmds = (VklCommands*)ev.user_data;
     ASSERT(cmds != NULL);
     uint32_t idx = canvas->swapchain.img_idx;
-    // log_debug("canvas frame %d, swapchain idx %d", canvas->frame_idx, idx);
 
     vkl_cmd_begin(cmds, idx);
     vkl_cmd_begin_renderpass(
         cmds, idx, &canvas->renderpass_overlay, &canvas->framebuffers_overlay);
-    vkl_imgui_frame(canvas, cmds, idx);
+
+    // Begin new frame.
+    {
+        ImGui_ImplVulkan_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+    }
+
+    // Call the IMGUI private callbacks to render the GUI.
+    {
+        VklPrivateEvent ev_imgui;
+        ev_imgui.type = VKL_PRIVATE_EVENT_IMGUI;
+        ev_imgui.u.f.idx = canvas->frame_idx;
+        ev_imgui.u.f.interval = canvas->clock.interval;
+        ev_imgui.u.f.time = canvas->clock.elapsed;
+        _canvas_callbacks(canvas, ev_imgui);
+    }
+
+    // End frame.
+    {
+        ImGui::Render();
+        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmds->cmds[idx]);
+    }
+
     vkl_cmd_end_renderpass(cmds, idx);
     vkl_cmd_end(cmds, idx);
 
     ASSERT(canvas != NULL);
-    vkl_submit_commands(&canvas->submit, ev.user_data);
+    vkl_submit_commands(&canvas->submit, cmds);
 }
 
-
-    // ImGUI.
-    VklCommands* cmds = vkl_canvas_commands(canvas, VKL_DEFAULT_QUEUE_RENDER, 0, 0);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_PRE_SEND, 0, _presend, cmds);
-*/
 
 
 /*************************************************************************************************/
@@ -134,30 +150,17 @@ void vkl_imgui_init(VklCanvas* canvas)
 
     ImGui_ImplVulkan_DestroyFontUploadObjects();
     vkl_commands_destroy(&cmd);
+
+    // PRE_SEND callback that will call the IMGUI callbacks.
+    VklCommands* cmds = vkl_canvas_commands(canvas, VKL_DEFAULT_QUEUE_RENDER, 0, 0);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_PRE_SEND, 0, _presend, cmds);
 }
 
-void vkl_imgui_frame(VklCanvas* canvas, VklCommands* cmds, uint32_t cmd_idx)
+void vkl_imgui_callback_fps(VklCanvas* canvas, VklPrivateEvent)
 {
-    if (!canvas->overlay)
-        return;
-    // Start the Dear ImGui frame
-    ImGui_ImplVulkan_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
-
-    // Enable docking in main window.
-    // ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(),
-    // ImGuiDockNodeFlags_PassthruCentralNode);
-
-    // ImGuiIO& io = ImGui::GetIO();
-    int flags = 0;
-
-    ImGui::Begin("Hello", NULL, flags);
+    ImGui::Begin("Hello", NULL, 0);
     // TODO: GUI code
     ImGui::End();
-    ImGui::Render();
-
-    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmds->cmds[cmd_idx]);
 }
 
 void vkl_imgui_destroy()

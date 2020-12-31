@@ -14,9 +14,9 @@ extern "C" {
 
 VKY_EXPORT void vkl_imgui_init(VklCanvas* canvas);
 
-VKY_EXPORT void vkl_imgui_frame(VklCanvas* canvas, VklCommands* cmds, uint32_t cmd_idx);
-
 VKY_EXPORT void vkl_imgui_destroy();
+
+VKY_EXPORT void vkl_imgui_callback_fps(VklCanvas* canvas, VklPrivateEvent);
 
 
 
