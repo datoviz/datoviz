@@ -43,6 +43,7 @@ typedef enum
     VKL_GRAPHICS_PATH,
     VKL_GRAPHICS_TEXT,
 
+    VKL_GRAPHICS_MESH,
     VKL_GRAPHICS_MESH_RAW,
     VKL_GRAPHICS_MESH_TEXTURED,
     VKL_GRAPHICS_MESH_MULTI_TEXTURED,
@@ -106,6 +107,8 @@ typedef struct VklGraphicsPointParams VklGraphicsPointParams;
 typedef struct VklGraphicsMarkerVertex VklGraphicsMarkerVertex;
 typedef struct VklGraphicsMarkerParams VklGraphicsMarkerParams;
 typedef struct VklGraphicsSegmentVertex VklGraphicsSegmentVertex;
+typedef struct VklGraphicsMeshVertex VklGraphicsMeshVertex;
+typedef struct VklGraphicsMeshParams VklGraphicsMeshParams;
 
 typedef struct VklGraphicsTextParams VklGraphicsTextParams;
 typedef struct VklGraphicsTextVertex VklGraphicsTextVertex;
@@ -231,6 +234,34 @@ struct VklGraphicsTextItem
     cvec4* glyph_colors;
     float font_size;
     const char* string;
+};
+
+
+
+/*************************************************************************************************/
+/*  Graphics mesh                                                                                */
+/*************************************************************************************************/
+
+struct VklGraphicsMeshVertex
+{
+    vec3 pos;
+    vec3 normal;
+    vec2 uv;
+};
+
+struct VklGraphicsMeshParams
+{
+    mat4 lights_pos_0; // lights 0-3
+    mat4 lights_pos_1; // lights 4-7
+    mat4 lights_params_0;
+    mat4 lights_params_1;
+
+    vec4 view_pos;
+
+    ivec2 tex_size_0;
+    ivec2 tex_size_1;
+    ivec2 tex_size_2;
+    ivec2 tex_size_3;
 };
 
 

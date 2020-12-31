@@ -22,6 +22,7 @@ int test_graphics_triangle_fan(TestContext* context);
 int test_graphics_marker(TestContext* context);
 int test_graphics_segment(TestContext* context);
 int test_graphics_text(TestContext* context);
+int test_graphics_mesh(TestContext* context);
 
 
 

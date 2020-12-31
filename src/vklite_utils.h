@@ -1371,11 +1371,17 @@ static void update_descriptor_set(
         {
             log_trace("bind texture for binding point %d", i);
             ASSERT(images[i] != NULL);
-
+            // if (images[i] != NULL)
+            // {
             uint32_t idx_clip = MIN(idx, images[i]->count - 1);
             image_infos[i].imageLayout = images[i]->layout;
             image_infos[i].imageView = images[i]->image_views[idx_clip];
             image_infos[i].sampler = samplers[i]->sampler;
+            // }
+            // else
+            // {
+            //     log_warn("empty texture for binding point %d", i);
+            // }
         }
         else
         {

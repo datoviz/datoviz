@@ -588,3 +588,64 @@ int test_graphics_text(TestContext* context)
     vkl_font_atlas_destroy(atlas);
     TEST_END
 }
+
+
+
+/*************************************************************************************************/
+/*  Mesh tests                                                                                   */
+/*************************************************************************************************/
+
+int test_graphics_mesh(TestContext* context)
+{
+    INIT_GRAPHICS(VKL_GRAPHICS_MESH)
+
+    uint32_t nv = 3; // number of vertices
+    uint32_t ni = nv;
+
+    TestGraphics tg = {0};
+    tg.graphics = graphics;
+    tg.vertices = vkl_array_struct(nv, sizeof(VklGraphicsMeshVertex));
+    tg.indices = vkl_array_struct(ni, sizeof(VklIndex));
+    uint32_t vertex_count = tg.vertices.item_count;
+    uint32_t index_count = tg.indices.item_count;
+    tg.br_vert = vkl_ctx_buffers(
+        gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, vertex_count * sizeof(VklGraphicsMeshVertex));
+    tg.br_index =
+        vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_INDEX, 1, index_count * sizeof(VklIndex));
+    VklGraphicsMeshVertex* vertices = tg.vertices.data;
+    VklIndex* indices = tg.indices.data;
+
+    // Vertices and indices.
+    for (uint32_t i = 0; i < vertex_count; i++)
+    {
+        RANDN_POS(vertices[i].pos)
+        // TODO: normal and uv
+        indices[i] = i;
+    }
+    vkl_upload_buffers(
+        gpu->context, tg.br_vert, 0, vertex_count * tg.vertices.item_size, tg.vertices.data);
+    vkl_upload_buffers(
+        gpu->context, tg.br_index, 0, index_count * tg.indices.item_size, tg.indices.data);
+
+    // Parameters.
+    VklGraphicsMeshParams params = {0};
+    // TODO: params
+    tg.br_params = vkl_ctx_buffers(
+        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsMeshParams));
+    vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsMeshParams), &params);
+
+    // Texture.
+    VklTexture* texture =
+        vkl_ctx_texture(gpu->context, 2, (uvec3){1, 1, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+    cvec4 tex_data[] = {{255, 0, 0, 255}};
+    vkl_upload_texture(gpu->context, texture, sizeof(tex_data), tex_data);
+
+    _common_bindings(&tg);
+    vkl_bindings_buffer(&tg.bindings, VKL_USER_BINDING, tg.br_params);
+    for (uint32_t i = 1; i <= 4; i++)
+        vkl_bindings_texture(&tg.bindings, VKL_USER_BINDING + i, texture);
+    vkl_bindings_update(&tg.bindings);
+
+    RUN;
+    TEST_END
+}
