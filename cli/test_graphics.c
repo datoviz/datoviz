@@ -208,7 +208,6 @@ int test_graphics_dynamic(TestContext* context)
     vkl_bindings_buffer(&tg.bindings, VKL_USER_BINDING, tg.br_params);
     vkl_bindings_update(&tg.bindings);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_WHEEL, 0, _graphics_points_wheel_callback, &tg);
 
     RUN;
@@ -283,15 +282,10 @@ int test_graphics_3D(TestContext* context)
     vkl_bindings_buffer(&tg.bindings, 0, tg.br_mvp);
     vkl_bindings_buffer(&tg.bindings, 1, tg.br_viewport);
     vkl_bindings_buffer(&tg.bindings, VKL_USER_BINDING, tg.br_params);
-
     vkl_bindings_update(&tg.bindings);
 
-    // vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _graphics_refill, &tg);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1.0 / 60, _graphics_3D_callback, &tg);
 
-    // vkl_app_run(app, N_FRAMES);
-    // FREE(data);
     RUN;
     TEST_END
 }

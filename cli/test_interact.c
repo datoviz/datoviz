@@ -135,7 +135,6 @@ int test_interact_panzoom(TestContext* context)
     scene.visual = vkl_visual(canvas);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _update_interact, &scene);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
 
     const uint32_t N = 10000;
     float param = 5.0f;
@@ -165,7 +164,6 @@ int test_interact_arcball(TestContext* context)
     scene.visual = vkl_visual(canvas);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _update_interact, &scene);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
 
     const uint32_t N = 10000;
     float param = 5.0f;
@@ -195,7 +193,6 @@ int test_interact_camera(TestContext* context)
     scene.visual = vkl_visual(canvas);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _update_interact, &scene);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
 
     const uint32_t N = 10000;
     float param = 5.0f;

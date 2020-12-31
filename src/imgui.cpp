@@ -1,3 +1,5 @@
+#include <inttypes.h>
+
 #include "imgui.h"
 
 BEGIN_INCL_NO_WARN
@@ -158,8 +160,9 @@ void vkl_imgui_init(VklCanvas* canvas)
 
 void vkl_imgui_callback_fps(VklCanvas* canvas, VklPrivateEvent)
 {
-    ImGui::Begin("Hello", NULL, 0);
-    // TODO: GUI code
+    ASSERT(canvas != NULL);
+    ImGui::Begin("FPS", NULL, 0);
+    ImGui::Text("FPS: %.1f", canvas->fps);
     ImGui::End();
 }
 

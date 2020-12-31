@@ -117,9 +117,6 @@ int test_scene_1(TestContext* context)
     vkl_visual_data(visual2, VKL_PROP_COLOR, 0, N, color);
     vkl_visual_data(visual2, VKL_PROP_MARKER_SIZE, 0, 1, &param);
 
-    // vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
-    // vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _panzoom, scene);
-
     vkl_app_run(app, N_FRAMES);
     vkl_visual_destroy(visual);
     vkl_visual_destroy(visual2);
@@ -160,7 +157,6 @@ int test_scene_axes(TestContext* context)
     vkl_visual_data(visual, VKL_PROP_COLOR, 0, N, color);
     vkl_visual_data(visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
     vkl_app_run(app, N_FRAMES);
     vkl_scene_destroy(scene);
     TEST_END

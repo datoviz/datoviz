@@ -655,6 +655,14 @@ static int _destroy_callbacks(VklCanvas* canvas)
 
 
 
+static void _fps(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    canvas->fps = canvas->frame_idx - canvas->clock.checkpoint_value;
+    canvas->clock.checkpoint_value = canvas->frame_idx;
+}
+
+
+
 /*************************************************************************************************/
 /*  Canvas creation                                                                              */
 /*************************************************************************************************/
@@ -834,6 +842,9 @@ _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
         vkl_imgui_init(canvas);
     }
 
+    // FPS callback.
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
+
     return canvas;
 }
 
@@ -999,6 +1010,13 @@ void vkl_canvas_callback(
     VklCanvasCallback callback, void* user_data)
 {
     ASSERT(canvas != NULL);
+
+    if (type == VKL_PRIVATE_EVENT_IMGUI && !canvas->overlay)
+    {
+        log_error("the canvas must be created with the VKL_CANVAS_FLAGS_IMGUI flag before a GUI "
+                  "can be shown");
+        return;
+    }
 
     VklCanvasCallbackRegister r = {0};
     r.callback = callback;

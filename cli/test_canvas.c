@@ -841,7 +841,6 @@ int test_canvas_particles(TestContext* context)
         canvas->user_data = visual;
         vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _particle_refill, visual);
         vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _particle_frame, visual);
-        vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1, _fps, NULL);
         vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _particle_cursor, visual);
     }
 
@@ -899,8 +898,6 @@ int test_canvas_screencast(TestContext* context)
 
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _cursor_callback, NULL);
     vkl_event_callback(canvas, VKL_EVENT_SCREENCAST, 0, _screencast_callback, NULL);
-
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1., _fps, NULL);
 
     vkl_screencast(canvas, 1. / 30);
 

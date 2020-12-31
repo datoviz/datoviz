@@ -494,14 +494,6 @@ static void _destroy_context(TestContext* context)
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static void _fps(VklCanvas* canvas, VklPrivateEvent ev)
-{
-    log_debug("FPS: %d", canvas->frame_idx - canvas->clock.checkpoint_value);
-    canvas->clock.checkpoint_value = canvas->frame_idx;
-}
-
-
-
 static VklRenderpass default_renderpass(
     VklGpu* gpu, VkClearColorValue clear_color_value, VkFormat format, VkImageLayout layout)
 {

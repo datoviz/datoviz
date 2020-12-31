@@ -562,6 +562,7 @@ struct VklCanvas
     uint32_t cur_frame; // current frame within the images in flight
     uint64_t frame_idx;
     VklClock clock;
+    float fps;
 
     // when refilling command buffers, keep track of which img_idx were updated until we stop
     // calling the REFILL callbackks
