@@ -21,7 +21,7 @@
 /*************************************************************************************************/
 
 static VklRenderpass default_renderpass(
-    VklGpu* gpu, VkClearColorValue clear_color_value, VkFormat format, VkImageLayout layout)
+    VklGpu* gpu, VkClearColorValue clear_color_value, VkFormat format, bool has_overlay)
 {
     VklRenderpass renderpass = vkl_renderpass(gpu);
 
@@ -34,10 +34,15 @@ static VklRenderpass default_renderpass(
     vkl_renderpass_clear(&renderpass, clear_color);
     vkl_renderpass_clear(&renderpass, clear_depth);
 
+    VkImageLayout layout =
+        has_overlay ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
     // Color attachment.
     vkl_renderpass_attachment(
         &renderpass, 0, //
         VKL_RENDERPASS_ATTACHMENT_COLOR, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    // has_overlay ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+    //             : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     vkl_renderpass_attachment_layout(&renderpass, 0, VK_IMAGE_LAYOUT_UNDEFINED, layout);
     vkl_renderpass_attachment_ops(
         &renderpass, 0, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
@@ -683,7 +688,8 @@ static int _destroy_callbacks(VklCanvas* canvas)
 /*  Canvas creation                                                                              */
 /*************************************************************************************************/
 
-static VklCanvas* _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool offscreen)
+static VklCanvas*
+_canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overlay)
 {
     ASSERT(gpu != NULL);
     VklApp* app = gpu->app;
@@ -740,11 +746,11 @@ static VklCanvas* _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool off
     }
 
     // Create default renderpass.
-    canvas->renderpass = default_renderpass(
-        gpu, VKL_DEFAULT_BACKGROUND, VKL_DEFAULT_IMAGE_FORMAT,
-        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-    canvas->renderpass_overlay =
-        renderpass_overlay(gpu, VKL_DEFAULT_IMAGE_FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    canvas->renderpass =
+        default_renderpass(gpu, VKL_DEFAULT_BACKGROUND, VKL_DEFAULT_IMAGE_FORMAT, overlay);
+    if (overlay)
+        canvas->renderpass_overlay =
+            renderpass_overlay(gpu, VKL_DEFAULT_IMAGE_FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
     // Create swapchain
     {
@@ -788,7 +794,8 @@ static VklCanvas* _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool off
 
     // Create renderpass.
     vkl_renderpass_create(&canvas->renderpass);
-    vkl_renderpass_create(&canvas->renderpass_overlay);
+    if (overlay)
+        vkl_renderpass_create(&canvas->renderpass_overlay);
 
     // Create framebuffers.
     {
@@ -797,10 +804,14 @@ static VklCanvas* _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool off
         vkl_framebuffers_attachment(&canvas->framebuffers, 1, &canvas->depth_image);
         vkl_framebuffers_create(&canvas->framebuffers, &canvas->renderpass);
 
-        canvas->framebuffers_overlay = vkl_framebuffers(gpu);
-        vkl_framebuffers_attachment(&canvas->framebuffers_overlay, 0, canvas->swapchain.images);
-        vkl_framebuffers_attachment(&canvas->framebuffers_overlay, 1, &canvas->depth_image);
-        vkl_framebuffers_create(&canvas->framebuffers_overlay, &canvas->renderpass_overlay);
+        if (overlay)
+        {
+            canvas->framebuffers_overlay = vkl_framebuffers(gpu);
+            vkl_framebuffers_attachment(
+                &canvas->framebuffers_overlay, 0, canvas->swapchain.images);
+            vkl_framebuffers_attachment(&canvas->framebuffers_overlay, 1, &canvas->depth_image);
+            vkl_framebuffers_create(&canvas->framebuffers_overlay, &canvas->renderpass_overlay);
+        }
     }
 
     // Create synchronization objects.
@@ -854,7 +865,8 @@ VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height)
 {
     ASSERT(gpu != NULL);
     bool offscreen = gpu->app->backend == VKL_BACKEND_GLFW ? false : true;
-    return _canvas(gpu, width, height, offscreen);
+    bool overlay = gpu->app->has_overlay;
+    return _canvas(gpu, width, height, offscreen, overlay);
 }
 
 
@@ -865,6 +877,7 @@ void vkl_canvas_recreate(VklCanvas* canvas)
     VklBackend backend = canvas->app->backend;
     VklWindow* window = canvas->window;
     VklGpu* gpu = canvas->gpu;
+    VklApp* app = gpu->app;
     VklSwapchain* swapchain = &canvas->swapchain;
     VklFramebuffers* framebuffers = &canvas->framebuffers;
     VklRenderpass* renderpass = &canvas->renderpass;
@@ -892,7 +905,8 @@ void vkl_canvas_recreate(VklCanvas* canvas)
 
     // Destroy swapchain resources.
     vkl_framebuffers_destroy(&canvas->framebuffers);
-    vkl_framebuffers_destroy(&canvas->framebuffers_overlay);
+    if (app->has_overlay)
+        vkl_framebuffers_destroy(&canvas->framebuffers_overlay);
     vkl_images_destroy(&canvas->depth_image);
     vkl_images_destroy(canvas->swapchain.images);
 
@@ -914,7 +928,8 @@ void vkl_canvas_recreate(VklCanvas* canvas)
     ASSERT(framebuffers->attachments[0]->width == width);
     ASSERT(framebuffers->attachments[0]->height == height);
     vkl_framebuffers_create(framebuffers, renderpass);
-    vkl_framebuffers_create(framebuffers_overlay, renderpass_overlay);
+    if (app->has_overlay)
+        vkl_framebuffers_create(framebuffers_overlay, renderpass_overlay);
 
     _refill_canvas(canvas, UINT32_MAX);
 }
@@ -940,7 +955,8 @@ vkl_canvas_commands(VklCanvas* canvas, uint32_t queue_idx, uint32_t group_id, ui
 
 VklCanvas* vkl_canvas_offscreen(VklGpu* gpu, uint32_t width, uint32_t height)
 {
-    return _canvas(gpu, width, height, true);
+    // NOTE: no overlay for now in offscreen canvas
+    return _canvas(gpu, width, height, true, false);
 }
 
 
@@ -2200,6 +2216,7 @@ void vkl_canvas_destroy(VklCanvas* canvas)
         log_trace("skip destruction of already-destroyed canvas");
         return;
     }
+    VklApp* app = canvas->app;
     log_trace("destroying canvas");
 
     // DEBUG: only in non offscreen mode
@@ -2234,7 +2251,8 @@ void vkl_canvas_destroy(VklCanvas* canvas)
     // Destroy the renderpasses.
     log_trace("canvas destroy renderpass");
     vkl_renderpass_destroy(&canvas->renderpass);
-    vkl_renderpass_destroy(&canvas->renderpass_overlay);
+    if (app->has_overlay)
+        vkl_renderpass_destroy(&canvas->renderpass_overlay);
 
     // Destroy the swapchain.
     log_trace("canvas destroy swapchain");
@@ -2243,7 +2261,8 @@ void vkl_canvas_destroy(VklCanvas* canvas)
     // Destroy the framebuffers.
     log_trace("canvas destroy framebuffers");
     vkl_framebuffers_destroy(&canvas->framebuffers);
-    vkl_framebuffers_destroy(&canvas->framebuffers_overlay);
+    if (app->has_overlay)
+        vkl_framebuffers_destroy(&canvas->framebuffers_overlay);
 
     // Destroy the window.
     log_trace("canvas destroy window");

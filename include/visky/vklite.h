@@ -270,6 +270,7 @@ struct VklApp
 
     // Backend
     VklBackend backend;
+    bool has_overlay; // whether ImGui is used or not
 
     // Global clock
     VklClock clock;

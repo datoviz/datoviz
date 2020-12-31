@@ -180,6 +180,8 @@ static void _triangle_refill(VklCanvas* canvas, VklPrivateEvent ev)
 static void _presend(VklCanvas* canvas, VklPrivateEvent ev)
 {
     ASSERT(canvas != NULL);
+    if (!canvas->app->has_overlay)
+        return;
     VklCommands* cmds = ev.user_data;
     ASSERT(cmds != NULL);
     uint32_t idx = canvas->swapchain.img_idx;
@@ -200,6 +202,7 @@ static void _presend(VklCanvas* canvas, VklPrivateEvent ev)
 int test_canvas_3(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    app->has_overlay = true;
     VklGpu* gpu = vkl_gpu(app, 0);
     VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT);
     AT(canvas != NULL);
@@ -217,7 +220,7 @@ int test_canvas_3(TestContext* context)
 
     vkl_graphics_destroy(&visual.graphics);
     destroy_visual(&visual);
-    vkl_imgui_destroy();
+    vkl_imgui_destroy(app);
     TEST_END
 }
 
