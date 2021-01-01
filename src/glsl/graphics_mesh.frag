@@ -30,7 +30,6 @@ layout (location = 3) in vec3 in_triangle;
 layout (location = 0) out vec4 out_color;
 
 void main() {
-
     vec3 normal, light_dir, ambient, diffuse, view_dir, reflect_dir, specular, color;
     vec3 lpar, lpos;
     vec3 light_color = vec3(1); // TODO

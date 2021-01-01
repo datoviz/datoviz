@@ -1799,6 +1799,10 @@ VklGraphics vkl_graphics(VklGpu* gpu)
 
     VklGraphics graphics = {0};
     graphics.gpu = gpu;
+
+    // Default values.
+    graphics.cull_mode = VK_CULL_MODE_FRONT_BIT;
+
     obj_init(&graphics.obj);
 
     graphics.slots = vkl_slots(gpu);
@@ -2001,7 +2005,7 @@ void vkl_graphics_create(VklGraphics* graphics)
     // Pipeline.
     VkPipelineInputAssemblyStateCreateInfo input_assembly =
         create_input_assembly(graphics->topology);
-    VkPipelineRasterizationStateCreateInfo rasterizer = create_rasterizer();
+    VkPipelineRasterizationStateCreateInfo rasterizer = create_rasterizer(graphics->cull_mode);
     VkPipelineMultisampleStateCreateInfo multisampling = create_multisampling();
     VkPipelineColorBlendAttachmentState color_blend_attachment = create_color_blend_attachment();
     VkPipelineColorBlendStateCreateInfo color_blending =

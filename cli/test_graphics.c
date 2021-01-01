@@ -103,7 +103,7 @@ static void _common_bindings(TestGraphics* tg)
 #define INIT_GRAPHICS(type)                                                                       \
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);                                                      \
     VklGpu* gpu = vkl_gpu(app, 0);                                                                \
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);                              \
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, VKL_CANVAS_FLAGS_FPS);           \
     VklGraphics* graphics = vkl_graphics_builtin(canvas, type, 0);
 
 #define BEGIN_DATA(type, n, user_data)                                                            \
@@ -611,26 +611,25 @@ int test_graphics_mesh(TestContext* context)
 
     // Vertices and indices.
     float x = .5;
-    // TODO: uv
     VklGraphicsMeshVertex cube[] = {
-        {{-x, -x, +x}, {0, 0, +1}, {0, 0}}, // front
-        {{+x, -x, +x}, {0, 0, +1}, {0, 0}}, //
-        {{+x, +x, +x}, {0, 0, +1}, {0, 0}}, //
-        {{+x, +x, +x}, {0, 0, +1}, {0, 0}}, //
-        {{-x, +x, +x}, {0, 0, +1}, {0, 0}}, //
-        {{-x, -x, +x}, {0, 0, +1}, {0, 0}}, //
+        {{-x, -x, +x}, {0, 0, +1}, {1, 1}}, // front
+        {{+x, -x, +x}, {0, 0, +1}, {1, 1}}, //
+        {{+x, +x, +x}, {0, 0, +1}, {1, 1}}, //
+        {{+x, +x, +x}, {0, 0, +1}, {1, 1}}, //
+        {{-x, +x, +x}, {0, 0, +1}, {1, 1}}, //
+        {{-x, -x, +x}, {0, 0, +1}, {1, 1}}, //
         {{+x, -x, +x}, {+1, 0, 0}, {0, 0}}, // right
         {{+x, -x, -x}, {+1, 0, 0}, {0, 0}}, //
         {{+x, +x, -x}, {+1, 0, 0}, {0, 0}}, //
         {{+x, +x, -x}, {+1, 0, 0}, {0, 0}}, //
         {{+x, +x, +x}, {+1, 0, 0}, {0, 0}}, //
         {{+x, -x, +x}, {+1, 0, 0}, {0, 0}}, //
-        {{-x, +x, -x}, {0, 0, -1}, {0, 0}}, // back
-        {{+x, +x, -x}, {0, 0, -1}, {0, 0}}, //
-        {{+x, -x, -x}, {0, 0, -1}, {0, 0}}, //
-        {{+x, -x, -x}, {0, 0, -1}, {0, 0}}, //
-        {{-x, -x, -x}, {0, 0, -1}, {0, 0}}, //
-        {{-x, +x, -x}, {0, 0, -1}, {0, 0}}, //
+        {{-x, +x, -x}, {0, 0, -1}, {1, 1}}, // back
+        {{+x, +x, -x}, {0, 0, -1}, {1, 1}}, //
+        {{+x, -x, -x}, {0, 0, -1}, {1, 1}}, //
+        {{+x, -x, -x}, {0, 0, -1}, {1, 1}}, //
+        {{-x, -x, -x}, {0, 0, -1}, {1, 1}}, //
+        {{-x, +x, -x}, {0, 0, -1}, {1, 1}}, //
         {{-x, -x, -x}, {-1, 0, 0}, {0, 0}}, // left
         {{-x, -x, +x}, {-1, 0, 0}, {0, 0}}, //
         {{-x, +x, +x}, {-1, 0, 0}, {0, 0}}, //
@@ -679,8 +678,8 @@ int test_graphics_mesh(TestContext* context)
 
     // Texture.
     VklTexture* texture =
-        vkl_ctx_texture(gpu->context, 2, (uvec3){1, 1, 1}, VK_FORMAT_R8G8B8A8_UNORM);
-    cvec4 tex_data[] = {{255, 0, 0, 255}};
+        vkl_ctx_texture(gpu->context, 2, (uvec3){2, 1, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+    cvec4 tex_data[] = {{255, 0, 0, 255}, {0, 255, 0, 255}};
     vkl_upload_texture(gpu->context, texture, sizeof(tex_data), tex_data);
 
     // Create the bindings.
@@ -704,12 +703,12 @@ int test_graphics_mesh(TestContext* context)
 
     // Parameters.
     VklGraphicsMeshParams params = {0};
-    params.lights_params_0[0][0] = .3;
+    params.lights_params_0[0][0] = .4;
     params.lights_params_0[0][1] = .3;
     params.lights_params_0[0][2] = .3;
-    params.lights_pos_0[0][0] = 1;
+    params.lights_pos_0[0][0] = -1;
     params.lights_pos_0[0][1] = 1;
-    params.lights_pos_0[0][2] = 1;
+    params.lights_pos_0[0][2] = 5;
     params.tex_coefs[0] = 1;
     glm_vec3_copy(tg.eye, params.view_pos);
 
