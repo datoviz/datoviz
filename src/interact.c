@@ -272,11 +272,11 @@ static VklCamera _camera(VklCanvas* canvas, VklInteractType type)
 static void _camera_update_mvp(VklCamera* camera, VklMVP* mvp)
 {
     ASSERT(camera != NULL);
-    vec3 center;
+    vec3 center = {0};
     glm_vec3_add(camera->eye, camera->forward, center);
-    glm_lookat(camera->eye, center, camera->up, mvp->view);
-    float ratio = 1; // TODO: viewport.w / viewport.h;
-    glm_perspective(GLM_PI_4, ratio, -1, 1, mvp->proj);
+
+    VklViewport viewport = vkl_viewport_full(camera->canvas);
+    vkl_mvp_camera(viewport, camera->eye, center, (vec2){-1, 1}, mvp);
 }
 
 static void _camera_callback(
@@ -289,7 +289,7 @@ static void _camera_callback(
     bool is_active = false;
 
     const float dt = (float)interact->canvas->clock.interval;
-    const float alpha = 10;
+    const float alpha = 5;
     const float beta = 10;
     const float dl = alpha * dt;
     const float max_pitch = .99;
@@ -329,7 +329,7 @@ static void _camera_callback(
         // Change the camera elevation with the mouse wheel.
         if (mouse->cur_state == VKL_MOUSE_STATE_WHEEL)
         {
-            camera->target[1] += 100 * dl * mouse->wheel_delta[1];
+            camera->target[1] += 1 * dl * mouse->wheel_delta[1];
         }
 
         // Arrow keys navigation.
