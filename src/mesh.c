@@ -259,70 +259,58 @@ VklMesh vkl_mesh_cube()
     const uint32_t nv = 36;
     vkl_array_resize(&mesh.vertices, nv);
     VklGraphicsMeshVertex* vertex = (VklGraphicsMeshVertex*)mesh.vertices.data;
-    VklIndex* index = (VklIndex*)mesh.indices.data;
+    ASSERT(vertex != NULL);
 
-    // Get vertices and indices pointers into the mesh arrays.
-    uint32_t first_vertex = 0;
     float x = .5;
-
     VklGraphicsMeshVertex vertices[] = {
+        {{-x, -x, +x}, {0, 0, +1}, {0, 1}}, // front
+        {{+x, -x, +x}, {0, 0, +1}, {1, 1}}, //
+        {{+x, +x, +x}, {0, 0, +1}, {1, 0}}, //
+        {{+x, +x, +x}, {0, 0, +1}, {1, 0}}, //
+        {{-x, +x, +x}, {0, 0, +1}, {0, 0}}, //
+        {{-x, -x, +x}, {0, 0, +1}, {0, 1}}, //
 
-        {{-x, -x, +x}, {0, 0, +1}}, // back
-        {{+x, -x, +x}, {0, 0, +1}}, //
-        {{+x, +x, +x}, {0, 0, +1}}, //
-        {{+x, +x, +x}, {0, 0, +1}}, //
-        {{-x, +x, +x}, {0, 0, +1}}, //
-        {{-x, -x, +x}, {0, 0, +1}}, //
+        {{+x, -x, +x}, {+1, 0, 0}, {0, 1}}, // right
+        {{+x, -x, -x}, {+1, 0, 0}, {1, 1}}, //
+        {{+x, +x, -x}, {+1, 0, 0}, {1, 0}}, //
+        {{+x, +x, -x}, {+1, 0, 0}, {1, 0}}, //
+        {{+x, +x, +x}, {+1, 0, 0}, {0, 0}}, //
+        {{+x, -x, +x}, {+1, 0, 0}, {0, 1}}, //
 
-        {{+x, -x, +x}, {+1, 0, 0}}, // right
-        {{+x, -x, -x}, {+1, 0, 0}}, //
-        {{+x, +x, -x}, {+1, 0, 0}}, //
-        {{+x, +x, -x}, {+1, 0, 0}}, //
-        {{+x, +x, +x}, {+1, 0, 0}}, //
-        {{+x, -x, +x}, {+1, 0, 0}}, //
+        {{-x, +x, -x}, {0, 0, -1}, {1, 0}}, // back
+        {{+x, +x, -x}, {0, 0, -1}, {0, 0}}, //
+        {{+x, -x, -x}, {0, 0, -1}, {0, 1}}, //
+        {{+x, -x, -x}, {0, 0, -1}, {0, 1}}, //
+        {{-x, -x, -x}, {0, 0, -1}, {1, 1}}, //
+        {{-x, +x, -x}, {0, 0, -1}, {1, 0}}, //
 
-        {{-x, +x, -x}, {0, 0, -1}}, // front
-        {{+x, +x, -x}, {0, 0, -1}}, //
-        {{+x, -x, -x}, {0, 0, -1}}, //
-        {{+x, -x, -x}, {0, 0, -1}}, //
-        {{-x, -x, -x}, {0, 0, -1}}, //
-        {{-x, +x, -x}, {0, 0, -1}}, //
+        {{-x, -x, -x}, {-1, 0, 0}, {0, 1}}, // left
+        {{-x, -x, +x}, {-1, 0, 0}, {1, 1}}, //
+        {{-x, +x, +x}, {-1, 0, 0}, {1, 0}}, //
+        {{-x, +x, +x}, {-1, 0, 0}, {1, 0}}, //
+        {{-x, +x, -x}, {-1, 0, 0}, {0, 0}}, //
+        {{-x, -x, -x}, {-1, 0, 0}, {0, 1}}, //
 
-        {{-x, -x, -x}, {-1, 0, 0}}, // left
-        {{-x, -x, +x}, {-1, 0, 0}}, //
-        {{-x, +x, +x}, {-1, 0, 0}}, //
-        {{-x, +x, +x}, {-1, 0, 0}}, //
-        {{-x, +x, -x}, {-1, 0, 0}}, //
-        {{-x, -x, -x}, {-1, 0, 0}}, //
+        {{-x, -x, -x}, {0, -1, 0}, {0, 1}}, // bottom
+        {{+x, -x, -x}, {0, -1, 0}, {1, 1}}, //
+        {{+x, -x, +x}, {0, -1, 0}, {1, 0}}, //
+        {{+x, -x, +x}, {0, -1, 0}, {1, 0}}, //
+        {{-x, -x, +x}, {0, -1, 0}, {0, 0}}, //
+        {{-x, -x, -x}, {0, -1, 0}, {0, 1}}, //
 
-        {{-x, -x, -x}, {0, -1, 0}}, // bottom
-        {{+x, -x, -x}, {0, -1, 0}}, //
-        {{+x, -x, +x}, {0, -1, 0}}, //
-        {{+x, -x, +x}, {0, -1, 0}}, //
-        {{-x, -x, +x}, {0, -1, 0}}, //
-        {{-x, -x, -x}, {0, -1, 0}}, //
-
-        {{-x, +x, +x}, {0, +1, 0}}, // top
-        {{+x, +x, +x}, {0, +1, 0}}, //
-        {{+x, +x, -x}, {0, +1, 0}}, //
-        {{+x, +x, -x}, {0, +1, 0}}, //
-        {{-x, +x, -x}, {0, +1, 0}}, //
-        {{-x, +x, +x}, {0, +1, 0}}, //
-
+        {{-x, +x, +x}, {0, +1, 0}, {0, 1}}, // top
+        {{+x, +x, +x}, {0, +1, 0}, {1, 1}}, //
+        {{+x, +x, -x}, {0, +1, 0}, {1, 0}}, //
+        {{+x, +x, -x}, {0, +1, 0}, {1, 0}}, //
+        {{-x, +x, -x}, {0, +1, 0}, {0, 0}}, //
+        {{-x, +x, +x}, {0, +1, 0}, {0, 1}}, //
     };
-
-    // Transform, colors, indices.
     for (uint32_t i = 0; i < nv; i++)
     {
         transform_pos(&mesh, vertices[i].pos);
         transform_normal(&mesh, vertices[i].normal);
-        *index = first_vertex + i;
-        index++;
     }
-
-    // Copy the vertices to the mesh vertices.
     memcpy(vertex, vertices, sizeof(vertices));
-
     return mesh;
 }
 
@@ -411,10 +399,10 @@ VklMesh vkl_mesh_square()
     const uint32_t nv = 6;
     vkl_array_resize(&mesh.vertices, nv);
     VklGraphicsMeshVertex* vertex = (VklGraphicsMeshVertex*)mesh.vertices.data;
-    VklIndex* index = (VklIndex*)mesh.indices.data;
+    // VklIndex* index = (VklIndex*)mesh.indices.data;
 
     // Get vertices and indices pointers into the mesh arrays.
-    uint32_t first_vertex = 0;
+    // uint32_t first_vertex = 0;
     float x = .5;
 
     VklGraphicsMeshVertex vertices[] = {
@@ -432,8 +420,8 @@ VklMesh vkl_mesh_square()
         // Transform.
         transform_pos(&mesh, vertices[i].pos);
         transform_normal(&mesh, vertices[i].normal);
-        *index = (first_vertex + i);
-        index++;
+        // *index = (first_vertex + i);
+        // index++;
     }
 
     // Copy the vertices to the mesh vertices.

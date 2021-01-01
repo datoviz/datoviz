@@ -1,6 +1,7 @@
 #include "test_graphics.h"
 #include "../include/visky/colormaps.h"
 #include "../include/visky/graphics.h"
+#include "../include/visky/mesh.h"
 #include "utils.h"
 
 
@@ -599,7 +600,7 @@ static void _graphics_mesh_callback(VklCanvas* canvas, VklPrivateEvent ev)
 {
     VklGpu* gpu = canvas->gpu;
     TestGraphics* tg = ev.user_data;
-    vec3 axis;
+    vec3 axis = {0};
     axis[1] = 1;
     glm_rotate_make(tg->mvp.model, ev.u.t.time, axis);
     vkl_upload_buffers(gpu->context, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
@@ -609,80 +610,35 @@ int test_graphics_mesh(TestContext* context)
 {
     INIT_GRAPHICS(VKL_GRAPHICS_MESH)
 
-    // Vertices and indices.
-    float x = .5;
-    VklGraphicsMeshVertex cube[] = {
-        {{-x, -x, +x}, {0, 0, +1}, {1, 1}}, // front
-        {{+x, -x, +x}, {0, 0, +1}, {1, 1}}, //
-        {{+x, +x, +x}, {0, 0, +1}, {1, 1}}, //
-        {{+x, +x, +x}, {0, 0, +1}, {1, 1}}, //
-        {{-x, +x, +x}, {0, 0, +1}, {1, 1}}, //
-        {{-x, -x, +x}, {0, 0, +1}, {1, 1}}, //
-
-        {{+x, -x, +x}, {+1, 0, 0}, {0, 0}}, // right
-        {{+x, -x, -x}, {+1, 0, 0}, {0, 0}}, //
-        {{+x, +x, -x}, {+1, 0, 0}, {0, 0}}, //
-        {{+x, +x, -x}, {+1, 0, 0}, {0, 0}}, //
-        {{+x, +x, +x}, {+1, 0, 0}, {0, 0}}, //
-        {{+x, -x, +x}, {+1, 0, 0}, {0, 0}}, //
-
-        {{-x, +x, -x}, {0, 0, -1}, {1, 1}}, // back
-        {{+x, +x, -x}, {0, 0, -1}, {1, 1}}, //
-        {{+x, -x, -x}, {0, 0, -1}, {1, 1}}, //
-        {{+x, -x, -x}, {0, 0, -1}, {1, 1}}, //
-        {{-x, -x, -x}, {0, 0, -1}, {1, 1}}, //
-        {{-x, +x, -x}, {0, 0, -1}, {1, 1}}, //
-
-        {{-x, -x, -x}, {-1, 0, 0}, {0, 0}}, // left
-        {{-x, -x, +x}, {-1, 0, 0}, {0, 0}}, //
-        {{-x, +x, +x}, {-1, 0, 0}, {0, 0}}, //
-        {{-x, +x, +x}, {-1, 0, 0}, {0, 0}}, //
-        {{-x, +x, -x}, {-1, 0, 0}, {0, 0}}, //
-        {{-x, -x, -x}, {-1, 0, 0}, {0, 0}}, //
-
-        {{-x, -x, -x}, {0, -1, 0}, {0, 0}}, // bottom
-        {{+x, -x, -x}, {0, -1, 0}, {0, 0}}, //
-        {{+x, -x, +x}, {0, -1, 0}, {0, 0}}, //
-        {{+x, -x, +x}, {0, -1, 0}, {0, 0}}, //
-        {{-x, -x, +x}, {0, -1, 0}, {0, 0}}, //
-        {{-x, -x, -x}, {0, -1, 0}, {0, 0}}, //
-
-        {{-x, +x, +x}, {0, +1, 0}, {0, 0}}, // top
-        {{+x, +x, +x}, {0, +1, 0}, {0, 0}}, //
-        {{+x, +x, -x}, {0, +1, 0}, {0, 0}}, //
-        {{+x, +x, -x}, {0, +1, 0}, {0, 0}}, //
-        {{-x, +x, -x}, {0, +1, 0}, {0, 0}}, //
-        {{-x, +x, +x}, {0, +1, 0}, {0, 0}}, //
-    };
-
-    uint32_t nv = sizeof(cube) / sizeof(VklGraphicsMeshVertex);
-    uint32_t ni = nv;
-
     TestGraphics tg = {0};
     tg.graphics = graphics;
-    tg.vertices = vkl_array_struct(nv, sizeof(VklGraphicsMeshVertex));
-    tg.indices = vkl_array_struct(ni, sizeof(VklIndex));
+
+    VklMesh mesh = vkl_mesh_cube();
+    tg.vertices = mesh.vertices;
+    tg.indices = mesh.indices;
     uint32_t vertex_count = tg.vertices.item_count;
     uint32_t index_count = tg.indices.item_count;
     tg.br_vert = vkl_ctx_buffers(
         gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, vertex_count * sizeof(VklGraphicsMeshVertex));
-    tg.br_index =
-        vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_INDEX, 1, index_count * sizeof(VklIndex));
-    VklGraphicsMeshVertex* vertices = tg.vertices.data;
-    VklIndex* indices = tg.indices.data;
+    if (index_count > 0)
+        tg.br_index = vkl_ctx_buffers(
+            gpu->context, VKL_DEFAULT_BUFFER_INDEX, 1, index_count * sizeof(VklIndex));
 
-    memcpy(vertices, cube, sizeof(cube));
-    for (uint32_t i = 0; i < vertex_count; i++)
-        indices[i] = i;
     vkl_upload_buffers(
         gpu->context, tg.br_vert, 0, vertex_count * tg.vertices.item_size, tg.vertices.data);
-    vkl_upload_buffers(
-        gpu->context, tg.br_index, 0, index_count * tg.indices.item_size, tg.indices.data);
+    if (index_count > 0)
+        vkl_upload_buffers(
+            gpu->context, tg.br_index, 0, index_count * tg.indices.item_size, tg.indices.data);
 
     // Texture.
     VklTexture* texture =
-        vkl_ctx_texture(gpu->context, 2, (uvec3){2, 1, 1}, VK_FORMAT_R8G8B8A8_UNORM);
-    cvec4 tex_data[] = {{255, 0, 0, 255}, {0, 255, 0, 255}};
+        vkl_ctx_texture(gpu->context, 2, (uvec3){2, 2, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+    cvec4 tex_data[] = {
+        {255, 0, 0, 255}, //
+        {0, 255, 0, 255},
+        {0, 0, 255, 255},
+        {255, 255, 0, 255},
+    };
     vkl_upload_texture(gpu->context, texture, sizeof(tex_data), tex_data);
 
     // Create the bindings.
