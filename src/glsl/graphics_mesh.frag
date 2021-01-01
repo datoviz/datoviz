@@ -16,7 +16,7 @@ layout(binding = (USER_BINDING+4)) uniform sampler2D tex_3;
 layout (location = 0) in vec3 in_pos;
 layout (location = 1) in vec3 in_normal;
 layout (location = 2) in vec2 in_uv;
-layout (location = 3) in vec3 in_triangle;
+// layout (location = 3) in vec3 in_triangle;
 
 layout (location = 0) out vec4 out_color;
 

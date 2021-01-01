@@ -2,7 +2,7 @@
 #define VKL_VKLITE2_HEADER
 
 #define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+// #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
 #include <assert.h>
 #include <math.h>

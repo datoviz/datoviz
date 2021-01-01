@@ -921,6 +921,8 @@ void vkl_canvas_recreate(VklCanvas* canvas)
     // Recreate the framebuffers with the new size.
     ASSERT(framebuffers->attachments[0]->width == width);
     ASSERT(framebuffers->attachments[0]->height == height);
+    ASSERT(framebuffers->attachments[1]->width == width);
+    ASSERT(framebuffers->attachments[1]->height == height);
     vkl_framebuffers_create(framebuffers, renderpass);
     if (canvas->overlay)
         vkl_framebuffers_create(framebuffers_overlay, renderpass_overlay);

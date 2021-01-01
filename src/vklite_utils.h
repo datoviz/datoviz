@@ -1539,12 +1539,12 @@ static VkPipelineDepthStencilStateCreateInfo create_depth_stencil(bool enable)
     depth_stencil.depthTestEnable = enable;
     depth_stencil.depthWriteEnable = VK_TRUE;
     depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS;
-    depth_stencil.depthBoundsTestEnable = VK_FALSE;
-    depth_stencil.minDepthBounds = 0.0f; // Optional
-    depth_stencil.maxDepthBounds = 1.0f; // Optional
-    depth_stencil.stencilTestEnable = VK_FALSE;
-    depth_stencil.front = (VkStencilOpState){0}; // Optional
-    depth_stencil.back = (VkStencilOpState){0};  // Optional
+    // depth_stencil.depthBoundsTestEnable = VK_FALSE;
+    // depth_stencil.minDepthBounds = 0.0f; // Optional
+    // depth_stencil.maxDepthBounds = 1.0f; // Optional
+    // depth_stencil.stencilTestEnable = VK_FALSE;
+    // depth_stencil.front = (VkStencilOpState){0}; // Optional
+    // depth_stencil.back = (VkStencilOpState){0};  // Optional
     return depth_stencil;
 }
 

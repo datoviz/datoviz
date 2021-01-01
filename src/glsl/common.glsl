@@ -87,7 +87,7 @@ vec4 to_vulkan(vec4 tr) {
     // HACK: we transform from OpenGL conventional coordinate system to Vulkan
     // This allows us to use MVP matrices in OpenGL conventions.
     tr.y = -tr.y; // Vulkan swaps top and bottom in its device coordinate system.
-    tr.z = .5 * (1.0 - tr.z); // depth is [-1, 1] in OpenGL but [0, 1] in Vulkan
+    tr.z = .5 * (tr.z + tr.w); // depth is [-1, 1] in OpenGL but [0, 1] in Vulkan
     return tr;
 }
 

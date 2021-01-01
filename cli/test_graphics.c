@@ -269,7 +269,7 @@ int test_graphics_3D(TestContext* context)
     tg.up[1] = 1;
     glm_lookat(tg.eye, tg.center, tg.up, tg.mvp.view);
     float ratio = canvas->swapchain.images->width / (float)canvas->swapchain.images->height;
-    glm_perspective(GLM_PI_4, ratio, -1.0f, 1.0f, tg.mvp.proj);
+    glm_perspective(GLM_PI_4, ratio, 0.1f, 100.0f, tg.mvp.proj);
 
     vkl_upload_buffers(gpu->context, tg.br_mvp, 0, sizeof(VklMVP), &tg.mvp);
 
@@ -618,30 +618,35 @@ int test_graphics_mesh(TestContext* context)
         {{+x, +x, +x}, {0, 0, +1}, {1, 1}}, //
         {{-x, +x, +x}, {0, 0, +1}, {1, 1}}, //
         {{-x, -x, +x}, {0, 0, +1}, {1, 1}}, //
+
         {{+x, -x, +x}, {+1, 0, 0}, {0, 0}}, // right
         {{+x, -x, -x}, {+1, 0, 0}, {0, 0}}, //
         {{+x, +x, -x}, {+1, 0, 0}, {0, 0}}, //
         {{+x, +x, -x}, {+1, 0, 0}, {0, 0}}, //
         {{+x, +x, +x}, {+1, 0, 0}, {0, 0}}, //
         {{+x, -x, +x}, {+1, 0, 0}, {0, 0}}, //
+
         {{-x, +x, -x}, {0, 0, -1}, {1, 1}}, // back
         {{+x, +x, -x}, {0, 0, -1}, {1, 1}}, //
         {{+x, -x, -x}, {0, 0, -1}, {1, 1}}, //
         {{+x, -x, -x}, {0, 0, -1}, {1, 1}}, //
         {{-x, -x, -x}, {0, 0, -1}, {1, 1}}, //
         {{-x, +x, -x}, {0, 0, -1}, {1, 1}}, //
+
         {{-x, -x, -x}, {-1, 0, 0}, {0, 0}}, // left
         {{-x, -x, +x}, {-1, 0, 0}, {0, 0}}, //
         {{-x, +x, +x}, {-1, 0, 0}, {0, 0}}, //
         {{-x, +x, +x}, {-1, 0, 0}, {0, 0}}, //
         {{-x, +x, -x}, {-1, 0, 0}, {0, 0}}, //
         {{-x, -x, -x}, {-1, 0, 0}, {0, 0}}, //
+
         {{-x, -x, -x}, {0, -1, 0}, {0, 0}}, // bottom
         {{+x, -x, -x}, {0, -1, 0}, {0, 0}}, //
         {{+x, -x, +x}, {0, -1, 0}, {0, 0}}, //
         {{+x, -x, +x}, {0, -1, 0}, {0, 0}}, //
         {{-x, -x, +x}, {0, -1, 0}, {0, 0}}, //
         {{-x, -x, -x}, {0, -1, 0}, {0, 0}}, //
+
         {{-x, +x, +x}, {0, +1, 0}, {0, 0}}, // top
         {{+x, +x, +x}, {0, +1, 0}, {0, 0}}, //
         {{+x, +x, -x}, {0, +1, 0}, {0, 0}}, //
@@ -668,9 +673,7 @@ int test_graphics_mesh(TestContext* context)
 
     memcpy(vertices, cube, sizeof(cube));
     for (uint32_t i = 0; i < vertex_count; i++)
-    {
         indices[i] = i;
-    }
     vkl_upload_buffers(
         gpu->context, tg.br_vert, 0, vertex_count * tg.vertices.item_size, tg.vertices.data);
     vkl_upload_buffers(
@@ -698,7 +701,7 @@ int test_graphics_mesh(TestContext* context)
     tg.up[1] = 1;
     glm_lookat(tg.eye, tg.center, tg.up, tg.mvp.view);
     float ratio = canvas->swapchain.images->width / (float)canvas->swapchain.images->height;
-    glm_perspective(GLM_PI_4, ratio, -1.0f, 1.0f, tg.mvp.proj);
+    glm_perspective(GLM_PI_4, ratio, 0.1f, 100.0f, tg.mvp.proj);
     vkl_upload_buffers(gpu->context, tg.br_mvp, 0, sizeof(VklMVP), &tg.mvp);
 
     // Parameters.

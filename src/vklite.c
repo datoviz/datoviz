@@ -1800,9 +1800,6 @@ VklGraphics vkl_graphics(VklGpu* gpu)
     VklGraphics graphics = {0};
     graphics.gpu = gpu;
 
-    // Default values.
-    graphics.cull_mode = VK_CULL_MODE_FRONT_BIT;
-
     obj_init(&graphics.obj);
 
     graphics.slots = vkl_slots(gpu);
@@ -2505,7 +2502,6 @@ void vkl_renderpass_create(VklRenderpass* renderpass)
                                                 [VKL_MAX_ATTACHMENTS_PER_RENDERPASS] = {0};
     uint32_t attachment = 0;
     uint32_t k = 0;
-    // bool has_depth_attachment = false;
     for (uint32_t i = 0; i < renderpass->subpass_count; i++)
     {
         k = 0;

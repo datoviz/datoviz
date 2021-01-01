@@ -18,7 +18,7 @@ layout (location = 2) in vec2 uv;
 layout (location = 0) out vec3 out_pos;
 layout (location = 1) out vec3 out_normal;
 layout (location = 2) out vec2 out_uv;
-layout (location = 3) out vec3 out_triangle;
+// layout (location = 3) out vec3 out_triangle;
 
 void main() {
     gl_Position = transform(pos);
@@ -27,5 +27,5 @@ void main() {
     out_normal = ((transpose(inverse(mvp.model)) * vec4(normal, 1.0))).xyz;
 
     out_uv = uv;
-    out_triangle = triangle_coords();
+    // out_triangle = triangle_coords();
 }

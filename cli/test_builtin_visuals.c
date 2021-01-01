@@ -13,6 +13,7 @@
 static VklViewport viewport;
 static VklBufferRegions br_viewport;
 static mat4 MAT4_ID = GLM_MAT4_IDENTITY_INIT;
+static float zero = 0;
 
 static void _mouse_callback(VklCanvas* canvas, VklEvent ev)
 {
@@ -44,6 +45,7 @@ static void _common_data(VklVisual* visual)
     vkl_visual_data(visual, VKL_PROP_MODEL, 0, 1, MAT4_ID);
     vkl_visual_data(visual, VKL_PROP_VIEW, 0, 1, MAT4_ID);
     vkl_visual_data(visual, VKL_PROP_PROJ, 0, 1, MAT4_ID);
+    vkl_visual_data(visual, VKL_PROP_TIME, 0, 1, &zero);
 
     // Viewport.
     br_viewport = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklViewport));

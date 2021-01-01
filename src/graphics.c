@@ -37,8 +37,8 @@ static inline void _load_shader(
 #define PRIMITIVE(x)                                                                              \
     vkl_graphics_renderpass(graphics, &canvas->renderpass, 0);                                    \
     vkl_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_##x);                                   \
-    vkl_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);                                    \
-    vkl_graphics_depth_test(graphics, VKL_DEPTH_TEST_ENABLE);
+    vkl_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
+
 
 #define CREATE vkl_graphics_create(graphics);
 
@@ -276,6 +276,7 @@ static void _graphics_mesh(VklCanvas* canvas, VklGraphics* graphics)
     SHADER(VERTEX, "graphics_mesh_vert")
     SHADER(FRAGMENT, "graphics_mesh_frag")
     PRIMITIVE(TRIANGLE_LIST)
+    vkl_graphics_depth_test(graphics, VKL_DEPTH_TEST_ENABLE);
 
     ATTR_BEGIN(VklGraphicsMeshVertex)
     ATTR_POS(VklGraphicsMeshVertex, pos)
