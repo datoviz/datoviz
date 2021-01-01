@@ -253,7 +253,6 @@ struct VklGraphicsMeshParams
 {
     mat4 lights_pos_0;    // lights 0-3
     mat4 lights_params_0; // for each light, coefs for ambient, diffuse, specular
-
     vec4 view_pos;
     vec4 tex_coefs; // blending coefficients for the textures
 };
