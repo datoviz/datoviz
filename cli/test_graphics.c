@@ -606,14 +606,68 @@ static void _graphics_mesh_callback(VklCanvas* canvas, VklPrivateEvent ev)
     vkl_upload_buffers(gpu->context, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
 }
 
+static VklMesh _graphics_mesh_example(VklMeshType type)
+{
+    switch (type)
+    {
+    case VKL_MESH_SURFACE:;
+        const uint32_t N = 250;
+        uint32_t col_count = N + 1;
+        uint32_t row_count = 2 * N + 1;
+        uint32_t point_count = col_count * row_count;
+        float* heights = calloc(point_count, sizeof(float));
+        float w = 1;
+        float x, y, z;
+        for (uint32_t i = 0; i < row_count; i++)
+        {
+            x = (float)i / (row_count - 1);
+            x = -w + 2 * w * x;
+            for (uint32_t j = 0; j < col_count; j++)
+            {
+                y = (float)j / (col_count - 1);
+                y = -w + 2 * w * y;
+                z = .25 * sin(10 * x) * cos(10 * y);
+                heights[col_count * i + j] = z;
+            }
+        }
+        VklMesh mesh = vkl_mesh_surface(row_count, col_count, heights);
+        FREE(heights);
+        return mesh;
+        break;
+
+    case VKL_MESH_CUBE:
+        return vkl_mesh_cube();
+
+    case VKL_MESH_SPHERE:
+        return vkl_mesh_sphere(100, 100);
+
+    case VKL_MESH_CYLINDER:
+        return vkl_mesh_cylinder(100);
+
+    case VKL_MESH_CONE:
+        return vkl_mesh_cone(100);
+
+    case VKL_MESH_SQUARE:
+        return vkl_mesh_square();
+
+    case VKL_MESH_DISC:
+        return vkl_mesh_disc(100);
+
+    default:
+        break;
+    }
+
+    return (VklMesh){0};
+}
+
 int test_graphics_mesh(TestContext* context)
 {
     INIT_GRAPHICS(VKL_GRAPHICS_MESH)
 
     TestGraphics tg = {0};
     tg.graphics = graphics;
+    VklMesh mesh = _graphics_mesh_example(VKL_MESH_CUBE);
 
-    VklMesh mesh = vkl_mesh_cube();
     tg.vertices = mesh.vertices;
     tg.indices = mesh.indices;
     uint32_t vertex_count = tg.vertices.item_count;

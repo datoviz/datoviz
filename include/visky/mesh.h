@@ -6,6 +6,25 @@
 
 
 /*************************************************************************************************/
+/*  Enums                                                                                     */
+/*************************************************************************************************/
+
+typedef enum
+{
+    VKL_MESH_CUSTOM,
+    VKL_MESH_CUBE,
+    VKL_MESH_SPHERE,
+    VKL_MESH_SURFACE,
+    VKL_MESH_CYLINDER,
+    VKL_MESH_CONE,
+    VKL_MESH_SQUARE,
+    VKL_MESH_DISC,
+    VKL_MESH_COUNT,
+} VklMeshType;
+
+
+
+/*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
@@ -50,8 +69,7 @@ VKY_EXPORT VklMesh vkl_mesh(void);
 
 VKY_EXPORT VklMesh vkl_mesh_grid(uint32_t row_count, uint32_t col_count, const vec3* positions);
 
-VKY_EXPORT VklMesh vkl_mesh_grid_surface(
-    uint32_t row_count, uint32_t col_count, vec3 p00, vec3 p01, vec3 p10, const float* heights);
+VKY_EXPORT VklMesh vkl_mesh_surface(uint32_t row_count, uint32_t col_count, const float* heights);
 
 VKY_EXPORT VklMesh vkl_mesh_cube(void);
 

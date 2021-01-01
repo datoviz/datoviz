@@ -159,8 +159,8 @@ VklMesh vkl_mesh_grid(uint32_t row_count, uint32_t col_count, const vec3* positi
             // Position.
             ASSERT(point_idx < nv);
             _vec3_copy(positions[point_idx], vertex->pos);
-            uv[0] = i / (float)row_count;
-            uv[1] = j / (float)col_count;
+            uv[1] = i / (float)(row_count - 1);
+            uv[0] = j / (float)(col_count - 1);
             _vec3_copy(uv, vertex->uv);
 
             // Normals.
@@ -216,15 +216,15 @@ VklMesh vkl_mesh_grid(uint32_t row_count, uint32_t col_count, const vec3* positi
     return mesh;
 }
 
-VklMesh vkl_mesh_grid_surface(
-    uint32_t row_count, uint32_t col_count, vec3 p00, vec3 p01, vec3 p10, const float* heights)
+VklMesh vkl_mesh_surface(uint32_t row_count, uint32_t col_count, const float* heights)
 {
     ASSERT(row_count > 0);
     ASSERT(col_count > 0);
 
     vec3* positions = calloc(col_count * row_count, sizeof(vec3));
+    vec3 p00 = {-1, 0, -1}, p10 = {+1, 0, -1}, p01 = {-1, 0, +1};
+    vec3 p = {0}, q = {0}, r = {0};
 
-    vec3 p, q, r;
     glm_vec3_sub(p01, p00, p);
     glm_vec3_sub(p10, p00, q);
     glm_vec3_crossn(p, q, r);
@@ -357,7 +357,7 @@ VklMesh vkl_mesh_cylinder(uint32_t count)
             x = r * cos(phi);
             z = r * sin(phi);
             ASSERT(k < point_count);
-            _vec3_copy((vec3){x, -.5 + i, z}, positions[k]);
+            _vec3_copy((vec3){x, .5 - i, z}, positions[k]);
             k++;
         }
     }
@@ -399,34 +399,21 @@ VklMesh vkl_mesh_square()
     const uint32_t nv = 6;
     vkl_array_resize(&mesh.vertices, nv);
     VklGraphicsMeshVertex* vertex = (VklGraphicsMeshVertex*)mesh.vertices.data;
-    // VklIndex* index = (VklIndex*)mesh.indices.data;
-
-    // Get vertices and indices pointers into the mesh arrays.
-    // uint32_t first_vertex = 0;
     float x = .5;
-
     VklGraphicsMeshVertex vertices[] = {
-        {{-x, -x, 0}, {0, 0, +1}, {0, 0}}, //
-        {{+x, -x, 0}, {0, 0, +1}, {0, 1}}, //
-        {{+x, +x, 0}, {0, 0, +1}, {1, 1}}, //
-        {{+x, +x, 0}, {0, 0, +1}, {1, 1}}, //
-        {{-x, +x, 0}, {0, 0, +1}, {0, 1}}, //
-        {{-x, -x, 0}, {0, 0, +1}, {0, 0}}, //
+        {{-x, -x, 0}, {0, 0, +1}, {0, 1}}, //
+        {{+x, -x, 0}, {0, 0, +1}, {1, 1}}, //
+        {{+x, +x, 0}, {0, 0, +1}, {1, 0}}, //
+        {{+x, +x, 0}, {0, 0, +1}, {1, 0}}, //
+        {{-x, +x, 0}, {0, 0, +1}, {0, 0}}, //
+        {{-x, -x, 0}, {0, 0, +1}, {0, 1}}, //
     };
-
-    // Transform, colors, indices.
     for (uint32_t i = 0; i < nv; i++)
     {
-        // Transform.
         transform_pos(&mesh, vertices[i].pos);
         transform_normal(&mesh, vertices[i].normal);
-        // *index = (first_vertex + i);
-        // index++;
     }
-
-    // Copy the vertices to the mesh vertices.
     memcpy(vertex, vertices, sizeof(vertices));
-
     return mesh;
 }
 
@@ -453,7 +440,7 @@ VklMesh vkl_mesh_disc(uint32_t count)
     vec3 normal = {0, 0, -1};
     _vec3_copy((vec3){0, 0, 0}, vertex->pos);
     _vec3_copy(normal, vertex->normal);
-    vertex->uv[0] = 0;
+    vertex->uv[0] = 0.5;
     vertex->uv[1] = 0;
     transform_pos(&mesh, vertex->pos);
     transform_normal(&mesh, vertex->normal);
@@ -474,8 +461,8 @@ VklMesh vkl_mesh_disc(uint32_t count)
         // Normal.
         _vec3_copy(normal, vertex->normal);
 
-        vertex->uv[0] = 1;
-        vertex->uv[1] = i / (float)count;
+        vertex->uv[0] = i / (float)(count - 1);
+        vertex->uv[1] = 1;
 
         // Transform.
         transform_pos(&mesh, vertex->pos);

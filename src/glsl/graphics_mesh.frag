@@ -48,7 +48,7 @@ void main() {
         ambient = light_color;
 
         // Diffuse component.
-        // if (!gl_FrontFacing) normal = -normal;
+        if (gl_FrontFacing) normal = -normal;
         diff = max(dot(light_dir, normal), 0.0);
         diffuse = diff * light_color;
 
