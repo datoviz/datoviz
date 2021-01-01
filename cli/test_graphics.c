@@ -224,6 +224,10 @@ static void _graphics_3D_callback(VklCanvas* canvas, VklPrivateEvent ev)
     vec3 axis;
     axis[1] = 1;
     glm_rotate_make(tg->mvp.model, .5 * ev.u.t.time, axis);
+
+    VklViewport viewport = vkl_viewport_full(canvas);
+    vkl_mvp_camera(viewport, (vec3){0, 0, 3}, (vec3){0, 0, 0}, &tg->mvp);
+
     vkl_upload_buffers(gpu->context, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
 }
 
@@ -260,19 +264,6 @@ int test_graphics_3D(TestContext* context)
     tg.br_viewport = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
     tg.br_params = vkl_ctx_buffers(
         gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointParams));
-
-    // Upload MVP.
-    glm_mat4_identity(tg.mvp.model);
-    glm_mat4_identity(tg.mvp.view);
-    glm_mat4_identity(tg.mvp.proj);
-
-    tg.eye[2] = 2;
-    tg.up[1] = 1;
-    glm_lookat(tg.eye, tg.center, tg.up, tg.mvp.view);
-    float ratio = canvas->swapchain.images->width / (float)canvas->swapchain.images->height;
-    glm_perspective(GLM_PI_4, ratio, 0.1f, 100.0f, tg.mvp.proj);
-
-    vkl_upload_buffers(gpu->context, tg.br_mvp, 0, sizeof(VklMVP), &tg.mvp);
 
     // Upload params.
     tg.param = 50.0f;
@@ -603,6 +594,10 @@ static void _graphics_mesh_callback(VklCanvas* canvas, VklPrivateEvent ev)
     vec3 axis = {0};
     axis[1] = 1;
     glm_rotate_make(tg->mvp.model, ev.u.t.time, axis);
+
+    VklViewport viewport = vkl_viewport_full(canvas);
+    vkl_mvp_camera(viewport, (vec3){0, 0, 3}, (vec3){0, 0, 0}, &tg->mvp);
+
     vkl_upload_buffers(gpu->context, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
 }
 
@@ -702,17 +697,6 @@ int test_graphics_mesh(TestContext* context)
     tg.br_mvp = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklMVP));
     tg.br_viewport =
         vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklViewport));
-
-    // Upload MVP.
-    glm_mat4_identity(tg.mvp.model);
-    glm_mat4_identity(tg.mvp.view);
-    glm_mat4_identity(tg.mvp.proj);
-    tg.eye[2] = 3;
-    tg.up[1] = 1;
-    glm_lookat(tg.eye, tg.center, tg.up, tg.mvp.view);
-    float ratio = canvas->swapchain.images->width / (float)canvas->swapchain.images->height;
-    glm_perspective(GLM_PI_4, ratio, 0.1f, 100.0f, tg.mvp.proj);
-    vkl_upload_buffers(gpu->context, tg.br_mvp, 0, sizeof(VklMVP), &tg.mvp);
 
     // Parameters.
     VklGraphicsMeshParams params = {0};

@@ -280,6 +280,8 @@ vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type, int flags);
 
 VKY_EXPORT VklViewport vkl_viewport_full(VklCanvas* canvas);
 
+VKY_EXPORT void vkl_mvp_camera(VklViewport viewport, vec3 eye, vec3 center, VklMVP* mvp);
+
 
 
 #endif

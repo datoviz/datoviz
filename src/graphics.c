@@ -494,3 +494,16 @@ VklViewport vkl_viewport_full(VklCanvas* canvas)
 
     return viewport;
 }
+
+
+
+void vkl_mvp_camera(VklViewport viewport, vec3 eye, vec3 center, VklMVP* mvp)
+{
+    vec3 up = {0, 1, 0};
+    float near = 0.1f;
+    float far = 100.0f;
+    glm_lookat(eye, center, up, mvp->view);
+    ASSERT(viewport.size_framebuffer[1] > 0);
+    float ratio = viewport.size_framebuffer[0] / (float)viewport.size_framebuffer[1];
+    glm_perspective(GLM_PI_4, ratio, near, far, mvp->proj);
+}
