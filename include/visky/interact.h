@@ -56,6 +56,8 @@ typedef void (*VklInteractCallback)(
 
 struct VklPanzoom
 {
+    VklCanvas* canvas;
+
     vec3 camera_pos;
     vec3 press_pos;
 
@@ -74,6 +76,8 @@ struct VklPanzoom
 
 struct VklCamera
 {
+    VklCanvas* canvas;
+
     vec3 eye; // smoothly follows target
     vec3 forward;
     vec3 up;
@@ -89,6 +93,8 @@ struct VklCamera
 
 struct VklArcball
 {
+    VklCanvas* canvas;
+
     mat4 center_translation, translation;
     versor rotation;
     mat4 mat;

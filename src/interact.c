@@ -34,9 +34,10 @@ static bool _pos_in_viewport(VklViewport viewport, vec2 pos)
 /*  Panzoom                                                                                      */
 /*************************************************************************************************/
 
-static VklPanzoom _panzoom()
+static VklPanzoom _panzoom(VklCanvas* canvas)
 {
     VklPanzoom p = {0};
+    p.canvas = canvas;
     p.camera_pos[2] = +2;
     p.zoom[0] = 1;
     p.zoom[1] = 1;
@@ -260,9 +261,10 @@ static void _camera_reset(VklCamera* camera)
     glm_vec3_copy((vec3){0, 1, 0}, camera->up);
 }
 
-static VklCamera _camera(VklInteractType type)
+static VklCamera _camera(VklCanvas* canvas, VklInteractType type)
 {
     VklCamera c = {0};
+    c.canvas = canvas;
     _camera_reset(&c);
     return c;
 }
@@ -414,6 +416,7 @@ static void _arcball_reset(VklArcball* arcball)
     ASSERT(arcball != NULL);
 
     vec3 eye, center, up, dir, x_axis, y_axis, z_axis;
+    glm_vec3_copy((vec3){0, 0, 2}, arcball->camera.eye);
     glm_vec3_copy(arcball->camera.eye, eye);
     glm_vec3_copy((vec3){0, 0, 0}, center);
     glm_vec3_copy((vec3){0, +1, 0}, up);
@@ -432,9 +435,7 @@ static void _arcball_reset(VklArcball* arcball)
     glm_vec3_cross(z_axis, y_axis, x_axis);
     glm_vec3_normalize(x_axis);
 
-    glm_translate_make(arcball->center_translation, center);
-    glm_mat4_inv(arcball->center_translation, arcball->center_translation);
-
+    glm_mat4_identity(arcball->center_translation);
     glm_translate_make(arcball->translation, (vec3){0, 0, -glm_vec3_norm(dir)});
 
     mat3 m;
@@ -445,13 +446,12 @@ static void _arcball_reset(VklArcball* arcball)
     glm_mat3_transpose(m);
     glm_mat3_quat(m, arcball->rotation);
     glm_quat_normalize(arcball->rotation);
-
-    // glm_mat4_identity(arcball->mat_user);
 }
 
-static VklArcball _arcball()
+static VklArcball _arcball(VklCanvas* canvas)
 {
     VklArcball arcball = {0};
+    arcball.canvas = canvas;
     _arcball_reset(&arcball);
     return arcball;
 }
@@ -495,58 +495,13 @@ static void _arcball_rotate(VklArcball* arcball, vec2 cur_pos, vec2 last_pos)
     glm_quat_mul(mouse_cur_ball, arcball->rotation, arcball->rotation);
 }
 
-static void _arcball_zoom(VklArcball* arcball, vec3 motion)
-{
-    ASSERT(arcball != NULL);
-
-    mat4 tr;
-    glm_translate_make(tr, motion);
-    glm_mat4_mul(tr, arcball->translation, arcball->translation);
-    // Zoom bound.
-    // float zoom_max = 1;
-    // if (arcball->translation[3][2] > -zoom_max)
-    //     arcball->translation[3][2] = -zoom_max;
-}
-
-static void _arcball_pan(VklArcball* arcball, vec2 delta)
-{
-    vec4 motion = {delta[0], delta[1], 0, 0};
-    // Find the panning amount in the world space
-    mat4 inv_panel;
-    glm_mat4_inv(arcball->mat, inv_panel);
-    glm_mat4_mulv(inv_panel, motion, motion);
-    mat4 tr;
-    glm_translate_make(tr, motion);
-    glm_mat4_mul(tr, arcball->center_translation, arcball->center_translation);
-
-    // Update the view matrix.
-    glm_quat_mat4(arcball->rotation, arcball->mat);
-    glm_mat4_mul(arcball->mat, arcball->center_translation, arcball->mat);
-    glm_mat4_mul(arcball->translation, arcball->mat, arcball->mat);
-}
-
 static void _arcball_update_mvp(VklArcball* arcball, VklMVP* mvp)
 {
     ASSERT(arcball != NULL);
     glm_mat4_copy(arcball->mat, mvp->model);
 
-    // // NOTE: need to invert the mouse normalized coordinates if the standard 3D view matrix
-    // is
-    // // also applied.
-    // if (arcball->which_matrix == VKL_MVP_MODEL)
-    // {
-    //     delta[0] *= -1;
-    //     delta[1] *= -1;
-    // }
-
-    vec3 center = {0};
-    vec3 eye = {0, 0, 2.5};
-    vec3 up = {0, 1, 0};
-    glm_lookat(eye, center, up, mvp->view);
-    float ratio = 1; // TODO: viewport.w / viewport.h;
-    glm_perspective(GLM_PI_4, ratio, -1, 1, mvp->proj);
-
-    // mvp->view
+    VklViewport viewport = vkl_viewport_full(arcball->canvas);
+    vkl_mvp_camera(viewport, arcball->camera.eye, (vec3){0, 0, 0}, (vec2){-1, 1}, mvp);
 }
 
 static void _arcball_callback(
@@ -555,7 +510,7 @@ static void _arcball_callback(
     ASSERT(interact != NULL);
     ASSERT(interact->type == VKL_INTERACT_ARCBALL);
     VklArcball* arcball = &interact->u.a;
-    bool is_active = false;
+    bool is_active = true;
 
     bool cur_active = _pos_in_viewport(viewport, mouse->cur_pos);
     bool press_active = _pos_in_viewport(viewport, mouse->press_pos);
@@ -582,8 +537,7 @@ static void _arcball_callback(
         // if (vkl_panel_from_mouse(scene, mouse->cur_pos) != panel)
         //     return;
         // panel->status = VKL_PANEL_STATUS_ACTIVE;
-        vec3 motion = {0, 0, +.2 * mouse->wheel_delta[1]};
-        _arcball_zoom(arcball, motion);
+        glm_vec3_scale(arcball->camera.eye, exp(.1 * mouse->wheel_delta[1]), arcball->camera.eye);
         is_active = true;
     }
 
@@ -597,32 +551,26 @@ static void _arcball_callback(
 
     // Compute the View matrix.
     glm_quat_mat4(arcball->rotation, arcball->mat);
-    glm_mat4_mul(arcball->mat, arcball->center_translation, arcball->mat);
-    glm_mat4_mul(arcball->translation, arcball->mat, arcball->mat);
+    // glm_mat4_mul(arcball->mat, arcball->center_translation, arcball->mat);
+    // glm_mat4_mul(arcball->translation, arcball->mat, arcball->mat);
 
-    // Pan.
-    if (press_active && mouse->cur_state == VKL_MOUSE_STATE_DRAG &&
-        mouse->button == VKL_MOUSE_BUTTON_RIGHT)
-    {
-        // // TODO
-        // if (vkl_panel_from_mouse(scene, mouse->press_pos) != panel)
-        //     return;
-        // panel->status = VKL_PANEL_STATUS_ACTIVE;
+    // // Pan.
+    // if (press_active && mouse->cur_state == VKL_MOUSE_STATE_DRAG &&
+    //     mouse->button == VKL_MOUSE_BUTTON_RIGHT)
+    // {
+    //     // // TODO
+    //     // if (vkl_panel_from_mouse(scene, mouse->press_pos) != panel)
+    //     //     return;
+    //     // panel->status = VKL_PANEL_STATUS_ACTIVE;
 
-        vec2 delta;
-        glm_vec2_sub(interact->mouse_local.cur_pos, interact->mouse_local.last_pos, delta);
-        delta[0] *= .5;
-        delta[1] *= .5;
-        _arcball_pan(arcball, delta);
-        is_active = true;
-    }
+    //     vec2 delta;
+    //     glm_vec2_sub(interact->mouse_local.cur_pos, interact->mouse_local.last_pos, delta);
+    //     float k = 5;
+    //     vec3 motion = {k * delta[0], k * delta[1], 0};
+    //     glm_vec3_add(arcball->camera.eye, motion, arcball->camera.eye);
 
-    // Make a copy of the transformation matrix, if other controllers or the user want to modify
-    // the model/view matrix.
-    // glm_mat4_copy(arcball_mat, arcball->mat_arcball);
-
-    // Take the user matrix into account.
-    // glm_mat4_mul(arcball->mat, arcball->mat_user, arcball->mat);
+    //     is_active = true;
+    // }
 
     if (is_active)
         _arcball_update_mvp(arcball, &interact->mvp);
@@ -670,21 +618,21 @@ VklInteract vkl_interact_builtin(VklCanvas* canvas, VklInteractType type)
     {
     case VKL_INTERACT_PANZOOM:
     case VKL_INTERACT_PANZOOM_FIXED_ASPECT:
-        interact.u.p = _panzoom();
+        interact.u.p = _panzoom(canvas);
         if (type == VKL_INTERACT_PANZOOM_FIXED_ASPECT)
             interact.u.p.fixed_aspect = true;
         interact.callback = _panzoom_callback;
         break;
 
     case VKL_INTERACT_ARCBALL:
-        interact.u.a = _arcball();
+        interact.u.a = _arcball(canvas);
         interact.callback = _arcball_callback;
         break;
 
     case VKL_INTERACT_FLY:
     case VKL_INTERACT_FPS:
     case VKL_INTERACT_TURNTABLE:
-        interact.u.c = _camera(type);
+        interact.u.c = _camera(canvas, type);
         interact.callback = _camera_callback;
         break;
 

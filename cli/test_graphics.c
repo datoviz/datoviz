@@ -226,7 +226,7 @@ static void _graphics_3D_callback(VklCanvas* canvas, VklPrivateEvent ev)
     glm_rotate_make(tg->mvp.model, .5 * ev.u.t.time, axis);
 
     VklViewport viewport = vkl_viewport_full(canvas);
-    vkl_mvp_camera(viewport, (vec3){0, 0, 3}, (vec3){0, 0, 0}, &tg->mvp);
+    vkl_mvp_camera(viewport, (vec3){0, 0, 3}, (vec3){0, 0, 0}, (vec2){.1, 100}, &tg->mvp);
 
     vkl_upload_buffers(gpu->context, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
 }
@@ -596,7 +596,7 @@ static void _graphics_mesh_callback(VklCanvas* canvas, VklPrivateEvent ev)
     glm_rotate_make(tg->mvp.model, ev.u.t.time, axis);
 
     VklViewport viewport = vkl_viewport_full(canvas);
-    vkl_mvp_camera(viewport, (vec3){0, 0, 3}, (vec3){0, 0, 0}, &tg->mvp);
+    vkl_mvp_camera(viewport, (vec3){0, 0, 3}, (vec3){0, 0, 0}, (vec2){.1, 100}, &tg->mvp);
 
     vkl_upload_buffers(gpu->context, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
 }

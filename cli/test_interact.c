@@ -10,8 +10,6 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-// #define N_FRAMES (getenv("VKY_INTERACT") != NULL ? 0 : 10)
-
 
 
 /*************************************************************************************************/
@@ -89,8 +87,6 @@ static void _add_visual(
     VklBufferRegions br_viewport = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
     VklBufferRegions br_params =
         vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointParams));
-    // VklTexture* tex_color = vkl_ctx_texture(ctx, 2, (uvec3){16, 16, 1},
-    // VK_FORMAT_R8G8B8A8_UNORM);
 
     vkl_upload_buffers(ctx, br_params, 0, sizeof(VklGraphicsPointParams), params);
 
@@ -109,7 +105,6 @@ static void _add_visual(
     vkl_visual_buffer(visual, VKL_SOURCE_TYPE_MVP, 0, br_mvp);
     vkl_visual_buffer(visual, VKL_SOURCE_TYPE_VIEWPORT, 0, br_viewport);
     vkl_visual_buffer(visual, VKL_SOURCE_TYPE_PARAM, 0, br_params);
-    // vkl_visual_texture(visual, VKL_SOURCE_TEXTURE_2D, 0, tex_color);
 
     // Upload the data to the GPU.
     VklViewport viewport = vkl_viewport_full(canvas);
@@ -157,7 +152,7 @@ int test_interact_arcball(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, VKL_CANVAS_FLAGS_FPS);
 
     TestScene scene = {0};
     scene.interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
@@ -170,8 +165,8 @@ int test_interact_arcball(TestContext* context)
     VklGraphicsPointParams params = {.point_size = param};
     VklVertex* vertices = calloc(N, sizeof(VklVertex));
     _add_visual(&scene, N, vertices, &params);
-    vkl_app_run(app, N_FRAMES);
 
+    vkl_app_run(app, N_FRAMES);
     FREE(vertices);
     TEST_END
 }
