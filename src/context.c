@@ -9,6 +9,8 @@
 /*************************************************************************************************/
 
 #define TO_KB(x) ((x) / (1024.0))
+#define TO_MB(x) ((x) / (1024.0 * 1024.0))
+#define TO_GB(x) ((x) / (1024.0 * 1024.0 * 1024.0))
 
 
 
@@ -405,7 +407,7 @@ vkl_ctx_buffers(VklContext* context, uint32_t buffer_idx, uint32_t buffer_count,
     if (offset + alsize * buffer_count > regions.buffer->size)
     {
         VkDeviceSize new_size = next_pow2(offset + alsize * buffer_count);
-        log_info("reallocating buffer #%d to %.3f KB", buffer_idx, TO_KB(new_size));
+        log_info("reallocating buffer #%d to %.1f KB", buffer_idx, TO_KB(new_size));
         vkl_buffer_resize(
             regions.buffer, new_size, VKL_DEFAULT_QUEUE_TRANSFER, &context->transfer_cmd);
     }
@@ -594,11 +596,22 @@ void vkl_texture_destroy(VklTexture* texture)
 /*  Data transfers utils                                                                         */
 /*************************************************************************************************/
 
-static VklBuffer* staging_buffer(VklContext* context)
+static VklBuffer* staging_buffer(VklContext* context, VkDeviceSize size)
 {
     VklBuffer* staging = vkl_container_get(&context->buffers, VKL_DEFAULT_BUFFER_STAGING);
     ASSERT(staging != NULL);
     ASSERT(staging->buffer != VK_NULL_HANDLE);
+    // Resize the staging buffer is needed.
+    // TODO: keep staging buffer fixed and copy parts of the data to staging buffer in several
+    // steps.
+    if (staging->size < size)
+    {
+        VkDeviceSize new_size = next_pow2(size);
+        log_info(
+            "reallocating staging buffer to %.1f MB", VKL_DEFAULT_BUFFER_STAGING, TO_MB(new_size));
+        vkl_buffer_resize(staging, new_size, VKL_DEFAULT_QUEUE_TRANSFER, &context->transfer_cmd);
+    }
+    ASSERT(staging->size >= size);
     return staging;
 }
 
@@ -616,11 +629,11 @@ static void process_texture_upload(VklContext* context, VklTransfer tr)
     // Wait for the transfer queue to be idle.
     vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
 
-    // Take the staging buffer.
-    VklBuffer* staging = staging_buffer(context);
-
     // Size of the buffer to transfer.
     VkDeviceSize size = tr.u.tex.size;
+
+    // Take the staging buffer.
+    VklBuffer* staging = staging_buffer(context, size);
 
     // Transfer from the CPU to the GPU staging buffer.
     vkl_buffer_upload(staging, 0, size, (const void*)tr.u.tex.data);
@@ -676,7 +689,8 @@ static void process_texture_download(VklContext* context, VklTransfer tr)
     ASSERT(tr.type == VKL_TRANSFER_TEXTURE_DOWNLOAD);
 
     // Take the staging buffer.
-    VklBuffer* staging = staging_buffer(context);
+    VkDeviceSize size = tr.u.tex.size;
+    VklBuffer* staging = staging_buffer(context, size);
 
     // Take transfer cmd buf.
     VklCommands* cmds = &context->transfer_cmd;
@@ -717,7 +731,7 @@ static void process_texture_download(VklContext* context, VklTransfer tr)
     vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
 
     // Transfer from the CPU to the GPU staging buffer.
-    vkl_buffer_download(staging, 0, tr.u.tex.size, tr.u.tex.data);
+    vkl_buffer_download(staging, 0, size, tr.u.tex.data);
 }
 
 
@@ -733,9 +747,6 @@ static void process_buffer_upload(VklContext* context, VklTransfer tr)
 
     // Wait for the transfer queue to be idle.
     vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
-
-    // Take the staging buffer.
-    VklBuffer* staging = staging_buffer(context);
 
     // Size of the buffer to transfer.
     VkDeviceSize region_size = tr.u.buf.size;
@@ -754,6 +765,10 @@ static void process_buffer_upload(VklContext* context, VklTransfer tr)
     VklPointer pointer = aligned_repeat(region_size, tr.u.buf.data, n, tr.u.buf.regions.alignment);
     // Transfer from the CPU to the GPU staging buffer.
     VkDeviceSize total_size = alsize * n;
+
+    // Take the staging buffer.
+    VklBuffer* staging = staging_buffer(context, total_size);
+
     vkl_buffer_upload(staging, 0, total_size, pointer.pointer);
     ALIGNED_FREE(pointer)
 
@@ -803,9 +818,6 @@ static void process_buffer_download(VklContext* context, VklTransfer tr)
 
     ASSERT(tr.type == VKL_TRANSFER_BUFFER_DOWNLOAD);
 
-    // Take the staging buffer.
-    VklBuffer* staging = staging_buffer(context);
-
     // Take transfer cmd buf.
     VklCommands* cmds = &context->transfer_cmd;
     vkl_cmd_reset(cmds, 0);
@@ -813,6 +825,9 @@ static void process_buffer_download(VklContext* context, VklTransfer tr)
 
     // Size of the buffer to transfer.
     VkDeviceSize size = tr.u.buf.size;
+
+    // Take the staging buffer.
+    VklBuffer* staging = staging_buffer(context, size);
 
     // Determine the offset in the source buffer.
     // Should be consecutive offsets.

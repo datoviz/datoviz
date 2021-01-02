@@ -932,6 +932,7 @@ void* vkl_buffer_map(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size)
     ASSERT(buffer->gpu != NULL);
     ASSERT(buffer->gpu->device != VK_NULL_HANDLE);
     ASSERT(is_obj_created(&buffer->obj));
+    ASSERT(offset + size <= buffer->size);
     ASSERT(
         (buffer->memory & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) && //
         (buffer->memory & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT));
@@ -967,6 +968,8 @@ void vkl_buffer_upload(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size
     ASSERT(buffer != NULL);
     ASSERT(size != 0);
     ASSERT(data != NULL);
+    ASSERT(buffer->buffer != VK_NULL_HANDLE);
+    ASSERT(offset + size <= buffer->size);
 
     log_trace("uploading %d bytes to GPU buffer", size);
     void* mapped = vkl_buffer_map(buffer, offset, size);
