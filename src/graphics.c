@@ -467,36 +467,6 @@ VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type, in
 
 
 
-/*************************************************************************************************/
-/*  Viewport                                                                                     */
-/*************************************************************************************************/
-
-VklViewport vkl_viewport_full(VklCanvas* canvas)
-{
-    ASSERT(canvas != NULL);
-    VklViewport viewport = {0};
-
-    viewport.viewport.x = 0;
-    viewport.viewport.y = 0;
-    viewport.viewport.minDepth = +0;
-    viewport.viewport.maxDepth = +1;
-
-    viewport.size_framebuffer[0] = viewport.viewport.width =
-        (float)canvas->swapchain.images->width;
-    viewport.size_framebuffer[1] = viewport.viewport.height =
-        (float)canvas->swapchain.images->height;
-
-    viewport.size_screen[0] = canvas->window->width;
-    viewport.size_screen[1] = canvas->window->height;
-
-    viewport.dpi_scaling = VKL_DEFAULT_DPI_SCALING;
-    viewport.clip = VKL_VIEWPORT_FULL;
-
-    return viewport;
-}
-
-
-
 void vkl_mvp_camera(VklViewport viewport, vec3 eye, vec3 center, vec2 near_far, VklMVP* mvp)
 {
     vec3 up = {0, 1, 0};

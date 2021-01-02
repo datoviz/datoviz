@@ -110,6 +110,8 @@ static void _common_bindings(TestGraphics* tg)
 #define BEGIN_DATA(type, n, user_data)                                                            \
     TestGraphics tg = {0};                                                                        \
     tg.graphics = graphics;                                                                       \
+    tg.up[1] = 1;                                                                                 \
+    tg.eye[2] = 3;                                                                                \
     tg.vertices = vkl_array_struct(0, sizeof(type));                                              \
     tg.indices = vkl_array_struct(0, sizeof(VklIndex));                                           \
     VklGraphicsData data = vkl_graphics_data(graphics, &tg.vertices, &tg.indices, user_data);     \
@@ -226,7 +228,7 @@ static void _graphics_3D_callback(VklCanvas* canvas, VklPrivateEvent ev)
     glm_rotate_make(tg->mvp.model, .5 * ev.u.t.time, axis);
 
     VklViewport viewport = vkl_viewport_full(canvas);
-    vkl_mvp_camera(viewport, (vec3){0, 0, 3}, (vec3){0, 0, 0}, (vec2){.1, 100}, &tg->mvp);
+    vkl_mvp_camera(viewport, tg->eye, tg->center, (vec2){.1, 100}, &tg->mvp);
 
     vkl_upload_buffers(gpu->context, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
 }
@@ -596,7 +598,7 @@ static void _graphics_mesh_callback(VklCanvas* canvas, VklPrivateEvent ev)
     glm_rotate_make(tg->mvp.model, ev.u.t.time, axis);
 
     VklViewport viewport = vkl_viewport_full(canvas);
-    vkl_mvp_camera(viewport, (vec3){0, 0, 3}, (vec3){0, 0, 0}, (vec2){.1, 100}, &tg->mvp);
+    vkl_mvp_camera(viewport, tg->eye, tg->center, (vec2){.1, 10}, &tg->mvp);
 
     vkl_upload_buffers(gpu->context, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
 }
@@ -660,6 +662,8 @@ int test_graphics_mesh(TestContext* context)
     INIT_GRAPHICS(VKL_GRAPHICS_MESH)
 
     TestGraphics tg = {0};
+    tg.eye[2] = 3;
+    tg.up[1] = 1;
     tg.graphics = graphics;
     VklMesh mesh = _graphics_mesh_example(VKL_MESH_CUBE);
 
@@ -700,12 +704,12 @@ int test_graphics_mesh(TestContext* context)
 
     // Parameters.
     VklGraphicsMeshParams params = {0};
-    params.lights_params_0[0][0] = .4;
-    params.lights_params_0[0][1] = .3;
-    params.lights_params_0[0][2] = .3;
-    params.lights_pos_0[0][0] = -1;
-    params.lights_pos_0[0][1] = 1;
-    params.lights_pos_0[0][2] = 5;
+    params.lights_params_0[0][0] = 0.2;
+    params.lights_params_0[0][1] = 0.4;
+    params.lights_params_0[0][2] = 0.4;
+    params.lights_pos_0[0][0] = -2;
+    params.lights_pos_0[0][1] = 0.5;
+    params.lights_pos_0[0][2] = +2;
     params.tex_coefs[0] = 1;
     glm_vec3_copy(tg.eye, params.view_pos);
 

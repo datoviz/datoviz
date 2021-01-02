@@ -15,7 +15,6 @@
 // NOTE: must correspond to the same constant in common.glsl
 #define VKL_USER_BINDING 2
 
-#define VKL_DEFAULT_DPI_SCALING 1.0f
 #define VKL_MAX_GLYPHS_PER_TEXT 256
 
 
@@ -277,8 +276,6 @@ VKY_EXPORT void vkl_graphics_append(VklGraphicsData* data, const void* item);
 
 VKY_EXPORT VklGraphics*
 vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type, int flags);
-
-VKY_EXPORT VklViewport vkl_viewport_full(VklCanvas* canvas);
 
 VKY_EXPORT void
 vkl_mvp_camera(VklViewport viewport, vec3 eye, vec3 center, vec2 near_far, VklMVP* mvp);

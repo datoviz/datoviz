@@ -27,6 +27,7 @@ extern "C" {
     }
 #define VKL_DEFAULT_IMAGE_FORMAT VK_FORMAT_B8G8R8A8_UNORM
 // #define VKL_DEFAULT_PRESENT_MODE VK_PRESENT_MODE_FIFO_KHR
+#define VKL_DEFAULT_DPI_SCALING 1.0f
 #define VKL_DEFAULT_PRESENT_MODE                                                                  \
     (getenv("VKL_FPS") != NULL ? VK_PRESENT_MODE_IMMEDIATE_KHR : VK_PRESENT_MODE_FIFO_KHR)
 #define VKL_MIN_SWAPCHAIN_IMAGE_COUNT 3
@@ -615,6 +616,7 @@ struct VklCanvas
 
     VklScreencast* screencast;
 
+    VklViewport viewport;
     VklScene* scene;
 };
 
@@ -675,6 +677,8 @@ VKY_EXPORT void vkl_canvas_clear_color(VklCanvas* canvas, VkClearColorValue colo
 VKY_EXPORT void vkl_canvas_size(VklCanvas* canvas, VklCanvasSizeType type, uvec2 size);
 
 VKY_EXPORT void vkl_canvas_close_on_esc(VklCanvas* canvas, bool value);
+
+VKY_EXPORT VklViewport vkl_viewport_full(VklCanvas* canvas);
 
 
 
