@@ -90,6 +90,7 @@ int test_panel_1(TestContext* context)
     vec3* pos = calloc(N, sizeof(vec3));
     cvec4* color = calloc(N, sizeof(cvec4));
     float param = 10.0f;
+    float zero = 0.0f;
     mat4 id = GLM_MAT4_IDENTITY_INIT;
     for (uint32_t i = 0; i < N; i++)
     {
@@ -106,12 +107,12 @@ int test_panel_1(TestContext* context)
         vkl_visual_data(&visual, VKL_PROP_MODEL, 0, 1, id);
         vkl_visual_data(&visual, VKL_PROP_VIEW, 0, 1, id);
         vkl_visual_data(&visual, VKL_PROP_PROJ, 0, 1, id);
+        vkl_visual_data(&visual, VKL_PROP_TIME, 0, 1, &zero);
 
         vkl_visual_data_buffer(&visual, VKL_SOURCE_TYPE_VIEWPORT, 0, 0, 1, 1, NULL);
     }
 
-    VklViewport viewport = vkl_viewport_full(canvas);
-    vkl_visual_update(&visual, viewport, (VklDataCoords){0}, NULL);
+    vkl_visual_update(&visual, canvas->viewport, (VklDataCoords){0}, NULL);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _canvas_fill, &grid);
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_CLICK, 0, _canvas_click, &grid);

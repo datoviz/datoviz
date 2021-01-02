@@ -64,8 +64,7 @@ static void _update_interact(VklCanvas* canvas, VklPrivateEvent ev)
     TestScene* scene = (TestScene*)ev.user_data;
     ASSERT(scene != NULL);
 
-    VklViewport viewport = vkl_viewport_full(canvas);
-    vkl_interact_update(&scene->interact, viewport, &canvas->mouse, &canvas->keyboard);
+    vkl_interact_update(&scene->interact, canvas->viewport, &canvas->mouse, &canvas->keyboard);
     VklSource* source = vkl_bake_source(&scene->visual, VKL_SOURCE_TYPE_MVP, 0);
     VklBufferRegions* br = &source->u.br;
     VklPointer pointer = aligned_repeat(br->size, &scene->interact.mvp, 1, br->alignment);
@@ -107,8 +106,7 @@ static void _add_visual(
     vkl_visual_buffer(visual, VKL_SOURCE_TYPE_PARAM, 0, br_params);
 
     // Upload the data to the GPU.
-    VklViewport viewport = vkl_viewport_full(canvas);
-    vkl_visual_update(visual, viewport, (VklDataCoords){0}, NULL);
+    vkl_visual_update(visual, canvas->viewport, (VklDataCoords){0}, NULL);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _visual_canvas_fill, visual);
 }

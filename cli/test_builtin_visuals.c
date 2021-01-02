@@ -10,7 +10,6 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static VklViewport viewport;
 static VklBufferRegions br_viewport;
 static mat4 MAT4_ID = GLM_MAT4_IDENTITY_INIT;
 static float zero = 0;
@@ -26,12 +25,11 @@ static void _mouse_callback(VklCanvas* canvas, VklEvent ev)
 static void _resize(VklCanvas* canvas, VklPrivateEvent ev)
 {
     VklContext* ctx = canvas->gpu->context;
-    viewport = vkl_viewport_full(canvas);
-    viewport.margins[0] = 100;
-    viewport.margins[1] = 100;
-    viewport.margins[2] = 100;
-    viewport.margins[3] = 100;
-    vkl_upload_buffers(ctx, br_viewport, 0, sizeof(VklViewport), &viewport);
+    canvas->viewport.margins[0] = 100;
+    canvas->viewport.margins[1] = 100;
+    canvas->viewport.margins[2] = 100;
+    canvas->viewport.margins[3] = 100;
+    vkl_upload_buffers(ctx, br_viewport, 0, sizeof(VklViewport), &canvas->viewport);
 }
 
 static void _common_data(VklVisual* visual)
@@ -49,7 +47,6 @@ static void _common_data(VklVisual* visual)
 
     // Viewport.
     br_viewport = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklViewport));
-    viewport = vkl_viewport_full(canvas);
 
     // For the tests, share the same viewport buffer region among all graphics pipelines of the
     // visual.
@@ -57,8 +54,8 @@ static void _common_data(VklVisual* visual)
     {
         vkl_visual_buffer(visual, VKL_SOURCE_TYPE_VIEWPORT, pidx, br_viewport);
     }
-    vkl_upload_buffers(ctx, br_viewport, 0, sizeof(VklViewport), &viewport);
-    vkl_visual_update(visual, viewport, (VklDataCoords){0}, NULL);
+    vkl_upload_buffers(ctx, br_viewport, 0, sizeof(VklViewport), &canvas->viewport);
+    vkl_visual_update(visual, canvas->viewport, (VklDataCoords){0}, NULL);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _visual_canvas_fill, visual);
 }
@@ -182,8 +179,7 @@ static void _visual_update(VklCanvas* canvas, VklPrivateEvent ev)
     vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, xticks);
     vkl_visual_data(visual, VKL_PROP_TEXT, 0, N, text);
 
-    viewport = vkl_viewport_full(canvas);
-    vkl_visual_update(visual, viewport, (VklDataCoords){0}, NULL);
+    vkl_visual_update(visual, canvas->viewport, (VklDataCoords){0}, NULL);
     // Manual trigger of full refill in canvas main loop. Normally this is automatically handled
     // by the scene API, which is not used in this test.
     canvas->obj.status = VKL_OBJECT_STATUS_NEED_FULL_UPDATE;

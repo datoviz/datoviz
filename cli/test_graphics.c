@@ -25,7 +25,6 @@ struct TestGraphics
     VklMVP mvp;
     vec3 eye, center, up;
 
-    VklViewport viewport;
     VklArray vertices;
     VklArray indices;
     float param;
@@ -226,9 +225,7 @@ static void _graphics_3D_callback(VklCanvas* canvas, VklPrivateEvent ev)
     vec3 axis;
     axis[1] = 1;
     glm_rotate_make(tg->mvp.model, .5 * ev.u.t.time, axis);
-
-    VklViewport viewport = vkl_viewport_full(canvas);
-    vkl_mvp_camera(viewport, tg->eye, tg->center, (vec2){.1, 100}, &tg->mvp);
+    vkl_mvp_camera(canvas->viewport, tg->eye, tg->center, (vec2){.1, 100}, &tg->mvp);
 
     vkl_upload_buffers(gpu->context, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
 }
@@ -474,9 +471,8 @@ int test_graphics_marker(TestContext* context)
 static void _resize(VklCanvas* canvas, VklPrivateEvent ev)
 {
     TestGraphics* tg = (TestGraphics*)ev.user_data;
-    tg->viewport = vkl_viewport_full(canvas);
     vkl_upload_buffers(
-        canvas->gpu->context, tg->br_viewport, 0, sizeof(VklViewport), &tg->viewport);
+        canvas->gpu->context, tg->br_viewport, 0, sizeof(VklViewport), &canvas->viewport);
 }
 
 int test_graphics_segment(TestContext* context)
@@ -596,9 +592,7 @@ static void _graphics_mesh_callback(VklCanvas* canvas, VklPrivateEvent ev)
     vec3 axis = {0};
     axis[1] = 1;
     glm_rotate_make(tg->mvp.model, ev.u.t.time, axis);
-
-    VklViewport viewport = vkl_viewport_full(canvas);
-    vkl_mvp_camera(viewport, tg->eye, tg->center, (vec2){.1, 10}, &tg->mvp);
+    vkl_mvp_camera(canvas->viewport, tg->eye, tg->center, (vec2){.1, 10}, &tg->mvp);
 
     vkl_upload_buffers(gpu->context, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
 }

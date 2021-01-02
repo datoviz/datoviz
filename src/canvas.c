@@ -608,6 +608,7 @@ static int _resize_callbacks(VklCanvas* canvas)
     ev.type = VKL_PRIVATE_EVENT_RESIZE;
     vkl_canvas_size(canvas, VKL_CANVAS_SIZE_SCREEN, ev.u.r.size_screen);
     vkl_canvas_size(canvas, VKL_CANVAS_SIZE_FRAMEBUFFER, ev.u.r.size_framebuffer);
+    canvas->viewport = vkl_viewport_full(canvas);
     return _canvas_callbacks(canvas, ev);
 }
 
@@ -837,6 +838,9 @@ _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
 
     obj_created(&canvas->obj);
 
+    // Update the viewport field.
+    canvas->viewport = vkl_viewport_full(canvas);
+
     if (overlay)
     {
         vkl_imgui_init(canvas);
@@ -1016,13 +1020,24 @@ VklViewport vkl_viewport_full(VklCanvas* canvas)
     viewport.viewport.minDepth = +0;
     viewport.viewport.maxDepth = +1;
 
+    ASSERT(canvas->swapchain.images != NULL);
     viewport.size_framebuffer[0] = viewport.viewport.width =
         (float)canvas->swapchain.images->width;
     viewport.size_framebuffer[1] = viewport.viewport.height =
         (float)canvas->swapchain.images->height;
 
-    viewport.size_screen[0] = canvas->window->width;
-    viewport.size_screen[1] = canvas->window->height;
+    if (canvas->window != NULL)
+    {
+        viewport.size_screen[0] = canvas->window->width;
+        viewport.size_screen[1] = canvas->window->height;
+    }
+    else
+    {
+        // If offscreen canvas, there is no window and we use the same units for screen coords
+        // and framebuffer coords.
+        viewport.size_screen[0] = viewport.size_framebuffer[0];
+        viewport.size_screen[1] = viewport.size_framebuffer[1];
+    }
 
     viewport.dpi_scaling = VKL_DEFAULT_DPI_SCALING;
     viewport.clip = VKL_VIEWPORT_FULL;

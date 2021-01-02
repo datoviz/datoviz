@@ -75,8 +75,7 @@ int test_visuals_1(TestContext* context)
     vkl_visual_buffer(&visual, VKL_SOURCE_TYPE_PARAM, 0, br_params);
 
     // Upload the data to the GPU.
-    VklViewport viewport = vkl_viewport_full(canvas);
-    vkl_visual_update(&visual, viewport, (VklDataCoords){0}, NULL);
+    vkl_visual_update(&visual, canvas->viewport, (VklDataCoords){0}, NULL);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _visual_canvas_fill, &visual);
 
@@ -133,8 +132,7 @@ int test_visuals_2(TestContext* context)
     vkl_visual_buffer(&visual, VKL_SOURCE_TYPE_VIEWPORT, 0, br_viewport);
 
     // Upload the data to the GPU..
-    VklViewport viewport = vkl_viewport_full(canvas);
-    vkl_visual_update(&visual, viewport, (VklDataCoords){0}, NULL);
+    vkl_visual_update(&visual, canvas->viewport, (VklDataCoords){0}, NULL);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _visual_canvas_fill, &visual);
 
@@ -215,8 +213,7 @@ int test_visuals_3(TestContext* context)
     vkl_visual_buffer(&visual, VKL_SOURCE_TYPE_VIEWPORT, 0, br_viewport);
 
     // Upload the data to the GPU.
-    VklViewport viewport = vkl_viewport_full(canvas);
-    vkl_visual_update(&visual, viewport, (VklDataCoords){0}, NULL);
+    vkl_visual_update(&visual, canvas->viewport, (VklDataCoords){0}, NULL);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _visual_canvas_fill, &visual);
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1.0 / 60, _timer_callback, &visual);
@@ -245,9 +242,7 @@ static void _visual_update(VklCanvas* canvas, VklPrivateEvent ev)
         pos[i][0] = -.75 + 1.5 / (N - 1) * i;
     }
     vkl_visual_data(visual, VKL_PROP_POS, 0, N, pos);
-
-    VklViewport viewport = vkl_viewport_full(canvas);
-    vkl_visual_update(visual, viewport, (VklDataCoords){0}, NULL);
+    vkl_visual_update(visual, canvas->viewport, (VklDataCoords){0}, NULL);
 
     vkl_canvas_to_refill(visual->canvas, true);
 }
@@ -288,9 +283,8 @@ int test_visuals_4(TestContext* context)
     vkl_visual_data(&visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
 
     // Upload the data to the GPU..
-    VklViewport viewport = vkl_viewport_full(canvas);
-    vkl_visual_data_buffer(&visual, VKL_SOURCE_TYPE_VIEWPORT, 0, 0, 1, 1, &viewport);
-    vkl_visual_update(&visual, viewport, (VklDataCoords){0}, NULL);
+    vkl_visual_data_buffer(&visual, VKL_SOURCE_TYPE_VIEWPORT, 0, 0, 1, 1, &canvas->viewport);
+    vkl_visual_update(&visual, canvas->viewport, (VklDataCoords){0}, NULL);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, .1, _visual_update, &visual);
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _visual_canvas_fill, &visual);
