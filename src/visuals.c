@@ -109,7 +109,7 @@ static void _set_source_bindings(VklVisual* visual, VklSource* source)
 
 
 
-static uint32_t _get_buffer_idx(VklSource* source)
+static VklDefaultBuffer _get_default_buffer(VklSource* source)
 {
     switch (source->source_kind)
     {
@@ -883,7 +883,7 @@ void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source)
         // Number of buffers: 1, unless using _immediate upload.
         uint32_t buf_count =
             _uniform_source_is_immediate(source) ? canvas->swapchain.img_count : 1;
-        source->u.br = vkl_ctx_buffers(ctx, _get_buffer_idx(source), buf_count, size);
+        source->u.br = vkl_ctx_buffers(ctx, _get_default_buffer(source), buf_count, size);
 
         // Set the pipeline bindings with the source buffer.
         _set_source_bindings(visual, source);

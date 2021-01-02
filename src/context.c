@@ -361,13 +361,13 @@ void vkl_context_destroy(VklContext* context)
 /*  Buffer allocation                                                                            */
 /*************************************************************************************************/
 
-VklBufferRegions
-vkl_ctx_buffers(VklContext* context, uint32_t buffer_idx, uint32_t buffer_count, VkDeviceSize size)
+VklBufferRegions vkl_ctx_buffers(
+    VklContext* context, VklDefaultBuffer buffer_idx, uint32_t buffer_count, VkDeviceSize size)
 {
     ASSERT(context != NULL);
     ASSERT(context->gpu != NULL);
     ASSERT(buffer_count > 0);
-    ASSERT(buffer_idx < context->buffers.capacity);
+    ASSERT((uint32_t)buffer_idx < context->buffers.capacity);
     ASSERT(size > 0);
 
     VkDeviceSize alignment = 0;
