@@ -673,7 +673,7 @@ void vkl_cmd_begin(VklCommands* cmds, uint32_t idx)
 {
     ASSERT(cmds != NULL);
     ASSERT(cmds->count > 0);
-    log_trace("begin command buffer");
+    // log_trace("begin command buffer");
     VkCommandBufferBeginInfo begin_info = {0};
     begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     VK_CHECK_RESULT(vkBeginCommandBuffer(cmds->cmds[idx], &begin_info));
@@ -686,7 +686,7 @@ void vkl_cmd_end(VklCommands* cmds, uint32_t idx)
     ASSERT(cmds != NULL);
     ASSERT(cmds->count > 0);
 
-    log_trace("end command buffer");
+    // log_trace("end command buffer");
     VK_CHECK_RESULT(vkEndCommandBuffer(cmds->cmds[idx]));
 
     obj_created(&cmds->obj);
@@ -2878,7 +2878,7 @@ void vkl_cmd_begin_renderpass(
     ASSERT(framebuffers->attachment_count > 0);
     uint32_t width = framebuffers->attachments[0]->width;
     uint32_t height = framebuffers->attachments[0]->height;
-    log_trace("begin renderpass with size %dx%d", width, height);
+    // log_trace("begin renderpass with size %dx%d", width, height);
 
     CMD_START_CLIP(cmds->count)
     ASSERT(framebuffers->framebuffers[iclip] != VK_NULL_HANDLE);
