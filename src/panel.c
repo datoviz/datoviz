@@ -370,17 +370,25 @@ VklViewport vkl_panel_viewport(VklPanel* panel)
 
 
 
-VklPanel* vkl_panel_at(VklGrid* grid, vec2 pos)
+bool vkl_panel_contains(VklPanel* panel, vec2 screen_pos)
+{
+    return _pos_in_viewport(panel->viewport, screen_pos);
+}
+
+
+
+VklPanel* vkl_panel_at(VklGrid* grid, vec2 screen_pos)
 {
     ASSERT(grid != NULL);
-    float x = pos[0];
-    float y = pos[1];
+
+    // HACK: ensure there is only 1  loop over the grid panels going on at the same time.
+    // Otherwise we'll have an infinite loop.
+    ASSERT(grid->panels._loop_idx == 0);
 
     VklPanel* panel = vkl_container_iter(&grid->panels);
     while (panel != NULL)
     {
-        if (panel->x <= x && x <= panel->x + panel->width && //
-            panel->y <= y && y <= panel->y + panel->height)
+        if (vkl_panel_contains(panel, screen_pos))
             return panel;
         panel = vkl_container_iter(&grid->panels);
     }

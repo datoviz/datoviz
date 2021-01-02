@@ -148,6 +148,8 @@ VKY_EXPORT void vkl_panel_span(VklPanel* panel, VklGridAxis axis, uint32_t span)
 
 VKY_EXPORT void vkl_panel_cell(VklPanel* panel, uint32_t row, uint32_t col);
 
+VKY_EXPORT bool vkl_panel_contains(VklPanel* panel, vec2 pos);
+
 VKY_EXPORT VklPanel* vkl_panel_at(VklGrid* grid, vec2 pos); // normalized coords
 
 VKY_EXPORT void vkl_panel_destroy(VklPanel* panel);

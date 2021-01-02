@@ -678,6 +678,18 @@ VKY_EXPORT void vkl_canvas_size(VklCanvas* canvas, VklCanvasSizeType type, uvec2
 
 VKY_EXPORT void vkl_canvas_close_on_esc(VklCanvas* canvas, bool value);
 
+// screen coordinates
+static inline bool _pos_in_viewport(VklViewport viewport, vec2 screen_pos)
+{
+    ASSERT(viewport.size_screen[0] > 0);
+    return (
+        viewport.offset_screen[0] <= screen_pos[0] &&                           //
+        viewport.offset_screen[1] <= screen_pos[1] &&                           //
+        screen_pos[0] <= viewport.offset_screen[0] + viewport.size_screen[0] && //
+        screen_pos[1] <= viewport.offset_screen[1] + viewport.size_screen[1]    //
+    );
+}
+
 VKY_EXPORT VklViewport vkl_viewport_full(VklCanvas* canvas);
 
 

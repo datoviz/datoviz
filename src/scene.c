@@ -134,6 +134,18 @@ static void _scene_frame(VklCanvas* canvas, VklPrivateEvent ev)
             panel->controller->callback(panel->controller, (VklEvent){0});
         }
 
+        // TODO
+        // // Handle floating panels.
+        // if (panel->mode == VKL_PANEL_FLOATING &&               //
+        //     canvas->mouse.cur_state == VKL_MOUSE_STATE_DRAG && //
+        //     vkl_panel_contains(panel, canvas->mouse.press_pos))
+        // {
+        //     float x = canvas->mouse.cur_pos[0] / canvas->window->width;
+        //     float y = canvas->mouse.cur_pos[1] / canvas->window->height;
+        //     log_info("moving panel to %.1fx%.1f", x, y);
+        //     vkl_panel_pos(panel, x, y);
+        // }
+
         // Update all visuals in the panel, using the panel's viewport.
         to_update = panel->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE;
         viewport = panel->viewport;

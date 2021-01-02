@@ -1,4 +1,5 @@
 #include "../include/visky/interact.h"
+#include "../include/visky/canvas.h"
 
 
 
@@ -9,24 +10,6 @@
 #define VKL_PANZOOM_MOUSE_WHEEL_FACTOR .2
 #define VKL_PANZOOM_MIN_ZOOM           1e-6
 #define VKL_PANZOOM_MAX_ZOOM           1e+6
-
-
-
-/*************************************************************************************************/
-/*  Utils                                                                                        */
-/*************************************************************************************************/
-
-// screen coordinates
-static bool _pos_in_viewport(VklViewport viewport, vec2 pos)
-{
-    ASSERT(viewport.size_screen[0] > 0);
-    return (
-        viewport.offset_screen[0] <= pos[0] &&                           //
-        viewport.offset_screen[1] <= pos[1] &&                           //
-        pos[0] <= viewport.offset_screen[0] + viewport.size_screen[0] && //
-        pos[1] <= viewport.offset_screen[1] + viewport.size_screen[1]    //
-    );
-}
 
 
 

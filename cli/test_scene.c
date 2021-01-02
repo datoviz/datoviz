@@ -85,12 +85,13 @@ int test_scene_1(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, VKL_CANVAS_FLAGS_FPS);
     VklContext* ctx = gpu->context;
     ASSERT(ctx != NULL);
 
     VklScene* scene = vkl_scene(canvas, 2, 3);
     VklPanel* panel = vkl_scene_panel(scene, 0, 0, VKL_CONTROLLER_PANZOOM, 0);
+    vkl_panel_mode(panel, VKL_PANEL_FLOATING);
     VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_MARKER, 0);
 
     // Visual data.
