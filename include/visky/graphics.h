@@ -42,11 +42,12 @@ typedef enum
     VKL_GRAPHICS_PATH,
     VKL_GRAPHICS_TEXT,
 
+    VKL_GRAPHICS_IMAGE,
     VKL_GRAPHICS_MESH,
-    VKL_GRAPHICS_MESH_RAW,
-    VKL_GRAPHICS_MESH_TEXTURED,
-    VKL_GRAPHICS_MESH_MULTI_TEXTURED,
-    VKL_GRAPHICS_MESH_SHADED,
+    // VKL_GRAPHICS_MESH_RAW,
+    // VKL_GRAPHICS_MESH_TEXTURED,
+    // VKL_GRAPHICS_MESH_MULTI_TEXTURED,
+    // VKL_GRAPHICS_MESH_SHADED,
 
     VKL_GRAPHICS_FAKE_SPHERE,
     VKL_GRAPHICS_VOLUME,
@@ -103,9 +104,15 @@ typedef struct VklVertex VklVertex;
 typedef struct VklMVP VklMVP;
 
 typedef struct VklGraphicsPointParams VklGraphicsPointParams;
+
 typedef struct VklGraphicsMarkerVertex VklGraphicsMarkerVertex;
 typedef struct VklGraphicsMarkerParams VklGraphicsMarkerParams;
+
 typedef struct VklGraphicsSegmentVertex VklGraphicsSegmentVertex;
+
+typedef struct VklGraphicsImageVertex VklGraphicsImageVertex;
+typedef struct VklGraphicsImageParams VklGraphicsImageParams;
+
 typedef struct VklGraphicsMeshVertex VklGraphicsMeshVertex;
 typedef struct VklGraphicsMeshParams VklGraphicsMeshParams;
 
@@ -233,6 +240,23 @@ struct VklGraphicsTextItem
     cvec4* glyph_colors;
     float font_size;
     const char* string;
+};
+
+
+
+/*************************************************************************************************/
+/*  Graphics image                                                                               */
+/*************************************************************************************************/
+
+struct VklGraphicsImageVertex
+{
+    vec3 pos;
+    vec2 uv;
+};
+
+struct VklGraphicsImageParams
+{
+    vec4 tex_coefs; // blending coefficients for the textures
 };
 
 

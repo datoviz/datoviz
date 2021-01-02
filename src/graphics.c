@@ -268,6 +268,31 @@ static void _graphics_text(VklCanvas* canvas, VklGraphics* graphics)
 
 
 /*************************************************************************************************/
+/*  Image                                                                                        */
+/*************************************************************************************************/
+
+static void _graphics_image(VklCanvas* canvas, VklGraphics* graphics)
+{
+    SHADER(VERTEX, "graphics_image_vert")
+    SHADER(FRAGMENT, "graphics_image_frag")
+    PRIMITIVE(TRIANGLE_LIST)
+
+    ATTR_BEGIN(VklGraphicsImageVertex)
+    ATTR_POS(VklGraphicsImageVertex, pos)
+    ATTR(VklGraphicsImageVertex, VK_FORMAT_R32G32_SFLOAT, uv)
+
+    _common_bindings(graphics);
+    vkl_graphics_slot(graphics, VKL_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    for (uint32_t i = 1; i <= 4; i++)
+        vkl_graphics_slot(
+            graphics, VKL_USER_BINDING + i, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+
+    CREATE
+}
+
+
+
+/*************************************************************************************************/
 /*  3D mesh                                                                                      */
 /*************************************************************************************************/
 
@@ -447,6 +472,12 @@ VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type, in
 
     case VKL_GRAPHICS_TEXT:
         _graphics_text(canvas, graphics);
+        break;
+
+
+        // Image
+    case VKL_GRAPHICS_IMAGE:
+        _graphics_image(canvas, graphics);
         break;
 
 

@@ -55,14 +55,14 @@ static void _graphics_refill(VklCanvas* canvas, VklPrivateEvent ev)
     vkl_cmd_bind_graphics(cmds, idx, graphics, bindings, 0);
     if (graphics->pipeline != VK_NULL_HANDLE)
     {
-        if (br_index->buffer != NULL)
+        if (br_index->buffer != VK_NULL_HANDLE)
         {
             log_debug("draw indexed %d", tg->indices.item_count);
             vkl_cmd_draw_indexed(cmds, idx, 0, 0, tg->indices.item_count);
         }
         else
         {
-            log_debug("draw indexed %d", tg->vertices.item_count);
+            log_debug("draw non-indexed %d", tg->vertices.item_count);
             vkl_cmd_draw(cmds, idx, 0, tg->vertices.item_count);
         }
     }
@@ -576,6 +576,69 @@ int test_graphics_text(TestContext* context)
 
     RUN;
     vkl_font_atlas_destroy(atlas);
+    TEST_END
+}
+
+
+
+/*************************************************************************************************/
+/*  Image tests                                                                                  */
+/*************************************************************************************************/
+
+int test_graphics_image(TestContext* context)
+{
+    INIT_GRAPHICS(VKL_GRAPHICS_IMAGE)
+
+    // Vertices.
+    uint32_t n = 6;
+    TestGraphics tg = {0};
+    tg.graphics = graphics;
+    tg.vertices = vkl_array_struct(n, sizeof(VklGraphicsImageVertex));
+    ASSERT(tg.vertices.item_count == n);
+    tg.br_vert = vkl_ctx_buffers(
+        gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1,
+        tg.vertices.item_count * sizeof(VklGraphicsImageVertex));
+    float x = 1;
+    VklGraphicsImageVertex vertices[] = {
+        {{-x, -x, 0}, {0, 1}}, //
+        {{+x, -x, 0}, {1, 1}}, //
+        {{+x, +x, 0}, {1, 0}}, //
+        {{+x, +x, 0}, {1, 0}}, //
+        {{-x, +x, 0}, {0, 0}}, //
+        {{-x, -x, 0}, {0, 1}}, //
+    };
+    vkl_upload_buffers(
+        gpu->context, tg.br_vert, 0, tg.vertices.item_count * sizeof(VklGraphicsImageVertex),
+        vertices);
+
+    // Parameters.
+    tg.br_params = vkl_ctx_buffers(
+        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsImageParams));
+    VklGraphicsImageParams params = {0};
+    params.tex_coefs[0] = 1;
+    vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsImageParams), &params);
+
+    // Texture.
+    const uint32_t nt = 16;
+    VklTexture* texture =
+        vkl_ctx_texture(gpu->context, 2, (uvec3){nt, nt, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+    cvec4* tex_data = calloc(nt * nt, sizeof(cvec4));
+    for (uint32_t i = 0; i < nt * nt; i++)
+    {
+        tex_data[i][i % 3] = 255;
+        tex_data[i][3] = 255;
+    }
+    vkl_upload_texture(gpu->context, texture, nt * nt * sizeof(cvec4), tex_data);
+
+    // Bindings.
+    _common_bindings(&tg);
+    vkl_bindings_buffer(&tg.bindings, VKL_USER_BINDING, tg.br_params);
+    for (uint32_t i = 1; i <= 4; i++)
+        vkl_bindings_texture(&tg.bindings, VKL_USER_BINDING + i, texture);
+    vkl_bindings_update(&tg.bindings);
+
+    RUN;
+    FREE(tex_data)
     TEST_END
 }
 
