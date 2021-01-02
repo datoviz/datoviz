@@ -28,6 +28,7 @@ typedef enum
 {
     VKL_PANEL_GRID,
     VKL_PANEL_INSET,
+    VKL_PANEL_FLOATING,
 } VklPanelMode;
 
 

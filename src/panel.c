@@ -229,16 +229,13 @@ void vkl_panel_update(VklPanel* panel)
     VklGrid* grid = panel->grid;
     // VklContext* ctx = grid->canvas->gpu->context;
 
-    if (panel->mode == VKL_PANEL_INSET)
-        return;
-
-    ASSERT(panel->mode == VKL_PANEL_GRID);
-
-    panel->x = grid->xs[panel->col];
-    panel->y = grid->ys[panel->row];
-    panel->width = grid->widths[panel->col] * panel->hspan;
-    panel->height = grid->heights[panel->row] * panel->vspan;
-
+    if (panel->mode == VKL_PANEL_GRID)
+    {
+        panel->x = grid->xs[panel->col];
+        panel->y = grid->ys[panel->row];
+        panel->width = grid->widths[panel->col] * panel->hspan;
+        panel->height = grid->heights[panel->row] * panel->vspan;
+    }
     // Update the viewport structures.
     _update_viewport(panel);
 
@@ -301,9 +298,7 @@ void vkl_panel_pos(VklPanel* panel, float x, float y)
     panel->x = x;
     panel->y = y;
 
-    _update_grid_panels(panel->grid, VKL_GRID_HORIZONTAL);
-    _update_grid_panels(panel->grid, VKL_GRID_VERTICAL);
-    // vkl_canvas_to_refill(panel->grid->canvas, true);
+    vkl_panel_update(panel);
 }
 
 

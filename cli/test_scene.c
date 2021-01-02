@@ -227,7 +227,7 @@ int test_scene_logistic(TestContext* context)
     vkl_cmd_push(cmds, 0, &compute->slots, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(N), &N);
     vkl_cmd_compute(cmds, 0, compute, (uvec3){N, 1, 1});
     vkl_cmd_end(cmds, 0);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1. / 30, _logistic, cmds);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1. / 10, _logistic, cmds);
 
     vkl_app_run(app, N_FRAMES);
     vkl_compute_destroy(compute);
