@@ -172,7 +172,7 @@ static void _triangle_refill(VklCanvas* canvas, VklPrivateEvent ev)
             canvas->framebuffers.attachments[0]->height, 0, 1});
     vkl_cmd_bind_vertex_buffer(cmds, idx, &visual->br, 0);
     vkl_cmd_bind_graphics(cmds, idx, &visual->graphics, &visual->bindings, 0);
-    vkl_cmd_draw(cmds, idx, 0, 3);
+    vkl_cmd_draw(cmds, idx, 0, visual->n_vertices);
     vkl_cmd_end_renderpass(cmds, idx);
     vkl_cmd_end(cmds, idx);
 }
@@ -591,6 +591,96 @@ int test_canvas_8(TestContext* context)
     vkl_graphics_destroy(&visual.graphics);
     vkl_bindings_destroy(&bindings);
     destroy_visual(&visual);
+    TEST_END
+}
+
+
+
+/*************************************************************************************************/
+/*  Canvas triangle with vertex buffer update                                                    */
+/*************************************************************************************************/
+
+static void _append_callback(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    ASSERT(canvas != NULL);
+    TestVisual* visual = ev.user_data;
+    ASSERT(visual != NULL);
+
+    const uint32_t N = 3 + ev.u.t.idx;
+    visual->n_vertices = 3 * N;
+    TestVertex* data = calloc(visual->n_vertices, sizeof(TestVertex));
+    float t = 0, t2 = 0;
+    for (uint32_t i = 0; i < N; i++)
+    {
+        t = i / (float)N;
+        t2 = (i + 1) / (float)N;
+
+        data[3 * i + 0].color[0] = 1;
+        data[3 * i + 0].color[3] = 1;
+
+        data[3 * i + 1].color[1] = 1;
+        data[3 * i + 1].color[3] = 1;
+        data[3 * i + 1].pos[0] = .5 * cos(M_2PI * t);
+        data[3 * i + 1].pos[1] = .5 * sin(M_2PI * t);
+
+        data[3 * i + 2].color[2] = 1;
+        data[3 * i + 2].color[3] = 1;
+        data[3 * i + 2].pos[0] = .5 * cos(M_2PI * t2);
+        data[3 * i + 2].pos[1] = .5 * sin(M_2PI * t2);
+    }
+    FREE(visual->data);
+    visual->data = data;
+    VkDeviceSize size = visual->n_vertices * sizeof(TestVertex);
+    visual->br = vkl_ctx_buffers(
+        canvas->gpu->context, VKL_DEFAULT_BUFFER_VERTEX, canvas->swapchain.img_count, size);
+    vkl_upload_buffers(canvas->gpu->context, visual->br, 0, size, data);
+
+    vkl_canvas_to_refill(canvas, true);
+}
+
+int test_canvas_append(TestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
+    AT(canvas != NULL);
+
+    TestVisual visual = {0};
+    visual.n_vertices = 3;
+    visual.gpu = canvas->gpu;
+    visual.renderpass = &canvas->renderpass;
+    visual.framebuffers = &canvas->framebuffers;
+    _triangle_graphics(&visual, "");
+    canvas->user_data = &visual;
+    visual.data = calloc(3, sizeof(TestVertex));
+
+    // Create the bindings.
+    visual.bindings = vkl_bindings(&visual.graphics.slots, 1);
+    vkl_bindings_update(&visual.bindings);
+
+    // Create the graphics pipeline.
+    vkl_graphics_create(&visual.graphics);
+
+    // Triangle buffer.
+    VkDeviceSize size = 3 * sizeof(TestVertex);
+    visual.br = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, size);
+
+    // Upload the triangle data.
+    TestVertex data[3] = {
+        {{-1, +1, 0}, {1, 0, 0, 1}},
+        {{+1, +1, 0}, {0, 1, 0, 1}},
+        {{+0, -1, 0}, {0, 0, 1, 1}},
+    };
+    memcpy(visual.data, data, sizeof(data));
+    vkl_upload_buffers(canvas->gpu->context, visual.br, 0, size, data);
+
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_refill, &visual);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, .25, _append_callback, &visual);
+
+    vkl_app_run(app, N_FRAMES);
+
+    destroy_visual(&visual);
+    FREE(visual.data);
     TEST_END
 }
 
