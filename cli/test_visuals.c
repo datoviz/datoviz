@@ -229,6 +229,7 @@ int test_visuals_3(TestContext* context)
 }
 
 
+
 static void _visual_update(VklCanvas* canvas, VklPrivateEvent ev)
 {
     ASSERT(canvas != NULL);
@@ -245,6 +246,7 @@ static void _visual_update(VklCanvas* canvas, VklPrivateEvent ev)
     vkl_visual_update(visual, canvas->viewport, (VklDataCoords){0}, NULL);
 
     vkl_canvas_to_refill(visual->canvas, true);
+    FREE(pos);
 }
 
 int test_visuals_4(TestContext* context)
@@ -295,5 +297,63 @@ int test_visuals_4(TestContext* context)
     vkl_visual_destroy(&visual);
     FREE(pos);
     FREE(color);
+    TEST_END
+}
+
+
+
+static void _append(VklVisual* visual)
+{
+    ASSERT(visual != NULL);
+    vec3 pos = {0};
+    cvec4 color = {0};
+    RANDN_POS(pos);
+    RAND_COLOR(color);
+    vkl_visual_data_append(visual, VKL_PROP_POS, 0, 1, &pos);
+    vkl_visual_data_append(visual, VKL_PROP_COLOR, 0, 1, &color);
+}
+
+static void _visual_append(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    ASSERT(canvas != NULL);
+    VklVisual* visual = ev.user_data;
+    ASSERT(visual != NULL);
+    _append(visual);
+    vkl_visual_update(visual, visual->canvas->viewport, (VklDataCoords){0}, NULL);
+    vkl_canvas_to_refill(visual->canvas, true);
+}
+
+int test_visuals_5(TestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
+    VklContext* ctx = gpu->context;
+    ASSERT(ctx != NULL);
+    VklVisual visual = vkl_visual(canvas);
+    _marker_visual(&visual);
+    _append(&visual);
+
+    // MVP.
+    mat4 id = GLM_MAT4_IDENTITY_INIT;
+    vkl_visual_data(&visual, VKL_PROP_MODEL, 0, 1, id);
+    vkl_visual_data(&visual, VKL_PROP_VIEW, 0, 1, id);
+    vkl_visual_data(&visual, VKL_PROP_PROJ, 0, 1, id);
+
+    // Param.
+    float param = 50.0f;
+    vkl_visual_data(&visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
+
+    // Upload the data to the GPU..
+    vkl_visual_data_buffer(&visual, VKL_SOURCE_TYPE_VIEWPORT, 0, 0, 1, 1, &canvas->viewport);
+    vkl_visual_update(&visual, canvas->viewport, (VklDataCoords){0}, NULL);
+
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, .1, _visual_append, &visual);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _visual_canvas_fill, &visual);
+
+    // Run and end.
+    vkl_app_run(app, N_FRAMES);
+
+    vkl_visual_destroy(&visual);
     TEST_END
 }

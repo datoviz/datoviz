@@ -353,6 +353,9 @@ VKY_EXPORT void vkl_visual_data_partial(
     VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, //
     uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data);
 
+VKY_EXPORT void vkl_visual_data_append(
+    VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, uint32_t count, const void* data);
+
 VKY_EXPORT void vkl_visual_data_buffer(
     VklVisual* visual, VklSourceType source_type, uint32_t idx, //
     uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data);

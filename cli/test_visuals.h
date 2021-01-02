@@ -117,6 +117,7 @@ int test_visuals_1(TestContext* context);
 int test_visuals_2(TestContext* context);
 int test_visuals_3(TestContext* context);
 int test_visuals_4(TestContext* context);
+int test_visuals_5(TestContext* context);
 
 
 

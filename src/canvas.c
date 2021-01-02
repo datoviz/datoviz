@@ -1967,26 +1967,36 @@ void vkl_canvas_frame(VklCanvas* canvas)
     {
         log_debug("need to update canvas, will refill the command buffers");
 
-        // Wait for command buffer to be ready for update.
-        vkl_fences_wait(&canvas->fences_flight, canvas->swapchain.img_idx);
-        // vkl_queue_wait(canvas->gpu, VKL_DEFAULT_QUEUE_RENDER); // DEBUG
-
-        // HACK: avoid edge effects when the resize takes some time and the dt becomes too large
-        canvas->clock.interval = 0;
-
-        // Refill the command buffer for the current swapchain image.
-        _refill_canvas(canvas, canvas->swapchain.img_idx);
-
-        // Mark that command buffer as updated.
-        canvas->img_updated[canvas->swapchain.img_idx] = true;
-
-        // We move away from NEED_UPDATE status only if all swapchain images have been updated.
-        if (_all_true(canvas->swapchain.img_count, canvas->img_updated))
+        // DEBUG
+        if (0)
         {
-            log_trace("all command buffers updated, no longer need to update");
+            vkl_queue_wait(canvas->gpu, VKL_DEFAULT_QUEUE_RENDER);
+            _refill_canvas(canvas, UINT32_MAX);
             canvas->obj.status = VKL_OBJECT_STATUS_CREATED;
-            // Reset the img_updated bool array.
-            memset(canvas->img_updated, 0, VKL_MAX_SWAPCHAIN_IMAGES);
+        }
+        else
+        {
+            // Wait for command buffer to be ready for update.
+            vkl_fences_wait(&canvas->fences_flight, canvas->swapchain.img_idx);
+
+            // HACK: avoid edge effects when the resize takes some time and the dt becomes too
+            // large
+            canvas->clock.interval = 0;
+
+            // Refill the command buffer for the current swapchain image.
+            _refill_canvas(canvas, canvas->swapchain.img_idx);
+
+            // Mark that command buffer as updated.
+            canvas->img_updated[canvas->swapchain.img_idx] = true;
+
+            // We move away from NEED_UPDATE status only if all swapchain images have been updated.
+            if (_all_true(canvas->swapchain.img_count, canvas->img_updated))
+            {
+                log_trace("all command buffers updated, no longer need to update");
+                canvas->obj.status = VKL_OBJECT_STATUS_CREATED;
+                // Reset the img_updated bool array.
+                memset(canvas->img_updated, 0, VKL_MAX_SWAPCHAIN_IMAGES);
+            }
         }
     }
 }

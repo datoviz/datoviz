@@ -488,6 +488,18 @@ void vkl_visual_data_partial(
 
 
 
+void vkl_visual_data_append(
+    VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, uint32_t count, const void* data)
+{
+    ASSERT(visual != NULL);
+    VklProp* prop = vkl_bake_prop(visual, prop_type, prop_idx);
+    ASSERT(prop != NULL);
+    uint32_t first_item = prop->arr_orig.item_count;
+    vkl_visual_data_partial(visual, prop_type, prop_idx, first_item, count, count, data);
+}
+
+
+
 static VklSource* _assert_source_exists(VklVisual* visual, VklSourceType source_type, uint32_t idx)
 {
     VklSource* source = vkl_bake_source(visual, source_type, idx);
@@ -864,12 +876,9 @@ void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source)
     {
         VkDeviceSize size = next_pow2(count * source->arr.item_size);
         ASSERT(size >= count * source->arr.item_size);
-        if (source->u.br.size > 0)
-            log_debug(
-                "need to reallocate new buffer region to fit %d elements (%d bytes)", count, size);
-        else
-            log_debug(
-                "need to allocate new buffer region to fit %d elements (%d bytes)", count, size);
+        log_debug(
+            "need to %sallocate new buffer region to fit %d elements (%d bytes)",
+            source->u.br.size > 0 ? "re" : "", count, size);
 
         // Number of buffers: 1, unless using _immediate upload.
         uint32_t buf_count =
