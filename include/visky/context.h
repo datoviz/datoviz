@@ -53,6 +53,7 @@ typedef struct VklTransferBuffer VklTransferBuffer;
 typedef struct VklTransferBufferCopy VklTransferBufferCopy;
 typedef struct VklTransferTexture VklTransferTexture;
 typedef struct VklTransferTextureCopy VklTransferTextureCopy;
+typedef union VklTransferUnion VklTransferUnion;
 
 typedef struct VklFontAtlas VklFontAtlas;
 
@@ -197,16 +198,20 @@ struct VklTransferTextureCopy
 
 
 
+union VklTransferUnion
+{
+    VklTransferBuffer buf;
+    VklTransferTexture tex;
+    VklTransferBufferCopy buf_copy;
+    VklTransferTextureCopy tex_copy;
+};
+
+
+
 struct VklTransfer
 {
     VklDataTransferType type;
-    union
-    {
-        VklTransferBuffer buf;
-        VklTransferTexture tex;
-        VklTransferBufferCopy buf_copy;
-        VklTransferTextureCopy tex_copy;
-    } u;
+    VklTransferUnion u;
 };
 
 
