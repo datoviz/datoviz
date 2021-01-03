@@ -394,7 +394,7 @@ static VklContainer vkl_container(uint32_t count, size_t item_size, VklObjectTyp
 {
     ASSERT(count > 0);
     ASSERT(item_size > 0);
-    log_trace("create container");
+    // log_trace("create container");
     VklContainer container = {0};
     container.count = 0;
     container.item_size = item_size;
@@ -423,7 +423,7 @@ static void vkl_container_delete_if_destroyed(VklContainer* container, uint32_t 
     VklObject* object = (VklObject*)container->items[idx];
     if (object->status == VKL_OBJECT_STATUS_DESTROYED)
     {
-        log_trace("delete container item #%d", idx);
+        // log_trace("delete container item #%d", idx);
         FREE(container->items[idx]);
         container->items[idx] = NULL;
         container->count--;
@@ -473,7 +473,7 @@ static void* vkl_container_alloc(VklContainer* container)
     ASSERT(container->items[available_slot] == NULL);
 
     // Memory allocation on the heap and store the pointer in the container.
-    log_trace("container allocates new item #%d", available_slot);
+    // log_trace("container allocates new item #%d", available_slot);
     container->items[available_slot] = calloc(1, container->item_size);
     container->count++;
     ASSERT(container->items[available_slot] != NULL);
@@ -522,14 +522,14 @@ static void vkl_container_destroy(VklContainer* container)
     if (container->items == NULL)
         return;
     ASSERT(container->items != NULL);
-    log_trace("container destroy");
+    // log_trace("container destroy");
     // Check all elements have been destroyed, and free them if necessary.
     VklObject* item = NULL;
     for (uint32_t i = 0; i < container->capacity; i++)
     {
         if (container->items[i] != NULL)
         {
-            log_trace("deleting container item #%d", i);
+            // log_trace("deleting container item #%d", i);
             // When destroying the container, ensure that all objects have been destroyed first.
             // NOTE: only works if every item has a VklObject as first struct field.
             item = (VklObject*)container->items[i];
@@ -548,7 +548,7 @@ static void vkl_container_destroy(VklContainer* container)
         }
     }
     ASSERT(container->count == 0);
-    log_trace("free container items");
+    // log_trace("free container items");
     FREE(container->items);
     container->capacity = 0;
 }

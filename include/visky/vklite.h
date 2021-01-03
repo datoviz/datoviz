@@ -208,6 +208,34 @@ typedef enum
 
 #define CMD_END //
 
+#define GB 1073741824
+#define MB 1048576
+#define KB 1024
+
+static char _PRETTY_SIZE[64] = {0};
+
+static inline char* pretty_size(VkDeviceSize size){
+    float s = (float)size;
+    const char* u;
+    if (size >= GB) {
+        s /= GB;
+        u = "GB";
+    }
+    else if (size >= MB) {
+        s /= MB;
+        u = "MB";
+    }
+    else if (size >= KB) {
+        s /= KB;
+        u = "KB";
+    }
+    else {
+        u = "bytes";
+    }
+    snprintf(_PRETTY_SIZE, 64, "%.1f %s", s, u);
+    return _PRETTY_SIZE;
+}
+
 
 
 /*************************************************************************************************/

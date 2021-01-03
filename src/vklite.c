@@ -971,7 +971,7 @@ void vkl_buffer_upload(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size
     ASSERT(buffer->buffer != VK_NULL_HANDLE);
     ASSERT(offset + size <= buffer->size);
 
-    log_trace("uploading %d bytes to GPU buffer", size);
+    log_trace("uploading %s to GPU buffer", pretty_size(size));
     void* mapped = vkl_buffer_map(buffer, offset, size);
     ASSERT(mapped != NULL);
     memcpy(mapped, data, size);
@@ -982,7 +982,7 @@ void vkl_buffer_upload(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size
 
 void vkl_buffer_download(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, void* data)
 {
-    log_trace("downloading %d bytes from GPU buffer", size);
+    log_trace("downloading %s from GPU buffer", pretty_size(size));
     VklBufferRegions br = {0};
     br.buffer = buffer;
     br.count = 1;
@@ -1087,7 +1087,7 @@ void vkl_buffer_regions_upload(VklBufferRegions* br, uint32_t idx, const void* d
     ASSERT(size != 0);
     ASSERT(data != NULL);
 
-    log_trace("uploading %d bytes to GPU buffer", size);
+    log_trace("uploading %s to GPU buffer", pretty_size(size));
     void* mapped = vkl_buffer_regions_map(br, idx);
     ASSERT(mapped != NULL);
     memcpy(mapped, data, size);
@@ -2056,7 +2056,7 @@ void vkl_graphics_destroy(VklGraphics* graphics)
     ASSERT(graphics != NULL);
     if (graphics->obj.status <= VKL_OBJECT_STATUS_INIT || graphics->gpu == NULL)
     {
-        log_trace("skip destruction of already-destroyed graphics");
+        // log_trace("skip destruction of already-destroyed graphics");
         return;
     }
     ASSERT(graphics->gpu != NULL);

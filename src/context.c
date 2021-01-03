@@ -5,16 +5,6 @@
 
 
 /*************************************************************************************************/
-/*  Macros                                                                                       */
-/*************************************************************************************************/
-
-#define TO_KB(x) ((x) / (1024.0))
-#define TO_MB(x) ((x) / (1024.0 * 1024.0))
-#define TO_GB(x) ((x) / (1024.0 * 1024.0 * 1024.0))
-
-
-
-/*************************************************************************************************/
 /*  Thread-safe FIFO queue                                                                       */
 /*************************************************************************************************/
 
@@ -43,7 +33,7 @@ void vkl_fifo_enqueue(VklFifo* fifo, void* item)
 
     if ((fifo->head + 1) % fifo->capacity != fifo->tail)
     {
-        log_trace("enqueue item, head %d, tail %d", fifo->head, fifo->tail);
+        // log_trace("enqueue item, head %d, tail %d", fifo->head, fifo->tail);
         fifo->items[fifo->head] = item;
         fifo->head++;
         if (fifo->head >= fifo->capacity)
@@ -87,7 +77,7 @@ void* vkl_fifo_dequeue(VklFifo* fifo, bool wait)
 
     ASSERT(0 <= fifo->tail && fifo->tail < fifo->capacity);
 
-    log_trace("dequeue item, head %d, tail %d", fifo->head, fifo->tail);
+    // log_trace("dequeue item, head %d, tail %d", fifo->head, fifo->tail);
     void* item = fifo->items[fifo->tail];
 
     fifo->tail++;
@@ -407,14 +397,14 @@ VklBufferRegions vkl_ctx_buffers(
     if (offset + alsize * buffer_count > regions.buffer->size)
     {
         VkDeviceSize new_size = next_pow2(offset + alsize * buffer_count);
-        log_info("reallocating buffer #%d to %.1f KB", buffer_idx, TO_KB(new_size));
+        log_info("reallocating buffer #%d to %s", buffer_idx, pretty_size(new_size));
         vkl_buffer_resize(
             regions.buffer, new_size, VKL_DEFAULT_QUEUE_TRANSFER, &context->transfer_cmd);
     }
 
     log_debug(
-        "allocating %d buffers (type #%d) with size %d bytes (aligned size %d bytes)", //
-        buffer_count, buffer_idx, size, alsize);
+        "allocating %d buffers (type #%d) with size %s (aligned size %s)", //
+        buffer_count, buffer_idx, pretty_size(size), pretty_size(alsize));
     ASSERT(offset + alsize * buffer_count <= regions.buffer->size);
     buffer->allocated_size += alsize * buffer_count;
 
@@ -608,7 +598,7 @@ static VklBuffer* staging_buffer(VklContext* context, VkDeviceSize size)
     {
         VkDeviceSize new_size = next_pow2(size);
         log_info(
-            "reallocating staging buffer to %.1f MB", VKL_DEFAULT_BUFFER_STAGING, TO_MB(new_size));
+            "reallocating staging buffer to %s", VKL_DEFAULT_BUFFER_STAGING, pretty_size(new_size));
         vkl_buffer_resize(staging, new_size, VKL_DEFAULT_QUEUE_TRANSFER, &context->transfer_cmd);
     }
     ASSERT(staging->size >= size);
