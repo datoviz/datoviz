@@ -1,6 +1,7 @@
 #include "../include/visky/canvas.h"
 #include "../include/visky/context.h"
 #include "../src/imgui.h"
+#include "../src/transfers.h"
 #include "../src/vklite_utils.h"
 #include <stdlib.h>
 
@@ -824,6 +825,7 @@ _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
     canvas->submit = vkl_submit(gpu);
 
     canvas->immediate_queue = vkl_fifo(VKL_MAX_FIFO_CAPACITY);
+    canvas->transfers = vkl_fifo(VKL_MAX_FIFO_CAPACITY);
 
     // Event system.
     {
@@ -1143,6 +1145,21 @@ void vkl_upload_buffers_immediate(
 
     canvas->immediate_transfers[fifo->head] = tr;
     vkl_fifo_enqueue(fifo, &canvas->immediate_transfers[fifo->head]);
+}
+
+
+
+void vkl_canvas_buffers(
+    VklCanvas* canvas, VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size,
+    const void* data, bool need_refill)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(size > 0);
+    ASSERT(br.buffer != NULL);
+    ASSERT(is_obj_created(&br.buffer->obj));
+    ASSERT(data != NULL);
+
+    // enqueue_regions_transfer(context, VKL_TRANSFER_BUFFER_UPLOAD, regions, offset, size, data);
 }
 
 

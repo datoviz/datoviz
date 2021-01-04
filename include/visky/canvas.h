@@ -15,7 +15,7 @@ extern "C" {
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define VKL_MAX_EVENT_CALLBACKS 256
+#define VKL_MAX_EVENT_CALLBACKS 32
 // Maximum acceptable duration for the pending events in the event queue, in seconds
 #define VKL_MAX_EVENT_DURATION .5
 #define VKL_DEFAULT_BACKGROUND                                                                    \
@@ -45,6 +45,7 @@ extern "C" {
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
+// Canvas creation flags.
 typedef enum
 {
     VKL_CANVAS_FLAGS_NONE = 0x0000,
@@ -136,6 +137,37 @@ typedef enum
 
 
 
+// Transfer status.
+typedef enum
+{
+    VKL_TRANSFER_STATUS_NONE,
+    VKL_TRANSFER_STATUS_PROCESSING,
+    VKL_TRANSFER_STATUS_DONE,
+} VklTransferStatus;
+
+
+
+// Canvas refill status.
+typedef enum
+{
+    VKL_REFILL_NONE,
+    VKL_REFILL_REQUESTED,
+    VKL_REFILL_PROCESSING,
+} VklRefillStatus;
+
+
+
+// Screencast status.
+typedef enum
+{
+    VKL_SCREENCAST_NONE,
+    VKL_SCREENCAST_IDLE,
+    VKL_SCREENCAST_AWAIT_COPY,
+    VKL_SCREENCAST_AWAIT_TRANSFER,
+} VklScreencastStatus;
+
+
+
 /*************************************************************************************************/
 /*  Event system                                                                                 */
 /*************************************************************************************************/
@@ -209,16 +241,6 @@ typedef enum
 
 
 
-typedef enum
-{
-    VKL_SCREENCAST_NONE,
-    VKL_SCREENCAST_IDLE,
-    VKL_SCREENCAST_AWAIT_COPY,
-    VKL_SCREENCAST_AWAIT_TRANSFER,
-} VklScreencastStatus;
-
-
-
 /*************************************************************************************************/
 /*  Type definitions                                                                             */
 /*************************************************************************************************/
@@ -257,6 +279,7 @@ typedef struct VklCanvasCallbackRegister VklCanvasCallbackRegister;
 typedef struct VklEventCallbackRegister VklEventCallbackRegister;
 
 typedef struct VklScreencast VklScreencast;
+typedef struct VklPendingRefill VklPendingRefill;
 
 
 
@@ -512,7 +535,7 @@ struct VklEventCallbackRegister
 
 
 /*************************************************************************************************/
-/*  Screencast struct                                                                            */
+/*  Misc structs                                                                                 */
 /*************************************************************************************************/
 
 struct VklScreencast
@@ -532,6 +555,14 @@ struct VklScreencast
 
 
 
+struct VklPendingRefill
+{
+    bool completed[VKL_MAX_SWAPCHAIN_IMAGES];
+    atomic(VklRefillStatus, status);
+};
+
+
+
 /*************************************************************************************************/
 /*  Canvas struct                                                                                */
 /*************************************************************************************************/
@@ -547,6 +578,7 @@ struct VklCanvas
     int flags;
     void* user_data;
 
+    // TODO: remove?
     // This thread-safe variable is used by the background thread to
     // safely communicate a status change of the canvas
     atomic(VklObjectStatus, cur_status);
@@ -566,6 +598,7 @@ struct VklCanvas
     VklClock clock;
     float fps;
 
+    // TODO: remove
     // when refilling command buffers, keep track of which img_idx were updated until we stop
     // calling the REFILL callbackks
     bool img_updated[VKL_MAX_SWAPCHAIN_IMAGES];
@@ -591,11 +624,14 @@ struct VklCanvas
     // Graphics pipelines.
     VklContainer graphics;
 
+    // TODO: remove
     // IMMEDIATE transfers
     VklFifo immediate_queue; // _immediate transfers queue
     VklTransfer immediate_transfers[VKL_MAX_TRANSFERS];
     VklTransfer* immediate_transfer_cur;
     bool immediate_transfer_updated[VKL_MAX_SWAPCHAIN_IMAGES];
+
+    VklFifo transfers;
 
     // Canvas callbacks, running in the main thread so should be fast to process, especially
     // for internal usage.
@@ -615,6 +651,7 @@ struct VklCanvas
     VklKeyboard keyboard;
 
     VklScreencast* screencast;
+    VklPendingRefill refills;
 
     VklViewport viewport;
     VklScene* scene;
@@ -744,6 +781,10 @@ VKY_EXPORT void vkl_canvas_to_close(VklCanvas* canvas, bool value);
 /*************************************************************************************************/
 /*  Fast transfers                                                                               */
 /*************************************************************************************************/
+
+VKY_EXPORT void vkl_canvas_buffers(
+    VklCanvas* canvas, VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size,
+    const void* data, bool need_refill);
 
 VKY_EXPORT void vkl_upload_buffers_immediate(
     VklCanvas* canvas, VklBufferRegions regions, bool update_all_regions, //
