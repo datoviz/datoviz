@@ -42,7 +42,8 @@ int test_fifo(TestContext* context);
 /*  Context                                                                                   */
 /*************************************************************************************************/
 
-int test_context_buffer(TestContext* context);
+int test_context_buffer_1(TestContext* context);
+int test_context_buffer_2(TestContext* context);
 int test_context_texture(TestContext* context);
 int test_context_transfer_sync(TestContext* context);
 int test_context_copy(TestContext* context);

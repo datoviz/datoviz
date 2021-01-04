@@ -44,7 +44,8 @@ static TestCase TEST_CASES[] = {
 
     // context
     CASE_FIXTURE_NONE(test_fifo),                            //
-    CASE_FIXTURE_NONE(test_context_buffer),                  //
+    CASE_FIXTURE_NONE(test_context_buffer_1),                //
+    CASE_FIXTURE_NONE(test_context_buffer_2),                //
     CASE_FIXTURE_NONE(test_context_texture),                 //
     CASE_FIXTURE_NONE(test_context_copy),                    //
     CASE_FIXTURE_NONE(test_context_transfer_sync),           //

@@ -697,7 +697,66 @@ int test_fifo(TestContext* context)
 /*  Context                                                                                   */
 /*************************************************************************************************/
 
-int test_context_buffer(TestContext* context)
+int test_context_buffer_1(TestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    VklContext* ctx = vkl_context(gpu, NULL);
+
+    // Create a buffer.
+    VklBuffer* buffer = vkl_container_alloc(&ctx->buffers);
+    *buffer = vkl_buffer(gpu);
+    vkl_buffer_queue_access(buffer, 0);
+    vkl_buffer_size(buffer, 256);
+    vkl_buffer_usage(buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    vkl_buffer_memory(
+        buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vkl_buffer_create(buffer);
+
+    // Send some data to the GPU.
+    uint8_t* data = calloc(256, 1);
+    for (uint32_t i = 0; i < 256; i++)
+        data[i] = i;
+    vkl_buffer_upload(buffer, 0, 256, data);
+
+    // Allocate buffer regions.
+    VklBufferRegions br = vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_COUNT, 3, 64);
+    AT(br.count == 3);
+    AT(br.offsets[0] == 0);
+    AT(br.offsets[1] == 64);
+    AT(br.offsets[2] == 128);
+    AT(br.size == 64);
+    AT(buffer->size == 256);
+
+    // This allocation will trigger a buffer resize.
+    br = vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_COUNT, 2, 64);
+    AT(br.count == 2);
+    AT(br.offsets[0] == 192);
+    AT(br.offsets[1] == 256);
+    AT(br.size == 64);
+    AT(buffer->size == 512);
+
+    // Recover the data.
+    void* data2 = calloc(256, 1);
+    vkl_buffer_download(buffer, 0, 256, data2);
+
+    // Check that the data downloaded from the GPU is the same.
+    // This also checks that the data on the initial buffer was successfully copied to the new
+    // buffer during reallocation
+    AT(memcmp(data2, data, 256) == 0);
+
+    vkl_buffer_destroy(buffer);
+
+    vkl_context_reset(ctx);
+
+    FREE(data);
+    FREE(data2);
+    TEST_END
+}
+
+
+
+int test_context_buffer_2(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
