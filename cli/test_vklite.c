@@ -711,6 +711,7 @@ int test_context_buffer_1(TestContext* context)
     vkl_buffer_usage(buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
     vkl_buffer_memory(
         buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vkl_buffer_type(buffer, VKL_BUFFER_TYPE_UNDEFINED);
     vkl_buffer_create(buffer);
 
     // Send some data to the GPU.
@@ -720,7 +721,9 @@ int test_context_buffer_1(TestContext* context)
     vkl_buffer_upload(buffer, 0, 256, data);
 
     // Allocate buffer regions.
-    VklBufferRegions br = vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_COUNT, 3, 64);
+    VklBufferRegions br = vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_UNDEFINED, 3, 64);
+    ASSERT(br.buffer != NULL);
+    ASSERT(br.buffer == buffer);
     AT(br.count == 3);
     AT(br.offsets[0] == 0);
     AT(br.offsets[1] == 64);
@@ -729,7 +732,9 @@ int test_context_buffer_1(TestContext* context)
     AT(buffer->size == 256);
 
     // This allocation will trigger a buffer resize.
-    br = vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_COUNT, 2, 64);
+    br = vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_UNDEFINED, 2, 64);
+    ASSERT(br.buffer != NULL);
+    ASSERT(br.buffer == buffer);
     AT(br.count == 2);
     AT(br.offsets[0] == 192);
     AT(br.offsets[1] == 256);
@@ -779,7 +784,7 @@ int test_context_buffer_2(TestContext* context)
     vkl_buffer_upload(buffer, 0, 256, data);
 
     // Allocate buffer regions.
-    VklBufferRegions br = vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_COUNT, 3, 64);
+    VklBufferRegions br = vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_UNDEFINED, 3, 64);
     AT(br.count == 3);
     AT(br.offsets[0] == 0);
     AT(br.offsets[1] == 64);

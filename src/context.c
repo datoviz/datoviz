@@ -358,20 +358,35 @@ void vkl_context_destroy(VklContext* context)
 /*************************************************************************************************/
 
 VklBufferRegions vkl_ctx_buffers(
-    VklContext* context, VklBufferType buffer_idx, uint32_t buffer_count, VkDeviceSize size)
+    VklContext* context, VklBufferType buffer_type, uint32_t buffer_count, VkDeviceSize size)
 {
     ASSERT(context != NULL);
     ASSERT(context->gpu != NULL);
     ASSERT(buffer_count > 0);
-    ASSERT((uint32_t)buffer_idx < context->buffers.capacity);
     ASSERT(size > 0);
+    ASSERT(buffer_type < VKL_BUFFER_TYPE_COUNT);
+
+    // Choose the first buffer with the requested type.
+    VklBuffer* buffer = vkl_container_iter(&context->buffers);
+    while (buffer != NULL)
+    {
+        if (is_obj_created(&buffer->obj) && buffer->type == buffer_type)
+            break;
+        buffer = vkl_container_iter(&context->buffers);
+    }
+    if (buffer == NULL)
+    {
+        log_error("could not find buffer with requested type %d", buffer_type);
+        return (VklBufferRegions){0};
+    }
+    ASSERT(buffer != NULL);
+    ASSERT(buffer->type == buffer_type);
+    ASSERT(is_obj_created(&buffer->obj));
 
     VkDeviceSize alignment = 0;
-    VklBuffer* buffer = vkl_container_get(&context->buffers, buffer_idx);
-    ASSERT(buffer != NULL);
     VkDeviceSize offset = buffer->allocated_size;
     bool needs_align =
-        buffer_idx == VKL_BUFFER_TYPE_UNIFORM || buffer_idx == VKL_BUFFER_TYPE_UNIFORM_MAPPABLE;
+        buffer_type == VKL_BUFFER_TYPE_UNIFORM || buffer_type == VKL_BUFFER_TYPE_UNIFORM_MAPPABLE;
     if (needs_align)
     {
         alignment = context->gpu->device_properties.limits.minUniformBufferOffsetAlignment;
@@ -386,7 +401,7 @@ VklBufferRegions vkl_ctx_buffers(
 
     if (!is_obj_created(&buffer->obj))
     {
-        log_error("invalid buffer #%d", buffer_idx);
+        log_error("invalid buffer %d", buffer_type);
         return regions;
     }
 
@@ -403,14 +418,14 @@ VklBufferRegions vkl_ctx_buffers(
     if (offset + alsize * buffer_count > regions.buffer->size)
     {
         VkDeviceSize new_size = next_pow2(offset + alsize * buffer_count);
-        log_info("reallocating buffer #%d to %s", buffer_idx, pretty_size(new_size));
+        log_info("reallocating buffer %d to %s", buffer_type, pretty_size(new_size));
         vkl_buffer_resize(
             regions.buffer, new_size, VKL_DEFAULT_QUEUE_TRANSFER, &context->transfer_cmd);
     }
 
     log_debug(
-        "allocating %d buffers (type #%d) with size %s (aligned size %s)", //
-        buffer_count, buffer_idx, pretty_size(size), pretty_size(alsize));
+        "allocating %d buffers (type %d) with size %s (aligned size %s)", //
+        buffer_count, buffer_type, pretty_size(size), pretty_size(alsize));
     ASSERT(offset + alsize * buffer_count <= regions.buffer->size);
     buffer->allocated_size += alsize * buffer_count;
 
