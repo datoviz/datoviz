@@ -768,49 +768,92 @@ int test_context_buffer_2(TestContext* context)
     VklContext* ctx = vkl_context(gpu, NULL);
 
     // Create a buffer.
+    VkDeviceSize total = 512;
     VklBuffer* buffer = vkl_container_alloc(&ctx->buffers);
     *buffer = vkl_buffer(gpu);
     vkl_buffer_queue_access(buffer, 0);
-    vkl_buffer_size(buffer, 256);
+    vkl_buffer_size(buffer, total);
     vkl_buffer_usage(buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
     vkl_buffer_memory(
         buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vkl_buffer_type(buffer, VKL_BUFFER_TYPE_UNDEFINED);
     vkl_buffer_create(buffer);
+    VkBuffer vk_buffer = buffer->buffer;
 
     // Send some data to the GPU.
-    uint8_t* data = calloc(256, 1);
-    for (uint32_t i = 0; i < 256; i++)
+    uint8_t* data = calloc(total, 1);
+    for (uint32_t i = 0; i < total; i++)
         data[i] = i;
-    vkl_buffer_upload(buffer, 0, 256, data);
+    vkl_buffer_upload(buffer, 0, total, data);
 
-    // Allocate buffer regions.
-    VklBufferRegions br = vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_UNDEFINED, 3, 64);
-    AT(br.count == 3);
+    // Allocate buffer region.
+    VklBufferRegions br = vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_UNDEFINED, 1, 64);
+    VklBufferRegions br0 = br; // backup
+    ASSERT(br.buffer != NULL);
+    ASSERT(br.buffer == buffer);
+    AT(br.count == 1);
     AT(br.offsets[0] == 0);
-    AT(br.offsets[1] == 64);
-    AT(br.offsets[2] == 128);
     AT(br.size == 64);
-    AT(buffer->size == 256);
+    AT(buffer->allocated_size == 64);
+    AT(buffer->size == total);
 
-    // This allocation will trigger a buffer resize.
-    br = vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_COUNT, 2, 64);
-    AT(br.count == 2);
+    // Resize the buffer in place.
+    vkl_ctx_buffers_resize(ctx, &br, 128);
+    ASSERT(br.buffer != NULL);
+    ASSERT(br.buffer == buffer);
+    AT(br.count == 1);
+    AT(br.offsets[0] == 0);
+    AT(br.size == 128);
+    AT(buffer->allocated_size == 128);
+    AT(buffer->size == total);
+
+    // Allocate new buffer region.
+    VklBufferRegions br2 = vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_UNDEFINED, 1, 64);
+    ASSERT(br2.buffer != NULL);
+    ASSERT(br2.buffer == buffer);
+    AT(br2.count == 1);
+    AT(br2.offsets[0] == 128); // br2 just after the resized first region
+    AT(br2.size == 64);        // allocated 192
+    AT(buffer->allocated_size == 192);
+    AT(buffer->size == total);
+
+    // Resize the old buffer, but cannot resize in-place, so will successfully allocate a (third)
+    // new region.
+    vkl_ctx_buffers_resize(ctx, &br, 192);
+    ASSERT(br.buffer != NULL);
+    ASSERT(br.buffer == buffer);
+    ASSERT(br.buffer->buffer == vk_buffer);
+    AT(br.count == 1);
     AT(br.offsets[0] == 192);
-    AT(br.offsets[1] == 256);
-    AT(br.size == 64);
-    AT(buffer->size == 512);
+    AT(br.size == 192);
+    AT(buffer->allocated_size == 192 + 192);
+    AT(buffer->size == total);
+
+    // Dealocate, and redo the same, but with a larger size which will *also* trigger a resize
+    // of the underlying buffer.
+    buffer->allocated_size = 192;
+    br = br0;
+
+    vkl_ctx_buffers_resize(ctx, &br, 1024);
+    ASSERT(br.buffer != NULL);
+    ASSERT(br.buffer == buffer);
+    ASSERT(br.buffer->buffer != vk_buffer);
+    AT(br.count == 1);
+    AT(br.offsets[0] == 192);
+    AT(br.size == 1024);
+    AT(buffer->allocated_size == 192 + 1024);
+    AT(buffer->size == 2048); // automatic resize only uses powers of two
 
     // Recover the data.
-    void* data2 = calloc(256, 1);
-    vkl_buffer_download(buffer, 0, 256, data2);
+    void* data2 = calloc(total, 1);
+    vkl_buffer_download(buffer, 0, total, data2);
 
     // Check that the data downloaded from the GPU is the same.
     // This also checks that the data on the initial buffer was successfully copied to the new
     // buffer during reallocation
-    AT(memcmp(data2, data, 256) == 0);
+    AT(memcmp(data2, data, total) == 0);
 
     vkl_buffer_destroy(buffer);
-
     vkl_context_reset(ctx);
 
     FREE(data);

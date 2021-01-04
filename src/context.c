@@ -367,7 +367,7 @@ VklBufferRegions vkl_ctx_buffers(
     ASSERT(buffer_type < VKL_BUFFER_TYPE_COUNT);
 
     // Choose the first buffer with the requested type.
-    VklBuffer* buffer = vkl_container_iter(&context->buffers);
+    VklBuffer* buffer = vkl_container_iter_init(&context->buffers);
     while (buffer != NULL)
     {
         if (is_obj_created(&buffer->obj) && buffer->type == buffer_type)
@@ -435,45 +435,45 @@ VklBufferRegions vkl_ctx_buffers(
 
 
 
-VklBufferRegions
-vkl_ctx_buffers_resize(VklContext* context, VklBufferRegions br, VkDeviceSize new_size)
+void vkl_ctx_buffers_resize(VklContext* context, VklBufferRegions* br, VkDeviceSize new_size)
 {
     // NOTE: this function tries to resize a buffer region in-place, which only works if
     // it is the last allocated region in the buffer. Otherwise a brand new region is allocated,
     // which wastes space. TODO: smarter memory management, defragmentation etc.
-    ASSERT(br.buffer != NULL);
-    ASSERT(br.count > 0);
-    if (br.count > 1)
+    ASSERT(br->buffer != NULL);
+    ASSERT(br->count > 0);
+    if (br->count > 1)
     {
         log_error("vkl_buffer_regions_resize() currently only supports regions with buf count=1");
-        return br;
+        return;
     }
-    ASSERT(br.count == 1);
+    ASSERT(br->count == 1);
 
     // The region is the last allocated in the buffer, we can safely resize it.
-    if (br.offsets[0] + br.aligned_size == br.buffer->allocated_size)
+    VkDeviceSize old_size = br->aligned_size > 0 ? br->aligned_size : br->size;
+    ASSERT(old_size > 0);
+    if (br->offsets[0] + old_size == br->buffer->allocated_size)
     {
-        log_trace("resize the buffer region in-place");
-        br.size = new_size;
-        if (br.alignment > 0)
-            br.aligned_size = aligned_size(new_size, br.alignment);
-        else
-            br.aligned_size = br.size;
+        log_debug("resize the buffer region in-place");
+        br->size = new_size;
+        if (br->alignment > 0)
+            br->aligned_size = aligned_size(new_size, br->alignment);
+        br->buffer->allocated_size = br->offsets[0] + new_size;
 
         // Need to reallocate a new underlying buffer.
-        if (br.offsets[0] + br.aligned_size > br.buffer->size)
+        if (br->offsets[0] + old_size > br->buffer->size)
         {
-            VkDeviceSize bs = next_pow2(br.offsets[0] + br.aligned_size);
-            log_info("reallocating buffer #%d to %s", br.buffer->type, pretty_size(bs));
-            vkl_buffer_resize(br.buffer, bs, VKL_DEFAULT_QUEUE_TRANSFER, &context->transfer_cmd);
+            VkDeviceSize bs = next_pow2(br->offsets[0] + old_size);
+            log_info("reallocating buffer #%d to %s", br->buffer->type, pretty_size(bs));
+            vkl_buffer_resize(br->buffer, bs, VKL_DEFAULT_QUEUE_TRANSFER, &context->transfer_cmd);
         }
-        return br;
     }
 
     // The region cannot be resized directly, need to make a new region allocation.
     else
     {
-        return vkl_ctx_buffers(context, br.buffer->type, 1, new_size);
+        log_debug("failed to resize the buffer region in-place, allocating a new region");
+        *br = vkl_ctx_buffers(context, br->buffer->type, 1, new_size);
     }
 }
 
