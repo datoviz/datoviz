@@ -980,6 +980,9 @@ vkl_buffer_resize(VklBuffer* buffer, VkDeviceSize size, uint32_t queue_idx, VklC
 
 VKY_EXPORT void* vkl_buffer_map(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size);
 
+VKY_EXPORT void
+vkl_buffer_memcpy(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, const void* data);
+
 VKY_EXPORT void vkl_buffer_unmap(VklBuffer* buffer);
 
 VKY_EXPORT void
