@@ -146,6 +146,7 @@ int test_canvas_2(TestContext* context)
 static void _make_triangle2(VklCanvas* canvas, TestVisual* visual, const char* suffix)
 {
     visual->gpu = canvas->gpu;
+    visual->n_vertices = 3;
     visual->renderpass = &canvas->renderpass;
     visual->framebuffers = &canvas->framebuffers;
     test_triangle(visual, suffix);
@@ -972,8 +973,10 @@ int test_canvas_offscreen(TestContext* context)
 
 static void _screencast_callback(VklCanvas* canvas, VklEvent ev)
 {
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/screenshot.ppm", ARTIFACTS_DIR);
     log_trace("screencast frame #%d %d", ev.u.s.idx, ev.u.s.rgba[0]);
-    // write_ppm("screenshot.ppm", ev.u.s.width, ev.u.s.height, ev.u.s.rgba);
+    write_ppm(path, ev.u.s.width, ev.u.s.height, ev.u.s.rgba);
     FREE(ev.u.s.rgba);
 }
 

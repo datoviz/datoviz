@@ -866,6 +866,7 @@ static void _triangle_graphics(TestVisual* visual, const char* suffix)
     visual->graphics = vkl_graphics(gpu);
     ASSERT(visual->renderpass != NULL);
     VklGraphics* graphics = &visual->graphics;
+    visual->n_vertices = 3;
 
     vkl_graphics_renderpass(graphics, visual->renderpass, 0);
     vkl_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);

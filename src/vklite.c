@@ -3175,6 +3175,7 @@ void vkl_cmd_bind_index_buffer(
 
 void vkl_cmd_draw(VklCommands* cmds, uint32_t idx, uint32_t first_vertex, uint32_t vertex_count)
 {
+    ASSERT(vertex_count > 0);
     CMD_START
     vkCmdDraw(cb, vertex_count, 1, first_vertex, 0);
     CMD_END
@@ -3186,6 +3187,7 @@ void vkl_cmd_draw_indexed(
     VklCommands* cmds, uint32_t idx, uint32_t first_index, uint32_t vertex_offset,
     uint32_t index_count)
 {
+    ASSERT(index_count > 0);
     CMD_START
     vkCmdDrawIndexed(cb, index_count, 1, first_index, (int32_t)vertex_offset, 0);
     CMD_END
