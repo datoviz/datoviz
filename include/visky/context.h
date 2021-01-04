@@ -209,7 +209,6 @@ struct VklContext
     VklCommands transfer_cmd;
 
     VklFifo fifo; // transfer queue
-    VklTransfer transfers[VKL_MAX_TRANSFERS];
 
     VklContainer buffers;
     VklContainer images;

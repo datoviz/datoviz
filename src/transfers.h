@@ -465,8 +465,9 @@ static void fifo_enqueue(VklContext* context, VklTransfer transfer)
     ASSERT(context != NULL);
     VklFifo* fifo = &context->fifo;
     ASSERT(0 <= fifo->head && fifo->head < fifo->capacity);
-    context->transfers[fifo->head] = transfer;
-    vkl_fifo_enqueue(fifo, &context->transfers[fifo->head]);
+    VklTransfer* tr = calloc(1, sizeof(VklTransfer));
+    *tr = transfer;
+    vkl_fifo_enqueue(fifo, tr);
 }
 
 
@@ -479,7 +480,10 @@ static VklTransfer fifo_dequeue(VklContext* context, bool wait)
     if (item == NULL)
         return (VklTransfer){0};
     ASSERT(item != NULL);
-    return *item;
+    VklTransfer out = {0};
+    out = *item;
+    FREE(item);
+    return out;
 }
 
 
