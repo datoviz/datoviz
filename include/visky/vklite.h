@@ -127,6 +127,7 @@ typedef enum
 } VklBackend;
 
 
+
 // Queue type.
 typedef enum
 {
@@ -139,6 +140,7 @@ typedef enum
 } VklQueueType;
 
 
+
 // Command buffer type.
 typedef enum
 {
@@ -147,6 +149,22 @@ typedef enum
     VKL_COMMAND_COMPUTE,
     VKL_COMMAND_GUI,
 } VklCommandBufferType;
+
+
+
+// Buffer type.
+typedef enum
+{
+    VKL_BUFFER_TYPE_UNDEFINED,
+    VKL_BUFFER_TYPE_STAGING,
+    VKL_BUFFER_TYPE_VERTEX,
+    VKL_BUFFER_TYPE_INDEX,
+    VKL_BUFFER_TYPE_UNIFORM,
+    VKL_BUFFER_TYPE_STORAGE,
+    VKL_BUFFER_TYPE_UNIFORM_MAPPABLE,
+    VKL_BUFFER_TYPE_COUNT,
+} VklBufferType;
+
 
 
 // Texture axis.
@@ -158,6 +176,7 @@ typedef enum
 } VklTextureAxis;
 
 
+
 // Blend type.
 typedef enum
 {
@@ -166,12 +185,14 @@ typedef enum
 } VklBlendType;
 
 
+
 // Depth test.
 typedef enum
 {
     VKL_DEPTH_TEST_DISABLE,
     VKL_DEPTH_TEST_ENABLE,
 } VklDepthTest;
+
 
 
 // Render pass attachment type.
@@ -214,22 +235,27 @@ typedef enum
 
 static char _PRETTY_SIZE[64] = {0};
 
-static inline char* pretty_size(VkDeviceSize size){
+static inline char* pretty_size(VkDeviceSize size)
+{
     float s = (float)size;
     const char* u;
-    if (size >= GB) {
+    if (size >= GB)
+    {
         s /= GB;
         u = "GB";
     }
-    else if (size >= MB) {
+    else if (size >= MB)
+    {
         s /= MB;
         u = "MB";
     }
-    else if (size >= KB) {
+    else if (size >= KB)
+    {
         s /= KB;
         u = "KB";
     }
-    else {
+    else
+    {
         u = "bytes";
     }
     snprintf(_PRETTY_SIZE, 64, "%.1f %s", s, u);
@@ -442,6 +468,7 @@ struct VklBuffer
     VklObject obj;
     VklGpu* gpu;
 
+    VklBufferType type;
     VkBuffer buffer;
     VkDeviceMemory device_memory;
 
@@ -453,6 +480,8 @@ struct VklBuffer
     VkDeviceSize allocated_size;
     VkBufferUsageFlags usage;
     VkMemoryPropertyFlags memory;
+
+    void* mmap;
 };
 
 
@@ -935,6 +964,8 @@ VKY_EXPORT void vkl_commands_destroy(VklCommands* cmds);
 VKY_EXPORT VklBuffer vkl_buffer(VklGpu* gpu);
 
 VKY_EXPORT void vkl_buffer_size(VklBuffer* buffer, VkDeviceSize size);
+
+VKY_EXPORT void vkl_buffer_type(VklBuffer* buffer, VklBufferType type);
 
 VKY_EXPORT void vkl_buffer_usage(VklBuffer* buffer, VkBufferUsageFlags usage);
 

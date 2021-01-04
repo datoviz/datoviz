@@ -190,6 +190,7 @@ static void _context_default_buffers(VklContext* context)
     // Staging buffer
     buffer = vkl_container_get(&context->buffers, VKL_BUFFER_TYPE_STAGING);
     ASSERT(buffer != NULL);
+    vkl_buffer_type(buffer, VKL_BUFFER_TYPE_STAGING);
     vkl_buffer_size(buffer, VKL_BUFFER_TYPE_STAGING_SIZE);
     vkl_buffer_usage(buffer, transferable);
     vkl_buffer_memory(
@@ -199,6 +200,7 @@ static void _context_default_buffers(VklContext* context)
     // Vertex buffer
     buffer = vkl_container_get(&context->buffers, VKL_BUFFER_TYPE_VERTEX);
     ASSERT(buffer != NULL);
+    vkl_buffer_type(buffer, VKL_BUFFER_TYPE_VERTEX);
     vkl_buffer_size(buffer, VKL_BUFFER_TYPE_VERTEX_SIZE);
     vkl_buffer_usage(
         buffer,
@@ -209,6 +211,7 @@ static void _context_default_buffers(VklContext* context)
     // Index buffer
     buffer = vkl_container_get(&context->buffers, VKL_BUFFER_TYPE_INDEX);
     ASSERT(buffer != NULL);
+    vkl_buffer_type(buffer, VKL_BUFFER_TYPE_INDEX);
     vkl_buffer_size(buffer, VKL_BUFFER_TYPE_INDEX_SIZE);
     vkl_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
     vkl_buffer_memory(buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
@@ -217,6 +220,7 @@ static void _context_default_buffers(VklContext* context)
     // Storage buffer
     buffer = vkl_container_get(&context->buffers, VKL_BUFFER_TYPE_STORAGE);
     ASSERT(buffer != NULL);
+    vkl_buffer_type(buffer, VKL_BUFFER_TYPE_STORAGE);
     vkl_buffer_size(buffer, VKL_BUFFER_TYPE_STORAGE_SIZE);
     vkl_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
     vkl_buffer_memory(buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
@@ -225,6 +229,7 @@ static void _context_default_buffers(VklContext* context)
     // Uniform buffer
     buffer = vkl_container_get(&context->buffers, VKL_BUFFER_TYPE_UNIFORM);
     ASSERT(buffer != NULL);
+    vkl_buffer_type(buffer, VKL_BUFFER_TYPE_UNIFORM);
     vkl_buffer_size(buffer, VKL_BUFFER_TYPE_UNIFORM_SIZE);
     vkl_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
     vkl_buffer_memory(buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
@@ -233,6 +238,7 @@ static void _context_default_buffers(VklContext* context)
     // Mappable uniform buffer
     buffer = vkl_container_get(&context->buffers, VKL_BUFFER_TYPE_UNIFORM_MAPPABLE);
     ASSERT(buffer != NULL);
+    vkl_buffer_type(buffer, VKL_BUFFER_TYPE_UNIFORM_MAPPABLE);
     vkl_buffer_size(buffer, VKL_BUFFER_TYPE_UNIFORM_SIZE);
     vkl_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
     vkl_buffer_memory(

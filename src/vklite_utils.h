@@ -712,7 +712,8 @@ static void create_device(VklGpu* gpu, VkSurfaceKHR surface)
                 // queues have the same score, we take the *first* one instead of the last.
                 qf = q->queue_family_count - qfi - 1;
                 qf_match = true;
-                // log_trace("looking at queue family %d with score %d", qf, queue_family_score[qf]);
+                // log_trace("looking at queue family %d with score %d", qf,
+                // queue_family_score[qf]);
                 if ((q->queue_types[i] & VKL_QUEUE_TRANSFER) && !q->support_transfer[qf])
                     qf_match = false;
                 if ((q->queue_types[i] & VKL_QUEUE_GRAPHICS) && !q->support_graphics[qf])

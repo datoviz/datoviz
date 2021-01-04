@@ -63,20 +63,6 @@ typedef struct VklFontAtlas VklFontAtlas;
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
-// Default buffer.
-typedef enum
-{
-    VKL_BUFFER_TYPE_STAGING,
-    VKL_BUFFER_TYPE_VERTEX,
-    VKL_BUFFER_TYPE_INDEX,
-    VKL_BUFFER_TYPE_UNIFORM,
-    VKL_BUFFER_TYPE_STORAGE,
-    VKL_BUFFER_TYPE_UNIFORM_MAPPABLE,
-    VKL_BUFFER_TYPE_COUNT,
-} VklBufferType;
-
-
-
 // Default queue.
 typedef enum
 {

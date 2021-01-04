@@ -784,6 +784,14 @@ void vkl_buffer_size(VklBuffer* buffer, VkDeviceSize size)
 
 
 
+void vkl_buffer_type(VklBuffer* buffer, VklBufferType type)
+{
+    ASSERT(buffer != NULL);
+    buffer->type = type;
+}
+
+
+
 void vkl_buffer_usage(VklBuffer* buffer, VkBufferUsageFlags usage)
 {
     ASSERT(buffer != NULL);
