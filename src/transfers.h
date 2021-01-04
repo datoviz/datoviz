@@ -460,10 +460,9 @@ static int process_transfer(VklContext* context, VklTransfer tr)
 /*  Transfer utils                                                                               */
 /*************************************************************************************************/
 
-static void fifo_enqueue(VklContext* context, VklTransfer transfer)
+static void fifo_enqueue(VklContext* context, VklFifo* fifo, VklTransfer transfer)
 {
     ASSERT(context != NULL);
-    VklFifo* fifo = &context->fifo;
     ASSERT(0 <= fifo->head && fifo->head < fifo->capacity);
     VklTransfer* tr = calloc(1, sizeof(VklTransfer));
     *tr = transfer;
@@ -472,10 +471,9 @@ static void fifo_enqueue(VklContext* context, VklTransfer transfer)
 
 
 
-static VklTransfer fifo_dequeue(VklContext* context, bool wait)
+static VklTransfer fifo_dequeue(VklContext* context, VklFifo* fifo, bool wait)
 {
     ASSERT(context != NULL);
-    VklFifo* fifo = &context->fifo;
     VklTransfer* item = vkl_fifo_dequeue(fifo, wait);
     if (item == NULL)
         return (VklTransfer){0};
@@ -511,7 +509,7 @@ static VklTransfer enqueue_texture_transfer(
     if (context->transfer_mode == VKL_TRANSFER_MODE_SYNC)
         process_transfer(context, tr);
     else
-        fifo_enqueue(context, tr);
+        fifo_enqueue(context, &context->fifo, tr);
 
     return tr;
 }
@@ -537,7 +535,7 @@ static VklTransfer enqueue_regions_transfer(
     if (context->transfer_mode == VKL_TRANSFER_MODE_SYNC)
         process_transfer(context, tr);
     else
-        fifo_enqueue(context, tr);
+        fifo_enqueue(context, &context->fifo, tr);
 
     return tr;
 }

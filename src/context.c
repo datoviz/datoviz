@@ -670,7 +670,7 @@ void vkl_transfer_loop(VklContext* context, bool wait)
     {
         // log_trace("transfer loop awaits for transfer task, iteration %d...", counter);
         // wait until a transfer task is available
-        tr = fifo_dequeue(context, wait);
+        tr = fifo_dequeue(context, &context->fifo, wait);
         // process the dequeued task
         context->fifo.is_processing = true;
         res = process_transfer(context, tr);
@@ -718,7 +718,7 @@ void vkl_transfer_stop(VklContext* context)
     // Enqueue a special object that causes the dequeue loop to end.
     VklTransfer tr = {0};
     tr.type = VKL_TRANSFER_NONE;
-    fifo_enqueue(context, tr);
+    fifo_enqueue(context, &context->fifo, tr);
 }
 
 
@@ -833,7 +833,7 @@ void vkl_copy_buffers(
     if (context->transfer_mode == VKL_TRANSFER_MODE_SYNC)
         process_transfer(context, tr);
     else
-        fifo_enqueue(context, tr);
+        fifo_enqueue(context, &context->fifo, tr);
 }
 
 
@@ -858,5 +858,5 @@ void vkl_copy_textures(
     if (context->transfer_mode == VKL_TRANSFER_MODE_SYNC)
         process_transfer(context, tr);
     else
-        fifo_enqueue(context, tr);
+        fifo_enqueue(context, &context->fifo, tr);
 }

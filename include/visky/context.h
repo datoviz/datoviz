@@ -192,6 +192,7 @@ struct VklTransfer
 {
     VklDataTransferType type;
     VklTransferUnion u;
+    bool need_refill;
 };
 
 

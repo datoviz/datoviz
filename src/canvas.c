@@ -1149,9 +1149,17 @@ void vkl_upload_buffers_immediate(
 
 
 
+static void _process_transfers(VklCanvas* canvas)
+{
+    ASSERT(canvas != NULL);
+    //
+}
+
+
+
 void vkl_canvas_buffers(
-    VklCanvas* canvas, VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size,
-    const void* data, bool need_refill)
+    VklCanvas* canvas, VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data,
+    bool need_refill)
 {
     ASSERT(canvas != NULL);
     ASSERT(size > 0);
@@ -1159,7 +1167,21 @@ void vkl_canvas_buffers(
     ASSERT(is_obj_created(&br.buffer->obj));
     ASSERT(data != NULL);
 
-    // enqueue_regions_transfer(context, VKL_TRANSFER_BUFFER_UPLOAD, regions, offset, size, data);
+    ASSERT(canvas->gpu != NULL);
+    VklContext* context = canvas->gpu->context;
+    ASSERT(context != NULL);
+    ASSERT(size > 0);
+    ASSERT(data != NULL);
+
+    // Create the transfer object.
+    VklTransfer tr = {0};
+    tr.type = VKL_TRANSFER_BUFFER_UPLOAD;
+    tr.u.buf.regions = br;
+    tr.u.buf.offset = offset;
+    tr.u.buf.size = size;
+    tr.u.buf.data = data;
+
+    fifo_enqueue(context, &context->fifo, tr);
 }
 
 
