@@ -109,20 +109,19 @@ static void _set_source_bindings(VklVisual* visual, VklSource* source)
 
 
 
-static VklDefaultBuffer _get_default_buffer(VklSource* source)
+static VklBufferType _get_default_buffer(VklSource* source)
 {
     switch (source->source_kind)
     {
     case VKL_SOURCE_VERTEX:
-        return VKL_DEFAULT_BUFFER_VERTEX;
+        return VKL_BUFFER_TYPE_VERTEX;
     case VKL_SOURCE_INDEX:
-        return VKL_DEFAULT_BUFFER_INDEX;
+        return VKL_BUFFER_TYPE_INDEX;
     case VKL_SOURCE_UNIFORM:
-        return (source->flags & VKL_SOURCE_FLAG_IMMEDIATE) != 0
-                   ? VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE
-                   : VKL_DEFAULT_BUFFER_UNIFORM;
+        return (source->flags & VKL_SOURCE_FLAG_IMMEDIATE) != 0 ? VKL_BUFFER_TYPE_UNIFORM_MAPPABLE
+                                                                : VKL_BUFFER_TYPE_UNIFORM;
     case VKL_SOURCE_STORAGE:
-        return VKL_DEFAULT_BUFFER_STORAGE;
+        return VKL_BUFFER_TYPE_STORAGE;
     default:
         log_error("buffer idx not found");
         break;

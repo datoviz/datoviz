@@ -210,8 +210,8 @@ VklPanel* vkl_panel(VklGrid* grid, uint32_t row, uint32_t col)
 
     // MVP uniform buffer.
     uint32_t n = canvas->swapchain.img_count;
-    panel->br_mvp = vkl_ctx_buffers(
-        canvas->gpu->context, VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE, n, sizeof(VklMVP));
+    panel->br_mvp =
+        vkl_ctx_buffers(canvas->gpu->context, VKL_BUFFER_TYPE_UNIFORM_MAPPABLE, n, sizeof(VklMVP));
     // Initialize with identity matrices. Will be later updated by the scene controllers at every
     // frame.
     vkl_upload_buffers_immediate(canvas, panel->br_mvp, true, 0, panel->br_mvp.size, &MVP_ID);

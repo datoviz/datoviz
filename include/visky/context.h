@@ -34,11 +34,11 @@ extern "C" {
 #define VKL_DEFAULT_WIDTH  800
 #define VKL_DEFAULT_HEIGHT 600
 
-#define VKL_DEFAULT_BUFFER_STAGING_SIZE (16 * 1024 * 1024)
-#define VKL_DEFAULT_BUFFER_VERTEX_SIZE  (16 * 1024 * 1024)
-#define VKL_DEFAULT_BUFFER_INDEX_SIZE   (16 * 1024 * 1024)
-#define VKL_DEFAULT_BUFFER_STORAGE_SIZE (16 * 1024 * 1024)
-#define VKL_DEFAULT_BUFFER_UNIFORM_SIZE (4 * 1024 * 1024)
+#define VKL_BUFFER_TYPE_STAGING_SIZE (16 * 1024 * 1024)
+#define VKL_BUFFER_TYPE_VERTEX_SIZE  (16 * 1024 * 1024)
+#define VKL_BUFFER_TYPE_INDEX_SIZE   (16 * 1024 * 1024)
+#define VKL_BUFFER_TYPE_STORAGE_SIZE (16 * 1024 * 1024)
+#define VKL_BUFFER_TYPE_UNIFORM_SIZE (4 * 1024 * 1024)
 
 
 
@@ -66,14 +66,14 @@ typedef struct VklFontAtlas VklFontAtlas;
 // Default buffer.
 typedef enum
 {
-    VKL_DEFAULT_BUFFER_STAGING,
-    VKL_DEFAULT_BUFFER_VERTEX,
-    VKL_DEFAULT_BUFFER_INDEX,
-    VKL_DEFAULT_BUFFER_UNIFORM,
-    VKL_DEFAULT_BUFFER_STORAGE,
-    VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE,
-    VKL_DEFAULT_BUFFER_COUNT,
-} VklDefaultBuffer;
+    VKL_BUFFER_TYPE_STAGING,
+    VKL_BUFFER_TYPE_VERTEX,
+    VKL_BUFFER_TYPE_INDEX,
+    VKL_BUFFER_TYPE_UNIFORM,
+    VKL_BUFFER_TYPE_STORAGE,
+    VKL_BUFFER_TYPE_UNIFORM_MAPPABLE,
+    VKL_BUFFER_TYPE_COUNT,
+} VklBufferType;
 
 
 
@@ -292,7 +292,7 @@ VKY_EXPORT void vkl_transfer_stop(VklContext* context);
 /*************************************************************************************************/
 
 VKY_EXPORT VklBufferRegions vkl_ctx_buffers(
-    VklContext* context, VklDefaultBuffer buffer_idx, uint32_t buffer_count, VkDeviceSize size);
+    VklContext* context, VklBufferType buffer_idx, uint32_t buffer_count, VkDeviceSize size);
 
 
 

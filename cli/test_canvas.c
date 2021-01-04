@@ -352,7 +352,7 @@ int test_canvas_5(TestContext* context)
 
     // Triangle buffer.
     VkDeviceSize size = 3 * sizeof(TestVertex);
-    visual.br = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, size);
+    visual.br = vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_VERTEX, 1, size);
 
     // Upload the triangle data.
     TestVertex data[3] = {
@@ -419,8 +419,7 @@ int test_canvas_6(TestContext* context)
     vkl_graphics_slot(&visual.graphics, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
     // Uniform buffer.
-    visual.br_u =
-        vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, img_count, sizeof(vec4));
+    visual.br_u = vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, img_count, sizeof(vec4));
     ASSERT(visual.br_u.aligned_size >= visual.br_u.size);
     vkl_upload_buffers(canvas->gpu->context, visual.br_u, 0, sizeof(vec4), vec);
 
@@ -436,7 +435,7 @@ int test_canvas_6(TestContext* context)
 
     // Triangle buffer.
     VkDeviceSize size = 3 * sizeof(TestVertex);
-    visual.br = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, size);
+    visual.br = vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_VERTEX, 1, size);
 
     // Upload the triangle data.
     TestVertex data[3] = {
@@ -633,7 +632,7 @@ static void _append_callback(VklCanvas* canvas, VklPrivateEvent ev)
     visual->data = data;
     VkDeviceSize size = visual->n_vertices * sizeof(TestVertex);
     visual->br = vkl_ctx_buffers(
-        canvas->gpu->context, VKL_DEFAULT_BUFFER_VERTEX, canvas->swapchain.img_count, size);
+        canvas->gpu->context, VKL_BUFFER_TYPE_VERTEX, canvas->swapchain.img_count, size);
     vkl_upload_buffers(canvas->gpu->context, visual->br, 0, size, data);
 
     vkl_canvas_to_refill(canvas, true);
@@ -664,7 +663,7 @@ int test_canvas_append(TestContext* context)
 
     // Triangle buffer.
     VkDeviceSize size = 3 * sizeof(TestVertex);
-    visual.br = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, size);
+    visual.br = vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_VERTEX, 1, size);
 
     // Upload the triangle data.
     TestVertex data[3] = {
@@ -840,12 +839,12 @@ int test_canvas_particles(TestContext* context)
     visual->n_vertices = n;
     VkDeviceSize size = n * sizeof(TestParticle);
     // Vertex buffer.
-    visual->br = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, size);
+    visual->br = vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_VERTEX, 1, size);
 
     TestParticleCompute tpc = {0};
     // Struct holding some pointers for compute command buffer submission.
     {
-        tpc.br = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_STORAGE, 1, size);
+        tpc.br = vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_STORAGE, 1, size);
         tpc.fence = vkl_fences(gpu, 1);
         visual->user_data = calloc(1, sizeof(TestParticleCompute));
     }
@@ -895,7 +894,7 @@ int test_canvas_particles(TestContext* context)
 
         // Uniform buffer.
         visual->br_u = vkl_ctx_buffers(
-            gpu->context, VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE, canvas->swapchain.img_count,
+            gpu->context, VKL_BUFFER_TYPE_UNIFORM_MAPPABLE, canvas->swapchain.img_count,
             sizeof(TestParticleUniform));
         visual->data_u = calloc(1, sizeof(TestParticleUniform));
 

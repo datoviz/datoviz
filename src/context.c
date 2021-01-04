@@ -172,7 +172,7 @@ static void _context_default_buffers(VklContext* context)
     ASSERT(context->gpu != NULL);
     // Create a predetermined set of buffers.
     VklBuffer* buffer = NULL;
-    for (uint32_t i = 0; i < VKL_DEFAULT_BUFFER_COUNT; i++)
+    for (uint32_t i = 0; i < VKL_BUFFER_TYPE_COUNT; i++)
     {
         buffer = vkl_container_alloc(&context->buffers);
         *buffer = vkl_buffer(context->gpu);
@@ -188,18 +188,18 @@ static void _context_default_buffers(VklContext* context)
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
     // Staging buffer
-    buffer = vkl_container_get(&context->buffers, VKL_DEFAULT_BUFFER_STAGING);
+    buffer = vkl_container_get(&context->buffers, VKL_BUFFER_TYPE_STAGING);
     ASSERT(buffer != NULL);
-    vkl_buffer_size(buffer, VKL_DEFAULT_BUFFER_STAGING_SIZE);
+    vkl_buffer_size(buffer, VKL_BUFFER_TYPE_STAGING_SIZE);
     vkl_buffer_usage(buffer, transferable);
     vkl_buffer_memory(
         buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
     vkl_buffer_create(buffer);
 
     // Vertex buffer
-    buffer = vkl_container_get(&context->buffers, VKL_DEFAULT_BUFFER_VERTEX);
+    buffer = vkl_container_get(&context->buffers, VKL_BUFFER_TYPE_VERTEX);
     ASSERT(buffer != NULL);
-    vkl_buffer_size(buffer, VKL_DEFAULT_BUFFER_VERTEX_SIZE);
+    vkl_buffer_size(buffer, VKL_BUFFER_TYPE_VERTEX_SIZE);
     vkl_buffer_usage(
         buffer,
         transferable | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
@@ -207,33 +207,33 @@ static void _context_default_buffers(VklContext* context)
     vkl_buffer_create(buffer);
 
     // Index buffer
-    buffer = vkl_container_get(&context->buffers, VKL_DEFAULT_BUFFER_INDEX);
+    buffer = vkl_container_get(&context->buffers, VKL_BUFFER_TYPE_INDEX);
     ASSERT(buffer != NULL);
-    vkl_buffer_size(buffer, VKL_DEFAULT_BUFFER_INDEX_SIZE);
+    vkl_buffer_size(buffer, VKL_BUFFER_TYPE_INDEX_SIZE);
     vkl_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
     vkl_buffer_memory(buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     vkl_buffer_create(buffer);
 
     // Storage buffer
-    buffer = vkl_container_get(&context->buffers, VKL_DEFAULT_BUFFER_STORAGE);
+    buffer = vkl_container_get(&context->buffers, VKL_BUFFER_TYPE_STORAGE);
     ASSERT(buffer != NULL);
-    vkl_buffer_size(buffer, VKL_DEFAULT_BUFFER_STORAGE_SIZE);
+    vkl_buffer_size(buffer, VKL_BUFFER_TYPE_STORAGE_SIZE);
     vkl_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
     vkl_buffer_memory(buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     vkl_buffer_create(buffer);
 
     // Uniform buffer
-    buffer = vkl_container_get(&context->buffers, VKL_DEFAULT_BUFFER_UNIFORM);
+    buffer = vkl_container_get(&context->buffers, VKL_BUFFER_TYPE_UNIFORM);
     ASSERT(buffer != NULL);
-    vkl_buffer_size(buffer, VKL_DEFAULT_BUFFER_UNIFORM_SIZE);
+    vkl_buffer_size(buffer, VKL_BUFFER_TYPE_UNIFORM_SIZE);
     vkl_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
     vkl_buffer_memory(buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     vkl_buffer_create(buffer);
 
     // Mappable uniform buffer
-    buffer = vkl_container_get(&context->buffers, VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE);
+    buffer = vkl_container_get(&context->buffers, VKL_BUFFER_TYPE_UNIFORM_MAPPABLE);
     ASSERT(buffer != NULL);
-    vkl_buffer_size(buffer, VKL_DEFAULT_BUFFER_UNIFORM_SIZE);
+    vkl_buffer_size(buffer, VKL_BUFFER_TYPE_UNIFORM_SIZE);
     vkl_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
     vkl_buffer_memory(
         buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
@@ -352,7 +352,7 @@ void vkl_context_destroy(VklContext* context)
 /*************************************************************************************************/
 
 VklBufferRegions vkl_ctx_buffers(
-    VklContext* context, VklDefaultBuffer buffer_idx, uint32_t buffer_count, VkDeviceSize size)
+    VklContext* context, VklBufferType buffer_idx, uint32_t buffer_count, VkDeviceSize size)
 {
     ASSERT(context != NULL);
     ASSERT(context->gpu != NULL);
@@ -364,8 +364,8 @@ VklBufferRegions vkl_ctx_buffers(
     VklBuffer* buffer = vkl_container_get(&context->buffers, buffer_idx);
     ASSERT(buffer != NULL);
     VkDeviceSize offset = buffer->allocated_size;
-    bool needs_align = buffer_idx == VKL_DEFAULT_BUFFER_UNIFORM ||
-                       buffer_idx == VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE;
+    bool needs_align =
+        buffer_idx == VKL_BUFFER_TYPE_UNIFORM || buffer_idx == VKL_BUFFER_TYPE_UNIFORM_MAPPABLE;
     if (needs_align)
     {
         alignment = context->gpu->device_properties.limits.minUniformBufferOffsetAlignment;
@@ -588,7 +588,7 @@ void vkl_texture_destroy(VklTexture* texture)
 
 static VklBuffer* staging_buffer(VklContext* context, VkDeviceSize size)
 {
-    VklBuffer* staging = vkl_container_get(&context->buffers, VKL_DEFAULT_BUFFER_STAGING);
+    VklBuffer* staging = vkl_container_get(&context->buffers, VKL_BUFFER_TYPE_STAGING);
     ASSERT(staging != NULL);
     ASSERT(staging->buffer != VK_NULL_HANDLE);
     // Resize the staging buffer is needed.
@@ -598,7 +598,7 @@ static VklBuffer* staging_buffer(VklContext* context, VkDeviceSize size)
     {
         VkDeviceSize new_size = next_pow2(size);
         log_info(
-            "reallocating staging buffer to %s", VKL_DEFAULT_BUFFER_STAGING, pretty_size(new_size));
+            "reallocating staging buffer to %s", VKL_BUFFER_TYPE_STAGING, pretty_size(new_size));
         vkl_buffer_resize(staging, new_size, VKL_DEFAULT_QUEUE_TRANSFER, &context->transfer_cmd);
     }
     ASSERT(staging->size >= size);

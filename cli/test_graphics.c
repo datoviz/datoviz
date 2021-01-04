@@ -79,9 +79,9 @@ static void _common_bindings(TestGraphics* tg)
     tg->bindings = vkl_bindings(&graphics->slots, 1);
 
     // Binding resources.
-    tg->br_mvp = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklMVP));
+    tg->br_mvp = vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklMVP));
     tg->br_viewport =
-        vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklViewport));
+        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklViewport));
 
     // Upload MVP.
     glm_mat4_identity(tg->mvp.model);
@@ -119,10 +119,10 @@ static void _common_bindings(TestGraphics* tg)
     uint32_t vertex_count = tg.vertices.item_count;                                               \
     uint32_t index_count = tg.indices.item_count;                                                 \
     tg.br_vert =                                                                                  \
-        vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, vertex_count * sizeof(type)); \
+        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_VERTEX, 1, vertex_count * sizeof(type));    \
     if (index_count > 0)                                                                          \
         tg.br_index = vkl_ctx_buffers(                                                            \
-            gpu->context, VKL_DEFAULT_BUFFER_INDEX, 1, index_count * sizeof(VklIndex));           \
+            gpu->context, VKL_BUFFER_TYPE_INDEX, 1, index_count * sizeof(VklIndex));              \
     type* vertices = tg.vertices.data;
 
 #define END_DATA                                                                                  \
@@ -188,10 +188,10 @@ int test_graphics_dynamic(TestContext* context)
     tg.bindings = vkl_bindings(&graphics->slots, 1);
 
     // Binding resources.
-    tg.br_mvp = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklMVP));
-    tg.br_viewport = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
-    tg.br_params = vkl_ctx_buffers(
-        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointParams));
+    tg.br_mvp = vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklMVP));
+    tg.br_viewport = vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, 16);
+    tg.br_params =
+        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsPointParams));
 
     // Upload MVP.
     glm_mat4_identity(tg.mvp.model);
@@ -259,10 +259,10 @@ int test_graphics_3D(TestContext* context)
     tg.bindings = vkl_bindings(&graphics->slots, 1);
 
     // Binding resources.
-    tg.br_mvp = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklMVP));
-    tg.br_viewport = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
-    tg.br_params = vkl_ctx_buffers(
-        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointParams));
+    tg.br_mvp = vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklMVP));
+    tg.br_viewport = vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, 16);
+    tg.br_params =
+        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsPointParams));
 
     // Upload params.
     tg.param = 50.0f;
@@ -298,8 +298,8 @@ int test_graphics_points(TestContext* context)
     }
     END_DATA
 
-    tg.br_params = vkl_ctx_buffers(
-        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointParams));
+    tg.br_params =
+        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsPointParams));
     BINDINGS_PARAMS
 
     tg.param = 5.0f;
@@ -445,8 +445,8 @@ int test_graphics_marker(TestContext* context)
     }
     END_DATA
 
-    tg.br_params = vkl_ctx_buffers(
-        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointParams));
+    tg.br_params =
+        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsPointParams));
     BINDINGS_PARAMS
 
     VklGraphicsMarkerParams params = {0};
@@ -563,8 +563,8 @@ int test_graphics_text(TestContext* context)
 
     END_DATA
 
-    tg.br_params = vkl_ctx_buffers(
-        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsTextParams));
+    tg.br_params =
+        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsTextParams));
     vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsTextParams), &params);
 
     _common_bindings(&tg);
@@ -596,7 +596,7 @@ int test_graphics_image(TestContext* context)
     tg.vertices = vkl_array_struct(n, sizeof(VklGraphicsImageVertex));
     ASSERT(tg.vertices.item_count == n);
     tg.br_vert = vkl_ctx_buffers(
-        gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1,
+        gpu->context, VKL_BUFFER_TYPE_VERTEX, 1,
         tg.vertices.item_count * sizeof(VklGraphicsImageVertex));
     float x = 1;
     VklGraphicsImageVertex vertices[] = {
@@ -612,8 +612,8 @@ int test_graphics_image(TestContext* context)
         vertices);
 
     // Parameters.
-    tg.br_params = vkl_ctx_buffers(
-        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsImageParams));
+    tg.br_params =
+        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsImageParams));
     VklGraphicsImageParams params = {0};
     params.tex_coefs[0] = 1;
     vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsImageParams), &params);
@@ -729,10 +729,10 @@ int test_graphics_mesh(TestContext* context)
     uint32_t vertex_count = tg.vertices.item_count;
     uint32_t index_count = tg.indices.item_count;
     tg.br_vert = vkl_ctx_buffers(
-        gpu->context, VKL_DEFAULT_BUFFER_VERTEX, 1, vertex_count * sizeof(VklGraphicsMeshVertex));
+        gpu->context, VKL_BUFFER_TYPE_VERTEX, 1, vertex_count * sizeof(VklGraphicsMeshVertex));
     if (index_count > 0)
         tg.br_index = vkl_ctx_buffers(
-            gpu->context, VKL_DEFAULT_BUFFER_INDEX, 1, index_count * sizeof(VklIndex));
+            gpu->context, VKL_BUFFER_TYPE_INDEX, 1, index_count * sizeof(VklIndex));
 
     vkl_upload_buffers(
         gpu->context, tg.br_vert, 0, vertex_count * tg.vertices.item_size, tg.vertices.data);
@@ -755,9 +755,9 @@ int test_graphics_mesh(TestContext* context)
     tg.bindings = vkl_bindings(&graphics->slots, 1);
 
     // Binding resources.
-    tg.br_mvp = vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklMVP));
+    tg.br_mvp = vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklMVP));
     tg.br_viewport =
-        vkl_ctx_buffers(gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklViewport));
+        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklViewport));
 
     // Parameters.
     VklGraphicsMeshParams params = {0};
@@ -770,8 +770,8 @@ int test_graphics_mesh(TestContext* context)
     params.tex_coefs[0] = 1;
     glm_vec3_copy(tg.eye, params.view_pos);
 
-    tg.br_params = vkl_ctx_buffers(
-        gpu->context, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsMeshParams));
+    tg.br_params =
+        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsMeshParams));
     vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsMeshParams), &params);
 
     // Bindings

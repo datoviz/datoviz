@@ -46,7 +46,7 @@ static void _common_data(VklVisual* visual)
     vkl_visual_data(visual, VKL_PROP_TIME, 0, 1, &zero);
 
     // Viewport.
-    br_viewport = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklViewport));
+    br_viewport = vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklViewport));
 
     // For the tests, share the same viewport buffer region among all graphics pipelines of the
     // visual.

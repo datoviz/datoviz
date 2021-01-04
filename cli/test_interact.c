@@ -82,10 +82,10 @@ static void _add_visual(
     VklContext* ctx = gpu->context;
 
     VklBufferRegions br_mvp = vkl_ctx_buffers(
-        ctx, VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE, canvas->swapchain.img_count, sizeof(VklMVP));
-    VklBufferRegions br_viewport = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
+        ctx, VKL_BUFFER_TYPE_UNIFORM_MAPPABLE, canvas->swapchain.img_count, sizeof(VklMVP));
+    VklBufferRegions br_viewport = vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_UNIFORM, 1, 16);
     VklBufferRegions br_params =
-        vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointParams));
+        vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsPointParams));
 
     vkl_upload_buffers(ctx, br_params, 0, sizeof(VklGraphicsPointParams), params);
 

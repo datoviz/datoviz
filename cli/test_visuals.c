@@ -29,10 +29,10 @@ int test_visuals_1(TestContext* context)
 
     // Binding resources.
     VklBufferRegions br_mvp =
-        vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE, 1, sizeof(VklMVP));
-    VklBufferRegions br_viewport = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
+        vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_UNIFORM_MAPPABLE, 1, sizeof(VklMVP));
+    VklBufferRegions br_viewport = vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_UNIFORM, 1, 16);
     VklBufferRegions br_params =
-        vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, sizeof(VklGraphicsPointParams));
+        vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsPointParams));
 
     // Binding data.
     VklMVP mvp = {0};
@@ -60,7 +60,7 @@ int test_visuals_1(TestContext* context)
     {
         // Via a GPU buffer.
         // VklBufferRegions br_vert =
-        //     vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_VERTEX, 1, N * sizeof(VklVertex));
+        //     vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_VERTEX, 1, N * sizeof(VklVertex));
         // vkl_upload_buffers(ctx, br_vert, 0, N * sizeof(VklVertex), vertices);
         // visual.vertex_count = N;
         // vkl_visual_buffer(&visual, VKL_SOURCE_TYPE_VERTEX, 0, br_vert);
@@ -103,7 +103,7 @@ int test_visuals_2(TestContext* context)
     const uint32_t N = 10000;
 
     // Binding resources.
-    VklBufferRegions br_viewport = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
+    VklBufferRegions br_viewport = vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_UNIFORM, 1, 16);
 
     // Vertex data.
     vec3* pos = calloc(N, sizeof(vec3));
@@ -177,7 +177,7 @@ int test_visuals_3(TestContext* context)
     const uint32_t N = 10000;
 
     // Binding resources.
-    VklBufferRegions br_viewport = vkl_ctx_buffers(ctx, VKL_DEFAULT_BUFFER_UNIFORM, 1, 16);
+    VklBufferRegions br_viewport = vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_UNIFORM, 1, 16);
 
     // Vertex data.
     vec3* pos = calloc(N, sizeof(vec3));
@@ -193,7 +193,7 @@ int test_visuals_3(TestContext* context)
     vkl_visual_data(&visual, VKL_PROP_COLOR, 0, N, color);
 
     br_mvp = vkl_ctx_buffers(
-        ctx, VKL_DEFAULT_BUFFER_UNIFORM_MAPPABLE, canvas->swapchain.img_count, sizeof(VklMVP));
+        ctx, VKL_BUFFER_TYPE_UNIFORM_MAPPABLE, canvas->swapchain.img_count, sizeof(VklMVP));
     vkl_visual_buffer(&visual, VKL_SOURCE_TYPE_MVP, 0, br_mvp);
 
     // MVP.
