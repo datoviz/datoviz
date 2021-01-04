@@ -940,16 +940,16 @@ void* vkl_buffer_map(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size)
     ASSERT(buffer->gpu != NULL);
     ASSERT(buffer->gpu->device != VK_NULL_HANDLE);
     ASSERT(is_obj_created(&buffer->obj));
-    ASSERT(offset + size <= buffer->size);
+    if (size < UINT64_MAX)
+        ASSERT(offset + size <= buffer->size);
     ASSERT(
         (buffer->memory & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) && //
         (buffer->memory & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT));
 
-    // log_trace("map buffer");
+    ASSERT(buffer->mmap == NULL);
     void* cdata = NULL;
     VK_CHECK_RESULT(
         vkMapMemory(buffer->gpu->device, buffer->device_memory, offset, size, 0, &cdata));
-    buffer->mmap = cdata;
     return cdata;
 }
 
@@ -957,6 +957,7 @@ void* vkl_buffer_map(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size)
 
 void vkl_buffer_memcpy(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, const void* data)
 {
+    // need to be called after buffer->mmap = vkl_buffer_map(...)
     ASSERT(buffer != NULL);
     ASSERT(buffer->gpu != NULL);
     ASSERT(buffer->gpu->device != VK_NULL_HANDLE);
@@ -988,7 +989,6 @@ void vkl_buffer_unmap(VklBuffer* buffer)
 
     // log_trace("unmap buffer");
     vkUnmapMemory(buffer->gpu->device, buffer->device_memory);
-    buffer->mmap = NULL;
 }
 
 
@@ -1002,11 +1002,24 @@ void vkl_buffer_upload(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size
     ASSERT(offset + size <= buffer->size);
 
     log_trace("uploading %s to GPU buffer", pretty_size(size));
-    void* mapped = vkl_buffer_map(buffer, offset, size);
+    void* mapped = NULL;
+    bool need_unmap = false;
+    if (buffer->mmap == NULL)
+    {
+        mapped = vkl_buffer_map(buffer, offset, size);
+        need_unmap = true;
+    }
+    else
+    {
+        mapped = buffer->mmap;
+        need_unmap = false;
+    }
+
     ASSERT(mapped != NULL);
     memcpy(mapped, data, size);
-    vkl_buffer_memcpy(buffer, 0, size, data);
-    vkl_buffer_unmap(buffer);
+
+    if (need_unmap)
+        vkl_buffer_unmap(buffer);
 }
 
 
@@ -1014,14 +1027,22 @@ void vkl_buffer_upload(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size
 void vkl_buffer_download(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, void* data)
 {
     log_trace("downloading %s from GPU buffer", pretty_size(size));
-    VklBufferRegions br = {0};
-    br.buffer = buffer;
-    br.count = 1;
-    br.offsets[0] = offset;
-    br.size = size;
-    void* mapped = vkl_buffer_regions_map(&br, 0);
+
+    void* mapped = NULL;
+    bool need_unmap = false;
+    if (buffer->mmap == NULL)
+    {
+        mapped = vkl_buffer_map(buffer, offset, size);
+        need_unmap = true;
+    }
+    else
+    {
+        mapped = buffer->mmap;
+        need_unmap = false;
+    }
     memcpy(data, mapped, size);
-    vkl_buffer_regions_unmap(&br);
+    if (need_unmap)
+        vkl_buffer_unmap(buffer);
 }
 
 
@@ -1119,10 +1140,25 @@ void vkl_buffer_regions_upload(VklBufferRegions* br, uint32_t idx, const void* d
     ASSERT(data != NULL);
 
     log_trace("uploading %s to GPU buffer", pretty_size(size));
-    void* mapped = vkl_buffer_regions_map(br, idx);
+
+    void* mapped = NULL;
+    bool need_unmap = false;
+    if (buffer->mmap == NULL)
+    {
+        mapped = vkl_buffer_regions_map(br, idx);
+        need_unmap = true;
+    }
+    else
+    {
+        mapped = buffer->mmap;
+        need_unmap = false;
+    }
     ASSERT(mapped != NULL);
+
     memcpy(mapped, data, size);
-    vkl_buffer_regions_unmap(br);
+
+    if (need_unmap)
+        vkl_buffer_regions_unmap(br);
 }
 
 
