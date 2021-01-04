@@ -1,5 +1,6 @@
 #include "../include/visky/canvas.h"
 #include "../include/visky/context.h"
+#include "../include/visky/vklite.h"
 #include "../src/imgui.h"
 #include "../src/transfers.h"
 #include "../src/vklite_utils.h"
@@ -1149,6 +1150,48 @@ void vkl_upload_buffers_immediate(
 
 
 
+static void _copy_from_staging(
+    VklContext* context, VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size)
+{
+    ASSERT(context != NULL);
+
+    VklGpu* gpu = context->gpu;
+    ASSERT(gpu != NULL);
+
+    VklBuffer* staging = staging_buffer(context, size);
+    ASSERT(staging != NULL);
+
+    // Take transfer cmd buf.
+    VklCommands* cmds = &context->transfer_cmd;
+    vkl_cmd_reset(cmds, 0);
+    vkl_cmd_begin(cmds, 0);
+
+    VkBufferCopy region = {0};
+    region.size = size;
+    region.srcOffset = 0;
+    region.dstOffset = br.offsets[0] + offset;
+    vkCmdCopyBuffer(cmds->cmds[0], staging->buffer, br.buffer->buffer, br.count, &region);
+    vkl_cmd_end(cmds, 0);
+
+    // Wait for the render queue to be idle.
+    // TODO: less brutal synchronization with semaphores. Here we stop all
+    // rendering so that we're sure that the buffer we're going to write to is not
+    // being used by the GPU.
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_RENDER);
+
+    // Submit the commands to the transfer queue.
+    VklSubmit submit = vkl_submit(gpu);
+    vkl_submit_commands(&submit, cmds);
+    vkl_submit_send(&submit, 0, NULL, 0);
+
+    // Wait for the transfer queue to be idle.
+    // TODO: less brutal synchronization with semaphores. Here we wait for the
+    // transfer to be complete before we send new rendering commands.
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
+}
+
+
+
 static void _canvas_process_transfers(VklCanvas* canvas)
 {
     // This function is to be called at every frame, after the FRAME callbacks (so that FRAME
@@ -1229,37 +1272,7 @@ static void _canvas_process_transfers(VklCanvas* canvas)
                 vkl_buffer_memcpy(staging, 0, tr.u.buf.size, tr.u.buf.data);
 
                 // Copy from the staging buffer to the target buffer.
-                {
-                    // Take transfer cmd buf.
-                    VklCommands* cmds = &context->transfer_cmd;
-                    vkl_cmd_reset(cmds, 0);
-                    vkl_cmd_begin(cmds, 0);
-
-                    VkBufferCopy region = {0};
-                    region.size = tr.u.buf.size;
-                    region.srcOffset = 0;
-                    region.dstOffset = tr.u.buf.regions.offsets[0] + tr.u.buf.offset;
-                    vkCmdCopyBuffer(
-                        cmds->cmds[0], staging->buffer, tr.u.buf.regions.buffer->buffer, //
-                        tr.u.buf.regions.count, &region);
-                    vkl_cmd_end(cmds, 0);
-
-                    // Wait for the render queue to be idle.
-                    // TODO: less brutal synchronization with semaphores. Here we stop all
-                    // rendering so that we're sure that the buffer we're going to write to is not
-                    // being used by the GPU.
-                    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_RENDER);
-
-                    // Submit the commands to the transfer queue.
-                    VklSubmit submit = vkl_submit(gpu);
-                    vkl_submit_commands(&submit, cmds);
-                    vkl_submit_send(&submit, 0, NULL, 0);
-
-                    // Wait for the transfer queue to be idle.
-                    // TODO: less brutal synchronization with semaphores. Here we wait for the
-                    // transfer to be complete before we send new rendering commands.
-                    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
-                }
+                _copy_from_staging(context, tr.u.buf.regions, tr.u.buf.offset, tr.u.buf.size);
             }
 
             // Need refill after the end of the transfer?
