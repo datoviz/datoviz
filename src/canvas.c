@@ -968,7 +968,7 @@ void vkl_canvas_clear_color(VklCanvas* canvas, VkClearColorValue color)
 {
     ASSERT(canvas != NULL);
     canvas->renderpass.clear_values->color = color;
-    vkl_canvas_to_refill(canvas, true);
+    vkl_canvas_to_refill(canvas);
 }
 
 
@@ -1108,16 +1108,16 @@ void vkl_canvas_set_status(VklCanvas* canvas, VklObjectStatus status)
 
 
 
-void vkl_canvas_to_refill(VklCanvas* canvas, bool value)
+void vkl_canvas_to_refill(VklCanvas* canvas)
 {
-    vkl_canvas_set_status(canvas, value ? VKL_OBJECT_STATUS_NEED_UPDATE : canvas->cur_status);
+    vkl_canvas_set_status(canvas, VKL_OBJECT_STATUS_NEED_UPDATE);
 }
 
 
 
-void vkl_canvas_to_close(VklCanvas* canvas, bool value)
+void vkl_canvas_to_close(VklCanvas* canvas)
 {
-    vkl_canvas_set_status(canvas, value ? VKL_OBJECT_STATUS_NEED_DESTROY : canvas->cur_status);
+    vkl_canvas_set_status(canvas, VKL_OBJECT_STATUS_NEED_DESTROY);
 }
 
 
@@ -1151,6 +1151,11 @@ void vkl_upload_buffers_immediate(
 
 static void _canvas_process_transfers(VklCanvas* canvas)
 {
+    // This function is to be called at every frame, after the FRAME callbacks (so that FRAME
+    // callbacks calling vkl_canvas_buffers() have their transfers processed immediately in the
+    // same frame), but before queue submit, so that we may get a chance to ask for a command
+    // buffer refill before submission (if a transfer requires a refill, e.g. after a vertex buffer
+    // count change)
     ASSERT(canvas != NULL);
     VklGpu* gpu = canvas->gpu;
     ASSERT(gpu != NULL);
@@ -1161,6 +1166,8 @@ static void _canvas_process_transfers(VklCanvas* canvas)
     VklTransfer tr = {0};
     VklBufferRegions br = {0};
     uint32_t idx = canvas->swapchain.img_idx;
+
+    // Process all pending transfer tasks.
     while (true)
     {
         tr = fifo_dequeue(context, fifo, false);
@@ -1177,7 +1184,16 @@ static void _canvas_process_transfers(VklCanvas* canvas)
             ASSERT(tr.u.buf.regions.buffer != VK_NULL_HANDLE);
             ASSERT(br.offsets[idx] + tr.u.buf.offset + tr.u.buf.size <= br.size);
 
-            // Mappable uniforms.
+            // Mappable uniforms. We only update the current swapchain image here.
+            //
+            // NOTE: mappable uniforms are expected to be updated at every frame (eg MVP)
+            // so that every swapchain image gets the most up-to-date data.
+            //
+            // NOTE: this function must be called AFTER the next swapchain image has been acquired,
+            // so that swapchain->img_idx corresponds to the image that will be rendered in the
+            // current frame, AFTER the transfer tasks have completed. This ensures that the very
+            // next frame will be up to date with the latest data and command buffer (if
+            // need_refill=true).
             if (br.buffer->type == VKL_BUFFER_TYPE_UNIFORM_MAPPABLE)
             {
                 // The mappable buffer must be constantly mapped.
@@ -1229,6 +1245,9 @@ static void _canvas_process_transfers(VklCanvas* canvas)
                     vkl_cmd_end(cmds, 0);
 
                     // Wait for the render queue to be idle.
+                    // TODO: less brutal synchronization with semaphores. Here we stop all
+                    // rendering so that we're sure that the buffer we're going to write to is not
+                    // being used by the GPU.
                     vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_RENDER);
 
                     // Submit the commands to the transfer queue.
@@ -1237,13 +1256,15 @@ static void _canvas_process_transfers(VklCanvas* canvas)
                     vkl_submit_send(&submit, 0, NULL, 0);
 
                     // Wait for the transfer queue to be idle.
+                    // TODO: less brutal synchronization with semaphores. Here we wait for the
+                    // transfer to be complete before we send new rendering commands.
                     vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
                 }
             }
 
             // Need refill after the end of the transfer?
             if (tr.need_refill)
-                vkl_canvas_to_refill(canvas, true);
+                vkl_canvas_to_refill(canvas);
         }
         fifo->is_processing = false;
     }
@@ -1251,6 +1272,7 @@ static void _canvas_process_transfers(VklCanvas* canvas)
 
 
 
+// This function is exposed to the scene API, all buffer uploads should use it.
 void vkl_canvas_buffers(
     VklCanvas* canvas, VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data,
     bool need_refill)

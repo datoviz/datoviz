@@ -245,7 +245,7 @@ static void _visual_update(VklCanvas* canvas, VklPrivateEvent ev)
     vkl_visual_data(visual, VKL_PROP_POS, 0, N, pos);
     vkl_visual_update(visual, canvas->viewport, (VklDataCoords){0}, NULL);
 
-    vkl_canvas_to_refill(visual->canvas, true);
+    vkl_canvas_to_refill(visual->canvas);
     FREE(pos);
 }
 
@@ -320,7 +320,7 @@ static void _visual_append(VklCanvas* canvas, VklPrivateEvent ev)
     ASSERT(visual != NULL);
     _append(visual);
     vkl_visual_update(visual, visual->canvas->viewport, (VklDataCoords){0}, NULL);
-    vkl_canvas_to_refill(visual->canvas, true);
+    vkl_canvas_to_refill(visual->canvas);
 }
 
 int test_visuals_5(TestContext* context)

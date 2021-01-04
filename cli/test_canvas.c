@@ -243,7 +243,7 @@ static void _push_cursor_callback(VklCanvas* canvas, VklEvent ev)
     push_vec[0] = x;
     push_vec[1] = y;
     push_vec[2] = 1;
-    vkl_canvas_to_refill(canvas, true);
+    vkl_canvas_to_refill(canvas);
 }
 
 int test_canvas_4(TestContext* context)
@@ -635,7 +635,7 @@ static void _append_callback(VklCanvas* canvas, VklPrivateEvent ev)
         canvas->gpu->context, VKL_BUFFER_TYPE_VERTEX, canvas->swapchain.img_count, size);
     vkl_upload_buffers(canvas->gpu->context, visual->br, 0, size, data);
 
-    vkl_canvas_to_refill(canvas, true);
+    vkl_canvas_to_refill(canvas);
 }
 
 int test_canvas_append(TestContext* context)

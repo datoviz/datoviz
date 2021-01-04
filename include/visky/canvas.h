@@ -772,9 +772,9 @@ VKY_EXPORT void vkl_event_callback(
 
 VKY_EXPORT void vkl_canvas_set_status(VklCanvas* canvas, VklObjectStatus status);
 
-VKY_EXPORT void vkl_canvas_to_refill(VklCanvas* canvas, bool value);
+VKY_EXPORT void vkl_canvas_to_refill(VklCanvas* canvas);
 
-VKY_EXPORT void vkl_canvas_to_close(VklCanvas* canvas, bool value);
+VKY_EXPORT void vkl_canvas_to_close(VklCanvas* canvas);
 
 
 

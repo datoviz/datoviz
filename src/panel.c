@@ -100,7 +100,7 @@ static void _update_grid_panels(VklGrid* grid, VklGridAxis axis)
     }
     // NOTE: not sure if this is needed? Decommenting causes the command buffers to be recorded
     // twice.
-    // vkl_canvas_to_refill(grid->canvas, true);
+    // vkl_canvas_to_refill(grid->canvas);
     //
     // TODO: hide panels that are overlapped by hspan/vspan-ed panels
     // by setting STATUS_INACTIVE (with log warn)
@@ -330,7 +330,7 @@ void vkl_panel_size(VklPanel* panel, VklGridAxis axis, float size)
 
         _update_grid_panels(grid, axis);
     }
-    // vkl_canvas_to_refill(panel->grid->canvas, true);
+    // vkl_canvas_to_refill(panel->grid->canvas);
 }
 
 
@@ -344,7 +344,7 @@ void vkl_panel_span(VklPanel* panel, VklGridAxis axis, uint32_t span)
         panel->vspan = span;
 
     _update_grid_panels(panel->grid, axis);
-    // vkl_canvas_to_refill(panel->grid->canvas, true);
+    // vkl_canvas_to_refill(panel->grid->canvas);
 }
 
 
@@ -357,7 +357,7 @@ void vkl_panel_cell(VklPanel* panel, uint32_t row, uint32_t col)
 
     _update_grid_panels(panel->grid, VKL_GRID_HORIZONTAL);
     _update_grid_panels(panel->grid, VKL_GRID_VERTICAL);
-    // vkl_canvas_to_refill(panel->grid->canvas, true);
+    // vkl_canvas_to_refill(panel->grid->canvas);
 }
 
 
