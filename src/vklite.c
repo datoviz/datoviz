@@ -1089,19 +1089,19 @@ VklBufferRegions vkl_buffer_regions(
 
 
 
-void* vkl_buffer_regions_map(VklBufferRegions* buffer_regions, uint32_t idx)
+void* vkl_buffer_regions_map(VklBufferRegions* br, uint32_t idx)
 {
-    ASSERT(buffer_regions != NULL);
-    VklBuffer* buffer = buffer_regions->buffer;
-    return vkl_buffer_map(buffer, buffer_regions->offsets[idx], buffer_regions->size);
+    ASSERT(br != NULL);
+    VklBuffer* buffer = br->buffer;
+    return vkl_buffer_map(buffer, br->offsets[idx], br->size);
 }
 
 
 
-void vkl_buffer_regions_unmap(VklBufferRegions* buffer_regions)
+void vkl_buffer_regions_unmap(VklBufferRegions* br)
 {
-    ASSERT(buffer_regions != NULL);
-    VklBuffer* buffer = buffer_regions->buffer;
+    ASSERT(br != NULL);
+    VklBuffer* buffer = br->buffer;
     ASSERT(buffer != NULL);
     vkl_buffer_unmap(buffer);
 }
@@ -1619,16 +1619,16 @@ VklBindings vkl_bindings(VklSlots* slots, uint32_t dset_count)
 
 
 
-void vkl_bindings_buffer(VklBindings* bindings, uint32_t idx, VklBufferRegions buffer_regions)
+void vkl_bindings_buffer(VklBindings* bindings, uint32_t idx, VklBufferRegions br)
 {
     ASSERT(bindings != NULL);
-    ASSERT(buffer_regions.buffer != VK_NULL_HANDLE);
-    ASSERT(buffer_regions.count > 0);
+    ASSERT(br.buffer != VK_NULL_HANDLE);
+    ASSERT(br.count > 0);
     ASSERT(bindings->dset_count > 0);
-    ASSERT(buffer_regions.count == 1 || buffer_regions.count == bindings->dset_count);
+    ASSERT(br.count == 1 || br.count == bindings->dset_count);
     log_trace("set bindings with buffer for binding #%d", idx);
 
-    bindings->buffer_regions[idx] = buffer_regions;
+    bindings->br[idx] = br;
 
     if (bindings->obj.status == VKL_OBJECT_STATUS_CREATED)
         bindings->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
@@ -1671,7 +1671,7 @@ void vkl_bindings_update(VklBindings* bindings)
     {
         update_descriptor_set(
             bindings->gpu->device, bindings->slots->slot_count, bindings->slots->types,
-            bindings->buffer_regions, bindings->images, bindings->samplers, //
+            bindings->br, bindings->images, bindings->samplers, //
             i, bindings->dsets[i]);
     }
 
@@ -2143,13 +2143,11 @@ void vkl_barrier_stages(
 
 
 
-void vkl_barrier_buffer(VklBarrier* barrier, VklBufferRegions* buffer_regions)
+void vkl_barrier_buffer(VklBarrier* barrier, VklBufferRegions br)
 {
     ASSERT(barrier != NULL);
-
     VklBarrierBuffer* b = &barrier->buffer_barriers[barrier->buffer_barrier_count++];
-
-    b->buffer_regions = *buffer_regions;
+    b->br = br;
 }
 
 
@@ -2159,7 +2157,7 @@ void vkl_barrier_buffer_queue(VklBarrier* barrier, uint32_t src_queue, uint32_t 
     ASSERT(barrier != NULL);
 
     VklBarrierBuffer* b = &barrier->buffer_barriers[barrier->buffer_barrier_count - 1];
-    ASSERT(b->buffer_regions.buffer != NULL);
+    ASSERT(b->br.buffer != NULL);
 
     b->queue_transfer = true;
     b->src_queue = src_queue;
@@ -2174,7 +2172,7 @@ void vkl_barrier_buffer_access(
     ASSERT(barrier != NULL);
 
     VklBarrierBuffer* b = &barrier->buffer_barriers[barrier->buffer_barrier_count - 1];
-    ASSERT(b->buffer_regions.buffer != NULL);
+    ASSERT(b->br.buffer != NULL);
 
     b->src_access = src_access;
     b->dst_access = dst_access;
@@ -2969,10 +2967,10 @@ void vkl_cmd_barrier(VklCommands* cmds, uint32_t idx, VklBarrier* barrier)
         buffer_info = &barrier->buffer_barriers[j];
 
         buffer_barrier->sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        buffer_barrier->buffer = buffer_info->buffer_regions.buffer->buffer;
-        buffer_barrier->size = buffer_info->buffer_regions.size;
-        ASSERT(i < buffer_info->buffer_regions.count);
-        buffer_barrier->offset = buffer_info->buffer_regions.offsets[i];
+        buffer_barrier->buffer = buffer_info->br.buffer->buffer;
+        buffer_barrier->size = buffer_info->br.size;
+        ASSERT(i < buffer_info->br.count);
+        buffer_barrier->offset = buffer_info->br.offsets[i];
 
         buffer_barrier->srcAccessMask = buffer_info->src_access;
         buffer_barrier->dstAccessMask = buffer_info->dst_access;
@@ -3165,8 +3163,8 @@ void vkl_cmd_bind_graphics(
     {
         if (slots->types[i] == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
         {
-            ASSERT(bindings->buffer_regions[i].aligned_size > 0);
-            dyn_offsets[dyn_count++] = dynamic_idx * bindings->buffer_regions[i].aligned_size;
+            ASSERT(bindings->br[i].aligned_size > 0);
+            dyn_offsets[dyn_count++] = dynamic_idx * bindings->br[i].aligned_size;
         }
     }
 
@@ -3182,23 +3180,21 @@ void vkl_cmd_bind_graphics(
 
 
 void vkl_cmd_bind_vertex_buffer(
-    VklCommands* cmds, uint32_t idx, VklBufferRegions* buffer_regions, VkDeviceSize offset)
+    VklCommands* cmds, uint32_t idx, VklBufferRegions br, VkDeviceSize offset)
 {
-    CMD_START_CLIP(buffer_regions->count)
-    VkDeviceSize offsets[] = {buffer_regions->offsets[iclip] + offset};
-    vkCmdBindVertexBuffers(cb, 0, 1, &buffer_regions->buffer->buffer, offsets);
+    CMD_START_CLIP(br.count)
+    VkDeviceSize offsets[] = {br.offsets[iclip] + offset};
+    vkCmdBindVertexBuffers(cb, 0, 1, &br.buffer->buffer, offsets);
     CMD_END
 }
 
 
 
 void vkl_cmd_bind_index_buffer(
-    VklCommands* cmds, uint32_t idx, VklBufferRegions* buffer_regions, VkDeviceSize offset)
+    VklCommands* cmds, uint32_t idx, VklBufferRegions br, VkDeviceSize offset)
 {
-    CMD_START_CLIP(buffer_regions->count)
-    vkCmdBindIndexBuffer(
-        cb, buffer_regions->buffer->buffer, buffer_regions->offsets[iclip] + offset,
-        VK_INDEX_TYPE_UINT32);
+    CMD_START_CLIP(br.count)
+    vkCmdBindIndexBuffer(cb, br.buffer->buffer, br.offsets[iclip] + offset, VK_INDEX_TYPE_UINT32);
     CMD_END
 }
 
@@ -3226,19 +3222,19 @@ void vkl_cmd_draw_indexed(
 
 
 
-void vkl_cmd_draw_indirect(VklCommands* cmds, uint32_t idx, VklBufferRegions* indirect)
+void vkl_cmd_draw_indirect(VklCommands* cmds, uint32_t idx, VklBufferRegions indirect)
 {
-    CMD_START_CLIP(indirect->count)
-    vkCmdDrawIndirect(cb, indirect->buffer->buffer, indirect->offsets[iclip], 1, 0);
+    CMD_START_CLIP(indirect.count)
+    vkCmdDrawIndirect(cb, indirect.buffer->buffer, indirect.offsets[iclip], 1, 0);
     CMD_END
 }
 
 
 
-void vkl_cmd_draw_indexed_indirect(VklCommands* cmds, uint32_t idx, VklBufferRegions* indirect)
+void vkl_cmd_draw_indexed_indirect(VklCommands* cmds, uint32_t idx, VklBufferRegions indirect)
 {
-    CMD_START_CLIP(indirect->count)
-    vkCmdDrawIndexedIndirect(cb, indirect->buffer->buffer, indirect->offsets[iclip], 1, 0);
+    CMD_START_CLIP(indirect.count)
+    vkCmdDrawIndexedIndirect(cb, indirect.buffer->buffer, indirect.offsets[iclip], 1, 0);
     CMD_END
 }
 

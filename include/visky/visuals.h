@@ -465,7 +465,7 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
         // Bind the vertex buffer.
         VklBufferRegions* vertex_buf = &vertex_source->u.br;
         ASSERT(vertex_buf != NULL);
-        vkl_cmd_bind_vertex_buffer(cmds, idx, vertex_buf, 0);
+        vkl_cmd_bind_vertex_buffer(cmds, idx, *vertex_buf, 0);
 
         // Index buffer?
         VklSource* index_source = vkl_bake_source(visual, VKL_SOURCE_TYPE_INDEX, pipeline_idx);
@@ -477,7 +477,7 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
             ASSERT(index_count > 0);
             index_buf = &index_source->u.br;
             ASSERT(index_buf != NULL);
-            vkl_cmd_bind_index_buffer(cmds, idx, index_buf, 0);
+            vkl_cmd_bind_index_buffer(cmds, idx, *index_buf, 0);
         }
 
         // Draw command.

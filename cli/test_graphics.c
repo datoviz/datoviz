@@ -49,9 +49,9 @@ static void _graphics_refill(VklCanvas* canvas, VklPrivateEvent ev)
         (VkViewport){
             0, 0, canvas->framebuffers.attachments[0]->width,
             canvas->framebuffers.attachments[0]->height, 0, 1});
-    vkl_cmd_bind_vertex_buffer(cmds, idx, br, 0);
+    vkl_cmd_bind_vertex_buffer(cmds, idx, *br, 0);
     if (br_index->buffer != NULL)
-        vkl_cmd_bind_index_buffer(cmds, idx, br_index, 0);
+        vkl_cmd_bind_index_buffer(cmds, idx, *br_index, 0);
     vkl_cmd_bind_graphics(cmds, idx, graphics, bindings, 0);
     if (graphics->pipeline != VK_NULL_HANDLE)
     {

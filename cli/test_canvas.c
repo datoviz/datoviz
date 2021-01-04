@@ -171,7 +171,7 @@ static void _triangle_refill(VklCanvas* canvas, VklPrivateEvent ev)
         (VkViewport){
             0, 0, canvas->framebuffers.attachments[0]->width,
             canvas->framebuffers.attachments[0]->height, 0, 1});
-    vkl_cmd_bind_vertex_buffer(cmds, idx, &visual->br, 0);
+    vkl_cmd_bind_vertex_buffer(cmds, idx, visual->br, 0);
     vkl_cmd_bind_graphics(cmds, idx, &visual->graphics, &visual->bindings, 0);
     vkl_cmd_draw(cmds, idx, 0, visual->n_vertices);
     vkl_cmd_end_renderpass(cmds, idx);
@@ -222,7 +222,7 @@ static void _triangle_push_refill(VklCanvas* canvas, VklPrivateEvent ev)
             visual->framebuffers->attachments[0]->width,
             visual->framebuffers->attachments[0]->height, //
             0, 1});
-    vkl_cmd_bind_vertex_buffer(cmds, idx, &visual->br, 0);
+    vkl_cmd_bind_vertex_buffer(cmds, idx, visual->br, 0);
     vkl_cmd_bind_graphics(cmds, idx, &visual->graphics, &visual->bindings, 0);
 
     // Push constants.
@@ -483,7 +483,7 @@ static void _triangle_compute_refill(VklCanvas* canvas, VklPrivateEvent ev)
         (VkViewport){
             0, 0, canvas->framebuffers.attachments[0]->width,
             canvas->framebuffers.attachments[0]->height, 0, 1});
-    vkl_cmd_bind_vertex_buffer(cmds, idx, &visual->br, 0);
+    vkl_cmd_bind_vertex_buffer(cmds, idx, visual->br, 0);
     vkl_cmd_bind_graphics(cmds, idx, &visual->graphics, &visual->bindings, 0);
     vkl_cmd_draw(cmds, idx, 0, 3);
     vkl_cmd_end_renderpass(cmds, idx);
@@ -788,7 +788,7 @@ static void _particle_refill(VklCanvas* canvas, VklPrivateEvent ev)
             0, 0, //
             canvas->framebuffers.attachments[0]->width,
             canvas->framebuffers.attachments[0]->height, 0, 1});
-    vkl_cmd_bind_vertex_buffer(cmds, idx, &visual->br, 0);
+    vkl_cmd_bind_vertex_buffer(cmds, idx, visual->br, 0);
     vkl_cmd_bind_graphics(cmds, idx, &visual->graphics, &visual->bindings, 0);
     vkl_cmd_draw(cmds, idx, 0, visual->n_vertices);
     vkl_cmd_end_renderpass(cmds, idx);

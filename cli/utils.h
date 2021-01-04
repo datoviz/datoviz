@@ -95,7 +95,7 @@ struct TestCanvas
     VklCompute* compute;
     VklBindings* bindings;
     VklGraphics* graphics;
-    VklBufferRegions* br;
+    VklBufferRegions br;
 
     void* data;
 };
@@ -957,7 +957,7 @@ static void empty_commands(TestCanvas* canvas, VklCommands* cmds, uint32_t idx)
 
 static void triangle_commands(TestCanvas* canvas, VklCommands* cmds, uint32_t idx)
 {
-    ASSERT(canvas->br != NULL);
+    ASSERT(canvas->br.buffer != NULL);
     ASSERT(canvas->graphics != NULL);
     ASSERT(canvas->bindings != NULL);
 

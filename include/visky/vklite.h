@@ -571,7 +571,7 @@ struct VklBindings
     uint32_t dset_count;
     VkDescriptorSet dsets[VKL_MAX_SWAPCHAIN_IMAGES];
 
-    VklBufferRegions buffer_regions[VKL_MAX_BINDINGS_SIZE];
+    VklBufferRegions br[VKL_MAX_BINDINGS_SIZE];
     VklImages* images[VKL_MAX_BINDINGS_SIZE];
     VklSampler* samplers[VKL_MAX_BINDINGS_SIZE];
 };
@@ -648,7 +648,7 @@ struct VklGraphics
 
 struct VklBarrierBuffer
 {
-    VklBufferRegions buffer_regions;
+    VklBufferRegions br;
     bool queue_transfer;
 
     VkAccessFlags src_access;
@@ -999,9 +999,9 @@ VKY_EXPORT VklBufferRegions vkl_buffer_regions(
     VklBuffer* buffer, uint32_t count, //
     VkDeviceSize offset, VkDeviceSize size, VkDeviceSize alignment);
 
-VKY_EXPORT void* vkl_buffer_regions_map(VklBufferRegions* buffer_regions, uint32_t idx);
+VKY_EXPORT void* vkl_buffer_regions_map(VklBufferRegions* br, uint32_t idx);
 
-VKY_EXPORT void vkl_buffer_regions_unmap(VklBufferRegions* buffer_regions);
+VKY_EXPORT void vkl_buffer_regions_unmap(VklBufferRegions* br);
 
 VKY_EXPORT void vkl_buffer_regions_upload(VklBufferRegions* br, uint32_t idx, const void* data);
 
@@ -1085,8 +1085,7 @@ VKY_EXPORT void vkl_slots_destroy(VklSlots* slots);
 
 VKY_EXPORT VklBindings vkl_bindings(VklSlots* slots, uint32_t dset_count);
 
-VKY_EXPORT void
-vkl_bindings_buffer(VklBindings* bindings, uint32_t idx, VklBufferRegions buffer_regions);
+VKY_EXPORT void vkl_bindings_buffer(VklBindings* bindings, uint32_t idx, VklBufferRegions br);
 
 VKY_EXPORT void vkl_bindings_texture(VklBindings* bindings, uint32_t idx, VklTexture* texture);
 
@@ -1175,7 +1174,7 @@ VKY_EXPORT VklBarrier vkl_barrier(VklGpu* gpu);
 VKY_EXPORT void vkl_barrier_stages(
     VklBarrier* barrier, VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage);
 
-VKY_EXPORT void vkl_barrier_buffer(VklBarrier* barrier, VklBufferRegions* buffer_regions);
+VKY_EXPORT void vkl_barrier_buffer(VklBarrier* barrier, VklBufferRegions br);
 
 VKY_EXPORT void
 vkl_barrier_buffer_queue(VklBarrier* barrier, uint32_t src_queue, uint32_t dst_queue);
@@ -1330,10 +1329,10 @@ VKY_EXPORT void vkl_cmd_bind_graphics(
     VklBindings* bindings, uint32_t dynamic_idx);
 
 VKY_EXPORT void vkl_cmd_bind_vertex_buffer(
-    VklCommands* cmds, uint32_t idx, VklBufferRegions* buffer_regions, VkDeviceSize offset);
+    VklCommands* cmds, uint32_t idx, VklBufferRegions br, VkDeviceSize offset);
 
 VKY_EXPORT void vkl_cmd_bind_index_buffer(
-    VklCommands* cmds, uint32_t idx, VklBufferRegions* buffer_regions, VkDeviceSize offset);
+    VklCommands* cmds, uint32_t idx, VklBufferRegions br, VkDeviceSize offset);
 
 VKY_EXPORT void
 vkl_cmd_draw(VklCommands* cmds, uint32_t idx, uint32_t first_vertex, uint32_t vertex_count);
@@ -1342,10 +1341,10 @@ VKY_EXPORT void vkl_cmd_draw_indexed(
     VklCommands* cmds, uint32_t idx, uint32_t first_index, uint32_t vertex_offset,
     uint32_t index_count);
 
-VKY_EXPORT void vkl_cmd_draw_indirect(VklCommands* cmds, uint32_t idx, VklBufferRegions* indirect);
+VKY_EXPORT void vkl_cmd_draw_indirect(VklCommands* cmds, uint32_t idx, VklBufferRegions indirect);
 
 VKY_EXPORT void
-vkl_cmd_draw_indexed_indirect(VklCommands* cmds, uint32_t idx, VklBufferRegions* indirect);
+vkl_cmd_draw_indexed_indirect(VklCommands* cmds, uint32_t idx, VklBufferRegions indirect);
 
 VKY_EXPORT void vkl_cmd_copy_buffer(
     VklCommands* cmds, uint32_t idx,             //

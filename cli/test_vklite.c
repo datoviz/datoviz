@@ -515,7 +515,7 @@ static void _make_triangle(TestCanvas* canvas, TestVisual* visual)
     visual->framebuffers = &canvas->framebuffers;
     test_triangle(visual, "");
     canvas->data = visual;
-    canvas->br = &visual->br;
+    canvas->br = visual->br;
     canvas->graphics = &visual->graphics;
     canvas->bindings = &visual->bindings;
 }
