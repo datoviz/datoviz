@@ -74,7 +74,7 @@ VklApp* vkl_app(VklBackend backend)
 
 int vkl_app_destroy(VklApp* app)
 {
-    log_trace("starting destruction of app...");
+    log_debug("starting destruction of app...");
     vkl_app_wait(app);
 
     // Destroy the canvases.
@@ -255,7 +255,7 @@ void vkl_app_wait(VklApp* app)
 {
     ASSERT(app != NULL);
     log_trace("wait for all GPUs to be idle");
-    VklGpu* gpu = vkl_container_iter(&app->gpus);
+    VklGpu* gpu = vkl_container_iter_init(&app->gpus);
     while (gpu != NULL)
     {
         vkl_gpu_wait(gpu);

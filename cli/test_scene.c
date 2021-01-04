@@ -32,7 +32,7 @@ static void _panzoom(VklCanvas* canvas, VklPrivateEvent ev)
     dvec2 pos_ur = {0};
 
 
-    VklPanel* panel = vkl_container_iter(&grid->panels);
+    VklPanel* panel = vkl_container_iter_init(&grid->panels);
     VklPanel* other = NULL;
     uint32_t i = 0;
     while (panel != NULL)

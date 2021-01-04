@@ -28,7 +28,7 @@ static void _canvas_fill(VklCanvas* canvas, VklPrivateEvent ev)
 
         vkl_visual_fill_begin(canvas, cmds, img_idx);
 
-        panel = vkl_container_iter(&grid->panels);
+        panel = vkl_container_iter_init(&grid->panels);
         while (panel != NULL)
         {
             ASSERT(is_obj_created(&panel->obj));

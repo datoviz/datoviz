@@ -2099,7 +2099,7 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
         n_canvas_active = 0;
 
         // Loop over the canvases.
-        canvas = vkl_container_iter(&app->canvases);
+        canvas = vkl_container_iter_init(&app->canvases);
         while (canvas != NULL)
         {
             ASSERT(canvas != NULL);
@@ -2196,7 +2196,7 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
         // Process the pending transfer tasks.
         // NOTE: this has never been tested with multiple GPUs yet.
         VklContext* context = NULL;
-        VklGpu* gpu = vkl_container_iter(&app->gpus);
+        VklGpu* gpu = vkl_container_iter_init(&app->gpus);
         while (gpu != NULL)
         {
             if (!is_obj_created(&gpu->obj))
@@ -2225,7 +2225,7 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
         // Full update: complete refill of all swapchain command buffers after data transfers
         // that changed the number of items in VERTEX or INDEX sources, which means the number
         // of vertices/indices to draw (fixed in the command buffer) has to change.
-        canvas = vkl_container_iter(&app->canvases);
+        canvas = vkl_container_iter_init(&app->canvases);
         while (canvas != NULL)
         {
             ASSERT(canvas != NULL);

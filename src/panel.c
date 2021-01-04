@@ -92,7 +92,7 @@ static void _update_grid_panels(VklGrid* grid, VklGridAxis axis)
     }
 
     // Update the panel positions and sizes.
-    VklPanel* panel = vkl_container_iter(&grid->panels);
+    VklPanel* panel = vkl_container_iter_init(&grid->panels);
     while (panel != NULL)
     {
         vkl_panel_update(panel);
@@ -136,7 +136,7 @@ static float _to_normalized_unit(VklPanel* panel, VklGridAxis axis, float size)
 static VklPanel* _get_panel(VklGrid* grid, uint32_t row, uint32_t col)
 {
     ASSERT(grid != NULL);
-    VklPanel* panel = vkl_container_iter(&grid->panels);
+    VklPanel* panel = vkl_container_iter_init(&grid->panels);
     while (panel != NULL)
     {
         if (panel->row == row && panel->col == col)
@@ -385,7 +385,7 @@ VklPanel* vkl_panel_at(VklGrid* grid, vec2 screen_pos)
     // Otherwise we'll have an infinite loop.
     ASSERT(grid->panels._loop_idx == 0);
 
-    VklPanel* panel = vkl_container_iter(&grid->panels);
+    VklPanel* panel = vkl_container_iter_init(&grid->panels);
     while (panel != NULL)
     {
         if (vkl_panel_contains(panel, screen_pos))

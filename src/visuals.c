@@ -149,7 +149,7 @@ static VkFormat _get_texture_format(VklVisual* visual, VklSource* source)
     ASSERT(_source_is_texture(source->source_kind));
     VklDataType dtype = VKL_DTYPE_NONE;
 
-    VklProp* prop = vkl_container_iter(&visual->props);
+    VklProp* prop = vkl_container_iter_init(&visual->props);
     while (prop != NULL)
     {
         if (prop->source == source)
@@ -253,7 +253,7 @@ void vkl_visual_destroy(VklVisual* visual)
     ASSERT(visual != NULL);
 
     // Free the props.
-    VklProp* prop = vkl_container_iter(&visual->props);
+    VklProp* prop = vkl_container_iter_init(&visual->props);
     while (prop != NULL)
     {
         vkl_array_destroy(&prop->arr_orig);
@@ -264,7 +264,7 @@ void vkl_visual_destroy(VklVisual* visual)
     vkl_container_destroy(&visual->props);
 
     // Free the data sources.
-    VklSource* source = vkl_container_iter(&visual->sources);
+    VklSource* source = vkl_container_iter_init(&visual->sources);
     while (source != NULL)
     {
         vkl_array_destroy(&source->arr);
@@ -506,7 +506,7 @@ static VklSource* _assert_source_exists(VklVisual* visual, VklSourceType source_
     // Check if the requested source is not a shared source.
     if (source == NULL)
     {
-        VklSource* src = vkl_container_iter(&visual->sources);
+        VklSource* src = vkl_container_iter_init(&visual->sources);
         while (src != NULL)
         {
             for (uint32_t j = 0; j < src->other_count; j++)
@@ -713,7 +713,7 @@ void vkl_visual_fill_end(VklCanvas* canvas, VklCommands* cmds, uint32_t idx)
 VklSource* vkl_bake_source(VklVisual* visual, VklSourceType source_type, uint32_t pipeline_idx)
 {
     ASSERT(visual != NULL);
-    VklSource* source = vkl_container_iter(&visual->sources);
+    VklSource* source = vkl_container_iter_init(&visual->sources);
     VklSource* out = NULL;
     while (source != NULL)
     {
@@ -732,7 +732,7 @@ VklSource* vkl_bake_source(VklVisual* visual, VklSourceType source_type, uint32_
 VklProp* vkl_bake_prop(VklVisual* visual, VklPropType prop_type, uint32_t idx)
 {
     ASSERT(visual != NULL);
-    VklProp* prop = vkl_container_iter(&visual->props);
+    VklProp* prop = vkl_container_iter_init(&visual->props);
     VklProp* out = NULL;
     while (prop != NULL)
     {
@@ -774,7 +774,7 @@ uint32_t vkl_bake_max_prop_size(VklVisual* visual, VklSource* source)
     VklArray* arr = NULL;
     uint32_t item_count = 0;
 
-    VklProp* prop = vkl_container_iter(&visual->props);
+    VklProp* prop = vkl_container_iter_init(&visual->props);
     while (prop != NULL)
     {
         if (prop->source == source)
@@ -846,7 +846,7 @@ void vkl_bake_source_fill(VklVisual* visual, VklSource* source)
     ASSERT(source != NULL);
 
     // Copy all associated props to the source array.
-    VklProp* prop = vkl_container_iter(&visual->props);
+    VklProp* prop = vkl_container_iter_init(&visual->props);
     while (prop != NULL)
     {
         if (prop->source == source)
@@ -990,7 +990,7 @@ void vkl_visual_update(
     VklContext* ctx = visual->canvas->gpu->context;
     bool to_upload = false;
 
-    VklSource* source = vkl_container_iter(&visual->sources);
+    VklSource* source = vkl_container_iter_init(&visual->sources);
     VklBindings* bindings = NULL;
     while (source != NULL)
     {

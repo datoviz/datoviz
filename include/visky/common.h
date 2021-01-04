@@ -516,6 +516,13 @@ static void* vkl_container_iter(VklContainer* container)
     return NULL;
 }
 
+static void* vkl_container_iter_init(VklContainer* container)
+{
+    ASSERT(container != NULL);
+    container->_loop_idx = 0;
+    return vkl_container_iter(container);
+}
+
 static void vkl_container_destroy(VklContainer* container)
 {
     ASSERT(container != NULL);
@@ -555,7 +562,7 @@ static void vkl_container_destroy(VklContainer* container)
 
 #define CONTAINER_DESTROY_ITEMS(t, c, f)                                                          \
     {                                                                                             \
-        t* o = vkl_container_iter(&c);                                                            \
+        t* o = vkl_container_iter_init(&c);                                                       \
         while (o != NULL)                                                                         \
         {                                                                                         \
             f(o);                                                                                 \

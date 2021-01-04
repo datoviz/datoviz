@@ -73,7 +73,7 @@ int test_container(TestContext* context)
     // Iterate through items.
     for (uint32_t k = 0; k < 10; k++)
     {
-        TestObject* item = vkl_container_iter(&container);
+        TestObject* item = vkl_container_iter_init(&container);
         uint32_t i = 0;
         while (item != NULL)
         {

@@ -73,7 +73,7 @@ static void _scene_fill(VklCanvas* canvas, VklPrivateEvent ev)
         log_trace("visual fill cmd %d begin %d", i, img_idx);
         vkl_visual_fill_begin(canvas, cmds, img_idx);
 
-        panel = vkl_container_iter(&grid->panels);
+        panel = vkl_container_iter_init(&grid->panels);
         while (panel != NULL)
         {
             // Update the panel.
@@ -122,7 +122,7 @@ static void _scene_frame(VklCanvas* canvas, VklPrivateEvent ev)
     // Go through all panels that need to be updated.
     bool to_update = false;
 
-    VklPanel* panel = vkl_container_iter(&grid->panels);
+    VklPanel* panel = vkl_container_iter_init(&grid->panels);
     VklVisual* visual = NULL;
     VklSource* source = NULL;
     while (panel != NULL)
@@ -247,7 +247,7 @@ static void _upload_mvp(VklCanvas* canvas, VklPrivateEvent ev)
     VklBufferRegions* br = NULL;
 
     // Go through all panels that need to be updated.
-    VklPanel* panel = vkl_container_iter(&grid->panels);
+    VklPanel* panel = vkl_container_iter_init(&grid->panels);
     while (panel != NULL)
     {
         if (panel->controller == NULL)
@@ -916,7 +916,7 @@ void vkl_scene_destroy(VklScene* scene)
     ASSERT(grid != NULL);
 
     // Destroy all panels.
-    VklPanel* panel = vkl_container_iter(&grid->panels);
+    VklPanel* panel = vkl_container_iter_init(&grid->panels);
     while (panel != NULL)
     {
         if (panel->obj.status == VKL_OBJECT_STATUS_NONE)

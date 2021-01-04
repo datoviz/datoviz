@@ -533,7 +533,7 @@ static void _bake_source(VklVisual* visual, VklSource* source)
 
 static void _bake_uniforms(VklVisual* visual)
 {
-    VklSource* source = vkl_container_iter(&visual->sources);
+    VklSource* source = vkl_container_iter_init(&visual->sources);
     // UNIFORM sources.
 
     while (source != NULL)
