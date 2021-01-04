@@ -18,7 +18,7 @@ static VklBuffer* staging_buffer(VklContext* context, VkDeviceSize size)
     ASSERT(staging->buffer != VK_NULL_HANDLE);
     // Resize the staging buffer is needed.
     // TODO: keep staging buffer fixed and copy parts of the data to staging buffer in several
-    // steps.
+    // steps?
     if (staging->size < size)
     {
         VkDeviceSize new_size = next_pow2(size);

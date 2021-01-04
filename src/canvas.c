@@ -1149,10 +1149,104 @@ void vkl_upload_buffers_immediate(
 
 
 
-static void _process_transfers(VklCanvas* canvas)
+static void _canvas_process_transfers(VklCanvas* canvas)
 {
     ASSERT(canvas != NULL);
-    //
+    VklGpu* gpu = canvas->gpu;
+    ASSERT(gpu != NULL);
+    VklContext* context = canvas->gpu->context;
+    ASSERT(context != NULL);
+    VklFifo* fifo = &canvas->transfers;
+
+    VklTransfer tr = {0};
+    VklBufferRegions br = {0};
+    uint32_t idx = canvas->swapchain.img_idx;
+    while (true)
+    {
+        tr = fifo_dequeue(context, fifo, false);
+        if (tr.type == VKL_TRANSFER_NONE)
+            break;
+        fifo->is_processing = true;
+
+        // Process UPLOAD transfers.
+        if (tr.type == VKL_TRANSFER_BUFFER_UPLOAD)
+        {
+            br = tr.u.buf.regions;
+            ASSERT(tr.u.buf.data != NULL);
+            ASSERT(tr.u.buf.size > 0);
+            ASSERT(tr.u.buf.regions.buffer != VK_NULL_HANDLE);
+            ASSERT(br.offsets[idx] + tr.u.buf.offset + tr.u.buf.size <= br.size);
+
+            // Mappable uniforms.
+            if (br.buffer->type == VKL_BUFFER_TYPE_UNIFORM_MAPPABLE)
+            {
+                // The mappable buffer must be constantly mapped.
+                ASSERT(br.buffer->mmap != NULL);
+                ASSERT(br.count == canvas->swapchain.img_count);
+                ASSERT(idx < br.count);
+                // NOTE: no need for alignment when copying a single buffer region (corresponding
+                // to the current swapchain image)
+                vkl_buffer_memcpy(
+                    br.buffer, br.offsets[idx] + tr.u.buf.offset, tr.u.buf.size, tr.u.buf.data);
+            }
+
+            // Staging buffer.
+            else if (br.buffer->type == VKL_BUFFER_TYPE_STAGING)
+            {
+                // The staging buffer must be constantly mapped.
+                ASSERT(br.buffer->mmap != NULL);
+                ASSERT(br.count == 1);
+                vkl_buffer_memcpy(
+                    br.buffer, br.offsets[0] + tr.u.buf.offset, tr.u.buf.size, tr.u.buf.data);
+            }
+
+            // All other (non-mappable) buffers. Require synchronization and copy on command
+            // buffer.
+            else
+            {
+                ASSERT(br.count == 1);
+
+                // Take the staging buffer and ensure it is big enough.
+                VklBuffer* staging = staging_buffer(context, tr.u.buf.size);
+
+                // Memcpy into the staging buffer.
+                vkl_buffer_memcpy(staging, 0, tr.u.buf.size, tr.u.buf.data);
+
+                // Copy from the staging buffer to the target buffer.
+                {
+                    // Take transfer cmd buf.
+                    VklCommands* cmds = &context->transfer_cmd;
+                    vkl_cmd_reset(cmds, 0);
+                    vkl_cmd_begin(cmds, 0);
+
+                    VkBufferCopy region = {0};
+                    region.size = tr.u.buf.size;
+                    region.srcOffset = 0;
+                    region.dstOffset = tr.u.buf.regions.offsets[0] + tr.u.buf.offset;
+                    vkCmdCopyBuffer(
+                        cmds->cmds[0], staging->buffer, tr.u.buf.regions.buffer->buffer, //
+                        tr.u.buf.regions.count, &region);
+                    vkl_cmd_end(cmds, 0);
+
+                    // Wait for the render queue to be idle.
+                    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_RENDER);
+
+                    // Submit the commands to the transfer queue.
+                    VklSubmit submit = vkl_submit(gpu);
+                    vkl_submit_commands(&submit, cmds);
+                    vkl_submit_send(&submit, 0, NULL, 0);
+
+                    // Wait for the transfer queue to be idle.
+                    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
+                }
+            }
+
+            // Need refill after the end of the transfer?
+            if (tr.need_refill)
+                vkl_canvas_to_refill(canvas, true);
+        }
+        fifo->is_processing = false;
+    }
 }
 
 
