@@ -880,7 +880,7 @@ void vkl_buffer_create(VklBuffer* buffer)
 
 
 
-void vkl_buffer_resize(VklBuffer* buffer, VkDeviceSize size, uint32_t queue_idx, VklCommands* cmds)
+void vkl_buffer_resize(VklBuffer* buffer, VkDeviceSize size, VklCommands* cmds)
 {
     ASSERT(buffer != NULL);
     log_debug("[SLOW] resize buffer to size %d", size);
@@ -904,6 +904,7 @@ void vkl_buffer_resize(VklBuffer* buffer, VkDeviceSize size, uint32_t queue_idx,
     // old buffer to the new, by flushing the corresponding queue and waiting for completion.
     if (cmds != NULL)
     {
+        uint32_t queue_idx = cmds->queue_idx;
         log_debug("copying data from the old buffer to the new one before destroying the old one");
         ASSERT(queue_idx < gpu->queues.queue_count);
         ASSERT(size >= buffer->size);

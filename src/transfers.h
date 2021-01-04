@@ -24,7 +24,7 @@ static VklBuffer* staging_buffer(VklContext* context, VkDeviceSize size)
         VkDeviceSize new_size = next_pow2(size);
         log_info(
             "reallocating staging buffer to %s", VKL_BUFFER_TYPE_STAGING, pretty_size(new_size));
-        vkl_buffer_resize(staging, new_size, VKL_DEFAULT_QUEUE_TRANSFER, &context->transfer_cmd);
+        vkl_buffer_resize(staging, new_size, &context->transfer_cmd);
     }
     ASSERT(staging->size >= size);
     return staging;

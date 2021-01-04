@@ -975,8 +975,7 @@ VKY_EXPORT void vkl_buffer_queue_access(VklBuffer* buffer, uint32_t queues);
 
 VKY_EXPORT void vkl_buffer_create(VklBuffer* buffer);
 
-VKY_EXPORT void
-vkl_buffer_resize(VklBuffer* buffer, VkDeviceSize size, uint32_t queue_idx, VklCommands* cmds);
+VKY_EXPORT void vkl_buffer_resize(VklBuffer* buffer, VkDeviceSize size, VklCommands* cmds);
 
 VKY_EXPORT void* vkl_buffer_map(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size);
 

@@ -444,8 +444,7 @@ VklBufferRegions vkl_ctx_buffers(
     {
         VkDeviceSize new_size = next_pow2(offset + alsize * buffer_count);
         log_info("reallocating buffer %d to %s", buffer_type, pretty_size(new_size));
-        vkl_buffer_resize(
-            regions.buffer, new_size, VKL_DEFAULT_QUEUE_TRANSFER, &context->transfer_cmd);
+        vkl_buffer_resize(regions.buffer, new_size, &context->transfer_cmd);
     }
 
     log_debug(
@@ -490,7 +489,7 @@ void vkl_ctx_buffers_resize(VklContext* context, VklBufferRegions* br, VkDeviceS
         {
             VkDeviceSize bs = next_pow2(br->offsets[0] + old_size);
             log_info("reallocating buffer #%d to %s", br->buffer->type, pretty_size(bs));
-            vkl_buffer_resize(br->buffer, bs, VKL_DEFAULT_QUEUE_TRANSFER, &context->transfer_cmd);
+            vkl_buffer_resize(br->buffer, bs, &context->transfer_cmd);
         }
     }
 
