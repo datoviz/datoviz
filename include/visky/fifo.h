@@ -3,6 +3,10 @@
 
 #include "common.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 
 /*************************************************************************************************/
@@ -61,5 +65,9 @@ VKY_EXPORT void vkl_fifo_reset(VklFifo* fifo);
 VKY_EXPORT void vkl_fifo_destroy(VklFifo* fifo);
 
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

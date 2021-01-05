@@ -375,12 +375,9 @@ static VklTexture* _font_texture(VklContext* ctx, VklFontAtlas* atlas)
     vkl_texture_filter(texture, VKL_FILTER_MAX, VK_FILTER_LINEAR);
     vkl_texture_filter(texture, VKL_FILTER_MIN, VK_FILTER_LINEAR);
 
-    // HACK
-    VklCanvas canvas = {0};
-    canvas.gpu = ctx->gpu;
-    vkl_upload_texture(
-        &canvas, texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET,
-        (uint32_t)(atlas->width * atlas->height * 4), atlas->font_texture);
+    vkl_texture_upload(
+        texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, (uint32_t)(atlas->width * atlas->height * 4),
+        atlas->font_texture);
     return texture;
 }
 

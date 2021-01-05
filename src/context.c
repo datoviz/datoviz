@@ -507,6 +507,143 @@ void vkl_texture_address_mode(
 
 
 
+void vkl_texture_upload(
+    VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data)
+{
+    ASSERT(texture != NULL);
+    VklContext* context = texture->context;
+    ASSERT(context != NULL);
+    ASSERT(size > 0);
+    ASSERT(data != NULL);
+
+    // Take the staging buffer.
+    VklBuffer* staging = staging_buffer(context, size);
+
+    // Memcpy into the staging buffer.
+    vkl_buffer_upload(staging, 0, size, data);
+
+    // Copy from the staging buffer to the texture.
+    _copy_texture_from_staging(context, texture, offset, shape, size);
+}
+
+
+
+void vkl_texture_download(
+    VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data)
+{
+    ASSERT(texture != NULL);
+    VklContext* context = texture->context;
+    ASSERT(context != NULL);
+    ASSERT(size > 0);
+    ASSERT(data != NULL);
+
+    // Take the staging buffer.
+    VklBuffer* staging = staging_buffer(context, size);
+
+    // Copy from the staging buffer to the texture.
+    _copy_texture_to_staging(context, texture, offset, shape, size);
+
+    // Memcpy into the staging buffer.
+    vkl_buffer_download(staging, 0, size, data);
+}
+
+
+
+void vkl_texture_copy(
+    VklTexture* src, uvec3 src_offset, VklTexture* dst, uvec3 dst_offset, uvec3 shape)
+{
+    ASSERT(src != NULL);
+    ASSERT(dst != NULL);
+    VklContext* context = src->context;
+    VklGpu* gpu = context->gpu;
+    ASSERT(context != NULL);
+
+    // Take transfer cmd buf.
+    VklCommands* cmds = &context->transfer_cmd;
+    vkl_cmd_reset(cmds, 0);
+    vkl_cmd_begin(cmds, 0);
+
+    VklBarrier src_barrier = vkl_barrier(gpu);
+    vkl_barrier_stages(
+        &src_barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    vkl_barrier_images(&src_barrier, src->image);
+
+    VklBarrier dst_barrier = vkl_barrier(gpu);
+    vkl_barrier_stages(
+        &dst_barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    vkl_barrier_images(&dst_barrier, dst->image);
+
+    // Source image transition.
+    if (src->image->layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+    {
+        vkl_barrier_images_layout(
+            &src_barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+        vkl_cmd_barrier(cmds, 0, &src_barrier);
+    }
+
+    // Destination image transition.
+    {
+        log_trace("destination image transition");
+        vkl_barrier_images_layout(
+            &dst_barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        vkl_cmd_barrier(cmds, 0, &dst_barrier);
+    }
+
+    // Copy texture command.
+    VkImageCopy copy = {0};
+    copy.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    copy.srcSubresource.layerCount = 1;
+    copy.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    copy.dstSubresource.layerCount = 1;
+    copy.extent.width = shape[0];
+    copy.extent.height = shape[1];
+    copy.extent.depth = shape[2];
+    copy.srcOffset.x = (int32_t)src_offset[0];
+    copy.srcOffset.y = (int32_t)src_offset[1];
+    copy.srcOffset.z = (int32_t)src_offset[2];
+    copy.dstOffset.x = (int32_t)dst_offset[0];
+    copy.dstOffset.y = (int32_t)dst_offset[1];
+    copy.dstOffset.z = (int32_t)dst_offset[2];
+    vkCmdCopyImage(
+        cmds->cmds[0],                                               //
+        src->image->images[0], VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, //
+        dst->image->images[0], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, //
+        1, &copy);
+
+    // Source image transition.
+    if (src->image->layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+    {
+        vkl_barrier_images_layout(
+            &src_barrier, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, src->image->layout);
+        vkl_cmd_barrier(cmds, 0, &src_barrier);
+    }
+
+    // Destination image transition.
+    if (dst->image->layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+    {
+        log_trace("destination image transition back");
+        vkl_barrier_images_layout(
+            &dst_barrier, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, dst->image->layout);
+        vkl_cmd_barrier(cmds, 0, &dst_barrier);
+    }
+
+    vkl_cmd_end(cmds, 0);
+
+    // Wait for the render queue to be idle.
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_RENDER);
+
+    // Submit the commands to the transfer queue.
+    VklSubmit submit = vkl_submit(gpu);
+    vkl_submit_commands(&submit, cmds);
+    log_debug("copy %dx%dx%d between 2 textures", shape[0], shape[1], shape[2]);
+    vkl_submit_send(&submit, 0, NULL, 0);
+
+    // Wait for the transfer queue to be idle.
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
+}
+
+
+
 void vkl_texture_destroy(VklTexture* texture)
 {
     ASSERT(texture != NULL);

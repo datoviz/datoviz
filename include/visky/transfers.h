@@ -1,7 +1,7 @@
 #ifndef VKL_TRANSFERS_HEADER
 #define VKL_TRANSFERS_HEADER
 
-// #include "../include/visky/canvas.h"
+// #include "../include/visky/context.h"
 #include "../include/visky/vklite.h"
 
 
