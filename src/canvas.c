@@ -1120,10 +1120,10 @@ void vkl_canvas_to_close(VklCanvas* canvas)
 
 
 /*************************************************************************************************/
-/*  Fast transfers                                                                               */
+/*  Transfers                                                                                    */
 /*************************************************************************************************/
 
-static void _copy_from_staging(
+static void _copy_buffer_from_staging(
     VklContext* context, VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size)
 {
     ASSERT(context != NULL);
@@ -1172,6 +1172,7 @@ static void _process_buffer_upload(VklCanvas* canvas, VklTransfer tr)
     VklGpu* gpu = canvas->gpu;
     ASSERT(gpu != NULL);
     VklContext* context = canvas->gpu->context;
+    ASSERT(tr.type == VKL_TRANSFER_BUFFER_UPLOAD);
     VklBufferRegions br = tr.u.buf.regions;
     uint32_t idx = canvas->swapchain.img_idx;
 
@@ -1226,8 +1227,86 @@ static void _process_buffer_upload(VklCanvas* canvas, VklTransfer tr)
         vkl_buffer_memcpy(staging, 0, tr.u.buf.size, tr.u.buf.data);
 
         // Copy from the staging buffer to the target buffer.
-        _copy_from_staging(context, tr.u.buf.regions, tr.u.buf.offset, tr.u.buf.size);
+        _copy_buffer_from_staging(context, tr.u.buf.regions, tr.u.buf.offset, tr.u.buf.size);
     }
+}
+
+
+
+static void _copy_texture_from_staging(
+    VklContext* context, VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size)
+{
+    ASSERT(context != NULL);
+
+    VklGpu* gpu = context->gpu;
+    ASSERT(gpu != NULL);
+
+    VklBuffer* staging = staging_buffer(context, size);
+    ASSERT(staging != NULL);
+
+    // Take transfer cmd buf.
+    VklCommands* cmds = &context->transfer_cmd;
+    vkl_cmd_reset(cmds, 0);
+    vkl_cmd_begin(cmds, 0);
+
+    // Image transition.
+    VklBarrier barrier = vkl_barrier(gpu);
+    vkl_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    ASSERT(texture != NULL);
+    ASSERT(texture->image != NULL);
+    vkl_barrier_images(&barrier, texture->image);
+    vkl_barrier_images_layout(
+        &barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    vkl_barrier_images_access(&barrier, 0, VK_ACCESS_TRANSFER_WRITE_BIT);
+    vkl_cmd_barrier(cmds, 0, &barrier);
+
+    // Copy to staging buffer
+    vkl_cmd_copy_buffer_to_image(cmds, 0, staging, texture->image);
+
+    // Image transition.
+    vkl_barrier_images_layout(
+        &barrier, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, texture->image->layout);
+    vkl_barrier_images_access(&barrier, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_MEMORY_READ_BIT);
+    vkl_cmd_barrier(cmds, 0, &barrier);
+
+    vkl_cmd_end(cmds, 0);
+
+    // Wait for the render queue to be idle.
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_RENDER);
+
+    // Submit the commands to the transfer queue.
+    VklSubmit submit = vkl_submit(gpu);
+    vkl_submit_commands(&submit, cmds);
+    vkl_submit_send(&submit, 0, NULL, 0);
+
+    // Wait for the transfer queue to be idle.
+    // TODO: less brutal synchronization with semaphores. Here we wait for the
+    // transfer to be complete before we send new rendering commands.
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
+}
+
+
+
+static void _process_texture_upload(VklCanvas* canvas, VklTransfer tr)
+{
+    ASSERT(canvas != NULL);
+    VklGpu* gpu = canvas->gpu;
+    ASSERT(gpu != NULL);
+    VklContext* context = canvas->gpu->context;
+    ASSERT(tr.type == VKL_TRANSFER_TEXTURE_UPLOAD);
+
+    // Size of the buffer to transfer.
+    VkDeviceSize size = tr.u.tex.size;
+
+    // Take the staging buffer.
+    VklBuffer* staging = staging_buffer(context, size);
+
+    // Memcpy into the staging buffer.
+    vkl_buffer_memcpy(staging, 0, tr.u.tex.size, tr.u.tex.data);
+
+    // Copy from the staging buffer to the texture.
+    _copy_texture_from_staging(
+        context, tr.u.tex.texture, tr.u.tex.offset, tr.u.tex.shape, tr.u.tex.size);
 }
 
 
@@ -1261,6 +1340,8 @@ static void _canvas_process_transfers(VklCanvas* canvas)
         // Process UPLOAD transfers.
         if (tr.type == VKL_TRANSFER_BUFFER_UPLOAD)
             _process_buffer_upload(canvas, tr);
+        if (tr.type == VKL_TRANSFER_TEXTURE_UPLOAD)
+            _process_texture_upload(canvas, tr);
         fifo->is_processing = false;
     }
 }

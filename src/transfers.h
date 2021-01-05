@@ -16,11 +16,18 @@ static VklBuffer* staging_buffer(VklContext* context, VkDeviceSize size)
     VklBuffer* staging = vkl_container_get(&context->buffers, VKL_BUFFER_TYPE_STAGING);
     ASSERT(staging != NULL);
     ASSERT(staging->buffer != VK_NULL_HANDLE);
+
+    // Make sure the staging buffer is idle before using it.
+    // TODO: optimize this and avoid hard synchronization here before copying data into
+    // the staging buffer.
+    vkl_queue_wait(context->gpu, VKL_DEFAULT_QUEUE_TRANSFER);
+
     // Resize the staging buffer is needed.
     // TODO: keep staging buffer fixed and copy parts of the data to staging buffer in several
     // steps?
     if (staging->size < size)
     {
+
         VkDeviceSize new_size = next_pow2(size);
         log_info(
             "reallocating staging buffer to %s", VKL_BUFFER_TYPE_STAGING, pretty_size(new_size));
