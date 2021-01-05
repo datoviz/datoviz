@@ -30,6 +30,8 @@ int test_canvas_transfer_buffer(TestContext* context)
 
     VkDeviceSize size = 16;
     VklBufferRegions br = vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_VERTEX, 1, size);
+    VklBufferRegions br2 = vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_VERTEX, 1, size);
+    AT(br.offsets[0] < br2.offsets[0]);
 
     uint8_t* data = calloc(size, sizeof(uint8_t));
     for (uint32_t i = 0; i < size; i++)
@@ -37,16 +39,20 @@ int test_canvas_transfer_buffer(TestContext* context)
 
     // Upload a buffer.
     vkl_canvas_buffers(canvas, br, 0, size, data);
-    vkl_app_run(app, 5);
+    vkl_app_run(app, 3);
+
+    // Copy.
+    vkl_canvas_buffers_copy(canvas, br, 0, br2, 0, size);
+    vkl_app_run(app, 3);
 
     // Download a buffer.
     uint8_t* data2 = calloc(size, sizeof(uint8_t));
-    vkl_canvas_buffers_download(canvas, br, 0, size, data2);
+    vkl_canvas_buffers_download(canvas, br2, 0, size, data2);
     // we must run at least one frame in order for the download to be processed
     AT(memcmp(data2, data, size) != 0);
 
     // Compare.
-    vkl_app_run(app, 5);
+    vkl_app_run(app, 3);
     AT(memcmp(data2, data, size) == 0);
 
     FREE(data);
@@ -64,21 +70,35 @@ int test_canvas_transfer_texture(TestContext* context)
     VklContext* ctx = gpu->context;
 
     VkDeviceSize size = 16 * 16 * 4;
-    uint8_t* img_data = calloc(size, sizeof(uint8_t));
+    uint8_t* data = calloc(size, sizeof(uint8_t));
     for (uint32_t i = 0; i < size; i++)
-        img_data[i] = (uint8_t)(i % 256);
+        data[i] = (uint8_t)(i % 256);
+
     uvec3 offset = {0};
     uvec3 shape = {16, 16, 1};
+
     VklTexture* tex = vkl_ctx_texture(ctx, 2, shape, VK_FORMAT_R8G8B8A8_UNORM);
-    vkl_canvas_texture(canvas, tex, offset, shape, size, img_data);
-    vkl_app_run(app, 5);
+    VklTexture* tex2 = vkl_ctx_texture(ctx, 2, shape, VK_FORMAT_R8G8B8A8_UNORM);
 
-    uint8_t* img_data2 = calloc(size, sizeof(uint8_t));
-    vkl_canvas_texture_download(canvas, tex, offset, shape, size, img_data2);
-    AT(memcmp(img_data, img_data2, size) != 0);
-    vkl_app_run(app, 5);
-    AT(memcmp(img_data, img_data2, size) == 0);
+    // Upload.
+    vkl_canvas_texture(canvas, tex, offset, shape, size, data);
+    vkl_app_run(app, 3);
 
+    // Copy.
+    vkl_canvas_texture_copy(canvas, tex, offset, tex2, offset, shape, size);
+    vkl_app_run(app, 3);
+
+    // Download.
+    uint8_t* data2 = calloc(size, sizeof(uint8_t));
+    vkl_canvas_texture_download(canvas, tex2, offset, shape, size, data2);
+    AT(memcmp(data, data2, size) != 0);
+
+    // Compare.
+    vkl_app_run(app, 3);
+    AT(memcmp(data, data2, size) == 0);
+
+    FREE(data);
+    FREE(data2);
     TEST_END
 }
 

@@ -258,95 +258,6 @@ static void* _event_thread(void* p_canvas)
 
 
 /*************************************************************************************************/
-/*  Canvas-specific transfers                                                                    */
-/*************************************************************************************************/
-
-static void process_buffer_upload_immediate(VklCanvas* canvas, VklTransfer tr, uint32_t img_idx)
-{
-    // Must be called by the main event loop, just after the fence for the current frame
-    // so we're sure the buffer region corresponding to the current swapchain image is not being
-    // used and we can update the buffer safely.
-    ASSERT(tr.type == VKL_TRANSFER_BUFFER_UPLOAD_IMMEDIATE);
-
-    // Size of the buffer to transfer.
-    VkDeviceSize region_size = tr.u.buf.size;
-    ASSERT(region_size > 0);
-
-    VklBufferRegions* br = &tr.u.buf.regions;
-    VkDeviceSize alsize = br->aligned_size;
-    if (alsize == 0)
-        alsize = region_size;
-    ASSERT(alsize > 0);
-    ASSERT(alsize >= region_size);
-
-    ASSERT(tr.u.buf.regions.count > 0);
-
-    // We only upload to the buffer region that corresponds to the current swapchain image, to
-    // avoid having to deal with synchronization.
-
-    // Copy the data as many times as there are buffer regions, and make sure the array is
-    // aligned if using a UNIFORM buffer.
-    VklPointer pointer = aligned_repeat(region_size, tr.u.buf.data, 1, br->alignment);
-    // Transfer from the CPU to the GPU staging buffer.
-    vkl_buffer_upload(br->buffer, br->offsets[img_idx] + tr.u.buf.offset, alsize, pointer.pointer);
-    ALIGNED_FREE(pointer)
-}
-
-
-
-// static void _immediate_transfers(VklCanvas* canvas)
-// {
-//     ASSERT(canvas != NULL);
-//     // Special FIFO queue for IMMEDIATE transfers.
-//     VklFifo* fifo = &canvas->immediate_queue;
-//     ASSERT(fifo != NULL);
-
-//     // See if there is a current _immediate transfer going on.
-//     VklTransfer* tr = canvas->immediate_transfer_cur;
-//     // If not, dequeue.
-//     if (tr == NULL)
-//     {
-//         tr = vkl_fifo_dequeue(fifo, false);
-//     }
-//     // Here, we have nothing to do.
-//     if (tr == NULL)
-//         return;
-//     // Here we have a IMMEDIATE transfer to process, as many times as there are swap chain
-//     images. ASSERT(tr != NULL);
-
-//     // Current swapchain image.
-//     uint32_t n = tr->u.buf.update_count; // number of buffer regions to update
-
-//     // 2 cases: only 1 region to update (any swapchain image), or 1 per swapchain image.
-//     ASSERT(n == 1 || n == canvas->swapchain.img_count);
-//     uint32_t img_idx = CLIP(canvas->swapchain.img_idx, 0, tr->u.buf.regions.count - 1);
-//     // ASSERT(img_idx < tr->u.buf.regions.count);
-//     ASSERT(img_idx < VKL_MAX_SWAPCHAIN_IMAGES);
-
-//     // Skip the update if this swapchain image has already been processed.
-//     if (canvas->immediate_transfer_updated[img_idx])
-//         return;
-
-//     // Mark the dequeued transfer as being currently processed.
-//     canvas->immediate_transfer_cur = tr;
-
-//     // Process it.
-//     process_buffer_upload_immediate(canvas, *tr, img_idx);
-
-//     // Mark the buffer region corresponding to the current swapchain image as done.
-//     canvas->immediate_transfer_updated[img_idx] = true;
-
-//     // If all regions corresponding to all swapchain images have been updated, reset.
-//     if (n == 1 || _all_true(n, canvas->immediate_transfer_updated))
-//     {
-//         memset(canvas->immediate_transfer_updated, 0, n * sizeof(bool));
-//         canvas->immediate_transfer_cur = NULL;
-//     }
-// }
-
-
-
-/*************************************************************************************************/
 /*  Backend-specific event callbacks                                                             */
 /*************************************************************************************************/
 
@@ -1277,6 +1188,7 @@ static void _copy_buffer_to_staging(
     // Submit the commands to the transfer queue.
     VklSubmit submit = vkl_submit(gpu);
     vkl_submit_commands(&submit, cmds);
+    log_debug("copy %s to staging buffer", pretty_size(size));
     vkl_submit_send(&submit, 0, NULL, 0);
 
     // Wait for the transfer queue to be idle.
@@ -1345,11 +1257,64 @@ static void _process_buffer_download(VklCanvas* canvas, VklTransfer tr)
         VklBuffer* staging = staging_buffer(context, tr.u.buf.size);
 
         // Copy from the source buffer to the staging buffer.
-        _copy_buffer_from_staging(context, tr.u.buf.regions, tr.u.buf.offset, tr.u.buf.size);
+        _copy_buffer_to_staging(context, tr.u.buf.regions, tr.u.buf.offset, tr.u.buf.size);
 
         // Memcpy into the staging buffer.
         vkl_buffer_download(staging, 0, tr.u.buf.size, tr.u.buf.data);
     }
+}
+
+
+
+/*************************************************************************************************/
+/*  Buffer copy                                                                                  */
+/*************************************************************************************************/
+
+static void _process_buffer_copy(VklCanvas* canvas, VklTransfer tr)
+{
+    ASSERT(canvas != NULL);
+    VklGpu* gpu = canvas->gpu;
+    ASSERT(gpu != NULL);
+    VklContext* context = canvas->gpu->context;
+    ASSERT(tr.type == VKL_TRANSFER_BUFFER_COPY);
+
+    VklBufferRegions* src = &tr.u.buf_copy.src;
+    VklBufferRegions* dst = &tr.u.buf_copy.dst;
+    ASSERT(src->count == dst->count);
+
+    VkDeviceSize size = tr.u.buf_copy.size;
+    VkDeviceSize src_offset = tr.u.buf_copy.src_offset;
+    VkDeviceSize dst_offset = tr.u.buf_copy.dst_offset;
+
+    // Take transfer cmd buf.
+    VklCommands* cmds = &context->transfer_cmd;
+    vkl_cmd_reset(cmds, 0);
+    vkl_cmd_begin(cmds, 0);
+
+    // Copy buffer command.
+    VkBufferCopy* regions = (VkBufferCopy*)calloc(src->count, sizeof(VkBufferCopy));
+    for (uint32_t i = 0; i < src->count; i++)
+    {
+        regions[i].size = size;
+        regions[i].srcOffset = src->offsets[i] + src_offset;
+        regions[i].dstOffset = dst->offsets[i] + dst_offset;
+    }
+    vkCmdCopyBuffer(cmds->cmds[0], src->buffer->buffer, dst->buffer->buffer, src->count, regions);
+
+    vkl_cmd_end(cmds, 0);
+    FREE(regions);
+
+    // Wait for the render queue to be idle.
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_RENDER);
+
+    // Submit the commands to the transfer queue.
+    VklSubmit submit = vkl_submit(gpu);
+    vkl_submit_commands(&submit, cmds);
+    log_debug("copy %s between 2 buffers", pretty_size(size));
+    vkl_submit_send(&submit, 0, NULL, 0);
+
+    // Wait for the transfer queue to be idle.
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
 }
 
 
@@ -1437,7 +1402,7 @@ static void _process_texture_upload(VklCanvas* canvas, VklTransfer tr)
 
 
 /*************************************************************************************************/
-/*  Texture load                                                                               */
+/*  Texture download                                                                             */
 /*************************************************************************************************/
 
 static void _copy_texture_to_staging(
@@ -1519,6 +1484,109 @@ static void _process_texture_download(VklCanvas* canvas, VklTransfer tr)
 
 
 /*************************************************************************************************/
+/*  Texture copy                                                                                 */
+/*************************************************************************************************/
+
+static void _process_texture_copy(VklCanvas* canvas, VklTransfer tr)
+{
+    ASSERT(canvas != NULL);
+    VklGpu* gpu = canvas->gpu;
+    ASSERT(gpu != NULL);
+    VklContext* context = canvas->gpu->context;
+    ASSERT(tr.type == VKL_TRANSFER_TEXTURE_COPY);
+
+    VklTexture* src = tr.u.tex_copy.src;
+    VklTexture* dst = tr.u.tex_copy.dst;
+
+    // Take transfer cmd buf.
+    VklCommands* cmds = &context->transfer_cmd;
+    vkl_cmd_reset(cmds, 0);
+    vkl_cmd_begin(cmds, 0);
+
+    VklBarrier src_barrier = vkl_barrier(gpu);
+    vkl_barrier_stages(
+        &src_barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    vkl_barrier_images(&src_barrier, src->image);
+
+    VklBarrier dst_barrier = vkl_barrier(gpu);
+    vkl_barrier_stages(
+        &dst_barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    vkl_barrier_images(&dst_barrier, dst->image);
+
+    // Source image transition.
+    if (src->image->layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+    {
+        vkl_barrier_images_layout(
+            &src_barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+        vkl_cmd_barrier(cmds, 0, &src_barrier);
+    }
+
+    // Destination image transition.
+    {
+        log_trace("destination image transition");
+        vkl_barrier_images_layout(
+            &dst_barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        vkl_cmd_barrier(cmds, 0, &dst_barrier);
+    }
+
+    // Copy texture command.
+    VkImageCopy copy = {0};
+    copy.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    copy.srcSubresource.layerCount = 1;
+    copy.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    copy.dstSubresource.layerCount = 1;
+    copy.extent.width = tr.u.tex_copy.shape[0];
+    copy.extent.height = tr.u.tex_copy.shape[1];
+    copy.extent.depth = tr.u.tex_copy.shape[2];
+    copy.srcOffset.x = (int32_t)tr.u.tex_copy.src_offset[0];
+    copy.srcOffset.y = (int32_t)tr.u.tex_copy.src_offset[1];
+    copy.srcOffset.z = (int32_t)tr.u.tex_copy.src_offset[2];
+    copy.dstOffset.x = (int32_t)tr.u.tex_copy.dst_offset[0];
+    copy.dstOffset.y = (int32_t)tr.u.tex_copy.dst_offset[1];
+    copy.dstOffset.z = (int32_t)tr.u.tex_copy.dst_offset[2];
+    vkCmdCopyImage(
+        cmds->cmds[0],                                               //
+        src->image->images[0], VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, //
+        dst->image->images[0], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, //
+        1, &copy);
+
+    // Source image transition.
+    if (src->image->layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+    {
+        vkl_barrier_images_layout(
+            &src_barrier, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, src->image->layout);
+        vkl_cmd_barrier(cmds, 0, &src_barrier);
+    }
+
+    // Destination image transition.
+    if (dst->image->layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+    {
+        log_trace("destination image transition back");
+        vkl_barrier_images_layout(
+            &dst_barrier, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, dst->image->layout);
+        vkl_cmd_barrier(cmds, 0, &dst_barrier);
+    }
+
+    vkl_cmd_end(cmds, 0);
+
+    // Wait for the render queue to be idle.
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_RENDER);
+
+    // Submit the commands to the transfer queue.
+    VklSubmit submit = vkl_submit(gpu);
+    vkl_submit_commands(&submit, cmds);
+    log_debug(
+        "copy %dx%dx%d between 2 textures", tr.u.tex_copy.shape[0], tr.u.tex_copy.shape[1],
+        tr.u.tex_copy.shape[2]);
+    vkl_submit_send(&submit, 0, NULL, 0);
+
+    // Wait for the transfer queue to be idle.
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
+}
+
+
+
+/*************************************************************************************************/
 /*  Canvas transfers processing                                                                  */
 /*************************************************************************************************/
 
@@ -1553,12 +1621,16 @@ static void _canvas_process_transfers(VklCanvas* canvas)
             _process_buffer_upload(canvas, tr);
         if (tr.type == VKL_TRANSFER_BUFFER_DOWNLOAD)
             _process_buffer_download(canvas, tr);
+        if (tr.type == VKL_TRANSFER_BUFFER_COPY)
+            _process_buffer_copy(canvas, tr);
 
         // Process texture transfers.
         if (tr.type == VKL_TRANSFER_TEXTURE_UPLOAD)
             _process_texture_upload(canvas, tr);
         if (tr.type == VKL_TRANSFER_TEXTURE_DOWNLOAD)
             _process_texture_download(canvas, tr);
+        if (tr.type == VKL_TRANSFER_TEXTURE_COPY)
+            _process_texture_copy(canvas, tr);
 
         fifo->is_processing = false;
     }
@@ -1575,15 +1647,12 @@ static void _enqueue_buffers_transfer(
     VkDeviceSize offset, VkDeviceSize size, void* data)
 {
     ASSERT(canvas != NULL);
+    VklContext* context = canvas->gpu->context;
+    ASSERT(canvas->gpu != NULL);
+    ASSERT(context != NULL);
     ASSERT(size > 0);
     ASSERT(br.buffer != NULL);
     ASSERT(is_obj_created(&br.buffer->obj));
-    ASSERT(data != NULL);
-
-    ASSERT(canvas->gpu != NULL);
-    VklContext* context = canvas->gpu->context;
-    ASSERT(context != NULL);
-    ASSERT(size > 0);
     ASSERT(data != NULL);
 
     // Create the transfer object.
@@ -1615,6 +1684,32 @@ void vkl_canvas_buffers_download(
 
 
 
+void vkl_canvas_buffers_copy(
+    VklCanvas* canvas, VklBufferRegions src, VkDeviceSize src_offset, //
+    VklBufferRegions dst, VkDeviceSize dst_offset, VkDeviceSize size)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(size > 0);
+    ASSERT(src.buffer != NULL);
+    ASSERT(dst.buffer != NULL);
+    ASSERT(canvas->gpu != NULL);
+    VklContext* context = canvas->gpu->context;
+    ASSERT(context != NULL);
+
+    // Create the transfer object.
+    VklTransfer tr = {0};
+    tr.type = VKL_TRANSFER_BUFFER_COPY;
+    tr.u.buf_copy.src = src;
+    tr.u.buf_copy.dst = dst;
+    tr.u.buf_copy.src_offset = src_offset;
+    tr.u.buf_copy.dst_offset = dst_offset;
+    tr.u.buf_copy.size = size;
+
+    fifo_enqueue(context, &canvas->transfers, tr);
+}
+
+
+
 /*************************************************************************************************/
 /*  Canvas texture transfers                                                                     */
 /*************************************************************************************************/
@@ -1624,14 +1719,11 @@ static void _enqueue_texture_transfer(
     uvec3 offset, uvec3 shape, VkDeviceSize size, void* data)
 {
     ASSERT(canvas != NULL);
-    ASSERT(size > 0);
-    ASSERT(texture != NULL);
-    ASSERT(is_obj_created(&texture->obj));
-    ASSERT(data != NULL);
-
     ASSERT(canvas->gpu != NULL);
     VklContext* context = canvas->gpu->context;
     ASSERT(context != NULL);
+    ASSERT(texture != NULL);
+    ASSERT(is_obj_created(&texture->obj));
     ASSERT(size > 0);
     ASSERT(data != NULL);
 
@@ -1668,6 +1760,34 @@ void vkl_canvas_texture_download(
 {
     _enqueue_texture_transfer(
         canvas, VKL_TRANSFER_TEXTURE_DOWNLOAD, texture, offset, shape, size, data);
+}
+
+
+
+void vkl_canvas_texture_copy(
+    VklCanvas* canvas, VklTexture* src, uvec3 src_offset, VklTexture* dst, uvec3 dst_offset,
+    uvec3 shape, VkDeviceSize size)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(canvas->gpu != NULL);
+    VklContext* context = canvas->gpu->context;
+    ASSERT(context != NULL);
+    ASSERT(src != NULL);
+    ASSERT(is_obj_created(&src->obj));
+    ASSERT(dst != NULL);
+    ASSERT(is_obj_created(&dst->obj));
+    ASSERT(size > 0);
+
+    // Create the transfer object.
+    VklTransfer tr = {0};
+    tr.type = VKL_TRANSFER_TEXTURE_COPY;
+    tr.u.tex_copy.src = src;
+    tr.u.tex_copy.dst = dst;
+    memcpy(tr.u.tex_copy.src_offset, src_offset, sizeof(uvec3));
+    memcpy(tr.u.tex_copy.dst_offset, dst_offset, sizeof(uvec3));
+    memcpy(tr.u.tex_copy.shape, shape, sizeof(uvec3));
+
+    fifo_enqueue(context, &canvas->transfers, tr);
 }
 
 
