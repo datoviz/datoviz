@@ -133,10 +133,10 @@ static void _common_bindings(TestGraphics* tg)
     ASSERT(index_count == 0 || index_count > 0);                                                  \
     ASSERT(vertices != NULL);                                                                     \
     vkl_upload_buffers(                                                                           \
-        gpu->context, tg.br_vert, 0, vertex_count* tg.vertices.item_size, tg.vertices.data);      \
+        canvas, tg.br_vert, 0, vertex_count* tg.vertices.item_size, tg.vertices.data);            \
     if (index_count > 0)                                                                          \
         vkl_upload_buffers(                                                                       \
-            gpu->context, tg.br_index, 0, index_count* tg.indices.item_size, tg.indices.data);
+            canvas, tg.br_index, 0, index_count* tg.indices.item_size, tg.indices.data);
 
 #define BINDINGS_PARAMS                                                                           \
     _common_bindings(&tg);                                                                        \
@@ -161,7 +161,6 @@ static void _common_bindings(TestGraphics* tg)
 
 static void _graphics_points_wheel_callback(VklCanvas* canvas, VklEvent ev)
 {
-    VklGpu* gpu = canvas->gpu;
     TestGraphics* tg = ev.user_data;
 
     // Update point size.
@@ -222,7 +221,6 @@ int test_graphics_dynamic(TestContext* context)
 
 static void _graphics_3D_callback(VklCanvas* canvas, VklPrivateEvent ev)
 {
-    VklGpu* gpu = canvas->gpu;
     TestGraphics* tg = ev.user_data;
     vec3 axis;
     axis[1] = 1;
@@ -473,8 +471,7 @@ int test_graphics_marker(TestContext* context)
 static void _resize(VklCanvas* canvas, VklPrivateEvent ev)
 {
     TestGraphics* tg = (TestGraphics*)ev.user_data;
-    vkl_upload_buffers(
-        canvas->gpu->context, tg->br_viewport, 0, sizeof(VklViewport), &canvas->viewport);
+    vkl_upload_buffers(canvas, tg->br_viewport, 0, sizeof(VklViewport), &canvas->viewport);
 }
 
 int test_graphics_segment(TestContext* context)
@@ -611,8 +608,7 @@ int test_graphics_image(TestContext* context)
         {{-x, -x, 0}, {0, 1}}, //
     };
     vkl_upload_buffers(
-        gpu->context, tg.br_vert, 0, tg.vertices.item_count * sizeof(VklGraphicsImageVertex),
-        vertices);
+        canvas, tg.br_vert, 0, tg.vertices.item_count * sizeof(VklGraphicsImageVertex), vertices);
 
     // Parameters.
     tg.br_params =
@@ -632,7 +628,7 @@ int test_graphics_image(TestContext* context)
         tex_data[i][3] = 255;
     }
     vkl_upload_texture(
-        canvas, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, texture, nt * nt * sizeof(cvec4), tex_data);
+        canvas, texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, nt * nt * sizeof(cvec4), tex_data);
 
     // Bindings.
     _common_bindings(&tg);
@@ -654,7 +650,6 @@ int test_graphics_image(TestContext* context)
 
 static void _graphics_mesh_callback(VklCanvas* canvas, VklPrivateEvent ev)
 {
-    VklGpu* gpu = canvas->gpu;
     TestGraphics* tg = ev.user_data;
     vec3 axis = {0};
     axis[1] = 1;
@@ -740,10 +735,10 @@ int test_graphics_mesh(TestContext* context)
             gpu->context, VKL_BUFFER_TYPE_INDEX, 1, index_count * sizeof(VklIndex));
 
     vkl_upload_buffers(
-        gpu->context, tg.br_vert, 0, vertex_count * tg.vertices.item_size, tg.vertices.data);
+        canvas, tg.br_vert, 0, vertex_count * tg.vertices.item_size, tg.vertices.data);
     if (index_count > 0)
         vkl_upload_buffers(
-            gpu->context, tg.br_index, 0, index_count * tg.indices.item_size, tg.indices.data);
+            canvas, tg.br_index, 0, index_count * tg.indices.item_size, tg.indices.data);
 
     // Texture.
     VklTexture* texture =
@@ -755,7 +750,7 @@ int test_graphics_mesh(TestContext* context)
         {255, 255, 0, 255},
     };
     vkl_upload_texture(
-        canvas, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, texture, sizeof(tex_data), tex_data);
+        canvas, texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, sizeof(tex_data), tex_data);
 
     // Create the bindings.
     tg.bindings = vkl_bindings(&graphics->slots, 1);

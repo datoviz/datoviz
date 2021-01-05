@@ -24,7 +24,6 @@ static void _mouse_callback(VklCanvas* canvas, VklEvent ev)
 
 static void _resize(VklCanvas* canvas, VklPrivateEvent ev)
 {
-    VklContext* ctx = canvas->gpu->context;
     canvas->viewport.margins[0] = 100;
     canvas->viewport.margins[1] = 100;
     canvas->viewport.margins[2] = 100;

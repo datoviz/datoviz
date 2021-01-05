@@ -870,7 +870,8 @@ void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source)
             source->u.br.size > 0 ? "re" : "", count, size);
 
         // TODO
-        uint32_t buf_count = source == VKL_SOURCE_TYPE_MVP ? canvas->swapchain.img_count : 1;
+        uint32_t buf_count =
+            source->source_type == VKL_SOURCE_TYPE_MVP ? canvas->swapchain.img_count : 1;
         source->u.br = vkl_ctx_buffers(ctx, _get_default_buffer(source), buf_count, size);
 
         // Set the pipeline bindings with the source buffer.
