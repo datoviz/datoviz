@@ -765,7 +765,7 @@ VKY_EXPORT void vkl_canvas_to_close(VklCanvas* canvas);
 
 
 /*************************************************************************************************/
-/*  Fast transfers                                                                               */
+/*  Transfers                                                                                    */
 /*************************************************************************************************/
 
 VKY_EXPORT void vkl_canvas_buffers(
@@ -773,6 +773,14 @@ VKY_EXPORT void vkl_canvas_buffers(
 
 VKY_EXPORT void vkl_canvas_buffers_download(
     VklCanvas* canvas, VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data);
+
+VKY_EXPORT void vkl_canvas_texture(
+    VklCanvas* canvas, VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size,
+    void* data);
+
+VKY_EXPORT void vkl_canvas_texture_download(
+    VklCanvas* canvas, VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size,
+    void* data);
 
 
 

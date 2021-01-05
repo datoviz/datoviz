@@ -56,6 +56,34 @@ int test_canvas_transfer_buffer(TestContext* context)
 
 
 
+int test_canvas_transfer_texture(TestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
+    VklContext* ctx = gpu->context;
+
+    VkDeviceSize size = 16 * 16 * 4;
+    uint8_t* img_data = calloc(size, sizeof(uint8_t));
+    for (uint32_t i = 0; i < size; i++)
+        img_data[i] = (uint8_t)(i % 256);
+    uvec3 offset = {0};
+    uvec3 shape = {16, 16, 1};
+    VklTexture* tex = vkl_ctx_texture(ctx, 2, shape, VK_FORMAT_R8G8B8A8_UNORM);
+    vkl_canvas_texture(canvas, tex, offset, shape, size, img_data);
+    vkl_app_run(app, 5);
+
+    uint8_t* img_data2 = calloc(size, sizeof(uint8_t));
+    vkl_canvas_texture_download(canvas, tex, offset, shape, size, img_data2);
+    AT(memcmp(img_data, img_data2, size) != 0);
+    vkl_app_run(app, 5);
+    AT(memcmp(img_data, img_data2, size) == 0);
+
+    TEST_END
+}
+
+
+
 /*************************************************************************************************/
 /*  Canvas 1                                                                                     */
 /*************************************************************************************************/

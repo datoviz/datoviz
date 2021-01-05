@@ -1443,16 +1443,83 @@ static void _process_texture_upload(VklCanvas* canvas, VklTransfer tr)
 static void _copy_texture_to_staging(
     VklContext* context, VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size)
 {
+    ASSERT(context != NULL);
+
+    VklGpu* gpu = context->gpu;
+    ASSERT(gpu != NULL);
+
+    VklBuffer* staging = staging_buffer(context, size);
+    ASSERT(staging != NULL);
+
+    // Take transfer cmd buf.
+    VklCommands* cmds = &context->transfer_cmd;
+    vkl_cmd_reset(cmds, 0);
+    vkl_cmd_begin(cmds, 0);
+
+    // Image transition.
+    VklBarrier barrier = vkl_barrier(gpu);
+    vkl_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    ASSERT(texture != NULL);
+    ASSERT(texture->image != NULL);
+    vkl_barrier_images(&barrier, texture->image);
+    vkl_barrier_images_layout(
+        &barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    vkl_barrier_images_access(&barrier, 0, VK_ACCESS_TRANSFER_READ_BIT);
+    vkl_cmd_barrier(cmds, 0, &barrier);
+
+    // Copy to staging buffer
+    vkl_cmd_copy_image_to_buffer(cmds, 0, texture->image, staging);
+
+    // Image transition.
+    vkl_barrier_images_layout(
+        &barrier, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, texture->image->layout);
+    vkl_barrier_images_access(&barrier, VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_MEMORY_READ_BIT);
+    vkl_cmd_barrier(cmds, 0, &barrier);
+
+    vkl_cmd_end(cmds, 0);
+
+    // Wait for the render queue to be idle.
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_RENDER);
+
+    // Submit the commands to the transfer queue.
+    VklSubmit submit = vkl_submit(gpu);
+    vkl_submit_commands(&submit, cmds);
+    vkl_submit_send(&submit, 0, NULL, 0);
+
+    // Wait for the transfer queue to be idle.
+    // TODO: less brutal synchronization with semaphores. Here we wait for the
+    // transfer to be complete before we send new rendering commands.
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
 }
 
 
 
-static void _process_texture_download(VklCanvas* canvas, VklTransfer tr) {}
+static void _process_texture_download(VklCanvas* canvas, VklTransfer tr)
+{
+    ASSERT(canvas != NULL);
+    VklGpu* gpu = canvas->gpu;
+    ASSERT(gpu != NULL);
+    VklContext* context = canvas->gpu->context;
+    ASSERT(tr.type == VKL_TRANSFER_TEXTURE_DOWNLOAD);
+
+    // Size of the buffer to transfer.
+    VkDeviceSize size = tr.u.tex.size;
+
+    // Take the staging buffer.
+    VklBuffer* staging = staging_buffer(context, size);
+
+    // Copy from the staging buffer to the texture.
+    _copy_texture_to_staging(
+        context, tr.u.tex.texture, tr.u.tex.offset, tr.u.tex.shape, tr.u.tex.size);
+
+    // Memcpy into the staging buffer.
+    vkl_buffer_download(staging, 0, tr.u.tex.size, tr.u.tex.data);
+}
 
 
 
 /*************************************************************************************************/
-/*  Canvas transfers                                                                             */
+/*  Canvas transfers processing                                                                  */
 /*************************************************************************************************/
 
 static void _canvas_process_transfers(VklCanvas* canvas)
@@ -1499,6 +1566,10 @@ static void _canvas_process_transfers(VklCanvas* canvas)
 
 
 
+/*************************************************************************************************/
+/*  Canvas buffer transfers                                                                      */
+/*************************************************************************************************/
+
 static void _enqueue_buffers_transfer(
     VklCanvas* canvas, VklDataTransferType type, VklBufferRegions br, //
     VkDeviceSize offset, VkDeviceSize size, void* data)
@@ -1540,6 +1611,63 @@ void vkl_canvas_buffers_download(
     VklCanvas* canvas, VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data)
 {
     _enqueue_buffers_transfer(canvas, VKL_TRANSFER_BUFFER_DOWNLOAD, br, offset, size, data);
+}
+
+
+
+/*************************************************************************************************/
+/*  Canvas texture transfers                                                                     */
+/*************************************************************************************************/
+
+static void _enqueue_texture_transfer(
+    VklCanvas* canvas, VklDataTransferType type, VklTexture* texture, //
+    uvec3 offset, uvec3 shape, VkDeviceSize size, void* data)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(size > 0);
+    ASSERT(texture != NULL);
+    ASSERT(is_obj_created(&texture->obj));
+    ASSERT(data != NULL);
+
+    ASSERT(canvas->gpu != NULL);
+    VklContext* context = canvas->gpu->context;
+    ASSERT(context != NULL);
+    ASSERT(size > 0);
+    ASSERT(data != NULL);
+
+    // Create the transfer object.
+    VklTransfer tr = {0};
+    tr.type = type;
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        tr.u.tex.shape[i] = shape[i];
+        tr.u.tex.offset[i] = offset[i];
+    }
+    tr.u.tex.size = size;
+    tr.u.tex.data = data;
+    tr.u.tex.texture = texture;
+
+    fifo_enqueue(context, &canvas->transfers, tr);
+}
+
+
+
+void vkl_canvas_texture(
+    VklCanvas* canvas, VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size,
+    void* data)
+{
+    _enqueue_texture_transfer(
+        canvas, VKL_TRANSFER_TEXTURE_UPLOAD, texture, offset, shape, size, data);
+}
+
+
+
+void vkl_canvas_texture_download(
+    VklCanvas* canvas, VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size,
+    void* data)
+{
+    _enqueue_texture_transfer(
+        canvas, VKL_TRANSFER_TEXTURE_DOWNLOAD, texture, offset, shape, size, data);
 }
 
 
