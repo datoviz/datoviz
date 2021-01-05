@@ -28,8 +28,8 @@ int test_visuals_1(TestContext* context)
     const uint32_t N = 10000;
 
     // Binding resources.
-    VklBufferRegions br_mvp =
-        vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_UNIFORM_MAPPABLE, 1, sizeof(VklMVP));
+    VklBufferRegions br_mvp = vkl_ctx_buffers(
+        ctx, VKL_BUFFER_TYPE_UNIFORM_MAPPABLE, canvas->swapchain.img_count, sizeof(VklMVP));
     VklBufferRegions br_viewport = vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_UNIFORM, 1, 16);
     VklBufferRegions br_params =
         vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsPointParams));
@@ -42,10 +42,10 @@ int test_visuals_1(TestContext* context)
         glm_mat4_identity(mvp.model);
         glm_mat4_identity(mvp.view);
         glm_mat4_identity(mvp.proj);
-        vkl_upload_buffers(ctx, br_mvp, 0, sizeof(VklMVP), &mvp);
+        vkl_upload_buffers(canvas, br_mvp, 0, sizeof(VklMVP), &mvp);
 
         // Upload params.
-        vkl_upload_buffers(ctx, br_params, 0, sizeof(VklGraphicsPointParams), &params);
+        vkl_upload_buffers(canvas, br_params, 0, sizeof(VklGraphicsPointParams), &params);
     }
 
     // Vertex data.
@@ -61,7 +61,7 @@ int test_visuals_1(TestContext* context)
         // Via a GPU buffer.
         // VklBufferRegions br_vert =
         //     vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_VERTEX, 1, N * sizeof(VklVertex));
-        // vkl_upload_buffers(ctx, br_vert, 0, N * sizeof(VklVertex), vertices);
+        // vkl_upload_buffers(canvas, br_vert, 0, N * sizeof(VklVertex), vertices);
         // visual.vertex_count = N;
         // vkl_visual_buffer(&visual, VKL_SOURCE_TYPE_VERTEX, 0, br_vert);
 
@@ -160,7 +160,7 @@ static void _timer_callback(VklCanvas* canvas, VklPrivateEvent ev)
     mvp.view[0][1] = sin(t);
     mvp.view[1][0] = -sin(t);
     mvp.view[1][1] = cos(t);
-    vkl_upload_buffers(canvas->gpu->context, br_mvp, 0, br_mvp.size, &mvp);
+    vkl_upload_buffers(canvas, br_mvp, 0, br_mvp.size, &mvp);
 }
 
 int test_visuals_3(TestContext* context)

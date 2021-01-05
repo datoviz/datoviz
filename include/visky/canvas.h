@@ -1,8 +1,10 @@
 #ifndef VKL_CANVAS_HEADER
 #define VKL_CANVAS_HEADER
 
-#include "../include/visky/context.h"
+#include "context.h"
+#include "fifo.h"
 #include "keycode.h"
+#include "transfers.h"
 #include "vklite.h"
 
 #ifdef __cplusplus
@@ -761,36 +763,6 @@ VKY_EXPORT void vkl_event_callback(
 VKY_EXPORT void vkl_canvas_to_refill(VklCanvas* canvas);
 
 VKY_EXPORT void vkl_canvas_to_close(VklCanvas* canvas);
-
-
-
-/*************************************************************************************************/
-/*  Transfers                                                                                    */
-/*************************************************************************************************/
-
-VKY_EXPORT void vkl_canvas_buffers(
-    VklCanvas* canvas, VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data);
-
-VKY_EXPORT void vkl_canvas_buffers_download(
-    VklCanvas* canvas, VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data);
-
-VKY_EXPORT void vkl_canvas_buffers_copy(
-    VklCanvas* canvas, VklBufferRegions src, VkDeviceSize src_offset, //
-    VklBufferRegions dst, VkDeviceSize dst_offset, VkDeviceSize size);
-
-
-
-VKY_EXPORT void vkl_canvas_texture(
-    VklCanvas* canvas, VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size,
-    void* data);
-
-VKY_EXPORT void vkl_canvas_texture_download(
-    VklCanvas* canvas, VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size,
-    void* data);
-
-VKY_EXPORT void vkl_canvas_texture_copy(
-    VklCanvas* canvas, VklTexture* src, uvec3 src_offset, VklTexture* dst, uvec3 dst_offset,
-    uvec3 shape, VkDeviceSize size);
 
 
 

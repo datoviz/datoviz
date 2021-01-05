@@ -29,7 +29,7 @@ static void _resize(VklCanvas* canvas, VklPrivateEvent ev)
     canvas->viewport.margins[1] = 100;
     canvas->viewport.margins[2] = 100;
     canvas->viewport.margins[3] = 100;
-    vkl_upload_buffers(ctx, br_viewport, 0, sizeof(VklViewport), &canvas->viewport);
+    vkl_upload_buffers(canvas, br_viewport, 0, sizeof(VklViewport), &canvas->viewport);
 }
 
 static void _common_data(VklVisual* visual)
@@ -54,7 +54,7 @@ static void _common_data(VklVisual* visual)
     {
         vkl_visual_buffer(visual, VKL_SOURCE_TYPE_VIEWPORT, pidx, br_viewport);
     }
-    vkl_upload_buffers(ctx, br_viewport, 0, sizeof(VklViewport), &canvas->viewport);
+    vkl_upload_buffers(canvas, br_viewport, 0, sizeof(VklViewport), &canvas->viewport);
     vkl_visual_update(visual, canvas->viewport, (VklDataCoords){0}, NULL);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _visual_canvas_fill, visual);

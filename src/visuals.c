@@ -16,16 +16,6 @@ static bool _source_needs_binding(VklSourceKind source_kind)
 
 
 
-// static bool _uniform_source_is_immediate(VklSource* source)
-// {
-//     ASSERT(source != NULL);
-//     if (source->source_kind != VKL_SOURCE_UNIFORM)
-//         return false;
-//     return (source->flags & VKL_SOURCE_FLAG_IMMEDIATE) != 0;
-// }
-
-
-
 static VklSourceKind _get_source_kind(VklSourceType type)
 {
     switch (type)
@@ -880,7 +870,7 @@ void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source)
             source->u.br.size > 0 ? "re" : "", count, size);
 
         // TODO
-        uint32_t buf_count = canvas->swapchain.img_count;
+        uint32_t buf_count = source == VKL_SOURCE_TYPE_MVP ? canvas->swapchain.img_count : 1;
         source->u.br = vkl_ctx_buffers(ctx, _get_default_buffer(source), buf_count, size);
 
         // Set the pipeline bindings with the source buffer.
@@ -984,9 +974,8 @@ void vkl_visual_update(
     // Upload the buffers and textures
     VklArray* arr = NULL;
     VklBufferRegions* br = NULL;
-    // VklCanvas* canvas = visual->canvas;
+    VklCanvas* canvas = visual->canvas;
     VklTexture* texture = NULL;
-    VklContext* ctx = visual->canvas->gpu->context;
     bool to_upload = false;
 
     VklSource* source = vkl_container_iter_init(&visual->sources);
@@ -1065,7 +1054,7 @@ void vkl_visual_update(
                 "%d #%d", //
                 arr->item_count, br->size, source->source_type, source->pipeline_idx);
 
-            vkl_upload_buffers(ctx, *br, 0, size, arr->data);
+            vkl_upload_buffers(canvas, *br, 0, size, arr->data);
             source->obj.status = VKL_OBJECT_STATUS_CREATED;
             visual->obj.status = VKL_OBJECT_STATUS_CREATED;
         }
@@ -1091,7 +1080,9 @@ void vkl_visual_update(
                 "upload texture for automatically-handled source %d #%d, shape %dx%dx%d", //
                 source->source_type, source->pipeline_idx,                                //
                 arr->shape[0], arr->shape[1], arr->shape[2]);
-            vkl_upload_texture(ctx, texture, arr->item_count * arr->item_size, arr->data);
+            vkl_upload_texture(
+                canvas, texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET,
+                arr->item_count * arr->item_size, arr->data);
             source->obj.status = VKL_OBJECT_STATUS_CREATED;
             visual->obj.status = VKL_OBJECT_STATUS_CREATED;
         }

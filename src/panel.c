@@ -213,7 +213,7 @@ VklPanel* vkl_panel(VklGrid* grid, uint32_t row, uint32_t col)
     panel->br_mvp = vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_UNIFORM_MAPPABLE, n, sizeof(VklMVP));
     // Initialize with identity matrices. Will be later updated by the scene controllers at every
     // frame.
-    vkl_upload_buffers(ctx, panel->br_mvp, 0, panel->br_mvp.size, &MVP_ID);
+    vkl_upload_buffers(canvas, panel->br_mvp, 0, panel->br_mvp.size, &MVP_ID);
 
     // Update the VklViewport.
     vkl_panel_update(panel);

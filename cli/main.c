@@ -43,16 +43,8 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_shader_compile),        //
 
     // context
-    CASE_FIXTURE_NONE(test_fifo),                            //
-    CASE_FIXTURE_NONE(test_context_buffer_1),                //
-    CASE_FIXTURE_NONE(test_context_buffer_2),                //
-    CASE_FIXTURE_NONE(test_context_texture),                 //
-    CASE_FIXTURE_NONE(test_context_copy),                    //
-    CASE_FIXTURE_NONE(test_context_transfer_sync),           //
-    CASE_FIXTURE_NONE(test_context_transfer_async_nothread), //
-    CASE_FIXTURE_NONE(test_context_transfer_async_thread),   //
-    CASE_FIXTURE_NONE(test_context_download),                //
-    CASE_FIXTURE_NONE(test_default_app),                     //
+    CASE_FIXTURE_NONE(test_fifo),        //
+    CASE_FIXTURE_NONE(test_default_app), //
 
     // canvas
     CASE_FIXTURE_NONE(test_canvas_transfer_buffer),  //

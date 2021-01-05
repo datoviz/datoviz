@@ -87,7 +87,7 @@ static void _add_visual(
     VklBufferRegions br_params =
         vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsPointParams));
 
-    vkl_upload_buffers(ctx, br_params, 0, sizeof(VklGraphicsPointParams), params);
+    vkl_upload_buffers(canvas, br_params, 0, sizeof(VklGraphicsPointParams), params);
 
     for (uint32_t i = 0; i < N; i++)
     {

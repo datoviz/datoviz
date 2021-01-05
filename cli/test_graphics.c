@@ -14,6 +14,7 @@ typedef struct TestGraphics TestGraphics;
 
 struct TestGraphics
 {
+    VklCanvas* canvas;
     VklGraphics* graphics;
     VklBufferRegions br_vert;
     VklBufferRegions br_index;
@@ -87,7 +88,7 @@ static void _common_bindings(TestGraphics* tg)
     glm_mat4_identity(tg->mvp.model);
     glm_mat4_identity(tg->mvp.view);
     glm_mat4_identity(tg->mvp.proj);
-    vkl_upload_buffers(gpu->context, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
+    vkl_upload_buffers(tg->canvas, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
 
     // Bindings
     vkl_bindings_buffer(&tg->bindings, 0, tg->br_mvp);
@@ -108,6 +109,7 @@ static void _common_bindings(TestGraphics* tg)
 
 #define BEGIN_DATA(type, n, user_data)                                                            \
     TestGraphics tg = {0};                                                                        \
+    tg.canvas = canvas;                                                                           \
     tg.graphics = graphics;                                                                       \
     tg.up[1] = 1;                                                                                 \
     tg.eye[2] = 3;                                                                                \
@@ -165,12 +167,12 @@ static void _graphics_points_wheel_callback(VklCanvas* canvas, VklEvent ev)
     // Update point size.
     tg->param += ev.u.w.dir[1] * .5;
     tg->param = CLIP(tg->param, 1, 100);
-    vkl_upload_buffers(gpu->context, tg->br_params, 0, sizeof(VklGraphicsPointParams), &tg->param);
+    vkl_upload_buffers(canvas, tg->br_params, 0, sizeof(VklGraphicsPointParams), &tg->param);
 
     // Update MVP.
     tg->mvp.model[0][0] = .1 * tg->param;
     tg->mvp.model[1][1] = .1 * tg->param;
-    vkl_upload_buffers(gpu->context, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
+    vkl_upload_buffers(canvas, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
 }
 
 int test_graphics_dynamic(TestContext* context)
@@ -197,12 +199,12 @@ int test_graphics_dynamic(TestContext* context)
     glm_mat4_identity(tg.mvp.model);
     glm_mat4_identity(tg.mvp.view);
     glm_mat4_identity(tg.mvp.proj);
-    vkl_upload_buffers(gpu->context, tg.br_mvp, 0, sizeof(VklMVP), &tg.mvp);
+    vkl_upload_buffers(canvas, tg.br_mvp, 0, sizeof(VklMVP), &tg.mvp);
 
     // Upload params.
     tg.param = 5.0f;
     VklGraphicsPointParams params = {.point_size = tg.param};
-    vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsPointParams), &params);
+    vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsPointParams), &params);
 
     // Bindings
     vkl_bindings_buffer(&tg.bindings, 0, tg.br_mvp);
@@ -227,7 +229,7 @@ static void _graphics_3D_callback(VklCanvas* canvas, VklPrivateEvent ev)
     glm_rotate_make(tg->mvp.model, .5 * ev.u.t.time, axis);
     vkl_mvp_camera(canvas->viewport, tg->eye, tg->center, (vec2){.1, 100}, &tg->mvp);
 
-    vkl_upload_buffers(gpu->context, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
+    vkl_upload_buffers(canvas, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
 }
 
 int test_graphics_3D(TestContext* context)
@@ -267,7 +269,7 @@ int test_graphics_3D(TestContext* context)
     // Upload params.
     tg.param = 50.0f;
     VklGraphicsPointParams params = {.point_size = tg.param};
-    vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsPointParams), &params);
+    vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsPointParams), &params);
 
     // Bindings
     vkl_bindings_buffer(&tg.bindings, 0, tg.br_mvp);
@@ -304,7 +306,7 @@ int test_graphics_points(TestContext* context)
 
     tg.param = 5.0f;
     VklGraphicsPointParams params = {.point_size = tg.param};
-    vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsPointParams), &params);
+    vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsPointParams), &params);
 
     RUN;
     TEST_END
@@ -456,7 +458,7 @@ int test_graphics_marker(TestContext* context)
     params.edge_color[3] = 1;
     params.edge_width = 2;
     // params.enable_depth
-    vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsMarkerParams), &params);
+    vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsMarkerParams), &params);
 
     RUN;
     TEST_END
@@ -565,7 +567,7 @@ int test_graphics_text(TestContext* context)
 
     tg.br_params =
         vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsTextParams));
-    vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsTextParams), &params);
+    vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsTextParams), &params);
 
     _common_bindings(&tg);
     vkl_bindings_buffer(&tg.bindings, VKL_USER_BINDING, tg.br_params);
@@ -592,6 +594,7 @@ int test_graphics_image(TestContext* context)
     // Vertices.
     uint32_t n = 6;
     TestGraphics tg = {0};
+    tg.canvas = canvas;
     tg.graphics = graphics;
     tg.vertices = vkl_array_struct(n, sizeof(VklGraphicsImageVertex));
     ASSERT(tg.vertices.item_count == n);
@@ -616,7 +619,7 @@ int test_graphics_image(TestContext* context)
         vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsImageParams));
     VklGraphicsImageParams params = {0};
     params.tex_coefs[0] = 1;
-    vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsImageParams), &params);
+    vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsImageParams), &params);
 
     // Texture.
     const uint32_t nt = 16;
@@ -628,7 +631,8 @@ int test_graphics_image(TestContext* context)
         tex_data[i][i % 3] = 255;
         tex_data[i][3] = 255;
     }
-    vkl_upload_texture(gpu->context, texture, nt * nt * sizeof(cvec4), tex_data);
+    vkl_upload_texture(
+        canvas, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, texture, nt * nt * sizeof(cvec4), tex_data);
 
     // Bindings.
     _common_bindings(&tg);
@@ -657,7 +661,7 @@ static void _graphics_mesh_callback(VklCanvas* canvas, VklPrivateEvent ev)
     glm_rotate_make(tg->mvp.model, ev.u.t.time, axis);
     vkl_mvp_camera(canvas->viewport, tg->eye, tg->center, (vec2){.1, 10}, &tg->mvp);
 
-    vkl_upload_buffers(gpu->context, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
+    vkl_upload_buffers(canvas, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
 }
 
 static VklMesh _graphics_mesh_example(VklMeshType type)
@@ -719,6 +723,7 @@ int test_graphics_mesh(TestContext* context)
     INIT_GRAPHICS(VKL_GRAPHICS_MESH)
 
     TestGraphics tg = {0};
+    tg.canvas = canvas;
     tg.eye[2] = 3;
     tg.up[1] = 1;
     tg.graphics = graphics;
@@ -749,7 +754,8 @@ int test_graphics_mesh(TestContext* context)
         {0, 0, 255, 255},
         {255, 255, 0, 255},
     };
-    vkl_upload_texture(gpu->context, texture, sizeof(tex_data), tex_data);
+    vkl_upload_texture(
+        canvas, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, texture, sizeof(tex_data), tex_data);
 
     // Create the bindings.
     tg.bindings = vkl_bindings(&graphics->slots, 1);
@@ -772,7 +778,7 @@ int test_graphics_mesh(TestContext* context)
 
     tg.br_params =
         vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsMeshParams));
-    vkl_upload_buffers(gpu->context, tg.br_params, 0, sizeof(VklGraphicsMeshParams), &params);
+    vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsMeshParams), &params);
 
     // Bindings
     vkl_bindings_buffer(&tg.bindings, 0, tg.br_mvp);
