@@ -1120,7 +1120,7 @@ void vkl_canvas_to_close(VklCanvas* canvas)
 
 
 /*************************************************************************************************/
-/*  Transfers                                                                                    */
+/*  Buffer upload                                                                                */
 /*************************************************************************************************/
 
 static void _copy_buffer_from_staging(
@@ -1200,7 +1200,7 @@ static void _process_buffer_upload(VklCanvas* canvas, VklTransfer tr)
 
         // NOTE: no need for alignment when copying a single buffer region (corresponding
         // to the current swapchain image)
-        vkl_buffer_memcpy(
+        vkl_buffer_upload(
             br.buffer, br.offsets[idx] + tr.u.buf.offset, tr.u.buf.size, tr.u.buf.data);
     }
 
@@ -1210,7 +1210,7 @@ static void _process_buffer_upload(VklCanvas* canvas, VklTransfer tr)
         // The staging buffer must be constantly mapped.
         ASSERT(br.buffer->mmap != NULL);
         ASSERT(br.count == 1);
-        vkl_buffer_memcpy(
+        vkl_buffer_upload(
             br.buffer, br.offsets[0] + tr.u.buf.offset, tr.u.buf.size, tr.u.buf.data);
     }
 
@@ -1224,7 +1224,7 @@ static void _process_buffer_upload(VklCanvas* canvas, VklTransfer tr)
         VklBuffer* staging = staging_buffer(context, tr.u.buf.size);
 
         // Memcpy into the staging buffer.
-        vkl_buffer_memcpy(staging, 0, tr.u.buf.size, tr.u.buf.data);
+        vkl_buffer_upload(staging, 0, tr.u.buf.size, tr.u.buf.data);
 
         // Copy from the staging buffer to the target buffer.
         _copy_buffer_from_staging(context, tr.u.buf.regions, tr.u.buf.offset, tr.u.buf.size);
@@ -1232,6 +1232,131 @@ static void _process_buffer_upload(VklCanvas* canvas, VklTransfer tr)
 }
 
 
+
+/*************************************************************************************************/
+/*  Buffer download                                                                              */
+/*************************************************************************************************/
+
+static void _copy_buffer_to_staging(
+    VklContext* context, VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size)
+{
+    ASSERT(context != NULL);
+
+    VklGpu* gpu = context->gpu;
+    ASSERT(gpu != NULL);
+
+    VklBuffer* staging = staging_buffer(context, size);
+    ASSERT(staging != NULL);
+
+    // Take transfer cmd buf.
+    VklCommands* cmds = &context->transfer_cmd;
+    vkl_cmd_reset(cmds, 0);
+    vkl_cmd_begin(cmds, 0);
+
+    // Determine the offset in the source buffer.
+    // Should be consecutive offsets.
+    VkDeviceSize vk_offset = br.offsets[0];
+    uint32_t n_regions = br.count;
+    for (uint32_t i = 1; i < n_regions; i++)
+    {
+        ASSERT(br.offsets[i] == vk_offset + i * size);
+    }
+    // Take into account the transfer offset.
+    vk_offset += offset;
+
+    // Copy to staging buffer
+    ASSERT(br.buffer != 0);
+    vkl_cmd_copy_buffer(cmds, 0, br.buffer, vk_offset, staging, 0, size * n_regions);
+    vkl_cmd_end(cmds, 0);
+
+    // Wait for the compute queue to be idle, as we assume the buffer to be copied from may
+    // be modified by compute shaders.
+    // TODO: more efficient synchronization (semaphores?)
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_COMPUTE);
+
+    // Submit the commands to the transfer queue.
+    VklSubmit submit = vkl_submit(gpu);
+    vkl_submit_commands(&submit, cmds);
+    vkl_submit_send(&submit, 0, NULL, 0);
+
+    // Wait for the transfer queue to be idle.
+    // TODO: less brutal synchronization with semaphores. Here we wait for the
+    // transfer to be complete before we send new rendering commands.
+    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
+}
+
+
+
+static void _process_buffer_download(VklCanvas* canvas, VklTransfer tr)
+{
+    ASSERT(canvas != NULL);
+    VklGpu* gpu = canvas->gpu;
+    ASSERT(gpu != NULL);
+    VklContext* context = canvas->gpu->context;
+    ASSERT(tr.type == VKL_TRANSFER_BUFFER_DOWNLOAD);
+    VklBufferRegions br = tr.u.buf.regions;
+    uint32_t idx = canvas->swapchain.img_idx;
+
+    ASSERT(br.size > 0);
+    ASSERT(tr.u.buf.data != NULL);
+    ASSERT(tr.u.buf.size > 0);
+    ASSERT(tr.u.buf.regions.buffer != VK_NULL_HANDLE);
+
+    // Mappable uniforms. We only update the current swapchain image here.
+    //
+    // NOTE: mappable uniforms are expected to be updated at every frame (eg MVP)
+    // so that every swapchain image gets the most up-to-date data.
+    //
+    // NOTE: this function must be called AFTER the next swapchain image has been acquired,
+    // so that swapchain->img_idx corresponds to the image that will be rendered in the
+    // current frame, AFTER the transfer tasks have completed. This ensures that the very
+    // next frame will be up to date with the latest data and command buffer (if need
+    // refill).
+    if (br.buffer->type == VKL_BUFFER_TYPE_UNIFORM_MAPPABLE)
+    {
+        // The mappable buffer must be constantly mapped.
+        ASSERT(br.buffer->mmap != NULL);
+        ASSERT(br.count == canvas->swapchain.img_count);
+        ASSERT(idx < br.count);
+
+        // NOTE: no need for alignment when copying a single buffer region (corresponding
+        // to the current swapchain image)
+        vkl_buffer_download(
+            br.buffer, br.offsets[idx] + tr.u.buf.offset, tr.u.buf.size, tr.u.buf.data);
+    }
+
+    // Staging buffer.
+    else if (br.buffer->type == VKL_BUFFER_TYPE_STAGING)
+    {
+        // The staging buffer must be constantly mapped.
+        ASSERT(br.buffer->mmap != NULL);
+        ASSERT(br.count == 1);
+        vkl_buffer_download(
+            br.buffer, br.offsets[0] + tr.u.buf.offset, tr.u.buf.size, tr.u.buf.data);
+    }
+
+    // All other (non-mappable) buffers. Require synchronization and copy on command
+    // buffer.
+    else
+    {
+        ASSERT(br.count == 1);
+
+        // Take the staging buffer and ensure it is big enough.
+        VklBuffer* staging = staging_buffer(context, tr.u.buf.size);
+
+        // Copy from the source buffer to the staging buffer.
+        _copy_buffer_from_staging(context, tr.u.buf.regions, tr.u.buf.offset, tr.u.buf.size);
+
+        // Memcpy into the staging buffer.
+        vkl_buffer_download(staging, 0, tr.u.buf.size, tr.u.buf.data);
+    }
+}
+
+
+
+/*************************************************************************************************/
+/*  Texture upload                                                                               */
+/*************************************************************************************************/
 
 static void _copy_texture_from_staging(
     VklContext* context, VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size)
@@ -1302,7 +1427,7 @@ static void _process_texture_upload(VklCanvas* canvas, VklTransfer tr)
     VklBuffer* staging = staging_buffer(context, size);
 
     // Memcpy into the staging buffer.
-    vkl_buffer_memcpy(staging, 0, tr.u.tex.size, tr.u.tex.data);
+    vkl_buffer_upload(staging, 0, tr.u.tex.size, tr.u.tex.data);
 
     // Copy from the staging buffer to the texture.
     _copy_texture_from_staging(
@@ -1310,6 +1435,25 @@ static void _process_texture_upload(VklCanvas* canvas, VklTransfer tr)
 }
 
 
+
+/*************************************************************************************************/
+/*  Texture load                                                                               */
+/*************************************************************************************************/
+
+static void _copy_texture_to_staging(
+    VklContext* context, VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size)
+{
+}
+
+
+
+static void _process_texture_download(VklCanvas* canvas, VklTransfer tr) {}
+
+
+
+/*************************************************************************************************/
+/*  Canvas transfers                                                                             */
+/*************************************************************************************************/
 
 static void _canvas_process_transfers(VklCanvas* canvas)
 {
@@ -1337,20 +1481,27 @@ static void _canvas_process_transfers(VklCanvas* canvas)
             break;
         fifo->is_processing = true;
 
-        // Process UPLOAD transfers.
+        // Process buffer transfers.
         if (tr.type == VKL_TRANSFER_BUFFER_UPLOAD)
             _process_buffer_upload(canvas, tr);
+        if (tr.type == VKL_TRANSFER_BUFFER_DOWNLOAD)
+            _process_buffer_download(canvas, tr);
+
+        // Process texture transfers.
         if (tr.type == VKL_TRANSFER_TEXTURE_UPLOAD)
             _process_texture_upload(canvas, tr);
+        if (tr.type == VKL_TRANSFER_TEXTURE_DOWNLOAD)
+            _process_texture_download(canvas, tr);
+
         fifo->is_processing = false;
     }
 }
 
 
 
-// This function is exposed to the scene API, all buffer uploads should use it.
-void vkl_canvas_buffers(
-    VklCanvas* canvas, VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data)
+static void _enqueue_buffers_transfer(
+    VklCanvas* canvas, VklDataTransferType type, VklBufferRegions br, //
+    VkDeviceSize offset, VkDeviceSize size, void* data)
 {
     ASSERT(canvas != NULL);
     ASSERT(size > 0);
@@ -1366,13 +1517,29 @@ void vkl_canvas_buffers(
 
     // Create the transfer object.
     VklTransfer tr = {0};
-    tr.type = VKL_TRANSFER_BUFFER_UPLOAD;
+    tr.type = type;
     tr.u.buf.regions = br;
     tr.u.buf.offset = offset;
     tr.u.buf.size = size;
     tr.u.buf.data = data;
 
     fifo_enqueue(context, &canvas->transfers, tr);
+}
+
+
+
+void vkl_canvas_buffers(
+    VklCanvas* canvas, VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data)
+{
+    _enqueue_buffers_transfer(canvas, VKL_TRANSFER_BUFFER_UPLOAD, br, offset, size, data);
+}
+
+
+
+void vkl_canvas_buffers_download(
+    VklCanvas* canvas, VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data)
+{
+    _enqueue_buffers_transfer(canvas, VKL_TRANSFER_BUFFER_DOWNLOAD, br, offset, size, data);
 }
 
 

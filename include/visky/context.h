@@ -272,7 +272,7 @@ VKY_EXPORT void vkl_transfer_stop(VklContext* context);
 /*************************************************************************************************/
 
 VKY_EXPORT VklBufferRegions vkl_ctx_buffers(
-    VklContext* context, VklBufferType buffer_idx, uint32_t buffer_count, VkDeviceSize size);
+    VklContext* context, VklBufferType buffer_type, uint32_t buffer_count, VkDeviceSize size);
 
 VKY_EXPORT void
 vkl_ctx_buffers_resize(VklContext* context, VklBufferRegions* br, VkDeviceSize new_size);

@@ -947,34 +947,12 @@ void* vkl_buffer_map(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size)
         (buffer->memory & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) && //
         (buffer->memory & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT));
 
+    log_debug("memmap buffer %d", buffer->type);
     ASSERT(buffer->mmap == NULL);
     void* cdata = NULL;
     VK_CHECK_RESULT(
         vkMapMemory(buffer->gpu->device, buffer->device_memory, offset, size, 0, &cdata));
     return cdata;
-}
-
-
-
-void vkl_buffer_memcpy(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, const void* data)
-{
-    // need to be called after buffer->mmap = vkl_buffer_map(...)
-    ASSERT(buffer != NULL);
-    ASSERT(buffer->gpu != NULL);
-    ASSERT(buffer->gpu->device != VK_NULL_HANDLE);
-    ASSERT(is_obj_created(&buffer->obj));
-    ASSERT(size > 0);
-    ASSERT(offset + size <= buffer->size);
-    ASSERT(data != NULL);
-
-    if (buffer->mmap == NULL)
-    {
-        log_error("vkl_buffer_map() must be called before vkl_buffer_memcpy()");
-        return;
-    }
-    ASSERT(buffer->mmap != NULL);
-    log_debug("memcpy %s", pretty_size(size));
-    memcpy((void*)((int64_t)buffer->mmap + (int64_t)offset), data, size);
 }
 
 
@@ -990,7 +968,7 @@ void vkl_buffer_unmap(VklBuffer* buffer)
         (buffer->memory & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) && //
         (buffer->memory & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT));
 
-    // log_trace("unmap buffer");
+    log_debug("unmap buffer %d", buffer->type);
     vkUnmapMemory(buffer->gpu->device, buffer->device_memory);
 }
 
@@ -999,7 +977,7 @@ void vkl_buffer_unmap(VklBuffer* buffer)
 void vkl_buffer_upload(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, const void* data)
 {
     ASSERT(buffer != NULL);
-    ASSERT(size != 0);
+    ASSERT(size > 0);
     ASSERT(data != NULL);
     ASSERT(buffer->buffer != VK_NULL_HANDLE);
     ASSERT(offset + size <= buffer->size);
@@ -1014,7 +992,7 @@ void vkl_buffer_upload(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size
     }
     else
     {
-        mapped = buffer->mmap;
+        mapped = (void*)((int64_t)buffer->mmap + (int64_t)offset);
         need_unmap = false;
     }
 
@@ -1040,7 +1018,7 @@ void vkl_buffer_download(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize si
     }
     else
     {
-        mapped = buffer->mmap;
+        mapped = (void*)((int64_t)buffer->mmap + (int64_t)offset);
         need_unmap = false;
     }
     memcpy(data, mapped, size);

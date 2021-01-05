@@ -19,6 +19,44 @@ struct TestParticle
 
 
 /*************************************************************************************************/
+/*  Canvas buffer upload                                                                         */
+/*************************************************************************************************/
+
+int test_canvas_transfer_buffer(TestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
+
+    VkDeviceSize size = 16;
+    VklBufferRegions br = vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_VERTEX, 1, size);
+
+    uint8_t* data = calloc(size, sizeof(uint8_t));
+    for (uint32_t i = 0; i < size; i++)
+        data[i] = i;
+
+    // Upload a buffer.
+    vkl_canvas_buffers(canvas, br, 0, size, data);
+    vkl_app_run(app, 5);
+
+    // Download a buffer.
+    uint8_t* data2 = calloc(size, sizeof(uint8_t));
+    vkl_canvas_buffers_download(canvas, br, 0, size, data2);
+    // we must run at least one frame in order for the download to be processed
+    AT(memcmp(data2, data, size) != 0);
+
+    // Compare.
+    vkl_app_run(app, 5);
+    AT(memcmp(data2, data, size) == 0);
+
+    FREE(data);
+    FREE(data2);
+    TEST_END
+}
+
+
+
+/*************************************************************************************************/
 /*  Canvas 1                                                                                     */
 /*************************************************************************************************/
 

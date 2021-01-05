@@ -10,6 +10,7 @@
 /*  Canvas tests                                                                                 */
 /*************************************************************************************************/
 
+int test_canvas_transfer_buffer(TestContext* context);
 int test_canvas_1(TestContext* context);
 int test_canvas_2(TestContext* context);
 int test_canvas_3(TestContext* context);
