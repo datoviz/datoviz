@@ -16,6 +16,7 @@ VklFifo vkl_fifo(int32_t capacity)
     VklFifo fifo = {0};
     ASSERT(capacity <= VKL_MAX_FIFO_CAPACITY);
     fifo.capacity = capacity;
+    fifo.is_empty = true;
 
     if (pthread_mutex_init(&fifo.lock, NULL) != 0)
         log_error("mutex creation failed");
@@ -45,7 +46,9 @@ void vkl_fifo_enqueue(VklFifo* fifo, void* item)
         log_error("FIFO queue is full, reseting it");
         fifo->head = 0;
         fifo->tail = 0;
+        vkl_fifo_enqueue(fifo, item);
     }
+    fifo->is_empty = false;
 
     ASSERT(0 <= fifo->head && fifo->head < fifo->capacity);
     pthread_cond_signal(&fifo->cond);
@@ -73,6 +76,7 @@ void* vkl_fifo_dequeue(VklFifo* fifo, bool wait)
         // log_trace("FIFO queue was empty");
         // Don't forget to unlock the mutex before exiting this function.
         pthread_mutex_unlock(&fifo->lock);
+        fifo->is_empty = true;
         return NULL;
     }
 
@@ -87,6 +91,9 @@ void* vkl_fifo_dequeue(VklFifo* fifo, bool wait)
 
     ASSERT(0 <= fifo->tail && fifo->tail < fifo->capacity);
     pthread_mutex_unlock(&fifo->lock);
+
+    if (fifo->head == fifo->tail)
+        fifo->is_empty = true;
 
     return item;
 }

@@ -658,10 +658,13 @@ int test_fifo(TestContext* context)
     uint8_t item = 12;
 
     // Enqueue + dequeue in the same thread.
+    AT(fifo.is_empty);
     vkl_fifo_enqueue(&fifo, &item);
+    AT(!fifo.is_empty);
     ASSERT(fifo.head == 1);
     ASSERT(fifo.tail == 0);
     uint8_t* data = vkl_fifo_dequeue(&fifo, true);
+    AT(fifo.is_empty);
     ASSERT(*data = item);
 
     // Enqueue in the main thread, dequeue in a background thread.
@@ -669,6 +672,7 @@ int test_fifo(TestContext* context)
     ASSERT(fifo.user_data == NULL);
     pthread_create(&thread, NULL, _fifo_thread_1, &fifo);
     vkl_fifo_enqueue(&fifo, &item);
+    AT(!fifo.is_empty);
     pthread_join(thread, NULL);
     ASSERT(fifo.user_data != NULL);
     ASSERT(fifo.user_data == &item);

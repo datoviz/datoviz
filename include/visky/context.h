@@ -117,6 +117,7 @@ struct VklFifo
     pthread_cond_t cond;
 
     atomic(bool, is_processing);
+    atomic(bool, is_empty);
 };
 
 
