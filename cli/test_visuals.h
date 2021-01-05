@@ -28,7 +28,7 @@ static void _marker_visual(VklVisual* visual)
         // Binding #0: uniform buffer MVP
         vkl_visual_source( //
             visual, VKL_SOURCE_TYPE_MVP, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklMVP),
-            VKL_SOURCE_FLAG_IMMEDIATE);
+            VKL_SOURCE_FLAG_MAPPABLE);
 
         // Binding #1: uniform buffer viewport
         vkl_visual_source(

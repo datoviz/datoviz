@@ -99,24 +99,32 @@ static void _set_source_bindings(VklVisual* visual, VklSource* source)
 
 
 
-static VklBufferType _get_default_buffer(VklSource* source)
+static void _create_source_buffer(VklCanvas* canvas, VklSource* source, VkDeviceSize size)
 {
+    VklContext* ctx = canvas->gpu->context;
+    VklBufferType type = VKL_BUFFER_TYPE_UNDEFINED;
+    bool mappable = (source->flags & VKL_SOURCE_FLAG_MAPPABLE) != 0;
     switch (source->source_kind)
     {
     case VKL_SOURCE_VERTEX:
-        return VKL_BUFFER_TYPE_VERTEX;
+        type = VKL_BUFFER_TYPE_VERTEX;
+        break;
     case VKL_SOURCE_INDEX:
-        return VKL_BUFFER_TYPE_INDEX;
+        type = VKL_BUFFER_TYPE_INDEX;
+        break;
     case VKL_SOURCE_UNIFORM:
-        return (source->flags & VKL_SOURCE_FLAG_IMMEDIATE) != 0 ? VKL_BUFFER_TYPE_UNIFORM_MAPPABLE
-                                                                : VKL_BUFFER_TYPE_UNIFORM;
+        type = mappable ? VKL_BUFFER_TYPE_UNIFORM_MAPPABLE : VKL_BUFFER_TYPE_UNIFORM;
+        break;
     case VKL_SOURCE_STORAGE:
-        return VKL_BUFFER_TYPE_STORAGE;
+        type = VKL_BUFFER_TYPE_STORAGE;
+        break;
     default:
-        log_error("buffer idx not found");
+        log_error("invalid source kind %d", source->source_kind);
+        return;
         break;
     }
-    return 0;
+    uint32_t buf_count = source->source_type == mappable ? canvas->swapchain.img_count : 1;
+    source->u.br = vkl_ctx_buffers(ctx, type, buf_count, size);
 }
 
 
@@ -851,7 +859,6 @@ void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source)
 {
     ASSERT(visual != NULL);
     ASSERT(source != NULL);
-    VklContext* ctx = visual->canvas->gpu->context;
     VklCanvas* canvas = visual->canvas;
 
     ASSERT(source->source_kind < VKL_SOURCE_TEXTURE_1D);
@@ -868,12 +875,7 @@ void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source)
         log_debug(
             "need to %sallocate new buffer region to fit %d elements (%d bytes)",
             source->u.br.size > 0 ? "re" : "", count, size);
-
-        // TODO
-        uint32_t buf_count =
-            source->source_type == VKL_SOURCE_TYPE_MVP ? canvas->swapchain.img_count : 1;
-        source->u.br = vkl_ctx_buffers(ctx, _get_default_buffer(source), buf_count, size);
-
+        _create_source_buffer(canvas, source, size);
         // Set the pipeline bindings with the source buffer.
         _set_source_bindings(visual, source);
     }

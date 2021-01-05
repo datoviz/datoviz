@@ -107,7 +107,7 @@ typedef enum
 // Source flags.
 typedef enum
 {
-    VKL_SOURCE_FLAG_IMMEDIATE = 0x0001,
+    VKL_SOURCE_FLAG_MAPPABLE = 0x0001,
 } VklSourceFlags;
 
 
