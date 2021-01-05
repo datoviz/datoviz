@@ -48,8 +48,6 @@ int test_canvas_transfer_buffer(TestContext* context)
     // Download a buffer.
     uint8_t* data2 = calloc(size, sizeof(uint8_t));
     vkl_download_buffers(canvas, br2, 0, size, data2);
-    // we must run at least one frame in order for the download to be processed
-    AT(memcmp(data2, data, size) != 0);
 
     // Compare.
     vkl_app_run(app, 3);
@@ -91,7 +89,6 @@ int test_canvas_transfer_texture(TestContext* context)
     // Download.
     uint8_t* data2 = calloc(size, sizeof(uint8_t));
     vkl_download_texture(canvas, tex2, offset, shape, size, data2);
-    AT(memcmp(data, data2, size) != 0);
 
     // Compare.
     vkl_app_run(app, 3);
