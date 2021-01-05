@@ -1166,6 +1166,72 @@ static void _copy_from_staging(
 
 
 
+static void _process_buffer_upload(VklCanvas* canvas, VklTransfer tr)
+{
+    ASSERT(canvas != NULL);
+    VklGpu* gpu = canvas->gpu;
+    ASSERT(gpu != NULL);
+    VklContext* context = canvas->gpu->context;
+    VklBufferRegions br = tr.u.buf.regions;
+    uint32_t idx = canvas->swapchain.img_idx;
+
+    ASSERT(br.size > 0);
+    ASSERT(tr.u.buf.data != NULL);
+    ASSERT(tr.u.buf.size > 0);
+    ASSERT(tr.u.buf.regions.buffer != VK_NULL_HANDLE);
+
+    // Mappable uniforms. We only update the current swapchain image here.
+    //
+    // NOTE: mappable uniforms are expected to be updated at every frame (eg MVP)
+    // so that every swapchain image gets the most up-to-date data.
+    //
+    // NOTE: this function must be called AFTER the next swapchain image has been acquired,
+    // so that swapchain->img_idx corresponds to the image that will be rendered in the
+    // current frame, AFTER the transfer tasks have completed. This ensures that the very
+    // next frame will be up to date with the latest data and command buffer (if need
+    // refill).
+    if (br.buffer->type == VKL_BUFFER_TYPE_UNIFORM_MAPPABLE)
+    {
+        // The mappable buffer must be constantly mapped.
+        ASSERT(br.buffer->mmap != NULL);
+        ASSERT(br.count == canvas->swapchain.img_count);
+        ASSERT(idx < br.count);
+
+        // NOTE: no need for alignment when copying a single buffer region (corresponding
+        // to the current swapchain image)
+        vkl_buffer_memcpy(
+            br.buffer, br.offsets[idx] + tr.u.buf.offset, tr.u.buf.size, tr.u.buf.data);
+    }
+
+    // Staging buffer.
+    else if (br.buffer->type == VKL_BUFFER_TYPE_STAGING)
+    {
+        // The staging buffer must be constantly mapped.
+        ASSERT(br.buffer->mmap != NULL);
+        ASSERT(br.count == 1);
+        vkl_buffer_memcpy(
+            br.buffer, br.offsets[0] + tr.u.buf.offset, tr.u.buf.size, tr.u.buf.data);
+    }
+
+    // All other (non-mappable) buffers. Require synchronization and copy on command
+    // buffer.
+    else
+    {
+        ASSERT(br.count == 1);
+
+        // Take the staging buffer and ensure it is big enough.
+        VklBuffer* staging = staging_buffer(context, tr.u.buf.size);
+
+        // Memcpy into the staging buffer.
+        vkl_buffer_memcpy(staging, 0, tr.u.buf.size, tr.u.buf.data);
+
+        // Copy from the staging buffer to the target buffer.
+        _copy_from_staging(context, tr.u.buf.regions, tr.u.buf.offset, tr.u.buf.size);
+    }
+}
+
+
+
 static void _canvas_process_transfers(VklCanvas* canvas)
 {
     // This function is to be called at every frame, after the FRAME callbacks (so that FRAME
@@ -1183,11 +1249,8 @@ static void _canvas_process_transfers(VklCanvas* canvas)
     if (fifo->is_empty)
         return;
 
-    VklTransfer tr = {0};
-    VklBufferRegions br = {0};
-    uint32_t idx = canvas->swapchain.img_idx;
-
     // Process all pending transfer tasks.
+    VklTransfer tr = {0};
     while (true)
     {
         tr = fifo_dequeue(context, fifo, false);
@@ -1197,63 +1260,7 @@ static void _canvas_process_transfers(VklCanvas* canvas)
 
         // Process UPLOAD transfers.
         if (tr.type == VKL_TRANSFER_BUFFER_UPLOAD)
-        {
-            br = tr.u.buf.regions;
-            ASSERT(br.size > 0);
-            ASSERT(tr.u.buf.data != NULL);
-            ASSERT(tr.u.buf.size > 0);
-            ASSERT(tr.u.buf.regions.buffer != VK_NULL_HANDLE);
-            // ASSERT(br.offsets[idx] + tr.u.buf.offset + tr.u.buf.size <= br.size);
-
-            // Mappable uniforms. We only update the current swapchain image here.
-            //
-            // NOTE: mappable uniforms are expected to be updated at every frame (eg MVP)
-            // so that every swapchain image gets the most up-to-date data.
-            //
-            // NOTE: this function must be called AFTER the next swapchain image has been acquired,
-            // so that swapchain->img_idx corresponds to the image that will be rendered in the
-            // current frame, AFTER the transfer tasks have completed. This ensures that the very
-            // next frame will be up to date with the latest data and command buffer (if need
-            // refill).
-            if (br.buffer->type == VKL_BUFFER_TYPE_UNIFORM_MAPPABLE)
-            {
-                // The mappable buffer must be constantly mapped.
-                ASSERT(br.buffer->mmap != NULL);
-                ASSERT(br.count == canvas->swapchain.img_count);
-                ASSERT(idx < br.count);
-
-                // NOTE: no need for alignment when copying a single buffer region (corresponding
-                // to the current swapchain image)
-                vkl_buffer_memcpy(
-                    br.buffer, br.offsets[idx] + tr.u.buf.offset, tr.u.buf.size, tr.u.buf.data);
-            }
-
-            // Staging buffer.
-            else if (br.buffer->type == VKL_BUFFER_TYPE_STAGING)
-            {
-                // The staging buffer must be constantly mapped.
-                ASSERT(br.buffer->mmap != NULL);
-                ASSERT(br.count == 1);
-                vkl_buffer_memcpy(
-                    br.buffer, br.offsets[0] + tr.u.buf.offset, tr.u.buf.size, tr.u.buf.data);
-            }
-
-            // All other (non-mappable) buffers. Require synchronization and copy on command
-            // buffer.
-            else
-            {
-                ASSERT(br.count == 1);
-
-                // Take the staging buffer and ensure it is big enough.
-                VklBuffer* staging = staging_buffer(context, tr.u.buf.size);
-
-                // Memcpy into the staging buffer.
-                vkl_buffer_memcpy(staging, 0, tr.u.buf.size, tr.u.buf.data);
-
-                // Copy from the staging buffer to the target buffer.
-                _copy_from_staging(context, tr.u.buf.regions, tr.u.buf.offset, tr.u.buf.size);
-            }
-        }
+            _process_buffer_upload(canvas, tr);
         fifo->is_processing = false;
     }
 }
