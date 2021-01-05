@@ -1821,10 +1821,18 @@ void vkl_canvas_frame(VklCanvas* canvas)
     // Refill if needed, only 1 swapchain command buffer per frame to avoid waiting on the device.
     uint32_t img_idx = canvas->swapchain.img_idx;
     // Only proceed if the current swapchain image has not been processed yet.
-    if ((atomic_load(&canvas->refills.status) == VKL_REFILL_REQUESTED ||
-         atomic_load(&canvas->refills.status) == VKL_REFILL_PROCESSING) &&
-        !canvas->refills.completed[img_idx])
+    if (atomic_load(&canvas->refills.status) == VKL_REFILL_REQUESTED ||
+        atomic_load(&canvas->refills.status) == VKL_REFILL_PROCESSING)
     {
+        // If refill has just been requested, reset the ongoing refill by setting completed to
+        // false for all swapchain images.
+        if (atomic_load(&canvas->refills.status) == VKL_REFILL_REQUESTED)
+            memset(canvas->refills.completed, 0, VKL_MAX_SWAPCHAIN_IMAGES);
+
+        // Skip this step if the current swapchain image has already been processed.
+        if (canvas->refills.completed[img_idx])
+            return;
+
         log_debug("refill the command buffers for swapchain image #%d", img_idx);
         VklRefillStatus status = VKL_REFILL_PROCESSING;
         atomic_store(&canvas->refills.status, status);

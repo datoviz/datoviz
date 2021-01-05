@@ -332,6 +332,8 @@ static void _push_cursor_callback(VklCanvas* canvas, VklEvent ev)
     vkl_canvas_to_refill(canvas);
 }
 
+static void _wait(VklCanvas* canvas, VklPrivateEvent ev) { vkl_sleep(50); }
+
 int test_canvas_4(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
@@ -378,11 +380,9 @@ int test_canvas_4(TestContext* context)
     visual.br.size = size;
     visual.br.count = 1;
 
-    // Refill callback
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_push_refill, &visual);
-
-    // Cursor callback.
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _push_cursor_callback, NULL);
+    // vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _wait, NULL);
 
     vkl_app_run(app, N_FRAMES);
 
