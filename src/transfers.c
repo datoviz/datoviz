@@ -44,12 +44,16 @@ static void _process_buffer_upload(VklCanvas* canvas, VklTransfer tr)
         // NOTE: no need for alignment when copying a single buffer region (corresponding
         // to the current swapchain image)
         if (tr.u.buf.update_all_buffers)
+        {
             for (uint32_t i = 0; i < tr.u.buf.regions.count; i++)
                 vkl_buffer_upload(
                     br.buffer, br.offsets[i] + tr.u.buf.offset, tr.u.buf.size, tr.u.buf.data);
+        }
         else
+        {
             vkl_buffer_upload(
                 br.buffer, br.offsets[idx] + tr.u.buf.offset, tr.u.buf.size, tr.u.buf.data);
+        }
     }
 
     // Staging buffer.
@@ -289,10 +293,14 @@ static void _enqueue_buffers_transfer(
 
 
 
+// WARNING: these functions require that the pointer lives through the next frame (no copy)
 void vkl_upload_buffers(
     VklCanvas* canvas, VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data)
 {
     _enqueue_buffers_transfer(canvas, VKL_TRANSFER_BUFFER_UPLOAD, br, offset, size, data);
+
+    if (!canvas->app->is_running)
+        vkl_process_transfers(canvas);
 }
 
 
@@ -301,6 +309,9 @@ void vkl_download_buffers(
     VklCanvas* canvas, VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data)
 {
     _enqueue_buffers_transfer(canvas, VKL_TRANSFER_BUFFER_DOWNLOAD, br, offset, size, data);
+
+    if (!canvas->app->is_running)
+        vkl_process_transfers(canvas);
 }
 
 
@@ -328,6 +339,9 @@ void vkl_copy_buffers(
     tr.u.buf_copy.size = size;
 
     fifo_enqueue(context, &canvas->transfers, tr);
+
+    if (!canvas->app->is_running)
+        vkl_process_transfers(canvas);
 }
 
 
@@ -380,6 +394,9 @@ void vkl_upload_texture(
 {
     _enqueue_texture_transfer(
         canvas, VKL_TRANSFER_TEXTURE_UPLOAD, texture, offset, shape, size, data);
+
+    if (!canvas->app->is_running)
+        vkl_process_transfers(canvas);
 }
 
 
@@ -390,6 +407,9 @@ void vkl_download_texture(
 {
     _enqueue_texture_transfer(
         canvas, VKL_TRANSFER_TEXTURE_DOWNLOAD, texture, offset, shape, size, data);
+
+    if (!canvas->app->is_running)
+        vkl_process_transfers(canvas);
 }
 
 
@@ -419,4 +439,7 @@ void vkl_copy_texture(
     memcpy(tr.u.tex_copy.shape, shape, sizeof(uvec3));
 
     fifo_enqueue(context, &canvas->transfers, tr);
+
+    if (!canvas->app->is_running)
+        vkl_process_transfers(canvas);
 }

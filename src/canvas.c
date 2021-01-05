@@ -2073,25 +2073,6 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             gpu = vkl_container_iter(&app->gpus);
         }
 
-        // // Full update: complete refill of all swapchain command buffers after data transfers
-        // // that changed the number of items in VERTEX or INDEX sources, which means the number
-        // // of vertices/indices to draw (fixed in the command buffer) has to change.
-        // canvas = vkl_container_iter_init(&app->canvases);
-        // while (canvas != NULL)
-        // {
-        //     ASSERT(canvas != NULL);
-        //     if (canvas->obj.status == VKL_OBJECT_STATUS_NEED_FULL_UPDATE)
-        //     {
-        //         log_info("full update requested on canvas, triggering full refill");
-        //         // We need to stop the rendering because we'll update all command buffers at
-        //         once. vkl_queue_wait(canvas->gpu, VKL_DEFAULT_QUEUE_RENDER);
-        //         // Complete refill of the canvas that require a full update.
-        //         _refill_canvas(canvas, UINT32_MAX);
-        //         canvas->obj.status = VKL_OBJECT_STATUS_CREATED;
-        //     }
-        //     canvas = vkl_container_iter(&app->canvases);
-        // }
-
         // Close the application if all canvases have been closed.
         if (n_canvas_active == 0)
         {

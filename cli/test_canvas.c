@@ -801,7 +801,6 @@ struct TestParticleCompute
 static void _particle_frame(VklCanvas* canvas, VklPrivateEvent ev)
 {
     TestVisual* visual = (TestVisual*)ev.user_data;
-    // VklContext* ctx = visual->gpu->context;
     TestParticleUniform* data_u = visual->data_u;
     data_u->dt = (float)canvas->clock.interval;
     vkl_upload_buffers(canvas, visual->br_u, 0, sizeof(TestParticleUniform), visual->data_u);
@@ -943,6 +942,9 @@ int test_canvas_particles(TestContext* context)
         vkl_upload_buffers(canvas, visual->br, 0, size, visual->data);
         // Copy in the storage buffer
         vkl_upload_buffers(canvas, tpc.br, 0, size, visual->data);
+        // WARNING: it's okay to free the pointer here, vkl_upload_buffers() is normally lazy
+        // and does not make a copy of the pointer, *except* when the app is not running, like
+        // here.
         FREE(visual->data);
     }
 
