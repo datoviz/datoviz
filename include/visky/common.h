@@ -315,17 +315,18 @@ typedef enum
 // NOTE: the order is important, status >= CREATED means the object has been created
 typedef enum
 {
-    VKL_OBJECT_STATUS_NONE,             //
-    VKL_OBJECT_STATUS_ALLOC,            // after allocation
-    VKL_OBJECT_STATUS_DESTROYED,        // after destruction
-    VKL_OBJECT_STATUS_INIT,             // after struct initialization but before Vulkan creation
-    VKL_OBJECT_STATUS_CREATED,          // after proper creation on the GPU
-    VKL_OBJECT_STATUS_NEED_RECREATE,    // need to be recreated
-    VKL_OBJECT_STATUS_NEED_UPDATE,      // need to be updated
-    VKL_OBJECT_STATUS_NEED_FULL_UPDATE, // need to be fully updated (typically full cmd buf refill)
-    VKL_OBJECT_STATUS_NEED_DESTROY,     // need to be destroyed
-    VKL_OBJECT_STATUS_INACTIVE,         // inactive
-    VKL_OBJECT_STATUS_INVALID,          // invalid
+    VKL_OBJECT_STATUS_NONE,          //
+    VKL_OBJECT_STATUS_ALLOC,         // after allocation
+    VKL_OBJECT_STATUS_DESTROYED,     // after destruction
+    VKL_OBJECT_STATUS_INIT,          // after struct initialization but before Vulkan creation
+    VKL_OBJECT_STATUS_CREATED,       // after proper creation on the GPU
+    VKL_OBJECT_STATUS_NEED_RECREATE, // need to be recreated
+    VKL_OBJECT_STATUS_NEED_UPDATE,   // need to be updated
+    // VKL_OBJECT_STATUS_NEED_FULL_UPDATE, // need to be fully updated (typically full cmd buf
+    // refill)
+    VKL_OBJECT_STATUS_NEED_DESTROY, // need to be destroyed
+    VKL_OBJECT_STATUS_INACTIVE,     // inactive
+    VKL_OBJECT_STATUS_INVALID,      // invalid
 } VklObjectStatus;
 
 typedef struct VklObject VklObject;

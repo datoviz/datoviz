@@ -5,8 +5,10 @@
 
 
 /*************************************************************************************************/
-/*  Macros                                                                                       */
+/*  Utils                                                                                        */
 /*************************************************************************************************/
+
+static void _wait(VklCanvas* canvas, VklPrivateEvent ev) { vkl_sleep(500); }
 
 
 
@@ -349,6 +351,7 @@ int test_visuals_5(TestContext* context)
     vkl_visual_update(&visual, canvas->viewport, (VklDataCoords){0}, NULL);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, .1, _visual_append, &visual);
+    // vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _wait, &visual);
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _visual_canvas_fill, &visual);
 
     // Run and end.

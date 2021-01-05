@@ -45,7 +45,7 @@ struct VklTransferBuffer
 {
     VklBufferRegions regions;
     VkDeviceSize offset, size;
-    uint32_t update_count; // TODO: remove
+    bool update_all_buffers;
     void* data;
 };
 

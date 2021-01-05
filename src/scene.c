@@ -173,10 +173,7 @@ static void _scene_frame(VklCanvas* canvas, VklPrivateEvent ev)
                 vkl_visual_update(visual, viewport, (VklDataCoords){0}, NULL);
 
                 // Detect whether the vertex/index count has changed, in which case we'll need a
-                // full refill in the same frame as the data upload. To signal this to the canvas
-                // we'll set it to the NEED_FULL_UPDATE status. At the end of the frame, after the
-                // pending transfer tasks have completed, we'll trigger a full refill of the canvas
-                // with full GPU wait on the RENDER queue.
+                // full refill in the same frame as the data upload.
                 for (uint32_t pidx = 0; pidx < visual->graphics_count; pidx++)
                 {
                     // Detect a change in vertex_count.
@@ -185,7 +182,7 @@ static void _scene_frame(VklCanvas* canvas, VklPrivateEvent ev)
                     {
                         log_info("automatic detection of a change in vertex count, will trigger "
                                  "full refill");
-                        canvas->obj.status = VKL_OBJECT_STATUS_NEED_FULL_UPDATE;
+                        vkl_canvas_to_refill(canvas);
                         visual->prev_vertex_count[pidx] = source->arr.item_count;
                     }
 
@@ -195,7 +192,7 @@ static void _scene_frame(VklCanvas* canvas, VklPrivateEvent ev)
                     {
                         log_info("automatic detection of a change in index count, will trigger "
                                  "full refill");
-                        canvas->obj.status = VKL_OBJECT_STATUS_NEED_FULL_UPDATE;
+                        vkl_canvas_to_refill(canvas);
                         visual->prev_index_count[pidx] = source->arr.item_count;
                     }
                 }
@@ -244,7 +241,7 @@ static void _upload_mvp(VklCanvas* canvas, VklPrivateEvent ev)
 
     VklInteract* interact = NULL;
     VklController* controller = NULL;
-    VklBufferRegions* br = NULL;
+    // VklBufferRegions* br = NULL;
 
     // Go through all panels that need to be updated.
     VklPanel* panel = vkl_container_iter_init(&grid->panels);
@@ -266,12 +263,7 @@ static void _upload_mvp(VklCanvas* canvas, VklPrivateEvent ev)
             interact->mvp.time = canvas->clock.elapsed;
 
             // NOTE: we need to update the uniform buffer at every frame
-            br = &panel->br_mvp;
-
-            // GPU transfer happens here:
-            VklPointer pointer = aligned_repeat(br->size, &interact->mvp, 1, br->alignment);
-            vkl_buffer_regions_upload(br, canvas->swapchain.img_idx, pointer.pointer);
-            ALIGNED_FREE(pointer)
+            vkl_upload_buffers(canvas, panel->br_mvp, 0, panel->br_mvp.size, &interact->mvp);
         }
         panel = vkl_container_iter(&grid->panels);
     }

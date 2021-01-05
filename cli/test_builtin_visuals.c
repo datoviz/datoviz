@@ -181,7 +181,7 @@ static void _visual_update(VklCanvas* canvas, VklPrivateEvent ev)
     vkl_visual_update(visual, canvas->viewport, (VklDataCoords){0}, NULL);
     // Manual trigger of full refill in canvas main loop. Normally this is automatically handled
     // by the scene API, which is not used in this test.
-    canvas->obj.status = VKL_OBJECT_STATUS_NEED_FULL_UPDATE;
+    vkl_canvas_to_refill(canvas);
 
     FREE(xticks);
     FREE(yticks);

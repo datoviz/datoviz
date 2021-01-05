@@ -43,8 +43,13 @@ static void _process_buffer_upload(VklCanvas* canvas, VklTransfer tr)
 
         // NOTE: no need for alignment when copying a single buffer region (corresponding
         // to the current swapchain image)
-        vkl_buffer_upload(
-            br.buffer, br.offsets[idx] + tr.u.buf.offset, tr.u.buf.size, tr.u.buf.data);
+        if (tr.u.buf.update_all_buffers)
+            for (uint32_t i = 0; i < tr.u.buf.regions.count; i++)
+                vkl_buffer_upload(
+                    br.buffer, br.offsets[i] + tr.u.buf.offset, tr.u.buf.size, tr.u.buf.data);
+        else
+            vkl_buffer_upload(
+                br.buffer, br.offsets[idx] + tr.u.buf.offset, tr.u.buf.size, tr.u.buf.data);
     }
 
     // Staging buffer.
@@ -273,6 +278,11 @@ static void _enqueue_buffers_transfer(
     tr.u.buf.offset = offset;
     tr.u.buf.size = size;
     tr.u.buf.data = data;
+
+    // HACK: when uploading buffers when the app is not running (for example at initialization)
+    // we upload all copies of the VklBufferRegions. This is used when using UNIFORM_MAPPABLE
+    // buffers that are not continuously updated in each frame.
+    tr.u.buf.update_all_buffers = !canvas->app->is_running;
 
     fifo_enqueue(context, &canvas->transfers, tr);
 }

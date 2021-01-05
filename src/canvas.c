@@ -514,6 +514,52 @@ static void _refill_canvas(VklCanvas* canvas, uint32_t img_idx)
 
 
 
+static void _refill_frame(VklCanvas* canvas)
+{
+    uint32_t img_idx = canvas->swapchain.img_idx;
+    // Only proceed if the current swapchain image has not been processed yet.
+    if (atomic_load(&canvas->refills.status) == VKL_REFILL_REQUESTED ||
+        atomic_load(&canvas->refills.status) == VKL_REFILL_PROCESSING)
+    {
+        // If refill has just been requested, reset the ongoing refill by setting completed to
+        // false for all swapchain images.
+        if (atomic_load(&canvas->refills.status) == VKL_REFILL_REQUESTED)
+            memset(canvas->refills.completed, 0, VKL_MAX_SWAPCHAIN_IMAGES);
+
+        // Skip this step if the current swapchain image has already been processed.
+        if (canvas->refills.completed[img_idx])
+            return;
+
+        log_debug("refill the command buffers for swapchain image #%d", img_idx);
+        VklRefillStatus status = VKL_REFILL_PROCESSING;
+        atomic_store(&canvas->refills.status, status);
+
+        // Wait for command buffer to be ready for update.
+        vkl_fences_wait(&canvas->fences_flight, img_idx);
+
+        // HACK: avoid edge effects when the resize takes some time and the dt becomes too large
+        canvas->clock.interval = 0;
+
+        // Refill the command buffer for the current swapchain image.
+        _refill_canvas(canvas, img_idx);
+
+        // Mark that command buffer as updated.
+        canvas->refills.completed[img_idx] = true;
+
+        // We move away from NEED_UPDATE status only if all swapchain images have been updated.
+        if (_all_true(canvas->swapchain.img_count, canvas->refills.completed))
+        {
+            log_trace("all command buffers updated, no longer need to update");
+            status = VKL_REFILL_NONE;
+            atomic_store(&canvas->refills.status, status);
+            // Reset the img_updated bool array.
+            memset(canvas->refills.completed, 0, VKL_MAX_SWAPCHAIN_IMAGES);
+        }
+    }
+}
+
+
+
 static int _resize_callbacks(VklCanvas* canvas)
 {
     VklPrivateEvent ev = {0};
@@ -1819,46 +1865,7 @@ void vkl_canvas_frame(VklCanvas* canvas)
     vkl_process_transfers(canvas);
 
     // Refill if needed, only 1 swapchain command buffer per frame to avoid waiting on the device.
-    uint32_t img_idx = canvas->swapchain.img_idx;
-    // Only proceed if the current swapchain image has not been processed yet.
-    if (atomic_load(&canvas->refills.status) == VKL_REFILL_REQUESTED ||
-        atomic_load(&canvas->refills.status) == VKL_REFILL_PROCESSING)
-    {
-        // If refill has just been requested, reset the ongoing refill by setting completed to
-        // false for all swapchain images.
-        if (atomic_load(&canvas->refills.status) == VKL_REFILL_REQUESTED)
-            memset(canvas->refills.completed, 0, VKL_MAX_SWAPCHAIN_IMAGES);
-
-        // Skip this step if the current swapchain image has already been processed.
-        if (canvas->refills.completed[img_idx])
-            return;
-
-        log_debug("refill the command buffers for swapchain image #%d", img_idx);
-        VklRefillStatus status = VKL_REFILL_PROCESSING;
-        atomic_store(&canvas->refills.status, status);
-
-        // Wait for command buffer to be ready for update.
-        vkl_fences_wait(&canvas->fences_flight, img_idx);
-
-        // HACK: avoid edge effects when the resize takes some time and the dt becomes too large
-        canvas->clock.interval = 0;
-
-        // Refill the command buffer for the current swapchain image.
-        _refill_canvas(canvas, img_idx);
-
-        // Mark that command buffer as updated.
-        canvas->refills.completed[img_idx] = true;
-
-        // We move away from NEED_UPDATE status only if all swapchain images have been updated.
-        if (_all_true(canvas->swapchain.img_count, canvas->refills.completed))
-        {
-            log_trace("all command buffers updated, no longer need to update");
-            status = VKL_REFILL_NONE;
-            atomic_store(&canvas->refills.status, status);
-            // Reset the img_updated bool array.
-            memset(canvas->refills.completed, 0, VKL_MAX_SWAPCHAIN_IMAGES);
-        }
-    }
+    _refill_frame(canvas);
 }
 
 
@@ -2066,24 +2073,24 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             gpu = vkl_container_iter(&app->gpus);
         }
 
-        // Full update: complete refill of all swapchain command buffers after data transfers
-        // that changed the number of items in VERTEX or INDEX sources, which means the number
-        // of vertices/indices to draw (fixed in the command buffer) has to change.
-        canvas = vkl_container_iter_init(&app->canvases);
-        while (canvas != NULL)
-        {
-            ASSERT(canvas != NULL);
-            if (canvas->obj.status == VKL_OBJECT_STATUS_NEED_FULL_UPDATE)
-            {
-                log_info("full update requested on canvas, triggering full refill");
-                // We need to stop the rendering because we'll update all command buffers at once.
-                vkl_queue_wait(canvas->gpu, VKL_DEFAULT_QUEUE_RENDER);
-                // Complete refill of the canvas that require a full update.
-                _refill_canvas(canvas, UINT32_MAX);
-                canvas->obj.status = VKL_OBJECT_STATUS_CREATED;
-            }
-            canvas = vkl_container_iter(&app->canvases);
-        }
+        // // Full update: complete refill of all swapchain command buffers after data transfers
+        // // that changed the number of items in VERTEX or INDEX sources, which means the number
+        // // of vertices/indices to draw (fixed in the command buffer) has to change.
+        // canvas = vkl_container_iter_init(&app->canvases);
+        // while (canvas != NULL)
+        // {
+        //     ASSERT(canvas != NULL);
+        //     if (canvas->obj.status == VKL_OBJECT_STATUS_NEED_FULL_UPDATE)
+        //     {
+        //         log_info("full update requested on canvas, triggering full refill");
+        //         // We need to stop the rendering because we'll update all command buffers at
+        //         once. vkl_queue_wait(canvas->gpu, VKL_DEFAULT_QUEUE_RENDER);
+        //         // Complete refill of the canvas that require a full update.
+        //         _refill_canvas(canvas, UINT32_MAX);
+        //         canvas->obj.status = VKL_OBJECT_STATUS_CREATED;
+        //     }
+        //     canvas = vkl_container_iter(&app->canvases);
+        // }
 
         // Close the application if all canvases have been closed.
         if (n_canvas_active == 0)
