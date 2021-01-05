@@ -325,7 +325,7 @@ static void _vertex_cursor_callback(VklCanvas* canvas, VklEvent ev)
         data[i].color[1] = y;
         data[i].color[2] = 1;
     }
-    vkl_upload_buffers(canvas->gpu->context, visual->br, 0, 3 * sizeof(TestVertex), data);
+    vkl_canvas_buffers(canvas, visual->br, 0, 3 * sizeof(TestVertex), data);
 }
 
 int test_canvas_5(TestContext* context)
@@ -361,7 +361,7 @@ int test_canvas_5(TestContext* context)
         {{+0, -1, 0}, {0, 0, 1, 1}},
     };
     memcpy(visual.data, data, sizeof(data));
-    vkl_upload_buffers(canvas->gpu->context, visual.br, 0, size, data);
+    vkl_canvas_buffers(canvas, visual.br, 0, 3 * sizeof(TestVertex), data);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_refill, &visual);
 
@@ -389,13 +389,16 @@ static void _uniform_cursor_callback(VklCanvas* canvas, VklEvent ev)
     vkl_canvas_size(canvas, VKL_CANVAS_SIZE_SCREEN, size);
     double x = ev.u.m.pos[0] / (double)size[0];
     double y = ev.u.m.pos[1] / (double)size[1];
-    TestVisual* visual = ev.user_data;
-
     vec[0] = x;
     vec[1] = y;
     vec[2] = 1;
     vec[3] = 1;
-    vkl_upload_buffers(canvas->gpu->context, visual->br_u, 0, sizeof(vec4), vec);
+}
+
+static void _uniform_frame_callback(VklCanvas* canvas, VklPrivateEvent ev)
+{
+    TestVisual* visual = ev.user_data;
+    vkl_canvas_buffers(canvas, visual->br_u, 0, sizeof(vec4), vec);
 }
 
 int test_canvas_6(TestContext* context)
@@ -419,9 +422,10 @@ int test_canvas_6(TestContext* context)
     vkl_graphics_slot(&visual.graphics, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
     // Uniform buffer.
-    visual.br_u = vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, img_count, sizeof(vec4));
+    visual.br_u =
+        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM_MAPPABLE, img_count, sizeof(vec4));
     ASSERT(visual.br_u.aligned_size >= visual.br_u.size);
-    vkl_upload_buffers(canvas->gpu->context, visual.br_u, 0, sizeof(vec4), vec);
+    vkl_canvas_buffers(canvas, visual.br_u, 0, sizeof(vec4), vec);
 
     // Create the bindings.
     ASSERT(img_count > 0);
@@ -444,12 +448,14 @@ int test_canvas_6(TestContext* context)
         {{+0, -1, 0}, {0, 0, 1, 1}},
     };
     memcpy(visual.data, data, sizeof(data));
-    vkl_upload_buffers(canvas->gpu->context, visual.br, 0, size, data);
+    vkl_canvas_buffers(canvas, visual.br, 0, size, data);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_refill, &visual);
 
     // Cursor callback.
+    // WARNING: UNIFORM_MAPPABLE must be updated at every frame!
     vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _uniform_cursor_callback, &visual);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _uniform_frame_callback, &visual);
 
     vkl_app_run(app, N_FRAMES);
 
@@ -631,10 +637,9 @@ static void _append_callback(VklCanvas* canvas, VklPrivateEvent ev)
     FREE(visual->data);
     visual->data = data;
     VkDeviceSize size = visual->n_vertices * sizeof(TestVertex);
-    visual->br = vkl_ctx_buffers(
-        canvas->gpu->context, VKL_BUFFER_TYPE_VERTEX, canvas->swapchain.img_count, size);
-    vkl_upload_buffers(canvas->gpu->context, visual->br, 0, size, data);
-
+    visual->br = vkl_ctx_buffers(canvas->gpu->context, VKL_BUFFER_TYPE_VERTEX, 1, size);
+    vkl_canvas_buffers(canvas, visual->br, 0, size, data);
+    // NOTE: important, we need to refill the canvas after the vertex count has changed.
     vkl_canvas_to_refill(canvas);
 }
 
@@ -672,10 +677,10 @@ int test_canvas_append(TestContext* context)
         {{+0, -1, 0}, {0, 0, 1, 1}},
     };
     memcpy(visual.data, data, sizeof(data));
-    vkl_upload_buffers(canvas->gpu->context, visual.br, 0, size, data);
+    vkl_canvas_buffers(canvas, visual.br, 0, size, data);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_refill, &visual);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, .25, _append_callback, &visual);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, .1, _append_callback, &visual);
 
     vkl_app_run(app, N_FRAMES);
 
@@ -713,37 +718,25 @@ static void _particle_frame(VklCanvas* canvas, VklPrivateEvent ev)
     VklContext* ctx = visual->gpu->context;
     TestParticleUniform* data_u = visual->data_u;
     data_u->dt = (float)canvas->clock.interval;
-
-    // TODO
-    // This command is slower as it causes a full GPU wait every time we update the uniform buffer
-    // because there is only one.
-    vkl_upload_buffers(
-        canvas->gpu->context, visual->br_u, 0, sizeof(TestParticleUniform), visual->data_u);
-
-    // This command is slighty faster as there are no waits, the uniform buffer is updated
-    // directly in the main event loop, but there are as many copies as there are swapchain
-    // images. Only the buffer region corresponding to the current swapchain image is
-    // updated, because we're sure that region is not being used by the RENDER queue.
-    // vkl_upload_buffers_immediate(
-    //     canvas, visual->br_u, false, 0, sizeof(TestParticleUniform), visual->data_u);
+    vkl_canvas_buffers(canvas, visual->br_u, 0, sizeof(TestParticleUniform), visual->data_u);
 
     // Here we submit tasks to the compute queue independently of the main render loop.
     // We submit a new task as soon as the old one finishes.
     TestParticleCompute* tpc = visual->user_data;
-    log_trace("frame #%d running %d", canvas->frame_idx, tpc->is_running);
+    log_debug("frame #%d running %d", canvas->frame_idx, tpc->is_running);
     if (tpc->is_running && vkl_fences_ready(&tpc->fence, 0))
     {
-        log_trace("compute task finished");
+        log_debug("compute task finished");
         tpc->is_running = false;
     }
     if (!tpc->is_running)
     {
         // Copy storage buffer to vertex buffer.
-        log_trace("enqueue copy from storage buffer to vertex buffer");
+        log_debug("enqueue copy from storage buffer to vertex buffer");
         vkl_copy_buffers(ctx, tpc->br, 0, visual->br, 0, visual->br.size);
 
         // Send the command buffer.
-        log_trace("submit new compute command");
+        log_debug("submit new compute command");
         VklSubmit submit = vkl_submit(visual->gpu);
         vkl_submit_commands(&submit, tpc->cmds);
         vkl_submit_send(&submit, 0, &tpc->fence, 0);
@@ -804,7 +797,7 @@ int test_canvas_particles(TestContext* context)
     AT(canvas != NULL);
 
     // Sync mode only to set things up.
-    vkl_transfer_mode(canvas->gpu->context, VKL_TRANSFER_MODE_SYNC);
+    // vkl_transfer_mode(canvas->gpu->context, VKL_TRANSFER_MODE_SYNC);
 
     TestVisual* visual = calloc(1, sizeof(TestVisual));
     visual->gpu = canvas->gpu;
@@ -812,12 +805,11 @@ int test_canvas_particles(TestContext* context)
     visual->framebuffers = &canvas->framebuffers;
 
     // Create graphics pipeline.
-
     visual->graphics = vkl_graphics(gpu);
     ASSERT(visual->renderpass != NULL);
     VklGraphics* graphics = &visual->graphics;
     char path[1024];
-
+    // Graphics pipeline.
     {
         vkl_graphics_renderpass(graphics, visual->renderpass, 0);
         vkl_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
@@ -865,9 +857,9 @@ int test_canvas_particles(TestContext* context)
             ((TestParticle*)visual->data)[i].color[3] = .5;
         }
         // Vertex buffer
-        vkl_upload_buffers(canvas->gpu->context, visual->br, 0, size, visual->data);
+        vkl_canvas_buffers(canvas, visual->br, 0, size, visual->data);
         // Copy in the storage buffer
-        vkl_upload_buffers(canvas->gpu->context, tpc.br, 0, size, visual->data);
+        vkl_canvas_buffers(canvas, tpc.br, 0, size, visual->data);
         FREE(visual->data);
     }
 

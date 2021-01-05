@@ -964,6 +964,7 @@ void vkl_buffer_memcpy(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size
     ASSERT(buffer->gpu->device != VK_NULL_HANDLE);
     ASSERT(is_obj_created(&buffer->obj));
     ASSERT(size > 0);
+    ASSERT(offset + size <= buffer->size);
     ASSERT(data != NULL);
 
     if (buffer->mmap == NULL)
@@ -972,6 +973,7 @@ void vkl_buffer_memcpy(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size
         return;
     }
     ASSERT(buffer->mmap != NULL);
+    log_debug("memcpy %s", pretty_size(size));
     memcpy((void*)((int64_t)buffer->mmap + (int64_t)offset), data, size);
 }
 

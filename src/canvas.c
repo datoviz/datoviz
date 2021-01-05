@@ -1123,29 +1123,6 @@ void vkl_canvas_to_close(VklCanvas* canvas)
 /*  Fast transfers                                                                               */
 /*************************************************************************************************/
 
-// void vkl_upload_buffers_immediate(
-//     VklCanvas* canvas, VklBufferRegions regions, bool update_all_regions, //
-//     VkDeviceSize offset, VkDeviceSize size, void* data)
-// {
-//     ASSERT(canvas != NULL);
-//     VklFifo* fifo = &canvas->immediate_queue;
-//     ASSERT(0 <= fifo->head && fifo->head < fifo->capacity);
-//     ASSERT(regions.count == canvas->swapchain.img_count);
-
-//     VklTransfer tr = {0};
-//     tr.type = VKL_TRANSFER_BUFFER_UPLOAD_IMMEDIATE;
-//     tr.u.buf.regions = regions;
-//     tr.u.buf.offset = offset;
-//     tr.u.buf.size = size;
-//     tr.u.buf.data = data;
-//     tr.u.buf.update_count = update_all_regions ? canvas->swapchain.img_count : 1;
-
-//     canvas->immediate_transfers[fifo->head] = tr;
-//     vkl_fifo_enqueue(fifo, &canvas->immediate_transfers[fifo->head]);
-// }
-
-
-
 static void _copy_from_staging(
     VklContext* context, VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size)
 {
@@ -1178,6 +1155,7 @@ static void _copy_from_staging(
     // Submit the commands to the transfer queue.
     VklSubmit submit = vkl_submit(gpu);
     vkl_submit_commands(&submit, cmds);
+    log_debug("copy %s from staging buffer", pretty_size(size));
     vkl_submit_send(&submit, 0, NULL, 0);
 
     // Wait for the transfer queue to be idle.
@@ -1221,10 +1199,11 @@ static void _canvas_process_transfers(VklCanvas* canvas)
         if (tr.type == VKL_TRANSFER_BUFFER_UPLOAD)
         {
             br = tr.u.buf.regions;
+            ASSERT(br.size > 0);
             ASSERT(tr.u.buf.data != NULL);
             ASSERT(tr.u.buf.size > 0);
             ASSERT(tr.u.buf.regions.buffer != VK_NULL_HANDLE);
-            ASSERT(br.offsets[idx] + tr.u.buf.offset + tr.u.buf.size <= br.size);
+            // ASSERT(br.offsets[idx] + tr.u.buf.offset + tr.u.buf.size <= br.size);
 
             // Mappable uniforms. We only update the current swapchain image here.
             //
@@ -1234,14 +1213,15 @@ static void _canvas_process_transfers(VklCanvas* canvas)
             // NOTE: this function must be called AFTER the next swapchain image has been acquired,
             // so that swapchain->img_idx corresponds to the image that will be rendered in the
             // current frame, AFTER the transfer tasks have completed. This ensures that the very
-            // next frame will be up to date with the latest data and command buffer (if
-            // need_refill=true).
+            // next frame will be up to date with the latest data and command buffer (if need
+            // refill).
             if (br.buffer->type == VKL_BUFFER_TYPE_UNIFORM_MAPPABLE)
             {
                 // The mappable buffer must be constantly mapped.
                 ASSERT(br.buffer->mmap != NULL);
                 ASSERT(br.count == canvas->swapchain.img_count);
                 ASSERT(idx < br.count);
+
                 // NOTE: no need for alignment when copying a single buffer region (corresponding
                 // to the current swapchain image)
                 vkl_buffer_memcpy(
@@ -1273,10 +1253,6 @@ static void _canvas_process_transfers(VklCanvas* canvas)
                 // Copy from the staging buffer to the target buffer.
                 _copy_from_staging(context, tr.u.buf.regions, tr.u.buf.offset, tr.u.buf.size);
             }
-
-            // Need refill after the end of the transfer?
-            if (tr.need_refill)
-                vkl_canvas_to_refill(canvas);
         }
         fifo->is_processing = false;
     }
@@ -1286,8 +1262,7 @@ static void _canvas_process_transfers(VklCanvas* canvas)
 
 // This function is exposed to the scene API, all buffer uploads should use it.
 void vkl_canvas_buffers(
-    VklCanvas* canvas, VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data,
-    bool need_refill)
+    VklCanvas* canvas, VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data)
 {
     ASSERT(canvas != NULL);
     ASSERT(size > 0);
@@ -1309,7 +1284,7 @@ void vkl_canvas_buffers(
     tr.u.buf.size = size;
     tr.u.buf.data = data;
 
-    fifo_enqueue(context, &context->fifo, tr);
+    fifo_enqueue(context, &canvas->transfers, tr);
 }
 
 
@@ -2235,8 +2210,6 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
     uint32_t n_canvas_active = 0;
     for (uint64_t iter = 0; iter < frame_count; iter++)
     {
-        // if (frame_count > 0)
-        //     log_trace("frame iteration %d/%d", iter, frame_count);
         n_canvas_active = 0;
 
         // Loop over the canvases.
@@ -2244,15 +2217,12 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
         while (canvas != NULL)
         {
             ASSERT(canvas != NULL);
-            // if (canvas->obj.status == VKL_OBJECT_STATUS_NONE)
-            //     break;
             if (canvas->obj.status < VKL_OBJECT_STATUS_CREATED)
             {
                 canvas = vkl_container_iter(&app->canvases);
                 continue;
             }
             ASSERT(canvas->obj.status >= VKL_OBJECT_STATUS_CREATED);
-            // log_trace("processing frame #%d for canvas #%d", canvas->frame_idx, canvas_idx);
 
             // INIT event at the first frame
             if (canvas->frame_idx == 0)
@@ -2270,15 +2240,13 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
                 vkl_window_poll_events(canvas->window);
 
             // Frame logic.
-            // log_trace("frame logic for canvas #%d", canvas_idx);
-            // Swapchain image acquisition happens here:
+            // NOTE: swapchain image acquisition happens here
             vkl_canvas_frame(canvas);
 
             // If there is a problem with swapchain image acquisition, wait and try again later.
             if (canvas->swapchain.obj.status == VKL_OBJECT_STATUS_INVALID)
             {
-                // log_trace("swapchain image acquisition failed, waiting and skipping this
-                // frame");
+                log_trace("swapchain image acquisition failed, waiting and skipping this frame");
                 vkl_gpu_wait(canvas->gpu);
                 canvas = vkl_container_iter(&app->canvases);
                 continue;
@@ -2287,7 +2255,7 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             // If the swapchain needs to be recreated (for example, after a resize), do it.
             if (canvas->swapchain.obj.status == VKL_OBJECT_STATUS_NEED_RECREATE)
             {
-                // log_trace("swapchain image acquisition failed, recreating the canvas");
+                log_trace("swapchain image acquisition failed, recreating the canvas");
 
                 // Recreate the canvas.
                 vkl_canvas_recreate(canvas);
@@ -2336,19 +2304,11 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
 
         // Process the pending transfer tasks.
         // NOTE: this has never been tested with multiple GPUs yet.
-        VklContext* context = NULL;
         VklGpu* gpu = vkl_container_iter_init(&app->gpus);
         while (gpu != NULL)
         {
             if (!is_obj_created(&gpu->obj))
                 break;
-            context = gpu->context;
-
-            if (is_obj_created(&context->obj))
-            {
-                // log_trace("processing transfers for GPU #%d", gpu_idx);
-                vkl_transfer_loop(context, false);
-            }
 
             // IMPORTANT: we need to wait for the present queue to be idle, otherwise the GPU hangs
             // when waiting for fences (not sure why). The problem only arises when using different
