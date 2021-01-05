@@ -294,55 +294,55 @@ static void process_buffer_upload_immediate(VklCanvas* canvas, VklTransfer tr, u
 
 
 
-static void _immediate_transfers(VklCanvas* canvas)
-{
-    ASSERT(canvas != NULL);
-    // Special FIFO queue for IMMEDIATE transfers.
-    VklFifo* fifo = &canvas->immediate_queue;
-    ASSERT(fifo != NULL);
+// static void _immediate_transfers(VklCanvas* canvas)
+// {
+//     ASSERT(canvas != NULL);
+//     // Special FIFO queue for IMMEDIATE transfers.
+//     VklFifo* fifo = &canvas->immediate_queue;
+//     ASSERT(fifo != NULL);
 
-    // See if there is a current _immediate transfer going on.
-    VklTransfer* tr = canvas->immediate_transfer_cur;
-    // If not, dequeue.
-    if (tr == NULL)
-    {
-        tr = vkl_fifo_dequeue(fifo, false);
-    }
-    // Here, we have nothing to do.
-    if (tr == NULL)
-        return;
-    // Here we have a IMMEDIATE transfer to process, as many times as there are swap chain images.
-    ASSERT(tr != NULL);
+//     // See if there is a current _immediate transfer going on.
+//     VklTransfer* tr = canvas->immediate_transfer_cur;
+//     // If not, dequeue.
+//     if (tr == NULL)
+//     {
+//         tr = vkl_fifo_dequeue(fifo, false);
+//     }
+//     // Here, we have nothing to do.
+//     if (tr == NULL)
+//         return;
+//     // Here we have a IMMEDIATE transfer to process, as many times as there are swap chain
+//     images. ASSERT(tr != NULL);
 
-    // Current swapchain image.
-    uint32_t n = tr->u.buf.update_count; // number of buffer regions to update
+//     // Current swapchain image.
+//     uint32_t n = tr->u.buf.update_count; // number of buffer regions to update
 
-    // 2 cases: only 1 region to update (any swapchain image), or 1 per swapchain image.
-    ASSERT(n == 1 || n == canvas->swapchain.img_count);
-    uint32_t img_idx = CLIP(canvas->swapchain.img_idx, 0, tr->u.buf.regions.count - 1);
-    // ASSERT(img_idx < tr->u.buf.regions.count);
-    ASSERT(img_idx < VKL_MAX_SWAPCHAIN_IMAGES);
+//     // 2 cases: only 1 region to update (any swapchain image), or 1 per swapchain image.
+//     ASSERT(n == 1 || n == canvas->swapchain.img_count);
+//     uint32_t img_idx = CLIP(canvas->swapchain.img_idx, 0, tr->u.buf.regions.count - 1);
+//     // ASSERT(img_idx < tr->u.buf.regions.count);
+//     ASSERT(img_idx < VKL_MAX_SWAPCHAIN_IMAGES);
 
-    // Skip the update if this swapchain image has already been processed.
-    if (canvas->immediate_transfer_updated[img_idx])
-        return;
+//     // Skip the update if this swapchain image has already been processed.
+//     if (canvas->immediate_transfer_updated[img_idx])
+//         return;
 
-    // Mark the dequeued transfer as being currently processed.
-    canvas->immediate_transfer_cur = tr;
+//     // Mark the dequeued transfer as being currently processed.
+//     canvas->immediate_transfer_cur = tr;
 
-    // Process it.
-    process_buffer_upload_immediate(canvas, *tr, img_idx);
+//     // Process it.
+//     process_buffer_upload_immediate(canvas, *tr, img_idx);
 
-    // Mark the buffer region corresponding to the current swapchain image as done.
-    canvas->immediate_transfer_updated[img_idx] = true;
+//     // Mark the buffer region corresponding to the current swapchain image as done.
+//     canvas->immediate_transfer_updated[img_idx] = true;
 
-    // If all regions corresponding to all swapchain images have been updated, reset.
-    if (n == 1 || _all_true(n, canvas->immediate_transfer_updated))
-    {
-        memset(canvas->immediate_transfer_updated, 0, n * sizeof(bool));
-        canvas->immediate_transfer_cur = NULL;
-    }
-}
+//     // If all regions corresponding to all swapchain images have been updated, reset.
+//     if (n == 1 || _all_true(n, canvas->immediate_transfer_updated))
+//     {
+//         memset(canvas->immediate_transfer_updated, 0, n * sizeof(bool));
+//         canvas->immediate_transfer_cur = NULL;
+//     }
+// }
 
 
 
@@ -697,8 +697,8 @@ _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
 
     // Initialize the atomic variables used to communicate state changes from a background thread
     // to the main thread (REFILL or CLOSE events).
-    atomic_init(&canvas->cur_status, VKL_OBJECT_STATUS_NONE);
-    atomic_init(&canvas->next_status, VKL_OBJECT_STATUS_NONE);
+    atomic_init(&canvas->to_close, false);
+    atomic_init(&canvas->refills.status, VKL_REFILL_NONE);
 
     // Allocate memory for canvas objects.
     canvas->commands =
@@ -825,7 +825,7 @@ _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
     // Default submit instance.
     canvas->submit = vkl_submit(gpu);
 
-    canvas->immediate_queue = vkl_fifo(VKL_MAX_FIFO_CAPACITY);
+    // canvas->immediate_queue = vkl_fifo(VKL_MAX_FIFO_CAPACITY);
     canvas->transfers = vkl_fifo(VKL_MAX_FIFO_CAPACITY);
 
     // Event system.
@@ -1101,24 +1101,20 @@ void vkl_event_callback(
 /*  Thread-safe state changes                                                                    */
 /*************************************************************************************************/
 
-void vkl_canvas_set_status(VklCanvas* canvas, VklObjectStatus status)
-{
-    ASSERT(canvas != NULL);
-    atomic_store(&canvas->next_status, status);
-}
-
-
-
 void vkl_canvas_to_refill(VklCanvas* canvas)
 {
-    vkl_canvas_set_status(canvas, VKL_OBJECT_STATUS_NEED_UPDATE);
+    ASSERT(canvas != NULL);
+    VklRefillStatus status = VKL_REFILL_REQUESTED;
+    atomic_store(&canvas->refills.status, status);
 }
 
 
 
 void vkl_canvas_to_close(VklCanvas* canvas)
 {
-    vkl_canvas_set_status(canvas, VKL_OBJECT_STATUS_NEED_DESTROY);
+    ASSERT(canvas != NULL);
+    bool value = true;
+    atomic_store(&canvas->to_close, value);
 }
 
 
@@ -1127,26 +1123,26 @@ void vkl_canvas_to_close(VklCanvas* canvas)
 /*  Fast transfers                                                                               */
 /*************************************************************************************************/
 
-void vkl_upload_buffers_immediate(
-    VklCanvas* canvas, VklBufferRegions regions, bool update_all_regions, //
-    VkDeviceSize offset, VkDeviceSize size, void* data)
-{
-    ASSERT(canvas != NULL);
-    VklFifo* fifo = &canvas->immediate_queue;
-    ASSERT(0 <= fifo->head && fifo->head < fifo->capacity);
-    ASSERT(regions.count == canvas->swapchain.img_count);
+// void vkl_upload_buffers_immediate(
+//     VklCanvas* canvas, VklBufferRegions regions, bool update_all_regions, //
+//     VkDeviceSize offset, VkDeviceSize size, void* data)
+// {
+//     ASSERT(canvas != NULL);
+//     VklFifo* fifo = &canvas->immediate_queue;
+//     ASSERT(0 <= fifo->head && fifo->head < fifo->capacity);
+//     ASSERT(regions.count == canvas->swapchain.img_count);
 
-    VklTransfer tr = {0};
-    tr.type = VKL_TRANSFER_BUFFER_UPLOAD_IMMEDIATE;
-    tr.u.buf.regions = regions;
-    tr.u.buf.offset = offset;
-    tr.u.buf.size = size;
-    tr.u.buf.data = data;
-    tr.u.buf.update_count = update_all_regions ? canvas->swapchain.img_count : 1;
+//     VklTransfer tr = {0};
+//     tr.type = VKL_TRANSFER_BUFFER_UPLOAD_IMMEDIATE;
+//     tr.u.buf.regions = regions;
+//     tr.u.buf.offset = offset;
+//     tr.u.buf.size = size;
+//     tr.u.buf.data = data;
+//     tr.u.buf.update_count = update_all_regions ? canvas->swapchain.img_count : 1;
 
-    canvas->immediate_transfers[fifo->head] = tr;
-    vkl_fifo_enqueue(fifo, &canvas->immediate_transfers[fifo->head]);
-}
+//     canvas->immediate_transfers[fifo->head] = tr;
+//     vkl_fifo_enqueue(fifo, &canvas->immediate_transfers[fifo->head]);
+// }
 
 
 
@@ -1205,6 +1201,9 @@ static void _canvas_process_transfers(VklCanvas* canvas)
     VklContext* context = canvas->gpu->context;
     ASSERT(context != NULL);
     VklFifo* fifo = &canvas->transfers;
+    // Do nothing if there are no pending transfers.
+    if (fifo->is_empty)
+        return;
 
     VklTransfer tr = {0};
     VklBufferRegions br = {0};
@@ -2080,8 +2079,14 @@ void vkl_canvas_frame(VklCanvas* canvas)
     _clock_set(&canvas->app->clock); // global clock
     _clock_set(&canvas->clock);      // canvas-local clock
 
-    // Update cur_status
-    atomic_store(&canvas->cur_status, canvas->obj.status);
+    // Wait for fence.
+    vkl_fences_wait(&canvas->fences_render_finished, canvas->cur_frame);
+
+    // We acquire the next swapchain image.
+    if (!canvas->offscreen)
+        vkl_swapchain_acquire(
+            &canvas->swapchain, &canvas->sem_img_available, //
+            canvas->cur_frame, NULL, 0);
 
     // Call INTERACT callbacks (for backends only), which may enqueue some events.
     _interact_callbacks(canvas);
@@ -2097,74 +2102,42 @@ void vkl_canvas_frame(VklCanvas* canvas)
 
     // Refill all command buffers at the first iteration.
     if (canvas->frame_idx == 0)
-    {
-        log_debug("fill the command buffers at the first frame");
-        vkl_gpu_wait(canvas->gpu);
-        _refill_canvas(canvas, UINT32_MAX);
-        canvas->obj.status = VKL_OBJECT_STATUS_CREATED;
-    }
+        vkl_canvas_to_refill(canvas);
 
-    // Get the next status.
-    VklObjectStatus next_status = atomic_load(&canvas->next_status);
-    // If the next status is set, update the actual canvas status.
-    if (next_status != VKL_OBJECT_STATUS_NONE)
-    {
-        canvas->obj.status = next_status;
-        // Reset the next_status atomic variable.
-        atomic_store(&canvas->next_status, VKL_OBJECT_STATUS_NONE);
-        // Now, the canvas actual status has been updated with the value set by a background
-        // thread. This may cause a REFILL or CLOSE or other.
-    }
-
-    // Wait for fence.
-    vkl_fences_wait(&canvas->fences_render_finished, canvas->cur_frame);
-
-    // Process IMMEDIATE buffer transfers (used by uniform buffers that exist in multiple copies
-    // to avoid GPU synchronization by making it such that each swapchain image has its own
-    // buffer region)
-    _immediate_transfers(canvas);
-
-    // We acquire the next swapchain image.
-    if (!canvas->offscreen)
-        vkl_swapchain_acquire(
-            &canvas->swapchain, &canvas->sem_img_available, //
-            canvas->cur_frame, NULL, 0);
+    // Pending transfers.
+    _canvas_process_transfers(canvas);
 
     // Refill if needed, only 1 swapchain command buffer per frame to avoid waiting on the device.
-    if (canvas->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE)
+    uint32_t img_idx = canvas->swapchain.img_idx;
+    // Only proceed if the current swapchain image has not been processed yet.
+    if ((atomic_load(&canvas->refills.status) == VKL_REFILL_REQUESTED ||
+         atomic_load(&canvas->refills.status) == VKL_REFILL_PROCESSING) &&
+        !canvas->refills.completed[img_idx])
     {
-        log_debug("need to update canvas, will refill the command buffers");
+        log_debug("refill the command buffers for swapchain image #%d", img_idx);
+        VklRefillStatus status = VKL_REFILL_PROCESSING;
+        atomic_store(&canvas->refills.status, status);
 
-        // DEBUG
-        if (0)
+        // Wait for command buffer to be ready for update.
+        vkl_fences_wait(&canvas->fences_flight, img_idx);
+
+        // HACK: avoid edge effects when the resize takes some time and the dt becomes too large
+        canvas->clock.interval = 0;
+
+        // Refill the command buffer for the current swapchain image.
+        _refill_canvas(canvas, img_idx);
+
+        // Mark that command buffer as updated.
+        canvas->refills.completed[img_idx] = true;
+
+        // We move away from NEED_UPDATE status only if all swapchain images have been updated.
+        if (_all_true(canvas->swapchain.img_count, canvas->refills.completed))
         {
-            vkl_queue_wait(canvas->gpu, VKL_DEFAULT_QUEUE_RENDER);
-            _refill_canvas(canvas, UINT32_MAX);
-            canvas->obj.status = VKL_OBJECT_STATUS_CREATED;
-        }
-        else
-        {
-            // Wait for command buffer to be ready for update.
-            vkl_fences_wait(&canvas->fences_flight, canvas->swapchain.img_idx);
-
-            // HACK: avoid edge effects when the resize takes some time and the dt becomes too
-            // large
-            canvas->clock.interval = 0;
-
-            // Refill the command buffer for the current swapchain image.
-            _refill_canvas(canvas, canvas->swapchain.img_idx);
-
-            // Mark that command buffer as updated.
-            canvas->img_updated[canvas->swapchain.img_idx] = true;
-
-            // We move away from NEED_UPDATE status only if all swapchain images have been updated.
-            if (_all_true(canvas->swapchain.img_count, canvas->img_updated))
-            {
-                log_trace("all command buffers updated, no longer need to update");
-                canvas->obj.status = VKL_OBJECT_STATUS_CREATED;
-                // Reset the img_updated bool array.
-                memset(canvas->img_updated, 0, VKL_MAX_SWAPCHAIN_IMAGES);
-            }
+            log_trace("all command buffers updated, no longer need to update");
+            status = VKL_REFILL_NONE;
+            atomic_store(&canvas->refills.status, status);
+            // Reset the img_updated bool array.
+            memset(canvas->refills.completed, 0, VKL_MAX_SWAPCHAIN_IMAGES);
         }
     }
 }
@@ -2453,7 +2426,8 @@ void vkl_canvas_destroy(VklCanvas* canvas)
     vkl_fifo_destroy(&canvas->event_queue);
 
     // Fast transfers.
-    vkl_fifo_destroy(&canvas->immediate_queue);
+    // vkl_fifo_destroy(&canvas->immediate_queue);
+    vkl_fifo_destroy(&canvas->transfers);
 
     // Destroy callbacks.
     _destroy_callbacks(canvas);

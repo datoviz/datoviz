@@ -714,17 +714,18 @@ static void _particle_frame(VklCanvas* canvas, VklPrivateEvent ev)
     TestParticleUniform* data_u = visual->data_u;
     data_u->dt = (float)canvas->clock.interval;
 
+    // TODO
     // This command is slower as it causes a full GPU wait every time we update the uniform buffer
     // because there is only one.
-    // vkl_buffer_regions_upload(
-    //     canvas->gpu->context, &visual->br_u, 0, sizeof(TestParticleUniform), visual->data_u);
+    vkl_upload_buffers(
+        canvas->gpu->context, visual->br_u, 0, sizeof(TestParticleUniform), visual->data_u);
 
     // This command is slighty faster as there are no waits, the uniform buffer is updated
     // directly in the main event loop, but there are as many copies as there are swapchain
     // images. Only the buffer region corresponding to the current swapchain image is
     // updated, because we're sure that region is not being used by the RENDER queue.
-    vkl_upload_buffers_immediate(
-        canvas, visual->br_u, false, 0, sizeof(TestParticleUniform), visual->data_u);
+    // vkl_upload_buffers_immediate(
+    //     canvas, visual->br_u, false, 0, sizeof(TestParticleUniform), visual->data_u);
 
     // Here we submit tasks to the compute queue independently of the main render loop.
     // We submit a new task as soon as the old one finishes.

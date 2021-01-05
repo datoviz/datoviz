@@ -160,7 +160,7 @@ static void _timer_callback(VklCanvas* canvas, VklPrivateEvent ev)
     mvp.view[0][1] = sin(t);
     mvp.view[1][0] = -sin(t);
     mvp.view[1][1] = cos(t);
-    vkl_upload_buffers_immediate(canvas, br_mvp, true, 0, br_mvp.size, &mvp);
+    vkl_upload_buffers(canvas->gpu->context, br_mvp, 0, br_mvp.size, &mvp);
 }
 
 int test_visuals_3(TestContext* context)

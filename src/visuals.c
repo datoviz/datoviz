@@ -16,13 +16,13 @@ static bool _source_needs_binding(VklSourceKind source_kind)
 
 
 
-static bool _uniform_source_is_immediate(VklSource* source)
-{
-    ASSERT(source != NULL);
-    if (source->source_kind != VKL_SOURCE_UNIFORM)
-        return false;
-    return (source->flags & VKL_SOURCE_FLAG_IMMEDIATE) != 0;
-}
+// static bool _uniform_source_is_immediate(VklSource* source)
+// {
+//     ASSERT(source != NULL);
+//     if (source->source_kind != VKL_SOURCE_UNIFORM)
+//         return false;
+//     return (source->flags & VKL_SOURCE_FLAG_IMMEDIATE) != 0;
+// }
 
 
 
@@ -879,9 +879,8 @@ void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source)
             "need to %sallocate new buffer region to fit %d elements (%d bytes)",
             source->u.br.size > 0 ? "re" : "", count, size);
 
-        // Number of buffers: 1, unless using _immediate upload.
-        uint32_t buf_count =
-            _uniform_source_is_immediate(source) ? canvas->swapchain.img_count : 1;
+        // TODO
+        uint32_t buf_count = canvas->swapchain.img_count;
         source->u.br = vkl_ctx_buffers(ctx, _get_default_buffer(source), buf_count, size);
 
         // Set the pipeline bindings with the source buffer.
@@ -985,7 +984,7 @@ void vkl_visual_update(
     // Upload the buffers and textures
     VklArray* arr = NULL;
     VklBufferRegions* br = NULL;
-    VklCanvas* canvas = visual->canvas;
+    // VklCanvas* canvas = visual->canvas;
     VklTexture* texture = NULL;
     VklContext* ctx = visual->canvas->gpu->context;
     bool to_upload = false;
@@ -1066,10 +1065,7 @@ void vkl_visual_update(
                 "%d #%d", //
                 arr->item_count, br->size, source->source_type, source->pipeline_idx);
 
-            if (_uniform_source_is_immediate(source))
-                vkl_upload_buffers_immediate(canvas, *br, true, 0, size, arr->data);
-            else
-                vkl_upload_buffers(ctx, *br, 0, size, arr->data);
+            vkl_upload_buffers(ctx, *br, 0, size, arr->data);
             source->obj.status = VKL_OBJECT_STATUS_CREATED;
             visual->obj.status = VKL_OBJECT_STATUS_CREATED;
         }

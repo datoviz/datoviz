@@ -578,11 +578,10 @@ struct VklCanvas
     int flags;
     void* user_data;
 
-    // TODO: remove?
     // This thread-safe variable is used by the background thread to
     // safely communicate a status change of the canvas
     atomic(VklObjectStatus, cur_status);
-    atomic(VklObjectStatus, next_status);
+    atomic(bool, to_close);
 
     VklWindow* window;
 
@@ -597,11 +596,6 @@ struct VklCanvas
     uint64_t frame_idx;
     VklClock clock;
     float fps;
-
-    // TODO: remove
-    // when refilling command buffers, keep track of which img_idx were updated until we stop
-    // calling the REFILL callbackks
-    bool img_updated[VKL_MAX_SWAPCHAIN_IMAGES];
 
     // Renderpasses.
     VklRenderpass renderpass;         // default renderpass
@@ -624,13 +618,7 @@ struct VklCanvas
     // Graphics pipelines.
     VklContainer graphics;
 
-    // TODO: remove
-    // IMMEDIATE transfers
-    VklFifo immediate_queue; // _immediate transfers queue
-    VklTransfer immediate_transfers[VKL_MAX_TRANSFERS];
-    VklTransfer* immediate_transfer_cur;
-    bool immediate_transfer_updated[VKL_MAX_SWAPCHAIN_IMAGES];
-
+    // Data transfers.
     VklFifo transfers;
 
     // Canvas callbacks, running in the main thread so should be fast to process, especially
@@ -770,8 +758,6 @@ VKY_EXPORT void vkl_event_callback(
 /*  State changes                                                                                */
 /*************************************************************************************************/
 
-VKY_EXPORT void vkl_canvas_set_status(VklCanvas* canvas, VklObjectStatus status);
-
 VKY_EXPORT void vkl_canvas_to_refill(VklCanvas* canvas);
 
 VKY_EXPORT void vkl_canvas_to_close(VklCanvas* canvas);
@@ -786,9 +772,9 @@ VKY_EXPORT void vkl_canvas_buffers(
     VklCanvas* canvas, VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data,
     bool need_refill);
 
-VKY_EXPORT void vkl_upload_buffers_immediate(
-    VklCanvas* canvas, VklBufferRegions regions, bool update_all_regions, //
-    VkDeviceSize offset, VkDeviceSize size, void* data);
+// VKY_EXPORT void vkl_upload_buffers_immediate(
+//     VklCanvas* canvas, VklBufferRegions regions, bool update_all_regions, //
+//     VkDeviceSize offset, VkDeviceSize size, void* data);
 
 
 
