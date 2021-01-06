@@ -652,7 +652,7 @@ static void* _fifo_thread_2(void* arg)
 
 
 
-int test_fifo(TestContext* context)
+int test_fifo_1(TestContext* context)
 {
     VklFifo fifo = vkl_fifo(8);
     uint8_t item = 12;
@@ -692,6 +692,30 @@ int test_fifo(TestContext* context)
     pthread_join(thread, NULL);
     FREE(fifo.user_data);
 
+    vkl_fifo_destroy(&fifo);
+    return 0;
+}
+
+
+
+int test_fifo_2(TestContext* context)
+{
+    VklFifo fifo = vkl_fifo(8);
+    uint32_t numbers[64] = {0};
+    for (uint32_t i = 0; i < 64; i++)
+    {
+        numbers[i] = i;
+        vkl_fifo_enqueue(&fifo, &numbers[i]);
+    }
+    uint32_t* res = NULL;
+    for (uint32_t i = 0; i < 64; i++)
+    {
+        AT(!fifo.is_empty);
+        res = vkl_fifo_dequeue(&fifo, false);
+        AT(*res == i);
+    }
+    AT(fifo.is_empty);
+    vkl_fifo_destroy(&fifo);
     return 0;
 }
 

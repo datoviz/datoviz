@@ -14,6 +14,7 @@ VklFifo vkl_fifo(int32_t capacity)
     ASSERT(capacity <= VKL_MAX_FIFO_CAPACITY);
     fifo.capacity = capacity;
     fifo.is_empty = true;
+    fifo.items = calloc((uint32_t)capacity, sizeof(void*));
 
     if (pthread_mutex_init(&fifo.lock, NULL) != 0)
         log_error("mutex creation failed");
@@ -30,21 +31,19 @@ void vkl_fifo_enqueue(VklFifo* fifo, void* item)
     ASSERT(fifo != NULL);
     pthread_mutex_lock(&fifo->lock);
 
-    if ((fifo->head + 1) % fifo->capacity != fifo->tail)
+    if ((fifo->head + 1) % fifo->capacity == fifo->tail)
     {
-        // log_trace("enqueue item, head %d, tail %d", fifo->head, fifo->tail);
-        fifo->items[fifo->head] = item;
-        fifo->head++;
-        if (fifo->head >= fifo->capacity)
-            fifo->head -= fifo->capacity;
+        ASSERT(fifo->items != NULL);
+        fifo->capacity *= 2;
+        log_debug("FIFO queue is full, enlarging it to %d", fifo->capacity);
+        REALLOC(fifo->items, (uint32_t)fifo->capacity * sizeof(void*));
     }
-    else
-    {
-        log_error("FIFO queue is full, reseting it");
-        fifo->head = 0;
-        fifo->tail = 0;
-        vkl_fifo_enqueue(fifo, item);
-    }
+
+    ASSERT((fifo->head + 1) % fifo->capacity != fifo->tail);
+    fifo->items[fifo->head] = item;
+    fifo->head++;
+    if (fifo->head >= fifo->capacity)
+        fifo->head -= fifo->capacity;
     fifo->is_empty = false;
 
     ASSERT(0 <= fifo->head && fifo->head < fifo->capacity);
@@ -152,4 +151,7 @@ void vkl_fifo_destroy(VklFifo* fifo)
     ASSERT(fifo != NULL);
     pthread_mutex_destroy(&fifo->lock);
     pthread_cond_destroy(&fifo->cond);
+
+    ASSERT(fifo->items != NULL);
+    FREE(fifo->items);
 }

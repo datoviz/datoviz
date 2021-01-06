@@ -43,7 +43,8 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_shader_compile),        //
 
     // context
-    CASE_FIXTURE_NONE(test_fifo),        //
+    CASE_FIXTURE_NONE(test_fifo_1),      //
+    CASE_FIXTURE_NONE(test_fifo_2),      //
     CASE_FIXTURE_NONE(test_default_app), //
 
     // canvas

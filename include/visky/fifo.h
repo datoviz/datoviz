@@ -33,7 +33,7 @@ struct VklFifo
 {
     int32_t head, tail;
     int32_t capacity;
-    void* items[VKL_MAX_FIFO_CAPACITY];
+    void** items;
     void* user_data;
 
     pthread_mutex_t lock;

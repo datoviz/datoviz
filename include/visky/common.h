@@ -199,9 +199,9 @@ END_INCL_NO_WARN
 
 #define REALLOC(x, s)                                                                             \
     {                                                                                             \
-        void* _new = realloc(x, s);                                                               \
+        void* _new = realloc((x), (s));                                                           \
         if (_new == NULL)                                                                         \
-            log_error("error reallocating %s to %d bytes", #x, s);                                \
+            log_error("error reallocating %s to %d bytes", #x, (s));                              \
         else                                                                                      \
             x = _new;                                                                             \
     }
