@@ -50,7 +50,7 @@ static void _panel_to_update(VklPanel* panel)
 
 
 
-static void _scene_fill(VklCanvas* canvas, VklPrivateEvent ev)
+static void _scene_fill(VklCanvas* canvas, VklEvent ev)
 {
     log_debug("scene fill");
     ASSERT(canvas != NULL);
@@ -110,7 +110,7 @@ static void _scene_fill(VklCanvas* canvas, VklPrivateEvent ev)
 
 
 
-static void _scene_frame(VklCanvas* canvas, VklPrivateEvent ev)
+static void _scene_frame(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
     ASSERT(ev.user_data != NULL);
@@ -230,7 +230,7 @@ static void _default_controller_callback(VklController* controller, VklEvent ev)
 
 
 
-static void _upload_mvp(VklCanvas* canvas, VklPrivateEvent ev)
+static void _upload_mvp(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
     ASSERT(ev.user_data != NULL);
@@ -708,15 +708,18 @@ VklScene* vkl_scene(VklCanvas* canvas, uint32_t n_rows, uint32_t n_cols)
     canvas->scene->controllers = vkl_container(
         VKL_CONTAINER_DEFAULT_COUNT, sizeof(VklController), VKL_OBJECT_TYPE_CONTROLLER);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _scene_fill, canvas->scene);
+    vkl_event_callback(
+        canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _scene_fill, canvas->scene);
 
     // HACK: we use a param of 1 here as a way of putting a lower priority, so that the
     // _scene_frame callback is called *after* the user FRAME callbacks. If the user callbacks call
     // vkl_visual_data(), the _scene_frame() callback will be called directly afterwards, in the
     // same frame.
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 1, _scene_frame, canvas->scene);
+    vkl_event_callback(
+        canvas, VKL_EVENT_FRAME, 1, VKL_EVENT_MODE_SYNC, _scene_frame, canvas->scene);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _upload_mvp, canvas->scene);
+    vkl_event_callback(
+        canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _upload_mvp, canvas->scene);
 
 
     return canvas->scene;

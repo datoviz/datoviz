@@ -1,5 +1,6 @@
 #include <inttypes.h>
 
+#include "../include/visky/canvas.h"
 #include "imgui.h"
 
 BEGIN_INCL_NO_WARN
@@ -76,7 +77,7 @@ static void _imgui_destroy()
     ImGui::DestroyContext();
 }
 
-static void _presend(VklCanvas* canvas, VklPrivateEvent ev)
+static void _presend(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
     if (!canvas->overlay)
@@ -98,12 +99,12 @@ static void _presend(VklCanvas* canvas, VklPrivateEvent ev)
 
     // Call the IMGUI private callbacks to render the GUI.
     {
-        VklPrivateEvent ev_imgui;
-        ev_imgui.type = VKL_PRIVATE_EVENT_IMGUI;
+        VklEvent ev_imgui;
+        ev_imgui.type = VKL_EVENT_IMGUI;
         ev_imgui.u.f.idx = canvas->frame_idx;
         ev_imgui.u.f.interval = canvas->clock.interval;
         ev_imgui.u.f.time = canvas->clock.elapsed;
-        _canvas_callbacks(canvas, ev_imgui);
+        _event_produce(canvas, ev_imgui);
     }
 
     // End frame.
@@ -156,7 +157,7 @@ void vkl_imgui_init(VklCanvas* canvas)
     // PRE_SEND callback that will call the IMGUI callbacks.
     VklCommands* cmds =
         vkl_canvas_commands(canvas, VKL_DEFAULT_QUEUE_RENDER, canvas->swapchain.img_count);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_PRE_SEND, 0, _presend, cmds);
+    vkl_event_callback(canvas, VKL_EVENT_PRE_SEND, 0, VKL_EVENT_MODE_SYNC, _presend, cmds);
 }
 
 void vkl_imgui_begin(const char* title, VklGuiStyle style)
@@ -225,7 +226,7 @@ void vkl_imgui_begin(const char* title, VklGuiStyle style)
 
 void vkl_imgui_end() { ImGui::End(); }
 
-void vkl_imgui_callback_fps(VklCanvas* canvas, VklPrivateEvent)
+void vkl_imgui_callback_fps(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
     vkl_imgui_begin("FPS", VKL_GUI_FIXED_TR);

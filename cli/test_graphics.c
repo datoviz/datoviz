@@ -32,7 +32,7 @@ struct TestGraphics
     void* data;
 };
 
-static void _graphics_refill(VklCanvas* canvas, VklPrivateEvent ev)
+static void _graphics_refill(VklCanvas* canvas, VklEvent ev)
 {
     TestGraphics* tg = (TestGraphics*)ev.user_data;
     VklCommands* cmds = ev.u.rf.cmds[0];
@@ -148,7 +148,7 @@ static void _common_bindings(TestGraphics* tg)
     vkl_bindings_update(&tg.bindings);
 
 #define RUN                                                                                       \
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _graphics_refill, &tg);              \
+    vkl_event_callback(canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _graphics_refill, &tg);  \
     vkl_app_run(app, N_FRAMES);                                                                   \
     vkl_array_destroy(&tg.vertices);                                                              \
     vkl_array_destroy(&tg.indices);
@@ -211,7 +211,9 @@ int test_graphics_dynamic(TestContext* context)
     vkl_bindings_buffer(&tg.bindings, VKL_USER_BINDING, tg.br_params);
     vkl_bindings_update(&tg.bindings);
 
-    vkl_event_callback(canvas, VKL_EVENT_MOUSE_WHEEL, 0, _graphics_points_wheel_callback, &tg);
+    vkl_event_callback(
+        canvas, VKL_EVENT_MOUSE_WHEEL, 0, VKL_EVENT_MODE_SYNC, _graphics_points_wheel_callback,
+        &tg);
 
     RUN;
     TEST_END
@@ -219,12 +221,13 @@ int test_graphics_dynamic(TestContext* context)
 
 
 
-static void _graphics_3D_callback(VklCanvas* canvas, VklPrivateEvent ev)
+static void _graphics_3D_callback(VklCanvas* canvas, VklEvent ev)
 {
+    ASSERT(ev.type = VKL_EVENT_FRAME);
     TestGraphics* tg = ev.user_data;
-    vec3 axis;
+    vec3 axis = {0};
     axis[1] = 1;
-    glm_rotate_make(tg->mvp.model, .5 * ev.u.t.time, axis);
+    glm_rotate_make(tg->mvp.model, ev.u.f.time, axis);
     vkl_mvp_camera(canvas->viewport, tg->eye, tg->center, (vec2){.1, 100}, &tg->mvp);
 
     vkl_upload_buffers(canvas, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
@@ -234,25 +237,25 @@ int test_graphics_3D(TestContext* context)
 {
     INIT_GRAPHICS(VKL_GRAPHICS_POINTS)
     BEGIN_DATA(VklVertex, 3, NULL)
+    {
+        // Top red
+        vertices[0].pos[0] = 0;
+        vertices[0].pos[1] = .5;
+        vertices[0].color[0] = 255;
+        vertices[0].color[3] = 255;
 
-    // Top red
-    vertices[0].pos[0] = 0;
-    vertices[0].pos[1] = .5;
-    vertices[0].color[0] = 255;
-    vertices[0].color[3] = 255;
+        // Bottom left green
+        vertices[1].pos[0] = -.5;
+        vertices[1].pos[1] = -.5;
+        vertices[1].color[1] = 255;
+        vertices[1].color[3] = 255;
 
-    // Bottom left green
-    vertices[1].pos[0] = -.5;
-    vertices[1].pos[1] = -.5;
-    vertices[1].color[1] = 255;
-    vertices[1].color[3] = 255;
-
-    // Bottom right blue
-    vertices[2].pos[0] = +.5;
-    vertices[2].pos[1] = -.5;
-    vertices[2].color[2] = 255;
-    vertices[2].color[3] = 255;
-
+        // Bottom right blue
+        vertices[2].pos[0] = +.5;
+        vertices[2].pos[1] = -.5;
+        vertices[2].color[2] = 255;
+        vertices[2].color[3] = 255;
+    }
     END_DATA
 
     // Create the bindings.
@@ -265,7 +268,7 @@ int test_graphics_3D(TestContext* context)
         vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsPointParams));
 
     // Upload params.
-    tg.param = 50.0f;
+    tg.param = 200.0f;
     VklGraphicsPointParams params = {.point_size = tg.param};
     vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsPointParams), &params);
 
@@ -275,7 +278,8 @@ int test_graphics_3D(TestContext* context)
     vkl_bindings_buffer(&tg.bindings, VKL_USER_BINDING, tg.br_params);
     vkl_bindings_update(&tg.bindings);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1.0 / 60, _graphics_3D_callback, &tg);
+    vkl_event_callback(
+        canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _graphics_3D_callback, &tg);
 
     RUN;
     TEST_END
@@ -468,7 +472,7 @@ int test_graphics_marker(TestContext* context)
 /*  Agg segment tests                                                                            */
 /*************************************************************************************************/
 
-static void _resize(VklCanvas* canvas, VklPrivateEvent ev)
+static void _resize(VklCanvas* canvas, VklEvent ev)
 {
     TestGraphics* tg = (TestGraphics*)ev.user_data;
     vkl_upload_buffers(canvas, tg->br_viewport, 0, sizeof(VklViewport), &canvas->viewport);
@@ -496,7 +500,7 @@ int test_graphics_segment(TestContext* context)
     }
     END_DATA
     BINDINGS_NO_PARAMS
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_RESIZE, 0, _resize, &tg);
+    vkl_event_callback(canvas, VKL_EVENT_RESIZE, 0, VKL_EVENT_MODE_SYNC, _resize, &tg);
     RUN;
     TEST_END
 }
@@ -571,7 +575,7 @@ int test_graphics_text(TestContext* context)
     vkl_bindings_texture(&tg.bindings, VKL_USER_BINDING + 1, atlas->texture);
     vkl_bindings_update(&tg.bindings);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_RESIZE, 0, _resize, &tg);
+    vkl_event_callback(canvas, VKL_EVENT_RESIZE, 0, VKL_EVENT_MODE_SYNC, _resize, &tg);
 
     RUN;
     vkl_font_atlas_destroy(atlas);
@@ -648,12 +652,12 @@ int test_graphics_image(TestContext* context)
 /*  Mesh tests                                                                                   */
 /*************************************************************************************************/
 
-static void _graphics_mesh_callback(VklCanvas* canvas, VklPrivateEvent ev)
+static void _graphics_mesh_callback(VklCanvas* canvas, VklEvent ev)
 {
     TestGraphics* tg = ev.user_data;
     vec3 axis = {0};
     axis[1] = 1;
-    glm_rotate_make(tg->mvp.model, ev.u.t.time, axis);
+    glm_rotate_make(tg->mvp.model, ev.u.f.time, axis);
     vkl_mvp_camera(canvas->viewport, tg->eye, tg->center, (vec2){.1, 10}, &tg->mvp);
 
     vkl_upload_buffers(canvas, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
@@ -784,7 +788,8 @@ int test_graphics_mesh(TestContext* context)
     vkl_bindings_update(&tg.bindings);
 
     // Callback.
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1.0 / 60, _graphics_mesh_callback, &tg);
+    vkl_event_callback(
+        canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _graphics_mesh_callback, &tg);
 
     RUN;
     TEST_END

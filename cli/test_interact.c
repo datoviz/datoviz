@@ -41,10 +41,14 @@ int test_interact_1(TestContext* context)
     VklMouse mouse = vkl_mouse();
     VklKeyboard keyboard = vkl_keyboard();
 
-    vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _mouse_callback, &mouse);
-    vkl_event_callback(canvas, VKL_EVENT_MOUSE_BUTTON, 0, _mouse_callback, &mouse);
-    vkl_event_callback(canvas, VKL_EVENT_MOUSE_WHEEL, 0, _mouse_callback, &mouse);
-    vkl_event_callback(canvas, VKL_EVENT_KEY, 0, _keyboard_callback, &keyboard);
+    vkl_event_callback(
+        canvas, VKL_EVENT_MOUSE_MOVE, 0, VKL_EVENT_MODE_SYNC, _mouse_callback, &mouse);
+    vkl_event_callback(
+        canvas, VKL_EVENT_MOUSE_BUTTON, 0, VKL_EVENT_MODE_SYNC, _mouse_callback, &mouse);
+    vkl_event_callback(
+        canvas, VKL_EVENT_MOUSE_WHEEL, 0, VKL_EVENT_MODE_SYNC, _mouse_callback, &mouse);
+    vkl_event_callback(
+        canvas, VKL_EVENT_KEY, 0, VKL_EVENT_MODE_SYNC, _keyboard_callback, &keyboard);
 
     vkl_app_run(app, N_FRAMES);
 
@@ -57,7 +61,7 @@ int test_interact_1(TestContext* context)
 /*  Interact utils                                                                               */
 /*************************************************************************************************/
 
-static void _update_interact(VklCanvas* canvas, VklPrivateEvent ev)
+static void _update_interact(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
     ASSERT(canvas != NULL);
@@ -109,7 +113,8 @@ static void _add_visual(
     // Upload the data to the GPU.
     vkl_visual_update(visual, canvas->viewport, (VklDataCoords){0}, NULL);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _visual_canvas_fill, visual);
+    vkl_event_callback(
+        canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _visual_canvas_fill, visual);
 }
 
 
@@ -128,7 +133,7 @@ int test_interact_panzoom(TestContext* context)
     scene.interact = vkl_interact_builtin(canvas, VKL_INTERACT_PANZOOM);
     scene.visual = vkl_visual(canvas);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _update_interact, &scene);
+    vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _update_interact, &scene);
 
     const uint32_t N = 10000;
     float param = 5.0f;
@@ -157,7 +162,7 @@ int test_interact_arcball(TestContext* context)
     scene.interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
     scene.visual = vkl_visual(canvas);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _update_interact, &scene);
+    vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _update_interact, &scene);
 
     const uint32_t N = 10000;
     float param = 5.0f;
@@ -186,7 +191,7 @@ int test_interact_camera(TestContext* context)
     scene.interact = vkl_interact_builtin(canvas, VKL_INTERACT_FLY);
     scene.visual = vkl_visual(canvas);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _update_interact, &scene);
+    vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _update_interact, &scene);
 
     const uint32_t N = 10000;
     float param = 5.0f;

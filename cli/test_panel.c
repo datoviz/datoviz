@@ -8,7 +8,7 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static void _canvas_fill(VklCanvas* canvas, VklPrivateEvent ev)
+static void _canvas_fill(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
     ASSERT(ev.user_data != NULL);
@@ -114,8 +114,9 @@ int test_panel_1(TestContext* context)
 
     vkl_visual_update(&visual, canvas->viewport, (VklDataCoords){0}, NULL);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _canvas_fill, &grid);
-    vkl_event_callback(canvas, VKL_EVENT_MOUSE_CLICK, 0, _canvas_click, &grid);
+    vkl_event_callback(canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _canvas_fill, &grid);
+    vkl_event_callback(
+        canvas, VKL_EVENT_MOUSE_CLICK, 0, VKL_EVENT_MODE_SYNC, _canvas_click, &grid);
 
     vkl_app_run(app, N_FRAMES);
     vkl_visual_destroy(&visual);

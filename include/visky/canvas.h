@@ -57,30 +57,6 @@ typedef enum
 
 
 
-/**
- * Private event types.
- *
- * Private events are emitted and consumed in the main thread, typically by the canvas itself.
- * They are rarely used by end-users.
- *
- */
-// Private event types
-typedef enum
-{
-    VKL_PRIVATE_EVENT_INIT,      // called before the first frame
-    VKL_PRIVATE_EVENT_REFILL,    // called every time the command buffers need to be recreated
-    VKL_PRIVATE_EVENT_INTERACT,  // called at every frame, before event enqueue
-    VKL_PRIVATE_EVENT_FRAME,     // called at every frame, after event enqueue
-    VKL_PRIVATE_EVENT_IMGUI,     // called at every frame, after event enqueue
-    VKL_PRIVATE_EVENT_TIMER,     // called every X ms in the main thread, just after FRAME
-    VKL_PRIVATE_EVENT_RESIZE,    // called at every resize
-    VKL_PRIVATE_EVENT_PRE_SEND,  // called before sending the commands buffers
-    VKL_PRIVATE_EVENT_POST_SEND, // called after sending the commands buffers
-    VKL_PRIVATE_EVENT_DESTROY,   // called before destruction
-} VklPrivateEventType;
-
-
-
 // Canvas size type
 typedef enum
 {
@@ -175,29 +151,44 @@ typedef enum
 /*************************************************************************************************/
 
 /**
- * Public event types.
+ * Event types.
  *
- * Public events (also just called "events") are emitted in the main thread and consumed in the
- * background thread by user callbacks.
+ * Events are emitted and consumed either in the main thread or in the background thread.
+ *
  */
 // Event types
 typedef enum
 {
-    VKL_EVENT_NONE,
-    VKL_EVENT_INIT,
-    VKL_EVENT_MOUSE_BUTTON,
-    VKL_EVENT_MOUSE_MOVE,
-    VKL_EVENT_MOUSE_WHEEL,
-    VKL_EVENT_MOUSE_DRAG_BEGIN,
-    VKL_EVENT_MOUSE_DRAG_END,
-    VKL_EVENT_MOUSE_CLICK,
-    VKL_EVENT_MOUSE_DOUBLE_CLICK,
-    VKL_EVENT_KEY,
-    VKL_EVENT_FRAME,
-    // VKL_EVENT_TIMER,   // TODO later
-    // VKL_EVENT_ONESHOT, // TODO later
-    VKL_EVENT_SCREENCAST,
+    VKL_EVENT_NONE,               //
+    VKL_EVENT_INIT,               // called before the first frame
+    VKL_EVENT_REFILL,             // called every time the command buffers need to be recreated
+    VKL_EVENT_INTERACT,           // called at every frame, before event enqueue
+    VKL_EVENT_FRAME,              // called at every frame, after event enqueue
+    VKL_EVENT_IMGUI,              // called at every frame, after event enqueue
+    VKL_EVENT_SCREENCAST,         // called when a screenshot has been downloaded
+    VKL_EVENT_TIMER,              // called every X ms in the main thread, just after FRAME
+    VKL_EVENT_MOUSE_BUTTON,       // called when a mouse button is pressed or released
+    VKL_EVENT_MOUSE_MOVE,         // called when the mouse moves
+    VKL_EVENT_MOUSE_WHEEL,        // called when the mouse wheel is used
+    VKL_EVENT_MOUSE_DRAG_BEGIN,   // called when a drag event starts
+    VKL_EVENT_MOUSE_DRAG_END,     // called when a drag event stops
+    VKL_EVENT_MOUSE_CLICK,        // called after a click (called once during a double click)
+    VKL_EVENT_MOUSE_DOUBLE_CLICK, // called after a double click
+    VKL_EVENT_KEY,                // called after a keyboard key pressed or released
+    VKL_EVENT_RESIZE,             // called at every resize
+    VKL_EVENT_PRE_SEND,           // called before sending the commands buffers
+    VKL_EVENT_POST_SEND,          // called after sending the commands buffers
+    VKL_EVENT_DESTROY,            // called before destruction
 } VklEventType;
+
+
+
+// Event mode (sync/async)
+typedef enum
+{
+    VKL_EVENT_MODE_SYNC,
+    VKL_EVENT_MODE_ASYNC,
+} VklEventMode;
 
 
 
@@ -248,36 +239,28 @@ typedef enum
 /*************************************************************************************************/
 
 typedef struct VklScene VklScene;
-
 typedef struct VklMouse VklMouse;
 typedef struct VklKeyboard VklKeyboard;
 typedef struct VklMouseLocal VklMouseLocal;
 
-// Public events (background thread).
+// Events structures.
+typedef struct VklEvent VklEvent;
+typedef struct VklFrameEvent VklFrameEvent;
 typedef struct VklKeyEvent VklKeyEvent;
 typedef struct VklMouseButtonEvent VklMouseButtonEvent;
+typedef struct VklMouseClickEvent VklMouseClickEvent;
+typedef struct VklMouseDragEvent VklMouseDragEvent;
 typedef struct VklMouseMoveEvent VklMouseMoveEvent;
 typedef struct VklMouseWheelEvent VklMouseWheelEvent;
-typedef struct VklMouseDragEvent VklMouseDragEvent;
-typedef struct VklMouseClickEvent VklMouseClickEvent;
-typedef struct VklScreencastEvent VklScreencastEvent;
-typedef struct VklFrameEvent VklFrameEvent;
-typedef union VklEventUnion VklEventUnion;
-typedef struct VklEvent VklEvent;
-
-// Private events (main thread).
-typedef struct VklTimerEvent VklTimerEvent;
-typedef struct VklResizeEvent VklResizeEvent;
-typedef struct VklViewport VklViewport;
 typedef struct VklRefillEvent VklRefillEvent;
+typedef struct VklResizeEvent VklResizeEvent;
+typedef struct VklScreencastEvent VklScreencastEvent;
 typedef struct VklSubmitEvent VklSubmitEvent;
-typedef struct VklPrivateEvent VklPrivateEvent;
-typedef union VklPrivateEventUnion VklPrivateEventUnion;
+typedef struct VklTimerEvent VklTimerEvent;
+typedef struct VklViewport VklViewport;
+typedef union VklEventUnion VklEventUnion;
 
-typedef void (*VklCanvasCallback)(VklCanvas*, VklPrivateEvent);
 typedef void (*VklEventCallback)(VklCanvas*, VklEvent);
-
-typedef struct VklCanvasCallbackRegister VklCanvasCallbackRegister;
 typedef struct VklEventCallbackRegister VklEventCallbackRegister;
 
 typedef struct VklScreencast VklScreencast;
@@ -328,6 +311,38 @@ struct VklKeyboard
     VklKeyboardStateType cur_state;
 
     double press_time;
+};
+
+
+
+/*************************************************************************************************/
+/*  Viewport struct                                                                              */
+/*************************************************************************************************/
+
+// NOTE: must correspond to the shader structure in common.glsl
+struct VklViewport
+{
+    VkViewport viewport; // Vulkan viewport
+    vec4 margins;
+
+    // Position and size of the viewport in screen coordinates.
+    uvec2 offset_screen;
+    uvec2 size_screen;
+
+    // Position and size of the viewport in framebuffer coordinates.
+    uvec2 offset_framebuffer;
+    uvec2 size_framebuffer;
+
+    // Options
+    // Viewport clipping.
+    VklViewportClip clip; // used by the GPU for viewport clipping
+
+    // Used to discard transform on one axis
+    VklTransformAxis transform;
+
+    float dpi_scaling;
+
+    // TODO: aspect ratio
 };
 
 
@@ -415,34 +430,6 @@ struct VklScreencastEvent
 
 
 
-// NOTE: must correspond to the shader structure in common.glsl
-struct VklViewport
-{
-    VkViewport viewport; // Vulkan viewport
-    vec4 margins;
-
-    // Position and size of the viewport in screen coordinates.
-    uvec2 offset_screen;
-    uvec2 size_screen;
-
-    // Position and size of the viewport in framebuffer coordinates.
-    uvec2 offset_framebuffer;
-    uvec2 size_framebuffer;
-
-    // Options
-    // Viewport clipping.
-    VklViewportClip clip; // used by the GPU for viewport clipping
-
-    // Used to discard transform on one axis
-    VklTransformAxis transform;
-
-    float dpi_scaling;
-
-    // TODO: aspect ratio
-};
-
-
-
 struct VklRefillEvent
 {
     uint32_t img_idx;
@@ -469,38 +456,20 @@ struct VklSubmitEvent
 
 
 
-union VklPrivateEventUnion
-{
-    VklRefillEvent rf; // for REFILL private events
-    VklResizeEvent r;  // for RESIZE private events
-    VklFrameEvent t;   // for FRAME private events
-    VklFrameEvent f;   // for TIMER private events
-    VklSubmitEvent s;  // for SUBMIT private events
-};
-
-
-
-struct VklPrivateEvent
-{
-    VklPrivateEventType type;
-    void* user_data;
-    VklPrivateEventUnion u;
-};
-
-
-
 union VklEventUnion
 {
-
-    VklMouseButtonEvent b; // for MOUSE_BUTTON public events
-    VklMouseMoveEvent m;   // for MOUSE_MOVE public events
-    VklMouseWheelEvent w;  // for WHEEL public events
-    VklMouseDragEvent d;   // for DRAG public events
-    VklMouseClickEvent c;  // for DRAG public events
-    VklKeyEvent k;         // for KEY public events
-    VklFrameEvent f;       // for FRAME public event
-    // VklTimerEvent t;       // for TIMER, ONESHOT public events
-    VklScreencastEvent s; // for SCREENCAST public events
+    VklFrameEvent f;       // for FRAME events
+    VklFrameEvent t;       // for TIMER events
+    VklKeyEvent k;         // for KEY events
+    VklMouseButtonEvent b; // for MOUSE_BUTTON events
+    VklMouseClickEvent c;  // for DRAG events
+    VklMouseDragEvent d;   // for DRAG events
+    VklMouseMoveEvent m;   // for MOUSE_MOVE events
+    VklMouseWheelEvent w;  // for WHEEL events
+    VklRefillEvent rf;     // for REFILL events
+    VklResizeEvent r;      // for RESIZE events
+    VklScreencastEvent sc; // for SCREENCAST events
+    VklSubmitEvent s;      // for SUBMIT events
 };
 
 
@@ -514,24 +483,14 @@ struct VklEvent
 
 
 
-struct VklCanvasCallbackRegister
-{
-    VklPrivateEventType type;
-    uint64_t idx; // used by TIMER events: increases every time the TIMER event is raised
-    double param;
-    void* user_data;
-    VklCanvasCallback callback;
-};
-
-
-
 struct VklEventCallbackRegister
 {
     VklEventType type;
-    // uint64_t idx; // used by TIMER events: increases every time the TIMER event is raised
+    uint64_t idx; // used by TIMER events: increases every time the TIMER event is raised
     double param;
-    void* user_data;
+    VklEventMode mode;
     VklEventCallback callback;
+    void* user_data;
 };
 
 
@@ -623,19 +582,15 @@ struct VklCanvas
     // Data transfers.
     VklFifo transfers;
 
-    // Canvas callbacks, running in the main thread so should be fast to process, especially
-    // for internal usage.
-    uint32_t canvas_callbacks_count;
-    VklCanvasCallbackRegister canvas_callbacks[VKL_MAX_EVENT_CALLBACKS];
-
     // Event callbacks, running in the background thread, may be slow, for end-users.
-    uint32_t event_callbacks_count;
-    VklEventCallbackRegister event_callbacks[VKL_MAX_EVENT_CALLBACKS];
+    uint32_t callbacks_count;
+    VklEventCallbackRegister callbacks[VKL_MAX_EVENT_CALLBACKS];
 
     // Event queue.
     VklFifo event_queue;
     VklEvent events[VKL_MAX_FIFO_CAPACITY];
     VklThread event_thread;
+    bool enable_lock;
     atomic(VklEventType, event_processing);
     VklMouse mouse;
     VklKeyboard keyboard;
@@ -652,32 +607,6 @@ struct VklCanvas
 /*************************************************************************************************/
 /*  Canvas                                                                                       */
 /*************************************************************************************************/
-
-static int _canvas_callbacks(VklCanvas* canvas, VklPrivateEvent event)
-{
-    int n_callbacks = 0;
-    // HACK: we first call the callbacks with no param, then we call the callbacks with a non-zero
-    // param. This is a way to use the param as a priority value. This is used by the scene FRAME
-    // callback so that it occurs after the user callbacks.
-    for (uint32_t pass = 0; pass < 2; pass++)
-    {
-        for (uint32_t i = 0; i < canvas->canvas_callbacks_count; i++)
-        {
-            // Will pass the user_data that was registered, to the callback function.
-            event.user_data = canvas->canvas_callbacks[i].user_data;
-
-            // Only call the callbacks registered for the specified type.
-            if (canvas->canvas_callbacks[i].type == event.type &&
-                (pass == 0 || canvas->canvas_callbacks[i].param > 0))
-            {
-                // log_debug("canvas callback type %d number %d", event.type, i);
-                canvas->canvas_callbacks[i].callback(canvas, event);
-                n_callbacks++;
-            }
-        }
-    }
-    return n_callbacks;
-}
 
 // adds callbacks as a function of the backend
 // GLFW ex: init_canvas_glfw(VklCanvas* canvas);
@@ -726,32 +655,20 @@ VKY_EXPORT VklViewport vkl_viewport_full(VklCanvas* canvas);
 /*************************************************************************************************/
 
 /**
- * Register a callback for private events.
- */
-VKY_EXPORT void vkl_canvas_callback(
-    VklCanvas* canvas, VklPrivateEventType type, double param, //
-    VklCanvasCallback callback, void* user_data);
-
-
-
-/**
- * Register a callback for public events.
+ * Register a callback for events.
  *
- * These user callbacks run in the background thread and can access the VklMouse and VklKeyboard
- * structures with the current state of the mouse and keyboard.
+ * These user callbacks run either in the main thread (sync callbacks) or in the background thread
+ * (async callbacks). Callbacks can access the VklMouse and VklKeyboard structures with the
+ * current state of the mouse and keyboard.
  *
+ * @par TIMER events:
  *
- * @par TIMER public events:
- *
- * Callbacks registered with TIMER public events need to specify as `param` the delay, in seconds,
+ * Callbacks registered with TIMER events need to specify as `param` the delay, in seconds,
  * between successive TIMER events.
- *
- * TIMER public events are raised by a special thread and enqueued in the Canvas event queue.
- * They are consumed in the background thread (which is a different thread than the TIMER thread).
  *
  */
 VKY_EXPORT void vkl_event_callback(
-    VklCanvas* canvas, VklEventType type, double param, //
+    VklCanvas* canvas, VklEventType type, double param, VklEventMode mode, //
     VklEventCallback callback, void* user_data);
 
 
@@ -779,8 +696,8 @@ VKY_EXPORT void vkl_canvas_to_close(VklCanvas* canvas);
  * - video records (requires ffmpeg)
  *
  * @param canvas
- * @param interval If non-zero, the Canvas will raise periodic SCREENCAST private events every
- *      `interval` seconds. The private event payload will contain a pointer to the grabbed
+ * @param interval If non-zero, the Canvas will raise periodic SCREENCAST events every
+ *      `interval` seconds. The event payload will contain a pointer to the grabbed
  *      framebuffer image.
  * @param rgb If NULL, the Canvas will create a CPU buffer with the appropriate size. Otherwise,
  *      the images will be copied to the provided buffer. The caller must ensure the buffer is
@@ -807,7 +724,7 @@ VKY_EXPORT void vkl_screencast_destroy(VklCanvas* canvas);
  *
  * This function creates a screencast if there isn't one already. It is implemented with hard
  * synchronization commands so this command should *not* be used for creating many successive
- * screenshots. For that, one should register a SCREENCAST private event callback.
+ * screenshots. For that, one should register a SCREENCAST event callback.
  *
  * @param canvas
  * @return A pointer to the 24-bit RGB framebuffer.
@@ -853,8 +770,6 @@ VKY_EXPORT void vkl_keyboard_event(VklKeyboard* keyboard, VklCanvas* canvas, Vkl
 /*  Event system                                                                                 */
 /*************************************************************************************************/
 
-VKY_EXPORT void vkl_event_enqueue(VklCanvas* canvas, VklEvent event);
-
 VKY_EXPORT void vkl_event_mouse_button(
     VklCanvas* canvas, VklMouseButtonType type, VklMouseButton button, int modifiers);
 
@@ -877,8 +792,6 @@ VKY_EXPORT void vkl_event_frame(VklCanvas* canvas, uint64_t idx, double time, do
 
 VKY_EXPORT void vkl_event_timer(VklCanvas* canvas, uint64_t idx, double time, double interval);
 
-VKY_EXPORT VklEvent* vkl_event_dequeue(VklCanvas* canvas, bool wait);
-
 // Return the number of events of the given type that are still being processed or pending in the
 // queue.
 VKY_EXPORT int vkl_event_pending(VklCanvas* canvas, VklEventType type);
@@ -896,6 +809,187 @@ VKY_EXPORT void vkl_canvas_frame(VklCanvas* canvas);
 VKY_EXPORT void vkl_canvas_frame_submit(VklCanvas* canvas);
 
 VKY_EXPORT void vkl_app_run(VklApp* app, uint64_t frame_count);
+
+
+
+/*************************************************************************************************/
+/*  Event system                                                                                 */
+/*************************************************************************************************/
+
+static void _event_enqueue(VklCanvas* canvas, VklEvent event)
+{
+    ASSERT(canvas != NULL);
+    VklFifo* fifo = &canvas->event_queue;
+    ASSERT(fifo != NULL);
+    VklEvent* ev = (VklEvent*)calloc(1, sizeof(VklEvent));
+    *ev = event;
+    vkl_fifo_enqueue(fifo, ev);
+}
+
+
+
+static VklEvent _event_dequeue(VklCanvas* canvas, bool wait)
+{
+    ASSERT(canvas != NULL);
+    VklFifo* fifo = &canvas->event_queue;
+    ASSERT(fifo != NULL);
+    VklEvent* item = (VklEvent*)vkl_fifo_dequeue(fifo, wait);
+    VklEvent out;
+    out.type = VKL_EVENT_NONE;
+    if (item == NULL)
+        return out;
+    ASSERT(item != NULL);
+    out = *item;
+    FREE(item);
+    return out;
+}
+
+
+
+static bool _has_async_callbacks(VklCanvas* canvas, VklEventType type)
+{
+    ASSERT(canvas != NULL);
+    for (uint32_t i = 0; i < canvas->callbacks_count; i++)
+    {
+        if (canvas->callbacks[i].type == type && canvas->callbacks[i].mode == VKL_EVENT_MODE_ASYNC)
+            return true;
+    }
+    return false;
+}
+
+
+
+static bool _has_event_callbacks(VklCanvas* canvas, VklEventType type)
+{
+    ASSERT(canvas != NULL);
+    if (type == VKL_EVENT_NONE || type == VKL_EVENT_INIT)
+        return true;
+    for (uint32_t i = 0; i < canvas->callbacks_count; i++)
+        if (canvas->callbacks[i].type == type)
+            return true;
+    return false;
+}
+
+
+
+static int _event_consume(VklCanvas* canvas, VklEvent ev, VklEventMode mode)
+{
+    ASSERT(canvas != NULL);
+
+    if (canvas->enable_lock)
+        vkl_thread_lock(&canvas->event_thread);
+
+
+
+    // HACK: we first call the callbacks with no param, then we call the callbacks with a non-zero
+    // param. This is a way to use the param as a priority value. This is used by the scene FRAME
+    // callback so that it occurs after the user callbacks.
+    int n_callbacks = 0;
+    VklEventCallbackRegister* r = NULL;
+    for (uint32_t pass = 0; pass < 2; pass++)
+    {
+        for (uint32_t i = 0; i < canvas->callbacks_count; i++)
+        {
+            r = &canvas->callbacks[i];
+            // Will pass the user_data that was registered, to the callback function.
+            ev.user_data = r->user_data;
+
+            // Only call the callbacks registered for the specified type.
+            if (r->type == ev.type && r->mode == mode && (pass == 0 || r->param > 0))
+            {
+                r->callback(canvas, ev);
+                n_callbacks++;
+            }
+        }
+    }
+
+    if (canvas->enable_lock)
+        vkl_thread_unlock(&canvas->event_thread);
+
+    return n_callbacks;
+}
+
+
+
+static int _event_produce(VklCanvas* canvas, VklEvent ev)
+{
+    ASSERT(canvas != NULL);
+
+    // Call the sync callbacks directly.
+    int n_callbacks = _event_consume(canvas, ev, VKL_EVENT_MODE_SYNC);
+
+    // Enqueue the event only if there is at least one async callback for that event type.
+    if (_has_async_callbacks(canvas, ev.type))
+        _event_enqueue(canvas, ev);
+
+    return n_callbacks;
+}
+
+
+
+static void* _event_thread(void* p_canvas)
+{
+    VklCanvas* canvas = (VklCanvas*)p_canvas;
+    ASSERT(canvas != NULL);
+    log_debug("starting event thread");
+
+    VklEvent ev;
+    double avg_event_time = 0; // average event callback time across all event types
+    double elapsed = 0;        // average time of the event callbacks in the current iteration
+    int n_callbacks = 0;       // number of event callbacks in the current event loop iteration
+    int counter = 0;           // number of iterations in the event loop
+    int events_to_keep = 0;    // maximum number of pending events to keep in the queue
+
+    while (true)
+    {
+        // log_trace("event thread awaits for events...");
+        // Wait until an event is available
+        ev = _event_dequeue(canvas, true);
+        canvas->event_processing = ev.type; // type of the event being processed
+        if (ev.type == VKL_EVENT_NONE)
+        {
+            log_trace("received empty event, stopping the event thread");
+            break;
+        }
+
+        // Logic to discard some events if the queue is getting overloaded because of long-running
+        // callbacks.
+
+        // TODO: there are ways to improve the mechanism dropping events from the queue when the
+        // queue is getting overloaded. Doing it on a per-type basis, better estimating the avg
+        // time taken by each callback, etc.
+
+        // log_trace("event dequeued type %d, processing it...", ev.type);
+        // process the dequeued task
+        elapsed = _clock_get(&canvas->clock);
+        n_callbacks = _event_consume(canvas, ev, VKL_EVENT_MODE_ASYNC);
+        elapsed = _clock_get(&canvas->clock) - elapsed;
+        // NOTE: avoid division by zero.
+        if (n_callbacks > 0)
+            elapsed /= n_callbacks; // average duration of the events
+
+        // Update the average event time.
+        avg_event_time = ((avg_event_time * counter) + elapsed) / (counter + 1);
+        if (avg_event_time > 0)
+        {
+            events_to_keep =
+                CLIP(VKL_MAX_EVENT_DURATION / avg_event_time, 1, VKL_MAX_FIFO_CAPACITY);
+            if (events_to_keep == VKL_MAX_FIFO_CAPACITY)
+                events_to_keep = 0;
+        }
+
+        // Handle event queue overloading: if events are enqueued faster than
+        // they are consumed, we should discard the older events so that the
+        // queue doesn't keep filling up.
+        vkl_fifo_discard(&canvas->event_queue, events_to_keep);
+
+        canvas->event_processing = VKL_EVENT_NONE;
+        counter++;
+    }
+    log_debug("end event thread");
+
+    return NULL;
+}
 
 
 

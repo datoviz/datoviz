@@ -15,7 +15,7 @@
 /*  Scene tests                                                                                  */
 /*************************************************************************************************/
 
-static void _panzoom(VklCanvas* canvas, VklPrivateEvent ev)
+static void _panzoom(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
     VklScene* scene = ev.user_data;
@@ -167,7 +167,7 @@ int test_scene_axes(TestContext* context)
 
 
 
-static void _logistic(VklCanvas* canvas, VklPrivateEvent ev)
+static void _logistic(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
     VklCommands* cmds = ev.user_data;
@@ -228,7 +228,7 @@ int test_scene_logistic(TestContext* context)
     vkl_cmd_push(cmds, 0, &compute->slots, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(N), &N);
     vkl_cmd_compute(cmds, 0, compute, (uvec3){N, 1, 1});
     vkl_cmd_end(cmds, 0);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1. / 10, _logistic, cmds);
+    vkl_event_callback(canvas, VKL_EVENT_TIMER, 1. / 10, VKL_EVENT_MODE_SYNC, _logistic, cmds);
 
     vkl_app_run(app, N_FRAMES);
     vkl_compute_destroy(compute);

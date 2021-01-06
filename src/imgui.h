@@ -37,7 +37,7 @@ VKY_EXPORT void vkl_imgui_end();
 
 VKY_EXPORT void vkl_imgui_destroy();
 
-VKY_EXPORT void vkl_imgui_callback_fps(VklCanvas* canvas, VklPrivateEvent);
+VKY_EXPORT void vkl_imgui_callback_fps(VklCanvas* canvas, VklEvent);
 
 
 

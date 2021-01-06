@@ -22,7 +22,7 @@ static void _mouse_callback(VklCanvas* canvas, VklEvent ev)
     vkl_mouse_event(mouse, canvas, ev);
 }
 
-static void _resize(VklCanvas* canvas, VklPrivateEvent ev)
+static void _resize(VklCanvas* canvas, VklEvent ev)
 {
     canvas->viewport.margins[0] = 100;
     canvas->viewport.margins[1] = 100;
@@ -56,7 +56,8 @@ static void _common_data(VklVisual* visual)
     vkl_upload_buffers(canvas, br_viewport, 0, sizeof(VklViewport), &canvas->viewport);
     vkl_visual_update(visual, canvas->viewport, (VklDataCoords){0}, NULL);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _visual_canvas_fill, visual);
+    vkl_event_callback(
+        canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _visual_canvas_fill, visual);
 }
 
 #define INIT                                                                                      \
@@ -68,7 +69,7 @@ static void _common_data(VklVisual* visual)
 
 #define RUN                                                                                       \
     _common_data(&visual);                                                                        \
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _resize, NULL);                      \
+    vkl_event_callback(canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _resize, NULL);          \
     vkl_app_run(app, N_FRAMES);
 
 #define END                                                                                       \
@@ -153,7 +154,7 @@ int test_visuals_segment_raw(TestContext* context)
 
 
 
-static void _visual_update(VklCanvas* canvas, VklPrivateEvent ev)
+static void _visual_update(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
     VklVisual* visual = ev.user_data;
@@ -188,7 +189,7 @@ static void _visual_update(VklCanvas* canvas, VklPrivateEvent ev)
     FREE(text);
 }
 
-// static void _wait(VklCanvas* canvas, VklPrivateEvent ev) { vkl_sleep(50); }
+// static void _wait(VklCanvas* canvas, VklEvent ev) { vkl_sleep(50); }
 
 int test_visuals_axes_2D(TestContext* context)
 {
@@ -244,9 +245,9 @@ int test_visuals_axes_2D(TestContext* context)
 
     _common_data(&visual);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, .25, _visual_update, &visual);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _resize, NULL);
-    // vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _wait, NULL);
+    vkl_event_callback(canvas, VKL_EVENT_TIMER, .25, VKL_EVENT_MODE_SYNC, _visual_update, &visual);
+    vkl_event_callback(canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _resize, NULL);
+    // vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _wait, NULL);
     vkl_app_run(app, N_FRAMES);
     FREE(xticks);
     FREE(yticks);

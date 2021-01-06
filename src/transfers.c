@@ -6,6 +6,36 @@
 
 
 /*************************************************************************************************/
+/*  FIFO                                                                                         */
+/*************************************************************************************************/
+
+static void _transfer_enqueue(VklFifo* fifo, VklTransfer transfer)
+{
+    ASSERT(fifo->capacity > 0);
+    ASSERT(0 <= fifo->head && fifo->head < fifo->capacity);
+    VklTransfer* tr = (VklTransfer*)calloc(1, sizeof(VklTransfer));
+    *tr = transfer;
+    vkl_fifo_enqueue(fifo, tr);
+}
+
+
+
+static VklTransfer _transfer_dequeue(VklFifo* fifo, bool wait)
+{
+    VklTransfer* item = (VklTransfer*)vkl_fifo_dequeue(fifo, wait);
+    VklTransfer out;
+    out.type = VKL_TRANSFER_NONE;
+    if (item == NULL)
+        return out;
+    ASSERT(item != NULL);
+    out = *item;
+    FREE(item);
+    return out;
+}
+
+
+
+/*************************************************************************************************/
 /*  Buffer transfers                                                                             */
 /*************************************************************************************************/
 
@@ -226,7 +256,7 @@ void vkl_process_transfers(VklCanvas* canvas)
     VklTransfer tr = {0};
     while (true)
     {
-        tr = fifo_dequeue(context, fifo, false);
+        tr = _transfer_dequeue(fifo, false);
         if (tr.type == VKL_TRANSFER_NONE)
             break;
         fifo->is_processing = true;
@@ -288,7 +318,7 @@ static void _enqueue_buffers_transfer(
     // buffers that are not continuously updated in each frame.
     tr.u.buf.update_all_buffers = !canvas->app->is_running;
 
-    fifo_enqueue(context, &canvas->transfers, tr);
+    _transfer_enqueue(&canvas->transfers, tr);
 }
 
 
@@ -338,7 +368,7 @@ void vkl_copy_buffers(
     tr.u.buf_copy.dst_offset = dst_offset;
     tr.u.buf_copy.size = size;
 
-    fifo_enqueue(context, &canvas->transfers, tr);
+    _transfer_enqueue(&canvas->transfers, tr);
 
     if (!canvas->app->is_running)
         vkl_process_transfers(canvas);
@@ -383,7 +413,7 @@ static void _enqueue_texture_transfer(
     tr.u.tex.data = data;
     tr.u.tex.texture = texture;
 
-    fifo_enqueue(context, &canvas->transfers, tr);
+    _transfer_enqueue(&canvas->transfers, tr);
 }
 
 
@@ -438,7 +468,7 @@ void vkl_copy_texture(
     memcpy(tr.u.tex_copy.dst_offset, dst_offset, sizeof(uvec3));
     memcpy(tr.u.tex_copy.shape, shape, sizeof(uvec3));
 
-    fifo_enqueue(context, &canvas->transfers, tr);
+    _transfer_enqueue(&canvas->transfers, tr);
 
     if (!canvas->app->is_running)
         vkl_process_transfers(canvas);

@@ -8,7 +8,7 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static void _wait(VklCanvas* canvas, VklPrivateEvent ev) { vkl_sleep(500); }
+static void _wait(VklCanvas* canvas, VklEvent ev) { vkl_sleep(500); }
 
 
 
@@ -79,7 +79,8 @@ int test_visuals_1(TestContext* context)
     // Upload the data to the GPU.
     vkl_visual_update(&visual, canvas->viewport, (VklDataCoords){0}, NULL);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _visual_canvas_fill, &visual);
+    vkl_event_callback(
+        canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _visual_canvas_fill, &visual);
 
     // Run and end.
     vkl_app_run(app, N_FRAMES);
@@ -136,7 +137,8 @@ int test_visuals_2(TestContext* context)
     // Upload the data to the GPU..
     vkl_visual_update(&visual, canvas->viewport, (VklDataCoords){0}, NULL);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _visual_canvas_fill, &visual);
+    vkl_event_callback(
+        canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _visual_canvas_fill, &visual);
 
     // Run and end.
     vkl_app_run(app, N_FRAMES);
@@ -152,7 +154,7 @@ int test_visuals_2(TestContext* context)
 static VklMVP mvp;
 static VklBufferRegions br_mvp;
 
-static void _timer_callback(VklCanvas* canvas, VklPrivateEvent ev)
+static void _timer_callback(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
     VklVisual* visual = ev.user_data;
@@ -217,8 +219,9 @@ int test_visuals_3(TestContext* context)
     // Upload the data to the GPU.
     vkl_visual_update(&visual, canvas->viewport, (VklDataCoords){0}, NULL);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _visual_canvas_fill, &visual);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _timer_callback, &visual);
+    vkl_event_callback(
+        canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _visual_canvas_fill, &visual);
+    vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _timer_callback, &visual);
 
     // Run and end.
     vkl_app_run(app, N_FRAMES);
@@ -232,7 +235,7 @@ int test_visuals_3(TestContext* context)
 
 
 
-static void _visual_update(VklCanvas* canvas, VklPrivateEvent ev)
+static void _visual_update(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
     VklVisual* visual = ev.user_data;
@@ -290,8 +293,9 @@ int test_visuals_4(TestContext* context)
     vkl_visual_data_buffer(&visual, VKL_SOURCE_TYPE_VIEWPORT, 0, 0, 1, 1, &canvas->viewport);
     vkl_visual_update(&visual, canvas->viewport, (VklDataCoords){0}, NULL);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, .1, _visual_update, &visual);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _visual_canvas_fill, &visual);
+    vkl_event_callback(canvas, VKL_EVENT_TIMER, .1, VKL_EVENT_MODE_SYNC, _visual_update, &visual);
+    vkl_event_callback(
+        canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _visual_canvas_fill, &visual);
 
     // Run and end.
     vkl_app_run(app, N_FRAMES);
@@ -315,7 +319,7 @@ static void _append(VklVisual* visual)
     vkl_visual_data_append(visual, VKL_PROP_COLOR, 0, 1, &color);
 }
 
-static void _visual_append(VklCanvas* canvas, VklPrivateEvent ev)
+static void _visual_append(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
     VklVisual* visual = ev.user_data;
@@ -350,9 +354,10 @@ int test_visuals_5(TestContext* context)
     vkl_visual_data_buffer(&visual, VKL_SOURCE_TYPE_VIEWPORT, 0, 0, 1, 1, &canvas->viewport);
     vkl_visual_update(&visual, canvas->viewport, (VklDataCoords){0}, NULL);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, .1, _visual_append, &visual);
-    // vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _wait, &visual);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _visual_canvas_fill, &visual);
+    vkl_event_callback(canvas, VKL_EVENT_TIMER, .1, VKL_EVENT_MODE_SYNC, _visual_append, &visual);
+    // vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, _wait, &visual);
+    vkl_event_callback(
+        canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _visual_canvas_fill, &visual);
 
     // Run and end.
     vkl_app_run(app, N_FRAMES);

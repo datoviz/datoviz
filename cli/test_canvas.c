@@ -105,7 +105,7 @@ int test_canvas_transfer_texture(TestContext* context)
 /*  Canvas 1                                                                                     */
 /*************************************************************************************************/
 
-static void _frame_callback(VklCanvas* canvas, VklPrivateEvent ev)
+static void _frame_callback(VklCanvas* canvas, VklEvent ev)
 {
     log_debug(
         "canvas #%d, frame callback #%d, time %.6f, interval %.6f", //
@@ -141,12 +141,12 @@ int test_canvas_1(TestContext* context)
     ASSERT(size[0] > 0);
     ASSERT(size[1] > 0);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _frame_callback, NULL);
+    vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _frame_callback, NULL);
 
     vkl_app_run(app, 8);
 
     // Send a mock key press event.
-    vkl_event_callback(canvas, VKL_EVENT_KEY, 0, _key_callback, NULL);
+    vkl_event_callback(canvas, VKL_EVENT_KEY, 0, VKL_EVENT_MODE_SYNC, _key_callback, NULL);
     vkl_event_key(canvas, VKL_KEY_PRESS, VKL_KEY_A, 0);
 
     // Second canvas.
@@ -195,7 +195,7 @@ static void _cursor_callback(VklCanvas* canvas, VklEvent ev)
     vkl_canvas_clear_color(canvas, (VkClearColorValue){{x, 0, y, 1}});
 }
 
-static void _timer_callback(VklCanvas* canvas, VklPrivateEvent ev)
+static void _timer_callback(VklCanvas* canvas, VklEvent ev)
 {
     log_trace("timer callback #%d time %.3f", ev.u.t.idx, ev.u.t.time);
     float x = exp(-.01 * (float)ev.u.t.idx);
@@ -208,13 +208,17 @@ int test_canvas_2(TestContext* context)
     VklGpu* gpu = vkl_gpu(app, 0);
     VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
 
-    vkl_event_callback(canvas, VKL_EVENT_INIT, 0, _init_callback, NULL);
-    vkl_event_callback(canvas, VKL_EVENT_KEY, 0, _key_callback, NULL);
-    vkl_event_callback(canvas, VKL_EVENT_MOUSE_WHEEL, 0, _wheel_callback, NULL);
-    vkl_event_callback(canvas, VKL_EVENT_MOUSE_BUTTON, 0, _button_callback, NULL);
-    vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _cursor_callback, NULL);
+    vkl_event_callback(canvas, VKL_EVENT_INIT, 0, VKL_EVENT_MODE_SYNC, _init_callback, NULL);
+    vkl_event_callback(canvas, VKL_EVENT_KEY, 0, VKL_EVENT_MODE_SYNC, _key_callback, NULL);
+    vkl_event_callback(
+        canvas, VKL_EVENT_MOUSE_WHEEL, 0, VKL_EVENT_MODE_SYNC, _wheel_callback, NULL);
+    vkl_event_callback(
+        canvas, VKL_EVENT_MOUSE_BUTTON, 0, VKL_EVENT_MODE_SYNC, _button_callback, NULL);
+    vkl_event_callback(
+        canvas, VKL_EVENT_MOUSE_MOVE, 0, VKL_EVENT_MODE_SYNC, _cursor_callback, NULL);
 
-    // vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, .05, _timer_callback, NULL);
+    // vkl_event_callback(canvas, VKL_EVENT_TIMER, .05, VKL_EVENT_MODE_SYNC, _timer_callback,
+    // NULL);
 
     vkl_app_run(app, N_FRAMES);
     TEST_END
@@ -236,7 +240,7 @@ static void _make_triangle2(VklCanvas* canvas, TestVisual* visual, const char* s
     canvas->user_data = visual;
 }
 
-static void _triangle_refill(VklCanvas* canvas, VklPrivateEvent ev)
+static void _triangle_refill(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
     // Take the first command buffers, which corresponds to the default canvas render command//
@@ -271,7 +275,8 @@ int test_canvas_3(TestContext* context)
 
     TestVisual visual = {0};
     _make_triangle2(canvas, &visual, "");
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_refill, &visual);
+    vkl_event_callback(
+        canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _triangle_refill, &visual);
 
     vkl_app_run(app, N_FRAMES);
     vkl_graphics_destroy(&visual.graphics);
@@ -287,7 +292,7 @@ int test_canvas_3(TestContext* context)
 
 static vec3 push_vec; // NOTE: not thread-safe
 
-static void _triangle_push_refill(VklCanvas* canvas, VklPrivateEvent ev)
+static void _triangle_push_refill(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
     ASSERT(ev.u.rf.cmd_count == 1);
@@ -329,7 +334,7 @@ static void _push_cursor_callback(VklCanvas* canvas, VklEvent ev)
     vkl_canvas_to_refill(canvas);
 }
 
-static void _wait(VklCanvas* canvas, VklPrivateEvent ev) { vkl_sleep(50); }
+static void _wait(VklCanvas* canvas, VklEvent ev) { vkl_sleep(50); }
 
 int test_canvas_4(TestContext* context)
 {
@@ -377,9 +382,10 @@ int test_canvas_4(TestContext* context)
     visual.br.size = size;
     visual.br.count = 1;
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_push_refill, &visual);
-    vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _push_cursor_callback, NULL);
-    // vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _wait, NULL);
+    vkl_event_callback(
+        canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _triangle_push_refill, &visual);
+    vkl_event_callback(
+        canvas, VKL_EVENT_MOUSE_MOVE, 0, VKL_EVENT_MODE_SYNC, _push_cursor_callback, NULL);
 
     vkl_app_run(app, N_FRAMES);
 
@@ -446,10 +452,12 @@ int test_canvas_5(TestContext* context)
     memcpy(visual.data, data, sizeof(data));
     vkl_upload_buffers(canvas, visual.br, 0, 3 * sizeof(TestVertex), data);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_refill, &visual);
+    vkl_event_callback(
+        canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _triangle_refill, &visual);
 
     // Cursor callback.
-    vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _vertex_cursor_callback, &visual);
+    vkl_event_callback(
+        canvas, VKL_EVENT_MOUSE_MOVE, 0, VKL_EVENT_MODE_SYNC, _vertex_cursor_callback, &visual);
 
     vkl_app_run(app, N_FRAMES);
 
@@ -478,7 +486,7 @@ static void _uniform_cursor_callback(VklCanvas* canvas, VklEvent ev)
     vec[3] = 1;
 }
 
-static void _uniform_frame_callback(VklCanvas* canvas, VklPrivateEvent ev)
+static void _uniform_frame_callback(VklCanvas* canvas, VklEvent ev)
 {
     TestVisual* visual = ev.user_data;
     vkl_upload_buffers(canvas, visual->br_u, 0, sizeof(vec4), vec);
@@ -533,12 +541,15 @@ int test_canvas_6(TestContext* context)
     memcpy(visual.data, data, sizeof(data));
     vkl_upload_buffers(canvas, visual.br, 0, size, data);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_refill, &visual);
+    vkl_event_callback(
+        canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _triangle_refill, &visual);
 
     // Cursor callback.
     // WARNING: UNIFORM_MAPPABLE must be updated at every frame!
-    vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _uniform_cursor_callback, &visual);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _uniform_frame_callback, &visual);
+    vkl_event_callback(
+        canvas, VKL_EVENT_MOUSE_MOVE, 0, VKL_EVENT_MODE_SYNC, _uniform_cursor_callback, &visual);
+    vkl_event_callback(
+        canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _uniform_frame_callback, &visual);
 
     vkl_app_run(app, N_FRAMES);
 
@@ -553,7 +564,7 @@ int test_canvas_6(TestContext* context)
 /*  Canvas triangle with compute                                                                 */
 /*************************************************************************************************/
 
-static void _triangle_compute_refill(VklCanvas* canvas, VklPrivateEvent ev)
+static void _triangle_compute_refill(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
     ASSERT(ev.u.rf.cmd_count == 1);
@@ -604,7 +615,8 @@ int test_canvas_7(TestContext* context)
         vkl_compute_create(visual.compute);
     }
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_compute_refill, &visual);
+    vkl_event_callback(
+        canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _triangle_compute_refill, &visual);
 
     vkl_app_run(app, N_FRAMES);
 
@@ -620,7 +632,7 @@ int test_canvas_7(TestContext* context)
 /*  Canvas triangle with compute                                                                 */
 /*************************************************************************************************/
 
-static void _triangle_compute(VklCanvas* canvas, VklPrivateEvent ev)
+static void _triangle_compute(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
     ASSERT(canvas->gpu != NULL);
@@ -672,8 +684,9 @@ int test_canvas_8(TestContext* context)
     vkl_cmd_end(cmds, 0);
     ASSERT(is_obj_created(&cmds->obj));
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_refill, &visual);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _triangle_compute, cmds);
+    vkl_event_callback(
+        canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _triangle_refill, &visual);
+    vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _triangle_compute, cmds);
 
     vkl_app_run(app, N_FRAMES);
 
@@ -689,7 +702,7 @@ int test_canvas_8(TestContext* context)
 /*  Canvas triangle with vertex buffer update                                                    */
 /*************************************************************************************************/
 
-static void _append_callback(VklCanvas* canvas, VklPrivateEvent ev)
+static void _append_callback(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
     TestVisual* visual = ev.user_data;
@@ -762,8 +775,10 @@ int test_canvas_append(TestContext* context)
     memcpy(visual.data, data, sizeof(data));
     vkl_upload_buffers(canvas, visual.br, 0, size, data);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _triangle_refill, &visual);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, .1, _append_callback, &visual);
+    vkl_event_callback(
+        canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _triangle_refill, &visual);
+    vkl_event_callback(
+        canvas, VKL_EVENT_TIMER, .1, VKL_EVENT_MODE_SYNC, _append_callback, &visual);
 
     vkl_app_run(app, N_FRAMES);
 
@@ -795,7 +810,7 @@ struct TestParticleCompute
     bool is_running;
 };
 
-static void _particle_frame(VklCanvas* canvas, VklPrivateEvent ev)
+static void _particle_frame(VklCanvas* canvas, VklEvent ev)
 {
     TestVisual* visual = (TestVisual*)ev.user_data;
     TestParticleUniform* data_u = visual->data_u;
@@ -840,7 +855,7 @@ static void _particle_cursor(VklCanvas* canvas, VklEvent ev)
     data_u->pos[1] = y;
 }
 
-static void _particle_refill(VklCanvas* canvas, VklPrivateEvent ev)
+static void _particle_refill(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
     ASSERT(ev.u.rf.cmd_count == 1);
@@ -1001,9 +1016,12 @@ int test_canvas_particles(TestContext* context)
     // Callbacks.
     {
         canvas->user_data = visual;
-        vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _particle_refill, visual);
-        vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _particle_frame, visual);
-        vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _particle_cursor, visual);
+        vkl_event_callback(
+            canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _particle_refill, visual);
+        vkl_event_callback(
+            canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _particle_frame, visual);
+        vkl_event_callback(
+            canvas, VKL_EVENT_MOUSE_MOVE, 0, VKL_EVENT_MODE_SYNC, _particle_cursor, visual);
     }
 
     vkl_app_run(app, N_FRAMES);
@@ -1027,12 +1045,12 @@ int test_canvas_offscreen(TestContext* context)
     VklGpu* gpu = vkl_gpu(app, 0);
     VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _frame_callback, NULL);
+    vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _frame_callback, NULL);
 
     vkl_app_run(app, 10);
 
     // // Send a mock key press event.
-    // vkl_event_callback(canvas, VKL_EVENT_KEY, 0, _key_callback, NULL);
+    // vkl_event_callback(canvas, VKL_EVENT_KEY, 0, VKL_EVENT_MODE_SYNC, _key_callback, NULL);
     // vkl_event_key(canvas, VKL_KEY_PRESS, VKL_KEY_A);
 
     TEST_END
@@ -1048,9 +1066,9 @@ static void _screencast_callback(VklCanvas* canvas, VklEvent ev)
 {
     char path[1024];
     snprintf(path, sizeof(path), "%s/screenshot.ppm", ARTIFACTS_DIR);
-    log_trace("screencast frame #%d %d", ev.u.s.idx, ev.u.s.rgba[0]);
-    write_ppm(path, ev.u.s.width, ev.u.s.height, ev.u.s.rgba);
-    FREE(ev.u.s.rgba);
+    log_trace("screencast frame #%d %d", ev.u.sc.idx, ev.u.sc.rgba[0]);
+    write_ppm(path, ev.u.sc.width, ev.u.sc.height, ev.u.sc.rgba);
+    FREE(ev.u.sc.rgba);
 }
 
 int test_canvas_screencast(TestContext* context)
@@ -1059,8 +1077,10 @@ int test_canvas_screencast(TestContext* context)
     VklGpu* gpu = vkl_gpu(app, 0);
     VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
 
-    vkl_event_callback(canvas, VKL_EVENT_MOUSE_MOVE, 0, _cursor_callback, NULL);
-    vkl_event_callback(canvas, VKL_EVENT_SCREENCAST, 0, _screencast_callback, NULL);
+    vkl_event_callback(
+        canvas, VKL_EVENT_MOUSE_MOVE, 0, VKL_EVENT_MODE_SYNC, _cursor_callback, NULL);
+    vkl_event_callback(
+        canvas, VKL_EVENT_SCREENCAST, 0, VKL_EVENT_MODE_SYNC, _screencast_callback, NULL);
 
     vkl_screencast(canvas, 1. / 30);
 

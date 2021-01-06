@@ -79,34 +79,6 @@ struct VklContext
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static void fifo_enqueue(VklContext* context, VklFifo* fifo, VklTransfer transfer)
-{
-    ASSERT(context != NULL);
-    ASSERT(fifo->capacity > 0);
-    ASSERT(0 <= fifo->head && fifo->head < fifo->capacity);
-    VklTransfer* tr = (VklTransfer*)calloc(1, sizeof(VklTransfer));
-    *tr = transfer;
-    vkl_fifo_enqueue(fifo, tr);
-}
-
-
-
-static VklTransfer fifo_dequeue(VklContext* context, VklFifo* fifo, bool wait)
-{
-    ASSERT(context != NULL);
-    VklTransfer* item = (VklTransfer*)vkl_fifo_dequeue(fifo, wait);
-    VklTransfer out;
-    out.type = VKL_TRANSFER_NONE;
-    if (item == NULL)
-        return out;
-    ASSERT(item != NULL);
-    out = *item;
-    FREE(item);
-    return out;
-}
-
-
-
 static VklBuffer* staging_buffer(VklContext* context, VkDeviceSize size)
 {
     VklBuffer* staging = (VklBuffer*)vkl_container_get(&context->buffers, VKL_BUFFER_TYPE_STAGING);

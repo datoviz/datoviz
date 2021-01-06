@@ -79,7 +79,7 @@ static void _marker_visual(VklVisual* visual)
     }
 }
 
-static void _visual_canvas_fill(VklCanvas* canvas, VklPrivateEvent ev)
+static void _visual_canvas_fill(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
     ASSERT(ev.user_data != NULL);

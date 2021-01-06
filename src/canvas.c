@@ -159,104 +159,6 @@ static inline bool _all_true(uint32_t n, bool* arr)
 
 
 /*************************************************************************************************/
-/*  Public event sending                                                                         */
-/*************************************************************************************************/
-
-static int _event_callbacks(VklCanvas* canvas, VklEvent* event)
-{
-    // NOTE: no need for thread synchronization as long as only the event thread manipulates
-    // the event callbacks.
-    int n_callbacks = 0;
-    vkl_thread_lock(&canvas->event_thread);
-    for (uint32_t i = 0; i < canvas->event_callbacks_count; i++)
-    {
-        // Will pass the user_data that was registered, to the callback function.
-        event->user_data = canvas->event_callbacks[i].user_data;
-
-        // Only call the callbacks registered for the specified type.
-        if (canvas->event_callbacks[i].type == event->type)
-        {
-            canvas->event_callbacks[i].callback(canvas, *event);
-            n_callbacks++;
-        }
-    }
-    vkl_thread_unlock(&canvas->event_thread);
-    return n_callbacks;
-}
-
-
-
-/*************************************************************************************************/
-/*  Event thread                                                                                 */
-/*************************************************************************************************/
-
-static void* _event_thread(void* p_canvas)
-{
-    VklCanvas* canvas = (VklCanvas*)p_canvas;
-    ASSERT(canvas != NULL);
-    log_debug("starting event thread");
-
-    VklEvent* ev = NULL;
-    double avg_event_time = 0; // average event callback time across all event types
-    double elapsed = 0;        // average time of the event callbacks in the current iteration
-    int n_callbacks = 0;       // number of event callbacks in the current event loop iteration
-    int counter = 0;           // number of iterations in the event loop
-    int events_to_keep = 0;    // maximum number of pending events to keep in the queue
-
-    while (true)
-    {
-        // log_trace("event thread awaits for events...");
-        // Wait until an event is available
-        ev = vkl_event_dequeue(canvas, true);
-        canvas->event_processing = ev->type; // type of the event being processed
-        if (ev->type == VKL_EVENT_NONE)
-        {
-            log_trace("received empty event, stopping the event thread");
-            break;
-        }
-
-        // Logic to discard some events if the queue is getting overloaded because of long-running
-        // callbacks.
-
-        // TODO: there are ways to improve the mechanism dropping events from the queue when the
-        // queue is getting overloaded. Doing it on a per-type basis, better estimating the avg
-        // time taken by each callback, etc.
-
-        // log_trace("event dequeued type %d, processing it...", ev.type);
-        // process the dequeued task
-        elapsed = _clock_get(&canvas->clock);
-        n_callbacks = _event_callbacks(canvas, ev);
-        elapsed = _clock_get(&canvas->clock) - elapsed;
-        // NOTE: avoid division by zero.
-        if (n_callbacks > 0)
-            elapsed /= n_callbacks; // average duration of the events
-
-        // Update the average event time.
-        avg_event_time = ((avg_event_time * counter) + elapsed) / (counter + 1);
-        if (avg_event_time > 0)
-        {
-            events_to_keep =
-                CLIP(VKL_MAX_EVENT_DURATION / avg_event_time, 1, VKL_MAX_FIFO_CAPACITY);
-            if (events_to_keep == VKL_MAX_FIFO_CAPACITY)
-                events_to_keep = 0;
-        }
-
-        // Handle event queue overloading: if events are enqueued faster than
-        // they are consumed, we should discard the older events so that the
-        // queue doesn't keep filling up.
-        vkl_fifo_discard(&canvas->event_queue, events_to_keep);
-
-        canvas->event_processing = VKL_EVENT_NONE;
-        counter++;
-    }
-    log_debug("end event thread");
-
-    return NULL;
-}
-
-
-
-/*************************************************************************************************/
 /*  Backend-specific event callbacks                                                             */
 /*************************************************************************************************/
 
@@ -334,7 +236,7 @@ static void _glfw_move_callback(GLFWwindow* window, double xpos, double ypos)
     vkl_event_mouse_move(canvas, (vec2){xpos, ypos});
 }
 
-static void _glfw_frame_callback(VklCanvas* canvas, VklPrivateEvent ev)
+static void _glfw_frame_callback(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
     GLFWwindow* w = canvas->window->backend_window;
@@ -400,7 +302,8 @@ static void backend_event_callbacks(VklCanvas* canvas)
         // glfwSetCursorPosCallback(w, _glfw_move_callback);
 
         // Register a function called at every frame, after event polling and state update
-        vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_INTERACT, 0, _glfw_frame_callback, NULL);
+        vkl_event_callback(
+            canvas, VKL_EVENT_INTERACT, 0, VKL_EVENT_MODE_SYNC, _glfw_frame_callback, NULL);
 
         break;
     default:
@@ -411,43 +314,89 @@ static void backend_event_callbacks(VklCanvas* canvas)
 
 
 /*************************************************************************************************/
-/*  Private event sending                                                                        */
+/*  Event producers                                                                              */
 /*************************************************************************************************/
 
-static int _interact_callbacks(VklCanvas* canvas)
+static int _event_interact(VklCanvas* canvas)
 {
-    VklPrivateEvent ev = {0};
-    ev.type = VKL_PRIVATE_EVENT_INTERACT;
-    return _canvas_callbacks(canvas, ev);
+    VklEvent ev = {0};
+    ev.type = VKL_EVENT_INTERACT;
+    return _event_produce(canvas, ev);
 }
 
 
 
-static int _frame_callbacks(VklCanvas* canvas)
+static int _event_frame(VklCanvas* canvas)
 {
     ASSERT(canvas != NULL);
-    VklPrivateEvent ev = {0};
-    ev.type = VKL_PRIVATE_EVENT_FRAME;
+    VklEvent ev = {0};
+    ev.type = VKL_EVENT_FRAME;
     ev.u.f.idx = canvas->frame_idx;
     ev.u.f.interval = canvas->clock.interval;
     ev.u.f.time = canvas->clock.elapsed;
-    return _canvas_callbacks(canvas, ev);
+    return _event_produce(canvas, ev);
 }
 
 
 
-static void _refill_callbacks(VklCanvas* canvas, VklPrivateEvent ev, uint32_t img_idx)
+static void _event_timer(VklCanvas* canvas)
 {
-    log_debug("refill callbacks for image #%d", img_idx);
+    ASSERT(canvas != NULL);
+    // Go through all TIMER callbacks
+    double last_time = 0;
+    double expected_time = 0;
+    double cur_time = canvas->clock.elapsed;
+    double interval = 0;
+    VklEvent ev = {0};
+    VklEventCallbackRegister* r = NULL;
+    ev.type = VKL_EVENT_TIMER;
+    for (uint32_t i = 0; i < canvas->callbacks_count; i++)
+    {
+        r = &canvas->callbacks[i];
+        if (r->type == VKL_EVENT_TIMER)
+        {
+            interval = r->param;
+
+            // At what time was the last TIMER event for this callback?
+            last_time = r->idx * interval;
+            if (cur_time < last_time)
+                log_warn("%.3f %.3f", cur_time, last_time);
+
+            // What is the next expected time?
+            expected_time = (r->idx + 1) * interval;
+
+            // If we reached the expected time, we raise the TIMER event immediately.
+            if (cur_time >= expected_time)
+            {
+                ev.user_data = r->user_data;
+                r->idx++;
+                ev.u.t.idx = r->idx;
+                ev.u.t.time = cur_time;
+                // NOTE: this is the time since the last *expected* time of the previous TIMER
+                // event, not the actual time.
+                ev.u.t.interval = cur_time - last_time;
+
+                // Call this TIMER callback.
+                r->callback(canvas, ev);
+            }
+        }
+    }
+}
+
+
+
+static void _event_refill(VklCanvas* canvas, VklEvent ev)
+{
+    // log_debug("refill callbacks for image #%d", img_idx);
     ASSERT(canvas != NULL);
     ASSERT(ev.u.rf.cmd_count > 0);
-    ev.u.rf.img_idx = img_idx;
+    uint32_t img_idx = ev.u.rf.img_idx;
 
     // Reset all command buffers before calling the REFILL callbacks.
     for (uint32_t i = 0; i < ev.u.rf.cmd_count; i++)
         vkl_cmd_reset(ev.u.rf.cmds[i], img_idx);
 
-    int res = _canvas_callbacks(canvas, ev);
+    int res = _event_produce(canvas, ev);
     if (res == 0)
     {
         log_trace("no REFILL callback registered, filling command buffers with blank screen");
@@ -460,19 +409,54 @@ static void _refill_callbacks(VklCanvas* canvas, VklPrivateEvent ev, uint32_t im
 
 
 
+static int _event_resize(VklCanvas* canvas)
+{
+    VklEvent ev = {0};
+    ev.type = VKL_EVENT_RESIZE;
+    vkl_canvas_size(canvas, VKL_CANVAS_SIZE_SCREEN, ev.u.r.size_screen);
+    vkl_canvas_size(canvas, VKL_CANVAS_SIZE_FRAMEBUFFER, ev.u.r.size_framebuffer);
+    canvas->viewport = vkl_viewport_full(canvas);
+    return _event_produce(canvas, ev);
+}
+
+
+
+static int _event_presend(VklCanvas* canvas)
+{
+    VklEvent ev = {0};
+    ev.type = VKL_EVENT_PRE_SEND;
+    ev.u.s.submit = &canvas->submit;
+    return _event_produce(canvas, ev);
+}
+
+
+
+static int _event_postsend(VklCanvas* canvas)
+{
+    VklEvent ev = {0};
+    ev.type = VKL_EVENT_POST_SEND;
+    ev.u.s.submit = &canvas->submit;
+    return _event_produce(canvas, ev);
+}
+
+
+
+/*************************************************************************************************/
+/*  Event utils                                                                                  */
+/*************************************************************************************************/
+
 static void _refill_canvas(VklCanvas* canvas, uint32_t img_idx)
 {
     ASSERT(canvas != NULL);
     log_debug("refill canvas %d", img_idx);
-    VklPrivateEvent ev = {0};
-    ev.type = VKL_PRIVATE_EVENT_REFILL;
+    VklEvent ev = {0};
+    ev.type = VKL_EVENT_REFILL;
+    ev.u.rf.img_idx = img_idx;
 
     // First commands passed is the default cmds_render VklCommands instance used for rendering.
     uint32_t k = 0;
     if (canvas->cmds_render.obj.status >= VKL_OBJECT_STATUS_INIT)
-    {
         ev.u.rf.cmds[k++] = &canvas->cmds_render;
-    }
 
     // // Fill the active command buffers for the RENDER queue.
     uint32_t img_count = canvas->cmds_render.count;
@@ -501,14 +485,12 @@ static void _refill_canvas(VklCanvas* canvas, uint32_t img_idx)
     {
         log_debug("complete refill of the canvas");
         for (img_idx = 0; img_idx < img_count; img_idx++)
-        {
-            _refill_callbacks(canvas, ev, img_idx);
-        }
+            _event_refill(canvas, ev);
     }
     else
     {
         log_trace("refill of the canvas for image idx #%d", img_idx);
-        _refill_callbacks(canvas, ev, img_idx);
+        _event_refill(canvas, ev);
     }
 }
 
@@ -559,61 +541,16 @@ static void _refill_frame(VklCanvas* canvas)
 
 
 
-static int _resize_callbacks(VklCanvas* canvas)
-{
-    VklPrivateEvent ev = {0};
-    ev.type = VKL_PRIVATE_EVENT_RESIZE;
-    vkl_canvas_size(canvas, VKL_CANVAS_SIZE_SCREEN, ev.u.r.size_screen);
-    vkl_canvas_size(canvas, VKL_CANVAS_SIZE_FRAMEBUFFER, ev.u.r.size_framebuffer);
-    canvas->viewport = vkl_viewport_full(canvas);
-    return _canvas_callbacks(canvas, ev);
-}
-
-
-
-static int _pre_send_callbacks(VklCanvas* canvas)
-{
-    VklPrivateEvent ev = {0};
-    ev.type = VKL_PRIVATE_EVENT_PRE_SEND;
-    ev.u.s.submit = &canvas->submit;
-    return _canvas_callbacks(canvas, ev);
-}
-
-
-
-static int _post_send_callbacks(VklCanvas* canvas)
-{
-    VklPrivateEvent ev = {0};
-    ev.type = VKL_PRIVATE_EVENT_POST_SEND;
-    ev.u.s.submit = &canvas->submit;
-    return _canvas_callbacks(canvas, ev);
-}
-
-
-
-static bool _has_event_callbacks(VklCanvas* canvas, VklEventType type)
-{
-    ASSERT(canvas != NULL);
-    if (type == VKL_EVENT_NONE || type == VKL_EVENT_INIT)
-        return true;
-    for (uint32_t i = 0; i < canvas->event_callbacks_count; i++)
-        if (canvas->event_callbacks[i].type == type)
-            return true;
-    return false;
-}
-
-
-
 static int _destroy_callbacks(VklCanvas* canvas)
 {
-    VklPrivateEvent ev = {0};
-    ev.type = VKL_PRIVATE_EVENT_DESTROY;
-    return _canvas_callbacks(canvas, ev);
+    VklEvent ev = {0};
+    ev.type = VKL_EVENT_DESTROY;
+    return _event_produce(canvas, ev);
 }
 
 
 
-static void _fps(VklCanvas* canvas, VklPrivateEvent ev)
+static void _fps(VklCanvas* canvas, VklEvent ev)
 {
     canvas->fps = (canvas->frame_idx - canvas->clock.checkpoint_value) / ev.u.t.interval;
     canvas->clock.checkpoint_value = canvas->frame_idx;
@@ -804,10 +741,11 @@ _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
     // FPS callback.
     {
         canvas->fps = 60;
-        vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, .25, _fps, NULL);
+        vkl_event_callback(canvas, VKL_EVENT_TIMER, .25, VKL_EVENT_MODE_SYNC, _fps, NULL);
 
         if (((canvas->flags >> 1) & VKL_CANVAS_FLAGS_FPS) != 0)
-            vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_IMGUI, 0, vkl_imgui_callback_fps, NULL);
+            vkl_event_callback(
+                canvas, VKL_EVENT_IMGUI, 0, VKL_EVENT_MODE_SYNC, vkl_imgui_callback_fps, NULL);
     }
 
     return canvas;
@@ -1004,45 +942,46 @@ VklViewport vkl_viewport_full(VklCanvas* canvas)
 /*  Callbacks                                                                                    */
 /*************************************************************************************************/
 
-void vkl_canvas_callback(
-    VklCanvas* canvas, VklPrivateEventType type, double param, //
-    VklCanvasCallback callback, void* user_data)
+void vkl_event_callback(
+    VklCanvas* canvas, VklEventType type, double param, VklEventMode mode, //
+    VklEventCallback callback, void* user_data)
 {
     ASSERT(canvas != NULL);
 
-    if (type == VKL_PRIVATE_EVENT_IMGUI && !canvas->overlay)
+    if (type == VKL_EVENT_IMGUI && !canvas->overlay)
     {
         log_error("the canvas must be created with the VKL_CANVAS_FLAGS_IMGUI flag before a GUI "
                   "can be shown");
         return;
     }
 
-    VklCanvasCallbackRegister r = {0};
-    r.callback = callback;
-    r.type = type;
-    r.user_data = user_data;
-    r.param = param;
-
-    canvas->canvas_callbacks[canvas->canvas_callbacks_count++] = r;
-}
-
-
-
-void vkl_event_callback(
-    VklCanvas* canvas, VklEventType type, double param, //
-    VklEventCallback callback, void* user_data)
-{
-    ASSERT(canvas != NULL);
-
     VklEventCallbackRegister r = {0};
     r.callback = callback;
     r.type = type;
+    r.mode = mode;
     r.user_data = user_data;
     r.param = param;
 
-    vkl_thread_lock(&canvas->event_thread);
-    canvas->event_callbacks[canvas->event_callbacks_count++] = r;
-    vkl_thread_unlock(&canvas->event_thread);
+    // Automatically enable the global lock if there is at least one async callback. The lock
+    // is used when calling any callback.
+    // TODO: improve this if this causes performance issues (locking/unlocking at every frame)
+    if (mode == VKL_EVENT_MODE_ASYNC)
+    {
+        // enable the global callback lock that surrounds all callbacks. This ensures
+        // that scene objects can be modified by both the main thread (internal scene
+        // system implemented in a sync callback) and in async callbacks (running in the
+        // background thread)
+        log_debug("enable the global callback lock");
+        canvas->enable_lock = true;
+    }
+
+    if (canvas->enable_lock)
+        vkl_thread_lock(&canvas->event_thread);
+
+    canvas->callbacks[canvas->callbacks_count++] = r;
+
+    if (canvas->enable_lock)
+        vkl_thread_unlock(&canvas->event_thread);
 }
 
 
@@ -1334,7 +1273,7 @@ void vkl_event_mouse_button(
     // Update the mouse state.
     vkl_mouse_event(&canvas->mouse, canvas, event);
 
-    vkl_event_enqueue(canvas, event);
+    _event_produce(canvas, event);
 }
 
 
@@ -1351,7 +1290,7 @@ void vkl_event_mouse_move(VklCanvas* canvas, vec2 pos)
     // Update the mouse state.
     vkl_mouse_event(&canvas->mouse, canvas, event);
 
-    vkl_event_enqueue(canvas, event);
+    _event_produce(canvas, event);
 }
 
 
@@ -1368,7 +1307,7 @@ void vkl_event_mouse_wheel(VklCanvas* canvas, vec2 dir)
     // Update the mouse state.
     vkl_mouse_event(&canvas->mouse, canvas, event);
 
-    vkl_event_enqueue(canvas, event);
+    _event_produce(canvas, event);
 }
 
 
@@ -1382,7 +1321,7 @@ void vkl_event_mouse_click(VklCanvas* canvas, vec2 pos, VklMouseButton button)
     event.u.c.pos[1] = pos[1];
     event.u.c.button = button;
     event.u.c.double_click = false;
-    vkl_event_enqueue(canvas, event);
+    _event_produce(canvas, event);
 }
 
 
@@ -1396,7 +1335,7 @@ void vkl_event_mouse_double_click(VklCanvas* canvas, vec2 pos, VklMouseButton bu
     event.u.c.pos[1] = pos[1];
     event.u.c.button = button;
     event.u.c.double_click = true;
-    vkl_event_enqueue(canvas, event);
+    _event_produce(canvas, event);
 }
 
 
@@ -1409,7 +1348,7 @@ void vkl_event_mouse_drag(VklCanvas* canvas, vec2 pos, VklMouseButton button)
     event.u.d.pos[0] = pos[0];
     event.u.d.pos[1] = pos[1];
     event.u.d.button = button;
-    vkl_event_enqueue(canvas, event);
+    _event_produce(canvas, event);
 }
 
 
@@ -1422,7 +1361,7 @@ void vkl_event_mouse_drag_end(VklCanvas* canvas, vec2 pos, VklMouseButton button
     event.u.d.pos[0] = pos[0];
     event.u.d.pos[1] = pos[1];
     event.u.d.button = button;
-    vkl_event_enqueue(canvas, event);
+    _event_produce(canvas, event);
 }
 
 
@@ -1440,7 +1379,7 @@ void vkl_event_key(VklCanvas* canvas, VklKeyType type, VklKeyCode key_code, int 
     // Update the keyboard state.
     vkl_keyboard_event(&canvas->keyboard, canvas, event);
 
-    vkl_event_enqueue(canvas, event);
+    _event_produce(canvas, event);
 }
 
 
@@ -1455,29 +1394,7 @@ void vkl_event_frame(VklCanvas* canvas, uint64_t idx, double time, double interv
     event.u.f.time = time;
     event.u.f.interval = interval;
 
-    vkl_event_enqueue(canvas, event);
-}
-
-
-
-void vkl_event_enqueue(VklCanvas* canvas, VklEvent event)
-{
-    ASSERT(canvas != NULL);
-    if (!_has_event_callbacks(canvas, event.type))
-        return;
-    VklFifo* fifo = &canvas->event_queue;
-    ASSERT(0 <= fifo->head && fifo->head < fifo->capacity);
-    canvas->events[fifo->head] = event;
-    vkl_fifo_enqueue(fifo, &canvas->events[fifo->head]);
-}
-
-
-
-VklEvent* vkl_event_dequeue(VklCanvas* canvas, bool wait)
-{
-    ASSERT(canvas != NULL);
-    VklFifo* fifo = &canvas->event_queue;
-    return vkl_fifo_dequeue(fifo, wait);
+    _event_produce(canvas, event);
 }
 
 
@@ -1524,7 +1441,7 @@ void vkl_event_stop(VklCanvas* canvas)
     VklFifo* fifo = &canvas->event_queue;
     vkl_fifo_reset(fifo);
     // Send a null event to the queue which causes the dequeue awaiting thread to end.
-    vkl_event_enqueue(canvas, (VklEvent){0});
+    _event_enqueue(canvas, (VklEvent){0});
 }
 
 
@@ -1574,7 +1491,7 @@ static void _screencast_cmds(VklScreencast* screencast)
 
 
 
-static void _screencast_timer_callback(VklCanvas* canvas, VklPrivateEvent ev)
+static void _screencast_timer_callback(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
     VklScreencast* screencast = (VklScreencast*)ev.user_data;
@@ -1603,7 +1520,7 @@ static void _screencast_timer_callback(VklCanvas* canvas, VklPrivateEvent ev)
 
 
 
-static void _screencast_post_send(VklCanvas* canvas, VklPrivateEvent ev)
+static void _screencast_post_send(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
     VklScreencast* screencast = (VklScreencast*)ev.user_data;
@@ -1654,13 +1571,13 @@ static void _screencast_post_send(VklCanvas* canvas, VklPrivateEvent ev)
         // Enqueue a special SCREENCAST public event with a pointer to the CPU buffer user
         VklEvent sev = {0};
         sev.type = VKL_EVENT_SCREENCAST;
-        sev.u.s.idx = screencast->frame_idx;
-        sev.u.s.interval = screencast->clock.interval;
-        sev.u.s.rgba = rgba;
-        sev.u.s.width = screencast->staging.width;
-        sev.u.s.height = screencast->staging.height;
+        sev.u.sc.idx = screencast->frame_idx;
+        sev.u.sc.interval = screencast->clock.interval;
+        sev.u.sc.rgba = rgba;
+        sev.u.sc.width = screencast->staging.width;
+        sev.u.sc.height = screencast->staging.height;
         log_trace("send SCREENCAST event");
-        vkl_event_enqueue(canvas, sev);
+        _event_produce(canvas, sev);
 
         // Reset screencast status.
         _clock_set(&screencast->clock);
@@ -1671,7 +1588,7 @@ static void _screencast_post_send(VklCanvas* canvas, VklPrivateEvent ev)
 
 
 
-static void _screencast_resize(VklCanvas* canvas, VklPrivateEvent ev)
+static void _screencast_resize(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
     VklScreencast* screencast = (VklScreencast*)ev.user_data;
@@ -1691,7 +1608,7 @@ static void _screencast_resize(VklCanvas* canvas, VklPrivateEvent ev)
 
 
 
-static void _screencast_destroy(VklCanvas* canvas, VklPrivateEvent ev)
+static void _screencast_destroy(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
     vkl_screencast_destroy(canvas);
@@ -1734,10 +1651,12 @@ void vkl_screencast(VklCanvas* canvas, double interval)
 
     _clock_init(&sc->clock);
 
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, interval, _screencast_timer_callback, sc);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_POST_SEND, 0, _screencast_post_send, sc);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_RESIZE, 0, _screencast_resize, sc);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_DESTROY, 0, _screencast_destroy, sc);
+    vkl_event_callback(
+        canvas, VKL_EVENT_TIMER, interval, VKL_EVENT_MODE_SYNC, _screencast_timer_callback, sc);
+    vkl_event_callback(
+        canvas, VKL_EVENT_POST_SEND, 0, VKL_EVENT_MODE_SYNC, _screencast_post_send, sc);
+    vkl_event_callback(canvas, VKL_EVENT_RESIZE, 0, VKL_EVENT_MODE_SYNC, _screencast_resize, sc);
+    vkl_event_callback(canvas, VKL_EVENT_DESTROY, 0, VKL_EVENT_MODE_SYNC, _screencast_destroy, sc);
 
     sc->obj.type = VKL_OBJECT_TYPE_SCREENCAST;
     obj_created(&sc->obj);
@@ -1778,50 +1697,6 @@ void vkl_screenshot_file(VklCanvas* canvas, const char* filename) {}
 /*  Event loop                                                                                   */
 /*************************************************************************************************/
 
-static void _timer_callbacks(VklCanvas* canvas)
-{
-    ASSERT(canvas != NULL);
-    // Go through all private TIMER callbacks
-    double last_time = 0;
-    double expected_time = 0;
-    double cur_time = canvas->clock.elapsed;
-    double interval = 0;
-    VklPrivateEvent ev = {0};
-    ev.type = VKL_PRIVATE_EVENT_TIMER;
-    for (uint32_t i = 0; i < canvas->canvas_callbacks_count; i++)
-    {
-        if (canvas->canvas_callbacks[i].type == VKL_PRIVATE_EVENT_TIMER)
-        {
-            interval = canvas->canvas_callbacks[i].param;
-
-            // At what time was the last TIMER event for this callback?
-            last_time = canvas->canvas_callbacks[i].idx * interval;
-            if (cur_time < last_time)
-                log_warn("%.3f %.3f", cur_time, last_time);
-
-            // What is the next expected time?
-            expected_time = (canvas->canvas_callbacks[i].idx + 1) * interval;
-
-            // If we reached the expected time, we raise the TIMER event immediately.
-            if (cur_time >= expected_time)
-            {
-                ev.user_data = canvas->canvas_callbacks[i].user_data;
-                canvas->canvas_callbacks[i].idx++;
-                ev.u.t.idx = canvas->canvas_callbacks[i].idx;
-                ev.u.t.time = cur_time;
-                // NOTE: this is the time since the last *expected* time of the previous TIMER
-                // event, not the actual time.
-                ev.u.t.interval = cur_time - last_time;
-
-                // Call this TIMER callback.
-                canvas->canvas_callbacks[i].callback(canvas, ev);
-            }
-        }
-    }
-}
-
-
-
 void vkl_canvas_frame(VklCanvas* canvas)
 {
     ASSERT(canvas != NULL);
@@ -1835,16 +1710,16 @@ void vkl_canvas_frame(VklCanvas* canvas)
     _clock_set(&canvas->clock);      // canvas-local clock
 
     // Call INTERACT callbacks (for backends only), which may enqueue some events.
-    _interact_callbacks(canvas);
+    _event_interact(canvas);
 
     // Call FRAME callbacks.
-    _frame_callbacks(canvas);
+    _event_frame(canvas);
 
     // Give a chance to update event structures in the main loop, for example reset wheel.
     _backend_next_frame(canvas);
 
-    // Call TIMER private callbacks, in the main thread.
-    _timer_callbacks(canvas);
+    // Call TIMER callbacks, in the main thread.
+    _event_timer(canvas);
 
     // Refill all command buffers at the first iteration.
     if (canvas->frame_idx == 0)
@@ -1913,13 +1788,13 @@ void vkl_canvas_frame_submit(VklCanvas* canvas)
     // SEND callbacks and send the Submit instance.
     {
         // Call PRE_SEND callbacks
-        _pre_send_callbacks(canvas);
+        _event_presend(canvas);
 
         // Send the Submit instance.
         vkl_submit_send(s, img_idx, &canvas->fences_render_finished, f);
 
         // Call POST_SEND callbacks
-        _post_send_callbacks(canvas);
+        _event_postsend(canvas);
     }
 
     // Once the image is rendered, we present the swapchain image.
@@ -1968,11 +1843,11 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             if (canvas->frame_idx == 0)
             {
                 // Call RESIZE callbacks at initialization.
-                _resize_callbacks(canvas);
+                _event_resize(canvas);
 
                 VklEvent ev = {0};
                 ev.type = VKL_EVENT_INIT;
-                vkl_event_enqueue(canvas, ev);
+                _event_produce(canvas, ev);
             }
 
             // Poll events.
@@ -2008,7 +1883,7 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
                 vkl_canvas_recreate(canvas);
 
                 // Update the VklViewport struct and call RESIZE callbacks.
-                _resize_callbacks(canvas);
+                _event_resize(canvas);
 
                 // Refill the canvas after the VklViewport has been updated.
                 // _refill_canvas(canvas, UINT32_MAX);
