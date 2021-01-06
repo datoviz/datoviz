@@ -167,6 +167,37 @@ typedef enum
 
 
 
+// Graphics builtins
+typedef enum
+{
+    VKL_GRAPHICS_NONE,
+    VKL_GRAPHICS_POINTS,
+
+    VKL_GRAPHICS_LINES,
+    VKL_GRAPHICS_LINE_STRIP,
+    VKL_GRAPHICS_TRIANGLES,
+    VKL_GRAPHICS_TRIANGLE_STRIP,
+    VKL_GRAPHICS_TRIANGLE_FAN,
+
+    VKL_GRAPHICS_MARKER_RAW,
+    VKL_GRAPHICS_MARKER,
+
+    VKL_GRAPHICS_SEGMENT,
+    VKL_GRAPHICS_ARROW,
+    VKL_GRAPHICS_PATH,
+    VKL_GRAPHICS_TEXT,
+
+    VKL_GRAPHICS_IMAGE,
+    VKL_GRAPHICS_MESH,
+
+    VKL_GRAPHICS_FAKE_SPHERE,
+    VKL_GRAPHICS_VOLUME,
+
+    VKL_GRAPHICS_COUNT,
+} VklGraphicsType;
+
+
+
 // Texture axis.
 typedef enum
 {
@@ -617,6 +648,9 @@ struct VklGraphics
 {
     VklObject obj;
     VklGpu* gpu;
+
+    VklGraphicsType type;
+    int flags;
 
     VklRenderpass* renderpass;
     uint32_t subpass;

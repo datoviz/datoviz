@@ -28,41 +28,6 @@ END_INCL_NO_WARN
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
-// Graphics builtins
-typedef enum
-{
-    VKL_GRAPHICS_NONE,
-    VKL_GRAPHICS_POINTS,
-
-    VKL_GRAPHICS_LINES,
-    VKL_GRAPHICS_LINE_STRIP,
-    VKL_GRAPHICS_TRIANGLES,
-    VKL_GRAPHICS_TRIANGLE_STRIP,
-    VKL_GRAPHICS_TRIANGLE_FAN,
-
-    VKL_GRAPHICS_MARKER_RAW,
-    VKL_GRAPHICS_MARKER,
-
-    VKL_GRAPHICS_SEGMENT,
-    VKL_GRAPHICS_ARROW,
-    VKL_GRAPHICS_PATH,
-    VKL_GRAPHICS_TEXT,
-
-    VKL_GRAPHICS_IMAGE,
-    VKL_GRAPHICS_MESH,
-    // VKL_GRAPHICS_MESH_RAW,
-    // VKL_GRAPHICS_MESH_TEXTURED,
-    // VKL_GRAPHICS_MESH_MULTI_TEXTURED,
-    // VKL_GRAPHICS_MESH_SHADED,
-
-    VKL_GRAPHICS_FAKE_SPHERE,
-    VKL_GRAPHICS_VOLUME,
-
-    VKL_GRAPHICS_COUNT,
-} VklGraphicsBuiltin;
-
-
-
 // NOTE: the numbers need to correspond to markers.glsl at the bottom.
 typedef enum
 {
@@ -323,8 +288,7 @@ VKY_EXPORT void vkl_graphics_append(VklGraphicsData* data, const void* item);
 
 
 
-VKY_EXPORT VklGraphics*
-vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type, int flags);
+VKY_EXPORT VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsType type, int flags);
 
 VKY_EXPORT void
 vkl_mvp_camera(VklViewport viewport, vec3 eye, vec3 center, vec2 near_far, VklMVP* mvp);

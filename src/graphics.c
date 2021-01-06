@@ -401,35 +401,36 @@ void vkl_graphics_append(VklGraphicsData* data, const void* item)
 /*  Graphics builtin                                                                             */
 /*************************************************************************************************/
 
-VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type, int flags)
+static VklGraphics* _find_graphics(VklCanvas* canvas, VklGraphicsType type, int flags)
+{
+    VklGraphics* graphics = vkl_container_iter_init(&canvas->graphics);
+    if (graphics != NULL)
+    {
+        if (graphics->type == type && graphics->flags == flags)
+            return graphics;
+        graphics = vkl_container_iter(&canvas->graphics);
+    }
+    return NULL;
+}
+
+
+
+VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsType type, int flags)
 {
     ASSERT(canvas != NULL);
     ASSERT(canvas->gpu != NULL);
     ASSERT(type != VKL_GRAPHICS_NONE);
+    ASSERT(canvas->graphics.capacity > 0);
 
-    // HACK: ensure all GRAPHICS_COUNT graphics are allocated, and create them on demand.
-    // Only 1 graphics per graphics type.
-    VklGraphics* graphics = NULL;
-    if (canvas->graphics.items[0] == NULL)
-    {
-        for (uint32_t i = 0; i < VKL_GRAPHICS_COUNT; i++)
-        {
-            graphics = vkl_container_alloc(&canvas->graphics);
-            ASSERT(graphics != NULL);
-            graphics->obj.status = VKL_OBJECT_STATUS_INIT; // will only be created when requested
-        }
-    }
-    ASSERT(canvas->graphics.items[0] != NULL);
-    ASSERT(canvas->graphics.items[VKL_GRAPHICS_COUNT - 1] != NULL);
-
-    ASSERT((uint32_t)type < VKL_GRAPHICS_COUNT);
-    graphics = vkl_container_get(&canvas->graphics, (uint32_t)type);
-    ASSERT(graphics != NULL);
-    if (is_obj_created(&graphics->obj))
+    // Try to find an existing graphics with the requested type and flags.
+    VklGraphics* graphics = _find_graphics(canvas, type, flags);
+    if (graphics != NULL)
         return graphics;
-    ASSERT(!is_obj_created(&graphics->obj));
 
-    // Common initialization.
+    // If there is none, create a new one.
+    graphics = vkl_container_alloc(&canvas->graphics);
+    ASSERT(graphics != NULL);
+    ASSERT(!is_obj_created(&graphics->obj));
     *graphics = vkl_graphics(canvas->gpu);
 
     switch (type)
@@ -492,7 +493,6 @@ VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsBuiltin type, in
         break;
     }
 
-    // ASSERT(is_obj_created(&graphics->obj));
     return graphics;
 }
 
