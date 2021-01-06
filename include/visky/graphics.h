@@ -28,6 +28,16 @@ END_INCL_NO_WARN
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
+// Graphics flags.
+typedef enum
+{
+    VKL_GRAPHICS_FLAGS_NONE = 0x0000,
+    VKL_GRAPHICS_FLAGS_DEPTH_TEST = 0x0001,
+} VklGraphicsFlags;
+
+
+
+// Marker type.
 // NOTE: the numbers need to correspond to markers.glsl at the bottom.
 typedef enum
 {
@@ -54,6 +64,7 @@ typedef enum
 
 
 
+// Cap type.
 typedef enum
 {
     VKL_CAP_TYPE_NONE = 0,

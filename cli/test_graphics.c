@@ -101,11 +101,11 @@ static void _common_bindings(TestGraphics* tg)
 /*  Macros                                                                                       */
 /*************************************************************************************************/
 
-#define INIT_GRAPHICS(type)                                                                       \
+#define INIT_GRAPHICS(type, flags)                                                                \
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);                                                      \
     VklGpu* gpu = vkl_gpu(app, 0);                                                                \
     VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, VKL_CANVAS_FLAGS_FPS);           \
-    VklGraphics* graphics = vkl_graphics_builtin(canvas, type, 0);
+    VklGraphics* graphics = vkl_graphics_builtin(canvas, type, flags);
 
 #define BEGIN_DATA(type, n, user_data)                                                            \
     TestGraphics tg = {0};                                                                        \
@@ -176,7 +176,7 @@ static void _graphics_points_wheel_callback(VklCanvas* canvas, VklEvent ev)
 
 int test_graphics_dynamic(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_POINTS)
+    INIT_GRAPHICS(VKL_GRAPHICS_POINTS, 0)
     BEGIN_DATA(VklVertex, 10000, NULL)
     for (uint32_t i = 0; i < vertex_count; i++)
     {
@@ -235,7 +235,7 @@ static void _graphics_3D_callback(VklCanvas* canvas, VklEvent ev)
 
 int test_graphics_3D(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_POINTS)
+    INIT_GRAPHICS(VKL_GRAPHICS_POINTS, VKL_GRAPHICS_FLAGS_DEPTH_TEST)
     BEGIN_DATA(VklVertex, 3, NULL)
     {
         // Top red
@@ -293,7 +293,7 @@ int test_graphics_3D(TestContext* context)
 
 int test_graphics_points(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_POINTS)
+    INIT_GRAPHICS(VKL_GRAPHICS_POINTS, 0)
     BEGIN_DATA(VklVertex, 10000, NULL)
     for (uint32_t i = 0; i < vertex_count; i++)
     {
@@ -318,7 +318,7 @@ int test_graphics_points(TestContext* context)
 
 int test_graphics_lines(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_LINES)
+    INIT_GRAPHICS(VKL_GRAPHICS_LINES, 0)
     BEGIN_DATA(VklVertex, 100, NULL)
     for (uint32_t i = 0; i < vertex_count; i++)
     {
@@ -337,7 +337,7 @@ int test_graphics_lines(TestContext* context)
 
 int test_graphics_line_strip(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_LINE_STRIP)
+    INIT_GRAPHICS(VKL_GRAPHICS_LINE_STRIP, 0)
     BEGIN_DATA(VklVertex, 1000, NULL)
     for (uint32_t i = 0; i < vertex_count; i++)
     {
@@ -356,7 +356,7 @@ int test_graphics_line_strip(TestContext* context)
 
 int test_graphics_triangles(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_TRIANGLES)
+    INIT_GRAPHICS(VKL_GRAPHICS_TRIANGLES, 0)
     const uint32_t N = 100;
     BEGIN_DATA(VklVertex, N * 3, NULL)
 
@@ -392,7 +392,7 @@ int test_graphics_triangles(TestContext* context)
 
 int test_graphics_triangle_strip(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_TRIANGLE_STRIP)
+    INIT_GRAPHICS(VKL_GRAPHICS_TRIANGLE_STRIP, 0)
     BEGIN_DATA(VklVertex, 50, NULL)
     float m = .05;
     for (uint32_t i = 0; i < vertex_count; i++)
@@ -413,7 +413,7 @@ int test_graphics_triangle_strip(TestContext* context)
 
 int test_graphics_triangle_fan(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_TRIANGLE_FAN)
+    INIT_GRAPHICS(VKL_GRAPHICS_TRIANGLE_FAN, 0)
     BEGIN_DATA(VklVertex, 20, NULL)
     for (uint32_t i = 1; i < vertex_count; i++)
     {
@@ -437,7 +437,7 @@ int test_graphics_triangle_fan(TestContext* context)
 
 int test_graphics_marker(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_MARKER)
+    INIT_GRAPHICS(VKL_GRAPHICS_MARKER, 0)
     BEGIN_DATA(VklGraphicsMarkerVertex, 1000, NULL)
     for (uint32_t i = 0; i < vertex_count; i++)
     {
@@ -480,7 +480,7 @@ static void _resize(VklCanvas* canvas, VklEvent ev)
 
 int test_graphics_segment(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_SEGMENT)
+    INIT_GRAPHICS(VKL_GRAPHICS_SEGMENT, 0)
     const uint32_t N = 16;
     BEGIN_DATA(VklGraphicsSegmentVertex, 4 * N, NULL)
 
@@ -513,7 +513,7 @@ int test_graphics_segment(TestContext* context)
 
 int test_graphics_text(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_TEXT)
+    INIT_GRAPHICS(VKL_GRAPHICS_TEXT, 0)
     const uint32_t N = 26;
     const char str[] = "Hello world!";
     const uint32_t offset = strlen(str);
@@ -590,7 +590,7 @@ int test_graphics_text(TestContext* context)
 
 int test_graphics_image(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_IMAGE)
+    INIT_GRAPHICS(VKL_GRAPHICS_IMAGE, 0)
 
     // Vertices.
     uint32_t n = 6;
@@ -719,7 +719,7 @@ static VklMesh _graphics_mesh_example(VklMeshType type)
 
 int test_graphics_mesh(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_MESH)
+    INIT_GRAPHICS(VKL_GRAPHICS_MESH, 0)
 
     TestGraphics tg = {0};
     tg.canvas = canvas;

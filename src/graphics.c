@@ -77,6 +77,10 @@ static void _graphics_points(VklCanvas* canvas, VklGraphics* graphics)
     SHADER(FRAGMENT, "graphics_point_frag")
     PRIMITIVE(POINT_LIST)
 
+    // Depth test flag.
+    if ((graphics->flags & VKL_GRAPHICS_FLAGS_DEPTH_TEST) != 0)
+        vkl_graphics_depth_test(graphics, VKL_DEPTH_TEST_ENABLE);
+
     ATTR_BEGIN(VklVertex)
     ATTR_POS(VklVertex, pos)
     ATTR_COL(VklVertex, color)
@@ -432,6 +436,8 @@ VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsType type, int f
     ASSERT(graphics != NULL);
     ASSERT(!is_obj_created(&graphics->obj));
     *graphics = vkl_graphics(canvas->gpu);
+    graphics->type = type;
+    graphics->flags = flags;
 
     switch (type)
     {
