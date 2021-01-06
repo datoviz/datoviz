@@ -664,13 +664,6 @@ void vkl_visual_fill_event(
     VklVisual* visual, VkClearColorValue clear_color, VklCommands* cmds, uint32_t cmd_idx,
     VklViewport viewport, void* user_data)
 {
-    // Called in a REFILL canvas callback.
-    // log_info(
-    //     "visual %d fill event %d, viewport %.0fx%.0f %.0fx%.0f", visual, cmd_idx, //
-    //     viewport.viewport.x, viewport.viewport.y,                                 //
-    //     viewport.viewport.width, viewport.viewport.height                         //
-    // );
-
     ASSERT(visual != NULL);
     ASSERT(visual->callback_fill != NULL);
 

@@ -530,7 +530,6 @@ static void _refill_frame(VklCanvas* canvas)
         if (canvas->refills.completed[img_idx])
             return;
 
-        log_debug("refill the command buffers for swapchain image #%d", img_idx);
         VklRefillStatus status = VKL_REFILL_PROCESSING;
         atomic_store(&canvas->refills.status, status);
 
@@ -618,6 +617,7 @@ static void _fps(VklCanvas* canvas, VklPrivateEvent ev)
 {
     canvas->fps = (canvas->frame_idx - canvas->clock.checkpoint_value) / ev.u.t.interval;
     canvas->clock.checkpoint_value = canvas->frame_idx;
+    // log_info("FPS: %.1f", canvas->fps);
 }
 
 
@@ -885,8 +885,6 @@ void vkl_canvas_recreate(VklCanvas* canvas)
     vkl_framebuffers_create(framebuffers, renderpass);
     if (canvas->overlay)
         vkl_framebuffers_create(framebuffers_overlay, renderpass_overlay);
-
-    _refill_canvas(canvas, UINT32_MAX);
 }
 
 
@@ -1836,15 +1834,6 @@ void vkl_canvas_frame(VklCanvas* canvas)
     _clock_set(&canvas->app->clock); // global clock
     _clock_set(&canvas->clock);      // canvas-local clock
 
-    // Wait for fence.
-    vkl_fences_wait(&canvas->fences_render_finished, canvas->cur_frame);
-
-    // We acquire the next swapchain image.
-    if (!canvas->offscreen)
-        vkl_swapchain_acquire(
-            &canvas->swapchain, &canvas->sem_img_available, //
-            canvas->cur_frame, NULL, 0);
-
     // Call INTERACT callbacks (for backends only), which may enqueue some events.
     _interact_callbacks(canvas);
 
@@ -1990,9 +1979,16 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             if (canvas->window != NULL)
                 vkl_window_poll_events(canvas->window);
 
-            // Frame logic.
             // NOTE: swapchain image acquisition happens here
-            vkl_canvas_frame(canvas);
+
+            // Wait for fence.
+            vkl_fences_wait(&canvas->fences_render_finished, canvas->cur_frame);
+
+            // We acquire the next swapchain image.
+            if (!canvas->offscreen)
+                vkl_swapchain_acquire(
+                    &canvas->swapchain, &canvas->sem_img_available, //
+                    canvas->cur_frame, NULL, 0);
 
             // If there is a problem with swapchain image acquisition, wait and try again later.
             if (canvas->swapchain.obj.status == VKL_OBJECT_STATUS_INVALID)
@@ -2011,8 +2007,12 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
                 // Recreate the canvas.
                 vkl_canvas_recreate(canvas);
 
-                // Call RESIZE callbacks.
+                // Update the VklViewport struct and call RESIZE callbacks.
                 _resize_callbacks(canvas);
+
+                // Refill the canvas after the VklViewport has been updated.
+                // _refill_canvas(canvas, UINT32_MAX);
+                vkl_canvas_to_refill(canvas);
 
                 n_canvas_active++;
                 canvas = vkl_container_iter(&app->canvases);
@@ -2042,6 +2042,9 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
                 canvas = vkl_container_iter(&app->canvases);
                 continue;
             }
+
+            // Frame logic.
+            vkl_canvas_frame(canvas);
 
             // Submit the command buffers and swapchain logic.
             // log_trace("submitting frame for canvas #%d", canvas_idx);

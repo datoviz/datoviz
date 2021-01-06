@@ -218,7 +218,7 @@ int test_visuals_3(TestContext* context)
     vkl_visual_update(&visual, canvas->viewport, (VklDataCoords){0}, NULL);
 
     vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_REFILL, 0, _visual_canvas_fill, &visual);
-    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_TIMER, 1.0 / 60, _timer_callback, &visual);
+    vkl_canvas_callback(canvas, VKL_PRIVATE_EVENT_FRAME, 0, _timer_callback, &visual);
 
     // Run and end.
     vkl_app_run(app, N_FRAMES);
