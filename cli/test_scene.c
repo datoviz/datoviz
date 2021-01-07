@@ -1,6 +1,8 @@
 #include "test_scene.h"
+#include "../external/exwilk.h"
 #include "../include/visky/builtin_visuals.h"
 #include "../include/visky/scene.h"
+#include "../src/axes.h"
 #include "utils.h"
 
 
@@ -11,7 +13,24 @@
 
 int test_axes_1(TestContext* context)
 {
-    //
+    VklTickFormat f = {0};
+    f.format_type = VKL_TICK_FORMAT_SCIENTIFIC;
+    f.precision = 3;
+    VklAxesContext ctx = {0};
+    ctx.coord = VKL_AXES_COORD_X;
+    ctx.size_viewport = 1000;
+    ctx.size_glyph = 10;
+
+    const uint32_t N = 16;
+    char* labels = calloc(N * MAX_GLYPHS_PER_TICK, sizeof(char));
+    make_labels(f, 0, 1, .1, ctx, labels);
+    for (uint32_t i = 0; i < N; i++)
+    {
+        log_debug("%s ", &labels[i * MAX_GLYPHS_PER_TICK]);
+    }
+
+    FREE(labels);
+    return 0;
 }
 
 

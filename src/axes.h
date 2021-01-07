@@ -8,6 +8,29 @@
 
 
 /*************************************************************************************************/
+/*  Typedefs                                                                                     */
+/*************************************************************************************************/
+
+typedef struct VklAxesTicks VklAxesTicks;
+
+
+
+/*************************************************************************************************/
+/*  Axes structs                                                                                 */
+/*************************************************************************************************/
+
+struct VklAxesTicks
+{
+    double vmin, vmax;        // range values
+    double lmin, lmax, lstep; // tick range and interval
+    VklTickFormat format;
+    double* values; // from lmin to lmax by lstep
+    char* labels;
+};
+
+
+
+/*************************************************************************************************/
 /*  Axes functions                                                                               */
 /*************************************************************************************************/
 
@@ -235,9 +258,39 @@ static void _axes_destroy(VklController* controller)
 
 
 
-static void vkl_axes_ticks(double vmin, double vmax, VklAxisCoord coord, VklAxesContext ctx)
+static VklAxesTicks vkl_axes_ticks(double vmin, double vmax, VklAxesContext ctx)
 {
-    // TODO
+    R r = wilk_ext(vmin, vmax, 12, ctx);
+
+    VklAxesTicks out = {0};
+    out.format = r.f;
+    out.vmin = vmin;
+    out.vmax = vmax;
+    out.lmin = r.lmin;
+    out.lmax = r.lmax;
+    out.lstep = r.lstep;
+
+    ASSERT(r.lstep > 0);
+    ASSERT(r.lmin < r.lmax);
+
+    // Generate the values between lmin and lmax.
+    uint32_t n = floor(1 + (r.lmax - r.lmin) / r.lstep); // number of labels
+    ASSERT(r.lmin + n * r.lstep <= r.lmax);
+    ASSERT(r.lmin + (n + 1) * r.lstep > r.lmax);
+
+    out.values = calloc(n, sizeof(double));
+    uint32_t k = 0;
+    for (double x = r.lmin; x <= r.lmax; x += r.lstep)
+    {
+        out.values[k] = x;
+        k++;
+    }
+    ASSERT(k == n);
+
+    out.labels = calloc(k * MAX_GLYPHS_PER_TICK, sizeof(char));
+    make_labels(r.f, r.lmin, r.lmax, r.lstep, ctx, out.labels);
+
+    return out;
 }
 
 
