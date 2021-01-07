@@ -1930,20 +1930,20 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             canvas = vkl_container_iter(&app->canvases);
         }
 
-        // Process the pending transfer tasks.
+        // IMPORTANT: we need to wait for the present queue to be idle, otherwise the GPU hangs
+        // when waiting for fences (not sure why). The problem only arises when using different
+        // queues for command buffer submission and swapchain present.
+
         // NOTE: this has never been tested with multiple GPUs yet.
         VklGpu* gpu = vkl_container_iter_init(&app->gpus);
         while (gpu != NULL)
         {
             if (!is_obj_created(&gpu->obj))
                 break;
-
-            // IMPORTANT: we need to wait for the present queue to be idle, otherwise the GPU hangs
-            // when waiting for fences (not sure why). The problem only arises when using different
-            // queues for command buffer submission and swapchain present.
             if (gpu->queues.queues[VKL_DEFAULT_QUEUE_PRESENT] != VK_NULL_HANDLE &&
                 gpu->queues.queues[VKL_DEFAULT_QUEUE_PRESENT] !=
-                    gpu->queues.queues[VKL_DEFAULT_QUEUE_RENDER])
+                    gpu->queues.queues[VKL_DEFAULT_QUEUE_RENDER] &&
+                iter % VKL_MAX_SWAPCHAIN_IMAGES == 0)
             {
                 vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_PRESENT);
             }
