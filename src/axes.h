@@ -37,15 +37,16 @@ static void _axes_ticks(VklController* controller, VklAxisCoord coord)
 
     // TODO: improve
     int32_t N = 3 * 12;
-    VklAxesContext context = {0};
-    context.glyph_size[0] = 12;
-    context.glyph_size[1] = 12;
-    context.coord = coord;
+    // TODO
+    // VklAxesContext context = {0};
+    // context.glyph_size[0] = 12;
+    // context.glyph_size[1] = 12;
+    // context.coord = coord;
     uvec2 size = {0};
     vkl_canvas_size(canvas, VKL_CANVAS_SIZE_FRAMEBUFFER, size);
-    context.viewport_size[0] = size[0];
-    context.viewport_size[1] = size[1];
-    R r = wilk_ext(vmin0, vmax0, N, false, context);
+    // context.viewport_size[0] = size[0];
+    // context.viewport_size[1] = size[1];
+    R r = {0}; // wilk_ext(vmin0, vmax0, N, false, context);
     vmin0 = r.lmin;
     vmax0 = r.lmax;
     double dv = r.lstep;
@@ -230,6 +231,13 @@ static void _axes_destroy(VklController* controller)
         vkl_array_destroy(&axes->text[i]);
         FREE(axes->buf[i]);
     }
+}
+
+
+
+static void vkl_axes_ticks(double vmin, double vmax, VklAxisCoord coord, VklAxesContext ctx)
+{
+    // TODO
 }
 
 

@@ -27,30 +27,23 @@ https://github.com/quantenschaum/ctplot/blob/master/ctplot/ticks.py
 /*  Constants and macros                                                                         */
 /*************************************************************************************************/
 
-#define INF   100000000
-#define J_MAX 10
-#define K_MAX 50
-#define Z_MAX 18
+#define INF           1000000000
+#define J_MAX         10
+#define K_MAX         50
+#define Z_MAX         18
+#define PRECISION_MAX 9
+#define DIST_MIN      50
 
-#define VKL_AXES_NORMAL_RANGE(x)                                                                  \
-    ((x) == 0 || ((VKL_AXES_DECIMAL_FORMAT_MIN <= (x)) && ((x) < VKL_AXES_DECIMAL_FORMAT_MAX)))
-
-#define VKL_TICK_FORMAT_COUNT 2
-
-#define VKL_AXES_DECIMAL_FORMAT_MIN .01
-#define VKL_AXES_DECIMAL_FORMAT_MAX 1000
-
-#define VKL_AXES_COVERAGE_NTICKS_X    2
-#define VKL_AXES_COVERAGE_NTICKS_Y    2
-#define VKL_AXES_PHYSICAL_DENSITY_MAX .35
 
 
 /*************************************************************************************************/
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
+// Tick format type.
 typedef enum
 {
+    VKL_TICK_FORMAT_UNDEFINED,
     VKL_TICK_FORMAT_DECIMAL,
     VKL_TICK_FORMAT_SCIENTIFIC,
 } VklTickFormatType;
@@ -76,16 +69,14 @@ typedef struct R R;
 struct VklTickFormat
 {
     VklTickFormatType format_type;
-    int32_t precision; // number of digits after the dot
-    double legibility;
+    uint32_t precision; // number of significant digits
 };
 
 
 
-struct VklAxesTickRange
+struct VklAxesTicks
 {
     double vmin, vmax, step;
-    double vmin_ndc, vmax_ndc, step_ndc;
     VklTickFormat format;
 };
 
@@ -93,10 +84,8 @@ struct VklAxesTickRange
 
 struct VklAxesContext
 {
-    uint8_t coord; // TODO enum
-    vec2 glyph_size, viewport_size;
-    double dpi_factor;
-    bool debug;
+    float size_viewport; // along the current dimension
+    float size_glyph;    // either width or height
 };
 
 
@@ -125,10 +114,6 @@ struct R
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
-
-R wilk_ext(double dmin, double dmax, int32_t m, int32_t only_inside, VklAxesContext context);
-
-
 
 static double coverage(double dmin, double dmax, double lmin, double lmax)
 {
@@ -179,10 +164,6 @@ static double simplicity(Q q, int32_t j, double lmin, double lmax, double lstep)
     else
         v = 0;
 
-    // Penalize ticks where 0 is crossed but not on the ticks.
-    if (lmin < 0 && lmax > 0 && fmod(lmax / lstep, 1) > eps)
-        return -INF;
-
     return (n - i) / (n - 1.0) + v - j;
 }
 
@@ -198,93 +179,126 @@ static double simplicity_max(Q q, int32_t j)
 
 
 
-static int32_t
-optimal_precision(double lmin, double lmax, double lstep, VklTickFormatType format_type)
+static double leg(VklTickFormat format, double x)
 {
-    double ax = fmax(fabs(lmin), fabs(lmax));
-    assert(ax > 0);
-    bool normal_range = VKL_AXES_DECIMAL_FORMAT_MIN <= ax && ax < VKL_AXES_DECIMAL_FORMAT_MAX;
-    int32_t precision = 0;
-    if (format_type == VKL_TICK_FORMAT_DECIMAL)
+    double ax = fabs(x);
+    double l = 0;
+    switch (format.format_type)
     {
-        if (lstep >= 1 && normal_range)
-            return 1;
-        precision = (int)fabs(floor(log10(lstep)));
-        precision++;
+    case VKL_TICK_FORMAT_DECIMAL:
+        l = ax > 1e-4 && ax < 1e6 ? 1 : 0;
+        break;
+
+    case VKL_TICK_FORMAT_SCIENTIFIC:
+        l = .25;
+        break;
+
+    default:
+        l = 0;
+        break;
     }
-    else if (format_type == VKL_TICK_FORMAT_SCIENTIFIC)
-    {
-        // HACK: avoid divide by zero.
-        if (fabs(lmin) < 1e-8)
-            lmin = 1;
-        precision = (int)fabs(floor(log10(lstep / fabs(lmin))));
-    }
-    if (precision < 0)
-    {
-        log_warn("precision is negative: %d", precision);
-        precision = 0;
-    }
-    return precision;
+
+    // TODO: format.precision, penalize larger precisions because of less legibility
+
+    return l;
+}
+
+
+
+static inline double dist_overlap(double d)
+{
+    if (d >= DIST_MIN)
+        return 1;
+    else if (d == 0)
+        return -INF;
+    else
+        return 2 - DIST_MIN / d;
 }
 
 
 
 static double
-leg_overlap(double lmin, double lmax, double lstep, VklTickFormat format, VklAxesContext context)
+overlap(VklTickFormat format, double lmin, double lmax, double lstep, VklAxesContext context)
 {
-    assert(lmin <= lmax);
-    assert(lstep > 0);
+    // double o = 0;             // overlap score
+    double d = 0;             // distance between label i and i+1
+    double min_overlap = INF; //
+    double label_overlap = 0; //
 
-    int32_t n_labels = 1 + (int)ceil((lmax - lmin) / lstep);
-    double glyph_size = context.glyph_size[context.coord];
-    double viewport_size = context.viewport_size[context.coord];
-
-    assert(n_labels > 0);
-    assert(glyph_size > 0);
-    assert(viewport_size > 0);
-
-    int32_t nglyphs = 0;
-    if (format.format_type == VKL_TICK_FORMAT_DECIMAL)
+    for (double x = lmin; x <= lmax; x += lstep)
     {
-        nglyphs = 2 + (int)floor(fabs(log10(fmax(fabs(lmin), fabs(lmax))))) + format.precision;
-    }
-    else
-    {
-        nglyphs = 6 + format.precision;
-    }
-    assert(nglyphs > 0);
+        // Compute the distance between the current label and the next.
+        // TODO: d
 
-    double size = context.coord == 0 ? VKL_AXES_COVERAGE_NTICKS_X * nglyphs * glyph_size
-                                     : VKL_AXES_COVERAGE_NTICKS_Y * glyph_size;
-    double coverage = size * n_labels / viewport_size;
-    if (coverage < VKL_AXES_PHYSICAL_DENSITY_MAX)
-    {
-        return pow(coverage / VKL_AXES_PHYSICAL_DENSITY_MAX, 2);
+        // Compute the overlap for the current label.
+        label_overlap = dist_overlap(d);
+
+        // Compute the minimum overlap between two successive labels.
+        if (label_overlap < min_overlap)
+            min_overlap = label_overlap;
     }
-    else
-        return -100 - pow(coverage, 2);
+
+    return min_overlap;
 }
 
 
 
-static VklTickFormat legibility(double lmin, double lmax, double lstep, VklAxesContext context)
+static double
+legibility(VklTickFormat format, double lmin, double lmax, double lstep, VklAxesContext context)
 {
-    assert(lstep > 0);
-    double ax = fmax(fabs(lmin), fabs(lmax));
-    bool normal_range = VKL_AXES_NORMAL_RANGE(ax);
+    ASSERT(lmin < lmax);
+    ASSERT(lstep > 0);
 
-    // Determine the format.
-    VklTickFormatType format_type =
-        normal_range ? VKL_TICK_FORMAT_DECIMAL : VKL_TICK_FORMAT_SCIENTIFIC;
+    double f = 0;
 
-    // Determine the optimal precision (number of digits after dot).
-    int32_t precision = optimal_precision(lmin, lmax, lstep, format_type);
-    VklTickFormat format = {format_type, precision, 0};
+    // Format part.
+    uint32_t k = 0;
+    for (double x = lmin; x <= lmax; x += lstep)
+    {
+        f += leg(format, x);
+        k += 1;
+    }
+    f = .9 * f / MAX(1, k); // TODO: 0-extended?
 
-    // The legibility score is the physical coverage of the labels.
-    double score_leg_overlap = leg_overlap(lmin, lmax, lstep, format, context);
-    format.legibility = score_leg_overlap;
-    return format;
+    // TODO: allocate a large char[] array, fill it with sprintf(), then pass it to overlap() and
+    // duplicate()
+
+    // Overlap part.
+    double o = overlap(format, lmin, lmax, lstep, context);
+
+    // Duplicates part.
+    double d = 0;
+    // TODO: take into account the precision, and penalize states where there are 2 identical
+    // labels.
+
+    return (f + o + d) / 3.0;
+}
+
+
+
+static VklTickFormat opt_format(double lmin, double lmax, double lstep, VklAxesContext context)
+{
+    // VklTickFormatType ftype = VKL_TICK_FORMAT_DECIMAL;
+    // uint32_t precision;
+    double l = INF, best_l = INF;
+    VklTickFormat format = {0}, best_format = {0};
+    for (uint32_t f = 1; f <= 2; f++)
+    {
+        format.format_type = (VklTickFormatType)f;
+        for (uint32_t p = 1; p <= PRECISION_MAX; p++)
+        {
+            format.precision = p;
+            l = legibility(format, lmin, lmax, lstep, context);
+            if (l < best_l)
+            {
+                best_format = format;
+                best_l = l;
+            }
+        }
+    }
+    ASSERT(best_format.format_type != VKL_TICK_FORMAT_UNDEFINED);
+    ASSERT(best_format.precision > 0);
+    return best_format;
 }
 
 
@@ -294,8 +308,8 @@ score(dvec4 weights, double simplicity, double coverage, double density, double 
 {
     double s = weights[0] * simplicity + weights[1] * coverage + //
                weights[2] * density + weights[3] * legibility;
-    if (s < -INF / 2)
-        s = -INF;
+    // if (s < -INF / 2)
+    //     s = -INF;
     return s;
 }
 
@@ -308,15 +322,25 @@ q : nice number
 j : skip, amount among a sequence of nice numbers
 z : 10-exponent of the step size
 */
-R wilk_ext(double dmin, double dmax, int32_t m, int32_t only_inside, VklAxesContext context)
+static R wilk_ext(double dmin, double dmax, int32_t m, VklAxesContext context)
 {
-    if ((dmin >= dmax) || (m < 1)
-        // check viewport size
-        // context.viewport_size[0] / context.dpi_factor < 200 ||
-        // context.viewport_size[1] / context.dpi_factor < 200
-    )
+    // if ((dmin >= dmax) || (m < 1)
+    // check viewport size
+    // context.viewport_size[0] / context.dpi_factor < 200 ||
+    // context.viewport_size[1] / context.dpi_factor < 200
+    // )
+    // {
+    //     return (R){dmin, dmax, dmax - dmin, 1, 0, 2, {0, 0, 0}, 0};
+    // }
+
+    ASSERT(dmin < dmax);
+    ASSERT(context.size_glyph > 0);
+    ASSERT(context.size_viewport > 0);
+    ASSERT(m > 0);
+    if (context.size_viewport < 5 * context.size_glyph)
     {
-        return (R){dmin, dmax, dmax - dmin, 1, 0, 2, {0, 0, 0}, 0};
+        log_debug("degenerate axes context, return a trivial tick range");
+        return (R){dmin, dmax, dmax - dmin, 1, 0, 2, {VKL_TICK_FORMAT_DECIMAL, 1}, 0};
     }
 
     double DEFAULT_Q[] = {1, 5, 2, 2.5, 4, 3};
@@ -332,15 +356,19 @@ R wilk_ext(double dmin, double dmax, int32_t m, int32_t only_inside, VklAxesCont
     q.values = DEFAULT_Q;
 
     int32_t j = 1;
+    int32_t u, k;
+    double sm, dm, delta, z, step, cm, min_start, max_start, l, lmin, lmax, lstep, start, s, c, d,
+        scr;
+    VklTickFormat format;
     while (j < J_MAX)
     {
         // printf("j %d\n", j);
-        for (int32_t u = 0; u < n; u++)
+        for (u = 0; u < n; u++)
         {
             // printf("u %d\n", u);
             q.i = u;
             q.value = DEFAULT_Q[q.i];
-            double sm = simplicity_max(q, j);
+            sm = simplicity_max(q, j);
 
             if (score(W, sm, 1, 1, 1) < best_score)
             {
@@ -348,32 +376,32 @@ R wilk_ext(double dmin, double dmax, int32_t m, int32_t only_inside, VklAxesCont
                 break;
             }
 
-            int32_t k = 2;
+            k = 2;
             while (k < K_MAX)
             {
                 // printf("k %d\n", k);
-                double dm = density_max(k, m);
+                dm = density_max(k, m);
 
                 if (score(W, sm, 1, dm, 1) < best_score)
                     break;
 
-                double delta = (dmax - dmin) / (k + 1.) / j / q.value;
-                double z = ceil(log10(delta));
+                delta = (dmax - dmin) / (k + 1.) / j / q.value;
+                z = ceil(log10(delta));
 
                 while (z < Z_MAX)
                 {
                     // printf("z %f\n", z);
                     assert(j > 0);
                     assert(q.value > 0);
-                    double step = j * q.value * pow(10., z);
+                    step = j * q.value * pow(10., z);
                     assert(step > 0);
-                    double cm = coverage_max(dmin, dmax, step * (k - 1.));
+                    cm = coverage_max(dmin, dmax, step * (k - 1.));
 
                     if (score(W, sm, cm, dm, 1) < best_score)
                         break;
 
-                    double min_start = floor(dmax / step) * j - (k - 1.) * j;
-                    double max_start = ceil(dmin / step) * j;
+                    min_start = floor(dmax / step) * j - (k - 1.) * j;
+                    max_start = ceil(dmin / step) * j;
 
                     if (min_start > max_start)
                     {
@@ -381,22 +409,24 @@ R wilk_ext(double dmin, double dmax, int32_t m, int32_t only_inside, VklAxesCont
                         break;
                     }
 
-                    for (double start = min_start; start <= max_start; start++)
+                    for (start = min_start; start <= max_start; start++)
                     {
-                        double lmin = start * (step / j);
-                        double lmax = lmin + step * (k - 1.0);
-                        double lstep = step;
+                        lmin = start * (step / j);
+                        lmax = lmin + step * (k - 1.0);
+                        lstep = step;
 
-                        double s = simplicity(q, j, lmin, lmax, lstep);
-                        double c = coverage(dmin, dmax, lmin, lmax);
-                        double d = density(k, m, dmin, dmax, lmin, lmax);
+                        s = simplicity(q, j, lmin, lmax, lstep);
+                        c = coverage(dmin, dmax, lmin, lmax);
+                        d = density(k, m, dmin, dmax, lmin, lmax);
+                        format = opt_format(lmin, lmax, lstep, context);
+                        l = legibility(format, lmin, lmax, lstep, context);
+
                         assert(lstep > 0);
-                        VklTickFormat format = legibility(lmin, lmax, lstep, context);
-                        double scr = score(W, s, c, d, format.legibility);
+                        scr = score(W, s, c, d, l);
 
-                        if ((scr > best_score) &&
-                            ((only_inside <= 0) || ((lmin >= dmin) && (lmax <= dmax))) &&
-                            ((only_inside >= 0) || ((lmin <= dmin) && (lmax >= dmax))))
+                        if ((scr > best_score) && //
+                            ((lmin >= dmin) && (lmax <= dmax)) &&
+                            ((lmin <= dmin) && (lmax >= dmax)))
                         {
                             best_score = scr;
                             result = (R){lmin, lmax, lstep, j, q.value, k, format, scr};
@@ -410,7 +440,7 @@ R wilk_ext(double dmin, double dmax, int32_t m, int32_t only_inside, VklAxesCont
         j++;
     }
 
-    context.debug = true;
+    // context.debug = true;
     // leg_overlap(result.lmin, result.lmax, result.lstep, result.f, context);
     return result;
 }
