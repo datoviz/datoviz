@@ -24,6 +24,7 @@ struct VklAxesTicks
     double vmin, vmax;        // range values
     double lmin, lmax, lstep; // tick range and interval
     VklTickFormat format;
+    uint32_t value_count;
     double* values; // from lmin to lmax by lstep
     char* labels;
 };
@@ -260,6 +261,7 @@ static void _axes_destroy(VklController* controller)
 
 static VklAxesTicks vkl_axes_ticks(double vmin, double vmax, VklAxesContext ctx)
 {
+    // TODO: better choice for the initial number of labels
     R r = wilk_ext(vmin, vmax, 12, ctx);
 
     VklAxesTicks out = {0};
@@ -274,20 +276,20 @@ static VklAxesTicks vkl_axes_ticks(double vmin, double vmax, VklAxesContext ctx)
     ASSERT(r.lmin < r.lmax);
 
     // Generate the values between lmin and lmax.
-    uint32_t n = floor(1 + (r.lmax - r.lmin) / r.lstep); // number of labels
-    ASSERT(r.lmin + n * r.lstep <= r.lmax);
-    ASSERT(r.lmin + (n + 1) * r.lstep > r.lmax);
-
+    double x = 0;
+    uint32_t n = floor(1 + (r.lmax - r.lmin) / r.lstep);
+    out.value_count = n;
     out.values = calloc(n, sizeof(double));
-    uint32_t k = 0;
-    for (double x = r.lmin; x <= r.lmax; x += r.lstep)
+    ASSERT(n >= 2);
+    ASSERT(r.lmin + (n - 1) * r.lstep <= r.lmax);
+    ASSERT(r.lmin + n * r.lstep >= r.lmax);
+    for (uint32_t i = 0; i < n; i++)
     {
-        out.values[k] = x;
-        k++;
+        x = r.lmin + i * r.lstep;
+        ASSERT(x <= r.lmax);
+        out.values[i] = x;
     }
-    ASSERT(k == n);
-
-    out.labels = calloc(k * MAX_GLYPHS_PER_TICK, sizeof(char));
+    out.labels = calloc(n * MAX_GLYPHS_PER_TICK, sizeof(char));
     make_labels(r.f, r.lmin, r.lmax, r.lstep, ctx, out.labels);
 
     return out;

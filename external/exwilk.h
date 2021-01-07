@@ -33,7 +33,15 @@ https://github.com/quantenschaum/ctplot/blob/master/ctplot/ticks.py
 #define Z_MAX               18
 #define PRECISION_MAX       9
 #define DIST_MIN            50
-#define MAX_GLYPHS_PER_TICK 16
+#define MAX_GLYPHS_PER_TICK 24
+
+#define ITER_TICKS                                                                                \
+    double x = 0;                                                                                 \
+    uint32_t n = floor(1 + (lmax - lmin) / lstep);                                                \
+    ASSERT(n >= 2);                                                                               \
+    ASSERT(lmin + (n - 1) * lstep <= lmax);                                                       \
+    ASSERT(lmin + n * lstep >= lmax);                                                             \
+    for (uint32_t i = 0; i < n; i++)
 
 
 
@@ -205,9 +213,12 @@ static inline double dist_overlap(double d)
     else if (d == 0)
         return -INF;
     else
+    {
+        ASSERT(d >= 0);
+        ASSERT(d < DIST_MIN);
         return 2 - DIST_MIN / d;
+    }
 }
-
 
 
 static double overlap(
@@ -221,22 +232,25 @@ static double overlap(
     double glyph = context.size_glyph;
     uint32_t n0 = 1, n1 = 1;
 
-    uint32_t i = 0;
-    for (double x = lmin; x <= lmax - lstep; x += lstep)
+    ITER_TICKS
     {
+        if (i == n - 1)
+            break;
+        x = lmin + i * lstep;
+        ASSERT(x <= lmax);
+
         n0 = strlen(&labels[i * MAX_GLYPHS_PER_TICK]);
         n1 = strlen(&labels[(i + 1) * MAX_GLYPHS_PER_TICK]);
         // Compute the distance between the current label and the next.
-        d = lstep / (lmax - lmin) * size - glyph / 2 * (n0 + n1);
+        d = MAX(0, lstep / (lmax - lmin) * size - glyph / 2 * (n0 + n1));
 
         // Compute the overlap for the current label.
         label_overlap = dist_overlap(d);
+        ASSERT(label_overlap <= 1);
 
         // Compute the minimum overlap between two successive labels.
         if (label_overlap < min_overlap)
             min_overlap = label_overlap;
-
-        i++;
     }
 
     return min_overlap;
@@ -271,11 +285,13 @@ static void make_labels(
     char tick_format[8] = {0};
     _get_tick_format(format, tick_format);
 
-    uint32_t i = 0;
-    for (double x = lmin; x <= lmax; x += lstep)
+    ITER_TICKS
     {
+        x = lmin + i * lstep;
+        ASSERT(x <= lmax);
+
         snprintf(&labels[i * MAX_GLYPHS_PER_TICK], MAX_GLYPHS_PER_TICK, tick_format, x);
-        i++;
+        ASSERT(strlen(&labels[i * MAX_GLYPHS_PER_TICK]) < MAX_GLYPHS_PER_TICK);
     }
 }
 
@@ -290,28 +306,31 @@ legibility(VklTickFormat format, double lmin, double lmax, double lstep, VklAxes
     double f = 0;
 
     // Format part.
-    uint32_t k = 0; // number of labels
-    for (double x = lmin; x <= lmax; x += lstep)
+    ITER_TICKS
     {
+        x = lmin + i * lstep;
+        ASSERT(x <= lmax);
         f += leg(format, x);
-        k++;
     }
-    f = .9 * f / MAX(1, k); // TODO: 0-extended?
+    f = .9 * f / MAX(1, n); // TODO: 0-extended?
 
     // Allocate a char[] array containing all labels, fill it with sprintf(), then pass it to
     // overlap() and duplicate()
-    char* labels = calloc(k * MAX_GLYPHS_PER_TICK, sizeof(char));
+    char* labels = calloc(n * MAX_GLYPHS_PER_TICK, sizeof(char));
     make_labels(format, lmin, lmax, lstep, context, labels);
 
     // Overlap part.
     double o = overlap(format, lmin, lmax, lstep, context, labels);
 
     // Duplicates part.
-    double d = 0;
+    double d = 1;
     // TODO: take into account the precision, and penalize states where there are 2 identical
     // labels.
 
     FREE(labels);
+    ASSERT(f <= 1);
+    ASSERT(o <= 1);
+    ASSERT(d <= 1);
 
     return (f + o + d) / 3.0;
 }
@@ -321,8 +340,7 @@ legibility(VklTickFormat format, double lmin, double lmax, double lstep, VklAxes
 static VklTickFormat opt_format(double lmin, double lmax, double lstep, VklAxesContext context)
 {
     // VklTickFormatType ftype = VKL_TICK_FORMAT_DECIMAL;
-    // uint32_t precision;
-    double l = INF, best_l = INF;
+    double l = -INF, best_l = -INF;
     VklTickFormat format = {0}, best_format = {0};
     for (uint32_t f = 1; f <= 2; f++)
     {
@@ -331,7 +349,7 @@ static VklTickFormat opt_format(double lmin, double lmax, double lstep, VklAxesC
         {
             format.precision = p;
             l = legibility(format, lmin, lmax, lstep, context);
-            if (l < best_l)
+            if (l > best_l)
             {
                 best_format = format;
                 best_l = l;
@@ -379,7 +397,7 @@ static R wilk_ext(double dmin, double dmax, int32_t m, VklAxesContext context)
     ASSERT(context.size_glyph > 0);
     ASSERT(context.size_viewport > 0);
     ASSERT(m > 0);
-    if (context.size_viewport < 5 * context.size_glyph)
+    if (context.size_viewport < 10 * context.size_glyph)
     {
         log_debug("degenerate axes context, return a trivial tick range");
         return (R){dmin, dmax, dmax - dmin, 1, 0, 2, {VKL_TICK_FORMAT_DECIMAL, 1}, 0};

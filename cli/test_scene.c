@@ -16,6 +16,7 @@ int test_axes_1(TestContext* context)
     VklTickFormat f = {0};
     f.format_type = VKL_TICK_FORMAT_SCIENTIFIC;
     f.precision = 3;
+
     VklAxesContext ctx = {0};
     ctx.coord = VKL_AXES_COORD_X;
     ctx.size_viewport = 1000;
@@ -28,8 +29,41 @@ int test_axes_1(TestContext* context)
     {
         log_debug("%s ", &labels[i * MAX_GLYPHS_PER_TICK]);
     }
-
     FREE(labels);
+    return 0;
+}
+
+
+
+int test_axes_2(TestContext* context)
+{
+    VklAxesContext ctx = {0};
+    ctx.coord = VKL_AXES_COORD_X;
+    ctx.size_viewport = 2000;
+    ctx.size_glyph = 10;
+
+    {
+        VklTickFormat f = opt_format(0, 1, .2, ctx);
+        DBG(f.format_type);
+        DBG(f.precision);
+    }
+
+    // {
+    //     uint32_t n_glyphs = 64;
+    //     char* labels = calloc(n_glyphs, sizeof(char));
+    //     for (uint32_t i = 0; i < n_glyphs; i++)
+    //         labels[i] = i % 2 == 0 ? 64 : 0;
+    //     VklTickFormat f = opt_format(0, 1, .1, ctx);
+    //     double o = overlap(f, 0, 1, .1, ctx, labels);
+    //     ASSERT(o > 0);
+    //     DBGF(o);
+    //     FREE(labels);
+    // }
+
+    VklAxesTicks ticks = vkl_axes_ticks(0, 1, ctx);
+    for (uint32_t i = 0; i < ticks.value_count; i++)
+        log_debug("%.3f : %s", ticks.values[i], &ticks.labels[i * MAX_GLYPHS_PER_TICK]);
+
     return 0;
 }
 

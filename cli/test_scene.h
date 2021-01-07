@@ -10,6 +10,7 @@
 /*************************************************************************************************/
 
 int test_axes_1(TestContext* context);
+int test_axes_2(TestContext* context);
 int test_scene_1(TestContext* context);
 int test_scene_axes(TestContext* context);
 int test_scene_logistic(TestContext* context);
