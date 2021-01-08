@@ -244,8 +244,14 @@ overlap(VklTickFormat format, double lmin, double lmax, double lstep, VklAxesCon
         x = lmin + i * lstep;
         ASSERT(x <= lmax);
 
-        n0 = strlen(&context.labels[i * MAX_GLYPHS_PER_TICK]);
-        n1 = strlen(&context.labels[(i + 1) * MAX_GLYPHS_PER_TICK]);
+        // NOTE: the size that takes each label on the current coordinate is:
+        // - X axis: number of characters in the label times the glyph width
+        // - Y axis: always 1 times the glyph height
+        if (context.coord == VKL_AXES_COORD_X)
+        {
+            n0 = strlen(&context.labels[i * MAX_GLYPHS_PER_TICK]);
+            n1 = strlen(&context.labels[(i + 1) * MAX_GLYPHS_PER_TICK]);
+        }
         // Compute the distance between the current label and the next.
         d = MAX(0, lstep / (lmax - lmin) * size - glyph / 2 * (n0 + n1));
 

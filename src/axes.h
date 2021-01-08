@@ -32,10 +32,74 @@ struct VklAxesTicks
 
 
 /*************************************************************************************************/
-/*  Axes functions                                                                               */
+/*  Tick positioning                                                                             */
 /*************************************************************************************************/
 
-static void _tick_format(double value, char* out_text) { snprintf(out_text, 16, "%.1f", value); }
+static VklAxesTicks vkl_ticks(double vmin, double vmax, VklAxesContext ctx)
+{
+    ASSERT(vmin < vmax);
+    ASSERT(ctx.coord <= VKL_AXES_COORD_Y);
+    ASSERT(ctx.size_glyph > 0);
+    ASSERT(ctx.size_viewport > 0);
+
+    bool x_axis = ctx.coord == VKL_AXES_COORD_X;
+    int32_t label_count =
+        (int32_t)ceil(((.5 * ctx.size_viewport) / ((x_axis ? 8.0 : 1) * ctx.size_glyph)));
+    label_count = MAX(2, label_count);
+    log_debug(
+        "running extended Wilkinson algorithm with %d labels on range [%.3f, %.3f]", label_count,
+        vmin, vmax);
+    R r = wilk_ext(vmin, vmax, label_count, ctx);
+
+    ASSERT(r.lstep > 0);
+    ASSERT(r.lmin < r.lmax);
+
+    VklAxesTicks out = {0};
+    out.format = r.f;
+    out.vmin = vmin;
+    out.vmax = vmax;
+    out.lmin = r.lmin;
+    out.lmax = r.lmax;
+    out.lstep = r.lstep;
+
+    // Generate the values between lmin and lmax.
+    double x = 0;
+    uint32_t n = floor(1 + (r.lmax - r.lmin) / r.lstep);
+    out.value_count = n;
+    out.values = calloc(n, sizeof(double));
+    ASSERT(n >= 2);
+    if (n >= 3)
+    {
+        ASSERT(r.lmin + (n - 1) * r.lstep <= r.lmax);
+        ASSERT(r.lmin + n * r.lstep >= r.lmax);
+    }
+    for (uint32_t i = 0; i < n; i++)
+    {
+        x = r.lmin + i * r.lstep;
+        // log_debug("%f %f %f %f", x, r.lmin, r.lmax, r.lstep);
+        ASSERT(x <= r.lmax + .5 * r.lstep);
+        out.values[i] = x;
+    }
+    ctx.labels = calloc(n * MAX_GLYPHS_PER_TICK, sizeof(char));
+    make_labels(r.f, r.lmin, r.lmax, r.lstep, ctx);
+    out.labels = ctx.labels;
+    return out;
+}
+
+
+
+static void vkl_ticks_destroy(VklAxesTicks* ticks)
+{
+    ASSERT(ticks != NULL);
+    FREE(ticks->values);
+    FREE(ticks->labels);
+}
+
+
+
+/*************************************************************************************************/
+/*  Axes functions                                                                               */
+/*************************************************************************************************/
 
 static void _axes_ticks(VklController* controller, VklAxisCoord coord)
 {
@@ -125,10 +189,12 @@ static void _axes_ticks_init(VklController* controller)
     {
         // Init structures.
         // TODO: constants
-        axes->buf[coord] = calloc(128 * 16, sizeof(char)); // max ticks * max glyphs per tick
+        axes->buf[coord] = calloc(
+            MAX_LABELS * MAX_GLYPHS_PER_TICK, sizeof(char)); // max ticks * max glyphs per tick
         axes->ticks[coord] = vkl_array(0, VKL_DTYPE_FLOAT);
         axes->text[coord] = vkl_array(0, VKL_DTYPE_STR);
 
+        // TODO
         // Set the initial range.
         axes->range[coord][0] = -1;
         axes->range[coord][1] = +1;
@@ -143,6 +209,7 @@ static void _axes_ticks_init(VklController* controller)
 
 static void _axes_collision(VklController* controller, bool* update)
 {
+
     ASSERT(controller != NULL);
     ASSERT(controller->type == VKL_CONTROLLER_AXES_2D);
     VklAxes2D* axes = &controller->u.axes_2D;
@@ -150,6 +217,9 @@ static void _axes_collision(VklController* controller, bool* update)
     ASSERT(update != NULL);
 
     // TODO
+    // Determine whether the ticks are overlapping, if so we should recompute the ticks (zooming)
+    // Same if there are less than N visible labels (dezooming)
+
     // set update depending on whether there is a collision on the labels on that axis
     update[0] = (controller->panel->grid->canvas->frame_idx % 5000) == 0;
     update[1] = (controller->panel->grid->canvas->frame_idx % 5000) == 0;
@@ -157,6 +227,8 @@ static void _axes_collision(VklController* controller, bool* update)
 
 static void _axes_range(VklController* controller, VklAxisCoord coord)
 {
+    // Update axes->range struct as a function of the current panzoom
+
     ASSERT(controller != NULL);
     ASSERT(controller->type == VKL_CONTROLLER_AXES_2D);
     VklAxes2D* axes = &controller->u.axes_2D;
@@ -255,68 +327,6 @@ static void _axes_destroy(VklController* controller)
         vkl_array_destroy(&axes->text[i]);
         FREE(axes->buf[i]);
     }
-}
-
-
-
-static VklAxesTicks vkl_ticks(double vmin, double vmax, VklAxesContext ctx)
-{
-    ASSERT(vmin < vmax);
-    ASSERT(ctx.coord <= VKL_AXES_COORD_Y);
-    ASSERT(ctx.size_glyph > 0);
-    ASSERT(ctx.size_viewport > 0);
-
-    bool x_axis = ctx.coord == VKL_AXES_COORD_X;
-    int32_t label_count =
-        (int32_t)ceil(((.5 * ctx.size_viewport) / ((x_axis ? 8.0 : 1) * ctx.size_glyph)));
-    label_count = MAX(2, label_count);
-    log_debug(
-        "running extended Wilkinson algorithm with %d labels on range [%.3f, %.3f]", label_count,
-        vmin, vmax);
-    R r = wilk_ext(vmin, vmax, label_count, ctx);
-
-    ASSERT(r.lstep > 0);
-    ASSERT(r.lmin < r.lmax);
-
-    VklAxesTicks out = {0};
-    out.format = r.f;
-    out.vmin = vmin;
-    out.vmax = vmax;
-    out.lmin = r.lmin;
-    out.lmax = r.lmax;
-    out.lstep = r.lstep;
-
-    // Generate the values between lmin and lmax.
-    double x = 0;
-    uint32_t n = floor(1 + (r.lmax - r.lmin) / r.lstep);
-    out.value_count = n;
-    out.values = calloc(n, sizeof(double));
-    ASSERT(n >= 2);
-    if (n >= 3)
-    {
-        ASSERT(r.lmin + (n - 1) * r.lstep <= r.lmax);
-        ASSERT(r.lmin + n * r.lstep >= r.lmax);
-    }
-    for (uint32_t i = 0; i < n; i++)
-    {
-        x = r.lmin + i * r.lstep;
-        // log_debug("%f %f %f %f", x, r.lmin, r.lmax, r.lstep);
-        ASSERT(x <= r.lmax + .5 * r.lstep);
-        out.values[i] = x;
-    }
-    ctx.labels = calloc(n * MAX_GLYPHS_PER_TICK, sizeof(char));
-    make_labels(r.f, r.lmin, r.lmax, r.lstep, ctx);
-    out.labels = ctx.labels;
-    return out;
-}
-
-
-
-static void vkl_ticks_destroy(VklAxesTicks* ticks)
-{
-    ASSERT(ticks != NULL);
-    FREE(ticks->values);
-    FREE(ticks->labels);
 }
 
 
