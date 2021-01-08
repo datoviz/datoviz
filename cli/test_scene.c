@@ -41,7 +41,7 @@ int test_axes_2(TestContext* context)
 {
     VklAxesContext ctx = {0};
     ctx.coord = VKL_AXES_COORD_X;
-    ctx.size_viewport = 2000;
+    ctx.size_viewport = 1000;
     ctx.size_glyph = 10;
 
     // {
@@ -64,7 +64,7 @@ int test_axes_2(TestContext* context)
 
     VklAxesTicks ticks = vkl_ticks(-10.12, 20.34, ctx);
     for (uint32_t i = 0; i < ticks.value_count; i++)
-        log_debug("%s", &ticks.labels[i * MAX_GLYPHS_PER_TICK]);
+        log_debug("tick #%02d: %s", i, &ticks.labels[i * MAX_GLYPHS_PER_TICK]);
     vkl_ticks_destroy(&ticks);
 
     return 0;

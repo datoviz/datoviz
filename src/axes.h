@@ -261,8 +261,20 @@ static void _axes_destroy(VklController* controller)
 
 static VklAxesTicks vkl_ticks(double vmin, double vmax, VklAxesContext ctx)
 {
-    // TODO: better choice for the initial number of labels
-    R r = wilk_ext(vmin, vmax, 12, ctx);
+    ASSERT(vmin < vmax);
+    ASSERT(ctx.coord <= VKL_AXES_COORD_Y);
+    ASSERT(ctx.size_glyph > 0);
+    ASSERT(ctx.size_viewport > 0);
+
+    bool x_axis = ctx.coord == VKL_AXES_COORD_X;
+    int32_t label_count =
+        (int32_t)ceil(((.5 * ctx.size_viewport) / ((x_axis ? 8.0 : 1) * ctx.size_glyph)));
+    label_count = MAX(2, label_count);
+    log_debug(
+        "running extended Wilkinson algorithm with %d labels on range [%.3f, %.3f]", label_count,
+        vmin, vmax);
+    R r = wilk_ext(vmin, vmax, label_count, ctx);
+
     ASSERT(r.lstep > 0);
     ASSERT(r.lmin < r.lmax);
 
@@ -280,12 +292,16 @@ static VklAxesTicks vkl_ticks(double vmin, double vmax, VklAxesContext ctx)
     out.value_count = n;
     out.values = calloc(n, sizeof(double));
     ASSERT(n >= 2);
-    ASSERT(r.lmin + (n - 1) * r.lstep <= r.lmax);
-    ASSERT(r.lmin + n * r.lstep >= r.lmax);
+    if (n >= 3)
+    {
+        ASSERT(r.lmin + (n - 1) * r.lstep <= r.lmax);
+        ASSERT(r.lmin + n * r.lstep >= r.lmax);
+    }
     for (uint32_t i = 0; i < n; i++)
     {
         x = r.lmin + i * r.lstep;
-        ASSERT(x <= r.lmax);
+        // log_debug("%f %f %f %f", x, r.lmin, r.lmax, r.lstep);
+        ASSERT(x <= r.lmax + .5 * r.lstep);
         out.values[i] = x;
     }
     ctx.labels = calloc(n * MAX_GLYPHS_PER_TICK, sizeof(char));
@@ -295,9 +311,10 @@ static VklAxesTicks vkl_ticks(double vmin, double vmax, VklAxesContext ctx)
 }
 
 
+
 static void vkl_ticks_destroy(VklAxesTicks* ticks)
 {
-    ASSERT(ticks!=NULL);
+    ASSERT(ticks != NULL);
     FREE(ticks->values);
     FREE(ticks->labels);
 }

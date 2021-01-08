@@ -40,8 +40,11 @@ https://github.com/quantenschaum/ctplot/blob/master/ctplot/ticks.py
     double x = 0;                                                                                 \
     uint32_t n = floor(1 + (lmax - lmin) / lstep);                                                \
     ASSERT(n >= 2);                                                                               \
-    ASSERT(lmin + (n - 1) * lstep <= lmax);                                                       \
-    ASSERT(lmin + n * lstep >= lmax);                                                             \
+    if (n >= 3)                                                                                   \
+    {                                                                                             \
+        ASSERT(lmin + (n - 1) * lstep <= lmax);                                                   \
+        ASSERT(lmin + n * lstep >= lmax);                                                         \
+    }                                                                                             \
     for (uint32_t i = 0; i < n; i++)
 
 
@@ -118,14 +121,14 @@ struct R
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-static inline double coverage(double dmin, double dmax, double lmin, double lmax)
+VKY_INLINE double coverage(double dmin, double dmax, double lmin, double lmax)
 {
     return 1. - 0.5 * (pow(dmax - lmax, 2) + pow(dmin - lmin, 2)) / pow(0.1 * (dmax - dmin), 2);
 }
 
 
 
-static inline double coverage_max(double dmin, double dmax, double span)
+VKY_INLINE double coverage_max(double dmin, double dmax, double span)
 {
     double drange = dmax - dmin;
     if (span > drange)
@@ -136,7 +139,7 @@ static inline double coverage_max(double dmin, double dmax, double span)
 
 
 
-static inline double density(double k, double m, double dmin, double dmax, double lmin, double lmax)
+VKY_INLINE double density(double k, double m, double dmin, double dmax, double lmin, double lmax)
 {
     double r = (k - 1.) / (lmax - lmin);
     double rt = (m - 1.) / (fmax(lmax, dmax) - fmin(lmin, dmin));
@@ -145,7 +148,7 @@ static inline double density(double k, double m, double dmin, double dmax, doubl
 
 
 
-static inline double density_max(int32_t k, int32_t m)
+VKY_INLINE double density_max(int32_t k, int32_t m)
 {
     if (k >= m)
         return 2. - (k - 1.0) / (m - 1.0);
@@ -155,7 +158,7 @@ static inline double density_max(int32_t k, int32_t m)
 
 
 
-static inline double simplicity(Q q, int32_t j, double lmin, double lmax, double lstep)
+VKY_INLINE double simplicity(Q q, int32_t j, double lmin, double lmax, double lstep)
 {
     double eps = 1e-10;
     int64_t n = q.len;
@@ -172,7 +175,7 @@ static inline double simplicity(Q q, int32_t j, double lmin, double lmax, double
 
 
 
-static inline double simplicity_max(Q q, int32_t j)
+VKY_INLINE double simplicity_max(Q q, int32_t j)
 {
     int64_t n = q.len;
     int32_t i = q.i + 1;
@@ -182,7 +185,7 @@ static inline double simplicity_max(Q q, int32_t j)
 
 
 
-static inline double leg(VklTickFormat format, double x)
+VKY_INLINE double leg(VklTickFormat format, double x)
 {
     double ax = fabs(x);
     double l = 0;
@@ -208,7 +211,7 @@ static inline double leg(VklTickFormat format, double x)
 
 
 
-static inline double dist_overlap(double d)
+VKY_INLINE double dist_overlap(double d)
 {
     if (d >= DIST_MIN)
         return 1;
@@ -224,8 +227,8 @@ static inline double dist_overlap(double d)
 
 
 
-static double overlap(
-    VklTickFormat format, double lmin, double lmax, double lstep, VklAxesContext context)
+VKY_INLINE double
+overlap(VklTickFormat format, double lmin, double lmax, double lstep, VklAxesContext context)
 {
     double d = 0;             // distance between label i and i+1
     double min_overlap = INF; //
@@ -263,37 +266,52 @@ static double overlap(
 
 VKY_INLINE void _get_tick_format(VklTickFormat format, char* fmt)
 {
-    strcpy(fmt, "%.XF"); // [2] = precision, [3] = f or e
-    sprintf(&fmt[2], "%d", format.precision);
+    uint32_t offset = 4;
+    strcpy(fmt, "%s%.XF"); // [2] = precision, [3] = f or e
+    snprintf(&fmt[offset], 4, "%d", format.precision);
     switch (format.format_type)
     {
     case VKL_TICK_FORMAT_DECIMAL:
-        fmt[3] = 'f';
+        fmt[offset + 1] = 'f';
         break;
     case VKL_TICK_FORMAT_SCIENTIFIC:
-        fmt[3] = 'e';
+        fmt[offset + 1] = 'e';
         break;
     default:
+        log_error("unknown tick format %d", format.format_type);
         break;
     }
 }
 
 
 
-static void make_labels(
-    VklTickFormat format, double lmin, double lmax, double lstep, VklAxesContext context)
+VKY_INLINE void _tick_label(double x, char* tick_format, char* out)
+{
+    if (x == 0)
+    {
+        snprintf(out, 2, "0");
+        return;
+    }
+    char sign[2] = {0};
+    sign[0] = x < 0 ? '-' : '+';
+    snprintf(out, MAX_GLYPHS_PER_TICK, tick_format, sign, fabs(x));
+    ASSERT(strlen(out) < MAX_GLYPHS_PER_TICK);
+}
+
+
+
+static void
+make_labels(VklTickFormat format, double lmin, double lmax, double lstep, VklAxesContext context)
 {
     ASSERT(context.labels != NULL);
-    char tick_format[8] = {0};
+    char tick_format[12] = {0};
     _get_tick_format(format, tick_format);
 
     ITER_TICKS
     {
         x = lmin + i * lstep;
-        ASSERT(x <= lmax);
-
-        snprintf(&context.labels[i * MAX_GLYPHS_PER_TICK], MAX_GLYPHS_PER_TICK, tick_format, x);
-        ASSERT(strlen(&context.labels[i * MAX_GLYPHS_PER_TICK]) < MAX_GLYPHS_PER_TICK);
+        ASSERT(x <= lmax + .5 * lstep);
+        _tick_label(x, tick_format, &context.labels[i * MAX_GLYPHS_PER_TICK]);
     }
 }
 
@@ -311,7 +329,7 @@ legibility(VklTickFormat format, double lmin, double lmax, double lstep, VklAxes
     ITER_TICKS
     {
         x = lmin + i * lstep;
-        ASSERT(x <= lmax);
+        ASSERT(x <= lmax + .5 * lstep);
         f += leg(format, x);
     }
     f = .9 * f / MAX(1, n); // TODO: 0-extended?
@@ -449,12 +467,12 @@ static R wilk_ext(double dmin, double dmax, int32_t m, VklAxesContext context)
 
                 while (z < Z_MAX)
                 {
-                    //printf("z %f\n", z);
+                    // printf("z %f\n", z);
                     ASSERT(j > 0);
                     ASSERT(q.value > 0);
                     step = j * q.value * pow(10., z);
                     ASSERT(step > 0);
-                    //if (step > dmax - dmin)
+                    // if (step > dmax - dmin)
                     //    break;
                     cm = coverage_max(dmin, dmax, step * (k - 1.));
 
@@ -484,7 +502,7 @@ static R wilk_ext(double dmin, double dmax, int32_t m, VklAxesContext context)
 
                         ASSERT(lstep > 0);
                         scr = score(W, s, c, d, l);
-                        //log_debug("score %f: s %f c %f d %f l %f", scr, s, c, d, l);
+                        // log_debug("score %f: s %f c %f d %f l %f", scr, s, c, d, l);
 
                         if (scr > best_score)
                         {
