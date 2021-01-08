@@ -1,8 +1,6 @@
 #include "test_scene.h"
-#include "../external/exwilk.h"
 #include "../include/visky/builtin_visuals.h"
 #include "../include/visky/scene.h"
-// #include "../src/axes.h"
 #include "utils.h"
 
 
@@ -22,9 +20,9 @@ int test_axes_1(TestContext* context)
     ctx.size_viewport = 1000;
     ctx.size_glyph = 10;
 
-    const uint32_t N = 16;
+    const uint32_t N = 11;
     ctx.labels = calloc(N * MAX_GLYPHS_PER_TICK, sizeof(char));
-    make_labels(f, 0, 1, .1, ctx);
+    make_labels(f, 0, .1, N, ctx);
     for (uint32_t i = 0; i < N; i++)
     {
         if (strlen(&ctx.labels[i * MAX_GLYPHS_PER_TICK]) == 0)
@@ -44,27 +42,44 @@ int test_axes_2(TestContext* context)
     ctx.size_viewport = 1000;
     ctx.size_glyph = 10;
 
-    // {
-    //     VklTickFormat f = opt_format(0, 1, .2, ctx);
-    //     DBG(f.format_type);
-    //     DBG(f.precision);
-    // }
-
-    // {
-    //     uint32_t n_glyphs = 64;
-    //     char* labels = calloc(n_glyphs, sizeof(char));
-    //     for (uint32_t i = 0; i < n_glyphs; i++)
-    //         labels[i] = i % 2 == 0 ? 64 : 0;
-    //     VklTickFormat f = opt_format(0, 1, .1, ctx);
-    //     double o = overlap(f, 0, 1, .1, ctx, labels);
-    //     ASSERT(o > 0);
-    //     DBGF(o);
-    //     FREE(labels);
-    // }
-
+    // No extensions.
     VklAxesTicks ticks = vkl_ticks(-10.12, 20.34, ctx);
     for (uint32_t i = 0; i < ticks.value_count; i++)
         log_debug("tick #%02d: %s", i, &ticks.labels[i * MAX_GLYPHS_PER_TICK]);
+
+    vkl_ticks_destroy(&ticks);
+    return 0;
+}
+
+
+
+int test_axes_3(TestContext* context)
+{
+    VklAxesContext ctx = {0};
+    ctx.coord = VKL_AXES_COORD_X;
+    ctx.size_viewport = 1000;
+    ctx.size_glyph = 10;
+
+    VklAxesTicks ticks = {0};
+
+    // No extensions.
+    ctx.extensions = 0;
+    ticks = vkl_ticks(-2, +2, ctx);
+    for (uint32_t i = 0; i < ticks.value_count; i++)
+        log_debug("tick #%02d: %s", i, &ticks.labels[i * MAX_GLYPHS_PER_TICK]);
+
+    // 1 extension on each side.
+    ctx.extensions = 1;
+    ticks = vkl_ticks(-2, +2, ctx);
+    for (uint32_t i = 0; i < ticks.value_count; i++)
+        log_debug("tick #%02d: %s", i, &ticks.labels[i * MAX_GLYPHS_PER_TICK]);
+
+    // 2 extension on each side.
+    ctx.extensions = 2;
+    ticks = vkl_ticks(-2, +2, ctx);
+    for (uint32_t i = 0; i < ticks.value_count; i++)
+        log_debug("tick #%02d: %s", i, &ticks.labels[i * MAX_GLYPHS_PER_TICK]);
+
     vkl_ticks_destroy(&ticks);
 
     return 0;

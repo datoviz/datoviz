@@ -68,24 +68,14 @@ typedef enum
     VKL_VISUAL_SURFACE,     //
     VKL_VISUAL_VOLUME,      //
     VKL_VISUAL_FAKE_SPHERE, //
-
-    VKL_VISUAL_AXES_2D,  //
-    VKL_VISUAL_AXES_3D,  //
-    VKL_VISUAL_COLORMAP, //
+    VKL_VISUAL_AXES_2D,     //
+    VKL_VISUAL_AXES_3D,     //
+    VKL_VISUAL_COLORMAP,    //
 
     VKL_VISUAL_COUNT,
 
     VKL_VISUAL_CUSTOM,
 } VklVisualType;
-
-
-
-// Axis coord.
-typedef enum
-{
-    VKL_AXES_COORD_X,
-    VKL_AXES_COORD_Y,
-} VklAxisCoord;
 
 
 

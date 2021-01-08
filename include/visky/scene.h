@@ -4,9 +4,8 @@
 #include "builtin_visuals.h"
 #include "interact.h"
 #include "panel.h"
+#include "ticks.h"
 #include "visuals.h"
-#include "../external/exwilk.h"
-//#include "../../src/axes.h"
 
 
 
@@ -56,7 +55,6 @@ typedef struct VklScene VklScene;
 typedef struct VklController VklController;
 typedef struct VklTransform VklTransform;
 typedef struct VklAxes2D VklAxes2D;
-// typedef struct VklAxesTicks VklAxesTicks;
 typedef union VklControllerUnion VklControllerUnion;
 
 typedef void (*VklControllerCallback)(VklController* controller, VklEvent ev);
@@ -66,19 +64,6 @@ typedef void (*VklControllerCallback)(VklController* controller, VklEvent ev);
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
-
-// struct VklAxesTicks
-// {
-//     double dmin, dmax;        // range values
-//     double lmin, lmax, lstep; // tick range and interval
-//     VklTickFormat format;     // best format
-//     uint32_t value_count;     // final number of labels
-//     uint32_t value_count_req; // number of values requested
-//     double* values;           // from lmin to lmax by lstep
-//     char* labels;             // hold all tick labels
-// };
-
-
 
 struct VklAxes2D
 {
@@ -249,7 +234,7 @@ static VklAxesContext _axes_context(VklController* controller, VklAxisCoord coor
 
     // Canvas size, used in tick computation.
     VklCanvas* canvas = controller->panel->grid->canvas;
-    ASSERT(canvas!= NULL);
+    ASSERT(canvas != NULL);
     float dpi_scaling = controller->panel->viewport.dpi_scaling;
     uvec2 size = {0};
     vkl_canvas_size(canvas, VKL_CANVAS_SIZE_FRAMEBUFFER, size);
@@ -261,6 +246,7 @@ static VklAxesContext _axes_context(VklController* controller, VklAxisCoord coor
     ctx.size_glyph =
         coord == VKL_AXES_COORD_X ? VKL_FONT_ATLAS.glyph_width : VKL_FONT_ATLAS.glyph_height;
     ctx.size_glyph *= dpi_scaling;
+    ctx.extensions = 1; // extend the range once on the left/right and top/bottom
 
     return ctx;
 }
@@ -279,16 +265,16 @@ static void _axes_ticks(VklController* controller, VklAxisCoord coord)
     double vlen = vmax - vmin;
     ASSERT(vlen > 0);
 
-    // Extended range for tolerancy during panzoom.
-    double vmin0 = vmin - vlen;
-    double vmax0 = vmax + vlen;
-    ASSERT(vmin0 < vmax0);
+    // // Extended range for tolerancy during panzoom.
+    // double vmin0 = vmin - vlen;
+    // double vmax0 = vmax + vlen;
+    // ASSERT(vmin0 < vmax0);
 
     // Prepare context for tick computation.
     VklAxesContext ctx = _axes_context(controller, coord);
 
     // Determine the tick number and positions.
-    axes->ticks[coord] = vkl_ticks(vmin0, vmax0, ctx);
+    axes->ticks[coord] = vkl_ticks(vmin, vmax, ctx);
 }
 
 // Update the axes visual's data as a function of the computed ticks.
@@ -389,10 +375,9 @@ static void _axes_collision(VklController* controller, bool* update)
     }
 }
 
+// Update axes->range struct as a function of the current panzoom.
 static void _axes_range(VklController* controller, VklAxisCoord coord)
 {
-    // Update axes->range struct as a function of the current panzoom
-
     ASSERT(controller != NULL);
     ASSERT(controller->type == VKL_CONTROLLER_AXES_2D);
     VklAxes2D* axes = &controller->u.axes_2D;
@@ -413,6 +398,7 @@ static void _axes_range(VklController* controller, VklAxisCoord coord)
     // log_info("%.3f %.3f", axes->range[coord][0], axes->range[coord][1]);
 }
 
+// Callback called at every frame.
 static void _axes_callback(VklController* controller, VklEvent ev)
 {
     ASSERT(controller != NULL);
@@ -444,6 +430,7 @@ static void _axes_callback(VklController* controller, VklEvent ev)
     }
 }
 
+// Add axes to a panel.
 static void _add_axes(VklController* controller)
 {
     ASSERT(controller != NULL);
@@ -483,6 +470,7 @@ static void _add_axes(VklController* controller)
     _axes_ticks_init(controller);
 }
 
+// Destroy the axes objects.
 static void _axes_destroy(VklController* controller)
 {
     ASSERT(controller != NULL);

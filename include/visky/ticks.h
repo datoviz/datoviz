@@ -10,8 +10,8 @@ https://github.com/quantenschaum/ctplot/blob/master/ctplot/ticks.py
 
 */
 
-#ifndef VKL_EXWILK_HEADER
-#define VKL_EXWILK_HEADER
+#ifndef VKL_TICKS_HEADER
+#define VKL_TICKS_HEADER
 
 #include <assert.h>
 #include <limits.h>
@@ -20,6 +20,8 @@ https://github.com/quantenschaum/ctplot/blob/master/ctplot/ticks.py
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "../include/visky/common.h"
 
 
 
@@ -92,6 +94,7 @@ struct VklAxesContext
     VklAxisCoord coord;
     float size_viewport; // along the current dimension
     float size_glyph;    // either width or height
+    uint32_t extensions; // number of extensions on each side (typically 1)
     char* labels;        // used to store labels to avoid too many allocations during search
 };
 
@@ -321,16 +324,16 @@ VKY_INLINE void _tick_label(double x, char* tick_format, char* out)
 
 
 static void
-make_labels(VklTickFormat format, double lmin, double lmax, double lstep, VklAxesContext context)
+make_labels(VklTickFormat format, double x0, double lstep, uint32_t n, VklAxesContext context)
 {
     ASSERT(context.labels != NULL);
     char tick_format[12] = {0};
     _get_tick_format(format, tick_format);
 
-    ITER_TICKS
+    double x = x0;
+    for (uint32_t i = 0; i < n; i++)
     {
-        x = lmin + i * lstep;
-        ASSERT(x <= lmax + .5 * lstep);
+        x = x0 + i * lstep;
         _tick_label(x, tick_format, &context.labels[i * MAX_GLYPHS_PER_TICK]);
     }
 }
@@ -354,7 +357,7 @@ legibility(VklTickFormat format, double lmin, double lmax, double lstep, VklAxes
     }
     f = .9 * f / MAX(1, n); // TODO: 0-extended?
 
-    make_labels(format, lmin, lmax, lstep, context);
+    make_labels(format, lmin, lstep, n, context);
 
     // Overlap part.
     double o = overlap(format, lmin, lmax, lstep, context);
@@ -558,51 +561,55 @@ static VklAxesTicks vkl_ticks(double vmin, double vmax, VklAxesContext ctx)
 
     // NOTE: factor Y because we average 6 characters per tick, and this only counts on the x axis.
     // This number is only an initial guess, the algorithm will find a proper one.
-    int32_t label_count =
+    int32_t label_count_req =
         (int32_t)ceil(((ctx.size_viewport) / ((x_axis ? 6.0 : 1) * ctx.size_glyph)));
-    // NOTE: factor 3, because the initial range covers not only the current viewport but also
-    // the left/right or top/bottom ones.
-    label_count = MAX(2, 3 * label_count );
+    label_count_req = MAX(2, label_count_req);
 
     log_debug(
         "running extended Wilkinson algorithm on axis %d with %d labels on range [%.3f, %.3f], "
-        "viewport size %.1f, glyph size %.1f", ctx.coord, label_count, vmin, vmax,
-        ctx.size_viewport, ctx.size_glyph);
-    R r = wilk_ext(vmin, vmax, label_count, ctx);
+        "viewport size %.1f, glyph size %.1f",
+        ctx.coord, label_count_req, vmin, vmax, ctx.size_viewport, ctx.size_glyph);
+    R r = wilk_ext(vmin, vmax, label_count_req, ctx);
 
     ASSERT(r.lstep > 0);
     ASSERT(r.lmin < r.lmax);
 
+    uint32_t ext = ctx.extensions;
     VklAxesTicks out = {0};
     out.format = r.f;
-    out.dmin = vmin;
-    out.dmax = vmax;
-    out.lmin = r.lmin;
-    out.lmax = r.lmax;
+    // requested range (extended)
+    // extended left/right or top/bottom
+    double diff = vmax - vmin;
+    out.dmin = vmin - ext * diff;
+    out.dmax = vmax + ext * diff;
+    // ticks range (extended)
+    out.lmin = r.lmin - ext * diff;
+    out.lmax = r.lmax + ext * diff;
     out.lstep = r.lstep;
-    ASSERT(label_count > 0);
-    out.value_count_req = (uint32_t)label_count;
+    ASSERT(label_count_req > 0);
+    out.value_count_req = (2 * ext + 1) * (uint32_t)label_count_req;
+    ASSERT(out.value_count_req > 0);
 
     // Generate the values between lmin and lmax.
-    double x = 0;
     uint32_t n = floor(1 + (r.lmax - r.lmin) / r.lstep);
+    // Extension of the requested range.
+    // n is now the total number of ticks across the extended range
+    n *= (2 * ext + 1);
+
     out.value_count = n;
+    double x0 = r.lmin - ext * diff - r.lstep * ext;
+
     out.values = calloc(n, sizeof(double));
     ASSERT(n >= 2);
-    if (n >= 3)
-    {
-        ASSERT(r.lmin + (n - 1) * r.lstep <= r.lmax);
-        ASSERT(r.lmin + n * r.lstep >= r.lmax);
-    }
+
+    double x = 0;
     for (uint32_t i = 0; i < n; i++)
     {
-        x = r.lmin + i * r.lstep;
-        // log_debug("%f %f %f %f", x, r.lmin, r.lmax, r.lstep);
-        ASSERT(x <= r.lmax + .5 * r.lstep);
+        x = x0 + i * r.lstep;
         out.values[i] = x;
     }
     ctx.labels = calloc(n * MAX_GLYPHS_PER_TICK, sizeof(char));
-    make_labels(r.f, r.lmin, r.lmax, r.lstep, ctx);
+    make_labels(r.f, x0, r.lstep, n, ctx);
     out.labels = ctx.labels;
     log_debug(
         "found %d labels, [%.1f, %.1f] with step %.1f", //
