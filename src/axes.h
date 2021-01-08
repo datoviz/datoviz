@@ -259,10 +259,12 @@ static void _axes_destroy(VklController* controller)
 
 
 
-static VklAxesTicks vkl_axes_ticks(double vmin, double vmax, VklAxesContext ctx)
+static VklAxesTicks vkl_ticks(double vmin, double vmax, VklAxesContext ctx)
 {
     // TODO: better choice for the initial number of labels
     R r = wilk_ext(vmin, vmax, 12, ctx);
+    ASSERT(r.lstep > 0);
+    ASSERT(r.lmin < r.lmax);
 
     VklAxesTicks out = {0};
     out.format = r.f;
@@ -271,9 +273,6 @@ static VklAxesTicks vkl_axes_ticks(double vmin, double vmax, VklAxesContext ctx)
     out.lmin = r.lmin;
     out.lmax = r.lmax;
     out.lstep = r.lstep;
-
-    ASSERT(r.lstep > 0);
-    ASSERT(r.lmin < r.lmax);
 
     // Generate the values between lmin and lmax.
     double x = 0;
@@ -289,10 +288,18 @@ static VklAxesTicks vkl_axes_ticks(double vmin, double vmax, VklAxesContext ctx)
         ASSERT(x <= r.lmax);
         out.values[i] = x;
     }
-    out.labels = calloc(n * MAX_GLYPHS_PER_TICK, sizeof(char));
-    make_labels(r.f, r.lmin, r.lmax, r.lstep, ctx, out.labels);
-
+    ctx.labels = calloc(n * MAX_GLYPHS_PER_TICK, sizeof(char));
+    make_labels(r.f, r.lmin, r.lmax, r.lstep, ctx);
+    out.labels = ctx.labels;
     return out;
+}
+
+
+static void vkl_ticks_destroy(VklAxesTicks* ticks)
+{
+    ASSERT(ticks!=NULL);
+    FREE(ticks->values);
+    FREE(ticks->labels);
 }
 
 

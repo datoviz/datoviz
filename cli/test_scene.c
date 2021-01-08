@@ -23,13 +23,15 @@ int test_axes_1(TestContext* context)
     ctx.size_glyph = 10;
 
     const uint32_t N = 16;
-    char* labels = calloc(N * MAX_GLYPHS_PER_TICK, sizeof(char));
-    make_labels(f, 0, 1, .1, ctx, labels);
+    ctx.labels = calloc(N * MAX_GLYPHS_PER_TICK, sizeof(char));
+    make_labels(f, 0, 1, .1, ctx);
     for (uint32_t i = 0; i < N; i++)
     {
-        log_debug("%s ", &labels[i * MAX_GLYPHS_PER_TICK]);
+        if (strlen(&ctx.labels[i * MAX_GLYPHS_PER_TICK]) == 0)
+            break;
+        log_debug("%s ", &ctx.labels[i * MAX_GLYPHS_PER_TICK]);
     }
-    FREE(labels);
+    FREE(ctx.labels);
     return 0;
 }
 
@@ -42,11 +44,11 @@ int test_axes_2(TestContext* context)
     ctx.size_viewport = 2000;
     ctx.size_glyph = 10;
 
-    {
-        VklTickFormat f = opt_format(0, 1, .2, ctx);
-        DBG(f.format_type);
-        DBG(f.precision);
-    }
+    // {
+    //     VklTickFormat f = opt_format(0, 1, .2, ctx);
+    //     DBG(f.format_type);
+    //     DBG(f.precision);
+    // }
 
     // {
     //     uint32_t n_glyphs = 64;
@@ -60,9 +62,10 @@ int test_axes_2(TestContext* context)
     //     FREE(labels);
     // }
 
-    VklAxesTicks ticks = vkl_axes_ticks(0, 1, ctx);
+    VklAxesTicks ticks = vkl_ticks(-10.12, 20.34, ctx);
     for (uint32_t i = 0; i < ticks.value_count; i++)
-        log_debug("%.3f : %s", ticks.values[i], &ticks.labels[i * MAX_GLYPHS_PER_TICK]);
+        log_debug("%s", &ticks.labels[i * MAX_GLYPHS_PER_TICK]);
+    vkl_ticks_destroy(&ticks);
 
     return 0;
 }

@@ -34,6 +34,7 @@ https://github.com/quantenschaum/ctplot/blob/master/ctplot/ticks.py
 #define PRECISION_MAX       9
 #define DIST_MIN            50
 #define MAX_GLYPHS_PER_TICK 24
+#define MAX_LABELS          256
 
 #define ITER_TICKS                                                                                \
     double x = 0;                                                                                 \
@@ -87,6 +88,7 @@ struct VklAxesContext
     VklAxisCoord coord;
     float size_viewport; // along the current dimension
     float size_glyph;    // either width or height
+    char* labels;        // used to store labels to avoid too many allocations during search
 };
 
 
@@ -116,14 +118,14 @@ struct R
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-static double coverage(double dmin, double dmax, double lmin, double lmax)
+static inline double coverage(double dmin, double dmax, double lmin, double lmax)
 {
     return 1. - 0.5 * (pow(dmax - lmax, 2) + pow(dmin - lmin, 2)) / pow(0.1 * (dmax - dmin), 2);
 }
 
 
 
-static double coverage_max(double dmin, double dmax, double span)
+static inline double coverage_max(double dmin, double dmax, double span)
 {
     double drange = dmax - dmin;
     if (span > drange)
@@ -134,7 +136,7 @@ static double coverage_max(double dmin, double dmax, double span)
 
 
 
-static double density(double k, double m, double dmin, double dmax, double lmin, double lmax)
+static inline double density(double k, double m, double dmin, double dmax, double lmin, double lmax)
 {
     double r = (k - 1.) / (lmax - lmin);
     double rt = (m - 1.) / (fmax(lmax, dmax) - fmin(lmin, dmin));
@@ -143,7 +145,7 @@ static double density(double k, double m, double dmin, double dmax, double lmin,
 
 
 
-static double density_max(int32_t k, int32_t m)
+static inline double density_max(int32_t k, int32_t m)
 {
     if (k >= m)
         return 2. - (k - 1.0) / (m - 1.0);
@@ -153,7 +155,7 @@ static double density_max(int32_t k, int32_t m)
 
 
 
-static double simplicity(Q q, int32_t j, double lmin, double lmax, double lstep)
+static inline double simplicity(Q q, int32_t j, double lmin, double lmax, double lstep)
 {
     double eps = 1e-10;
     int64_t n = q.len;
@@ -170,7 +172,7 @@ static double simplicity(Q q, int32_t j, double lmin, double lmax, double lstep)
 
 
 
-static double simplicity_max(Q q, int32_t j)
+static inline double simplicity_max(Q q, int32_t j)
 {
     int64_t n = q.len;
     int32_t i = q.i + 1;
@@ -180,7 +182,7 @@ static double simplicity_max(Q q, int32_t j)
 
 
 
-static double leg(VklTickFormat format, double x)
+static inline double leg(VklTickFormat format, double x)
 {
     double ax = fabs(x);
     double l = 0;
@@ -221,9 +223,9 @@ static inline double dist_overlap(double d)
 }
 
 
+
 static double overlap(
-    VklTickFormat format, double lmin, double lmax, double lstep, VklAxesContext context,
-    char* labels)
+    VklTickFormat format, double lmin, double lmax, double lstep, VklAxesContext context)
 {
     double d = 0;             // distance between label i and i+1
     double min_overlap = INF; //
@@ -239,8 +241,8 @@ static double overlap(
         x = lmin + i * lstep;
         ASSERT(x <= lmax);
 
-        n0 = strlen(&labels[i * MAX_GLYPHS_PER_TICK]);
-        n1 = strlen(&labels[(i + 1) * MAX_GLYPHS_PER_TICK]);
+        n0 = strlen(&context.labels[i * MAX_GLYPHS_PER_TICK]);
+        n1 = strlen(&context.labels[(i + 1) * MAX_GLYPHS_PER_TICK]);
         // Compute the distance between the current label and the next.
         d = MAX(0, lstep / (lmax - lmin) * size - glyph / 2 * (n0 + n1));
 
@@ -253,6 +255,7 @@ static double overlap(
             min_overlap = label_overlap;
     }
 
+    // log_debug("overlap %f %f %f, %f", lmin, lmax, lstep, min_overlap);
     return min_overlap;
 }
 
@@ -278,10 +281,9 @@ VKY_INLINE void _get_tick_format(VklTickFormat format, char* fmt)
 
 
 static void make_labels(
-    VklTickFormat format, double lmin, double lmax, double lstep, VklAxesContext context,
-    char* labels)
+    VklTickFormat format, double lmin, double lmax, double lstep, VklAxesContext context)
 {
-
+    ASSERT(context.labels != NULL);
     char tick_format[8] = {0};
     _get_tick_format(format, tick_format);
 
@@ -290,8 +292,8 @@ static void make_labels(
         x = lmin + i * lstep;
         ASSERT(x <= lmax);
 
-        snprintf(&labels[i * MAX_GLYPHS_PER_TICK], MAX_GLYPHS_PER_TICK, tick_format, x);
-        ASSERT(strlen(&labels[i * MAX_GLYPHS_PER_TICK]) < MAX_GLYPHS_PER_TICK);
+        snprintf(&context.labels[i * MAX_GLYPHS_PER_TICK], MAX_GLYPHS_PER_TICK, tick_format, x);
+        ASSERT(strlen(&context.labels[i * MAX_GLYPHS_PER_TICK]) < MAX_GLYPHS_PER_TICK);
     }
 }
 
@@ -314,20 +316,16 @@ legibility(VklTickFormat format, double lmin, double lmax, double lstep, VklAxes
     }
     f = .9 * f / MAX(1, n); // TODO: 0-extended?
 
-    // Allocate a char[] array containing all labels, fill it with sprintf(), then pass it to
-    // overlap() and duplicate()
-    char* labels = calloc(n * MAX_GLYPHS_PER_TICK, sizeof(char));
-    make_labels(format, lmin, lmax, lstep, context, labels);
+    make_labels(format, lmin, lmax, lstep, context);
 
     // Overlap part.
-    double o = overlap(format, lmin, lmax, lstep, context, labels);
+    double o = overlap(format, lmin, lmax, lstep, context);
 
     // Duplicates part.
     double d = 1;
     // TODO: take into account the precision, and penalize states where there are 2 identical
     // labels.
 
-    FREE(labels);
     ASSERT(f <= 1);
     ASSERT(o <= 1);
     ASSERT(d <= 1);
@@ -339,7 +337,6 @@ legibility(VklTickFormat format, double lmin, double lmax, double lstep, VklAxes
 
 static VklTickFormat opt_format(double lmin, double lmax, double lstep, VklAxesContext context)
 {
-    // VklTickFormatType ftype = VKL_TICK_FORMAT_DECIMAL;
     double l = -INF, best_l = -INF;
     VklTickFormat format = {0}, best_format = {0};
     for (uint32_t f = 1; f <= 2; f++)
@@ -368,7 +365,7 @@ score(dvec4 weights, double simplicity, double coverage, double density, double 
 {
     double s = weights[0] * simplicity + weights[1] * coverage + //
                weights[2] * density + weights[3] * legibility;
-    // if (s < -INF / 2)
+    // if (s < -100)
     //     s = -INF;
     return s;
 }
@@ -403,8 +400,10 @@ static R wilk_ext(double dmin, double dmax, int32_t m, VklAxesContext context)
         return (R){dmin, dmax, dmax - dmin, 1, 0, 2, {VKL_TICK_FORMAT_DECIMAL, 1}, 0};
     }
 
+    context.labels = calloc(MAX_LABELS * MAX_GLYPHS_PER_TICK, sizeof(char));
+
     double DEFAULT_Q[] = {1, 5, 2, 2.5, 4, 3};
-    dvec4 W = {0.2, 0.25, 0.5, 0.05};
+    dvec4 W = {0.2, 0.25, 0.5, 0.05}; // score weights
 
     double n = (double)sizeof(DEFAULT_Q) / sizeof(DEFAULT_Q[0]);
     double best_score = -INF;
@@ -430,7 +429,7 @@ static R wilk_ext(double dmin, double dmax, int32_t m, VklAxesContext context)
             q.value = DEFAULT_Q[q.i];
             sm = simplicity_max(q, j);
 
-            if (score(W, sm, 1, 1, 1) < best_score)
+            if (score(W, sm, 1, 1, 1) <= best_score)
             {
                 j = INF;
                 break;
@@ -442,7 +441,7 @@ static R wilk_ext(double dmin, double dmax, int32_t m, VklAxesContext context)
                 // printf("k %d\n", k);
                 dm = density_max(k, m);
 
-                if (score(W, sm, 1, dm, 1) < best_score)
+                if (score(W, sm, 1, dm, 1) <= best_score)
                     break;
 
                 delta = (dmax - dmin) / (k + 1.) / j / q.value;
@@ -450,14 +449,16 @@ static R wilk_ext(double dmin, double dmax, int32_t m, VklAxesContext context)
 
                 while (z < Z_MAX)
                 {
-                    // printf("z %f\n", z);
-                    assert(j > 0);
-                    assert(q.value > 0);
+                    //printf("z %f\n", z);
+                    ASSERT(j > 0);
+                    ASSERT(q.value > 0);
                     step = j * q.value * pow(10., z);
-                    assert(step > 0);
+                    ASSERT(step > 0);
+                    //if (step > dmax - dmin)
+                    //    break;
                     cm = coverage_max(dmin, dmax, step * (k - 1.));
 
-                    if (score(W, sm, cm, dm, 1) < best_score)
+                    if (score(W, sm, cm, dm, 1) <= best_score)
                         break;
 
                     min_start = floor(dmax / step) * j - (k - 1.) * j;
@@ -481,12 +482,11 @@ static R wilk_ext(double dmin, double dmax, int32_t m, VklAxesContext context)
                         format = opt_format(lmin, lmax, lstep, context);
                         l = legibility(format, lmin, lmax, lstep, context);
 
-                        assert(lstep > 0);
+                        ASSERT(lstep > 0);
                         scr = score(W, s, c, d, l);
+                        //log_debug("score %f: s %f c %f d %f l %f", scr, s, c, d, l);
 
-                        if ((scr > best_score) && //
-                            ((lmin >= dmin) && (lmax <= dmax)) &&
-                            ((lmin <= dmin) && (lmax >= dmax)))
+                        if (scr > best_score)
                         {
                             best_score = scr;
                             result = (R){lmin, lmax, lstep, j, q.value, k, format, scr};
@@ -499,9 +499,7 @@ static R wilk_ext(double dmin, double dmax, int32_t m, VklAxesContext context)
         }
         j++;
     }
-
-    // context.debug = true;
-    // leg_overlap(result.lmin, result.lmax, result.lstep, result.f, context);
+    FREE(context.labels);
     return result;
 }
 
