@@ -70,6 +70,7 @@ struct VklAxes2D
     VklAxesTicks ticks[2];
     dvec2 panzoom_range[2]; // current panzoom range in data coordinates
     dvec2 tick_range[2]; // extended range (in data coordinates) used to compute the current ticks
+    VklAxesContext ctx[2];
 };
 
 
@@ -238,15 +239,22 @@ static VklAxesContext _axes_context(VklController* controller, VklAxisCoord coor
     float dpi_scaling = controller->panel->viewport.dpi_scaling;
     uvec2 size = {0};
     vkl_canvas_size(canvas, VKL_CANVAS_SIZE_FRAMEBUFFER, size);
+    VklViewport* viewport = &controller->panel->viewport;
+    vec4 m = {0};
+    glm_vec4_copy(viewport->margins, m);
 
     // Make axes context.
     VklAxesContext ctx = {0};
     ctx.coord = coord;
-    ctx.size_viewport = size[coord];
-    ctx.size_glyph =
-        coord == VKL_AXES_COORD_X ? VKL_FONT_ATLAS.glyph_width : VKL_FONT_ATLAS.glyph_height;
-    ctx.size_glyph *= dpi_scaling;
     ctx.extensions = 1; // extend the range once on the left/right and top/bottom
+    ctx.size_viewport = size[coord] - m[1 - coord] - m[3 - coord]; // remove the margins
+
+    // TODO: improve determination of glyph size
+    float font_size = 14;
+    ctx.size_glyph = coord == VKL_AXES_COORD_X
+                         ? font_size * VKL_FONT_ATLAS.glyph_width / VKL_FONT_ATLAS.glyph_height
+                         : font_size;
+    ctx.size_glyph *= dpi_scaling;
 
     return ctx;
 }
@@ -275,6 +283,9 @@ static void _axes_ticks(VklController* controller, VklAxisCoord coord)
 
     // Determine the tick number and positions.
     axes->ticks[coord] = vkl_ticks(vmin, vmax, ctx);
+
+    // We keep track of the context, which notably has a pointer to the labels.
+    axes->ctx[coord] = ctx;
 }
 
 // Update the axes visual's data as a function of the computed ticks.
@@ -352,26 +363,37 @@ static void _axes_collision(VklController* controller, bool* update)
     // Same if there are less than N visible labels (dezooming)
     for (uint32_t i = 0; i < 2; i++)
     {
-        VklAxisCoord coord = (VklAxisCoord)i;
+        // VklAxisCoord coord = (VklAxisCoord)i;
         VklAxesTicks* ticks = &axes->ticks[i];
-        VklAxesContext ctx = _axes_context(controller, coord);
+        ASSERT(ticks != NULL);
+
+        // NOTE: make a copy because we'll use a temporary context object when computing the
+        // overlap.
+        VklAxesContext ctx = axes->ctx[i];
+        ctx.labels = ticks->labels;
+        ASSERT(controller->interacts != NULL);
+        ASSERT(controller->interact_count >= 1);
         float scale = controller->interacts[0].u.p.zoom[i];
+        ASSERT(scale > 0);
         ctx.size_viewport *= scale;
+        ASSERT(ctx.size_viewport > 0);
+        ASSERT(ctx.labels != NULL);
 
         // Check whether there are overlapping labels (dezooming).
-        double o = overlap(ticks->format, ticks->lmin, ticks->lmax, ticks->lstep, ctx);
-
-        // Check whether there are too few labels (zooming).
-        double d = density(
-            ticks->value_count, ticks->value_count_req, //
-            ticks->dmin, ticks->dmax, ticks->lmin, ticks->lmax);
+        double min_distance = min_distance_labels(
+            ticks->format, ticks->lmin_orig, ticks->lmax_orig, ticks->lstep, ctx);
 
         // Check whether the current view is outside the computed ticks (panning);
         bool outside =
             axes->panzoom_range[i][0] <= ticks->lmin || axes->panzoom_range[i][1] >= ticks->lmax;
 
+        double rel_space = min_distance / (ctx.size_viewport / scale);
+
         // Recompute the ticks on the current axis?
-        update[i] = o <= 0 || d <= .75 || outside;
+        // log_debug(
+        //     "coord %d min_d %.3f, min_d_rel %.3f, outside %d", //
+        //     i, min_distance, rel_space, outside);
+        update[i] = min_distance <= 10 || rel_space >= .25 || outside;
     }
 }
 
@@ -403,27 +425,30 @@ static void _axes_callback(VklController* controller, VklEvent ev)
 {
     ASSERT(controller != NULL);
     _default_controller_callback(controller, ev);
-    return;
+    ASSERT(controller->interacts != NULL);
+    ASSERT(controller->interact_count >= 1);
     if (!controller->interacts[0].is_active)
         return;
+    ASSERT(controller->panel != NULL);
+    ASSERT(controller->panel->grid != NULL);
     VklCanvas* canvas = controller->panel->grid->canvas;
+    ASSERT(canvas != NULL);
 
     // Check label collision
     // DEBUG
     // bool update[2] = {true, true}; // whether X and Y axes must be updated or not
     bool update[2] = {false, false}; // whether X and Y axes must be updated or not
+    _axes_range(controller, 0);
+    _axes_range(controller, 1);
     _axes_collision(controller, update);
 
-    log_debug("%d %d", update[0], update[1]);
-
-    // TODO DEBUG
-    return;
+    // log_debug("%d %d", update[0], update[1]);
+    // return;
 
     for (uint32_t coord = 0; coord < 2; coord++)
     {
         if (!update[coord])
             continue;
-        _axes_range(controller, coord);
         _axes_ticks(controller, coord);
         _axes_upload(controller, coord);
         canvas->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;

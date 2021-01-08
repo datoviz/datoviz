@@ -102,13 +102,14 @@ struct VklAxesContext
 
 struct VklAxesTicks
 {
-    double dmin, dmax;        // range values
-    double lmin, lmax, lstep; // tick range and interval
-    VklTickFormat format;     // best format
-    uint32_t value_count;     // final number of labels
-    uint32_t value_count_req; // number of values requested
-    double* values;           // from lmin to lmax by lstep
-    char* labels;             // hold all tick labels
+    double dmin, dmax;           // range values
+    double lmin, lmax, lstep;    // tick range (extended) and interval
+    double lmin_orig, lmax_orig; // tick range (not extended)
+    VklTickFormat format;        // best format
+    uint32_t value_count;        // final number of labels
+    uint32_t value_count_req;    // number of values requested
+    double* values;              // from lmin to lmax by lstep
+    char* labels;                // hold all tick labels
 };
 
 
@@ -244,15 +245,20 @@ VKY_INLINE double dist_overlap(double d)
 
 
 
-VKY_INLINE double
-overlap(VklTickFormat format, double lmin, double lmax, double lstep, VklAxesContext context)
+VKY_INLINE double min_distance_labels(
+    VklTickFormat format, double lmin, double lmax, double lstep, VklAxesContext context)
 {
-    double d = 0;             // distance between label i and i+1
-    double min_overlap = INF; //
-    double label_overlap = 0; //
+    // NOTE: the context must have labels allocated/computed in order for the overlap to be
+    // computed.
+    // log_debug("overlap %.1f %.1f %.1f", lmin, lmax, lstep);
+
+    double d = 0;       // distance between label i and i+1
+    double min_d = INF; //
+    // double label_overlap = 0; //
     double size = context.size_viewport;
     double glyph = context.size_glyph;
     uint32_t n0 = 1, n1 = 1;
+    ASSERT(context.labels != NULL);
 
     ITER_TICKS
     {
@@ -270,19 +276,23 @@ overlap(VklTickFormat format, double lmin, double lmax, double lstep, VklAxesCon
             n1 = strlen(&context.labels[(i + 1) * MAX_GLYPHS_PER_TICK]);
         }
         // Compute the distance between the current label and the next.
-        d = MAX(0, lstep / (lmax - lmin) * size - glyph / 2 * (n0 + n1));
+        d = MAX(0, lstep / (lmax - lmin) * size - (glyph) * (n0 + n1));
 
-        // Compute the overlap for the current label.
-        label_overlap = dist_overlap(d);
-        ASSERT(label_overlap <= 1);
+        // // Compute the overlap for the current label.
+        // label_overlap = dist_overlap(d);
+        // ASSERT(label_overlap <= 1);
 
         // Compute the minimum overlap between two successive labels.
-        if (label_overlap < min_overlap)
-            min_overlap = label_overlap;
+        if (d < min_d)
+            min_d = d;
     }
 
+    // Compute the overlap for the current label.
+    // label_overlap = dist_overlap(d);
+    // ASSERT(label_overlap <= 1);
+
     // log_debug("overlap %f %f %f, %f", lmin, lmax, lstep, min_overlap);
-    return min_overlap;
+    return min_d;
 }
 
 
@@ -360,7 +370,7 @@ legibility(VklTickFormat format, double lmin, double lmax, double lstep, VklAxes
     make_labels(format, lmin, lstep, n, context);
 
     // Overlap part.
-    double o = overlap(format, lmin, lmax, lstep, context);
+    double o = dist_overlap(min_distance_labels(format, lmin, lmax, lstep, context));
 
     // Duplicates part.
     double d = 1;
@@ -562,7 +572,7 @@ static VklAxesTicks vkl_ticks(double vmin, double vmax, VklAxesContext ctx)
     // NOTE: factor Y because we average 6 characters per tick, and this only counts on the x axis.
     // This number is only an initial guess, the algorithm will find a proper one.
     int32_t label_count_req =
-        (int32_t)ceil(((ctx.size_viewport) / ((x_axis ? 6.0 : 1) * ctx.size_glyph)));
+        (int32_t)ceil(((.25 * ctx.size_viewport) / ((x_axis ? 6.0 : 1) * ctx.size_glyph)));
     label_count_req = MAX(2, label_count_req);
 
     log_debug(
@@ -582,6 +592,9 @@ static VklAxesTicks vkl_ticks(double vmin, double vmax, VklAxesContext ctx)
     double diff = vmax - vmin;
     out.dmin = vmin - ext * diff;
     out.dmax = vmax + ext * diff;
+    // ticks range (not extended)
+    out.lmin_orig = r.lmin;
+    out.lmax_orig = r.lmax;
     // ticks range (extended)
     out.lmin = r.lmin - ext * diff;
     out.lmax = r.lmax + ext * diff;
