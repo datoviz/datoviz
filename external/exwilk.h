@@ -69,6 +69,7 @@ typedef enum
 
 typedef struct VklTickFormat VklTickFormat;
 typedef struct VklAxesContext VklAxesContext;
+typedef struct VklAxesTicks VklAxesTicks;
 typedef struct Q Q;
 typedef struct R R;
 
@@ -96,6 +97,19 @@ struct VklAxesContext
 
 
 
+struct VklAxesTicks
+{
+    double dmin, dmax;        // range values
+    double lmin, lmax, lstep; // tick range and interval
+    VklTickFormat format;     // best format
+    uint32_t value_count;     // final number of labels
+    uint32_t value_count_req; // number of values requested
+    double* values;           // from lmin to lmax by lstep
+    char* labels;             // hold all tick labels
+};
+
+
+
 struct Q
 {
     int32_t i;
@@ -118,7 +132,7 @@ struct R
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Algorithm                                                                                    */
 /*************************************************************************************************/
 
 VKY_INLINE double coverage(double dmin, double dmax, double lmin, double lmax)
@@ -525,6 +539,84 @@ static R wilk_ext(double dmin, double dmax, int32_t m, VklAxesContext context)
     }
     FREE(context.labels);
     return result;
+}
+
+
+
+/*************************************************************************************************/
+/*  Wrappers                                                                                     */
+/*************************************************************************************************/
+
+static VklAxesTicks vkl_ticks(double vmin, double vmax, VklAxesContext ctx)
+{
+    ASSERT(vmin < vmax);
+    ASSERT(ctx.coord <= VKL_AXES_COORD_Y);
+    ASSERT(ctx.size_glyph > 0);
+    ASSERT(ctx.size_viewport > 0);
+
+    bool x_axis = ctx.coord == VKL_AXES_COORD_X;
+
+    // NOTE: factor Y because we average 6 characters per tick, and this only counts on the x axis.
+    // This number is only an initial guess, the algorithm will find a proper one.
+    int32_t label_count =
+        (int32_t)ceil(((ctx.size_viewport) / ((x_axis ? 6.0 : 1) * ctx.size_glyph)));
+    // NOTE: factor 3, because the initial range covers not only the current viewport but also
+    // the left/right or top/bottom ones.
+    label_count = MAX(2, 3 * label_count );
+
+    log_debug(
+        "running extended Wilkinson algorithm on axis %d with %d labels on range [%.3f, %.3f], "
+        "viewport size %.1f, glyph size %.1f", ctx.coord, label_count, vmin, vmax,
+        ctx.size_viewport, ctx.size_glyph);
+    R r = wilk_ext(vmin, vmax, label_count, ctx);
+
+    ASSERT(r.lstep > 0);
+    ASSERT(r.lmin < r.lmax);
+
+    VklAxesTicks out = {0};
+    out.format = r.f;
+    out.dmin = vmin;
+    out.dmax = vmax;
+    out.lmin = r.lmin;
+    out.lmax = r.lmax;
+    out.lstep = r.lstep;
+    ASSERT(label_count > 0);
+    out.value_count_req = (uint32_t)label_count;
+
+    // Generate the values between lmin and lmax.
+    double x = 0;
+    uint32_t n = floor(1 + (r.lmax - r.lmin) / r.lstep);
+    out.value_count = n;
+    out.values = calloc(n, sizeof(double));
+    ASSERT(n >= 2);
+    if (n >= 3)
+    {
+        ASSERT(r.lmin + (n - 1) * r.lstep <= r.lmax);
+        ASSERT(r.lmin + n * r.lstep >= r.lmax);
+    }
+    for (uint32_t i = 0; i < n; i++)
+    {
+        x = r.lmin + i * r.lstep;
+        // log_debug("%f %f %f %f", x, r.lmin, r.lmax, r.lstep);
+        ASSERT(x <= r.lmax + .5 * r.lstep);
+        out.values[i] = x;
+    }
+    ctx.labels = calloc(n * MAX_GLYPHS_PER_TICK, sizeof(char));
+    make_labels(r.f, r.lmin, r.lmax, r.lstep, ctx);
+    out.labels = ctx.labels;
+    log_debug(
+        "found %d labels, [%.1f, %.1f] with step %.1f", //
+        out.value_count, out.lmin, out.lmax, out.lstep);
+    return out;
+}
+
+
+
+static void vkl_ticks_destroy(VklAxesTicks* ticks)
+{
+    ASSERT(ticks != NULL);
+    FREE(ticks->values);
+    FREE(ticks->labels);
 }
 
 

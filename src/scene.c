@@ -3,7 +3,7 @@
 #include "../include/visky/panel.h"
 #include "../include/visky/visuals.h"
 #include "../include/visky/vklite.h"
-#include "axes.h"
+// #include "axes.h"
 #include "vklite_utils.h"
 
 

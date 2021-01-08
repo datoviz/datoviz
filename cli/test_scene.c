@@ -2,7 +2,7 @@
 #include "../external/exwilk.h"
 #include "../include/visky/builtin_visuals.h"
 #include "../include/visky/scene.h"
-#include "../src/axes.h"
+// #include "../src/axes.h"
 #include "utils.h"
 
 
