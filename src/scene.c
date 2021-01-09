@@ -356,10 +356,24 @@ static void _axes_upload(VklController* controller, VklAxisCoord coord)
 
     VklAxesTicks* axticks = &axes->ticks[coord];
     uint32_t N = axticks->value_count;
+
     // Convert ticks from double to float.
     float* ticks = calloc(N, sizeof(float));
     for (uint32_t i = 0; i < N; i++)
         ticks[i] = axticks->values[i];
+
+    // Minor ticks.
+    float* minor_ticks = calloc((N - 1) * 4, sizeof(float));
+    uint32_t k = 0;
+    for (uint32_t i = 0; i < N - 1; i++)
+    {
+        for (uint32_t j = 1; j <= 4; j++)
+        {
+            minor_ticks[k++] =
+                axticks->values[i] + j * (axticks->values[i + 1] - axticks->values[i]) / 5.;
+        }
+    }
+    ASSERT(k == (N - 1) * 4);
 
     // Prepare text values.
     char** text = calloc(N, sizeof(char*));
@@ -368,7 +382,7 @@ static void _axes_upload(VklController* controller, VklAxisCoord coord)
 
     // TODO: more minor ticks between the major ticks.
     float lim[] = {-1};
-    vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_MINOR, N, ticks);
+    vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_MINOR, 4 * (N - 1), minor_ticks);
     vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR, N, ticks);
     vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, ticks);
     vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_LIM, 1, lim);
@@ -490,12 +504,14 @@ static void _axes_callback(VklController* controller, VklEvent ev)
     _default_controller_callback(controller, ev);
     ASSERT(controller->interacts != NULL);
     ASSERT(controller->interact_count >= 1);
-    if (!controller->interacts[0].is_active)
-        return;
     ASSERT(controller->panel != NULL);
     ASSERT(controller->panel->grid != NULL);
+
     VklCanvas* canvas = controller->panel->grid->canvas;
     ASSERT(canvas != NULL);
+
+    if (!controller->interacts[0].is_active && !canvas->resized)
+        return;
 
     // Check label collision
     // DEBUG
@@ -504,9 +520,12 @@ static void _axes_callback(VklController* controller, VklEvent ev)
     _axes_range(controller, 0);
     _axes_range(controller, 1);
     _axes_collision(controller, update);
-
-    // log_debug("%d %d", update[0], update[1]);
-    // return;
+    // Force axes ticks refresh when resizing.
+    if (canvas->resized)
+    {
+        update[0] = true;
+        update[1] = true;
+    }
 
     for (uint32_t coord = 0; coord < 2; coord++)
     {

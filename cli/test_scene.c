@@ -46,17 +46,17 @@ int test_axes_2(TestContext* context)
     ctx.size_viewport = 2000;
     ctx.size_glyph = 5;
 
-    // VklAxesTicks ticks = vkl_ticks(-10.12, 20.34, ctx);
-    // for (uint32_t i = 0; i < ticks.value_count; i++)
-    //     log_debug("tick #%02d: %s", i, &ticks.labels[i * MAX_GLYPHS_PER_TICK]);
-    // AT(!duplicate_labels(&ticks, &ctx));
+    VklAxesTicks ticks = vkl_ticks(-10.12, 20.34, ctx);
+    for (uint32_t i = 0; i < ticks.value_count; i++)
+        log_debug("tick #%02d: %s", i, &ticks.labels[i * MAX_GLYPHS_PER_TICK]);
+    AT(!duplicate_labels(&ticks, &ctx));
 
-    // ticks = vkl_ticks(.001, .002, ctx);
-    // for (uint32_t i = 0; i < ticks.value_count; i++)
-    //     log_debug("tick #%02d: %s", i, &ticks.labels[i * MAX_GLYPHS_PER_TICK]);
-    // AT(!duplicate_labels(&ticks, &ctx));
+    ticks = vkl_ticks(.001, .002, ctx);
+    for (uint32_t i = 0; i < ticks.value_count; i++)
+        log_debug("tick #%02d: %s", i, &ticks.labels[i * MAX_GLYPHS_PER_TICK]);
+    AT(!duplicate_labels(&ticks, &ctx));
 
-    VklAxesTicks ticks = vkl_ticks(-0.131456, -0.124789, ctx);
+    ticks = vkl_ticks(-0.131456, -0.124789, ctx);
     for (uint32_t i = 0; i < ticks.value_count; i++)
         log_debug("tick #%02d: %s", i, &ticks.labels[i * MAX_GLYPHS_PER_TICK]);
     AT(!duplicate_labels(&ticks, &ctx));

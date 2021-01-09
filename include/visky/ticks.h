@@ -220,8 +220,6 @@ VKY_INLINE double leg(VklTickFormat format, uint32_t precision, double x)
         break;
     }
 
-    // TODO: format.precision, penalize larger precisions because of less legibility
-
     return l;
 }
 
