@@ -234,8 +234,8 @@ int test_scene_axes(TestContext* context)
     vkl_visual_data(visual, VKL_PROP_COLOR, 0, N, color);
     vkl_visual_data(visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
 
-    bool update[2] = {0};
-    _axes_collision(panel->controller, update);
+    // bool update[2] = {0};
+    // _axes_collision(panel->controller, update);
 
     vkl_app_run(app, N_FRAMES);
     vkl_scene_destroy(scene);
