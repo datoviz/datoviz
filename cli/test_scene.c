@@ -11,25 +11,29 @@
 
 int test_axes_1(TestContext* context)
 {
-    VklTickFormat f = {0};
-    f.format_type = VKL_TICK_FORMAT_SCIENTIFIC;
-    f.precision = 3;
-
     VklAxesContext ctx = {0};
     ctx.coord = VKL_AXES_COORD_X;
     ctx.size_viewport = 1000;
     ctx.size_glyph = 10;
 
-    const uint32_t N = 11;
-    ctx.labels = calloc(N * MAX_GLYPHS_PER_TICK, sizeof(char));
-    make_labels(f, 0, .1, N, ctx);
+    VklAxesTicks ticks = create_ticks(0, 1, 11, ctx);
+    ticks.lmin = 0;
+    ticks.lmax = 1;
+    ticks.lstep = .1;
+    const uint32_t N = tick_count(ticks.lmin, ticks.lmax, ticks.lstep);
+    ticks.value_count = N;
+
+    ticks.format = VKL_TICK_FORMAT_SCIENTIFIC;
+    ticks.precision = 3;
+    ticks.labels = calloc(N * MAX_GLYPHS_PER_TICK, sizeof(char));
+    make_labels(&ticks, &ctx, false);
     for (uint32_t i = 0; i < N; i++)
     {
-        if (strlen(&ctx.labels[i * MAX_GLYPHS_PER_TICK]) == 0)
+        if (strlen(&ticks.labels[i * MAX_GLYPHS_PER_TICK]) == 0)
             break;
-        log_debug("%s ", &ctx.labels[i * MAX_GLYPHS_PER_TICK]);
+        log_debug("%s ", &ticks.labels[i * MAX_GLYPHS_PER_TICK]);
     }
-    FREE(ctx.labels);
+    FREE(ticks.labels);
     return 0;
 }
 
@@ -39,8 +43,8 @@ int test_axes_2(TestContext* context)
 {
     VklAxesContext ctx = {0};
     ctx.coord = VKL_AXES_COORD_X;
-    ctx.size_viewport = 1000;
-    ctx.size_glyph = 10;
+    ctx.size_viewport = 1600;
+    ctx.size_glyph = 16;
 
     // No extensions.
     VklAxesTicks ticks = vkl_ticks(-10.12, 20.34, ctx);

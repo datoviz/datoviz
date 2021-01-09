@@ -38,18 +38,6 @@ https://github.com/quantenschaum/ctplot/blob/master/ctplot/ticks.py
 #define MAX_GLYPHS_PER_TICK 24
 #define MAX_LABELS          256
 
-#define ITER_TICKS                                                                                \
-    double x = 0;                                                                                 \
-    uint32_t n = floor(1 + (lmax - lmin) / lstep);                                                \
-    if (n <= 2)                                                                                   \
-        return 0;                                                                                 \
-    if (n >= 3)                                                                                   \
-    {                                                                                             \
-        ASSERT(lmin + (n - 1) * lstep <= lmax);                                                   \
-        ASSERT(lmin + n * lstep >= lmax);                                                         \
-    }                                                                                             \
-    for (uint32_t i = 0; i < n; i++)
-
 
 
 /*************************************************************************************************/
@@ -62,7 +50,7 @@ typedef enum
     VKL_TICK_FORMAT_UNDEFINED,
     VKL_TICK_FORMAT_DECIMAL,
     VKL_TICK_FORMAT_SCIENTIFIC,
-} VklTickFormatType;
+} VklTickFormat;
 
 
 
@@ -70,7 +58,6 @@ typedef enum
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct VklTickFormat VklTickFormat;
 typedef struct VklAxesContext VklAxesContext;
 typedef struct VklAxesTicks VklAxesTicks;
 typedef struct Q Q;
@@ -82,14 +69,6 @@ typedef struct R R;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-struct VklTickFormat
-{
-    VklTickFormatType format_type;
-    uint32_t precision; // number of digits after the dot
-};
-
-
-
 struct VklAxesContext
 {
     VklAxisCoord coord;
@@ -97,7 +76,6 @@ struct VklAxesContext
     float size_glyph;    // either width or height
     float scale_orig;    // scale
     uint32_t extensions; // number of extensions on each side (typically 1)
-    char* labels;        // used to store labels to avoid too many allocations during search
 };
 
 
@@ -105,11 +83,12 @@ struct VklAxesContext
 struct VklAxesTicks
 {
     double dmin, dmax;           // range values
-    double lmin, lmax, lstep;    // tick range (extended) and interval
-    double lmin_orig, lmax_orig; // tick range (not extended)
-    VklTickFormat format;        // best format
+    double lmin, lmax, lstep;    // tick range  and interval
+    double lmin_orig, lmax_orig; // extended range
     uint32_t value_count;        // final number of labels
     uint32_t value_count_req;    // number of values requested
+    VklTickFormat format;        // decimal or scientific notation
+    uint32_t precision;          // number of digits after the dot
     double* values;              // from lmin to lmax by lstep
     char* labels;                // hold all tick labels
 };
@@ -131,15 +110,23 @@ struct R
 {
     double lmin, lmax, lstep;
     int32_t j, q, k;
-    VklTickFormat f;
+    VklTickFormat f; // format type
+    uint32_t p;      // format precision
     double scr;
 };
 
 
 
 /*************************************************************************************************/
-/*  Algorithm                                                                                    */
+/*  Scoring functions                                                                            */
 /*************************************************************************************************/
+
+VKY_INLINE uint32_t tick_count(double lmin, double lmax, double lstep)
+{
+    return floor(1 + (lmax - lmin) / lstep);
+}
+
+
 
 VKY_INLINE double coverage(double dmin, double dmax, double lmin, double lmax)
 {
@@ -205,11 +192,31 @@ VKY_INLINE double simplicity_max(Q q, int32_t j)
 
 
 
+VKY_INLINE double dist_overlap(double d)
+{
+    if (d >= DIST_MIN)
+        return 1;
+    else if (d == 0)
+        return -INF;
+    else
+    {
+        ASSERT(d >= 0);
+        ASSERT(d < DIST_MIN);
+        return 2 - DIST_MIN / d;
+    }
+}
+
+
+
+/*************************************************************************************************/
+/*  Format                                                                                       */
+/*************************************************************************************************/
+
 VKY_INLINE double leg(VklTickFormat format, double x)
 {
     double ax = fabs(x);
     double l = 0;
-    switch (format.format_type)
+    switch (format)
     {
     case VKL_TICK_FORMAT_DECIMAL:
         l = ax > 1e-4 && ax < 1e6 ? 1 : 0;
@@ -231,24 +238,7 @@ VKY_INLINE double leg(VklTickFormat format, double x)
 
 
 
-VKY_INLINE double dist_overlap(double d)
-{
-    if (d >= DIST_MIN)
-        return 1;
-    else if (d == 0)
-        return -INF;
-    else
-    {
-        ASSERT(d >= 0);
-        ASSERT(d < DIST_MIN);
-        return 2 - DIST_MIN / d;
-    }
-}
-
-
-
-VKY_INLINE double min_distance_labels(
-    VklTickFormat format, double lmin, double lmax, double lstep, VklAxesContext context)
+VKY_INLINE double min_distance_labels(VklAxesTicks* ticks, VklAxesContext* ctx)
 {
     // NOTE: the context must have labels allocated/computed in order for the overlap to be
     // computed.
@@ -257,34 +247,41 @@ VKY_INLINE double min_distance_labels(
     double d = 0;       // distance between label i and i+1
     double min_d = INF; //
     // double label_overlap = 0; //
-    double size = context.size_viewport;
+    double size = ctx->size_viewport;
     ASSERT(size > 0);
-    double glyph = context.size_glyph;
+    double glyph = ctx->size_glyph;
     ASSERT(glyph > 0);
+    ASSERT(ticks->value_count > 0);
 
     uint32_t n0 = 1, n1 = 1;
-    ASSERT(context.labels != NULL);
-    ASSERT(strlen(context.labels) > 0);
+    ASSERT(ticks->labels != NULL);
+    ASSERT(strlen(ticks->labels) > 0);
 
-    ITER_TICKS
+    uint32_t n = ticks->value_count;
+    double lmin = ticks->lmin_orig;
+    double lmax = ticks->lmax_orig;
+    double lstep = ticks->lstep;
+    // double x = 0;
+    for (uint32_t i = 0; i < n; i++)
     {
         if (i == n - 1)
             break;
-        x = lmin + i * lstep;
-        ASSERT(x <= lmax);
+        // x = lmin + i * lstep;
+        // ASSERT(x <= lmax);
 
         // NOTE: the size that takes each label on the current coordinate is:
         // - X axis: number of characters in the label times the glyph width
         // - Y axis: always 1 times the glyph height
-        if (context.coord == VKL_AXES_COORD_X)
+        if (ctx->coord == VKL_AXES_COORD_X)
         {
-            n0 = strlen(&context.labels[i * MAX_GLYPHS_PER_TICK]);
-            n1 = strlen(&context.labels[(i + 1) * MAX_GLYPHS_PER_TICK]);
+            n0 = strlen(&ticks->labels[i * MAX_GLYPHS_PER_TICK]);
+            n1 = strlen(&ticks->labels[(i + 1) * MAX_GLYPHS_PER_TICK]);
             ASSERT(n0 > 0);
             ASSERT(n1 > 0);
         }
         // Compute the distance between the current label and the next.
         d = MAX(0, lstep / (lmax - lmin) * size - glyph * (n0 + n1));
+
         // if (context.coord == 0 && d == 0)
         //     log_info(
         //         "%.1f %.1f dist %d n0=%d %s, n1=%d %s, %.6f", //
@@ -311,12 +308,12 @@ VKY_INLINE double min_distance_labels(
 
 
 
-VKY_INLINE void _get_tick_format(VklTickFormat format, char* fmt)
+VKY_INLINE void _get_tick_format(VklTickFormat format, uint32_t precision, char* fmt)
 {
     uint32_t offset = 4;
     strcpy(fmt, "%s%.XF"); // [2] = precision, [3] = f or e
-    snprintf(&fmt[offset], 4, "%d", format.precision);
-    switch (format.format_type)
+    snprintf(&fmt[offset], 4, "%d", precision);
+    switch (format)
     {
     case VKL_TICK_FORMAT_DECIMAL:
         fmt[offset + 1] = 'f';
@@ -325,7 +322,7 @@ VKY_INLINE void _get_tick_format(VklTickFormat format, char* fmt)
         fmt[offset + 1] = 'e';
         break;
     default:
-        log_error("unknown tick format %d", format.format_type);
+        log_error("unknown tick format %d", format);
         break;
     }
 }
@@ -347,44 +344,54 @@ VKY_INLINE void _tick_label(double x, char* tick_format, char* out)
 
 
 
-static void
-make_labels(VklTickFormat format, double x0, double lstep, uint32_t n, VklAxesContext context)
+static void make_labels(VklAxesTicks* ticks, VklAxesContext* ctx, bool extended)
 {
-    ASSERT(context.labels != NULL);
+    ASSERT(ticks->labels != NULL);
     char tick_format[12] = {0};
-    _get_tick_format(format, tick_format);
+    _get_tick_format(ticks->format, ticks->precision, tick_format);
 
+    // double diff = ticks->lmax - ticks->lmin;
+    double x0 = ticks->lmin - extended * ctx->extensions * ticks->lstep;
     double x = x0;
-    for (uint32_t i = 0; i < n; i++)
+    for (uint32_t i = 0; i < ticks->value_count; i++)
     {
-        x = x0 + i * lstep;
-        _tick_label(x, tick_format, &context.labels[i * MAX_GLYPHS_PER_TICK]);
+        x = x0 + i * ticks->lstep;
+        ticks->values[i] = x;
+        _tick_label(x, tick_format, &ticks->labels[i * MAX_GLYPHS_PER_TICK]);
     }
 }
 
 
 
-static double
-legibility(VklTickFormat format, double lmin, double lmax, double lstep, VklAxesContext context)
+static double legibility(VklAxesTicks* ticks, VklAxesContext* ctx)
 {
+    uint32_t n = ticks->value_count;
+    double lmin = ticks->lmin;
+    double lmax = ticks->lmax;
+    double lstep = ticks->lstep;
+
     ASSERT(lmin < lmax);
     ASSERT(lstep > 0);
 
     double f = 0;
 
     // Format part.
-    ITER_TICKS
+    double x = 0;
+    for (uint32_t i = 0; i < n; i++)
     {
         x = lmin + i * lstep;
         ASSERT(x <= lmax + .5 * lstep);
-        f += leg(format, x);
+        f += leg(ticks->format, x);
     }
     f = .9 * f / MAX(1, n); // TODO: 0-extended?
 
-    make_labels(format, lmin, lstep, n, context);
+    // Compute the labels.
+    make_labels(ticks, ctx, false);
 
     // Overlap part.
-    double o = dist_overlap(min_distance_labels(format, lmin, lmax, lstep, context));
+    ticks->lmin_orig = ticks->lmin;
+    ticks->lmax_orig = ticks->lmax;
+    double o = dist_overlap(min_distance_labels(ticks, ctx));
 
     // Duplicates part.
     double d = 1;
@@ -400,30 +407,9 @@ legibility(VklTickFormat format, double lmin, double lmax, double lstep, VklAxes
 
 
 
-static VklTickFormat opt_format(double lmin, double lmax, double lstep, VklAxesContext context)
-{
-    double l = -INF, best_l = -INF;
-    VklTickFormat format = {0}, best_format = {0};
-    for (uint32_t f = 1; f <= 2; f++)
-    {
-        format.format_type = (VklTickFormatType)f;
-        for (uint32_t p = 1; p <= PRECISION_MAX; p++)
-        {
-            format.precision = p;
-            l = legibility(format, lmin, lmax, lstep, context);
-            if (l > best_l)
-            {
-                best_format = format;
-                best_l = l;
-            }
-        }
-    }
-    ASSERT(best_format.format_type != VKL_TICK_FORMAT_UNDEFINED);
-    ASSERT(best_format.precision > 0);
-    return best_format;
-}
-
-
+/*************************************************************************************************/
+/*  Algorithm                                                                                    */
+/*************************************************************************************************/
 
 static double
 score(dvec4 weights, double simplicity, double coverage, double density, double legibility)
@@ -437,6 +423,66 @@ score(dvec4 weights, double simplicity, double coverage, double density, double 
 
 
 
+// Optimize ticks->format|precision wrt to legibility.
+static void opt_format(VklAxesTicks* ticks, VklAxesContext* ctx)
+{
+    double l = -INF, best_l = -INF;
+    VklTickFormat format = {0}, best_format = {0};
+    uint32_t best_precision = 0;
+    for (uint32_t f = 1; f <= 2; f++)
+    {
+        format = (VklTickFormat)f;
+        for (uint32_t p = 1; p <= PRECISION_MAX; p++)
+        {
+            ticks->precision = p;
+            l = legibility(ticks, ctx);
+            if (l > best_l)
+            {
+                best_format = format;
+                best_precision = p;
+                best_l = l;
+            }
+            // Prune the search if the legibility is too low
+            else
+                break;
+        }
+    }
+    ASSERT(best_format != VKL_TICK_FORMAT_UNDEFINED);
+    ASSERT(best_precision > 0);
+    // return best_format;
+    ticks->format = best_format;
+    ticks->precision = best_precision;
+}
+
+
+
+static VklAxesTicks create_ticks(double dmin, double dmax, int32_t m, VklAxesContext ctx)
+{
+    VklAxesTicks ticks = {0};
+    ticks.dmin = dmin;
+    ticks.dmax = dmax;
+
+    // Allocate values and labels buffers.
+    ticks.values = calloc(MAX_LABELS, sizeof(double));
+    ticks.labels = calloc(MAX_LABELS * MAX_GLYPHS_PER_TICK, sizeof(char));
+
+    // Default result.
+    ticks.format = VKL_TICK_FORMAT_DECIMAL;
+    ticks.precision = 1;
+    ticks.value_count_req = (uint32_t)m;
+    ticks.value_count = 2;
+    ticks.lmin = dmin;
+    ticks.lmax = dmax;
+    ticks.lstep = dmax - dmin;
+    ticks.values[0] = dmin;
+    ticks.values[1] = dmax;
+    make_labels(&ticks, &ctx, false);
+
+    return ticks;
+}
+
+
+
 /*
 k : current number of labels
 m : requested number of labels
@@ -444,7 +490,7 @@ q : nice number
 j : skip, amount among a sequence of nice numbers
 z : 10-exponent of the step size
 */
-static R wilk_ext(double dmin, double dmax, int32_t m, VklAxesContext context)
+static VklAxesTicks wilk_ext(double dmin, double dmax, int32_t m, VklAxesContext ctx)
 {
     // if ((dmin >= dmax) || (m < 1)
     // check viewport size
@@ -456,23 +502,24 @@ static R wilk_ext(double dmin, double dmax, int32_t m, VklAxesContext context)
     // }
 
     ASSERT(dmin < dmax);
-    ASSERT(context.size_glyph > 0);
-    ASSERT(context.size_viewport > 0);
+    ASSERT(ctx.size_glyph > 0);
+    ASSERT(ctx.size_viewport > 0);
     ASSERT(m > 0);
-    if (context.size_viewport < 10 * context.size_glyph)
+
+    VklAxesTicks ticks = create_ticks(dmin, dmax, m, ctx);
+    if (ctx.size_viewport < 10 * ctx.size_glyph)
     {
         log_debug("degenerate axes context, return a trivial tick range");
-        return (R){dmin, dmax, dmax - dmin, 1, 0, 2, {VKL_TICK_FORMAT_DECIMAL, 1}, 0};
+        return ticks;
     }
 
-    context.labels = calloc(MAX_LABELS * MAX_GLYPHS_PER_TICK, sizeof(char));
-
+    VklAxesTicks best_ticks = ticks;
     double DEFAULT_Q[] = {1, 5, 2, 2.5, 4, 3};
     dvec4 W = {0.2, 0.25, 0.5, 0.05}; // score weights
 
     double n = (double)sizeof(DEFAULT_Q) / sizeof(DEFAULT_Q[0]);
     double best_score = -INF;
-    R result = {0};
+    // R result = {0};
     Q q = {0};
     q.i = 0;
     q.len = n;
@@ -483,7 +530,7 @@ static R wilk_ext(double dmin, double dmax, int32_t m, VklAxesContext context)
     int32_t u, k;
     double sm, dm, delta, z, step, cm, min_start, max_start, l, lmin, lmax, lstep, start, s, c, d,
         scr;
-    VklTickFormat format;
+    // VklTickFormat format;
     while (j < J_MAX)
     {
         // printf("j %d\n", j);
@@ -541,11 +588,16 @@ static R wilk_ext(double dmin, double dmax, int32_t m, VklAxesContext context)
                         lmax = lmin + step * (k - 1.0);
                         lstep = step;
 
+                        ticks.lmin = lmin;
+                        ticks.lmax = lmax;
+                        ticks.lstep = lstep;
+
                         s = simplicity(q, j, lmin, lmax, lstep);
                         c = coverage(dmin, dmax, lmin, lmax);
                         d = density(k, m, dmin, dmax, lmin, lmax);
-                        format = opt_format(lmin, lmax, lstep, context);
-                        l = legibility(format, lmin, lmax, lstep, context);
+                        // The following optimized ticks.format|precision in-place.
+                        opt_format(&ticks, &ctx);
+                        l = legibility(&ticks, &ctx);
 
                         ASSERT(lstep > 0);
                         scr = score(W, s, c, d, l);
@@ -554,7 +606,15 @@ static R wilk_ext(double dmin, double dmax, int32_t m, VklAxesContext context)
                         if (scr > best_score)
                         {
                             best_score = scr;
-                            result = (R){lmin, lmax, lstep, j, q.value, k, format, scr};
+                            // result = (R){lmin, lmax, lstep, j, q.value, k, format, scr};
+                            // Keep track of the best result so far.
+                            best_ticks.lmin = lmin;
+                            best_ticks.lmax = lmax;
+                            best_ticks.lstep = lstep;
+
+                            // Best format and precision are stored in the ticks struct.
+                            best_ticks.format = ticks.format;
+                            best_ticks.precision = ticks.precision;
                         }
                     }
                     z++;
@@ -564,8 +624,11 @@ static R wilk_ext(double dmin, double dmax, int32_t m, VklAxesContext context)
         }
         j++;
     }
-    FREE(context.labels);
-    return result;
+
+    best_ticks.value_count = tick_count(best_ticks.lmin, best_ticks.lmax, best_ticks.lstep);
+    make_labels(&best_ticks, &ctx, false);
+
+    return best_ticks;
 }
 
 
@@ -574,9 +637,54 @@ static R wilk_ext(double dmin, double dmax, int32_t m, VklAxesContext context)
 /*  Wrappers                                                                                     */
 /*************************************************************************************************/
 
-static VklAxesTicks vkl_ticks(double vmin, double vmax, VklAxesContext ctx)
+static VklAxesTicks extend_ticks(VklAxesTicks ticks, VklAxesContext ctx)
 {
-    ASSERT(vmin < vmax);
+    VklAxesTicks ex = ticks;
+    uint32_t extensions = ctx.extensions;
+
+    // requested range (extended)
+    // extended left/right or top/bottom
+    double diff = ticks.dmax - ticks.dmin;
+    ticks.dmin -= extensions * diff;
+    ticks.dmax += extensions * diff;
+    // ticks range (extended)
+    ex.lmin -= extensions * diff;
+    ex.lmax += extensions * diff;
+    ex.value_count_req = (2 * extensions + 1) * (uint32_t)ticks.value_count_req;
+    ASSERT(ex.value_count_req > 0);
+
+    // Generate the values between lmin and lmax.
+    uint32_t n = floor(1 + (ticks.lmax - ticks.lmin) / ticks.lstep);
+    // Extension of the requested range.
+    // n is now the total number of ticks across the extended range
+    n *= (2 * extensions + 1);
+    ASSERT(n >= 2);
+
+    ex.value_count = n;
+
+    // Generate extended values and labels.
+    ASSERT(ex.values != NULL);
+    ASSERT(ex.values == ticks.values);
+    FREE(ex.values);
+    ticks.values = NULL;
+
+    ASSERT(ex.labels != NULL);
+    ASSERT(ex.labels == ticks.labels);
+    FREE(ex.labels);
+    ticks.labels = NULL;
+    ex.values = calloc(n, sizeof(double));
+    ex.labels = calloc(n * MAX_GLYPHS_PER_TICK, sizeof(char));
+    make_labels(&ex, &ctx, true);
+    ex.lmin_orig = ticks.lmin;
+    ex.lmax_orig = ticks.lmax;
+    return ex;
+}
+
+
+
+static VklAxesTicks vkl_ticks(double dmin, double dmax, VklAxesContext ctx)
+{
+    ASSERT(dmin < dmax);
     ASSERT(ctx.coord <= VKL_AXES_COORD_Y);
     ASSERT(ctx.size_glyph > 0);
     ASSERT(ctx.size_viewport > 0);
@@ -586,62 +694,24 @@ static VklAxesTicks vkl_ticks(double vmin, double vmax, VklAxesContext ctx)
     // NOTE: factor Y because we average 6 characters per tick, and this only counts on the x axis.
     // This number is only an initial guess, the algorithm will find a proper one.
     int32_t label_count_req =
-        (int32_t)ceil(((.2 * ctx.size_viewport) / ((x_axis ? 6.0 : 1) * ctx.size_glyph)));
+        (int32_t)ceil(((.25 * ctx.size_viewport) / ((x_axis ? 6.0 : 1) * ctx.size_glyph)));
     label_count_req = MAX(2, label_count_req);
 
     log_debug(
         "running extended Wilkinson algorithm on axis %d with %d labels on range [%.3f, %.3f], "
-        "viewport size %.1f, glyph size %.1f",
-        ctx.coord, label_count_req, vmin, vmax, ctx.size_viewport, ctx.size_glyph);
-    R r = wilk_ext(vmin, vmax, label_count_req, ctx);
+        "viewport size %.1f, glyph size %.1f, extension %d",
+        ctx.coord, label_count_req, dmin, dmax, ctx.size_viewport, ctx.size_glyph, ctx.extensions);
+    VklAxesTicks ticks = wilk_ext(dmin, dmax, label_count_req, ctx);
+    ASSERT(ticks.lstep > 0);
+    ASSERT(ticks.lmin < ticks.lmax);
+    ASSERT(ticks.value_count > 0);
+    ASSERT(ticks.values != NULL);
+    ASSERT(ticks.labels != NULL);
 
-    ASSERT(r.lstep > 0);
-    ASSERT(r.lmin < r.lmax);
-
-    uint32_t ext = ctx.extensions;
-    VklAxesTicks out = {0};
-    out.format = r.f;
-    // requested range (extended)
-    // extended left/right or top/bottom
-    double diff = vmax - vmin;
-    out.dmin = vmin - ext * diff;
-    out.dmax = vmax + ext * diff;
-    // ticks range (not extended)
-    out.lmin_orig = r.lmin;
-    out.lmax_orig = r.lmax;
-    // ticks range (extended)
-    out.lmin = r.lmin - ext * diff;
-    out.lmax = r.lmax + ext * diff;
-    out.lstep = r.lstep;
-    ASSERT(label_count_req > 0);
-    out.value_count_req = (2 * ext + 1) * (uint32_t)label_count_req;
-    ASSERT(out.value_count_req > 0);
-
-    // Generate the values between lmin and lmax.
-    uint32_t n = floor(1 + (r.lmax - r.lmin) / r.lstep);
-    // Extension of the requested range.
-    // n is now the total number of ticks across the extended range
-    n *= (2 * ext + 1);
-
-    out.value_count = n;
-    double x0 = r.lmin - ext * diff - r.lstep * ext;
-
-    out.values = calloc(n, sizeof(double));
-    ASSERT(n >= 2);
-
-    double x = 0;
-    for (uint32_t i = 0; i < n; i++)
-    {
-        x = x0 + i * r.lstep;
-        out.values[i] = x;
-    }
-    ctx.labels = calloc(n * MAX_GLYPHS_PER_TICK, sizeof(char));
-    make_labels(r.f, x0, r.lstep, n, ctx);
-    out.labels = ctx.labels;
     log_debug(
         "found %d labels, [%.1f, %.1f] with step %.1f", //
-        out.value_count, out.lmin, out.lmax, out.lstep);
-    return out;
+        ticks.value_count, ticks.lmin, ticks.lmax, ticks.lstep);
+    return extend_ticks(ticks, ctx);
 }
 
 

@@ -337,7 +337,7 @@ static void _axes_ticks(VklController* controller, VklAxisCoord coord)
     // Determine the tick number and positions.
     axes->ticks[coord] = vkl_ticks(vmin, vmax, ctx);
 
-    // We keep track of the context, which notably has a pointer to the labels.
+    // We keep track of the context.
     axes->ctx[coord] = ctx;
 }
 
@@ -429,18 +429,17 @@ static void _axes_collision(VklController* controller, bool* update)
         // NOTE: make a copy because we'll use a temporary context object when computing the
         // overlap.
         VklAxesContext ctx = axes->ctx[i];
-        ctx.labels = ticks->labels;
+        // ctx.labels = ticks->labels;
         ASSERT(controller->interacts != NULL);
         ASSERT(controller->interact_count >= 1);
         float scale = controller->interacts[0].u.p.zoom[i] / ctx.scale_orig;
         ASSERT(scale > 0);
         ctx.size_viewport *= scale;
         ASSERT(ctx.size_viewport > 0);
-        ASSERT(ctx.labels != NULL);
+        // ASSERT(ctx.labels != NULL);
 
         // Check whether there are overlapping labels (dezooming).
-        double min_distance = min_distance_labels(
-            ticks->format, ticks->lmin_orig, ticks->lmax_orig, ticks->lstep, ctx);
+        double min_distance = min_distance_labels(ticks, &ctx);
 
         // Check whether the current view is outside the computed ticks (panning);
         bool outside =
