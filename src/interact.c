@@ -67,12 +67,20 @@ static void _panzoom_zoom(VklPanzoom* panzoom, vec2 delta, vec2 center)
         zoom_new[0] = CLIP(zx, VKL_PANZOOM_MIN_ZOOM, VKL_PANZOOM_MAX_ZOOM);
         panzoom->lim_reached[0] = true;
     }
+    else
+    {
+        panzoom->lim_reached[0] = false;
+    }
     // Clip zoom y.
     double zy = zoom_new[1];
     if (zy <= VKL_PANZOOM_MIN_ZOOM || zy >= VKL_PANZOOM_MAX_ZOOM)
     {
         zoom_new[1] = CLIP(zy, VKL_PANZOOM_MIN_ZOOM, VKL_PANZOOM_MAX_ZOOM);
         panzoom->lim_reached[1] = true;
+    }
+    else
+    {
+        panzoom->lim_reached[1] = false;
     }
 
     // Update zoom.

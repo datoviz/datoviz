@@ -41,7 +41,8 @@ https://github.com/quantenschaum/ctplot/blob/master/ctplot/ticks.py
 #define ITER_TICKS                                                                                \
     double x = 0;                                                                                 \
     uint32_t n = floor(1 + (lmax - lmin) / lstep);                                                \
-    ASSERT(n >= 2);                                                                               \
+    if (n <= 2)                                                                                   \
+        return 0;                                                                                 \
     if (n >= 3)                                                                                   \
     {                                                                                             \
         ASSERT(lmin + (n - 1) * lstep <= lmax);                                                   \
@@ -585,7 +586,7 @@ static VklAxesTicks vkl_ticks(double vmin, double vmax, VklAxesContext ctx)
     // NOTE: factor Y because we average 6 characters per tick, and this only counts on the x axis.
     // This number is only an initial guess, the algorithm will find a proper one.
     int32_t label_count_req =
-        (int32_t)ceil(((.1 * ctx.size_viewport) / ((x_axis ? 6.0 : 1) * ctx.size_glyph)));
+        (int32_t)ceil(((.2 * ctx.size_viewport) / ((x_axis ? 6.0 : 1) * ctx.size_glyph)));
     label_count_req = MAX(2, label_count_req);
 
     log_debug(
