@@ -179,8 +179,8 @@ static void _scene_frame(VklCanvas* canvas, VklEvent ev)
                     source = vkl_bake_source(visual, VKL_SOURCE_TYPE_VERTEX, pidx);
                     if (source->arr.item_count != visual->prev_vertex_count[pidx])
                     {
-                        log_info("automatic detection of a change in vertex count, will trigger "
-                                 "full refill");
+                        log_debug("automatic detection of a change in vertex count, will trigger "
+                                  "full refill");
                         vkl_canvas_to_refill(canvas);
                         visual->prev_vertex_count[pidx] = source->arr.item_count;
                     }
@@ -189,8 +189,8 @@ static void _scene_frame(VklCanvas* canvas, VklEvent ev)
                     source = vkl_bake_source(visual, VKL_SOURCE_TYPE_INDEX, pidx);
                     if (source != NULL && source->arr.item_count != visual->prev_index_count[pidx])
                     {
-                        log_info("automatic detection of a change in index count, will trigger "
-                                 "full refill");
+                        log_debug("automatic detection of a change in index count, will trigger "
+                                  "full refill");
                         vkl_canvas_to_refill(canvas);
                         visual->prev_index_count[pidx] = source->arr.item_count;
                     }

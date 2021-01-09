@@ -88,7 +88,8 @@ fi
 
 if [ $1 == "prof" ]
 then
-    valgrind --tool=callgrind --dump-instr=yes --simulate-cache=yes --collect-jumps=yes $2
+    # valgrind --tool=callgrind --dump-instr=yes --simulate-cache=yes --collect-jumps=yes $2
+    gprof build/visky -Al > prof.txt
 fi
 
 if [ $1 == "run" ]
