@@ -1884,6 +1884,7 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
 
                 // Update the VklViewport struct and call RESIZE callbacks.
                 _event_resize(canvas);
+                canvas->resized = true;
 
                 // Refill the canvas after the VklViewport has been updated.
                 // _refill_canvas(canvas, UINT32_MAX);
@@ -1920,6 +1921,7 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
 
             // Frame logic.
             vkl_canvas_frame(canvas);
+            canvas->resized = false;
 
             // Submit the command buffers and swapchain logic.
             // log_trace("submitting frame for canvas #%d", canvas_idx);
@@ -1927,12 +1929,14 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
             canvas->frame_idx++;
             n_canvas_active++;
 
+
             canvas = vkl_container_iter(&app->canvases);
         }
 
         // IMPORTANT: we need to wait for the present queue to be idle, otherwise the GPU hangs
         // when waiting for fences (not sure why). The problem only arises when using different
-        // queues for command buffer submission and swapchain present.
+        // queues for command buffer submission and swapchain present. There has be a better way
+        // to fix this.
 
         // NOTE: this has never been tested with multiple GPUs yet.
         VklGpu* gpu = vkl_container_iter_init(&app->gpus);

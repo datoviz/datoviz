@@ -536,6 +536,7 @@ struct VklCanvas
 
     bool offscreen;
     bool overlay;
+    bool resized;
     int flags;
     void* user_data;
 
@@ -879,8 +880,6 @@ static int _event_consume(VklCanvas* canvas, VklEvent ev, VklEventMode mode)
     if (canvas->enable_lock)
         vkl_thread_lock(&canvas->event_thread);
 
-
-
     // HACK: we first call the callbacks with no param, then we call the callbacks with a non-zero
     // param. This is a way to use the param as a priority value. This is used by the scene FRAME
     // callback so that it occurs after the user callbacks.
@@ -895,7 +894,10 @@ static int _event_consume(VklCanvas* canvas, VklEvent ev, VklEventMode mode)
             ev.user_data = r->user_data;
 
             // Only call the callbacks registered for the specified type.
-            if (r->type == ev.type && r->mode == mode && (pass == 0 || r->param > 0))
+            if ((r->type == ev.type) &&              //
+                (r->mode == mode) &&                 //
+                (((pass == 0) && (r->param == 0)) || //
+                 ((pass == 1) && (r->param > 0))))   //
             {
                 r->callback(canvas, ev);
                 n_callbacks++;
