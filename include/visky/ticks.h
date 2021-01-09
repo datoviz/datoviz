@@ -94,6 +94,7 @@ struct VklAxesContext
     VklAxisCoord coord;
     float size_viewport; // along the current dimension
     float size_glyph;    // either width or height
+    float scale_orig;    // scale
     uint32_t extensions; // number of extensions on each side (typically 1)
     char* labels;        // used to store labels to avoid too many allocations during search
 };
@@ -250,15 +251,19 @@ VKY_INLINE double min_distance_labels(
 {
     // NOTE: the context must have labels allocated/computed in order for the overlap to be
     // computed.
-    // log_debug("overlap %.1f %.1f %.1f", lmin, lmax, lstep);
+    // log_info("overlap %.1f %.1f %.1f", lmin, lmax, lstep);
 
     double d = 0;       // distance between label i and i+1
     double min_d = INF; //
     // double label_overlap = 0; //
     double size = context.size_viewport;
+    ASSERT(size > 0);
     double glyph = context.size_glyph;
+    ASSERT(glyph > 0);
+
     uint32_t n0 = 1, n1 = 1;
     ASSERT(context.labels != NULL);
+    ASSERT(strlen(context.labels) > 0);
 
     ITER_TICKS
     {
@@ -274,9 +279,17 @@ VKY_INLINE double min_distance_labels(
         {
             n0 = strlen(&context.labels[i * MAX_GLYPHS_PER_TICK]);
             n1 = strlen(&context.labels[(i + 1) * MAX_GLYPHS_PER_TICK]);
+            ASSERT(n0 > 0);
+            ASSERT(n1 > 0);
         }
         // Compute the distance between the current label and the next.
-        d = MAX(0, lstep / (lmax - lmin) * size - (glyph) * (n0 + n1));
+        d = MAX(0, lstep / (lmax - lmin) * size - glyph * (n0 + n1));
+        // if (context.coord == 0 && d == 0)
+        //     log_info(
+        //         "%.1f %.1f dist %d n0=%d %s, n1=%d %s, %.6f", //
+        //         context.size_viewport, context.size_glyph,    //
+        //         i, n0, &context.labels[i * MAX_GLYPHS_PER_TICK], n1,
+        //         &context.labels[(i + 1) * MAX_GLYPHS_PER_TICK], d);
 
         // // Compute the overlap for the current label.
         // label_overlap = dist_overlap(d);
@@ -572,7 +585,7 @@ static VklAxesTicks vkl_ticks(double vmin, double vmax, VklAxesContext ctx)
     // NOTE: factor Y because we average 6 characters per tick, and this only counts on the x axis.
     // This number is only an initial guess, the algorithm will find a proper one.
     int32_t label_count_req =
-        (int32_t)ceil(((.25 * ctx.size_viewport) / ((x_axis ? 6.0 : 1) * ctx.size_glyph)));
+        (int32_t)ceil(((.1 * ctx.size_viewport) / ((x_axis ? 6.0 : 1) * ctx.size_glyph)));
     label_count_req = MAX(2, label_count_req);
 
     log_debug(

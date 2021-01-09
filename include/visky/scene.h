@@ -248,6 +248,7 @@ static VklAxesContext _axes_context(VklController* controller, VklAxisCoord coor
     ctx.coord = coord;
     ctx.extensions = 1; // extend the range once on the left/right and top/bottom
     ctx.size_viewport = size[coord] - m[1 - coord] - m[3 - coord]; // remove the margins
+    ctx.scale_orig = controller->interacts[0].u.p.zoom[coord];
 
     // TODO: improve determination of glyph size
     float font_size = 14;
@@ -373,7 +374,7 @@ static void _axes_collision(VklController* controller, bool* update)
         ctx.labels = ticks->labels;
         ASSERT(controller->interacts != NULL);
         ASSERT(controller->interact_count >= 1);
-        float scale = controller->interacts[0].u.p.zoom[i];
+        float scale = controller->interacts[0].u.p.zoom[i] / ctx.scale_orig;
         ASSERT(scale > 0);
         ctx.size_viewport *= scale;
         ASSERT(ctx.size_viewport > 0);
@@ -389,11 +390,12 @@ static void _axes_collision(VklController* controller, bool* update)
 
         double rel_space = min_distance / (ctx.size_viewport / scale);
 
+        // if (i == 0)
+        //     log_info(
+        //         "coord %d min_d %.3f, rel_space %.3f, outside %d", //
+        //         i, min_distance, rel_space, outside);
         // Recompute the ticks on the current axis?
-        // log_debug(
-        //     "coord %d min_d %.3f, min_d_rel %.3f, outside %d", //
-        //     i, min_distance, rel_space, outside);
-        update[i] = min_distance <= 10 || rel_space >= .25 || outside;
+        update[i] = min_distance <= 0 || rel_space >= .5 || outside;
     }
 }
 
