@@ -25,12 +25,15 @@ if [ $1 == "cython" ]
 then
     cd build && \
     cmake .. -GNinja -DVISKY_WITH_CYTHON=ON && \
-    VKY_EXAMPLE= ninja && \
+    ninja && \
     cd ../bindings/cython && \
-    ./build.sh # && \
-    if [ ! -L "$(pwd)/visky/pyvisky.so" ]; then
-        ln -s $(pwd)/../../build/pyvisky.*.so $(pwd)/visky/pyvisky.so
-    fi
+    ./build.sh && \
+    cp ../../build/libvisky* visky && \
+    cp ../../build/pyvisky.*so visky/pyvisky.so && \
+    cd ..
+    #if [ ! -L "$(pwd)/visky/pyvisky.so" ]; then
+    #    ln -s $(pwd)/build/pyvisky.*.so $(pwd)/visky/pyvisky.so
+    #fi
 fi
 
 if [ $1 == "clang" ]

@@ -4,7 +4,7 @@ import os.path as op
 
 from IPython.terminal.pt_inputhooks import register
 
-from visky.pyvisky import App
+from .pyvisky import App
 
 
 # Logging

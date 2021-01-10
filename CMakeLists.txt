@@ -456,7 +456,10 @@ if (VISKY_WITH_CYTHON)
     # set_target_properties(
     #     pyvisky PROPERTIES
     #     LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bindings/cython/visky/)
-    target_link_libraries(pyvisky ${PYTHON_LIBRARIES} ${LINK_LIBS} visky)
+
+    # WARNING: linking with {PYTHON_LIBRARIES} causes a Python segfault on macOS when importing
+    target_link_libraries(pyvisky ${LINK_LIBS} visky)
+
     # install(TARGETS pyvisky LIBRARY DESTINATION visky)
     # add_custom_target(pyvisky ALL COMMAND ${CMAKE_COMMAND} -E create_symlink ${PROJECT_BINARY_DIR}/ bindings/cython/visky)
     install(TARGETS pyvisky LIBRARY DESTINATION src)
