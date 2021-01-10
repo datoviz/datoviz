@@ -8,8 +8,8 @@
 /*************************************************************************************************/
 
 #define VKL_PANZOOM_MOUSE_WHEEL_FACTOR .2
-#define VKL_PANZOOM_MIN_ZOOM           1e-6
-#define VKL_PANZOOM_MAX_ZOOM           1e+6
+#define VKL_PANZOOM_MIN_ZOOM           1e-5
+#define VKL_PANZOOM_MAX_ZOOM           1e+5
 
 
 

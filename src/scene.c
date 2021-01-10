@@ -380,7 +380,7 @@ static void _axes_upload(VklController* controller, VklAxisCoord coord)
     for (uint32_t i = 0; i < N; i++)
         text[i] = &axticks->labels[i * MAX_GLYPHS_PER_TICK];
 
-    // TODO: more minor ticks between the major ticks.
+    // Set visual data.
     float lim[] = {-1};
     vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_MINOR, 4 * (N - 1), minor_ticks);
     vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR, N, ticks);
@@ -863,12 +863,6 @@ void vkl_controller_callback(VklController* controller, VklControllerCallback ca
 {
     ASSERT(controller != NULL);
     controller->callback = callback;
-    /*
-    TODO
-    the callback should start to check whether the associated panel has the focus
-    it can call interact callbacks
-    update the data coords
-    */
 }
 
 
