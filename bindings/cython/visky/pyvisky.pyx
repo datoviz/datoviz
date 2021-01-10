@@ -92,7 +92,7 @@ cdef class App:
             self._c_app = NULL
 
     def canvas(self, int width=DEFAULT_WIDTH, int height=DEFAULT_HEIGHT, int rows=1, int cols=1):
-        c_canvas = cv.vkl_canvas(self._c_gpu, width, height)
+        c_canvas = cv.vkl_canvas(self._c_gpu, width, height, 0)
         if c_canvas is NULL:
             raise MemoryError()
         c = Canvas()
@@ -130,7 +130,7 @@ cdef _add_event_callback(cv.VklCanvas* c_canvas, cv.VklEventType evtype, f, args
     Py_INCREF(tup)
 
     ptr_to_obj = <void*>tup
-    cv.vkl_event_callback(c_canvas, evtype, 0, <cv.VklEventCallback>_wrapped_callback, ptr_to_obj)
+    cv.vkl_event_callback(c_canvas, evtype, 0, cv.VKL_EVENT_MODE_ASYNC, <cv.VklEventCallback>_wrapped_callback, ptr_to_obj)
 
 
 
@@ -179,7 +179,7 @@ cdef class Canvas:
         if self._c_scene is not NULL:
             cv.vkl_scene_destroy(self._c_scene)
         if self._c_canvas is not NULL:
-            cv.vkl_canvas_to_close(self._c_canvas, True)
+            cv.vkl_canvas_to_close(self._c_canvas)
             self._c_canvas = NULL
 
     def connect(self, evtype_py, f):

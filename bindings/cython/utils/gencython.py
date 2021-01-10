@@ -21,18 +21,21 @@ HEADER_FILES = (
     'vklite.h', 'context.h', 'canvas.h', 'keycode.h',
     'graphics.h', 'builtin_visuals.h', 'panel.h', 'visuals.h', 'scene.h')
 STRUCTS = (
-    'VklViewport',
-    'VklMouseButtonEvent',
-    'VklMouseMoveEvent',
-    'VklMouseWheelEvent',
-    'VklMouseDragEvent',
-    'VklMouseClickEvent',
-    'VklKeyEvent',
-    'VklFrameEvent',
-    'VklTimerEvent',
-    'VklScreencastEvent',
     'VklEvent',
     'VklEventUnion',
+    'VklFrameEvent',
+    'VklKeyEvent',
+    'VklMouseButtonEvent',
+    'VklMouseClickEvent',
+    'VklMouseDragEvent',
+    'VklMouseMoveEvent',
+    'VklMouseWheelEvent',
+    'VklRefillEvent',
+    'VklResizeEvent',
+    'VklScreencastEvent',
+    'VklSubmitEvent',
+    'VklTimerEvent',
+    'VklViewport',
 )
 
 ENUM_START = '# ENUM START'
