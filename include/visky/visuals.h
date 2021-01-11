@@ -64,14 +64,14 @@ typedef enum
 // Source kinds.
 typedef enum
 {
-    VKL_SOURCE_NONE,
-    VKL_SOURCE_VERTEX = 0x0010,
-    VKL_SOURCE_INDEX = 0x0020,
-    VKL_SOURCE_UNIFORM = 0x0030,
-    VKL_SOURCE_STORAGE = 0x0040,
-    VKL_SOURCE_TEXTURE_1D = 0x0050,
-    VKL_SOURCE_TEXTURE_2D = 0x0060,
-    VKL_SOURCE_TEXTURE_3D = 0x0070,
+    VKL_SOURCE_KIND_NONE,
+    VKL_SOURCE_KIND_VERTEX = 0x0010,
+    VKL_SOURCE_KIND_INDEX = 0x0020,
+    VKL_SOURCE_KIND_UNIFORM = 0x0030,
+    VKL_SOURCE_KIND_STORAGE = 0x0040,
+    VKL_SOURCE_KIND_TEXTURE_1D = 0x0050,
+    VKL_SOURCE_KIND_TEXTURE_2D = 0x0060,
+    VKL_SOURCE_KIND_TEXTURE_3D = 0x0070,
 } VklSourceKind;
 
 
@@ -559,7 +559,8 @@ static void _bake_uniforms(VklVisual* visual)
 
         // Allocate the UNIFORM sources, using the number of items in the props, and fill them
         // with the props.
-        if (source->source_kind == VKL_SOURCE_UNIFORM && source->origin == VKL_SOURCE_ORIGIN_LIB)
+        if (source->source_kind == VKL_SOURCE_KIND_UNIFORM &&
+            source->origin == VKL_SOURCE_ORIGIN_LIB)
         {
             uint32_t count = vkl_bake_max_prop_size(visual, source);
             ASSERT(count > 0);

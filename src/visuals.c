@@ -10,8 +10,8 @@
 
 static bool _source_needs_binding(VklSourceKind source_kind)
 {
-    return source_kind == VKL_SOURCE_UNIFORM || //
-           source_kind == VKL_SOURCE_STORAGE;
+    return source_kind == VKL_SOURCE_KIND_UNIFORM || //
+           source_kind == VKL_SOURCE_KIND_STORAGE;
 }
 
 
@@ -23,14 +23,14 @@ static VklSourceKind _get_source_kind(VklSourceType type)
     case VKL_SOURCE_TYPE_MVP:
     case VKL_SOURCE_TYPE_VIEWPORT:
     case VKL_SOURCE_TYPE_PARAM:
-        return VKL_SOURCE_UNIFORM;
+        return VKL_SOURCE_KIND_UNIFORM;
         break;
 
     case VKL_SOURCE_TYPE_VERTEX:
-        return VKL_SOURCE_VERTEX;
+        return VKL_SOURCE_KIND_VERTEX;
 
     case VKL_SOURCE_TYPE_INDEX:
-        return VKL_SOURCE_INDEX;
+        return VKL_SOURCE_KIND_INDEX;
 
     case VKL_SOURCE_TYPE_IMAGE:
     case VKL_SOURCE_TYPE_IMAGE_1:
@@ -39,10 +39,10 @@ static VklSourceKind _get_source_kind(VklSourceType type)
     case VKL_SOURCE_TYPE_IMAGE_4:
     case VKL_SOURCE_TYPE_COLOR_TEXTURE:
     case VKL_SOURCE_TYPE_FONT_ATLAS:
-        return VKL_SOURCE_TEXTURE_2D;
+        return VKL_SOURCE_KIND_TEXTURE_2D;
 
     case VKL_SOURCE_TYPE_VOLUME:
-        return VKL_SOURCE_TEXTURE_3D;
+        return VKL_SOURCE_KIND_TEXTURE_3D;
 
     default:
         log_error("source type %d not yet supported", type);
@@ -55,17 +55,17 @@ static VklSourceKind _get_source_kind(VklSourceType type)
 
 static bool _source_is_texture(VklSourceKind source_kind)
 {
-    return source_kind == VKL_SOURCE_TEXTURE_1D || //
-           source_kind == VKL_SOURCE_TEXTURE_2D || //
-           source_kind == VKL_SOURCE_TEXTURE_3D;
+    return source_kind == VKL_SOURCE_KIND_TEXTURE_1D || //
+           source_kind == VKL_SOURCE_KIND_TEXTURE_2D || //
+           source_kind == VKL_SOURCE_KIND_TEXTURE_3D;
 }
 
 
 
 static bool _source_is_buffer(VklSourceKind source_kind)
 {
-    return source_kind == VKL_SOURCE_UNIFORM || source_kind == VKL_SOURCE_STORAGE ||
-           source_kind == VKL_SOURCE_VERTEX || source_kind == VKL_SOURCE_INDEX;
+    return source_kind == VKL_SOURCE_KIND_UNIFORM || source_kind == VKL_SOURCE_KIND_STORAGE ||
+           source_kind == VKL_SOURCE_KIND_VERTEX || source_kind == VKL_SOURCE_KIND_INDEX;
 }
 
 
@@ -111,16 +111,16 @@ static void _create_source_buffer(VklCanvas* canvas, VklSource* source, VkDevice
     bool mappable = (source->flags & VKL_SOURCE_FLAG_MAPPABLE) != 0;
     switch (source->source_kind)
     {
-    case VKL_SOURCE_VERTEX:
+    case VKL_SOURCE_KIND_VERTEX:
         type = VKL_BUFFER_TYPE_VERTEX;
         break;
-    case VKL_SOURCE_INDEX:
+    case VKL_SOURCE_KIND_INDEX:
         type = VKL_BUFFER_TYPE_INDEX;
         break;
-    case VKL_SOURCE_UNIFORM:
+    case VKL_SOURCE_KIND_UNIFORM:
         type = mappable ? VKL_BUFFER_TYPE_UNIFORM_MAPPABLE : VKL_BUFFER_TYPE_UNIFORM;
         break;
-    case VKL_SOURCE_STORAGE:
+    case VKL_SOURCE_KIND_STORAGE:
         type = VKL_BUFFER_TYPE_STORAGE;
         break;
     default:
@@ -137,9 +137,9 @@ static void _create_source_buffer(VklCanvas* canvas, VklSource* source, VkDevice
 static uint32_t _get_texture_ndims(VklSourceKind source_kind)
 {
     uint32_t ndims = 1;
-    if (source_kind == VKL_SOURCE_TEXTURE_2D)
+    if (source_kind == VKL_SOURCE_KIND_TEXTURE_2D)
         ndims = 2;
-    if (source_kind == VKL_SOURCE_TEXTURE_3D)
+    if (source_kind == VKL_SOURCE_KIND_TEXTURE_3D)
         ndims = 3;
     return ndims;
 }
@@ -304,7 +304,7 @@ void vkl_visual_source(
     source->slot_idx = slot_idx;
     source->flags = flags;
 
-    if (source->source_kind < VKL_SOURCE_TEXTURE_1D)
+    if (source->source_kind < VKL_SOURCE_KIND_TEXTURE_1D)
         source->arr = vkl_array_struct(0, item_size);
     else
     {
@@ -317,7 +317,7 @@ void vkl_visual_source(
     source->origin = VKL_SOURCE_ORIGIN_NONE;
 
     // NOTE: exception for INDEX source, most frequently automatically handled by the library
-    if (source->source_kind == VKL_SOURCE_INDEX)
+    if (source->source_kind == VKL_SOURCE_KIND_INDEX)
     {
         source->origin = VKL_SOURCE_ORIGIN_LIB;
         source->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
@@ -357,7 +357,7 @@ void vkl_visual_prop(
     ASSERT(prop->source != NULL);
 
     // NOTE: we do not use prop arrays for texture sources at the moment
-    if (prop->source->source_kind < VKL_SOURCE_TEXTURE_1D)
+    if (prop->source->source_kind < VKL_SOURCE_KIND_TEXTURE_1D)
         prop->arr_orig = vkl_array(0, prop->dtype);
 }
 
@@ -856,7 +856,7 @@ void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source)
     ASSERT(source != NULL);
     VklCanvas* canvas = visual->canvas;
 
-    ASSERT(source->source_kind < VKL_SOURCE_TEXTURE_1D);
+    ASSERT(source->source_kind < VKL_SOURCE_KIND_TEXTURE_1D);
     ASSERT(source->arr.item_size > 0);
 
     uint32_t count = source->arr.item_count;
