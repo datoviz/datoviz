@@ -54,6 +54,11 @@ _MOUSE_STATES = {
     # cv.VKL_MOUSE_STATE_DOUBLE_CLICK: 'double_click',
 }
 
+_CONTROLLERS = {
+    'panzoom': cv.VKL_CONTROLLER_PANZOOM,
+    'arcball': cv.VKL_CONTROLLER_ARCBALL,
+}
+
 
 def _key_name(key):
     return _KEYS.get(key, key)
@@ -148,9 +153,9 @@ cdef class Canvas:
         self._app = app
         # _add_close_callback(self._c_canvas, self._destroy_wrapper, ())
 
-    def panel(self, int row=0, int col=0):
-        # TODO: controller
-        c_panel = cv.vkl_scene_panel(self._c_scene, row, col, cv.VKL_CONTROLLER_PANZOOM, 0)
+    def panel(self, int row=0, int col=0, controller='panzoom'):
+        ctl = _CONTROLLERS.get(controller, cv.VKL_CONTROLLER_PANZOOM)
+        c_panel = cv.vkl_scene_panel(self._c_scene, row, col, ctl, 0)
         if c_panel is NULL:
             raise MemoryError()
         p = Panel()
