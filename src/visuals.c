@@ -975,6 +975,7 @@ void vkl_visual_update(
     VklArray* arr = NULL;
     VklBufferRegions* br = NULL;
     VklCanvas* canvas = visual->canvas;
+    VklContext* ctx = canvas->gpu->context;
     VklTexture* texture = NULL;
     bool to_upload = false;
 
@@ -982,21 +983,42 @@ void vkl_visual_update(
     VklBindings* bindings = NULL;
     while (source != NULL)
     {
+        // No source set: using default source or skipping.
         if (source->origin == VKL_SOURCE_ORIGIN_NONE)
         {
-            log_error(
-                "source type %d #%d is not set, skip visual update", source->source_type,
-                source->pipeline_idx);
-
-            // NOTE: mark the binding corresponding to the source's pipeline as invalid.
-            bindings = vkl_container_get(&visual->bindings, source->pipeline_idx);
-            ASSERT(bindings != NULL);
-            bindings->obj.status = VKL_OBJECT_STATUS_INVALID;
-            for (uint32_t j = 0; j < source->other_count; j++)
+            if (_source_is_texture(source->source_kind))
             {
-                bindings = vkl_container_get(&visual->bindings, source->other_idxs[j]);
+                log_warn(
+                    "source type %d #%d is not set, using default texture (colormap array)",
+                    source->source_type, source->pipeline_idx);
+                vkl_visual_texture(
+                    visual, source->source_type, source->pipeline_idx, ctx->color_texture.texture);
+            }
+            else if (_source_is_buffer(source->source_kind))
+            {
+                log_warn(
+                    "source type %d #%d is not set, using empty buffer", source->source_type,
+                    source->pipeline_idx);
+                _create_source_buffer(canvas, source, 1);
+                // VklBufferRegions br = vkl_ctx_buffers();
+                // vkl_visual_buffer(visual, source->source_type, source->pipeline_idx, br);
+            }
+            else
+            {
+                log_warn(
+                    "source type %d #%d is not set, skip visual update", source->source_type,
+                    source->pipeline_idx);
+
+                // NOTE: mark the binding corresponding to the source's pipeline as invalid.
+                bindings = vkl_container_get(&visual->bindings, source->pipeline_idx);
                 ASSERT(bindings != NULL);
                 bindings->obj.status = VKL_OBJECT_STATUS_INVALID;
+                for (uint32_t j = 0; j < source->other_count; j++)
+                {
+                    bindings = vkl_container_get(&visual->bindings, source->other_idxs[j]);
+                    ASSERT(bindings != NULL);
+                    bindings->obj.status = VKL_OBJECT_STATUS_INVALID;
+                }
             }
 
             break;

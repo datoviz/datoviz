@@ -468,23 +468,27 @@ cdef extern from "<visky/visky.h>":
         VKL_PROP_MARGIN = 9
         VKL_PROP_NORMAL = 10
         VKL_PROP_TEXCOORDS = 11
-        VKL_PROP_IMAGE = 12
-        VKL_PROP_COLOR_TEXTURE = 13
-        VKL_PROP_MODEL = 14
-        VKL_PROP_VIEW = 15
-        VKL_PROP_PROJ = 16
-        VKL_PROP_TIME = 17
-        VKL_PROP_INDEX = 18
+        VKL_PROP_TEXCOEFS = 12
+        VKL_PROP_IMAGE = 13
+        VKL_PROP_COLOR_TEXTURE = 14
+        VKL_PROP_LIGHT_POS = 15
+        VKL_PROP_LIGHT_PARAMS = 16
+        VKL_PROP_VIEW_POS = 17
+        VKL_PROP_MODEL = 18
+        VKL_PROP_VIEW = 19
+        VKL_PROP_PROJ = 20
+        VKL_PROP_TIME = 21
+        VKL_PROP_INDEX = 22
 
     ctypedef enum VklSourceKind:
-        VKL_SOURCE_NONE = 0
-        VKL_SOURCE_VERTEX = 0x0010
-        VKL_SOURCE_INDEX = 0x0020
-        VKL_SOURCE_UNIFORM = 0x0030
-        VKL_SOURCE_STORAGE = 0x0040
-        VKL_SOURCE_TEXTURE_1D = 0x0050
-        VKL_SOURCE_TEXTURE_2D = 0x0060
-        VKL_SOURCE_TEXTURE_3D = 0x0070
+        VKL_SOURCE_KIND_NONE = 0
+        VKL_SOURCE_KIND_VERTEX = 0x0010
+        VKL_SOURCE_KIND_INDEX = 0x0020
+        VKL_SOURCE_KIND_UNIFORM = 0x0030
+        VKL_SOURCE_KIND_STORAGE = 0x0040
+        VKL_SOURCE_KIND_TEXTURE_1D = 0x0050
+        VKL_SOURCE_KIND_TEXTURE_2D = 0x0060
+        VKL_SOURCE_KIND_TEXTURE_3D = 0x0070
 
     ctypedef enum VklSourceType:
         VKL_SOURCE_TYPE_NONE = 0
