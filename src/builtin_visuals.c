@@ -153,12 +153,31 @@ static void _visual_mesh(VklVisual* visual)
     // Common props.
     _common_props(visual);
 
-    // TODO: params
-    // // Params.
-    // vkl_visual_prop(visual, VKL_PROP_, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_PARAM, 0);
-    // vkl_visual_prop_copy(
-    //     visual, VKL_PROP_MARKER_SIZE, 0, 0, offsetof(VklGraphicsMeshParams, point_size),
-    //     VKL_ARRAY_COPY_SINGLE, 1);
+    // Params.
+
+    // Light positions.
+    vkl_visual_prop(visual, VKL_PROP_LIGHT_POS, 0, VKL_DTYPE_MAT4, VKL_SOURCE_TYPE_PARAM, 0);
+    vkl_visual_prop_copy(
+        visual, VKL_PROP_LIGHT_POS, 0, 0, offsetof(VklGraphicsMeshParams, lights_pos_0),
+        VKL_ARRAY_COPY_SINGLE, 1);
+
+    // Light params.
+    vkl_visual_prop(visual, VKL_PROP_LIGHT_PARAMS, 0, VKL_DTYPE_MAT4, VKL_SOURCE_TYPE_PARAM, 0);
+    vkl_visual_prop_copy(
+        visual, VKL_PROP_LIGHT_PARAMS, 0, 1, offsetof(VklGraphicsMeshParams, lights_params_0),
+        VKL_ARRAY_COPY_SINGLE, 1);
+
+    // View pos.
+    vkl_visual_prop(visual, VKL_PROP_VIEW_POS, 0, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);
+    vkl_visual_prop_copy(
+        visual, VKL_PROP_VIEW_POS, 0, 2, offsetof(VklGraphicsMeshParams, view_pos),
+        VKL_ARRAY_COPY_SINGLE, 1);
+
+    // Texture coefficients.
+    vkl_visual_prop(visual, VKL_PROP_TEXCOEFS, 0, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);
+    vkl_visual_prop_copy(
+        visual, VKL_PROP_TEXCOEFS, 0, 3, offsetof(VklGraphicsMeshParams, tex_coefs),
+        VKL_ARRAY_COPY_SINGLE, 1);
 
     // Texture props.
     // HACK: use SOURCE_TYPE_IMAGE_1..4 because we don't currently support multiple sources

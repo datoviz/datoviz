@@ -178,16 +178,27 @@ int test_visuals_mesh(TestContext* context)
     vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE_3, 0, gpu->context->font_atlas.texture);
     vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE_4, 0, gpu->context->font_atlas.texture);
 
-    VklGraphicsMeshParams params = {0};
-    params.lights_params_0[0][0] = 0.2;
-    params.lights_params_0[0][1] = 0.4;
-    params.lights_params_0[0][2] = 0.4;
-    params.lights_pos_0[0][0] = -2;
-    params.lights_pos_0[0][1] = 0.5;
-    params.lights_pos_0[0][2] = +2;
-    params.tex_coefs[0] = 1;
-    params.view_pos[2] = 3;
-    vkl_visual_data_full(&visual, VKL_SOURCE_TYPE_PARAM, 0, 0, 1, 1, &params);
+    // VklGraphicsMeshParams params = {0};
+    mat4 lights_params = {0};
+    lights_params[0][0] = 0.2;
+    lights_params[0][1] = 0.4;
+    lights_params[0][2] = 0.4;
+
+    mat4 lights_pos = {0};
+    lights_pos[0][0] = -2;
+    lights_pos[0][1] = 0.5;
+    lights_pos[0][2] = +2;
+
+    vec4 tex_coefs = {0};
+    tex_coefs[0] = 1;
+
+    vec4 view_pos = {0};
+    view_pos[2] = 3;
+    // vkl_visual_data_full(&visual, VKL_SOURCE_TYPE_PARAM, 0, 0, 1, 1, &params);
+    vkl_visual_data(&visual, VKL_PROP_LIGHT_PARAMS, 0, 1, lights_params);
+    vkl_visual_data(&visual, VKL_PROP_LIGHT_POS, 0, 1, lights_pos);
+    vkl_visual_data(&visual, VKL_PROP_TEXCOEFS, 0, 1, tex_coefs);
+    vkl_visual_data(&visual, VKL_PROP_VIEW_POS, 0, 1, view_pos);
 
     RUN;
     vkl_mesh_destroy(&mesh);
