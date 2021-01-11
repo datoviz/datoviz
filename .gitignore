@@ -22,6 +22,7 @@ bindings/r
 _skbuild
 site
 _shaders.h
+pyvisky.c
 
 *.png
 *.ppm
