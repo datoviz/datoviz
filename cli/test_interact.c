@@ -99,7 +99,7 @@ static void _add_visual(
         RANDN_POS(vertices[i].pos)
         RAND_COLOR(vertices[i].color)
     }
-    vkl_visual_data_buffer(visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, N, N, vertices);
+    vkl_visual_data_full(visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, N, N, vertices);
 
     VklMVP mvp = {0};
     glm_mat4_identity(mvp.model);

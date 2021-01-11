@@ -368,13 +368,13 @@ VKY_EXPORT void vkl_visual_data_partial(
 VKY_EXPORT void vkl_visual_data_append(
     VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, uint32_t count, const void* data);
 
-VKY_EXPORT void vkl_visual_data_buffer(
+VKY_EXPORT void vkl_visual_data_full(
     VklVisual* visual, VklSourceType source_type, uint32_t idx, //
     uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data);
 
-VKY_EXPORT void vkl_visual_data_texture(
-    VklVisual* visual, VklPropType type, uint32_t prop_idx, //
-    uint32_t width, uint32_t height, uint32_t depth, const void* data);
+// VKY_EXPORT void vkl_visual_data_texture(
+//     VklVisual* visual, VklPropType type, uint32_t prop_idx, //
+//     uint32_t width, uint32_t height, uint32_t depth, const void* data);
 
 VKY_EXPORT void
 vkl_visual_buffer(VklVisual* visual, VklSourceType source_type, uint32_t idx, VklBufferRegions br);

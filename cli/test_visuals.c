@@ -68,7 +68,7 @@ int test_visuals_1(TestContext* context)
         // vkl_visual_buffer(&visual, VKL_SOURCE_TYPE_VERTEX, 0, br_vert);
 
         // Via user-provided data (underlying vertex buffer created automatically).
-        vkl_visual_data_buffer(&visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, N, N, vertices);
+        vkl_visual_data_full(&visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, N, N, vertices);
     }
 
     // Set uniform buffers.
@@ -290,7 +290,7 @@ int test_visuals_4(TestContext* context)
     vkl_visual_data(&visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
 
     // Upload the data to the GPU..
-    vkl_visual_data_buffer(&visual, VKL_SOURCE_TYPE_VIEWPORT, 0, 0, 1, 1, &canvas->viewport);
+    vkl_visual_data_full(&visual, VKL_SOURCE_TYPE_VIEWPORT, 0, 0, 1, 1, &canvas->viewport);
     vkl_visual_update(&visual, canvas->viewport, (VklDataCoords){0}, NULL);
 
     vkl_event_callback(canvas, VKL_EVENT_TIMER, .1, VKL_EVENT_MODE_SYNC, _visual_update, &visual);
@@ -351,7 +351,7 @@ int test_visuals_5(TestContext* context)
     vkl_visual_data(&visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
 
     // Upload the data to the GPU..
-    vkl_visual_data_buffer(&visual, VKL_SOURCE_TYPE_VIEWPORT, 0, 0, 1, 1, &canvas->viewport);
+    vkl_visual_data_full(&visual, VKL_SOURCE_TYPE_VIEWPORT, 0, 0, 1, 1, &canvas->viewport);
     vkl_visual_update(&visual, canvas->viewport, (VklDataCoords){0}, NULL);
 
     vkl_event_callback(canvas, VKL_EVENT_TIMER, .1, VKL_EVENT_MODE_SYNC, _visual_append, &visual);

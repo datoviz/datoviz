@@ -170,8 +170,8 @@ int test_visuals_mesh(TestContext* context)
     uint32_t ni = mesh.indices.item_count;
 
     // Set visual data.
-    vkl_visual_data_buffer(&visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
-    vkl_visual_data_buffer(&visual, VKL_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
+    vkl_visual_data_full(&visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
+    vkl_visual_data_full(&visual, VKL_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
 
     vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE_1, 0, gpu->context->font_atlas.texture);
     vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE_2, 0, gpu->context->font_atlas.texture);
@@ -187,7 +187,7 @@ int test_visuals_mesh(TestContext* context)
     params.lights_pos_0[0][2] = +2;
     params.tex_coefs[0] = 1;
     params.view_pos[2] = 3;
-    vkl_visual_data_buffer(&visual, VKL_SOURCE_TYPE_PARAM, 0, 0, 1, 1, &params);
+    vkl_visual_data_full(&visual, VKL_SOURCE_TYPE_PARAM, 0, 0, 1, 1, &params);
 
     RUN;
     vkl_mesh_destroy(&mesh);
@@ -281,7 +281,7 @@ int test_visuals_axes_2D(TestContext* context)
     params.grid_size[1] = (int32_t)atlas->cols;
     params.tex_size[0] = (int32_t)atlas->width;
     params.tex_size[1] = (int32_t)atlas->height;
-    vkl_visual_data_buffer(&visual, VKL_SOURCE_TYPE_PARAM, 1, 0, 1, 1, &params);
+    vkl_visual_data_full(&visual, VKL_SOURCE_TYPE_PARAM, 1, 0, 1, 1, &params);
 
     _common_data(&visual);
 
