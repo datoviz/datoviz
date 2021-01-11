@@ -1,6 +1,6 @@
 # WARNING: parts of this file are auto-generated
 
-cdef extern from "../include/visky/visky.h":
+cdef extern from "<visky/visky.h>":
 
     # Numerical types
     ctypedef long int32_t

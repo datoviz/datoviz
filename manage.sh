@@ -10,7 +10,7 @@ if [ $1 == "build" ]
 then
     mkdir -p build &&
     cd build && \
-    cmake .. -GNinja -DVISKY_WITH_CYTHON=OFF && \
+    cmake .. -GNinja && \
     VKY_EXAMPLE= ninja && \
     cd ..
 fi
@@ -23,18 +23,9 @@ fi
 
 if [ $1 == "cython" ]
 then
-    cd build && \
-    cmake .. -GNinja -DVISKY_WITH_CYTHON=ON && \
-    ninja && \
-    cd ../bindings/cython && \
-    ./build.sh && \
-    cp ../../build/libvisky* visky && \
-    # cp ../../build/pyvisky.*so visky/pyvisky.so && \ // macOS??
-    cp _skbuild/*/cmake-build/pyvisky*so visky/pyvisky.so && \
-    cd ..
-    #if [ ! -L "$(pwd)/visky/pyvisky.so" ]; then
-    #    ln -s $(pwd)/build/pyvisky.*.so $(pwd)/visky/pyvisky.so
-    #fi
+    cd bindings/cython && \
+    python3 setup.py build_ext -i && \
+    cd ../..
 fi
 
 if [ $1 == "clang" ]

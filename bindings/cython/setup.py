@@ -1,8 +1,14 @@
 from pathlib import Path
-from skbuild import setup
+from setuptools import Extension, setup
+from Cython.Build import cythonize
 
-ROOT_DIR = (Path(__file__).parent / '../../').resolve()
+CYTHON_DIR = Path(__file__).parent
+ROOT_DIR = (CYTHON_DIR / '../../').resolve()
+INCLUDE_DIR = ROOT_DIR / 'include'
+BUILD_DIR = ROOT_DIR / 'build'
 
+# NOTE: build with dynamic linking of visky. Need to add to LD_LIBRARY_PATH env variable
+# the path to the visky library (in <root>/build/).
 setup(
     name='visky',
     version='0.0.0a0',
@@ -12,8 +18,12 @@ setup(
     url='https://visky.dev',
     long_description='''Scientific visualization''',
     packages=['visky'],
-    cmake_args=[
-        '-DVISKY_WITH_EXAMPLES=0',
-    ],
-    cmake_source_dir=ROOT_DIR,
+    ext_modules=cythonize(
+        [Extension(
+            'visky.pyvisky', ['visky/pyvisky.pyx'],
+            libraries=['visky'],
+            include_dirs=[str(INCLUDE_DIR)],
+            library_dirs=[str(BUILD_DIR)]
+        )],
+        compiler_directives={'language_level' : '3'}),
 )

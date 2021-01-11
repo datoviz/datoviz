@@ -244,7 +244,7 @@
 # limitations under the License.
 #=============================================================================
 
-find_package(PythonInterp REQUIRED)
+find_package(Python REQUIRED COMPONENTS Interpreter)
 find_package(PythonLibs)
 include(targetLinkLibrariesWithDynamicLookup)
 
@@ -296,7 +296,7 @@ sys.stdout.write(\";\".join((
 )))
 ")
 
-execute_process(COMMAND "${PYTHON_EXECUTABLE}" -c "${_command}"
+execute_process(COMMAND "${Python_EXECUTABLE}" -c "${_command}"
                 OUTPUT_VARIABLE _list
                 RESULT_VARIABLE _result)
 

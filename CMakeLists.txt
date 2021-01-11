@@ -21,7 +21,7 @@ option(VISKY_WITH_GLSLANG "Build Visky with glslang support" OFF)
 
 option(VISKY_WITH_CLI "Build Visky command-line interface with tests and demos" ON)
 option(VISKY_WITH_EXAMPLES "Build Visky (old) examples" OFF)
-option(VISKY_WITH_CYTHON "Build Cython bindings" OFF)
+# option(VISKY_WITH_CYTHON "Build Cython bindings" OFF)
 
 
 # Define the project
@@ -443,27 +443,27 @@ endif()
 # Cython build
 # -------------------------------------------------------------------------------------------------
 
-if (VISKY_WITH_CYTHON)
-    add_subdirectory(bindings/cython/visky)
-    find_package(PythonExtensions)
-    find_package(Cython)
-    find_package(NumPy)
-    include_directories(${INCL_DIRS} ${PYTHON_INCLUDE_DIRS} ${NumPy_INCLUDE_DIRS})
-    add_cython_target(pyvisky bindings/cython/visky/pyvisky.pyx PY3 C)
-    add_library(pyvisky MODULE ${pyvisky})
-    python_extension_module(pyvisky)
-    target_compile_options(pyvisky PUBLIC -w)
-    # set_target_properties(
-    #     pyvisky PROPERTIES
-    #     LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bindings/cython/visky/)
+# if (VISKY_WITH_CYTHON)
+#     add_subdirectory(bindings/cython/visky)
+#     find_package(PythonExtensions)
+#     find_package(Cython)
+#     find_package(NumPy)
+#     include_directories(${INCL_DIRS} ${PYTHON_INCLUDE_DIRS} ${NumPy_INCLUDE_DIRS})
+#     add_cython_target(pyvisky bindings/cython/visky/pyvisky.pyx PY3 C)
+#     add_library(pyvisky MODULE ${pyvisky})
+#     python_extension_module(pyvisky)
+#     target_compile_options(pyvisky PUBLIC -w)
+#     # set_target_properties(
+#     #     pyvisky PROPERTIES
+#     #     LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bindings/cython/visky/)
 
-    # WARNING: linking with {PYTHON_LIBRARIES} causes a Python segfault on macOS when importing
-    target_link_libraries(pyvisky ${LINK_LIBS} visky)
+#     # WARNING: linking with {PYTHON_LIBRARIES} causes a Python segfault on macOS when importing
+#     target_link_libraries(pyvisky ${LINK_LIBS} visky)
 
-    # install(TARGETS pyvisky LIBRARY DESTINATION visky)
-    # add_custom_target(pyvisky ALL COMMAND ${CMAKE_COMMAND} -E create_symlink ${PROJECT_BINARY_DIR}/ bindings/cython/visky)
-    install(TARGETS pyvisky LIBRARY DESTINATION src)
-endif()
+#     # install(TARGETS pyvisky LIBRARY DESTINATION visky)
+#     # add_custom_target(pyvisky ALL COMMAND ${CMAKE_COMMAND} -E create_symlink ${PROJECT_BINARY_DIR}/ bindings/cython/visky)
+#     install(TARGETS pyvisky LIBRARY DESTINATION src)
+# endif()
 
 
 # -------------------------------------------------------------------------------------------------
