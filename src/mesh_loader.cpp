@@ -137,7 +137,8 @@ VklMesh vkl_mesh_obj(const char* file_path)
         }
     }
 
-    // TODO: mesh normalization
+    // Mesh normalization.
+    vkl_mesh_normalize(&mesh);
 
     return mesh;
 }

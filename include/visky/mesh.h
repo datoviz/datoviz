@@ -89,6 +89,8 @@ VKY_EXPORT VklMesh vkl_mesh_square(void);
 
 VKY_EXPORT VklMesh vkl_mesh_disc(uint32_t count);
 
+VKY_EXPORT void vkl_mesh_normalize(VklMesh* mesh);
+
 VKY_EXPORT void vkl_mesh_destroy(VklMesh* mesh);
 
 

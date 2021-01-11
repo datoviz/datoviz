@@ -79,43 +79,51 @@ void vkl_mesh_rotate(VklMesh* mesh, float angle, vec3 axis)
     vkl_mesh_transform_add(mesh, tr);
 }
 
-// void vkl_normalize_mesh(VklArray vertices)
-// {
-//     const float INF = 1000000;
-//     vec3 min = {+INF, +INF, +INF}, max = {-INF, -INF, -INF};
-//     vec3 center = {0};
-//     vec3 pos = {0};
+void vkl_mesh_normalize(VklMesh* mesh)
+{
+    const float INF = 1000000;
+    vec3 min = {+INF, +INF, +INF}, max = {-INF, -INF, -INF};
+    vec3 center = {0};
+    vec3 pos = {0};
 
-//     for (uint32_t i = 0; i < vertices.item_count; i++)
-//     {
-//         _vec3_copy(vertices[i].pos, pos);
-//         glm_vec3_minv(min, pos, min);
-//         glm_vec3_maxv(max, pos, max);
+    uint32_t nv = mesh->vertices.item_count;
+    VklGraphicsMeshVertex* vertex = NULL;
+    for (uint32_t i = 0; i < nv; i++)
+    {
+        vertex = vkl_array_item(&mesh->vertices, i);
+        ASSERT(vertex != NULL);
+        _vec3_copy(vertex->pos, pos);
+        glm_vec3_minv(min, pos, min);
+        glm_vec3_maxv(max, pos, max);
 
-//         glm_vec3_add(center, pos, center);
-//     }
-//     glm_vec3_scale(center, 1. / vertex_count, center);
+        glm_vec3_add(center, pos, center);
+    }
+    glm_vec3_scale(center, 1. / nv, center);
 
-//     // a * (pos - center) \in (-1, 1)
-//     // a * (min - center)
-//     // a = min(1/(max-center), 1/(center-xmin))
-//     vec3 u = {0}, v = {0};
-//     glm_vec3_sub(max, center, u);
-//     glm_vec3_sub(center, min, v);
-//     for (uint32_t k = 0; k < 3; k++)
-//     {
-//         u[k] = 1 / u[k];
-//         v[k] = 1 / v[k];
-//     }
-//     float a = fmin(glm_vec3_min(u), glm_vec3_min(v));
-//     ASSERT(a > 0);
+    // a * (pos - center) \in (-1, 1)
+    // a * (min - center)
+    // a = min(1/(max-center), 1/(center-xmin))
+    vec3 u = {0}, v = {0};
+    glm_vec3_sub(max, center, u);
+    glm_vec3_sub(center, min, v);
+    glm_vec3_div((vec3){1, 1, 1}, u, u);
+    glm_vec3_div((vec3){1, 1, 1}, v, v);
+    // for (uint32_t k = 0; k < 3; k++)
+    // {
+    //     u[k] = 1 / u[k];
+    //     v[k] = 1 / v[k];
+    // }
+    float a = fmin(glm_vec3_min(u), glm_vec3_min(v));
+    ASSERT(a > 0);
 
-//     for (uint32_t i = 0; i < vertex_count; i++)
-//     {
-//         glm_vec3_sub(vertices[i].pos, center, vertices[i].pos);
-//         glm_vec3_scale(vertices[i].pos, a, vertices[i].pos);
-//     }
-// }
+    for (uint32_t i = 0; i < nv; i++)
+    {
+        vertex = vkl_array_item(&mesh->vertices, i);
+        ASSERT(vertex != NULL);
+        glm_vec3_sub(vertex->pos, center, vertex->pos);
+        glm_vec3_scale(vertex->pos, a, vertex->pos);
+    }
+}
 
 
 
