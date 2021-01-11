@@ -6,10 +6,10 @@ c = canvas()
 panel = c.panel()
 visual = panel.visual('marker')
 
-N = 1000
+N = 1 * 1024 * 1024
 visual.data('pos', (.25 * np.random.randn(N, 3)).astype(np.float32))
 visual.data('color', np.random.randint(
-    low=100, high=255, size=(N, 4)).astype(np.uint8))
-visual.data('ms', (20 * np.ones(1)).astype(np.float32))
+    low=50, high=255, size=(N, 4)).astype(np.uint8))
+visual.data('ms', (2 * np.ones(1)).astype(np.float32))
 
 run()
