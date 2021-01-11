@@ -72,8 +72,9 @@ We need to generate different types of data structures for colors:
 #define CMAP_COUNT 256
 
 #pragma GCC visibility push(default)
-static const unsigned char* VKL_COLOR_TEXTURE;
+static const unsigned char* VKL_COLORMAP_ARRAY;
 #pragma GCC visibility pop
+
 
 
 /*************************************************************************************************/
@@ -305,12 +306,15 @@ static uint8_t _scale_uint8(double value, double vmin, double vmax)
     return (uint8_t)(x * 256);
 }
 
-static void _load_colormap()
+static const unsigned char* _load_colormaps()
 {
+    if (VKL_COLORMAP_ARRAY != NULL)
+        return VKL_COLORMAP_ARRAY;
     unsigned long size = 0;
-    VKL_COLOR_TEXTURE = vkl_resource_texture("color_texture", &size);
+    VKL_COLORMAP_ARRAY = vkl_resource_texture("color_texture", &size);
+    ASSERT(VKL_COLORMAP_ARRAY != NULL);
     ASSERT(size > 0);
-    ASSERT(VKL_COLOR_TEXTURE != NULL);
+    return VKL_COLORMAP_ARRAY;
 }
 
 VKY_INLINE void vkl_colormap(VklColormap cmap, uint8_t value, cvec4 color)
@@ -328,17 +332,15 @@ VKY_INLINE void vkl_colormap(VklColormap cmap, uint8_t value, cvec4 color)
         col = value;
     }
 
-    if (VKL_COLOR_TEXTURE == NULL)
-    {
-        _load_colormap();
-    }
-    ASSERT(VKL_COLOR_TEXTURE != NULL);
+    // Make sure the colormap array is loaded in memory.
+    _load_colormaps();
+    ASSERT(VKL_COLORMAP_ARRAY != NULL);
 
     uint32_t offset = (uint32_t)row * 256 * 4 + (uint32_t)col * 4;
     ASSERT(offset < 256 * 256 * 4 - 4);
-    color[0] = VKL_COLOR_TEXTURE[offset + 0];
-    color[1] = VKL_COLOR_TEXTURE[offset + 1];
-    color[2] = VKL_COLOR_TEXTURE[offset + 2];
+    color[0] = VKL_COLORMAP_ARRAY[offset + 0];
+    color[1] = VKL_COLORMAP_ARRAY[offset + 1];
+    color[2] = VKL_COLORMAP_ARRAY[offset + 2];
     color[3] = 255;
 }
 

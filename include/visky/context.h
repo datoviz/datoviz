@@ -1,6 +1,7 @@
 #ifndef VKL_CONTEXT_HEADER
 #define VKL_CONTEXT_HEADER
 
+#include "colormaps.h"
 #include "common.h"
 #include "fifo.h"
 #include "transfers.h"
@@ -60,6 +61,7 @@ typedef enum
 /*************************************************************************************************/
 
 typedef struct VklFontAtlas VklFontAtlas;
+typedef struct VklColorTexture VklColorTexture;
 
 
 
@@ -80,6 +82,14 @@ struct VklFontAtlas
 
 
 
+struct VklColorTexture
+{
+    const unsigned char* arr;
+    VklTexture* texture;
+};
+
+
+
 struct VklContext
 {
     VklObject obj;
@@ -95,6 +105,7 @@ struct VklContext
 
     // Font atlas.
     VklFontAtlas font_atlas;
+    VklColorTexture color_texture;
 };
 
 
@@ -374,8 +385,8 @@ VKY_EXPORT void vkl_texture_filter(VklTexture* texture, VklFilterType type, VkFi
 VKY_EXPORT void vkl_texture_address_mode(
     VklTexture* texture, VklTextureAxis axis, VkSamplerAddressMode address_mode);
 
-VKY_EXPORT void
-vkl_texture_upload(VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data);
+VKY_EXPORT void vkl_texture_upload(
+    VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, const void* data);
 
 VKY_EXPORT void vkl_texture_download(
     VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data);

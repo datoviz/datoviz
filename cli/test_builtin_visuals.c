@@ -173,12 +173,11 @@ int test_visuals_mesh(TestContext* context)
     vkl_visual_data_full(&visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
     vkl_visual_data_full(&visual, VKL_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
 
-    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE_1, 0, gpu->context->font_atlas.texture);
-    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE_2, 0, gpu->context->font_atlas.texture);
-    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE_3, 0, gpu->context->font_atlas.texture);
-    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE_4, 0, gpu->context->font_atlas.texture);
+    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE_1, 0, gpu->context->color_texture.texture);
+    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE_2, 0, gpu->context->color_texture.texture);
+    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE_3, 0, gpu->context->color_texture.texture);
+    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE_4, 0, gpu->context->color_texture.texture);
 
-    // VklGraphicsMeshParams params = {0};
     mat4 lights_params = {0};
     lights_params[0][0] = 0.2;
     lights_params[0][1] = 0.4;
@@ -194,7 +193,6 @@ int test_visuals_mesh(TestContext* context)
 
     vec4 view_pos = {0};
     view_pos[2] = 3;
-    // vkl_visual_data_full(&visual, VKL_SOURCE_TYPE_PARAM, 0, 0, 1, 1, &params);
     vkl_visual_data(&visual, VKL_PROP_LIGHT_PARAMS, 0, 1, lights_params);
     vkl_visual_data(&visual, VKL_PROP_LIGHT_POS, 0, 1, lights_pos);
     vkl_visual_data(&visual, VKL_PROP_TEXCOEFS, 0, 1, tex_coefs);

@@ -192,6 +192,14 @@ VklContext* vkl_context(VklGpu* gpu, VklWindow* window)
     // Create the font atlas and assign it to the context.
     context->font_atlas = vkl_font_atlas(context);
 
+    // Color texture.
+    context->color_texture.arr = _load_colormaps();
+    context->color_texture.texture =
+        vkl_ctx_texture(context, 2, (uvec3){256, 256, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+    vkl_texture_upload(
+        context->color_texture.texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, 256 * 256 * 4,
+        context->color_texture.arr);
+
     return context;
 }
 
@@ -515,7 +523,7 @@ void vkl_texture_address_mode(
 
 
 void vkl_texture_upload(
-    VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data)
+    VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, const void* data)
 {
     ASSERT(texture != NULL);
     VklContext* context = texture->context;
