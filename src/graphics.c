@@ -308,6 +308,8 @@ static void _graphics_mesh(VklCanvas* canvas, VklGraphics* graphics)
     SHADER(FRAGMENT, "graphics_mesh_frag")
     PRIMITIVE(TRIANGLE_LIST)
     vkl_graphics_depth_test(graphics, VKL_DEPTH_TEST_ENABLE);
+    vkl_graphics_front_face(graphics, VK_FRONT_FACE_CLOCKWISE);
+    vkl_graphics_cull_mode(graphics, VK_CULL_MODE_FRONT_BIT);
 
     ATTR_BEGIN(VklGraphicsMeshVertex)
     ATTR_POS(VklGraphicsMeshVertex, pos)

@@ -489,7 +489,7 @@ static void _arcball_update_mvp(VklArcball* arcball, VklMVP* mvp)
     ASSERT(arcball != NULL);
     glm_mat4_copy(arcball->mat, mvp->model);
     vkl_mvp_camera(
-        arcball->canvas->viewport, arcball->camera.eye, (vec3){0, 0, 0}, (vec2){-1, 1}, mvp);
+        arcball->canvas->viewport, arcball->camera.eye, (vec3){0, 0, 0}, (vec2){0.1, 10}, mvp);
 }
 
 static void _arcball_callback(

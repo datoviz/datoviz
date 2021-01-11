@@ -991,6 +991,12 @@ void vkl_visual_update(
                 log_warn(
                     "source type %d #%d is not set, using default texture (colormap array)",
                     source->source_type, source->pipeline_idx);
+                ASSERT(ctx->color_texture.texture != NULL);
+                ASSERT(ctx->color_texture.texture->image != NULL);
+                ASSERT(ctx->color_texture.texture->image->images[0] != VK_NULL_HANDLE);
+                ASSERT(ctx->color_texture.texture->sampler != NULL);
+                ASSERT(is_obj_created(&ctx->color_texture.texture->obj));
+                // source->origin = VKL_SOURCE_ORIGIN_LIB;
                 vkl_visual_texture(
                     visual, source->source_type, source->pipeline_idx, ctx->color_texture.texture);
             }
@@ -1021,7 +1027,7 @@ void vkl_visual_update(
                 }
             }
 
-            break;
+            continue;
         }
 
         // Upload only for sources manages by visky.

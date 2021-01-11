@@ -24,6 +24,7 @@ struct TestGraphics
     VklBufferRegions br_params;
     VklTexture* texture;
     VklBindings bindings;
+    VklInteract interact;
     VklMVP mvp;
     vec3 eye, center, up;
 
@@ -668,13 +669,18 @@ int test_graphics_image(TestContext* context)
 
 static void _graphics_mesh_callback(VklCanvas* canvas, VklEvent ev)
 {
+    ASSERT(canvas != NULL);
     TestGraphics* tg = ev.user_data;
-    vec3 axis = {0};
-    axis[1] = 1;
-    glm_rotate_make(tg->mvp.model, ev.u.f.time, axis);
-    vkl_mvp_camera(canvas->viewport, tg->eye, tg->center, (vec2){.1, 10}, &tg->mvp);
+    ASSERT(tg != NULL);
 
-    vkl_upload_buffers(canvas, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
+    vkl_interact_update(&tg->interact, canvas->viewport, &canvas->mouse, &canvas->keyboard);
+    vkl_upload_buffers(canvas, tg->br_mvp, 0, sizeof(VklMVP), &tg->interact.mvp);
+
+    // vec3 axis = {0};
+    // axis[1] = 1;
+    // glm_rotate_make(tg->mvp.model, ev.u.f.time, axis);
+    // vkl_mvp_camera(canvas->viewport, tg->eye, tg->center, (vec2){.1, 10}, &tg->mvp);
+    // vkl_upload_buffers(canvas, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
 }
 
 static VklMesh _graphics_mesh_example(VklMeshType type)
@@ -787,12 +793,12 @@ int test_graphics_mesh(TestContext* context)
 
     // Parameters.
     VklGraphicsMeshParams params = {0};
-    params.lights_params_0[0][0] = 0.2;
+    params.lights_params_0[0][0] = 0.4;
     params.lights_params_0[0][1] = 0.4;
     params.lights_params_0[0][2] = 0.4;
-    params.lights_pos_0[0][0] = -2;
+    params.lights_pos_0[0][0] = -1;
     params.lights_pos_0[0][1] = 0.5;
-    params.lights_pos_0[0][2] = +2;
+    params.lights_pos_0[0][2] = +1;
     params.tex_coefs[0] = 1;
     glm_vec3_copy(tg.eye, params.view_pos);
 
@@ -807,6 +813,8 @@ int test_graphics_mesh(TestContext* context)
     for (uint32_t i = 1; i <= 4; i++)
         vkl_bindings_texture(&tg.bindings, VKL_USER_BINDING + i, texture);
     vkl_bindings_update(&tg.bindings);
+
+    tg.interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
 
     // Callback.
     vkl_event_callback(

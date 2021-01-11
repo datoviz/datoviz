@@ -941,6 +941,10 @@ VklController vkl_controller_builtin(VklPanel* panel, VklControllerType type, in
         vkl_controller_interact(&controller, VKL_INTERACT_ARCBALL);
         break;
 
+    case VKL_CONTROLLER_CAMERA:
+        vkl_controller_interact(&controller, VKL_INTERACT_FLY);
+        break;
+
     case VKL_CONTROLLER_AXES_2D:
         vkl_controller_interact(&controller, VKL_INTERACT_PANZOOM);
         vkl_controller_callback(&controller, _axes_callback);

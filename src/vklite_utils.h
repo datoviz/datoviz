@@ -1475,7 +1475,8 @@ static VkPipelineInputAssemblyStateCreateInfo create_input_assembly(VkPrimitiveT
 }
 
 
-static VkPipelineRasterizationStateCreateInfo create_rasterizer(VkCullModeFlags cull_mode)
+static VkPipelineRasterizationStateCreateInfo
+create_rasterizer(VkCullModeFlags cull_mode, VkFrontFace front_face)
 {
     VkPipelineRasterizationStateCreateInfo rasterizer = {0};
     rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -1484,7 +1485,7 @@ static VkPipelineRasterizationStateCreateInfo create_rasterizer(VkCullModeFlags 
     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
     rasterizer.lineWidth = 1.0f;
     rasterizer.cullMode = cull_mode;
-    rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    rasterizer.frontFace = front_face;
     rasterizer.depthBiasEnable = VK_FALSE;
     return rasterizer;
 }

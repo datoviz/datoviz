@@ -2079,7 +2079,8 @@ void vkl_graphics_create(VklGraphics* graphics)
     // Pipeline.
     VkPipelineInputAssemblyStateCreateInfo input_assembly =
         create_input_assembly(graphics->topology);
-    VkPipelineRasterizationStateCreateInfo rasterizer = create_rasterizer(graphics->cull_mode);
+    VkPipelineRasterizationStateCreateInfo rasterizer =
+        create_rasterizer(graphics->cull_mode, graphics->front_face);
     VkPipelineMultisampleStateCreateInfo multisampling = create_multisampling();
     VkPipelineColorBlendAttachmentState color_blend_attachment = create_color_blend_attachment();
     VkPipelineColorBlendStateCreateInfo color_blending =

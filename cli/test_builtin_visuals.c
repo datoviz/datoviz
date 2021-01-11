@@ -176,8 +176,6 @@ int test_visuals_mesh(TestContext* context)
     vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE_1, 0, gpu->context->color_texture.texture);
     vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE_2, 0, gpu->context->color_texture.texture);
     vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE_3, 0, gpu->context->color_texture.texture);
-    // vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE_4, 0,
-    // gpu->context->color_texture.texture);
 
     mat4 lights_params = {0};
     lights_params[0][0] = 0.2;

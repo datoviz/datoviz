@@ -24,7 +24,8 @@ setup(
             libraries=['visky'],
             include_dirs=[str(INCLUDE_DIR), str(
                 BUILD_DIR / '_deps/cglm-src/include')],
-            library_dirs=[str(BUILD_DIR)]
+            library_dirs=[str(BUILD_DIR)],
+            extra_compile_args=['-w'],
         )],
         compiler_directives={'language_level': '3'}),
 )

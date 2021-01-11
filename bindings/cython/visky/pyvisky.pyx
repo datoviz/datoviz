@@ -62,7 +62,22 @@ _VISUALS = {
 _CONTROLLERS = {
     'panzoom': cv.VKL_CONTROLLER_PANZOOM,
     'arcball': cv.VKL_CONTROLLER_ARCBALL,
+    'fps': cv.VKL_CONTROLLER_CAMERA,
 }
+
+_PROPS = {
+    'pos': cv.VKL_PROP_POS,
+    'color': cv.VKL_PROP_COLOR,
+    'ms': cv.VKL_PROP_MARKER_SIZE,
+    'normal': cv.VKL_PROP_NORMAL,
+    'texcoords': cv.VKL_PROP_TEXCOORDS,
+    'index': cv.VKL_PROP_INDEX,
+    'light_params': cv.VKL_PROP_LIGHT_PARAMS,
+    'light_pos': cv.VKL_PROP_LIGHT_POS,
+    'texcoefs': cv.VKL_PROP_TEXCOEFS,
+    'view_pos': cv.VKL_PROP_VIEW_POS,
+}
+
 
 
 def _key_name(key):
@@ -73,6 +88,9 @@ def _button_name(button):
 
 def _mouse_state(state):
     return _MOUSE_STATES.get(state, None)
+
+def _get_prop(name):
+    return _PROPS[name]
 
 
 
@@ -250,18 +268,6 @@ cdef class Panel:
         return v
 
 
-_PROPS = {
-    'pos': cv.VKL_PROP_POS,
-    'color': cv.VKL_PROP_COLOR,
-    'ms': cv.VKL_PROP_MARKER_SIZE,
-    'normal': cv.VKL_PROP_NORMAL,
-    'texcoords': cv.VKL_PROP_TEXCOORDS,
-    'index': cv.VKL_PROP_INDEX,
-}
-
-def _get_prop(name):
-    return _PROPS[name]
-
 
 cdef class Visual:
     cdef cv.VklPanel* _c_panel
@@ -273,6 +279,5 @@ cdef class Visual:
 
     def data(self, name, np.ndarray value):
         prop = _get_prop(name)
-        # TODO: props
         N = value.shape[0]
         cv.vkl_visual_data(self._c_visual, prop, 0, N, &value.data[0]);
