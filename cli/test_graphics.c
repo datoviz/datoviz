@@ -78,10 +78,12 @@ static void _common_bindings(TestGraphics* tg)
     VklGraphics* graphics = tg->graphics;
 
     // Create the bindings.
-    tg->bindings = vkl_bindings(&graphics->slots, 1);
+    tg->bindings = vkl_bindings(&graphics->slots, tg->canvas->swapchain.img_count);
 
     // Binding resources.
-    tg->br_mvp = vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklMVP));
+    tg->br_mvp = vkl_ctx_buffers(
+        gpu->context, VKL_BUFFER_TYPE_UNIFORM_MAPPABLE, tg->canvas->swapchain.img_count,
+        sizeof(VklMVP));
     tg->br_viewport =
         vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklViewport));
 
@@ -195,10 +197,12 @@ int test_graphics_dynamic(TestContext* context)
     END_DATA
 
     // Create the bindings.
-    tg.bindings = vkl_bindings(&graphics->slots, 1);
+    tg.bindings = vkl_bindings(&graphics->slots, canvas->swapchain.img_count);
 
     // Binding resources.
-    tg.br_mvp = vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklMVP));
+    tg.br_mvp = vkl_ctx_buffers(
+        gpu->context, VKL_BUFFER_TYPE_UNIFORM_MAPPABLE, canvas->swapchain.img_count,
+        sizeof(VklMVP));
     tg.br_viewport = vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, 16);
     tg.br_params =
         vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsPointParams));
@@ -268,10 +272,12 @@ int test_graphics_3D(TestContext* context)
     END_DATA
 
     // Create the bindings.
-    tg.bindings = vkl_bindings(&graphics->slots, 1);
+    tg.bindings = vkl_bindings(&graphics->slots, canvas->swapchain.img_count);
 
     // Binding resources.
-    tg.br_mvp = vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklMVP));
+    tg.br_mvp = vkl_ctx_buffers(
+        gpu->context, VKL_BUFFER_TYPE_UNIFORM_MAPPABLE, canvas->swapchain.img_count,
+        sizeof(VklMVP));
     tg.br_viewport = vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, 16);
     tg.br_params =
         vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsPointParams));
@@ -770,10 +776,12 @@ int test_graphics_mesh(TestContext* context)
         canvas, texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, sizeof(tex_data), tex_data);
 
     // Create the bindings.
-    tg.bindings = vkl_bindings(&graphics->slots, 1);
+    tg.bindings = vkl_bindings(&graphics->slots, canvas->swapchain.img_count);
 
     // Binding resources.
-    tg.br_mvp = vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklMVP));
+    tg.br_mvp = vkl_ctx_buffers(
+        gpu->context, VKL_BUFFER_TYPE_UNIFORM_MAPPABLE, canvas->swapchain.img_count,
+        sizeof(VklMVP));
     tg.br_viewport =
         vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklViewport));
 
