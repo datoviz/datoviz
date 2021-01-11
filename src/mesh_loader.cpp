@@ -44,9 +44,10 @@ VklMesh vkl_mesh_obj(const char* file_path)
     uint32_t ns = shapes.size();
 
     // Count the number of indices.
+    // TODO: do not count in a first pass, use C++ resizable containers directly.
     uint32_t s, f, fv, v;
-    for (s = 0; s < ns; s++)
-    {                                                                 // loop over shapes
+    for (s = 0; s < ns; s++) // loop over shapes
+    {
         for (f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) // loop over faces
         {
             fv = shapes[s].mesh.num_face_vertices[f]; // number of indices per face
@@ -60,7 +61,7 @@ VklMesh vkl_mesh_obj(const char* file_path)
         }
     }
     ASSERT(ni > 0);
-    log_debug("loaded %s: %d shape(s), %d vertices, %d indices", ns, nv, ni);
+    log_debug("loading shape %d: %d shape(s), %d vertices, %d indices", s, ns, nv, ni);
 
     // Create the mesh object and allocate the vertex and index arrays.
     vkl_array_resize(&mesh.vertices, nv);
@@ -76,33 +77,48 @@ VklMesh vkl_mesh_obj(const char* file_path)
     // Loop over shapes
     uint32_t i, index_offset, nf;
     tinyobj::index_t idx;
-    for (s = 0; s < ns; s++)
+
+    // Vertices
+    log_debug("loading %d vertices", nv);
+    size_t nv_obj = attrib.vertices.size();
+    size_t nn_obj = attrib.normals.size();
+    size_t nt_obj = attrib.texcoords.size();
+
+    for (i = 0; i < nv; i++)
     {
-        // Vertices
-        for (i = 0; i < nv; i++)
+        // Vertex position.
+        ASSERT(3 * i + 2 < nv_obj);
+        vertex->pos[0] = attrib.vertices[3 * i + 0];
+        vertex->pos[1] = attrib.vertices[3 * i + 1];
+        vertex->pos[2] = attrib.vertices[3 * i + 2];
+
+        // Vertex normal.
+        ASSERT(3 * i + 2 < nn_obj);
+        vertex->normal[0] = attrib.normals[3 * i + 0];
+        vertex->normal[1] = attrib.normals[3 * i + 1];
+        vertex->normal[2] = attrib.normals[3 * i + 2];
+
+        // Vertex tex coords.
+        if (nt_obj > 0)
         {
-            // Vertex position.
-            vertex->pos[0] = attrib.vertices[3 * i + 0];
-            vertex->pos[1] = attrib.vertices[3 * i + 1];
-            vertex->pos[2] = attrib.vertices[3 * i + 2];
-
-            // Vertex normal.
-            vertex->normal[0] = attrib.normals[3 * i + 0];
-            vertex->normal[1] = attrib.normals[3 * i + 1];
-            vertex->normal[2] = attrib.normals[3 * i + 2];
-
-            // Vertex tex coords.
+            ASSERT(2 * i + 1 < nt_obj);
             vertex->uv[0] = attrib.texcoords[2 * i + 0];
             vertex->uv[1] = attrib.texcoords[2 * i + 1];
-
-            // Go to next vertex.
-            vertex++;
         }
 
+        // Go to next vertex.
+        vertex++;
+    }
+
+    // Shapes.
+    for (s = 0; s < ns; s++)
+    {
         // Faces.
         index_offset = 0;
         nf = shapes[s].mesh.num_face_vertices.size(); // number of faces in the current shape
-        for (f = 0; f < nf; f++)                      // loop over faces
+        log_debug("shape #%d: loading %d indices", s, nf);
+
+        for (f = 0; f < nf; f++) // loop over faces
         {
             fv = shapes[s].mesh.num_face_vertices[f]; // number of vertices in the face
 

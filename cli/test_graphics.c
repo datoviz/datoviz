@@ -104,7 +104,7 @@ static void _common_bindings(TestGraphics* tg)
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define MESH VKL_MESH_CUBE
+#define MESH VKL_MESH_OBJ
 
 
 
@@ -745,7 +745,7 @@ int test_graphics_mesh(TestContext* context)
     tg.eye[2] = 3;
     tg.up[1] = 1;
     tg.graphics = graphics;
-    VklMesh mesh = _graphics_mesh_example(VKL_MESH_CUBE);
+    VklMesh mesh = _graphics_mesh_example(MESH);
 
     tg.vertices = mesh.vertices;
     tg.indices = mesh.indices;
