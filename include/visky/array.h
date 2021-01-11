@@ -187,8 +187,9 @@ static VkDeviceSize _get_dtype_size(VklDataType dtype)
 
 static VklArray _create_array(uint32_t item_count, VklDataType dtype, VkDeviceSize item_size)
 {
-    VklArray arr = {0};
+    VklArray arr;
     arr.obj.type = VKL_OBJECT_TYPE_ARRAY;
+    arr.ndims = 0;
     arr.dtype = dtype;
     arr.item_size = item_size;
     arr.item_count = item_count;

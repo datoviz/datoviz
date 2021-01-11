@@ -4,6 +4,11 @@
 #include "array.h"
 #include "graphics.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 
 /*************************************************************************************************/
 /*  Enums                                                                                     */
@@ -19,6 +24,7 @@ typedef enum
     VKL_MESH_CONE,
     VKL_MESH_SQUARE,
     VKL_MESH_DISC,
+    VKL_MESH_OBJ,
     VKL_MESH_COUNT,
 } VklMeshType;
 
@@ -86,5 +92,9 @@ VKY_EXPORT VklMesh vkl_mesh_disc(uint32_t count);
 VKY_EXPORT void vkl_mesh_destroy(VklMesh* mesh);
 
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

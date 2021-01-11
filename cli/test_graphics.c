@@ -2,6 +2,7 @@
 #include "../include/visky/colormaps.h"
 #include "../include/visky/graphics.h"
 #include "../include/visky/mesh.h"
+#include "../src/mesh_loader.h"
 #include "utils.h"
 
 
@@ -94,6 +95,14 @@ static void _common_bindings(TestGraphics* tg)
     vkl_bindings_buffer(&tg->bindings, 0, tg->br_mvp);
     vkl_bindings_buffer(&tg->bindings, 1, tg->br_viewport);
 }
+
+
+
+/*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define MESH VKL_MESH_CUBE
 
 
 
@@ -708,6 +717,11 @@ static VklMesh _graphics_mesh_example(VklMeshType type)
 
     case VKL_MESH_DISC:
         return vkl_mesh_disc(100);
+
+    case VKL_MESH_OBJ:;
+        char path[1024];
+        snprintf(path, sizeof(path), "%s/mesh/%s", DATA_DIR, "brain.obj");
+        return vkl_mesh_obj(path);
 
     default:
         break;
