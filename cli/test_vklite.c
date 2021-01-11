@@ -101,7 +101,7 @@ int test_vklite_commands(TestContext* context)
 
 
 
-int test_vklite_buffer(TestContext* context)
+int test_vklite_buffer_1(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
@@ -133,6 +133,61 @@ int test_vklite_buffer(TestContext* context)
     FREE(data);
     FREE(data2);
 
+    vkl_buffer_destroy(&buffer);
+
+    TEST_END
+}
+
+
+
+int test_vklite_buffer_resize(TestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
+    vkl_gpu_create(gpu, 0);
+
+    VklBuffer buffer = vkl_buffer(gpu);
+    const VkDeviceSize size = 256;
+    vkl_buffer_size(&buffer, size);
+    vkl_buffer_usage(&buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    vkl_buffer_memory(
+        &buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    vkl_buffer_queue_access(&buffer, 0);
+    vkl_buffer_create(&buffer);
+
+    // Map the buffer.
+    buffer.mmap = vkl_buffer_map(&buffer, 0, VK_WHOLE_SIZE);
+
+    // Send some data to the GPU.
+    uint8_t* data = calloc(size, 1);
+    for (uint32_t i = 0; i < size; i++)
+        data[i] = i;
+    vkl_buffer_upload(&buffer, 0, size, data);
+    ASSERT(buffer.mmap != NULL);
+    void* old_mmap = buffer.mmap;
+
+    // Resize the buffer.
+    VklCommands cmds = vkl_commands(gpu, 0, 1);
+    // NOTE: this should automatically unmap, delete, create, remap, copy old data to new.
+    vkl_buffer_resize(&buffer, 2 * size, &cmds);
+    ASSERT(buffer.size == 2 * size);
+    ASSERT(buffer.mmap != NULL);
+    ASSERT(buffer.mmap != old_mmap);
+
+    // Recover the data.
+    void* data2 = calloc(size, 1);
+    vkl_buffer_download(&buffer, 0, size, data2);
+
+    // Check that the data downloaded from the GPU is the same.
+    AT(memcmp(data2, data, size) == 0);
+
+    FREE(data);
+    FREE(data2);
+
+    // Unmap the buffer.
+    vkl_buffer_unmap(&buffer);
+    buffer.mmap = NULL;
     vkl_buffer_destroy(&buffer);
 
     TEST_END

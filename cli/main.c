@@ -29,7 +29,8 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_vklite_window),         //
     CASE_FIXTURE_NONE(test_vklite_swapchain),      //
     CASE_FIXTURE_NONE(test_vklite_commands),       //
-    CASE_FIXTURE_NONE(test_vklite_buffer),         //
+    CASE_FIXTURE_NONE(test_vklite_buffer_1),       //
+    CASE_FIXTURE_NONE(test_vklite_buffer_resize),  //
     CASE_FIXTURE_NONE(test_vklite_compute),        //
     CASE_FIXTURE_NONE(test_vklite_push),           //
     CASE_FIXTURE_NONE(test_vklite_images),         //

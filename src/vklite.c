@@ -831,6 +831,13 @@ static void _buffer_create(VklBuffer* buffer)
 
 static void _buffer_destroy(VklBuffer* buffer)
 {
+    // Unmap permanently-mapped buffers before destruction.
+    if (buffer->mmap != NULL)
+    {
+        vkl_buffer_unmap(buffer);
+        buffer->mmap = NULL;
+    }
+
     if (buffer->buffer != VK_NULL_HANDLE)
     {
         vkDestroyBuffer(buffer->gpu->device, buffer->buffer, NULL);
@@ -900,6 +907,17 @@ void vkl_buffer_resize(VklBuffer* buffer, VkDeviceSize size, VklCommands* cmds)
     _buffer_create(&new_buffer);
     // At this point, the new buffer is empty.
 
+    // Handle permanent mapping.
+    void* old_mmap = buffer->mmap;
+    if (buffer->mmap != NULL)
+    {
+        // Unmap the to-be-deleted buffer.
+        vkl_buffer_unmap(buffer);
+        // NOTE: buffer->mmap remains not NULL but invalid: it will need to be reset to a new
+        // mapped region after creation of the new buffer.
+        buffer->mmap = NULL;
+    }
+
     // If a VklCommands object was passed for the data transfer, transfer the data from the
     // old buffer to the new, by flushing the corresponding queue and waiting for completion.
     if (cmds != NULL)
@@ -931,6 +949,14 @@ void vkl_buffer_resize(VklBuffer* buffer, VkDeviceSize size, VklCommands* cmds)
     buffer->device_memory = new_buffer.device_memory;
     ASSERT(buffer->buffer != VK_NULL_HANDLE);
     ASSERT(buffer->device_memory != VK_NULL_HANDLE);
+
+    // If the existing buffer was already mapped, we need to remap the new buffer.
+    if (old_mmap != NULL)
+    {
+        buffer->mmap = vkl_buffer_map(buffer, 0, VK_WHOLE_SIZE);
+        // Make sure the permanent memmap has been updated after the buffer resize.
+        ASSERT(buffer->mmap != old_mmap);
+    }
 }
 
 
