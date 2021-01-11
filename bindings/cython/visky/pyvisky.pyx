@@ -261,5 +261,5 @@ cdef class Visual:
     def data(self, name, np.ndarray value):
         prop = _get_prop(name)
         # TODO: props
-        N = value.size
+        N = value.shape[0]
         cv.vkl_visual_data(self._c_visual, prop, 0, N, &value.data[0]);
