@@ -189,6 +189,8 @@ static void _visual_update(VklCanvas* canvas, VklEvent ev)
     FREE(text);
 }
 
+
+
 // static void _wait(VklCanvas* canvas, VklEvent ev) { vkl_sleep(50); }
 
 int test_visuals_axes_2D(TestContext* context)
@@ -196,7 +198,7 @@ int test_visuals_axes_2D(TestContext* context)
     INIT;
     vkl_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});
 
-    VklFontAtlas* atlas = vkl_font_atlas(gpu->context);
+    VklFontAtlas* atlas = &gpu->context->font_atlas;
     ASSERT(strlen(atlas->font_str) > 0);
 
     VklVisual visual = vkl_visual(canvas);

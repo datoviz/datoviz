@@ -519,7 +519,7 @@ int test_graphics_text(TestContext* context)
     const uint32_t offset = strlen(str);
 
     // Font atlas
-    VklFontAtlas* atlas = vkl_font_atlas(gpu->context);
+    VklFontAtlas* atlas = &gpu->context->font_atlas;
 
     VklGraphicsTextParams params = {0};
     params.grid_size[0] = (int32_t)atlas->rows;
@@ -578,7 +578,6 @@ int test_graphics_text(TestContext* context)
     vkl_event_callback(canvas, VKL_EVENT_RESIZE, 0, VKL_EVENT_MODE_SYNC, _resize, &tg);
 
     RUN;
-    vkl_font_atlas_destroy(atlas);
     TEST_END
 }
 

@@ -56,8 +56,29 @@ typedef enum
 
 
 /*************************************************************************************************/
+/*  Typedefs */
+/*************************************************************************************************/
+
+typedef struct VklFontAtlas VklFontAtlas;
+
+
+
+/*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
+
+struct VklFontAtlas
+{
+    const char* name;
+    uint32_t width, height;
+    uint32_t cols, rows;
+    uint8_t* font_texture;
+    float glyph_width, glyph_height;
+    const char* font_str;
+    VklTexture* texture;
+};
+
+
 
 struct VklContext
 {
@@ -71,6 +92,9 @@ struct VklContext
     VklContainer samplers;
     VklContainer textures;
     VklContainer computes;
+
+    // Font atlas.
+    VklFontAtlas font_atlas;
 };
 
 

@@ -1,5 +1,5 @@
-#ifndef VKL_VKLITE2_HEADER
-#define VKL_VKLITE2_HEADER
+#ifndef VKL_VKLITE_HEADER
+#define VKL_VKLITE_HEADER
 
 #define GLM_FORCE_RADIANS
 // #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -19,6 +19,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+#include "app.h"
 #include "common.h"
 
 BEGIN_INCL_NO_WARN
@@ -28,13 +29,6 @@ END_INCL_NO_WARN
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/*
-TODO later
-- rename Vkl/VKL/vkl to Vkl
-- move constants to constants.c
-- put glfw-specific code in the same place
-*/
 
 
 
@@ -72,9 +66,6 @@ TODO later
 /*  Type definitions */
 /*************************************************************************************************/
 
-typedef struct VklApp VklApp;
-typedef struct VklThread VklThread;
-typedef struct VklClock VklClock;
 typedef struct VklQueues VklQueues;
 typedef struct VklGpu VklGpu;
 typedef struct VklWindow VklWindow;
@@ -117,16 +108,6 @@ typedef void (*VklGraphicsCallback)(VklGraphicsData* data, uint32_t item_count, 
 /*************************************************************************************************/
 /*  Enums                                                                                        */
 /*************************************************************************************************/
-
-// Backend.
-typedef enum
-{
-    VKL_BACKEND_NONE,
-    VKL_BACKEND_GLFW,
-    VKL_BACKEND_OFFSCREEN,
-} VklBackend;
-
-
 
 // Queue type.
 typedef enum
@@ -296,95 +277,8 @@ static inline char* pretty_size(VkDeviceSize size)
 
 
 /*************************************************************************************************/
-/*  Clock                                                                                        */
-/*************************************************************************************************/
-
-struct VklClock
-{
-    double elapsed;  // time in seconds elapsed since calling _start_time(clock)
-    double interval; // interval since the last clock update
-
-    struct timeval start, current;
-    double checkpoint_time;
-    uint64_t checkpoint_value;
-};
-
-
-
-static inline void _clock_init(VklClock* clock) { gettimeofday(&clock->start, NULL); }
-
-
-
-static inline double _clock_get(VklClock* clock)
-{
-    gettimeofday(&clock->current, NULL);
-    double elapsed = (clock->current.tv_sec - clock->start.tv_sec) +
-                     (clock->current.tv_usec - clock->start.tv_usec) / 1000000.0;
-    return elapsed;
-}
-
-
-
-static inline void _clock_set(VklClock* clock)
-{
-    // Typically called at every frame.
-    double elapsed = _clock_get(clock);
-    clock->interval = elapsed - clock->elapsed;
-    clock->elapsed = elapsed;
-}
-
-
-
-/*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
-
-struct VklThread
-{
-    VklObject obj;
-    pthread_t thread;
-    pthread_mutex_t lock;
-};
-
-
-
-struct VklApp
-{
-    VklObject obj;
-    uint32_t n_errors;
-
-    // Backend
-    VklBackend backend;
-
-    // Global clock
-    VklClock clock;
-    bool is_running;
-
-    // Vulkan objects.
-    VkInstance instance;
-    VkDebugUtilsMessengerEXT debug_messenger;
-
-    // GPUs.
-    // uint32_t max_gpus;
-    // uint32_t gpu_count;
-    // VklGpu* gpus;
-    VklContainer gpus;
-
-    // Windows.
-    // uint32_t max_windows;
-    // VklWindow* windows;
-    VklContainer windows;
-
-    // Canvas.
-    // uint32_t max_canvases;
-    // VklCanvas* canvases;
-    VklContainer canvases;
-
-    // Threads.
-    VklThread timer_thread;
-};
-
-
 
 struct VklQueues
 {
@@ -1393,6 +1287,7 @@ VKY_EXPORT void vkl_cmd_push(
 /*************************************************************************************************/
 
 VKY_EXPORT void vkl_context_destroy(VklContext* context);
+
 
 
 #ifdef __cplusplus

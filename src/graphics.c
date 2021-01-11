@@ -1,6 +1,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../include/visky/graphics.h"
+#include "../include/visky/atlas.h"
 #include "../include/visky/canvas.h"
+#include "../include/visky/context.h"
 
 
 /*************************************************************************************************/
@@ -205,7 +207,7 @@ static void _graphics_text_callback(VklGraphicsData* data, uint32_t item_count, 
 
     ASSERT(item_count > 0);
     vkl_array_resize(data->vertices, 4 * item_count);
-    VklFontAtlas* atlas = vkl_font_atlas(data->graphics->gpu->context);
+    VklFontAtlas* atlas = &data->graphics->gpu->context->font_atlas;
     ASSERT(atlas != NULL);
 
     if (item == NULL)

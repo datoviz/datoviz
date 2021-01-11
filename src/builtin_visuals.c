@@ -142,11 +142,12 @@ static void _visual_segment_raw(VklVisual* visual)
 /*  Axes 2D                                                                                      */
 /*************************************************************************************************/
 
+// TODO: customizable params
 static cvec4 VKL_DEFAULT_AXES_COLOR[] = {
     {0, 0, 0, 255}, {0, 0, 0, 255}, {128, 128, 128, 255}, {0, 0, 0, 255}};
 static vec4 VKL_DEFAULT_AXES_LINE_WIDTH = {2.0f, 4.0f, 1.0f, 2.0f};
 static vec2 VKL_DEFAULT_AXES_TICK_LENGTH = {10.0f, 15.0f};
-static float VKL_DEFAULT_AXES_FONT_SIZE = 14.0f;
+static float VKL_DEFAULT_AXES_FONT_SIZE = 12.0f;
 
 static uint32_t _count_prop_items(
     VklVisual* visual, uint32_t prop_count, VklPropType* prop_types, //

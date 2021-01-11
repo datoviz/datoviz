@@ -71,6 +71,7 @@ struct VklAxes2D
     dvec2 panzoom_range[2]; // current panzoom range in data coordinates
     dvec2 tick_range[2]; // extended range (in data coordinates) used to compute the current ticks
     VklAxesContext ctx[2];
+    float font_size;
 };
 
 

@@ -301,9 +301,13 @@ static VklAxesContext _axes_context(VklController* controller, VklAxisCoord coor
     ctx.scale_orig = controller->interacts[0].u.p.zoom[coord];
 
     // TODO: improve determination of glyph size
-    float font_size = 14;
+    float font_size = controller->u.axes_2D.font_size;
+    ASSERT(font_size > 0);
+    VklFontAtlas* atlas = &canvas->gpu->context->font_atlas;
+    ASSERT(atlas->glyph_width > 0);
+    ASSERT(atlas->glyph_height > 0);
     ctx.size_glyph = coord == VKL_AXES_COORD_X
-                         ? font_size * VKL_FONT_ATLAS.glyph_width / VKL_FONT_ATLAS.glyph_height
+                         ? font_size * atlas->glyph_width / atlas->glyph_height
                          : font_size;
     ctx.size_glyph *= dpi_scaling;
 
@@ -400,6 +404,14 @@ static void _axes_ticks_init(VklController* controller)
     ASSERT(controller != NULL);
     ASSERT(controller->type == VKL_CONTROLLER_AXES_2D);
     VklAxes2D* axes = &controller->u.axes_2D;
+
+    // NOTE: get the font size which was set by in builtin_visuals.c as a prop.
+    VklProp* prop = vkl_bake_prop(controller->visuals[0], VKL_PROP_TEXT_SIZE, 0);
+    ASSERT(prop != NULL);
+    float* font_size = vkl_bake_prop_item(prop, 0);
+    axes->font_size = *font_size;
+    ASSERT(axes->font_size > 0);
+
     ASSERT(axes != NULL);
 
     for (uint32_t coord = 0; coord < 2; coord++)
@@ -564,7 +576,7 @@ static void _add_axes(VklController* controller)
             coord == 0 ? VKL_TRANSFORM_AXIS_X : VKL_TRANSFORM_AXIS_Y;
 
         // Text params.
-        VklFontAtlas* atlas = vkl_font_atlas(ctx);
+        VklFontAtlas* atlas = &ctx->font_atlas;
         ASSERT(strlen(atlas->font_str) > 0);
         vkl_visual_texture(visual, VKL_SOURCE_TYPE_FONT_ATLAS, 1, atlas->texture);
 

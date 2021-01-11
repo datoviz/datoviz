@@ -1,4 +1,5 @@
 #include "../include/visky/context.h"
+#include "../include/visky/atlas.h"
 #include "vklite_utils.h"
 #include <stdlib.h>
 
@@ -188,6 +189,9 @@ VklContext* vkl_context(VklGpu* gpu, VklWindow* window)
     gpu->context = context;
     obj_created(&context->obj);
 
+    // Create the font atlas and assign it to the context.
+    context->font_atlas = vkl_font_atlas(context);
+
     return context;
 }
 
@@ -213,6 +217,9 @@ void vkl_context_destroy(VklContext* context)
     log_trace("destroying context");
     ASSERT(context != NULL);
     ASSERT(context->gpu != NULL);
+
+    // Destroy the font atlas.
+    vkl_font_atlas_destroy(&context->font_atlas);
 
     // Destroy the buffers, images, samplers, textures, computes.
     _destroy_resources(context);
