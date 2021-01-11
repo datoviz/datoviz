@@ -22,8 +22,9 @@ setup(
         [Extension(
             'visky.pyvisky', ['visky/pyvisky.pyx'],
             libraries=['visky'],
-            include_dirs=[str(INCLUDE_DIR)],
+            include_dirs=[str(INCLUDE_DIR), str(
+                BUILD_DIR / '_deps/cglm-src/include')],
             library_dirs=[str(BUILD_DIR)]
         )],
-        compiler_directives={'language_level' : '3'}),
+        compiler_directives={'language_level': '3'}),
 )
