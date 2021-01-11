@@ -24,6 +24,7 @@ fi
 if [ $1 == "cython" ]
 then
     cd bindings/cython && \
+    python3 utils/gencython.py && \
     python3 setup.py build_ext -i && \
     cd ../..
 fi

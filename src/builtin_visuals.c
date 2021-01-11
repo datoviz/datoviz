@@ -146,6 +146,10 @@ static void _visual_mesh(VklVisual* visual)
         visual, VKL_PROP_TEXCOORDS, 0, 0, offsetof(VklGraphicsMeshVertex, uv), //
         VKL_ARRAY_COPY_SINGLE, 1);
 
+    // Index.
+    vkl_visual_prop(visual, VKL_PROP_INDEX, 0, VKL_DTYPE_UINT, VKL_SOURCE_TYPE_INDEX, 0);
+    vkl_visual_prop_copy(visual, VKL_PROP_INDEX, 0, 0, 0, VKL_ARRAY_COPY_SINGLE, 1);
+
     // Common props.
     _common_props(visual);
 

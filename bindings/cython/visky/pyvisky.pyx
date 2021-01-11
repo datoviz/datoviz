@@ -54,6 +54,11 @@ _MOUSE_STATES = {
     # cv.VKL_MOUSE_STATE_DOUBLE_CLICK: 'double_click',
 }
 
+_VISUALS = {
+    'marker': cv.VKL_VISUAL_MARKER,
+    'mesh': cv.VKL_VISUAL_MESH,
+}
+
 _CONTROLLERS = {
     'panzoom': cv.VKL_CONTROLLER_PANZOOM,
     'arcball': cv.VKL_CONTROLLER_ARCBALL,
@@ -235,8 +240,8 @@ cdef class Panel:
         self._c_scene = c_scene
 
     def visual(self, vtype):
-        # TODO: visual type
-        c_visual = cv.vkl_scene_visual(self._c_panel, cv.VKL_VISUAL_MARKER, 0)
+        visual_type = _VISUALS.get(vtype, cv.VKL_VISUAL_MARKER)
+        c_visual = cv.vkl_scene_visual(self._c_panel, visual_type, 0)
         if c_visual is NULL:
             raise MemoryError()
         v = Visual()
@@ -249,6 +254,9 @@ _PROPS = {
     'pos': cv.VKL_PROP_POS,
     'color': cv.VKL_PROP_COLOR,
     'ms': cv.VKL_PROP_MARKER_SIZE,
+    'normal': cv.VKL_PROP_NORMAL,
+    'texcoords': cv.VKL_PROP_TEXCOORDS,
+    'index': cv.VKL_PROP_INDEX,
 }
 
 def _get_prop(name):

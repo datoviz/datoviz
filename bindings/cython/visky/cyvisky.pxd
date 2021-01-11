@@ -466,21 +466,25 @@ cdef extern from "<visky/visky.h>":
         VKL_PROP_TYPE = 7
         VKL_PROP_LENGTH = 8
         VKL_PROP_MARGIN = 9
-        VKL_PROP_COLOR_TEXTURE = 10
-        VKL_PROP_MODEL = 11
-        VKL_PROP_VIEW = 12
-        VKL_PROP_PROJ = 13
-        VKL_PROP_TIME = 14
+        VKL_PROP_NORMAL = 10
+        VKL_PROP_TEXCOORDS = 11
+        VKL_PROP_IMAGE = 12
+        VKL_PROP_COLOR_TEXTURE = 13
+        VKL_PROP_MODEL = 14
+        VKL_PROP_VIEW = 15
+        VKL_PROP_PROJ = 16
+        VKL_PROP_TIME = 17
+        VKL_PROP_INDEX = 18
 
     ctypedef enum VklSourceKind:
         VKL_SOURCE_NONE = 0
-        VKL_SOURCE_VERTEX = 1
-        VKL_SOURCE_INDEX = 2
-        VKL_SOURCE_UNIFORM = 3
-        VKL_SOURCE_STORAGE = 4
-        VKL_SOURCE_TEXTURE_1D = 5
-        VKL_SOURCE_TEXTURE_2D = 6
-        VKL_SOURCE_TEXTURE_3D = 7
+        VKL_SOURCE_VERTEX = 0x0010
+        VKL_SOURCE_INDEX = 0x0020
+        VKL_SOURCE_UNIFORM = 0x0030
+        VKL_SOURCE_STORAGE = 0x0040
+        VKL_SOURCE_TEXTURE_1D = 0x0050
+        VKL_SOURCE_TEXTURE_2D = 0x0060
+        VKL_SOURCE_TEXTURE_3D = 0x0070
 
     ctypedef enum VklSourceType:
         VKL_SOURCE_TYPE_NONE = 0
@@ -490,10 +494,15 @@ cdef extern from "<visky/visky.h>":
         VKL_SOURCE_TYPE_VERTEX = 4
         VKL_SOURCE_TYPE_INDEX = 5
         VKL_SOURCE_TYPE_IMAGE = 6
-        VKL_SOURCE_TYPE_VOLUME = 7
-        VKL_SOURCE_TYPE_COLOR_TEXTURE = 8
-        VKL_SOURCE_TYPE_FONT_ATLAS = 9
-        VKL_SOURCE_TYPE_OTHER = 10
+        VKL_SOURCE_TYPE_IMAGE_1 = 7
+        VKL_SOURCE_TYPE_IMAGE_2 = 8
+        VKL_SOURCE_TYPE_IMAGE_3 = 9
+        VKL_SOURCE_TYPE_IMAGE_4 = 10
+        VKL_SOURCE_TYPE_VOLUME = 11
+        VKL_SOURCE_TYPE_COLOR_TEXTURE = 12
+        VKL_SOURCE_TYPE_FONT_ATLAS = 13
+        VKL_SOURCE_TYPE_OTHER = 14
+        VKL_SOURCE_TYPE_COUNT = 15
 
     ctypedef enum VklSourceOrigin:
         VKL_SOURCE_ORIGIN_NONE = 0

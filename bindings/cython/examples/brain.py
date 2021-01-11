@@ -23,12 +23,15 @@ vn *= c
 # Create the scene.
 canvas = canvas()
 panel = canvas.panel(controller='arcball')
-visual = panel.visual('marker')
+visual = panel.visual('mesh')
 
 # Set the visual data.
 visual.data('pos', vertices.astype(np.float32))
-visual.data('color', np.random.randint(
-    low=50, high=255, size=(N, 4)).astype(np.uint8))
-visual.data('ms', (2 * np.ones(1)).astype(np.float32))
+visual.data('normal', vn.astype(np.float32))
+visual.data('index', triangles.astype(np.uint32))
+# visual.data('texcoor', vn.astype(np.float32))
+# visual.data('color', np.random.randint(
+#     low=50, high=255, size=(N, 4)).astype(np.uint8))
+# visual.data('ms', (2 * np.ones(1)).astype(np.float32))
 
 run()
