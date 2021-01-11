@@ -29,7 +29,8 @@ then
     cd ../bindings/cython && \
     ./build.sh && \
     cp ../../build/libvisky* visky && \
-    cp ../../build/pyvisky.*so visky/pyvisky.so && \
+    # cp ../../build/pyvisky.*so visky/pyvisky.so && \ // macOS??
+    cp _skbuild/*/cmake-build/pyvisky*so visky/pyvisky.so && \
     cd ..
     #if [ ! -L "$(pwd)/visky/pyvisky.so" ]; then
     #    ln -s $(pwd)/build/pyvisky.*.so $(pwd)/visky/pyvisky.so

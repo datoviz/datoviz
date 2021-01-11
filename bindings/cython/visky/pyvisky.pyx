@@ -92,7 +92,7 @@ cdef class App:
             self._c_app = NULL
 
     def canvas(self, int width=DEFAULT_WIDTH, int height=DEFAULT_HEIGHT, int rows=1, int cols=1):
-        c_canvas = cv.vkl_canvas(self._c_gpu, width, height, 0)
+        c_canvas = cv.vkl_canvas(self._c_gpu, width, height, cv.VKL_CANVAS_FLAGS_FPS)
         if c_canvas is NULL:
             raise MemoryError()
         c = Canvas()

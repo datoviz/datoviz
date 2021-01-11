@@ -86,6 +86,13 @@ cdef extern from "../include/visky/visky.h":
 
 
     # ENUM START
+    # from file: app.h
+
+    ctypedef enum VklBackend:
+        VKL_BACKEND_NONE = 0
+        VKL_BACKEND_GLFW = 1
+        VKL_BACKEND_OFFSCREEN = 2
+
     # from file: builtin_visuals.h
 
     ctypedef enum VklVisualVariant:
@@ -498,11 +505,6 @@ cdef extern from "../include/visky/visky.h":
         VKL_SOURCE_FLAG_MAPPABLE = 0x0001
 
     # from file: vklite.h
-
-    ctypedef enum VklBackend:
-        VKL_BACKEND_NONE = 0
-        VKL_BACKEND_GLFW = 1
-        VKL_BACKEND_OFFSCREEN = 2
 
     ctypedef enum VklQueueType:
         VKL_QUEUE_TRANSFER = 0x01

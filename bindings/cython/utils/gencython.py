@@ -18,7 +18,7 @@ INTERNAL_HEADER_DIR = (Path(__file__).parent / '../../../src').resolve()
 EXTERNAL_HEADER_DIR = HEADER_DIR / '../../external'
 CYTHON_OUTPUT = (Path(__file__).parent / '../visky/cyvisky.pxd').resolve()
 HEADER_FILES = (
-    'vklite.h', 'context.h', 'canvas.h', 'keycode.h',
+    'app.h', 'vklite.h', 'context.h', 'canvas.h', 'keycode.h',
     'graphics.h', 'builtin_visuals.h', 'panel.h', 'visuals.h', 'scene.h')
 STRUCTS = (
     'VklEvent',
