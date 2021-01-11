@@ -94,6 +94,81 @@ static void _visual_marker_raw(VklVisual* visual)
 
 
 /*************************************************************************************************/
+/*  Mesh                                                                                         */
+/*************************************************************************************************/
+
+static void _visual_mesh(VklVisual* visual)
+{
+    ASSERT(visual != NULL);
+    VklCanvas* canvas = visual->canvas;
+    ASSERT(canvas != NULL);
+
+    // Graphics.
+    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_MESH, 0));
+
+    // Sources
+    vkl_visual_source(                                            // vertex buffer
+        visual, VKL_SOURCE_TYPE_VERTEX, VKL_PIPELINE_GRAPHICS, 0, //
+        0, sizeof(VklGraphicsMeshVertex), 0);                     //
+
+    vkl_visual_source(                                           // index buffer
+        visual, VKL_SOURCE_TYPE_INDEX, VKL_PIPELINE_GRAPHICS, 0, //
+        0, sizeof(VklIndex), 0);                                 //
+
+    _common_sources(visual); // common sources
+
+    vkl_visual_source(                                           // params
+        visual, VKL_SOURCE_TYPE_PARAM, VKL_PIPELINE_GRAPHICS, 0, //
+        VKL_USER_BINDING, sizeof(VklGraphicsMeshParams), 0);     //
+
+    for (uint32_t i = 1; i <= 4; i++)                                    // texture sources
+        vkl_visual_source(                                               //
+            visual, VKL_SOURCE_TYPE_IMAGE + i, VKL_PIPELINE_GRAPHICS, 0, //
+            VKL_USER_BINDING + i, sizeof(cvec4), 0);                     //
+
+    // Props:
+
+    // Vertex pos.
+    vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_VEC3, VKL_SOURCE_TYPE_VERTEX, 0);
+    vkl_visual_prop_copy(
+        visual, VKL_PROP_POS, 0, 0, offsetof(VklGraphicsMeshVertex, pos), //
+        VKL_ARRAY_COPY_SINGLE, 1);
+
+    // Vertex normal.
+    vkl_visual_prop(visual, VKL_PROP_NORMAL, 0, VKL_DTYPE_VEC3, VKL_SOURCE_TYPE_VERTEX, 0);
+    vkl_visual_prop_copy(
+        visual, VKL_PROP_NORMAL, 0, 0, offsetof(VklGraphicsMeshVertex, normal), //
+        VKL_ARRAY_COPY_SINGLE, 1);
+
+    // Vertex tex coords.
+    vkl_visual_prop(visual, VKL_PROP_TEXCOORDS, 0, VKL_DTYPE_VEC2, VKL_SOURCE_TYPE_VERTEX, 0);
+    vkl_visual_prop_copy(
+        visual, VKL_PROP_TEXCOORDS, 0, 0, offsetof(VklGraphicsMeshVertex, uv), //
+        VKL_ARRAY_COPY_SINGLE, 1);
+
+    // Common props.
+    _common_props(visual);
+
+    // TODO: params
+    // // Params.
+    // vkl_visual_prop(visual, VKL_PROP_, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_PARAM, 0);
+    // vkl_visual_prop_copy(
+    //     visual, VKL_PROP_MARKER_SIZE, 0, 0, offsetof(VklGraphicsMeshParams, point_size),
+    //     VKL_ARRAY_COPY_SINGLE, 1);
+
+    // Texture props.
+    // HACK: use SOURCE_TYPE_IMAGE_1..4 because we don't currently support multiple sources
+    // of the same type
+    // WARNING: VKL_SOURCE_TYPE_IMAGE must be immediately followed by VKL_SOURCE_TYPE_IMAGE_n in
+    // the enumeration list
+    for (uint32_t i = 1; i <= 4; i++)
+        vkl_visual_prop(
+            visual, VKL_PROP_IMAGE, i - 1, VKL_DTYPE_UINT, VKL_SOURCE_TYPE_IMAGE + i, 0);
+}
+
+
+
+/*************************************************************************************************/
 /*  Segment raw                                                                                  */
 /*************************************************************************************************/
 
@@ -549,6 +624,10 @@ void vkl_visual_builtin(VklVisual* visual, VklVisualType type, int flags)
     case VKL_VISUAL_SEGMENT:
         // TODO: raw/agg
         _visual_segment_raw(visual);
+        break;
+
+    case VKL_VISUAL_MESH:
+        _visual_mesh(visual);
         break;
 
     case VKL_VISUAL_AXES_2D:

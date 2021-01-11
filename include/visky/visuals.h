@@ -48,7 +48,9 @@ typedef enum
     VKL_PROP_TYPE,
     VKL_PROP_LENGTH,
     VKL_PROP_MARGIN,
-
+    VKL_PROP_NORMAL,
+    VKL_PROP_TEXCOORDS,
+    VKL_PROP_IMAGE,
     VKL_PROP_COLOR_TEXTURE,
     VKL_PROP_MODEL,
     VKL_PROP_VIEW,
@@ -62,13 +64,13 @@ typedef enum
 typedef enum
 {
     VKL_SOURCE_NONE,
-    VKL_SOURCE_VERTEX,     // 1
-    VKL_SOURCE_INDEX,      // 2
-    VKL_SOURCE_UNIFORM,    // 3
-    VKL_SOURCE_STORAGE,    // 4
-    VKL_SOURCE_TEXTURE_1D, // 5
-    VKL_SOURCE_TEXTURE_2D, // 6
-    VKL_SOURCE_TEXTURE_3D, // 7
+    VKL_SOURCE_VERTEX = 0x0010,
+    VKL_SOURCE_INDEX = 0x0020,
+    VKL_SOURCE_UNIFORM = 0x0030,
+    VKL_SOURCE_STORAGE = 0x0040,
+    VKL_SOURCE_TEXTURE_1D = 0x0050,
+    VKL_SOURCE_TEXTURE_2D = 0x0060,
+    VKL_SOURCE_TEXTURE_3D = 0x0070,
 } VklSourceKind;
 
 
@@ -78,16 +80,25 @@ typedef enum
 typedef enum
 {
     VKL_SOURCE_TYPE_NONE,
-    VKL_SOURCE_TYPE_MVP,           // 1
-    VKL_SOURCE_TYPE_VIEWPORT,      // 2
-    VKL_SOURCE_TYPE_PARAM,         // 3
-    VKL_SOURCE_TYPE_VERTEX,        // 4
-    VKL_SOURCE_TYPE_INDEX,         // 5
-    VKL_SOURCE_TYPE_IMAGE,         // 6
-    VKL_SOURCE_TYPE_VOLUME,        // 7
-    VKL_SOURCE_TYPE_COLOR_TEXTURE, // 8
-    VKL_SOURCE_TYPE_FONT_ATLAS,    // 9
+    VKL_SOURCE_TYPE_MVP,      // 1
+    VKL_SOURCE_TYPE_VIEWPORT, // 2
+    VKL_SOURCE_TYPE_PARAM,    // 3
+    VKL_SOURCE_TYPE_VERTEX,   // 4
+    VKL_SOURCE_TYPE_INDEX,    // 5
+    VKL_SOURCE_TYPE_IMAGE,
+    // HACK: should support multiple source types per pipeline instead
+    // WARNING: VKL_SOURCE_TYPE_IMAGE must be immediately followed by VKL_SOURCE_TYPE_IMAGE_n in
+    // the enumeration list
+    VKL_SOURCE_TYPE_IMAGE_1,
+    VKL_SOURCE_TYPE_IMAGE_2,
+    VKL_SOURCE_TYPE_IMAGE_3,
+    VKL_SOURCE_TYPE_IMAGE_4,
+    VKL_SOURCE_TYPE_VOLUME,
+    VKL_SOURCE_TYPE_COLOR_TEXTURE,
+    VKL_SOURCE_TYPE_FONT_ATLAS,
     VKL_SOURCE_TYPE_OTHER,
+
+    VKL_SOURCE_TYPE_COUNT,
 } VklSourceType;
 
 

@@ -109,6 +109,9 @@ VklMesh vkl_mesh_obj(const char* file_path)
         // Go to next vertex.
         vertex++;
     }
+    ASSERT(
+        (int64_t)vertex - (int64_t)mesh.vertices.data ==
+        (int64_t)(nv * sizeof(VklGraphicsMeshVertex)));
 
     // Shapes.
     for (s = 0; s < ns; s++)
@@ -136,6 +139,7 @@ VklMesh vkl_mesh_obj(const char* file_path)
             index_offset += fv;
         }
     }
+    ASSERT((int64_t)index - (int64_t)mesh.indices.data == (int64_t)(ni * sizeof(VklIndex)));
 
     // Mesh normalization.
     vkl_mesh_normalize(&mesh);

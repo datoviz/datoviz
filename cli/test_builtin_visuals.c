@@ -1,6 +1,7 @@
 #include "test_builtin_visuals.h"
 #include "../include/visky/builtin_visuals.h"
 #include "../include/visky/interact.h"
+#include "../src/mesh_loader.h"
 #include "test_visuals.h"
 #include "utils.h"
 
@@ -154,6 +155,47 @@ int test_visuals_segment_raw(TestContext* context)
 
 
 
+int test_visuals_mesh(TestContext* context)
+{
+    INIT;
+
+    VklVisual visual = vkl_visual(canvas);
+    vkl_visual_builtin(&visual, VKL_VISUAL_MESH, 0);
+
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/mesh/%s", DATA_DIR, "brain.obj");
+    VklMesh mesh = vkl_mesh_obj(path);
+
+    uint32_t nv = mesh.vertices.item_count;
+    uint32_t ni = mesh.indices.item_count;
+
+    // Set visual data.
+    vkl_visual_data_buffer(&visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
+    vkl_visual_data_buffer(&visual, VKL_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
+
+    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE_1, 0, gpu->context->font_atlas.texture);
+    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE_2, 0, gpu->context->font_atlas.texture);
+    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE_3, 0, gpu->context->font_atlas.texture);
+    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE_4, 0, gpu->context->font_atlas.texture);
+
+    VklGraphicsMeshParams params = {0};
+    params.lights_params_0[0][0] = 0.2;
+    params.lights_params_0[0][1] = 0.4;
+    params.lights_params_0[0][2] = 0.4;
+    params.lights_pos_0[0][0] = -2;
+    params.lights_pos_0[0][1] = 0.5;
+    params.lights_pos_0[0][2] = +2;
+    params.tex_coefs[0] = 1;
+    params.view_pos[2] = 3;
+    vkl_visual_data_buffer(&visual, VKL_SOURCE_TYPE_PARAM, 0, 0, 1, 1, &params);
+
+    RUN;
+    vkl_mesh_destroy(&mesh);
+    END;
+}
+
+
+
 static void _visual_update(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
@@ -188,10 +230,6 @@ static void _visual_update(VklCanvas* canvas, VklEvent ev)
     FREE(yticks);
     FREE(text);
 }
-
-
-
-// static void _wait(VklCanvas* canvas, VklEvent ev) { vkl_sleep(50); }
 
 int test_visuals_axes_2D(TestContext* context)
 {

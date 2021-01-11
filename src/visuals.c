@@ -33,6 +33,10 @@ static VklSourceKind _get_source_kind(VklSourceType type)
         return VKL_SOURCE_INDEX;
 
     case VKL_SOURCE_TYPE_IMAGE:
+    case VKL_SOURCE_TYPE_IMAGE_1:
+    case VKL_SOURCE_TYPE_IMAGE_2:
+    case VKL_SOURCE_TYPE_IMAGE_3:
+    case VKL_SOURCE_TYPE_IMAGE_4:
     case VKL_SOURCE_TYPE_COLOR_TEXTURE:
     case VKL_SOURCE_TYPE_FONT_ATLAS:
         return VKL_SOURCE_TEXTURE_2D;
@@ -73,6 +77,7 @@ static VklBindings* _get_bindings(VklVisual* visual, VklSource* source)
         return vkl_container_get(&visual->bindings, source->pipeline_idx);
     else if (source->pipeline == VKL_PIPELINE_COMPUTE)
         return vkl_container_get(&visual->bindings_comp, source->pipeline_idx);
+    log_error("could not find binding for source %d", source->source_type);
     return NULL;
 }
 
@@ -539,6 +544,7 @@ void vkl_visual_data_buffer(
 
     // Get the associated source.
     VklSource* source = _assert_source_exists(visual, source_type, idx);
+    ASSERT(source->source_type == source_type);
 
     // Make sure the array has the right size.
     vkl_array_resize(&source->arr, count);
@@ -623,6 +629,7 @@ void vkl_visual_texture(
     visual->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
 
     VklBindings* bindings = _get_bindings(visual, source);
+    ASSERT(bindings != NULL);
     ASSERT(texture->image != NULL);
     ASSERT(texture->sampler != NULL);
     vkl_bindings_texture(bindings, source->slot_idx, texture);
@@ -822,11 +829,6 @@ void vkl_bake_source_alloc(VklVisual* visual, VklSource* source, uint32_t count)
     VklArray* arr = &source->arr;
     ASSERT(is_obj_created(&arr->obj));
     vkl_array_resize(arr, count);
-
-    // if (source->source_kind == VKL_SOURCE_VERTEX)
-    //     visual->vertex_count = count;
-    // else if (source->source_kind == VKL_SOURCE_INDEX)
-    //     visual->index_count = count;
 }
 
 

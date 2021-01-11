@@ -277,7 +277,10 @@ static void vkl_array_resize(VklArray* array, uint32_t item_count)
     {
         array->data = calloc(item_count, array->item_size);
         array->item_count = item_count;
-        array->buffer_size = item_count * array->item_size;
+        array->buffer_size = next_pow2(item_count * array->item_size);
+        log_trace(
+            "allocate array to contain %d elements (%s)", item_count,
+            pretty_size(array->buffer_size));
         return;
     }
 
@@ -377,9 +380,11 @@ static void vkl_array_data(
     ASSERT(src != NULL);
 
     VkDeviceSize copy_size = MIN(item_count, data_item_count) * item_size;
+    ASSERT(copy_size > 0);
     log_trace(
         "copy %d elements (%d bytes) into array[%d:%d]", //
         data_item_count, copy_size, first_item, first_item + item_count);
+    ASSERT(array->buffer_size >= (first_item + item_count) * item_size);
     memcpy((void*)((int64_t)dst + (int64_t)(first_item * item_size)), src, copy_size);
 
     // If the source data array is smaller than the destination array, repeat the last value.

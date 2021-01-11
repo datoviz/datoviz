@@ -104,7 +104,7 @@ static void _common_bindings(TestGraphics* tg)
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define MESH VKL_MESH_OBJ
+#define MESH VKL_MESH_CUBE
 
 
 

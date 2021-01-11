@@ -109,6 +109,7 @@ static TestCase TEST_CASES[] = {
     // builtin visuals
     CASE_FIXTURE_NONE(test_visuals_marker_raw),  //
     CASE_FIXTURE_NONE(test_visuals_segment_raw), //
+    CASE_FIXTURE_NONE(test_visuals_mesh),        //
     CASE_FIXTURE_NONE(test_visuals_axes_2D),     //
 
     // axes
