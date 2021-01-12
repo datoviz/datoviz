@@ -90,14 +90,7 @@ typedef enum
     VKL_SOURCE_TYPE_PARAM,    // 3
     VKL_SOURCE_TYPE_VERTEX,   // 4
     VKL_SOURCE_TYPE_INDEX,    // 5
-    VKL_SOURCE_TYPE_IMAGE,
-    // HACK: should support multiple source types per pipeline instead
-    // WARNING: VKL_SOURCE_TYPE_IMAGE must be immediately followed by VKL_SOURCE_TYPE_IMAGE_n in
-    // the enumeration list
-    VKL_SOURCE_TYPE_IMAGE_1,
-    VKL_SOURCE_TYPE_IMAGE_2,
-    VKL_SOURCE_TYPE_IMAGE_3,
-    VKL_SOURCE_TYPE_IMAGE_4,
+    VKL_SOURCE_TYPE_IMAGE,    // 6
     VKL_SOURCE_TYPE_VOLUME,
     VKL_SOURCE_TYPE_COLOR_TEXTURE,
     VKL_SOURCE_TYPE_FONT_ATLAS,

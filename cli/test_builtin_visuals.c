@@ -246,7 +246,7 @@ int test_visuals_mesh(TestContext* context)
         FREE(vertices);
     }
 
-    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE_1, 0, gpu->context->color_texture.texture);
+    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE, 0, gpu->context->color_texture.texture);
 
     mat4 lights_params = {0};
     lights_params[0][0] = 0.3;

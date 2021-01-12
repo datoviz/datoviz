@@ -33,10 +33,6 @@ static VklSourceKind _get_source_kind(VklSourceType type)
         return VKL_SOURCE_KIND_INDEX;
 
     case VKL_SOURCE_TYPE_IMAGE:
-    case VKL_SOURCE_TYPE_IMAGE_1:
-    case VKL_SOURCE_TYPE_IMAGE_2:
-    case VKL_SOURCE_TYPE_IMAGE_3:
-    case VKL_SOURCE_TYPE_IMAGE_4:
     case VKL_SOURCE_TYPE_COLOR_TEXTURE:
     case VKL_SOURCE_TYPE_FONT_ATLAS:
         return VKL_SOURCE_KIND_TEXTURE_2D;

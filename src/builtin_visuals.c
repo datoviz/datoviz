@@ -121,10 +121,10 @@ static void _visual_mesh(VklVisual* visual)
         visual, VKL_SOURCE_TYPE_PARAM, 0, VKL_PIPELINE_GRAPHICS, 0, //
         VKL_USER_BINDING, sizeof(VklGraphicsMeshParams), 0);        //
 
-    for (uint32_t i = 1; i <= 4; i++)                                       // texture sources
-        vkl_visual_source(                                                  //
-            visual, VKL_SOURCE_TYPE_IMAGE + i, 0, VKL_PIPELINE_GRAPHICS, 0, //
-            VKL_USER_BINDING + i, sizeof(cvec4), 0);                        //
+    for (uint32_t i = 0; i < 4; i++)                                    // texture sources
+        vkl_visual_source(                                              //
+            visual, VKL_SOURCE_TYPE_IMAGE, i, VKL_PIPELINE_GRAPHICS, 0, //
+            VKL_USER_BINDING + i + 1, sizeof(cvec4), 0);                //
 
     // Props:
 
@@ -180,13 +180,8 @@ static void _visual_mesh(VklVisual* visual)
         VKL_ARRAY_COPY_SINGLE, 1);
 
     // Texture props.
-    // HACK: use SOURCE_TYPE_IMAGE_1..4 because we don't currently support multiple sources
-    // of the same type
-    // WARNING: VKL_SOURCE_TYPE_IMAGE must be immediately followed by VKL_SOURCE_TYPE_IMAGE_n in
-    // the enumeration list
-    for (uint32_t i = 1; i <= 4; i++)
-        vkl_visual_prop(
-            visual, VKL_PROP_IMAGE, i - 1, VKL_DTYPE_UINT, VKL_SOURCE_TYPE_IMAGE + i, 0);
+    for (uint32_t i = 0; i < 4; i++)
+        vkl_visual_prop(visual, VKL_PROP_IMAGE, i, VKL_DTYPE_UINT, VKL_SOURCE_TYPE_IMAGE, i);
 }
 
 
