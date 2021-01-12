@@ -11,6 +11,7 @@
 
 int test_graphics_dynamic(TestContext* context);
 int test_graphics_3D(TestContext* context);
+int test_graphics_depth(TestContext* context);
 
 // Basic graphics.
 int test_graphics_points(TestContext* context);

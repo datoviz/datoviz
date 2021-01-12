@@ -303,6 +303,64 @@ int test_graphics_3D(TestContext* context)
 
 
 
+int test_graphics_depth(TestContext* context)
+{
+    INIT_GRAPHICS(VKL_GRAPHICS_TRIANGLES, VKL_GRAPHICS_FLAGS_DEPTH_TEST)
+    const uint32_t N = 1000;
+    BEGIN_DATA(VklVertex, N * 3, NULL)
+
+    float x = 0;
+    float y = 0;
+    float l = .075;
+    float z = 0;
+    VklVertex *v0, *v1, *v2;
+    uint32_t j = 0;
+    for (uint32_t i = 0; i < N; i++)
+    {
+        v0 = &((VklVertex*)vertices)[3 * i + 0];
+        v1 = &((VklVertex*)vertices)[3 * i + 1];
+        v2 = &((VklVertex*)vertices)[3 * i + 2];
+
+        x = .75 * (-1 + 2 * rand_float());
+        y = .75 * (-1 + 2 * rand_float());
+
+        // The following should work even if the depth buffer is not working.
+        // j = i < N / 6 ? 0 : 1;
+
+        // The following checks the depth buffer.
+        j = i % 2;
+
+        // red background, green foreground
+        z = j == 0 ? .75 : .25; // j == 0, .75 = background, .25 = foreground
+
+        v0->pos[0] = x - l;
+        v0->pos[1] = y - l;
+        v0->pos[2] = z;
+        v0->color[j] = TO_BYTE(.2);
+        v0->color[3] = 255;
+
+        v1->pos[0] = x + l;
+        v1->pos[1] = y - l;
+        v1->pos[2] = z;
+        v1->color[j] = TO_BYTE(.5);
+        v1->color[3] = 255;
+
+        v2->pos[0] = x + 0;
+        v2->pos[1] = y + l;
+        v2->pos[2] = z;
+        v2->color[j] = TO_BYTE(.8);
+        v2->color[j + 1] = TO_BYTE(.3);
+        v2->color[3] = 255;
+    }
+
+    END_DATA
+    BINDINGS_NO_PARAMS
+    RUN;
+    TEST_END
+}
+
+
+
 /*************************************************************************************************/
 /*  Basic graphics tests                                                                         */
 /*************************************************************************************************/

@@ -102,6 +102,10 @@ static void _graphics_basic(VklCanvas* canvas, VklGraphics* graphics, VkPrimitiv
     vkl_graphics_topology(graphics, topology);
     vkl_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
 
+    // Depth test flag.
+    if ((graphics->flags & VKL_GRAPHICS_FLAGS_DEPTH_TEST) != 0)
+        vkl_graphics_depth_test(graphics, VKL_DEPTH_TEST_ENABLE);
+
     ATTR_BEGIN(VklVertex)
     ATTR_POS(VklVertex, pos)
     ATTR_COL(VklVertex, color)
@@ -308,8 +312,8 @@ static void _graphics_mesh(VklCanvas* canvas, VklGraphics* graphics)
     SHADER(FRAGMENT, "graphics_mesh_frag")
     PRIMITIVE(TRIANGLE_LIST)
     vkl_graphics_depth_test(graphics, VKL_DEPTH_TEST_ENABLE);
-    vkl_graphics_front_face(graphics, VK_FRONT_FACE_CLOCKWISE);
-    vkl_graphics_cull_mode(graphics, VK_CULL_MODE_FRONT_BIT);
+    // vkl_graphics_front_face(graphics, VK_FRONT_FACE_CLOCKWISE);
+    // vkl_graphics_cull_mode(graphics, VK_CULL_MODE_FRONT_BIT);
 
     ATTR_BEGIN(VklGraphicsMeshVertex)
     ATTR_POS(VklGraphicsMeshVertex, pos)
