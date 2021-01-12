@@ -23,6 +23,7 @@ static void _check_viewport(VklViewport* viewport)
     ASSERT(viewport->size_framebuffer[1] > 0);
     ASSERT(viewport->viewport.width > 0);
     ASSERT(viewport->viewport.height > 0);
+    ASSERT(viewport->viewport.minDepth < viewport->viewport.maxDepth);
     ASSERT(viewport->dpi_scaling > 0);
 }
 
@@ -49,6 +50,8 @@ static void _update_viewport(VklPanel* panel)
     viewport->offset_framebuffer[1] = viewport->viewport.y = panel->y * win_height;
     viewport->size_framebuffer[0] = viewport->viewport.width = panel->width * win_width;
     viewport->size_framebuffer[1] = viewport->viewport.height = panel->height * win_height;
+    viewport->viewport.minDepth = 0;
+    viewport->viewport.maxDepth = 1;
 
     _check_viewport(viewport);
 }

@@ -19,6 +19,7 @@ static void _update_visual_viewport(VklPanel* panel, VklVisual* visual)
     {
         visual->viewport.transform = visual->transform[pidx];
         visual->viewport.clip = visual->clip[pidx];
+        ASSERT(visual->viewport.viewport.minDepth < visual->viewport.viewport.maxDepth);
         vkl_visual_data_full(visual, VKL_SOURCE_TYPE_VIEWPORT, pidx, 0, 1, 1, &visual->viewport);
     }
 }
