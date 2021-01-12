@@ -93,9 +93,12 @@ static void _set_source_bindings(VklVisual* visual, VklSource* source)
 
         // Share the source's buffer regions with other pipelines.
         VklBindings* other = NULL;
+        VklSource* other_source = NULL;
         for (uint32_t i = 0; i < source->other_count; i++)
         {
-            other = vkl_container_get(&visual->bindings, source->other_idxs[i]);
+            other_source = vkl_bake_source(visual, source->source_type, source->other_idxs[i]);
+            // Get the binding corresponding to the pipeline of the other source.
+            other = vkl_container_get(&visual->bindings, other_source->pipeline_idx);
             ASSERT(other != NULL);
             vkl_bindings_buffer(other, source->slot_idx, source->u.br);
         }
@@ -989,9 +992,13 @@ void vkl_visual_update(
                 bindings = vkl_container_get(&visual->bindings, source->pipeline_idx);
                 ASSERT(bindings != NULL);
                 bindings->obj.status = VKL_OBJECT_STATUS_INVALID;
+                VklSource* other = NULL;
                 for (uint32_t j = 0; j < source->other_count; j++)
                 {
-                    bindings = vkl_container_get(&visual->bindings, source->other_idxs[j]);
+                    // Get other source.
+                    other = vkl_bake_source(visual, source->source_type, source->other_idxs[j]);
+                    // Get bindings corresponding to graphics pipeline of that other source/
+                    bindings = vkl_container_get(&visual->bindings, other->pipeline_idx);
                     ASSERT(bindings != NULL);
                     bindings->obj.status = VKL_OBJECT_STATUS_INVALID;
                 }
