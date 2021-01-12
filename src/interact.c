@@ -405,7 +405,7 @@ static void _arcball_reset(VklArcball* arcball)
     ASSERT(arcball != NULL);
 
     vec3 eye, center, up, dir, x_axis, y_axis, z_axis;
-    glm_vec3_copy((vec3){0, 0, 2}, arcball->camera.eye);
+    glm_vec3_copy((vec3){0, 0, 3}, arcball->camera.eye);
     glm_vec3_copy(arcball->camera.eye, eye);
     glm_vec3_copy((vec3){0, 0, 0}, center);
     glm_vec3_copy((vec3){0, +1, 0}, up);
