@@ -21,22 +21,23 @@ static void _marker_visual(VklVisual* visual)
     {
         // Vertex buffer.
         vkl_visual_source( //
-            visual, VKL_SOURCE_TYPE_VERTEX, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklVertex), 0);
+            visual, VKL_SOURCE_TYPE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklVertex), 0);
 
 
 
         // Binding #0: uniform buffer MVP
         vkl_visual_source( //
-            visual, VKL_SOURCE_TYPE_MVP, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklMVP),
+            visual, VKL_SOURCE_TYPE_MVP, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklMVP),
             VKL_SOURCE_FLAG_MAPPABLE);
 
         // Binding #1: uniform buffer viewport
         vkl_visual_source(
-            visual, VKL_SOURCE_TYPE_VIEWPORT, VKL_PIPELINE_GRAPHICS, 0, 1, sizeof(VklViewport), 0);
+            visual, VKL_SOURCE_TYPE_VIEWPORT, 0, VKL_PIPELINE_GRAPHICS, 0, 1, sizeof(VklViewport),
+            0);
 
         // Binding #2: uniform buffer params
         vkl_visual_source(
-            visual, VKL_SOURCE_TYPE_PARAM, VKL_PIPELINE_GRAPHICS, 0, 2,
+            visual, VKL_SOURCE_TYPE_PARAM, 0, VKL_PIPELINE_GRAPHICS, 0, 2,
             sizeof(VklGraphicsPointParams), 0);
     }
 

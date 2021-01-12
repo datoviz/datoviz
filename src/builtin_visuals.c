@@ -12,12 +12,12 @@ static void _common_sources(VklVisual* visual)
 
     // Binding #0: uniform buffer MVP
     vkl_visual_source( //
-        visual, VKL_SOURCE_TYPE_MVP, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklMVP),
+        visual, VKL_SOURCE_TYPE_MVP, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklMVP),
         VKL_SOURCE_FLAG_MAPPABLE);
 
     // Binding #1: uniform buffer viewport
     vkl_visual_source(
-        visual, VKL_SOURCE_TYPE_VIEWPORT, VKL_PIPELINE_GRAPHICS, 0, 1, sizeof(VklViewport), 0);
+        visual, VKL_SOURCE_TYPE_VIEWPORT, 0, VKL_PIPELINE_GRAPHICS, 0, 1, sizeof(VklViewport), 0);
 }
 
 static void _common_props(VklVisual* visual)
@@ -63,10 +63,10 @@ static void _visual_marker_raw(VklVisual* visual)
 
     // Sources
     vkl_visual_source(
-        visual, VKL_SOURCE_TYPE_VERTEX, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklVertex), 0);
+        visual, VKL_SOURCE_TYPE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklVertex), 0);
     _common_sources(visual);
     vkl_visual_source(
-        visual, VKL_SOURCE_TYPE_PARAM, VKL_PIPELINE_GRAPHICS, 0, VKL_USER_BINDING,
+        visual, VKL_SOURCE_TYPE_PARAM, 0, VKL_PIPELINE_GRAPHICS, 0, VKL_USER_BINDING,
         sizeof(VklGraphicsPointParams), 0);
 
     // Props:
@@ -107,24 +107,24 @@ static void _visual_mesh(VklVisual* visual)
     vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_MESH, 0));
 
     // Sources
-    vkl_visual_source(                                            // vertex buffer
-        visual, VKL_SOURCE_TYPE_VERTEX, VKL_PIPELINE_GRAPHICS, 0, //
-        0, sizeof(VklGraphicsMeshVertex), 0);                     //
+    vkl_visual_source(                                               // vertex buffer
+        visual, VKL_SOURCE_TYPE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, //
+        0, sizeof(VklGraphicsMeshVertex), 0);                        //
 
-    vkl_visual_source(                                           // index buffer
-        visual, VKL_SOURCE_TYPE_INDEX, VKL_PIPELINE_GRAPHICS, 0, //
-        0, sizeof(VklIndex), 0);                                 //
+    vkl_visual_source(                                              // index buffer
+        visual, VKL_SOURCE_TYPE_INDEX, 0, VKL_PIPELINE_GRAPHICS, 0, //
+        0, sizeof(VklIndex), 0);                                    //
 
     _common_sources(visual); // common sources
 
-    vkl_visual_source(                                           // params
-        visual, VKL_SOURCE_TYPE_PARAM, VKL_PIPELINE_GRAPHICS, 0, //
-        VKL_USER_BINDING, sizeof(VklGraphicsMeshParams), 0);     //
+    vkl_visual_source(                                              // params
+        visual, VKL_SOURCE_TYPE_PARAM, 0, VKL_PIPELINE_GRAPHICS, 0, //
+        VKL_USER_BINDING, sizeof(VklGraphicsMeshParams), 0);        //
 
-    for (uint32_t i = 1; i <= 4; i++)                                    // texture sources
-        vkl_visual_source(                                               //
-            visual, VKL_SOURCE_TYPE_IMAGE + i, VKL_PIPELINE_GRAPHICS, 0, //
-            VKL_USER_BINDING + i, sizeof(cvec4), 0);                     //
+    for (uint32_t i = 1; i <= 4; i++)                                       // texture sources
+        vkl_visual_source(                                                  //
+            visual, VKL_SOURCE_TYPE_IMAGE + i, 0, VKL_PIPELINE_GRAPHICS, 0, //
+            VKL_USER_BINDING + i, sizeof(cvec4), 0);                        //
 
     // Props:
 
@@ -208,7 +208,7 @@ static void _visual_segment_raw(VklVisual* visual)
 
     // Sources
     vkl_visual_source(
-        visual, VKL_SOURCE_TYPE_VERTEX, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklVertex), 0);
+        visual, VKL_SOURCE_TYPE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklVertex), 0);
     _common_sources(visual);
 
     // Props:
@@ -536,41 +536,42 @@ static void _visual_axes_2D(VklVisual* visual)
     {
         // Vertex buffer.
         vkl_visual_source(
-            visual, VKL_SOURCE_TYPE_VERTEX, VKL_PIPELINE_GRAPHICS, 0, //
+            visual, VKL_SOURCE_TYPE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, //
             0, sizeof(VklGraphicsSegmentVertex), 0);
 
         // Index buffer.
         vkl_visual_source(
-            visual, VKL_SOURCE_TYPE_INDEX, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklIndex), 0);
+            visual, VKL_SOURCE_TYPE_INDEX, 0, VKL_PIPELINE_GRAPHICS, 0, //
+            0, sizeof(VklIndex), 0);
     }
 
     // Text graphics.
     {
         // Vertex buffer.
         vkl_visual_source(
-            visual, VKL_SOURCE_TYPE_VERTEX, VKL_PIPELINE_GRAPHICS, 1, //
+            visual, VKL_SOURCE_TYPE_VERTEX, 1, VKL_PIPELINE_GRAPHICS, 1, //
             0, sizeof(VklGraphicsTextVertex), 0);
 
         // Parameters.
         vkl_visual_source(
-            visual, VKL_SOURCE_TYPE_PARAM, VKL_PIPELINE_GRAPHICS, 1, //
+            visual, VKL_SOURCE_TYPE_PARAM, 0, VKL_PIPELINE_GRAPHICS, 1, //
             VKL_USER_BINDING, sizeof(VklGraphicsTextParams), 0);
 
         // Font atlas texture.
         vkl_visual_source(
-            visual, VKL_SOURCE_TYPE_FONT_ATLAS, VKL_PIPELINE_GRAPHICS, 1, //
+            visual, VKL_SOURCE_TYPE_FONT_ATLAS, 0, VKL_PIPELINE_GRAPHICS, 1, //
             VKL_USER_BINDING + 1, sizeof(cvec4), 0);
     }
 
-    // Uniform buffers.
+    // Uniform buffers. // set MVP and Viewport sources for pipeline #0
     _common_sources(visual);
 
-    // Share the MVP source with the second visual.
+    // Share the MVP source with the second graphics pipeline.
     vkl_visual_source_share(visual, VKL_SOURCE_TYPE_MVP, 0, 1);
 
     // NOTE: the viewport source is not shared, as we want different clipping for both graphics.
     vkl_visual_source(
-        visual, VKL_SOURCE_TYPE_VIEWPORT, VKL_PIPELINE_GRAPHICS, 1, 1, sizeof(VklViewport), 0);
+        visual, VKL_SOURCE_TYPE_VIEWPORT, 1, VKL_PIPELINE_GRAPHICS, 1, 1, sizeof(VklViewport), 0);
 
     // Segment graphics props.
     {

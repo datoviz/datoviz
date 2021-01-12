@@ -191,8 +191,7 @@ union VklSourceUnion
 
 
 
-// Within a visual, a source is uniquely identified by (1) its type, (2) the pipeline_idx
-// We assume there is no more than 1 source of a given type in a given pipeline.
+// Within a visual, a source is uniquely identified by (1) its type, (2) the source_idx
 struct VklSource
 {
     VklObject obj;
@@ -200,9 +199,12 @@ struct VklSource
     // Identifier of the prop
     VklPipelineType pipeline; // graphics or compute pipeline?
     uint32_t pipeline_idx;    // idx of the pipeline within the graphics or compute pipelines
+
     uint32_t other_count; // the same source may be shared by multiple pipelines of the same type,
                           // using the same slot_idx
     uint32_t other_idxs[VKL_MAX_GRAPHICS_PER_VISUAL];
+
+    uint32_t source_idx;
     VklSourceType source_type; // Type of the source (MVP, viewport, vertex buffer, etc.)
     VklSourceKind source_kind; // Vertex, index, uniform, storage, or texture
     uint32_t slot_idx;         // Binding slot, or 0 for vertex/index
@@ -333,15 +335,16 @@ VKY_EXPORT void vkl_visual_destroy(VklVisual* visual);
 // Define a new source. (source_type, pipeline_idx) completely identifies a source within all
 // pipelines
 VKY_EXPORT void vkl_visual_source(
-    VklVisual* visual, VklSourceType type, VklPipelineType pipeline, uint32_t pipeline_idx,
+    VklVisual* visual, VklSourceType type, uint32_t source_idx, //
+    VklPipelineType pipeline, uint32_t pipeline_idx,            //
     uint32_t slot_idx, VkDeviceSize item_size, int flags);
 
 VKY_EXPORT void vkl_visual_source_share(
-    VklVisual* visual, VklSourceType source_type, uint32_t pipeline_idx, uint32_t other_idx);
+    VklVisual* visual, VklSourceType source_type, uint32_t source_idx, uint32_t other_idx);
 
 VKY_EXPORT void vkl_visual_prop(
     VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, VklDataType dtype,
-    VklSourceType source_type, uint32_t pipeline_idx);
+    VklSourceType source_type, uint32_t source_idx);
 
 VKY_EXPORT void vkl_visual_prop_default(
     VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, void* default_value);
@@ -374,18 +377,14 @@ VKY_EXPORT void vkl_visual_data_append(
     VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, uint32_t count, const void* data);
 
 VKY_EXPORT void vkl_visual_data_source(
-    VklVisual* visual, VklSourceType source_type, uint32_t idx, //
+    VklVisual* visual, VklSourceType source_type, uint32_t source_idx, //
     uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data);
 
-// VKY_EXPORT void vkl_visual_data_texture(
-//     VklVisual* visual, VklPropType type, uint32_t prop_idx, //
-//     uint32_t width, uint32_t height, uint32_t depth, const void* data);
-
-VKY_EXPORT void
-vkl_visual_buffer(VklVisual* visual, VklSourceType source_type, uint32_t idx, VklBufferRegions br);
+VKY_EXPORT void vkl_visual_buffer(
+    VklVisual* visual, VklSourceType source_type, uint32_t source_idx, VklBufferRegions br);
 
 VKY_EXPORT void vkl_visual_texture(
-    VklVisual* visual, VklSourceType source_type, uint32_t idx, VklTexture* texture);
+    VklVisual* visual, VklSourceType source_type, uint32_t source_idx, VklTexture* texture);
 
 
 
@@ -414,7 +413,7 @@ VKY_EXPORT void vkl_visual_callback_bake(VklVisual* visual, VklVisualDataCallbac
 /*************************************************************************************************/
 
 VKY_EXPORT VklSource*
-vkl_bake_source(VklVisual* visual, VklSourceType source_type, uint32_t pipeline_idx);
+vkl_bake_source(VklVisual* visual, VklSourceType source_type, uint32_t source_idx);
 
 VKY_EXPORT VklProp* vkl_bake_prop(VklVisual* visual, VklPropType prop_type, uint32_t idx);
 
@@ -447,6 +446,21 @@ VKY_EXPORT void vkl_visual_update(
 /*  Default callbacks                                                                            */
 /*************************************************************************************************/
 
+// Get the first source of a given type for the given pipeline, or none.
+static VklSource* _get_source(VklVisual* visual, VklSourceType source_type, uint32_t pipeline_idx)
+{
+    ASSERT(visual != NULL);
+    VklSource* source = vkl_container_iter_init(&visual->sources);
+    while (source != NULL)
+    {
+        if (source->source_type == source_type && source->pipeline_idx == pipeline_idx)
+            return source;
+        source = vkl_container_iter(&visual->sources);
+    }
+    return NULL;
+}
+
+
 static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
 {
     ASSERT(visual != NULL);
@@ -469,8 +483,10 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
         bindings = vkl_container_get(&visual->bindings, pipeline_idx);
         ASSERT(is_obj_created(&bindings->obj));
 
-        VklSource* vertex_source = vkl_bake_source(visual, VKL_SOURCE_TYPE_VERTEX, pipeline_idx);
+        VklSource* vertex_source = _get_source(visual, VKL_SOURCE_TYPE_VERTEX, pipeline_idx);
         ASSERT(vertex_source != NULL);
+        ASSERT(vertex_source->pipeline_idx == pipeline_idx);
+
         uint32_t vertex_count = vertex_source->arr.item_count;
         if (vertex_count == 0)
         {
@@ -485,7 +501,7 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
         vkl_cmd_bind_vertex_buffer(cmds, idx, *vertex_buf, 0);
 
         // Index buffer?
-        VklSource* index_source = vkl_bake_source(visual, VKL_SOURCE_TYPE_INDEX, pipeline_idx);
+        VklSource* index_source = _get_source(visual, VKL_SOURCE_TYPE_INDEX, pipeline_idx);
         uint32_t index_count = 0;
         VklBufferRegions* index_buf = NULL;
         if (index_source != NULL)

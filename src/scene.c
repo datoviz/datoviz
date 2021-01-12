@@ -20,6 +20,8 @@ static void _update_visual_viewport(VklPanel* panel, VklVisual* visual)
         visual->viewport.transform = visual->transform[pidx];
         visual->viewport.clip = visual->clip[pidx];
         ASSERT(visual->viewport.viewport.minDepth < visual->viewport.viewport.maxDepth);
+        // NOTE: here we make the assumption that there is exactly 1 viewport per graphics
+        // pipeline, such that the source idx corresponds to the pipeline idx.
         vkl_visual_data_source(visual, VKL_SOURCE_TYPE_VIEWPORT, pidx, 0, 1, 1, &visual->viewport);
     }
 }
@@ -586,7 +588,7 @@ static void _add_axes(VklController* controller)
         params.grid_size[1] = (int32_t)atlas->cols;
         params.tex_size[0] = (int32_t)atlas->width;
         params.tex_size[1] = (int32_t)atlas->height;
-        vkl_visual_data_source(visual, VKL_SOURCE_TYPE_PARAM, 1, 0, 1, 1, &params);
+        vkl_visual_data_source(visual, VKL_SOURCE_TYPE_PARAM, 0, 0, 1, 1, &params);
     }
     // Add the axes data.
     _axes_ticks_init(controller);
