@@ -536,7 +536,6 @@ static void _bake_source(VklVisual* visual, VklSource* source)
             "skip bake source for source %d that doesn't need updating", source->source_kind);
         return;
     }
-    log_debug("baking source %d", source->source_kind);
 
     // The number of vertices corresponds to the largest prop.
     uint32_t count = vkl_bake_max_prop_size(visual, source);
@@ -545,6 +544,8 @@ static void _bake_source(VklVisual* visual, VklSource* source)
         log_warn("empty source %d", source->source_type);
         return;
     }
+
+    log_debug("baking source %d", source->source_kind);
 
     // Allocate the source array.
     vkl_bake_source_alloc(visual, source, count);

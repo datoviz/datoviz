@@ -177,7 +177,7 @@ cdef class Canvas:
         # _add_close_callback(self._c_canvas, self._destroy_wrapper, ())
 
     def panel(self, int row=0, int col=0, controller='panzoom'):
-        ctl = _CONTROLLERS.get(controller, cv.VKL_CONTROLLER_PANZOOM)
+        ctl = _CONTROLLERS.get(controller, cv.VKL_CONTROLLER_NONE)
         c_panel = cv.vkl_scene_panel(self._c_scene, row, col, ctl, 0)
         if c_panel is NULL:
             raise MemoryError()

@@ -28,6 +28,8 @@ void main() {
 
     normal = normalize(in_normal);
     out_color = vec4(0, 0, 0, 1);
+    diffuse = vec3(0);
+    specular = vec3(0);
 
     // Color.
     color = vec3(0);
@@ -48,7 +50,7 @@ void main() {
         ambient = light_color;
 
         // Diffuse component.
-        if (gl_FrontFacing) normal = -normal;
+        // if (gl_FrontFacing) normal = -normal;
         diff = max(dot(light_dir, normal), 0.0);
         diffuse = diff * light_color;
 

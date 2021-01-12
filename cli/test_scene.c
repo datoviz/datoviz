@@ -228,7 +228,7 @@ int test_scene_mesh(TestContext* context)
     ASSERT(ctx != NULL);
 
     VklScene* scene = vkl_scene(canvas, 1, 1);
-    VklPanel* panel = vkl_scene_panel(scene, 0, 0, VKL_CONTROLLER_NONE, 0);
+    VklPanel* panel = vkl_scene_panel(scene, 0, 0, VKL_CONTROLLER_ARCBALL, 0);
     VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_MESH, 0);
 
     uint32_t N = 1000;
@@ -258,6 +258,8 @@ int test_scene_mesh(TestContext* context)
 
         // red background, green foreground
         z = j == 0 ? .75 : .25; // j == 0, .75 = background, .25 = foreground
+
+        z += .01 * randn();
 
         v0->pos[0] = x - l;
         v0->pos[1] = y - l;

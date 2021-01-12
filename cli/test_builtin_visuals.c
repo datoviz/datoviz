@@ -29,6 +29,7 @@ static void _resize(VklCanvas* canvas, VklEvent ev)
     canvas->viewport.margins[1] = 100;
     canvas->viewport.margins[2] = 100;
     canvas->viewport.margins[3] = 100;
+    ASSERT(canvas->viewport.viewport.minDepth < canvas->viewport.viewport.maxDepth);
     vkl_upload_buffers(canvas, br_viewport, 0, sizeof(VklViewport), &canvas->viewport);
 }
 
@@ -216,6 +217,7 @@ int test_visuals_mesh(TestContext* context)
 
             // red background, green foreground
             z = j == 0 ? .75 : .25; // j == 0, .75 = background, .25 = foreground
+
             z += .01 * randn();
 
             v0->pos[0] = x - l;
