@@ -303,6 +303,28 @@ static void _graphics_image(VklCanvas* canvas, VklGraphics* graphics)
 
 
 /*************************************************************************************************/
+/*  Volume image                                                                                 */
+/*************************************************************************************************/
+
+static void _graphics_volume_image(VklCanvas* canvas, VklGraphics* graphics)
+{
+    SHADER(VERTEX, "graphics_volume_image_vert")
+    SHADER(FRAGMENT, "graphics_volume_image_frag")
+    PRIMITIVE(TRIANGLE_LIST)
+
+    ATTR_BEGIN(VklGraphicsVolumeVertex)
+    ATTR_POS(VklGraphicsVolumeVertex, pos)
+    ATTR(VklGraphicsVolumeVertex, VK_FORMAT_R32G32B32_SFLOAT, uvw)
+
+    _common_bindings(graphics);
+    vkl_graphics_slot(graphics, VKL_USER_BINDING, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+
+    CREATE
+}
+
+
+
+/*************************************************************************************************/
 /*  3D mesh                                                                                      */
 /*************************************************************************************************/
 
@@ -493,6 +515,11 @@ VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsType type, int f
         // Image
     case VKL_GRAPHICS_IMAGE:
         _graphics_image(canvas, graphics);
+        break;
+
+        // Volume image
+    case VKL_GRAPHICS_VOLUME_IMAGE:
+        _graphics_volume_image(canvas, graphics);
         break;
 
 

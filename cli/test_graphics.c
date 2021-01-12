@@ -745,6 +745,84 @@ int test_graphics_image(TestContext* context)
 
 
 /*************************************************************************************************/
+/*  Volume image tests                                                                           */
+/*************************************************************************************************/
+
+static void _graphics_volume_callback(VklCanvas* canvas, VklEvent ev)
+{
+    TestGraphics* tg = ev.user_data;
+    VklGraphicsVolumeVertex* vertex = NULL;
+    float dx = ev.u.w.dir[1];
+    for (uint32_t i = 0; i < 6; i++)
+        ((VklGraphicsVolumeVertex*)tg->vertices.data)[i].uvw[2] += .1 * dx;
+    vkl_upload_buffers(
+        canvas, tg->br_vert, 0, tg->vertices.item_count * sizeof(VklGraphicsVolumeVertex),
+        tg->vertices.data);
+}
+
+int test_graphics_volume_image(TestContext* context)
+{
+    INIT_GRAPHICS(VKL_GRAPHICS_VOLUME_IMAGE, 0)
+
+    // Vertices.
+    uint32_t n = 6;
+    TestGraphics tg = {0};
+    tg.canvas = canvas;
+    tg.graphics = graphics;
+    tg.vertices = vkl_array_struct(n, sizeof(VklGraphicsVolumeVertex));
+    ASSERT(tg.vertices.item_count == n);
+    tg.br_vert = vkl_ctx_buffers(
+        gpu->context, VKL_BUFFER_TYPE_VERTEX, 1,
+        tg.vertices.item_count * sizeof(VklGraphicsVolumeVertex));
+    float x = .5;
+    VklGraphicsVolumeVertex vertices[] = {
+        {{-x, -x, 0}, {0, 1, 0.5}}, //
+        {{+x, -x, 0}, {1, 1, 0.5}}, //
+        {{+x, +x, 0}, {1, 0, 0.5}}, //
+        {{+x, +x, 0}, {1, 0, 0.5}}, //
+        {{-x, +x, 0}, {0, 0, 0.5}}, //
+        {{-x, -x, 0}, {0, 1, 0.5}}, //
+    };
+    memcpy(tg.vertices.data, vertices, sizeof(vertices));
+    vkl_upload_buffers(
+        canvas, tg.br_vert, 0, tg.vertices.item_count * sizeof(VklGraphicsVolumeVertex),
+        tg.vertices.data);
+
+    // Texture.
+    const uint32_t nt = 4;
+    VklTexture* texture =
+        vkl_ctx_texture(gpu->context, 3, (uvec3){nt, nt, nt}, VK_FORMAT_R8_UNORM);
+    vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_W, VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    uint8_t* tex_data = calloc(nt * nt * nt, sizeof(uint8_t));
+    for (uint32_t i = 0; i < nt * nt * nt; i++)
+    {
+        if (i % 3 == 0)
+            tex_data[i] = 64;
+        if (i % 3 == 1)
+            tex_data[i] = 128;
+        if (i % 3 == 2)
+            tex_data[i] = 255;
+    }
+    vkl_upload_texture(
+        canvas, texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, //
+        nt * nt * nt * sizeof(uint8_t), tex_data);
+
+    // Bindings.
+    _common_bindings(&tg);
+    vkl_bindings_texture(&tg.bindings, VKL_USER_BINDING, texture);
+    vkl_bindings_update(&tg.bindings);
+
+    vkl_event_callback(
+        canvas, VKL_EVENT_MOUSE_WHEEL, 0, VKL_EVENT_MODE_SYNC, _graphics_volume_callback, &tg);
+
+    RUN;
+    FREE(tex_data)
+    TEST_END
+}
+
+
+
+/*************************************************************************************************/
 /*  Mesh tests                                                                                   */
 /*************************************************************************************************/
 

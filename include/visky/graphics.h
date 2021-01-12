@@ -90,6 +90,8 @@ typedef struct VklGraphicsSegmentVertex VklGraphicsSegmentVertex;
 typedef struct VklGraphicsImageVertex VklGraphicsImageVertex;
 typedef struct VklGraphicsImageParams VklGraphicsImageParams;
 
+typedef struct VklGraphicsVolumeVertex VklGraphicsVolumeVertex;
+
 typedef struct VklGraphicsMeshVertex VklGraphicsMeshVertex;
 typedef struct VklGraphicsMeshParams VklGraphicsMeshParams;
 
@@ -234,6 +236,18 @@ struct VklGraphicsImageVertex
 struct VklGraphicsImageParams
 {
     vec4 tex_coefs; // blending coefficients for the textures
+};
+
+
+
+/*************************************************************************************************/
+/*  Graphics volume                                                                              */
+/*************************************************************************************************/
+
+struct VklGraphicsVolumeVertex
+{
+    vec3 pos;
+    vec3 uvw;
 };
 
 
