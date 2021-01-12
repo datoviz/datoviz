@@ -277,7 +277,11 @@ static void vkl_array_resize(VklArray* array, uint32_t item_count)
     {
         array->data = calloc(item_count, array->item_size);
         array->item_count = item_count;
-        array->buffer_size = next_pow2(item_count * array->item_size);
+
+        // NOTE: using next_pow2() below causes a crash in scene_axes test
+        array->buffer_size = item_count * array->item_size;
+        // array->buffer_size = next_pow2(item_count * array->item_size);
+
         log_trace(
             "allocate array to contain %d elements (%s)", item_count,
             pretty_size(array->buffer_size));
