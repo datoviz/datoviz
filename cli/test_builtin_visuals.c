@@ -162,23 +162,76 @@ int test_visuals_mesh(TestContext* context)
     VklVisual visual = vkl_visual(canvas);
     vkl_visual_builtin(&visual, VKL_VISUAL_MESH, 0);
 
-    char path[1024];
-    snprintf(path, sizeof(path), "%s/mesh/%s", DATA_DIR, "brain.obj");
-    VklMesh mesh = vkl_mesh_obj(path);
+    // char path[1024];
+    // snprintf(path, sizeof(path), "%s/mesh/%s", DATA_DIR, "brain.obj");
+    // VklMesh mesh = vkl_mesh_obj(path);
 
-    uint32_t nv = mesh.vertices.item_count;
-    uint32_t ni = mesh.indices.item_count;
+    // uint32_t nv = mesh.vertices.item_count;
+    // uint32_t ni = mesh.indices.item_count;
 
-    // Set visual data.
-    vkl_visual_data_full(&visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
-    vkl_visual_data_full(&visual, VKL_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
+    // // Set visual data.
+    // vkl_visual_data_full(&visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
+    // vkl_visual_data_full(&visual, VKL_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
+
+
+    {
+        uint32_t N = 1000;
+        uint32_t nv = 3 * N;
+        VklGraphicsMeshVertex* vertices = calloc(3 * N, sizeof(VklGraphicsMeshVertex));
+        float x = 0;
+        float y = 0;
+        float l = .075;
+        float z = 0;
+        VklGraphicsMeshVertex *v0, *v1, *v2;
+        uint32_t j = 0;
+        float col = (1.5) / 256.0;
+        for (uint32_t i = 0; i < N; i++)
+        {
+            v0 = &vertices[3 * i + 0];
+            v1 = &vertices[3 * i + 1];
+            v2 = &vertices[3 * i + 2];
+
+            x = .75 * (-1 + 2 * rand_float());
+            y = .75 * (-1 + 2 * rand_float());
+
+            // The following should work even if the depth buffer is not working.
+            // j = i < N / 6 ? 0 : 1;
+
+            // The following checks the depth buffer.
+            j = i % 2;
+
+            // red background, green foreground
+            z = j == 0 ? .75 : .25; // j == 0, .75 = background, .25 = foreground
+
+            v0->pos[0] = x - l;
+            v0->pos[1] = y - l;
+            v0->pos[2] = z;
+            v0->uv[0] = 0.00;
+            v0->uv[1] = col + 2 * j / 256.0;
+            v0->normal[2] = -1;
+
+            v1->pos[0] = x + l;
+            v1->pos[1] = y - l;
+            v1->pos[2] = z;
+            v1->uv[0] = 0.50;
+            v1->uv[1] = col + 2 * j / 256.0;
+            v1->normal[2] = -1;
+
+            v2->pos[0] = x + 0;
+            v2->pos[1] = y + l;
+            v2->pos[2] = z;
+            v2->uv[0] = 1.00;
+            v2->uv[1] = col + 2 * j / 256.0;
+            v2->normal[2] = -1;
+        }
+        vkl_visual_data_full(&visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, vertices);
+        FREE(vertices);
+    }
 
     vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE_1, 0, gpu->context->color_texture.texture);
-    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE_2, 0, gpu->context->color_texture.texture);
-    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE_3, 0, gpu->context->color_texture.texture);
 
     mat4 lights_params = {0};
-    lights_params[0][0] = 0.2;
+    lights_params[0][0] = 0.3;
     lights_params[0][1] = 0.4;
     lights_params[0][2] = 0.4;
 
@@ -198,7 +251,7 @@ int test_visuals_mesh(TestContext* context)
     vkl_visual_data(&visual, VKL_PROP_VIEW_POS, 0, 1, view_pos);
 
     RUN;
-    vkl_mesh_destroy(&mesh);
+    // vkl_mesh_destroy(&mesh);
     END;
 }
 

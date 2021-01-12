@@ -490,10 +490,12 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
         if (index_source != NULL)
         {
             index_count = index_source->arr.item_count;
-            ASSERT(index_count > 0);
-            index_buf = &index_source->u.br;
-            ASSERT(index_buf != NULL);
-            vkl_cmd_bind_index_buffer(cmds, idx, *index_buf, 0);
+            if (index_count > 0)
+            {
+                index_buf = &index_source->u.br;
+                ASSERT(index_buf != NULL);
+                vkl_cmd_bind_index_buffer(cmds, idx, *index_buf, 0);
+            }
         }
 
         // Draw command.
@@ -537,6 +539,11 @@ static void _bake_source(VklVisual* visual, VklSource* source)
 
     // The number of vertices corresponds to the largest prop.
     uint32_t count = vkl_bake_max_prop_size(visual, source);
+    if (count == 0)
+    {
+        log_warn("empty source %d", source->source_type);
+        return;
+    }
 
     // Allocate the source array.
     vkl_bake_source_alloc(visual, source, count);

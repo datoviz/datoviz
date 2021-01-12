@@ -1060,6 +1060,13 @@ void vkl_visual_update(
         // Update buffer sources.
         if (_source_is_buffer(source->source_kind))
         {
+            if (arr->item_count == 0)
+            {
+                log_warn("empty source %d", source->source_type);
+                source = vkl_container_iter(&visual->sources);
+                continue;
+            }
+
             br = &source->u.br;
 
             // NOTE: the source array MUST have been allocated by the baking function,
