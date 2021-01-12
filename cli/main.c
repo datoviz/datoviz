@@ -59,6 +59,7 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_canvas_6),                //
     CASE_FIXTURE_NONE(test_canvas_7),                //
     CASE_FIXTURE_NONE(test_canvas_8),                //
+    CASE_FIXTURE_NONE(test_canvas_depth),            //
     CASE_FIXTURE_NONE(test_canvas_append),           //
     CASE_FIXTURE_NONE(test_canvas_particles),        //
     CASE_FIXTURE_NONE(test_canvas_offscreen),        //

@@ -699,6 +699,117 @@ int test_canvas_8(TestContext* context)
 
 
 /*************************************************************************************************/
+/*  Triangles depth                                                                              */
+/*************************************************************************************************/
+
+static void _depth_frame_callback(VklCanvas* canvas, VklEvent ev)
+{
+    TestVisual* visual = ev.user_data;
+    // vkl_upload_buffers(canvas, visual->br_u, 0, sizeof(vec4), vec);
+}
+
+int test_canvas_depth(TestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
+    AT(canvas != NULL);
+    uint32_t img_count = canvas->swapchain.img_count;
+    ASSERT(img_count > 0);
+
+    TestVisual visual = {0};
+    visual.gpu = canvas->gpu;
+    visual.renderpass = &canvas->renderpass;
+    visual.framebuffers = &canvas->framebuffers;
+    _triangle_graphics(&visual, "");
+    canvas->user_data = &visual;
+
+    // Create the slots.
+    // vkl_graphics_slot(&visual.graphics, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+
+    // Uniform buffer.
+    // visual.br_u =
+    //     vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM_MAPPABLE, img_count,
+    //     sizeof(vec4));
+    // ASSERT(visual.br_u.aligned_size >= visual.br_u.size);
+    // vkl_upload_buffers(canvas, visual.br_u, 0, sizeof(vec4), vec);
+
+    // Create the bindings.
+    ASSERT(img_count > 0);
+    visual.bindings = vkl_bindings(&visual.graphics.slots, img_count);
+    // ASSERT(visual.br_u.buffer != VK_NULL_HANDLE);
+    // vkl_bindings_buffer(&visual.bindings, 0, visual.br_u);
+    vkl_bindings_update(&visual.bindings);
+
+    // Create the graphics pipeline.
+    vkl_graphics_create(&visual.graphics);
+
+    // Triangle buffer.
+    const uint32_t N = 3 * 1000;
+    visual.n_vertices = N;
+    visual.data = calloc(N, sizeof(TestVertex));
+    VkDeviceSize size = N * sizeof(TestVertex);
+    visual.br = vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_VERTEX, 1, size);
+    float x = 0;
+    float y = 0;
+    float l = .075;
+    float z = 0;
+    TestVertex *v0, *v1, *v2;
+    uint32_t j = 0;
+    for (uint32_t i = 0; i < N / 3; i++)
+    {
+        v0 = &((TestVertex*)visual.data)[3 * i + 0];
+        v1 = &((TestVertex*)visual.data)[3 * i + 1];
+        v2 = &((TestVertex*)visual.data)[3 * i + 2];
+
+        x = .75 * (-1 + 2 * rand_float());
+        y = .75 * (-1 + 2 * rand_float());
+
+        // The following should work even if the depth buffer is not working.
+        j = i < N / 6 ? 0 : 1;
+
+        // The following checks the depth buffer.
+        j = i % 2;
+
+        // red background, green foreground
+        z = j == 0 ? .75 : .25; // j == 0, .75 = background, .25 = foreground
+
+        v0->pos[0] = x - l;
+        v0->pos[1] = y - l;
+        v0->pos[2] = z;
+        v0->color[j] = .2;
+        v0->color[3] = 1;
+
+        v1->pos[0] = x + l;
+        v1->pos[1] = y - l;
+        v1->pos[2] = z;
+        v1->color[j] = .5;
+        v1->color[3] = 1;
+
+        v2->pos[0] = x + 0;
+        v2->pos[1] = y + l;
+        v2->pos[2] = z;
+        v2->color[j] = .8;
+        v2->color[j + 1] = .3;
+        v2->color[3] = 1;
+    }
+    vkl_upload_buffers(canvas, visual.br, 0, size, visual.data);
+
+    vkl_event_callback(
+        canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _triangle_refill, &visual);
+    // vkl_event_callback(
+    //     canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _depth_frame_callback, &visual);
+
+    vkl_app_run(app, N_FRAMES);
+
+    destroy_visual(&visual);
+    FREE(visual.data);
+    TEST_END
+}
+
+
+
+/*************************************************************************************************/
 /*  Canvas triangle with vertex buffer update                                                    */
 /*************************************************************************************************/
 
