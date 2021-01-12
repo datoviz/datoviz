@@ -871,6 +871,7 @@ static void _triangle_graphics(TestVisual* visual, const char* suffix)
     vkl_graphics_renderpass(graphics, visual->renderpass, 0);
     vkl_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     vkl_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
+    vkl_graphics_depth_test(graphics, VKL_DEPTH_TEST_ENABLE);
 
     char path[1024];
     snprintf(path, sizeof(path), "%s/test_triangle%s.vert.spv", SPIRV_DIR, suffix);

@@ -702,12 +702,6 @@ int test_canvas_8(TestContext* context)
 /*  Triangles depth                                                                              */
 /*************************************************************************************************/
 
-static void _depth_frame_callback(VklCanvas* canvas, VklEvent ev)
-{
-    TestVisual* visual = ev.user_data;
-    // vkl_upload_buffers(canvas, visual->br_u, 0, sizeof(vec4), vec);
-}
-
 int test_canvas_depth(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
@@ -721,24 +715,30 @@ int test_canvas_depth(TestContext* context)
     visual.gpu = canvas->gpu;
     visual.renderpass = &canvas->renderpass;
     visual.framebuffers = &canvas->framebuffers;
-    _triangle_graphics(&visual, "");
+
+    visual.graphics = vkl_graphics(gpu);
+    VklGraphics* graphics = &visual.graphics;
+    vkl_graphics_renderpass(graphics, visual.renderpass, 0);
+    vkl_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    vkl_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
+    vkl_graphics_depth_test(graphics, VKL_DEPTH_TEST_ENABLE);
+
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/test_triangle%s.vert.spv", SPIRV_DIR, "");
+    vkl_graphics_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
+    snprintf(path, sizeof(path), "%s/test_triangle%s.frag.spv", SPIRV_DIR, "");
+    vkl_graphics_shader(graphics, VK_SHADER_STAGE_FRAGMENT_BIT, path);
+    vkl_graphics_vertex_binding(graphics, 0, sizeof(TestVertex));
+    vkl_graphics_vertex_attr(
+        graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(TestVertex, pos));
+    vkl_graphics_vertex_attr(
+        graphics, 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(TestVertex, color));
+
     canvas->user_data = &visual;
-
-    // Create the slots.
-    // vkl_graphics_slot(&visual.graphics, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-
-    // Uniform buffer.
-    // visual.br_u =
-    //     vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM_MAPPABLE, img_count,
-    //     sizeof(vec4));
-    // ASSERT(visual.br_u.aligned_size >= visual.br_u.size);
-    // vkl_upload_buffers(canvas, visual.br_u, 0, sizeof(vec4), vec);
 
     // Create the bindings.
     ASSERT(img_count > 0);
     visual.bindings = vkl_bindings(&visual.graphics.slots, img_count);
-    // ASSERT(visual.br_u.buffer != VK_NULL_HANDLE);
-    // vkl_bindings_buffer(&visual.bindings, 0, visual.br_u);
     vkl_bindings_update(&visual.bindings);
 
     // Create the graphics pipeline.
@@ -766,7 +766,7 @@ int test_canvas_depth(TestContext* context)
         y = .75 * (-1 + 2 * rand_float());
 
         // The following should work even if the depth buffer is not working.
-        j = i < N / 6 ? 0 : 1;
+        // j = i < N / 6 ? 0 : 1;
 
         // The following checks the depth buffer.
         j = i % 2;
@@ -797,11 +797,8 @@ int test_canvas_depth(TestContext* context)
 
     vkl_event_callback(
         canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _triangle_refill, &visual);
-    // vkl_event_callback(
-    //     canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _depth_frame_callback, &visual);
 
     vkl_app_run(app, N_FRAMES);
-
     destroy_visual(&visual);
     FREE(visual.data);
     TEST_END
