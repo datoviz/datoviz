@@ -533,7 +533,7 @@ static VklSource* _assert_source_exists(VklVisual* visual, VklSourceType source_
     return source;
 }
 
-void vkl_visual_data_full(
+void vkl_visual_data_source(
     VklVisual* visual, VklSourceType source_type, uint32_t idx, //
     uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data)
 {
@@ -1070,7 +1070,7 @@ void vkl_visual_update(
             br = &source->u.br;
 
             // NOTE: the source array MUST have been allocated by the baking function,
-            // or directly by the user via vkl_visual_data_full() (NOBAKE origin)
+            // or directly by the user via vkl_visual_data_source() (NOBAKE origin)
             ASSERT(arr->item_count > 0);
             ASSERT(arr->item_size > 0);
 

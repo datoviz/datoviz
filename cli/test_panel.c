@@ -109,7 +109,7 @@ int test_panel_1(TestContext* context)
         vkl_visual_data(&visual, VKL_PROP_PROJ, 0, 1, id);
         vkl_visual_data(&visual, VKL_PROP_TIME, 0, 1, &zero);
 
-        vkl_visual_data_full(&visual, VKL_SOURCE_TYPE_VIEWPORT, 0, 0, 1, 1, NULL);
+        vkl_visual_data_source(&visual, VKL_SOURCE_TYPE_VIEWPORT, 0, 0, 1, 1, NULL);
     }
 
     vkl_visual_update(&visual, canvas->viewport, (VklDataCoords){0}, NULL);

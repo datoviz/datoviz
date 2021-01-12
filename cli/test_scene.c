@@ -282,7 +282,7 @@ int test_scene_mesh(TestContext* context)
         v2->uv[1] = col + 2 * j / 256.0;
         v2->normal[2] = -1;
     }
-    vkl_visual_data_full(visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, vertices);
+    vkl_visual_data_source(visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, vertices);
     FREE(vertices);
 
     vkl_visual_texture(visual, VKL_SOURCE_TYPE_IMAGE_1, 0, gpu->context->color_texture.texture);

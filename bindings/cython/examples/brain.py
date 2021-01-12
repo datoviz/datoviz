@@ -65,7 +65,7 @@ visual.data('index', triangles.ravel().astype(np.uint32))
 lights_params = np.zeros((4, 4), dtype=np.float32, order='C')
 lights_params[0, 0] = 0.3
 lights_params[0, 1] = 0.4
-lights_params[0, 2] = 0.4
+lights_params[0, 2] = 0.3
 
 lights_pos = np.zeros((4, 4), dtype=np.float32, order='C')
 lights_pos[0, 0] = -2

@@ -185,8 +185,9 @@ int test_visuals_mesh(TestContext* context)
         // uint32_t ni = mesh.indices.item_count;
 
         // // Set visual data.
-        // vkl_visual_data_full(&visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
-        // vkl_visual_data_full(&visual, VKL_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
+        // vkl_visual_data_source(&visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, nv, nv,
+        // mesh.vertices.data); vkl_visual_data_source(&visual, VKL_SOURCE_TYPE_INDEX, 0, 0, ni,
+        // ni, mesh.indices.data);
     }
 
     {
@@ -241,7 +242,7 @@ int test_visuals_mesh(TestContext* context)
             v2->uv[1] = col + 2 * j / 256.0;
             v2->normal[2] = -1;
         }
-        vkl_visual_data_full(&visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, vertices);
+        vkl_visual_data_source(&visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, vertices);
         FREE(vertices);
     }
 
@@ -363,7 +364,7 @@ int test_visuals_axes_2D(TestContext* context)
     params.grid_size[1] = (int32_t)atlas->cols;
     params.tex_size[0] = (int32_t)atlas->width;
     params.tex_size[1] = (int32_t)atlas->height;
-    vkl_visual_data_full(&visual, VKL_SOURCE_TYPE_PARAM, 1, 0, 1, 1, &params);
+    vkl_visual_data_source(&visual, VKL_SOURCE_TYPE_PARAM, 1, 0, 1, 1, &params);
 
     _common_data(&visual);
 
