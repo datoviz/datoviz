@@ -219,6 +219,102 @@ int test_scene_1(TestContext* context)
 
 
 
+int test_scene_mesh(TestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
+    VklContext* ctx = gpu->context;
+    ASSERT(ctx != NULL);
+
+    VklScene* scene = vkl_scene(canvas, 1, 1);
+    VklPanel* panel = vkl_scene_panel(scene, 0, 0, VKL_CONTROLLER_NONE, 0);
+    VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_MESH, 0);
+
+    uint32_t N = 1000;
+    uint32_t nv = 3 * N;
+    VklGraphicsMeshVertex* vertices = calloc(3 * N, sizeof(VklGraphicsMeshVertex));
+    float x = 0;
+    float y = 0;
+    float l = .075;
+    float z = 0;
+    VklGraphicsMeshVertex *v0, *v1, *v2;
+    uint32_t j = 0;
+    float col = (1.5) / 256.0;
+    for (uint32_t i = 0; i < N; i++)
+    {
+        v0 = &vertices[3 * i + 0];
+        v1 = &vertices[3 * i + 1];
+        v2 = &vertices[3 * i + 2];
+
+        x = .75 * (-1 + 2 * rand_float());
+        y = .75 * (-1 + 2 * rand_float());
+
+        // The following should work even if the depth buffer is not working.
+        // j = i < N / 6 ? 0 : 1;
+
+        // The following checks the depth buffer.
+        j = i % 2;
+
+        // red background, green foreground
+        z = j == 0 ? .75 : .25; // j == 0, .75 = background, .25 = foreground
+
+        v0->pos[0] = x - l;
+        v0->pos[1] = y - l;
+        v0->pos[2] = z;
+        v0->uv[0] = 0.00;
+        v0->uv[1] = col + 2 * j / 256.0;
+        v0->normal[2] = -1;
+
+        v1->pos[0] = x + l;
+        v1->pos[1] = y - l;
+        v1->pos[2] = z;
+        v1->uv[0] = 0.50;
+        v1->uv[1] = col + 2 * j / 256.0;
+        v1->normal[2] = -1;
+
+        v2->pos[0] = x + 0;
+        v2->pos[1] = y + l;
+        v2->pos[2] = z;
+        v2->uv[0] = 1.00;
+        v2->uv[1] = col + 2 * j / 256.0;
+        v2->normal[2] = -1;
+    }
+    vkl_visual_data_full(visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, vertices);
+    FREE(vertices);
+
+    vkl_visual_texture(visual, VKL_SOURCE_TYPE_IMAGE_1, 0, gpu->context->color_texture.texture);
+
+    mat4 lights_params = {0};
+    lights_params[0][0] = 0.3;
+    lights_params[0][1] = 0.4;
+    lights_params[0][2] = 0.4;
+
+    mat4 lights_pos = {0};
+    lights_pos[0][0] = -2;
+    lights_pos[0][1] = 0.5;
+    lights_pos[0][2] = +2;
+
+    vec4 tex_coefs = {0};
+    tex_coefs[0] = 1;
+
+    vec4 view_pos = {0};
+    view_pos[2] = 3;
+    vkl_visual_data(visual, VKL_PROP_LIGHT_PARAMS, 0, 1, lights_params);
+    vkl_visual_data(visual, VKL_PROP_LIGHT_POS, 0, 1, lights_pos);
+    vkl_visual_data(visual, VKL_PROP_TEXCOEFS, 0, 1, tex_coefs);
+    vkl_visual_data(visual, VKL_PROP_VIEW_POS, 0, 1, view_pos);
+
+    vkl_app_run(app, N_FRAMES);
+    vkl_visual_destroy(visual);
+    vkl_scene_destroy(scene);
+    // FREE(pos);
+    // FREE(color);
+    TEST_END
+}
+
+
+
 int test_scene_axes(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);

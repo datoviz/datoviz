@@ -121,6 +121,7 @@ static TestCase TEST_CASES[] = {
 
     // scene
     CASE_FIXTURE_NONE(test_scene_1),        //
+    CASE_FIXTURE_NONE(test_scene_mesh),     //
     CASE_FIXTURE_NONE(test_scene_axes),     //
     CASE_FIXTURE_NONE(test_scene_logistic), //
 

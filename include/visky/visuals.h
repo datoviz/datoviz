@@ -250,6 +250,7 @@ struct VklVisual
     VklCanvas* canvas;
     int flags;
     int priority;
+    void* user_data;
 
     // Graphics.
     uint32_t graphics_count;

@@ -155,6 +155,19 @@ int test_visuals_segment_raw(TestContext* context)
 
 
 
+static void _update_interact(VklCanvas* canvas, VklEvent ev)
+{
+    ASSERT(canvas != NULL);
+    VklVisual* visual = (VklVisual*)ev.user_data;
+    ASSERT(visual != NULL);
+
+    VklInteract* interact = visual->user_data;
+    vkl_interact_update(interact, canvas->viewport, &canvas->mouse, &canvas->keyboard);
+    VklSource* source = vkl_bake_source(visual, VKL_SOURCE_TYPE_MVP, 0);
+    VklBufferRegions* br = &source->u.br;
+    vkl_upload_buffers(canvas, *br, 0, br->size, &interact->mvp);
+}
+
 int test_visuals_mesh(TestContext* context)
 {
     INIT;
@@ -162,17 +175,18 @@ int test_visuals_mesh(TestContext* context)
     VklVisual visual = vkl_visual(canvas);
     vkl_visual_builtin(&visual, VKL_VISUAL_MESH, 0);
 
-    // char path[1024];
-    // snprintf(path, sizeof(path), "%s/mesh/%s", DATA_DIR, "brain.obj");
-    // VklMesh mesh = vkl_mesh_obj(path);
+    {
+        // char path[1024];
+        // snprintf(path, sizeof(path), "%s/mesh/%s", DATA_DIR, "brain.obj");
+        // VklMesh mesh = vkl_mesh_obj(path);
 
-    // uint32_t nv = mesh.vertices.item_count;
-    // uint32_t ni = mesh.indices.item_count;
+        // uint32_t nv = mesh.vertices.item_count;
+        // uint32_t ni = mesh.indices.item_count;
 
-    // // Set visual data.
-    // vkl_visual_data_full(&visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
-    // vkl_visual_data_full(&visual, VKL_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
-
+        // // Set visual data.
+        // vkl_visual_data_full(&visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
+        // vkl_visual_data_full(&visual, VKL_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
+    }
 
     {
         uint32_t N = 1000;
@@ -202,6 +216,7 @@ int test_visuals_mesh(TestContext* context)
 
             // red background, green foreground
             z = j == 0 ? .75 : .25; // j == 0, .75 = background, .25 = foreground
+            z += .01 * randn();
 
             v0->pos[0] = x - l;
             v0->pos[1] = y - l;
@@ -249,6 +264,10 @@ int test_visuals_mesh(TestContext* context)
     vkl_visual_data(&visual, VKL_PROP_LIGHT_POS, 0, 1, lights_pos);
     vkl_visual_data(&visual, VKL_PROP_TEXCOEFS, 0, 1, tex_coefs);
     vkl_visual_data(&visual, VKL_PROP_VIEW_POS, 0, 1, view_pos);
+
+    VklInteract interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
+    visual.user_data = &interact;
+    vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _update_interact, &visual);
 
     RUN;
     // vkl_mesh_destroy(&mesh);
