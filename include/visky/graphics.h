@@ -91,6 +91,7 @@ typedef struct VklGraphicsImageVertex VklGraphicsImageVertex;
 typedef struct VklGraphicsImageParams VklGraphicsImageParams;
 
 typedef struct VklGraphicsVolumeVertex VklGraphicsVolumeVertex;
+typedef struct VklGraphicsVolumeParams VklGraphicsVolumeParams;
 
 typedef struct VklGraphicsMeshVertex VklGraphicsMeshVertex;
 typedef struct VklGraphicsMeshParams VklGraphicsMeshParams;
@@ -248,6 +249,11 @@ struct VklGraphicsVolumeVertex
 {
     vec3 pos;
     vec3 uvw;
+};
+
+struct VklGraphicsVolumeParams
+{
+    int32_t cmap;
 };
 
 

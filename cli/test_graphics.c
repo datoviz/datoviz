@@ -751,10 +751,9 @@ int test_graphics_image(TestContext* context)
 static void _graphics_volume_callback(VklCanvas* canvas, VklEvent ev)
 {
     TestGraphics* tg = ev.user_data;
-    VklGraphicsVolumeVertex* vertex = NULL;
     float dx = ev.u.w.dir[1];
     for (uint32_t i = 0; i < 6; i++)
-        ((VklGraphicsVolumeVertex*)tg->vertices.data)[i].uvw[2] += .1 * dx;
+        ((VklGraphicsVolumeVertex*)tg->vertices.data)[i].uvw[2] += 12 / 256.0;
     vkl_upload_buffers(
         canvas, tg->br_vert, 0, tg->vertices.item_count * sizeof(VklGraphicsVolumeVertex),
         tg->vertices.data);
@@ -788,28 +787,31 @@ int test_graphics_volume_image(TestContext* context)
         canvas, tg.br_vert, 0, tg.vertices.item_count * sizeof(VklGraphicsVolumeVertex),
         tg.vertices.data);
 
+    // Parameters.
+    tg.br_params =
+        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsVolumeParams));
+    VklGraphicsVolumeParams params = {0};
+    params.cmap = VKL_CMAP_HSV;
+    vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsVolumeParams), &params);
+
     // Texture.
-    const uint32_t nt = 4;
+    const uint32_t nt = 12;
     VklTexture* texture =
         vkl_ctx_texture(gpu->context, 3, (uvec3){nt, nt, nt}, VK_FORMAT_R8_UNORM);
     vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_W, VK_SAMPLER_ADDRESS_MODE_REPEAT);
     uint8_t* tex_data = calloc(nt * nt * nt, sizeof(uint8_t));
     for (uint32_t i = 0; i < nt * nt * nt; i++)
     {
-        if (i % 3 == 0)
-            tex_data[i] = 64;
-        if (i % 3 == 1)
-            tex_data[i] = 128;
-        if (i % 3 == 2)
-            tex_data[i] = 255;
+        tex_data[i] = i % 256;
     }
     vkl_upload_texture(
         canvas, texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, //
         nt * nt * nt * sizeof(uint8_t), tex_data);
 
-    // Bindings.
+    // Bindings.1
     _common_bindings(&tg);
-    vkl_bindings_texture(&tg.bindings, VKL_USER_BINDING, texture);
+    vkl_bindings_buffer(&tg.bindings, VKL_USER_BINDING, tg.br_params);
+    vkl_bindings_texture(&tg.bindings, VKL_USER_BINDING + 1, texture);
     vkl_bindings_update(&tg.bindings);
 
     vkl_event_callback(

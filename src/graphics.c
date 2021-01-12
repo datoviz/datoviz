@@ -317,7 +317,8 @@ static void _graphics_volume_image(VklCanvas* canvas, VklGraphics* graphics)
     ATTR(VklGraphicsVolumeVertex, VK_FORMAT_R32G32B32_SFLOAT, uvw)
 
     _common_bindings(graphics);
-    vkl_graphics_slot(graphics, VKL_USER_BINDING, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+    vkl_graphics_slot(graphics, VKL_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    vkl_graphics_slot(graphics, VKL_USER_BINDING + 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
     CREATE
 }
