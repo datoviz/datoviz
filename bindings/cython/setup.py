@@ -23,8 +23,12 @@ setup(
         [Extension(
             'visky.pyvisky', ['visky/pyvisky.pyx'],
             libraries=['visky'],
-            include_dirs=[np.get_include(), str(INCLUDE_DIR), str(
-                BUILD_DIR / '_deps/cglm-src/include')],
+            include_dirs=[
+                np.get_include(),
+                str(INCLUDE_DIR),
+                str(BUILD_DIR / '_deps/cglm-src/include'),
+                str(BUILD_DIR / '_deps/glfw-src/include'),
+            ],
             library_dirs=[str(BUILD_DIR)],
             extra_compile_args=['-w'],
         )],
