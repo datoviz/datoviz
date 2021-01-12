@@ -305,21 +305,22 @@ int test_graphics_3D(TestContext* context)
 
 int test_graphics_depth(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_TRIANGLES, VKL_GRAPHICS_FLAGS_DEPTH_TEST)
+    INIT_GRAPHICS(VKL_GRAPHICS_MESH, 0)
     const uint32_t N = 1000;
-    BEGIN_DATA(VklVertex, N * 3, NULL)
+    BEGIN_DATA(VklGraphicsMeshVertex, N * 3, NULL)
 
     float x = 0;
     float y = 0;
     float l = .075;
     float z = 0;
-    VklVertex *v0, *v1, *v2;
+    VklGraphicsMeshVertex *v0, *v1, *v2;
     uint32_t j = 0;
+    float col = (1.5) / 256.0;
     for (uint32_t i = 0; i < N; i++)
     {
-        v0 = &((VklVertex*)vertices)[3 * i + 0];
-        v1 = &((VklVertex*)vertices)[3 * i + 1];
-        v2 = &((VklVertex*)vertices)[3 * i + 2];
+        v0 = &((VklGraphicsMeshVertex*)vertices)[3 * i + 0];
+        v1 = &((VklGraphicsMeshVertex*)vertices)[3 * i + 1];
+        v2 = &((VklGraphicsMeshVertex*)vertices)[3 * i + 2];
 
         x = .75 * (-1 + 2 * rand_float());
         y = .75 * (-1 + 2 * rand_float());
@@ -336,25 +337,47 @@ int test_graphics_depth(TestContext* context)
         v0->pos[0] = x - l;
         v0->pos[1] = y - l;
         v0->pos[2] = z;
-        v0->color[j] = TO_BYTE(.2);
-        v0->color[3] = 255;
+        v0->uv[0] = 0.00;
+        v0->uv[1] = col + 2 * j / 256.0;
+        v0->normal[2] = 1;
 
         v1->pos[0] = x + l;
         v1->pos[1] = y - l;
         v1->pos[2] = z;
-        v1->color[j] = TO_BYTE(.5);
-        v1->color[3] = 255;
+        v1->uv[0] = 0.50;
+        v1->uv[1] = col + 2 * j / 256.0;
+        v1->normal[2] = 1;
 
         v2->pos[0] = x + 0;
         v2->pos[1] = y + l;
         v2->pos[2] = z;
-        v2->color[j] = TO_BYTE(.8);
-        v2->color[j + 1] = TO_BYTE(.3);
-        v2->color[3] = 255;
+        v2->uv[0] = 1.00;
+        v2->uv[1] = col + 2 * j / 256.0;
+        v2->normal[2] = 1;
     }
 
     END_DATA
-    BINDINGS_NO_PARAMS
+
+    tg.br_params =
+        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsMeshParams));
+
+    _common_bindings(&tg);
+    vkl_bindings_buffer(&tg.bindings, VKL_USER_BINDING, tg.br_params);
+    for (uint32_t i = 1; i <= 4; i++)
+        vkl_bindings_texture(
+            &tg.bindings, VKL_USER_BINDING + i, gpu->context->color_texture.texture);
+    vkl_bindings_update(&tg.bindings);
+
+    VklGraphicsMeshParams params = {0};
+    params.lights_params_0[0][0] = 0.4;
+    params.lights_params_0[0][1] = 0.4;
+    params.lights_params_0[0][2] = 0.4;
+    params.lights_pos_0[0][0] = -1;
+    params.lights_pos_0[0][1] = 0.5;
+    params.lights_pos_0[0][2] = +1;
+    params.tex_coefs[0] = 1;
+    vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsMeshParams), &params);
+
     RUN;
     TEST_END
 }
