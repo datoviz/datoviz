@@ -97,6 +97,7 @@ static void _set_source_bindings(VklVisual* visual, VklSource* source)
         for (uint32_t i = 0; i < source->other_count; i++)
         {
             other_source = vkl_bake_source(visual, source->source_type, source->other_idxs[i]);
+            ASSERT(other_source != NULL);
             // Get the binding corresponding to the pipeline of the other source.
             other = vkl_container_get(&visual->bindings, other_source->pipeline_idx);
             ASSERT(other != NULL);
@@ -512,23 +513,23 @@ _assert_source_exists(VklVisual* visual, VklSourceType source_type, uint32_t sou
 {
     VklSource* source = vkl_bake_source(visual, source_type, source_idx);
 
-    // Check if the requested source is not a shared source.
-    if (source == NULL)
-    {
-        VklSource* src = vkl_container_iter_init(&visual->sources);
-        while (src != NULL)
-        {
-            for (uint32_t j = 0; j < src->other_count; j++)
-            {
-                if (src->other_idxs[j] == source_idx)
-                {
-                    source = src;
-                    break;
-                }
-            }
-            src = vkl_container_iter(&visual->sources);
-        }
-    }
+    // // Check if the requested source is not a shared source.
+    // if (source == NULL)
+    // {
+    //     VklSource* src = vkl_container_iter_init(&visual->sources);
+    //     while (src != NULL)
+    //     {
+    //         for (uint32_t j = 0; j < src->other_count; j++)
+    //         {
+    //             if (src->other_idxs[j] == source_idx)
+    //             {
+    //                 source = src;
+    //                 break;
+    //             }
+    //         }
+    //         src = vkl_container_iter(&visual->sources);
+    //     }
+    // }
 
     if (source == NULL)
     {
@@ -988,22 +989,26 @@ void vkl_visual_update(
                     "source type %d #%d is not set, skip visual update", //
                     source->source_type, source->source_idx);
 
-                // NOTE: mark the binding corresponding to the source's pipeline as invalid.
-                bindings = vkl_container_get(&visual->bindings, source->pipeline_idx);
-                ASSERT(bindings != NULL);
-                bindings->obj.status = VKL_OBJECT_STATUS_INVALID;
-                VklSource* other = NULL;
-                for (uint32_t j = 0; j < source->other_count; j++)
-                {
-                    // Get other source.
-                    other = vkl_bake_source(visual, source->source_type, source->other_idxs[j]);
-                    // Get bindings corresponding to graphics pipeline of that other source/
-                    bindings = vkl_container_get(&visual->bindings, other->pipeline_idx);
-                    ASSERT(bindings != NULL);
-                    bindings->obj.status = VKL_OBJECT_STATUS_INVALID;
-                }
+                // NOTE: The following is useless??
+
+                // // NOTE: mark the binding corresponding to the source's pipeline as invalid.
+                // bindings = vkl_container_get(&visual->bindings, source->pipeline_idx);
+                // ASSERT(bindings != NULL);
+                // bindings->obj.status = VKL_OBJECT_STATUS_INVALID;
+                // VklSource* other = NULL;
+                // for (uint32_t j = 0; j < source->other_count; j++)
+                // {
+                //     // Get other source.
+                //     other = vkl_bake_source(visual, source->source_type, source->other_idxs[j]);
+                //     ASSERT(other != NULL);
+                //     // Get bindings corresponding to graphics pipeline of that other source/
+                //     bindings = vkl_container_get(&visual->bindings, other->pipeline_idx);
+                //     ASSERT(bindings != NULL);
+                //     bindings->obj.status = VKL_OBJECT_STATUS_INVALID;
+                // }
             }
 
+            source = vkl_container_iter(&visual->sources);
             continue;
         }
 

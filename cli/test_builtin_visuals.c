@@ -326,7 +326,7 @@ int test_visuals_axes_2D(TestContext* context)
 
     vkl_visual_builtin(&visual, VKL_VISUAL_AXES_2D, VKL_AXES_COORD_X);
 
-    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_FONT_ATLAS, 1, atlas->texture);
+    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_FONT_ATLAS, 0, atlas->texture);
 
     const uint32_t N = 5;
     float* xticks = calloc(N, sizeof(float));
@@ -368,9 +368,8 @@ int test_visuals_axes_2D(TestContext* context)
 
     _common_data(&visual);
 
-    vkl_event_callback(canvas, VKL_EVENT_TIMER, .25, VKL_EVENT_MODE_SYNC, _visual_update, &visual);
+    vkl_event_callback(canvas, VKL_EVENT_TIMER, .1, VKL_EVENT_MODE_SYNC, _visual_update, &visual);
     vkl_event_callback(canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _resize, NULL);
-    // vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _wait, NULL);
     vkl_app_run(app, N_FRAMES);
     FREE(xticks);
     FREE(yticks);

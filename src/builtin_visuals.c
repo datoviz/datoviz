@@ -566,6 +566,10 @@ static void _visual_axes_2D(VklVisual* visual)
     // Uniform buffers. // set MVP and Viewport sources for pipeline #0
     _common_sources(visual);
 
+    // Binding #0: uniform buffer MVP
+    vkl_visual_source( //
+        visual, VKL_SOURCE_TYPE_MVP, 1, VKL_PIPELINE_GRAPHICS, 1, 0, sizeof(VklMVP),
+        VKL_SOURCE_FLAG_MAPPABLE);
     // Share the MVP source with the second graphics pipeline.
     vkl_visual_source_share(visual, VKL_SOURCE_TYPE_MVP, 0, 1);
 
