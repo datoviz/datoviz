@@ -581,7 +581,7 @@ static void _add_axes(VklController* controller)
         // Text params.
         VklFontAtlas* atlas = &ctx->font_atlas;
         ASSERT(strlen(atlas->font_str) > 0);
-        vkl_visual_texture(visual, VKL_SOURCE_TYPE_FONT_ATLAS, 1, atlas->texture);
+        vkl_visual_texture(visual, VKL_SOURCE_TYPE_FONT_ATLAS, 0, atlas->texture);
 
         VklGraphicsTextParams params = {0};
         params.grid_size[0] = (int32_t)atlas->rows;
