@@ -1,5 +1,6 @@
 from pathlib import Path
 from setuptools import Extension, setup
+import numpy as np
 from Cython.Build import cythonize
 
 CYTHON_DIR = Path(__file__).parent
@@ -22,7 +23,7 @@ setup(
         [Extension(
             'visky.pyvisky', ['visky/pyvisky.pyx'],
             libraries=['visky'],
-            include_dirs=[str(INCLUDE_DIR), str(
+            include_dirs=[np.get_include(), str(INCLUDE_DIR), str(
                 BUILD_DIR / '_deps/cglm-src/include')],
             library_dirs=[str(BUILD_DIR)],
             extra_compile_args=['-w'],
