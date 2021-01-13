@@ -7,7 +7,7 @@ from allensdk.core.mouse_connectivity_cache import MouseConnectivityCache
 from visky import canvas, run
 
 # Download the mouse data.
-mcc = MouseConnectivityCache(resolution=10)
+mcc = MouseConnectivityCache(resolution=25)
 structure_id = 315  # this is id for isocortex
 cortex = mcc.get_structure_mesh(structure_id)
 vertices, normals, triangles, tn = cortex
@@ -15,6 +15,9 @@ indices = triangles.ravel()
 N = vertices.shape[0]
 Nf = triangles.shape[0]
 print(f"{N} vertices, {Nf} faces")
+
+volume, info = mcc.get_template_volume()
+volume *= 100
 
 # Data normalization.
 # TODO: do in Visky instead
@@ -34,12 +37,12 @@ mesh.data('index', indices.astype(np.uint32))
 
 # Slice plane.
 plane = panel.visual('volume_slice')
-x = .5;
-plane.data('pos', np.array([[0, -x, +x]], dtype=np.float32), idx=0)
-plane.data('pos', np.array([[0, +x, -x]], dtype=np.float32), idx=1)
-plane.data('texcoords', np.array([[0, 0, 0.5]], dtype=np.float32), idx=0)
-plane.data('texcoords', np.array([[1, 1, 0.5]], dtype=np.float32), idx=1)
+plane.data('pos', np.array([[0, +.25, +.5]], dtype=np.float32), idx=0)
+plane.data('pos', np.array([[0, -.45, -.5]], dtype=np.float32), idx=1)
+plane.data('texcoords', np.array([[ 0.5, 0, 0]], dtype=np.float32), idx=0)
+plane.data('texcoords', np.array([[ 0.5, 1, 1]], dtype=np.float32), idx=1)
 plane.data('colormap', np.array([[26]], dtype=np.int32))
-plane.volume(np.random.randint(size=(4, 4, 4), low=0, high=255).astype(np.uint8))
+# plane.volume(np.random.randint(size=(4, 4, 4), low=0, high=255).astype(np.uint8))
+plane.volume(volume)
 
 run()

@@ -93,6 +93,7 @@ cdef extern from "<visky/visky.h>":
     # HACK: manual copy for now
     ctypedef enum VkFormat:
         VK_FORMAT_R8_UNORM = 9
+        VK_FORMAT_R16_UNORM = 70
 
     ctypedef enum VkFilter:
         VK_FILTER_NEAREST = 0
