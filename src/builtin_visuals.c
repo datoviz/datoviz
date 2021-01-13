@@ -185,6 +185,13 @@ static void _visual_mesh(VklVisual* visual)
         VKL_ARRAY_COPY_SINGLE, 1);
     vkl_visual_prop_default(visual, VKL_PROP_TEXCOEFS, 0, &params.tex_coefs);
 
+    // Clipping coefficients.
+    vkl_visual_prop(visual, VKL_PROP_CLIP, 0, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);
+    vkl_visual_prop_copy(
+        visual, VKL_PROP_CLIP, 0, 4, offsetof(VklGraphicsMeshParams, clip_coefs),
+        VKL_ARRAY_COPY_SINGLE, 1);
+    vkl_visual_prop_default(visual, VKL_PROP_TEXCOEFS, 0, &params.tex_coefs);
+
     // Texture props.
     for (uint32_t i = 0; i < 4; i++)
         vkl_visual_prop(visual, VKL_PROP_IMAGE, i, VKL_DTYPE_UINT, VKL_SOURCE_TYPE_IMAGE, i);
