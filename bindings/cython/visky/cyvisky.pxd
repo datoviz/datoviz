@@ -499,12 +499,13 @@ cdef extern from "<visky/visky.h>":
         VKL_PROP_COLOR_TEXTURE = 16
         VKL_PROP_LIGHT_POS = 17
         VKL_PROP_LIGHT_PARAMS = 18
-        VKL_PROP_VIEW_POS = 19
-        VKL_PROP_MODEL = 20
-        VKL_PROP_VIEW = 21
-        VKL_PROP_PROJ = 22
-        VKL_PROP_TIME = 23
-        VKL_PROP_INDEX = 24
+        VKL_PROP_CLIP = 19
+        VKL_PROP_VIEW_POS = 20
+        VKL_PROP_MODEL = 21
+        VKL_PROP_VIEW = 22
+        VKL_PROP_PROJ = 23
+        VKL_PROP_TIME = 24
+        VKL_PROP_INDEX = 25
 
     ctypedef enum VklSourceKind:
         VKL_SOURCE_KIND_NONE = 0
