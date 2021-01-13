@@ -6,6 +6,7 @@ layout (std140, binding = USER_BINDING) uniform Params {
     mat4 lights_params_0; // for each light, coefs for ambient, diffuse, specular
     vec4 view_pos;
     vec4 tex_coefs; // blending coefficients for the textures
+    vec4 clip_coefs;
 } params;
 
 layout(binding = (USER_BINDING+1)) uniform sampler2D tex_0;
@@ -16,11 +17,16 @@ layout(binding = (USER_BINDING+4)) uniform sampler2D tex_3;
 layout (location = 0) in vec3 in_pos;
 layout (location = 1) in vec3 in_normal;
 layout (location = 2) in vec2 in_uv;
-// layout (location = 3) in vec3 in_triangle;
+layout (location = 3) in float in_clip;
 
 layout (location = 0) out vec4 out_color;
 
+const float eps = .00001;
+
 void main() {
+    if (in_clip < -eps)
+        discard;
+
     vec3 normal, light_dir, ambient, diffuse, view_dir, reflect_dir, specular, color;
     vec3 lpar, lpos;
     vec3 light_color = vec3(1); // TODO

@@ -284,6 +284,7 @@ struct VklGraphicsMeshParams
     mat4 lights_params_0; // for each light, coefs for ambient, diffuse, specular
     vec4 view_pos;        // view position
     vec4 tex_coefs;       // blending coefficients for the textures
+    vec4 clip_coefs;      // dot product of this vector with the vertex position < 0 => discard
 };
 
 static VklGraphicsMeshParams default_graphics_mesh_params(vec3 eye)
