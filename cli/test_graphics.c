@@ -751,9 +751,9 @@ int test_graphics_image(TestContext* context)
 static void _graphics_volume_callback(VklCanvas* canvas, VklEvent ev)
 {
     TestGraphics* tg = ev.user_data;
-    float dx = ev.u.w.dir[1];
+    // float dx = ev.u.w.dir[1];
     for (uint32_t i = 0; i < 6; i++)
-        ((VklGraphicsVolumeVertex*)tg->vertices.data)[i].uvw[2] += 12 / 256.0;
+        ((VklGraphicsVolumeVertex*)tg->vertices.data)[i].uvw[2] += 24 / 256.0;
     vkl_upload_buffers(
         canvas, tg->br_vert, 0, tg->vertices.item_count * sizeof(VklGraphicsVolumeVertex),
         tg->vertices.data);

@@ -265,7 +265,7 @@ static void _camera_update_mvp(VklCamera* camera, VklMVP* mvp)
     ASSERT(camera != NULL);
     vec3 center = {0};
     glm_vec3_add(camera->eye, camera->forward, center);
-    vkl_mvp_camera(camera->canvas->viewport, camera->eye, center, (vec2){-1, 1}, mvp);
+    vkl_mvp_camera(camera->canvas->viewport, camera->eye, center, (vec2){0.1, 100}, mvp);
 }
 
 static void _camera_callback(
@@ -430,7 +430,7 @@ static void _arcball_reset(VklArcball* arcball)
     mat3 m;
     glm_vec3_copy((vec3){-x_axis[0], -x_axis[1], -x_axis[2]}, m[0]);
     glm_vec3_copy((vec3){+y_axis[0], +y_axis[1], +y_axis[2]}, m[1]);
-    glm_vec3_copy((vec3){+z_axis[0], +z_axis[1], +z_axis[2]}, m[2]);
+    glm_vec3_copy((vec3){-z_axis[0], -z_axis[1], -z_axis[2]}, m[2]);
 
     glm_mat3_transpose(m);
     glm_mat3_quat(m, arcball->rotation);
@@ -489,7 +489,7 @@ static void _arcball_update_mvp(VklArcball* arcball, VklMVP* mvp)
     ASSERT(arcball != NULL);
     glm_mat4_copy(arcball->mat, mvp->model);
     vkl_mvp_camera(
-        arcball->canvas->viewport, arcball->camera.eye, (vec3){0, 0, 0}, (vec2){0.1, 10}, mvp);
+        arcball->canvas->viewport, arcball->camera.eye, (vec3){0, 0, 0}, (vec2){0.1, 100}, mvp);
 }
 
 static void _arcball_callback(

@@ -306,11 +306,59 @@ static void _graphics_image(VklCanvas* canvas, VklGraphics* graphics)
 /*  Volume image                                                                                 */
 /*************************************************************************************************/
 
+static void
+_graphics_volume_image_callback(VklGraphicsData* data, uint32_t item_count, const void* item)
+{
+    ASSERT(data != NULL);
+    ASSERT(data->vertices != NULL);
+
+    ASSERT(item_count > 0);
+    vkl_array_resize(data->vertices, 6 * item_count);
+
+    if (item == NULL)
+        return;
+    ASSERT(item != NULL);
+    ASSERT(data->current_idx < item_count);
+
+    const VklGraphicsVolumeItem* item_vert = (const VklGraphicsVolumeItem*)item;
+
+    float xl = item_vert->pos_tl[0];
+    float yt = item_vert->pos_tl[1];
+    float zf = item_vert->pos_tl[2];
+
+    float xr = item_vert->pos_br[0];
+    float yb = item_vert->pos_br[1];
+    float zb = item_vert->pos_br[2];
+
+    float ul = item_vert->uvw_tl[0];
+    float vt = item_vert->uvw_tl[1];
+    float wf = item_vert->uvw_tl[2];
+
+    float ur = item_vert->uvw_br[0];
+    float vb = item_vert->uvw_br[1];
+    float wb = item_vert->uvw_br[2];
+
+    VklGraphicsVolumeVertex vertices[6] = {
+        // vec3 pos, vec3 uvw
+        {{xl, yb, zf}, {ul, vb, wf}}, // blf
+        {{xr, yb, zb}, {ur, vb, wb}}, // brb
+        {{xr, yt, zb}, {ur, vt, wb}}, // trb
+        {{xr, yt, zb}, {ur, vt, wb}}, // trb
+        {{xl, yt, zf}, {ul, vt, wf}}, // tlf
+        {{xl, yb, zf}, {ul, vb, wf}}, // blf
+    };
+
+    vkl_array_data(data->vertices, 6 * data->current_idx, 6, 6, vertices);
+
+    data->current_idx++;
+}
+
 static void _graphics_volume_image(VklCanvas* canvas, VklGraphics* graphics)
 {
     SHADER(VERTEX, "graphics_volume_image_vert")
     SHADER(FRAGMENT, "graphics_volume_image_frag")
     PRIMITIVE(TRIANGLE_LIST)
+    vkl_graphics_depth_test(graphics, VKL_DEPTH_TEST_ENABLE);
 
     ATTR_BEGIN(VklGraphicsVolumeVertex)
     ATTR_POS(VklGraphicsVolumeVertex, pos)
@@ -321,6 +369,8 @@ static void _graphics_volume_image(VklCanvas* canvas, VklGraphics* graphics)
     vkl_graphics_slot(graphics, VKL_USER_BINDING + 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
     CREATE
+
+    vkl_graphics_callback(graphics, _graphics_volume_image_callback);
 }
 
 

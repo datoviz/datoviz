@@ -208,7 +208,6 @@ vec4 jet(float x) {
 
 vec4 colormap(int cmap, float x) {
     CLAMP
-    return hsv(x);
     if (cmap == VKL_CMAP_HSV) return hsv(x);
     else if (cmap == VKL_CMAP_INFERNO) return inferno(x);
     else if (cmap == VKL_CMAP_MAGMA) return magma(x);

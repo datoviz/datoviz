@@ -13,9 +13,7 @@ layout (location = 0) in vec3 in_uvw;
 layout (location = 0) out vec4 out_color;
 
 void main() {
-    float value = texture(tex, in_uvw).r;
+    // HACK: the .99999 factor fixes a display artifact in the texture.
+    float value = texture(tex, clamp(in_uvw, 0, .99999)).r;
     out_color = colormap(params.cmap, value);
-
-
-
 }

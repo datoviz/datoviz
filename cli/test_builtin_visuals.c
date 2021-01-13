@@ -273,7 +273,39 @@ int test_visuals_mesh(TestContext* context)
     vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _update_interact, &visual);
 
     RUN;
-    // vkl_mesh_destroy(&mesh);
+    END;
+}
+
+
+
+int test_visuals_volume_image(TestContext* context)
+{
+    INIT;
+
+    VklVisual visual = vkl_visual(canvas);
+    vkl_visual_builtin(&visual, VKL_VISUAL_VOLUME_IMAGE, 0);
+
+    float x = .75;
+    vkl_visual_data(&visual, VKL_PROP_POS, 0, 2, (vec3[]){{-x, +x, +x}, {-x, +x, -x}});
+    vkl_visual_data(&visual, VKL_PROP_POS, 1, 2, (vec3[]){{+x, -x, +x}, {+x, -x, -x}});
+    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 0, 2, (vec3[]){{0, 0, 0}, {0, 0, 1}});
+    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 1, 2, (vec3[]){{1, 1, 0}, {1, 1, 1}});
+
+    VklColormap cmap = VKL_CMAP_JET;
+    vkl_visual_data(&visual, VKL_PROP_COLORMAP, 0, 1, &cmap);
+
+    uint8_t volume[8] = {0};
+    for (uint32_t i = 0; i < 8; i++)
+        volume[i] = 32 * i;
+    VklTexture* texture = vkl_ctx_texture(gpu->context, 3, (uvec3){2, 2, 2}, VK_FORMAT_R8_UNORM);
+    vkl_texture_upload(texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, sizeof(volume), volume);
+    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_VOLUME, 0, texture);
+
+    VklInteract interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
+    visual.user_data = &interact;
+    vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _update_interact, &visual);
+
+    RUN;
     END;
 }
 

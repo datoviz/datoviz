@@ -317,7 +317,7 @@ static const unsigned char* _load_colormaps()
     return VKL_COLORMAP_ARRAY;
 }
 
-VKY_INLINE void vkl_colormap(VklColormap cmap, uint8_t value, cvec4 color)
+VKY_INLINE void vkl_colormap_idx(VklColormap cmap, uint8_t value, cvec2 out)
 {
     uint8_t row = 0, col = 0;
     if (cmap >= CPAL032_OFS)
@@ -331,6 +331,16 @@ VKY_INLINE void vkl_colormap(VklColormap cmap, uint8_t value, cvec4 color)
         row = (uint8_t)cmap;
         col = value;
     }
+    out[0] = row;
+    out[1] = col;
+}
+
+VKY_INLINE void vkl_colormap(VklColormap cmap, uint8_t value, cvec4 color)
+{
+    cvec2 out = {0};
+    vkl_colormap_idx(cmap, value, out);
+    uint8_t row = out[0];
+    uint8_t col = out[1];
 
     // Make sure the colormap array is loaded in memory.
     _load_colormaps();

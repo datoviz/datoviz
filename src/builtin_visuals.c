@@ -187,6 +187,106 @@ static void _visual_mesh(VklVisual* visual)
 
 
 /*************************************************************************************************/
+/*  Volume image                                                                                 */
+/*************************************************************************************************/
+
+static void _visual_volume_image_bake(VklVisual* visual, VklVisualDataEvent ev)
+{
+    ASSERT(visual != NULL);
+
+    // Vertex buffer source.
+    VklSource* source = vkl_bake_source(visual, VKL_SOURCE_TYPE_VERTEX, 0);
+
+    // Number of images
+    uint32_t img_count = vkl_bake_prop(visual, VKL_PROP_POS, 0)->arr_orig.item_count;
+    ASSERT(vkl_bake_prop(visual, VKL_PROP_POS, 1)->arr_orig.item_count == img_count);
+
+    // Graphics data.
+    VklGraphicsData data = vkl_graphics_data(visual->graphics[0], &source->arr, NULL, NULL);
+    vkl_graphics_alloc(&data, img_count);
+
+    // Get prop data.
+    VklProp* pos_tl = vkl_bake_prop(visual, VKL_PROP_POS, 0);
+    VklProp* pos_br = vkl_bake_prop(visual, VKL_PROP_POS, 1);
+    VklProp* uvw_tl = vkl_bake_prop(visual, VKL_PROP_TEXCOORDS, 0);
+    VklProp* uvw_br = vkl_bake_prop(visual, VKL_PROP_TEXCOORDS, 1);
+
+    ASSERT(pos_tl != NULL);
+    ASSERT(pos_br != NULL);
+    ASSERT(uvw_tl != NULL);
+    ASSERT(uvw_br != NULL);
+
+    VklGraphicsVolumeItem item = {0};
+
+    for (uint32_t i = 0; i < img_count; i++)
+    {
+        memcpy(item.pos_tl, vkl_bake_prop_item(pos_tl, i), sizeof(vec3));
+        memcpy(item.pos_br, vkl_bake_prop_item(pos_br, i), sizeof(vec3));
+        memcpy(item.uvw_tl, vkl_bake_prop_item(uvw_tl, i), sizeof(vec3));
+        memcpy(item.uvw_br, vkl_bake_prop_item(uvw_br, i), sizeof(vec3));
+        vkl_graphics_append(&data, &item);
+    }
+}
+
+static void _visual_volume_image(VklVisual* visual)
+{
+    ASSERT(visual != NULL);
+    VklCanvas* canvas = visual->canvas;
+    ASSERT(canvas != NULL);
+
+    // TODO: customizable dtype for the image
+
+    // Graphics.
+    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_VOLUME_IMAGE, 0));
+
+    // Sources
+    vkl_visual_source(                                               // vertex buffer
+        visual, VKL_SOURCE_TYPE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, //
+        0, sizeof(VklGraphicsVolumeVertex), 0);                      //
+
+    _common_sources(visual); // common sources
+
+    vkl_visual_source(                                              // params
+        visual, VKL_SOURCE_TYPE_PARAM, 0, VKL_PIPELINE_GRAPHICS, 0, //
+        VKL_USER_BINDING, sizeof(VklGraphicsVolumeParams), 0);      //
+
+    vkl_visual_source(                                               // texture source
+        visual, VKL_SOURCE_TYPE_VOLUME, 0, VKL_PIPELINE_GRAPHICS, 0, //
+        VKL_USER_BINDING + 1, sizeof(uint8_t), 0);                   //
+
+    // Props:
+
+    // Top left corner position.
+    vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_VEC3, VKL_SOURCE_TYPE_VERTEX, 0);
+    // Bottom right corner position.
+    vkl_visual_prop(visual, VKL_PROP_POS, 1, VKL_DTYPE_VEC3, VKL_SOURCE_TYPE_VERTEX, 0);
+
+    // Top left corner tex coords.
+    vkl_visual_prop(visual, VKL_PROP_TEXCOORDS, 0, VKL_DTYPE_VEC3, VKL_SOURCE_TYPE_VERTEX, 0);
+    // Bottom right corner tex coords.
+    vkl_visual_prop(visual, VKL_PROP_TEXCOORDS, 1, VKL_DTYPE_VEC3, VKL_SOURCE_TYPE_VERTEX, 0);
+
+    // Common props.
+    _common_props(visual);
+
+    // Params.
+
+    // Colormap.
+    vkl_visual_prop(visual, VKL_PROP_COLORMAP, 0, VKL_DTYPE_INT, VKL_SOURCE_TYPE_PARAM, 0);
+    vkl_visual_prop_copy(
+        visual, VKL_PROP_COLORMAP, 0, 0, offsetof(VklGraphicsVolumeParams, cmap),
+        VKL_ARRAY_COPY_SINGLE, 1);
+
+    // 3D texture prop.
+    vkl_visual_prop(visual, VKL_PROP_VOLUME, 0, VKL_DTYPE_CHAR, VKL_SOURCE_TYPE_VOLUME, 0);
+
+    // Baking function.
+    vkl_visual_callback_bake(visual, _visual_volume_image_bake);
+}
+
+
+
+/*************************************************************************************************/
 /*  Segment raw                                                                                  */
 /*************************************************************************************************/
 
@@ -651,6 +751,10 @@ void vkl_visual_builtin(VklVisual* visual, VklVisualType type, int flags)
 
     case VKL_VISUAL_MESH:
         _visual_mesh(visual);
+        break;
+
+    case VKL_VISUAL_VOLUME_IMAGE:
+        _visual_volume_image(visual);
         break;
 
     case VKL_VISUAL_AXES_2D:
