@@ -66,7 +66,7 @@ typedef enum
     VKL_VISUAL_CANDLE,       //
     VKL_VISUAL_GRAPH,        //
     VKL_VISUAL_SURFACE,      //
-    VKL_VISUAL_VOLUME_IMAGE, //
+    VKL_VISUAL_VOLUME_SLICE, //
     VKL_VISUAL_VOLUME,       //
     VKL_VISUAL_FAKE_SPHERE,  //
     VKL_VISUAL_AXES_2D,      //

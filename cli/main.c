@@ -81,7 +81,7 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_graphics_segment),      //
     CASE_FIXTURE_NONE(test_graphics_text),         //
     CASE_FIXTURE_NONE(test_graphics_image),        //
-    CASE_FIXTURE_NONE(test_graphics_volume_image), //
+    CASE_FIXTURE_NONE(test_graphics_volume_slice), //
     CASE_FIXTURE_NONE(test_graphics_mesh),         //
 
     // array
@@ -113,7 +113,7 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_visuals_marker_raw),   //
     CASE_FIXTURE_NONE(test_visuals_segment_raw),  //
     CASE_FIXTURE_NONE(test_visuals_mesh),         //
-    CASE_FIXTURE_NONE(test_visuals_volume_image), //
+    CASE_FIXTURE_NONE(test_visuals_volume_slice), //
     CASE_FIXTURE_NONE(test_visuals_axes_2D),      //
 
     // axes

@@ -262,6 +262,7 @@ struct VklGraphicsVolumeVertex
 
 struct VklGraphicsVolumeParams
 {
+    mat4 cmap_coefs;
     int32_t cmap;
 };
 

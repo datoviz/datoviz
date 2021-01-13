@@ -217,12 +217,12 @@ int test_visuals_mesh(TestContext* context)
 
 
 
-int test_visuals_volume_image(TestContext* context)
+int test_visuals_volume_slice(TestContext* context)
 {
     INIT;
 
     VklVisual visual = vkl_visual(canvas);
-    vkl_visual_builtin(&visual, VKL_VISUAL_VOLUME_IMAGE, 0);
+    vkl_visual_builtin(&visual, VKL_VISUAL_VOLUME_SLICE, 0);
 
     // float x = .5;
     // vkl_visual_data(&visual, VKL_PROP_POS, 0, 2, (vec3[]){{-x, +x, +.5}, {-x, +x, -.5}});

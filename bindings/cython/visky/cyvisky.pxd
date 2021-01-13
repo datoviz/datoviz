@@ -146,7 +146,7 @@ cdef extern from "<visky/visky.h>":
         VKL_VISUAL_CANDLE = 16
         VKL_VISUAL_GRAPH = 17
         VKL_VISUAL_SURFACE = 18
-        VKL_VISUAL_VOLUME_IMAGE = 19
+        VKL_VISUAL_VOLUME_SLICE = 19
         VKL_VISUAL_VOLUME = 20
         VKL_VISUAL_FAKE_SPHERE = 21
         VKL_VISUAL_AXES_2D = 22
@@ -581,7 +581,7 @@ cdef extern from "<visky/visky.h>":
         VKL_GRAPHICS_PATH = 11
         VKL_GRAPHICS_TEXT = 12
         VKL_GRAPHICS_IMAGE = 13
-        VKL_GRAPHICS_VOLUME_IMAGE = 14
+        VKL_GRAPHICS_VOLUME_SLICE = 14
         VKL_GRAPHICS_MESH = 15
         VKL_GRAPHICS_FAKE_SPHERE = 16
         VKL_GRAPHICS_VOLUME = 17

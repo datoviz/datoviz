@@ -57,7 +57,7 @@ _MOUSE_STATES = {
 _VISUALS = {
     'marker': cv.VKL_VISUAL_MARKER,
     'mesh': cv.VKL_VISUAL_MESH,
-    'volume_slice': cv.VKL_VISUAL_VOLUME_IMAGE,
+    'volume_slice': cv.VKL_VISUAL_VOLUME_SLICE,
 }
 
 _CONTROLLERS = {

@@ -203,7 +203,7 @@ static void _visual_mesh(VklVisual* visual)
 /*  Volume image                                                                                 */
 /*************************************************************************************************/
 
-static void _visual_volume_image_bake(VklVisual* visual, VklVisualDataEvent ev)
+static void _visual_volume_slice_bake(VklVisual* visual, VklVisualDataEvent ev)
 {
     ASSERT(visual != NULL);
 
@@ -242,7 +242,7 @@ static void _visual_volume_image_bake(VklVisual* visual, VklVisualDataEvent ev)
     }
 }
 
-static void _visual_volume_image(VklVisual* visual)
+static void _visual_volume_slice(VklVisual* visual)
 {
     ASSERT(visual != NULL);
     VklCanvas* canvas = visual->canvas;
@@ -251,7 +251,7 @@ static void _visual_volume_image(VklVisual* visual)
     // TODO: customizable dtype for the image
 
     // Graphics.
-    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_VOLUME_IMAGE, 0));
+    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_VOLUME_SLICE, 0));
 
     // Sources
     vkl_visual_source(                                               // vertex buffer
@@ -303,7 +303,7 @@ static void _visual_volume_image(VklVisual* visual)
     vkl_visual_prop(visual, VKL_PROP_VOLUME, 0, VKL_DTYPE_CHAR, VKL_SOURCE_TYPE_VOLUME, 0);
 
     // Baking function.
-    vkl_visual_callback_bake(visual, _visual_volume_image_bake);
+    vkl_visual_callback_bake(visual, _visual_volume_slice_bake);
 }
 
 
@@ -775,8 +775,8 @@ void vkl_visual_builtin(VklVisual* visual, VklVisualType type, int flags)
         _visual_mesh(visual);
         break;
 
-    case VKL_VISUAL_VOLUME_IMAGE:
-        _visual_volume_image(visual);
+    case VKL_VISUAL_VOLUME_SLICE:
+        _visual_volume_slice(visual);
         break;
 
     case VKL_VISUAL_AXES_2D:

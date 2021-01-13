@@ -721,9 +721,9 @@ static void _graphics_volume_callback(VklCanvas* canvas, VklEvent ev)
         tg->vertices.data);
 }
 
-int test_graphics_volume_image(TestContext* context)
+int test_graphics_volume_slice(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_VOLUME_IMAGE, 0)
+    INIT_GRAPHICS(VKL_GRAPHICS_VOLUME_SLICE, 0)
 
     // Vertices.
     uint32_t n = 6;

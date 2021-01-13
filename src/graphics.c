@@ -307,7 +307,7 @@ static void _graphics_image(VklCanvas* canvas, VklGraphics* graphics)
 /*************************************************************************************************/
 
 static void
-_graphics_volume_image_callback(VklGraphicsData* data, uint32_t item_count, const void* item)
+_graphics_volume_slice_callback(VklGraphicsData* data, uint32_t item_count, const void* item)
 {
     ASSERT(data != NULL);
     ASSERT(data->vertices != NULL);
@@ -353,10 +353,10 @@ _graphics_volume_image_callback(VklGraphicsData* data, uint32_t item_count, cons
     data->current_idx++;
 }
 
-static void _graphics_volume_image(VklCanvas* canvas, VklGraphics* graphics)
+static void _graphics_volume_slice(VklCanvas* canvas, VklGraphics* graphics)
 {
-    SHADER(VERTEX, "graphics_volume_image_vert")
-    SHADER(FRAGMENT, "graphics_volume_image_frag")
+    SHADER(VERTEX, "graphics_volume_slice_vert")
+    SHADER(FRAGMENT, "graphics_volume_slice_frag")
     PRIMITIVE(TRIANGLE_LIST)
     vkl_graphics_depth_test(graphics, VKL_DEPTH_TEST_ENABLE);
 
@@ -371,7 +371,7 @@ static void _graphics_volume_image(VklCanvas* canvas, VklGraphics* graphics)
 
     CREATE
 
-    vkl_graphics_callback(graphics, _graphics_volume_image_callback);
+    vkl_graphics_callback(graphics, _graphics_volume_slice_callback);
 }
 
 
@@ -575,8 +575,8 @@ VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsType type, int f
         break;
 
         // Volume image
-    case VKL_GRAPHICS_VOLUME_IMAGE:
-        _graphics_volume_image(canvas, graphics);
+    case VKL_GRAPHICS_VOLUME_SLICE:
+        _graphics_volume_slice(canvas, graphics);
         break;
 
 

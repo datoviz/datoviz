@@ -24,7 +24,7 @@ int test_graphics_marker(TestContext* context);
 int test_graphics_segment(TestContext* context);
 int test_graphics_text(TestContext* context);
 int test_graphics_image(TestContext* context);
-int test_graphics_volume_image(TestContext* context);
+int test_graphics_volume_slice(TestContext* context);
 int test_graphics_mesh(TestContext* context);
 
 
