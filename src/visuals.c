@@ -261,6 +261,10 @@ void vkl_visual_destroy(VklVisual* visual)
     {
         vkl_array_destroy(&prop->arr_orig);
         vkl_array_destroy(&prop->arr_trans);
+        if (prop->default_value != NULL)
+        {
+            FREE(prop->default_value)
+        }
         obj_destroyed(&prop->obj);
         prop = vkl_container_iter(&visual->props);
     }
@@ -371,7 +375,15 @@ void vkl_visual_prop_default(
     ASSERT(visual != NULL);
     VklProp* prop = vkl_bake_prop(visual, prop_type, prop_idx);
     ASSERT(prop != NULL);
-    prop->default_value = default_value;
+    ASSERT(prop->arr_orig.item_size > 0);
+
+    // Makes a copy of the default value to the prop.
+    if (prop->default_value == NULL)
+        prop->default_value = calloc(1, prop->arr_orig.item_size);
+    memcpy(prop->default_value, default_value, prop->arr_orig.item_size);
+
+    // Declaring a default value to the prop is equivalent to setting a single value to the prop.
+    vkl_visual_data(visual, prop_type, prop_idx, 1, default_value);
 }
 
 
@@ -969,21 +981,22 @@ void vkl_visual_update(
                 ASSERT(ctx->color_texture.texture->image->images[0] != VK_NULL_HANDLE);
                 ASSERT(ctx->color_texture.texture->sampler != NULL);
                 ASSERT(is_obj_created(&ctx->color_texture.texture->obj));
+
                 vkl_visual_texture(
                     visual, source->source_type, source->source_idx, ctx->color_texture.texture);
             }
             else if (_source_is_buffer(source->source_kind))
             {
                 log_warn(
-                    "source type %d #%d is not set, using empty buffer", //
+                    "source type %d #%d is not set, create buffer with 1 empty or default element",
                     source->source_type, source->source_idx);
-                _create_source_buffer(canvas, source, 1);
             }
             else
             {
-                log_warn(
-                    "source type %d #%d is not set, skip visual update", //
+                log_error(
+                    "unknown source type %d #%d, aborting", //
                     source->source_type, source->source_idx);
+                ASSERT(0);
 
                 // NOTE: The following is useless??
 
@@ -1039,7 +1052,7 @@ void vkl_visual_update(
         {
             if (arr->item_count == 0)
             {
-                log_warn("empty source %d", source->source_type);
+                log_debug("empty source %d", source->source_type);
                 source = vkl_container_iter(&visual->sources);
                 continue;
             }

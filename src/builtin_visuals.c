@@ -154,30 +154,36 @@ static void _visual_mesh(VklVisual* visual)
     _common_props(visual);
 
     // Params.
+    // Default values.
+    VklGraphicsMeshParams params = default_graphics_mesh_params((vec3){0, 0, 3});
 
     // Light positions.
     vkl_visual_prop(visual, VKL_PROP_LIGHT_POS, 0, VKL_DTYPE_MAT4, VKL_SOURCE_TYPE_PARAM, 0);
     vkl_visual_prop_copy(
         visual, VKL_PROP_LIGHT_POS, 0, 0, offsetof(VklGraphicsMeshParams, lights_pos_0),
         VKL_ARRAY_COPY_SINGLE, 1);
+    vkl_visual_prop_default(visual, VKL_PROP_LIGHT_POS, 0, &params.lights_pos_0);
 
     // Light params.
     vkl_visual_prop(visual, VKL_PROP_LIGHT_PARAMS, 0, VKL_DTYPE_MAT4, VKL_SOURCE_TYPE_PARAM, 0);
     vkl_visual_prop_copy(
         visual, VKL_PROP_LIGHT_PARAMS, 0, 1, offsetof(VklGraphicsMeshParams, lights_params_0),
         VKL_ARRAY_COPY_SINGLE, 1);
+    vkl_visual_prop_default(visual, VKL_PROP_LIGHT_PARAMS, 0, &params.lights_params_0);
 
     // View pos.
     vkl_visual_prop(visual, VKL_PROP_VIEW_POS, 0, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);
     vkl_visual_prop_copy(
         visual, VKL_PROP_VIEW_POS, 0, 2, offsetof(VklGraphicsMeshParams, view_pos),
         VKL_ARRAY_COPY_SINGLE, 1);
+    vkl_visual_prop_default(visual, VKL_PROP_VIEW_POS, 0, &params.view_pos);
 
     // Texture coefficients.
     vkl_visual_prop(visual, VKL_PROP_TEXCOEFS, 0, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);
     vkl_visual_prop_copy(
         visual, VKL_PROP_TEXCOEFS, 0, 3, offsetof(VklGraphicsMeshParams, tex_coefs),
         VKL_ARRAY_COPY_SINGLE, 1);
+    vkl_visual_prop_default(visual, VKL_PROP_TEXCOEFS, 0, &params.tex_coefs);
 
     // Texture props.
     for (uint32_t i = 0; i < 4; i++)
