@@ -57,6 +57,7 @@ _MOUSE_STATES = {
 _VISUALS = {
     'marker': cv.VKL_VISUAL_MARKER,
     'mesh': cv.VKL_VISUAL_MESH,
+    'volume_slice': cv.VKL_VISUAL_VOLUME_IMAGE,
 }
 
 _CONTROLLERS = {
@@ -76,6 +77,7 @@ _PROPS = {
     'light_pos': cv.VKL_PROP_LIGHT_POS,
     'texcoefs': cv.VKL_PROP_TEXCOEFS,
     'view_pos': cv.VKL_PROP_VIEW_POS,
+    'colormap': cv.VKL_PROP_COLORMAP,
 }
 
 
@@ -272,12 +274,27 @@ cdef class Panel:
 cdef class Visual:
     cdef cv.VklPanel* _c_panel
     cdef cv.VklVisual* _c_visual
+    cdef cv.VklContext* _c_context
 
     cdef create(self, cv.VklPanel* c_panel, cv.VklVisual* c_visual):
         self._c_panel = c_panel
         self._c_visual = c_visual
+        self._c_context = c_visual.canvas.gpu.context
 
-    def data(self, name, np.ndarray value):
+    def data(self, name, np.ndarray value, idx=0):
         prop = _get_prop(name)
         N = value.shape[0]
-        cv.vkl_visual_data(self._c_visual, prop, 0, N, &value.data[0]);
+        cv.vkl_visual_data(self._c_visual, prop, idx, N, &value.data[0])
+
+    def volume(self, np.ndarray value, idx=0):
+        assert value.ndim == 3
+        # TODO: choose format as a function of the array dtype
+        cdef cv.uvec3 shape
+        shape[0] = value.shape[0]
+        shape[1] = value.shape[1]
+        shape[2] = value.shape[2]
+        cdef size = value.size
+        texture = cv.vkl_ctx_texture(self._c_context, 3, shape, cv.VK_FORMAT_R8_UNORM)
+        cdef cv.uvec3 VKL_ZERO_OFFSET = [0, 0, 0]
+        cv.vkl_texture_upload(texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, size, &value.data[0])
+        cv.vkl_visual_texture(self._c_visual, cv.VKL_SOURCE_TYPE_VOLUME, idx, texture)

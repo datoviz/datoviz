@@ -11,6 +11,7 @@ mcc = MouseConnectivityCache(resolution=10)
 structure_id = 315  # this is id for isocortex
 cortex = mcc.get_structure_mesh(structure_id)
 vertices, normals, triangles, tn = cortex
+indices = triangles.ravel()
 N = vertices.shape[0]
 Nf = triangles.shape[0]
 print(f"{N} vertices, {Nf} faces")
@@ -21,18 +22,24 @@ vertices -= vertices.mean(axis=0)
 c = .5 / np.abs(vertices).max()
 vertices *= -c
 
-texcoords = np.zeros((N, 2))
-
 # Create the scene.
 canvas = canvas()
 panel = canvas.panel(controller='arcball')
-visual = panel.visual('mesh')
 
-# Set the visual data.
-visual.data('pos', vertices.astype(np.float32))
-visual.data('normal', normals.astype(np.float32))
-visual.data('texcoords', texcoords.astype(np.float32))
-visual.data('index', triangles.ravel().astype(np.uint32))
+# Mesh.
+mesh = panel.visual('mesh')
+mesh.data('pos', vertices.astype(np.float32))
+mesh.data('normal', normals.astype(np.float32))
+mesh.data('index', indices.astype(np.uint32))
 
+# Slice plane.
+plane = panel.visual('volume_slice')
+x = .5;
+plane.data('pos', np.array([[-x, +x, 0]], dtype=np.float32), idx=0)
+plane.data('pos', np.array([[+x, -x, 0]], dtype=np.float32), idx=1)
+plane.data('texcoords', np.array([[0, 0, 0.5]], dtype=np.float32), idx=0)
+plane.data('texcoords', np.array([[1, 1, 0.5]], dtype=np.float32), idx=1)
+plane.data('colormap', np.array([[26]], dtype=np.int32))
+plane.volume(np.random.randint(size=(4, 4, 4), low=0, high=255).astype(np.uint8))
 
 run()

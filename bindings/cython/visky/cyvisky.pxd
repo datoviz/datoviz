@@ -33,15 +33,25 @@ cdef extern from "<visky/visky.h>":
 
     ctypedef float[4][4] mat4
 
+    ctypedef uint64_t VkDeviceSize
+
+
     ctypedef struct VklApp:
         pass
 
+    ctypedef struct VklContext:
+        VklGpu* gpu
+
     ctypedef struct VklGpu:
         VklApp* app
+        VklContext* context
+
+    ctypedef struct VklTexture:
         VklGpu* gpu
 
     ctypedef struct VklCanvas:
         VklApp* app
+        VklGpu* gpu
 
     ctypedef struct VklScene:
         VklCanvas* canvas
@@ -53,6 +63,7 @@ cdef extern from "<visky/visky.h>":
         VklGrid* grid
 
     ctypedef struct VklVisual:
+        VklCanvas* canvas
         VklPanel* panel
 
     ctypedef struct VklSubmit:
@@ -76,6 +87,9 @@ cdef extern from "<visky/visky.h>":
 
 
 
+    # HACK: manual copy for now
+    ctypedef enum VkFormat:
+        VK_FORMAT_R8_UNORM = 9
 
 
     # ---------------------------------------------------------------------------------------------
@@ -689,6 +703,10 @@ cdef extern from "<visky/visky.h>":
     void vkl_canvas_to_close(VklCanvas* canvas)
     void vkl_app_run(VklApp* app, uint64_t frame_count)
 
+    # from file: context.h
+    VklTexture* vkl_ctx_texture(VklContext* context, uint32_t dims, uvec3 size, VkFormat format)
+    void vkl_texture_upload(VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, const void* data)
+
     # from file: scene.h
     VklScene* vkl_scene(VklCanvas* canvas, uint32_t n_rows, uint32_t n_cols)
     void vkl_scene_destroy(VklScene* scene)
@@ -697,6 +715,7 @@ cdef extern from "<visky/visky.h>":
 
     # from file: visuals.h
     void vkl_visual_data(VklVisual* visual, VklPropType type, uint32_t prop_idx, uint32_t count, const void* data)
+    void vkl_visual_texture(VklVisual* visual, VklSourceType source_type, uint32_t source_idx, VklTexture* texture)
 
     # from file: vklite.h
     VklApp* vkl_app(VklBackend backend)
