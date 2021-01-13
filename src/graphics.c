@@ -456,6 +456,11 @@ vkl_graphics_data(VklGraphics* graphics, VklArray* vertices, VklArray* indices, 
 void vkl_graphics_alloc(VklGraphicsData* data, uint32_t item_count)
 {
     ASSERT(data != NULL);
+    if (item_count == 0)
+    {
+        log_error("empty graphics allocation");
+        return;
+    }
     ASSERT(item_count > 0);
     data->item_count = item_count;
     VklGraphics* graphics = data->graphics;

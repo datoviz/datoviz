@@ -202,6 +202,7 @@ static void _visual_volume_image_bake(VklVisual* visual, VklVisualDataEvent ev)
 
     // Vertex buffer source.
     VklSource* source = vkl_bake_source(visual, VKL_SOURCE_TYPE_VERTEX, 0);
+    ASSERT(source->arr.item_size == sizeof(VklGraphicsVolumeVertex));
 
     // Number of images
     uint32_t img_count = vkl_bake_prop(visual, VKL_PROP_POS, 0)->arr_orig.item_count;
@@ -226,10 +227,10 @@ static void _visual_volume_image_bake(VklVisual* visual, VklVisualDataEvent ev)
 
     for (uint32_t i = 0; i < img_count; i++)
     {
-        memcpy(item.pos_tl, vkl_bake_prop_item(pos_tl, i), sizeof(vec3));
-        memcpy(item.pos_br, vkl_bake_prop_item(pos_br, i), sizeof(vec3));
-        memcpy(item.uvw_tl, vkl_bake_prop_item(uvw_tl, i), sizeof(vec3));
-        memcpy(item.uvw_br, vkl_bake_prop_item(uvw_br, i), sizeof(vec3));
+        memcpy(&item.pos_tl, vkl_bake_prop_item(pos_tl, i), sizeof(vec3));
+        memcpy(&item.pos_br, vkl_bake_prop_item(pos_br, i), sizeof(vec3));
+        memcpy(&item.uvw_tl, vkl_bake_prop_item(uvw_tl, i), sizeof(vec3));
+        memcpy(&item.uvw_br, vkl_bake_prop_item(uvw_br, i), sizeof(vec3));
         vkl_graphics_append(&data, &item);
     }
 }

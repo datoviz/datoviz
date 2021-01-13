@@ -787,7 +787,7 @@ void vkl_bake_prop_copy(VklVisual* visual, VklProp* prop)
 
     if (prop->arr_orig.data == NULL)
     {
-        log_error("visual prop %d #%d not set", prop->prop_type, prop->prop_idx);
+        log_warn("visual prop %d #%d not set", prop->prop_type, prop->prop_idx);
         return;
     }
 
@@ -990,6 +990,12 @@ void vkl_visual_update(
                 log_warn(
                     "source type %d #%d is not set, create buffer with 1 empty or default element",
                     source->source_type, source->source_idx);
+                if (source->source_type == VKL_SOURCE_TYPE_VERTEX)
+                {
+                    log_warn("skipping visual data upload as VERTEX source is not set");
+                    visual->obj.status = VKL_OBJECT_STATUS_INVALID;
+                    return;
+                }
             }
             else
             {
