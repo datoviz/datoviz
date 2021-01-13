@@ -123,13 +123,14 @@ cdef extern from "<visky/visky.h>":
         VKL_VISUAL_CANDLE = 16
         VKL_VISUAL_GRAPH = 17
         VKL_VISUAL_SURFACE = 18
-        VKL_VISUAL_VOLUME = 19
-        VKL_VISUAL_FAKE_SPHERE = 20
-        VKL_VISUAL_AXES_2D = 21
-        VKL_VISUAL_AXES_3D = 22
-        VKL_VISUAL_COLORMAP = 23
-        VKL_VISUAL_COUNT = 24
-        VKL_VISUAL_CUSTOM = 25
+        VKL_VISUAL_VOLUME_IMAGE = 19
+        VKL_VISUAL_VOLUME = 20
+        VKL_VISUAL_FAKE_SPHERE = 21
+        VKL_VISUAL_AXES_2D = 22
+        VKL_VISUAL_AXES_3D = 23
+        VKL_VISUAL_COLORMAP = 24
+        VKL_VISUAL_COUNT = 25
+        VKL_VISUAL_CUSTOM = 26
 
     ctypedef enum VklAxisLevel:
         VKL_AXES_LEVEL_MINOR = 0
@@ -459,26 +460,28 @@ cdef extern from "<visky/visky.h>":
         VKL_PROP_NONE = 0
         VKL_PROP_POS = 1
         VKL_PROP_COLOR = 2
-        VKL_PROP_MARKER_SIZE = 3
-        VKL_PROP_TEXT = 4
-        VKL_PROP_TEXT_SIZE = 5
-        VKL_PROP_LINE_WIDTH = 6
-        VKL_PROP_TYPE = 7
-        VKL_PROP_LENGTH = 8
-        VKL_PROP_MARGIN = 9
-        VKL_PROP_NORMAL = 10
-        VKL_PROP_TEXCOORDS = 11
-        VKL_PROP_TEXCOEFS = 12
-        VKL_PROP_IMAGE = 13
-        VKL_PROP_COLOR_TEXTURE = 14
-        VKL_PROP_LIGHT_POS = 15
-        VKL_PROP_LIGHT_PARAMS = 16
-        VKL_PROP_VIEW_POS = 17
-        VKL_PROP_MODEL = 18
-        VKL_PROP_VIEW = 19
-        VKL_PROP_PROJ = 20
-        VKL_PROP_TIME = 21
-        VKL_PROP_INDEX = 22
+        VKL_PROP_COLORMAP = 3
+        VKL_PROP_MARKER_SIZE = 4
+        VKL_PROP_TEXT = 5
+        VKL_PROP_TEXT_SIZE = 6
+        VKL_PROP_LINE_WIDTH = 7
+        VKL_PROP_TYPE = 8
+        VKL_PROP_LENGTH = 9
+        VKL_PROP_MARGIN = 10
+        VKL_PROP_NORMAL = 11
+        VKL_PROP_TEXCOORDS = 12
+        VKL_PROP_TEXCOEFS = 13
+        VKL_PROP_IMAGE = 14
+        VKL_PROP_VOLUME = 15
+        VKL_PROP_COLOR_TEXTURE = 16
+        VKL_PROP_LIGHT_POS = 17
+        VKL_PROP_LIGHT_PARAMS = 18
+        VKL_PROP_VIEW_POS = 19
+        VKL_PROP_MODEL = 20
+        VKL_PROP_VIEW = 21
+        VKL_PROP_PROJ = 22
+        VKL_PROP_TIME = 23
+        VKL_PROP_INDEX = 24
 
     ctypedef enum VklSourceKind:
         VKL_SOURCE_KIND_NONE = 0
@@ -498,15 +501,11 @@ cdef extern from "<visky/visky.h>":
         VKL_SOURCE_TYPE_VERTEX = 4
         VKL_SOURCE_TYPE_INDEX = 5
         VKL_SOURCE_TYPE_IMAGE = 6
-        VKL_SOURCE_TYPE_IMAGE_1 = 7
-        VKL_SOURCE_TYPE_IMAGE_2 = 8
-        VKL_SOURCE_TYPE_IMAGE_3 = 9
-        VKL_SOURCE_TYPE_IMAGE_4 = 10
-        VKL_SOURCE_TYPE_VOLUME = 11
-        VKL_SOURCE_TYPE_COLOR_TEXTURE = 12
-        VKL_SOURCE_TYPE_FONT_ATLAS = 13
-        VKL_SOURCE_TYPE_OTHER = 14
-        VKL_SOURCE_TYPE_COUNT = 15
+        VKL_SOURCE_TYPE_VOLUME = 7
+        VKL_SOURCE_TYPE_COLOR_TEXTURE = 8
+        VKL_SOURCE_TYPE_FONT_ATLAS = 9
+        VKL_SOURCE_TYPE_OTHER = 10
+        VKL_SOURCE_TYPE_COUNT = 11
 
     ctypedef enum VklSourceOrigin:
         VKL_SOURCE_ORIGIN_NONE = 0
@@ -558,10 +557,11 @@ cdef extern from "<visky/visky.h>":
         VKL_GRAPHICS_PATH = 11
         VKL_GRAPHICS_TEXT = 12
         VKL_GRAPHICS_IMAGE = 13
-        VKL_GRAPHICS_MESH = 14
-        VKL_GRAPHICS_FAKE_SPHERE = 15
-        VKL_GRAPHICS_VOLUME = 16
-        VKL_GRAPHICS_COUNT = 17
+        VKL_GRAPHICS_VOLUME_IMAGE = 14
+        VKL_GRAPHICS_MESH = 15
+        VKL_GRAPHICS_FAKE_SPHERE = 16
+        VKL_GRAPHICS_VOLUME = 17
+        VKL_GRAPHICS_COUNT = 18
 
     ctypedef enum VklTextureAxis:
         VKL_TEXTURE_AXIS_U = 0
