@@ -179,6 +179,11 @@ static void _graphics_points_wheel_callback(VklCanvas* canvas, VklEvent ev)
     tg->param += ev.u.w.dir[1] * .5;
     tg->param = CLIP(tg->param, 1, 100);
     vkl_upload_buffers(canvas, tg->br_params, 0, sizeof(VklGraphicsPointParams), &tg->param);
+}
+
+static void _graphics_update_mvp(VklCanvas* canvas, VklEvent ev)
+{
+    TestGraphics* tg = ev.user_data;
 
     // Update MVP.
     tg->mvp.model[0][0] = .1 * tg->param;
@@ -228,6 +233,7 @@ int test_graphics_dynamic(TestContext* context)
     vkl_event_callback(
         canvas, VKL_EVENT_MOUSE_WHEEL, 0, VKL_EVENT_MODE_SYNC, _graphics_points_wheel_callback,
         &tg);
+    vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _graphics_update_mvp, &tg);
 
     RUN;
     TEST_END
@@ -308,54 +314,7 @@ int test_graphics_depth(TestContext* context)
     INIT_GRAPHICS(VKL_GRAPHICS_MESH, 0)
     const uint32_t N = 1000;
     BEGIN_DATA(VklGraphicsMeshVertex, N * 3, NULL)
-
-    float x = 0;
-    float y = 0;
-    float l = .075;
-    float z = 0;
-    VklGraphicsMeshVertex *v0, *v1, *v2;
-    uint32_t j = 0;
-    float col = (1.5) / 256.0;
-    for (uint32_t i = 0; i < N; i++)
-    {
-        v0 = &((VklGraphicsMeshVertex*)vertices)[3 * i + 0];
-        v1 = &((VklGraphicsMeshVertex*)vertices)[3 * i + 1];
-        v2 = &((VklGraphicsMeshVertex*)vertices)[3 * i + 2];
-
-        x = .75 * (-1 + 2 * rand_float());
-        y = .75 * (-1 + 2 * rand_float());
-
-        // The following should work even if the depth buffer is not working.
-        // j = i < N / 6 ? 0 : 1;
-
-        // The following checks the depth buffer.
-        j = i % 2;
-
-        // red background, green foreground
-        z = j == 0 ? .75 : .25; // j == 0, .75 = background, .25 = foreground
-
-        v0->pos[0] = x - l;
-        v0->pos[1] = y - l;
-        v0->pos[2] = z;
-        v0->uv[0] = 0.00;
-        v0->uv[1] = col + 2 * j / 256.0;
-        v0->normal[2] = 1;
-
-        v1->pos[0] = x + l;
-        v1->pos[1] = y - l;
-        v1->pos[2] = z;
-        v1->uv[0] = 0.50;
-        v1->uv[1] = col + 2 * j / 256.0;
-        v1->normal[2] = 1;
-
-        v2->pos[0] = x + 0;
-        v2->pos[1] = y + l;
-        v2->pos[2] = z;
-        v2->uv[0] = 1.00;
-        v2->uv[1] = col + 2 * j / 256.0;
-        v2->normal[2] = 1;
-    }
-
+    _depth_vertices(N, vertices, false);
     END_DATA
 
     tg.br_params =
@@ -368,14 +327,7 @@ int test_graphics_depth(TestContext* context)
             &tg.bindings, VKL_USER_BINDING + i, gpu->context->color_texture.texture);
     vkl_bindings_update(&tg.bindings);
 
-    VklGraphicsMeshParams params = {0};
-    params.lights_params_0[0][0] = 0.4;
-    params.lights_params_0[0][1] = 0.4;
-    params.lights_params_0[0][2] = 0.4;
-    params.lights_pos_0[0][0] = -1;
-    params.lights_pos_0[0][1] = 0.5;
-    params.lights_pos_0[0][2] = +1;
-    params.tex_coefs[0] = 1;
+    VklGraphicsMeshParams params = default_graphics_mesh_params(tg.eye);
     vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsMeshParams), &params);
 
     RUN;
@@ -953,15 +905,7 @@ int test_graphics_mesh(TestContext* context)
         vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklViewport));
 
     // Parameters.
-    VklGraphicsMeshParams params = {0};
-    params.lights_params_0[0][0] = 0.4;
-    params.lights_params_0[0][1] = 0.4;
-    params.lights_params_0[0][2] = 0.4;
-    params.lights_pos_0[0][0] = -1;
-    params.lights_pos_0[0][1] = 0.5;
-    params.lights_pos_0[0][2] = +1;
-    params.tex_coefs[0] = 1;
-    glm_vec3_copy(tg.eye, params.view_pos);
+    VklGraphicsMeshParams params = default_graphics_mesh_params(tg.eye);
 
     tg.br_params =
         vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsMeshParams));

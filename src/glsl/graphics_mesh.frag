@@ -50,8 +50,9 @@ void main() {
         ambient = light_color;
 
         // Diffuse component.
-        // if (gl_FrontFacing) normal = -normal;
+        // HACK: normals on both faces
         diff = max(dot(light_dir, normal), 0.0);
+        diff = max(diff, max(dot(light_dir, -normal), 0.0));
         diffuse = diff * light_color;
 
         // Specular component.

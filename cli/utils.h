@@ -887,6 +887,67 @@ static void _triangle_graphics(TestVisual* visual, const char* suffix)
 
 
 
+static void _depth_vertices(uint32_t N, VklGraphicsMeshVertex* vertices, bool vulkan_transform)
+{
+    float x = 0;
+    float y = 0;
+    float l = .075;
+    float z = 0;
+    VklGraphicsMeshVertex *v0, *v1, *v2;
+    uint32_t j = 0;
+    float col = (0.5) / 256.0;
+    vec2 z_values = {.75, .25};
+    if (vulkan_transform)
+    {
+        z_values[0] = -.5;
+        z_values[1] = +.5;
+    }
+    for (uint32_t i = 0; i < N; i++)
+    {
+        v0 = &vertices[3 * i + 0];
+        v1 = &vertices[3 * i + 1];
+        v2 = &vertices[3 * i + 2];
+
+        x = .75 * (-1 + 2 * rand_float());
+        y = .75 * (-1 + 2 * rand_float());
+
+        // The following should work even if the depth buffer is not working.
+        // j = i < N / 6 ? 0 : 1;
+
+        // The following checks the depth buffer.
+        j = i % 2;
+
+        // grey background, color foreground
+        // j == 0 : background, j == 1 : foreground
+        // NOTE: no Vulkan transformation, use native Vulkan z coordinate, 0 = front, 1 = back
+        z = z_values[j % 2]; // j == 0, .75 = background, .25 = foreground (if no vulkan_transform)
+        z += .01 * randn();
+
+        v0->pos[0] = x - l;
+        v0->pos[1] = y - l;
+        v0->pos[2] = z;
+        v0->uv[0] = 0.00;
+        v0->uv[1] = col + 1 * j / 256.0;
+        v0->normal[2] = 1;
+
+        v1->pos[0] = x + l;
+        v1->pos[1] = y - l;
+        v1->pos[2] = z;
+        v1->uv[0] = 0.50;
+        v1->uv[1] = col + 1 * j / 256.0;
+        v1->normal[2] = 1;
+
+        v2->pos[0] = x + 0;
+        v2->pos[1] = y + l;
+        v2->pos[2] = z;
+        v2->uv[0] = 1.00;
+        v2->uv[1] = col + 1 * j / 256.0;
+        v2->normal[2] = 1;
+    }
+}
+
+
+
 static void _triangle_buffer(TestVisual* visual)
 {
     VklGpu* gpu = visual->gpu;

@@ -194,79 +194,18 @@ int test_visuals_mesh(TestContext* context)
         uint32_t N = 1000;
         uint32_t nv = 3 * N;
         VklGraphicsMeshVertex* vertices = calloc(3 * N, sizeof(VklGraphicsMeshVertex));
-        float x = 0;
-        float y = 0;
-        float l = .075;
-        float z = 0;
-        VklGraphicsMeshVertex *v0, *v1, *v2;
-        uint32_t j = 0;
-        float col = (1.5) / 256.0;
-        for (uint32_t i = 0; i < N; i++)
-        {
-            v0 = &vertices[3 * i + 0];
-            v1 = &vertices[3 * i + 1];
-            v2 = &vertices[3 * i + 2];
-
-            x = .75 * (-1 + 2 * rand_float());
-            y = .75 * (-1 + 2 * rand_float());
-
-            // The following should work even if the depth buffer is not working.
-            // j = i < N / 6 ? 0 : 1;
-
-            // The following checks the depth buffer.
-            j = i % 2;
-
-            // red background, green foreground
-            z = j == 0 ? .75 : .25; // j == 0, .75 = background, .25 = foreground
-
-            z += .01 * randn();
-
-            v0->pos[0] = x - l;
-            v0->pos[1] = y - l;
-            v0->pos[2] = z;
-            v0->uv[0] = 0.00;
-            v0->uv[1] = col + 2 * j / 256.0;
-            v0->normal[2] = -1;
-
-            v1->pos[0] = x + l;
-            v1->pos[1] = y - l;
-            v1->pos[2] = z;
-            v1->uv[0] = 0.50;
-            v1->uv[1] = col + 2 * j / 256.0;
-            v1->normal[2] = -1;
-
-            v2->pos[0] = x + 0;
-            v2->pos[1] = y + l;
-            v2->pos[2] = z;
-            v2->uv[0] = 1.00;
-            v2->uv[1] = col + 2 * j / 256.0;
-            v2->normal[2] = -1;
-        }
+        _depth_vertices(N, vertices, true);
         vkl_visual_data_source(&visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, vertices);
         FREE(vertices);
     }
 
     vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE, 0, gpu->context->color_texture.texture);
 
-    mat4 lights_params = {0};
-    lights_params[0][0] = 0.3;
-    lights_params[0][1] = 0.4;
-    lights_params[0][2] = 0.4;
-
-    mat4 lights_pos = {0};
-    lights_pos[0][0] = -2;
-    lights_pos[0][1] = 0.5;
-    lights_pos[0][2] = +2;
-
-    vec4 tex_coefs = {0};
-    tex_coefs[0] = 1;
-
-    vec4 view_pos = {0};
-    view_pos[2] = 3;
-    vkl_visual_data(&visual, VKL_PROP_LIGHT_PARAMS, 0, 1, lights_params);
-    vkl_visual_data(&visual, VKL_PROP_LIGHT_POS, 0, 1, lights_pos);
-    vkl_visual_data(&visual, VKL_PROP_TEXCOEFS, 0, 1, tex_coefs);
-    vkl_visual_data(&visual, VKL_PROP_VIEW_POS, 0, 1, view_pos);
+    VklGraphicsMeshParams params = default_graphics_mesh_params((vec3){0, 0, 3});
+    vkl_visual_data(&visual, VKL_PROP_LIGHT_PARAMS, 0, 1, &params.lights_params_0);
+    vkl_visual_data(&visual, VKL_PROP_LIGHT_POS, 0, 1, &params.lights_pos_0);
+    vkl_visual_data(&visual, VKL_PROP_TEXCOEFS, 0, 1, &params.tex_coefs);
+    vkl_visual_data(&visual, VKL_PROP_VIEW_POS, 0, 1, &params.view_pos);
 
     VklInteract interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
     visual.user_data = &interact;
