@@ -99,6 +99,16 @@ static void _common_bindings(TestGraphics* tg)
     vkl_bindings_buffer(&tg->bindings, 1, tg->br_viewport);
 }
 
+static void _interact_callback(VklCanvas* canvas, VklEvent ev)
+{
+    ASSERT(canvas != NULL);
+    TestGraphics* tg = ev.user_data;
+    ASSERT(tg != NULL);
+
+    vkl_interact_update(&tg->interact, canvas->viewport, &canvas->mouse, &canvas->keyboard);
+    vkl_upload_buffers(canvas, tg->br_mvp, 0, sizeof(VklMVP), &tg->interact.mvp);
+}
+
 
 
 /*************************************************************************************************/
@@ -705,7 +715,7 @@ static void _graphics_volume_callback(VklCanvas* canvas, VklEvent ev)
     TestGraphics* tg = ev.user_data;
     // float dx = ev.u.w.dir[1];
     for (uint32_t i = 0; i < 6; i++)
-        ((VklGraphicsVolumeVertex*)tg->vertices.data)[i].uvw[2] += 24 / 256.0;
+        ((VklGraphicsVolumeVertex*)tg->vertices.data)[i].uvw[2] += .5 / 256.0;
     vkl_upload_buffers(
         canvas, tg->br_vert, 0, tg->vertices.item_count * sizeof(VklGraphicsVolumeVertex),
         tg->vertices.data);
@@ -723,8 +733,7 @@ int test_graphics_volume_image(TestContext* context)
     tg.vertices = vkl_array_struct(n, sizeof(VklGraphicsVolumeVertex));
     ASSERT(tg.vertices.item_count == n);
     tg.br_vert = vkl_ctx_buffers(
-        gpu->context, VKL_BUFFER_TYPE_VERTEX, 1,
-        tg.vertices.item_count * sizeof(VklGraphicsVolumeVertex));
+        gpu->context, VKL_BUFFER_TYPE_VERTEX, 1, tg.vertices.item_count * tg.vertices.item_size);
     float x = .5;
     VklGraphicsVolumeVertex vertices[] = {
         {{-x, -x, 0}, {0, 1, 0.5}}, //
@@ -736,8 +745,7 @@ int test_graphics_volume_image(TestContext* context)
     };
     memcpy(tg.vertices.data, vertices, sizeof(vertices));
     vkl_upload_buffers(
-        canvas, tg.br_vert, 0, tg.vertices.item_count * sizeof(VklGraphicsVolumeVertex),
-        tg.vertices.data);
+        canvas, tg.br_vert, 0, tg.vertices.item_count * tg.vertices.item_size, tg.vertices.data);
 
     // Parameters.
     tg.br_params =
@@ -750,12 +758,13 @@ int test_graphics_volume_image(TestContext* context)
     const uint32_t nt = 12;
     VklTexture* texture =
         vkl_ctx_texture(gpu->context, 3, (uvec3){nt, nt, nt}, VK_FORMAT_R8_UNORM);
+    // vkl_texture_filter(texture, VKL_FILTER_MAX, VK_FILTER_LINEAR);
+    vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_REPEAT);
     vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_W, VK_SAMPLER_ADDRESS_MODE_REPEAT);
     uint8_t* tex_data = calloc(nt * nt * nt, sizeof(uint8_t));
     for (uint32_t i = 0; i < nt * nt * nt; i++)
-    {
         tex_data[i] = i % 256;
-    }
     vkl_upload_texture(
         canvas, texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, //
         nt * nt * nt * sizeof(uint8_t), tex_data);
@@ -766,8 +775,11 @@ int test_graphics_volume_image(TestContext* context)
     vkl_bindings_texture(&tg.bindings, VKL_USER_BINDING + 1, texture);
     vkl_bindings_update(&tg.bindings);
 
+    // Interactivity.
+    tg.interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
+    vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _interact_callback, &tg);
     vkl_event_callback(
-        canvas, VKL_EVENT_MOUSE_WHEEL, 0, VKL_EVENT_MODE_SYNC, _graphics_volume_callback, &tg);
+        canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _graphics_volume_callback, &tg);
 
     RUN;
     FREE(tex_data)
@@ -779,22 +791,6 @@ int test_graphics_volume_image(TestContext* context)
 /*************************************************************************************************/
 /*  Mesh tests                                                                                   */
 /*************************************************************************************************/
-
-static void _graphics_mesh_callback(VklCanvas* canvas, VklEvent ev)
-{
-    ASSERT(canvas != NULL);
-    TestGraphics* tg = ev.user_data;
-    ASSERT(tg != NULL);
-
-    vkl_interact_update(&tg->interact, canvas->viewport, &canvas->mouse, &canvas->keyboard);
-    vkl_upload_buffers(canvas, tg->br_mvp, 0, sizeof(VklMVP), &tg->interact.mvp);
-
-    // vec3 axis = {0};
-    // axis[1] = 1;
-    // glm_rotate_make(tg->mvp.model, ev.u.f.time, axis);
-    // vkl_mvp_camera(canvas->viewport, tg->eye, tg->center, (vec2){.1, 10}, &tg->mvp);
-    // vkl_upload_buffers(canvas, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
-}
 
 static VklMesh _graphics_mesh_example(VklMeshType type)
 {
@@ -919,11 +915,9 @@ int test_graphics_mesh(TestContext* context)
         vkl_bindings_texture(&tg.bindings, VKL_USER_BINDING + i, texture);
     vkl_bindings_update(&tg.bindings);
 
+    // Interactivity.
     tg.interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
-
-    // Callback.
-    vkl_event_callback(
-        canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _graphics_mesh_callback, &tg);
+    vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _interact_callback, &tg);
 
     RUN;
     TEST_END

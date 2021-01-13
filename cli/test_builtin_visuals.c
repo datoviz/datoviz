@@ -224,20 +224,32 @@ int test_visuals_volume_image(TestContext* context)
     VklVisual visual = vkl_visual(canvas);
     vkl_visual_builtin(&visual, VKL_VISUAL_VOLUME_IMAGE, 0);
 
-    float x = .75;
-    vkl_visual_data(&visual, VKL_PROP_POS, 0, 2, (vec3[]){{-x, +x, +x}, {-x, +x, -x}});
-    vkl_visual_data(&visual, VKL_PROP_POS, 1, 2, (vec3[]){{+x, -x, +x}, {+x, -x, -x}});
-    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 0, 2, (vec3[]){{0, 0, 0}, {0, 0, 1}});
-    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 1, 2, (vec3[]){{1, 1, 0}, {1, 1, 1}});
+    // float x = .5;
+    // vkl_visual_data(&visual, VKL_PROP_POS, 0, 2, (vec3[]){{-x, +x, +.5}, {-x, +x, -.5}});
+    // vkl_visual_data(&visual, VKL_PROP_POS, 1, 2, (vec3[]){{+x, -x, +.5}, {+x, -x, -.5}});
+    // vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 0, 2, (vec3[]){{0, 0, 1}, {0, 0, 1}});
+    // vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 1, 2, (vec3[]){{1, 1, 1}, {1, 1, 1}});
+
+    float x = .5;
+    vkl_visual_data(&visual, VKL_PROP_POS, 0, 1, (vec3[]){{-x, +x, 0}});
+    vkl_visual_data(&visual, VKL_PROP_POS, 1, 1, (vec3[]){{+x, -x, 0}});
+    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 0, 1, (vec3[]){{0.1, 0.1, 0.5}});
+    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 1, 1, (vec3[]){{0.9, 0.9, 0.5}});
 
     VklColormap cmap = VKL_CMAP_JET;
     vkl_visual_data(&visual, VKL_PROP_COLORMAP, 0, 1, &cmap);
 
-    uint8_t volume[8] = {0};
-    for (uint32_t i = 0; i < 8; i++)
+    // uint8_t volume[8] = {0};
+    uint8_t* volume = calloc(16, sizeof(uint8_t));
+    for (uint32_t i = 0; i < 16; i++)
         volume[i] = 32 * i;
     VklTexture* texture = vkl_ctx_texture(gpu->context, 3, (uvec3){2, 2, 2}, VK_FORMAT_R8_UNORM);
-    vkl_texture_upload(texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, sizeof(volume), volume);
+    vkl_texture_filter(texture, VKL_FILTER_MAX, VK_FILTER_LINEAR);
+    vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_W, VK_SAMPLER_ADDRESS_MODE_REPEAT);
+
+    vkl_texture_upload(texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, 16 * sizeof(uint8_t), volume);
     vkl_visual_texture(&visual, VKL_SOURCE_TYPE_VOLUME, 0, texture);
 
     VklInteract interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
@@ -245,6 +257,7 @@ int test_visuals_volume_image(TestContext* context)
     vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _update_interact, &visual);
 
     RUN;
+    FREE(volume);
     END;
 }
 
