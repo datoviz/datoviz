@@ -264,9 +264,13 @@ static void _visual_volume_image(VklVisual* visual)
         visual, VKL_SOURCE_TYPE_PARAM, 0, VKL_PIPELINE_GRAPHICS, 0, //
         VKL_USER_BINDING, sizeof(VklGraphicsVolumeParams), 0);      //
 
+    vkl_visual_source(                                                      // colormap texture
+        visual, VKL_SOURCE_TYPE_COLOR_TEXTURE, 0, VKL_PIPELINE_GRAPHICS, 0, //
+        VKL_USER_BINDING + 1, sizeof(uint8_t), 0);                          //
+
     vkl_visual_source(                                               // texture source
         visual, VKL_SOURCE_TYPE_VOLUME, 0, VKL_PIPELINE_GRAPHICS, 0, //
-        VKL_USER_BINDING + 1, sizeof(uint8_t), 0);                   //
+        VKL_USER_BINDING + 2, sizeof(uint8_t), 0);                   //
 
     // Props:
 
@@ -290,6 +294,10 @@ static void _visual_volume_image(VklVisual* visual)
     vkl_visual_prop_copy(
         visual, VKL_PROP_COLORMAP, 0, 0, offsetof(VklGraphicsVolumeParams, cmap),
         VKL_ARRAY_COPY_SINGLE, 1);
+
+    // Colormap texture prop.
+    vkl_visual_prop(
+        visual, VKL_PROP_COLOR_TEXTURE, 0, VKL_DTYPE_CHAR, VKL_SOURCE_TYPE_COLOR_TEXTURE, 0);
 
     // 3D texture prop.
     vkl_visual_prop(visual, VKL_PROP_VOLUME, 0, VKL_DTYPE_CHAR, VKL_SOURCE_TYPE_VOLUME, 0);

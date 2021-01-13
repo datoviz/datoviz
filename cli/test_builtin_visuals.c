@@ -233,8 +233,8 @@ int test_visuals_volume_image(TestContext* context)
     float x = .5;
     vkl_visual_data(&visual, VKL_PROP_POS, 0, 1, (vec3[]){{-x, +x, 0}});
     vkl_visual_data(&visual, VKL_PROP_POS, 1, 1, (vec3[]){{+x, -x, 0}});
-    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 0, 1, (vec3[]){{0.1, 0.1, 0.5}});
-    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 1, 1, (vec3[]){{0.9, 0.9, 0.5}});
+    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 0, 1, (vec3[]){{0.1, 0.1, 0.1}});
+    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 1, 1, (vec3[]){{0.9, 0.9, 0.1}});
 
     VklColormap cmap = VKL_CMAP_JET;
     vkl_visual_data(&visual, VKL_PROP_COLORMAP, 0, 1, &cmap);
@@ -244,12 +244,16 @@ int test_visuals_volume_image(TestContext* context)
     for (uint32_t i = 0; i < 16; i++)
         volume[i] = 32 * i;
     VklTexture* texture = vkl_ctx_texture(gpu->context, 3, (uvec3){2, 2, 2}, VK_FORMAT_R8_UNORM);
-    vkl_texture_filter(texture, VKL_FILTER_MAX, VK_FILTER_LINEAR);
+    // WARNING: nearest filter causes visual artifacts when sampling from a 3D texture close to the
+    // boundaries between different values
+    vkl_texture_filter(texture, VKL_FILTER_MAX, VK_FILTER_NEAREST);
     vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_REPEAT);
     vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_REPEAT);
     vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_W, VK_SAMPLER_ADDRESS_MODE_REPEAT);
 
     vkl_texture_upload(texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, 16 * sizeof(uint8_t), volume);
+    vkl_visual_texture(
+        &visual, VKL_SOURCE_TYPE_COLOR_TEXTURE, 0, gpu->context->color_texture.texture);
     vkl_visual_texture(&visual, VKL_SOURCE_TYPE_VOLUME, 0, texture);
 
     VklInteract interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);

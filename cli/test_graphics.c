@@ -758,7 +758,9 @@ int test_graphics_volume_image(TestContext* context)
     const uint32_t nt = 12;
     VklTexture* texture =
         vkl_ctx_texture(gpu->context, 3, (uvec3){nt, nt, nt}, VK_FORMAT_R8_UNORM);
-    // vkl_texture_filter(texture, VKL_FILTER_MAX, VK_FILTER_LINEAR);
+    // WARNING: nearest filter causes visual artifacts when sampling from a 3D texture close to the
+    // boundaries between different values
+    vkl_texture_filter(texture, VKL_FILTER_MAX, VK_FILTER_NEAREST);
     vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_REPEAT);
     vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_REPEAT);
     vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_W, VK_SAMPLER_ADDRESS_MODE_REPEAT);
@@ -772,7 +774,8 @@ int test_graphics_volume_image(TestContext* context)
     // Bindings.1
     _common_bindings(&tg);
     vkl_bindings_buffer(&tg.bindings, VKL_USER_BINDING, tg.br_params);
-    vkl_bindings_texture(&tg.bindings, VKL_USER_BINDING + 1, texture);
+    vkl_bindings_texture(&tg.bindings, VKL_USER_BINDING + 1, gpu->context->color_texture.texture);
+    vkl_bindings_texture(&tg.bindings, VKL_USER_BINDING + 2, texture);
     vkl_bindings_update(&tg.bindings);
 
     // Interactivity.
