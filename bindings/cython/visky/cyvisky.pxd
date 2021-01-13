@@ -86,10 +86,18 @@ cdef extern from "<visky/visky.h>":
         uint32_t    uint32[4]
 
 
+    # ---------------------------------------------------------------------------------------------
+    # Vulkan enums:
+    # ---------------------------------------------------------------------------------------------
 
     # HACK: manual copy for now
     ctypedef enum VkFormat:
         VK_FORMAT_R8_UNORM = 9
+
+    ctypedef enum VkFilter:
+        VK_FILTER_NEAREST = 0
+        VK_FILTER_LINEAR = 1
+
 
 
     # ---------------------------------------------------------------------------------------------
@@ -705,6 +713,7 @@ cdef extern from "<visky/visky.h>":
 
     # from file: context.h
     VklTexture* vkl_ctx_texture(VklContext* context, uint32_t dims, uvec3 size, VkFormat format)
+    void vkl_texture_filter(VklTexture* texture, VklFilterType type, VkFilter filter)
     void vkl_texture_upload(VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, const void* data)
 
     # from file: scene.h

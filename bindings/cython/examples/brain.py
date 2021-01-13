@@ -35,8 +35,8 @@ mesh.data('index', indices.astype(np.uint32))
 # Slice plane.
 plane = panel.visual('volume_slice')
 x = .5;
-plane.data('pos', np.array([[-x, +x, 0]], dtype=np.float32), idx=0)
-plane.data('pos', np.array([[+x, -x, 0]], dtype=np.float32), idx=1)
+plane.data('pos', np.array([[0, -x, +x]], dtype=np.float32), idx=0)
+plane.data('pos', np.array([[0, +x, -x]], dtype=np.float32), idx=1)
 plane.data('texcoords', np.array([[0, 0, 0.5]], dtype=np.float32), idx=0)
 plane.data('texcoords', np.array([[1, 1, 0.5]], dtype=np.float32), idx=1)
 plane.data('colormap', np.array([[26]], dtype=np.int32))
