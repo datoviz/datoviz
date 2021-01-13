@@ -238,6 +238,7 @@ int test_visuals_volume_slice(TestContext* context)
 
     VklColormap cmap = VKL_CMAP_JET;
     vkl_visual_data(&visual, VKL_PROP_COLORMAP, 0, 1, &cmap);
+    vkl_visual_data(&visual, VKL_PROP_TRANSFER_Y, 0, 1, (vec4){0, .2, .8, 1});
 
     // uint8_t volume[8] = {0};
     uint8_t* volume = calloc(16, sizeof(uint8_t));

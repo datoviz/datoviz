@@ -713,9 +713,9 @@ int test_graphics_image(TestContext* context)
 static void _graphics_volume_callback(VklCanvas* canvas, VklEvent ev)
 {
     TestGraphics* tg = ev.user_data;
-    // float dx = ev.u.w.dir[1];
+    float dx = ev.u.f.interval;
     for (uint32_t i = 0; i < 6; i++)
-        ((VklGraphicsVolumeVertex*)tg->vertices.data)[i].uvw[2] += .5 / 256.0;
+        ((VklGraphicsVolumeVertex*)tg->vertices.data)[i].uvw[2] += .1 * dx;
     vkl_upload_buffers(
         canvas, tg->br_vert, 0, tg->vertices.item_count * sizeof(VklGraphicsVolumeVertex),
         tg->vertices.data);
@@ -752,6 +752,17 @@ int test_graphics_volume_slice(TestContext* context)
         vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsVolumeParams));
     VklGraphicsVolumeParams params = {0};
     params.cmap = VKL_CMAP_HSV;
+
+    params.cmap_coefs[0][0] = 0.0;
+    params.cmap_coefs[0][1] = .333;
+    params.cmap_coefs[0][2] = .666;
+    params.cmap_coefs[0][3] = 1.0;
+
+    params.cmap_coefs[1][0] = 0;
+    params.cmap_coefs[1][1] = .2;
+    params.cmap_coefs[1][2] = .8;
+    params.cmap_coefs[1][3] = 1;
+
     vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsVolumeParams), &params);
 
     // Texture.

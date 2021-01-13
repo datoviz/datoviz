@@ -78,6 +78,8 @@ _PROPS = {
     'texcoefs': cv.VKL_PROP_TEXCOEFS,
     'view_pos': cv.VKL_PROP_VIEW_POS,
     'colormap': cv.VKL_PROP_COLORMAP,
+    'transferx': cv.VKL_PROP_TRANSFER_X,
+    'transfery': cv.VKL_PROP_TRANSFER_Y,
 }
 
 
