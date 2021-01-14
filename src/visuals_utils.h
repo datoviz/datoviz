@@ -583,4 +583,76 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
 
 
 
+/*************************************************************************************************/
+/*  Position normalization                                                                       */
+/*************************************************************************************************/
+
+// TODO: use double instead
+static void _norm_cube(VklArray* points_in, vec2 xlim, vec2 ylim, vec2 zlim)
+{
+    float xmin = INFINITY;
+    float ymin = INFINITY;
+    float zmin = INFINITY;
+
+    float xmax = -INFINITY;
+    float ymax = -INFINITY;
+    float zmax = -INFINITY;
+
+    vec3* pos = NULL;
+    for (uint32_t i = 0; i < points_in->item_count; i++)
+    {
+        pos = vkl_array_item(points_in, i);
+        xmin = MIN(xmin, (*pos)[0]);
+        xmax = MAX(xmax, (*pos)[0]);
+        ymin = MIN(ymin, (*pos)[1]);
+        ymax = MAX(ymax, (*pos)[1]);
+        zmin = MIN(zmin, (*pos)[2]);
+        zmax = MAX(zmax, (*pos)[2]);
+    }
+
+    float xcenter = .5 * (xmin + xmax);
+    float ycenter = .5 * (ymin + ymax);
+    float zcenter = .5 * (zmin + zmax);
+
+    float edge = 0;
+    edge = MAX(edge, MAX(xmax - xcenter, xcenter - xmin));
+    edge = MAX(edge, MAX(ymax - ycenter, ycenter - ymin));
+    edge = MAX(edge, MAX(zmax - zcenter, zcenter - zmin));
+    if (edge == 0)
+        edge = 1;
+    ASSERT(edge > 0);
+
+    xlim[0] = xcenter - edge;
+    xlim[1] = xcenter + edge;
+
+    ylim[0] = ycenter - edge;
+    ylim[1] = ycenter + edge;
+
+    zlim[0] = zcenter - edge;
+    zlim[1] = zcenter + edge;
+}
+
+
+
+static void _norm_pos(vec2 xlim, vec2 ylim, vec2 zlim, VklArray* points_in, VklArray* points_out)
+{
+    ASSERT(points_out->item_count == points_in->item_count);
+    ASSERT(points_out->item_size == points_in->item_size);
+
+    vec3* pos_in = NULL;
+    vec3* pos_out = NULL;
+
+    for (uint32_t i = 0; i < points_in->item_count; i++)
+    {
+        pos_in = vkl_array_item(points_in, i);
+        pos_out = vkl_array_item(points_out, i);
+
+        (*pos_out)[0] = -1.0 + 2.0 * ((*pos_in)[0] - xlim[0]) / (xlim[1] - xlim[0]);
+        (*pos_out)[1] = -1.0 + 2.0 * ((*pos_in)[1] - ylim[0]) / (ylim[1] - ylim[0]);
+        (*pos_out)[2] = -1.0 + 2.0 * ((*pos_in)[2] - zlim[0]) / (zlim[1] - zlim[0]);
+    }
+}
+
+
+
 #endif

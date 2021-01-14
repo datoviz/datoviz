@@ -21,6 +21,7 @@
 
 static TestCase TEST_CASES[] = {
 
+    // common tests
     CASE_FIXTURE_NONE(test_container),
 
     // vklite2
@@ -94,11 +95,12 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_array_3D),  //
 
     // visuals
-    CASE_FIXTURE_NONE(test_visuals_1), //
-    CASE_FIXTURE_NONE(test_visuals_2), //
-    CASE_FIXTURE_NONE(test_visuals_3), //
-    CASE_FIXTURE_NONE(test_visuals_4), //
-    CASE_FIXTURE_NONE(test_visuals_5), //
+    CASE_FIXTURE_NONE(test_visuals_norm), //
+    CASE_FIXTURE_NONE(test_visuals_1),    //
+    CASE_FIXTURE_NONE(test_visuals_2),    //
+    CASE_FIXTURE_NONE(test_visuals_3),    //
+    CASE_FIXTURE_NONE(test_visuals_4),    //
+    CASE_FIXTURE_NONE(test_visuals_5),    //
 
     // interact
     CASE_FIXTURE_NONE(test_interact_1),       //

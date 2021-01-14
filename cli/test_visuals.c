@@ -1,5 +1,6 @@
 #include "test_visuals.h"
 #include "../include/visky/visuals.h"
+#include "../src/visuals_utils.h"
 #include "utils.h"
 
 
@@ -13,8 +14,56 @@ static void _wait(VklCanvas* canvas, VklEvent ev) { vkl_sleep(500); }
 
 
 /*************************************************************************************************/
-/*  Graphics tests                                                                               */
+/*  Visuals tests                                                                                */
 /*************************************************************************************************/
+
+int test_visuals_norm(TestContext* context)
+{
+    const uint32_t n = 10000;
+    const float eps = 1e-3;
+
+    // Compute the data bounds of an array of vec3.
+    VklArray pos_in = vkl_array(n, VKL_DTYPE_VEC3);
+    vec3* positions = (vec3*)pos_in.data;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        positions[i][0] = +2 + rand_float();
+        positions[i][1] = +8 + rand_float();
+        positions[i][2] = -5 + 10 * rand_float();
+    }
+    vec2 xlim, ylim, zlim;
+    _norm_cube(&pos_in, xlim, ylim, zlim);
+    AT(xlim[0] - 2 < eps);
+    AT(2 - xlim[1] < eps);
+    AT(ylim[0] - 8 < eps);
+    AT(8 - ylim[1] < eps);
+    AT(zlim[0] + 5 < eps);
+    AT(5 - zlim[1] < eps);
+
+
+    // Normalize the data.
+    VklArray pos_out = vkl_array(n, VKL_DTYPE_VEC3);
+    _norm_pos(xlim, ylim, zlim, &pos_in, &pos_out);
+    positions = (vec3*)pos_out.data;
+    vec3* pos = NULL;
+    float v = 0;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        pos = vkl_array_item(&pos_out, i);
+        v = (*pos)[0];
+        AT(-1 <= v && v <= +1);
+        v = (*pos)[1];
+        AT(-1 <= v && v <= +1);
+        v = (*pos)[2];
+        AT(-1 <= v && v <= +1);
+    }
+
+
+    vkl_array_destroy(&pos_in);
+    vkl_array_destroy(&pos_out);
+    return 0;
+}
+
 
 int test_visuals_1(TestContext* context)
 {
