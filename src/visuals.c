@@ -512,8 +512,8 @@ VklProp* vkl_prop_get(VklVisual* visual, VklPropType prop_type, uint32_t prop_id
         prop = vkl_container_iter(&visual->props);
     }
     if (out == NULL)
-        log_error("prop with type %d #%d not found", prop_type, prop_idx);
-    ASSERT(out != NULL);
+        log_debug("prop with type %d #%d not found", prop_type, prop_idx);
+    // ASSERT(out != NULL);
     return out;
 }
 

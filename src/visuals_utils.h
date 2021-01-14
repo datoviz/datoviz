@@ -92,7 +92,7 @@ static VkFormat _get_texture_format(VklVisual* visual, VklSource* source)
         {
             // Check that there is only 1 prop associated to the texture source.
             if (dtype != VKL_DTYPE_NONE)
-                log_error("multiple texture props not supported");
+                log_error("multiple texture props not (yet) supported");
             dtype = prop->dtype;
         }
         prop = vkl_container_iter(&visual->props);
@@ -354,7 +354,7 @@ static void _prop_copy(VklVisual* visual, VklProp* prop)
 
     if (prop->arr_orig.data == NULL)
     {
-        log_warn("visual prop %d #%d not set", prop->prop_type, prop->prop_idx);
+        log_debug("visual prop %d #%d not set", prop->prop_type, prop->prop_idx);
         return;
     }
 
@@ -441,7 +441,7 @@ static void _bake_source(VklVisual* visual, VklSource* source)
     uint32_t count = _source_size(visual, source);
     if (count == 0)
     {
-        log_warn("empty source %d", source->source_type);
+        log_debug("empty source %d", source->source_type);
         return;
     }
 
@@ -677,7 +677,7 @@ static VklBox _box_cube(VklBox box)
 
 
 
-static void _norm_pos(VklBox box, VklArray* points_in, VklArray* points_out)
+static void _normalize_pos(VklBox box, VklArray* points_in, VklArray* points_out)
 {
     ASSERT(points_out->item_count == points_in->item_count);
     ASSERT(points_out->item_size == points_in->item_size);
