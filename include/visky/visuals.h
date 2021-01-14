@@ -135,6 +135,7 @@ typedef struct VklProp VklProp;
 typedef union VklSourceUnion VklSourceUnion;
 typedef struct VklSource VklSource;
 typedef struct VklDataCoords VklDataCoords;
+typedef struct VklBox VklBox;
 
 typedef struct VklVisualFillEvent VklVisualFillEvent;
 typedef struct VklVisualDataEvent VklVisualDataEvent;
@@ -169,6 +170,14 @@ enqueue data transfers
 /*************************************************************************************************/
 /*  Source structs                                                                               */
 /*************************************************************************************************/
+
+struct VklBox
+{
+    vec2 xlim;
+    vec2 ylim;
+    vec2 zlim;
+};
+
 
 struct VklDataCoords
 {

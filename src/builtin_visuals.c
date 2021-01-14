@@ -242,6 +242,19 @@ static void _visual_volume_slice_bake(VklVisual* visual, VklVisualDataEvent ev)
     }
 }
 
+static void _visual_normalize(VklVisual* visual, VklVisualDataEvent ev)
+{
+    ASSERT(visual != NULL);
+    VklProp* prop = vkl_prop_get(visual, VKL_PROP_POS, 0);
+    VklArray* arr = &prop->arr_orig;
+    ASSERT(arr->item_count > 0);
+
+    VklArray* arr_tr = &prop->arr_trans;
+    *arr_tr = vkl_array(arr->item_count, VKL_DTYPE_VEC3);
+    VklBox box = _norm_cube(arr);
+    _norm_pos(box, arr, arr_tr);
+}
+
 static void _visual_volume_slice(VklVisual* visual)
 {
     ASSERT(visual != NULL);
@@ -333,6 +346,7 @@ static void _visual_volume_slice(VklVisual* visual)
 
     // Baking function.
     vkl_visual_callback_bake(visual, _visual_volume_slice_bake);
+    vkl_visual_callback_transform(visual, _visual_normalize);
 }
 
 

@@ -560,7 +560,7 @@ void vkl_visual_update(
 
     if (visual->callback_transform != NULL)
     {
-        log_trace("visual transform callback");
+        log_debug("visual transform callback");
         // This callback updates some props data_trans
         visual->callback_transform(visual, ev);
     }
