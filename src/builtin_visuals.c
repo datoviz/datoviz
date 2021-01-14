@@ -212,8 +212,8 @@ static void _visual_volume_slice_bake(VklVisual* visual, VklVisualDataEvent ev)
     ASSERT(source->arr.item_size == sizeof(VklGraphicsVolumeVertex));
 
     // Number of images
-    uint32_t img_count = vkl_bake_prop(visual, VKL_PROP_POS, 0)->arr_orig.item_count;
-    ASSERT(vkl_bake_prop(visual, VKL_PROP_POS, 1)->arr_orig.item_count == img_count);
+    uint32_t img_count = vkl_bake_array(visual, VKL_PROP_POS, 0)->item_count;
+    ASSERT(vkl_bake_array(visual, VKL_PROP_POS, 1)->item_count == img_count);
 
     // Graphics data.
     VklGraphicsData data = vkl_graphics_data(visual->graphics[0], &source->arr, NULL, NULL);
@@ -403,22 +403,22 @@ static uint32_t _count_prop_items(
     {
         for (uint32_t j = 0; j < idx_count; j++)
         {
-            count += vkl_bake_prop(visual, prop_types[i], j)->arr_orig.item_count;
+            count += vkl_bake_array(visual, prop_types[i], j)->item_count;
         }
     }
     return count;
 }
 
-static uint32_t _count_chars(VklProp* prop)
+static uint32_t _count_chars(VklArray* arr_text)
 {
-    ASSERT(prop != NULL);
-    uint32_t n_text = prop->arr_orig.item_count;
+    ASSERT(arr_text != NULL);
+    uint32_t n_text = arr_text->item_count;
     uint32_t char_count = 0;
     char* str = NULL;
     uint32_t slen = 0;
     for (uint32_t i = 0; i < n_text; i++)
     {
-        str = ((char**)prop->arr_orig.data)[i];
+        str = ((char**)arr_text->data)[i];
         slen = strlen(str);
         ASSERT(slen > 0);
         char_count += slen;
@@ -602,14 +602,14 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
         vkl_graphics_data(visual->graphics[1], &text_vert_src->arr, NULL, visual);
 
     // Text prop.
-    prop = vkl_bake_prop(visual, VKL_PROP_TEXT, 0);
+    VklArray* arr_text = vkl_bake_array(visual, VKL_PROP_TEXT, 0);
     ASSERT(prop != NULL);
 
     // Major tick prop.
     VklProp* prop_major = vkl_bake_prop(visual, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR);
     uint32_t n_major = prop_major->arr_orig.item_count;
-    uint32_t n_text = prop->arr_orig.item_count;
-    uint32_t count_chars = _count_chars(prop);
+    uint32_t n_text = arr_text->item_count;
+    uint32_t count_chars = _count_chars(arr_text);
 
     // Skip text graphics if no text.
     if (n_text == 0 || count_chars == 0 || n_major == 0)
@@ -653,7 +653,7 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
     for (uint32_t i = 0; i < n_text; i++)
     {
         // Add text.
-        text = ((char**)prop->arr_orig.data)[i];
+        text = ((char**)arr_text->data)[i];
         ASSERT(text != NULL);
         ASSERT(strlen(text) > 0);
         str_item.font_size = font_size;

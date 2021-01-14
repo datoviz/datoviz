@@ -463,16 +463,16 @@ void vkl_visual_group(VklVisual* visual, uint32_t group_idx, uint32_t size)
 
 
 void vkl_visual_data(
-    VklVisual* visual, VklPropType prop_type, uint32_t idx, uint32_t count, const void* data)
+    VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, uint32_t count, const void* data)
 {
     ASSERT(visual != NULL);
-    vkl_visual_data_partial(visual, prop_type, idx, 0, count, count, data);
+    vkl_visual_data_partial(visual, prop_type, prop_idx, 0, count, count, data);
 }
 
 
 
 void vkl_visual_data_partial(
-    VklVisual* visual, VklPropType prop_type, uint32_t idx, //
+    VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, //
     uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data)
 {
     ASSERT(visual != NULL);
@@ -481,7 +481,7 @@ void vkl_visual_data_partial(
     ASSERT(data_item_count > 0);
 
     // Get the associated prop.
-    VklProp* prop = vkl_bake_prop(visual, prop_type, idx);
+    VklProp* prop = vkl_bake_prop(visual, prop_type, prop_idx);
     ASSERT(prop != NULL);
 
     // Make sure the array has the right size.
@@ -714,14 +714,14 @@ VklSource* vkl_bake_source(VklVisual* visual, VklSourceType source_type, uint32_
 
 
 
-VklProp* vkl_bake_prop(VklVisual* visual, VklPropType prop_type, uint32_t idx)
+VklProp* vkl_bake_prop(VklVisual* visual, VklPropType prop_type, uint32_t prop_idx)
 {
     ASSERT(visual != NULL);
     VklProp* prop = vkl_container_iter_init(&visual->props);
     VklProp* out = NULL;
     while (prop != NULL)
     {
-        if (prop->prop_type == prop_type && prop->prop_idx == idx)
+        if (prop->prop_type == prop_type && prop->prop_idx == prop_idx)
         {
             ASSERT(out == NULL);
             out = prop;
@@ -729,19 +729,32 @@ VklProp* vkl_bake_prop(VklVisual* visual, VklPropType prop_type, uint32_t idx)
         prop = vkl_container_iter(&visual->props);
     }
     if (out == NULL)
-        log_error("prop with type %d #%d not found", prop_type, idx);
+        log_error("prop with type %d #%d not found", prop_type, prop_idx);
     ASSERT(out != NULL);
     return out;
 }
 
 
 
-void* vkl_bake_prop_item(VklProp* prop, uint32_t idx)
+VklArray* vkl_bake_array(VklVisual* visual, VklPropType prop_type, uint32_t prop_idx)
+{
+    ASSERT(visual != NULL);
+    VklProp* prop = vkl_bake_prop(visual, prop_type, prop_idx);
+    ASSERT(prop != NULL);
+    if (prop->arr_trans.item_count > 0)
+        return &prop->arr_trans;
+    else
+        return &prop->arr_orig;
+}
+
+
+
+void* vkl_bake_prop_item(VklProp* prop, uint32_t prop_idx)
 {
     ASSERT(prop != NULL);
     void* res = prop->default_value;
-    if (idx < prop->arr_orig.item_count)
-        res = vkl_array_item(&prop->arr_orig, idx);
+    if (prop_idx < prop->arr_orig.item_count)
+        res = vkl_array_item(&prop->arr_orig, prop_idx);
     if (res == NULL)
     {
         log_debug("no default value for prop %d #%d", prop->prop_type, prop->prop_idx);

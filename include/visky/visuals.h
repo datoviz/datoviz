@@ -412,6 +412,8 @@ vkl_bake_source(VklVisual* visual, VklSourceType source_type, uint32_t source_id
 
 VKY_EXPORT VklProp* vkl_bake_prop(VklVisual* visual, VklPropType prop_type, uint32_t idx);
 
+VKY_EXPORT VklArray* vkl_bake_array(VklVisual* visual, VklPropType prop_type, uint32_t idx);
+
 VKY_EXPORT void* vkl_bake_prop_item(VklProp* prop, uint32_t idx);
 
 VKY_EXPORT uint32_t vkl_bake_max_prop_size(VklVisual* visual, VklSource* source);
