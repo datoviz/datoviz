@@ -324,19 +324,19 @@ _graphics_volume_slice_callback(VklGraphicsData* data, uint32_t item_count, cons
 
     VklGraphicsVolumeVertex vertices[6] = {0};
 
-    glm_vec3_copy(item_vert->pos3, vertices[0].pos);
-    glm_vec3_copy(item_vert->pos2, vertices[1].pos);
-    glm_vec3_copy(item_vert->pos1, vertices[2].pos);
-    glm_vec3_copy(item_vert->pos1, vertices[3].pos);
-    glm_vec3_copy(item_vert->pos0, vertices[4].pos);
-    glm_vec3_copy(item_vert->pos3, vertices[5].pos);
+    _vec3_copy(item_vert->pos3, vertices[0].pos);
+    _vec3_copy(item_vert->pos2, vertices[1].pos);
+    _vec3_copy(item_vert->pos1, vertices[2].pos);
+    _vec3_copy(item_vert->pos1, vertices[3].pos);
+    _vec3_copy(item_vert->pos0, vertices[4].pos);
+    _vec3_copy(item_vert->pos3, vertices[5].pos);
 
-    glm_vec3_copy(item_vert->uvw3, vertices[0].uvw);
-    glm_vec3_copy(item_vert->uvw2, vertices[1].uvw);
-    glm_vec3_copy(item_vert->uvw1, vertices[2].uvw);
-    glm_vec3_copy(item_vert->uvw1, vertices[3].uvw);
-    glm_vec3_copy(item_vert->uvw0, vertices[4].uvw);
-    glm_vec3_copy(item_vert->uvw3, vertices[5].uvw);
+    _vec3_copy(item_vert->uvw3, vertices[0].uvw);
+    _vec3_copy(item_vert->uvw2, vertices[1].uvw);
+    _vec3_copy(item_vert->uvw1, vertices[2].uvw);
+    _vec3_copy(item_vert->uvw1, vertices[3].uvw);
+    _vec3_copy(item_vert->uvw0, vertices[4].uvw);
+    _vec3_copy(item_vert->uvw3, vertices[5].uvw);
 
     vkl_array_data(data->vertices, 6 * data->current_idx, 6, 6, vertices);
 
