@@ -121,6 +121,10 @@ static void _graphics_marker(VklCanvas* canvas, VklGraphics* graphics)
     SHADER(FRAGMENT, "graphics_marker_frag")
     PRIMITIVE(POINT_LIST)
 
+    // Depth test flag.
+    if ((graphics->flags & VKL_GRAPHICS_FLAGS_DEPTH_TEST) != 0)
+        vkl_graphics_depth_test(graphics, VKL_DEPTH_TEST_ENABLE);
+
     ATTR_BEGIN(VklGraphicsMarkerVertex)
     ATTR_POS(VklGraphicsMarkerVertex, pos)
     ATTR_COL(VklGraphicsMarkerVertex, color)
