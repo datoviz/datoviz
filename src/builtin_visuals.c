@@ -63,11 +63,16 @@ static void _visual_normalize(VklVisual* visual, VklVisualDataEvent ev)
         arr = &prop->arr_orig;
         if (arr->item_count == 0)
         {
-            log_debug("POS prop #%d is empty, skipping data normalization", i);
+            log_warn("POS prop #%d is empty, skipping data normalization", i);
             return;
         }
         boxes[i] = _box_bounding(arr);
         n_pos_props++;
+    }
+    if (n_pos_props == 0)
+    {
+        log_warn("no POS props found, skipping data normalization");
+        return;
     }
 
     // Merge the boxes and make it square.
@@ -78,6 +83,7 @@ static void _visual_normalize(VklVisual* visual, VklVisualDataEvent ev)
     VklArray* arr_tr = NULL;
     for (uint32_t i = 0; i < n_pos_props; i++)
     {
+        log_info("normalize POS prop #%d", i);
         prop = vkl_prop_get(visual, VKL_PROP_POS, i);
         arr = &prop->arr_orig;
         arr_tr = &prop->arr_trans;

@@ -23,6 +23,8 @@ static void _update_visual_viewport(VklPanel* panel, VklVisual* visual)
         // NOTE: here we make the assumption that there is exactly 1 viewport per graphics
         // pipeline, such that the source idx corresponds to the pipeline idx.
         vkl_visual_data_source(visual, VKL_SOURCE_TYPE_VIEWPORT, pidx, 0, 1, 1, &visual->viewport);
+        // HACK: this call should not set the visual status to NEED_UPDATE
+        visual->obj.status = VKL_OBJECT_STATUS_CREATED;
     }
 }
 
@@ -64,6 +66,7 @@ static void _scene_fill(VklCanvas* canvas, VklEvent ev)
     VklViewport viewport = {0};
     VklCommands* cmds = NULL;
     VklPanel* panel = NULL;
+    VklVisual* visual = NULL;
     uint32_t img_idx = 0;
 
     // Go through all the current command buffers.
@@ -87,7 +90,7 @@ static void _scene_fill(VklCanvas* canvas, VklEvent ev)
             vkl_cmd_viewport(cmds, img_idx, viewport.viewport);
 
             // Go through all visuals in the panel.
-            VklVisual* visual = NULL;
+            visual = NULL;
             for (int priority = -panel->prority_max; priority <= panel->prority_max; priority++)
             {
                 for (uint32_t k = 0; k < panel->visual_count; k++)
@@ -105,7 +108,6 @@ static void _scene_fill(VklCanvas* canvas, VklEvent ev)
 
             panel = vkl_container_iter(&grid->panels);
         }
-
         vkl_visual_fill_end(canvas, cmds, img_idx);
     }
 }
@@ -125,8 +127,8 @@ static void _scene_frame(VklCanvas* canvas, VklEvent ev)
     bool to_update = false;
 
     VklPanel* panel = vkl_container_iter_init(&grid->panels);
-    VklVisual* visual = NULL;
     VklSource* source = NULL;
+    VklVisual* visual = NULL;
     while (panel != NULL)
     {
         // Interactivity.
@@ -169,13 +171,18 @@ static void _scene_frame(VklCanvas* canvas, VklEvent ev)
                 }
             }
 
-            if (to_update || visual->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE)
+            // Update visual data if needed.
+            if (visual->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE)
             {
                 // TODO: data coords
                 vkl_visual_update(visual, viewport, (VklDataCoords){0}, NULL);
+                visual->obj.status = VKL_OBJECT_STATUS_CREATED;
+            }
 
-                // Detect whether the vertex/index count has changed, in which case we'll need a
-                // full refill in the same frame as the data upload.
+            // Detect whether the vertex/index count has changed, in which case we'll need a
+            // full refill in the same frame as the data upload.
+            if (to_update)
+            {
                 for (uint32_t pidx = 0; pidx < visual->graphics_count; pidx++)
                 {
                     // Detect a change in vertex_count.
