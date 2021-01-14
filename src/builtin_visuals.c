@@ -263,14 +263,49 @@ static void _visual_volume_slice_bake(VklVisual* visual, VklVisualDataEvent ev)
 static void _visual_normalize(VklVisual* visual, VklVisualDataEvent ev)
 {
     ASSERT(visual != NULL);
-    VklProp* prop = vkl_prop_get(visual, VKL_PROP_POS, 0);
-    VklArray* arr = &prop->arr_orig;
-    ASSERT(arr->item_count > 0);
 
-    // VklArray* arr_tr = &prop->arr_trans;
-    // *arr_tr = vkl_array(arr->item_count, VKL_DTYPE_VEC3);
-    // VklBox box = _norm_cube(arr);
-    // _norm_pos(box, arr, arr_tr);
+    VklProp* prop0 = vkl_prop_get(visual, VKL_PROP_POS, 0);
+    VklProp* prop1 = vkl_prop_get(visual, VKL_PROP_POS, 1);
+    VklProp* prop2 = vkl_prop_get(visual, VKL_PROP_POS, 2);
+    VklProp* prop3 = vkl_prop_get(visual, VKL_PROP_POS, 3);
+
+    ASSERT(prop0 != NULL);
+    ASSERT(prop1 != NULL);
+    ASSERT(prop2 != NULL);
+    ASSERT(prop3 != NULL);
+
+    VklArray* arr0 = &prop0->arr_orig;
+    VklArray* arr1 = &prop1->arr_orig;
+    VklArray* arr2 = &prop2->arr_orig;
+    VklArray* arr3 = &prop3->arr_orig;
+
+    ASSERT(arr0->item_count == arr1->item_count);
+    ASSERT(arr1->item_count == arr2->item_count);
+    ASSERT(arr2->item_count == arr3->item_count);
+    const uint32_t n = arr0->item_count;
+
+    VklBox box0 = _box_bounding(arr0);
+    VklBox box1 = _box_bounding(arr1);
+    VklBox box2 = _box_bounding(arr2);
+    VklBox box3 = _box_bounding(arr3);
+
+    VklBox box = _box_merge(4, (VklBox[]){box0, box1, box2, box3});
+    box = _box_cube(box);
+
+    VklArray* arr0_tr = &prop0->arr_trans;
+    VklArray* arr1_tr = &prop1->arr_trans;
+    VklArray* arr2_tr = &prop2->arr_trans;
+    VklArray* arr3_tr = &prop3->arr_trans;
+
+    *arr0_tr = vkl_array(n, VKL_DTYPE_VEC3);
+    *arr1_tr = vkl_array(n, VKL_DTYPE_VEC3);
+    *arr2_tr = vkl_array(n, VKL_DTYPE_VEC3);
+    *arr3_tr = vkl_array(n, VKL_DTYPE_VEC3);
+
+    _norm_pos(box, arr0, arr0_tr);
+    _norm_pos(box, arr1, arr1_tr);
+    _norm_pos(box, arr2, arr2_tr);
+    _norm_pos(box, arr3, arr3_tr);
 }
 
 static void _visual_volume_slice(VklVisual* visual)

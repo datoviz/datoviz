@@ -31,7 +31,7 @@ int test_visuals_norm(TestContext* context)
         positions[i][1] = +8 + rand_float();
         positions[i][2] = -5 + 10 * rand_float();
     }
-    VklBox box = _bounding_box(&pos_in);
+    VklBox box = _box_bounding(&pos_in);
     AT(fabs(box.xlim[0] - 2) < eps);
     AT(fabs(box.xlim[1] - 3) < eps);
     AT(fabs(box.ylim[0] - 8) < eps);

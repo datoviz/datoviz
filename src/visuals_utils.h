@@ -590,7 +590,7 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
 // TODO: use double instead
 
 // Return the bounding box of a set of vec3 points.
-static VklBox _bounding_box(VklArray* points_in)
+static VklBox _box_bounding(VklArray* points_in)
 {
     ASSERT(points_in != NULL);
     ASSERT(points_in->item_count > 0);
@@ -617,6 +617,23 @@ static VklBox _bounding_box(VklArray* points_in)
     }
     VklBox box = {{xmin, xmax}, {ymin, ymax}, {zmin, zmax}};
     return box;
+}
+
+
+
+static VklBox _box_merge(uint32_t count, VklBox* boxes)
+{
+    VklBox merged = {{INFINITY, -INFINITY}, {INFINITY, -INFINITY}, {INFINITY, -INFINITY}};
+    for (uint32_t i = 0; i < count; i++)
+    {
+        merged.xlim[0] = MIN(merged.xlim[0], boxes[i].xlim[0]);
+        merged.xlim[1] = MAX(merged.xlim[1], boxes[i].xlim[1]);
+        merged.ylim[0] = MIN(merged.ylim[0], boxes[i].ylim[0]);
+        merged.ylim[1] = MAX(merged.ylim[1], boxes[i].ylim[1]);
+        merged.zlim[0] = MIN(merged.zlim[0], boxes[i].zlim[0]);
+        merged.zlim[1] = MAX(merged.zlim[1], boxes[i].zlim[1]);
+    }
+    return merged;
 }
 
 
