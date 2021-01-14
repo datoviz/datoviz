@@ -1,4 +1,5 @@
 #include "../include/visky/builtin_visuals.h"
+#include "visuals_utils.h"
 
 
 
@@ -211,15 +212,7 @@ static void _visual_volume_slice_bake(VklVisual* visual, VklVisualDataEvent ev)
     VklSource* source = vkl_source_get(visual, VKL_SOURCE_TYPE_VERTEX, 0);
     ASSERT(source->arr.item_size == sizeof(VklGraphicsVolumeVertex));
 
-    // Number of images
-    uint32_t img_count = vkl_prop_array(visual, VKL_PROP_POS, 0)->item_count;
-    ASSERT(vkl_prop_array(visual, VKL_PROP_POS, 1)->item_count == img_count);
-
-    // Graphics data.
-    VklGraphicsData data = vkl_graphics_data(visual->graphics[0], &source->arr, NULL, NULL);
-    vkl_graphics_alloc(&data, img_count);
-
-    // Get prop data.
+    // Get props.
     VklProp* pos_tl = vkl_prop_get(visual, VKL_PROP_POS, 0);
     VklProp* pos_br = vkl_prop_get(visual, VKL_PROP_POS, 1);
     VklProp* uvw_tl = vkl_prop_get(visual, VKL_PROP_TEXCOORDS, 0);
@@ -230,8 +223,15 @@ static void _visual_volume_slice_bake(VklVisual* visual, VklVisualDataEvent ev)
     ASSERT(uvw_tl != NULL);
     ASSERT(uvw_br != NULL);
 
-    VklGraphicsVolumeItem item = {0};
+    // Number of images
+    uint32_t img_count = vkl_prop_size(pos_tl);
+    ASSERT(vkl_prop_size(pos_br) == img_count);
 
+    // Graphics data.
+    VklGraphicsData data = vkl_graphics_data(visual->graphics[0], &source->arr, NULL, NULL);
+    vkl_graphics_alloc(&data, img_count);
+
+    VklGraphicsVolumeItem item = {0};
     for (uint32_t i = 0; i < img_count; i++)
     {
         memcpy(&item.pos_tl, vkl_prop_item(pos_tl, i), sizeof(vec3));
@@ -403,7 +403,7 @@ static uint32_t _count_prop_items(
     {
         for (uint32_t j = 0; j < idx_count; j++)
         {
-            count += vkl_prop_array(visual, prop_types[i], j)->item_count;
+            count += vkl_prop_size(vkl_prop_get(visual, prop_types[i], j));
         }
     }
     return count;
@@ -602,7 +602,7 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
         vkl_graphics_data(visual->graphics[1], &text_vert_src->arr, NULL, visual);
 
     // Text prop.
-    VklArray* arr_text = vkl_prop_array(visual, VKL_PROP_TEXT, 0);
+    VklArray* arr_text = _prop_array(vkl_prop_get(visual, VKL_PROP_TEXT, 0));
     ASSERT(prop != NULL);
 
     // Major tick prop.

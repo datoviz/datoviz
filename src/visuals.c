@@ -519,15 +519,10 @@ VklProp* vkl_prop_get(VklVisual* visual, VklPropType prop_type, uint32_t prop_id
 
 
 
-VklArray* vkl_prop_array(VklVisual* visual, VklPropType prop_type, uint32_t prop_idx)
+uint32_t vkl_prop_size(VklProp* prop)
 {
-    ASSERT(visual != NULL);
-    VklProp* prop = vkl_prop_get(visual, prop_type, prop_idx);
-    ASSERT(prop != NULL);
-    if (prop->arr_trans.item_count > 0)
-        return &prop->arr_trans;
-    else
-        return &prop->arr_orig;
+    VklArray* arr = _prop_array(prop);
+    return arr->item_count;
 }
 
 
@@ -535,9 +530,10 @@ VklArray* vkl_prop_array(VklVisual* visual, VklPropType prop_type, uint32_t prop
 void* vkl_prop_item(VklProp* prop, uint32_t prop_idx)
 {
     ASSERT(prop != NULL);
+    VklArray* arr = _prop_array(prop);
     void* res = prop->default_value;
-    if (prop_idx < prop->arr_orig.item_count)
-        res = vkl_array_item(&prop->arr_orig, prop_idx);
+    if (prop_idx < arr->item_count)
+        res = vkl_array_item(arr, prop_idx);
     if (res == NULL)
     {
         log_debug("no default value for prop %d #%d", prop->prop_type, prop->prop_idx);

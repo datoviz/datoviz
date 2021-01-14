@@ -331,6 +331,17 @@ static void _source_texture(VklVisual* visual, VklSource* source)
 /*  Visual baking helpers                                                                        */
 /*************************************************************************************************/
 
+static VklArray* _prop_array(VklProp* prop)
+{
+    ASSERT(prop != NULL);
+    if (prop->arr_trans.item_count > 0)
+        return &prop->arr_trans;
+    else
+        return &prop->arr_orig;
+}
+
+
+
 static void _prop_copy(VklVisual* visual, VklProp* prop)
 {
     ASSERT(prop != NULL);

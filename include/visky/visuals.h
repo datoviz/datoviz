@@ -412,7 +412,7 @@ vkl_source_get(VklVisual* visual, VklSourceType source_type, uint32_t source_idx
 
 VKY_EXPORT VklProp* vkl_prop_get(VklVisual* visual, VklPropType prop_type, uint32_t idx);
 
-VKY_EXPORT VklArray* vkl_prop_array(VklVisual* visual, VklPropType prop_type, uint32_t idx);
+VKY_EXPORT uint32_t vkl_prop_size(VklProp* prop);
 
 VKY_EXPORT void* vkl_prop_item(VklProp* prop, uint32_t idx);
 
