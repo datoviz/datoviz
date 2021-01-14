@@ -50,9 +50,11 @@ static void _visual_normalize(VklVisual* visual, VklVisualDataEvent ev)
     ASSERT(visual != NULL);
 
     uint32_t n_pos_props = 0;
-    VklProp* prop = NULL; // vkl_prop_get(visual, VKL_PROP_POS, 0);
+    VklProp* prop = NULL;
     VklArray* arr = NULL;
-    VklBox boxes[32] = {0}; // max number of props of the same type
+
+    VklBox boxes[32] = {0};   // max number of props of the same type
+    VklProp* props[32] = {0}; // max number of props of the same type
 
     // Gather all POS props, and get the bounding box on each.
     for (uint32_t i = 0; i < 32; i++)
@@ -63,10 +65,10 @@ static void _visual_normalize(VklVisual* visual, VklVisualDataEvent ev)
         arr = &prop->arr_orig;
         if (arr->item_count == 0)
         {
-            log_warn("POS prop #%d is empty, skipping data normalization", i);
-            return;
+            continue;
         }
-        boxes[i] = _box_bounding(arr);
+        boxes[n_pos_props] = _box_bounding(arr);
+        props[n_pos_props] = prop;
         n_pos_props++;
     }
     if (n_pos_props == 0)
@@ -83,8 +85,8 @@ static void _visual_normalize(VklVisual* visual, VklVisualDataEvent ev)
     VklArray* arr_tr = NULL;
     for (uint32_t i = 0; i < n_pos_props; i++)
     {
-        log_info("normalize POS prop #%d", i);
-        prop = vkl_prop_get(visual, VKL_PROP_POS, i);
+        log_debug("normalize POS prop #%d", i);
+        prop = props[i];
         arr = &prop->arr_orig;
         arr_tr = &prop->arr_trans;
         ASSERT(arr->item_count > 0);

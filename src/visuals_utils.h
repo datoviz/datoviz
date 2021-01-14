@@ -168,6 +168,17 @@ static VklBindings* _get_bindings(VklVisual* visual, VklSource* source)
 
 
 
+static VklArray* _prop_array(VklProp* prop)
+{
+    ASSERT(prop != NULL);
+    if (prop->arr_trans.item_count > 0)
+        return &prop->arr_trans;
+    else
+        return &prop->arr_orig;
+}
+
+
+
 static uint32_t _source_size(VklVisual* visual, VklSource* source)
 {
     ASSERT(visual != NULL);
@@ -181,7 +192,7 @@ static uint32_t _source_size(VklVisual* visual, VklSource* source)
     {
         if (prop->source == source)
         {
-            arr = &prop->arr_orig;
+            arr = _prop_array(prop);
             ASSERT(arr != NULL);
             item_count = MAX(item_count, arr->item_count * MAX(1, prop->reps));
         }
@@ -331,17 +342,6 @@ static void _source_texture(VklVisual* visual, VklSource* source)
 /*  Visual baking helpers                                                                        */
 /*************************************************************************************************/
 
-static VklArray* _prop_array(VklProp* prop)
-{
-    ASSERT(prop != NULL);
-    if (prop->arr_trans.item_count > 0)
-        return &prop->arr_trans;
-    else
-        return &prop->arr_orig;
-}
-
-
-
 static void _prop_copy(VklVisual* visual, VklProp* prop)
 {
     ASSERT(prop != NULL);
@@ -352,22 +352,23 @@ static void _prop_copy(VklVisual* visual, VklProp* prop)
     VkDeviceSize col_size = _get_dtype_size(prop->dtype);
     ASSERT(col_size > 0);
 
-    if (prop->arr_orig.data == NULL)
+    VklArray* arr = _prop_array(prop);
+    if (arr->data == NULL)
     {
         log_debug("visual prop %d #%d not set", prop->prop_type, prop->prop_idx);
         return;
     }
 
-    ASSERT(prop->arr_orig.data != NULL);
+    ASSERT(arr->data != NULL);
     ASSERT(source->arr.data != NULL);
-    ASSERT(prop->arr_orig.item_count <= source->arr.item_count);
+    ASSERT(arr->item_count <= source->arr.item_count);
 
     // log_debug(
     //     "copy %d prop offset %d size %d into source size %d", //
     //     item_count, prop->offset, col_size, source->arr.item_size);
     vkl_array_column(
         &source->arr, prop->offset, col_size, 0, source->arr.item_count, //
-        prop->arr_orig.item_count, prop->arr_orig.data, prop->copy_type, prop->reps);
+        arr->item_count, arr->data, prop->copy_type, prop->reps);
 }
 
 
