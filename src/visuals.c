@@ -92,7 +92,7 @@ static void _set_source_bindings(VklVisual* visual, VklSource* source)
         VklSource* other_source = NULL;
         for (uint32_t i = 0; i < source->other_count; i++)
         {
-            other_source = vkl_bake_source(visual, source->source_type, source->other_idxs[i]);
+            other_source = vkl_source_get(visual, source->source_type, source->other_idxs[i]);
             ASSERT(other_source != NULL);
             // Get the binding corresponding to the pipeline of the other source.
             other = vkl_container_get(&visual->bindings, other_source->pipeline_idx);
@@ -298,7 +298,7 @@ void vkl_visual_source(
     uint32_t slot_idx, VkDeviceSize item_size, int flags)
 {
     ASSERT(visual != NULL);
-    ASSERT(vkl_bake_source(visual, source_type, source_idx) == NULL);
+    ASSERT(vkl_source_get(visual, source_type, source_idx) == NULL);
 
     VklSource* source = vkl_container_alloc(&visual->sources);
     obj_init(&source->obj);
@@ -336,7 +336,7 @@ void vkl_visual_source_share(
     VklVisual* visual, VklSourceType source_type, uint32_t source_idx, uint32_t other_idx)
 {
     ASSERT(visual != NULL);
-    VklSource* source = vkl_bake_source(visual, source_type, source_idx);
+    VklSource* source = vkl_source_get(visual, source_type, source_idx);
     ASSERT(source != NULL);
     source->other_idxs[source->other_count++] = other_idx;
 }
@@ -355,7 +355,7 @@ void vkl_visual_prop(
     prop->prop_type = prop_type;
     prop->prop_idx = prop_idx;
     prop->dtype = dtype;
-    prop->source = vkl_bake_source(visual, source_type, source_idx);
+    prop->source = vkl_source_get(visual, source_type, source_idx);
     if (prop->source == NULL)
     {
         log_error("source of type %d #%d not found", source_type, source_idx);
@@ -373,7 +373,7 @@ void vkl_visual_prop_default(
     VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, void* default_value)
 {
     ASSERT(visual != NULL);
-    VklProp* prop = vkl_bake_prop(visual, prop_type, prop_idx);
+    VklProp* prop = vkl_prop_get(visual, prop_type, prop_idx);
     ASSERT(prop != NULL);
     ASSERT(prop->arr_orig.item_size > 0);
 
@@ -393,7 +393,7 @@ void vkl_visual_prop_copy(
     uint32_t field_idx, VkDeviceSize offset, VklArrayCopyType copy_type, uint32_t reps)
 {
     ASSERT(visual != NULL);
-    VklProp* prop = vkl_bake_prop(visual, prop_type, prop_idx);
+    VklProp* prop = vkl_prop_get(visual, prop_type, prop_idx);
     ASSERT(prop != NULL);
 
     prop->field_idx = field_idx;
@@ -481,7 +481,7 @@ void vkl_visual_data_partial(
     ASSERT(data_item_count > 0);
 
     // Get the associated prop.
-    VklProp* prop = vkl_bake_prop(visual, prop_type, prop_idx);
+    VklProp* prop = vkl_prop_get(visual, prop_type, prop_idx);
     ASSERT(prop != NULL);
 
     // Make sure the array has the right size.
@@ -508,7 +508,7 @@ void vkl_visual_data_append(
     VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, uint32_t count, const void* data)
 {
     ASSERT(visual != NULL);
-    VklProp* prop = vkl_bake_prop(visual, prop_type, prop_idx);
+    VklProp* prop = vkl_prop_get(visual, prop_type, prop_idx);
     ASSERT(prop != NULL);
     uint32_t first_item = prop->arr_orig.item_count;
     vkl_visual_data_partial(visual, prop_type, prop_idx, first_item, count, count, data);
@@ -519,7 +519,7 @@ void vkl_visual_data_append(
 static VklSource*
 _assert_source_exists(VklVisual* visual, VklSourceType source_type, uint32_t source_idx)
 {
-    VklSource* source = vkl_bake_source(visual, source_type, source_idx);
+    VklSource* source = vkl_source_get(visual, source_type, source_idx);
 
     // // Check if the requested source is not a shared source.
     // if (source == NULL)
@@ -694,7 +694,7 @@ void vkl_visual_fill_end(VklCanvas* canvas, VklCommands* cmds, uint32_t idx)
 /*  Baking helpers                                                                               */
 /*************************************************************************************************/
 
-VklSource* vkl_bake_source(VklVisual* visual, VklSourceType source_type, uint32_t source_idx)
+VklSource* vkl_source_get(VklVisual* visual, VklSourceType source_type, uint32_t source_idx)
 {
     ASSERT(visual != NULL);
     VklSource* source = vkl_container_iter_init(&visual->sources);
@@ -714,7 +714,7 @@ VklSource* vkl_bake_source(VklVisual* visual, VklSourceType source_type, uint32_
 
 
 
-VklProp* vkl_bake_prop(VklVisual* visual, VklPropType prop_type, uint32_t prop_idx)
+VklProp* vkl_prop_get(VklVisual* visual, VklPropType prop_type, uint32_t prop_idx)
 {
     ASSERT(visual != NULL);
     VklProp* prop = vkl_container_iter_init(&visual->props);
@@ -736,10 +736,10 @@ VklProp* vkl_bake_prop(VklVisual* visual, VklPropType prop_type, uint32_t prop_i
 
 
 
-VklArray* vkl_bake_array(VklVisual* visual, VklPropType prop_type, uint32_t prop_idx)
+VklArray* vkl_prop_array(VklVisual* visual, VklPropType prop_type, uint32_t prop_idx)
 {
     ASSERT(visual != NULL);
-    VklProp* prop = vkl_bake_prop(visual, prop_type, prop_idx);
+    VklProp* prop = vkl_prop_get(visual, prop_type, prop_idx);
     ASSERT(prop != NULL);
     if (prop->arr_trans.item_count > 0)
         return &prop->arr_trans;
@@ -749,7 +749,7 @@ VklArray* vkl_bake_array(VklVisual* visual, VklPropType prop_type, uint32_t prop
 
 
 
-void* vkl_bake_prop_item(VklProp* prop, uint32_t prop_idx)
+void* vkl_prop_item(VklProp* prop, uint32_t prop_idx)
 {
     ASSERT(prop != NULL);
     void* res = prop->default_value;
@@ -764,7 +764,7 @@ void* vkl_bake_prop_item(VklProp* prop, uint32_t prop_idx)
 
 
 
-uint32_t vkl_bake_max_prop_size(VklVisual* visual, VklSource* source)
+uint32_t vkl_source_size(VklVisual* visual, VklSource* source)
 {
     ASSERT(visual != NULL);
     ASSERT(source != NULL);
@@ -788,7 +788,7 @@ uint32_t vkl_bake_max_prop_size(VklVisual* visual, VklSource* source)
 
 
 
-void vkl_bake_prop_copy(VklVisual* visual, VklProp* prop)
+void vkl_prop_copy(VklVisual* visual, VklProp* prop)
 {
     ASSERT(prop != NULL);
 
@@ -818,7 +818,7 @@ void vkl_bake_prop_copy(VklVisual* visual, VklProp* prop)
 
 
 
-void vkl_bake_source_alloc(VklVisual* visual, VklSource* source, uint32_t count)
+void vkl_source_alloc(VklVisual* visual, VklSource* source, uint32_t count)
 {
     ASSERT(visual != NULL);
     ASSERT(source != NULL);
@@ -833,7 +833,7 @@ void vkl_bake_source_alloc(VklVisual* visual, VklSource* source, uint32_t count)
 
 
 
-void vkl_bake_source_fill(VklVisual* visual, VklSource* source)
+void vkl_source_fill(VklVisual* visual, VklSource* source)
 {
     ASSERT(visual != NULL);
     ASSERT(source != NULL);
@@ -843,14 +843,14 @@ void vkl_bake_source_fill(VklVisual* visual, VklSource* source)
     while (prop != NULL)
     {
         if (prop->source == source)
-            vkl_bake_prop_copy(visual, prop);
+            vkl_prop_copy(visual, prop);
         prop = vkl_container_iter(&visual->props);
     }
 }
 
 
 
-void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source)
+void vkl_source_buffer(VklVisual* visual, VklSource* source)
 {
     ASSERT(visual != NULL);
     ASSERT(source != NULL);
@@ -879,7 +879,7 @@ void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source)
 
 
 
-void vkl_visual_texture_alloc(VklVisual* visual, VklSource* source)
+void vkl_source_texture(VklVisual* visual, VklSource* source)
 {
     ASSERT(visual != NULL);
     ASSERT(source != NULL);
@@ -1084,7 +1084,7 @@ void vkl_visual_update(
             ASSERT(arr->item_size > 0);
 
             // Make sure the GPU buffer exists and is allocated with the right size.
-            vkl_visual_buffer_alloc(visual, source);
+            vkl_source_buffer(visual, source);
 
             ASSERT(br->size > 0);
             VkDeviceSize size = arr->item_count * arr->item_size;
@@ -1107,7 +1107,7 @@ void vkl_visual_update(
         else if (_source_is_texture(source->source_kind))
         {
             // Make sure the GPU texture exists and is allocated with the right shape.
-            vkl_visual_texture_alloc(visual, source);
+            vkl_source_texture(visual, source);
             texture = source->u.tex;
 
             ASSERT(texture != NULL);

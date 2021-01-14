@@ -12,7 +12,7 @@
 
 #define PARAM(t, x, n, i)                                                                         \
     {                                                                                             \
-        t* item = vkl_bake_prop_item(vkl_bake_prop(visual, VKL_PROP_##n, i), 0);                  \
+        t* item = vkl_prop_item(vkl_prop_get(visual, VKL_PROP_##n, i), 0);                        \
         if (item != NULL)                                                                         \
             memcpy(&x, item, sizeof(t));                                                          \
     }

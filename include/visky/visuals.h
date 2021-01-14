@@ -408,25 +408,25 @@ VKY_EXPORT void vkl_visual_callback_bake(VklVisual* visual, VklVisualDataCallbac
 /*************************************************************************************************/
 
 VKY_EXPORT VklSource*
-vkl_bake_source(VklVisual* visual, VklSourceType source_type, uint32_t source_idx);
+vkl_source_get(VklVisual* visual, VklSourceType source_type, uint32_t source_idx);
 
-VKY_EXPORT VklProp* vkl_bake_prop(VklVisual* visual, VklPropType prop_type, uint32_t idx);
+VKY_EXPORT VklProp* vkl_prop_get(VklVisual* visual, VklPropType prop_type, uint32_t idx);
 
-VKY_EXPORT VklArray* vkl_bake_array(VklVisual* visual, VklPropType prop_type, uint32_t idx);
+VKY_EXPORT VklArray* vkl_prop_array(VklVisual* visual, VklPropType prop_type, uint32_t idx);
 
-VKY_EXPORT void* vkl_bake_prop_item(VklProp* prop, uint32_t idx);
+VKY_EXPORT void* vkl_prop_item(VklProp* prop, uint32_t idx);
 
-VKY_EXPORT uint32_t vkl_bake_max_prop_size(VklVisual* visual, VklSource* source);
+VKY_EXPORT uint32_t vkl_source_size(VklVisual* visual, VklSource* source);
 
-VKY_EXPORT void vkl_bake_prop_copy(VklVisual* visual, VklProp* prop);
+VKY_EXPORT void vkl_prop_copy(VklVisual* visual, VklProp* prop);
 
-VKY_EXPORT void vkl_bake_source_alloc(VklVisual* visual, VklSource* source, uint32_t count);
+VKY_EXPORT void vkl_source_alloc(VklVisual* visual, VklSource* source, uint32_t count);
 
-VKY_EXPORT void vkl_bake_source_fill(VklVisual* visual, VklSource* source);
+VKY_EXPORT void vkl_source_fill(VklVisual* visual, VklSource* source);
 
-VKY_EXPORT void vkl_visual_buffer_alloc(VklVisual* visual, VklSource* source);
+VKY_EXPORT void vkl_source_buffer(VklVisual* visual, VklSource* source);
 
-VKY_EXPORT void vkl_visual_texture_alloc(VklVisual* visual, VklSource* source);
+VKY_EXPORT void vkl_source_texture(VklVisual* visual, VklSource* source);
 
 
 
@@ -551,7 +551,7 @@ static void _bake_source(VklVisual* visual, VklSource* source)
     }
 
     // The number of vertices corresponds to the largest prop.
-    uint32_t count = vkl_bake_max_prop_size(visual, source);
+    uint32_t count = vkl_source_size(visual, source);
     if (count == 0)
     {
         log_warn("empty source %d", source->source_type);
@@ -561,10 +561,10 @@ static void _bake_source(VklVisual* visual, VklSource* source)
     log_debug("baking source %d", source->source_kind);
 
     // Allocate the source array.
-    vkl_bake_source_alloc(visual, source, count);
+    vkl_source_alloc(visual, source, count);
 
     // Copy all corresponding props to the array.
-    vkl_bake_source_fill(visual, source);
+    vkl_source_fill(visual, source);
 }
 
 
@@ -588,10 +588,10 @@ static void _bake_uniforms(VklVisual* visual)
         if (source->source_kind == VKL_SOURCE_KIND_UNIFORM &&
             source->origin == VKL_SOURCE_ORIGIN_LIB)
         {
-            uint32_t count = vkl_bake_max_prop_size(visual, source);
+            uint32_t count = vkl_source_size(visual, source);
             ASSERT(count > 0);
-            vkl_bake_source_alloc(visual, source, count);
-            vkl_bake_source_fill(visual, source);
+            vkl_source_alloc(visual, source, count);
+            vkl_source_fill(visual, source);
         }
         source = vkl_container_iter(&visual->sources);
     }
@@ -607,11 +607,11 @@ static void _default_visual_bake(VklVisual* visual, VklVisualDataEvent ev)
     ASSERT(visual != NULL);
 
     // VERTEX source.
-    VklSource* source = vkl_bake_source(visual, VKL_SOURCE_TYPE_VERTEX, 0);
+    VklSource* source = vkl_source_get(visual, VKL_SOURCE_TYPE_VERTEX, 0);
     _bake_source(visual, source);
 
     // INDEX source.
-    source = vkl_bake_source(visual, VKL_SOURCE_TYPE_INDEX, 0);
+    source = vkl_source_get(visual, VKL_SOURCE_TYPE_INDEX, 0);
     _bake_source(visual, source);
 }
 

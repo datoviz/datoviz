@@ -338,7 +338,7 @@ int test_scene_logistic(TestContext* context)
     vkl_compute_push(compute, 0, sizeof(N), VK_SHADER_STAGE_COMPUTE_BIT);
 
     VklBindings bindings = vkl_bindings(&compute->slots, 1);
-    VklSource* source = vkl_bake_source(visual, VKL_SOURCE_TYPE_VERTEX, 0);
+    VklSource* source = vkl_source_get(visual, VKL_SOURCE_TYPE_VERTEX, 0);
     vkl_visual_update(visual, panel->viewport, (VklDataCoords){0}, NULL);
     vkl_bindings_buffer(&bindings, 0, source->u.br);
     vkl_bindings_update(&bindings);

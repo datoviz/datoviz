@@ -208,22 +208,22 @@ static void _visual_volume_slice_bake(VklVisual* visual, VklVisualDataEvent ev)
     ASSERT(visual != NULL);
 
     // Vertex buffer source.
-    VklSource* source = vkl_bake_source(visual, VKL_SOURCE_TYPE_VERTEX, 0);
+    VklSource* source = vkl_source_get(visual, VKL_SOURCE_TYPE_VERTEX, 0);
     ASSERT(source->arr.item_size == sizeof(VklGraphicsVolumeVertex));
 
     // Number of images
-    uint32_t img_count = vkl_bake_array(visual, VKL_PROP_POS, 0)->item_count;
-    ASSERT(vkl_bake_array(visual, VKL_PROP_POS, 1)->item_count == img_count);
+    uint32_t img_count = vkl_prop_array(visual, VKL_PROP_POS, 0)->item_count;
+    ASSERT(vkl_prop_array(visual, VKL_PROP_POS, 1)->item_count == img_count);
 
     // Graphics data.
     VklGraphicsData data = vkl_graphics_data(visual->graphics[0], &source->arr, NULL, NULL);
     vkl_graphics_alloc(&data, img_count);
 
     // Get prop data.
-    VklProp* pos_tl = vkl_bake_prop(visual, VKL_PROP_POS, 0);
-    VklProp* pos_br = vkl_bake_prop(visual, VKL_PROP_POS, 1);
-    VklProp* uvw_tl = vkl_bake_prop(visual, VKL_PROP_TEXCOORDS, 0);
-    VklProp* uvw_br = vkl_bake_prop(visual, VKL_PROP_TEXCOORDS, 1);
+    VklProp* pos_tl = vkl_prop_get(visual, VKL_PROP_POS, 0);
+    VklProp* pos_br = vkl_prop_get(visual, VKL_PROP_POS, 1);
+    VklProp* uvw_tl = vkl_prop_get(visual, VKL_PROP_TEXCOORDS, 0);
+    VklProp* uvw_br = vkl_prop_get(visual, VKL_PROP_TEXCOORDS, 1);
 
     ASSERT(pos_tl != NULL);
     ASSERT(pos_br != NULL);
@@ -234,10 +234,10 @@ static void _visual_volume_slice_bake(VklVisual* visual, VklVisualDataEvent ev)
 
     for (uint32_t i = 0; i < img_count; i++)
     {
-        memcpy(&item.pos_tl, vkl_bake_prop_item(pos_tl, i), sizeof(vec3));
-        memcpy(&item.pos_br, vkl_bake_prop_item(pos_br, i), sizeof(vec3));
-        memcpy(&item.uvw_tl, vkl_bake_prop_item(uvw_tl, i), sizeof(vec3));
-        memcpy(&item.uvw_br, vkl_bake_prop_item(uvw_br, i), sizeof(vec3));
+        memcpy(&item.pos_tl, vkl_prop_item(pos_tl, i), sizeof(vec3));
+        memcpy(&item.pos_br, vkl_prop_item(pos_br, i), sizeof(vec3));
+        memcpy(&item.uvw_tl, vkl_prop_item(uvw_tl, i), sizeof(vec3));
+        memcpy(&item.uvw_br, vkl_prop_item(uvw_br, i), sizeof(vec3));
         vkl_graphics_append(&data, &item);
     }
 }
@@ -403,7 +403,7 @@ static uint32_t _count_prop_items(
     {
         for (uint32_t j = 0; j < idx_count; j++)
         {
-            count += vkl_bake_array(visual, prop_types[i], j)->item_count;
+            count += vkl_prop_array(visual, prop_types[i], j)->item_count;
         }
     }
     return count;
@@ -522,7 +522,7 @@ static void _add_ticks(
     for (uint32_t i = 0; i < n; i++)
     {
         // TODO: transformation
-        x = vkl_bake_prop_item(tick_prop, i);
+        x = vkl_prop_item(tick_prop, i);
         ASSERT(x != NULL);
 
         _tick_shift(i, n, s, tick_length, level, coord, vertex.shift);
@@ -543,9 +543,9 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
     ASSERT(visual != NULL);
 
     // Data sources.
-    VklSource* seg_vert_src = vkl_bake_source(visual, VKL_SOURCE_TYPE_VERTEX, 0);
-    VklSource* seg_index_src = vkl_bake_source(visual, VKL_SOURCE_TYPE_INDEX, 0);
-    VklSource* text_vert_src = vkl_bake_source(visual, VKL_SOURCE_TYPE_VERTEX, 1);
+    VklSource* seg_vert_src = vkl_source_get(visual, VKL_SOURCE_TYPE_VERTEX, 0);
+    VklSource* seg_index_src = vkl_source_get(visual, VKL_SOURCE_TYPE_INDEX, 0);
+    VklSource* text_vert_src = vkl_source_get(visual, VKL_SOURCE_TYPE_VERTEX, 1);
 
     // HACK: mark the index buffer to be updated.
     seg_index_src->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
@@ -583,7 +583,7 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
     for (uint32_t level = 0; level < VKL_AXES_LEVEL_COUNT; level++)
     {
         // Take the tick positions.
-        prop = vkl_bake_prop(visual, VKL_PROP_POS, level);
+        prop = vkl_prop_get(visual, VKL_PROP_POS, level);
         ASSERT(prop != NULL);
         tick_count = prop->arr_orig.item_count; // number of ticks for this level.
         if (tick_count == 0)
@@ -602,11 +602,11 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
         vkl_graphics_data(visual->graphics[1], &text_vert_src->arr, NULL, visual);
 
     // Text prop.
-    VklArray* arr_text = vkl_bake_array(visual, VKL_PROP_TEXT, 0);
+    VklArray* arr_text = vkl_prop_array(visual, VKL_PROP_TEXT, 0);
     ASSERT(prop != NULL);
 
     // Major tick prop.
-    VklProp* prop_major = vkl_bake_prop(visual, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR);
+    VklProp* prop_major = vkl_prop_get(visual, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR);
     uint32_t n_major = prop_major->arr_orig.item_count;
     uint32_t n_text = arr_text->item_count;
     uint32_t count_chars = _count_chars(arr_text);
@@ -660,7 +660,7 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
         str_item.string = text;
 
         // Position of the text corresponds to position of the major tick.
-        x = vkl_bake_prop_item(prop_major, i);
+        x = vkl_prop_item(prop_major, i);
         ASSERT(x != NULL);
         _tick_pos(*x, VKL_AXES_LEVEL_MAJOR, coord, str_item.vertex.pos, P);
 

@@ -164,7 +164,7 @@ static void _update_interact(VklCanvas* canvas, VklEvent ev)
 
     VklInteract* interact = visual->user_data;
     vkl_interact_update(interact, canvas->viewport, &canvas->mouse, &canvas->keyboard);
-    VklSource* source = vkl_bake_source(visual, VKL_SOURCE_TYPE_MVP, 0);
+    VklSource* source = vkl_source_get(visual, VKL_SOURCE_TYPE_MVP, 0);
     VklBufferRegions* br = &source->u.br;
     vkl_upload_buffers(canvas, *br, 0, br->size, &interact->mvp);
 }

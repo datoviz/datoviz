@@ -160,10 +160,10 @@ static void _scene_frame(VklCanvas* canvas, VklEvent ev)
             {
                 for (uint32_t pidx = 0; pidx < visual->graphics_count; pidx++)
                 {
-                    source = vkl_bake_source(visual, VKL_SOURCE_TYPE_VERTEX, pidx);
+                    source = vkl_source_get(visual, VKL_SOURCE_TYPE_VERTEX, pidx);
                     visual->prev_vertex_count[pidx] = source->arr.item_count;
 
-                    source = vkl_bake_source(visual, VKL_SOURCE_TYPE_INDEX, pidx);
+                    source = vkl_source_get(visual, VKL_SOURCE_TYPE_INDEX, pidx);
                     if (source != NULL)
                         visual->prev_index_count[pidx] = source->arr.item_count;
                 }
@@ -179,7 +179,7 @@ static void _scene_frame(VklCanvas* canvas, VklEvent ev)
                 for (uint32_t pidx = 0; pidx < visual->graphics_count; pidx++)
                 {
                     // Detect a change in vertex_count.
-                    source = vkl_bake_source(visual, VKL_SOURCE_TYPE_VERTEX, pidx);
+                    source = vkl_source_get(visual, VKL_SOURCE_TYPE_VERTEX, pidx);
                     if (source->arr.item_count != visual->prev_vertex_count[pidx])
                     {
                         log_debug("automatic detection of a change in vertex count, will trigger "
@@ -189,7 +189,7 @@ static void _scene_frame(VklCanvas* canvas, VklEvent ev)
                     }
 
                     // Detect a change in index_count.
-                    source = vkl_bake_source(visual, VKL_SOURCE_TYPE_INDEX, pidx);
+                    source = vkl_source_get(visual, VKL_SOURCE_TYPE_INDEX, pidx);
                     if (source != NULL && source->arr.item_count != visual->prev_index_count[pidx])
                     {
                         log_debug("automatic detection of a change in index count, will trigger "
@@ -409,9 +409,9 @@ static void _axes_ticks_init(VklController* controller)
     VklAxes2D* axes = &controller->u.axes_2D;
 
     // NOTE: get the font size which was set by in builtin_visuals.c as a prop.
-    VklProp* prop = vkl_bake_prop(controller->visuals[0], VKL_PROP_TEXT_SIZE, 0);
+    VklProp* prop = vkl_prop_get(controller->visuals[0], VKL_PROP_TEXT_SIZE, 0);
     ASSERT(prop != NULL);
-    float* font_size = vkl_bake_prop_item(prop, 0);
+    float* font_size = vkl_prop_item(prop, 0);
     axes->font_size = *font_size;
     ASSERT(axes->font_size > 0);
 
