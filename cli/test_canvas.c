@@ -1173,7 +1173,7 @@ int test_canvas_offscreen(TestContext* context)
 static void _screencast_callback(VklCanvas* canvas, VklEvent ev)
 {
     char path[1024];
-    snprintf(path, sizeof(path), "%s/screenshot.ppm", ARTIFACTS_DIR);
+    snprintf(path, sizeof(path), "%s/screencast.ppm", ARTIFACTS_DIR);
     log_trace("screencast frame #%d %d", ev.u.sc.idx, ev.u.sc.rgba[0]);
     write_ppm(path, ev.u.sc.width, ev.u.sc.height, ev.u.sc.rgba);
     FREE(ev.u.sc.rgba);

@@ -592,7 +592,9 @@ int test_vklite_graphics(TestContext* context)
     triangle_commands(&canvas, &cmds, 0);
     vkl_cmd_submit_sync(&cmds, 0);
 
-    save_screenshot(visual.framebuffers, "screenshot.ppm");
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/screenshot.ppm", ARTIFACTS_DIR);
+    save_screenshot(visual.framebuffers, path);
 
     destroy_visual(&visual);
     destroy_canvas(&canvas);
