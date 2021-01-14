@@ -31,13 +31,21 @@ int test_visuals_norm(TestContext* context)
         positions[i][1] = +8 + rand_float();
         positions[i][2] = -5 + 10 * rand_float();
     }
-    VklBox box = _norm_cube(&pos_in);
-    AT(box.xlim[0] - 2 < eps);
-    AT(2 - box.xlim[1] < eps);
-    AT(box.ylim[0] - 8 < eps);
-    AT(8 - box.ylim[1] < eps);
-    AT(box.zlim[0] + 5 < eps);
-    AT(5 - box.zlim[1] < eps);
+    VklBox box = _bounding_box(&pos_in);
+    AT(fabs(box.xlim[0] - 2) < eps);
+    AT(fabs(box.xlim[1] - 3) < eps);
+    AT(fabs(box.ylim[0] - 8) < eps);
+    AT(fabs(box.ylim[1] - 9) < eps);
+    AT(fabs(box.zlim[0] + 5) < eps);
+    AT(fabs(box.zlim[1] - 5) < eps);
+
+    box = _box_cube(box);
+    AT(fabs(box.xlim[0] + 2.5) < eps);
+    AT(fabs(box.xlim[1] - 7.5) < eps);
+    AT(fabs(box.ylim[0] - 3.5) < eps);
+    AT(fabs(box.ylim[1] - 13.5) < eps);
+    AT(fabs(box.zlim[0] + 5) < eps);
+    AT(fabs(box.zlim[1] - 5) < eps);
 
 
     // Normalize the data.

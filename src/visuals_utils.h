@@ -588,7 +588,9 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
 /*************************************************************************************************/
 
 // TODO: use double instead
-static VklBox _norm_cube(VklArray* points_in)
+
+// Return the bounding box of a set of vec3 points.
+static VklBox _bounding_box(VklArray* points_in)
 {
     ASSERT(points_in != NULL);
     ASSERT(points_in->item_count > 0);
@@ -613,6 +615,21 @@ static VklBox _norm_cube(VklArray* points_in)
         zmin = MIN(zmin, (*pos)[2]);
         zmax = MAX(zmax, (*pos)[2]);
     }
+    VklBox box = {{xmin, xmax}, {ymin, ymax}, {zmin, zmax}};
+    return box;
+}
+
+
+
+// Return the smallest cube surrounding a box.
+static VklBox _box_cube(VklBox box)
+{
+    float xmin = box.xlim[0];
+    float xmax = box.xlim[1];
+    float ymin = box.ylim[0];
+    float ymax = box.ylim[1];
+    float zmin = box.zlim[0];
+    float zmax = box.zlim[1];
 
     float xcenter = .5 * (xmin + xmax);
     float ycenter = .5 * (ymin + ymax);
@@ -630,17 +647,15 @@ static VklBox _norm_cube(VklArray* points_in)
         edge = 1;
     ASSERT(edge > 0);
 
-    VklBox box = {0};
-    box.xlim[0] = xcenter - edge;
-    box.xlim[1] = xcenter + edge;
+    VklBox out = {0};
+    out.xlim[0] = xcenter - edge;
+    out.xlim[1] = xcenter + edge;
+    out.ylim[0] = ycenter - edge;
+    out.ylim[1] = ycenter + edge;
+    out.zlim[0] = zcenter - edge;
+    out.zlim[1] = zcenter + edge;
 
-    box.ylim[0] = ycenter - edge;
-    box.ylim[1] = ycenter + edge;
-
-    box.zlim[0] = zcenter - edge;
-    box.zlim[1] = zcenter + edge;
-
-    return box;
+    return out;
 }
 
 

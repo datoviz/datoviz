@@ -322,31 +322,21 @@ _graphics_volume_slice_callback(VklGraphicsData* data, uint32_t item_count, cons
 
     const VklGraphicsVolumeItem* item_vert = (const VklGraphicsVolumeItem*)item;
 
-    float xl = item_vert->pos_tl[0];
-    float yt = item_vert->pos_tl[1];
-    float zf = item_vert->pos_tl[2];
+    VklGraphicsVolumeVertex vertices[6] = {0};
 
-    float xr = item_vert->pos_br[0];
-    float yb = item_vert->pos_br[1];
-    float zb = item_vert->pos_br[2];
+    glm_vec3_copy(item_vert->pos3, vertices[0].pos);
+    glm_vec3_copy(item_vert->pos2, vertices[1].pos);
+    glm_vec3_copy(item_vert->pos1, vertices[2].pos);
+    glm_vec3_copy(item_vert->pos1, vertices[3].pos);
+    glm_vec3_copy(item_vert->pos0, vertices[4].pos);
+    glm_vec3_copy(item_vert->pos3, vertices[5].pos);
 
-    float ul = item_vert->uvw_tl[0];
-    float vt = item_vert->uvw_tl[1];
-    float wf = item_vert->uvw_tl[2];
-
-    float ur = item_vert->uvw_br[0];
-    float vb = item_vert->uvw_br[1];
-    float wb = item_vert->uvw_br[2];
-
-    VklGraphicsVolumeVertex vertices[6] = {
-        // vec3 pos, vec3 uvw
-        {{xl, yb, zf}, {ul, vb, wf}}, // blf
-        {{xr, yb, zb}, {ur, vb, wb}}, // brb
-        {{xr, yt, zb}, {ur, vt, wb}}, // trb
-        {{xr, yt, zb}, {ur, vt, wb}}, // trb
-        {{xl, yt, zf}, {ul, vt, wf}}, // tlf
-        {{xl, yb, zf}, {ul, vb, wf}}, // blf
-    };
+    glm_vec3_copy(item_vert->uvw3, vertices[0].uvw);
+    glm_vec3_copy(item_vert->uvw2, vertices[1].uvw);
+    glm_vec3_copy(item_vert->uvw1, vertices[2].uvw);
+    glm_vec3_copy(item_vert->uvw1, vertices[3].uvw);
+    glm_vec3_copy(item_vert->uvw0, vertices[4].uvw);
+    glm_vec3_copy(item_vert->uvw3, vertices[5].uvw);
 
     vkl_array_data(data->vertices, 6 * data->current_idx, 6, 6, vertices);
 

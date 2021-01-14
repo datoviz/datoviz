@@ -248,10 +248,8 @@ struct VklGraphicsImageParams
 
 struct VklGraphicsVolumeItem
 {
-    vec3 pos_tl;
-    vec3 pos_br;
-    vec3 uvw_tl;
-    vec3 uvw_br;
+    vec3 pos0, pos1, pos2, pos3;
+    vec3 uvw0, uvw1, uvw2, uvw3;
 };
 
 struct VklGraphicsVolumeVertex

@@ -213,19 +213,31 @@ static void _visual_volume_slice_bake(VklVisual* visual, VklVisualDataEvent ev)
     ASSERT(source->arr.item_size == sizeof(VklGraphicsVolumeVertex));
 
     // Get props.
-    VklProp* pos_tl = vkl_prop_get(visual, VKL_PROP_POS, 0);
-    VklProp* pos_br = vkl_prop_get(visual, VKL_PROP_POS, 1);
-    VklProp* uvw_tl = vkl_prop_get(visual, VKL_PROP_TEXCOORDS, 0);
-    VklProp* uvw_br = vkl_prop_get(visual, VKL_PROP_TEXCOORDS, 1);
+    VklProp* pos0 = vkl_prop_get(visual, VKL_PROP_POS, 0);
+    VklProp* pos1 = vkl_prop_get(visual, VKL_PROP_POS, 1);
+    VklProp* pos2 = vkl_prop_get(visual, VKL_PROP_POS, 2);
+    VklProp* pos3 = vkl_prop_get(visual, VKL_PROP_POS, 3);
 
-    ASSERT(pos_tl != NULL);
-    ASSERT(pos_br != NULL);
-    ASSERT(uvw_tl != NULL);
-    ASSERT(uvw_br != NULL);
+    VklProp* uvw0 = vkl_prop_get(visual, VKL_PROP_TEXCOORDS, 0);
+    VklProp* uvw1 = vkl_prop_get(visual, VKL_PROP_TEXCOORDS, 1);
+    VklProp* uvw2 = vkl_prop_get(visual, VKL_PROP_TEXCOORDS, 2);
+    VklProp* uvw3 = vkl_prop_get(visual, VKL_PROP_TEXCOORDS, 3);
+
+    ASSERT(pos0 != NULL);
+    ASSERT(pos1 != NULL);
+    ASSERT(pos2 != NULL);
+    ASSERT(pos3 != NULL);
+
+    ASSERT(uvw0 != NULL);
+    ASSERT(uvw1 != NULL);
+    ASSERT(uvw2 != NULL);
+    ASSERT(uvw3 != NULL);
 
     // Number of images
-    uint32_t img_count = vkl_prop_size(pos_tl);
-    ASSERT(vkl_prop_size(pos_br) == img_count);
+    uint32_t img_count = vkl_prop_size(pos0);
+    ASSERT(vkl_prop_size(pos1) == img_count);
+    ASSERT(vkl_prop_size(pos2) == img_count);
+    ASSERT(vkl_prop_size(pos3) == img_count);
 
     // Graphics data.
     VklGraphicsData data = vkl_graphics_data(visual->graphics[0], &source->arr, NULL, NULL);
@@ -234,10 +246,16 @@ static void _visual_volume_slice_bake(VklVisual* visual, VklVisualDataEvent ev)
     VklGraphicsVolumeItem item = {0};
     for (uint32_t i = 0; i < img_count; i++)
     {
-        memcpy(&item.pos_tl, vkl_prop_item(pos_tl, i), sizeof(vec3));
-        memcpy(&item.pos_br, vkl_prop_item(pos_br, i), sizeof(vec3));
-        memcpy(&item.uvw_tl, vkl_prop_item(uvw_tl, i), sizeof(vec3));
-        memcpy(&item.uvw_br, vkl_prop_item(uvw_br, i), sizeof(vec3));
+        memcpy(&item.pos0, vkl_prop_item(pos0, i), sizeof(vec3));
+        memcpy(&item.pos1, vkl_prop_item(pos1, i), sizeof(vec3));
+        memcpy(&item.pos2, vkl_prop_item(pos2, i), sizeof(vec3));
+        memcpy(&item.pos3, vkl_prop_item(pos3, i), sizeof(vec3));
+
+        memcpy(&item.uvw0, vkl_prop_item(uvw0, i), sizeof(vec3));
+        memcpy(&item.uvw1, vkl_prop_item(uvw1, i), sizeof(vec3));
+        memcpy(&item.uvw2, vkl_prop_item(uvw2, i), sizeof(vec3));
+        memcpy(&item.uvw3, vkl_prop_item(uvw3, i), sizeof(vec3));
+
         vkl_graphics_append(&data, &item);
     }
 }
@@ -249,10 +267,10 @@ static void _visual_normalize(VklVisual* visual, VklVisualDataEvent ev)
     VklArray* arr = &prop->arr_orig;
     ASSERT(arr->item_count > 0);
 
-    VklArray* arr_tr = &prop->arr_trans;
-    *arr_tr = vkl_array(arr->item_count, VKL_DTYPE_VEC3);
-    VklBox box = _norm_cube(arr);
-    _norm_pos(box, arr, arr_tr);
+    // VklArray* arr_tr = &prop->arr_trans;
+    // *arr_tr = vkl_array(arr->item_count, VKL_DTYPE_VEC3);
+    // VklBox box = _norm_cube(arr);
+    // _norm_pos(box, arr, arr_tr);
 }
 
 static void _visual_volume_slice(VklVisual* visual)
@@ -287,15 +305,13 @@ static void _visual_volume_slice(VklVisual* visual)
 
     // Props:
 
-    // Top left corner position.
-    vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_VEC3, VKL_SOURCE_TYPE_VERTEX, 0);
-    // Bottom right corner position.
-    vkl_visual_prop(visual, VKL_PROP_POS, 1, VKL_DTYPE_VEC3, VKL_SOURCE_TYPE_VERTEX, 0);
+    // Point positions.
+    for (uint32_t i = 0; i < 4; i++)
+        vkl_visual_prop(visual, VKL_PROP_POS, i, VKL_DTYPE_VEC3, VKL_SOURCE_TYPE_VERTEX, 0);
 
-    // Top left corner tex coords.
-    vkl_visual_prop(visual, VKL_PROP_TEXCOORDS, 0, VKL_DTYPE_VEC3, VKL_SOURCE_TYPE_VERTEX, 0);
-    // Bottom right corner tex coords.
-    vkl_visual_prop(visual, VKL_PROP_TEXCOORDS, 1, VKL_DTYPE_VEC3, VKL_SOURCE_TYPE_VERTEX, 0);
+    // Tex coords.
+    for (uint32_t i = 0; i < 4; i++)
+        vkl_visual_prop(visual, VKL_PROP_TEXCOORDS, i, VKL_DTYPE_VEC3, VKL_SOURCE_TYPE_VERTEX, 0);
 
     // Common props.
     _common_props(visual);

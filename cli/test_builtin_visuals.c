@@ -232,9 +232,14 @@ int test_visuals_volume_slice(TestContext* context)
 
     float x = .5;
     vkl_visual_data(&visual, VKL_PROP_POS, 0, 1, (vec3[]){{1 - x, 1 + x, 0}});
-    vkl_visual_data(&visual, VKL_PROP_POS, 1, 1, (vec3[]){{1 + x, 1 - x, 0}});
+    vkl_visual_data(&visual, VKL_PROP_POS, 1, 1, (vec3[]){{1 + x, 1 + x, 0}});
+    vkl_visual_data(&visual, VKL_PROP_POS, 2, 1, (vec3[]){{1 + x, 1 - x, 0}});
+    vkl_visual_data(&visual, VKL_PROP_POS, 3, 1, (vec3[]){{1 - x, 1 - x, 0}});
+
     vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 0, 1, (vec3[]){{0.1, 0.1, 0.1}});
-    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 1, 1, (vec3[]){{0.9, 0.9, 0.1}});
+    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 1, 1, (vec3[]){{0.9, 0.1, 0.1}});
+    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 2, 1, (vec3[]){{0.9, 0.9, 0.1}});
+    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 3, 1, (vec3[]){{0.1, 0.9, 0.1}});
 
     VklColormap cmap = VKL_CMAP_HSV;
     vkl_visual_data(&visual, VKL_PROP_COLORMAP, 0, 1, &cmap);
