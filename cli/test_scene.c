@@ -278,9 +278,6 @@ int test_scene_axes(TestContext* context)
     vkl_visual_data(visual, VKL_PROP_COLOR, 0, N, color);
     vkl_visual_data(visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
 
-    // bool update[2] = {0};
-    // _axes_collision(panel->controller, update);
-
     vkl_app_run(app, N_FRAMES);
     vkl_scene_destroy(scene);
     FREE(pos);
@@ -313,7 +310,7 @@ int test_scene_logistic(TestContext* context)
     VklPanel* panel = vkl_scene_panel(scene, 0, 0, VKL_CONTROLLER_PANZOOM, 0);
 
     // Markers.
-    VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_MARKER, 0);
+    VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_MARKER, VKL_GRAPHICS_FLAGS_DEPTH_TEST);
 
     const uint32_t N = 1000000;
     vec3* pos = calloc(N, sizeof(vec3));

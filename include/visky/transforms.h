@@ -195,8 +195,6 @@ static VklBox _box_cube(VklBox box)
 static void _normalize_pos(VklBox box, VklArray* points_in, VklArray* points_out)
 {
     ASSERT(points_out->item_count == points_in->item_count);
-    DBG(points_out->item_size);
-    DBG(points_in->item_size);
     ASSERT(points_out->item_size == points_in->item_size);
 
     vec3* pos_in = NULL;

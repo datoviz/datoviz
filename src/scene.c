@@ -71,7 +71,7 @@ static void _transform_pos_prop(VklDataCoords coords, VklProp* prop)
         return;
     }
 
-    *arr_tr = vkl_array(arr->item_count, VKL_DTYPE_VEC3);
+    *arr_tr = vkl_array(arr->item_count, arr->dtype);
     vkl_transform(coords, arr, arr_tr);
 }
 
@@ -92,6 +92,10 @@ static void _panel_renormalize(VklPanel* panel, VklBox box)
     for (uint32_t i = 0; i < panel->visual_count; i++)
     {
         visual = panel->visuals[i];
+
+        // NOTE: skip visuals that should not be transformed.
+        if ((visual->flags & VKL_SCENE_VISUAL_FLAGS_TRANSFORM_NONE) != 0)
+            continue;
 
         // Go through all visual props.
         prop = vkl_container_iter_init(&visual->props);
@@ -733,7 +737,8 @@ static void _add_axes(VklController* controller)
 
     for (uint32_t coord = 0; coord < 2; coord++)
     {
-        VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_AXES_2D, (int)coord);
+        VklVisual* visual = vkl_scene_visual(
+            panel, VKL_VISUAL_AXES_2D, VKL_SCENE_VISUAL_FLAGS_TRANSFORM_NONE | (int)coord);
         vkl_controller_visual(controller, visual);
         visual->priority = VKL_MAX_VISUAL_PRIORITY;
 

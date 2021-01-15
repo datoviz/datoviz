@@ -73,7 +73,7 @@ layout (std140, binding = 1) uniform Viewport {
 
     // Options
     int clip;               // viewport clipping
-    int transform;
+    int interact_axis;
     float dpi_scaling;      // DPI scaling
 } viewport;
 
@@ -97,7 +97,7 @@ vec4 transform(vec3 pos, vec2 shift, uint transform_mode) {
 
     // By default, take the viewport transform.
     if (transform_mode == 0)
-        transform_mode = uint(viewport.transform);
+        transform_mode = uint(viewport.interact_axis);
     // Default: transform all
     if (transform_mode == 0)
         transform_mode = VKL_TRANSFORM_AXIS_ALL;

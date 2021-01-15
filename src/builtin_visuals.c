@@ -583,7 +583,7 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
     vkl_graphics_alloc(&seg_data, count);
 
     // Visual coordinate.
-    VklAxisCoord coord = (VklAxisCoord)visual->flags;
+    VklAxisCoord coord = (VklAxisCoord)(visual->flags & 0xF);
     ASSERT(coord < 2);
 
     // Params
