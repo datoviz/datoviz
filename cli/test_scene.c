@@ -133,7 +133,7 @@ static void _panzoom(VklCanvas* canvas, VklEvent ev)
         if (controller->interacts[0].is_active && controller->type == VKL_CONTROLLER_PANZOOM)
         {
             // Get box of active panel.
-            tr = vkl_transform(panel, VKL_CDS_PANZOOM, VKL_CDS_GPU);
+            tr = vkl_transform_old(panel, VKL_CDS_PANZOOM, VKL_CDS_GPU);
             vkl_transform_apply(&tr, ll, pos_ll);
             vkl_transform_apply(&tr, ur, pos_ur);
             log_debug("(%.3f, %.3f) (%.3f, %.3f)", pos_ll[0], pos_ll[1], pos_ur[0], pos_ur[1]);

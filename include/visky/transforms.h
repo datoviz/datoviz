@@ -28,6 +28,16 @@ typedef enum
 
 
 
+typedef enum
+{
+    VKL_TRANSFORM_FLAGS_NONE = 0x0000,
+    VKL_TRANSFORM_FLAGS_LOGX = 0x0001,
+    VKL_TRANSFORM_FLAGS_LOGY = 0x0002,
+    VKL_TRANSFORM_FLAGS_LOGLOG = 0x0003,
+} VklTransformFlags;
+
+
+
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
@@ -43,6 +53,7 @@ typedef struct VklBox VklBox;
 
 struct VklBox
 {
+    // TODO: double
     vec2 xlim;
     vec2 ylim;
     vec2 zlim;
@@ -52,8 +63,10 @@ struct VklBox
 
 struct VklDataCoords
 {
-    dvec4 data; // (blx, bly, trx, try)
-    vec4 gpu;   // (blx, bly, trx, try)
+    VklBox box; // in data coordinate system
+    VklTransform transform;
+    int flags;
+    // TODO: union with transform parameters?
 };
 
 
@@ -170,6 +183,14 @@ static void _normalize_pos(VklBox box, VklArray* points_in, VklArray* points_out
         (*pos_out)[2] = -1.0 + 2.0 * ((*pos_in)[2] - box.zlim[0]) / (box.zlim[1] - box.zlim[0]);
     }
 }
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+VKY_EXPORT void vkl_transform(VklDataCoords coords, VklArray* pos_in, VklArray* pos_out);
 
 
 

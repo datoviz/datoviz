@@ -562,7 +562,7 @@ static void _axes_range(VklController* controller, VklAxisCoord coord)
     dvec2 ur = {+1, +1};
     dvec2 pos_ll = {0};
     dvec2 pos_ur = {0};
-    tr = vkl_transform(controller->panel, VKL_CDS_PANZOOM, VKL_CDS_GPU);
+    tr = vkl_transform_old(controller->panel, VKL_CDS_PANZOOM, VKL_CDS_GPU);
     // TODO: transform to data coordinates instead of GPU coordinates.
     vkl_transform_apply(&tr, ll, pos_ll);
     vkl_transform_apply(&tr, ur, pos_ur);
@@ -732,7 +732,7 @@ void vkl_transform_apply(VklTransformOLD* tr, dvec2 in, dvec2 out)
 
 
 
-VklTransformOLD vkl_transform(VklPanel* panel, VklCDS source, VklCDS target)
+VklTransformOLD vkl_transform_old(VklPanel* panel, VklCDS source, VklCDS target)
 {
     ASSERT(panel != NULL);
     VklTransformOLD tr = {{1, 1}, {0, 0}}; // identity
@@ -772,13 +772,13 @@ VklTransformOLD vkl_transform(VklPanel* panel, VklCDS source, VklCDS target)
     }
     else if (source > target)
     {
-        return vkl_transform_inv(vkl_transform(panel, target, source));
+        return vkl_transform_inv(vkl_transform_old(panel, target, source));
     }
     else if (target - source >= 2)
     {
         for (uint32_t k = source; k <= target - 1; k++)
         {
-            tr = vkl_transform_mul(tr, vkl_transform(panel, (VklCDS)k, (VklCDS)(k + 1)));
+            tr = vkl_transform_mul(tr, vkl_transform_old(panel, (VklCDS)k, (VklCDS)(k + 1)));
         }
     }
     else if (target - source == 1)

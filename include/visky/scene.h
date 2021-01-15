@@ -98,7 +98,6 @@ struct VklController
     uint32_t interact_count;
     VklInteract interacts[VKL_MAX_VISUALS_PER_CONTROLLER];
 
-    VklDataCoords coords;
     // may call vkl_visual_update() on all visuals in the panel
     VklControllerCallback callback;
     VklControllerUnion u;
@@ -138,7 +137,7 @@ struct VklTransformOLD
 /*  Transform functions                                                                          */
 /*************************************************************************************************/
 
-VklTransformOLD vkl_transform(VklPanel* panel, VklCDS source, VklCDS target);
+VklTransformOLD vkl_transform_old(VklPanel* panel, VklCDS source, VklCDS target);
 
 VklTransformOLD vkl_transform_inv(VklTransformOLD);
 
