@@ -57,8 +57,8 @@ static inline void _visual_set(VklVisual* visual)
 static inline bool _visual_has_request(VklVisual* visual)
 {
     ASSERT(visual != NULL);
-    return visual->obj.request == VKL_VISUAL_REQUEST_SET ||
-           visual->obj.request == VKL_VISUAL_REQUEST_NOT_SET;
+    return visual->obj.request != VKL_VISUAL_REQUEST_SET &&
+           visual->obj.request != VKL_VISUAL_REQUEST_NOT_SET;
 }
 
 
@@ -420,9 +420,12 @@ static void _scene_frame(VklCanvas* canvas, VklEvent ev)
             visual = panel->visuals[j];
 
             // First frame:
-            // Initialize prev_vertex_count and prev_index_count.
             if (canvas->frame_idx == 0)
             {
+                // Set all visuals to be updated.
+                _visual_request(visual, panel, VKL_VISUAL_REQUEST_UPLOAD);
+
+                // Initialize prev_vertex_count and prev_index_count.
                 for (uint32_t pidx = 0; pidx < visual->graphics_count; pidx++)
                 {
                     source = vkl_source_get(visual, VKL_SOURCE_TYPE_VERTEX, pidx);
@@ -435,23 +438,19 @@ static void _scene_frame(VklCanvas* canvas, VklEvent ev)
             }
 
             // Skip the visual if there is no request.
-
             if (!_visual_has_request(visual))
                 continue;
 
             // Process visual upload.
             if (visual->obj.request == VKL_VISUAL_REQUEST_UPLOAD)
             {
-                DBG(0);
                 // Update the visual's data.
                 vkl_visual_update(visual, viewport, panel->data_coords, NULL);
 
-                DBG(1);
                 // Detect whether the number of vertices/indices has changed, in which case we need
                 // a refill in the current frame.
                 _visual_detect_item_count_change(visual);
 
-                DBG(2);
                 // The visual no longer needs UPLOAD.
                 _visual_set(visual);
             }
