@@ -203,4 +203,27 @@ vkl_scene_panel(VklScene* scene, uint32_t row, uint32_t col, VklControllerType t
 
 
 
+static void _default_controller_callback(VklController* controller, VklEvent ev)
+{
+    VklScene* scene = controller->panel->scene;
+    VklCanvas* canvas = scene->canvas;
+
+    // Controller interactivity.
+    VklInteract* interact = NULL;
+
+    // Use all interact of the controllers.
+    for (uint32_t i = 0; i < controller->interact_count; i++)
+    {
+        interact = &controller->interacts[i];
+        // float delay = canvas->clock.elapsed - interact->last_update;
+
+        // Update the interact using the current panel's viewport.
+        VklViewport viewport = controller->panel->viewport;
+        vkl_interact_update(interact, viewport, &canvas->mouse, &canvas->keyboard);
+        // NOTE: the CPU->GPU transfer occurs at every frame, in another callback below
+    }
+}
+
+
+
 #endif

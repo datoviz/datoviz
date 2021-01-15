@@ -272,6 +272,7 @@ int test_scene_axes(TestContext* context)
         RANDN_POS(pos[i])
         RAND_COLOR(color[i])
         color[i][3] = 200;
+        // pos[i][0] *= 10;
     }
 
     vkl_visual_data(visual, VKL_PROP_POS, 0, N, pos);
