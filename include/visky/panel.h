@@ -1,6 +1,7 @@
 #ifndef VKL_PANEL_HEADER
 #define VKL_PANEL_HEADER
 
+#include "transforms.h"
 #include "visuals.h"
 
 
@@ -96,6 +97,7 @@ struct VklPanel
     void* mvp_mmap;          // for permanent mapping of the MVP uniform buffer
 
     VklController* controller;
+    VklTransform* transform;
     VklCommands* cmds;
     int prority_max;
 };

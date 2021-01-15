@@ -5,6 +5,7 @@
 #include "interact.h"
 #include "panel.h"
 #include "ticks.h"
+#include "transforms.h"
 #include "visuals.h"
 
 
@@ -53,7 +54,7 @@ typedef enum
 
 typedef struct VklScene VklScene;
 typedef struct VklController VklController;
-typedef struct VklTransform VklTransform;
+typedef struct VklTransformOLD VklTransformOLD;
 typedef struct VklAxes2D VklAxes2D;
 typedef union VklControllerUnion VklControllerUnion;
 
@@ -126,7 +127,7 @@ struct VklScene
 /*  Transform definitions                                                                        */
 /*************************************************************************************************/
 
-struct VklTransform
+struct VklTransformOLD
 {
     dvec2 scale, shift;
 };
@@ -137,15 +138,15 @@ struct VklTransform
 /*  Transform functions                                                                          */
 /*************************************************************************************************/
 
-VklTransform vkl_transform(VklPanel* panel, VklCDS source, VklCDS target);
+VklTransformOLD vkl_transform(VklPanel* panel, VklCDS source, VklCDS target);
 
-VklTransform vkl_transform_inv(VklTransform);
+VklTransformOLD vkl_transform_inv(VklTransformOLD);
 
-VklTransform vkl_transform_mul(VklTransform, VklTransform);
+VklTransformOLD vkl_transform_mul(VklTransformOLD, VklTransformOLD);
 
-VklTransform vkl_transform_interp(dvec2 pin, dvec2 pout, dvec2 qin, dvec2 qout);
+VklTransformOLD vkl_transform_interp(dvec2 pin, dvec2 pout, dvec2 qin, dvec2 qout);
 
-void vkl_transform_apply(VklTransform*, dvec2 in, dvec2 out);
+void vkl_transform_apply(VklTransformOLD*, dvec2 in, dvec2 out);
 
 
 

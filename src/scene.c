@@ -3,6 +3,7 @@
 #include "../include/visky/panel.h"
 #include "../include/visky/visuals.h"
 #include "../include/visky/vklite.h"
+#include "visuals_utils.h"
 #include "vklite_utils.h"
 
 
@@ -280,6 +281,59 @@ static void _default_controller_callback(VklController* controller, VklEvent ev)
 
 
 
+static void _normalize_3D(VklVisual* visual, VklVisualDataEvent ev)
+{
+    ASSERT(visual != NULL);
+
+    uint32_t n_pos_props = 0;
+    VklProp* prop = NULL;
+    VklArray* arr = NULL;
+
+    VklBox boxes[32] = {0};   // max number of props of the same type
+    VklProp* props[32] = {0}; // max number of props of the same type
+
+    // Gather all non-empty POS props, and get the bounding box on each.
+    for (uint32_t i = 0; i < 32; i++)
+    {
+        prop = vkl_prop_get(visual, VKL_PROP_POS, i);
+        if (prop == NULL)
+            break;
+        arr = &prop->arr_orig;
+        if (arr->item_count == 0)
+        {
+            continue;
+        }
+        boxes[n_pos_props] = _box_bounding(arr);
+        props[n_pos_props] = prop;
+        n_pos_props++;
+    }
+    if (n_pos_props == 0)
+    {
+        log_warn("no POS props found, skipping data normalization");
+        return;
+    }
+
+    // Merge the boxes and make it square.
+    VklBox box = _box_merge(n_pos_props, boxes);
+    box = _box_cube(box);
+
+    // Normalize the props into the arr_trans arrays.
+    VklArray* arr_tr = NULL;
+    for (uint32_t i = 0; i < n_pos_props; i++)
+    {
+        log_debug("normalize POS prop #%d", i);
+        prop = props[i];
+        arr = &prop->arr_orig;
+        arr_tr = &prop->arr_trans;
+        ASSERT(arr->item_count > 0);
+
+        *arr_tr = vkl_array(arr->item_count, VKL_DTYPE_VEC3);
+        _normalize_pos(box, arr, arr_tr);
+    }
+}
+
+
+
 /*************************************************************************************************/
 /*  Axes functions                                                                               */
 /*************************************************************************************************/
@@ -503,7 +557,7 @@ static void _axes_range(VklController* controller, VklAxisCoord coord)
     ASSERT(axes != NULL);
 
     // set axes->range depending on coord
-    VklTransform tr = {0};
+    VklTransformOLD tr = {0};
     dvec2 ll = {-1, -1};
     dvec2 ur = {+1, +1};
     dvec2 pos_ll = {0};
@@ -623,12 +677,12 @@ static void _axes_destroy(VklController* controller)
 /*  Transform functions                                                                          */
 /*************************************************************************************************/
 
-VklTransform vkl_transform_inv(VklTransform tr)
+VklTransformOLD vkl_transform_inv(VklTransformOLD tr)
 {
     ASSERT(tr.scale[0] != 0);
     ASSERT(tr.scale[1] != 0);
 
-    VklTransform tri = {0};
+    VklTransformOLD tri = {0};
     tri.scale[0] = 1. / tr.scale[0];
     tri.scale[1] = 1. / tr.scale[1];
     tri.shift[0] = -tr.scale[0] * tr.shift[0];
@@ -638,9 +692,9 @@ VklTransform vkl_transform_inv(VklTransform tr)
 
 
 
-VklTransform vkl_transform_mul(VklTransform tr0, VklTransform tr1)
+VklTransformOLD vkl_transform_mul(VklTransformOLD tr0, VklTransformOLD tr1)
 {
-    VklTransform trm = {0};
+    VklTransformOLD trm = {0};
     trm.scale[0] = tr0.scale[0] * tr1.scale[0];
     trm.scale[1] = tr0.scale[1] * tr1.scale[1];
     trm.shift[0] = tr0.shift[0] + tr1.shift[0] / tr0.scale[0];
@@ -650,9 +704,9 @@ VklTransform vkl_transform_mul(VklTransform tr0, VklTransform tr1)
 
 
 
-VklTransform vkl_transform_interp(dvec2 pin, dvec2 pout, dvec2 qin, dvec2 qout)
+VklTransformOLD vkl_transform_interp(dvec2 pin, dvec2 pout, dvec2 qin, dvec2 qout)
 {
-    VklTransform tr = {0};
+    VklTransformOLD tr = {0};
     tr.scale[0] = tr.scale[1] = 1;
     if (qin[0] != pin[0])
         tr.scale[0] = (qout[0] - pout[0]) / (qin[0] - pin[0]);
@@ -667,7 +721,7 @@ VklTransform vkl_transform_interp(dvec2 pin, dvec2 pout, dvec2 qin, dvec2 qout)
 
 
 
-void vkl_transform_apply(VklTransform* tr, dvec2 in, dvec2 out)
+void vkl_transform_apply(VklTransformOLD* tr, dvec2 in, dvec2 out)
 {
     ASSERT(tr != NULL);
     if (tr->scale[0] != 0)
@@ -678,10 +732,10 @@ void vkl_transform_apply(VklTransform* tr, dvec2 in, dvec2 out)
 
 
 
-VklTransform vkl_transform(VklPanel* panel, VklCDS source, VklCDS target)
+VklTransformOLD vkl_transform(VklPanel* panel, VklCDS source, VklCDS target)
 {
     ASSERT(panel != NULL);
-    VklTransform tr = {{1, 1}, {0, 0}}; // identity
+    VklTransformOLD tr = {{1, 1}, {0, 0}}; // identity
     dvec2 NDC0 = {-1, -1};
     dvec2 NDC1 = {+1, +1};
     dvec2 ll = {-1, -1};
@@ -1013,6 +1067,10 @@ VklVisual* vkl_scene_visual(VklPanel* panel, VklVisualType type, int flags)
     // Put all graphics pipeline in the inner viewport by default.
     for (uint32_t pidx = 0; pidx < visual->graphics_count; pidx++)
         visual->clip[pidx] = VKL_VIEWPORT_INNER;
+
+    // TODO: cleaner determination of panel transforms.
+    if (panel->controller->type == VKL_CONTROLLER_ARCBALL)
+        vkl_visual_callback_transform(visual, _normalize_3D);
 
     return visual;
 }

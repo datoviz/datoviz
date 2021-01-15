@@ -115,7 +115,7 @@ static void _panzoom(VklCanvas* canvas, VklEvent ev)
 
     VklController* controller = NULL;
     VklInteract* interact = NULL;
-    VklTransform tr = {0};
+    VklTransformOLD tr = {0};
     dvec2 ll = {-1, -1};
     dvec2 ur = {+1, +1};
     dvec2 pos_ll = {0};

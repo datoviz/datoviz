@@ -45,57 +45,6 @@ static void _common_props(VklVisual* visual)
         visual, VKL_PROP_TIME, 0, 3, offsetof(VklMVP, time), VKL_ARRAY_COPY_SINGLE, 1);
 }
 
-static void _visual_normalize(VklVisual* visual, VklVisualDataEvent ev)
-{
-    ASSERT(visual != NULL);
-
-    uint32_t n_pos_props = 0;
-    VklProp* prop = NULL;
-    VklArray* arr = NULL;
-
-    VklBox boxes[32] = {0};   // max number of props of the same type
-    VklProp* props[32] = {0}; // max number of props of the same type
-
-    // Gather all POS props, and get the bounding box on each.
-    for (uint32_t i = 0; i < 32; i++)
-    {
-        prop = vkl_prop_get(visual, VKL_PROP_POS, i);
-        if (prop == NULL)
-            break;
-        arr = &prop->arr_orig;
-        if (arr->item_count == 0)
-        {
-            continue;
-        }
-        boxes[n_pos_props] = _box_bounding(arr);
-        props[n_pos_props] = prop;
-        n_pos_props++;
-    }
-    if (n_pos_props == 0)
-    {
-        log_warn("no POS props found, skipping data normalization");
-        return;
-    }
-
-    // Merge the boxes and make it square.
-    VklBox box = _box_merge(n_pos_props, boxes);
-    box = _box_cube(box);
-
-    // Normalize the props into the arr_trans arrays.
-    VklArray* arr_tr = NULL;
-    for (uint32_t i = 0; i < n_pos_props; i++)
-    {
-        log_debug("normalize POS prop #%d", i);
-        prop = props[i];
-        arr = &prop->arr_orig;
-        arr_tr = &prop->arr_trans;
-        ASSERT(arr->item_count > 0);
-
-        *arr_tr = vkl_array(arr->item_count, VKL_DTYPE_VEC3);
-        _normalize_pos(box, arr, arr_tr);
-    }
-}
-
 
 
 /*************************************************************************************************/
@@ -249,7 +198,7 @@ static void _visual_mesh(VklVisual* visual)
     for (uint32_t i = 0; i < 4; i++)
         vkl_visual_prop(visual, VKL_PROP_IMAGE, i, VKL_DTYPE_UINT, VKL_SOURCE_TYPE_IMAGE, i);
 
-    vkl_visual_callback_transform(visual, _visual_normalize);
+    // vkl_visual_callback_transform(visual, _visual_normalize);
 }
 
 
@@ -403,7 +352,7 @@ static void _visual_volume_slice(VklVisual* visual)
 
     // Baking function.
     vkl_visual_callback_bake(visual, _visual_volume_slice_bake);
-    vkl_visual_callback_transform(visual, _visual_normalize);
+    // vkl_visual_callback_transform(visual, _visual_normalize);
 }
 
 

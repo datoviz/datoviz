@@ -4,8 +4,8 @@
 #include "array.h"
 #include "context.h"
 #include "graphics.h"
+#include "transforms.h"
 #include "vklite.h"
-
 
 
 /*************************************************************************************************/
@@ -134,8 +134,6 @@ typedef struct VklProp VklProp;
 // typedef struct VklSourceTexture VklSourceTexture;
 typedef union VklSourceUnion VklSourceUnion;
 typedef struct VklSource VklSource;
-typedef struct VklDataCoords VklDataCoords;
-typedef struct VklBox VklBox;
 
 typedef struct VklVisualFillEvent VklVisualFillEvent;
 typedef struct VklVisualDataEvent VklVisualDataEvent;
@@ -170,22 +168,6 @@ enqueue data transfers
 /*************************************************************************************************/
 /*  Source structs                                                                               */
 /*************************************************************************************************/
-
-struct VklBox
-{
-    vec2 xlim;
-    vec2 ylim;
-    vec2 zlim;
-};
-
-
-struct VklDataCoords
-{
-    dvec4 data; // (blx, bly, trx, try)
-    vec4 gpu;   // (blx, bly, trx, try)
-};
-
-
 
 union VklSourceUnion
 {
