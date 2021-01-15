@@ -60,8 +60,7 @@ static void _visual_marker_raw(VklVisual* visual)
     ASSERT(canvas != NULL);
 
     // Graphics.
-    vkl_visual_graphics(
-        visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_POINTS, VKL_GRAPHICS_FLAGS_DEPTH_TEST));
+    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_POINTS, visual->flags));
 
     // Sources
     vkl_visual_source(
