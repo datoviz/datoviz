@@ -281,7 +281,7 @@ static void _default_controller_callback(VklController* controller, VklEvent ev)
 
 
 
-static void _normalize_3D(VklVisual* visual, VklVisualDataEvent ev)
+static void _visual_transform(VklVisual* visual, VklVisualDataEvent ev)
 {
     ASSERT(visual != NULL);
 
@@ -1068,9 +1068,7 @@ VklVisual* vkl_scene_visual(VklPanel* panel, VklVisualType type, int flags)
     for (uint32_t pidx = 0; pidx < visual->graphics_count; pidx++)
         visual->clip[pidx] = VKL_VIEWPORT_INNER;
 
-    // TODO: cleaner determination of panel transforms.
-    if (panel->controller->type == VKL_CONTROLLER_ARCBALL)
-        vkl_visual_callback_transform(visual, _normalize_3D);
+    vkl_visual_callback_transform(visual, _visual_transform);
 
     return visual;
 }

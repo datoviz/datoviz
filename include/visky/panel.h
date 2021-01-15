@@ -75,6 +75,7 @@ struct VklPanel
     VklGrid* grid;
     VklPanelMode mode;
     VklPanelSizeUnit size_unit; // the unit x, y, width, height are in
+    VklTransform transform;     // data transformation
 
     // User-specified:
     uint32_t row, col;
@@ -97,7 +98,6 @@ struct VklPanel
     void* mvp_mmap;          // for permanent mapping of the MVP uniform buffer
 
     VklController* controller;
-    VklTransform* transform;
     VklCommands* cmds;
     int prority_max;
 };
