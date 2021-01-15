@@ -183,7 +183,6 @@ int test_visuals_2(TestContext* context)
     vkl_visual_data(&visual, VKL_PROP_MODEL, 0, 1, id);
     vkl_visual_data(&visual, VKL_PROP_VIEW, 0, 1, id);
     vkl_visual_data(&visual, VKL_PROP_PROJ, 0, 1, id);
-
     // Param.
     float param = 5.0f;
     vkl_visual_data(&visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
@@ -191,7 +190,7 @@ int test_visuals_2(TestContext* context)
     // GPU bindings.
     vkl_visual_buffer(&visual, VKL_SOURCE_TYPE_VIEWPORT, 0, br_viewport);
 
-    // Upload the data to the GPU..
+    // Upload the data to the GPU manually.
     vkl_visual_update(&visual, canvas->viewport, (VklDataCoords){0}, NULL);
 
     vkl_event_callback(

@@ -568,7 +568,7 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
     VklSource* text_vert_src = vkl_source_get(visual, VKL_SOURCE_TYPE_VERTEX, 1);
 
     // HACK: mark the index buffer to be updated.
-    seg_index_src->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+    seg_index_src->obj.request = VKL_VISUAL_REQUEST_UPLOAD;
 
     // Count the total number of segments.
     // NOTE: the number of segments is determined by the POS prop.

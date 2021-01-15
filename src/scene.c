@@ -25,12 +25,95 @@ static void _viewport_print(VklViewport v)
 
 
 
-static void _panel_to_update(VklPanel* panel)
+static inline void _visual_request(VklVisual* visual, VklPanel* panel, VklVisualRequest req)
+{
+    if (visual != NULL)
+    {
+        visual->obj.request = req;
+    }
+    if (panel != NULL)
+    {
+        // Update the panel request when one of its visual need to be updated. Also mark the scene
+        // as needing an update. The scene frame callback checks, at every frame, what needs to be
+        // updated. The scene and panel requests lets it avoid doing a full scan at every frame.
+        panel->obj.request = req;
+        if (panel->scene != NULL)
+            panel->scene->obj.request = req;
+    }
+    if (req == VKL_VISUAL_REQUEST_REFILL)
+        vkl_canvas_to_refill(visual->canvas);
+}
+
+
+
+static inline void _visual_set(VklVisual* visual)
+{
+    ASSERT(visual != NULL);
+    visual->obj.request = VKL_VISUAL_REQUEST_SET;
+}
+
+
+
+static inline bool _visual_has_request(VklVisual* visual)
+{
+    ASSERT(visual != NULL);
+    return visual->obj.request == VKL_VISUAL_REQUEST_SET ||
+           visual->obj.request == VKL_VISUAL_REQUEST_NOT_SET;
+}
+
+
+
+static inline void _panel_set(VklPanel* panel)
 {
     ASSERT(panel != NULL);
-    panel->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
-    if (panel->scene != NULL)
-        panel->scene->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+    panel->obj.request = VKL_VISUAL_REQUEST_SET;
+}
+
+
+
+static inline bool _panel_has_request(VklPanel* panel)
+{
+    ASSERT(panel != NULL);
+    return panel->obj.request == VKL_VISUAL_REQUEST_SET ||
+           panel->obj.request == VKL_VISUAL_REQUEST_NOT_SET;
+}
+
+
+
+static inline void _scene_set(VklScene* scene)
+{
+    ASSERT(scene != NULL);
+    scene->obj.request = VKL_VISUAL_REQUEST_SET;
+}
+
+
+
+static void _visual_detect_item_count_change(VklVisual* visual)
+{
+    ASSERT(visual != NULL);
+    VklCanvas* canvas = visual->canvas;
+    ASSERT(canvas != NULL);
+    VklSource* source = NULL;
+    for (uint32_t pidx = 0; pidx < visual->graphics_count; pidx++)
+    {
+        // Detect a change in vertex_count.
+        source = vkl_source_get(visual, VKL_SOURCE_TYPE_VERTEX, pidx);
+        if (source->arr.item_count != visual->prev_vertex_count[pidx])
+        {
+            log_debug("automatic detection of a change in vertex count, will trigger full refill");
+            _visual_request(visual, NULL, VKL_VISUAL_REQUEST_REFILL);
+            visual->prev_vertex_count[pidx] = source->arr.item_count;
+        }
+
+        // Detect a change in index_count.
+        source = vkl_source_get(visual, VKL_SOURCE_TYPE_INDEX, pidx);
+        if (source != NULL && source->arr.item_count != visual->prev_index_count[pidx])
+        {
+            log_debug("automatic detection of a change in index count, will trigger full refill");
+            _visual_request(visual, NULL, VKL_VISUAL_REQUEST_REFILL);
+            visual->prev_index_count[pidx] = source->arr.item_count;
+        }
+    }
 }
 
 
@@ -119,7 +202,8 @@ static void _panel_renormalize(VklPanel* panel, VklBox box)
                 _transform_pos_prop(panel->data_coords, prop);
 
                 // Mark the visual has needing data update.
-                visual->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+                // visual->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+                _visual_request(visual, panel, VKL_VISUAL_REQUEST_UPLOAD);
             }
 
             prop = vkl_container_iter(&visual->props);
@@ -152,9 +236,6 @@ static void _panel_visual_added(VklPanel* panel, VklVisual* visual)
     {
         // Renormalize all visuals in the panel.
         _panel_renormalize(panel, box);
-
-        // Mark the panel as NEED_UPDATE so that the new data gets uploaded to the GPU.
-        _panel_to_update(panel);
     }
 }
 
@@ -183,9 +264,6 @@ static void _panel_normalize(VklPanel* panel)
     // Renormalize all visuals in the panel.
     _panel_renormalize(panel, box);
 
-    // Mark the panel as NEED_UPDATE so that the new data gets uploaded to the GPU.
-    _panel_to_update(panel);
-
     FREE(boxes);
 }
 
@@ -204,8 +282,6 @@ static void _update_visual_viewport(VklPanel* panel, VklVisual* visual)
         // pipeline, such that the source idx corresponds to the pipeline idx.
         // _viewport_print(visual->viewport);
         vkl_visual_data_source(visual, VKL_SOURCE_TYPE_VIEWPORT, pidx, 0, 1, 1, &visual->viewport);
-        // HACK: this call should not set the visual status to NEED_UPDATE
-        visual->obj.status = VKL_OBJECT_STATUS_CREATED;
     }
 }
 
@@ -299,8 +375,7 @@ static void _scene_frame(VklCanvas* canvas, VklEvent ev)
     VklViewport viewport = {0};
 
     // Go through all panels that need to be updated.
-    bool to_update = false;
-
+    // bool to_update = false;
     VklPanel* panel = vkl_container_iter_init(&grid->panels);
     VklSource* source = NULL;
     VklVisual* visual = NULL;
@@ -329,8 +404,16 @@ static void _scene_frame(VklCanvas* canvas, VklEvent ev)
         if (canvas->frame_idx == 0)
             _panel_normalize(panel);
 
-        // Update all visuals in the panel, using the panel's viewport.
-        to_update = panel->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE;
+        // Process panel and visual requests.
+
+        // NOTE: vkl_visual_data() functions have no notion of panel and cannot update its request.
+        // So we are forced to scan through all panels and visuals to find visuals that need an
+        // update. That's why the following is commented out.
+        // // Skip the panel if there is no request.
+        // if (!_panel_has_request(panel))
+        //     continue;
+
+        // to_update = panel->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE;
         viewport = panel->viewport;
         for (uint32_t j = 0; j < panel->visual_count; j++)
         {
@@ -351,46 +434,37 @@ static void _scene_frame(VklCanvas* canvas, VklEvent ev)
                 }
             }
 
-            // Update visual data if needed.
-            if (visual->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE)
+            // Skip the visual if there is no request.
+
+            if (!_visual_has_request(visual))
+                continue;
+
+            // Process visual upload.
+            if (visual->obj.request == VKL_VISUAL_REQUEST_UPLOAD)
             {
+                DBG(0);
+                // Update the visual's data.
                 vkl_visual_update(visual, viewport, panel->data_coords, NULL);
-                visual->obj.status = VKL_OBJECT_STATUS_CREATED;
-            }
 
-            // Detect whether the vertex/index count has changed, in which case we'll need a
-            // full refill in the same frame as the data upload.
-            if (to_update)
-            {
-                for (uint32_t pidx = 0; pidx < visual->graphics_count; pidx++)
-                {
-                    // Detect a change in vertex_count.
-                    source = vkl_source_get(visual, VKL_SOURCE_TYPE_VERTEX, pidx);
-                    if (source->arr.item_count != visual->prev_vertex_count[pidx])
-                    {
-                        log_debug("automatic detection of a change in vertex count, will trigger "
-                                  "full refill");
-                        vkl_canvas_to_refill(canvas);
-                        visual->prev_vertex_count[pidx] = source->arr.item_count;
-                    }
+                DBG(1);
+                // Detect whether the number of vertices/indices has changed, in which case we need
+                // a refill in the current frame.
+                _visual_detect_item_count_change(visual);
 
-                    // Detect a change in index_count.
-                    source = vkl_source_get(visual, VKL_SOURCE_TYPE_INDEX, pidx);
-                    if (source != NULL && source->arr.item_count != visual->prev_index_count[pidx])
-                    {
-                        log_debug("automatic detection of a change in index count, will trigger "
-                                  "full refill");
-                        vkl_canvas_to_refill(canvas);
-                        visual->prev_index_count[pidx] = source->arr.item_count;
-                    }
-                }
+                DBG(2);
+                // The visual no longer needs UPLOAD.
+                _visual_set(visual);
             }
         }
-        panel->obj.status = VKL_OBJECT_STATUS_CREATED;
+
+        // Mark the panel as no longer needing to be updated.
+        _panel_set(panel);
 
         panel = vkl_container_iter(&grid->panels);
     }
-    scene->obj.status = VKL_OBJECT_STATUS_CREATED;
+
+    // Mark the scene as no longer needing to be updated.
+    _scene_set(scene);
 }
 
 
@@ -734,7 +808,8 @@ static void _axes_callback(VklController* controller, VklEvent ev)
             continue;
         _axes_ticks(controller, coord);
         _axes_upload(controller, coord);
-        canvas->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+        // TODO: what else to do here? update a request??
+        // canvas->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
     }
 }
 
@@ -1167,8 +1242,6 @@ vkl_scene_panel(VklScene* scene, uint32_t row, uint32_t col, VklControllerType t
     // TODO: update panel->data_coords.transform depending on the flags
     panel->scene = scene;
     panel->prority_max = VKL_MAX_VISUAL_PRIORITY;
-    // At initialization, must update all visuals data.
-    _panel_to_update(panel);
     return panel;
 }
 

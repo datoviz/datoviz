@@ -75,6 +75,43 @@ void vkl_visual_destroy(VklVisual* visual)
 /*  Visual creation                                                                              */
 /*************************************************************************************************/
 
+static void _source_set_changed(VklSource* source, bool value)
+{
+    ASSERT(source != NULL);
+    int req = value ? VKL_VISUAL_REQUEST_UPLOAD : VKL_VISUAL_REQUEST_NOT_SET;
+    source->obj.request = req;
+    ASSERT(source->visual != NULL);
+    source->visual->obj.request = req;
+}
+
+
+
+static void _source_set(VklSource* source)
+{
+    ASSERT(source != NULL);
+    source->obj.request = VKL_VISUAL_REQUEST_SET;
+    ASSERT(source->visual != NULL);
+    source->visual->obj.request = VKL_VISUAL_REQUEST_SET;
+}
+
+
+
+static bool _source_has_changed(VklSource* source)
+{
+    ASSERT(source != NULL);
+    return source->obj.request == VKL_VISUAL_REQUEST_UPLOAD;
+}
+
+
+
+static bool _source_is_set(VklSource* source)
+{
+    ASSERT(source != NULL);
+    return source->obj.request != VKL_VISUAL_REQUEST_NOT_SET;
+}
+
+
+
 void vkl_visual_source(
     VklVisual* visual, VklSourceType source_type, uint32_t source_idx, //
     VklPipelineType pipeline, uint32_t pipeline_idx,                   //
@@ -85,6 +122,7 @@ void vkl_visual_source(
 
     VklSource* source = vkl_container_alloc(&visual->sources);
     obj_init(&source->obj);
+    source->visual = visual;
     source->source_type = source_type;
     source->source_kind = _get_source_kind(source_type);
     source->source_idx = source_idx;
@@ -109,7 +147,8 @@ void vkl_visual_source(
     if (source->source_kind == VKL_SOURCE_KIND_INDEX)
     {
         source->origin = VKL_SOURCE_ORIGIN_LIB;
-        source->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+        _source_set_changed(source, true);
+        // source->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
     }
 }
 
@@ -280,8 +319,9 @@ void vkl_visual_data_partial(
     {
         log_trace("source type %d #%d handled by lib", source->source_type, source->source_idx);
         source->origin = VKL_SOURCE_ORIGIN_LIB;
-        source->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
-        visual->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+        // source->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+        // visual->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+        _source_set_changed(source, true);
     }
 }
 
@@ -352,8 +392,9 @@ void vkl_visual_data_source(
     vkl_array_data(&source->arr, first_item, item_count, data_item_count, data);
 
     source->origin = VKL_SOURCE_ORIGIN_NOBAKE;
-    source->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
-    visual->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+    // source->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+    // visual->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+    _source_set_changed(source, true);
 }
 
 
@@ -374,8 +415,9 @@ void vkl_visual_buffer(
 
     source->u.br = br;
     source->origin = VKL_SOURCE_ORIGIN_USER;
-    source->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
-    visual->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+    _source_set_changed(source, true);
+    // source->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+    // visual->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
 
     // Set the pipeline bindings with the source buffer.
     _set_source_bindings(visual, source);
@@ -394,8 +436,9 @@ void vkl_visual_texture(
 
     source->u.tex = texture;
     source->origin = VKL_SOURCE_ORIGIN_USER;
-    source->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
-    visual->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+    _source_set_changed(source, true);
+    // source->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+    // visual->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
 
     VklBindings* bindings = _get_bindings(visual, source);
     ASSERT(bindings != NULL);
@@ -654,15 +697,17 @@ void vkl_visual_update(
             source = vkl_container_iter(&visual->sources);
             continue;
         }
-        if (source->obj.status == VKL_OBJECT_STATUS_INIT)
+        if (!_source_is_set(source))
         {
             log_error("data source %d #%d was never set", source->source_type, source->source_idx);
             source = vkl_container_iter(&visual->sources);
             continue;
         }
-        else if (source->obj.status != VKL_OBJECT_STATUS_NEED_UPDATE)
+        else if (!_source_has_changed(source))
         {
-            log_trace("skip data upload for source that doesn't need to be updated");
+            log_trace(
+                "skip data upload for source %d that doesn't need to be updated",
+                source->source_type);
             source = vkl_container_iter(&visual->sources);
             continue;
         }
@@ -702,8 +747,9 @@ void vkl_visual_update(
                 arr->item_count, br->size, source->source_type, source->source_idx);
 
             vkl_upload_buffers(canvas, *br, 0, size, arr->data);
-            source->obj.status = VKL_OBJECT_STATUS_CREATED;
-            visual->obj.status = VKL_OBJECT_STATUS_CREATED;
+            _source_set(source);
+            // source->obj.status = VKL_OBJECT_STATUS_CREATED;
+            // visual->obj.status = VKL_OBJECT_STATUS_CREATED;
         }
 
         // Update textures.
@@ -730,8 +776,7 @@ void vkl_visual_update(
             vkl_upload_texture(
                 canvas, texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET,
                 arr->item_count * arr->item_size, arr->data);
-            source->obj.status = VKL_OBJECT_STATUS_CREATED;
-            visual->obj.status = VKL_OBJECT_STATUS_CREATED;
+            _source_set(source);
         }
 
         source = vkl_container_iter(&visual->sources);

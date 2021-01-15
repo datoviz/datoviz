@@ -123,6 +123,18 @@ typedef enum
 
 
 
+typedef enum
+{
+    VKL_VISUAL_REQUEST_NOT_SET = 0x0000,       // object has never been set
+    VKL_VISUAL_REQUEST_SET = 0x0001,           // object has been set
+    VKL_VISUAL_REQUEST_REFILL = 0x0010,        // visual requires a command buffer refill
+    VKL_VISUAL_REQUEST_UPLOAD = 0x0020,        // visual requires data GPU upload
+    VKL_VISUAL_REQUEST_NORMALIZATION = 0x0040, // visual requires CPU data normalization
+    VKL_VISUAL_REQUEST_VIEWPORT = 0x0080,      // visual requires viewport update
+} VklVisualRequest;
+
+
+
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
@@ -130,8 +142,6 @@ typedef enum
 typedef struct VklVisual VklVisual;
 typedef struct VklProp VklProp;
 
-// typedef struct VklSourceBuffer VklSourceBuffer;
-// typedef struct VklSourceTexture VklSourceTexture;
 typedef union VklSourceUnion VklSourceUnion;
 typedef struct VklSource VklSource;
 
@@ -181,6 +191,7 @@ union VklSourceUnion
 struct VklSource
 {
     VklObject obj;
+    VklVisual* visual;
 
     // Identifier of the prop
     VklPipelineType pipeline; // graphics or compute pipeline?

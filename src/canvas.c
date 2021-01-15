@@ -1812,7 +1812,7 @@ void vkl_canvas_frame_submit(VklCanvas* canvas)
 
 void vkl_app_run(VklApp* app, uint64_t frame_count)
 {
-    log_trace("start main loop");
+    log_debug("start main loop with %d frames", frame_count);
     ASSERT(app != NULL);
     app->is_running = true;
     if (frame_count == 0)

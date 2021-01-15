@@ -431,7 +431,7 @@ static void _bake_source(VklVisual* visual, VklSource* source)
     // The baking function doesn't run if the VERTEX source is handled by the user.
     if (source->origin != VKL_SOURCE_ORIGIN_LIB)
         return;
-    if (source->obj.status != VKL_OBJECT_STATUS_NEED_UPDATE)
+    if (source->obj.request != VKL_VISUAL_REQUEST_UPLOAD)
     {
         log_trace(
             "skip bake source for source %d that doesn't need updating", source->source_kind);
@@ -464,7 +464,7 @@ static void _bake_uniforms(VklVisual* visual)
 
     while (source != NULL)
     {
-        if (source->obj.status != VKL_OBJECT_STATUS_NEED_UPDATE)
+        if (source->obj.request != VKL_VISUAL_REQUEST_UPLOAD)
         {
             log_trace("skip bake source for uniform source that doesn't need updating");
             source = vkl_container_iter(&visual->sources);
