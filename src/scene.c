@@ -18,7 +18,7 @@ static void _update_visual_viewport(VklPanel* panel, VklVisual* visual)
     // Each graphics pipeline in the visual has its own transform/clip viewport options
     for (uint32_t pidx = 0; pidx < visual->graphics_count; pidx++)
     {
-        visual->viewport.transform = visual->transform[pidx];
+        visual->viewport.transform = visual->interact_axis[pidx];
         visual->viewport.clip = visual->clip[pidx];
         ASSERT(visual->viewport.viewport.minDepth < visual->viewport.viewport.maxDepth);
         // NOTE: here we make the assumption that there is exactly 1 viewport per graphics
@@ -636,8 +636,8 @@ static void _add_axes(VklController* controller)
         visual->clip[0] = VKL_VIEWPORT_OUTER;
         visual->clip[1] = coord == 0 ? VKL_VIEWPORT_OUTER_BOTTOM : VKL_VIEWPORT_OUTER_LEFT;
 
-        visual->transform[0] = visual->transform[1] =
-            coord == 0 ? VKL_TRANSFORM_AXIS_X : VKL_TRANSFORM_AXIS_Y;
+        visual->interact_axis[0] = visual->interact_axis[1] =
+            coord == 0 ? VKL_INTERACT_AXIS_X : VKL_INTERACT_AXIS_Y;
 
         // Text params.
         VklFontAtlas* atlas = &ctx->font_atlas;

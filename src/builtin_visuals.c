@@ -532,8 +532,8 @@ static void _add_ticks(
     vec3 P0 = {0};
     vec3 P1 = {0};
     VklCapType cap = VKL_CAP_TYPE_NONE;
-    VklTransformAxis transform =
-        level == VKL_AXES_LEVEL_LIM ? VKL_TRANSFORM_AXIS_NONE : VKL_TRANSFORM_AXIS_DEFAULT;
+    VklInteractAxis transform =
+        level == VKL_AXES_LEVEL_LIM ? VKL_INTERACT_AXIS_NONE : VKL_INTERACT_AXIS_DEFAULT;
 
     uint32_t n = tick_prop->arr_orig.item_count;
     ASSERT(n > 0);

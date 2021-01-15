@@ -83,12 +83,12 @@ typedef enum
 // NOTE: must correspond to values in common.glsl
 typedef enum
 {
-    VKL_TRANSFORM_AXIS_DEFAULT,
-    VKL_TRANSFORM_AXIS_ALL,  // normal transform
-    VKL_TRANSFORM_AXIS_X,    // transform just on the X axis
-    VKL_TRANSFORM_AXIS_Y,    // transform just on the Y axis
-    VKL_TRANSFORM_AXIS_NONE, // no transform
-} VklTransformAxis;
+    VKL_INTERACT_AXIS_DEFAULT,
+    VKL_INTERACT_AXIS_ALL,  // normal transform
+    VKL_INTERACT_AXIS_X,    // transform just on the X axis
+    VKL_INTERACT_AXIS_Y,    // transform just on the Y axis
+    VKL_INTERACT_AXIS_NONE, // no transform
+} VklInteractAxis;
 
 
 
@@ -338,7 +338,7 @@ struct VklViewport
     VklViewportClip clip; // used by the GPU for viewport clipping
 
     // Used to discard transform on one axis
-    VklTransformAxis transform;
+    VklInteractAxis transform;
 
     float dpi_scaling;
 
