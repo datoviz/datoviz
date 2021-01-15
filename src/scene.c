@@ -221,6 +221,10 @@ static void _panel_visual_added(VklPanel* panel, VklVisual* visual)
 
     VklDataCoords* coords = &panel->data_coords;
 
+    // NOTE: skip visuals that should not be transformed.
+    if ((visual->flags & VKL_SCENE_VISUAL_FLAGS_TRANSFORM_NONE) != 0)
+        return;
+
     // Get the visual box.
     VklBox box = _visual_box(visual);
 
@@ -252,7 +256,9 @@ static void _panel_normalize(VklPanel* panel)
 
     // Get the bounding box of each visual.
     for (uint32_t i = 0; i < panel->visual_count; i++)
-        boxes[i] = _visual_box(panel->visuals[i]);
+        // NOTE: skip visuals that should not be transformed.
+        if ((panel->visuals[i]->flags & VKL_SCENE_VISUAL_FLAGS_TRANSFORM_NONE) == 0)
+            boxes[i] = _visual_box(panel->visuals[i]);
 
     // Merge the visual box with the existing box.
     VklBox box = _box_merge(panel->visual_count, boxes);
@@ -666,6 +672,8 @@ static void _axes_ticks_init(VklController* controller)
     ASSERT(controller != NULL);
     ASSERT(controller->type == VKL_CONTROLLER_AXES_2D);
     VklAxes2D* axes = &controller->u.axes_2D;
+    VklPanel* panel = controller->panel;
+    VklDataCoords* coords = &panel->data_coords;
 
     // NOTE: get the font size which was set by in builtin_visuals.c as a prop.
     VklProp* prop = vkl_prop_get(controller->visuals[0], VKL_PROP_TEXT_SIZE, 0);
