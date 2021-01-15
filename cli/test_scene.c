@@ -193,6 +193,7 @@ int test_scene_1(TestContext* context)
     {
         RANDN_POS(pos[i])
         RAND_COLOR(color[i])
+        pos[i][0] *= 10; // NOTE: check automatic data normalization
     }
 
     vkl_visual_data(visual, VKL_PROP_POS, 0, N, pos);

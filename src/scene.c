@@ -1,6 +1,7 @@
 #include "../include/visky/scene.h"
 #include "../include/visky/canvas.h"
 #include "../include/visky/panel.h"
+#include "../include/visky/transforms.h"
 #include "../include/visky/visuals.h"
 #include "../include/visky/vklite.h"
 #include "visuals_utils.h"
@@ -12,13 +13,175 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
+static void _panel_to_update(VklPanel* panel)
+{
+    ASSERT(panel != NULL);
+    panel->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+    if (panel->scene != NULL)
+        panel->scene->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+}
+
+
+
+// Return the box surrounding all POS props of a visual.
+static VklBox _visual_box(VklVisual* visual)
+{
+    ASSERT(visual != NULL);
+
+    VklProp* prop = NULL;
+    VklArray* arr = NULL;
+
+    // The POS props that will need to be transformed.
+    uint32_t n_pos_props = 0;
+
+    VklBox boxes[32] = {0}; // max number of props of the same type
+
+    // Gather all non-empty POS props, and get the bounding box on each.
+    for (uint32_t i = 0; i < 32; i++)
+    {
+        prop = vkl_prop_get(visual, VKL_PROP_POS, i);
+        if (prop == NULL)
+            break;
+        arr = &prop->arr_orig;
+        if (arr->item_count == 0)
+        {
+            continue;
+        }
+        boxes[n_pos_props++] = _box_bounding(arr);
+    }
+
+    // Merge the boxes of the visual.
+    VklBox box = _box_merge(n_pos_props, boxes);
+    return box;
+}
+
+
+
+// Renormalize a POS prop.
+static void _transform_pos_prop(VklDataCoords coords, VklProp* prop)
+{
+    VklArray* arr = NULL;
+    VklArray* arr_tr = NULL;
+
+    arr = &prop->arr_orig;
+    arr_tr = &prop->arr_trans;
+    if (arr->item_count == 0)
+    {
+        log_warn("empty POS prop, skipping renormalization");
+        return;
+    }
+
+    *arr_tr = vkl_array(arr->item_count, VKL_DTYPE_VEC3);
+    vkl_transform(coords, arr, arr_tr);
+}
+
+
+
+// Renormalize all POS props of all visuals in the panel.
+static void _panel_renormalize(VklPanel* panel, VklBox box)
+{
+    log_debug("renormalize all visuals in panel");
+    ASSERT(panel != NULL);
+    VklVisual* visual = NULL;
+    VklProp* prop = NULL;
+
+    // Update the data coords box.
+    panel->data_coords.box = box;
+
+    // Go through all visuals in the panel.
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        visual = panel->visuals[i];
+
+        // Go through all visual props.
+        prop = vkl_container_iter_init(&visual->props);
+        while (prop != NULL)
+        {
+            if (prop->prop_type == VKL_PROP_POS)
+            {
+                // Transform all POS props with the panel data coordinates.
+                _transform_pos_prop(panel->data_coords, prop);
+
+                // Mark the visual has needing data update.
+                visual->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+            }
+
+            prop = vkl_container_iter(&visual->props);
+        }
+    }
+}
+
+
+
+// Update the VklPanel.data_coords struct when a new visual is added.
+static void _panel_visual_added(VklPanel* panel, VklVisual* visual)
+{
+    ASSERT(panel != NULL);
+    ASSERT(visual != NULL);
+
+    VklDataCoords* coords = &panel->data_coords;
+
+    // Get the visual box.
+    VklBox box = _visual_box(visual);
+
+    // Merge the visual box with the existing box.
+    box = _box_merge(2, (VklBox[]){coords->box, box});
+
+    // Make the box square if needed.
+    if ((coords->flags & VKL_TRANSFORM_FLAGS_FIXED_ASPECT) != 0)
+        box = _box_cube(box);
+
+    // If the panel box has changed, renormalize all visuals.
+    if (memcmp(&box, &coords->box, sizeof(VklBox)) != 0)
+    {
+        // Renormalize all visuals in the panel.
+        _panel_renormalize(panel, box);
+
+        // Mark the panel as NEED_UPDATE so that the new data gets uploaded to the GPU.
+        _panel_to_update(panel);
+    }
+}
+
+
+
+// Update the VklPanel.data_coords struct as a function of all of the visuals data.
+static void _panel_normalize(VklPanel* panel)
+{
+    ASSERT(panel != NULL);
+    log_debug("full panel normalization on %d visuals", panel->visual_count);
+
+    VklDataCoords* coords = &panel->data_coords;
+    VklBox* boxes = calloc(panel->visual_count, sizeof(VklBox));
+
+    // Get the bounding box of each visual.
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+        boxes[i] = _visual_box(panel->visuals[i]);
+
+    // Merge the visual box with the existing box.
+    VklBox box = _box_merge(panel->visual_count, boxes);
+
+    // Make the box square if needed.
+    if ((coords->flags & VKL_TRANSFORM_FLAGS_FIXED_ASPECT) != 0)
+        box = _box_cube(box);
+
+    // Renormalize all visuals in the panel.
+    _panel_renormalize(panel, box);
+
+    // Mark the panel as NEED_UPDATE so that the new data gets uploaded to the GPU.
+    _panel_to_update(panel);
+
+    FREE(boxes);
+}
+
+
+
 static void _update_visual_viewport(VklPanel* panel, VklVisual* visual)
 {
     visual->viewport = panel->viewport;
     // Each graphics pipeline in the visual has its own transform/clip viewport options
     for (uint32_t pidx = 0; pidx < visual->graphics_count; pidx++)
     {
-        visual->viewport.transform = visual->interact_axis[pidx];
+        visual->viewport.interact_axis = visual->interact_axis[pidx];
         visual->viewport.clip = visual->clip[pidx];
         ASSERT(visual->viewport.viewport.minDepth < visual->viewport.viewport.maxDepth);
         // NOTE: here we make the assumption that there is exactly 1 viewport per graphics
@@ -41,16 +204,6 @@ static void _common_data(VklPanel* panel, VklVisual* visual)
 
     // Binding 1: viewport
     _update_visual_viewport(panel, visual);
-}
-
-
-
-static void _panel_to_update(VklPanel* panel)
-{
-    ASSERT(panel != NULL);
-    panel->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
-    if (panel->scene != NULL)
-        panel->scene->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
 }
 
 
@@ -151,6 +304,10 @@ static void _scene_frame(VklCanvas* canvas, VklEvent ev)
         //     vkl_panel_pos(panel, x, y);
         // }
 
+        // Initial normalization of all visuals in the panel.
+        if (canvas->frame_idx == 0)
+            _panel_normalize(panel);
+
         // Update all visuals in the panel, using the panel's viewport.
         to_update = panel->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE;
         viewport = panel->viewport;
@@ -158,7 +315,8 @@ static void _scene_frame(VklCanvas* canvas, VklEvent ev)
         {
             visual = panel->visuals[j];
 
-            // First frame: initialize prev_vertex_count and prev_index_count.
+            // First frame:
+            // Initialize prev_vertex_count and prev_index_count.
             if (canvas->frame_idx == 0)
             {
                 for (uint32_t pidx = 0; pidx < visual->graphics_count; pidx++)
@@ -175,8 +333,7 @@ static void _scene_frame(VklCanvas* canvas, VklEvent ev)
             // Update visual data if needed.
             if (visual->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE)
             {
-                // TODO: data coords
-                vkl_visual_update(visual, viewport, (VklDataCoords){0}, NULL);
+                vkl_visual_update(visual, viewport, panel->data_coords, NULL);
                 visual->obj.status = VKL_OBJECT_STATUS_CREATED;
             }
 
@@ -276,59 +433,6 @@ static void _default_controller_callback(VklController* controller, VklEvent ev)
         VklViewport viewport = controller->panel->viewport;
         vkl_interact_update(interact, viewport, &canvas->mouse, &canvas->keyboard);
         // NOTE: the CPU->GPU transfer occurs at every frame, in another callback below
-    }
-}
-
-
-
-static void _visual_transform(VklVisual* visual, VklVisualDataEvent ev)
-{
-    ASSERT(visual != NULL);
-
-    uint32_t n_pos_props = 0;
-    VklProp* prop = NULL;
-    VklArray* arr = NULL;
-
-    VklBox boxes[32] = {0};   // max number of props of the same type
-    VklProp* props[32] = {0}; // max number of props of the same type
-
-    // Gather all non-empty POS props, and get the bounding box on each.
-    for (uint32_t i = 0; i < 32; i++)
-    {
-        prop = vkl_prop_get(visual, VKL_PROP_POS, i);
-        if (prop == NULL)
-            break;
-        arr = &prop->arr_orig;
-        if (arr->item_count == 0)
-        {
-            continue;
-        }
-        boxes[n_pos_props] = _box_bounding(arr);
-        props[n_pos_props] = prop;
-        n_pos_props++;
-    }
-    if (n_pos_props == 0)
-    {
-        log_warn("no POS props found, skipping data normalization");
-        return;
-    }
-
-    // Merge the boxes and make it square.
-    VklBox box = _box_merge(n_pos_props, boxes);
-    box = _box_cube(box);
-
-    // Normalize the props into the arr_trans arrays.
-    VklArray* arr_tr = NULL;
-    for (uint32_t i = 0; i < n_pos_props; i++)
-    {
-        log_debug("normalize POS prop #%d", i);
-        prop = props[i];
-        arr = &prop->arr_orig;
-        arr_tr = &prop->arr_trans;
-        ASSERT(arr->item_count > 0);
-
-        *arr_tr = vkl_array(arr->item_count, VKL_DTYPE_VEC3);
-        _normalize_pos(box, arr, arr_tr);
     }
 }
 
@@ -1038,6 +1142,7 @@ vkl_scene_panel(VklScene* scene, uint32_t row, uint32_t col, VklControllerType t
     *controller = vkl_controller_builtin(panel, type, flags);
     controller->flags = flags;
     panel->controller = controller;
+    // TODO: update panel->data_coords.transform depending on the flags
     panel->scene = scene;
     panel->prority_max = VKL_MAX_VISUAL_PRIORITY;
     // At initialization, must update all visuals data.
@@ -1068,7 +1173,9 @@ VklVisual* vkl_scene_visual(VklPanel* panel, VklVisualType type, int flags)
     for (uint32_t pidx = 0; pidx < visual->graphics_count; pidx++)
         visual->clip[pidx] = VKL_VIEWPORT_INNER;
 
-    vkl_visual_callback_transform(visual, _visual_transform);
+    // Update the panel data coords as a function of the visual's data.
+    if (scene->canvas->app->is_running)
+        _panel_visual_added(panel, visual);
 
     return visual;
 }

@@ -127,7 +127,16 @@ static VklBox _box_merge(uint32_t count, VklBox* boxes)
 
 
 
-// Return the smallest cube surrounding a box.
+static void _box_print(VklBox box)
+{
+    log_info(
+        "box x [%.3f, %.3f], y [%.3f, %.3f], z [%.3f, %.3f]", //
+        box.xlim[0], box.xlim[1], box.ylim[0], box.ylim[1], box.zlim[0], box.zlim[1]);
+}
+
+
+
+// Make a box cubic/square (if need to keep fixed aspect ratio).
 static VklBox _box_cube(VklBox box)
 {
     float xmin = box.xlim[0];
@@ -146,21 +155,38 @@ static VklBox _box_cube(VklBox box)
     ASSERT(zmin <= zcenter && zcenter <= zmax);
 
     float edge = 0;
-    edge = MAX(edge, MAX(xmax - xcenter, xcenter - xmin));
-    edge = MAX(edge, MAX(ymax - ycenter, ycenter - ymin));
-    edge = MAX(edge, MAX(zmax - zcenter, zcenter - zmin));
+    float edge_x = MAX(xmax - xcenter, xcenter - xmin);
+    float edge_y = MAX(ymax - ycenter, ycenter - ymin);
+    float edge_z = MAX(zmax - zcenter, zcenter - zmin);
+
+    edge = MAX(edge, edge_x);
+    edge = MAX(edge, edge_y);
+    edge = MAX(edge, edge_z);
     if (edge == 0)
         edge = 1;
     ASSERT(edge > 0);
 
-    VklBox out = {0};
-    out.xlim[0] = xcenter - edge;
-    out.xlim[1] = xcenter + edge;
-    out.ylim[0] = ycenter - edge;
-    out.ylim[1] = ycenter + edge;
-    out.zlim[0] = zcenter - edge;
-    out.zlim[1] = zcenter + edge;
+    // Find the edge on each axis. Do not extend the range if an axis range is degenerate.
+    edge_x = edge_x > 0 ? edge : edge_x;
+    edge_y = edge_y > 0 ? edge : edge_y;
+    edge_z = edge_z > 0 ? edge : edge_z;
 
+    VklBox out = box;
+    // if (edge_x > 0)
+    // {
+    out.xlim[0] = xcenter - edge_x;
+    out.xlim[1] = xcenter + edge_x;
+    // }
+    // if (edge_y > 0)
+    // {
+    out.ylim[0] = ycenter - edge_y;
+    out.ylim[1] = ycenter + edge_y;
+    // }
+    // if (edge_z > 0)
+    // {
+    out.zlim[0] = zcenter - edge_z;
+    out.zlim[1] = zcenter + edge_z;
+    // }
     return out;
 }
 
@@ -169,6 +195,8 @@ static VklBox _box_cube(VklBox box)
 static void _normalize_pos(VklBox box, VklArray* points_in, VklArray* points_out)
 {
     ASSERT(points_out->item_count == points_in->item_count);
+    DBG(points_out->item_size);
+    DBG(points_in->item_size);
     ASSERT(points_out->item_size == points_in->item_size);
 
     vec3* pos_in = NULL;

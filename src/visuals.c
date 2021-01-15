@@ -410,14 +410,6 @@ void vkl_visual_texture(
 /*  Visual events                                                                                */
 /*************************************************************************************************/
 
-void vkl_visual_callback_transform(VklVisual* visual, VklVisualDataCallback callback)
-{
-    ASSERT(visual != NULL);
-    visual->callback_transform = callback;
-}
-
-
-
 void vkl_visual_callback_bake(VklVisual* visual, VklVisualDataCallback callback)
 {
     ASSERT(visual != NULL);
@@ -558,12 +550,12 @@ void vkl_visual_update(
     ev.coords = coords;
     ev.user_data = user_data;
 
-    if (visual->callback_transform != NULL)
-    {
-        log_debug("visual transform callback");
-        // This callback updates some props data_trans
-        visual->callback_transform(visual, ev);
-    }
+    // if (visual->callback_transform != NULL)
+    // {
+    //     log_debug("visual transform callback");
+    //     // This callback updates some props data_trans
+    //     visual->callback_transform(visual, ev);
+    // }
 
     if (visual->callback_bake != NULL)
     {

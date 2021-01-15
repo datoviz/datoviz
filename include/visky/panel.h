@@ -75,7 +75,7 @@ struct VklPanel
     VklGrid* grid;
     VklPanelMode mode;
     VklPanelSizeUnit size_unit; // the unit x, y, width, height are in
-    VklTransform transform;     // data transformation
+    VklDataCoords data_coords;  // data CPU transformation
 
     // User-specified:
     uint32_t row, col;

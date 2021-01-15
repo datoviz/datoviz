@@ -338,7 +338,7 @@ struct VklViewport
     VklViewportClip clip; // used by the GPU for viewport clipping
 
     // Used to discard transform on one axis
-    VklInteractAxis transform;
+    VklInteractAxis interact_axis;
 
     float dpi_scaling;
 
