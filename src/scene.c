@@ -13,6 +13,18 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
+static void _viewport_print(VklViewport v)
+{
+    log_info(
+        "viewport clip %d, dpi %.2f, interact axis %d, margin top %.2f, wf %d, ws %d, viewport "
+        "%.2f %.2f %.2f %.2f %.2f %.2f",
+        v.clip, v.dpi_scaling, v.interact_axis, v.margins[0], v.size_framebuffer[0],
+        v.size_screen[0], v.viewport.width, v.viewport.height, v.viewport.x, v.viewport.y,
+        v.viewport.minDepth, v.viewport.maxDepth);
+}
+
+
+
 static void _panel_to_update(VklPanel* panel)
 {
     ASSERT(panel != NULL);
@@ -190,6 +202,7 @@ static void _update_visual_viewport(VklPanel* panel, VklVisual* visual)
         ASSERT(visual->viewport.viewport.minDepth < visual->viewport.viewport.maxDepth);
         // NOTE: here we make the assumption that there is exactly 1 viewport per graphics
         // pipeline, such that the source idx corresponds to the pipeline idx.
+        // _viewport_print(visual->viewport);
         vkl_visual_data_source(visual, VKL_SOURCE_TYPE_VIEWPORT, pidx, 0, 1, 1, &visual->viewport);
         // HACK: this call should not set the visual status to NEED_UPDATE
         visual->obj.status = VKL_OBJECT_STATUS_CREATED;
@@ -247,6 +260,12 @@ static void _scene_fill(VklCanvas* canvas, VklEvent ev)
             viewport = vkl_panel_viewport(panel);
             vkl_cmd_viewport(cmds, img_idx, viewport.viewport);
 
+            // Update visual VklViewport struct and upload it, only once per visual.
+            // TODO: move this to a RESIZE callback instead
+            if (img_idx == 0)
+                for (uint32_t k = 0; k < panel->visual_count; k++)
+                    _update_visual_viewport(panel, panel->visuals[k]);
+
             // Go through all visuals in the panel.
             visual = NULL;
             for (int priority = -panel->prority_max; priority <= panel->prority_max; priority++)
@@ -256,8 +275,6 @@ static void _scene_fill(VklCanvas* canvas, VklEvent ev)
                     visual = panel->visuals[k];
                     if (visual->priority != priority)
                         continue;
-                    // Update visual VklViewport struct and upload it.
-                    _update_visual_viewport(panel, visual);
 
                     vkl_visual_fill_event(
                         visual, ev.u.rf.clear_color, cmds, img_idx, viewport, NULL);
