@@ -180,12 +180,12 @@ cdef extern from "<visky/visky.h>":
         VKL_VIEWPORT_OUTER_BOTTOM = 3
         VKL_VIEWPORT_OUTER_LEFT = 4
 
-    ctypedef enum VklTransformAxis:
-        VKL_TRANSFORM_AXIS_DEFAULT = 0
-        VKL_TRANSFORM_AXIS_ALL = 1
-        VKL_TRANSFORM_AXIS_X = 2
-        VKL_TRANSFORM_AXIS_Y = 3
-        VKL_TRANSFORM_AXIS_NONE = 4
+    ctypedef enum VklInteractAxis:
+        VKL_INTERACT_AXIS_DEFAULT = 0
+        VKL_INTERACT_AXIS_ALL = 1
+        VKL_INTERACT_AXIS_X = 2
+        VKL_INTERACT_AXIS_Y = 3
+        VKL_INTERACT_AXIS_NONE = 4
 
     ctypedef enum VklMouseStateType:
         VKL_MOUSE_STATE_INACTIVE = 0
@@ -473,6 +473,10 @@ cdef extern from "<visky/visky.h>":
         VKL_CDS_CANVAS_NDC = 5
         VKL_CDS_CANVAS_PX = 6
 
+    ctypedef enum VklSceneVisualFlags:
+        VKL_SCENE_VISUAL_FLAGS_NONE = 0x0000
+        VKL_SCENE_VISUAL_FLAGS_TRANSFORM_NONE = 0x1000
+
     # from file: visuals.h
 
     ctypedef enum VklPipelineType:
@@ -541,6 +545,14 @@ cdef extern from "<visky/visky.h>":
 
     ctypedef enum VklSourceFlags:
         VKL_SOURCE_FLAG_MAPPABLE = 0x0001
+
+    ctypedef enum VklVisualRequest:
+        VKL_VISUAL_REQUEST_NOT_SET = 0x0000
+        VKL_VISUAL_REQUEST_SET = 0x0001
+        VKL_VISUAL_REQUEST_REFILL = 0x0010
+        VKL_VISUAL_REQUEST_UPLOAD = 0x0020
+        VKL_VISUAL_REQUEST_NORMALIZATION = 0x0040
+        VKL_VISUAL_REQUEST_VIEWPORT = 0x0080
 
     # from file: vklite.h
 
@@ -621,7 +633,7 @@ cdef extern from "<visky/visky.h>":
         uvec2 offset_framebuffer
         uvec2 size_framebuffer
         VklViewportClip clip
-        VklTransformAxis transform
+        VklInteractAxis interact_axis
         float dpi_scaling
 
     ctypedef struct VklMouseButtonEvent:
