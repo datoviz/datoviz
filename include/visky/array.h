@@ -423,10 +423,34 @@ static inline void* vkl_array_item(VklArray* array, uint32_t idx)
 
 
 
+static inline void _cast(VklDataType target_dtype, void* dst, VklDataType source_dtype, void* src)
+{
+    if (source_dtype == VKL_DTYPE_DOUBLE && target_dtype == VKL_DTYPE_FLOAT)
+    {
+        ((vec3*)dst)[0][0] = ((dvec3*)src)[0][0];
+    }
+    else if (source_dtype == VKL_DTYPE_DVEC2 && target_dtype == VKL_DTYPE_VEC2)
+    {
+        ((vec3*)dst)[0][0] = ((dvec3*)src)[0][0];
+        ((vec3*)dst)[0][1] = ((dvec3*)src)[0][1];
+    }
+    else if (source_dtype == VKL_DTYPE_DVEC3 && target_dtype == VKL_DTYPE_VEC3)
+    {
+        ((vec3*)dst)[0][0] = ((dvec3*)src)[0][0];
+        ((vec3*)dst)[0][1] = ((dvec3*)src)[0][1];
+        ((vec3*)dst)[0][2] = ((dvec3*)src)[0][2];
+    }
+    else
+        log_error("unknown casting dtypes %d %d", source_dtype, target_dtype);
+}
+
+
+
 static void vkl_array_column(
     VklArray* array, VkDeviceSize offset, VkDeviceSize col_size, //
     uint32_t first_item, uint32_t item_count,                    //
     uint32_t data_item_count, const void* data,                  //
+    VklDataType source_dtype, VklDataType target_dtype,          //
     VklArrayCopyType copy_type, uint32_t reps)                   //
 {
     ASSERT(array != NULL);
@@ -470,7 +494,16 @@ static void vkl_array_column(
 
         // Copy the current item, unless we are in SINGLE copy mode
         if (!skip)
-            memcpy((void*)dst_byte, (void*)src_byte, col_size);
+        {
+            if (source_dtype == target_dtype ||   //
+                source_dtype == VKL_DTYPE_NONE || //
+                target_dtype == VKL_DTYPE_NONE)   //
+                memcpy((void*)dst_byte, (void*)src_byte, col_size);
+            else
+            {
+                _cast(target_dtype, (void*)dst_byte, source_dtype, (void*)src_byte);
+            }
+        }
 
         // Advance the source pointer, unless we are in SINGLE copy mode
         skip = reps > 1 && m < reps - 1;
