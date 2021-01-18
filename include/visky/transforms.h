@@ -192,7 +192,14 @@ static VklBox _box_cube(VklBox box)
 
 
 
-static void _normalize_pos(VklBox box, VklArray* points_in, VklArray* points_out)
+static inline void _transform_point_linear(vec2* lim, float* in, float* out)
+{
+    *out = -1.0 + 2.0 * ((*in) - (*lim)[0]) / ((*lim)[1] - (*lim)[0]);
+}
+
+
+
+static void _transform_linear(VklBox box, VklArray* points_in, VklArray* points_out)
 {
     ASSERT(points_out->item_count == points_in->item_count);
     ASSERT(points_out->item_size == points_in->item_size);
@@ -205,9 +212,9 @@ static void _normalize_pos(VklBox box, VklArray* points_in, VklArray* points_out
         pos_in = vkl_array_item(points_in, i);
         pos_out = vkl_array_item(points_out, i);
 
-        (*pos_out)[0] = -1.0 + 2.0 * ((*pos_in)[0] - box.xlim[0]) / (box.xlim[1] - box.xlim[0]);
-        (*pos_out)[1] = -1.0 + 2.0 * ((*pos_in)[1] - box.ylim[0]) / (box.ylim[1] - box.ylim[0]);
-        (*pos_out)[2] = -1.0 + 2.0 * ((*pos_in)[2] - box.zlim[0]) / (box.zlim[1] - box.zlim[0]);
+        _transform_point_linear(&box.xlim, &pos_in[0][0], &pos_out[0][0]);
+        _transform_point_linear(&box.ylim, &pos_in[0][1], &pos_out[0][1]);
+        _transform_point_linear(&box.zlim, &pos_in[0][2], &pos_out[0][2]);
     }
 }
 

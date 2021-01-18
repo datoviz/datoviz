@@ -17,7 +17,7 @@ void vkl_transform(VklDataCoords coords, VklArray* pos_in, VklArray* pos_out)
     {
 
     case VKL_TRANSFORM_CARTESIAN:
-        _normalize_pos(coords.box, pos_in, pos_out);
+        _transform_linear(coords.box, pos_in, pos_out);
         break;
 
         // TODO: other transforms

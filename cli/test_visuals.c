@@ -50,7 +50,7 @@ int test_visuals_norm(TestContext* context)
 
     // Normalize the data.
     VklArray pos_out = vkl_array(n, VKL_DTYPE_VEC3);
-    _normalize_pos(box, &pos_in, &pos_out);
+    _transform_linear(box, &pos_in, &pos_out);
     positions = (vec3*)pos_out.data;
     vec3* pos = NULL;
     float v = 0;

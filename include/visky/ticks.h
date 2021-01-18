@@ -82,15 +82,15 @@ struct VklAxesContext
 
 struct VklAxesTicks
 {
-    double dmin, dmax;           // range values
-    double lmin, lmax, lstep;    // tick range  and interval
-    double lmin_orig, lmax_orig; // extended range
-    uint32_t value_count;        // final number of labels
-    uint32_t value_count_req;    // number of values requested
-    VklTickFormat format;        // decimal or scientific notation
-    uint32_t precision;          // number of digits after the dot
-    double* values;              // from lmin to lmax by lstep
-    char* labels;                // hold all tick labels
+    double dmin, dmax;        // requested range values
+    double lmin, lmax, lstep; // computed tick range  and interval (initial range)
+    double lmin_ex, lmax_ex;  // extended tick range (extended left/right or bottom/top)
+    uint32_t value_count;     // final number of labels
+    uint32_t value_count_req; // number of values requested
+    VklTickFormat format;     // decimal or scientific notation
+    uint32_t precision;       // number of digits after the dot
+    double* values;           // from lmin to lmax by lstep
+    char* labels;             // hold all tick labels
 };
 
 
@@ -245,8 +245,8 @@ VKY_INLINE double min_distance_labels(VklAxesTicks* ticks, VklAxesContext* ctx)
     ASSERT(strlen(ticks->labels) > 0);
 
     uint32_t n = ticks->value_count;
-    double lmin = ticks->lmin_orig;
-    double lmax = ticks->lmax_orig;
+    double lmin = ticks->lmin_ex;
+    double lmax = ticks->lmax_ex;
     double lstep = ticks->lstep;
     // double x = 0;
     for (uint32_t i = 0; i < n; i++)
@@ -396,8 +396,8 @@ static double legibility(VklAxesTicks* ticks, VklAxesContext* ctx)
     make_labels(ticks, ctx, false);
 
     // Overlap part.
-    ticks->lmin_orig = ticks->lmin;
-    ticks->lmax_orig = ticks->lmax;
+    ticks->lmin_ex = ticks->lmin;
+    ticks->lmax_ex = ticks->lmax;
     double o = dist_overlap(min_distance_labels(ticks, ctx));
 
     // Duplicates part.
@@ -682,8 +682,8 @@ static VklAxesTicks extend_ticks(VklAxesTicks ticks, VklAxesContext ctx)
     ex.values = calloc(n, sizeof(double));
     ex.labels = calloc(n * MAX_GLYPHS_PER_TICK, sizeof(char));
     make_labels(&ex, &ctx, true);
-    ex.lmin_orig = ticks.lmin;
-    ex.lmax_orig = ticks.lmax;
+    ex.lmin_ex = ticks.lmin;
+    ex.lmax_ex = ticks.lmax;
     return ex;
 }
 

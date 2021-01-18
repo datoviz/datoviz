@@ -95,6 +95,13 @@ static void _axes_upload(VklController* controller, VklAxisCoord coord)
     ASSERT(controller->visual_count == 2);
 
     VklVisual* visual = controller->visuals[coord];
+    ASSERT(visual != NULL);
+
+    VklPanel* panel = controller->panel;
+    ASSERT(panel != NULL);
+
+    VklDataCoords* coords = &panel->data_coords;
+    ASSERT(coords != NULL);
 
     VklAxesTicks* axticks = &axes->ticks[coord];
     uint32_t N = axticks->value_count;
@@ -108,13 +115,8 @@ static void _axes_upload(VklController* controller, VklAxisCoord coord)
     float* minor_ticks = calloc((N - 1) * 4, sizeof(float));
     uint32_t k = 0;
     for (uint32_t i = 0; i < N - 1; i++)
-    {
         for (uint32_t j = 1; j <= 4; j++)
-        {
-            minor_ticks[k++] =
-                axticks->values[i] + j * (axticks->values[i + 1] - axticks->values[i]) / 5.;
-        }
-    }
+            minor_ticks[k++] = ticks[i] + j * (ticks[i + 1] - ticks[i]) / 5.;
     ASSERT(k == (N - 1) * 4);
 
     // Prepare text values.
@@ -130,6 +132,7 @@ static void _axes_upload(VklController* controller, VklAxisCoord coord)
     vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_LIM, 1, lim);
     vkl_visual_data(visual, VKL_PROP_TEXT, 0, N, text);
 
+    FREE(minor_ticks);
     FREE(ticks);
     FREE(text);
 }

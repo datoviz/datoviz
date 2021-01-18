@@ -211,6 +211,18 @@ static VklArray vkl_array(uint32_t item_count, VklDataType dtype)
 
 
 
+static VklArray vkl_array_wrap(uint32_t item_count, VklDataType dtype, void* data)
+{
+    VklArray arr = vkl_array(0, dtype); // do not allocate underlying buffer
+    // Manual setting of struct fields with the passed buffer
+    arr.item_count = item_count;
+    arr.buffer_size = item_count * arr.item_size;
+    arr.data = data;
+    return arr;
+}
+
+
+
 static VklArray vkl_array_struct(uint32_t item_count, VkDeviceSize item_size)
 {
     ASSERT(item_size > 0);
