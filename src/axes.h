@@ -103,16 +103,22 @@ static void _axes_upload(VklController* controller, VklAxisCoord coord)
     VklDataCoords* coords = &panel->data_coords;
     ASSERT(coords != NULL);
 
+    VklBox* box = &coords->box;
+    ASSERT(box != NULL);
+
     VklAxesTicks* axticks = &axes->ticks[coord];
     uint32_t N = axticks->value_count;
 
-    // Convert ticks from double to float.
-    float* ticks = calloc(N, sizeof(float));
+    dvec2 axlim = {axticks->dmin, axticks->dmax};
+
+    // Transform the ticks from the data coordinates to the scene coordinates, based on the initial
+    // axes range axlim.
+    double* ticks = calloc(N, sizeof(double));
     for (uint32_t i = 0; i < N; i++)
-        ticks[i] = axticks->values[i];
+        _transform_point_linear(&axlim, &axticks->values[i], &ticks[i]);
 
     // Minor ticks.
-    float* minor_ticks = calloc((N - 1) * 4, sizeof(float));
+    double* minor_ticks = calloc((N - 1) * 4, sizeof(double));
     uint32_t k = 0;
     for (uint32_t i = 0; i < N - 1; i++)
         for (uint32_t j = 1; j <= 4; j++)
@@ -125,7 +131,8 @@ static void _axes_upload(VklController* controller, VklAxisCoord coord)
         text[i] = &axticks->labels[i * MAX_GLYPHS_PER_TICK];
 
     // Set visual data.
-    float lim[] = {-1};
+    double lim[] = {-1};
+    // TODO: POS prop should always be double, default baking should convert to float?
     vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_MINOR, 4 * (N - 1), minor_ticks);
     vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR, N, ticks);
     vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, ticks);

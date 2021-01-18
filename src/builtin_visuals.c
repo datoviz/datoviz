@@ -73,9 +73,10 @@ static void _visual_marker_raw(VklVisual* visual)
     // Props:
 
     // Vertex pos.
-    vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_VEC3, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_copy(
-        visual, VKL_PROP_POS, 0, 0, offsetof(VklVertex, pos), VKL_ARRAY_COPY_SINGLE, 1);
+    vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
+    vkl_visual_prop_cast(
+        visual, VKL_PROP_POS, 0, 0, offsetof(VklVertex, pos), VKL_DTYPE_VEC3,
+        VKL_ARRAY_COPY_SINGLE, 1);
 
     // Vertex color.
     vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
@@ -130,10 +131,10 @@ static void _visual_mesh(VklVisual* visual)
     // Props:
 
     // Vertex pos.
-    vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_VEC3, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_copy(
+    vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
+    vkl_visual_prop_cast(
         visual, VKL_PROP_POS, 0, 0, offsetof(VklGraphicsMeshVertex, pos), //
-        VKL_ARRAY_COPY_SINGLE, 1);
+        VKL_DTYPE_VEC3, VKL_ARRAY_COPY_SINGLE, 1);
 
     // Vertex normal.
     vkl_visual_prop(visual, VKL_PROP_NORMAL, 0, VKL_DTYPE_VEC3, VKL_SOURCE_TYPE_VERTEX, 0);
@@ -248,10 +249,15 @@ static void _visual_volume_slice_bake(VklVisual* visual, VklVisualDataEvent ev)
     VklGraphicsVolumeItem item = {0};
     for (uint32_t i = 0; i < img_count; i++)
     {
-        memcpy(&item.pos0, vkl_prop_item(pos0, i), sizeof(vec3));
-        memcpy(&item.pos1, vkl_prop_item(pos1, i), sizeof(vec3));
-        memcpy(&item.pos2, vkl_prop_item(pos2, i), sizeof(vec3));
-        memcpy(&item.pos3, vkl_prop_item(pos3, i), sizeof(vec3));
+        _vec3_cast((const dvec3*)vkl_prop_item(pos0, i), &item.pos0);
+        _vec3_cast((const dvec3*)vkl_prop_item(pos1, i), &item.pos1);
+        _vec3_cast((const dvec3*)vkl_prop_item(pos2, i), &item.pos2);
+        _vec3_cast((const dvec3*)vkl_prop_item(pos3, i), &item.pos3);
+
+        // memcpy(&item.pos0, vkl_prop_item(pos0, i), sizeof(vec3));
+        // memcpy(&item.pos1, vkl_prop_item(pos1, i), sizeof(vec3));
+        // memcpy(&item.pos2, vkl_prop_item(pos2, i), sizeof(vec3));
+        // memcpy(&item.pos3, vkl_prop_item(pos3, i), sizeof(vec3));
 
         memcpy(&item.uvw0, vkl_prop_item(uvw0, i), sizeof(vec3));
         memcpy(&item.uvw1, vkl_prop_item(uvw1, i), sizeof(vec3));
@@ -296,7 +302,7 @@ static void _visual_volume_slice(VklVisual* visual)
 
     // Point positions.
     for (uint32_t i = 0; i < 4; i++)
-        vkl_visual_prop(visual, VKL_PROP_POS, i, VKL_DTYPE_VEC3, VKL_SOURCE_TYPE_VERTEX, 0);
+        vkl_visual_prop(visual, VKL_PROP_POS, i, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
 
     // Tex coords.
     for (uint32_t i = 0; i < 4; i++)
@@ -379,14 +385,15 @@ static void _visual_segment_raw(VklVisual* visual)
     // Props:
 
     // Vertex pos, segment start.
-    vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_VEC3, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_copy(
-        visual, VKL_PROP_POS, 0, 0, offsetof(VklVertex, pos), VKL_ARRAY_COPY_SINGLE, 2);
+    vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
+    vkl_visual_prop_cast(
+        visual, VKL_PROP_POS, 0, 0, offsetof(VklVertex, pos), VKL_DTYPE_VEC3,
+        VKL_ARRAY_COPY_SINGLE, 2);
 
     // Vertex pos, segment end.
-    vkl_visual_prop(visual, VKL_PROP_POS, 1, VKL_DTYPE_VEC3, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_copy(
-        visual, VKL_PROP_POS, 1, 0, sizeof(VklVertex) + offsetof(VklVertex, pos),
+    vkl_visual_prop(visual, VKL_PROP_POS, 1, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
+    vkl_visual_prop_cast(
+        visual, VKL_PROP_POS, 1, 0, sizeof(VklVertex) + offsetof(VklVertex, pos), VKL_DTYPE_VEC3,
         VKL_ARRAY_COPY_SINGLE, 2);
 
 
@@ -445,7 +452,7 @@ static uint32_t _count_chars(VklArray* arr_text)
     return char_count;
 }
 
-static void _tick_pos(float x, VklAxisLevel level, VklAxisCoord coord, vec3 P0, vec3 P1)
+static void _tick_pos(double x, VklAxisLevel level, VklAxisCoord coord, vec3 P0, vec3 P1)
 {
     vec2 lim = {0};
     lim[0] = -1;
@@ -527,7 +534,7 @@ static void _add_ticks(
     ASSERT(tick_prop != NULL);
     ASSERT(data != NULL);
 
-    float* x = NULL;
+    double* x = NULL;
     vec3 P0 = {0};
     vec3 P1 = {0};
     VklCapType cap = VKL_CAP_TYPE_NONE;
@@ -651,7 +658,7 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
 
     char* text = NULL;
     VklGraphicsTextItem str_item = {0};
-    float* x = NULL;
+    double* x = NULL;
     vec3 P = {0};
     float font_size = 0;
 
@@ -748,7 +755,7 @@ static void _visual_axes_2D(VklVisual* visual)
         {
             // xticks
             vkl_visual_prop(
-                visual, VKL_PROP_POS, level, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_VERTEX, 0);
+                visual, VKL_PROP_POS, level, VKL_DTYPE_DOUBLE, VKL_SOURCE_TYPE_VERTEX, 0);
 
             // color
             vkl_visual_prop(

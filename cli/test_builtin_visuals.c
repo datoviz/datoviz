@@ -92,7 +92,7 @@ int test_visuals_marker_raw(TestContext* context)
     vkl_visual_builtin(&visual, VKL_VISUAL_MARKER, 0);
 
     const uint32_t N = 1000;
-    vec3* pos = calloc(N, sizeof(vec3));
+    dvec3* pos = calloc(N, sizeof(dvec3));
     cvec4* color = calloc(N, sizeof(cvec4));
     for (uint32_t i = 0; i < N; i++)
     {
@@ -124,8 +124,8 @@ int test_visuals_segment_raw(TestContext* context)
     vkl_visual_builtin(&visual, VKL_VISUAL_SEGMENT, 0);
 
     const uint32_t N = 100;
-    vec3* pos0 = calloc(N, sizeof(vec3));
-    vec3* pos1 = calloc(N, sizeof(vec3));
+    dvec3* pos0 = calloc(N, sizeof(dvec3));
+    dvec3* pos1 = calloc(N, sizeof(dvec3));
     cvec4* color = calloc(N, sizeof(cvec4));
     float t = 0;
     for (uint32_t i = 0; i < N; i++)
@@ -225,16 +225,16 @@ int test_visuals_volume_slice(TestContext* context)
     vkl_visual_builtin(&visual, VKL_VISUAL_VOLUME_SLICE, 0);
 
     // float x = .5;
-    // vkl_visual_data(&visual, VKL_PROP_POS, 0, 2, (vec3[]){{-x, +x, +.5}, {-x, +x, -.5}});
-    // vkl_visual_data(&visual, VKL_PROP_POS, 1, 2, (vec3[]){{+x, -x, +.5}, {+x, -x, -.5}});
-    // vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 0, 2, (vec3[]){{0, 0, 1}, {0, 0, 1}});
-    // vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 1, 2, (vec3[]){{1, 1, 1}, {1, 1, 1}});
+    // vkl_visual_data(&visual, VKL_PROP_POS, 0, 2, (dvec3[]){{-x, +x, +.5}, {-x, +x, -.5}});
+    // vkl_visual_data(&visual, VKL_PROP_POS, 1, 2, (dvec3[]){{+x, -x, +.5}, {+x, -x, -.5}});
+    // vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 0, 2, (dvec3[]){{0, 0, 1}, {0, 0, 1}});
+    // vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 1, 2, (dvec3[]){{1, 1, 1}, {1, 1, 1}});
 
-    float x = .5;
-    vkl_visual_data(&visual, VKL_PROP_POS, 0, 1, (vec3[]){{-x, +x, 0}});
-    vkl_visual_data(&visual, VKL_PROP_POS, 1, 1, (vec3[]){{+x, +x, 0}});
-    vkl_visual_data(&visual, VKL_PROP_POS, 2, 1, (vec3[]){{+x, -x, 0}});
-    vkl_visual_data(&visual, VKL_PROP_POS, 3, 1, (vec3[]){{-x, -x, 0}});
+    double x = .5;
+    vkl_visual_data(&visual, VKL_PROP_POS, 0, 1, (dvec3[]){{-x, +x, 0}});
+    vkl_visual_data(&visual, VKL_PROP_POS, 1, 1, (dvec3[]){{+x, +x, 0}});
+    vkl_visual_data(&visual, VKL_PROP_POS, 2, 1, (dvec3[]){{+x, -x, 0}});
+    vkl_visual_data(&visual, VKL_PROP_POS, 3, 1, (dvec3[]){{-x, -x, 0}});
 
     vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 0, 1, (vec3[]){{0.1, 0.1, 0.1}});
     vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 1, 1, (vec3[]){{0.9, 0.1, 0.1}});
@@ -283,14 +283,14 @@ static void _visual_update(VklCanvas* canvas, VklEvent ev)
     ASSERT(visual != NULL);
 
     const uint32_t N = 2 + (ev.u.t.idx % 16);
-    float* xticks = calloc(N, sizeof(float));
-    float* yticks = calloc(N, sizeof(float));
+    double* xticks = calloc(N, sizeof(double));
+    double* yticks = calloc(N, sizeof(double));
     char* hello = "ABC";
     char** text = calloc(N, sizeof(char*));
-    float t = 0;
+    double t = 0;
     for (uint32_t i = 0; i < N; i++)
     {
-        t = -1 + 2 * (float)i / (N - 1);
+        t = -1 + 2 * (double)i / (N - 1);
         xticks[i] = t;
         yticks[i] = t;
         text[i] = hello;
@@ -326,14 +326,14 @@ int test_visuals_axes_2D(TestContext* context)
     vkl_visual_texture(&visual, VKL_SOURCE_TYPE_FONT_ATLAS, 0, atlas->texture);
 
     const uint32_t N = 5;
-    float* xticks = calloc(N, sizeof(float));
-    float* yticks = calloc(N, sizeof(float));
+    double* xticks = calloc(N, sizeof(double));
+    double* yticks = calloc(N, sizeof(double));
     char* hello = "ABC";
     char** text = calloc(N, sizeof(char*));
-    float t = 0;
+    double t = 0;
     for (uint32_t i = 0; i < N; i++)
     {
-        t = -1 + 2 * (float)i / (N - 1);
+        t = -1 + 2 * (double)i / (N - 1);
         xticks[i] = t;
         yticks[i] = t;
         text[i] = hello;

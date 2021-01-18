@@ -54,10 +54,9 @@ typedef struct VklBox VklBox;
 
 struct VklBox
 {
-    // TODO: double
-    vec2 xlim;
-    vec2 ylim;
-    vec2 zlim;
+    dvec2 xlim;
+    dvec2 ylim;
+    dvec2 zlim;
 };
 
 
@@ -78,25 +77,25 @@ struct VklDataCoords
 
 // TODO: use double instead
 
-// Return the bounding box of a set of vec3 points.
+// Return the bounding box of a set of dvec3 points.
 static VklBox _box_bounding(VklArray* points_in)
 {
     ASSERT(points_in != NULL);
     ASSERT(points_in->item_count > 0);
     ASSERT(points_in->item_size > 0);
 
-    float xmin = INFINITY;
-    float ymin = INFINITY;
-    float zmin = INFINITY;
+    double xmin = INFINITY;
+    double ymin = INFINITY;
+    double zmin = INFINITY;
 
-    float xmax = -INFINITY;
-    float ymax = -INFINITY;
-    float zmax = -INFINITY;
+    double xmax = -INFINITY;
+    double ymax = -INFINITY;
+    double zmax = -INFINITY;
 
-    vec3* pos = NULL;
+    dvec3* pos = NULL;
     for (uint32_t i = 0; i < points_in->item_count; i++)
     {
-        pos = (vec3*)vkl_array_item(points_in, i);
+        pos = (dvec3*)vkl_array_item(points_in, i);
         xmin = MIN(xmin, (*pos)[0]);
         xmax = MAX(xmax, (*pos)[0]);
         ymin = MIN(ymin, (*pos)[1]);
@@ -139,25 +138,25 @@ static void _box_print(VklBox box)
 // Make a box cubic/square (if need to keep fixed aspect ratio).
 static VklBox _box_cube(VklBox box)
 {
-    float xmin = box.xlim[0];
-    float xmax = box.xlim[1];
-    float ymin = box.ylim[0];
-    float ymax = box.ylim[1];
-    float zmin = box.zlim[0];
-    float zmax = box.zlim[1];
+    double xmin = box.xlim[0];
+    double xmax = box.xlim[1];
+    double ymin = box.ylim[0];
+    double ymax = box.ylim[1];
+    double zmin = box.zlim[0];
+    double zmax = box.zlim[1];
 
-    float xcenter = .5 * (xmin + xmax);
-    float ycenter = .5 * (ymin + ymax);
-    float zcenter = .5 * (zmin + zmax);
+    double xcenter = .5 * (xmin + xmax);
+    double ycenter = .5 * (ymin + ymax);
+    double zcenter = .5 * (zmin + zmax);
 
     ASSERT(xmin <= xcenter && xcenter <= xmax);
     ASSERT(ymin <= ycenter && ycenter <= ymax);
     ASSERT(zmin <= zcenter && zcenter <= zmax);
 
-    float edge = 0;
-    float edge_x = MAX(xmax - xcenter, xcenter - xmin);
-    float edge_y = MAX(ymax - ycenter, ycenter - ymin);
-    float edge_z = MAX(zmax - zcenter, zcenter - zmin);
+    double edge = 0;
+    double edge_x = MAX(xmax - xcenter, xcenter - xmin);
+    double edge_y = MAX(ymax - ycenter, ycenter - ymin);
+    double edge_z = MAX(zmax - zcenter, zcenter - zmin);
 
     edge = MAX(edge, edge_x);
     edge = MAX(edge, edge_y);
@@ -192,7 +191,7 @@ static VklBox _box_cube(VklBox box)
 
 
 
-static inline void _transform_point_linear(vec2* lim, float* in, float* out)
+static inline void _transform_point_linear(dvec2* lim, double* in, double* out)
 {
     *out = -1.0 + 2.0 * ((*in) - (*lim)[0]) / ((*lim)[1] - (*lim)[0]);
 }
@@ -204,8 +203,8 @@ static void _transform_linear(VklBox box, VklArray* points_in, VklArray* points_
     ASSERT(points_out->item_count == points_in->item_count);
     ASSERT(points_out->item_size == points_in->item_size);
 
-    vec3* pos_in = NULL;
-    vec3* pos_out = NULL;
+    dvec3* pos_in = NULL;
+    dvec3* pos_out = NULL;
 
     for (uint32_t i = 0; i < points_in->item_count; i++)
     {

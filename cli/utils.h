@@ -899,8 +899,8 @@ static void _depth_vertices(uint32_t N, VklGraphicsMeshVertex* vertices, bool vu
     vec2 z_values = {.75, .25};
     if (vulkan_transform)
     {
-        z_values[0] = -.5;
-        z_values[1] = +.5;
+        z_values[0] = -.25;
+        z_values[1] = +.25;
     }
     for (uint32_t i = 0; i < N; i++)
     {
