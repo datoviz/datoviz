@@ -89,6 +89,7 @@ struct VklArray
 {
     VklObject obj;
     VklDataType dtype;
+    uint32_t components; // number of components, ie 2 for vec2, 3 for dvec3, etc.
     VkDeviceSize item_size;
     uint32_t item_count;
     VkDeviceSize buffer_size;
@@ -123,10 +124,13 @@ static VkDeviceSize _get_dtype_size(VklDataType dtype)
     case VKL_DTYPE_USHORT:
     case VKL_DTYPE_SHORT:
         return 2;
+    case VKL_DTYPE_SVEC2:
     case VKL_DTYPE_USVEC2:
         return 2 * 2;
+    case VKL_DTYPE_SVEC3:
     case VKL_DTYPE_USVEC3:
         return 2 * 3;
+    case VKL_DTYPE_SVEC4:
     case VKL_DTYPE_USVEC4:
         return 2 * 4;
 
@@ -181,6 +185,55 @@ static VkDeviceSize _get_dtype_size(VklDataType dtype)
 
 
 
+static uint32_t _get_components(VklDataType dtype)
+{
+    switch (dtype)
+    {
+    case VKL_DTYPE_CHAR:
+    case VKL_DTYPE_USHORT:
+    case VKL_DTYPE_SHORT:
+    case VKL_DTYPE_UINT:
+    case VKL_DTYPE_INT:
+    case VKL_DTYPE_FLOAT:
+    case VKL_DTYPE_DOUBLE:
+        return 1;
+
+    case VKL_DTYPE_CVEC2:
+    case VKL_DTYPE_USVEC2:
+    case VKL_DTYPE_SVEC2:
+    case VKL_DTYPE_UVEC2:
+    case VKL_DTYPE_IVEC2:
+    case VKL_DTYPE_VEC2:
+    case VKL_DTYPE_DVEC2:
+        return 2;
+
+    case VKL_DTYPE_CVEC3:
+    case VKL_DTYPE_USVEC3:
+    case VKL_DTYPE_SVEC3:
+    case VKL_DTYPE_UVEC3:
+    case VKL_DTYPE_IVEC3:
+    case VKL_DTYPE_VEC3:
+    case VKL_DTYPE_DVEC3:
+        return 3;
+
+    case VKL_DTYPE_CVEC4:
+    case VKL_DTYPE_USVEC4:
+    case VKL_DTYPE_SVEC4:
+    case VKL_DTYPE_UVEC4:
+    case VKL_DTYPE_IVEC4:
+    case VKL_DTYPE_VEC4:
+    case VKL_DTYPE_DVEC4:
+        return 4;
+
+    default:
+        return 0;
+        break;
+    }
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -191,6 +244,7 @@ static VklArray _create_array(uint32_t item_count, VklDataType dtype, VkDeviceSi
     memset(&arr, 0, sizeof(VklArray));
     arr.obj.type = VKL_OBJECT_TYPE_ARRAY;
     arr.dtype = dtype;
+    arr.components = _get_components(dtype);
     arr.item_size = item_size;
     arr.item_count = item_count;
     arr.buffer_size = item_count * arr.item_size;
