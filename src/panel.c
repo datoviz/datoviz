@@ -201,12 +201,11 @@ VklPanel* vkl_panel(VklGrid* grid, uint32_t row, uint32_t col)
     panel->vspan = 1;
 
     // Default data coords.
-    panel->data_coords.box.xlim[0] = -1;
-    panel->data_coords.box.xlim[1] = +1;
-    panel->data_coords.box.ylim[0] = -1;
-    panel->data_coords.box.ylim[1] = +1;
-    panel->data_coords.box.zlim[0] = -1;
-    panel->data_coords.box.zlim[1] = +1;
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        panel->data_coords.box.p0[i] = -1;
+        panel->data_coords.box.p1[i] = +1;
+    }
     panel->data_coords.transform = VKL_TRANSFORM_CARTESIAN;
 
     // Default DPI scaling.

@@ -10,6 +10,17 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
+#define VKL_BOX_NDC                                                                               \
+    (VklBox)                                                                                      \
+    {                                                                                             \
+        {-1, -1, -1}, { +1, +1, +1 }                                                              \
+    }
+#define VKL_BOX_INF                                                                               \
+    (VklBox)                                                                                      \
+    {                                                                                             \
+        {+INFINITY, +INFINITY, +INFINITY}, { -INFINITY, -INFINITY, -INFINITY }                    \
+    }
+
 
 
 /*************************************************************************************************/
@@ -54,9 +65,10 @@ typedef struct VklBox VklBox;
 
 struct VklBox
 {
-    dvec2 xlim;
-    dvec2 ylim;
-    dvec2 zlim;
+    // dvec2 xlim;
+    // dvec2 ylim;
+    // dvec2 zlim;
+    dvec3 p0, p1;
 };
 
 
@@ -84,26 +96,26 @@ static VklBox _box_bounding(VklArray* points_in)
     ASSERT(points_in->item_count > 0);
     ASSERT(points_in->item_size > 0);
 
-    double xmin = INFINITY;
-    double ymin = INFINITY;
-    double zmin = INFINITY;
+    // double xmin = INFINITY;
+    // double ymin = INFINITY;
+    // double zmin = INFINITY;
 
-    double xmax = -INFINITY;
-    double ymax = -INFINITY;
-    double zmax = -INFINITY;
+    // double xmax = -INFINITY;
+    // double ymax = -INFINITY;
+    // double zmax = -INFINITY;
 
     dvec3* pos = NULL;
+    VklBox box = VKL_BOX_INF;
     for (uint32_t i = 0; i < points_in->item_count; i++)
     {
         pos = (dvec3*)vkl_array_item(points_in, i);
-        xmin = MIN(xmin, (*pos)[0]);
-        xmax = MAX(xmax, (*pos)[0]);
-        ymin = MIN(ymin, (*pos)[1]);
-        ymax = MAX(ymax, (*pos)[1]);
-        zmin = MIN(zmin, (*pos)[2]);
-        zmax = MAX(zmax, (*pos)[2]);
+        ASSERT(pos != NULL);
+        for (uint32_t j = 0; j < 3; j++)
+        {
+            box.p0[j] = MIN(box.p0[j], (*pos)[j]);
+            box.p1[j] = MAX(box.p1[j], (*pos)[j]);
+        }
     }
-    VklBox box = {{xmin, xmax}, {ymin, ymax}, {zmin, zmax}};
     return box;
 }
 
@@ -111,39 +123,38 @@ static VklBox _box_bounding(VklArray* points_in)
 
 static VklBox _box_merge(uint32_t count, VklBox* boxes)
 {
-    VklBox merged = {{INFINITY, -INFINITY}, {INFINITY, -INFINITY}, {INFINITY, -INFINITY}};
+    VklBox merged = VKL_BOX_INF;
     for (uint32_t i = 0; i < count; i++)
     {
-        merged.xlim[0] = MIN(merged.xlim[0], boxes[i].xlim[0]);
-        merged.xlim[1] = MAX(merged.xlim[1], boxes[i].xlim[1]);
-        merged.ylim[0] = MIN(merged.ylim[0], boxes[i].ylim[0]);
-        merged.ylim[1] = MAX(merged.ylim[1], boxes[i].ylim[1]);
-        merged.zlim[0] = MIN(merged.zlim[0], boxes[i].zlim[0]);
-        merged.zlim[1] = MAX(merged.zlim[1], boxes[i].zlim[1]);
+        for (uint32_t j = 0; j < 3; j++)
+        {
+            merged.p0[j] = MIN(merged.p0[j], boxes[i].p0[j]);
+            merged.p1[j] = MAX(merged.p1[j], boxes[i].p1[j]);
+        }
     }
     return merged;
 }
 
 
 
-static void _box_print(VklBox box)
-{
-    log_info(
-        "box x [%.3f, %.3f], y [%.3f, %.3f], z [%.3f, %.3f]", //
-        box.xlim[0], box.xlim[1], box.ylim[0], box.ylim[1], box.zlim[0], box.zlim[1]);
-}
+// static void _box_print(VklBox box)
+// {
+//     log_info(
+//         "box x [%.3f, %.3f], y [%.3f, %.3f], z [%.3f, %.3f]", //
+//         box.xlim[0], box.xlim[1], box.ylim[0], box.ylim[1], box.zlim[0], box.zlim[1]);
+// }
 
 
 
 // Make a box cubic/square (if need to keep fixed aspect ratio).
 static VklBox _box_cube(VklBox box)
 {
-    double xmin = box.xlim[0];
-    double xmax = box.xlim[1];
-    double ymin = box.ylim[0];
-    double ymax = box.ylim[1];
-    double zmin = box.zlim[0];
-    double zmax = box.zlim[1];
+    double xmin = box.p0[0];
+    double xmax = box.p1[0];
+    double ymin = box.p0[1];
+    double ymax = box.p1[1];
+    double zmin = box.p0[2];
+    double zmax = box.p1[2];
 
     double xcenter = .5 * (xmin + xmax);
     double ycenter = .5 * (ymin + ymax);
@@ -173,47 +184,70 @@ static VklBox _box_cube(VklBox box)
     VklBox out = box;
     // if (edge_x > 0)
     // {
-    out.xlim[0] = xcenter - edge_x;
-    out.xlim[1] = xcenter + edge_x;
+    out.p0[0] = xcenter - edge_x;
+    out.p1[0] = xcenter + edge_x;
     // }
     // if (edge_y > 0)
     // {
-    out.ylim[0] = ycenter - edge_y;
-    out.ylim[1] = ycenter + edge_y;
+    out.p0[1] = ycenter - edge_y;
+    out.p1[1] = ycenter + edge_y;
     // }
     // if (edge_z > 0)
     // {
-    out.zlim[0] = zcenter - edge_z;
-    out.zlim[1] = zcenter + edge_z;
+    out.p0[2] = zcenter - edge_z;
+    out.p1[2] = zcenter + edge_z;
     // }
     return out;
 }
 
 
 
-static inline void _transform_point_linear(dvec2* lim, double* in, double* out)
-{
-    *out = -1.0 + 2.0 * ((*in) - (*lim)[0]) / ((*lim)[1] - (*lim)[0]);
-}
+// static inline void _transform_point_linear(dvec2* in_lim, double* in, dvec2* out_lim, double*
+// out)
+// {
+//     *out = (*out_lim)[0] +
+//            (out_lim[1] - out_lim[0]) * ((*in) - (*in_lim)[0]) / ((*in_lim)[1] - (*in_lim)[0]);
+// }
 
 
 
-static void _transform_linear(VklBox box, VklArray* points_in, VklArray* points_out)
+static void _transform_linear(
+    VklBox box_in, VklArray* points_in, //
+    VklBox box_out, VklArray* points_out)
 {
     ASSERT(points_out->item_count == points_in->item_count);
     ASSERT(points_out->item_size == points_in->item_size);
 
+    ASSERT(points_out->dtype == points_in->dtype);
+    ASSERT(
+        points_out->dtype == VKL_DTYPE_DOUBLE || //
+        points_out->dtype == VKL_DTYPE_DVEC2 ||  //
+        points_out->dtype == VKL_DTYPE_DVEC3 ||  //
+        points_out->dtype == VKL_DTYPE_DVEC4     //
+    );
+
+    const uint32_t components = points_in->components;
+    ASSERT(points_out->components == components);
+    ASSERT(1 <= components && components <= 4);
+
     dvec3* pos_in = NULL;
     dvec3* pos_out = NULL;
 
+    dvec3 a = {0};
+    dvec3 b = {0};
+    for (uint32_t j = 0; j < components; j++)
+    {
+        a[j] = (box_out.p1[j] - box_out.p0[j]) / (box_in.p1[j] - box_in.p0[j]);
+        b[j] = box_out.p0[j] * box_in.p1[j] - box_out.p1[j] * box_in.p0[j];
+    }
+
     for (uint32_t i = 0; i < points_in->item_count; i++)
     {
-        pos_in = vkl_array_item(points_in, i);
-        pos_out = vkl_array_item(points_out, i);
+        pos_in = (dvec3*)vkl_array_item(points_in, i);
+        pos_out = (dvec3*)vkl_array_item(points_out, i);
 
-        _transform_point_linear(&box.xlim, &pos_in[0][0], &pos_out[0][0]);
-        _transform_point_linear(&box.ylim, &pos_in[0][1], &pos_out[0][1]);
-        _transform_point_linear(&box.zlim, &pos_in[0][2], &pos_out[0][2]);
+        for (uint32_t j = 0; j < components; j++)
+            (*pos_out)[j] = a[j] * (*pos_in)[j] + b[j];
     }
 }
 

@@ -76,6 +76,10 @@ static void _axes_ticks(VklController* controller, VklAxisCoord coord)
     double vlen = vmax - vmin;
     ASSERT(vlen > 0);
 
+    // Free the existing ticks.
+    if (axes->ticks[coord].values != NULL)
+        vkl_ticks_destroy(&axes->ticks[coord]);
+
     // Determine the tick number and positions.
     axes->ticks[coord] = vkl_ticks(vmin, vmax, ctx);
 
@@ -103,22 +107,29 @@ static void _axes_upload(VklController* controller, VklAxisCoord coord)
     VklDataCoords* coords = &panel->data_coords;
     ASSERT(coords != NULL);
 
-    VklBox* box = &coords->box;
-    ASSERT(box != NULL);
-
     VklAxesTicks* axticks = &axes->ticks[coord];
     uint32_t N = axticks->value_count;
 
-    dvec2 axlim = {axticks->dmin, axticks->dmax};
+    // Array with the tick values. The underlying buffer is owned by the ticks object so this array
+    // should not be destroyed.
+    VklArray arr_in = vkl_array_wrap(N, VKL_DTYPE_DOUBLE, axticks->values);
+
+    // Array with the transformed tick positions, used to populate the axes visual's props.
+    VklArray arr_out = vkl_array(N, VKL_DTYPE_DOUBLE);
+
+    // Box corresponding to the initial range in data coordinates.
+    VklBox box = (VklBox){{axticks->dmin, 0, 0}, {axticks->dmax, 0, 0}};
 
     // Transform the ticks from the data coordinates to the scene coordinates, based on the initial
-    // axes range axlim.
-    double* ticks = calloc(N, sizeof(double));
-    for (uint32_t i = 0; i < N; i++)
-        _transform_point_linear(&axlim, &axticks->values[i], &ticks[i]);
+    // axes range.
+    _transform_linear(box, &arr_in, VKL_BOX_NDC, &arr_out);
+
+    // Array with the ticks in scene coordinates.
+    double* ticks = (double*)arr_out.data;
+    ASSERT(ticks != NULL);
 
     // Minor ticks.
-    double* minor_ticks = calloc((N - 1) * 4, sizeof(double));
+    double* minor_ticks = (double*)calloc((N - 1) * 4, sizeof(double));
     uint32_t k = 0;
     for (uint32_t i = 0; i < N - 1; i++)
         for (uint32_t j = 1; j <= 4; j++)
@@ -126,13 +137,12 @@ static void _axes_upload(VklController* controller, VklAxisCoord coord)
     ASSERT(k == (N - 1) * 4);
 
     // Prepare text values.
-    char** text = calloc(N, sizeof(char*));
+    char** text = (char**)calloc(N, sizeof(char*));
     for (uint32_t i = 0; i < N; i++)
         text[i] = &axticks->labels[i * MAX_GLYPHS_PER_TICK];
 
     // Set visual data.
     double lim[] = {-1};
-    // TODO: POS prop should always be double, default baking should convert to float?
     vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_MINOR, 4 * (N - 1), minor_ticks);
     vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR, N, ticks);
     vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, ticks);
@@ -140,7 +150,7 @@ static void _axes_upload(VklController* controller, VklAxisCoord coord)
     vkl_visual_data(visual, VKL_PROP_TEXT, 0, N, text);
 
     FREE(minor_ticks);
-    FREE(ticks);
+    vkl_array_destroy(&arr_out);
     FREE(text);
 }
 
@@ -156,10 +166,10 @@ static void _axes_set(VklController* controller, VklBox box)
     ASSERT(axes != NULL);
 
     // Initial data coordinates from the panel
-    axes->tick_range[0][0] = box.xlim[0];
-    axes->tick_range[0][1] = box.xlim[1];
-    axes->tick_range[1][0] = box.ylim[0];
-    axes->tick_range[1][1] = box.ylim[1];
+    axes->tick_range[0][0] = box.p0[0];
+    axes->tick_range[0][1] = box.p1[0];
+    axes->tick_range[1][0] = box.p0[1];
+    axes->tick_range[1][1] = box.p1[1];
 
     for (uint32_t coord = 0; coord < 2; coord++)
     {

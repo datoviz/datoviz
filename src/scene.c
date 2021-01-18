@@ -139,10 +139,9 @@ static VklBox _visual_box(VklVisual* visual)
         if (prop == NULL)
             break;
         arr = &prop->arr_orig;
+        ASSERT(arr != NULL);
         if (arr->item_count == 0)
-        {
             continue;
-        }
         boxes[n_pos_props++] = _box_bounding(arr);
     }
 
@@ -254,12 +253,16 @@ static void _panel_normalize(VklPanel* panel)
 
     VklDataCoords* coords = &panel->data_coords;
     VklBox* boxes = calloc(panel->visual_count, sizeof(VklBox));
-
     // Get the bounding box of each visual.
     for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        ASSERT(panel->visuals[i] != NULL);
         // NOTE: skip visuals that should not be transformed.
         if ((panel->visuals[i]->flags & VKL_SCENE_VISUAL_FLAGS_TRANSFORM_NONE) == 0)
+        {
             boxes[i] = _visual_box(panel->visuals[i]);
+        }
+    }
 
     // Merge the visual box with the existing box.
     VklBox box = _box_merge(panel->visual_count, boxes);

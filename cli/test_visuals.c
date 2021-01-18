@@ -32,25 +32,25 @@ int test_visuals_norm(TestContext* context)
         positions[i][2] = -5 + 10 * rand_float();
     }
     VklBox box = _box_bounding(&pos_in);
-    AT(fabs(box.xlim[0] - 2) < eps);
-    AT(fabs(box.xlim[1] - 3) < eps);
-    AT(fabs(box.ylim[0] - 8) < eps);
-    AT(fabs(box.ylim[1] - 9) < eps);
-    AT(fabs(box.zlim[0] + 5) < eps);
-    AT(fabs(box.zlim[1] - 5) < eps);
+    AT(fabs(box.p0[0] - 2) < eps);
+    AT(fabs(box.p1[0] - 3) < eps);
+    AT(fabs(box.p0[1] - 8) < eps);
+    AT(fabs(box.p1[1] - 9) < eps);
+    AT(fabs(box.p0[2] + 5) < eps);
+    AT(fabs(box.p1[2] - 5) < eps);
 
     box = _box_cube(box);
-    AT(fabs(box.xlim[0] + 2.5) < eps);
-    AT(fabs(box.xlim[1] - 7.5) < eps);
-    AT(fabs(box.ylim[0] - 3.5) < eps);
-    AT(fabs(box.ylim[1] - 13.5) < eps);
-    AT(fabs(box.zlim[0] + 5) < eps);
-    AT(fabs(box.zlim[1] - 5) < eps);
+    AT(fabs(box.p0[0] + 2.5) < eps);
+    AT(fabs(box.p1[0] - 7.5) < eps);
+    AT(fabs(box.p0[1] - 3.5) < eps);
+    AT(fabs(box.p1[1] - 13.5) < eps);
+    AT(fabs(box.p0[2] + 5) < eps);
+    AT(fabs(box.p1[2] - 5) < eps);
 
 
     // Normalize the data.
     VklArray pos_out = vkl_array(n, VKL_DTYPE_DVEC3);
-    _transform_linear(box, &pos_in, &pos_out);
+    _transform_linear(box, &pos_in, VKL_BOX_NDC, &pos_out);
     positions = (dvec3*)pos_out.data;
     dvec3* pos = NULL;
     double v = 0;
