@@ -87,7 +87,7 @@ int test_panel_1(TestContext* context)
 
     // Visual data.
     const uint32_t N = 1000;
-    vec3* pos = calloc(N, sizeof(vec3));
+    dvec3* pos = calloc(N, sizeof(dvec3));
     cvec4* color = calloc(N, sizeof(cvec4));
     float param = 10.0f;
     float zero = 0.0f;

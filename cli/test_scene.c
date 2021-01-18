@@ -186,7 +186,7 @@ int test_scene_1(TestContext* context)
 
     // Visual data.
     const uint32_t N = 1000;
-    vec3* pos = calloc(N, sizeof(vec3));
+    dvec3* pos = calloc(N, sizeof(dvec3));
     cvec4* color = calloc(N, sizeof(cvec4));
     float param = 10.0f;
     for (uint32_t i = 0; i < N; i++)
@@ -264,7 +264,7 @@ int test_scene_axes(TestContext* context)
     // Markers.
     VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_MARKER, 0);
     const uint32_t N = 10000;
-    vec3* pos = calloc(N, sizeof(vec3));
+    dvec3* pos = calloc(N, sizeof(dvec3));
     cvec4* color = calloc(N, sizeof(cvec4));
     float param = 10.0f;
     for (uint32_t i = 0; i < N; i++)
@@ -314,11 +314,11 @@ int test_scene_logistic(TestContext* context)
     VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_MARKER, VKL_GRAPHICS_FLAGS_NONE);
 
     const uint32_t N = 1000000;
-    vec3* pos = calloc(N, sizeof(vec3));
+    dvec3* pos = calloc(N, sizeof(dvec3));
     cvec4* color = calloc(N, sizeof(cvec4));
     for (uint32_t i = 0; i < N; i++)
     {
-        pos[i][0] = -1 + 2 * i / (float)(N - 1);
+        pos[i][0] = -1 + 2 * i / (double)(N - 1);
         pos[i][1] = -1 + 2 * rand_float();
         vkl_colormap_scale(VKL_CMAP_HSV, i, 0, N, color[i]);
         color[i][3] = 20;
