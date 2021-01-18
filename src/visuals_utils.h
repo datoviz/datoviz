@@ -363,12 +363,11 @@ static void _prop_copy(VklVisual* visual, VklProp* prop)
     ASSERT(source->arr.data != NULL);
     ASSERT(arr->item_count <= source->arr.item_count);
 
-    // log_debug(
-    //     "copy %d prop offset %d size %d into source size %d", //
-    //     item_count, prop->offset, col_size, source->arr.item_size);
     vkl_array_column(
         &source->arr, prop->offset, col_size, 0, source->arr.item_count, //
-        arr->item_count, arr->data, prop->copy_type, prop->reps);
+        arr->item_count, arr->data,                                      //
+        prop->arr_orig.dtype, prop->target_dtype,                        // optional cast
+        prop->copy_type, prop->reps);
 }
 
 

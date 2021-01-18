@@ -212,7 +212,8 @@ void vkl_visual_prop_default(
 
 void vkl_visual_prop_copy(
     VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, //
-    uint32_t field_idx, VkDeviceSize offset, VklArrayCopyType copy_type, uint32_t reps)
+    uint32_t field_idx, VkDeviceSize offset,                     //
+    VklArrayCopyType copy_type, uint32_t reps)
 {
     ASSERT(visual != NULL);
     VklProp* prop = vkl_prop_get(visual, prop_type, prop_idx);
@@ -222,6 +223,25 @@ void vkl_visual_prop_copy(
     prop->offset = offset;
     prop->copy_type = copy_type;
     prop->reps = reps;
+    prop->target_dtype = VKL_DTYPE_NONE;
+}
+
+
+
+void vkl_visual_prop_cast(
+    VklVisual* visual, VklPropType prop_type, uint32_t prop_idx,       //
+    uint32_t field_idx, VkDeviceSize offset, VklDataType target_dtype, //
+    VklArrayCopyType copy_type, uint32_t reps)
+{
+    ASSERT(visual != NULL);
+    VklProp* prop = vkl_prop_get(visual, prop_type, prop_idx);
+    ASSERT(prop != NULL);
+
+    prop->field_idx = field_idx;
+    prop->offset = offset;
+    prop->copy_type = copy_type;
+    prop->reps = reps;
+    prop->target_dtype = target_dtype;
 }
 
 

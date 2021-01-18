@@ -44,9 +44,11 @@ static void _marker_visual(VklVisual* visual)
     // Props.
     {
         // Vertex pos.
-        vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_VEC3, VKL_SOURCE_TYPE_VERTEX, 0);
-        vkl_visual_prop_copy(
-            visual, VKL_PROP_POS, 0, 0, offsetof(VklVertex, pos), VKL_ARRAY_COPY_SINGLE, 1);
+        vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
+        vkl_visual_prop_cast(
+            visual, VKL_PROP_POS, 0, 0, offsetof(VklVertex, pos),
+            VKL_DTYPE_VEC3, // NOTE: cast to float
+            VKL_ARRAY_COPY_SINGLE, 1);
 
         // Vertex color.
         vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);

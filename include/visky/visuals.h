@@ -232,6 +232,7 @@ struct VklProp
     VklArray arr_trans; // transformed data array
     // VklArray arr_triang; // triangulated data array
 
+    VklDataType target_dtype; // used for casting during the copy to the vertex array
     VklArrayCopyType copy_type;
     uint32_t reps; // number of repeats when copying
     // bool is_set; // whether the user has set this prop
@@ -350,6 +351,11 @@ VKY_EXPORT void vkl_visual_prop_copy(
     VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, //
     uint32_t field_idx, VkDeviceSize offset,                     //
     VklArrayCopyType copy_type, uint32_t reps);
+
+VKY_EXPORT void vkl_visual_prop_cast(
+    VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, //
+    uint32_t field_idx, VkDeviceSize offset,                     //
+    VklDataType target_dtype, VklArrayCopyType copy_type, uint32_t reps);
 
 VKY_EXPORT void vkl_visual_graphics(VklVisual* visual, VklGraphics* graphics);
 

@@ -86,13 +86,14 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_graphics_mesh),         //
 
     // array
-    CASE_FIXTURE_NONE(test_array_1),   //
-    CASE_FIXTURE_NONE(test_array_2),   //
-    CASE_FIXTURE_NONE(test_array_3),   //
-    CASE_FIXTURE_NONE(test_array_4),   //
-    CASE_FIXTURE_NONE(test_array_5),   //
-    CASE_FIXTURE_NONE(test_array_mvp), //
-    CASE_FIXTURE_NONE(test_array_3D),  //
+    CASE_FIXTURE_NONE(test_array_1),    //
+    CASE_FIXTURE_NONE(test_array_2),    //
+    CASE_FIXTURE_NONE(test_array_3),    //
+    CASE_FIXTURE_NONE(test_array_4),    //
+    CASE_FIXTURE_NONE(test_array_5),    //
+    CASE_FIXTURE_NONE(test_array_cast), //
+    CASE_FIXTURE_NONE(test_array_mvp),  //
+    CASE_FIXTURE_NONE(test_array_3D),   //
 
     // visuals
     CASE_FIXTURE_NONE(test_visuals_norm), //

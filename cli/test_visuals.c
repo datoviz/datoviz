@@ -20,11 +20,11 @@ static void _wait(VklCanvas* canvas, VklEvent ev) { vkl_sleep(500); }
 int test_visuals_norm(TestContext* context)
 {
     const uint32_t n = 10000;
-    const float eps = 1e-3;
+    const double eps = 1e-3;
 
-    // Compute the data bounds of an array of vec3.
-    VklArray pos_in = vkl_array(n, VKL_DTYPE_VEC3);
-    vec3* positions = (vec3*)pos_in.data;
+    // Compute the data bounds of an array of dvec3.
+    VklArray pos_in = vkl_array(n, VKL_DTYPE_DVEC3);
+    dvec3* positions = (dvec3*)pos_in.data;
     for (uint32_t i = 0; i < n; i++)
     {
         positions[i][0] = +2 + rand_float();
@@ -49,11 +49,11 @@ int test_visuals_norm(TestContext* context)
 
 
     // Normalize the data.
-    VklArray pos_out = vkl_array(n, VKL_DTYPE_VEC3);
+    VklArray pos_out = vkl_array(n, VKL_DTYPE_DVEC3);
     _transform_linear(box, &pos_in, &pos_out);
-    positions = (vec3*)pos_out.data;
-    vec3* pos = NULL;
-    float v = 0;
+    positions = (dvec3*)pos_out.data;
+    dvec3* pos = NULL;
+    double v = 0;
     for (uint32_t i = 0; i < n; i++)
     {
         pos = vkl_array_item(&pos_out, i);
@@ -166,7 +166,7 @@ int test_visuals_2(TestContext* context)
     VklBufferRegions br_viewport = vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_UNIFORM, 1, 16);
 
     // Vertex data.
-    vec3* pos = calloc(N, sizeof(vec3));
+    dvec3* pos = calloc(N, sizeof(dvec3));
     cvec4* color = calloc(N, sizeof(cvec4));
     for (uint32_t i = 0; i < N; i++)
     {
@@ -240,7 +240,7 @@ int test_visuals_3(TestContext* context)
     VklBufferRegions br_viewport = vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_UNIFORM, 1, 16);
 
     // Vertex data.
-    vec3* pos = calloc(N, sizeof(vec3));
+    dvec3* pos = calloc(N, sizeof(dvec3));
     cvec4* color = calloc(N, sizeof(cvec4));
     for (uint32_t i = 0; i < N; i++)
     {
@@ -298,7 +298,7 @@ static void _visual_update(VklCanvas* canvas, VklEvent ev)
     ASSERT(visual != NULL);
 
     const uint32_t N = 2 + (ev.u.t.idx % 10);
-    vec3* pos = calloc(N, sizeof(vec3));
+    dvec3* pos = calloc(N, sizeof(dvec3));
     for (uint32_t i = 0; i < N; i++)
     {
         pos[i][0] = -.75 + 1.5 / (N - 1) * i;
@@ -306,6 +306,7 @@ static void _visual_update(VklCanvas* canvas, VklEvent ev)
     vkl_visual_data(visual, VKL_PROP_POS, 0, N, pos);
     vkl_visual_update(visual, canvas->viewport, (VklDataCoords){0}, NULL);
 
+    // Need explicit refill because the number of vertices changes.
     vkl_canvas_to_refill(visual->canvas);
     FREE(pos);
 }
@@ -322,7 +323,7 @@ int test_visuals_4(TestContext* context)
 
     // Vertex data.
     const uint32_t N = 5;
-    vec3* pos = calloc(N, sizeof(vec3));
+    dvec3* pos = calloc(N, sizeof(dvec3));
     cvec4* color = calloc(N, sizeof(cvec4));
     for (uint32_t i = 0; i < N; i++)
     {
@@ -367,7 +368,7 @@ int test_visuals_4(TestContext* context)
 static void _append(VklVisual* visual)
 {
     ASSERT(visual != NULL);
-    vec3 pos = {0};
+    dvec3 pos = {0};
     cvec4 color = {0};
     RANDN_POS(pos);
     RAND_COLOR(color);
@@ -410,7 +411,7 @@ int test_visuals_5(TestContext* context)
     vkl_visual_data_source(&visual, VKL_SOURCE_TYPE_VIEWPORT, 0, 0, 1, 1, &canvas->viewport);
     vkl_visual_update(&visual, canvas->viewport, (VklDataCoords){0}, NULL);
 
-    vkl_event_callback(canvas, VKL_EVENT_TIMER, .1, VKL_EVENT_MODE_SYNC, _visual_append, &visual);
+    vkl_event_callback(canvas, VKL_EVENT_TIMER, .05, VKL_EVENT_MODE_SYNC, _visual_append, &visual);
     // vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, _wait, &visual);
     vkl_event_callback(
         canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _visual_canvas_fill, &visual);
