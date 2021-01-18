@@ -529,193 +529,194 @@ static void _upload_mvp(VklCanvas* canvas, VklEvent ev)
 /*  Transform functions                                                                          */
 /*************************************************************************************************/
 
-VklTransformOLD vkl_transform_inv(VklTransformOLD tr)
-{
-    ASSERT(tr.scale[0] != 0);
-    ASSERT(tr.scale[1] != 0);
+// VklTransformOLD vkl_transform_inv(VklTransformOLD tr)
+// {
+//     ASSERT(tr.scale[0] != 0);
+//     ASSERT(tr.scale[1] != 0);
 
-    VklTransformOLD tri = {0};
-    tri.scale[0] = 1. / tr.scale[0];
-    tri.scale[1] = 1. / tr.scale[1];
-    tri.shift[0] = -tr.scale[0] * tr.shift[0];
-    tri.shift[1] = -tr.scale[1] * tr.shift[1];
-    return tri;
-}
-
-
-
-VklTransformOLD vkl_transform_mul(VklTransformOLD tr0, VklTransformOLD tr1)
-{
-    VklTransformOLD trm = {0};
-    trm.scale[0] = tr0.scale[0] * tr1.scale[0];
-    trm.scale[1] = tr0.scale[1] * tr1.scale[1];
-    trm.shift[0] = tr0.shift[0] + tr1.shift[0] / tr0.scale[0];
-    trm.shift[1] = tr0.shift[1] + tr1.shift[1] / tr0.scale[1];
-    return trm;
-}
+//     VklTransformOLD tri = {0};
+//     tri.scale[0] = 1. / tr.scale[0];
+//     tri.scale[1] = 1. / tr.scale[1];
+//     tri.shift[0] = -tr.scale[0] * tr.shift[0];
+//     tri.shift[1] = -tr.scale[1] * tr.shift[1];
+//     return tri;
+// }
 
 
 
-VklTransformOLD vkl_transform_interp(dvec2 pin, dvec2 pout, dvec2 qin, dvec2 qout)
-{
-    VklTransformOLD tr = {0};
-    tr.scale[0] = tr.scale[1] = 1;
-    if (qin[0] != pin[0])
-        tr.scale[0] = (qout[0] - pout[0]) / (qin[0] - pin[0]);
-    if (qin[1] != pin[1])
-        tr.scale[1] = (qout[1] - pout[1]) / (qin[1] - pin[1]);
-    if (qout[0] != pout[0])
-        tr.shift[0] = (pin[0] * qout[0] - pout[0] * qin[0]) / (qout[0] - pout[0]);
-    if (qout[1] != pout[1])
-        tr.shift[1] = (pin[1] * qout[1] - pout[1] * qin[1]) / (qout[1] - pout[1]);
-    return tr;
-}
+// VklTransformOLD vkl_transform_mul(VklTransformOLD tr0, VklTransformOLD tr1)
+// {
+//     VklTransformOLD trm = {0};
+//     trm.scale[0] = tr0.scale[0] * tr1.scale[0];
+//     trm.scale[1] = tr0.scale[1] * tr1.scale[1];
+//     trm.shift[0] = tr0.shift[0] + tr1.shift[0] / tr0.scale[0];
+//     trm.shift[1] = tr0.shift[1] + tr1.shift[1] / tr0.scale[1];
+//     return trm;
+// }
 
 
 
-void vkl_transform_apply(VklTransformOLD* tr, dvec2 in, dvec2 out)
-{
-    ASSERT(tr != NULL);
-    if (tr->scale[0] != 0)
-        out[0] = tr->scale[0] * (in[0] - tr->shift[0]);
-    if (tr->scale[1] != 0)
-        out[1] = tr->scale[1] * (in[1] - tr->shift[1]);
-}
+// VklTransformOLD vkl_transform_interp(dvec2 pin, dvec2 pout, dvec2 qin, dvec2 qout)
+// {
+//     VklTransformOLD tr = {0};
+//     tr.scale[0] = tr.scale[1] = 1;
+//     if (qin[0] != pin[0])
+//         tr.scale[0] = (qout[0] - pout[0]) / (qin[0] - pin[0]);
+//     if (qin[1] != pin[1])
+//         tr.scale[1] = (qout[1] - pout[1]) / (qin[1] - pin[1]);
+//     if (qout[0] != pout[0])
+//         tr.shift[0] = (pin[0] * qout[0] - pout[0] * qin[0]) / (qout[0] - pout[0]);
+//     if (qout[1] != pout[1])
+//         tr.shift[1] = (pin[1] * qout[1] - pout[1] * qin[1]) / (qout[1] - pout[1]);
+//     return tr;
+// }
 
 
 
-VklTransformOLD vkl_transform_old(VklPanel* panel, VklCDS source, VklCDS target)
-{
-    ASSERT(panel != NULL);
-    VklTransformOLD tr = {{1, 1}, {0, 0}}; // identity
-    dvec2 NDC0 = {-1, -1};
-    dvec2 NDC1 = {+1, +1};
-    dvec2 ll = {-1, -1};
-    dvec2 ur = {+1, +1};
-    VklPanzoom* panzoom = NULL;
-    VklCanvas* canvas = panel->scene->canvas;
+// void vkl_transform_apply(VklTransformOLD* tr, dvec2 in, dvec2 out)
+// {
+//     ASSERT(tr != NULL);
+//     if (tr->scale[0] != 0)
+//         out[0] = tr->scale[0] * (in[0] - tr->shift[0]);
+//     if (tr->scale[1] != 0)
+//         out[1] = tr->scale[1] * (in[1] - tr->shift[1]);
+// }
 
-    if (panel->controller->type == VKL_CONTROLLER_AXES_2D)
-    {
-        // log_error("not implemented yet");
-        // TODO
-        // ll[0] = axes->xscale_orig.vmin;
-        // ll[1] = axes->yscale_orig.vmin;
-        // ur[0] = axes->xscale_orig.vmax;
-        // ur[1] = axes->yscale_orig.vmax;
-        // panzoom = axes->panzoom_inner;
-        panzoom = &panel->controller->interacts[0].u.p;
-    }
-    else if (panel->controller->type == VKL_CONTROLLER_PANZOOM)
-    {
-        panzoom = &panel->controller->interacts[0].u.p;
-    }
-    else
-    {
-        log_error("controller other than axes 2D and panzoom not yet supported");
-        return tr;
-    }
 
-    VklViewport viewport = panel->viewport;
 
-    if (source == target)
-    {
-        return tr;
-    }
-    else if (source > target)
-    {
-        return vkl_transform_inv(vkl_transform_old(panel, target, source));
-    }
-    else if (target - source >= 2)
-    {
-        for (uint32_t k = source; k <= target - 1; k++)
-        {
-            tr = vkl_transform_mul(tr, vkl_transform_old(panel, (VklCDS)k, (VklCDS)(k + 1)));
-        }
-    }
-    else if (target - source == 1)
-    {
-        switch (source)
-        {
+// VklTransformOLD vkl_transform_old(VklPanel* panel, VklCDSOld source, VklCDSOld target)
+// {
+//     ASSERT(panel != NULL);
+//     VklTransformOLD tr = {{1, 1}, {0, 0}}; // identity
+//     dvec2 NDC0 = {-1, -1};
+//     dvec2 NDC1 = {+1, +1};
+//     dvec2 ll = {-1, -1};
+//     dvec2 ur = {+1, +1};
+//     VklPanzoom* panzoom = NULL;
+//     VklCanvas* canvas = panel->scene->canvas;
 
-        case VKL_CDS_DATA:
-            // linear normalization based on axes range
-            ASSERT(target == VKL_CDS_GPU);
-            {
-                tr = vkl_transform_interp(ll, NDC0, ur, NDC1);
-            }
-            break;
+//     if (panel->controller->type == VKL_CONTROLLER_AXES_2D)
+//     {
+//         // log_error("not implemented yet");
+//         // TODO
+//         // ll[0] = axes->xscale_orig.vmin;
+//         // ll[1] = axes->yscale_orig.vmin;
+//         // ur[0] = axes->xscale_orig.vmax;
+//         // ur[1] = axes->yscale_orig.vmax;
+//         // panzoom = axes->panzoom_inner;
+//         panzoom = &panel->controller->interacts[0].u.p;
+//     }
+//     else if (panel->controller->type == VKL_CONTROLLER_PANZOOM)
+//     {
+//         panzoom = &panel->controller->interacts[0].u.p;
+//     }
+//     else
+//     {
+//         log_error("controller other than axes 2D and panzoom not yet supported");
+//         return tr;
+//     }
 
-        case VKL_CDS_GPU:
-            // apply panzoom
-            ASSERT(target == VKL_CDS_PANZOOM);
-            {
-                ASSERT(panzoom != NULL);
-                ASSERT(panzoom->zoom[0] != 0);
-                ASSERT(panzoom->zoom[1] != 0);
-                dvec2 p = {panzoom->camera_pos[0], panzoom->camera_pos[1]};
-                dvec2 s = {panzoom->zoom[0], panzoom->zoom[1]};
-                tr.scale[0] = s[0];
-                tr.scale[1] = s[1];
-                tr.shift[0] = p[0]; // / s[0];
-                tr.shift[1] = p[1]; // / s[1];
-            }
-            break;
+//     VklViewport viewport = panel->viewport;
 
-        case VKL_CDS_PANZOOM:
-            // using inner viewport
-            ASSERT(target == VKL_CDS_PANEL);
-            {
-                // Margins.
-                // double cw = panel->scene->canvas->size.framebuffer_width;
-                // double ch = panel->scene->canvas->size.framebuffer_height;
-                // uvec2 size = {0};
-                // vkl_canvas_size(canvas, VKL_CANVAS_SIZE_FRAMEBUFFER, size);
-                double cw = viewport.viewport.width;
-                double ch = viewport.viewport.height;
-                double mt = 2 * viewport.margins[0] / ch;
-                double mr = 2 * viewport.margins[1] / cw;
-                double mb = 2 * viewport.margins[2] / ch;
-                double ml = 2 * viewport.margins[3] / cw;
+//     if (source == target)
+//     {
+//         return tr;
+//     }
+//     else if (source > target)
+//     {
+//         return vkl_transform_inv(vkl_transform_old(panel, target, source));
+//     }
+//     else if (target - source >= 2)
+//     {
+//         for (uint32_t k = source; k <= target - 1; k++)
+//         {
+//             tr = vkl_transform_mul(tr, vkl_transform_old(panel, (VklCDSOld)k, (VklCDSOld)(k +
+//             1)));
+//         }
+//     }
+//     else if (target - source == 1)
+//     {
+//         switch (source)
+//         {
 
-                tr = vkl_transform_interp(
-                    NDC0, (dvec2){-1 + ml, -1 + mb}, NDC1, (dvec2){+1 - mr, +1 - mt});
-            }
-            break;
+//         case VKL_CDS_DATA:
+//             // linear normalization based on axes range
+//             ASSERT(target == VKL_CDS_GPU);
+//             {
+//                 tr = vkl_transform_interp(ll, NDC0, ur, NDC1);
+//             }
+//             break;
 
-        case VKL_CDS_PANEL:
-            // multiply by canvas size
-            ASSERT(target == VKL_CDS_CANVAS_NDC);
-            {
-                // From outer to inner viewport.
-                ll[0] = -1 + 2 * viewport.viewport.x;
-                ll[1] = +1 - 2 * (viewport.viewport.y + viewport.viewport.height);
-                ur[0] = -1 + 2 * (viewport.viewport.x + viewport.viewport.width);
-                ur[1] = +1 - 2 * viewport.viewport.y;
+//         case VKL_CDS_GPU:
+//             // apply panzoom
+//             ASSERT(target == VKL_CDS_PANZOOM);
+//             {
+//                 ASSERT(panzoom != NULL);
+//                 ASSERT(panzoom->zoom[0] != 0);
+//                 ASSERT(panzoom->zoom[1] != 0);
+//                 dvec2 p = {panzoom->camera_pos[0], panzoom->camera_pos[1]};
+//                 dvec2 s = {panzoom->zoom[0], panzoom->zoom[1]};
+//                 tr.scale[0] = s[0];
+//                 tr.scale[1] = s[1];
+//                 tr.shift[0] = p[0]; // / s[0];
+//                 tr.shift[1] = p[1]; // / s[1];
+//             }
+//             break;
 
-                tr = vkl_transform_interp(NDC0, ll, NDC1, ur);
-            }
-            break;
+//         case VKL_CDS_PANZOOM:
+//             // using inner viewport
+//             ASSERT(target == VKL_CDS_PANEL);
+//             {
+//                 // Margins.
+//                 // double cw = panel->scene->canvas->size.framebuffer_width;
+//                 // double ch = panel->scene->canvas->size.framebuffer_height;
+//                 // uvec2 size = {0};
+//                 // vkl_canvas_size(canvas, VKL_CANVAS_SIZE_FRAMEBUFFER, size);
+//                 double cw = viewport.viewport.width;
+//                 double ch = viewport.viewport.height;
+//                 double mt = 2 * viewport.margins[0] / ch;
+//                 double mr = 2 * viewport.margins[1] / cw;
+//                 double mb = 2 * viewport.margins[2] / ch;
+//                 double ml = 2 * viewport.margins[3] / cw;
 
-        case VKL_CDS_CANVAS_NDC:
-            // multiply by canvas size
-            ASSERT(target == VKL_CDS_CANVAS_PX);
-            {
-                uvec2 size = {0};
-                vkl_canvas_size(canvas, VKL_CANVAS_SIZE_SCREEN, size);
-                tr = vkl_transform_interp(NDC0, (dvec2){0, size[1]}, NDC1, (dvec2){size[0], 0});
-            }
-            break;
+//                 tr = vkl_transform_interp(
+//                     NDC0, (dvec2){-1 + ml, -1 + mb}, NDC1, (dvec2){+1 - mr, +1 - mt});
+//             }
+//             break;
 
-        default:
-            log_error("unknown coordinate systems");
-            break;
-        }
-    }
-    ASSERT(tr.scale[0] != 0);
-    ASSERT(tr.scale[1] != 0);
-    return tr;
-}
+//         case VKL_CDS_PANEL:
+//             // multiply by canvas size
+//             ASSERT(target == VKL_CDS_CANVAS_NDC);
+//             {
+//                 // From outer to inner viewport.
+//                 ll[0] = -1 + 2 * viewport.viewport.x;
+//                 ll[1] = +1 - 2 * (viewport.viewport.y + viewport.viewport.height);
+//                 ur[0] = -1 + 2 * (viewport.viewport.x + viewport.viewport.width);
+//                 ur[1] = +1 - 2 * viewport.viewport.y;
+
+//                 tr = vkl_transform_interp(NDC0, ll, NDC1, ur);
+//             }
+//             break;
+
+//         case VKL_CDS_CANVAS_NDC:
+//             // multiply by canvas size
+//             ASSERT(target == VKL_CDS_CANVAS_PX);
+//             {
+//                 uvec2 size = {0};
+//                 vkl_canvas_size(canvas, VKL_CANVAS_SIZE_SCREEN, size);
+//                 tr = vkl_transform_interp(NDC0, (dvec2){0, size[1]}, NDC1, (dvec2){size[0], 0});
+//             }
+//             break;
+
+//         default:
+//             log_error("unknown coordinate systems");
+//             break;
+//         }
+//     }
+//     ASSERT(tr.scale[0] != 0);
+//     ASSERT(tr.scale[1] != 0);
+//     return tr;
+// }
 
 
 

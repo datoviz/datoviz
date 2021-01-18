@@ -27,6 +27,7 @@
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
+// Transformations.
 typedef enum
 {
     VKL_TRANSFORM_NONE,
@@ -39,6 +40,7 @@ typedef enum
 
 
 
+// Transformation flags.
 typedef enum
 {
     VKL_TRANSFORM_FLAGS_NONE = 0x0000,
@@ -50,12 +52,28 @@ typedef enum
 
 
 
+// Coordinate system.
+typedef enum
+{
+    VKL_CDS_NONE,
+    VKL_CDS_DATA,
+    VKL_CDS_SCENE,
+    VKL_CDS_VULKAN,
+    VKL_CDS_FRAMEBUFFER,
+    VKL_CDS_WINDOW,
+} VklCDS;
+
+
+
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
 typedef struct VklDataCoords VklDataCoords;
 typedef struct VklBox VklBox;
+
+// Forward declarations.
+typedef struct VklPanel VklPanel;
 
 
 
@@ -65,9 +83,6 @@ typedef struct VklBox VklBox;
 
 struct VklBox
 {
-    // dvec2 xlim;
-    // dvec2 ylim;
-    // dvec2 zlim;
     dvec3 p0, p1;
 };
 
@@ -87,22 +102,12 @@ struct VklDataCoords
 /*  Position normalization                                                                       */
 /*************************************************************************************************/
 
-// TODO: use double instead
-
 // Return the bounding box of a set of dvec3 points.
 static VklBox _box_bounding(VklArray* points_in)
 {
     ASSERT(points_in != NULL);
     ASSERT(points_in->item_count > 0);
     ASSERT(points_in->item_size > 0);
-
-    // double xmin = INFINITY;
-    // double ymin = INFINITY;
-    // double zmin = INFINITY;
-
-    // double xmax = -INFINITY;
-    // double ymax = -INFINITY;
-    // double zmax = -INFINITY;
 
     dvec3* pos = NULL;
     VklBox box = VKL_BOX_INF;
@@ -134,15 +139,6 @@ static VklBox _box_merge(uint32_t count, VklBox* boxes)
     }
     return merged;
 }
-
-
-
-// static void _box_print(VklBox box)
-// {
-//     log_info(
-//         "box x [%.3f, %.3f], y [%.3f, %.3f], z [%.3f, %.3f]", //
-//         box.xlim[0], box.xlim[1], box.ylim[0], box.ylim[1], box.zlim[0], box.zlim[1]);
-// }
 
 
 
@@ -202,15 +198,6 @@ static VklBox _box_cube(VklBox box)
 
 
 
-// static inline void _transform_point_linear(dvec2* in_lim, double* in, dvec2* out_lim, double*
-// out)
-// {
-//     *out = (*out_lim)[0] +
-//            (out_lim[1] - out_lim[0]) * ((*in) - (*in_lim)[0]) / ((*in_lim)[1] - (*in_lim)[0]);
-// }
-
-
-
 static void _transform_linear(
     VklBox box_in, VklArray* points_in, //
     VklBox box_out, VklArray* points_out)
@@ -258,6 +245,8 @@ static void _transform_linear(
 /*************************************************************************************************/
 
 VKY_EXPORT void vkl_transform(VklDataCoords coords, VklArray* pos_in, VklArray* pos_out);
+
+VKY_EXPORT void vkl_cds(VklPanel* panel, VklCDS source, dvec3 in, VklCDS target, dvec3 out);
 
 
 

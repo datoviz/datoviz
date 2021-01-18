@@ -267,19 +267,20 @@ static void _axes_range(VklController* controller, VklAxisCoord coord)
     VklAxes2D* axes = &controller->u.axes_2D;
     ASSERT(axes != NULL);
 
-    // set axes->range depending on coord
-    VklTransformOLD tr = {0};
-    dvec2 ll = {-1, -1};
-    dvec2 ur = {+1, +1};
-    dvec2 pos_ll = {0};
-    dvec2 pos_ur = {0};
-    tr = vkl_transform_old(controller->panel, VKL_CDS_PANZOOM, VKL_CDS_GPU);
-    // TODO: transform to data coordinates instead of GPU coordinates.
-    vkl_transform_apply(&tr, ll, pos_ll);
-    vkl_transform_apply(&tr, ur, pos_ur);
-    axes->panzoom_range[coord][0] = pos_ll[coord];
-    axes->panzoom_range[coord][1] = pos_ur[coord];
-    // log_info("%.3f %.3f", axes->range[coord][0], axes->range[coord][1]);
+    // TODO
+    // // set axes->range depending on coord
+    // VklTransformOLD tr = {0};
+    // dvec2 ll = {-1, -1};
+    // dvec2 ur = {+1, +1};
+    // dvec2 pos_ll = {0};
+    // dvec2 pos_ur = {0};
+    // tr = vkl_transform_old(controller->panel, VKL_CDS_PANZOOM, VKL_CDS_GPU);
+    // // TODO: transform to data coordinates instead of GPU coordinates.
+    // vkl_transform_apply(&tr, ll, pos_ll);
+    // vkl_transform_apply(&tr, ur, pos_ur);
+    // axes->panzoom_range[coord][0] = pos_ll[coord];
+    // axes->panzoom_range[coord][1] = pos_ur[coord];
+    // // log_info("%.3f %.3f", axes->range[coord][0], axes->range[coord][1]);
 }
 
 

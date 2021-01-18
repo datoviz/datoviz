@@ -265,6 +265,15 @@ static VklArray vkl_array(uint32_t item_count, VklDataType dtype)
 
 
 
+static VklArray vkl_array_point(dvec3 pos)
+{
+    VklArray arr = vkl_array(1, VKL_DTYPE_DVEC3);
+    memcpy(arr.data, pos, sizeof(dvec3));
+    return arr;
+}
+
+
+
 static VklArray vkl_array_wrap(uint32_t item_count, VklDataType dtype, void* data)
 {
     VklArray arr = vkl_array(0, dtype); // do not allocate underlying buffer

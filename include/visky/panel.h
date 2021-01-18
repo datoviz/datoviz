@@ -95,7 +95,6 @@ struct VklPanel
 
     // GPU objects
     VklBufferRegions br_mvp; // for the uniform buffer containing the MVP
-    void* mvp_mmap;          // for permanent mapping of the MVP uniform buffer
 
     VklController* controller;
     VklCommands* cmds;
