@@ -237,10 +237,12 @@ typedef uint8_t cvec4[4]; // used for color index
 
 /* Signed */
 typedef int16_t svec2[2];
+typedef int16_t svec3[3];
 typedef int16_t svec4[4]; // used for glyph as vec4 of uint16
 
 /* Unsigned */
 typedef uint16_t usvec2[2];
+typedef uint16_t usvec3[3];
 typedef uint16_t usvec4[4]; // used for glyph as vec4 of uint16
 
 
@@ -251,6 +253,7 @@ typedef uint16_t usvec4[4]; // used for glyph as vec4 of uint16
 
 /* Signed */
 typedef int32_t ivec2[2];
+typedef int32_t ivec3[3];
 typedef int32_t ivec4[4];
 
 /* Unsigned */
@@ -268,6 +271,7 @@ typedef uint32_t VklIndex;
 /*************************************************************************************************/
 
 typedef vec2 fvec2;
+typedef vec3 fvec3;
 typedef vec4 fvec4;
 
 
@@ -278,6 +282,7 @@ typedef vec4 fvec4;
 
 /* Array types */
 typedef double dvec2[2];
+typedef double dvec3[3];
 typedef double dvec4[4];
 
 
@@ -291,6 +296,15 @@ static inline void _vec3_copy(const vec3 a, vec3 b)
     b[0] = a[0];
     b[1] = a[1];
     b[2] = a[2];
+}
+
+
+
+static inline void _vec3_cast(const dvec3* a, vec3* b)
+{
+    b[0][0] = (float)a[0][0];
+    b[0][1] = (float)a[0][1];
+    b[0][2] = (float)a[0][2];
 }
 
 
