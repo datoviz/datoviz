@@ -106,7 +106,6 @@ static void _visual_canvas_fill(VklCanvas* canvas, VklEvent ev)
 /*  Visuals tests                                                                                */
 /*************************************************************************************************/
 
-int test_visuals_norm(TestContext* context);
 int test_visuals_1(TestContext* context);
 int test_visuals_2(TestContext* context);
 int test_visuals_3(TestContext* context);

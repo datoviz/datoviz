@@ -1,5 +1,6 @@
 #include "test_visuals.h"
 #include "../include/visky/visuals.h"
+#include "../src/transforms_utils.h"
 #include "../src/visuals_utils.h"
 #include "utils.h"
 
@@ -16,62 +17,6 @@ static void _wait(VklCanvas* canvas, VklEvent ev) { vkl_sleep(500); }
 /*************************************************************************************************/
 /*  Visuals tests                                                                                */
 /*************************************************************************************************/
-
-int test_visuals_norm(TestContext* context)
-{
-    const uint32_t n = 10000;
-    const double eps = 1e-3;
-
-    // Compute the data bounds of an array of dvec3.
-    VklArray pos_in = vkl_array(n, VKL_DTYPE_DVEC3);
-    dvec3* positions = (dvec3*)pos_in.data;
-    for (uint32_t i = 0; i < n; i++)
-    {
-        positions[i][0] = +2 + rand_float();
-        positions[i][1] = +8 + rand_float();
-        positions[i][2] = -5 + 10 * rand_float();
-    }
-    VklBox box = _box_bounding(&pos_in);
-    AT(fabs(box.p0[0] - 2) < eps);
-    AT(fabs(box.p1[0] - 3) < eps);
-    AT(fabs(box.p0[1] - 8) < eps);
-    AT(fabs(box.p1[1] - 9) < eps);
-    AT(fabs(box.p0[2] + 5) < eps);
-    AT(fabs(box.p1[2] - 5) < eps);
-
-    box = _box_cube(box);
-    AT(fabs(box.p0[0] + 2.5) < eps);
-    AT(fabs(box.p1[0] - 7.5) < eps);
-    AT(fabs(box.p0[1] - 3.5) < eps);
-    AT(fabs(box.p1[1] - 13.5) < eps);
-    AT(fabs(box.p0[2] + 5) < eps);
-    AT(fabs(box.p1[2] - 5) < eps);
-
-
-    // Normalize the data.
-    VklArray pos_out = vkl_array(n, VKL_DTYPE_DVEC3);
-    _transform_linear(box, &pos_in, VKL_BOX_NDC, &pos_out);
-    positions = (dvec3*)pos_out.data;
-    dvec3* pos = NULL;
-    double v = 0;
-    for (uint32_t i = 0; i < n; i++)
-    {
-        pos = vkl_array_item(&pos_out, i);
-        v = (*pos)[0];
-        AT(-1 <= v && v <= +1);
-        v = (*pos)[1];
-        AT(-1 <= v && v <= +1);
-        v = (*pos)[2];
-        AT(-1 <= v && v <= +1);
-    }
-
-
-    vkl_array_destroy(&pos_in);
-    vkl_array_destroy(&pos_out);
-    return 0;
-}
-
-
 
 int test_visuals_1(TestContext* context)
 {

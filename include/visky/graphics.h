@@ -78,7 +78,6 @@ typedef enum
 /*************************************************************************************************/
 
 typedef struct VklVertex VklVertex;
-typedef struct VklMVP VklMVP;
 
 typedef struct VklGraphicsPointParams VklGraphicsPointParams;
 
@@ -113,16 +112,6 @@ struct VklVertex
 {
     vec3 pos;
     cvec4 color;
-};
-
-
-
-struct VklMVP
-{
-    mat4 model;
-    mat4 view;
-    mat4 proj;
-    float time;
 };
 
 

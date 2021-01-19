@@ -35,19 +35,7 @@ typedef enum
 
 
 
-// // Coordinate system
-// typedef enum
-// {
-//     VKL_CDS_DATA = 1,       // data coordinate system
-//     VKL_CDS_GPU = 2,        // data coordinates normalized to -1,+1 and sent to the GPU
-//     VKL_CDS_PANZOOM = 3,    // normalized coords within the panel inner's viewport (w/ panzoom)
-//     VKL_CDS_PANEL = 4,      // NDC coordinates within the outer panel viewport
-//     VKL_CDS_CANVAS_NDC = 5, // normalized coords within the canvas
-//     VKL_CDS_CANVAS_PX = 6,  // same but in pixels, origin at the upper left
-// } VklCDSOld;
-
-
-
+// Visual flags.
 typedef enum
 {
     VKL_SCENE_VISUAL_FLAGS_NONE = 0x0000,
@@ -127,33 +115,6 @@ struct VklScene
     // Controllers.
     VklContainer controllers;
 };
-
-
-
-/*************************************************************************************************/
-/*  Transform definitions                                                                        */
-/*************************************************************************************************/
-
-struct VklTransformOLD
-{
-    dvec2 scale, shift;
-};
-
-
-
-/*************************************************************************************************/
-/*  Transform functions                                                                          */
-/*************************************************************************************************/
-
-// VklTransformOLD vkl_transform_old(VklPanel* panel, VklCDSOld source, VklCDSOld target);
-
-// VklTransformOLD vkl_transform_inv(VklTransformOLD);
-
-// VklTransformOLD vkl_transform_mul(VklTransformOLD, VklTransformOLD);
-
-// VklTransformOLD vkl_transform_interp(dvec2 pin, dvec2 pout, dvec2 qin, dvec2 qout);
-
-// void vkl_transform_apply(VklTransformOLD*, dvec2 in, dvec2 out);
 
 
 

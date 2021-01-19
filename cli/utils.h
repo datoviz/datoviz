@@ -468,6 +468,8 @@ static void _destroy_context(TestContext* context)
 
 #define AIN(x, m, M) AT((m) <= (x) && (x) <= (M))
 
+#define AC(x, y, eps) AIN((x - y), -eps, +eps)
+
 #define ABOX(x, a, b, c, d)                                                                       \
     AT(((x).pos_ll[0] == (a)) && ((x).pos_ll[1] == (b)) && ((x).pos_ur[0] == (c)) &&              \
        ((x).pos_ur[1] == (d)))

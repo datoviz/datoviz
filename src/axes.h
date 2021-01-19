@@ -7,6 +7,7 @@
 #include "../include/visky/transforms.h"
 #include "../include/visky/visuals.h"
 #include "../include/visky/vklite.h"
+#include "transforms_utils.h"
 #include "visuals_utils.h"
 #include "vklite_utils.h"
 

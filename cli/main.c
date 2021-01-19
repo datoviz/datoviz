@@ -9,6 +9,7 @@
 #include "test_interact.h"
 #include "test_panel.h"
 #include "test_scene.h"
+#include "test_transforms.h"
 #include "test_visuals.h"
 #include "test_vklite.h"
 #include "utils.h"
@@ -85,6 +86,13 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_graphics_volume_slice), //
     CASE_FIXTURE_NONE(test_graphics_mesh),         //
 
+    // transforms
+    CASE_FIXTURE_NONE(test_transforms_1), //
+    CASE_FIXTURE_NONE(test_transforms_2), //
+    CASE_FIXTURE_NONE(test_transforms_3), //
+    CASE_FIXTURE_NONE(test_transforms_4), //
+    CASE_FIXTURE_NONE(test_transforms_5), //
+
     // array
     CASE_FIXTURE_NONE(test_array_1),    //
     CASE_FIXTURE_NONE(test_array_2),    //
@@ -96,12 +104,11 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_array_3D),   //
 
     // visuals
-    CASE_FIXTURE_NONE(test_visuals_norm), //
-    CASE_FIXTURE_NONE(test_visuals_1),    //
-    CASE_FIXTURE_NONE(test_visuals_2),    //
-    CASE_FIXTURE_NONE(test_visuals_3),    //
-    CASE_FIXTURE_NONE(test_visuals_4),    //
-    CASE_FIXTURE_NONE(test_visuals_5),    //
+    CASE_FIXTURE_NONE(test_visuals_1), //
+    CASE_FIXTURE_NONE(test_visuals_2), //
+    CASE_FIXTURE_NONE(test_visuals_3), //
+    CASE_FIXTURE_NONE(test_visuals_4), //
+    CASE_FIXTURE_NONE(test_visuals_5), //
 
     // interact
     CASE_FIXTURE_NONE(test_interact_1),       //

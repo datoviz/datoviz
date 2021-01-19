@@ -137,6 +137,7 @@ END_INCL_NO_WARN
 // #define STB_IMAGE_IMPLEMENTATION
 
 #include "log.h"
+#include "types.h"
 
 
 
@@ -162,19 +163,6 @@ END_INCL_NO_WARN
 #define M_2PI 6.283185307179586
 
 #define VKY_NEVER -1000000
-
-
-
-/*************************************************************************************************/
-/*  Common enums                                                                                 */
-/*************************************************************************************************/
-
-// Axis coord.
-typedef enum
-{
-    VKL_AXES_COORD_X,
-    VKL_AXES_COORD_Y,
-} VklAxisCoord;
 
 
 
@@ -222,90 +210,30 @@ typedef enum
 
 
 /*************************************************************************************************/
-/*  8-bit integers                                                                               */
+/*  Common enums                                                                                 */
 /*************************************************************************************************/
 
-typedef uint8_t cvec2[2];
-typedef uint8_t cvec3[3];
-typedef uint8_t cvec4[4]; // used for color index
-
-
-
-/*************************************************************************************************/
-/*  16-bit integers                                                                              */
-/*************************************************************************************************/
-
-/* Signed */
-typedef int16_t svec2[2];
-typedef int16_t svec3[3];
-typedef int16_t svec4[4]; // used for glyph as vec4 of uint16
-
-/* Unsigned */
-typedef uint16_t usvec2[2];
-typedef uint16_t usvec3[3];
-typedef uint16_t usvec4[4]; // used for glyph as vec4 of uint16
-
-
-
-/*************************************************************************************************/
-/*  32-bit integers                                                                              */
-/*************************************************************************************************/
-
-/* Signed */
-typedef int32_t ivec2[2];
-typedef int32_t ivec3[3];
-typedef int32_t ivec4[4];
-
-/* Unsigned */
-typedef uint32_t uvec2[2];
-typedef uint32_t uvec3[3];
-typedef uint32_t uvec4[4];
-
-/* Index */
-typedef uint32_t VklIndex;
-
-
-
-/*************************************************************************************************/
-/*  Single-precision floating-point numbers                                                      */
-/*************************************************************************************************/
-
-typedef vec2 fvec2;
-typedef vec3 fvec3;
-typedef vec4 fvec4;
-
-
-
-/*************************************************************************************************/
-/*  Double-precision floating-point numbers                                                      */
-/*************************************************************************************************/
-
-/* Array types */
-typedef double dvec2[2];
-typedef double dvec3[3];
-typedef double dvec4[4];
-
-
-
-/*************************************************************************************************/
-/*  Misc                                                                                         */
-/*************************************************************************************************/
-
-static inline void _vec3_copy(const vec3 a, vec3 b)
+// Axis coord.
+typedef enum
 {
-    b[0] = a[0];
-    b[1] = a[1];
-    b[2] = a[2];
-}
+    VKL_AXES_COORD_X,
+    VKL_AXES_COORD_Y,
+} VklAxisCoord;
 
 
 
-static inline void _vec3_cast(const dvec3* a, vec3* b)
+/*************************************************************************************************/
+/*  Misc structures                                                                              */
+/*************************************************************************************************/
+
+typedef struct VklMVP VklMVP;
+struct VklMVP
 {
-    b[0][0] = (float)a[0][0];
-    b[0][1] = (float)a[0][1];
-    b[0][2] = (float)a[0][2];
-}
+    mat4 model;
+    mat4 view;
+    mat4 proj;
+    float time;
+};
 
 
 
@@ -369,7 +297,6 @@ typedef enum
 
 typedef struct VklObject VklObject;
 typedef struct VklContainer VklContainer;
-
 
 
 /*************************************************************************************************/
