@@ -145,6 +145,9 @@ static VklBox _visual_box(VklVisual* visual)
         boxes[n_pos_props++] = _box_bounding(arr);
     }
 
+    if (n_pos_props == 0)
+        return VKL_BOX_NDC;
+
     // Merge the boxes of the visual.
     VklBox box = _box_merge(n_pos_props, boxes);
     return box;
@@ -696,7 +699,12 @@ vkl_scene_panel(VklScene* scene, uint32_t row, uint32_t col, VklControllerType t
     *controller = vkl_controller_builtin(panel, type, flags);
     controller->flags = flags;
     panel->controller = controller;
+
     // TODO: update panel->data_coords.transform depending on the flags
+    if (type == VKL_CONTROLLER_ARCBALL)
+        flags |= VKL_TRANSFORM_FLAGS_FIXED_ASPECT;
+    panel->data_coords.flags = flags;
+
     panel->scene = scene;
     panel->prority_max = VKL_MAX_VISUAL_PRIORITY;
     return panel;
