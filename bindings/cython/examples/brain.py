@@ -25,28 +25,31 @@ panel = canvas.panel(controller='arcball')
 
 # Mesh.
 mesh = panel.visual('mesh')
-mesh.data('pos', vertices.astype(np.float32))
+mesh.data('pos', vertices.astype(np.float64))
 mesh.data('normal', normals.astype(np.float32))
 mesh.data('index', indices.astype(np.uint32))
 
 
-root = Path('/home/cyrille/git/visky-data/yanliang/').resolve()
+# root = Path('/home/cyrille/git/visky-data/yanliang/').resolve()
 
-x = np.load(root / 'single_unit_x.npy')
-y = np.load(root / 'single_unit_y.npy')
-z = np.load(root / 'single_unit_z.npy')
-pos = np.c_[x, y, z] * 100
+# x = np.load(root / 'single_unit_x.npy')
+# y = np.load(root / 'single_unit_y.npy')
+# z = np.load(root / 'single_unit_z.npy')
+# pos = np.c_[x, y, z] * 100
 
-visual = panel.visual('marker')
+# visual = panel.visual('marker')
 
-# TODO: normalization
-N = x.size
-color = 255 * np.ones((N, 4))
-ms = 5 * np.ones(1)
+# # TODO: normalization
+# N = x.size
+# color = 255 * np.ones((N, 4))
+# ms = 5 * np.ones(1)
 
-visual.data('pos', pos.astype(np.float32))
-visual.data('color', color.astype(np.uint8))
-visual.data('ms', ms.astype(np.float32))
+# visual.data('pos', pos.astype(np.float32))
+# visual.data('color', color.astype(np.uint8))
+# visual.data('ms', ms.astype(np.float32))
+
+# x0, y0, z0 = vertices.min(axis=0)
+# x1, y1, z0 = vertices.max(axis=0)
 
 
 # Slice plane.

@@ -465,14 +465,6 @@ cdef extern from "<visky/visky.h>":
         VKL_CONTROLLER_CAMERA = 4
         VKL_CONTROLLER_AXES_3D = 5
 
-    ctypedef enum VklCDS:
-        VKL_CDS_DATA = 1
-        VKL_CDS_GPU = 2
-        VKL_CDS_PANZOOM = 3
-        VKL_CDS_PANEL = 4
-        VKL_CDS_CANVAS_NDC = 5
-        VKL_CDS_CANVAS_PX = 6
-
     ctypedef enum VklSceneVisualFlags:
         VKL_SCENE_VISUAL_FLAGS_NONE = 0x0000
         VKL_SCENE_VISUAL_FLAGS_TRANSFORM_NONE = 0x1000
