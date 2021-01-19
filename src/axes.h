@@ -60,20 +60,33 @@ static VklAxesContext _axes_context(VklController* controller, VklAxisCoord coor
 
 
 // Recompute the tick locations as a function of the current axis range in data coordinates.
-static void _axes_ticks(VklController* controller, VklAxisCoord coord)
+static void _axes_ticks(VklController* controller, VklAxisCoord coord, dvec2 range)
 {
     ASSERT(controller != NULL);
     ASSERT(controller->type == VKL_CONTROLLER_AXES_2D);
+
     VklAxes2D* axes = &controller->u.axes_2D;
     ASSERT(axes != NULL);
+
+    VklPanel* panel = controller->panel;
+    ASSERT(panel != NULL);
 
     // Prepare context for tick computation.
     VklAxesContext ctx = _axes_context(controller, coord);
 
-    // Find the ticks given the range.
-    // TODO: take tick range into account
-    double vmin = axes->panzoom_range[coord][0];
-    double vmax = axes->panzoom_range[coord][1];
+    // // compute the extent, in data coordinates, of the current view
+    // dvec3 in_bl = {-1, +1, .5}, out_bl;
+    // dvec3 in_tr = {+1, -1, .5}, out_tr;
+
+    // VklTransformChain tc = _transforms_cds(panel, VKL_CDS_VULKAN, VKL_CDS_DATA);
+    // _transforms_apply(&tc, in_bl, out_bl);
+    // _transforms_apply(&tc, in_tr, out_tr);
+
+    // double vmin = out_bl[coord];
+    // double vmax = out_tr[coord];
+
+    double vmin = range[0];
+    double vmax = range[1];
     double vlen = vmax - vmin;
     ASSERT(vlen > 0);
 
@@ -123,6 +136,7 @@ static void _axes_upload(VklController* controller, VklAxisCoord coord)
 
     // Transform the ticks from the data coordinates to the scene coordinates, based on the initial
     // axes range.
+    // TODO: use vkl_transform_data() but it needs to be adapted to double rather than dvec3
     _transform_linear(box, &arr_in, VKL_BOX_NDC, &arr_out);
 
     // Array with the ticks in scene coordinates.
@@ -160,6 +174,9 @@ static void _axes_upload(VklController* controller, VklAxisCoord coord)
 // Update the axes to the extent defined by the VklDataCoords struct in the VklPanel
 static void _axes_set(VklController* controller, VklBox box)
 {
+    // WARNING: the panzoom must be reset when calling this function, so that axes->box corresponds
+    // to the current view.
+
     ASSERT(controller != NULL);
     ASSERT(controller->type == VKL_CONTROLLER_AXES_2D);
 
@@ -167,21 +184,14 @@ static void _axes_set(VklController* controller, VklBox box)
     ASSERT(axes != NULL);
 
     // Initial data coordinates from the panel
-    axes->tick_range[0][0] = box.p0[0];
-    axes->tick_range[0][1] = box.p1[0];
-    axes->tick_range[1][0] = box.p0[1];
-    axes->tick_range[1][1] = box.p1[1];
+    _check_box(box);
+    axes->box = box;
 
     for (uint32_t coord = 0; coord < 2; coord++)
     {
-        axes->panzoom_range[coord][0] = -1;
-        axes->panzoom_range[coord][1] = +1;
-
-        // Check the initial range.
-        ASSERT(axes->tick_range[coord][0] < axes->tick_range[coord][1]);
-
         // Compute the ticks for these ranges.
-        _axes_ticks(controller, coord);
+        // NOTE: the range for computing the ticks is the initial range with reset panzoom.
+        _axes_ticks(controller, coord, (dvec2){box.p0[coord], box.p1[coord]});
 
         // Upload the data.
         _axes_upload(controller, coord);
@@ -212,77 +222,76 @@ static void _axes_ticks_init(VklController* controller)
 
 
 // Determine the coords that need to be updated during panzoom because of overlapping labels.
-static void _axes_collision(VklController* controller, bool* update)
+// range is the current range, in data coordinates, that is visible
+static bool _axes_collision(VklController* controller, VklAxisCoord coord, dvec2 range)
 {
     ASSERT(controller != NULL);
     ASSERT(controller->type == VKL_CONTROLLER_AXES_2D);
     VklAxes2D* axes = &controller->u.axes_2D;
     ASSERT(axes != NULL);
-    ASSERT(update != NULL);
+    // ASSERT(update != NULL);
 
     // Determine whether the ticks are overlapping, if so we should recompute the ticks (zooming)
     // Same if there are less than N visible labels (dezooming)
-    for (uint32_t i = 0; i < 2; i++)
-    {
-        // VklAxisCoord coord = (VklAxisCoord)i;
-        VklAxesTicks* ticks = &axes->ticks[i];
-        ASSERT(ticks != NULL);
+    // for (uint32_t i = 0; i < 2; i++)
+    // {
+    // VklAxisCoord coord = (VklAxisCoord)i;
+    VklAxesTicks* ticks = &axes->ticks[coord];
+    ASSERT(ticks != NULL);
 
-        // NOTE: make a copy because we'll use a temporary context object when computing the
-        // overlap.
-        VklAxesContext ctx = axes->ctx[i];
-        // ctx.labels = ticks->labels;
-        ASSERT(controller->interacts != NULL);
-        ASSERT(controller->interact_count >= 1);
-        float scale = controller->interacts[0].u.p.zoom[i] / ctx.scale_orig;
-        ASSERT(scale > 0);
-        ctx.size_viewport *= scale;
-        ASSERT(ctx.size_viewport > 0);
-        // ASSERT(ctx.labels != NULL);
+    // NOTE: make a copy because we'll use a temporary context object when computing the
+    // overlap.
+    VklAxesContext ctx = axes->ctx[coord];
+    // ctx.labels = ticks->labels;
+    ASSERT(controller->interacts != NULL);
+    ASSERT(controller->interact_count >= 1);
+    float scale = controller->interacts[0].u.p.zoom[coord] / ctx.scale_orig;
+    ASSERT(scale > 0);
+    ctx.size_viewport *= scale;
+    ASSERT(ctx.size_viewport > 0);
+    // ASSERT(ctx.labels != NULL);
 
-        // Check whether there are overlapping labels (dezooming).
-        double min_distance = min_distance_labels(ticks, &ctx);
+    // Check whether there are overlapping labels (dezooming).
+    double min_distance = min_distance_labels(ticks, &ctx);
 
-        // Check whether the current view is outside the computed ticks (panning);
-        bool outside =
-            axes->panzoom_range[i][0] <= ticks->lmin || axes->panzoom_range[i][1] >= ticks->lmax;
+    // Check whether the current view is outside the computed ticks (panning);
+    bool outside = range[0] <= ticks->lmin_ex || range[1] >= ticks->lmax_ex;
 
-        double rel_space = min_distance / (ctx.size_viewport / scale);
+    double rel_space = min_distance / (ctx.size_viewport / scale);
 
-        // if (i == 0)
-        //     log_info(
-        //         "coord %d min_d %.3f, rel_space %.3f, outside %d", //
-        //         i, min_distance, rel_space, outside);
-        // Recompute the ticks on the current axis?
-        update[i] = min_distance <= 0 || rel_space >= .5 || outside;
-    }
+    // if (i == 0)
+    //     log_info(
+    //         "coord %d min_d %.3f, rel_space %.3f, outside %d", //
+    //         i, min_distance, rel_space, outside);
+    // Recompute the ticks on the current axis?
+    // }
+
+    return min_distance <= 0 || rel_space >= .5 || outside;
 }
 
 
 
-// Update axes->range struct as a function of the current panzoom.
-static void _axes_range(VklController* controller, VklAxisCoord coord)
-{
-    ASSERT(controller != NULL);
-    ASSERT(controller->type == VKL_CONTROLLER_AXES_2D);
-    VklAxes2D* axes = &controller->u.axes_2D;
-    ASSERT(axes != NULL);
+// // Update axes->range struct as a function of the current panzoom.
+// static void _axes_range(VklController* controller, VklAxisCoord coord)
+// {
+//     ASSERT(controller != NULL);
+//     ASSERT(controller->type == VKL_CONTROLLER_AXES_2D);
+//     VklPanel* panel = controller->panel;
+//     ASSERT(panel != NULL);
+//     VklAxes2D* axes = &controller->u.axes_2D;
+//     ASSERT(axes != NULL);
 
-    // TODO
-    // // set axes->range depending on coord
-    // VklTransformOLD tr = {0};
-    // dvec2 ll = {-1, -1};
-    // dvec2 ur = {+1, +1};
-    // dvec2 pos_ll = {0};
-    // dvec2 pos_ur = {0};
-    // tr = vkl_transform_old(controller->panel, VKL_CDS_PANZOOM, VKL_CDS_GPU);
-    // // TODO: transform to data coordinates instead of GPU coordinates.
-    // vkl_transform_apply(&tr, ll, pos_ll);
-    // vkl_transform_apply(&tr, ur, pos_ur);
-    // axes->panzoom_range[coord][0] = pos_ll[coord];
-    // axes->panzoom_range[coord][1] = pos_ur[coord];
-    // // log_info("%.3f %.3f", axes->range[coord][0], axes->range[coord][1]);
-}
+//     // set axes->range depending on coord
+//     dvec3 in_bl = {-1, +1, .5}, out_bl;
+//     dvec3 in_tr = {+1, -1, .5}, out_tr;
+
+//     VklTransformChain tc = _transforms_cds(panel, VKL_CDS_VULKAN, VKL_CDS_SCENE);
+//     _transforms_apply(&tc, in_bl, out_bl);
+//     _transforms_apply(&tc, in_tr, out_tr);
+
+//     axes->panzoom_range[coord][0] = out_bl[coord];
+//     axes->panzoom_range[coord][1] = out_tr[coord];
+// }
 
 
 
@@ -299,6 +308,9 @@ static void _axes_callback(VklController* controller, VklEvent ev)
     VklCanvas* canvas = controller->panel->grid->canvas;
     ASSERT(canvas != NULL);
 
+    VklPanel* panel = controller->panel;
+    ASSERT(panel != NULL);
+
     if (!controller->interacts[0].is_active && !canvas->resized)
         return;
 
@@ -306,9 +318,28 @@ static void _axes_callback(VklController* controller, VklEvent ev)
     // DEBUG
     // bool update[2] = {true, true}; // whether X and Y axes must be updated or not
     bool update[2] = {false, false}; // whether X and Y axes must be updated or not
-    _axes_range(controller, 0);
-    _axes_range(controller, 1);
-    _axes_collision(controller, update);
+
+    dvec2 range[2];
+    // Compute current visible range in data coordinates in range[coord]
+    // Determine collision on each axis.
+
+    dvec3 in_bl = {-1, +1, .5}, out_bl;
+    dvec3 in_tr = {+1, -1, .5}, out_tr;
+
+    VklTransformChain tc = _transforms_cds(panel, VKL_CDS_VULKAN, VKL_CDS_DATA);
+    _transforms_apply(&tc, in_bl, out_bl);
+    _transforms_apply(&tc, in_tr, out_tr);
+
+    for (uint32_t i = 0; i < 2; i++)
+    {
+        range[i][0] = out_bl[i];
+        range[i][1] = out_tr[i];
+
+        update[i] = _axes_collision(controller, i, range[i]);
+        if (update[i])
+            log_info("%d %f %f %d", i, range[i][0], range[i][1], update[i]);
+    }
+
     // Force axes ticks refresh when resizing.
     if (canvas->resized)
     {
@@ -320,7 +351,7 @@ static void _axes_callback(VklController* controller, VklEvent ev)
     {
         if (!update[coord])
             continue;
-        _axes_ticks(controller, coord);
+        _axes_ticks(controller, coord, range[coord]);
         _axes_upload(controller, coord);
         // TODO: what else to do here? update a request??
         // canvas->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;

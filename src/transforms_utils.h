@@ -11,6 +11,14 @@
 /*  Position normalization                                                                       */
 /*************************************************************************************************/
 
+static void _check_box(VklBox box)
+{
+    for (uint32_t i = 0; i < 3; i++)
+        ASSERT(box.p0[i] <= box.p1[i]);
+}
+
+
+
 // Return the bounding box of a set of dvec3 points.
 static VklBox _box_bounding(VklArray* points_in)
 {

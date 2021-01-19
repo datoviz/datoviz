@@ -64,10 +64,9 @@ typedef void (*VklControllerCallback)(VklController* controller, VklEvent ev);
 
 struct VklAxes2D
 {
+    VklAxesContext ctx[2]; // one per dimension
     VklAxesTicks ticks[2];
-    dvec2 panzoom_range[2]; // current panzoom range in data coordinates
-    dvec2 tick_range[2]; // extended range (in data coordinates) used to compute the current ticks
-    VklAxesContext ctx[2];
+    VklBox box; // box, in data coordinates, corresponding to the box showed with initial panzoom
     float font_size;
 };
 
