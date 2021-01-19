@@ -124,24 +124,14 @@ static void _axes_upload(VklController* controller, VklAxisCoord coord)
     VklAxesTicks* axticks = &axes->ticks[coord];
     uint32_t N = axticks->value_count;
 
-    // Array with the tick values. The underlying buffer is owned by the ticks object so this array
-    // should not be destroyed.
-    VklArray arr_in = vkl_array_wrap(N, VKL_DTYPE_DOUBLE, axticks->values);
+    // Range used for normalization of the ticks (corresponds to init panzoom).
+    double vmin = axes->box.p0[coord];
+    double vmax = axes->box.p1[coord];
 
-    // Array with the transformed tick positions, used to populate the axes visual's props.
-    VklArray arr_out = vkl_array(N, VKL_DTYPE_DOUBLE);
-
-    // Box corresponding to the initial range in data coordinates.
-    VklBox box = (VklBox){{axticks->dmin, 0, 0}, {axticks->dmax, 0, 0}};
-
-    // Transform the ticks from the data coordinates to the scene coordinates, based on the initial
-    // axes range.
-    // TODO: use vkl_transform_data() but it needs to be adapted to double rather than dvec3
-    _transform_linear(box, &arr_in, VKL_BOX_NDC, &arr_out);
-
-    // Array with the ticks in scene coordinates.
-    double* ticks = (double*)arr_out.data;
-    ASSERT(ticks != NULL);
+    // Normalize the tick values to fit in NDC range.
+    double* ticks = (double*)calloc(N, sizeof(double));
+    for (uint32_t i = 0; i < N; i++)
+        ticks[i] = -1 + 2 * (axticks->values[i] - vmin) / (vmax - vmin);
 
     // Minor ticks.
     double* minor_ticks = (double*)calloc((N - 1) * 4, sizeof(double));
@@ -165,7 +155,7 @@ static void _axes_upload(VklController* controller, VklAxisCoord coord)
     vkl_visual_data(visual, VKL_PROP_TEXT, 0, N, text);
 
     FREE(minor_ticks);
-    vkl_array_destroy(&arr_out);
+    FREE(ticks);
     FREE(text);
 }
 
@@ -184,6 +174,8 @@ static void _axes_set(VklController* controller, VklBox box)
     ASSERT(axes != NULL);
 
     // Initial data coordinates from the panel
+    // log_info(
+    //     "set axes range to x=[%f, %f], y=[%f, %f]", box.p0[0], box.p1[0], box.p0[1], box.p1[1]);
     _check_box(box);
     axes->box = box;
 
@@ -256,6 +248,8 @@ static bool _axes_collision(VklController* controller, VklAxisCoord coord, dvec2
 
     // Check whether the current view is outside the computed ticks (panning);
     bool outside = range[0] <= ticks->lmin_ex || range[1] >= ticks->lmax_ex;
+    // if (coord == 0)
+    //     log_info("%f %f %d", ticks->lmin_ex, ticks->lmax_ex, outside);
 
     double rel_space = min_distance / (ctx.size_viewport / scale);
 
@@ -335,9 +329,9 @@ static void _axes_callback(VklController* controller, VklEvent ev)
         range[i][0] = out_bl[i];
         range[i][1] = out_tr[i];
 
-        update[i] = _axes_collision(controller, i, range[i]);
-        if (update[i])
-            log_info("%d %f %f %d", i, range[i][0], range[i][1], update[i]);
+        update[i] = _axes_collision(controller, (VklAxisCoord)i, range[i]);
+        // if (update[i])
+        //     log_info("%d %f %f %d", i, range[i][0], range[i][1], update[i]);
     }
 
     // Force axes ticks refresh when resizing.
@@ -351,8 +345,9 @@ static void _axes_callback(VklController* controller, VklEvent ev)
     {
         if (!update[coord])
             continue;
-        _axes_ticks(controller, coord, range[coord]);
-        _axes_upload(controller, coord);
+        _axes_ticks(controller, (VklAxisCoord)coord, range[coord]);
+        _axes_upload(controller, (VklAxisCoord)coord);
+
         // TODO: what else to do here? update a request??
         // canvas->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
     }

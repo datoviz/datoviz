@@ -16,7 +16,7 @@ void vkl_transform_data(VklDataCoords coords, VklArray* pos_in, VklArray* pos_ou
     ASSERT(pos_out != NULL);
 
     log_debug("data normalization on %d position elements", pos_in->item_count);
-    VklTransform tr = _transform(coords.transform);
+    VklTransform tr = _transform_interp(coords.box, VKL_BOX_NDC);
     if (inverse)
         tr = _transform_inv(&tr);
 

@@ -82,15 +82,15 @@ struct VklAxesContext
 
 struct VklAxesTicks
 {
-    double dmin, dmax;        // requested range values
-    double lmin, lmax, lstep; // computed tick range (initial range)
-    double lmin_ex, lmax_ex;  // extended tick range (extended left/right or bottom/top)
-    uint32_t value_count;     // final number of labels
-    uint32_t value_count_req; // number of values requested
-    VklTickFormat format;     // decimal or scientific notation
-    uint32_t precision;       // number of digits after the dot
-    double* values;           // from lmin to lmax by lstep
-    char* labels;             // hold all tick labels
+    double dmin, dmax;              // requested range values
+    double lmin_ex, lmax_ex, lstep; // computed tick range (initial range)
+    double lmin_in, lmax_in;        // extended tick range (extended left/right or bottom/top)
+    uint32_t value_count;           // final number of labels
+    uint32_t value_count_req;       // number of values requested
+    VklTickFormat format;           // decimal or scientific notation
+    uint32_t precision;             // number of digits after the dot
+    double* values;                 // from lmin to lmax by lstep
+    char* labels;                   // hold all tick labels
 };
 
 
@@ -245,8 +245,8 @@ VKY_INLINE double min_distance_labels(VklAxesTicks* ticks, VklAxesContext* ctx)
     ASSERT(strlen(ticks->labels) > 0);
 
     uint32_t n = ticks->value_count;
-    double lmin = ticks->lmin_ex;
-    double lmax = ticks->lmax_ex;
+    double lmin = ticks->lmin_in;
+    double lmax = ticks->lmax_in;
     double lstep = ticks->lstep;
     // double x = 0;
     for (uint32_t i = 0; i < n; i++)
@@ -338,7 +338,7 @@ static void make_labels(VklAxesTicks* ticks, VklAxesContext* ctx, bool extended)
     _get_tick_format(ticks->format, ticks->precision, tick_format);
 
     // double diff = ticks->lmax - ticks->lmin;
-    double x0 = ticks->lmin - extended * ctx->extensions * ticks->lstep;
+    double x0 = ticks->lmin_ex - extended * ctx->extensions * ticks->lstep;
     double x = x0;
     for (uint32_t i = 0; i < ticks->value_count; i++)
     {
@@ -373,8 +373,8 @@ static bool duplicate_labels(VklAxesTicks* ticks, VklAxesContext* ctx)
 static double legibility(VklAxesTicks* ticks, VklAxesContext* ctx)
 {
     uint32_t n = ticks->value_count;
-    double lmin = ticks->lmin;
-    double lmax = ticks->lmax;
+    double lmin = ticks->lmin_ex;
+    double lmax = ticks->lmax_ex;
     double lstep = ticks->lstep;
 
     ASSERT(lmin < lmax);
@@ -396,8 +396,8 @@ static double legibility(VklAxesTicks* ticks, VklAxesContext* ctx)
     make_labels(ticks, ctx, false);
 
     // Overlap part.
-    ticks->lmin_ex = ticks->lmin;
-    ticks->lmax_ex = ticks->lmax;
+    ticks->lmin_in = ticks->lmin_ex;
+    ticks->lmax_in = ticks->lmax_ex;
     double o = dist_overlap(min_distance_labels(ticks, ctx));
 
     // Duplicates part.
@@ -478,8 +478,8 @@ static VklAxesTicks create_ticks(double dmin, double dmax, int32_t m, VklAxesCon
     ticks.precision = 1;
     ticks.value_count_req = (uint32_t)m;
     ticks.value_count = 2;
-    ticks.lmin = dmin;
-    ticks.lmax = dmax;
+    ticks.lmin_ex = dmin;
+    ticks.lmax_ex = dmax;
     ticks.lstep = dmax - dmin;
     ticks.values[0] = dmin;
     ticks.values[1] = dmax;
@@ -493,8 +493,8 @@ static VklAxesTicks create_ticks(double dmin, double dmax, int32_t m, VklAxesCon
 static void debug_ticks(VklAxesTicks* ticks, VklAxesContext* ctx)
 {
     log_debug(
-        "%f %f %f, n=%d, p=%d, dup %d", ticks->lmin, ticks->lmax, ticks->lstep, ticks->value_count,
-        ticks->precision, duplicate_labels(ticks, ctx));
+        "%f %f %f, n=%d, p=%d, dup %d", ticks->lmin_ex, ticks->lmax_ex, ticks->lstep,
+        ticks->value_count, ticks->precision, duplicate_labels(ticks, ctx));
 }
 
 
@@ -591,8 +591,8 @@ static VklAxesTicks wilk_ext(double dmin, double dmax, int32_t m, VklAxesContext
                         lmax = lmin + step * (k - 1.0);
                         lstep = step;
 
-                        ticks.lmin = lmin;
-                        ticks.lmax = lmax;
+                        ticks.lmin_ex = lmin;
+                        ticks.lmax_ex = lmax;
                         ticks.lstep = lstep;
                         ticks.value_count = tick_count(lmin, lmax, lstep);
 
@@ -612,8 +612,8 @@ static VklAxesTicks wilk_ext(double dmin, double dmax, int32_t m, VklAxesContext
                         {
                             best_score = scr;
                             // Keep track of the best result so far.
-                            best_ticks.lmin = lmin;
-                            best_ticks.lmax = lmax;
+                            best_ticks.lmin_ex = lmin;
+                            best_ticks.lmax_ex = lmax;
                             best_ticks.lstep = lstep;
                             best_ticks.value_count = tick_count(lmin, lmax, lstep);
 
@@ -631,7 +631,7 @@ static VklAxesTicks wilk_ext(double dmin, double dmax, int32_t m, VklAxesContext
         j++;
     }
 
-    best_ticks.value_count = tick_count(best_ticks.lmin, best_ticks.lmax, best_ticks.lstep);
+    best_ticks.value_count = tick_count(best_ticks.lmin_ex, best_ticks.lmax_ex, best_ticks.lstep);
     make_labels(&best_ticks, &ctx, false);
     // debug_ticks(&best_ticks, &ctx);
 
@@ -655,13 +655,13 @@ static VklAxesTicks extend_ticks(VklAxesTicks ticks, VklAxesContext ctx)
     ticks.dmin -= extensions * diff;
     ticks.dmax += extensions * diff;
     // ticks range (extended)
-    ex.lmin -= extensions * diff;
-    ex.lmax += extensions * diff;
+    ex.lmin_ex -= extensions * diff;
+    ex.lmax_ex += extensions * diff;
     ex.value_count_req = (2 * extensions + 1) * (uint32_t)ticks.value_count_req;
     ASSERT(ex.value_count_req > 0);
 
     // Generate the values between lmin and lmax.
-    uint32_t n = round(1 + (ticks.lmax - ticks.lmin) / ticks.lstep);
+    uint32_t n = round(1 + (ticks.lmax_ex - ticks.lmin_ex) / ticks.lstep);
     ASSERT(n >= 2);
     // Extension of the requested range.
     // n is now the total number of ticks across the extended range
@@ -679,11 +679,11 @@ static VklAxesTicks extend_ticks(VklAxesTicks ticks, VklAxesContext ctx)
     ASSERT(ex.labels == ticks.labels);
     FREE(ex.labels);
     ticks.labels = NULL;
-    ex.values = calloc(n, sizeof(double));
-    ex.labels = calloc(n * MAX_GLYPHS_PER_TICK, sizeof(char));
+    ex.values = (double*)calloc(n, sizeof(double));
+    ex.labels = (char*)calloc(n * MAX_GLYPHS_PER_TICK, sizeof(char));
     make_labels(&ex, &ctx, true);
-    ex.lmin_ex = ticks.lmin;
-    ex.lmax_ex = ticks.lmax;
+    ex.lmin_in = ticks.lmin_ex;
+    ex.lmax_in = ticks.lmax_ex;
     return ex;
 }
 
@@ -710,14 +710,14 @@ static VklAxesTicks vkl_ticks(double dmin, double dmax, VklAxesContext ctx)
         ctx.coord, label_count_req, dmin, dmax, ctx.size_viewport, ctx.size_glyph, ctx.extensions);
     VklAxesTicks ticks = wilk_ext(dmin, dmax, label_count_req, ctx);
     ASSERT(ticks.lstep > 0);
-    ASSERT(ticks.lmin < ticks.lmax);
+    ASSERT(ticks.lmin_ex < ticks.lmax_ex);
     ASSERT(ticks.value_count > 0);
     ASSERT(ticks.values != NULL);
     ASSERT(ticks.labels != NULL);
 
     log_debug(
         "found %d labels, [%.5f, %.5f] with step %.5f", //
-        ticks.value_count, ticks.lmin, ticks.lmax, ticks.lstep);
+        ticks.value_count, ticks.lmin_ex, ticks.lmax_ex, ticks.lstep);
     return extend_ticks(ticks, ctx);
 }
 

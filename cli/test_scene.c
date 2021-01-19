@@ -17,10 +17,10 @@ int test_axes_1(TestContext* context)
     ctx.size_glyph = 10;
 
     VklAxesTicks ticks = create_ticks(0, 1, 11, ctx);
-    ticks.lmin = 0;
-    ticks.lmax = 1;
+    ticks.lmin_ex = 0;
+    ticks.lmax_ex = 1;
     ticks.lstep = .1;
-    const uint32_t N = tick_count(ticks.lmin, ticks.lmax, ticks.lstep);
+    const uint32_t N = tick_count(ticks.lmin_ex, ticks.lmax_ex, ticks.lstep);
     ticks.value_count = N;
 
     ticks.format = VKL_TICK_FORMAT_SCIENTIFIC;
@@ -273,7 +273,7 @@ int test_scene_axes(TestContext* context)
         RANDN_POS(pos[i])
         RAND_COLOR(color[i])
         color[i][3] = 200;
-        // pos[i][0] *= 10;
+        pos[i][0] += 10;
     }
 
     vkl_visual_data(visual, VKL_PROP_POS, 0, N, pos);

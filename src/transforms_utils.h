@@ -59,6 +59,13 @@ static VklBox _box_merge(uint32_t count, VklBox* boxes)
 
 
 
+static void _box_print(VklBox box)
+{
+    log_info("box [%f, %f] [%f, %f]", box.p0[0], box.p1[0], box.p0[1], box.p1[1]);
+}
+
+
+
 // Make a box cubic/square (if need to keep fixed aspect ratio).
 static VklBox _box_cube(VklBox box)
 {
@@ -115,41 +122,30 @@ static VklBox _box_cube(VklBox box)
 
 
 
-// NOTE: 1D transform only
-static void _transform_linear(
-    VklBox box_in, VklArray* points_in, //
-    VklBox box_out, VklArray* points_out)
-{
-    ASSERT(points_out->item_count == points_in->item_count);
-    ASSERT(points_out->item_size == points_in->item_size);
+// // NOTE: 1D transform only
+// static void _transform_linear(
+//     dvec2 , VklArray* points_in, //
+//     VklArray* points_out)
+// {
+//     ASSERT(points_out->item_count == points_in->item_count);
+//     ASSERT(points_out->item_size == points_in->item_size);
 
-    ASSERT(points_out->dtype == points_in->dtype);
-    ASSERT(points_out->dtype == VKL_DTYPE_DOUBLE);
+//     ASSERT(points_out->dtype == points_in->dtype);
+//     ASSERT(points_out->dtype == VKL_DTYPE_DOUBLE);
 
-    const uint32_t components = points_in->components;
-    ASSERT(components == 1);
+//     double* pos_in = NULL;
+//     double* pos_out = NULL;
 
-    //      || //
-    //     points_out->dtype == VKL_DTYPE_DVEC2 ||  //
-    //     points_out->dtype == VKL_DTYPE_DVEC3 ||  //
-    //     points_out->dtype == VKL_DTYPE_DVEC4     //
-    // );
-    // ASSERT(points_out->components == components);
-    // ASSERT(1 <= components && components <= 4);
+//     double a = (box_out.p1[0] - box_out.p0[0]) / (box_in.p1[0] - box_in.p0[0]);
+//     double b = box_out.p0[0] * box_in.p1[0] - box_out.p1[0] * box_in.p0[0];
 
-    double* pos_in = NULL;
-    double* pos_out = NULL;
-
-    double a = (box_out.p1[0] - box_out.p0[0]) / (box_in.p1[0] - box_in.p0[0]);
-    double b = box_out.p0[0] * box_in.p1[0] - box_out.p1[0] * box_in.p0[0];
-
-    for (uint32_t i = 0; i < points_in->item_count; i++)
-    {
-        pos_in = (double*)vkl_array_item(points_in, i);
-        pos_out = (double*)vkl_array_item(points_out, i);
-        (*pos_out) = a * (*pos_in) + b;
-    }
-}
+//     for (uint32_t i = 0; i < points_in->item_count; i++)
+//     {
+//         pos_in = (double*)vkl_array_item(points_in, i);
+//         pos_out = (double*)vkl_array_item(points_out, i);
+//         (*pos_out) = a * (*pos_in) + b;
+//     }
+// }
 
 
 
@@ -291,12 +287,12 @@ static VklTransform _transform_cds(VklPanel* panel, VklCDS source)
 
             // Margins.
             double mt = 2 * viewport.margins[0] / h;
-            // double mr = 2 * viewport.margins[1] / w;
-            // double mb = 2 * viewport.margins[2] / h;
+            double mr = 2 * viewport.margins[1] / w;
+            double mb = 2 * viewport.margins[2] / h;
             double ml = 2 * viewport.margins[3] / w;
 
             VklBox box0 = (VklBox){{-1, -1, 0}, {+1, +1, 1}};
-            VklBox box1 = (VklBox){{x + ml, y + mt, 0}, {x + ml + w, y + mt + h, 1}};
+            VklBox box1 = (VklBox){{x + ml, y + mt, 0}, {x + w - mr, y + h - mb, 1}};
             tr = _transform_interp(box0, box1);
         }
         break;

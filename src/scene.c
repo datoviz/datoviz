@@ -175,7 +175,6 @@ static void _transform_pos_prop(VklDataCoords coords, VklProp* prop)
 // Renormalize all POS props of all visuals in the panel.
 static void _panel_renormalize(VklPanel* panel, VklBox box)
 {
-    log_debug("renormalize all visuals in panel");
     ASSERT(panel != NULL);
     VklVisual* visual = NULL;
     VklProp* prop = NULL;
@@ -253,6 +252,7 @@ static void _panel_normalize(VklPanel* panel)
 
     VklDataCoords* coords = &panel->data_coords;
     VklBox* boxes = calloc(panel->visual_count, sizeof(VklBox));
+    uint32_t count = 0;
     // Get the bounding box of each visual.
     for (uint32_t i = 0; i < panel->visual_count; i++)
     {
@@ -260,12 +260,12 @@ static void _panel_normalize(VklPanel* panel)
         // NOTE: skip visuals that should not be transformed.
         if ((panel->visuals[i]->flags & VKL_SCENE_VISUAL_FLAGS_TRANSFORM_NONE) == 0)
         {
-            boxes[i] = _visual_box(panel->visuals[i]);
+            boxes[count++] = _visual_box(panel->visuals[i]);
         }
     }
 
     // Merge the visual box with the existing box.
-    VklBox box = _box_merge(panel->visual_count, boxes);
+    VklBox box = _box_merge(count, boxes);
 
     // Make the box square if needed.
     if ((coords->flags & VKL_TRANSFORM_FLAGS_FIXED_ASPECT) != 0)

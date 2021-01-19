@@ -35,25 +35,25 @@ int test_transforms_1(TestContext* context)
     AT(fabs(box.p1[0] - 5) < eps);
 
 
-    // Normalize the data.
-    VklArray pos_out = vkl_array(n, VKL_DTYPE_DOUBLE);
-    _transform_linear(box, &pos_in, VKL_BOX_NDC, &pos_out);
-    positions = (double*)pos_out.data;
-    double* pos = NULL;
-    double v = 0;
-    for (uint32_t i = 0; i < n; i++)
-    {
-        pos = vkl_array_item(&pos_out, i);
-        //     v = (*pos)[0];
-        //     AT(-1 <= v && v <= +1);
-        //     v = (*pos)[1];
-        //     AT(-1 <= v && v <= +1);
-        v = (*pos);
-        AT(-1 - eps <= v && v <= +1 + eps);
-    }
+    // // Normalize the data.
+    // VklArray pos_out = vkl_array(n, VKL_DTYPE_DOUBLE);
+    // _transform_linear(box, &pos_in, VKL_BOX_NDC, &pos_out);
+    // positions = (double*)pos_out.data;
+    // double* pos = NULL;
+    // double v = 0;
+    // for (uint32_t i = 0; i < n; i++)
+    // {
+    //     pos = vkl_array_item(&pos_out, i);
+    //     //     v = (*pos)[0];
+    //     //     AT(-1 <= v && v <= +1);
+    //     //     v = (*pos)[1];
+    //     //     AT(-1 <= v && v <= +1);
+    //     v = (*pos);
+    //     AT(-1 - eps <= v && v <= +1 + eps);
+    // }
 
     vkl_array_destroy(&pos_in);
-    vkl_array_destroy(&pos_out);
+    // vkl_array_destroy(&pos_out);
 
     return 0;
 }
