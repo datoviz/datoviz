@@ -748,6 +748,10 @@ _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
                 canvas, VKL_EVENT_IMGUI, 0, VKL_EVENT_MODE_SYNC, vkl_imgui_callback_fps, NULL);
     }
 
+    ASSERT(canvas->swapchain.images != NULL);
+    log_debug(
+        "created canvas of size %dx%d", //
+        canvas->swapchain.images->width, canvas->swapchain.images->height);
     return canvas;
 }
 

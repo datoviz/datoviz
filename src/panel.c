@@ -36,6 +36,11 @@ static void _update_viewport(VklPanel* panel)
 
     VklViewport* viewport = &panel->viewport;
 
+    ASSERT(panel->width > 0);
+    ASSERT(panel->height > 0);
+    ASSERT(canvas->window->width > 0);
+    ASSERT(canvas->window->height > 0);
+
     // Size in screen coordinates.
     viewport->size_screen[0] = panel->width * canvas->window->width;
     viewport->size_screen[1] = panel->height * canvas->window->height;
@@ -63,7 +68,7 @@ static void _update_grid_panels(VklGrid* grid, VklGridAxis axis)
     ASSERT(grid != NULL);
 
     bool h = axis == VKL_GRID_HORIZONTAL;
-    uint32_t n = h ? grid->n_rows : grid->n_cols;
+    uint32_t n = h ? grid->n_cols : grid->n_rows;
     float total = 0.0f;
 
     for (uint32_t i = 0; i < n; i++)
@@ -187,6 +192,9 @@ VklPanel* vkl_panel(VklGrid* grid, uint32_t row, uint32_t col)
     ASSERT(canvas != NULL);
     VklContext* ctx = canvas->gpu->context;
 
+    ASSERT(row < grid->n_rows);
+    ASSERT(col < grid->n_cols);
+
     VklPanel* panel = _get_panel(grid, row, col);
     if (panel != NULL)
         return panel;
@@ -199,6 +207,7 @@ VklPanel* vkl_panel(VklGrid* grid, uint32_t row, uint32_t col)
     panel->col = col;
     panel->hspan = 1;
     panel->vspan = 1;
+    panel->mode = VKL_PANEL_GRID;
 
     // Default data coords.
     for (uint32_t i = 0; i < 3; i++)
@@ -238,7 +247,9 @@ void vkl_panel_update(VklPanel* panel)
 {
     ASSERT(panel != NULL);
     VklGrid* grid = panel->grid;
-    // VklContext* ctx = grid->canvas->gpu->context;
+
+    ASSERT(panel->col < grid->n_cols);
+    ASSERT(panel->row < grid->n_rows);
 
     if (panel->mode == VKL_PANEL_GRID)
     {
