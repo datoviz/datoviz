@@ -60,9 +60,9 @@ panel = canvas.panel(controller='arcball')
 
 # Mesh.
 mesh = panel.visual('mesh')
-mesh.data('pos', vertices.astype(np.float64))
-mesh.data('normal', normals.astype(np.float32))
-mesh.data('index', indices.astype(np.uint32))
+mesh.data('pos', vertices)
+mesh.data('normal', normals)
+mesh.data('index', indices)
 # mesh.data('clip', np.array([1, 0, 0, 0]).astype(np.float32))
 
 
@@ -88,19 +88,19 @@ color = atlas.regions.rgb[lr]
 visual = panel.visual('marker', depth_test=True)
 
 N = x.size
-color = np.hstack((color, 255 * np.ones((N, 1)))).astype(np.uint8)
+color = np.hstack((color, 255 * np.ones((N, 1))))
 # ms = 2 * np.ones(1)
 
-visual.data('pos', pos_ccf.astype(np.float64))
-visual.data('color', color.astype(np.uint8))
+visual.data('pos', pos_ccf)
+visual.data('color', color)
 ms = fr[:, 0, 0]
-visual.data('ms', ms.astype(np.float32))
+visual.data('ms', ms)
 
 i = 0
 def f():
     global i
     ms = 2 + 4 * np.sqrt(fr[:, i % fr.shape[1], 0])
-    visual.data('ms', ms.astype(np.float32))
+    visual.data('ms', ms)
     i += 1
 canvas.connect('timer', f, param=.05)
 

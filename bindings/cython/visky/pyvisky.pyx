@@ -85,6 +85,14 @@ _PROPS = {
     'clip': cv.VKL_PROP_CLIP,
 }
 
+_PROP_DTYPES = {
+    'pos': np.double,
+    'color': np.uint8,
+    'alpha': np.uint8,
+    'index': np.uint32,
+    'colormap': np.uint8,
+}
+
 _EVENTS ={
     'mouse': cv.VKL_EVENT_MOUSE_MOVE,
     'frame': cv.VKL_EVENT_FRAME,
@@ -296,8 +304,11 @@ cdef class Visual:
         self._c_context = c_visual.canvas.gpu.context
 
     def data(self, name, np.ndarray value, idx=0):
-        if name == 'pos':
-            assert value.dtype == np.float64
+        dtype = _PROP_DTYPES.get(name, np.float32)
+        if value.dtype != dtype:
+            value = value.astype(dtype)
+        assert value.dtype == dtype
+
         prop = _get_prop(name)
         N = value.shape[0]
         cv.vkl_visual_data(self._c_visual, prop, idx, N, &value.data[0])
