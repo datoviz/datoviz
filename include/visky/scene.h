@@ -38,9 +38,9 @@ typedef enum
 // Visual flags.
 typedef enum
 {
-    VKL_SCENE_VISUAL_FLAGS_NONE = 0x0000,
-    VKL_SCENE_VISUAL_FLAGS_TRANSFORM_NONE = 0x1000,
-} VklSceneVisualFlags;
+    VKL_VISUAL_FLAGS_TRANSFORM_AUTO = 0x0000,
+    VKL_VISUAL_FLAGS_TRANSFORM_NONE = 0x0010,
+} VklVisualFlags;
 
 
 

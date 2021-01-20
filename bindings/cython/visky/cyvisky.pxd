@@ -181,11 +181,15 @@ cdef extern from "<visky/visky.h>":
         VKL_VIEWPORT_OUTER_LEFT = 4
 
     ctypedef enum VklInteractAxis:
-        VKL_INTERACT_AXIS_DEFAULT = 0
-        VKL_INTERACT_AXIS_ALL = 1
-        VKL_INTERACT_AXIS_X = 2
-        VKL_INTERACT_AXIS_Y = 3
-        VKL_INTERACT_AXIS_NONE = 4
+        VKL_INTERACT_FIXED_AXIS_DEFAULT = 0x0000
+        VKL_INTERACT_FIXED_AXIS_X = 0x1000
+        VKL_INTERACT_FIXED_AXIS_Y = 0x2000
+        VKL_INTERACT_FIXED_AXIS_Z = 0x4000
+        VKL_INTERACT_FIXED_AXIS_XY = 0x3000
+        VKL_INTERACT_FIXED_AXIS_XZ = 0x5000
+        VKL_INTERACT_FIXED_AXIS_YZ = 0x6000
+        VKL_INTERACT_FIXED_AXIS_ALL = 0x7000
+        VKL_INTERACT_FIXED_AXIS_NONE = 0x8000
 
     ctypedef enum VklMouseStateType:
         VKL_MOUSE_STATE_INACTIVE = 0
@@ -279,8 +283,8 @@ cdef extern from "<visky/visky.h>":
     # from file: graphics.h
 
     ctypedef enum VklGraphicsFlags:
-        VKL_GRAPHICS_FLAGS_NONE = 0x0000
-        VKL_GRAPHICS_FLAGS_DEPTH_TEST = 0x0001
+        VKL_GRAPHICS_FLAGS_DEPTH_TEST_DISABLE = 0x0000
+        VKL_GRAPHICS_FLAGS_DEPTH_TEST_ENABLE = 0x0100
 
     ctypedef enum VkyMarkerType:
         VKL_MARKER_DISC = 0
@@ -465,9 +469,9 @@ cdef extern from "<visky/visky.h>":
         VKL_CONTROLLER_CAMERA = 4
         VKL_CONTROLLER_AXES_3D = 5
 
-    ctypedef enum VklSceneVisualFlags:
-        VKL_SCENE_VISUAL_FLAGS_NONE = 0x0000
-        VKL_SCENE_VISUAL_FLAGS_TRANSFORM_NONE = 0x1000
+    ctypedef enum VklVisualFlags:
+        VKL_VISUAL_FLAGS_TRANSFORM_AUTO = 0x0000
+        VKL_VISUAL_FLAGS_TRANSFORM_NONE = 0x0010
 
     # from file: visuals.h
 
@@ -626,7 +630,7 @@ cdef extern from "<visky/visky.h>":
         uvec2 offset_framebuffer
         uvec2 size_framebuffer
         VklViewportClip clip
-        VklInteractAxis interact_axis
+        int32_t interact_axis
         float dpi_scaling
 
     ctypedef struct VklMouseButtonEvent:

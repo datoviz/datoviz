@@ -547,8 +547,10 @@ static void _add_ticks(
     vec3 P0 = {0};
     vec3 P1 = {0};
     VklCapType cap = VKL_CAP_TYPE_NONE;
-    VklInteractAxis transform =
-        level == VKL_AXES_LEVEL_LIM ? VKL_INTERACT_AXIS_NONE : VKL_INTERACT_AXIS_DEFAULT;
+    int32_t interact_axis = level == VKL_AXES_LEVEL_LIM ? VKL_INTERACT_FIXED_AXIS_ALL
+                                                        : VKL_INTERACT_FIXED_AXIS_DEFAULT;
+    interact_axis = interact_axis >> 12;
+    ASSERT(0 <= interact_axis && interact_axis <= 8);
 
     uint32_t n = tick_prop->arr_orig.item_count;
     ASSERT(n > 0);
@@ -568,7 +570,7 @@ static void _add_ticks(
         memcpy(vertex.color, color, sizeof(cvec4));
         vertex.cap0 = vertex.cap1 = cap;
         vertex.linewidth = lw;
-        vertex.transform = transform;
+        vertex.transform = interact_axis;
         vkl_graphics_append(data, &vertex);
     }
 }

@@ -80,7 +80,7 @@ static void _graphics_points(VklCanvas* canvas, VklGraphics* graphics)
     PRIMITIVE(POINT_LIST)
 
     // Depth test flag.
-    if ((graphics->flags & VKL_GRAPHICS_FLAGS_DEPTH_TEST) != 0)
+    if ((graphics->flags & VKL_GRAPHICS_FLAGS_DEPTH_TEST_ENABLE) != 0)
         vkl_graphics_depth_test(graphics, VKL_DEPTH_TEST_ENABLE);
 
     ATTR_BEGIN(VklVertex)
@@ -103,7 +103,7 @@ static void _graphics_basic(VklCanvas* canvas, VklGraphics* graphics, VkPrimitiv
     vkl_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
 
     // Depth test flag.
-    if ((graphics->flags & VKL_GRAPHICS_FLAGS_DEPTH_TEST) != 0)
+    if ((graphics->flags & VKL_GRAPHICS_FLAGS_DEPTH_TEST_ENABLE) != 0)
         vkl_graphics_depth_test(graphics, VKL_DEPTH_TEST_ENABLE);
 
     ATTR_BEGIN(VklVertex)
@@ -122,7 +122,7 @@ static void _graphics_marker(VklCanvas* canvas, VklGraphics* graphics)
     PRIMITIVE(POINT_LIST)
 
     // Depth test flag.
-    if ((graphics->flags & VKL_GRAPHICS_FLAGS_DEPTH_TEST) != 0)
+    if ((graphics->flags & VKL_GRAPHICS_FLAGS_DEPTH_TEST_ENABLE) != 0)
         vkl_graphics_depth_test(graphics, VKL_DEPTH_TEST_ENABLE);
 
     ATTR_BEGIN(VklGraphicsMarkerVertex)

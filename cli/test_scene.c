@@ -312,7 +312,8 @@ int test_scene_logistic(TestContext* context)
     VklPanel* panel = vkl_scene_panel(scene, 0, 0, VKL_CONTROLLER_PANZOOM, 0);
 
     // Markers.
-    VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_MARKER, VKL_GRAPHICS_FLAGS_NONE);
+    VklVisual* visual =
+        vkl_scene_visual(panel, VKL_VISUAL_MARKER, VKL_GRAPHICS_FLAGS_DEPTH_TEST_DISABLE);
 
     const uint32_t N = 1000000;
     dvec3* pos = calloc(N, sizeof(dvec3));

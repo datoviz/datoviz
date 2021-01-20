@@ -668,7 +668,8 @@ void vkl_visual_update(
             }
             else if (_source_is_buffer(source->source_kind))
             {
-                log_warn("source type %d #%d is not set", source->source_type, source->source_idx);
+                log_debug(
+                    "source type %d #%d is not set", source->source_type, source->source_idx);
                 if (source->source_type == VKL_SOURCE_TYPE_VERTEX)
                 {
                     log_warn("skipping visual data upload as VERTEX source is not set");

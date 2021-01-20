@@ -367,10 +367,17 @@ static void _add_axes(VklController* controller)
 
     vkl_panel_margins(panel, (vec4){25, 25, 100, 100});
 
+    int flags = 0;
     for (uint32_t coord = 0; coord < 2; coord++)
     {
-        VklVisual* visual = vkl_scene_visual(
-            panel, VKL_VISUAL_AXES_2D, VKL_SCENE_VISUAL_FLAGS_TRANSFORM_NONE | (int)coord);
+        // Axes visual flags
+        // 0x000X: coordinate
+        // 0x00X0: no CPU pos normalization
+        // 0xX0000: interact fixed axis
+        flags = VKL_VISUAL_FLAGS_TRANSFORM_NONE |
+                (coord == 0 ? VKL_INTERACT_FIXED_AXIS_Y : VKL_INTERACT_FIXED_AXIS_X) | //
+                (int)coord;
+        VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_AXES_2D, flags);
         vkl_controller_visual(controller, visual);
         visual->priority = VKL_MAX_VISUAL_PRIORITY;
 
@@ -378,7 +385,7 @@ static void _add_axes(VklController* controller)
         visual->clip[1] = coord == 0 ? VKL_VIEWPORT_OUTER_BOTTOM : VKL_VIEWPORT_OUTER_LEFT;
 
         visual->interact_axis[0] = visual->interact_axis[1] =
-            coord == 0 ? VKL_INTERACT_AXIS_X : VKL_INTERACT_AXIS_Y;
+            (coord == 0 ? VKL_INTERACT_FIXED_AXIS_Y : VKL_INTERACT_FIXED_AXIS_X) >> 12;
 
         // Text params.
         VklFontAtlas* atlas = &ctx->font_atlas;

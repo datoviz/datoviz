@@ -191,7 +191,7 @@ static void _panel_renormalize(VklPanel* panel, VklBox box)
         visual = panel->visuals[i];
 
         // NOTE: skip visuals that should not be transformed.
-        if ((visual->flags & VKL_SCENE_VISUAL_FLAGS_TRANSFORM_NONE) != 0)
+        if ((visual->flags & VKL_VISUAL_FLAGS_TRANSFORM_NONE) != 0)
             continue;
 
         // Go through all visual props.
@@ -224,7 +224,7 @@ static void _panel_visual_added(VklPanel* panel, VklVisual* visual)
     VklDataCoords* coords = &panel->data_coords;
 
     // NOTE: skip visuals that should not be transformed.
-    if ((visual->flags & VKL_SCENE_VISUAL_FLAGS_TRANSFORM_NONE) != 0)
+    if ((visual->flags & VKL_VISUAL_FLAGS_TRANSFORM_NONE) != 0)
         return;
 
     // Get the visual box.
@@ -261,7 +261,7 @@ static void _panel_normalize(VklPanel* panel)
     {
         ASSERT(panel->visuals[i] != NULL);
         // NOTE: skip visuals that should not be transformed.
-        if ((panel->visuals[i]->flags & VKL_SCENE_VISUAL_FLAGS_TRANSFORM_NONE) == 0)
+        if ((panel->visuals[i]->flags & VKL_VISUAL_FLAGS_TRANSFORM_NONE) == 0)
         {
             boxes[count++] = _visual_box(panel->visuals[i]);
         }

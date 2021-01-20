@@ -265,7 +265,7 @@ static void _graphics_3D_callback(VklCanvas* canvas, VklEvent ev)
 
 int test_graphics_3D(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_POINTS, VKL_GRAPHICS_FLAGS_DEPTH_TEST)
+    INIT_GRAPHICS(VKL_GRAPHICS_POINTS, VKL_GRAPHICS_FLAGS_DEPTH_TEST_ENABLE)
     BEGIN_DATA(VklVertex, 3, NULL)
     {
         // Top red

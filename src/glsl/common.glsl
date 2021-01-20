@@ -8,11 +8,15 @@
 #define VKL_VIEWPORT_OUTER_BOTTOM   3
 #define VKL_VIEWPORT_OUTER_LEFT     4
 
-#define VKL_TRANSFORM_AXIS_DEFAULT  0
-#define VKL_TRANSFORM_AXIS_ALL      1
-#define VKL_TRANSFORM_AXIS_X        2
-#define VKL_TRANSFORM_AXIS_Y        3
-#define VKL_TRANSFORM_AXIS_NONE     4
+#define VKL_INTERACT_FIXED_AXIS_DEFAULT 0x0
+#define VKL_INTERACT_FIXED_AXIS_X 0x1
+#define VKL_INTERACT_FIXED_AXIS_Y 0x2
+#define VKL_INTERACT_FIXED_AXIS_Z 0x4
+#define VKL_INTERACT_FIXED_AXIS_XY 0x3
+#define VKL_INTERACT_FIXED_AXIS_XZ 0x5
+#define VKL_INTERACT_FIXED_AXIS_YZ 0x6
+#define VKL_INTERACT_FIXED_AXIS_ALL 0x7
+#define VKL_INTERACT_FIXED_AXIS_NONE 0x8
 
 #define USER_BINDING 2
 
@@ -96,26 +100,30 @@ vec4 transform(vec3 pos, vec2 shift, uint transform_mode) {
     vec4 tr = vec4(pos, 1.0);
 
     // By default, take the viewport transform.
-    if (transform_mode == 0)
+    if (transform_mode == VKL_INTERACT_FIXED_AXIS_DEFAULT)
         transform_mode = uint(viewport.interact_axis);
     // Default: transform all
-    if (transform_mode == 0)
-        transform_mode = VKL_TRANSFORM_AXIS_ALL;
+    if (transform_mode == VKL_INTERACT_FIXED_AXIS_DEFAULT)
+        transform_mode = VKL_INTERACT_FIXED_AXIS_NONE;
 
     // Transform.
     switch (transform_mode) {
-        case VKL_TRANSFORM_AXIS_NONE:
+        case VKL_INTERACT_FIXED_AXIS_ALL:
             break;
-        case VKL_TRANSFORM_AXIS_ALL:
+        case VKL_INTERACT_FIXED_AXIS_NONE:
             tr = mvp * tr;
             break;
-        case VKL_TRANSFORM_AXIS_X:
+        case VKL_INTERACT_FIXED_AXIS_X:
+            tr = mvp * tr;
+            tr.x = pos.x;
+            break;
+        case VKL_INTERACT_FIXED_AXIS_Y:
             tr = mvp * tr;
             tr.y = pos.y;
             break;
-        case VKL_TRANSFORM_AXIS_Y:
+        case VKL_INTERACT_FIXED_AXIS_Z:
             tr = mvp * tr;
-            tr.x = pos.x;
+            tr.z = pos.z;
             break;
         default:
             break;
