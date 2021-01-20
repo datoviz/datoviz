@@ -1981,6 +1981,8 @@ void vkl_graphics_blend(VklGraphics* graphics, VklBlendType blend_type)
 void vkl_graphics_depth_test(VklGraphics* graphics, VklDepthTest depth_test)
 {
     ASSERT(graphics != NULL);
+    if (depth_test)
+        log_debug("enable depth test");
     graphics->depth_test = depth_test;
 }
 

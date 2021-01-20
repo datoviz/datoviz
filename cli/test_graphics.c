@@ -518,7 +518,6 @@ int test_graphics_marker(TestContext* context)
     params.edge_color[2] = 1;
     params.edge_color[3] = 1;
     params.edge_width = 2;
-    // params.enable_depth
     vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsMarkerParams), &params);
 
     RUN;

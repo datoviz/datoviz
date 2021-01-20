@@ -49,13 +49,11 @@ static void _common_props(VklVisual* visual)
 
 
 /*************************************************************************************************/
-/*  Scatter raw                                                                                  */
+/*  Marker raw                                                                                   */
 /*************************************************************************************************/
 
 static void _visual_marker_raw(VklVisual* visual)
 {
-    // TODO: flags variant
-
     ASSERT(visual != NULL);
     VklCanvas* canvas = visual->canvas;
     ASSERT(canvas != NULL);
@@ -92,6 +90,97 @@ static void _visual_marker_raw(VklVisual* visual)
     vkl_visual_prop_copy(
         visual, VKL_PROP_MARKER_SIZE, 0, 0, offsetof(VklGraphicsPointParams, point_size),
         VKL_ARRAY_COPY_SINGLE, 1);
+}
+
+
+
+/*************************************************************************************************/
+/*  Marker agg                                                                                   */
+/*************************************************************************************************/
+
+static void _visual_marker_agg(VklVisual* visual)
+{
+    ASSERT(visual != NULL);
+    VklCanvas* canvas = visual->canvas;
+    ASSERT(canvas != NULL);
+
+    // Graphics.
+    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_MARKER, visual->flags));
+    vkl_graphics_depth_test(visual->graphics[0], VKL_DEPTH_TEST_DISABLE);
+
+    // Sources
+    vkl_visual_source(
+        visual, VKL_SOURCE_TYPE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, 0,
+        sizeof(VklGraphicsMarkerVertex), 0);
+    _common_sources(visual);
+    vkl_visual_source(
+        visual, VKL_SOURCE_TYPE_PARAM, 0, VKL_PIPELINE_GRAPHICS, 0, VKL_USER_BINDING,
+        sizeof(VklGraphicsMarkerParams), 0);
+
+    // Props:
+
+    // Marker pos.
+    vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
+    vkl_visual_prop_cast(
+        visual, VKL_PROP_POS, 0, 0, offsetof(VklGraphicsMarkerVertex, pos), VKL_DTYPE_VEC3,
+        VKL_ARRAY_COPY_SINGLE, 1);
+
+    // Marker color.
+    vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
+    vkl_visual_prop_copy(
+        visual, VKL_PROP_COLOR, 0, 1, offsetof(VklGraphicsMarkerVertex, color),
+        VKL_ARRAY_COPY_SINGLE, 1);
+    cvec4 color = {200, 200, 200, 255};
+    vkl_visual_prop_default(visual, VKL_PROP_COLOR, 0, &color);
+
+    // Marker size.
+    vkl_visual_prop(visual, VKL_PROP_MARKER_SIZE, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_VERTEX, 0);
+    vkl_visual_prop_copy(
+        visual, VKL_PROP_MARKER_SIZE, 0, 1, offsetof(VklGraphicsMarkerVertex, size),
+        VKL_ARRAY_COPY_SINGLE, 1);
+    float size = 20;
+    vkl_visual_prop_default(visual, VKL_PROP_MARKER_SIZE, 0, &size);
+
+    // Marker type.
+    vkl_visual_prop(visual, VKL_PROP_MARKER_TYPE, 0, VKL_DTYPE_CHAR, VKL_SOURCE_TYPE_VERTEX, 0);
+    vkl_visual_prop_copy(
+        visual, VKL_PROP_MARKER_TYPE, 0, 1, offsetof(VklGraphicsMarkerVertex, marker),
+        VKL_ARRAY_COPY_SINGLE, 1);
+    VklMarkerType marker = VKL_MARKER_DISC;
+    vkl_visual_prop_default(visual, VKL_PROP_MARKER_TYPE, 0, &marker);
+
+    // Marker angle.
+    vkl_visual_prop(visual, VKL_PROP_ANGLE, 0, VKL_DTYPE_CHAR, VKL_SOURCE_TYPE_VERTEX, 0);
+    vkl_visual_prop_copy(
+        visual, VKL_PROP_ANGLE, 0, 1, offsetof(VklGraphicsMarkerVertex, angle),
+        VKL_ARRAY_COPY_SINGLE, 1);
+    float angle = 0;
+    vkl_visual_prop_default(visual, VKL_PROP_ANGLE, 0, &angle);
+
+    // Marker transform.
+    vkl_visual_prop(visual, VKL_PROP_TRANSFORM, 0, VKL_DTYPE_CHAR, VKL_SOURCE_TYPE_VERTEX, 0);
+    vkl_visual_prop_copy(
+        visual, VKL_PROP_TRANSFORM, 0, 1, offsetof(VklGraphicsMarkerVertex, transform),
+        VKL_ARRAY_COPY_SINGLE, 1);
+
+    // Common props.
+    _common_props(visual);
+
+    // Param: edge color.
+    vkl_visual_prop(visual, VKL_PROP_COLOR, 1, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);
+    vkl_visual_prop_copy(
+        visual, VKL_PROP_COLOR, 1, 0, offsetof(VklGraphicsMarkerParams, edge_color),
+        VKL_ARRAY_COPY_SINGLE, 1);
+    vec4 edge_color = {0, 0, 0, 1};
+    vkl_visual_prop_default(visual, VKL_PROP_COLOR, 1, &edge_color);
+
+    // Param: edge width.
+    vkl_visual_prop(visual, VKL_PROP_LINE_WIDTH, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_PARAM, 0);
+    vkl_visual_prop_copy(
+        visual, VKL_PROP_LINE_WIDTH, 0, 0, offsetof(VklGraphicsMarkerParams, edge_width),
+        VKL_ARRAY_COPY_SINGLE, 1);
+    float edge_width = 1;
+    vkl_visual_prop_default(visual, VKL_PROP_LINE_WIDTH, 0, &edge_width);
 }
 
 
@@ -377,8 +466,6 @@ static void _visual_volume_slice(VklVisual* visual)
 
 static void _visual_segment_raw(VklVisual* visual)
 {
-    // TODO: flags variant
-
     ASSERT(visual != NULL);
     VklCanvas* canvas = visual->canvas;
     ASSERT(canvas != NULL);
@@ -827,9 +914,12 @@ void vkl_visual_builtin(VklVisual* visual, VklVisualType type, int flags)
     switch (type)
     {
 
-    case VKL_VISUAL_MARKER:
-        // TODO: raw/agg
+    case VKL_VISUAL_MARKER_RAW:
         _visual_marker_raw(visual);
+        break;
+
+    case VKL_VISUAL_MARKER_AGG:
+        _visual_marker_agg(visual);
         break;
 
     case VKL_VISUAL_SEGMENT:

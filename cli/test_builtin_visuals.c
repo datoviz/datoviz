@@ -89,7 +89,7 @@ int test_visuals_marker_raw(TestContext* context)
     INIT;
 
     VklVisual visual = vkl_visual(canvas);
-    vkl_visual_builtin(&visual, VKL_VISUAL_MARKER, 0);
+    vkl_visual_builtin(&visual, VKL_VISUAL_MARKER_RAW, 0);
 
     const uint32_t N = 1000;
     dvec3* pos = calloc(N, sizeof(dvec3));
@@ -107,6 +107,38 @@ int test_visuals_marker_raw(TestContext* context)
     // Params.
     float param = 20.0f;
     vkl_visual_data(&visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
+
+    RUN;
+    FREE(pos);
+    FREE(color);
+    END;
+}
+
+
+
+int test_visuals_marker_agg(TestContext* context)
+{
+    INIT;
+
+    VklVisual visual = vkl_visual(canvas);
+    vkl_visual_builtin(&visual, VKL_VISUAL_MARKER_AGG, 0);
+
+    const uint32_t N = 1000;
+    dvec3* pos = calloc(N, sizeof(dvec3));
+    cvec4* color = calloc(N, sizeof(cvec4));
+    for (uint32_t i = 0; i < N; i++)
+    {
+        RANDN_POS(pos[i])
+        RAND_COLOR(color[i])
+    }
+
+    // Set visual data.
+    vkl_visual_data(&visual, VKL_PROP_POS, 0, N, pos);
+    vkl_visual_data(&visual, VKL_PROP_COLOR, 0, N, color);
+
+    // // Params.
+    // float param = 20.0f;
+    // vkl_visual_data(&visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
 
     RUN;
     FREE(pos);

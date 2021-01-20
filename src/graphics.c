@@ -115,6 +115,12 @@ static void _graphics_basic(VklCanvas* canvas, VklGraphics* graphics, VkPrimitiv
     CREATE
 }
 
+
+
+/*************************************************************************************************/
+/*  Agg marker graphics                                                                          */
+/*************************************************************************************************/
+
 static void _graphics_marker(VklCanvas* canvas, VklGraphics* graphics)
 {
     SHADER(VERTEX, "graphics_marker_vert")

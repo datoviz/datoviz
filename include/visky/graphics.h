@@ -55,7 +55,7 @@ typedef enum
     VKL_MARKER_TAG = 16,
     VKL_MARKER_TRIANGLE = 17,
     VKL_MARKER_VBAR = 18,
-} VkyMarkerType;
+} VklMarkerType;
 
 
 
@@ -159,7 +159,6 @@ struct VklGraphicsMarkerParams
 {
     vec4 edge_color;
     float edge_width;
-    int32_t enable_depth;
 };
 
 

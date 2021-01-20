@@ -17,6 +17,7 @@
 /*************************************************************************************************/
 
 int test_visuals_marker_raw(TestContext* context);
+int test_visuals_marker_agg(TestContext* context);
 int test_visuals_segment_raw(TestContext* context);
 int test_visuals_mesh(TestContext* context);
 int test_visuals_volume_slice(TestContext* context);
