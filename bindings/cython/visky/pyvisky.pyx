@@ -55,7 +55,8 @@ _MOUSE_STATES = {
 }
 
 _VISUALS = {
-    'marker': cv.VKL_VISUAL_MARKER_RAW,
+    'point': cv.VKL_VISUAL_MARKER_RAW,
+    'marker': cv.VKL_VISUAL_MARKER_AGG,
     'mesh': cv.VKL_VISUAL_MESH,
     'volume_slice': cv.VKL_VISUAL_VOLUME_SLICE,
 }
@@ -82,6 +83,12 @@ _PROPS = {
     'transferx': cv.VKL_PROP_TRANSFER_X,
     'transfery': cv.VKL_PROP_TRANSFER_Y,
     'clip': cv.VKL_PROP_CLIP,
+}
+
+_EVENTS ={
+    'mouse': cv.VKL_EVENT_MOUSE_MOVE,
+    'frame': cv.VKL_EVENT_FRAME,
+    'timer': cv.VKL_EVENT_TIMER,
 }
 
 
@@ -145,16 +152,17 @@ cdef _wrapped_callback(cv.VklCanvas* c_canvas, cv.VklEvent c_ev):
     cdef object tup
     if c_ev.user_data != NULL:
         tup = <object>c_ev.user_data
-        pos = (<int>c_ev.u.m.pos[0], <int>c_ev.u.m.pos[1])
+        # pos = (<int>c_ev.u.m.pos[0], <int>c_ev.u.m.pos[1])
         f, args = tup
         try:
-            f(pos)
+            # f(pos)
+            f()
         except Exception as e:
             print("Error: %s" % e)
 
 
 
-cdef _add_event_callback(cv.VklCanvas* c_canvas, cv.VklEventType evtype, f, args):
+cdef _add_event_callback(cv.VklCanvas* c_canvas, cv.VklEventType evtype, double param, f, args):
     cdef void* ptr_to_obj
     tup = (f, args)
 
@@ -164,7 +172,7 @@ cdef _add_event_callback(cv.VklCanvas* c_canvas, cv.VklEventType evtype, f, args
     Py_INCREF(tup)
 
     ptr_to_obj = <void*>tup
-    cv.vkl_event_callback(c_canvas, evtype, 0, cv.VKL_EVENT_MODE_ASYNC, <cv.VklEventCallback>_wrapped_callback, ptr_to_obj)
+    cv.vkl_event_callback(c_canvas, evtype, param, cv.VKL_EVENT_MODE_SYNC, <cv.VklEventCallback>_wrapped_callback, ptr_to_obj)
 
 
 
@@ -216,11 +224,10 @@ cdef class Canvas:
             cv.vkl_canvas_to_close(self._c_canvas)
             self._c_canvas = NULL
 
-    def connect(self, evtype_py, f):
+    def connect(self, evtype_py, f, param=0):
         cdef cv.VklEventType evtype
-        if evtype_py == 'mouse':
-            evtype = cv.VKL_EVENT_MOUSE_MOVE
-        _add_event_callback(self._c_canvas, evtype, f, ())
+        evtype = _EVENTS.get(evtype_py, 0)
+        _add_event_callback(self._c_canvas, evtype, param, f, ())
 
     # def _wrap_keyboard(self, f):
     #     @wraps(f)
