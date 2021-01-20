@@ -118,42 +118,35 @@ cdef extern from "<visky/visky.h>":
 
     # from file: builtin_visuals.h
 
-    ctypedef enum VklVisualVariant:
-        VKL_VISUAL_VARIANT_NONE = 0
-        VKL_VISUAL_VARIANT_RAW = 0x0001
-        VKL_VISUAL_VARIANT_AGG = 0x0002
-        VKL_VISUAL_VARIANT_SHADED = 0x0004
-        VKL_VISUAL_VARIANT_TEXTURED = 0x0010
-        VKL_VISUAL_VARIANT_TEXTURED_MULTI = 0x0020
-
     ctypedef enum VklVisualType:
         VKL_VISUAL_NONE = 0
-        VKL_VISUAL_MARKER = 1
-        VKL_VISUAL_SEGMENT = 2
-        VKL_VISUAL_ARROW = 3
-        VKL_VISUAL_PATH = 4
-        VKL_VISUAL_TEXT = 5
-        VKL_VISUAL_TRIANGLE = 6
-        VKL_VISUAL_RECTANGLE = 7
-        VKL_VISUAL_IMAGE = 8
-        VKL_VISUAL_DISC = 9
-        VKL_VISUAL_SECTOR = 10
-        VKL_VISUAL_MESH = 11
-        VKL_VISUAL_POLYGON = 12
-        VKL_VISUAL_PSLG = 13
-        VKL_VISUAL_HISTOGRAM = 14
-        VKL_VISUAL_AREA = 15
-        VKL_VISUAL_CANDLE = 16
-        VKL_VISUAL_GRAPH = 17
-        VKL_VISUAL_SURFACE = 18
-        VKL_VISUAL_VOLUME_SLICE = 19
-        VKL_VISUAL_VOLUME = 20
-        VKL_VISUAL_FAKE_SPHERE = 21
-        VKL_VISUAL_AXES_2D = 22
-        VKL_VISUAL_AXES_3D = 23
-        VKL_VISUAL_COLORMAP = 24
-        VKL_VISUAL_COUNT = 25
-        VKL_VISUAL_CUSTOM = 26
+        VKL_VISUAL_MARKER_RAW = 1
+        VKL_VISUAL_MARKER_AGG = 2
+        VKL_VISUAL_SEGMENT = 3
+        VKL_VISUAL_ARROW = 4
+        VKL_VISUAL_PATH = 5
+        VKL_VISUAL_TEXT = 6
+        VKL_VISUAL_TRIANGLE = 7
+        VKL_VISUAL_RECTANGLE = 8
+        VKL_VISUAL_IMAGE = 9
+        VKL_VISUAL_DISC = 10
+        VKL_VISUAL_SECTOR = 11
+        VKL_VISUAL_MESH = 12
+        VKL_VISUAL_POLYGON = 13
+        VKL_VISUAL_PSLG = 14
+        VKL_VISUAL_HISTOGRAM = 15
+        VKL_VISUAL_AREA = 16
+        VKL_VISUAL_CANDLE = 17
+        VKL_VISUAL_GRAPH = 18
+        VKL_VISUAL_SURFACE = 19
+        VKL_VISUAL_VOLUME_SLICE = 20
+        VKL_VISUAL_VOLUME = 21
+        VKL_VISUAL_FAKE_SPHERE = 22
+        VKL_VISUAL_AXES_2D = 23
+        VKL_VISUAL_AXES_3D = 24
+        VKL_VISUAL_COLORMAP = 25
+        VKL_VISUAL_COUNT = 26
+        VKL_VISUAL_CUSTOM = 27
 
     ctypedef enum VklAxisLevel:
         VKL_AXES_LEVEL_MINOR = 0
@@ -286,7 +279,7 @@ cdef extern from "<visky/visky.h>":
         VKL_GRAPHICS_FLAGS_DEPTH_TEST_DISABLE = 0x0000
         VKL_GRAPHICS_FLAGS_DEPTH_TEST_ENABLE = 0x0100
 
-    ctypedef enum VkyMarkerType:
+    ctypedef enum VklMarkerType:
         VKL_MARKER_DISC = 0
         VKL_MARKER_ASTERISK = 1
         VKL_MARKER_CHEVRON = 2
@@ -486,29 +479,32 @@ cdef extern from "<visky/visky.h>":
         VKL_PROP_ALPHA = 3
         VKL_PROP_COLORMAP = 4
         VKL_PROP_MARKER_SIZE = 5
-        VKL_PROP_TEXT = 6
-        VKL_PROP_TEXT_SIZE = 7
-        VKL_PROP_LINE_WIDTH = 8
-        VKL_PROP_TYPE = 9
-        VKL_PROP_LENGTH = 10
-        VKL_PROP_MARGIN = 11
-        VKL_PROP_NORMAL = 12
-        VKL_PROP_TEXCOORDS = 13
-        VKL_PROP_TEXCOEFS = 14
-        VKL_PROP_IMAGE = 15
-        VKL_PROP_VOLUME = 16
-        VKL_PROP_COLOR_TEXTURE = 17
-        VKL_PROP_TRANSFER_X = 18
-        VKL_PROP_TRANSFER_Y = 19
-        VKL_PROP_LIGHT_POS = 20
-        VKL_PROP_LIGHT_PARAMS = 21
-        VKL_PROP_CLIP = 22
-        VKL_PROP_VIEW_POS = 23
-        VKL_PROP_MODEL = 24
-        VKL_PROP_VIEW = 25
-        VKL_PROP_PROJ = 26
-        VKL_PROP_TIME = 27
-        VKL_PROP_INDEX = 28
+        VKL_PROP_MARKER_TYPE = 6
+        VKL_PROP_ANGLE = 7
+        VKL_PROP_TEXT = 8
+        VKL_PROP_TEXT_SIZE = 9
+        VKL_PROP_LINE_WIDTH = 10
+        VKL_PROP_TYPE = 11
+        VKL_PROP_LENGTH = 12
+        VKL_PROP_MARGIN = 13
+        VKL_PROP_NORMAL = 14
+        VKL_PROP_TEXCOORDS = 15
+        VKL_PROP_TEXCOEFS = 16
+        VKL_PROP_IMAGE = 17
+        VKL_PROP_VOLUME = 18
+        VKL_PROP_COLOR_TEXTURE = 19
+        VKL_PROP_TRANSFER_X = 20
+        VKL_PROP_TRANSFER_Y = 21
+        VKL_PROP_LIGHT_POS = 22
+        VKL_PROP_LIGHT_PARAMS = 23
+        VKL_PROP_CLIP = 24
+        VKL_PROP_VIEW_POS = 25
+        VKL_PROP_MODEL = 26
+        VKL_PROP_VIEW = 27
+        VKL_PROP_PROJ = 28
+        VKL_PROP_TIME = 29
+        VKL_PROP_INDEX = 30
+        VKL_PROP_TRANSFORM = 31
 
     ctypedef enum VklSourceKind:
         VKL_SOURCE_KIND_NONE = 0
