@@ -263,10 +263,12 @@ cdef class Panel:
         self._c_panel = c_panel
         self._c_scene = c_scene
 
-    def visual(self, vtype):
+    def visual(self, vtype, depth_test=None):
         visual_type = _VISUALS.get(vtype, cv.VKL_VISUAL_MARKER)
-        # cv.VKL_GRAPHICS_FLAGS_DEPTH_TEST
-        c_visual = cv.vkl_scene_visual(self._c_panel, visual_type, 0)
+        flags = 0
+        if depth_test:
+            flags |= cv.VKL_GRAPHICS_FLAGS_DEPTH_TEST_ENABLE
+        c_visual = cv.vkl_scene_visual(self._c_panel, visual_type, flags)
         if c_visual is NULL:
             raise MemoryError()
         v = Visual()

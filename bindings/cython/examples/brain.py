@@ -73,7 +73,7 @@ l = atlas.get_labels(pos)
 lr = _index_of(l, atlas.regions.id)
 color = atlas.regions.rgb[lr]
 
-visual = panel.visual('marker')
+visual = panel.visual('marker', depth_test=True)
 
 N = x.size
 color = np.hstack((color, 255 * np.ones((N, 1)))).astype(np.uint8)
