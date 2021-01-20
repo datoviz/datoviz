@@ -875,6 +875,11 @@ int test_graphics_mesh(TestContext* context)
     tg.graphics = graphics;
     VklMesh mesh = _graphics_mesh_example(MESH);
 
+    // NOTE: test overriding of texture coordinates with packed color
+    // for (uint32_t i = 0; i < mesh.vertices.item_count; i++)
+    //     vkl_colormap_packuv(
+    //         (cvec3){255, 128, 64}, ((VklGraphicsMeshVertex*)mesh.vertices.data)[i].uv);
+
     tg.vertices = mesh.vertices;
     tg.indices = mesh.indices;
     uint32_t vertex_count = tg.vertices.item_count;

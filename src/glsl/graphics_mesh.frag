@@ -17,8 +17,9 @@ layout(binding = (USER_BINDING+4)) uniform sampler2D tex_3;
 layout (location = 0) in vec3 in_pos;
 layout (location = 1) in vec3 in_normal;
 layout (location = 2) in vec2 in_uv;
-layout (location = 3) in float in_clip;
-layout (location = 4) in float in_alpha;
+layout (location = 3) in vec3 in_color;
+layout (location = 4) in float in_clip;
+layout (location = 5) in float in_alpha;
 
 layout (location = 0) out vec4 out_color;
 
@@ -39,11 +40,14 @@ void main() {
     specular = vec3(0);
 
     // Color.
-    color = vec3(0);
-    color += params.tex_coefs.x * texture(tex_0, in_uv).xyz;
-    color += params.tex_coefs.y * texture(tex_1, in_uv).xyz;
-    color += params.tex_coefs.z * texture(tex_2, in_uv).xyz;
-    color += params.tex_coefs.t * texture(tex_3, in_uv).xyz;
+    color = in_color;
+    if (in_uv.y >= 0)
+    {
+        color += params.tex_coefs.x * texture(tex_0, in_uv).xyz;
+        color += params.tex_coefs.y * texture(tex_1, in_uv).xyz;
+        color += params.tex_coefs.z * texture(tex_2, in_uv).xyz;
+        color += params.tex_coefs.t * texture(tex_3, in_uv).xyz;
+    }
 
     // Light position and params.
     for (int i = 0; i < 3; i++) {

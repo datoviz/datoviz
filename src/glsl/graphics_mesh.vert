@@ -17,8 +17,9 @@ layout (location = 3) in float alpha;
 layout (location = 0) out vec3 out_pos;
 layout (location = 1) out vec3 out_normal;
 layout (location = 2) out vec2 out_uv;
-layout (location = 3) out float out_clip;
-layout (location = 4) out float out_alpha;
+layout (location = 3) out vec3 out_color;
+layout (location = 4) out float out_clip;
+layout (location = 5) out float out_alpha;
 
 void main() {
     gl_Position = transform(pos);
@@ -29,4 +30,15 @@ void main() {
     out_uv = uv;
     out_clip = dot(vec4(pos, 1.0), params.clip_coefs);
     out_alpha = alpha;
+    out_color = vec3(0);
+
+    // NOTE: if uv.y is negative, we take uv.x and unpack the 3 first bytes and interpret them as
+    // custom colors
+    if (uv.y < 0)
+    {
+        out_color.x = mod(uv.x, 256.0);
+        out_color.y = mod(floor(uv.x / 256.0), 256.0);
+        out_color.z = mod(floor(uv.x / 65536.0), 256.0);
+        out_color /= 256.0;
+    }
 }
