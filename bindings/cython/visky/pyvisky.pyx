@@ -69,6 +69,7 @@ _CONTROLLERS = {
 _PROPS = {
     'pos': cv.VKL_PROP_POS,
     'color': cv.VKL_PROP_COLOR,
+    'alpha': cv.VKL_PROP_ALPHA,
     'ms': cv.VKL_PROP_MARKER_SIZE,
     'normal': cv.VKL_PROP_NORMAL,
     'texcoords': cv.VKL_PROP_TEXCOORDS,

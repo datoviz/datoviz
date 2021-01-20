@@ -12,11 +12,13 @@ layout (std140, binding = USER_BINDING) uniform Params {
 layout (location = 0) in vec3 pos;
 layout (location = 1) in vec3 normal;
 layout (location = 2) in vec2 uv;
+layout (location = 3) in float alpha;
 
 layout (location = 0) out vec3 out_pos;
 layout (location = 1) out vec3 out_normal;
 layout (location = 2) out vec2 out_uv;
 layout (location = 3) out float out_clip;
+layout (location = 4) out float out_alpha;
 
 void main() {
     gl_Position = transform(pos);
@@ -26,5 +28,5 @@ void main() {
 
     out_uv = uv;
     out_clip = dot(vec4(pos, 1.0), params.clip_coefs);
-    // out_triangle = triangle_coords();
+    out_alpha = alpha;
 }

@@ -18,6 +18,7 @@ layout (location = 0) in vec3 in_pos;
 layout (location = 1) in vec3 in_normal;
 layout (location = 2) in vec2 in_uv;
 layout (location = 3) in float in_clip;
+layout (location = 4) in float in_alpha;
 
 layout (location = 0) out vec4 out_color;
 
@@ -70,4 +71,6 @@ void main() {
         // Total color.
         out_color.xyz += (lpar.x * ambient + lpar.y * diffuse + lpar.z * specular) * color;
     }
+
+    out_color.a = in_alpha;
 }

@@ -387,6 +387,7 @@ static void _graphics_mesh(VklCanvas* canvas, VklGraphics* graphics)
     ATTR_POS(VklGraphicsMeshVertex, pos)
     ATTR(VklGraphicsMeshVertex, VK_FORMAT_R32G32B32_SFLOAT, normal)
     ATTR(VklGraphicsMeshVertex, VK_FORMAT_R32G32_SFLOAT, uv)
+    ATTR(VklGraphicsMeshVertex, VK_FORMAT_R8_UNORM, alpha)
 
     _common_bindings(graphics);
     vkl_graphics_slot(graphics, VKL_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);

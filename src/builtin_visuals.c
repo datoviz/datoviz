@@ -149,6 +149,14 @@ static void _visual_mesh(VklVisual* visual)
         visual, VKL_PROP_TEXCOORDS, 0, 0, offsetof(VklGraphicsMeshVertex, uv), //
         VKL_ARRAY_COPY_SINGLE, 1);
 
+    // Vertex alpha.
+    vkl_visual_prop(visual, VKL_PROP_ALPHA, 0, VKL_DTYPE_CHAR, VKL_SOURCE_TYPE_VERTEX, 0);
+    vkl_visual_prop_copy(
+        visual, VKL_PROP_ALPHA, 0, 0, offsetof(VklGraphicsMeshVertex, alpha), //
+        VKL_ARRAY_COPY_SINGLE, 1);
+    uint8_t alpha = 255;
+    vkl_visual_prop_default(visual, VKL_PROP_ALPHA, 0, &alpha);
+
     // Index.
     vkl_visual_prop(visual, VKL_PROP_INDEX, 0, VKL_DTYPE_UINT, VKL_SOURCE_TYPE_INDEX, 0);
     vkl_visual_prop_copy(visual, VKL_PROP_INDEX, 0, 0, 0, VKL_ARRAY_COPY_SINGLE, 1);

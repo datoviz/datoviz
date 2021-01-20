@@ -264,6 +264,7 @@ struct VklGraphicsMeshVertex
     vec3 pos;
     vec3 normal;
     vec2 uv;
+    uint8_t alpha;
 };
 
 struct VklGraphicsMeshParams

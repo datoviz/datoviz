@@ -931,6 +931,7 @@ static void _depth_vertices(uint32_t N, VklGraphicsMeshVertex* vertices, bool vu
         v0->uv[0] = 0.00;
         v0->uv[1] = col + 1 * j / 256.0;
         v0->normal[2] = 1;
+        v0->alpha = 255;
 
         v1->pos[0] = x + l;
         v1->pos[1] = y - l;
@@ -938,6 +939,7 @@ static void _depth_vertices(uint32_t N, VklGraphicsMeshVertex* vertices, bool vu
         v1->uv[0] = 0.50;
         v1->uv[1] = col + 1 * j / 256.0;
         v1->normal[2] = 1;
+        v1->alpha = 255;
 
         v2->pos[0] = x + 0;
         v2->pos[1] = y + l;
@@ -945,6 +947,7 @@ static void _depth_vertices(uint32_t N, VklGraphicsMeshVertex* vertices, bool vu
         v2->uv[0] = 1.00;
         v2->uv[1] = col + 1 * j / 256.0;
         v2->normal[2] = 1;
+        v2->alpha = 255;
     }
 }
 
