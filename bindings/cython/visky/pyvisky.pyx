@@ -80,6 +80,7 @@ _PROPS = {
     'colormap': cv.VKL_PROP_COLORMAP,
     'transferx': cv.VKL_PROP_TRANSFER_X,
     'transfery': cv.VKL_PROP_TRANSFER_Y,
+    'clip': cv.VKL_PROP_CLIP,
 }
 
 
@@ -263,6 +264,7 @@ cdef class Panel:
 
     def visual(self, vtype):
         visual_type = _VISUALS.get(vtype, cv.VKL_VISUAL_MARKER)
+        # cv.VKL_GRAPHICS_FLAGS_DEPTH_TEST
         c_visual = cv.vkl_scene_visual(self._c_panel, visual_type, 0)
         if c_visual is NULL:
             raise MemoryError()
@@ -284,6 +286,8 @@ cdef class Visual:
         self._c_context = c_visual.canvas.gpu.context
 
     def data(self, name, np.ndarray value, idx=0):
+        if name == 'pos':
+            assert value.dtype == np.float64
         prop = _get_prop(name)
         N = value.shape[0]
         cv.vkl_visual_data(self._c_visual, prop, idx, N, &value.data[0])
