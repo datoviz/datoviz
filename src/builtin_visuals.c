@@ -1,4 +1,5 @@
 #include "../include/visky/builtin_visuals.h"
+#include "../include/visky/interact.h"
 #include "visuals_utils.h"
 
 
@@ -157,7 +158,7 @@ static void _visual_mesh(VklVisual* visual)
 
     // Params.
     // Default values.
-    VklGraphicsMeshParams params = default_graphics_mesh_params((vec3){0, 0, 3});
+    VklGraphicsMeshParams params = default_graphics_mesh_params(VKL_CAMERA_EYE);
 
     // Light positions.
     vkl_visual_prop(visual, VKL_PROP_LIGHT_POS, 0, VKL_DTYPE_MAT4, VKL_SOURCE_TYPE_PARAM, 0);

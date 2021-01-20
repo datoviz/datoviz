@@ -201,7 +201,7 @@ int test_visuals_mesh(TestContext* context)
 
     vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE, 0, gpu->context->color_texture.texture);
 
-    VklGraphicsMeshParams params = default_graphics_mesh_params((vec3){0, 0, 3});
+    VklGraphicsMeshParams params = default_graphics_mesh_params(VKL_CAMERA_EYE);
     vkl_visual_data(&visual, VKL_PROP_LIGHT_PARAMS, 0, 1, &params.lights_params_0);
     vkl_visual_data(&visual, VKL_PROP_LIGHT_POS, 0, 1, &params.lights_pos_0);
     vkl_visual_data(&visual, VKL_PROP_TEXCOEFS, 0, 1, &params.tex_coefs);

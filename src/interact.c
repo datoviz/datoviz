@@ -246,10 +246,10 @@ static void _panzoom_callback(
 static void _camera_reset(VklCamera* camera)
 {
     ASSERT(camera != NULL);
-    glm_vec3_copy((vec3){0, 0, 3}, camera->eye);
+    glm_vec3_copy(VKL_CAMERA_EYE, camera->eye);
     glm_vec3_copy(camera->eye, camera->target);
     glm_vec3_copy((vec3){0, 0, -1}, camera->forward);
-    glm_vec3_copy((vec3){0, 1, 0}, camera->up);
+    glm_vec3_copy(VKL_CAMERA_UP, camera->up);
 }
 
 static VklCamera _camera(VklCanvas* canvas, VklInteractType type)
@@ -405,10 +405,10 @@ static void _arcball_reset(VklArcball* arcball)
     ASSERT(arcball != NULL);
 
     vec3 eye, center, up, dir, x_axis, y_axis, z_axis;
-    glm_vec3_copy((vec3){0, 0, 3}, arcball->camera.eye);
+    glm_vec3_copy(VKL_CAMERA_EYE, arcball->camera.eye);
     glm_vec3_copy(arcball->camera.eye, eye);
     glm_vec3_copy((vec3){0, 0, 0}, center);
-    glm_vec3_copy((vec3){0, +1, 0}, up);
+    glm_vec3_copy(VKL_CAMERA_UP, up);
 
     glm_vec3_sub(center, eye, dir);
     glm_vec3_copy(dir, z_axis);
