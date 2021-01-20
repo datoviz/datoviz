@@ -30,6 +30,18 @@ def _transpose(M):
     return np.c_[-z, -y, -x]
 
 
+def _index_of(arr, lookup):
+    lookup = np.asarray(lookup, dtype=np.int32)
+    m = (lookup.max() if len(lookup) else 0) + 1
+    tmp = np.zeros(m + 1, dtype=np.int)
+    # Ensure that -1 values are kept.
+    tmp[-1] = -1
+    if len(lookup):
+        tmp[lookup] = np.arange(len(lookup))
+    return tmp[arr]
+
+
+
 vertices = _transpose(vertices)
 normals = _transpose(normals)
 
@@ -55,15 +67,19 @@ x = np.load(root / 'single_unit_x.npy')
 y = np.load(root / 'single_unit_y.npy')
 z = np.load(root / 'single_unit_z.npy')
 pos = np.c_[x, y, z]
-pos = _transpose(atlas.xyz2ccf(pos, ccf_order='apdvml')[:, [2, 0, 1]])
+pos_ccf = _transpose(atlas.xyz2ccf(pos, ccf_order='apdvml')[:, [2, 0, 1]])
+
+l = atlas.get_labels(pos)
+lr = _index_of(l, atlas.regions.id)
+color = atlas.regions.rgb[lr]
 
 visual = panel.visual('marker')
 
 N = x.size
-color = 255 * np.ones((N, 4))
+color = np.hstack((color, 255 * np.ones((N, 1)))).astype(np.uint8)
 ms = 5 * np.ones(1)
 
-visual.data('pos', pos.astype(np.float64))
+visual.data('pos', pos_ccf.astype(np.float64))
 visual.data('color', color.astype(np.uint8))
 visual.data('ms', ms.astype(np.float32))
 
