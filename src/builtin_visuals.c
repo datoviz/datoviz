@@ -446,6 +446,7 @@ static void _visual_volume_slice(VklVisual* visual)
     // Props:
 
     // Point positions.
+    // Top left, top right, bottom right, bottom left
     for (uint32_t i = 0; i < 4; i++)
         vkl_visual_prop(visual, VKL_PROP_POS, i, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
 
@@ -476,7 +477,7 @@ static void _visual_volume_slice(VklVisual* visual)
     vkl_visual_prop_copy(
         visual, VKL_PROP_TRANSFER_Y, 0, 0,
         offsetof(VklGraphicsVolumeParams, cmap_coefs) + sizeof(vec4), VKL_ARRAY_COPY_SINGLE, 1);
-    // vkl_visual_prop_default(visual, VKL_PROP_TRANSFER_Y, 0, vec);
+    vkl_visual_prop_default(visual, VKL_PROP_TRANSFER_Y, 0, vec);
 
     // Alpha transfer function.
     vkl_visual_prop(visual, VKL_PROP_TRANSFER_X, 1, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);
@@ -491,7 +492,7 @@ static void _visual_volume_slice(VklVisual* visual)
         visual, VKL_PROP_TRANSFER_Y, 1, 0,
         offsetof(VklGraphicsVolumeParams, cmap_coefs) + 3 * sizeof(vec4), VKL_ARRAY_COPY_SINGLE,
         1);
-    // vkl_visual_prop_default(visual, VKL_PROP_TRANSFER_Y, 1, vec);
+    vkl_visual_prop_default(visual, VKL_PROP_TRANSFER_Y, 1, vec);
 
     // Colormap texture prop.
     vkl_visual_prop(
