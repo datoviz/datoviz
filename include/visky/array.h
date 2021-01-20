@@ -75,6 +75,7 @@ typedef enum
 // Array copy types.
 typedef enum
 {
+    VKL_ARRAY_COPY_NONE,
     VKL_ARRAY_COPY_REPEAT,
     VKL_ARRAY_COPY_SINGLE,
 } VklArrayCopyType;

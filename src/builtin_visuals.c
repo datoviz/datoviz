@@ -189,6 +189,50 @@ static void _visual_marker_agg(VklVisual* visual)
 /*  Mesh                                                                                         */
 /*************************************************************************************************/
 
+static void _mesh_bake(VklVisual* visual, VklVisualDataEvent ev)
+{
+    // Take the color prop and override the tex coords and alpha if needed.
+    VklProp* prop_color = vkl_prop_get(visual, VKL_PROP_COLOR, 0);         // cvec4
+    VklProp* prop_texcoords = vkl_prop_get(visual, VKL_PROP_TEXCOORDS, 0); // vec2
+    VklProp* prop_alpha = vkl_prop_get(visual, VKL_PROP_ALPHA, 0);         // uint8_t
+
+    VklArray* arr_color = _prop_array(prop_color);
+    VklArray* arr_texcoords = _prop_array(prop_texcoords);
+    VklArray* arr_alpha = _prop_array(prop_alpha);
+
+    // If colors have been specified, we need to override texcoords.
+    uint32_t N = arr_color->item_count;
+    if (N > 0)
+    {
+        vkl_array_resize(arr_texcoords, N);
+        vkl_array_resize(arr_alpha, N);
+
+        ASSERT(arr_texcoords->item_count == N);
+        ASSERT(arr_alpha->item_count == N);
+
+        cvec4* color = NULL;
+        cvec3* rgb = NULL;
+        vec2* uv = NULL;
+        uint8_t* alpha = NULL;
+
+        for (uint32_t i = 0; i < N; i++)
+        {
+            color = vkl_array_item(arr_color, i);
+            uv = vkl_array_item(arr_texcoords, i);
+            alpha = vkl_array_item(arr_alpha, i);
+
+            // Copy the color RGB components to the UV tex coords by packing 3 char into a float
+            rgb = (cvec3*)color;
+            vkl_colormap_packuv(*rgb, *uv);
+
+            // Copy the alpha component to the ALPHA prop
+            *alpha = (*color)[3];
+        }
+    }
+
+    _default_visual_bake(visual, ev);
+}
+
 static void _visual_mesh(VklVisual* visual)
 {
     ASSERT(visual != NULL);
@@ -237,6 +281,9 @@ static void _visual_mesh(VklVisual* visual)
     vkl_visual_prop_copy(
         visual, VKL_PROP_TEXCOORDS, 0, 0, offsetof(VklGraphicsMeshVertex, uv), //
         VKL_ARRAY_COPY_SINGLE, 1);
+
+    // Vertex color: override tex coords by packing 3 bytes into a float
+    vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
 
     // Vertex alpha.
     vkl_visual_prop(visual, VKL_PROP_ALPHA, 0, VKL_DTYPE_CHAR, VKL_SOURCE_TYPE_VERTEX, 0);
@@ -296,7 +343,7 @@ static void _visual_mesh(VklVisual* visual)
     for (uint32_t i = 0; i < 4; i++)
         vkl_visual_prop(visual, VKL_PROP_IMAGE, i, VKL_DTYPE_UINT, VKL_SOURCE_TYPE_IMAGE, i);
 
-    // vkl_visual_callback_transform(visual, _visual_normalize);
+    vkl_visual_callback_bake(visual, _mesh_bake);
 }
 
 

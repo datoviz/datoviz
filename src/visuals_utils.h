@@ -359,6 +359,10 @@ static void _prop_copy(VklVisual* visual, VklProp* prop)
         return;
     }
 
+    // Do not copy props that have no automatic copy set up.
+    if (prop->copy_type == VKL_ARRAY_COPY_NONE)
+        return;
+
     ASSERT(arr->data != NULL);
     ASSERT(source->arr.data != NULL);
     ASSERT(arr->item_count <= source->arr.item_count);

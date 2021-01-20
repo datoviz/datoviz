@@ -127,6 +127,7 @@ typedef enum
 
 
 
+// Visual request.
 typedef enum
 {
     VKL_VISUAL_REQUEST_NOT_SET = 0x0000,       // object has never been set
