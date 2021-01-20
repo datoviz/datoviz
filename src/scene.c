@@ -528,6 +528,25 @@ static void _upload_mvp(VklCanvas* canvas, VklEvent ev)
 
 
 
+static int _transform_flags(VklControllerType type, int flags)
+{
+    switch (type)
+    {
+
+    case VKL_CONTROLLER_ARCBALL:
+    case VKL_CONTROLLER_CAMERA:
+        // 3D panels: fixed aspect
+        flags |= VKL_TRANSFORM_FLAGS_FIXED_ASPECT;
+        break;
+
+    default:
+        break;
+    }
+    return flags;
+}
+
+
+
 /*************************************************************************************************/
 /*  Scene creation                                                                               */
 /*************************************************************************************************/
@@ -693,6 +712,11 @@ VklController vkl_controller_builtin(VklPanel* panel, VklControllerType type, in
 VklPanel*
 vkl_scene_panel(VklScene* scene, uint32_t row, uint32_t col, VklControllerType type, int flags)
 {
+    /*
+    the flags gets passed to:
+    - controller (controller params)
+    - data coords (transform)
+    */
     ASSERT(scene != NULL);
     VklPanel* panel = vkl_panel(&scene->grid, row, col);
     VklController* controller = vkl_container_alloc(&scene->controllers);
@@ -700,9 +724,8 @@ vkl_scene_panel(VklScene* scene, uint32_t row, uint32_t col, VklControllerType t
     controller->flags = flags;
     panel->controller = controller;
 
-    // TODO: update panel->data_coords.transform depending on the flags
-    if (type == VKL_CONTROLLER_ARCBALL)
-        flags |= VKL_TRANSFORM_FLAGS_FIXED_ASPECT;
+    // Set panel transform flags depending on the contrller type.
+    flags = _transform_flags(type, flags);
     panel->data_coords.flags = flags;
 
     panel->scene = scene;

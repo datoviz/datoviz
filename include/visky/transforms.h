@@ -102,7 +102,7 @@ struct VklDataCoords
 {
     VklBox box; // in data coordinate system
     VklTransformType transform;
-    int flags;
+    int flags; // come from the panel
     // TODO: union with transform parameters?
 };
 
@@ -112,7 +112,7 @@ struct VklTransform
 {
     VklTransformType type;
     dmat4 mat; // transformation matrix for linear transforms, parameters for other transforms
-    int flags;
+    int flags; // come from the panel
     bool inverse;
 };
 
