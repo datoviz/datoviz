@@ -133,22 +133,22 @@ canvas.connect('timer', f, param=.05)
 
 
 
-# P = vertices
-# x0, y0, z0 = P.min(axis=0)
-# x1, y1, z1 = P.max(axis=0)
-# z = .5 * (z0 + z1)
+P = vertices
+x0, y0, z0 = P.min(axis=0)
+x1, y1, z1 = P.max(axis=0)
+z = .5 * (z0 + z1)
 
-# volume, info = mcc.get_template_volume()
-# volume *= 100
+volume, info = mcc.get_template_volume()
+volume *= 100
 
-# # Slice plane.
-# plane = panel.visual('volume_slice')
+# Slice plane.
+plane = panel.visual('volume_slice')
 
-# # Top left, top right, bottom right, bottom left
-# plane.data('pos', np.array([[x0, y1, z]], dtype=np.float64), idx=0)
-# plane.data('pos', np.array([[x1, y1, z]], dtype=np.float64), idx=1)
-# plane.data('pos', np.array([[x1, y0, z]], dtype=np.float64), idx=2)
-# plane.data('pos', np.array([[x0, y0, z]], dtype=np.float64), idx=3)
+# Top left, top right, bottom right, bottom left
+plane.data('pos', np.array([[x0, y1, z]], dtype=np.float64), idx=0)
+plane.data('pos', np.array([[x1, y1, z]], dtype=np.float64), idx=1)
+plane.data('pos', np.array([[x1, y0, z]], dtype=np.float64), idx=2)
+plane.data('pos', np.array([[x0, y0, z]], dtype=np.float64), idx=3)
 
 # P = atlas.ccf2xyz(cortex[0], ccf_order='apdvml')
 # x0, y0, z0 = P.min(axis=0)
@@ -163,26 +163,33 @@ canvas.connect('timer', f, param=.05)
 # w = atlas.bc.z2i(z) / (atlas.bc.nxyz[2] * 1.0)
 # # print((u0, v0), (u1, v1), w)
 
-# # DEBUG
-# u0=v0=0
-# u1=v1=1
-# w=.5
+# DEBUG
+u0=v0=0
+u1=v1=1
+w=.5
 
-# plane.data('texcoords', np.array([[0.5, 0, 0]], dtype=np.float32), idx=0)
-# plane.data('texcoords', np.array([[0.5, 1, 0]], dtype=np.float32), idx=1)
-# plane.data('texcoords', np.array([[0.5, 1, 1]], dtype=np.float32), idx=2)
-# plane.data('texcoords', np.array([[0.5, 0, 1]], dtype=np.float32), idx=3)
+plane.data('texcoords', np.array([[0.5, 0, 0]], dtype=np.float32), idx=0)
+plane.data('texcoords', np.array([[0.5, 1, 0]], dtype=np.float32), idx=1)
+plane.data('texcoords', np.array([[0.5, 1, 1]], dtype=np.float32), idx=2)
+plane.data('texcoords', np.array([[0.5, 0, 1]], dtype=np.float32), idx=3)
 
 # # plane.data('texcoords', np.array([[w, u0, v1]], dtype=np.float32), idx=0)
 # # plane.data('texcoords', np.array([[w, u1, v1]], dtype=np.float32), idx=1)
 # # plane.data('texcoords', np.array([[w, u1, v0]], dtype=np.float32), idx=2)
 # # plane.data('texcoords', np.array([[w, u0, v0]], dtype=np.float32), idx=3)
 
-# plane.data('colormap', np.array([[26]], dtype=np.int32))
-# plane.data('transferx', np.array([[0, .1, .9, 1]], dtype=np.float32), idx=0)
-# plane.data('transfery', np.array([[1, 1, 1, 1]], dtype=np.float32), idx=0)
-# plane.data('transferx', np.array([[0, .1, .9, 1]], dtype=np.float32), idx=1)
-# plane.data('transfery', np.array([[1, 1, 1, 1]], dtype=np.float32), idx=1)
-# plane.volume(volume)
+plane.data('colormap', np.array([[26]], dtype=np.int32))
+
+a = (0, .33, .66, 1)
+b = (0, .33, .66, 1)
+plane.data('transferx', np.array([a], dtype=np.float32), idx=0)
+plane.data('transfery', np.array([b], dtype=np.float32), idx=0)
+
+a = (0, .33, .66, 1)
+b = (0, .33, .66, 1)
+plane.data('transferx', np.array([a], dtype=np.float32), idx=1)
+plane.data('transfery', np.array([b], dtype=np.float32), idx=1)
+
+plane.volume(volume)
 
 run()
