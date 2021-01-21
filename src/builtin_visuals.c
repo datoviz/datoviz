@@ -81,6 +81,8 @@ static void _visual_marker_raw(VklVisual* visual)
     vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
     vkl_visual_prop_copy(
         visual, VKL_PROP_COLOR, 0, 1, offsetof(VklVertex, color), VKL_ARRAY_COPY_SINGLE, 1);
+    cvec4 color = {200, 200, 200, 255};
+    vkl_visual_prop_default(visual, VKL_PROP_COLOR, 0, &color);
 
     // Common props.
     _common_props(visual);
@@ -90,6 +92,8 @@ static void _visual_marker_raw(VklVisual* visual)
     vkl_visual_prop_copy(
         visual, VKL_PROP_MARKER_SIZE, 0, 0, offsetof(VklGraphicsPointParams, point_size),
         VKL_ARRAY_COPY_SINGLE, 1);
+    float size = 5;
+    vkl_visual_prop_default(visual, VKL_PROP_MARKER_SIZE, 0, &size);
 }
 
 
