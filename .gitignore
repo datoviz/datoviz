@@ -24,6 +24,8 @@ _skbuild
 site
 _shaders.h
 pyvisky.c
+.joblib
+*.pkl
 
 *.png
 *.ppm
