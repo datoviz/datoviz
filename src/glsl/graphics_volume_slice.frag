@@ -4,7 +4,10 @@
 
 layout(std140, binding = USER_BINDING) uniform Params
 {
-    mat4 cmap_coefs; // x_cmap, y_cmap, x_alpha, y_alpha
+    vec4 x_cmap;
+    vec4 y_cmap;
+    vec4 x_alpha;
+    vec4 y_alpha;
     int cmap;
 }
 params;
@@ -30,7 +33,7 @@ float transfer(float x, vec4 xcoefs, vec4 ycoefs)
         return ycoefs.w;
 }
 
-#define sum(x) (dot(x, vec4(1)))
+#define sum(x) (dot(x, vec4(1, 1, 1, 1)))
 
 void main()
 {
@@ -38,13 +41,13 @@ void main()
     float value = texture(tex, in_uvw).r;
 
     // Transfer function on the texture value.
-    if (sum(params.cmap_coefs[1]) != 0)
-        value = transfer(value, params.cmap_coefs[0], params.cmap_coefs[1]);
+    if (sum(params.x_cmap) != 0)
+        value = transfer(value, params.x_cmap, params.y_cmap);
 
     // Transfer function on the texture value.
     float alpha = 1.0;
-    if (sum(params.cmap_coefs[3]) != 0)
-        alpha = transfer(value, params.cmap_coefs[2], params.cmap_coefs[3]);
+    if (sum(params.x_alpha) != 0)
+        alpha = transfer(value, params.x_alpha, params.y_alpha);
 
     // Sampling from the color texture.
     out_color = texture(tex_cmap, vec2(value, (params.cmap + .5) / 256.0));
