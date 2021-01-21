@@ -68,8 +68,6 @@ def load_mesh(name):
     N = vertices.shape[0]
     Nf = triangles.shape[0]
     print(f"Load mesh {name}: {N} vertices, {Nf} faces")
-    vertices = _transpose(vertices)
-    normals = _transpose(normals)
     return vertices, normals, indices
 
 
@@ -99,7 +97,9 @@ canvas = canvas()
 panel = canvas.panel(controller='arcball')
 
 # Load the mesh.
-vertices, normals, indices = load_mesh('Isocortex')
+vertices_, normals_, indices = load_mesh('Isocortex')
+vertices = _transpose(vertices_)
+normals = _transpose(normals_)
 
 # Display the mesh.
 mesh = panel.visual('mesh')
@@ -145,51 +145,38 @@ volume *= 100
 plane = panel.visual('volume_slice')
 
 # Top left, top right, bottom right, bottom left
-plane.data('pos', np.array([[x0, y1, z]], dtype=np.float64), idx=0)
-plane.data('pos', np.array([[x1, y1, z]], dtype=np.float64), idx=1)
-plane.data('pos', np.array([[x1, y0, z]], dtype=np.float64), idx=2)
-plane.data('pos', np.array([[x0, y0, z]], dtype=np.float64), idx=3)
+plane.data('pos', np.array([[x0, y1, z]]), idx=0)
+plane.data('pos', np.array([[x1, y1, z]]), idx=1)
+plane.data('pos', np.array([[x1, y0, z]]), idx=2)
+plane.data('pos', np.array([[x0, y0, z]]), idx=3)
 
-# P = atlas.ccf2xyz(cortex[0], ccf_order='apdvml')
-# x0, y0, z0 = P.min(axis=0)
-# x1, y1, z1 = P.max(axis=0)
-# z = .5 * (z0 + z1)
 
-# # TODO: compute volume indices as a function of the vertex positions
-# u0 = atlas.bc.x2i(x0) / (atlas.bc.nxyz[0] * 1.0)
-# u1 = atlas.bc.x2i(x1) / (atlas.bc.nxyz[0] * 1.0)
-# v0 = atlas.bc.y2i(y0) / (atlas.bc.nxyz[1] * 1.0)
-# v1 = atlas.bc.y2i(y1) / (atlas.bc.nxyz[1] * 1.0)
-# w = atlas.bc.z2i(z) / (atlas.bc.nxyz[2] * 1.0)
-# # print((u0, v0), (u1, v1), w)
 
-# DEBUG
-u0=v0=0
-u1=v1=1
-w=.5
+P = atlas.ccf2xyz(vertices_, ccf_order='apdvml')
+x0, y0, z0 = P.min(axis=0)
+x1, y1, z1 = P.max(axis=0)
+z = .5 * (z0 + z1)
 
-plane.data('texcoords', np.array([[0.5, 0, 0]], dtype=np.float32), idx=0)
-plane.data('texcoords', np.array([[0.5, 1, 0]], dtype=np.float32), idx=1)
-plane.data('texcoords', np.array([[0.5, 1, 1]], dtype=np.float32), idx=2)
-plane.data('texcoords', np.array([[0.5, 0, 1]], dtype=np.float32), idx=3)
+# TODO: compute volume indices as a function of the vertex positions
+u0 = atlas.bc.x2i(x0) / (atlas.bc.nxyz[0] * 1.0)
+u1 = atlas.bc.x2i(x1) / (atlas.bc.nxyz[0] * 1.0)
+v0 = atlas.bc.y2i(y0) / (atlas.bc.nxyz[1] * 1.0)
+v1 = atlas.bc.y2i(y1) / (atlas.bc.nxyz[1] * 1.0)
+w = atlas.bc.z2i(z) / (atlas.bc.nxyz[2] * 1.0)
 
-# # plane.data('texcoords', np.array([[w, u0, v1]], dtype=np.float32), idx=0)
-# # plane.data('texcoords', np.array([[w, u1, v1]], dtype=np.float32), idx=1)
-# # plane.data('texcoords', np.array([[w, u1, v0]], dtype=np.float32), idx=2)
-# # plane.data('texcoords', np.array([[w, u0, v0]], dtype=np.float32), idx=3)
+plane.data('texcoords', np.array([[u0, v1, w]]), idx=0)
+plane.data('texcoords', np.array([[u1, v1, w]]), idx=1)
+plane.data('texcoords', np.array([[u1, v0, w]]), idx=2)
+plane.data('texcoords', np.array([[u0, v0, w]]), idx=3)
+
+
+
+a = (0, .1, 1, 1)
+b = (0, 1, 1, 1)
+plane.data('transferx', np.array([a]), idx=1)
+plane.data('transfery', np.array([b]), idx=1)
 
 plane.data('colormap', np.array([[26]], dtype=np.int32))
-
-a = (0, .33, .66, 1)
-b = (0, .33, .66, 1)
-plane.data('transferx', np.array([a], dtype=np.float32), idx=0)
-plane.data('transfery', np.array([b], dtype=np.float32), idx=0)
-
-a = (0, .33, .66, 1)
-b = (0, .33, .66, 1)
-plane.data('transferx', np.array([a], dtype=np.float32), idx=1)
-plane.data('transfery', np.array([b], dtype=np.float32), idx=1)
-
 plane.volume(volume)
 
 run()
