@@ -110,7 +110,7 @@ mesh.data('index', indices)
 
 
 # Load the neural activity data.
-root = Path('/home/cyrille/git/visky-data/yanliang/').resolve()
+root = Path(__file__).parent / '../../../data/yanliang/'
 pos, color, fr = load_yanliang(root)
 pos_ccf = _transpose(atlas.xyz2ccf(pos, ccf_order='apdvml')[:, [2, 0, 1]])
 ms = fr[:, 0, 0]
