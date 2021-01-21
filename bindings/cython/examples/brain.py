@@ -1,6 +1,7 @@
 from pathlib import Path
 import time
 
+from joblib import Memory
 import numpy as np
 from allensdk.core.mouse_connectivity_cache import MouseConnectivityCache
 from ibllib.atlas import AllenAtlas
@@ -46,6 +47,21 @@ def region_color(name):
 # Loading functions
 # -------------------------------------------------------------------------------------------------
 
+RESOLUTION = 25
+cachedir = Path(__file__).parent / '.joblib'
+MEM = Memory(cachedir)
+
+
+@MEM.cache
+def get_atlas(res):
+    return AllenAtlas(res)
+
+
+atlas = get_atlas(RESOLUTION)
+mcc = MouseConnectivityCache(resolution=RESOLUTION)
+
+
+@MEM.cache
 def load_mesh(name):
     vertices, normals, triangles, tn = mcc.get_structure_mesh(region_id(name))
     indices = triangles.ravel()
@@ -57,6 +73,7 @@ def load_mesh(name):
     return vertices, normals, indices
 
 
+@MEM.cache
 def load_yanliang(path):
     x = np.load(root / 'single_unit_x.npy')
     y = np.load(root / 'single_unit_y.npy')
@@ -72,14 +89,10 @@ def load_yanliang(path):
     return pos, color, fr
 
 
+
 # -------------------------------------------------------------------------------------------------
 # Main script
 # -------------------------------------------------------------------------------------------------
-
-RESOLUTION = 25
-atlas = AllenAtlas(RESOLUTION)
-mcc = MouseConnectivityCache(resolution=RESOLUTION)
-
 
 # Create the scene.
 canvas = canvas()
