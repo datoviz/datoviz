@@ -60,7 +60,7 @@ static VklSourceKind _get_source_kind(VklSourceType type)
 
     default:
         log_error("source type %d not yet supported", type);
-        return VKL_SOURCE_TYPE_NONE;
+        return VKL_SOURCE_KIND_NONE;
         break;
     }
 }

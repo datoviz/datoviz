@@ -752,15 +752,15 @@ int test_graphics_volume_slice(TestContext* context)
     VklGraphicsVolumeParams params = {0};
     params.cmap = VKL_CMAP_HSV;
 
-    params.cmap_coefs[0][0] = 0.0;
-    params.cmap_coefs[0][1] = .333;
-    params.cmap_coefs[0][2] = .666;
-    params.cmap_coefs[0][3] = 1.0;
+    params.x_cmap[0] = 0.0;
+    params.x_cmap[1] = .333;
+    params.x_cmap[2] = .666;
+    params.x_cmap[3] = 1.0;
 
-    params.cmap_coefs[1][0] = 0;
-    params.cmap_coefs[1][1] = .2;
-    params.cmap_coefs[1][2] = .8;
-    params.cmap_coefs[1][3] = 1;
+    params.y_cmap[0] = 0;
+    params.y_cmap[1] = .2;
+    params.y_cmap[2] = .8;
+    params.y_cmap[3] = 1;
 
     vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsVolumeParams), &params);
 

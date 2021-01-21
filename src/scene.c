@@ -30,16 +30,16 @@ static inline void _visual_request(VklVisual* visual, VklPanel* panel, VklVisual
 {
     if (visual != NULL)
     {
-        visual->obj.request = req;
+        visual->obj.request = (int)req;
     }
     if (panel != NULL)
     {
         // Update the panel request when one of its visual need to be updated. Also mark the scene
         // as needing an update. The scene frame callback checks, at every frame, what needs to be
         // updated. The scene and panel requests lets it avoid doing a full scan at every frame.
-        panel->obj.request = req;
+        panel->obj.request = (int)req;
         if (panel->scene != NULL)
-            panel->scene->obj.request = req;
+            panel->scene->obj.request = (int)req;
     }
     if (req == VKL_VISUAL_REQUEST_REFILL)
         vkl_canvas_to_refill(visual->canvas);
@@ -294,7 +294,7 @@ static void _update_visual_viewport(VklPanel* panel, VklVisual* visual)
     // Each graphics pipeline in the visual has its own transform/clip viewport options
     for (uint32_t pidx = 0; pidx < visual->graphics_count; pidx++)
     {
-        visual->viewport.interact_axis = visual->interact_axis[pidx];
+        visual->viewport.interact_axis = (int32_t)visual->interact_axis[pidx];
         visual->viewport.clip = visual->clip[pidx];
         ASSERT(visual->viewport.viewport.minDepth < visual->viewport.viewport.maxDepth);
         // NOTE: here we make the assumption that there is exactly 1 viewport per graphics
