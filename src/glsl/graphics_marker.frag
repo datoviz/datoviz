@@ -23,5 +23,8 @@ void main() {
     mat2 rot = mat2(cos(angle), sin(angle), -sin(angle), cos(angle));
     P = rot * P;
     float distance = select_marker(P * (size + 2 * params.edge_width + antialias), size, marker);
-    out_color = outline(distance, params.edge_width, params.edge_color, color);
+    if (params.edge_width > 0)
+        out_color = outline(distance, params.edge_width, params.edge_color, color);
+    else
+        out_color = filled(distance, params.edge_width, color);
 }
