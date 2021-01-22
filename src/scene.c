@@ -176,36 +176,54 @@ static void _transform_pos_prop(VklDataCoords coords, VklProp* prop)
 
 
 
-static void _transpose_cds(VklCDSTranspose transpose, VklProp* prop)
+// Transpose a POS or NORMAL prop.
+static void _transpose_pos(VklCDSTranspose transpose, VklProp* prop)
 {
-    ASSERT(prop != NULL);
-    VklArray* arr_src = _prop_array(prop);
-    ASSERT(arr_src != NULL);
-    if (arr_src->item_count == 0)
+    if (transpose == VKL_CDS_TRANSPOSE_NONE)
         return;
 
-    VklArray* arr_dst = &prop->arr_trans;
-    ASSERT(arr_dst != NULL);
-
-    // Create the transformed array if needed.
-    if (arr_dst->dtype == VKL_DTYPE_NONE)
-        *arr_dst = vkl_array(arr_src->item_count, arr_src->dtype);
-
-    // Make sure the destination array has the right size.
-    vkl_array_resize(arr_dst, arr_src->item_count);
+    ASSERT(prop != NULL);
+    VklArray* arr = &prop->arr_orig;
+    ASSERT(arr != NULL);
+    if (arr->item_count == 0)
+        return;
 
     // Make the transposition.
-    void* src = NULL;
-    void* dst = NULL;
-    log_debug("transposing %d elements to CDS transpose %d", arr_src->item_count, transpose);
-    for (uint32_t i = 0; i < arr_src->item_count; i++)
+    void* item = NULL;
+    log_debug("transposing %d elements to CDS transpose %d", arr->item_count, transpose);
+    for (uint32_t i = 0; i < arr->item_count; i++)
     {
-        src = vkl_array_item(arr_src, i);
-        dst = vkl_array_item(arr_dst, i);
+        item = vkl_array_item(arr, i);
         if (prop->dtype == VKL_DTYPE_DVEC3)
-            _transpose_dvec3(transpose, (dvec3*)src, (dvec3*)dst);
+            _transpose_dvec3(transpose, (dvec3*)item, (dvec3*)item);
         else if (prop->dtype == VKL_DTYPE_VEC3)
-            _transpose_vec3(transpose, (vec3*)src, (vec3*)dst);
+            _transpose_vec3(transpose, (vec3*)item, (vec3*)item);
+    }
+}
+
+
+
+// Transpose the POS and NORMAL panels, if needed.
+static void _transpose_visual(VklPanel* panel, VklVisual* visual)
+{
+    ASSERT(panel != NULL);
+    ASSERT(visual != NULL);
+
+    VklProp* prop = NULL;
+
+    // Go through all visual props.
+    prop = vkl_container_iter_init(&visual->props);
+    while (prop != NULL)
+    {
+        // CDS transposition.
+        if (prop->obj.request == 0 &&
+            (prop->prop_type == VKL_PROP_POS || prop->prop_type == VKL_PROP_NORMAL))
+        {
+            _transpose_pos(panel->data_coords.transpose, prop);
+            prop->obj.request = 1; // HACK: we only transpose props once, after they've been set.
+        }
+
+        prop = vkl_container_iter(&visual->props);
     }
 }
 
@@ -234,15 +252,9 @@ static void _panel_normalize_visuals(VklPanel* panel, VklBox box)
         prop = vkl_container_iter_init(&visual->props);
         while (prop != NULL)
         {
-            // Transpose CDS
-            if (prop->prop_type == VKL_PROP_POS || prop->prop_type == VKL_PROP_NORMAL)
-            {
-                _transpose_cds(panel->data_coords.transpose, prop);
-            }
-
+            // Transform all POS props with the panel data coordinates.
             if (prop->prop_type == VKL_PROP_POS)
             {
-                // Transform all POS props with the panel data coordinates.
                 _transform_pos_prop(panel->data_coords, prop);
 
                 // Mark the visual has needing data update.
@@ -268,6 +280,9 @@ static void _panel_visual_added(VklPanel* panel, VklVisual* visual)
     // NOTE: skip visuals that should not be transformed.
     if ((visual->flags & VKL_VISUAL_FLAGS_TRANSFORM_NONE) != 0)
         return;
+
+    // Transpose the POS and NORMAL props, if needed.
+    _transpose_visual(panel, visual);
 
     // Get the visual box.
     VklBox box = _visual_box(visual);
@@ -298,10 +313,15 @@ static void _panel_normalize(VklPanel* panel)
     VklDataCoords* coords = &panel->data_coords;
     VklBox* boxes = calloc(panel->visual_count, sizeof(VklBox));
     uint32_t count = 0;
+
     // Get the bounding box of each visual.
     for (uint32_t i = 0; i < panel->visual_count; i++)
     {
         ASSERT(panel->visuals[i] != NULL);
+
+        // Transpose the POS and NORMAL props, if needed.
+        _transpose_visual(panel, panel->visuals[i]);
+
         // NOTE: skip visuals that should not be transformed.
         if ((panel->visuals[i]->flags & VKL_VISUAL_FLAGS_TRANSFORM_NONE) == 0)
         {
