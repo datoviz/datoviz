@@ -169,14 +169,84 @@ static void _transform_pos_prop(VklDataCoords coords, VklProp* prop)
         return;
     }
 
+    // Create the transformed prop array.
     *arr_tr = vkl_array(arr->item_count, arr->dtype);
     vkl_transform_data(coords, arr, arr_tr, false);
 }
 
 
 
+static void _transpose_dvec3(VklCDSTranspose transpose, dvec3* src, dvec3* dst)
+{
+    ASSERT(src != NULL);
+    ASSERT(dst != NULL);
+    dvec3 src_ = {0}; // make a copy for the case when src==dst
+    memcpy(&src_, src, sizeof(dvec3));
+    switch (transpose)
+    {
+
+    case VKL_CDS_TRANSPOSE_XBYDZL:
+        (*dst)[0] = -(*src)[2];
+        (*dst)[1] = -(*src)[1];
+        (*dst)[2] = -(*src)[0];
+        break;
+
+    case VKL_CDS_TRANSPOSE_XFYRZU:
+        (*dst)[0] = -(*src)[1];
+        (*dst)[1] = +(*src)[2];
+        (*dst)[2] = +(*src)[0];
+        break;
+
+    case VKL_CDS_TRANSPOSE_XLYBZD:
+        (*dst)[0] = -(*src)[0];
+        (*dst)[1] = -(*src)[2];
+        (*dst)[2] = -(*src)[1];
+        break;
+
+    default:
+        log_error("unknown CDS transpose %d", transpose);
+        break;
+    }
+}
+
+
+
+static void _transpose_cds(VklCDSTranspose transpose, VklProp* prop)
+{
+    ASSERT(prop != NULL);
+    VklArray* arr_src = _prop_array(prop);
+    ASSERT(arr_src != NULL);
+    if (arr_src->item_count == 0)
+        return;
+
+    VklArray* arr_dst = &prop->arr_trans;
+    ASSERT(arr_dst != NULL);
+
+    // Create the transformed array if needed.
+    if (arr_dst->dtype == VKL_DTYPE_NONE)
+        *arr_dst = vkl_array(arr_src->item_count, arr_src->dtype);
+
+    // Make sure the destination array has the right size.
+    vkl_array_resize(arr_dst, arr_src->item_count);
+
+    // Make the transposition.
+    void* src = NULL;
+    void* dst = NULL;
+    for (uint32_t i = 0; i < arr_src->item_count; i++)
+    {
+        src = vkl_array_item(arr_src, i);
+        dst = vkl_array_item(arr_dst, i);
+        if (prop->dtype == VKL_DTYPE_DVEC3)
+            _transpose_dvec3(transpose, (dvec3*)src, (dvec3*)dst);
+        // else if (prop->dtype == VKL_DTYPE_VEC3)
+        //     _transpose_vec3(transpose, (vec3*)src, (vec3*)dst);
+    }
+}
+
+
+
 // Renormalize all POS props of all visuals in the panel.
-static void _panel_renormalize(VklPanel* panel, VklBox box)
+static void _panel_normalize_visuals(VklPanel* panel, VklBox box)
 {
     ASSERT(panel != NULL);
     VklVisual* visual = NULL;
@@ -198,6 +268,12 @@ static void _panel_renormalize(VklPanel* panel, VklBox box)
         prop = vkl_container_iter_init(&visual->props);
         while (prop != NULL)
         {
+            // Transpose CDS
+            if (prop->prop_type == VKL_PROP_POS || prop->prop_type == VKL_PROP_NORMAL)
+            {
+                _transpose_cds(panel->data_coords.transpose, prop);
+            }
+
             if (prop->prop_type == VKL_PROP_POS)
             {
                 // Transform all POS props with the panel data coordinates.
@@ -241,7 +317,7 @@ static void _panel_visual_added(VklPanel* panel, VklVisual* visual)
     if (memcmp(&box, &coords->box, sizeof(VklBox)) != 0)
     {
         // Renormalize all visuals in the panel.
-        _panel_renormalize(panel, box);
+        _panel_normalize_visuals(panel, box);
     }
 }
 
@@ -275,7 +351,7 @@ static void _panel_normalize(VklPanel* panel)
         box = _box_cube(box);
 
     // Renormalize all visuals in the panel.
-    _panel_renormalize(panel, box);
+    _panel_normalize_visuals(panel, box);
 
     // Update the axes.
     if (panel->controller->type == VKL_CONTROLLER_AXES_2D)

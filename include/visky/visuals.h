@@ -46,7 +46,6 @@ typedef enum
     VKL_PROP_TEXT,
     VKL_PROP_TEXT_SIZE,
     VKL_PROP_LINE_WIDTH,
-    VKL_PROP_TYPE, // remove?
     VKL_PROP_LENGTH,
     VKL_PROP_MARGIN,
     VKL_PROP_NORMAL,

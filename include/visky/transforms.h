@@ -73,6 +73,16 @@ typedef enum
 
 
 
+typedef enum
+{
+    VKL_CDS_TRANSPOSE_DEFAULT, // x right  y up     z front
+    VKL_CDS_TRANSPOSE_XFYRZU,  // x front  y right  z up
+    VKL_CDS_TRANSPOSE_XBYDZL,  // x back   y down   z left
+    VKL_CDS_TRANSPOSE_XLYBZD,  // x left   y back   z down
+} VklCDSTranspose;
+
+
+
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
@@ -100,7 +110,8 @@ struct VklBox
 
 struct VklDataCoords
 {
-    VklBox box; // in data coordinate system
+    VklBox box;                // in data coordinate system
+    VklCDSTranspose transpose; // possible transposition of the data coordinate system
     VklTransformType transform;
     int flags; // come from the panel
     // TODO: union with transform parameters?
