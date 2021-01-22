@@ -27,4 +27,6 @@ void main() {
         out_color = outline(distance, params.edge_width, params.edge_color, color);
     else
         out_color = filled(distance, params.edge_width, color);
+    if (out_color.a < .05)
+        discard;
 }

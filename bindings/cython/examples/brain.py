@@ -78,6 +78,13 @@ def load_yanliang(path):
     return pos, color, fr
 
 
+@MEM.cache
+def load_volume():
+    volume, info = mcc.get_template_volume()
+    volume *= 100
+    return volume
+
+
 def ccf2uvw(P):
     P = atlas.ccf2xyz(P, ccf_order='apdvml')
     x, y, z = P
@@ -116,6 +123,7 @@ points = panel.visual('marker', depth_test=True)
 points.data('pos', pos_ccf)
 points.data('color', color)
 points.data('ms', ms)
+points.data('linewidth', np.ones(1))
 
 # Animation.
 i = 0
@@ -136,9 +144,11 @@ P = vertices
 x0, y0, z0 = P.min(axis=0)
 x1, y1, z1 = P.max(axis=0)
 x = .5 * (x0 + x1)
+z0 -= .1 * (z1 - z0)
+z1 += .1 * (z1 - z0)
+y1 += (y1 - y0)
 
-volume, info = mcc.get_template_volume()
-volume *= 100
+volume = load_volume()
 
 # Slice plane.
 plane = panel.visual('volume_slice')
@@ -158,12 +168,12 @@ plane.data('pos', np.atleast_2d(P2), idx=2)
 plane.data('pos', np.atleast_2d(P3), idx=3)
 
 # Top left, top right, bottom right, bottom left
-plane.data('texcoords', np.atleast_2d(ccf2uvw(P0)), idx=0)
-plane.data('texcoords', np.atleast_2d(ccf2uvw(P1)), idx=1)
-plane.data('texcoords', np.atleast_2d(ccf2uvw(P2)), idx=2)
-plane.data('texcoords', np.atleast_2d(ccf2uvw(P3)), idx=3)
+plane.data('texcoords', np.atleast_2d(ccf2uvw(P0)[[2, 0, 1]]), idx=0)
+plane.data('texcoords', np.atleast_2d(ccf2uvw(P1)[[2, 0, 1]]), idx=1)
+plane.data('texcoords', np.atleast_2d(ccf2uvw(P2)[[2, 0, 1]]), idx=2)
+plane.data('texcoords', np.atleast_2d(ccf2uvw(P3)[[2, 0, 1]]), idx=3)
 
-a = (0, .1, 1, 1)
+a = (0, .05, 1, 1)
 b = (0, 1, 1, 1)
 plane.data('transferx', np.array([a]), idx=1)
 plane.data('transfery', np.array([b]), idx=1)
