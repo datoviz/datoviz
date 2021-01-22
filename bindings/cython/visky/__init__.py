@@ -4,7 +4,7 @@ import os.path as op
 
 from IPython.terminal.pt_inputhooks import register
 
-from .pyvisky import App
+from .pyvisky import App, colormap
 
 
 # Logging

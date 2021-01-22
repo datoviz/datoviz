@@ -361,6 +361,15 @@ vkl_colormap_scale(VklColormap cmap, double value, double vmin, double vmax, cve
     vkl_colormap(cmap, u_value, color);
 }
 
+static void vkl_colormap_array(
+    VklColormap cmap, double vmin, double vmax, uint32_t count, double* values, cvec4* out)
+{
+    ASSERT(values != NULL);
+    ASSERT(out != NULL);
+    for (uint32_t i = 0; i < count; i++)
+        vkl_colormap_scale(cmap, values[i], vmin, vmax, out[i]);
+}
+
 // Pack a 4*uint8 color into a vec2 uv (u = linear combination of components, v = -1 to signal the
 // shader that it needs to unpack the color), used for mesh. Only works because integers up to 2^24
 // can be represented exactly with float32.

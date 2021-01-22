@@ -18,7 +18,7 @@ INTERNAL_HEADER_DIR = (Path(__file__).parent / '../../../src').resolve()
 EXTERNAL_HEADER_DIR = HEADER_DIR / '../../external'
 CYTHON_OUTPUT = (Path(__file__).parent / '../visky/cyvisky.pxd').resolve()
 HEADER_FILES = (
-    'app.h', 'vklite.h', 'context.h', 'canvas.h', 'keycode.h', 'transforms.h',
+    'app.h', 'vklite.h', 'context.h', 'canvas.h', 'keycode.h', 'transforms.h', 'colormaps.h',
     'graphics.h', 'builtin_visuals.h', 'panel.h', 'visuals.h', 'scene.h')
 STRUCTS = (
     'VklEvent',
@@ -303,6 +303,11 @@ if __name__ == '__main__':
         generated = _gen_enum(enums)
         if generated:
             enums_to_insert += f'# from file: {filename.name}\n\n{generated}'
+
+        if 'color' in str(filename):
+            defines = parse_defines(text)
+            for key, val in defines.items():
+                enums_to_insert = enums_to_insert.replace(key, str(val))
 
         # Parse the structs
         structs = _parse_struct(text)

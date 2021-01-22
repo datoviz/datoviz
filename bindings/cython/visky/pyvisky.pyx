@@ -122,6 +122,19 @@ def _get_prop(name):
     return _PROPS[name]
 
 
+ctypedef np.double_t DOUBLE
+
+def colormap(np.ndarray[DOUBLE, ndim=1] values, vmin=None, vmax=None, cmap=cv.VKL_CMAP_VIRIDIS):
+    N = values.size
+    # TODO: ndarrays
+    cdef np.ndarray out = np.zeros((N, 4), dtype=np.uint8)
+    if vmin is None:
+        vmin = values.min()
+    if vmax is None:
+        vmax = values.max()
+    cv.vkl_colormap_array(cmap, vmin, vmax, N, <double*>&values.data[0], <cv.cvec4*>&out.data[0])
+    return out
+
 
 cdef class App:
 

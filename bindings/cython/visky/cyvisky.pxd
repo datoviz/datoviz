@@ -260,6 +260,157 @@ cdef extern from "<visky/visky.h>":
         VKL_MOUSE_BUTTON_MIDDLE = 2
         VKL_MOUSE_BUTTON_RIGHT = 3
 
+    # from file: colormaps.h
+
+    ctypedef enum VklColormap:
+        VKL_CMAP_BINARY = 0
+        VKL_CMAP_HSV = 1
+        VKL_CMAP_CIVIDIS = 2
+        VKL_CMAP_INFERNO = 3
+        VKL_CMAP_MAGMA = 4
+        VKL_CMAP_PLASMA = 5
+        VKL_CMAP_VIRIDIS = 6
+        VKL_CMAP_BLUES = 7
+        VKL_CMAP_BUGN = 8
+        VKL_CMAP_BUPU = 9
+        VKL_CMAP_GNBU = 10
+        VKL_CMAP_GREENS = 11
+        VKL_CMAP_GREYS = 12
+        VKL_CMAP_ORANGES = 13
+        VKL_CMAP_ORRD = 14
+        VKL_CMAP_PUBU = 15
+        VKL_CMAP_PUBUGN = 16
+        VKL_CMAP_PURPLES = 17
+        VKL_CMAP_RDPU = 18
+        VKL_CMAP_REDS = 19
+        VKL_CMAP_YLGN = 20
+        VKL_CMAP_YLGNBU = 21
+        VKL_CMAP_YLORBR = 22
+        VKL_CMAP_YLORRD = 23
+        VKL_CMAP_AFMHOT = 24
+        VKL_CMAP_AUTUMN = 25
+        VKL_CMAP_BONE = 26
+        VKL_CMAP_COOL = 27
+        VKL_CMAP_COPPER = 28
+        VKL_CMAP_GIST_HEAT = 29
+        VKL_CMAP_GRAY = 30
+        VKL_CMAP_HOT = 31
+        VKL_CMAP_PINK = 32
+        VKL_CMAP_SPRING = 33
+        VKL_CMAP_SUMMER = 34
+        VKL_CMAP_WINTER = 35
+        VKL_CMAP_WISTIA = 36
+        VKL_CMAP_BRBG = 37
+        VKL_CMAP_BWR = 38
+        VKL_CMAP_COOLWARM = 39
+        VKL_CMAP_PIYG = 40
+        VKL_CMAP_PRGN = 41
+        VKL_CMAP_PUOR = 42
+        VKL_CMAP_RDBU = 43
+        VKL_CMAP_RDGY = 44
+        VKL_CMAP_RDYLBU = 45
+        VKL_CMAP_RDYLGN = 46
+        VKL_CMAP_SEISMIC = 47
+        VKL_CMAP_SPECTRAL = 48
+        VKL_CMAP_TWILIGHT_SHIFTED = 49
+        VKL_CMAP_TWILIGHT = 50
+        VKL_CMAP_BRG = 51
+        VKL_CMAP_CMRMAP = 52
+        VKL_CMAP_CUBEHELIX = 53
+        VKL_CMAP_FLAG = 54
+        VKL_CMAP_GIST_EARTH = 55
+        VKL_CMAP_GIST_NCAR = 56
+        VKL_CMAP_GIST_RAINBOW = 57
+        VKL_CMAP_GIST_STERN = 58
+        VKL_CMAP_GNUPLOT2 = 59
+        VKL_CMAP_GNUPLOT = 60
+        VKL_CMAP_JET = 61
+        VKL_CMAP_NIPY_SPECTRAL = 62
+        VKL_CMAP_OCEAN = 63
+        VKL_CMAP_PRISM = 64
+        VKL_CMAP_RAINBOW = 65
+        VKL_CMAP_TERRAIN = 66
+        VKL_CMAP_BKR = 67
+        VKL_CMAP_BKY = 68
+        VKL_CMAP_CET_D10 = 69
+        VKL_CMAP_CET_D11 = 70
+        VKL_CMAP_CET_D8 = 71
+        VKL_CMAP_CET_D13 = 72
+        VKL_CMAP_CET_D3 = 73
+        VKL_CMAP_CET_D1A = 74
+        VKL_CMAP_BJY = 75
+        VKL_CMAP_GWV = 76
+        VKL_CMAP_BWY = 77
+        VKL_CMAP_CET_D12 = 78
+        VKL_CMAP_CET_R3 = 79
+        VKL_CMAP_CET_D9 = 80
+        VKL_CMAP_CWR = 81
+        VKL_CMAP_CET_CBC1 = 82
+        VKL_CMAP_CET_CBC2 = 83
+        VKL_CMAP_CET_CBL1 = 84
+        VKL_CMAP_CET_CBL2 = 85
+        VKL_CMAP_CET_CBTC1 = 86
+        VKL_CMAP_CET_CBTC2 = 87
+        VKL_CMAP_CET_CBTL1 = 88
+        VKL_CMAP_BGY = 89
+        VKL_CMAP_BGYW = 90
+        VKL_CMAP_BMW = 91
+        VKL_CMAP_CET_C1 = 92
+        VKL_CMAP_CET_C1S = 93
+        VKL_CMAP_CET_C2 = 94
+        VKL_CMAP_CET_C4 = 95
+        VKL_CMAP_CET_C4S = 96
+        VKL_CMAP_CET_C5 = 97
+        VKL_CMAP_CET_I1 = 98
+        VKL_CMAP_CET_I3 = 99
+        VKL_CMAP_CET_L10 = 100
+        VKL_CMAP_CET_L11 = 101
+        VKL_CMAP_CET_L12 = 102
+        VKL_CMAP_CET_L16 = 103
+        VKL_CMAP_CET_L17 = 104
+        VKL_CMAP_CET_L18 = 105
+        VKL_CMAP_CET_L19 = 106
+        VKL_CMAP_CET_L4 = 107
+        VKL_CMAP_CET_L7 = 108
+        VKL_CMAP_CET_L8 = 109
+        VKL_CMAP_CET_L9 = 110
+        VKL_CMAP_CET_R1 = 111
+        VKL_CMAP_CET_R2 = 112
+        VKL_CMAP_COLORWHEEL = 113
+        VKL_CMAP_FIRE = 114
+        VKL_CMAP_ISOLUM = 115
+        VKL_CMAP_KB = 116
+        VKL_CMAP_KBC = 117
+        VKL_CMAP_KG = 118
+        VKL_CMAP_KGY = 119
+        VKL_CMAP_KR = 120
+        VKL_CMAP_BLACK_BODY = 121
+        VKL_CMAP_KINDLMANN = 122
+        VKL_CMAP_EXTENDED_KINDLMANN = 123
+        VKL_CPAL256_GLASBEY = 176
+        VKL_CPAL256_GLASBEY_COOL = 125
+        VKL_CPAL256_GLASBEY_DARK = 126
+        VKL_CPAL256_GLASBEY_HV = 127
+        VKL_CPAL256_GLASBEY_LIGHT = 128
+        VKL_CPAL256_GLASBEY_WARM = 129
+        VKL_CPAL032_ACCENT = 240
+        VKL_CPAL032_DARK2 = 131
+        VKL_CPAL032_PAIRED = 132
+        VKL_CPAL032_PASTEL1 = 133
+        VKL_CPAL032_PASTEL2 = 134
+        VKL_CPAL032_SET1 = 135
+        VKL_CPAL032_SET2 = 136
+        VKL_CPAL032_SET3 = 137
+        VKL_CPAL032_TAB10 = 138
+        VKL_CPAL032_TAB20 = 139
+        VKL_CPAL032_TAB20B = 140
+        VKL_CPAL032_TAB20C = 141
+        VKL_CPAL032_CATEGORY10_10 = 142
+        VKL_CPAL032_CATEGORY20_20 = 143
+        VKL_CPAL032_CATEGORY20B_20 = 144
+        VKL_CPAL032_CATEGORY20C_20 = 145
+        VKL_CPAL032_COLORBLIND8 = 146
+
     # from file: context.h
 
     ctypedef enum VklDefaultQueue:
@@ -740,6 +891,7 @@ cdef extern from "<visky/visky.h>":
 
 
     ctypedef void (*VklEventCallback)(VklCanvas*, VklEvent)
+    void vkl_colormap_array(VklColormap cmap, double vmin, double vmax, uint32_t count, double* values, cvec4* out);
 
 
 
