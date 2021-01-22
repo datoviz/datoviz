@@ -466,6 +466,37 @@ cdef extern from "<visky/visky.h>":
         VKL_VISUAL_FLAGS_TRANSFORM_AUTO = 0x0000
         VKL_VISUAL_FLAGS_TRANSFORM_NONE = 0x0010
 
+    # from file: transforms.h
+
+    ctypedef enum VklTransformType:
+        VKL_TRANSFORM_NONE = 0
+        VKL_TRANSFORM_CARTESIAN = 1
+        VKL_TRANSFORM_POLAR = 2
+        VKL_TRANSFORM_CYLINDRICAL = 3
+        VKL_TRANSFORM_SPHERICAL = 4
+        VKL_TRANSFORM_EARTH_MERCATOR_WEB = 5
+
+    ctypedef enum VklTransformFlags:
+        VKL_TRANSFORM_FLAGS_NONE = 0x0000
+        VKL_TRANSFORM_FLAGS_LOGX = 0x0001
+        VKL_TRANSFORM_FLAGS_LOGY = 0x0002
+        VKL_TRANSFORM_FLAGS_LOGLOG = 0x0003
+        VKL_TRANSFORM_FLAGS_FIXED_ASPECT = 0x0008
+
+    ctypedef enum VklCDS:
+        VKL_CDS_NONE = 0
+        VKL_CDS_DATA = 1
+        VKL_CDS_SCENE = 2
+        VKL_CDS_VULKAN = 3
+        VKL_CDS_FRAMEBUFFER = 4
+        VKL_CDS_WINDOW = 5
+
+    ctypedef enum VklCDSTranspose:
+        VKL_CDS_TRANSPOSE_NONE = 0
+        VKL_CDS_TRANSPOSE_XFYRZU = 1
+        VKL_CDS_TRANSPOSE_XBYDZL = 2
+        VKL_CDS_TRANSPOSE_XLYBZD = 3
+
     # from file: visuals.h
 
     ctypedef enum VklPipelineType:
@@ -484,27 +515,26 @@ cdef extern from "<visky/visky.h>":
         VKL_PROP_TEXT = 8
         VKL_PROP_TEXT_SIZE = 9
         VKL_PROP_LINE_WIDTH = 10
-        VKL_PROP_TYPE = 11
-        VKL_PROP_LENGTH = 12
-        VKL_PROP_MARGIN = 13
-        VKL_PROP_NORMAL = 14
-        VKL_PROP_TEXCOORDS = 15
-        VKL_PROP_TEXCOEFS = 16
-        VKL_PROP_IMAGE = 17
-        VKL_PROP_VOLUME = 18
-        VKL_PROP_COLOR_TEXTURE = 19
-        VKL_PROP_TRANSFER_X = 20
-        VKL_PROP_TRANSFER_Y = 21
-        VKL_PROP_LIGHT_POS = 22
-        VKL_PROP_LIGHT_PARAMS = 23
-        VKL_PROP_CLIP = 24
-        VKL_PROP_VIEW_POS = 25
-        VKL_PROP_MODEL = 26
-        VKL_PROP_VIEW = 27
-        VKL_PROP_PROJ = 28
-        VKL_PROP_TIME = 29
-        VKL_PROP_INDEX = 30
-        VKL_PROP_TRANSFORM = 31
+        VKL_PROP_LENGTH = 11
+        VKL_PROP_MARGIN = 12
+        VKL_PROP_NORMAL = 13
+        VKL_PROP_TEXCOORDS = 14
+        VKL_PROP_TEXCOEFS = 15
+        VKL_PROP_IMAGE = 16
+        VKL_PROP_VOLUME = 17
+        VKL_PROP_COLOR_TEXTURE = 18
+        VKL_PROP_TRANSFER_X = 19
+        VKL_PROP_TRANSFER_Y = 20
+        VKL_PROP_LIGHT_POS = 21
+        VKL_PROP_LIGHT_PARAMS = 22
+        VKL_PROP_CLIP = 23
+        VKL_PROP_VIEW_POS = 24
+        VKL_PROP_MODEL = 25
+        VKL_PROP_VIEW = 26
+        VKL_PROP_PROJ = 27
+        VKL_PROP_TIME = 28
+        VKL_PROP_INDEX = 29
+        VKL_PROP_TRANSFORM = 30
 
     ctypedef enum VklSourceKind:
         VKL_SOURCE_KIND_NONE = 0
@@ -724,6 +754,9 @@ cdef extern from "<visky/visky.h>":
     VklTexture* vkl_ctx_texture(VklContext* context, uint32_t dims, uvec3 size, VkFormat format)
     void vkl_texture_filter(VklTexture* texture, VklFilterType type, VkFilter filter)
     void vkl_texture_upload(VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, const void* data)
+
+    # from file: panel.h
+    void vkl_panel_transpose(VklPanel* panel, VklCDSTranspose transpose)
 
     # from file: scene.h
     VklScene* vkl_scene(VklCanvas* canvas, uint32_t n_rows, uint32_t n_cols)

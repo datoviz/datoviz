@@ -216,6 +216,7 @@ VklPanel* vkl_panel(VklGrid* grid, uint32_t row, uint32_t col)
         panel->data_coords.box.p1[i] = +1;
     }
     panel->data_coords.transform = VKL_TRANSFORM_CARTESIAN;
+    panel->data_coords.transpose = VKL_CDS_TRANSPOSE_NONE;
 
     // Default DPI scaling.
     panel->viewport.dpi_scaling = VKL_DEFAULT_DPI_SCALING;
@@ -380,6 +381,14 @@ void vkl_panel_cell(VklPanel* panel, uint32_t row, uint32_t col)
     _update_grid_panels(panel->grid, VKL_GRID_HORIZONTAL);
     _update_grid_panels(panel->grid, VKL_GRID_VERTICAL);
     // vkl_canvas_to_refill(panel->grid->canvas);
+}
+
+
+
+void vkl_panel_transpose(VklPanel* panel, VklCDSTranspose transpose)
+{
+    ASSERT(panel != NULL);
+    panel->data_coords.transpose = transpose;
 }
 
 

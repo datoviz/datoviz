@@ -67,6 +67,13 @@ _CONTROLLERS = {
     'fps': cv.VKL_CONTROLLER_CAMERA,
 }
 
+_TRANSPOSES = {
+    None: cv.VKL_CDS_TRANSPOSE_NONE,
+    'xfyrzu': cv.VKL_CDS_TRANSPOSE_XFYRZU,
+    'xbydzl': cv.VKL_CDS_TRANSPOSE_XBYDZL,
+    'xlybzd': cv.VKL_CDS_TRANSPOSE_XLYBZD,
+}
+
 _PROPS = {
     'pos': cv.VKL_PROP_POS,
     'color': cv.VKL_PROP_COLOR,
@@ -198,11 +205,13 @@ cdef class Canvas:
         self._app = app
         # _add_close_callback(self._c_canvas, self._destroy_wrapper, ())
 
-    def panel(self, int row=0, int col=0, controller='panzoom'):
+    def panel(self, int row=0, int col=0, controller='panzoom', transpose=None):
         ctl = _CONTROLLERS.get(controller, cv.VKL_CONTROLLER_NONE)
+        trans = _TRANSPOSES.get(transpose, cv.VKL_CDS_TRANSPOSE_NONE)
         c_panel = cv.vkl_scene_panel(self._c_scene, row, col, ctl, 0)
         if c_panel is NULL:
             raise MemoryError()
+        cv.vkl_panel_transpose(c_panel, trans)
         p = Panel()
         p.create(self._c_scene, c_panel)
         self._panels.append(p)

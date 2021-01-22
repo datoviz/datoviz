@@ -9,13 +9,12 @@ from ibllib.atlas import AllenAtlas
 from visky import canvas, run
 
 
-
 # -------------------------------------------------------------------------------------------------
 # Utils
 # -------------------------------------------------------------------------------------------------
 
 def _transpose(M):
-    # return M
+    return M
     x, y, z = M.T
     return np.c_[-z, -y, -x]
 
@@ -40,7 +39,6 @@ def region_color(name):
     i = np.nonzero(atlas.regions.name == 'Isocortex')[0][0]
     mesh_color = atlas.regions.rgb[i]
     return mesh_color
-
 
 
 # -------------------------------------------------------------------------------------------------
@@ -87,14 +85,12 @@ def load_yanliang(path):
     return pos, color, fr
 
 
-
 # -------------------------------------------------------------------------------------------------
 # Main script
 # -------------------------------------------------------------------------------------------------
-
 # Create the scene.
 canvas = canvas()
-panel = canvas.panel(controller='arcball')
+panel = canvas.panel(controller='arcball', transpose='xbydzl')
 
 # Load the mesh.
 vertices_, normals_, indices = load_mesh('Isocortex')
@@ -123,14 +119,16 @@ points.data('ms', ms)
 
 # Animation.
 i = 0
+
+
 def f():
     global i
     ms = 2 + 4 * np.sqrt(fr[:, i % fr.shape[1], 0])
     points.data('ms', ms)
     i += 1
+
+
 canvas.connect('timer', f, param=.05)
-
-
 
 
 P = vertices
@@ -151,7 +149,6 @@ plane.data('pos', np.array([[x1, y0, z]]), idx=2)
 plane.data('pos', np.array([[x0, y0, z]]), idx=3)
 
 
-
 P = atlas.ccf2xyz(vertices_, ccf_order='apdvml')
 x0, y0, z0 = P.min(axis=0)
 x1, y1, z1 = P.max(axis=0)
@@ -168,7 +165,6 @@ plane.data('texcoords', np.array([[u0, v1, w]]), idx=0)
 plane.data('texcoords', np.array([[u1, v1, w]]), idx=1)
 plane.data('texcoords', np.array([[u1, v0, w]]), idx=2)
 plane.data('texcoords', np.array([[u0, v0, w]]), idx=3)
-
 
 
 a = (0, .1, 1, 1)
