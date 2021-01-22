@@ -69,83 +69,50 @@ static void _box_print(VklBox box)
 // Make a box cubic/square (if need to keep fixed aspect ratio).
 static VklBox _box_cube(VklBox box)
 {
-    double xmin = box.p0[0];
-    double xmax = box.p1[0];
-    double ymin = box.p0[1];
-    double ymax = box.p1[1];
-    double zmin = box.p0[2];
-    double zmax = box.p1[2];
+    double edge[3] = {0};
+    double edge_common = 0;
 
-    double xcenter = .5 * (xmin + xmax);
-    double ycenter = .5 * (ymin + ymax);
-    double zcenter = .5 * (zmin + zmax);
+    double vmin = 0;
+    double vmax = 0;
+    double center = 0;
 
-    ASSERT(xmin <= xcenter && xcenter <= xmax);
-    ASSERT(ymin <= ycenter && ycenter <= ymax);
-    ASSERT(zmin <= zcenter && zcenter <= zmax);
+    for (uint32_t j = 0; j < 3; j++)
+    {
+        vmin = box.p0[j];
+        vmax = box.p1[j];
 
-    double edge = 0;
-    double edge_x = MAX(xmax - xcenter, xcenter - xmin);
-    double edge_y = MAX(ymax - ycenter, ycenter - ymin);
-    double edge_z = MAX(zmax - zcenter, zcenter - zmin);
+        if (vmin == +INFINITY && vmax == -INFINITY)
+        {
+            vmin = -1;
+            vmax = +1;
+        }
+        ASSERT(vmin < +INFINITY);
+        ASSERT(vmax > -INFINITY);
 
-    edge = MAX(edge, edge_x);
-    edge = MAX(edge, edge_y);
-    edge = MAX(edge, edge_z);
-    if (edge == 0)
-        edge = 1;
-    ASSERT(edge > 0);
+        center = .5 * (vmin + vmax);
 
-    // Find the edge on each axis. Do not extend the range if an axis range is degenerate.
-    edge_x = edge_x > 0 ? edge : edge_x;
-    edge_y = edge_y > 0 ? edge : edge_y;
-    edge_z = edge_z > 0 ? edge : edge_z;
+        ASSERT(vmin <= center && center <= vmax);
+
+        edge[j] = MAX(vmax - center, center - vmin);
+    }
+
+    // Max edge.
+    for (uint32_t j = 0; j < 3; j++)
+        edge_common = MAX(edge_common, edge[j]);
+    if (edge_common == 0)
+        edge_common = 1;
+    ASSERT(edge_common > 0);
 
     VklBox out = box;
-    // if (edge_x > 0)
-    // {
-    out.p0[0] = xcenter - edge_x;
-    out.p1[0] = xcenter + edge_x;
-    // }
-    // if (edge_y > 0)
-    // {
-    out.p0[1] = ycenter - edge_y;
-    out.p1[1] = ycenter + edge_y;
-    // }
-    // if (edge_z > 0)
-    // {
-    out.p0[2] = zcenter - edge_z;
-    out.p1[2] = zcenter + edge_z;
-    // }
+    for (uint32_t j = 0; j < 3; j++)
+    {
+        // Find the edge on each axis. Do not extend the range if an axis range is degenerate.
+        out.p0[j] = center - (edge[j] == 0 ? 0 : edge_common);
+        out.p1[j] = center + (edge[j] == 0 ? 0 : edge_common);
+    }
+
     return out;
 }
-
-
-
-// // NOTE: 1D transform only
-// static void _transform_linear(
-//     dvec2 , VklArray* points_in, //
-//     VklArray* points_out)
-// {
-//     ASSERT(points_out->item_count == points_in->item_count);
-//     ASSERT(points_out->item_size == points_in->item_size);
-
-//     ASSERT(points_out->dtype == points_in->dtype);
-//     ASSERT(points_out->dtype == VKL_DTYPE_DOUBLE);
-
-//     double* pos_in = NULL;
-//     double* pos_out = NULL;
-
-//     double a = (box_out.p1[0] - box_out.p0[0]) / (box_in.p1[0] - box_in.p0[0]);
-//     double b = box_out.p0[0] * box_in.p1[0] - box_out.p1[0] * box_in.p0[0];
-
-//     for (uint32_t i = 0; i < points_in->item_count; i++)
-//     {
-//         pos_in = (double*)vkl_array_item(points_in, i);
-//         pos_out = (double*)vkl_array_item(points_out, i);
-//         (*pos_out) = a * (*pos_in) + b;
-//     }
-// }
 
 
 
