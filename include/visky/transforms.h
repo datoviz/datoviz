@@ -73,6 +73,7 @@ typedef enum
 
 
 
+// CDS transpose.
 typedef enum
 {
     VKL_CDS_TRANSPOSE_DEFAULT, // x right  y up     z front
@@ -134,6 +135,49 @@ struct VklTransformChain
     uint32_t count;
     VklTransform transforms[VKL_TRANSFORM_CHAIN_MAX_SIZE];
 };
+
+
+
+/*************************************************************************************************/
+/*  Transposition functions                                                                      */
+/*************************************************************************************************/
+
+#define MAKE_TRANSPOSE(T)                                                                         \
+    static void _transpose_##T(VklCDSTranspose transpose, T* src, T* dst)                         \
+    {                                                                                             \
+        ASSERT(src != NULL);                                                                      \
+        ASSERT(dst != NULL);                                                                      \
+        T src_ = {0};                                                                             \
+        memcpy(&src_, src, sizeof(T));                                                            \
+        switch (transpose)                                                                        \
+        {                                                                                         \
+                                                                                                  \
+        case VKL_CDS_TRANSPOSE_XBYDZL:                                                            \
+            (*dst)[0] = -(*src)[2];                                                               \
+            (*dst)[1] = -(*src)[1];                                                               \
+            (*dst)[2] = -(*src)[0];                                                               \
+            break;                                                                                \
+                                                                                                  \
+        case VKL_CDS_TRANSPOSE_XFYRZU:                                                            \
+            (*dst)[0] = -(*src)[1];                                                               \
+            (*dst)[1] = +(*src)[2];                                                               \
+            (*dst)[2] = +(*src)[0];                                                               \
+            break;                                                                                \
+                                                                                                  \
+        case VKL_CDS_TRANSPOSE_XLYBZD:                                                            \
+            (*dst)[0] = -(*src)[0];                                                               \
+            (*dst)[1] = -(*src)[2];                                                               \
+            (*dst)[2] = -(*src)[1];                                                               \
+            break;                                                                                \
+                                                                                                  \
+        default:                                                                                  \
+            log_error("unknown CDS transpose %d", transpose);                                     \
+            break;                                                                                \
+        }                                                                                         \
+    }
+
+MAKE_TRANSPOSE(dvec3)
+MAKE_TRANSPOSE(vec3)
 
 
 

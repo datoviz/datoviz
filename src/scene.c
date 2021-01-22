@@ -176,41 +176,6 @@ static void _transform_pos_prop(VklDataCoords coords, VklProp* prop)
 
 
 
-static void _transpose_dvec3(VklCDSTranspose transpose, dvec3* src, dvec3* dst)
-{
-    ASSERT(src != NULL);
-    ASSERT(dst != NULL);
-    dvec3 src_ = {0}; // make a copy for the case when src==dst
-    memcpy(&src_, src, sizeof(dvec3));
-    switch (transpose)
-    {
-
-    case VKL_CDS_TRANSPOSE_XBYDZL:
-        (*dst)[0] = -(*src)[2];
-        (*dst)[1] = -(*src)[1];
-        (*dst)[2] = -(*src)[0];
-        break;
-
-    case VKL_CDS_TRANSPOSE_XFYRZU:
-        (*dst)[0] = -(*src)[1];
-        (*dst)[1] = +(*src)[2];
-        (*dst)[2] = +(*src)[0];
-        break;
-
-    case VKL_CDS_TRANSPOSE_XLYBZD:
-        (*dst)[0] = -(*src)[0];
-        (*dst)[1] = -(*src)[2];
-        (*dst)[2] = -(*src)[1];
-        break;
-
-    default:
-        log_error("unknown CDS transpose %d", transpose);
-        break;
-    }
-}
-
-
-
 static void _transpose_cds(VklCDSTranspose transpose, VklProp* prop)
 {
     ASSERT(prop != NULL);
@@ -232,14 +197,15 @@ static void _transpose_cds(VklCDSTranspose transpose, VklProp* prop)
     // Make the transposition.
     void* src = NULL;
     void* dst = NULL;
+    log_debug("transposing %d elements to CDS transpose %d", arr_src->item_count, transpose);
     for (uint32_t i = 0; i < arr_src->item_count; i++)
     {
         src = vkl_array_item(arr_src, i);
         dst = vkl_array_item(arr_dst, i);
         if (prop->dtype == VKL_DTYPE_DVEC3)
             _transpose_dvec3(transpose, (dvec3*)src, (dvec3*)dst);
-        // else if (prop->dtype == VKL_DTYPE_VEC3)
-        //     _transpose_vec3(transpose, (vec3*)src, (vec3*)dst);
+        else if (prop->dtype == VKL_DTYPE_VEC3)
+            _transpose_vec3(transpose, (vec3*)src, (vec3*)dst);
     }
 }
 
