@@ -61,7 +61,9 @@ static VklBox _box_merge(uint32_t count, VklBox* boxes)
 
 static void _box_print(VklBox box)
 {
-    log_info("box [%f, %f] [%f, %f]", box.p0[0], box.p1[0], box.p0[1], box.p1[1]);
+    log_info(
+        "box [%f, %f] [%f, %f] [%f %f]", box.p0[0], box.p1[0], box.p0[1], box.p1[1], box.p0[2],
+        box.p1[2]);
 }
 
 
@@ -69,12 +71,12 @@ static void _box_print(VklBox box)
 // Make a box cubic/square (if need to keep fixed aspect ratio).
 static VklBox _box_cube(VklBox box)
 {
-    double edge[3] = {0};
     double edge_common = 0;
-
     double vmin = 0;
     double vmax = 0;
-    double center = 0;
+
+    dvec3 edge = {0};
+    dvec3 center = {0};
 
     for (uint32_t j = 0; j < 3; j++)
     {
@@ -89,11 +91,12 @@ static VklBox _box_cube(VklBox box)
         ASSERT(vmin < +INFINITY);
         ASSERT(vmax > -INFINITY);
 
-        center = .5 * (vmin + vmax);
+        center[j] = .5 * (vmin + vmax);
+        ASSERT(center[j] != NAN);
 
-        ASSERT(vmin <= center && center <= vmax);
+        ASSERT(vmin <= center[j] && center[j] <= vmax);
 
-        edge[j] = MAX(vmax - center, center - vmin);
+        edge[j] = MAX(vmax - center[j], center[j] - vmin);
     }
 
     // Max edge.
@@ -107,10 +110,9 @@ static VklBox _box_cube(VklBox box)
     for (uint32_t j = 0; j < 3; j++)
     {
         // Find the edge on each axis. Do not extend the range if an axis range is degenerate.
-        out.p0[j] = center - (edge[j] == 0 ? 0 : edge_common);
-        out.p1[j] = center + (edge[j] == 0 ? 0 : edge_common);
+        out.p0[j] = center[j] - (edge[j] == 0 ? 0 : edge_common);
+        out.p1[j] = center[j] + (edge[j] == 0 ? 0 : edge_common);
     }
-
     return out;
 }
 
