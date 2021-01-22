@@ -85,6 +85,7 @@ _PROPS = {
     'light_params': cv.VKL_PROP_LIGHT_PARAMS,
     'light_pos': cv.VKL_PROP_LIGHT_POS,
     'texcoefs': cv.VKL_PROP_TEXCOEFS,
+    'linewidth': cv.VKL_PROP_LINE_WIDTH,
     'view_pos': cv.VKL_PROP_VIEW_POS,
     'colormap': cv.VKL_PROP_COLORMAP,
     'transferx': cv.VKL_PROP_TRANSFER_X,
@@ -287,11 +288,13 @@ cdef class Panel:
         self._c_panel = c_panel
         self._c_scene = c_scene
 
-    def visual(self, vtype, depth_test=None):
+    def visual(self, vtype, depth_test=None, transform='auto'):
         visual_type = _VISUALS.get(vtype, cv.VKL_VISUAL_MARKER_RAW)
         flags = 0
         if depth_test:
             flags |= cv.VKL_GRAPHICS_FLAGS_DEPTH_TEST_ENABLE
+        if transform is None:
+            flags |= cv.VKL_VISUAL_FLAGS_TRANSFORM_NONE
         c_visual = cv.vkl_scene_visual(self._c_panel, visual_type, flags)
         if c_visual is NULL:
             raise MemoryError()
@@ -317,6 +320,9 @@ cdef class Visual:
         if value.dtype != dtype:
             value = value.astype(dtype)
         assert value.dtype == dtype
+
+        if not value.flags['C_CONTIGUOUS']:
+            value = np.ascontiguousarray(value)
 
         prop = _get_prop(name)
         N = value.shape[0]
