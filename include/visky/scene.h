@@ -181,6 +181,20 @@ vkl_scene_panel(VklScene* scene, uint32_t row, uint32_t col, VklControllerType t
 
 
 
+/*************************************************************************************************/
+/*  Interact functions                                                                           */
+/*************************************************************************************************/
+
+VKY_EXPORT void vkl_camera_pos(VklPanel* panel, vec3 pos);
+
+VKY_EXPORT void vkl_camera_look(VklPanel* panel, vec3 center);
+
+VKY_EXPORT void vkl_arcball_rotate(VklPanel* panel, float angle, vec3 axis);
+
+// TODO: panzoom functions
+
+
+
 static void _default_controller_callback(VklController* controller, VklEvent ev)
 {
     VklScene* scene = controller->panel->scene;

@@ -1,10 +1,12 @@
 #include "../include/visky/scene.h"
 #include "../include/visky/canvas.h"
+#include "../include/visky/interact.h"
 #include "../include/visky/panel.h"
 #include "../include/visky/transforms.h"
 #include "../include/visky/visuals.h"
 #include "../include/visky/vklite.h"
 #include "axes.h"
+#include "interact_utils.h"
 #include "visuals_utils.h"
 #include "vklite_utils.h"
 
@@ -823,6 +825,56 @@ VklVisual* vkl_scene_visual(VklPanel* panel, VklVisualType type, int flags)
         _panel_visual_added(panel, visual);
 
     return visual;
+}
+
+
+
+/*************************************************************************************************/
+/*  Interact functions                                                                           */
+/*************************************************************************************************/
+
+static VklMVP* _panel_mvp(VklPanel* panel)
+{
+    ASSERT(panel != NULL);
+    if (panel->controller->interact_count > 0)
+        return &panel->controller->interacts[0].mvp;
+    return NULL;
+}
+
+
+
+void vkl_camera_pos(VklPanel* panel, vec3 pos)
+{
+    ASSERT(panel != NULL);
+    ASSERT(panel->controller->type == VKL_CONTROLLER_CAMERA);
+    VklMVP* mvp = _panel_mvp(panel);
+    VklCamera* camera = &panel->controller->interacts[0].u.c;
+    glm_vec3_copy(pos, camera->eye);
+    _camera_update_mvp(camera, mvp);
+}
+
+
+
+void vkl_camera_look(VklPanel* panel, vec3 center)
+{
+    ASSERT(panel != NULL);
+    ASSERT(panel->controller->type == VKL_CONTROLLER_CAMERA);
+    VklMVP* mvp = _panel_mvp(panel);
+    VklCamera* camera = &panel->controller->interacts[0].u.c;
+    glm_vec3_sub(center, camera->eye, camera->forward);
+    _camera_update_mvp(camera, mvp);
+}
+
+
+
+void vkl_arcball_rotate(VklPanel* panel, float angle, vec3 axis)
+{
+    ASSERT(panel != NULL);
+    ASSERT(panel->controller->type == VKL_CONTROLLER_ARCBALL);
+    VklMVP* mvp = _panel_mvp(panel);
+    VklArcball* arcball = &panel->controller->interacts[0].u.a;
+    glm_quatv(arcball->rotation, angle, axis);
+    _arcball_update_mvp(arcball, mvp);
 }
 
 

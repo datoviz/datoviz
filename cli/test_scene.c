@@ -221,6 +221,14 @@ int test_scene_1(TestContext* context)
 
 
 
+static void _rotate(VklCanvas* canvas, VklEvent ev)
+{
+    VklPanel* panel = (VklPanel*)ev.user_data;
+    float angle = ev.u.t.time;
+    vec3 axis = {0, 1, 0};
+    vkl_arcball_rotate(panel, angle, axis);
+}
+
 int test_scene_mesh(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
@@ -241,6 +249,8 @@ int test_scene_mesh(TestContext* context)
     FREE(vertices);
 
     vkl_visual_texture(visual, VKL_SOURCE_TYPE_IMAGE, 0, gpu->context->color_texture.texture);
+
+    // vkl_event_callback(canvas, VKL_EVENT_TIMER, 1. / 60, VKL_EVENT_MODE_SYNC, _rotate, panel);
 
     vkl_app_run(app, N_FRAMES);
     vkl_visual_destroy(visual);

@@ -16,6 +16,10 @@
 #define VKL_CAMERA_UP                                                                             \
     (vec3) { 0, 1, 0 }
 
+#define VKL_PANZOOM_MOUSE_WHEEL_FACTOR .2
+#define VKL_PANZOOM_MIN_ZOOM           1e-5
+#define VKL_PANZOOM_MAX_ZOOM           1e+5
+
 
 
 /*************************************************************************************************/
