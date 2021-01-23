@@ -25,7 +25,6 @@ extern "C" {
 #include <unistd.h>
 
 
-
 /*************************************************************************************************/
 /*  Export macros                                                                                */
 /*************************************************************************************************/
@@ -222,25 +221,6 @@ typedef enum
 
 
 
-/*************************************************************************************************/
-/*  Misc structures                                                                              */
-/*************************************************************************************************/
-
-typedef struct VklMVP VklMVP;
-struct VklMVP
-{
-    mat4 model;
-    mat4 view;
-    mat4 proj;
-    float time;
-};
-
-
-
-/*************************************************************************************************/
-/*  Objects                                                                                      */
-/*************************************************************************************************/
-
 // Object types.
 typedef enum
 {
@@ -295,12 +275,23 @@ typedef enum
     VKL_OBJECT_STATUS_INVALID,       // invalid
 } VklObjectStatus;
 
-typedef struct VklObject VklObject;
-typedef struct VklContainer VklContainer;
 
 
 /*************************************************************************************************/
-/*  Object structure                                                                             */
+/*  Typedefs                                                                                     */
+/*************************************************************************************************/
+
+typedef struct VklMVP VklMVP;
+typedef struct VklObject VklObject;
+typedef struct VklContainer VklContainer;
+typedef struct VklThread VklThread;
+
+typedef void* (*VklThreadCallback)(void*);
+
+
+
+/*************************************************************************************************/
+/*  Structures                                                                                   */
 /*************************************************************************************************/
 
 struct VklObject
@@ -323,6 +314,25 @@ struct VklContainer
     void** items;
     size_t item_size;
     uint32_t _loop_idx;
+};
+
+
+
+struct VklThread
+{
+    VklObject obj;
+    pthread_t thread;
+    pthread_mutex_t lock;
+};
+
+
+
+struct VklMVP
+{
+    mat4 model;
+    mat4 view;
+    mat4 proj;
+    float time;
 };
 
 
@@ -560,6 +570,20 @@ VKY_EXPORT const unsigned char* vkl_resource_shader(const char* name, unsigned l
 
 // Defined in cmake-generated file build/_colortex.c
 VKY_EXPORT const unsigned char* vkl_resource_texture(const char* name, unsigned long* size);
+
+
+
+/*************************************************************************************************/
+/*  Thread                                                                                       */
+/*************************************************************************************************/
+
+VKY_EXPORT VklThread vkl_thread(VklThreadCallback callback, void* user_data);
+
+VKY_EXPORT void vkl_thread_lock(VklThread*);
+
+VKY_EXPORT void vkl_thread_unlock(VklThread*);
+
+VKY_EXPORT void vkl_thread_join(VklThread* thread);
 
 
 

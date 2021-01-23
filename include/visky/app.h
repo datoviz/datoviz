@@ -3,7 +3,6 @@
 
 #include <assert.h>
 #include <math.h>
-#include <pthread.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -28,7 +27,6 @@ extern "C" {
 
 typedef struct VklApp VklApp;
 typedef struct VklClock VklClock;
-typedef struct VklThread VklThread;
 
 
 
@@ -89,15 +87,6 @@ static inline void _clock_set(VklClock* clock)
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
-
-struct VklThread
-{
-    VklObject obj;
-    pthread_t thread;
-    pthread_mutex_t lock;
-};
-
-
 
 struct VklApp
 {

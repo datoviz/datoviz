@@ -100,7 +100,6 @@ typedef struct VklTexture VklTexture;
 typedef struct VklGraphicsData VklGraphicsData;
 
 // Callback definitions
-typedef void* (*VklThreadCallback)(void*);
 typedef void (*VklGraphicsCallback)(VklGraphicsData* data, uint32_t item_count, const void* item);
 
 
@@ -777,20 +776,6 @@ VKY_EXPORT VklApp* vkl_app(VklBackend backend);
  * @param app the application to destroy
  */
 VKY_EXPORT int vkl_app_destroy(VklApp* app);
-
-
-
-/*************************************************************************************************/
-/*  Thread                                                                                       */
-/*************************************************************************************************/
-
-VKY_EXPORT VklThread vkl_thread(VklThreadCallback callback, void* user_data);
-
-VKY_EXPORT void vkl_thread_lock(VklThread*);
-
-VKY_EXPORT void vkl_thread_unlock(VklThread*);
-
-VKY_EXPORT void vkl_thread_join(VklThread* thread);
 
 
 
