@@ -271,6 +271,7 @@ VklThread vkl_thread(VklThreadCallback callback, void* user_data)
         log_error("thread creation failed");
     if (pthread_mutex_init(&thread.lock, NULL) != 0)
         log_error("mutex creation failed");
+    atomic_init(&thread.lock_idx, 0);
     obj_created(&thread.obj);
     return thread;
 }
@@ -290,11 +291,18 @@ void vkl_thread_join(VklThread* thread)
 void vkl_thread_lock(VklThread* thread)
 {
     ASSERT(thread != NULL);
-    if (is_obj_created(&thread->obj))
+    if (!is_obj_created(&thread->obj))
+        return;
+    // The lock idx is used to ensure that nested thread_lock() will work as expected. Only the
+    // first lock is effective. Only the last unlock is effective.
+    int lock_idx = atomic_load(&thread->lock_idx);
+    ASSERT(lock_idx >= 0);
+    if (lock_idx == 0)
     {
-        log_info("LOCK");
+        log_trace("acquire lock");
         pthread_mutex_lock(&thread->lock);
     }
+    atomic_store(&thread->lock_idx, lock_idx + 1);
 }
 
 
@@ -302,11 +310,16 @@ void vkl_thread_lock(VklThread* thread)
 void vkl_thread_unlock(VklThread* thread)
 {
     ASSERT(thread != NULL);
-    if (is_obj_created(&thread->obj))
+    if (!is_obj_created(&thread->obj))
+        return;
+    int lock_idx = atomic_load(&thread->lock_idx);
+    ASSERT(lock_idx >= 0);
+    if (lock_idx == 1)
     {
-        log_info("UNLOCK");
+        log_trace("release lock");
         pthread_mutex_unlock(&thread->lock);
     }
+    atomic_store(&thread->lock_idx, lock_idx - 1);
 }
 
 

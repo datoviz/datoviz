@@ -323,6 +323,7 @@ struct VklThread
     VklObject obj;
     pthread_t thread;
     pthread_mutex_t lock;
+    atomic(int, lock_idx); // used to allow nested callbacks and avoid deadlocks: only 1 lock
 };
 
 
