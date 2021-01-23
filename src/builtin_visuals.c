@@ -24,26 +24,24 @@ static void _common_sources(VklVisual* visual)
 
 static void _common_props(VklVisual* visual)
 {
+    VklProp* prop = NULL;
+
     // MVP
     // Model.
-    vkl_visual_prop(visual, VKL_PROP_MODEL, 0, VKL_DTYPE_MAT4, VKL_SOURCE_TYPE_MVP, 0);
-    vkl_visual_prop_copy(
-        visual, VKL_PROP_MODEL, 0, 0, offsetof(VklMVP, model), VKL_ARRAY_COPY_SINGLE, 1);
+    prop = vkl_visual_prop(visual, VKL_PROP_MODEL, 0, VKL_DTYPE_MAT4, VKL_SOURCE_TYPE_MVP, 0);
+    vkl_visual_prop_copy(prop, 0, offsetof(VklMVP, model), VKL_ARRAY_COPY_SINGLE, 1);
 
     // View.
-    vkl_visual_prop(visual, VKL_PROP_VIEW, 0, VKL_DTYPE_MAT4, VKL_SOURCE_TYPE_MVP, 0);
-    vkl_visual_prop_copy(
-        visual, VKL_PROP_VIEW, 0, 1, offsetof(VklMVP, view), VKL_ARRAY_COPY_SINGLE, 1);
+    prop = vkl_visual_prop(visual, VKL_PROP_VIEW, 0, VKL_DTYPE_MAT4, VKL_SOURCE_TYPE_MVP, 0);
+    vkl_visual_prop_copy(prop, 1, offsetof(VklMVP, view), VKL_ARRAY_COPY_SINGLE, 1);
 
     // Proj.
-    vkl_visual_prop(visual, VKL_PROP_PROJ, 0, VKL_DTYPE_MAT4, VKL_SOURCE_TYPE_MVP, 0);
-    vkl_visual_prop_copy(
-        visual, VKL_PROP_PROJ, 0, 2, offsetof(VklMVP, proj), VKL_ARRAY_COPY_SINGLE, 1);
+    prop = vkl_visual_prop(visual, VKL_PROP_PROJ, 0, VKL_DTYPE_MAT4, VKL_SOURCE_TYPE_MVP, 0);
+    vkl_visual_prop_copy(prop, 2, offsetof(VklMVP, proj), VKL_ARRAY_COPY_SINGLE, 1);
 
     // Time.
-    vkl_visual_prop(visual, VKL_PROP_TIME, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_MVP, 0);
-    vkl_visual_prop_copy(
-        visual, VKL_PROP_TIME, 0, 3, offsetof(VklMVP, time), VKL_ARRAY_COPY_SINGLE, 1);
+    prop = vkl_visual_prop(visual, VKL_PROP_TIME, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_MVP, 0);
+    vkl_visual_prop_copy(prop, 3, offsetof(VklMVP, time), VKL_ARRAY_COPY_SINGLE, 1);
 }
 
 
@@ -57,6 +55,7 @@ static void _visual_marker_raw(VklVisual* visual)
     ASSERT(visual != NULL);
     VklCanvas* canvas = visual->canvas;
     ASSERT(canvas != NULL);
+    VklProp* prop = NULL;
 
     // Graphics.
     vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_POINTS, visual->flags));
@@ -72,28 +71,26 @@ static void _visual_marker_raw(VklVisual* visual)
     // Props:
 
     // Vertex pos.
-    vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
+    prop = vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
     vkl_visual_prop_cast(
-        visual, VKL_PROP_POS, 0, 0, offsetof(VklVertex, pos), VKL_DTYPE_VEC3,
-        VKL_ARRAY_COPY_SINGLE, 1);
+        prop, 0, offsetof(VklVertex, pos), VKL_DTYPE_VEC3, VKL_ARRAY_COPY_SINGLE, 1);
 
     // Vertex color.
-    vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_copy(
-        visual, VKL_PROP_COLOR, 0, 1, offsetof(VklVertex, color), VKL_ARRAY_COPY_SINGLE, 1);
+    prop = vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
+    vkl_visual_prop_copy(prop, 1, offsetof(VklVertex, color), VKL_ARRAY_COPY_SINGLE, 1);
     cvec4 color = {200, 200, 200, 255};
-    vkl_visual_prop_default(visual, VKL_PROP_COLOR, 0, &color);
+    vkl_visual_prop_default(prop, &color);
 
     // Common props.
     _common_props(visual);
 
     // Param: marker size.
-    vkl_visual_prop(visual, VKL_PROP_MARKER_SIZE, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_PARAM, 0);
+    prop = vkl_visual_prop(
+        visual, VKL_PROP_MARKER_SIZE, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_PARAM, 0);
     vkl_visual_prop_copy(
-        visual, VKL_PROP_MARKER_SIZE, 0, 0, offsetof(VklGraphicsPointParams, point_size),
-        VKL_ARRAY_COPY_SINGLE, 1);
+        prop, 0, offsetof(VklGraphicsPointParams, point_size), VKL_ARRAY_COPY_SINGLE, 1);
     float size = 5;
-    vkl_visual_prop_default(visual, VKL_PROP_MARKER_SIZE, 0, &size);
+    vkl_visual_prop_default(prop, &size);
 }
 
 
@@ -107,6 +104,7 @@ static void _visual_marker_agg(VklVisual* visual)
     ASSERT(visual != NULL);
     VklCanvas* canvas = visual->canvas;
     ASSERT(canvas != NULL);
+    VklProp* prop = NULL;
 
     // Graphics.
     vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_MARKER, visual->flags));
@@ -124,67 +122,63 @@ static void _visual_marker_agg(VklVisual* visual)
     // Props:
 
     // Marker pos.
-    vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
+    prop = vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
     vkl_visual_prop_cast(
-        visual, VKL_PROP_POS, 0, 0, offsetof(VklGraphicsMarkerVertex, pos), VKL_DTYPE_VEC3,
-        VKL_ARRAY_COPY_SINGLE, 1);
+        prop, 0, offsetof(VklGraphicsMarkerVertex, pos), VKL_DTYPE_VEC3, VKL_ARRAY_COPY_SINGLE, 1);
 
     // Marker color.
-    vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
+    prop = vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
     vkl_visual_prop_copy(
-        visual, VKL_PROP_COLOR, 0, 1, offsetof(VklGraphicsMarkerVertex, color),
-        VKL_ARRAY_COPY_SINGLE, 1);
+        prop, 1, offsetof(VklGraphicsMarkerVertex, color), VKL_ARRAY_COPY_SINGLE, 1);
     cvec4 color = {200, 200, 200, 255};
-    vkl_visual_prop_default(visual, VKL_PROP_COLOR, 0, &color);
+    vkl_visual_prop_default(prop, &color);
 
     // Marker size.
-    vkl_visual_prop(visual, VKL_PROP_MARKER_SIZE, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_VERTEX, 0);
+    prop = vkl_visual_prop(
+        visual, VKL_PROP_MARKER_SIZE, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_VERTEX, 0);
     vkl_visual_prop_copy(
-        visual, VKL_PROP_MARKER_SIZE, 0, 1, offsetof(VklGraphicsMarkerVertex, size),
-        VKL_ARRAY_COPY_SINGLE, 1);
+        prop, 1, offsetof(VklGraphicsMarkerVertex, size), VKL_ARRAY_COPY_SINGLE, 1);
     float size = 20;
-    vkl_visual_prop_default(visual, VKL_PROP_MARKER_SIZE, 0, &size);
+    vkl_visual_prop_default(prop, &size);
 
     // Marker type.
-    vkl_visual_prop(visual, VKL_PROP_MARKER_TYPE, 0, VKL_DTYPE_CHAR, VKL_SOURCE_TYPE_VERTEX, 0);
+    prop = vkl_visual_prop(
+        visual, VKL_PROP_MARKER_TYPE, 0, VKL_DTYPE_CHAR, VKL_SOURCE_TYPE_VERTEX, 0);
     vkl_visual_prop_copy(
-        visual, VKL_PROP_MARKER_TYPE, 0, 1, offsetof(VklGraphicsMarkerVertex, marker),
-        VKL_ARRAY_COPY_SINGLE, 1);
+        prop, 1, offsetof(VklGraphicsMarkerVertex, marker), VKL_ARRAY_COPY_SINGLE, 1);
     VklMarkerType marker = VKL_MARKER_DISC;
-    vkl_visual_prop_default(visual, VKL_PROP_MARKER_TYPE, 0, &marker);
+    vkl_visual_prop_default(prop, &marker);
 
     // Marker angle.
-    vkl_visual_prop(visual, VKL_PROP_ANGLE, 0, VKL_DTYPE_CHAR, VKL_SOURCE_TYPE_VERTEX, 0);
+    prop = vkl_visual_prop(visual, VKL_PROP_ANGLE, 0, VKL_DTYPE_CHAR, VKL_SOURCE_TYPE_VERTEX, 0);
     vkl_visual_prop_copy(
-        visual, VKL_PROP_ANGLE, 0, 1, offsetof(VklGraphicsMarkerVertex, angle),
-        VKL_ARRAY_COPY_SINGLE, 1);
+        prop, 1, offsetof(VklGraphicsMarkerVertex, angle), VKL_ARRAY_COPY_SINGLE, 1);
     float angle = 0;
-    vkl_visual_prop_default(visual, VKL_PROP_ANGLE, 0, &angle);
+    vkl_visual_prop_default(prop, &angle);
 
     // Marker transform.
-    vkl_visual_prop(visual, VKL_PROP_TRANSFORM, 0, VKL_DTYPE_CHAR, VKL_SOURCE_TYPE_VERTEX, 0);
+    prop =
+        vkl_visual_prop(visual, VKL_PROP_TRANSFORM, 0, VKL_DTYPE_CHAR, VKL_SOURCE_TYPE_VERTEX, 0);
     vkl_visual_prop_copy(
-        visual, VKL_PROP_TRANSFORM, 0, 1, offsetof(VklGraphicsMarkerVertex, transform),
-        VKL_ARRAY_COPY_SINGLE, 1);
+        prop, 1, offsetof(VklGraphicsMarkerVertex, transform), VKL_ARRAY_COPY_SINGLE, 1);
 
     // Common props.
     _common_props(visual);
 
     // Param: edge color.
-    vkl_visual_prop(visual, VKL_PROP_COLOR, 1, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);
+    prop = vkl_visual_prop(visual, VKL_PROP_COLOR, 1, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);
     vkl_visual_prop_copy(
-        visual, VKL_PROP_COLOR, 1, 0, offsetof(VklGraphicsMarkerParams, edge_color),
-        VKL_ARRAY_COPY_SINGLE, 1);
+        prop, 0, offsetof(VklGraphicsMarkerParams, edge_color), VKL_ARRAY_COPY_SINGLE, 1);
     vec4 edge_color = {0, 0, 0, 1};
-    vkl_visual_prop_default(visual, VKL_PROP_COLOR, 1, &edge_color);
+    vkl_visual_prop_default(prop, &edge_color);
 
     // Param: edge width.
-    vkl_visual_prop(visual, VKL_PROP_LINE_WIDTH, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_PARAM, 0);
+    prop =
+        vkl_visual_prop(visual, VKL_PROP_LINE_WIDTH, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_PARAM, 0);
     vkl_visual_prop_copy(
-        visual, VKL_PROP_LINE_WIDTH, 0, 0, offsetof(VklGraphicsMarkerParams, edge_width),
-        VKL_ARRAY_COPY_SINGLE, 1);
+        prop, 0, offsetof(VklGraphicsMarkerParams, edge_width), VKL_ARRAY_COPY_SINGLE, 1);
     float edge_width = 1;
-    vkl_visual_prop_default(visual, VKL_PROP_LINE_WIDTH, 0, &edge_width);
+    vkl_visual_prop_default(prop, &edge_width);
 }
 
 
@@ -242,6 +236,7 @@ static void _visual_mesh(VklVisual* visual)
     ASSERT(visual != NULL);
     VklCanvas* canvas = visual->canvas;
     ASSERT(canvas != NULL);
+    VklProp* prop = NULL;
 
     // Graphics.
     vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_MESH, 0));
@@ -269,37 +264,33 @@ static void _visual_mesh(VklVisual* visual)
     // Props:
 
     // Vertex pos.
-    vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
+    prop = vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
     vkl_visual_prop_cast(
-        visual, VKL_PROP_POS, 0, 0, offsetof(VklGraphicsMeshVertex, pos), //
-        VKL_DTYPE_VEC3, VKL_ARRAY_COPY_SINGLE, 1);
+        prop, 0, offsetof(VklGraphicsMeshVertex, pos), VKL_DTYPE_VEC3, VKL_ARRAY_COPY_SINGLE, 1);
 
     // Vertex normal.
-    vkl_visual_prop(visual, VKL_PROP_NORMAL, 0, VKL_DTYPE_VEC3, VKL_SOURCE_TYPE_VERTEX, 0);
+    prop = vkl_visual_prop(visual, VKL_PROP_NORMAL, 0, VKL_DTYPE_VEC3, VKL_SOURCE_TYPE_VERTEX, 0);
     vkl_visual_prop_copy(
-        visual, VKL_PROP_NORMAL, 0, 0, offsetof(VklGraphicsMeshVertex, normal), //
-        VKL_ARRAY_COPY_SINGLE, 1);
+        prop, 0, offsetof(VklGraphicsMeshVertex, normal), VKL_ARRAY_COPY_SINGLE, 1);
 
     // Vertex tex coords.
-    vkl_visual_prop(visual, VKL_PROP_TEXCOORDS, 0, VKL_DTYPE_VEC2, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_copy(
-        visual, VKL_PROP_TEXCOORDS, 0, 0, offsetof(VklGraphicsMeshVertex, uv), //
-        VKL_ARRAY_COPY_SINGLE, 1);
+    prop =
+        vkl_visual_prop(visual, VKL_PROP_TEXCOORDS, 0, VKL_DTYPE_VEC2, VKL_SOURCE_TYPE_VERTEX, 0);
+    vkl_visual_prop_copy(prop, 0, offsetof(VklGraphicsMeshVertex, uv), VKL_ARRAY_COPY_SINGLE, 1);
 
     // Vertex color: override tex coords by packing 3 bytes into a float
-    vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
+    prop = vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
 
     // Vertex alpha.
-    vkl_visual_prop(visual, VKL_PROP_ALPHA, 0, VKL_DTYPE_CHAR, VKL_SOURCE_TYPE_VERTEX, 0);
+    prop = vkl_visual_prop(visual, VKL_PROP_ALPHA, 0, VKL_DTYPE_CHAR, VKL_SOURCE_TYPE_VERTEX, 0);
     vkl_visual_prop_copy(
-        visual, VKL_PROP_ALPHA, 0, 0, offsetof(VklGraphicsMeshVertex, alpha), //
-        VKL_ARRAY_COPY_SINGLE, 1);
+        prop, 0, offsetof(VklGraphicsMeshVertex, alpha), VKL_ARRAY_COPY_SINGLE, 1);
     uint8_t alpha = 255;
-    vkl_visual_prop_default(visual, VKL_PROP_ALPHA, 0, &alpha);
+    vkl_visual_prop_default(prop, &alpha);
 
     // Index.
-    vkl_visual_prop(visual, VKL_PROP_INDEX, 0, VKL_DTYPE_UINT, VKL_SOURCE_TYPE_INDEX, 0);
-    vkl_visual_prop_copy(visual, VKL_PROP_INDEX, 0, 0, 0, VKL_ARRAY_COPY_SINGLE, 1);
+    prop = vkl_visual_prop(visual, VKL_PROP_INDEX, 0, VKL_DTYPE_UINT, VKL_SOURCE_TYPE_INDEX, 0);
+    vkl_visual_prop_copy(prop, 0, 0, VKL_ARRAY_COPY_SINGLE, 1);
 
     // Common props.
     _common_props(visual);
@@ -309,39 +300,35 @@ static void _visual_mesh(VklVisual* visual)
     VklGraphicsMeshParams params = default_graphics_mesh_params(VKL_CAMERA_EYE);
 
     // Light positions.
-    vkl_visual_prop(visual, VKL_PROP_LIGHT_POS, 0, VKL_DTYPE_MAT4, VKL_SOURCE_TYPE_PARAM, 0);
+    prop =
+        vkl_visual_prop(visual, VKL_PROP_LIGHT_POS, 0, VKL_DTYPE_MAT4, VKL_SOURCE_TYPE_PARAM, 0);
     vkl_visual_prop_copy(
-        visual, VKL_PROP_LIGHT_POS, 0, 0, offsetof(VklGraphicsMeshParams, lights_pos_0),
-        VKL_ARRAY_COPY_SINGLE, 1);
-    vkl_visual_prop_default(visual, VKL_PROP_LIGHT_POS, 0, &params.lights_pos_0);
+        prop, 0, offsetof(VklGraphicsMeshParams, lights_pos_0), VKL_ARRAY_COPY_SINGLE, 1);
+    vkl_visual_prop_default(prop, &params.lights_pos_0);
 
     // Light params.
-    vkl_visual_prop(visual, VKL_PROP_LIGHT_PARAMS, 0, VKL_DTYPE_MAT4, VKL_SOURCE_TYPE_PARAM, 0);
+    prop = vkl_visual_prop(
+        visual, VKL_PROP_LIGHT_PARAMS, 0, VKL_DTYPE_MAT4, VKL_SOURCE_TYPE_PARAM, 0);
     vkl_visual_prop_copy(
-        visual, VKL_PROP_LIGHT_PARAMS, 0, 1, offsetof(VklGraphicsMeshParams, lights_params_0),
-        VKL_ARRAY_COPY_SINGLE, 1);
-    vkl_visual_prop_default(visual, VKL_PROP_LIGHT_PARAMS, 0, &params.lights_params_0);
+        prop, 1, offsetof(VklGraphicsMeshParams, lights_params_0), VKL_ARRAY_COPY_SINGLE, 1);
+    vkl_visual_prop_default(prop, &params.lights_params_0);
 
     // View pos.
-    vkl_visual_prop(visual, VKL_PROP_VIEW_POS, 0, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);
+    prop = vkl_visual_prop(visual, VKL_PROP_VIEW_POS, 0, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);
     vkl_visual_prop_copy(
-        visual, VKL_PROP_VIEW_POS, 0, 2, offsetof(VklGraphicsMeshParams, view_pos),
-        VKL_ARRAY_COPY_SINGLE, 1);
-    vkl_visual_prop_default(visual, VKL_PROP_VIEW_POS, 0, &params.view_pos);
+        prop, 2, offsetof(VklGraphicsMeshParams, view_pos), VKL_ARRAY_COPY_SINGLE, 1);
+    vkl_visual_prop_default(prop, &params.view_pos);
 
     // Texture coefficients.
-    vkl_visual_prop(visual, VKL_PROP_TEXCOEFS, 0, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);
+    prop = vkl_visual_prop(visual, VKL_PROP_TEXCOEFS, 0, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);
     vkl_visual_prop_copy(
-        visual, VKL_PROP_TEXCOEFS, 0, 3, offsetof(VklGraphicsMeshParams, tex_coefs),
-        VKL_ARRAY_COPY_SINGLE, 1);
-    vkl_visual_prop_default(visual, VKL_PROP_TEXCOEFS, 0, &params.tex_coefs);
+        prop, 3, offsetof(VklGraphicsMeshParams, tex_coefs), VKL_ARRAY_COPY_SINGLE, 1);
+    vkl_visual_prop_default(prop, &params.tex_coefs);
 
     // Clipping coefficients.
-    vkl_visual_prop(visual, VKL_PROP_CLIP, 0, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);
+    prop = vkl_visual_prop(visual, VKL_PROP_CLIP, 0, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);
     vkl_visual_prop_copy(
-        visual, VKL_PROP_CLIP, 0, 4, offsetof(VklGraphicsMeshParams, clip_coefs),
-        VKL_ARRAY_COPY_SINGLE, 1);
-    vkl_visual_prop_default(visual, VKL_PROP_TEXCOEFS, 0, &params.tex_coefs);
+        prop, 4, offsetof(VklGraphicsMeshParams, clip_coefs), VKL_ARRAY_COPY_SINGLE, 1);
 
     // Texture props.
     for (uint32_t i = 0; i < 4; i++)
@@ -422,6 +409,7 @@ static void _visual_volume_slice(VklVisual* visual)
     ASSERT(visual != NULL);
     VklCanvas* canvas = visual->canvas;
     ASSERT(canvas != NULL);
+    VklProp* prop = NULL;
 
     // TODO: customizable dtype for the image
 
@@ -465,45 +453,35 @@ static void _visual_volume_slice(VklVisual* visual)
 
     // Colormap transfer function.
     vec4 vec = {0, .333333, .666666, 1};
-    vkl_visual_prop(                                                                  //
-        visual, VKL_PROP_TRANSFER_X, 0, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);    //
-    vkl_visual_prop_copy(                                                             //
-        visual, VKL_PROP_TRANSFER_X, 0, 0, offsetof(VklGraphicsVolumeParams, x_cmap), //
-        VKL_ARRAY_COPY_SINGLE, 1);                                                    //
-    vkl_visual_prop_default(                                                          //
-        visual, VKL_PROP_TRANSFER_X, 0, vec);                                         //
+    prop = vkl_visual_prop(                                                            //
+        visual, VKL_PROP_TRANSFER_X, 0, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);     //
+    vkl_visual_prop_copy(                                                              //
+        prop, 0, offsetof(VklGraphicsVolumeParams, x_cmap), VKL_ARRAY_COPY_SINGLE, 1); //
+    vkl_visual_prop_default(prop, vec);                                                //
 
-    vkl_visual_prop(                                                                  //
-        visual, VKL_PROP_TRANSFER_Y, 0, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);    //
-    vkl_visual_prop_copy(                                                             //
-        visual, VKL_PROP_TRANSFER_Y, 0, 1, offsetof(VklGraphicsVolumeParams, y_cmap), //
-        VKL_ARRAY_COPY_SINGLE, 1);                                                    //
-    vkl_visual_prop_default(                                                          //
-        visual, VKL_PROP_TRANSFER_Y, 0, vec);                                         //
+    prop = vkl_visual_prop(                                                            //
+        visual, VKL_PROP_TRANSFER_Y, 0, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);     //
+    vkl_visual_prop_copy(                                                              //
+        prop, 1, offsetof(VklGraphicsVolumeParams, y_cmap), VKL_ARRAY_COPY_SINGLE, 1); //
+    vkl_visual_prop_default(prop, vec);                                                //
 
     // Alpha transfer function.
-    vkl_visual_prop(                                                                   //
-        visual, VKL_PROP_TRANSFER_X, 1, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);     //
-    vkl_visual_prop_copy(                                                              //
-        visual, VKL_PROP_TRANSFER_X, 1, 2, offsetof(VklGraphicsVolumeParams, x_alpha), //
-        VKL_ARRAY_COPY_SINGLE, 1);                                                     //
-    vkl_visual_prop_default(                                                           //
-        visual, VKL_PROP_TRANSFER_X, 1, vec);                                          //
+    prop = vkl_visual_prop(                                                             //
+        visual, VKL_PROP_TRANSFER_X, 1, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);      //
+    vkl_visual_prop_copy(                                                               //
+        prop, 2, offsetof(VklGraphicsVolumeParams, x_alpha), VKL_ARRAY_COPY_SINGLE, 1); //
+    vkl_visual_prop_default(prop, vec);                                                 //
 
-    vkl_visual_prop(                                                                   //
-        visual, VKL_PROP_TRANSFER_Y, 1, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);     //
-    vkl_visual_prop_copy(                                                              //
-        visual, VKL_PROP_TRANSFER_Y, 1, 3, offsetof(VklGraphicsVolumeParams, y_alpha), //
-        VKL_ARRAY_COPY_SINGLE, 1);                                                     //
-    vkl_visual_prop_default(                                                           //
-        visual, VKL_PROP_TRANSFER_Y, 1, vec);                                          //
+    prop = vkl_visual_prop(                                                             //
+        visual, VKL_PROP_TRANSFER_Y, 1, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);      //
+    vkl_visual_prop_copy(                                                               //
+        prop, 3, offsetof(VklGraphicsVolumeParams, y_alpha), VKL_ARRAY_COPY_SINGLE, 1); //
+    vkl_visual_prop_default(prop, vec);                                                 //
 
     // Colormap value.
-    vkl_visual_prop( //
-        visual, VKL_PROP_COLORMAP, 0, VKL_DTYPE_INT, VKL_SOURCE_TYPE_PARAM, 0);
-    vkl_visual_prop_copy( //
-        visual, VKL_PROP_COLORMAP, 0, 4, offsetof(VklGraphicsVolumeParams, cmap),
-        VKL_ARRAY_COPY_SINGLE, 1);
+    prop = vkl_visual_prop(visual, VKL_PROP_COLORMAP, 0, VKL_DTYPE_INT, VKL_SOURCE_TYPE_PARAM, 0);
+    vkl_visual_prop_copy(
+        prop, 4, offsetof(VklGraphicsVolumeParams, cmap), VKL_ARRAY_COPY_SINGLE, 1);
 
 
 
@@ -530,6 +508,7 @@ static void _visual_segment_raw(VklVisual* visual)
     ASSERT(visual != NULL);
     VklCanvas* canvas = visual->canvas;
     ASSERT(canvas != NULL);
+    VklProp* prop = NULL;
 
     // Graphics.
     vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_LINES, 0));
@@ -542,22 +521,20 @@ static void _visual_segment_raw(VklVisual* visual)
     // Props:
 
     // Vertex pos, segment start.
-    vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
+    prop = vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
     vkl_visual_prop_cast(
-        visual, VKL_PROP_POS, 0, 0, offsetof(VklVertex, pos), VKL_DTYPE_VEC3,
-        VKL_ARRAY_COPY_SINGLE, 2);
+        prop, 0, offsetof(VklVertex, pos), VKL_DTYPE_VEC3, VKL_ARRAY_COPY_SINGLE, 2);
 
     // Vertex pos, segment end.
-    vkl_visual_prop(visual, VKL_PROP_POS, 1, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
+    prop = vkl_visual_prop(visual, VKL_PROP_POS, 1, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
     vkl_visual_prop_cast(
-        visual, VKL_PROP_POS, 1, 0, sizeof(VklVertex) + offsetof(VklVertex, pos), VKL_DTYPE_VEC3,
+        prop, 0, sizeof(VklVertex) + offsetof(VklVertex, pos), VKL_DTYPE_VEC3,
         VKL_ARRAY_COPY_SINGLE, 2);
 
 
     // Vertex color.
-    vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_copy(
-        visual, VKL_PROP_COLOR, 0, 1, offsetof(VklVertex, color), VKL_ARRAY_COPY_REPEAT, 2);
+    prop = vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
+    vkl_visual_prop_copy(prop, 1, offsetof(VklVertex, color), VKL_ARRAY_COPY_REPEAT, 2);
 
     // Common props.
     _common_props(visual);
@@ -858,6 +835,7 @@ static void _visual_axes_2D(VklVisual* visual)
     ASSERT(visual != NULL);
     VklCanvas* canvas = visual->canvas;
     ASSERT(canvas != NULL);
+    VklProp* prop = NULL;
 
     // Graphics.
     vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_SEGMENT, 0));
@@ -913,34 +891,31 @@ static void _visual_axes_2D(VklVisual* visual)
         for (uint32_t level = 0; level < VKL_AXES_LEVEL_COUNT; level++)
         {
             // xticks
-            vkl_visual_prop(
+            prop = vkl_visual_prop(
                 visual, VKL_PROP_POS, level, VKL_DTYPE_DOUBLE, VKL_SOURCE_TYPE_VERTEX, 0);
 
             // color
-            vkl_visual_prop(
+            prop = vkl_visual_prop(
                 visual, VKL_PROP_COLOR, level, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
-            vkl_visual_prop_default(visual, VKL_PROP_COLOR, level, &VKL_DEFAULT_AXES_COLOR[level]);
+            vkl_visual_prop_default(prop, &VKL_DEFAULT_AXES_COLOR[level]);
 
             // line width
-            vkl_visual_prop(
+            prop = vkl_visual_prop(
                 visual, VKL_PROP_LINE_WIDTH, level, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_VERTEX, 0);
-            vkl_visual_prop_default(
-                visual, VKL_PROP_LINE_WIDTH, level, &VKL_DEFAULT_AXES_LINE_WIDTH[level]);
+            vkl_visual_prop_default(prop, &VKL_DEFAULT_AXES_LINE_WIDTH[level]);
         }
 
         // minor tick length
-        vkl_visual_prop(
+        prop = vkl_visual_prop(
             visual, VKL_PROP_LENGTH, VKL_AXES_LEVEL_MINOR, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_VERTEX,
             0);
-        vkl_visual_prop_default(
-            visual, VKL_PROP_LENGTH, VKL_AXES_LEVEL_MINOR, &VKL_DEFAULT_AXES_TICK_LENGTH[0]);
+        vkl_visual_prop_default(prop, &VKL_DEFAULT_AXES_TICK_LENGTH[0]);
 
         // major tick length
-        vkl_visual_prop(
+        prop = vkl_visual_prop(
             visual, VKL_PROP_LENGTH, VKL_AXES_LEVEL_MAJOR, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_VERTEX,
             0);
-        vkl_visual_prop_default(
-            visual, VKL_PROP_LENGTH, VKL_AXES_LEVEL_MAJOR, &VKL_DEFAULT_AXES_TICK_LENGTH[1]);
+        vkl_visual_prop_default(prop, &VKL_DEFAULT_AXES_TICK_LENGTH[1]);
 
         // tick h margin
         // vkl_visual_prop(visual, VKL_PROP_MARGIN, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_VERTEX, 0);
@@ -952,11 +927,12 @@ static void _visual_axes_2D(VklVisual* visual)
     // Text graphics props.
     {
         // tick text
-        vkl_visual_prop(visual, VKL_PROP_TEXT, 0, VKL_DTYPE_STR, VKL_SOURCE_TYPE_VERTEX, 1);
+        prop = vkl_visual_prop(visual, VKL_PROP_TEXT, 0, VKL_DTYPE_STR, VKL_SOURCE_TYPE_VERTEX, 1);
 
         // tick text size
-        vkl_visual_prop(visual, VKL_PROP_TEXT_SIZE, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_VERTEX, 1);
-        vkl_visual_prop_default(visual, VKL_PROP_TEXT_SIZE, 0, &VKL_DEFAULT_AXES_FONT_SIZE);
+        prop = vkl_visual_prop(
+            visual, VKL_PROP_TEXT_SIZE, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_VERTEX, 1);
+        vkl_visual_prop_default(prop, &VKL_DEFAULT_AXES_FONT_SIZE);
     }
 
     vkl_visual_callback_bake(visual, _visual_axes_2D_bake);

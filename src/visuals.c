@@ -165,7 +165,7 @@ void vkl_visual_source_share(
 
 
 
-void vkl_visual_prop(
+VklProp* vkl_visual_prop(
     VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, VklDataType dtype,
     VklSourceType source_type, uint32_t source_idx)
 {
@@ -187,15 +187,14 @@ void vkl_visual_prop(
     // NOTE: we do not use prop arrays for texture sources at the moment
     if (prop->source->source_kind < VKL_SOURCE_KIND_TEXTURE_1D)
         prop->arr_orig = vkl_array(0, prop->dtype);
+
+    return prop;
 }
 
 
 
-void vkl_visual_prop_default(
-    VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, void* default_value)
+void vkl_visual_prop_default(VklProp* prop, void* default_value)
 {
-    ASSERT(visual != NULL);
-    VklProp* prop = vkl_prop_get(visual, prop_type, prop_idx);
     ASSERT(prop != NULL);
     ASSERT(prop->arr_orig.item_size > 0);
 
@@ -205,18 +204,15 @@ void vkl_visual_prop_default(
     memcpy(prop->default_value, default_value, prop->arr_orig.item_size);
 
     // Declaring a default value to the prop is equivalent to setting a single value to the prop.
-    vkl_visual_data(visual, prop_type, prop_idx, 1, default_value);
+    vkl_visual_data(prop->source->visual, prop->prop_type, prop->prop_idx, 1, default_value);
 }
 
 
 
 void vkl_visual_prop_copy(
-    VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, //
-    uint32_t field_idx, VkDeviceSize offset,                     //
+    VklProp* prop, uint32_t field_idx, VkDeviceSize offset, //
     VklArrayCopyType copy_type, uint32_t reps)
 {
-    ASSERT(visual != NULL);
-    VklProp* prop = vkl_prop_get(visual, prop_type, prop_idx);
     ASSERT(prop != NULL);
 
     prop->field_idx = field_idx;
@@ -229,12 +225,9 @@ void vkl_visual_prop_copy(
 
 
 void vkl_visual_prop_cast(
-    VklVisual* visual, VklPropType prop_type, uint32_t prop_idx,       //
-    uint32_t field_idx, VkDeviceSize offset, VklDataType target_dtype, //
+    VklProp* prop, uint32_t field_idx, VkDeviceSize offset, VklDataType target_dtype, //
     VklArrayCopyType copy_type, uint32_t reps)
 {
-    ASSERT(visual != NULL);
-    VklProp* prop = vkl_prop_get(visual, prop_type, prop_idx);
     ASSERT(prop != NULL);
 
     prop->field_idx = field_idx;

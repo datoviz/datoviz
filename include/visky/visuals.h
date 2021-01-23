@@ -344,21 +344,18 @@ VKY_EXPORT void vkl_visual_source(
 VKY_EXPORT void vkl_visual_source_share(
     VklVisual* visual, VklSourceType source_type, uint32_t source_idx, uint32_t other_idx);
 
-VKY_EXPORT void vkl_visual_prop(
+VKY_EXPORT VklProp* vkl_visual_prop(
     VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, VklDataType dtype,
     VklSourceType source_type, uint32_t source_idx);
 
-VKY_EXPORT void vkl_visual_prop_default(
-    VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, void* default_value);
+VKY_EXPORT void vkl_visual_prop_default(VklProp* prop, void* default_value);
 
 VKY_EXPORT void vkl_visual_prop_copy(
-    VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, //
-    uint32_t field_idx, VkDeviceSize offset,                     //
+    VklProp* prop, uint32_t field_idx, VkDeviceSize offset, //
     VklArrayCopyType copy_type, uint32_t reps);
 
 VKY_EXPORT void vkl_visual_prop_cast(
-    VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, //
-    uint32_t field_idx, VkDeviceSize offset,                     //
+    VklProp* prop, uint32_t field_idx, VkDeviceSize offset, //
     VklDataType target_dtype, VklArrayCopyType copy_type, uint32_t reps);
 
 VKY_EXPORT void vkl_visual_graphics(VklVisual* visual, VklGraphics* graphics);
