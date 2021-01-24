@@ -714,9 +714,9 @@ static void _graphics_volume_callback(VklCanvas* canvas, VklEvent ev)
     TestGraphics* tg = ev.user_data;
     float dx = ev.u.f.interval;
     for (uint32_t i = 0; i < 6; i++)
-        ((VklGraphicsVolumeVertex*)tg->vertices.data)[i].uvw[2] += .1 * dx;
+        ((VklGraphicsVolumeSliceVertex*)tg->vertices.data)[i].uvw[2] += .1 * dx;
     vkl_upload_buffers(
-        canvas, tg->br_vert, 0, tg->vertices.item_count * sizeof(VklGraphicsVolumeVertex),
+        canvas, tg->br_vert, 0, tg->vertices.item_count * sizeof(VklGraphicsVolumeSliceVertex),
         tg->vertices.data);
 }
 
@@ -729,12 +729,12 @@ int test_graphics_volume_slice(TestContext* context)
     TestGraphics tg = {0};
     tg.canvas = canvas;
     tg.graphics = graphics;
-    tg.vertices = vkl_array_struct(n, sizeof(VklGraphicsVolumeVertex));
+    tg.vertices = vkl_array_struct(n, sizeof(VklGraphicsVolumeSliceVertex));
     ASSERT(tg.vertices.item_count == n);
     tg.br_vert = vkl_ctx_buffers(
         gpu->context, VKL_BUFFER_TYPE_VERTEX, 1, tg.vertices.item_count * tg.vertices.item_size);
     float x = .5;
-    VklGraphicsVolumeVertex vertices[] = {
+    VklGraphicsVolumeSliceVertex vertices[] = {
         {{-x, -x, 0}, {0, 1, 0.5}}, //
         {{+x, -x, 0}, {1, 1, 0.5}}, //
         {{+x, +x, 0}, {1, 0, 0.5}}, //
@@ -747,9 +747,9 @@ int test_graphics_volume_slice(TestContext* context)
         canvas, tg.br_vert, 0, tg.vertices.item_count * tg.vertices.item_size, tg.vertices.data);
 
     // Parameters.
-    tg.br_params =
-        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsVolumeParams));
-    VklGraphicsVolumeParams params = {0};
+    tg.br_params = vkl_ctx_buffers(
+        gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsVolumeSliceParams));
+    VklGraphicsVolumeSliceParams params = {0};
     params.cmap = VKL_CMAP_HSV;
 
     params.x_cmap[0] = 0.0;
@@ -762,7 +762,7 @@ int test_graphics_volume_slice(TestContext* context)
     params.y_cmap[2] = .8;
     params.y_cmap[3] = 1;
 
-    vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsVolumeParams), &params);
+    vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsVolumeSliceParams), &params);
 
     // Texture.
     const uint32_t nt = 12;

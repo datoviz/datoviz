@@ -330,9 +330,9 @@ _graphics_volume_slice_callback(VklGraphicsData* data, uint32_t item_count, cons
     ASSERT(item != NULL);
     ASSERT(data->current_idx < item_count);
 
-    const VklGraphicsVolumeItem* item_vert = (const VklGraphicsVolumeItem*)item;
+    const VklGraphicsVolumeSliceItem* item_vert = (const VklGraphicsVolumeSliceItem*)item;
 
-    VklGraphicsVolumeVertex vertices[6] = {0};
+    VklGraphicsVolumeSliceVertex vertices[6] = {0};
 
     _vec3_copy(item_vert->pos3, vertices[0].pos);
     _vec3_copy(item_vert->pos2, vertices[1].pos);
@@ -360,9 +360,9 @@ static void _graphics_volume_slice(VklCanvas* canvas, VklGraphics* graphics)
     PRIMITIVE(TRIANGLE_LIST)
     vkl_graphics_depth_test(graphics, VKL_DEPTH_TEST_ENABLE);
 
-    ATTR_BEGIN(VklGraphicsVolumeVertex)
-    ATTR_POS(VklGraphicsVolumeVertex, pos)
-    ATTR(VklGraphicsVolumeVertex, VK_FORMAT_R32G32B32_SFLOAT, uvw)
+    ATTR_BEGIN(VklGraphicsVolumeSliceVertex)
+    ATTR_POS(VklGraphicsVolumeSliceVertex, pos)
+    ATTR(VklGraphicsVolumeSliceVertex, VK_FORMAT_R32G32B32_SFLOAT, uvw)
 
     _common_bindings(graphics);
     vkl_graphics_slot(graphics, VKL_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);

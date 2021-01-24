@@ -89,9 +89,9 @@ typedef struct VklGraphicsSegmentVertex VklGraphicsSegmentVertex;
 typedef struct VklGraphicsImageVertex VklGraphicsImageVertex;
 typedef struct VklGraphicsImageParams VklGraphicsImageParams;
 
-typedef struct VklGraphicsVolumeItem VklGraphicsVolumeItem;
-typedef struct VklGraphicsVolumeVertex VklGraphicsVolumeVertex;
-typedef struct VklGraphicsVolumeParams VklGraphicsVolumeParams;
+typedef struct VklGraphicsVolumeSliceItem VklGraphicsVolumeSliceItem;
+typedef struct VklGraphicsVolumeSliceVertex VklGraphicsVolumeSliceVertex;
+typedef struct VklGraphicsVolumeSliceParams VklGraphicsVolumeSliceParams;
 
 typedef struct VklGraphicsMeshVertex VklGraphicsMeshVertex;
 typedef struct VklGraphicsMeshParams VklGraphicsMeshParams;
@@ -231,22 +231,22 @@ struct VklGraphicsImageParams
 
 
 /*************************************************************************************************/
-/*  Graphics volume                                                                              */
+/*  Graphics volume slice                                                                        */
 /*************************************************************************************************/
 
-struct VklGraphicsVolumeItem
+struct VklGraphicsVolumeSliceItem
 {
     vec3 pos0, pos1, pos2, pos3;
     vec3 uvw0, uvw1, uvw2, uvw3;
 };
 
-struct VklGraphicsVolumeVertex
+struct VklGraphicsVolumeSliceVertex
 {
     vec3 pos;
     vec3 uvw;
 };
 
-struct VklGraphicsVolumeParams
+struct VklGraphicsVolumeSliceParams
 {
     vec4 x_cmap;
     vec4 y_cmap;

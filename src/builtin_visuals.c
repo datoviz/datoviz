@@ -349,7 +349,7 @@ static void _visual_volume_slice_bake(VklVisual* visual, VklVisualDataEvent ev)
 
     // Vertex buffer source.
     VklSource* source = vkl_source_get(visual, VKL_SOURCE_TYPE_VERTEX, 0);
-    ASSERT(source->arr.item_size == sizeof(VklGraphicsVolumeVertex));
+    ASSERT(source->arr.item_size == sizeof(VklGraphicsVolumeSliceVertex));
 
     // Get props.
     VklProp* pos0 = vkl_prop_get(visual, VKL_PROP_POS, 0);
@@ -382,7 +382,7 @@ static void _visual_volume_slice_bake(VklVisual* visual, VklVisualDataEvent ev)
     VklGraphicsData data = vkl_graphics_data(visual->graphics[0], &source->arr, NULL, NULL);
     vkl_graphics_alloc(&data, img_count);
 
-    VklGraphicsVolumeItem item = {0};
+    VklGraphicsVolumeSliceItem item = {0};
     for (uint32_t i = 0; i < img_count; i++)
     {
         _vec3_cast((const dvec3*)vkl_prop_item(pos0, i), &item.pos0);
@@ -419,13 +419,13 @@ static void _visual_volume_slice(VklVisual* visual)
     // Sources
     vkl_visual_source(                                               // vertex buffer
         visual, VKL_SOURCE_TYPE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, //
-        0, sizeof(VklGraphicsVolumeVertex), 0);                      //
+        0, sizeof(VklGraphicsVolumeSliceVertex), 0);                 //
 
     _common_sources(visual); // common sources
 
     vkl_visual_source(                                              // params
         visual, VKL_SOURCE_TYPE_PARAM, 0, VKL_PIPELINE_GRAPHICS, 0, //
-        VKL_USER_BINDING, sizeof(VklGraphicsVolumeParams), 0);      //
+        VKL_USER_BINDING, sizeof(VklGraphicsVolumeSliceParams), 0); //
 
     vkl_visual_source(                                                      // colormap texture
         visual, VKL_SOURCE_TYPE_COLOR_TEXTURE, 0, VKL_PIPELINE_GRAPHICS, 0, //
@@ -453,35 +453,35 @@ static void _visual_volume_slice(VklVisual* visual)
 
     // Colormap transfer function.
     vec4 vec = {0, .333333, .666666, 1};
-    prop = vkl_visual_prop(                                                            //
-        visual, VKL_PROP_TRANSFER_X, 0, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);     //
-    vkl_visual_prop_copy(                                                              //
-        prop, 0, offsetof(VklGraphicsVolumeParams, x_cmap), VKL_ARRAY_COPY_SINGLE, 1); //
-    vkl_visual_prop_default(prop, vec);                                                //
+    prop = vkl_visual_prop(                                                                 //
+        visual, VKL_PROP_TRANSFER_X, 0, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);          //
+    vkl_visual_prop_copy(                                                                   //
+        prop, 0, offsetof(VklGraphicsVolumeSliceParams, x_cmap), VKL_ARRAY_COPY_SINGLE, 1); //
+    vkl_visual_prop_default(prop, vec);                                                     //
 
-    prop = vkl_visual_prop(                                                            //
-        visual, VKL_PROP_TRANSFER_Y, 0, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);     //
-    vkl_visual_prop_copy(                                                              //
-        prop, 1, offsetof(VklGraphicsVolumeParams, y_cmap), VKL_ARRAY_COPY_SINGLE, 1); //
-    vkl_visual_prop_default(prop, vec);                                                //
+    prop = vkl_visual_prop(                                                                 //
+        visual, VKL_PROP_TRANSFER_Y, 0, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);          //
+    vkl_visual_prop_copy(                                                                   //
+        prop, 1, offsetof(VklGraphicsVolumeSliceParams, y_cmap), VKL_ARRAY_COPY_SINGLE, 1); //
+    vkl_visual_prop_default(prop, vec);                                                     //
 
     // Alpha transfer function.
-    prop = vkl_visual_prop(                                                             //
-        visual, VKL_PROP_TRANSFER_X, 1, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);      //
-    vkl_visual_prop_copy(                                                               //
-        prop, 2, offsetof(VklGraphicsVolumeParams, x_alpha), VKL_ARRAY_COPY_SINGLE, 1); //
-    vkl_visual_prop_default(prop, vec);                                                 //
+    prop = vkl_visual_prop(                                                                  //
+        visual, VKL_PROP_TRANSFER_X, 1, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);           //
+    vkl_visual_prop_copy(                                                                    //
+        prop, 2, offsetof(VklGraphicsVolumeSliceParams, x_alpha), VKL_ARRAY_COPY_SINGLE, 1); //
+    vkl_visual_prop_default(prop, vec);                                                      //
 
-    prop = vkl_visual_prop(                                                             //
-        visual, VKL_PROP_TRANSFER_Y, 1, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);      //
-    vkl_visual_prop_copy(                                                               //
-        prop, 3, offsetof(VklGraphicsVolumeParams, y_alpha), VKL_ARRAY_COPY_SINGLE, 1); //
-    vkl_visual_prop_default(prop, vec);                                                 //
+    prop = vkl_visual_prop(                                                                  //
+        visual, VKL_PROP_TRANSFER_Y, 1, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);           //
+    vkl_visual_prop_copy(                                                                    //
+        prop, 3, offsetof(VklGraphicsVolumeSliceParams, y_alpha), VKL_ARRAY_COPY_SINGLE, 1); //
+    vkl_visual_prop_default(prop, vec);                                                      //
 
     // Colormap value.
     prop = vkl_visual_prop(visual, VKL_PROP_COLORMAP, 0, VKL_DTYPE_INT, VKL_SOURCE_TYPE_PARAM, 0);
     vkl_visual_prop_copy(
-        prop, 4, offsetof(VklGraphicsVolumeParams, cmap), VKL_ARRAY_COPY_SINGLE, 1);
+        prop, 4, offsetof(VklGraphicsVolumeSliceParams, cmap), VKL_ARRAY_COPY_SINGLE, 1);
 
 
 
