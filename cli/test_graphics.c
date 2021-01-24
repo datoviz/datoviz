@@ -32,6 +32,7 @@ struct TestGraphics
     VklArray indices;
     float param;
     void* data;
+    void* params_data;
 };
 
 static void _graphics_refill(VklCanvas* canvas, VklEvent ev)
@@ -805,11 +806,19 @@ int test_graphics_volume_slice(TestContext* context)
 /*  Volume tests                                                                                 */
 /*************************************************************************************************/
 
+static void _volume_update_mvp(VklCanvas* canvas, VklEvent ev)
+{
+    TestGraphics* tg = ev.user_data;
+    glm_vec3_copy(
+        tg->interact.u.a.camera.eye, ((VklGraphicsVolumeParams*)tg->params_data)->view_pos);
+    vkl_upload_buffers(canvas, tg->br_params, 0, sizeof(VklGraphicsVolumeParams), tg->params_data);
+}
+
 int test_graphics_volume_1(TestContext* context)
 {
     INIT_GRAPHICS(VKL_GRAPHICS_VOLUME, 0)
     BEGIN_DATA(VklGraphicsVolumeVertex, 36, NULL)
-    float x = .5f;
+    float x = .75f;
     VklGraphicsVolumeItem item = {{-x, -x, -x}, {+x, +x, +x}, {0, 0, 0}, {1, 1, 1}};
     vkl_graphics_append(&data, &item);
     END_DATA
@@ -820,6 +829,7 @@ int test_graphics_volume_1(TestContext* context)
     VklGraphicsVolumeParams params = {0};
     glm_vec3_copy(tg.eye, params.view_pos);
     params.cmap = VKL_CMAP_HSV;
+    tg.params_data = &params;
     vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsVolumeParams), &params);
 
     // Texture.
@@ -849,6 +859,7 @@ int test_graphics_volume_1(TestContext* context)
     // Interactivity.
     tg.interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
     vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _interact_callback, &tg);
+    vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _volume_update_mvp, &tg);
     vkl_event_callback(canvas, VKL_EVENT_RESIZE, 0, VKL_EVENT_MODE_SYNC, _resize, &tg);
 
     RUN;
