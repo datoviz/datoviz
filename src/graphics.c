@@ -313,7 +313,7 @@ static void _graphics_image(VklCanvas* canvas, VklGraphics* graphics)
 
 
 /*************************************************************************************************/
-/*  Volume image                                                                                 */
+/*  Volume slice                                                                                 */
 /*************************************************************************************************/
 
 static void
@@ -372,6 +372,113 @@ static void _graphics_volume_slice(VklCanvas* canvas, VklGraphics* graphics)
     CREATE
 
     vkl_graphics_callback(graphics, _graphics_volume_slice_callback);
+}
+
+
+
+/*************************************************************************************************/
+/*  Volume                                                                                       */
+/*************************************************************************************************/
+
+static void _graphics_volume_callback(VklGraphicsData* data, uint32_t item_count, const void* item)
+{
+    ASSERT(data != NULL);
+    ASSERT(data->vertices != NULL);
+
+    ASSERT(item_count > 0);
+    vkl_array_resize(data->vertices, 6 * item_count);
+
+    if (item == NULL)
+        return;
+    ASSERT(item != NULL);
+    ASSERT(data->current_idx < item_count);
+
+    const VklGraphicsVolumeItem* item_vert = (const VklGraphicsVolumeItem*)item;
+
+    float x0 = item_vert->pos0[0];
+    float y0 = item_vert->pos0[1];
+    float z0 = item_vert->pos0[2];
+
+    float x1 = item_vert->pos1[0];
+    float y1 = item_vert->pos1[1];
+    float z1 = item_vert->pos1[2];
+
+    float u0 = item_vert->uvw0[0];
+    float v0 = item_vert->uvw0[1];
+    float w0 = item_vert->uvw0[2];
+
+    float u1 = item_vert->uvw1[0];
+    float v1 = item_vert->uvw1[1];
+    float w1 = item_vert->uvw1[2];
+
+    // pos, uvw
+    VklGraphicsVolumeVertex vertices[36] = {
+        {{x0, y0, z1}, {u0, v0, w1}}, // front
+        {{x1, y0, z1}, {u1, v0, w1}}, //
+        {{x1, y1, z1}, {u1, v1, w1}}, //
+        {{x1, y1, z1}, {u1, v1, w1}}, //
+        {{x0, y1, z1}, {u0, v1, w1}}, //
+        {{x0, y0, z1}, {u0, v0, w1}}, //
+                                      //
+        {{x1, y0, z1}, {u1, v0, w1}}, // right
+        {{x1, y0, z0}, {u1, v0, w0}}, //
+        {{x1, y1, z0}, {u1, v1, w0}}, //
+        {{x1, y1, z0}, {u1, v1, w0}}, //
+        {{x1, y1, z1}, {u1, v1, w1}}, //
+        {{x1, y0, z1}, {u1, v0, w1}}, //
+                                      //
+        {{x0, y1, z0}, {u0, v1, w0}}, // back
+        {{x1, y1, z0}, {u1, v1, w0}}, //
+        {{x1, y0, z0}, {u1, v0, w0}}, //
+        {{x1, y0, z0}, {u1, v0, w0}}, //
+        {{x0, y0, z0}, {u0, v0, w0}}, //
+        {{x0, y1, z0}, {u0, v1, w0}}, //
+                                      //
+        {{x0, y0, z0}, {u0, v0, w0}}, // left
+        {{x0, y0, z1}, {u0, v0, w1}}, //
+        {{x0, y1, z1}, {u0, v1, w1}}, //
+        {{x0, y1, z1}, {u0, v1, w1}}, //
+        {{x0, y1, z0}, {u0, v1, w0}}, //
+        {{x0, y0, z0}, {u0, v0, w0}}, //
+                                      //
+        {{x0, y0, z0}, {u0, v0, w0}}, // bottom
+        {{x1, y0, z0}, {u1, v0, w0}}, //
+        {{x1, y0, z1}, {u1, v0, w1}}, //
+        {{x1, y0, z1}, {u1, v0, w1}}, //
+        {{x0, y0, z1}, {u0, v0, w1}}, //
+        {{x0, y0, z0}, {u0, v0, w0}}, //
+                                      //
+        {{x0, y1, z1}, {u0, v1, w1}}, // top
+        {{x1, y1, z1}, {u1, v1, w1}}, //
+        {{x1, y1, z0}, {u1, v1, w0}}, //
+        {{x1, y1, z0}, {u1, v1, w0}}, //
+        {{x0, y1, z0}, {u0, v1, w0}}, //
+        {{x0, y1, z1}, {u0, v1, w1}}, //
+    };
+
+    vkl_array_data(data->vertices, 36 * data->current_idx, 36, 36, vertices);
+    data->current_idx++;
+}
+
+static void _graphics_volume(VklCanvas* canvas, VklGraphics* graphics)
+{
+    SHADER(VERTEX, "graphics_volume_vert")
+    SHADER(FRAGMENT, "graphics_volume_frag")
+    PRIMITIVE(TRIANGLE_LIST)
+    vkl_graphics_depth_test(graphics, VKL_DEPTH_TEST_ENABLE);
+
+    ATTR_BEGIN(VklGraphicsVolumeVertex)
+    ATTR_POS(VklGraphicsVolumeVertex, pos)
+    ATTR(VklGraphicsVolumeVertex, VK_FORMAT_R32G32B32_SFLOAT, uvw)
+
+    _common_bindings(graphics);
+    vkl_graphics_slot(graphics, VKL_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    vkl_graphics_slot(graphics, VKL_USER_BINDING + 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+    vkl_graphics_slot(graphics, VKL_USER_BINDING + 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+
+    CREATE
+
+    vkl_graphics_callback(graphics, _graphics_volume_callback);
 }
 
 
@@ -575,9 +682,14 @@ VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsType type, int f
         _graphics_image(canvas, graphics);
         break;
 
-        // Volume image
+        // Volume slice
     case VKL_GRAPHICS_VOLUME_SLICE:
         _graphics_volume_slice(canvas, graphics);
+        break;
+
+        // Volume
+    case VKL_GRAPHICS_VOLUME:
+        _graphics_volume(canvas, graphics);
         break;
 
 

@@ -781,7 +781,7 @@ int test_graphics_volume_slice(TestContext* context)
         canvas, texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, //
         nt * nt * nt * sizeof(uint8_t), tex_data);
 
-    // Bindings.1
+    // Bindings.
     _common_bindings(&tg);
     vkl_bindings_buffer(&tg.bindings, VKL_USER_BINDING, tg.br_params);
     vkl_bindings_texture(&tg.bindings, VKL_USER_BINDING + 1, gpu->context->color_texture.texture);
@@ -793,6 +793,63 @@ int test_graphics_volume_slice(TestContext* context)
     vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _interact_callback, &tg);
     vkl_event_callback(
         canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _graphics_volume_callback, &tg);
+
+    RUN;
+    FREE(tex_data)
+    TEST_END
+}
+
+
+
+/*************************************************************************************************/
+/*  Volume tests                                                                                 */
+/*************************************************************************************************/
+
+int test_graphics_volume_1(TestContext* context)
+{
+    INIT_GRAPHICS(VKL_GRAPHICS_VOLUME, 0)
+    BEGIN_DATA(VklGraphicsVolumeVertex, 36, NULL)
+    float x = .5f;
+    VklGraphicsVolumeItem item = {{-x, -x, -x}, {+x, +x, +x}, {0, 0, 0}, {1, 1, 1}};
+    vkl_graphics_append(&data, &item);
+    END_DATA
+
+    // Parameters.
+    tg.br_params =
+        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsVolumeParams));
+    VklGraphicsVolumeParams params = {0};
+    glm_vec3_copy(tg.eye, params.view_pos);
+    params.cmap = VKL_CMAP_HSV;
+    vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsVolumeParams), &params);
+
+    // Texture.
+    const uint32_t nt = 12;
+    VklTexture* texture =
+        vkl_ctx_texture(gpu->context, 3, (uvec3){nt, nt, nt}, VK_FORMAT_R8_UNORM);
+    // WARNING: nearest filter causes visual artifacts when sampling from a 3D texture close to the
+    // boundaries between different values
+    vkl_texture_filter(texture, VKL_FILTER_MAX, VK_FILTER_NEAREST);
+    vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_W, VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    uint8_t* tex_data = calloc(nt * nt * nt, sizeof(uint8_t));
+    for (uint32_t i = 0; i < nt * nt * nt; i++)
+        tex_data[i] = i % 256;
+    vkl_upload_texture(
+        canvas, texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, //
+        nt * nt * nt * sizeof(uint8_t), tex_data);
+
+    // Bindings.
+    _common_bindings(&tg);
+    vkl_bindings_buffer(&tg.bindings, VKL_USER_BINDING, tg.br_params);
+    vkl_bindings_texture(&tg.bindings, VKL_USER_BINDING + 1, gpu->context->color_texture.texture);
+    vkl_bindings_texture(&tg.bindings, VKL_USER_BINDING + 2, texture);
+    vkl_bindings_update(&tg.bindings);
+
+    // Interactivity.
+    tg.interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
+    vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _interact_callback, &tg);
+    vkl_event_callback(canvas, VKL_EVENT_RESIZE, 0, VKL_EVENT_MODE_SYNC, _resize, &tg);
 
     RUN;
     FREE(tex_data)
