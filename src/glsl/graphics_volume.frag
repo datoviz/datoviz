@@ -17,18 +17,43 @@ layout(location = 2) in vec3 in_ray;
 
 layout(location = 0) out vec4 out_color;
 
+
+bool intersect_box(vec3 origin, vec3 dir, vec3 box_min, vec3 box_max)
+{
+    vec3 inv_r = 1.0 / dir;
+    vec3 tbot = inv_r * (box_min-origin);
+    vec3 ttop = inv_r * (box_max-origin);
+    vec3 tmin = min(ttop, tbot);
+    vec3 tmax = max(ttop, tbot);
+    vec2 t = max(tmin.xx, tmin.yz);
+    float t0 = max(t.x, t.y);
+    t = min(tmax.xx, tmax.yz);
+    float t1 = min(t.x, t.y);
+    return t0 <= t1;
+}
+
+
 void main()
 {
     // vec3 orig = params.view_pos;
     vec3 u = normalize(in_ray);
     vec3 c = vec3(0);
     vec3 o = params.view_pos.xyz;
+
     float r = .25;
-    float delta = pow(dot(u, o-c), 2) - (dot(o-c, o-c)-r*r);
-    float a = delta < 0 ? .75 : .25;
+    vec3 b0 = vec3(-r);
+    vec3 b1 = vec3(r);
+    mat4 m = inverse(mvp.model);
+    bool b = intersect_box((m*vec4(o, 1)).xyz, (m*vec4(u, 1)).xyz, b0, b1);
+
+    // float delta = pow(dot(u, o-c), 2) - (dot(o-c, o-c)-r*r);
+    // float a = b ? .75 : .25;
     // if (delta < 0) discard;
-    out_color = vec4(in_pos, 1);
-    out_color.r = a;
+
+    out_color = vec4(in_uvw, 1);
+    out_color.xyz *= (b ? 1.25 : .75);
+    // out_color.r = a;
+
     // Fetch the value from the texture.
     // float value = texture(tex, in_uvw).r;
 
