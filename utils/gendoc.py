@@ -27,7 +27,6 @@ ICONS = {
 }
 
 
-
 # File explorer and manipulation
 # -------------------------------------------------------------------------------------------------
 
@@ -46,7 +45,7 @@ def read_file(filename):
 def insert_text(text, i, n, insert):
     out = text[:i]
     out += insert
-    out += text[i + n - 1:]
+    out += text[i + n:]
     return out
 
 
@@ -214,7 +213,8 @@ def _gen_func_doc(name, func):
     description = '\n'.join(description).strip()
 
     # Signature
-    args_s = ', '.join(f"{'const ' if args.const else ''}{arg.dtype} {arg.name}" for arg in args)
+    args_s = ', '.join(
+        f"{'const ' if args.const else ''}{arg.dtype} {arg.name}" for arg in args)
     signature = f'```c\n{out} {name}({args_s});\n```'
     signature = f'=== "C"\n{indent(signature, prefix="    ")}'
 
@@ -250,12 +250,12 @@ def _camel_to_snake(name):
 
 def _parse_markdown(api_text):
     # Parse the api.md file and extracts all function definitions
-    r = re.compile(r'#+\s+`?(\w+)\(\)`?') # ex: "### `vkl_canvas()`"
+    r = re.compile(r'#+\s+`?(\w+)\(\)`?')  # ex: "### `vkl_canvas()`"
     functions = r.finditer(api_text)
     return functions
 
 
-ITEM_HEADER = '### '
+ITEM_HEADER = re.compile(r'^#+\s+', flags=re.MULTILINE)
 
 
 if __name__ == '__main__':
@@ -283,20 +283,22 @@ if __name__ == '__main__':
         name = m.group(1)
         # Find the position of the function in the current text
         header = f'### `{name}()`'
+        assert header in api_text, header
         i = api_text.index(header)
         # All text after the current function header
         rem = api_text[i + len(header):]
         assert rem
         # We need to go up to where?
-        if ITEM_HEADER in rem:
-            n = rem.index(ITEM_HEADER)
+        r = ITEM_HEADER.search(rem)
+        if r:
+            n = r.start(0)
         else:
             n = len(rem)
         n += len(header)
         assert n > 0
         # Docstring to insert.
         insert = _gen_func_doc(name, all_funcs[name])
-        api_text = insert_text(api_text, i, n, insert)
+        api_text = insert_text(api_text, i, n - 1, insert)
 
     api_text = api_text.strip() + '\n'
 

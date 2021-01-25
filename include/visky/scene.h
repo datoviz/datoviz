@@ -1,3 +1,7 @@
+/*************************************************************************************************/
+/*  Scene API                                                                                    */
+/*************************************************************************************************/
+
 #ifndef VKL_SCENE_HEADER
 #define VKL_SCENE_HEADER
 
@@ -23,14 +27,20 @@
 /*************************************************************************************************/
 
 // Controller type
+/**
+ * Controller type.
+ *
+ * The controller type determines the way the user interacts with a panel.
+ *
+ */
 typedef enum
 {
-    VKL_CONTROLLER_NONE,
-    VKL_CONTROLLER_PANZOOM,
-    VKL_CONTROLLER_AXES_2D,
-    VKL_CONTROLLER_ARCBALL,
-    VKL_CONTROLLER_CAMERA,
-    VKL_CONTROLLER_AXES_3D,
+    VKL_CONTROLLER_NONE,    // static panel
+    VKL_CONTROLLER_PANZOOM, // pan and zoom with the mouse
+    VKL_CONTROLLER_AXES_2D, // panzoom + 2D axes with ticks, grid, etc.
+    VKL_CONTROLLER_ARCBALL, // 3D rotating model with the mouse (uses quaternions)
+    VKL_CONTROLLER_CAMERA,  // 3D camera with keyboard for movement and mouse for view
+    VKL_CONTROLLER_AXES_3D, // 3D arcball with axes (NOT IMPLEMENTED YET)
 } VklControllerType;
 
 
@@ -41,6 +51,8 @@ typedef enum
     VKL_VISUAL_FLAGS_TRANSFORM_AUTO = 0x0000,
     VKL_VISUAL_FLAGS_TRANSFORM_NONE = 0x0010,
 } VklVisualFlags;
+
+
 
 /*
 flags bits range:
@@ -139,8 +151,28 @@ struct VklScene
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+/**
+ * Create a scene with a grid layout.
+ *
+ * The scene defines a 2D grid where each cell contains a panel (subplot). Panels may support
+ * various kinds of interactivity.
+ *
+ * @param canvas the canvas
+ * @param n_rows number of rows in the grid
+ * @param n_cols number of columns in the grid
+ * @returns a pointer to the created scene
+ */
 VKY_EXPORT VklScene* vkl_scene(VklCanvas* canvas, uint32_t n_rows, uint32_t n_cols);
 
+
+
+/**
+ * Destroy a scene.
+ *
+ * Destroy all panels and visuals in the scene.
+ *
+ * @param scene the scene
+ */
 VKY_EXPORT void vkl_scene_destroy(VklScene* scene);
 
 
