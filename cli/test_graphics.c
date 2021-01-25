@@ -2,6 +2,7 @@
 #include "../include/visky/colormaps.h"
 #include "../include/visky/graphics.h"
 #include "../include/visky/mesh.h"
+#include "../src/interact_utils.h"
 #include "../src/mesh_loader.h"
 #include "utils.h"
 
@@ -816,28 +817,36 @@ static void _volume_update_mvp(VklCanvas* canvas, VklEvent ev)
 
 int test_graphics_volume_1(TestContext* context)
 {
+    // Texture shape.
+    const uint32_t ni = 320;
+    const uint32_t nj = 456;
+    const uint32_t nk = 528;
+
+    VklGraphicsVolumeParams params = {0};
+    float c = .005;
+    vec4 box_size = {c * ni, c * nj, c * nk, 0};
+    glm_vec4_copy(box_size, params.box_size);
+    params.cmap = VKL_CMAP_BONE;
+    vec3 p0 = {-c * ni / 2., -c * nj / 2., -c * nk / 2.};
+    vec3 p1 = {+c * ni / 2., +c * nj / 2., +c * nk / 2.};
+
     INIT_GRAPHICS(VKL_GRAPHICS_VOLUME, 0)
     BEGIN_DATA(VklGraphicsVolumeVertex, 36, NULL)
-    float x = .75f;
-    VklGraphicsVolumeItem item = {{-x, -x, -x}, {+x, +x, +x}, {0, 0, 0}, {1, 1, 1}};
+    VklGraphicsVolumeItem item = {
+        {p0[0], p0[1], p0[2]}, {p1[0], p1[1], p1[2]}, {0, 0, 0}, {1, 1, 1}};
     vkl_graphics_append(&data, &item);
     END_DATA
 
     // Parameters.
     tg.br_params =
         vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsVolumeParams));
-    VklGraphicsVolumeParams params = {0};
     glm_vec3_copy(tg.eye, params.view_pos);
-    params.cmap = VKL_CMAP_BONE;
     tg.params_data = &params;
     vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsVolumeParams), &params);
 
     // Texture.
     char path[1024];
     snprintf(path, sizeof(path), "%s/volume/%s", DATA_DIR, "atlas_25.img");
-    const uint32_t ni = 320;
-    const uint32_t nj = 456;
-    const uint32_t nk = 528;
     VklTexture* texture =
         vkl_ctx_texture(gpu->context, 3, (uvec3){ni, nj, nk}, VK_FORMAT_R16_UNORM);
     // WARNING: nearest filter causes visual artifacts when sampling from a 3D texture close to the
@@ -869,6 +878,18 @@ int test_graphics_volume_1(TestContext* context)
     vkl_event_callback(
         canvas, VKL_EVENT_TIMER, 1. / 60, VKL_EVENT_MODE_SYNC, _volume_update_mvp, &tg);
     vkl_event_callback(canvas, VKL_EVENT_RESIZE, 0, VKL_EVENT_MODE_SYNC, _resize, &tg);
+
+    VklArcball* arcball = &tg.interact.u.a;
+    versor q;
+    glm_quatv(q, M_PI / 2, (vec3){0, 0, 1});
+    glm_quat_mul(arcball->rotation, q, arcball->rotation);
+    glm_quatv(q, M_PI, (vec3){0, 1, 0});
+    glm_quat_mul(arcball->rotation, q, arcball->rotation);
+    glm_quatv(q, M_PI / 6, (vec3){1, 0, 0});
+    glm_quat_mul(arcball->rotation, q, arcball->rotation);
+    glm_quatv(q, -M_PI / 6, (vec3){0, 1, 0});
+    glm_quat_mul(arcball->rotation, q, arcball->rotation);
+    _arcball_update_mvp(arcball, &tg.interact.mvp);
 
     RUN;
     FREE(tex_data)

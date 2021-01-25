@@ -1,12 +1,14 @@
 #version 450
 #include "common.glsl"
+#include "colormaps.glsl"
 
-#define STEP_SIZE 0.0025
+#define STEP_SIZE 0.005
 #define MAX_ITER 10 / STEP_SIZE
 
 layout(std140, binding = USER_BINDING) uniform Params
 {
     vec4 view_pos;
+    vec4 box_size;
     int cmap;
 }
 params;
@@ -39,8 +41,11 @@ bool intersect_box(vec3 origin, vec3 dir, vec3 box_min, vec3 box_max, out float 
 
 vec4 fetch_color(vec3 uvw) {
     float v = texture(tex, uvw).r;
+
     // Color component: colormap.
-    vec4 color = texture(tex_cmap, vec2(v, (params.cmap + .5) / 256.0));
+    vec4 color = colormap(params.cmap, v);
+    // vec4 color = texture(tex_cmap, vec2(v, (params.cmap + .5) / 256.0));
+
     // Alpha value: value.
     color.a = v;
     return color;
@@ -66,9 +71,8 @@ void main()
     // // float delta = pow(dot(u, o-c), 2) - (dot(o-c, o-c)-r*r);
 
     float t0, t1;
-    float r = .75;
-    vec3 b0 = vec3(-r);
-    vec3 b1 = vec3(+r);
+    vec3 b0 = -params.box_size.xyz / 2;
+    vec3 b1 = +params.box_size.xyz / 2;
     intersect_box(o, u, b0, b1, t0, t1);
     if (t0 < 0 || t1 < 0) discard;
 
@@ -86,7 +90,6 @@ void main()
     for (int i = 0; i < MAX_ITER && travel > 0.0; ++i, pos += dl, travel -= STEP_SIZE) {
         uvw = (pos - b0) / (b1 - b0);
         s = fetch_color(uvw);
-        // alpha = (exp(s.a) - 1.0) / (exp(1.0) - 1.0);
         alpha = s.a;
         acc = s + (1 - alpha) * acc;
 

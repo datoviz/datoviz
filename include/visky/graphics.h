@@ -282,6 +282,7 @@ struct VklGraphicsVolumeVertex
 struct VklGraphicsVolumeParams
 {
     vec4 view_pos;
+    vec4 box_size;
     int32_t cmap;
 };
 
