@@ -828,26 +828,33 @@ int test_graphics_volume_1(TestContext* context)
         vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsVolumeParams));
     VklGraphicsVolumeParams params = {0};
     glm_vec3_copy(tg.eye, params.view_pos);
-    params.cmap = VKL_CMAP_HSV;
+    params.cmap = VKL_CMAP_BONE;
     tg.params_data = &params;
     vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsVolumeParams), &params);
 
     // Texture.
-    const uint32_t nt = 12;
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/volume/%s", DATA_DIR, "atlas_25.img");
+    const uint32_t ni = 320;
+    const uint32_t nj = 456;
+    const uint32_t nk = 528;
     VklTexture* texture =
-        vkl_ctx_texture(gpu->context, 3, (uvec3){nt, nt, nt}, VK_FORMAT_R8_UNORM);
+        vkl_ctx_texture(gpu->context, 3, (uvec3){ni, nj, nk}, VK_FORMAT_R16_UNORM);
     // WARNING: nearest filter causes visual artifacts when sampling from a 3D texture close to the
     // boundaries between different values
-    vkl_texture_filter(texture, VKL_FILTER_MAX, VK_FILTER_NEAREST);
+    vkl_texture_filter(texture, VKL_FILTER_MAX, VK_FILTER_LINEAR);
     vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_REPEAT);
     vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_REPEAT);
     vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_W, VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    uint8_t* tex_data = calloc(nt * nt * nt, sizeof(uint8_t));
-    for (uint32_t i = 0; i < nt * nt * nt; i++)
-        tex_data[i] = i % 256;
+
+    // uint8_t* tex_data = calloc(ni * nj * nk, sizeof(uint16_t));
+    uint16_t* tex_data = (uint16_t*)read_file(path, NULL);
+    for (uint32_t i = 0; i < (ni * nj * nk); i++)
+        tex_data[i] *= 100;
     vkl_upload_texture(
         canvas, texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, //
-        nt * nt * nt * sizeof(uint8_t), tex_data);
+        ni * nj * nk * sizeof(uint16_t), tex_data);
+    FREE(tex_data);
 
     // Bindings.
     _common_bindings(&tg);
@@ -859,7 +866,8 @@ int test_graphics_volume_1(TestContext* context)
     // Interactivity.
     tg.interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
     vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _interact_callback, &tg);
-    vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _volume_update_mvp, &tg);
+    vkl_event_callback(
+        canvas, VKL_EVENT_TIMER, 1. / 60, VKL_EVENT_MODE_SYNC, _volume_update_mvp, &tg);
     vkl_event_callback(canvas, VKL_EVENT_RESIZE, 0, VKL_EVENT_MODE_SYNC, _resize, &tg);
 
     RUN;
