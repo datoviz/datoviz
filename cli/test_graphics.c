@@ -850,7 +850,7 @@ int test_graphics_volume_1(TestContext* context)
     // uint8_t* tex_data = calloc(ni * nj * nk, sizeof(uint16_t));
     uint16_t* tex_data = (uint16_t*)read_file(path, NULL);
     for (uint32_t i = 0; i < (ni * nj * nk); i++)
-        tex_data[i] *= 100;
+        tex_data[i] *= 10;
     vkl_upload_texture(
         canvas, texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, //
         ni * nj * nk * sizeof(uint16_t), tex_data);

@@ -36,6 +36,18 @@ bool intersect_box(vec3 origin, vec3 dir, vec3 box_min, vec3 box_max, out float 
 }
 
 
+
+vec4 fetch_color(vec3 uvw) {
+    float v = texture(tex, uvw).r;
+    // Color component: colormap.
+    vec4 color = texture(tex_cmap, vec2(v, (params.cmap + .5) / 256.0));
+    // Alpha value: value.
+    color.a = v;
+    return color;
+}
+
+
+
 void main()
 {
     mat4 mi = inverse(mvp.model);
@@ -62,42 +74,29 @@ void main()
 
     vec3 ray_start = o + u * t0;
     vec3 ray_stop = o + u * t1;
-    // out_color.xyz = ray_stop;
-    // out_color.a = 1;
 
-    vec3 pos = ray_start;
-    vec3 step = normalize(ray_stop - ray_start) * STEP_SIZE;
-    float travel = distance(ray_stop, ray_start);
+    vec3 pos = ray_stop;
+    vec3 dl = normalize(ray_start - ray_stop) * STEP_SIZE;
+    float travel = distance(ray_start, ray_stop);
     float max_intensity = 0.0;
-
-    // vec4 color = vec4(0.0);
-    // color.a = 1.0;
     vec3 uvw = vec3(0);
-    for (int i = 0; i < MAX_ITER && travel > 0.0; ++i, pos += step, travel -= STEP_SIZE) {
+    vec4 s = vec4(0);
+    vec4 acc = vec4(0);
+    float alpha = 0;
+    for (int i = 0; i < MAX_ITER && travel > 0.0; ++i, pos += dl, travel -= STEP_SIZE) {
         uvw = (pos - b0) / (b1 - b0);
-        float intensity = texture(tex, uvw).r;
-        // intensity *= exp(-pow(dot(pos, pos) / .25, 2));
+        s = fetch_color(uvw);
+        // alpha = (exp(s.a) - 1.0) / (exp(1.0) - 1.0);
+        alpha = s.a;
+        acc = s + (1 - alpha) * acc;
 
         // MIP
-        if (intensity > max_intensity) {
-            max_intensity = intensity;
+        if (s.a > max_intensity) {
+            max_intensity = s.a;
         }
+
     }
-    if (max_intensity < .1) discard;
-    out_color = texture(tex_cmap, vec2(max_intensity, (params.cmap + .5) / 256.0));
-
-    // Fetch the value from the texture.
-    // float value = texture(tex, in_uvw).r;
-
-    // // Transfer function on the texture value.
-    // if (sum(params.x_cmap) != 0)
-    //     value = transfer(value, params.x_cmap, params.y_cmap);
-
-    // // Transfer function on the texture value.
-    // float alpha = 1.0;
-    // if (sum(params.x_alpha) != 0)
-    //     alpha = transfer(value, params.x_alpha, params.y_alpha);
-
-    // // Sampling from the color texture.
-    // out_color = texture(tex_cmap, vec2(value, (params.cmap + .5) / 256.0));
+    // if (max_intensity < .001)
+    //     discard;
+    out_color = acc;
 }
