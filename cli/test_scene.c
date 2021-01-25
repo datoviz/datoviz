@@ -1,6 +1,7 @@
 #include "test_scene.h"
 #include "../include/visky/builtin_visuals.h"
 #include "../include/visky/scene.h"
+#include "../src/ticks.h"
 #include "utils.h"
 
 

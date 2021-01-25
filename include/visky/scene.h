@@ -4,7 +4,7 @@
 #include "builtin_visuals.h"
 #include "interact.h"
 #include "panel.h"
-#include "ticks.h"
+#include "ticks_types.h"
 #include "transforms.h"
 #include "visuals.h"
 
