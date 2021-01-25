@@ -761,8 +761,8 @@ struct VklTexture
  * There is typically only one App object in a given application. This object holds a pointer to
  * the Vulkan instance and is responsible for discovering the available GPUs.
  *
- * @param backend the backend, typically either VKL_BACKEND_GLFW or VKL_BACKEND_OFFSCREEN
- * @returns a pointer to the created VklApp struct
+ * @param backend the backend
+ * @returns a pointer to the created app
  */
 VKY_EXPORT VklApp* vkl_app(VklBackend backend);
 

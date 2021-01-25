@@ -102,3 +102,15 @@ if [ $1 == "dockerrun" ]
 then
     docker run -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -h $HOSTNAME -v $HOME/.Xauthority:/home/visky/.Xauthority -it visky
 fi
+
+if [ $1 == "doc" ]
+then
+    python3 utils/gendoc.py && \
+    mkdocs build
+fi
+
+if [ $1 == "docs" ]
+then
+    python3 utils/gendoc.py && \
+    mkdocs serve
+fi
