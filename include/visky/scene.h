@@ -181,20 +181,64 @@ VKY_EXPORT void vkl_scene_destroy(VklScene* scene);
 /*  Controller                                                                                   */
 /*************************************************************************************************/
 
+/**
+ * Create a custom controller.
+ *
+ * @param panel the panel
+ * @returns a controller structure
+ */
 VKY_EXPORT VklController vkl_controller(VklPanel* panel);
 
+/**
+ * Add a visual to a controller.
+ *
+ * @param controller the controller
+ * @param visual the visual
+ */
 VKY_EXPORT void vkl_controller_visual(VklController* controller, VklVisual* visual);
 
+/**
+ * Add an interact to a controller.
+ *
+ * @param controller the controller
+ * @param interact the interact
+ */
 VKY_EXPORT void vkl_controller_interact(VklController* controller, VklInteractType type);
 
+/**
+ * Specify a controller frame callback.
+ *
+ * Callback signature: `void(VklController* controller, VklEvent ev);`
+ *
+ * @param controller the controller
+ * @param callback the callback
+ */
 VKY_EXPORT void vkl_controller_callback(VklController* controller, VklControllerCallback callback);
 
+/**
+ * Update a controller.
+ *
+ * !!! missing "Not yet implemented"
+ *
+ * @param controller the controller
+ */
 VKY_EXPORT void vkl_controller_update(VklController* controller);
 
+/**
+ * Destroy a controller.
+ *
+ * @param controller the controller
+ */
 VKY_EXPORT void vkl_controller_destroy(VklController* controller);
 
 
-
+/**
+ * Create a builtin controller.
+ *
+ * @param panel the panel
+ * @param type the controller type
+ * @param flags flags for the builtin controller
+ */
 VKY_EXPORT VklController
 vkl_controller_builtin(VklPanel* panel, VklControllerType type, int flags);
 
@@ -204,10 +248,26 @@ vkl_controller_builtin(VklPanel* panel, VklControllerType type, int flags);
 /*  High-level functions                                                                         */
 /*************************************************************************************************/
 
-VKY_EXPORT VklVisual* vkl_scene_visual(VklPanel* panel, VklVisualType type, int flags);
-
+/**
+ * Add a panel to the scene grid.
+ *
+ * @param controller the scene
+ * @param row the row index (0-based)
+ * @param col the column index (0-based)
+ * @param type the controller type
+ * @param flags flags for the builtin controller
+ */
 VKY_EXPORT VklPanel*
 vkl_scene_panel(VklScene* scene, uint32_t row, uint32_t col, VklControllerType type, int flags);
+
+/**
+ * Create a builtin or custom visual and add it to a panel.
+ *
+ * @param panel the panel
+ * @param type the type of visual
+ * @param flags flags for the builtin visual
+ */
+VKY_EXPORT VklVisual* vkl_scene_visual(VklPanel* panel, VklVisualType type, int flags);
 
 // VKY_EXPORT void vkl_visual_toggle(VklVisual* visual, VklVisualVisibility visibility);
 
@@ -217,10 +277,29 @@ vkl_scene_panel(VklScene* scene, uint32_t row, uint32_t col, VklControllerType t
 /*  Interact functions                                                                           */
 /*************************************************************************************************/
 
+/**
+ * Set the camera position.
+ *
+ * @param panel the panel
+ * @param pos the position in scene coordinates
+ */
 VKY_EXPORT void vkl_camera_pos(VklPanel* panel, vec3 pos);
 
+/**
+ * Set the camera center position (the position the camera points to).
+ *
+ * @param panel the panel
+ * @param center the center position
+ */
 VKY_EXPORT void vkl_camera_look(VklPanel* panel, vec3 center);
 
+/**
+ * Set the arcball rotation.
+ *
+ * @param panel the panel
+ * @param angle the rotation angle
+ * @param axis the rotation angle
+ */
 VKY_EXPORT void vkl_arcball_rotate(VklPanel* panel, float angle, vec3 axis);
 
 // TODO: panzoom functions
