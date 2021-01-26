@@ -193,9 +193,26 @@ MAKE_TRANSPOSE(vec3)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+/**
+ * Apply a CPU builtin transformation on position data.
+ *
+ * @param coords the data coordinate system and bounds
+ * @param pos_in input array of dvec3 values
+ * @param[out] pos_out output array of dvec3 values
+ * @param inverse whether to use the inverse or forward transformation
+ */
 VKY_EXPORT void
 vkl_transform_data(VklDataCoords coords, VklArray* pos_in, VklArray* pos_out, bool inverse);
 
+/**
+ * Convert a 3D position from a coordinate system to another.
+ *
+ * @param panel the panel
+ * @param source the source coordinate system
+ * @param in the input position
+ * @param target the target coordinate system
+ * @param[out] out the output (transformed) position
+ */
 VKY_EXPORT void vkl_transform(VklPanel* panel, VklCDS source, dvec3 in, VklCDS target, dvec3 out);
 
 
