@@ -1,3 +1,7 @@
+/*************************************************************************************************/
+/*  Batteries-included Vulkan-aware bare window with swapchain and event system                  */
+/*************************************************************************************************/
+
 #ifndef VKL_CANVAS_HEADER
 #define VKL_CANVAS_HEADER
 
@@ -613,18 +617,42 @@ struct VklCanvas
 /*  Canvas                                                                                       */
 /*************************************************************************************************/
 
-// adds callbacks as a function of the backend
-// GLFW ex: init_canvas_glfw(VklCanvas* canvas);
-// start a background thread that:
-// - dequeue event queue (wait)
-// - switch the event type
-// - call the relevant event callbacks
+/**
+ * Create a canvas.
+ *
+ * @param gpu the GPU to use for swapchain presentation
+ * @param width the initial window width, in pixels
+ * @param height the initial window height, in pixels
+ * @param flags the creation flags for the canvas
+ */
 VKY_EXPORT VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height, int flags);
 
-VKY_EXPORT VklCanvas* vkl_canvas_offscreen(VklGpu* gpu, uint32_t width, uint32_t height);
+/**
+ * Create an offscreen canvas.
+ *
+ * @param gpu the GPU to use for swapchain presentation
+ * @param width the canvas width, in pixels
+ * @param height the canvas height, in pixels
+ * @param flags the creation flags for the canvas
+ */
+VKY_EXPORT VklCanvas*
+vkl_canvas_offscreen(VklGpu* gpu, uint32_t width, uint32_t height, int flags);
 
+/**
+ * Recreate the canvas GPU resources and swapchain.
+ *
+ * @param canvas the canvas to recreate
+ */
 VKY_EXPORT void vkl_canvas_recreate(VklCanvas* canvas);
 
+/**
+ * Create a set of Vulkan command buffers on a given GPU queue.
+ *
+ * @param canvas the canvas
+ * @param queue_idx the index of the GPU queue within the GPU context
+ * @param count number of command buffers to create
+ * @returns the set of created command buffers
+ */
 VKY_EXPORT VklCommands* vkl_canvas_commands(VklCanvas* canvas, uint32_t queue_idx, uint32_t count);
 
 
@@ -633,10 +661,33 @@ VKY_EXPORT VklCommands* vkl_canvas_commands(VklCanvas* canvas, uint32_t queue_id
 /*  Canvas misc                                                                                  */
 /*************************************************************************************************/
 
+/**
+ * Change the background color of a canvas.
+ *
+ * !!! note
+ *     A command buffer refill will be triggered so as to record them again with the updated clear
+ *     color value.
+ *
+ * @param canvas the canvas
+ * @param color the background color
+ */
 VKY_EXPORT void vkl_canvas_clear_color(VklCanvas* canvas, VkClearColorValue color);
 
+/**
+ * Get the canvas size.
+ *
+ * @param canvas the canvas
+ * @param type the unit of the requested screen size
+ * @param[out] size the size vector filled by this function
+ */
 VKY_EXPORT void vkl_canvas_size(VklCanvas* canvas, VklCanvasSizeType type, uvec2 size);
 
+/**
+ * Whether the canvas should close when Escape is pressed.
+ *
+ * @param canvas the canvas
+ * @param value the boolean value
+ */
 VKY_EXPORT void vkl_canvas_close_on_esc(VklCanvas* canvas, bool value);
 
 // screen coordinates
@@ -651,6 +702,12 @@ static inline bool _pos_in_viewport(VklViewport viewport, vec2 screen_pos)
     );
 }
 
+/**
+ * Get the viewport corresponding to the full canvas.
+ *
+ * @param canvas the canvas
+ * @returns the viewport
+ */
 VKY_EXPORT VklViewport vkl_viewport_full(VklCanvas* canvas);
 
 
@@ -660,16 +717,22 @@ VKY_EXPORT VklViewport vkl_viewport_full(VklCanvas* canvas);
 /*************************************************************************************************/
 
 /**
- * Register a callback for events.
+ * Register a callback for canvas events.
  *
- * These user callbacks run either in the main thread (sync callbacks) or in the background thread
- * (async callbacks). Callbacks can access the VklMouse and VklKeyboard structures with the
- * current state of the mouse and keyboard.
+ * These user callbacks run either in the main thread (*sync* callbacks) or in the background
+ * thread * (*async* callbacks). Callbacks can access the `VklMouse` and `VklKeyboard` structures
+ * with the current state of the mouse and keyboard.
  *
- * @par TIMER events:
+ * Callback function signature: `void(VklCanvas*, VklEvent)`
  *
- * Callbacks registered with TIMER events need to specify as `param` the delay, in seconds,
- * between successive TIMER events.
+ * The event object has a field with the user-specified pointer `user_data`.
+ *
+ * @param canvas the canvas
+ * @param type the event type
+ * @param param time interval for TIMER events, in seconds
+ * @param mode whether the callback is sync or async
+ * @param callback the callback function
+ * @param user_data a pointer to arbitrary user data
  *
  */
 VKY_EXPORT void vkl_event_callback(
@@ -682,8 +745,18 @@ VKY_EXPORT void vkl_event_callback(
 /*  State changes                                                                                */
 /*************************************************************************************************/
 
+/**
+ * Trigger a canvas refill at the next frame.
+ *
+ * @param canvas the canvas
+ */
 VKY_EXPORT void vkl_canvas_to_refill(VklCanvas* canvas);
 
+/**
+ * Close the canvas at the next frame.
+ *
+ * @param canvas the canvas
+ */
 VKY_EXPORT void vkl_canvas_to_close(VklCanvas* canvas);
 
 
@@ -700,6 +773,9 @@ VKY_EXPORT void vkl_canvas_to_close(VklCanvas* canvas);
  * - screenshots,
  * - video records (requires ffmpeg)
  *
+ * This command creates a host-coherent GPU image with the same size as the current framebuffer
+ * size.
+ *
  * @param canvas
  * @param interval If non-zero, the Canvas will raise periodic SCREENCAST events every
  *      `interval` seconds. The event payload will contain a pointer to the grabbed
@@ -709,9 +785,6 @@ VKY_EXPORT void vkl_canvas_to_close(VklCanvas* canvas);
  *      allocated with enough memory to store the image. Providing a pointer disables resize
  *      support (the swapchain and GPU images will not be recreated upon resize).
  *
- * This command creates a host-coherent GPU image with the same size as the current framebuffer
- * size.
- *
  */
 VKY_EXPORT void vkl_screencast(VklCanvas* canvas, double interval);
 
@@ -719,6 +792,8 @@ VKY_EXPORT void vkl_screencast(VklCanvas* canvas, double interval);
 
 /**
  * Destroy the screencast.
+ *
+ * @param canvas
  */
 VKY_EXPORT void vkl_screencast_destroy(VklCanvas* canvas);
 
@@ -821,6 +896,7 @@ VKY_EXPORT void vkl_app_run(VklApp* app, uint64_t frame_count);
 /*  Event system                                                                                 */
 /*************************************************************************************************/
 
+// Enqueue an event.
 static void _event_enqueue(VklCanvas* canvas, VklEvent event)
 {
     ASSERT(canvas != NULL);
@@ -833,6 +909,7 @@ static void _event_enqueue(VklCanvas* canvas, VklEvent event)
 
 
 
+// Dequeue an event, immediately, or waiting until an event is available.
 static VklEvent _event_dequeue(VklCanvas* canvas, bool wait)
 {
     ASSERT(canvas != NULL);
@@ -851,6 +928,7 @@ static VklEvent _event_dequeue(VklCanvas* canvas, bool wait)
 
 
 
+// Whether there is at least one async callback.
 static bool _has_async_callbacks(VklCanvas* canvas, VklEventType type)
 {
     ASSERT(canvas != NULL);
@@ -864,6 +942,7 @@ static bool _has_async_callbacks(VklCanvas* canvas, VklEventType type)
 
 
 
+// Whether there is at least one event callback.
 static bool _has_event_callbacks(VklCanvas* canvas, VklEventType type)
 {
     ASSERT(canvas != NULL);
@@ -877,6 +956,7 @@ static bool _has_event_callbacks(VklCanvas* canvas, VklEventType type)
 
 
 
+// Consume an event, return the number of callbacks called.
 static int _event_consume(VklCanvas* canvas, VklEvent ev, VklEventMode mode)
 {
     ASSERT(canvas != NULL);
@@ -917,6 +997,8 @@ static int _event_consume(VklCanvas* canvas, VklEvent ev, VklEventMode mode)
 
 
 
+// Produce an event, call the sync callbacks, and enqueue the event if there is at least one async
+// callback.
 static int _event_produce(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
@@ -933,6 +1015,7 @@ static int _event_produce(VklCanvas* canvas, VklEvent ev)
 
 
 
+// Event loop running in the background thread, waiting for events and dequeuing them.
 static void* _event_thread(void* p_canvas)
 {
     VklCanvas* canvas = (VklCanvas*)p_canvas;

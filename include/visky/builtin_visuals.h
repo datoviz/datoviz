@@ -1,3 +1,7 @@
+/*************************************************************************************************/
+/*  Library of builtin visuals                                                                   */
+/*************************************************************************************************/
+
 #ifndef VKL_BUILTIN_VISUALS_HEADER
 #define VKL_BUILTIN_VISUALS_HEADER
 
@@ -109,6 +113,13 @@ typedef enum
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+/**
+ * Make a builtin visual out of an existing visual.
+ *
+ * @param visual the visual to update
+ * @param type the type of builtin visual
+ * @param flags the creation flags for the builtin visual
+ */
 VKY_EXPORT void vkl_visual_builtin(VklVisual* visual, VklVisualType type, int flags);
 
 

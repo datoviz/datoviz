@@ -70,6 +70,71 @@ Destroy the application.
 
 This function automatically destroys all objects created within the application.
 
+## Canvas API
+
+### `vkl_canvas()`
+
+=== "C"
+    ```c
+    VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height, int flags);
+    ```
+
+| Parameter | Type | Description |
+| ---- | ---- | ---- |
+| :octicons-arrow-right-16: `gpu` | `VklGpu*` | the GPU to use for swapchain presentation |
+| :octicons-arrow-right-16: `width` | `uint32_t` | the initial window width, in pixels |
+| :octicons-arrow-right-16: `height` | `uint32_t` | the initial window height, in pixels |
+| :octicons-arrow-right-16: `flags` | `int` | the creation flags for the canvas |
+
+Create a canvas.
+
+### `vkl_canvas_offscreen()`
+
+=== "C"
+    ```c
+    VklCanvas* vkl_canvas_offscreen(
+        VklGpu* gpu, uint32_t width, uint32_t height, int flags);
+    ```
+
+| Parameter | Type | Description |
+| ---- | ---- | ---- |
+| :octicons-arrow-right-16: `gpu` | `VklGpu*` | the GPU to use for swapchain presentation |
+| :octicons-arrow-right-16: `width` | `uint32_t` | the canvas width, in pixels |
+| :octicons-arrow-right-16: `height` | `uint32_t` | the canvas height, in pixels |
+| :octicons-arrow-right-16: `flags` | `int` | the creation flags for the canvas |
+
+Create an offscreen canvas.
+
+### `vkl_canvas_recreate()`
+
+=== "C"
+    ```c
+    void vkl_canvas_recreate(VklCanvas* canvas);
+    ```
+
+| Parameter | Type | Description |
+| ---- | ---- | ---- |
+| :octicons-arrow-right-16: `canvas` | `VklCanvas*` | the canvas to recreate |
+
+Recreate the canvas GPU resources and swapchain.
+
+### `vkl_canvas_commands()`
+
+=== "C"
+    ```c
+    VklCommands* vkl_canvas_commands(
+        VklCanvas* canvas, uint32_t queue_idx, uint32_t count);
+    ```
+
+| Parameter | Type | Description |
+| ---- | ---- | ---- |
+| :octicons-arrow-right-16: `canvas` | `VklCanvas*` | the canvas |
+| :octicons-arrow-right-16: `queue_idx` | `uint32_t` | the index of the GPU queue within the GPU context |
+| :octicons-arrow-right-16: `count` | `uint32_t` | number of command buffers to create |
+| :octicons-arrow-left-16: `returns` | `VklCommands*` | set of created command buffers |
+
+Create a set of Vulkan command buffers on a given GPU queue.
+
 ## Array API
 
 ### `vkl_array()`

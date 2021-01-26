@@ -845,7 +845,7 @@ VklCommands* vkl_canvas_commands(VklCanvas* canvas, uint32_t queue_idx, uint32_t
 /*  Offscreen                                                                                    */
 /*************************************************************************************************/
 
-VklCanvas* vkl_canvas_offscreen(VklGpu* gpu, uint32_t width, uint32_t height)
+VklCanvas* vkl_canvas_offscreen(VklGpu* gpu, uint32_t width, uint32_t height, int flags)
 {
     // NOTE: no overlay for now in offscreen canvas
     return _canvas(gpu, width, height, true, false, 0);
