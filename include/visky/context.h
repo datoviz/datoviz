@@ -118,6 +118,7 @@ struct VklContext
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
+// Get the staging buffer, and make sure it can contain `size` bytes.
 static VklBuffer* staging_buffer(VklContext* context, VkDeviceSize size)
 {
     VklBuffer* staging = (VklBuffer*)vkl_container_get(&context->buffers, VKL_BUFFER_TYPE_STAGING);
@@ -291,6 +292,7 @@ static void _copy_texture_from_staging(
 }
 
 
+
 static void _copy_texture_to_staging(
     VklContext* context, VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size)
 {
@@ -349,8 +351,19 @@ static void _copy_texture_to_staging(
 /*  Context                                                                                      */
 /*************************************************************************************************/
 
+/**
+ * Create a context associated to a GPU.
+ *
+ * @param gpu the GPU
+ * @param window the window with the surface attached to the GPU
+ */
 VKY_EXPORT VklContext* vkl_context(VklGpu* gpu, VklWindow* window);
 
+/**
+ * Destroy all GPU resources in a GPU context.
+ *
+ * @param context the context
+ */
 VKY_EXPORT void vkl_context_reset(VklContext* context);
 
 
@@ -359,9 +372,24 @@ VKY_EXPORT void vkl_context_reset(VklContext* context);
 /*  Buffer allocation                                                                            */
 /*************************************************************************************************/
 
+/**
+ * Allocate one of several buffer regions on the GPU.
+ *
+ * @param context the context
+ * @param buffer_type the type of buffer to allocate the regions on
+ * @param buffer_count the number of buffer regions to allocate
+ * @param size the size of each region to allocate, in bytes
+ */
 VKY_EXPORT VklBufferRegions vkl_ctx_buffers(
     VklContext* context, VklBufferType buffer_type, uint32_t buffer_count, VkDeviceSize size);
 
+/**
+ * Resize a set of buffer regions.
+ *
+ * @param context the context
+ * @param br the buffer regions to resize
+ * @param new_size the new size of each buffer region, in bytes
+ */
 VKY_EXPORT void
 vkl_ctx_buffers_resize(VklContext* context, VklBufferRegions* br, VkDeviceSize new_size);
 
@@ -371,6 +399,12 @@ vkl_ctx_buffers_resize(VklContext* context, VklBufferRegions* br, VkDeviceSize n
 /*  Compute                                                                                      */
 /*************************************************************************************************/
 
+/**
+ * Create a new compute pipeline.
+ *
+ * @param context the context
+ * @param shader_path path to the `.spirv` file containing the compute shader
+ */
 VKY_EXPORT VklCompute* vkl_ctx_compute(VklContext* context, const char* shader_path);
 
 
@@ -379,25 +413,100 @@ VKY_EXPORT VklCompute* vkl_ctx_compute(VklContext* context, const char* shader_p
 /*  Texture                                                                                      */
 /*************************************************************************************************/
 
+/**
+ * Create a new GPU texture.
+ *
+ * @param context the context
+ * @param dims the number of dimensions of the texture (1, 2, or 3)
+ * @param size the width, height, and depth
+ * @param format the format of each pixel
+ */
 VKY_EXPORT VklTexture*
 vkl_ctx_texture(VklContext* context, uint32_t dims, uvec3 size, VkFormat format);
 
+/**
+ * Resize a texture.
+ *
+ * !!! warning
+ *     This function will delete the texture data.
+ *
+ * @param texture the texture
+ * @param size the new size (width, height, depth)
+ */
 VKY_EXPORT void vkl_texture_resize(VklTexture* texture, uvec3 size);
 
+/**
+ * Set the texture filter.
+ *
+ * @param texture the texture
+ * @param type the filter type
+ * @param filter the filter
+ */
 VKY_EXPORT void vkl_texture_filter(VklTexture* texture, VklFilterType type, VkFilter filter);
 
+/**
+ * Set the texture address mode.
+ *
+ * @param texture the texture
+ * @param axis the axis
+ * @param address_mode the address mode
+ */
 VKY_EXPORT void vkl_texture_address_mode(
     VklTexture* texture, VklTextureAxis axis, VkSamplerAddressMode address_mode);
 
+/**
+ * Upload data to a GPU texture.
+ *
+ * !!! note
+ *     This function should not be used to update a texture that is being used for rendering in the
+ *     main event loop, otherwise full GPU synchronization needs to be done. Look at the Transfers
+ *     API instead.
+ *
+ * @param texture the texture
+ * @param offset offset within the texture
+ * @param shape shape of the part of the texture to update
+ * @param size size of the data to upload, in bytes
+ * @param data pointer to the data to upload
+ */
 VKY_EXPORT void vkl_texture_upload(
     VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, const void* data);
 
+/**
+ * Download a texture from the GPU to the CPU.
+ *
+ * !!! note
+ *     This function should not be used to download from a texture that is being used for rendering
+ *     in the main event loop, otherwise full GPU synchronization needs to be done. Look at the
+ *     Transfers API instead.
+ *
+ * @param texture the texture
+ * @param offset offset within the texture
+ * @param shape shape of the part of the texture to download
+ * @param size size of the data to download, in bytes
+ * @param data pointer to the buffer to download to (should be already allocated)
+ */
 VKY_EXPORT void vkl_texture_download(
     VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data);
 
+/**
+ * Copy part of a texture to another texture.
+ *
+ * This function does not involve CPU-GPU data transfers.
+ *
+ * @param src the source texture
+ * @param src_offset offset within the source texture
+ * @param dst the target texture
+ * @param dst_offset offset within the target texture
+ * @param shape shape of the part of the texture to copy
+ */
 VKY_EXPORT void vkl_texture_copy(
     VklTexture* src, uvec3 src_offset, VklTexture* dst, uvec3 dst_offset, uvec3 shape);
 
+/**
+ * Destroy a texture.
+ *
+ * @param texture the texture
+ */
 VKY_EXPORT void vkl_texture_destroy(VklTexture* texture);
 
 
