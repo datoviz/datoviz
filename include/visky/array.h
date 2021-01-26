@@ -1,13 +1,12 @@
+/*************************************************************************************************/
+/*  Array API                                                                                    */
+/*  Provides a simplistic 1D array object mostly used by the Visual API                          */
+/*************************************************************************************************/
+
 #ifndef VKL_ARRAY_HEADER
 #define VKL_ARRAY_HEADER
 
 #include "vklite.h"
-
-
-
-/*************************************************************************************************/
-/*  Constants                                                                                    */
-/*************************************************************************************************/
 
 
 
@@ -107,6 +106,7 @@ struct VklArray
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
+// Size in bytes of a single element of a given dtype.
 static VkDeviceSize _get_dtype_size(VklDataType dtype)
 {
     switch (dtype)
@@ -186,6 +186,7 @@ static VkDeviceSize _get_dtype_size(VklDataType dtype)
 
 
 
+// Number of components in a given dtype (e.g. 4 for vec4)
 static uint32_t _get_components(VklDataType dtype)
 {
     switch (dtype)
@@ -239,6 +240,8 @@ static uint32_t _get_components(VklDataType dtype)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+// Create a new 1D array with a given dtype, number of elements, and item size (used for record
+// arrays containing heterogeneous data)
 static VklArray _create_array(uint32_t item_count, VklDataType dtype, VkDeviceSize item_size)
 {
     VklArray arr;
@@ -257,6 +260,13 @@ static VklArray _create_array(uint32_t item_count, VklDataType dtype, VkDeviceSi
 
 
 
+/**
+ * Create a new 1D array.
+ *
+ * @param item_count initial number of elements
+ * @param dtype the data type of the array
+ * @returns a new array
+ */
 static VklArray vkl_array(uint32_t item_count, VklDataType dtype)
 {
     ASSERT(dtype != VKL_DTYPE_NONE);
@@ -266,6 +276,12 @@ static VklArray vkl_array(uint32_t item_count, VklDataType dtype)
 
 
 
+/**
+ * Create an array with a single dvec3 position.
+ *
+ * @param pos initial number of elements
+ * @returns a new array
+ */
 static VklArray vkl_array_point(dvec3 pos)
 {
     VklArray arr = vkl_array(1, VKL_DTYPE_DVEC3);
@@ -275,6 +291,18 @@ static VklArray vkl_array_point(dvec3 pos)
 
 
 
+/**
+ * Create a 1D array from an existing compatible memory buffer.
+ *
+ * The created array does not allocate memory, it uses the passed buffer instead.
+ *
+ * !!! warning
+ *     Destroying the array will free the passed pointer!
+ *
+ * @param item_count number of elements in the passed buffer
+ * @param dtype the data type of the array
+ * @returns the array wrapping the buffer
+ */
 static VklArray vkl_array_wrap(uint32_t item_count, VklDataType dtype, void* data)
 {
     VklArray arr = vkl_array(0, dtype); // do not allocate underlying buffer
@@ -287,6 +315,13 @@ static VklArray vkl_array_wrap(uint32_t item_count, VklDataType dtype, void* dat
 
 
 
+/**
+ * Create a 1D record array with heterogeneous data type.
+ *
+ * @param item_count number of elements
+ * @param item_size size, in bytes, of each item
+ * @returns the array
+ */
 static VklArray vkl_array_struct(uint32_t item_count, VkDeviceSize item_size)
 {
     ASSERT(item_size > 0);
@@ -295,6 +330,16 @@ static VklArray vkl_array_struct(uint32_t item_count, VkDeviceSize item_size)
 
 
 
+/**
+ * Create a 3D array holding a texture.
+ *
+ * @param ndims number of dimensions (1, 2, 3)
+ * @param width number of elements along the 1st dimension
+ * @param height number of elements along the 2nd dimension
+ * @param depth number of elements along the 3rd dimension
+ * @param item_size size of each item in bytes
+ * @returns the array
+ */
 static VklArray vkl_array_3D(
     uint32_t ndims, uint32_t width, uint32_t height, uint32_t depth, VkDeviceSize item_size)
 {
@@ -318,6 +363,7 @@ static VklArray vkl_array_3D(
 
 
 
+// Fill the remaining of an array with the last non-empty value.
 static void
 _repeat_last(uint32_t old_item_count, VkDeviceSize item_size, void* data, uint32_t item_count)
 {
@@ -336,6 +382,16 @@ _repeat_last(uint32_t old_item_count, VkDeviceSize item_size, void* data, uint32
 
 
 
+/**
+ * Resize an existing array.
+ *
+ * * If the new size is equal to the old size, do nothing.
+ * * If the new size is smaller than the old size, change the size attribute but do not reallocate
+ * * If the new size is larger than the old size, reallocate memory and copy over the old values
+ *
+ * @param array the array to resize
+ * @param item_count the new number of items
+ */
 static void vkl_array_resize(VklArray* array, uint32_t item_count)
 {
     ASSERT(array != NULL);
@@ -390,6 +446,11 @@ static void vkl_array_resize(VklArray* array, uint32_t item_count)
 
 
 
+/**
+ * Reset to 0 the contents of an existing array.
+ *
+ * @param array the array to clear
+ */
 static void vkl_array_clear(VklArray* array)
 {
     ASSERT(array != NULL);
@@ -398,7 +459,18 @@ static void vkl_array_clear(VklArray* array)
 
 
 
-// WARNING: this command currently loses all the data in the array.
+/**
+ * Reshape a 3D array and *delete all the data in it*.
+ *
+ * !!! warning
+ *     The contents of the array will be cleared. Copying the existing data would require more work
+ *     and is not necessary at the moment.
+ *
+ * @param array the array to reshape and clear
+ * @param width number of elements along the 1st dimension
+ * @param height number of elements along the 2nd dimension
+ * @param depth number of elements along the 3rd dimension
+ */
 static void vkl_array_reshape(VklArray* array, uint32_t width, uint32_t height, uint32_t depth)
 {
     ASSERT(array != NULL);
@@ -425,6 +497,31 @@ static void vkl_array_reshape(VklArray* array, uint32_t width, uint32_t height, 
 
 
 
+/**
+ * Copy data into an array.
+ *
+ * * There will be `item_count` values copied between `first_item` and `first_item + item_count` in
+ *   the array.
+ * * There are `data_item_count` values in the passed buffer.
+ * * If `item_count > data_item_count`, the last value of `data` will be repeated until the last
+ * value.
+ *
+ * Example:
+ *
+ * === "C"
+ *     ```c
+ *     // Create an array of 10 double numbers, initialize all elements with 1.23.
+ *     VklArray arr = vkl_array(10, VKL_DTYPE_DOUBLE);
+ *     double item = 1.23;
+ *     vkl_array_data(&arr, 0, 10, 1, &item);
+ *     ```
+ *
+ * @param array the array
+ * @param first_item first element in the array to be overwritten
+ * @param item_count number of items to write
+ * @param data_item_count number of elements in `data`
+ * @param data the buffer containing the data to copy
+ */
 static void vkl_array_data(
     VklArray* array, uint32_t first_item, uint32_t item_count, //
     uint32_t data_item_count, const void* data)

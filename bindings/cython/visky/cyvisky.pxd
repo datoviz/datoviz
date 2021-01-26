@@ -913,8 +913,8 @@ cdef extern from "<visky/visky.h>":
     # from file: scene.h
     VklScene* vkl_scene(VklCanvas* canvas, uint32_t n_rows, uint32_t n_cols)
     void vkl_scene_destroy(VklScene* scene)
-    VklVisual* vkl_scene_visual(VklPanel* panel, VklVisualType type, int flags)
     VklPanel* vkl_scene_panel(VklScene* scene, uint32_t row, uint32_t col, VklControllerType type, int flags)
+    VklVisual* vkl_scene_visual(VklPanel* panel, VklVisualType type, int flags)
 
     # from file: visuals.h
     void vkl_visual_data(VklVisual* visual, VklPropType type, uint32_t prop_idx, uint32_t count, const void* data)
