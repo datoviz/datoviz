@@ -1,4 +1,5 @@
 from functools import lru_cache
+import itertools
 from pathlib import Path
 import os
 from pprint import pprint
@@ -15,11 +16,11 @@ from pyparsing import (
 
 ROOT_DIR = Path(__file__).parent.parent.resolve()
 HEADER_DIR = ROOT_DIR / 'include/visky'
-# INTERNAL_HEADER_DIR =  ROOT_DIR / 'src
+INTERNAL_HEADER_DIR =  ROOT_DIR / 'src'
 EXTERNAL_HEADER_DIR = ROOT_DIR / 'external'
 API_OUTPUT = ROOT_DIR / 'docs/api.md'
 HEADER_FILES = (
-    'app.h', 'vklite.h', 'context.h', 'canvas.h', 'colormaps.h',
+    'app.h', 'array.h', 'vklite.h', 'context.h', 'canvas.h', 'colormaps.h',
     'panel.h', 'visuals.h', 'scene.h')
 ICONS = {
     'in': ':octicons-arrow-right-16:',
@@ -33,8 +34,8 @@ ICONS = {
 def iter_header_files():
     for h in sorted(HEADER_DIR.glob('*.h')):
         yield h
-    # for h in sorted(INTERNAL_HEADER_DIR.glob('*.h')):
-    #     yield h
+    for h in sorted(INTERNAL_HEADER_DIR.glob('*.h')):
+        yield h
 
 
 def read_file(filename):
@@ -50,7 +51,7 @@ def insert_text(text, i, n, insert):
 
 
 def _remove_comments(text):
-    return '\n'.join([l.split('//')[0] for l in text.splitlines()])
+    return '\n'.join([l.split('//')[0] if not l.startswith(' *') else l for l in text.splitlines()])
 
 
 # C header parsing
@@ -156,6 +157,7 @@ def _parse_funcs(text, is_output=False):
     # syntax we don't want to see in the final parse tree
     LPAR, RPAR, LBRACE, RBRACE, COMMA, SEMICOLON = map(Suppress, "(){},;")
     const = Keyword("const")
+    static = Keyword("static")
     dtype = Word(alphanums + "_*")
     identifier = Word(alphanums + "_")
     argDecl = Group(
@@ -165,34 +167,52 @@ def _parse_funcs(text, is_output=False):
                  ) + Optional(COMMA))
     args = Group(ZeroOrMore(argDecl))
     if not is_output:
-        func = Suppress("VKY_EXPORT")
+        func = Optional(Suppress("VKY_EXPORT"))
     else:
         func = Empty()
-    func = cStyleComment("docstring") + func + \
+    signature = Optional(static("static")) + \
         dtype("out") + \
         identifier("name") + \
         LPAR + args("args") + RPAR + \
         Optional(SEMICOLON)
+    func = cStyleComment("docstring") + func + \
+        signature("signature")
 
     for item, start, stop in func.scanString(text):
         args = []
         # for i, entry in enumerate(item.args):
         #     args.append((entry.const, entry.dtype, entry.name))
-        funcs[item.name] = (item.out, item.args, item.docstring)
+        funcs[item.name] = item
     return funcs
+
+
+MAX_LINE_LENGTH = 76
+
+
+def grouper(n, iterable):
+    it = iter(iterable)
+    while True:
+        chunk_it = itertools.islice(it, n)
+        try:
+            first_el = next(chunk_it)
+        except StopIteration:
+            return
+        yield itertools.chain((first_el,), chunk_it)
 
 
 def _gen_func_doc(name, func):
     # Generate the function documentation
-    out, args, docstring = func
+    out = func.out
+    args = func.args
+    docstring = func.docstring
     docstring = docstring if docstring.startswith('/**\n') else ''
     docstring = '\n'.join(_[3:] for _ in docstring.splitlines())
     docstring = docstring.strip()
 
     def _arg_type(n):
-        for (dt, n_) in args:
-            if n_ == n:
-                return dt
+        for arg in args:
+            if arg.name == n:
+                return arg.dtype
 
     # Extract the argument docstring from the whole docstring, @param keywords etc.
     lines = docstring.splitlines()
@@ -215,6 +235,14 @@ def _gen_func_doc(name, func):
     # Signature
     args_s = ', '.join(
         f"{'const ' if args.const else ''}{arg.dtype} {arg.name}" for arg in args)
+    # Split long lines
+    if len(out) + len(name) + len(args_s) >= MAX_LINE_LENGTH:
+        if len(args_s) >= MAX_LINE_LENGTH - 4:
+            args_s = '\n' + args_s
+            args_s = ',\n'.join(indent(', '.join(_), '    ') for _ in grouper(3, args_s.split(', ')))
+        else:
+            args_s = '\n' + indent(args_s, '    ')
+
     signature = f'```c\n{out} {name}({args_s});\n```'
     signature = f'=== "C"\n{indent(signature, prefix="    ")}'
 
@@ -240,7 +268,7 @@ def _gen_func_doc(name, func):
         desc = ret[ret.index(' ') + 1:]
         params_s += f"| {ICONS['out']} `returns` | `{out}` | {desc} |\n"
 
-    return f"### `{name}()`\n\n{signature}\n\n{description}\n\n{params_s}"
+    return f"### `{name}()`\n\n{signature}\n\n{params_s}\n\n{description}"
 
 
 def _camel_to_snake(name):
@@ -270,7 +298,9 @@ if __name__ == '__main__':
             continue
         text = read_file(filename)
         # Parse the functions
-        all_funcs.update(_parse_funcs(text))
+        f = _parse_funcs(text)
+        print(f"{len(f):02d} functions found in {filename}")
+        all_funcs.update(f)
 
     # TODO: enums and structs
 
