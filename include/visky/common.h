@@ -530,19 +530,6 @@ static void* vkl_container_get(VklContainer* container, uint32_t idx)
 }
 
 /**
- * Start a loop iteration over all valid objects within the container.
- *
- * @param container the container
- * @returns a pointer to the first object
- */
-static void* vkl_container_iter_init(VklContainer* container)
-{
-    ASSERT(container != NULL);
-    container->_loop_idx = 0;
-    return vkl_container_iter(container);
-}
-
-/**
  * Continue an already-started loop iteration on a container.
  *
  * @param container the container
@@ -568,6 +555,19 @@ static void* vkl_container_iter(VklContainer* container)
     // End the outer loop, reset the internal idx.
     container->_loop_idx = 0;
     return NULL;
+}
+
+/**
+ * Start a loop iteration over all valid objects within the container.
+ *
+ * @param container the container
+ * @returns a pointer to the first object
+ */
+static void* vkl_container_iter_init(VklContainer* container)
+{
+    ASSERT(container != NULL);
+    container->_loop_idx = 0;
+    return vkl_container_iter(container);
 }
 
 /**
