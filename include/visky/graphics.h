@@ -333,20 +333,68 @@ static VklGraphicsMeshParams default_graphics_mesh_params(vec3 eye)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+/**
+ * Set a graphics data callback.
+ *
+ * The callback function is called when one calls `vkl_graphics_append()` on that visual. It allows
+ * one to easily add graphical elements, letting the graphics handle low-level GPU implementation
+ * details (tesselation with vertices).
+ *
+ * Callback function signature: `void(VklGraphicsData*, uint32_t, const void*)`
+ *
+ * @param graphics the graphics pipeline
+ * @param callback the callback function
+ */
 VKY_EXPORT void vkl_graphics_callback(VklGraphics* graphics, VklGraphicsCallback callback);
 
-// Used in visual bake
+/**
+ * Start a data collection for a graphics pipeline.
+ *
+ * @param graphics the graphics pipeline
+ * @param vertices pointer to an existing array containing vertices of the right type
+ * @param indices pointer to an existing array containing the indices
+ * @param user_data arbitrary user-provided pointer
+ * @returns the graphics data object
+ */
 VKY_EXPORT VklGraphicsData
 vkl_graphics_data(VklGraphics* graphics, VklArray* vertices, VklArray* indices, void* user_data);
 
+/**
+ * Allocate the graphics data object with the appropriate number of elements.
+ *
+ * @param data the graphics data object
+ * @param item_count the number of graphical items
+ */
 VKY_EXPORT void vkl_graphics_alloc(VklGraphicsData* data, uint32_t item_count);
 
+/**
+ * Add one graphical element after the graphics data object has been properly allocated.
+ *
+ * @param data the graphics data object
+ * @param item a pointer to an object of the appropriate graphics item type
+ */
 VKY_EXPORT void vkl_graphics_append(VklGraphicsData* data, const void* item);
 
-
-
+/**
+ * Create a new graphics pipeline of a given builtin type.
+ *
+ * @param canvas the canvas holding the grahpics pipeline
+ * @param type the graphics type
+ * @param flags the creation flags for the graphics
+ */
 VKY_EXPORT VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsType type, int flags);
 
+
+
+/**
+ * Set up a 3D camera on a Model-View-Projection (MVP) object.
+ *
+ * @param viewport the viewport
+ * @param eye the camera position in scene coordinates
+ * @param center the position the camera points to
+ * @param near_far the near and far values for the perspective matrix
+ * @param[out] mvp a pointer to an MVP object
+ */
 VKY_EXPORT void
 vkl_mvp_camera(VklViewport viewport, vec3 eye, vec3 center, vec2 near_far, VklMVP* mvp);
 
