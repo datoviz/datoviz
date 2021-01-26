@@ -296,6 +296,7 @@ typedef enum
 /*  Color utils                                                                                  */
 /*************************************************************************************************/
 
+// Rescale a double value to a byte.
 static uint8_t _scale_uint8(double value, double vmin, double vmax)
 {
     if (vmin == vmax)
@@ -310,6 +311,7 @@ static uint8_t _scale_uint8(double value, double vmin, double vmax)
     return (uint8_t)(x * 256);
 }
 
+// Load the colormap array.
 static const unsigned char* _load_colormaps()
 {
     if (VKL_COLORMAP_ARRAY != NULL)

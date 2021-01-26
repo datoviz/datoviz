@@ -263,6 +263,7 @@ typedef enum
 } VklObjectType;
 
 
+
 // Object status.
 // NOTE: the order is important, status >= CREATED means the object has been created
 typedef enum
@@ -346,12 +347,35 @@ struct VklMVP
 /*  Object functions                                                                             */
 /*************************************************************************************************/
 
+/**
+ * Initialize an object.
+ *
+ * Memory for the object has been allocated and its fields properly initialized.
+ *
+ * @param obj the object
+ */
 static inline void obj_init(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_INIT; }
 
+/**
+ * Mark an object as successfully created on the GPU.
+ *
+ * @param obj the object
+ */
 static inline void obj_created(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_CREATED; }
 
+/**
+ * Mark an object as destroyed.
+ *
+ * @param obj the object
+ */
 static inline void obj_destroyed(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_DESTROYED; }
 
+/**
+ * Whether an object has been successfully created.
+ *
+ * @param obj the object
+ * @returns a boolean indicated whether the object has been successfully created
+ */
 static inline bool is_obj_created(VklObject* obj)
 {
     return obj != NULL && obj->status >= VKL_OBJECT_STATUS_CREATED &&
@@ -364,6 +388,7 @@ static inline bool is_obj_created(VklObject* obj)
 /*  Container                                                                                    */
 /*************************************************************************************************/
 
+// Smallest power of 2 larger or equal than a positive integer.
 static uint64_t next_pow2(uint64_t x)
 {
     uint64_t p = 1;
@@ -372,6 +397,13 @@ static uint64_t next_pow2(uint64_t x)
     return p;
 }
 
+/**
+ * Create a container that will contain an arbitrary number of objects of the same type.
+ *
+ * @param count initial number of objects in the container
+ * @param item_size size of each object, in bytes
+ * @param type object type
+ */
 static VklContainer vkl_container(uint32_t count, size_t item_size, VklObjectType type)
 {
     ASSERT(count > 0);
@@ -394,6 +426,12 @@ static VklContainer vkl_container(uint32_t count, size_t item_size, VklObjectTyp
     return container;
 }
 
+/**
+ * Free a given object in the constainer if it was previously destroyed.
+ *
+ * @param container the container
+ * @param idx the index of the object within the container
+ */
 static void vkl_container_delete_if_destroyed(VklContainer* container, uint32_t idx)
 {
     ASSERT(container != NULL);
@@ -413,6 +451,14 @@ static void vkl_container_delete_if_destroyed(VklContainer* container, uint32_t 
     }
 }
 
+/**
+ * Get a pointer to a new object in the container.
+ *
+ * If the container is full, it will be automatically resized.
+ *
+ * @param container the container
+ * @returns a pointer to an allocated object
+ */
 static void* vkl_container_alloc(VklContainer* container)
 {
     ASSERT(container != NULL);
@@ -468,6 +514,13 @@ static void* vkl_container_alloc(VklContainer* container)
     return container->items[available_slot];
 }
 
+/**
+ * Return the object at a given index.
+ *
+ * @param container the container
+ * @param idx the index of the object within the container
+ * @param returns a pointer to the object at the specified index
+ */
 static void* vkl_container_get(VklContainer* container, uint32_t idx)
 {
     ASSERT(container != NULL);
@@ -476,6 +529,25 @@ static void* vkl_container_get(VklContainer* container, uint32_t idx)
     return container->items[idx];
 }
 
+/**
+ * Start a loop iteration over all valid objects within the container.
+ *
+ * @param container the container
+ * @returns a pointer to the first object
+ */
+static void* vkl_container_iter_init(VklContainer* container)
+{
+    ASSERT(container != NULL);
+    container->_loop_idx = 0;
+    return vkl_container_iter(container);
+}
+
+/**
+ * Continue an already-started loop iteration on a container.
+ *
+ * @param container the container
+ * @returns a pointer to the next object in the container, or NULL at the end
+ */
 static void* vkl_container_iter(VklContainer* container)
 {
     ASSERT(container != NULL);
@@ -498,13 +570,18 @@ static void* vkl_container_iter(VklContainer* container)
     return NULL;
 }
 
-static void* vkl_container_iter_init(VklContainer* container)
-{
-    ASSERT(container != NULL);
-    container->_loop_idx = 0;
-    return vkl_container_iter(container);
-}
-
+/**
+ * Destroy a container.
+ *
+ * Free all remaining objects, as well as the container itself.
+ *
+ * !!! warning
+ *     All objects in the container must have been destroyed beforehand, since the generic
+ *     container does not know how to properly destroy objects that were created on the GPU.
+ *
+ * @param container the container
+ * @param idx the index of the object within the container
+ */
 static void vkl_container_destroy(VklContainer* container)
 {
     ASSERT(container != NULL);
@@ -558,17 +635,55 @@ static void vkl_container_destroy(VklContainer* container)
 /*  I/O                                                                                          */
 /*************************************************************************************************/
 
+/**
+ * Save an image to a PNG file
+ *
+ * @param filename path to the PNG file to create
+ * @param width width of the image
+ * @param height height of the image
+ * @param image pointer to an array of 32-bit RGBA values
+ */
 VKY_EXPORT int
 write_png(const char* filename, uint32_t width, uint32_t height, const uint8_t* image);
 
+/**
+ * Save an image to a PPM file (short ASCII header and flat binary RGBA values).
+ *
+ * @param filename path to the PPM file to create
+ * @param width width of the image
+ * @param height height of the image
+ * @param image pointer to an array of 32-bit RGBA values
+ */
 VKY_EXPORT int
 write_ppm(const char* filename, uint32_t width, uint32_t height, const uint8_t* image);
 
+/**
+ * Read a binary file.
+ *
+ * @param filename path of the file to open
+ * @param[out] size of the file
+ * @returns pointer to a byte buffer with the file contents
+ */
 VKY_EXPORT char* read_file(const char* filename, size_t* size);
 
+/**
+ * Read a NumPy NPY file.
+ *
+ * @param filename path of the file to open
+ * @param[out] size of the file
+ * @returns pointer to a buffer containing the array elements
+ */
 VKY_EXPORT char* read_npy(const char* filename, size_t* size);
 
-VKY_EXPORT uint8_t* read_ppm(const char* filename, int*, int*);
+/**
+ * Read a PPM image file.
+ *
+ * @param filename path of the file to open
+ * @param[out] width width of the image
+ * @param[out] height of the image
+ * @returns pointer to a buffer with the loaded RGBA pixel colors
+ */
+VKY_EXPORT uint8_t* read_ppm(const char* filename, int* width, int* height);
 
 // Defined in cmake-generated file build/_shaders.c
 VKY_EXPORT const unsigned char* vkl_resource_shader(const char* name, unsigned long* size);
@@ -582,12 +697,36 @@ VKY_EXPORT const unsigned char* vkl_resource_texture(const char* name, unsigned 
 /*  Thread                                                                                       */
 /*************************************************************************************************/
 
+/**
+ * Create a thread.
+ *
+ * Callback function signature: `void*(void*)`
+ *
+ * @param callback the function that will run in a background thread
+ * @param user_data a pointer to arbitrary user data
+ * @returns thread object
+ */
 VKY_EXPORT VklThread vkl_thread(VklThreadCallback callback, void* user_data);
 
-VKY_EXPORT void vkl_thread_lock(VklThread*);
+/**
+ * Acquire a mutex lock associated to the thread.
+ *
+ * @param thread the thread
+ */
+VKY_EXPORT void vkl_thread_lock(VklThread* thread);
 
-VKY_EXPORT void vkl_thread_unlock(VklThread*);
+/**
+ * Release a mutex lock associated to the thread.
+ *
+ * @param thread the thread
+ */
+VKY_EXPORT void vkl_thread_unlock(VklThread* thread);
 
+/**
+ * Destroy a thread after the thread function has finished running.
+ *
+ * @param thread the thread
+ */
 VKY_EXPORT void vkl_thread_join(VklThread* thread);
 
 
@@ -596,6 +735,11 @@ VKY_EXPORT void vkl_thread_join(VklThread* thread);
 /*  Misc                                                                                         */
 /*************************************************************************************************/
 
+/**
+ * Wait a given number of milliseconds.
+ *
+ * @param milliseconds sleep duration
+ */
 static inline void vkl_sleep(int milliseconds)
 {
 #ifdef WIN32
@@ -614,10 +758,25 @@ static inline void vkl_sleep(int milliseconds)
 /*  Random                                                                                       */
 /*************************************************************************************************/
 
+/**
+ * Return a random integer number between 0 and 255.
+ *
+ * @returns random number
+ */
 VKY_EXPORT uint8_t rand_byte(void);
 
+/**
+ * Return a random floating-point number between 0 and 1.
+ *
+ * @returns random number
+ */
 VKY_EXPORT float rand_float(void);
 
+/**
+ * Return a random normal floating-point number.
+ *
+ * @returns random number
+ */
 VKY_EXPORT float randn(void);
 
 
