@@ -1707,7 +1707,8 @@ VklCompute vkl_compute(VklGpu* gpu, const char* shader_path)
     compute.obj.status = VKL_OBJECT_STATUS_INIT;
 
     compute.gpu = gpu;
-    strcpy(compute.shader_path, shader_path);
+    if (shader_path != NULL)
+        strcpy(compute.shader_path, shader_path);
 
     compute.slots = vkl_slots(gpu);
 

@@ -785,7 +785,7 @@ VKY_EXPORT int vkl_app_destroy(VklApp* app);
 /*  GPU                                                                                          */
 /*************************************************************************************************/
 /**
- * Create a GPU.
+ * Initialize a GPU.
  *
  * A GPU object is the interface to one of the GPUs on the current system.
  *
@@ -928,7 +928,7 @@ VKY_EXPORT void vkl_canvases_destroy(VklContainer* canvases);
 /*************************************************************************************************/
 
 /**
- * Create a swapchain.
+ * Initialize a swapchain.
  *
  * @param gpu the GPU
  * @param window the window
@@ -1083,7 +1083,7 @@ VKY_EXPORT void vkl_commands_destroy(VklCommands* cmds);
 /*************************************************************************************************/
 
 /**
- * Create a GPU buffer.
+ * Initialize a GPU buffer.
  *
  * @param gpu the GPU
  * @returns the buffer
@@ -1237,7 +1237,7 @@ VKY_EXPORT void vkl_buffer_regions_upload(VklBufferRegions* br, uint32_t idx, co
 /*************************************************************************************************/
 
 /**
- * Create a set of GPU images.
+ * Initialize a set of GPU images.
  *
  * @param gpu the GPU
  * @param type the image type
@@ -1371,7 +1371,7 @@ VKY_EXPORT void vkl_images_destroy(VklImages* images);
 /*************************************************************************************************/
 
 /**
- * Create a texture sampler.
+ * Initialize a texture sampler.
  *
  * @param gpu the GPU
  * @returns the sampler object
@@ -1424,15 +1424,46 @@ VKY_EXPORT void vkl_sampler_destroy(VklSampler* sampler);
 /*  Slots                                                                                        */
 /*************************************************************************************************/
 
+/**
+ * Initialize pipeline slots (aka Vulkan descriptor set layout).
+ *
+ * @param gpu the GPU
+ * @returns the slots
+ */
 VKY_EXPORT VklSlots vkl_slots(VklGpu* gpu);
 
+/**
+ * Set the slots binding.
+ *
+ * @param slots the slots
+ * @param idx the slot index to set up
+ * @param type the descriptor type for that slot
+ */
 VKY_EXPORT void vkl_slots_binding(VklSlots* slots, uint32_t idx, VkDescriptorType type);
 
+/**
+ * Set up push constants.
+ *
+ * @param slots the slots
+ * @param offset the push constant offset, in bytes
+ * @param size the push constant size, in bytes
+ * @param shaders the shader stages that will access the push constant
+ */
 VKY_EXPORT void vkl_slots_push(
     VklSlots* slots, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders);
 
+/**
+ * Create the slots after they have been set up.
+ *
+ * @param slots the slots
+ */
 VKY_EXPORT void vkl_slots_create(VklSlots* slots);
 
+/**
+ * Destroy the slots
+ *
+ * @param slots the slots
+ */
 VKY_EXPORT void vkl_slots_destroy(VklSlots* slots);
 
 
@@ -1441,14 +1472,44 @@ VKY_EXPORT void vkl_slots_destroy(VklSlots* slots);
 /*  Bindings                                                                                     */
 /*************************************************************************************************/
 
+/**
+ * Initialize bindings corresponding to slots.
+ *
+ * @param slots the slots
+ * @param dset_count the number of descriptor sets (number of swapchain images)
+ */
 VKY_EXPORT VklBindings vkl_bindings(VklSlots* slots, uint32_t dset_count);
 
+/**
+ * Bind a buffer to a slot.
+ *
+ * @param bindings the bindings
+ * @param idx the slot index
+ * @param br the buffer regions to bind to that slot
+ */
 VKY_EXPORT void vkl_bindings_buffer(VklBindings* bindings, uint32_t idx, VklBufferRegions br);
 
+/**
+ * Bind a texture to a slot.
+ *
+ * @param bindings the bindings
+ * @param idx the slot index
+ * @param br the texture to bind to that slot
+ */
 VKY_EXPORT void vkl_bindings_texture(VklBindings* bindings, uint32_t idx, VklTexture* texture);
 
+/**
+ * Update the bindings after the buffers/textures have been set up.
+ *
+ * @param bindings the bindings
+ */
 VKY_EXPORT void vkl_bindings_update(VklBindings* bindings);
 
+/**
+ * Destroy bindings.
+ *
+ * @param bindings the bindings
+ */
 VKY_EXPORT void vkl_bindings_destroy(VklBindings* bindings);
 
 
@@ -1457,19 +1518,63 @@ VKY_EXPORT void vkl_bindings_destroy(VklBindings* bindings);
 /*  Compute                                                                                      */
 /*************************************************************************************************/
 
+/**
+ * Initialize a compute pipeline.
+ *
+ * @param gpu the GPU
+ * @param shader_path (optional) the path to the `.spirv` file with the compute shader
+ * @returns the compute pipeline
+ */
 VKY_EXPORT VklCompute vkl_compute(VklGpu* gpu, const char* shader_path);
 
+/**
+ * Create a compute pipeline after it has been set up.
+ *
+ * @param compute the compute pipeline
+ */
 VKY_EXPORT void vkl_compute_create(VklCompute* compute);
 
+/**
+ * Set the GLSL code directly (the library will compile it automatically to SPIRV).
+ *
+ * @param compute the compute pipeline
+ * @param code the GLSL code defining the compute shader
+ */
 VKY_EXPORT void vkl_compute_code(VklCompute* compute, const char* code);
 
+/**
+ * Declare a slot for the compute pipeline.
+ *
+ * @param compute the compute pipeline
+ * @param idx the slot index
+ * @param type the descriptor type
+ */
 VKY_EXPORT void vkl_compute_slot(VklCompute* compute, uint32_t idx, VkDescriptorType type);
 
+/**
+ * Set up push constant.
+ *
+ * @param compute the compute pipeline
+ * @param offset the push constant offset, in bytes
+ * @param size the push constant size, in bytes
+ * @param shaders the shaders that will need to access the push constant
+ */
 VKY_EXPORT void vkl_compute_push(
     VklCompute* compute, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders);
 
+/**
+ * Associate a bindings object to a compute pipeline.
+ *
+ * @param compute the compute pipeline
+ * @param bindings the bindings
+ */
 VKY_EXPORT void vkl_compute_bindings(VklCompute* compute, VklBindings* bindings);
 
+/**
+ * Destroy a compute pipeline.
+ *
+ * @param compute the compute pipeline
+ */
 VKY_EXPORT void vkl_compute_destroy(VklCompute* compute);
 
 
@@ -1478,47 +1583,158 @@ VKY_EXPORT void vkl_compute_destroy(VklCompute* compute);
 /*  Pipeline                                                                                     */
 /*************************************************************************************************/
 
+/**
+ * Initialize a graphics pipeline.
+ *
+ * @param gpu the GPU
+ * @returns the graphics pipeline
+ */
 VKY_EXPORT VklGraphics vkl_graphics(VklGpu* gpu);
 
+/**
+ * Set the renderpass of a graphics pipeline.
+ *
+ * @param graphics the graphics pipeline
+ * @param renderpass the render pass
+ * @param subpass the subpass index
+ */
 VKY_EXPORT void
 vkl_graphics_renderpass(VklGraphics* graphics, VklRenderpass* renderpass, uint32_t subpass);
 
+/**
+ * Set the graphics pipeline primitive topology
+ *
+ * @param graphics the graphics pipeline
+ * @param topology the primitive topology
+ */
 VKY_EXPORT void vkl_graphics_topology(VklGraphics* graphics, VkPrimitiveTopology topology);
 
+/**
+ * Set the GLSL code of a graphics pipeline.
+ *
+ * @param graphics the graphics pipeline
+ * @param stage the shader stage
+ * @param code the GLSL code of the shader
+ */
 VKY_EXPORT void
 vkl_graphics_shader_glsl(VklGraphics* graphics, VkShaderStageFlagBits stage, const char* code);
 
+/**
+ * Set the SPIRV code of a graphics pipeline.
+ *
+ * @param graphics the graphics pipeline
+ * @param stage the shader stage
+ * @param size the size of the SPIRV buffer, in bytes
+ * @param buffer the binary buffer with the SPIRV code
+ */
 VKY_EXPORT void vkl_graphics_shader_spirv(
-    VklGraphics* graphics, VkShaderStageFlagBits stage, //
-    VkDeviceSize size, const uint32_t* buffer);
+    VklGraphics* graphics, VkShaderStageFlagBits stage, VkDeviceSize size, const uint32_t* buffer);
 
+/**
+ * Set the path to a shader for a graphics pipeline.
+ *
+ * @param graphics the graphics pipeline
+ * @param stage the shader stage
+ * @param shader_path the path to the `.spirv` shader file
+ */
 VKY_EXPORT void
 vkl_graphics_shader(VklGraphics* graphics, VkShaderStageFlagBits stage, const char* shader_path);
 
+/**
+ * Set the vertex binding.
+ *
+ * @param graphics the graphics pipeline
+ * @param binding the binding index
+ * @param stride the stride in the vertex buffer, in bytes
+ */
 VKY_EXPORT void
 vkl_graphics_vertex_binding(VklGraphics* graphics, uint32_t binding, VkDeviceSize stride);
 
+/**
+ * Add a vertex attribute.
+ *
+ * @param graphics the graphics pipeline
+ * @param binding the binding index (as specified in the vertex shader)
+ * @param location the location index (as specified in the vertex shader)
+ * @param format the format
+ * @param offset the offset, in bytes
+ */
 VKY_EXPORT void vkl_graphics_vertex_attr(
     VklGraphics* graphics, uint32_t binding, uint32_t location, VkFormat format,
     VkDeviceSize offset);
 
+/**
+ * Set the graphics blend type.
+ *
+ * @param graphics the graphics pipeline
+ * @param blend_type the blend type
+ */
 VKY_EXPORT void vkl_graphics_blend(VklGraphics* graphics, VklBlendType blend_type);
 
+/**
+ * Set the graphics depth test.
+ *
+ * @param graphics the graphics pipeline
+ * @param depth_test the depth test
+ */
 VKY_EXPORT void vkl_graphics_depth_test(VklGraphics* graphics, VklDepthTest depth_test);
 
+/**
+ * Set the graphics polygon mode.
+ *
+ * @param graphics the graphics pipeline
+ * @param polygon_mode the polygon mode
+ */
 VKY_EXPORT void vkl_graphics_polygon_mode(VklGraphics* graphics, VkPolygonMode polygon_mode);
 
+/**
+ * Set the graphics cull mode.
+ *
+ * @param graphics the graphics pipeline
+ * @param cull_mode the cull mode
+ */
 VKY_EXPORT void vkl_graphics_cull_mode(VklGraphics* graphics, VkCullModeFlags cull_mode);
 
+/**
+ * Set the graphics front face.
+ *
+ * @param graphics the graphics pipeline
+ * @param front_face the front face
+ */
 VKY_EXPORT void vkl_graphics_front_face(VklGraphics* graphics, VkFrontFace front_face);
 
+/**
+ * Create a graphics pipeline after it has been set up.
+ *
+ * @param graphics the graphics pipeline
+ */
 VKY_EXPORT void vkl_graphics_create(VklGraphics* graphics);
 
+/**
+ * Set a binding slot for a graphics pipeline.
+ *
+ * @param graphics the graphics pipeline
+ * @param idx the slot index
+ * @param type the descriptor type
+ */
 VKY_EXPORT void vkl_graphics_slot(VklGraphics* graphics, uint32_t idx, VkDescriptorType type);
 
+/**
+ * Set a graphics pipeline push constant.
+ *
+ * @param graphics the graphics pipeline
+ * @param offset the push constant offset, in bytes
+ * @param offset the push size, in bytes
+ * @param shaders the shader stages that will access the push constant
+ */
 VKY_EXPORT void vkl_graphics_push(
     VklGraphics* graphics, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders);
 
+/**
+ * Destroy a graphics pipeline.
+ *
+ * @param graphics the graphics pipeline
+ */
 VKY_EXPORT void vkl_graphics_destroy(VklGraphics* graphics);
 
 
@@ -1527,27 +1743,87 @@ VKY_EXPORT void vkl_graphics_destroy(VklGraphics* graphics);
 /*  Barrier                                                                                      */
 /*************************************************************************************************/
 
+/**
+ * Initialize a synchronization barrier (usedwithin a command buffer).
+ *
+ * @param gpu the GPU
+ * @returns the barrier
+ */
 VKY_EXPORT VklBarrier vkl_barrier(VklGpu* gpu);
 
+/**
+ * Set the barrier stages.
+ *
+ * @param barrier the barrier
+ * @param src_stage the source stage
+ * @param dst_stage the destination stage
+ */
 VKY_EXPORT void vkl_barrier_stages(
     VklBarrier* barrier, VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage);
 
+/**
+ * Set the barrier buffer.
+ *
+ * @param barrier the barrier
+ * @param br the buffer regions
+ */
 VKY_EXPORT void vkl_barrier_buffer(VklBarrier* barrier, VklBufferRegions br);
 
+/**
+ * Set the barrier buffer queue.
+ *
+ * @param barrier the barrier
+ * @param src_queue the source queue index
+ * @param dst_queue the destination queue index
+ */
 VKY_EXPORT void
 vkl_barrier_buffer_queue(VklBarrier* barrier, uint32_t src_queue, uint32_t dst_queue);
 
+/**
+ * Set the barrier buffer access.
+ *
+ * @param barrier the barrier
+ * @param src_access the source access flags
+ * @param dst_access the destination access flags
+ */
 VKY_EXPORT void
 vkl_barrier_buffer_access(VklBarrier* barrier, VkAccessFlags src_access, VkAccessFlags dst_access);
 
+/**
+ * Set the barrier images.
+ *
+ * @param barrier the barrier
+ * @param images the images
+ */
 VKY_EXPORT void vkl_barrier_images(VklBarrier* barrier, VklImages* images);
 
+/**
+ * Set the barrier images layout.
+ *
+ * @param barrier the barrier
+ * @param src_layout the source layout
+ * @param dst_layout the destination layout
+ */
 VKY_EXPORT void
 vkl_barrier_images_layout(VklBarrier* barrier, VkImageLayout src_layout, VkImageLayout dst_layout);
 
+/**
+ * Set the barrier images queue.
+ *
+ * @param barrier the barrier
+ * @param src_queue the source queue index
+ * @param dst_queue the destination queue index
+ */
 VKY_EXPORT void
 vkl_barrier_images_queue(VklBarrier* barrier, uint32_t src_queue, uint32_t dst_queue);
 
+/**
+ * Set the barrier images access.
+ *
+ * @param barrier the barrier
+ * @param src_access the source access flags
+ * @param dst_access the destination access flags
+ */
 VKY_EXPORT void
 vkl_barrier_images_access(VklBarrier* barrier, VkAccessFlags src_access, VkAccessFlags dst_access);
 
