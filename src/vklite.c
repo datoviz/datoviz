@@ -137,7 +137,7 @@ void vkl_gpu_request_features(VklGpu* gpu, VkPhysicalDeviceFeatures requested_fe
 
 
 
-void vkl_gpu_queue(VklGpu* gpu, VklQueueType type, uint32_t idx)
+void vkl_gpu_queue(VklGpu* gpu, uint32_t idx, VklQueueType type)
 {
     ASSERT(gpu != NULL);
     VklQueues* q = &gpu->queues;

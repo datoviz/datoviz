@@ -810,10 +810,10 @@ VKY_EXPORT void vkl_gpu_request_features(VklGpu* gpu, VkPhysicalDeviceFeatures r
  * Request a new Vulkan queue before creating the GPU.
  *
  * @param gpu the GPU
+ * @param idx the queue index (should be regularly increasing: 0, 1, 2...)
  * @param type the queue type
- * @param type the queue index (should be regularly increasing: 0, 1, 2...)
  */
-VKY_EXPORT void vkl_gpu_queue(VklGpu* gpu, VklQueueType type, uint32_t idx);
+VKY_EXPORT void vkl_gpu_queue(VklGpu* gpu, uint32_t idx, VklQueueType type);
 
 /**
  * Create a GPU once the features and queues have been set up.

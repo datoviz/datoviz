@@ -11,11 +11,11 @@
 
 static void _context_default_queues(VklGpu* gpu, VklWindow* window)
 {
-    vkl_gpu_queue(gpu, VKL_QUEUE_TRANSFER, VKL_DEFAULT_QUEUE_TRANSFER);
-    vkl_gpu_queue(gpu, VKL_QUEUE_COMPUTE, VKL_DEFAULT_QUEUE_COMPUTE);
-    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, VKL_DEFAULT_QUEUE_RENDER);
+    vkl_gpu_queue(gpu, VKL_DEFAULT_QUEUE_TRANSFER, VKL_QUEUE_TRANSFER);
+    vkl_gpu_queue(gpu, VKL_DEFAULT_QUEUE_COMPUTE, VKL_QUEUE_COMPUTE);
+    vkl_gpu_queue(gpu, VKL_DEFAULT_QUEUE_RENDER, VKL_QUEUE_RENDER);
     if (window != NULL)
-        vkl_gpu_queue(gpu, VKL_QUEUE_PRESENT, VKL_DEFAULT_QUEUE_PRESENT);
+        vkl_gpu_queue(gpu, VKL_DEFAULT_QUEUE_PRESENT, VKL_QUEUE_PRESENT);
 }
 
 

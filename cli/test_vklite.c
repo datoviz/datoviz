@@ -19,9 +19,9 @@ int test_vklite_app(TestContext* context)
     AT(((VklGpu*)(app->gpus.items[0]))->obj.status == VKL_OBJECT_STATUS_INIT);
 
     VklGpu* gpu = vkl_gpu(app, 0);
-    vkl_gpu_queue(gpu, VKL_QUEUE_TRANSFER, 0);
-    vkl_gpu_queue(gpu, VKL_QUEUE_GRAPHICS | VKL_QUEUE_COMPUTE, 1);
-    vkl_gpu_queue(gpu, VKL_QUEUE_COMPUTE, 2);
+    vkl_gpu_queue(gpu, 0, VKL_QUEUE_TRANSFER);
+    vkl_gpu_queue(gpu, 1, VKL_QUEUE_GRAPHICS | VKL_QUEUE_COMPUTE);
+    vkl_gpu_queue(gpu, 2, VKL_QUEUE_COMPUTE);
     vkl_gpu_create(gpu, 0);
 
     TEST_END
@@ -33,7 +33,7 @@ int test_vklite_surface(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    vkl_gpu_queue(gpu, VKL_QUEUE_ALL, 0);
+    vkl_gpu_queue(gpu, 0, VKL_QUEUE_ALL);
 
     // Create a GLFW window and surface.
     VkSurfaceKHR surface = 0;
@@ -69,8 +69,8 @@ int test_vklite_swapchain(TestContext* context)
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklWindow* window = vkl_window(app, 100, 100);
     VklGpu* gpu = vkl_gpu(app, 0);
-    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
-    vkl_gpu_queue(gpu, VKL_QUEUE_PRESENT, 1);
+    vkl_gpu_queue(gpu, 0, VKL_QUEUE_RENDER);
+    vkl_gpu_queue(gpu, 1, VKL_QUEUE_PRESENT);
     vkl_gpu_create(gpu, window->surface);
     VklSwapchain swapchain = vkl_swapchain(gpu, window, 3);
     vkl_swapchain_format(&swapchain, VK_FORMAT_B8G8R8A8_UNORM);
@@ -88,7 +88,7 @@ int test_vklite_commands(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
+    vkl_gpu_queue(gpu, 0, VKL_QUEUE_RENDER);
     vkl_gpu_create(gpu, 0);
     VklCommands cmds = vkl_commands(gpu, 0, 3);
     vkl_cmd_begin(&cmds, 0);
@@ -105,7 +105,7 @@ int test_vklite_buffer_1(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
+    vkl_gpu_queue(gpu, 0, VKL_QUEUE_RENDER);
     vkl_gpu_create(gpu, 0);
 
     VklBuffer buffer = vkl_buffer(gpu);
@@ -144,7 +144,7 @@ int test_vklite_buffer_resize(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
+    vkl_gpu_queue(gpu, 0, VKL_QUEUE_RENDER);
     vkl_gpu_create(gpu, 0);
 
     VklBuffer buffer = vkl_buffer(gpu);
@@ -199,7 +199,7 @@ int test_vklite_compute(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    vkl_gpu_queue(gpu, VKL_QUEUE_COMPUTE, 0);
+    vkl_gpu_queue(gpu, 0, VKL_QUEUE_COMPUTE);
     vkl_gpu_create(gpu, 0);
 
     // Create the compute pipeline.
@@ -265,7 +265,7 @@ int test_vklite_push(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    vkl_gpu_queue(gpu, VKL_QUEUE_COMPUTE, 0);
+    vkl_gpu_queue(gpu, 0, VKL_QUEUE_COMPUTE);
     vkl_gpu_create(gpu, 0);
 
     // Create the compute pipeline.
@@ -334,7 +334,7 @@ int test_vklite_images(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
+    vkl_gpu_queue(gpu, 0, VKL_QUEUE_RENDER);
     vkl_gpu_create(gpu, 0);
 
     VklImages images = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
@@ -357,7 +357,7 @@ int test_vklite_sampler(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
+    vkl_gpu_queue(gpu, 0, VKL_QUEUE_RENDER);
     vkl_gpu_create(gpu, 0);
 
     VklSampler sampler = vkl_sampler(gpu);
@@ -377,7 +377,7 @@ int test_vklite_barrier(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
+    vkl_gpu_queue(gpu, 0, VKL_QUEUE_RENDER);
     vkl_gpu_create(gpu, 0);
 
     // Image.
@@ -434,8 +434,8 @@ int test_vklite_submit(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    vkl_gpu_queue(gpu, VKL_QUEUE_COMPUTE, 0);
-    vkl_gpu_queue(gpu, VKL_QUEUE_COMPUTE, 1);
+    vkl_gpu_queue(gpu, 0, VKL_QUEUE_COMPUTE);
+    vkl_gpu_queue(gpu, 1, VKL_QUEUE_COMPUTE);
     vkl_gpu_create(gpu, 0);
 
     // Create the compute pipeline.
@@ -539,7 +539,7 @@ int test_vklite_blank(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
+    vkl_gpu_queue(gpu, 0, VKL_QUEUE_RENDER);
     vkl_gpu_create(gpu, 0);
 
     TestCanvas canvas = offscreen(gpu);
@@ -581,7 +581,7 @@ int test_vklite_graphics(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
+    vkl_gpu_queue(gpu, 0, VKL_QUEUE_RENDER);
     vkl_gpu_create(gpu, 0);
 
     TestCanvas canvas = offscreen(gpu);
@@ -610,8 +610,8 @@ int test_basic_canvas_1(TestContext* context)
     VklWindow* window = vkl_window(app, TEST_WIDTH, TEST_HEIGHT);
 
     VklGpu* gpu = vkl_gpu(app, 0);
-    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
-    vkl_gpu_queue(gpu, VKL_QUEUE_PRESENT, 1);
+    vkl_gpu_queue(gpu, 0, VKL_QUEUE_RENDER);
+    vkl_gpu_queue(gpu, 1, VKL_QUEUE_PRESENT);
     vkl_gpu_create(gpu, window->surface);
 
     TestCanvas canvas = glfw_canvas(gpu, window);
@@ -632,8 +632,8 @@ int test_basic_canvas_triangle(TestContext* context)
     VklWindow* window = vkl_window(app, TEST_WIDTH, TEST_HEIGHT);
 
     VklGpu* gpu = vkl_gpu(app, 0);
-    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
-    vkl_gpu_queue(gpu, VKL_QUEUE_PRESENT, 1);
+    vkl_gpu_queue(gpu, 0, VKL_QUEUE_RENDER);
+    vkl_gpu_queue(gpu, 1, VKL_QUEUE_PRESENT);
     vkl_gpu_create(gpu, window->surface);
 
     TestCanvas canvas = glfw_canvas(gpu, window);
@@ -655,7 +655,7 @@ int test_shader_compile(TestContext* context)
     VklApp* app = vkl_app(VKL_BACKEND_OFFSCREEN);
 
     VklGpu* gpu = vkl_gpu(app, 0);
-    vkl_gpu_queue(gpu, VKL_QUEUE_RENDER, 0);
+    vkl_gpu_queue(gpu, 0, VKL_QUEUE_RENDER);
     vkl_gpu_create(gpu, VK_NULL_HANDLE);
 
     VkShaderModule module = vkl_shader_compile(
