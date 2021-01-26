@@ -575,6 +575,13 @@ static void vkl_array_data(
 
 
 
+/**
+ * Retrieve a single element from an array.
+ *
+ * @param array the array
+ * @param idx the index of the element to retrieve
+ * @returns a pointer to the requested element
+ */
 static inline void* vkl_array_item(VklArray* array, uint32_t idx)
 {
     ASSERT(array != NULL);
@@ -584,6 +591,7 @@ static inline void* vkl_array_item(VklArray* array, uint32_t idx)
 
 
 
+// Cast a vector.
 static inline void _cast(VklDataType target_dtype, void* dst, VklDataType source_dtype, void* src)
 {
     if (source_dtype == VKL_DTYPE_DOUBLE && target_dtype == VKL_DTYPE_FLOAT)
@@ -607,6 +615,25 @@ static inline void _cast(VklDataType target_dtype, void* dst, VklDataType source
 
 
 
+/**
+ * Copy data into the column of a record array.
+ *
+ * This function is used by the default visual baking function, which copies to the vertex buffer
+ * (corresponding to a record array with as many fields as GLSL attributes in the vertex shader)
+ * the user-specified visual props (data for the individual elements).
+ *
+ * @param array the array
+ * @param offset the offset within the array, in bytes
+ * @param col_size stride in the source array, in bytes
+ * @param first_item first element in the array to be overwritten
+ * @param item_count number of elements to write
+ * @param data_item_count number of elements in `data`
+ * @param data the buffer containing the data to copy
+ * @param source_dtype the source dtype (only used when casting)
+ * @param target_dtype the target dtype (only used when casting)
+ * @param copy_type the type of copy
+ * @param reps the number of repeats for each copied element
+ */
 static void vkl_array_column(
     VklArray* array, VkDeviceSize offset, VkDeviceSize col_size, //
     uint32_t first_item, uint32_t item_count,                    //
@@ -653,6 +680,8 @@ static void vkl_array_column(
         // Determine whether the current item copy should be skipped.
         skip = copy_type == VKL_ARRAY_COPY_SINGLE && reps > 1 && m > 0;
 
+        // NOTE: this function is not optimized and might benefit from being refactored.
+
         // Copy the current item, unless we are in SINGLE copy mode
         if (!skip)
         {
@@ -680,6 +709,13 @@ static void vkl_array_column(
 
 
 
+/**
+ * Destroy an array.
+ *
+ * This function frees the allocated underlying data buffer.
+ *
+ * @param array the array to destroy
+ */
 static void vkl_array_destroy(VklArray* array)
 {
     ASSERT(array != NULL);
