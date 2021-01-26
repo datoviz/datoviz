@@ -26,6 +26,7 @@ ICONS = {
     'in': ':octicons-arrow-right-16:',
     'out': ':octicons-arrow-left-16:',
 }
+MAX_LINE_LENGTH = 76
 
 
 # File explorer and manipulation
@@ -52,6 +53,17 @@ def insert_text(text, i, n, insert):
 
 def _remove_comments(text):
     return '\n'.join([l.split('//')[0] if not l.startswith(' *') else l for l in text.splitlines()])
+
+
+def grouper(n, iterable):
+    it = iter(iterable)
+    while True:
+        chunk_it = itertools.islice(it, n)
+        try:
+            first_el = next(chunk_it)
+        except StopIteration:
+            return
+        yield itertools.chain((first_el,), chunk_it)
 
 
 # C header parsing
@@ -158,6 +170,7 @@ def _parse_funcs(text, is_output=False):
     LPAR, RPAR, LBRACE, RBRACE, COMMA, SEMICOLON = map(Suppress, "(){},;")
     const = Keyword("const")
     static = Keyword("static")
+    inline = Keyword("inline")
     dtype = Word(alphanums + "_*")
     identifier = Word(alphanums + "_")
     argDecl = Group(
@@ -171,13 +184,13 @@ def _parse_funcs(text, is_output=False):
     else:
         func = Empty()
     signature = Optional(static("static")) + \
+        Optional(inline("inline")) + \
         dtype("out") + \
         identifier("name") + \
         LPAR + args("args") + RPAR + \
         Optional(SEMICOLON)
     func = cStyleComment("docstring") + func + \
         signature("signature")
-
     for item, start, stop in func.scanString(text):
         args = []
         # for i, entry in enumerate(item.args):
@@ -185,19 +198,6 @@ def _parse_funcs(text, is_output=False):
         funcs[item.name] = item
     return funcs
 
-
-MAX_LINE_LENGTH = 76
-
-
-def grouper(n, iterable):
-    it = iter(iterable)
-    while True:
-        chunk_it = itertools.islice(it, n)
-        try:
-            first_el = next(chunk_it)
-        except StopIteration:
-            return
-        yield itertools.chain((first_el,), chunk_it)
 
 
 def _gen_func_doc(name, func):
@@ -268,7 +268,7 @@ def _gen_func_doc(name, func):
         desc = ret[ret.index(' ') + 1:]
         params_s += f"| {ICONS['out']} `returns` | `{out}` | {desc} |\n"
 
-    return f"### `{name}()`\n\n{signature}\n\n{params_s}\n\n{description}"
+    return f"### `{name}()`\n\n{signature}\n\n{params_s}\n{description}\n"
 
 
 def _camel_to_snake(name):
@@ -300,6 +300,8 @@ if __name__ == '__main__':
         # Parse the functions
         f = _parse_funcs(text)
         print(f"{len(f):02d} functions found in {filename}")
+        for name in f.keys():
+            print(f'### `{name}()`\n')
         all_funcs.update(f)
 
     # TODO: enums and structs

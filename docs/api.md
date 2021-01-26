@@ -16,11 +16,11 @@
 | :octicons-arrow-right-16: `n_cols` | `uint32_t` | number of columns in the grid |
 | :octicons-arrow-left-16: `returns` | `VklScene*` | pointer to the created scene |
 
-
 Create a scene with a grid layout.
 
 The scene defines a 2D grid where each cell contains a panel (subplot). Panels may support
 various kinds of interactivity.
+
 ### `vkl_scene_destroy()`
 
 === "C"
@@ -32,10 +32,10 @@ various kinds of interactivity.
 | ---- | ---- | ---- |
 | :octicons-arrow-right-16: `scene` | `VklScene*` | the scene |
 
-
 Destroy a scene.
 
 Destroy all panels and visuals in the scene.
+
 ## App API
 
 ### `vkl_app()`
@@ -50,11 +50,11 @@ Destroy all panels and visuals in the scene.
 | :octicons-arrow-right-16: `backend` | `VklBackend` | the backend |
 | :octicons-arrow-left-16: `returns` | `VklApp*` | pointer to the created app |
 
-
 Create an application instance.
 
 There is typically only one App object in a given application. This object holds a pointer to
 the Vulkan instance and is responsible for discovering the available GPUs.
+
 ### `vkl_app_destroy()`
 
 === "C"
@@ -66,11 +66,147 @@ the Vulkan instance and is responsible for discovering the available GPUs.
 | ---- | ---- | ---- |
 | :octicons-arrow-right-16: `app` | `VklApp*` | the application to destroy |
 
-
 Destroy the application.
 
 This function automatically destroys all objects created within the application.
+
 ## Array API
+
+### `vkl_array()`
+
+=== "C"
+    ```c
+    VklArray vkl_array(uint32_t item_count, VklDataType dtype);
+    ```
+
+| Parameter | Type | Description |
+| ---- | ---- | ---- |
+| :octicons-arrow-right-16: `item_count` | `uint32_t` | initial number of elements |
+| :octicons-arrow-right-16: `dtype` | `VklDataType` | the data type of the array |
+| :octicons-arrow-left-16: `returns` | `VklArray` | new array |
+
+Create a new 1D array.
+
+### `vkl_array_point()`
+
+=== "C"
+    ```c
+    VklArray vkl_array_point(dvec3 pos);
+    ```
+
+| Parameter | Type | Description |
+| ---- | ---- | ---- |
+| :octicons-arrow-right-16: `pos` | `dvec3` | initial number of elements |
+| :octicons-arrow-left-16: `returns` | `VklArray` | new array |
+
+Create an array with a single dvec3 position.
+
+### `vkl_array_wrap()`
+
+=== "C"
+    ```c
+    VklArray vkl_array_wrap(uint32_t item_count, VklDataType dtype, void* data);
+    ```
+
+| Parameter | Type | Description |
+| ---- | ---- | ---- |
+| :octicons-arrow-right-16: `item_count` | `uint32_t` | number of elements in the passed buffer |
+| :octicons-arrow-right-16: `dtype` | `VklDataType` | the data type of the array |
+| :octicons-arrow-left-16: `returns` | `VklArray` | array wrapping the buffer |
+
+Create a 1D array from an existing compatible memory buffer.
+
+The created array does not allocate memory, it uses the passed buffer instead.
+
+!!! warning
+    Destroying the array will free the passed pointer!
+
+### `vkl_array_struct()`
+
+=== "C"
+    ```c
+    VklArray vkl_array_struct(uint32_t item_count, VkDeviceSize item_size);
+    ```
+
+| Parameter | Type | Description |
+| ---- | ---- | ---- |
+| :octicons-arrow-right-16: `item_count` | `uint32_t` | number of elements |
+| :octicons-arrow-right-16: `item_size` | `VkDeviceSize` | size, in bytes, of each item |
+| :octicons-arrow-left-16: `returns` | `VklArray` | array |
+
+Create a 1D record array with heterogeneous data type.
+
+### `vkl_array_3D()`
+
+=== "C"
+    ```c
+    VklArray vkl_array_3D(
+        uint32_t ndims, uint32_t width, uint32_t height,
+        uint32_t depth, VkDeviceSize item_size);
+    ```
+
+| Parameter | Type | Description |
+| ---- | ---- | ---- |
+| :octicons-arrow-right-16: `ndims` | `uint32_t` | number of dimensions (1, 2, 3) |
+| :octicons-arrow-right-16: `width` | `uint32_t` | number of elements along the 1st dimension |
+| :octicons-arrow-right-16: `height` | `uint32_t` | number of elements along the 2nd dimension |
+| :octicons-arrow-right-16: `depth` | `uint32_t` | number of elements along the 3rd dimension |
+| :octicons-arrow-right-16: `item_size` | `VkDeviceSize` | size of each item in bytes |
+| :octicons-arrow-left-16: `returns` | `VklArray` | array |
+
+Create a 3D array holding a texture.
+
+### `vkl_array_resize()`
+
+=== "C"
+    ```c
+    void vkl_array_resize(VklArray* array, uint32_t item_count);
+    ```
+
+| Parameter | Type | Description |
+| ---- | ---- | ---- |
+| :octicons-arrow-right-16: `array` | `VklArray*` | the array to resize |
+| :octicons-arrow-right-16: `item_count` | `uint32_t` | the new number of items |
+
+Resize an existing array.
+
+* If the new size is equal to the old size, do nothing.
+* If the new size is smaller than the old size, change the size attribute but do not reallocate
+* If the new size is larger than the old size, reallocate memory and copy over the old values
+
+### `vkl_array_clear()`
+
+=== "C"
+    ```c
+    void vkl_array_clear(VklArray* array);
+    ```
+
+| Parameter | Type | Description |
+| ---- | ---- | ---- |
+| :octicons-arrow-right-16: `array` | `VklArray*` | the array to clear |
+
+Reset to 0 the contents of an existing array.
+
+### `vkl_array_reshape()`
+
+=== "C"
+    ```c
+    void vkl_array_reshape(
+        VklArray* array, uint32_t width, uint32_t height, uint32_t depth);
+    ```
+
+| Parameter | Type | Description |
+| ---- | ---- | ---- |
+| :octicons-arrow-right-16: `array` | `VklArray*` | the array to reshape and clear |
+| :octicons-arrow-right-16: `width` | `uint32_t` | number of elements along the 1st dimension |
+| :octicons-arrow-right-16: `height` | `uint32_t` | number of elements along the 2nd dimension |
+| :octicons-arrow-right-16: `depth` | `uint32_t` | number of elements along the 3rd dimension |
+
+Reshape a 3D array and *delete all the data in it*.
+
+!!! warning
+    The contents of the array will be cleared. Copying the existing data would require more work
+    and is not necessary at the moment.
 
 ### `vkl_array_data()`
 
@@ -89,7 +225,6 @@ This function automatically destroys all objects created within the application.
 | :octicons-arrow-right-16: `data_item_count` | `uint32_t` | number of elements in `data` |
 | :octicons-arrow-right-16: `data` | `void*` | the buffer containing the data to copy |
 
-
 Copy data into an array.
 
 * There will be `item_count` values copied between `first_item` and `first_item + item_count` in
@@ -107,3 +242,64 @@ Example:
     double item = 1.23;
     vkl_array_data(&arr, 0, 10, 1, &item);
     ```
+
+### `vkl_array_item()`
+
+=== "C"
+    ```c
+    void* vkl_array_item(VklArray* array, uint32_t idx);
+    ```
+
+| Parameter | Type | Description |
+| ---- | ---- | ---- |
+| :octicons-arrow-right-16: `array` | `VklArray*` | the array |
+| :octicons-arrow-right-16: `idx` | `uint32_t` | the index of the element to retrieve |
+| :octicons-arrow-left-16: `returns` | `void*` | pointer to the requested element |
+
+Retrieve a single element from an array.
+
+### `vkl_array_column()`
+
+=== "C"
+    ```c
+    void vkl_array_column(
+        VklArray* array, VkDeviceSize offset, VkDeviceSize col_size,
+        uint32_t first_item, uint32_t item_count, uint32_t data_item_count,
+        void* data, VklDataType source_dtype, VklDataType target_dtype,
+        VklArrayCopyType copy_type, uint32_t reps);
+    ```
+
+| Parameter | Type | Description |
+| ---- | ---- | ---- |
+| :octicons-arrow-right-16: `array` | `VklArray*` | the array |
+| :octicons-arrow-right-16: `offset` | `VkDeviceSize` | the offset within the array, in bytes |
+| :octicons-arrow-right-16: `col_size` | `VkDeviceSize` | stride in the source array, in bytes |
+| :octicons-arrow-right-16: `first_item` | `uint32_t` | first element in the array to be overwritten |
+| :octicons-arrow-right-16: `item_count` | `uint32_t` | number of elements to write |
+| :octicons-arrow-right-16: `data_item_count` | `uint32_t` | number of elements in `data` |
+| :octicons-arrow-right-16: `data` | `void*` | the buffer containing the data to copy |
+| :octicons-arrow-right-16: `source_dtype` | `VklDataType` | the source dtype (only used when casting) |
+| :octicons-arrow-right-16: `target_dtype` | `VklDataType` | the target dtype (only used when casting) |
+| :octicons-arrow-right-16: `copy_type` | `VklArrayCopyType` | the type of copy |
+| :octicons-arrow-right-16: `reps` | `uint32_t` | the number of repeats for each copied element |
+
+Copy data into the column of a record array.
+
+This function is used by the default visual baking function, which copies to the vertex buffer
+(corresponding to a record array with as many fields as GLSL attributes in the vertex shader)
+the user-specified visual props (data for the individual elements).
+
+### `vkl_array_destroy()`
+
+=== "C"
+    ```c
+    void vkl_array_destroy(VklArray* array);
+    ```
+
+| Parameter | Type | Description |
+| ---- | ---- | ---- |
+| :octicons-arrow-right-16: `array` | `VklArray*` | the array to destroy |
+
+Destroy an array.
+
+This function frees the allocated underlying data buffer.
