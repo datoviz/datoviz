@@ -2111,7 +2111,7 @@ vkl_submit_signal_semaphores(VklSubmit* submit, VklSemaphores* semaphores, uint3
  * Submit the command buffers to their queue.
  *
  * @param submit the submit object
- * @param cmd_idx the command buffer index to submit to
+ * @param cmd_idx the command buffer index to submit
  * @param fences the fences to signal after completion
  * @param fence_idx the fence index to signal
  */
@@ -2131,54 +2131,192 @@ VKY_EXPORT void vkl_submit_reset(VklSubmit* submit);
 /*  Command buffer filling                                                                       */
 /*************************************************************************************************/
 
+/**
+ * Begin a render pass.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
+ * @param renderpass the render pass
+ * @param framebuffers the framebuffers
+ */
 VKY_EXPORT void vkl_cmd_begin_renderpass(
     VklCommands* cmds, uint32_t idx, VklRenderpass* renderpass, VklFramebuffers* framebuffers);
 
+/**
+ * End a render pass.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
+ */
 VKY_EXPORT void vkl_cmd_end_renderpass(VklCommands* cmds, uint32_t idx);
 
+/**
+ * Launch a compute task.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
+ * @param compute the computer pipeline
+ * @param size the task shape
+ */
 VKY_EXPORT void vkl_cmd_compute(VklCommands* cmds, uint32_t idx, VklCompute* compute, uvec3 size);
 
+/**
+ * Register a barrier.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
+ * @param barrier the barrier
+ */
 VKY_EXPORT void vkl_cmd_barrier(VklCommands* cmds, uint32_t idx, VklBarrier* barrier);
 
+/**
+ * Copy a GPU buffer to a GPU image.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
+ * @param buffer the buffer
+ * @param images the image
+ */
 VKY_EXPORT void vkl_cmd_copy_buffer_to_image(
     VklCommands* cmds, uint32_t idx, VklBuffer* buffer, VklImages* images);
 
+/**
+ * Copy a GPU image to a GPU buffer.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
+ * @param images the image
+ * @param buffer the buffer
+ */
 VKY_EXPORT void vkl_cmd_copy_image_to_buffer(
     VklCommands* cmds, uint32_t idx, VklImages* images, VklBuffer* buffer);
 
+/**
+ * Copy a GPU image to another.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
+ * @param src_img the source image
+ * @param dst_img the destination image
+ */
 VKY_EXPORT void
 vkl_cmd_copy_image(VklCommands* cmds, uint32_t idx, VklImages* src_img, VklImages* dst_img);
 
+/**
+ * Set the viewport.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
+ * @param viewport the viewport
+ */
 VKY_EXPORT void vkl_cmd_viewport(VklCommands* cmds, uint32_t idx, VkViewport viewport);
 
+/**
+ * Bind a graphics pipeline.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
+ * @param graphics the graphics pipeline
+ * @param bindings the bindings associated to the pipeline
+ * @param dynamic_idx the dynamic uniform buffer index
+ */
 VKY_EXPORT void vkl_cmd_bind_graphics(
     VklCommands* cmds, uint32_t idx, VklGraphics* graphics, //
     VklBindings* bindings, uint32_t dynamic_idx);
 
+/**
+ * Bind a vertex buffer.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
+ * @param br the buffer regions
+ * @param offset the offset within the buffer regions, in bytes
+ */
 VKY_EXPORT void vkl_cmd_bind_vertex_buffer(
     VklCommands* cmds, uint32_t idx, VklBufferRegions br, VkDeviceSize offset);
 
+/**
+ * Bind an index buffer.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
+ * @param br the buffer regions
+ * @param offset the offset within the buffer regions, in bytes
+ */
 VKY_EXPORT void vkl_cmd_bind_index_buffer(
     VklCommands* cmds, uint32_t idx, VklBufferRegions br, VkDeviceSize offset);
 
+/**
+ * Direct draw.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
+ * @param first_vertex index of the first vertex
+ * @param vertex_count number of vertices to draw
+ */
 VKY_EXPORT void
 vkl_cmd_draw(VklCommands* cmds, uint32_t idx, uint32_t first_vertex, uint32_t vertex_count);
 
+/**
+ * Direct indexed draw.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
+ * @param first_index index of the first index
+ * @param vertex_offset offset of the vertex
+ * @param index_count number of indices to draw
+ */
 VKY_EXPORT void vkl_cmd_draw_indexed(
     VklCommands* cmds, uint32_t idx, uint32_t first_index, uint32_t vertex_offset,
     uint32_t index_count);
 
+/**
+ * Indirect draw.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
+ * @param indirect buffer regions with the indirect draw info
+ */
 VKY_EXPORT void vkl_cmd_draw_indirect(VklCommands* cmds, uint32_t idx, VklBufferRegions indirect);
 
+/**
+ * Indirect indexed draw.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
+ * @param indirect buffer regions with the indirect draw info
+ */
 VKY_EXPORT void
 vkl_cmd_draw_indexed_indirect(VklCommands* cmds, uint32_t idx, VklBufferRegions indirect);
 
+/**
+ * Copy a GPU buffer to another.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
+ * @param src_buf the source buffer
+ * @param src_offset the offset in the source buffer
+ * @param dst_buf the destination buffer, in bytes
+ * @param dst_offset the offset in the destination buffer, in bytes
+ * @param size the size of the region to copy, in bytes
+ */
 VKY_EXPORT void vkl_cmd_copy_buffer(
     VklCommands* cmds, uint32_t idx,             //
     VklBuffer* src_buf, VkDeviceSize src_offset, //
     VklBuffer* dst_buf, VkDeviceSize dst_offset, //
     VkDeviceSize size);
 
+/**
+ * Push constants.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
+ * @param slots the slots
+ * @param shaders the shader stages that have access to the push constant
+ * @param offset the offset in the push constant, in bytes
+ * @param size the size in the push constant, in bytes
+ * @param data the data to send via the push constant
+ */
 VKY_EXPORT void vkl_cmd_push(
     VklCommands* cmds, uint32_t idx, VklSlots* slots, VkShaderStageFlagBits shaders, //
     VkDeviceSize offset, VkDeviceSize size, const void* data);
@@ -2189,6 +2327,11 @@ VKY_EXPORT void vkl_cmd_push(
 /*  Context                                                                                      */
 /*************************************************************************************************/
 
+/**
+ * Destroy a context.
+ *
+ * @param context the context
+ */
 VKY_EXPORT void vkl_context_destroy(VklContext* context);
 
 
