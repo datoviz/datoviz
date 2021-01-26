@@ -776,28 +776,20 @@ VKY_EXPORT void vkl_canvas_to_close(VklCanvas* canvas);
  * This command creates a host-coherent GPU image with the same size as the current framebuffer
  * size.
  *
- * @param canvas
- * @param interval If non-zero, the Canvas will raise periodic SCREENCAST events every
- *      `interval` seconds. The event payload will contain a pointer to the grabbed
- *      framebuffer image.
- * @param rgb If NULL, the Canvas will create a CPU buffer with the appropriate size. Otherwise,
- *      the images will be copied to the provided buffer. The caller must ensure the buffer is
- *      allocated with enough memory to store the image. Providing a pointer disables resize
- *      support (the swapchain and GPU images will not be recreated upon resize).
+ * If the interval is non-zero, the canvas will raise periodic SCREENCAST events every  `interval`
+ * seconds. The event payload will contain a pointer to the grabbed framebuffer image.
  *
+ * @param canvas the canvas
+ * @param interval screencast events interval
  */
 VKY_EXPORT void vkl_screencast(VklCanvas* canvas, double interval);
-
-
 
 /**
  * Destroy the screencast.
  *
- * @param canvas
+ * @param canvas the canvas
  */
 VKY_EXPORT void vkl_screencast_destroy(VklCanvas* canvas);
-
-
 
 /**
  * Make a screenshot.
@@ -806,20 +798,16 @@ VKY_EXPORT void vkl_screencast_destroy(VklCanvas* canvas);
  * synchronization commands so this command should *not* be used for creating many successive
  * screenshots. For that, one should register a SCREENCAST event callback.
  *
- * @param canvas
- * @return A pointer to the 24-bit RGB framebuffer.
- *
+ * @param canvas the canvas
+ * @returns A pointer to the 24-bit RGB framebuffer.
  */
 VKY_EXPORT uint8_t* vkl_screenshot(VklCanvas* canvas);
-
-
 
 /**
  * Make a screenshot and save it to a PNG or PPM file.
  *
- * @param canvas
- * @param filename Path to the screenshot image.
- *
+ * @param canvas the canvas
+ * @param filename the path to the screenshot image to create
  */
 VKY_EXPORT void vkl_screenshot_file(VklCanvas* canvas, const char* filename);
 
@@ -829,19 +817,65 @@ VKY_EXPORT void vkl_screenshot_file(VklCanvas* canvas, const char* filename);
 /*  Mouse and keyboard                                                                           */
 /*************************************************************************************************/
 
+/**
+ * Create the mouse object holding the current mouse state.
+ *
+ * @returns mouse object
+ */
 VKY_EXPORT VklMouse vkl_mouse(void);
 
+/**
+ * Reset the mouse state.
+ *
+ * @param mouse the mouse object
+ */
 VKY_EXPORT void vkl_mouse_reset(VklMouse* mouse);
 
+/**
+ * Emit a mouse event.
+ *
+ * @param mouse the mouse object
+ * @param canvas the canvas
+ * @param ev the mouse event
+ */
 VKY_EXPORT void vkl_mouse_event(VklMouse* mouse, VklCanvas* canvas, VklEvent ev);
 
+/**
+ * Convert mouse coordinates from global to local.
+ *
+ * * Global coordinates: in pixels, origin at the top-left corner of the window.
+ * * Local coordinates: in normalize coordinates [-1, 1], origin at the center of a given viewport,
+ *   taking viewport margins into account
+ *
+ * @param mouse the mouse object
+ * @param mouse_local the mouse local object
+ * @param canvas the canvas
+ * @param viewport the viewport defining the local coordinates
+ */
 VKY_EXPORT void vkl_mouse_local(
     VklMouse* mouse, VklMouseLocal* mouse_local, VklCanvas* canvas, VklViewport viewport);
 
+/**
+ * Create the keyboard object holding the current keyboard state.
+ *
+ * @returns keyboard object
+ */
 VKY_EXPORT VklKeyboard vkl_keyboard(void);
 
+/**
+ * Reset the keyboard state
+ *
+ * @returns keyboard object
+ */
 VKY_EXPORT void vkl_keyboard_reset(VklKeyboard* keyboard);
 
+/**
+ * Emit a keyboard event.
+ *
+ * @param keyboard the keyboard object
+ * @param canvas the canvas
+ * @param ev the keyboard event
+ */
 VKY_EXPORT void vkl_keyboard_event(VklKeyboard* keyboard, VklCanvas* canvas, VklEvent ev);
 
 
@@ -850,44 +884,153 @@ VKY_EXPORT void vkl_keyboard_event(VklKeyboard* keyboard, VklCanvas* canvas, Vkl
 /*  Event system                                                                                 */
 /*************************************************************************************************/
 
+/**
+ * Emit a mouse button event.
+ *
+ * @param canvas the canvas
+ * @param type whether this is a press or release event
+ * @param button the mouse button
+ * @param modifiers flags with the active keyboard modifiers
+ */
 VKY_EXPORT void vkl_event_mouse_button(
     VklCanvas* canvas, VklMouseButtonType type, VklMouseButton button, int modifiers);
 
+/**
+ * Emit a mouse move event.
+ *
+ * @param canvas the canvas
+ * @param pos the current mouse position, in pixels
+ */
 VKY_EXPORT void vkl_event_mouse_move(VklCanvas* canvas, vec2 pos);
 
+/**
+ * Emit a mouse wheel event.
+ *
+ * @param canvas the canvas
+ * @param dir the mouse wheel direction
+ */
 VKY_EXPORT void vkl_event_mouse_wheel(VklCanvas* canvas, vec2 dir);
 
+/**
+ * Emit a mouse click event.
+ *
+ * @param canvas the canvas
+ * @param pos the click position
+ * @param button the mouse button
+ */
 VKY_EXPORT void vkl_event_mouse_click(VklCanvas* canvas, vec2 pos, VklMouseButton button);
 
+/**
+ * Emit a mouse double-click event.
+ *
+ * @param canvas the canvas
+ * @param pos the double-click position
+ * @param button the mouse button
+ */
 VKY_EXPORT void vkl_event_mouse_double_click(VklCanvas* canvas, vec2 pos, VklMouseButton button);
 
+/**
+ * Emit a mouse drag event.
+ *
+ * @param canvas the canvas
+ * @param pos the drag start position
+ * @param button the mouse button
+ */
 VKY_EXPORT void vkl_event_mouse_drag(VklCanvas* canvas, vec2 pos, VklMouseButton button);
 
+/**
+ * Emit a mouse drag end event.
+ *
+ * @param canvas the canvas
+ * @param pos the drag end position
+ * @param button the mouse button
+ */
 VKY_EXPORT void vkl_event_mouse_drag_end(VklCanvas* canvas, vec2 pos, VklMouseButton button);
 
+/**
+ * Emit a keyboard event.
+ *
+ * @param canvas the canvas
+ * @param type press or release
+ * @param key_code the key
+ * @param modifiers flags with the active keyboard modifiers
+ */
 VKY_EXPORT void
 vkl_event_key(VklCanvas* canvas, VklKeyType type, VklKeyCode key_code, int modifiers);
 
+/**
+ * Emit a frame event.
+ *
+ * Typically raised at every canvas frame.
+ *
+ * @param canvas the canvas
+ * @param idx the frame index
+ * @param time the current time
+ * @param interval the interval since the last frame event
+ */
 VKY_EXPORT void vkl_event_frame(VklCanvas* canvas, uint64_t idx, double time, double interval);
 
+/**
+ * Emit a timer event.
+ *
+ * @param canvas the canvas
+ * @param idx the timer event index
+ * @param time the current time
+ * @param interval the interval since the last timer event
+ */
 VKY_EXPORT void vkl_event_timer(VklCanvas* canvas, uint64_t idx, double time, double interval);
 
-// Return the number of events of the given type that are still being processed or pending in the
-// queue.
+/**
+ * Return the number of pending events.
+ *
+ * This is the number of events of the given type that are still being processed or pending in the
+ * queue.
+ *
+ * @param canvas the canvas
+ * @param type the event type
+ * @returns the number of pending events
+ */
 VKY_EXPORT int vkl_event_pending(VklCanvas* canvas, VklEventType type);
 
+/**
+ * Stop the background event loop.
+ *
+ * This function sends a special "closing" event to the event loop, causing it to stop.
+ *
+ * @param canvas the canvas
+ */
 VKY_EXPORT void vkl_event_stop(VklCanvas* canvas);
 
 
 
 /*************************************************************************************************/
-/*  Event loop                                                                                   */
+/*  Main canvas event loop                                                                       */
 /*************************************************************************************************/
 
+/**
+ * Process a single frame in the event loop.
+ *
+ * This function probably never needs to be called directly, unless writing a custom backend.
+ *
+ * @param canvas the canvas
+ */
 VKY_EXPORT void vkl_canvas_frame(VklCanvas* canvas);
 
+/**
+ * Submit the rendered frame to the swapchain system.
+ *
+ * @param canvas the canvas
+ */
 VKY_EXPORT void vkl_canvas_frame_submit(VklCanvas* canvas);
 
+/**
+ * Start the main event loop.
+ *
+ * Every loop iteration processes one frame of all open canvases.
+ *
+ * @param app the app
+ * @param frame_count number of frames to process (0 for infinite loop)
+ */
 VKY_EXPORT void vkl_app_run(VklApp* app, uint64_t frame_count);
 
 
