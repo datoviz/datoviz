@@ -1,3 +1,7 @@
+/*************************************************************************************************/
+/*  Tick structures used by both the axes visuals and the tick positioning algorithm             */
+/*************************************************************************************************/
+
 #ifndef VKL_TICKS_STRUCTS_HEADER
 #define VKL_TICKS_STRUCTS_HEADER
 

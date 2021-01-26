@@ -1,3 +1,7 @@
+/*************************************************************************************************/
+/*  Visual system, interfacing user data to graphics pipelines and GPU objects                   */
+/*************************************************************************************************/
+
 #ifndef VKL_VISUALS_HEADER
 #define VKL_VISUALS_HEADER
 

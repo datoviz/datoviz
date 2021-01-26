@@ -12,7 +12,6 @@
 extern "C" {
 #endif
 
-//#include "../include/visky/common.h"
 #include <stdarg.h>
 #include <stdio.h>
 

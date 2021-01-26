@@ -1,3 +1,7 @@
+/*************************************************************************************************/
+/*  GPU data transfers interfacing closely with the canvas event loop                            */
+/*************************************************************************************************/
+
 #ifndef VKL_TRANSFERS_HEADER
 #define VKL_TRANSFERS_HEADER
 
