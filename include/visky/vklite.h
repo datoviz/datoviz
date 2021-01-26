@@ -1833,8 +1833,20 @@ vkl_barrier_images_access(VklBarrier* barrier, VkAccessFlags src_access, VkAcces
 /*  Semaphores                                                                                   */
 /*************************************************************************************************/
 
+/**
+ * Initialize a set of semaphores (GPU-GPU synchronization).
+ *
+ * @param gpu the GPU
+ * @param count the number of semaphores
+ * @returns the semaphores
+ */
 VKY_EXPORT VklSemaphores vkl_semaphores(VklGpu* gpu, uint32_t count);
 
+/**
+ * Destroy semaphores.
+ *
+ * @param semaphores the semaphores
+ */
 VKY_EXPORT void vkl_semaphores_destroy(VklSemaphores* semaphores);
 
 
@@ -1843,17 +1855,55 @@ VKY_EXPORT void vkl_semaphores_destroy(VklSemaphores* semaphores);
 /*  Fences                                                                                       */
 /*************************************************************************************************/
 
+/**
+ * Initialize a set of fences (CPU-GPU synchronization).
+ *
+ * @param gpu the GPU
+ * @param count the number of fences
+ * @returns the fences
+ */
 VKY_EXPORT VklFences vkl_fences(VklGpu* gpu, uint32_t count);
 
+/**
+ * Copy a fence from a set of fences to another.
+ *
+ * @param src_fences the source fences
+ * @param src_idx the fence index within the source fences
+ * @param dst_fences the destination fences
+ * @param dst_idx the fence index within the destination fences
+ */
 VKY_EXPORT void
 vkl_fences_copy(VklFences* src_fences, uint32_t src_idx, VklFences* dst_fences, uint32_t dst_idx);
 
+/**
+ * Wait on the GPU until a fence is signaled.
+ *
+ * @param fences the fences
+ * @param idx the fence index
+ */
 VKY_EXPORT void vkl_fences_wait(VklFences* fences, uint32_t idx);
 
+/**
+ * Return whether a fence is ready.
+ *
+ * @param fences the fences
+ * @param idx the fence index
+ */
 VKY_EXPORT bool vkl_fences_ready(VklFences* fences, uint32_t idx);
 
+/**
+ * Rset the state of a fence.
+ *
+ * @param fences the fences
+ * @param idx the fence index
+ */
 VKY_EXPORT void vkl_fences_reset(VklFences* fences, uint32_t idx);
 
+/**
+ * Destroy fences.
+ *
+ * @param fences the fences
+ */
 VKY_EXPORT void vkl_fences_destroy(VklFences* fences);
 
 
@@ -1862,38 +1912,116 @@ VKY_EXPORT void vkl_fences_destroy(VklFences* fences);
 /*  Renderpass                                                                                   */
 /*************************************************************************************************/
 
+/**
+ * Initialize a render pass.
+ *
+ * @param gpu the GPU
+ * @returns the render pass
+ */
 VKY_EXPORT VklRenderpass vkl_renderpass(VklGpu* gpu);
 
+/**
+ * Set the clear value of a render pass.
+ *
+ * @param renderpass the render pass
+ * @param value the clear value
+ */
 VKY_EXPORT void vkl_renderpass_clear(VklRenderpass* renderpass, VkClearValue value);
 
+/**
+ * Specify a render pass attachment.
+ *
+ * @param renderpass the render pass
+ * @param idx the attachment index
+ * @param type the attachment type
+ * @param format the attachment image format
+ * @param ref_layout the image layout
+ */
 VKY_EXPORT void vkl_renderpass_attachment(
     VklRenderpass* renderpass, uint32_t idx, VklRenderpassAttachmentType type, VkFormat format,
     VkImageLayout ref_layout);
 
+/**
+ * Set the attachment layout.
+ *
+ * @param renderpass the render pass
+ * @param idx the attachment index
+ * @param src_layout the source layout
+ * @param dst_layout the destination layout
+ */
 VKY_EXPORT void vkl_renderpass_attachment_layout(
     VklRenderpass* renderpass, uint32_t idx, VkImageLayout src_layout, VkImageLayout dst_layout);
 
+/**
+ * Set the attachment load and store operations.
+ *
+ * @param renderpass the render pass
+ * @param idx the attachment index
+ * @param load_op the load operation
+ * @param store_op the store operation
+ */
 VKY_EXPORT void vkl_renderpass_attachment_ops(
     VklRenderpass* renderpass, uint32_t idx, //
     VkAttachmentLoadOp load_op, VkAttachmentStoreOp store_op);
 
+/**
+ * Set a subpass attachment.
+ *
+ * @param renderpass the render pass
+ * @param subpass_idx the subpass index
+ * @param attachment_idx the attachment index
+ */
 VKY_EXPORT void vkl_renderpass_subpass_attachment(
     VklRenderpass* renderpass, uint32_t subpass_idx, uint32_t attachment_idx);
 
+/**
+ * Set a subpass dependency.
+ *
+ * @param renderpass the render pass
+ * @param dependency_idx the dependency index
+ * @param src_subpass the source subpass index
+ * @param dst_subpass the destination subpass index
+ */
 VKY_EXPORT void vkl_renderpass_subpass_dependency(
     VklRenderpass* renderpass, uint32_t dependency_idx, //
     uint32_t src_subpass, uint32_t dst_subpass);
 
+/**
+ * Set a subpass dependency access.
+ *
+ * @param renderpass the render pass
+ * @param dependency_idx the dependency index
+ * @param src_access the source access flags
+ * @param dst_access the destinationaccess flags
+ */
 VKY_EXPORT void vkl_renderpass_subpass_dependency_access(
     VklRenderpass* renderpass, uint32_t dependency_idx, //
     VkAccessFlags src_access, VkAccessFlags dst_access);
 
+/**
+ * Set a subpass dependency stage.
+ *
+ * @param renderpass the render pass
+ * @param dependency_idx the dependency index
+ * @param src_stage the source pipeline stages
+ * @param dst_stage the destination pipeline stages
+ */
 VKY_EXPORT void vkl_renderpass_subpass_dependency_stage(
     VklRenderpass* renderpass, uint32_t dependency_idx, //
     VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage);
 
+/**
+ * Create a render pass after it has been set up.
+ *
+ * @param renderpass the render pass
+ */
 VKY_EXPORT void vkl_renderpass_create(VklRenderpass* renderpass);
 
+/**
+ * Destroy a render pass.
+ *
+ * @param renderpass the render pass
+ */
 VKY_EXPORT void vkl_renderpass_destroy(VklRenderpass* renderpass);
 
 
@@ -1902,13 +2030,38 @@ VKY_EXPORT void vkl_renderpass_destroy(VklRenderpass* renderpass);
 /*  Framebuffers                                                                                 */
 /*************************************************************************************************/
 
+/**
+ * Initialize a set of framebuffers.
+ *
+ * @param gpu the GPU
+ * @returns the framebuffers
+ */
 VKY_EXPORT VklFramebuffers vkl_framebuffers(VklGpu* gpu);
+
+/**
+ * Set framebuffers attachment.
+ *
+ * @param framebuffers the framebuffers
+ * @param attachment_idx the attachment index
+ * @param images the images
+ */
 
 VKY_EXPORT void vkl_framebuffers_attachment(
     VklFramebuffers* framebuffers, uint32_t attachment_idx, VklImages* images);
 
+/**
+ * Create a set of framebuffers after it has been set up.
+ *
+ * @param framebuffers the framebuffers
+ * @param renderpass the render pass
+ */
 VKY_EXPORT void vkl_framebuffers_create(VklFramebuffers* framebuffers, VklRenderpass* renderpass);
 
+/**
+ * Destroy a set of framebuffers.
+ *
+ * @param framebuffers the framebuffers
+ */
 VKY_EXPORT void vkl_framebuffers_destroy(VklFramebuffers* framebuffers);
 
 
@@ -1917,19 +2070,59 @@ VKY_EXPORT void vkl_framebuffers_destroy(VklFramebuffers* framebuffers);
 /*  Submit                                                                                       */
 /*************************************************************************************************/
 
+/**
+ * Create a submit object, used to submit command buffers to a GPU queue.
+ *
+ * @param gpu the GPU
+ * @returns the submit
+ */
 VKY_EXPORT VklSubmit vkl_submit(VklGpu* gpu);
 
+/**
+ * Set the command buffers to submit.
+ *
+ * @param submit the submit object
+ * @param cmds the set of command buffers
+ */
 VKY_EXPORT void vkl_submit_commands(VklSubmit* submit, VklCommands* commands);
 
+/**
+ * Set the wait semaphores
+ *
+ * @param submit the submit object
+ * @param stage the pipeline stage
+ * @param semaphores the set of semaphores to wait on
+ * @param idx the semaphore index to wait on
+ */
 VKY_EXPORT void vkl_submit_wait_semaphores(
     VklSubmit* submit, VkPipelineStageFlags stage, VklSemaphores* semaphores, uint32_t idx);
 
+/**
+ * Set the signal semaphores
+ *
+ * @param submit the submit object
+ * @param semaphores the set of semaphores to signal after the commands have completed
+ * @param idx the semaphore index to signal
+ */
 VKY_EXPORT void
 vkl_submit_signal_semaphores(VklSubmit* submit, VklSemaphores* semaphores, uint32_t idx);
 
+/**
+ * Submit the command buffers to their queue.
+ *
+ * @param submit the submit object
+ * @param cmd_idx the command buffer index to submit to
+ * @param fences the fences to signal after completion
+ * @param fence_idx the fence index to signal
+ */
 VKY_EXPORT void
-vkl_submit_send(VklSubmit* submit, uint32_t cmd_idx, VklFences* fence, uint32_t fence_idx);
+vkl_submit_send(VklSubmit* submit, uint32_t cmd_idx, VklFences* fences, uint32_t fence_idx);
 
+/**
+ * Reset a submit object.
+ *
+ * @param submit the submit object
+ */
 VKY_EXPORT void vkl_submit_reset(VklSubmit* submit);
 
 
