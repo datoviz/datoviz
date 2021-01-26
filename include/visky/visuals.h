@@ -332,38 +332,127 @@ struct VklVisualDataEvent
 /*  Visual creation                                                                              */
 /*************************************************************************************************/
 
+/**
+ * Create a blank visual.
+ *
+ * @param canvas the canvas
+ * @returns a visual object
+ */
 VKY_EXPORT VklVisual vkl_visual(VklCanvas* canvas);
 
+/**
+ * Destroy a visual.
+ *
+ * This function destroys all GPU objects associated to the visual.
+ *
+ * @param visual the visual
+ */
 VKY_EXPORT void vkl_visual_destroy(VklVisual* visual);
 
 
 
-// Define a new source. (source_type, pipeline_idx) completely identifies a source within all
-// pipelines
+/**
+ * Define a new source for a visual.
+ *
+ * Within a given visual, a source is uniquely determined by its type and index. The index is the
+ * index of the source among all sources of the same type within the visual.
+ *
+ * Within a given visual, a pipeline is uniquely determined by its type and index. The index is the
+ * index of the pipeline among all pipelines of the same type within the visual.
+ *
+ * @param visual the visual
+ * @param type the source type
+ * @param source_idx the index of the source
+ * @param pipeline the pipeline type
+ * @param pipeline_idx the index of the pipeline
+ * @param slot_idx the binding slot of the GPU object associated to the source
+ * @param item_size the size of every element in the source data, in bytes
+ * @param flags the source creation flags
+ */
 VKY_EXPORT void vkl_visual_source(
     VklVisual* visual, VklSourceType type, uint32_t source_idx, //
     VklPipelineType pipeline, uint32_t pipeline_idx,            //
     uint32_t slot_idx, VkDeviceSize item_size, int flags);
 
+/**
+ * Set up a source share between two sources of the same type, in a given visual.
+ *
+ * When two sources are shared, they use the same underlying data buffer.
+ *
+ * @param visual the visual
+ * @param source_type the source type
+ * @param source_idx the source index
+ * @param other_idx the index of the other source
+ */
 VKY_EXPORT void vkl_visual_source_share(
     VklVisual* visual, VklSourceType source_type, uint32_t source_idx, uint32_t other_idx);
 
+/**
+ * Define a new prop for a visual.
+ *
+ * Within a given visual, a prop is uniquely determined by its type and index. The index is the
+ * index of the prop among all props of the same type within the visual.
+ *
+ * @param visual the visual
+ * @param prop_type the prop type
+ * @param prop_idx the prop index
+ * @param dtype the data type of the prop
+ * @param source_type the type of the source associated to the prop
+ * @param source_idx the index of the source associated to the prop
+ */
 VKY_EXPORT VklProp* vkl_visual_prop(
     VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, VklDataType dtype,
     VklSourceType source_type, uint32_t source_idx);
 
+/**
+ * Set up a default value for a prop.
+ *
+ * @param prop the prop
+ * @param default_value a pointer to the default value
+ */
 VKY_EXPORT void vkl_visual_prop_default(VklProp* prop, void* default_value);
 
+/**
+ * Set up how a prop is copied to its associated source.
+ *
+ * @param prop the prop
+ * @param field_idx the index of the corresponding struct field in the source
+ * @param offset the offset within each source item
+ * @param copy_type the type of copy
+ * @param reps the number of repeats for each copied item
+ */
 VKY_EXPORT void vkl_visual_prop_copy(
     VklProp* prop, uint32_t field_idx, VkDeviceSize offset, //
     VklArrayCopyType copy_type, uint32_t reps);
 
+/**
+ * Set up how a prop should be cast when it is copied to its source.
+ *
+ * @param prop the prop
+ * @param field_idx the index of the corresponding struct field in the source
+ * @param offset the offset within each source item
+ * @param target_dtype the data type to cast to
+ * @param copy_type the type of copy
+ * @param reps the number of repeats for each copied item
+ */
 VKY_EXPORT void vkl_visual_prop_cast(
     VklProp* prop, uint32_t field_idx, VkDeviceSize offset, //
     VklDataType target_dtype, VklArrayCopyType copy_type, uint32_t reps);
 
+/**
+ * Add a graphics pipeline to a visual.
+ *
+ * @param visual the visual
+ * @param graphics the graphics
+ */
 VKY_EXPORT void vkl_visual_graphics(VklVisual* visual, VklGraphics* graphics);
 
+/**
+ * Add a compute pipeline to a visual.
+ *
+ * @param visual the visual
+ * @param compute the compute pipeline
+ */
 VKY_EXPORT void vkl_visual_compute(VklVisual* visual, VklCompute* compute);
 
 
@@ -372,25 +461,91 @@ VKY_EXPORT void vkl_visual_compute(VklVisual* visual, VklCompute* compute);
 /*  User-facing functions                                                                        */
 /*************************************************************************************************/
 
+/**
+ * Define a new data group within a visual.
+ *
+ * @param visual the visual
+ * @param group_idx the group index
+ * @param size the number of elements in the group
+ */
 VKY_EXPORT void vkl_visual_group(VklVisual* visual, uint32_t group_idx, uint32_t size);
 
+/**
+ * Set the data for a given visual prop.
+ *
+ * @param visual the visual
+ * @param prop_type the prop type
+ * @param prop_idx the prop index
+ * @param count the number of elements to upload
+ * @param data the data, that should be in the dtype of the prop
+ */
 VKY_EXPORT void vkl_visual_data(
-    VklVisual* visual, VklPropType type, uint32_t prop_idx, uint32_t count, const void* data);
+    VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, uint32_t count, const void* data);
 
+/**
+ * Set partial data for a given visual prop.
+ *
+ * If the specified data has less elements than the number of elements to update, the last element
+ * will be repeated as many times as necessary.
+ *
+ * @param visual the visual
+ * @param prop_type the prop type
+ * @param prop_idx the prop index
+ * @param first_item the first item to write to
+ * @param item_count the number of elements to update in the source array
+ * @param data_item_count the number of elements to copy from `data`
+ * @param data the data, that should be in the dtype of the prop
+ */
 VKY_EXPORT void vkl_visual_data_partial(
     VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, //
     uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data);
 
+/**
+ * Append elements to the prop.
+ *
+ * @param visual the visual
+ * @param prop_type the prop type
+ * @param prop_idx the prop index
+ * @param count the number of elements to append to the prop
+ * @param data the data, that should be in the dtype of the prop
+ */
 VKY_EXPORT void vkl_visual_data_append(
     VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, uint32_t count, const void* data);
 
+/**
+ * Set partial data for a given source.
+ *
+ * @param visual the visual
+ * @param source_type the source type
+ * @param source_idx the source index
+ * @param first_item the first item to write to
+ * @param item_count the number of elements to update in the source array
+ * @param data_item_count the number of elements to copy from `data`
+ * @param data the data, that should be in the dtype of the source
+ */
 VKY_EXPORT void vkl_visual_data_source(
     VklVisual* visual, VklSourceType source_type, uint32_t source_idx, //
     uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data);
 
+/**
+ * Set an existing GPU buffer for a visual source.
+ *
+ * @param visual the visual
+ * @param source_type the source type
+ * @param source_idx the source index
+ * @param br the buffer regions
+ */
 VKY_EXPORT void vkl_visual_buffer(
     VklVisual* visual, VklSourceType source_type, uint32_t source_idx, VklBufferRegions br);
 
+/**
+ * Set an existing GPU texture for a visual source.
+ *
+ * @param visual the visual
+ * @param source_type the source type
+ * @param source_idx the source index
+ * @param texture the texture
+ */
 VKY_EXPORT void vkl_visual_texture(
     VklVisual* visual, VklSourceType source_type, uint32_t source_idx, VklTexture* texture);
 
@@ -400,16 +555,56 @@ VKY_EXPORT void vkl_visual_texture(
 /*  Visual events                                                                                */
 /*************************************************************************************************/
 
+/**
+ * Set a fill callback for a visual
+ *
+ * Callback function signature: `void(VklVisual*, VklVisualFillEvent)`
+ *
+ * @param visual the visual
+ * @param callback the fill callback
+ */
 VKY_EXPORT void vkl_visual_fill_callback(VklVisual* visual, VklVisualFillCallback callback);
 
+/**
+ * Call the visual fill callback.
+ *
+ * @param visual the visual
+ * @param clear_color the clear color
+ * @param cmds the command buffers to update
+ * @param cmd_idx the index of the command buffer to update
+ * @param viewport the viewport
+ * @param user_data arbitrary user data pointer
+ */
 VKY_EXPORT void vkl_visual_fill_event(
     VklVisual* visual, VkClearColorValue clear_color, VklCommands* cmds, uint32_t cmd_idx,
     VklViewport viewport, void* user_data);
 
+/**
+ * Begin recording a command buffer and begin the render pass.
+ *
+ * @param canvas the canvas
+ * @param cmds the command buffers
+ * @param idx the command buffer index
+ */
 VKY_EXPORT void vkl_visual_fill_begin(VklCanvas* canvas, VklCommands* cmds, uint32_t idx);
 
+/**
+ * Stop recording a command buffer and stop the render pass.
+ *
+ * @param canvas the canvas
+ * @param cmds the command buffers
+ * @param idx the command buffer index
+ */
 VKY_EXPORT void vkl_visual_fill_end(VklCanvas* canvas, VklCommands* cmds, uint32_t idx);
 
+/**
+ * Set the visual bake callback function.
+ *
+ * Callback function signature: `void(VklVisual*, VklVisualDataEvent)`
+ *
+ * @param visual the visual
+ * @param callback the bake callback function
+ */
 VKY_EXPORT void vkl_visual_callback_bake(VklVisual* visual, VklVisualDataCallback callback);
 
 
@@ -418,13 +613,38 @@ VKY_EXPORT void vkl_visual_callback_bake(VklVisual* visual, VklVisualDataCallbac
 /*  Baking helpers                                                                               */
 /*************************************************************************************************/
 
+/**
+ * Return a source object.
+ *
+ * @param visual the visual
+ * @param source_type the source type
+ * @param source_idx the source index
+ */
 VKY_EXPORT VklSource*
 vkl_source_get(VklVisual* visual, VklSourceType source_type, uint32_t source_idx);
 
+/**
+ * Return a prop object.
+ *
+ * @param visual the visual
+ * @param prop_type the prop type
+ * @param prop_idx the prop index
+ */
 VKY_EXPORT VklProp* vkl_prop_get(VklVisual* visual, VklPropType prop_type, uint32_t idx);
 
+/**
+ * Return the size of a prop array.
+ *
+ * @param prop the prop
+ */
 VKY_EXPORT uint32_t vkl_prop_size(VklProp* prop);
 
+/**
+ * Return an item in a prop array.
+ *
+ * @param prop the prop
+ * @param idx the prop idx
+ */
 VKY_EXPORT void* vkl_prop_item(VklProp* prop, uint32_t idx);
 
 
@@ -433,8 +653,17 @@ VKY_EXPORT void* vkl_prop_item(VklProp* prop, uint32_t idx);
 /*  Data update                                                                                  */
 /*************************************************************************************************/
 
+/**
+ * Update all GPU buffers and textures from the visual props and sources.
+ *
+ * @param visual the visual
+ * @param viewport the viewport
+ * @param coords the data coordinates and transformation
+ * @param user_data arbitrary user data pointer
+ */
 VKY_EXPORT void vkl_visual_update(
     VklVisual* visual, VklViewport viewport, VklDataCoords coords, const void* user_data);
+
 
 
 #endif
