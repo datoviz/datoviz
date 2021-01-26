@@ -1,3 +1,7 @@
+/*************************************************************************************************/
+/*  Colormap texture with builtin common colormaps                                               */
+/*************************************************************************************************/
+
 #ifndef VKL_COLORMAP_HEADER
 #define VKL_COLORMAP_HEADER
 
@@ -317,6 +321,13 @@ static const unsigned char* _load_colormaps()
     return VKL_COLORMAP_ARRAY;
 }
 
+/**
+ * Get the texture coordinates corresponding to a colormap and value.
+ *
+ * @param cmap the colormap
+ * @param value the value
+ * @param[out] out the colormap coordinates within the texture
+ */
 VKY_INLINE void vkl_colormap_idx(VklColormap cmap, uint8_t value, cvec2 out)
 {
     uint8_t row = 0, col = 0;
@@ -335,6 +346,13 @@ VKY_INLINE void vkl_colormap_idx(VklColormap cmap, uint8_t value, cvec2 out)
     out[1] = col;
 }
 
+/**
+ * Fetch a color from a colormap and a value.
+ *
+ * @param cmap the colormap
+ * @param value the value
+ * @param[out] color the fetched color
+ */
 VKY_INLINE void vkl_colormap(VklColormap cmap, uint8_t value, cvec4 color)
 {
     cvec2 out = {0};
@@ -354,6 +372,15 @@ VKY_INLINE void vkl_colormap(VklColormap cmap, uint8_t value, cvec4 color)
     color[3] = 255;
 }
 
+/**
+ * Fetch a color from a colormap and an interpolated value.
+ *
+ * @param cmap the colormap
+ * @param value the value
+ * @param vmin the minimum value
+ * @param vmax the maximum value
+ * @param[out] color the fetched color
+ */
 VKY_INLINE void
 vkl_colormap_scale(VklColormap cmap, double value, double vmin, double vmax, cvec4 color)
 {
@@ -361,8 +388,18 @@ vkl_colormap_scale(VklColormap cmap, double value, double vmin, double vmax, cve
     vkl_colormap(cmap, u_value, color);
 }
 
+/**
+ * Fetch colors from a colormap and an array of values.
+ *
+ * @param cmap the colormap
+ * @param count the number of values
+ * @param values pointer to the array of double numbers
+ * @param vmin the minimum value
+ * @param vmax the maximum value
+ * @param[out] out the fetched colors
+ */
 static void vkl_colormap_array(
-    VklColormap cmap, double vmin, double vmax, uint32_t count, double* values, cvec4* out)
+    VklColormap cmap, uint32_t count, double* values, double vmin, double vmax, cvec4* out)
 {
     ASSERT(values != NULL);
     ASSERT(out != NULL);
@@ -370,9 +407,17 @@ static void vkl_colormap_array(
         vkl_colormap_scale(cmap, values[i], vmin, vmax, out[i]);
 }
 
-// Pack a 4*uint8 color into a vec2 uv (u = linear combination of components, v = -1 to signal the
-// shader that it needs to unpack the color), used for mesh. Only works because integers up to 2^24
-// can be represented exactly with float32.
+/**
+ * Pack an arbitrary RGB color into a special uv texture coordinates
+ *
+ * This is used by the mesh visual, that only accepts texture coordinates in its vertices. When
+ * setting the first texture coordinate to -1, the second coordinate, a float, is used to unpack 3
+ * uint8_t RGB values. It only works because integers up to 2^24 can be represented exactly with
+ * float32.
+ *
+ * @param color the RGB color
+ * @param[out] uv the texture coordinates
+ */
 VKY_INLINE void vkl_colormap_packuv(cvec3 color, vec2 uv)
 {
     uv[1] = -1;

@@ -891,7 +891,7 @@ cdef extern from "<visky/visky.h>":
 
 
     ctypedef void (*VklEventCallback)(VklCanvas*, VklEvent)
-    void vkl_colormap_array(VklColormap cmap, double vmin, double vmax, uint32_t count, double* values, cvec4* out);
+    void vkl_colormap_array(VklColormap cmap, uint32_t count, double* values, double vmin, double vmax, cvec4* out);
 
 
 

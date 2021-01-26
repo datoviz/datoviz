@@ -132,7 +132,7 @@ def colormap(np.ndarray[DOUBLE, ndim=1] values, vmin=None, vmax=None, cmap=cv.VK
         vmin = values.min()
     if vmax is None:
         vmax = values.max()
-    cv.vkl_colormap_array(cmap, vmin, vmax, N, <double*>&values.data[0], <cv.cvec4*>&out.data[0])
+    cv.vkl_colormap_array(cmap, N, <double*>&values.data[0], vmin, vmax, <cv.cvec4*>&out.data[0])
     return out
 
 
