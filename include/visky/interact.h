@@ -152,15 +152,54 @@ struct VklInteract
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+/**
+ * Create an interactivity object.
+ *
+ * @param canvas the canvas
+ * @param user_data arbitrary user pointer
+ * @returns an interactivity object
+ */
 VKY_EXPORT VklInteract vkl_interact(VklCanvas* canvas, void* user_data);
 
+/**
+ * Add an interactivity callback.
+ *
+ * The callback function is called at every frame and is meant to update the `mvp` object.
+ *
+ * Callback function signature: `(VklInteract*, VklViewport, VklMouse*, VklKeyboard*)`
+ *
+ * @param interact the interactivity object
+ * @param callback the interactivity callback function
+ */
 VKY_EXPORT void vkl_interact_callback(VklInteract* interact, VklInteractCallback callback);
 
+/**
+ * Create a builtin interactivity object.
+ *
+ * @param canvas the canvas
+ * @param type the builtin interactivity type
+ * @returns an interactivity object
+ */
 VKY_EXPORT VklInteract vkl_interact_builtin(VklCanvas* canvas, VklInteractType type);
 
+/**
+ * Call the interactivity callback.
+ *
+ * Normally called at every frame.
+ *
+ * @param interact the interact object
+ * @param viewport the viewport
+ * @param mouse the mouse object
+ * @param keyboard the keyboard object
+ */
 VKY_EXPORT void vkl_interact_update(
     VklInteract* interact, VklViewport viewport, VklMouse* mouse, VklKeyboard* keyboard);
 
+/**
+ * Destroy an interactivity object.
+ *
+ * @param canvas the interactivity object
+ */
 VKY_EXPORT void vkl_interact_destroy(VklInteract* interact);
 
 
