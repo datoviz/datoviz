@@ -770,8 +770,6 @@ struct VklTexture
  */
 VKY_EXPORT VklApp* vkl_app(VklBackend backend);
 
-
-
 /**
  * Destroy the application.
  *
@@ -786,21 +784,80 @@ VKY_EXPORT int vkl_app_destroy(VklApp* app);
 /*************************************************************************************************/
 /*  GPU                                                                                          */
 /*************************************************************************************************/
+/**
+ * Create a GPU.
+ *
+ * A GPU object is the interface to one of the GPUs on the current system.
+ *
+ * @param app the app
+ * @param idx the GPU index among the system's GPUs
+ * @returns a pointer to the created GPU object
+ */
 
 VKY_EXPORT VklGpu* vkl_gpu(VklApp* app, uint32_t idx);
 
+/**
+ * Request some features before creating the GPU instance.
+ *
+ * This function needs to be called before creating the GPU with ` vkl_gpu_create()`.
+ *
+ * @param gpu the GPU
+ * @param requested_features the list of requested features
+ */
 VKY_EXPORT void vkl_gpu_request_features(VklGpu* gpu, VkPhysicalDeviceFeatures requested_features);
 
+/**
+ * Request a new Vulkan queue before creating the GPU.
+ *
+ * @param gpu the GPU
+ * @param type the queue type
+ * @param type the queue index (should be regularly increasing: 0, 1, 2...)
+ */
 VKY_EXPORT void vkl_gpu_queue(VklGpu* gpu, VklQueueType type, uint32_t idx);
 
+/**
+ * Create a GPU once the features and queues have been set up.
+ *
+ * @param gpu the GPU
+ * @param surface the surface on which the GPU will need to render
+ */
 VKY_EXPORT void vkl_gpu_create(VklGpu* gpu, VkSurfaceKHR surface);
 
+/**
+ * Wait for a queue to be idle.
+ *
+ * This is one of the different GPU synchronization methods. It is not efficient as it waits until
+ * the queue is idle.
+ *
+ * @param gpu the GPU
+ * @param queue_idx the queue index
+ */
 VKY_EXPORT void vkl_queue_wait(VklGpu* gpu, uint32_t queue_idx);
 
+/**
+ * Full synchronization on all GPUs.
+ *
+ * This function waits on all queues of all GPUs. The strongest, least efficient of the
+ * synchronization methods.
+ *
+ * @param app the application instance
+ */
 VKY_EXPORT void vkl_app_wait(VklApp* app);
 
+/**
+ * Full synchronization on a given GPU.
+ *
+ * This function waits on all queues of a given GPU.
+ *
+ * @param gpu the GPU
+ */
 VKY_EXPORT void vkl_gpu_wait(VklGpu* gpu);
 
+/**
+ * Destroy the resources associated to a GPU.
+ *
+ * @param gpu the GPU
+ */
 VKY_EXPORT void vkl_gpu_destroy(VklGpu* gpu);
 
 
@@ -809,18 +866,59 @@ VKY_EXPORT void vkl_gpu_destroy(VklGpu* gpu);
 /*  Window                                                                                       */
 /*************************************************************************************************/
 
+/**
+ * Create a blank window.
+ *
+ * This function is rarely used on its own. A bare window offers
+ * no functionality that allows one to render to it with Vulkan. One needs a swapchain, an event
+ * loop, and so on, which are provided instead at the level of the Canvas.
+ *
+ * @param app the application instance
+ * @param width the window width, in pixels
+ * @param height the window height, in pixels
+ * @returns the window
+ */
 VKY_EXPORT VklWindow* vkl_window(VklApp* app, uint32_t width, uint32_t height);
 
+/**
+ * Get the window size, in pixels.
+ *
+ * @param window the window
+ * @param[out] framebuffer_width the width, in pixels
+ * @param[out] framebuffer_height the height, in pixels
+ */
 VKY_EXPORT void
 vkl_window_get_size(VklWindow* window, uint32_t* framebuffer_width, uint32_t* framebuffer_height);
 
+/**
+ * Process the pending windowing events by the backend (glfw by default).
+ *
+ * @param window the window
+ */
 VKY_EXPORT void vkl_window_poll_events(VklWindow* window);
 
-// NOTE: to be called AFTER vkl_swapchain_destroy()
+/**
+ * Destroy a window.
+ *
+ * !!! warning
+ *     This function must be imperatively called *after* `vkl_swapchain_destroy()`.
+ *
+ * @param window the window
+ */
 VKY_EXPORT void vkl_window_destroy(VklWindow* window);
 
+/**
+ * Destroy a canvas.
+ *
+ * @param canvas the canvas
+ */
 VKY_EXPORT void vkl_canvas_destroy(VklCanvas* canvas);
 
+/**
+ * Destroy all canvases.
+ *
+ * @param canvases the container with the canvases.
+ */
 VKY_EXPORT void vkl_canvases_destroy(VklContainer* canvases);
 
 
@@ -829,28 +927,89 @@ VKY_EXPORT void vkl_canvases_destroy(VklContainer* canvases);
 /*  Swapchain                                                                                    */
 /*************************************************************************************************/
 
+/**
+ * Create a swapchain.
+ *
+ * @param gpu the GPU
+ * @param window the window
+ * @param min_img_count the minimum acceptable number of images in the swapchain
+ * @returns the swapchain
+ */
 VKY_EXPORT VklSwapchain vkl_swapchain(VklGpu* gpu, VklWindow* window, uint32_t min_img_count);
 
+/**
+ * Set the swapchain image format.
+ *
+ * @param swapchain the swapchain
+ * @param format the format
+ */
 VKY_EXPORT void vkl_swapchain_format(VklSwapchain* swapchain, VkFormat format);
 
+/**
+ * Set the swapchain present mode.
+ *
+ * @param swapchain the swapchain
+ * @param present_mode the present mode
+ */
 VKY_EXPORT void vkl_swapchain_present_mode(VklSwapchain* swapchain, VkPresentModeKHR present_mode);
 
+/**
+ * Set the swapchain requested image size.
+ *
+ * @param swapchain the swapchain
+ * @param width the requested width
+ * @param height the requested height
+ */
 VKY_EXPORT void
 vkl_swapchain_requested_size(VklSwapchain* swapchain, uint32_t width, uint32_t height);
 
+/**
+ * Create the swapchain once it has been set up.
+ *
+ * @param swapchain the swapchain
+ */
 VKY_EXPORT void vkl_swapchain_create(VklSwapchain* swapchain);
 
+/**
+ * Recreate a swapchain (for example after a window resize).
+ *
+ * @param swapchain the swapchain
+ */
 VKY_EXPORT void vkl_swapchain_recreate(VklSwapchain* swapchain);
 
+/**
+ * Acquire a swapchain image.
+ *
+ * @param swapchain the swapchain
+ * @param semaphores the set of signal semaphores
+ * @param semaphore_idx the index of the semaphore to signal after image acquisition
+ * @param fences the set of signal fences
+ * @param fence_idx the index of the fence to signal after image acquisition
+ */
 VKY_EXPORT void vkl_swapchain_acquire(
     VklSwapchain* swapchain, VklSemaphores* semaphores, uint32_t semaphore_idx, VklFences* fences,
     uint32_t fence_idx);
 
+/**
+ * Present a swapchain image to the screen after it has been rendered.
+ *
+ * @param swapchain the swapchain
+ * @param queue_idx the index of the present queue
+ * @param semaphores the set of waiting semaphores
+ * @param semaphore_idx the index of the semaphore to wait on before presentation
+ */
 VKY_EXPORT void vkl_swapchain_present(
     VklSwapchain* swapchain, uint32_t queue_idx, VklSemaphores* semaphores,
     uint32_t semaphore_idx);
 
-// NOTE: to be called BEFORE vkl_window_destroy()
+/**
+ * Destroy a swapchain
+ *
+ * !!! warning
+ *     This function must imperatively be called *before* `vkl_window_destroy()`.
+ *
+ * @param swapchain the swapchain
+ */
 VKY_EXPORT void vkl_swapchain_destroy(VklSwapchain* swapchain);
 
 
@@ -859,18 +1018,62 @@ VKY_EXPORT void vkl_swapchain_destroy(VklSwapchain* swapchain);
 /*  Commands                                                                                     */
 /*************************************************************************************************/
 
+/**
+ * Create a set of command buffers.
+ *
+ * @param gpu the GPU
+ * @param queue the queue index within the GPU
+ * @param count the number of command buffers to create
+ * @returns the set of command buffers
+ */
 VKY_EXPORT VklCommands vkl_commands(VklGpu* gpu, uint32_t queue, uint32_t count);
 
+/**
+ * Start recording a command buffer.
+ *
+ * @param cmds the set of command buffers
+ * @param idx the index of the command buffer to begin recording on
+ */
 VKY_EXPORT void vkl_cmd_begin(VklCommands* cmds, uint32_t idx);
 
+/**
+ * Stop recording a command buffer.
+ *
+ * @param cmds the set of command buffers
+ * @param idx the index of the command buffer to stop the recording on
+ */
 VKY_EXPORT void vkl_cmd_end(VklCommands* cmds, uint32_t idx);
 
+/**
+ * Reset a command buffer.
+ *
+ * @param cmds the set of command buffers
+ * @param idx the index of the command buffer to reset
+ */
 VKY_EXPORT void vkl_cmd_reset(VklCommands* cmds, uint32_t idx);
 
+/**
+ * Free a set of command buffers.
+ *
+ * @param cmds the set of command buffers
+ */
 VKY_EXPORT void vkl_cmd_free(VklCommands* cmds);
 
+/**
+ * Submit a command buffer on its queue with inefficient full synchronization.
+ *
+ * This function is relatively inefficient because it calls `vkl_queue_wait()`.
+ *
+ * @param cmds the set of command buffers
+ * @param idx the index of the command buffer to submit
+ */
 VKY_EXPORT void vkl_cmd_submit_sync(VklCommands* cmds, uint32_t idx);
 
+/**
+ * Destroy a set of command buffers.
+ *
+ * @param cmds the set of command buffers
+ */
 VKY_EXPORT void vkl_commands_destroy(VklCommands* cmds);
 
 
@@ -879,44 +1082,152 @@ VKY_EXPORT void vkl_commands_destroy(VklCommands* cmds);
 /*  Buffers                                                                                      */
 /*************************************************************************************************/
 
+/**
+ * Create a GPU buffer.
+ *
+ * @param gpu the GPU
+ * @returns the buffer
+ */
 VKY_EXPORT VklBuffer vkl_buffer(VklGpu* gpu);
 
+/**
+ * Set the buffer size.
+ *
+ * @param buffer the buffer
+ * @param size the buffer size, in bytes
+ */
 VKY_EXPORT void vkl_buffer_size(VklBuffer* buffer, VkDeviceSize size);
 
+/**
+ * Set the buffer type.
+ *
+ * @param buffer the buffer
+ * @param type the buffer type
+ */
 VKY_EXPORT void vkl_buffer_type(VklBuffer* buffer, VklBufferType type);
 
+/**
+ * Set the buffer usage.
+ *
+ * @param buffer the buffer
+ * @param usage the buffer usage
+ */
 VKY_EXPORT void vkl_buffer_usage(VklBuffer* buffer, VkBufferUsageFlags usage);
 
+/**
+ * Set the buffer memory properties.
+ *
+ * @param buffer the buffer
+ * @param memory the memory properties
+ */
 VKY_EXPORT void vkl_buffer_memory(VklBuffer* buffer, VkMemoryPropertyFlags memory);
 
-VKY_EXPORT void vkl_buffer_queue_access(VklBuffer* buffer, uint32_t queues);
+/**
+ * Set the buffer queue access.
+ *
+ * @param buffer the buffer
+ * @param queue_idx the queue index
+ */
+VKY_EXPORT void vkl_buffer_queue_access(VklBuffer* buffer, uint32_t queue_idx);
 
+/**
+ * Create the buffer after it has been set.
+ *
+ * @param buffer the buffer
+ */
 VKY_EXPORT void vkl_buffer_create(VklBuffer* buffer);
 
+/**
+ * Resize a buffer.
+ *
+ * @param buffer the buffer
+ * @param size the new buffer size, in bytes
+ * @param cmds the command buffers to use for the GPU-GPU data copy transfer
+ */
 VKY_EXPORT void vkl_buffer_resize(VklBuffer* buffer, VkDeviceSize size, VklCommands* cmds);
 
+/**
+ * Memory-map a buffer.
+ *
+ * @param buffer the buffer
+ * @param offset the offset within the buffer, in bytes
+ * @param size the size to map, in bytes
+ */
 VKY_EXPORT void* vkl_buffer_map(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size);
 
+/**
+ * Unmap a buffer.
+ *
+ * @param buffer the buffer
+ */
 VKY_EXPORT void vkl_buffer_unmap(VklBuffer* buffer);
 
+/**
+ * Download a buffer data to the CPU.
+ *
+ * @param buffer the buffer
+ * @param offset the offset within the buffer, in bytes
+ * @param size the size of the region to download, in bytes
+ * @param[out] data the buffer to download on (must be allocated with the appropriate size)
+ */
 VKY_EXPORT void
 vkl_buffer_download(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, void* data);
 
+/**
+ * Upload data to a GPU buffer.
+ *
+ * @param buffer the buffer
+ * @param offset the offset within the buffer, in bytes
+ * @param size the buffer size, in bytes
+ * @param data the data to upload
+ */
 VKY_EXPORT void
 vkl_buffer_upload(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, const void* data);
 
+/**
+ * Destroy a buffer
+ *
+ * @param buffer the buffer
+ */
 VKY_EXPORT void vkl_buffer_destroy(VklBuffer* buffer);
 
 
 
+/**
+ * Create buffer regions on an existing GPU buffer.
+ *
+ * @param buffer the buffer
+ * @param count the number of successive regions
+ * @param offset the offset within the buffer
+ * @param size the size of each region, in bytes
+ * @param alignment the alignment requirement for the region offsets
+ */
 VKY_EXPORT VklBufferRegions vkl_buffer_regions(
     VklBuffer* buffer, uint32_t count, //
     VkDeviceSize offset, VkDeviceSize size, VkDeviceSize alignment);
 
+/**
+ * Map a buffer region.
+ *
+ * @param br the buffer regions
+ * @param idx the index of the buffer region to map
+ */
 VKY_EXPORT void* vkl_buffer_regions_map(VklBufferRegions* br, uint32_t idx);
 
+/**
+ * Unmap a set of buffer regions.
+ *
+ * @param br the buffer regions
+ */
 VKY_EXPORT void vkl_buffer_regions_unmap(VklBufferRegions* br);
 
+/**
+ * Upload data to a buffer region.
+ *
+ * @param br the set of buffer regions
+ * @param idx the index of the buffer region to upload data to
+ * @param data the data to upload
+ */
 VKY_EXPORT void vkl_buffer_regions_upload(VklBufferRegions* br, uint32_t idx, const void* data);
 
 
@@ -925,34 +1236,132 @@ VKY_EXPORT void vkl_buffer_regions_upload(VklBufferRegions* br, uint32_t idx, co
 /*  Images                                                                                       */
 /*************************************************************************************************/
 
+/**
+ * Create a set of GPU images.
+ *
+ * @param gpu the GPU
+ * @param type the image type
+ * @param count the number of images
+ * @returns the images
+ */
 VKY_EXPORT VklImages vkl_images(VklGpu* gpu, VkImageType type, uint32_t count);
 
+/**
+ * Set the images format.
+ *
+ * @param images the images
+ * @param format the image format
+ */
 VKY_EXPORT void vkl_images_format(VklImages* images, VkFormat format);
 
+/**
+ * Set the images layout.
+ *
+ * @param images the images
+ * @param layout the image layout
+ */
 VKY_EXPORT void vkl_images_layout(VklImages* images, VkImageLayout layout);
 
+/**
+ * Set the images size.
+ *
+ * @param images the images
+ * @param width the image width
+ * @param height the image height
+ * @param depth the image depth
+ */
 VKY_EXPORT void
 vkl_images_size(VklImages* images, uint32_t width, uint32_t height, uint32_t depth);
 
+/**
+ * Set the images tiling.
+ *
+ * @param images the images
+ * @param tiling the image tiling
+ */
 VKY_EXPORT void vkl_images_tiling(VklImages* images, VkImageTiling tiling);
 
+/**
+ * Set the images usage.
+ *
+ * @param images the images
+ * @param usage the image usage
+ */
 VKY_EXPORT void vkl_images_usage(VklImages* images, VkImageUsageFlags usage);
 
+/**
+ * Set the images memory properties.
+ *
+ * @param images the images
+ * @param memory the memory properties
+ */
 VKY_EXPORT void vkl_images_memory(VklImages* images, VkMemoryPropertyFlags memory);
 
+/**
+ * Set the images aspect.
+ *
+ * @param images the images
+ * @param aspect the image aspect
+ */
 VKY_EXPORT void vkl_images_aspect(VklImages* images, VkImageAspectFlags aspect);
 
-VKY_EXPORT void vkl_images_queue_access(VklImages* images, uint32_t queue);
+/**
+ * Set the images queue access.
+ *
+ * This parameter specifies which queues may access the image from command buffers submitted to
+ * them.
+ *
+ * @param images the images
+ * @param queue_idx the queue index
+ */
+VKY_EXPORT void vkl_images_queue_access(VklImages* images, uint32_t queue_idx);
 
+/**
+ * Create the images after they have been set up.
+ *
+ * @param images the images
+ */
 VKY_EXPORT void vkl_images_create(VklImages* images);
 
+/**
+ * Resize images.
+ *
+ * !!! warning
+ *     This function deletes the images contents when resizing.
+ *
+ * @param images the images
+ * @param width the new width
+ * @param height the new height
+ * @param depth the new depth
+ */
 VKY_EXPORT void
 vkl_images_resize(VklImages* images, uint32_t width, uint32_t height, uint32_t depth);
 
+/**
+ * Transition the images to their layout after creation.
+ *
+ * This function performs a hard synchronization on the queue and submits a command buffer with the
+ * image transition.
+ *
+ * @param images the images
+ */
 VKY_EXPORT void vkl_images_transition(VklImages* images);
 
+/**
+ * Download the data from a staging GPU image.
+ *
+ * @param staging the images to download the data from
+ * @param idx the index of the image
+ * @param swizzle whether the RGBA values need to be transposed
+ * @param[out] rgba the buffer that will be filled with the image data (must be already allocated)
+ */
 VKY_EXPORT void vkl_images_download(VklImages* staging, uint32_t idx, bool swizzle, uint8_t* rgba);
 
+/**
+ * Destroy images.
+ *
+ * @param images the images
+ */
 VKY_EXPORT void vkl_images_destroy(VklImages* images);
 
 
@@ -961,17 +1370,52 @@ VKY_EXPORT void vkl_images_destroy(VklImages* images);
 /*  Sampler                                                                                      */
 /*************************************************************************************************/
 
+/**
+ * Create a texture sampler.
+ *
+ * @param gpu the GPU
+ * @returns the sampler object
+ */
 VKY_EXPORT VklSampler vkl_sampler(VklGpu* gpu);
 
+/**
+ * Set the sampler min filter.
+ *
+ * @param sampler the sampler
+ * @param filter the filter
+ */
 VKY_EXPORT void vkl_sampler_min_filter(VklSampler* sampler, VkFilter filter);
 
+/**
+ * Set the sampler mag filter.
+ *
+ * @param sampler the sampler
+ * @param filter the filter
+ */
 VKY_EXPORT void vkl_sampler_mag_filter(VklSampler* sampler, VkFilter filter);
 
+/**
+ * Set the sampler address mode
+ *
+ * @param sampler the sampler
+ * @param axis the sampler axis
+ * @param address_mode the address mode
+ */
 VKY_EXPORT void vkl_sampler_address_mode(
     VklSampler* sampler, VklTextureAxis axis, VkSamplerAddressMode address_mode);
 
+/**
+ * Create the sampler after it has been set up.
+ *
+ * @param sampler the sampler
+ */
 VKY_EXPORT void vkl_sampler_create(VklSampler* sampler);
 
+/**
+ * Destroy a sampler
+ *
+ * @param sampler the sampler
+ */
 VKY_EXPORT void vkl_sampler_destroy(VklSampler* sampler);
 
 

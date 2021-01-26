@@ -763,12 +763,12 @@ void vkl_buffer_memory(VklBuffer* buffer, VkMemoryPropertyFlags memory)
 
 
 
-void vkl_buffer_queue_access(VklBuffer* buffer, uint32_t queue)
+void vkl_buffer_queue_access(VklBuffer* buffer, uint32_t queue_idx)
 {
     ASSERT(buffer != NULL);
     ASSERT(buffer->gpu != NULL);
-    ASSERT(queue < buffer->gpu->queues.queue_count);
-    buffer->queues[buffer->queue_count++] = queue;
+    ASSERT(queue_idx < buffer->gpu->queues.queue_count);
+    buffer->queues[buffer->queue_count++] = queue_idx;
 }
 
 
@@ -1216,11 +1216,11 @@ void vkl_images_aspect(VklImages* images, VkImageAspectFlags aspect)
 
 
 
-void vkl_images_queue_access(VklImages* images, uint32_t queue)
+void vkl_images_queue_access(VklImages* images, uint32_t queue_idx)
 {
     ASSERT(images != NULL);
-    ASSERT(queue < images->gpu->queues.queue_count);
-    images->queues[images->queue_count++] = queue;
+    ASSERT(queue_idx < images->gpu->queues.queue_count);
+    images->queues[images->queue_count++] = queue_idx;
 }
 
 
