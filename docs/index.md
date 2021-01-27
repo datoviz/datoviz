@@ -16,7 +16,7 @@ The documentation is divided in:
 * [**User manual**](user/index.md): for regular users who are mainly interested in scientific 2D/3D plotting
 * [**Expert manual**](expert/index.md): for advanced users who need to create their own visuals by writing **shaders in GLSL**
 * [**Developer manual**](developer/index.md): for advanced users who want to contribute back to Visky
-* [**API reference**](api/index.md)
+* [**C API reference**](api/index.md)
 
 See also the [**gallery**](gallery/index.md).
 

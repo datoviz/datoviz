@@ -26,6 +26,7 @@ ICONS = {
     'in': ':octicons-arrow-right-16:',
     'out': ':octicons-arrow-left-16:',
 }
+ITEM_HEADER = re.compile(r'^#+\s+', flags=re.MULTILINE)
 MAX_LINE_LENGTH = 76
 
 
@@ -44,11 +45,8 @@ def read_file(filename):
     return _remove_comments(text)
 
 
-def insert_text(text, i, n, insert):
-    out = text[:i]
-    out += insert
-    out += text[i + n:]
-    return out
+def insert_text(text, i, insert):
+    return text[:i] + insert + text[i:]
 
 
 def _remove_comments(text):
@@ -199,7 +197,6 @@ def _parse_funcs(text, is_output=False):
     return funcs
 
 
-
 def _gen_func_doc(name, func):
     # Generate the function documentation
     out = func.out
@@ -268,7 +265,7 @@ def _gen_func_doc(name, func):
         desc = ret[ret.index(' ') + 1:]
         params_s += f"| {ICONS['out']} `returns` | `{out}` | {desc} |\n"
 
-    return f"### `{name}()`\n\n{signature}\n\n{params_s}\n{description}\n"
+    return f"{signature}\n\n{params_s}\n{description}\n"
 
 
 def _camel_to_snake(name):
@@ -283,15 +280,7 @@ def _parse_markdown(api_text):
     return functions
 
 
-ITEM_HEADER = re.compile(r'^#+\s+', flags=re.MULTILINE)
-
-
-if __name__ == '__main__':
-    # enums_to_insert = ''
-    # structs_to_insert = ''
-    # funcs_to_insert = ''
-
-    # Parse all functions.
+def parse_all_functions():
     all_funcs = {}
     for filename in iter_header_files():
         if filename.name not in HEADER_FILES:
@@ -301,38 +290,104 @@ if __name__ == '__main__':
         f = _parse_funcs(text)
         print(f"{len(f):02d} functions found in {filename}")
         for name in f.keys():
-            print(f'### `{name}()`\n')
+            print(f'### `{name}()`')
         all_funcs.update(f)
+    return all_funcs
 
-    # TODO: enums and structs
 
-    # Find where to insert the documentation strings in the output file.
-    api_text = API_OUTPUT.read_text()
-    funcs_to_output = _parse_markdown(api_text)
+def config_hook(config):
+    config['gendoc'] = {
+        'functions': parse_all_functions(),
+    }
+    return config
+
+
+def hook(markdown, page, config, files):
+    assert 'gendoc' in config
+    if 'api/' not in page.file.abs_src_path:
+        return
+    funcs_to_output = _parse_markdown(markdown)
+    out = markdown
 
     # Output text, copy of the original text
     for m in funcs_to_output:
         name = m.group(1)
+
         # Find the position of the function in the current text
-        header = f'### `{name}()`'
-        assert header in api_text, header
-        i = api_text.index(header)
-        # All text after the current function header
-        rem = api_text[i + len(header):]
-        assert rem
-        # We need to go up to where?
-        r = ITEM_HEADER.search(rem)
-        if r:
-            n = r.start(0)
-        else:
-            n = len(rem)
-        n += len(header)
-        assert n > 0
+        r = re.compile(r'^#+\s+`%s\(\)`' % name, flags=re.MULTILINE)
+        m2 = r.search(out)
+        i = m2.end(0)
+
+        # header = f'### `{name}()`'
+        # assert header in api_text, header
+        # i = api_text.index(header)
+        # # All text after the current function header
+        # rem = api_text[i + len(header):]
+        # assert rem
+        # # We need to go up to where?
+        # r = ITEM_HEADER.search(rem)
+        # if r:
+        #     n = r.start(0)
+        # else:
+        #     n = len(rem)
+        # n += len(header)
+        # assert n > 0
         # Docstring to insert.
-        insert = _gen_func_doc(name, all_funcs[name])
-        api_text = insert_text(api_text, i, n - 1, insert)
+        insert = _gen_func_doc(name, config['gendoc']['functions'][name])
+        out = insert_text(out, i, f'\n\n{insert}\n\n')
 
-    api_text = api_text.strip() + '\n'
+    out = out.strip() + '\n'
+    return out
+    # print(out)
 
-    # print(api_text)
-    API_OUTPUT.write_text(api_text)
+
+# if __name__ == '__main__':
+#     # enums_to_insert = ''
+#     # structs_to_insert = ''
+#     # funcs_to_insert = ''
+
+#     # Parse all functions.
+#     all_funcs = {}
+#     for filename in iter_header_files():
+#         if filename.name not in HEADER_FILES:
+#             continue
+#         text = read_file(filename)
+#         # Parse the functions
+#         f = _parse_funcs(text)
+#         print(f"{len(f):02d} functions found in {filename}")
+#         for name in f.keys():
+#             print(f'### `{name}()`\n')
+#         all_funcs.update(f)
+
+#     # TODO: enums and structs
+
+#     # Find where to insert the documentation strings in the output file.
+#     api_text = API_OUTPUT.read_text()
+#     funcs_to_output = _parse_markdown(api_text)
+
+#     # Output text, copy of the original text
+#     for m in funcs_to_output:
+#         name = m.group(1)
+#         # Find the position of the function in the current text
+#         header = f'### `{name}()`'
+#         assert header in api_text, header
+#         i = api_text.index(header)
+#         # All text after the current function header
+#         rem = api_text[i + len(header):]
+#         assert rem
+#         # We need to go up to where?
+#         r = ITEM_HEADER.search(rem)
+#         if r:
+#             n = r.start(0)
+#         else:
+#             n = len(rem)
+#         n += len(header)
+#         assert n > 0
+#         # Docstring to insert.
+#         insert = _gen_func_doc(name, all_funcs[name])
+#         api_text = insert_text(api_text, i, n - 1, insert)
+
+#     api_text = api_text.strip() + '\n'
+
+#     # print(api_text)
+#     # API_OUTPUT.write_text(api_text)
