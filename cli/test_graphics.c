@@ -788,36 +788,28 @@ static void _graphics_volume_callback(VklCanvas* canvas, VklEvent ev)
 int test_graphics_volume_slice(TestContext* context)
 {
     INIT_GRAPHICS(VKL_GRAPHICS_VOLUME_SLICE, 0)
-
-    // Vertices.
-    uint32_t n = 6;
-    TestGraphics tg = {0};
-    tg.canvas = canvas;
-    tg.graphics = graphics;
-    tg.vertices = vkl_array_struct(n, sizeof(VklGraphicsVolumeSliceVertex));
-    ASSERT(tg.vertices.item_count == n);
-    tg.br_vert = vkl_ctx_buffers(
-        gpu->context, VKL_BUFFER_TYPE_VERTEX, 1, tg.vertices.item_count * tg.vertices.item_size);
-    float x = 1;
-    VklGraphicsVolumeSliceVertex vertices[] = {
-        {{-x, -x, 0}, {0, 1, 0.5}}, //
-        {{+x, -x, 0}, {1, 1, 0.5}}, //
-        {{+x, +x, 0}, {1, 0, 0.5}}, //
-        {{+x, +x, 0}, {1, 0, 0.5}}, //
-        {{-x, +x, 0}, {0, 0, 0.5}}, //
-        {{-x, -x, 0}, {0, 1, 0.5}}, //
-    };
-    memcpy(tg.vertices.data, vertices, sizeof(vertices));
-    vkl_upload_buffers(
-        canvas, tg.br_vert, 0, tg.vertices.item_count * tg.vertices.item_size, tg.vertices.data);
+    BEGIN_DATA(VklGraphicsVolumeVertex, 6, NULL)
+    float x = MOUSE_VOLUME_DEPTH / (float)MOUSE_VOLUME_HEIGHT;
+    float y = 1;
+    VklGraphicsVolumeSliceItem item = {
+        {-x, -y, 0},  //
+        {+x, -y, 0},  //
+        {+x, +y, 0},  //
+        {-x, +y, 0},  //
+        {1, 0, 0.5},  //
+        {1, 1, 0.5},  //
+        {0, 1, 0.5},  //
+        {0, 0, 0.5}}; //
+    vkl_graphics_append(&data, &item);
+    END_DATA
 
     // Parameters.
     tg.br_params = vkl_ctx_buffers(
         gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsVolumeSliceParams));
+
     VklGraphicsVolumeSliceParams params = {0};
     params.cmap = VKL_CMAP_BONE;
-    params.scale = 10;
-
+    params.scale = 13;
     params.x_alpha[0] = .0;
     params.x_alpha[1] = .025;
     params.x_alpha[2] = 1;
@@ -827,7 +819,6 @@ int test_graphics_volume_slice(TestContext* context)
     params.y_alpha[1] = 1;
     params.y_alpha[2] = 1;
     params.y_alpha[3] = 1;
-
     vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsVolumeSliceParams), &params);
 
     // Texture.
@@ -848,7 +839,6 @@ int test_graphics_volume_slice(TestContext* context)
 
     RUN;
     SCREENSHOT("volume_slice")
-    // FREE(tex_data)
     TEST_END
 }
 
