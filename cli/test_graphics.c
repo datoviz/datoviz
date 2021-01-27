@@ -6,6 +6,9 @@
 #include "../src/mesh_loader.h"
 #include "utils.h"
 
+BEGIN_INCL_NO_WARN
+#include "../external/stb_image.h"
+END_INCL_NO_WARN
 
 
 /*************************************************************************************************/
@@ -433,15 +436,17 @@ int test_graphics_line_strip(TestContext* context)
 int test_graphics_triangles(TestContext* context)
 {
     INIT_GRAPHICS(VKL_GRAPHICS_TRIANGLES, 0)
-    const uint32_t N = 100;
+    const uint32_t N = 40; // number of triangles
     BEGIN_DATA(VklVertex, N * 3, NULL)
 
+    float t = 0;
     for (uint32_t i = 0; i < N; i++)
     {
-        RANDN_POS(vertices[3 * i].pos)
-        RAND_COLOR(vertices[3 * i].color)
-        vertices[3 * i].pos[2] = 0;
-        vertices[3 * i].color[3] = rand_byte();
+        t = i / (float)N;
+        vertices[3 * i].pos[0] = -.75 + 1.5 * t * t;
+        vertices[3 * i].pos[1] = +.75 - 1.5 * t;
+        vkl_colormap_scale(VKL_CMAP_HSV, i, 0, N, vertices[3 * i].color);
+        vertices[3 * i].color[3] = 128;
 
         // Copy the 2 other points per triangle.
         glm_vec3_copy(vertices[3 * i].pos, vertices[3 * i + 1].pos);
@@ -450,7 +455,7 @@ int test_graphics_triangles(TestContext* context)
         memcpy(vertices[3 * i + 2].color, vertices[3 * i].color, sizeof(cvec4));
 
         // Shift the points.
-        float ms = .1 * rand_float();
+        float ms = .02 + .2 * t * t;
         vertices[3 * i + 0].pos[0] -= ms;
         vertices[3 * i + 1].pos[0] += ms;
         vertices[3 * i + 0].pos[1] -= ms;
@@ -470,14 +475,15 @@ int test_graphics_triangles(TestContext* context)
 int test_graphics_triangle_strip(TestContext* context)
 {
     INIT_GRAPHICS(VKL_GRAPHICS_TRIANGLE_STRIP, 0)
-    BEGIN_DATA(VklVertex, 50, NULL)
-    float m = .05;
+    BEGIN_DATA(VklVertex, 40, NULL)
+    float m = .1;
+    float y = canvas->swapchain.images->width / (float)canvas->swapchain.images->height;
     for (uint32_t i = 0; i < vertex_count; i++)
     {
-        float t = (float)i / (float)(vertex_count - 1);
+        float t = .9 * (float)i / (float)(vertex_count - 1);
         float a = M_2PI * t;
-        vertices[i].pos[0] = (.75 + (i % 2 == 0 ? +m : -m)) * cos(a);
-        vertices[i].pos[1] = (.75 + (i % 2 == 0 ? +m : -m)) * sin(a);
+        vertices[i].pos[0] = (.5 + (i % 2 == 0 ? +m : -m)) * cos(a);
+        vertices[i].pos[1] = y * (.5 + (i % 2 == 0 ? +m : -m)) * sin(a);
         vkl_colormap_scale(VKL_CMAP_HSV, t, 0, 1, vertices[i].color);
     }
     END_DATA
@@ -492,13 +498,14 @@ int test_graphics_triangle_strip(TestContext* context)
 int test_graphics_triangle_fan(TestContext* context)
 {
     INIT_GRAPHICS(VKL_GRAPHICS_TRIANGLE_FAN, 0)
-    BEGIN_DATA(VklVertex, 20, NULL)
+    BEGIN_DATA(VklVertex, 30, NULL)
+    float y = canvas->swapchain.images->width / (float)canvas->swapchain.images->height;
     for (uint32_t i = 1; i < vertex_count; i++)
     {
         float t = (float)i / (float)(vertex_count - 1);
         float a = M_2PI * t;
-        vertices[i].pos[0] = .75 * cos(a);
-        vertices[i].pos[1] = .75 * sin(a);
+        vertices[i].pos[0] = .5 * cos(a);
+        vertices[i].pos[1] = y * .5 * sin(a);
         vkl_colormap_scale(VKL_CMAP_HSV, t, 0, 1, vertices[i].color);
     }
     END_DATA
@@ -702,17 +709,17 @@ int test_graphics_image(TestContext* context)
     vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsImageParams), &params);
 
     // Texture.
-    const uint32_t nt = 16;
-    VklTexture* texture =
-        vkl_ctx_texture(gpu->context, 2, (uvec3){nt, nt, 1}, VK_FORMAT_R8G8B8A8_UNORM);
-    cvec4* tex_data = calloc(nt * nt, sizeof(cvec4));
-    for (uint32_t i = 0; i < nt * nt; i++)
-    {
-        tex_data[i][i % 3] = 255;
-        tex_data[i][3] = 255;
-    }
+    // https://pixabay.com/illustrations/earth-planet-world-globe-space-1617121/
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/textures/earth.jpg", DATA_DIR);
+    int width, height, depth;
+    uint8_t* tex_data = stbi_load(path, &width, &height, &depth, STBI_rgb_alpha);
+    uint32_t tex_size = (uint32_t)(width * height);
+    // const uint32_t nt = 16;
+    VklTexture* texture = vkl_ctx_texture(
+        gpu->context, 2, (uvec3){(uint32_t)width, (uint32_t)height, 1}, VK_FORMAT_R8G8B8A8_UNORM);
     vkl_upload_texture(
-        canvas, texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, nt * nt * sizeof(cvec4), tex_data);
+        canvas, texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, tex_size * sizeof(cvec4), tex_data);
 
     // Bindings.
     _common_bindings(&tg);
