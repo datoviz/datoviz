@@ -1091,6 +1091,7 @@ int test_graphics_mesh(TestContext* context)
     glm_quat_mul(arcball->rotation, q, arcball->rotation);
     glm_quatv(q, M_PI / 6, (vec3){0, 1, 0});
     glm_quat_mul(arcball->rotation, q, arcball->rotation);
+    arcball->camera.eye[2] = 3;
     _arcball_update_mvp(arcball, &tg.interact.mvp);
 
     RUN;
