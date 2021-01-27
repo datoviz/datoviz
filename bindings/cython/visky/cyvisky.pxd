@@ -917,7 +917,7 @@ cdef extern from "<visky/visky.h>":
     VklVisual* vkl_scene_visual(VklPanel* panel, VklVisualType type, int flags)
 
     # from file: visuals.h
-    void vkl_visual_data(VklVisual* visual, VklPropType type, uint32_t prop_idx, uint32_t count, const void* data)
+    void vkl_visual_data(VklVisual* visual, VklPropType prop_type, uint32_t prop_idx, uint32_t count, const void* data)
     void vkl_visual_texture(VklVisual* visual, VklSourceType source_type, uint32_t source_idx, VklTexture* texture)
 
     # from file: vklite.h
