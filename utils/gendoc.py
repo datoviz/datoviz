@@ -27,6 +27,7 @@ ICONS = {
     'out': ':octicons-arrow-left-16:',
 }
 ITEM_HEADER = re.compile(r'^#+\s+', flags=re.MULTILINE)
+GRAPHICS_CODE = re.compile(r'```c\n([a-zA-Z0-9\_]+)\n```')
 MAX_LINE_LENGTH = 76
 
 
@@ -135,30 +136,25 @@ def _parse_struct(text):
     _struct = Literal("struct") ^ Literal("union")
     dtype = Word(alphanums + "_*")
     identifier = Word(alphanums + "_[]")
-    structDecl = Group(dtype("dtype") + identifier("name") + SEMICOLON)
+    structDecl = Group(dtype("dtype") + identifier("name") +
+                       SEMICOLON + Optional(cStyleComment("desc")))
     structList = Group(structDecl + ZeroOrMore(structDecl))
     struct = _struct('struct') + identifier("struct_name") + LBRACE + \
         structList("names") + RBRACE + SEMICOLON
-
     for item, start, stop in struct.scanString(text):
         l = []
         for i, entry in enumerate(item.names):
-            l.append((entry.dtype, entry.name))
+            l.append((entry.dtype, entry.name, entry.desc))
         structs[item.struct_name] = (item.struct, l)
     return structs
 
 
-def _gen_struct(structs):
-    out = ''
-    for name, (struct, l) in structs.items():
-        if name in STRUCTS:
-            out += f'ctypedef {struct} {name}:\n'
-            for dtype, identifier in l:
-                if dtype == 'bool':
-                    dtype = 'bint'
-                out += f'    {dtype} {identifier}\n'
-            out += '\n'
-    return out
+def _gen_struct(name, fields):
+    out = f'#### {name}\n\n| Field | Type | Description |\n| ---- | ---- | ---- |\n'
+    for dtype, field, desc in fields[1]:
+        desc = desc.replace('/*', '').replace('*/', '').strip()
+        out += f'| `{field}` | `{dtype}` | {desc} |\n'
+    return out.strip() + '\n\n'
 
 
 def _parse_funcs(text, is_output=False):
@@ -291,71 +287,69 @@ def _parse_markdown_enums(api_text):
     return enums
 
 
-def parse_all_functions():
+def parse_headers():
     all_funcs = {}
-    for filename in iter_header_files():
-        text = read_file(filename)
-        # Parse the functions
-        f = _parse_funcs(text)
-        # print(f"{len(f):02d} functions found in {filename}")
-        all_funcs.update(f)
-    return all_funcs
-
-
-def parse_all_enums():
     all_enums = {}
+    all_structs = {}
     for filename in iter_header_files():
         text = read_file(filename)
+
+        funcs = _parse_funcs(text)
         defines = parse_defines(text)
         enums = _parse_enum(text, defines)
+        structs = _parse_struct(text)
+
+        all_funcs.update(funcs)
         all_enums.update(enums)
-    return all_enums
-
-
-ENABLE = 0
-
-
-def config_hook(config):
-    if not ENABLE:
-        return
-    config['gendoc'] = {
-        'functions': parse_all_functions(),
-        'enums': parse_all_enums(),
+        all_structs.update(structs)
+    return {
+        'functions': all_funcs,
+        'enums': all_enums,
+        'structs': all_structs,
     }
-    return config
 
 
-def hook(markdown, page, config, files):
-    if not ENABLE:
-        return
-    assert 'gendoc' in config
-    if 'api/' not in page.file.abs_src_path:
-        return
-    # Enums
-    if 'enum' in page.file.abs_src_path:
-        enums_to_output = _parse_markdown_enums(markdown)
-        out = markdown
-        # Output text, copy of the original text
-        for m in enums_to_output:
-            name = m.group(1)
-            # Find the position of the function in the current text
-            r = re.compile(r'^#+\s+`%s`' % name, flags=re.MULTILINE)
-            m2 = r.search(out)
-            i = m2.end(0)
-            insert = _gen_enum(name, config['gendoc']['enums'][name])
-            out = insert_text(out, i, f'\n\n{insert}\n\n')
-    # Functions
-    else:
-        funcs_to_output = _parse_markdown(markdown)
-        out = markdown
-        # Output text, copy of the original text
-        for m in funcs_to_output:
-            name = m.group(1)
-            # Find the position of the function in the current text
-            r = re.compile(r'^#+\s+`%s\(\)`' % name, flags=re.MULTILINE)
-            m2 = r.search(out)
-            i = m2.end(0)
-            insert = _gen_func_doc(name, config['gendoc']['functions'][name])
-            out = insert_text(out, i, f'\n\n{insert}\n\n')
+def insert_functions_doc(markdown, config):
+    funcs_to_output = _parse_markdown(markdown)
+    out = markdown
+    # Output text, copy of the original text
+    for m in funcs_to_output:
+        name = m.group(1)
+        # Find the position of the function in the current text
+        r = re.compile(r'^#+\s+`%s\(\)`' % name, flags=re.MULTILINE)
+        m2 = r.search(out)
+        i = m2.end(0)
+        insert = _gen_func_doc(name, config['gendoc']['functions'][name])
+        out = insert_text(out, i, f'\n\n{insert}\n\n')
     out = out.strip() + '\n'
     return out
+
+
+def insert_enums_doc(markdown, config):
+    enums_to_output = _parse_markdown_enums(markdown)
+    out = markdown
+    # Output text, copy of the original text
+    for m in enums_to_output:
+        name = m.group(1)
+        # Find the position of the function in the current text
+        r = re.compile(r'^#+\s+`%s`' % name, flags=re.MULTILINE)
+        m2 = r.search(out)
+        i = m2.end(0)
+        insert = _gen_enum(name, config['gendoc']['enums'][name])
+        out = insert_text(out, i, f'\n\n{insert}\n\n')
+    out = out.strip() + '\n'
+    return out
+
+
+def insert_graphics_doc(markdown, config):
+    def _sub_graphics_code(m):
+        n = m.group(1)
+        out = ''
+        for h in ('Item', 'Vertex', 'Params'):
+            s = f'VklGraphics{n}{h}'
+            struct = config['gendoc']['structs'].get(s, None)
+            if struct:
+                out += _gen_struct(f'{h} structure: `{s}`', struct)
+        return out
+
+    return GRAPHICS_CODE.sub(_sub_graphics_code, markdown)

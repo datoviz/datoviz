@@ -244,25 +244,33 @@ struct VklGraphicsImageParams
 
 struct VklGraphicsVolumeSliceItem
 {
-    // top left, top right, bottom right, bottom left
-    vec3 pos0, pos1, pos2, pos3;
-    vec3 uvw0, uvw1, uvw2, uvw3;
+    vec3 pos0; /* top left corner */
+    vec3 pos1; /* top right corner */
+    vec3 pos2; /* bottom right corner */
+    vec3 pos3; /* bottom left corner */
+
+    vec3 uvw0; /* tex coords of the top left corner */
+    vec3 uvw1; /* tex coords of the top right corner */
+    vec3 uvw2; /* tex coords of the bottom right corner */
+    vec3 uvw3; /* tex coords of the bottom left corner */
 };
 
 struct VklGraphicsVolumeSliceVertex
 {
-    vec3 pos;
-    vec3 uvw;
+    vec3 pos; /* position */
+    vec3 uvw; /* 3D tex coords */
 };
 
 struct VklGraphicsVolumeSliceParams
 {
-    vec4 x_cmap;
-    vec4 y_cmap;
-    vec4 x_alpha;
-    vec4 y_alpha;
-    int32_t cmap;
-    float scale;
+    vec4 x_cmap; /* x values of the color transfer function */
+    vec4 y_cmap; /* y values of the color transfer function */
+
+    vec4 x_alpha; /* x values of the alpha transfer function */
+    vec4 y_alpha; /* y values of the alpha transfer function */
+
+    int32_t cmap; /* colormap */
+    float scale;  /* scaling factor for the fetched volume values */
 };
 
 

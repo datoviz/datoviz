@@ -15,6 +15,7 @@ extra_css:
 markdown_extensions:
   - toc:
       permalink: true
+      toc_depth: 3
   - abbr
   - admonition
   - attr_list
@@ -29,9 +30,8 @@ plugins:
   - search
   - mkdocs-simple-hooks:
       hooks:
-        on_page_markdown: "utils.gendoc:hook"
-        on_config: "utils.gendoc:config_hook"
-        on_page_markdown: "utils.export_colormap:hook"
+        on_config: "utils.hooks:config_hook"
+        on_page_markdown: "utils.hooks:page_hook"
 nav:
   - Home: 'index.md'
   - Quick start:
