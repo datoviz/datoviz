@@ -9,6 +9,7 @@ layout(std140, binding = USER_BINDING) uniform Params
     vec4 x_alpha;
     vec4 y_alpha;
     int cmap;
+    float scale;
 }
 params;
 
@@ -38,7 +39,7 @@ float transfer(float x, vec4 xcoefs, vec4 ycoefs)
 void main()
 {
     // Fetch the value from the texture.
-    float value = texture(tex, in_uvw).r;
+    float value = params.scale * texture(tex, in_uvw).r;
 
     // Transfer function on the texture value.
     if (sum(params.x_cmap) != 0)

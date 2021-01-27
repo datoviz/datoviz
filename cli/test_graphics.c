@@ -11,6 +11,19 @@ BEGIN_INCL_NO_WARN
 END_INCL_NO_WARN
 
 
+
+/*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define MESH VKL_MESH_CUBE
+
+#define MOUSE_VOLUME_WIDTH  320
+#define MOUSE_VOLUME_HEIGHT 456
+#define MOUSE_VOLUME_DEPTH  528
+
+
+
 /*************************************************************************************************/
 /*  Graphics utils                                                                               */
 /*************************************************************************************************/
@@ -114,13 +127,34 @@ static void _interact_callback(VklCanvas* canvas, VklEvent ev)
     vkl_upload_buffers(canvas, tg->br_mvp, 0, sizeof(VklMVP), &tg->interact.mvp);
 }
 
+static VklTexture* _mouse_volume(VklCanvas* canvas)
+{
+    VklGpu* gpu = canvas->gpu;
 
+    const uint32_t ni = MOUSE_VOLUME_WIDTH;
+    const uint32_t nj = MOUSE_VOLUME_HEIGHT;
+    const uint32_t nk = MOUSE_VOLUME_DEPTH;
 
-/*************************************************************************************************/
-/*  Constants                                                                                    */
-/*************************************************************************************************/
-
-#define MESH VKL_MESH_CUBE
+    // Texture.
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/volume/%s", DATA_DIR, "atlas_25.img");
+    VklTexture* texture =
+        vkl_ctx_texture(gpu->context, 3, (uvec3){ni, nj, nk}, VK_FORMAT_R16_UNORM);
+    // WARNING: nearest filter causes visual artifacts when sampling from a 3D texture close to the
+    // boundaries between different values
+    vkl_texture_filter(texture, VKL_FILTER_MAX, VK_FILTER_LINEAR);
+    vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_W, VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    uint16_t* tex_data = (uint16_t*)read_file(path, NULL);
+    for (uint32_t i = 0; i < (ni * nj * nk); i++)
+        tex_data[i] *= 10;
+    vkl_upload_texture(
+        canvas, texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, //
+        ni * nj * nk * sizeof(uint16_t), tex_data);
+    FREE(tex_data);
+    return texture;
+}
 
 
 
@@ -764,7 +798,7 @@ int test_graphics_volume_slice(TestContext* context)
     ASSERT(tg.vertices.item_count == n);
     tg.br_vert = vkl_ctx_buffers(
         gpu->context, VKL_BUFFER_TYPE_VERTEX, 1, tg.vertices.item_count * tg.vertices.item_size);
-    float x = .5;
+    float x = 1;
     VklGraphicsVolumeSliceVertex vertices[] = {
         {{-x, -x, 0}, {0, 1, 0.5}}, //
         {{+x, -x, 0}, {1, 1, 0.5}}, //
@@ -781,36 +815,23 @@ int test_graphics_volume_slice(TestContext* context)
     tg.br_params = vkl_ctx_buffers(
         gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsVolumeSliceParams));
     VklGraphicsVolumeSliceParams params = {0};
-    params.cmap = VKL_CMAP_HSV;
+    params.cmap = VKL_CMAP_BONE;
+    params.scale = 10;
 
-    params.x_cmap[0] = 0.0;
-    params.x_cmap[1] = .333;
-    params.x_cmap[2] = .666;
-    params.x_cmap[3] = 1.0;
+    params.x_alpha[0] = .0;
+    params.x_alpha[1] = .025;
+    params.x_alpha[2] = 1;
+    params.x_alpha[3] = 1;
 
-    params.y_cmap[0] = 0;
-    params.y_cmap[1] = .2;
-    params.y_cmap[2] = .8;
-    params.y_cmap[3] = 1;
+    params.y_alpha[0] = 0;
+    params.y_alpha[1] = 1;
+    params.y_alpha[2] = 1;
+    params.y_alpha[3] = 1;
 
     vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsVolumeSliceParams), &params);
 
     // Texture.
-    const uint32_t nt = 12;
-    VklTexture* texture =
-        vkl_ctx_texture(gpu->context, 3, (uvec3){nt, nt, nt}, VK_FORMAT_R8_UNORM);
-    // WARNING: nearest filter causes visual artifacts when sampling from a 3D texture close to the
-    // boundaries between different values
-    vkl_texture_filter(texture, VKL_FILTER_MAX, VK_FILTER_NEAREST);
-    vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_W, VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    uint8_t* tex_data = calloc(nt * nt * nt, sizeof(uint8_t));
-    for (uint32_t i = 0; i < nt * nt * nt; i++)
-        tex_data[i] = i % 256;
-    vkl_upload_texture(
-        canvas, texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, //
-        nt * nt * nt * sizeof(uint8_t), tex_data);
+    VklTexture* texture = _mouse_volume(canvas);
 
     // Bindings.
     _common_bindings(&tg);
@@ -827,7 +848,7 @@ int test_graphics_volume_slice(TestContext* context)
 
     RUN;
     SCREENSHOT("volume_slice")
-    FREE(tex_data)
+    // FREE(tex_data)
     TEST_END
 }
 
@@ -847,10 +868,9 @@ static void _volume_update_mvp(VklCanvas* canvas, VklEvent ev)
 
 int test_graphics_volume_1(TestContext* context)
 {
-    // Texture shape.
-    const uint32_t ni = 320;
-    const uint32_t nj = 456;
-    const uint32_t nk = 528;
+    const uint32_t ni = MOUSE_VOLUME_WIDTH;
+    const uint32_t nj = MOUSE_VOLUME_HEIGHT;
+    const uint32_t nk = MOUSE_VOLUME_DEPTH;
 
     VklGraphicsVolumeParams params = {0};
     float c = .005;
@@ -874,26 +894,7 @@ int test_graphics_volume_1(TestContext* context)
     tg.params_data = &params;
     vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsVolumeParams), &params);
 
-    // Texture.
-    char path[1024];
-    snprintf(path, sizeof(path), "%s/volume/%s", DATA_DIR, "atlas_25.img");
-    VklTexture* texture =
-        vkl_ctx_texture(gpu->context, 3, (uvec3){ni, nj, nk}, VK_FORMAT_R16_UNORM);
-    // WARNING: nearest filter causes visual artifacts when sampling from a 3D texture close to the
-    // boundaries between different values
-    vkl_texture_filter(texture, VKL_FILTER_MAX, VK_FILTER_LINEAR);
-    vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_W, VK_SAMPLER_ADDRESS_MODE_REPEAT);
-
-    // uint8_t* tex_data = calloc(ni * nj * nk, sizeof(uint16_t));
-    uint16_t* tex_data = (uint16_t*)read_file(path, NULL);
-    for (uint32_t i = 0; i < (ni * nj * nk); i++)
-        tex_data[i] *= 10;
-    vkl_upload_texture(
-        canvas, texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, //
-        ni * nj * nk * sizeof(uint16_t), tex_data);
-    FREE(tex_data);
+    VklTexture* texture = _mouse_volume(canvas);
 
     // Bindings.
     _common_bindings(&tg);
@@ -923,7 +924,6 @@ int test_graphics_volume_1(TestContext* context)
 
     RUN;
     SCREENSHOT("volume")
-    FREE(tex_data)
     TEST_END
 }
 

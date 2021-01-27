@@ -262,6 +262,7 @@ struct VklGraphicsVolumeSliceParams
     vec4 x_alpha;
     vec4 y_alpha;
     int32_t cmap;
+    float scale;
 };
 
 
