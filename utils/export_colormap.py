@@ -1,8 +1,11 @@
 import itertools
 from pathlib import Path
+import csv
 import re
 import sys
 from textwrap import dedent
+import io
+import base64
 
 from matplotlib import cm, image
 import numpy as np
@@ -35,9 +38,9 @@ BOKEH_NAMES["category20c_20"] = "Category20c_20"
 
 MAX_PALETTE_SIZE = 32
 
-path = Path(__file__).parent.parent / "../include/visky/colormaps.h"
-texture_path = Path(__file__).parent.parent / \
-    "../data/textures/color_texture.img"
+ROOT_DIR = Path(__file__).parent.parent
+path = ROOT_DIR / "include/visky/colormaps.h"
+texture_path = ROOT_DIR / "data/textures/color_texture.img"
 
 # Ensure the subdirectorys exist.
 texture_path.parent.mkdir(exist_ok=True, parents=True)
@@ -180,5 +183,51 @@ def generate_binary():
         f.write('\n'.join(out) + '\n')
 
 
+def img2b64(x):
+    assert x.dtype == np.dtype(np.uint8)
+    im = Image.fromarray(x)
+    rawBytes = io.BytesIO()
+    im.save(rawBytes, "PNG")
+    rawBytes.seek(0)
+    return base64.b64encode(rawBytes.read()).decode('ascii')
+
+
+def img2md(name, arr):
+    return f"| `{name.lower()}` | ![{name}](data:image/png;base64,{img2b64(arr)}) |"
+
+
+def load_colormap_texture():
+    return np.fromfile(
+        ROOT_DIR / "data/textures/color_texture.img", dtype=np.uint8).reshape((256, 256, 4))
+
+
+def generate_colormaps_doc():
+    arr = load_colormap_texture()
+    out = "| Name | Colormap |\n| ---- | ---- |\n"
+    with open(ROOT_DIR / "data/textures/color_texture.csv", 'r') as f:
+        r = csv.reader(f, delimiter=',')
+        next(r)
+        for line in r:
+            name = line[0]
+            row = int(line[1])
+            col = int(line[2])
+            size = int(line[3])
+            cmap = arr[[row], col:col + size, :]
+            cmap = np.repeat(cmap, 24, axis=0)
+            cmap = np.repeat(cmap, 512 // cmap.shape[1], axis=1)
+            # print(cmap.shape)
+            out += img2md(name, cmap) + '\n'
+    return out
+
+
+def hook(markdown, page, config, files):
+    if 'color' in page.file.abs_src_path:
+        return (
+            markdown + '\n\n## List of colormaps and color palettes\n\n' +
+            generate_colormaps_doc())
+
+
 if __name__ == '__main__':
-    generate_binary()
+    # generate_binary()
+    # generate_colormaps_doc()
+    pass

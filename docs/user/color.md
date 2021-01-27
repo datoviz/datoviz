@@ -4,6 +4,14 @@ Visky has built-in support for many continuous colormaps and discrete color pale
 
 ## The colormap texture
 
-Visky natively integrates a 256x256 24-bit texture called the **colormap texture**. Each of the non-empty rows of the texture contains either one 256-color colormap, or 8 discrete 32-color palettes. A lot of empty space remains in the texture, which can used for future colormaps or user-defined colormaps.
+Visky natively integrates a 256x256 24-bit texture called the **colormap texture**. Each of the non-empty rows of the texture contains either:
 
-When using the Scene API, this texture is automatically loaded both on the CPU and on the GPU. For the sake of efficient GPU memory usage, the same GPU texture buffer is shared by all visuals and all canvases of an application. Visuals that follow the standard Visky visual convention (which is the case for all built-in visuals) have a reserved binding slot (descriptor set) for this texture.
+- a 256-color continuous colormap,
+- a 256-color discrete color palette,
+- eight discrete 32-color palettes.
+
+A lot of empty space remains in the texture, which can used for future colormaps or user-defined colormaps.
+
+The texture is always loaded in memory, exactly once on each GPU. It can be shared between different visuals and different canvases. It is used by some visuals.
+
+<!-- The list of colormaps is generated in a mkdocs hook from utils/export_colormap.py -->

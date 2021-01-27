@@ -16,7 +16,7 @@ from pyparsing import (
 
 ROOT_DIR = Path(__file__).parent.parent.resolve()
 HEADER_DIR = ROOT_DIR / 'include/visky'
-INTERNAL_HEADER_DIR =  ROOT_DIR / 'src'
+INTERNAL_HEADER_DIR = ROOT_DIR / 'src'
 EXTERNAL_HEADER_DIR = ROOT_DIR / 'external'
 API_OUTPUT = ROOT_DIR / 'docs/api.md'
 # HEADER_FILES = (
@@ -74,7 +74,7 @@ def parse_defines(text):
     defines = {k: v.replace('(', '').replace(')', '')
                for k, v in defines.items()}
     defines = {k: v.strip()
-        for k, v in defines.items() if k.startswith('CMAP') or k.startswith('CPAL')}
+               for k, v in defines.items() if k.startswith('CMAP') or k.startswith('CPAL')}
     for k, v in defines.items():
         if v.isdigit():
             defines[k] = int(v)
@@ -179,7 +179,8 @@ def _parse_funcs(text, is_output=False):
                  ) + Optional(COMMA))
     args = Group(ZeroOrMore(argDecl))
     if not is_output:
-        func = Optional(Suppress("VKY_EXPORT")) + Optional(Suppress("VKY_INLINE"))
+        func = Optional(Suppress("VKY_EXPORT")) + \
+            Optional(Suppress("VKY_INLINE"))
     else:
         func = Empty()
     signature = Optional(static("static")) + \
@@ -238,7 +239,8 @@ def _gen_func_doc(name, func):
     if len(out) + len(name) + len(args_s) >= MAX_LINE_LENGTH:
         if len(args_s) >= MAX_LINE_LENGTH - 4:
             args_s = '\n' + args_s
-            args_s = ',\n'.join(indent(', '.join(_), '    ') for _ in grouper(3, args_s.split(', ')))
+            args_s = ',\n'.join(indent(', '.join(_), '    ')
+                                for _ in grouper(3, args_s.split(', ')))
         else:
             args_s = '\n' + indent(args_s, '    ')
 
@@ -310,7 +312,12 @@ def parse_all_enums():
     return all_enums
 
 
+ENABLE = 0
+
+
 def config_hook(config):
+    if not ENABLE:
+        return
     config['gendoc'] = {
         'functions': parse_all_functions(),
         'enums': parse_all_enums(),
@@ -319,6 +326,8 @@ def config_hook(config):
 
 
 def hook(markdown, page, config, files):
+    if not ENABLE:
+        return
     assert 'gendoc' in config
     if 'api/' not in page.file.abs_src_path:
         return

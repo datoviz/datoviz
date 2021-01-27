@@ -31,6 +31,7 @@ plugins:
       hooks:
         on_page_markdown: "utils.gendoc:hook"
         on_config: "utils.gendoc:config_hook"
+        on_page_markdown: "utils.export_colormap:hook"
 nav:
   - Home: 'index.md'
   - Quick start:
