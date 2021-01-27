@@ -57,6 +57,17 @@ Image
 Mesh
 ```
 
+The mesh graphics supports the following features:
+
+- Blinn-Phong shading
+- Up to four textures
+- Customizable texture blending coefficients
+- Transparency (but does not play well with depth test)
+- Support for arbitrary RGB values (via cvec3 packing into vec2)
+- Customizable plane clipping
+
+Plane clipping: when the clip vector is non-zero, the fragment shader implements the following test. If the dot product of the clip vector with the vertex position (in scene coordinates) is negative, the fragment is discarded. This feature allows to cut the mesh along any arbitrary affine plane.
+
 
 ### Volume slice
 

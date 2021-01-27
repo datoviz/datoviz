@@ -118,8 +118,8 @@ typedef struct VklGraphicsData VklGraphicsData;
 
 struct VklVertex
 {
-    vec3 pos;
-    cvec4 color;
+    vec3 pos;    /* position */
+    cvec4 color; /* color */
 };
 
 
@@ -143,7 +143,7 @@ struct VklGraphicsData
 
 struct VklGraphicsPointParams
 {
-    float point_size;
+    float point_size; /* point size, in pixels */
 };
 
 
@@ -154,19 +154,19 @@ struct VklGraphicsPointParams
 
 struct VklGraphicsMarkerVertex
 {
-    vec3 pos;
-    cvec4 color;
-    float size;
+    vec3 pos;    /* position */
+    cvec4 color; /* color */
+    float size;  /* marker size, in pixels */
     // in fact a VklMarkerType but we should control the exact data type for the GPU
-    uint8_t marker;
-    uint8_t angle;
-    uint8_t transform;
+    uint8_t marker;    /* marker type enum */
+    uint8_t angle;     /* angle, between 0 (0) included and 256 (M_2PI) excluded */
+    uint8_t transform; /* transform enum */
 };
 
 struct VklGraphicsMarkerParams
 {
-    vec4 edge_color;
-    float edge_width;
+    vec4 edge_color;  /* edge color RGBA */
+    float edge_width; /* line width, in pixels */
 };
 
 
@@ -177,14 +177,14 @@ struct VklGraphicsMarkerParams
 
 struct VklGraphicsSegmentVertex
 {
-    vec3 P0;
-    vec3 P1;
-    vec4 shift;
-    cvec4 color;
-    float linewidth;
-    VklCapType cap0;
-    VklCapType cap1;
-    uint8_t transform;
+    vec3 P0;           /* start position */
+    vec3 P1;           /* end position */
+    vec4 shift;        /* shift of start (xy) and end (zw) positions, in pixels */
+    cvec4 color;       /* color */
+    float linewidth;   /* line width, in pixels */
+    VklCapType cap0;   /* start cap enum */
+    VklCapType cap1;   /* end cap enum */
+    uint8_t transform; /* transform enum */
 };
 
 
@@ -195,28 +195,28 @@ struct VklGraphicsSegmentVertex
 
 struct VklGraphicsTextVertex
 {
-    vec3 pos;
-    vec2 shift;
-    cvec4 color;
-    vec2 glyph_size;
-    vec2 anchor;
-    float angle;
-    usvec4 glyph; // char, char_index, str_len, str_index
-    uint8_t transform;
+    vec3 pos;          /* position */
+    vec2 shift;        /* shift, in pixels */
+    cvec4 color;       /* color */
+    vec2 glyph_size;   /* glyph size, in pixels */
+    vec2 anchor;       /* character anchor, in normalized coordinates */
+    float angle;       /* string angle */
+    usvec4 glyph;      /* glyph: char code, char index, string length, string index */
+    uint8_t transform; /* transform enum */
 };
 
 struct VklGraphicsTextItem
 {
-    VklGraphicsTextVertex vertex;
-    cvec4* glyph_colors;
-    float font_size;
-    const char* string;
+    VklGraphicsTextVertex vertex; /* text vertex */
+    cvec4* glyph_colors;          /* glyph colors */
+    float font_size;              /* font size */
+    const char* string;           /* text string */
 };
 
 struct VklGraphicsTextParams
 {
-    ivec2 grid_size;
-    ivec2 tex_size;
+    ivec2 grid_size; /* font atlas grid size (rows, columns) */
+    ivec2 tex_size;  /* font atlas texture size, in pixels */
 };
 
 
@@ -227,13 +227,13 @@ struct VklGraphicsTextParams
 
 struct VklGraphicsImageVertex
 {
-    vec3 pos;
-    vec2 uv;
+    vec3 pos; /* position */
+    vec2 uv;  /* tex coordinates */
 };
 
 struct VklGraphicsImageParams
 {
-    vec4 tex_coefs; // blending coefficients for the textures
+    vec4 tex_coefs; /* blending coefficients for the four images */
 };
 
 
@@ -282,21 +282,23 @@ struct VklGraphicsVolumeSliceParams
 struct VklGraphicsVolumeItem
 {
     // top left front, bottom right back
-    vec3 pos0, pos1;
-    vec3 uvw0, uvw1;
+    vec3 pos0; /* top left front position */
+    vec3 pos1; /* bottom right back position */
+    vec3 uvw0; /* tex coordinates of the top left front corner */
+    vec3 uvw1; /* tex coordinates of the bottom right back position */
 };
 
 struct VklGraphicsVolumeVertex
 {
-    vec3 pos;
-    vec3 uvw;
+    vec3 pos; /* position */
+    vec3 uvw; /* tex coords */
 };
 
 struct VklGraphicsVolumeParams
 {
-    vec4 view_pos;
-    vec4 box_size;
-    int32_t cmap;
+    vec4 view_pos; /* camera position */
+    vec4 box_size; /* size of the box containing the volume, in NDC */
+    int32_t cmap;  /* colormap */
 };
 
 
@@ -307,19 +309,19 @@ struct VklGraphicsVolumeParams
 
 struct VklGraphicsMeshVertex
 {
-    vec3 pos;
-    vec3 normal;
-    vec2 uv;
-    uint8_t alpha;
+    vec3 pos;      /* position */
+    vec3 normal;   /* normal vector */
+    vec2 uv;       /* tex coords */
+    uint8_t alpha; /* transparency value */
 };
 
 struct VklGraphicsMeshParams
 {
-    mat4 lights_pos_0;    // lights 0-3
-    mat4 lights_params_0; // for each light, coefs for ambient, diffuse, specular
-    vec4 view_pos;        // view position
-    vec4 tex_coefs;       // blending coefficients for the textures
-    vec4 clip_coefs;      // dot product of this vector with the vertex position < 0 => discard
+    mat4 lights_pos_0;    /* positions of each of the maximum four lights */
+    mat4 lights_params_0; /* ambient, diffuse, specular coefs for each light */
+    vec4 view_pos;        /* camera position */
+    vec4 tex_coefs;       /* blending coefficients for the four textures */
+    vec4 clip_coefs;      /* clip coefficients */
 };
 
 static VklGraphicsMeshParams default_graphics_mesh_params(vec3 eye)

@@ -69,6 +69,7 @@ void main() {
         // Specular component.
         view_dir = normalize(params.view_pos.xyz - in_pos);
         reflect_dir = reflect(-light_dir, normal);
+        // TODO: customizable specular exponent
         spec = pow(max(dot(view_dir, reflect_dir), 0.0), 32.0);
         specular = spec * light_color;
 
