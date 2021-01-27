@@ -807,7 +807,11 @@ VKY_EXPORT void vkl_screencast_destroy(VklCanvas* canvas);
 VKY_EXPORT uint8_t* vkl_screenshot(VklCanvas* canvas);
 
 /**
- * Make a screenshot and save it to a PNG or PPM file.
+ * Make a screenshot and save it to a PNG file.
+ *
+ * !!! note
+ *     This function uses full GPU synchronization methods so it is relatively inefficient. More
+ *      efficient methods are not yet implemented.
  *
  * @param canvas the canvas
  * @param png_path the path to the PNG file to create
