@@ -23,8 +23,8 @@
 #define NORM3_255       (1. / (3 * 255.0 * 255.0))
 #define NORM3_THRESHOLD 1e-5
 
-#define TEST_WIDTH  640
-#define TEST_HEIGHT 480
+#define TEST_WIDTH  WIDTH
+#define TEST_HEIGHT HEIGHT
 
 static const VkClearColorValue bgcolor = {{.4f, .6f, .8f, 1.0f}};
 #define TEST_FORMAT       VK_FORMAT_B8G8R8A8_UNORM

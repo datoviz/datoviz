@@ -149,7 +149,7 @@ END_INCL_NO_WARN
 /*************************************************************************************************/
 
 #define ENGINE_NAME         "Visky"
-#define APPLICATION_NAME    "Visky prototype"
+#define APPLICATION_NAME    "Visky canvas"
 #define APPLICATION_VERSION VK_MAKE_VERSION(1, 0, 0)
 
 #define VKL_MAX_FRAMES_IN_FLIGHT    2

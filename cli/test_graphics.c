@@ -177,7 +177,10 @@ static void _interact_callback(VklCanvas* canvas, VklEvent ev)
     vkl_array_destroy(&tg.vertices);                                                              \
     vkl_array_destroy(&tg.indices);
 
+// NOTE: avoid screenshot in interactive mode, otherwise the canvas is destroyed *before* taking
+// the screenshot, leading to a segfault.
 #define SCREENSHOT(name)                                                                          \
+    if (N_FRAMES != 0)                                                                            \
     {                                                                                             \
         char screenshot_path[1024];                                                               \
         snprintf(                                                                                 \
