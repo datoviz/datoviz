@@ -193,12 +193,6 @@ struct VklGraphicsSegmentVertex
 /*  Graphics text                                                                                */
 /*************************************************************************************************/
 
-struct VklGraphicsTextParams
-{
-    ivec2 grid_size;
-    ivec2 tex_size;
-};
-
 struct VklGraphicsTextVertex
 {
     vec3 pos;
@@ -217,6 +211,12 @@ struct VklGraphicsTextItem
     cvec4* glyph_colors;
     float font_size;
     const char* string;
+};
+
+struct VklGraphicsTextParams
+{
+    ivec2 grid_size;
+    ivec2 tex_size;
 };
 
 
