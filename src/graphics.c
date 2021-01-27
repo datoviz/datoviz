@@ -386,7 +386,7 @@ static void _graphics_volume_callback(VklGraphicsData* data, uint32_t item_count
     ASSERT(data->vertices != NULL);
 
     ASSERT(item_count > 0);
-    vkl_array_resize(data->vertices, 6 * item_count);
+    vkl_array_resize(data->vertices, 36 * item_count);
 
     if (item == NULL)
         return;

@@ -788,19 +788,22 @@ static void _graphics_volume_callback(VklCanvas* canvas, VklEvent ev)
 int test_graphics_volume_slice(TestContext* context)
 {
     INIT_GRAPHICS(VKL_GRAPHICS_VOLUME_SLICE, 0)
-    BEGIN_DATA(VklGraphicsVolumeVertex, 6, NULL)
+    const uint32_t N = 8;
+    BEGIN_DATA(VklGraphicsVolumeVertex, N, NULL)
     float x = MOUSE_VOLUME_DEPTH / (float)MOUSE_VOLUME_HEIGHT;
     float y = 1;
-    VklGraphicsVolumeSliceItem item = {
-        {-x, -y, 0},  //
-        {+x, -y, 0},  //
-        {+x, +y, 0},  //
-        {-x, +y, 0},  //
-        {1, 0, 0.5},  //
-        {1, 1, 0.5},  //
-        {0, 1, 0.5},  //
-        {0, 0, 0.5}}; //
-    vkl_graphics_append(&data, &item);
+    float z = 0;
+    float t = 0;
+    for (uint32_t i = 0; i < N; i++)
+    {
+        t = 1 - i / (float)(N - 1);
+        z = -1 + 2 * t;
+        t = .1 + .8 * t;
+        VklGraphicsVolumeSliceItem item =                        //
+            {{-x, -y, z}, {+x, -y, z}, {+x, +y, z}, {-x, +y, z}, //
+             {1, 0, t},   {1, 1, t},   {0, 1, t},   {0, 0, t}};  //
+        vkl_graphics_append(&data, &item);
+    }
     END_DATA
 
     // Parameters.
@@ -810,15 +813,17 @@ int test_graphics_volume_slice(TestContext* context)
     VklGraphicsVolumeSliceParams params = {0};
     params.cmap = VKL_CMAP_BONE;
     params.scale = 13;
+
+    // Transfer function for the alpha channel.
     params.x_alpha[0] = .0;
-    params.x_alpha[1] = .025;
-    params.x_alpha[2] = 1;
+    params.x_alpha[1] = .05;
+    params.x_alpha[2] = .051;
     params.x_alpha[3] = 1;
 
     params.y_alpha[0] = 0;
-    params.y_alpha[1] = 1;
-    params.y_alpha[2] = 1;
-    params.y_alpha[3] = 1;
+    params.y_alpha[1] = 0;
+    params.y_alpha[2] = .75;
+    params.y_alpha[3] = .75;
     vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsVolumeSliceParams), &params);
 
     // Texture.
@@ -834,8 +839,18 @@ int test_graphics_volume_slice(TestContext* context)
     // Interactivity.
     tg.interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
     vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _interact_callback, &tg);
-    vkl_event_callback(
-        canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _graphics_volume_callback, &tg);
+    // vkl_event_callback(
+    //     canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _graphics_volume_callback, &tg);
+
+    VklArcball* arcball = &tg.interact.u.a;
+    versor q;
+    glm_quatv(q, M_PI, (vec3){0, 1, 0});
+    glm_quat_mul(arcball->rotation, q, arcball->rotation);
+    glm_quatv(q, -M_PI / 8, (vec3){1, 0, 0});
+    glm_quat_mul(arcball->rotation, q, arcball->rotation);
+    glm_quatv(q, -M_PI / 6, (vec3){0, 1, 0});
+    glm_quat_mul(arcball->rotation, q, arcball->rotation);
+    _arcball_update_mvp(arcball, &tg.interact.mvp);
 
     RUN;
     SCREENSHOT("volume_slice")
@@ -871,7 +886,7 @@ int test_graphics_volume_1(TestContext* context)
     vec3 p1 = {+c * ni / 2., +c * nj / 2., +c * nk / 2.};
 
     INIT_GRAPHICS(VKL_GRAPHICS_VOLUME, 0)
-    BEGIN_DATA(VklGraphicsVolumeVertex, 36, NULL)
+    BEGIN_DATA(VklGraphicsVolumeVertex, 1, NULL)
     VklGraphicsVolumeItem item = {
         {p0[0], p0[1], p0[2]}, {p1[0], p1[1], p1[2]}, {0, 0, 0}, {1, 1, 1}};
     vkl_graphics_append(&data, &item);

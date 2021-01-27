@@ -57,4 +57,5 @@ void main()
     // out_color = colormap(params.cmap, value);
 
     out_color.a = alpha;
+    if (alpha < .01) discard;
 }
