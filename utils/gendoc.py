@@ -19,9 +19,9 @@ HEADER_DIR = ROOT_DIR / 'include/visky'
 INTERNAL_HEADER_DIR =  ROOT_DIR / 'src'
 EXTERNAL_HEADER_DIR = ROOT_DIR / 'external'
 API_OUTPUT = ROOT_DIR / 'docs/api.md'
-HEADER_FILES = (
-    'app.h', 'array.h', 'vklite.h', 'context.h', 'canvas.h', 'colormaps.h',
-    'panel.h', 'visuals.h', 'scene.h')
+# HEADER_FILES = (
+#     'app.h', 'array.h', 'vklite.h', 'context.h', 'canvas.h', 'colormaps.h',
+#     'panel.h', 'visuals.h', 'scene.h')
 ICONS = {
     'in': ':octicons-arrow-right-16:',
     'out': ':octicons-arrow-left-16:',
@@ -178,7 +178,7 @@ def _parse_funcs(text, is_output=False):
                  ) + Optional(COMMA))
     args = Group(ZeroOrMore(argDecl))
     if not is_output:
-        func = Optional(Suppress("VKY_EXPORT"))
+        func = Optional(Suppress("VKY_EXPORT")) + Optional(Suppress("VKY_INLINE"))
     else:
         func = Empty()
     signature = Optional(static("static")) + \
@@ -283,8 +283,8 @@ def _parse_markdown(api_text):
 def parse_all_functions():
     all_funcs = {}
     for filename in iter_header_files():
-        if filename.name not in HEADER_FILES:
-            continue
+        # if filename.name not in HEADER_FILES:
+        #     continue
         text = read_file(filename)
         # Parse the functions
         f = _parse_funcs(text)
