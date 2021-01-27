@@ -798,6 +798,9 @@ VKY_EXPORT void vkl_screencast_destroy(VklCanvas* canvas);
  * synchronization commands so this command should *not* be used for creating many successive
  * screenshots. For that, one should register a SCREENCAST event callback.
  *
+ * !!! error
+ *     This function is not yet implemented.
+ *
  * @param canvas the canvas
  * @returns A pointer to the 24-bit RGB framebuffer.
  */
@@ -807,9 +810,9 @@ VKY_EXPORT uint8_t* vkl_screenshot(VklCanvas* canvas);
  * Make a screenshot and save it to a PNG or PPM file.
  *
  * @param canvas the canvas
- * @param filename the path to the screenshot image to create
+ * @param png_path the path to the PNG file to create
  */
-VKY_EXPORT void vkl_screenshot_file(VklCanvas* canvas, const char* filename);
+VKY_EXPORT void vkl_screenshot_file(VklCanvas* canvas, const char* png_path);
 
 
 

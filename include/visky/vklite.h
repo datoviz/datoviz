@@ -234,7 +234,8 @@ typedef enum
 #define CMD_START_CLIP(cnt)                                                                       \
     ASSERT(cmds != NULL);                                                                         \
     ASSERT(cnt > 0);                                                                              \
-    ASSERT((cnt) == 1 || (cnt) == cmds->count);                                                   \
+    if (!((cnt) == 1 || (cnt) == cmds->count))                                                    \
+        log_warn("mismatch between image count and cmd buf count");                               \
     VkCommandBuffer cb = {0};                                                                     \
     uint32_t iclip = 0;                                                                           \
     uint32_t i = idx;                                                                             \

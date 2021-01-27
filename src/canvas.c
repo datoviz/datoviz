@@ -1689,11 +1689,72 @@ void vkl_screencast_destroy(VklCanvas* canvas)
 
 
 
-uint8_t* vkl_screenshot(VklCanvas* canvas) { return NULL; }
+void vkl_screenshot_file(VklCanvas* canvas, const char* png_path)
+{
+    log_info("saving screenshot of canvas to %s with full synchronization (slow)", png_path);
+    // TODO: more efficient screenshot saving with screencast
+
+    VklGpu* gpu = canvas->gpu;
+
+    vkl_gpu_wait(gpu);
+    VklImages* images = canvas->swapchain.images;
+    VklImages staging = vkl_images(canvas->gpu, VK_IMAGE_TYPE_2D, 1);
+
+    // Staging images.
+    {
+        vkl_images_format(&staging, images->format);
+        vkl_images_size(&staging, images->width, images->height, images->depth);
+        vkl_images_tiling(&staging, VK_IMAGE_TILING_LINEAR);
+        vkl_images_usage(&staging, VK_IMAGE_USAGE_TRANSFER_DST_BIT);
+        vkl_images_layout(&staging, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        vkl_images_memory(
+            &staging, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        vkl_images_create(&staging);
+        vkl_images_transition(&staging);
+    }
+
+    // Copy from the swapchain image to the staging image.
+    {
+        VklBarrier barrier = vkl_barrier(canvas->gpu);
+        vkl_barrier_stages(
+            &barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+        vkl_barrier_images(&barrier, images);
+        VklCommands* cmds = &canvas->cmds_transfer;
+        vkl_cmd_reset(cmds, 0);
+        vkl_cmd_begin(cmds, 0);
+        vkl_barrier_images_layout(
+            &barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+        vkl_barrier_images_access(
+            &barrier, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT);
+        vkl_cmd_barrier(cmds, 0, &barrier);
+        vkl_cmd_copy_image(cmds, 0, images, &staging);
+        vkl_barrier_images_layout(
+            &barrier, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+        vkl_barrier_images_access(
+            &barrier, VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_TRANSFER_WRITE_BIT);
+        vkl_cmd_barrier(cmds, 0, &barrier);
+        vkl_cmd_end(cmds, 0);
+        vkl_cmd_submit_sync(cmds, 0);
+    }
+
+    // Make the screenshot.
+    {
+        uint8_t* rgba = calloc(staging.width * staging.height, 4 * sizeof(uint8_t));
+        vkl_images_download(&staging, 0, true, rgba);
+        vkl_gpu_wait(gpu);
+        write_png(png_path, images->width, images->height, rgba);
+        vkl_images_destroy(&staging);
+        FREE(rgba);
+    }
+}
 
 
 
-void vkl_screenshot_file(VklCanvas* canvas, const char* filename) {}
+uint8_t* vkl_screenshot(VklCanvas* canvas)
+{
+    log_error("not yet implemented");
+    return NULL;
+}
 
 
 

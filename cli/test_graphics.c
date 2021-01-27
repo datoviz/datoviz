@@ -128,7 +128,7 @@ static void _interact_callback(VklCanvas* canvas, VklEvent ev)
 #define INIT_GRAPHICS(type, flags)                                                                \
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);                                                      \
     VklGpu* gpu = vkl_gpu(app, 0);                                                                \
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, VKL_CANVAS_FLAGS_FPS);           \
+    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);                              \
     VklGraphics* graphics = vkl_graphics_builtin(canvas, type, flags);
 
 #define BEGIN_DATA(type, n, user_data)                                                            \
@@ -176,6 +176,11 @@ static void _interact_callback(VklCanvas* canvas, VklEvent ev)
     vkl_app_run(app, N_FRAMES);                                                                   \
     vkl_array_destroy(&tg.vertices);                                                              \
     vkl_array_destroy(&tg.indices);
+
+#define SCREENSHOT(name)                                                                          \
+    char path[1024];                                                                              \
+    snprintf(path, sizeof(path), "%s/docs/images/graphics/%s.png", ROOT_DIR, name);               \
+    vkl_screenshot_file(canvas, path);
 
 
 
@@ -523,6 +528,7 @@ int test_graphics_marker(TestContext* context)
     vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsMarkerParams), &params);
 
     RUN;
+    SCREENSHOT("marker")
     TEST_END
 }
 
