@@ -422,7 +422,7 @@ cdef extern from "<visky/visky.h>":
 
     ctypedef enum VklFilterType:
         VKL_FILTER_MIN = 0
-        VKL_FILTER_MAX = 1
+        VKL_FILTER_MAG = 1
 
     # from file: graphics.h
 

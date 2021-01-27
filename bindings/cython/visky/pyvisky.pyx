@@ -351,7 +351,7 @@ cdef class Visual:
         cdef size = value.size
         cdef item_size = np.dtype(value.dtype).itemsize
         texture = cv.vkl_ctx_texture(self._c_context, 3, shape, cv.VK_FORMAT_R16_UNORM)
-        cv.vkl_texture_filter(texture, cv.VKL_FILTER_MAX, cv.VK_FILTER_LINEAR);
+        cv.vkl_texture_filter(texture, cv.VKL_FILTER_MAG, cv.VK_FILTER_LINEAR);
         cdef cv.uvec3 VKL_ZERO_OFFSET = [0, 0, 0]
         cv.vkl_texture_upload(texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, size * item_size, &value.data[0])
         cv.vkl_visual_texture(self._c_visual, cv.VKL_SOURCE_TYPE_VOLUME, idx, texture)
