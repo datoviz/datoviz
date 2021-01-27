@@ -196,6 +196,12 @@ VklContext* vkl_context(VklGpu* gpu, VklWindow* window)
     context->color_texture.arr = _load_colormaps();
     context->color_texture.texture =
         vkl_ctx_texture(context, 2, (uvec3){256, 256, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+    vkl_texture_address_mode(
+        context->color_texture.texture, VKL_TEXTURE_AXIS_U,
+        VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
+    vkl_texture_address_mode(
+        context->color_texture.texture, VKL_TEXTURE_AXIS_V,
+        VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
     vkl_texture_upload(
         context->color_texture.texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, 256 * 256 * 4,
         context->color_texture.arr);
@@ -495,7 +501,7 @@ void vkl_texture_filter(VklTexture* texture, VklFilterType type, VkFilter filter
     case VKL_FILTER_MIN:
         vkl_sampler_min_filter(texture->sampler, filter);
         break;
-    case VKL_FILTER_MAX:
+    case VKL_FILTER_MAG:
         vkl_sampler_mag_filter(texture->sampler, filter);
         break;
     default:

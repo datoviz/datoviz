@@ -60,7 +60,7 @@ static VklTexture* _font_texture(VklContext* ctx, VklFontAtlas* atlas)
     uvec3 shape = {(uint32_t)atlas->width, (uint32_t)atlas->height, 1};
     VklTexture* texture = vkl_ctx_texture(ctx, 2, shape, VK_FORMAT_R8G8B8A8_UNORM);
     // NOTE: the font texture must have LINEAR filter! otherwise no antialiasing
-    vkl_texture_filter(texture, VKL_FILTER_MAX, VK_FILTER_LINEAR);
+    vkl_texture_filter(texture, VKL_FILTER_MAG, VK_FILTER_LINEAR);
     vkl_texture_filter(texture, VKL_FILTER_MIN, VK_FILTER_LINEAR);
 
     vkl_texture_upload(

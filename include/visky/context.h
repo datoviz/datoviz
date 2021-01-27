@@ -55,7 +55,7 @@ typedef enum
 typedef enum
 {
     VKL_FILTER_MIN,
-    VKL_FILTER_MAX,
+    VKL_FILTER_MAG,
 } VklFilterType;
 
 

@@ -16,7 +16,7 @@ END_INCL_NO_WARN
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define MESH VKL_MESH_CUBE
+#define MESH VKL_MESH_SURFACE
 
 #define MOUSE_VOLUME_WIDTH  320
 #define MOUSE_VOLUME_HEIGHT 456
@@ -142,7 +142,7 @@ static VklTexture* _mouse_volume(VklCanvas* canvas)
         vkl_ctx_texture(gpu->context, 3, (uvec3){ni, nj, nk}, VK_FORMAT_R16_UNORM);
     // WARNING: nearest filter causes visual artifacts when sampling from a 3D texture close to the
     // boundaries between different values
-    vkl_texture_filter(texture, VKL_FILTER_MAX, VK_FILTER_LINEAR);
+    vkl_texture_filter(texture, VKL_FILTER_MAG, VK_FILTER_LINEAR);
     vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_REPEAT);
     vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_REPEAT);
     vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_W, VK_SAMPLER_ADDRESS_MODE_REPEAT);
@@ -948,7 +948,7 @@ static VklMesh _graphics_mesh_example(VklMeshType type)
         uint32_t row_count = 2 * N + 1;
         uint32_t point_count = col_count * row_count;
         float* heights = calloc(point_count, sizeof(float));
-        float w = 1;
+        float w = 1.5;
         float x, y, z;
         for (uint32_t i = 0; i < row_count; i++)
         {
@@ -958,7 +958,8 @@ static VklMesh _graphics_mesh_example(VklMeshType type)
             {
                 y = (float)j / (col_count - 1);
                 y = -w + 2 * w * y;
-                z = .25 * sin(10 * x) * cos(10 * y);
+                z = .5 * sin(10 * x) * cos(10 * y);
+                z *= exp(-1 * (x * x + y * y));
                 heights[col_count * i + j] = z;
             }
         }
@@ -1008,10 +1009,36 @@ int test_graphics_mesh(TestContext* context)
     tg.graphics = graphics;
     VklMesh mesh = _graphics_mesh_example(MESH);
 
-    // NOTE: test overriding of texture coordinates with packed color
-    // for (uint32_t i = 0; i < mesh.vertices.item_count; i++)
-    //     vkl_colormap_packuv(
-    //         (cvec3){255, 128, 64}, ((VklGraphicsMeshVertex*)mesh.vertices.data)[i].uv);
+    // Texture.
+    VklTexture* texture = NULL;
+    // Square texture.
+    if (0)
+    {
+        texture = vkl_ctx_texture(gpu->context, 2, (uvec3){2, 2, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+        cvec4 tex_data[] = {
+            {255, 0, 0, 255}, //
+            {0, 255, 0, 255},
+            {0, 0, 255, 255},
+            {255, 255, 0, 255},
+        };
+        vkl_upload_texture(
+            canvas, texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, sizeof(tex_data), tex_data);
+    }
+
+    // Height map.
+    {
+        VklGraphicsMeshVertex* vertices = ((VklGraphicsMeshVertex*)mesh.vertices.data);
+        // Use the colormap texture.
+        texture = gpu->context->color_texture.texture;
+        float z = 0;
+        for (uint32_t i = 0; i < mesh.vertices.item_count; i++)
+        {
+            z = vertices[i].pos[1];
+            z = (z + .18) / .6;
+            // Get the coordinates within the colormap texture.
+            vkl_colormap_uv(VKL_CMAP_JET, TO_BYTE(z), vertices[i].uv);
+        }
+    }
 
     tg.vertices = mesh.vertices;
     tg.indices = mesh.indices;
@@ -1028,18 +1055,6 @@ int test_graphics_mesh(TestContext* context)
     if (index_count > 0)
         vkl_upload_buffers(
             canvas, tg.br_index, 0, index_count * tg.indices.item_size, tg.indices.data);
-
-    // Texture.
-    VklTexture* texture =
-        vkl_ctx_texture(gpu->context, 2, (uvec3){2, 2, 1}, VK_FORMAT_R8G8B8A8_UNORM);
-    cvec4 tex_data[] = {
-        {255, 0, 0, 255}, //
-        {0, 255, 0, 255},
-        {0, 0, 255, 255},
-        {255, 255, 0, 255},
-    };
-    vkl_upload_texture(
-        canvas, texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, sizeof(tex_data), tex_data);
 
     // Create the bindings.
     tg.bindings = vkl_bindings(&graphics->slots, canvas->swapchain.img_count);
@@ -1069,6 +1084,14 @@ int test_graphics_mesh(TestContext* context)
     // Interactivity.
     tg.interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
     vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _interact_callback, &tg);
+
+    VklArcball* arcball = &tg.interact.u.a;
+    versor q;
+    glm_quatv(q, M_PI / 6, (vec3){1, 0, 0});
+    glm_quat_mul(arcball->rotation, q, arcball->rotation);
+    glm_quatv(q, M_PI / 6, (vec3){0, 1, 0});
+    glm_quat_mul(arcball->rotation, q, arcball->rotation);
+    _arcball_update_mvp(arcball, &tg.interact.mvp);
 
     RUN;
     SCREENSHOT("mesh")

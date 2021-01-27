@@ -49,8 +49,9 @@
 
 ## Colormaps
 
-### `vkl_colormap_idx()`
 ### `vkl_colormap()`
+### `vkl_colormap_idx()`
+### `vkl_colormap_uv()`
 ### `vkl_colormap_scale()`
 ### `vkl_colormap_array()`
 ### `vkl_colormap_packuv()`

@@ -284,7 +284,7 @@ int test_visuals_volume_slice(TestContext* context)
         vkl_ctx_texture(gpu->context, 3, (uvec3){nt, nt, nt}, VK_FORMAT_R8_UNORM);
     // WARNING: nearest filter causes visual artifacts when sampling from a 3D texture close to the
     // boundaries between different values
-    vkl_texture_filter(texture, VKL_FILTER_MAX, VK_FILTER_NEAREST);
+    vkl_texture_filter(texture, VKL_FILTER_MAG, VK_FILTER_NEAREST);
     vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_REPEAT);
     vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_REPEAT);
     vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_W, VK_SAMPLER_ADDRESS_MODE_REPEAT);

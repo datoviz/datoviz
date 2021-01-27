@@ -324,7 +324,7 @@ static const unsigned char* _load_colormaps()
 }
 
 /**
- * Get the texture coordinates corresponding to a colormap and value.
+ * Get the texture integer coordinates corresponding to a colormap and value.
  *
  * @param cmap the colormap
  * @param value the value
@@ -346,6 +346,21 @@ VKY_INLINE void vkl_colormap_idx(VklColormap cmap, uint8_t value, cvec2 out)
     }
     out[0] = row;
     out[1] = col;
+}
+
+/**
+ * Get the texture normalized coordinates corresponding to a colormap and value.
+ *
+ * @param cmap the colormap
+ * @param value the value
+ * @param[out] out the colormap coordinates within the texture
+ */
+VKY_INLINE void vkl_colormap_uv(VklColormap cmap, uint8_t value, vec2 uv)
+{
+    cvec2 ij = {0};
+    vkl_colormap_idx(cmap, value, ij);
+    uv[0] = (ij[1] + .5) / 256.;
+    uv[1] = (ij[0] + .5) / 256.;
 }
 
 /**
