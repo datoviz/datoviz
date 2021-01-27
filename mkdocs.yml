@@ -34,7 +34,7 @@ nav:
   - User manual: 'user/index.md'
   - Expert manual: 'expert/index.md'
   - Developer manual: 'developer/index.md'
-  - C API reference: 'api/api.md'
+  - C API reference: 'api/index.md'
   - Gallery: 'gallery.md'
   - Quick start:
       - Introduction: 'quickstart/index.md'
@@ -72,10 +72,11 @@ nav:
   - Gallery:
       - Introduction: 'gallery.md'
   - API:
-      - Index: 'api/api.md'
+      - Index: 'api/index.md'
       - Scene API: 'api/scene.md'
       - Visual API: 'api/visual.md'
       - Controller API: 'api/controller.md'
       - Canvas API: 'api/canvas.md'
+      - GPU API: 'api/gpu.md'
       - vklite API: 'api/vklite.md'
       - Misc API: 'api/misc.md'

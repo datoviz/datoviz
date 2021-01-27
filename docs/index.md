@@ -18,7 +18,7 @@ The documentation is divided in:
 * [**Developer manual**](developer/index.md): for advanced users who want to contribute back to Visky
 * [**C API reference**](api/index.md)
 
-See also the [**gallery**](gallery/index.md).
+See also the [**gallery**](gallery.md).
 
 
 
