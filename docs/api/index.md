@@ -7,3 +7,4 @@
 * [GPU API](gpu.md)
 * [vklite API](vklite.md)
 * [Misc API](misc.md)
+* [Enumerations](enums.md)

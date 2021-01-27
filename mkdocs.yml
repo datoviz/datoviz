@@ -74,5 +74,6 @@ nav:
       - GPU API: 'api/gpu.md'
       - vklite API: 'api/vklite.md'
       - Misc API: 'api/misc.md'
+      - Enumerations: 'api/enums.md'
   - Gallery:
       - Introduction: 'gallery.md'

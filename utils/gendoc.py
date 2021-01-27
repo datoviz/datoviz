@@ -69,10 +69,12 @@ def grouper(n, iterable):
 
 def parse_defines(text):
     defines = re.findall(
-        r"#define (C[A-Z\_0-9]+)\s+([^\n]+)", text, re.MULTILINE)
+        r"#define ([A-Z\_0-9]+)\s+([a-zA-Z\_0-9\(\) \+\-]+)", text, re.MULTILINE)
     defines = dict(defines)
     defines = {k: v.replace('(', '').replace(')', '')
                for k, v in defines.items()}
+    defines = {k: v.strip()
+        for k, v in defines.items() if k.startswith('CMAP') or k.startswith('CPAL')}
     for k, v in defines.items():
         if v.isdigit():
             defines[k] = int(v)
@@ -86,7 +88,8 @@ def parse_defines(text):
     return defines
 
 
-def _parse_enum(text):
+def _parse_enum(text, defines=None):
+    defines = defines or {}
     enums = {}
     # syntax we don't want to see in the final parse tree
     LBRACE, RBRACE, EQ, COMMA, SEMICOLON = map(Suppress, "{}=,;")
@@ -110,21 +113,19 @@ def _parse_enum(text):
                 entry.value = int(entry.value)
             elif not entry.value:
                 entry.value = i
-            elif entry.value in ('false', 'true'):
-                entry.value = entry.value.capitalize()
+            elif entry.value in defines:
+                entry.value = defines[entry.value]
             l.append((entry.name, entry.value))
         enums[item.enum] = l
     return enums
 
 
-def _gen_enum(enums):
+def _gen_enum(name, values):
     out = ''
-    for name, l in enums.items():
-        out += f'ctypedef enum {name}:\n'
-        for identifier, value in l:
-            out += f'    {identifier} = {value}\n'
-        out += '\n'
-    return out
+    out += '| Name | Value |\n| ---- | ---- |\n'
+    for identifier, value in values:
+        out += f'| `{identifier}` | {value} |\n'
+    return out + '\n'
 
 
 def _parse_struct(text):
@@ -281,20 +282,38 @@ def _parse_markdown(api_text):
     return functions
 
 
+def _parse_markdown_enums(api_text):
+    # Parse the enums.md file and extracts all enums definitions
+    r = re.compile(r'#{2,}\s+`(\w+)`')  # ex: "### `VklMyEnum`"
+    enums = r.finditer(api_text)
+    return enums
+
+
 def parse_all_functions():
     all_funcs = {}
     for filename in iter_header_files():
         text = read_file(filename)
         # Parse the functions
         f = _parse_funcs(text)
-        print(f"{len(f):02d} functions found in {filename}")
+        # print(f"{len(f):02d} functions found in {filename}")
         all_funcs.update(f)
     return all_funcs
+
+
+def parse_all_enums():
+    all_enums = {}
+    for filename in iter_header_files():
+        text = read_file(filename)
+        defines = parse_defines(text)
+        enums = _parse_enum(text, defines)
+        all_enums.update(enums)
+    return all_enums
 
 
 def config_hook(config):
     config['gendoc'] = {
         'functions': parse_all_functions(),
+        'enums': parse_all_enums(),
     }
     return config
 
@@ -303,16 +322,31 @@ def hook(markdown, page, config, files):
     assert 'gendoc' in config
     if 'api/' not in page.file.abs_src_path:
         return
-    funcs_to_output = _parse_markdown(markdown)
-    out = markdown
-    # Output text, copy of the original text
-    for m in funcs_to_output:
-        name = m.group(1)
-        # Find the position of the function in the current text
-        r = re.compile(r'^#+\s+`%s\(\)`' % name, flags=re.MULTILINE)
-        m2 = r.search(out)
-        i = m2.end(0)
-        insert = _gen_func_doc(name, config['gendoc']['functions'][name])
-        out = insert_text(out, i, f'\n\n{insert}\n\n')
+    # Enums
+    if 'enum' in page.file.abs_src_path:
+        enums_to_output = _parse_markdown_enums(markdown)
+        out = markdown
+        # Output text, copy of the original text
+        for m in enums_to_output:
+            name = m.group(1)
+            # Find the position of the function in the current text
+            r = re.compile(r'^#+\s+`%s`' % name, flags=re.MULTILINE)
+            m2 = r.search(out)
+            i = m2.end(0)
+            insert = _gen_enum(name, config['gendoc']['enums'][name])
+            out = insert_text(out, i, f'\n\n{insert}\n\n')
+    # Functions
+    else:
+        funcs_to_output = _parse_markdown(markdown)
+        out = markdown
+        # Output text, copy of the original text
+        for m in funcs_to_output:
+            name = m.group(1)
+            # Find the position of the function in the current text
+            r = re.compile(r'^#+\s+`%s\(\)`' % name, flags=re.MULTILINE)
+            m2 = r.search(out)
+            i = m2.end(0)
+            insert = _gen_func_doc(name, config['gendoc']['functions'][name])
+            out = insert_text(out, i, f'\n\n{insert}\n\n')
     out = out.strip() + '\n'
     return out
