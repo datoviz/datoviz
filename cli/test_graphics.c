@@ -178,9 +178,13 @@ static void _interact_callback(VklCanvas* canvas, VklEvent ev)
     vkl_array_destroy(&tg.indices);
 
 #define SCREENSHOT(name)                                                                          \
-    char path[1024];                                                                              \
-    snprintf(path, sizeof(path), "%s/docs/images/graphics/%s.png", ROOT_DIR, name);               \
-    vkl_screenshot_file(canvas, path);
+    {                                                                                             \
+        char screenshot_path[1024];                                                               \
+        snprintf(                                                                                 \
+            screenshot_path, sizeof(screenshot_path), "%s/docs/images/graphics/%s.png", ROOT_DIR, \
+            name);                                                                                \
+        vkl_screenshot_file(canvas, screenshot_path);                                             \
+    }
 
 
 
@@ -377,6 +381,7 @@ int test_graphics_points(TestContext* context)
     vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsPointParams), &params);
 
     RUN;
+    SCREENSHOT("points")
     TEST_END
 }
 
@@ -396,6 +401,7 @@ int test_graphics_lines(TestContext* context)
     END_DATA
     BINDINGS_NO_PARAMS
     RUN;
+    SCREENSHOT("lines")
     TEST_END
 }
 
@@ -415,6 +421,7 @@ int test_graphics_line_strip(TestContext* context)
     END_DATA
     BINDINGS_NO_PARAMS
     RUN;
+    SCREENSHOT("line_strip")
     TEST_END
 }
 
@@ -451,6 +458,7 @@ int test_graphics_triangles(TestContext* context)
     END_DATA
     BINDINGS_NO_PARAMS
     RUN;
+    SCREENSHOT("triangles")
     TEST_END
 }
 
@@ -472,6 +480,7 @@ int test_graphics_triangle_strip(TestContext* context)
     END_DATA
     BINDINGS_NO_PARAMS
     RUN;
+    SCREENSHOT("triangle_strip")
     TEST_END
 }
 
@@ -492,6 +501,7 @@ int test_graphics_triangle_fan(TestContext* context)
     END_DATA
     BINDINGS_NO_PARAMS
     RUN;
+    SCREENSHOT("triangle_fan")
     TEST_END
 }
 
@@ -568,6 +578,7 @@ int test_graphics_segment(TestContext* context)
     BINDINGS_NO_PARAMS
     vkl_event_callback(canvas, VKL_EVENT_RESIZE, 0, VKL_EVENT_MODE_SYNC, _resize, &tg);
     RUN;
+    SCREENSHOT("segment")
     TEST_END
 }
 
@@ -644,6 +655,7 @@ int test_graphics_text(TestContext* context)
     vkl_event_callback(canvas, VKL_EVENT_RESIZE, 0, VKL_EVENT_MODE_SYNC, _resize, &tg);
 
     RUN;
+    SCREENSHOT("text")
     TEST_END
 }
 
@@ -707,6 +719,7 @@ int test_graphics_image(TestContext* context)
     vkl_bindings_update(&tg.bindings);
 
     RUN;
+    SCREENSHOT("image")
     FREE(tex_data)
     TEST_END
 }
@@ -803,6 +816,7 @@ int test_graphics_volume_slice(TestContext* context)
         canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _graphics_volume_callback, &tg);
 
     RUN;
+    SCREENSHOT("volume_slice")
     FREE(tex_data)
     TEST_END
 }
@@ -898,6 +912,7 @@ int test_graphics_volume_1(TestContext* context)
     _arcball_update_mvp(arcball, &tg.interact.mvp);
 
     RUN;
+    SCREENSHOT("volume")
     FREE(tex_data)
     TEST_END
 }
@@ -1041,5 +1056,6 @@ int test_graphics_mesh(TestContext* context)
     vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _interact_callback, &tg);
 
     RUN;
+    SCREENSHOT("mesh")
     TEST_END
 }
