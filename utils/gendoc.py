@@ -227,7 +227,8 @@ def _gen_func_doc(name, func):
             # if l == '':
             #     l = '\n\n'
             description.append(l)
-    description = '\n'.join(description).strip()
+    brief = description[0] if description else ''
+    description = '\n'.join(description[1:]).strip()
 
     # Signature
     args_s = ', '.join(
@@ -241,7 +242,7 @@ def _gen_func_doc(name, func):
             args_s = '\n' + indent(args_s, '    ')
 
     signature = f'```c\n{out} {name}({args_s});\n```'
-    signature = f'=== "C"\n{indent(signature, prefix="    ")}'
+    # signature = f'=== "C"\n{indent(signature, prefix="    ")}'
 
     # Parameters table
     params_s = ""
@@ -265,7 +266,7 @@ def _gen_func_doc(name, func):
         desc = ret[ret.index(' ') + 1:]
         params_s += f"| {ICONS['out']} `returns` | `{out}` | {desc} |\n"
 
-    return f"{signature}\n\n{params_s}\n{description}\n"
+    return f"{brief}\n\n{signature}\n\n{params_s}\n{description}\n"
 
 
 def _camel_to_snake(name):
