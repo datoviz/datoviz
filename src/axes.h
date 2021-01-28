@@ -408,7 +408,6 @@ static void _add_axes(VklController* controller)
 
     vkl_panel_margins(panel, (vec4){25, 25, 100, 100});
 
-    int flags = 0;
     for (uint32_t coord = 0; coord < 2; coord++)
         _axes_visual(controller, (VklAxisCoord)coord);
 

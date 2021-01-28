@@ -173,7 +173,7 @@ int test_visuals_line(TestContext* context)
     INIT;
 
     VklVisual visual = vkl_visual(canvas);
-    vkl_visual_builtin(&visual, VKL_VISUAL_SEGMENT, 0);
+    vkl_visual_builtin(&visual, VKL_VISUAL_LINE, 0);
 
     const uint32_t N = 100;
     dvec3* pos0 = calloc(N, sizeof(dvec3));
@@ -204,6 +204,38 @@ int test_visuals_line(TestContext* context)
     FREE(pos1);
     FREE(color);
     SCREENSHOT("line")
+    END;
+}
+
+
+
+int test_visuals_line_strip(TestContext* context)
+{
+    INIT;
+
+    VklVisual visual = vkl_visual(canvas);
+    vkl_visual_builtin(&visual, VKL_VISUAL_LINE_STRIP, 0);
+
+    const uint32_t N = 1000;
+    dvec3* pos = calloc(N, sizeof(dvec3));
+    cvec4* color = calloc(N, sizeof(cvec4));
+    float t = 0;
+    for (uint32_t i = 0; i < N; i++)
+    {
+        t = -1 + 2 * (float)i / (N - 1);
+        pos[i][0] = -1 + 2 * t;
+        pos[i][1] = .5 * sin(8 * M_2PI * t);
+        vkl_colormap_scale(VKL_CMAP_RAINBOW, t, 0, 1, color[i]);
+    }
+
+    // Set visual data.
+    vkl_visual_data(&visual, VKL_PROP_POS, 0, N, pos);
+    vkl_visual_data(&visual, VKL_PROP_COLOR, 0, N, color);
+
+    RUN;
+    FREE(pos);
+    FREE(color);
+    SCREENSHOT("line_strip")
     END;
 }
 

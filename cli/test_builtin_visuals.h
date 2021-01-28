@@ -16,13 +16,22 @@
 /*  Visuals tests                                                                                */
 /*************************************************************************************************/
 
+// Basic visuals.
 int test_visuals_point(TestContext* context);
-int test_visuals_marker(TestContext* context);
 int test_visuals_line(TestContext* context);
-int test_visuals_mesh(TestContext* context);
-int test_visuals_volume_slice(TestContext* context);
+int test_visuals_line_strip(TestContext* context);
+int test_visuals_triangle(TestContext* context);
+int test_visuals_triangle_strip(TestContext* context);
+int test_visuals_triangle_fan(TestContext* context);
+
+// 2D visuals.
+int test_visuals_marker(TestContext* context);
 int test_visuals_axes_2D_1(TestContext* context);
 int test_visuals_axes_2D_update(TestContext* context);
+
+// 3D visuals.
+int test_visuals_mesh(TestContext* context);
+int test_visuals_volume_slice(TestContext* context);
 
 
 

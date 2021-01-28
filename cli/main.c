@@ -79,14 +79,17 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_graphics_triangle_strip), //
     CASE_FIXTURE_NONE(test_graphics_triangle_fan),   //
 
-    CASE_FIXTURE_NONE(test_graphics_marker_1),           //
-    CASE_FIXTURE_NONE(test_graphics_marker_screenshots), //
-    CASE_FIXTURE_NONE(test_graphics_segment),            //
-    CASE_FIXTURE_NONE(test_graphics_text),               //
-    CASE_FIXTURE_NONE(test_graphics_image),              //
-    CASE_FIXTURE_NONE(test_graphics_volume_1),           //
-    CASE_FIXTURE_NONE(test_graphics_volume_slice),       //
-    CASE_FIXTURE_NONE(test_graphics_mesh),               //
+    CASE_FIXTURE_NONE(test_graphics_marker_1), //
+
+    // generate marker screenshots:
+    // CASE_FIXTURE_NONE(test_graphics_marker_screenshots), //
+
+    CASE_FIXTURE_NONE(test_graphics_segment),      //
+    CASE_FIXTURE_NONE(test_graphics_text),         //
+    CASE_FIXTURE_NONE(test_graphics_image),        //
+    CASE_FIXTURE_NONE(test_graphics_volume_1),     //
+    CASE_FIXTURE_NONE(test_graphics_volume_slice), //
+    CASE_FIXTURE_NONE(test_graphics_mesh),         //
 
     // transforms
     CASE_FIXTURE_NONE(test_transforms_1), //
@@ -123,12 +126,13 @@ static TestCase TEST_CASES[] = {
 
     // builtin visuals
     CASE_FIXTURE_NONE(test_visuals_point),          //
-    CASE_FIXTURE_NONE(test_visuals_marker),         //
     CASE_FIXTURE_NONE(test_visuals_line),           //
-    CASE_FIXTURE_NONE(test_visuals_mesh),           //
-    CASE_FIXTURE_NONE(test_visuals_volume_slice),   //
+    CASE_FIXTURE_NONE(test_visuals_line_strip),     //
+    CASE_FIXTURE_NONE(test_visuals_marker),         //
     CASE_FIXTURE_NONE(test_visuals_axes_2D_1),      //
     CASE_FIXTURE_NONE(test_visuals_axes_2D_update), //
+    CASE_FIXTURE_NONE(test_visuals_mesh),           //
+    CASE_FIXTURE_NONE(test_visuals_volume_slice),   //
 
     // axes
     CASE_FIXTURE_NONE(test_axes_1), //
