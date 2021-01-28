@@ -220,13 +220,6 @@ def generate_colormaps_doc():
     return out
 
 
-def hook(markdown, page, config, files):
-    if 'color' in page.file.abs_src_path:
-        return (
-            markdown + '\n\n## List of colormaps and color palettes\n\n' +
-            generate_colormaps_doc())
-
-
 if __name__ == '__main__':
     # generate_binary()
     # generate_colormaps_doc()
