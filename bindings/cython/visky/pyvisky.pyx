@@ -55,8 +55,8 @@ _MOUSE_STATES = {
 }
 
 _VISUALS = {
-    'point': cv.VKL_VISUAL_MARKER_RAW,
-    'marker': cv.VKL_VISUAL_MARKER_AGG,
+    'point': cv.VKL_VISUAL_POINT,
+    'marker': cv.VKL_VISUAL_MARKER,
     'mesh': cv.VKL_VISUAL_MESH,
     'volume_slice': cv.VKL_VISUAL_VOLUME_SLICE,
 }
@@ -302,7 +302,7 @@ cdef class Panel:
         self._c_scene = c_scene
 
     def visual(self, vtype, depth_test=None, transform='auto'):
-        visual_type = _VISUALS.get(vtype, cv.VKL_VISUAL_MARKER_RAW)
+        visual_type = _VISUALS.get(vtype, cv.VKL_VISUAL_MARKER)
         flags = 0
         if depth_test:
             flags |= cv.VKL_GRAPHICS_FLAGS_DEPTH_TEST_ENABLE

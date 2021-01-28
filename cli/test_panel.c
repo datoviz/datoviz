@@ -81,7 +81,7 @@ int test_panel_1(TestContext* context)
     VklGrid grid = vkl_grid(canvas, 2, 3);
 
     VklVisual visual = vkl_visual(canvas);
-    vkl_visual_builtin(&visual, VKL_VISUAL_MARKER_RAW, 0);
+    vkl_visual_builtin(&visual, VKL_VISUAL_POINT, 0);
 
     vkl_panel_visual(vkl_panel(&grid, 0, 0), &visual);
 

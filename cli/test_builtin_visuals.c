@@ -96,12 +96,12 @@ static void _common_data(VklVisual* visual)
 /*  Builtin visual tests                                                                         */
 /*************************************************************************************************/
 
-int test_visuals_marker_raw(TestContext* context)
+int test_visuals_point(TestContext* context)
 {
     INIT;
 
     VklVisual visual = vkl_visual(canvas);
-    vkl_visual_builtin(&visual, VKL_VISUAL_MARKER_RAW, 0);
+    vkl_visual_builtin(&visual, VKL_VISUAL_POINT, 0);
 
     const uint32_t N = 1000;
     dvec3* pos = calloc(N, sizeof(dvec3));
@@ -129,12 +129,12 @@ int test_visuals_marker_raw(TestContext* context)
 
 
 
-int test_visuals_marker_agg(TestContext* context)
+int test_visuals_marker(TestContext* context)
 {
     INIT;
 
     VklVisual visual = vkl_visual(canvas);
-    vkl_visual_builtin(&visual, VKL_VISUAL_MARKER_AGG, 0);
+    vkl_visual_builtin(&visual, VKL_VISUAL_MARKER, 0);
 
     const uint32_t N = 1000;
     dvec3* pos = calloc(N, sizeof(dvec3));
@@ -161,7 +161,7 @@ int test_visuals_marker_agg(TestContext* context)
 
 
 
-int test_visuals_segment_raw(TestContext* context)
+int test_visuals_line(TestContext* context)
 {
     INIT;
 

@@ -47,10 +47,10 @@ static void _common_props(VklVisual* visual)
 
 
 /*************************************************************************************************/
-/*  Marker raw                                                                                   */
+/*  Point                                                                                        */
 /*************************************************************************************************/
 
-static void _visual_marker_raw(VklVisual* visual)
+static void _visual_point(VklVisual* visual)
 {
     ASSERT(visual != NULL);
     VklCanvas* canvas = visual->canvas;
@@ -96,10 +96,10 @@ static void _visual_marker_raw(VklVisual* visual)
 
 
 /*************************************************************************************************/
-/*  Marker agg                                                                                   */
+/*  Marker                                                                                       */
 /*************************************************************************************************/
 
-static void _visual_marker_agg(VklVisual* visual)
+static void _visual_marker(VklVisual* visual)
 {
     ASSERT(visual != NULL);
     VklCanvas* canvas = visual->canvas;
@@ -503,7 +503,7 @@ static void _visual_volume_slice(VklVisual* visual)
 /*  Segment raw                                                                                  */
 /*************************************************************************************************/
 
-static void _visual_segment_raw(VklVisual* visual)
+static void _visual_line(VklVisual* visual)
 {
     ASSERT(visual != NULL);
     VklCanvas* canvas = visual->canvas;
@@ -951,17 +951,17 @@ void vkl_visual_builtin(VklVisual* visual, VklVisualType type, int flags)
     switch (type)
     {
 
-    case VKL_VISUAL_MARKER_RAW:
-        _visual_marker_raw(visual);
+    case VKL_VISUAL_POINT:
+        _visual_point(visual);
         break;
 
-    case VKL_VISUAL_MARKER_AGG:
-        _visual_marker_agg(visual);
+    case VKL_VISUAL_MARKER:
+        _visual_marker(visual);
         break;
 
     case VKL_VISUAL_SEGMENT:
         // TODO: raw/agg
-        _visual_segment_raw(visual);
+        _visual_line(visual);
         break;
 
     case VKL_VISUAL_MESH:

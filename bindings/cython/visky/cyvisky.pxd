@@ -120,8 +120,8 @@ cdef extern from "<visky/visky.h>":
 
     ctypedef enum VklVisualType:
         VKL_VISUAL_NONE = 0
-        VKL_VISUAL_MARKER_RAW = 1
-        VKL_VISUAL_MARKER_AGG = 2
+        VKL_VISUAL_POINT = 1
+        VKL_VISUAL_MARKER = 2
         VKL_VISUAL_SEGMENT = 3
         VKL_VISUAL_ARROW = 4
         VKL_VISUAL_PATH = 5
@@ -762,7 +762,6 @@ cdef extern from "<visky/visky.h>":
         VKL_GRAPHICS_TRIANGLE = 4
         VKL_GRAPHICS_TRIANGLE_STRIP = 5
         VKL_GRAPHICS_TRIANGLE_FAN = 6
-        VKL_GRAPHICS_MARKER_RAW = 7
         VKL_GRAPHICS_MARKER = 8
         VKL_GRAPHICS_SEGMENT = 9
         VKL_GRAPHICS_ARROW = 10

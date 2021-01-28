@@ -184,7 +184,7 @@ int test_scene_1(TestContext* context)
     VklScene* scene = vkl_scene(canvas, 2, 3);
     VklPanel* panel = vkl_scene_panel(scene, 0, 0, VKL_CONTROLLER_PANZOOM, 0);
     vkl_panel_mode(panel, VKL_PANEL_FLOATING);
-    VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_MARKER_RAW, 0);
+    VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_POINT, 0);
 
     // Visual data.
     const uint32_t N = 1000;
@@ -206,7 +206,7 @@ int test_scene_1(TestContext* context)
     VklPanel* panel2 = vkl_scene_panel(scene, 1, 1, VKL_CONTROLLER_PANZOOM, 0);
     vkl_panel_span(panel2, VKL_GRID_VERTICAL, 2);
 
-    VklVisual* visual2 = vkl_scene_visual(panel2, VKL_VISUAL_MARKER_RAW, 0);
+    VklVisual* visual2 = vkl_scene_visual(panel2, VKL_VISUAL_POINT, 0);
     vkl_visual_data(visual2, VKL_PROP_POS, 0, N, pos);
     vkl_visual_data(visual2, VKL_PROP_COLOR, 0, N, color);
     vkl_visual_data(visual2, VKL_PROP_MARKER_SIZE, 0, 1, &param);
@@ -274,7 +274,7 @@ int test_scene_axes(TestContext* context)
     VklPanel* panel = vkl_scene_panel(scene, 0, 0, VKL_CONTROLLER_AXES_2D, 0);
 
     // Markers.
-    VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_MARKER_RAW, 0);
+    VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_POINT, 0);
     const uint32_t N = 10000;
     dvec3* pos = calloc(N, sizeof(dvec3));
     cvec4* color = calloc(N, sizeof(cvec4));
@@ -324,7 +324,7 @@ int test_scene_logistic(TestContext* context)
 
     // Markers.
     VklVisual* visual =
-        vkl_scene_visual(panel, VKL_VISUAL_MARKER_RAW, VKL_GRAPHICS_FLAGS_DEPTH_TEST_DISABLE);
+        vkl_scene_visual(panel, VKL_VISUAL_POINT, VKL_GRAPHICS_FLAGS_DEPTH_TEST_DISABLE);
 
     const uint32_t N = 1000000;
     dvec3* pos = calloc(N, sizeof(dvec3));
