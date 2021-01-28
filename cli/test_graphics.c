@@ -18,10 +18,6 @@ END_INCL_NO_WARN
 
 #define MESH VKL_MESH_SURFACE
 
-#define MOUSE_VOLUME_WIDTH  320
-#define MOUSE_VOLUME_HEIGHT 456
-#define MOUSE_VOLUME_DEPTH  528
-
 
 
 /*************************************************************************************************/
@@ -125,35 +121,6 @@ static void _interact_callback(VklCanvas* canvas, VklEvent ev)
 
     vkl_interact_update(&tg->interact, canvas->viewport, &canvas->mouse, &canvas->keyboard);
     vkl_upload_buffers(canvas, tg->br_mvp, 0, sizeof(VklMVP), &tg->interact.mvp);
-}
-
-static VklTexture* _mouse_volume(VklCanvas* canvas)
-{
-    VklGpu* gpu = canvas->gpu;
-
-    const uint32_t ni = MOUSE_VOLUME_WIDTH;
-    const uint32_t nj = MOUSE_VOLUME_HEIGHT;
-    const uint32_t nk = MOUSE_VOLUME_DEPTH;
-
-    // Texture.
-    char path[1024];
-    snprintf(path, sizeof(path), "%s/volume/%s", DATA_DIR, "atlas_25.img");
-    VklTexture* texture =
-        vkl_ctx_texture(gpu->context, 3, (uvec3){ni, nj, nk}, VK_FORMAT_R16_UNORM);
-    // WARNING: nearest filter causes visual artifacts when sampling from a 3D texture close to the
-    // boundaries between different values
-    vkl_texture_filter(texture, VKL_FILTER_MAG, VK_FILTER_LINEAR);
-    vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_W, VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    uint16_t* tex_data = (uint16_t*)read_file(path, NULL);
-    for (uint32_t i = 0; i < (ni * nj * nk); i++)
-        tex_data[i] *= 10;
-    vkl_upload_texture(
-        canvas, texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, //
-        ni * nj * nk * sizeof(uint16_t), tex_data);
-    FREE(tex_data);
-    return texture;
 }
 
 

@@ -69,6 +69,7 @@ typedef enum
     VKL_PROP_PROJ,
     VKL_PROP_TIME,
     VKL_PROP_INDEX,
+    VKL_PROP_SCALE,
     VKL_PROP_TRANSFORM,
 } VklPropType;
 

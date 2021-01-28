@@ -483,6 +483,11 @@ static void _visual_volume_slice(VklVisual* visual)
     vkl_visual_prop_copy(
         prop, 4, offsetof(VklGraphicsVolumeSliceParams, cmap), VKL_ARRAY_COPY_SINGLE, 1);
 
+    // Scaling factor.
+    prop = vkl_visual_prop(visual, VKL_PROP_SCALE, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_PARAM, 0);
+    vkl_visual_prop_copy(
+        prop, 5, offsetof(VklGraphicsVolumeSliceParams, scale), VKL_ARRAY_COPY_SINGLE, 1);
+
 
 
     // Colormap texture prop.

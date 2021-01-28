@@ -263,6 +263,7 @@ int test_visuals_mesh(TestContext* context)
     _arcball_update_mvp(arcball, &interact.mvp);
 
     RUN;
+    SCREENSHOT("mesh")
     END;
 }
 
@@ -275,51 +276,71 @@ int test_visuals_volume_slice(TestContext* context)
     VklVisual visual = vkl_visual(canvas);
     vkl_visual_builtin(&visual, VKL_VISUAL_VOLUME_SLICE, 0);
 
-    // float x = .5;
-    // vkl_visual_data(&visual, VKL_PROP_POS, 0, 2, (dvec3[]){{-x, +x, +.5}, {-x, +x, -.5}});
-    // vkl_visual_data(&visual, VKL_PROP_POS, 1, 2, (dvec3[]){{+x, -x, +.5}, {+x, -x, -.5}});
-    // vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 0, 2, (dvec3[]){{0, 0, 1}, {0, 0, 1}});
-    // vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 1, 2, (dvec3[]){{1, 1, 1}, {1, 1, 1}});
+    float x = MOUSE_VOLUME_DEPTH / (float)MOUSE_VOLUME_HEIGHT;
+    float y = 1;
+    float z = 0;
+    float t = 0;
+    dvec3 p0[8], p1[8], p2[8], p3[8];
+    vec3 uvw0[8], uvw1[8], uvw2[8], uvw3[8];
+    for (uint32_t i = 0; i < 8; i++)
+    {
+        t = 1 - i / (float)(8 - 1);
+        z = -1 + 2 * t;
+        t = .1 + .8 * t;
 
-    double x = .5;
-    vkl_visual_data(&visual, VKL_PROP_POS, 0, 1, (dvec3[]){{-x, +x, 0}});
-    vkl_visual_data(&visual, VKL_PROP_POS, 1, 1, (dvec3[]){{+x, +x, 0}});
-    vkl_visual_data(&visual, VKL_PROP_POS, 2, 1, (dvec3[]){{+x, -x, 0}});
-    vkl_visual_data(&visual, VKL_PROP_POS, 3, 1, (dvec3[]){{-x, -x, 0}});
+        p0[i][0] = -x, p0[i][1] = -y, p0[i][2] = +z;
+        p1[i][0] = +x, p1[i][1] = -y, p1[i][2] = +z;
+        p2[i][0] = +x, p2[i][1] = +y, p2[i][2] = +z;
+        p3[i][0] = -x, p3[i][1] = +y, p3[i][2] = +z;
 
-    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 0, 1, (vec3[]){{0.1, 0.1, 0.1}});
-    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 1, 1, (vec3[]){{0.9, 0.1, 0.1}});
-    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 2, 1, (vec3[]){{0.9, 0.9, 0.1}});
-    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 3, 1, (vec3[]){{0.1, 0.9, 0.1}});
+        uvw0[i][0] = 1, uvw0[i][1] = 0, uvw0[i][2] = t;
+        uvw1[i][0] = 1, uvw1[i][1] = 1, uvw1[i][2] = t;
+        uvw2[i][0] = 0, uvw2[i][1] = 1, uvw2[i][2] = t;
+        uvw3[i][0] = 0, uvw3[i][1] = 0, uvw3[i][2] = t;
+    }
 
-    VklColormap cmap = VKL_CMAP_HSV;
+    vkl_visual_data(&visual, VKL_PROP_POS, 0, 8, p0);
+    vkl_visual_data(&visual, VKL_PROP_POS, 1, 8, p1);
+    vkl_visual_data(&visual, VKL_PROP_POS, 2, 8, p2);
+    vkl_visual_data(&visual, VKL_PROP_POS, 3, 8, p3);
+
+    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 0, 8, uvw0);
+    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 1, 8, uvw1);
+    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 2, 8, uvw2);
+    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 3, 8, uvw3);
+
+    vkl_visual_data(&visual, VKL_PROP_TRANSFER_X, 0, 1, (vec4[]){{0, 1, 1, 1}});
+    vkl_visual_data(&visual, VKL_PROP_TRANSFER_Y, 0, 1, (vec4[]){{0, 1, 1, 1}});
+    vkl_visual_data(&visual, VKL_PROP_TRANSFER_X, 1, 1, (vec4[]){{0, .05, .051, 1}});
+    vkl_visual_data(&visual, VKL_PROP_TRANSFER_Y, 1, 1, (vec4[]){{0, 0, .75, .75}});
+
+    float scale = 13;
+    vkl_visual_data(&visual, VKL_PROP_SCALE, 0, 1, &scale);
+
+    VklColormap cmap = VKL_CMAP_BONE;
     vkl_visual_data(&visual, VKL_PROP_COLORMAP, 0, 1, &cmap);
 
-    const uint32_t nt = 12;
-    uint8_t* volume = calloc(nt * nt * nt, sizeof(uint8_t));
-    for (uint32_t i = 0; i < nt * nt * nt; i++)
-        volume[i] = i % 256;
-    VklTexture* texture =
-        vkl_ctx_texture(gpu->context, 3, (uvec3){nt, nt, nt}, VK_FORMAT_R8_UNORM);
-    // WARNING: nearest filter causes visual artifacts when sampling from a 3D texture close to the
-    // boundaries between different values
-    vkl_texture_filter(texture, VKL_FILTER_MAG, VK_FILTER_NEAREST);
-    vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_W, VK_SAMPLER_ADDRESS_MODE_REPEAT);
-
-    vkl_texture_upload(
-        texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, nt * nt * nt * sizeof(uint8_t), volume);
+    // Texture.
+    VklTexture* volume = _mouse_volume(canvas);
     vkl_visual_texture(
         &visual, VKL_SOURCE_TYPE_COLOR_TEXTURE, 0, gpu->context->color_texture.texture);
-    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_VOLUME, 0, texture);
+    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_VOLUME, 0, volume);
 
     VklInteract interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
     visual.user_data = &interact;
     vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _update_interact, &visual);
 
+    VklArcball* arcball = &interact.u.a;
+    versor q;
+    glm_quatv(q, +M_PI / 8, (vec3){1, 0, 0});
+    glm_quat_mul(arcball->rotation, q, arcball->rotation);
+    glm_quatv(q, M_PI - M_PI / 6, (vec3){0, 1, 0});
+    glm_quat_mul(arcball->rotation, q, arcball->rotation);
+    arcball->camera.eye[2] = 3;
+    _arcball_update_mvp(arcball, &interact.mvp);
+
     RUN;
-    FREE(volume);
+    SCREENSHOT("volume_slice")
     END;
 }
 
