@@ -139,24 +139,29 @@ int test_visuals_marker(TestContext* context)
     const uint32_t N = 1000;
     dvec3* pos = calloc(N, sizeof(dvec3));
     cvec4* color = calloc(N, sizeof(cvec4));
+    float* size = calloc(N, sizeof(size));
+    float t = 0;
     for (uint32_t i = 0; i < N; i++)
     {
-        RANDN_POS(pos[i])
-        RAND_COLOR(color[i])
+        t = -1 + 2 * i / (float)(N - 1);
+        pos[i][0] = t;
+        pos[i][1] = .25 * sin(M_2PI * t);
+        pos[i][1] += .25 * randn();
+        vkl_colormap(VKL_CPAL256_GLASBEY, i % 256, color[i]);
+        color[i][3] = 192;
+        size[i] = 5 + 45 * rand_float();
     }
 
     // Set visual data.
     vkl_visual_data(&visual, VKL_PROP_POS, 0, N, pos);
     vkl_visual_data(&visual, VKL_PROP_COLOR, 0, N, color);
-
-    // // Params.
-    // float param = 20.0f;
-    // vkl_visual_data(&visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
+    vkl_visual_data(&visual, VKL_PROP_MARKER_SIZE, 0, N, size);
 
     RUN;
     SCREENSHOT("marker")
     FREE(pos);
     FREE(color);
+    FREE(size);
     END;
 }
 
