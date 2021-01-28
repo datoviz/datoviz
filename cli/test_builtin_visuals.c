@@ -26,10 +26,6 @@ static void _mouse_callback(VklCanvas* canvas, VklEvent ev)
 
 static void _resize(VklCanvas* canvas, VklEvent ev)
 {
-    canvas->viewport.margins[0] = 100;
-    canvas->viewport.margins[1] = 100;
-    canvas->viewport.margins[2] = 100;
-    canvas->viewport.margins[3] = 100;
     ASSERT(canvas->viewport.viewport.minDepth < canvas->viewport.viewport.maxDepth);
     vkl_upload_buffers(canvas, br_viewport, 0, sizeof(VklViewport), &canvas->viewport);
 }

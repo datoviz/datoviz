@@ -211,6 +211,18 @@ The **point** visual is a trimmed-downed version of the **marker** visual. It is
 | `color` | 0 | `color` | line color |
 
 
+### Line strip
+
+![](../images/visuals/line_strip.png)
+
+#### Props
+
+| Type | Index | Type | Description |
+| ---- | ---- | ---- | ---- |
+| `pos` | 0 | `dvec3` | point position |
+| `color` | 0 | `color` | point color |
+
+
 
 
 
