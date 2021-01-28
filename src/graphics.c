@@ -73,7 +73,7 @@ static void _common_bindings(VklGraphics* graphics)
 /*  Basic graphics                                                                               */
 /*************************************************************************************************/
 
-static void _graphics_points(VklCanvas* canvas, VklGraphics* graphics)
+static void _graphics_point(VklCanvas* canvas, VklGraphics* graphics)
 {
     SHADER(VERTEX, "graphics_point_vert")
     SHADER(FRAGMENT, "graphics_point_frag")
@@ -638,11 +638,11 @@ VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsType type, int f
     {
 
         // Basic graphics types.
-    case VKL_GRAPHICS_POINTS:
-        _graphics_points(canvas, graphics);
+    case VKL_GRAPHICS_POINT:
+        _graphics_point(canvas, graphics);
         break;
 
-    case VKL_GRAPHICS_LINES:
+    case VKL_GRAPHICS_LINE:
         _graphics_basic(canvas, graphics, VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
         break;
 
@@ -650,7 +650,7 @@ VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsType type, int f
         _graphics_basic(canvas, graphics, VK_PRIMITIVE_TOPOLOGY_LINE_STRIP);
         break;
 
-    case VKL_GRAPHICS_TRIANGLES:
+    case VKL_GRAPHICS_TRIANGLE:
         _graphics_basic(canvas, graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
         break;
 

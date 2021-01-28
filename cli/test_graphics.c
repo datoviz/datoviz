@@ -232,7 +232,7 @@ static VklTexture* _mouse_volume(VklCanvas* canvas)
 /*  Misc graphics tests */
 /*************************************************************************************************/
 
-static void _graphics_points_wheel_callback(VklCanvas* canvas, VklEvent ev)
+static void _graphics_point_wheel_callback(VklCanvas* canvas, VklEvent ev)
 {
     TestGraphics* tg = ev.user_data;
 
@@ -254,7 +254,7 @@ static void _graphics_update_mvp(VklCanvas* canvas, VklEvent ev)
 
 int test_graphics_dynamic(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_POINTS, 0)
+    INIT_GRAPHICS(VKL_GRAPHICS_POINT, 0)
     BEGIN_DATA(VklVertex, 10000, NULL)
     for (uint32_t i = 0; i < vertex_count; i++)
     {
@@ -292,7 +292,7 @@ int test_graphics_dynamic(TestContext* context)
     vkl_bindings_update(&tg.bindings);
 
     vkl_event_callback(
-        canvas, VKL_EVENT_MOUSE_WHEEL, 0, VKL_EVENT_MODE_SYNC, _graphics_points_wheel_callback,
+        canvas, VKL_EVENT_MOUSE_WHEEL, 0, VKL_EVENT_MODE_SYNC, _graphics_point_wheel_callback,
         &tg);
     vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _graphics_update_mvp, &tg);
 
@@ -316,7 +316,7 @@ static void _graphics_3D_callback(VklCanvas* canvas, VklEvent ev)
 
 int test_graphics_3D(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_POINTS, VKL_GRAPHICS_FLAGS_DEPTH_TEST_ENABLE)
+    INIT_GRAPHICS(VKL_GRAPHICS_POINT, VKL_GRAPHICS_FLAGS_DEPTH_TEST_ENABLE)
     BEGIN_DATA(VklVertex, 3, NULL)
     {
         // Top red
@@ -401,9 +401,9 @@ int test_graphics_depth(TestContext* context)
 /*  Basic graphics tests                                                                         */
 /*************************************************************************************************/
 
-int test_graphics_points(TestContext* context)
+int test_graphics_point(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_POINTS, 0)
+    INIT_GRAPHICS(VKL_GRAPHICS_POINT, 0)
     BEGIN_DATA(VklVertex, 10000, NULL)
     for (uint32_t i = 0; i < vertex_count; i++)
     {
@@ -421,15 +421,15 @@ int test_graphics_points(TestContext* context)
     vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsPointParams), &params);
 
     RUN;
-    SCREENSHOT("points")
+    SCREENSHOT("point")
     TEST_END
 }
 
 
 
-int test_graphics_lines(TestContext* context)
+int test_graphics_line(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_LINES, 0)
+    INIT_GRAPHICS(VKL_GRAPHICS_LINE, 0)
     BEGIN_DATA(VklVertex, 100, NULL)
     for (uint32_t i = 0; i < vertex_count; i++)
     {
@@ -441,7 +441,7 @@ int test_graphics_lines(TestContext* context)
     END_DATA
     BINDINGS_NO_PARAMS
     RUN;
-    SCREENSHOT("lines")
+    SCREENSHOT("line")
     TEST_END
 }
 
@@ -467,9 +467,9 @@ int test_graphics_line_strip(TestContext* context)
 
 
 
-int test_graphics_triangles(TestContext* context)
+int test_graphics_triangle(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_TRIANGLES, 0)
+    INIT_GRAPHICS(VKL_GRAPHICS_TRIANGLE, 0)
     const uint32_t N = 40; // number of triangles
     BEGIN_DATA(VklVertex, N * 3, NULL)
 
@@ -500,7 +500,7 @@ int test_graphics_triangles(TestContext* context)
     END_DATA
     BINDINGS_NO_PARAMS
     RUN;
-    SCREENSHOT("triangles")
+    SCREENSHOT("triangle")
     TEST_END
 }
 

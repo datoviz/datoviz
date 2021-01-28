@@ -72,10 +72,10 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_graphics_3D),      //
     CASE_FIXTURE_NONE(test_graphics_depth),   //
 
-    CASE_FIXTURE_NONE(test_graphics_points),         //
-    CASE_FIXTURE_NONE(test_graphics_lines),          //
+    CASE_FIXTURE_NONE(test_graphics_point),          //
+    CASE_FIXTURE_NONE(test_graphics_line),           //
     CASE_FIXTURE_NONE(test_graphics_line_strip),     //
-    CASE_FIXTURE_NONE(test_graphics_triangles),      //
+    CASE_FIXTURE_NONE(test_graphics_triangle),       //
     CASE_FIXTURE_NONE(test_graphics_triangle_strip), //
     CASE_FIXTURE_NONE(test_graphics_triangle_fan),   //
 

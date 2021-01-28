@@ -78,6 +78,18 @@ static void _common_data(VklVisual* visual)
     vkl_visual_destroy(&visual);                                                                  \
     TEST_END
 
+// NOTE: avoid screenshot in interactive mode, otherwise the canvas is destroyed *before* taking
+// the screenshot, leading to a segfault.
+#define SCREENSHOT(name)                                                                          \
+    if (N_FRAMES != 0)                                                                            \
+    {                                                                                             \
+        char screenshot_path[1024];                                                               \
+        snprintf(                                                                                 \
+            screenshot_path, sizeof(screenshot_path), "%s/docs/images/visuals/%s.png", ROOT_DIR,  \
+            name);                                                                                \
+        vkl_screenshot_file(canvas, screenshot_path);                                             \
+    }
+
 
 
 /*************************************************************************************************/
@@ -109,6 +121,7 @@ int test_visuals_marker_raw(TestContext* context)
     vkl_visual_data(&visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
 
     RUN;
+    // SCREENSHOT("point")
     FREE(pos);
     FREE(color);
     END;

@@ -756,10 +756,10 @@ cdef extern from "<visky/visky.h>":
 
     ctypedef enum VklGraphicsType:
         VKL_GRAPHICS_NONE = 0
-        VKL_GRAPHICS_POINTS = 1
-        VKL_GRAPHICS_LINES = 2
+        VKL_GRAPHICS_POINT = 1
+        VKL_GRAPHICS_LINE = 2
         VKL_GRAPHICS_LINE_STRIP = 3
-        VKL_GRAPHICS_TRIANGLES = 4
+        VKL_GRAPHICS_TRIANGLE = 4
         VKL_GRAPHICS_TRIANGLE_STRIP = 5
         VKL_GRAPHICS_TRIANGLE_FAN = 6
         VKL_GRAPHICS_MARKER_RAW = 7

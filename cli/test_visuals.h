@@ -16,7 +16,7 @@ static void _marker_visual(VklVisual* visual)
     VklProp* prop = NULL;
 
     // Graphics.
-    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_POINTS, 0));
+    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_POINT, 0));
 
     // Sources.
     {

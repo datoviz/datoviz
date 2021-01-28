@@ -58,7 +58,7 @@ static void _visual_marker_raw(VklVisual* visual)
     VklProp* prop = NULL;
 
     // Graphics.
-    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_POINTS, visual->flags));
+    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_POINT, visual->flags));
 
     // Sources
     vkl_visual_source(
@@ -511,7 +511,7 @@ static void _visual_segment_raw(VklVisual* visual)
     VklProp* prop = NULL;
 
     // Graphics.
-    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_LINES, 0));
+    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_LINE, 0));
 
     // Sources
     vkl_visual_source(

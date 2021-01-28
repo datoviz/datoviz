@@ -14,10 +14,10 @@ int test_graphics_3D(TestContext* context);
 int test_graphics_depth(TestContext* context);
 
 // Basic graphics.
-int test_graphics_points(TestContext* context);
-int test_graphics_lines(TestContext* context);
+int test_graphics_point(TestContext* context);
+int test_graphics_line(TestContext* context);
 int test_graphics_line_strip(TestContext* context);
-int test_graphics_triangles(TestContext* context);
+int test_graphics_triangle(TestContext* context);
 int test_graphics_triangle_strip(TestContext* context);
 int test_graphics_triangle_fan(TestContext* context);
 int test_graphics_marker(TestContext* context);
