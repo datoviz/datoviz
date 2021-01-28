@@ -99,6 +99,13 @@ VKY_EXPORT void vkl_mesh_scale(VklMesh* mesh, vec3 scale);
  */
 VKY_EXPORT void vkl_mesh_rotate(VklMesh* mesh, float angle, vec3 axis);
 
+/**
+ * Apply the transformation matrix to a mesh.
+ *
+ * @param mesh the mesh
+ */
+VKY_EXPORT void vkl_mesh_transform(VklMesh* mesh);
+
 
 
 /*************************************************************************************************/

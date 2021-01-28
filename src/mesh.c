@@ -67,6 +67,18 @@ void vkl_mesh_rotate(VklMesh* mesh, float angle, vec3 axis)
     vkl_mesh_transform_add(mesh, tr);
 }
 
+void vkl_mesh_transform(VklMesh* mesh)
+{
+    ASSERT(mesh != NULL);
+    VklGraphicsMeshVertex* vertex = NULL;
+    for (uint32_t i = 0; i < mesh->vertices.item_count; i++)
+    {
+        vertex = vkl_array_item(&mesh->vertices, i);
+        transform_pos(mesh, vertex->pos);
+        transform_normal(mesh, vertex->normal);
+    }
+}
+
 void vkl_mesh_normalize(VklMesh* mesh)
 {
     const float INF = 1000000;
