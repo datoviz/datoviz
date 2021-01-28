@@ -121,32 +121,33 @@ cdef extern from "<visky/visky.h>":
     ctypedef enum VklVisualType:
         VKL_VISUAL_NONE = 0
         VKL_VISUAL_POINT = 1
-        VKL_VISUAL_MARKER = 2
-        VKL_VISUAL_SEGMENT = 3
-        VKL_VISUAL_ARROW = 4
-        VKL_VISUAL_PATH = 5
-        VKL_VISUAL_TEXT = 6
-        VKL_VISUAL_TRIANGLE = 7
-        VKL_VISUAL_RECTANGLE = 8
-        VKL_VISUAL_IMAGE = 9
-        VKL_VISUAL_DISC = 10
-        VKL_VISUAL_SECTOR = 11
-        VKL_VISUAL_MESH = 12
-        VKL_VISUAL_POLYGON = 13
-        VKL_VISUAL_PSLG = 14
-        VKL_VISUAL_HISTOGRAM = 15
-        VKL_VISUAL_AREA = 16
-        VKL_VISUAL_CANDLE = 17
-        VKL_VISUAL_GRAPH = 18
-        VKL_VISUAL_SURFACE = 19
-        VKL_VISUAL_VOLUME_SLICE = 20
-        VKL_VISUAL_VOLUME = 21
-        VKL_VISUAL_FAKE_SPHERE = 22
-        VKL_VISUAL_AXES_2D = 23
-        VKL_VISUAL_AXES_3D = 24
-        VKL_VISUAL_COLORMAP = 25
-        VKL_VISUAL_COUNT = 26
-        VKL_VISUAL_CUSTOM = 27
+        VKL_VISUAL_LINE = 2
+        VKL_VISUAL_TRIANGLE = 3
+        VKL_VISUAL_RECTANGLE = 4
+        VKL_VISUAL_MARKER = 5
+        VKL_VISUAL_SEGMENT = 6
+        VKL_VISUAL_ARROW = 7
+        VKL_VISUAL_PATH = 8
+        VKL_VISUAL_TEXT = 9
+        VKL_VISUAL_IMAGE = 10
+        VKL_VISUAL_DISC = 11
+        VKL_VISUAL_SECTOR = 12
+        VKL_VISUAL_MESH = 13
+        VKL_VISUAL_POLYGON = 14
+        VKL_VISUAL_PSLG = 15
+        VKL_VISUAL_HISTOGRAM = 16
+        VKL_VISUAL_AREA = 17
+        VKL_VISUAL_CANDLE = 18
+        VKL_VISUAL_GRAPH = 19
+        VKL_VISUAL_SURFACE = 20
+        VKL_VISUAL_VOLUME_SLICE = 21
+        VKL_VISUAL_VOLUME = 22
+        VKL_VISUAL_FAKE_SPHERE = 23
+        VKL_VISUAL_AXES_2D = 24
+        VKL_VISUAL_AXES_3D = 25
+        VKL_VISUAL_COLORMAP = 26
+        VKL_VISUAL_COUNT = 27
+        VKL_VISUAL_CUSTOM = 28
 
     ctypedef enum VklAxisLevel:
         VKL_AXES_LEVEL_MINOR = 0
@@ -450,6 +451,7 @@ cdef extern from "<visky/visky.h>":
         VKL_MARKER_TAG = 16
         VKL_MARKER_TRIANGLE = 17
         VKL_MARKER_VBAR = 18
+        VKL_MARKER_COUNT = 19
 
     ctypedef enum VklCapType:
         VKL_CAP_TYPE_NONE = 0
@@ -762,17 +764,17 @@ cdef extern from "<visky/visky.h>":
         VKL_GRAPHICS_TRIANGLE = 4
         VKL_GRAPHICS_TRIANGLE_STRIP = 5
         VKL_GRAPHICS_TRIANGLE_FAN = 6
-        VKL_GRAPHICS_MARKER = 8
-        VKL_GRAPHICS_SEGMENT = 9
-        VKL_GRAPHICS_ARROW = 10
-        VKL_GRAPHICS_PATH = 11
-        VKL_GRAPHICS_TEXT = 12
-        VKL_GRAPHICS_IMAGE = 13
-        VKL_GRAPHICS_VOLUME_SLICE = 14
-        VKL_GRAPHICS_MESH = 15
-        VKL_GRAPHICS_FAKE_SPHERE = 16
-        VKL_GRAPHICS_VOLUME = 17
-        VKL_GRAPHICS_COUNT = 18
+        VKL_GRAPHICS_MARKER = 7
+        VKL_GRAPHICS_SEGMENT = 8
+        VKL_GRAPHICS_ARROW = 9
+        VKL_GRAPHICS_PATH = 10
+        VKL_GRAPHICS_TEXT = 11
+        VKL_GRAPHICS_IMAGE = 12
+        VKL_GRAPHICS_VOLUME_SLICE = 13
+        VKL_GRAPHICS_MESH = 14
+        VKL_GRAPHICS_FAKE_SPHERE = 15
+        VKL_GRAPHICS_VOLUME = 16
+        VKL_GRAPHICS_COUNT = 17
 
     ctypedef enum VklTextureAxis:
         VKL_TEXTURE_AXIS_U = 0

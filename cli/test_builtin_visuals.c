@@ -121,7 +121,7 @@ int test_visuals_point(TestContext* context)
     vkl_visual_data(&visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
 
     RUN;
-    // SCREENSHOT("point")
+    SCREENSHOT("point")
     FREE(pos);
     FREE(color);
     END;
@@ -154,6 +154,7 @@ int test_visuals_marker(TestContext* context)
     // vkl_visual_data(&visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
 
     RUN;
+    SCREENSHOT("marker")
     FREE(pos);
     FREE(color);
     END;

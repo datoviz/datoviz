@@ -59,6 +59,7 @@ typedef enum
     VKL_MARKER_TAG = 16,
     VKL_MARKER_TRIANGLE = 17,
     VKL_MARKER_VBAR = 18,
+    VKL_MARKER_COUNT,
 } VklMarkerType;
 
 

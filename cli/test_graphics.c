@@ -559,13 +559,32 @@ int test_graphics_marker(TestContext* context)
 {
     INIT_GRAPHICS(VKL_GRAPHICS_MARKER, 0)
     BEGIN_DATA(VklGraphicsMarkerVertex, 1000, NULL)
-    for (uint32_t i = 0; i < vertex_count; i++)
+
+    // Random markers.
+    for (uint32_t i = 0; i < vertex_count - VKL_MARKER_COUNT; i++)
     {
         RANDN_POS(vertices[i].pos)
+        vertices[i].pos[1] -= .1;
         RAND_COLOR(vertices[i].color)
-        vertices[i].color[3] = 196;
-        vertices[i].size = 20 + rand_float() * 50;
+        vertices[i].color[3] = rand_byte();
+        vertices[i].size = 10 + 40 * rand_float();
         vertices[i].marker = VKL_MARKER_DISC;
+    }
+
+    // Top bar with all marker types.
+    uint32_t j = 0;
+    for (uint32_t i = vertex_count - VKL_MARKER_COUNT; i < vertex_count; i++)
+    {
+        j = i - (vertex_count - VKL_MARKER_COUNT);
+        ASSERT(j < VKL_MARKER_COUNT);
+
+        vertices[i].pos[0] = .9 * (-1 + 2 * j / (float)(VKL_MARKER_COUNT - 1));
+        vertices[i].pos[1] = +.9;
+        vkl_colormap_scale(VKL_CMAP_HSV, j, 0, VKL_MARKER_COUNT, vertices[i].color);
+        vertices[i].color[3] = 255;
+        vertices[i].size = 35;
+        vertices[i].angle = TO_BYTE(i / (float)(VKL_MARKER_COUNT - 1));
+        vertices[i].marker = (VklMarkerType)(j);
     }
     END_DATA
 
