@@ -30,6 +30,16 @@ static void _resize(VklCanvas* canvas, VklEvent ev)
     vkl_upload_buffers(canvas, br_viewport, 0, sizeof(VklViewport), &canvas->viewport);
 }
 
+static void _resize_margins(VklCanvas* canvas, VklEvent ev)
+{
+    ASSERT(canvas->viewport.viewport.minDepth < canvas->viewport.viewport.maxDepth);
+    canvas->viewport.margins[0] = 100;
+    canvas->viewport.margins[1] = 100;
+    canvas->viewport.margins[2] = 100;
+    canvas->viewport.margins[3] = 100;
+    vkl_upload_buffers(canvas, br_viewport, 0, sizeof(VklViewport), &canvas->viewport);
+}
+
 static void _common_data(VklVisual* visual)
 {
     ASSERT(visual != NULL);
@@ -306,6 +316,42 @@ int test_visuals_triangle(TestContext* context)
 
 
 
+int test_visuals_triangle_strip(TestContext* context)
+{
+    INIT;
+
+    VklVisual visual = vkl_visual(canvas);
+    vkl_visual_builtin(&visual, VKL_VISUAL_TRIANGLE_STRIP, 0);
+
+    const uint32_t N = 40;
+    dvec3* pos = calloc(N, sizeof(dvec3));
+    cvec4* color = calloc(N, sizeof(cvec4));
+    float m = .1;
+    float t = 0;
+    float a = 0;
+    float y = canvas->swapchain.images->width / (float)canvas->swapchain.images->height;
+    for (uint32_t i = 0; i < N; i++)
+    {
+        t = .9 * (float)i / (float)(N - 1);
+        a = M_2PI * t;
+        pos[i][0] = (.5 + (i % 2 == 0 ? +m : -m)) * cos(a);
+        pos[i][1] = y * (.5 + (i % 2 == 0 ? +m : -m)) * sin(a);
+        vkl_colormap_scale(VKL_CMAP_HSV, t, 0, 1, color[i]);
+    }
+
+    // Set visual data.
+    vkl_visual_data(&visual, VKL_PROP_POS, 0, N, pos);
+    vkl_visual_data(&visual, VKL_PROP_COLOR, 0, N, color);
+
+    RUN;
+    FREE(pos);
+    FREE(color);
+    SCREENSHOT("triangle_strip")
+    END;
+}
+
+
+
 /*************************************************************************************************/
 /*  2D visual tests                                                                              */
 /*************************************************************************************************/
@@ -359,7 +405,7 @@ int test_visuals_axes_2D_1(TestContext* context)
     vkl_visual_data_source(&visual, VKL_SOURCE_TYPE_PARAM, 0, 0, 1, 1, &params);
 
     _common_data(&visual);
-    vkl_event_callback(canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _resize, NULL);
+    vkl_event_callback(canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _resize_margins, NULL);
 
     vkl_app_run(app, N_FRAMES);
     SCREENSHOT("axes")
@@ -462,7 +508,7 @@ int test_visuals_axes_2D_update(TestContext* context)
     _common_data(&visual);
 
     vkl_event_callback(canvas, VKL_EVENT_TIMER, .1, VKL_EVENT_MODE_SYNC, _visual_update, &visual);
-    vkl_event_callback(canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _resize, NULL);
+    vkl_event_callback(canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _resize_margins, NULL);
     vkl_app_run(app, N_FRAMES);
     FREE(xticks);
     FREE(yticks);

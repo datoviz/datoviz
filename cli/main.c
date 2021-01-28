@@ -129,11 +129,14 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_visuals_line),           //
     CASE_FIXTURE_NONE(test_visuals_line_strip),     //
     CASE_FIXTURE_NONE(test_visuals_triangle),       //
+    CASE_FIXTURE_NONE(test_visuals_triangle_strip), //
+
     CASE_FIXTURE_NONE(test_visuals_marker),         //
     CASE_FIXTURE_NONE(test_visuals_axes_2D_1),      //
     CASE_FIXTURE_NONE(test_visuals_axes_2D_update), //
-    CASE_FIXTURE_NONE(test_visuals_mesh),           //
-    CASE_FIXTURE_NONE(test_visuals_volume_slice),   //
+
+    CASE_FIXTURE_NONE(test_visuals_mesh),         //
+    CASE_FIXTURE_NONE(test_visuals_volume_slice), //
 
     // axes
     CASE_FIXTURE_NONE(test_axes_1), //
