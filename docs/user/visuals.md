@@ -237,6 +237,46 @@ The sources and props below are shared by all builtin visuals.
 | `time` | 0 | `float` | `mvp` | time since app start, in seconds |
 
 
+## Common enums
+
 ### Visual transform
 
 ### Visual clip
+
+### Data types
+
+| Data type | Component size | Type size | Description |
+| ---- | ---- | ---- | ---- |
+| `char`  | 8 |  8 | 1 byte (unsigned byte) |
+| `cvec2` | 8 | 16 | 2 bytes |
+| `cvec3` | 8 | 24 | 3 bytes |
+| `cvec4` | 8 | 32 | 4 bytes |
+| `ushort` | 16 | 16 | 1 unsigned short integer |
+| `usvec2` | 16 | 32 | 2 ushort |
+| `usvec3` | 16 | 48 | 3 ushort |
+| `usvec4` | 16 | 64 | 4 ushort |
+| `short` | 16 | 16 | 1 signed short integer |
+| `svec2` | 16 | 32 | 2 short |
+| `svec3` | 16 | 48 | 3 short |
+| `svec4` | 16 | 64 | 4 short |
+| `uint` | 32 | 32 | 1 unsigned long integer |
+| `uvec2` | 32 | 64 | 2 uint |
+| `uvec3` | 32 | 96 | 3 uint |
+| `uvec4` | 32 | 128 | 4 uint |
+| `int` | 32 | 32 | 1 long integer |
+| `ivec2` | 32 | 64 | 2 int |
+| `ivec3` | 32 | 96 | 3 int |
+| `ivec4` | 32 | 128 | 4 int |
+| `float` | 32 | 32 | 1 single-precision floating-point number |
+| `vec2` | 32 | 64 | 2 float |
+| `vec3` | 32 | 96 | 3 float |
+| `vec4` | 32 | 128 | 4 float |
+| `double` | 64 | 64 | 1 double-precision floating-point number |
+| `dvec2` | 64 | 128 | 2 double |
+| `dvec3` | 64 | 192 | 3 double |
+| `dvec4` | 64 | 256 | 4 double |
+| `mat2` | 32 | 128 | 2x2 matrix of floats |
+| `mat3` | 32 | 288 | 3x3 matrix of floats |
+| `mat4` | 32 | 512 | 4x4 matrix of floats |
+| `custom` | - | - | used by structured/record arrays (heterogeneous types) |
+| `str` | 64 | 64 | pointer to `char` |
