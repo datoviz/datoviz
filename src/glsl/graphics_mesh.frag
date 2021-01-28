@@ -3,7 +3,7 @@
 
 layout (std140, binding = USER_BINDING) uniform Params {
     mat4 lights_pos_0; // lights 0-3
-    mat4 lights_params_0; // for each light, coefs for ambient, diffuse, specular
+    mat4 lights_params_0; // for each light, coefs for ambient, diffuse, specular, specular expon
     vec4 view_pos;
     vec4 tex_coefs; // blending coefficients for the textures
     vec4 clip_coefs;
@@ -30,7 +30,8 @@ void main() {
         discard;
 
     vec3 normal, light_dir, ambient, diffuse, view_dir, reflect_dir, specular, color;
-    vec3 lpar, lpos;
+    vec4 lpar;
+    vec3 lpos;
     vec3 light_color = vec3(1); // TODO
     float diff, spec;
 
@@ -52,7 +53,8 @@ void main() {
     // Light position and params.
     for (int i = 0; i < 3; i++) {
         lpos = params.lights_pos_0[i].xyz;
-        lpar = params.lights_params_0[i].xyz;
+        lpar = params.lights_params_0[i];
+        if (length(lpar) == 0) break;
 
         // Light direction.
         light_dir = normalize(lpos - in_pos);
@@ -70,7 +72,7 @@ void main() {
         view_dir = normalize(params.view_pos.xyz - in_pos);
         reflect_dir = reflect(-light_dir, normal);
         // TODO: customizable specular exponent
-        spec = pow(max(dot(view_dir, reflect_dir), 0.0), 32.0);
+        spec = pow(max(dot(view_dir, reflect_dir), 0.0), lpar.w);
         specular = spec * light_color;
 
         // Total color.

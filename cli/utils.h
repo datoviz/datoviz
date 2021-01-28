@@ -10,8 +10,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH  1600
-#define HEIGHT 1200
+#define WIDTH  1280
+#define HEIGHT 960
 
 // Pass N = FPS * DURATION frames before taking a test screenshot
 #define FPS         60

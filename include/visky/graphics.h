@@ -327,14 +327,15 @@ struct VklGraphicsMeshParams
 static VklGraphicsMeshParams default_graphics_mesh_params(vec3 eye)
 {
     VklGraphicsMeshParams params = {0};
-    params.lights_params_0[0][0] = 0.2;
-    params.lights_params_0[0][1] = 0.5;
-    params.lights_params_0[0][2] = 0.3;
-    params.lights_pos_0[0][0] = -1;
-    params.lights_pos_0[0][1] = 1;
-    params.lights_pos_0[0][2] = +10;
-    params.tex_coefs[0] = 1;
-    glm_vec3_copy(eye, params.view_pos);
+    params.lights_params_0[0][0] = 0.2;  // ambient coefficient
+    params.lights_params_0[0][1] = 0.5;  // diffuse coefficient
+    params.lights_params_0[0][2] = 0.3;  // specular coefficient
+    params.lights_params_0[0][3] = 32.0; // specular exponent
+    params.lights_pos_0[0][0] = -1;      // light position
+    params.lights_pos_0[0][1] = 1;       //
+    params.lights_pos_0[0][2] = +10;     //
+    params.tex_coefs[0] = 1;             // texture blending coefficients
+    glm_vec3_copy(eye, params.view_pos); // camera position
     return params;
 }
 
