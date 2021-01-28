@@ -10,8 +10,13 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
+#if !OS_MACOS
 #define WIDTH  1280
 #define HEIGHT 960
+#else
+#define WIDTH  800
+#define HEIGHT 600
+#endif
 
 // Pass N = FPS * DURATION frames before taking a test screenshot
 #define FPS         60

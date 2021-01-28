@@ -77,8 +77,9 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_graphics_line_strip),     //
     CASE_FIXTURE_NONE(test_graphics_triangle),       //
     CASE_FIXTURE_NONE(test_graphics_triangle_strip), //
-    CASE_FIXTURE_NONE(test_graphics_triangle_fan),   //
-
+#if !OS_MACOS
+    CASE_FIXTURE_NONE(test_graphics_triangle_fan), //
+#endif
     CASE_FIXTURE_NONE(test_graphics_marker_1), //
 
     // generate marker screenshots:
@@ -130,7 +131,9 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_visuals_line_strip),     //
     CASE_FIXTURE_NONE(test_visuals_triangle),       //
     CASE_FIXTURE_NONE(test_visuals_triangle_strip), //
-    CASE_FIXTURE_NONE(test_visuals_triangle_fan),   //
+#if !OS_MACOS
+    CASE_FIXTURE_NONE(test_visuals_triangle_fan), //
+#endif
 
     CASE_FIXTURE_NONE(test_visuals_marker),         //
     CASE_FIXTURE_NONE(test_visuals_polygon),        //
