@@ -91,7 +91,7 @@ Volume
 
 ### Points
 
-![](../images/graphics/points.png)
+![](../images/graphics/point.png)
 
 ```c
 Point
@@ -100,7 +100,7 @@ Point
 
 ### Lines
 
-![](../images/graphics/lines.png)
+![](../images/graphics/line.png)
 
 ```c
 Lines
@@ -114,7 +114,7 @@ Lines
 
 ### Triangles
 
-![](../images/graphics/triangles.png)
+![](../images/graphics/triangle.png)
 
 
 ### Triangle strip

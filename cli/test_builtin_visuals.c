@@ -398,7 +398,7 @@ int test_visuals_axes_2D_1(TestContext* context)
     vkl_event_callback(canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _resize, NULL);
 
     vkl_app_run(app, N_FRAMES);
-    SCREENSHOT("axis")
+    SCREENSHOT("axes")
     FREE(xticks);
     FREE(xticks_minor);
     FREE(text);

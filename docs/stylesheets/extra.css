@@ -2,3 +2,7 @@ h3[id^=vkl_] {
     border-top: 5px solid whitesmoke;
     padding-top: 20px;
 }
+
+img[alt^=marker_] {
+    width: 32px;
+}

@@ -585,15 +585,16 @@ int test_graphics_marker_screenshots(TestContext* context)
 {
     VklApp* app = vkl_app(VKL_BACKEND_GLFW);
     VklGpu* gpu = vkl_gpu(app, 0);
-    VklCanvas* canvas = vkl_canvas(gpu, 256, 256, 0);
+    VklCanvas* canvas = vkl_canvas(gpu, 128, 128, 0);
+    vkl_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});
     VklGraphics* graphics = vkl_graphics_builtin(canvas, VKL_GRAPHICS_MARKER, 0);
     BEGIN_DATA(VklGraphicsMarkerVertex, 1, NULL)
 
     vertices[0].marker = 0;
-    vertices[0].size = 200;
-    vertices[0].color[0] = 39;
-    vertices[0].color[1] = 35;
-    vertices[0].color[2] = 153;
+    vertices[0].size = 100;
+    vertices[0].color[0] = 124;
+    vertices[0].color[1] = 141;
+    vertices[0].color[2] = 194;
     vertices[0].color[3] = 255;
 
     END_DATA
@@ -603,9 +604,9 @@ int test_graphics_marker_screenshots(TestContext* context)
     BINDINGS_PARAMS
 
     VklGraphicsMarkerParams params = {0};
-    params.edge_color[0] = 1;
-    params.edge_color[1] = 1;
-    params.edge_color[2] = 1;
+    params.edge_color[0] = 0;
+    params.edge_color[1] = 0;
+    params.edge_color[2] = 0;
     params.edge_color[3] = 1;
     params.edge_width = 5;
     vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsMarkerParams), &params);
