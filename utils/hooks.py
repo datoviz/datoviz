@@ -1,3 +1,6 @@
+from pathlib import Path
+from joblib import Memory
+
 from .gendoc import (
     insert_functions_doc, insert_enums_doc, insert_graphics_doc,
     parse_headers,
@@ -5,7 +8,9 @@ from .gendoc import (
 from .export_colormap import generate_colormaps_doc
 
 
-# ENABLE = 0
+cachedir = Path(__file__).parent / '.joblib'
+MEM = Memory(cachedir)
+parse_headers = MEM.cache(parse_headers)
 
 
 def config_hook(config):
@@ -14,8 +19,6 @@ def config_hook(config):
 
 
 def page_hook(markdown, page, config, files):
-    # if not ENABLE:
-    #     return
     assert 'gendoc' in config
     path = page.file.abs_src_path
     if 'graphics' in path:
