@@ -71,17 +71,6 @@
 | 1 | `text` | tick labels |
 
 
-#### Sources
-
-| Type | Index | Graphics | Description |
-| ---- | ---- | ---- | ---- |
-| `vertex` | 0 | `segment` | vertex buffer for ticks |
-| `index` | 0 | `segment` | index buffer for ticks |
-| `vertex` | 1 | `text` | vertex buffer for labels |
-| `index` | 1 | `text` | index buffer for labels |
-| `font_atlas` | 0 | `text` | font atlas for labels |
-
-
 #### Props
 
 | Type | Index | Type | Graphics | Description |
@@ -95,6 +84,17 @@
 | `text_size` | 0 | `float` | `text` | tick labels font size |
 
 
+#### Sources
+
+| Type | Index | Graphics | Description |
+| ---- | ---- | ---- | ---- |
+| `vertex` | 0 | `segment` | vertex buffer for ticks |
+| `index` | 0 | `segment` | index buffer for ticks |
+| `vertex` | 1 | `text` | vertex buffer for labels |
+| `index` | 1 | `text` | index buffer for labels |
+| `font_atlas` | 0 | `text` | font atlas for labels |
+
+
 
 
 
@@ -106,16 +106,73 @@
 
 ![](../images/visuals/mesh.png)
 
+Features:
+
+* Up to four blendable textures.
+* Up to four lights
+
 #### Props
 
 | Type | Index | Type | Description |
 | ---- | ---- | ---- | ---- |
-| `pos` | 0 | `dvec3` | line start position |
-| `pos` | 1 | `dvec3` | line end position |
-| `color` | 0 | `color` | line color |
+| `pos` | 0 | `dvec3` | vertex position |
+| `normal` | 0 | `vec3` | vertex normal |
+| `texcoords` | 0 | `vec2` | texture coordinates |
+| `color` | 0 | `cvec4` | color as RGB 3-bytes |
+| `alpha` | 0 | `char` | alpha transparency value |
+| `index` | 0 | `uint32` | faces, as vertex indices |
+| `light_pos` | 0 | `mat4` | light positions (*uniform*) |
+| `light_params` | 0 | `mat4` | light coefficients (*uniform*) |
+| `view_pos` | 0 | `vec4` | camera position (*uniform*) |
+| `texcoefs` | 0 | `vec4` | texture blending coefficients (*uniform*) |
+| `clip` | 0 | `vec4` | clip vector (*uniform*) |
+
+!!! warning
+    The `texcoords` and `color` props are mutually exclusive. The color has precedence over the texcoords. The mesh vertex struct has no color field, only a texcoord field. When the color prop is set, special texcoords values are computed (packing 3 bytes into the second texture coordinate floating-point number).
+
+#### Sources
+
+| Type | Index | Description |
+| ---- | ---- | ---- |
+| `vertex` | 0 | vertex buffer (vertices) |
+| `index` | 0 | index buffer (faces) |
+| `param` | 0 | parameter struct |
+| `image` | 0..3 | 2D texture with image #i |
 
 
 
+### Volume slice
+
+![](../images/visuals/volume_slice.png)
+
+
+#### Props
+
+| Type | Index | Type | Description |
+| ---- | ---- | ---- | ---- |
+| `pos` | 0 | `dvec3` | top left position |
+| `pos` | 1 | `dvec3` | top right position |
+| `pos` | 2 | `dvec3` | bottom right position |
+| `pos` | 3 | `dvec3` | bottom left position |
+| `texcoords` | 0 | `vec3` | top left texture coordinates |
+| `texcoords` | 1 | `vec3` | top right texture coordinates |
+| `texcoords` | 2 | `vec3` | bottom right texture coordinates |
+| `texcoords` | 3 | `vec3` | bottom left texture coordinates |
+| `transfer_x` | 0 | `vec4` | colormap transfer function, x values (*uniform*) |
+| `transfer_y` | 0 | `vec4` | colormap transfer function, y values (*uniform*) |
+| `transfer_x` | 1 | `vec4` | alpha transfer function, x values (*uniform*) |
+| `transfer_y` | 1 | `vec4` | alpha transfer function, y values (*uniform*) |
+| `colormap` | 0 | `int` | colormap enum (*uniform*) |
+| `scale` | 0 | `float` | volume value scaling factor (*uniform*) |
+
+#### Sources
+
+| Type | Index | Description |
+| ---- | ---- | ---- |
+| `vertex` | 0 | vertex buffer |
+| `param` | 0 | parameter struct |
+| `color_texture` | 0 | 2D texture with the colormap texture |
+| `volume` | 0 | 3D texture with the volume |
 
 
 
