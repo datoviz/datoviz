@@ -50,7 +50,7 @@ The **Viewport** is an axis-aligned rectangular part of the canvas. It is define
 
 ## Visual
 
-Whereas all objects above relate to the _structure_ of the window, the [**visuals**](visuals.md) define its _contents_. Visky provides many built-in visuals: markers, segments, paths, triangles, rectangles, polygons (patches), images, text, and so on. While almost all visuals may be used either in [2D](visuals2D.md) or [3D](visuals3D.md), some of them are typically only used in 2D (images, rectangles...) while others are mostly used in 3D (meshes).
+Whereas all objects above relate to the _structure_ of the window, the [**visuals**](visuals.md) define its _contents_. Visky provides [many built-in visuals](visuals.md): markers, segments, paths, triangles, rectangles, polygons (patches), images, text, and so on. While almost all visuals may be used either in 2D or 3D, some of them are typically only used in 2D (images, rectangles...), while others are mostly used in 3D (meshes).
 
 Visuals are added to the different panels.
 

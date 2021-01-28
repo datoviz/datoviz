@@ -45,8 +45,6 @@ nav:
       - The scene: 'user/scene.md'
       - Colormaps: 'user/color.md'
       - Visuals: 'user/visuals.md'
-      - 2D plotting: 'user/visuals2D.md'
-      - 3D plotting: 'user/visuals3D.md'
       - Graphics: 'user/graphics.md'
       - Meshes and triangulations: 'user/mesh.md'
       - Coordinate systems and transformations: 'user/transform.md'
