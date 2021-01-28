@@ -1,6 +1,7 @@
 #include "test_builtin_visuals.h"
 #include "../include/visky/builtin_visuals.h"
 #include "../include/visky/interact.h"
+#include "../src/interact_utils.h"
 #include "../src/mesh_loader.h"
 #include "test_visuals.h"
 #include "utils.h"
@@ -179,18 +180,18 @@ int test_visuals_line(TestContext* context)
     dvec3* pos1 = calloc(N, sizeof(dvec3));
     cvec4* color = calloc(N, sizeof(cvec4));
     float t = 0;
+    float y = canvas->swapchain.images->width / (float)canvas->swapchain.images->height;
     for (uint32_t i = 0; i < N; i++)
     {
         t = M_2PI * (float)i / N;
 
         pos0[i][0] = .25 * cos(t);
-        pos0[i][1] = .25 * sin(t);
+        pos0[i][1] = y * .25 * sin(t);
 
         pos1[i][0] = .75 * cos(t);
-        pos1[i][1] = .75 * sin(t);
+        pos1[i][1] = y * .75 * sin(t);
 
-        RAND_COLOR(color[i])
-        RAND_COLOR(color[i])
+        vkl_colormap_scale(VKL_CMAP_HSV, i, 0, N, color[i]);
     }
 
     // Set visual data.
@@ -202,6 +203,7 @@ int test_visuals_line(TestContext* context)
     FREE(pos0);
     FREE(pos1);
     FREE(color);
+    SCREENSHOT("line")
     END;
 }
 
@@ -227,30 +229,19 @@ int test_visuals_mesh(TestContext* context)
     VklVisual visual = vkl_visual(canvas);
     vkl_visual_builtin(&visual, VKL_VISUAL_MESH, 0);
 
-    {
-        // char path[1024];
-        // snprintf(path, sizeof(path), "%s/mesh/%s", DATA_DIR, "brain.obj");
-        // VklMesh mesh = vkl_mesh_obj(path);
+    // Load a mesh file.
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/mesh/%s", DATA_DIR, "brain.obj");
+    VklMesh mesh = vkl_mesh_obj(path);
+    vkl_mesh_rotate(&mesh, M_PI, (vec3){1, 0, 0});
+    vkl_mesh_transform(&mesh);
 
-        // uint32_t nv = mesh.vertices.item_count;
-        // uint32_t ni = mesh.indices.item_count;
+    uint32_t nv = mesh.vertices.item_count;
+    uint32_t ni = mesh.indices.item_count;
 
-        // // Set visual data.
-        // vkl_visual_data_source(&visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, nv, nv,
-        // mesh.vertices.data); vkl_visual_data_source(&visual, VKL_SOURCE_TYPE_INDEX, 0, 0, ni,
-        // ni, mesh.indices.data);
-    }
-
-    {
-        uint32_t N = 1000;
-        uint32_t nv = 3 * N;
-        VklGraphicsMeshVertex* vertices = calloc(3 * N, sizeof(VklGraphicsMeshVertex));
-        _depth_vertices(N, vertices, true);
-        vkl_visual_data_source(&visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, vertices);
-        FREE(vertices);
-    }
-
-    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_IMAGE, 0, gpu->context->color_texture.texture);
+    // Set visual data.
+    vkl_visual_data_source(&visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
+    vkl_visual_data_source(&visual, VKL_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
 
     VklGraphicsMeshParams params = default_graphics_mesh_params(VKL_CAMERA_EYE);
     vkl_visual_data(&visual, VKL_PROP_LIGHT_PARAMS, 0, 1, &params.lights_params_0);
@@ -261,6 +252,15 @@ int test_visuals_mesh(TestContext* context)
     VklInteract interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
     visual.user_data = &interact;
     vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _update_interact, &visual);
+
+    VklArcball* arcball = &interact.u.a;
+    versor q;
+    glm_quatv(q, +M_PI / 6, (vec3){1, 0, 0});
+    glm_quat_mul(arcball->rotation, q, arcball->rotation);
+    glm_quatv(q, +M_PI / 6, (vec3){0, 1, 0});
+    glm_quat_mul(arcball->rotation, q, arcball->rotation);
+    arcball->camera.eye[2] = 3;
+    _arcball_update_mvp(arcball, &interact.mvp);
 
     RUN;
     END;

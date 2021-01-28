@@ -106,6 +106,9 @@ VklMesh vkl_mesh_obj(const char* file_path)
             vertex->uv[1] = attrib.texcoords[2 * i + 1];
         }
 
+        // Alpha value.
+        vertex->alpha = 255;
+
         // Go to next vertex.
         vertex++;
     }
