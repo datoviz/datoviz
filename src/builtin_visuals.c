@@ -260,6 +260,42 @@ static void _visual_triangle_strip(VklVisual* visual)
 
 
 /*************************************************************************************************/
+/*  Triangle fan                                                                                 */
+/*************************************************************************************************/
+
+static void _visual_triangle_fan(VklVisual* visual)
+{
+    ASSERT(visual != NULL);
+    VklCanvas* canvas = visual->canvas;
+    ASSERT(canvas != NULL);
+    VklProp* prop = NULL;
+
+    // Graphics.
+    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_TRIANGLE_FAN, 0));
+
+    // Sources
+    vkl_visual_source(
+        visual, VKL_SOURCE_TYPE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklVertex), 0);
+    _common_sources(visual);
+
+    // Props:
+
+    // Vertex pos.
+    prop = vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
+    vkl_visual_prop_cast(
+        prop, 0, offsetof(VklVertex, pos), VKL_DTYPE_VEC3, VKL_ARRAY_COPY_SINGLE, 1);
+
+    // Vertex color.
+    prop = vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
+    vkl_visual_prop_copy(prop, 1, offsetof(VklVertex, color), VKL_ARRAY_COPY_REPEAT, 1);
+
+    // Common props.
+    _common_props(visual);
+}
+
+
+
+/*************************************************************************************************/
 /*************************************************************************************************/
 /*  Antialiased 2D visuals                                                                       */
 /*************************************************************************************************/
@@ -1111,6 +1147,10 @@ void vkl_visual_builtin(VklVisual* visual, VklVisualType type, int flags)
 
     case VKL_VISUAL_TRIANGLE_STRIP:
         _visual_triangle_strip(visual);
+        break;
+
+    case VKL_VISUAL_TRIANGLE_FAN:
+        _visual_triangle_fan(visual);
         break;
 
 

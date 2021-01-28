@@ -352,6 +352,41 @@ int test_visuals_triangle_strip(TestContext* context)
 
 
 
+int test_visuals_triangle_fan(TestContext* context)
+{
+    INIT;
+
+    VklVisual visual = vkl_visual(canvas);
+    vkl_visual_builtin(&visual, VKL_VISUAL_TRIANGLE_FAN, 0);
+
+    const uint32_t N = 30;
+    dvec3* pos = calloc(N, sizeof(dvec3));
+    cvec4* color = calloc(N, sizeof(cvec4));
+    float t = 0;
+    float a = 0;
+    float y = canvas->swapchain.images->width / (float)canvas->swapchain.images->height;
+    for (uint32_t i = 1; i < N; i++)
+    {
+        t = (float)i / (float)(N - 1);
+        a = M_2PI * t;
+        pos[i][0] = .5 * cos(a);
+        pos[i][1] = y * .5 * sin(a);
+        vkl_colormap_scale(VKL_CMAP_HSV, t, 0, 1, color[i]);
+    }
+
+    // Set visual data.
+    vkl_visual_data(&visual, VKL_PROP_POS, 0, N, pos);
+    vkl_visual_data(&visual, VKL_PROP_COLOR, 0, N, color);
+
+    RUN;
+    FREE(pos);
+    FREE(color);
+    SCREENSHOT("triangle_fan")
+    END;
+}
+
+
+
 /*************************************************************************************************/
 /*  2D visual tests                                                                              */
 /*************************************************************************************************/
