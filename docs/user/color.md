@@ -1,17 +1,19 @@
 # Colormaps
 
-Visky has built-in support for many continuous colormaps and discrete color palettes. It comes with most colormaps provided by the Python libraries matplotlib, bokeh, and colorcet.
+Visky natively includes a collection of common colormaps, both continuous and discrete (color palettes). These colormaps come from the following sources:
 
-## The colormap texture
+* matplotlib
+* bokeh
+* colorcet
+* [Kenneth Moreland's page](https://www.kennethmoreland.com/color-advice/)
 
-Visky natively integrates a 256x256 24-bit texture called the **colormap texture**. Each of the non-empty rows of the texture contains either:
+![Colormap texture](../images/color_texture.png){: align=right }
+These colormaps are stored in a 256x256 texture. Each row contains either:
 
-- a 256-color continuous colormap,
-- a 256-color discrete color palette,
-- eight discrete 32-color palettes.
+* a 256-color continuous colormap,
+* a 256-color discrete color palette,
+* eight discrete 32-color palettes.
 
-A lot of empty space remains in the texture, which can used for future colormaps or user-defined colormaps.
-
-The texture is always loaded in memory, exactly once on each GPU. It can be shared between different visuals and different canvases. It is used by some visuals.
+Unused space may be used for future or user-defined colormaps. The texture is always loaded both in CPU and GPU memory. It is shared between all visuals and canvases.
 
 <!-- The list of colormaps is generated in a mkdocs hook from utils/export_colormap.py -->

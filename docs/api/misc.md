@@ -87,6 +87,7 @@
 ### `vkl_mesh_translate()`
 ### `vkl_mesh_scale()`
 ### `vkl_mesh_rotate()`
+### `vkl_mesh_transform()`
 
 
 ## Random
