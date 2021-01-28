@@ -183,6 +183,47 @@ static void _visual_line_strip(VklVisual* visual)
 
 
 /*************************************************************************************************/
+/*  Triangle                                                                                     */
+/*************************************************************************************************/
+
+static void _visual_triangle(VklVisual* visual)
+{
+    ASSERT(visual != NULL);
+    VklCanvas* canvas = visual->canvas;
+    ASSERT(canvas != NULL);
+    VklProp* prop = NULL;
+
+    // Graphics.
+    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_TRIANGLE, 0));
+
+    // Sources
+    vkl_visual_source(
+        visual, VKL_SOURCE_TYPE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklVertex), 0);
+    _common_sources(visual);
+
+    // Props:
+
+    // Vertex pos, triangle point.
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        prop =
+            vkl_visual_prop(visual, VKL_PROP_POS, i, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
+        vkl_visual_prop_cast(
+            prop, 0, i * sizeof(VklVertex) + offsetof(VklVertex, pos), //
+            VKL_DTYPE_VEC3, VKL_ARRAY_COPY_SINGLE, 3);
+    }
+
+    // Vertex color.
+    prop = vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
+    vkl_visual_prop_copy(prop, 1, offsetof(VklVertex, color), VKL_ARRAY_COPY_REPEAT, 3);
+
+    // Common props.
+    _common_props(visual);
+}
+
+
+
+/*************************************************************************************************/
 /*************************************************************************************************/
 /*  Antialiased 2D visuals                                                                       */
 /*************************************************************************************************/
@@ -1026,6 +1067,10 @@ void vkl_visual_builtin(VklVisual* visual, VklVisualType type, int flags)
 
     case VKL_VISUAL_LINE_STRIP:
         _visual_line_strip(visual);
+        break;
+
+    case VKL_VISUAL_TRIANGLE:
+        _visual_triangle(visual);
         break;
 
 

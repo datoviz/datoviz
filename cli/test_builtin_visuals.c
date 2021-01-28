@@ -90,7 +90,7 @@ static void _common_data(VklVisual* visual)
 
 
 /*************************************************************************************************/
-/*  Builtin visual tests                                                                         */
+/*  Basic visual tests                                                                           */
 /*************************************************************************************************/
 
 int test_visuals_point(TestContext* context)
@@ -254,142 +254,61 @@ int test_visuals_line_strip(TestContext* context)
 
 
 
-static void _update_interact(VklCanvas* canvas, VklEvent ev)
-{
-    ASSERT(canvas != NULL);
-    VklVisual* visual = (VklVisual*)ev.user_data;
-    ASSERT(visual != NULL);
-
-    VklInteract* interact = visual->user_data;
-    vkl_interact_update(interact, canvas->viewport, &canvas->mouse, &canvas->keyboard);
-    VklSource* source = vkl_source_get(visual, VKL_SOURCE_TYPE_MVP, 0);
-    VklBufferRegions* br = &source->u.br;
-    vkl_upload_buffers(canvas, *br, 0, br->size, &interact->mvp);
-}
-
-int test_visuals_mesh(TestContext* context)
+int test_visuals_triangle(TestContext* context)
 {
     INIT;
 
     VklVisual visual = vkl_visual(canvas);
-    vkl_visual_builtin(&visual, VKL_VISUAL_MESH, 0);
+    vkl_visual_builtin(&visual, VKL_VISUAL_TRIANGLE, 0);
 
-    // Load a mesh file.
-    char path[1024];
-    snprintf(path, sizeof(path), "%s/mesh/%s", DATA_DIR, "brain.obj");
-    VklMesh mesh = vkl_mesh_obj(path);
-    vkl_mesh_rotate(&mesh, M_PI, (vec3){1, 0, 0});
-    vkl_mesh_transform(&mesh);
-
-    uint32_t nv = mesh.vertices.item_count;
-    uint32_t ni = mesh.indices.item_count;
-
-    // Set visual data.
-    vkl_visual_data_source(&visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
-    vkl_visual_data_source(&visual, VKL_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
-
-    VklGraphicsMeshParams params = default_graphics_mesh_params(VKL_CAMERA_EYE);
-    vkl_visual_data(&visual, VKL_PROP_LIGHT_PARAMS, 0, 1, &params.lights_params_0);
-    vkl_visual_data(&visual, VKL_PROP_LIGHT_POS, 0, 1, &params.lights_pos_0);
-    vkl_visual_data(&visual, VKL_PROP_TEXCOEFS, 0, 1, &params.tex_coefs);
-    vkl_visual_data(&visual, VKL_PROP_VIEW_POS, 0, 1, &params.view_pos);
-
-    VklInteract interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
-    visual.user_data = &interact;
-    vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _update_interact, &visual);
-
-    VklArcball* arcball = &interact.u.a;
-    versor q;
-    glm_quatv(q, +M_PI / 6, (vec3){1, 0, 0});
-    glm_quat_mul(arcball->rotation, q, arcball->rotation);
-    glm_quatv(q, +M_PI / 6, (vec3){0, 1, 0});
-    glm_quat_mul(arcball->rotation, q, arcball->rotation);
-    arcball->camera.eye[2] = 3;
-    _arcball_update_mvp(arcball, &interact.mvp);
-
-    RUN;
-    SCREENSHOT("mesh")
-    END;
-}
-
-
-
-int test_visuals_volume_slice(TestContext* context)
-{
-    INIT;
-
-    VklVisual visual = vkl_visual(canvas);
-    vkl_visual_builtin(&visual, VKL_VISUAL_VOLUME_SLICE, 0);
-
-    float x = MOUSE_VOLUME_DEPTH / (float)MOUSE_VOLUME_HEIGHT;
-    float y = 1;
-    float z = 0;
+    const uint32_t N = 40;
+    dvec3* pos0 = calloc(N, sizeof(dvec3));
+    dvec3* pos1 = calloc(N, sizeof(dvec3));
+    dvec3* pos2 = calloc(N, sizeof(dvec3));
+    cvec4* color = calloc(N, sizeof(cvec4));
     float t = 0;
-    dvec3 p0[8], p1[8], p2[8], p3[8];
-    vec3 uvw0[8], uvw1[8], uvw2[8], uvw3[8];
-    for (uint32_t i = 0; i < 8; i++)
+    float ms = 0;
+    for (uint32_t i = 0; i < N; i++)
     {
-        t = 1 - i / (float)(8 - 1);
-        z = -1 + 2 * t;
-        t = .1 + .8 * t;
+        t = i / (float)N;
+        pos0[i][0] = -.75 + 1.5 * t * t;
+        pos0[i][1] = +.75 - 1.5 * t;
+        vkl_colormap_scale(VKL_CMAP_HSV, i, 0, N, color[i]);
+        color[i][3] = 128;
 
-        p0[i][0] = -x, p0[i][1] = -y, p0[i][2] = +z;
-        p1[i][0] = +x, p1[i][1] = -y, p1[i][2] = +z;
-        p2[i][0] = +x, p2[i][1] = +y, p2[i][2] = +z;
-        p3[i][0] = -x, p3[i][1] = +y, p3[i][2] = +z;
+        // Copy the 2 other points per triangle.
+        _dvec3_copy(pos0[i], pos1[i]);
+        _dvec3_copy(pos0[i], pos2[i]);
 
-        uvw0[i][0] = 1, uvw0[i][1] = 0, uvw0[i][2] = t;
-        uvw1[i][0] = 1, uvw1[i][1] = 1, uvw1[i][2] = t;
-        uvw2[i][0] = 0, uvw2[i][1] = 1, uvw2[i][2] = t;
-        uvw3[i][0] = 0, uvw3[i][1] = 0, uvw3[i][2] = t;
+        // Shift the points.
+        ms = .02 + .2 * t * t;
+        pos0[i][0] -= ms;
+        pos1[i][0] += ms;
+        pos0[i][1] -= ms;
+        pos1[i][1] -= ms;
+        pos2[i][1] += ms;
     }
 
-    vkl_visual_data(&visual, VKL_PROP_POS, 0, 8, p0);
-    vkl_visual_data(&visual, VKL_PROP_POS, 1, 8, p1);
-    vkl_visual_data(&visual, VKL_PROP_POS, 2, 8, p2);
-    vkl_visual_data(&visual, VKL_PROP_POS, 3, 8, p3);
-
-    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 0, 8, uvw0);
-    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 1, 8, uvw1);
-    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 2, 8, uvw2);
-    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 3, 8, uvw3);
-
-    vkl_visual_data(&visual, VKL_PROP_TRANSFER_X, 0, 1, (vec4[]){{0, 1, 1, 1}});
-    vkl_visual_data(&visual, VKL_PROP_TRANSFER_Y, 0, 1, (vec4[]){{0, 1, 1, 1}});
-    vkl_visual_data(&visual, VKL_PROP_TRANSFER_X, 1, 1, (vec4[]){{0, .05, .051, 1}});
-    vkl_visual_data(&visual, VKL_PROP_TRANSFER_Y, 1, 1, (vec4[]){{0, 0, .75, .75}});
-
-    float scale = 13;
-    vkl_visual_data(&visual, VKL_PROP_SCALE, 0, 1, &scale);
-
-    VklColormap cmap = VKL_CMAP_BONE;
-    vkl_visual_data(&visual, VKL_PROP_COLORMAP, 0, 1, &cmap);
-
-    // Texture.
-    VklTexture* volume = _mouse_volume(canvas);
-    vkl_visual_texture(
-        &visual, VKL_SOURCE_TYPE_COLOR_TEXTURE, 0, gpu->context->color_texture.texture);
-    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_VOLUME, 0, volume);
-
-    VklInteract interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
-    visual.user_data = &interact;
-    vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _update_interact, &visual);
-
-    VklArcball* arcball = &interact.u.a;
-    versor q;
-    glm_quatv(q, +M_PI / 8, (vec3){1, 0, 0});
-    glm_quat_mul(arcball->rotation, q, arcball->rotation);
-    glm_quatv(q, M_PI - M_PI / 6, (vec3){0, 1, 0});
-    glm_quat_mul(arcball->rotation, q, arcball->rotation);
-    arcball->camera.eye[2] = 3;
-    _arcball_update_mvp(arcball, &interact.mvp);
+    // Set visual data.
+    vkl_visual_data(&visual, VKL_PROP_POS, 0, N, pos0);
+    vkl_visual_data(&visual, VKL_PROP_POS, 1, N, pos1);
+    vkl_visual_data(&visual, VKL_PROP_POS, 2, N, pos2);
+    vkl_visual_data(&visual, VKL_PROP_COLOR, 0, N, color);
 
     RUN;
-    SCREENSHOT("volume_slice")
+    FREE(pos0);
+    FREE(pos1);
+    FREE(pos2);
+    FREE(color);
+    SCREENSHOT("triangle")
     END;
 }
 
 
+
+/*************************************************************************************************/
+/*  2D visual tests                                                                              */
+/*************************************************************************************************/
 
 int test_visuals_axes_2D_1(TestContext* context)
 {
@@ -550,4 +469,145 @@ int test_visuals_axes_2D_update(TestContext* context)
     FREE(text);
     vkl_visual_destroy(&visual);
     TEST_END
+}
+
+
+
+/*************************************************************************************************/
+/*  3D visual tests                                                                              */
+/*************************************************************************************************/
+
+static void _update_interact(VklCanvas* canvas, VklEvent ev)
+{
+    ASSERT(canvas != NULL);
+    VklVisual* visual = (VklVisual*)ev.user_data;
+    ASSERT(visual != NULL);
+
+    VklInteract* interact = visual->user_data;
+    vkl_interact_update(interact, canvas->viewport, &canvas->mouse, &canvas->keyboard);
+    VklSource* source = vkl_source_get(visual, VKL_SOURCE_TYPE_MVP, 0);
+    VklBufferRegions* br = &source->u.br;
+    vkl_upload_buffers(canvas, *br, 0, br->size, &interact->mvp);
+}
+
+int test_visuals_mesh(TestContext* context)
+{
+    INIT;
+
+    VklVisual visual = vkl_visual(canvas);
+    vkl_visual_builtin(&visual, VKL_VISUAL_MESH, 0);
+
+    // Load a mesh file.
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/mesh/%s", DATA_DIR, "brain.obj");
+    VklMesh mesh = vkl_mesh_obj(path);
+    vkl_mesh_rotate(&mesh, M_PI, (vec3){1, 0, 0});
+    vkl_mesh_transform(&mesh);
+
+    uint32_t nv = mesh.vertices.item_count;
+    uint32_t ni = mesh.indices.item_count;
+
+    // Set visual data.
+    vkl_visual_data_source(&visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
+    vkl_visual_data_source(&visual, VKL_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
+
+    VklGraphicsMeshParams params = default_graphics_mesh_params(VKL_CAMERA_EYE);
+    vkl_visual_data(&visual, VKL_PROP_LIGHT_PARAMS, 0, 1, &params.lights_params_0);
+    vkl_visual_data(&visual, VKL_PROP_LIGHT_POS, 0, 1, &params.lights_pos_0);
+    vkl_visual_data(&visual, VKL_PROP_TEXCOEFS, 0, 1, &params.tex_coefs);
+    vkl_visual_data(&visual, VKL_PROP_VIEW_POS, 0, 1, &params.view_pos);
+
+    VklInteract interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
+    visual.user_data = &interact;
+    vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _update_interact, &visual);
+
+    VklArcball* arcball = &interact.u.a;
+    versor q;
+    glm_quatv(q, +M_PI / 6, (vec3){1, 0, 0});
+    glm_quat_mul(arcball->rotation, q, arcball->rotation);
+    glm_quatv(q, +M_PI / 6, (vec3){0, 1, 0});
+    glm_quat_mul(arcball->rotation, q, arcball->rotation);
+    arcball->camera.eye[2] = 3;
+    _arcball_update_mvp(arcball, &interact.mvp);
+
+    RUN;
+    SCREENSHOT("mesh")
+    END;
+}
+
+
+
+int test_visuals_volume_slice(TestContext* context)
+{
+    INIT;
+
+    VklVisual visual = vkl_visual(canvas);
+    vkl_visual_builtin(&visual, VKL_VISUAL_VOLUME_SLICE, 0);
+
+    float x = MOUSE_VOLUME_DEPTH / (float)MOUSE_VOLUME_HEIGHT;
+    float y = 1;
+    float z = 0;
+    float t = 0;
+    dvec3 p0[8], p1[8], p2[8], p3[8];
+    vec3 uvw0[8], uvw1[8], uvw2[8], uvw3[8];
+    for (uint32_t i = 0; i < 8; i++)
+    {
+        t = 1 - i / (float)(8 - 1);
+        z = -1 + 2 * t;
+        t = .1 + .8 * t;
+
+        p0[i][0] = -x, p0[i][1] = -y, p0[i][2] = +z;
+        p1[i][0] = +x, p1[i][1] = -y, p1[i][2] = +z;
+        p2[i][0] = +x, p2[i][1] = +y, p2[i][2] = +z;
+        p3[i][0] = -x, p3[i][1] = +y, p3[i][2] = +z;
+
+        uvw0[i][0] = 1, uvw0[i][1] = 0, uvw0[i][2] = t;
+        uvw1[i][0] = 1, uvw1[i][1] = 1, uvw1[i][2] = t;
+        uvw2[i][0] = 0, uvw2[i][1] = 1, uvw2[i][2] = t;
+        uvw3[i][0] = 0, uvw3[i][1] = 0, uvw3[i][2] = t;
+    }
+
+    vkl_visual_data(&visual, VKL_PROP_POS, 0, 8, p0);
+    vkl_visual_data(&visual, VKL_PROP_POS, 1, 8, p1);
+    vkl_visual_data(&visual, VKL_PROP_POS, 2, 8, p2);
+    vkl_visual_data(&visual, VKL_PROP_POS, 3, 8, p3);
+
+    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 0, 8, uvw0);
+    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 1, 8, uvw1);
+    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 2, 8, uvw2);
+    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 3, 8, uvw3);
+
+    vkl_visual_data(&visual, VKL_PROP_TRANSFER_X, 0, 1, (vec4[]){{0, 1, 1, 1}});
+    vkl_visual_data(&visual, VKL_PROP_TRANSFER_Y, 0, 1, (vec4[]){{0, 1, 1, 1}});
+    vkl_visual_data(&visual, VKL_PROP_TRANSFER_X, 1, 1, (vec4[]){{0, .05, .051, 1}});
+    vkl_visual_data(&visual, VKL_PROP_TRANSFER_Y, 1, 1, (vec4[]){{0, 0, .75, .75}});
+
+    float scale = 13;
+    vkl_visual_data(&visual, VKL_PROP_SCALE, 0, 1, &scale);
+
+    VklColormap cmap = VKL_CMAP_BONE;
+    vkl_visual_data(&visual, VKL_PROP_COLORMAP, 0, 1, &cmap);
+
+    // Texture.
+    VklTexture* volume = _mouse_volume(canvas);
+    vkl_visual_texture(
+        &visual, VKL_SOURCE_TYPE_COLOR_TEXTURE, 0, gpu->context->color_texture.texture);
+    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_VOLUME, 0, volume);
+
+    VklInteract interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
+    visual.user_data = &interact;
+    vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _update_interact, &visual);
+
+    VklArcball* arcball = &interact.u.a;
+    versor q;
+    glm_quatv(q, +M_PI / 8, (vec3){1, 0, 0});
+    glm_quat_mul(arcball->rotation, q, arcball->rotation);
+    glm_quatv(q, M_PI - M_PI / 6, (vec3){0, 1, 0});
+    glm_quat_mul(arcball->rotation, q, arcball->rotation);
+    arcball->camera.eye[2] = 3;
+    _arcball_update_mvp(arcball, &interact.mvp);
+
+    RUN;
+    SCREENSHOT("volume_slice")
+    END;
 }

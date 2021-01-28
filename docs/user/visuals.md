@@ -223,6 +223,20 @@ The **point** visual is a trimmed-downed version of the **marker** visual. It is
 | `color` | 0 | `color` | point color |
 
 
+### Triangle
+
+![](../images/visuals/triangle.png)
+
+#### Props
+
+| Type | Index | Type | Description |
+| ---- | ---- | ---- | ---- |
+| `pos` | 0 | `dvec3` | triangle position 0 |
+| `pos` | 1 | `dvec3` | triangle position 1 |
+| `pos` | 2 | `dvec3` | triangle position 2 |
+| `color` | 0 | `color` | triangle color |
+
+
 
 
 
