@@ -357,6 +357,45 @@ static void _axes_callback(VklController* controller, VklEvent ev)
 
 
 
+static void _axes_visual(VklController* controller, VklAxisCoord coord)
+{
+    ASSERT(controller != NULL);
+    VklPanel* panel = controller->panel;
+    ASSERT(panel != NULL);
+    VklContext* ctx = panel->grid->canvas->gpu->context;
+
+    // Axes visual flags
+    // 0x000X: coordinate
+    // 0x00X0: no CPU pos normalization
+    // 0xX0000: interact fixed axis
+    int flags = VKL_VISUAL_FLAGS_TRANSFORM_NONE |
+                (coord == 0 ? VKL_INTERACT_FIXED_AXIS_Y : VKL_INTERACT_FIXED_AXIS_X) | //
+                (int)coord;
+    VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_AXES_2D, flags);
+    vkl_controller_visual(controller, visual);
+    visual->priority = VKL_MAX_VISUAL_PRIORITY;
+
+    visual->clip[0] = VKL_VIEWPORT_OUTER;
+    visual->clip[1] = coord == 0 ? VKL_VIEWPORT_OUTER_BOTTOM : VKL_VIEWPORT_OUTER_LEFT;
+
+    visual->interact_axis[0] = visual->interact_axis[1] =
+        (coord == 0 ? VKL_INTERACT_FIXED_AXIS_Y : VKL_INTERACT_FIXED_AXIS_X) >> 12;
+
+    // Text params.
+    VklFontAtlas* atlas = &ctx->font_atlas;
+    ASSERT(strlen(atlas->font_str) > 0);
+    vkl_visual_texture(visual, VKL_SOURCE_TYPE_FONT_ATLAS, 0, atlas->texture);
+
+    VklGraphicsTextParams params = {0};
+    params.grid_size[0] = (int32_t)atlas->rows;
+    params.grid_size[1] = (int32_t)atlas->cols;
+    params.tex_size[0] = (int32_t)atlas->width;
+    params.tex_size[1] = (int32_t)atlas->height;
+    vkl_visual_data_source(visual, VKL_SOURCE_TYPE_PARAM, 0, 0, 1, 1, &params);
+}
+
+
+
 // Add axes to a panel.
 static void _add_axes(VklController* controller)
 {
@@ -371,36 +410,8 @@ static void _add_axes(VklController* controller)
 
     int flags = 0;
     for (uint32_t coord = 0; coord < 2; coord++)
-    {
-        // Axes visual flags
-        // 0x000X: coordinate
-        // 0x00X0: no CPU pos normalization
-        // 0xX0000: interact fixed axis
-        flags = VKL_VISUAL_FLAGS_TRANSFORM_NONE |
-                (coord == 0 ? VKL_INTERACT_FIXED_AXIS_Y : VKL_INTERACT_FIXED_AXIS_X) | //
-                (int)coord;
-        VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_AXES_2D, flags);
-        vkl_controller_visual(controller, visual);
-        visual->priority = VKL_MAX_VISUAL_PRIORITY;
+        _axes_visual(controller, (VklAxisCoord)coord);
 
-        visual->clip[0] = VKL_VIEWPORT_OUTER;
-        visual->clip[1] = coord == 0 ? VKL_VIEWPORT_OUTER_BOTTOM : VKL_VIEWPORT_OUTER_LEFT;
-
-        visual->interact_axis[0] = visual->interact_axis[1] =
-            (coord == 0 ? VKL_INTERACT_FIXED_AXIS_Y : VKL_INTERACT_FIXED_AXIS_X) >> 12;
-
-        // Text params.
-        VklFontAtlas* atlas = &ctx->font_atlas;
-        ASSERT(strlen(atlas->font_str) > 0);
-        vkl_visual_texture(visual, VKL_SOURCE_TYPE_FONT_ATLAS, 0, atlas->texture);
-
-        VklGraphicsTextParams params = {0};
-        params.grid_size[0] = (int32_t)atlas->rows;
-        params.grid_size[1] = (int32_t)atlas->cols;
-        params.tex_size[0] = (int32_t)atlas->width;
-        params.tex_size[1] = (int32_t)atlas->height;
-        vkl_visual_data_source(visual, VKL_SOURCE_TYPE_PARAM, 0, 0, 1, 1, &params);
-    }
     // Add the axes data.
     _axes_ticks_init(controller);
 }

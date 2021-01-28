@@ -22,6 +22,7 @@ int test_visuals_line(TestContext* context);
 int test_visuals_mesh(TestContext* context);
 int test_visuals_volume_slice(TestContext* context);
 int test_visuals_axes_2D(TestContext* context);
+int test_visuals_axes_2D_update(TestContext* context);
 
 
 

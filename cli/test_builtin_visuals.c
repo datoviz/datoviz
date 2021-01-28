@@ -346,6 +346,75 @@ int test_visuals_volume_slice(TestContext* context)
 
 
 
+int test_visuals_axes_2D(TestContext* context)
+{
+    INIT;
+    vkl_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});
+
+    VklFontAtlas* atlas = &gpu->context->font_atlas;
+    ASSERT(strlen(atlas->font_str) > 0);
+
+    VklVisual visualx = vkl_visual(canvas);
+    VklVisual visualy = vkl_visual(canvas);
+
+    vkl_visual_builtin(&visualx, VKL_VISUAL_AXES_2D, VKL_AXES_COORD_X);
+    vkl_visual_builtin(&visualy, VKL_VISUAL_AXES_2D, VKL_AXES_COORD_Y);
+
+    vkl_visual_texture(&visualx, VKL_SOURCE_TYPE_FONT_ATLAS, 0, atlas->texture);
+    vkl_visual_texture(&visualy, VKL_SOURCE_TYPE_FONT_ATLAS, 0, atlas->texture);
+
+    // _axes_ticks(controller, coord, (dvec2){box.p0[coord], box.p1[coord]});
+    // _axes_upload(controller, coord);
+
+    // const uint32_t N = 5;
+    // const uint32_t MAX_GLYPHS = 12;
+    // double* xticks = calloc(N, sizeof(double));
+    // double* yticks = calloc(N, sizeof(double));
+    // char* text = calloc(N * MAX_GLYPHS, sizeof(char*));
+    // double t = 0;
+    // for (uint32_t i = 0; i < N; i++)
+    // {
+    //     t = -1 + 2 * (double)i / (N - 1);
+    //     xticks[i] = t;
+    //     yticks[i] = t;
+    //     text[i] = hello;
+    // }
+
+    // // Set visual data.
+    // vkl_visual_data(&visual, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR, N, xticks);
+    // vkl_visual_data(&visual, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, xticks);
+    // vkl_visual_data(&visual, VKL_PROP_TEXT, 0, N, text);
+
+    // cvec4 color = {255, 0, 0, 255};
+    // vkl_visual_data(&visual, VKL_PROP_COLOR, VKL_AXES_LEVEL_MAJOR, 1, color);
+    // color[0] = 0;
+    // color[1] = 255;
+    // vkl_visual_data(&visual, VKL_PROP_COLOR, VKL_AXES_LEVEL_GRID, 1, color);
+
+    // float lw = 10;
+    // vkl_visual_data(&visual, VKL_PROP_LINE_WIDTH, VKL_AXES_LEVEL_MAJOR, 1, &lw);
+    // lw = 5;
+    // vkl_visual_data(&visual, VKL_PROP_LINE_WIDTH, VKL_AXES_LEVEL_GRID, 1, &lw);
+
+    // // Text params.
+    // VklGraphicsTextParams params = {0};
+    // params.grid_size[0] = (int32_t)atlas->rows;
+    // params.grid_size[1] = (int32_t)atlas->cols;
+    // params.tex_size[0] = (int32_t)atlas->width;
+    // params.tex_size[1] = (int32_t)atlas->height;
+    // vkl_visual_data_source(&visual, VKL_SOURCE_TYPE_PARAM, 0, 0, 1, 1, &params);
+
+    // _common_data(&visual);
+
+    // vkl_event_callback(canvas, VKL_EVENT_TIMER, .1, VKL_EVENT_MODE_SYNC, _visual_update,
+    // &visual); vkl_event_callback(canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _resize,
+    // NULL); vkl_app_run(app, N_FRAMES); FREE(xticks); FREE(yticks); FREE(text);
+    // vkl_visual_destroy(&visual);
+    TEST_END
+}
+
+
+
 static void _visual_update(VklCanvas* canvas, VklEvent ev)
 {
     ASSERT(canvas != NULL);
@@ -381,7 +450,7 @@ static void _visual_update(VklCanvas* canvas, VklEvent ev)
     FREE(text);
 }
 
-int test_visuals_axes_2D(TestContext* context)
+int test_visuals_axes_2D_update(TestContext* context)
 {
     INIT;
     vkl_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});
