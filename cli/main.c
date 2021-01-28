@@ -133,6 +133,7 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_visuals_triangle_fan),   //
 
     CASE_FIXTURE_NONE(test_visuals_marker),         //
+    CASE_FIXTURE_NONE(test_visuals_polygon),        //
     CASE_FIXTURE_NONE(test_visuals_axes_2D_1),      //
     CASE_FIXTURE_NONE(test_visuals_axes_2D_update), //
 

@@ -752,6 +752,9 @@ static inline void vkl_sleep(int milliseconds)
 #endif
 }
 
+void vkl_triangulate_polygon(
+    uint32_t point_count, const dvec3* polygon, uint32_t* index_count, uint32_t** out_indices);
+
 
 
 /*************************************************************************************************/

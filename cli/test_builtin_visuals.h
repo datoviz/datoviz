@@ -28,6 +28,7 @@ int test_visuals_triangle_fan(TestContext* context);
 int test_visuals_marker(TestContext* context);
 int test_visuals_axes_2D_1(TestContext* context);
 int test_visuals_axes_2D_update(TestContext* context);
+int test_visuals_polygon(TestContext* context);
 
 // 3D visuals.
 int test_visuals_mesh(TestContext* context);

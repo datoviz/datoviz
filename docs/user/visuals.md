@@ -49,6 +49,23 @@
 | `vbar` | 18 | ![marker_vbar](../images/graphics/marker_vbar.png) |
 
 
+
+### Polygon
+
+![](../images/visuals/polygon.png)
+
+This visual currently only uses a basic `triangle` underlying graphics. It performs a triangulation of the polygons with the earcut C++ library by mapbox. Several arbitrary-sized polygons can be specified in the same visual.
+
+#### Props
+
+| Type | Index | Type | Description |
+| ---- | ---- | ---- | ---- |
+| `pos` | 0 | `dvec3` | all polygon points, concatenated |
+| `length` | 0 | `uint` | polygon lengths, one integer per polygon |
+| `color` | 0 | `cvec4` | polygon colors, one per polygon |
+
+
+
 ### Axes
 
 ![](../images/visuals/axes.png)

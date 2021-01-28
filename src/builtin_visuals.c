@@ -790,6 +790,157 @@ static void _visual_axes_2D(VklVisual* visual)
 
 
 /*************************************************************************************************/
+/*  Polygon                                                                                      */
+/*************************************************************************************************/
+
+static void _polygon_bake(VklVisual* visual, VklVisualDataEvent ev)
+{
+    ASSERT(visual != NULL);
+
+    VklProp* prop_pos = vkl_prop_get(visual, VKL_PROP_POS, 0);       // dvec3
+    VklProp* prop_length = vkl_prop_get(visual, VKL_PROP_LENGTH, 0); // uint
+    VklProp* prop_color = vkl_prop_get(visual, VKL_PROP_COLOR, 0);   // cvec4
+
+    VklArray* arr_pos = _prop_array(prop_pos);
+    VklArray* arr_length = _prop_array(prop_length);
+    VklArray* arr_color = _prop_array(prop_color);
+
+    VklSource* src_vertex = vkl_source_get(visual, VKL_SOURCE_TYPE_VERTEX, 0);
+    VklSource* src_index = vkl_source_get(visual, VKL_SOURCE_TYPE_INDEX, 0);
+
+    // The baking function doesn't run if the VERTEX source is handled by the user.
+    if (src_vertex->origin != VKL_SOURCE_ORIGIN_LIB)
+        return;
+    if (src_vertex->obj.request != VKL_VISUAL_REQUEST_UPLOAD)
+    {
+        log_trace(
+            "skip bake source for source %d that doesn't need updating", src_vertex->source_kind);
+        return;
+    }
+
+    // Source arrays.
+    VklArray* arr_vertex = &src_vertex->arr;
+    VklArray* arr_index = &src_index->arr;
+
+    // Number of points and polygons.
+    uint32_t n_points = arr_pos->item_count;
+    uint32_t n_polys = arr_length->item_count;
+
+    ASSERT(n_points > 0);
+    ASSERT(n_polys > 0);
+
+    dvec3* points = (dvec3*)arr_pos->data;
+    uint32_t* poly_lengths = (uint32_t*)arr_length->data;
+
+    // Triangulate the polygons.
+    uint32_t index_count = 0;
+    uint32_t total_index_count = 0;
+    uint32_t* indices = NULL;
+    uint32_t* index_count_list = (uint32_t*)calloc(n_polys, sizeof(uint32_t));
+    uint32_t** indices_list = (uint32_t**)calloc(n_polys, sizeof(uint32_t*));
+    uint32_t offset = 0;
+
+    // Triangulate all polygons.
+    for (uint32_t i = 0; i < n_polys; i++)
+    {
+        vkl_triangulate_polygon(
+            poly_lengths[i], (const dvec3*)&points[offset], &index_count, &indices);
+        ASSERT(indices != NULL);
+        ASSERT(index_count > 0);
+        total_index_count += index_count;
+        // Save each triangulation's indices in order to concatenate them afterwards.
+        index_count_list[i] = index_count;
+        indices_list[i] = indices;
+        offset += poly_lengths[i];
+    }
+
+    // Concatenate all triangulations.
+    uint32_t* total_indices = (uint32_t*)calloc(total_index_count, sizeof(uint32_t));
+    offset = 0;
+    uint32_t voffset = 0;
+    for (uint32_t i = 0; i < n_polys; i++)
+    {
+        for (uint32_t j = 0; j < index_count_list[i]; j++)
+        {
+            total_indices[offset + j] = voffset + indices_list[i][j];
+        }
+        offset += index_count_list[i];
+        voffset += poly_lengths[i];
+        FREE(indices_list[i]);
+    }
+
+    // Reesize and fill the vertex buffer.
+    vkl_array_resize(arr_vertex, n_points);
+    // Copy the positions from the pos prop to the vertex buffer.
+    _prop_copy(visual, prop_pos);
+
+    // Resize and fill the index buffer.
+    vkl_array_resize(arr_index, total_index_count);
+    vkl_array_data(arr_index, 0, total_index_count, total_index_count, total_indices);
+
+    // Copy the polygon colors to the vertices.
+    cvec4* color = NULL;
+    // Go through the polygons.
+    uint32_t k = 0;
+    for (uint32_t i = 0; i < n_polys; i++)
+    {
+        // Color prop for the current polygon.
+        color = (cvec4*)vkl_array_item(arr_color, i);
+        // Copy the color to the vertex buffer, repeating it for each vertex in the polygon.
+        vkl_array_column(
+            arr_vertex, offsetof(VklVertex, color), sizeof(cvec4), k, poly_lengths[i], 1, color,
+            VKL_DTYPE_NONE, VKL_DTYPE_NONE, VKL_ARRAY_COPY_SINGLE, 1);
+        k += poly_lengths[i];
+    }
+
+    FREE(index_count_list);
+    FREE(indices_list);
+    FREE(total_indices);
+}
+
+static void _visual_polygon(VklVisual* visual)
+{
+    ASSERT(visual != NULL);
+    VklCanvas* canvas = visual->canvas;
+    ASSERT(canvas != NULL);
+    VklProp* prop = NULL;
+
+    // Graphics.
+    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_TRIANGLE, 0));
+
+    // Sources
+    vkl_visual_source(
+        visual, VKL_SOURCE_TYPE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklVertex), 0);
+
+    vkl_visual_source(
+        visual, VKL_SOURCE_TYPE_INDEX, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklIndex), 0);
+
+    _common_sources(visual);
+
+    // Props:
+
+    // Polygon points, 1 position per point.
+    prop = vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
+    // Copy the polygon points directly to the vertex buffer, as the triangulation only sets the
+    // vertex indices and does not change the vertices themselves.
+    vkl_visual_prop_cast(
+        prop, 0, offsetof(VklVertex, pos), VKL_DTYPE_VEC3, VKL_ARRAY_COPY_SINGLE, 1);
+
+    // Polygon lengths, 1 length per polygon.
+    prop = vkl_visual_prop(visual, VKL_PROP_LENGTH, 0, VKL_DTYPE_UINT, VKL_SOURCE_TYPE_VERTEX, 0);
+
+    // Polygon colors, 1 color per polygon.
+    prop = vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
+
+    // Common props.
+    _common_props(visual);
+
+    vkl_visual_callback_bake(visual, _polygon_bake);
+}
+
+
+
+/*************************************************************************************************/
 /*************************************************************************************************/
 /*  3D visuals                                                                                   */
 /*************************************************************************************************/
@@ -1157,6 +1308,10 @@ void vkl_visual_builtin(VklVisual* visual, VklVisualType type, int flags)
 
     case VKL_VISUAL_MARKER:
         _visual_marker(visual);
+        break;
+
+    case VKL_VISUAL_POLYGON:
+        _visual_polygon(visual);
         break;
 
     case VKL_VISUAL_AXES_2D:
