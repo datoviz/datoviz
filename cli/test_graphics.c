@@ -519,10 +519,10 @@ int test_graphics_triangle_fan(TestContext* context)
 
 
 /*************************************************************************************************/
-/*  Agg marker tests                                                                             */
+/*  Marker tests                                                                                 */
 /*************************************************************************************************/
 
-int test_graphics_marker(TestContext* context)
+int test_graphics_marker_1(TestContext* context)
 {
     INIT_GRAPHICS(VKL_GRAPHICS_MARKER, 0)
     BEGIN_DATA(VklGraphicsMarkerVertex, 1000, NULL)
@@ -569,6 +569,71 @@ int test_graphics_marker(TestContext* context)
 
     RUN;
     SCREENSHOT("marker")
+    TEST_END
+}
+
+
+
+#define SAVE_MARKER(MARKER, NAME)                                                                 \
+    ((VklGraphicsMarkerVertex*)tg.vertices.data)[0].marker = (MARKER);                            \
+    vkl_upload_buffers(                                                                           \
+        canvas, tg.br_vert, 0, vertex_count* tg.vertices.item_size, tg.vertices.data);            \
+    vkl_app_run(app, 3);                                                                          \
+    SCREENSHOT(NAME)
+
+int test_graphics_marker_screenshots(TestContext* context)
+{
+    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    VklGpu* gpu = vkl_gpu(app, 0);
+    VklCanvas* canvas = vkl_canvas(gpu, 256, 256, 0);
+    VklGraphics* graphics = vkl_graphics_builtin(canvas, VKL_GRAPHICS_MARKER, 0);
+    BEGIN_DATA(VklGraphicsMarkerVertex, 1, NULL)
+
+    vertices[0].marker = 0;
+    vertices[0].size = 200;
+    vertices[0].color[0] = 39;
+    vertices[0].color[1] = 35;
+    vertices[0].color[2] = 153;
+    vertices[0].color[3] = 255;
+
+    END_DATA
+
+    tg.br_params =
+        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsPointParams));
+    BINDINGS_PARAMS
+
+    VklGraphicsMarkerParams params = {0};
+    params.edge_color[0] = 1;
+    params.edge_color[1] = 1;
+    params.edge_color[2] = 1;
+    params.edge_color[3] = 1;
+    params.edge_width = 5;
+    vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsMarkerParams), &params);
+
+    vkl_event_callback(canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _graphics_refill, &tg);
+
+    SAVE_MARKER(VKL_MARKER_DISC, "marker_disc")
+    SAVE_MARKER(VKL_MARKER_ASTERISK, "marker_asterisk")
+    SAVE_MARKER(VKL_MARKER_CHEVRON, "marker_chevron")
+    SAVE_MARKER(VKL_MARKER_CLOVER, "marker_clover")
+    SAVE_MARKER(VKL_MARKER_CLUB, "marker_club")
+    SAVE_MARKER(VKL_MARKER_CROSS, "marker_cross")
+    SAVE_MARKER(VKL_MARKER_DIAMOND, "marker_diamond")
+    SAVE_MARKER(VKL_MARKER_ARROW, "marker_arrow")
+    SAVE_MARKER(VKL_MARKER_ELLIPSE, "marker_ellipse")
+    SAVE_MARKER(VKL_MARKER_HBAR, "marker_hbar")
+    SAVE_MARKER(VKL_MARKER_HEART, "marker_heart")
+    SAVE_MARKER(VKL_MARKER_INFINITY, "marker_infinity")
+    SAVE_MARKER(VKL_MARKER_PIN, "marker_pin")
+    SAVE_MARKER(VKL_MARKER_RING, "marker_ring")
+    SAVE_MARKER(VKL_MARKER_SPADE, "marker_spade")
+    SAVE_MARKER(VKL_MARKER_SQUARE, "marker_square")
+    SAVE_MARKER(VKL_MARKER_TAG, "marker_tag")
+    SAVE_MARKER(VKL_MARKER_TRIANGLE, "marker_triangle")
+    SAVE_MARKER(VKL_MARKER_VBAR, "marker_vbar")
+
+    vkl_array_destroy(&tg.vertices);
+    vkl_array_destroy(&tg.indices);
     TEST_END
 }
 
