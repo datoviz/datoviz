@@ -9,4 +9,6 @@ void main()
     CLIP
 
     out_color = in_color;
+    if (out_color.a < .01)
+        discard;
 }
