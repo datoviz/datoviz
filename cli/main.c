@@ -82,7 +82,7 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_graphics_marker_1), //
 
     // generate marker screenshots:
-    // CASE_FIXTURE_NONE(test_graphics_marker_screenshots), //
+    CASE_FIXTURE_NONE(test_graphics_marker_screenshots), //
 
     CASE_FIXTURE_NONE(test_graphics_segment),      //
     CASE_FIXTURE_NONE(test_graphics_text),         //
