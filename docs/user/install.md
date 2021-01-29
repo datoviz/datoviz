@@ -1,5 +1,8 @@
 # Installation
 
+!!! note
+    Making easy-to-install packages for common systems is a work in progress. Help needed! In the meantime, you need to manually compile the library. The best supported platform at the moment is Ubuntu 20.04.
+
 Visky should work on most systems. It has been developed on Linux (Ubuntu 20.04), tested on macOS (Intel). Windows support is preliminary, help needed.
 
 ## Dependencies
@@ -14,19 +17,19 @@ Mandatory dependencies that need to be installed before building the library:
 
 Optional dependencies (used by the current version or an upcoming version of the library):
 
-* **freetype**
-* **libpng**
-* **ffmpeg**
-* **Qt5** (will require Ubuntu >= 20.04)
+* **freetype** (optional)
+* **libpng** (optional)
+* **ffmpeg** (optional)
+* **Qt5** (optional, not supported on Ubuntu *strictly* below 20.04)
 
 Dependencies already included in the repository:
 
 * **glfw3 3.3+**: cross-platform windowing system
 * **cglm**: basic types and math computations on vectors and matrices
+* **stb_image**: image file input and output
 * **Dear ImGui**: rich graphical user interfaces
 * **earcut.hpp**: triangulation of polygons
 * **triangle**: triangulation of complex polygons and planar straight-line graphs (PSLG)
-* **stb_image**: image file input and output
 * **tiny_obj_loader**: loading of `.obj` mesh files
 
 
@@ -90,6 +93,13 @@ Dependencies already included in the repository:
 4. `./manage.sh example`
 
 
+### Build the Cython module
+
+1. Compile the Cython module: `./manage.sh cython`
+2. Export the shared library path in your environment: `source setup-env.sh`
+3. Try a Python example: `python bindings/cython/examples/test.py`
+
+
 ## Windows 10 (mingw-w64)
 
 **Help needed to fill in the details**.
@@ -112,7 +122,7 @@ Dependencies already included in the repository:
 
     ```
     setup-env.bat
-    build\app_triangle.exe
+    build\visky.exe example (TODO)
     ```
 
 **Note**: Visky does not yet compile with Microsoft Visual C++ compiler, help appreciated.
