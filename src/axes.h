@@ -41,7 +41,7 @@ static VklAxesContext _axes_context(VklController* controller, VklAxisCoord coor
     // Make axes context.
     VklAxesContext ctx = {0};
     ctx.coord = coord;
-    ctx.extensions = 1; // extend the range once on the left/right and top/bottom
+    ctx.extensions = 1; // extend the range on the left/right and top/bottom
     ctx.size_viewport = size[coord] - m[1 - coord] - m[3 - coord]; // remove the margins
     ctx.scale_orig = controller->interacts[0].u.p.zoom[coord];
 
@@ -244,7 +244,7 @@ static bool _axes_collision(VklController* controller, VklAxisCoord coord, dvec2
     double min_distance = min_distance_labels(ticks, &ctx);
 
     // Check whether the current view is outside the computed ticks (panning);
-    bool outside = range[0] <= ticks->lmin_ex || range[1] >= ticks->lmax_ex;
+    bool outside = range[0] <= ticks->lmin_in || range[1] >= ticks->lmax_in;
     // if (coord == 0)
     //     log_info("%f %f %d", ticks->lmin_ex, ticks->lmax_ex, outside);
 

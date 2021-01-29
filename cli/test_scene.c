@@ -18,10 +18,10 @@ int test_axes_1(TestContext* context)
     ctx.size_glyph = 10;
 
     VklAxesTicks ticks = create_ticks(0, 1, 11, ctx);
-    ticks.lmin_ex = 0;
-    ticks.lmax_ex = 1;
+    ticks.lmin_in = 0;
+    ticks.lmax_in = 1;
     ticks.lstep = .1;
-    const uint32_t N = tick_count(ticks.lmin_ex, ticks.lmax_ex, ticks.lstep);
+    const uint32_t N = tick_count(ticks.lmin_in, ticks.lmax_in, ticks.lstep);
     ticks.value_count = N;
 
     ticks.format = VKL_TICK_FORMAT_SCIENTIFIC;
@@ -94,7 +94,8 @@ int test_axes_3(TestContext* context)
     ctx.extensions = 2;
     ticks = vkl_ticks(x0, x1, ctx);
     for (uint32_t i = 0; i < ticks.value_count; i++)
-        log_debug("tick #%02d: %s", i, &ticks.labels[i * MAX_GLYPHS_PER_TICK]);
+        log_debug(
+            "tick #%02d: %s (%f)", i, &ticks.labels[i * MAX_GLYPHS_PER_TICK], ticks.values[i]);
 
     vkl_ticks_destroy(&ticks);
 

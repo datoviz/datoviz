@@ -51,8 +51,8 @@ struct VklAxesContext
 struct VklAxesTicks
 {
     double dmin, dmax;              // requested range values
-    double lmin_ex, lmax_ex, lstep; // computed tick range (initial range)
-    double lmin_in, lmax_in;        // extended tick range (extended left/right or bottom/top)
+    double lmin_in, lmax_in, lstep; // computed tick range (initial range)
+    double lmin_ex, lmax_ex;        // extended tick range (extended left/right or bottom/top)
     uint32_t value_count;           // final number of labels
     uint32_t value_count_req;       // number of values requested
     VklTickFormat format;           // decimal or scientific notation
