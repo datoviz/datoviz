@@ -70,10 +70,10 @@ def canvas(*args, **kwargs):
     return app().canvas(*args, **kwargs)
 
 
-def run():
+def run(**kwargs):
     enable_ipython()
     if not _IN_IPYTHON:
-        app().run()
+        app().run(**kwargs)
 
 
 @atexit.register

@@ -1,3 +1,5 @@
+# cython: c_string_type=unicode, c_string_encoding=ascii
+
 from functools import wraps, partial
 import logging
 
@@ -65,7 +67,7 @@ _CONTROLLERS = {
     'panzoom': cv.VKL_CONTROLLER_PANZOOM,
     'axes': cv.VKL_CONTROLLER_AXES_2D,
     'arcball': cv.VKL_CONTROLLER_ARCBALL,
-    'fps': cv.VKL_CONTROLLER_CAMERA,
+    'camera': cv.VKL_CONTROLLER_CAMERA,
 }
 
 _TRANSPOSES = {
@@ -162,8 +164,13 @@ cdef class App:
             cv.vkl_app_destroy(self._c_app)
             self._c_app = NULL
 
-    def canvas(self, int width=DEFAULT_WIDTH, int height=DEFAULT_HEIGHT, int rows=1, int cols=1):
-        c_canvas = cv.vkl_canvas(self._c_gpu, width, height, cv.VKL_CANVAS_FLAGS_FPS)
+    def canvas(
+            self, int width=DEFAULT_WIDTH, int height=DEFAULT_HEIGHT, int rows=1, int cols=1,
+            bint show_fps=False):
+        cdef int fps = 0
+        if show_fps:
+            fps = cv.VKL_CANVAS_FLAGS_FPS
+        c_canvas = cv.vkl_canvas(self._c_gpu, width, height, fps)
         if c_canvas is NULL:
             raise MemoryError()
         c = Canvas()
@@ -171,7 +178,11 @@ cdef class App:
         self._canvases.append(c)
         return c
 
-    def run(self, int n_frames=0):
+    def run(self, int n_frames=0, unicode screenshot=None):
+        # HACK: run a few frames to render the image, make a screenshot, and run the event loop.
+        if screenshot and self._canvases:
+            cv.vkl_app_run(self._c_app, 5)
+            self._canvases[0].screenshot(screenshot)
         cv.vkl_app_run(self._c_app, n_frames)
 
     def run_one_frame(self):
@@ -219,6 +230,10 @@ cdef class Canvas:
         self._c_scene = cv.vkl_scene(c_canvas, rows, cols)
         self._app = app
         # _add_close_callback(self._c_canvas, self._destroy_wrapper, ())
+
+    def screenshot(self, unicode path):
+        cdef char* _c_path = path
+        cv.vkl_screenshot_file(self._c_canvas, _c_path);
 
     def panel(self, int row=0, int col=0, controller='axes', transpose=None):
         ctl = _CONTROLLERS.get(controller, cv.VKL_CONTROLLER_NONE)

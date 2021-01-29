@@ -906,6 +906,7 @@ cdef extern from "<visky/visky.h>":
     void vkl_canvas_clear_color(VklCanvas* canvas, VkClearColorValue color)
     void vkl_event_callback(VklCanvas* canvas, VklEventType type, double param, VklEventMode mode, VklEventCallback callback, void* user_data)
     void vkl_canvas_to_close(VklCanvas* canvas)
+    void vkl_screenshot_file(VklCanvas* canvas, const char* png_path)
     void vkl_app_run(VklApp* app, uint64_t frame_count)
 
     # from file: context.h
