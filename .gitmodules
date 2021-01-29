@@ -5,3 +5,6 @@
 	path = data
 	url = git@github.com:viskydev/data.git
 	branch = refactor
+[submodule "external/cglm"]
+	path = external/cglm
+	url = git@github.com:recp/cglm.git

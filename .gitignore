@@ -18,7 +18,6 @@ mouse_connectivity
 target/
 Testing
 msdfgen
-cglm
 bindings/r
 _skbuild
 site
@@ -35,6 +34,7 @@ pyvisky.c
 *.ts
 *.bin
 data.zip
+visky_example
 
 # Prerequisites
 *.d

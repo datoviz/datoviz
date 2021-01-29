@@ -48,13 +48,14 @@ else()
     message(FATAL_ERROR "-- Could NOT find Vulkan")
 endif()
 
-# cglm dependency: download from GitHub
-FetchContent_Declare(
-  cglm
-  GIT_REPOSITORY https://github.com/recp/cglm
-  GIT_TAG        v0.7.8
-)
-FetchContent_MakeAvailable(cglm)
+# # cglm dependency: download from GitHub
+# FetchContent_Declare(
+#   cglm
+#   GIT_REPOSITORY https://github.com/recp/cglm
+#   GIT_TAG        v0.7.8
+# )
+# FetchContent_MakeAvailable(cglm)
+add_subdirectory(external/cglm/)
 
 # glfw3 dependency on Windows
 if (WIN32 OR APPLE)
