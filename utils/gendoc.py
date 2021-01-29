@@ -30,6 +30,8 @@ ITEM_HEADER = re.compile(r'^#+\s+', flags=re.MULTILINE)
 GRAPHICS_CODE = re.compile(r'```c\n([a-zA-Z0-9\_]+)\n```')
 MAX_LINE_LENGTH = 76
 INDEX_LINK = re.compile(r'\]\(docs/([^\)]+\.md)\)')
+INSERT_CODE = re.compile(r'<!-- CODE_([^ ]+) ([^ ]+) -->')
+INSERT_IMAGE = re.compile(r'<!-- IMAGE ([^ ]+) -->')
 
 
 
@@ -361,3 +363,26 @@ def process_index_page(markdown, config):
     index = (ROOT_DIR / 'README.md').read_text()
     index = INDEX_LINK.sub(r'](\1)', index)
     return index
+
+
+def process_code_image(markdown, config):
+    def _repl_code(m):
+        path = ROOT_DIR / m.group(2)
+        lang = m.group(1).lower()
+        assert path.exists()
+        code = path.read_text()
+        if lang == 'python':
+            comment = '#'
+        elif lang == 'c':
+            comment = '//'
+        else:
+            raise NotImplementedError("unknown language")
+        return f'```{lang}\n{comment} code from `{m.group(2)}`:\n\n{code}\n```\n'
+
+    def _repl_image(m):
+        rel_path = m.group(1)
+        return f'![]({rel_path})'
+
+    markdown = INSERT_CODE.sub(_repl_code, markdown)
+    markdown = INSERT_IMAGE.sub(_repl_image, markdown)
+    return markdown

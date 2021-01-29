@@ -6,8 +6,9 @@ theme:
   name: material
   features:
     - navigation.tabs
-    - navigation.tabs.sticky
     - navigation.expand
+    - toc.integrate
+    # - navigation.tabs.sticky
   icon:
     repo: fontawesome/brands/github
 extra_css:

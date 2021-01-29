@@ -2,8 +2,8 @@
 /*  Example of a standalone application using the library.                                       */
 /*************************************************************************************************/
 
-/// Import the library public header. The compiler needs to be passed the path to the library
-/// headers.
+/// Import the library public header. The compiler needs to be passed the path to the headers and
+/// shared library, see build.sh.
 #include <visky/visky.h>
 
 int main(int argc, char** argv)
@@ -45,7 +45,7 @@ int main(int argc, char** argv)
         pos[i][1] = randn();
         // Color: random value with a colormap.
         vkl_colormap_scale(VKL_CMAP_VIRIDIS, rand_float(), 0, 1, color[i]);
-        // A bit of transparency on the alpha channel.
+        // A bit of transparency via the alpha channel.
         color[i][3] = 196;
         // Random marker size.
         size[i] = 2 + 30 * rand_float();
@@ -58,6 +58,10 @@ int main(int argc, char** argv)
 
     // We run the application. The last argument is the number of frames to run, or 0 for infinite
     // loop (stop when escape is pressed or when the window is closed).
+
+    // vkl_app_run(app, 5);
+    // vkl_screenshot_file(canvas, "/home/cyrille/git/visky/docs/images/c_example.png");
+
     vkl_app_run(app, 0);
 
     // We need to clean up all objects handled by Visky at the end.

@@ -3,7 +3,7 @@ from joblib import Memory
 
 from .gendoc import (
     insert_functions_doc, insert_enums_doc, insert_graphics_doc,
-    parse_headers, process_index_page,
+    parse_headers, process_index_page, process_code_image,
 )
 from .export_colormap import generate_colormaps_doc
 
@@ -33,3 +33,5 @@ def page_hook(markdown, page, config, files):
         return insert_enums_doc(markdown, config)
     elif 'api/' in path:
         return insert_functions_doc(markdown, config)
+    elif 'user/' in path:
+        return process_code_image(markdown, config)
