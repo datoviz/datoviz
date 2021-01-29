@@ -48,7 +48,7 @@ int main(int argc, char** argv)
         // A bit of transparency via the alpha channel.
         color[i][3] = 196;
         // Random marker size.
-        size[i] = 2 + 30 * rand_float();
+        size[i] = 2 + 38 * rand_float();
     }
 
     // We link our data to the visual properties.
