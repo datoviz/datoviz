@@ -3,7 +3,7 @@ from joblib import Memory
 
 from .gendoc import (
     insert_functions_doc, insert_enums_doc, insert_graphics_doc,
-    parse_headers,
+    parse_headers, process_index_page,
 )
 from .export_colormap import generate_colormaps_doc
 
@@ -21,7 +21,9 @@ def config_hook(config):
 def page_hook(markdown, page, config, files):
     assert 'gendoc' in config
     path = page.file.abs_src_path
-    if 'graphics' in path:
+    if 'docs/index.md' in path:
+        return process_index_page(markdown, config)
+    elif 'graphics' in path:
         return insert_graphics_doc(markdown, config)
     elif 'color' in path:
         return (

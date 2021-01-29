@@ -1,163 +1,116 @@
 # Visky: scientific visualization with Vulkan
 
-**Visky** is a **scientific visualization library written in C** leveraging the low-level Vulkan API for GPUs. It is still highly experimental and the API/ABI changes a lot. The main goals of Visky are **performance, scalability, visual quality**, and ease of use. Longer-term goals are: integration with dynamic languages, easy and fast generation of static plots and videos, remote use.
+**Visky** is an open-source **high-performance interactive scientific data visualization library** leveraging the graphics processing unit (**GPU**) for speed, visual quality, and scalability. It supports both 2D and 3D rendering.
 
-Visky provides a high-level interface to create interactive plots, as well as a low-level API for those who want to deal with shaders, GPU buffers, etc. Visky is entirely implemented in C, except for thin C wrappers of C++ dependencies.
+Visky has been tested on Linux, macOS (Intel), and to a lesser extent, Windows. It should work on most computers, with or without a discrete GPU (but with up-to-date graphics drivers).
 
-A longer-term goal would be to provide a reasonably **stable ABI** allowing dynamic languages to implement bindings via a foreign function interface. The `bindings/` subfolder provides binding proofs of concepts for **Python, Julia, and Rust** (help appreciated for other languages).
+Visky is **written in C** and provides native **Python bindings** (based on Cython). Bindings to other languages could be developed thanks to community efforts (Julia, R, MATLAB, Rust, C#, and so on). Visky uses the [**Vulkan graphics API**](https://www.khronos.org/vulkan/) created by the Khronos consortium, successor of OpenGL. Supporting other modern graphics API, such as WebGPU, would constitute interesting developments.
 
-The main supported windowing library is **glfw** at the moment. The next step is to support Qt5, a proof of concept is provided in the examples. Offscreen backends are also provided, which are useful for testing, the video backend (using ffmpeg), and remote backends (there's a VNC backend proof of concept, and integration with Jupyter is planned via tornado and WebSockets).
+Visky is currently being developed mostly by [Cyrille Rossant](https://cyrille.rossant.net) at the [International Brain Laboratory](http://internationalbrainlab.org/), a consortium of neuroscience research labs around the world.
 
-Tighter integration with Dear ImGui is also planned to make it possible to build rich, interactive GUIs without the need for an external GUI system like Qt.
-
-
-## Installation
-
-Currently Visky works best on Ubuntu 20.04. Installation on other platforms is possible but might require slightly more work.
-
-*Note*: Ubuntu < 20.04 does not support the Qt5 backend example.
-
-### Dependencies
-
-The only mandatory dependency is the **Vulkan SDK**. The build process uses **cmake 3.16+** and **ninja** (to make the build faster).
-
-**Optional dependencies** are:
-
-* **freetype** (text bitmap support)
-* **libpng** (screenshot and offscreen backends)
-* **ffmpeg** (video backend)
-* **libvncserver** (VNC backend)
-* **Qt5** (Qt example). Note: Ubuntu users need Ubuntu 20.04 in order to have a distribution of Qt5 with Vulkan support.
-* **ASSIMP** (mesh file loading)
-
-Automatically-handled dependencies are (statically bundled or managed by the build process, no need to install them manually):
-
-* **glfw3 3.3+**: cross-platform windowing system
-* **cglm**: basic types and math computations on vectors and matrices
-* **Dear ImGui**: rich graphical user interfaces
-* **earcut.hpp**: triangulation of polygons
-* **triangle**: triangulation of complex polygons and planar straight-line graphs (PSLG)
-* **stb_image**: image file input and output
-* **tiny_obj_loader**: loading of `.obj` mesh files
+Visky is at an early stage of development. The library is quite usable but evolves quickly. Many more features will come later and the documentation will be improved. Contributions are highly welcome!
 
 
-### Ubuntu 20.04
+## Screenshots
 
-1. Install the latest graphics drivers for your system and hardware.
-2. Install the build tools:
+TODO
 
-    `sudo apt install build-essential cmake ninja-build xcb libx11-xcb-dev libglfw3-dev`
+See also the [**gallery**](docs/gallery.md).
 
-3. Install the optional dependencies:
+## Features
 
-    `sudo apt install libpng-dev libavcodec-dev libavformat-dev libavfilter-dev libavutil-dev libswresample-dev libvncserver-dev xtightvncviewer libqt5opengl5-dev libfreetype6-dev libassimp-dev`
+* **High-quality antialiased 2D visuals**: markers, paths, lines, text, arrows, polygons, and more (implementation from [glumpy](https://glumpy.github.io/))
+* **3D visuals**: meshes, surfaces, volumes
+* **Mixing 2D and 3D** plots seamlessly in the same window
+* **~150 colormaps** included (from matplotlib, colorcet, MATLAB)
+* **High-level interactivity**: pan & zoom, mouse arcball, first-person cameras
+* **Axes**: ticks, grids, labels
+* **Subplots** organized in a grid layout
+* **DPI-aware**: partial support for high-resolution monitors
+* **GUIs** integrated via the **Dear ImGUI** C++ library (Qt or other backends not required)
+* **Custom visuals**, with custom shaders and/or custom data transformations
+* Initial support for multiple canvases
+* Initial support for offscreen rendering and CPU emulation via swiftshader
 
-4. Install the latest [Lunarg Vulkan SDK](https://vulkan.lunarg.com/) (tarball SDK), for example in `~/vulkan`
+Upcoming features:
 
-    1. `cd ~/vulkan`
-    2. `./vulkansdk samples` (build the Vulkan samples)
-    3. `./samples/build/Sample-Programs/Hologram/Hologram` (test an example)
-    4. **Important**: add `source ~/vulkan/setup-env.sh` to your `~/.bashrc` so that the `$VULKAN_SDK` environment variable and other variables are properly set in your terminal.
+* More visuals: triangulations, planar straight-line graphs (PSLG), histograms, areas, graphs...
+* Further data transformations: logarithmic, polar, basic Earth coordinate systems for geographical data
+* Colorbars
+* 3D axes
+* Mouse picking
+* Screencast and video recording with ffmpeg (optional dependency)
+* Better support of multiple GPUs
+* Qt integration
+* Continuous integration, more robust testing...
 
-5. Clone the visky repository and build the library:
+Long-term future (or shorter if there are community contributions):
 
-    1. `git clone --recursive git@github.com:viskydev/visky.git`
-    2. `cd visky`
-    3. `./manage.sh build`
-
-6. Check that the compilation worked by running an example:
-
-    1. `./manage.sh run app_triangle`
-
-    Note: this will only work if Vulkan SDK's `setup-env.sh` file is source-ed in the terminal.
-
-
-### macOS
-
-#### Install the dependencies
-
-1. Type `git` in a terminal to install it.
-2. Install Xcode
-3. Install [Homebrew](https://brew.sh/) if you don't have it already
-4. Type `brew install cmake ninja`
-
-
-#### Install Vulkan
-
-1. Install [the latest Vulkan SDK](https://vulkan.lunarg.com/sdk/home#mac)
-2. `cd /Volumes/vulkansdk-macos-1.2.154.0` (replace by appropriate version)
-3. `./install_vulkan.py`
+* Support for other languages (Julia, R, MATLAB, Rust...)
+* Jupyter notebook integration
+* Web integration via WebGPU?
+* Remote desktop integration?
 
 
-#### Install Visky
+## Documentation
 
-1. `git clone --recursive git@github.com:viskydev/visky.git` (you need to set up an SSH key). Checkout the relevant branch.
-2. `cd visky`
-3. `./manage.sh build`
-4. `./manage.sh test`
+The documentation is divided into:
 
-
-
-### Windows 10 (mingw-w64)
-
-**Help needed to fill in the details**.
-
-1. Install the latest graphics drivers for your system and hardware.
-2. Install [Winlibs](http://winlibs.com/), a Windows port of gcc, using mingw-w64.
-3. Install [CMake for Windows](https://cmake.org/download/)
-4. Install the latest [Lunarg Vulkan SDK](https://vulkan.lunarg.com/) (`.exe` executable).
-    Windows Universal C Runtime https://stackoverflow.com/a/52329698
-5. Clone the repository.
-6. Enter the following commands within the repository's directory:
-
-    ```
-    cd build
-    cmake .. -G "MinGW Makefiles"
-    mingw32-make
-    cd ..
-    ```
-7. To run an example (the batch script will only work in cmd.exe, not Powershell):
-
-    ```
-    setup-env.bat
-    build\app_triangle.exe
-    ```
-
-**Note**: Visky does not yet compile with Microsoft Visual C++ compiler, PRs welcome.
+* [**User manual**](docs/user/index.md): for regular users with no GPU knowledge, with a focus on scientific 2D/3D plotting
+* [**Expert manual**](docs/expert/index.md): for advanced users, with a focus on writing custom visuals, understanding Vulkan and the architecture of the library, creating entirely custom applications, making GPU optimizations, and more
+* [**C API reference**](docs/api/index.md): for anyone who needs to use the C API
 
 
-## Code organization
+## Credits and related projects
 
-There are two sets of APIs:
+Visky is developed primarily by [Cyrille Rossant](https://cyrille.rossant.net/) at the [International Brain Laboratory](https://www.internationalbrainlab.com/).
 
-* The **scene API**: this high-level API deals with visual elements such as markers, paths, images, text, subplots, axes...
-* The **app API**: this low-level API deals with shaders, GPU buffers, pipelines, etc.
+Visky borrows heavily ideas and code from other projects.
 
-The scene API is built on top of the app API. The app API is written on top of a **thin Vulkan wrapper** called **vklite** and implemented in `src/vklite.c`. Almost all of Vulkan-specific code is found in this file. The app API could later support other modern GPU APIs such as WebGPU, DirectX 12 and Apple Metal since the abstractions provided by vklite (pipelines, shaders, buffers...) are roughly the same as those provided by these APIs.
+### VisPy
 
-There are some examples using either the app API or the scene API in `examples/`. There is also a testing suite that implements many other examples.
+[**VisPy**](https://vispy.org/) is a Python scientific visualization library created in 2013 by Luke Campagnola (developer of [**pyqtgraph**](http://www.pyqtgraph.org/)), Almar Klein (developer of [**visvis**](https://github.com/almarklein/visvis)), Nicolas Rougier (developer of [**glumpy**](https://glumpy.github.io/)), and myself (Cyrille Rossant, developer of **galry**). We joined forces to create a single library unifying all of our approaches, which proved to be challenging. There is today a community of users and projects based on VisPy ([napari](https://napari.org/)), and the library is currently being maintained by David Hoese, Eric Larson, and others. VisPy recently received [funding from the **Chan Zuckerberg Initiative**](https://chanzuckerberg.com/eoss/proposals/rebuilding-the-community-behind-vispys-fast-interactive-visualizations/) to improve the documentation and knowledge base.
 
+VisPy is written entirely in Python and it is based on OpenGL, an almost 30 year old technology. Vulkan was first released in 2016 by the Khronos consortium and it can be seen, to some extent, as a successor to OpenGL. However, Vulkan is a lower-level library and it is harder to use. This is the price to pay to reach better GPU performance.
 
-## Testing suite
+Visky may be seen as a ground-up reincarnation of VisPy, with two fundamental differences: it is written in **C** rather than Python, and it uses **Vulkan** rather than OpenGL.
 
-There are few unit tests yet, but the library comes with an integration testing suite that runs a few examples (offscreen), makes screenshots, and compares them to presaved reference screenshots. A test passes if the two images are almost identical.
-
-1. `./manage.sh test`
-2. Screenshots are saved in `test/screenshots/` the first time you run the tests.
-3. Afterwards, screenshots are no longer saved but compared to the reference screenshots, unless a test fails, in which case the failing screenshot it saved with the`*_fail.png` suffix. To see a diff:
-
-    1. Install ImageMagick.
-    2. Make a diff with `compare test/screenshots/test_11_image* -compose src diff.png`
-    3. Open `diff.png`
+* The main advantages of C compared to Python are: ability to bind to any other language beyond Python; performance; possibility to use the Vulkan C API directly rather than via a wrapper.
+* The main advantages of Vulkan compared to OpenGL are: modern API, more adapted to today's hardware; performance. However, it is more complex and less user-friendly. Visky abstracts away a lot of that complexity.
 
 
-## No GPU? Enable CPU Vulkan emulation with Google SwiftShader
+### Glumpy
 
-This is useful on computers with no GPUs or on continuous integration servers, for testing purposes only. SwiftShader only works with **offscreen backends**.
+Glumpy, developed by Nicolas Rougier, provides [efficient implementations of high-quality 2D visuals on the GPU](https://www.labri.fr/perso/nrougier/python-opengl/), using algorithms from the antigrain geometry library. The GPU code of most 2D visuals in Visky comes directly from Glumpy.
 
-1. Install https://github.com/google/swiftshader
-2. Temporarily override your native Vulkan driver with the SwiftShader one:
 
-    1. Linux: `export LD_LIBRARY_PATH=/path/to/swiftshader/build/Linux/:$LD_LIBRARY_PATH`
+### Dependencies and algorithms
 
-3. Run the Visky tests as usual `./test.sh`
+* [LunarG Vulkan SDK](https://www.lunarg.com/vulkan-sdk/) (mandatory)
+* [GLFW](https://www.glfw.org/) (mandatory)
+* [earcut](https://github.com/mapbox/earcut) (included)
+* [triangle](https://www.cs.cmu.edu/~quake/triangle.html), for Delaunay triangulations (included)
+* [antigrain geometry](https://en.wikipedia.org/wiki/Anti-Grain_Geometry)
+* [extended Wilkinson algorithm](http://vis.stanford.edu/papers/tick-labels) for tick placement (included)
+* [Dear ImGUI](https://github.com/ocornut/imgui) (included)
+
+An upcoming version will also have the following dependencies:
+
+* [freetype](https://www.freetype.org/) (optional)
+* [ffmpeg](https://ffmpeg.org/) (optional)
+
+
+### Related projects
+
+* [mayavi](https://docs.enthought.com/mayavi/mayavi/)
+* [VTK](https://vtk.org/)
+* [napari](https://napari.org/)
+* [vedo](https://github.com/marcomusy/vedo)
+* [ipygany](https://ipygany.readthedocs.io/en/latest/)
+* [ipyvolume](https://github.com/maartenbreddels/ipyvolume)
+
+
+
+*[Vulkan]: Low-level graphics API created by Khronos, and successor of OpenGL
+*[shaders]: code written in GLSL and executed on the GPU to customize the graphics pipeline
+*[GLSL]: OpenGL shading language, the C-like language used to write shaders

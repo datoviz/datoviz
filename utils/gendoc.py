@@ -29,6 +29,8 @@ ICONS = {
 ITEM_HEADER = re.compile(r'^#+\s+', flags=re.MULTILINE)
 GRAPHICS_CODE = re.compile(r'```c\n([a-zA-Z0-9\_]+)\n```')
 MAX_LINE_LENGTH = 76
+INDEX_LINK = re.compile(r'\]\(docs/([^\)]+\.md)\)')
+
 
 
 # File explorer and manipulation
@@ -353,3 +355,9 @@ def insert_graphics_doc(markdown, config):
         return out
 
     return GRAPHICS_CODE.sub(_sub_graphics_code, markdown)
+
+
+def process_index_page(markdown, config):
+    index = (ROOT_DIR / 'README.md').read_text()
+    index = INDEX_LINK.sub(r'](\1)', index)
+    return index

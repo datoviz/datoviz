@@ -1,6 +1,6 @@
 # User manual
 
-This user manual targets regular users with no GPU knowledge, with a focus on scientific 2D/3D plotting.
+The user manual focuses on **scientific 2D/3D plotting wth Python**, and it assumes no prior experience with GPU.
 
 * [Installation](install.md)
 * [Quickstart](plots.md): basic plots
