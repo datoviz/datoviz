@@ -1,0 +1,12 @@
+mkdocs
+mkdocs-material
+mkdocs-material-extensions
+mkdocs-simple-hooks
+imageio
+pyparsing
+matplotlib
+numpy
+bokeh
+colorcet
+webcolors
+pillow

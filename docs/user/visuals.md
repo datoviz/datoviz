@@ -1,5 +1,6 @@
 # Visuals
 
+idea, props and sources, batch as much as possible, list of visuals
 
 !!! note
     Props marked *uniform* correspond to the params structure available to the shader as a uniform variable. Each uniform param is shared across all vertices of a given visual. Therefore, these props can receive only a single value.

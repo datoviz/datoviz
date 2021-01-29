@@ -1,14 +1,11 @@
 # User manual
 
-This user manual targets regular users who want to make scientific plots with Visky.
+This user manual targets regular users with no GPU knowledge, with a focus on scientific 2D/3D plotting.
 
-The user manual is organized as follows:
-
-* Describing the [**different objects and abstractions**](abstractions.md) used in Visky.
-* Describing the [**Canvas**](canvas.md).
-* Describing the [**Scene**](scene.md), which endows the raw Canvas with higher-level plotting-related functionality.
-* Describing the [**colormaps**](color.md) natively integrated in Visky.
-* Describing the [**visuals**](visuals.md), the most important abstraction in Visky.
-* Describing [**meshes, triangulations**](mesh.md), [**coordinate systems, transformations**](transform.md).
-* Describing [**mouse and keyboard interaction**](interact.md) and [**graphical user interfaces**](gui.md).
-* Describing the [**backends**](backends.md).
+* [Installation](install.md)
+* [Quickstart](plots.md): basic plots
+* [Scene](scene.md): subplot layout, panels, grid, controllers, transformations, data coordinate systems
+* [Colormaps](colormaps.md): usage, and list of all included colormaps
+* [Visuals](visuals.md): usage, and list of all included visuals
+* [Callbacks](callbacks.md): how to implement advanced interactivity features
+* [Graphics user interfaces](gui.md): how to integrate basic GUIs
