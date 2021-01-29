@@ -183,7 +183,8 @@ vec4 transform(vec3 pos) {
 
 bool clip_viewport(vec2 frag_coords) {
     vec2 uv = frag_coords - viewport.offset;
-    return (uv.y < 0 + viewport.margins.x ||
+    return (
+        uv.y < 0 + viewport.margins.x ||
         uv.x > viewport.size.x - viewport.margins.y ||
         uv.y > viewport.size.y - viewport.margins.z ||
         uv.x < 0 + viewport.margins.w

@@ -78,20 +78,21 @@ int test_axes_3(TestContext* context)
     VklAxesTicks ticks = {0};
 
     // No extensions.
+    double x0 = -2.123, x1 = +2.456;
     ctx.extensions = 0;
-    ticks = vkl_ticks(-2, +2, ctx);
+    ticks = vkl_ticks(x0, x1, ctx);
     for (uint32_t i = 0; i < ticks.value_count; i++)
         log_debug("tick #%02d: %s", i, &ticks.labels[i * MAX_GLYPHS_PER_TICK]);
 
     // 1 extension on each side.
     ctx.extensions = 1;
-    ticks = vkl_ticks(-2, +2, ctx);
+    ticks = vkl_ticks(x0, x1, ctx);
     for (uint32_t i = 0; i < ticks.value_count; i++)
         log_debug("tick #%02d: %s", i, &ticks.labels[i * MAX_GLYPHS_PER_TICK]);
 
     // 2 extension on each side.
     ctx.extensions = 2;
-    ticks = vkl_ticks(-2, +2, ctx);
+    ticks = vkl_ticks(x0, x1, ctx);
     for (uint32_t i = 0; i < ticks.value_count; i++)
         log_debug("tick #%02d: %s", i, &ticks.labels[i * MAX_GLYPHS_PER_TICK]);
 

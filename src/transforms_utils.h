@@ -45,6 +45,8 @@ static VklBox _box_bounding(VklArray* points_in)
 
 static VklBox _box_merge(uint32_t count, VklBox* boxes)
 {
+    if (count == 0)
+        return VKL_BOX_NDC;
     VklBox merged = VKL_BOX_INF;
     for (uint32_t i = 0; i < count; i++)
     {
@@ -52,6 +54,14 @@ static VklBox _box_merge(uint32_t count, VklBox* boxes)
         {
             merged.p0[j] = MIN(merged.p0[j], boxes[i].p0[j]);
             merged.p1[j] = MAX(merged.p1[j], boxes[i].p1[j]);
+        }
+    }
+    for (uint32_t j = 0; j < 3; j++)
+    {
+        if (merged.p0[j] == merged.p1[j])
+        {
+            merged.p0[j] -= 1;
+            merged.p1[j] += 1;
         }
     }
     return merged;

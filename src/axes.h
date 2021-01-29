@@ -76,17 +76,6 @@ static void _axes_ticks(VklController* controller, VklAxisCoord coord, dvec2 ran
     // Prepare context for tick computation.
     VklAxesContext ctx = _axes_context(controller, coord);
 
-    // // compute the extent, in data coordinates, of the current view
-    // dvec3 in_bl = {-1, +1, .5}, out_bl;
-    // dvec3 in_tr = {+1, -1, .5}, out_tr;
-
-    // VklTransformChain tc = _transforms_cds(panel, VKL_CDS_VULKAN, VKL_CDS_DATA);
-    // _transforms_apply(&tc, in_bl, out_bl);
-    // _transforms_apply(&tc, in_tr, out_tr);
-
-    // double vmin = out_bl[coord];
-    // double vmax = out_tr[coord];
-
     double vmin = range[0];
     double vmax = range[1];
     double vlen = vmax - vmin;
@@ -133,7 +122,10 @@ static void _axes_upload(VklController* controller, VklAxisCoord coord)
     // Normalize the tick values to fit in NDC range.
     double* ticks = (double*)calloc(N, sizeof(double));
     for (uint32_t i = 0; i < N; i++)
+    {
         ticks[i] = -1 + 2 * (axticks->values[i] - vmin) / (vmax - vmin);
+        // log_info("%d %f vmin=%f vmax=%f", i, ticks[i], vmin, vmax);
+    }
 
     // Minor ticks.
     double* minor_ticks = (double*)calloc((N - 1) * 4, sizeof(double));
@@ -146,7 +138,10 @@ static void _axes_upload(VklController* controller, VklAxisCoord coord)
     // Prepare text values.
     char** text = (char**)calloc(N, sizeof(char*));
     for (uint32_t i = 0; i < N; i++)
+    {
         text[i] = &axticks->labels[i * MAX_GLYPHS_PER_TICK];
+        // log_info("%f %s", ticks[i], text[i]);
+    }
 
     // Set visual data.
     double lim[] = {-1};
@@ -332,7 +327,9 @@ static void _axes_callback(VklController* controller, VklEvent ev)
         range[i][1] = out_tr[i];
 
         update[i] = _axes_collision(controller, (VklAxisCoord)i, range[i]);
-        // if (update[i])
+
+        // DEBUG
+        // if (i == 0)
         //     log_info("%d %f %f %d", i, range[i][0], range[i][1], update[i]);
     }
 
