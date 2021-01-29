@@ -17,6 +17,16 @@ TODO
 
 See also the [**gallery**](docs/gallery.md).
 
+
+## Documentation
+
+The documentation is divided into:
+
+* [**User manual**](docs/user/index.md): for regular users with no GPU knowledge, with a focus on scientific 2D/3D plotting
+* [**Expert manual**](docs/expert/index.md): for advanced users, with a focus on writing custom visuals, understanding Vulkan and the architecture of the library, creating entirely custom applications, making GPU optimizations, and more
+* [**C API reference**](docs/api/index.md): for anyone who needs to use the C API
+
+
 ## Features
 
 * **High-quality antialiased 2D visuals**: markers, paths, lines, text, arrows, polygons, and more (implementation from [glumpy](https://glumpy.github.io/))
@@ -50,15 +60,6 @@ Long-term future (or shorter if there are community contributions):
 * Jupyter notebook integration
 * Web integration via WebGPU?
 * Remote desktop integration?
-
-
-## Documentation
-
-The documentation is divided into:
-
-* [**User manual**](docs/user/index.md): for regular users with no GPU knowledge, with a focus on scientific 2D/3D plotting
-* [**Expert manual**](docs/expert/index.md): for advanced users, with a focus on writing custom visuals, understanding Vulkan and the architecture of the library, creating entirely custom applications, making GPU optimizations, and more
-* [**C API reference**](docs/api/index.md): for anyone who needs to use the C API
 
 
 ## Credits and related projects
