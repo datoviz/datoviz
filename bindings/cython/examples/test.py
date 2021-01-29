@@ -3,7 +3,7 @@
 import numpy.random as nr
 
 # Import the library.
-from visky import canvas, run
+from visky import canvas, run, colormap
 
 # Create a new canvas and scene. There's only 1 subplot (panel) by default.
 c = canvas()
@@ -19,7 +19,7 @@ visual = panel.visual('marker')
 # predefined props. Here, we set the marker positions, colors (RGBA bytes), and size (in pixels)
 N = 10_000
 visual.data('pos', nr.randn(N, 3))
-visual.data('color', nr.randint(low=50, high=255, size=(N, 4)))
+visual.data('color', colormap(nr.rand(N), vmin=0, vmax=1))
 visual.data('ms', nr.uniform(low=2, high=40, size=N))
 
 # We run the main event loop, which will display the canvas until Escape is # pressed or the

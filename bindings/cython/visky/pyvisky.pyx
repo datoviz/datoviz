@@ -13,8 +13,8 @@ cimport visky.cyvisky as cv
 logger = logging.getLogger(__name__)
 
 
-DEFAULT_WIDTH = 1280
-DEFAULT_HEIGHT = 1024
+DEFAULT_WIDTH = 1024
+DEFAULT_HEIGHT = 768
 
 
 # TODO: add more keys
