@@ -11,8 +11,8 @@ cimport visky.cyvisky as cv
 logger = logging.getLogger(__name__)
 
 
-DEFAULT_WIDTH = 800
-DEFAULT_HEIGHT = 800
+DEFAULT_WIDTH = 1280
+DEFAULT_HEIGHT = 1024
 
 
 # TODO: add more keys
@@ -63,6 +63,7 @@ _VISUALS = {
 
 _CONTROLLERS = {
     'panzoom': cv.VKL_CONTROLLER_PANZOOM,
+    'axes': cv.VKL_CONTROLLER_AXES_2D,
     'arcball': cv.VKL_CONTROLLER_ARCBALL,
     'fps': cv.VKL_CONTROLLER_CAMERA,
 }
@@ -219,7 +220,7 @@ cdef class Canvas:
         self._app = app
         # _add_close_callback(self._c_canvas, self._destroy_wrapper, ())
 
-    def panel(self, int row=0, int col=0, controller='panzoom', transpose=None):
+    def panel(self, int row=0, int col=0, controller='axes', transpose=None):
         ctl = _CONTROLLERS.get(controller, cv.VKL_CONTROLLER_NONE)
         trans = _TRANSPOSES.get(transpose, cv.VKL_CDS_TRANSPOSE_NONE)
         c_panel = cv.vkl_scene_panel(self._c_scene, row, col, ctl, 0)

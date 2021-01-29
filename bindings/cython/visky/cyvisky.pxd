@@ -903,6 +903,7 @@ cdef extern from "<visky/visky.h>":
     # FUNCTION START
     # from file: canvas.h
     VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height, int flags)
+    void vkl_canvas_clear_color(VklCanvas* canvas, VkClearColorValue color)
     void vkl_event_callback(VklCanvas* canvas, VklEventType type, double param, VklEventMode mode, VklEventCallback callback, void* user_data)
     void vkl_canvas_to_close(VklCanvas* canvas)
     void vkl_app_run(VklApp* app, uint64_t frame_count)
