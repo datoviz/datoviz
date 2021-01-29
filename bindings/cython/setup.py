@@ -26,7 +26,7 @@ setup(
             include_dirs=[
                 np.get_include(),
                 str(INCLUDE_DIR),
-                str(BUILD_DIR / '_deps/cglm-src/include'),
+                str(ROOT_DIR / 'external/cglm/include'),
                 str(BUILD_DIR / '_deps/glfw-src/include'),
             ],
             library_dirs=[str(BUILD_DIR)],
