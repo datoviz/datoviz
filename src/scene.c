@@ -788,6 +788,10 @@ vkl_scene_panel(VklScene* scene, uint32_t row, uint32_t col, VklControllerType t
     controller->flags = flags;
     panel->controller = controller;
 
+    // HACK: white background if axes controller.
+    if (type == VKL_CONTROLLER_AXES_2D)
+        vkl_canvas_clear_color(scene->canvas, (VkClearColorValue){{1, 1, 1, 1}});
+
     // Set panel transform flags depending on the contrller type.
     flags = _transform_flags(type, flags);
     panel->data_coords.flags = flags;

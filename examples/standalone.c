@@ -17,9 +17,6 @@ int main(int argc, char** argv)
     // Create a new canvas with the size specified. The last argument is for optional flags.
     VklCanvas* canvas = vkl_canvas(gpu, 1280, 1024, 0);
 
-    // Change the canvas clear color.
-    vkl_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});
-
     // Create a new scene, which allows to define several subplots (panels) organized within a
     // grid. Here we just use a single panel spanning the entire canvas.
     VklScene* scene = vkl_scene(canvas, 1, 1);
