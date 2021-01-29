@@ -607,9 +607,9 @@ static VklAxesTicks extend_ticks(VklAxesTicks ticks, VklAxesContext ctx)
     VklAxesTicks ex = ticks;
     uint32_t extensions = ctx.extensions;
 
+    double diff = ticks.lmax_in - ticks.lmin_in;
     // requested range (extended)
     // extended left/right or top/bottom
-    double diff = ticks.dmax - ticks.dmin;
     ticks.dmin -= extensions * diff;
     ticks.dmax += extensions * diff;
     // ticks range (extended)
