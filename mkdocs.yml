@@ -38,10 +38,10 @@ nav:
   - User manual:
       - Introduction: 'user/index.md'
       - Installation: 'user/install.md'
-      - Quickstart: 'user/plots.md'
-      - Scene: 'user/scene.md'
+      - Quickstart: 'user/quickstart.md'
       - Colormaps: 'user/colormaps.md'
       - Visuals: 'user/visuals.md'
+      - Scene: 'user/scene.md'
       - Callbacks: 'user/callbacks.md'
       - GUI: 'user/gui.md'
   - Expert manual:
