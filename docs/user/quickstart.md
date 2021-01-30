@@ -32,6 +32,7 @@ The simple examples above showed:
 
 These steps already cover a large number of simple plotting applications. The strength of the library is to provide a unified interface to all kinds of visual elements. Next steps will show you:
 
+* how to use colormaps,
 * the list of currently supported visuals, with their associated user-settable properties,
 * the list of currently supported controller types,
 * how to create subplots.

@@ -20,15 +20,43 @@ Visky provides a few functions to easily make colors out of scalar values:
 
 === "Python"
     ```python
+    import numpy as np
     from visky import colormap
-    colors = colormap(values, vmin=0, vmax=1, cmap=X)
+
+    values = np.random.rand(1000)
+    colors = colormap(values, vmin=0, vmax=1, cmap='viridis')
+    print(colors)
+
+    # output:
+    # [[126 210  78 255]
+    #  [ 64  68 135 255]
+    #  [ 36 170 130 255]
+    #  ...
+    #  [ 36 132 141 255]
+    #  [ 61  75 137 255]
+    #  [ 31 148 139 255]]
     ```
 
 === "C"
     ```c
-    vkl_colormap(cmap, value, color);
-    vkl_colormap_scale(cmap, value, vmin, vmax, color);
-    vkl_colormap_array(cmap, count, values, vmin, vmax, colors);
+    VklColormap cmap = VKL_CMAP_VIRIDIS;
+    cvec4 color = {0};
+    uint8_t value = 128;
+    double dvalue = .5;
+
+    // Get a single color from a byte.
+    vkl_colormap(cmap, 128, color);
+
+    // Get a single color from a double, with a custom vmin-vmax range.
+    vkl_colormap_scale(cmap, dvalue, 0, 1, color);
+
+    // Get an array of colors from an array of values.
+    const uint32_t N = 10;
+    double* values = calloc(N, sizeof(double));
+    cvec4* colors = calloc(N, sizeof(cvec4));
+    vkl_colormap_array(cmap, N, values, 0, 1, colors);
+    FREE(values);
+    FREE(colors);
     ```
 
 <!-- The list of colormaps is generated in a mkdocs hook from utils/export_colormap.py -->
