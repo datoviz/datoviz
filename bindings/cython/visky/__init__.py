@@ -4,7 +4,13 @@ import os.path as op
 
 from IPython.terminal.pt_inputhooks import register
 
-from .pyvisky import App, colormap
+try:
+    from .pyvisky import App, colormap
+except ImportError:
+    raise ImportError(
+        "Unable to load the shared library, make sure to run in your terminal:\n"
+        "`export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/build`")
+    exit(1)
 
 
 # Logging

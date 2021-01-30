@@ -277,7 +277,7 @@ def _get_prop(name):
 
 ctypedef np.double_t DOUBLE
 
-def colormap(np.ndarray[DOUBLE, ndim=1] values, vmin=None, vmax=None, cmap=None):
+def colormap(np.ndarray[DOUBLE, ndim=1] values, vmin=None, vmax=None, cmap=None, alpha=None):
     N = values.size
     cmap_ = _COLORMAPS.get(cmap, cv.VKL_CMAP_VIRIDIS)
     # TODO: ndarrays
@@ -287,6 +287,11 @@ def colormap(np.ndarray[DOUBLE, ndim=1] values, vmin=None, vmax=None, cmap=None)
     if vmax is None:
         vmax = values.max()
     cv.vkl_colormap_array(cmap_, N, <double*>&values.data[0], vmin, vmax, <cv.cvec4*>&out.data[0])
+    if alpha is not None:
+        if not isinstance(alpha, np.ndarray):
+            alpha = np.array(alpha)
+        alpha = (alpha * 255).astype(np.uint8)
+        out[:, 3] = alpha
     return out
 
 
