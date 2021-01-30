@@ -1,9 +1,49 @@
 # Visuals
 
-idea, props and sources, batch as much as possible, list of visuals
+The **visual** is the most important abstraction in Visky. It abstracts away the internal details related to GPU rendering and proposes a user-friendly interface to set up visual elements.
+
+Adding a new visual to a panel involves the following steps:
+
+1. choosing one of the existing visuals on this page,
+2. preparing the data to match the format expected by the visual properties,
+3. setting the visual properties with the data.
+
+## Visual properties, or "props"
+
+Each predefined visual comes with a set of predefined visual properties, also called **props**. For example, the `marker` visual has props for: point position, color, marker size, marker type, angle, and so on.
+
+This page presents the list of all predefined visuals along with their sets of props. You'll probably refer a lot to this page since it contains the most important information you'll need for your visualizations.
+
+Each prop is defined by:
+
+* a name,
+* a data type (for example `float32`, `uint8`),
+* a description of how the prop is used for rendering.
 
 !!! note
-    Props marked *uniform* correspond to the params structure available to the shader as a uniform variable. Each uniform param is shared across all vertices of a given visual. Therefore, these props can receive only a single value.
+    The Python API takes care of converting each prop to the correct data type using NumPy `ndarray.astype()`. Most props accepting floating-point numbers require single-precision format since this is the optimal format for GPUs. The notable exception is the POS prop (position), which requires double-precision data. Visky provides an internal CPU-based data transformation system that requires double precision (single-precision would not be acceptable for scientific data handling). Also, visuals that implement triangulation require double precision. Visky converts the transformed position to single-precision at the last moment before uploading it to the GPU.
+
+## Batch rendering
+
+Another crucial notion related to visuals is **batch rendering**. For performance reasons, it is recommended **to use as few visuals as possible in a given scene**. For example:
+
+* to display a scatter plot with 100 points, use a single `marker` visual with 100 points, instead of ~~using 100 visuals with one point~~,
+* to display 100 polygons, use a single `polygon` visual with 100 items (each containing an arbitrary number of points), instead of ~~using 100 visuals~~,
+* similarly with paths, images, meshes, text, and so on.
+
+This allows the GPU to render all of these different objects of the same type in a single draw command (with the same GPU transformation matrices).
+
+To define multiple objects with various sizes in a given visual (for example, displaying multiple paths with the same visual), one typically concatenates all points and properties in big arrays (total size is the sum of all object sizes), and use the special prop `length` to define the length of each object (vector with as many elements as there are different objects).
+
+
+## Technical notes
+
+The rest of this page exposes the list of all visuals currently implemented in the library. Here is some more technical information about the visuals:
+
+* In a given visual, a prop is entirely defined by its type and its index. A visual may have multiple props of the same type. For example, the `segment` visual has a first prop `pos` with the segment start position, and another with the segment end position. The tables below specify the role of these indices in each case.
+* A **visual source** corresponds to a GPU object holding the data for the visual. Common source types include: vertex buffer, index buffer, uniform buffer, texture. In a given visual, a source is entirely defined by its type and its index. Each prop is typically linked to a given source. Most props correspond either to shader attributes, in which case they are associated with the vertex buffer, or to global variables, in which case they are associated with uniform buffers.
+* A visual is composed of one or several **pipelines**: graphics pipelines (or just **graphics**), and optionally compute pipelines (or just **computes**). A graphics pipeline corresponds to a vertex shader, a fragment shader, and possibly other shaders. In a given visual, each pipeline is entirely defined by its type (graphics or compute) and its index. The tables below specify the different pipelines when there are several of them in a given visual. For example, the axes visual contains a `segment` graphics for tick segments, and a `text` graphics for tick labels.
+* Props marked *uniform* below can only receive a single value. They correspond to struct fields in a uniform buffer, and they are thus shared across all vertices of a given visual.
 
 
 ## 2D visuals
