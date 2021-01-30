@@ -20,7 +20,7 @@ int test_transforms_1(TestContext* context)
     VklArray pos_in = vkl_array(n, VKL_DTYPE_DOUBLE);
     double* positions = (double*)pos_in.data;
     for (uint32_t i = 0; i < n; i++)
-        positions[i] = -5 + 10 * rand_float();
+        positions[i] = -5 + 10 * vkl_rand_float();
 
     VklBox box = _box_bounding(&pos_in);
     AT(fabs(box.p0[0] + 5) < eps);

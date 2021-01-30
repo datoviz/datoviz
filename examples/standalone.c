@@ -41,14 +41,14 @@ int main(int argc, char** argv)
     for (uint32_t i = 0; i < N; i++)
     {
         // Random gaussian position.
-        pos[i][0] = randn();
-        pos[i][1] = randn();
+        pos[i][0] = vkl_rand_normal();
+        pos[i][1] = vkl_rand_normal();
         // Color: random value with a colormap.
-        vkl_colormap_scale(VKL_CMAP_VIRIDIS, rand_float(), 0, 1, color[i]);
+        vkl_colormap_scale(VKL_CMAP_VIRIDIS, vkl_rand_float(), 0, 1, color[i]);
         // A bit of transparency via the alpha channel.
         color[i][3] = 196;
         // Random marker size.
-        size[i] = 2 + 38 * rand_float();
+        size[i] = 2 + 38 * vkl_rand_float();
     }
 
     // We link our data to the visual properties.

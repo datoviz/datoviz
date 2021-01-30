@@ -153,10 +153,10 @@ int test_visuals_marker(TestContext* context)
         t = -1 + 2 * i / (float)(N - 1);
         pos[i][0] = t;
         pos[i][1] = .25 * sin(M_2PI * t);
-        pos[i][1] += .25 * randn();
+        pos[i][1] += .25 * vkl_rand_normal();
         vkl_colormap(VKL_CPAL256_GLASBEY, i % 256, color[i]);
         color[i][3] = 192;
-        size[i] = 5 + 45 * rand_float();
+        size[i] = 5 + 45 * vkl_rand_float();
     }
 
     // Set visual data.

@@ -51,7 +51,7 @@ static void _context_default_buffers(VklContext* context)
         vkl_buffer_memory(
             buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
         vkl_buffer_create(buffer);
-        ASSERT(is_obj_created(&buffer->obj));
+        ASSERT(vkl_obj_is_created(&buffer->obj));
 
         // Permanently map the buffer.
         buffer->mmap = vkl_buffer_map(buffer, 0, VK_WHOLE_SIZE);
@@ -68,7 +68,7 @@ static void _context_default_buffers(VklContext* context)
             transferable | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
         vkl_buffer_memory(buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
         vkl_buffer_create(buffer);
-        ASSERT(is_obj_created(&buffer->obj));
+        ASSERT(vkl_obj_is_created(&buffer->obj));
     }
 
     // Index buffer
@@ -80,7 +80,7 @@ static void _context_default_buffers(VklContext* context)
         vkl_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
         vkl_buffer_memory(buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
         vkl_buffer_create(buffer);
-        ASSERT(is_obj_created(&buffer->obj));
+        ASSERT(vkl_obj_is_created(&buffer->obj));
     }
 
     // Storage buffer
@@ -92,7 +92,7 @@ static void _context_default_buffers(VklContext* context)
         vkl_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
         vkl_buffer_memory(buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
         vkl_buffer_create(buffer);
-        ASSERT(is_obj_created(&buffer->obj));
+        ASSERT(vkl_obj_is_created(&buffer->obj));
     }
 
     // Uniform buffer
@@ -104,7 +104,7 @@ static void _context_default_buffers(VklContext* context)
         vkl_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
         vkl_buffer_memory(buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
         vkl_buffer_create(buffer);
-        ASSERT(is_obj_created(&buffer->obj));
+        ASSERT(vkl_obj_is_created(&buffer->obj));
     }
 
     // Mappable uniform buffer
@@ -117,7 +117,7 @@ static void _context_default_buffers(VklContext* context)
         vkl_buffer_memory(
             buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
         vkl_buffer_create(buffer);
-        ASSERT(is_obj_created(&buffer->obj));
+        ASSERT(vkl_obj_is_created(&buffer->obj));
 
         // Permanently map the buffer.
         buffer->mmap = vkl_buffer_map(buffer, 0, VK_WHOLE_SIZE);
@@ -151,7 +151,7 @@ static void _destroy_resources(VklContext* context)
 VklContext* vkl_context(VklGpu* gpu, VklWindow* window)
 {
     ASSERT(gpu != NULL);
-    ASSERT(!is_obj_created(&gpu->obj));
+    ASSERT(!vkl_obj_is_created(&gpu->obj));
     log_trace("creating context");
 
     VklContext* context = calloc(1, sizeof(VklContext));
@@ -173,7 +173,7 @@ VklContext* vkl_context(VklGpu* gpu, VklWindow* window)
     _context_default_queues(gpu, window);
 
     // Create the GPU after the default queues have been set.
-    if (!is_obj_created(&gpu->obj))
+    if (!vkl_obj_is_created(&gpu->obj))
     {
         VkSurfaceKHR surface = VK_NULL_HANDLE;
         if (window != NULL)
@@ -187,7 +187,7 @@ VklContext* vkl_context(VklGpu* gpu, VklWindow* window)
     context->transfer_cmd = vkl_commands(gpu, VKL_DEFAULT_QUEUE_TRANSFER, 1);
 
     gpu->context = context;
-    obj_created(&context->obj);
+    vkl_obj_created(&context->obj);
 
     // Create the font atlas and assign it to the context.
     context->font_atlas = vkl_font_atlas(context);
@@ -265,7 +265,7 @@ VklBufferRegions vkl_ctx_buffers(
     VklBuffer* buffer = vkl_container_iter_init(&context->buffers);
     while (buffer != NULL)
     {
-        if (is_obj_created(&buffer->obj) && buffer->type == buffer_type)
+        if (vkl_obj_is_created(&buffer->obj) && buffer->type == buffer_type)
             break;
         buffer = vkl_container_iter(&context->buffers);
     }
@@ -276,7 +276,7 @@ VklBufferRegions vkl_ctx_buffers(
     }
     ASSERT(buffer != NULL);
     ASSERT(buffer->type == buffer_type);
-    ASSERT(is_obj_created(&buffer->obj));
+    ASSERT(vkl_obj_is_created(&buffer->obj));
 
     VkDeviceSize alignment = 0;
     VkDeviceSize offset = buffer->allocated_size;
@@ -294,7 +294,7 @@ VklBufferRegions vkl_ctx_buffers(
         alsize = size;
     ASSERT(alsize > 0);
 
-    if (!is_obj_created(&buffer->obj))
+    if (!vkl_obj_is_created(&buffer->obj))
     {
         log_error("invalid buffer %d", buffer_type);
         return regions;
@@ -312,7 +312,7 @@ VklBufferRegions vkl_ctx_buffers(
     // Need to reallocate?
     if (offset + alsize * buffer_count > regions.buffer->size)
     {
-        VkDeviceSize new_size = next_pow2(offset + alsize * buffer_count);
+        VkDeviceSize new_size = vkl_next_pow2(offset + alsize * buffer_count);
         log_info("reallocating buffer %d to %s", buffer_type, pretty_size(new_size));
         vkl_buffer_resize(regions.buffer, new_size, &context->transfer_cmd);
     }
@@ -357,7 +357,7 @@ void vkl_ctx_buffers_resize(VklContext* context, VklBufferRegions* br, VkDeviceS
         // Need to reallocate a new underlying buffer.
         if (br->offsets[0] + old_size > br->buffer->size)
         {
-            VkDeviceSize bs = next_pow2(br->offsets[0] + old_size);
+            VkDeviceSize bs = vkl_next_pow2(br->offsets[0] + old_size);
             log_info("reallocating buffer #%d to %s", br->buffer->type, pretty_size(bs));
             vkl_buffer_resize(br->buffer, bs, &context->transfer_cmd);
         }
@@ -454,7 +454,7 @@ VklTexture* vkl_ctx_texture(VklContext* context, uint32_t dims, uvec3 size, VkFo
     vkl_sampler_address_mode(sampler, VKL_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
     vkl_sampler_create(sampler);
 
-    obj_created(&texture->obj);
+    vkl_obj_created(&texture->obj);
 
     // Immediately transition the image to its layout.
     {
@@ -673,5 +673,5 @@ void vkl_texture_destroy(VklTexture* texture)
 
     texture->image = NULL;
     texture->sampler = NULL;
-    obj_destroyed(&texture->obj);
+    vkl_obj_destroyed(&texture->obj);
 }

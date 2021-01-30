@@ -354,21 +354,21 @@ struct VklMVP
  *
  * @param obj the object
  */
-static inline void obj_init(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_INIT; }
+static inline void vkl_obj_init(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_INIT; }
 
 /**
  * Mark an object as successfully created on the GPU.
  *
  * @param obj the object
  */
-static inline void obj_created(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_CREATED; }
+static inline void vkl_obj_created(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_CREATED; }
 
 /**
  * Mark an object as destroyed.
  *
  * @param obj the object
  */
-static inline void obj_destroyed(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_DESTROYED; }
+static inline void vkl_obj_destroyed(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_DESTROYED; }
 
 /**
  * Whether an object has been successfully created.
@@ -376,7 +376,7 @@ static inline void obj_destroyed(VklObject* obj) { obj->status = VKL_OBJECT_STAT
  * @param obj the object
  * @returns a boolean indicated whether the object has been successfully created
  */
-static inline bool is_obj_created(VklObject* obj)
+static inline bool vkl_obj_is_created(VklObject* obj)
 {
     return obj != NULL && obj->status >= VKL_OBJECT_STATUS_CREATED &&
            obj->status != VKL_OBJECT_STATUS_INVALID;
@@ -389,7 +389,7 @@ static inline bool is_obj_created(VklObject* obj)
 /*************************************************************************************************/
 
 // Smallest power of 2 larger or equal than a positive integer.
-static uint64_t next_pow2(uint64_t x)
+static uint64_t vkl_next_pow2(uint64_t x)
 {
     uint64_t p = 1;
     while (p < x)
@@ -413,7 +413,7 @@ static VklContainer vkl_container(uint32_t count, size_t item_size, VklObjectTyp
     container.count = 0;
     container.item_size = item_size;
     container.type = type;
-    container.capacity = next_pow2(count);
+    container.capacity = vkl_next_pow2(count);
     ASSERT(container.capacity > 0);
     container.items = (void**)calloc(container.capacity, sizeof(void*));
     // NOTE: we shouldn't rely on calloc() initializing pointer values to NULL as it is not
@@ -644,7 +644,7 @@ static void vkl_container_destroy(VklContainer* container)
  * @param image pointer to an array of 32-bit RGBA values
  */
 VKY_EXPORT int
-write_png(const char* filename, uint32_t width, uint32_t height, const uint8_t* image);
+vkl_write_png(const char* filename, uint32_t width, uint32_t height, const uint8_t* image);
 
 /**
  * Save an image to a PPM file (short ASCII header and flat binary RGBA values).
@@ -655,7 +655,7 @@ write_png(const char* filename, uint32_t width, uint32_t height, const uint8_t* 
  * @param image pointer to an array of 32-bit RGBA values
  */
 VKY_EXPORT int
-write_ppm(const char* filename, uint32_t width, uint32_t height, const uint8_t* image);
+vkl_write_ppm(const char* filename, uint32_t width, uint32_t height, const uint8_t* image);
 
 /**
  * Read a binary file.
@@ -664,7 +664,7 @@ write_ppm(const char* filename, uint32_t width, uint32_t height, const uint8_t* 
  * @param[out] size of the file
  * @returns pointer to a byte buffer with the file contents
  */
-VKY_EXPORT char* read_file(const char* filename, size_t* size);
+VKY_EXPORT char* vkl_read_file(const char* filename, size_t* size);
 
 /**
  * Read a NumPy NPY file.
@@ -673,7 +673,7 @@ VKY_EXPORT char* read_file(const char* filename, size_t* size);
  * @param[out] size of the file
  * @returns pointer to a buffer containing the array elements
  */
-VKY_EXPORT char* read_npy(const char* filename, size_t* size);
+VKY_EXPORT char* vkl_read_npy(const char* filename, size_t* size);
 
 /**
  * Read a PPM image file.
@@ -683,7 +683,7 @@ VKY_EXPORT char* read_npy(const char* filename, size_t* size);
  * @param[out] height of the image
  * @returns pointer to a buffer with the loaded RGBA pixel colors
  */
-VKY_EXPORT uint8_t* read_ppm(const char* filename, int* width, int* height);
+VKY_EXPORT uint8_t* vkl_read_ppm(const char* filename, int* width, int* height);
 
 // Defined in cmake-generated file build/_shaders.c
 VKY_EXPORT const unsigned char* vkl_resource_shader(const char* name, unsigned long* size);
@@ -766,21 +766,21 @@ void vkl_triangulate_polygon(
  *
  * @returns random number
  */
-VKY_EXPORT uint8_t rand_byte(void);
+VKY_EXPORT uint8_t vkl_rand_byte(void);
 
 /**
  * Return a random floating-point number between 0 and 1.
  *
  * @returns random number
  */
-VKY_EXPORT float rand_float(void);
+VKY_EXPORT float vkl_rand_float(void);
 
 /**
  * Return a random normal floating-point number.
  *
  * @returns random number
  */
-VKY_EXPORT float randn(void);
+VKY_EXPORT float vkl_rand_normal(void);
 
 
 

@@ -31,7 +31,7 @@ static void _canvas_fill(VklCanvas* canvas, VklEvent ev)
         panel = vkl_container_iter_init(&grid->panels);
         while (panel != NULL)
         {
-            ASSERT(is_obj_created(&panel->obj));
+            ASSERT(vkl_obj_is_created(&panel->obj));
             // Find the panel viewport.
             viewport = vkl_panel_viewport(panel);
             vkl_cmd_viewport(cmds, img_idx, viewport.viewport);

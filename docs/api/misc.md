@@ -19,10 +19,10 @@
 
 ## Object
 
-### `obj_init()`
-### `obj_created()`
-### `obj_destroyed()`
-### `is_obj_created()`
+### `vkl_obj_init()`
+### `vkl_obj_created()`
+### `vkl_obj_destroyed()`
+### `vkl_obj_is_created()`
 
 
 ## Container
@@ -38,11 +38,11 @@
 
 ## I/O
 
-### `write_png()`
-### `write_ppm()`
-### `read_file()`
-### `read_npy()`
-### `read_ppm()`
+### `vkl_write_png()`
+### `vkl_write_ppm()`
+### `vkl_read_file()`
+### `vkl_read_npy()`
+### `vkl_read_ppm()`
 
 
 ## Thread
@@ -92,12 +92,12 @@
 
 ## Random
 
-### `rand_byte()`
-### `rand_float()`
-### `randn()`
+### `vkl_rand_byte()`
+### `vkl_rand_float()`
+### `vkl_rand_normal()`
 
 
 ## Misc
 
 ### `vkl_sleep()`
-### `next_pow2()`
+### `vkl_next_pow2()`

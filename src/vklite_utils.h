@@ -87,7 +87,7 @@ static VkDeviceSize get_alignment(VkDeviceSize alignment, VkDeviceSize min_align
 {
     if (min_alignment > 0)
         alignment = (alignment + min_alignment - 1) & ~(min_alignment - 1);
-    alignment = next_pow2(alignment);
+    alignment = vkl_next_pow2(alignment);
     ASSERT(alignment >= min_alignment);
     return alignment;
 }
@@ -1430,7 +1430,7 @@ static VkShaderModule create_shader_module_from_file(VkDevice device, const char
 {
     log_trace("create shader module from file %s", filename);
     size_t size = 0;
-    uint32_t* shader_code = (uint32_t*)read_file(filename, &size);
+    uint32_t* shader_code = (uint32_t*)vkl_read_file(filename, &size);
     VkShaderModule module = create_shader_module(device, size, shader_code);
     FREE(shader_code);
     return module;

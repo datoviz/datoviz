@@ -28,7 +28,7 @@ VklVisual vkl_visual(VklCanvas* canvas)
     visual.callback_fill = _default_visual_fill;
     visual.callback_bake = _default_visual_bake;
 
-    obj_created(&visual.obj);
+    vkl_obj_created(&visual.obj);
     return visual;
 }
 
@@ -48,7 +48,7 @@ void vkl_visual_destroy(VklVisual* visual)
         {
             FREE(prop->default_value)
         }
-        obj_destroyed(&prop->obj);
+        vkl_obj_destroyed(&prop->obj);
         prop = vkl_container_iter(&visual->props);
     }
     vkl_container_destroy(&visual->props);
@@ -58,7 +58,7 @@ void vkl_visual_destroy(VklVisual* visual)
     while (source != NULL)
     {
         vkl_array_destroy(&source->arr);
-        obj_destroyed(&source->obj);
+        vkl_obj_destroyed(&source->obj);
         source = vkl_container_iter(&visual->sources);
     }
     vkl_container_destroy(&visual->sources);
@@ -66,7 +66,7 @@ void vkl_visual_destroy(VklVisual* visual)
     CONTAINER_DESTROY_ITEMS(VklBindings, visual->bindings, vkl_bindings_destroy)
     CONTAINER_DESTROY_ITEMS(VklBindings, visual->bindings_comp, vkl_bindings_destroy)
 
-    obj_destroyed(&visual->obj);
+    vkl_obj_destroyed(&visual->obj);
 }
 
 
@@ -121,7 +121,7 @@ void vkl_visual_source(
     ASSERT(vkl_source_get(visual, source_type, source_idx) == NULL);
 
     VklSource* source = vkl_container_alloc(&visual->sources);
-    obj_init(&source->obj);
+    vkl_obj_init(&source->obj);
     source->visual = visual;
     source->source_type = source_type;
     source->source_kind = _get_source_kind(source_type);
@@ -172,7 +172,7 @@ VklProp* vkl_visual_prop(
     ASSERT(visual != NULL);
 
     VklProp* prop = vkl_container_alloc(&visual->props);
-    obj_init(&prop->obj);
+    vkl_obj_init(&prop->obj);
 
     prop->prop_type = prop_type;
     prop->prop_idx = prop_idx;
@@ -243,7 +243,7 @@ void vkl_visual_graphics(VklVisual* visual, VklGraphics* graphics)
 {
     ASSERT(visual != NULL);
     ASSERT(graphics != NULL);
-    ASSERT(is_obj_created(&graphics->obj));
+    ASSERT(vkl_obj_is_created(&graphics->obj));
     if (visual->graphics_count >= VKL_MAX_GRAPHICS_PER_VISUAL)
     {
         log_error("maximum number of graphics per visual reached");
@@ -263,7 +263,7 @@ void vkl_visual_compute(VklVisual* visual, VklCompute* compute)
 {
     ASSERT(visual != NULL);
     ASSERT(compute != NULL);
-    ASSERT(is_obj_created(&compute->obj));
+    ASSERT(vkl_obj_is_created(&compute->obj));
     if (visual->compute_count >= VKL_MAX_COMPUTES_PER_VISUAL)
     {
         log_error("maximum number of computes per visual reached");
@@ -656,7 +656,7 @@ void vkl_visual_update(
                 ASSERT(ctx->color_texture.texture->image != NULL);
                 ASSERT(ctx->color_texture.texture->image->images[0] != VK_NULL_HANDLE);
                 ASSERT(ctx->color_texture.texture->sampler != NULL);
-                ASSERT(is_obj_created(&ctx->color_texture.texture->obj));
+                ASSERT(vkl_obj_is_created(&ctx->color_texture.texture->obj));
 
                 vkl_visual_texture(
                     visual, source->source_type, source->source_idx, ctx->color_texture.texture);
@@ -776,7 +776,7 @@ void vkl_visual_update(
             texture = source->u.tex;
 
             ASSERT(texture != NULL);
-            ASSERT(is_obj_created(&texture->obj));
+            ASSERT(vkl_obj_is_created(&texture->obj));
             // NOTE: the source array MUST have been allocated by the baking function
             ASSERT(arr->item_count > 0);
             ASSERT(arr->item_size > 0);

@@ -273,7 +273,7 @@ static void _source_buffer(VklVisual* visual, VklSource* source)
     // Allocate the buffer if it doesn't exist yet, or if it is not large enough.
     if (source->u.br.buffer == VK_NULL_HANDLE || source->u.br.size < count * source->arr.item_size)
     {
-        VkDeviceSize size = next_pow2(count * source->arr.item_size);
+        VkDeviceSize size = vkl_next_pow2(count * source->arr.item_size);
         ASSERT(size >= count * source->arr.item_size);
         log_debug(
             "need to %sallocate new buffer region to fit %d elements (%d bytes)",
@@ -385,7 +385,7 @@ static void _source_alloc(VklVisual* visual, VklSource* source, uint32_t count)
     log_trace(
         "alloc %d elements for source %d #%d", count, source->source_type, source->source_idx);
     VklArray* arr = &source->arr;
-    ASSERT(is_obj_created(&arr->obj));
+    ASSERT(vkl_obj_is_created(&arr->obj));
     vkl_array_resize(arr, count);
 }
 
@@ -526,10 +526,10 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
     VklBindings* bindings = NULL;
     for (uint32_t pipeline_idx = 0; pipeline_idx < visual->graphics_count; pipeline_idx++)
     {
-        ASSERT(is_obj_created(&visual->graphics[pipeline_idx]->obj));
+        ASSERT(vkl_obj_is_created(&visual->graphics[pipeline_idx]->obj));
 
         bindings = vkl_container_get(&visual->bindings, pipeline_idx);
-        ASSERT(is_obj_created(&bindings->obj));
+        ASSERT(vkl_obj_is_created(&bindings->obj));
 
         VklSource* vertex_source =
             _get_pipeline_source(visual, VKL_SOURCE_TYPE_VERTEX, pipeline_idx);

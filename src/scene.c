@@ -413,7 +413,7 @@ static void _scene_fill(VklCanvas* canvas, VklEvent ev)
         {
             // Update the panel.
             vkl_panel_update(panel);
-            ASSERT(is_obj_created(&panel->obj));
+            ASSERT(vkl_obj_is_created(&panel->obj));
 
             // Find the panel viewport.
             viewport = vkl_panel_viewport(panel);
@@ -656,7 +656,7 @@ VklController vkl_controller(VklPanel* panel)
     VklController controller = {0};
     controller.panel = panel;
     controller.callback = _default_controller_callback;
-    obj_created(&controller.obj);
+    vkl_obj_created(&controller.obj);
     return controller;
 }
 
@@ -724,7 +724,7 @@ void vkl_controller_destroy(VklController* controller)
     {
         vkl_interact_destroy(&controller->interacts[i]);
     }
-    obj_destroyed(&controller->obj);
+    vkl_obj_destroyed(&controller->obj);
 }
 
 
@@ -909,6 +909,6 @@ void vkl_scene_destroy(VklScene* scene)
     vkl_container_destroy(&scene->controllers);
 
     vkl_container_destroy(&scene->visuals);
-    obj_destroyed(&scene->obj);
+    vkl_obj_destroyed(&scene->obj);
     FREE(scene);
 }

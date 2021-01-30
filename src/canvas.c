@@ -613,7 +613,7 @@ _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
         ASSERT(framebuffer_height > 0);
     }
 
-    if (gpu->context == NULL || !is_obj_created(&gpu->context->obj))
+    if (gpu->context == NULL || !vkl_obj_is_created(&gpu->context->obj))
     {
         log_trace("canvas automatically create the GPU context");
         gpu->context = vkl_context(gpu, window);
@@ -656,7 +656,7 @@ _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
             vkl_images_queue_access(images, VKL_DEFAULT_QUEUE_RENDER);
             vkl_images_create(images);
 
-            obj_created(&canvas->swapchain.obj);
+            vkl_obj_created(&canvas->swapchain.obj);
         }
 
         // Depth attachment.
@@ -728,7 +728,7 @@ _canvas(VklGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
         backend_event_callbacks(canvas);
     }
 
-    obj_created(&canvas->obj);
+    vkl_obj_created(&canvas->obj);
 
     // Update the viewport field.
     canvas->viewport = vkl_viewport_full(canvas);
@@ -1663,7 +1663,7 @@ void vkl_screencast(VklCanvas* canvas, double interval)
     vkl_event_callback(canvas, VKL_EVENT_DESTROY, 0, VKL_EVENT_MODE_SYNC, _screencast_destroy, sc);
 
     sc->obj.type = VKL_OBJECT_TYPE_SCREENCAST;
-    obj_created(&sc->obj);
+    vkl_obj_created(&sc->obj);
 }
 
 
@@ -1675,14 +1675,14 @@ void vkl_screencast_destroy(VklCanvas* canvas)
     if (screencast == NULL)
         return;
     ASSERT(screencast != NULL);
-    if (!is_obj_created(&screencast->obj))
+    if (!vkl_obj_is_created(&screencast->obj))
         return;
 
     vkl_fences_destroy(&screencast->fence);
     vkl_semaphores_destroy(&screencast->semaphore);
     vkl_images_destroy(&screencast->staging);
 
-    obj_destroyed(&screencast->obj);
+    vkl_obj_destroyed(&screencast->obj);
     FREE(screencast);
     canvas->screencast = NULL;
 }
@@ -1742,7 +1742,7 @@ void vkl_screenshot_file(VklCanvas* canvas, const char* png_path)
         uint8_t* rgba = calloc(staging.width * staging.height, 4 * sizeof(uint8_t));
         vkl_images_download(&staging, 0, true, rgba);
         vkl_gpu_wait(gpu);
-        write_png(png_path, images->width, images->height, rgba);
+        vkl_write_png(png_path, images->width, images->height, rgba);
         vkl_images_destroy(&staging);
         FREE(rgba);
     }
@@ -2007,7 +2007,7 @@ void vkl_app_run(VklApp* app, uint64_t frame_count)
         VklGpu* gpu = vkl_container_iter_init(&app->gpus);
         while (gpu != NULL)
         {
-            if (!is_obj_created(&gpu->obj))
+            if (!vkl_obj_is_created(&gpu->obj))
                 break;
             if (gpu->queues.queues[VKL_DEFAULT_QUEUE_PRESENT] != VK_NULL_HANDLE &&
                 gpu->queues.queues[VKL_DEFAULT_QUEUE_PRESENT] !=
@@ -2117,7 +2117,7 @@ void vkl_canvas_destroy(VklCanvas* canvas)
     if (canvas->overlay)
         vkl_imgui_destroy();
 
-    obj_destroyed(&canvas->obj);
+    vkl_obj_destroyed(&canvas->obj);
 }
 
 

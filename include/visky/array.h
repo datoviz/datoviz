@@ -254,7 +254,7 @@ static VklArray _create_array(uint32_t item_count, VklDataType dtype, VkDeviceSi
     arr.buffer_size = item_count * arr.item_size;
     if (item_count > 0)
         arr.data = calloc(item_count, arr.item_size);
-    obj_created(&arr.obj);
+    vkl_obj_created(&arr.obj);
     return arr;
 }
 
@@ -410,9 +410,9 @@ static void vkl_array_resize(VklArray* array, uint32_t item_count)
         array->data = calloc(item_count, array->item_size);
         array->item_count = item_count;
 
-        // NOTE: using next_pow2() below causes a crash in scene_axes test
+        // NOTE: using vkl_next_pow2() below causes a crash in scene_axes test
         array->buffer_size = item_count * array->item_size;
-        // array->buffer_size = next_pow2(item_count * array->item_size);
+        // array->buffer_size = vkl_next_pow2(item_count * array->item_size);
 
         log_trace(
             "allocate array to contain %d elements (%s)", item_count,
@@ -719,9 +719,9 @@ static void vkl_array_column(
 static void vkl_array_destroy(VklArray* array)
 {
     ASSERT(array != NULL);
-    if (!is_obj_created(&array->obj))
+    if (!vkl_obj_is_created(&array->obj))
         return;
-    obj_destroyed(&array->obj);
+    vkl_obj_destroyed(&array->obj);
     FREE(array->data) //
 }
 

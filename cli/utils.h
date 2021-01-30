@@ -179,7 +179,7 @@ static bool file_exists(const char* path) { return access(path, F_OK) != -1; }
 static int image_diff(const uint8_t* image_0, const char* path)
 {
     int w = 0, h = 0;
-    uint8_t* image_1 = read_ppm(path, &w, &h);
+    uint8_t* image_1 = vkl_read_ppm(path, &w, &h);
     ASSERT(w == WIDTH && h == HEIGHT);
 
     // Fast byte-to-byte comparison of the images.
@@ -214,7 +214,7 @@ static int image_diff(const uint8_t* image_0, const char* path)
 static int write_image(const char* path, const uint8_t* rgb)
 {
     int res = 0;
-    res = write_ppm(path, WIDTH, HEIGHT, rgb);
+    res = vkl_write_ppm(path, WIDTH, HEIGHT, rgb);
     if (res != 0)
     {
         log_error("failed writing to %s", path);
@@ -489,14 +489,14 @@ static void _destroy_context(TestContext* context)
 #define TEST_END return vkl_app_destroy(app);
 
 #define RANDN_POS(x)                                                                              \
-    x[0] = .25 * randn();                                                                         \
-    x[1] = .25 * randn();                                                                         \
-    x[2] = .25 * randn();
+    x[0] = .25 * vkl_rand_normal();                                                               \
+    x[1] = .25 * vkl_rand_normal();                                                               \
+    x[2] = .25 * vkl_rand_normal();
 
 #define RAND_COLOR(x)                                                                             \
-    x[0] = rand_byte();                                                                           \
-    x[1] = rand_byte();                                                                           \
-    x[2] = rand_byte();                                                                           \
+    x[0] = vkl_rand_byte();                                                                       \
+    x[1] = vkl_rand_byte();                                                                       \
+    x[2] = vkl_rand_byte();                                                                       \
     x[3] = 255;
 
 
@@ -722,7 +722,7 @@ static void save_screenshot(VklFramebuffers* framebuffers, const char* path)
     // Make a screenshot of the color attachment.
     VklImages* images = framebuffers->attachments[0];
     uint8_t* rgba = screenshot(images);
-    write_ppm(path, images->width, images->height, rgba);
+    vkl_write_ppm(path, images->width, images->height, rgba);
     FREE(rgba);
 }
 
@@ -919,8 +919,8 @@ static void _depth_vertices(uint32_t N, VklGraphicsMeshVertex* vertices, bool vu
         v1 = &vertices[3 * i + 1];
         v2 = &vertices[3 * i + 2];
 
-        x = .75 * (-1 + 2 * rand_float());
-        y = .75 * (-1 + 2 * rand_float());
+        x = .75 * (-1 + 2 * vkl_rand_float());
+        y = .75 * (-1 + 2 * vkl_rand_float());
 
         // The following should work even if the depth buffer is not working.
         // j = i < N / 6 ? 0 : 1;
@@ -932,7 +932,7 @@ static void _depth_vertices(uint32_t N, VklGraphicsMeshVertex* vertices, bool vu
         // j == 0 : background, j == 1 : foreground
         // NOTE: no Vulkan transformation, use native Vulkan z coordinate, 0 = front, 1 = back
         z = z_values[j % 2]; // j == 0, .75 = background, .25 = foreground (if no vulkan_transform)
-        z += .01 * randn();
+        z += .01 * vkl_rand_normal();
 
         v0->pos[0] = x - l;
         v0->pos[1] = y - l;
@@ -1036,7 +1036,7 @@ static VklTexture* _mouse_volume(VklCanvas* canvas)
     vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_REPEAT);
     vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_REPEAT);
     vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_W, VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    uint16_t* tex_data = (uint16_t*)read_file(path, NULL);
+    uint16_t* tex_data = (uint16_t*)vkl_read_file(path, NULL);
     for (uint32_t i = 0; i < (ni * nj * nk); i++)
         tex_data[i] *= 10;
     vkl_upload_texture(

@@ -200,7 +200,7 @@ VklPanel* vkl_panel(VklGrid* grid, uint32_t row, uint32_t col)
         return panel;
 
     panel = vkl_container_alloc(&grid->panels);
-    obj_created(&panel->obj);
+    vkl_obj_created(&panel->obj);
 
     panel->grid = grid;
     panel->row = row;
@@ -435,5 +435,5 @@ void vkl_panel_destroy(VklPanel* panel)
     {
         vkl_visual_destroy(panel->visuals[i]);
     }
-    obj_destroyed(&panel->obj);
+    vkl_obj_destroyed(&panel->obj);
 }

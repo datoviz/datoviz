@@ -638,7 +638,7 @@ static void _triangle_compute(VklCanvas* canvas, VklEvent ev)
     ASSERT(canvas->gpu != NULL);
     VklGpu* gpu = canvas->gpu;
     VklCommands* cmds = (VklCommands*)ev.user_data;
-    ASSERT(is_obj_created(&cmds->obj));
+    ASSERT(vkl_obj_is_created(&cmds->obj));
 
     VklSubmit submit = vkl_submit(canvas->gpu);
     vkl_submit_commands(&submit, cmds);
@@ -682,7 +682,7 @@ int test_canvas_8(TestContext* context)
     vkl_cmd_begin(cmds, 0);
     vkl_cmd_compute(cmds, 0, visual.compute, (uvec3){3, 1, 1});
     vkl_cmd_end(cmds, 0);
-    ASSERT(is_obj_created(&cmds->obj));
+    ASSERT(vkl_obj_is_created(&cmds->obj));
 
     vkl_event_callback(
         canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _triangle_refill, &visual);
@@ -762,8 +762,8 @@ int test_canvas_depth(TestContext* context)
         v1 = &((TestVertex*)visual.data)[3 * i + 1];
         v2 = &((TestVertex*)visual.data)[3 * i + 2];
 
-        x = .75 * (-1 + 2 * rand_float());
-        y = .75 * (-1 + 2 * rand_float());
+        x = .75 * (-1 + 2 * vkl_rand_float());
+        y = .75 * (-1 + 2 * vkl_rand_float());
 
         // The following should work even if the depth buffer is not working.
         // j = i < N / 6 ? 0 : 1;
@@ -1049,13 +1049,13 @@ int test_canvas_particles(TestContext* context)
         visual->data = calloc(n, sizeof(TestParticle));
         for (uint32_t i = 0; i < n; i++)
         {
-            ((TestParticle*)visual->data)[i].pos[0] = .2 * randn();
-            ((TestParticle*)visual->data)[i].pos[1] = .2 * randn();
-            ((TestParticle*)visual->data)[i].vel[0] = .05 * randn();
-            ((TestParticle*)visual->data)[i].vel[1] = .05 * randn();
-            ((TestParticle*)visual->data)[i].color[0] = rand_float();
-            ((TestParticle*)visual->data)[i].color[1] = rand_float();
-            ((TestParticle*)visual->data)[i].color[2] = rand_float();
+            ((TestParticle*)visual->data)[i].pos[0] = .2 * vkl_rand_normal();
+            ((TestParticle*)visual->data)[i].pos[1] = .2 * vkl_rand_normal();
+            ((TestParticle*)visual->data)[i].vel[0] = .05 * vkl_rand_normal();
+            ((TestParticle*)visual->data)[i].vel[1] = .05 * vkl_rand_normal();
+            ((TestParticle*)visual->data)[i].color[0] = vkl_rand_float();
+            ((TestParticle*)visual->data)[i].color[1] = vkl_rand_float();
+            ((TestParticle*)visual->data)[i].color[2] = vkl_rand_float();
             ((TestParticle*)visual->data)[i].color[3] = .5;
         }
         // Vertex buffer
@@ -1175,7 +1175,7 @@ static void _screencast_callback(VklCanvas* canvas, VklEvent ev)
     char path[1024];
     snprintf(path, sizeof(path), "%s/screencast_%02d.ppm", ARTIFACTS_DIR, (int)ev.u.sc.idx);
     log_info("screencast frame #%d %d %s", ev.u.sc.idx, ev.u.sc.rgba[0], path);
-    write_ppm(path, ev.u.sc.width, ev.u.sc.height, ev.u.sc.rgba);
+    vkl_write_ppm(path, ev.u.sc.width, ev.u.sc.height, ev.u.sc.rgba);
     FREE(ev.u.sc.rgba);
 }
 

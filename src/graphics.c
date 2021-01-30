@@ -629,7 +629,7 @@ VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsType type, int f
     // If there is none, create a new one.
     graphics = vkl_container_alloc(&canvas->graphics);
     ASSERT(graphics != NULL);
-    ASSERT(!is_obj_created(&graphics->obj));
+    ASSERT(!vkl_obj_is_created(&graphics->obj));
     *graphics = vkl_graphics(canvas->gpu);
     graphics->type = type;
     graphics->flags = flags;

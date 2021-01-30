@@ -14,7 +14,7 @@ VklApp* vkl_app(VklBackend backend)
     log_set_level_env();
 
     VklApp* app = calloc(1, sizeof(VklApp));
-    obj_init(&app->obj);
+    vkl_obj_init(&app->obj);
     app->obj.type = VKL_OBJECT_TYPE_APP;
     app->backend = backend;
 
@@ -34,7 +34,7 @@ VklApp* vkl_app(VklBackend backend)
         required_extension_count, required_extensions, &app->instance, &app->debug_messenger,
         &app->n_errors);
     // debug_messenger != VK_NULL_HANDLE means validation enabled
-    obj_created(&app->obj);
+    vkl_obj_created(&app->obj);
 
     // Count the number of devices.
     uint32_t gpu_count = 0;
@@ -57,7 +57,7 @@ VklApp* vkl_app(VklBackend backend)
         for (uint32_t i = 0; i < gpu_count; i++)
         {
             gpu = vkl_container_alloc(&app->gpus);
-            obj_init(&gpu->obj);
+            vkl_obj_init(&gpu->obj);
             gpu->app = app;
             gpu->idx = i;
             discover_gpu(physical_devices[i], gpu);
@@ -180,7 +180,7 @@ void vkl_gpu_create(VklGpu* gpu, VkSurfaceKHR surface)
     // Create descriptor pool.
     create_descriptor_pool(gpu->device, &gpu->dset_pool);
 
-    obj_created(&gpu->obj);
+    vkl_obj_created(&gpu->obj);
     log_trace("GPU #%d created", gpu->idx);
 }
 
@@ -224,7 +224,7 @@ void vkl_gpu_destroy(VklGpu* gpu)
 {
     log_trace("starting destruction of GPU #%d...", gpu->idx);
     ASSERT(gpu != NULL);
-    if (!is_obj_created(&gpu->obj))
+    if (!vkl_obj_is_created(&gpu->obj))
     {
 
         log_trace("skip destruction of GPU as it was not properly created");
@@ -269,7 +269,7 @@ void vkl_gpu_destroy(VklGpu* gpu)
     }
 
 
-    obj_destroyed(&gpu->obj);
+    vkl_obj_destroyed(&gpu->obj);
     log_trace("GPU #%d destroyed", gpu->idx);
 }
 
@@ -336,7 +336,7 @@ void vkl_window_destroy(VklWindow* window)
     ASSERT(window->surface != NULL);
     backend_window_destroy(
         window->app->instance, window->app->backend, window->backend_window, window->surface);
-    obj_destroyed(&window->obj);
+    vkl_obj_destroyed(&window->obj);
 }
 
 
@@ -392,7 +392,7 @@ static void _swapchain_destroy(VklSwapchain* swapchain)
 VklSwapchain vkl_swapchain(VklGpu* gpu, VklWindow* window, uint32_t min_img_count)
 {
     ASSERT(gpu != NULL);
-    ASSERT(is_obj_created(&gpu->obj));
+    ASSERT(vkl_obj_is_created(&gpu->obj));
 
     VklSwapchain swapchain = {0};
 
@@ -416,7 +416,7 @@ void vkl_swapchain_present_mode(VklSwapchain* swapchain, VkPresentModeKHR presen
 {
     ASSERT(swapchain != NULL);
     ASSERT(swapchain->gpu != NULL);
-    ASSERT(is_obj_created(&swapchain->gpu->obj));
+    ASSERT(vkl_obj_is_created(&swapchain->gpu->obj));
 
     swapchain->present_mode = VK_PRESENT_MODE_FIFO_KHR; // default present mode
 
@@ -460,8 +460,8 @@ void vkl_swapchain_create(VklSwapchain* swapchain)
     // Create swapchain
     _swapchain_create(swapchain);
 
-    obj_created(&swapchain->images->obj);
-    obj_created(&swapchain->obj);
+    vkl_obj_created(&swapchain->images->obj);
+    vkl_obj_created(&swapchain->obj);
     log_trace("swapchain created");
 }
 
@@ -473,8 +473,8 @@ void vkl_swapchain_recreate(VklSwapchain* swapchain)
     _swapchain_destroy(swapchain);
     _swapchain_create(swapchain);
 
-    obj_created(&swapchain->images->obj);
-    obj_created(&swapchain->obj);
+    vkl_obj_created(&swapchain->images->obj);
+    vkl_obj_created(&swapchain->obj);
 }
 
 
@@ -569,7 +569,7 @@ void vkl_swapchain_present(
 void vkl_swapchain_destroy(VklSwapchain* swapchain)
 {
     ASSERT(swapchain != NULL);
-    if (!is_obj_created(&swapchain->obj))
+    if (!vkl_obj_is_created(&swapchain->obj))
     {
         log_trace("skip destruction of already-destroyed swapchain");
         return;
@@ -588,7 +588,7 @@ void vkl_swapchain_destroy(VklSwapchain* swapchain)
     if (swapchain->swapchain != VK_NULL_HANDLE)
         swapchain->swapchain = VK_NULL_HANDLE;
 
-    obj_destroyed(&swapchain->obj);
+    vkl_obj_destroyed(&swapchain->obj);
     log_trace("swapchain destroyed");
 }
 
@@ -601,7 +601,7 @@ void vkl_swapchain_destroy(VklSwapchain* swapchain)
 VklCommands vkl_commands(VklGpu* gpu, uint32_t queue, uint32_t count)
 {
     ASSERT(gpu != NULL);
-    ASSERT(is_obj_created(&gpu->obj));
+    ASSERT(vkl_obj_is_created(&gpu->obj));
 
     ASSERT(count <= VKL_MAX_COMMAND_BUFFERS_PER_SET);
     ASSERT(queue < gpu->queues.queue_count);
@@ -617,7 +617,7 @@ VklCommands vkl_commands(VklGpu* gpu, uint32_t queue, uint32_t count)
     commands.count = count;
     allocate_command_buffers(gpu->device, gpu->queues.cmd_pools[qf], count, commands.cmds);
 
-    obj_init(&commands.obj);
+    vkl_obj_init(&commands.obj);
 
     return commands;
 }
@@ -644,7 +644,7 @@ void vkl_cmd_end(VklCommands* cmds, uint32_t idx)
     // log_trace("end command buffer");
     VK_CHECK_RESULT(vkEndCommandBuffer(cmds->cmds[idx]));
 
-    obj_created(&cmds->obj);
+    vkl_obj_created(&cmds->obj);
 }
 
 
@@ -673,7 +673,7 @@ void vkl_cmd_free(VklCommands* cmds)
         cmds->gpu->device, cmds->gpu->queues.cmd_pools[cmds->queue_idx], //
         cmds->count, cmds->cmds);
 
-    obj_init(&cmds->obj);
+    vkl_obj_init(&cmds->obj);
 }
 
 
@@ -699,13 +699,13 @@ void vkl_cmd_submit_sync(VklCommands* cmds, uint32_t idx)
 void vkl_commands_destroy(VklCommands* cmds)
 {
     ASSERT(cmds != NULL);
-    if (!is_obj_created(&cmds->obj))
+    if (!vkl_obj_is_created(&cmds->obj))
     {
         log_trace("skip destruction of already-destroyed commands");
         return;
     }
     log_trace("destroy commands");
-    obj_destroyed(&cmds->obj);
+    vkl_obj_destroyed(&cmds->obj);
 }
 
 
@@ -717,7 +717,7 @@ void vkl_commands_destroy(VklCommands* cmds)
 VklBuffer vkl_buffer(VklGpu* gpu)
 {
     ASSERT(gpu != NULL);
-    ASSERT(is_obj_created(&gpu->obj));
+    ASSERT(vkl_obj_is_created(&gpu->obj));
 
     VklBuffer buffer = {0};
     buffer.obj.status = VKL_OBJECT_STATUS_INIT;
@@ -836,7 +836,7 @@ void vkl_buffer_create(VklBuffer* buffer)
     log_trace("starting creation of buffer...");
     _buffer_create(buffer);
 
-    obj_created(&buffer->obj);
+    vkl_obj_created(&buffer->obj);
     log_trace("buffer created");
 }
 
@@ -921,7 +921,7 @@ void* vkl_buffer_map(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size)
     ASSERT(buffer != NULL);
     ASSERT(buffer->gpu != NULL);
     ASSERT(buffer->gpu->device != VK_NULL_HANDLE);
-    ASSERT(is_obj_created(&buffer->obj));
+    ASSERT(vkl_obj_is_created(&buffer->obj));
     if (size < UINT64_MAX)
         ASSERT(offset + size <= buffer->size);
     ASSERT(
@@ -943,7 +943,7 @@ void vkl_buffer_unmap(VklBuffer* buffer)
     ASSERT(buffer != NULL);
     ASSERT(buffer->gpu != NULL);
     ASSERT(buffer->gpu->device != VK_NULL_HANDLE);
-    ASSERT(is_obj_created(&buffer->obj));
+    ASSERT(vkl_obj_is_created(&buffer->obj));
 
     ASSERT(
         (buffer->memory & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) && //
@@ -1012,14 +1012,14 @@ void vkl_buffer_download(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize si
 void vkl_buffer_destroy(VklBuffer* buffer)
 {
     ASSERT(buffer != NULL);
-    if (!is_obj_created(&buffer->obj))
+    if (!vkl_obj_is_created(&buffer->obj))
     {
         log_trace("skip destruction of already-destroyed buffer");
         return;
     }
     log_trace("destroy buffer");
     _buffer_destroy(buffer);
-    obj_destroyed(&buffer->obj);
+    vkl_obj_destroyed(&buffer->obj);
 }
 
 
@@ -1035,7 +1035,7 @@ VklBufferRegions vkl_buffer_regions(
     ASSERT(buffer != NULL);
     ASSERT(buffer->gpu != NULL);
     ASSERT(buffer->gpu->device != VK_NULL_HANDLE);
-    ASSERT(is_obj_created(&buffer->obj));
+    ASSERT(vkl_obj_is_created(&buffer->obj));
     ASSERT(count <= VKL_MAX_BUFFER_REGIONS_PER_SET);
 
     VklBufferRegions regions = {0};
@@ -1132,7 +1132,7 @@ void vkl_buffer_regions_upload(VklBufferRegions* br, uint32_t idx, const void* d
 VklImages vkl_images(VklGpu* gpu, VkImageType type, uint32_t count)
 {
     ASSERT(gpu != NULL);
-    ASSERT(is_obj_created(&gpu->obj));
+    ASSERT(vkl_obj_is_created(&gpu->obj));
 
     VklImages images = {0};
     images.obj.status = VKL_OBJECT_STATUS_INIT;
@@ -1281,7 +1281,7 @@ void vkl_images_create(VklImages* images)
 
     log_trace("starting creation of %d images...", images->count);
     _images_create(images);
-    obj_created(&images->obj);
+    vkl_obj_created(&images->obj);
     log_trace("%d images created", images->count);
 }
 
@@ -1387,14 +1387,14 @@ void vkl_images_download(VklImages* staging, uint32_t idx, bool swizzle, uint8_t
 void vkl_images_destroy(VklImages* images)
 {
     ASSERT(images != NULL);
-    if (!is_obj_created(&images->obj))
+    if (!vkl_obj_is_created(&images->obj))
     {
         log_trace("skip destruction of already-destroyed images");
         return;
     }
     log_trace("destroy %d image(s) and image view(s)", images->count);
     _images_destroy(images);
-    obj_destroyed(&images->obj);
+    vkl_obj_destroyed(&images->obj);
 }
 
 
@@ -1406,7 +1406,7 @@ void vkl_images_destroy(VklImages* images)
 VklSampler vkl_sampler(VklGpu* gpu)
 {
     ASSERT(gpu != NULL);
-    ASSERT(is_obj_created(&gpu->obj));
+    ASSERT(vkl_obj_is_created(&gpu->obj));
 
     VklSampler sampler = {0};
     sampler.obj.status = VKL_OBJECT_STATUS_INIT;
@@ -1455,7 +1455,7 @@ void vkl_sampler_create(VklSampler* sampler)
         sampler->gpu->device, sampler->mag_filter, sampler->min_filter, //
         sampler->address_modes, false, &sampler->sampler);
 
-    obj_created(&sampler->obj);
+    vkl_obj_created(&sampler->obj);
     log_trace("sampler created");
 }
 
@@ -1464,7 +1464,7 @@ void vkl_sampler_create(VklSampler* sampler)
 void vkl_sampler_destroy(VklSampler* sampler)
 {
     ASSERT(sampler != NULL);
-    if (!is_obj_created(&sampler->obj))
+    if (!vkl_obj_is_created(&sampler->obj))
     {
         log_trace("skip destruction of already-destroyed sampler");
         return;
@@ -1475,7 +1475,7 @@ void vkl_sampler_destroy(VklSampler* sampler)
         vkDestroySampler(sampler->gpu->device, sampler->sampler, NULL);
         sampler->sampler = VK_NULL_HANDLE;
     }
-    obj_destroyed(&sampler->obj);
+    vkl_obj_destroyed(&sampler->obj);
 }
 
 
@@ -1487,11 +1487,11 @@ void vkl_sampler_destroy(VklSampler* sampler)
 VklSlots vkl_slots(VklGpu* gpu)
 {
     ASSERT(gpu != NULL);
-    ASSERT(is_obj_created(&gpu->obj));
+    ASSERT(vkl_obj_is_created(&gpu->obj));
 
     VklSlots slots = {0};
     slots.gpu = gpu;
-    obj_init(&slots.obj);
+    vkl_obj_init(&slots.obj);
 
     return slots;
 }
@@ -1549,7 +1549,7 @@ void vkl_slots_create(VklSlots* slots)
         slots->gpu->device, slots->push_count, push_constants, //
         &slots->dset_layout, &slots->pipeline_layout);
 
-    obj_created(&slots->obj);
+    vkl_obj_created(&slots->obj);
     log_trace("slots created");
 }
 
@@ -1559,7 +1559,7 @@ void vkl_slots_destroy(VklSlots* slots)
 {
     ASSERT(slots != NULL);
     ASSERT(slots->gpu != NULL);
-    if (!is_obj_created(&slots->obj))
+    if (!vkl_obj_is_created(&slots->obj))
     {
         log_trace("skip destruction of already-destroyed slots");
         return;
@@ -1576,7 +1576,7 @@ void vkl_slots_destroy(VklSlots* slots)
         vkDestroyDescriptorSetLayout(device, slots->dset_layout, NULL);
         slots->dset_layout = VK_NULL_HANDLE;
     }
-    obj_destroyed(&slots->obj);
+    vkl_obj_destroyed(&slots->obj);
 }
 
 
@@ -1590,15 +1590,15 @@ VklBindings vkl_bindings(VklSlots* slots, uint32_t dset_count)
     ASSERT(slots != NULL);
     VklGpu* gpu = slots->gpu;
     ASSERT(gpu != NULL);
-    ASSERT(is_obj_created(&gpu->obj));
+    ASSERT(vkl_obj_is_created(&gpu->obj));
 
     VklBindings bindings = {0};
     bindings.slots = slots;
     bindings.gpu = gpu;
 
-    obj_init(&bindings.obj);
+    vkl_obj_init(&bindings.obj);
 
-    if (!is_obj_created(&slots->obj))
+    if (!vkl_obj_is_created(&slots->obj))
         vkl_slots_create(slots);
     ASSERT(dset_count > 0);
     ASSERT(slots->dset_layout != VK_NULL_HANDLE);
@@ -1609,7 +1609,7 @@ VklBindings vkl_bindings(VklSlots* slots, uint32_t dset_count)
     allocate_descriptor_sets(
         gpu->device, gpu->dset_pool, slots->dset_layout, bindings.dset_count, bindings.dsets);
 
-    obj_created(&bindings.obj);
+    vkl_obj_created(&bindings.obj);
     log_trace("bindings created");
 
     return bindings;
@@ -1660,7 +1660,7 @@ void vkl_bindings_update(VklBindings* bindings)
 {
     log_trace("update bindings");
     ASSERT(bindings->slots != NULL);
-    ASSERT(is_obj_created(&bindings->slots->obj));
+    ASSERT(vkl_obj_is_created(&bindings->slots->obj));
     ASSERT(bindings->slots->dset_layout != VK_NULL_HANDLE);
     ASSERT(bindings->dset_count > 0);
     ASSERT(bindings->dset_count <= VKL_MAX_SWAPCHAIN_IMAGES);
@@ -1683,13 +1683,13 @@ void vkl_bindings_destroy(VklBindings* bindings)
 {
     ASSERT(bindings != NULL);
     ASSERT(bindings->gpu != NULL);
-    if (!is_obj_created(&bindings->obj))
+    if (!vkl_obj_is_created(&bindings->obj))
     {
         log_trace("skip destruction of already-destroyed bindings");
         return;
     }
     log_trace("destroy bindings");
-    obj_destroyed(&bindings->obj);
+    vkl_obj_destroyed(&bindings->obj);
 }
 
 
@@ -1701,7 +1701,7 @@ void vkl_bindings_destroy(VklBindings* bindings)
 VklCompute vkl_compute(VklGpu* gpu, const char* shader_path)
 {
     ASSERT(gpu != NULL);
-    ASSERT(is_obj_created(&gpu->obj));
+    ASSERT(vkl_obj_is_created(&gpu->obj));
 
     VklCompute compute = {0};
     compute.obj.status = VKL_OBJECT_STATUS_INIT;
@@ -1757,7 +1757,7 @@ void vkl_compute_create(VklCompute* compute)
     ASSERT(compute->gpu != NULL);
     ASSERT(compute->gpu->device != VK_NULL_HANDLE);
     ASSERT(compute->shader_path != NULL);
-    if (!is_obj_created(&compute->slots.obj))
+    if (!vkl_obj_is_created(&compute->slots.obj))
         vkl_slots_create(&compute->slots);
 
     if (compute->bindings == NULL)
@@ -1783,7 +1783,7 @@ void vkl_compute_create(VklCompute* compute)
         compute->gpu->device, compute->shader_module, //
         compute->slots.pipeline_layout, &compute->pipeline);
 
-    obj_created(&compute->obj);
+    vkl_obj_created(&compute->obj);
     log_trace("compute created");
 }
 
@@ -1793,7 +1793,7 @@ void vkl_compute_destroy(VklCompute* compute)
 {
     ASSERT(compute != NULL);
     ASSERT(compute->gpu != NULL);
-    if (!is_obj_created(&compute->obj))
+    if (!vkl_obj_is_created(&compute->obj))
     {
         log_trace("skip destruction of already-destroyed compute");
         return;
@@ -1801,7 +1801,7 @@ void vkl_compute_destroy(VklCompute* compute)
     log_trace("destroy compute");
 
     // Destroy the compute slots.
-    if (is_obj_created(&compute->slots.obj))
+    if (vkl_obj_is_created(&compute->slots.obj))
         vkl_slots_destroy(&compute->slots);
 
     VkDevice device = compute->gpu->device;
@@ -1816,7 +1816,7 @@ void vkl_compute_destroy(VklCompute* compute)
         compute->pipeline = VK_NULL_HANDLE;
     }
 
-    obj_destroyed(&compute->obj);
+    vkl_obj_destroyed(&compute->obj);
 }
 
 
@@ -1828,12 +1828,12 @@ void vkl_compute_destroy(VklCompute* compute)
 VklGraphics vkl_graphics(VklGpu* gpu)
 {
     ASSERT(gpu != NULL);
-    ASSERT(is_obj_created(&gpu->obj));
+    ASSERT(vkl_obj_is_created(&gpu->obj));
 
     VklGraphics graphics = {0};
     graphics.gpu = gpu;
 
-    obj_init(&graphics.obj);
+    vkl_obj_init(&graphics.obj);
 
     graphics.slots = vkl_slots(gpu);
 
@@ -1991,7 +1991,7 @@ void vkl_graphics_create(VklGraphics* graphics)
     ASSERT(graphics->gpu != NULL);
     ASSERT(graphics->gpu->device != VK_NULL_HANDLE);
     ASSERT(graphics->renderpass != NULL);
-    if (!is_obj_created(&graphics->slots.obj))
+    if (!vkl_obj_is_created(&graphics->slots.obj))
         vkl_slots_create(&graphics->slots);
 
     log_trace("starting creation of graphics pipeline...");
@@ -2074,7 +2074,7 @@ void vkl_graphics_create(VklGraphics* graphics)
     if (graphics->pipeline != VK_NULL_HANDLE)
     {
         log_trace("graphics pipeline created");
-        obj_created(&graphics->obj);
+        vkl_obj_created(&graphics->obj);
     }
     else
     {
@@ -2111,10 +2111,10 @@ void vkl_graphics_destroy(VklGraphics* graphics)
     }
 
     // Destroy slots.
-    if (is_obj_created(&graphics->slots.obj))
+    if (vkl_obj_is_created(&graphics->slots.obj))
         vkl_slots_destroy(&graphics->slots);
 
-    obj_destroyed(&graphics->obj);
+    vkl_obj_destroyed(&graphics->obj);
 }
 
 
@@ -2126,7 +2126,7 @@ void vkl_graphics_destroy(VklGraphics* graphics)
 VklBarrier vkl_barrier(VklGpu* gpu)
 {
     ASSERT(gpu != NULL);
-    ASSERT(is_obj_created(&gpu->obj));
+    ASSERT(vkl_obj_is_created(&gpu->obj));
 
     VklBarrier barrier = {0};
     barrier.gpu = gpu;
@@ -2242,7 +2242,7 @@ void vkl_barrier_images_queue(VklBarrier* barrier, uint32_t src_queue, uint32_t 
 VklSemaphores vkl_semaphores(VklGpu* gpu, uint32_t count)
 {
     ASSERT(gpu != NULL);
-    ASSERT(is_obj_created(&gpu->obj));
+    ASSERT(vkl_obj_is_created(&gpu->obj));
 
     ASSERT(count > 0);
     log_trace("create set of %d semaphore(s)", count);
@@ -2256,7 +2256,7 @@ VklSemaphores vkl_semaphores(VklGpu* gpu, uint32_t count)
     for (uint32_t i = 0; i < count; i++)
         VK_CHECK_RESULT(vkCreateSemaphore(gpu->device, &info, NULL, &semaphores.semaphores[i]));
 
-    obj_created(&semaphores.obj);
+    vkl_obj_created(&semaphores.obj);
 
     return semaphores;
 }
@@ -2266,7 +2266,7 @@ VklSemaphores vkl_semaphores(VklGpu* gpu, uint32_t count)
 void vkl_semaphores_destroy(VklSemaphores* semaphores)
 {
     ASSERT(semaphores != NULL);
-    if (!is_obj_created(&semaphores->obj))
+    if (!vkl_obj_is_created(&semaphores->obj))
     {
         log_trace("skip destruction of already-destroyed semaphores");
         return;
@@ -2283,7 +2283,7 @@ void vkl_semaphores_destroy(VklSemaphores* semaphores)
             semaphores->semaphores[i] = VK_NULL_HANDLE;
         }
     }
-    obj_destroyed(&semaphores->obj);
+    vkl_obj_destroyed(&semaphores->obj);
 }
 
 
@@ -2295,7 +2295,7 @@ void vkl_semaphores_destroy(VklSemaphores* semaphores)
 VklFences vkl_fences(VklGpu* gpu, uint32_t count)
 {
     ASSERT(gpu != NULL);
-    ASSERT(is_obj_created(&gpu->obj));
+    ASSERT(vkl_obj_is_created(&gpu->obj));
 
     VklFences fences = {0};
 
@@ -2312,7 +2312,7 @@ VklFences vkl_fences(VklGpu* gpu, uint32_t count)
     for (uint32_t i = 0; i < fences.count; i++)
         VK_CHECK_RESULT(vkCreateFence(fences.gpu->device, &info, NULL, &fences.fences[i]));
 
-    obj_created(&fences.obj);
+    vkl_obj_created(&fences.obj);
     return fences;
 }
 
@@ -2381,7 +2381,7 @@ void vkl_fences_reset(VklFences* fences, uint32_t idx)
 void vkl_fences_destroy(VklFences* fences)
 {
     ASSERT(fences != NULL);
-    if (!is_obj_created(&fences->obj))
+    if (!vkl_obj_is_created(&fences->obj))
     {
         log_trace("skip destruction of already-destroyed fences");
         return;
@@ -2398,7 +2398,7 @@ void vkl_fences_destroy(VklFences* fences)
             fences->fences[i] = VK_NULL_HANDLE;
         }
     }
-    obj_destroyed(&fences->obj);
+    vkl_obj_destroyed(&fences->obj);
 }
 
 
@@ -2410,7 +2410,7 @@ void vkl_fences_destroy(VklFences* fences)
 VklRenderpass vkl_renderpass(VklGpu* gpu)
 {
     ASSERT(gpu != NULL);
-    ASSERT(is_obj_created(&gpu->obj));
+    ASSERT(vkl_obj_is_created(&gpu->obj));
 
     VklRenderpass renderpass = {0};
     renderpass.gpu = gpu;
@@ -2588,7 +2588,7 @@ void vkl_renderpass_create(VklRenderpass* renderpass)
         renderpass->gpu->device, &render_pass_info, NULL, &renderpass->renderpass));
 
     log_trace("renderpass created");
-    obj_created(&renderpass->obj);
+    vkl_obj_created(&renderpass->obj);
 }
 
 
@@ -2596,7 +2596,7 @@ void vkl_renderpass_create(VklRenderpass* renderpass)
 void vkl_renderpass_destroy(VklRenderpass* renderpass)
 {
     ASSERT(renderpass != NULL);
-    if (!is_obj_created(&renderpass->obj))
+    if (!vkl_obj_is_created(&renderpass->obj))
     {
         log_trace("skip destruction of already-destroyed renderpass");
         return;
@@ -2609,7 +2609,7 @@ void vkl_renderpass_destroy(VklRenderpass* renderpass)
         renderpass->renderpass = VK_NULL_HANDLE;
     }
 
-    obj_destroyed(&renderpass->obj);
+    vkl_obj_destroyed(&renderpass->obj);
 }
 
 
@@ -2621,7 +2621,7 @@ void vkl_renderpass_destroy(VklRenderpass* renderpass)
 VklFramebuffers vkl_framebuffers(VklGpu* gpu)
 {
     ASSERT(gpu != NULL);
-    ASSERT(is_obj_created(&gpu->obj));
+    ASSERT(vkl_obj_is_created(&gpu->obj));
 
     VklFramebuffers framebuffers = {0};
     framebuffers.gpu = gpu;
@@ -2716,7 +2716,7 @@ void vkl_framebuffers_create(VklFramebuffers* framebuffers, VklRenderpass* rende
     ASSERT(framebuffers->gpu->device != VK_NULL_HANDLE);
 
     ASSERT(renderpass != NULL);
-    ASSERT(is_obj_created(&renderpass->obj));
+    ASSERT(vkl_obj_is_created(&renderpass->obj));
 
     framebuffers->renderpass = renderpass;
 
@@ -2730,7 +2730,7 @@ void vkl_framebuffers_create(VklFramebuffers* framebuffers, VklRenderpass* rende
     log_trace("starting creation of %d framebuffer(s)", framebuffers->framebuffer_count);
     _framebuffers_create(framebuffers);
     log_trace("framebuffers created");
-    obj_created(&framebuffers->obj);
+    vkl_obj_created(&framebuffers->obj);
 }
 
 
@@ -2738,14 +2738,14 @@ void vkl_framebuffers_create(VklFramebuffers* framebuffers, VklRenderpass* rende
 void vkl_framebuffers_destroy(VklFramebuffers* framebuffers)
 {
     ASSERT(framebuffers != NULL);
-    if (!is_obj_created(&framebuffers->obj))
+    if (!vkl_obj_is_created(&framebuffers->obj))
     {
         log_trace("skip destruction of already-destroyed framebuffers");
         return;
     }
     log_trace("destroying %d framebuffers", framebuffers->framebuffer_count);
     _framebuffers_destroy(framebuffers);
-    obj_destroyed(&framebuffers->obj);
+    vkl_obj_destroyed(&framebuffers->obj);
 }
 
 
@@ -2757,7 +2757,7 @@ void vkl_framebuffers_destroy(VklFramebuffers* framebuffers)
 VklSubmit vkl_submit(VklGpu* gpu)
 {
     ASSERT(gpu != NULL);
-    ASSERT(is_obj_created(&gpu->obj));
+    ASSERT(vkl_obj_is_created(&gpu->obj));
 
     VklSubmit submit = {0};
     submit.gpu = gpu;
@@ -2904,8 +2904,8 @@ void vkl_cmd_begin_renderpass(
     ASSERT(renderpass != NULL);
     ASSERT(framebuffers != NULL);
 
-    ASSERT(is_obj_created(&renderpass->obj));
-    ASSERT(is_obj_created(&framebuffers->obj));
+    ASSERT(vkl_obj_is_created(&renderpass->obj));
+    ASSERT(vkl_obj_is_created(&framebuffers->obj));
     ASSERT(renderpass->renderpass != VK_NULL_HANDLE);
 
     // Find the framebuffer size.
@@ -3171,7 +3171,7 @@ void vkl_cmd_bind_graphics(
     }
 
     CMD_START_CLIP(bindings->dset_count)
-    if (is_obj_created(&graphics->obj))
+    if (vkl_obj_is_created(&graphics->obj))
         vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, graphics->pipeline);
     vkCmdBindDescriptorSets(
         cb, VK_PIPELINE_BIND_POINT_GRAPHICS, slots->pipeline_layout, //

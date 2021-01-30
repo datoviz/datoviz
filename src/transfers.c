@@ -302,7 +302,7 @@ static void _enqueue_buffers_transfer(
     ASSERT(canvas->transfers.capacity > 0);
     ASSERT(size > 0);
     ASSERT(br.buffer != NULL);
-    ASSERT(is_obj_created(&br.buffer->obj));
+    ASSERT(vkl_obj_is_created(&br.buffer->obj));
     ASSERT(data != NULL);
 
     // Create the transfer object.
@@ -390,7 +390,7 @@ static void _enqueue_texture_transfer(
     ASSERT(context != NULL);
     ASSERT(canvas->transfers.capacity > 0);
     ASSERT(texture != NULL);
-    ASSERT(is_obj_created(&texture->obj));
+    ASSERT(vkl_obj_is_created(&texture->obj));
     ASSERT(size > 0);
     ASSERT(data != NULL);
 
@@ -454,9 +454,9 @@ void vkl_copy_texture(
     ASSERT(context != NULL);
     ASSERT(canvas->transfers.capacity > 0);
     ASSERT(src != NULL);
-    ASSERT(is_obj_created(&src->obj));
+    ASSERT(vkl_obj_is_created(&src->obj));
     ASSERT(dst != NULL);
-    ASSERT(is_obj_created(&dst->obj));
+    ASSERT(vkl_obj_is_created(&dst->obj));
     ASSERT(size > 0);
 
     // Create the transfer object.

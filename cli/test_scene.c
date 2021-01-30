@@ -334,7 +334,7 @@ int test_scene_logistic(TestContext* context)
     for (uint32_t i = 0; i < N; i++)
     {
         pos[i][0] = -1 + 2 * i / (double)(N - 1);
-        pos[i][1] = -1 + 2 * rand_float();
+        pos[i][1] = -1 + 2 * vkl_rand_float();
         vkl_colormap_scale(VKL_CMAP_HSV, i, 0, N, color[i]);
         color[i][3] = 20;
     }

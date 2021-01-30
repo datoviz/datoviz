@@ -533,8 +533,8 @@ int test_graphics_marker_1(TestContext* context)
         RANDN_POS(vertices[i].pos)
         vertices[i].pos[1] -= .1;
         RAND_COLOR(vertices[i].color)
-        vertices[i].color[3] = rand_byte();
-        vertices[i].size = 10 + 40 * rand_float();
+        vertices[i].color[3] = vkl_rand_byte();
+        vertices[i].size = 10 + 40 * vkl_rand_float();
         vertices[i].marker = VKL_MARKER_DISC;
     }
 
