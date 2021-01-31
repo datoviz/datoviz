@@ -5,13 +5,16 @@ The **scene** provides facilities to create **panels** (subplots) within a canva
 
 ## Coordinate system
 
-Visky uses the standard OpenGL 3D coordinate system, which is different from the Vulkan coordinate system:
+Visky uses the standard OpenGL 3D coordinate system:
 
---> IMAGE OPENGL=VISKY / VULKAN
+![Visky coordinate system](../images/cds.svg)
+*Visky coordinate system*
+
+Note that this is different from the Vulkan coordinate system, where y and z go in the opposite direction. The other difference is that in Visky, all axes range in the interval `[-1, +1]`. In the original Vulkan coordinate system, `z` goes from 0 to 1 instead.
 
 This convention makes it possible to use existing camera matrix routines implemented in the cglm library. The GPU code of all included shaders include the final OpenGL->Vulkan transformation right before the vertex shader output.
 
-Other conventions for x, y, z axes will be supported in the future.
+Other conventions for `x, y, z` axes will be supported in the future.
 
 
 ## Data transforms
@@ -23,45 +26,57 @@ Therefore, Visky provides a system to make transformations on the CPU **in doubl
 
 ## Controllers
 
-Once a panel is created, one needs to specify a **Controller**. This object defines how the user interacts with the panel.
+When creating a new panel, one needs to specify a **Controller**. This object defines how the user interacts with the panel.
 
---> CODE EXAMPLE python and C showing how to define a controller
+=== "Python"
+    ```python
+    panel = c.panel(row=0, col=0, controller='axes')
+    ```
+=== "C"
+    ```c
+    VklPanel* panel = vkl_scene_panel(scene, 0, 0, VKL_CONTROLLER_AXES_2D, 0);
+    ```
 
-There are several builtin controllers.
+The controllers currently implemented are:
+
+* **static**: no interactivity,
+* **panzoom**: pan and zoom with the mouse,
+* **axes**: axes with ticks, tick labels, grid, and interactivity with pan and zoom,
+* **arcbcall**: static 3D camera, model rotation with the mouse,
+* **camera**: first-person 3D camera.
+
+More controllers will be implemented in the future. The C interface used to create custom controllers will be refined too.
 
 ### Panzoom
 
-The **Panzoom controller** provides mouse interaction patterns for panning and zooming:
+The **panzoom controller** provides mouse interaction patterns for panning and zooming:
 
 * **Mouse dragging with left button**: pan
 * **Mouse dragging with right button**: zoom in x and y axis independently
 * **Mouse wheel**: zoom in and out in both axes simultaneously
 * **Double-click with left button**: reset to initial view
 
-
-
 ### Axes 2D
 
 The **axes 2D controller** displays ticks, tick labels, grid and provides panzoom interaction.
-
-
 
 ### Arcball
 
 The arcball controller is used to rotate a 3D object in all directions using the mouse. It is implemented with quaternions.
 
+### First-person camera
 
-### First-person cameras
-
-Visky provides two first-person cameras at the moment:
-
-* **FPS camera**: left-dragging controls the camera, the arrow keys control the position, the Z is controlled by the mouse wheel.
-* **Fly camera**: like the FPS camera, but the Up and Down keys advance the camera in the 3D direction determined by the mouse. The Z axis has no special role.
-
+Left-dragging controls the camera, the arrow keys control the position, the Z is controlled by the mouse wheel.
 
 
 ## Subplots
 
 Panels are organized within a **grid** layout. Each panel is indexed by its row and column. By default, there is a single panel spanning the entire canvas.
 
-TODO: widths, heights, span
+By default, a regular grid is created. You can customize the size of each colum, row, and make panels span multiple grid cells. Only the C interface is implemented at the moment.
+
+=== "C"
+    ```c
+    vkl_panel_size(panel, VKL_GRID_HORIZONTAL, 0.5); // proportion of the width
+    vkl_panel_span(panel, VKL_GRID_HORIZONTAL, 2); // the panel spans 2 horizontal cells
+    ```
