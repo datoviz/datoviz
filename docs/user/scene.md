@@ -5,14 +5,20 @@ The **scene** provides facilities to create **panels** (subplots) within a canva
 
 ## Coordinate system
 
+Visky uses the standard OpenGL 3D coordinate system, which is different from the Vulkan coordinate system:
+
 --> IMAGE OPENGL=VISKY / VULKAN
 
-diff with vulkan
+This convention makes it possible to use existing camera matrix routines implemented in the cglm library. The GPU code of all included shaders include the final OpenGL->Vulkan transformation right before the vertex shader output.
+
+Other conventions for x, y, z axes will be supported in the future.
 
 
 ## Data transforms
 
+Position props are specified in the original data coordinate system corresponding to the scientific data to be visualized. Yet, Visky requires vertex positions to be in normalized coordinates (between -1 and 1) when sent to the GPU. Since the GPU only deals with single-precision floating point numbers, doing data normalization on the GPU would result in significant loss of precision and would harm performance.
 
+Therefore, Visky provides a system to make transformations on the CPU **in double precision** before uploading the data to the GPU. By default, the data is linearly transformed to fit the [-1, +1] cube. Other types of transformations will soon be implemented (polar coordinates, geographic coordinate systems, and so on).
 
 
 ## Controllers

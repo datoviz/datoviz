@@ -4,12 +4,11 @@
 
 Visky has been tested on Linux, macOS (Intel), and to a lesser extent, Windows. It should work on most computers, with or without a discrete GPU (but with up-to-date graphics drivers).
 
-Visky is **written in C** and provides native **Python bindings** (based on Cython). Bindings to other languages could be developed thanks to community efforts (Julia, R, MATLAB, Rust, C#, and so on). Visky uses the [**Vulkan graphics API**](https://www.khronos.org/vulkan/) created by the Khronos consortium, successor of OpenGL. Supporting other modern graphics API, such as WebGPU, would constitute interesting developments.
+**Written in C**, Visky has been designed from the group up for **performance**. It provides native **Python bindings** (based on Cython). Bindings to other languages could be developed thanks to community efforts (Julia, R, MATLAB, Rust, C#, and so on). Visky uses the [**Vulkan graphics API**](https://www.khronos.org/vulkan/) created by the Khronos consortium, successor of OpenGL. Supporting other modern graphics API, such as WebGPU, would constitute interesting developments.
 
 Visky is currently being developed mostly by [Cyrille Rossant](https://cyrille.rossant.net) at the [International Brain Laboratory](http://internationalbrainlab.org/), a consortium of neuroscience research labs around the world.
 
 Visky is at an early stage of development. The library is quite usable but evolves quickly. Many more features will come later and the documentation will be improved. Contributions are highly welcome!
-
 
 ## Screenshots
 
