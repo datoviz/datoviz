@@ -1,9 +1,9 @@
 [submodule "external/imgui"]
 	path = external/imgui
-	url = git@github.com:viskydev/imgui.git
+	url = git@github.com:datoviz/imgui.git
 [submodule "data"]
 	path = data
-	url = git@github.com:viskydev/data.git
+	url = git@github.com:datoviz/data.git
 	branch = refactor
 [submodule "external/cglm"]
 	path = external/cglm

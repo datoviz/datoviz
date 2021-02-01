@@ -11,7 +11,7 @@ then
     mkdir -p build &&
     cd build && \
     cmake .. -GNinja && \
-    VKY_EXAMPLE= ninja && \
+    DVZ_EXAMPLE= ninja && \
     cd ..
 fi
 
@@ -86,11 +86,6 @@ if [ $1 == "prof" ]
 then
     # valgrind --tool=callgrind --dump-instr=yes --simulate-cache=yes --collect-jumps=yes $2
     gprof build/datoviz -Al > prof.txt
-fi
-
-if [ $1 == "run" ]
-then
-    VKY_EXAMPLE=$2 ./manage.sh build && ./build/$2
 fi
 
 if [ $1 == "docker" ]

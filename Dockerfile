@@ -3,7 +3,7 @@
 
 FROM ubuntu:20.04
 
-LABEL maintainer "Visky Development Team"
+LABEL maintainer "Datoviz Development Team"
 
 # Install the build and lib dependencies, install vulkan and a recent version of CMake
 RUN \
@@ -35,8 +35,8 @@ RUN pip3 install pyparsing scikit-build colorcet imageio
 
 # User and group
 RUN \
-    groupadd -g 1000 visky && \
-    useradd -d /home/visky -s /bin/bash -m visky -u 1000 -g 1000 && \
-    chown -R visky:visky /visky
-USER visky
-ENV HOME /home/visky
+    groupadd -g 1000 datoviz && \
+    useradd -d /home/datoviz -s /bin/bash -m datoviz -u 1000 -g 1000 && \
+    chown -R datoviz:datoviz /datoviz
+USER datoviz
+ENV HOME /home/datoviz
