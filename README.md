@@ -76,7 +76,7 @@ VisPy is written entirely in Python and it is based on OpenGL, an almost 30 year
 Datoviz may be seen as a ground-up reincarnation of VisPy, with two fundamental differences: it is written in **C** rather than Python, and it uses **Vulkan** rather than OpenGL.
 
 * The main advantages of C compared to Python are: ability to bind to any other language beyond Python; performance; possibility to use the Vulkan C API directly rather than via a wrapper.
-* The main advantages of Vulkan compared to OpenGL are: modern API, more adapted to today's hardware; performance. However, it is more complex and less user-friendly. Datoviz abstracts away a lot of that complexity.
+* The main advantages of Vulkan compared to OpenGL are: modern API, more adapted to today's hardware; performance. However, it is more complex and less user-friendly. Datoviz abstracts a lot of that complexity away.
 
 
 ### Glumpy
@@ -88,11 +88,12 @@ Glumpy, developed by Nicolas Rougier, provides [efficient implementations of hig
 
 * [LunarG Vulkan SDK](https://www.lunarg.com/vulkan-sdk/) (mandatory)
 * [GLFW](https://www.glfw.org/) (mandatory)
+* [libpng](http://www.libpng.org/pub/png/libpng.html) (optional)
 * [earcut](https://github.com/mapbox/earcut) (included)
 * [triangle](https://www.cs.cmu.edu/~quake/triangle.html), for Delaunay triangulations (included)
-* [antigrain geometry](https://en.wikipedia.org/wiki/Anti-Grain_Geometry)
 * [extended Wilkinson algorithm](http://vis.stanford.edu/papers/tick-labels) for tick placement (included)
 * [Dear ImGUI](https://github.com/ocornut/imgui) (included)
+* [antigrain geometry](https://en.wikipedia.org/wiki/Anti-Grain_Geometry) (GLSL implementation included)
 
 An upcoming version will also have the following dependencies:
 
@@ -110,6 +111,7 @@ An upcoming version will also have the following dependencies:
 * [ipyvolume](https://github.com/maartenbreddels/ipyvolume)
 
 
+Glossary:
 
 *[Vulkan]: Low-level graphics API created by Khronos, and successor of OpenGL
 *[shaders]: code written in GLSL and executed on the GPU to customize the graphics pipeline

@@ -167,10 +167,10 @@ uint8_t* dvz_read_ppm(const char* filename, int* width, int* height)
     return image;
 }
 
-char* dvz_read_file(const char* filename, size_t* size)
+uint32_t* dvz_read_file(const char* filename, size_t* size)
 {
     /* The returned pointer must be freed by the caller. */
-    char* buffer = NULL;
+    uint32_t* buffer = NULL;
     size_t length = 0;
     FILE* f = fopen(filename, "rb");
 

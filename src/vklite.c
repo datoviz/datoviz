@@ -1343,11 +1343,12 @@ void dvz_images_download(DvzImages* staging, uint32_t idx, bool swizzle, uint8_t
     uint32_t h = staging->height;
     ASSERT(w > 0);
     ASSERT(h > 0);
+    ASSERT(row_pitch >= w * 4);
 
     // First, memcopy from the GPU to the CPU.
-    uint8_t* image = calloc(w * h, 4);
+    uint8_t* image = calloc(row_pitch * h, 1);
     uint8_t* image_orig = image;
-    memcpy(image, data, w * h * 4);
+    memcpy(image, data, row_pitch * h);
     vkUnmapMemory(staging->gpu->device, staging->memories[idx]);
 
     // Then, swizzle.
@@ -1359,6 +1360,7 @@ void dvz_images_download(DvzImages* staging, uint32_t idx, bool swizzle, uint8_t
         src_offset = 0;
         for (uint32_t x = 0; x < w; x++)
         {
+            ASSERT(src_offset + 2 < w * h * 4);
             if (swizzle)
             {
                 rgb[dst_offset + 0] = image[src_offset + 2];

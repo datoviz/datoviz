@@ -40,4 +40,4 @@ These steps already cover a large number of simple plotting applications. The st
 Further notes:
 
 * The examples shown here use the so-called **scene API**. Datoviz provides other, lower-level APIs for those with more advanced needs (see the expert manual). In particular, it is possible to use a "raw" canvas and have full control on what is displayed (for example, simple animations or video games).
-* Although the library should cover most use-cases with the included visuals, you can also write your own. Writing custom shaders is not straightforward, however, and this topic is covered in the expert manual.
+* Although the library should cover most use-cases with the included visuals, you can also write your own visuals. Writing custom shaders is not straightforward, however, and this topic is covered in the expert manual.

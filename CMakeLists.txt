@@ -11,16 +11,16 @@ set(CMAKE_C_STANDARD_REQUIRED True)
 
 
 # Options
-option(DATOVIZ_WITH_FFMPEG "Build Datoviz with FFMPEG support" ON)
-option(DATOVIZ_WITH_VNC "Build Datoviz with VNC support" ON)
+# option(DATOVIZ_WITH_VNC "Build Datoviz with VNC support" OFF)
+# option(DATOVIZ_WITH_QT "Build Datoviz with QT support" OFF)
+# option(DATOVIZ_WITH_ASSIMP "Build Datoviz with ASSIMP support" OFF)
+# option(DATOVIZ_WITH_FREETYPE "Build Datoviz with Freetype support" OFF)
 option(DATOVIZ_WITH_PNG "Build Datoviz with PNG support" ON)
-option(DATOVIZ_WITH_QT "Build Datoviz with QT support" ON)
-option(DATOVIZ_WITH_FREETYPE "Build Datoviz with Freetype support" ON)
-option(DATOVIZ_WITH_ASSIMP "Build Datoviz with ASSIMP support" OFF)
+option(DATOVIZ_WITH_FFMPEG "Build Datoviz with FFMPEG support" OFF)
 option(DATOVIZ_WITH_GLSLANG "Build Datoviz with glslang support" OFF)
 
 option(DATOVIZ_WITH_CLI "Build Datoviz command-line interface with tests and demos" ON)
-option(DATOVIZ_WITH_EXAMPLES "Build Datoviz (old) examples" OFF)
+# option(DATOVIZ_WITH_EXAMPLES "Build Datoviz (old) examples" OFF)
 # option(DATOVIZ_WITH_CYTHON "Build Cython bindings" OFF)
 
 
@@ -242,70 +242,70 @@ if(DATOVIZ_WITH_FFMPEG)
 endif()
 
 
-# Optional libVNCserver
-set(HAS_VNC 0)
-if(DATOVIZ_WITH_VNC)
-    find_path(LIBVNCSERVER_INCLUDE_DIRS rfb/rfb.h)
-    find_library(LIBVNCSERVER_LIB NAMES vncserver)
-    if((LIBVNCSERVER_INCLUDE_DIRS AND LIBVNCSERVER_LIB))
-        message(STATUS "Found VNCSERVER")
-        set(INCL_DIRS ${INCL_DIRS} ${LIBVNCSERVER_INCLUDE_DIRS})
-        set(LINK_LIBS ${LINK_LIBS} ${LIBVNCSERVER_LIB})
-        set(HAS_VNC 1)
-    else()
-        message(WARNING "-- Could NOT find vncserver")
-    endif()
-endif()
-
-
-# Optional Qt5
-set(HAS_QT 0)
-# HACK
-# if (${APPLE})
-#   set(DATOVIZ_WITH_QT 0)
+# # Optional libVNCserver
+# set(HAS_VNC 0)
+# if(DATOVIZ_WITH_VNC)
+#     find_path(LIBVNCSERVER_INCLUDE_DIRS rfb/rfb.h)
+#     find_library(LIBVNCSERVER_LIB NAMES vncserver)
+#     if((LIBVNCSERVER_INCLUDE_DIRS AND LIBVNCSERVER_LIB))
+#         message(STATUS "Found VNCSERVER")
+#         set(INCL_DIRS ${INCL_DIRS} ${LIBVNCSERVER_INCLUDE_DIRS})
+#         set(LINK_LIBS ${LINK_LIBS} ${LIBVNCSERVER_LIB})
+#         set(HAS_VNC 1)
+#     else()
+#         message(WARNING "-- Could NOT find vncserver")
+#     endif()
 # endif()
-if(DATOVIZ_WITH_QT)
-    find_package(Qt5 5.12 COMPONENTS Widgets QUIET)
-    if(${Qt5_FOUND})
-        message(STATUS "Found Qt5 >= 5.12")
-        set(INCL_DIRS ${INCL_DIRS} ${Qt5})
-        set(LINK_LIBS ${LINK_LIBS} Qt5::Widgets)
-        set(HAS_QT 1)
-    else()
-        message(WARNING "-- Could NOT find Qt5")
-    endif()
-endif()
 
 
-# Optional ASSIMP
-set(HAS_ASSIMP 0)
-if(DATOVIZ_WITH_ASSIMP)
-    find_package(ASSIMP)
-    # if((ASSIMP_INCLUDE_DIRS AND ASSIMP_LIB))
-    if(ASSIMP_FOUND)
-        message(STATUS "Found ASSIMP")
-        set(INCL_DIRS ${INCL_DIRS} ${ASSIMP_INCLUDE_DIRS})
-        set(LINK_LIBS ${LINK_LIBS} ${ASSIMP_LIBRARIES})
-        set(HAS_ASSIMP 1)
-    else()
-        message(WARNING "-- Could NOT find ASSIMP")
-    endif()
-endif()
+# # Optional Qt5
+# set(HAS_QT 0)
+# # HACK
+# # if (${APPLE})
+# #   set(DATOVIZ_WITH_QT 0)
+# # endif()
+# if(DATOVIZ_WITH_QT)
+#     find_package(Qt5 5.12 COMPONENTS Widgets QUIET)
+#     if(${Qt5_FOUND})
+#         message(STATUS "Found Qt5 >= 5.12")
+#         set(INCL_DIRS ${INCL_DIRS} ${Qt5})
+#         set(LINK_LIBS ${LINK_LIBS} Qt5::Widgets)
+#         set(HAS_QT 1)
+#     else()
+#         message(WARNING "-- Could NOT find Qt5")
+#     endif()
+# endif()
 
 
-# Optional Freetype
-set(HAS_FREETYPE 0)
-if(DATOVIZ_WITH_FREETYPE)
-    find_package(Freetype)
-    if(Freetype_FOUND)
-        message(STATUS "Found Freetype")
-        set(INCL_DIRS ${INCL_DIRS} ${FREETYPE_INCLUDE_DIRS})
-        set(LINK_LIBS ${LINK_LIBS} ${FREETYPE_LIBRARIES})
-        set(HAS_FREETYPE 1)
-    else()
-        message(WARNING "-- Could NOT find FREETYPE")
-    endif()
-endif()
+# # Optional ASSIMP
+# set(HAS_ASSIMP 0)
+# if(DATOVIZ_WITH_ASSIMP)
+#     find_package(ASSIMP)
+#     # if((ASSIMP_INCLUDE_DIRS AND ASSIMP_LIB))
+#     if(ASSIMP_FOUND)
+#         message(STATUS "Found ASSIMP")
+#         set(INCL_DIRS ${INCL_DIRS} ${ASSIMP_INCLUDE_DIRS})
+#         set(LINK_LIBS ${LINK_LIBS} ${ASSIMP_LIBRARIES})
+#         set(HAS_ASSIMP 1)
+#     else()
+#         message(WARNING "-- Could NOT find ASSIMP")
+#     endif()
+# endif()
+
+
+# # Optional Freetype
+# set(HAS_FREETYPE 0)
+# if(DATOVIZ_WITH_FREETYPE)
+#     find_package(Freetype)
+#     if(Freetype_FOUND)
+#         message(STATUS "Found Freetype")
+#         set(INCL_DIRS ${INCL_DIRS} ${FREETYPE_INCLUDE_DIRS})
+#         set(LINK_LIBS ${LINK_LIBS} ${FREETYPE_LIBRARIES})
+#         set(HAS_FREETYPE 1)
+#     else()
+#         message(WARNING "-- Could NOT find FREETYPE")
+#     endif()
+# endif()
 
 
 # Pass definitions
@@ -319,11 +319,11 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
     SPIRV_DIR=\"${SPIRV_DIR}\"
     ARTIFACTS_DIR=\"${CMAKE_SOURCE_DIR}/build/artifacts\"
 
+    # HAS_FFMPEG=${HAS_FFMPEG}
+    # HAS_VNC=${HAS_VNC}
+    # HAS_QT=${HAS_QT}
+    # HAS_ASSIMP=${HAS_ASSIMP}
     HAS_PNG=${HAS_PNG}
-    HAS_FFMPEG=${HAS_FFMPEG}
-    HAS_VNC=${HAS_VNC}
-    HAS_QT=${HAS_QT}
-    HAS_ASSIMP=${HAS_ASSIMP}
     HAS_GLSLANG=${HAS_GLSLANG}
 
     OS_MACOS=${OS_MACOS}
@@ -496,25 +496,24 @@ function(compile_example example_file)
 endfunction()
 
 
-# NOTE: to remove later (to be integrated into the CLI)
-if (DATOVIZ_WITH_EXAMPLES)
-    set(DVZ_EXAMPLE_PATH ${CMAKE_SOURCE_DIR}/examples/${DVZ_EXAMPLE})
-    if (${DVZ_EXAMPLE}xxx STREQUAL "xxx")
-        # Compile all examples
-        file(GLOB examples "examples/*.c" "examples/*.cpp")
-        foreach(example_file ${examples})
-            compile_example(${example_file})
-        endforeach()
-    elseif(EXISTS "${DVZ_EXAMPLE_PATH}.c")
-        # Or compile a single C example
-        compile_example("${DVZ_EXAMPLE_PATH}.c")
-    elseif(EXISTS "${DVZ_EXAMPLE_PATH}.cpp")
-        # Or compile a single C++ example
-        compile_example("${DVZ_EXAMPLE_PATH}.cpp")
-    elseif(NOT ${DVZ_EXAMPLE} STREQUAL "test")
-        message("WARNING: example '${DVZ_EXAMPLE}' not found")
-    endif()
-endif()
+# if (DATOVIZ_WITH_EXAMPLES)
+#     set(DVZ_EXAMPLE_PATH ${CMAKE_SOURCE_DIR}/examples/${DVZ_EXAMPLE})
+#     if (${DVZ_EXAMPLE}xxx STREQUAL "xxx")
+#         # Compile all examples
+#         file(GLOB examples "examples/*.c" "examples/*.cpp")
+#         foreach(example_file ${examples})
+#             compile_example(${example_file})
+#         endforeach()
+#     elseif(EXISTS "${DVZ_EXAMPLE_PATH}.c")
+#         # Or compile a single C example
+#         compile_example("${DVZ_EXAMPLE_PATH}.c")
+#     elseif(EXISTS "${DVZ_EXAMPLE_PATH}.cpp")
+#         # Or compile a single C++ example
+#         compile_example("${DVZ_EXAMPLE_PATH}.cpp")
+#     elseif(NOT ${DVZ_EXAMPLE} STREQUAL "test")
+#         message("WARNING: example '${DVZ_EXAMPLE}' not found")
+#     endif()
+# endif()
 
 
 
