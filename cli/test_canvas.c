@@ -160,8 +160,8 @@ int test_canvas_1(TestContext* context)
     ASSERT(canvas->window->app != NULL);
     ASSERT(canvas2->window != NULL);
     ASSERT(canvas2->app != NULL);
-    dvz_canvas_clear_color(canvas, (VkClearColorValue){{1, 0, 0, 1}});
-    dvz_canvas_clear_color(canvas2, (VkClearColorValue){{0, 1, 0, 1}});
+    dvz_canvas_clear_color(canvas, 1, 0, 0);
+    dvz_canvas_clear_color(canvas2, 0, 1, 0);
     dvz_app_run(app, 5);
 
     TEST_END
@@ -192,14 +192,14 @@ static void _cursor_callback(DvzCanvas* canvas, DvzEvent ev)
     dvz_canvas_size(canvas, DVZ_CANVAS_SIZE_SCREEN, size);
     double x = ev.u.m.pos[0] / (double)size[0];
     double y = ev.u.m.pos[1] / (double)size[1];
-    dvz_canvas_clear_color(canvas, (VkClearColorValue){{x, 0, y, 1}});
+    dvz_canvas_clear_color(canvas, x, 0, y);
 }
 
 static void _timer_callback(DvzCanvas* canvas, DvzEvent ev)
 {
     log_trace("timer callback #%d time %.3f", ev.u.t.idx, ev.u.t.time);
     float x = exp(-.01 * (float)ev.u.t.idx);
-    dvz_canvas_clear_color(canvas, (VkClearColorValue){{x, 0, 0, 1}});
+    dvz_canvas_clear_color(canvas, x, 0, 0);
 }
 
 int test_canvas_2(TestContext* context)

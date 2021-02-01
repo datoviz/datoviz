@@ -68,7 +68,7 @@ The C API provides a function to change the background color of a canvas.
 
 === "C"
     ```c
-    dvz_canvas_clear_color(canvas, (VkClearColorValue){{1, 0, 0, 1}});
+    dvz_canvas_clear_color(canvas, 1, 0, 0); // red background
     ```
 
 

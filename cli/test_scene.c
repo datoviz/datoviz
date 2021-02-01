@@ -268,7 +268,7 @@ int test_scene_axes(TestContext* context)
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
     DvzGpu* gpu = dvz_gpu(app, 0);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, DVZ_CANVAS_FLAGS_FPS);
-    dvz_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});
+    dvz_canvas_clear_color(canvas, 1, 1, 1);
     DvzContext* ctx = gpu->context;
     ASSERT(ctx != NULL);
 
@@ -317,7 +317,7 @@ int test_scene_logistic(TestContext* context)
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
     DvzGpu* gpu = dvz_gpu(app, 0);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, DVZ_CANVAS_FLAGS_FPS);
-    dvz_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});
+    dvz_canvas_clear_color(canvas, 1, 1, 1);
     DvzContext* ctx = gpu->context;
     ASSERT(ctx != NULL);
 

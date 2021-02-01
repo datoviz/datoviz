@@ -903,7 +903,7 @@ cdef extern from "<datoviz/datoviz.h>":
     # FUNCTION START
     # from file: canvas.h
     DvzCanvas* dvz_canvas(DvzGpu* gpu, uint32_t width, uint32_t height, int flags)
-    void dvz_canvas_clear_color(DvzCanvas* canvas, VkClearColorValue color)
+    void dvz_canvas_clear_color(DvzCanvas* canvas, float red, float green, float blue)
     void dvz_event_callback(DvzCanvas* canvas, DvzEventType type, double param, DvzEventMode mode, DvzEventCallback callback, void* user_data)
     void dvz_canvas_to_close(DvzCanvas* canvas)
     void dvz_screenshot_file(DvzCanvas* canvas, const char* png_path)

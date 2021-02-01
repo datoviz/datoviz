@@ -857,10 +857,10 @@ DvzCanvas* dvz_canvas_offscreen(DvzGpu* gpu, uint32_t width, uint32_t height, in
 /*  Canvas misc                                                                                  */
 /*************************************************************************************************/
 
-void dvz_canvas_clear_color(DvzCanvas* canvas, VkClearColorValue color)
+void dvz_canvas_clear_color(DvzCanvas* canvas, float red, float green, float blue)
 {
     ASSERT(canvas != NULL);
-    canvas->renderpass.clear_values->color = color;
+    canvas->renderpass.clear_values->color = (VkClearColorValue){{red, green, blue, 1}};
     dvz_canvas_to_refill(canvas);
 }
 

@@ -394,7 +394,7 @@ int test_visuals_triangle_fan(TestContext* context)
 int test_visuals_axes_2D_1(TestContext* context)
 {
     INIT;
-    dvz_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});
+    dvz_canvas_clear_color(canvas, 1, 1, 1);
 
     DvzFontAtlas* atlas = &gpu->context->font_atlas;
     ASSERT(strlen(atlas->font_str) > 0);
@@ -491,7 +491,7 @@ static void _visual_update(DvzCanvas* canvas, DvzEvent ev)
 int test_visuals_axes_2D_update(TestContext* context)
 {
     INIT;
-    dvz_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});
+    dvz_canvas_clear_color(canvas, 1, 1, 1);
 
     DvzFontAtlas* atlas = &gpu->context->font_atlas;
     ASSERT(strlen(atlas->font_str) > 0);

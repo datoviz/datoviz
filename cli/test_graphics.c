@@ -586,7 +586,7 @@ int test_graphics_marker_screenshots(TestContext* context)
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
     DvzGpu* gpu = dvz_gpu(app, 0);
     DvzCanvas* canvas = dvz_canvas(gpu, 128, 128, 0);
-    dvz_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});
+    dvz_canvas_clear_color(canvas, 1, 1, 1);
     DvzGraphics* graphics = dvz_graphics_builtin(canvas, DVZ_GRAPHICS_MARKER, 0);
     BEGIN_DATA(DvzGraphicsMarkerVertex, 1, NULL)
 

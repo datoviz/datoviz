@@ -669,9 +669,11 @@ DVZ_EXPORT DvzCommands* dvz_canvas_commands(DvzCanvas* canvas, uint32_t queue_id
  *     color value.
  *
  * @param canvas the canvas
- * @param color the background color
+ * @param red the red component, between 0 and 1
+ * @param green the green component, between 0 and 1
+ * @param blue the blue component, between 0 and 1
  */
-DVZ_EXPORT void dvz_canvas_clear_color(DvzCanvas* canvas, VkClearColorValue color);
+DVZ_EXPORT void dvz_canvas_clear_color(DvzCanvas* canvas, float red, float green, float blue);
 
 /**
  * Get the canvas size.
