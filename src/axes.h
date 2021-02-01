@@ -359,6 +359,7 @@ static void _axes_visual(DvzController* controller, DvzAxisCoord coord)
     ASSERT(controller != NULL);
     DvzPanel* panel = controller->panel;
     ASSERT(panel != NULL);
+    ASSERT(panel->scene != NULL);
     DvzContext* ctx = panel->grid->canvas->gpu->context;
 
     // Axes visual flags
@@ -399,6 +400,7 @@ static void _add_axes(DvzController* controller)
     ASSERT(controller != NULL);
     DvzPanel* panel = controller->panel;
     ASSERT(panel != NULL);
+    ASSERT(panel->scene != NULL);
     panel->controller = controller;
     DvzContext* ctx = panel->grid->canvas->gpu->context;
     ASSERT(ctx != NULL);

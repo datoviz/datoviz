@@ -784,6 +784,8 @@ dvz_scene_panel(DvzScene* scene, uint32_t row, uint32_t col, DvzControllerType t
     */
     ASSERT(scene != NULL);
     DvzPanel* panel = dvz_panel(&scene->grid, row, col);
+    panel->scene = scene;
+
     DvzController* controller = dvz_container_alloc(&scene->controllers);
     *controller = dvz_controller_builtin(panel, type, flags);
     controller->flags = flags;
@@ -842,6 +844,7 @@ DvzVisual* dvz_scene_visual(DvzPanel* panel, DvzVisualType type, int flags)
     ASSERT(panel != NULL);
     ASSERT(panel->controller != NULL);
     ASSERT(type != DVZ_VISUAL_CUSTOM);
+    ASSERT(panel->scene != NULL);
 
     // Create a blank visual.
     DvzVisual* visual = dvz_scene_visual_blank(panel->scene, flags);
