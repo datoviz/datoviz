@@ -60,7 +60,7 @@ int main(int argc, char** argv)
     // loop (stop when escape is pressed or when the window is closed).
 
     // dvz_app_run(app, 5);
-    // dvz_screenshot_file(canvas, "/home/cyrille/git/datoviz/docs/images/c_example.png");
+    // dvz_screenshot_file(canvas, "c_example.png");
 
     dvz_app_run(app, 0);
 
