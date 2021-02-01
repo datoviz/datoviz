@@ -1338,3 +1338,13 @@ void dvz_visual_builtin(DvzVisual* visual, DvzVisualType type, int flags)
         break;
     }
 }
+
+
+
+void dvz_visual_custom(DvzVisual* visual)
+{
+    ASSERT(visual != NULL);
+    ASSERT(visual->graphics_count > 0);
+    _common_sources(visual);
+    _common_props(visual);
+}

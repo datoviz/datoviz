@@ -547,6 +547,15 @@ DvzSource* dvz_source_get(DvzVisual* visual, DvzSourceType source_type, uint32_t
 
 
 
+DvzArray* dvz_source_array(DvzVisual* visual, DvzSourceType source_type, uint32_t source_idx)
+{
+    ASSERT(visual != NULL);
+    DvzSource* source = dvz_source_get(visual, source_type, source_idx);
+    return _source_array(source);
+}
+
+
+
 DvzProp* dvz_prop_get(DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx)
 {
     ASSERT(visual != NULL);
@@ -565,6 +574,15 @@ DvzProp* dvz_prop_get(DvzVisual* visual, DvzPropType prop_type, uint32_t prop_id
         log_trace("prop with type %d #%d not found", prop_type, prop_idx);
     // ASSERT(out != NULL);
     return out;
+}
+
+
+
+DvzArray* dvz_prop_array(DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx)
+{
+    ASSERT(visual != NULL);
+    DvzProp* prop = dvz_prop_get(visual, prop_type, prop_idx);
+    return _prop_array(prop);
 }
 
 
@@ -601,7 +619,6 @@ void dvz_visual_update(
     DvzVisual* visual, DvzViewport viewport, DvzDataCoords coords, const void* user_data)
 {
     ASSERT(visual != NULL);
-    log_trace("visual update");
 
     DvzVisualDataEvent ev = {0};
     ev.viewport = viewport;

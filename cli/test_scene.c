@@ -345,6 +345,7 @@ int test_scene_logistic(TestContext* context)
     dvz_visual_data(visual, DVZ_PROP_MARKER_SIZE, 0, 1, &param);
 
     // Create compute object.
+    // TODO: make a nicer wrapper for this use case
     char path[1024];
     snprintf(path, sizeof(path), "%s/test_logistic.comp.spv", SPIRV_DIR);
     DvzCompute* compute = dvz_ctx_compute(gpu->context, path);

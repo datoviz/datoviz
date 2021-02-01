@@ -42,6 +42,7 @@
 
 ### `dvz_source_get()`
 ### `dvz_prop_get()`
+### `dvz_prop_array()`
 ### `dvz_prop_size()`
 ### `dvz_prop_item()`
 

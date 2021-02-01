@@ -370,6 +370,7 @@ static void _update_visual_viewport(DvzPanel* panel, DvzVisual* visual)
 
 
 
+// Bind the MVP and viewport buffers.
 static void _common_data(DvzPanel* panel, DvzVisual* visual)
 {
     ASSERT(panel != NULL);
@@ -803,21 +804,15 @@ dvz_scene_panel(DvzScene* scene, uint32_t row, uint32_t col, DvzControllerType t
 
 
 
-DvzVisual* dvz_scene_visual(DvzPanel* panel, DvzVisualType type, int flags)
+static void _add_visual(DvzPanel* panel, DvzVisual* visual)
 {
     ASSERT(panel != NULL);
-    ASSERT(panel->controller != NULL);
-    DvzScene* scene = panel->grid->canvas->scene;
-    DvzVisual* visual = dvz_container_alloc(&scene->visuals);
+    ASSERT(visual != NULL);
 
-    // Create the visual.
-    *visual = dvz_visual(panel->grid->canvas);
-    dvz_visual_builtin(visual, type, flags);
-
-    // Add it to the panel.
+    // Add the visual to the panel.
     dvz_panel_visual(panel, visual);
 
-    // Bind the common buffers (MVP, viewport, color texture).
+    // Bind the common buffers (MVP, viewport).
     _common_data(panel, visual);
 
     // Put all graphics pipeline in the inner viewport by default.
@@ -825,10 +820,53 @@ DvzVisual* dvz_scene_visual(DvzPanel* panel, DvzVisualType type, int flags)
         visual->clip[pidx] = DVZ_VIEWPORT_INNER;
 
     // Update the panel data coords as a function of the visual's data.
-    if (scene->canvas->app->is_running)
+    if (panel->scene->canvas->app->is_running)
         _panel_visual_added(panel, visual);
+}
+
+
+
+DvzVisual* dvz_scene_visual_blank(DvzScene* scene, int flags)
+{
+    ASSERT(scene != NULL);
+    DvzVisual* visual = dvz_container_alloc(&scene->visuals);
+    *visual = dvz_visual(scene->canvas);
+    visual->flags = flags;
+    return visual;
+}
+
+
+
+DvzVisual* dvz_scene_visual(DvzPanel* panel, DvzVisualType type, int flags)
+{
+    ASSERT(panel != NULL);
+    ASSERT(panel->controller != NULL);
+    ASSERT(type != DVZ_VISUAL_CUSTOM);
+
+    // Create a blank visual.
+    DvzVisual* visual = dvz_scene_visual_blank(panel->scene, flags);
+
+    // Builtin visual.
+    dvz_visual_builtin(visual, type, flags);
+
+    // Add it to the panel.
+    _add_visual(panel, visual);
 
     return visual;
+}
+
+
+
+void dvz_scene_visual_custom(DvzPanel* panel, DvzVisual* visual)
+{
+    ASSERT(panel != NULL);
+    ASSERT(visual != NULL);
+
+    // Add common sources and props.
+    dvz_visual_custom(visual);
+
+    // Bind the scene data (mvp, viewport).
+    _add_visual(panel, visual);
 }
 
 

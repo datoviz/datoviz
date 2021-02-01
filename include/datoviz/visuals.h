@@ -400,6 +400,7 @@ DVZ_EXPORT void dvz_visual_source_share(
  * @param dtype the data type of the prop
  * @param source_type the type of the source associated to the prop
  * @param source_idx the index of the source associated to the prop
+ * @returns the prop object
  */
 DVZ_EXPORT DvzProp* dvz_visual_prop(
     DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx, DvzDataType dtype,
@@ -620,9 +621,23 @@ DVZ_EXPORT void dvz_visual_callback_bake(DvzVisual* visual, DvzVisualDataCallbac
  * @param visual the visual
  * @param source_type the source type
  * @param source_idx the source index
+ * @returns the source
  */
 DVZ_EXPORT DvzSource*
 dvz_source_get(DvzVisual* visual, DvzSourceType source_type, uint32_t source_idx);
+
+
+/**
+ * Return a source array.
+ *
+ * @param visual the visual
+ * @param source_type the source type
+ * @param source_idx the source index
+ * @returns the array
+ */
+DVZ_EXPORT DvzArray*
+dvz_source_array(DvzVisual* visual, DvzSourceType source_type, uint32_t source_idx);
+
 
 /**
  * Return a prop object.
@@ -630,23 +645,39 @@ dvz_source_get(DvzVisual* visual, DvzSourceType source_type, uint32_t source_idx
  * @param visual the visual
  * @param prop_type the prop type
  * @param prop_idx the prop index
+ * @returns the array
  */
-DVZ_EXPORT DvzProp* dvz_prop_get(DvzVisual* visual, DvzPropType prop_type, uint32_t idx);
+DVZ_EXPORT DvzProp* dvz_prop_get(DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx);
+
+
+/**
+ * Return the array of a prop.
+ *
+ * @param visual the visual
+ * @param prop_type the prop type
+ * @param prop_idx the prop index
+ * @returns the array
+ */
+DVZ_EXPORT DvzArray* dvz_prop_array(DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx);
+
 
 /**
  * Return the size of a prop array.
  *
  * @param prop the prop
+ * @returns the prop size
  */
 DVZ_EXPORT uint32_t dvz_prop_size(DvzProp* prop);
+
 
 /**
  * Return an item in a prop array.
  *
  * @param prop the prop
- * @param idx the prop idx
+ * @param prop_idx the prop idx
+ * @returns a pointer to the item
  */
-DVZ_EXPORT void* dvz_prop_item(DvzProp* prop, uint32_t idx);
+DVZ_EXPORT void* dvz_prop_item(DvzProp* prop, uint32_t prop_idx);
 
 
 

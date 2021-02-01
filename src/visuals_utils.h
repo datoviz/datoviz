@@ -34,6 +34,15 @@ static bool _source_needs_binding(DvzSourceKind source_kind)
 
 
 
+// Return the source array.
+static DvzArray* _source_array(DvzSource* source)
+{
+    ASSERT(source != NULL);
+    return &source->arr;
+}
+
+
+
 static DvzSourceKind _get_source_kind(DvzSourceType type)
 {
     switch (type)
@@ -168,6 +177,7 @@ static DvzBindings* _get_bindings(DvzVisual* visual, DvzSource* source)
 
 
 
+// Return the prop array, transformed if it exists, otherwise original.
 static DvzArray* _prop_array(DvzProp* prop)
 {
     ASSERT(prop != NULL);
@@ -209,6 +219,8 @@ static void _set_source_bindings(DvzVisual* visual, DvzSource* source)
     if (_source_needs_binding(source->source_kind))
     {
         DvzBindings* bindings = _get_bindings(visual, source);
+        // NOTE: the graphics must be created before.
+        ASSERT(bindings != NULL);
         dvz_bindings_buffer(bindings, source->slot_idx, source->u.br);
 
         // Share the source's buffer regions with other pipelines.

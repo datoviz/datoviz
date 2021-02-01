@@ -135,5 +135,15 @@ typedef enum
 DVZ_EXPORT void dvz_visual_builtin(DvzVisual* visual, DvzVisualType type, int flags);
 
 
+/**
+ * Create the common sources and props for a custom visual.
+ *
+ * This function *must* be called *after* setting at least 1 graphics pipeline.
+ *
+ * @param visual the visual to update
+ */
+DVZ_EXPORT void dvz_visual_custom(DvzVisual* visual);
+
+
 
 #endif
