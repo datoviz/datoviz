@@ -26,7 +26,6 @@ pydatoviz.c
 .joblib
 *.pkl
 .DS_Store
-*.png
 *.ppm
 *.avi
 *.mpg

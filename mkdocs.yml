@@ -4,6 +4,7 @@ site_description: High-performance interactive scientific data visualization lib
 site_author: Cyrille Rossant
 theme:
   name: material
+  logo: images/logow.png
   features:
     - navigation.tabs
     - navigation.expand
