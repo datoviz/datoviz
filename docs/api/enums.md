@@ -2,16 +2,16 @@
 
 ## Scene
 
-### `VklControllerType`
+### `DvzControllerType`
 
 
 
 ## Visuals
 
-### `VklMarkerType`
+### `DvzMarkerType`
 
 
 
 ## Miscellaneous
 
-### `VklDataType`
+### `DvzDataType`

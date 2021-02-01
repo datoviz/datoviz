@@ -8,7 +8,7 @@
 #include <zlib.h>
 #endif
 
-#include "../include/visky/common.h"
+#include "../include/datoviz/common.h"
 
 BEGIN_INCL_NO_WARN
 #include <cglm/struct.h>
@@ -20,7 +20,7 @@ END_INCL_NO_WARN
 /*  I/O                                                                                          */
 /*************************************************************************************************/
 
-int vkl_write_png(const char* filename, uint32_t width, uint32_t height, const uint8_t* image)
+int dvz_write_png(const char* filename, uint32_t width, uint32_t height, const uint8_t* image)
 {
 #if HAS_PNG
     // from https://fossies.org/linux/libpng/example.c
@@ -81,12 +81,12 @@ int vkl_write_png(const char* filename, uint32_t width, uint32_t height, const u
     FREE(row_pointers);
     return 0;
 #else
-    log_error("visky was not build with PNG support, please install libpng-dev");
+    log_error("datoviz was not build with PNG support, please install libpng-dev");
     return 1;
 #endif
 }
 
-int vkl_write_ppm(const char* filename, uint32_t width, uint32_t height, const uint8_t* image)
+int dvz_write_ppm(const char* filename, uint32_t width, uint32_t height, const uint8_t* image)
 {
     // from https://github.com/SaschaWillems/Vulkan/blob/master/examples/screenshot/screenshot.cpp
     FILE* fp;
@@ -103,7 +103,7 @@ int vkl_write_ppm(const char* filename, uint32_t width, uint32_t height, const u
     return 0;
 }
 
-uint8_t* vkl_read_ppm(const char* filename, int* width, int* height)
+uint8_t* dvz_read_ppm(const char* filename, int* width, int* height)
 {
     FILE* fp;
     fp = fopen(filename, "rb");
@@ -167,7 +167,7 @@ uint8_t* vkl_read_ppm(const char* filename, int* width, int* height)
     return image;
 }
 
-char* vkl_read_file(const char* filename, size_t* size)
+char* dvz_read_file(const char* filename, size_t* size)
 {
     /* The returned pointer must be freed by the caller. */
     char* buffer = NULL;
@@ -191,7 +191,7 @@ char* vkl_read_file(const char* filename, size_t* size)
     return buffer;
 }
 
-char* vkl_read_npy(const char* filename, size_t* size)
+char* dvz_read_npy(const char* filename, size_t* size)
 {
     /* Tiny NPY reader that requires the user to know in advance the data type of the file. */
 
@@ -264,34 +264,34 @@ error:
 /*  Thread                                                                                       */
 /*************************************************************************************************/
 
-VklThread vkl_thread(VklThreadCallback callback, void* user_data)
+DvzThread dvz_thread(DvzThreadCallback callback, void* user_data)
 {
-    VklThread thread = {0};
+    DvzThread thread = {0};
     if (pthread_create(&thread.thread, NULL, callback, user_data) != 0)
         log_error("thread creation failed");
     if (pthread_mutex_init(&thread.lock, NULL) != 0)
         log_error("mutex creation failed");
     atomic_init(&thread.lock_idx, 0);
-    vkl_obj_created(&thread.obj);
+    dvz_obj_created(&thread.obj);
     return thread;
 }
 
 
 
-void vkl_thread_join(VklThread* thread)
+void dvz_thread_join(DvzThread* thread)
 {
     ASSERT(thread != NULL);
     pthread_join(thread->thread, NULL);
     pthread_mutex_destroy(&thread->lock);
-    vkl_obj_destroyed(&thread->obj);
+    dvz_obj_destroyed(&thread->obj);
 }
 
 
 
-void vkl_thread_lock(VklThread* thread)
+void dvz_thread_lock(DvzThread* thread)
 {
     ASSERT(thread != NULL);
-    if (!vkl_obj_is_created(&thread->obj))
+    if (!dvz_obj_is_created(&thread->obj))
         return;
     // The lock idx is used to ensure that nested thread_lock() will work as expected. Only the
     // first lock is effective. Only the last unlock is effective.
@@ -307,10 +307,10 @@ void vkl_thread_lock(VklThread* thread)
 
 
 
-void vkl_thread_unlock(VklThread* thread)
+void dvz_thread_unlock(DvzThread* thread)
 {
     ASSERT(thread != NULL);
-    if (!vkl_obj_is_created(&thread->obj))
+    if (!dvz_obj_is_created(&thread->obj))
         return;
     int lock_idx = atomic_load(&thread->lock_idx);
     ASSERT(lock_idx >= 0);
@@ -328,11 +328,11 @@ void vkl_thread_unlock(VklThread* thread)
 /*  Random                                                                                       */
 /*************************************************************************************************/
 
-uint8_t vkl_rand_byte() { return rand() % 256; }
+uint8_t dvz_rand_byte() { return rand() % 256; }
 
-float vkl_rand_float() { return (float)rand() / (float)(RAND_MAX); }
+float dvz_rand_float() { return (float)rand() / (float)(RAND_MAX); }
 
-float vkl_rand_normal()
+float dvz_rand_normal()
 {
-    return sqrt(-2.0 * log(vkl_rand_float())) * cos(2 * M_PI * vkl_rand_float());
+    return sqrt(-2.0 * log(dvz_rand_float())) * cos(2 * M_PI * dvz_rand_float());
 }

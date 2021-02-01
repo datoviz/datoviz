@@ -3,8 +3,8 @@
 /*  Provides a simplistic 1D array object mostly used by the Visual API                          */
 /*************************************************************************************************/
 
-#ifndef VKL_ARRAY_HEADER
-#define VKL_ARRAY_HEADER
+#ifndef DVZ_ARRAY_HEADER
+#define DVZ_ARRAY_HEADER
 
 #include "vklite.h"
 
@@ -14,7 +14,7 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct VklArray VklArray;
+typedef struct DvzArray DvzArray;
 
 
 
@@ -25,59 +25,59 @@ typedef struct VklArray VklArray;
 // Data types.
 typedef enum
 {
-    VKL_DTYPE_NONE,
-    VKL_DTYPE_CUSTOM, // used for structured arrays (aka record arrays)
-    VKL_DTYPE_STR,    // 64 bits, pointer
+    DVZ_DTYPE_NONE,
+    DVZ_DTYPE_CUSTOM, // used for structured arrays (aka record arrays)
+    DVZ_DTYPE_STR,    // 64 bits, pointer
 
-    VKL_DTYPE_CHAR, // 8 bits, unsigned int
-    VKL_DTYPE_CVEC2,
-    VKL_DTYPE_CVEC3,
-    VKL_DTYPE_CVEC4,
+    DVZ_DTYPE_CHAR, // 8 bits, unsigned int
+    DVZ_DTYPE_CVEC2,
+    DVZ_DTYPE_CVEC3,
+    DVZ_DTYPE_CVEC4,
 
-    VKL_DTYPE_USHORT, // 16 bits, unsigned int
-    VKL_DTYPE_USVEC2,
-    VKL_DTYPE_USVEC3,
-    VKL_DTYPE_USVEC4,
+    DVZ_DTYPE_USHORT, // 16 bits, unsigned int
+    DVZ_DTYPE_USVEC2,
+    DVZ_DTYPE_USVEC3,
+    DVZ_DTYPE_USVEC4,
 
-    VKL_DTYPE_SHORT, // 16 bits, signed int
-    VKL_DTYPE_SVEC2,
-    VKL_DTYPE_SVEC3,
-    VKL_DTYPE_SVEC4,
+    DVZ_DTYPE_SHORT, // 16 bits, signed int
+    DVZ_DTYPE_SVEC2,
+    DVZ_DTYPE_SVEC3,
+    DVZ_DTYPE_SVEC4,
 
-    VKL_DTYPE_UINT, // 32 bits, unsigned int
-    VKL_DTYPE_UVEC2,
-    VKL_DTYPE_UVEC3,
-    VKL_DTYPE_UVEC4,
+    DVZ_DTYPE_UINT, // 32 bits, unsigned int
+    DVZ_DTYPE_UVEC2,
+    DVZ_DTYPE_UVEC3,
+    DVZ_DTYPE_UVEC4,
 
-    VKL_DTYPE_INT, // 32 bits, signed int
-    VKL_DTYPE_IVEC2,
-    VKL_DTYPE_IVEC3,
-    VKL_DTYPE_IVEC4,
+    DVZ_DTYPE_INT, // 32 bits, signed int
+    DVZ_DTYPE_IVEC2,
+    DVZ_DTYPE_IVEC3,
+    DVZ_DTYPE_IVEC4,
 
-    VKL_DTYPE_FLOAT, // 32 bits float
-    VKL_DTYPE_VEC2,
-    VKL_DTYPE_VEC3,
-    VKL_DTYPE_VEC4,
+    DVZ_DTYPE_FLOAT, // 32 bits float
+    DVZ_DTYPE_VEC2,
+    DVZ_DTYPE_VEC3,
+    DVZ_DTYPE_VEC4,
 
-    VKL_DTYPE_DOUBLE, // 64 bits double
-    VKL_DTYPE_DVEC2,
-    VKL_DTYPE_DVEC3,
-    VKL_DTYPE_DVEC4,
+    DVZ_DTYPE_DOUBLE, // 64 bits double
+    DVZ_DTYPE_DVEC2,
+    DVZ_DTYPE_DVEC3,
+    DVZ_DTYPE_DVEC4,
 
-    VKL_DTYPE_MAT2, // matrices of floats
-    VKL_DTYPE_MAT3,
-    VKL_DTYPE_MAT4,
-} VklDataType;
+    DVZ_DTYPE_MAT2, // matrices of floats
+    DVZ_DTYPE_MAT3,
+    DVZ_DTYPE_MAT4,
+} DvzDataType;
 
 
 
 // Array copy types.
 typedef enum
 {
-    VKL_ARRAY_COPY_NONE,
-    VKL_ARRAY_COPY_REPEAT,
-    VKL_ARRAY_COPY_SINGLE,
-} VklArrayCopyType;
+    DVZ_ARRAY_COPY_NONE,
+    DVZ_ARRAY_COPY_REPEAT,
+    DVZ_ARRAY_COPY_SINGLE,
+} DvzArrayCopyType;
 
 
 
@@ -85,10 +85,10 @@ typedef enum
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-struct VklArray
+struct DvzArray
 {
-    VklObject obj;
-    VklDataType dtype;
+    DvzObject obj;
+    DvzDataType dtype;
     uint32_t components; // number of components, ie 2 for vec2, 3 for dvec3, etc.
     VkDeviceSize item_size;
     uint32_t item_count;
@@ -107,79 +107,79 @@ struct VklArray
 /*************************************************************************************************/
 
 // Size in bytes of a single element of a given dtype.
-static VkDeviceSize _get_dtype_size(VklDataType dtype)
+static VkDeviceSize _get_dtype_size(DvzDataType dtype)
 {
     switch (dtype)
     {
     // 8 bits
-    case VKL_DTYPE_CHAR:
+    case DVZ_DTYPE_CHAR:
         return 1;
-    case VKL_DTYPE_CVEC2:
+    case DVZ_DTYPE_CVEC2:
         return 1 * 2;
-    case VKL_DTYPE_CVEC3:
+    case DVZ_DTYPE_CVEC3:
         return 1 * 3;
-    case VKL_DTYPE_CVEC4:
+    case DVZ_DTYPE_CVEC4:
         return 1 * 4;
 
     // 16 bits
-    case VKL_DTYPE_USHORT:
-    case VKL_DTYPE_SHORT:
+    case DVZ_DTYPE_USHORT:
+    case DVZ_DTYPE_SHORT:
         return 2;
-    case VKL_DTYPE_SVEC2:
-    case VKL_DTYPE_USVEC2:
+    case DVZ_DTYPE_SVEC2:
+    case DVZ_DTYPE_USVEC2:
         return 2 * 2;
-    case VKL_DTYPE_SVEC3:
-    case VKL_DTYPE_USVEC3:
+    case DVZ_DTYPE_SVEC3:
+    case DVZ_DTYPE_USVEC3:
         return 2 * 3;
-    case VKL_DTYPE_SVEC4:
-    case VKL_DTYPE_USVEC4:
+    case DVZ_DTYPE_SVEC4:
+    case DVZ_DTYPE_USVEC4:
         return 2 * 4;
 
     // 32 bits
-    case VKL_DTYPE_FLOAT:
-    case VKL_DTYPE_UINT:
-    case VKL_DTYPE_INT:
+    case DVZ_DTYPE_FLOAT:
+    case DVZ_DTYPE_UINT:
+    case DVZ_DTYPE_INT:
         return 4;
 
-    case VKL_DTYPE_VEC2:
-    case VKL_DTYPE_UVEC2:
-    case VKL_DTYPE_IVEC2:
+    case DVZ_DTYPE_VEC2:
+    case DVZ_DTYPE_UVEC2:
+    case DVZ_DTYPE_IVEC2:
         return 4 * 2;
 
-    case VKL_DTYPE_VEC3:
-    case VKL_DTYPE_UVEC3:
-    case VKL_DTYPE_IVEC3:
+    case DVZ_DTYPE_VEC3:
+    case DVZ_DTYPE_UVEC3:
+    case DVZ_DTYPE_IVEC3:
         return 4 * 3;
 
-    case VKL_DTYPE_VEC4:
-    case VKL_DTYPE_UVEC4:
-    case VKL_DTYPE_IVEC4:
+    case DVZ_DTYPE_VEC4:
+    case DVZ_DTYPE_UVEC4:
+    case DVZ_DTYPE_IVEC4:
         return 4 * 4;
 
     // 64 bits
-    case VKL_DTYPE_DOUBLE:
+    case DVZ_DTYPE_DOUBLE:
         return 8;
-    case VKL_DTYPE_DVEC2:
+    case DVZ_DTYPE_DVEC2:
         return 8 * 2;
-    case VKL_DTYPE_DVEC3:
+    case DVZ_DTYPE_DVEC3:
         return 8 * 3;
-    case VKL_DTYPE_DVEC4:
+    case DVZ_DTYPE_DVEC4:
         return 8 * 4;
-    case VKL_DTYPE_STR:
+    case DVZ_DTYPE_STR:
         return sizeof(char*);
 
-    case VKL_DTYPE_MAT2:
+    case DVZ_DTYPE_MAT2:
         return 2 * 2 * 4;
-    case VKL_DTYPE_MAT3:
+    case DVZ_DTYPE_MAT3:
         return 3 * 3 * 4;
-    case VKL_DTYPE_MAT4:
+    case DVZ_DTYPE_MAT4:
         return 4 * 4 * 4;
 
     default:
         break;
     }
 
-    if (dtype != VKL_DTYPE_NONE)
+    if (dtype != DVZ_DTYPE_NONE)
         log_error("could not find the size of dtype %d", dtype);
     return 0;
 }
@@ -187,44 +187,44 @@ static VkDeviceSize _get_dtype_size(VklDataType dtype)
 
 
 // Number of components in a given dtype (e.g. 4 for vec4)
-static uint32_t _get_components(VklDataType dtype)
+static uint32_t _get_components(DvzDataType dtype)
 {
     switch (dtype)
     {
-    case VKL_DTYPE_CHAR:
-    case VKL_DTYPE_USHORT:
-    case VKL_DTYPE_SHORT:
-    case VKL_DTYPE_UINT:
-    case VKL_DTYPE_INT:
-    case VKL_DTYPE_FLOAT:
-    case VKL_DTYPE_DOUBLE:
+    case DVZ_DTYPE_CHAR:
+    case DVZ_DTYPE_USHORT:
+    case DVZ_DTYPE_SHORT:
+    case DVZ_DTYPE_UINT:
+    case DVZ_DTYPE_INT:
+    case DVZ_DTYPE_FLOAT:
+    case DVZ_DTYPE_DOUBLE:
         return 1;
 
-    case VKL_DTYPE_CVEC2:
-    case VKL_DTYPE_USVEC2:
-    case VKL_DTYPE_SVEC2:
-    case VKL_DTYPE_UVEC2:
-    case VKL_DTYPE_IVEC2:
-    case VKL_DTYPE_VEC2:
-    case VKL_DTYPE_DVEC2:
+    case DVZ_DTYPE_CVEC2:
+    case DVZ_DTYPE_USVEC2:
+    case DVZ_DTYPE_SVEC2:
+    case DVZ_DTYPE_UVEC2:
+    case DVZ_DTYPE_IVEC2:
+    case DVZ_DTYPE_VEC2:
+    case DVZ_DTYPE_DVEC2:
         return 2;
 
-    case VKL_DTYPE_CVEC3:
-    case VKL_DTYPE_USVEC3:
-    case VKL_DTYPE_SVEC3:
-    case VKL_DTYPE_UVEC3:
-    case VKL_DTYPE_IVEC3:
-    case VKL_DTYPE_VEC3:
-    case VKL_DTYPE_DVEC3:
+    case DVZ_DTYPE_CVEC3:
+    case DVZ_DTYPE_USVEC3:
+    case DVZ_DTYPE_SVEC3:
+    case DVZ_DTYPE_UVEC3:
+    case DVZ_DTYPE_IVEC3:
+    case DVZ_DTYPE_VEC3:
+    case DVZ_DTYPE_DVEC3:
         return 3;
 
-    case VKL_DTYPE_CVEC4:
-    case VKL_DTYPE_USVEC4:
-    case VKL_DTYPE_SVEC4:
-    case VKL_DTYPE_UVEC4:
-    case VKL_DTYPE_IVEC4:
-    case VKL_DTYPE_VEC4:
-    case VKL_DTYPE_DVEC4:
+    case DVZ_DTYPE_CVEC4:
+    case DVZ_DTYPE_USVEC4:
+    case DVZ_DTYPE_SVEC4:
+    case DVZ_DTYPE_UVEC4:
+    case DVZ_DTYPE_IVEC4:
+    case DVZ_DTYPE_VEC4:
+    case DVZ_DTYPE_DVEC4:
         return 4;
 
     default:
@@ -242,11 +242,11 @@ static uint32_t _get_components(VklDataType dtype)
 
 // Create a new 1D array with a given dtype, number of elements, and item size (used for record
 // arrays containing heterogeneous data)
-static VklArray _create_array(uint32_t item_count, VklDataType dtype, VkDeviceSize item_size)
+static DvzArray _create_array(uint32_t item_count, DvzDataType dtype, VkDeviceSize item_size)
 {
-    VklArray arr;
-    memset(&arr, 0, sizeof(VklArray));
-    arr.obj.type = VKL_OBJECT_TYPE_ARRAY;
+    DvzArray arr;
+    memset(&arr, 0, sizeof(DvzArray));
+    arr.obj.type = DVZ_OBJECT_TYPE_ARRAY;
     arr.dtype = dtype;
     arr.components = _get_components(dtype);
     arr.item_size = item_size;
@@ -254,7 +254,7 @@ static VklArray _create_array(uint32_t item_count, VklDataType dtype, VkDeviceSi
     arr.buffer_size = item_count * arr.item_size;
     if (item_count > 0)
         arr.data = calloc(item_count, arr.item_size);
-    vkl_obj_created(&arr.obj);
+    dvz_obj_created(&arr.obj);
     return arr;
 }
 
@@ -267,10 +267,10 @@ static VklArray _create_array(uint32_t item_count, VklDataType dtype, VkDeviceSi
  * @param dtype the data type of the array
  * @returns a new array
  */
-static VklArray vkl_array(uint32_t item_count, VklDataType dtype)
+static DvzArray dvz_array(uint32_t item_count, DvzDataType dtype)
 {
-    ASSERT(dtype != VKL_DTYPE_NONE);
-    ASSERT(dtype != VKL_DTYPE_CUSTOM);
+    ASSERT(dtype != DVZ_DTYPE_NONE);
+    ASSERT(dtype != DVZ_DTYPE_CUSTOM);
     return _create_array(item_count, dtype, _get_dtype_size(dtype));
 }
 
@@ -282,9 +282,9 @@ static VklArray vkl_array(uint32_t item_count, VklDataType dtype)
  * @param pos initial number of elements
  * @returns a new array
  */
-static VklArray vkl_array_point(dvec3 pos)
+static DvzArray dvz_array_point(dvec3 pos)
 {
-    VklArray arr = vkl_array(1, VKL_DTYPE_DVEC3);
+    DvzArray arr = dvz_array(1, DVZ_DTYPE_DVEC3);
     memcpy(arr.data, pos, sizeof(dvec3));
     return arr;
 }
@@ -303,9 +303,9 @@ static VklArray vkl_array_point(dvec3 pos)
  * @param dtype the data type of the array
  * @returns the array wrapping the buffer
  */
-static VklArray vkl_array_wrap(uint32_t item_count, VklDataType dtype, void* data)
+static DvzArray dvz_array_wrap(uint32_t item_count, DvzDataType dtype, void* data)
 {
-    VklArray arr = vkl_array(0, dtype); // do not allocate underlying buffer
+    DvzArray arr = dvz_array(0, dtype); // do not allocate underlying buffer
     // Manual setting of struct fields with the passed buffer
     arr.item_count = item_count;
     arr.buffer_size = item_count * arr.item_size;
@@ -322,10 +322,10 @@ static VklArray vkl_array_wrap(uint32_t item_count, VklDataType dtype, void* dat
  * @param item_size size, in bytes, of each item
  * @returns the array
  */
-static VklArray vkl_array_struct(uint32_t item_count, VkDeviceSize item_size)
+static DvzArray dvz_array_struct(uint32_t item_count, VkDeviceSize item_size)
 {
     ASSERT(item_size > 0);
-    return _create_array(item_count, VKL_DTYPE_CUSTOM, item_size);
+    return _create_array(item_count, DVZ_DTYPE_CUSTOM, item_size);
 }
 
 
@@ -340,7 +340,7 @@ static VklArray vkl_array_struct(uint32_t item_count, VkDeviceSize item_size)
  * @param item_size size of each item in bytes
  * @returns the array
  */
-static VklArray vkl_array_3D(
+static DvzArray dvz_array_3D(
     uint32_t ndims, uint32_t width, uint32_t height, uint32_t depth, VkDeviceSize item_size)
 {
     ASSERT(ndims > 0);
@@ -353,7 +353,7 @@ static VklArray vkl_array_3D(
 
     uint32_t item_count = width * height * depth;
 
-    VklArray arr = _create_array(item_count, VKL_DTYPE_CUSTOM, item_size);
+    DvzArray arr = _create_array(item_count, DVZ_DTYPE_CUSTOM, item_size);
     arr.ndims = ndims;
     arr.shape[0] = width;
     arr.shape[1] = height;
@@ -392,7 +392,7 @@ _repeat_last(uint32_t old_item_count, VkDeviceSize item_size, void* data, uint32
  * @param array the array to resize
  * @param item_count the new number of items
  */
-static void vkl_array_resize(VklArray* array, uint32_t item_count)
+static void dvz_array_resize(DvzArray* array, uint32_t item_count)
 {
     ASSERT(array != NULL);
     ASSERT(item_count > 0);
@@ -410,9 +410,9 @@ static void vkl_array_resize(VklArray* array, uint32_t item_count)
         array->data = calloc(item_count, array->item_size);
         array->item_count = item_count;
 
-        // NOTE: using vkl_next_pow2() below causes a crash in scene_axes test
+        // NOTE: using dvz_next_pow2() below causes a crash in scene_axes test
         array->buffer_size = item_count * array->item_size;
-        // array->buffer_size = vkl_next_pow2(item_count * array->item_size);
+        // array->buffer_size = dvz_next_pow2(item_count * array->item_size);
 
         log_trace(
             "allocate array to contain %d elements (%s)", item_count,
@@ -451,7 +451,7 @@ static void vkl_array_resize(VklArray* array, uint32_t item_count)
  *
  * @param array the array to clear
  */
-static void vkl_array_clear(VklArray* array)
+static void dvz_array_clear(DvzArray* array)
 {
     ASSERT(array != NULL);
     memset(array->data, 0, array->buffer_size);
@@ -471,7 +471,7 @@ static void vkl_array_clear(VklArray* array)
  * @param height number of elements along the 2nd dimension
  * @param depth number of elements along the 3rd dimension
  */
-static void vkl_array_reshape(VklArray* array, uint32_t width, uint32_t height, uint32_t depth)
+static void dvz_array_reshape(DvzArray* array, uint32_t width, uint32_t height, uint32_t depth)
 {
     ASSERT(array != NULL);
     ASSERT(width > 0);
@@ -484,11 +484,11 @@ static void vkl_array_reshape(VklArray* array, uint32_t width, uint32_t height, 
         return;
 
     // Resize the underlying buffer.
-    vkl_array_resize(array, item_count);
+    dvz_array_resize(array, item_count);
 
     // HACK: reset to 0 the array instead of having to deal with reshaping.
     log_trace("clearing the 3D array while reshaping it to %dx%dx%d", width, height, depth);
-    vkl_array_clear(array);
+    dvz_array_clear(array);
 
     array->shape[0] = width;
     array->shape[1] = height;
@@ -511,9 +511,9 @@ static void vkl_array_reshape(VklArray* array, uint32_t width, uint32_t height, 
  * === "C"
  *     ```c
  *     // Create an array of 10 double numbers, initialize all elements with 1.23.
- *     VklArray arr = vkl_array(10, VKL_DTYPE_DOUBLE);
+ *     DvzArray arr = dvz_array(10, DVZ_DTYPE_DOUBLE);
  *     double item = 1.23;
- *     vkl_array_data(&arr, 0, 10, 1, &item);
+ *     dvz_array_data(&arr, 0, 10, 1, &item);
  *     ```
  *
  * @param array the array
@@ -522,8 +522,8 @@ static void vkl_array_reshape(VklArray* array, uint32_t width, uint32_t height, 
  * @param data_item_count number of elements in `data`
  * @param data the buffer containing the data to copy
  */
-static void vkl_array_data(
-    VklArray* array, uint32_t first_item, uint32_t item_count, //
+static void dvz_array_data(
+    DvzArray* array, uint32_t first_item, uint32_t item_count, //
     uint32_t data_item_count, const void* data)
 {
     ASSERT(array != NULL);
@@ -531,7 +531,7 @@ static void vkl_array_data(
     ASSERT(array->data != NULL);
     if (data == NULL)
     {
-        log_debug("skipping vkl_array_data() with NULL data");
+        log_debug("skipping dvz_array_data() with NULL data");
         return;
     }
     ASSERT(item_count > 0);
@@ -539,7 +539,7 @@ static void vkl_array_data(
     // Resize if necessary.
     if (first_item + item_count > array->item_count)
     {
-        vkl_array_resize(array, first_item + item_count);
+        dvz_array_resize(array, first_item + item_count);
     }
     ASSERT(first_item + item_count <= array->item_count);
     ASSERT(array->item_size > 0);
@@ -582,7 +582,7 @@ static void vkl_array_data(
  * @param idx the index of the element to retrieve
  * @returns a pointer to the requested element
  */
-static inline void* vkl_array_item(VklArray* array, uint32_t idx)
+static inline void* dvz_array_item(DvzArray* array, uint32_t idx)
 {
     ASSERT(array != NULL);
     idx = CLIP(idx, 0, array->item_count - 1);
@@ -592,18 +592,18 @@ static inline void* vkl_array_item(VklArray* array, uint32_t idx)
 
 
 // Cast a vector.
-static inline void _cast(VklDataType target_dtype, void* dst, VklDataType source_dtype, void* src)
+static inline void _cast(DvzDataType target_dtype, void* dst, DvzDataType source_dtype, void* src)
 {
-    if (source_dtype == VKL_DTYPE_DOUBLE && target_dtype == VKL_DTYPE_FLOAT)
+    if (source_dtype == DVZ_DTYPE_DOUBLE && target_dtype == DVZ_DTYPE_FLOAT)
     {
         ((vec3*)dst)[0][0] = ((dvec3*)src)[0][0];
     }
-    else if (source_dtype == VKL_DTYPE_DVEC2 && target_dtype == VKL_DTYPE_VEC2)
+    else if (source_dtype == DVZ_DTYPE_DVEC2 && target_dtype == DVZ_DTYPE_VEC2)
     {
         ((vec3*)dst)[0][0] = ((dvec3*)src)[0][0];
         ((vec3*)dst)[0][1] = ((dvec3*)src)[0][1];
     }
-    else if (source_dtype == VKL_DTYPE_DVEC3 && target_dtype == VKL_DTYPE_VEC3)
+    else if (source_dtype == DVZ_DTYPE_DVEC3 && target_dtype == DVZ_DTYPE_VEC3)
     {
         ((vec3*)dst)[0][0] = ((dvec3*)src)[0][0];
         ((vec3*)dst)[0][1] = ((dvec3*)src)[0][1];
@@ -634,12 +634,12 @@ static inline void _cast(VklDataType target_dtype, void* dst, VklDataType source
  * @param copy_type the type of copy
  * @param reps the number of repeats for each copied element
  */
-static void vkl_array_column(
-    VklArray* array, VkDeviceSize offset, VkDeviceSize col_size, //
+static void dvz_array_column(
+    DvzArray* array, VkDeviceSize offset, VkDeviceSize col_size, //
     uint32_t first_item, uint32_t item_count,                    //
     uint32_t data_item_count, const void* data,                  //
-    VklDataType source_dtype, VklDataType target_dtype,          //
-    VklArrayCopyType copy_type, uint32_t reps)                   //
+    DvzDataType source_dtype, DvzDataType target_dtype,          //
+    DvzArrayCopyType copy_type, uint32_t reps)                   //
 {
     ASSERT(array != NULL);
     ASSERT(data_item_count > 0);
@@ -678,7 +678,7 @@ static void vkl_array_column(
         if (reps > 1)
             m = i % reps;
         // Determine whether the current item copy should be skipped.
-        skip = copy_type == VKL_ARRAY_COPY_SINGLE && reps > 1 && m > 0;
+        skip = copy_type == DVZ_ARRAY_COPY_SINGLE && reps > 1 && m > 0;
 
         // NOTE: this function is not optimized and might benefit from being refactored.
 
@@ -686,8 +686,8 @@ static void vkl_array_column(
         if (!skip)
         {
             if (source_dtype == target_dtype ||   //
-                source_dtype == VKL_DTYPE_NONE || //
-                target_dtype == VKL_DTYPE_NONE)   //
+                source_dtype == DVZ_DTYPE_NONE || //
+                target_dtype == DVZ_DTYPE_NONE)   //
                 memcpy((void*)dst_byte, (void*)src_byte, col_size);
             else
             {
@@ -716,12 +716,12 @@ static void vkl_array_column(
  *
  * @param array the array to destroy
  */
-static void vkl_array_destroy(VklArray* array)
+static void dvz_array_destroy(DvzArray* array)
 {
     ASSERT(array != NULL);
-    if (!vkl_obj_is_created(&array->obj))
+    if (!dvz_obj_is_created(&array->obj))
         return;
-    vkl_obj_destroyed(&array->obj);
+    dvz_obj_destroyed(&array->obj);
     FREE(array->data) //
 }
 

@@ -2,8 +2,8 @@
 /*  Collection of builtin graphics pipelines                                                     */
 /*************************************************************************************************/
 
-#ifndef VKL_GRAPHICS_HEADER
-#define VKL_GRAPHICS_HEADER
+#ifndef DVZ_GRAPHICS_HEADER
+#define DVZ_GRAPHICS_HEADER
 
 #include "array.h"
 #include "canvas.h"
@@ -17,9 +17,9 @@
 
 // Number of common bindings
 // NOTE: must correspond to the same constant in common.glsl
-#define VKL_USER_BINDING 2
+#define DVZ_USER_BINDING 2
 
-#define VKL_MAX_GLYPHS_PER_TEXT 256
+#define DVZ_MAX_GLYPHS_PER_TEXT 256
 
 
 
@@ -30,9 +30,9 @@
 // Graphics flags.
 typedef enum
 {
-    VKL_GRAPHICS_FLAGS_DEPTH_TEST_DISABLE = 0x0000,
-    VKL_GRAPHICS_FLAGS_DEPTH_TEST_ENABLE = 0x0100,
-} VklGraphicsFlags;
+    DVZ_GRAPHICS_FLAGS_DEPTH_TEST_DISABLE = 0x0000,
+    DVZ_GRAPHICS_FLAGS_DEPTH_TEST_ENABLE = 0x0100,
+} DvzGraphicsFlags;
 
 
 
@@ -40,41 +40,41 @@ typedef enum
 // NOTE: the numbers need to correspond to markers.glsl at the bottom.
 typedef enum
 {
-    VKL_MARKER_DISC = 0,
-    VKL_MARKER_ASTERISK = 1,
-    VKL_MARKER_CHEVRON = 2,
-    VKL_MARKER_CLOVER = 3,
-    VKL_MARKER_CLUB = 4,
-    VKL_MARKER_CROSS = 5,
-    VKL_MARKER_DIAMOND = 6,
-    VKL_MARKER_ARROW = 7,
-    VKL_MARKER_ELLIPSE = 8,
-    VKL_MARKER_HBAR = 9,
-    VKL_MARKER_HEART = 10,
-    VKL_MARKER_INFINITY = 11,
-    VKL_MARKER_PIN = 12,
-    VKL_MARKER_RING = 13,
-    VKL_MARKER_SPADE = 14,
-    VKL_MARKER_SQUARE = 15,
-    VKL_MARKER_TAG = 16,
-    VKL_MARKER_TRIANGLE = 17,
-    VKL_MARKER_VBAR = 18,
-    VKL_MARKER_COUNT,
-} VklMarkerType;
+    DVZ_MARKER_DISC = 0,
+    DVZ_MARKER_ASTERISK = 1,
+    DVZ_MARKER_CHEVRON = 2,
+    DVZ_MARKER_CLOVER = 3,
+    DVZ_MARKER_CLUB = 4,
+    DVZ_MARKER_CROSS = 5,
+    DVZ_MARKER_DIAMOND = 6,
+    DVZ_MARKER_ARROW = 7,
+    DVZ_MARKER_ELLIPSE = 8,
+    DVZ_MARKER_HBAR = 9,
+    DVZ_MARKER_HEART = 10,
+    DVZ_MARKER_INFINITY = 11,
+    DVZ_MARKER_PIN = 12,
+    DVZ_MARKER_RING = 13,
+    DVZ_MARKER_SPADE = 14,
+    DVZ_MARKER_SQUARE = 15,
+    DVZ_MARKER_TAG = 16,
+    DVZ_MARKER_TRIANGLE = 17,
+    DVZ_MARKER_VBAR = 18,
+    DVZ_MARKER_COUNT,
+} DvzMarkerType;
 
 
 
 // Cap type.
 typedef enum
 {
-    VKL_CAP_TYPE_NONE = 0,
-    VKL_CAP_ROUND = 1,
-    VKL_CAP_TRIANGLE_IN = 2,
-    VKL_CAP_TRIANGLE_OUT = 3,
-    VKL_CAP_SQUARE = 4,
-    VKL_CAP_BUTT = 5,
-    VKL_CAP_COUNT,
-} VklCapType;
+    DVZ_CAP_TYPE_NONE = 0,
+    DVZ_CAP_ROUND = 1,
+    DVZ_CAP_TRIANGLE_IN = 2,
+    DVZ_CAP_TRIANGLE_OUT = 3,
+    DVZ_CAP_SQUARE = 4,
+    DVZ_CAP_BUTT = 5,
+    DVZ_CAP_COUNT,
+} DvzCapType;
 
 
 
@@ -82,34 +82,34 @@ typedef enum
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct VklVertex VklVertex;
+typedef struct DvzVertex DvzVertex;
 
-typedef struct VklGraphicsPointParams VklGraphicsPointParams;
+typedef struct DvzGraphicsPointParams DvzGraphicsPointParams;
 
-typedef struct VklGraphicsMarkerVertex VklGraphicsMarkerVertex;
-typedef struct VklGraphicsMarkerParams VklGraphicsMarkerParams;
+typedef struct DvzGraphicsMarkerVertex DvzGraphicsMarkerVertex;
+typedef struct DvzGraphicsMarkerParams DvzGraphicsMarkerParams;
 
-typedef struct VklGraphicsSegmentVertex VklGraphicsSegmentVertex;
+typedef struct DvzGraphicsSegmentVertex DvzGraphicsSegmentVertex;
 
-typedef struct VklGraphicsImageVertex VklGraphicsImageVertex;
-typedef struct VklGraphicsImageParams VklGraphicsImageParams;
+typedef struct DvzGraphicsImageVertex DvzGraphicsImageVertex;
+typedef struct DvzGraphicsImageParams DvzGraphicsImageParams;
 
-typedef struct VklGraphicsVolumeSliceItem VklGraphicsVolumeSliceItem;
-typedef struct VklGraphicsVolumeSliceVertex VklGraphicsVolumeSliceVertex;
-typedef struct VklGraphicsVolumeSliceParams VklGraphicsVolumeSliceParams;
+typedef struct DvzGraphicsVolumeSliceItem DvzGraphicsVolumeSliceItem;
+typedef struct DvzGraphicsVolumeSliceVertex DvzGraphicsVolumeSliceVertex;
+typedef struct DvzGraphicsVolumeSliceParams DvzGraphicsVolumeSliceParams;
 
-typedef struct VklGraphicsVolumeItem VklGraphicsVolumeItem;
-typedef struct VklGraphicsVolumeVertex VklGraphicsVolumeVertex;
-typedef struct VklGraphicsVolumeParams VklGraphicsVolumeParams;
+typedef struct DvzGraphicsVolumeItem DvzGraphicsVolumeItem;
+typedef struct DvzGraphicsVolumeVertex DvzGraphicsVolumeVertex;
+typedef struct DvzGraphicsVolumeParams DvzGraphicsVolumeParams;
 
-typedef struct VklGraphicsMeshVertex VklGraphicsMeshVertex;
-typedef struct VklGraphicsMeshParams VklGraphicsMeshParams;
+typedef struct DvzGraphicsMeshVertex DvzGraphicsMeshVertex;
+typedef struct DvzGraphicsMeshParams DvzGraphicsMeshParams;
 
-typedef struct VklGraphicsTextParams VklGraphicsTextParams;
-typedef struct VklGraphicsTextVertex VklGraphicsTextVertex;
-typedef struct VklGraphicsTextItem VklGraphicsTextItem;
+typedef struct DvzGraphicsTextParams DvzGraphicsTextParams;
+typedef struct DvzGraphicsTextVertex DvzGraphicsTextVertex;
+typedef struct DvzGraphicsTextItem DvzGraphicsTextItem;
 
-typedef struct VklGraphicsData VklGraphicsData;
+typedef struct DvzGraphicsData DvzGraphicsData;
 
 
 
@@ -117,7 +117,7 @@ typedef struct VklGraphicsData VklGraphicsData;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-struct VklVertex
+struct DvzVertex
 {
     vec3 pos;    /* position */
     cvec4 color; /* color */
@@ -125,11 +125,11 @@ struct VklVertex
 
 
 
-struct VklGraphicsData
+struct DvzGraphicsData
 {
-    VklGraphics* graphics;
-    VklArray* vertices;
-    VklArray* indices;
+    DvzGraphics* graphics;
+    DvzArray* vertices;
+    DvzArray* indices;
     uint32_t item_count;
     uint32_t current_idx;
     uint32_t current_group;
@@ -142,7 +142,7 @@ struct VklGraphicsData
 /*  Graphics point                                                                               */
 /*************************************************************************************************/
 
-struct VklGraphicsPointParams
+struct DvzGraphicsPointParams
 {
     float point_size; /* point size, in pixels */
 };
@@ -153,18 +153,18 @@ struct VklGraphicsPointParams
 /*  Graphics marker                                                                              */
 /*************************************************************************************************/
 
-struct VklGraphicsMarkerVertex
+struct DvzGraphicsMarkerVertex
 {
     vec3 pos;    /* position */
     cvec4 color; /* color */
     float size;  /* marker size, in pixels */
-    // in fact a VklMarkerType but we should control the exact data type for the GPU
+    // in fact a DvzMarkerType but we should control the exact data type for the GPU
     uint8_t marker;    /* marker type enum */
     uint8_t angle;     /* angle, between 0 (0) included and 256 (M_2PI) excluded */
     uint8_t transform; /* transform enum */
 };
 
-struct VklGraphicsMarkerParams
+struct DvzGraphicsMarkerParams
 {
     vec4 edge_color;  /* edge color RGBA */
     float edge_width; /* line width, in pixels */
@@ -176,15 +176,15 @@ struct VklGraphicsMarkerParams
 /*  Graphics segment                                                                             */
 /*************************************************************************************************/
 
-struct VklGraphicsSegmentVertex
+struct DvzGraphicsSegmentVertex
 {
     vec3 P0;           /* start position */
     vec3 P1;           /* end position */
     vec4 shift;        /* shift of start (xy) and end (zw) positions, in pixels */
     cvec4 color;       /* color */
     float linewidth;   /* line width, in pixels */
-    VklCapType cap0;   /* start cap enum */
-    VklCapType cap1;   /* end cap enum */
+    DvzCapType cap0;   /* start cap enum */
+    DvzCapType cap1;   /* end cap enum */
     uint8_t transform; /* transform enum */
 };
 
@@ -194,7 +194,7 @@ struct VklGraphicsSegmentVertex
 /*  Graphics text                                                                                */
 /*************************************************************************************************/
 
-struct VklGraphicsTextVertex
+struct DvzGraphicsTextVertex
 {
     vec3 pos;          /* position */
     vec2 shift;        /* shift, in pixels */
@@ -206,15 +206,15 @@ struct VklGraphicsTextVertex
     uint8_t transform; /* transform enum */
 };
 
-struct VklGraphicsTextItem
+struct DvzGraphicsTextItem
 {
-    VklGraphicsTextVertex vertex; /* text vertex */
+    DvzGraphicsTextVertex vertex; /* text vertex */
     cvec4* glyph_colors;          /* glyph colors */
     float font_size;              /* font size */
     const char* string;           /* text string */
 };
 
-struct VklGraphicsTextParams
+struct DvzGraphicsTextParams
 {
     ivec2 grid_size; /* font atlas grid size (rows, columns) */
     ivec2 tex_size;  /* font atlas texture size, in pixels */
@@ -226,13 +226,13 @@ struct VklGraphicsTextParams
 /*  Graphics image                                                                               */
 /*************************************************************************************************/
 
-struct VklGraphicsImageVertex
+struct DvzGraphicsImageVertex
 {
     vec3 pos; /* position */
     vec2 uv;  /* tex coordinates */
 };
 
-struct VklGraphicsImageParams
+struct DvzGraphicsImageParams
 {
     vec4 tex_coefs; /* blending coefficients for the four images */
 };
@@ -243,7 +243,7 @@ struct VklGraphicsImageParams
 /*  Graphics volume slice                                                                        */
 /*************************************************************************************************/
 
-struct VklGraphicsVolumeSliceItem
+struct DvzGraphicsVolumeSliceItem
 {
     vec3 pos0; /* top left corner */
     vec3 pos1; /* top right corner */
@@ -256,13 +256,13 @@ struct VklGraphicsVolumeSliceItem
     vec3 uvw3; /* tex coords of the bottom left corner */
 };
 
-struct VklGraphicsVolumeSliceVertex
+struct DvzGraphicsVolumeSliceVertex
 {
     vec3 pos; /* position */
     vec3 uvw; /* 3D tex coords */
 };
 
-struct VklGraphicsVolumeSliceParams
+struct DvzGraphicsVolumeSliceParams
 {
     vec4 x_cmap; /* x values of the color transfer function */
     vec4 y_cmap; /* y values of the color transfer function */
@@ -280,7 +280,7 @@ struct VklGraphicsVolumeSliceParams
 /*  Graphics volume                                                                              */
 /*************************************************************************************************/
 
-struct VklGraphicsVolumeItem
+struct DvzGraphicsVolumeItem
 {
     // top left front, bottom right back
     vec3 pos0; /* top left front position */
@@ -289,13 +289,13 @@ struct VklGraphicsVolumeItem
     vec3 uvw1; /* tex coordinates of the bottom right back position */
 };
 
-struct VklGraphicsVolumeVertex
+struct DvzGraphicsVolumeVertex
 {
     vec3 pos; /* position */
     vec3 uvw; /* tex coords */
 };
 
-struct VklGraphicsVolumeParams
+struct DvzGraphicsVolumeParams
 {
     vec4 view_pos; /* camera position */
     vec4 box_size; /* size of the box containing the volume, in NDC */
@@ -308,7 +308,7 @@ struct VklGraphicsVolumeParams
 /*  Graphics mesh                                                                                */
 /*************************************************************************************************/
 
-struct VklGraphicsMeshVertex
+struct DvzGraphicsMeshVertex
 {
     vec3 pos;      /* position */
     vec3 normal;   /* normal vector */
@@ -316,7 +316,7 @@ struct VklGraphicsMeshVertex
     uint8_t alpha; /* transparency value */
 };
 
-struct VklGraphicsMeshParams
+struct DvzGraphicsMeshParams
 {
     mat4 lights_pos_0;    /* positions of each of the maximum four lights */
     mat4 lights_params_0; /* ambient, diffuse, specular coefs for each light */
@@ -325,9 +325,9 @@ struct VklGraphicsMeshParams
     vec4 clip_coefs;      /* clip coefficients */
 };
 
-static VklGraphicsMeshParams default_graphics_mesh_params(vec3 eye)
+static DvzGraphicsMeshParams default_graphics_mesh_params(vec3 eye)
 {
-    VklGraphicsMeshParams params = {0};
+    DvzGraphicsMeshParams params = {0};
     params.lights_params_0[0][0] = 0.2;  // ambient coefficient
     params.lights_params_0[0][1] = 0.5;  // diffuse coefficient
     params.lights_params_0[0][2] = 0.3;  // specular coefficient
@@ -349,16 +349,16 @@ static VklGraphicsMeshParams default_graphics_mesh_params(vec3 eye)
 /**
  * Set a graphics data callback.
  *
- * The callback function is called when one calls `vkl_graphics_append()` on that visual. It allows
+ * The callback function is called when one calls `dvz_graphics_append()` on that visual. It allows
  * one to easily add graphical elements, letting the graphics handle low-level GPU implementation
  * details (tesselation with vertices).
  *
- * Callback function signature: `void(VklGraphicsData*, uint32_t, const void*)`
+ * Callback function signature: `void(DvzGraphicsData*, uint32_t, const void*)`
  *
  * @param graphics the graphics pipeline
  * @param callback the callback function
  */
-VKY_EXPORT void vkl_graphics_callback(VklGraphics* graphics, VklGraphicsCallback callback);
+DVZ_EXPORT void dvz_graphics_callback(DvzGraphics* graphics, DvzGraphicsCallback callback);
 
 /**
  * Start a data collection for a graphics pipeline.
@@ -369,8 +369,8 @@ VKY_EXPORT void vkl_graphics_callback(VklGraphics* graphics, VklGraphicsCallback
  * @param user_data arbitrary user-provided pointer
  * @returns the graphics data object
  */
-VKY_EXPORT VklGraphicsData
-vkl_graphics_data(VklGraphics* graphics, VklArray* vertices, VklArray* indices, void* user_data);
+DVZ_EXPORT DvzGraphicsData
+dvz_graphics_data(DvzGraphics* graphics, DvzArray* vertices, DvzArray* indices, void* user_data);
 
 /**
  * Allocate the graphics data object with the appropriate number of elements.
@@ -378,7 +378,7 @@ vkl_graphics_data(VklGraphics* graphics, VklArray* vertices, VklArray* indices, 
  * @param data the graphics data object
  * @param item_count the number of graphical items
  */
-VKY_EXPORT void vkl_graphics_alloc(VklGraphicsData* data, uint32_t item_count);
+DVZ_EXPORT void dvz_graphics_alloc(DvzGraphicsData* data, uint32_t item_count);
 
 /**
  * Add one graphical element after the graphics data object has been properly allocated.
@@ -386,7 +386,7 @@ VKY_EXPORT void vkl_graphics_alloc(VklGraphicsData* data, uint32_t item_count);
  * @param data the graphics data object
  * @param item a pointer to an object of the appropriate graphics item type
  */
-VKY_EXPORT void vkl_graphics_append(VklGraphicsData* data, const void* item);
+DVZ_EXPORT void dvz_graphics_append(DvzGraphicsData* data, const void* item);
 
 /**
  * Create a new graphics pipeline of a given builtin type.
@@ -395,7 +395,7 @@ VKY_EXPORT void vkl_graphics_append(VklGraphicsData* data, const void* item);
  * @param type the graphics type
  * @param flags the creation flags for the graphics
  */
-VKY_EXPORT VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsType type, int flags);
+DVZ_EXPORT DvzGraphics* dvz_graphics_builtin(DvzCanvas* canvas, DvzGraphicsType type, int flags);
 
 
 
@@ -408,8 +408,8 @@ VKY_EXPORT VklGraphics* vkl_graphics_builtin(VklCanvas* canvas, VklGraphicsType 
  * @param near_far the near and far values for the perspective matrix
  * @param[out] mvp a pointer to an MVP object
  */
-VKY_EXPORT void
-vkl_mvp_camera(VklViewport viewport, vec3 eye, vec3 center, vec2 near_far, VklMVP* mvp);
+DVZ_EXPORT void
+dvz_mvp_camera(DvzViewport viewport, vec3 eye, vec3 center, vec2 near_far, DvzMVP* mvp);
 
 
 #endif

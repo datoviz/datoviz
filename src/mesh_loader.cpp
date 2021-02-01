@@ -9,10 +9,10 @@
 /*  Tiny Obj loader                                                                              */
 /*************************************************************************************************/
 
-VklMesh vkl_mesh_obj(const char* file_path)
+DvzMesh dvz_mesh_obj(const char* file_path)
 {
     log_trace("loading file %s", file_path);
-    VklMesh mesh = vkl_mesh();
+    DvzMesh mesh = dvz_mesh();
 
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
@@ -64,12 +64,12 @@ VklMesh vkl_mesh_obj(const char* file_path)
     log_debug("loading shape %d: %d shape(s), %d vertices, %d indices", s, ns, nv, ni);
 
     // Create the mesh object and allocate the vertex and index arrays.
-    vkl_array_resize(&mesh.vertices, nv);
-    vkl_array_resize(&mesh.indices, ni);
+    dvz_array_resize(&mesh.vertices, nv);
+    dvz_array_resize(&mesh.indices, ni);
 
     // Pointers to the current vertex and index.
-    VklGraphicsMeshVertex* vertex = (VklGraphicsMeshVertex*)mesh.vertices.data;
-    VklIndex* index = (VklIndex*)mesh.indices.data;
+    DvzGraphicsMeshVertex* vertex = (DvzGraphicsMeshVertex*)mesh.vertices.data;
+    DvzIndex* index = (DvzIndex*)mesh.indices.data;
 
     ASSERT(vertex != NULL);
     ASSERT(index != NULL);
@@ -114,7 +114,7 @@ VklMesh vkl_mesh_obj(const char* file_path)
     }
     ASSERT(
         (int64_t)vertex - (int64_t)mesh.vertices.data ==
-        (int64_t)(nv * sizeof(VklGraphicsMeshVertex)));
+        (int64_t)(nv * sizeof(DvzGraphicsMeshVertex)));
 
     // Shapes.
     for (s = 0; s < ns; s++)
@@ -136,16 +136,16 @@ VklMesh vkl_mesh_obj(const char* file_path)
             for (v = 0; v < fv; v++)
             {
                 idx = shapes[s].mesh.indices[index_offset + v];
-                *index = (VklIndex)idx.vertex_index;
+                *index = (DvzIndex)idx.vertex_index;
                 index++;
             }
             index_offset += fv;
         }
     }
-    ASSERT((int64_t)index - (int64_t)mesh.indices.data == (int64_t)(ni * sizeof(VklIndex)));
+    ASSERT((int64_t)index - (int64_t)mesh.indices.data == (int64_t)(ni * sizeof(DvzIndex)));
 
     // Mesh normalization.
-    vkl_mesh_normalize(&mesh);
+    dvz_mesh_normalize(&mesh);
 
     return mesh;
 }

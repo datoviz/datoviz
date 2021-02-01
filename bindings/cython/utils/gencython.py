@@ -13,29 +13,29 @@ from pyparsing import (
 )
 
 
-HEADER_DIR = (Path(__file__).parent / '../../../include/visky').resolve()
+HEADER_DIR = (Path(__file__).parent / '../../../include/datoviz').resolve()
 INTERNAL_HEADER_DIR = (Path(__file__).parent / '../../../src').resolve()
 EXTERNAL_HEADER_DIR = HEADER_DIR / '../../external'
-CYTHON_OUTPUT = (Path(__file__).parent / '../visky/cyvisky.pxd').resolve()
+CYTHON_OUTPUT = (Path(__file__).parent / '../datoviz/cydatoviz.pxd').resolve()
 HEADER_FILES = (
     'app.h', 'vklite.h', 'context.h', 'canvas.h', 'keycode.h', 'transforms.h', 'colormaps.h',
     'graphics.h', 'builtin_visuals.h', 'panel.h', 'visuals.h', 'scene.h')
 STRUCTS = (
-    'VklEvent',
-    'VklEventUnion',
-    'VklFrameEvent',
-    'VklKeyEvent',
-    'VklMouseButtonEvent',
-    'VklMouseClickEvent',
-    'VklMouseDragEvent',
-    'VklMouseMoveEvent',
-    'VklMouseWheelEvent',
-    'VklRefillEvent',
-    'VklResizeEvent',
-    'VklScreencastEvent',
-    'VklSubmitEvent',
-    'VklTimerEvent',
-    'VklViewport',
+    'DvzEvent',
+    'DvzEventUnion',
+    'DvzFrameEvent',
+    'DvzKeyEvent',
+    'DvzMouseButtonEvent',
+    'DvzMouseClickEvent',
+    'DvzMouseDragEvent',
+    'DvzMouseMoveEvent',
+    'DvzMouseWheelEvent',
+    'DvzRefillEvent',
+    'DvzResizeEvent',
+    'DvzScreencastEvent',
+    'DvzSubmitEvent',
+    'DvzTimerEvent',
+    'DvzViewport',
 )
 
 ENUM_START = '# ENUM START'
@@ -101,7 +101,7 @@ def parse_defines(text):
     return defines
 
 
-# _STRUCT_NAMES = ('VklPrivateEvent', 'VklEvent')
+# _STRUCT_NAMES = ('DvzPrivateEvent', 'DvzEvent')
 
 
 def _parse_enum(text):
@@ -224,7 +224,7 @@ def _parse_func(text, is_output=False):
                  ) + Optional(COMMA))
     args = Group(ZeroOrMore(argDecl))
     if not is_output:
-        func = Suppress("VKY_EXPORT")
+        func = Suppress("DVZ_EXPORT")
     else:
         func = Empty()
     func = func + \
@@ -269,9 +269,9 @@ def _gen_cython_func(name, func):
                 argname = 'value'
             elif dtype == 'size_t':
                 argname = 'size'
-            elif 'Vkl' in dtype:
+            elif 'Dvz' in dtype:
                 argname = _camel_to_snake(
-                    dtype.replace('Vkl', '')).replace('*', '')
+                    dtype.replace('Dvz', '')).replace('*', '')
             else:
                 raise ValueError(dtype)
         if const:

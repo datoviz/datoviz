@@ -1,9 +1,9 @@
-#ifndef VKL_TRANSFORMS_UTILS_HEADER
-#define VKL_TRANSFORMS_UTILS_HEADER
+#ifndef DVZ_TRANSFORMS_UTILS_HEADER
+#define DVZ_TRANSFORMS_UTILS_HEADER
 
-#include "../include/visky/interact.h"
-#include "../include/visky/panel.h"
-#include "../include/visky/scene.h"
+#include "../include/datoviz/interact.h"
+#include "../include/datoviz/panel.h"
+#include "../include/datoviz/scene.h"
 
 
 
@@ -11,7 +11,7 @@
 /*  Position normalization                                                                       */
 /*************************************************************************************************/
 
-static void _check_box(VklBox box)
+static void _check_box(DvzBox box)
 {
     for (uint32_t i = 0; i < 3; i++)
         ASSERT(box.p0[i] <= box.p1[i]);
@@ -20,17 +20,17 @@ static void _check_box(VklBox box)
 
 
 // Return the bounding box of a set of dvec3 points.
-static VklBox _box_bounding(VklArray* points_in)
+static DvzBox _box_bounding(DvzArray* points_in)
 {
     ASSERT(points_in != NULL);
     ASSERT(points_in->item_count > 0);
     ASSERT(points_in->item_size > 0);
 
     dvec3* pos = NULL;
-    VklBox box = VKL_BOX_INF;
+    DvzBox box = DVZ_BOX_INF;
     for (uint32_t i = 0; i < points_in->item_count; i++)
     {
-        pos = (dvec3*)vkl_array_item(points_in, i);
+        pos = (dvec3*)dvz_array_item(points_in, i);
         ASSERT(pos != NULL);
         for (uint32_t j = 0; j < 3; j++)
         {
@@ -43,11 +43,11 @@ static VklBox _box_bounding(VklArray* points_in)
 
 
 
-static VklBox _box_merge(uint32_t count, VklBox* boxes)
+static DvzBox _box_merge(uint32_t count, DvzBox* boxes)
 {
     if (count == 0)
-        return VKL_BOX_NDC;
-    VklBox merged = VKL_BOX_INF;
+        return DVZ_BOX_NDC;
+    DvzBox merged = DVZ_BOX_INF;
     for (uint32_t i = 0; i < count; i++)
     {
         for (uint32_t j = 0; j < 3; j++)
@@ -69,7 +69,7 @@ static VklBox _box_merge(uint32_t count, VklBox* boxes)
 
 
 
-static void _box_print(VklBox box)
+static void _box_print(DvzBox box)
 {
     log_info(
         "box [%f, %f] [%f, %f] [%f %f]", box.p0[0], box.p1[0], box.p0[1], box.p1[1], box.p0[2],
@@ -79,7 +79,7 @@ static void _box_print(VklBox box)
 
 
 // Make a box cubic/square (if need to keep fixed aspect ratio).
-static VklBox _box_cube(VklBox box)
+static DvzBox _box_cube(DvzBox box)
 {
     double edge_common = 0;
     double vmin = 0;
@@ -116,7 +116,7 @@ static VklBox _box_cube(VklBox box)
         edge_common = 1;
     ASSERT(edge_common > 0);
 
-    VklBox out = box;
+    DvzBox out = box;
     for (uint32_t j = 0; j < 3; j++)
     {
         // Find the edge on each axis. Do not extend the range if an axis range is degenerate.
@@ -132,9 +132,9 @@ static VklBox _box_cube(VklBox box)
 /*  Internal transform API                                                                       */
 /*************************************************************************************************/
 
-static VklTransform _transform(VklTransformType type)
+static DvzTransform _transform(DvzTransformType type)
 {
-    VklTransform tr = {0};
+    DvzTransform tr = {0};
     tr.type = type;
     _dmat4_identity(tr.mat);
     return tr;
@@ -142,9 +142,9 @@ static VklTransform _transform(VklTransformType type)
 
 
 
-static VklTransform _transform_interp(VklBox box_in, VklBox box_out)
+static DvzTransform _transform_interp(DvzBox box_in, DvzBox box_out)
 {
-    VklTransform tr = _transform(VKL_TRANSFORM_CARTESIAN);
+    DvzTransform tr = _transform(DVZ_TRANSFORM_CARTESIAN);
 
     for (uint32_t j = 0; j < 3; j++)
     {
@@ -161,12 +161,12 @@ static VklTransform _transform_interp(VklBox box_in, VklBox box_out)
 
 
 
-static VklTransform _transform_inv(VklTransform* tr)
+static DvzTransform _transform_inv(DvzTransform* tr)
 {
     ASSERT(tr != NULL);
-    VklTransform tri = {0};
+    DvzTransform tri = {0};
     tri.type = tr->type;
-    if (tr->type == VKL_TRANSFORM_CARTESIAN)
+    if (tr->type == DVZ_TRANSFORM_CARTESIAN)
     {
         tri.inverse = false; // we inverse the matrix instead
         _dmat4_inv(tr->mat, tri.mat);
@@ -182,10 +182,10 @@ static VklTransform _transform_inv(VklTransform* tr)
 
 
 
-static inline void _transform_apply(VklTransform* tr, dvec3 in, dvec3 out)
+static inline void _transform_apply(DvzTransform* tr, dvec3 in, dvec3 out)
 {
     ASSERT(tr != NULL);
-    if (tr->type == VKL_TRANSFORM_CARTESIAN)
+    if (tr->type == DVZ_TRANSFORM_CARTESIAN)
     {
         ASSERT(!tr->inverse);
         // TODO: implement log scale? available in tr->flags
@@ -199,9 +199,9 @@ static inline void _transform_apply(VklTransform* tr, dvec3 in, dvec3 out)
 
 
 
-static VklTransform _transform_mvp(VklMVP* mvp)
+static DvzTransform _transform_mvp(DvzMVP* mvp)
 {
-    VklTransform tr = _transform(VKL_TRANSFORM_CARTESIAN);
+    DvzTransform tr = _transform(DVZ_TRANSFORM_CARTESIAN);
     dmat4 mat;
 
     _dmat4_mat4(mvp->model, mat);
@@ -215,26 +215,26 @@ static VklTransform _transform_mvp(VklMVP* mvp)
 
     // flip y axis and renormalize z coordinate to account for differences between OpenGL and
     // Vulkan conventions (because we want to use cglm MVP helpers that use the OpenGL convention).
-    _dmat4_mul(VKL_TRANSFORM_MATRIX_VULKAN, tr.mat, tr.mat);
+    _dmat4_mul(DVZ_TRANSFORM_MATRIX_VULKAN, tr.mat, tr.mat);
     return tr;
 }
 
 
 
 // transformation from a CDS to the next
-static VklTransform _transform_cds(VklPanel* panel, VklCDS source)
+static DvzTransform _transform_cds(DvzPanel* panel, DvzCDS source)
 {
     ASSERT(panel != NULL);
-    VklTransform tr = _transform(VKL_TRANSFORM_CARTESIAN);
-    VklBox box_data = panel->data_coords.box;
-    VklBox box_ndc = VKL_BOX_NDC;
-    VklViewport viewport = panel->viewport;
+    DvzTransform tr = _transform(DVZ_TRANSFORM_CARTESIAN);
+    DvzBox box_data = panel->data_coords.box;
+    DvzBox box_ndc = DVZ_BOX_NDC;
+    DvzViewport viewport = panel->viewport;
 
     ASSERT(panel->grid != NULL);
-    VklCanvas* canvas = panel->grid->canvas;
+    DvzCanvas* canvas = panel->grid->canvas;
     ASSERT(canvas != NULL);
 
-    VklMVP mvp = {0};
+    DvzMVP mvp = {0};
     if (panel->controller != NULL && panel->controller->interact_count > 0)
         mvp = panel->controller->interacts[0].mvp;
     else
@@ -246,15 +246,15 @@ static VklTransform _transform_cds(VklPanel* panel, VklCDS source)
 
     switch (source)
     {
-    case VKL_CDS_DATA: // to SCENE
+    case DVZ_CDS_DATA: // to SCENE
         tr = _transform_interp(box_data, box_ndc);
         break;
 
-    case VKL_CDS_SCENE: // to VULKAN
+    case DVZ_CDS_SCENE: // to VULKAN
         tr = _transform_mvp(&mvp);
         break;
 
-    case VKL_CDS_VULKAN:; // to FRAMEBUFFER
+    case DVZ_CDS_VULKAN:; // to FRAMEBUFFER
         {
             // Viewport size, in framebuffer coordinates
             double x = viewport.viewport.x;
@@ -270,13 +270,13 @@ static VklTransform _transform_cds(VklPanel* panel, VklCDS source)
             double mb = 2 * viewport.margins[2] / h;
             double ml = 2 * viewport.margins[3] / w;
 
-            VklBox box0 = (VklBox){{-1, -1, 0}, {+1, +1, 1}};
-            VklBox box1 = (VklBox){{x + ml, y + mt, 0}, {x + w - mr, y + h - mb, 1}};
+            DvzBox box0 = (DvzBox){{-1, -1, 0}, {+1, +1, 1}};
+            DvzBox box1 = (DvzBox){{x + ml, y + mt, 0}, {x + w - mr, y + h - mb, 1}};
             tr = _transform_interp(box0, box1);
         }
         break;
 
-    case VKL_CDS_FRAMEBUFFER:; // to WINDOW
+    case DVZ_CDS_FRAMEBUFFER:; // to WINDOW
         {
             // Canvas size, in screen and framebuffer coordinates
             double ws = viewport.size_screen[0];
@@ -284,8 +284,8 @@ static VklTransform _transform_cds(VklPanel* panel, VklCDS source)
             double wf = viewport.size_framebuffer[0];
             double hf = viewport.size_framebuffer[1];
 
-            VklBox box0 = (VklBox){{0, 0, 0}, {wf, hf, 1}};
-            VklBox box1 = (VklBox){{0, 0, 0}, {ws, hs, 1}};
+            DvzBox box0 = (DvzBox){{0, 0, 0}, {wf, hf, 1}};
+            DvzBox box1 = (DvzBox){{0, 0, 0}, {ws, hs, 1}};
             tr = _transform_interp(box0, box1);
         }
         break;
@@ -304,24 +304,24 @@ static VklTransform _transform_cds(VklPanel* panel, VklCDS source)
 /*  Internal transform chain API                                                                 */
 /*************************************************************************************************/
 
-static VklTransformChain _transforms()
+static DvzTransformChain _transforms()
 {
-    VklTransformChain tc = {0};
+    DvzTransformChain tc = {0};
     return tc;
 }
 
 
 
-static void _transforms_append(VklTransformChain* tc, VklTransform tr)
+static void _transforms_append(DvzTransformChain* tc, DvzTransform tr)
 {
     ASSERT(tc != NULL);
-    ASSERT(tc->count < VKL_TRANSFORM_CHAIN_MAX_SIZE - 1);
+    ASSERT(tc->count < DVZ_TRANSFORM_CHAIN_MAX_SIZE - 1);
     tc->transforms[tc->count++] = tr;
 }
 
 
 
-static inline void _transforms_apply(VklTransformChain* tc, dvec3 in, dvec3 out)
+static inline void _transforms_apply(DvzTransformChain* tc, dvec3 in, dvec3 out)
 {
     ASSERT(tc != NULL);
     dvec3 temp0, temp1;
@@ -336,10 +336,10 @@ static inline void _transforms_apply(VklTransformChain* tc, dvec3 in, dvec3 out)
 
 
 
-static VklTransformChain _transforms_inv(VklTransformChain* tc)
+static DvzTransformChain _transforms_inv(DvzTransformChain* tc)
 {
     ASSERT(tc != NULL);
-    VklTransformChain tci = {0};
+    DvzTransformChain tci = {0};
     tci.count = tc->count;
     for (uint32_t i = 0; i < tc->count; i++)
     {
@@ -350,10 +350,10 @@ static VklTransformChain _transforms_inv(VklTransformChain* tc)
 
 
 
-static VklTransformChain _transforms_cds(VklPanel* panel, VklCDS source, VklCDS target)
+static DvzTransformChain _transforms_cds(DvzPanel* panel, DvzCDS source, DvzCDS target)
 {
     ASSERT(panel != NULL);
-    VklTransformChain tc = _transforms();
+    DvzTransformChain tc = _transforms();
     int32_t d = (int32_t)target - (int32_t)source;
     if (d < 0)
     {
@@ -366,7 +366,7 @@ static VklTransformChain _transforms_cds(VklPanel* panel, VklCDS source, VklCDS 
         // d == 1 ? single loop iteration
         for (int32_t i = 0; i < d; i++)
         {
-            _transforms_append(&tc, _transform_cds(panel, (VklCDS)((int32_t)source + i)));
+            _transforms_append(&tc, _transform_cds(panel, (DvzCDS)((int32_t)source + i)));
         }
     }
     return tc;

@@ -1,5 +1,5 @@
-#include "../include/visky/context.h"
-#include "../include/visky/atlas.h"
+#include "../include/datoviz/context.h"
+#include "../include/datoviz/atlas.h"
 #include "vklite_utils.h"
 #include <stdlib.h>
 
@@ -9,33 +9,33 @@
 /*  Context                                                                                      */
 /*************************************************************************************************/
 
-static void _context_default_queues(VklGpu* gpu, VklWindow* window)
+static void _context_default_queues(DvzGpu* gpu, DvzWindow* window)
 {
-    vkl_gpu_queue(gpu, VKL_DEFAULT_QUEUE_TRANSFER, VKL_QUEUE_TRANSFER);
-    vkl_gpu_queue(gpu, VKL_DEFAULT_QUEUE_COMPUTE, VKL_QUEUE_COMPUTE);
-    vkl_gpu_queue(gpu, VKL_DEFAULT_QUEUE_RENDER, VKL_QUEUE_RENDER);
+    dvz_gpu_queue(gpu, DVZ_DEFAULT_QUEUE_TRANSFER, DVZ_QUEUE_TRANSFER);
+    dvz_gpu_queue(gpu, DVZ_DEFAULT_QUEUE_COMPUTE, DVZ_QUEUE_COMPUTE);
+    dvz_gpu_queue(gpu, DVZ_DEFAULT_QUEUE_RENDER, DVZ_QUEUE_RENDER);
     if (window != NULL)
-        vkl_gpu_queue(gpu, VKL_DEFAULT_QUEUE_PRESENT, VKL_QUEUE_PRESENT);
+        dvz_gpu_queue(gpu, DVZ_DEFAULT_QUEUE_PRESENT, DVZ_QUEUE_PRESENT);
 }
 
 
 
-static void _context_default_buffers(VklContext* context)
+static void _context_default_buffers(DvzContext* context)
 {
     ASSERT(context != NULL);
     ASSERT(context->gpu != NULL);
     // Create a predetermined set of buffers.
-    VklBuffer* buffer = NULL;
-    for (uint32_t i = 0; i < VKL_BUFFER_TYPE_COUNT; i++)
+    DvzBuffer* buffer = NULL;
+    for (uint32_t i = 0; i < DVZ_BUFFER_TYPE_COUNT; i++)
     {
-        buffer = vkl_container_alloc(&context->buffers);
-        *buffer = vkl_buffer(context->gpu);
+        buffer = dvz_container_alloc(&context->buffers);
+        *buffer = dvz_buffer(context->gpu);
         ASSERT(buffer != NULL);
 
         // All buffers may be accessed from these queues.
-        vkl_buffer_queue_access(buffer, VKL_DEFAULT_QUEUE_TRANSFER);
-        vkl_buffer_queue_access(buffer, VKL_DEFAULT_QUEUE_COMPUTE);
-        vkl_buffer_queue_access(buffer, VKL_DEFAULT_QUEUE_RENDER);
+        dvz_buffer_queue_access(buffer, DVZ_DEFAULT_QUEUE_TRANSFER);
+        dvz_buffer_queue_access(buffer, DVZ_DEFAULT_QUEUE_COMPUTE);
+        dvz_buffer_queue_access(buffer, DVZ_DEFAULT_QUEUE_RENDER);
     }
 
     VkBufferUsageFlagBits transferable =
@@ -43,167 +43,167 @@ static void _context_default_buffers(VklContext* context)
 
     // Staging buffer
     {
-        buffer = vkl_container_get(&context->buffers, VKL_BUFFER_TYPE_STAGING);
+        buffer = dvz_container_get(&context->buffers, DVZ_BUFFER_TYPE_STAGING);
         ASSERT(buffer != NULL);
-        vkl_buffer_type(buffer, VKL_BUFFER_TYPE_STAGING);
-        vkl_buffer_size(buffer, VKL_BUFFER_TYPE_STAGING_SIZE);
-        vkl_buffer_usage(buffer, transferable);
-        vkl_buffer_memory(
+        dvz_buffer_type(buffer, DVZ_BUFFER_TYPE_STAGING);
+        dvz_buffer_size(buffer, DVZ_BUFFER_TYPE_STAGING_SIZE);
+        dvz_buffer_usage(buffer, transferable);
+        dvz_buffer_memory(
             buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-        vkl_buffer_create(buffer);
-        ASSERT(vkl_obj_is_created(&buffer->obj));
+        dvz_buffer_create(buffer);
+        ASSERT(dvz_obj_is_created(&buffer->obj));
 
         // Permanently map the buffer.
-        buffer->mmap = vkl_buffer_map(buffer, 0, VK_WHOLE_SIZE);
+        buffer->mmap = dvz_buffer_map(buffer, 0, VK_WHOLE_SIZE);
     }
 
     // Vertex buffer
     {
-        buffer = vkl_container_get(&context->buffers, VKL_BUFFER_TYPE_VERTEX);
+        buffer = dvz_container_get(&context->buffers, DVZ_BUFFER_TYPE_VERTEX);
         ASSERT(buffer != NULL);
-        vkl_buffer_type(buffer, VKL_BUFFER_TYPE_VERTEX);
-        vkl_buffer_size(buffer, VKL_BUFFER_TYPE_VERTEX_SIZE);
-        vkl_buffer_usage(
+        dvz_buffer_type(buffer, DVZ_BUFFER_TYPE_VERTEX);
+        dvz_buffer_size(buffer, DVZ_BUFFER_TYPE_VERTEX_SIZE);
+        dvz_buffer_usage(
             buffer,
             transferable | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
-        vkl_buffer_memory(buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-        vkl_buffer_create(buffer);
-        ASSERT(vkl_obj_is_created(&buffer->obj));
+        dvz_buffer_memory(buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        dvz_buffer_create(buffer);
+        ASSERT(dvz_obj_is_created(&buffer->obj));
     }
 
     // Index buffer
     {
-        buffer = vkl_container_get(&context->buffers, VKL_BUFFER_TYPE_INDEX);
+        buffer = dvz_container_get(&context->buffers, DVZ_BUFFER_TYPE_INDEX);
         ASSERT(buffer != NULL);
-        vkl_buffer_type(buffer, VKL_BUFFER_TYPE_INDEX);
-        vkl_buffer_size(buffer, VKL_BUFFER_TYPE_INDEX_SIZE);
-        vkl_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
-        vkl_buffer_memory(buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-        vkl_buffer_create(buffer);
-        ASSERT(vkl_obj_is_created(&buffer->obj));
+        dvz_buffer_type(buffer, DVZ_BUFFER_TYPE_INDEX);
+        dvz_buffer_size(buffer, DVZ_BUFFER_TYPE_INDEX_SIZE);
+        dvz_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+        dvz_buffer_memory(buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        dvz_buffer_create(buffer);
+        ASSERT(dvz_obj_is_created(&buffer->obj));
     }
 
     // Storage buffer
     {
-        buffer = vkl_container_get(&context->buffers, VKL_BUFFER_TYPE_STORAGE);
+        buffer = dvz_container_get(&context->buffers, DVZ_BUFFER_TYPE_STORAGE);
         ASSERT(buffer != NULL);
-        vkl_buffer_type(buffer, VKL_BUFFER_TYPE_STORAGE);
-        vkl_buffer_size(buffer, VKL_BUFFER_TYPE_STORAGE_SIZE);
-        vkl_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
-        vkl_buffer_memory(buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-        vkl_buffer_create(buffer);
-        ASSERT(vkl_obj_is_created(&buffer->obj));
+        dvz_buffer_type(buffer, DVZ_BUFFER_TYPE_STORAGE);
+        dvz_buffer_size(buffer, DVZ_BUFFER_TYPE_STORAGE_SIZE);
+        dvz_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+        dvz_buffer_memory(buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        dvz_buffer_create(buffer);
+        ASSERT(dvz_obj_is_created(&buffer->obj));
     }
 
     // Uniform buffer
     {
-        buffer = vkl_container_get(&context->buffers, VKL_BUFFER_TYPE_UNIFORM);
+        buffer = dvz_container_get(&context->buffers, DVZ_BUFFER_TYPE_UNIFORM);
         ASSERT(buffer != NULL);
-        vkl_buffer_type(buffer, VKL_BUFFER_TYPE_UNIFORM);
-        vkl_buffer_size(buffer, VKL_BUFFER_TYPE_UNIFORM_SIZE);
-        vkl_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
-        vkl_buffer_memory(buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-        vkl_buffer_create(buffer);
-        ASSERT(vkl_obj_is_created(&buffer->obj));
+        dvz_buffer_type(buffer, DVZ_BUFFER_TYPE_UNIFORM);
+        dvz_buffer_size(buffer, DVZ_BUFFER_TYPE_UNIFORM_SIZE);
+        dvz_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+        dvz_buffer_memory(buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        dvz_buffer_create(buffer);
+        ASSERT(dvz_obj_is_created(&buffer->obj));
     }
 
     // Mappable uniform buffer
     {
-        buffer = vkl_container_get(&context->buffers, VKL_BUFFER_TYPE_UNIFORM_MAPPABLE);
+        buffer = dvz_container_get(&context->buffers, DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE);
         ASSERT(buffer != NULL);
-        vkl_buffer_type(buffer, VKL_BUFFER_TYPE_UNIFORM_MAPPABLE);
-        vkl_buffer_size(buffer, VKL_BUFFER_TYPE_UNIFORM_SIZE);
-        vkl_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
-        vkl_buffer_memory(
+        dvz_buffer_type(buffer, DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE);
+        dvz_buffer_size(buffer, DVZ_BUFFER_TYPE_UNIFORM_SIZE);
+        dvz_buffer_usage(buffer, transferable | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+        dvz_buffer_memory(
             buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-        vkl_buffer_create(buffer);
-        ASSERT(vkl_obj_is_created(&buffer->obj));
+        dvz_buffer_create(buffer);
+        ASSERT(dvz_obj_is_created(&buffer->obj));
 
         // Permanently map the buffer.
-        buffer->mmap = vkl_buffer_map(buffer, 0, VK_WHOLE_SIZE);
+        buffer->mmap = dvz_buffer_map(buffer, 0, VK_WHOLE_SIZE);
     }
 }
 
 
 
-static void _destroy_resources(VklContext* context)
+static void _destroy_resources(DvzContext* context)
 {
     ASSERT(context != NULL);
 
     log_trace("context destroy buffers");
-    CONTAINER_DESTROY_ITEMS(VklBuffer, context->buffers, vkl_buffer_destroy)
+    CONTAINER_DESTROY_ITEMS(DvzBuffer, context->buffers, dvz_buffer_destroy)
 
     log_trace("context destroy sets of images");
-    CONTAINER_DESTROY_ITEMS(VklImages, context->images, vkl_images_destroy)
+    CONTAINER_DESTROY_ITEMS(DvzImages, context->images, dvz_images_destroy)
 
     log_trace("context destroy samplers");
-    CONTAINER_DESTROY_ITEMS(VklSampler, context->samplers, vkl_sampler_destroy)
+    CONTAINER_DESTROY_ITEMS(DvzSampler, context->samplers, dvz_sampler_destroy)
 
     log_trace("context destroy textures");
-    CONTAINER_DESTROY_ITEMS(VklTexture, context->textures, vkl_texture_destroy)
+    CONTAINER_DESTROY_ITEMS(DvzTexture, context->textures, dvz_texture_destroy)
 
     log_trace("context destroy computes");
-    CONTAINER_DESTROY_ITEMS(VklCompute, context->computes, vkl_compute_destroy)
+    CONTAINER_DESTROY_ITEMS(DvzCompute, context->computes, dvz_compute_destroy)
 }
 
 
 
-VklContext* vkl_context(VklGpu* gpu, VklWindow* window)
+DvzContext* dvz_context(DvzGpu* gpu, DvzWindow* window)
 {
     ASSERT(gpu != NULL);
-    ASSERT(!vkl_obj_is_created(&gpu->obj));
+    ASSERT(!dvz_obj_is_created(&gpu->obj));
     log_trace("creating context");
 
-    VklContext* context = calloc(1, sizeof(VklContext));
+    DvzContext* context = calloc(1, sizeof(DvzContext));
     context->gpu = gpu;
 
     // Allocate memory for buffers, textures, and computes.
     context->buffers =
-        vkl_container(VKL_CONTAINER_DEFAULT_COUNT, sizeof(VklBuffer), VKL_OBJECT_TYPE_BUFFER);
+        dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzBuffer), DVZ_OBJECT_TYPE_BUFFER);
     context->images =
-        vkl_container(VKL_CONTAINER_DEFAULT_COUNT, sizeof(VklImages), VKL_OBJECT_TYPE_IMAGES);
+        dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzImages), DVZ_OBJECT_TYPE_IMAGES);
     context->samplers =
-        vkl_container(VKL_CONTAINER_DEFAULT_COUNT, sizeof(VklSampler), VKL_OBJECT_TYPE_SAMPLER);
+        dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzSampler), DVZ_OBJECT_TYPE_SAMPLER);
     context->textures =
-        vkl_container(VKL_CONTAINER_DEFAULT_COUNT, sizeof(VklTexture), VKL_OBJECT_TYPE_TEXTURE);
+        dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzTexture), DVZ_OBJECT_TYPE_TEXTURE);
     context->computes =
-        vkl_container(VKL_CONTAINER_DEFAULT_COUNT, sizeof(VklCompute), VKL_OBJECT_TYPE_COMPUTE);
+        dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzCompute), DVZ_OBJECT_TYPE_COMPUTE);
 
     // Specify the default queues.
     _context_default_queues(gpu, window);
 
     // Create the GPU after the default queues have been set.
-    if (!vkl_obj_is_created(&gpu->obj))
+    if (!dvz_obj_is_created(&gpu->obj))
     {
         VkSurfaceKHR surface = VK_NULL_HANDLE;
         if (window != NULL)
             surface = window->surface;
-        vkl_gpu_create(gpu, surface);
+        dvz_gpu_create(gpu, surface);
     }
 
     // Create the default buffers.
     _context_default_buffers(context);
 
-    context->transfer_cmd = vkl_commands(gpu, VKL_DEFAULT_QUEUE_TRANSFER, 1);
+    context->transfer_cmd = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_TRANSFER, 1);
 
     gpu->context = context;
-    vkl_obj_created(&context->obj);
+    dvz_obj_created(&context->obj);
 
     // Create the font atlas and assign it to the context.
-    context->font_atlas = vkl_font_atlas(context);
+    context->font_atlas = dvz_font_atlas(context);
 
     // Color texture.
     context->color_texture.arr = _load_colormaps();
     context->color_texture.texture =
-        vkl_ctx_texture(context, 2, (uvec3){256, 256, 1}, VK_FORMAT_R8G8B8A8_UNORM);
-    vkl_texture_address_mode(
-        context->color_texture.texture, VKL_TEXTURE_AXIS_U,
+        dvz_ctx_texture(context, 2, (uvec3){256, 256, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+    dvz_texture_address_mode(
+        context->color_texture.texture, DVZ_TEXTURE_AXIS_U,
         VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
-    vkl_texture_address_mode(
-        context->color_texture.texture, VKL_TEXTURE_AXIS_V,
+    dvz_texture_address_mode(
+        context->color_texture.texture, DVZ_TEXTURE_AXIS_V,
         VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
-    vkl_texture_upload(
-        context->color_texture.texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, 256 * 256 * 4,
+    dvz_texture_upload(
+        context->color_texture.texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, 256 * 256 * 4,
         context->color_texture.arr);
 
     return context;
@@ -211,7 +211,7 @@ VklContext* vkl_context(VklGpu* gpu, VklWindow* window)
 
 
 
-void vkl_context_reset(VklContext* context)
+void dvz_context_reset(DvzContext* context)
 {
     ASSERT(context != NULL);
     log_trace("reset the context");
@@ -221,7 +221,7 @@ void vkl_context_reset(VklContext* context)
 
 
 
-void vkl_context_destroy(VklContext* context)
+void dvz_context_destroy(DvzContext* context)
 {
     if (context == NULL)
     {
@@ -233,17 +233,17 @@ void vkl_context_destroy(VklContext* context)
     ASSERT(context->gpu != NULL);
 
     // Destroy the font atlas.
-    vkl_font_atlas_destroy(&context->font_atlas);
+    dvz_font_atlas_destroy(&context->font_atlas);
 
     // Destroy the buffers, images, samplers, textures, computes.
     _destroy_resources(context);
 
     // Free the allocated memory.
-    vkl_container_destroy(&context->buffers);
-    vkl_container_destroy(&context->images);
-    vkl_container_destroy(&context->samplers);
-    vkl_container_destroy(&context->textures);
-    vkl_container_destroy(&context->computes);
+    dvz_container_destroy(&context->buffers);
+    dvz_container_destroy(&context->images);
+    dvz_container_destroy(&context->samplers);
+    dvz_container_destroy(&context->textures);
+    dvz_container_destroy(&context->computes);
 }
 
 
@@ -252,49 +252,49 @@ void vkl_context_destroy(VklContext* context)
 /*  Buffer allocation                                                                            */
 /*************************************************************************************************/
 
-VklBufferRegions vkl_ctx_buffers(
-    VklContext* context, VklBufferType buffer_type, uint32_t buffer_count, VkDeviceSize size)
+DvzBufferRegions dvz_ctx_buffers(
+    DvzContext* context, DvzBufferType buffer_type, uint32_t buffer_count, VkDeviceSize size)
 {
     ASSERT(context != NULL);
     ASSERT(context->gpu != NULL);
     ASSERT(buffer_count > 0);
     ASSERT(size > 0);
-    ASSERT(buffer_type < VKL_BUFFER_TYPE_COUNT);
+    ASSERT(buffer_type < DVZ_BUFFER_TYPE_COUNT);
 
     // Choose the first buffer with the requested type.
-    VklBuffer* buffer = vkl_container_iter_init(&context->buffers);
+    DvzBuffer* buffer = dvz_container_iter_init(&context->buffers);
     while (buffer != NULL)
     {
-        if (vkl_obj_is_created(&buffer->obj) && buffer->type == buffer_type)
+        if (dvz_obj_is_created(&buffer->obj) && buffer->type == buffer_type)
             break;
-        buffer = vkl_container_iter(&context->buffers);
+        buffer = dvz_container_iter(&context->buffers);
     }
     if (buffer == NULL)
     {
         log_error("could not find buffer with requested type %d", buffer_type);
-        return (VklBufferRegions){0};
+        return (DvzBufferRegions){0};
     }
     ASSERT(buffer != NULL);
     ASSERT(buffer->type == buffer_type);
-    ASSERT(vkl_obj_is_created(&buffer->obj));
+    ASSERT(dvz_obj_is_created(&buffer->obj));
 
     VkDeviceSize alignment = 0;
     VkDeviceSize offset = buffer->allocated_size;
     bool needs_align =
-        buffer_type == VKL_BUFFER_TYPE_UNIFORM || buffer_type == VKL_BUFFER_TYPE_UNIFORM_MAPPABLE;
+        buffer_type == DVZ_BUFFER_TYPE_UNIFORM || buffer_type == DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE;
     if (needs_align)
     {
         alignment = context->gpu->device_properties.limits.minUniformBufferOffsetAlignment;
         ASSERT(offset % alignment == 0); // offset should be already aligned
     }
 
-    VklBufferRegions regions = vkl_buffer_regions(buffer, buffer_count, offset, size, alignment);
+    DvzBufferRegions regions = dvz_buffer_regions(buffer, buffer_count, offset, size, alignment);
     VkDeviceSize alsize = regions.aligned_size;
     if (alsize == 0)
         alsize = size;
     ASSERT(alsize > 0);
 
-    if (!vkl_obj_is_created(&buffer->obj))
+    if (!dvz_obj_is_created(&buffer->obj))
     {
         log_error("invalid buffer %d", buffer_type);
         return regions;
@@ -312,9 +312,9 @@ VklBufferRegions vkl_ctx_buffers(
     // Need to reallocate?
     if (offset + alsize * buffer_count > regions.buffer->size)
     {
-        VkDeviceSize new_size = vkl_next_pow2(offset + alsize * buffer_count);
+        VkDeviceSize new_size = dvz_next_pow2(offset + alsize * buffer_count);
         log_info("reallocating buffer %d to %s", buffer_type, pretty_size(new_size));
-        vkl_buffer_resize(regions.buffer, new_size, &context->transfer_cmd);
+        dvz_buffer_resize(regions.buffer, new_size, &context->transfer_cmd);
     }
 
     log_debug(
@@ -329,7 +329,7 @@ VklBufferRegions vkl_ctx_buffers(
 
 
 
-void vkl_ctx_buffers_resize(VklContext* context, VklBufferRegions* br, VkDeviceSize new_size)
+void dvz_ctx_buffers_resize(DvzContext* context, DvzBufferRegions* br, VkDeviceSize new_size)
 {
     // NOTE: this function tries to resize a buffer region in-place, which only works if
     // it is the last allocated region in the buffer. Otherwise a brand new region is allocated,
@@ -338,7 +338,7 @@ void vkl_ctx_buffers_resize(VklContext* context, VklBufferRegions* br, VkDeviceS
     ASSERT(br->count > 0);
     if (br->count > 1)
     {
-        log_error("vkl_buffer_regions_resize() currently only supports regions with buf count=1");
+        log_error("dvz_buffer_regions_resize() currently only supports regions with buf count=1");
         return;
     }
     ASSERT(br->count == 1);
@@ -357,9 +357,9 @@ void vkl_ctx_buffers_resize(VklContext* context, VklBufferRegions* br, VkDeviceS
         // Need to reallocate a new underlying buffer.
         if (br->offsets[0] + old_size > br->buffer->size)
         {
-            VkDeviceSize bs = vkl_next_pow2(br->offsets[0] + old_size);
+            VkDeviceSize bs = dvz_next_pow2(br->offsets[0] + old_size);
             log_info("reallocating buffer #%d to %s", br->buffer->type, pretty_size(bs));
-            vkl_buffer_resize(br->buffer, bs, &context->transfer_cmd);
+            dvz_buffer_resize(br->buffer, bs, &context->transfer_cmd);
         }
     }
 
@@ -367,7 +367,7 @@ void vkl_ctx_buffers_resize(VklContext* context, VklBufferRegions* br, VkDeviceS
     else
     {
         log_debug("failed to resize the buffer region in-place, allocating a new region");
-        *br = vkl_ctx_buffers(context, br->buffer->type, 1, new_size);
+        *br = dvz_ctx_buffers(context, br->buffer->type, 1, new_size);
     }
 }
 
@@ -377,13 +377,13 @@ void vkl_ctx_buffers_resize(VklContext* context, VklBufferRegions* br, VkDeviceS
 /*  Compute                                                                                      */
 /*************************************************************************************************/
 
-VklCompute* vkl_ctx_compute(VklContext* context, const char* shader_path)
+DvzCompute* dvz_ctx_compute(DvzContext* context, const char* shader_path)
 {
     ASSERT(context != NULL);
     ASSERT(shader_path != NULL);
 
-    VklCompute* compute = vkl_container_alloc(&context->computes);
-    *compute = vkl_compute(context->gpu, shader_path);
+    DvzCompute* compute = dvz_container_alloc(&context->computes);
+    *compute = dvz_compute(context->gpu, shader_path);
     return compute;
 }
 
@@ -416,64 +416,64 @@ static VkImageType image_type_from_dims(uint32_t dims)
 
 
 
-VklTexture* vkl_ctx_texture(VklContext* context, uint32_t dims, uvec3 size, VkFormat format)
+DvzTexture* dvz_ctx_texture(DvzContext* context, uint32_t dims, uvec3 size, VkFormat format)
 {
     ASSERT(context != NULL);
 
-    VklTexture* texture = vkl_container_alloc(&context->textures);
-    VklImages* image = vkl_container_alloc(&context->images);
-    VklSampler* sampler = vkl_container_alloc(&context->samplers);
+    DvzTexture* texture = dvz_container_alloc(&context->textures);
+    DvzImages* image = dvz_container_alloc(&context->images);
+    DvzSampler* sampler = dvz_container_alloc(&context->samplers);
 
     texture->context = context;
-    *image = vkl_images(context->gpu, image_type_from_dims(dims), 1);
-    *sampler = vkl_sampler(context->gpu);
+    *image = dvz_images(context->gpu, image_type_from_dims(dims), 1);
+    *sampler = dvz_sampler(context->gpu);
 
     texture->image = image;
     texture->sampler = sampler;
 
     // Create the image.
-    vkl_images_format(image, format);
-    vkl_images_size(image, size[0], size[1], size[2]);
-    vkl_images_tiling(image, VK_IMAGE_TILING_OPTIMAL);
-    vkl_images_layout(image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    vkl_images_usage(
+    dvz_images_format(image, format);
+    dvz_images_size(image, size[0], size[1], size[2]);
+    dvz_images_tiling(image, VK_IMAGE_TILING_OPTIMAL);
+    dvz_images_layout(image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    dvz_images_usage(
         image,                                                    //
         VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | //
             VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT);
-    vkl_images_memory(image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    vkl_images_queue_access(image, VKL_DEFAULT_QUEUE_TRANSFER);
-    vkl_images_queue_access(image, VKL_DEFAULT_QUEUE_COMPUTE);
-    vkl_images_queue_access(image, VKL_DEFAULT_QUEUE_RENDER);
-    vkl_images_create(image);
+    dvz_images_memory(image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    dvz_images_queue_access(image, DVZ_DEFAULT_QUEUE_TRANSFER);
+    dvz_images_queue_access(image, DVZ_DEFAULT_QUEUE_COMPUTE);
+    dvz_images_queue_access(image, DVZ_DEFAULT_QUEUE_RENDER);
+    dvz_images_create(image);
 
     // Create the sampler.
-    vkl_sampler_min_filter(sampler, VK_FILTER_NEAREST);
-    vkl_sampler_mag_filter(sampler, VK_FILTER_NEAREST);
-    vkl_sampler_address_mode(sampler, VKL_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-    vkl_sampler_address_mode(sampler, VKL_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-    vkl_sampler_address_mode(sampler, VKL_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-    vkl_sampler_create(sampler);
+    dvz_sampler_min_filter(sampler, VK_FILTER_NEAREST);
+    dvz_sampler_mag_filter(sampler, VK_FILTER_NEAREST);
+    dvz_sampler_address_mode(sampler, DVZ_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_sampler_address_mode(sampler, DVZ_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_sampler_address_mode(sampler, DVZ_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_sampler_create(sampler);
 
-    vkl_obj_created(&texture->obj);
+    dvz_obj_created(&texture->obj);
 
     // Immediately transition the image to its layout.
     {
-        VklGpu* gpu = context->gpu;
-        VklCommands* cmds = &context->transfer_cmd;
+        DvzGpu* gpu = context->gpu;
+        DvzCommands* cmds = &context->transfer_cmd;
 
-        vkl_cmd_reset(cmds, 0);
-        vkl_cmd_begin(cmds, 0);
+        dvz_cmd_reset(cmds, 0);
+        dvz_cmd_begin(cmds, 0);
 
-        VklBarrier barrier = vkl_barrier(gpu);
-        vkl_barrier_stages(
+        DvzBarrier barrier = dvz_barrier(gpu);
+        dvz_barrier_stages(
             &barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
-        vkl_barrier_images(&barrier, image);
-        vkl_barrier_images_layout(&barrier, VK_IMAGE_LAYOUT_UNDEFINED, image->layout);
-        vkl_barrier_images_access(&barrier, 0, VK_ACCESS_TRANSFER_READ_BIT);
-        vkl_cmd_barrier(cmds, 0, &barrier);
+        dvz_barrier_images(&barrier, image);
+        dvz_barrier_images_layout(&barrier, VK_IMAGE_LAYOUT_UNDEFINED, image->layout);
+        dvz_barrier_images_access(&barrier, 0, VK_ACCESS_TRANSFER_READ_BIT);
+        dvz_cmd_barrier(cmds, 0, &barrier);
 
-        vkl_cmd_end(cmds, 0);
-        vkl_cmd_submit_sync(cmds, 0);
+        dvz_cmd_end(cmds, 0);
+        dvz_cmd_submit_sync(cmds, 0);
     }
 
     return texture;
@@ -481,67 +481,67 @@ VklTexture* vkl_ctx_texture(VklContext* context, uint32_t dims, uvec3 size, VkFo
 
 
 
-void vkl_texture_resize(VklTexture* texture, uvec3 size)
+void dvz_texture_resize(DvzTexture* texture, uvec3 size)
 {
     ASSERT(texture != NULL);
     ASSERT(texture->image != NULL);
 
-    vkl_images_resize(texture->image, size[0], size[1], size[2]);
+    dvz_images_resize(texture->image, size[0], size[1], size[2]);
 }
 
 
 
-void vkl_texture_filter(VklTexture* texture, VklFilterType type, VkFilter filter)
+void dvz_texture_filter(DvzTexture* texture, DvzFilterType type, VkFilter filter)
 {
     ASSERT(texture != NULL);
     ASSERT(texture->sampler != NULL);
 
     switch (type)
     {
-    case VKL_FILTER_MIN:
-        vkl_sampler_min_filter(texture->sampler, filter);
+    case DVZ_FILTER_MIN:
+        dvz_sampler_min_filter(texture->sampler, filter);
         break;
-    case VKL_FILTER_MAG:
-        vkl_sampler_mag_filter(texture->sampler, filter);
+    case DVZ_FILTER_MAG:
+        dvz_sampler_mag_filter(texture->sampler, filter);
         break;
     default:
         log_error("invalid filter type %d", type);
         break;
     }
-    vkl_sampler_destroy(texture->sampler);
-    vkl_sampler_create(texture->sampler);
+    dvz_sampler_destroy(texture->sampler);
+    dvz_sampler_create(texture->sampler);
 }
 
 
 
-void vkl_texture_address_mode(
-    VklTexture* texture, VklTextureAxis axis, VkSamplerAddressMode address_mode)
+void dvz_texture_address_mode(
+    DvzTexture* texture, DvzTextureAxis axis, VkSamplerAddressMode address_mode)
 {
     ASSERT(texture != NULL);
     ASSERT(texture->sampler != NULL);
 
-    vkl_sampler_address_mode(texture->sampler, axis, address_mode);
+    dvz_sampler_address_mode(texture->sampler, axis, address_mode);
 
-    vkl_sampler_destroy(texture->sampler);
-    vkl_sampler_create(texture->sampler);
+    dvz_sampler_destroy(texture->sampler);
+    dvz_sampler_create(texture->sampler);
 }
 
 
 
-void vkl_texture_upload(
-    VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, const void* data)
+void dvz_texture_upload(
+    DvzTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, const void* data)
 {
     ASSERT(texture != NULL);
-    VklContext* context = texture->context;
+    DvzContext* context = texture->context;
     ASSERT(context != NULL);
     ASSERT(size > 0);
     ASSERT(data != NULL);
 
     // Take the staging buffer.
-    VklBuffer* staging = staging_buffer(context, size);
+    DvzBuffer* staging = staging_buffer(context, size);
 
     // Memcpy into the staging buffer.
-    vkl_buffer_upload(staging, 0, size, data);
+    dvz_buffer_upload(staging, 0, size, data);
 
     // Copy from the staging buffer to the texture.
     _copy_texture_from_staging(context, texture, offset, shape, size);
@@ -549,65 +549,65 @@ void vkl_texture_upload(
 
 
 
-void vkl_texture_download(
-    VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data)
+void dvz_texture_download(
+    DvzTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data)
 {
     ASSERT(texture != NULL);
-    VklContext* context = texture->context;
+    DvzContext* context = texture->context;
     ASSERT(context != NULL);
     ASSERT(size > 0);
     ASSERT(data != NULL);
 
     // Take the staging buffer.
-    VklBuffer* staging = staging_buffer(context, size);
+    DvzBuffer* staging = staging_buffer(context, size);
 
     // Copy from the staging buffer to the texture.
     _copy_texture_to_staging(context, texture, offset, shape, size);
 
     // Memcpy into the staging buffer.
-    vkl_buffer_download(staging, 0, size, data);
+    dvz_buffer_download(staging, 0, size, data);
 }
 
 
 
-void vkl_texture_copy(
-    VklTexture* src, uvec3 src_offset, VklTexture* dst, uvec3 dst_offset, uvec3 shape)
+void dvz_texture_copy(
+    DvzTexture* src, uvec3 src_offset, DvzTexture* dst, uvec3 dst_offset, uvec3 shape)
 {
     ASSERT(src != NULL);
     ASSERT(dst != NULL);
-    VklContext* context = src->context;
-    VklGpu* gpu = context->gpu;
+    DvzContext* context = src->context;
+    DvzGpu* gpu = context->gpu;
     ASSERT(context != NULL);
 
     // Take transfer cmd buf.
-    VklCommands* cmds = &context->transfer_cmd;
-    vkl_cmd_reset(cmds, 0);
-    vkl_cmd_begin(cmds, 0);
+    DvzCommands* cmds = &context->transfer_cmd;
+    dvz_cmd_reset(cmds, 0);
+    dvz_cmd_begin(cmds, 0);
 
-    VklBarrier src_barrier = vkl_barrier(gpu);
-    vkl_barrier_stages(
+    DvzBarrier src_barrier = dvz_barrier(gpu);
+    dvz_barrier_stages(
         &src_barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
-    vkl_barrier_images(&src_barrier, src->image);
+    dvz_barrier_images(&src_barrier, src->image);
 
-    VklBarrier dst_barrier = vkl_barrier(gpu);
-    vkl_barrier_stages(
+    DvzBarrier dst_barrier = dvz_barrier(gpu);
+    dvz_barrier_stages(
         &dst_barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
-    vkl_barrier_images(&dst_barrier, dst->image);
+    dvz_barrier_images(&dst_barrier, dst->image);
 
     // Source image transition.
     if (src->image->layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
     {
-        vkl_barrier_images_layout(
+        dvz_barrier_images_layout(
             &src_barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-        vkl_cmd_barrier(cmds, 0, &src_barrier);
+        dvz_cmd_barrier(cmds, 0, &src_barrier);
     }
 
     // Destination image transition.
     {
         log_trace("destination image transition");
-        vkl_barrier_images_layout(
+        dvz_barrier_images_layout(
             &dst_barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-        vkl_cmd_barrier(cmds, 0, &dst_barrier);
+        dvz_cmd_barrier(cmds, 0, &dst_barrier);
     }
 
     // Copy texture command.
@@ -634,44 +634,44 @@ void vkl_texture_copy(
     // Source image transition.
     if (src->image->layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
     {
-        vkl_barrier_images_layout(
+        dvz_barrier_images_layout(
             &src_barrier, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, src->image->layout);
-        vkl_cmd_barrier(cmds, 0, &src_barrier);
+        dvz_cmd_barrier(cmds, 0, &src_barrier);
     }
 
     // Destination image transition.
     if (dst->image->layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
     {
         log_trace("destination image transition back");
-        vkl_barrier_images_layout(
+        dvz_barrier_images_layout(
             &dst_barrier, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, dst->image->layout);
-        vkl_cmd_barrier(cmds, 0, &dst_barrier);
+        dvz_cmd_barrier(cmds, 0, &dst_barrier);
     }
 
-    vkl_cmd_end(cmds, 0);
+    dvz_cmd_end(cmds, 0);
 
     // Wait for the render queue to be idle.
-    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_RENDER);
+    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_RENDER);
 
     // Submit the commands to the transfer queue.
-    VklSubmit submit = vkl_submit(gpu);
-    vkl_submit_commands(&submit, cmds);
+    DvzSubmit submit = dvz_submit(gpu);
+    dvz_submit_commands(&submit, cmds);
     log_debug("copy %dx%dx%d between 2 textures", shape[0], shape[1], shape[2]);
-    vkl_submit_send(&submit, 0, NULL, 0);
+    dvz_submit_send(&submit, 0, NULL, 0);
 
     // Wait for the transfer queue to be idle.
-    vkl_queue_wait(gpu, VKL_DEFAULT_QUEUE_TRANSFER);
+    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
 }
 
 
 
-void vkl_texture_destroy(VklTexture* texture)
+void dvz_texture_destroy(DvzTexture* texture)
 {
     ASSERT(texture != NULL);
-    vkl_images_destroy(texture->image);
-    vkl_sampler_destroy(texture->sampler);
+    dvz_images_destroy(texture->image);
+    dvz_sampler_destroy(texture->sampler);
 
     texture->image = NULL;
     texture->sampler = NULL;
-    vkl_obj_destroyed(&texture->obj);
+    dvz_obj_destroyed(&texture->obj);
 }

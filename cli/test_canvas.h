@@ -1,5 +1,5 @@
-#ifndef VKY_TEST_CANVAS_HEADER
-#define VKY_TEST_CANVAS_HEADER
+#ifndef DVZ_TEST_CANVAS_HEADER
+#define DVZ_TEST_CANVAS_HEADER
 
 
 #include "utils.h"

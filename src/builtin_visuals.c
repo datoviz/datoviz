@@ -1,5 +1,5 @@
-#include "../include/visky/builtin_visuals.h"
-#include "../include/visky/interact.h"
+#include "../include/datoviz/builtin_visuals.h"
+#include "../include/datoviz/interact.h"
 #include "visuals_utils.h"
 
 
@@ -8,40 +8,40 @@
 /*  Common utils                                                                                 */
 /*************************************************************************************************/
 
-static void _common_sources(VklVisual* visual)
+static void _common_sources(DvzVisual* visual)
 {
     ASSERT(visual != NULL);
 
     // Binding #0: uniform buffer MVP
-    vkl_visual_source( //
-        visual, VKL_SOURCE_TYPE_MVP, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklMVP),
-        VKL_SOURCE_FLAG_MAPPABLE);
+    dvz_visual_source( //
+        visual, DVZ_SOURCE_TYPE_MVP, 0, DVZ_PIPELINE_GRAPHICS, 0, 0, sizeof(DvzMVP),
+        DVZ_SOURCE_FLAG_MAPPABLE);
 
     // Binding #1: uniform buffer viewport
-    vkl_visual_source(
-        visual, VKL_SOURCE_TYPE_VIEWPORT, 0, VKL_PIPELINE_GRAPHICS, 0, 1, sizeof(VklViewport), 0);
+    dvz_visual_source(
+        visual, DVZ_SOURCE_TYPE_VIEWPORT, 0, DVZ_PIPELINE_GRAPHICS, 0, 1, sizeof(DvzViewport), 0);
 }
 
-static void _common_props(VklVisual* visual)
+static void _common_props(DvzVisual* visual)
 {
-    VklProp* prop = NULL;
+    DvzProp* prop = NULL;
 
     // MVP
     // Model.
-    prop = vkl_visual_prop(visual, VKL_PROP_MODEL, 0, VKL_DTYPE_MAT4, VKL_SOURCE_TYPE_MVP, 0);
-    vkl_visual_prop_copy(prop, 0, offsetof(VklMVP, model), VKL_ARRAY_COPY_SINGLE, 1);
+    prop = dvz_visual_prop(visual, DVZ_PROP_MODEL, 0, DVZ_DTYPE_MAT4, DVZ_SOURCE_TYPE_MVP, 0);
+    dvz_visual_prop_copy(prop, 0, offsetof(DvzMVP, model), DVZ_ARRAY_COPY_SINGLE, 1);
 
     // View.
-    prop = vkl_visual_prop(visual, VKL_PROP_VIEW, 0, VKL_DTYPE_MAT4, VKL_SOURCE_TYPE_MVP, 0);
-    vkl_visual_prop_copy(prop, 1, offsetof(VklMVP, view), VKL_ARRAY_COPY_SINGLE, 1);
+    prop = dvz_visual_prop(visual, DVZ_PROP_VIEW, 0, DVZ_DTYPE_MAT4, DVZ_SOURCE_TYPE_MVP, 0);
+    dvz_visual_prop_copy(prop, 1, offsetof(DvzMVP, view), DVZ_ARRAY_COPY_SINGLE, 1);
 
     // Proj.
-    prop = vkl_visual_prop(visual, VKL_PROP_PROJ, 0, VKL_DTYPE_MAT4, VKL_SOURCE_TYPE_MVP, 0);
-    vkl_visual_prop_copy(prop, 2, offsetof(VklMVP, proj), VKL_ARRAY_COPY_SINGLE, 1);
+    prop = dvz_visual_prop(visual, DVZ_PROP_PROJ, 0, DVZ_DTYPE_MAT4, DVZ_SOURCE_TYPE_MVP, 0);
+    dvz_visual_prop_copy(prop, 2, offsetof(DvzMVP, proj), DVZ_ARRAY_COPY_SINGLE, 1);
 
     // Time.
-    prop = vkl_visual_prop(visual, VKL_PROP_TIME, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_MVP, 0);
-    vkl_visual_prop_copy(prop, 3, offsetof(VklMVP, time), VKL_ARRAY_COPY_SINGLE, 1);
+    prop = dvz_visual_prop(visual, DVZ_PROP_TIME, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_MVP, 0);
+    dvz_visual_prop_copy(prop, 3, offsetof(DvzMVP, time), DVZ_ARRAY_COPY_SINGLE, 1);
 }
 
 
@@ -58,47 +58,47 @@ static void _common_props(VklVisual* visual)
 /*  Point                                                                                        */
 /*************************************************************************************************/
 
-static void _visual_point(VklVisual* visual)
+static void _visual_point(DvzVisual* visual)
 {
     ASSERT(visual != NULL);
-    VklCanvas* canvas = visual->canvas;
+    DvzCanvas* canvas = visual->canvas;
     ASSERT(canvas != NULL);
-    VklProp* prop = NULL;
+    DvzProp* prop = NULL;
 
     // Graphics.
-    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_POINT, visual->flags));
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_POINT, visual->flags));
 
     // Sources
-    vkl_visual_source(
-        visual, VKL_SOURCE_TYPE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklVertex), 0);
+    dvz_visual_source(
+        visual, DVZ_SOURCE_TYPE_VERTEX, 0, DVZ_PIPELINE_GRAPHICS, 0, 0, sizeof(DvzVertex), 0);
     _common_sources(visual);
-    vkl_visual_source(
-        visual, VKL_SOURCE_TYPE_PARAM, 0, VKL_PIPELINE_GRAPHICS, 0, VKL_USER_BINDING,
-        sizeof(VklGraphicsPointParams), 0);
+    dvz_visual_source(
+        visual, DVZ_SOURCE_TYPE_PARAM, 0, DVZ_PIPELINE_GRAPHICS, 0, DVZ_USER_BINDING,
+        sizeof(DvzGraphicsPointParams), 0);
 
     // Props:
 
     // Vertex pos.
-    prop = vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_cast(
-        prop, 0, offsetof(VklVertex, pos), VKL_DTYPE_VEC3, VKL_ARRAY_COPY_SINGLE, 1);
+    prop = dvz_visual_prop(visual, DVZ_PROP_POS, 0, DVZ_DTYPE_DVEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_cast(
+        prop, 0, offsetof(DvzVertex, pos), DVZ_DTYPE_VEC3, DVZ_ARRAY_COPY_SINGLE, 1);
 
     // Vertex color.
-    prop = vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_copy(prop, 1, offsetof(VklVertex, color), VKL_ARRAY_COPY_SINGLE, 1);
+    prop = dvz_visual_prop(visual, DVZ_PROP_COLOR, 0, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_copy(prop, 1, offsetof(DvzVertex, color), DVZ_ARRAY_COPY_SINGLE, 1);
     cvec4 color = {200, 200, 200, 255};
-    vkl_visual_prop_default(prop, &color);
+    dvz_visual_prop_default(prop, &color);
 
     // Common props.
     _common_props(visual);
 
     // Param: marker size.
-    prop = vkl_visual_prop(
-        visual, VKL_PROP_MARKER_SIZE, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_PARAM, 0);
-    vkl_visual_prop_copy(
-        prop, 0, offsetof(VklGraphicsPointParams, point_size), VKL_ARRAY_COPY_SINGLE, 1);
+    prop = dvz_visual_prop(
+        visual, DVZ_PROP_MARKER_SIZE, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_PARAM, 0);
+    dvz_visual_prop_copy(
+        prop, 0, offsetof(DvzGraphicsPointParams, point_size), DVZ_ARRAY_COPY_SINGLE, 1);
     float size = 5;
-    vkl_visual_prop_default(prop, &size);
+    dvz_visual_prop_default(prop, &size);
 }
 
 
@@ -107,38 +107,38 @@ static void _visual_point(VklVisual* visual)
 /*  Line                                                                                         */
 /*************************************************************************************************/
 
-static void _visual_line(VklVisual* visual)
+static void _visual_line(DvzVisual* visual)
 {
     ASSERT(visual != NULL);
-    VklCanvas* canvas = visual->canvas;
+    DvzCanvas* canvas = visual->canvas;
     ASSERT(canvas != NULL);
-    VklProp* prop = NULL;
+    DvzProp* prop = NULL;
 
     // Graphics.
-    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_LINE, 0));
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_LINE, 0));
 
     // Sources
-    vkl_visual_source(
-        visual, VKL_SOURCE_TYPE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklVertex), 0);
+    dvz_visual_source(
+        visual, DVZ_SOURCE_TYPE_VERTEX, 0, DVZ_PIPELINE_GRAPHICS, 0, 0, sizeof(DvzVertex), 0);
     _common_sources(visual);
 
     // Props:
 
     // Vertex pos, segment start.
-    prop = vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_cast(
-        prop, 0, offsetof(VklVertex, pos), VKL_DTYPE_VEC3, VKL_ARRAY_COPY_SINGLE, 2);
+    prop = dvz_visual_prop(visual, DVZ_PROP_POS, 0, DVZ_DTYPE_DVEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_cast(
+        prop, 0, offsetof(DvzVertex, pos), DVZ_DTYPE_VEC3, DVZ_ARRAY_COPY_SINGLE, 2);
 
     // Vertex pos, segment end.
-    prop = vkl_visual_prop(visual, VKL_PROP_POS, 1, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_cast(
-        prop, 0, sizeof(VklVertex) + offsetof(VklVertex, pos), VKL_DTYPE_VEC3,
-        VKL_ARRAY_COPY_SINGLE, 2);
+    prop = dvz_visual_prop(visual, DVZ_PROP_POS, 1, DVZ_DTYPE_DVEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_cast(
+        prop, 0, sizeof(DvzVertex) + offsetof(DvzVertex, pos), DVZ_DTYPE_VEC3,
+        DVZ_ARRAY_COPY_SINGLE, 2);
 
 
     // Vertex color.
-    prop = vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_copy(prop, 1, offsetof(VklVertex, color), VKL_ARRAY_COPY_REPEAT, 2);
+    prop = dvz_visual_prop(visual, DVZ_PROP_COLOR, 0, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_copy(prop, 1, offsetof(DvzVertex, color), DVZ_ARRAY_COPY_REPEAT, 2);
 
     // Common props.
     _common_props(visual);
@@ -150,31 +150,31 @@ static void _visual_line(VklVisual* visual)
 /*  Line strip                                                                                   */
 /*************************************************************************************************/
 
-static void _visual_line_strip(VklVisual* visual)
+static void _visual_line_strip(DvzVisual* visual)
 {
     ASSERT(visual != NULL);
-    VklCanvas* canvas = visual->canvas;
+    DvzCanvas* canvas = visual->canvas;
     ASSERT(canvas != NULL);
-    VklProp* prop = NULL;
+    DvzProp* prop = NULL;
 
     // Graphics.
-    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_LINE_STRIP, 0));
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_LINE_STRIP, 0));
 
     // Sources
-    vkl_visual_source(
-        visual, VKL_SOURCE_TYPE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklVertex), 0);
+    dvz_visual_source(
+        visual, DVZ_SOURCE_TYPE_VERTEX, 0, DVZ_PIPELINE_GRAPHICS, 0, 0, sizeof(DvzVertex), 0);
     _common_sources(visual);
 
     // Props:
 
     // Vertex pos.
-    prop = vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_cast(
-        prop, 0, offsetof(VklVertex, pos), VKL_DTYPE_VEC3, VKL_ARRAY_COPY_SINGLE, 1);
+    prop = dvz_visual_prop(visual, DVZ_PROP_POS, 0, DVZ_DTYPE_DVEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_cast(
+        prop, 0, offsetof(DvzVertex, pos), DVZ_DTYPE_VEC3, DVZ_ARRAY_COPY_SINGLE, 1);
 
     // Vertex color.
-    prop = vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_copy(prop, 1, offsetof(VklVertex, color), VKL_ARRAY_COPY_REPEAT, 1);
+    prop = dvz_visual_prop(visual, DVZ_PROP_COLOR, 0, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_copy(prop, 1, offsetof(DvzVertex, color), DVZ_ARRAY_COPY_REPEAT, 1);
 
     // Common props.
     _common_props(visual);
@@ -186,19 +186,19 @@ static void _visual_line_strip(VklVisual* visual)
 /*  Triangle                                                                                     */
 /*************************************************************************************************/
 
-static void _visual_triangle(VklVisual* visual)
+static void _visual_triangle(DvzVisual* visual)
 {
     ASSERT(visual != NULL);
-    VklCanvas* canvas = visual->canvas;
+    DvzCanvas* canvas = visual->canvas;
     ASSERT(canvas != NULL);
-    VklProp* prop = NULL;
+    DvzProp* prop = NULL;
 
     // Graphics.
-    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_TRIANGLE, 0));
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TRIANGLE, 0));
 
     // Sources
-    vkl_visual_source(
-        visual, VKL_SOURCE_TYPE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklVertex), 0);
+    dvz_visual_source(
+        visual, DVZ_SOURCE_TYPE_VERTEX, 0, DVZ_PIPELINE_GRAPHICS, 0, 0, sizeof(DvzVertex), 0);
     _common_sources(visual);
 
     // Props:
@@ -207,15 +207,15 @@ static void _visual_triangle(VklVisual* visual)
     for (uint32_t i = 0; i < 3; i++)
     {
         prop =
-            vkl_visual_prop(visual, VKL_PROP_POS, i, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
-        vkl_visual_prop_cast(
-            prop, 0, i * sizeof(VklVertex) + offsetof(VklVertex, pos), //
-            VKL_DTYPE_VEC3, VKL_ARRAY_COPY_SINGLE, 3);
+            dvz_visual_prop(visual, DVZ_PROP_POS, i, DVZ_DTYPE_DVEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
+        dvz_visual_prop_cast(
+            prop, 0, i * sizeof(DvzVertex) + offsetof(DvzVertex, pos), //
+            DVZ_DTYPE_VEC3, DVZ_ARRAY_COPY_SINGLE, 3);
     }
 
     // Vertex color.
-    prop = vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_copy(prop, 1, offsetof(VklVertex, color), VKL_ARRAY_COPY_REPEAT, 3);
+    prop = dvz_visual_prop(visual, DVZ_PROP_COLOR, 0, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_copy(prop, 1, offsetof(DvzVertex, color), DVZ_ARRAY_COPY_REPEAT, 3);
 
     // Common props.
     _common_props(visual);
@@ -227,31 +227,31 @@ static void _visual_triangle(VklVisual* visual)
 /*  Triangle strip                                                                               */
 /*************************************************************************************************/
 
-static void _visual_triangle_strip(VklVisual* visual)
+static void _visual_triangle_strip(DvzVisual* visual)
 {
     ASSERT(visual != NULL);
-    VklCanvas* canvas = visual->canvas;
+    DvzCanvas* canvas = visual->canvas;
     ASSERT(canvas != NULL);
-    VklProp* prop = NULL;
+    DvzProp* prop = NULL;
 
     // Graphics.
-    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_TRIANGLE_STRIP, 0));
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TRIANGLE_STRIP, 0));
 
     // Sources
-    vkl_visual_source(
-        visual, VKL_SOURCE_TYPE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklVertex), 0);
+    dvz_visual_source(
+        visual, DVZ_SOURCE_TYPE_VERTEX, 0, DVZ_PIPELINE_GRAPHICS, 0, 0, sizeof(DvzVertex), 0);
     _common_sources(visual);
 
     // Props:
 
     // Vertex pos.
-    prop = vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_cast(
-        prop, 0, offsetof(VklVertex, pos), VKL_DTYPE_VEC3, VKL_ARRAY_COPY_SINGLE, 1);
+    prop = dvz_visual_prop(visual, DVZ_PROP_POS, 0, DVZ_DTYPE_DVEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_cast(
+        prop, 0, offsetof(DvzVertex, pos), DVZ_DTYPE_VEC3, DVZ_ARRAY_COPY_SINGLE, 1);
 
     // Vertex color.
-    prop = vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_copy(prop, 1, offsetof(VklVertex, color), VKL_ARRAY_COPY_REPEAT, 1);
+    prop = dvz_visual_prop(visual, DVZ_PROP_COLOR, 0, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_copy(prop, 1, offsetof(DvzVertex, color), DVZ_ARRAY_COPY_REPEAT, 1);
 
     // Common props.
     _common_props(visual);
@@ -263,31 +263,31 @@ static void _visual_triangle_strip(VklVisual* visual)
 /*  Triangle fan                                                                                 */
 /*************************************************************************************************/
 
-static void _visual_triangle_fan(VklVisual* visual)
+static void _visual_triangle_fan(DvzVisual* visual)
 {
     ASSERT(visual != NULL);
-    VklCanvas* canvas = visual->canvas;
+    DvzCanvas* canvas = visual->canvas;
     ASSERT(canvas != NULL);
-    VklProp* prop = NULL;
+    DvzProp* prop = NULL;
 
     // Graphics.
-    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_TRIANGLE_FAN, 0));
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TRIANGLE_FAN, 0));
 
     // Sources
-    vkl_visual_source(
-        visual, VKL_SOURCE_TYPE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklVertex), 0);
+    dvz_visual_source(
+        visual, DVZ_SOURCE_TYPE_VERTEX, 0, DVZ_PIPELINE_GRAPHICS, 0, 0, sizeof(DvzVertex), 0);
     _common_sources(visual);
 
     // Props:
 
     // Vertex pos.
-    prop = vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_cast(
-        prop, 0, offsetof(VklVertex, pos), VKL_DTYPE_VEC3, VKL_ARRAY_COPY_SINGLE, 1);
+    prop = dvz_visual_prop(visual, DVZ_PROP_POS, 0, DVZ_DTYPE_DVEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_cast(
+        prop, 0, offsetof(DvzVertex, pos), DVZ_DTYPE_VEC3, DVZ_ARRAY_COPY_SINGLE, 1);
 
     // Vertex color.
-    prop = vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_copy(prop, 1, offsetof(VklVertex, color), VKL_ARRAY_COPY_REPEAT, 1);
+    prop = dvz_visual_prop(visual, DVZ_PROP_COLOR, 0, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_copy(prop, 1, offsetof(DvzVertex, color), DVZ_ARRAY_COPY_REPEAT, 1);
 
     // Common props.
     _common_props(visual);
@@ -307,86 +307,86 @@ static void _visual_triangle_fan(VklVisual* visual)
 /*  Marker                                                                                       */
 /*************************************************************************************************/
 
-static void _visual_marker(VklVisual* visual)
+static void _visual_marker(DvzVisual* visual)
 {
     ASSERT(visual != NULL);
-    VklCanvas* canvas = visual->canvas;
+    DvzCanvas* canvas = visual->canvas;
     ASSERT(canvas != NULL);
-    VklProp* prop = NULL;
+    DvzProp* prop = NULL;
 
     // Graphics.
-    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_MARKER, visual->flags));
-    vkl_graphics_depth_test(visual->graphics[0], VKL_DEPTH_TEST_DISABLE);
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_MARKER, visual->flags));
+    dvz_graphics_depth_test(visual->graphics[0], DVZ_DEPTH_TEST_DISABLE);
 
     // Sources
-    vkl_visual_source(
-        visual, VKL_SOURCE_TYPE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, 0,
-        sizeof(VklGraphicsMarkerVertex), 0);
+    dvz_visual_source(
+        visual, DVZ_SOURCE_TYPE_VERTEX, 0, DVZ_PIPELINE_GRAPHICS, 0, 0,
+        sizeof(DvzGraphicsMarkerVertex), 0);
     _common_sources(visual);
-    vkl_visual_source(
-        visual, VKL_SOURCE_TYPE_PARAM, 0, VKL_PIPELINE_GRAPHICS, 0, VKL_USER_BINDING,
-        sizeof(VklGraphicsMarkerParams), 0);
+    dvz_visual_source(
+        visual, DVZ_SOURCE_TYPE_PARAM, 0, DVZ_PIPELINE_GRAPHICS, 0, DVZ_USER_BINDING,
+        sizeof(DvzGraphicsMarkerParams), 0);
 
     // Props:
 
     // Marker pos.
-    prop = vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_cast(
-        prop, 0, offsetof(VklGraphicsMarkerVertex, pos), VKL_DTYPE_VEC3, VKL_ARRAY_COPY_SINGLE, 1);
+    prop = dvz_visual_prop(visual, DVZ_PROP_POS, 0, DVZ_DTYPE_DVEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_cast(
+        prop, 0, offsetof(DvzGraphicsMarkerVertex, pos), DVZ_DTYPE_VEC3, DVZ_ARRAY_COPY_SINGLE, 1);
 
     // Marker color.
-    prop = vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_copy(
-        prop, 1, offsetof(VklGraphicsMarkerVertex, color), VKL_ARRAY_COPY_SINGLE, 1);
+    prop = dvz_visual_prop(visual, DVZ_PROP_COLOR, 0, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_copy(
+        prop, 1, offsetof(DvzGraphicsMarkerVertex, color), DVZ_ARRAY_COPY_SINGLE, 1);
     cvec4 color = {200, 200, 200, 255};
-    vkl_visual_prop_default(prop, &color);
+    dvz_visual_prop_default(prop, &color);
 
     // Marker size.
-    prop = vkl_visual_prop(
-        visual, VKL_PROP_MARKER_SIZE, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_copy(
-        prop, 1, offsetof(VklGraphicsMarkerVertex, size), VKL_ARRAY_COPY_SINGLE, 1);
+    prop = dvz_visual_prop(
+        visual, DVZ_PROP_MARKER_SIZE, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_copy(
+        prop, 1, offsetof(DvzGraphicsMarkerVertex, size), DVZ_ARRAY_COPY_SINGLE, 1);
     float size = 20;
-    vkl_visual_prop_default(prop, &size);
+    dvz_visual_prop_default(prop, &size);
 
     // Marker type.
-    prop = vkl_visual_prop(
-        visual, VKL_PROP_MARKER_TYPE, 0, VKL_DTYPE_CHAR, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_copy(
-        prop, 1, offsetof(VklGraphicsMarkerVertex, marker), VKL_ARRAY_COPY_SINGLE, 1);
-    VklMarkerType marker = VKL_MARKER_DISC;
-    vkl_visual_prop_default(prop, &marker);
+    prop = dvz_visual_prop(
+        visual, DVZ_PROP_MARKER_TYPE, 0, DVZ_DTYPE_CHAR, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_copy(
+        prop, 1, offsetof(DvzGraphicsMarkerVertex, marker), DVZ_ARRAY_COPY_SINGLE, 1);
+    DvzMarkerType marker = DVZ_MARKER_DISC;
+    dvz_visual_prop_default(prop, &marker);
 
     // Marker angle.
-    prop = vkl_visual_prop(visual, VKL_PROP_ANGLE, 0, VKL_DTYPE_CHAR, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_copy(
-        prop, 1, offsetof(VklGraphicsMarkerVertex, angle), VKL_ARRAY_COPY_SINGLE, 1);
+    prop = dvz_visual_prop(visual, DVZ_PROP_ANGLE, 0, DVZ_DTYPE_CHAR, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_copy(
+        prop, 1, offsetof(DvzGraphicsMarkerVertex, angle), DVZ_ARRAY_COPY_SINGLE, 1);
     float angle = 0;
-    vkl_visual_prop_default(prop, &angle);
+    dvz_visual_prop_default(prop, &angle);
 
     // Marker transform.
     prop =
-        vkl_visual_prop(visual, VKL_PROP_TRANSFORM, 0, VKL_DTYPE_CHAR, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_copy(
-        prop, 1, offsetof(VklGraphicsMarkerVertex, transform), VKL_ARRAY_COPY_SINGLE, 1);
+        dvz_visual_prop(visual, DVZ_PROP_TRANSFORM, 0, DVZ_DTYPE_CHAR, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_copy(
+        prop, 1, offsetof(DvzGraphicsMarkerVertex, transform), DVZ_ARRAY_COPY_SINGLE, 1);
 
     // Common props.
     _common_props(visual);
 
     // Param: edge color.
-    prop = vkl_visual_prop(visual, VKL_PROP_COLOR, 1, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);
-    vkl_visual_prop_copy(
-        prop, 0, offsetof(VklGraphicsMarkerParams, edge_color), VKL_ARRAY_COPY_SINGLE, 1);
+    prop = dvz_visual_prop(visual, DVZ_PROP_COLOR, 1, DVZ_DTYPE_VEC4, DVZ_SOURCE_TYPE_PARAM, 0);
+    dvz_visual_prop_copy(
+        prop, 0, offsetof(DvzGraphicsMarkerParams, edge_color), DVZ_ARRAY_COPY_SINGLE, 1);
     vec4 edge_color = {0, 0, 0, 1};
-    vkl_visual_prop_default(prop, &edge_color);
+    dvz_visual_prop_default(prop, &edge_color);
 
     // Param: edge width.
     prop =
-        vkl_visual_prop(visual, VKL_PROP_LINE_WIDTH, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_PARAM, 0);
-    vkl_visual_prop_copy(
-        prop, 0, offsetof(VklGraphicsMarkerParams, edge_width), VKL_ARRAY_COPY_SINGLE, 1);
+        dvz_visual_prop(visual, DVZ_PROP_LINE_WIDTH, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_PARAM, 0);
+    dvz_visual_prop_copy(
+        prop, 0, offsetof(DvzGraphicsMarkerParams, edge_width), DVZ_ARRAY_COPY_SINGLE, 1);
     float edge_width = 1;
-    vkl_visual_prop_default(prop, &edge_width);
+    dvz_visual_prop_default(prop, &edge_width);
 }
 
 
@@ -396,14 +396,14 @@ static void _visual_marker(VklVisual* visual)
 /*************************************************************************************************/
 
 // TODO: customizable params
-static cvec4 VKL_DEFAULT_AXES_COLOR[] = {
+static cvec4 DVZ_DEFAULT_AXES_COLOR[] = {
     {0, 0, 0, 255}, {0, 0, 0, 255}, {128, 128, 128, 255}, {0, 0, 0, 255}};
-static vec4 VKL_DEFAULT_AXES_LINE_WIDTH = {2.0f, 4.0f, 1.0f, 2.0f};
-static vec2 VKL_DEFAULT_AXES_TICK_LENGTH = {10.0f, 15.0f};
-static float VKL_DEFAULT_AXES_FONT_SIZE = 12.0f;
+static vec4 DVZ_DEFAULT_AXES_LINE_WIDTH = {2.0f, 4.0f, 1.0f, 2.0f};
+static vec2 DVZ_DEFAULT_AXES_TICK_LENGTH = {10.0f, 15.0f};
+static float DVZ_DEFAULT_AXES_FONT_SIZE = 12.0f;
 
 static uint32_t _count_prop_items(
-    VklVisual* visual, uint32_t prop_count, VklPropType* prop_types, //
+    DvzVisual* visual, uint32_t prop_count, DvzPropType* prop_types, //
     uint32_t idx_count)
 {
     ASSERT(visual != NULL);
@@ -412,13 +412,13 @@ static uint32_t _count_prop_items(
     {
         for (uint32_t j = 0; j < idx_count; j++)
         {
-            count += vkl_prop_size(vkl_prop_get(visual, prop_types[i], j));
+            count += dvz_prop_size(dvz_prop_get(visual, prop_types[i], j));
         }
     }
     return count;
 }
 
-static uint32_t _count_chars(VklArray* arr_text)
+static uint32_t _count_chars(DvzArray* arr_text)
 {
     ASSERT(arr_text != NULL);
     uint32_t n_text = arr_text->item_count;
@@ -435,33 +435,33 @@ static uint32_t _count_chars(VklArray* arr_text)
     return char_count;
 }
 
-static void _tick_pos(double x, VklAxisLevel level, VklAxisCoord coord, vec3 P0, vec3 P1)
+static void _tick_pos(double x, DvzAxisLevel level, DvzAxisCoord coord, vec3 P0, vec3 P1)
 {
     vec2 lim = {0};
     lim[0] = -1;
 
     switch (level)
     {
-    case VKL_AXES_LEVEL_MINOR:
-    case VKL_AXES_LEVEL_MAJOR:
+    case DVZ_AXES_LEVEL_MINOR:
+    case DVZ_AXES_LEVEL_MAJOR:
         lim[1] = -1;
         break;
-    case VKL_AXES_LEVEL_GRID:
-    case VKL_AXES_LEVEL_LIM:
+    case DVZ_AXES_LEVEL_GRID:
+    case DVZ_AXES_LEVEL_LIM:
         lim[1] = +1;
         break;
     default:
         break;
     }
 
-    if (coord == VKL_AXES_COORD_X)
+    if (coord == DVZ_AXES_COORD_X)
     {
         P0[0] = x;
         P0[1] = lim[0];
         P1[0] = x;
         P1[1] = lim[1];
     }
-    else if (coord == VKL_AXES_COORD_Y)
+    else if (coord == DVZ_AXES_COORD_Y)
     {
         P0[1] = x;
         P0[0] = lim[0];
@@ -471,15 +471,15 @@ static void _tick_pos(double x, VklAxisLevel level, VklAxisCoord coord, vec3 P0,
 }
 
 static void _tick_shift(
-    uint32_t i, uint32_t n, float s, vec2 tick_length, VklAxisLevel level, VklAxisCoord coord,
+    uint32_t i, uint32_t n, float s, vec2 tick_length, DvzAxisLevel level, DvzAxisCoord coord,
     vec4 shift)
 {
-    if (level <= VKL_AXES_LEVEL_MAJOR)
+    if (level <= DVZ_AXES_LEVEL_MAJOR)
         shift[3 - coord] = tick_length[level];
 
-    if (level == VKL_AXES_LEVEL_LIM)
+    if (level == DVZ_AXES_LEVEL_LIM)
     {
-        if (coord == VKL_AXES_COORD_X)
+        if (coord == DVZ_AXES_COORD_X)
         {
             // Prevent half of the first and last lines to be cut off by viewport clipping.
             if (i == 0)
@@ -493,7 +493,7 @@ static void _tick_shift(
                 shift[2] -= s;
             }
         }
-        else if (coord == VKL_AXES_COORD_Y)
+        else if (coord == DVZ_AXES_COORD_Y)
         {
             // Prevent half of the first and last lines to be cut off by viewport clipping.
             if (i == 0)
@@ -511,7 +511,7 @@ static void _tick_shift(
 }
 
 static void _add_ticks(
-    VklProp* tick_prop, VklGraphicsData* data, VklAxisLevel level, VklAxisCoord coord, cvec4 color,
+    DvzProp* tick_prop, DvzGraphicsData* data, DvzAxisLevel level, DvzAxisCoord coord, cvec4 color,
     float lw, vec2 tick_length)
 {
     ASSERT(tick_prop != NULL);
@@ -520,20 +520,20 @@ static void _add_ticks(
     double* x = NULL;
     vec3 P0 = {0};
     vec3 P1 = {0};
-    VklCapType cap = VKL_CAP_TYPE_NONE;
-    int32_t interact_axis = level == VKL_AXES_LEVEL_LIM ? VKL_INTERACT_FIXED_AXIS_ALL
-                                                        : VKL_INTERACT_FIXED_AXIS_DEFAULT;
+    DvzCapType cap = DVZ_CAP_TYPE_NONE;
+    int32_t interact_axis = level == DVZ_AXES_LEVEL_LIM ? DVZ_INTERACT_FIXED_AXIS_ALL
+                                                        : DVZ_INTERACT_FIXED_AXIS_DEFAULT;
     interact_axis = interact_axis >> 12;
     ASSERT(0 <= interact_axis && interact_axis <= 8);
 
     uint32_t n = tick_prop->arr_orig.item_count;
     ASSERT(n > 0);
     float s = 0 + .5 * lw;
-    VklGraphicsSegmentVertex vertex = {0};
+    DvzGraphicsSegmentVertex vertex = {0};
     for (uint32_t i = 0; i < n; i++)
     {
         // TODO: transformation
-        x = vkl_prop_item(tick_prop, i);
+        x = dvz_prop_item(tick_prop, i);
         ASSERT(x != NULL);
 
         _tick_shift(i, n, s, tick_length, level, coord, vertex.shift);
@@ -545,36 +545,36 @@ static void _add_ticks(
         vertex.cap0 = vertex.cap1 = cap;
         vertex.linewidth = lw;
         vertex.transform = interact_axis;
-        vkl_graphics_append(data, &vertex);
+        dvz_graphics_append(data, &vertex);
     }
 }
 
-static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
+static void _visual_axes_2D_bake(DvzVisual* visual, DvzVisualDataEvent ev)
 {
     ASSERT(visual != NULL);
 
     // Data sources.
-    VklSource* seg_vert_src = vkl_source_get(visual, VKL_SOURCE_TYPE_VERTEX, 0);
-    VklSource* seg_index_src = vkl_source_get(visual, VKL_SOURCE_TYPE_INDEX, 0);
-    VklSource* text_vert_src = vkl_source_get(visual, VKL_SOURCE_TYPE_VERTEX, 1);
+    DvzSource* seg_vert_src = dvz_source_get(visual, DVZ_SOURCE_TYPE_VERTEX, 0);
+    DvzSource* seg_index_src = dvz_source_get(visual, DVZ_SOURCE_TYPE_INDEX, 0);
+    DvzSource* text_vert_src = dvz_source_get(visual, DVZ_SOURCE_TYPE_VERTEX, 1);
 
     // HACK: mark the index buffer to be updated.
-    seg_index_src->obj.request = VKL_VISUAL_REQUEST_UPLOAD;
+    seg_index_src->obj.request = DVZ_VISUAL_REQUEST_UPLOAD;
 
     // Count the total number of segments.
     // NOTE: the number of segments is determined by the POS prop.
-    uint32_t count = _count_prop_items(visual, 1, (VklPropType[]){VKL_PROP_POS}, 4);
+    uint32_t count = _count_prop_items(visual, 1, (DvzPropType[]){DVZ_PROP_POS}, 4);
 
 
     // Segment graphics.
     // -----------------
 
-    VklGraphicsData seg_data =
-        vkl_graphics_data(visual->graphics[0], &seg_vert_src->arr, &seg_index_src->arr, visual);
-    vkl_graphics_alloc(&seg_data, count);
+    DvzGraphicsData seg_data =
+        dvz_graphics_data(visual->graphics[0], &seg_vert_src->arr, &seg_index_src->arr, visual);
+    dvz_graphics_alloc(&seg_data, count);
 
     // Visual coordinate.
-    VklAxisCoord coord = (VklAxisCoord)(visual->flags & 0xF);
+    DvzAxisCoord coord = (DvzAxisCoord)(visual->flags & 0xF);
     ASSERT(coord < 2);
 
     // Params
@@ -582,19 +582,19 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
     float lw = 0;
 
     float tick_length_minor = 0, tick_length_major = 0;
-    PARAM(float, tick_length_minor, LENGTH, VKL_AXES_LEVEL_MINOR)
-    PARAM(float, tick_length_major, LENGTH, VKL_AXES_LEVEL_MAJOR)
+    PARAM(float, tick_length_minor, LENGTH, DVZ_AXES_LEVEL_MINOR)
+    PARAM(float, tick_length_major, LENGTH, DVZ_AXES_LEVEL_MAJOR)
     DPI_SCALE(tick_length_minor)
     DPI_SCALE(tick_length_major)
 
     vec2 tick_length = {tick_length_minor, tick_length_major};
 
-    VklProp* prop = NULL;
+    DvzProp* prop = NULL;
     uint32_t tick_count = 0;
-    for (uint32_t level = 0; level < VKL_AXES_LEVEL_COUNT; level++)
+    for (uint32_t level = 0; level < DVZ_AXES_LEVEL_COUNT; level++)
     {
         // Take the tick positions.
-        prop = vkl_prop_get(visual, VKL_PROP_POS, level);
+        prop = dvz_prop_get(visual, DVZ_PROP_POS, level);
         ASSERT(prop != NULL);
         tick_count = prop->arr_orig.item_count; // number of ticks for this level.
         if (tick_count == 0)
@@ -605,19 +605,19 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
         PARAM(float, lw, LINE_WIDTH, level)
         DPI_SCALE(lw)
 
-        _add_ticks(prop, &seg_data, (VklAxisLevel)level, coord, color, lw, tick_length);
+        _add_ticks(prop, &seg_data, (DvzAxisLevel)level, coord, color, lw, tick_length);
     }
 
     // Labels: one for each major tick.
-    VklGraphicsData text_data =
-        vkl_graphics_data(visual->graphics[1], &text_vert_src->arr, NULL, visual);
+    DvzGraphicsData text_data =
+        dvz_graphics_data(visual->graphics[1], &text_vert_src->arr, NULL, visual);
 
     // Text prop.
-    VklArray* arr_text = _prop_array(vkl_prop_get(visual, VKL_PROP_TEXT, 0));
+    DvzArray* arr_text = _prop_array(dvz_prop_get(visual, DVZ_PROP_TEXT, 0));
     ASSERT(prop != NULL);
 
     // Major tick prop.
-    VklProp* prop_major = vkl_prop_get(visual, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR);
+    DvzProp* prop_major = dvz_prop_get(visual, DVZ_PROP_POS, DVZ_AXES_LEVEL_MAJOR);
     uint32_t n_major = prop_major->arr_orig.item_count;
     uint32_t n_text = arr_text->item_count;
     uint32_t count_chars = _count_chars(arr_text);
@@ -639,10 +639,10 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
     ASSERT(n_text > 0);
 
     // Allocate the text vertex array.
-    vkl_graphics_alloc(&text_data, count_chars);
+    dvz_graphics_alloc(&text_data, count_chars);
 
     char* text = NULL;
-    VklGraphicsTextItem str_item = {0};
+    DvzGraphicsTextItem str_item = {0};
     double* x = NULL;
     vec3 P = {0};
     float font_size = 0;
@@ -650,12 +650,12 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
     PARAM(float, font_size, TEXT_SIZE, 0)
     DPI_SCALE(font_size)
 
-    if (coord == VKL_AXES_COORD_X)
+    if (coord == DVZ_AXES_COORD_X)
     {
         str_item.vertex.anchor[1] = 1;
         str_item.vertex.shift[1] = -10;
     }
-    else if (coord == VKL_AXES_COORD_Y)
+    else if (coord == DVZ_AXES_COORD_Y)
     {
         str_item.vertex.anchor[0] = -1;
         str_item.vertex.shift[0] = -10;
@@ -671,103 +671,103 @@ static void _visual_axes_2D_bake(VklVisual* visual, VklVisualDataEvent ev)
         str_item.string = text;
 
         // Position of the text corresponds to position of the major tick.
-        x = vkl_prop_item(prop_major, i);
+        x = dvz_prop_item(prop_major, i);
         ASSERT(x != NULL);
-        _tick_pos(*x, VKL_AXES_LEVEL_MAJOR, coord, str_item.vertex.pos, P);
+        _tick_pos(*x, DVZ_AXES_LEVEL_MAJOR, coord, str_item.vertex.pos, P);
 
-        vkl_graphics_append(&text_data, &str_item);
+        dvz_graphics_append(&text_data, &str_item);
     }
 }
 
-static void _visual_axes_2D(VklVisual* visual)
+static void _visual_axes_2D(DvzVisual* visual)
 {
     ASSERT(visual != NULL);
-    VklCanvas* canvas = visual->canvas;
+    DvzCanvas* canvas = visual->canvas;
     ASSERT(canvas != NULL);
-    VklProp* prop = NULL;
+    DvzProp* prop = NULL;
 
     // Graphics.
-    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_SEGMENT, 0));
-    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_TEXT, 0));
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_SEGMENT, 0));
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TEXT, 0));
 
     // Segment graphics.
     {
         // Vertex buffer.
-        vkl_visual_source(
-            visual, VKL_SOURCE_TYPE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, //
-            0, sizeof(VklGraphicsSegmentVertex), 0);
+        dvz_visual_source(
+            visual, DVZ_SOURCE_TYPE_VERTEX, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+            0, sizeof(DvzGraphicsSegmentVertex), 0);
 
         // Index buffer.
-        vkl_visual_source(
-            visual, VKL_SOURCE_TYPE_INDEX, 0, VKL_PIPELINE_GRAPHICS, 0, //
-            0, sizeof(VklIndex), 0);
+        dvz_visual_source(
+            visual, DVZ_SOURCE_TYPE_INDEX, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+            0, sizeof(DvzIndex), 0);
     }
 
     // Text graphics.
     {
         // Vertex buffer.
-        vkl_visual_source(
-            visual, VKL_SOURCE_TYPE_VERTEX, 1, VKL_PIPELINE_GRAPHICS, 1, //
-            0, sizeof(VklGraphicsTextVertex), 0);
+        dvz_visual_source(
+            visual, DVZ_SOURCE_TYPE_VERTEX, 1, DVZ_PIPELINE_GRAPHICS, 1, //
+            0, sizeof(DvzGraphicsTextVertex), 0);
 
         // Parameters.
-        vkl_visual_source(
-            visual, VKL_SOURCE_TYPE_PARAM, 0, VKL_PIPELINE_GRAPHICS, 1, //
-            VKL_USER_BINDING, sizeof(VklGraphicsTextParams), 0);
+        dvz_visual_source(
+            visual, DVZ_SOURCE_TYPE_PARAM, 0, DVZ_PIPELINE_GRAPHICS, 1, //
+            DVZ_USER_BINDING, sizeof(DvzGraphicsTextParams), 0);
 
         // Font atlas texture.
-        vkl_visual_source(
-            visual, VKL_SOURCE_TYPE_FONT_ATLAS, 0, VKL_PIPELINE_GRAPHICS, 1, //
-            VKL_USER_BINDING + 1, sizeof(cvec4), 0);
+        dvz_visual_source(
+            visual, DVZ_SOURCE_TYPE_FONT_ATLAS, 0, DVZ_PIPELINE_GRAPHICS, 1, //
+            DVZ_USER_BINDING + 1, sizeof(cvec4), 0);
     }
 
     // Uniform buffers. // set MVP and Viewport sources for pipeline #0
     _common_sources(visual);
 
     // Binding #0: uniform buffer MVP
-    vkl_visual_source( //
-        visual, VKL_SOURCE_TYPE_MVP, 1, VKL_PIPELINE_GRAPHICS, 1, 0, sizeof(VklMVP),
-        VKL_SOURCE_FLAG_MAPPABLE);
+    dvz_visual_source( //
+        visual, DVZ_SOURCE_TYPE_MVP, 1, DVZ_PIPELINE_GRAPHICS, 1, 0, sizeof(DvzMVP),
+        DVZ_SOURCE_FLAG_MAPPABLE);
     // Share the MVP source with the second graphics pipeline.
-    vkl_visual_source_share(visual, VKL_SOURCE_TYPE_MVP, 0, 1);
+    dvz_visual_source_share(visual, DVZ_SOURCE_TYPE_MVP, 0, 1);
 
     // NOTE: the viewport source is not shared, as we want different clipping for both graphics.
-    vkl_visual_source(
-        visual, VKL_SOURCE_TYPE_VIEWPORT, 1, VKL_PIPELINE_GRAPHICS, 1, 1, sizeof(VklViewport), 0);
+    dvz_visual_source(
+        visual, DVZ_SOURCE_TYPE_VIEWPORT, 1, DVZ_PIPELINE_GRAPHICS, 1, 1, sizeof(DvzViewport), 0);
 
     // Segment graphics props.
     {
-        for (uint32_t level = 0; level < VKL_AXES_LEVEL_COUNT; level++)
+        for (uint32_t level = 0; level < DVZ_AXES_LEVEL_COUNT; level++)
         {
             // xticks
-            prop = vkl_visual_prop(
-                visual, VKL_PROP_POS, level, VKL_DTYPE_DOUBLE, VKL_SOURCE_TYPE_VERTEX, 0);
+            prop = dvz_visual_prop(
+                visual, DVZ_PROP_POS, level, DVZ_DTYPE_DOUBLE, DVZ_SOURCE_TYPE_VERTEX, 0);
 
             // color
-            prop = vkl_visual_prop(
-                visual, VKL_PROP_COLOR, level, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
-            vkl_visual_prop_default(prop, &VKL_DEFAULT_AXES_COLOR[level]);
+            prop = dvz_visual_prop(
+                visual, DVZ_PROP_COLOR, level, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 0);
+            dvz_visual_prop_default(prop, &DVZ_DEFAULT_AXES_COLOR[level]);
 
             // line width
-            prop = vkl_visual_prop(
-                visual, VKL_PROP_LINE_WIDTH, level, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_VERTEX, 0);
-            vkl_visual_prop_default(prop, &VKL_DEFAULT_AXES_LINE_WIDTH[level]);
+            prop = dvz_visual_prop(
+                visual, DVZ_PROP_LINE_WIDTH, level, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_VERTEX, 0);
+            dvz_visual_prop_default(prop, &DVZ_DEFAULT_AXES_LINE_WIDTH[level]);
         }
 
         // minor tick length
-        prop = vkl_visual_prop(
-            visual, VKL_PROP_LENGTH, VKL_AXES_LEVEL_MINOR, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_VERTEX,
+        prop = dvz_visual_prop(
+            visual, DVZ_PROP_LENGTH, DVZ_AXES_LEVEL_MINOR, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_VERTEX,
             0);
-        vkl_visual_prop_default(prop, &VKL_DEFAULT_AXES_TICK_LENGTH[0]);
+        dvz_visual_prop_default(prop, &DVZ_DEFAULT_AXES_TICK_LENGTH[0]);
 
         // major tick length
-        prop = vkl_visual_prop(
-            visual, VKL_PROP_LENGTH, VKL_AXES_LEVEL_MAJOR, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_VERTEX,
+        prop = dvz_visual_prop(
+            visual, DVZ_PROP_LENGTH, DVZ_AXES_LEVEL_MAJOR, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_VERTEX,
             0);
-        vkl_visual_prop_default(prop, &VKL_DEFAULT_AXES_TICK_LENGTH[1]);
+        dvz_visual_prop_default(prop, &DVZ_DEFAULT_AXES_TICK_LENGTH[1]);
 
         // tick h margin
-        // vkl_visual_prop(visual, VKL_PROP_MARGIN, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_VERTEX, 0);
+        // dvz_visual_prop(visual, DVZ_PROP_MARGIN, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_VERTEX, 0);
         // TODO: default
     }
 
@@ -776,15 +776,15 @@ static void _visual_axes_2D(VklVisual* visual)
     // Text graphics props.
     {
         // tick text
-        prop = vkl_visual_prop(visual, VKL_PROP_TEXT, 0, VKL_DTYPE_STR, VKL_SOURCE_TYPE_VERTEX, 1);
+        prop = dvz_visual_prop(visual, DVZ_PROP_TEXT, 0, DVZ_DTYPE_STR, DVZ_SOURCE_TYPE_VERTEX, 1);
 
         // tick text size
-        prop = vkl_visual_prop(
-            visual, VKL_PROP_TEXT_SIZE, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_VERTEX, 1);
-        vkl_visual_prop_default(prop, &VKL_DEFAULT_AXES_FONT_SIZE);
+        prop = dvz_visual_prop(
+            visual, DVZ_PROP_TEXT_SIZE, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_VERTEX, 1);
+        dvz_visual_prop_default(prop, &DVZ_DEFAULT_AXES_FONT_SIZE);
     }
 
-    vkl_visual_callback_bake(visual, _visual_axes_2D_bake);
+    dvz_visual_callback_bake(visual, _visual_axes_2D_bake);
 }
 
 
@@ -793,25 +793,25 @@ static void _visual_axes_2D(VklVisual* visual)
 /*  Polygon                                                                                      */
 /*************************************************************************************************/
 
-static void _polygon_bake(VklVisual* visual, VklVisualDataEvent ev)
+static void _polygon_bake(DvzVisual* visual, DvzVisualDataEvent ev)
 {
     ASSERT(visual != NULL);
 
-    VklProp* prop_pos = vkl_prop_get(visual, VKL_PROP_POS, 0);       // dvec3
-    VklProp* prop_length = vkl_prop_get(visual, VKL_PROP_LENGTH, 0); // uint
-    VklProp* prop_color = vkl_prop_get(visual, VKL_PROP_COLOR, 0);   // cvec4
+    DvzProp* prop_pos = dvz_prop_get(visual, DVZ_PROP_POS, 0);       // dvec3
+    DvzProp* prop_length = dvz_prop_get(visual, DVZ_PROP_LENGTH, 0); // uint
+    DvzProp* prop_color = dvz_prop_get(visual, DVZ_PROP_COLOR, 0);   // cvec4
 
-    VklArray* arr_pos = _prop_array(prop_pos);
-    VklArray* arr_length = _prop_array(prop_length);
-    VklArray* arr_color = _prop_array(prop_color);
+    DvzArray* arr_pos = _prop_array(prop_pos);
+    DvzArray* arr_length = _prop_array(prop_length);
+    DvzArray* arr_color = _prop_array(prop_color);
 
-    VklSource* src_vertex = vkl_source_get(visual, VKL_SOURCE_TYPE_VERTEX, 0);
-    VklSource* src_index = vkl_source_get(visual, VKL_SOURCE_TYPE_INDEX, 0);
+    DvzSource* src_vertex = dvz_source_get(visual, DVZ_SOURCE_TYPE_VERTEX, 0);
+    DvzSource* src_index = dvz_source_get(visual, DVZ_SOURCE_TYPE_INDEX, 0);
 
     // The baking function doesn't run if the VERTEX source is handled by the user.
-    if (src_vertex->origin != VKL_SOURCE_ORIGIN_LIB)
+    if (src_vertex->origin != DVZ_SOURCE_ORIGIN_LIB)
         return;
-    if (src_vertex->obj.request != VKL_VISUAL_REQUEST_UPLOAD)
+    if (src_vertex->obj.request != DVZ_VISUAL_REQUEST_UPLOAD)
     {
         log_trace(
             "skip bake source for source %d that doesn't need updating", src_vertex->source_kind);
@@ -819,8 +819,8 @@ static void _polygon_bake(VklVisual* visual, VklVisualDataEvent ev)
     }
 
     // Source arrays.
-    VklArray* arr_vertex = &src_vertex->arr;
-    VklArray* arr_index = &src_index->arr;
+    DvzArray* arr_vertex = &src_vertex->arr;
+    DvzArray* arr_index = &src_index->arr;
 
     // Number of points and polygons.
     uint32_t n_points = arr_pos->item_count;
@@ -843,7 +843,7 @@ static void _polygon_bake(VklVisual* visual, VklVisualDataEvent ev)
     // Triangulate all polygons.
     for (uint32_t i = 0; i < n_polys; i++)
     {
-        vkl_triangulate_polygon(
+        dvz_triangulate_polygon(
             poly_lengths[i], (const dvec3*)&points[offset], &index_count, &indices);
         ASSERT(indices != NULL);
         ASSERT(index_count > 0);
@@ -870,13 +870,13 @@ static void _polygon_bake(VklVisual* visual, VklVisualDataEvent ev)
     }
 
     // Reesize and fill the vertex buffer.
-    vkl_array_resize(arr_vertex, n_points);
+    dvz_array_resize(arr_vertex, n_points);
     // Copy the positions from the pos prop to the vertex buffer.
     _prop_copy(visual, prop_pos);
 
     // Resize and fill the index buffer.
-    vkl_array_resize(arr_index, total_index_count);
-    vkl_array_data(arr_index, 0, total_index_count, total_index_count, total_indices);
+    dvz_array_resize(arr_index, total_index_count);
+    dvz_array_data(arr_index, 0, total_index_count, total_index_count, total_indices);
 
     // Copy the polygon colors to the vertices.
     cvec4* color = NULL;
@@ -885,11 +885,11 @@ static void _polygon_bake(VklVisual* visual, VklVisualDataEvent ev)
     for (uint32_t i = 0; i < n_polys; i++)
     {
         // Color prop for the current polygon.
-        color = (cvec4*)vkl_array_item(arr_color, i);
+        color = (cvec4*)dvz_array_item(arr_color, i);
         // Copy the color to the vertex buffer, repeating it for each vertex in the polygon.
-        vkl_array_column(
-            arr_vertex, offsetof(VklVertex, color), sizeof(cvec4), k, poly_lengths[i], 1, color,
-            VKL_DTYPE_NONE, VKL_DTYPE_NONE, VKL_ARRAY_COPY_SINGLE, 1);
+        dvz_array_column(
+            arr_vertex, offsetof(DvzVertex, color), sizeof(cvec4), k, poly_lengths[i], 1, color,
+            DVZ_DTYPE_NONE, DVZ_DTYPE_NONE, DVZ_ARRAY_COPY_SINGLE, 1);
         k += poly_lengths[i];
     }
 
@@ -898,44 +898,44 @@ static void _polygon_bake(VklVisual* visual, VklVisualDataEvent ev)
     FREE(total_indices);
 }
 
-static void _visual_polygon(VklVisual* visual)
+static void _visual_polygon(DvzVisual* visual)
 {
     ASSERT(visual != NULL);
-    VklCanvas* canvas = visual->canvas;
+    DvzCanvas* canvas = visual->canvas;
     ASSERT(canvas != NULL);
-    VklProp* prop = NULL;
+    DvzProp* prop = NULL;
 
     // Graphics.
-    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_TRIANGLE, 0));
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TRIANGLE, 0));
 
     // Sources
-    vkl_visual_source(
-        visual, VKL_SOURCE_TYPE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklVertex), 0);
+    dvz_visual_source(
+        visual, DVZ_SOURCE_TYPE_VERTEX, 0, DVZ_PIPELINE_GRAPHICS, 0, 0, sizeof(DvzVertex), 0);
 
-    vkl_visual_source(
-        visual, VKL_SOURCE_TYPE_INDEX, 0, VKL_PIPELINE_GRAPHICS, 0, 0, sizeof(VklIndex), 0);
+    dvz_visual_source(
+        visual, DVZ_SOURCE_TYPE_INDEX, 0, DVZ_PIPELINE_GRAPHICS, 0, 0, sizeof(DvzIndex), 0);
 
     _common_sources(visual);
 
     // Props:
 
     // Polygon points, 1 position per point.
-    prop = vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
+    prop = dvz_visual_prop(visual, DVZ_PROP_POS, 0, DVZ_DTYPE_DVEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
     // Copy the polygon points directly to the vertex buffer, as the triangulation only sets the
     // vertex indices and does not change the vertices themselves.
-    vkl_visual_prop_cast(
-        prop, 0, offsetof(VklVertex, pos), VKL_DTYPE_VEC3, VKL_ARRAY_COPY_SINGLE, 1);
+    dvz_visual_prop_cast(
+        prop, 0, offsetof(DvzVertex, pos), DVZ_DTYPE_VEC3, DVZ_ARRAY_COPY_SINGLE, 1);
 
     // Polygon lengths, 1 length per polygon.
-    prop = vkl_visual_prop(visual, VKL_PROP_LENGTH, 0, VKL_DTYPE_UINT, VKL_SOURCE_TYPE_VERTEX, 0);
+    prop = dvz_visual_prop(visual, DVZ_PROP_LENGTH, 0, DVZ_DTYPE_UINT, DVZ_SOURCE_TYPE_VERTEX, 0);
 
     // Polygon colors, 1 color per polygon.
-    prop = vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
+    prop = dvz_visual_prop(visual, DVZ_PROP_COLOR, 0, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 0);
 
     // Common props.
     _common_props(visual);
 
-    vkl_visual_callback_bake(visual, _polygon_bake);
+    dvz_visual_callback_bake(visual, _polygon_bake);
 }
 
 
@@ -952,23 +952,23 @@ static void _visual_polygon(VklVisual* visual)
 /*  Mesh                                                                                         */
 /*************************************************************************************************/
 
-static void _mesh_bake(VklVisual* visual, VklVisualDataEvent ev)
+static void _mesh_bake(DvzVisual* visual, DvzVisualDataEvent ev)
 {
     // Take the color prop and override the tex coords and alpha if needed.
-    VklProp* prop_color = vkl_prop_get(visual, VKL_PROP_COLOR, 0);         // cvec4
-    VklProp* prop_texcoords = vkl_prop_get(visual, VKL_PROP_TEXCOORDS, 0); // vec2
-    VklProp* prop_alpha = vkl_prop_get(visual, VKL_PROP_ALPHA, 0);         // uint8_t
+    DvzProp* prop_color = dvz_prop_get(visual, DVZ_PROP_COLOR, 0);         // cvec4
+    DvzProp* prop_texcoords = dvz_prop_get(visual, DVZ_PROP_TEXCOORDS, 0); // vec2
+    DvzProp* prop_alpha = dvz_prop_get(visual, DVZ_PROP_ALPHA, 0);         // uint8_t
 
-    VklArray* arr_color = _prop_array(prop_color);
-    VklArray* arr_texcoords = _prop_array(prop_texcoords);
-    VklArray* arr_alpha = _prop_array(prop_alpha);
+    DvzArray* arr_color = _prop_array(prop_color);
+    DvzArray* arr_texcoords = _prop_array(prop_texcoords);
+    DvzArray* arr_alpha = _prop_array(prop_alpha);
 
     // If colors have been specified, we need to override texcoords.
     uint32_t N = arr_color->item_count;
     if (N > 0)
     {
-        vkl_array_resize(arr_texcoords, N);
-        vkl_array_resize(arr_alpha, N);
+        dvz_array_resize(arr_texcoords, N);
+        dvz_array_resize(arr_alpha, N);
 
         ASSERT(arr_texcoords->item_count == N);
         ASSERT(arr_alpha->item_count == N);
@@ -980,13 +980,13 @@ static void _mesh_bake(VklVisual* visual, VklVisualDataEvent ev)
 
         for (uint32_t i = 0; i < N; i++)
         {
-            color = vkl_array_item(arr_color, i);
-            uv = vkl_array_item(arr_texcoords, i);
-            alpha = vkl_array_item(arr_alpha, i);
+            color = dvz_array_item(arr_color, i);
+            uv = dvz_array_item(arr_texcoords, i);
+            alpha = dvz_array_item(arr_alpha, i);
 
             // Copy the color RGB components to the UV tex coords by packing 3 char into a float
             rgb = (cvec3*)color;
-            vkl_colormap_packuv(*rgb, *uv);
+            dvz_colormap_packuv(*rgb, *uv);
 
             // Copy the alpha component to the ALPHA prop
             *alpha = (*color)[3];
@@ -996,110 +996,110 @@ static void _mesh_bake(VklVisual* visual, VklVisualDataEvent ev)
     _default_visual_bake(visual, ev);
 }
 
-static void _visual_mesh(VklVisual* visual)
+static void _visual_mesh(DvzVisual* visual)
 {
     ASSERT(visual != NULL);
-    VklCanvas* canvas = visual->canvas;
+    DvzCanvas* canvas = visual->canvas;
     ASSERT(canvas != NULL);
-    VklProp* prop = NULL;
+    DvzProp* prop = NULL;
 
     // Graphics.
-    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_MESH, 0));
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_MESH, 0));
 
     // Sources
-    vkl_visual_source(                                               // vertex buffer
-        visual, VKL_SOURCE_TYPE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, //
-        0, sizeof(VklGraphicsMeshVertex), 0);                        //
+    dvz_visual_source(                                               // vertex buffer
+        visual, DVZ_SOURCE_TYPE_VERTEX, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+        0, sizeof(DvzGraphicsMeshVertex), 0);                        //
 
-    vkl_visual_source(                                              // index buffer
-        visual, VKL_SOURCE_TYPE_INDEX, 0, VKL_PIPELINE_GRAPHICS, 0, //
-        0, sizeof(VklIndex), 0);                                    //
+    dvz_visual_source(                                              // index buffer
+        visual, DVZ_SOURCE_TYPE_INDEX, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+        0, sizeof(DvzIndex), 0);                                    //
 
     _common_sources(visual); // common sources
 
-    vkl_visual_source(                                              // params
-        visual, VKL_SOURCE_TYPE_PARAM, 0, VKL_PIPELINE_GRAPHICS, 0, //
-        VKL_USER_BINDING, sizeof(VklGraphicsMeshParams), 0);        //
+    dvz_visual_source(                                              // params
+        visual, DVZ_SOURCE_TYPE_PARAM, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+        DVZ_USER_BINDING, sizeof(DvzGraphicsMeshParams), 0);        //
 
     for (uint32_t i = 0; i < 4; i++)                                    // texture sources
-        vkl_visual_source(                                              //
-            visual, VKL_SOURCE_TYPE_IMAGE, i, VKL_PIPELINE_GRAPHICS, 0, //
-            VKL_USER_BINDING + i + 1, sizeof(cvec4), 0);                //
+        dvz_visual_source(                                              //
+            visual, DVZ_SOURCE_TYPE_IMAGE, i, DVZ_PIPELINE_GRAPHICS, 0, //
+            DVZ_USER_BINDING + i + 1, sizeof(cvec4), 0);                //
 
     // Props:
 
     // Vertex pos.
-    prop = vkl_visual_prop(visual, VKL_PROP_POS, 0, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_cast(
-        prop, 0, offsetof(VklGraphicsMeshVertex, pos), VKL_DTYPE_VEC3, VKL_ARRAY_COPY_SINGLE, 1);
+    prop = dvz_visual_prop(visual, DVZ_PROP_POS, 0, DVZ_DTYPE_DVEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_cast(
+        prop, 0, offsetof(DvzGraphicsMeshVertex, pos), DVZ_DTYPE_VEC3, DVZ_ARRAY_COPY_SINGLE, 1);
 
     // Vertex normal.
-    prop = vkl_visual_prop(visual, VKL_PROP_NORMAL, 0, VKL_DTYPE_VEC3, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_copy(
-        prop, 0, offsetof(VklGraphicsMeshVertex, normal), VKL_ARRAY_COPY_SINGLE, 1);
+    prop = dvz_visual_prop(visual, DVZ_PROP_NORMAL, 0, DVZ_DTYPE_VEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_copy(
+        prop, 0, offsetof(DvzGraphicsMeshVertex, normal), DVZ_ARRAY_COPY_SINGLE, 1);
 
     // Vertex tex coords.
     prop =
-        vkl_visual_prop(visual, VKL_PROP_TEXCOORDS, 0, VKL_DTYPE_VEC2, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_copy(prop, 0, offsetof(VklGraphicsMeshVertex, uv), VKL_ARRAY_COPY_SINGLE, 1);
+        dvz_visual_prop(visual, DVZ_PROP_TEXCOORDS, 0, DVZ_DTYPE_VEC2, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_copy(prop, 0, offsetof(DvzGraphicsMeshVertex, uv), DVZ_ARRAY_COPY_SINGLE, 1);
 
     // Vertex color: override tex coords by packing 3 bytes into a float
-    prop = vkl_visual_prop(visual, VKL_PROP_COLOR, 0, VKL_DTYPE_CVEC4, VKL_SOURCE_TYPE_VERTEX, 0);
+    prop = dvz_visual_prop(visual, DVZ_PROP_COLOR, 0, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 0);
 
     // Vertex alpha.
-    prop = vkl_visual_prop(visual, VKL_PROP_ALPHA, 0, VKL_DTYPE_CHAR, VKL_SOURCE_TYPE_VERTEX, 0);
-    vkl_visual_prop_copy(
-        prop, 0, offsetof(VklGraphicsMeshVertex, alpha), VKL_ARRAY_COPY_SINGLE, 1);
+    prop = dvz_visual_prop(visual, DVZ_PROP_ALPHA, 0, DVZ_DTYPE_CHAR, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_copy(
+        prop, 0, offsetof(DvzGraphicsMeshVertex, alpha), DVZ_ARRAY_COPY_SINGLE, 1);
     uint8_t alpha = 255;
-    vkl_visual_prop_default(prop, &alpha);
+    dvz_visual_prop_default(prop, &alpha);
 
     // Index.
-    prop = vkl_visual_prop(visual, VKL_PROP_INDEX, 0, VKL_DTYPE_UINT, VKL_SOURCE_TYPE_INDEX, 0);
-    vkl_visual_prop_copy(prop, 0, 0, VKL_ARRAY_COPY_SINGLE, 1);
+    prop = dvz_visual_prop(visual, DVZ_PROP_INDEX, 0, DVZ_DTYPE_UINT, DVZ_SOURCE_TYPE_INDEX, 0);
+    dvz_visual_prop_copy(prop, 0, 0, DVZ_ARRAY_COPY_SINGLE, 1);
 
     // Common props.
     _common_props(visual);
 
     // Params.
     // Default values.
-    VklGraphicsMeshParams params = default_graphics_mesh_params(VKL_CAMERA_EYE);
+    DvzGraphicsMeshParams params = default_graphics_mesh_params(DVZ_CAMERA_EYE);
 
     // Light positions.
     prop =
-        vkl_visual_prop(visual, VKL_PROP_LIGHT_POS, 0, VKL_DTYPE_MAT4, VKL_SOURCE_TYPE_PARAM, 0);
-    vkl_visual_prop_copy(
-        prop, 0, offsetof(VklGraphicsMeshParams, lights_pos_0), VKL_ARRAY_COPY_SINGLE, 1);
-    vkl_visual_prop_default(prop, &params.lights_pos_0);
+        dvz_visual_prop(visual, DVZ_PROP_LIGHT_POS, 0, DVZ_DTYPE_MAT4, DVZ_SOURCE_TYPE_PARAM, 0);
+    dvz_visual_prop_copy(
+        prop, 0, offsetof(DvzGraphicsMeshParams, lights_pos_0), DVZ_ARRAY_COPY_SINGLE, 1);
+    dvz_visual_prop_default(prop, &params.lights_pos_0);
 
     // Light params.
-    prop = vkl_visual_prop(
-        visual, VKL_PROP_LIGHT_PARAMS, 0, VKL_DTYPE_MAT4, VKL_SOURCE_TYPE_PARAM, 0);
-    vkl_visual_prop_copy(
-        prop, 1, offsetof(VklGraphicsMeshParams, lights_params_0), VKL_ARRAY_COPY_SINGLE, 1);
-    vkl_visual_prop_default(prop, &params.lights_params_0);
+    prop = dvz_visual_prop(
+        visual, DVZ_PROP_LIGHT_PARAMS, 0, DVZ_DTYPE_MAT4, DVZ_SOURCE_TYPE_PARAM, 0);
+    dvz_visual_prop_copy(
+        prop, 1, offsetof(DvzGraphicsMeshParams, lights_params_0), DVZ_ARRAY_COPY_SINGLE, 1);
+    dvz_visual_prop_default(prop, &params.lights_params_0);
 
     // View pos.
-    prop = vkl_visual_prop(visual, VKL_PROP_VIEW_POS, 0, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);
-    vkl_visual_prop_copy(
-        prop, 2, offsetof(VklGraphicsMeshParams, view_pos), VKL_ARRAY_COPY_SINGLE, 1);
-    vkl_visual_prop_default(prop, &params.view_pos);
+    prop = dvz_visual_prop(visual, DVZ_PROP_VIEW_POS, 0, DVZ_DTYPE_VEC4, DVZ_SOURCE_TYPE_PARAM, 0);
+    dvz_visual_prop_copy(
+        prop, 2, offsetof(DvzGraphicsMeshParams, view_pos), DVZ_ARRAY_COPY_SINGLE, 1);
+    dvz_visual_prop_default(prop, &params.view_pos);
 
     // Texture coefficients.
-    prop = vkl_visual_prop(visual, VKL_PROP_TEXCOEFS, 0, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);
-    vkl_visual_prop_copy(
-        prop, 3, offsetof(VklGraphicsMeshParams, tex_coefs), VKL_ARRAY_COPY_SINGLE, 1);
-    vkl_visual_prop_default(prop, &params.tex_coefs);
+    prop = dvz_visual_prop(visual, DVZ_PROP_TEXCOEFS, 0, DVZ_DTYPE_VEC4, DVZ_SOURCE_TYPE_PARAM, 0);
+    dvz_visual_prop_copy(
+        prop, 3, offsetof(DvzGraphicsMeshParams, tex_coefs), DVZ_ARRAY_COPY_SINGLE, 1);
+    dvz_visual_prop_default(prop, &params.tex_coefs);
 
     // Clipping coefficients.
-    prop = vkl_visual_prop(visual, VKL_PROP_CLIP, 0, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);
-    vkl_visual_prop_copy(
-        prop, 4, offsetof(VklGraphicsMeshParams, clip_coefs), VKL_ARRAY_COPY_SINGLE, 1);
+    prop = dvz_visual_prop(visual, DVZ_PROP_CLIP, 0, DVZ_DTYPE_VEC4, DVZ_SOURCE_TYPE_PARAM, 0);
+    dvz_visual_prop_copy(
+        prop, 4, offsetof(DvzGraphicsMeshParams, clip_coefs), DVZ_ARRAY_COPY_SINGLE, 1);
 
     // Texture props.
     for (uint32_t i = 0; i < 4; i++)
-        vkl_visual_prop(visual, VKL_PROP_IMAGE, i, VKL_DTYPE_UINT, VKL_SOURCE_TYPE_IMAGE, i);
+        dvz_visual_prop(visual, DVZ_PROP_IMAGE, i, DVZ_DTYPE_UINT, DVZ_SOURCE_TYPE_IMAGE, i);
 
-    vkl_visual_callback_bake(visual, _mesh_bake);
+    dvz_visual_callback_bake(visual, _mesh_bake);
 }
 
 
@@ -1108,24 +1108,24 @@ static void _visual_mesh(VklVisual* visual)
 /*  Volume image                                                                                 */
 /*************************************************************************************************/
 
-static void _visual_volume_slice_bake(VklVisual* visual, VklVisualDataEvent ev)
+static void _visual_volume_slice_bake(DvzVisual* visual, DvzVisualDataEvent ev)
 {
     ASSERT(visual != NULL);
 
     // Vertex buffer source.
-    VklSource* source = vkl_source_get(visual, VKL_SOURCE_TYPE_VERTEX, 0);
-    ASSERT(source->arr.item_size == sizeof(VklGraphicsVolumeSliceVertex));
+    DvzSource* source = dvz_source_get(visual, DVZ_SOURCE_TYPE_VERTEX, 0);
+    ASSERT(source->arr.item_size == sizeof(DvzGraphicsVolumeSliceVertex));
 
     // Get props.
-    VklProp* pos0 = vkl_prop_get(visual, VKL_PROP_POS, 0);
-    VklProp* pos1 = vkl_prop_get(visual, VKL_PROP_POS, 1);
-    VklProp* pos2 = vkl_prop_get(visual, VKL_PROP_POS, 2);
-    VklProp* pos3 = vkl_prop_get(visual, VKL_PROP_POS, 3);
+    DvzProp* pos0 = dvz_prop_get(visual, DVZ_PROP_POS, 0);
+    DvzProp* pos1 = dvz_prop_get(visual, DVZ_PROP_POS, 1);
+    DvzProp* pos2 = dvz_prop_get(visual, DVZ_PROP_POS, 2);
+    DvzProp* pos3 = dvz_prop_get(visual, DVZ_PROP_POS, 3);
 
-    VklProp* uvw0 = vkl_prop_get(visual, VKL_PROP_TEXCOORDS, 0);
-    VklProp* uvw1 = vkl_prop_get(visual, VKL_PROP_TEXCOORDS, 1);
-    VklProp* uvw2 = vkl_prop_get(visual, VKL_PROP_TEXCOORDS, 2);
-    VklProp* uvw3 = vkl_prop_get(visual, VKL_PROP_TEXCOORDS, 3);
+    DvzProp* uvw0 = dvz_prop_get(visual, DVZ_PROP_TEXCOORDS, 0);
+    DvzProp* uvw1 = dvz_prop_get(visual, DVZ_PROP_TEXCOORDS, 1);
+    DvzProp* uvw2 = dvz_prop_get(visual, DVZ_PROP_TEXCOORDS, 2);
+    DvzProp* uvw3 = dvz_prop_get(visual, DVZ_PROP_TEXCOORDS, 3);
 
     ASSERT(pos0 != NULL);
     ASSERT(pos1 != NULL);
@@ -1138,78 +1138,78 @@ static void _visual_volume_slice_bake(VklVisual* visual, VklVisualDataEvent ev)
     ASSERT(uvw3 != NULL);
 
     // Number of images
-    uint32_t img_count = vkl_prop_size(pos0);
-    ASSERT(vkl_prop_size(pos1) == img_count);
-    ASSERT(vkl_prop_size(pos2) == img_count);
-    ASSERT(vkl_prop_size(pos3) == img_count);
+    uint32_t img_count = dvz_prop_size(pos0);
+    ASSERT(dvz_prop_size(pos1) == img_count);
+    ASSERT(dvz_prop_size(pos2) == img_count);
+    ASSERT(dvz_prop_size(pos3) == img_count);
 
     // Graphics data.
-    VklGraphicsData data = vkl_graphics_data(visual->graphics[0], &source->arr, NULL, NULL);
-    vkl_graphics_alloc(&data, img_count);
+    DvzGraphicsData data = dvz_graphics_data(visual->graphics[0], &source->arr, NULL, NULL);
+    dvz_graphics_alloc(&data, img_count);
 
-    VklGraphicsVolumeSliceItem item = {0};
+    DvzGraphicsVolumeSliceItem item = {0};
     for (uint32_t i = 0; i < img_count; i++)
     {
-        _vec3_cast((const dvec3*)vkl_prop_item(pos0, i), &item.pos0);
-        _vec3_cast((const dvec3*)vkl_prop_item(pos1, i), &item.pos1);
-        _vec3_cast((const dvec3*)vkl_prop_item(pos2, i), &item.pos2);
-        _vec3_cast((const dvec3*)vkl_prop_item(pos3, i), &item.pos3);
+        _vec3_cast((const dvec3*)dvz_prop_item(pos0, i), &item.pos0);
+        _vec3_cast((const dvec3*)dvz_prop_item(pos1, i), &item.pos1);
+        _vec3_cast((const dvec3*)dvz_prop_item(pos2, i), &item.pos2);
+        _vec3_cast((const dvec3*)dvz_prop_item(pos3, i), &item.pos3);
 
-        // memcpy(&item.pos0, vkl_prop_item(pos0, i), sizeof(vec3));
-        // memcpy(&item.pos1, vkl_prop_item(pos1, i), sizeof(vec3));
-        // memcpy(&item.pos2, vkl_prop_item(pos2, i), sizeof(vec3));
-        // memcpy(&item.pos3, vkl_prop_item(pos3, i), sizeof(vec3));
+        // memcpy(&item.pos0, dvz_prop_item(pos0, i), sizeof(vec3));
+        // memcpy(&item.pos1, dvz_prop_item(pos1, i), sizeof(vec3));
+        // memcpy(&item.pos2, dvz_prop_item(pos2, i), sizeof(vec3));
+        // memcpy(&item.pos3, dvz_prop_item(pos3, i), sizeof(vec3));
 
-        memcpy(&item.uvw0, vkl_prop_item(uvw0, i), sizeof(vec3));
-        memcpy(&item.uvw1, vkl_prop_item(uvw1, i), sizeof(vec3));
-        memcpy(&item.uvw2, vkl_prop_item(uvw2, i), sizeof(vec3));
-        memcpy(&item.uvw3, vkl_prop_item(uvw3, i), sizeof(vec3));
+        memcpy(&item.uvw0, dvz_prop_item(uvw0, i), sizeof(vec3));
+        memcpy(&item.uvw1, dvz_prop_item(uvw1, i), sizeof(vec3));
+        memcpy(&item.uvw2, dvz_prop_item(uvw2, i), sizeof(vec3));
+        memcpy(&item.uvw3, dvz_prop_item(uvw3, i), sizeof(vec3));
 
-        vkl_graphics_append(&data, &item);
+        dvz_graphics_append(&data, &item);
     }
 }
 
-static void _visual_volume_slice(VklVisual* visual)
+static void _visual_volume_slice(DvzVisual* visual)
 {
     ASSERT(visual != NULL);
-    VklCanvas* canvas = visual->canvas;
+    DvzCanvas* canvas = visual->canvas;
     ASSERT(canvas != NULL);
-    VklProp* prop = NULL;
+    DvzProp* prop = NULL;
 
     // TODO: customizable dtype for the image
 
     // Graphics.
-    vkl_visual_graphics(visual, vkl_graphics_builtin(canvas, VKL_GRAPHICS_VOLUME_SLICE, 0));
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_VOLUME_SLICE, 0));
 
     // Sources
-    vkl_visual_source(                                               // vertex buffer
-        visual, VKL_SOURCE_TYPE_VERTEX, 0, VKL_PIPELINE_GRAPHICS, 0, //
-        0, sizeof(VklGraphicsVolumeSliceVertex), 0);                 //
+    dvz_visual_source(                                               // vertex buffer
+        visual, DVZ_SOURCE_TYPE_VERTEX, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+        0, sizeof(DvzGraphicsVolumeSliceVertex), 0);                 //
 
     _common_sources(visual); // common sources
 
-    vkl_visual_source(                                              // params
-        visual, VKL_SOURCE_TYPE_PARAM, 0, VKL_PIPELINE_GRAPHICS, 0, //
-        VKL_USER_BINDING, sizeof(VklGraphicsVolumeSliceParams), 0); //
+    dvz_visual_source(                                              // params
+        visual, DVZ_SOURCE_TYPE_PARAM, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+        DVZ_USER_BINDING, sizeof(DvzGraphicsVolumeSliceParams), 0); //
 
-    vkl_visual_source(                                                      // colormap texture
-        visual, VKL_SOURCE_TYPE_COLOR_TEXTURE, 0, VKL_PIPELINE_GRAPHICS, 0, //
-        VKL_USER_BINDING + 1, sizeof(uint8_t), 0);                          //
+    dvz_visual_source(                                                      // colormap texture
+        visual, DVZ_SOURCE_TYPE_COLOR_TEXTURE, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+        DVZ_USER_BINDING + 1, sizeof(uint8_t), 0);                          //
 
-    vkl_visual_source(                                               // texture source
-        visual, VKL_SOURCE_TYPE_VOLUME, 0, VKL_PIPELINE_GRAPHICS, 0, //
-        VKL_USER_BINDING + 2, sizeof(uint8_t), 0);                   //
+    dvz_visual_source(                                               // texture source
+        visual, DVZ_SOURCE_TYPE_VOLUME, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+        DVZ_USER_BINDING + 2, sizeof(uint8_t), 0);                   //
 
     // Props:
 
     // Point positions.
     // Top left, top right, bottom right, bottom left
     for (uint32_t i = 0; i < 4; i++)
-        vkl_visual_prop(visual, VKL_PROP_POS, i, VKL_DTYPE_DVEC3, VKL_SOURCE_TYPE_VERTEX, 0);
+        dvz_visual_prop(visual, DVZ_PROP_POS, i, DVZ_DTYPE_DVEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
 
     // Tex coords.
     for (uint32_t i = 0; i < 4; i++)
-        vkl_visual_prop(visual, VKL_PROP_TEXCOORDS, i, VKL_DTYPE_VEC3, VKL_SOURCE_TYPE_VERTEX, 0);
+        dvz_visual_prop(visual, DVZ_PROP_TEXCOORDS, i, DVZ_DTYPE_VEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
 
     // Common props.
     _common_props(visual);
@@ -1218,53 +1218,53 @@ static void _visual_volume_slice(VklVisual* visual)
 
     // Colormap transfer function.
     vec4 vec = {0, .333333, .666666, 1};
-    prop = vkl_visual_prop(                                                                 //
-        visual, VKL_PROP_TRANSFER_X, 0, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);          //
-    vkl_visual_prop_copy(                                                                   //
-        prop, 0, offsetof(VklGraphicsVolumeSliceParams, x_cmap), VKL_ARRAY_COPY_SINGLE, 1); //
-    vkl_visual_prop_default(prop, vec);                                                     //
+    prop = dvz_visual_prop(                                                                 //
+        visual, DVZ_PROP_TRANSFER_X, 0, DVZ_DTYPE_VEC4, DVZ_SOURCE_TYPE_PARAM, 0);          //
+    dvz_visual_prop_copy(                                                                   //
+        prop, 0, offsetof(DvzGraphicsVolumeSliceParams, x_cmap), DVZ_ARRAY_COPY_SINGLE, 1); //
+    dvz_visual_prop_default(prop, vec);                                                     //
 
-    prop = vkl_visual_prop(                                                                 //
-        visual, VKL_PROP_TRANSFER_Y, 0, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);          //
-    vkl_visual_prop_copy(                                                                   //
-        prop, 1, offsetof(VklGraphicsVolumeSliceParams, y_cmap), VKL_ARRAY_COPY_SINGLE, 1); //
-    vkl_visual_prop_default(prop, vec);                                                     //
+    prop = dvz_visual_prop(                                                                 //
+        visual, DVZ_PROP_TRANSFER_Y, 0, DVZ_DTYPE_VEC4, DVZ_SOURCE_TYPE_PARAM, 0);          //
+    dvz_visual_prop_copy(                                                                   //
+        prop, 1, offsetof(DvzGraphicsVolumeSliceParams, y_cmap), DVZ_ARRAY_COPY_SINGLE, 1); //
+    dvz_visual_prop_default(prop, vec);                                                     //
 
     // Alpha transfer function.
-    prop = vkl_visual_prop(                                                                  //
-        visual, VKL_PROP_TRANSFER_X, 1, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);           //
-    vkl_visual_prop_copy(                                                                    //
-        prop, 2, offsetof(VklGraphicsVolumeSliceParams, x_alpha), VKL_ARRAY_COPY_SINGLE, 1); //
-    vkl_visual_prop_default(prop, vec);                                                      //
+    prop = dvz_visual_prop(                                                                  //
+        visual, DVZ_PROP_TRANSFER_X, 1, DVZ_DTYPE_VEC4, DVZ_SOURCE_TYPE_PARAM, 0);           //
+    dvz_visual_prop_copy(                                                                    //
+        prop, 2, offsetof(DvzGraphicsVolumeSliceParams, x_alpha), DVZ_ARRAY_COPY_SINGLE, 1); //
+    dvz_visual_prop_default(prop, vec);                                                      //
 
-    prop = vkl_visual_prop(                                                                  //
-        visual, VKL_PROP_TRANSFER_Y, 1, VKL_DTYPE_VEC4, VKL_SOURCE_TYPE_PARAM, 0);           //
-    vkl_visual_prop_copy(                                                                    //
-        prop, 3, offsetof(VklGraphicsVolumeSliceParams, y_alpha), VKL_ARRAY_COPY_SINGLE, 1); //
-    vkl_visual_prop_default(prop, vec);                                                      //
+    prop = dvz_visual_prop(                                                                  //
+        visual, DVZ_PROP_TRANSFER_Y, 1, DVZ_DTYPE_VEC4, DVZ_SOURCE_TYPE_PARAM, 0);           //
+    dvz_visual_prop_copy(                                                                    //
+        prop, 3, offsetof(DvzGraphicsVolumeSliceParams, y_alpha), DVZ_ARRAY_COPY_SINGLE, 1); //
+    dvz_visual_prop_default(prop, vec);                                                      //
 
     // Colormap value.
-    prop = vkl_visual_prop(visual, VKL_PROP_COLORMAP, 0, VKL_DTYPE_INT, VKL_SOURCE_TYPE_PARAM, 0);
-    vkl_visual_prop_copy(
-        prop, 4, offsetof(VklGraphicsVolumeSliceParams, cmap), VKL_ARRAY_COPY_SINGLE, 1);
+    prop = dvz_visual_prop(visual, DVZ_PROP_COLORMAP, 0, DVZ_DTYPE_INT, DVZ_SOURCE_TYPE_PARAM, 0);
+    dvz_visual_prop_copy(
+        prop, 4, offsetof(DvzGraphicsVolumeSliceParams, cmap), DVZ_ARRAY_COPY_SINGLE, 1);
 
     // Scaling factor.
-    prop = vkl_visual_prop(visual, VKL_PROP_SCALE, 0, VKL_DTYPE_FLOAT, VKL_SOURCE_TYPE_PARAM, 0);
-    vkl_visual_prop_copy(
-        prop, 5, offsetof(VklGraphicsVolumeSliceParams, scale), VKL_ARRAY_COPY_SINGLE, 1);
+    prop = dvz_visual_prop(visual, DVZ_PROP_SCALE, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_PARAM, 0);
+    dvz_visual_prop_copy(
+        prop, 5, offsetof(DvzGraphicsVolumeSliceParams, scale), DVZ_ARRAY_COPY_SINGLE, 1);
 
 
 
     // Colormap texture prop.
-    vkl_visual_prop(
-        visual, VKL_PROP_COLOR_TEXTURE, 0, VKL_DTYPE_CHAR, VKL_SOURCE_TYPE_COLOR_TEXTURE, 0);
+    dvz_visual_prop(
+        visual, DVZ_PROP_COLOR_TEXTURE, 0, DVZ_DTYPE_CHAR, DVZ_SOURCE_TYPE_COLOR_TEXTURE, 0);
 
     // 3D texture prop.
-    vkl_visual_prop(visual, VKL_PROP_VOLUME, 0, VKL_DTYPE_CHAR, VKL_SOURCE_TYPE_VOLUME, 0);
+    dvz_visual_prop(visual, DVZ_PROP_VOLUME, 0, DVZ_DTYPE_CHAR, DVZ_SOURCE_TYPE_VOLUME, 0);
 
     // Baking function.
-    vkl_visual_callback_bake(visual, _visual_volume_slice_bake);
-    // vkl_visual_callback_transform(visual, _visual_normalize);
+    dvz_visual_callback_bake(visual, _visual_volume_slice_bake);
+    // dvz_visual_callback_transform(visual, _visual_normalize);
 }
 
 
@@ -1273,64 +1273,64 @@ static void _visual_volume_slice(VklVisual* visual)
 /*  Main function                                                                                */
 /*************************************************************************************************/
 
-void vkl_visual_builtin(VklVisual* visual, VklVisualType type, int flags)
+void dvz_visual_builtin(DvzVisual* visual, DvzVisualType type, int flags)
 {
     ASSERT(visual != NULL);
     visual->flags = flags;
     switch (type)
     {
 
-    case VKL_VISUAL_POINT:
+    case DVZ_VISUAL_POINT:
         _visual_point(visual);
         break;
 
-    case VKL_VISUAL_LINE:
+    case DVZ_VISUAL_LINE:
         _visual_line(visual);
         break;
 
-    case VKL_VISUAL_LINE_STRIP:
+    case DVZ_VISUAL_LINE_STRIP:
         _visual_line_strip(visual);
         break;
 
-    case VKL_VISUAL_TRIANGLE:
+    case DVZ_VISUAL_TRIANGLE:
         _visual_triangle(visual);
         break;
 
-    case VKL_VISUAL_TRIANGLE_STRIP:
+    case DVZ_VISUAL_TRIANGLE_STRIP:
         _visual_triangle_strip(visual);
         break;
 
-    case VKL_VISUAL_TRIANGLE_FAN:
+    case DVZ_VISUAL_TRIANGLE_FAN:
         _visual_triangle_fan(visual);
         break;
 
 
 
-    case VKL_VISUAL_MARKER:
+    case DVZ_VISUAL_MARKER:
         _visual_marker(visual);
         break;
 
-    case VKL_VISUAL_POLYGON:
+    case DVZ_VISUAL_POLYGON:
         _visual_polygon(visual);
         break;
 
-    case VKL_VISUAL_AXES_2D:
+    case DVZ_VISUAL_AXES_2D:
         _visual_axes_2D(visual);
         break;
 
 
 
-    case VKL_VISUAL_MESH:
+    case DVZ_VISUAL_MESH:
         _visual_mesh(visual);
         break;
 
-    case VKL_VISUAL_VOLUME_SLICE:
+    case DVZ_VISUAL_VOLUME_SLICE:
         _visual_volume_slice(visual);
         break;
 
 
-    case VKL_VISUAL_CUSTOM:
-    case VKL_VISUAL_NONE:
+    case DVZ_VISUAL_CUSTOM:
+    case DVZ_VISUAL_NONE:
         break;
 
     default:

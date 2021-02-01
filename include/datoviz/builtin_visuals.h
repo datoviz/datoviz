@@ -2,8 +2,8 @@
 /*  Library of builtin visuals                                                                   */
 /*************************************************************************************************/
 
-#ifndef VKL_BUILTIN_VISUALS_HEADER
-#define VKL_BUILTIN_VISUALS_HEADER
+#ifndef DVZ_BUILTIN_VISUALS_HEADER
+#define DVZ_BUILTIN_VISUALS_HEADER
 
 #include "graphics.h"
 #include "visuals.h"
@@ -16,7 +16,7 @@
 
 #define PARAM(t, x, n, i)                                                                         \
     {                                                                                             \
-        t* item = vkl_prop_item(vkl_prop_get(visual, VKL_PROP_##n, i), 0);                        \
+        t* item = dvz_prop_item(dvz_prop_get(visual, DVZ_PROP_##n, i), 0);                        \
         if (item != NULL)                                                                         \
             memcpy(&x, item, sizeof(t));                                                          \
     }
@@ -34,78 +34,78 @@
 // // Variants.
 // typedef enum
 // {
-//     VKL_VISUAL_VARIANT_NONE = 0,
+//     DVZ_VISUAL_VARIANT_NONE = 0,
 
-//     VKL_VISUAL_VARIANT_RAW = 0x0001,
-//     VKL_VISUAL_VARIANT_AGG = 0x0002,
-//     VKL_VISUAL_VARIANT_SHADED = 0x0004,
+//     DVZ_VISUAL_VARIANT_RAW = 0x0001,
+//     DVZ_VISUAL_VARIANT_AGG = 0x0002,
+//     DVZ_VISUAL_VARIANT_SHADED = 0x0004,
 
-//     VKL_VISUAL_VARIANT_TEXTURED = 0x0010,
-//     VKL_VISUAL_VARIANT_TEXTURED_MULTI = 0x0020,
+//     DVZ_VISUAL_VARIANT_TEXTURED = 0x0010,
+//     DVZ_VISUAL_VARIANT_TEXTURED_MULTI = 0x0020,
 
-// } VklVisualVariant;
+// } DvzVisualVariant;
 
 
 
 // Visual types.
 typedef enum
 {
-    VKL_VISUAL_NONE,
+    DVZ_VISUAL_NONE,
 
     // Basic visuals.
-    VKL_VISUAL_POINT,
-    VKL_VISUAL_LINE,
-    VKL_VISUAL_LINE_STRIP,
-    VKL_VISUAL_TRIANGLE,
-    VKL_VISUAL_TRIANGLE_STRIP,
-    VKL_VISUAL_TRIANGLE_FAN,
+    DVZ_VISUAL_POINT,
+    DVZ_VISUAL_LINE,
+    DVZ_VISUAL_LINE_STRIP,
+    DVZ_VISUAL_TRIANGLE,
+    DVZ_VISUAL_TRIANGLE_STRIP,
+    DVZ_VISUAL_TRIANGLE_FAN,
 
-    VKL_VISUAL_RECTANGLE,
+    DVZ_VISUAL_RECTANGLE,
 
-    VKL_VISUAL_MARKER,
-    VKL_VISUAL_SEGMENT,
-    VKL_VISUAL_ARROW,
-    VKL_VISUAL_PATH,
+    DVZ_VISUAL_MARKER,
+    DVZ_VISUAL_SEGMENT,
+    DVZ_VISUAL_ARROW,
+    DVZ_VISUAL_PATH,
 
-    VKL_VISUAL_TEXT,
-    VKL_VISUAL_IMAGE,
+    DVZ_VISUAL_TEXT,
+    DVZ_VISUAL_IMAGE,
 
-    VKL_VISUAL_DISC,
-    VKL_VISUAL_SECTOR,
-    VKL_VISUAL_MESH,
-    VKL_VISUAL_POLYGON,
-    VKL_VISUAL_PSLG,
-    VKL_VISUAL_HISTOGRAM,
-    VKL_VISUAL_AREA,
-    VKL_VISUAL_CANDLE,
+    DVZ_VISUAL_DISC,
+    DVZ_VISUAL_SECTOR,
+    DVZ_VISUAL_MESH,
+    DVZ_VISUAL_POLYGON,
+    DVZ_VISUAL_PSLG,
+    DVZ_VISUAL_HISTOGRAM,
+    DVZ_VISUAL_AREA,
+    DVZ_VISUAL_CANDLE,
 
-    VKL_VISUAL_GRAPH,
+    DVZ_VISUAL_GRAPH,
 
-    VKL_VISUAL_SURFACE,
-    VKL_VISUAL_VOLUME_SLICE,
-    VKL_VISUAL_VOLUME,
+    DVZ_VISUAL_SURFACE,
+    DVZ_VISUAL_VOLUME_SLICE,
+    DVZ_VISUAL_VOLUME,
 
-    VKL_VISUAL_FAKE_SPHERE,
-    VKL_VISUAL_AXES_2D,
-    VKL_VISUAL_AXES_3D,
-    VKL_VISUAL_COLORMAP,
+    DVZ_VISUAL_FAKE_SPHERE,
+    DVZ_VISUAL_AXES_2D,
+    DVZ_VISUAL_AXES_3D,
+    DVZ_VISUAL_COLORMAP,
 
-    VKL_VISUAL_COUNT,
+    DVZ_VISUAL_COUNT,
 
-    VKL_VISUAL_CUSTOM,
-} VklVisualType;
+    DVZ_VISUAL_CUSTOM,
+} DvzVisualType;
 
 
 
 // Axis levels
 typedef enum
 {
-    VKL_AXES_LEVEL_MINOR,
-    VKL_AXES_LEVEL_MAJOR,
-    VKL_AXES_LEVEL_GRID,
-    VKL_AXES_LEVEL_LIM,
-    VKL_AXES_LEVEL_COUNT,
-} VklAxisLevel;
+    DVZ_AXES_LEVEL_MINOR,
+    DVZ_AXES_LEVEL_MAJOR,
+    DVZ_AXES_LEVEL_GRID,
+    DVZ_AXES_LEVEL_LIM,
+    DVZ_AXES_LEVEL_COUNT,
+} DvzAxisLevel;
 
 
 
@@ -132,7 +132,7 @@ typedef enum
  * @param type the type of builtin visual
  * @param flags the creation flags for the builtin visual
  */
-VKY_EXPORT void vkl_visual_builtin(VklVisual* visual, VklVisualType type, int flags);
+DVZ_EXPORT void dvz_visual_builtin(DvzVisual* visual, DvzVisualType type, int flags);
 
 
 

@@ -5,12 +5,12 @@ The **scene** provides facilities to create **panels** (subplots) within a canva
 
 ## Coordinate system
 
-Visky uses the standard OpenGL 3D coordinate system:
+Datoviz uses the standard OpenGL 3D coordinate system:
 
-![Visky coordinate system](../images/cds.svg)
-*Visky coordinate system*
+![Datoviz coordinate system](../images/cds.svg)
+*Datoviz coordinate system*
 
-Note that this is different from the Vulkan coordinate system, where y and z go in the opposite direction. The other difference is that in Visky, all axes range in the interval `[-1, +1]`. In the original Vulkan coordinate system, `z` goes from 0 to 1 instead.
+Note that this is different from the Vulkan coordinate system, where y and z go in the opposite direction. The other difference is that in Datoviz, all axes range in the interval `[-1, +1]`. In the original Vulkan coordinate system, `z` goes from 0 to 1 instead.
 
 This convention makes it possible to use existing camera matrix routines implemented in the cglm library. The GPU code of all included shaders include the final OpenGL->Vulkan transformation right before the vertex shader output.
 
@@ -19,9 +19,9 @@ Other conventions for `x, y, z` axes will be supported in the future.
 
 ## Data transforms
 
-Position props are specified in the original data coordinate system corresponding to the scientific data to be visualized. Yet, Visky requires vertex positions to be in normalized coordinates (between -1 and 1) when sent to the GPU. Since the GPU only deals with single-precision floating point numbers, doing data normalization on the GPU would result in significant loss of precision and would harm performance.
+Position props are specified in the original data coordinate system corresponding to the scientific data to be visualized. Yet, Datoviz requires vertex positions to be in normalized coordinates (between -1 and 1) when sent to the GPU. Since the GPU only deals with single-precision floating point numbers, doing data normalization on the GPU would result in significant loss of precision and would harm performance.
 
-Therefore, Visky provides a system to make transformations on the CPU **in double precision** before uploading the data to the GPU. By default, the data is linearly transformed to fit the [-1, +1] cube. Other types of transformations will soon be implemented (polar coordinates, geographic coordinate systems, and so on).
+Therefore, Datoviz provides a system to make transformations on the CPU **in double precision** before uploading the data to the GPU. By default, the data is linearly transformed to fit the [-1, +1] cube. Other types of transformations will soon be implemented (polar coordinates, geographic coordinate systems, and so on).
 
 
 ## Controllers
@@ -34,7 +34,7 @@ When creating a new panel, one needs to specify a **Controller**. This object de
     ```
 === "C"
     ```c
-    VklPanel* panel = vkl_scene_panel(scene, 0, 0, VKL_CONTROLLER_AXES_2D, 0);
+    DvzPanel* panel = dvz_scene_panel(scene, 0, 0, DVZ_CONTROLLER_AXES_2D, 0);
     ```
 
 The controllers currently implemented are:
@@ -77,6 +77,6 @@ By default, a regular grid is created. You can customize the size of each colum,
 
 === "C"
     ```c
-    vkl_panel_size(panel, VKL_GRID_HORIZONTAL, 0.5); // proportion of the width
-    vkl_panel_span(panel, VKL_GRID_HORIZONTAL, 2); // the panel spans 2 horizontal cells
+    dvz_panel_size(panel, DVZ_GRID_HORIZONTAL, 0.5); // proportion of the width
+    dvz_panel_span(panel, DVZ_GRID_HORIZONTAL, 2); // the panel spans 2 horizontal cells
     ```

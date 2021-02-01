@@ -1,7 +1,7 @@
-#ifndef VKY_TEST_BUILTIN_VISUALS_HEADER
-#define VKY_TEST_BUILTIN_VISUALS_HEADER
+#ifndef DVZ_TEST_BUILTIN_VISUALS_HEADER
+#define DVZ_TEST_BUILTIN_VISUALS_HEADER
 
-#include "../include/visky/visuals.h"
+#include "../include/datoviz/visuals.h"
 #include "utils.h"
 
 

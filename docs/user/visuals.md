@@ -1,6 +1,6 @@
 # Visuals
 
-The **visual** is the most important abstraction in Visky. It abstracts away the internal details related to GPU rendering and proposes a user-friendly interface to set up visual elements.
+The **visual** is the most important abstraction in Datoviz. It abstracts away the internal details related to GPU rendering and proposes a user-friendly interface to set up visual elements.
 
 Adding a new visual to a panel involves the following steps:
 
@@ -21,7 +21,7 @@ Each prop is defined by:
 * a description of how the prop is used for rendering.
 
 !!! note
-    The Python API takes care of converting each prop to the correct data type using NumPy `ndarray.astype()`. Most props accepting floating-point numbers require single-precision format since this is the optimal format for GPUs. The notable exception is the POS prop (position), which requires double-precision data. Visky provides an internal CPU-based data transformation system that requires double precision (single-precision would not be acceptable for scientific data handling). Also, visuals that implement triangulation require double precision. Visky converts the transformed position to single-precision at the last moment before uploading it to the GPU.
+    The Python API takes care of converting each prop to the correct data type using NumPy `ndarray.astype()`. Most props accepting floating-point numbers require single-precision format since this is the optimal format for GPUs. The notable exception is the POS prop (position), which requires double-precision data. Datoviz provides an internal CPU-based data transformation system that requires double precision (single-precision would not be acceptable for scientific data handling). Also, visuals that implement triangulation require double precision. Datoviz converts the transformed position to single-precision at the last moment before uploading it to the GPU.
 
 ## Batch rendering
 
@@ -330,8 +330,8 @@ The sources and props below are shared by all builtin visuals.
 
 | Type | Index |  Description |
 | ---- | ---- | ---- |
-| `mvp` | 0 | `VklMVP` structure with model-view-proj matrices |
-| `viewport` | 0 | `VklViewport` structure with viewport info |
+| `mvp` | 0 | `DvzMVP` structure with model-view-proj matrices |
+| `viewport` | 0 | `DvzViewport` structure with viewport info |
 
 ### Common props
 

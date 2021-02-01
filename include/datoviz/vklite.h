@@ -2,8 +2,8 @@
 /*  Light wrapper on top of the Vulkan C API                                                     */
 /*************************************************************************************************/
 
-#ifndef VKL_VKLITE_HEADER
-#define VKL_VKLITE_HEADER
+#ifndef DVZ_VKLITE_HEADER
+#define DVZ_VKLITE_HEADER
 
 #define GLM_FORCE_RADIANS
 // #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -40,29 +40,29 @@ extern "C" {
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define VKL_MAX_BINDINGS_SIZE    32
-#define VKL_MAX_DESCRIPTOR_SETS  64
-#define VKL_MAX_PRESENT_MODES    16
-#define VKL_MAX_PUSH_CONSTANTS   16
-#define VKL_MAX_QUEUE_FAMILIES   16
-#define VKL_MAX_QUEUES           16
-#define VKL_MAX_SWAPCHAIN_IMAGES 8
+#define DVZ_MAX_BINDINGS_SIZE    32
+#define DVZ_MAX_DESCRIPTOR_SETS  64
+#define DVZ_MAX_PRESENT_MODES    16
+#define DVZ_MAX_PUSH_CONSTANTS   16
+#define DVZ_MAX_QUEUE_FAMILIES   16
+#define DVZ_MAX_QUEUES           16
+#define DVZ_MAX_SWAPCHAIN_IMAGES 8
 
-// Maximum number of command buffers per VklCommands struct
-#define VKL_MAX_COMMAND_BUFFERS_PER_SET     VKL_MAX_SWAPCHAIN_IMAGES
-#define VKL_MAX_BUFFER_REGIONS_PER_SET      VKL_MAX_SWAPCHAIN_IMAGES
-#define VKL_MAX_IMAGES_PER_SET              VKL_MAX_SWAPCHAIN_IMAGES
-#define VKL_MAX_SEMAPHORES_PER_SET          VKL_MAX_SWAPCHAIN_IMAGES
-#define VKL_MAX_FENCES_PER_SET              VKL_MAX_SWAPCHAIN_IMAGES
-#define VKL_MAX_COMMANDS_PER_SUBMIT         16
-#define VKL_MAX_BARRIERS_PER_SET            8
-#define VKL_MAX_SEMAPHORES_PER_SUBMIT       8
-#define VKL_MAX_SHADERS_PER_GRAPHICS        8
-#define VKL_MAX_ATTACHMENTS_PER_RENDERPASS  8
-#define VKL_MAX_SUBPASSES_PER_RENDERPASS    8
-#define VKL_MAX_DEPENDENCIES_PER_RENDERPASS 8
-#define VKL_MAX_VERTEX_BINDINGS             16
-#define VKL_MAX_VERTEX_ATTRS                32
+// Maximum number of command buffers per DvzCommands struct
+#define DVZ_MAX_COMMAND_BUFFERS_PER_SET     DVZ_MAX_SWAPCHAIN_IMAGES
+#define DVZ_MAX_BUFFER_REGIONS_PER_SET      DVZ_MAX_SWAPCHAIN_IMAGES
+#define DVZ_MAX_IMAGES_PER_SET              DVZ_MAX_SWAPCHAIN_IMAGES
+#define DVZ_MAX_SEMAPHORES_PER_SET          DVZ_MAX_SWAPCHAIN_IMAGES
+#define DVZ_MAX_FENCES_PER_SET              DVZ_MAX_SWAPCHAIN_IMAGES
+#define DVZ_MAX_COMMANDS_PER_SUBMIT         16
+#define DVZ_MAX_BARRIERS_PER_SET            8
+#define DVZ_MAX_SEMAPHORES_PER_SUBMIT       8
+#define DVZ_MAX_SHADERS_PER_GRAPHICS        8
+#define DVZ_MAX_ATTACHMENTS_PER_RENDERPASS  8
+#define DVZ_MAX_SUBPASSES_PER_RENDERPASS    8
+#define DVZ_MAX_DEPENDENCIES_PER_RENDERPASS 8
+#define DVZ_MAX_VERTEX_BINDINGS             16
+#define DVZ_MAX_VERTEX_ATTRS                32
 
 
 
@@ -70,41 +70,41 @@ extern "C" {
 /*  Type definitions */
 /*************************************************************************************************/
 
-typedef struct VklQueues VklQueues;
-typedef struct VklGpu VklGpu;
-typedef struct VklWindow VklWindow;
-typedef struct VklSwapchain VklSwapchain;
-typedef struct VklCommands VklCommands;
-typedef struct VklBuffer VklBuffer;
-typedef struct VklBufferRegions VklBufferRegions;
-typedef struct VklImages VklImages;
-typedef struct VklSampler VklSampler;
-typedef struct VklSlots VklSlots;
-typedef struct VklBindings VklBindings;
-typedef struct VklCompute VklCompute;
-typedef struct VklVertexBinding VklVertexBinding;
-typedef struct VklVertexAttr VklVertexAttr;
-typedef struct VklGraphics VklGraphics;
-typedef struct VklBarrierBuffer VklBarrierBuffer;
-typedef struct VklBarrierImage VklBarrierImage;
-typedef struct VklBarrier VklBarrier;
-typedef struct VklSemaphores VklSemaphores;
-typedef struct VklFences VklFences;
-typedef struct VklRenderpass VklRenderpass;
-typedef struct VklRenderpassAttachment VklRenderpassAttachment;
-typedef struct VklRenderpassSubpass VklRenderpassSubpass;
-typedef struct VklRenderpassDependency VklRenderpassDependency;
-typedef struct VklFramebuffers VklFramebuffers;
-typedef struct VklSubmit VklSubmit;
+typedef struct DvzQueues DvzQueues;
+typedef struct DvzGpu DvzGpu;
+typedef struct DvzWindow DvzWindow;
+typedef struct DvzSwapchain DvzSwapchain;
+typedef struct DvzCommands DvzCommands;
+typedef struct DvzBuffer DvzBuffer;
+typedef struct DvzBufferRegions DvzBufferRegions;
+typedef struct DvzImages DvzImages;
+typedef struct DvzSampler DvzSampler;
+typedef struct DvzSlots DvzSlots;
+typedef struct DvzBindings DvzBindings;
+typedef struct DvzCompute DvzCompute;
+typedef struct DvzVertexBinding DvzVertexBinding;
+typedef struct DvzVertexAttr DvzVertexAttr;
+typedef struct DvzGraphics DvzGraphics;
+typedef struct DvzBarrierBuffer DvzBarrierBuffer;
+typedef struct DvzBarrierImage DvzBarrierImage;
+typedef struct DvzBarrier DvzBarrier;
+typedef struct DvzSemaphores DvzSemaphores;
+typedef struct DvzFences DvzFences;
+typedef struct DvzRenderpass DvzRenderpass;
+typedef struct DvzRenderpassAttachment DvzRenderpassAttachment;
+typedef struct DvzRenderpassSubpass DvzRenderpassSubpass;
+typedef struct DvzRenderpassDependency DvzRenderpassDependency;
+typedef struct DvzFramebuffers DvzFramebuffers;
+typedef struct DvzSubmit DvzSubmit;
 
 // Forward declarations.
-typedef struct VklCanvas VklCanvas;
-typedef struct VklContext VklContext;
-typedef struct VklTexture VklTexture;
-typedef struct VklGraphicsData VklGraphicsData;
+typedef struct DvzCanvas DvzCanvas;
+typedef struct DvzContext DvzContext;
+typedef struct DvzTexture DvzTexture;
+typedef struct DvzGraphicsData DvzGraphicsData;
 
 // Callback definitions
-typedef void (*VklGraphicsCallback)(VklGraphicsData* data, uint32_t item_count, const void* item);
+typedef void (*DvzGraphicsCallback)(DvzGraphicsData* data, uint32_t item_count, const void* item);
 
 
 
@@ -115,107 +115,107 @@ typedef void (*VklGraphicsCallback)(VklGraphicsData* data, uint32_t item_count, 
 // Queue type.
 typedef enum
 {
-    VKL_QUEUE_TRANSFER = 0x01,
-    VKL_QUEUE_GRAPHICS = 0x02,
-    VKL_QUEUE_COMPUTE = 0x04,
-    VKL_QUEUE_PRESENT = 0x08,
-    VKL_QUEUE_RENDER = 0x07,
-    VKL_QUEUE_ALL = 0x0F,
-} VklQueueType;
+    DVZ_QUEUE_TRANSFER = 0x01,
+    DVZ_QUEUE_GRAPHICS = 0x02,
+    DVZ_QUEUE_COMPUTE = 0x04,
+    DVZ_QUEUE_PRESENT = 0x08,
+    DVZ_QUEUE_RENDER = 0x07,
+    DVZ_QUEUE_ALL = 0x0F,
+} DvzQueueType;
 
 
 
 // Command buffer type.
 typedef enum
 {
-    VKL_COMMAND_TRANSFERS,
-    VKL_COMMAND_GRAPHICS,
-    VKL_COMMAND_COMPUTE,
-    VKL_COMMAND_GUI,
-} VklCommandBufferType;
+    DVZ_COMMAND_TRANSFERS,
+    DVZ_COMMAND_GRAPHICS,
+    DVZ_COMMAND_COMPUTE,
+    DVZ_COMMAND_GUI,
+} DvzCommandBufferType;
 
 
 
 // Buffer type.
 typedef enum
 {
-    VKL_BUFFER_TYPE_UNDEFINED,
-    VKL_BUFFER_TYPE_STAGING,
-    VKL_BUFFER_TYPE_VERTEX,
-    VKL_BUFFER_TYPE_INDEX,
-    VKL_BUFFER_TYPE_UNIFORM,
-    VKL_BUFFER_TYPE_STORAGE,
-    VKL_BUFFER_TYPE_UNIFORM_MAPPABLE,
-    VKL_BUFFER_TYPE_COUNT,
-} VklBufferType;
+    DVZ_BUFFER_TYPE_UNDEFINED,
+    DVZ_BUFFER_TYPE_STAGING,
+    DVZ_BUFFER_TYPE_VERTEX,
+    DVZ_BUFFER_TYPE_INDEX,
+    DVZ_BUFFER_TYPE_UNIFORM,
+    DVZ_BUFFER_TYPE_STORAGE,
+    DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE,
+    DVZ_BUFFER_TYPE_COUNT,
+} DvzBufferType;
 
 
 
 // Graphics builtins
 typedef enum
 {
-    VKL_GRAPHICS_NONE,
-    VKL_GRAPHICS_POINT,
+    DVZ_GRAPHICS_NONE,
+    DVZ_GRAPHICS_POINT,
 
-    VKL_GRAPHICS_LINE,
-    VKL_GRAPHICS_LINE_STRIP,
-    VKL_GRAPHICS_TRIANGLE,
-    VKL_GRAPHICS_TRIANGLE_STRIP,
-    VKL_GRAPHICS_TRIANGLE_FAN,
+    DVZ_GRAPHICS_LINE,
+    DVZ_GRAPHICS_LINE_STRIP,
+    DVZ_GRAPHICS_TRIANGLE,
+    DVZ_GRAPHICS_TRIANGLE_STRIP,
+    DVZ_GRAPHICS_TRIANGLE_FAN,
 
-    VKL_GRAPHICS_MARKER,
+    DVZ_GRAPHICS_MARKER,
 
-    VKL_GRAPHICS_SEGMENT,
-    VKL_GRAPHICS_ARROW,
-    VKL_GRAPHICS_PATH,
-    VKL_GRAPHICS_TEXT,
+    DVZ_GRAPHICS_SEGMENT,
+    DVZ_GRAPHICS_ARROW,
+    DVZ_GRAPHICS_PATH,
+    DVZ_GRAPHICS_TEXT,
 
-    VKL_GRAPHICS_IMAGE,
-    VKL_GRAPHICS_VOLUME_SLICE,
-    VKL_GRAPHICS_MESH,
+    DVZ_GRAPHICS_IMAGE,
+    DVZ_GRAPHICS_VOLUME_SLICE,
+    DVZ_GRAPHICS_MESH,
 
-    VKL_GRAPHICS_FAKE_SPHERE,
-    VKL_GRAPHICS_VOLUME,
+    DVZ_GRAPHICS_FAKE_SPHERE,
+    DVZ_GRAPHICS_VOLUME,
 
-    VKL_GRAPHICS_COUNT,
-} VklGraphicsType;
+    DVZ_GRAPHICS_COUNT,
+} DvzGraphicsType;
 
 
 
 // Texture axis.
 typedef enum
 {
-    VKL_TEXTURE_AXIS_U,
-    VKL_TEXTURE_AXIS_V,
-    VKL_TEXTURE_AXIS_W,
-} VklTextureAxis;
+    DVZ_TEXTURE_AXIS_U,
+    DVZ_TEXTURE_AXIS_V,
+    DVZ_TEXTURE_AXIS_W,
+} DvzTextureAxis;
 
 
 
 // Blend type.
 typedef enum
 {
-    VKL_BLEND_DISABLE,
-    VKL_BLEND_ENABLE,
-} VklBlendType;
+    DVZ_BLEND_DISABLE,
+    DVZ_BLEND_ENABLE,
+} DvzBlendType;
 
 
 
 // Depth test.
 typedef enum
 {
-    VKL_DEPTH_TEST_DISABLE,
-    VKL_DEPTH_TEST_ENABLE,
-} VklDepthTest;
+    DVZ_DEPTH_TEST_DISABLE,
+    DVZ_DEPTH_TEST_ENABLE,
+} DvzDepthTest;
 
 
 
 // Render pass attachment type.
 typedef enum
 {
-    VKL_RENDERPASS_ATTACHMENT_COLOR,
-    VKL_RENDERPASS_ATTACHMENT_DEPTH,
-} VklRenderpassAttachmentType;
+    DVZ_RENDERPASS_ATTACHMENT_COLOR,
+    DVZ_RENDERPASS_ATTACHMENT_DEPTH,
+} DvzRenderpassAttachmentType;
 
 
 
@@ -284,41 +284,41 @@ static inline char* pretty_size(VkDeviceSize size)
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-struct VklQueues
+struct DvzQueues
 {
-    VklObject obj;
+    DvzObject obj;
 
     // Hardware supported queues
     // -------------------------
     // Number of different queue families supported by the hardware
     uint32_t queue_family_count;
     // Properties of the queue families
-    // VkQueueFamilyProperties queue_families[VKL_MAX_QUEUE_FAMILIES];
-    bool support_transfer[VKL_MAX_QUEUE_FAMILIES];
-    bool support_graphics[VKL_MAX_QUEUE_FAMILIES];
-    bool support_compute[VKL_MAX_QUEUE_FAMILIES];
-    bool support_present[VKL_MAX_QUEUE_FAMILIES];
-    uint32_t max_queue_count[VKL_MAX_QUEUE_FAMILIES]; // for each queue family, the max # of queues
+    // VkQueueFamilyProperties queue_families[DVZ_MAX_QUEUE_FAMILIES];
+    bool support_transfer[DVZ_MAX_QUEUE_FAMILIES];
+    bool support_graphics[DVZ_MAX_QUEUE_FAMILIES];
+    bool support_compute[DVZ_MAX_QUEUE_FAMILIES];
+    bool support_present[DVZ_MAX_QUEUE_FAMILIES];
+    uint32_t max_queue_count[DVZ_MAX_QUEUE_FAMILIES]; // for each queue family, the max # of queues
 
     // Requested queues
     // ----------------
     // Number of requested queues
     uint32_t queue_count;
     // Requested queue types.
-    VklQueueType queue_types[VKL_MAX_QUEUES]; // the VKL type of each queue
+    DvzQueueType queue_types[DVZ_MAX_QUEUES]; // the VKL type of each queue
     // Queues and associated command pools
-    uint32_t queue_families[VKL_MAX_QUEUES]; // for each family, the # of queues
-    uint32_t queue_indices[VKL_MAX_QUEUES];  // for each requested queue, its # within its family
-    VkQueue queues[VKL_MAX_QUEUES];
-    VkCommandPool cmd_pools[VKL_MAX_QUEUE_FAMILIES];
+    uint32_t queue_families[DVZ_MAX_QUEUES]; // for each family, the # of queues
+    uint32_t queue_indices[DVZ_MAX_QUEUES];  // for each requested queue, its # within its family
+    VkQueue queues[DVZ_MAX_QUEUES];
+    VkCommandPool cmd_pools[DVZ_MAX_QUEUE_FAMILIES];
 };
 
 
 
-struct VklGpu
+struct DvzGpu
 {
-    VklObject obj;
-    VklApp* app;
+    DvzObject obj;
+    DvzApp* app;
 
     uint32_t idx; // GPU index within the app
     const char* name;
@@ -329,23 +329,23 @@ struct VklGpu
     VkPhysicalDeviceMemoryProperties memory_properties;
 
     uint32_t present_mode_count;
-    VkPresentModeKHR present_modes[VKL_MAX_PRESENT_MODES];
+    VkPresentModeKHR present_modes[DVZ_MAX_PRESENT_MODES];
 
-    VklQueues queues;
+    DvzQueues queues;
     VkDescriptorPool dset_pool;
 
     VkPhysicalDeviceFeatures requested_features;
     VkDevice device;
 
-    VklContext* context;
+    DvzContext* context;
 };
 
 
 
-struct VklWindow
+struct DvzWindow
 {
-    VklObject obj;
-    VklApp* app;
+    DvzObject obj;
+    DvzApp* app;
 
     void* backend_window;
     uint32_t width, height; // in screen coordinates
@@ -357,11 +357,11 @@ struct VklWindow
 
 
 
-struct VklSwapchain
+struct DvzSwapchain
 {
-    VklObject obj;
-    VklGpu* gpu;
-    VklWindow* window;
+    DvzObject obj;
+    DvzGpu* gpu;
+    DvzWindow* window;
 
     VkFormat format;
     VkPresentModeKHR present_mode;
@@ -375,35 +375,35 @@ struct VklSwapchain
     VkSwapchainKHR swapchain;
 
     // The actual framebuffer size in pixels is found in the images size
-    VklImages* images;
+    DvzImages* images;
 };
 
 
 
-struct VklCommands
+struct DvzCommands
 {
-    VklObject obj;
-    VklGpu* gpu;
+    DvzObject obj;
+    DvzGpu* gpu;
 
     uint32_t queue_idx;
     uint32_t count;
-    VkCommandBuffer cmds[VKL_MAX_COMMAND_BUFFERS_PER_SET];
+    VkCommandBuffer cmds[DVZ_MAX_COMMAND_BUFFERS_PER_SET];
 };
 
 
 
-struct VklBuffer
+struct DvzBuffer
 {
-    VklObject obj;
-    VklGpu* gpu;
+    DvzObject obj;
+    DvzGpu* gpu;
 
-    VklBufferType type;
+    DvzBufferType type;
     VkBuffer buffer;
     VkDeviceMemory device_memory;
 
     // Queues that need access to the buffer.
     uint32_t queue_count;
-    uint32_t queues[VKL_MAX_QUEUES];
+    uint32_t queues[DVZ_MAX_QUEUES];
 
     VkDeviceSize size;
     VkDeviceSize allocated_size;
@@ -415,29 +415,29 @@ struct VklBuffer
 
 
 
-struct VklBufferRegions
+struct DvzBufferRegions
 {
-    VklBuffer* buffer;
+    DvzBuffer* buffer;
     uint32_t count;
     VkDeviceSize size;
     VkDeviceSize aligned_size; // NOTE: is non-null only for aligned arrays
     VkDeviceSize alignment;
-    VkDeviceSize offsets[VKL_MAX_BUFFER_REGIONS_PER_SET];
+    VkDeviceSize offsets[DVZ_MAX_BUFFER_REGIONS_PER_SET];
 };
 
 
 
-struct VklImages
+struct DvzImages
 {
-    VklObject obj;
-    VklGpu* gpu;
+    DvzObject obj;
+    DvzGpu* gpu;
 
     uint32_t count;
     bool is_swapchain;
 
     // Queues that need access to the buffer.
     uint32_t queue_count;
-    uint32_t queues[VKL_MAX_QUEUES];
+    uint32_t queues[DVZ_MAX_QUEUES];
 
     VkImageType image_type;
     VkImageViewType view_type;
@@ -449,17 +449,17 @@ struct VklImages
     VkMemoryPropertyFlags memory;
     VkImageAspectFlags aspect;
 
-    VkImage images[VKL_MAX_IMAGES_PER_SET];
-    VkDeviceMemory memories[VKL_MAX_IMAGES_PER_SET];
-    VkImageView image_views[VKL_MAX_IMAGES_PER_SET];
+    VkImage images[DVZ_MAX_IMAGES_PER_SET];
+    VkDeviceMemory memories[DVZ_MAX_IMAGES_PER_SET];
+    VkImageView image_views[DVZ_MAX_IMAGES_PER_SET];
 };
 
 
 
-struct VklSampler
+struct DvzSampler
 {
-    VklObject obj;
-    VklGpu* gpu;
+    DvzObject obj;
+    DvzGpu* gpu;
 
     VkFilter min_filter;
     VkFilter mag_filter;
@@ -469,18 +469,18 @@ struct VklSampler
 
 
 
-struct VklSlots
+struct DvzSlots
 {
-    VklObject obj;
-    VklGpu* gpu;
+    DvzObject obj;
+    DvzGpu* gpu;
 
     uint32_t slot_count;
-    VkDescriptorType types[VKL_MAX_BINDINGS_SIZE];
+    VkDescriptorType types[DVZ_MAX_BINDINGS_SIZE];
 
     uint32_t push_count;
-    VkDeviceSize push_offsets[VKL_MAX_PUSH_CONSTANTS];
-    VkDeviceSize push_sizes[VKL_MAX_PUSH_CONSTANTS];
-    VkShaderStageFlags push_shaders[VKL_MAX_PUSH_CONSTANTS];
+    VkDeviceSize push_offsets[DVZ_MAX_PUSH_CONSTANTS];
+    VkDeviceSize push_sizes[DVZ_MAX_PUSH_CONSTANTS];
+    VkShaderStageFlags push_shaders[DVZ_MAX_PUSH_CONSTANTS];
 
     VkPipelineLayout pipeline_layout;
     VkDescriptorSetLayout dset_layout;
@@ -488,43 +488,43 @@ struct VklSlots
 
 
 
-struct VklBindings
+struct DvzBindings
 {
-    VklObject obj;
-    VklGpu* gpu;
+    DvzObject obj;
+    DvzGpu* gpu;
 
-    VklSlots* slots;
+    DvzSlots* slots;
 
     // a Bindings struct holds multiple almost-identical copies of descriptor sets
-    // with the same layout, but possibly with the different idx in the VklBuffer
+    // with the same layout, but possibly with the different idx in the DvzBuffer
     uint32_t dset_count;
-    VkDescriptorSet dsets[VKL_MAX_SWAPCHAIN_IMAGES];
+    VkDescriptorSet dsets[DVZ_MAX_SWAPCHAIN_IMAGES];
 
-    VklBufferRegions br[VKL_MAX_BINDINGS_SIZE];
-    VklImages* images[VKL_MAX_BINDINGS_SIZE];
-    VklSampler* samplers[VKL_MAX_BINDINGS_SIZE];
+    DvzBufferRegions br[DVZ_MAX_BINDINGS_SIZE];
+    DvzImages* images[DVZ_MAX_BINDINGS_SIZE];
+    DvzSampler* samplers[DVZ_MAX_BINDINGS_SIZE];
 };
 
 
 
-struct VklCompute
+struct DvzCompute
 {
-    VklObject obj;
-    VklGpu* gpu;
-    VklContext* context;
+    DvzObject obj;
+    DvzGpu* gpu;
+    DvzContext* context;
 
     char shader_path[1024];
     const char* shader_code;
 
     VkPipeline pipeline;
-    VklSlots slots;
-    VklBindings* bindings;
+    DvzSlots slots;
+    DvzBindings* bindings;
     VkShaderModule shader_module;
 };
 
 
 
-struct VklVertexBinding
+struct DvzVertexBinding
 {
     uint32_t binding;
     VkDeviceSize stride;
@@ -532,7 +532,7 @@ struct VklVertexBinding
 
 
 
-struct VklVertexAttr
+struct DvzVertexAttr
 {
     uint32_t binding;
     uint32_t location;
@@ -542,45 +542,45 @@ struct VklVertexAttr
 
 
 
-struct VklGraphics
+struct DvzGraphics
 {
-    VklObject obj;
-    VklGpu* gpu;
+    DvzObject obj;
+    DvzGpu* gpu;
 
-    VklGraphicsType type;
+    DvzGraphicsType type;
     int flags;
 
-    VklRenderpass* renderpass;
+    DvzRenderpass* renderpass;
     uint32_t subpass;
 
     VkPrimitiveTopology topology;
-    VklBlendType blend_type;
-    VklDepthTest depth_test;
+    DvzBlendType blend_type;
+    DvzDepthTest depth_test;
     VkPolygonMode polygon_mode;
     VkCullModeFlags cull_mode;
     VkFrontFace front_face;
 
     VkPipeline pipeline;
-    VklSlots slots;
+    DvzSlots slots;
 
     uint32_t vertex_binding_count;
-    VklVertexBinding vertex_bindings[VKL_MAX_VERTEX_BINDINGS];
+    DvzVertexBinding vertex_bindings[DVZ_MAX_VERTEX_BINDINGS];
 
     uint32_t vertex_attr_count;
-    VklVertexAttr vertex_attrs[VKL_MAX_VERTEX_ATTRS];
+    DvzVertexAttr vertex_attrs[DVZ_MAX_VERTEX_ATTRS];
 
     uint32_t shader_count;
-    VkShaderStageFlagBits shader_stages[VKL_MAX_SHADERS_PER_GRAPHICS];
-    VkShaderModule shader_modules[VKL_MAX_SHADERS_PER_GRAPHICS];
+    VkShaderStageFlagBits shader_stages[DVZ_MAX_SHADERS_PER_GRAPHICS];
+    VkShaderModule shader_modules[DVZ_MAX_SHADERS_PER_GRAPHICS];
 
-    VklGraphicsCallback callback;
+    DvzGraphicsCallback callback;
 };
 
 
 
-struct VklBarrierBuffer
+struct DvzBarrierBuffer
 {
-    VklBufferRegions br;
+    DvzBufferRegions br;
     bool queue_transfer;
 
     VkAccessFlags src_access;
@@ -592,9 +592,9 @@ struct VklBarrierBuffer
 
 
 
-struct VklBarrierImage
+struct DvzBarrierImage
 {
-    VklImages* images;
+    DvzImages* images;
     bool queue_transfer;
 
     VkAccessFlags src_access;
@@ -608,10 +608,10 @@ struct VklBarrierImage
 
 
 
-struct VklBarrier
+struct DvzBarrier
 {
-    VklObject obj;
-    VklGpu* gpu;
+    DvzObject obj;
+    DvzGpu* gpu;
 
     // uint32_t idx; // index within the buffer regions or images
 
@@ -619,40 +619,40 @@ struct VklBarrier
     VkPipelineStageFlagBits dst_stage;
 
     uint32_t buffer_barrier_count;
-    VklBarrierBuffer buffer_barriers[VKL_MAX_BARRIERS_PER_SET];
+    DvzBarrierBuffer buffer_barriers[DVZ_MAX_BARRIERS_PER_SET];
 
     uint32_t image_barrier_count;
-    VklBarrierImage image_barriers[VKL_MAX_BARRIERS_PER_SET];
+    DvzBarrierImage image_barriers[DVZ_MAX_BARRIERS_PER_SET];
 };
 
 
 
-struct VklFences
+struct DvzFences
 {
-    VklObject obj;
-    VklGpu* gpu;
+    DvzObject obj;
+    DvzGpu* gpu;
 
     uint32_t count;
-    VkFence fences[VKL_MAX_FENCES_PER_SET];
+    VkFence fences[DVZ_MAX_FENCES_PER_SET];
 };
 
 
 
-struct VklSemaphores
+struct DvzSemaphores
 {
-    VklObject obj;
-    VklGpu* gpu;
+    DvzObject obj;
+    DvzGpu* gpu;
 
     uint32_t count;
-    VkSemaphore semaphores[VKL_MAX_SEMAPHORES_PER_SET];
+    VkSemaphore semaphores[DVZ_MAX_SEMAPHORES_PER_SET];
 };
 
 
 
-struct VklRenderpassAttachment
+struct DvzRenderpassAttachment
 {
     VkImageLayout ref_layout;
-    VklRenderpassAttachmentType type;
+    DvzRenderpassAttachmentType type;
     VkFormat format;
 
     VkImageLayout src_layout;
@@ -664,15 +664,15 @@ struct VklRenderpassAttachment
 
 
 
-struct VklRenderpassSubpass
+struct DvzRenderpassSubpass
 {
     uint32_t attachment_count;
-    uint32_t attachments[VKL_MAX_ATTACHMENTS_PER_RENDERPASS];
+    uint32_t attachments[DVZ_MAX_ATTACHMENTS_PER_RENDERPASS];
 };
 
 
 
-struct VklRenderpassDependency
+struct DvzRenderpassDependency
 {
     uint32_t src_subpass;
     VkPipelineStageFlags src_stage;
@@ -685,72 +685,72 @@ struct VklRenderpassDependency
 
 
 
-struct VklFramebuffers
+struct DvzFramebuffers
 {
-    VklObject obj;
-    VklGpu* gpu;
-    VklRenderpass* renderpass;
+    DvzObject obj;
+    DvzGpu* gpu;
+    DvzRenderpass* renderpass;
 
     uint32_t attachment_count;
     // by definition, the framebuffers size = the first attachment's size
-    VklImages* attachments[VKL_MAX_ATTACHMENTS_PER_RENDERPASS];
+    DvzImages* attachments[DVZ_MAX_ATTACHMENTS_PER_RENDERPASS];
 
     uint32_t framebuffer_count;
-    VkFramebuffer framebuffers[VKL_MAX_SWAPCHAIN_IMAGES];
+    VkFramebuffer framebuffers[DVZ_MAX_SWAPCHAIN_IMAGES];
 };
 
 
 
-struct VklRenderpass
+struct DvzRenderpass
 {
-    VklObject obj;
-    VklGpu* gpu;
+    DvzObject obj;
+    DvzGpu* gpu;
 
     uint32_t attachment_count;
-    VklRenderpassAttachment attachments[VKL_MAX_ATTACHMENTS_PER_RENDERPASS];
+    DvzRenderpassAttachment attachments[DVZ_MAX_ATTACHMENTS_PER_RENDERPASS];
 
     uint32_t clear_count;
-    VkClearValue clear_values[VKL_MAX_ATTACHMENTS_PER_RENDERPASS];
+    VkClearValue clear_values[DVZ_MAX_ATTACHMENTS_PER_RENDERPASS];
 
     uint32_t subpass_count;
-    VklRenderpassSubpass subpasses[VKL_MAX_SUBPASSES_PER_RENDERPASS];
+    DvzRenderpassSubpass subpasses[DVZ_MAX_SUBPASSES_PER_RENDERPASS];
 
     uint32_t dependency_count;
-    VklRenderpassDependency dependencies[VKL_MAX_DEPENDENCIES_PER_RENDERPASS];
+    DvzRenderpassDependency dependencies[DVZ_MAX_DEPENDENCIES_PER_RENDERPASS];
 
     VkRenderPass renderpass;
 };
 
 
 
-struct VklSubmit
+struct DvzSubmit
 {
-    VklObject obj;
-    VklGpu* gpu;
+    DvzObject obj;
+    DvzGpu* gpu;
 
     uint32_t commands_count;
-    VklCommands* commands[VKL_MAX_COMMANDS_PER_SUBMIT];
+    DvzCommands* commands[DVZ_MAX_COMMANDS_PER_SUBMIT];
 
     uint32_t wait_semaphores_count;
-    uint32_t wait_semaphores_idx[VKL_MAX_SEMAPHORES_PER_SUBMIT];
-    VklSemaphores* wait_semaphores[VKL_MAX_SEMAPHORES_PER_SUBMIT];
-    VkPipelineStageFlags wait_stages[VKL_MAX_SEMAPHORES_PER_SUBMIT];
+    uint32_t wait_semaphores_idx[DVZ_MAX_SEMAPHORES_PER_SUBMIT];
+    DvzSemaphores* wait_semaphores[DVZ_MAX_SEMAPHORES_PER_SUBMIT];
+    VkPipelineStageFlags wait_stages[DVZ_MAX_SEMAPHORES_PER_SUBMIT];
 
     uint32_t signal_semaphores_count;
-    uint32_t signal_semaphores_idx[VKL_MAX_SEMAPHORES_PER_SUBMIT];
-    VklSemaphores* signal_semaphores[VKL_MAX_SEMAPHORES_PER_SUBMIT];
+    uint32_t signal_semaphores_idx[DVZ_MAX_SEMAPHORES_PER_SUBMIT];
+    DvzSemaphores* signal_semaphores[DVZ_MAX_SEMAPHORES_PER_SUBMIT];
 };
 
 
 
-struct VklTexture
+struct DvzTexture
 {
-    VklObject obj;
+    DvzObject obj;
 
-    VklContext* context;
+    DvzContext* context;
 
-    VklImages* image;
-    VklSampler* sampler;
+    DvzImages* image;
+    DvzSampler* sampler;
 };
 
 
@@ -768,7 +768,7 @@ struct VklTexture
  * @param backend the backend
  * @returns a pointer to the created app
  */
-VKY_EXPORT VklApp* vkl_app(VklBackend backend);
+DVZ_EXPORT DvzApp* dvz_app(DvzBackend backend);
 
 /**
  * Destroy the application.
@@ -777,7 +777,7 @@ VKY_EXPORT VklApp* vkl_app(VklBackend backend);
  *
  * @param app the application to destroy
  */
-VKY_EXPORT int vkl_app_destroy(VklApp* app);
+DVZ_EXPORT int dvz_app_destroy(DvzApp* app);
 
 
 
@@ -794,17 +794,17 @@ VKY_EXPORT int vkl_app_destroy(VklApp* app);
  * @returns a pointer to the created GPU object
  */
 
-VKY_EXPORT VklGpu* vkl_gpu(VklApp* app, uint32_t idx);
+DVZ_EXPORT DvzGpu* dvz_gpu(DvzApp* app, uint32_t idx);
 
 /**
  * Request some features before creating the GPU instance.
  *
- * This function needs to be called before creating the GPU with ` vkl_gpu_create()`.
+ * This function needs to be called before creating the GPU with ` dvz_gpu_create()`.
  *
  * @param gpu the GPU
  * @param requested_features the list of requested features
  */
-VKY_EXPORT void vkl_gpu_request_features(VklGpu* gpu, VkPhysicalDeviceFeatures requested_features);
+DVZ_EXPORT void dvz_gpu_request_features(DvzGpu* gpu, VkPhysicalDeviceFeatures requested_features);
 
 /**
  * Request a new Vulkan queue before creating the GPU.
@@ -813,7 +813,7 @@ VKY_EXPORT void vkl_gpu_request_features(VklGpu* gpu, VkPhysicalDeviceFeatures r
  * @param idx the queue index (should be regularly increasing: 0, 1, 2...)
  * @param type the queue type
  */
-VKY_EXPORT void vkl_gpu_queue(VklGpu* gpu, uint32_t idx, VklQueueType type);
+DVZ_EXPORT void dvz_gpu_queue(DvzGpu* gpu, uint32_t idx, DvzQueueType type);
 
 /**
  * Create a GPU once the features and queues have been set up.
@@ -821,7 +821,7 @@ VKY_EXPORT void vkl_gpu_queue(VklGpu* gpu, uint32_t idx, VklQueueType type);
  * @param gpu the GPU
  * @param surface the surface on which the GPU will need to render
  */
-VKY_EXPORT void vkl_gpu_create(VklGpu* gpu, VkSurfaceKHR surface);
+DVZ_EXPORT void dvz_gpu_create(DvzGpu* gpu, VkSurfaceKHR surface);
 
 /**
  * Wait for a queue to be idle.
@@ -832,7 +832,7 @@ VKY_EXPORT void vkl_gpu_create(VklGpu* gpu, VkSurfaceKHR surface);
  * @param gpu the GPU
  * @param queue_idx the queue index
  */
-VKY_EXPORT void vkl_queue_wait(VklGpu* gpu, uint32_t queue_idx);
+DVZ_EXPORT void dvz_queue_wait(DvzGpu* gpu, uint32_t queue_idx);
 
 /**
  * Full synchronization on all GPUs.
@@ -842,7 +842,7 @@ VKY_EXPORT void vkl_queue_wait(VklGpu* gpu, uint32_t queue_idx);
  *
  * @param app the application instance
  */
-VKY_EXPORT void vkl_app_wait(VklApp* app);
+DVZ_EXPORT void dvz_app_wait(DvzApp* app);
 
 /**
  * Full synchronization on a given GPU.
@@ -851,14 +851,14 @@ VKY_EXPORT void vkl_app_wait(VklApp* app);
  *
  * @param gpu the GPU
  */
-VKY_EXPORT void vkl_gpu_wait(VklGpu* gpu);
+DVZ_EXPORT void dvz_gpu_wait(DvzGpu* gpu);
 
 /**
  * Destroy the resources associated to a GPU.
  *
  * @param gpu the GPU
  */
-VKY_EXPORT void vkl_gpu_destroy(VklGpu* gpu);
+DVZ_EXPORT void dvz_gpu_destroy(DvzGpu* gpu);
 
 
 
@@ -878,7 +878,7 @@ VKY_EXPORT void vkl_gpu_destroy(VklGpu* gpu);
  * @param height the window height, in pixels
  * @returns the window
  */
-VKY_EXPORT VklWindow* vkl_window(VklApp* app, uint32_t width, uint32_t height);
+DVZ_EXPORT DvzWindow* dvz_window(DvzApp* app, uint32_t width, uint32_t height);
 
 /**
  * Get the window size, in pixels.
@@ -887,39 +887,39 @@ VKY_EXPORT VklWindow* vkl_window(VklApp* app, uint32_t width, uint32_t height);
  * @param[out] framebuffer_width the width, in pixels
  * @param[out] framebuffer_height the height, in pixels
  */
-VKY_EXPORT void
-vkl_window_get_size(VklWindow* window, uint32_t* framebuffer_width, uint32_t* framebuffer_height);
+DVZ_EXPORT void
+dvz_window_get_size(DvzWindow* window, uint32_t* framebuffer_width, uint32_t* framebuffer_height);
 
 /**
  * Process the pending windowing events by the backend (glfw by default).
  *
  * @param window the window
  */
-VKY_EXPORT void vkl_window_poll_events(VklWindow* window);
+DVZ_EXPORT void dvz_window_poll_events(DvzWindow* window);
 
 /**
  * Destroy a window.
  *
  * !!! warning
- *     This function must be imperatively called *after* `vkl_swapchain_destroy()`.
+ *     This function must be imperatively called *after* `dvz_swapchain_destroy()`.
  *
  * @param window the window
  */
-VKY_EXPORT void vkl_window_destroy(VklWindow* window);
+DVZ_EXPORT void dvz_window_destroy(DvzWindow* window);
 
 /**
  * Destroy a canvas.
  *
  * @param canvas the canvas
  */
-VKY_EXPORT void vkl_canvas_destroy(VklCanvas* canvas);
+DVZ_EXPORT void dvz_canvas_destroy(DvzCanvas* canvas);
 
 /**
  * Destroy all canvases.
  *
  * @param canvases the container with the canvases.
  */
-VKY_EXPORT void vkl_canvases_destroy(VklContainer* canvases);
+DVZ_EXPORT void dvz_canvases_destroy(DvzContainer* canvases);
 
 
 
@@ -935,7 +935,7 @@ VKY_EXPORT void vkl_canvases_destroy(VklContainer* canvases);
  * @param min_img_count the minimum acceptable number of images in the swapchain
  * @returns the swapchain
  */
-VKY_EXPORT VklSwapchain vkl_swapchain(VklGpu* gpu, VklWindow* window, uint32_t min_img_count);
+DVZ_EXPORT DvzSwapchain dvz_swapchain(DvzGpu* gpu, DvzWindow* window, uint32_t min_img_count);
 
 /**
  * Set the swapchain image format.
@@ -943,7 +943,7 @@ VKY_EXPORT VklSwapchain vkl_swapchain(VklGpu* gpu, VklWindow* window, uint32_t m
  * @param swapchain the swapchain
  * @param format the format
  */
-VKY_EXPORT void vkl_swapchain_format(VklSwapchain* swapchain, VkFormat format);
+DVZ_EXPORT void dvz_swapchain_format(DvzSwapchain* swapchain, VkFormat format);
 
 /**
  * Set the swapchain present mode.
@@ -951,7 +951,7 @@ VKY_EXPORT void vkl_swapchain_format(VklSwapchain* swapchain, VkFormat format);
  * @param swapchain the swapchain
  * @param present_mode the present mode
  */
-VKY_EXPORT void vkl_swapchain_present_mode(VklSwapchain* swapchain, VkPresentModeKHR present_mode);
+DVZ_EXPORT void dvz_swapchain_present_mode(DvzSwapchain* swapchain, VkPresentModeKHR present_mode);
 
 /**
  * Set the swapchain requested image size.
@@ -960,22 +960,22 @@ VKY_EXPORT void vkl_swapchain_present_mode(VklSwapchain* swapchain, VkPresentMod
  * @param width the requested width
  * @param height the requested height
  */
-VKY_EXPORT void
-vkl_swapchain_requested_size(VklSwapchain* swapchain, uint32_t width, uint32_t height);
+DVZ_EXPORT void
+dvz_swapchain_requested_size(DvzSwapchain* swapchain, uint32_t width, uint32_t height);
 
 /**
  * Create the swapchain once it has been set up.
  *
  * @param swapchain the swapchain
  */
-VKY_EXPORT void vkl_swapchain_create(VklSwapchain* swapchain);
+DVZ_EXPORT void dvz_swapchain_create(DvzSwapchain* swapchain);
 
 /**
  * Recreate a swapchain (for example after a window resize).
  *
  * @param swapchain the swapchain
  */
-VKY_EXPORT void vkl_swapchain_recreate(VklSwapchain* swapchain);
+DVZ_EXPORT void dvz_swapchain_recreate(DvzSwapchain* swapchain);
 
 /**
  * Acquire a swapchain image.
@@ -986,8 +986,8 @@ VKY_EXPORT void vkl_swapchain_recreate(VklSwapchain* swapchain);
  * @param fences the set of signal fences
  * @param fence_idx the index of the fence to signal after image acquisition
  */
-VKY_EXPORT void vkl_swapchain_acquire(
-    VklSwapchain* swapchain, VklSemaphores* semaphores, uint32_t semaphore_idx, VklFences* fences,
+DVZ_EXPORT void dvz_swapchain_acquire(
+    DvzSwapchain* swapchain, DvzSemaphores* semaphores, uint32_t semaphore_idx, DvzFences* fences,
     uint32_t fence_idx);
 
 /**
@@ -998,19 +998,19 @@ VKY_EXPORT void vkl_swapchain_acquire(
  * @param semaphores the set of waiting semaphores
  * @param semaphore_idx the index of the semaphore to wait on before presentation
  */
-VKY_EXPORT void vkl_swapchain_present(
-    VklSwapchain* swapchain, uint32_t queue_idx, VklSemaphores* semaphores,
+DVZ_EXPORT void dvz_swapchain_present(
+    DvzSwapchain* swapchain, uint32_t queue_idx, DvzSemaphores* semaphores,
     uint32_t semaphore_idx);
 
 /**
  * Destroy a swapchain
  *
  * !!! warning
- *     This function must imperatively be called *before* `vkl_window_destroy()`.
+ *     This function must imperatively be called *before* `dvz_window_destroy()`.
  *
  * @param swapchain the swapchain
  */
-VKY_EXPORT void vkl_swapchain_destroy(VklSwapchain* swapchain);
+DVZ_EXPORT void dvz_swapchain_destroy(DvzSwapchain* swapchain);
 
 
 
@@ -1026,7 +1026,7 @@ VKY_EXPORT void vkl_swapchain_destroy(VklSwapchain* swapchain);
  * @param count the number of command buffers to create
  * @returns the set of command buffers
  */
-VKY_EXPORT VklCommands vkl_commands(VklGpu* gpu, uint32_t queue, uint32_t count);
+DVZ_EXPORT DvzCommands dvz_commands(DvzGpu* gpu, uint32_t queue, uint32_t count);
 
 /**
  * Start recording a command buffer.
@@ -1034,7 +1034,7 @@ VKY_EXPORT VklCommands vkl_commands(VklGpu* gpu, uint32_t queue, uint32_t count)
  * @param cmds the set of command buffers
  * @param idx the index of the command buffer to begin recording on
  */
-VKY_EXPORT void vkl_cmd_begin(VklCommands* cmds, uint32_t idx);
+DVZ_EXPORT void dvz_cmd_begin(DvzCommands* cmds, uint32_t idx);
 
 /**
  * Stop recording a command buffer.
@@ -1042,7 +1042,7 @@ VKY_EXPORT void vkl_cmd_begin(VklCommands* cmds, uint32_t idx);
  * @param cmds the set of command buffers
  * @param idx the index of the command buffer to stop the recording on
  */
-VKY_EXPORT void vkl_cmd_end(VklCommands* cmds, uint32_t idx);
+DVZ_EXPORT void dvz_cmd_end(DvzCommands* cmds, uint32_t idx);
 
 /**
  * Reset a command buffer.
@@ -1050,31 +1050,31 @@ VKY_EXPORT void vkl_cmd_end(VklCommands* cmds, uint32_t idx);
  * @param cmds the set of command buffers
  * @param idx the index of the command buffer to reset
  */
-VKY_EXPORT void vkl_cmd_reset(VklCommands* cmds, uint32_t idx);
+DVZ_EXPORT void dvz_cmd_reset(DvzCommands* cmds, uint32_t idx);
 
 /**
  * Free a set of command buffers.
  *
  * @param cmds the set of command buffers
  */
-VKY_EXPORT void vkl_cmd_free(VklCommands* cmds);
+DVZ_EXPORT void dvz_cmd_free(DvzCommands* cmds);
 
 /**
  * Submit a command buffer on its queue with inefficient full synchronization.
  *
- * This function is relatively inefficient because it calls `vkl_queue_wait()`.
+ * This function is relatively inefficient because it calls `dvz_queue_wait()`.
  *
  * @param cmds the set of command buffers
  * @param idx the index of the command buffer to submit
  */
-VKY_EXPORT void vkl_cmd_submit_sync(VklCommands* cmds, uint32_t idx);
+DVZ_EXPORT void dvz_cmd_submit_sync(DvzCommands* cmds, uint32_t idx);
 
 /**
  * Destroy a set of command buffers.
  *
  * @param cmds the set of command buffers
  */
-VKY_EXPORT void vkl_commands_destroy(VklCommands* cmds);
+DVZ_EXPORT void dvz_commands_destroy(DvzCommands* cmds);
 
 
 
@@ -1088,7 +1088,7 @@ VKY_EXPORT void vkl_commands_destroy(VklCommands* cmds);
  * @param gpu the GPU
  * @returns the buffer
  */
-VKY_EXPORT VklBuffer vkl_buffer(VklGpu* gpu);
+DVZ_EXPORT DvzBuffer dvz_buffer(DvzGpu* gpu);
 
 /**
  * Set the buffer size.
@@ -1096,7 +1096,7 @@ VKY_EXPORT VklBuffer vkl_buffer(VklGpu* gpu);
  * @param buffer the buffer
  * @param size the buffer size, in bytes
  */
-VKY_EXPORT void vkl_buffer_size(VklBuffer* buffer, VkDeviceSize size);
+DVZ_EXPORT void dvz_buffer_size(DvzBuffer* buffer, VkDeviceSize size);
 
 /**
  * Set the buffer type.
@@ -1104,7 +1104,7 @@ VKY_EXPORT void vkl_buffer_size(VklBuffer* buffer, VkDeviceSize size);
  * @param buffer the buffer
  * @param type the buffer type
  */
-VKY_EXPORT void vkl_buffer_type(VklBuffer* buffer, VklBufferType type);
+DVZ_EXPORT void dvz_buffer_type(DvzBuffer* buffer, DvzBufferType type);
 
 /**
  * Set the buffer usage.
@@ -1112,7 +1112,7 @@ VKY_EXPORT void vkl_buffer_type(VklBuffer* buffer, VklBufferType type);
  * @param buffer the buffer
  * @param usage the buffer usage
  */
-VKY_EXPORT void vkl_buffer_usage(VklBuffer* buffer, VkBufferUsageFlags usage);
+DVZ_EXPORT void dvz_buffer_usage(DvzBuffer* buffer, VkBufferUsageFlags usage);
 
 /**
  * Set the buffer memory properties.
@@ -1120,7 +1120,7 @@ VKY_EXPORT void vkl_buffer_usage(VklBuffer* buffer, VkBufferUsageFlags usage);
  * @param buffer the buffer
  * @param memory the memory properties
  */
-VKY_EXPORT void vkl_buffer_memory(VklBuffer* buffer, VkMemoryPropertyFlags memory);
+DVZ_EXPORT void dvz_buffer_memory(DvzBuffer* buffer, VkMemoryPropertyFlags memory);
 
 /**
  * Set the buffer queue access.
@@ -1128,14 +1128,14 @@ VKY_EXPORT void vkl_buffer_memory(VklBuffer* buffer, VkMemoryPropertyFlags memor
  * @param buffer the buffer
  * @param queue_idx the queue index
  */
-VKY_EXPORT void vkl_buffer_queue_access(VklBuffer* buffer, uint32_t queue_idx);
+DVZ_EXPORT void dvz_buffer_queue_access(DvzBuffer* buffer, uint32_t queue_idx);
 
 /**
  * Create the buffer after it has been set.
  *
  * @param buffer the buffer
  */
-VKY_EXPORT void vkl_buffer_create(VklBuffer* buffer);
+DVZ_EXPORT void dvz_buffer_create(DvzBuffer* buffer);
 
 /**
  * Resize a buffer.
@@ -1144,7 +1144,7 @@ VKY_EXPORT void vkl_buffer_create(VklBuffer* buffer);
  * @param size the new buffer size, in bytes
  * @param cmds the command buffers to use for the GPU-GPU data copy transfer
  */
-VKY_EXPORT void vkl_buffer_resize(VklBuffer* buffer, VkDeviceSize size, VklCommands* cmds);
+DVZ_EXPORT void dvz_buffer_resize(DvzBuffer* buffer, VkDeviceSize size, DvzCommands* cmds);
 
 /**
  * Memory-map a buffer.
@@ -1153,14 +1153,14 @@ VKY_EXPORT void vkl_buffer_resize(VklBuffer* buffer, VkDeviceSize size, VklComma
  * @param offset the offset within the buffer, in bytes
  * @param size the size to map, in bytes
  */
-VKY_EXPORT void* vkl_buffer_map(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size);
+DVZ_EXPORT void* dvz_buffer_map(DvzBuffer* buffer, VkDeviceSize offset, VkDeviceSize size);
 
 /**
  * Unmap a buffer.
  *
  * @param buffer the buffer
  */
-VKY_EXPORT void vkl_buffer_unmap(VklBuffer* buffer);
+DVZ_EXPORT void dvz_buffer_unmap(DvzBuffer* buffer);
 
 /**
  * Download a buffer data to the CPU.
@@ -1170,8 +1170,8 @@ VKY_EXPORT void vkl_buffer_unmap(VklBuffer* buffer);
  * @param size the size of the region to download, in bytes
  * @param[out] data the buffer to download on (must be allocated with the appropriate size)
  */
-VKY_EXPORT void
-vkl_buffer_download(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, void* data);
+DVZ_EXPORT void
+dvz_buffer_download(DvzBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, void* data);
 
 /**
  * Upload data to a GPU buffer.
@@ -1181,15 +1181,15 @@ vkl_buffer_download(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, v
  * @param size the buffer size, in bytes
  * @param data the data to upload
  */
-VKY_EXPORT void
-vkl_buffer_upload(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, const void* data);
+DVZ_EXPORT void
+dvz_buffer_upload(DvzBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, const void* data);
 
 /**
  * Destroy a buffer
  *
  * @param buffer the buffer
  */
-VKY_EXPORT void vkl_buffer_destroy(VklBuffer* buffer);
+DVZ_EXPORT void dvz_buffer_destroy(DvzBuffer* buffer);
 
 
 
@@ -1202,8 +1202,8 @@ VKY_EXPORT void vkl_buffer_destroy(VklBuffer* buffer);
  * @param size the size of each region, in bytes
  * @param alignment the alignment requirement for the region offsets
  */
-VKY_EXPORT VklBufferRegions vkl_buffer_regions(
-    VklBuffer* buffer, uint32_t count, //
+DVZ_EXPORT DvzBufferRegions dvz_buffer_regions(
+    DvzBuffer* buffer, uint32_t count, //
     VkDeviceSize offset, VkDeviceSize size, VkDeviceSize alignment);
 
 /**
@@ -1212,14 +1212,14 @@ VKY_EXPORT VklBufferRegions vkl_buffer_regions(
  * @param br the buffer regions
  * @param idx the index of the buffer region to map
  */
-VKY_EXPORT void* vkl_buffer_regions_map(VklBufferRegions* br, uint32_t idx);
+DVZ_EXPORT void* dvz_buffer_regions_map(DvzBufferRegions* br, uint32_t idx);
 
 /**
  * Unmap a set of buffer regions.
  *
  * @param br the buffer regions
  */
-VKY_EXPORT void vkl_buffer_regions_unmap(VklBufferRegions* br);
+DVZ_EXPORT void dvz_buffer_regions_unmap(DvzBufferRegions* br);
 
 /**
  * Upload data to a buffer region.
@@ -1228,7 +1228,7 @@ VKY_EXPORT void vkl_buffer_regions_unmap(VklBufferRegions* br);
  * @param idx the index of the buffer region to upload data to
  * @param data the data to upload
  */
-VKY_EXPORT void vkl_buffer_regions_upload(VklBufferRegions* br, uint32_t idx, const void* data);
+DVZ_EXPORT void dvz_buffer_regions_upload(DvzBufferRegions* br, uint32_t idx, const void* data);
 
 
 
@@ -1244,7 +1244,7 @@ VKY_EXPORT void vkl_buffer_regions_upload(VklBufferRegions* br, uint32_t idx, co
  * @param count the number of images
  * @returns the images
  */
-VKY_EXPORT VklImages vkl_images(VklGpu* gpu, VkImageType type, uint32_t count);
+DVZ_EXPORT DvzImages dvz_images(DvzGpu* gpu, VkImageType type, uint32_t count);
 
 /**
  * Set the images format.
@@ -1252,7 +1252,7 @@ VKY_EXPORT VklImages vkl_images(VklGpu* gpu, VkImageType type, uint32_t count);
  * @param images the images
  * @param format the image format
  */
-VKY_EXPORT void vkl_images_format(VklImages* images, VkFormat format);
+DVZ_EXPORT void dvz_images_format(DvzImages* images, VkFormat format);
 
 /**
  * Set the images layout.
@@ -1260,7 +1260,7 @@ VKY_EXPORT void vkl_images_format(VklImages* images, VkFormat format);
  * @param images the images
  * @param layout the image layout
  */
-VKY_EXPORT void vkl_images_layout(VklImages* images, VkImageLayout layout);
+DVZ_EXPORT void dvz_images_layout(DvzImages* images, VkImageLayout layout);
 
 /**
  * Set the images size.
@@ -1270,8 +1270,8 @@ VKY_EXPORT void vkl_images_layout(VklImages* images, VkImageLayout layout);
  * @param height the image height
  * @param depth the image depth
  */
-VKY_EXPORT void
-vkl_images_size(VklImages* images, uint32_t width, uint32_t height, uint32_t depth);
+DVZ_EXPORT void
+dvz_images_size(DvzImages* images, uint32_t width, uint32_t height, uint32_t depth);
 
 /**
  * Set the images tiling.
@@ -1279,7 +1279,7 @@ vkl_images_size(VklImages* images, uint32_t width, uint32_t height, uint32_t dep
  * @param images the images
  * @param tiling the image tiling
  */
-VKY_EXPORT void vkl_images_tiling(VklImages* images, VkImageTiling tiling);
+DVZ_EXPORT void dvz_images_tiling(DvzImages* images, VkImageTiling tiling);
 
 /**
  * Set the images usage.
@@ -1287,7 +1287,7 @@ VKY_EXPORT void vkl_images_tiling(VklImages* images, VkImageTiling tiling);
  * @param images the images
  * @param usage the image usage
  */
-VKY_EXPORT void vkl_images_usage(VklImages* images, VkImageUsageFlags usage);
+DVZ_EXPORT void dvz_images_usage(DvzImages* images, VkImageUsageFlags usage);
 
 /**
  * Set the images memory properties.
@@ -1295,7 +1295,7 @@ VKY_EXPORT void vkl_images_usage(VklImages* images, VkImageUsageFlags usage);
  * @param images the images
  * @param memory the memory properties
  */
-VKY_EXPORT void vkl_images_memory(VklImages* images, VkMemoryPropertyFlags memory);
+DVZ_EXPORT void dvz_images_memory(DvzImages* images, VkMemoryPropertyFlags memory);
 
 /**
  * Set the images aspect.
@@ -1303,7 +1303,7 @@ VKY_EXPORT void vkl_images_memory(VklImages* images, VkMemoryPropertyFlags memor
  * @param images the images
  * @param aspect the image aspect
  */
-VKY_EXPORT void vkl_images_aspect(VklImages* images, VkImageAspectFlags aspect);
+DVZ_EXPORT void dvz_images_aspect(DvzImages* images, VkImageAspectFlags aspect);
 
 /**
  * Set the images queue access.
@@ -1314,14 +1314,14 @@ VKY_EXPORT void vkl_images_aspect(VklImages* images, VkImageAspectFlags aspect);
  * @param images the images
  * @param queue_idx the queue index
  */
-VKY_EXPORT void vkl_images_queue_access(VklImages* images, uint32_t queue_idx);
+DVZ_EXPORT void dvz_images_queue_access(DvzImages* images, uint32_t queue_idx);
 
 /**
  * Create the images after they have been set up.
  *
  * @param images the images
  */
-VKY_EXPORT void vkl_images_create(VklImages* images);
+DVZ_EXPORT void dvz_images_create(DvzImages* images);
 
 /**
  * Resize images.
@@ -1334,8 +1334,8 @@ VKY_EXPORT void vkl_images_create(VklImages* images);
  * @param height the new height
  * @param depth the new depth
  */
-VKY_EXPORT void
-vkl_images_resize(VklImages* images, uint32_t width, uint32_t height, uint32_t depth);
+DVZ_EXPORT void
+dvz_images_resize(DvzImages* images, uint32_t width, uint32_t height, uint32_t depth);
 
 /**
  * Transition the images to their layout after creation.
@@ -1345,7 +1345,7 @@ vkl_images_resize(VklImages* images, uint32_t width, uint32_t height, uint32_t d
  *
  * @param images the images
  */
-VKY_EXPORT void vkl_images_transition(VklImages* images);
+DVZ_EXPORT void dvz_images_transition(DvzImages* images);
 
 /**
  * Download the data from a staging GPU image.
@@ -1355,14 +1355,14 @@ VKY_EXPORT void vkl_images_transition(VklImages* images);
  * @param swizzle whether the RGBA values need to be transposed
  * @param[out] rgba the buffer that will be filled with the image data (must be already allocated)
  */
-VKY_EXPORT void vkl_images_download(VklImages* staging, uint32_t idx, bool swizzle, uint8_t* rgba);
+DVZ_EXPORT void dvz_images_download(DvzImages* staging, uint32_t idx, bool swizzle, uint8_t* rgba);
 
 /**
  * Destroy images.
  *
  * @param images the images
  */
-VKY_EXPORT void vkl_images_destroy(VklImages* images);
+DVZ_EXPORT void dvz_images_destroy(DvzImages* images);
 
 
 
@@ -1376,7 +1376,7 @@ VKY_EXPORT void vkl_images_destroy(VklImages* images);
  * @param gpu the GPU
  * @returns the sampler object
  */
-VKY_EXPORT VklSampler vkl_sampler(VklGpu* gpu);
+DVZ_EXPORT DvzSampler dvz_sampler(DvzGpu* gpu);
 
 /**
  * Set the sampler min filter.
@@ -1384,7 +1384,7 @@ VKY_EXPORT VklSampler vkl_sampler(VklGpu* gpu);
  * @param sampler the sampler
  * @param filter the filter
  */
-VKY_EXPORT void vkl_sampler_min_filter(VklSampler* sampler, VkFilter filter);
+DVZ_EXPORT void dvz_sampler_min_filter(DvzSampler* sampler, VkFilter filter);
 
 /**
  * Set the sampler mag filter.
@@ -1392,7 +1392,7 @@ VKY_EXPORT void vkl_sampler_min_filter(VklSampler* sampler, VkFilter filter);
  * @param sampler the sampler
  * @param filter the filter
  */
-VKY_EXPORT void vkl_sampler_mag_filter(VklSampler* sampler, VkFilter filter);
+DVZ_EXPORT void dvz_sampler_mag_filter(DvzSampler* sampler, VkFilter filter);
 
 /**
  * Set the sampler address mode
@@ -1401,22 +1401,22 @@ VKY_EXPORT void vkl_sampler_mag_filter(VklSampler* sampler, VkFilter filter);
  * @param axis the sampler axis
  * @param address_mode the address mode
  */
-VKY_EXPORT void vkl_sampler_address_mode(
-    VklSampler* sampler, VklTextureAxis axis, VkSamplerAddressMode address_mode);
+DVZ_EXPORT void dvz_sampler_address_mode(
+    DvzSampler* sampler, DvzTextureAxis axis, VkSamplerAddressMode address_mode);
 
 /**
  * Create the sampler after it has been set up.
  *
  * @param sampler the sampler
  */
-VKY_EXPORT void vkl_sampler_create(VklSampler* sampler);
+DVZ_EXPORT void dvz_sampler_create(DvzSampler* sampler);
 
 /**
  * Destroy a sampler
  *
  * @param sampler the sampler
  */
-VKY_EXPORT void vkl_sampler_destroy(VklSampler* sampler);
+DVZ_EXPORT void dvz_sampler_destroy(DvzSampler* sampler);
 
 
 
@@ -1430,7 +1430,7 @@ VKY_EXPORT void vkl_sampler_destroy(VklSampler* sampler);
  * @param gpu the GPU
  * @returns the slots
  */
-VKY_EXPORT VklSlots vkl_slots(VklGpu* gpu);
+DVZ_EXPORT DvzSlots dvz_slots(DvzGpu* gpu);
 
 /**
  * Set the slots binding.
@@ -1439,7 +1439,7 @@ VKY_EXPORT VklSlots vkl_slots(VklGpu* gpu);
  * @param idx the slot index to set up
  * @param type the descriptor type for that slot
  */
-VKY_EXPORT void vkl_slots_binding(VklSlots* slots, uint32_t idx, VkDescriptorType type);
+DVZ_EXPORT void dvz_slots_binding(DvzSlots* slots, uint32_t idx, VkDescriptorType type);
 
 /**
  * Set up push constants.
@@ -1449,22 +1449,22 @@ VKY_EXPORT void vkl_slots_binding(VklSlots* slots, uint32_t idx, VkDescriptorTyp
  * @param size the push constant size, in bytes
  * @param shaders the shader stages that will access the push constant
  */
-VKY_EXPORT void vkl_slots_push(
-    VklSlots* slots, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders);
+DVZ_EXPORT void dvz_slots_push(
+    DvzSlots* slots, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders);
 
 /**
  * Create the slots after they have been set up.
  *
  * @param slots the slots
  */
-VKY_EXPORT void vkl_slots_create(VklSlots* slots);
+DVZ_EXPORT void dvz_slots_create(DvzSlots* slots);
 
 /**
  * Destroy the slots
  *
  * @param slots the slots
  */
-VKY_EXPORT void vkl_slots_destroy(VklSlots* slots);
+DVZ_EXPORT void dvz_slots_destroy(DvzSlots* slots);
 
 
 
@@ -1478,7 +1478,7 @@ VKY_EXPORT void vkl_slots_destroy(VklSlots* slots);
  * @param slots the slots
  * @param dset_count the number of descriptor sets (number of swapchain images)
  */
-VKY_EXPORT VklBindings vkl_bindings(VklSlots* slots, uint32_t dset_count);
+DVZ_EXPORT DvzBindings dvz_bindings(DvzSlots* slots, uint32_t dset_count);
 
 /**
  * Bind a buffer to a slot.
@@ -1487,7 +1487,7 @@ VKY_EXPORT VklBindings vkl_bindings(VklSlots* slots, uint32_t dset_count);
  * @param idx the slot index
  * @param br the buffer regions to bind to that slot
  */
-VKY_EXPORT void vkl_bindings_buffer(VklBindings* bindings, uint32_t idx, VklBufferRegions br);
+DVZ_EXPORT void dvz_bindings_buffer(DvzBindings* bindings, uint32_t idx, DvzBufferRegions br);
 
 /**
  * Bind a texture to a slot.
@@ -1496,21 +1496,21 @@ VKY_EXPORT void vkl_bindings_buffer(VklBindings* bindings, uint32_t idx, VklBuff
  * @param idx the slot index
  * @param br the texture to bind to that slot
  */
-VKY_EXPORT void vkl_bindings_texture(VklBindings* bindings, uint32_t idx, VklTexture* texture);
+DVZ_EXPORT void dvz_bindings_texture(DvzBindings* bindings, uint32_t idx, DvzTexture* texture);
 
 /**
  * Update the bindings after the buffers/textures have been set up.
  *
  * @param bindings the bindings
  */
-VKY_EXPORT void vkl_bindings_update(VklBindings* bindings);
+DVZ_EXPORT void dvz_bindings_update(DvzBindings* bindings);
 
 /**
  * Destroy bindings.
  *
  * @param bindings the bindings
  */
-VKY_EXPORT void vkl_bindings_destroy(VklBindings* bindings);
+DVZ_EXPORT void dvz_bindings_destroy(DvzBindings* bindings);
 
 
 
@@ -1525,14 +1525,14 @@ VKY_EXPORT void vkl_bindings_destroy(VklBindings* bindings);
  * @param shader_path (optional) the path to the `.spirv` file with the compute shader
  * @returns the compute pipeline
  */
-VKY_EXPORT VklCompute vkl_compute(VklGpu* gpu, const char* shader_path);
+DVZ_EXPORT DvzCompute dvz_compute(DvzGpu* gpu, const char* shader_path);
 
 /**
  * Create a compute pipeline after it has been set up.
  *
  * @param compute the compute pipeline
  */
-VKY_EXPORT void vkl_compute_create(VklCompute* compute);
+DVZ_EXPORT void dvz_compute_create(DvzCompute* compute);
 
 /**
  * Set the GLSL code directly (the library will compile it automatically to SPIRV).
@@ -1540,7 +1540,7 @@ VKY_EXPORT void vkl_compute_create(VklCompute* compute);
  * @param compute the compute pipeline
  * @param code the GLSL code defining the compute shader
  */
-VKY_EXPORT void vkl_compute_code(VklCompute* compute, const char* code);
+DVZ_EXPORT void dvz_compute_code(DvzCompute* compute, const char* code);
 
 /**
  * Declare a slot for the compute pipeline.
@@ -1549,7 +1549,7 @@ VKY_EXPORT void vkl_compute_code(VklCompute* compute, const char* code);
  * @param idx the slot index
  * @param type the descriptor type
  */
-VKY_EXPORT void vkl_compute_slot(VklCompute* compute, uint32_t idx, VkDescriptorType type);
+DVZ_EXPORT void dvz_compute_slot(DvzCompute* compute, uint32_t idx, VkDescriptorType type);
 
 /**
  * Set up push constant.
@@ -1559,8 +1559,8 @@ VKY_EXPORT void vkl_compute_slot(VklCompute* compute, uint32_t idx, VkDescriptor
  * @param size the push constant size, in bytes
  * @param shaders the shaders that will need to access the push constant
  */
-VKY_EXPORT void vkl_compute_push(
-    VklCompute* compute, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders);
+DVZ_EXPORT void dvz_compute_push(
+    DvzCompute* compute, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders);
 
 /**
  * Associate a bindings object to a compute pipeline.
@@ -1568,14 +1568,14 @@ VKY_EXPORT void vkl_compute_push(
  * @param compute the compute pipeline
  * @param bindings the bindings
  */
-VKY_EXPORT void vkl_compute_bindings(VklCompute* compute, VklBindings* bindings);
+DVZ_EXPORT void dvz_compute_bindings(DvzCompute* compute, DvzBindings* bindings);
 
 /**
  * Destroy a compute pipeline.
  *
  * @param compute the compute pipeline
  */
-VKY_EXPORT void vkl_compute_destroy(VklCompute* compute);
+DVZ_EXPORT void dvz_compute_destroy(DvzCompute* compute);
 
 
 
@@ -1589,7 +1589,7 @@ VKY_EXPORT void vkl_compute_destroy(VklCompute* compute);
  * @param gpu the GPU
  * @returns the graphics pipeline
  */
-VKY_EXPORT VklGraphics vkl_graphics(VklGpu* gpu);
+DVZ_EXPORT DvzGraphics dvz_graphics(DvzGpu* gpu);
 
 /**
  * Set the renderpass of a graphics pipeline.
@@ -1598,8 +1598,8 @@ VKY_EXPORT VklGraphics vkl_graphics(VklGpu* gpu);
  * @param renderpass the render pass
  * @param subpass the subpass index
  */
-VKY_EXPORT void
-vkl_graphics_renderpass(VklGraphics* graphics, VklRenderpass* renderpass, uint32_t subpass);
+DVZ_EXPORT void
+dvz_graphics_renderpass(DvzGraphics* graphics, DvzRenderpass* renderpass, uint32_t subpass);
 
 /**
  * Set the graphics pipeline primitive topology
@@ -1607,7 +1607,7 @@ vkl_graphics_renderpass(VklGraphics* graphics, VklRenderpass* renderpass, uint32
  * @param graphics the graphics pipeline
  * @param topology the primitive topology
  */
-VKY_EXPORT void vkl_graphics_topology(VklGraphics* graphics, VkPrimitiveTopology topology);
+DVZ_EXPORT void dvz_graphics_topology(DvzGraphics* graphics, VkPrimitiveTopology topology);
 
 /**
  * Set the GLSL code of a graphics pipeline.
@@ -1616,8 +1616,8 @@ VKY_EXPORT void vkl_graphics_topology(VklGraphics* graphics, VkPrimitiveTopology
  * @param stage the shader stage
  * @param code the GLSL code of the shader
  */
-VKY_EXPORT void
-vkl_graphics_shader_glsl(VklGraphics* graphics, VkShaderStageFlagBits stage, const char* code);
+DVZ_EXPORT void
+dvz_graphics_shader_glsl(DvzGraphics* graphics, VkShaderStageFlagBits stage, const char* code);
 
 /**
  * Set the SPIRV code of a graphics pipeline.
@@ -1627,8 +1627,8 @@ vkl_graphics_shader_glsl(VklGraphics* graphics, VkShaderStageFlagBits stage, con
  * @param size the size of the SPIRV buffer, in bytes
  * @param buffer the binary buffer with the SPIRV code
  */
-VKY_EXPORT void vkl_graphics_shader_spirv(
-    VklGraphics* graphics, VkShaderStageFlagBits stage, VkDeviceSize size, const uint32_t* buffer);
+DVZ_EXPORT void dvz_graphics_shader_spirv(
+    DvzGraphics* graphics, VkShaderStageFlagBits stage, VkDeviceSize size, const uint32_t* buffer);
 
 /**
  * Set the path to a shader for a graphics pipeline.
@@ -1637,8 +1637,8 @@ VKY_EXPORT void vkl_graphics_shader_spirv(
  * @param stage the shader stage
  * @param shader_path the path to the `.spirv` shader file
  */
-VKY_EXPORT void
-vkl_graphics_shader(VklGraphics* graphics, VkShaderStageFlagBits stage, const char* shader_path);
+DVZ_EXPORT void
+dvz_graphics_shader(DvzGraphics* graphics, VkShaderStageFlagBits stage, const char* shader_path);
 
 /**
  * Set the vertex binding.
@@ -1647,8 +1647,8 @@ vkl_graphics_shader(VklGraphics* graphics, VkShaderStageFlagBits stage, const ch
  * @param binding the binding index
  * @param stride the stride in the vertex buffer, in bytes
  */
-VKY_EXPORT void
-vkl_graphics_vertex_binding(VklGraphics* graphics, uint32_t binding, VkDeviceSize stride);
+DVZ_EXPORT void
+dvz_graphics_vertex_binding(DvzGraphics* graphics, uint32_t binding, VkDeviceSize stride);
 
 /**
  * Add a vertex attribute.
@@ -1659,8 +1659,8 @@ vkl_graphics_vertex_binding(VklGraphics* graphics, uint32_t binding, VkDeviceSiz
  * @param format the format
  * @param offset the offset, in bytes
  */
-VKY_EXPORT void vkl_graphics_vertex_attr(
-    VklGraphics* graphics, uint32_t binding, uint32_t location, VkFormat format,
+DVZ_EXPORT void dvz_graphics_vertex_attr(
+    DvzGraphics* graphics, uint32_t binding, uint32_t location, VkFormat format,
     VkDeviceSize offset);
 
 /**
@@ -1669,7 +1669,7 @@ VKY_EXPORT void vkl_graphics_vertex_attr(
  * @param graphics the graphics pipeline
  * @param blend_type the blend type
  */
-VKY_EXPORT void vkl_graphics_blend(VklGraphics* graphics, VklBlendType blend_type);
+DVZ_EXPORT void dvz_graphics_blend(DvzGraphics* graphics, DvzBlendType blend_type);
 
 /**
  * Set the graphics depth test.
@@ -1677,7 +1677,7 @@ VKY_EXPORT void vkl_graphics_blend(VklGraphics* graphics, VklBlendType blend_typ
  * @param graphics the graphics pipeline
  * @param depth_test the depth test
  */
-VKY_EXPORT void vkl_graphics_depth_test(VklGraphics* graphics, VklDepthTest depth_test);
+DVZ_EXPORT void dvz_graphics_depth_test(DvzGraphics* graphics, DvzDepthTest depth_test);
 
 /**
  * Set the graphics polygon mode.
@@ -1685,7 +1685,7 @@ VKY_EXPORT void vkl_graphics_depth_test(VklGraphics* graphics, VklDepthTest dept
  * @param graphics the graphics pipeline
  * @param polygon_mode the polygon mode
  */
-VKY_EXPORT void vkl_graphics_polygon_mode(VklGraphics* graphics, VkPolygonMode polygon_mode);
+DVZ_EXPORT void dvz_graphics_polygon_mode(DvzGraphics* graphics, VkPolygonMode polygon_mode);
 
 /**
  * Set the graphics cull mode.
@@ -1693,7 +1693,7 @@ VKY_EXPORT void vkl_graphics_polygon_mode(VklGraphics* graphics, VkPolygonMode p
  * @param graphics the graphics pipeline
  * @param cull_mode the cull mode
  */
-VKY_EXPORT void vkl_graphics_cull_mode(VklGraphics* graphics, VkCullModeFlags cull_mode);
+DVZ_EXPORT void dvz_graphics_cull_mode(DvzGraphics* graphics, VkCullModeFlags cull_mode);
 
 /**
  * Set the graphics front face.
@@ -1701,14 +1701,14 @@ VKY_EXPORT void vkl_graphics_cull_mode(VklGraphics* graphics, VkCullModeFlags cu
  * @param graphics the graphics pipeline
  * @param front_face the front face
  */
-VKY_EXPORT void vkl_graphics_front_face(VklGraphics* graphics, VkFrontFace front_face);
+DVZ_EXPORT void dvz_graphics_front_face(DvzGraphics* graphics, VkFrontFace front_face);
 
 /**
  * Create a graphics pipeline after it has been set up.
  *
  * @param graphics the graphics pipeline
  */
-VKY_EXPORT void vkl_graphics_create(VklGraphics* graphics);
+DVZ_EXPORT void dvz_graphics_create(DvzGraphics* graphics);
 
 /**
  * Set a binding slot for a graphics pipeline.
@@ -1717,7 +1717,7 @@ VKY_EXPORT void vkl_graphics_create(VklGraphics* graphics);
  * @param idx the slot index
  * @param type the descriptor type
  */
-VKY_EXPORT void vkl_graphics_slot(VklGraphics* graphics, uint32_t idx, VkDescriptorType type);
+DVZ_EXPORT void dvz_graphics_slot(DvzGraphics* graphics, uint32_t idx, VkDescriptorType type);
 
 /**
  * Set a graphics pipeline push constant.
@@ -1727,15 +1727,15 @@ VKY_EXPORT void vkl_graphics_slot(VklGraphics* graphics, uint32_t idx, VkDescrip
  * @param offset the push size, in bytes
  * @param shaders the shader stages that will access the push constant
  */
-VKY_EXPORT void vkl_graphics_push(
-    VklGraphics* graphics, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders);
+DVZ_EXPORT void dvz_graphics_push(
+    DvzGraphics* graphics, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders);
 
 /**
  * Destroy a graphics pipeline.
  *
  * @param graphics the graphics pipeline
  */
-VKY_EXPORT void vkl_graphics_destroy(VklGraphics* graphics);
+DVZ_EXPORT void dvz_graphics_destroy(DvzGraphics* graphics);
 
 
 
@@ -1749,7 +1749,7 @@ VKY_EXPORT void vkl_graphics_destroy(VklGraphics* graphics);
  * @param gpu the GPU
  * @returns the barrier
  */
-VKY_EXPORT VklBarrier vkl_barrier(VklGpu* gpu);
+DVZ_EXPORT DvzBarrier dvz_barrier(DvzGpu* gpu);
 
 /**
  * Set the barrier stages.
@@ -1758,8 +1758,8 @@ VKY_EXPORT VklBarrier vkl_barrier(VklGpu* gpu);
  * @param src_stage the source stage
  * @param dst_stage the destination stage
  */
-VKY_EXPORT void vkl_barrier_stages(
-    VklBarrier* barrier, VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage);
+DVZ_EXPORT void dvz_barrier_stages(
+    DvzBarrier* barrier, VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage);
 
 /**
  * Set the barrier buffer.
@@ -1767,7 +1767,7 @@ VKY_EXPORT void vkl_barrier_stages(
  * @param barrier the barrier
  * @param br the buffer regions
  */
-VKY_EXPORT void vkl_barrier_buffer(VklBarrier* barrier, VklBufferRegions br);
+DVZ_EXPORT void dvz_barrier_buffer(DvzBarrier* barrier, DvzBufferRegions br);
 
 /**
  * Set the barrier buffer queue.
@@ -1776,8 +1776,8 @@ VKY_EXPORT void vkl_barrier_buffer(VklBarrier* barrier, VklBufferRegions br);
  * @param src_queue the source queue index
  * @param dst_queue the destination queue index
  */
-VKY_EXPORT void
-vkl_barrier_buffer_queue(VklBarrier* barrier, uint32_t src_queue, uint32_t dst_queue);
+DVZ_EXPORT void
+dvz_barrier_buffer_queue(DvzBarrier* barrier, uint32_t src_queue, uint32_t dst_queue);
 
 /**
  * Set the barrier buffer access.
@@ -1786,8 +1786,8 @@ vkl_barrier_buffer_queue(VklBarrier* barrier, uint32_t src_queue, uint32_t dst_q
  * @param src_access the source access flags
  * @param dst_access the destination access flags
  */
-VKY_EXPORT void
-vkl_barrier_buffer_access(VklBarrier* barrier, VkAccessFlags src_access, VkAccessFlags dst_access);
+DVZ_EXPORT void
+dvz_barrier_buffer_access(DvzBarrier* barrier, VkAccessFlags src_access, VkAccessFlags dst_access);
 
 /**
  * Set the barrier images.
@@ -1795,7 +1795,7 @@ vkl_barrier_buffer_access(VklBarrier* barrier, VkAccessFlags src_access, VkAcces
  * @param barrier the barrier
  * @param images the images
  */
-VKY_EXPORT void vkl_barrier_images(VklBarrier* barrier, VklImages* images);
+DVZ_EXPORT void dvz_barrier_images(DvzBarrier* barrier, DvzImages* images);
 
 /**
  * Set the barrier images layout.
@@ -1804,8 +1804,8 @@ VKY_EXPORT void vkl_barrier_images(VklBarrier* barrier, VklImages* images);
  * @param src_layout the source layout
  * @param dst_layout the destination layout
  */
-VKY_EXPORT void
-vkl_barrier_images_layout(VklBarrier* barrier, VkImageLayout src_layout, VkImageLayout dst_layout);
+DVZ_EXPORT void
+dvz_barrier_images_layout(DvzBarrier* barrier, VkImageLayout src_layout, VkImageLayout dst_layout);
 
 /**
  * Set the barrier images queue.
@@ -1814,8 +1814,8 @@ vkl_barrier_images_layout(VklBarrier* barrier, VkImageLayout src_layout, VkImage
  * @param src_queue the source queue index
  * @param dst_queue the destination queue index
  */
-VKY_EXPORT void
-vkl_barrier_images_queue(VklBarrier* barrier, uint32_t src_queue, uint32_t dst_queue);
+DVZ_EXPORT void
+dvz_barrier_images_queue(DvzBarrier* barrier, uint32_t src_queue, uint32_t dst_queue);
 
 /**
  * Set the barrier images access.
@@ -1824,8 +1824,8 @@ vkl_barrier_images_queue(VklBarrier* barrier, uint32_t src_queue, uint32_t dst_q
  * @param src_access the source access flags
  * @param dst_access the destination access flags
  */
-VKY_EXPORT void
-vkl_barrier_images_access(VklBarrier* barrier, VkAccessFlags src_access, VkAccessFlags dst_access);
+DVZ_EXPORT void
+dvz_barrier_images_access(DvzBarrier* barrier, VkAccessFlags src_access, VkAccessFlags dst_access);
 
 
 
@@ -1840,14 +1840,14 @@ vkl_barrier_images_access(VklBarrier* barrier, VkAccessFlags src_access, VkAcces
  * @param count the number of semaphores
  * @returns the semaphores
  */
-VKY_EXPORT VklSemaphores vkl_semaphores(VklGpu* gpu, uint32_t count);
+DVZ_EXPORT DvzSemaphores dvz_semaphores(DvzGpu* gpu, uint32_t count);
 
 /**
  * Destroy semaphores.
  *
  * @param semaphores the semaphores
  */
-VKY_EXPORT void vkl_semaphores_destroy(VklSemaphores* semaphores);
+DVZ_EXPORT void dvz_semaphores_destroy(DvzSemaphores* semaphores);
 
 
 
@@ -1862,7 +1862,7 @@ VKY_EXPORT void vkl_semaphores_destroy(VklSemaphores* semaphores);
  * @param count the number of fences
  * @returns the fences
  */
-VKY_EXPORT VklFences vkl_fences(VklGpu* gpu, uint32_t count);
+DVZ_EXPORT DvzFences dvz_fences(DvzGpu* gpu, uint32_t count);
 
 /**
  * Copy a fence from a set of fences to another.
@@ -1872,8 +1872,8 @@ VKY_EXPORT VklFences vkl_fences(VklGpu* gpu, uint32_t count);
  * @param dst_fences the destination fences
  * @param dst_idx the fence index within the destination fences
  */
-VKY_EXPORT void
-vkl_fences_copy(VklFences* src_fences, uint32_t src_idx, VklFences* dst_fences, uint32_t dst_idx);
+DVZ_EXPORT void
+dvz_fences_copy(DvzFences* src_fences, uint32_t src_idx, DvzFences* dst_fences, uint32_t dst_idx);
 
 /**
  * Wait on the GPU until a fence is signaled.
@@ -1881,7 +1881,7 @@ vkl_fences_copy(VklFences* src_fences, uint32_t src_idx, VklFences* dst_fences, 
  * @param fences the fences
  * @param idx the fence index
  */
-VKY_EXPORT void vkl_fences_wait(VklFences* fences, uint32_t idx);
+DVZ_EXPORT void dvz_fences_wait(DvzFences* fences, uint32_t idx);
 
 /**
  * Return whether a fence is ready.
@@ -1889,7 +1889,7 @@ VKY_EXPORT void vkl_fences_wait(VklFences* fences, uint32_t idx);
  * @param fences the fences
  * @param idx the fence index
  */
-VKY_EXPORT bool vkl_fences_ready(VklFences* fences, uint32_t idx);
+DVZ_EXPORT bool dvz_fences_ready(DvzFences* fences, uint32_t idx);
 
 /**
  * Rset the state of a fence.
@@ -1897,14 +1897,14 @@ VKY_EXPORT bool vkl_fences_ready(VklFences* fences, uint32_t idx);
  * @param fences the fences
  * @param idx the fence index
  */
-VKY_EXPORT void vkl_fences_reset(VklFences* fences, uint32_t idx);
+DVZ_EXPORT void dvz_fences_reset(DvzFences* fences, uint32_t idx);
 
 /**
  * Destroy fences.
  *
  * @param fences the fences
  */
-VKY_EXPORT void vkl_fences_destroy(VklFences* fences);
+DVZ_EXPORT void dvz_fences_destroy(DvzFences* fences);
 
 
 
@@ -1918,7 +1918,7 @@ VKY_EXPORT void vkl_fences_destroy(VklFences* fences);
  * @param gpu the GPU
  * @returns the render pass
  */
-VKY_EXPORT VklRenderpass vkl_renderpass(VklGpu* gpu);
+DVZ_EXPORT DvzRenderpass dvz_renderpass(DvzGpu* gpu);
 
 /**
  * Set the clear value of a render pass.
@@ -1926,7 +1926,7 @@ VKY_EXPORT VklRenderpass vkl_renderpass(VklGpu* gpu);
  * @param renderpass the render pass
  * @param value the clear value
  */
-VKY_EXPORT void vkl_renderpass_clear(VklRenderpass* renderpass, VkClearValue value);
+DVZ_EXPORT void dvz_renderpass_clear(DvzRenderpass* renderpass, VkClearValue value);
 
 /**
  * Specify a render pass attachment.
@@ -1937,8 +1937,8 @@ VKY_EXPORT void vkl_renderpass_clear(VklRenderpass* renderpass, VkClearValue val
  * @param format the attachment image format
  * @param ref_layout the image layout
  */
-VKY_EXPORT void vkl_renderpass_attachment(
-    VklRenderpass* renderpass, uint32_t idx, VklRenderpassAttachmentType type, VkFormat format,
+DVZ_EXPORT void dvz_renderpass_attachment(
+    DvzRenderpass* renderpass, uint32_t idx, DvzRenderpassAttachmentType type, VkFormat format,
     VkImageLayout ref_layout);
 
 /**
@@ -1949,8 +1949,8 @@ VKY_EXPORT void vkl_renderpass_attachment(
  * @param src_layout the source layout
  * @param dst_layout the destination layout
  */
-VKY_EXPORT void vkl_renderpass_attachment_layout(
-    VklRenderpass* renderpass, uint32_t idx, VkImageLayout src_layout, VkImageLayout dst_layout);
+DVZ_EXPORT void dvz_renderpass_attachment_layout(
+    DvzRenderpass* renderpass, uint32_t idx, VkImageLayout src_layout, VkImageLayout dst_layout);
 
 /**
  * Set the attachment load and store operations.
@@ -1960,8 +1960,8 @@ VKY_EXPORT void vkl_renderpass_attachment_layout(
  * @param load_op the load operation
  * @param store_op the store operation
  */
-VKY_EXPORT void vkl_renderpass_attachment_ops(
-    VklRenderpass* renderpass, uint32_t idx, //
+DVZ_EXPORT void dvz_renderpass_attachment_ops(
+    DvzRenderpass* renderpass, uint32_t idx, //
     VkAttachmentLoadOp load_op, VkAttachmentStoreOp store_op);
 
 /**
@@ -1971,8 +1971,8 @@ VKY_EXPORT void vkl_renderpass_attachment_ops(
  * @param subpass_idx the subpass index
  * @param attachment_idx the attachment index
  */
-VKY_EXPORT void vkl_renderpass_subpass_attachment(
-    VklRenderpass* renderpass, uint32_t subpass_idx, uint32_t attachment_idx);
+DVZ_EXPORT void dvz_renderpass_subpass_attachment(
+    DvzRenderpass* renderpass, uint32_t subpass_idx, uint32_t attachment_idx);
 
 /**
  * Set a subpass dependency.
@@ -1982,8 +1982,8 @@ VKY_EXPORT void vkl_renderpass_subpass_attachment(
  * @param src_subpass the source subpass index
  * @param dst_subpass the destination subpass index
  */
-VKY_EXPORT void vkl_renderpass_subpass_dependency(
-    VklRenderpass* renderpass, uint32_t dependency_idx, //
+DVZ_EXPORT void dvz_renderpass_subpass_dependency(
+    DvzRenderpass* renderpass, uint32_t dependency_idx, //
     uint32_t src_subpass, uint32_t dst_subpass);
 
 /**
@@ -1994,8 +1994,8 @@ VKY_EXPORT void vkl_renderpass_subpass_dependency(
  * @param src_access the source access flags
  * @param dst_access the destinationaccess flags
  */
-VKY_EXPORT void vkl_renderpass_subpass_dependency_access(
-    VklRenderpass* renderpass, uint32_t dependency_idx, //
+DVZ_EXPORT void dvz_renderpass_subpass_dependency_access(
+    DvzRenderpass* renderpass, uint32_t dependency_idx, //
     VkAccessFlags src_access, VkAccessFlags dst_access);
 
 /**
@@ -2006,8 +2006,8 @@ VKY_EXPORT void vkl_renderpass_subpass_dependency_access(
  * @param src_stage the source pipeline stages
  * @param dst_stage the destination pipeline stages
  */
-VKY_EXPORT void vkl_renderpass_subpass_dependency_stage(
-    VklRenderpass* renderpass, uint32_t dependency_idx, //
+DVZ_EXPORT void dvz_renderpass_subpass_dependency_stage(
+    DvzRenderpass* renderpass, uint32_t dependency_idx, //
     VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage);
 
 /**
@@ -2015,14 +2015,14 @@ VKY_EXPORT void vkl_renderpass_subpass_dependency_stage(
  *
  * @param renderpass the render pass
  */
-VKY_EXPORT void vkl_renderpass_create(VklRenderpass* renderpass);
+DVZ_EXPORT void dvz_renderpass_create(DvzRenderpass* renderpass);
 
 /**
  * Destroy a render pass.
  *
  * @param renderpass the render pass
  */
-VKY_EXPORT void vkl_renderpass_destroy(VklRenderpass* renderpass);
+DVZ_EXPORT void dvz_renderpass_destroy(DvzRenderpass* renderpass);
 
 
 
@@ -2036,7 +2036,7 @@ VKY_EXPORT void vkl_renderpass_destroy(VklRenderpass* renderpass);
  * @param gpu the GPU
  * @returns the framebuffers
  */
-VKY_EXPORT VklFramebuffers vkl_framebuffers(VklGpu* gpu);
+DVZ_EXPORT DvzFramebuffers dvz_framebuffers(DvzGpu* gpu);
 
 /**
  * Set framebuffers attachment.
@@ -2046,8 +2046,8 @@ VKY_EXPORT VklFramebuffers vkl_framebuffers(VklGpu* gpu);
  * @param images the images
  */
 
-VKY_EXPORT void vkl_framebuffers_attachment(
-    VklFramebuffers* framebuffers, uint32_t attachment_idx, VklImages* images);
+DVZ_EXPORT void dvz_framebuffers_attachment(
+    DvzFramebuffers* framebuffers, uint32_t attachment_idx, DvzImages* images);
 
 /**
  * Create a set of framebuffers after it has been set up.
@@ -2055,14 +2055,14 @@ VKY_EXPORT void vkl_framebuffers_attachment(
  * @param framebuffers the framebuffers
  * @param renderpass the render pass
  */
-VKY_EXPORT void vkl_framebuffers_create(VklFramebuffers* framebuffers, VklRenderpass* renderpass);
+DVZ_EXPORT void dvz_framebuffers_create(DvzFramebuffers* framebuffers, DvzRenderpass* renderpass);
 
 /**
  * Destroy a set of framebuffers.
  *
  * @param framebuffers the framebuffers
  */
-VKY_EXPORT void vkl_framebuffers_destroy(VklFramebuffers* framebuffers);
+DVZ_EXPORT void dvz_framebuffers_destroy(DvzFramebuffers* framebuffers);
 
 
 
@@ -2076,7 +2076,7 @@ VKY_EXPORT void vkl_framebuffers_destroy(VklFramebuffers* framebuffers);
  * @param gpu the GPU
  * @returns the submit
  */
-VKY_EXPORT VklSubmit vkl_submit(VklGpu* gpu);
+DVZ_EXPORT DvzSubmit dvz_submit(DvzGpu* gpu);
 
 /**
  * Set the command buffers to submit.
@@ -2084,7 +2084,7 @@ VKY_EXPORT VklSubmit vkl_submit(VklGpu* gpu);
  * @param submit the submit object
  * @param cmds the set of command buffers
  */
-VKY_EXPORT void vkl_submit_commands(VklSubmit* submit, VklCommands* commands);
+DVZ_EXPORT void dvz_submit_commands(DvzSubmit* submit, DvzCommands* commands);
 
 /**
  * Set the wait semaphores
@@ -2094,8 +2094,8 @@ VKY_EXPORT void vkl_submit_commands(VklSubmit* submit, VklCommands* commands);
  * @param semaphores the set of semaphores to wait on
  * @param idx the semaphore index to wait on
  */
-VKY_EXPORT void vkl_submit_wait_semaphores(
-    VklSubmit* submit, VkPipelineStageFlags stage, VklSemaphores* semaphores, uint32_t idx);
+DVZ_EXPORT void dvz_submit_wait_semaphores(
+    DvzSubmit* submit, VkPipelineStageFlags stage, DvzSemaphores* semaphores, uint32_t idx);
 
 /**
  * Set the signal semaphores
@@ -2104,8 +2104,8 @@ VKY_EXPORT void vkl_submit_wait_semaphores(
  * @param semaphores the set of semaphores to signal after the commands have completed
  * @param idx the semaphore index to signal
  */
-VKY_EXPORT void
-vkl_submit_signal_semaphores(VklSubmit* submit, VklSemaphores* semaphores, uint32_t idx);
+DVZ_EXPORT void
+dvz_submit_signal_semaphores(DvzSubmit* submit, DvzSemaphores* semaphores, uint32_t idx);
 
 /**
  * Submit the command buffers to their queue.
@@ -2115,15 +2115,15 @@ vkl_submit_signal_semaphores(VklSubmit* submit, VklSemaphores* semaphores, uint3
  * @param fences the fences to signal after completion
  * @param fence_idx the fence index to signal
  */
-VKY_EXPORT void
-vkl_submit_send(VklSubmit* submit, uint32_t cmd_idx, VklFences* fences, uint32_t fence_idx);
+DVZ_EXPORT void
+dvz_submit_send(DvzSubmit* submit, uint32_t cmd_idx, DvzFences* fences, uint32_t fence_idx);
 
 /**
  * Reset a submit object.
  *
  * @param submit the submit object
  */
-VKY_EXPORT void vkl_submit_reset(VklSubmit* submit);
+DVZ_EXPORT void dvz_submit_reset(DvzSubmit* submit);
 
 
 
@@ -2139,8 +2139,8 @@ VKY_EXPORT void vkl_submit_reset(VklSubmit* submit);
  * @param renderpass the render pass
  * @param framebuffers the framebuffers
  */
-VKY_EXPORT void vkl_cmd_begin_renderpass(
-    VklCommands* cmds, uint32_t idx, VklRenderpass* renderpass, VklFramebuffers* framebuffers);
+DVZ_EXPORT void dvz_cmd_begin_renderpass(
+    DvzCommands* cmds, uint32_t idx, DvzRenderpass* renderpass, DvzFramebuffers* framebuffers);
 
 /**
  * End a render pass.
@@ -2148,7 +2148,7 @@ VKY_EXPORT void vkl_cmd_begin_renderpass(
  * @param cmds the set of command buffers to record
  * @param idx the index of the command buffer to record
  */
-VKY_EXPORT void vkl_cmd_end_renderpass(VklCommands* cmds, uint32_t idx);
+DVZ_EXPORT void dvz_cmd_end_renderpass(DvzCommands* cmds, uint32_t idx);
 
 /**
  * Launch a compute task.
@@ -2158,7 +2158,7 @@ VKY_EXPORT void vkl_cmd_end_renderpass(VklCommands* cmds, uint32_t idx);
  * @param compute the computer pipeline
  * @param size the task shape
  */
-VKY_EXPORT void vkl_cmd_compute(VklCommands* cmds, uint32_t idx, VklCompute* compute, uvec3 size);
+DVZ_EXPORT void dvz_cmd_compute(DvzCommands* cmds, uint32_t idx, DvzCompute* compute, uvec3 size);
 
 /**
  * Register a barrier.
@@ -2167,7 +2167,7 @@ VKY_EXPORT void vkl_cmd_compute(VklCommands* cmds, uint32_t idx, VklCompute* com
  * @param idx the index of the command buffer to record
  * @param barrier the barrier
  */
-VKY_EXPORT void vkl_cmd_barrier(VklCommands* cmds, uint32_t idx, VklBarrier* barrier);
+DVZ_EXPORT void dvz_cmd_barrier(DvzCommands* cmds, uint32_t idx, DvzBarrier* barrier);
 
 /**
  * Copy a GPU buffer to a GPU image.
@@ -2177,8 +2177,8 @@ VKY_EXPORT void vkl_cmd_barrier(VklCommands* cmds, uint32_t idx, VklBarrier* bar
  * @param buffer the buffer
  * @param images the image
  */
-VKY_EXPORT void vkl_cmd_copy_buffer_to_image(
-    VklCommands* cmds, uint32_t idx, VklBuffer* buffer, VklImages* images);
+DVZ_EXPORT void dvz_cmd_copy_buffer_to_image(
+    DvzCommands* cmds, uint32_t idx, DvzBuffer* buffer, DvzImages* images);
 
 /**
  * Copy a GPU image to a GPU buffer.
@@ -2188,8 +2188,8 @@ VKY_EXPORT void vkl_cmd_copy_buffer_to_image(
  * @param images the image
  * @param buffer the buffer
  */
-VKY_EXPORT void vkl_cmd_copy_image_to_buffer(
-    VklCommands* cmds, uint32_t idx, VklImages* images, VklBuffer* buffer);
+DVZ_EXPORT void dvz_cmd_copy_image_to_buffer(
+    DvzCommands* cmds, uint32_t idx, DvzImages* images, DvzBuffer* buffer);
 
 /**
  * Copy a GPU image to another.
@@ -2199,8 +2199,8 @@ VKY_EXPORT void vkl_cmd_copy_image_to_buffer(
  * @param src_img the source image
  * @param dst_img the destination image
  */
-VKY_EXPORT void
-vkl_cmd_copy_image(VklCommands* cmds, uint32_t idx, VklImages* src_img, VklImages* dst_img);
+DVZ_EXPORT void
+dvz_cmd_copy_image(DvzCommands* cmds, uint32_t idx, DvzImages* src_img, DvzImages* dst_img);
 
 /**
  * Set the viewport.
@@ -2209,7 +2209,7 @@ vkl_cmd_copy_image(VklCommands* cmds, uint32_t idx, VklImages* src_img, VklImage
  * @param idx the index of the command buffer to record
  * @param viewport the viewport
  */
-VKY_EXPORT void vkl_cmd_viewport(VklCommands* cmds, uint32_t idx, VkViewport viewport);
+DVZ_EXPORT void dvz_cmd_viewport(DvzCommands* cmds, uint32_t idx, VkViewport viewport);
 
 /**
  * Bind a graphics pipeline.
@@ -2220,9 +2220,9 @@ VKY_EXPORT void vkl_cmd_viewport(VklCommands* cmds, uint32_t idx, VkViewport vie
  * @param bindings the bindings associated to the pipeline
  * @param dynamic_idx the dynamic uniform buffer index
  */
-VKY_EXPORT void vkl_cmd_bind_graphics(
-    VklCommands* cmds, uint32_t idx, VklGraphics* graphics, //
-    VklBindings* bindings, uint32_t dynamic_idx);
+DVZ_EXPORT void dvz_cmd_bind_graphics(
+    DvzCommands* cmds, uint32_t idx, DvzGraphics* graphics, //
+    DvzBindings* bindings, uint32_t dynamic_idx);
 
 /**
  * Bind a vertex buffer.
@@ -2232,8 +2232,8 @@ VKY_EXPORT void vkl_cmd_bind_graphics(
  * @param br the buffer regions
  * @param offset the offset within the buffer regions, in bytes
  */
-VKY_EXPORT void vkl_cmd_bind_vertex_buffer(
-    VklCommands* cmds, uint32_t idx, VklBufferRegions br, VkDeviceSize offset);
+DVZ_EXPORT void dvz_cmd_bind_vertex_buffer(
+    DvzCommands* cmds, uint32_t idx, DvzBufferRegions br, VkDeviceSize offset);
 
 /**
  * Bind an index buffer.
@@ -2243,8 +2243,8 @@ VKY_EXPORT void vkl_cmd_bind_vertex_buffer(
  * @param br the buffer regions
  * @param offset the offset within the buffer regions, in bytes
  */
-VKY_EXPORT void vkl_cmd_bind_index_buffer(
-    VklCommands* cmds, uint32_t idx, VklBufferRegions br, VkDeviceSize offset);
+DVZ_EXPORT void dvz_cmd_bind_index_buffer(
+    DvzCommands* cmds, uint32_t idx, DvzBufferRegions br, VkDeviceSize offset);
 
 /**
  * Direct draw.
@@ -2254,8 +2254,8 @@ VKY_EXPORT void vkl_cmd_bind_index_buffer(
  * @param first_vertex index of the first vertex
  * @param vertex_count number of vertices to draw
  */
-VKY_EXPORT void
-vkl_cmd_draw(VklCommands* cmds, uint32_t idx, uint32_t first_vertex, uint32_t vertex_count);
+DVZ_EXPORT void
+dvz_cmd_draw(DvzCommands* cmds, uint32_t idx, uint32_t first_vertex, uint32_t vertex_count);
 
 /**
  * Direct indexed draw.
@@ -2266,8 +2266,8 @@ vkl_cmd_draw(VklCommands* cmds, uint32_t idx, uint32_t first_vertex, uint32_t ve
  * @param vertex_offset offset of the vertex
  * @param index_count number of indices to draw
  */
-VKY_EXPORT void vkl_cmd_draw_indexed(
-    VklCommands* cmds, uint32_t idx, uint32_t first_index, uint32_t vertex_offset,
+DVZ_EXPORT void dvz_cmd_draw_indexed(
+    DvzCommands* cmds, uint32_t idx, uint32_t first_index, uint32_t vertex_offset,
     uint32_t index_count);
 
 /**
@@ -2277,7 +2277,7 @@ VKY_EXPORT void vkl_cmd_draw_indexed(
  * @param idx the index of the command buffer to record
  * @param indirect buffer regions with the indirect draw info
  */
-VKY_EXPORT void vkl_cmd_draw_indirect(VklCommands* cmds, uint32_t idx, VklBufferRegions indirect);
+DVZ_EXPORT void dvz_cmd_draw_indirect(DvzCommands* cmds, uint32_t idx, DvzBufferRegions indirect);
 
 /**
  * Indirect indexed draw.
@@ -2286,8 +2286,8 @@ VKY_EXPORT void vkl_cmd_draw_indirect(VklCommands* cmds, uint32_t idx, VklBuffer
  * @param idx the index of the command buffer to record
  * @param indirect buffer regions with the indirect draw info
  */
-VKY_EXPORT void
-vkl_cmd_draw_indexed_indirect(VklCommands* cmds, uint32_t idx, VklBufferRegions indirect);
+DVZ_EXPORT void
+dvz_cmd_draw_indexed_indirect(DvzCommands* cmds, uint32_t idx, DvzBufferRegions indirect);
 
 /**
  * Copy a GPU buffer to another.
@@ -2300,10 +2300,10 @@ vkl_cmd_draw_indexed_indirect(VklCommands* cmds, uint32_t idx, VklBufferRegions 
  * @param dst_offset the offset in the destination buffer, in bytes
  * @param size the size of the region to copy, in bytes
  */
-VKY_EXPORT void vkl_cmd_copy_buffer(
-    VklCommands* cmds, uint32_t idx,             //
-    VklBuffer* src_buf, VkDeviceSize src_offset, //
-    VklBuffer* dst_buf, VkDeviceSize dst_offset, //
+DVZ_EXPORT void dvz_cmd_copy_buffer(
+    DvzCommands* cmds, uint32_t idx,             //
+    DvzBuffer* src_buf, VkDeviceSize src_offset, //
+    DvzBuffer* dst_buf, VkDeviceSize dst_offset, //
     VkDeviceSize size);
 
 /**
@@ -2317,8 +2317,8 @@ VKY_EXPORT void vkl_cmd_copy_buffer(
  * @param size the size in the push constant, in bytes
  * @param data the data to send via the push constant
  */
-VKY_EXPORT void vkl_cmd_push(
-    VklCommands* cmds, uint32_t idx, VklSlots* slots, VkShaderStageFlagBits shaders, //
+DVZ_EXPORT void dvz_cmd_push(
+    DvzCommands* cmds, uint32_t idx, DvzSlots* slots, VkShaderStageFlagBits shaders, //
     VkDeviceSize offset, VkDeviceSize size, const void* data);
 
 
@@ -2332,7 +2332,7 @@ VKY_EXPORT void vkl_cmd_push(
  *
  * @param context the context
  */
-VKY_EXPORT void vkl_context_destroy(VklContext* context);
+DVZ_EXPORT void dvz_context_destroy(DvzContext* context);
 
 
 

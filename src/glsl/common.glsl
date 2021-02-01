@@ -2,21 +2,21 @@
 /*  Constants and macros                                                                         */
 /*************************************************************************************************/
 
-#define VKL_VIEWPORT_NONE           0
-#define VKL_VIEWPORT_INNER          1
-#define VKL_VIEWPORT_OUTER          2
-#define VKL_VIEWPORT_OUTER_BOTTOM   3
-#define VKL_VIEWPORT_OUTER_LEFT     4
+#define DVZ_VIEWPORT_NONE           0
+#define DVZ_VIEWPORT_INNER          1
+#define DVZ_VIEWPORT_OUTER          2
+#define DVZ_VIEWPORT_OUTER_BOTTOM   3
+#define DVZ_VIEWPORT_OUTER_LEFT     4
 
-#define VKL_INTERACT_FIXED_AXIS_DEFAULT 0x0
-#define VKL_INTERACT_FIXED_AXIS_X 0x1
-#define VKL_INTERACT_FIXED_AXIS_Y 0x2
-#define VKL_INTERACT_FIXED_AXIS_Z 0x4
-#define VKL_INTERACT_FIXED_AXIS_XY 0x3
-#define VKL_INTERACT_FIXED_AXIS_XZ 0x5
-#define VKL_INTERACT_FIXED_AXIS_YZ 0x6
-#define VKL_INTERACT_FIXED_AXIS_ALL 0x7
-#define VKL_INTERACT_FIXED_AXIS_NONE 0x8
+#define DVZ_INTERACT_FIXED_AXIS_DEFAULT 0x0
+#define DVZ_INTERACT_FIXED_AXIS_X 0x1
+#define DVZ_INTERACT_FIXED_AXIS_Y 0x2
+#define DVZ_INTERACT_FIXED_AXIS_Z 0x4
+#define DVZ_INTERACT_FIXED_AXIS_XY 0x3
+#define DVZ_INTERACT_FIXED_AXIS_XZ 0x5
+#define DVZ_INTERACT_FIXED_AXIS_YZ 0x6
+#define DVZ_INTERACT_FIXED_AXIS_ALL 0x7
+#define DVZ_INTERACT_FIXED_AXIS_NONE 0x8
 
 #define USER_BINDING 2
 
@@ -25,21 +25,21 @@
 #define CLIP \
     switch (viewport.clip)                                                                        \
     {                                                                                             \
-        case VKL_VIEWPORT_NONE:                                                                   \
+        case DVZ_VIEWPORT_NONE:                                                                   \
             break;                                                                                \
                                                                                                   \
-        case VKL_VIEWPORT_INNER:                                                                  \
-        case VKL_VIEWPORT_OUTER:                                                                  \
+        case DVZ_VIEWPORT_INNER:                                                                  \
+        case DVZ_VIEWPORT_OUTER:                                                                  \
             if(clip_viewport(gl_FragCoord.xy))                                                    \
                 discard;                                                                          \
             break;                                                                                \
                                                                                                   \
-        case VKL_VIEWPORT_OUTER_BOTTOM:                                                           \
+        case DVZ_VIEWPORT_OUTER_BOTTOM:                                                           \
             if(clip_viewport(gl_FragCoord.xy, 0))                                                 \
                 discard;                                                                          \
             break;                                                                                \
                                                                                                   \
-        case VKL_VIEWPORT_OUTER_LEFT:                                                             \
+        case DVZ_VIEWPORT_OUTER_LEFT:                                                             \
             if(clip_viewport(gl_FragCoord.xy, 1))                                                 \
                 discard;                                                                          \
             break;                                                                                \
@@ -100,28 +100,28 @@ vec4 transform(vec3 pos, vec2 shift, uint transform_mode) {
     vec4 tr = vec4(pos, 1.0);
 
     // By default, take the viewport transform.
-    if (transform_mode == VKL_INTERACT_FIXED_AXIS_DEFAULT)
+    if (transform_mode == DVZ_INTERACT_FIXED_AXIS_DEFAULT)
         transform_mode = uint(viewport.interact_axis);
     // Default: transform all
-    if (transform_mode == VKL_INTERACT_FIXED_AXIS_DEFAULT)
-        transform_mode = VKL_INTERACT_FIXED_AXIS_NONE;
+    if (transform_mode == DVZ_INTERACT_FIXED_AXIS_DEFAULT)
+        transform_mode = DVZ_INTERACT_FIXED_AXIS_NONE;
 
     // Transform.
     switch (transform_mode) {
-        case VKL_INTERACT_FIXED_AXIS_ALL:
+        case DVZ_INTERACT_FIXED_AXIS_ALL:
             break;
-        case VKL_INTERACT_FIXED_AXIS_NONE:
+        case DVZ_INTERACT_FIXED_AXIS_NONE:
             tr = mvp * tr;
             break;
-        case VKL_INTERACT_FIXED_AXIS_X:
+        case DVZ_INTERACT_FIXED_AXIS_X:
             tr = mvp * tr;
             tr.x = pos.x;
             break;
-        case VKL_INTERACT_FIXED_AXIS_Y:
+        case DVZ_INTERACT_FIXED_AXIS_Y:
             tr = mvp * tr;
             tr.y = pos.y;
             break;
-        case VKL_INTERACT_FIXED_AXIS_Z:
+        case DVZ_INTERACT_FIXED_AXIS_Z:
             tr = mvp * tr;
             tr.z = pos.z;
             break;

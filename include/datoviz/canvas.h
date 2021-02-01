@@ -2,8 +2,8 @@
 /*  Batteries-included Vulkan-aware bare window with swapchain and event system                  */
 /*************************************************************************************************/
 
-#ifndef VKL_CANVAS_HEADER
-#define VKL_CANVAS_HEADER
+#ifndef DVZ_CANVAS_HEADER
+#define DVZ_CANVAS_HEADER
 
 #include "context.h"
 #include "fifo.h"
@@ -21,29 +21,29 @@ extern "C" {
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define VKL_MAX_EVENT_CALLBACKS 32
+#define DVZ_MAX_EVENT_CALLBACKS 32
 // Maximum acceptable duration for the pending events in the event queue, in seconds
-#define VKL_MAX_EVENT_DURATION .5
-#define VKL_DEFAULT_BACKGROUND                                                                    \
+#define DVZ_MAX_EVENT_DURATION .5
+#define DVZ_DEFAULT_BACKGROUND                                                                    \
     (VkClearColorValue)                                                                           \
     {                                                                                             \
         {                                                                                         \
             0, .03, .07, 1.0f                                                                     \
         }                                                                                         \
     }
-#define VKL_DEFAULT_IMAGE_FORMAT VK_FORMAT_B8G8R8A8_UNORM
-// #define VKL_DEFAULT_PRESENT_MODE VK_PRESENT_MODE_FIFO_KHR
-#define VKL_DEFAULT_DPI_SCALING 1.0f
-#define VKL_DEFAULT_PRESENT_MODE                                                                  \
-    (getenv("VKL_FPS") != NULL ? VK_PRESENT_MODE_IMMEDIATE_KHR : VK_PRESENT_MODE_FIFO_KHR)
-#define VKL_MIN_SWAPCHAIN_IMAGE_COUNT 3
-#define VKL_SEMAPHORE_IMG_AVAILABLE   0
-#define VKL_SEMAPHORE_RENDER_FINISHED 1
-#define VKL_FENCE_RENDER_FINISHED     0
-#define VKL_FENCES_FLIGHT             1
-#define VKL_DEFAULT_COMMANDS_TRANSFER 0
-#define VKL_DEFAULT_COMMANDS_RENDER   1
-#define VKL_MAX_FRAMES_IN_FLIGHT      2
+#define DVZ_DEFAULT_IMAGE_FORMAT VK_FORMAT_B8G8R8A8_UNORM
+// #define DVZ_DEFAULT_PRESENT_MODE VK_PRESENT_MODE_FIFO_KHR
+#define DVZ_DEFAULT_DPI_SCALING 1.0f
+#define DVZ_DEFAULT_PRESENT_MODE                                                                  \
+    (getenv("DVZ_FPS") != NULL ? VK_PRESENT_MODE_IMMEDIATE_KHR : VK_PRESENT_MODE_FIFO_KHR)
+#define DVZ_MIN_SWAPCHAIN_IMAGE_COUNT 3
+#define DVZ_SEMAPHORE_IMG_AVAILABLE   0
+#define DVZ_SEMAPHORE_RENDER_FINISHED 1
+#define DVZ_FENCE_RENDER_FINISHED     0
+#define DVZ_FENCES_FLIGHT             1
+#define DVZ_DEFAULT_COMMANDS_TRANSFER 0
+#define DVZ_DEFAULT_COMMANDS_RENDER   1
+#define DVZ_MAX_FRAMES_IN_FLIGHT      2
 
 
 
@@ -54,19 +54,19 @@ extern "C" {
 // Canvas creation flags.
 typedef enum
 {
-    VKL_CANVAS_FLAGS_NONE = 0x0000,
-    VKL_CANVAS_FLAGS_IMGUI = 0x0001,
-    VKL_CANVAS_FLAGS_FPS = 0x0003, // NOTE: 1 bit for ImGUI, 1 bit for FPS
-} VklCanvasFlags;
+    DVZ_CANVAS_FLAGS_NONE = 0x0000,
+    DVZ_CANVAS_FLAGS_IMGUI = 0x0001,
+    DVZ_CANVAS_FLAGS_FPS = 0x0003, // NOTE: 1 bit for ImGUI, 1 bit for FPS
+} DvzCanvasFlags;
 
 
 
 // Canvas size type
 typedef enum
 {
-    VKL_CANVAS_SIZE_SCREEN,
-    VKL_CANVAS_SIZE_FRAMEBUFFER,
-} VklCanvasSizeType;
+    DVZ_CANVAS_SIZE_SCREEN,
+    DVZ_CANVAS_SIZE_FRAMEBUFFER,
+} DvzCanvasSizeType;
 
 
 
@@ -74,12 +74,12 @@ typedef enum
 // NOTE: must correspond to values in common.glsl
 typedef enum
 {
-    VKL_VIEWPORT_FULL,
-    VKL_VIEWPORT_INNER,
-    VKL_VIEWPORT_OUTER,
-    VKL_VIEWPORT_OUTER_BOTTOM,
-    VKL_VIEWPORT_OUTER_LEFT,
-} VklViewportClip;
+    DVZ_VIEWPORT_FULL,
+    DVZ_VIEWPORT_INNER,
+    DVZ_VIEWPORT_OUTER,
+    DVZ_VIEWPORT_OUTER_BOTTOM,
+    DVZ_VIEWPORT_OUTER_LEFT,
+} DvzViewportClip;
 
 
 
@@ -87,70 +87,70 @@ typedef enum
 // NOTE: must correspond to values in common.glsl
 typedef enum
 {
-    VKL_INTERACT_FIXED_AXIS_DEFAULT = 0x0000,
-    VKL_INTERACT_FIXED_AXIS_X = 0x1000,
-    VKL_INTERACT_FIXED_AXIS_Y = 0x2000,
-    VKL_INTERACT_FIXED_AXIS_Z = 0x4000,
-    VKL_INTERACT_FIXED_AXIS_XY = 0x3000,
-    VKL_INTERACT_FIXED_AXIS_XZ = 0x5000,
-    VKL_INTERACT_FIXED_AXIS_YZ = 0x6000,
-    VKL_INTERACT_FIXED_AXIS_ALL = 0x7000,
-    VKL_INTERACT_FIXED_AXIS_NONE = 0x8000,
-} VklInteractAxis;
+    DVZ_INTERACT_FIXED_AXIS_DEFAULT = 0x0000,
+    DVZ_INTERACT_FIXED_AXIS_X = 0x1000,
+    DVZ_INTERACT_FIXED_AXIS_Y = 0x2000,
+    DVZ_INTERACT_FIXED_AXIS_Z = 0x4000,
+    DVZ_INTERACT_FIXED_AXIS_XY = 0x3000,
+    DVZ_INTERACT_FIXED_AXIS_XZ = 0x5000,
+    DVZ_INTERACT_FIXED_AXIS_YZ = 0x6000,
+    DVZ_INTERACT_FIXED_AXIS_ALL = 0x7000,
+    DVZ_INTERACT_FIXED_AXIS_NONE = 0x8000,
+} DvzInteractAxis;
 
 
 
 // Mouse state type
 typedef enum
 {
-    VKL_MOUSE_STATE_INACTIVE,
-    VKL_MOUSE_STATE_DRAG,
-    VKL_MOUSE_STATE_WHEEL,
-    VKL_MOUSE_STATE_CLICK,
-    VKL_MOUSE_STATE_DOUBLE_CLICK,
-    VKL_MOUSE_STATE_CAPTURE,
-} VklMouseStateType;
+    DVZ_MOUSE_STATE_INACTIVE,
+    DVZ_MOUSE_STATE_DRAG,
+    DVZ_MOUSE_STATE_WHEEL,
+    DVZ_MOUSE_STATE_CLICK,
+    DVZ_MOUSE_STATE_DOUBLE_CLICK,
+    DVZ_MOUSE_STATE_CAPTURE,
+} DvzMouseStateType;
 
 
 
 // Key state type
 typedef enum
 {
-    VKL_KEYBOARD_STATE_INACTIVE,
-    VKL_KEYBOARD_STATE_ACTIVE,
-    VKL_KEYBOARD_STATE_CAPTURE,
-} VklKeyboardStateType;
+    DVZ_KEYBOARD_STATE_INACTIVE,
+    DVZ_KEYBOARD_STATE_ACTIVE,
+    DVZ_KEYBOARD_STATE_CAPTURE,
+} DvzKeyboardStateType;
 
 
 
 // Transfer status.
 typedef enum
 {
-    VKL_TRANSFER_STATUS_NONE,
-    VKL_TRANSFER_STATUS_PROCESSING,
-    VKL_TRANSFER_STATUS_DONE,
-} VklTransferStatus;
+    DVZ_TRANSFER_STATUS_NONE,
+    DVZ_TRANSFER_STATUS_PROCESSING,
+    DVZ_TRANSFER_STATUS_DONE,
+} DvzTransferStatus;
 
 
 
 // Canvas refill status.
 typedef enum
 {
-    VKL_REFILL_NONE,
-    VKL_REFILL_REQUESTED,
-    VKL_REFILL_PROCESSING,
-} VklRefillStatus;
+    DVZ_REFILL_NONE,
+    DVZ_REFILL_REQUESTED,
+    DVZ_REFILL_PROCESSING,
+} DvzRefillStatus;
 
 
 
 // Screencast status.
 typedef enum
 {
-    VKL_SCREENCAST_NONE,
-    VKL_SCREENCAST_IDLE,
-    VKL_SCREENCAST_AWAIT_COPY,
-    VKL_SCREENCAST_AWAIT_TRANSFER,
-} VklScreencastStatus;
+    DVZ_SCREENCAST_NONE,
+    DVZ_SCREENCAST_IDLE,
+    DVZ_SCREENCAST_AWAIT_COPY,
+    DVZ_SCREENCAST_AWAIT_TRANSFER,
+} DvzScreencastStatus;
 
 
 
@@ -167,54 +167,54 @@ typedef enum
 // Event types
 typedef enum
 {
-    VKL_EVENT_NONE,               //
-    VKL_EVENT_INIT,               // called before the first frame
-    VKL_EVENT_REFILL,             // called every time the command buffers need to be recreated
-    VKL_EVENT_INTERACT,           // called at every frame, before event enqueue
-    VKL_EVENT_FRAME,              // called at every frame, after event enqueue
-    VKL_EVENT_IMGUI,              // called at every frame, after event enqueue
-    VKL_EVENT_SCREENCAST,         // called when a screenshot has been downloaded
-    VKL_EVENT_TIMER,              // called every X ms in the main thread, just after FRAME
-    VKL_EVENT_MOUSE_BUTTON,       // called when a mouse button is pressed or released
-    VKL_EVENT_MOUSE_MOVE,         // called when the mouse moves
-    VKL_EVENT_MOUSE_WHEEL,        // called when the mouse wheel is used
-    VKL_EVENT_MOUSE_DRAG_BEGIN,   // called when a drag event starts
-    VKL_EVENT_MOUSE_DRAG_END,     // called when a drag event stops
-    VKL_EVENT_MOUSE_CLICK,        // called after a click (called once during a double click)
-    VKL_EVENT_MOUSE_DOUBLE_CLICK, // called after a double click
-    VKL_EVENT_KEY,                // called after a keyboard key pressed or released
-    VKL_EVENT_RESIZE,             // called at every resize
-    VKL_EVENT_PRE_SEND,           // called before sending the commands buffers
-    VKL_EVENT_POST_SEND,          // called after sending the commands buffers
-    VKL_EVENT_DESTROY,            // called before destruction
-} VklEventType;
+    DVZ_EVENT_NONE,               //
+    DVZ_EVENT_INIT,               // called before the first frame
+    DVZ_EVENT_REFILL,             // called every time the command buffers need to be recreated
+    DVZ_EVENT_INTERACT,           // called at every frame, before event enqueue
+    DVZ_EVENT_FRAME,              // called at every frame, after event enqueue
+    DVZ_EVENT_IMGUI,              // called at every frame, after event enqueue
+    DVZ_EVENT_SCREENCAST,         // called when a screenshot has been downloaded
+    DVZ_EVENT_TIMER,              // called every X ms in the main thread, just after FRAME
+    DVZ_EVENT_MOUSE_BUTTON,       // called when a mouse button is pressed or released
+    DVZ_EVENT_MOUSE_MOVE,         // called when the mouse moves
+    DVZ_EVENT_MOUSE_WHEEL,        // called when the mouse wheel is used
+    DVZ_EVENT_MOUSE_DRAG_BEGIN,   // called when a drag event starts
+    DVZ_EVENT_MOUSE_DRAG_END,     // called when a drag event stops
+    DVZ_EVENT_MOUSE_CLICK,        // called after a click (called once during a double click)
+    DVZ_EVENT_MOUSE_DOUBLE_CLICK, // called after a double click
+    DVZ_EVENT_KEY,                // called after a keyboard key pressed or released
+    DVZ_EVENT_RESIZE,             // called at every resize
+    DVZ_EVENT_PRE_SEND,           // called before sending the commands buffers
+    DVZ_EVENT_POST_SEND,          // called after sending the commands buffers
+    DVZ_EVENT_DESTROY,            // called before destruction
+} DvzEventType;
 
 
 
 // Event mode (sync/async)
 typedef enum
 {
-    VKL_EVENT_MODE_SYNC,
-    VKL_EVENT_MODE_ASYNC,
-} VklEventMode;
+    DVZ_EVENT_MODE_SYNC,
+    DVZ_EVENT_MODE_ASYNC,
+} DvzEventMode;
 
 
 
 // Key type
 typedef enum
 {
-    VKL_KEY_RELEASE,
-    VKL_KEY_PRESS,
-} VklKeyType;
+    DVZ_KEY_RELEASE,
+    DVZ_KEY_PRESS,
+} DvzKeyType;
 
 
 
 // Mouse button type
 typedef enum
 {
-    VKL_MOUSE_RELEASE,
-    VKL_MOUSE_PRESS,
-} VklMouseButtonType;
+    DVZ_MOUSE_RELEASE,
+    DVZ_MOUSE_PRESS,
+} DvzMouseButtonType;
 
 
 
@@ -222,23 +222,23 @@ typedef enum
 // NOTE: must match GLFW values! no mapping is done for now
 typedef enum
 {
-    VKL_KEY_MODIFIER_NONE = 0x00000000,
-    VKL_KEY_MODIFIER_SHIFT = 0x00000001,
-    VKL_KEY_MODIFIER_CONTROL = 0x00000002,
-    VKL_KEY_MODIFIER_ALT = 0x00000004,
-    VKL_KEY_MODIFIER_SUPER = 0x00000008,
-} VklKeyModifiers;
+    DVZ_KEY_MODIFIER_NONE = 0x00000000,
+    DVZ_KEY_MODIFIER_SHIFT = 0x00000001,
+    DVZ_KEY_MODIFIER_CONTROL = 0x00000002,
+    DVZ_KEY_MODIFIER_ALT = 0x00000004,
+    DVZ_KEY_MODIFIER_SUPER = 0x00000008,
+} DvzKeyModifiers;
 
 
 
 // Mouse button
 typedef enum
 {
-    VKL_MOUSE_BUTTON_NONE,
-    VKL_MOUSE_BUTTON_LEFT,
-    VKL_MOUSE_BUTTON_MIDDLE,
-    VKL_MOUSE_BUTTON_RIGHT,
-} VklMouseButton;
+    DVZ_MOUSE_BUTTON_NONE,
+    DVZ_MOUSE_BUTTON_LEFT,
+    DVZ_MOUSE_BUTTON_MIDDLE,
+    DVZ_MOUSE_BUTTON_RIGHT,
+} DvzMouseButton;
 
 
 
@@ -246,33 +246,33 @@ typedef enum
 /*  Type definitions                                                                             */
 /*************************************************************************************************/
 
-typedef struct VklScene VklScene;
-typedef struct VklMouse VklMouse;
-typedef struct VklKeyboard VklKeyboard;
-typedef struct VklMouseLocal VklMouseLocal;
+typedef struct DvzScene DvzScene;
+typedef struct DvzMouse DvzMouse;
+typedef struct DvzKeyboard DvzKeyboard;
+typedef struct DvzMouseLocal DvzMouseLocal;
 
 // Events structures.
-typedef struct VklEvent VklEvent;
-typedef struct VklFrameEvent VklFrameEvent;
-typedef struct VklKeyEvent VklKeyEvent;
-typedef struct VklMouseButtonEvent VklMouseButtonEvent;
-typedef struct VklMouseClickEvent VklMouseClickEvent;
-typedef struct VklMouseDragEvent VklMouseDragEvent;
-typedef struct VklMouseMoveEvent VklMouseMoveEvent;
-typedef struct VklMouseWheelEvent VklMouseWheelEvent;
-typedef struct VklRefillEvent VklRefillEvent;
-typedef struct VklResizeEvent VklResizeEvent;
-typedef struct VklScreencastEvent VklScreencastEvent;
-typedef struct VklSubmitEvent VklSubmitEvent;
-typedef struct VklTimerEvent VklTimerEvent;
-typedef struct VklViewport VklViewport;
-typedef union VklEventUnion VklEventUnion;
+typedef struct DvzEvent DvzEvent;
+typedef struct DvzFrameEvent DvzFrameEvent;
+typedef struct DvzKeyEvent DvzKeyEvent;
+typedef struct DvzMouseButtonEvent DvzMouseButtonEvent;
+typedef struct DvzMouseClickEvent DvzMouseClickEvent;
+typedef struct DvzMouseDragEvent DvzMouseDragEvent;
+typedef struct DvzMouseMoveEvent DvzMouseMoveEvent;
+typedef struct DvzMouseWheelEvent DvzMouseWheelEvent;
+typedef struct DvzRefillEvent DvzRefillEvent;
+typedef struct DvzResizeEvent DvzResizeEvent;
+typedef struct DvzScreencastEvent DvzScreencastEvent;
+typedef struct DvzSubmitEvent DvzSubmitEvent;
+typedef struct DvzTimerEvent DvzTimerEvent;
+typedef struct DvzViewport DvzViewport;
+typedef union DvzEventUnion DvzEventUnion;
 
-typedef void (*VklEventCallback)(VklCanvas*, VklEvent);
-typedef struct VklEventCallbackRegister VklEventCallbackRegister;
+typedef void (*DvzEventCallback)(DvzCanvas*, DvzEvent);
+typedef struct DvzEventCallbackRegister DvzEventCallbackRegister;
 
-typedef struct VklScreencast VklScreencast;
-typedef struct VklPendingRefill VklPendingRefill;
+typedef struct DvzScreencast DvzScreencast;
+typedef struct DvzPendingRefill DvzPendingRefill;
 
 
 
@@ -280,17 +280,17 @@ typedef struct VklPendingRefill VklPendingRefill;
 /*  Mouse and keyboard structs                                                                   */
 /*************************************************************************************************/
 
-struct VklMouse
+struct DvzMouse
 {
-    VklMouseButton button;
+    DvzMouseButton button;
     vec2 press_pos;
     vec2 last_pos;
     vec2 cur_pos;
     vec2 wheel_delta;
     float shift_length;
 
-    VklMouseStateType prev_state;
-    VklMouseStateType cur_state;
+    DvzMouseStateType prev_state;
+    DvzMouseStateType cur_state;
 
     double press_time;
     double click_time;
@@ -299,7 +299,7 @@ struct VklMouse
 
 
 // In normalize coordinates [-1, +1]
-struct VklMouseLocal
+struct DvzMouseLocal
 {
     vec2 press_pos;
     vec2 last_pos;
@@ -310,13 +310,13 @@ struct VklMouseLocal
 
 
 
-struct VklKeyboard
+struct DvzKeyboard
 {
-    VklKeyCode key_code;
+    DvzKeyCode key_code;
     int modifiers;
 
-    VklKeyboardStateType prev_state;
-    VklKeyboardStateType cur_state;
+    DvzKeyboardStateType prev_state;
+    DvzKeyboardStateType cur_state;
 
     double press_time;
 };
@@ -328,7 +328,7 @@ struct VklKeyboard
 /*************************************************************************************************/
 
 // NOTE: must correspond to the shader structure in common.glsl
-struct VklViewport
+struct DvzViewport
 {
     VkViewport viewport; // Vulkan viewport
     vec4 margins;
@@ -343,7 +343,7 @@ struct VklViewport
 
     // Options
     // Viewport clipping.
-    VklViewportClip clip; // used by the GPU for viewport clipping
+    DvzViewportClip clip; // used by the GPU for viewport clipping
 
     // Used to discard transform on one axis
     int32_t interact_axis;
@@ -359,56 +359,56 @@ struct VklViewport
 /*  Event structs                                                                                */
 /*************************************************************************************************/
 
-struct VklMouseButtonEvent
+struct DvzMouseButtonEvent
 {
-    VklMouseButton button;
-    VklMouseButtonType type;
+    DvzMouseButton button;
+    DvzMouseButtonType type;
     int modifiers;
 };
 
 
 
-struct VklMouseMoveEvent
+struct DvzMouseMoveEvent
 {
     vec2 pos;
 };
 
 
 
-struct VklMouseWheelEvent
+struct DvzMouseWheelEvent
 {
     vec2 dir;
 };
 
 
 
-struct VklMouseDragEvent
+struct DvzMouseDragEvent
 {
     vec2 pos;
-    VklMouseButton button;
+    DvzMouseButton button;
 };
 
 
 
-struct VklMouseClickEvent
+struct DvzMouseClickEvent
 {
     vec2 pos;
-    VklMouseButton button;
+    DvzMouseButton button;
     bool double_click;
 };
 
 
 
-struct VklKeyEvent
+struct DvzKeyEvent
 {
-    VklKeyType type;
-    VklKeyCode key_code;
+    DvzKeyType type;
+    DvzKeyCode key_code;
     int modifiers;
 };
 
 
 
-struct VklFrameEvent
+struct DvzFrameEvent
 {
     uint64_t idx;    // frame index
     double time;     // current time
@@ -417,7 +417,7 @@ struct VklFrameEvent
 
 
 
-struct VklTimerEvent
+struct DvzTimerEvent
 {
     uint64_t idx;    // event index
     double time;     // current time
@@ -426,7 +426,7 @@ struct VklTimerEvent
 
 
 
-struct VklScreencastEvent
+struct DvzScreencastEvent
 {
     uint64_t idx;
     double time;
@@ -438,18 +438,18 @@ struct VklScreencastEvent
 
 
 
-struct VklRefillEvent
+struct DvzRefillEvent
 {
     uint32_t img_idx;
     uint32_t cmd_count;
-    VklCommands* cmds[32];
-    VklViewport viewport;
+    DvzCommands* cmds[32];
+    DvzViewport viewport;
     VkClearColorValue clear_color;
 };
 
 
 
-struct VklResizeEvent
+struct DvzResizeEvent
 {
     uvec2 size_screen;
     uvec2 size_framebuffer;
@@ -457,47 +457,47 @@ struct VklResizeEvent
 
 
 
-struct VklSubmitEvent
+struct DvzSubmitEvent
 {
-    VklSubmit* submit;
+    DvzSubmit* submit;
 };
 
 
 
-union VklEventUnion
+union DvzEventUnion
 {
-    VklFrameEvent f;       // for FRAME events
-    VklFrameEvent t;       // for TIMER events
-    VklKeyEvent k;         // for KEY events
-    VklMouseButtonEvent b; // for MOUSE_BUTTON events
-    VklMouseClickEvent c;  // for DRAG events
-    VklMouseDragEvent d;   // for DRAG events
-    VklMouseMoveEvent m;   // for MOUSE_MOVE events
-    VklMouseWheelEvent w;  // for WHEEL events
-    VklRefillEvent rf;     // for REFILL events
-    VklResizeEvent r;      // for RESIZE events
-    VklScreencastEvent sc; // for SCREENCAST events
-    VklSubmitEvent s;      // for SUBMIT events
+    DvzFrameEvent f;       // for FRAME events
+    DvzFrameEvent t;       // for TIMER events
+    DvzKeyEvent k;         // for KEY events
+    DvzMouseButtonEvent b; // for MOUSE_BUTTON events
+    DvzMouseClickEvent c;  // for DRAG events
+    DvzMouseDragEvent d;   // for DRAG events
+    DvzMouseMoveEvent m;   // for MOUSE_MOVE events
+    DvzMouseWheelEvent w;  // for WHEEL events
+    DvzRefillEvent rf;     // for REFILL events
+    DvzResizeEvent r;      // for RESIZE events
+    DvzScreencastEvent sc; // for SCREENCAST events
+    DvzSubmitEvent s;      // for SUBMIT events
 };
 
 
 
-struct VklEvent
+struct DvzEvent
 {
-    VklEventType type;
+    DvzEventType type;
     void* user_data;
-    VklEventUnion u;
+    DvzEventUnion u;
 };
 
 
 
-struct VklEventCallbackRegister
+struct DvzEventCallbackRegister
 {
-    VklEventType type;
+    DvzEventType type;
     uint64_t idx; // used by TIMER events: increases every time the TIMER event is raised
     double param;
-    VklEventMode mode;
-    VklEventCallback callback;
+    DvzEventMode mode;
+    DvzEventCallback callback;
     void* user_data;
 };
 
@@ -507,27 +507,27 @@ struct VklEventCallbackRegister
 /*  Misc structs                                                                                 */
 /*************************************************************************************************/
 
-struct VklScreencast
+struct DvzScreencast
 {
-    VklObject obj;
+    DvzObject obj;
 
-    VklCanvas* canvas;
-    VklCommands cmds;
-    VklSemaphores semaphore;
-    VklFences fence;
-    VklImages staging;
-    VklSubmit submit;
+    DvzCanvas* canvas;
+    DvzCommands cmds;
+    DvzSemaphores semaphore;
+    DvzFences fence;
+    DvzImages staging;
+    DvzSubmit submit;
     uint64_t frame_idx;
-    VklClock clock;
-    VklScreencastStatus status;
+    DvzClock clock;
+    DvzScreencastStatus status;
 };
 
 
 
-struct VklPendingRefill
+struct DvzPendingRefill
 {
-    bool completed[VKL_MAX_SWAPCHAIN_IMAGES];
-    atomic(VklRefillStatus, status);
+    bool completed[DVZ_MAX_SWAPCHAIN_IMAGES];
+    atomic(DvzRefillStatus, status);
 };
 
 
@@ -536,11 +536,11 @@ struct VklPendingRefill
 /*  Canvas struct                                                                                */
 /*************************************************************************************************/
 
-struct VklCanvas
+struct DvzCanvas
 {
-    VklObject obj;
-    VklApp* app;
-    VklGpu* gpu;
+    DvzObject obj;
+    DvzApp* app;
+    DvzGpu* gpu;
 
     bool offscreen;
     bool overlay;
@@ -550,65 +550,65 @@ struct VklCanvas
 
     // This thread-safe variable is used by the background thread to
     // safely communicate a status change of the canvas
-    atomic(VklObjectStatus, cur_status);
+    atomic(DvzObjectStatus, cur_status);
     atomic(bool, to_close);
 
-    VklWindow* window;
+    DvzWindow* window;
 
     // Swapchain
-    VklSwapchain swapchain;
-    VklImages depth_image;
-    VklFramebuffers framebuffers;
-    VklFramebuffers framebuffers_overlay; // used by the overlay renderpass
-    VklSubmit submit;
+    DvzSwapchain swapchain;
+    DvzImages depth_image;
+    DvzFramebuffers framebuffers;
+    DvzFramebuffers framebuffers_overlay; // used by the overlay renderpass
+    DvzSubmit submit;
 
     uint32_t cur_frame; // current frame within the images in flight
     uint64_t frame_idx;
-    VklClock clock;
+    DvzClock clock;
     float fps;
 
     // Renderpasses.
-    VklRenderpass renderpass;         // default renderpass
-    VklRenderpass renderpass_overlay; // GUI overlay renderpass
+    DvzRenderpass renderpass;         // default renderpass
+    DvzRenderpass renderpass_overlay; // GUI overlay renderpass
 
     // Synchronization events.
-    VklSemaphores sem_img_available;
-    VklSemaphores sem_render_finished;
-    VklSemaphores* present_semaphores;
-    VklFences fences_render_finished;
-    VklFences fences_flight;
+    DvzSemaphores sem_img_available;
+    DvzSemaphores sem_render_finished;
+    DvzSemaphores* present_semaphores;
+    DvzFences fences_render_finished;
+    DvzFences fences_flight;
 
     // Default command buffers.
-    VklCommands cmds_transfer;
-    VklCommands cmds_render;
+    DvzCommands cmds_transfer;
+    DvzCommands cmds_render;
 
     // Other command buffers.
-    VklContainer commands;
+    DvzContainer commands;
 
     // Graphics pipelines.
-    VklContainer graphics;
+    DvzContainer graphics;
 
     // Data transfers.
-    VklFifo transfers;
+    DvzFifo transfers;
 
     // Event callbacks, running in the background thread, may be slow, for end-users.
     uint32_t callbacks_count;
-    VklEventCallbackRegister callbacks[VKL_MAX_EVENT_CALLBACKS];
+    DvzEventCallbackRegister callbacks[DVZ_MAX_EVENT_CALLBACKS];
 
     // Event queue.
-    VklFifo event_queue;
-    VklEvent events[VKL_MAX_FIFO_CAPACITY];
-    VklThread event_thread;
+    DvzFifo event_queue;
+    DvzEvent events[DVZ_MAX_FIFO_CAPACITY];
+    DvzThread event_thread;
     bool enable_lock;
-    atomic(VklEventType, event_processing);
-    VklMouse mouse;
-    VklKeyboard keyboard;
+    atomic(DvzEventType, event_processing);
+    DvzMouse mouse;
+    DvzKeyboard keyboard;
 
-    VklScreencast* screencast;
-    VklPendingRefill refills;
+    DvzScreencast* screencast;
+    DvzPendingRefill refills;
 
-    VklViewport viewport;
-    VklScene* scene;
+    DvzViewport viewport;
+    DvzScene* scene;
 };
 
 
@@ -625,7 +625,7 @@ struct VklCanvas
  * @param height the initial window height, in pixels
  * @param flags the creation flags for the canvas
  */
-VKY_EXPORT VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height, int flags);
+DVZ_EXPORT DvzCanvas* dvz_canvas(DvzGpu* gpu, uint32_t width, uint32_t height, int flags);
 
 /**
  * Create an offscreen canvas.
@@ -635,15 +635,15 @@ VKY_EXPORT VklCanvas* vkl_canvas(VklGpu* gpu, uint32_t width, uint32_t height, i
  * @param height the canvas height, in pixels
  * @param flags the creation flags for the canvas
  */
-VKY_EXPORT VklCanvas*
-vkl_canvas_offscreen(VklGpu* gpu, uint32_t width, uint32_t height, int flags);
+DVZ_EXPORT DvzCanvas*
+dvz_canvas_offscreen(DvzGpu* gpu, uint32_t width, uint32_t height, int flags);
 
 /**
  * Recreate the canvas GPU resources and swapchain.
  *
  * @param canvas the canvas to recreate
  */
-VKY_EXPORT void vkl_canvas_recreate(VklCanvas* canvas);
+DVZ_EXPORT void dvz_canvas_recreate(DvzCanvas* canvas);
 
 /**
  * Create a set of Vulkan command buffers on a given GPU queue.
@@ -653,7 +653,7 @@ VKY_EXPORT void vkl_canvas_recreate(VklCanvas* canvas);
  * @param count number of command buffers to create
  * @returns the set of created command buffers
  */
-VKY_EXPORT VklCommands* vkl_canvas_commands(VklCanvas* canvas, uint32_t queue_idx, uint32_t count);
+DVZ_EXPORT DvzCommands* dvz_canvas_commands(DvzCanvas* canvas, uint32_t queue_idx, uint32_t count);
 
 
 
@@ -671,7 +671,7 @@ VKY_EXPORT VklCommands* vkl_canvas_commands(VklCanvas* canvas, uint32_t queue_id
  * @param canvas the canvas
  * @param color the background color
  */
-VKY_EXPORT void vkl_canvas_clear_color(VklCanvas* canvas, VkClearColorValue color);
+DVZ_EXPORT void dvz_canvas_clear_color(DvzCanvas* canvas, VkClearColorValue color);
 
 /**
  * Get the canvas size.
@@ -680,7 +680,7 @@ VKY_EXPORT void vkl_canvas_clear_color(VklCanvas* canvas, VkClearColorValue colo
  * @param type the unit of the requested screen size
  * @param[out] size the size vector filled by this function
  */
-VKY_EXPORT void vkl_canvas_size(VklCanvas* canvas, VklCanvasSizeType type, uvec2 size);
+DVZ_EXPORT void dvz_canvas_size(DvzCanvas* canvas, DvzCanvasSizeType type, uvec2 size);
 
 /**
  * Whether the canvas should close when Escape is pressed.
@@ -688,10 +688,10 @@ VKY_EXPORT void vkl_canvas_size(VklCanvas* canvas, VklCanvasSizeType type, uvec2
  * @param canvas the canvas
  * @param value the boolean value
  */
-VKY_EXPORT void vkl_canvas_close_on_esc(VklCanvas* canvas, bool value);
+DVZ_EXPORT void dvz_canvas_close_on_esc(DvzCanvas* canvas, bool value);
 
 // screen coordinates
-static inline bool _pos_in_viewport(VklViewport viewport, vec2 screen_pos)
+static inline bool _pos_in_viewport(DvzViewport viewport, vec2 screen_pos)
 {
     ASSERT(viewport.size_screen[0] > 0);
     return (
@@ -708,7 +708,7 @@ static inline bool _pos_in_viewport(VklViewport viewport, vec2 screen_pos)
  * @param canvas the canvas
  * @returns the viewport
  */
-VKY_EXPORT VklViewport vkl_viewport_full(VklCanvas* canvas);
+DVZ_EXPORT DvzViewport dvz_viewport_full(DvzCanvas* canvas);
 
 
 
@@ -720,10 +720,10 @@ VKY_EXPORT VklViewport vkl_viewport_full(VklCanvas* canvas);
  * Register a callback for canvas events.
  *
  * These user callbacks run either in the main thread (*sync* callbacks) or in the background
- * thread * (*async* callbacks). Callbacks can access the `VklMouse` and `VklKeyboard` structures
+ * thread * (*async* callbacks). Callbacks can access the `DvzMouse` and `DvzKeyboard` structures
  * with the current state of the mouse and keyboard.
  *
- * Callback function signature: `void(VklCanvas*, VklEvent)`
+ * Callback function signature: `void(DvzCanvas*, DvzEvent)`
  *
  * The event object has a field with the user-specified pointer `user_data`.
  *
@@ -735,9 +735,9 @@ VKY_EXPORT VklViewport vkl_viewport_full(VklCanvas* canvas);
  * @param user_data a pointer to arbitrary user data
  *
  */
-VKY_EXPORT void vkl_event_callback(
-    VklCanvas* canvas, VklEventType type, double param, VklEventMode mode, //
-    VklEventCallback callback, void* user_data);
+DVZ_EXPORT void dvz_event_callback(
+    DvzCanvas* canvas, DvzEventType type, double param, DvzEventMode mode, //
+    DvzEventCallback callback, void* user_data);
 
 
 
@@ -750,14 +750,14 @@ VKY_EXPORT void vkl_event_callback(
  *
  * @param canvas the canvas
  */
-VKY_EXPORT void vkl_canvas_to_refill(VklCanvas* canvas);
+DVZ_EXPORT void dvz_canvas_to_refill(DvzCanvas* canvas);
 
 /**
  * Close the canvas at the next frame.
  *
  * @param canvas the canvas
  */
-VKY_EXPORT void vkl_canvas_to_close(VklCanvas* canvas);
+DVZ_EXPORT void dvz_canvas_to_close(DvzCanvas* canvas);
 
 
 
@@ -782,14 +782,14 @@ VKY_EXPORT void vkl_canvas_to_close(VklCanvas* canvas);
  * @param canvas the canvas
  * @param interval screencast events interval
  */
-VKY_EXPORT void vkl_screencast(VklCanvas* canvas, double interval);
+DVZ_EXPORT void dvz_screencast(DvzCanvas* canvas, double interval);
 
 /**
  * Destroy the screencast.
  *
  * @param canvas the canvas
  */
-VKY_EXPORT void vkl_screencast_destroy(VklCanvas* canvas);
+DVZ_EXPORT void dvz_screencast_destroy(DvzCanvas* canvas);
 
 /**
  * Make a screenshot.
@@ -804,7 +804,7 @@ VKY_EXPORT void vkl_screencast_destroy(VklCanvas* canvas);
  * @param canvas the canvas
  * @returns A pointer to the 24-bit RGB framebuffer.
  */
-VKY_EXPORT uint8_t* vkl_screenshot(VklCanvas* canvas);
+DVZ_EXPORT uint8_t* dvz_screenshot(DvzCanvas* canvas);
 
 /**
  * Make a screenshot and save it to a PNG file.
@@ -816,7 +816,7 @@ VKY_EXPORT uint8_t* vkl_screenshot(VklCanvas* canvas);
  * @param canvas the canvas
  * @param png_path the path to the PNG file to create
  */
-VKY_EXPORT void vkl_screenshot_file(VklCanvas* canvas, const char* png_path);
+DVZ_EXPORT void dvz_screenshot_file(DvzCanvas* canvas, const char* png_path);
 
 
 
@@ -829,14 +829,14 @@ VKY_EXPORT void vkl_screenshot_file(VklCanvas* canvas, const char* png_path);
  *
  * @returns mouse object
  */
-VKY_EXPORT VklMouse vkl_mouse(void);
+DVZ_EXPORT DvzMouse dvz_mouse(void);
 
 /**
  * Reset the mouse state.
  *
  * @param mouse the mouse object
  */
-VKY_EXPORT void vkl_mouse_reset(VklMouse* mouse);
+DVZ_EXPORT void dvz_mouse_reset(DvzMouse* mouse);
 
 /**
  * Emit a mouse event.
@@ -845,7 +845,7 @@ VKY_EXPORT void vkl_mouse_reset(VklMouse* mouse);
  * @param canvas the canvas
  * @param ev the mouse event
  */
-VKY_EXPORT void vkl_mouse_event(VklMouse* mouse, VklCanvas* canvas, VklEvent ev);
+DVZ_EXPORT void dvz_mouse_event(DvzMouse* mouse, DvzCanvas* canvas, DvzEvent ev);
 
 /**
  * Convert mouse coordinates from global to local.
@@ -859,22 +859,22 @@ VKY_EXPORT void vkl_mouse_event(VklMouse* mouse, VklCanvas* canvas, VklEvent ev)
  * @param canvas the canvas
  * @param viewport the viewport defining the local coordinates
  */
-VKY_EXPORT void vkl_mouse_local(
-    VklMouse* mouse, VklMouseLocal* mouse_local, VklCanvas* canvas, VklViewport viewport);
+DVZ_EXPORT void dvz_mouse_local(
+    DvzMouse* mouse, DvzMouseLocal* mouse_local, DvzCanvas* canvas, DvzViewport viewport);
 
 /**
  * Create the keyboard object holding the current keyboard state.
  *
  * @returns keyboard object
  */
-VKY_EXPORT VklKeyboard vkl_keyboard(void);
+DVZ_EXPORT DvzKeyboard dvz_keyboard(void);
 
 /**
  * Reset the keyboard state
  *
  * @returns keyboard object
  */
-VKY_EXPORT void vkl_keyboard_reset(VklKeyboard* keyboard);
+DVZ_EXPORT void dvz_keyboard_reset(DvzKeyboard* keyboard);
 
 /**
  * Emit a keyboard event.
@@ -883,7 +883,7 @@ VKY_EXPORT void vkl_keyboard_reset(VklKeyboard* keyboard);
  * @param canvas the canvas
  * @param ev the keyboard event
  */
-VKY_EXPORT void vkl_keyboard_event(VklKeyboard* keyboard, VklCanvas* canvas, VklEvent ev);
+DVZ_EXPORT void dvz_keyboard_event(DvzKeyboard* keyboard, DvzCanvas* canvas, DvzEvent ev);
 
 
 
@@ -899,8 +899,8 @@ VKY_EXPORT void vkl_keyboard_event(VklKeyboard* keyboard, VklCanvas* canvas, Vkl
  * @param button the mouse button
  * @param modifiers flags with the active keyboard modifiers
  */
-VKY_EXPORT void vkl_event_mouse_button(
-    VklCanvas* canvas, VklMouseButtonType type, VklMouseButton button, int modifiers);
+DVZ_EXPORT void dvz_event_mouse_button(
+    DvzCanvas* canvas, DvzMouseButtonType type, DvzMouseButton button, int modifiers);
 
 /**
  * Emit a mouse move event.
@@ -908,7 +908,7 @@ VKY_EXPORT void vkl_event_mouse_button(
  * @param canvas the canvas
  * @param pos the current mouse position, in pixels
  */
-VKY_EXPORT void vkl_event_mouse_move(VklCanvas* canvas, vec2 pos);
+DVZ_EXPORT void dvz_event_mouse_move(DvzCanvas* canvas, vec2 pos);
 
 /**
  * Emit a mouse wheel event.
@@ -916,7 +916,7 @@ VKY_EXPORT void vkl_event_mouse_move(VklCanvas* canvas, vec2 pos);
  * @param canvas the canvas
  * @param dir the mouse wheel direction
  */
-VKY_EXPORT void vkl_event_mouse_wheel(VklCanvas* canvas, vec2 dir);
+DVZ_EXPORT void dvz_event_mouse_wheel(DvzCanvas* canvas, vec2 dir);
 
 /**
  * Emit a mouse click event.
@@ -925,7 +925,7 @@ VKY_EXPORT void vkl_event_mouse_wheel(VklCanvas* canvas, vec2 dir);
  * @param pos the click position
  * @param button the mouse button
  */
-VKY_EXPORT void vkl_event_mouse_click(VklCanvas* canvas, vec2 pos, VklMouseButton button);
+DVZ_EXPORT void dvz_event_mouse_click(DvzCanvas* canvas, vec2 pos, DvzMouseButton button);
 
 /**
  * Emit a mouse double-click event.
@@ -934,7 +934,7 @@ VKY_EXPORT void vkl_event_mouse_click(VklCanvas* canvas, vec2 pos, VklMouseButto
  * @param pos the double-click position
  * @param button the mouse button
  */
-VKY_EXPORT void vkl_event_mouse_double_click(VklCanvas* canvas, vec2 pos, VklMouseButton button);
+DVZ_EXPORT void dvz_event_mouse_double_click(DvzCanvas* canvas, vec2 pos, DvzMouseButton button);
 
 /**
  * Emit a mouse drag event.
@@ -943,7 +943,7 @@ VKY_EXPORT void vkl_event_mouse_double_click(VklCanvas* canvas, vec2 pos, VklMou
  * @param pos the drag start position
  * @param button the mouse button
  */
-VKY_EXPORT void vkl_event_mouse_drag(VklCanvas* canvas, vec2 pos, VklMouseButton button);
+DVZ_EXPORT void dvz_event_mouse_drag(DvzCanvas* canvas, vec2 pos, DvzMouseButton button);
 
 /**
  * Emit a mouse drag end event.
@@ -952,7 +952,7 @@ VKY_EXPORT void vkl_event_mouse_drag(VklCanvas* canvas, vec2 pos, VklMouseButton
  * @param pos the drag end position
  * @param button the mouse button
  */
-VKY_EXPORT void vkl_event_mouse_drag_end(VklCanvas* canvas, vec2 pos, VklMouseButton button);
+DVZ_EXPORT void dvz_event_mouse_drag_end(DvzCanvas* canvas, vec2 pos, DvzMouseButton button);
 
 /**
  * Emit a keyboard event.
@@ -962,8 +962,8 @@ VKY_EXPORT void vkl_event_mouse_drag_end(VklCanvas* canvas, vec2 pos, VklMouseBu
  * @param key_code the key
  * @param modifiers flags with the active keyboard modifiers
  */
-VKY_EXPORT void
-vkl_event_key(VklCanvas* canvas, VklKeyType type, VklKeyCode key_code, int modifiers);
+DVZ_EXPORT void
+dvz_event_key(DvzCanvas* canvas, DvzKeyType type, DvzKeyCode key_code, int modifiers);
 
 /**
  * Emit a frame event.
@@ -975,7 +975,7 @@ vkl_event_key(VklCanvas* canvas, VklKeyType type, VklKeyCode key_code, int modif
  * @param time the current time
  * @param interval the interval since the last frame event
  */
-VKY_EXPORT void vkl_event_frame(VklCanvas* canvas, uint64_t idx, double time, double interval);
+DVZ_EXPORT void dvz_event_frame(DvzCanvas* canvas, uint64_t idx, double time, double interval);
 
 /**
  * Emit a timer event.
@@ -985,7 +985,7 @@ VKY_EXPORT void vkl_event_frame(VklCanvas* canvas, uint64_t idx, double time, do
  * @param time the current time
  * @param interval the interval since the last timer event
  */
-VKY_EXPORT void vkl_event_timer(VklCanvas* canvas, uint64_t idx, double time, double interval);
+DVZ_EXPORT void dvz_event_timer(DvzCanvas* canvas, uint64_t idx, double time, double interval);
 
 /**
  * Return the number of pending events.
@@ -997,7 +997,7 @@ VKY_EXPORT void vkl_event_timer(VklCanvas* canvas, uint64_t idx, double time, do
  * @param type the event type
  * @returns the number of pending events
  */
-VKY_EXPORT int vkl_event_pending(VklCanvas* canvas, VklEventType type);
+DVZ_EXPORT int dvz_event_pending(DvzCanvas* canvas, DvzEventType type);
 
 /**
  * Stop the background event loop.
@@ -1006,7 +1006,7 @@ VKY_EXPORT int vkl_event_pending(VklCanvas* canvas, VklEventType type);
  *
  * @param canvas the canvas
  */
-VKY_EXPORT void vkl_event_stop(VklCanvas* canvas);
+DVZ_EXPORT void dvz_event_stop(DvzCanvas* canvas);
 
 
 
@@ -1021,14 +1021,14 @@ VKY_EXPORT void vkl_event_stop(VklCanvas* canvas);
  *
  * @param canvas the canvas
  */
-VKY_EXPORT void vkl_canvas_frame(VklCanvas* canvas);
+DVZ_EXPORT void dvz_canvas_frame(DvzCanvas* canvas);
 
 /**
  * Submit the rendered frame to the swapchain system.
  *
  * @param canvas the canvas
  */
-VKY_EXPORT void vkl_canvas_frame_submit(VklCanvas* canvas);
+DVZ_EXPORT void dvz_canvas_frame_submit(DvzCanvas* canvas);
 
 /**
  * Start the main event loop.
@@ -1038,7 +1038,7 @@ VKY_EXPORT void vkl_canvas_frame_submit(VklCanvas* canvas);
  * @param app the app
  * @param frame_count number of frames to process (0 for infinite loop)
  */
-VKY_EXPORT void vkl_app_run(VklApp* app, uint64_t frame_count);
+DVZ_EXPORT void dvz_app_run(DvzApp* app, uint64_t frame_count);
 
 
 
@@ -1047,27 +1047,27 @@ VKY_EXPORT void vkl_app_run(VklApp* app, uint64_t frame_count);
 /*************************************************************************************************/
 
 // Enqueue an event.
-static void _event_enqueue(VklCanvas* canvas, VklEvent event)
+static void _event_enqueue(DvzCanvas* canvas, DvzEvent event)
 {
     ASSERT(canvas != NULL);
-    VklFifo* fifo = &canvas->event_queue;
+    DvzFifo* fifo = &canvas->event_queue;
     ASSERT(fifo != NULL);
-    VklEvent* ev = (VklEvent*)calloc(1, sizeof(VklEvent));
+    DvzEvent* ev = (DvzEvent*)calloc(1, sizeof(DvzEvent));
     *ev = event;
-    vkl_fifo_enqueue(fifo, ev);
+    dvz_fifo_enqueue(fifo, ev);
 }
 
 
 
 // Dequeue an event, immediately, or waiting until an event is available.
-static VklEvent _event_dequeue(VklCanvas* canvas, bool wait)
+static DvzEvent _event_dequeue(DvzCanvas* canvas, bool wait)
 {
     ASSERT(canvas != NULL);
-    VklFifo* fifo = &canvas->event_queue;
+    DvzFifo* fifo = &canvas->event_queue;
     ASSERT(fifo != NULL);
-    VklEvent* item = (VklEvent*)vkl_fifo_dequeue(fifo, wait);
-    VklEvent out;
-    out.type = VKL_EVENT_NONE;
+    DvzEvent* item = (DvzEvent*)dvz_fifo_dequeue(fifo, wait);
+    DvzEvent out;
+    out.type = DVZ_EVENT_NONE;
     if (item == NULL)
         return out;
     ASSERT(item != NULL);
@@ -1079,12 +1079,12 @@ static VklEvent _event_dequeue(VklCanvas* canvas, bool wait)
 
 
 // Whether there is at least one async callback.
-static bool _has_async_callbacks(VklCanvas* canvas, VklEventType type)
+static bool _has_async_callbacks(DvzCanvas* canvas, DvzEventType type)
 {
     ASSERT(canvas != NULL);
     for (uint32_t i = 0; i < canvas->callbacks_count; i++)
     {
-        if (canvas->callbacks[i].type == type && canvas->callbacks[i].mode == VKL_EVENT_MODE_ASYNC)
+        if (canvas->callbacks[i].type == type && canvas->callbacks[i].mode == DVZ_EVENT_MODE_ASYNC)
             return true;
     }
     return false;
@@ -1093,10 +1093,10 @@ static bool _has_async_callbacks(VklCanvas* canvas, VklEventType type)
 
 
 // Whether there is at least one event callback.
-static bool _has_event_callbacks(VklCanvas* canvas, VklEventType type)
+static bool _has_event_callbacks(DvzCanvas* canvas, DvzEventType type)
 {
     ASSERT(canvas != NULL);
-    if (type == VKL_EVENT_NONE || type == VKL_EVENT_INIT)
+    if (type == DVZ_EVENT_NONE || type == DVZ_EVENT_INIT)
         return true;
     for (uint32_t i = 0; i < canvas->callbacks_count; i++)
         if (canvas->callbacks[i].type == type)
@@ -1107,18 +1107,18 @@ static bool _has_event_callbacks(VklCanvas* canvas, VklEventType type)
 
 
 // Consume an event, return the number of callbacks called.
-static int _event_consume(VklCanvas* canvas, VklEvent ev, VklEventMode mode)
+static int _event_consume(DvzCanvas* canvas, DvzEvent ev, DvzEventMode mode)
 {
     ASSERT(canvas != NULL);
 
     if (canvas->enable_lock)
-        vkl_thread_lock(&canvas->event_thread);
+        dvz_thread_lock(&canvas->event_thread);
 
     // HACK: we first call the callbacks with no param, then we call the callbacks with a non-zero
     // param. This is a way to use the param as a priority value. This is used by the scene FRAME
     // callback so that it occurs after the user callbacks.
     int n_callbacks = 0;
-    VklEventCallbackRegister* r = NULL;
+    DvzEventCallbackRegister* r = NULL;
     for (uint32_t pass = 0; pass < 2; pass++)
     {
         for (uint32_t i = 0; i < canvas->callbacks_count; i++)
@@ -1140,7 +1140,7 @@ static int _event_consume(VklCanvas* canvas, VklEvent ev, VklEventMode mode)
     }
 
     if (canvas->enable_lock)
-        vkl_thread_unlock(&canvas->event_thread);
+        dvz_thread_unlock(&canvas->event_thread);
 
     return n_callbacks;
 }
@@ -1149,12 +1149,12 @@ static int _event_consume(VklCanvas* canvas, VklEvent ev, VklEventMode mode)
 
 // Produce an event, call the sync callbacks, and enqueue the event if there is at least one async
 // callback.
-static int _event_produce(VklCanvas* canvas, VklEvent ev)
+static int _event_produce(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
 
     // Call the sync callbacks directly.
-    int n_callbacks = _event_consume(canvas, ev, VKL_EVENT_MODE_SYNC);
+    int n_callbacks = _event_consume(canvas, ev, DVZ_EVENT_MODE_SYNC);
 
     // Enqueue the event only if there is at least one async callback for that event type.
     if (_has_async_callbacks(canvas, ev.type))
@@ -1168,11 +1168,11 @@ static int _event_produce(VklCanvas* canvas, VklEvent ev)
 // Event loop running in the background thread, waiting for events and dequeuing them.
 static void* _event_thread(void* p_canvas)
 {
-    VklCanvas* canvas = (VklCanvas*)p_canvas;
+    DvzCanvas* canvas = (DvzCanvas*)p_canvas;
     ASSERT(canvas != NULL);
     log_debug("starting event thread");
 
-    VklEvent ev;
+    DvzEvent ev;
     double avg_event_time = 0; // average event callback time across all event types
     double elapsed = 0;        // average time of the event callbacks in the current iteration
     int n_callbacks = 0;       // number of event callbacks in the current event loop iteration
@@ -1185,7 +1185,7 @@ static void* _event_thread(void* p_canvas)
         // Wait until an event is available
         ev = _event_dequeue(canvas, true);
         canvas->event_processing = ev.type; // type of the event being processed
-        if (ev.type == VKL_EVENT_NONE)
+        if (ev.type == DVZ_EVENT_NONE)
         {
             log_trace("received empty event, stopping the event thread");
             break;
@@ -1201,7 +1201,7 @@ static void* _event_thread(void* p_canvas)
         // log_trace("event dequeued type %d, processing it...", ev.type);
         // process the dequeued task
         elapsed = _clock_get(&canvas->clock);
-        n_callbacks = _event_consume(canvas, ev, VKL_EVENT_MODE_ASYNC);
+        n_callbacks = _event_consume(canvas, ev, DVZ_EVENT_MODE_ASYNC);
         elapsed = _clock_get(&canvas->clock) - elapsed;
         // NOTE: avoid division by zero.
         if (n_callbacks > 0)
@@ -1212,17 +1212,17 @@ static void* _event_thread(void* p_canvas)
         if (avg_event_time > 0)
         {
             events_to_keep =
-                CLIP(VKL_MAX_EVENT_DURATION / avg_event_time, 1, VKL_MAX_FIFO_CAPACITY);
-            if (events_to_keep == VKL_MAX_FIFO_CAPACITY)
+                CLIP(DVZ_MAX_EVENT_DURATION / avg_event_time, 1, DVZ_MAX_FIFO_CAPACITY);
+            if (events_to_keep == DVZ_MAX_FIFO_CAPACITY)
                 events_to_keep = 0;
         }
 
         // Handle event queue overloading: if events are enqueued faster than
         // they are consumed, we should discard the older events so that the
         // queue doesn't keep filling up.
-        vkl_fifo_discard(&canvas->event_queue, events_to_keep);
+        dvz_fifo_discard(&canvas->event_queue, events_to_keep);
 
-        canvas->event_processing = VKL_EVENT_NONE;
+        canvas->event_processing = DVZ_EVENT_NONE;
         counter++;
     }
     log_debug("end event thread");

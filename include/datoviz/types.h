@@ -2,8 +2,8 @@
 /*  Common types                                                                                 */
 /*************************************************************************************************/
 
-#ifndef VKY_TYPES_HEADER
-#define VKY_TYPES_HEADER
+#ifndef DVZ_TYPES_HEADER
+#define DVZ_TYPES_HEADER
 
 #include <cglm/cglm.h>
 
@@ -61,7 +61,7 @@ typedef uint32_t uvec3[3];
 typedef uint32_t uvec4[4];
 
 /* Index */
-typedef uint32_t VklIndex;
+typedef uint32_t DvzIndex;
 
 
 

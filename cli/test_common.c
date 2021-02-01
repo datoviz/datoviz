@@ -1,5 +1,5 @@
 #include "test_common.h"
-#include "../include/visky/common.h"
+#include "../include/datoviz/common.h"
 
 
 
@@ -10,7 +10,7 @@
 typedef struct TestObject TestObject;
 struct TestObject
 {
-    VklObject obj;
+    DvzObject obj;
     float x;
 };
 
@@ -18,17 +18,17 @@ int test_container(TestContext* context)
 {
     uint32_t capacity = 2;
 
-    VklContainer container = vkl_container(capacity, sizeof(TestObject), 0);
+    DvzContainer container = dvz_container(capacity, sizeof(TestObject), 0);
     AT(container.items != NULL);
     AT(container.item_size == sizeof(TestObject));
     AT(container.capacity == capacity);
     AT(container.count == 0);
 
     // Allocate one object.
-    TestObject* a = vkl_container_alloc(&container);
+    TestObject* a = dvz_container_alloc(&container);
     AT(a != NULL);
     a->x = 1;
-    vkl_obj_created(&a->obj);
+    dvz_obj_created(&a->obj);
     AT(container.items[0] != NULL);
     AT(container.items[0] == a);
     AT(container.items[1] == NULL);
@@ -36,23 +36,23 @@ int test_container(TestContext* context)
     AT(container.count == 1);
 
     // Allocate another one.
-    TestObject* b = vkl_container_alloc(&container);
+    TestObject* b = dvz_container_alloc(&container);
     AT(b != NULL);
     b->x = 2;
-    vkl_obj_created(&b->obj);
+    dvz_obj_created(&b->obj);
     AT(container.items[1] != NULL);
     AT(container.items[1] == b);
     AT(container.capacity == capacity);
     AT(container.count == 2);
 
     // Destroy the first object.
-    vkl_obj_destroyed(&a->obj);
+    dvz_obj_destroyed(&a->obj);
 
     // Allocate another one.
-    TestObject* c = vkl_container_alloc(&container);
+    TestObject* c = dvz_container_alloc(&container);
     AT(c != NULL);
     c->x = 3;
-    vkl_obj_created(&c->obj);
+    dvz_obj_created(&c->obj);
     AT(container.items[0] != NULL);
     AT(container.items[0] == c);
     AT(container.capacity == capacity);
@@ -60,10 +60,10 @@ int test_container(TestContext* context)
 
     // Allocate another one.
     // Container will be reallocated.
-    TestObject* d = vkl_container_alloc(&container);
+    TestObject* d = dvz_container_alloc(&container);
     AT(d != NULL);
     d->x = 4;
-    vkl_obj_created(&d->obj);
+    dvz_obj_created(&d->obj);
     AT(container.capacity == 4);
     AT(container.count == 3);
     AT(container.items[2] != NULL);
@@ -73,7 +73,7 @@ int test_container(TestContext* context)
     // Iterate through items.
     for (uint32_t k = 0; k < 10; k++)
     {
-        TestObject* item = vkl_container_iter_init(&container);
+        TestObject* item = dvz_container_iter_init(&container);
         uint32_t i = 0;
         while (item != NULL)
         {
@@ -85,17 +85,17 @@ int test_container(TestContext* context)
             if (i == 2)
                 AT(item->x == 4);
             i++;
-            item = vkl_container_iter(&container);
+            item = dvz_container_iter(&container);
         }
         ASSERT(i == 3);
     }
 
     // Destroy all objects.
-    vkl_obj_destroyed(&b->obj);
-    vkl_obj_destroyed(&c->obj);
-    vkl_obj_destroyed(&d->obj);
+    dvz_obj_destroyed(&b->obj);
+    dvz_obj_destroyed(&c->obj);
+    dvz_obj_destroyed(&d->obj);
 
     // Free all memory. This function will fail if there is at least one object not destroyed.
-    vkl_container_destroy(&container);
+    dvz_container_destroy(&container);
     return 0;
 }

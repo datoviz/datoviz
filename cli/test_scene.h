@@ -1,7 +1,7 @@
-#ifndef VKY_TEST_SCENE_HEADER
-#define VKY_TEST_SCENE_HEADER
+#ifndef DVZ_TEST_SCENE_HEADER
+#define DVZ_TEST_SCENE_HEADER
 
-#include "../include/visky/scene.h"
+#include "../include/datoviz/scene.h"
 #include "utils.h"
 
 

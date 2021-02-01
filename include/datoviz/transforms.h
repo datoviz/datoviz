@@ -2,8 +2,8 @@
 /*  Simple transform system for data normalization                                               */
 /*************************************************************************************************/
 
-#ifndef VKL_TRANSFORMS_HEADER
-#define VKL_TRANSFORMS_HEADER
+#ifndef DVZ_TRANSFORMS_HEADER
+#define DVZ_TRANSFORMS_HEADER
 
 #include "array.h"
 #include "common.h"
@@ -14,20 +14,20 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define VKL_BOX_NDC                                                                               \
-    (VklBox)                                                                                      \
+#define DVZ_BOX_NDC                                                                               \
+    (DvzBox)                                                                                      \
     {                                                                                             \
         {-1, -1, -1}, { +1, +1, +1 }                                                              \
     }
-#define VKL_BOX_INF                                                                               \
-    (VklBox)                                                                                      \
+#define DVZ_BOX_INF                                                                               \
+    (DvzBox)                                                                                      \
     {                                                                                             \
         {+INFINITY, +INFINITY, +INFINITY}, { -INFINITY, -INFINITY, -INFINITY }                    \
     }
 
-#define VKL_TRANSFORM_CHAIN_MAX_SIZE 32
+#define DVZ_TRANSFORM_CHAIN_MAX_SIZE 32
 
-#define VKL_TRANSFORM_MATRIX_VULKAN                                                               \
+#define DVZ_TRANSFORM_MATRIX_VULKAN                                                               \
     (dmat4)                                                                                       \
     {                                                                                             \
         {1, 0, 0, 0}, {0, -1, 0, 0}, {0, 0, .5, 0}, { 0, 0, .5, 1 }                               \
@@ -42,49 +42,49 @@
 // Transformations.
 typedef enum
 {
-    VKL_TRANSFORM_NONE,
-    VKL_TRANSFORM_CARTESIAN,
-    VKL_TRANSFORM_POLAR,
-    VKL_TRANSFORM_CYLINDRICAL,
-    VKL_TRANSFORM_SPHERICAL,
-    VKL_TRANSFORM_EARTH_MERCATOR_WEB,
-} VklTransformType;
+    DVZ_TRANSFORM_NONE,
+    DVZ_TRANSFORM_CARTESIAN,
+    DVZ_TRANSFORM_POLAR,
+    DVZ_TRANSFORM_CYLINDRICAL,
+    DVZ_TRANSFORM_SPHERICAL,
+    DVZ_TRANSFORM_EARTH_MERCATOR_WEB,
+} DvzTransformType;
 
 
 
 // Transformation flags.
 typedef enum
 {
-    VKL_TRANSFORM_FLAGS_NONE = 0x0000,
-    VKL_TRANSFORM_FLAGS_LOGX = 0x0001,
-    VKL_TRANSFORM_FLAGS_LOGY = 0x0002,
-    VKL_TRANSFORM_FLAGS_LOGLOG = 0x0003,
-    VKL_TRANSFORM_FLAGS_FIXED_ASPECT = 0x0008,
-} VklTransformFlags;
+    DVZ_TRANSFORM_FLAGS_NONE = 0x0000,
+    DVZ_TRANSFORM_FLAGS_LOGX = 0x0001,
+    DVZ_TRANSFORM_FLAGS_LOGY = 0x0002,
+    DVZ_TRANSFORM_FLAGS_LOGLOG = 0x0003,
+    DVZ_TRANSFORM_FLAGS_FIXED_ASPECT = 0x0008,
+} DvzTransformFlags;
 
 
 
 // Coordinate systems.
 typedef enum
 {
-    VKL_CDS_NONE,
-    VKL_CDS_DATA,
-    VKL_CDS_SCENE,
-    VKL_CDS_VULKAN,
-    VKL_CDS_FRAMEBUFFER,
-    VKL_CDS_WINDOW,
-} VklCDS;
+    DVZ_CDS_NONE,
+    DVZ_CDS_DATA,
+    DVZ_CDS_SCENE,
+    DVZ_CDS_VULKAN,
+    DVZ_CDS_FRAMEBUFFER,
+    DVZ_CDS_WINDOW,
+} DvzCDS;
 
 
 
 // CDS transpose.
 typedef enum
 {
-    VKL_CDS_TRANSPOSE_NONE,   // x right  y up     z front
-    VKL_CDS_TRANSPOSE_XFYRZU, // x front  y right  z up
-    VKL_CDS_TRANSPOSE_XBYDZL, // x back   y down   z left
-    VKL_CDS_TRANSPOSE_XLYBZD, // x left   y back   z down
-} VklCDSTranspose;
+    DVZ_CDS_TRANSPOSE_NONE,   // x right  y up     z front
+    DVZ_CDS_TRANSPOSE_XFYRZU, // x front  y right  z up
+    DVZ_CDS_TRANSPOSE_XBYDZL, // x back   y down   z left
+    DVZ_CDS_TRANSPOSE_XLYBZD, // x left   y back   z down
+} DvzCDSTranspose;
 
 
 
@@ -92,13 +92,13 @@ typedef enum
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct VklDataCoords VklDataCoords;
-typedef struct VklBox VklBox;
-typedef struct VklTransform VklTransform;
-typedef struct VklTransformChain VklTransformChain;
+typedef struct DvzDataCoords DvzDataCoords;
+typedef struct DvzBox DvzBox;
+typedef struct DvzTransform DvzTransform;
+typedef struct DvzTransformChain DvzTransformChain;
 
 // Forward declarations.
-typedef struct VklPanel VklPanel;
+typedef struct DvzPanel DvzPanel;
 
 
 
@@ -106,27 +106,27 @@ typedef struct VklPanel VklPanel;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-struct VklBox
+struct DvzBox
 {
     dvec3 p0, p1;
 };
 
 
 
-struct VklDataCoords
+struct DvzDataCoords
 {
-    VklBox box;                // in data coordinate system
-    VklCDSTranspose transpose; // possible transposition of the data coordinate system
-    VklTransformType transform;
+    DvzBox box;                // in data coordinate system
+    DvzCDSTranspose transpose; // possible transposition of the data coordinate system
+    DvzTransformType transform;
     int flags; // come from the panel
     // TODO: union with transform parameters?
 };
 
 
 
-struct VklTransform
+struct DvzTransform
 {
-    VklTransformType type;
+    DvzTransformType type;
     dmat4 mat; // transformation matrix for linear transforms, parameters for other transforms
     int flags; // come from the panel
     bool inverse;
@@ -134,10 +134,10 @@ struct VklTransform
 
 
 
-struct VklTransformChain
+struct DvzTransformChain
 {
     uint32_t count;
-    VklTransform transforms[VKL_TRANSFORM_CHAIN_MAX_SIZE];
+    DvzTransform transforms[DVZ_TRANSFORM_CHAIN_MAX_SIZE];
 };
 
 
@@ -147,7 +147,7 @@ struct VklTransformChain
 /*************************************************************************************************/
 
 #define MAKE_TRANSPOSE(T)                                                                         \
-    static void _transpose_##T(VklCDSTranspose transpose, T* src, T* dst)                         \
+    static void _transpose_##T(DvzCDSTranspose transpose, T* src, T* dst)                         \
     {                                                                                             \
         ASSERT(src != NULL);                                                                      \
         ASSERT(dst != NULL);                                                                      \
@@ -156,23 +156,23 @@ struct VklTransformChain
         switch (transpose)                                                                        \
         {                                                                                         \
                                                                                                   \
-        case VKL_CDS_TRANSPOSE_NONE:                                                              \
+        case DVZ_CDS_TRANSPOSE_NONE:                                                              \
             memcpy(dst, src_, sizeof(T));                                                         \
             break;                                                                                \
                                                                                                   \
-        case VKL_CDS_TRANSPOSE_XBYDZL:                                                            \
+        case DVZ_CDS_TRANSPOSE_XBYDZL:                                                            \
             (*dst)[0] = -src_[2];                                                                 \
             (*dst)[1] = -src_[1];                                                                 \
             (*dst)[2] = -src_[0];                                                                 \
             break;                                                                                \
                                                                                                   \
-        case VKL_CDS_TRANSPOSE_XFYRZU:                                                            \
+        case DVZ_CDS_TRANSPOSE_XFYRZU:                                                            \
             (*dst)[0] = -src_[1];                                                                 \
             (*dst)[1] = +src_[2];                                                                 \
             (*dst)[2] = +src_[0];                                                                 \
             break;                                                                                \
                                                                                                   \
-        case VKL_CDS_TRANSPOSE_XLYBZD:                                                            \
+        case DVZ_CDS_TRANSPOSE_XLYBZD:                                                            \
             (*dst)[0] = -src_[0];                                                                 \
             (*dst)[1] = -src_[2];                                                                 \
             (*dst)[2] = -src_[1];                                                                 \
@@ -201,8 +201,8 @@ MAKE_TRANSPOSE(vec3)
  * @param[out] pos_out output array of dvec3 values
  * @param inverse whether to use the inverse or forward transformation
  */
-VKY_EXPORT void
-vkl_transform_data(VklDataCoords coords, VklArray* pos_in, VklArray* pos_out, bool inverse);
+DVZ_EXPORT void
+dvz_transform_data(DvzDataCoords coords, DvzArray* pos_in, DvzArray* pos_out, bool inverse);
 
 /**
  * Convert a 3D position from a coordinate system to another.
@@ -213,7 +213,7 @@ vkl_transform_data(VklDataCoords coords, VklArray* pos_in, VklArray* pos_out, bo
  * @param target the target coordinate system
  * @param[out] out the output (transformed) position
  */
-VKY_EXPORT void vkl_transform(VklPanel* panel, VklCDS source, dvec3 in, VklCDS target, dvec3 out);
+DVZ_EXPORT void dvz_transform(DvzPanel* panel, DvzCDS source, dvec3 in, DvzCDS target, dvec3 out);
 
 
 

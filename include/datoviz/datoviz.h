@@ -2,8 +2,8 @@
 /*  Main include file                                                                            */
 /*************************************************************************************************/
 
-#ifndef VKL_PUBLIC_HEADER
-#define VKL_PUBLIC_HEADER
+#ifndef DVZ_PUBLIC_HEADER
+#define DVZ_PUBLIC_HEADER
 
 #ifdef __cplusplus
 extern "C" {

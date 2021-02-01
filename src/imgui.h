@@ -1,7 +1,7 @@
-#ifndef VKL_IMGUI_HEADER
-#define VKL_IMGUI_HEADER
+#ifndef DVZ_IMGUI_HEADER
+#define DVZ_IMGUI_HEADER
 
-#include "../include/visky/canvas.h"
+#include "../include/datoviz/canvas.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -15,13 +15,13 @@ extern "C" {
 
 typedef enum
 {
-    VKL_GUI_STANDARD = 0,
-    VKL_GUI_PROMPT = 1,
-    VKL_GUI_FIXED_TL = 10,
-    VKL_GUI_FIXED_TR = 11,
-    VKL_GUI_FIXED_LL = 12,
-    VKL_GUI_FIXED_LR = 13,
-} VklGuiStyle;
+    DVZ_GUI_STANDARD = 0,
+    DVZ_GUI_PROMPT = 1,
+    DVZ_GUI_FIXED_TL = 10,
+    DVZ_GUI_FIXED_TR = 11,
+    DVZ_GUI_FIXED_LL = 12,
+    DVZ_GUI_FIXED_LR = 13,
+} DvzGuiStyle;
 
 
 
@@ -29,15 +29,15 @@ typedef enum
 /*  ImGui functions                                                                              */
 /*************************************************************************************************/
 
-VKY_EXPORT void vkl_imgui_init(VklCanvas* canvas);
+DVZ_EXPORT void dvz_imgui_init(DvzCanvas* canvas);
 
-VKY_EXPORT void vkl_imgui_begin(const char* title, VklGuiStyle style);
+DVZ_EXPORT void dvz_imgui_begin(const char* title, DvzGuiStyle style);
 
-VKY_EXPORT void vkl_imgui_end();
+DVZ_EXPORT void dvz_imgui_end();
 
-VKY_EXPORT void vkl_imgui_destroy();
+DVZ_EXPORT void dvz_imgui_destroy();
 
-VKY_EXPORT void vkl_imgui_callback_fps(VklCanvas* canvas, VklEvent);
+DVZ_EXPORT void dvz_imgui_callback_fps(DvzCanvas* canvas, DvzEvent);
 
 
 

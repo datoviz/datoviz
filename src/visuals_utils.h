@@ -1,7 +1,7 @@
-#ifndef VKL_VISUALS_UTILS_HEADER
-#define VKL_VISUALS_UTILS_HEADER
+#ifndef DVZ_VISUALS_UTILS_HEADER
+#define DVZ_VISUALS_UTILS_HEADER
 
-#include "../include/visky/visuals.h"
+#include "../include/datoviz/visuals.h"
 
 
 
@@ -9,138 +9,138 @@
 /*  Visual utils                                                                                 */
 /*************************************************************************************************/
 
-static bool _source_is_texture(VklSourceKind source_kind)
+static bool _source_is_texture(DvzSourceKind source_kind)
 {
-    return source_kind == VKL_SOURCE_KIND_TEXTURE_1D || //
-           source_kind == VKL_SOURCE_KIND_TEXTURE_2D || //
-           source_kind == VKL_SOURCE_KIND_TEXTURE_3D;
+    return source_kind == DVZ_SOURCE_KIND_TEXTURE_1D || //
+           source_kind == DVZ_SOURCE_KIND_TEXTURE_2D || //
+           source_kind == DVZ_SOURCE_KIND_TEXTURE_3D;
 }
 
 
 
-static bool _source_is_buffer(VklSourceKind source_kind)
+static bool _source_is_buffer(DvzSourceKind source_kind)
 {
-    return source_kind == VKL_SOURCE_KIND_UNIFORM || source_kind == VKL_SOURCE_KIND_STORAGE ||
-           source_kind == VKL_SOURCE_KIND_VERTEX || source_kind == VKL_SOURCE_KIND_INDEX;
+    return source_kind == DVZ_SOURCE_KIND_UNIFORM || source_kind == DVZ_SOURCE_KIND_STORAGE ||
+           source_kind == DVZ_SOURCE_KIND_VERTEX || source_kind == DVZ_SOURCE_KIND_INDEX;
 }
 
 
 
-static bool _source_needs_binding(VklSourceKind source_kind)
+static bool _source_needs_binding(DvzSourceKind source_kind)
 {
-    return source_kind == VKL_SOURCE_KIND_UNIFORM || //
-           source_kind == VKL_SOURCE_KIND_STORAGE;
+    return source_kind == DVZ_SOURCE_KIND_UNIFORM || //
+           source_kind == DVZ_SOURCE_KIND_STORAGE;
 }
 
 
 
-static VklSourceKind _get_source_kind(VklSourceType type)
+static DvzSourceKind _get_source_kind(DvzSourceType type)
 {
     switch (type)
     {
-    case VKL_SOURCE_TYPE_MVP:
-    case VKL_SOURCE_TYPE_VIEWPORT:
-    case VKL_SOURCE_TYPE_PARAM:
-        return VKL_SOURCE_KIND_UNIFORM;
+    case DVZ_SOURCE_TYPE_MVP:
+    case DVZ_SOURCE_TYPE_VIEWPORT:
+    case DVZ_SOURCE_TYPE_PARAM:
+        return DVZ_SOURCE_KIND_UNIFORM;
         break;
 
-    case VKL_SOURCE_TYPE_VERTEX:
-        return VKL_SOURCE_KIND_VERTEX;
+    case DVZ_SOURCE_TYPE_VERTEX:
+        return DVZ_SOURCE_KIND_VERTEX;
 
-    case VKL_SOURCE_TYPE_INDEX:
-        return VKL_SOURCE_KIND_INDEX;
+    case DVZ_SOURCE_TYPE_INDEX:
+        return DVZ_SOURCE_KIND_INDEX;
 
-    case VKL_SOURCE_TYPE_IMAGE:
-    case VKL_SOURCE_TYPE_COLOR_TEXTURE:
-    case VKL_SOURCE_TYPE_FONT_ATLAS:
-        return VKL_SOURCE_KIND_TEXTURE_2D;
+    case DVZ_SOURCE_TYPE_IMAGE:
+    case DVZ_SOURCE_TYPE_COLOR_TEXTURE:
+    case DVZ_SOURCE_TYPE_FONT_ATLAS:
+        return DVZ_SOURCE_KIND_TEXTURE_2D;
 
-    case VKL_SOURCE_TYPE_VOLUME:
-        return VKL_SOURCE_KIND_TEXTURE_3D;
+    case DVZ_SOURCE_TYPE_VOLUME:
+        return DVZ_SOURCE_KIND_TEXTURE_3D;
 
     default:
         log_error("source type %d not yet supported", type);
-        return VKL_SOURCE_KIND_NONE;
+        return DVZ_SOURCE_KIND_NONE;
         break;
     }
 }
 
 
 
-static uint32_t _get_texture_ndims(VklSourceKind source_kind)
+static uint32_t _get_texture_ndims(DvzSourceKind source_kind)
 {
     uint32_t ndims = 1;
-    if (source_kind == VKL_SOURCE_KIND_TEXTURE_2D)
+    if (source_kind == DVZ_SOURCE_KIND_TEXTURE_2D)
         ndims = 2;
-    if (source_kind == VKL_SOURCE_KIND_TEXTURE_3D)
+    if (source_kind == DVZ_SOURCE_KIND_TEXTURE_3D)
         ndims = 3;
     return ndims;
 }
 
 
 
-static VkFormat _get_texture_format(VklVisual* visual, VklSource* source)
+static VkFormat _get_texture_format(DvzVisual* visual, DvzSource* source)
 {
     ASSERT(source != NULL);
     ASSERT(_source_is_texture(source->source_kind));
-    VklDataType dtype = VKL_DTYPE_NONE;
+    DvzDataType dtype = DVZ_DTYPE_NONE;
 
-    VklProp* prop = vkl_container_iter_init(&visual->props);
+    DvzProp* prop = dvz_container_iter_init(&visual->props);
     while (prop != NULL)
     {
         if (prop->source == source)
         {
             // Check that there is only 1 prop associated to the texture source.
-            if (dtype != VKL_DTYPE_NONE)
+            if (dtype != DVZ_DTYPE_NONE)
                 log_error("multiple texture props not (yet) supported");
             dtype = prop->dtype;
         }
-        prop = vkl_container_iter(&visual->props);
+        prop = dvz_container_iter(&visual->props);
     }
 
-    ASSERT(dtype != VKL_DTYPE_NONE);
+    ASSERT(dtype != DVZ_DTYPE_NONE);
     VkFormat format = VK_FORMAT_UNDEFINED;
     switch (dtype)
     {
 
     // 8 bit
-    case VKL_DTYPE_CHAR:
+    case DVZ_DTYPE_CHAR:
         format = VK_FORMAT_R8_UNORM;
         break;
 
-    case VKL_DTYPE_CVEC3:
+    case DVZ_DTYPE_CVEC3:
         format = VK_FORMAT_R8G8B8_UNORM;
         break;
 
-    case VKL_DTYPE_CVEC4:
+    case DVZ_DTYPE_CVEC4:
         format = VK_FORMAT_R8G8B8A8_UNORM;
         break;
 
 
     // 16 bit signed
-    case VKL_DTYPE_SHORT:
+    case DVZ_DTYPE_SHORT:
         format = VK_FORMAT_R16_SNORM;
         break;
 
-    case VKL_DTYPE_SVEC3:
+    case DVZ_DTYPE_SVEC3:
         format = VK_FORMAT_R16G16B16_SNORM;
         break;
 
-    case VKL_DTYPE_SVEC4:
+    case DVZ_DTYPE_SVEC4:
         format = VK_FORMAT_R16G16B16A16_SNORM;
         break;
 
 
     // 16 bit unsigned
-    case VKL_DTYPE_USHORT:
+    case DVZ_DTYPE_USHORT:
         format = VK_FORMAT_R16_UNORM;
         break;
 
-    case VKL_DTYPE_USVEC3:
+    case DVZ_DTYPE_USVEC3:
         format = VK_FORMAT_R16G16B16_UNORM;
         break;
 
-    case VKL_DTYPE_USVEC4:
+    case DVZ_DTYPE_USVEC4:
         format = VK_FORMAT_R16G16B16A16_UNORM;
         break;
 
@@ -155,20 +155,20 @@ static VkFormat _get_texture_format(VklVisual* visual, VklSource* source)
 
 
 
-static VklBindings* _get_bindings(VklVisual* visual, VklSource* source)
+static DvzBindings* _get_bindings(DvzVisual* visual, DvzSource* source)
 {
     ASSERT(source != NULL);
-    if (source->pipeline == VKL_PIPELINE_GRAPHICS)
-        return vkl_container_get(&visual->bindings, source->pipeline_idx);
-    else if (source->pipeline == VKL_PIPELINE_COMPUTE)
-        return vkl_container_get(&visual->bindings_comp, source->pipeline_idx);
+    if (source->pipeline == DVZ_PIPELINE_GRAPHICS)
+        return dvz_container_get(&visual->bindings, source->pipeline_idx);
+    else if (source->pipeline == DVZ_PIPELINE_COMPUTE)
+        return dvz_container_get(&visual->bindings_comp, source->pipeline_idx);
     log_error("could not find binding for source %d", source->source_type);
     return NULL;
 }
 
 
 
-static VklArray* _prop_array(VklProp* prop)
+static DvzArray* _prop_array(DvzProp* prop)
 {
     ASSERT(prop != NULL);
     if (prop->arr_trans.item_count > 0)
@@ -179,15 +179,15 @@ static VklArray* _prop_array(VklProp* prop)
 
 
 
-static uint32_t _source_size(VklVisual* visual, VklSource* source)
+static uint32_t _source_size(DvzVisual* visual, DvzSource* source)
 {
     ASSERT(visual != NULL);
     ASSERT(source != NULL);
 
-    VklArray* arr = NULL;
+    DvzArray* arr = NULL;
     uint32_t item_count = 0;
 
-    VklProp* prop = vkl_container_iter_init(&visual->props);
+    DvzProp* prop = dvz_container_iter_init(&visual->props);
     while (prop != NULL)
     {
         if (prop->source == source)
@@ -196,56 +196,56 @@ static uint32_t _source_size(VklVisual* visual, VklSource* source)
             ASSERT(arr != NULL);
             item_count = MAX(item_count, arr->item_count * MAX(1, prop->reps));
         }
-        prop = vkl_container_iter(&visual->props);
+        prop = dvz_container_iter(&visual->props);
     }
     return item_count;
 }
 
 
 
-static void _set_source_bindings(VklVisual* visual, VklSource* source)
+static void _set_source_bindings(DvzVisual* visual, DvzSource* source)
 {
     // Set bindings except for VERTEX and INDEX sources.
     if (_source_needs_binding(source->source_kind))
     {
-        VklBindings* bindings = _get_bindings(visual, source);
-        vkl_bindings_buffer(bindings, source->slot_idx, source->u.br);
+        DvzBindings* bindings = _get_bindings(visual, source);
+        dvz_bindings_buffer(bindings, source->slot_idx, source->u.br);
 
         // Share the source's buffer regions with other pipelines.
-        VklBindings* other = NULL;
-        VklSource* other_source = NULL;
+        DvzBindings* other = NULL;
+        DvzSource* other_source = NULL;
         for (uint32_t i = 0; i < source->other_count; i++)
         {
-            other_source = vkl_source_get(visual, source->source_type, source->other_idxs[i]);
+            other_source = dvz_source_get(visual, source->source_type, source->other_idxs[i]);
             ASSERT(other_source != NULL);
             // Get the binding corresponding to the pipeline of the other source.
-            other = vkl_container_get(&visual->bindings, other_source->pipeline_idx);
+            other = dvz_container_get(&visual->bindings, other_source->pipeline_idx);
             ASSERT(other != NULL);
-            vkl_bindings_buffer(other, source->slot_idx, source->u.br);
+            dvz_bindings_buffer(other, source->slot_idx, source->u.br);
         }
     }
 }
 
 
 
-static void _create_source_buffer(VklCanvas* canvas, VklSource* source, VkDeviceSize size)
+static void _create_source_buffer(DvzCanvas* canvas, DvzSource* source, VkDeviceSize size)
 {
-    VklContext* ctx = canvas->gpu->context;
-    VklBufferType type = VKL_BUFFER_TYPE_UNDEFINED;
-    bool mappable = (source->flags & VKL_SOURCE_FLAG_MAPPABLE) != 0;
+    DvzContext* ctx = canvas->gpu->context;
+    DvzBufferType type = DVZ_BUFFER_TYPE_UNDEFINED;
+    bool mappable = (source->flags & DVZ_SOURCE_FLAG_MAPPABLE) != 0;
     switch (source->source_kind)
     {
-    case VKL_SOURCE_KIND_VERTEX:
-        type = VKL_BUFFER_TYPE_VERTEX;
+    case DVZ_SOURCE_KIND_VERTEX:
+        type = DVZ_BUFFER_TYPE_VERTEX;
         break;
-    case VKL_SOURCE_KIND_INDEX:
-        type = VKL_BUFFER_TYPE_INDEX;
+    case DVZ_SOURCE_KIND_INDEX:
+        type = DVZ_BUFFER_TYPE_INDEX;
         break;
-    case VKL_SOURCE_KIND_UNIFORM:
-        type = mappable ? VKL_BUFFER_TYPE_UNIFORM_MAPPABLE : VKL_BUFFER_TYPE_UNIFORM;
+    case DVZ_SOURCE_KIND_UNIFORM:
+        type = mappable ? DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE : DVZ_BUFFER_TYPE_UNIFORM;
         break;
-    case VKL_SOURCE_KIND_STORAGE:
-        type = VKL_BUFFER_TYPE_STORAGE;
+    case DVZ_SOURCE_KIND_STORAGE:
+        type = DVZ_BUFFER_TYPE_STORAGE;
         break;
     default:
         log_error("invalid source kind %d", source->source_kind);
@@ -253,18 +253,18 @@ static void _create_source_buffer(VklCanvas* canvas, VklSource* source, VkDevice
         break;
     }
     uint32_t buf_count = source->source_type == mappable ? canvas->swapchain.img_count : 1;
-    source->u.br = vkl_ctx_buffers(ctx, type, buf_count, size);
+    source->u.br = dvz_ctx_buffers(ctx, type, buf_count, size);
 }
 
 
 
-static void _source_buffer(VklVisual* visual, VklSource* source)
+static void _source_buffer(DvzVisual* visual, DvzSource* source)
 {
     ASSERT(visual != NULL);
     ASSERT(source != NULL);
-    VklCanvas* canvas = visual->canvas;
+    DvzCanvas* canvas = visual->canvas;
 
-    ASSERT(source->source_kind < VKL_SOURCE_KIND_TEXTURE_1D);
+    ASSERT(source->source_kind < DVZ_SOURCE_KIND_TEXTURE_1D);
     ASSERT(source->arr.item_size > 0);
 
     uint32_t count = source->arr.item_count;
@@ -273,7 +273,7 @@ static void _source_buffer(VklVisual* visual, VklSource* source)
     // Allocate the buffer if it doesn't exist yet, or if it is not large enough.
     if (source->u.br.buffer == VK_NULL_HANDLE || source->u.br.size < count * source->arr.item_size)
     {
-        VkDeviceSize size = vkl_next_pow2(count * source->arr.item_size);
+        VkDeviceSize size = dvz_next_pow2(count * source->arr.item_size);
         ASSERT(size >= count * source->arr.item_size);
         log_debug(
             "need to %sallocate new buffer region to fit %d elements (%d bytes)",
@@ -287,11 +287,11 @@ static void _source_buffer(VklVisual* visual, VklSource* source)
 
 
 
-static void _source_texture(VklVisual* visual, VklSource* source)
+static void _source_texture(DvzVisual* visual, DvzSource* source)
 {
     ASSERT(visual != NULL);
     ASSERT(source != NULL);
-    VklContext* ctx = visual->canvas->gpu->context;
+    DvzContext* ctx = visual->canvas->gpu->context;
 
     ASSERT(_source_is_texture(source->source_kind));
 
@@ -307,7 +307,7 @@ static void _source_texture(VklVisual* visual, VklSource* source)
     ASSERT(format != VK_FORMAT_UNDEFINED);
 
     // Allocate the texture if it doesn't exist yet, or if it is not large enough.
-    VklTexture* tex = source->u.tex;
+    DvzTexture* tex = source->u.tex;
     if (tex == NULL ||                   //
         tex->image->width < shape[0] ||  //
         tex->image->height < shape[1] || //
@@ -318,20 +318,20 @@ static void _source_texture(VklVisual* visual, VklSource* source)
             log_debug(
                 "need to create new texture with shape %dx%dx%d", //
                 shape[0], shape[1], shape[2]);
-            tex = source->u.tex = vkl_ctx_texture(ctx, ndims, shape, format);
+            tex = source->u.tex = dvz_ctx_texture(ctx, ndims, shape, format);
         }
         else
         {
             log_debug(
                 "need to resize texture to new shape %dx%dx%d", //
                 shape[0], shape[1], shape[2]);
-            vkl_texture_resize(source->u.tex, shape);
+            dvz_texture_resize(source->u.tex, shape);
         }
         ASSERT(tex != NULL);
 
         // Set bindings.
-        VklBindings* bindings = _get_bindings(visual, source);
-        vkl_bindings_texture(bindings, source->slot_idx, tex);
+        DvzBindings* bindings = _get_bindings(visual, source);
+        dvz_bindings_texture(bindings, source->slot_idx, tex);
     }
     ASSERT(source->u.tex != NULL);
 }
@@ -342,17 +342,17 @@ static void _source_texture(VklVisual* visual, VklSource* source)
 /*  Visual baking helpers                                                                        */
 /*************************************************************************************************/
 
-static void _prop_copy(VklVisual* visual, VklProp* prop)
+static void _prop_copy(DvzVisual* visual, DvzProp* prop)
 {
     ASSERT(prop != NULL);
 
-    VklSource* source = prop->source;
+    DvzSource* source = prop->source;
     ASSERT(source != NULL);
 
     VkDeviceSize col_size = _get_dtype_size(prop->dtype);
     ASSERT(col_size > 0);
 
-    VklArray* arr = _prop_array(prop);
+    DvzArray* arr = _prop_array(prop);
     if (arr->data == NULL)
     {
         log_debug("visual prop %d #%d not set", prop->prop_type, prop->prop_idx);
@@ -360,14 +360,14 @@ static void _prop_copy(VklVisual* visual, VklProp* prop)
     }
 
     // Do not copy props that have no automatic copy set up.
-    if (prop->copy_type == VKL_ARRAY_COPY_NONE)
+    if (prop->copy_type == DVZ_ARRAY_COPY_NONE)
         return;
 
     ASSERT(arr->data != NULL);
     ASSERT(source->arr.data != NULL);
     ASSERT(arr->item_count <= source->arr.item_count);
 
-    vkl_array_column(
+    dvz_array_column(
         &source->arr, prop->offset, col_size, 0, source->arr.item_count, //
         arr->item_count, arr->data,                                      //
         prop->arr_orig.dtype, prop->target_dtype,                        // optional cast
@@ -376,7 +376,7 @@ static void _prop_copy(VklVisual* visual, VklProp* prop)
 
 
 
-static void _source_alloc(VklVisual* visual, VklSource* source, uint32_t count)
+static void _source_alloc(DvzVisual* visual, DvzSource* source, uint32_t count)
 {
     ASSERT(visual != NULL);
     ASSERT(source != NULL);
@@ -384,57 +384,57 @@ static void _source_alloc(VklVisual* visual, VklSource* source, uint32_t count)
     // Resize the source source.
     log_trace(
         "alloc %d elements for source %d #%d", count, source->source_type, source->source_idx);
-    VklArray* arr = &source->arr;
-    ASSERT(vkl_obj_is_created(&arr->obj));
-    vkl_array_resize(arr, count);
+    DvzArray* arr = &source->arr;
+    ASSERT(dvz_obj_is_created(&arr->obj));
+    dvz_array_resize(arr, count);
 }
 
 
 
-static void _source_fill(VklVisual* visual, VklSource* source)
+static void _source_fill(DvzVisual* visual, DvzSource* source)
 {
     ASSERT(visual != NULL);
     ASSERT(source != NULL);
 
     // Copy all associated props to the source array.
-    VklProp* prop = vkl_container_iter_init(&visual->props);
+    DvzProp* prop = dvz_container_iter_init(&visual->props);
     while (prop != NULL)
     {
         if (prop->source == source)
             _prop_copy(visual, prop);
-        prop = vkl_container_iter(&visual->props);
+        prop = dvz_container_iter(&visual->props);
     }
 }
 
 
 
 // Get the first source of a given type for the given pipeline, or none.
-static VklSource*
-_get_pipeline_source(VklVisual* visual, VklSourceType source_type, uint32_t pipeline_idx)
+static DvzSource*
+_get_pipeline_source(DvzVisual* visual, DvzSourceType source_type, uint32_t pipeline_idx)
 {
     ASSERT(visual != NULL);
-    VklSource* source = vkl_container_iter_init(&visual->sources);
+    DvzSource* source = dvz_container_iter_init(&visual->sources);
     while (source != NULL)
     {
         if (source->source_type == source_type && source->pipeline_idx == pipeline_idx)
             return source;
-        source = vkl_container_iter(&visual->sources);
+        source = dvz_container_iter(&visual->sources);
     }
     return NULL;
 }
 
 
 
-static void _bake_source(VklVisual* visual, VklSource* source)
+static void _bake_source(DvzVisual* visual, DvzSource* source)
 {
     ASSERT(visual != NULL);
     if (source == NULL)
         return;
 
     // The baking function doesn't run if the VERTEX source is handled by the user.
-    if (source->origin != VKL_SOURCE_ORIGIN_LIB)
+    if (source->origin != DVZ_SOURCE_ORIGIN_LIB)
         return;
-    if (source->obj.request != VKL_VISUAL_REQUEST_UPLOAD)
+    if (source->obj.request != DVZ_VISUAL_REQUEST_UPLOAD)
     {
         log_trace(
             "skip bake source for source %d that doesn't need updating", source->source_kind);
@@ -460,31 +460,31 @@ static void _bake_source(VklVisual* visual, VklSource* source)
 
 
 
-static void _bake_uniforms(VklVisual* visual)
+static void _bake_uniforms(DvzVisual* visual)
 {
-    VklSource* source = vkl_container_iter_init(&visual->sources);
+    DvzSource* source = dvz_container_iter_init(&visual->sources);
     // UNIFORM sources.
 
     while (source != NULL)
     {
-        if (source->obj.request != VKL_VISUAL_REQUEST_UPLOAD)
+        if (source->obj.request != DVZ_VISUAL_REQUEST_UPLOAD)
         {
             log_trace("skip bake source for uniform source that doesn't need updating");
-            source = vkl_container_iter(&visual->sources);
+            source = dvz_container_iter(&visual->sources);
             continue;
         }
 
         // Allocate the UNIFORM sources, using the number of items in the props, and fill them
         // with the props.
-        if (source->source_kind == VKL_SOURCE_KIND_UNIFORM &&
-            source->origin == VKL_SOURCE_ORIGIN_LIB)
+        if (source->source_kind == DVZ_SOURCE_KIND_UNIFORM &&
+            source->origin == DVZ_SOURCE_ORIGIN_LIB)
         {
             uint32_t count = _source_size(visual, source);
             ASSERT(count > 0);
             _source_alloc(visual, source, count);
             _source_fill(visual, source);
         }
-        source = vkl_container_iter(&visual->sources);
+        source = dvz_container_iter(&visual->sources);
     }
 }
 
@@ -494,28 +494,28 @@ static void _bake_uniforms(VklVisual* visual)
 /*  Visual default callbacks                                                                     */
 /*************************************************************************************************/
 
-static void _default_visual_bake(VklVisual* visual, VklVisualDataEvent ev)
+static void _default_visual_bake(DvzVisual* visual, DvzVisualDataEvent ev)
 {
     ASSERT(visual != NULL);
 
     // VERTEX source.
-    VklSource* source = vkl_source_get(visual, VKL_SOURCE_TYPE_VERTEX, 0);
+    DvzSource* source = dvz_source_get(visual, DVZ_SOURCE_TYPE_VERTEX, 0);
     _bake_source(visual, source);
 
     // INDEX source.
-    source = vkl_source_get(visual, VKL_SOURCE_TYPE_INDEX, 0);
+    source = dvz_source_get(visual, DVZ_SOURCE_TYPE_INDEX, 0);
     _bake_source(visual, source);
 }
 
 
 
-static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
+static void _default_visual_fill(DvzVisual* visual, DvzVisualFillEvent ev)
 {
     ASSERT(visual != NULL);
-    VklCanvas* canvas = visual->canvas;
+    DvzCanvas* canvas = visual->canvas;
     ASSERT(canvas != NULL);
 
-    VklCommands* cmds = ev.cmds;
+    DvzCommands* cmds = ev.cmds;
     uint32_t idx = ev.cmd_idx;
     VkViewport viewport = ev.viewport.viewport;
 
@@ -523,16 +523,16 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
     ASSERT(viewport.height > 0);
 
     // Draw all valid graphics pipelines.
-    VklBindings* bindings = NULL;
+    DvzBindings* bindings = NULL;
     for (uint32_t pipeline_idx = 0; pipeline_idx < visual->graphics_count; pipeline_idx++)
     {
-        ASSERT(vkl_obj_is_created(&visual->graphics[pipeline_idx]->obj));
+        ASSERT(dvz_obj_is_created(&visual->graphics[pipeline_idx]->obj));
 
-        bindings = vkl_container_get(&visual->bindings, pipeline_idx);
-        ASSERT(vkl_obj_is_created(&bindings->obj));
+        bindings = dvz_container_get(&visual->bindings, pipeline_idx);
+        ASSERT(dvz_obj_is_created(&bindings->obj));
 
-        VklSource* vertex_source =
-            _get_pipeline_source(visual, VKL_SOURCE_TYPE_VERTEX, pipeline_idx);
+        DvzSource* vertex_source =
+            _get_pipeline_source(visual, DVZ_SOURCE_TYPE_VERTEX, pipeline_idx);
         ASSERT(vertex_source != NULL);
         ASSERT(vertex_source->pipeline_idx == pipeline_idx);
 
@@ -545,15 +545,15 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
         ASSERT(vertex_count > 0);
 
         // Bind the vertex buffer.
-        VklBufferRegions* vertex_buf = &vertex_source->u.br;
+        DvzBufferRegions* vertex_buf = &vertex_source->u.br;
         ASSERT(vertex_buf != NULL);
-        vkl_cmd_bind_vertex_buffer(cmds, idx, *vertex_buf, 0);
+        dvz_cmd_bind_vertex_buffer(cmds, idx, *vertex_buf, 0);
 
         // Index buffer?
-        VklSource* index_source =
-            _get_pipeline_source(visual, VKL_SOURCE_TYPE_INDEX, pipeline_idx);
+        DvzSource* index_source =
+            _get_pipeline_source(visual, DVZ_SOURCE_TYPE_INDEX, pipeline_idx);
         uint32_t index_count = 0;
-        VklBufferRegions* index_buf = NULL;
+        DvzBufferRegions* index_buf = NULL;
         if (index_source != NULL)
         {
             index_count = index_source->arr.item_count;
@@ -561,26 +561,26 @@ static void _default_visual_fill(VklVisual* visual, VklVisualFillEvent ev)
             {
                 index_buf = &index_source->u.br;
                 ASSERT(index_buf != NULL);
-                vkl_cmd_bind_index_buffer(cmds, idx, *index_buf, 0);
+                dvz_cmd_bind_index_buffer(cmds, idx, *index_buf, 0);
             }
         }
 
         // Draw command.
-        vkl_cmd_bind_graphics(cmds, idx, visual->graphics[pipeline_idx], bindings, 0);
+        dvz_cmd_bind_graphics(cmds, idx, visual->graphics[pipeline_idx], bindings, 0);
 
         if (index_count == 0)
         {
             log_debug("draw %d vertices", vertex_count);
             // Make sure the bound vertex buffer is large enough.
             ASSERT(vertex_buf->size >= vertex_count * vertex_source->arr.item_size);
-            vkl_cmd_draw(cmds, idx, 0, vertex_count);
+            dvz_cmd_draw(cmds, idx, 0, vertex_count);
         }
         else
         {
             log_debug("draw %d indices", index_count);
             // Make sure the bound index buffer is large enough.
-            ASSERT(index_buf->size >= index_count * sizeof(VklIndex));
-            vkl_cmd_draw_indexed(cmds, idx, 0, 0, index_count);
+            ASSERT(index_buf->size >= index_count * sizeof(DvzIndex));
+            dvz_cmd_draw_indexed(cmds, idx, 0, 0, index_count);
         }
     }
 }

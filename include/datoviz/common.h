@@ -2,8 +2,8 @@
 /*  Common utils                                                                                 */
 /*************************************************************************************************/
 
-#ifndef VKY_COMMON_HEADER
-#define VKY_COMMON_HEADER
+#ifndef DVZ_COMMON_HEADER
+#define DVZ_COMMON_HEADER
 
 // Atomic macro, for both C++ and C
 #ifndef __cplusplus
@@ -34,15 +34,15 @@ extern "C" {
 /*************************************************************************************************/
 
 #if MSVC
-#ifdef VKY_SHARED
-#define VKY_EXPORT __declspec(dllexport)
+#ifdef DVZ_SHARED
+#define DVZ_EXPORT __declspec(dllexport)
 #else
-#define VKY_EXPORT __declspec(dllimport)
+#define DVZ_EXPORT __declspec(dllimport)
 #endif
-#define VKY_INLINE __forceinline
+#define DVZ_INLINE __forceinline
 #else
-#define VKY_EXPORT __attribute__((visibility("default")))
-#define VKY_INLINE static inline __attribute((always_inline))
+#define DVZ_EXPORT __attribute__((visibility("default")))
+#define DVZ_INLINE static inline __attribute((always_inline))
 #endif
 
 
@@ -148,12 +148,12 @@ END_INCL_NO_WARN
 /*  Built-in fixed constants                                                                     */
 /*************************************************************************************************/
 
-#define ENGINE_NAME         "Visky"
-#define APPLICATION_NAME    "Visky canvas"
+#define ENGINE_NAME         "Datoviz"
+#define APPLICATION_NAME    "Datoviz canvas"
 #define APPLICATION_VERSION VK_MAKE_VERSION(1, 0, 0)
 
-#define VKL_MAX_FRAMES_IN_FLIGHT    2
-#define VKL_CONTAINER_DEFAULT_COUNT 64
+#define DVZ_MAX_FRAMES_IN_FLIGHT    2
+#define DVZ_CONTAINER_DEFAULT_COUNT 64
 
 
 /*************************************************************************************************/
@@ -165,7 +165,7 @@ END_INCL_NO_WARN
 #endif
 #define M_2PI 6.283185307179586
 
-#define VKY_NEVER -1000000
+#define DVZ_NEVER -1000000
 
 
 
@@ -219,48 +219,48 @@ END_INCL_NO_WARN
 // Axis coord.
 typedef enum
 {
-    VKL_AXES_COORD_X,
-    VKL_AXES_COORD_Y,
-} VklAxisCoord;
+    DVZ_AXES_COORD_X,
+    DVZ_AXES_COORD_Y,
+} DvzAxisCoord;
 
 
 
 // Object types.
 typedef enum
 {
-    VKL_OBJECT_TYPE_UNDEFINED,
-    VKL_OBJECT_TYPE_APP,
-    VKL_OBJECT_TYPE_GPU,
-    VKL_OBJECT_TYPE_WINDOW,
-    VKL_OBJECT_TYPE_SWAPCHAIN,
-    VKL_OBJECT_TYPE_CANVAS,
-    VKL_OBJECT_TYPE_COMMANDS,
-    VKL_OBJECT_TYPE_BUFFER,
-    VKL_OBJECT_TYPE_TEXTURE,
-    VKL_OBJECT_TYPE_IMAGES,
-    VKL_OBJECT_TYPE_SAMPLER,
-    VKL_OBJECT_TYPE_BINDINGS,
-    VKL_OBJECT_TYPE_COMPUTE,
-    VKL_OBJECT_TYPE_GRAPHICS,
-    VKL_OBJECT_TYPE_BARRIER,
-    VKL_OBJECT_TYPE_FENCES,
-    VKL_OBJECT_TYPE_SEMAPHORES,
-    VKL_OBJECT_TYPE_RENDERPASS,
-    VKL_OBJECT_TYPE_FRAMEBUFFER,
-    VKL_OBJECT_TYPE_SUBMIT,
-    VKL_OBJECT_TYPE_SCREENCAST,
-    VKL_OBJECT_TYPE_ARRAY,
-    VKL_OBJECT_TYPE_VISUAL,
-    VKL_OBJECT_TYPE_PROP,
-    VKL_OBJECT_TYPE_SOURCE,
-    VKL_OBJECT_TYPE_SCENE,
-    VKL_OBJECT_TYPE_GRID,
-    VKL_OBJECT_TYPE_PANEL,
-    VKL_OBJECT_TYPE_CONTROLLER,
-    VKL_OBJECT_TYPE_AXES_2D,
-    VKL_OBJECT_TYPE_AXES_3D,
-    VKL_OBJECT_TYPE_CUSTOM,
-} VklObjectType;
+    DVZ_OBJECT_TYPE_UNDEFINED,
+    DVZ_OBJECT_TYPE_APP,
+    DVZ_OBJECT_TYPE_GPU,
+    DVZ_OBJECT_TYPE_WINDOW,
+    DVZ_OBJECT_TYPE_SWAPCHAIN,
+    DVZ_OBJECT_TYPE_CANVAS,
+    DVZ_OBJECT_TYPE_COMMANDS,
+    DVZ_OBJECT_TYPE_BUFFER,
+    DVZ_OBJECT_TYPE_TEXTURE,
+    DVZ_OBJECT_TYPE_IMAGES,
+    DVZ_OBJECT_TYPE_SAMPLER,
+    DVZ_OBJECT_TYPE_BINDINGS,
+    DVZ_OBJECT_TYPE_COMPUTE,
+    DVZ_OBJECT_TYPE_GRAPHICS,
+    DVZ_OBJECT_TYPE_BARRIER,
+    DVZ_OBJECT_TYPE_FENCES,
+    DVZ_OBJECT_TYPE_SEMAPHORES,
+    DVZ_OBJECT_TYPE_RENDERPASS,
+    DVZ_OBJECT_TYPE_FRAMEBUFFER,
+    DVZ_OBJECT_TYPE_SUBMIT,
+    DVZ_OBJECT_TYPE_SCREENCAST,
+    DVZ_OBJECT_TYPE_ARRAY,
+    DVZ_OBJECT_TYPE_VISUAL,
+    DVZ_OBJECT_TYPE_PROP,
+    DVZ_OBJECT_TYPE_SOURCE,
+    DVZ_OBJECT_TYPE_SCENE,
+    DVZ_OBJECT_TYPE_GRID,
+    DVZ_OBJECT_TYPE_PANEL,
+    DVZ_OBJECT_TYPE_CONTROLLER,
+    DVZ_OBJECT_TYPE_AXES_2D,
+    DVZ_OBJECT_TYPE_AXES_3D,
+    DVZ_OBJECT_TYPE_CUSTOM,
+} DvzObjectType;
 
 
 
@@ -268,17 +268,17 @@ typedef enum
 // NOTE: the order is important, status >= CREATED means the object has been created
 typedef enum
 {
-    VKL_OBJECT_STATUS_NONE,          //
-    VKL_OBJECT_STATUS_ALLOC,         // after allocation
-    VKL_OBJECT_STATUS_DESTROYED,     // after destruction
-    VKL_OBJECT_STATUS_INIT,          // after struct initialization but before Vulkan creation
-    VKL_OBJECT_STATUS_CREATED,       // after proper creation on the GPU
-    VKL_OBJECT_STATUS_NEED_RECREATE, // need to be recreated
-    VKL_OBJECT_STATUS_NEED_UPDATE,   // need to be updated
-    VKL_OBJECT_STATUS_NEED_DESTROY,  // need to be destroyed
-    VKL_OBJECT_STATUS_INACTIVE,      // inactive
-    VKL_OBJECT_STATUS_INVALID,       // invalid
-} VklObjectStatus;
+    DVZ_OBJECT_STATUS_NONE,          //
+    DVZ_OBJECT_STATUS_ALLOC,         // after allocation
+    DVZ_OBJECT_STATUS_DESTROYED,     // after destruction
+    DVZ_OBJECT_STATUS_INIT,          // after struct initialization but before Vulkan creation
+    DVZ_OBJECT_STATUS_CREATED,       // after proper creation on the GPU
+    DVZ_OBJECT_STATUS_NEED_RECREATE, // need to be recreated
+    DVZ_OBJECT_STATUS_NEED_UPDATE,   // need to be updated
+    DVZ_OBJECT_STATUS_NEED_DESTROY,  // need to be destroyed
+    DVZ_OBJECT_STATUS_INACTIVE,      // inactive
+    DVZ_OBJECT_STATUS_INVALID,       // invalid
+} DvzObjectStatus;
 
 
 
@@ -286,12 +286,12 @@ typedef enum
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct VklMVP VklMVP;
-typedef struct VklObject VklObject;
-typedef struct VklContainer VklContainer;
-typedef struct VklThread VklThread;
+typedef struct DvzMVP DvzMVP;
+typedef struct DvzObject DvzObject;
+typedef struct DvzContainer DvzContainer;
+typedef struct DvzThread DvzThread;
 
-typedef void* (*VklThreadCallback)(void*);
+typedef void* (*DvzThreadCallback)(void*);
 
 
 
@@ -299,10 +299,10 @@ typedef void* (*VklThreadCallback)(void*);
 /*  Structures                                                                                   */
 /*************************************************************************************************/
 
-struct VklObject
+struct DvzObject
 {
-    VklObjectType type;
-    VklObjectStatus status;
+    DvzObjectType type;
+    DvzObjectStatus status;
     int request;
 
     uint32_t group_id; // group identifier
@@ -311,11 +311,11 @@ struct VklObject
 
 
 
-struct VklContainer
+struct DvzContainer
 {
     uint32_t count;
     uint32_t capacity;
-    VklObjectType type;
+    DvzObjectType type;
     void** items;
     size_t item_size;
     uint32_t _loop_idx;
@@ -323,9 +323,9 @@ struct VklContainer
 
 
 
-struct VklThread
+struct DvzThread
 {
-    VklObject obj;
+    DvzObject obj;
     pthread_t thread;
     pthread_mutex_t lock;
     atomic(int, lock_idx); // used to allow nested callbacks and avoid deadlocks: only 1 lock
@@ -333,7 +333,7 @@ struct VklThread
 
 
 
-struct VklMVP
+struct DvzMVP
 {
     mat4 model;
     mat4 view;
@@ -354,21 +354,21 @@ struct VklMVP
  *
  * @param obj the object
  */
-static inline void vkl_obj_init(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_INIT; }
+static inline void dvz_obj_init(DvzObject* obj) { obj->status = DVZ_OBJECT_STATUS_INIT; }
 
 /**
  * Mark an object as successfully created on the GPU.
  *
  * @param obj the object
  */
-static inline void vkl_obj_created(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_CREATED; }
+static inline void dvz_obj_created(DvzObject* obj) { obj->status = DVZ_OBJECT_STATUS_CREATED; }
 
 /**
  * Mark an object as destroyed.
  *
  * @param obj the object
  */
-static inline void vkl_obj_destroyed(VklObject* obj) { obj->status = VKL_OBJECT_STATUS_DESTROYED; }
+static inline void dvz_obj_destroyed(DvzObject* obj) { obj->status = DVZ_OBJECT_STATUS_DESTROYED; }
 
 /**
  * Whether an object has been successfully created.
@@ -376,10 +376,10 @@ static inline void vkl_obj_destroyed(VklObject* obj) { obj->status = VKL_OBJECT_
  * @param obj the object
  * @returns a boolean indicated whether the object has been successfully created
  */
-static inline bool vkl_obj_is_created(VklObject* obj)
+static inline bool dvz_obj_is_created(DvzObject* obj)
 {
-    return obj != NULL && obj->status >= VKL_OBJECT_STATUS_CREATED &&
-           obj->status != VKL_OBJECT_STATUS_INVALID;
+    return obj != NULL && obj->status >= DVZ_OBJECT_STATUS_CREATED &&
+           obj->status != DVZ_OBJECT_STATUS_INVALID;
 }
 
 
@@ -389,7 +389,7 @@ static inline bool vkl_obj_is_created(VklObject* obj)
 /*************************************************************************************************/
 
 // Smallest power of 2 larger or equal than a positive integer.
-static uint64_t vkl_next_pow2(uint64_t x)
+static uint64_t dvz_next_pow2(uint64_t x)
 {
     uint64_t p = 1;
     while (p < x)
@@ -404,16 +404,16 @@ static uint64_t vkl_next_pow2(uint64_t x)
  * @param item_size size of each object, in bytes
  * @param type object type
  */
-static VklContainer vkl_container(uint32_t count, size_t item_size, VklObjectType type)
+static DvzContainer dvz_container(uint32_t count, size_t item_size, DvzObjectType type)
 {
     ASSERT(count > 0);
     ASSERT(item_size > 0);
     // log_trace("create container");
-    VklContainer container = {0};
+    DvzContainer container = {0};
     container.count = 0;
     container.item_size = item_size;
     container.type = type;
-    container.capacity = vkl_next_pow2(count);
+    container.capacity = dvz_next_pow2(count);
     ASSERT(container.capacity > 0);
     container.items = (void**)calloc(container.capacity, sizeof(void*));
     // NOTE: we shouldn't rely on calloc() initializing pointer values to NULL as it is not
@@ -432,7 +432,7 @@ static VklContainer vkl_container(uint32_t count, size_t item_size, VklObjectTyp
  * @param container the container
  * @param idx the index of the object within the container
  */
-static void vkl_container_delete_if_destroyed(VklContainer* container, uint32_t idx)
+static void dvz_container_delete_if_destroyed(DvzContainer* container, uint32_t idx)
 {
     ASSERT(container != NULL);
     ASSERT(container->capacity > 0);
@@ -440,8 +440,8 @@ static void vkl_container_delete_if_destroyed(VklContainer* container, uint32_t 
     ASSERT(idx < container->capacity);
     if (container->items[idx] == NULL)
         return;
-    VklObject* object = (VklObject*)container->items[idx];
-    if (object->status == VKL_OBJECT_STATUS_DESTROYED)
+    DvzObject* object = (DvzObject*)container->items[idx];
+    if (object->status == DVZ_OBJECT_STATUS_DESTROYED)
     {
         // log_trace("delete container item #%d", idx);
         FREE(container->items[idx]);
@@ -459,7 +459,7 @@ static void vkl_container_delete_if_destroyed(VklContainer* container, uint32_t 
  * @param container the container
  * @returns a pointer to an allocated object
  */
-static void* vkl_container_alloc(VklContainer* container)
+static void* dvz_container_alloc(DvzContainer* container)
 {
     ASSERT(container != NULL);
     ASSERT(container->capacity > 0);
@@ -469,7 +469,7 @@ static void* vkl_container_alloc(VklContainer* container)
     // Free the memory of destroyed objects and find the first available slot.
     for (uint32_t i = 0; i < container->capacity; i++)
     {
-        vkl_container_delete_if_destroyed(container, i);
+        dvz_container_delete_if_destroyed(container, i);
         // Find first slot with empty pointer, to use for new allocation.
         if (container->items[i] == NULL && available_slot == UINT32_MAX)
             available_slot = i;
@@ -506,9 +506,9 @@ static void* vkl_container_alloc(VklContainer* container)
     container->count++;
     ASSERT(container->items[available_slot] != NULL);
 
-    // Initialize the VklObject field.
-    VklObject* obj = (VklObject*)container->items[available_slot];
-    obj->status = VKL_OBJECT_STATUS_ALLOC;
+    // Initialize the DvzObject field.
+    DvzObject* obj = (DvzObject*)container->items[available_slot];
+    obj->status = DVZ_OBJECT_STATUS_ALLOC;
     obj->type = container->type;
 
     return container->items[available_slot];
@@ -521,7 +521,7 @@ static void* vkl_container_alloc(VklContainer* container)
  * @param idx the index of the object within the container
  * @param returns a pointer to the object at the specified index
  */
-static void* vkl_container_get(VklContainer* container, uint32_t idx)
+static void* dvz_container_get(DvzContainer* container, uint32_t idx)
 {
     ASSERT(container != NULL);
     ASSERT(container->items != NULL);
@@ -535,7 +535,7 @@ static void* vkl_container_get(VklContainer* container, uint32_t idx)
  * @param container the container
  * @returns a pointer to the next object in the container, or NULL at the end
  */
-static void* vkl_container_iter(VklContainer* container)
+static void* dvz_container_iter(DvzContainer* container)
 {
     ASSERT(container != NULL);
     if (container->items == NULL || container->capacity == 0 || container->count == 0)
@@ -545,7 +545,7 @@ static void* vkl_container_iter(VklContainer* container)
     ASSERT(container->_loop_idx <= container->capacity - 1);
     for (uint32_t i = container->_loop_idx; i < container->capacity; i++)
     {
-        vkl_container_delete_if_destroyed(container, i);
+        dvz_container_delete_if_destroyed(container, i);
         if (container->items[i] != NULL)
         {
             container->_loop_idx = i + 1;
@@ -563,11 +563,11 @@ static void* vkl_container_iter(VklContainer* container)
  * @param container the container
  * @returns a pointer to the first object
  */
-static void* vkl_container_iter_init(VklContainer* container)
+static void* dvz_container_iter_init(DvzContainer* container)
 {
     ASSERT(container != NULL);
     container->_loop_idx = 0;
-    return vkl_container_iter(container);
+    return dvz_container_iter(container);
 }
 
 /**
@@ -582,7 +582,7 @@ static void* vkl_container_iter_init(VklContainer* container)
  * @param container the container
  * @param idx the index of the object within the container
  */
-static void vkl_container_destroy(VklContainer* container)
+static void dvz_container_destroy(DvzContainer* container)
 {
     ASSERT(container != NULL);
     if (container->items == NULL)
@@ -590,21 +590,21 @@ static void vkl_container_destroy(VklContainer* container)
     ASSERT(container->items != NULL);
     // log_trace("container destroy");
     // Check all elements have been destroyed, and free them if necessary.
-    VklObject* item = NULL;
+    DvzObject* item = NULL;
     for (uint32_t i = 0; i < container->capacity; i++)
     {
         if (container->items[i] != NULL)
         {
             // log_trace("deleting container item #%d", i);
             // When destroying the container, ensure that all objects have been destroyed first.
-            // NOTE: only works if every item has a VklObject as first struct field.
-            item = (VklObject*)container->items[i];
-            vkl_container_delete_if_destroyed(container, i);
+            // NOTE: only works if every item has a DvzObject as first struct field.
+            item = (DvzObject*)container->items[i];
+            dvz_container_delete_if_destroyed(container, i);
             // Also deallocate objects allocated/initialized, but not created/destroyed.
             if (container->items[i] != NULL)
             {
-                ASSERT(item->status <= VKL_OBJECT_STATUS_INIT);
-                ASSERT(item->status != VKL_OBJECT_STATUS_DESTROYED);
+                ASSERT(item->status <= DVZ_OBJECT_STATUS_INIT);
+                ASSERT(item->status != DVZ_OBJECT_STATUS_DESTROYED);
                 FREE(container->items[i]);
                 container->items[i] = NULL;
                 container->count--;
@@ -621,11 +621,11 @@ static void vkl_container_destroy(VklContainer* container)
 
 #define CONTAINER_DESTROY_ITEMS(t, c, f)                                                          \
     {                                                                                             \
-        t* o = vkl_container_iter_init(&c);                                                       \
+        t* o = dvz_container_iter_init(&c);                                                       \
         while (o != NULL)                                                                         \
         {                                                                                         \
             f(o);                                                                                 \
-            o = vkl_container_iter(&c);                                                           \
+            o = dvz_container_iter(&c);                                                           \
         }                                                                                         \
     }
 
@@ -643,8 +643,8 @@ static void vkl_container_destroy(VklContainer* container)
  * @param height height of the image
  * @param image pointer to an array of 32-bit RGBA values
  */
-VKY_EXPORT int
-vkl_write_png(const char* filename, uint32_t width, uint32_t height, const uint8_t* image);
+DVZ_EXPORT int
+dvz_write_png(const char* filename, uint32_t width, uint32_t height, const uint8_t* image);
 
 /**
  * Save an image to a PPM file (short ASCII header and flat binary RGBA values).
@@ -654,8 +654,8 @@ vkl_write_png(const char* filename, uint32_t width, uint32_t height, const uint8
  * @param height height of the image
  * @param image pointer to an array of 32-bit RGBA values
  */
-VKY_EXPORT int
-vkl_write_ppm(const char* filename, uint32_t width, uint32_t height, const uint8_t* image);
+DVZ_EXPORT int
+dvz_write_ppm(const char* filename, uint32_t width, uint32_t height, const uint8_t* image);
 
 /**
  * Read a binary file.
@@ -664,7 +664,7 @@ vkl_write_ppm(const char* filename, uint32_t width, uint32_t height, const uint8
  * @param[out] size of the file
  * @returns pointer to a byte buffer with the file contents
  */
-VKY_EXPORT char* vkl_read_file(const char* filename, size_t* size);
+DVZ_EXPORT char* dvz_read_file(const char* filename, size_t* size);
 
 /**
  * Read a NumPy NPY file.
@@ -673,7 +673,7 @@ VKY_EXPORT char* vkl_read_file(const char* filename, size_t* size);
  * @param[out] size of the file
  * @returns pointer to a buffer containing the array elements
  */
-VKY_EXPORT char* vkl_read_npy(const char* filename, size_t* size);
+DVZ_EXPORT char* dvz_read_npy(const char* filename, size_t* size);
 
 /**
  * Read a PPM image file.
@@ -683,13 +683,13 @@ VKY_EXPORT char* vkl_read_npy(const char* filename, size_t* size);
  * @param[out] height of the image
  * @returns pointer to a buffer with the loaded RGBA pixel colors
  */
-VKY_EXPORT uint8_t* vkl_read_ppm(const char* filename, int* width, int* height);
+DVZ_EXPORT uint8_t* dvz_read_ppm(const char* filename, int* width, int* height);
 
 // Defined in cmake-generated file build/_shaders.c
-VKY_EXPORT const unsigned char* vkl_resource_shader(const char* name, unsigned long* size);
+DVZ_EXPORT const unsigned char* dvz_resource_shader(const char* name, unsigned long* size);
 
 // Defined in cmake-generated file build/_colortex.c
-VKY_EXPORT const unsigned char* vkl_resource_texture(const char* name, unsigned long* size);
+DVZ_EXPORT const unsigned char* dvz_resource_texture(const char* name, unsigned long* size);
 
 
 
@@ -706,28 +706,28 @@ VKY_EXPORT const unsigned char* vkl_resource_texture(const char* name, unsigned 
  * @param user_data a pointer to arbitrary user data
  * @returns thread object
  */
-VKY_EXPORT VklThread vkl_thread(VklThreadCallback callback, void* user_data);
+DVZ_EXPORT DvzThread dvz_thread(DvzThreadCallback callback, void* user_data);
 
 /**
  * Acquire a mutex lock associated to the thread.
  *
  * @param thread the thread
  */
-VKY_EXPORT void vkl_thread_lock(VklThread* thread);
+DVZ_EXPORT void dvz_thread_lock(DvzThread* thread);
 
 /**
  * Release a mutex lock associated to the thread.
  *
  * @param thread the thread
  */
-VKY_EXPORT void vkl_thread_unlock(VklThread* thread);
+DVZ_EXPORT void dvz_thread_unlock(DvzThread* thread);
 
 /**
  * Destroy a thread after the thread function has finished running.
  *
  * @param thread the thread
  */
-VKY_EXPORT void vkl_thread_join(VklThread* thread);
+DVZ_EXPORT void dvz_thread_join(DvzThread* thread);
 
 
 
@@ -740,7 +740,7 @@ VKY_EXPORT void vkl_thread_join(VklThread* thread);
  *
  * @param milliseconds sleep duration
  */
-static inline void vkl_sleep(int milliseconds)
+static inline void dvz_sleep(int milliseconds)
 {
 #ifdef WIN32
     Sleep((uint32_t)milliseconds);
@@ -752,7 +752,7 @@ static inline void vkl_sleep(int milliseconds)
 #endif
 }
 
-void vkl_triangulate_polygon(
+void dvz_triangulate_polygon(
     uint32_t point_count, const dvec3* polygon, uint32_t* index_count, uint32_t** out_indices);
 
 
@@ -766,21 +766,21 @@ void vkl_triangulate_polygon(
  *
  * @returns random number
  */
-VKY_EXPORT uint8_t vkl_rand_byte(void);
+DVZ_EXPORT uint8_t dvz_rand_byte(void);
 
 /**
  * Return a random floating-point number between 0 and 1.
  *
  * @returns random number
  */
-VKY_EXPORT float vkl_rand_float(void);
+DVZ_EXPORT float dvz_rand_float(void);
 
 /**
  * Return a random normal floating-point number.
  *
  * @returns random number
  */
-VKY_EXPORT float vkl_rand_normal(void);
+DVZ_EXPORT float dvz_rand_normal(void);
 
 
 

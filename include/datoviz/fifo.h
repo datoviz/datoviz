@@ -2,8 +2,8 @@
 /*  Standalone, thread-safe, generic FIFO queue                                                  */
 /*************************************************************************************************/
 
-#ifndef VKL_FIFO_HEADER
-#define VKL_FIFO_HEADER
+#ifndef DVZ_FIFO_HEADER
+#define DVZ_FIFO_HEADER
 
 #include "common.h"
 
@@ -17,7 +17,7 @@ extern "C" {
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define VKL_MAX_FIFO_CAPACITY 64
+#define DVZ_MAX_FIFO_CAPACITY 64
 
 
 
@@ -25,7 +25,7 @@ extern "C" {
 /*  Type definitions                                                                             */
 /*************************************************************************************************/
 
-typedef struct VklFifo VklFifo;
+typedef struct DvzFifo DvzFifo;
 
 
 
@@ -33,7 +33,7 @@ typedef struct VklFifo VklFifo;
 /*  FIFO queue                                                                                   */
 /*************************************************************************************************/
 
-struct VklFifo
+struct DvzFifo
 {
     int32_t head, tail;
     int32_t capacity;
@@ -59,7 +59,7 @@ struct VklFifo
  * @param capacity the maximum size
  * @returns a FIFO queue
  */
-VKY_EXPORT VklFifo vkl_fifo(int32_t capacity);
+DVZ_EXPORT DvzFifo dvz_fifo(int32_t capacity);
 
 /**
  * Enqueue an object in a queue.
@@ -67,7 +67,7 @@ VKY_EXPORT VklFifo vkl_fifo(int32_t capacity);
  * @param fifo the FIFO queue
  * @param item the pointer to the object to enqueue
  */
-VKY_EXPORT void vkl_fifo_enqueue(VklFifo* fifo, void* item);
+DVZ_EXPORT void dvz_fifo_enqueue(DvzFifo* fifo, void* item);
 
 /**
  * Dequeue an object from a queue.
@@ -76,7 +76,7 @@ VKY_EXPORT void vkl_fifo_enqueue(VklFifo* fifo, void* item);
  * @param wait whether to return immediately, or wait until the queue is non-empty
  * @returns a pointer to the dequeued object, or NULL if the queue is empty
  */
-VKY_EXPORT void* vkl_fifo_dequeue(VklFifo* fifo, bool wait);
+DVZ_EXPORT void* dvz_fifo_dequeue(DvzFifo* fifo, bool wait);
 
 /**
  * Get the number of items in a queue.
@@ -84,7 +84,7 @@ VKY_EXPORT void* vkl_fifo_dequeue(VklFifo* fifo, bool wait);
  * @param fifo the FIFO queue
  * @returns the number of elements in the queue
  */
-VKY_EXPORT int vkl_fifo_size(VklFifo* fifo);
+DVZ_EXPORT int dvz_fifo_size(DvzFifo* fifo);
 
 /**
  * Discard old items in a queue.
@@ -94,21 +94,21 @@ VKY_EXPORT int vkl_fifo_size(VklFifo* fifo);
  * @param fifo the FIFO queue
  * @param max_size the number of items to keep in the queue.
  */
-VKY_EXPORT void vkl_fifo_discard(VklFifo* fifo, int max_size);
+DVZ_EXPORT void dvz_fifo_discard(DvzFifo* fifo, int max_size);
 
 /**
  * Delete all items in a queue.
  *
  * @param fifo the FIFO queue
  */
-VKY_EXPORT void vkl_fifo_reset(VklFifo* fifo);
+DVZ_EXPORT void dvz_fifo_reset(DvzFifo* fifo);
 
 /**
  * Destroy a queue.
  *
  * @param fifo the FIFO queue
  */
-VKY_EXPORT void vkl_fifo_destroy(VklFifo* fifo);
+DVZ_EXPORT void dvz_fifo_destroy(DvzFifo* fifo);
 
 
 

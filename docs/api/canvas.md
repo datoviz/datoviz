@@ -2,60 +2,60 @@
 
 ## Canvas
 
-### `vkl_canvas_commands()`
-### `vkl_canvas_clear_color()`
-### `vkl_canvas_size()`
-### `vkl_canvas_close_on_esc()`
-### `vkl_canvas_recreate()`
-### `vkl_canvas_to_refill()`
-### `vkl_canvas_to_close()`
-### `vkl_canvases_destroy()`
+### `dvz_canvas_commands()`
+### `dvz_canvas_clear_color()`
+### `dvz_canvas_size()`
+### `dvz_canvas_close_on_esc()`
+### `dvz_canvas_recreate()`
+### `dvz_canvas_to_refill()`
+### `dvz_canvas_to_close()`
+### `dvz_canvases_destroy()`
 
 
 ## Misc
 
-### `vkl_viewport_full()`
+### `dvz_viewport_full()`
 
 
 ## Event emitting
 
-### `vkl_event_mouse_button()`
-### `vkl_event_mouse_move()`
-### `vkl_event_mouse_wheel()`
-### `vkl_event_mouse_click()`
-### `vkl_event_mouse_double_click()`
-### `vkl_event_mouse_drag()`
-### `vkl_event_mouse_drag_end()`
-### `vkl_event_key()`
-### `vkl_event_frame()`
-### `vkl_event_timer()`
+### `dvz_event_mouse_button()`
+### `dvz_event_mouse_move()`
+### `dvz_event_mouse_wheel()`
+### `dvz_event_mouse_click()`
+### `dvz_event_mouse_double_click()`
+### `dvz_event_mouse_drag()`
+### `dvz_event_mouse_drag_end()`
+### `dvz_event_key()`
+### `dvz_event_frame()`
+### `dvz_event_timer()`
 
 
 ## Screencast
 
-### `vkl_screencast()`
-### `vkl_screencast_destroy()`
-### `vkl_screenshot()`
-### `vkl_screenshot_file()`
+### `dvz_screencast()`
+### `dvz_screencast_destroy()`
+### `dvz_screenshot()`
+### `dvz_screenshot_file()`
 
 
 ## Internal event loop
 
-### `vkl_canvas_frame()`
-### `vkl_canvas_frame_submit()`
+### `dvz_canvas_frame()`
+### `dvz_canvas_frame_submit()`
 
 
 ## Internal event system
 
-### `vkl_event_callback()`
-### `vkl_event_pending()`
-### `vkl_event_stop()`
+### `dvz_event_callback()`
+### `dvz_event_pending()`
+### `dvz_event_stop()`
 
-### `vkl_mouse()`
-### `vkl_mouse_reset()`
-### `vkl_mouse_event()`
-### `vkl_mouse_local()`
+### `dvz_mouse()`
+### `dvz_mouse_reset()`
+### `dvz_mouse_event()`
+### `dvz_mouse_local()`
 
-### `vkl_keyboard()`
-### `vkl_keyboard_reset()`
-### `vkl_keyboard_event()`
+### `dvz_keyboard()`
+### `dvz_keyboard_reset()`
+### `dvz_keyboard_event()`

@@ -1,5 +1,5 @@
-#include "../include/visky/mesh.h"
-#include "../include/visky/common.h"
+#include "../include/datoviz/mesh.h"
+#include "../include/datoviz/common.h"
 
 
 
@@ -7,7 +7,7 @@
 /*  Mesh transforms                                                                              */
 /*************************************************************************************************/
 
-VKY_INLINE void texture_color(usvec2 ij, usvec2 nm, void* color)
+DVZ_INLINE void texture_color(usvec2 ij, usvec2 nm, void* color)
 {
     // Put two uint16 numbers with the UV tex coordinates in color
     uint16_t i = ij[0];
@@ -25,12 +25,12 @@ VKY_INLINE void texture_color(usvec2 ij, usvec2 nm, void* color)
     memcpy(color, (cvec4){x & 0xFF, (x >> 8) & 0xFF, y & 0xFF, (y >> 8) & 0xFF}, sizeof(cvec4));
 }
 
-VKY_INLINE void transform_pos(VklMesh* mesh, vec3 pos)
+DVZ_INLINE void transform_pos(DvzMesh* mesh, vec3 pos)
 {
     glm_mat4_mulv3(mesh->transform, pos, 1, pos);
 }
 
-VKY_INLINE void transform_normal(VklMesh* mesh, vec3 normal)
+DVZ_INLINE void transform_normal(DvzMesh* mesh, vec3 normal)
 {
     mat4 tr;
     glm_mat4_copy(mesh->transform, tr);
@@ -39,47 +39,47 @@ VKY_INLINE void transform_normal(VklMesh* mesh, vec3 normal)
     glm_mat4_mulv3(tr, normal, 1, normal);
 }
 
-void vkl_mesh_transform_reset(VklMesh* mesh) { glm_mat4_identity(mesh->transform); }
+void dvz_mesh_transform_reset(DvzMesh* mesh) { glm_mat4_identity(mesh->transform); }
 
-void vkl_mesh_transform_add(VklMesh* mesh, mat4 transform)
+void dvz_mesh_transform_add(DvzMesh* mesh, mat4 transform)
 {
     glm_mat4_mul(transform, mesh->transform, mesh->transform);
 }
 
-void vkl_mesh_translate(VklMesh* mesh, vec3 translate)
+void dvz_mesh_translate(DvzMesh* mesh, vec3 translate)
 {
     mat4 tr;
     glm_translate_make(tr, translate);
-    vkl_mesh_transform_add(mesh, tr);
+    dvz_mesh_transform_add(mesh, tr);
 }
 
-void vkl_mesh_scale(VklMesh* mesh, vec3 scale)
+void dvz_mesh_scale(DvzMesh* mesh, vec3 scale)
 {
     mat4 tr;
     glm_scale_make(tr, scale);
-    vkl_mesh_transform_add(mesh, tr);
+    dvz_mesh_transform_add(mesh, tr);
 }
 
-void vkl_mesh_rotate(VklMesh* mesh, float angle, vec3 axis)
+void dvz_mesh_rotate(DvzMesh* mesh, float angle, vec3 axis)
 {
     mat4 tr;
     glm_rotate_make(tr, angle, axis);
-    vkl_mesh_transform_add(mesh, tr);
+    dvz_mesh_transform_add(mesh, tr);
 }
 
-void vkl_mesh_transform(VklMesh* mesh)
+void dvz_mesh_transform(DvzMesh* mesh)
 {
     ASSERT(mesh != NULL);
-    VklGraphicsMeshVertex* vertex = NULL;
+    DvzGraphicsMeshVertex* vertex = NULL;
     for (uint32_t i = 0; i < mesh->vertices.item_count; i++)
     {
-        vertex = vkl_array_item(&mesh->vertices, i);
+        vertex = dvz_array_item(&mesh->vertices, i);
         transform_pos(mesh, vertex->pos);
         transform_normal(mesh, vertex->normal);
     }
 }
 
-void vkl_mesh_normalize(VklMesh* mesh)
+void dvz_mesh_normalize(DvzMesh* mesh)
 {
     const float INF = 1000000;
     vec3 min = {+INF, +INF, +INF}, max = {-INF, -INF, -INF};
@@ -87,10 +87,10 @@ void vkl_mesh_normalize(VklMesh* mesh)
     vec3 pos = {0};
 
     uint32_t nv = mesh->vertices.item_count;
-    VklGraphicsMeshVertex* vertex = NULL;
+    DvzGraphicsMeshVertex* vertex = NULL;
     for (uint32_t i = 0; i < nv; i++)
     {
-        vertex = vkl_array_item(&mesh->vertices, i);
+        vertex = dvz_array_item(&mesh->vertices, i);
         ASSERT(vertex != NULL);
         _vec3_copy(vertex->pos, pos);
         glm_vec3_minv(min, pos, min);
@@ -118,7 +118,7 @@ void vkl_mesh_normalize(VklMesh* mesh)
 
     for (uint32_t i = 0; i < nv; i++)
     {
-        vertex = vkl_array_item(&mesh->vertices, i);
+        vertex = dvz_array_item(&mesh->vertices, i);
         ASSERT(vertex != NULL);
         glm_vec3_sub(vertex->pos, center, vertex->pos);
         glm_vec3_scale(vertex->pos, a, vertex->pos);
@@ -131,30 +131,30 @@ void vkl_mesh_normalize(VklMesh* mesh)
 /*  Common shapes                                                                                */
 /*************************************************************************************************/
 
-VklMesh vkl_mesh()
+DvzMesh dvz_mesh()
 {
-    VklMesh mesh = {0};
-    mesh.vertices = vkl_array_struct(0, sizeof(VklGraphicsMeshVertex));
-    mesh.indices = vkl_array_struct(0, sizeof(VklIndex));
-    vkl_mesh_transform_reset(&mesh);
+    DvzMesh mesh = {0};
+    mesh.vertices = dvz_array_struct(0, sizeof(DvzGraphicsMeshVertex));
+    mesh.indices = dvz_array_struct(0, sizeof(DvzIndex));
+    dvz_mesh_transform_reset(&mesh);
     return mesh;
 }
 
-VklMesh vkl_mesh_grid(uint32_t row_count, uint32_t col_count, const vec3* positions)
+DvzMesh dvz_mesh_grid(uint32_t row_count, uint32_t col_count, const vec3* positions)
 {
-    VklMesh mesh = vkl_mesh();
+    DvzMesh mesh = dvz_mesh();
     const uint32_t nv = col_count * row_count;
     // 2 triangles = 6 vertices per point:
     const uint32_t ni = 6 * (col_count - 1) * (row_count - 1);
 
-    vkl_array_resize(&mesh.vertices, nv);
-    vkl_array_resize(&mesh.indices, ni);
+    dvz_array_resize(&mesh.vertices, nv);
+    dvz_array_resize(&mesh.indices, ni);
 
     // Get vertices and indices pointers into the mesh arrays.
     vec3 cur, next_j, next_i, u, v;
-    VklGraphicsMeshVertex* vertices = (VklGraphicsMeshVertex*)mesh.vertices.data;
-    VklGraphicsMeshVertex* vertex = (VklGraphicsMeshVertex*)mesh.vertices.data;
-    VklIndex* index = (VklIndex*)mesh.indices.data;
+    DvzGraphicsMeshVertex* vertices = (DvzGraphicsMeshVertex*)mesh.vertices.data;
+    DvzGraphicsMeshVertex* vertex = (DvzGraphicsMeshVertex*)mesh.vertices.data;
+    DvzIndex* index = (DvzIndex*)mesh.indices.data;
     vec2 uv = {0};
     uint32_t point_idx = 0;
     uint32_t first_vertex = 0;
@@ -197,7 +197,7 @@ VklMesh vkl_mesh_grid(uint32_t row_count, uint32_t col_count, const vec3* positi
             {
                 memcpy(
                     index,
-                    (VklIndex[]){
+                    (DvzIndex[]){
                         first_vertex + col_count * (i + 0) + (j + 0),
                         first_vertex + col_count * (i + 1) + (j + 0),
                         first_vertex + col_count * (i + 0) + (j + 1),
@@ -205,7 +205,7 @@ VklMesh vkl_mesh_grid(uint32_t row_count, uint32_t col_count, const vec3* positi
                         first_vertex + col_count * (i + 0) + (j + 1),
                         first_vertex + col_count * (i + 1) + (j + 0),
                     },
-                    6 * sizeof(VklIndex));
+                    6 * sizeof(DvzIndex));
                 index += 6;
             }
 
@@ -226,7 +226,7 @@ VklMesh vkl_mesh_grid(uint32_t row_count, uint32_t col_count, const vec3* positi
     return mesh;
 }
 
-VklMesh vkl_mesh_surface(uint32_t row_count, uint32_t col_count, const float* heights)
+DvzMesh dvz_mesh_surface(uint32_t row_count, uint32_t col_count, const float* heights)
 {
     ASSERT(row_count > 0);
     ASSERT(col_count > 0);
@@ -258,21 +258,21 @@ VklMesh vkl_mesh_surface(uint32_t row_count, uint32_t col_count, const float* he
         }
     }
 
-    VklMesh mesh = vkl_mesh_grid(row_count, col_count, (const vec3*)positions);
+    DvzMesh mesh = dvz_mesh_grid(row_count, col_count, (const vec3*)positions);
     FREE(positions);
     return mesh;
 }
 
-VklMesh vkl_mesh_cube()
+DvzMesh dvz_mesh_cube()
 {
-    VklMesh mesh = vkl_mesh();
+    DvzMesh mesh = dvz_mesh();
     const uint32_t nv = 36;
-    vkl_array_resize(&mesh.vertices, nv);
-    VklGraphicsMeshVertex* vertex = (VklGraphicsMeshVertex*)mesh.vertices.data;
+    dvz_array_resize(&mesh.vertices, nv);
+    DvzGraphicsMeshVertex* vertex = (DvzGraphicsMeshVertex*)mesh.vertices.data;
     ASSERT(vertex != NULL);
 
     float x = .5;
-    VklGraphicsMeshVertex vertices[] = {
+    DvzGraphicsMeshVertex vertices[] = {
         {{-x, -x, +x}, {0, 0, +1}, {0, 1}, 255}, // front
         {{+x, -x, +x}, {0, 0, +1}, {1, 1}, 255}, //
         {{+x, +x, +x}, {0, 0, +1}, {1, 0}, 255}, //
@@ -324,7 +324,7 @@ VklMesh vkl_mesh_cube()
     return mesh;
 }
 
-VklMesh vkl_mesh_sphere(uint32_t row_count, uint32_t col_count)
+DvzMesh dvz_mesh_sphere(uint32_t row_count, uint32_t col_count)
 {
     float dphi, dtheta;
     dphi = M_2PI / (col_count - 1);
@@ -345,12 +345,12 @@ VklMesh vkl_mesh_sphere(uint32_t row_count, uint32_t col_count)
             _vec3_copy((vec3){x, y, z}, positions[col_count * i + j]);
         }
     }
-    VklMesh mesh = vkl_mesh_grid(row_count, col_count, (const vec3*)positions);
+    DvzMesh mesh = dvz_mesh_grid(row_count, col_count, (const vec3*)positions);
     FREE(positions);
     return mesh;
 }
 
-VklMesh vkl_mesh_cylinder(uint32_t count)
+DvzMesh dvz_mesh_cylinder(uint32_t count)
 {
     float dphi;
     dphi = M_2PI / (count - 1);
@@ -371,12 +371,12 @@ VklMesh vkl_mesh_cylinder(uint32_t count)
             k++;
         }
     }
-    VklMesh mesh = vkl_mesh_grid(2, count, (const vec3*)positions);
+    DvzMesh mesh = dvz_mesh_grid(2, count, (const vec3*)positions);
     FREE(positions);
     return mesh;
 }
 
-VklMesh vkl_mesh_cone(uint32_t count)
+DvzMesh dvz_mesh_cone(uint32_t count)
 {
     float dphi;
     dphi = M_2PI / (count - 1);
@@ -398,19 +398,19 @@ VklMesh vkl_mesh_cone(uint32_t count)
             k++;
         }
     }
-    VklMesh mesh = vkl_mesh_grid(2, count, (const vec3*)positions);
+    DvzMesh mesh = dvz_mesh_grid(2, count, (const vec3*)positions);
     FREE(positions);
     return mesh;
 }
 
-VklMesh vkl_mesh_square()
+DvzMesh dvz_mesh_square()
 {
-    VklMesh mesh = vkl_mesh();
+    DvzMesh mesh = dvz_mesh();
     const uint32_t nv = 6;
-    vkl_array_resize(&mesh.vertices, nv);
-    VklGraphicsMeshVertex* vertex = (VklGraphicsMeshVertex*)mesh.vertices.data;
+    dvz_array_resize(&mesh.vertices, nv);
+    DvzGraphicsMeshVertex* vertex = (DvzGraphicsMeshVertex*)mesh.vertices.data;
     float x = .5;
-    VklGraphicsMeshVertex vertices[] = {
+    DvzGraphicsMeshVertex vertices[] = {
         {{-x, -x, 0}, {0, 0, +1}, {0, 1}, 255}, //
         {{+x, -x, 0}, {0, 0, +1}, {1, 1}, 255}, //
         {{+x, +x, 0}, {0, 0, +1}, {1, 0}, 255}, //
@@ -427,17 +427,17 @@ VklMesh vkl_mesh_square()
     return mesh;
 }
 
-VklMesh vkl_mesh_disc(uint32_t count)
+DvzMesh dvz_mesh_disc(uint32_t count)
 {
-    VklMesh mesh = vkl_mesh();
+    DvzMesh mesh = dvz_mesh();
     uint32_t nv = count + 1;
     uint32_t ni = 3 * count;
-    vkl_array_resize(&mesh.vertices, nv);
-    vkl_array_resize(&mesh.indices, ni);
+    dvz_array_resize(&mesh.vertices, nv);
+    dvz_array_resize(&mesh.indices, ni);
 
     // Get vertices and indices pointers into the mesh arrays.
-    VklGraphicsMeshVertex* vertex = (VklGraphicsMeshVertex*)mesh.vertices.data;
-    VklIndex* index = (VklIndex*)mesh.indices.data;
+    DvzGraphicsMeshVertex* vertex = (DvzGraphicsMeshVertex*)mesh.vertices.data;
+    DvzIndex* index = (DvzIndex*)mesh.indices.data;
     uint32_t first_vertex = 0;
 
     // Variables.
@@ -483,17 +483,17 @@ VklMesh vkl_mesh_disc(uint32_t count)
         // Indices.
         memcpy(
             index,
-            (VklIndex[]){
+            (DvzIndex[]){
                 first_vertex, first_vertex + i + 1, first_vertex + ((i + 1) % (count)) + 1},
-            3 * sizeof(VklIndex));
+            3 * sizeof(DvzIndex));
         index += 3;
     }
     return mesh;
 }
 
-void vkl_mesh_destroy(VklMesh* mesh)
+void dvz_mesh_destroy(DvzMesh* mesh)
 {
     ASSERT(mesh != NULL);
-    vkl_array_destroy(&mesh->vertices);
-    vkl_array_destroy(&mesh->indices);
+    dvz_array_destroy(&mesh->vertices);
+    dvz_array_destroy(&mesh->indices);
 }

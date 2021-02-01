@@ -1,5 +1,5 @@
-#ifndef VKY_TEST_INTERACT_HEADER
-#define VKY_TEST_INTERACT_HEADER
+#ifndef DVZ_TEST_INTERACT_HEADER
+#define DVZ_TEST_INTERACT_HEADER
 
 
 #include "utils.h"

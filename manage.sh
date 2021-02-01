@@ -40,7 +40,7 @@ fi
 
 if [ $1 == "download" ]
 then
-    wget https://github.com/viskydev/visky-data/archive/master.zip -o data.zip && unzip data.zip && rm data.zip
+    wget https://github.com/datoviz/datoviz-data/archive/master.zip -o data.zip && unzip data.zip && rm data.zip
 fi
 
 if [ $1 == "fixtest" ]
@@ -74,18 +74,18 @@ then
             dump="VK_LAYER_LUNARG_api_dump"
         fi
     fi
-    VK_INSTANCE_LAYERS=$dump ./build/visky test $2
+    VK_INSTANCE_LAYERS=$dump ./build/datoviz test $2
 fi
 
 if [ $1 == "demo" ]
 then
-    ./build/visky demo $2
+    ./build/datoviz demo $2
 fi
 
 if [ $1 == "prof" ]
 then
     # valgrind --tool=callgrind --dump-instr=yes --simulate-cache=yes --collect-jumps=yes $2
-    gprof build/visky -Al > prof.txt
+    gprof build/datoviz -Al > prof.txt
 fi
 
 if [ $1 == "run" ]
@@ -95,12 +95,12 @@ fi
 
 if [ $1 == "docker" ]
 then
-    docker build -t visky .
+    docker build -t datoviz .
 fi
 
 if [ $1 == "dockerrun" ]
 then
-    docker run -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -h $HOSTNAME -v $HOME/.Xauthority:/home/visky/.Xauthority -it visky
+    docker run -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -h $HOSTNAME -v $HOME/.Xauthority:/home/datoviz/.Xauthority -it datoviz
 fi
 
 if [ $1 == "doc" ]

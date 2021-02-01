@@ -4,7 +4,7 @@ import numpy as np
 import numpy.random as nr
 
 # Import the library.
-from visky import canvas, run, colormap
+from datoviz import canvas, run, colormap
 
 # Create a new canvas and scene. There's only 1 subplot (panel) by default.
 c = canvas()

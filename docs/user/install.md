@@ -3,7 +3,7 @@
 !!! note
     Making easy-to-install packages for common systems is a work in progress. Help needed! In the meantime, you need to manually compile the library. The best supported platform at the moment is Ubuntu 20.04.
 
-Visky should work on most systems. It has been developed on Linux (Ubuntu 20.04), tested on macOS (Intel). Windows support is preliminary, help needed.
+Datoviz should work on most systems. It has been developed on Linux (Ubuntu 20.04), tested on macOS (Intel). Windows support is preliminary, help needed.
 
 ## Dependencies
 
@@ -51,10 +51,10 @@ Dependencies already included in the repository:
     3. `./samples/build/Sample-Programs/Hologram/Hologram` (test an example)
     4. **Important**: add `source ~/vulkan/setup-env.sh` to your `~/.bashrc` so that the `$VULKAN_SDK` environment variable and other variables are properly set in your terminal.
 
-5. Clone the visky repository and build the library:
+5. Clone the datoviz repository and build the library:
 
-    1. `git clone --recursive git@github.com:viskydev/visky.git`
-    2. `cd visky`
+    1. `git clone --recursive git@github.com:datoviz/datoviz.git`
+    2. `cd datoviz`
     3. `./manage.sh build`
 
 6. Check that the compilation worked by running an example:
@@ -85,10 +85,10 @@ Dependencies already included in the repository:
 3. `./install_vulkan.py`
 
 
-### Install Visky
+### Install Datoviz
 
-1. `git clone --recursive git@github.com:viskydev/visky.git`
-2. `cd visky`
+1. `git clone --recursive git@github.com:datoviz/datoviz.git`
+2. `cd datoviz`
 3. `./manage.sh build`
 4. `./manage.sh example`
 
@@ -122,10 +122,10 @@ Dependencies already included in the repository:
 
     ```
     setup-env.bat
-    build\visky.exe example (TODO)
+    build\datoviz.exe example (TODO)
     ```
 
-**Note**: Visky does not yet compile with Microsoft Visual C++ compiler, help appreciated.
+**Note**: Datoviz does not yet compile with Microsoft Visual C++ compiler, help appreciated.
 
 
 
@@ -140,4 +140,4 @@ CPU Vulkan emulation is useful on computers with no GPUs or on continuous integr
 
     1. Linux: `export LD_LIBRARY_PATH=/path/to/swiftshader/build/Linux/:$LD_LIBRARY_PATH`
 
-3. Run the Visky tests as usual `./test.sh`
+3. Run the Datoviz tests as usual `./test.sh`

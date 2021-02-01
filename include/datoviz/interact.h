@@ -2,8 +2,8 @@
 /*  Interactivity tools (panzoom, arcball, ...)                                                  */
 /*************************************************************************************************/
 
-#ifndef VKL_INTERACT_HEADER
-#define VKL_INTERACT_HEADER
+#ifndef DVZ_INTERACT_HEADER
+#define DVZ_INTERACT_HEADER
 
 #include "canvas.h"
 #include "graphics.h"
@@ -14,15 +14,15 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define VKY_INTERACT_MIN_DELAY .01
-#define VKL_CAMERA_EYE                                                                            \
+#define DVZ_INTERACT_MIN_DELAY .01
+#define DVZ_CAMERA_EYE                                                                            \
     (vec3) { 0, 0, 4 }
-#define VKL_CAMERA_UP                                                                             \
+#define DVZ_CAMERA_UP                                                                             \
     (vec3) { 0, 1, 0 }
 
-#define VKL_PANZOOM_MOUSE_WHEEL_FACTOR .2
-#define VKL_PANZOOM_MIN_ZOOM           1e-5
-#define VKL_PANZOOM_MAX_ZOOM           1e+5
+#define DVZ_PANZOOM_MOUSE_WHEEL_FACTOR .2
+#define DVZ_PANZOOM_MIN_ZOOM           1e-5
+#define DVZ_PANZOOM_MAX_ZOOM           1e+5
 
 
 
@@ -30,11 +30,11 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct VklPanzoom VklPanzoom;
-typedef struct VklArcball VklArcball;
-typedef struct VklCamera VklCamera;
-typedef struct VklInteract VklInteract;
-typedef union VklInteractUnion VklInteractUnion;
+typedef struct DvzPanzoom DvzPanzoom;
+typedef struct DvzArcball DvzArcball;
+typedef struct DvzCamera DvzCamera;
+typedef struct DvzInteract DvzInteract;
+typedef union DvzInteractUnion DvzInteractUnion;
 
 
 
@@ -45,21 +45,21 @@ typedef union VklInteractUnion VklInteractUnion;
 // Interact type.
 typedef enum
 {
-    VKL_INTERACT_NONE,
-    VKL_INTERACT_PANZOOM,
-    VKL_INTERACT_PANZOOM_FIXED_ASPECT,
-    VKL_INTERACT_ARCBALL,
-    VKL_INTERACT_TURNTABLE,
-    VKL_INTERACT_FLY,
-    VKL_INTERACT_FPS,
-} VklInteractType;
+    DVZ_INTERACT_NONE,
+    DVZ_INTERACT_PANZOOM,
+    DVZ_INTERACT_PANZOOM_FIXED_ASPECT,
+    DVZ_INTERACT_ARCBALL,
+    DVZ_INTERACT_TURNTABLE,
+    DVZ_INTERACT_FLY,
+    DVZ_INTERACT_FPS,
+} DvzInteractType;
 
 
 
 // Interact callback.
-typedef void (*VklInteractCallback)(
-    VklInteract* interact, VklViewport viewport, //
-    VklMouse* mouse, VklKeyboard* keyboard);
+typedef void (*DvzInteractCallback)(
+    DvzInteract* interact, DvzViewport viewport, //
+    DvzMouse* mouse, DvzKeyboard* keyboard);
 
 
 
@@ -67,9 +67,9 @@ typedef void (*VklInteractCallback)(
 /*  Panzoom                                                                                      */
 /*************************************************************************************************/
 
-struct VklPanzoom
+struct DvzPanzoom
 {
-    VklCanvas* canvas;
+    DvzCanvas* canvas;
 
     vec3 camera_pos;
     vec3 press_pos;
@@ -87,9 +87,9 @@ struct VklPanzoom
 /*  Camera                                                                                       */
 /*************************************************************************************************/
 
-struct VklCamera
+struct DvzCamera
 {
-    VklCanvas* canvas;
+    DvzCanvas* canvas;
 
     vec3 eye; // smoothly follows target
     vec3 forward;
@@ -104,14 +104,14 @@ struct VklCamera
 /*  Arcball                                                                                      */
 /*************************************************************************************************/
 
-struct VklArcball
+struct DvzArcball
 {
-    VklCanvas* canvas;
+    DvzCanvas* canvas;
 
     mat4 center_translation, translation;
     versor rotation;
     mat4 mat;
-    VklCamera camera;
+    DvzCamera camera;
 };
 
 
@@ -120,26 +120,26 @@ struct VklArcball
 /*  Interact                                                                                     */
 /*************************************************************************************************/
 
-union VklInteractUnion
+union DvzInteractUnion
 {
-    VklPanzoom p;
-    VklArcball a;
-    VklCamera c;
+    DvzPanzoom p;
+    DvzArcball a;
+    DvzCamera c;
 };
 
 
 
-struct VklInteract
+struct DvzInteract
 {
-    VklCanvas* canvas;
-    VklInteractType type;
+    DvzCanvas* canvas;
+    DvzInteractType type;
 
-    VklMouseLocal mouse_local;
-    VklInteractCallback callback;
+    DvzMouseLocal mouse_local;
+    DvzInteractCallback callback;
 
-    VklMVP mvp;
+    DvzMVP mvp;
 
-    VklInteractUnion u;
+    DvzInteractUnion u;
 
     bool is_active;
     double last_update;
@@ -159,19 +159,19 @@ struct VklInteract
  * @param user_data arbitrary user pointer
  * @returns an interactivity object
  */
-VKY_EXPORT VklInteract vkl_interact(VklCanvas* canvas, void* user_data);
+DVZ_EXPORT DvzInteract dvz_interact(DvzCanvas* canvas, void* user_data);
 
 /**
  * Add an interactivity callback.
  *
  * The callback function is called at every frame and is meant to update the `mvp` object.
  *
- * Callback function signature: `(VklInteract*, VklViewport, VklMouse*, VklKeyboard*)`
+ * Callback function signature: `(DvzInteract*, DvzViewport, DvzMouse*, DvzKeyboard*)`
  *
  * @param interact the interactivity object
  * @param callback the interactivity callback function
  */
-VKY_EXPORT void vkl_interact_callback(VklInteract* interact, VklInteractCallback callback);
+DVZ_EXPORT void dvz_interact_callback(DvzInteract* interact, DvzInteractCallback callback);
 
 /**
  * Create a builtin interactivity object.
@@ -180,7 +180,7 @@ VKY_EXPORT void vkl_interact_callback(VklInteract* interact, VklInteractCallback
  * @param type the builtin interactivity type
  * @returns an interactivity object
  */
-VKY_EXPORT VklInteract vkl_interact_builtin(VklCanvas* canvas, VklInteractType type);
+DVZ_EXPORT DvzInteract dvz_interact_builtin(DvzCanvas* canvas, DvzInteractType type);
 
 /**
  * Call the interactivity callback.
@@ -192,15 +192,15 @@ VKY_EXPORT VklInteract vkl_interact_builtin(VklCanvas* canvas, VklInteractType t
  * @param mouse the mouse object
  * @param keyboard the keyboard object
  */
-VKY_EXPORT void vkl_interact_update(
-    VklInteract* interact, VklViewport viewport, VklMouse* mouse, VklKeyboard* keyboard);
+DVZ_EXPORT void dvz_interact_update(
+    DvzInteract* interact, DvzViewport viewport, DvzMouse* mouse, DvzKeyboard* keyboard);
 
 /**
  * Destroy an interactivity object.
  *
  * @param canvas the interactivity object
  */
-VKY_EXPORT void vkl_interact_destroy(VklInteract* interact);
+DVZ_EXPORT void dvz_interact_destroy(DvzInteract* interact);
 
 
 #endif

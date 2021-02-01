@@ -2,8 +2,8 @@
 /*  Singleton application, managing all GPU objects and windows                                  */
 /*************************************************************************************************/
 
-#ifndef VKL_APP_HEADER
-#define VKL_APP_HEADER
+#ifndef DVZ_APP_HEADER
+#define DVZ_APP_HEADER
 
 #include <assert.h>
 #include <math.h>
@@ -29,8 +29,8 @@ extern "C" {
 /*  Type definitions */
 /*************************************************************************************************/
 
-typedef struct VklApp VklApp;
-typedef struct VklClock VklClock;
+typedef struct DvzApp DvzApp;
+typedef struct DvzClock DvzClock;
 
 
 
@@ -41,10 +41,10 @@ typedef struct VklClock VklClock;
 // Backend.
 typedef enum
 {
-    VKL_BACKEND_NONE,
-    VKL_BACKEND_GLFW,
-    VKL_BACKEND_OFFSCREEN,
-} VklBackend;
+    DVZ_BACKEND_NONE,
+    DVZ_BACKEND_GLFW,
+    DVZ_BACKEND_OFFSCREEN,
+} DvzBackend;
 
 
 
@@ -52,7 +52,7 @@ typedef enum
 /*  Clock                                                                                        */
 /*************************************************************************************************/
 
-struct VklClock
+struct DvzClock
 {
     double elapsed;  // time in seconds elapsed since calling _start_time(clock)
     double interval; // interval since the last clock update
@@ -64,11 +64,11 @@ struct VklClock
 
 
 
-static inline void _clock_init(VklClock* clock) { gettimeofday(&clock->start, NULL); }
+static inline void _clock_init(DvzClock* clock) { gettimeofday(&clock->start, NULL); }
 
 
 
-static inline double _clock_get(VklClock* clock)
+static inline double _clock_get(DvzClock* clock)
 {
     gettimeofday(&clock->current, NULL);
     double elapsed = (clock->current.tv_sec - clock->start.tv_sec) +
@@ -78,7 +78,7 @@ static inline double _clock_get(VklClock* clock)
 
 
 
-static inline void _clock_set(VklClock* clock)
+static inline void _clock_set(DvzClock* clock)
 {
     // Typically called at every frame.
     double elapsed = _clock_get(clock);
@@ -92,16 +92,16 @@ static inline void _clock_set(VklClock* clock)
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-struct VklApp
+struct DvzApp
 {
-    VklObject obj;
+    DvzObject obj;
     uint32_t n_errors;
 
     // Backend
-    VklBackend backend;
+    DvzBackend backend;
 
     // Global clock
-    VklClock clock;
+    DvzClock clock;
     bool is_running;
 
     // Vulkan objects.
@@ -109,12 +109,12 @@ struct VklApp
     VkDebugUtilsMessengerEXT debug_messenger;
 
     // Containers.
-    VklContainer gpus;
-    VklContainer windows;
-    VklContainer canvases;
+    DvzContainer gpus;
+    DvzContainer windows;
+    DvzContainer canvases;
 
     // Threads.
-    VklThread timer_thread;
+    DvzThread timer_thread;
 };
 
 

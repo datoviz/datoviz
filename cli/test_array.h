@@ -1,5 +1,5 @@
-#ifndef VKY_TEST_ARRAY_HEADER
-#define VKY_TEST_ARRAY_HEADER
+#ifndef DVZ_TEST_ARRAY_HEADER
+#define DVZ_TEST_ARRAY_HEADER
 
 
 #include "utils.h"

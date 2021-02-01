@@ -2,8 +2,8 @@
 /*  Panels organized within a 2D grid layout (subplots)                                          */
 /*************************************************************************************************/
 
-#ifndef VKL_PANEL_HEADER
-#define VKL_PANEL_HEADER
+#ifndef DVZ_PANEL_HEADER
+#define DVZ_PANEL_HEADER
 
 #include "transforms.h"
 #include "visuals.h"
@@ -14,13 +14,13 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define VKL_GRID_MAX_COLS         64
-#define VKL_GRID_MAX_ROWS         64
-#define VKL_MAX_PANELS            1024
-#define VKL_MAX_VISUALS_PER_PANEL 64
+#define DVZ_GRID_MAX_COLS         64
+#define DVZ_GRID_MAX_ROWS         64
+#define DVZ_MAX_PANELS            1024
+#define DVZ_MAX_VISUALS_PER_PANEL 64
 
-// Group index of the set of panel VklCommands objects.
-#define VKL_COMMANDS_GROUP_PANELS 1
+// Group index of the set of panel DvzCommands objects.
+#define DVZ_COMMANDS_GROUP_PANELS 1
 
 
 
@@ -31,29 +31,29 @@
 // Panel mode.
 typedef enum
 {
-    VKL_PANEL_GRID,
-    VKL_PANEL_INSET,
-    VKL_PANEL_FLOATING,
-} VklPanelMode;
+    DVZ_PANEL_GRID,
+    DVZ_PANEL_INSET,
+    DVZ_PANEL_FLOATING,
+} DvzPanelMode;
 
 
 
 // Grid axis.
 typedef enum
 {
-    VKL_GRID_HORIZONTAL,
-    VKL_GRID_VERTICAL,
-} VklGridAxis;
+    DVZ_GRID_HORIZONTAL,
+    DVZ_GRID_VERTICAL,
+} DvzGridAxis;
 
 
 
 // Size unit.
 typedef enum
 {
-    VKL_PANEL_UNIT_NORMALIZED,
-    VKL_PANEL_UNIT_FRAMEBUFFER,
-    VKL_PANEL_UNIT_SCREEN,
-} VklPanelSizeUnit;
+    DVZ_PANEL_UNIT_NORMALIZED,
+    DVZ_PANEL_UNIT_FRAMEBUFFER,
+    DVZ_PANEL_UNIT_SCREEN,
+} DvzPanelSizeUnit;
 
 
 
@@ -61,9 +61,9 @@ typedef enum
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct VklGrid VklGrid;
-typedef struct VklPanel VklPanel;
-typedef struct VklController VklController;
+typedef struct DvzGrid DvzGrid;
+typedef struct DvzPanel DvzPanel;
+typedef struct DvzController DvzController;
 
 
 
@@ -71,15 +71,15 @@ typedef struct VklController VklController;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-struct VklPanel
+struct DvzPanel
 {
-    VklObject obj;
-    VklScene* scene;
+    DvzObject obj;
+    DvzScene* scene;
 
-    VklGrid* grid;
-    VklPanelMode mode;
-    VklPanelSizeUnit size_unit; // the unit x, y, width, height are in
-    VklDataCoords data_coords;  // data CPU transformation
+    DvzGrid* grid;
+    DvzPanelMode mode;
+    DvzPanelSizeUnit size_unit; // the unit x, y, width, height are in
+    DvzDataCoords data_coords;  // data CPU transformation
 
     // User-specified:
     uint32_t row, col;
@@ -92,33 +92,33 @@ struct VklPanel
 
     // Visuals
     uint32_t visual_count;
-    VklVisual* visuals[VKL_MAX_VISUALS_PER_PANEL];
+    DvzVisual* visuals[DVZ_MAX_VISUALS_PER_PANEL];
 
     // Viewport.
-    VklViewport viewport;
+    DvzViewport viewport;
 
     // GPU objects
-    VklBufferRegions br_mvp; // for the uniform buffer containing the MVP
+    DvzBufferRegions br_mvp; // for the uniform buffer containing the MVP
 
-    VklController* controller;
-    VklCommands* cmds;
+    DvzController* controller;
+    DvzCommands* cmds;
     int prority_max;
 };
 
 
 
-struct VklGrid
+struct DvzGrid
 {
-    VklCanvas* canvas;
+    DvzCanvas* canvas;
     uint32_t n_rows, n_cols;
 
     // In normalized coordinates (in [0, 1]):
-    float xs[VKL_GRID_MAX_COLS];
-    float ys[VKL_GRID_MAX_ROWS];
-    double widths[VKL_GRID_MAX_COLS];
-    double heights[VKL_GRID_MAX_ROWS];
+    float xs[DVZ_GRID_MAX_COLS];
+    float ys[DVZ_GRID_MAX_ROWS];
+    double widths[DVZ_GRID_MAX_COLS];
+    double heights[DVZ_GRID_MAX_ROWS];
 
-    VklContainer panels;
+    DvzContainer panels;
 };
 
 
@@ -135,14 +135,14 @@ struct VklGrid
  * @param col_count the number of columns
  * @returns the grid object
  */
-VKY_EXPORT VklGrid vkl_grid(VklCanvas* canvas, uint32_t row_count, uint32_t col_count);
+DVZ_EXPORT DvzGrid dvz_grid(DvzCanvas* canvas, uint32_t row_count, uint32_t col_count);
 
 /**
  * Destroy a grid.
  *
  * @param grid the grid
  */
-VKY_EXPORT void vkl_grid_destroy(VklGrid* grid);
+DVZ_EXPORT void dvz_grid_destroy(DvzGrid* grid);
 
 /**
  * Create a panel at a given location in a grid.
@@ -151,14 +151,14 @@ VKY_EXPORT void vkl_grid_destroy(VklGrid* grid);
  * @param row the row index in the grid
  * @param col the column index in the grid
  */
-VKY_EXPORT VklPanel* vkl_panel(VklGrid* grid, uint32_t row, uint32_t col);
+DVZ_EXPORT DvzPanel* dvz_panel(DvzGrid* grid, uint32_t row, uint32_t col);
 
 /**
  * Update a panel viewport.
  *
  * @param panel the panel
  */
-VKY_EXPORT void vkl_panel_update(VklPanel* panel);
+DVZ_EXPORT void dvz_panel_update(DvzPanel* panel);
 
 /**
  * Set panel margins.
@@ -168,7 +168,7 @@ VKY_EXPORT void vkl_panel_update(VklPanel* panel);
  * @param panel the panel
  * @param margins the margins, in pixels
  */
-VKY_EXPORT void vkl_panel_margins(VklPanel* panel, vec4 margins);
+DVZ_EXPORT void dvz_panel_margins(DvzPanel* panel, vec4 margins);
 
 /**
  * Set the DPI scaling factor for a panel.
@@ -176,7 +176,7 @@ VKY_EXPORT void vkl_panel_margins(VklPanel* panel, vec4 margins);
  * @param panel the panel
  * @param scaling the scaling factor (1 by default)
  */
-VKY_EXPORT void vkl_panel_dpi_scaling(VklPanel* panel, float scaling);
+DVZ_EXPORT void dvz_panel_dpi_scaling(DvzPanel* panel, float scaling);
 
 /**
  * Set the unit in which the panel size is specified.
@@ -184,7 +184,7 @@ VKY_EXPORT void vkl_panel_dpi_scaling(VklPanel* panel, float scaling);
  * @param panel the panel
  * @param unit the unit
  */
-VKY_EXPORT void vkl_panel_unit(VklPanel* panel, VklPanelSizeUnit unit);
+DVZ_EXPORT void dvz_panel_unit(DvzPanel* panel, DvzPanelSizeUnit unit);
 
 /**
  * Set the panel mode (grid or detached).
@@ -192,7 +192,7 @@ VKY_EXPORT void vkl_panel_unit(VklPanel* panel, VklPanelSizeUnit unit);
  * @param panel the panel
  * @param mode the mode
  */
-VKY_EXPORT void vkl_panel_mode(VklPanel* panel, VklPanelMode mode);
+DVZ_EXPORT void dvz_panel_mode(DvzPanel* panel, DvzPanelMode mode);
 
 /**
  * Add a visual to a panel.
@@ -200,29 +200,29 @@ VKY_EXPORT void vkl_panel_mode(VklPanel* panel, VklPanelMode mode);
  * @param panel the panel
  * @param visual the visual
  */
-VKY_EXPORT void vkl_panel_visual(VklPanel* panel, VklVisual* visual);
+DVZ_EXPORT void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual);
 
 /**
  * Set a panel position (in detached mode).
  *
- * The unit in which the coordinates are specified is controller by `vkl_panel_unit()`.
+ * The unit in which the coordinates are specified is controller by `dvz_panel_unit()`.
  *
  * @param panel the panel
  * @param x the position
  * @param y the position
  */
-VKY_EXPORT void vkl_panel_pos(VklPanel* panel, float x, float y);
+DVZ_EXPORT void dvz_panel_pos(DvzPanel* panel, float x, float y);
 
 /**
  * Set a panel size (in detached mode).
  *
- * The unit in which the size is specified is controller by `vkl_panel_unit()`.
+ * The unit in which the size is specified is controller by `dvz_panel_unit()`.
  *
  * @param panel the panel
  * @param axis the axis on which to specify the size
  * @param size the size
  */
-VKY_EXPORT void vkl_panel_size(VklPanel* panel, VklGridAxis axis, float size);
+DVZ_EXPORT void dvz_panel_size(DvzPanel* panel, DvzGridAxis axis, float size);
 
 /**
  * Set the number of cells a panel is spanning.
@@ -231,7 +231,7 @@ VKY_EXPORT void vkl_panel_size(VklPanel* panel, VklGridAxis axis, float size);
  * @param axis the direction to set the span
  * @param span the number of cells the panel spans
  */
-VKY_EXPORT void vkl_panel_span(VklPanel* panel, VklGridAxis axis, uint32_t span);
+DVZ_EXPORT void dvz_panel_span(DvzPanel* panel, DvzGridAxis axis, uint32_t span);
 
 /**
  * Set the position of a panel within a grid.
@@ -240,7 +240,7 @@ VKY_EXPORT void vkl_panel_span(VklPanel* panel, VklGridAxis axis, uint32_t span)
  * @param row the row index
  * @param col the column index
  */
-VKY_EXPORT void vkl_panel_cell(VklPanel* panel, uint32_t row, uint32_t col);
+DVZ_EXPORT void dvz_panel_cell(DvzPanel* panel, uint32_t row, uint32_t col);
 
 /**
  * Set the coordinate system transposition (order and direction of the 3 xyz axes).
@@ -248,7 +248,7 @@ VKY_EXPORT void vkl_panel_cell(VklPanel* panel, uint32_t row, uint32_t col);
  * @param panel the panel
  * @param transpose the transposition mode
  */
-VKY_EXPORT void vkl_panel_transpose(VklPanel* panel, VklCDSTranspose transpose);
+DVZ_EXPORT void dvz_panel_transpose(DvzPanel* panel, DvzCDSTranspose transpose);
 
 /**
  * Returns whether a point is contained in a panel.
@@ -256,7 +256,7 @@ VKY_EXPORT void vkl_panel_transpose(VklPanel* panel, VklCDSTranspose transpose);
  * @param panel the panel
  * @param pos the position
  */
-VKY_EXPORT bool vkl_panel_contains(VklPanel* panel, vec2 pos);
+DVZ_EXPORT bool dvz_panel_contains(DvzPanel* panel, vec2 pos);
 
 /**
  * Return the panel at a given position within the canvas.
@@ -264,14 +264,14 @@ VKY_EXPORT bool vkl_panel_contains(VklPanel* panel, vec2 pos);
  * @param grid the grid
  * @param pos the position in screen coordinates (pixels)
  */
-VKY_EXPORT VklPanel* vkl_panel_at(VklGrid* grid, vec2 pos);
+DVZ_EXPORT DvzPanel* dvz_panel_at(DvzGrid* grid, vec2 pos);
 
 /**
  * Destroy a panel and all visuals inside it.
  *
  * @param panel the panel
  */
-VKY_EXPORT void vkl_panel_destroy(VklPanel* panel);
+DVZ_EXPORT void dvz_panel_destroy(DvzPanel* panel);
 
 /**
  * Return the viewport of a panel.
@@ -279,7 +279,7 @@ VKY_EXPORT void vkl_panel_destroy(VklPanel* panel);
  * @param panel the panel
  * @returns the viewport
  */
-VKY_EXPORT VklViewport vkl_panel_viewport(VklPanel* panel);
+DVZ_EXPORT DvzViewport dvz_panel_viewport(DvzPanel* panel);
 
 
 

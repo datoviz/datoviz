@@ -2,8 +2,8 @@
 /*  Simple monospace font atlas                                                                  */
 /*************************************************************************************************/
 
-#ifndef VKL_FONT_ATLAS_HEADER
-#define VKL_FONT_ATLAS_HEADER
+#ifndef DVZ_FONT_ATLAS_HEADER
+#define DVZ_FONT_ATLAS_HEADER
 
 #include "common.h"
 #include "context.h"
@@ -19,13 +19,13 @@ END_INCL_NO_WARN
 /*  Font atlas                                                                                   */
 /*************************************************************************************************/
 
-static const char VKL_FONT_ATLAS_STRING[] =
+static const char DVZ_FONT_ATLAS_STRING[] =
     " !\"#$%&'()*+,-./"
     "0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7f";
 
 
 
-static size_t _font_atlas_glyph(VklFontAtlas* atlas, const char* str, uint32_t idx)
+static size_t _font_atlas_glyph(DvzFontAtlas* atlas, const char* str, uint32_t idx)
 {
     ASSERT(atlas != NULL);
     ASSERT(atlas->rows > 0);
@@ -42,7 +42,7 @@ static size_t _font_atlas_glyph(VklFontAtlas* atlas, const char* str, uint32_t i
 
 
 
-static void _font_atlas_glyph_size(VklFontAtlas* atlas, float size, vec2 glyph_size)
+static void _font_atlas_glyph_size(DvzFontAtlas* atlas, float size, vec2 glyph_size)
 {
     ASSERT(atlas != NULL);
     glyph_size[0] = size * atlas->glyph_width / atlas->glyph_height;
@@ -51,27 +51,27 @@ static void _font_atlas_glyph_size(VklFontAtlas* atlas, float size, vec2 glyph_s
 
 
 
-static VklTexture* _font_texture(VklContext* ctx, VklFontAtlas* atlas)
+static DvzTexture* _font_texture(DvzContext* ctx, DvzFontAtlas* atlas)
 {
     ASSERT(ctx != NULL);
     ASSERT(atlas != NULL);
     ASSERT(atlas->font_texture != NULL);
 
     uvec3 shape = {(uint32_t)atlas->width, (uint32_t)atlas->height, 1};
-    VklTexture* texture = vkl_ctx_texture(ctx, 2, shape, VK_FORMAT_R8G8B8A8_UNORM);
+    DvzTexture* texture = dvz_ctx_texture(ctx, 2, shape, VK_FORMAT_R8G8B8A8_UNORM);
     // NOTE: the font texture must have LINEAR filter! otherwise no antialiasing
-    vkl_texture_filter(texture, VKL_FILTER_MAG, VK_FILTER_LINEAR);
-    vkl_texture_filter(texture, VKL_FILTER_MIN, VK_FILTER_LINEAR);
+    dvz_texture_filter(texture, DVZ_FILTER_MAG, VK_FILTER_LINEAR);
+    dvz_texture_filter(texture, DVZ_FILTER_MIN, VK_FILTER_LINEAR);
 
-    vkl_texture_upload(
-        texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, (uint32_t)(atlas->width * atlas->height * 4),
+    dvz_texture_upload(
+        texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, (uint32_t)(atlas->width * atlas->height * 4),
         atlas->font_texture);
     return texture;
 }
 
 
 
-static VklFontAtlas vkl_font_atlas(VklContext* ctx)
+static DvzFontAtlas dvz_font_atlas(DvzContext* ctx)
 {
     // Font texture
     char path[1024];
@@ -80,14 +80,14 @@ static VklFontAtlas vkl_font_atlas(VklContext* ctx)
 
     int width, height, depth;
 
-    VklFontAtlas atlas = {0};
+    DvzFontAtlas atlas = {0};
     atlas.font_texture = stbi_load(path, &width, &height, &depth, STBI_rgb_alpha);
     ASSERT(width > 0);
     ASSERT(height > 0);
     ASSERT(depth > 0);
 
     // TODO: parameters
-    atlas.font_str = VKL_FONT_ATLAS_STRING;
+    atlas.font_str = DVZ_FONT_ATLAS_STRING;
     ASSERT(strlen(atlas.font_str) > 0);
     atlas.cols = 16;
     atlas.rows = 6;
@@ -104,7 +104,7 @@ static VklFontAtlas vkl_font_atlas(VklContext* ctx)
 
 
 
-static void vkl_font_atlas_destroy(VklFontAtlas* atlas)
+static void dvz_font_atlas_destroy(DvzFontAtlas* atlas)
 {
     ASSERT(atlas != NULL);
     ASSERT(atlas->font_texture != NULL);

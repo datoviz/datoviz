@@ -2,59 +2,59 @@
 
 ## Visual creation and destruction
 
-### `vkl_visual()`
-### `vkl_visual_graphics()`
-### `vkl_visual_compute()`
-### `vkl_visual_destroy()`
+### `dvz_visual()`
+### `dvz_visual_graphics()`
+### `dvz_visual_compute()`
+### `dvz_visual_destroy()`
 
 
 ## Visual data
 
-### `vkl_visual_group()`
-### `vkl_visual_data()`
-### `vkl_visual_data_partial()`
-### `vkl_visual_data_append()`
-### `vkl_visual_data_source()`
-### `vkl_visual_buffer()`
-### `vkl_visual_texture()`
+### `dvz_visual_group()`
+### `dvz_visual_data()`
+### `dvz_visual_data_partial()`
+### `dvz_visual_data_append()`
+### `dvz_visual_data_source()`
+### `dvz_visual_buffer()`
+### `dvz_visual_texture()`
 
 
 ## Visual sources and props
 
-### `vkl_visual_source()`
-### `vkl_visual_source_share()`
-### `vkl_visual_prop()`
-### `vkl_visual_prop_default()`
-### `vkl_visual_prop_copy()`
-### `vkl_visual_prop_cast()`
+### `dvz_visual_source()`
+### `dvz_visual_source_share()`
+### `dvz_visual_prop()`
+### `dvz_visual_prop_default()`
+### `dvz_visual_prop_copy()`
+### `dvz_visual_prop_cast()`
 
 
 ## Visual fill utils and callback
 
-### `vkl_visual_fill_callback()`
-### `vkl_visual_fill_event()`
-### `vkl_visual_fill_begin()`
-### `vkl_visual_fill_end()`
-### `vkl_visual_callback_bake()`
+### `dvz_visual_fill_callback()`
+### `dvz_visual_fill_event()`
+### `dvz_visual_fill_begin()`
+### `dvz_visual_fill_end()`
+### `dvz_visual_callback_bake()`
 
 
 ## Visual baking helpers
 
-### `vkl_source_get()`
-### `vkl_prop_get()`
-### `vkl_prop_size()`
-### `vkl_prop_item()`
+### `dvz_source_get()`
+### `dvz_prop_get()`
+### `dvz_prop_size()`
+### `dvz_prop_item()`
 
 
 ## Graphics pipeline
 
-### `vkl_graphics_callback()`
-### `vkl_graphics_data()`
-### `vkl_graphics_alloc()`
-### `vkl_graphics_append()`
-### `vkl_graphics_builtin()`
+### `dvz_graphics_callback()`
+### `dvz_graphics_data()`
+### `dvz_graphics_alloc()`
+### `dvz_graphics_append()`
+### `dvz_graphics_builtin()`
 
 
 ## Visual internal system
 
-### `vkl_visual_update()`
+### `dvz_visual_update()`

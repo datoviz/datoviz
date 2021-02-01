@@ -2,7 +2,7 @@
 
 
 !!! note
-    If not specified, the default vertex structure is `VklVertex`:
+    If not specified, the default vertex structure is `DvzVertex`:
 
     | Field | Type | Description |
     | ---- | ---- | ---- |

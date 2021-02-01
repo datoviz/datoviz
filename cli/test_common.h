@@ -1,5 +1,5 @@
-#ifndef VKY_COMMON_TEST_HEADER
-#define VKY_COMMON_TEST_HEADER
+#ifndef DVZ_COMMON_TEST_HEADER
+#define DVZ_COMMON_TEST_HEADER
 
 
 #include "utils.h"

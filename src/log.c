@@ -26,7 +26,7 @@
 #include <string.h>
 #include <time.h>
 
-#include <visky/log.h>
+#include <datoviz/log.h>
 
 #ifdef _WIN32
 #include "ansicolor-w32.h"
@@ -135,8 +135,8 @@ void log_log(int level, const char* file, int line, const char* fmt, ...)
 
 void log_set_level_env(void)
 {
-    const char* level = getenv("VKY_LOG_LEVEL");
-    int level_int = VKY_DEFAULT_LOG_LEVEL;
+    const char* level = getenv("DVZ_LOG_LEVEL");
+    int level_int = DVZ_DEFAULT_LOG_LEVEL;
     if (level != NULL)
         level_int = strtol(level, NULL, 10);
     log_set_level(level_int);

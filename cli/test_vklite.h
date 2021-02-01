@@ -1,5 +1,5 @@
-#ifndef VKY_VKLITE2_TEST_HEADER
-#define VKY_VKLITE2_TEST_HEADER
+#ifndef DVZ_VKLITE2_TEST_HEADER
+#define DVZ_VKLITE2_TEST_HEADER
 
 
 #include "utils.h"

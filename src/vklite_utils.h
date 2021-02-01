@@ -1,8 +1,8 @@
-#ifndef VKL_VKLITE_UTILS_HEADER
-#define VKL_VKLITE_UTILS_HEADER
+#ifndef DVZ_VKLITE_UTILS_HEADER
+#define DVZ_VKLITE_UTILS_HEADER
 
 
-#include "../include/visky/vklite.h"
+#include "../include/datoviz/vklite.h"
 
 
 
@@ -15,10 +15,10 @@
 #endif
 
 // Validation layers.
-static const char* VKL_LAYERS[] = {"VK_LAYER_KHRONOS_validation"};
+static const char* DVZ_LAYERS[] = {"VK_LAYER_KHRONOS_validation"};
 
 // Required device extensions.
-static const char* VKL_DEVICE_EXTENSIONS[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+static const char* DVZ_DEVICE_EXTENSIONS[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
 
 
@@ -87,7 +87,7 @@ static VkDeviceSize get_alignment(VkDeviceSize alignment, VkDeviceSize min_align
 {
     if (min_alignment > 0)
         alignment = (alignment + min_alignment - 1) & ~(min_alignment - 1);
-    alignment = vkl_next_pow2(alignment);
+    alignment = dvz_next_pow2(alignment);
     ASSERT(alignment >= min_alignment);
     return alignment;
 }
@@ -153,8 +153,8 @@ static VkDeviceSize aligned_size(VkDeviceSize size, VkDeviceSize alignment)
 
 
 
-typedef struct VklPointer VklPointer;
-struct VklPointer
+typedef struct DvzPointer DvzPointer;
+struct DvzPointer
 {
     void* pointer;
     bool aligned;
@@ -163,10 +163,10 @@ struct VklPointer
 /*
 WARNING: returns a wrapped pointer specifiying whether the pointer was aligned or not.
 This is needed on Windows because aligned pointers must be freed with _aligned_free(), whereas
-normal pointers must be freed with free(). Without a wrapper VklPointer struct, this function
+normal pointers must be freed with free(). Without a wrapper DvzPointer struct, this function
 wouldn't be able to say whether its returned pointer was aligned-allocated or normally allocated.
 */
-static VklPointer
+static DvzPointer
 aligned_repeat(VkDeviceSize size, const void* data, uint32_t count, VkDeviceSize alignment)
 {
     // Take any buffer and make `count` consecutive aligned copies of it.
@@ -184,7 +184,7 @@ aligned_repeat(VkDeviceSize size, const void* data, uint32_t count, VkDeviceSize
     {
         memcpy((void*)(((int64_t)repeated) + (int64_t)(i * alsize)), data, size);
     }
-    return (VklPointer){repeated, alignment > 0};
+    return (DvzPointer){repeated, alignment > 0};
 }
 
 
@@ -286,14 +286,14 @@ static bool check_validation_layer_support(
 /*  Backend-specific code                                                                        */
 /*************************************************************************************************/
 
-static const char** backend_extensions(VklBackend backend, uint32_t* required_extension_count)
+static const char** backend_extensions(DvzBackend backend, uint32_t* required_extension_count)
 {
     const char** required_extensions = NULL;
 
     // Backend initialization and required extensions.
     switch (backend)
     {
-    case VKL_BACKEND_GLFW:
+    case DVZ_BACKEND_GLFW:
 
         glfwInit();
         ASSERT(glfwVulkanSupported() != 0);
@@ -313,27 +313,27 @@ static const char** backend_extensions(VklBackend backend, uint32_t* required_ex
 static void
 _glfw_esc_callback(GLFWwindow* backend_window, int key, int scancode, int action, int mods)
 {
-    // WARNING: this callback is only valid for VklWindows that are not wrapped inside a VklCanvas
-    // This is because the VklCanvas has its own glfw keyboard callback, and there can be only 1.
-    VklWindow* window = (VklWindow*)glfwGetWindowUserPointer(backend_window);
+    // WARNING: this callback is only valid for DvzWindows that are not wrapped inside a DvzCanvas
+    // This is because the DvzCanvas has its own glfw keyboard callback, and there can be only 1.
+    DvzWindow* window = (DvzWindow*)glfwGetWindowUserPointer(backend_window);
     ASSERT(window != NULL);
     if (window->close_on_esc && action == GLFW_PRESS && key == GLFW_KEY_ESCAPE)
     {
-        window->obj.status = VKL_OBJECT_STATUS_NEED_DESTROY;
+        window->obj.status = DVZ_OBJECT_STATUS_NEED_DESTROY;
     }
 }
 
 
 
 static void* backend_window(
-    VkInstance instance, VklBackend backend, uint32_t width, uint32_t height, //
-    VklWindow* window, VkSurfaceKHR* surface)
+    VkInstance instance, DvzBackend backend, uint32_t width, uint32_t height, //
+    DvzWindow* window, VkSurfaceKHR* surface)
 {
     log_trace("create window with size %dx%d", width, height);
 
     switch (backend)
     {
-    case VKL_BACKEND_GLFW:
+    case DVZ_BACKEND_GLFW:
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         GLFWwindow* backend_window =
             glfwCreateWindow((int)width, (int)height, APPLICATION_NAME, NULL, NULL);
@@ -344,7 +344,7 @@ static void* backend_window(
         glfwSetWindowUserPointer(backend_window, window);
 
         // Callback that marks the window to close if ESC is pressed, but only if
-        // VklWindow.close_on_esc=true
+        // DvzWindow.close_on_esc=true
         glfwSetKeyCallback(backend_window, _glfw_esc_callback);
 
         return backend_window;
@@ -358,11 +358,11 @@ static void* backend_window(
 
 
 
-static void backend_poll_events(VklBackend backend, VklWindow* window)
+static void backend_poll_events(DvzBackend backend, DvzWindow* window)
 {
     switch (backend)
     {
-    case VKL_BACKEND_GLFW:
+    case DVZ_BACKEND_GLFW:
         glfwPollEvents();
         break;
     default:
@@ -373,14 +373,14 @@ static void backend_poll_events(VklBackend backend, VklWindow* window)
 
 
 static void
-backend_window_destroy(VkInstance instance, VklBackend backend, void* window, VkSurfaceKHR surface)
+backend_window_destroy(VkInstance instance, DvzBackend backend, void* window, VkSurfaceKHR surface)
 {
     log_trace("starting destruction of backend window...");
     // NOTE TODO: need to vkDeviceWaitIdle(device) on all devices before calling this
 
     switch (backend)
     {
-    case VKL_BACKEND_GLFW:
+    case DVZ_BACKEND_GLFW:
         glfwPollEvents();
         ASSERT(window != NULL);
         log_trace("destroy GLFW window");
@@ -402,7 +402,7 @@ backend_window_destroy(VkInstance instance, VklBackend backend, void* window, Vk
 
 
 static void backend_window_get_size(
-    VklBackend backend, void* window,                //
+    DvzBackend backend, void* window,                //
     uint32_t* window_width, uint32_t* window_height, //
     uint32_t* framebuffer_width, uint32_t* framebuffer_height)
 {
@@ -410,7 +410,7 @@ static void backend_window_get_size(
 
     switch (backend)
     {
-    case VKL_BACKEND_GLFW:;
+    case DVZ_BACKEND_GLFW:;
 
         int w, h;
 
@@ -450,11 +450,11 @@ static void backend_window_get_size(
 
 
 
-static bool backend_window_should_close(VklBackend backend, void* window)
+static bool backend_window_should_close(DvzBackend backend, void* window)
 {
     switch (backend)
     {
-    case VKL_BACKEND_GLFW:;
+    case DVZ_BACKEND_GLFW:;
         return glfwWindowShouldClose(window);
         break;
     default:
@@ -479,7 +479,7 @@ static void create_instance(
     bool has_validation = false;
     if (ENABLE_VALIDATION_LAYERS)
     {
-        has_validation = check_validation_layer_support(1, VKL_LAYERS);
+        has_validation = check_validation_layer_support(1, DVZ_LAYERS);
         if (!has_validation)
             log_error(
                 "validation layer support missing, make sure you have exported the environment "
@@ -534,7 +534,7 @@ static void create_instance(
     if (has_validation)
     {
         createInfo.enabledLayerCount = 1;
-        createInfo.ppEnabledLayerNames = VKL_LAYERS;
+        createInfo.ppEnabledLayerNames = DVZ_LAYERS;
         createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debug_create_info;
     }
     else
@@ -560,7 +560,7 @@ static void create_instance(
 
 
 
-static void destroy_instance(VklApp* app)
+static void destroy_instance(DvzApp* app)
 {
     log_trace("starting destruction of instance...");
 
@@ -580,7 +580,7 @@ static void destroy_instance(VklApp* app)
 
 
 
-static void find_queue_families(VkPhysicalDevice device, VklQueues* queues)
+static void find_queue_families(VkPhysicalDevice device, DvzQueues* queues)
 {
     ASSERT(device != VK_NULL_HANDLE);
     ASSERT(queues != NULL);
@@ -589,10 +589,10 @@ static void find_queue_families(VkPhysicalDevice device, VklQueues* queues)
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queues->queue_family_count, NULL);
     log_trace("found %d queue families", queues->queue_family_count);
     ASSERT(queues->queue_family_count > 0);
-    ASSERT(queues->queue_family_count <= VKL_MAX_QUEUE_FAMILIES);
-    VkQueueFamilyProperties queue_families[VKL_MAX_QUEUE_FAMILIES];
+    ASSERT(queues->queue_family_count <= DVZ_MAX_QUEUE_FAMILIES);
+    VkQueueFamilyProperties queue_families[DVZ_MAX_QUEUE_FAMILIES];
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queues->queue_family_count, queue_families);
-    ASSERT(queues->queue_family_count <= VKL_MAX_QUEUE_FAMILIES);
+    ASSERT(queues->queue_family_count <= DVZ_MAX_QUEUE_FAMILIES);
 
     for (uint32_t i = 0; i < queues->queue_family_count; i++)
     {
@@ -609,7 +609,7 @@ static void find_queue_families(VkPhysicalDevice device, VklQueues* queues)
 
 
 
-static void discover_gpu(VkPhysicalDevice physical_device, VklGpu* gpu)
+static void discover_gpu(VkPhysicalDevice physical_device, DvzGpu* gpu)
 {
     vkGetPhysicalDeviceProperties(physical_device, &gpu->device_properties);
     vkGetPhysicalDeviceFeatures(physical_device, &gpu->device_features);
@@ -624,7 +624,7 @@ static void discover_gpu(VkPhysicalDevice physical_device, VklGpu* gpu)
 
 
 static void
-find_present_queue_family(VkPhysicalDevice device, VkSurfaceKHR surface, VklQueues* queues)
+find_present_queue_family(VkPhysicalDevice device, VkSurfaceKHR surface, DvzQueues* queues)
 {
     if (surface == 0)
         return;
@@ -654,7 +654,7 @@ create_command_pool(VkDevice device, uint32_t queue_family_index, VkCommandPool*
 
 
 
-static void create_device(VklGpu* gpu, VkSurfaceKHR surface)
+static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
 {
     log_trace("starting creation of device...");
     ASSERT(gpu != NULL);
@@ -678,12 +678,12 @@ static void create_device(VklGpu* gpu, VkSurfaceKHR surface)
 
     // Here, we need to determine the queue family and queue index of every requested queue,
     // as a function of the requested queue type, and the discovered queue families.
-    VklQueues* q = &gpu->queues;
+    DvzQueues* q = &gpu->queues;
 
     // First, we compute, for each queue family, the number of queue types it supports
     log_trace("computing queue family scores");
-    uint32_t queue_family_score[VKL_MAX_QUEUE_FAMILIES] = {0};
-    ASSERT(q->queue_family_count <= VKL_MAX_QUEUE_FAMILIES);
+    uint32_t queue_family_score[DVZ_MAX_QUEUE_FAMILIES] = {0};
+    ASSERT(q->queue_family_count <= DVZ_MAX_QUEUE_FAMILIES);
     for (uint32_t i = 0; i < q->queue_family_count; i++)
     {
         queue_family_score[i] += (uint32_t)q->support_transfer[i];
@@ -697,8 +697,8 @@ static void create_device(VklGpu* gpu, VkSurfaceKHR surface)
     {
         bool qf_match;
         uint32_t lowest_score;
-        uint32_t queues_per_family[VKL_MAX_QUEUE_FAMILIES] = {0};
-        ASSERT(q->queue_count <= VKL_MAX_QUEUES);
+        uint32_t queues_per_family[DVZ_MAX_QUEUE_FAMILIES] = {0};
+        ASSERT(q->queue_count <= DVZ_MAX_QUEUES);
         for (uint32_t i = 0; i < q->queue_count; i++)
         {
             // log_trace("starting search of queue family for requested queue #%d", i);
@@ -714,13 +714,13 @@ static void create_device(VklGpu* gpu, VkSurfaceKHR surface)
                 qf_match = true;
                 // log_trace("looking at queue family %d with score %d", qf,
                 // queue_family_score[qf]);
-                if ((q->queue_types[i] & VKL_QUEUE_TRANSFER) && !q->support_transfer[qf])
+                if ((q->queue_types[i] & DVZ_QUEUE_TRANSFER) && !q->support_transfer[qf])
                     qf_match = false;
-                if ((q->queue_types[i] & VKL_QUEUE_GRAPHICS) && !q->support_graphics[qf])
+                if ((q->queue_types[i] & DVZ_QUEUE_GRAPHICS) && !q->support_graphics[qf])
                     qf_match = false;
-                if ((q->queue_types[i] & VKL_QUEUE_COMPUTE) && !q->support_compute[qf])
+                if ((q->queue_types[i] & DVZ_QUEUE_COMPUTE) && !q->support_compute[qf])
                     qf_match = false;
-                if ((q->queue_types[i] & VKL_QUEUE_PRESENT) && !q->support_present[qf])
+                if ((q->queue_types[i] & DVZ_QUEUE_PRESENT) && !q->support_present[qf])
                     qf_match = false;
                 // The current queue family doesn't match because it is full.
                 if (queues_per_family[qf] >= q->max_queue_count[qf])
@@ -767,7 +767,7 @@ static void create_device(VklGpu* gpu, VkSurfaceKHR surface)
 
     // Count the number of queues requested, for each queue family.
     log_trace("counting the number of requested queues for each queue family");
-    uint32_t queues_per_family[VKL_MAX_QUEUE_FAMILIES] = {0};
+    uint32_t queues_per_family[DVZ_MAX_QUEUE_FAMILIES] = {0};
     uint32_t qf = 0;         // queue family of the current queue
     uint32_t max_queues = 0; // max number of queues in the family of the current queue
     for (uint32_t i = 0; i < q->queue_count; i++)
@@ -775,7 +775,7 @@ static void create_device(VklGpu* gpu, VkSurfaceKHR surface)
         qf = q->queue_families[i]; // the queue family of the current queue
         max_queues = q->max_queue_count[qf];
         ASSERT(qf < q->queue_family_count);
-        ASSERT(qf < VKL_MAX_QUEUE_FAMILIES);
+        ASSERT(qf < DVZ_MAX_QUEUE_FAMILIES);
         if (queues_per_family[qf] < max_queues)
         {
             // Also determine the queue index of each requested queue within its queue family.
@@ -795,9 +795,9 @@ static void create_device(VklGpu* gpu, VkSurfaceKHR surface)
     // Count the number of queue families with at least 1 queue to create.
     log_trace("determining the queue families to create and the number of queues in each");
     uint32_t queue_family_count = 0;
-    uint32_t queues_per_family_to_create[VKL_MAX_QUEUE_FAMILIES] = {0};
+    uint32_t queues_per_family_to_create[DVZ_MAX_QUEUE_FAMILIES] = {0};
     // the queue family index of each queue family to create
-    uint32_t queue_family_indices[VKL_MAX_QUEUE_FAMILIES] = {0};
+    uint32_t queue_family_indices[DVZ_MAX_QUEUE_FAMILIES] = {0};
     for (qf = 0; qf < q->queue_family_count; qf++)
     {
         if (queues_per_family[qf] > 0)
@@ -831,9 +831,9 @@ static void create_device(VklGpu* gpu, VkSurfaceKHR surface)
 
     // Device extensions and layers
     device_info.enabledExtensionCount = (uint32_t)has_surface;
-    device_info.ppEnabledExtensionNames = has_surface ? VKL_DEVICE_EXTENSIONS : NULL;
+    device_info.ppEnabledExtensionNames = has_surface ? DVZ_DEVICE_EXTENSIONS : NULL;
     device_info.enabledLayerCount = (uint32_t)has_validation;
-    device_info.ppEnabledLayerNames = has_validation ? VKL_LAYERS : NULL;
+    device_info.ppEnabledLayerNames = has_validation ? DVZ_LAYERS : NULL;
 
     // Create the device
     VK_CHECK_RESULT(vkCreateDevice(gpu->physical_device, &device_info, NULL, &gpu->device));
@@ -851,7 +851,7 @@ static void create_swapchain(
     VkDevice device, VkPhysicalDevice pdevice,                              //
     VkSurfaceKHR surface, uint32_t image_count,                             //
     VkFormat format, VkPresentModeKHR present_mode,                         //
-    VklQueues* queues, uint32_t requested_width, uint32_t requested_height, //
+    DvzQueues* queues, uint32_t requested_width, uint32_t requested_height, //
     VkSurfaceCapabilitiesKHR* caps, VkSwapchainKHR* swapchain,              //
     uint32_t* width, uint32_t* height) // final actual swapchain size in pixels
 {
@@ -910,10 +910,10 @@ static void create_swapchain(
     // Determine which queue families have access to the swapchain images.
     // If there is at least one queue family that supports PRESENT but not GRAPHICS, then the
     // sharing mode will be concurrent, otherwise it is exclusive.
-    uint32_t queue_families[VKL_MAX_QUEUE_FAMILIES] = {0};
+    uint32_t queue_families[DVZ_MAX_QUEUE_FAMILIES] = {0};
     uint32_t n = 0;
     uint32_t qf = 0;
-    bool qf_counted[VKL_MAX_QUEUE_FAMILIES] = {0};
+    bool qf_counted[DVZ_MAX_QUEUE_FAMILIES] = {0};
     for (uint32_t i = 0; i < queues->queue_count; i++)
     {
         qf = queues->queue_families[i];
@@ -986,7 +986,7 @@ static uint32_t find_memory_type(
 
 
 static void make_shared(
-    VklQueues* queues, uint32_t queue_count, const uint32_t* queue_indices, //
+    DvzQueues* queues, uint32_t queue_count, const uint32_t* queue_indices, //
     VkSharingMode* sharing_mode, uint32_t* queue_family_count, uint32_t* queue_families)
 {
     ASSERT(queues != NULL);
@@ -1001,7 +1001,7 @@ static void make_shared(
     // different queue families. If >= 2, mode is concurrent, otherwise it is exclusive.
     uint32_t n = 0;
     uint32_t qf = 0;
-    uint32_t qfs[VKL_MAX_QUEUE_FAMILIES] = {0}; // for each queue family, the number of queues
+    uint32_t qfs[DVZ_MAX_QUEUE_FAMILIES] = {0}; // for each queue family, the number of queues
     for (uint32_t i = 0; i < queue_count; i++)
     {
         // Get the family of the current requested queue.
@@ -1032,7 +1032,7 @@ static void make_shared(
 
 
 static void create_buffer2(
-    VkDevice device, VklQueues* queues, uint32_t queue_count, uint32_t* queue_indices, //
+    VkDevice device, DvzQueues* queues, uint32_t queue_count, uint32_t* queue_indices, //
     VkBufferUsageFlags usage, VkMemoryPropertyFlags properties,
     VkPhysicalDeviceMemoryProperties memory_properties, VkDeviceSize size, //
     VkBuffer* buffer, VkDeviceMemory* bufferMemory)
@@ -1044,8 +1044,8 @@ static void create_buffer2(
     binfo.size = size;
     binfo.usage = usage;
 
-    // binfo.pQueueFamilyIndices = calloc(VKL_MAX_QUEUE_FAMILIES, sizeof(uint32_t));
-    uint32_t queue_families[VKL_MAX_QUEUE_FAMILIES];
+    // binfo.pQueueFamilyIndices = calloc(DVZ_MAX_QUEUE_FAMILIES, sizeof(uint32_t));
+    uint32_t queue_families[DVZ_MAX_QUEUE_FAMILIES];
     make_shared(
         queues, queue_count, queue_indices, //
         &binfo.sharingMode, &binfo.queueFamilyIndexCount, queue_families);
@@ -1102,7 +1102,7 @@ static void check_dims(VkImageType image_type, uint32_t width, uint32_t height, 
 
 
 static void create_image2(
-    VkDevice device, VklQueues* queues, uint32_t queue_count, uint32_t* queue_indices,        //
+    VkDevice device, DvzQueues* queues, uint32_t queue_count, uint32_t* queue_indices,        //
     VkImageType image_type, uint32_t width, uint32_t height, uint32_t depth, VkFormat format, //
     VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties,          //
     VkPhysicalDeviceMemoryProperties memory_properties,                                       //
@@ -1126,7 +1126,7 @@ static void create_image2(
     info.samples = VK_SAMPLE_COUNT_1_BIT;
 
     // Sharing mode, depending on the queues that need to access the image.
-    uint32_t queue_families[VKL_MAX_QUEUE_FAMILIES];
+    uint32_t queue_families[DVZ_MAX_QUEUE_FAMILIES];
     make_shared(
         queues, queue_count, queue_indices, //
         &info.sharingMode, &info.queueFamilyIndexCount, queue_families);
@@ -1219,23 +1219,23 @@ static void create_descriptor_pool(VkDevice device, VkDescriptorPool* dset_pool)
 {
     // Descriptor pool.
     VkDescriptorPoolSize poolSizes[] = {
-        {VK_DESCRIPTOR_TYPE_SAMPLER, VKL_MAX_DESCRIPTOR_SETS},
-        {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VKL_MAX_DESCRIPTOR_SETS},
-        {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VKL_MAX_DESCRIPTOR_SETS},
-        {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VKL_MAX_DESCRIPTOR_SETS},
-        {VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, VKL_MAX_DESCRIPTOR_SETS},
-        {VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, VKL_MAX_DESCRIPTOR_SETS},
-        {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VKL_MAX_DESCRIPTOR_SETS},
-        {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, VKL_MAX_DESCRIPTOR_SETS},
-        {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VKL_MAX_DESCRIPTOR_SETS},
-        {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, VKL_MAX_DESCRIPTOR_SETS},
-        {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, VKL_MAX_DESCRIPTOR_SETS}};
+        {VK_DESCRIPTOR_TYPE_SAMPLER, DVZ_MAX_DESCRIPTOR_SETS},
+        {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, DVZ_MAX_DESCRIPTOR_SETS},
+        {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, DVZ_MAX_DESCRIPTOR_SETS},
+        {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, DVZ_MAX_DESCRIPTOR_SETS},
+        {VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, DVZ_MAX_DESCRIPTOR_SETS},
+        {VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, DVZ_MAX_DESCRIPTOR_SETS},
+        {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, DVZ_MAX_DESCRIPTOR_SETS},
+        {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, DVZ_MAX_DESCRIPTOR_SETS},
+        {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, DVZ_MAX_DESCRIPTOR_SETS},
+        {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, DVZ_MAX_DESCRIPTOR_SETS},
+        {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, DVZ_MAX_DESCRIPTOR_SETS}};
     VkDescriptorPoolCreateInfo descriptor_pool_info = {0};
     descriptor_pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     descriptor_pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
     descriptor_pool_info.poolSizeCount = 11;
     descriptor_pool_info.pPoolSizes = poolSizes;
-    descriptor_pool_info.maxSets = VKL_MAX_DESCRIPTOR_SETS * descriptor_pool_info.poolSizeCount;
+    descriptor_pool_info.maxSets = DVZ_MAX_DESCRIPTOR_SETS * descriptor_pool_info.poolSizeCount;
 
     // Create descriptor pool.
     log_trace("create descriptor pool");
@@ -1336,17 +1336,17 @@ static bool is_descriptor_type_image(VkDescriptorType binding_type)
 
 static void update_descriptor_set(
     VkDevice device, uint32_t binding_count, VkDescriptorType* types,            //
-    VklBufferRegions* buffer_regions, VklImages** images, VklSampler** samplers, //
+    DvzBufferRegions* buffer_regions, DvzImages** images, DvzSampler** samplers, //
     uint32_t idx, VkDescriptorSet dset)
 {
     log_trace("update descriptor set #%d", idx);
     VkWriteDescriptorSet* descriptor_writes = calloc(binding_count, sizeof(VkWriteDescriptorSet));
 
-    VkDescriptorBufferInfo buffer_infos[VKL_MAX_BINDINGS_SIZE] = {0};
-    VkDescriptorImageInfo image_infos[VKL_MAX_BINDINGS_SIZE] = {0};
+    VkDescriptorBufferInfo buffer_infos[DVZ_MAX_BINDINGS_SIZE] = {0};
+    VkDescriptorImageInfo image_infos[DVZ_MAX_BINDINGS_SIZE] = {0};
 
     VkDescriptorType binding_type = {0};
-    VklBufferRegions* br = NULL;
+    DvzBufferRegions* br = NULL;
 
     for (uint32_t i = 0; i < binding_count; i++)
     {
@@ -1430,7 +1430,7 @@ static VkShaderModule create_shader_module_from_file(VkDevice device, const char
 {
     log_trace("create shader module from file %s", filename);
     size_t size = 0;
-    uint32_t* shader_code = (uint32_t*)vkl_read_file(filename, &size);
+    uint32_t* shader_code = (uint32_t*)dvz_read_file(filename, &size);
     VkShaderModule module = create_shader_module(device, size, shader_code);
     FREE(shader_code);
     return module;

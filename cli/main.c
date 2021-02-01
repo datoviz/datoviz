@@ -1,5 +1,5 @@
+#include <datoviz/datoviz.h>
 #include <unistd.h>
-#include <visky/visky.h>
 
 #include "test_array.h"
 #include "test_builtin_visuals.h"
@@ -197,7 +197,7 @@ static int launcher(TestContext* context, const char* name)
 
     /*
     // Run the app.
-    if (test_case.fixture >= VKY_TEST_FIXTURE_CANVAS)
+    if (test_case.fixture >= DVZ_TEST_FIXTURE_CANVAS)
     {
         ASSERT(context->canvas != NULL);
         run_canvas(context->canvas);
@@ -281,9 +281,9 @@ static int test(int argc, char** argv)
 
 static int info(int argc, char** argv)
 {
-    // VkyGpu gpu = vky_create_device(0, NULL);
+    // DvzGpu gpu = dvz_create_device(0, NULL);
     // printf("GPU: %s\n", gpu.device_properties.deviceName);
-    // vky_destroy_device(&gpu);
+    // dvz_destroy_device(&gpu);
     return 0;
 }
 

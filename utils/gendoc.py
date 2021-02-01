@@ -15,7 +15,7 @@ from pyparsing import (
 
 
 ROOT_DIR = Path(__file__).parent.parent.resolve()
-HEADER_DIR = ROOT_DIR / 'include/visky'
+HEADER_DIR = ROOT_DIR / 'include/datoviz'
 INTERNAL_HEADER_DIR = ROOT_DIR / 'src'
 EXTERNAL_HEADER_DIR = ROOT_DIR / 'external'
 API_OUTPUT = ROOT_DIR / 'docs/api.md'
@@ -179,8 +179,8 @@ def _parse_funcs(text, is_output=False):
                  ) + Optional(COMMA))
     args = Group(ZeroOrMore(argDecl))
     if not is_output:
-        func = Optional(Suppress("VKY_EXPORT")) + \
-            Optional(Suppress("VKY_INLINE"))
+        func = Optional(Suppress("DVZ_EXPORT")) + \
+            Optional(Suppress("DVZ_INLINE"))
     else:
         func = Empty()
     signature = Optional(static("static")) + \
@@ -279,14 +279,14 @@ def _camel_to_snake(name):
 
 def _parse_markdown(api_text):
     # Parse the api.md file and extracts all function definitions
-    r = re.compile(r'#+\s+`?(\w+)\(\)`?')  # ex: "### `vkl_canvas()`"
+    r = re.compile(r'#+\s+`?(\w+)\(\)`?')  # ex: "### `dvz_canvas()`"
     functions = r.finditer(api_text)
     return functions
 
 
 def _parse_markdown_enums(api_text):
     # Parse the enums.md file and extracts all enums definitions
-    r = re.compile(r'#{2,}\s+`(\w+)`')  # ex: "### `VklMyEnum`"
+    r = re.compile(r'#{2,}\s+`(\w+)`')  # ex: "### `DvzMyEnum`"
     enums = r.finditer(api_text)
     return enums
 
@@ -350,7 +350,7 @@ def insert_graphics_doc(markdown, config):
         n = m.group(1)
         out = ''
         for h in ('Item', 'Vertex', 'Params'):
-            s = f'VklGraphics{n}{h}'
+            s = f'DvzGraphics{n}{h}'
             struct = config['gendoc']['structs'].get(s, None)
             if struct:
                 out += _gen_struct(f'{h} structure: `{s}`', struct)

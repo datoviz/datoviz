@@ -5,7 +5,7 @@ import os.path as op
 from IPython.terminal.pt_inputhooks import register
 
 try:
-    from .pyvisky import App, colormap
+    from .pydatoviz import App, colormap
 except ImportError:
     raise ImportError(
         "Unable to load the shared library, make sure to run in your terminal:\n"
@@ -19,7 +19,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 # Set a null handler on the root logger
-logger = logging.getLogger('visky')
+logger = logging.getLogger('datoviz')
 logger.setLevel(logging.DEBUG)
 logger.addHandler(logging.NullHandler())
 
@@ -100,14 +100,14 @@ def inputhook(context):
     if _EXITING:
         return
     if _APP is None:
-        logger.debug("automatically creating a Visky app")
+        logger.debug("automatically creating a Datoviz app")
         _APP = app()
     assert _APP is not None
     while not context.input_is_ready():
         _APP.run_one_frame()
 
 
-register('visky', inputhook)
+register('datoviz', inputhook)
 
 
 def enable_ipython():
@@ -120,7 +120,7 @@ def enable_ipython():
         from IPython import get_ipython
         ipython = get_ipython()
         if ipython is not None:
-            ipython.magic('%gui visky')
+            ipython.magic('%gui datoviz')
             _IN_IPYTHON = True
     except Exception as e:
         logger.debug("Couldn't enable IPython integration: %s" % str(e))

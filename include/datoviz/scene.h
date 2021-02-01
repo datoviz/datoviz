@@ -2,8 +2,8 @@
 /*  Scene API                                                                                    */
 /*************************************************************************************************/
 
-#ifndef VKL_SCENE_HEADER
-#define VKL_SCENE_HEADER
+#ifndef DVZ_SCENE_HEADER
+#define DVZ_SCENE_HEADER
 
 #include "builtin_visuals.h"
 #include "interact.h"
@@ -18,7 +18,7 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define VKL_MAX_VISUALS_PER_CONTROLLER 64
+#define DVZ_MAX_VISUALS_PER_CONTROLLER 64
 
 
 
@@ -35,22 +35,22 @@
  */
 typedef enum
 {
-    VKL_CONTROLLER_NONE,    // static panel
-    VKL_CONTROLLER_PANZOOM, // pan and zoom with the mouse
-    VKL_CONTROLLER_AXES_2D, // panzoom + 2D axes with ticks, grid, etc.
-    VKL_CONTROLLER_ARCBALL, // 3D rotating model with the mouse (uses quaternions)
-    VKL_CONTROLLER_CAMERA,  // 3D camera with keyboard for movement and mouse for view
-    VKL_CONTROLLER_AXES_3D, // 3D arcball with axes (NOT IMPLEMENTED YET)
-} VklControllerType;
+    DVZ_CONTROLLER_NONE,    // static panel
+    DVZ_CONTROLLER_PANZOOM, // pan and zoom with the mouse
+    DVZ_CONTROLLER_AXES_2D, // panzoom + 2D axes with ticks, grid, etc.
+    DVZ_CONTROLLER_ARCBALL, // 3D rotating model with the mouse (uses quaternions)
+    DVZ_CONTROLLER_CAMERA,  // 3D camera with keyboard for movement and mouse for view
+    DVZ_CONTROLLER_AXES_3D, // 3D arcball with axes (NOT IMPLEMENTED YET)
+} DvzControllerType;
 
 
 
 // Visual flags.
 typedef enum
 {
-    VKL_VISUAL_FLAGS_TRANSFORM_AUTO = 0x0000,
-    VKL_VISUAL_FLAGS_TRANSFORM_NONE = 0x0010,
-} VklVisualFlags;
+    DVZ_VISUAL_FLAGS_TRANSFORM_AUTO = 0x0000,
+    DVZ_VISUAL_FLAGS_TRANSFORM_NONE = 0x0010,
+} DvzVisualFlags;
 
 
 
@@ -78,13 +78,13 @@ visual flags:
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct VklScene VklScene;
-typedef struct VklController VklController;
-typedef struct VklTransformOLD VklTransformOLD;
-typedef struct VklAxes2D VklAxes2D;
-typedef union VklControllerUnion VklControllerUnion;
+typedef struct DvzScene DvzScene;
+typedef struct DvzController DvzController;
+typedef struct DvzTransformOLD DvzTransformOLD;
+typedef struct DvzAxes2D DvzAxes2D;
+typedef union DvzControllerUnion DvzControllerUnion;
 
-typedef void (*VklControllerCallback)(VklController* controller, VklEvent ev);
+typedef void (*DvzControllerCallback)(DvzController* controller, DvzEvent ev);
 
 
 
@@ -92,57 +92,57 @@ typedef void (*VklControllerCallback)(VklController* controller, VklEvent ev);
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-struct VklAxes2D
+struct DvzAxes2D
 {
-    VklAxesContext ctx[2]; // one per dimension
-    VklAxesTicks ticks[2];
-    VklBox box; // box, in data coordinates, corresponding to the box showed with initial panzoom
+    DvzAxesContext ctx[2]; // one per dimension
+    DvzAxesTicks ticks[2];
+    DvzBox box; // box, in data coordinates, corresponding to the box showed with initial panzoom
     float font_size;
 };
 
 
 
-union VklControllerUnion
+union DvzControllerUnion
 {
-    VklAxes2D axes_2D;
+    DvzAxes2D axes_2D;
 };
 
 
 
-struct VklController
+struct DvzController
 {
-    VklObject obj;
-    VklPanel* panel;
+    DvzObject obj;
+    DvzPanel* panel;
     int flags;
 
-    VklControllerType type;
+    DvzControllerType type;
 
     uint32_t visual_count;
-    VklVisual* visuals[VKL_MAX_VISUALS_PER_CONTROLLER];
+    DvzVisual* visuals[DVZ_MAX_VISUALS_PER_CONTROLLER];
 
     uint32_t interact_count;
-    VklInteract interacts[VKL_MAX_VISUALS_PER_CONTROLLER];
+    DvzInteract interacts[DVZ_MAX_VISUALS_PER_CONTROLLER];
 
-    // may call vkl_visual_update() on all visuals in the panel
-    VklControllerCallback callback;
-    VklControllerUnion u;
+    // may call dvz_visual_update() on all visuals in the panel
+    DvzControllerCallback callback;
+    DvzControllerUnion u;
 };
 
 
 
-struct VklScene
+struct DvzScene
 {
-    VklObject obj;
-    VklCanvas* canvas;
+    DvzObject obj;
+    DvzCanvas* canvas;
 
     // The grid contains the panels.
-    VklGrid grid;
+    DvzGrid grid;
 
     // Visuals.
-    VklContainer visuals;
+    DvzContainer visuals;
 
     // Controllers.
-    VklContainer controllers;
+    DvzContainer controllers;
 };
 
 
@@ -162,7 +162,7 @@ struct VklScene
  * @param n_cols number of columns in the grid
  * @returns a pointer to the created scene
  */
-VKY_EXPORT VklScene* vkl_scene(VklCanvas* canvas, uint32_t n_rows, uint32_t n_cols);
+DVZ_EXPORT DvzScene* dvz_scene(DvzCanvas* canvas, uint32_t n_rows, uint32_t n_cols);
 
 
 
@@ -173,7 +173,7 @@ VKY_EXPORT VklScene* vkl_scene(VklCanvas* canvas, uint32_t n_rows, uint32_t n_co
  *
  * @param scene the scene
  */
-VKY_EXPORT void vkl_scene_destroy(VklScene* scene);
+DVZ_EXPORT void dvz_scene_destroy(DvzScene* scene);
 
 
 
@@ -187,7 +187,7 @@ VKY_EXPORT void vkl_scene_destroy(VklScene* scene);
  * @param panel the panel
  * @returns a controller structure
  */
-VKY_EXPORT VklController vkl_controller(VklPanel* panel);
+DVZ_EXPORT DvzController dvz_controller(DvzPanel* panel);
 
 /**
  * Add a visual to a controller.
@@ -195,7 +195,7 @@ VKY_EXPORT VklController vkl_controller(VklPanel* panel);
  * @param controller the controller
  * @param visual the visual
  */
-VKY_EXPORT void vkl_controller_visual(VklController* controller, VklVisual* visual);
+DVZ_EXPORT void dvz_controller_visual(DvzController* controller, DvzVisual* visual);
 
 /**
  * Add an interact to a controller.
@@ -203,17 +203,17 @@ VKY_EXPORT void vkl_controller_visual(VklController* controller, VklVisual* visu
  * @param controller the controller
  * @param interact the interact
  */
-VKY_EXPORT void vkl_controller_interact(VklController* controller, VklInteractType type);
+DVZ_EXPORT void dvz_controller_interact(DvzController* controller, DvzInteractType type);
 
 /**
  * Specify a controller frame callback.
  *
- * Callback signature: `void(VklController* controller, VklEvent ev);`
+ * Callback signature: `void(DvzController* controller, DvzEvent ev);`
  *
  * @param controller the controller
  * @param callback the callback
  */
-VKY_EXPORT void vkl_controller_callback(VklController* controller, VklControllerCallback callback);
+DVZ_EXPORT void dvz_controller_callback(DvzController* controller, DvzControllerCallback callback);
 
 /**
  * Update a controller.
@@ -222,14 +222,14 @@ VKY_EXPORT void vkl_controller_callback(VklController* controller, VklController
  *
  * @param controller the controller
  */
-VKY_EXPORT void vkl_controller_update(VklController* controller);
+DVZ_EXPORT void dvz_controller_update(DvzController* controller);
 
 /**
  * Destroy a controller.
  *
  * @param controller the controller
  */
-VKY_EXPORT void vkl_controller_destroy(VklController* controller);
+DVZ_EXPORT void dvz_controller_destroy(DvzController* controller);
 
 
 /**
@@ -239,8 +239,8 @@ VKY_EXPORT void vkl_controller_destroy(VklController* controller);
  * @param type the controller type
  * @param flags flags for the builtin controller
  */
-VKY_EXPORT VklController
-vkl_controller_builtin(VklPanel* panel, VklControllerType type, int flags);
+DVZ_EXPORT DvzController
+dvz_controller_builtin(DvzPanel* panel, DvzControllerType type, int flags);
 
 
 
@@ -257,8 +257,8 @@ vkl_controller_builtin(VklPanel* panel, VklControllerType type, int flags);
  * @param type the controller type
  * @param flags flags for the builtin controller
  */
-VKY_EXPORT VklPanel*
-vkl_scene_panel(VklScene* scene, uint32_t row, uint32_t col, VklControllerType type, int flags);
+DVZ_EXPORT DvzPanel*
+dvz_scene_panel(DvzScene* scene, uint32_t row, uint32_t col, DvzControllerType type, int flags);
 
 /**
  * Create a builtin or custom visual and add it to a panel.
@@ -267,9 +267,9 @@ vkl_scene_panel(VklScene* scene, uint32_t row, uint32_t col, VklControllerType t
  * @param type the type of visual
  * @param flags flags for the builtin visual
  */
-VKY_EXPORT VklVisual* vkl_scene_visual(VklPanel* panel, VklVisualType type, int flags);
+DVZ_EXPORT DvzVisual* dvz_scene_visual(DvzPanel* panel, DvzVisualType type, int flags);
 
-// VKY_EXPORT void vkl_visual_toggle(VklVisual* visual, VklVisualVisibility visibility);
+// DVZ_EXPORT void dvz_visual_toggle(DvzVisual* visual, DvzVisualVisibility visibility);
 
 
 
@@ -283,7 +283,7 @@ VKY_EXPORT VklVisual* vkl_scene_visual(VklPanel* panel, VklVisualType type, int 
  * @param panel the panel
  * @param pos the position in scene coordinates
  */
-VKY_EXPORT void vkl_camera_pos(VklPanel* panel, vec3 pos);
+DVZ_EXPORT void dvz_camera_pos(DvzPanel* panel, vec3 pos);
 
 /**
  * Set the camera center position (the position the camera points to).
@@ -291,7 +291,7 @@ VKY_EXPORT void vkl_camera_pos(VklPanel* panel, vec3 pos);
  * @param panel the panel
  * @param center the center position
  */
-VKY_EXPORT void vkl_camera_look(VklPanel* panel, vec3 center);
+DVZ_EXPORT void dvz_camera_look(DvzPanel* panel, vec3 center);
 
 /**
  * Set the arcball rotation.
@@ -300,19 +300,19 @@ VKY_EXPORT void vkl_camera_look(VklPanel* panel, vec3 center);
  * @param angle the rotation angle
  * @param axis the rotation angle
  */
-VKY_EXPORT void vkl_arcball_rotate(VklPanel* panel, float angle, vec3 axis);
+DVZ_EXPORT void dvz_arcball_rotate(DvzPanel* panel, float angle, vec3 axis);
 
 // TODO: panzoom functions
 
 
 
-static void _default_controller_callback(VklController* controller, VklEvent ev)
+static void _default_controller_callback(DvzController* controller, DvzEvent ev)
 {
-    VklScene* scene = controller->panel->scene;
-    VklCanvas* canvas = scene->canvas;
+    DvzScene* scene = controller->panel->scene;
+    DvzCanvas* canvas = scene->canvas;
 
     // Controller interactivity.
-    VklInteract* interact = NULL;
+    DvzInteract* interact = NULL;
 
     // Use all interact of the controllers.
     for (uint32_t i = 0; i < controller->interact_count; i++)
@@ -321,8 +321,8 @@ static void _default_controller_callback(VklController* controller, VklEvent ev)
         // float delay = canvas->clock.elapsed - interact->last_update;
 
         // Update the interact using the current panel's viewport.
-        VklViewport viewport = controller->panel->viewport;
-        vkl_interact_update(interact, viewport, &canvas->mouse, &canvas->keyboard);
+        DvzViewport viewport = controller->panel->viewport;
+        dvz_interact_update(interact, viewport, &canvas->mouse, &canvas->keyboard);
         // NOTE: the CPU->GPU transfer occurs at every frame, in another callback below
     }
 }

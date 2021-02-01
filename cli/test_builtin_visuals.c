@@ -1,6 +1,6 @@
 #include "test_builtin_visuals.h"
-#include "../include/visky/builtin_visuals.h"
-#include "../include/visky/interact.h"
+#include "../include/datoviz/builtin_visuals.h"
+#include "../include/datoviz/interact.h"
 #include "../src/interact_utils.h"
 #include "../src/mesh_loader.h"
 #include "test_visuals.h"
@@ -12,77 +12,77 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static VklBufferRegions br_viewport;
+static DvzBufferRegions br_viewport;
 static mat4 MAT4_ID = GLM_MAT4_IDENTITY_INIT;
 static float zero = 0;
 
-static void _mouse_callback(VklCanvas* canvas, VklEvent ev)
+static void _mouse_callback(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
-    VklMouse* mouse = (VklMouse*)ev.user_data;
+    DvzMouse* mouse = (DvzMouse*)ev.user_data;
     ASSERT(mouse != NULL);
-    vkl_mouse_event(mouse, canvas, ev);
+    dvz_mouse_event(mouse, canvas, ev);
 }
 
-static void _resize(VklCanvas* canvas, VklEvent ev)
+static void _resize(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas->viewport.viewport.minDepth < canvas->viewport.viewport.maxDepth);
-    vkl_upload_buffers(canvas, br_viewport, 0, sizeof(VklViewport), &canvas->viewport);
+    dvz_upload_buffers(canvas, br_viewport, 0, sizeof(DvzViewport), &canvas->viewport);
 }
 
-static void _resize_margins(VklCanvas* canvas, VklEvent ev)
+static void _resize_margins(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas->viewport.viewport.minDepth < canvas->viewport.viewport.maxDepth);
     canvas->viewport.margins[0] = 100;
     canvas->viewport.margins[1] = 100;
     canvas->viewport.margins[2] = 100;
     canvas->viewport.margins[3] = 100;
-    vkl_upload_buffers(canvas, br_viewport, 0, sizeof(VklViewport), &canvas->viewport);
+    dvz_upload_buffers(canvas, br_viewport, 0, sizeof(DvzViewport), &canvas->viewport);
 }
 
-static void _common_data(VklVisual* visual)
+static void _common_data(DvzVisual* visual)
 {
     ASSERT(visual != NULL);
-    VklCanvas* canvas = visual->canvas;
+    DvzCanvas* canvas = visual->canvas;
     ASSERT(canvas != NULL);
-    VklContext* ctx = canvas->gpu->context;
+    DvzContext* ctx = canvas->gpu->context;
     ASSERT(ctx != NULL);
 
-    vkl_visual_data(visual, VKL_PROP_MODEL, 0, 1, MAT4_ID);
-    vkl_visual_data(visual, VKL_PROP_VIEW, 0, 1, MAT4_ID);
-    vkl_visual_data(visual, VKL_PROP_PROJ, 0, 1, MAT4_ID);
-    vkl_visual_data(visual, VKL_PROP_TIME, 0, 1, &zero);
+    dvz_visual_data(visual, DVZ_PROP_MODEL, 0, 1, MAT4_ID);
+    dvz_visual_data(visual, DVZ_PROP_VIEW, 0, 1, MAT4_ID);
+    dvz_visual_data(visual, DVZ_PROP_PROJ, 0, 1, MAT4_ID);
+    dvz_visual_data(visual, DVZ_PROP_TIME, 0, 1, &zero);
 
     // Viewport.
-    br_viewport = vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklViewport));
+    br_viewport = dvz_ctx_buffers(ctx, DVZ_BUFFER_TYPE_UNIFORM, 1, sizeof(DvzViewport));
 
     // For the tests, share the same viewport buffer region among all graphics pipelines of the
     // visual.
     for (uint32_t pidx = 0; pidx < visual->graphics_count; pidx++)
     {
-        vkl_visual_buffer(visual, VKL_SOURCE_TYPE_VIEWPORT, pidx, br_viewport);
+        dvz_visual_buffer(visual, DVZ_SOURCE_TYPE_VIEWPORT, pidx, br_viewport);
     }
-    vkl_upload_buffers(canvas, br_viewport, 0, sizeof(VklViewport), &canvas->viewport);
-    vkl_visual_update(visual, canvas->viewport, (VklDataCoords){0}, NULL);
+    dvz_upload_buffers(canvas, br_viewport, 0, sizeof(DvzViewport), &canvas->viewport);
+    dvz_visual_update(visual, canvas->viewport, (DvzDataCoords){0}, NULL);
 
-    vkl_event_callback(
-        canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _visual_canvas_fill, visual);
+    dvz_event_callback(
+        canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, _visual_canvas_fill, visual);
 }
 
 #define INIT                                                                                      \
-    VklApp* app = vkl_app(VKL_BACKEND_GLFW);                                                      \
-    VklGpu* gpu = vkl_gpu(app, 0);                                                                \
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);                              \
-    VklContext* ctx = gpu->context;                                                               \
+    DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);                                                      \
+    DvzGpu* gpu = dvz_gpu(app, 0);                                                                \
+    DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);                              \
+    DvzContext* ctx = gpu->context;                                                               \
     ASSERT(ctx != NULL);
 
 #define RUN                                                                                       \
     _common_data(&visual);                                                                        \
-    vkl_event_callback(canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _resize, NULL);          \
-    vkl_app_run(app, N_FRAMES);
+    dvz_event_callback(canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, _resize, NULL);          \
+    dvz_app_run(app, N_FRAMES);
 
 #define END                                                                                       \
-    vkl_visual_destroy(&visual);                                                                  \
+    dvz_visual_destroy(&visual);                                                                  \
     TEST_END
 
 // NOTE: avoid screenshot in interactive mode, otherwise the canvas is destroyed *before* taking
@@ -94,7 +94,7 @@ static void _common_data(VklVisual* visual)
         snprintf(                                                                                 \
             screenshot_path, sizeof(screenshot_path), "%s/docs/images/visuals/%s.png", ROOT_DIR,  \
             name);                                                                                \
-        vkl_screenshot_file(canvas, screenshot_path);                                             \
+        dvz_screenshot_file(canvas, screenshot_path);                                             \
     }
 
 
@@ -107,8 +107,8 @@ int test_visuals_point(TestContext* context)
 {
     INIT;
 
-    VklVisual visual = vkl_visual(canvas);
-    vkl_visual_builtin(&visual, VKL_VISUAL_POINT, 0);
+    DvzVisual visual = dvz_visual(canvas);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_POINT, 0);
 
     const uint32_t N = 1000;
     dvec3* pos = calloc(N, sizeof(dvec3));
@@ -120,12 +120,12 @@ int test_visuals_point(TestContext* context)
     }
 
     // Set visual data.
-    vkl_visual_data(&visual, VKL_PROP_POS, 0, N, pos);
-    vkl_visual_data(&visual, VKL_PROP_COLOR, 0, N, color);
+    dvz_visual_data(&visual, DVZ_PROP_POS, 0, N, pos);
+    dvz_visual_data(&visual, DVZ_PROP_COLOR, 0, N, color);
 
     // Params.
     float param = 20.0f;
-    vkl_visual_data(&visual, VKL_PROP_MARKER_SIZE, 0, 1, &param);
+    dvz_visual_data(&visual, DVZ_PROP_MARKER_SIZE, 0, 1, &param);
 
     RUN;
     SCREENSHOT("point")
@@ -140,8 +140,8 @@ int test_visuals_marker(TestContext* context)
 {
     INIT;
 
-    VklVisual visual = vkl_visual(canvas);
-    vkl_visual_builtin(&visual, VKL_VISUAL_MARKER, 0);
+    DvzVisual visual = dvz_visual(canvas);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_MARKER, 0);
 
     const uint32_t N = 1000;
     dvec3* pos = calloc(N, sizeof(dvec3));
@@ -153,16 +153,16 @@ int test_visuals_marker(TestContext* context)
         t = -1 + 2 * i / (float)(N - 1);
         pos[i][0] = t;
         pos[i][1] = .25 * sin(M_2PI * t);
-        pos[i][1] += .25 * vkl_rand_normal();
-        vkl_colormap(VKL_CPAL256_GLASBEY, i % 256, color[i]);
+        pos[i][1] += .25 * dvz_rand_normal();
+        dvz_colormap(DVZ_CPAL256_GLASBEY, i % 256, color[i]);
         color[i][3] = 192;
-        size[i] = 5 + 45 * vkl_rand_float();
+        size[i] = 5 + 45 * dvz_rand_float();
     }
 
     // Set visual data.
-    vkl_visual_data(&visual, VKL_PROP_POS, 0, N, pos);
-    vkl_visual_data(&visual, VKL_PROP_COLOR, 0, N, color);
-    vkl_visual_data(&visual, VKL_PROP_MARKER_SIZE, 0, N, size);
+    dvz_visual_data(&visual, DVZ_PROP_POS, 0, N, pos);
+    dvz_visual_data(&visual, DVZ_PROP_COLOR, 0, N, color);
+    dvz_visual_data(&visual, DVZ_PROP_MARKER_SIZE, 0, N, size);
 
     RUN;
     SCREENSHOT("marker")
@@ -178,8 +178,8 @@ int test_visuals_line(TestContext* context)
 {
     INIT;
 
-    VklVisual visual = vkl_visual(canvas);
-    vkl_visual_builtin(&visual, VKL_VISUAL_LINE, 0);
+    DvzVisual visual = dvz_visual(canvas);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_LINE, 0);
 
     const uint32_t N = 100;
     dvec3* pos0 = calloc(N, sizeof(dvec3));
@@ -197,13 +197,13 @@ int test_visuals_line(TestContext* context)
         pos1[i][0] = .75 * cos(t);
         pos1[i][1] = y * .75 * sin(t);
 
-        vkl_colormap_scale(VKL_CMAP_HSV, i, 0, N, color[i]);
+        dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, N, color[i]);
     }
 
     // Set visual data.
-    vkl_visual_data(&visual, VKL_PROP_POS, 0, N, pos0);
-    vkl_visual_data(&visual, VKL_PROP_POS, 1, N, pos1);
-    vkl_visual_data(&visual, VKL_PROP_COLOR, 0, N, color);
+    dvz_visual_data(&visual, DVZ_PROP_POS, 0, N, pos0);
+    dvz_visual_data(&visual, DVZ_PROP_POS, 1, N, pos1);
+    dvz_visual_data(&visual, DVZ_PROP_COLOR, 0, N, color);
 
     RUN;
     FREE(pos0);
@@ -219,8 +219,8 @@ int test_visuals_line_strip(TestContext* context)
 {
     INIT;
 
-    VklVisual visual = vkl_visual(canvas);
-    vkl_visual_builtin(&visual, VKL_VISUAL_LINE_STRIP, 0);
+    DvzVisual visual = dvz_visual(canvas);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_LINE_STRIP, 0);
 
     const uint32_t N = 1000;
     dvec3* pos = calloc(2 * N + 2, sizeof(dvec3));
@@ -231,7 +231,7 @@ int test_visuals_line_strip(TestContext* context)
         t = -1 + 2 * (float)i / (N - 1);
         pos[i][0] = -1 + 2 * t;
         pos[i][1] = .5 * sin(8 * M_2PI * t) - .25;
-        vkl_colormap_scale(VKL_CMAP_RAINBOW, t, 0, 1, color[i]);
+        dvz_colormap_scale(DVZ_CMAP_RAINBOW, t, 0, 1, color[i]);
     }
     // Trick to display multiple lines with a single visual/graphics/draw call: add duplicate
     // points with alpha=0 at the end of line #i and the beginning of line #i+1. We need to add as
@@ -246,14 +246,14 @@ int test_visuals_line_strip(TestContext* context)
         t = -1 + 2 * (float)i / (N - 1);
         pos[i + N + 2][0] = -1 + 2 * t;
         pos[i + N + 2][1] = .5 * sin(8 * M_2PI * t) + .25;
-        vkl_colormap_scale(VKL_CMAP_RAINBOW, t, 0, 1, color[i + N + 2]);
+        dvz_colormap_scale(DVZ_CMAP_RAINBOW, t, 0, 1, color[i + N + 2]);
     }
     pos[N + 1][0] = pos[N + 2][0];
     pos[N + 1][1] = pos[N + 2][1];
 
     // Set visual data.
-    vkl_visual_data(&visual, VKL_PROP_POS, 0, 2 * N + 2, pos);
-    vkl_visual_data(&visual, VKL_PROP_COLOR, 0, 2 * N + 2, color);
+    dvz_visual_data(&visual, DVZ_PROP_POS, 0, 2 * N + 2, pos);
+    dvz_visual_data(&visual, DVZ_PROP_COLOR, 0, 2 * N + 2, color);
 
     RUN;
     FREE(pos);
@@ -268,8 +268,8 @@ int test_visuals_triangle(TestContext* context)
 {
     INIT;
 
-    VklVisual visual = vkl_visual(canvas);
-    vkl_visual_builtin(&visual, VKL_VISUAL_TRIANGLE, 0);
+    DvzVisual visual = dvz_visual(canvas);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_TRIANGLE, 0);
 
     const uint32_t N = 40;
     dvec3* pos0 = calloc(N, sizeof(dvec3));
@@ -283,7 +283,7 @@ int test_visuals_triangle(TestContext* context)
         t = i / (float)N;
         pos0[i][0] = -.75 + 1.5 * t * t;
         pos0[i][1] = +.75 - 1.5 * t;
-        vkl_colormap_scale(VKL_CMAP_HSV, i, 0, N, color[i]);
+        dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, N, color[i]);
         color[i][3] = 128;
 
         // Copy the 2 other points per triangle.
@@ -300,10 +300,10 @@ int test_visuals_triangle(TestContext* context)
     }
 
     // Set visual data.
-    vkl_visual_data(&visual, VKL_PROP_POS, 0, N, pos0);
-    vkl_visual_data(&visual, VKL_PROP_POS, 1, N, pos1);
-    vkl_visual_data(&visual, VKL_PROP_POS, 2, N, pos2);
-    vkl_visual_data(&visual, VKL_PROP_COLOR, 0, N, color);
+    dvz_visual_data(&visual, DVZ_PROP_POS, 0, N, pos0);
+    dvz_visual_data(&visual, DVZ_PROP_POS, 1, N, pos1);
+    dvz_visual_data(&visual, DVZ_PROP_POS, 2, N, pos2);
+    dvz_visual_data(&visual, DVZ_PROP_COLOR, 0, N, color);
 
     RUN;
     FREE(pos0);
@@ -320,8 +320,8 @@ int test_visuals_triangle_strip(TestContext* context)
 {
     INIT;
 
-    VklVisual visual = vkl_visual(canvas);
-    vkl_visual_builtin(&visual, VKL_VISUAL_TRIANGLE_STRIP, 0);
+    DvzVisual visual = dvz_visual(canvas);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_TRIANGLE_STRIP, 0);
 
     const uint32_t N = 40;
     dvec3* pos = calloc(N, sizeof(dvec3));
@@ -336,12 +336,12 @@ int test_visuals_triangle_strip(TestContext* context)
         a = M_2PI * t;
         pos[i][0] = (.5 + (i % 2 == 0 ? +m : -m)) * cos(a);
         pos[i][1] = y * (.5 + (i % 2 == 0 ? +m : -m)) * sin(a);
-        vkl_colormap_scale(VKL_CMAP_HSV, t, 0, 1, color[i]);
+        dvz_colormap_scale(DVZ_CMAP_HSV, t, 0, 1, color[i]);
     }
 
     // Set visual data.
-    vkl_visual_data(&visual, VKL_PROP_POS, 0, N, pos);
-    vkl_visual_data(&visual, VKL_PROP_COLOR, 0, N, color);
+    dvz_visual_data(&visual, DVZ_PROP_POS, 0, N, pos);
+    dvz_visual_data(&visual, DVZ_PROP_COLOR, 0, N, color);
 
     RUN;
     FREE(pos);
@@ -356,8 +356,8 @@ int test_visuals_triangle_fan(TestContext* context)
 {
     INIT;
 
-    VklVisual visual = vkl_visual(canvas);
-    vkl_visual_builtin(&visual, VKL_VISUAL_TRIANGLE_FAN, 0);
+    DvzVisual visual = dvz_visual(canvas);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_TRIANGLE_FAN, 0);
 
     const uint32_t N = 30;
     dvec3* pos = calloc(N, sizeof(dvec3));
@@ -371,12 +371,12 @@ int test_visuals_triangle_fan(TestContext* context)
         a = M_2PI * t;
         pos[i][0] = .5 * cos(a);
         pos[i][1] = y * .5 * sin(a);
-        vkl_colormap_scale(VKL_CMAP_HSV, t, 0, 1, color[i]);
+        dvz_colormap_scale(DVZ_CMAP_HSV, t, 0, 1, color[i]);
     }
 
     // Set visual data.
-    vkl_visual_data(&visual, VKL_PROP_POS, 0, N, pos);
-    vkl_visual_data(&visual, VKL_PROP_COLOR, 0, N, color);
+    dvz_visual_data(&visual, DVZ_PROP_POS, 0, N, pos);
+    dvz_visual_data(&visual, DVZ_PROP_COLOR, 0, N, color);
 
     RUN;
     FREE(pos);
@@ -394,16 +394,16 @@ int test_visuals_triangle_fan(TestContext* context)
 int test_visuals_axes_2D_1(TestContext* context)
 {
     INIT;
-    vkl_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});
+    dvz_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});
 
-    VklFontAtlas* atlas = &gpu->context->font_atlas;
+    DvzFontAtlas* atlas = &gpu->context->font_atlas;
     ASSERT(strlen(atlas->font_str) > 0);
 
-    VklVisual visual = vkl_visual(canvas);
-    vkl_visual_builtin(&visual, VKL_VISUAL_AXES_2D, VKL_AXES_COORD_X);
+    DvzVisual visual = dvz_visual(canvas);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_AXES_2D, DVZ_AXES_COORD_X);
 
     // Font atlas texture.
-    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_FONT_ATLAS, 0, atlas->texture);
+    dvz_visual_texture(&visual, DVZ_SOURCE_TYPE_FONT_ATLAS, 0, atlas->texture);
 
     // Prepare the data.
     const uint32_t N = 5;
@@ -426,37 +426,37 @@ int test_visuals_axes_2D_1(TestContext* context)
     }
 
     // Set the visual data.
-    vkl_visual_data(&visual, VKL_PROP_POS, VKL_AXES_LEVEL_MINOR, N_minor, xticks_minor);
-    vkl_visual_data(&visual, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR, N, xticks);
-    vkl_visual_data(&visual, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, xticks);
-    vkl_visual_data(&visual, VKL_PROP_TEXT, 0, N, strings);
+    dvz_visual_data(&visual, DVZ_PROP_POS, DVZ_AXES_LEVEL_MINOR, N_minor, xticks_minor);
+    dvz_visual_data(&visual, DVZ_PROP_POS, DVZ_AXES_LEVEL_MAJOR, N, xticks);
+    dvz_visual_data(&visual, DVZ_PROP_POS, DVZ_AXES_LEVEL_GRID, N, xticks);
+    dvz_visual_data(&visual, DVZ_PROP_TEXT, 0, N, strings);
 
     // Text params.
-    VklGraphicsTextParams params = {0};
+    DvzGraphicsTextParams params = {0};
     params.grid_size[0] = (int32_t)atlas->rows;
     params.grid_size[1] = (int32_t)atlas->cols;
     params.tex_size[0] = (int32_t)atlas->width;
     params.tex_size[1] = (int32_t)atlas->height;
-    vkl_visual_data_source(&visual, VKL_SOURCE_TYPE_PARAM, 0, 0, 1, 1, &params);
+    dvz_visual_data_source(&visual, DVZ_SOURCE_TYPE_PARAM, 0, 0, 1, 1, &params);
 
     _common_data(&visual);
-    vkl_event_callback(canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _resize_margins, NULL);
+    dvz_event_callback(canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, _resize_margins, NULL);
 
-    vkl_app_run(app, N_FRAMES);
+    dvz_app_run(app, N_FRAMES);
     SCREENSHOT("axes")
     FREE(xticks);
     FREE(xticks_minor);
     FREE(text);
-    vkl_visual_destroy(&visual);
+    dvz_visual_destroy(&visual);
     TEST_END
 }
 
 
 
-static void _visual_update(VklCanvas* canvas, VklEvent ev)
+static void _visual_update(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
-    VklVisual* visual = ev.user_data;
+    DvzVisual* visual = ev.user_data;
     ASSERT(visual != NULL);
 
     const uint32_t N = 2 + (ev.u.t.idx % 16);
@@ -474,14 +474,14 @@ static void _visual_update(VklCanvas* canvas, VklEvent ev)
     }
 
     // Set visual data.
-    vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR, N, xticks);
-    vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, xticks);
-    vkl_visual_data(visual, VKL_PROP_TEXT, 0, N, text);
+    dvz_visual_data(visual, DVZ_PROP_POS, DVZ_AXES_LEVEL_MAJOR, N, xticks);
+    dvz_visual_data(visual, DVZ_PROP_POS, DVZ_AXES_LEVEL_GRID, N, xticks);
+    dvz_visual_data(visual, DVZ_PROP_TEXT, 0, N, text);
 
-    vkl_visual_update(visual, canvas->viewport, (VklDataCoords){0}, NULL);
+    dvz_visual_update(visual, canvas->viewport, (DvzDataCoords){0}, NULL);
     // Manual trigger of full refill in canvas main loop. Normally this is automatically handled
     // by the scene API, which is not used in this test.
-    vkl_canvas_to_refill(canvas);
+    dvz_canvas_to_refill(canvas);
 
     FREE(xticks);
     FREE(yticks);
@@ -491,16 +491,16 @@ static void _visual_update(VklCanvas* canvas, VklEvent ev)
 int test_visuals_axes_2D_update(TestContext* context)
 {
     INIT;
-    vkl_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});
+    dvz_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});
 
-    VklFontAtlas* atlas = &gpu->context->font_atlas;
+    DvzFontAtlas* atlas = &gpu->context->font_atlas;
     ASSERT(strlen(atlas->font_str) > 0);
 
-    VklVisual visual = vkl_visual(canvas);
+    DvzVisual visual = dvz_visual(canvas);
 
-    vkl_visual_builtin(&visual, VKL_VISUAL_AXES_2D, VKL_AXES_COORD_X);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_AXES_2D, DVZ_AXES_COORD_X);
 
-    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_FONT_ATLAS, 0, atlas->texture);
+    dvz_visual_texture(&visual, DVZ_SOURCE_TYPE_FONT_ATLAS, 0, atlas->texture);
 
     const uint32_t N = 5;
     double* xticks = calloc(N, sizeof(double));
@@ -517,38 +517,38 @@ int test_visuals_axes_2D_update(TestContext* context)
     }
 
     // Set visual data.
-    vkl_visual_data(&visual, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR, N, xticks);
-    vkl_visual_data(&visual, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, xticks);
-    vkl_visual_data(&visual, VKL_PROP_TEXT, 0, N, text);
+    dvz_visual_data(&visual, DVZ_PROP_POS, DVZ_AXES_LEVEL_MAJOR, N, xticks);
+    dvz_visual_data(&visual, DVZ_PROP_POS, DVZ_AXES_LEVEL_GRID, N, xticks);
+    dvz_visual_data(&visual, DVZ_PROP_TEXT, 0, N, text);
 
     cvec4 color = {255, 0, 0, 255};
-    vkl_visual_data(&visual, VKL_PROP_COLOR, VKL_AXES_LEVEL_MAJOR, 1, color);
+    dvz_visual_data(&visual, DVZ_PROP_COLOR, DVZ_AXES_LEVEL_MAJOR, 1, color);
     color[0] = 0;
     color[1] = 255;
-    vkl_visual_data(&visual, VKL_PROP_COLOR, VKL_AXES_LEVEL_GRID, 1, color);
+    dvz_visual_data(&visual, DVZ_PROP_COLOR, DVZ_AXES_LEVEL_GRID, 1, color);
 
     float lw = 10;
-    vkl_visual_data(&visual, VKL_PROP_LINE_WIDTH, VKL_AXES_LEVEL_MAJOR, 1, &lw);
+    dvz_visual_data(&visual, DVZ_PROP_LINE_WIDTH, DVZ_AXES_LEVEL_MAJOR, 1, &lw);
     lw = 5;
-    vkl_visual_data(&visual, VKL_PROP_LINE_WIDTH, VKL_AXES_LEVEL_GRID, 1, &lw);
+    dvz_visual_data(&visual, DVZ_PROP_LINE_WIDTH, DVZ_AXES_LEVEL_GRID, 1, &lw);
 
     // Text params.
-    VklGraphicsTextParams params = {0};
+    DvzGraphicsTextParams params = {0};
     params.grid_size[0] = (int32_t)atlas->rows;
     params.grid_size[1] = (int32_t)atlas->cols;
     params.tex_size[0] = (int32_t)atlas->width;
     params.tex_size[1] = (int32_t)atlas->height;
-    vkl_visual_data_source(&visual, VKL_SOURCE_TYPE_PARAM, 0, 0, 1, 1, &params);
+    dvz_visual_data_source(&visual, DVZ_SOURCE_TYPE_PARAM, 0, 0, 1, 1, &params);
 
     _common_data(&visual);
 
-    vkl_event_callback(canvas, VKL_EVENT_TIMER, .1, VKL_EVENT_MODE_SYNC, _visual_update, &visual);
-    vkl_event_callback(canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _resize_margins, NULL);
-    vkl_app_run(app, N_FRAMES);
+    dvz_event_callback(canvas, DVZ_EVENT_TIMER, .1, DVZ_EVENT_MODE_SYNC, _visual_update, &visual);
+    dvz_event_callback(canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, _resize_margins, NULL);
+    dvz_app_run(app, N_FRAMES);
     FREE(xticks);
     FREE(yticks);
     FREE(text);
-    vkl_visual_destroy(&visual);
+    dvz_visual_destroy(&visual);
     TEST_END
 }
 
@@ -568,8 +568,8 @@ int test_visuals_polygon(TestContext* context)
 {
     INIT;
 
-    VklVisual visual = vkl_visual(canvas);
-    vkl_visual_builtin(&visual, VKL_VISUAL_POLYGON, 0);
+    DvzVisual visual = dvz_visual(canvas);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_POLYGON, 0);
 
     // Set polygons.
     const uint32_t n0 = 4, n1 = 5, n2 = 6;
@@ -588,15 +588,15 @@ int test_visuals_polygon(TestContext* context)
 
     // Polygon colors.
     cvec4 color[3] = {0};
-    VklColormap cmap = VKL_CPAL256_GLASBEY;
-    vkl_colormap(cmap, 0, color[0]);
-    vkl_colormap(cmap, 1, color[1]);
-    vkl_colormap(cmap, 2, color[2]);
+    DvzColormap cmap = DVZ_CPAL256_GLASBEY;
+    dvz_colormap(cmap, 0, color[0]);
+    dvz_colormap(cmap, 1, color[1]);
+    dvz_colormap(cmap, 2, color[2]);
 
     // Set visual data.
-    vkl_visual_data(&visual, VKL_PROP_POS, 0, point_count, points);
-    vkl_visual_data(&visual, VKL_PROP_LENGTH, 0, 3, poly_lengths);
-    vkl_visual_data(&visual, VKL_PROP_COLOR, 0, 3, color);
+    dvz_visual_data(&visual, DVZ_PROP_POS, 0, point_count, points);
+    dvz_visual_data(&visual, DVZ_PROP_LENGTH, 0, 3, poly_lengths);
+    dvz_visual_data(&visual, DVZ_PROP_COLOR, 0, 3, color);
 
     RUN;
     SCREENSHOT("polygon")
@@ -609,51 +609,51 @@ int test_visuals_polygon(TestContext* context)
 /*  3D visual tests                                                                              */
 /*************************************************************************************************/
 
-static void _update_interact(VklCanvas* canvas, VklEvent ev)
+static void _update_interact(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
-    VklVisual* visual = (VklVisual*)ev.user_data;
+    DvzVisual* visual = (DvzVisual*)ev.user_data;
     ASSERT(visual != NULL);
 
-    VklInteract* interact = visual->user_data;
-    vkl_interact_update(interact, canvas->viewport, &canvas->mouse, &canvas->keyboard);
-    VklSource* source = vkl_source_get(visual, VKL_SOURCE_TYPE_MVP, 0);
-    VklBufferRegions* br = &source->u.br;
-    vkl_upload_buffers(canvas, *br, 0, br->size, &interact->mvp);
+    DvzInteract* interact = visual->user_data;
+    dvz_interact_update(interact, canvas->viewport, &canvas->mouse, &canvas->keyboard);
+    DvzSource* source = dvz_source_get(visual, DVZ_SOURCE_TYPE_MVP, 0);
+    DvzBufferRegions* br = &source->u.br;
+    dvz_upload_buffers(canvas, *br, 0, br->size, &interact->mvp);
 }
 
 int test_visuals_mesh(TestContext* context)
 {
     INIT;
 
-    VklVisual visual = vkl_visual(canvas);
-    vkl_visual_builtin(&visual, VKL_VISUAL_MESH, 0);
+    DvzVisual visual = dvz_visual(canvas);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_MESH, 0);
 
     // Load a mesh file.
     char path[1024];
     snprintf(path, sizeof(path), "%s/mesh/%s", DATA_DIR, "brain.obj");
-    VklMesh mesh = vkl_mesh_obj(path);
-    vkl_mesh_rotate(&mesh, M_PI, (vec3){1, 0, 0});
-    vkl_mesh_transform(&mesh);
+    DvzMesh mesh = dvz_mesh_obj(path);
+    dvz_mesh_rotate(&mesh, M_PI, (vec3){1, 0, 0});
+    dvz_mesh_transform(&mesh);
 
     uint32_t nv = mesh.vertices.item_count;
     uint32_t ni = mesh.indices.item_count;
 
     // Set visual data.
-    vkl_visual_data_source(&visual, VKL_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
-    vkl_visual_data_source(&visual, VKL_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
+    dvz_visual_data_source(&visual, DVZ_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
+    dvz_visual_data_source(&visual, DVZ_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
 
-    VklGraphicsMeshParams params = default_graphics_mesh_params(VKL_CAMERA_EYE);
-    vkl_visual_data(&visual, VKL_PROP_LIGHT_PARAMS, 0, 1, &params.lights_params_0);
-    vkl_visual_data(&visual, VKL_PROP_LIGHT_POS, 0, 1, &params.lights_pos_0);
-    vkl_visual_data(&visual, VKL_PROP_TEXCOEFS, 0, 1, &params.tex_coefs);
-    vkl_visual_data(&visual, VKL_PROP_VIEW_POS, 0, 1, &params.view_pos);
+    DvzGraphicsMeshParams params = default_graphics_mesh_params(DVZ_CAMERA_EYE);
+    dvz_visual_data(&visual, DVZ_PROP_LIGHT_PARAMS, 0, 1, &params.lights_params_0);
+    dvz_visual_data(&visual, DVZ_PROP_LIGHT_POS, 0, 1, &params.lights_pos_0);
+    dvz_visual_data(&visual, DVZ_PROP_TEXCOEFS, 0, 1, &params.tex_coefs);
+    dvz_visual_data(&visual, DVZ_PROP_VIEW_POS, 0, 1, &params.view_pos);
 
-    VklInteract interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
+    DvzInteract interact = dvz_interact_builtin(canvas, DVZ_INTERACT_ARCBALL);
     visual.user_data = &interact;
-    vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _update_interact, &visual);
+    dvz_event_callback(canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _update_interact, &visual);
 
-    VklArcball* arcball = &interact.u.a;
+    DvzArcball* arcball = &interact.u.a;
     versor q;
     glm_quatv(q, +M_PI / 6, (vec3){1, 0, 0});
     glm_quat_mul(arcball->rotation, q, arcball->rotation);
@@ -673,8 +673,8 @@ int test_visuals_volume_slice(TestContext* context)
 {
     INIT;
 
-    VklVisual visual = vkl_visual(canvas);
-    vkl_visual_builtin(&visual, VKL_VISUAL_VOLUME_SLICE, 0);
+    DvzVisual visual = dvz_visual(canvas);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_VOLUME_SLICE, 0);
 
     float x = MOUSE_VOLUME_DEPTH / (float)MOUSE_VOLUME_HEIGHT;
     float y = 1;
@@ -699,38 +699,38 @@ int test_visuals_volume_slice(TestContext* context)
         uvw3[i][0] = 0, uvw3[i][1] = 0, uvw3[i][2] = t;
     }
 
-    vkl_visual_data(&visual, VKL_PROP_POS, 0, 8, p0);
-    vkl_visual_data(&visual, VKL_PROP_POS, 1, 8, p1);
-    vkl_visual_data(&visual, VKL_PROP_POS, 2, 8, p2);
-    vkl_visual_data(&visual, VKL_PROP_POS, 3, 8, p3);
+    dvz_visual_data(&visual, DVZ_PROP_POS, 0, 8, p0);
+    dvz_visual_data(&visual, DVZ_PROP_POS, 1, 8, p1);
+    dvz_visual_data(&visual, DVZ_PROP_POS, 2, 8, p2);
+    dvz_visual_data(&visual, DVZ_PROP_POS, 3, 8, p3);
 
-    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 0, 8, uvw0);
-    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 1, 8, uvw1);
-    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 2, 8, uvw2);
-    vkl_visual_data(&visual, VKL_PROP_TEXCOORDS, 3, 8, uvw3);
+    dvz_visual_data(&visual, DVZ_PROP_TEXCOORDS, 0, 8, uvw0);
+    dvz_visual_data(&visual, DVZ_PROP_TEXCOORDS, 1, 8, uvw1);
+    dvz_visual_data(&visual, DVZ_PROP_TEXCOORDS, 2, 8, uvw2);
+    dvz_visual_data(&visual, DVZ_PROP_TEXCOORDS, 3, 8, uvw3);
 
-    vkl_visual_data(&visual, VKL_PROP_TRANSFER_X, 0, 1, (vec4[]){{0, 1, 1, 1}});
-    vkl_visual_data(&visual, VKL_PROP_TRANSFER_Y, 0, 1, (vec4[]){{0, 1, 1, 1}});
-    vkl_visual_data(&visual, VKL_PROP_TRANSFER_X, 1, 1, (vec4[]){{0, .05, .051, 1}});
-    vkl_visual_data(&visual, VKL_PROP_TRANSFER_Y, 1, 1, (vec4[]){{0, 0, .75, .75}});
+    dvz_visual_data(&visual, DVZ_PROP_TRANSFER_X, 0, 1, (vec4[]){{0, 1, 1, 1}});
+    dvz_visual_data(&visual, DVZ_PROP_TRANSFER_Y, 0, 1, (vec4[]){{0, 1, 1, 1}});
+    dvz_visual_data(&visual, DVZ_PROP_TRANSFER_X, 1, 1, (vec4[]){{0, .05, .051, 1}});
+    dvz_visual_data(&visual, DVZ_PROP_TRANSFER_Y, 1, 1, (vec4[]){{0, 0, .75, .75}});
 
     float scale = 13;
-    vkl_visual_data(&visual, VKL_PROP_SCALE, 0, 1, &scale);
+    dvz_visual_data(&visual, DVZ_PROP_SCALE, 0, 1, &scale);
 
-    VklColormap cmap = VKL_CMAP_BONE;
-    vkl_visual_data(&visual, VKL_PROP_COLORMAP, 0, 1, &cmap);
+    DvzColormap cmap = DVZ_CMAP_BONE;
+    dvz_visual_data(&visual, DVZ_PROP_COLORMAP, 0, 1, &cmap);
 
     // Texture.
-    VklTexture* volume = _mouse_volume(canvas);
-    vkl_visual_texture(
-        &visual, VKL_SOURCE_TYPE_COLOR_TEXTURE, 0, gpu->context->color_texture.texture);
-    vkl_visual_texture(&visual, VKL_SOURCE_TYPE_VOLUME, 0, volume);
+    DvzTexture* volume = _mouse_volume(canvas);
+    dvz_visual_texture(
+        &visual, DVZ_SOURCE_TYPE_COLOR_TEXTURE, 0, gpu->context->color_texture.texture);
+    dvz_visual_texture(&visual, DVZ_SOURCE_TYPE_VOLUME, 0, volume);
 
-    VklInteract interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
+    DvzInteract interact = dvz_interact_builtin(canvas, DVZ_INTERACT_ARCBALL);
     visual.user_data = &interact;
-    vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _update_interact, &visual);
+    dvz_event_callback(canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _update_interact, &visual);
 
-    VklArcball* arcball = &interact.u.a;
+    DvzArcball* arcball = &interact.u.a;
     versor q;
     glm_quatv(q, +M_PI / 8, (vec3){1, 0, 0});
     glm_quat_mul(arcball->rotation, q, arcball->rotation);

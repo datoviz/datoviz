@@ -3,40 +3,40 @@
 
 ## Context
 
-### `vkl_context()`
-### `vkl_context_reset()`
-### `vkl_context_destroy()`
+### `dvz_context()`
+### `dvz_context_reset()`
+### `dvz_context_destroy()`
 
 
 ## Buffers
 
-### `vkl_ctx_buffers()`
-### `vkl_ctx_buffers_resize()`
+### `dvz_ctx_buffers()`
+### `dvz_ctx_buffers_resize()`
 
 
 ## Textures
 
-### `vkl_ctx_texture()`
-### `vkl_texture_resize()`
-### `vkl_texture_filter()`
-### `vkl_texture_address_mode()`
-### `vkl_texture_upload()`
-### `vkl_texture_download()`
-### `vkl_texture_copy()`
-### `vkl_texture_destroy()`
+### `dvz_ctx_texture()`
+### `dvz_texture_resize()`
+### `dvz_texture_filter()`
+### `dvz_texture_address_mode()`
+### `dvz_texture_upload()`
+### `dvz_texture_download()`
+### `dvz_texture_copy()`
+### `dvz_texture_destroy()`
 
 
 ## Compute pipeline
 
-### `vkl_ctx_compute()`
+### `dvz_ctx_compute()`
 
 
 ## Data transfers
 
-### `vkl_upload_buffers()`
-### `vkl_download_buffers()`
-### `vkl_copy_buffers()`
-### `vkl_upload_texture()`
-### `vkl_download_texture()`
-### `vkl_copy_texture()`
-### `vkl_process_transfers()`
+### `dvz_upload_buffers()`
+### `dvz_download_buffers()`
+### `dvz_copy_buffers()`
+### `dvz_upload_texture()`
+### `dvz_download_texture()`
+### `dvz_copy_texture()`
+### `dvz_process_transfers()`

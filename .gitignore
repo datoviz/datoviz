@@ -22,7 +22,7 @@ bindings/r
 _skbuild
 site
 _shaders.h
-pyvisky.c
+pydatoviz.c
 .joblib
 *.pkl
 .DS_Store
@@ -34,7 +34,7 @@ pyvisky.c
 *.ts
 *.bin
 data.zip
-visky_example
+datoviz_example
 
 # Prerequisites
 *.d

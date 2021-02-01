@@ -1,12 +1,10 @@
-// #include <visky/triangulation.h>
-
 #include <array>
 #include <cstring>
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
 
-#include <visky/common.h>
+#include <datoviz/common.h>
 
 #include <earcut.hpp>
 
@@ -17,7 +15,7 @@
 /*************************************************************************************************/
 
 // C wrapper for the ear-clip algorithm implementation in earcut.hpp
-void vkl_triangulate_polygon(
+void dvz_triangulate_polygon(
     uint32_t point_count, const dvec3* polygon, uint32_t* index_count, uint32_t** out_indices)
 {
     std::vector<std::vector<std::array<double, 3>>> polygon_v;

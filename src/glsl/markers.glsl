@@ -250,7 +250,7 @@ float marker_vbar(vec2 P, float size)
 
 
 float select_marker(vec2 P, float size, float marker_type) {
-    // NOTE: the numbers need to correspond to VklMarkerType enum in visuals.h
+    // NOTE: the numbers need to correspond to DvzMarkerType enum in visuals.h
     if (marker_type <  0.5) return marker_disc(P, size);
     if (marker_type <  1.5) return marker_asterisk(P, size);
     if (marker_type <  2.5) return marker_chevron(P, size);

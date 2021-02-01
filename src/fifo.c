@@ -1,4 +1,4 @@
-#include "../include/visky/fifo.h"
+#include "../include/datoviz/fifo.h"
 
 
 
@@ -6,12 +6,12 @@
 /*  Thread-safe FIFO queue                                                                       */
 /*************************************************************************************************/
 
-VklFifo vkl_fifo(int32_t capacity)
+DvzFifo dvz_fifo(int32_t capacity)
 {
     log_trace("creating generic FIFO queue with a capacity of %d items", capacity);
     ASSERT(capacity >= 2);
-    VklFifo fifo = {0};
-    ASSERT(capacity <= VKL_MAX_FIFO_CAPACITY);
+    DvzFifo fifo = {0};
+    ASSERT(capacity <= DVZ_MAX_FIFO_CAPACITY);
     fifo.capacity = capacity;
     fifo.is_empty = true;
     fifo.items = calloc((uint32_t)capacity, sizeof(void*));
@@ -26,7 +26,7 @@ VklFifo vkl_fifo(int32_t capacity)
 
 
 
-void vkl_fifo_enqueue(VklFifo* fifo, void* item)
+void dvz_fifo_enqueue(DvzFifo* fifo, void* item)
 {
     ASSERT(fifo != NULL);
     pthread_mutex_lock(&fifo->lock);
@@ -53,7 +53,7 @@ void vkl_fifo_enqueue(VklFifo* fifo, void* item)
 
 
 
-void* vkl_fifo_dequeue(VklFifo* fifo, bool wait)
+void* dvz_fifo_dequeue(DvzFifo* fifo, bool wait)
 {
     ASSERT(fifo != NULL);
     pthread_mutex_lock(&fifo->lock);
@@ -96,7 +96,7 @@ void* vkl_fifo_dequeue(VklFifo* fifo, bool wait)
 
 
 
-int vkl_fifo_size(VklFifo* fifo)
+int dvz_fifo_size(DvzFifo* fifo)
 {
     ASSERT(fifo != NULL);
     pthread_mutex_lock(&fifo->lock);
@@ -111,7 +111,7 @@ int vkl_fifo_size(VklFifo* fifo)
 
 
 
-void vkl_fifo_discard(VklFifo* fifo, int max_size)
+void dvz_fifo_discard(DvzFifo* fifo, int max_size)
 {
     ASSERT(fifo != NULL);
     if (max_size == 0)
@@ -134,7 +134,7 @@ void vkl_fifo_discard(VklFifo* fifo, int max_size)
 
 
 
-void vkl_fifo_reset(VklFifo* fifo)
+void dvz_fifo_reset(DvzFifo* fifo)
 {
     ASSERT(fifo != NULL);
     pthread_mutex_lock(&fifo->lock);
@@ -146,7 +146,7 @@ void vkl_fifo_reset(VklFifo* fifo)
 
 
 
-void vkl_fifo_destroy(VklFifo* fifo)
+void dvz_fifo_destroy(DvzFifo* fifo)
 {
     ASSERT(fifo != NULL);
     pthread_mutex_destroy(&fifo->lock);

@@ -1,6 +1,6 @@
 #include <inttypes.h>
 
-#include "../include/visky/canvas.h"
+#include "../include/datoviz/canvas.h"
 #include "imgui.h"
 
 BEGIN_INCL_NO_WARN
@@ -43,23 +43,23 @@ static void _imgui_init_context()
     ImGui::StyleColorsDark();
 }
 
-static void _imgui_enable(VklCanvas* canvas)
+static void _imgui_enable(DvzCanvas* canvas)
 {
     ASSERT(canvas != NULL);
-    VklGpu* gpu = canvas->gpu;
+    DvzGpu* gpu = canvas->gpu;
     ASSERT(gpu != NULL);
-    VklApp* app = gpu->app;
+    DvzApp* app = gpu->app;
     ASSERT(app != NULL);
 
-    if (canvas->app->backend == VKL_BACKEND_GLFW)
+    if (canvas->app->backend == DVZ_BACKEND_GLFW)
         ImGui_ImplGlfw_InitForVulkan((GLFWwindow*)canvas->window->backend_window, true);
 
     ImGui_ImplVulkan_InitInfo init_info = {0};
     init_info.Instance = app->instance;
     init_info.PhysicalDevice = gpu->physical_device;
     init_info.Device = gpu->device;
-    init_info.QueueFamily = gpu->queues.queue_families[VKL_DEFAULT_QUEUE_RENDER];
-    init_info.Queue = gpu->queues.queues[VKL_DEFAULT_QUEUE_RENDER];
+    init_info.QueueFamily = gpu->queues.queue_families[DVZ_DEFAULT_QUEUE_RENDER];
+    init_info.Queue = gpu->queues.queues[DVZ_DEFAULT_QUEUE_RENDER];
     init_info.DescriptorPool = gpu->dset_pool;
     // init_info.PipelineCache = gpu->pipeline_cache;
     // init_info.Allocator = gpu->allocator;
@@ -77,17 +77,17 @@ static void _imgui_destroy()
     ImGui::DestroyContext();
 }
 
-static void _presend(VklCanvas* canvas, VklEvent ev)
+static void _presend(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
     if (!canvas->overlay)
         return;
-    VklCommands* cmds = (VklCommands*)ev.user_data;
+    DvzCommands* cmds = (DvzCommands*)ev.user_data;
     ASSERT(cmds != NULL);
     uint32_t idx = canvas->swapchain.img_idx;
 
-    vkl_cmd_begin(cmds, idx);
-    vkl_cmd_begin_renderpass(
+    dvz_cmd_begin(cmds, idx);
+    dvz_cmd_begin_renderpass(
         cmds, idx, &canvas->renderpass_overlay, &canvas->framebuffers_overlay);
 
     // Begin new frame.
@@ -99,8 +99,8 @@ static void _presend(VklCanvas* canvas, VklEvent ev)
 
     // Call the IMGUI private callbacks to render the GUI.
     {
-        VklEvent ev_imgui;
-        ev_imgui.type = VKL_EVENT_IMGUI;
+        DvzEvent ev_imgui;
+        ev_imgui.type = DVZ_EVENT_IMGUI;
         ev_imgui.u.f.idx = canvas->frame_idx;
         ev_imgui.u.f.interval = canvas->clock.interval;
         ev_imgui.u.f.time = canvas->clock.elapsed;
@@ -113,11 +113,11 @@ static void _presend(VklCanvas* canvas, VklEvent ev)
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmds->cmds[idx]);
     }
 
-    vkl_cmd_end_renderpass(cmds, idx);
-    vkl_cmd_end(cmds, idx);
+    dvz_cmd_end_renderpass(cmds, idx);
+    dvz_cmd_end(cmds, idx);
 
     ASSERT(canvas != NULL);
-    vkl_submit_commands(&canvas->submit, cmds);
+    dvz_submit_commands(&canvas->submit, cmds);
 }
 
 
@@ -126,7 +126,7 @@ static void _presend(VklCanvas* canvas, VklEvent ev)
 /*  Dear ImGui functions                                                                         */
 /*************************************************************************************************/
 
-void vkl_imgui_init(VklCanvas* canvas)
+void dvz_imgui_init(DvzCanvas* canvas)
 {
     if (ImGui::GetCurrentContext() == NULL)
         _imgui_init_context();
@@ -145,22 +145,22 @@ void vkl_imgui_init(VklCanvas* canvas)
     io.Fonts->AddFontFromFileTTF(path, font_size);
 
     // Upload Fonts
-    VklCommands cmd = vkl_commands(canvas->gpu, VKL_DEFAULT_QUEUE_RENDER, 1);
-    vkl_cmd_begin(&cmd, 0);
+    DvzCommands cmd = dvz_commands(canvas->gpu, DVZ_DEFAULT_QUEUE_RENDER, 1);
+    dvz_cmd_begin(&cmd, 0);
     ImGui_ImplVulkan_CreateFontsTexture(cmd.cmds[0]);
-    vkl_cmd_end(&cmd, 0);
-    vkl_cmd_submit_sync(&cmd, 0);
+    dvz_cmd_end(&cmd, 0);
+    dvz_cmd_submit_sync(&cmd, 0);
 
     ImGui_ImplVulkan_DestroyFontUploadObjects();
-    vkl_commands_destroy(&cmd);
+    dvz_commands_destroy(&cmd);
 
     // PRE_SEND callback that will call the IMGUI callbacks.
-    VklCommands* cmds =
-        vkl_canvas_commands(canvas, VKL_DEFAULT_QUEUE_RENDER, canvas->swapchain.img_count);
-    vkl_event_callback(canvas, VKL_EVENT_PRE_SEND, 0, VKL_EVENT_MODE_SYNC, _presend, cmds);
+    DvzCommands* cmds =
+        dvz_canvas_commands(canvas, DVZ_DEFAULT_QUEUE_RENDER, canvas->swapchain.img_count);
+    dvz_event_callback(canvas, DVZ_EVENT_PRE_SEND, 0, DVZ_EVENT_MODE_SYNC, _presend, cmds);
 }
 
-void vkl_imgui_begin(const char* title, VklGuiStyle style)
+void dvz_imgui_begin(const char* title, DvzGuiStyle style)
 {
     ASSERT(title != NULL);
     ASSERT(strlen(title) > 0);
@@ -171,11 +171,11 @@ void vkl_imgui_begin(const char* title, VklGuiStyle style)
     switch (style)
     {
 
-    case VKL_GUI_STANDARD:
+    case DVZ_GUI_STANDARD:
         flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
         break;
 
-    case VKL_GUI_PROMPT:
+    case DVZ_GUI_PROMPT:
     {
         flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar |
                 ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNav |
@@ -194,10 +194,10 @@ void vkl_imgui_begin(const char* title, VklGuiStyle style)
         break;
     }
 
-    case VKL_GUI_FIXED_TL:
-    case VKL_GUI_FIXED_TR:
-    case VKL_GUI_FIXED_LL:
-    case VKL_GUI_FIXED_LR:
+    case DVZ_GUI_FIXED_TL:
+    case DVZ_GUI_FIXED_TR:
+    case DVZ_GUI_FIXED_LL:
+    case DVZ_GUI_FIXED_LR:
     {
         flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar |
                 ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNav |
@@ -224,17 +224,17 @@ void vkl_imgui_begin(const char* title, VklGuiStyle style)
     ImGui::Begin(title, NULL, flags);
 }
 
-void vkl_imgui_end() { ImGui::End(); }
+void dvz_imgui_end() { ImGui::End(); }
 
-void vkl_imgui_callback_fps(VklCanvas* canvas, VklEvent ev)
+void dvz_imgui_callback_fps(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
-    vkl_imgui_begin("FPS", VKL_GUI_FIXED_TR);
+    dvz_imgui_begin("FPS", DVZ_GUI_FIXED_TR);
     ImGui::Text("FPS: %.1f", canvas->fps);
-    vkl_imgui_end();
+    dvz_imgui_end();
 }
 
-void vkl_imgui_destroy()
+void dvz_imgui_destroy()
 {
     if (ImGui::GetCurrentContext() == NULL)
         return;

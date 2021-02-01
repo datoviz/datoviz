@@ -39,7 +39,7 @@ BOKEH_NAMES["category20c_20"] = "Category20c_20"
 MAX_PALETTE_SIZE = 32
 
 ROOT_DIR = Path(__file__).parent.parent
-path = ROOT_DIR / "include/visky/colormaps.h"
+path = ROOT_DIR / "include/datoviz/colormaps.h"
 texture_path = ROOT_DIR / "data/textures/color_texture.img"
 
 # Ensure the subdirectorys exist.
@@ -135,7 +135,7 @@ def generate_binary():
     colormaps = path.read_text()
     defines = parse_defines(colormaps)
     groups = re.findall(
-        r"^\s+(VKY\_C[PM][A-Z0-9]+\_)([^\,\=\s]+)", colormaps, re.MULTILINE)
+        r"^\s+(DVZ\_C[PM][A-Z0-9]+\_)([^\,\=\s]+)", colormaps, re.MULTILINE)
     texture = np.zeros((256, 256, 4), dtype=np.uint8)
     texture[..., -1] = 255
 
@@ -148,20 +148,20 @@ def generate_binary():
         assert l is not None
         lines = np.array(l, dtype=np.uint8)
         # lines = np.hstack((l, np.ones((lines.shape[0], 1), dtype=np.uint8)))
-        if prefix != "VKY_CPAL032_":
+        if prefix != "DVZ_CPAL032_":
             assert lines.shape == (256, 3)
 
-        if prefix == "VKY_CPAL256_" and last_prefix != prefix:
+        if prefix == "DVZ_CPAL256_" and last_prefix != prefix:
             row = defines["CPAL256_OFS"]
-        elif prefix == "VKY_CPAL032_" and last_prefix != prefix:
+        elif prefix == "DVZ_CPAL032_" and last_prefix != prefix:
             row = defines["CPAL032_OFS"]
 
         out.append(','.join((name, str(row), str(col), str(lines.shape[0]))))
         texture[row, col:col + lines.shape[0], :3] = lines
 
-        if prefix in ("VKY_CMAP_", "VKY_CPAL256_"):
+        if prefix in ("DVZ_CMAP_", "DVZ_CPAL256_"):
             row += 1
-        elif prefix == "VKY_CPAL032_":
+        elif prefix == "DVZ_CPAL032_":
             col += 32
             col = col % 256
             if col == 0:

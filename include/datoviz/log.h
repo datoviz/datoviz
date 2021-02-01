@@ -33,9 +33,9 @@ enum
 };
 
 #ifdef DEBUG
-#define VKY_DEFAULT_LOG_LEVEL LOG_TRACE
+#define DVZ_DEFAULT_LOG_LEVEL LOG_TRACE
 #else
-#define VKY_DEFAULT_LOG_LEVEL LOG_INFO
+#define DVZ_DEFAULT_LOG_LEVEL LOG_INFO
 #endif
 
 #define log_trace(...) log_log(LOG_TRACE, __FILENAME__, __LINE__, __VA_ARGS__)

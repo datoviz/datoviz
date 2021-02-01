@@ -5,7 +5,7 @@ import numpy as np
 from allensdk.core.mouse_connectivity_cache import MouseConnectivityCache
 from ibllib.atlas import AllenAtlas
 
-from visky import canvas, run
+from datoviz import canvas, run
 
 
 # -------------------------------------------------------------------------------------------------

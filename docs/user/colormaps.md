@@ -1,6 +1,6 @@
 # Colormaps
 
-Visky natively includes a collection of common colormaps, both continuous and discrete (color palettes). These colormaps come from the following sources:
+Datoviz natively includes a collection of common colormaps, both continuous and discrete (color palettes). These colormaps come from the following sources:
 
 * matplotlib
 * bokeh
@@ -16,12 +16,12 @@ These colormaps are stored in a 256x256 texture. Each row contains either:
 
 Unused space may be used for future or user-defined colormaps. The texture is always loaded both in CPU and GPU memory. It is shared between all visuals and canvases.
 
-Visky provides a few functions to easily make colors out of scalar values:
+Datoviz provides a few functions to easily make colors out of scalar values:
 
 === "Python"
     ```python
     import numpy as np
-    from visky import colormap
+    from datoviz import colormap
 
     values = np.random.rand(1000)
     colors = colormap(values, vmin=0, vmax=1, cmap='viridis')
@@ -39,22 +39,22 @@ Visky provides a few functions to easily make colors out of scalar values:
 
 === "C"
     ```c
-    VklColormap cmap = VKL_CMAP_VIRIDIS;
+    DvzColormap cmap = DVZ_CMAP_VIRIDIS;
     cvec4 color = {0};
     uint8_t value = 128;
     double dvalue = .5;
 
     // Get a single color from a byte.
-    vkl_colormap(cmap, 128, color);
+    dvz_colormap(cmap, 128, color);
 
     // Get a single color from a double, with a custom vmin-vmax range.
-    vkl_colormap_scale(cmap, dvalue, 0, 1, color);
+    dvz_colormap_scale(cmap, dvalue, 0, 1, color);
 
     // Get an array of colors from an array of values.
     const uint32_t N = 10;
     double* values = calloc(N, sizeof(double));
     cvec4* colors = calloc(N, sizeof(cvec4));
-    vkl_colormap_array(cmap, N, values, 0, 1, colors);
+    dvz_colormap_array(cmap, N, values, 0, 1, colors);
     FREE(values);
     FREE(colors);
     ```

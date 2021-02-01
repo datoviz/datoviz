@@ -8,21 +8,21 @@ ROOT_DIR = (CYTHON_DIR / '../../').resolve()
 INCLUDE_DIR = ROOT_DIR / 'include'
 BUILD_DIR = ROOT_DIR / 'build'
 
-# NOTE: build with dynamic linking of visky. Need to add to LD_LIBRARY_PATH env variable
-# the path to the visky library (in <root>/build/).
+# NOTE: build with dynamic linking of datoviz. Need to add to LD_LIBRARY_PATH env variable
+# the path to the datoviz library (in <root>/build/).
 setup(
-    name='visky',
+    name='datoviz',
     version='0.0.0a0',
     description='Scientific visualization',
     author='Cyrille Rossant',
     author_email='rossant@users.noreply.github.com',
-    url='https://visky.dev',
+    url='https://datoviz.dev',
     long_description='''Scientific visualization''',
-    packages=['visky'],
+    packages=['datoviz'],
     ext_modules=cythonize(
         [Extension(
-            'visky.pyvisky', ['visky/pyvisky.pyx'],
-            libraries=['visky'],
+            'datoviz.pydatoviz', ['datoviz/pydatoviz.pyx'],
+            libraries=['datoviz'],
             include_dirs=[
                 np.get_include(),
                 str(INCLUDE_DIR),

@@ -7,7 +7,7 @@
 This page provides a brief documentation of the vklite API. Familiarity with GPUs and graphics APIs like OpenGL, or more modern ones like Vulkan, Metal, DirectX 12, WebGPU is not strictly required but somewhat helpful.
 
 !!! note
-    Visky currently uses Vulkan almost entirely via the vklite interface. This interface provides abstractions such as memory buffers, graphics pipelines, shaders, textures, resource bindings and so on, which are relatively similar to those in other low-level graphics APIs. Therefore, it might be feasible to make Visky with these other APIs in the future. In particular, leveraging emerging technologies such as **WebGPU and WebAssembly** would be an interesting future direction to make Visky work in the browser
+    Datoviz currently uses Vulkan almost entirely via the vklite interface. This interface provides abstractions such as memory buffers, graphics pipelines, shaders, textures, resource bindings and so on, which are relatively similar to those in other low-level graphics APIs. Therefore, it might be feasible to make Datoviz with these other APIs in the future. In particular, leveraging emerging technologies such as **WebGPU and WebAssembly** would be an interesting future direction to make Datoviz work in the browser
 
 ## Canvas
 
@@ -20,7 +20,7 @@ This page provides a brief documentation of the vklite API. Familiarity with GPU
 ## Other shaders
 
 !!! note
-    Although supported by Visky, using geometry shaders is discouraged. Compute shaders are typically more powerful and have better hardware support. Vulkan geometry shaders are not supported on macOS.
+    Although supported by Datoviz, using geometry shaders is discouraged. Compute shaders are typically more powerful and have better hardware support. Vulkan geometry shaders are not supported on macOS.
 
 ## Vertex layout
 
@@ -46,7 +46,7 @@ This page provides a brief documentation of the vklite API. Familiarity with GPU
 
 ## Hardware capabilities and limits
 
-The `VkyGpu` structure contains a few fields with native Vulkan structures defining GPU capabilities and limits.
+The `DvzGpu` structure contains a few fields with native Vulkan structures defining GPU capabilities and limits.
 
 ### Common minimal values
 

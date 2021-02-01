@@ -2,11 +2,11 @@
 /*  GPU data transfers interfacing closely with the canvas event loop                            */
 /*************************************************************************************************/
 
-#ifndef VKL_TRANSFERS_HEADER
-#define VKL_TRANSFERS_HEADER
+#ifndef DVZ_TRANSFERS_HEADER
+#define DVZ_TRANSFERS_HEADER
 
-// #include "../include/visky/context.h"
-#include "../include/visky/vklite.h"
+// #include "../include/datoviz/context.h"
+#include "../include/datoviz/vklite.h"
 
 
 
@@ -17,14 +17,14 @@
 // Transfer type.
 typedef enum
 {
-    VKL_TRANSFER_NONE,
-    VKL_TRANSFER_BUFFER_UPLOAD,
-    VKL_TRANSFER_BUFFER_DOWNLOAD,
-    VKL_TRANSFER_BUFFER_COPY,
-    VKL_TRANSFER_TEXTURE_UPLOAD,
-    VKL_TRANSFER_TEXTURE_DOWNLOAD,
-    VKL_TRANSFER_TEXTURE_COPY,
-} VklDataTransferType;
+    DVZ_TRANSFER_NONE,
+    DVZ_TRANSFER_BUFFER_UPLOAD,
+    DVZ_TRANSFER_BUFFER_DOWNLOAD,
+    DVZ_TRANSFER_BUFFER_COPY,
+    DVZ_TRANSFER_TEXTURE_UPLOAD,
+    DVZ_TRANSFER_TEXTURE_DOWNLOAD,
+    DVZ_TRANSFER_TEXTURE_COPY,
+} DvzDataTransferType;
 
 
 
@@ -32,12 +32,12 @@ typedef enum
 /*  Transfer typedefs                                                                            */
 /*************************************************************************************************/
 
-typedef struct VklTransfer VklTransfer;
-typedef struct VklTransferBuffer VklTransferBuffer;
-typedef struct VklTransferBufferCopy VklTransferBufferCopy;
-typedef struct VklTransferTexture VklTransferTexture;
-typedef struct VklTransferTextureCopy VklTransferTextureCopy;
-typedef union VklTransferUnion VklTransferUnion;
+typedef struct DvzTransfer DvzTransfer;
+typedef struct DvzTransferBuffer DvzTransferBuffer;
+typedef struct DvzTransferBufferCopy DvzTransferBufferCopy;
+typedef struct DvzTransferTexture DvzTransferTexture;
+typedef struct DvzTransferTextureCopy DvzTransferTextureCopy;
+typedef union DvzTransferUnion DvzTransferUnion;
 
 
 
@@ -45,9 +45,9 @@ typedef union VklTransferUnion VklTransferUnion;
 /*  Transfer structs                                                                             */
 /*************************************************************************************************/
 
-struct VklTransferBuffer
+struct DvzTransferBuffer
 {
-    VklBufferRegions regions;
+    DvzBufferRegions regions;
     VkDeviceSize offset, size;
     bool update_all_buffers;
     void* data;
@@ -55,17 +55,17 @@ struct VklTransferBuffer
 
 
 
-struct VklTransferBufferCopy
+struct DvzTransferBufferCopy
 {
-    VklBufferRegions src, dst;
+    DvzBufferRegions src, dst;
     VkDeviceSize src_offset, dst_offset, size;
 };
 
 
 
-struct VklTransferTexture
+struct DvzTransferTexture
 {
-    VklTexture* texture;
+    DvzTexture* texture;
     uvec3 offset, shape;
     VkDeviceSize size;
     void* data;
@@ -73,28 +73,28 @@ struct VklTransferTexture
 
 
 
-struct VklTransferTextureCopy
+struct DvzTransferTextureCopy
 {
-    VklTexture *src, *dst;
+    DvzTexture *src, *dst;
     uvec3 src_offset, dst_offset, shape;
 };
 
 
 
-union VklTransferUnion
+union DvzTransferUnion
 {
-    VklTransferBuffer buf;
-    VklTransferTexture tex;
-    VklTransferBufferCopy buf_copy;
-    VklTransferTextureCopy tex_copy;
+    DvzTransferBuffer buf;
+    DvzTransferTexture tex;
+    DvzTransferBufferCopy buf_copy;
+    DvzTransferTextureCopy tex_copy;
 };
 
 
 
-struct VklTransfer
+struct DvzTransfer
 {
-    VklDataTransferType type;
-    VklTransferUnion u;
+    DvzDataTransferType type;
+    DvzTransferUnion u;
 };
 
 
@@ -112,8 +112,8 @@ struct VklTransfer
  * @param size the size of the data to upload, in bytes
  * @param data pointer to the data to upload to the GPU
  */
-VKY_EXPORT void vkl_upload_buffers(
-    VklCanvas* canvas, VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data);
+DVZ_EXPORT void dvz_upload_buffers(
+    DvzCanvas* canvas, DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data);
 
 /**
  * Download data from a buffer region to the CPU while the app event loop is running.
@@ -124,8 +124,8 @@ VKY_EXPORT void vkl_upload_buffers(
  * @param size the size of the data to upload, in bytes
  * @param[out] data pointer to a buffer already allocated to contain `size` bytes
  */
-VKY_EXPORT void vkl_download_buffers(
-    VklCanvas* canvas, VklBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data);
+DVZ_EXPORT void dvz_download_buffers(
+    DvzCanvas* canvas, DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data);
 
 /**
  * Copy data between two GPU buffer regions.
@@ -139,9 +139,9 @@ VKY_EXPORT void vkl_download_buffers(
  * @param dst_offset the offset within the target buffer region
  * @param size the size of the data to copy
  */
-VKY_EXPORT void vkl_copy_buffers(
-    VklCanvas* canvas, VklBufferRegions src, VkDeviceSize src_offset, //
-    VklBufferRegions dst, VkDeviceSize dst_offset, VkDeviceSize size);
+DVZ_EXPORT void dvz_copy_buffers(
+    DvzCanvas* canvas, DvzBufferRegions src, VkDeviceSize src_offset, //
+    DvzBufferRegions dst, VkDeviceSize dst_offset, VkDeviceSize size);
 
 /**
  * Upload data to a texture.
@@ -153,8 +153,8 @@ VKY_EXPORT void vkl_copy_buffers(
  * @param size the size of the uploaded data, in bytes
  * @param data pointer to the data to upload to the GPU
  */
-VKY_EXPORT void vkl_upload_texture(
-    VklCanvas* canvas, VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size,
+DVZ_EXPORT void dvz_upload_texture(
+    DvzCanvas* canvas, DvzTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size,
     void* data);
 
 /**
@@ -167,8 +167,8 @@ VKY_EXPORT void vkl_upload_texture(
  * @param size the size of the downloaded data, in bytes
  * @param[out] data pointer to the buffer that will hold the downloaded data
  */
-VKY_EXPORT void vkl_download_texture(
-    VklCanvas* canvas, VklTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size,
+DVZ_EXPORT void dvz_download_texture(
+    DvzCanvas* canvas, DvzTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size,
     void* data);
 
 /**
@@ -184,8 +184,8 @@ VKY_EXPORT void vkl_download_texture(
  * @param shape the shape of the part of the texture to copy
  * @param size the corresponding size of that part, in bytes
  */
-VKY_EXPORT void vkl_copy_texture(
-    VklCanvas* canvas, VklTexture* src, uvec3 src_offset, VklTexture* dst, uvec3 dst_offset,
+DVZ_EXPORT void dvz_copy_texture(
+    DvzCanvas* canvas, DvzTexture* src, uvec3 src_offset, DvzTexture* dst, uvec3 dst_offset,
     uvec3 shape, VkDeviceSize size);
 
 /**
@@ -202,7 +202,7 @@ VKY_EXPORT void vkl_copy_texture(
  * @param size the size of the data to upload, in bytes
  * @param data pointer to the data to upload to the GPU
  */
-VKY_EXPORT void vkl_process_transfers(VklCanvas* canvas);
+DVZ_EXPORT void dvz_process_transfers(DvzCanvas* canvas);
 
 
 

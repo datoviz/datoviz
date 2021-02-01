@@ -1,7 +1,7 @@
-#ifndef VKL_TEST_UTILS_HEADER
-#define VKL_TEST_UTILS_HEADER
+#ifndef DVZ_TEST_UTILS_HEADER
+#define DVZ_TEST_UTILS_HEADER
 
-#include "../include/visky/visky.h"
+#include "../include/datoviz/datoviz.h"
 #include "../src/vklite_utils.h"
 
 
@@ -40,7 +40,7 @@ static const VkClearColorValue bgcolor = {{.4f, .6f, .8f, 1.0f}};
 #define MOUSE_VOLUME_HEIGHT 456
 #define MOUSE_VOLUME_DEPTH  528
 
-#define N_FRAMES (getenv("VKY_INTERACT") != NULL ? 0 : 10)
+#define N_FRAMES (getenv("DVZ_INTERACT") != NULL ? 0 : 10)
 
 
 
@@ -68,9 +68,9 @@ typedef int (*TestFunction)(TestContext*);
 // TestFixture
 typedef enum
 {
-    VKY_TEST_FIXTURE_NONE,
-    VKY_TEST_FIXTURE_CANVAS,
-    VKY_TEST_FIXTURE_PANEL,
+    DVZ_TEST_FIXTURE_NONE,
+    DVZ_TEST_FIXTURE_CANVAS,
+    DVZ_TEST_FIXTURE_PANEL,
 } TestFixture;
 
 
@@ -89,22 +89,22 @@ struct TestVertex
 
 struct TestCanvas
 {
-    VklGpu* gpu;
+    DvzGpu* gpu;
     bool is_offscreen;
 
-    VklWindow* window;
+    DvzWindow* window;
 
-    VklRenderpass renderpass;
-    VklFramebuffers framebuffers;
-    VklSwapchain swapchain;
+    DvzRenderpass renderpass;
+    DvzFramebuffers framebuffers;
+    DvzSwapchain swapchain;
 
-    VklImages* images;
-    VklImages* depth;
+    DvzImages* images;
+    DvzImages* depth;
 
-    VklCompute* compute;
-    VklBindings* bindings;
-    VklGraphics* graphics;
-    VklBufferRegions br;
+    DvzCompute* compute;
+    DvzBindings* bindings;
+    DvzGraphics* graphics;
+    DvzBufferRegions br;
 
     void* data;
 };
@@ -113,15 +113,15 @@ struct TestCanvas
 
 struct TestVisual
 {
-    VklGpu* gpu;
-    VklRenderpass* renderpass;
-    VklFramebuffers* framebuffers;
-    VklGraphics graphics;
-    VklCompute* compute;
-    VklBindings bindings;
-    VklBuffer buffer;
-    VklBufferRegions br;
-    VklBufferRegions br_u;
+    DvzGpu* gpu;
+    DvzRenderpass* renderpass;
+    DvzFramebuffers* framebuffers;
+    DvzGraphics graphics;
+    DvzCompute* compute;
+    DvzBindings bindings;
+    DvzBuffer buffer;
+    DvzBufferRegions br;
+    DvzBufferRegions br_u;
     uint32_t n_vertices;
     float dt;
     void* data;
@@ -133,22 +133,22 @@ struct TestVisual
 
 struct TestScene
 {
-    VklMouse mouse;
-    VklKeyboard keyboard;
-    VklInteract interact;
-    VklVisual visual;
-    VklGrid* grid;
+    DvzMouse mouse;
+    DvzKeyboard keyboard;
+    DvzInteract interact;
+    DvzVisual visual;
+    DvzGrid* grid;
 };
 
 
 
 struct TestContext
 {
-    VklApp* app;
-    // VkyCanvas* canvas;
-    // VkyScene* scene;
-    // VkyPanel* panel;
-    // VkyScreenshot* screenshot;
+    DvzApp* app;
+    // DvzCanvas* canvas;
+    // DvzScene* scene;
+    // DvzPanel* panel;
+    // DvzScreenshot* screenshot;
     // bool is_live;
 };
 
@@ -165,7 +165,7 @@ struct TestCase
 
 
 
-typedef void (*FillCallback)(TestCanvas*, VklCommands*, uint32_t);
+typedef void (*FillCallback)(TestCanvas*, DvzCommands*, uint32_t);
 
 
 
@@ -179,7 +179,7 @@ static bool file_exists(const char* path) { return access(path, F_OK) != -1; }
 static int image_diff(const uint8_t* image_0, const char* path)
 {
     int w = 0, h = 0;
-    uint8_t* image_1 = vkl_read_ppm(path, &w, &h);
+    uint8_t* image_1 = dvz_read_ppm(path, &w, &h);
     ASSERT(w == WIDTH && h == HEIGHT);
 
     // Fast byte-to-byte comparison of the images.
@@ -214,7 +214,7 @@ static int image_diff(const uint8_t* image_0, const char* path)
 static int write_image(const char* path, const uint8_t* rgb)
 {
     int res = 0;
-    res = vkl_write_ppm(path, WIDTH, HEIGHT, rgb);
+    res = dvz_write_ppm(path, WIDTH, HEIGHT, rgb);
     if (res != 0)
     {
         log_error("failed writing to %s", path);
@@ -279,28 +279,28 @@ static uint8_t* make_screenshot(TestContext* context)
     // ASSERT(context->canvas != NULL);
     // // NOTE: the caller must free the output buffer
     // if (context->screenshot == NULL)
-    //     context->screenshot = vky_create_screenshot(context->canvas);
-    // vky_begin_screenshot(context->screenshot);
-    // uint8_t* rgb = vky_screenshot_to_rgb(context->screenshot, false);
-    // vky_end_screenshot(context->screenshot);
+    //     context->screenshot = dvz_create_screenshot(context->canvas);
+    // dvz_begin_screenshot(context->screenshot);
+    // uint8_t* rgb = dvz_screenshot_to_rgb(context->screenshot, false);
+    // dvz_end_screenshot(context->screenshot);
     // return rgb;
     return NULL;
 }
 
-static void run_canvas(VkyCanvas* canvas)
+static void run_canvas(DvzCanvas* canvas)
 {
     // Run one frame of the example.
-    vky_fill_command_buffers(canvas);
+    dvz_fill_command_buffers(canvas);
 
     // TODO: multiple frames before screenshot, mock input etc
     if (canvas->is_offscreen)
-        vky_offscreen_frame(canvas, 0);
+        dvz_offscreen_frame(canvas, 0);
     else
-        vky_run_app(canvas->app);
+        dvz_run_app(canvas->app);
 
     // for (double t = 0; t < frame_count / (float)FPS; t += (1. / FPS))
     // {
-    //     vky_offscreen_frame(canvas, t);
+    //     dvz_offscreen_frame(canvas, t);
     // }
 }
 
@@ -344,40 +344,40 @@ static void _setup(TestContext* context, TestFixture fixture)
 {
     ASSERT(context != NULL);
 
-    if (fixture >= VKY_TEST_FIXTURE_CANVAS)
+    if (fixture >= DVZ_TEST_FIXTURE_CANVAS)
     {
         if (context->app == NULL)
         {
             log_debug("fixture setup: create the app");
             context->app =
-                vky_create_app(context->is_live ? VKY_BACKEND_GLFW : VKY_BACKEND_OFFSCREEN, NULL);
+                dvz_create_app(context->is_live ? DVZ_BACKEND_GLFW : DVZ_BACKEND_OFFSCREEN, NULL);
         }
         ASSERT(context->app != NULL);
         if (context->canvas == NULL)
         {
             log_debug("fixture setup: create the canvas");
-            context->canvas = vky_create_canvas(context->app, WIDTH, HEIGHT);
+            context->canvas = dvz_create_canvas(context->app, WIDTH, HEIGHT);
             // Create large GPU buffers that will be cleared after each test.
-            vky_add_vertex_buffer(context->canvas->gpu, 1e6);
-            vky_add_index_buffer(context->canvas->gpu, 1e6);
+            dvz_add_vertex_buffer(context->canvas->gpu, 1e6);
+            dvz_add_index_buffer(context->canvas->gpu, 1e6);
         }
 
         ASSERT(context->canvas != NULL);
     }
 
-    if (fixture >= VKY_TEST_FIXTURE_PANEL)
+    if (fixture >= DVZ_TEST_FIXTURE_PANEL)
     {
         ASSERT(context->canvas != NULL);
         if (context->scene == NULL)
         {
             log_debug("fixture setup: create the scene");
-            context->scene = vky_create_scene(context->canvas, VKY_CLEAR_COLOR_WHITE, 1, 1);
+            context->scene = dvz_create_scene(context->canvas, DVZ_CLEAR_COLOR_WHITE, 1, 1);
         }
         ASSERT(context->scene != NULL);
         if (context->panel == NULL)
         {
             log_debug("fixture setup: create the panel");
-            context->panel = vky_get_panel(context->scene, 0, 0);
+            context->panel = dvz_get_panel(context->scene, 0, 0);
         }
 
         ASSERT(context->panel != NULL);
@@ -390,19 +390,19 @@ static void _teardown(TestContext* context, TestFixture fixture)
     // NOTE: do not try to reset the canvas when is_live is true, because there is
     // only one canvas so it doesn't make sense, and it would cause a segfault
     // as the canvas is destroyed as soon as it is closed.
-    if (fixture >= VKY_TEST_FIXTURE_CANVAS && !context->is_live)
+    if (fixture >= DVZ_TEST_FIXTURE_CANVAS && !context->is_live)
     {
         ASSERT(context->canvas != NULL);
         log_debug("fixture teardown: reset the canvas");
-        vky_reset_canvas(context->canvas);
+        dvz_reset_canvas(context->canvas);
         ASSERT(context->canvas->gpu != NULL);
-        vky_clear_all_buffers(context->canvas->gpu);
-        vky_reset_all_constants();
+        dvz_clear_all_buffers(context->canvas->gpu);
+        dvz_reset_all_constants();
     }
-    if (fixture >= VKY_TEST_FIXTURE_PANEL)
+    if (fixture >= DVZ_TEST_FIXTURE_PANEL)
     {
         log_debug("fixture teardown: destroy the scene");
-        vky_destroy_scene(context->canvas->scene);
+        dvz_destroy_scene(context->canvas->scene);
         context->scene = NULL;
         context->panel = NULL;
     }
@@ -421,13 +421,13 @@ static void _destroy_context(TestContext* context)
 
     if (context->screenshot != NULL)
     {
-        vky_destroy_screenshot(context->screenshot);
+        dvz_destroy_screenshot(context->screenshot);
         context->screenshot = NULL;
     }
 
     if (context->app != NULL)
     {
-        vky_destroy_app(context->app);
+        dvz_destroy_app(context->app);
         context->app = NULL;
     }
 }
@@ -441,17 +441,17 @@ static void _destroy_context(TestContext* context)
 
 #define CASE_FIXTURE_NONE(func)                                                                   \
     {                                                                                             \
-#func, VKY_TEST_FIXTURE_NONE, func, NULL, false                                           \
+#func, DVZ_TEST_FIXTURE_NONE, func, NULL, false                                           \
     }
 
 #define CASE_FIXTURE_CANVAS(func, func_destroy, screenshot)                                       \
     {                                                                                             \
-#func, VKY_TEST_FIXTURE_CANVAS, func, func_destroy, screenshot                            \
+#func, DVZ_TEST_FIXTURE_CANVAS, func, func_destroy, screenshot                            \
     }
 
 #define CASE_FIXTURE_PANEL(func, screenshot)                                                      \
     {                                                                                             \
-#func, VKY_TEST_FIXTURE_PANEL, func, NULL, screenshot                                     \
+#func, DVZ_TEST_FIXTURE_PANEL, func, NULL, screenshot                                     \
     }
 
 // #define CASE(func, fixture, save_screenshot)
@@ -486,17 +486,17 @@ static void _destroy_context(TestContext* context)
 #define PBOX(x)                                                                                   \
     printf("%f %f %f %f\n", (x).pos_ll[0], (x).pos_ll[1], (x).pos_ur[0], (x).pos_ur[1]);
 
-#define TEST_END return vkl_app_destroy(app);
+#define TEST_END return dvz_app_destroy(app);
 
 #define RANDN_POS(x)                                                                              \
-    x[0] = .25 * vkl_rand_normal();                                                               \
-    x[1] = .25 * vkl_rand_normal();                                                               \
-    x[2] = .25 * vkl_rand_normal();
+    x[0] = .25 * dvz_rand_normal();                                                               \
+    x[1] = .25 * dvz_rand_normal();                                                               \
+    x[2] = .25 * dvz_rand_normal();
 
 #define RAND_COLOR(x)                                                                             \
-    x[0] = vkl_rand_byte();                                                                       \
-    x[1] = vkl_rand_byte();                                                                       \
-    x[2] = vkl_rand_byte();                                                                       \
+    x[0] = dvz_rand_byte();                                                                       \
+    x[1] = dvz_rand_byte();                                                                       \
+    x[2] = dvz_rand_byte();                                                                       \
     x[3] = 255;
 
 
@@ -505,10 +505,10 @@ static void _destroy_context(TestContext* context)
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static VklRenderpass default_renderpass(
-    VklGpu* gpu, VkClearColorValue clear_color_value, VkFormat format, VkImageLayout layout)
+static DvzRenderpass default_renderpass(
+    DvzGpu* gpu, VkClearColorValue clear_color_value, VkFormat format, VkImageLayout layout)
 {
-    VklRenderpass renderpass = vkl_renderpass(gpu);
+    DvzRenderpass renderpass = dvz_renderpass(gpu);
 
     VkClearValue clear_color = {0};
     clear_color.color = clear_color_value;
@@ -516,37 +516,37 @@ static VklRenderpass default_renderpass(
     VkClearValue clear_depth = {0};
     clear_depth.depthStencil.depth = 1.0f;
 
-    vkl_renderpass_clear(&renderpass, clear_color);
-    vkl_renderpass_clear(&renderpass, clear_depth);
+    dvz_renderpass_clear(&renderpass, clear_color);
+    dvz_renderpass_clear(&renderpass, clear_depth);
 
     // Color attachment.
-    vkl_renderpass_attachment(
+    dvz_renderpass_attachment(
         &renderpass, 0, //
-        VKL_RENDERPASS_ATTACHMENT_COLOR, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-    vkl_renderpass_attachment_layout(&renderpass, 0, VK_IMAGE_LAYOUT_UNDEFINED, layout);
-    vkl_renderpass_attachment_ops(
+        DVZ_RENDERPASS_ATTACHMENT_COLOR, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    dvz_renderpass_attachment_layout(&renderpass, 0, VK_IMAGE_LAYOUT_UNDEFINED, layout);
+    dvz_renderpass_attachment_ops(
         &renderpass, 0, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
 
     // Depth attachment.
-    vkl_renderpass_attachment(
+    dvz_renderpass_attachment(
         &renderpass, 1, //
-        VKL_RENDERPASS_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT,
+        DVZ_RENDERPASS_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT,
         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-    vkl_renderpass_attachment_layout(
+    dvz_renderpass_attachment_layout(
         &renderpass, 1, VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-    vkl_renderpass_attachment_ops(
+    dvz_renderpass_attachment_ops(
         &renderpass, 1, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
 
     // Subpass.
-    vkl_renderpass_subpass_attachment(&renderpass, 0, 0);
-    vkl_renderpass_subpass_attachment(&renderpass, 0, 1);
-    vkl_renderpass_subpass_dependency(&renderpass, 0, VK_SUBPASS_EXTERNAL, 0);
-    vkl_renderpass_subpass_dependency_stage(
+    dvz_renderpass_subpass_attachment(&renderpass, 0, 0);
+    dvz_renderpass_subpass_attachment(&renderpass, 0, 1);
+    dvz_renderpass_subpass_dependency(&renderpass, 0, VK_SUBPASS_EXTERNAL, 0);
+    dvz_renderpass_subpass_dependency_stage(
         &renderpass, 0, //
         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-    vkl_renderpass_subpass_dependency_access(
+    dvz_renderpass_subpass_dependency_access(
         &renderpass, 0, 0,
         VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
 
@@ -556,23 +556,23 @@ static VklRenderpass default_renderpass(
 
 
 static void
-depth_image(VklImages* depth_images, VklRenderpass* renderpass, uint32_t width, uint32_t height)
+depth_image(DvzImages* depth_images, DvzRenderpass* renderpass, uint32_t width, uint32_t height)
 {
     // Depth attachment
-    vkl_images_format(depth_images, renderpass->attachments[1].format);
-    vkl_images_size(depth_images, width, height, 1);
-    vkl_images_tiling(depth_images, VK_IMAGE_TILING_OPTIMAL);
-    vkl_images_usage(depth_images, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
-    vkl_images_memory(depth_images, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    vkl_images_layout(depth_images, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-    vkl_images_aspect(depth_images, VK_IMAGE_ASPECT_DEPTH_BIT);
-    vkl_images_queue_access(depth_images, 0);
-    vkl_images_create(depth_images);
+    dvz_images_format(depth_images, renderpass->attachments[1].format);
+    dvz_images_size(depth_images, width, height, 1);
+    dvz_images_tiling(depth_images, VK_IMAGE_TILING_OPTIMAL);
+    dvz_images_usage(depth_images, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+    dvz_images_memory(depth_images, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    dvz_images_layout(depth_images, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    dvz_images_aspect(depth_images, VK_IMAGE_ASPECT_DEPTH_BIT);
+    dvz_images_queue_access(depth_images, 0);
+    dvz_images_create(depth_images);
 }
 
 
 
-static TestCanvas offscreen(VklGpu* gpu)
+static TestCanvas offscreen(DvzGpu* gpu)
 {
     TestCanvas canvas = {0};
     canvas.gpu = gpu;
@@ -582,43 +582,43 @@ static TestCanvas offscreen(VklGpu* gpu)
         default_renderpass(gpu, bgcolor, TEST_FORMAT, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
     // Color attachment
-    VklImages images_struct = vkl_images(canvas.renderpass.gpu, VK_IMAGE_TYPE_2D, 1);
-    VklImages* images = (VklImages*)calloc(1, sizeof(VklImages));
+    DvzImages images_struct = dvz_images(canvas.renderpass.gpu, VK_IMAGE_TYPE_2D, 1);
+    DvzImages* images = (DvzImages*)calloc(1, sizeof(DvzImages));
     *images = images_struct;
-    vkl_images_format(images, canvas.renderpass.attachments[0].format);
-    vkl_images_size(images, TEST_WIDTH, TEST_HEIGHT, 1);
-    vkl_images_tiling(images, VK_IMAGE_TILING_OPTIMAL);
-    vkl_images_usage(
+    dvz_images_format(images, canvas.renderpass.attachments[0].format);
+    dvz_images_size(images, TEST_WIDTH, TEST_HEIGHT, 1);
+    dvz_images_tiling(images, VK_IMAGE_TILING_OPTIMAL);
+    dvz_images_usage(
         images, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
-    vkl_images_memory(images, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    vkl_images_aspect(images, VK_IMAGE_ASPECT_COLOR_BIT);
-    vkl_images_layout(images, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-    vkl_images_queue_access(images, 0);
-    vkl_images_create(images);
+    dvz_images_memory(images, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    dvz_images_aspect(images, VK_IMAGE_ASPECT_COLOR_BIT);
+    dvz_images_layout(images, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    dvz_images_queue_access(images, 0);
+    dvz_images_create(images);
     canvas.images = images;
 
     // Depth attachment.
-    VklImages depth_struct = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
-    VklImages* depth = (VklImages*)calloc(1, sizeof(VklImages));
+    DvzImages depth_struct = dvz_images(gpu, VK_IMAGE_TYPE_2D, 1);
+    DvzImages* depth = (DvzImages*)calloc(1, sizeof(DvzImages));
     *depth = depth_struct;
     depth_image(depth, &canvas.renderpass, TEST_WIDTH, TEST_HEIGHT);
     canvas.depth = depth;
 
     // Create renderpass.
-    vkl_renderpass_create(&canvas.renderpass);
+    dvz_renderpass_create(&canvas.renderpass);
 
     // Create framebuffers.
-    canvas.framebuffers = vkl_framebuffers(canvas.renderpass.gpu);
-    vkl_framebuffers_attachment(&canvas.framebuffers, 0, images);
-    vkl_framebuffers_attachment(&canvas.framebuffers, 1, depth);
-    vkl_framebuffers_create(&canvas.framebuffers, &canvas.renderpass);
+    canvas.framebuffers = dvz_framebuffers(canvas.renderpass.gpu);
+    dvz_framebuffers_attachment(&canvas.framebuffers, 0, images);
+    dvz_framebuffers_attachment(&canvas.framebuffers, 1, depth);
+    dvz_framebuffers_create(&canvas.framebuffers, &canvas.renderpass);
 
     return canvas;
 }
 
 
 
-static TestCanvas glfw_canvas(VklGpu* gpu, VklWindow* window)
+static TestCanvas glfw_canvas(DvzGpu* gpu, DvzWindow* window)
 {
     TestCanvas canvas = {0};
     canvas.is_offscreen = false;
@@ -626,103 +626,103 @@ static TestCanvas glfw_canvas(VklGpu* gpu, VklWindow* window)
     canvas.window = window;
 
     uint32_t framebuffer_width, framebuffer_height;
-    vkl_window_get_size(window, &framebuffer_width, &framebuffer_height);
+    dvz_window_get_size(window, &framebuffer_width, &framebuffer_height);
     ASSERT(framebuffer_width > 0);
     ASSERT(framebuffer_height > 0);
 
-    VklRenderpass renderpass =
+    DvzRenderpass renderpass =
         default_renderpass(gpu, bgcolor, TEST_FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
     canvas.renderpass = renderpass;
 
-    canvas.swapchain = vkl_swapchain(canvas.renderpass.gpu, window, 3);
-    vkl_swapchain_format(&canvas.swapchain, VK_FORMAT_B8G8R8A8_UNORM);
-    vkl_swapchain_present_mode(&canvas.swapchain, TEST_PRESENT_MODE);
-    vkl_swapchain_create(&canvas.swapchain);
+    canvas.swapchain = dvz_swapchain(canvas.renderpass.gpu, window, 3);
+    dvz_swapchain_format(&canvas.swapchain, VK_FORMAT_B8G8R8A8_UNORM);
+    dvz_swapchain_present_mode(&canvas.swapchain, TEST_PRESENT_MODE);
+    dvz_swapchain_create(&canvas.swapchain);
     canvas.images = canvas.swapchain.images;
 
     // Depth attachment.
-    VklImages depth_struct = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
-    VklImages* depth = (VklImages*)calloc(1, sizeof(VklImages));
+    DvzImages depth_struct = dvz_images(gpu, VK_IMAGE_TYPE_2D, 1);
+    DvzImages* depth = (DvzImages*)calloc(1, sizeof(DvzImages));
     *depth = depth_struct;
     depth_image(depth, &canvas.renderpass, canvas.images->width, canvas.images->height);
     canvas.depth = depth;
 
     // Create renderpass.
-    vkl_renderpass_create(&canvas.renderpass);
+    dvz_renderpass_create(&canvas.renderpass);
 
     // Create framebuffers.
-    canvas.framebuffers = vkl_framebuffers(canvas.renderpass.gpu);
-    vkl_framebuffers_attachment(&canvas.framebuffers, 0, canvas.swapchain.images);
-    vkl_framebuffers_attachment(&canvas.framebuffers, 1, depth);
-    vkl_framebuffers_create(&canvas.framebuffers, &canvas.renderpass);
+    canvas.framebuffers = dvz_framebuffers(canvas.renderpass.gpu);
+    dvz_framebuffers_attachment(&canvas.framebuffers, 0, canvas.swapchain.images);
+    dvz_framebuffers_attachment(&canvas.framebuffers, 1, depth);
+    dvz_framebuffers_create(&canvas.framebuffers, &canvas.renderpass);
 
     return canvas;
 }
 
 
 
-static uint8_t* screenshot(VklImages* images)
+static uint8_t* screenshot(DvzImages* images)
 {
     // NOTE: the caller must free the output
 
-    VklGpu* gpu = images->gpu;
+    DvzGpu* gpu = images->gpu;
 
     // Create the staging image.
     log_debug("starting creation of staging image");
-    VklImages staging_struct = vkl_images(gpu, VK_IMAGE_TYPE_2D, 1);
-    VklImages* staging = (VklImages*)calloc(1, sizeof(VklImages));
+    DvzImages staging_struct = dvz_images(gpu, VK_IMAGE_TYPE_2D, 1);
+    DvzImages* staging = (DvzImages*)calloc(1, sizeof(DvzImages));
     *staging = staging_struct;
-    vkl_images_format(staging, images->format);
-    vkl_images_size(staging, images->width, images->height, images->depth);
-    vkl_images_tiling(staging, VK_IMAGE_TILING_LINEAR);
-    vkl_images_usage(staging, VK_IMAGE_USAGE_TRANSFER_DST_BIT);
-    vkl_images_layout(staging, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-    vkl_images_memory(
+    dvz_images_format(staging, images->format);
+    dvz_images_size(staging, images->width, images->height, images->depth);
+    dvz_images_tiling(staging, VK_IMAGE_TILING_LINEAR);
+    dvz_images_usage(staging, VK_IMAGE_USAGE_TRANSFER_DST_BIT);
+    dvz_images_layout(staging, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    dvz_images_memory(
         staging, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    vkl_images_create(staging);
+    dvz_images_create(staging);
 
     // Start the image transition command buffers.
-    VklCommands cmds = vkl_commands(gpu, 0, 1);
-    vkl_cmd_begin(&cmds, 0);
+    DvzCommands cmds = dvz_commands(gpu, 0, 1);
+    dvz_cmd_begin(&cmds, 0);
 
-    VklBarrier barrier = vkl_barrier(gpu);
-    vkl_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
-    vkl_barrier_images(&barrier, staging);
-    vkl_barrier_images_layout(
+    DvzBarrier barrier = dvz_barrier(gpu);
+    dvz_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    dvz_barrier_images(&barrier, staging);
+    dvz_barrier_images_layout(
         &barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-    vkl_barrier_images_access(&barrier, 0, VK_ACCESS_TRANSFER_WRITE_BIT);
-    vkl_cmd_barrier(&cmds, 0, &barrier);
+    dvz_barrier_images_access(&barrier, 0, VK_ACCESS_TRANSFER_WRITE_BIT);
+    dvz_cmd_barrier(&cmds, 0, &barrier);
 
     // Copy the image to the staging image.
-    vkl_cmd_copy_image(&cmds, 0, images, staging);
+    dvz_cmd_copy_image(&cmds, 0, images, staging);
 
-    vkl_barrier_images_layout(
+    dvz_barrier_images_layout(
         &barrier, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
-    vkl_barrier_images_access(&barrier, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_MEMORY_READ_BIT);
-    vkl_cmd_barrier(&cmds, 0, &barrier);
+    dvz_barrier_images_access(&barrier, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_MEMORY_READ_BIT);
+    dvz_cmd_barrier(&cmds, 0, &barrier);
 
     // End the cmds and submit them.
-    vkl_cmd_end(&cmds, 0);
-    vkl_cmd_submit_sync(&cmds, 0);
+    dvz_cmd_end(&cmds, 0);
+    dvz_cmd_submit_sync(&cmds, 0);
 
     // Now, copy the staging image into CPU memory.
     uint8_t* rgba = (uint8_t*)calloc(images->width * images->height, 3);
-    vkl_images_download(staging, 0, true, rgba);
+    dvz_images_download(staging, 0, true, rgba);
 
-    vkl_images_destroy(staging);
+    dvz_images_destroy(staging);
 
     return rgba;
 }
 
 
 
-static void save_screenshot(VklFramebuffers* framebuffers, const char* path)
+static void save_screenshot(DvzFramebuffers* framebuffers, const char* path)
 {
     log_debug("saving screenshot to %s", path);
     // Make a screenshot of the color attachment.
-    VklImages* images = framebuffers->attachments[0];
+    DvzImages* images = framebuffers->attachments[0];
     uint8_t* rgba = screenshot(images);
-    vkl_write_ppm(path, images->width, images->height, rgba);
+    dvz_write_ppm(path, images->width, images->height, rgba);
     FREE(rgba);
 }
 
@@ -730,28 +730,28 @@ static void save_screenshot(VklFramebuffers* framebuffers, const char* path)
 
 static void show_canvas(TestCanvas canvas, FillCallback fill_commands, uint32_t n_frames)
 {
-    VklGpu* gpu = canvas.gpu;
-    VklWindow* window = canvas.window;
-    VklRenderpass* renderpass = &canvas.renderpass;
-    VklFramebuffers* framebuffers = &canvas.framebuffers;
-    VklSwapchain* swapchain = &canvas.swapchain;
+    DvzGpu* gpu = canvas.gpu;
+    DvzWindow* window = canvas.window;
+    DvzRenderpass* renderpass = &canvas.renderpass;
+    DvzFramebuffers* framebuffers = &canvas.framebuffers;
+    DvzSwapchain* swapchain = &canvas.swapchain;
 
     ASSERT(swapchain != NULL);
     ASSERT(swapchain->img_count > 0);
 
-    VklCommands cmds = vkl_commands(gpu, 0, swapchain->img_count);
+    DvzCommands cmds = dvz_commands(gpu, 0, swapchain->img_count);
     for (uint32_t i = 0; i < cmds.count; i++)
         fill_commands(&canvas, &cmds, i);
 
     // Sync objects.
-    VklSemaphores sem_img_available = vkl_semaphores(gpu, VKL_MAX_FRAMES_IN_FLIGHT);
-    VklSemaphores sem_render_finished = vkl_semaphores(gpu, VKL_MAX_FRAMES_IN_FLIGHT);
-    VklFences fences = vkl_fences(gpu, VKL_MAX_FRAMES_IN_FLIGHT);
-    VklFences bak_fences = {0};
+    DvzSemaphores sem_img_available = dvz_semaphores(gpu, DVZ_MAX_FRAMES_IN_FLIGHT);
+    DvzSemaphores sem_render_finished = dvz_semaphores(gpu, DVZ_MAX_FRAMES_IN_FLIGHT);
+    DvzFences fences = dvz_fences(gpu, DVZ_MAX_FRAMES_IN_FLIGHT);
+    DvzFences bak_fences = {0};
     bak_fences.gpu = gpu;
     bak_fences.count = swapchain->img_count;
     uint32_t cur_frame = 0;
-    VklBackend backend = VKL_BACKEND_GLFW;
+    DvzBackend backend = DVZ_BACKEND_GLFW;
 
     for (uint32_t frame = 0; frame < n_frames; frame++)
     {
@@ -760,21 +760,21 @@ static void show_canvas(TestCanvas canvas, FillCallback fill_commands, uint32_t 
         glfwPollEvents();
 
         if (backend_window_should_close(backend, window->backend_window) ||
-            window->obj.status == VKL_OBJECT_STATUS_NEED_DESTROY)
+            window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
             break;
 
         // Wait for fence.
-        vkl_fences_wait(&fences, cur_frame);
+        dvz_fences_wait(&fences, cur_frame);
 
         // We acquire the next swapchain image.
-        vkl_swapchain_acquire(swapchain, &sem_img_available, cur_frame, NULL, 0);
-        if (swapchain->obj.status == VKL_OBJECT_STATUS_INVALID)
+        dvz_swapchain_acquire(swapchain, &sem_img_available, cur_frame, NULL, 0);
+        if (swapchain->obj.status == DVZ_OBJECT_STATUS_INVALID)
         {
-            vkl_gpu_wait(gpu);
+            dvz_gpu_wait(gpu);
             break;
         }
         // Handle resizing.
-        else if (swapchain->obj.status == VKL_OBJECT_STATUS_NEED_RECREATE)
+        else if (swapchain->obj.status == DVZ_OBJECT_STATUS_NEED_RECREATE)
         {
             log_trace("recreating the swapchain");
 
@@ -785,17 +785,17 @@ static void show_canvas(TestCanvas canvas, FillCallback fill_commands, uint32_t 
                 backend, window->backend_window, //
                 &window->width, &window->height, //
                 &width, &height);
-            vkl_gpu_wait(gpu);
+            dvz_gpu_wait(gpu);
 
             // Destroy swapchain resources.
-            vkl_framebuffers_destroy(framebuffers);
-            vkl_images_destroy(canvas.depth);
-            vkl_images_destroy(canvas.images);
-            vkl_swapchain_destroy(swapchain);
+            dvz_framebuffers_destroy(framebuffers);
+            dvz_images_destroy(canvas.depth);
+            dvz_images_destroy(canvas.images);
+            dvz_swapchain_destroy(swapchain);
 
             // Recreate the swapchain. This will automatically set the swapchain->images new
             // size.
-            vkl_swapchain_create(swapchain);
+            dvz_swapchain_create(swapchain);
             // Find the new framebuffer size as determined by the swapchain recreation.
             width = swapchain->images->width;
             height = swapchain->images->height;
@@ -804,52 +804,52 @@ static void show_canvas(TestCanvas canvas, FillCallback fill_commands, uint32_t 
             ASSERT(swapchain->images == canvas.images);
 
             // Need to recreate the depth image with the new size.
-            vkl_images_size(canvas.depth, width, height, 1);
-            vkl_images_create(canvas.depth);
+            dvz_images_size(canvas.depth, width, height, 1);
+            dvz_images_create(canvas.depth);
 
             // Recreate the framebuffers with the new size.
             ASSERT(framebuffers->attachments[0]->width == width);
             ASSERT(framebuffers->attachments[0]->height == height);
-            vkl_framebuffers_create(framebuffers, renderpass);
+            dvz_framebuffers_create(framebuffers, renderpass);
 
             // Need to refill the command buffers.
             for (uint32_t i = 0; i < cmds.count; i++)
             {
-                vkl_cmd_reset(&cmds, i);
+                dvz_cmd_reset(&cmds, i);
                 fill_commands(&canvas, &cmds, i);
             }
         }
         else
         {
-            vkl_fences_copy(&fences, cur_frame, &bak_fences, swapchain->img_idx);
+            dvz_fences_copy(&fences, cur_frame, &bak_fences, swapchain->img_idx);
 
             // Then, we submit the cmds on that image
-            VklSubmit submit = vkl_submit(gpu);
-            vkl_submit_commands(&submit, &cmds);
-            vkl_submit_wait_semaphores(
+            DvzSubmit submit = dvz_submit(gpu);
+            dvz_submit_commands(&submit, &cmds);
+            dvz_submit_wait_semaphores(
                 &submit, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, &sem_img_available,
                 cur_frame);
             // Once the render is finished, we signal another semaphore.
-            vkl_submit_signal_semaphores(&submit, &sem_render_finished, cur_frame);
-            vkl_submit_send(&submit, swapchain->img_idx, &fences, cur_frame);
+            dvz_submit_signal_semaphores(&submit, &sem_render_finished, cur_frame);
+            dvz_submit_send(&submit, swapchain->img_idx, &fences, cur_frame);
 
             // Once the image is rendered, we present the swapchain image.
-            vkl_swapchain_present(swapchain, 1, &sem_render_finished, cur_frame);
+            dvz_swapchain_present(swapchain, 1, &sem_render_finished, cur_frame);
 
-            cur_frame = (cur_frame + 1) % VKL_MAX_FRAMES_IN_FLIGHT;
+            cur_frame = (cur_frame + 1) % DVZ_MAX_FRAMES_IN_FLIGHT;
         }
 
         // IMPORTANT: we need to wait for the present queue to be idle, otherwise the GPU hangs
         // when waiting for fences (not sure why). The problem only arises when using different
         // queues for command buffer submission and swapchain present.
-        vkl_queue_wait(gpu, 1);
+        dvz_queue_wait(gpu, 1);
     }
     log_trace("end of main loop");
-    vkl_gpu_wait(gpu);
+    dvz_gpu_wait(gpu);
 
-    vkl_semaphores_destroy(&sem_img_available);
-    vkl_semaphores_destroy(&sem_render_finished);
-    vkl_fences_destroy(&fences);
+    dvz_semaphores_destroy(&sem_img_available);
+    dvz_semaphores_destroy(&sem_render_finished);
+    dvz_fences_destroy(&fences);
 }
 
 
@@ -859,52 +859,52 @@ static void destroy_canvas(TestCanvas* canvas)
     log_trace("destroy canvas");
     if (canvas->is_offscreen)
     {
-        vkl_images_destroy(canvas->images);
+        dvz_images_destroy(canvas->images);
     }
-    vkl_images_destroy(canvas->depth);
+    dvz_images_destroy(canvas->depth);
 
-    vkl_renderpass_destroy(&canvas->renderpass);
-    vkl_swapchain_destroy(&canvas->swapchain);
-    vkl_framebuffers_destroy(&canvas->framebuffers);
-    vkl_window_destroy(canvas->window);
+    dvz_renderpass_destroy(&canvas->renderpass);
+    dvz_swapchain_destroy(&canvas->swapchain);
+    dvz_framebuffers_destroy(&canvas->framebuffers);
+    dvz_window_destroy(canvas->window);
 }
 
 
 
 static void _triangle_graphics(TestVisual* visual, const char* suffix)
 {
-    VklGpu* gpu = visual->gpu;
-    visual->graphics = vkl_graphics(gpu);
+    DvzGpu* gpu = visual->gpu;
+    visual->graphics = dvz_graphics(gpu);
     ASSERT(visual->renderpass != NULL);
-    VklGraphics* graphics = &visual->graphics;
+    DvzGraphics* graphics = &visual->graphics;
     visual->n_vertices = 3;
 
-    vkl_graphics_renderpass(graphics, visual->renderpass, 0);
-    vkl_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-    vkl_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
-    vkl_graphics_depth_test(graphics, VKL_DEPTH_TEST_ENABLE);
+    dvz_graphics_renderpass(graphics, visual->renderpass, 0);
+    dvz_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    dvz_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
+    dvz_graphics_depth_test(graphics, DVZ_DEPTH_TEST_ENABLE);
 
     char path[1024];
     snprintf(path, sizeof(path), "%s/test_triangle%s.vert.spv", SPIRV_DIR, suffix);
-    vkl_graphics_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
+    dvz_graphics_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
     snprintf(path, sizeof(path), "%s/test_triangle%s.frag.spv", SPIRV_DIR, suffix);
-    vkl_graphics_shader(graphics, VK_SHADER_STAGE_FRAGMENT_BIT, path);
-    vkl_graphics_vertex_binding(graphics, 0, sizeof(TestVertex));
-    vkl_graphics_vertex_attr(
+    dvz_graphics_shader(graphics, VK_SHADER_STAGE_FRAGMENT_BIT, path);
+    dvz_graphics_vertex_binding(graphics, 0, sizeof(TestVertex));
+    dvz_graphics_vertex_attr(
         graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(TestVertex, pos));
-    vkl_graphics_vertex_attr(
+    dvz_graphics_vertex_attr(
         graphics, 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(TestVertex, color));
 }
 
 
 
-static void _depth_vertices(uint32_t N, VklGraphicsMeshVertex* vertices, bool vulkan_transform)
+static void _depth_vertices(uint32_t N, DvzGraphicsMeshVertex* vertices, bool vulkan_transform)
 {
     float x = 0;
     float y = 0;
     float l = .075;
     float z = 0;
-    VklGraphicsMeshVertex *v0, *v1, *v2;
+    DvzGraphicsMeshVertex *v0, *v1, *v2;
     uint32_t j = 0;
     float col = (0.5) / 256.0;
     vec2 z_values = {.75, .25};
@@ -919,8 +919,8 @@ static void _depth_vertices(uint32_t N, VklGraphicsMeshVertex* vertices, bool vu
         v1 = &vertices[3 * i + 1];
         v2 = &vertices[3 * i + 2];
 
-        x = .75 * (-1 + 2 * vkl_rand_float());
-        y = .75 * (-1 + 2 * vkl_rand_float());
+        x = .75 * (-1 + 2 * dvz_rand_float());
+        y = .75 * (-1 + 2 * dvz_rand_float());
 
         // The following should work even if the depth buffer is not working.
         // j = i < N / 6 ? 0 : 1;
@@ -932,7 +932,7 @@ static void _depth_vertices(uint32_t N, VklGraphicsMeshVertex* vertices, bool vu
         // j == 0 : background, j == 1 : foreground
         // NOTE: no Vulkan transformation, use native Vulkan z coordinate, 0 = front, 1 = back
         z = z_values[j % 2]; // j == 0, .75 = background, .25 = foreground (if no vulkan_transform)
-        z += .01 * vkl_rand_normal();
+        z += .01 * dvz_rand_normal();
 
         v0->pos[0] = x - l;
         v0->pos[1] = y - l;
@@ -964,18 +964,18 @@ static void _depth_vertices(uint32_t N, VklGraphicsMeshVertex* vertices, bool vu
 
 static void _triangle_buffer(TestVisual* visual)
 {
-    VklGpu* gpu = visual->gpu;
+    DvzGpu* gpu = visual->gpu;
 
     // Create the buffer.
-    visual->buffer = vkl_buffer(gpu);
+    visual->buffer = dvz_buffer(gpu);
     VkDeviceSize size = 3 * sizeof(TestVertex);
-    vkl_buffer_size(&visual->buffer, size);
-    vkl_buffer_usage(
+    dvz_buffer_size(&visual->buffer, size);
+    dvz_buffer_usage(
         &visual->buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
-    vkl_buffer_memory(
+    dvz_buffer_memory(
         &visual->buffer,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    vkl_buffer_create(&visual->buffer);
+    dvz_buffer_create(&visual->buffer);
 
     // Upload the triangle data.
     TestVertex data[3] = {
@@ -983,7 +983,7 @@ static void _triangle_buffer(TestVisual* visual)
         {{+1, +1, 0}, {0, 1, 0, 1}},
         {{+0, -1, 0}, {0, 0, 1, 1}},
     };
-    vkl_buffer_upload(&visual->buffer, 0, size, data);
+    dvz_buffer_upload(&visual->buffer, 0, size, data);
 
     visual->br.buffer = &visual->buffer;
     visual->br.size = size;
@@ -997,11 +997,11 @@ static void test_triangle(TestVisual* visual, const char* suffix)
     _triangle_graphics(visual, suffix);
 
     // Create the bindings.
-    visual->bindings = vkl_bindings(&visual->graphics.slots, 1);
-    vkl_bindings_update(&visual->bindings);
+    visual->bindings = dvz_bindings(&visual->graphics.slots, 1);
+    dvz_bindings_update(&visual->bindings);
 
     // Create the graphics pipeline.
-    vkl_graphics_create(&visual->graphics);
+    dvz_graphics_create(&visual->graphics);
 
     _triangle_buffer(visual);
 }
@@ -1010,16 +1010,16 @@ static void test_triangle(TestVisual* visual, const char* suffix)
 
 static void destroy_visual(TestVisual* visual)
 {
-    vkl_graphics_destroy(&visual->graphics);
-    vkl_bindings_destroy(&visual->bindings);
-    vkl_buffer_destroy(&visual->buffer);
+    dvz_graphics_destroy(&visual->graphics);
+    dvz_bindings_destroy(&visual->bindings);
+    dvz_buffer_destroy(&visual->buffer);
 }
 
 
 
-static VklTexture* _mouse_volume(VklCanvas* canvas)
+static DvzTexture* _mouse_volume(DvzCanvas* canvas)
 {
-    VklGpu* gpu = canvas->gpu;
+    DvzGpu* gpu = canvas->gpu;
 
     const uint32_t ni = MOUSE_VOLUME_WIDTH;
     const uint32_t nj = MOUSE_VOLUME_HEIGHT;
@@ -1028,19 +1028,19 @@ static VklTexture* _mouse_volume(VklCanvas* canvas)
     // Texture.
     char path[1024];
     snprintf(path, sizeof(path), "%s/volume/%s", DATA_DIR, "atlas_25.img");
-    VklTexture* texture =
-        vkl_ctx_texture(gpu->context, 3, (uvec3){ni, nj, nk}, VK_FORMAT_R16_UNORM);
+    DvzTexture* texture =
+        dvz_ctx_texture(gpu->context, 3, (uvec3){ni, nj, nk}, VK_FORMAT_R16_UNORM);
     // WARNING: nearest filter causes visual artifacts when sampling from a 3D texture close to the
     // boundaries between different values
-    vkl_texture_filter(texture, VKL_FILTER_MAG, VK_FILTER_LINEAR);
-    vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    vkl_texture_address_mode(texture, VKL_TEXTURE_AXIS_W, VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    uint16_t* tex_data = (uint16_t*)vkl_read_file(path, NULL);
+    dvz_texture_filter(texture, DVZ_FILTER_MAG, VK_FILTER_LINEAR);
+    dvz_texture_address_mode(texture, DVZ_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    dvz_texture_address_mode(texture, DVZ_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    dvz_texture_address_mode(texture, DVZ_TEXTURE_AXIS_W, VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    uint16_t* tex_data = (uint16_t*)dvz_read_file(path, NULL);
     for (uint32_t i = 0; i < (ni * nj * nk); i++)
         tex_data[i] *= 10;
-    vkl_upload_texture(
-        canvas, texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, //
+    dvz_upload_texture(
+        canvas, texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, //
         ni * nj * nk * sizeof(uint16_t), tex_data);
     FREE(tex_data);
     return texture;
@@ -1052,35 +1052,35 @@ static VklTexture* _mouse_volume(VklCanvas* canvas)
 /*  Commands filling                                                                             */
 /*************************************************************************************************/
 
-static void empty_commands(TestCanvas* canvas, VklCommands* cmds, uint32_t idx)
+static void empty_commands(TestCanvas* canvas, DvzCommands* cmds, uint32_t idx)
 {
-    vkl_cmd_begin(cmds, idx);
-    vkl_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, &canvas->framebuffers);
-    vkl_cmd_end_renderpass(cmds, idx);
-    vkl_cmd_end(cmds, idx);
+    dvz_cmd_begin(cmds, idx);
+    dvz_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, &canvas->framebuffers);
+    dvz_cmd_end_renderpass(cmds, idx);
+    dvz_cmd_end(cmds, idx);
 }
 
 
 
-static void triangle_commands(TestCanvas* canvas, VklCommands* cmds, uint32_t idx)
+static void triangle_commands(TestCanvas* canvas, DvzCommands* cmds, uint32_t idx)
 {
     ASSERT(canvas->br.buffer != NULL);
     ASSERT(canvas->graphics != NULL);
     ASSERT(canvas->bindings != NULL);
 
     // Commands.
-    vkl_cmd_begin(cmds, idx);
-    vkl_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, &canvas->framebuffers);
-    vkl_cmd_viewport(
+    dvz_cmd_begin(cmds, idx);
+    dvz_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, &canvas->framebuffers);
+    dvz_cmd_viewport(
         cmds, idx,
         (VkViewport){
             0, 0, canvas->framebuffers.attachments[0]->width,
             canvas->framebuffers.attachments[0]->height, 0, 1});
-    vkl_cmd_bind_vertex_buffer(cmds, idx, canvas->br, 0);
-    vkl_cmd_bind_graphics(cmds, idx, canvas->graphics, canvas->bindings, 0);
-    vkl_cmd_draw(cmds, idx, 0, 3);
-    vkl_cmd_end_renderpass(cmds, idx);
-    vkl_cmd_end(cmds, idx);
+    dvz_cmd_bind_vertex_buffer(cmds, idx, canvas->br, 0);
+    dvz_cmd_bind_graphics(cmds, idx, canvas->graphics, canvas->bindings, 0);
+    dvz_cmd_draw(cmds, idx, 0, 3);
+    dvz_cmd_end_renderpass(cmds, idx);
+    dvz_cmd_end(cmds, idx);
 }
 
 

@@ -1,13 +1,13 @@
-#ifndef VKL_AXIS_HEADER
-#define VKL_AXIS_HEADER
+#ifndef DVZ_AXIS_HEADER
+#define DVZ_AXIS_HEADER
 
-#include "../include/visky/canvas.h"
-#include "../include/visky/panel.h"
-#include "../include/visky/scene.h"
-#include "../include/visky/ticks_types.h"
-#include "../include/visky/transforms.h"
-#include "../include/visky/visuals.h"
-#include "../include/visky/vklite.h"
+#include "../include/datoviz/canvas.h"
+#include "../include/datoviz/panel.h"
+#include "../include/datoviz/scene.h"
+#include "../include/datoviz/ticks_types.h"
+#include "../include/datoviz/transforms.h"
+#include "../include/datoviz/visuals.h"
+#include "../include/datoviz/vklite.h"
 #include "ticks.h"
 #include "transforms_utils.h"
 #include "visuals_utils.h"
@@ -20,26 +20,26 @@
 /*************************************************************************************************/
 
 // Create the ticks context.
-static VklAxesContext _axes_context(VklController* controller, VklAxisCoord coord)
+static DvzAxesContext _axes_context(DvzController* controller, DvzAxisCoord coord)
 {
     ASSERT(controller != NULL);
-    ASSERT(controller->type == VKL_CONTROLLER_AXES_2D);
+    ASSERT(controller->type == DVZ_CONTROLLER_AXES_2D);
 
     ASSERT(controller->panel != NULL);
     ASSERT(controller->panel->grid != NULL);
 
     // Canvas size, used in tick computation.
-    VklCanvas* canvas = controller->panel->grid->canvas;
+    DvzCanvas* canvas = controller->panel->grid->canvas;
     ASSERT(canvas != NULL);
     float dpi_scaling = controller->panel->viewport.dpi_scaling;
     uvec2 size = {0};
-    vkl_canvas_size(canvas, VKL_CANVAS_SIZE_FRAMEBUFFER, size);
-    VklViewport* viewport = &controller->panel->viewport;
+    dvz_canvas_size(canvas, DVZ_CANVAS_SIZE_FRAMEBUFFER, size);
+    DvzViewport* viewport = &controller->panel->viewport;
     vec4 m = {0};
     glm_vec4_copy(viewport->margins, m);
 
     // Make axes context.
-    VklAxesContext ctx = {0};
+    DvzAxesContext ctx = {0};
     ctx.coord = coord;
     ctx.extensions = 1; // extend the range on the left/right and top/bottom
     ctx.size_viewport = size[coord] - m[1 - coord] - m[3 - coord]; // remove the margins
@@ -48,10 +48,10 @@ static VklAxesContext _axes_context(VklController* controller, VklAxisCoord coor
     // TODO: improve determination of glyph size
     float font_size = controller->u.axes_2D.font_size;
     ASSERT(font_size > 0);
-    VklFontAtlas* atlas = &canvas->gpu->context->font_atlas;
+    DvzFontAtlas* atlas = &canvas->gpu->context->font_atlas;
     ASSERT(atlas->glyph_width > 0);
     ASSERT(atlas->glyph_height > 0);
-    ctx.size_glyph = coord == VKL_AXES_COORD_X
+    ctx.size_glyph = coord == DVZ_AXES_COORD_X
                          ? font_size * atlas->glyph_width / atlas->glyph_height
                          : font_size;
     ctx.size_glyph *= dpi_scaling;
@@ -62,19 +62,19 @@ static VklAxesContext _axes_context(VklController* controller, VklAxisCoord coor
 
 
 // Recompute the tick locations as a function of the current axis range in data coordinates.
-static void _axes_ticks(VklController* controller, VklAxisCoord coord, dvec2 range)
+static void _axes_ticks(DvzController* controller, DvzAxisCoord coord, dvec2 range)
 {
     ASSERT(controller != NULL);
-    ASSERT(controller->type == VKL_CONTROLLER_AXES_2D);
+    ASSERT(controller->type == DVZ_CONTROLLER_AXES_2D);
 
-    VklAxes2D* axes = &controller->u.axes_2D;
+    DvzAxes2D* axes = &controller->u.axes_2D;
     ASSERT(axes != NULL);
 
-    VklPanel* panel = controller->panel;
+    DvzPanel* panel = controller->panel;
     ASSERT(panel != NULL);
 
     // Prepare context for tick computation.
-    VklAxesContext ctx = _axes_context(controller, coord);
+    DvzAxesContext ctx = _axes_context(controller, coord);
 
     double vmin = range[0];
     double vmax = range[1];
@@ -83,10 +83,10 @@ static void _axes_ticks(VklController* controller, VklAxisCoord coord, dvec2 ran
 
     // Free the existing ticks.
     if (axes->ticks[coord].values != NULL)
-        vkl_ticks_destroy(&axes->ticks[coord]);
+        dvz_ticks_destroy(&axes->ticks[coord]);
 
     // Determine the tick number and positions.
-    axes->ticks[coord] = vkl_ticks(vmin, vmax, ctx);
+    axes->ticks[coord] = dvz_ticks(vmin, vmax, ctx);
 
     // We keep track of the context.
     axes->ctx[coord] = ctx;
@@ -95,24 +95,24 @@ static void _axes_ticks(VklController* controller, VklAxisCoord coord, dvec2 ran
 
 
 // Update the axes visual's data as a function of the computed ticks.
-static void _axes_upload(VklController* controller, VklAxisCoord coord)
+static void _axes_upload(DvzController* controller, DvzAxisCoord coord)
 {
     ASSERT(controller != NULL);
-    ASSERT(controller->type == VKL_CONTROLLER_AXES_2D);
-    VklAxes2D* axes = &controller->u.axes_2D;
+    ASSERT(controller->type == DVZ_CONTROLLER_AXES_2D);
+    DvzAxes2D* axes = &controller->u.axes_2D;
     ASSERT(axes != NULL);
     ASSERT(controller->visual_count == 2);
 
-    VklVisual* visual = controller->visuals[coord];
+    DvzVisual* visual = controller->visuals[coord];
     ASSERT(visual != NULL);
 
-    VklPanel* panel = controller->panel;
+    DvzPanel* panel = controller->panel;
     ASSERT(panel != NULL);
 
-    VklDataCoords* coords = &panel->data_coords;
+    DvzDataCoords* coords = &panel->data_coords;
     ASSERT(coords != NULL);
 
-    VklAxesTicks* axticks = &axes->ticks[coord];
+    DvzAxesTicks* axticks = &axes->ticks[coord];
     uint32_t N = axticks->value_count;
 
     // Range used for normalization of the ticks (corresponds to init panzoom).
@@ -145,11 +145,11 @@ static void _axes_upload(VklController* controller, VklAxisCoord coord)
 
     // Set visual data.
     double lim[] = {-1};
-    vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_MINOR, 4 * (N - 1), minor_ticks);
-    vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_MAJOR, N, ticks);
-    vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_GRID, N, ticks);
-    vkl_visual_data(visual, VKL_PROP_POS, VKL_AXES_LEVEL_LIM, 1, lim);
-    vkl_visual_data(visual, VKL_PROP_TEXT, 0, N, text);
+    dvz_visual_data(visual, DVZ_PROP_POS, DVZ_AXES_LEVEL_MINOR, 4 * (N - 1), minor_ticks);
+    dvz_visual_data(visual, DVZ_PROP_POS, DVZ_AXES_LEVEL_MAJOR, N, ticks);
+    dvz_visual_data(visual, DVZ_PROP_POS, DVZ_AXES_LEVEL_GRID, N, ticks);
+    dvz_visual_data(visual, DVZ_PROP_POS, DVZ_AXES_LEVEL_LIM, 1, lim);
+    dvz_visual_data(visual, DVZ_PROP_TEXT, 0, N, text);
 
     FREE(minor_ticks);
     FREE(ticks);
@@ -158,16 +158,16 @@ static void _axes_upload(VklController* controller, VklAxisCoord coord)
 
 
 
-// Update the axes to the extent defined by the VklDataCoords struct in the VklPanel
-static void _axes_set(VklController* controller, VklBox box)
+// Update the axes to the extent defined by the DvzDataCoords struct in the DvzPanel
+static void _axes_set(DvzController* controller, DvzBox box)
 {
     // WARNING: the panzoom must be reset when calling this function, so that axes->box corresponds
     // to the current view.
 
     ASSERT(controller != NULL);
-    ASSERT(controller->type == VKL_CONTROLLER_AXES_2D);
+    ASSERT(controller->type == DVZ_CONTROLLER_AXES_2D);
 
-    VklAxes2D* axes = &controller->u.axes_2D;
+    DvzAxes2D* axes = &controller->u.axes_2D;
     ASSERT(axes != NULL);
 
     // Initial data coordinates from the panel
@@ -190,17 +190,17 @@ static void _axes_set(VklController* controller, VklBox box)
 
 
 // Initialize the ticks positions and visual.
-static void _axes_ticks_init(VklController* controller)
+static void _axes_ticks_init(DvzController* controller)
 {
     ASSERT(controller != NULL);
-    ASSERT(controller->type == VKL_CONTROLLER_AXES_2D);
+    ASSERT(controller->type == DVZ_CONTROLLER_AXES_2D);
     ASSERT(controller->panel != NULL);
-    VklAxes2D* axes = &controller->u.axes_2D;
+    DvzAxes2D* axes = &controller->u.axes_2D;
 
     // NOTE: get the font size which was set by in builtin_visuals.c as a prop.
-    VklProp* prop = vkl_prop_get(controller->visuals[0], VKL_PROP_TEXT_SIZE, 0);
+    DvzProp* prop = dvz_prop_get(controller->visuals[0], DVZ_PROP_TEXT_SIZE, 0);
     ASSERT(prop != NULL);
-    float* font_size = vkl_prop_item(prop, 0);
+    float* font_size = dvz_prop_item(prop, 0);
     axes->font_size = *font_size;
     ASSERT(axes->font_size > 0);
 
@@ -212,11 +212,11 @@ static void _axes_ticks_init(VklController* controller)
 
 // Determine the coords that need to be updated during panzoom because of overlapping labels.
 // range is the current range, in data coordinates, that is visible
-static bool _axes_collision(VklController* controller, VklAxisCoord coord, dvec2 range)
+static bool _axes_collision(DvzController* controller, DvzAxisCoord coord, dvec2 range)
 {
     ASSERT(controller != NULL);
-    ASSERT(controller->type == VKL_CONTROLLER_AXES_2D);
-    VklAxes2D* axes = &controller->u.axes_2D;
+    ASSERT(controller->type == DVZ_CONTROLLER_AXES_2D);
+    DvzAxes2D* axes = &controller->u.axes_2D;
     ASSERT(axes != NULL);
     // ASSERT(update != NULL);
 
@@ -224,13 +224,13 @@ static bool _axes_collision(VklController* controller, VklAxisCoord coord, dvec2
     // Same if there are less than N visible labels (dezooming)
     // for (uint32_t i = 0; i < 2; i++)
     // {
-    // VklAxisCoord coord = (VklAxisCoord)i;
-    VklAxesTicks* ticks = &axes->ticks[coord];
+    // DvzAxisCoord coord = (DvzAxisCoord)i;
+    DvzAxesTicks* ticks = &axes->ticks[coord];
     ASSERT(ticks != NULL);
 
     // NOTE: make a copy because we'll use a temporary context object when computing the
     // overlap.
-    VklAxesContext ctx = axes->ctx[coord];
+    DvzAxesContext ctx = axes->ctx[coord];
     // ctx.labels = ticks->labels;
     ASSERT(controller->interacts != NULL);
     ASSERT(controller->interact_count >= 1);
@@ -263,20 +263,20 @@ static bool _axes_collision(VklController* controller, VklAxisCoord coord, dvec2
 
 
 // // Update axes->range struct as a function of the current panzoom.
-// static void _axes_range(VklController* controller, VklAxisCoord coord)
+// static void _axes_range(DvzController* controller, DvzAxisCoord coord)
 // {
 //     ASSERT(controller != NULL);
-//     ASSERT(controller->type == VKL_CONTROLLER_AXES_2D);
-//     VklPanel* panel = controller->panel;
+//     ASSERT(controller->type == DVZ_CONTROLLER_AXES_2D);
+//     DvzPanel* panel = controller->panel;
 //     ASSERT(panel != NULL);
-//     VklAxes2D* axes = &controller->u.axes_2D;
+//     DvzAxes2D* axes = &controller->u.axes_2D;
 //     ASSERT(axes != NULL);
 
 //     // set axes->range depending on coord
 //     dvec3 in_bl = {-1, +1, .5}, out_bl;
 //     dvec3 in_tr = {+1, -1, .5}, out_tr;
 
-//     VklTransformChain tc = _transforms_cds(panel, VKL_CDS_VULKAN, VKL_CDS_SCENE);
+//     DvzTransformChain tc = _transforms_cds(panel, DVZ_CDS_VULKAN, DVZ_CDS_SCENE);
 //     _transforms_apply(&tc, in_bl, out_bl);
 //     _transforms_apply(&tc, in_tr, out_tr);
 
@@ -287,7 +287,7 @@ static bool _axes_collision(VklController* controller, VklAxisCoord coord, dvec2
 
 
 // Callback called at every frame.
-static void _axes_callback(VklController* controller, VklEvent ev)
+static void _axes_callback(DvzController* controller, DvzEvent ev)
 {
     ASSERT(controller != NULL);
     _default_controller_callback(controller, ev);
@@ -296,10 +296,10 @@ static void _axes_callback(VklController* controller, VklEvent ev)
     ASSERT(controller->panel != NULL);
     ASSERT(controller->panel->grid != NULL);
 
-    VklCanvas* canvas = controller->panel->grid->canvas;
+    DvzCanvas* canvas = controller->panel->grid->canvas;
     ASSERT(canvas != NULL);
 
-    VklPanel* panel = controller->panel;
+    DvzPanel* panel = controller->panel;
     ASSERT(panel != NULL);
 
     if (!controller->interacts[0].is_active && !canvas->resized)
@@ -317,7 +317,7 @@ static void _axes_callback(VklController* controller, VklEvent ev)
     dvec3 in_bl = {-1, +1, .5}, out_bl;
     dvec3 in_tr = {+1, -1, .5}, out_tr;
 
-    VklTransformChain tc = _transforms_cds(panel, VKL_CDS_VULKAN, VKL_CDS_DATA);
+    DvzTransformChain tc = _transforms_cds(panel, DVZ_CDS_VULKAN, DVZ_CDS_DATA);
     _transforms_apply(&tc, in_bl, out_bl);
     _transforms_apply(&tc, in_tr, out_tr);
 
@@ -326,7 +326,7 @@ static void _axes_callback(VklController* controller, VklEvent ev)
         range[i][0] = out_bl[i];
         range[i][1] = out_tr[i];
 
-        update[i] = _axes_collision(controller, (VklAxisCoord)i, range[i]);
+        update[i] = _axes_collision(controller, (DvzAxisCoord)i, range[i]);
 
         // DEBUG
         // if (i == 0)
@@ -344,69 +344,69 @@ static void _axes_callback(VklController* controller, VklEvent ev)
     {
         if (!update[coord])
             continue;
-        _axes_ticks(controller, (VklAxisCoord)coord, range[coord]);
-        _axes_upload(controller, (VklAxisCoord)coord);
+        _axes_ticks(controller, (DvzAxisCoord)coord, range[coord]);
+        _axes_upload(controller, (DvzAxisCoord)coord);
 
         // TODO: what else to do here? update a request??
-        // canvas->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+        // canvas->obj.status = DVZ_OBJECT_STATUS_NEED_UPDATE;
     }
 }
 
 
 
-static void _axes_visual(VklController* controller, VklAxisCoord coord)
+static void _axes_visual(DvzController* controller, DvzAxisCoord coord)
 {
     ASSERT(controller != NULL);
-    VklPanel* panel = controller->panel;
+    DvzPanel* panel = controller->panel;
     ASSERT(panel != NULL);
-    VklContext* ctx = panel->grid->canvas->gpu->context;
+    DvzContext* ctx = panel->grid->canvas->gpu->context;
 
     // Axes visual flags
     // 0x000X: coordinate
     // 0x00X0: no CPU pos normalization
     // 0xX0000: interact fixed axis
-    int flags = VKL_VISUAL_FLAGS_TRANSFORM_NONE |
-                (coord == 0 ? VKL_INTERACT_FIXED_AXIS_Y : VKL_INTERACT_FIXED_AXIS_X) | //
+    int flags = DVZ_VISUAL_FLAGS_TRANSFORM_NONE |
+                (coord == 0 ? DVZ_INTERACT_FIXED_AXIS_Y : DVZ_INTERACT_FIXED_AXIS_X) | //
                 (int)coord;
-    VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_AXES_2D, flags);
-    vkl_controller_visual(controller, visual);
-    visual->priority = VKL_MAX_VISUAL_PRIORITY;
+    DvzVisual* visual = dvz_scene_visual(panel, DVZ_VISUAL_AXES_2D, flags);
+    dvz_controller_visual(controller, visual);
+    visual->priority = DVZ_MAX_VISUAL_PRIORITY;
 
-    visual->clip[0] = VKL_VIEWPORT_OUTER;
-    visual->clip[1] = coord == 0 ? VKL_VIEWPORT_OUTER_BOTTOM : VKL_VIEWPORT_OUTER_LEFT;
+    visual->clip[0] = DVZ_VIEWPORT_OUTER;
+    visual->clip[1] = coord == 0 ? DVZ_VIEWPORT_OUTER_BOTTOM : DVZ_VIEWPORT_OUTER_LEFT;
 
     visual->interact_axis[0] = visual->interact_axis[1] =
-        (coord == 0 ? VKL_INTERACT_FIXED_AXIS_Y : VKL_INTERACT_FIXED_AXIS_X) >> 12;
+        (coord == 0 ? DVZ_INTERACT_FIXED_AXIS_Y : DVZ_INTERACT_FIXED_AXIS_X) >> 12;
 
     // Text params.
-    VklFontAtlas* atlas = &ctx->font_atlas;
+    DvzFontAtlas* atlas = &ctx->font_atlas;
     ASSERT(strlen(atlas->font_str) > 0);
-    vkl_visual_texture(visual, VKL_SOURCE_TYPE_FONT_ATLAS, 0, atlas->texture);
+    dvz_visual_texture(visual, DVZ_SOURCE_TYPE_FONT_ATLAS, 0, atlas->texture);
 
-    VklGraphicsTextParams params = {0};
+    DvzGraphicsTextParams params = {0};
     params.grid_size[0] = (int32_t)atlas->rows;
     params.grid_size[1] = (int32_t)atlas->cols;
     params.tex_size[0] = (int32_t)atlas->width;
     params.tex_size[1] = (int32_t)atlas->height;
-    vkl_visual_data_source(visual, VKL_SOURCE_TYPE_PARAM, 0, 0, 1, 1, &params);
+    dvz_visual_data_source(visual, DVZ_SOURCE_TYPE_PARAM, 0, 0, 1, 1, &params);
 }
 
 
 
 // Add axes to a panel.
-static void _add_axes(VklController* controller)
+static void _add_axes(DvzController* controller)
 {
     ASSERT(controller != NULL);
-    VklPanel* panel = controller->panel;
+    DvzPanel* panel = controller->panel;
     ASSERT(panel != NULL);
     panel->controller = controller;
-    VklContext* ctx = panel->grid->canvas->gpu->context;
+    DvzContext* ctx = panel->grid->canvas->gpu->context;
     ASSERT(ctx != NULL);
 
-    vkl_panel_margins(panel, (vec4){25, 25, 100, 100});
+    dvz_panel_margins(panel, (vec4){25, 25, 100, 100});
 
     for (uint32_t coord = 0; coord < 2; coord++)
-        _axes_visual(controller, (VklAxisCoord)coord);
+        _axes_visual(controller, (DvzAxisCoord)coord);
 
     // Add the axes data.
     _axes_ticks_init(controller);
@@ -415,16 +415,16 @@ static void _add_axes(VklController* controller)
 
 
 // Destroy the axes objects.
-static void _axes_destroy(VklController* controller)
+static void _axes_destroy(DvzController* controller)
 {
     ASSERT(controller != NULL);
-    ASSERT(controller->type == VKL_CONTROLLER_AXES_2D);
-    VklAxes2D* axes = &controller->u.axes_2D;
+    ASSERT(controller->type == DVZ_CONTROLLER_AXES_2D);
+    DvzAxes2D* axes = &controller->u.axes_2D;
     ASSERT(axes != NULL);
 
     for (uint32_t i = 0; i < 2; i++)
     {
-        vkl_ticks_destroy(&axes->ticks[i]);
+        dvz_ticks_destroy(&axes->ticks[i]);
     }
 }
 

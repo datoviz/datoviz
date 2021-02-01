@@ -2,8 +2,8 @@
 /*  Colormap texture with builtin common colormaps                                               */
 /*************************************************************************************************/
 
-#ifndef VKL_COLORMAP_HEADER
-#define VKL_COLORMAP_HEADER
+#ifndef DVZ_COLORMAP_HEADER
+#define DVZ_COLORMAP_HEADER
 
 /*
 References:
@@ -76,7 +76,7 @@ We need to generate different types of data structures for colors:
 #define CMAP_COUNT 256
 
 #pragma GCC visibility push(default)
-static const unsigned char* VKL_COLORMAP_ARRAY;
+static const unsigned char* DVZ_COLORMAP_ARRAY;
 #pragma GCC visibility pop
 
 
@@ -88,207 +88,207 @@ static const unsigned char* VKL_COLORMAP_ARRAY;
 typedef enum
 {
     // Standard colormaps
-    VKL_CMAP_BINARY, // grey level
-    VKL_CMAP_HSV,    // all HSV hues
+    DVZ_CMAP_BINARY, // grey level
+    DVZ_CMAP_HSV,    // all HSV hues
 
     // matplotlib perceptually uniform
 
-    VKL_CMAP_CIVIDIS,
-    VKL_CMAP_INFERNO,
-    VKL_CMAP_MAGMA,
-    VKL_CMAP_PLASMA,
-    VKL_CMAP_VIRIDIS,
+    DVZ_CMAP_CIVIDIS,
+    DVZ_CMAP_INFERNO,
+    DVZ_CMAP_MAGMA,
+    DVZ_CMAP_PLASMA,
+    DVZ_CMAP_VIRIDIS,
 
     // matplotlib sequential
 
-    VKL_CMAP_BLUES,
-    VKL_CMAP_BUGN,
-    VKL_CMAP_BUPU,
-    VKL_CMAP_GNBU,
-    VKL_CMAP_GREENS,
-    VKL_CMAP_GREYS,
-    VKL_CMAP_ORANGES,
-    VKL_CMAP_ORRD,
-    VKL_CMAP_PUBU,
-    VKL_CMAP_PUBUGN,
-    VKL_CMAP_PURPLES,
-    VKL_CMAP_RDPU,
-    VKL_CMAP_REDS,
-    VKL_CMAP_YLGN,
-    VKL_CMAP_YLGNBU,
-    VKL_CMAP_YLORBR,
-    VKL_CMAP_YLORRD,
+    DVZ_CMAP_BLUES,
+    DVZ_CMAP_BUGN,
+    DVZ_CMAP_BUPU,
+    DVZ_CMAP_GNBU,
+    DVZ_CMAP_GREENS,
+    DVZ_CMAP_GREYS,
+    DVZ_CMAP_ORANGES,
+    DVZ_CMAP_ORRD,
+    DVZ_CMAP_PUBU,
+    DVZ_CMAP_PUBUGN,
+    DVZ_CMAP_PURPLES,
+    DVZ_CMAP_RDPU,
+    DVZ_CMAP_REDS,
+    DVZ_CMAP_YLGN,
+    DVZ_CMAP_YLGNBU,
+    DVZ_CMAP_YLORBR,
+    DVZ_CMAP_YLORRD,
 
     // matplotlib sequential 2
 
-    VKL_CMAP_AFMHOT,
-    VKL_CMAP_AUTUMN,
-    VKL_CMAP_BONE,
-    VKL_CMAP_COOL,
-    VKL_CMAP_COPPER,
-    VKL_CMAP_GIST_HEAT,
-    VKL_CMAP_GRAY,
-    VKL_CMAP_HOT,
-    VKL_CMAP_PINK,
-    VKL_CMAP_SPRING,
-    VKL_CMAP_SUMMER,
-    VKL_CMAP_WINTER,
-    VKL_CMAP_WISTIA,
+    DVZ_CMAP_AFMHOT,
+    DVZ_CMAP_AUTUMN,
+    DVZ_CMAP_BONE,
+    DVZ_CMAP_COOL,
+    DVZ_CMAP_COPPER,
+    DVZ_CMAP_GIST_HEAT,
+    DVZ_CMAP_GRAY,
+    DVZ_CMAP_HOT,
+    DVZ_CMAP_PINK,
+    DVZ_CMAP_SPRING,
+    DVZ_CMAP_SUMMER,
+    DVZ_CMAP_WINTER,
+    DVZ_CMAP_WISTIA,
 
     // matplotlib diverging
 
-    VKL_CMAP_BRBG,
-    VKL_CMAP_BWR,
-    VKL_CMAP_COOLWARM,
-    VKL_CMAP_PIYG,
-    VKL_CMAP_PRGN,
-    VKL_CMAP_PUOR,
-    VKL_CMAP_RDBU,
-    VKL_CMAP_RDGY,
-    VKL_CMAP_RDYLBU,
-    VKL_CMAP_RDYLGN,
-    VKL_CMAP_SEISMIC,
-    VKL_CMAP_SPECTRAL,
+    DVZ_CMAP_BRBG,
+    DVZ_CMAP_BWR,
+    DVZ_CMAP_COOLWARM,
+    DVZ_CMAP_PIYG,
+    DVZ_CMAP_PRGN,
+    DVZ_CMAP_PUOR,
+    DVZ_CMAP_RDBU,
+    DVZ_CMAP_RDGY,
+    DVZ_CMAP_RDYLBU,
+    DVZ_CMAP_RDYLGN,
+    DVZ_CMAP_SEISMIC,
+    DVZ_CMAP_SPECTRAL,
 
     // matplotlib cyclic
 
-    VKL_CMAP_TWILIGHT_SHIFTED,
-    VKL_CMAP_TWILIGHT,
+    DVZ_CMAP_TWILIGHT_SHIFTED,
+    DVZ_CMAP_TWILIGHT,
 
     // matplotlib misc
 
-    VKL_CMAP_BRG,
-    VKL_CMAP_CMRMAP,
-    VKL_CMAP_CUBEHELIX,
-    VKL_CMAP_FLAG,
-    VKL_CMAP_GIST_EARTH,
-    VKL_CMAP_GIST_NCAR,
-    VKL_CMAP_GIST_RAINBOW,
-    VKL_CMAP_GIST_STERN,
-    VKL_CMAP_GNUPLOT2,
-    VKL_CMAP_GNUPLOT,
-    VKL_CMAP_JET,
-    VKL_CMAP_NIPY_SPECTRAL,
-    VKL_CMAP_OCEAN,
-    VKL_CMAP_PRISM,
-    VKL_CMAP_RAINBOW,
-    VKL_CMAP_TERRAIN,
+    DVZ_CMAP_BRG,
+    DVZ_CMAP_CMRMAP,
+    DVZ_CMAP_CUBEHELIX,
+    DVZ_CMAP_FLAG,
+    DVZ_CMAP_GIST_EARTH,
+    DVZ_CMAP_GIST_NCAR,
+    DVZ_CMAP_GIST_RAINBOW,
+    DVZ_CMAP_GIST_STERN,
+    DVZ_CMAP_GNUPLOT2,
+    DVZ_CMAP_GNUPLOT,
+    DVZ_CMAP_JET,
+    DVZ_CMAP_NIPY_SPECTRAL,
+    DVZ_CMAP_OCEAN,
+    DVZ_CMAP_PRISM,
+    DVZ_CMAP_RAINBOW,
+    DVZ_CMAP_TERRAIN,
 
     // colorcet diverging
 
-    VKL_CMAP_BKR,
-    VKL_CMAP_BKY,
-    VKL_CMAP_CET_D10,
-    VKL_CMAP_CET_D11,
-    VKL_CMAP_CET_D8,
-    VKL_CMAP_CET_D13,
-    VKL_CMAP_CET_D3,
-    VKL_CMAP_CET_D1A,
-    VKL_CMAP_BJY,
-    VKL_CMAP_GWV,
-    VKL_CMAP_BWY,
-    VKL_CMAP_CET_D12,
-    VKL_CMAP_CET_R3,
-    VKL_CMAP_CET_D9,
-    VKL_CMAP_CWR,
+    DVZ_CMAP_BKR,
+    DVZ_CMAP_BKY,
+    DVZ_CMAP_CET_D10,
+    DVZ_CMAP_CET_D11,
+    DVZ_CMAP_CET_D8,
+    DVZ_CMAP_CET_D13,
+    DVZ_CMAP_CET_D3,
+    DVZ_CMAP_CET_D1A,
+    DVZ_CMAP_BJY,
+    DVZ_CMAP_GWV,
+    DVZ_CMAP_BWY,
+    DVZ_CMAP_CET_D12,
+    DVZ_CMAP_CET_R3,
+    DVZ_CMAP_CET_D9,
+    DVZ_CMAP_CWR,
 
     // colorcet colorblind
 
-    VKL_CMAP_CET_CBC1,
-    VKL_CMAP_CET_CBC2,
-    VKL_CMAP_CET_CBL1,
-    VKL_CMAP_CET_CBL2,
-    VKL_CMAP_CET_CBTC1,
-    VKL_CMAP_CET_CBTC2,
-    VKL_CMAP_CET_CBTL1,
+    DVZ_CMAP_CET_CBC1,
+    DVZ_CMAP_CET_CBC2,
+    DVZ_CMAP_CET_CBL1,
+    DVZ_CMAP_CET_CBL2,
+    DVZ_CMAP_CET_CBTC1,
+    DVZ_CMAP_CET_CBTC2,
+    DVZ_CMAP_CET_CBTL1,
 
     // colorcet others
 
-    VKL_CMAP_BGY,
-    VKL_CMAP_BGYW,
-    VKL_CMAP_BMW,
-    VKL_CMAP_CET_C1,
-    VKL_CMAP_CET_C1S,
-    VKL_CMAP_CET_C2,
-    VKL_CMAP_CET_C4,
-    VKL_CMAP_CET_C4S,
-    VKL_CMAP_CET_C5,
-    VKL_CMAP_CET_I1,
-    VKL_CMAP_CET_I3,
-    VKL_CMAP_CET_L10,
-    VKL_CMAP_CET_L11,
-    VKL_CMAP_CET_L12,
-    VKL_CMAP_CET_L16,
-    VKL_CMAP_CET_L17,
-    VKL_CMAP_CET_L18,
-    VKL_CMAP_CET_L19,
-    VKL_CMAP_CET_L4,
-    VKL_CMAP_CET_L7,
-    VKL_CMAP_CET_L8,
-    VKL_CMAP_CET_L9,
-    VKL_CMAP_CET_R1,
-    VKL_CMAP_CET_R2,
-    VKL_CMAP_COLORWHEEL,
-    VKL_CMAP_FIRE,
-    VKL_CMAP_ISOLUM,
-    VKL_CMAP_KB,
-    VKL_CMAP_KBC,
-    VKL_CMAP_KG,
-    VKL_CMAP_KGY,
-    VKL_CMAP_KR,
+    DVZ_CMAP_BGY,
+    DVZ_CMAP_BGYW,
+    DVZ_CMAP_BMW,
+    DVZ_CMAP_CET_C1,
+    DVZ_CMAP_CET_C1S,
+    DVZ_CMAP_CET_C2,
+    DVZ_CMAP_CET_C4,
+    DVZ_CMAP_CET_C4S,
+    DVZ_CMAP_CET_C5,
+    DVZ_CMAP_CET_I1,
+    DVZ_CMAP_CET_I3,
+    DVZ_CMAP_CET_L10,
+    DVZ_CMAP_CET_L11,
+    DVZ_CMAP_CET_L12,
+    DVZ_CMAP_CET_L16,
+    DVZ_CMAP_CET_L17,
+    DVZ_CMAP_CET_L18,
+    DVZ_CMAP_CET_L19,
+    DVZ_CMAP_CET_L4,
+    DVZ_CMAP_CET_L7,
+    DVZ_CMAP_CET_L8,
+    DVZ_CMAP_CET_L9,
+    DVZ_CMAP_CET_R1,
+    DVZ_CMAP_CET_R2,
+    DVZ_CMAP_COLORWHEEL,
+    DVZ_CMAP_FIRE,
+    DVZ_CMAP_ISOLUM,
+    DVZ_CMAP_KB,
+    DVZ_CMAP_KBC,
+    DVZ_CMAP_KG,
+    DVZ_CMAP_KGY,
+    DVZ_CMAP_KR,
 
     // Moreland colormaps
 
-    VKL_CMAP_BLACK_BODY,
-    VKL_CMAP_KINDLMANN,
-    VKL_CMAP_EXTENDED_KINDLMANN,
+    DVZ_CMAP_BLACK_BODY,
+    DVZ_CMAP_KINDLMANN,
+    DVZ_CMAP_EXTENDED_KINDLMANN,
 
     // colorcet palettes with 256 colors
 
-    VKL_CPAL256_GLASBEY = CPAL256_OFS,
-    VKL_CPAL256_GLASBEY_COOL,
-    VKL_CPAL256_GLASBEY_DARK,
-    VKL_CPAL256_GLASBEY_HV,
-    VKL_CPAL256_GLASBEY_LIGHT,
-    VKL_CPAL256_GLASBEY_WARM,
+    DVZ_CPAL256_GLASBEY = CPAL256_OFS,
+    DVZ_CPAL256_GLASBEY_COOL,
+    DVZ_CPAL256_GLASBEY_DARK,
+    DVZ_CPAL256_GLASBEY_HV,
+    DVZ_CPAL256_GLASBEY_LIGHT,
+    DVZ_CPAL256_GLASBEY_WARM,
 
     // matplotlib palettes with <= 32 colors
 
-    VKL_CPAL032_ACCENT = CPAL032_OFS,
-    VKL_CPAL032_DARK2,
-    VKL_CPAL032_PAIRED,
-    VKL_CPAL032_PASTEL1,
-    VKL_CPAL032_PASTEL2,
-    VKL_CPAL032_SET1,
-    VKL_CPAL032_SET2,
-    VKL_CPAL032_SET3,
+    DVZ_CPAL032_ACCENT = CPAL032_OFS,
+    DVZ_CPAL032_DARK2,
+    DVZ_CPAL032_PAIRED,
+    DVZ_CPAL032_PASTEL1,
+    DVZ_CPAL032_PASTEL2,
+    DVZ_CPAL032_SET1,
+    DVZ_CPAL032_SET2,
+    DVZ_CPAL032_SET3,
 
     // (new row in the texture after 8 palettes)
 
-    VKL_CPAL032_TAB10,
-    VKL_CPAL032_TAB20,
-    VKL_CPAL032_TAB20B,
-    VKL_CPAL032_TAB20C,
+    DVZ_CPAL032_TAB10,
+    DVZ_CPAL032_TAB20,
+    DVZ_CPAL032_TAB20B,
+    DVZ_CPAL032_TAB20C,
 
     // bokeh palettes with <= 32 colors
 
-    VKL_CPAL032_CATEGORY10_10,
-    VKL_CPAL032_CATEGORY20_20,
-    VKL_CPAL032_CATEGORY20B_20,
-    VKL_CPAL032_CATEGORY20C_20,
+    DVZ_CPAL032_CATEGORY10_10,
+    DVZ_CPAL032_CATEGORY20_20,
+    DVZ_CPAL032_CATEGORY20B_20,
+    DVZ_CPAL032_CATEGORY20C_20,
 
     // (new row in the texture after 8 palettes)
-    VKL_CPAL032_COLORBLIND8,
+    DVZ_CPAL032_COLORBLIND8,
 
     // OS palettes
 
-    // VKL_CPAL032_WINDOWS_16,
-    // VKL_CPAL032_WINDOWS_20,
-    // VKL_CPAL032_APPLE_16,
-    // VKL_CPAL032_RISC_16,
-    // VKL_CPAL032_WEB_16,
+    // DVZ_CPAL032_WINDOWS_16,
+    // DVZ_CPAL032_WINDOWS_20,
+    // DVZ_CPAL032_APPLE_16,
+    // DVZ_CPAL032_RISC_16,
+    // DVZ_CPAL032_WEB_16,
 
-} VklColormap;
+} DvzColormap;
 
 
 
@@ -314,13 +314,13 @@ static uint8_t _scale_uint8(double value, double vmin, double vmax)
 // Load the colormap array.
 static const unsigned char* _load_colormaps()
 {
-    if (VKL_COLORMAP_ARRAY != NULL)
-        return VKL_COLORMAP_ARRAY;
+    if (DVZ_COLORMAP_ARRAY != NULL)
+        return DVZ_COLORMAP_ARRAY;
     unsigned long size = 0;
-    VKL_COLORMAP_ARRAY = vkl_resource_texture("color_texture", &size);
-    ASSERT(VKL_COLORMAP_ARRAY != NULL);
+    DVZ_COLORMAP_ARRAY = dvz_resource_texture("color_texture", &size);
+    ASSERT(DVZ_COLORMAP_ARRAY != NULL);
     ASSERT(size > 0);
-    return VKL_COLORMAP_ARRAY;
+    return DVZ_COLORMAP_ARRAY;
 }
 
 /**
@@ -330,7 +330,7 @@ static const unsigned char* _load_colormaps()
  * @param value the value
  * @param[out] out the colormap coordinates within the texture
  */
-VKY_INLINE void vkl_colormap_idx(VklColormap cmap, uint8_t value, cvec2 out)
+DVZ_INLINE void dvz_colormap_idx(DvzColormap cmap, uint8_t value, cvec2 out)
 {
     uint8_t row = 0, col = 0;
     if (cmap >= CPAL032_OFS)
@@ -355,10 +355,10 @@ VKY_INLINE void vkl_colormap_idx(VklColormap cmap, uint8_t value, cvec2 out)
  * @param value the value
  * @param[out] out the colormap coordinates within the texture
  */
-VKY_INLINE void vkl_colormap_uv(VklColormap cmap, uint8_t value, vec2 uv)
+DVZ_INLINE void dvz_colormap_uv(DvzColormap cmap, uint8_t value, vec2 uv)
 {
     cvec2 ij = {0};
-    vkl_colormap_idx(cmap, value, ij);
+    dvz_colormap_idx(cmap, value, ij);
     uv[0] = (ij[1] + .5) / 256.;
     uv[1] = (ij[0] + .5) / 256.;
 }
@@ -370,22 +370,22 @@ VKY_INLINE void vkl_colormap_uv(VklColormap cmap, uint8_t value, vec2 uv)
  * @param value the value
  * @param[out] color the fetched color
  */
-VKY_INLINE void vkl_colormap(VklColormap cmap, uint8_t value, cvec4 color)
+DVZ_INLINE void dvz_colormap(DvzColormap cmap, uint8_t value, cvec4 color)
 {
     cvec2 out = {0};
-    vkl_colormap_idx(cmap, value, out);
+    dvz_colormap_idx(cmap, value, out);
     uint8_t row = out[0];
     uint8_t col = out[1];
 
     // Make sure the colormap array is loaded in memory.
     _load_colormaps();
-    ASSERT(VKL_COLORMAP_ARRAY != NULL);
+    ASSERT(DVZ_COLORMAP_ARRAY != NULL);
 
     uint32_t offset = (uint32_t)row * 256 * 4 + (uint32_t)col * 4;
     ASSERT(offset < 256 * 256 * 4 - 4);
-    color[0] = VKL_COLORMAP_ARRAY[offset + 0];
-    color[1] = VKL_COLORMAP_ARRAY[offset + 1];
-    color[2] = VKL_COLORMAP_ARRAY[offset + 2];
+    color[0] = DVZ_COLORMAP_ARRAY[offset + 0];
+    color[1] = DVZ_COLORMAP_ARRAY[offset + 1];
+    color[2] = DVZ_COLORMAP_ARRAY[offset + 2];
     color[3] = 255;
 }
 
@@ -398,11 +398,11 @@ VKY_INLINE void vkl_colormap(VklColormap cmap, uint8_t value, cvec4 color)
  * @param vmax the maximum value
  * @param[out] color the fetched color
  */
-VKY_INLINE void
-vkl_colormap_scale(VklColormap cmap, double value, double vmin, double vmax, cvec4 color)
+DVZ_INLINE void
+dvz_colormap_scale(DvzColormap cmap, double value, double vmin, double vmax, cvec4 color)
 {
     uint8_t u_value = _scale_uint8(value, vmin, vmax);
-    vkl_colormap(cmap, u_value, color);
+    dvz_colormap(cmap, u_value, color);
 }
 
 /**
@@ -415,13 +415,13 @@ vkl_colormap_scale(VklColormap cmap, double value, double vmin, double vmax, cve
  * @param vmax the maximum value
  * @param[out] out the fetched colors
  */
-static void vkl_colormap_array(
-    VklColormap cmap, uint32_t count, double* values, double vmin, double vmax, cvec4* out)
+static void dvz_colormap_array(
+    DvzColormap cmap, uint32_t count, double* values, double vmin, double vmax, cvec4* out)
 {
     ASSERT(values != NULL);
     ASSERT(out != NULL);
     for (uint32_t i = 0; i < count; i++)
-        vkl_colormap_scale(cmap, values[i], vmin, vmax, out[i]);
+        dvz_colormap_scale(cmap, values[i], vmin, vmax, out[i]);
 }
 
 /**
@@ -435,7 +435,7 @@ static void vkl_colormap_array(
  * @param color the RGB color
  * @param[out] uv the texture coordinates
  */
-VKY_INLINE void vkl_colormap_packuv(cvec3 color, vec2 uv)
+DVZ_INLINE void dvz_colormap_packuv(cvec3 color, vec2 uv)
 {
     uv[1] = -1;
     uv[0] = color[0] + 256.0 * color[1] + 65536.0 * color[2];

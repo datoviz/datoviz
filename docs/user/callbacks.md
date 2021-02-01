@@ -16,7 +16,7 @@ The callback function receives two arguments: the canvas, and a special struct c
 
 === "C"
     ```c
-    void void callback(VklCanvas* canvas, VklEvent ev)
+    void void callback(DvzCanvas* canvas, DvzEvent ev)
     {
         double time = ev.u.t.time;
         // ...
@@ -24,7 +24,7 @@ The callback function receives two arguments: the canvas, and a special struct c
 
     // ...
 
-    vkl_event_callback(canvas, VKL_EVENT_TIMER, 1, VKL_EVENT_MODE_SYNC, callback, NULL);
+    dvz_event_callback(canvas, DVZ_EVENT_TIMER, 1, DVZ_EVENT_MODE_SYNC, callback, NULL);
     ```
 
 

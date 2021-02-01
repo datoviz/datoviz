@@ -1,7 +1,7 @@
 #include "test_graphics.h"
-#include "../include/visky/colormaps.h"
-#include "../include/visky/graphics.h"
-#include "../include/visky/mesh.h"
+#include "../include/datoviz/colormaps.h"
+#include "../include/datoviz/graphics.h"
+#include "../include/datoviz/mesh.h"
 #include "../src/interact_utils.h"
 #include "../src/mesh_loader.h"
 #include "utils.h"
@@ -16,7 +16,7 @@ END_INCL_NO_WARN
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define MESH VKL_MESH_SURFACE
+#define MESH DVZ_MESH_SURFACE
 
 
 
@@ -28,99 +28,99 @@ typedef struct TestGraphics TestGraphics;
 
 struct TestGraphics
 {
-    VklCanvas* canvas;
-    VklGraphics* graphics;
-    VklBufferRegions br_vert;
-    VklBufferRegions br_index;
-    VklBufferRegions br_mvp;
-    VklBufferRegions br_viewport;
-    VklBufferRegions br_params;
-    VklTexture* texture;
-    VklBindings bindings;
-    VklInteract interact;
-    VklMVP mvp;
+    DvzCanvas* canvas;
+    DvzGraphics* graphics;
+    DvzBufferRegions br_vert;
+    DvzBufferRegions br_index;
+    DvzBufferRegions br_mvp;
+    DvzBufferRegions br_viewport;
+    DvzBufferRegions br_params;
+    DvzTexture* texture;
+    DvzBindings bindings;
+    DvzInteract interact;
+    DvzMVP mvp;
     vec3 eye, center, up;
 
-    VklArray vertices;
-    VklArray indices;
+    DvzArray vertices;
+    DvzArray indices;
     float param;
     void* data;
     void* params_data;
 };
 
-static void _graphics_refill(VklCanvas* canvas, VklEvent ev)
+static void _graphics_refill(DvzCanvas* canvas, DvzEvent ev)
 {
     TestGraphics* tg = (TestGraphics*)ev.user_data;
-    VklCommands* cmds = ev.u.rf.cmds[0];
-    VklBufferRegions* br = &tg->br_vert;
-    VklBufferRegions* br_index = &tg->br_index;
-    VklBindings* bindings = &tg->bindings;
-    VklGraphics* graphics = tg->graphics;
+    DvzCommands* cmds = ev.u.rf.cmds[0];
+    DvzBufferRegions* br = &tg->br_vert;
+    DvzBufferRegions* br_index = &tg->br_index;
+    DvzBindings* bindings = &tg->bindings;
+    DvzGraphics* graphics = tg->graphics;
     uint32_t idx = ev.u.rf.img_idx;
 
     // Commands.
-    vkl_cmd_begin(cmds, idx);
-    vkl_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, &canvas->framebuffers);
-    vkl_cmd_viewport(
+    dvz_cmd_begin(cmds, idx);
+    dvz_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, &canvas->framebuffers);
+    dvz_cmd_viewport(
         cmds, idx,
         (VkViewport){
             0, 0, canvas->framebuffers.attachments[0]->width,
             canvas->framebuffers.attachments[0]->height, 0, 1});
-    vkl_cmd_bind_vertex_buffer(cmds, idx, *br, 0);
+    dvz_cmd_bind_vertex_buffer(cmds, idx, *br, 0);
     if (br_index->buffer != NULL)
-        vkl_cmd_bind_index_buffer(cmds, idx, *br_index, 0);
-    vkl_cmd_bind_graphics(cmds, idx, graphics, bindings, 0);
+        dvz_cmd_bind_index_buffer(cmds, idx, *br_index, 0);
+    dvz_cmd_bind_graphics(cmds, idx, graphics, bindings, 0);
     if (graphics->pipeline != VK_NULL_HANDLE)
     {
         if (br_index->buffer != VK_NULL_HANDLE)
         {
             log_debug("draw indexed %d", tg->indices.item_count);
-            vkl_cmd_draw_indexed(cmds, idx, 0, 0, tg->indices.item_count);
+            dvz_cmd_draw_indexed(cmds, idx, 0, 0, tg->indices.item_count);
         }
         else
         {
             log_debug("draw non-indexed %d", tg->vertices.item_count);
-            vkl_cmd_draw(cmds, idx, 0, tg->vertices.item_count);
+            dvz_cmd_draw(cmds, idx, 0, tg->vertices.item_count);
         }
     }
-    vkl_cmd_end_renderpass(cmds, idx);
-    vkl_cmd_end(cmds, idx);
+    dvz_cmd_end_renderpass(cmds, idx);
+    dvz_cmd_end(cmds, idx);
 }
 
 static void _common_bindings(TestGraphics* tg)
 {
-    VklGpu* gpu = tg->graphics->gpu;
-    VklGraphics* graphics = tg->graphics;
+    DvzGpu* gpu = tg->graphics->gpu;
+    DvzGraphics* graphics = tg->graphics;
 
     // Create the bindings.
-    tg->bindings = vkl_bindings(&graphics->slots, tg->canvas->swapchain.img_count);
+    tg->bindings = dvz_bindings(&graphics->slots, tg->canvas->swapchain.img_count);
 
     // Binding resources.
-    tg->br_mvp = vkl_ctx_buffers(
-        gpu->context, VKL_BUFFER_TYPE_UNIFORM_MAPPABLE, tg->canvas->swapchain.img_count,
-        sizeof(VklMVP));
+    tg->br_mvp = dvz_ctx_buffers(
+        gpu->context, DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE, tg->canvas->swapchain.img_count,
+        sizeof(DvzMVP));
     tg->br_viewport =
-        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklViewport));
+        dvz_ctx_buffers(gpu->context, DVZ_BUFFER_TYPE_UNIFORM, 1, sizeof(DvzViewport));
 
     // Upload MVP.
     glm_mat4_identity(tg->mvp.model);
     glm_mat4_identity(tg->mvp.view);
     glm_mat4_identity(tg->mvp.proj);
-    vkl_upload_buffers(tg->canvas, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
+    dvz_upload_buffers(tg->canvas, tg->br_mvp, 0, sizeof(DvzMVP), &tg->mvp);
 
     // Bindings
-    vkl_bindings_buffer(&tg->bindings, 0, tg->br_mvp);
-    vkl_bindings_buffer(&tg->bindings, 1, tg->br_viewport);
+    dvz_bindings_buffer(&tg->bindings, 0, tg->br_mvp);
+    dvz_bindings_buffer(&tg->bindings, 1, tg->br_viewport);
 }
 
-static void _interact_callback(VklCanvas* canvas, VklEvent ev)
+static void _interact_callback(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
     TestGraphics* tg = ev.user_data;
     ASSERT(tg != NULL);
 
-    vkl_interact_update(&tg->interact, canvas->viewport, &canvas->mouse, &canvas->keyboard);
-    vkl_upload_buffers(canvas, tg->br_mvp, 0, sizeof(VklMVP), &tg->interact.mvp);
+    dvz_interact_update(&tg->interact, canvas->viewport, &canvas->mouse, &canvas->keyboard);
+    dvz_upload_buffers(canvas, tg->br_mvp, 0, sizeof(DvzMVP), &tg->interact.mvp);
 }
 
 
@@ -130,10 +130,10 @@ static void _interact_callback(VklCanvas* canvas, VklEvent ev)
 /*************************************************************************************************/
 
 #define INIT_GRAPHICS(type, flags)                                                                \
-    VklApp* app = vkl_app(VKL_BACKEND_GLFW);                                                      \
-    VklGpu* gpu = vkl_gpu(app, 0);                                                                \
-    VklCanvas* canvas = vkl_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);                              \
-    VklGraphics* graphics = vkl_graphics_builtin(canvas, type, flags);
+    DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);                                                      \
+    DvzGpu* gpu = dvz_gpu(app, 0);                                                                \
+    DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);                              \
+    DvzGraphics* graphics = dvz_graphics_builtin(canvas, type, flags);
 
 #define BEGIN_DATA(type, n, user_data)                                                            \
     TestGraphics tg = {0};                                                                        \
@@ -141,18 +141,18 @@ static void _interact_callback(VklCanvas* canvas, VklEvent ev)
     tg.graphics = graphics;                                                                       \
     tg.up[1] = 1;                                                                                 \
     tg.eye[2] = 3;                                                                                \
-    tg.vertices = vkl_array_struct(0, sizeof(type));                                              \
-    tg.indices = vkl_array_struct(0, sizeof(VklIndex));                                           \
-    VklGraphicsData data = vkl_graphics_data(graphics, &tg.vertices, &tg.indices, user_data);     \
-    vkl_graphics_alloc(&data, n);                                                                 \
+    tg.vertices = dvz_array_struct(0, sizeof(type));                                              \
+    tg.indices = dvz_array_struct(0, sizeof(DvzIndex));                                           \
+    DvzGraphicsData data = dvz_graphics_data(graphics, &tg.vertices, &tg.indices, user_data);     \
+    dvz_graphics_alloc(&data, n);                                                                 \
     uint32_t item_count = n;                                                                      \
     uint32_t vertex_count = tg.vertices.item_count;                                               \
     uint32_t index_count = tg.indices.item_count;                                                 \
     tg.br_vert =                                                                                  \
-        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_VERTEX, 1, vertex_count * sizeof(type));    \
+        dvz_ctx_buffers(gpu->context, DVZ_BUFFER_TYPE_VERTEX, 1, vertex_count * sizeof(type));    \
     if (index_count > 0)                                                                          \
-        tg.br_index = vkl_ctx_buffers(                                                            \
-            gpu->context, VKL_BUFFER_TYPE_INDEX, 1, index_count * sizeof(VklIndex));              \
+        tg.br_index = dvz_ctx_buffers(                                                            \
+            gpu->context, DVZ_BUFFER_TYPE_INDEX, 1, index_count * sizeof(DvzIndex));              \
     type* vertices = tg.vertices.data;
 
 #define END_DATA                                                                                  \
@@ -160,26 +160,26 @@ static void _interact_callback(VklCanvas* canvas, VklEvent ev)
     ASSERT(vertex_count > 0);                                                                     \
     ASSERT(index_count == 0 || index_count > 0);                                                  \
     ASSERT(vertices != NULL);                                                                     \
-    vkl_upload_buffers(                                                                           \
+    dvz_upload_buffers(                                                                           \
         canvas, tg.br_vert, 0, vertex_count* tg.vertices.item_size, tg.vertices.data);            \
     if (index_count > 0)                                                                          \
-        vkl_upload_buffers(                                                                       \
+        dvz_upload_buffers(                                                                       \
             canvas, tg.br_index, 0, index_count* tg.indices.item_size, tg.indices.data);
 
 #define BINDINGS_PARAMS                                                                           \
     _common_bindings(&tg);                                                                        \
-    vkl_bindings_buffer(&tg.bindings, VKL_USER_BINDING, tg.br_params);                            \
-    vkl_bindings_update(&tg.bindings);
+    dvz_bindings_buffer(&tg.bindings, DVZ_USER_BINDING, tg.br_params);                            \
+    dvz_bindings_update(&tg.bindings);
 
 #define BINDINGS_NO_PARAMS                                                                        \
     _common_bindings(&tg);                                                                        \
-    vkl_bindings_update(&tg.bindings);
+    dvz_bindings_update(&tg.bindings);
 
 #define RUN                                                                                       \
-    vkl_event_callback(canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _graphics_refill, &tg);  \
-    vkl_app_run(app, N_FRAMES);                                                                   \
-    vkl_array_destroy(&tg.vertices);                                                              \
-    vkl_array_destroy(&tg.indices);
+    dvz_event_callback(canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, _graphics_refill, &tg);  \
+    dvz_app_run(app, N_FRAMES);                                                                   \
+    dvz_array_destroy(&tg.vertices);                                                              \
+    dvz_array_destroy(&tg.indices);
 
 // NOTE: avoid screenshot in interactive mode, otherwise the canvas is destroyed *before* taking
 // the screenshot, leading to a segfault.
@@ -190,7 +190,7 @@ static void _interact_callback(VklCanvas* canvas, VklEvent ev)
         snprintf(                                                                                 \
             screenshot_path, sizeof(screenshot_path), "%s/docs/images/graphics/%s.png", ROOT_DIR, \
             name);                                                                                \
-        vkl_screenshot_file(canvas, screenshot_path);                                             \
+        dvz_screenshot_file(canvas, screenshot_path);                                             \
     }
 
 
@@ -199,30 +199,30 @@ static void _interact_callback(VklCanvas* canvas, VklEvent ev)
 /*  Misc graphics tests */
 /*************************************************************************************************/
 
-static void _graphics_point_wheel_callback(VklCanvas* canvas, VklEvent ev)
+static void _graphics_point_wheel_callback(DvzCanvas* canvas, DvzEvent ev)
 {
     TestGraphics* tg = ev.user_data;
 
     // Update point size.
     tg->param += ev.u.w.dir[1] * .5;
     tg->param = CLIP(tg->param, 1, 100);
-    vkl_upload_buffers(canvas, tg->br_params, 0, sizeof(VklGraphicsPointParams), &tg->param);
+    dvz_upload_buffers(canvas, tg->br_params, 0, sizeof(DvzGraphicsPointParams), &tg->param);
 }
 
-static void _graphics_update_mvp(VklCanvas* canvas, VklEvent ev)
+static void _graphics_update_mvp(DvzCanvas* canvas, DvzEvent ev)
 {
     TestGraphics* tg = ev.user_data;
 
     // Update MVP.
     tg->mvp.model[0][0] = .1 * tg->param;
     tg->mvp.model[1][1] = .1 * tg->param;
-    vkl_upload_buffers(canvas, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
+    dvz_upload_buffers(canvas, tg->br_mvp, 0, sizeof(DvzMVP), &tg->mvp);
 }
 
 int test_graphics_dynamic(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_POINT, 0)
-    BEGIN_DATA(VklVertex, 10000, NULL)
+    INIT_GRAPHICS(DVZ_GRAPHICS_POINT, 0)
+    BEGIN_DATA(DvzVertex, 10000, NULL)
     for (uint32_t i = 0; i < vertex_count; i++)
     {
         RANDN_POS(vertices[i].pos)
@@ -231,37 +231,37 @@ int test_graphics_dynamic(TestContext* context)
     END_DATA
 
     // Create the bindings.
-    tg.bindings = vkl_bindings(&graphics->slots, canvas->swapchain.img_count);
+    tg.bindings = dvz_bindings(&graphics->slots, canvas->swapchain.img_count);
 
     // Binding resources.
-    tg.br_mvp = vkl_ctx_buffers(
-        gpu->context, VKL_BUFFER_TYPE_UNIFORM_MAPPABLE, canvas->swapchain.img_count,
-        sizeof(VklMVP));
-    tg.br_viewport = vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, 16);
+    tg.br_mvp = dvz_ctx_buffers(
+        gpu->context, DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE, canvas->swapchain.img_count,
+        sizeof(DvzMVP));
+    tg.br_viewport = dvz_ctx_buffers(gpu->context, DVZ_BUFFER_TYPE_UNIFORM, 1, 16);
     tg.br_params =
-        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsPointParams));
+        dvz_ctx_buffers(gpu->context, DVZ_BUFFER_TYPE_UNIFORM, 1, sizeof(DvzGraphicsPointParams));
 
     // Upload MVP.
     glm_mat4_identity(tg.mvp.model);
     glm_mat4_identity(tg.mvp.view);
     glm_mat4_identity(tg.mvp.proj);
-    vkl_upload_buffers(canvas, tg.br_mvp, 0, sizeof(VklMVP), &tg.mvp);
+    dvz_upload_buffers(canvas, tg.br_mvp, 0, sizeof(DvzMVP), &tg.mvp);
 
     // Upload params.
     tg.param = 5.0f;
-    VklGraphicsPointParams params = {.point_size = tg.param};
-    vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsPointParams), &params);
+    DvzGraphicsPointParams params = {.point_size = tg.param};
+    dvz_upload_buffers(canvas, tg.br_params, 0, sizeof(DvzGraphicsPointParams), &params);
 
     // Bindings
-    vkl_bindings_buffer(&tg.bindings, 0, tg.br_mvp);
-    vkl_bindings_buffer(&tg.bindings, 1, tg.br_viewport);
-    vkl_bindings_buffer(&tg.bindings, VKL_USER_BINDING, tg.br_params);
-    vkl_bindings_update(&tg.bindings);
+    dvz_bindings_buffer(&tg.bindings, 0, tg.br_mvp);
+    dvz_bindings_buffer(&tg.bindings, 1, tg.br_viewport);
+    dvz_bindings_buffer(&tg.bindings, DVZ_USER_BINDING, tg.br_params);
+    dvz_bindings_update(&tg.bindings);
 
-    vkl_event_callback(
-        canvas, VKL_EVENT_MOUSE_WHEEL, 0, VKL_EVENT_MODE_SYNC, _graphics_point_wheel_callback,
+    dvz_event_callback(
+        canvas, DVZ_EVENT_MOUSE_WHEEL, 0, DVZ_EVENT_MODE_SYNC, _graphics_point_wheel_callback,
         &tg);
-    vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _graphics_update_mvp, &tg);
+    dvz_event_callback(canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _graphics_update_mvp, &tg);
 
     RUN;
     TEST_END
@@ -269,22 +269,22 @@ int test_graphics_dynamic(TestContext* context)
 
 
 
-static void _graphics_3D_callback(VklCanvas* canvas, VklEvent ev)
+static void _graphics_3D_callback(DvzCanvas* canvas, DvzEvent ev)
 {
-    ASSERT(ev.type = VKL_EVENT_FRAME);
+    ASSERT(ev.type = DVZ_EVENT_FRAME);
     TestGraphics* tg = ev.user_data;
     vec3 axis = {0};
     axis[1] = 1;
     glm_rotate_make(tg->mvp.model, ev.u.f.time, axis);
-    vkl_mvp_camera(canvas->viewport, tg->eye, tg->center, (vec2){.1, 100}, &tg->mvp);
+    dvz_mvp_camera(canvas->viewport, tg->eye, tg->center, (vec2){.1, 100}, &tg->mvp);
 
-    vkl_upload_buffers(canvas, tg->br_mvp, 0, sizeof(VklMVP), &tg->mvp);
+    dvz_upload_buffers(canvas, tg->br_mvp, 0, sizeof(DvzMVP), &tg->mvp);
 }
 
 int test_graphics_3D(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_POINT, VKL_GRAPHICS_FLAGS_DEPTH_TEST_ENABLE)
-    BEGIN_DATA(VklVertex, 3, NULL)
+    INIT_GRAPHICS(DVZ_GRAPHICS_POINT, DVZ_GRAPHICS_FLAGS_DEPTH_TEST_ENABLE)
+    BEGIN_DATA(DvzVertex, 3, NULL)
     {
         // Top red
         vertices[0].pos[0] = 0;
@@ -307,29 +307,29 @@ int test_graphics_3D(TestContext* context)
     END_DATA
 
     // Create the bindings.
-    tg.bindings = vkl_bindings(&graphics->slots, canvas->swapchain.img_count);
+    tg.bindings = dvz_bindings(&graphics->slots, canvas->swapchain.img_count);
 
     // Binding resources.
-    tg.br_mvp = vkl_ctx_buffers(
-        gpu->context, VKL_BUFFER_TYPE_UNIFORM_MAPPABLE, canvas->swapchain.img_count,
-        sizeof(VklMVP));
-    tg.br_viewport = vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, 16);
+    tg.br_mvp = dvz_ctx_buffers(
+        gpu->context, DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE, canvas->swapchain.img_count,
+        sizeof(DvzMVP));
+    tg.br_viewport = dvz_ctx_buffers(gpu->context, DVZ_BUFFER_TYPE_UNIFORM, 1, 16);
     tg.br_params =
-        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsPointParams));
+        dvz_ctx_buffers(gpu->context, DVZ_BUFFER_TYPE_UNIFORM, 1, sizeof(DvzGraphicsPointParams));
 
     // Upload params.
     tg.param = 200.0f;
-    VklGraphicsPointParams params = {.point_size = tg.param};
-    vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsPointParams), &params);
+    DvzGraphicsPointParams params = {.point_size = tg.param};
+    dvz_upload_buffers(canvas, tg.br_params, 0, sizeof(DvzGraphicsPointParams), &params);
 
     // Bindings
-    vkl_bindings_buffer(&tg.bindings, 0, tg.br_mvp);
-    vkl_bindings_buffer(&tg.bindings, 1, tg.br_viewport);
-    vkl_bindings_buffer(&tg.bindings, VKL_USER_BINDING, tg.br_params);
-    vkl_bindings_update(&tg.bindings);
+    dvz_bindings_buffer(&tg.bindings, 0, tg.br_mvp);
+    dvz_bindings_buffer(&tg.bindings, 1, tg.br_viewport);
+    dvz_bindings_buffer(&tg.bindings, DVZ_USER_BINDING, tg.br_params);
+    dvz_bindings_update(&tg.bindings);
 
-    vkl_event_callback(
-        canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _graphics_3D_callback, &tg);
+    dvz_event_callback(
+        canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _graphics_3D_callback, &tg);
 
     RUN;
     TEST_END
@@ -339,24 +339,24 @@ int test_graphics_3D(TestContext* context)
 
 int test_graphics_depth(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_MESH, 0)
+    INIT_GRAPHICS(DVZ_GRAPHICS_MESH, 0)
     const uint32_t N = 1000;
-    BEGIN_DATA(VklGraphicsMeshVertex, N * 3, NULL)
+    BEGIN_DATA(DvzGraphicsMeshVertex, N * 3, NULL)
     _depth_vertices(N, vertices, false);
     END_DATA
 
     tg.br_params =
-        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsMeshParams));
+        dvz_ctx_buffers(gpu->context, DVZ_BUFFER_TYPE_UNIFORM, 1, sizeof(DvzGraphicsMeshParams));
 
     _common_bindings(&tg);
-    vkl_bindings_buffer(&tg.bindings, VKL_USER_BINDING, tg.br_params);
+    dvz_bindings_buffer(&tg.bindings, DVZ_USER_BINDING, tg.br_params);
     for (uint32_t i = 1; i <= 4; i++)
-        vkl_bindings_texture(
-            &tg.bindings, VKL_USER_BINDING + i, gpu->context->color_texture.texture);
-    vkl_bindings_update(&tg.bindings);
+        dvz_bindings_texture(
+            &tg.bindings, DVZ_USER_BINDING + i, gpu->context->color_texture.texture);
+    dvz_bindings_update(&tg.bindings);
 
-    VklGraphicsMeshParams params = default_graphics_mesh_params(tg.eye);
-    vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsMeshParams), &params);
+    DvzGraphicsMeshParams params = default_graphics_mesh_params(tg.eye);
+    dvz_upload_buffers(canvas, tg.br_params, 0, sizeof(DvzGraphicsMeshParams), &params);
 
     RUN;
     TEST_END
@@ -370,8 +370,8 @@ int test_graphics_depth(TestContext* context)
 
 int test_graphics_point(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_POINT, 0)
-    BEGIN_DATA(VklVertex, 10000, NULL)
+    INIT_GRAPHICS(DVZ_GRAPHICS_POINT, 0)
+    BEGIN_DATA(DvzVertex, 10000, NULL)
     for (uint32_t i = 0; i < vertex_count; i++)
     {
         RANDN_POS(vertices[i].pos)
@@ -380,12 +380,12 @@ int test_graphics_point(TestContext* context)
     END_DATA
 
     tg.br_params =
-        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsPointParams));
+        dvz_ctx_buffers(gpu->context, DVZ_BUFFER_TYPE_UNIFORM, 1, sizeof(DvzGraphicsPointParams));
     BINDINGS_PARAMS
 
     tg.param = 5.0f;
-    VklGraphicsPointParams params = {.point_size = tg.param};
-    vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsPointParams), &params);
+    DvzGraphicsPointParams params = {.point_size = tg.param};
+    dvz_upload_buffers(canvas, tg.br_params, 0, sizeof(DvzGraphicsPointParams), &params);
 
     RUN;
     SCREENSHOT("point")
@@ -396,14 +396,14 @@ int test_graphics_point(TestContext* context)
 
 int test_graphics_line(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_LINE, 0)
-    BEGIN_DATA(VklVertex, 100, NULL)
+    INIT_GRAPHICS(DVZ_GRAPHICS_LINE, 0)
+    BEGIN_DATA(DvzVertex, 100, NULL)
     for (uint32_t i = 0; i < vertex_count; i++)
     {
         float t = (float)(i / 2) / (float)vertex_count;
         vertices[i].pos[0] = .75 * (-1 + 4 * t);
         vertices[i].pos[1] = .75 * (-1 + (i % 2 == 0 ? 0 : 2));
-        vkl_colormap_scale(VKL_CMAP_RAINBOW, t, 0, .5, vertices[i].color);
+        dvz_colormap_scale(DVZ_CMAP_RAINBOW, t, 0, .5, vertices[i].color);
     }
     END_DATA
     BINDINGS_NO_PARAMS
@@ -416,14 +416,14 @@ int test_graphics_line(TestContext* context)
 
 int test_graphics_line_strip(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_LINE_STRIP, 0)
-    BEGIN_DATA(VklVertex, 1000, NULL)
+    INIT_GRAPHICS(DVZ_GRAPHICS_LINE_STRIP, 0)
+    BEGIN_DATA(DvzVertex, 1000, NULL)
     for (uint32_t i = 0; i < vertex_count; i++)
     {
         float t = (float)i / (float)vertex_count;
         vertices[i].pos[0] = -1 + 2 * t;
         vertices[i].pos[1] = .5 * sin(8 * M_2PI * t);
-        vkl_colormap_scale(VKL_CMAP_RAINBOW, t, 0, 1, vertices[i].color);
+        dvz_colormap_scale(DVZ_CMAP_RAINBOW, t, 0, 1, vertices[i].color);
     }
     END_DATA
     BINDINGS_NO_PARAMS
@@ -436,9 +436,9 @@ int test_graphics_line_strip(TestContext* context)
 
 int test_graphics_triangle(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_TRIANGLE, 0)
+    INIT_GRAPHICS(DVZ_GRAPHICS_TRIANGLE, 0)
     const uint32_t N = 40; // number of triangles
-    BEGIN_DATA(VklVertex, N * 3, NULL)
+    BEGIN_DATA(DvzVertex, N * 3, NULL)
 
     float t = 0;
     for (uint32_t i = 0; i < N; i++)
@@ -446,7 +446,7 @@ int test_graphics_triangle(TestContext* context)
         t = i / (float)N;
         vertices[3 * i].pos[0] = -.75 + 1.5 * t * t;
         vertices[3 * i].pos[1] = +.75 - 1.5 * t;
-        vkl_colormap_scale(VKL_CMAP_HSV, i, 0, N, vertices[3 * i].color);
+        dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, N, vertices[3 * i].color);
         vertices[3 * i].color[3] = 128;
 
         // Copy the 2 other points per triangle.
@@ -475,8 +475,8 @@ int test_graphics_triangle(TestContext* context)
 
 int test_graphics_triangle_strip(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_TRIANGLE_STRIP, 0)
-    BEGIN_DATA(VklVertex, 40, NULL)
+    INIT_GRAPHICS(DVZ_GRAPHICS_TRIANGLE_STRIP, 0)
+    BEGIN_DATA(DvzVertex, 40, NULL)
     float m = .1;
     float y = canvas->swapchain.images->width / (float)canvas->swapchain.images->height;
     for (uint32_t i = 0; i < vertex_count; i++)
@@ -485,7 +485,7 @@ int test_graphics_triangle_strip(TestContext* context)
         float a = M_2PI * t;
         vertices[i].pos[0] = (.5 + (i % 2 == 0 ? +m : -m)) * cos(a);
         vertices[i].pos[1] = y * (.5 + (i % 2 == 0 ? +m : -m)) * sin(a);
-        vkl_colormap_scale(VKL_CMAP_HSV, t, 0, 1, vertices[i].color);
+        dvz_colormap_scale(DVZ_CMAP_HSV, t, 0, 1, vertices[i].color);
     }
     END_DATA
     BINDINGS_NO_PARAMS
@@ -498,8 +498,8 @@ int test_graphics_triangle_strip(TestContext* context)
 
 int test_graphics_triangle_fan(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_TRIANGLE_FAN, 0)
-    BEGIN_DATA(VklVertex, 30, NULL)
+    INIT_GRAPHICS(DVZ_GRAPHICS_TRIANGLE_FAN, 0)
+    BEGIN_DATA(DvzVertex, 30, NULL)
     float y = canvas->swapchain.images->width / (float)canvas->swapchain.images->height;
     for (uint32_t i = 1; i < vertex_count; i++)
     {
@@ -507,7 +507,7 @@ int test_graphics_triangle_fan(TestContext* context)
         float a = M_2PI * t;
         vertices[i].pos[0] = .5 * cos(a);
         vertices[i].pos[1] = y * .5 * sin(a);
-        vkl_colormap_scale(VKL_CMAP_HSV, t, 0, 1, vertices[i].color);
+        dvz_colormap_scale(DVZ_CMAP_HSV, t, 0, 1, vertices[i].color);
     }
     END_DATA
     BINDINGS_NO_PARAMS
@@ -524,48 +524,48 @@ int test_graphics_triangle_fan(TestContext* context)
 
 int test_graphics_marker_1(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_MARKER, 0)
-    BEGIN_DATA(VklGraphicsMarkerVertex, 1000, NULL)
+    INIT_GRAPHICS(DVZ_GRAPHICS_MARKER, 0)
+    BEGIN_DATA(DvzGraphicsMarkerVertex, 1000, NULL)
 
     // Random markers.
-    for (uint32_t i = 0; i < vertex_count - VKL_MARKER_COUNT; i++)
+    for (uint32_t i = 0; i < vertex_count - DVZ_MARKER_COUNT; i++)
     {
         RANDN_POS(vertices[i].pos)
         vertices[i].pos[1] -= .1;
         RAND_COLOR(vertices[i].color)
-        vertices[i].color[3] = vkl_rand_byte();
-        vertices[i].size = 10 + 40 * vkl_rand_float();
-        vertices[i].marker = VKL_MARKER_DISC;
+        vertices[i].color[3] = dvz_rand_byte();
+        vertices[i].size = 10 + 40 * dvz_rand_float();
+        vertices[i].marker = DVZ_MARKER_DISC;
     }
 
     // Top bar with all marker types.
     uint32_t j = 0;
-    for (uint32_t i = vertex_count - VKL_MARKER_COUNT; i < vertex_count; i++)
+    for (uint32_t i = vertex_count - DVZ_MARKER_COUNT; i < vertex_count; i++)
     {
-        j = i - (vertex_count - VKL_MARKER_COUNT);
-        ASSERT(j < VKL_MARKER_COUNT);
+        j = i - (vertex_count - DVZ_MARKER_COUNT);
+        ASSERT(j < DVZ_MARKER_COUNT);
 
-        vertices[i].pos[0] = .9 * (-1 + 2 * j / (float)(VKL_MARKER_COUNT - 1));
+        vertices[i].pos[0] = .9 * (-1 + 2 * j / (float)(DVZ_MARKER_COUNT - 1));
         vertices[i].pos[1] = +.9;
-        vkl_colormap_scale(VKL_CMAP_HSV, j, 0, VKL_MARKER_COUNT, vertices[i].color);
+        dvz_colormap_scale(DVZ_CMAP_HSV, j, 0, DVZ_MARKER_COUNT, vertices[i].color);
         vertices[i].color[3] = 255;
         vertices[i].size = 35;
-        vertices[i].angle = TO_BYTE(i / (float)(VKL_MARKER_COUNT - 1));
-        vertices[i].marker = (VklMarkerType)(j);
+        vertices[i].angle = TO_BYTE(i / (float)(DVZ_MARKER_COUNT - 1));
+        vertices[i].marker = (DvzMarkerType)(j);
     }
     END_DATA
 
     tg.br_params =
-        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsPointParams));
+        dvz_ctx_buffers(gpu->context, DVZ_BUFFER_TYPE_UNIFORM, 1, sizeof(DvzGraphicsPointParams));
     BINDINGS_PARAMS
 
-    VklGraphicsMarkerParams params = {0};
+    DvzGraphicsMarkerParams params = {0};
     params.edge_color[0] = 1;
     params.edge_color[1] = 1;
     params.edge_color[2] = 1;
     params.edge_color[3] = 1;
     params.edge_width = 2;
-    vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsMarkerParams), &params);
+    dvz_upload_buffers(canvas, tg.br_params, 0, sizeof(DvzGraphicsMarkerParams), &params);
 
     RUN;
     SCREENSHOT("marker")
@@ -575,20 +575,20 @@ int test_graphics_marker_1(TestContext* context)
 
 
 #define SAVE_MARKER(MARKER, NAME)                                                                 \
-    ((VklGraphicsMarkerVertex*)tg.vertices.data)[0].marker = (MARKER);                            \
-    vkl_upload_buffers(                                                                           \
+    ((DvzGraphicsMarkerVertex*)tg.vertices.data)[0].marker = (MARKER);                            \
+    dvz_upload_buffers(                                                                           \
         canvas, tg.br_vert, 0, vertex_count* tg.vertices.item_size, tg.vertices.data);            \
-    vkl_app_run(app, 3);                                                                          \
+    dvz_app_run(app, 3);                                                                          \
     SCREENSHOT(NAME)
 
 int test_graphics_marker_screenshots(TestContext* context)
 {
-    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
-    VklGpu* gpu = vkl_gpu(app, 0);
-    VklCanvas* canvas = vkl_canvas(gpu, 128, 128, 0);
-    vkl_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});
-    VklGraphics* graphics = vkl_graphics_builtin(canvas, VKL_GRAPHICS_MARKER, 0);
-    BEGIN_DATA(VklGraphicsMarkerVertex, 1, NULL)
+    DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
+    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzCanvas* canvas = dvz_canvas(gpu, 128, 128, 0);
+    dvz_canvas_clear_color(canvas, (VkClearColorValue){{1, 1, 1, 1}});
+    DvzGraphics* graphics = dvz_graphics_builtin(canvas, DVZ_GRAPHICS_MARKER, 0);
+    BEGIN_DATA(DvzGraphicsMarkerVertex, 1, NULL)
 
     vertices[0].marker = 0;
     vertices[0].size = 100;
@@ -600,41 +600,41 @@ int test_graphics_marker_screenshots(TestContext* context)
     END_DATA
 
     tg.br_params =
-        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsPointParams));
+        dvz_ctx_buffers(gpu->context, DVZ_BUFFER_TYPE_UNIFORM, 1, sizeof(DvzGraphicsPointParams));
     BINDINGS_PARAMS
 
-    VklGraphicsMarkerParams params = {0};
+    DvzGraphicsMarkerParams params = {0};
     params.edge_color[0] = 0;
     params.edge_color[1] = 0;
     params.edge_color[2] = 0;
     params.edge_color[3] = 1;
     params.edge_width = 5;
-    vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsMarkerParams), &params);
+    dvz_upload_buffers(canvas, tg.br_params, 0, sizeof(DvzGraphicsMarkerParams), &params);
 
-    vkl_event_callback(canvas, VKL_EVENT_REFILL, 0, VKL_EVENT_MODE_SYNC, _graphics_refill, &tg);
+    dvz_event_callback(canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, _graphics_refill, &tg);
 
-    SAVE_MARKER(VKL_MARKER_DISC, "marker_disc")
-    SAVE_MARKER(VKL_MARKER_ASTERISK, "marker_asterisk")
-    SAVE_MARKER(VKL_MARKER_CHEVRON, "marker_chevron")
-    SAVE_MARKER(VKL_MARKER_CLOVER, "marker_clover")
-    SAVE_MARKER(VKL_MARKER_CLUB, "marker_club")
-    SAVE_MARKER(VKL_MARKER_CROSS, "marker_cross")
-    SAVE_MARKER(VKL_MARKER_DIAMOND, "marker_diamond")
-    SAVE_MARKER(VKL_MARKER_ARROW, "marker_arrow")
-    SAVE_MARKER(VKL_MARKER_ELLIPSE, "marker_ellipse")
-    SAVE_MARKER(VKL_MARKER_HBAR, "marker_hbar")
-    SAVE_MARKER(VKL_MARKER_HEART, "marker_heart")
-    SAVE_MARKER(VKL_MARKER_INFINITY, "marker_infinity")
-    SAVE_MARKER(VKL_MARKER_PIN, "marker_pin")
-    SAVE_MARKER(VKL_MARKER_RING, "marker_ring")
-    SAVE_MARKER(VKL_MARKER_SPADE, "marker_spade")
-    SAVE_MARKER(VKL_MARKER_SQUARE, "marker_square")
-    SAVE_MARKER(VKL_MARKER_TAG, "marker_tag")
-    SAVE_MARKER(VKL_MARKER_TRIANGLE, "marker_triangle")
-    SAVE_MARKER(VKL_MARKER_VBAR, "marker_vbar")
+    SAVE_MARKER(DVZ_MARKER_DISC, "marker_disc")
+    SAVE_MARKER(DVZ_MARKER_ASTERISK, "marker_asterisk")
+    SAVE_MARKER(DVZ_MARKER_CHEVRON, "marker_chevron")
+    SAVE_MARKER(DVZ_MARKER_CLOVER, "marker_clover")
+    SAVE_MARKER(DVZ_MARKER_CLUB, "marker_club")
+    SAVE_MARKER(DVZ_MARKER_CROSS, "marker_cross")
+    SAVE_MARKER(DVZ_MARKER_DIAMOND, "marker_diamond")
+    SAVE_MARKER(DVZ_MARKER_ARROW, "marker_arrow")
+    SAVE_MARKER(DVZ_MARKER_ELLIPSE, "marker_ellipse")
+    SAVE_MARKER(DVZ_MARKER_HBAR, "marker_hbar")
+    SAVE_MARKER(DVZ_MARKER_HEART, "marker_heart")
+    SAVE_MARKER(DVZ_MARKER_INFINITY, "marker_infinity")
+    SAVE_MARKER(DVZ_MARKER_PIN, "marker_pin")
+    SAVE_MARKER(DVZ_MARKER_RING, "marker_ring")
+    SAVE_MARKER(DVZ_MARKER_SPADE, "marker_spade")
+    SAVE_MARKER(DVZ_MARKER_SQUARE, "marker_square")
+    SAVE_MARKER(DVZ_MARKER_TAG, "marker_tag")
+    SAVE_MARKER(DVZ_MARKER_TRIANGLE, "marker_triangle")
+    SAVE_MARKER(DVZ_MARKER_VBAR, "marker_vbar")
 
-    vkl_array_destroy(&tg.vertices);
-    vkl_array_destroy(&tg.indices);
+    dvz_array_destroy(&tg.vertices);
+    dvz_array_destroy(&tg.indices);
     TEST_END
 }
 
@@ -644,19 +644,19 @@ int test_graphics_marker_screenshots(TestContext* context)
 /*  Agg segment tests                                                                            */
 /*************************************************************************************************/
 
-static void _resize(VklCanvas* canvas, VklEvent ev)
+static void _resize(DvzCanvas* canvas, DvzEvent ev)
 {
     TestGraphics* tg = (TestGraphics*)ev.user_data;
-    vkl_upload_buffers(canvas, tg->br_viewport, 0, sizeof(VklViewport), &canvas->viewport);
+    dvz_upload_buffers(canvas, tg->br_viewport, 0, sizeof(DvzViewport), &canvas->viewport);
 }
 
 int test_graphics_segment(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_SEGMENT, 0)
+    INIT_GRAPHICS(DVZ_GRAPHICS_SEGMENT, 0)
     const uint32_t N = 16;
-    BEGIN_DATA(VklGraphicsSegmentVertex, 4 * N, NULL)
+    BEGIN_DATA(DvzGraphicsSegmentVertex, 4 * N, NULL)
 
-    VklGraphicsSegmentVertex vertex = {0};
+    DvzGraphicsSegmentVertex vertex = {0};
     for (uint32_t i = 0; i < N; i++)
     {
         float t = (float)i / (float)N;
@@ -666,13 +666,13 @@ int test_graphics_segment(TestContext* context)
         vertex.P0[1] = y;
         vertex.P1[1] = -y;
         vertex.linewidth = 5 + 30 * t;
-        vkl_colormap_scale(VKL_CMAP_RAINBOW, t, 0, 1, vertex.color);
-        vertex.cap0 = vertex.cap1 = i % VKL_CAP_COUNT;
-        vkl_graphics_append(&data, &vertex);
+        dvz_colormap_scale(DVZ_CMAP_RAINBOW, t, 0, 1, vertex.color);
+        vertex.cap0 = vertex.cap1 = i % DVZ_CAP_COUNT;
+        dvz_graphics_append(&data, &vertex);
     }
     END_DATA
     BINDINGS_NO_PARAMS
-    vkl_event_callback(canvas, VKL_EVENT_RESIZE, 0, VKL_EVENT_MODE_SYNC, _resize, &tg);
+    dvz_event_callback(canvas, DVZ_EVENT_RESIZE, 0, DVZ_EVENT_MODE_SYNC, _resize, &tg);
     RUN;
     SCREENSHOT("segment")
     TEST_END
@@ -686,25 +686,25 @@ int test_graphics_segment(TestContext* context)
 
 int test_graphics_text(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_TEXT, 0)
+    INIT_GRAPHICS(DVZ_GRAPHICS_TEXT, 0)
     const uint32_t N = 26;
     const char str[] = "Hello world!";
     const uint32_t offset = strlen(str);
 
     // Font atlas
-    VklFontAtlas* atlas = &gpu->context->font_atlas;
+    DvzFontAtlas* atlas = &gpu->context->font_atlas;
 
-    VklGraphicsTextParams params = {0};
+    DvzGraphicsTextParams params = {0};
     params.grid_size[0] = (int32_t)atlas->rows;
     params.grid_size[1] = (int32_t)atlas->cols;
     params.tex_size[0] = (int32_t)atlas->width;
     params.tex_size[1] = (int32_t)atlas->height;
 
     // 26 letters in a circle.
-    BEGIN_DATA(VklGraphicsTextVertex, (N + offset), atlas)
+    BEGIN_DATA(DvzGraphicsTextVertex, (N + offset), atlas)
     float t = 0;
     float a = 0, x = 0, y = 0;
-    VklGraphicsTextItem item = {0};
+    DvzGraphicsTextItem item = {0};
     for (uint32_t i = 0; i < N; i++)
     {
         t = i / (float)N;
@@ -718,37 +718,37 @@ int test_graphics_text(TestContext* context)
         char s[2] = {0};
         s[0] = (char)(65 + i);
         item.string = s;
-        vkl_colormap_scale(VKL_CMAP_HSV, t, 0, 1, item.vertex.color);
+        dvz_colormap_scale(DVZ_CMAP_HSV, t, 0, 1, item.vertex.color);
 
-        vkl_graphics_append(&data, &item);
+        dvz_graphics_append(&data, &item);
     }
 
     // Hello world
     item.glyph_colors = calloc(offset, sizeof(cvec4));
     for (uint32_t i = 0; i < offset; i++)
     {
-        vkl_colormap_scale(VKL_CMAP_RAINBOW, i, 0, offset, item.glyph_colors[i]);
+        dvz_colormap_scale(DVZ_CMAP_RAINBOW, i, 0, offset, item.glyph_colors[i]);
     }
     item.vertex.pos[0] = 0;
     item.vertex.pos[1] = 0;
     item.vertex.angle = 0;
     item.font_size = 50;
     item.string = str;
-    vkl_graphics_append(&data, &item);
+    dvz_graphics_append(&data, &item);
     FREE(item.glyph_colors);
 
     END_DATA
 
     tg.br_params =
-        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsTextParams));
-    vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsTextParams), &params);
+        dvz_ctx_buffers(gpu->context, DVZ_BUFFER_TYPE_UNIFORM, 1, sizeof(DvzGraphicsTextParams));
+    dvz_upload_buffers(canvas, tg.br_params, 0, sizeof(DvzGraphicsTextParams), &params);
 
     _common_bindings(&tg);
-    vkl_bindings_buffer(&tg.bindings, VKL_USER_BINDING, tg.br_params);
-    vkl_bindings_texture(&tg.bindings, VKL_USER_BINDING + 1, atlas->texture);
-    vkl_bindings_update(&tg.bindings);
+    dvz_bindings_buffer(&tg.bindings, DVZ_USER_BINDING, tg.br_params);
+    dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 1, atlas->texture);
+    dvz_bindings_update(&tg.bindings);
 
-    vkl_event_callback(canvas, VKL_EVENT_RESIZE, 0, VKL_EVENT_MODE_SYNC, _resize, &tg);
+    dvz_event_callback(canvas, DVZ_EVENT_RESIZE, 0, DVZ_EVENT_MODE_SYNC, _resize, &tg);
 
     RUN;
     SCREENSHOT("text")
@@ -763,20 +763,20 @@ int test_graphics_text(TestContext* context)
 
 int test_graphics_image(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_IMAGE, 0)
+    INIT_GRAPHICS(DVZ_GRAPHICS_IMAGE, 0)
 
     // Vertices.
     uint32_t n = 6;
     TestGraphics tg = {0};
     tg.canvas = canvas;
     tg.graphics = graphics;
-    tg.vertices = vkl_array_struct(n, sizeof(VklGraphicsImageVertex));
+    tg.vertices = dvz_array_struct(n, sizeof(DvzGraphicsImageVertex));
     ASSERT(tg.vertices.item_count == n);
-    tg.br_vert = vkl_ctx_buffers(
-        gpu->context, VKL_BUFFER_TYPE_VERTEX, 1,
-        tg.vertices.item_count * sizeof(VklGraphicsImageVertex));
+    tg.br_vert = dvz_ctx_buffers(
+        gpu->context, DVZ_BUFFER_TYPE_VERTEX, 1,
+        tg.vertices.item_count * sizeof(DvzGraphicsImageVertex));
     float x = 1;
-    VklGraphicsImageVertex vertices[] = {
+    DvzGraphicsImageVertex vertices[] = {
         {{-x, -x, 0}, {0, 1}}, //
         {{+x, -x, 0}, {1, 1}}, //
         {{+x, +x, 0}, {1, 0}}, //
@@ -784,15 +784,15 @@ int test_graphics_image(TestContext* context)
         {{-x, +x, 0}, {0, 0}}, //
         {{-x, -x, 0}, {0, 1}}, //
     };
-    vkl_upload_buffers(
-        canvas, tg.br_vert, 0, tg.vertices.item_count * sizeof(VklGraphicsImageVertex), vertices);
+    dvz_upload_buffers(
+        canvas, tg.br_vert, 0, tg.vertices.item_count * sizeof(DvzGraphicsImageVertex), vertices);
 
     // Parameters.
     tg.br_params =
-        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsImageParams));
-    VklGraphicsImageParams params = {0};
+        dvz_ctx_buffers(gpu->context, DVZ_BUFFER_TYPE_UNIFORM, 1, sizeof(DvzGraphicsImageParams));
+    DvzGraphicsImageParams params = {0};
     params.tex_coefs[0] = 1;
-    vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsImageParams), &params);
+    dvz_upload_buffers(canvas, tg.br_params, 0, sizeof(DvzGraphicsImageParams), &params);
 
     // Texture.
     // https://pixabay.com/illustrations/earth-planet-world-globe-space-1617121/
@@ -802,17 +802,17 @@ int test_graphics_image(TestContext* context)
     uint8_t* tex_data = stbi_load(path, &width, &height, &depth, STBI_rgb_alpha);
     uint32_t tex_size = (uint32_t)(width * height);
     // const uint32_t nt = 16;
-    VklTexture* texture = vkl_ctx_texture(
+    DvzTexture* texture = dvz_ctx_texture(
         gpu->context, 2, (uvec3){(uint32_t)width, (uint32_t)height, 1}, VK_FORMAT_R8G8B8A8_UNORM);
-    vkl_upload_texture(
-        canvas, texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, tex_size * sizeof(cvec4), tex_data);
+    dvz_upload_texture(
+        canvas, texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, tex_size * sizeof(cvec4), tex_data);
 
     // Bindings.
     _common_bindings(&tg);
-    vkl_bindings_buffer(&tg.bindings, VKL_USER_BINDING, tg.br_params);
+    dvz_bindings_buffer(&tg.bindings, DVZ_USER_BINDING, tg.br_params);
     for (uint32_t i = 1; i <= 4; i++)
-        vkl_bindings_texture(&tg.bindings, VKL_USER_BINDING + i, texture);
-    vkl_bindings_update(&tg.bindings);
+        dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + i, texture);
+    dvz_bindings_update(&tg.bindings);
 
     RUN;
     SCREENSHOT("image")
@@ -826,22 +826,22 @@ int test_graphics_image(TestContext* context)
 /*  Volume image tests                                                                           */
 /*************************************************************************************************/
 
-static void _graphics_volume_callback(VklCanvas* canvas, VklEvent ev)
+static void _graphics_volume_callback(DvzCanvas* canvas, DvzEvent ev)
 {
     TestGraphics* tg = ev.user_data;
     float dx = ev.u.f.interval;
     for (uint32_t i = 0; i < 6; i++)
-        ((VklGraphicsVolumeSliceVertex*)tg->vertices.data)[i].uvw[2] += .1 * dx;
-    vkl_upload_buffers(
-        canvas, tg->br_vert, 0, tg->vertices.item_count * sizeof(VklGraphicsVolumeSliceVertex),
+        ((DvzGraphicsVolumeSliceVertex*)tg->vertices.data)[i].uvw[2] += .1 * dx;
+    dvz_upload_buffers(
+        canvas, tg->br_vert, 0, tg->vertices.item_count * sizeof(DvzGraphicsVolumeSliceVertex),
         tg->vertices.data);
 }
 
 int test_graphics_volume_slice(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_VOLUME_SLICE, 0)
+    INIT_GRAPHICS(DVZ_GRAPHICS_VOLUME_SLICE, 0)
     const uint32_t N = 8;
-    BEGIN_DATA(VklGraphicsVolumeVertex, N, NULL)
+    BEGIN_DATA(DvzGraphicsVolumeVertex, N, NULL)
     float x = MOUSE_VOLUME_DEPTH / (float)MOUSE_VOLUME_HEIGHT;
     float y = 1;
     float z = 0;
@@ -851,19 +851,19 @@ int test_graphics_volume_slice(TestContext* context)
         t = 1 - i / (float)(N - 1);
         z = -1 + 2 * t;
         t = .1 + .8 * t;
-        VklGraphicsVolumeSliceItem item =                        //
+        DvzGraphicsVolumeSliceItem item =                        //
             {{-x, -y, z}, {+x, -y, z}, {+x, +y, z}, {-x, +y, z}, //
              {1, 0, t},   {1, 1, t},   {0, 1, t},   {0, 0, t}};  //
-        vkl_graphics_append(&data, &item);
+        dvz_graphics_append(&data, &item);
     }
     END_DATA
 
     // Parameters.
-    tg.br_params = vkl_ctx_buffers(
-        gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsVolumeSliceParams));
+    tg.br_params = dvz_ctx_buffers(
+        gpu->context, DVZ_BUFFER_TYPE_UNIFORM, 1, sizeof(DvzGraphicsVolumeSliceParams));
 
-    VklGraphicsVolumeSliceParams params = {0};
-    params.cmap = VKL_CMAP_BONE;
+    DvzGraphicsVolumeSliceParams params = {0};
+    params.cmap = DVZ_CMAP_BONE;
     params.scale = 13;
 
     // Transfer function for the alpha channel.
@@ -876,25 +876,25 @@ int test_graphics_volume_slice(TestContext* context)
     params.y_alpha[1] = 0;
     params.y_alpha[2] = .75;
     params.y_alpha[3] = .75;
-    vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsVolumeSliceParams), &params);
+    dvz_upload_buffers(canvas, tg.br_params, 0, sizeof(DvzGraphicsVolumeSliceParams), &params);
 
     // Texture.
-    VklTexture* texture = _mouse_volume(canvas);
+    DvzTexture* texture = _mouse_volume(canvas);
 
     // Bindings.
     _common_bindings(&tg);
-    vkl_bindings_buffer(&tg.bindings, VKL_USER_BINDING, tg.br_params);
-    vkl_bindings_texture(&tg.bindings, VKL_USER_BINDING + 1, gpu->context->color_texture.texture);
-    vkl_bindings_texture(&tg.bindings, VKL_USER_BINDING + 2, texture);
-    vkl_bindings_update(&tg.bindings);
+    dvz_bindings_buffer(&tg.bindings, DVZ_USER_BINDING, tg.br_params);
+    dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 1, gpu->context->color_texture.texture);
+    dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 2, texture);
+    dvz_bindings_update(&tg.bindings);
 
     // Interactivity.
-    tg.interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
-    vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _interact_callback, &tg);
-    // vkl_event_callback(
-    //     canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _graphics_volume_callback, &tg);
+    tg.interact = dvz_interact_builtin(canvas, DVZ_INTERACT_ARCBALL);
+    dvz_event_callback(canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _interact_callback, &tg);
+    // dvz_event_callback(
+    //     canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _graphics_volume_callback, &tg);
 
-    VklArcball* arcball = &tg.interact.u.a;
+    DvzArcball* arcball = &tg.interact.u.a;
     versor q;
     glm_quatv(q, M_PI, (vec3){0, 1, 0});
     glm_quat_mul(arcball->rotation, q, arcball->rotation);
@@ -915,12 +915,12 @@ int test_graphics_volume_slice(TestContext* context)
 /*  Volume tests                                                                                 */
 /*************************************************************************************************/
 
-static void _volume_update_mvp(VklCanvas* canvas, VklEvent ev)
+static void _volume_update_mvp(DvzCanvas* canvas, DvzEvent ev)
 {
     TestGraphics* tg = ev.user_data;
     glm_vec3_copy(
-        tg->interact.u.a.camera.eye, ((VklGraphicsVolumeParams*)tg->params_data)->view_pos);
-    vkl_upload_buffers(canvas, tg->br_params, 0, sizeof(VklGraphicsVolumeParams), tg->params_data);
+        tg->interact.u.a.camera.eye, ((DvzGraphicsVolumeParams*)tg->params_data)->view_pos);
+    dvz_upload_buffers(canvas, tg->br_params, 0, sizeof(DvzGraphicsVolumeParams), tg->params_data);
 }
 
 int test_graphics_volume_1(TestContext* context)
@@ -929,45 +929,45 @@ int test_graphics_volume_1(TestContext* context)
     const uint32_t nj = MOUSE_VOLUME_HEIGHT;
     const uint32_t nk = MOUSE_VOLUME_DEPTH;
 
-    VklGraphicsVolumeParams params = {0};
+    DvzGraphicsVolumeParams params = {0};
     float c = .005;
     vec4 box_size = {c * ni, c * nj, c * nk, 0};
     glm_vec4_copy(box_size, params.box_size);
-    params.cmap = VKL_CMAP_BONE;
+    params.cmap = DVZ_CMAP_BONE;
     vec3 p0 = {-c * ni / 2., -c * nj / 2., -c * nk / 2.};
     vec3 p1 = {+c * ni / 2., +c * nj / 2., +c * nk / 2.};
 
-    INIT_GRAPHICS(VKL_GRAPHICS_VOLUME, 0)
-    BEGIN_DATA(VklGraphicsVolumeVertex, 1, NULL)
-    VklGraphicsVolumeItem item = {
+    INIT_GRAPHICS(DVZ_GRAPHICS_VOLUME, 0)
+    BEGIN_DATA(DvzGraphicsVolumeVertex, 1, NULL)
+    DvzGraphicsVolumeItem item = {
         {p0[0], p0[1], p0[2]}, {p1[0], p1[1], p1[2]}, {0, 0, 0}, {1, 1, 1}};
-    vkl_graphics_append(&data, &item);
+    dvz_graphics_append(&data, &item);
     END_DATA
 
     // Parameters.
     tg.br_params =
-        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsVolumeParams));
+        dvz_ctx_buffers(gpu->context, DVZ_BUFFER_TYPE_UNIFORM, 1, sizeof(DvzGraphicsVolumeParams));
     glm_vec3_copy(tg.eye, params.view_pos);
     tg.params_data = &params;
-    vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsVolumeParams), &params);
+    dvz_upload_buffers(canvas, tg.br_params, 0, sizeof(DvzGraphicsVolumeParams), &params);
 
-    VklTexture* texture = _mouse_volume(canvas);
+    DvzTexture* texture = _mouse_volume(canvas);
 
     // Bindings.
     _common_bindings(&tg);
-    vkl_bindings_buffer(&tg.bindings, VKL_USER_BINDING, tg.br_params);
-    vkl_bindings_texture(&tg.bindings, VKL_USER_BINDING + 1, gpu->context->color_texture.texture);
-    vkl_bindings_texture(&tg.bindings, VKL_USER_BINDING + 2, texture);
-    vkl_bindings_update(&tg.bindings);
+    dvz_bindings_buffer(&tg.bindings, DVZ_USER_BINDING, tg.br_params);
+    dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 1, gpu->context->color_texture.texture);
+    dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 2, texture);
+    dvz_bindings_update(&tg.bindings);
 
     // Interactivity.
-    tg.interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
-    vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _interact_callback, &tg);
-    vkl_event_callback(
-        canvas, VKL_EVENT_TIMER, 1. / 60, VKL_EVENT_MODE_SYNC, _volume_update_mvp, &tg);
-    vkl_event_callback(canvas, VKL_EVENT_RESIZE, 0, VKL_EVENT_MODE_SYNC, _resize, &tg);
+    tg.interact = dvz_interact_builtin(canvas, DVZ_INTERACT_ARCBALL);
+    dvz_event_callback(canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _interact_callback, &tg);
+    dvz_event_callback(
+        canvas, DVZ_EVENT_TIMER, 1. / 60, DVZ_EVENT_MODE_SYNC, _volume_update_mvp, &tg);
+    dvz_event_callback(canvas, DVZ_EVENT_RESIZE, 0, DVZ_EVENT_MODE_SYNC, _resize, &tg);
 
-    VklArcball* arcball = &tg.interact.u.a;
+    DvzArcball* arcball = &tg.interact.u.a;
     versor q;
     glm_quatv(q, M_PI / 2, (vec3){0, 0, 1});
     glm_quat_mul(arcball->rotation, q, arcball->rotation);
@@ -990,11 +990,11 @@ int test_graphics_volume_1(TestContext* context)
 /*  Mesh tests                                                                                   */
 /*************************************************************************************************/
 
-static VklMesh _graphics_mesh_example(VklMeshType type)
+static DvzMesh _graphics_mesh_example(DvzMeshType type)
 {
     switch (type)
     {
-    case VKL_MESH_SURFACE:;
+    case DVZ_MESH_SURFACE:;
         const uint32_t N = 250;
         uint32_t col_count = N + 1;
         uint32_t row_count = 2 * N + 1;
@@ -1015,71 +1015,71 @@ static VklMesh _graphics_mesh_example(VklMeshType type)
                 heights[col_count * i + j] = z;
             }
         }
-        VklMesh mesh = vkl_mesh_surface(row_count, col_count, heights);
+        DvzMesh mesh = dvz_mesh_surface(row_count, col_count, heights);
         FREE(heights);
         return mesh;
         break;
 
-    case VKL_MESH_CUBE:
-        return vkl_mesh_cube();
+    case DVZ_MESH_CUBE:
+        return dvz_mesh_cube();
 
-    case VKL_MESH_SPHERE:
-        return vkl_mesh_sphere(100, 100);
+    case DVZ_MESH_SPHERE:
+        return dvz_mesh_sphere(100, 100);
 
-    case VKL_MESH_CYLINDER:
-        return vkl_mesh_cylinder(100);
+    case DVZ_MESH_CYLINDER:
+        return dvz_mesh_cylinder(100);
 
-    case VKL_MESH_CONE:
-        return vkl_mesh_cone(100);
+    case DVZ_MESH_CONE:
+        return dvz_mesh_cone(100);
 
-    case VKL_MESH_SQUARE:
-        return vkl_mesh_square();
+    case DVZ_MESH_SQUARE:
+        return dvz_mesh_square();
 
-    case VKL_MESH_DISC:
-        return vkl_mesh_disc(100);
+    case DVZ_MESH_DISC:
+        return dvz_mesh_disc(100);
 
-    case VKL_MESH_OBJ:;
+    case DVZ_MESH_OBJ:;
         char path[1024];
         snprintf(path, sizeof(path), "%s/mesh/%s", DATA_DIR, "brain.obj");
-        return vkl_mesh_obj(path);
+        return dvz_mesh_obj(path);
 
     default:
         break;
     }
 
-    return (VklMesh){0};
+    return (DvzMesh){0};
 }
 
 int test_graphics_mesh(TestContext* context)
 {
-    INIT_GRAPHICS(VKL_GRAPHICS_MESH, 0)
+    INIT_GRAPHICS(DVZ_GRAPHICS_MESH, 0)
 
     TestGraphics tg = {0};
     tg.canvas = canvas;
     tg.eye[2] = 3;
     tg.up[1] = 1;
     tg.graphics = graphics;
-    VklMesh mesh = _graphics_mesh_example(MESH);
+    DvzMesh mesh = _graphics_mesh_example(MESH);
 
     // Texture.
-    VklTexture* texture = NULL;
+    DvzTexture* texture = NULL;
     // Square texture.
     if (0)
     {
-        texture = vkl_ctx_texture(gpu->context, 2, (uvec3){2, 2, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+        texture = dvz_ctx_texture(gpu->context, 2, (uvec3){2, 2, 1}, VK_FORMAT_R8G8B8A8_UNORM);
         cvec4 tex_data[] = {
             {255, 0, 0, 255}, //
             {0, 255, 0, 255},
             {0, 0, 255, 255},
             {255, 255, 0, 255},
         };
-        vkl_upload_texture(
-            canvas, texture, VKL_ZERO_OFFSET, VKL_ZERO_OFFSET, sizeof(tex_data), tex_data);
+        dvz_upload_texture(
+            canvas, texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, sizeof(tex_data), tex_data);
     }
 
     // Height map.
     {
-        VklGraphicsMeshVertex* vertices = ((VklGraphicsMeshVertex*)mesh.vertices.data);
+        DvzGraphicsMeshVertex* vertices = ((DvzGraphicsMeshVertex*)mesh.vertices.data);
         // Use the colormap texture.
         texture = gpu->context->color_texture.texture;
         float z = 0;
@@ -1088,7 +1088,7 @@ int test_graphics_mesh(TestContext* context)
             z = vertices[i].pos[1];
             z = (z + .18) / .6;
             // Get the coordinates within the colormap texture.
-            vkl_colormap_uv(VKL_CMAP_JET, TO_BYTE(z), vertices[i].uv);
+            dvz_colormap_uv(DVZ_CMAP_JET, TO_BYTE(z), vertices[i].uv);
         }
     }
 
@@ -1096,48 +1096,48 @@ int test_graphics_mesh(TestContext* context)
     tg.indices = mesh.indices;
     uint32_t vertex_count = tg.vertices.item_count;
     uint32_t index_count = tg.indices.item_count;
-    tg.br_vert = vkl_ctx_buffers(
-        gpu->context, VKL_BUFFER_TYPE_VERTEX, 1, vertex_count * sizeof(VklGraphicsMeshVertex));
+    tg.br_vert = dvz_ctx_buffers(
+        gpu->context, DVZ_BUFFER_TYPE_VERTEX, 1, vertex_count * sizeof(DvzGraphicsMeshVertex));
     if (index_count > 0)
-        tg.br_index = vkl_ctx_buffers(
-            gpu->context, VKL_BUFFER_TYPE_INDEX, 1, index_count * sizeof(VklIndex));
+        tg.br_index = dvz_ctx_buffers(
+            gpu->context, DVZ_BUFFER_TYPE_INDEX, 1, index_count * sizeof(DvzIndex));
 
-    vkl_upload_buffers(
+    dvz_upload_buffers(
         canvas, tg.br_vert, 0, vertex_count * tg.vertices.item_size, tg.vertices.data);
     if (index_count > 0)
-        vkl_upload_buffers(
+        dvz_upload_buffers(
             canvas, tg.br_index, 0, index_count * tg.indices.item_size, tg.indices.data);
 
     // Create the bindings.
-    tg.bindings = vkl_bindings(&graphics->slots, canvas->swapchain.img_count);
+    tg.bindings = dvz_bindings(&graphics->slots, canvas->swapchain.img_count);
 
     // Binding resources.
-    tg.br_mvp = vkl_ctx_buffers(
-        gpu->context, VKL_BUFFER_TYPE_UNIFORM_MAPPABLE, canvas->swapchain.img_count,
-        sizeof(VklMVP));
+    tg.br_mvp = dvz_ctx_buffers(
+        gpu->context, DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE, canvas->swapchain.img_count,
+        sizeof(DvzMVP));
     tg.br_viewport =
-        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklViewport));
+        dvz_ctx_buffers(gpu->context, DVZ_BUFFER_TYPE_UNIFORM, 1, sizeof(DvzViewport));
 
     // Parameters.
-    VklGraphicsMeshParams params = default_graphics_mesh_params(tg.eye);
+    DvzGraphicsMeshParams params = default_graphics_mesh_params(tg.eye);
 
     tg.br_params =
-        vkl_ctx_buffers(gpu->context, VKL_BUFFER_TYPE_UNIFORM, 1, sizeof(VklGraphicsMeshParams));
-    vkl_upload_buffers(canvas, tg.br_params, 0, sizeof(VklGraphicsMeshParams), &params);
+        dvz_ctx_buffers(gpu->context, DVZ_BUFFER_TYPE_UNIFORM, 1, sizeof(DvzGraphicsMeshParams));
+    dvz_upload_buffers(canvas, tg.br_params, 0, sizeof(DvzGraphicsMeshParams), &params);
 
     // Bindings
-    vkl_bindings_buffer(&tg.bindings, 0, tg.br_mvp);
-    vkl_bindings_buffer(&tg.bindings, 1, tg.br_viewport);
-    vkl_bindings_buffer(&tg.bindings, VKL_USER_BINDING, tg.br_params);
+    dvz_bindings_buffer(&tg.bindings, 0, tg.br_mvp);
+    dvz_bindings_buffer(&tg.bindings, 1, tg.br_viewport);
+    dvz_bindings_buffer(&tg.bindings, DVZ_USER_BINDING, tg.br_params);
     for (uint32_t i = 1; i <= 4; i++)
-        vkl_bindings_texture(&tg.bindings, VKL_USER_BINDING + i, texture);
-    vkl_bindings_update(&tg.bindings);
+        dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + i, texture);
+    dvz_bindings_update(&tg.bindings);
 
     // Interactivity.
-    tg.interact = vkl_interact_builtin(canvas, VKL_INTERACT_ARCBALL);
-    vkl_event_callback(canvas, VKL_EVENT_FRAME, 0, VKL_EVENT_MODE_SYNC, _interact_callback, &tg);
+    tg.interact = dvz_interact_builtin(canvas, DVZ_INTERACT_ARCBALL);
+    dvz_event_callback(canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _interact_callback, &tg);
 
-    VklArcball* arcball = &tg.interact.u.a;
+    DvzArcball* arcball = &tg.interact.u.a;
     versor q;
     glm_quatv(q, M_PI / 6, (vec3){1, 0, 0});
     glm_quat_mul(arcball->rotation, q, arcball->rotation);

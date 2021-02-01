@@ -1,21 +1,21 @@
 #define CLAMP x = clamp(x, 0, 1);
 
-#define VKL_CMAP_BINARY 0
-#define VKL_CMAP_HSV 1
-#define VKL_CMAP_CIVIDIS 2
-#define VKL_CMAP_INFERNO 3
-#define VKL_CMAP_MAGMA 4
-#define VKL_CMAP_PLASMA 5
-#define VKL_CMAP_VIRIDIS 6
-#define VKL_CMAP_AUTUMN 25
-#define VKL_CMAP_BONE 26
-#define VKL_CMAP_COOL 27
-#define VKL_CMAP_COPPER 28
-#define VKL_CMAP_HOT 31
-#define VKL_CMAP_SPRING 33
-#define VKL_CMAP_SUMMER 34
-#define VKL_CMAP_WINTER 35
-#define VKL_CMAP_JET 61
+#define DVZ_CMAP_BINARY 0
+#define DVZ_CMAP_HSV 1
+#define DVZ_CMAP_CIVIDIS 2
+#define DVZ_CMAP_INFERNO 3
+#define DVZ_CMAP_MAGMA 4
+#define DVZ_CMAP_PLASMA 5
+#define DVZ_CMAP_VIRIDIS 6
+#define DVZ_CMAP_AUTUMN 25
+#define DVZ_CMAP_BONE 26
+#define DVZ_CMAP_COOL 27
+#define DVZ_CMAP_COPPER 28
+#define DVZ_CMAP_HOT 31
+#define DVZ_CMAP_SPRING 33
+#define DVZ_CMAP_SUMMER 34
+#define DVZ_CMAP_WINTER 35
+#define DVZ_CMAP_JET 61
 
 
 vec4 rgb2hsv(vec4 c)
@@ -208,20 +208,20 @@ vec4 jet(float x) {
 
 vec4 colormap(int cmap, float x) {
     CLAMP
-    if (cmap == VKL_CMAP_HSV) return hsv(x);
-    else if (cmap == VKL_CMAP_INFERNO) return inferno(x);
-    else if (cmap == VKL_CMAP_MAGMA) return magma(x);
-    else if (cmap == VKL_CMAP_PLASMA) return plasma(x);
-    else if (cmap == VKL_CMAP_VIRIDIS) return viridis(x);
-    else if (cmap == VKL_CMAP_AUTUMN) return autumn(x);
-    else if (cmap == VKL_CMAP_BONE) return bone(x);
-    else if (cmap == VKL_CMAP_COOL) return cool(x);
-    else if (cmap == VKL_CMAP_COPPER) return copper(x);
-    else if (cmap == VKL_CMAP_HOT) return hot(x);
-    else if (cmap == VKL_CMAP_SPRING) return spring(x);
-    else if (cmap == VKL_CMAP_SUMMER) return summer(x);
-    else if (cmap == VKL_CMAP_WINTER) return winter(x);
-    else if (cmap == VKL_CMAP_JET) return jet(x);
+    if (cmap == DVZ_CMAP_HSV) return hsv(x);
+    else if (cmap == DVZ_CMAP_INFERNO) return inferno(x);
+    else if (cmap == DVZ_CMAP_MAGMA) return magma(x);
+    else if (cmap == DVZ_CMAP_PLASMA) return plasma(x);
+    else if (cmap == DVZ_CMAP_VIRIDIS) return viridis(x);
+    else if (cmap == DVZ_CMAP_AUTUMN) return autumn(x);
+    else if (cmap == DVZ_CMAP_BONE) return bone(x);
+    else if (cmap == DVZ_CMAP_COOL) return cool(x);
+    else if (cmap == DVZ_CMAP_COPPER) return copper(x);
+    else if (cmap == DVZ_CMAP_HOT) return hot(x);
+    else if (cmap == DVZ_CMAP_SPRING) return spring(x);
+    else if (cmap == DVZ_CMAP_SUMMER) return summer(x);
+    else if (cmap == DVZ_CMAP_WINTER) return winter(x);
+    else if (cmap == DVZ_CMAP_JET) return jet(x);
     // Fallback to texture sampling from the colormap texture.
     // NOTE: this may cause visual artifacts when the value x is itself sampled from a texture.
     // Computing the colormap directly without fetching the color from a color texture

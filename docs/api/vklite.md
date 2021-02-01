@@ -2,99 +2,99 @@
 
 ## GPU
 
-### `vkl_gpu()`
-### `vkl_gpu_request_features()`
-### `vkl_gpu_queue()`
-### `vkl_gpu_create()`
-### `vkl_gpu_destroy()`
+### `dvz_gpu()`
+### `dvz_gpu_request_features()`
+### `dvz_gpu_queue()`
+### `dvz_gpu_create()`
+### `dvz_gpu_destroy()`
 
 
 ## Coarse synchronization
 
-### `vkl_queue_wait()`
-### `vkl_app_wait()`
-### `vkl_gpu_wait()`
+### `dvz_queue_wait()`
+### `dvz_app_wait()`
+### `dvz_gpu_wait()`
 
 
 ## Window
 
-### `vkl_window()`
-### `vkl_window_get_size()`
-### `vkl_window_poll_events()`
-### `vkl_window_destroy()`
+### `dvz_window()`
+### `dvz_window_get_size()`
+### `dvz_window_poll_events()`
+### `dvz_window_destroy()`
 
 
 ## Swapchain
 
-### `vkl_swapchain()`
-### `vkl_swapchain_format()`
-### `vkl_swapchain_present_mode()`
-### `vkl_swapchain_requested_size()`
-### `vkl_swapchain_create()`
-### `vkl_swapchain_recreate()`
-### `vkl_swapchain_acquire()`
-### `vkl_swapchain_present()`
-### `vkl_swapchain_destroy()`
+### `dvz_swapchain()`
+### `dvz_swapchain_format()`
+### `dvz_swapchain_present_mode()`
+### `dvz_swapchain_requested_size()`
+### `dvz_swapchain_create()`
+### `dvz_swapchain_recreate()`
+### `dvz_swapchain_acquire()`
+### `dvz_swapchain_present()`
+### `dvz_swapchain_destroy()`
 
 
 ## Command buffers
 
-### `vkl_commands()`
-### `vkl_cmd_begin()`
-### `vkl_cmd_end()`
-### `vkl_cmd_reset()`
-### `vkl_cmd_free()`
-### `vkl_cmd_submit_sync()`
-### `vkl_commands_destroy()`
+### `dvz_commands()`
+### `dvz_cmd_begin()`
+### `dvz_cmd_end()`
+### `dvz_cmd_reset()`
+### `dvz_cmd_free()`
+### `dvz_cmd_submit_sync()`
+### `dvz_commands_destroy()`
 
 
 ## GPU buffer
 
-### `vkl_buffer()`
-### `vkl_buffer_size()`
-### `vkl_buffer_type()`
-### `vkl_buffer_usage()`
-### `vkl_buffer_memory()`
-### `vkl_buffer_queue_access()`
-### `vkl_buffer_create()`
-### `vkl_buffer_resize()`
-### `vkl_buffer_map()`
-### `vkl_buffer_unmap()`
-### `vkl_buffer_download()`
-### `vkl_buffer_upload()`
-### `vkl_buffer_destroy()`
-### `vkl_buffer_regions()`
-### `vkl_buffer_regions_map()`
-### `vkl_buffer_regions_unmap()`
-### `vkl_buffer_regions_upload()`
+### `dvz_buffer()`
+### `dvz_buffer_size()`
+### `dvz_buffer_type()`
+### `dvz_buffer_usage()`
+### `dvz_buffer_memory()`
+### `dvz_buffer_queue_access()`
+### `dvz_buffer_create()`
+### `dvz_buffer_resize()`
+### `dvz_buffer_map()`
+### `dvz_buffer_unmap()`
+### `dvz_buffer_download()`
+### `dvz_buffer_upload()`
+### `dvz_buffer_destroy()`
+### `dvz_buffer_regions()`
+### `dvz_buffer_regions_map()`
+### `dvz_buffer_regions_unmap()`
+### `dvz_buffer_regions_upload()`
 
 
 ## GPU images
 
-### `vkl_images()`
-### `vkl_images_format()`
-### `vkl_images_layout()`
-### `vkl_images_size()`
-### `vkl_images_tiling()`
-### `vkl_images_usage()`
-### `vkl_images_memory()`
-### `vkl_images_aspect()`
-### `vkl_images_queue_access()`
-### `vkl_images_create()`
-### `vkl_images_resize()`
-### `vkl_images_transition()`
-### `vkl_images_download()`
-### `vkl_images_destroy()`
+### `dvz_images()`
+### `dvz_images_format()`
+### `dvz_images_layout()`
+### `dvz_images_size()`
+### `dvz_images_tiling()`
+### `dvz_images_usage()`
+### `dvz_images_memory()`
+### `dvz_images_aspect()`
+### `dvz_images_queue_access()`
+### `dvz_images_create()`
+### `dvz_images_resize()`
+### `dvz_images_transition()`
+### `dvz_images_download()`
+### `dvz_images_destroy()`
 
 
 ## Sampler
 
-### `vkl_sampler()`
-### `vkl_sampler_min_filter()`
-### `vkl_sampler_mag_filter()`
-### `vkl_sampler_address_mode()`
-### `vkl_sampler_create()`
-### `vkl_sampler_destroy()`
+### `dvz_sampler()`
+### `dvz_sampler_min_filter()`
+### `dvz_sampler_mag_filter()`
+### `dvz_sampler_address_mode()`
+### `dvz_sampler_create()`
+### `dvz_sampler_destroy()`
 
 
 
@@ -102,134 +102,134 @@
 
 Vulkan terminology: descriptor set layout.
 
-### `vkl_slots()`
-### `vkl_slots_binding()`
-### `vkl_slots_push()`
-### `vkl_slots_create()`
-### `vkl_slots_destroy()`
+### `dvz_slots()`
+### `dvz_slots_binding()`
+### `dvz_slots_push()`
+### `dvz_slots_create()`
+### `dvz_slots_destroy()`
 
 
 ## Pipeline bindings
 
 Vulkan terminology: descriptor sets
 
-### `vkl_bindings()`
-### `vkl_bindings_buffer()`
-### `vkl_bindings_texture()`
-### `vkl_bindings_update()`
-### `vkl_bindings_destroy()`
+### `dvz_bindings()`
+### `dvz_bindings_buffer()`
+### `dvz_bindings_texture()`
+### `dvz_bindings_update()`
+### `dvz_bindings_destroy()`
 
 
 ## Graphics pipeline
 
-### `vkl_graphics()`
-### `vkl_graphics_renderpass()`
-### `vkl_graphics_topology()`
-### `vkl_graphics_shader_glsl()`
-### `vkl_graphics_shader_spirv()`
-### `vkl_graphics_shader()`
-### `vkl_graphics_vertex_binding()`
-### `vkl_graphics_vertex_attr()`
-### `vkl_graphics_blend()`
-### `vkl_graphics_depth_test()`
-### `vkl_graphics_polygon_mode()`
-### `vkl_graphics_cull_mode()`
-### `vkl_graphics_front_face()`
-### `vkl_graphics_create()`
-### `vkl_graphics_slot()`
-### `vkl_graphics_push()`
-### `vkl_graphics_destroy()`
+### `dvz_graphics()`
+### `dvz_graphics_renderpass()`
+### `dvz_graphics_topology()`
+### `dvz_graphics_shader_glsl()`
+### `dvz_graphics_shader_spirv()`
+### `dvz_graphics_shader()`
+### `dvz_graphics_vertex_binding()`
+### `dvz_graphics_vertex_attr()`
+### `dvz_graphics_blend()`
+### `dvz_graphics_depth_test()`
+### `dvz_graphics_polygon_mode()`
+### `dvz_graphics_cull_mode()`
+### `dvz_graphics_front_face()`
+### `dvz_graphics_create()`
+### `dvz_graphics_slot()`
+### `dvz_graphics_push()`
+### `dvz_graphics_destroy()`
 
 
 ## Compute pipeline
 
-### `vkl_compute()`
-### `vkl_compute_create()`
-### `vkl_compute_code()`
-### `vkl_compute_slot()`
-### `vkl_compute_push()`
-### `vkl_compute_bindings()`
-### `vkl_compute_destroy()`
+### `dvz_compute()`
+### `dvz_compute_create()`
+### `dvz_compute_code()`
+### `dvz_compute_slot()`
+### `dvz_compute_push()`
+### `dvz_compute_bindings()`
+### `dvz_compute_destroy()`
 
 
 ## Barrier
 
-### `vkl_barrier()`
-### `vkl_barrier_stages()`
-### `vkl_barrier_buffer()`
-### `vkl_barrier_buffer_queue()`
-### `vkl_barrier_buffer_access()`
-### `vkl_barrier_images()`
-### `vkl_barrier_images_layout()`
-### `vkl_barrier_images_queue()`
-### `vkl_barrier_images_access()`
+### `dvz_barrier()`
+### `dvz_barrier_stages()`
+### `dvz_barrier_buffer()`
+### `dvz_barrier_buffer_queue()`
+### `dvz_barrier_buffer_access()`
+### `dvz_barrier_images()`
+### `dvz_barrier_images_layout()`
+### `dvz_barrier_images_queue()`
+### `dvz_barrier_images_access()`
 
 
 ## Semaphores
 
-### `vkl_semaphores()`
-### `vkl_semaphores_destroy()`
+### `dvz_semaphores()`
+### `dvz_semaphores_destroy()`
 
 
 ## Fences
 
-### `vkl_fences()`
-### `vkl_fences_copy()`
-### `vkl_fences_wait()`
-### `vkl_fences_ready()`
-### `vkl_fences_reset()`
-### `vkl_fences_destroy()`
+### `dvz_fences()`
+### `dvz_fences_copy()`
+### `dvz_fences_wait()`
+### `dvz_fences_ready()`
+### `dvz_fences_reset()`
+### `dvz_fences_destroy()`
 
 
 ## Renderpass
 
-### `vkl_renderpass()`
-### `vkl_renderpass_clear()`
-### `vkl_renderpass_attachment()`
-### `vkl_renderpass_attachment_layout()`
-### `vkl_renderpass_attachment_ops()`
-### `vkl_renderpass_subpass_attachment()`
-### `vkl_renderpass_subpass_dependency()`
-### `vkl_renderpass_subpass_dependency_access()`
-### `vkl_renderpass_subpass_dependency_stage()`
-### `vkl_renderpass_create()`
-### `vkl_renderpass_destroy()`
+### `dvz_renderpass()`
+### `dvz_renderpass_clear()`
+### `dvz_renderpass_attachment()`
+### `dvz_renderpass_attachment_layout()`
+### `dvz_renderpass_attachment_ops()`
+### `dvz_renderpass_subpass_attachment()`
+### `dvz_renderpass_subpass_dependency()`
+### `dvz_renderpass_subpass_dependency_access()`
+### `dvz_renderpass_subpass_dependency_stage()`
+### `dvz_renderpass_create()`
+### `dvz_renderpass_destroy()`
 
 
 ## Framebuffers
 
-### `vkl_framebuffers()`
-### `vkl_framebuffers_attachment()`
-### `vkl_framebuffers_create()`
-### `vkl_framebuffers_destroy()`
+### `dvz_framebuffers()`
+### `dvz_framebuffers_attachment()`
+### `dvz_framebuffers_create()`
+### `dvz_framebuffers_destroy()`
 
 
 ## Submit
 
-### `vkl_submit()`
-### `vkl_submit_commands()`
-### `vkl_submit_wait_semaphores()`
-### `vkl_submit_signal_semaphores()`
-### `vkl_submit_send()`
-### `vkl_submit_reset()`
+### `dvz_submit()`
+### `dvz_submit_commands()`
+### `dvz_submit_wait_semaphores()`
+### `dvz_submit_signal_semaphores()`
+### `dvz_submit_send()`
+### `dvz_submit_reset()`
 
 
 ## Command buffer recording
 
-### `vkl_cmd_begin_renderpass()`
-### `vkl_cmd_end_renderpass()`
-### `vkl_cmd_compute()`
-### `vkl_cmd_barrier()`
-### `vkl_cmd_copy_buffer_to_image()`
-### `vkl_cmd_copy_image_to_buffer()`
-### `vkl_cmd_copy_image()`
-### `vkl_cmd_viewport()`
-### `vkl_cmd_bind_graphics()`
-### `vkl_cmd_bind_vertex_buffer()`
-### `vkl_cmd_bind_index_buffer()`
-### `vkl_cmd_draw()`
-### `vkl_cmd_draw_indexed()`
-### `vkl_cmd_draw_indirect()`
-### `vkl_cmd_draw_indexed_indirect()`
-### `vkl_cmd_copy_buffer()`
-### `vkl_cmd_push()`
+### `dvz_cmd_begin_renderpass()`
+### `dvz_cmd_end_renderpass()`
+### `dvz_cmd_compute()`
+### `dvz_cmd_barrier()`
+### `dvz_cmd_copy_buffer_to_image()`
+### `dvz_cmd_copy_image_to_buffer()`
+### `dvz_cmd_copy_image()`
+### `dvz_cmd_viewport()`
+### `dvz_cmd_bind_graphics()`
+### `dvz_cmd_bind_vertex_buffer()`
+### `dvz_cmd_bind_index_buffer()`
+### `dvz_cmd_draw()`
+### `dvz_cmd_draw_indexed()`
+### `dvz_cmd_draw_indirect()`
+### `dvz_cmd_draw_indexed_indirect()`
+### `dvz_cmd_copy_buffer()`
+### `dvz_cmd_push()`

@@ -4,30 +4,30 @@
 
 /// Import the library public header. The compiler needs to be passed the path to the headers and
 /// shared library, see build.sh.
-#include <visky/visky.h>
+#include <datoviz/datoviz.h>
 
 int main(int argc, char** argv)
 {
     // Create a singleton application with a GLFW backend.
-    VklApp* app = vkl_app(VKL_BACKEND_GLFW);
+    DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
 
     // Use the first detected GPU. The last argument is the GPU index.
-    VklGpu* gpu = vkl_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu(app, 0);
 
     // Create a new canvas with the size specified. The last argument is for optional flags.
-    VklCanvas* canvas = vkl_canvas(gpu, 1280, 1024, 0);
+    DvzCanvas* canvas = dvz_canvas(gpu, 1280, 1024, 0);
 
     // Create a new scene, which allows to define several subplots (panels) organized within a
     // grid. Here we just use a single panel spanning the entire canvas.
-    VklScene* scene = vkl_scene(canvas, 1, 1);
+    DvzScene* scene = dvz_scene(canvas, 1, 1);
 
     // Get the panel at row 0, column 0, and initialize it with an axes 2D controller.
     // The last argument is for optional flags.
-    VklPanel* panel = vkl_scene_panel(scene, 0, 0, VKL_CONTROLLER_AXES_2D, 0);
+    DvzPanel* panel = dvz_scene_panel(scene, 0, 0, DVZ_CONTROLLER_AXES_2D, 0);
 
     // Create a new "marker" visual within the panel.
     // The last argument is for optional flags.
-    VklVisual* visual = vkl_scene_visual(panel, VKL_VISUAL_MARKER, 0);
+    DvzVisual* visual = dvz_scene_visual(panel, DVZ_VISUAL_MARKER, 0);
 
     // Prepare the data for the marker visual:
     // - positions (three double-precision floating point numbers for x, y, z)
@@ -41,31 +41,31 @@ int main(int argc, char** argv)
     for (uint32_t i = 0; i < N; i++)
     {
         // Random gaussian position.
-        pos[i][0] = vkl_rand_normal();
-        pos[i][1] = vkl_rand_normal();
+        pos[i][0] = dvz_rand_normal();
+        pos[i][1] = dvz_rand_normal();
         // Color: random value with a colormap.
-        vkl_colormap_scale(VKL_CMAP_VIRIDIS, vkl_rand_float(), 0, 1, color[i]);
+        dvz_colormap_scale(DVZ_CMAP_VIRIDIS, dvz_rand_float(), 0, 1, color[i]);
         // A bit of transparency via the alpha channel.
         color[i][3] = 196;
         // Random marker size.
-        size[i] = 2 + 38 * vkl_rand_float();
+        size[i] = 2 + 38 * dvz_rand_float();
     }
 
     // We link our data to the visual properties.
-    vkl_visual_data(visual, VKL_PROP_POS, 0, N, pos);
-    vkl_visual_data(visual, VKL_PROP_COLOR, 0, N, color);
-    vkl_visual_data(visual, VKL_PROP_MARKER_SIZE, 0, N, size);
+    dvz_visual_data(visual, DVZ_PROP_POS, 0, N, pos);
+    dvz_visual_data(visual, DVZ_PROP_COLOR, 0, N, color);
+    dvz_visual_data(visual, DVZ_PROP_MARKER_SIZE, 0, N, size);
 
     // We run the application. The last argument is the number of frames to run, or 0 for infinite
     // loop (stop when escape is pressed or when the window is closed).
 
-    // vkl_app_run(app, 5);
-    // vkl_screenshot_file(canvas, "/home/cyrille/git/visky/docs/images/c_example.png");
+    // dvz_app_run(app, 5);
+    // dvz_screenshot_file(canvas, "/home/cyrille/git/datoviz/docs/images/c_example.png");
 
-    vkl_app_run(app, 0);
+    dvz_app_run(app, 0);
 
-    // We need to clean up all objects handled by Visky at the end.
-    vkl_app_destroy(app);
+    // We need to clean up all objects handled by Datoviz at the end.
+    dvz_app_destroy(app);
 
     // We free the memory of the arrays we've created.
     FREE(pos);

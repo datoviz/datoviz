@@ -1,5 +1,5 @@
-site_name: Visky Documentation
-repo_url: https://github.com/viskydev/visky
+site_name: Datoviz Documentation
+repo_url: https://github.com/datoviz/datoviz
 site_description: High-performance interactive scientific data visualization library
 site_author: Cyrille Rossant
 theme:
@@ -48,7 +48,7 @@ nav:
   - Expert manual:
       - Introduction: 'expert/index.md'
       - Vulkan crash course: 'expert/vulkan.md'
-      - Vklite: 'expert/vklite.md'
+      - Dvzite: 'expert/vklite.md'
       - Canvas: 'expert/canvas.md'
       - Custom visuals: 'expert/visual.md'
       - Graphics: 'expert/graphics.md'

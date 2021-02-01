@@ -2,56 +2,56 @@
 
 ## App, canvas, main loop
 
-### `vkl_app()`
+### `dvz_app()`
 
-### `vkl_canvas()`
-### `vkl_canvas_offscreen()`
+### `dvz_canvas()`
+### `dvz_canvas_offscreen()`
 
-### `vkl_scene()`
+### `dvz_scene()`
 
-### `vkl_app_run()`
+### `dvz_app_run()`
 
-### `vkl_scene_destroy()`
-### `vkl_canvas_destroy()`
-### `vkl_app_destroy()`
+### `dvz_scene_destroy()`
+### `dvz_canvas_destroy()`
+### `dvz_app_destroy()`
 
 
 ## Set panels, add visuals
 
-### `vkl_scene_panel()`
-### `vkl_scene_visual()`
+### `dvz_scene_panel()`
+### `dvz_scene_visual()`
 
 
 ## Grid and panels
 
-### `vkl_grid()`
-### `vkl_grid_destroy()`
+### `dvz_grid()`
+### `dvz_grid_destroy()`
 
-### `vkl_panel()`
-### `vkl_panel_update()`
-### `vkl_panel_margins()`
-### `vkl_panel_dpi_scaling()`
-### `vkl_panel_unit()`
-### `vkl_panel_mode()`
-### `vkl_panel_visual()`
-### `vkl_panel_pos()`
-### `vkl_panel_size()`
-### `vkl_panel_span()`
-### `vkl_panel_cell()`
-### `vkl_panel_transpose()`
-### `vkl_panel_contains()`
-### `vkl_panel_at()`
-### `vkl_panel_destroy()`
-### `vkl_panel_viewport()`
+### `dvz_panel()`
+### `dvz_panel_update()`
+### `dvz_panel_margins()`
+### `dvz_panel_dpi_scaling()`
+### `dvz_panel_unit()`
+### `dvz_panel_mode()`
+### `dvz_panel_visual()`
+### `dvz_panel_pos()`
+### `dvz_panel_size()`
+### `dvz_panel_span()`
+### `dvz_panel_cell()`
+### `dvz_panel_transpose()`
+### `dvz_panel_contains()`
+### `dvz_panel_at()`
+### `dvz_panel_destroy()`
+### `dvz_panel_viewport()`
 
 
 
 
 ## Colormaps
 
-### `vkl_colormap()`
-### `vkl_colormap_idx()`
-### `vkl_colormap_uv()`
-### `vkl_colormap_scale()`
-### `vkl_colormap_array()`
-### `vkl_colormap_packuv()`
+### `dvz_colormap()`
+### `dvz_colormap_idx()`
+### `dvz_colormap_uv()`
+### `dvz_colormap_scale()`
+### `dvz_colormap_array()`
+### `dvz_colormap_packuv()`

@@ -1,7 +1,7 @@
-#ifndef VKY_TEST_PANEL_HEADER
-#define VKY_TEST_PANEL_HEADER
+#ifndef DVZ_TEST_PANEL_HEADER
+#define DVZ_TEST_PANEL_HEADER
 
-#include "../include/visky/panel.h"
+#include "../include/datoviz/panel.h"
 #include "utils.h"
 
 

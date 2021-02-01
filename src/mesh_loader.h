@@ -1,7 +1,7 @@
-#ifndef VKL_MESH_LOADER_HEADER
-#define VKL_MESH_LOADER_HEADER
+#ifndef DVZ_MESH_LOADER_HEADER
+#define DVZ_MESH_LOADER_HEADER
 
-#include "../include/visky/mesh.h"
+#include "../include/datoviz/mesh.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -13,7 +13,7 @@ extern "C" {
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-VKY_EXPORT VklMesh vkl_mesh_obj(const char* file_path);
+DVZ_EXPORT DvzMesh dvz_mesh_obj(const char* file_path);
 
 
 

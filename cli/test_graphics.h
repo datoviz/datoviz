@@ -1,5 +1,5 @@
-#ifndef VKY_TEST_GRAPHICS_HEADER
-#define VKY_TEST_GRAPHICS_HEADER
+#ifndef DVZ_TEST_GRAPHICS_HEADER
+#define DVZ_TEST_GRAPHICS_HEADER
 
 #include "utils.h"
 

@@ -10,8 +10,8 @@ https://github.com/quantenschaum/ctplot/blob/master/ctplot/ticks.py
 
 */
 
-#ifndef VKL_TICKS_HEADER
-#define VKL_TICKS_HEADER
+#ifndef DVZ_TICKS_HEADER
+#define DVZ_TICKS_HEADER
 
 #include <assert.h>
 #include <limits.h>
@@ -21,7 +21,7 @@ https://github.com/quantenschaum/ctplot/blob/master/ctplot/ticks.py
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../include/visky/common.h"
+#include "../include/datoviz/common.h"
 
 
 
@@ -68,21 +68,21 @@ struct Q
 /*  Scoring functions                                                                            */
 /*************************************************************************************************/
 
-VKY_INLINE uint32_t tick_count(double lmin, double lmax, double lstep)
+DVZ_INLINE uint32_t tick_count(double lmin, double lmax, double lstep)
 {
     return floor(1 + (lmax - lmin) / lstep);
 }
 
 
 
-VKY_INLINE double coverage(double dmin, double dmax, double lmin, double lmax)
+DVZ_INLINE double coverage(double dmin, double dmax, double lmin, double lmax)
 {
     return 1. - 0.5 * (pow(dmax - lmax, 2) + pow(dmin - lmin, 2)) / pow(0.1 * (dmax - dmin), 2);
 }
 
 
 
-VKY_INLINE double coverage_max(double dmin, double dmax, double span)
+DVZ_INLINE double coverage_max(double dmin, double dmax, double span)
 {
     double drange = dmax - dmin;
     if (span > drange)
@@ -93,7 +93,7 @@ VKY_INLINE double coverage_max(double dmin, double dmax, double span)
 
 
 
-VKY_INLINE double density(double k, double m, double dmin, double dmax, double lmin, double lmax)
+DVZ_INLINE double density(double k, double m, double dmin, double dmax, double lmin, double lmax)
 {
     double r = (k - 1.) / (lmax - lmin);
     double rt = (m - 1.) / (fmax(lmax, dmax) - fmin(lmin, dmin));
@@ -102,7 +102,7 @@ VKY_INLINE double density(double k, double m, double dmin, double dmax, double l
 
 
 
-VKY_INLINE double density_max(int32_t k, int32_t m)
+DVZ_INLINE double density_max(int32_t k, int32_t m)
 {
     if (k >= m)
         return 2. - (k - 1.0) / (m - 1.0);
@@ -112,7 +112,7 @@ VKY_INLINE double density_max(int32_t k, int32_t m)
 
 
 
-VKY_INLINE double simplicity(Q q, int32_t j, double lmin, double lmax, double lstep)
+DVZ_INLINE double simplicity(Q q, int32_t j, double lmin, double lmax, double lstep)
 {
     double eps = 1e-10;
     int64_t n = q.len;
@@ -129,7 +129,7 @@ VKY_INLINE double simplicity(Q q, int32_t j, double lmin, double lmax, double ls
 
 
 
-VKY_INLINE double simplicity_max(Q q, int32_t j)
+DVZ_INLINE double simplicity_max(Q q, int32_t j)
 {
     int64_t n = q.len;
     int32_t i = q.i + 1;
@@ -139,7 +139,7 @@ VKY_INLINE double simplicity_max(Q q, int32_t j)
 
 
 
-VKY_INLINE double dist_overlap(double d)
+DVZ_INLINE double dist_overlap(double d)
 {
     if (d >= DIST_MIN)
         return 1;
@@ -159,17 +159,17 @@ VKY_INLINE double dist_overlap(double d)
 /*  Format                                                                                       */
 /*************************************************************************************************/
 
-VKY_INLINE double leg(VklTickFormat format, uint32_t precision, double x)
+DVZ_INLINE double leg(DvzTickFormat format, uint32_t precision, double x)
 {
     double ax = fabs(x);
     double l = 0;
     switch (format)
     {
-    case VKL_TICK_FORMAT_DECIMAL:
+    case DVZ_TICK_FORMAT_DECIMAL:
         l = ax > 1e-4 && ax < 1e6 ? 1 : 0;
         break;
 
-    case VKL_TICK_FORMAT_SCIENTIFIC:
+    case DVZ_TICK_FORMAT_SCIENTIFIC:
         l = .25;
         break;
 
@@ -183,7 +183,7 @@ VKY_INLINE double leg(VklTickFormat format, uint32_t precision, double x)
 
 
 
-VKY_INLINE double min_distance_labels(VklAxesTicks* ticks, VklAxesContext* ctx)
+DVZ_INLINE double min_distance_labels(DvzAxesTicks* ticks, DvzAxesContext* ctx)
 {
     // NOTE: the context must have labels allocated/computed in order for the overlap to be
     // computed.
@@ -217,7 +217,7 @@ VKY_INLINE double min_distance_labels(VklAxesTicks* ticks, VklAxesContext* ctx)
         // NOTE: the size that takes each label on the current coordinate is:
         // - X axis: number of characters in the label times the glyph width
         // - Y axis: always 1 times the glyph height
-        if (ctx->coord == VKL_AXES_COORD_X)
+        if (ctx->coord == DVZ_AXES_COORD_X)
         {
             n0 = strlen(&ticks->labels[i * MAX_GLYPHS_PER_TICK]);
             n1 = strlen(&ticks->labels[(i + 1) * MAX_GLYPHS_PER_TICK]);
@@ -253,17 +253,17 @@ VKY_INLINE double min_distance_labels(VklAxesTicks* ticks, VklAxesContext* ctx)
 
 
 
-VKY_INLINE void _get_tick_format(VklTickFormat format, uint32_t precision, char* fmt)
+DVZ_INLINE void _get_tick_format(DvzTickFormat format, uint32_t precision, char* fmt)
 {
     uint32_t offset = 4;
     strcpy(fmt, "%s%.XF"); // [2] = precision, [3] = f or e
     snprintf(&fmt[offset], 4, "%d", precision);
     switch (format)
     {
-    case VKL_TICK_FORMAT_DECIMAL:
+    case DVZ_TICK_FORMAT_DECIMAL:
         fmt[offset + 1] = 'f';
         break;
-    case VKL_TICK_FORMAT_SCIENTIFIC:
+    case DVZ_TICK_FORMAT_SCIENTIFIC:
         fmt[offset + 1] = 'e';
         break;
     default:
@@ -274,7 +274,7 @@ VKY_INLINE void _get_tick_format(VklTickFormat format, uint32_t precision, char*
 
 
 
-VKY_INLINE void _tick_label(double x, char* tick_format, char* out)
+DVZ_INLINE void _tick_label(double x, char* tick_format, char* out)
 {
     if (x == 0)
     {
@@ -289,7 +289,7 @@ VKY_INLINE void _tick_label(double x, char* tick_format, char* out)
 
 
 
-static void make_labels(VklAxesTicks* ticks, VklAxesContext* ctx, bool extended)
+static void make_labels(DvzAxesTicks* ticks, DvzAxesContext* ctx, bool extended)
 {
     ASSERT(ticks->labels != NULL);
     char tick_format[12] = {0};
@@ -318,7 +318,7 @@ static void make_labels(VklAxesTicks* ticks, VklAxesContext* ctx, bool extended)
 
 
 // Return whether there are duplicate labels.
-static bool duplicate_labels(VklAxesTicks* ticks, VklAxesContext* ctx)
+static bool duplicate_labels(DvzAxesTicks* ticks, DvzAxesContext* ctx)
 {
     uint32_t n = ticks->value_count;
     char* s0 = NULL;
@@ -337,7 +337,7 @@ static bool duplicate_labels(VklAxesTicks* ticks, VklAxesContext* ctx)
 
 
 
-static double legibility(VklAxesTicks* ticks, VklAxesContext* ctx)
+static double legibility(DvzAxesTicks* ticks, DvzAxesContext* ctx)
 {
     uint32_t n = ticks->value_count;
     double lmin = ticks->lmin_in;
@@ -399,14 +399,14 @@ score(dvec4 weights, double simplicity, double coverage, double density, double 
 
 
 // Optimize ticks->format|precision wrt to legibility.
-static void opt_format(VklAxesTicks* ticks, VklAxesContext* ctx)
+static void opt_format(DvzAxesTicks* ticks, DvzAxesContext* ctx)
 {
     double l = -INF, best_l = -INF;
-    VklTickFormat best_format = VKL_TICK_FORMAT_UNDEFINED;
+    DvzTickFormat best_format = DVZ_TICK_FORMAT_UNDEFINED;
     uint32_t best_precision = 0;
     for (uint32_t f = 1; f <= 2; f++)
     {
-        ticks->format = (VklTickFormat)f;
+        ticks->format = (DvzTickFormat)f;
         for (uint32_t p = 1; p <= PRECISION_MAX; p++)
         {
             ticks->precision = p;
@@ -419,7 +419,7 @@ static void opt_format(VklAxesTicks* ticks, VklAxesContext* ctx)
             }
         }
     }
-    if (best_format != VKL_TICK_FORMAT_UNDEFINED)
+    if (best_format != DVZ_TICK_FORMAT_UNDEFINED)
     {
         ASSERT(best_precision > 0);
         ticks->format = best_format;
@@ -430,9 +430,9 @@ static void opt_format(VklAxesTicks* ticks, VklAxesContext* ctx)
 
 
 
-static VklAxesTicks create_ticks(double dmin, double dmax, int32_t m, VklAxesContext ctx)
+static DvzAxesTicks create_ticks(double dmin, double dmax, int32_t m, DvzAxesContext ctx)
 {
-    VklAxesTicks ticks = {0};
+    DvzAxesTicks ticks = {0};
     ticks.dmin = dmin;
     ticks.dmax = dmax;
 
@@ -441,7 +441,7 @@ static VklAxesTicks create_ticks(double dmin, double dmax, int32_t m, VklAxesCon
     ticks.labels = calloc(MAX_LABELS * MAX_GLYPHS_PER_TICK, sizeof(char));
 
     // Default result.
-    ticks.format = VKL_TICK_FORMAT_DECIMAL;
+    ticks.format = DVZ_TICK_FORMAT_DECIMAL;
     ticks.precision = 1;
     ticks.value_count_req = (uint32_t)m;
     ticks.value_count = 2;
@@ -457,7 +457,7 @@ static VklAxesTicks create_ticks(double dmin, double dmax, int32_t m, VklAxesCon
 
 
 
-static void debug_ticks(VklAxesTicks* ticks, VklAxesContext* ctx)
+static void debug_ticks(DvzAxesTicks* ticks, DvzAxesContext* ctx)
 {
     log_debug(
         "%f %f %f, n=%d, p=%d, dup %d", ticks->lmin_in, ticks->lmax_in, ticks->lstep,
@@ -473,21 +473,21 @@ q : nice number
 j : skip, amount among a sequence of nice numbers
 z : 10-exponent of the step size
 */
-static VklAxesTicks wilk_ext(double dmin, double dmax, int32_t m, VklAxesContext ctx)
+static DvzAxesTicks wilk_ext(double dmin, double dmax, int32_t m, DvzAxesContext ctx)
 {
     ASSERT(dmin < dmax);
     ASSERT(ctx.size_glyph > 0);
     ASSERT(ctx.size_viewport > 0);
     ASSERT(m > 0);
 
-    VklAxesTicks ticks = create_ticks(dmin, dmax, m, ctx);
+    DvzAxesTicks ticks = create_ticks(dmin, dmax, m, ctx);
     if (ctx.size_viewport < 10 * ctx.size_glyph)
     {
         log_debug("degenerate axes context, return a trivial tick range");
         return ticks;
     }
 
-    VklAxesTicks best_ticks = ticks;
+    DvzAxesTicks best_ticks = ticks;
     double DEFAULT_Q[] = {1, 5, 2, 2.5, 4, 3};
     dvec4 W = {0.2, 0.25, 0.5, 0.05}; // score weights
 
@@ -611,9 +611,9 @@ static VklAxesTicks wilk_ext(double dmin, double dmax, int32_t m, VklAxesContext
 /*  Wrappers                                                                                     */
 /*************************************************************************************************/
 
-static VklAxesTicks extend_ticks(VklAxesTicks ticks, VklAxesContext ctx)
+static DvzAxesTicks extend_ticks(DvzAxesTicks ticks, DvzAxesContext ctx)
 {
-    VklAxesTicks ex = ticks;
+    DvzAxesTicks ex = ticks;
     uint32_t extensions = ctx.extensions;
     double diff = ticks.lmax_in - ticks.lmin_in;
     ASSERT(diff > 0);
@@ -657,14 +657,14 @@ static VklAxesTicks extend_ticks(VklAxesTicks ticks, VklAxesContext ctx)
 
 
 
-static VklAxesTicks vkl_ticks(double dmin, double dmax, VklAxesContext ctx)
+static DvzAxesTicks dvz_ticks(double dmin, double dmax, DvzAxesContext ctx)
 {
     ASSERT(dmin < dmax);
-    ASSERT(ctx.coord <= VKL_AXES_COORD_Y);
+    ASSERT(ctx.coord <= DVZ_AXES_COORD_Y);
     ASSERT(ctx.size_glyph > 0);
     ASSERT(ctx.size_viewport > 0);
 
-    bool x_axis = ctx.coord == VKL_AXES_COORD_X;
+    bool x_axis = ctx.coord == DVZ_AXES_COORD_X;
 
     // NOTE: factor Y because we average 6 characters per tick, and this only counts on the x axis.
     // This number is only an initial guess, the algorithm will find a proper one.
@@ -676,7 +676,7 @@ static VklAxesTicks vkl_ticks(double dmin, double dmax, VklAxesContext ctx)
         "running extended Wilkinson algorithm on axis %d with %d labels on range [%.3f, %.3f], "
         "viewport size %.1f, glyph size %.1f, extension %d",
         ctx.coord, label_count_req, dmin, dmax, ctx.size_viewport, ctx.size_glyph, ctx.extensions);
-    VklAxesTicks ticks = wilk_ext(dmin, dmax, label_count_req, ctx);
+    DvzAxesTicks ticks = wilk_ext(dmin, dmax, label_count_req, ctx);
     ASSERT(ticks.lstep > 0);
     ASSERT(ticks.lmin_in < ticks.lmax_in);
     ASSERT(ticks.value_count > 0);
@@ -691,7 +691,7 @@ static VklAxesTicks vkl_ticks(double dmin, double dmax, VklAxesContext ctx)
 
 
 
-static void vkl_ticks_destroy(VklAxesTicks* ticks)
+static void dvz_ticks_destroy(DvzAxesTicks* ticks)
 {
     ASSERT(ticks != NULL);
     FREE(ticks->values);

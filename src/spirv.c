@@ -1,5 +1,5 @@
 #include "spirv.h"
-#include "../include/visky/vklite.h"
+#include "../include/datoviz/vklite.h"
 
 
 #if HAS_GLSLANG
@@ -8,7 +8,7 @@
 #endif
 
 
-VkShaderModule vkl_shader_compile(VklGpu* gpu, const char* code, VkShaderStageFlagBits stage)
+VkShaderModule dvz_shader_compile(DvzGpu* gpu, const char* code, VkShaderStageFlagBits stage)
 {
     VkShaderModule module = {0};
 
@@ -99,7 +99,7 @@ VkShaderModule vkl_shader_compile(VklGpu* gpu, const char* code, VkShaderStageFl
     glslang_program_delete(program);
 
 #else
-    log_error("unable to compile shader to SPIRV, Visky was not built with glslang support");
+    log_error("unable to compile shader to SPIRV, Datoviz was not built with glslang support");
 #endif
 
     return module;

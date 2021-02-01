@@ -1,4 +1,4 @@
-#include "../include/visky/vklite.h"
+#include "../include/datoviz/vklite.h"
 #include "spirv.h"
 #include "vklite_utils.h"
 #include <stdlib.h>
@@ -9,21 +9,21 @@
 /*  App                                                                                          */
 /*************************************************************************************************/
 
-VklApp* vkl_app(VklBackend backend)
+DvzApp* dvz_app(DvzBackend backend)
 {
     log_set_level_env();
 
-    VklApp* app = calloc(1, sizeof(VklApp));
-    vkl_obj_init(&app->obj);
-    app->obj.type = VKL_OBJECT_TYPE_APP;
+    DvzApp* app = calloc(1, sizeof(DvzApp));
+    dvz_obj_init(&app->obj);
+    app->obj.type = DVZ_OBJECT_TYPE_APP;
     app->backend = backend;
 
     // Initialize the global clock.
     _clock_init(&app->clock);
 
-    app->gpus = vkl_container(VKL_CONTAINER_DEFAULT_COUNT, sizeof(VklGpu), VKL_OBJECT_TYPE_GPU);
+    app->gpus = dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzGpu), DVZ_OBJECT_TYPE_GPU);
     app->windows =
-        vkl_container(VKL_CONTAINER_DEFAULT_COUNT, sizeof(VklWindow), VKL_OBJECT_TYPE_WINDOW);
+        dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzWindow), DVZ_OBJECT_TYPE_WINDOW);
 
     // Which extensions are required? Depends on the backend.
     uint32_t required_extension_count = 0;
@@ -34,7 +34,7 @@ VklApp* vkl_app(VklBackend backend)
         required_extension_count, required_extensions, &app->instance, &app->debug_messenger,
         &app->n_errors);
     // debug_messenger != VK_NULL_HANDLE means validation enabled
-    vkl_obj_created(&app->obj);
+    dvz_obj_created(&app->obj);
 
     // Count the number of devices.
     uint32_t gpu_count = 0;
@@ -52,12 +52,12 @@ VklApp* vkl_app(VklBackend backend)
         // Initialize the GPU(s).
         VkPhysicalDevice* physical_devices = calloc(gpu_count, sizeof(VkPhysicalDevice));
         VK_CHECK_RESULT(vkEnumeratePhysicalDevices(app->instance, &gpu_count, physical_devices));
-        ASSERT(gpu_count <= VKL_CONTAINER_DEFAULT_COUNT);
-        VklGpu* gpu = NULL;
+        ASSERT(gpu_count <= DVZ_CONTAINER_DEFAULT_COUNT);
+        DvzGpu* gpu = NULL;
         for (uint32_t i = 0; i < gpu_count; i++)
         {
-            gpu = vkl_container_alloc(&app->gpus);
-            vkl_obj_init(&gpu->obj);
+            gpu = dvz_container_alloc(&app->gpus);
+            dvz_obj_init(&gpu->obj);
             gpu->app = app;
             gpu->idx = i;
             discover_gpu(physical_devices[i], gpu);
@@ -72,21 +72,21 @@ VklApp* vkl_app(VklBackend backend)
 
 
 
-int vkl_app_destroy(VklApp* app)
+int dvz_app_destroy(DvzApp* app)
 {
     log_debug("starting destruction of app...");
-    vkl_app_wait(app);
+    dvz_app_wait(app);
 
     // Destroy the canvases.
-    vkl_canvases_destroy(&app->canvases);
+    dvz_canvases_destroy(&app->canvases);
 
     // Destroy the GPUs.
-    CONTAINER_DESTROY_ITEMS(VklGpu, app->gpus, vkl_gpu_destroy)
-    vkl_container_destroy(&app->gpus);
+    CONTAINER_DESTROY_ITEMS(DvzGpu, app->gpus, dvz_gpu_destroy)
+    dvz_container_destroy(&app->gpus);
 
     // Destroy the windows.
-    CONTAINER_DESTROY_ITEMS(VklWindow, app->windows, vkl_window_destroy)
-    vkl_container_destroy(&app->windows);
+    CONTAINER_DESTROY_ITEMS(DvzWindow, app->windows, dvz_window_destroy)
+    dvz_container_destroy(&app->windows);
 
     // Destroy the debug messenger.
     if (app->debug_messenger)
@@ -117,32 +117,32 @@ int vkl_app_destroy(VklApp* app)
 /*  GPU                                                                                          */
 /*************************************************************************************************/
 
-VklGpu* vkl_gpu(VklApp* app, uint32_t idx)
+DvzGpu* dvz_gpu(DvzApp* app, uint32_t idx)
 {
     if (idx >= app->gpus.count)
     {
         log_error("GPU index %d higher than number of GPUs %d", idx, app->gpus.count);
         idx = 0;
     }
-    VklGpu* gpu = app->gpus.items[idx];
+    DvzGpu* gpu = app->gpus.items[idx];
     return gpu;
 }
 
 
 
-void vkl_gpu_request_features(VklGpu* gpu, VkPhysicalDeviceFeatures requested_features)
+void dvz_gpu_request_features(DvzGpu* gpu, VkPhysicalDeviceFeatures requested_features)
 {
     gpu->requested_features = requested_features;
 }
 
 
 
-void vkl_gpu_queue(VklGpu* gpu, uint32_t idx, VklQueueType type)
+void dvz_gpu_queue(DvzGpu* gpu, uint32_t idx, DvzQueueType type)
 {
     ASSERT(gpu != NULL);
-    VklQueues* q = &gpu->queues;
+    DvzQueues* q = &gpu->queues;
     ASSERT(q != NULL);
-    ASSERT(idx < VKL_MAX_QUEUES);
+    ASSERT(idx < DVZ_MAX_QUEUES);
     q->queue_types[idx] = type;
     ASSERT(idx == q->queue_count);
     q->queue_count++;
@@ -150,12 +150,12 @@ void vkl_gpu_queue(VklGpu* gpu, uint32_t idx, VklQueueType type)
 
 
 
-void vkl_gpu_create(VklGpu* gpu, VkSurfaceKHR surface)
+void dvz_gpu_create(DvzGpu* gpu, VkSurfaceKHR surface)
 {
     if (gpu->queues.queue_count == 0)
     {
         log_error(
-            "you must request at least one queue with vkl_gpu_queue() before creating the GPU");
+            "you must request at least one queue with dvz_gpu_queue() before creating the GPU");
         exit(1);
     }
     log_trace(
@@ -163,7 +163,7 @@ void vkl_gpu_create(VklGpu* gpu, VkSurfaceKHR surface)
         surface != VK_NULL_HANDLE ? "" : "OUT");
     create_device(gpu, surface);
 
-    VklQueues* q = &gpu->queues;
+    DvzQueues* q = &gpu->queues;
 
     // Create queues.
     uint32_t qf = 0;
@@ -180,13 +180,13 @@ void vkl_gpu_create(VklGpu* gpu, VkSurfaceKHR surface)
     // Create descriptor pool.
     create_descriptor_pool(gpu->device, &gpu->dset_pool);
 
-    vkl_obj_created(&gpu->obj);
+    dvz_obj_created(&gpu->obj);
     log_trace("GPU #%d created", gpu->idx);
 }
 
 
 
-void vkl_queue_wait(VklGpu* gpu, uint32_t queue_idx)
+void dvz_queue_wait(DvzGpu* gpu, uint32_t queue_idx)
 {
     ASSERT(gpu != NULL);
     ASSERT(queue_idx < gpu->queues.queue_count);
@@ -196,7 +196,7 @@ void vkl_queue_wait(VklGpu* gpu, uint32_t queue_idx)
 
 
 
-void vkl_gpu_wait(VklGpu* gpu)
+void dvz_gpu_wait(DvzGpu* gpu)
 {
     ASSERT(gpu != NULL);
     log_trace("waiting for device");
@@ -206,25 +206,25 @@ void vkl_gpu_wait(VklGpu* gpu)
 
 
 
-void vkl_app_wait(VklApp* app)
+void dvz_app_wait(DvzApp* app)
 {
     ASSERT(app != NULL);
     log_trace("wait for all GPUs to be idle");
-    VklGpu* gpu = vkl_container_iter_init(&app->gpus);
+    DvzGpu* gpu = dvz_container_iter_init(&app->gpus);
     while (gpu != NULL)
     {
-        vkl_gpu_wait(gpu);
-        gpu = vkl_container_iter(&app->gpus);
+        dvz_gpu_wait(gpu);
+        gpu = dvz_container_iter(&app->gpus);
     }
 }
 
 
 
-void vkl_gpu_destroy(VklGpu* gpu)
+void dvz_gpu_destroy(DvzGpu* gpu)
 {
     log_trace("starting destruction of GPU #%d...", gpu->idx);
     ASSERT(gpu != NULL);
-    if (!vkl_obj_is_created(&gpu->obj))
+    if (!dvz_obj_is_created(&gpu->obj))
     {
 
         log_trace("skip destruction of GPU as it was not properly created");
@@ -236,7 +236,7 @@ void vkl_gpu_destroy(VklGpu* gpu)
 
     if (gpu->context != NULL)
     {
-        vkl_context_destroy(gpu->context);
+        dvz_context_destroy(gpu->context);
         FREE(gpu->context);
         gpu->context = NULL;
     }
@@ -269,7 +269,7 @@ void vkl_gpu_destroy(VklGpu* gpu)
     }
 
 
-    vkl_obj_destroyed(&gpu->obj);
+    dvz_obj_destroyed(&gpu->obj);
     log_trace("GPU #%d destroyed", gpu->idx);
 }
 
@@ -279,15 +279,15 @@ void vkl_gpu_destroy(VklGpu* gpu)
 /*  Window                                                                                       */
 /*************************************************************************************************/
 
-VklWindow* vkl_window(VklApp* app, uint32_t width, uint32_t height)
+DvzWindow* dvz_window(DvzApp* app, uint32_t width, uint32_t height)
 {
     ASSERT(app != NULL);
 
-    VklWindow* window = vkl_container_alloc(&app->windows);
+    DvzWindow* window = dvz_container_alloc(&app->windows);
     ASSERT(window != NULL);
 
-    ASSERT(window->obj.type == VKL_OBJECT_TYPE_WINDOW);
-    ASSERT(window->obj.status == VKL_OBJECT_STATUS_ALLOC);
+    ASSERT(window->obj.type == DVZ_OBJECT_TYPE_WINDOW);
+    ASSERT(window->obj.status == DVZ_OBJECT_STATUS_ALLOC);
     window->app = app;
 
     window->width = width;
@@ -303,8 +303,8 @@ VklWindow* vkl_window(VklApp* app, uint32_t width, uint32_t height)
 
 
 
-void vkl_window_get_size(
-    VklWindow* window, uint32_t* framebuffer_width, uint32_t* framebuffer_height)
+void dvz_window_get_size(
+    DvzWindow* window, uint32_t* framebuffer_width, uint32_t* framebuffer_height)
 {
     ASSERT(window != NULL);
     backend_window_get_size(
@@ -315,7 +315,7 @@ void vkl_window_get_size(
 
 
 
-void vkl_window_poll_events(VklWindow* window)
+void dvz_window_poll_events(DvzWindow* window)
 {
     ASSERT(window != NULL);
     ASSERT(window->app != NULL);
@@ -324,9 +324,9 @@ void vkl_window_poll_events(VklWindow* window)
 
 
 
-void vkl_window_destroy(VklWindow* window)
+void dvz_window_destroy(DvzWindow* window)
 {
-    if (window == NULL || window->obj.status == VKL_OBJECT_STATUS_DESTROYED)
+    if (window == NULL || window->obj.status == DVZ_OBJECT_STATUS_DESTROYED)
     {
         log_trace("skip destruction of already-destroyed window");
         return;
@@ -336,7 +336,7 @@ void vkl_window_destroy(VklWindow* window)
     ASSERT(window->surface != NULL);
     backend_window_destroy(
         window->app->instance, window->app->backend, window->backend_window, window->surface);
-    vkl_obj_destroyed(&window->obj);
+    dvz_obj_destroyed(&window->obj);
 }
 
 
@@ -345,7 +345,7 @@ void vkl_window_destroy(VklWindow* window)
 /*  Swapchain                                                                                    */
 /*************************************************************************************************/
 
-static void _swapchain_create(VklSwapchain* swapchain)
+static void _swapchain_create(DvzSwapchain* swapchain)
 {
     uint32_t width, height;
     create_swapchain(
@@ -360,7 +360,7 @@ static void _swapchain_create(VklSwapchain* swapchain)
     // Actual framebuffer size in pixels, as determined by the swapchain creation process.
     ASSERT(width > 0);
     ASSERT(height > 0);
-    vkl_images_size(swapchain->images, width, height, 1);
+    dvz_images_size(swapchain->images, width, height, 1);
 
     // Get the number of swapchain images.
     vkGetSwapchainImagesKHR(
@@ -370,31 +370,31 @@ static void _swapchain_create(VklSwapchain* swapchain)
         swapchain->gpu->device, swapchain->swapchain, &swapchain->img_count,
         swapchain->images->images);
 
-    vkl_images_layout(swapchain->images, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    dvz_images_layout(swapchain->images, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
     // Create the swap chain image views (will skip the image creation as they are given by the
     // swapchain directly).
-    vkl_images_create(swapchain->images);
+    dvz_images_create(swapchain->images);
 }
 
 
 
-static void _swapchain_destroy(VklSwapchain* swapchain)
+static void _swapchain_destroy(DvzSwapchain* swapchain)
 {
     if (swapchain->images != NULL)
-        vkl_images_destroy(swapchain->images);
+        dvz_images_destroy(swapchain->images);
     if (swapchain->swapchain != VK_NULL_HANDLE)
         vkDestroySwapchainKHR(swapchain->gpu->device, swapchain->swapchain, NULL);
 }
 
 
 
-VklSwapchain vkl_swapchain(VklGpu* gpu, VklWindow* window, uint32_t min_img_count)
+DvzSwapchain dvz_swapchain(DvzGpu* gpu, DvzWindow* window, uint32_t min_img_count)
 {
     ASSERT(gpu != NULL);
-    ASSERT(vkl_obj_is_created(&gpu->obj));
+    ASSERT(dvz_obj_is_created(&gpu->obj));
 
-    VklSwapchain swapchain = {0};
+    DvzSwapchain swapchain = {0};
 
     swapchain.gpu = gpu;
     swapchain.window = window;
@@ -404,7 +404,7 @@ VklSwapchain vkl_swapchain(VklGpu* gpu, VklWindow* window, uint32_t min_img_coun
 
 
 
-void vkl_swapchain_format(VklSwapchain* swapchain, VkFormat format)
+void dvz_swapchain_format(DvzSwapchain* swapchain, VkFormat format)
 {
     ASSERT(swapchain != NULL);
     swapchain->format = format;
@@ -412,11 +412,11 @@ void vkl_swapchain_format(VklSwapchain* swapchain, VkFormat format)
 
 
 
-void vkl_swapchain_present_mode(VklSwapchain* swapchain, VkPresentModeKHR present_mode)
+void dvz_swapchain_present_mode(DvzSwapchain* swapchain, VkPresentModeKHR present_mode)
 {
     ASSERT(swapchain != NULL);
     ASSERT(swapchain->gpu != NULL);
-    ASSERT(vkl_obj_is_created(&swapchain->gpu->obj));
+    ASSERT(dvz_obj_is_created(&swapchain->gpu->obj));
 
     swapchain->present_mode = VK_PRESENT_MODE_FIFO_KHR; // default present mode
 
@@ -433,7 +433,7 @@ void vkl_swapchain_present_mode(VklSwapchain* swapchain, VkPresentModeKHR presen
 
 
 
-void vkl_swapchain_requested_size(VklSwapchain* swapchain, uint32_t width, uint32_t height)
+void dvz_swapchain_requested_size(DvzSwapchain* swapchain, uint32_t width, uint32_t height)
 {
     ASSERT(swapchain != NULL);
     swapchain->requested_width = width;
@@ -442,45 +442,45 @@ void vkl_swapchain_requested_size(VklSwapchain* swapchain, uint32_t width, uint3
 
 
 
-void vkl_swapchain_create(VklSwapchain* swapchain)
+void dvz_swapchain_create(DvzSwapchain* swapchain)
 {
     ASSERT(swapchain != NULL);
     ASSERT(swapchain->gpu != NULL);
 
     log_trace("starting creation of swapchain...");
 
-    // Create the VklImages struct.
+    // Create the DvzImages struct.
     {
-        swapchain->images = calloc(1, sizeof(VklImages));
-        *swapchain->images = vkl_images(swapchain->gpu, VK_IMAGE_TYPE_2D, swapchain->img_count);
+        swapchain->images = calloc(1, sizeof(DvzImages));
+        *swapchain->images = dvz_images(swapchain->gpu, VK_IMAGE_TYPE_2D, swapchain->img_count);
         swapchain->images->is_swapchain = true;
-        vkl_images_format(swapchain->images, swapchain->format);
+        dvz_images_format(swapchain->images, swapchain->format);
     }
 
     // Create swapchain
     _swapchain_create(swapchain);
 
-    vkl_obj_created(&swapchain->images->obj);
-    vkl_obj_created(&swapchain->obj);
+    dvz_obj_created(&swapchain->images->obj);
+    dvz_obj_created(&swapchain->obj);
     log_trace("swapchain created");
 }
 
 
 
-void vkl_swapchain_recreate(VklSwapchain* swapchain)
+void dvz_swapchain_recreate(DvzSwapchain* swapchain)
 {
     ASSERT(swapchain != NULL);
     _swapchain_destroy(swapchain);
     _swapchain_create(swapchain);
 
-    vkl_obj_created(&swapchain->images->obj);
-    vkl_obj_created(&swapchain->obj);
+    dvz_obj_created(&swapchain->images->obj);
+    dvz_obj_created(&swapchain->obj);
 }
 
 
 
-void vkl_swapchain_acquire(
-    VklSwapchain* swapchain, VklSemaphores* semaphores, uint32_t semaphore_idx, VklFences* fences,
+void dvz_swapchain_acquire(
+    DvzSwapchain* swapchain, DvzSemaphores* semaphores, uint32_t semaphore_idx, DvzFences* fences,
     uint32_t fence_idx)
 {
     ASSERT(swapchain != NULL);
@@ -508,7 +508,7 @@ void vkl_swapchain_acquire(
         break;
     case VK_ERROR_OUT_OF_DATE_KHR:
         log_trace("out of date swapchain, need to recreate it");
-        swapchain->obj.status = VKL_OBJECT_STATUS_NEED_RECREATE;
+        swapchain->obj.status = DVZ_OBJECT_STATUS_NEED_RECREATE;
         break;
     case VK_SUBOPTIMAL_KHR:
         log_warn("suboptimal frame, but do nothing");
@@ -516,15 +516,15 @@ void vkl_swapchain_acquire(
     default:
         log_error("failed acquiring the swapchain image");
         // TODO: is that correct? destroying the object if we failed acquiring the swapchain image?
-        swapchain->obj.status = VKL_OBJECT_STATUS_NEED_DESTROY;
+        swapchain->obj.status = DVZ_OBJECT_STATUS_NEED_DESTROY;
         break;
     }
 }
 
 
 
-void vkl_swapchain_present(
-    VklSwapchain* swapchain, uint32_t queue_idx, VklSemaphores* semaphores, uint32_t semaphore_idx)
+void dvz_swapchain_present(
+    DvzSwapchain* swapchain, uint32_t queue_idx, DvzSemaphores* semaphores, uint32_t semaphore_idx)
 {
     ASSERT(swapchain != NULL);
     ASSERT(swapchain->swapchain != VK_NULL_HANDLE);
@@ -556,7 +556,7 @@ void vkl_swapchain_present(
     case VK_ERROR_OUT_OF_DATE_KHR:
     case VK_SUBOPTIMAL_KHR:
         log_trace("out of date swapchain, need to recreate it");
-        swapchain->obj.status = VKL_OBJECT_STATUS_NEED_RECREATE;
+        swapchain->obj.status = DVZ_OBJECT_STATUS_NEED_RECREATE;
         break;
     default:
         log_error("failed presenting the swapchain image");
@@ -566,10 +566,10 @@ void vkl_swapchain_present(
 
 
 
-void vkl_swapchain_destroy(VklSwapchain* swapchain)
+void dvz_swapchain_destroy(DvzSwapchain* swapchain)
 {
     ASSERT(swapchain != NULL);
-    if (!vkl_obj_is_created(&swapchain->obj))
+    if (!dvz_obj_is_created(&swapchain->obj))
     {
         log_trace("skip destruction of already-destroyed swapchain");
         return;
@@ -588,7 +588,7 @@ void vkl_swapchain_destroy(VklSwapchain* swapchain)
     if (swapchain->swapchain != VK_NULL_HANDLE)
         swapchain->swapchain = VK_NULL_HANDLE;
 
-    vkl_obj_destroyed(&swapchain->obj);
+    dvz_obj_destroyed(&swapchain->obj);
     log_trace("swapchain destroyed");
 }
 
@@ -598,12 +598,12 @@ void vkl_swapchain_destroy(VklSwapchain* swapchain)
 /*  Commands                                                                                     */
 /*************************************************************************************************/
 
-VklCommands vkl_commands(VklGpu* gpu, uint32_t queue, uint32_t count)
+DvzCommands dvz_commands(DvzGpu* gpu, uint32_t queue, uint32_t count)
 {
     ASSERT(gpu != NULL);
-    ASSERT(vkl_obj_is_created(&gpu->obj));
+    ASSERT(dvz_obj_is_created(&gpu->obj));
 
-    ASSERT(count <= VKL_MAX_COMMAND_BUFFERS_PER_SET);
+    ASSERT(count <= DVZ_MAX_COMMAND_BUFFERS_PER_SET);
     ASSERT(queue < gpu->queues.queue_count);
     ASSERT(count > 0);
     uint32_t qf = gpu->queues.queue_families[queue];
@@ -611,20 +611,20 @@ VklCommands vkl_commands(VklGpu* gpu, uint32_t queue, uint32_t count)
     ASSERT(gpu->queues.cmd_pools[qf] != VK_NULL_HANDLE);
     log_trace("creating commands on queue #%d, queue family #%d", queue, qf);
 
-    VklCommands commands = {0};
+    DvzCommands commands = {0};
     commands.gpu = gpu;
     commands.queue_idx = queue;
     commands.count = count;
     allocate_command_buffers(gpu->device, gpu->queues.cmd_pools[qf], count, commands.cmds);
 
-    vkl_obj_init(&commands.obj);
+    dvz_obj_init(&commands.obj);
 
     return commands;
 }
 
 
 
-void vkl_cmd_begin(VklCommands* cmds, uint32_t idx)
+void dvz_cmd_begin(DvzCommands* cmds, uint32_t idx)
 {
     ASSERT(cmds != NULL);
     ASSERT(cmds->count > 0);
@@ -636,7 +636,7 @@ void vkl_cmd_begin(VklCommands* cmds, uint32_t idx)
 
 
 
-void vkl_cmd_end(VklCommands* cmds, uint32_t idx)
+void dvz_cmd_end(DvzCommands* cmds, uint32_t idx)
 {
     ASSERT(cmds != NULL);
     ASSERT(cmds->count > 0);
@@ -644,12 +644,12 @@ void vkl_cmd_end(VklCommands* cmds, uint32_t idx)
     // log_trace("end command buffer");
     VK_CHECK_RESULT(vkEndCommandBuffer(cmds->cmds[idx]));
 
-    vkl_obj_created(&cmds->obj);
+    dvz_obj_created(&cmds->obj);
 }
 
 
 
-void vkl_cmd_reset(VklCommands* cmds, uint32_t idx)
+void dvz_cmd_reset(DvzCommands* cmds, uint32_t idx)
 {
     ASSERT(cmds != NULL);
     ASSERT(cmds->count > 0);
@@ -661,7 +661,7 @@ void vkl_cmd_reset(VklCommands* cmds, uint32_t idx)
 
 
 
-void vkl_cmd_free(VklCommands* cmds)
+void dvz_cmd_free(DvzCommands* cmds)
 {
     ASSERT(cmds != NULL);
     ASSERT(cmds->count > 0);
@@ -673,16 +673,16 @@ void vkl_cmd_free(VklCommands* cmds)
         cmds->gpu->device, cmds->gpu->queues.cmd_pools[cmds->queue_idx], //
         cmds->count, cmds->cmds);
 
-    vkl_obj_init(&cmds->obj);
+    dvz_obj_init(&cmds->obj);
 }
 
 
 
-void vkl_cmd_submit_sync(VklCommands* cmds, uint32_t idx)
+void dvz_cmd_submit_sync(DvzCommands* cmds, uint32_t idx)
 {
     log_debug("[SLOW] submit %d command buffer(s)", cmds->count);
 
-    VklQueues* q = &cmds->gpu->queues;
+    DvzQueues* q = &cmds->gpu->queues;
     VkQueue queue = q->queues[cmds->queue_idx];
 
     vkQueueWaitIdle(queue);
@@ -696,16 +696,16 @@ void vkl_cmd_submit_sync(VklCommands* cmds, uint32_t idx)
 
 
 
-void vkl_commands_destroy(VklCommands* cmds)
+void dvz_commands_destroy(DvzCommands* cmds)
 {
     ASSERT(cmds != NULL);
-    if (!vkl_obj_is_created(&cmds->obj))
+    if (!dvz_obj_is_created(&cmds->obj))
     {
         log_trace("skip destruction of already-destroyed commands");
         return;
     }
     log_trace("destroy commands");
-    vkl_obj_destroyed(&cmds->obj);
+    dvz_obj_destroyed(&cmds->obj);
 }
 
 
@@ -714,13 +714,13 @@ void vkl_commands_destroy(VklCommands* cmds)
 /*  Buffers                                                                                      */
 /*************************************************************************************************/
 
-VklBuffer vkl_buffer(VklGpu* gpu)
+DvzBuffer dvz_buffer(DvzGpu* gpu)
 {
     ASSERT(gpu != NULL);
-    ASSERT(vkl_obj_is_created(&gpu->obj));
+    ASSERT(dvz_obj_is_created(&gpu->obj));
 
-    VklBuffer buffer = {0};
-    buffer.obj.status = VKL_OBJECT_STATUS_INIT;
+    DvzBuffer buffer = {0};
+    buffer.obj.status = DVZ_OBJECT_STATUS_INIT;
     buffer.gpu = gpu;
 
     // Default values.
@@ -731,7 +731,7 @@ VklBuffer vkl_buffer(VklGpu* gpu)
 
 
 
-void vkl_buffer_size(VklBuffer* buffer, VkDeviceSize size)
+void dvz_buffer_size(DvzBuffer* buffer, VkDeviceSize size)
 {
     ASSERT(buffer != NULL);
     buffer->size = size;
@@ -739,7 +739,7 @@ void vkl_buffer_size(VklBuffer* buffer, VkDeviceSize size)
 
 
 
-void vkl_buffer_type(VklBuffer* buffer, VklBufferType type)
+void dvz_buffer_type(DvzBuffer* buffer, DvzBufferType type)
 {
     ASSERT(buffer != NULL);
     buffer->type = type;
@@ -747,7 +747,7 @@ void vkl_buffer_type(VklBuffer* buffer, VklBufferType type)
 
 
 
-void vkl_buffer_usage(VklBuffer* buffer, VkBufferUsageFlags usage)
+void dvz_buffer_usage(DvzBuffer* buffer, VkBufferUsageFlags usage)
 {
     ASSERT(buffer != NULL);
     buffer->usage = usage;
@@ -755,7 +755,7 @@ void vkl_buffer_usage(VklBuffer* buffer, VkBufferUsageFlags usage)
 
 
 
-void vkl_buffer_memory(VklBuffer* buffer, VkMemoryPropertyFlags memory)
+void dvz_buffer_memory(DvzBuffer* buffer, VkMemoryPropertyFlags memory)
 {
     ASSERT(buffer != NULL);
     buffer->memory = memory;
@@ -763,7 +763,7 @@ void vkl_buffer_memory(VklBuffer* buffer, VkMemoryPropertyFlags memory)
 
 
 
-void vkl_buffer_queue_access(VklBuffer* buffer, uint32_t queue_idx)
+void dvz_buffer_queue_access(DvzBuffer* buffer, uint32_t queue_idx)
 {
     ASSERT(buffer != NULL);
     ASSERT(buffer->gpu != NULL);
@@ -773,7 +773,7 @@ void vkl_buffer_queue_access(VklBuffer* buffer, uint32_t queue_idx)
 
 
 
-static void _buffer_create(VklBuffer* buffer)
+static void _buffer_create(DvzBuffer* buffer)
 {
     create_buffer2(
         buffer->gpu->device,                                           //
@@ -784,12 +784,12 @@ static void _buffer_create(VklBuffer* buffer)
 
 
 
-static void _buffer_destroy(VklBuffer* buffer)
+static void _buffer_destroy(DvzBuffer* buffer)
 {
     // Unmap permanently-mapped buffers before destruction.
     if (buffer->mmap != NULL)
     {
-        vkl_buffer_unmap(buffer);
+        dvz_buffer_unmap(buffer);
         buffer->mmap = NULL;
     }
 
@@ -810,7 +810,7 @@ static void _buffer_destroy(VklBuffer* buffer)
 
 
 
-static void _buffer_copy(VklBuffer* buffer0, VklBuffer* buffer1)
+static void _buffer_copy(DvzBuffer* buffer0, DvzBuffer* buffer1)
 {
     // Copy the parameters of a buffer.
     buffer1->gpu = buffer0->gpu;
@@ -824,7 +824,7 @@ static void _buffer_copy(VklBuffer* buffer0, VklBuffer* buffer1)
 
 
 
-void vkl_buffer_create(VklBuffer* buffer)
+void dvz_buffer_create(DvzBuffer* buffer)
 {
     ASSERT(buffer != NULL);
     ASSERT(buffer->gpu != NULL);
@@ -836,20 +836,20 @@ void vkl_buffer_create(VklBuffer* buffer)
     log_trace("starting creation of buffer...");
     _buffer_create(buffer);
 
-    vkl_obj_created(&buffer->obj);
+    dvz_obj_created(&buffer->obj);
     log_trace("buffer created");
 }
 
 
 
-void vkl_buffer_resize(VklBuffer* buffer, VkDeviceSize size, VklCommands* cmds)
+void dvz_buffer_resize(DvzBuffer* buffer, VkDeviceSize size, DvzCommands* cmds)
 {
     ASSERT(buffer != NULL);
     log_debug("[SLOW] resize buffer to size %d", size);
-    VklGpu* gpu = buffer->gpu;
+    DvzGpu* gpu = buffer->gpu;
 
     // Create the new buffer with the new size.
-    VklBuffer new_buffer = vkl_buffer(gpu);
+    DvzBuffer new_buffer = dvz_buffer(gpu);
     _buffer_copy(buffer, &new_buffer);
     // Make sure we can copy to the new buffer.
     if ((new_buffer.usage & VK_BUFFER_USAGE_TRANSFER_DST_BIT) == 0)
@@ -867,13 +867,13 @@ void vkl_buffer_resize(VklBuffer* buffer, VkDeviceSize size, VklCommands* cmds)
     if (buffer->mmap != NULL)
     {
         // Unmap the to-be-deleted buffer.
-        vkl_buffer_unmap(buffer);
+        dvz_buffer_unmap(buffer);
         // NOTE: buffer->mmap remains not NULL but invalid: it will need to be reset to a new
         // mapped region after creation of the new buffer.
         buffer->mmap = NULL;
     }
 
-    // If a VklCommands object was passed for the data transfer, transfer the data from the
+    // If a DvzCommands object was passed for the data transfer, transfer the data from the
     // old buffer to the new, by flushing the corresponding queue and waiting for completion.
     if (cmds != NULL)
     {
@@ -882,13 +882,13 @@ void vkl_buffer_resize(VklBuffer* buffer, VkDeviceSize size, VklCommands* cmds)
         ASSERT(queue_idx < gpu->queues.queue_count);
         ASSERT(size >= buffer->size);
 
-        vkl_cmd_reset(cmds, 0);
-        vkl_cmd_begin(cmds, 0);
-        vkl_cmd_copy_buffer(cmds, 0, buffer, 0, &new_buffer, 0, buffer->size);
-        vkl_cmd_end(cmds, 0);
+        dvz_cmd_reset(cmds, 0);
+        dvz_cmd_begin(cmds, 0);
+        dvz_cmd_copy_buffer(cmds, 0, buffer, 0, &new_buffer, 0, buffer->size);
+        dvz_cmd_end(cmds, 0);
 
         VkQueue queue = gpu->queues.queues[queue_idx];
-        vkl_cmd_submit_sync(cmds, 0);
+        dvz_cmd_submit_sync(cmds, 0);
         vkQueueWaitIdle(queue);
     }
 
@@ -899,7 +899,7 @@ void vkl_buffer_resize(VklBuffer* buffer, VkDeviceSize size, VklCommands* cmds)
     buffer->size = new_buffer.size;
     ASSERT(buffer->size == size);
 
-    // Update the existing VklBuffer struct with the newly-created Vulkan objects.
+    // Update the existing DvzBuffer struct with the newly-created Vulkan objects.
     buffer->buffer = new_buffer.buffer;
     buffer->device_memory = new_buffer.device_memory;
     ASSERT(buffer->buffer != VK_NULL_HANDLE);
@@ -908,7 +908,7 @@ void vkl_buffer_resize(VklBuffer* buffer, VkDeviceSize size, VklCommands* cmds)
     // If the existing buffer was already mapped, we need to remap the new buffer.
     if (old_mmap != NULL)
     {
-        buffer->mmap = vkl_buffer_map(buffer, 0, VK_WHOLE_SIZE);
+        buffer->mmap = dvz_buffer_map(buffer, 0, VK_WHOLE_SIZE);
         // Make sure the permanent memmap has been updated after the buffer resize.
         ASSERT(buffer->mmap != old_mmap);
     }
@@ -916,12 +916,12 @@ void vkl_buffer_resize(VklBuffer* buffer, VkDeviceSize size, VklCommands* cmds)
 
 
 
-void* vkl_buffer_map(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size)
+void* dvz_buffer_map(DvzBuffer* buffer, VkDeviceSize offset, VkDeviceSize size)
 {
     ASSERT(buffer != NULL);
     ASSERT(buffer->gpu != NULL);
     ASSERT(buffer->gpu->device != VK_NULL_HANDLE);
-    ASSERT(vkl_obj_is_created(&buffer->obj));
+    ASSERT(dvz_obj_is_created(&buffer->obj));
     if (size < UINT64_MAX)
         ASSERT(offset + size <= buffer->size);
     ASSERT(
@@ -938,12 +938,12 @@ void* vkl_buffer_map(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size)
 
 
 
-void vkl_buffer_unmap(VklBuffer* buffer)
+void dvz_buffer_unmap(DvzBuffer* buffer)
 {
     ASSERT(buffer != NULL);
     ASSERT(buffer->gpu != NULL);
     ASSERT(buffer->gpu->device != VK_NULL_HANDLE);
-    ASSERT(vkl_obj_is_created(&buffer->obj));
+    ASSERT(dvz_obj_is_created(&buffer->obj));
 
     ASSERT(
         (buffer->memory & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) && //
@@ -955,7 +955,7 @@ void vkl_buffer_unmap(VklBuffer* buffer)
 
 
 
-void vkl_buffer_upload(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, const void* data)
+void dvz_buffer_upload(DvzBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, const void* data)
 {
     ASSERT(buffer != NULL);
     ASSERT(size > 0);
@@ -968,7 +968,7 @@ void vkl_buffer_upload(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size
     bool need_unmap = false;
     if (buffer->mmap == NULL)
     {
-        mapped = vkl_buffer_map(buffer, offset, size);
+        mapped = dvz_buffer_map(buffer, offset, size);
         need_unmap = true;
     }
     else
@@ -981,12 +981,12 @@ void vkl_buffer_upload(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size
     memcpy(mapped, data, size);
 
     if (need_unmap)
-        vkl_buffer_unmap(buffer);
+        dvz_buffer_unmap(buffer);
 }
 
 
 
-void vkl_buffer_download(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, void* data)
+void dvz_buffer_download(DvzBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, void* data)
 {
     log_trace("downloading %s from GPU buffer", pretty_size(size));
 
@@ -994,7 +994,7 @@ void vkl_buffer_download(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize si
     bool need_unmap = false;
     if (buffer->mmap == NULL)
     {
-        mapped = vkl_buffer_map(buffer, offset, size);
+        mapped = dvz_buffer_map(buffer, offset, size);
         need_unmap = true;
     }
     else
@@ -1004,22 +1004,22 @@ void vkl_buffer_download(VklBuffer* buffer, VkDeviceSize offset, VkDeviceSize si
     }
     memcpy(data, mapped, size);
     if (need_unmap)
-        vkl_buffer_unmap(buffer);
+        dvz_buffer_unmap(buffer);
 }
 
 
 
-void vkl_buffer_destroy(VklBuffer* buffer)
+void dvz_buffer_destroy(DvzBuffer* buffer)
 {
     ASSERT(buffer != NULL);
-    if (!vkl_obj_is_created(&buffer->obj))
+    if (!dvz_obj_is_created(&buffer->obj))
     {
         log_trace("skip destruction of already-destroyed buffer");
         return;
     }
     log_trace("destroy buffer");
     _buffer_destroy(buffer);
-    vkl_obj_destroyed(&buffer->obj);
+    dvz_obj_destroyed(&buffer->obj);
 }
 
 
@@ -1028,17 +1028,17 @@ void vkl_buffer_destroy(VklBuffer* buffer)
 /*  Buffer regions                                                                               */
 /*************************************************************************************************/
 
-VklBufferRegions vkl_buffer_regions(
-    VklBuffer* buffer, uint32_t count, //
+DvzBufferRegions dvz_buffer_regions(
+    DvzBuffer* buffer, uint32_t count, //
     VkDeviceSize offset, VkDeviceSize size, VkDeviceSize alignment)
 {
     ASSERT(buffer != NULL);
     ASSERT(buffer->gpu != NULL);
     ASSERT(buffer->gpu->device != VK_NULL_HANDLE);
-    ASSERT(vkl_obj_is_created(&buffer->obj));
-    ASSERT(count <= VKL_MAX_BUFFER_REGIONS_PER_SET);
+    ASSERT(dvz_obj_is_created(&buffer->obj));
+    ASSERT(count <= DVZ_MAX_BUFFER_REGIONS_PER_SET);
 
-    VklBufferRegions regions = {0};
+    DvzBufferRegions regions = {0};
     regions.buffer = buffer;
     regions.count = count;
     regions.size = size;
@@ -1072,29 +1072,29 @@ VklBufferRegions vkl_buffer_regions(
 
 
 
-void* vkl_buffer_regions_map(VklBufferRegions* br, uint32_t idx)
+void* dvz_buffer_regions_map(DvzBufferRegions* br, uint32_t idx)
 {
     ASSERT(br != NULL);
-    VklBuffer* buffer = br->buffer;
-    return vkl_buffer_map(buffer, br->offsets[idx], br->size);
+    DvzBuffer* buffer = br->buffer;
+    return dvz_buffer_map(buffer, br->offsets[idx], br->size);
 }
 
 
 
-void vkl_buffer_regions_unmap(VklBufferRegions* br)
+void dvz_buffer_regions_unmap(DvzBufferRegions* br)
 {
     ASSERT(br != NULL);
-    VklBuffer* buffer = br->buffer;
+    DvzBuffer* buffer = br->buffer;
     ASSERT(buffer != NULL);
-    vkl_buffer_unmap(buffer);
+    dvz_buffer_unmap(buffer);
 }
 
 
 
-void vkl_buffer_regions_upload(VklBufferRegions* br, uint32_t idx, const void* data)
+void dvz_buffer_regions_upload(DvzBufferRegions* br, uint32_t idx, const void* data)
 {
     ASSERT(br != NULL);
-    VklBuffer* buffer = br->buffer;
+    DvzBuffer* buffer = br->buffer;
     VkDeviceSize size = br->size;
 
     ASSERT(buffer != NULL);
@@ -1107,7 +1107,7 @@ void vkl_buffer_regions_upload(VklBufferRegions* br, uint32_t idx, const void* d
     bool need_unmap = false;
     if (buffer->mmap == NULL)
     {
-        mapped = vkl_buffer_regions_map(br, idx);
+        mapped = dvz_buffer_regions_map(br, idx);
         need_unmap = true;
     }
     else
@@ -1120,7 +1120,7 @@ void vkl_buffer_regions_upload(VklBufferRegions* br, uint32_t idx, const void* d
     memcpy(mapped, data, size);
 
     if (need_unmap)
-        vkl_buffer_regions_unmap(br);
+        dvz_buffer_regions_unmap(br);
 }
 
 
@@ -1129,13 +1129,13 @@ void vkl_buffer_regions_upload(VklBufferRegions* br, uint32_t idx, const void* d
 /*  Images                                                                                       */
 /*************************************************************************************************/
 
-VklImages vkl_images(VklGpu* gpu, VkImageType type, uint32_t count)
+DvzImages dvz_images(DvzGpu* gpu, VkImageType type, uint32_t count)
 {
     ASSERT(gpu != NULL);
-    ASSERT(vkl_obj_is_created(&gpu->obj));
+    ASSERT(dvz_obj_is_created(&gpu->obj));
 
-    VklImages images = {0};
-    images.obj.status = VKL_OBJECT_STATUS_INIT;
+    DvzImages images = {0};
+    images.obj.status = DVZ_OBJECT_STATUS_INIT;
 
     images.gpu = gpu;
     images.image_type = type;
@@ -1154,7 +1154,7 @@ VklImages vkl_images(VklGpu* gpu, VkImageType type, uint32_t count)
 
 
 
-void vkl_images_format(VklImages* images, VkFormat format)
+void dvz_images_format(DvzImages* images, VkFormat format)
 {
     ASSERT(images != NULL);
     images->format = format;
@@ -1162,7 +1162,7 @@ void vkl_images_format(VklImages* images, VkFormat format)
 
 
 
-void vkl_images_layout(VklImages* images, VkImageLayout layout)
+void dvz_images_layout(DvzImages* images, VkImageLayout layout)
 {
     ASSERT(images != NULL);
     images->layout = layout;
@@ -1170,7 +1170,7 @@ void vkl_images_layout(VklImages* images, VkImageLayout layout)
 
 
 
-void vkl_images_size(VklImages* images, uint32_t width, uint32_t height, uint32_t depth)
+void dvz_images_size(DvzImages* images, uint32_t width, uint32_t height, uint32_t depth)
 {
     ASSERT(images != NULL);
 
@@ -1184,7 +1184,7 @@ void vkl_images_size(VklImages* images, uint32_t width, uint32_t height, uint32_
 
 
 
-void vkl_images_tiling(VklImages* images, VkImageTiling tiling)
+void dvz_images_tiling(DvzImages* images, VkImageTiling tiling)
 {
     ASSERT(images != NULL);
     images->tiling = tiling;
@@ -1192,7 +1192,7 @@ void vkl_images_tiling(VklImages* images, VkImageTiling tiling)
 
 
 
-void vkl_images_usage(VklImages* images, VkImageUsageFlags usage)
+void dvz_images_usage(DvzImages* images, VkImageUsageFlags usage)
 {
     ASSERT(images != NULL);
     images->usage = usage;
@@ -1200,7 +1200,7 @@ void vkl_images_usage(VklImages* images, VkImageUsageFlags usage)
 
 
 
-void vkl_images_memory(VklImages* images, VkMemoryPropertyFlags memory)
+void dvz_images_memory(DvzImages* images, VkMemoryPropertyFlags memory)
 {
     ASSERT(images != NULL);
     images->memory = memory;
@@ -1208,7 +1208,7 @@ void vkl_images_memory(VklImages* images, VkMemoryPropertyFlags memory)
 
 
 
-void vkl_images_aspect(VklImages* images, VkImageAspectFlags aspect)
+void dvz_images_aspect(DvzImages* images, VkImageAspectFlags aspect)
 {
     ASSERT(images != NULL);
     images->aspect = aspect;
@@ -1216,7 +1216,7 @@ void vkl_images_aspect(VklImages* images, VkImageAspectFlags aspect)
 
 
 
-void vkl_images_queue_access(VklImages* images, uint32_t queue_idx)
+void dvz_images_queue_access(DvzImages* images, uint32_t queue_idx)
 {
     ASSERT(images != NULL);
     ASSERT(queue_idx < images->gpu->queues.queue_count);
@@ -1225,9 +1225,9 @@ void vkl_images_queue_access(VklImages* images, uint32_t queue_idx)
 
 
 
-static void _images_create(VklImages* images)
+static void _images_create(DvzImages* images)
 {
-    VklGpu* gpu = images->gpu;
+    DvzGpu* gpu = images->gpu;
     for (uint32_t i = 0; i < images->count; i++)
     {
         if (!images->is_swapchain)
@@ -1247,7 +1247,7 @@ static void _images_create(VklImages* images)
 
 
 
-static void _images_destroy(VklImages* images)
+static void _images_destroy(DvzImages* images)
 {
     for (uint32_t i = 0; i < images->count; i++)
     {
@@ -1271,7 +1271,7 @@ static void _images_destroy(VklImages* images)
 
 
 
-void vkl_images_create(VklImages* images)
+void dvz_images_create(DvzImages* images)
 {
     ASSERT(images != NULL);
     ASSERT(images->gpu != NULL);
@@ -1281,49 +1281,49 @@ void vkl_images_create(VklImages* images)
 
     log_trace("starting creation of %d images...", images->count);
     _images_create(images);
-    vkl_obj_created(&images->obj);
+    dvz_obj_created(&images->obj);
     log_trace("%d images created", images->count);
 }
 
 
 
-void vkl_images_transition(VklImages* images)
+void dvz_images_transition(DvzImages* images)
 {
     ASSERT(images != NULL);
-    VklGpu* gpu = images->gpu;
+    DvzGpu* gpu = images->gpu;
     ASSERT(gpu != NULL);
 
     // Start the image transition command buffer.
-    VklCommands cmds = vkl_commands(gpu, 0, 1);
-    VklBarrier barrier = vkl_barrier(gpu);
+    DvzCommands cmds = dvz_commands(gpu, 0, 1);
+    DvzBarrier barrier = dvz_barrier(gpu);
 
-    vkl_cmd_begin(&cmds, 0);
-    vkl_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
-    vkl_barrier_images(&barrier, images);
-    vkl_barrier_images_layout(&barrier, VK_IMAGE_LAYOUT_UNDEFINED, images->layout);
-    // vkl_barrier_images_access(&barrier, 0, VK_ACCESS_TRANSFER_WRITE_BIT);
-    vkl_cmd_barrier(&cmds, 0, &barrier);
-    vkl_cmd_end(&cmds, 0);
+    dvz_cmd_begin(&cmds, 0);
+    dvz_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    dvz_barrier_images(&barrier, images);
+    dvz_barrier_images_layout(&barrier, VK_IMAGE_LAYOUT_UNDEFINED, images->layout);
+    // dvz_barrier_images_access(&barrier, 0, VK_ACCESS_TRANSFER_WRITE_BIT);
+    dvz_cmd_barrier(&cmds, 0, &barrier);
+    dvz_cmd_end(&cmds, 0);
 
-    vkl_gpu_wait(gpu);
-    vkl_cmd_submit_sync(&cmds, 0);
+    dvz_gpu_wait(gpu);
+    dvz_cmd_submit_sync(&cmds, 0);
 }
 
 
 
-void vkl_images_resize(VklImages* images, uint32_t width, uint32_t height, uint32_t depth)
+void dvz_images_resize(DvzImages* images, uint32_t width, uint32_t height, uint32_t depth)
 {
     ASSERT(images != NULL);
     log_debug(
         "[SLOW] resize images to size %dx%dx%d, losing the data in it", width, height, depth);
     _images_destroy(images);
-    vkl_images_size(images, width, height, depth);
+    dvz_images_size(images, width, height, depth);
     _images_create(images);
 }
 
 
 
-void vkl_images_download(VklImages* staging, uint32_t idx, bool swizzle, uint8_t* rgb)
+void dvz_images_download(DvzImages* staging, uint32_t idx, bool swizzle, uint8_t* rgb)
 {
     VkImageSubresource subResource = {0};
     subResource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -1384,17 +1384,17 @@ void vkl_images_download(VklImages* staging, uint32_t idx, bool swizzle, uint8_t
 
 
 
-void vkl_images_destroy(VklImages* images)
+void dvz_images_destroy(DvzImages* images)
 {
     ASSERT(images != NULL);
-    if (!vkl_obj_is_created(&images->obj))
+    if (!dvz_obj_is_created(&images->obj))
     {
         log_trace("skip destruction of already-destroyed images");
         return;
     }
     log_trace("destroy %d image(s) and image view(s)", images->count);
     _images_destroy(images);
-    vkl_obj_destroyed(&images->obj);
+    dvz_obj_destroyed(&images->obj);
 }
 
 
@@ -1403,13 +1403,13 @@ void vkl_images_destroy(VklImages* images)
 /*  Sampler                                                                                      */
 /*************************************************************************************************/
 
-VklSampler vkl_sampler(VklGpu* gpu)
+DvzSampler dvz_sampler(DvzGpu* gpu)
 {
     ASSERT(gpu != NULL);
-    ASSERT(vkl_obj_is_created(&gpu->obj));
+    ASSERT(dvz_obj_is_created(&gpu->obj));
 
-    VklSampler sampler = {0};
-    sampler.obj.status = VKL_OBJECT_STATUS_INIT;
+    DvzSampler sampler = {0};
+    sampler.obj.status = DVZ_OBJECT_STATUS_INIT;
     sampler.gpu = gpu;
 
     return sampler;
@@ -1417,7 +1417,7 @@ VklSampler vkl_sampler(VklGpu* gpu)
 
 
 
-void vkl_sampler_min_filter(VklSampler* sampler, VkFilter filter)
+void dvz_sampler_min_filter(DvzSampler* sampler, VkFilter filter)
 {
     ASSERT(sampler != NULL);
     sampler->min_filter = filter;
@@ -1425,7 +1425,7 @@ void vkl_sampler_min_filter(VklSampler* sampler, VkFilter filter)
 
 
 
-void vkl_sampler_mag_filter(VklSampler* sampler, VkFilter filter)
+void dvz_sampler_mag_filter(DvzSampler* sampler, VkFilter filter)
 {
     ASSERT(sampler != NULL);
     sampler->mag_filter = filter;
@@ -1433,8 +1433,8 @@ void vkl_sampler_mag_filter(VklSampler* sampler, VkFilter filter)
 
 
 
-void vkl_sampler_address_mode(
-    VklSampler* sampler, VklTextureAxis axis, VkSamplerAddressMode address_mode)
+void dvz_sampler_address_mode(
+    DvzSampler* sampler, DvzTextureAxis axis, VkSamplerAddressMode address_mode)
 {
     ASSERT(sampler != NULL);
     ASSERT(axis <= 2);
@@ -1443,7 +1443,7 @@ void vkl_sampler_address_mode(
 
 
 
-void vkl_sampler_create(VklSampler* sampler)
+void dvz_sampler_create(DvzSampler* sampler)
 {
     ASSERT(sampler != NULL);
     ASSERT(sampler->gpu != NULL);
@@ -1455,16 +1455,16 @@ void vkl_sampler_create(VklSampler* sampler)
         sampler->gpu->device, sampler->mag_filter, sampler->min_filter, //
         sampler->address_modes, false, &sampler->sampler);
 
-    vkl_obj_created(&sampler->obj);
+    dvz_obj_created(&sampler->obj);
     log_trace("sampler created");
 }
 
 
 
-void vkl_sampler_destroy(VklSampler* sampler)
+void dvz_sampler_destroy(DvzSampler* sampler)
 {
     ASSERT(sampler != NULL);
-    if (!vkl_obj_is_created(&sampler->obj))
+    if (!dvz_obj_is_created(&sampler->obj))
     {
         log_trace("skip destruction of already-destroyed sampler");
         return;
@@ -1475,7 +1475,7 @@ void vkl_sampler_destroy(VklSampler* sampler)
         vkDestroySampler(sampler->gpu->device, sampler->sampler, NULL);
         sampler->sampler = VK_NULL_HANDLE;
     }
-    vkl_obj_destroyed(&sampler->obj);
+    dvz_obj_destroyed(&sampler->obj);
 }
 
 
@@ -1484,36 +1484,36 @@ void vkl_sampler_destroy(VklSampler* sampler)
 /*  Slots                                                                                        */
 /*************************************************************************************************/
 
-VklSlots vkl_slots(VklGpu* gpu)
+DvzSlots dvz_slots(DvzGpu* gpu)
 {
     ASSERT(gpu != NULL);
-    ASSERT(vkl_obj_is_created(&gpu->obj));
+    ASSERT(dvz_obj_is_created(&gpu->obj));
 
-    VklSlots slots = {0};
+    DvzSlots slots = {0};
     slots.gpu = gpu;
-    vkl_obj_init(&slots.obj);
+    dvz_obj_init(&slots.obj);
 
     return slots;
 }
 
 
 
-void vkl_slots_binding(VklSlots* slots, uint32_t idx, VkDescriptorType type)
+void dvz_slots_binding(DvzSlots* slots, uint32_t idx, VkDescriptorType type)
 {
     ASSERT(slots != NULL);
     ASSERT(idx == slots->slot_count);
-    ASSERT(idx < VKL_MAX_BINDINGS_SIZE);
+    ASSERT(idx < DVZ_MAX_BINDINGS_SIZE);
     slots->types[slots->slot_count++] = type;
 }
 
 
 
-void vkl_slots_push(
-    VklSlots* slots, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders)
+void dvz_slots_push(
+    DvzSlots* slots, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders)
 {
     ASSERT(slots != NULL);
     uint32_t idx = slots->push_count;
-    ASSERT(idx < VKL_MAX_PUSH_CONSTANTS);
+    ASSERT(idx < DVZ_MAX_PUSH_CONSTANTS);
 
     slots->push_offsets[idx] = offset;
     slots->push_sizes[idx] = size;
@@ -1524,7 +1524,7 @@ void vkl_slots_push(
 
 
 
-void vkl_slots_create(VklSlots* slots)
+void dvz_slots_create(DvzSlots* slots)
 {
     ASSERT(slots != NULL);
     ASSERT(slots->gpu != NULL);
@@ -1536,7 +1536,7 @@ void vkl_slots_create(VklSlots* slots)
         slots->gpu->device, slots->slot_count, slots->types, &slots->dset_layout);
 
     // Push constants.
-    VkPushConstantRange push_constants[VKL_MAX_PUSH_CONSTANTS] = {0};
+    VkPushConstantRange push_constants[DVZ_MAX_PUSH_CONSTANTS] = {0};
     for (uint32_t i = 0; i < slots->push_count; i++)
     {
         push_constants[i].offset = slots->push_offsets[i];
@@ -1549,17 +1549,17 @@ void vkl_slots_create(VklSlots* slots)
         slots->gpu->device, slots->push_count, push_constants, //
         &slots->dset_layout, &slots->pipeline_layout);
 
-    vkl_obj_created(&slots->obj);
+    dvz_obj_created(&slots->obj);
     log_trace("slots created");
 }
 
 
 
-void vkl_slots_destroy(VklSlots* slots)
+void dvz_slots_destroy(DvzSlots* slots)
 {
     ASSERT(slots != NULL);
     ASSERT(slots->gpu != NULL);
-    if (!vkl_obj_is_created(&slots->obj))
+    if (!dvz_obj_is_created(&slots->obj))
     {
         log_trace("skip destruction of already-destroyed slots");
         return;
@@ -1576,7 +1576,7 @@ void vkl_slots_destroy(VklSlots* slots)
         vkDestroyDescriptorSetLayout(device, slots->dset_layout, NULL);
         slots->dset_layout = VK_NULL_HANDLE;
     }
-    vkl_obj_destroyed(&slots->obj);
+    dvz_obj_destroyed(&slots->obj);
 }
 
 
@@ -1585,21 +1585,21 @@ void vkl_slots_destroy(VklSlots* slots)
 /*  Bindings                                                                                     */
 /*************************************************************************************************/
 
-VklBindings vkl_bindings(VklSlots* slots, uint32_t dset_count)
+DvzBindings dvz_bindings(DvzSlots* slots, uint32_t dset_count)
 {
     ASSERT(slots != NULL);
-    VklGpu* gpu = slots->gpu;
+    DvzGpu* gpu = slots->gpu;
     ASSERT(gpu != NULL);
-    ASSERT(vkl_obj_is_created(&gpu->obj));
+    ASSERT(dvz_obj_is_created(&gpu->obj));
 
-    VklBindings bindings = {0};
+    DvzBindings bindings = {0};
     bindings.slots = slots;
     bindings.gpu = gpu;
 
-    vkl_obj_init(&bindings.obj);
+    dvz_obj_init(&bindings.obj);
 
-    if (!vkl_obj_is_created(&slots->obj))
-        vkl_slots_create(slots);
+    if (!dvz_obj_is_created(&slots->obj))
+        dvz_slots_create(slots);
     ASSERT(dset_count > 0);
     ASSERT(slots->dset_layout != VK_NULL_HANDLE);
 
@@ -1609,7 +1609,7 @@ VklBindings vkl_bindings(VklSlots* slots, uint32_t dset_count)
     allocate_descriptor_sets(
         gpu->device, gpu->dset_pool, slots->dset_layout, bindings.dset_count, bindings.dsets);
 
-    vkl_obj_created(&bindings.obj);
+    dvz_obj_created(&bindings.obj);
     log_trace("bindings created");
 
     return bindings;
@@ -1617,7 +1617,7 @@ VklBindings vkl_bindings(VklSlots* slots, uint32_t dset_count)
 
 
 
-void vkl_bindings_buffer(VklBindings* bindings, uint32_t idx, VklBufferRegions br)
+void dvz_bindings_buffer(DvzBindings* bindings, uint32_t idx, DvzBufferRegions br)
 {
     ASSERT(bindings != NULL);
     ASSERT(br.buffer != VK_NULL_HANDLE);
@@ -1628,19 +1628,19 @@ void vkl_bindings_buffer(VklBindings* bindings, uint32_t idx, VklBufferRegions b
 
     bindings->br[idx] = br;
 
-    if (bindings->obj.status == VKL_OBJECT_STATUS_CREATED)
-        bindings->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+    if (bindings->obj.status == DVZ_OBJECT_STATUS_CREATED)
+        bindings->obj.status = DVZ_OBJECT_STATUS_NEED_UPDATE;
 }
 
 
 
-void vkl_bindings_texture(VklBindings* bindings, uint32_t idx, VklTexture* texture)
+void dvz_bindings_texture(DvzBindings* bindings, uint32_t idx, DvzTexture* texture)
 {
     ASSERT(bindings != NULL);
     ASSERT(texture != NULL);
 
-    VklImages* images = texture->image;
-    VklSampler* sampler = texture->sampler;
+    DvzImages* images = texture->image;
+    DvzSampler* sampler = texture->sampler;
 
     ASSERT(images != NULL);
     ASSERT(sampler != NULL);
@@ -1650,20 +1650,20 @@ void vkl_bindings_texture(VklBindings* bindings, uint32_t idx, VklTexture* textu
     bindings->images[idx] = images;
     bindings->samplers[idx] = sampler;
 
-    if (bindings->obj.status == VKL_OBJECT_STATUS_CREATED)
-        bindings->obj.status = VKL_OBJECT_STATUS_NEED_UPDATE;
+    if (bindings->obj.status == DVZ_OBJECT_STATUS_CREATED)
+        bindings->obj.status = DVZ_OBJECT_STATUS_NEED_UPDATE;
 }
 
 
 
-void vkl_bindings_update(VklBindings* bindings)
+void dvz_bindings_update(DvzBindings* bindings)
 {
     log_trace("update bindings");
     ASSERT(bindings->slots != NULL);
-    ASSERT(vkl_obj_is_created(&bindings->slots->obj));
+    ASSERT(dvz_obj_is_created(&bindings->slots->obj));
     ASSERT(bindings->slots->dset_layout != VK_NULL_HANDLE);
     ASSERT(bindings->dset_count > 0);
-    ASSERT(bindings->dset_count <= VKL_MAX_SWAPCHAIN_IMAGES);
+    ASSERT(bindings->dset_count <= DVZ_MAX_SWAPCHAIN_IMAGES);
 
     for (uint32_t i = 0; i < bindings->dset_count; i++)
     {
@@ -1673,23 +1673,23 @@ void vkl_bindings_update(VklBindings* bindings)
             i, bindings->dsets[i]);
     }
 
-    if (bindings->obj.status == VKL_OBJECT_STATUS_NEED_UPDATE)
-        bindings->obj.status = VKL_OBJECT_STATUS_CREATED;
+    if (bindings->obj.status == DVZ_OBJECT_STATUS_NEED_UPDATE)
+        bindings->obj.status = DVZ_OBJECT_STATUS_CREATED;
 }
 
 
 
-void vkl_bindings_destroy(VklBindings* bindings)
+void dvz_bindings_destroy(DvzBindings* bindings)
 {
     ASSERT(bindings != NULL);
     ASSERT(bindings->gpu != NULL);
-    if (!vkl_obj_is_created(&bindings->obj))
+    if (!dvz_obj_is_created(&bindings->obj))
     {
         log_trace("skip destruction of already-destroyed bindings");
         return;
     }
     log_trace("destroy bindings");
-    vkl_obj_destroyed(&bindings->obj);
+    dvz_obj_destroyed(&bindings->obj);
 }
 
 
@@ -1698,26 +1698,26 @@ void vkl_bindings_destroy(VklBindings* bindings)
 /*  Compute                                                                                      */
 /*************************************************************************************************/
 
-VklCompute vkl_compute(VklGpu* gpu, const char* shader_path)
+DvzCompute dvz_compute(DvzGpu* gpu, const char* shader_path)
 {
     ASSERT(gpu != NULL);
-    ASSERT(vkl_obj_is_created(&gpu->obj));
+    ASSERT(dvz_obj_is_created(&gpu->obj));
 
-    VklCompute compute = {0};
-    compute.obj.status = VKL_OBJECT_STATUS_INIT;
+    DvzCompute compute = {0};
+    compute.obj.status = DVZ_OBJECT_STATUS_INIT;
 
     compute.gpu = gpu;
     if (shader_path != NULL)
         strcpy(compute.shader_path, shader_path);
 
-    compute.slots = vkl_slots(gpu);
+    compute.slots = dvz_slots(gpu);
 
     return compute;
 }
 
 
 
-void vkl_compute_code(VklCompute* compute, const char* code)
+void dvz_compute_code(DvzCompute* compute, const char* code)
 {
     ASSERT(compute != NULL);
     compute->shader_code = code;
@@ -1725,24 +1725,24 @@ void vkl_compute_code(VklCompute* compute, const char* code)
 
 
 
-void vkl_compute_slot(VklCompute* compute, uint32_t idx, VkDescriptorType type)
+void dvz_compute_slot(DvzCompute* compute, uint32_t idx, VkDescriptorType type)
 {
     ASSERT(compute != NULL);
-    vkl_slots_binding(&compute->slots, idx, type);
+    dvz_slots_binding(&compute->slots, idx, type);
 }
 
 
 
-void vkl_compute_push(
-    VklCompute* compute, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders)
+void dvz_compute_push(
+    DvzCompute* compute, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders)
 {
     ASSERT(compute != NULL);
-    vkl_slots_push(&compute->slots, offset, size, shaders);
+    dvz_slots_push(&compute->slots, offset, size, shaders);
 }
 
 
 
-void vkl_compute_bindings(VklCompute* compute, VklBindings* bindings)
+void dvz_compute_bindings(DvzCompute* compute, DvzBindings* bindings)
 {
     ASSERT(compute != NULL);
     ASSERT(bindings != NULL);
@@ -1751,18 +1751,18 @@ void vkl_compute_bindings(VklCompute* compute, VklBindings* bindings)
 
 
 
-void vkl_compute_create(VklCompute* compute)
+void dvz_compute_create(DvzCompute* compute)
 {
     ASSERT(compute != NULL);
     ASSERT(compute->gpu != NULL);
     ASSERT(compute->gpu->device != VK_NULL_HANDLE);
     ASSERT(compute->shader_path != NULL);
-    if (!vkl_obj_is_created(&compute->slots.obj))
-        vkl_slots_create(&compute->slots);
+    if (!dvz_obj_is_created(&compute->slots.obj))
+        dvz_slots_create(&compute->slots);
 
     if (compute->bindings == NULL)
     {
-        log_error("vkl_compute_bindings() must be called before creating the compute");
+        log_error("dvz_compute_bindings() must be called before creating the compute");
         return;
     }
 
@@ -1771,7 +1771,7 @@ void vkl_compute_create(VklCompute* compute)
     if (compute->shader_code != NULL)
     {
         compute->shader_module =
-            vkl_shader_compile(compute->gpu, compute->shader_code, VK_SHADER_STAGE_COMPUTE_BIT);
+            dvz_shader_compile(compute->gpu, compute->shader_code, VK_SHADER_STAGE_COMPUTE_BIT);
     }
     else
     {
@@ -1783,17 +1783,17 @@ void vkl_compute_create(VklCompute* compute)
         compute->gpu->device, compute->shader_module, //
         compute->slots.pipeline_layout, &compute->pipeline);
 
-    vkl_obj_created(&compute->obj);
+    dvz_obj_created(&compute->obj);
     log_trace("compute created");
 }
 
 
 
-void vkl_compute_destroy(VklCompute* compute)
+void dvz_compute_destroy(DvzCompute* compute)
 {
     ASSERT(compute != NULL);
     ASSERT(compute->gpu != NULL);
-    if (!vkl_obj_is_created(&compute->obj))
+    if (!dvz_obj_is_created(&compute->obj))
     {
         log_trace("skip destruction of already-destroyed compute");
         return;
@@ -1801,8 +1801,8 @@ void vkl_compute_destroy(VklCompute* compute)
     log_trace("destroy compute");
 
     // Destroy the compute slots.
-    if (vkl_obj_is_created(&compute->slots.obj))
-        vkl_slots_destroy(&compute->slots);
+    if (dvz_obj_is_created(&compute->slots.obj))
+        dvz_slots_destroy(&compute->slots);
 
     VkDevice device = compute->gpu->device;
     if (compute->shader_module != VK_NULL_HANDLE)
@@ -1816,7 +1816,7 @@ void vkl_compute_destroy(VklCompute* compute)
         compute->pipeline = VK_NULL_HANDLE;
     }
 
-    vkl_obj_destroyed(&compute->obj);
+    dvz_obj_destroyed(&compute->obj);
 }
 
 
@@ -1825,24 +1825,24 @@ void vkl_compute_destroy(VklCompute* compute)
 /*  Graphics                                                                                     */
 /*************************************************************************************************/
 
-VklGraphics vkl_graphics(VklGpu* gpu)
+DvzGraphics dvz_graphics(DvzGpu* gpu)
 {
     ASSERT(gpu != NULL);
-    ASSERT(vkl_obj_is_created(&gpu->obj));
+    ASSERT(dvz_obj_is_created(&gpu->obj));
 
-    VklGraphics graphics = {0};
+    DvzGraphics graphics = {0};
     graphics.gpu = gpu;
 
-    vkl_obj_init(&graphics.obj);
+    dvz_obj_init(&graphics.obj);
 
-    graphics.slots = vkl_slots(gpu);
+    graphics.slots = dvz_slots(gpu);
 
     return graphics;
 }
 
 
 
-void vkl_graphics_renderpass(VklGraphics* graphics, VklRenderpass* renderpass, uint32_t subpass)
+void dvz_graphics_renderpass(DvzGraphics* graphics, DvzRenderpass* renderpass, uint32_t subpass)
 {
     ASSERT(graphics != NULL);
     graphics->renderpass = renderpass;
@@ -1851,7 +1851,7 @@ void vkl_graphics_renderpass(VklGraphics* graphics, VklRenderpass* renderpass, u
 
 
 
-void vkl_graphics_topology(VklGraphics* graphics, VkPrimitiveTopology topology)
+void dvz_graphics_topology(DvzGraphics* graphics, VkPrimitiveTopology topology)
 {
     ASSERT(graphics != NULL);
     graphics->topology = topology;
@@ -1859,7 +1859,7 @@ void vkl_graphics_topology(VklGraphics* graphics, VkPrimitiveTopology topology)
 
 
 
-void vkl_graphics_shader_glsl(VklGraphics* graphics, VkShaderStageFlagBits stage, const char* code)
+void dvz_graphics_shader_glsl(DvzGraphics* graphics, VkShaderStageFlagBits stage, const char* code)
 {
     ASSERT(graphics != NULL);
     ASSERT(graphics->gpu != NULL);
@@ -1867,14 +1867,14 @@ void vkl_graphics_shader_glsl(VklGraphics* graphics, VkShaderStageFlagBits stage
 
     graphics->shader_stages[graphics->shader_count] = stage;
     graphics->shader_modules[graphics->shader_count] =
-        vkl_shader_compile(graphics->gpu, code, stage);
+        dvz_shader_compile(graphics->gpu, code, stage);
     graphics->shader_count++;
 }
 
 
 
-void vkl_graphics_shader(
-    VklGraphics* graphics, VkShaderStageFlagBits stage, const char* shader_path)
+void dvz_graphics_shader(
+    DvzGraphics* graphics, VkShaderStageFlagBits stage, const char* shader_path)
 {
     ASSERT(graphics != NULL);
     ASSERT(graphics->gpu != NULL);
@@ -1887,8 +1887,8 @@ void vkl_graphics_shader(
 
 
 
-void vkl_graphics_shader_spirv(
-    VklGraphics* graphics, VkShaderStageFlagBits stage, //
+void dvz_graphics_shader_spirv(
+    DvzGraphics* graphics, VkShaderStageFlagBits stage, //
     VkDeviceSize size, const uint32_t* buffer)
 {
     ASSERT(graphics != NULL);
@@ -1902,22 +1902,22 @@ void vkl_graphics_shader_spirv(
 
 
 
-void vkl_graphics_vertex_binding(VklGraphics* graphics, uint32_t binding, VkDeviceSize stride)
+void dvz_graphics_vertex_binding(DvzGraphics* graphics, uint32_t binding, VkDeviceSize stride)
 {
     ASSERT(graphics != NULL);
-    VklVertexBinding* vb = &graphics->vertex_bindings[graphics->vertex_binding_count++];
+    DvzVertexBinding* vb = &graphics->vertex_bindings[graphics->vertex_binding_count++];
     vb->binding = binding;
     vb->stride = stride;
 }
 
 
 
-void vkl_graphics_vertex_attr(
-    VklGraphics* graphics, uint32_t binding, uint32_t location, VkFormat format,
+void dvz_graphics_vertex_attr(
+    DvzGraphics* graphics, uint32_t binding, uint32_t location, VkFormat format,
     VkDeviceSize offset)
 {
     ASSERT(graphics != NULL);
-    VklVertexAttr* va = &graphics->vertex_attrs[graphics->vertex_attr_count++];
+    DvzVertexAttr* va = &graphics->vertex_attrs[graphics->vertex_attr_count++];
     va->binding = binding;
     va->location = location;
     va->format = format;
@@ -1926,7 +1926,7 @@ void vkl_graphics_vertex_attr(
 
 
 
-void vkl_graphics_blend(VklGraphics* graphics, VklBlendType blend_type)
+void dvz_graphics_blend(DvzGraphics* graphics, DvzBlendType blend_type)
 {
     ASSERT(graphics != NULL);
     graphics->blend_type = blend_type;
@@ -1934,7 +1934,7 @@ void vkl_graphics_blend(VklGraphics* graphics, VklBlendType blend_type)
 
 
 
-void vkl_graphics_depth_test(VklGraphics* graphics, VklDepthTest depth_test)
+void dvz_graphics_depth_test(DvzGraphics* graphics, DvzDepthTest depth_test)
 {
     ASSERT(graphics != NULL);
     if (depth_test)
@@ -1944,7 +1944,7 @@ void vkl_graphics_depth_test(VklGraphics* graphics, VklDepthTest depth_test)
 
 
 
-void vkl_graphics_polygon_mode(VklGraphics* graphics, VkPolygonMode polygon_mode)
+void dvz_graphics_polygon_mode(DvzGraphics* graphics, VkPolygonMode polygon_mode)
 {
     ASSERT(graphics != NULL);
     graphics->polygon_mode = polygon_mode;
@@ -1952,7 +1952,7 @@ void vkl_graphics_polygon_mode(VklGraphics* graphics, VkPolygonMode polygon_mode
 
 
 
-void vkl_graphics_cull_mode(VklGraphics* graphics, VkCullModeFlags cull_mode)
+void dvz_graphics_cull_mode(DvzGraphics* graphics, VkCullModeFlags cull_mode)
 {
     ASSERT(graphics != NULL);
     graphics->cull_mode = cull_mode;
@@ -1960,7 +1960,7 @@ void vkl_graphics_cull_mode(VklGraphics* graphics, VkCullModeFlags cull_mode)
 
 
 
-void vkl_graphics_front_face(VklGraphics* graphics, VkFrontFace front_face)
+void dvz_graphics_front_face(DvzGraphics* graphics, VkFrontFace front_face)
 {
     ASSERT(graphics != NULL);
     graphics->front_face = front_face;
@@ -1968,31 +1968,31 @@ void vkl_graphics_front_face(VklGraphics* graphics, VkFrontFace front_face)
 
 
 
-void vkl_graphics_slot(VklGraphics* graphics, uint32_t idx, VkDescriptorType type)
+void dvz_graphics_slot(DvzGraphics* graphics, uint32_t idx, VkDescriptorType type)
 {
     ASSERT(graphics != NULL);
-    vkl_slots_binding(&graphics->slots, idx, type);
+    dvz_slots_binding(&graphics->slots, idx, type);
 }
 
 
 
-void vkl_graphics_push(
-    VklGraphics* graphics, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders)
+void dvz_graphics_push(
+    DvzGraphics* graphics, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders)
 {
     ASSERT(graphics != NULL);
-    vkl_slots_push(&graphics->slots, offset, size, shaders);
+    dvz_slots_push(&graphics->slots, offset, size, shaders);
 }
 
 
 
-void vkl_graphics_create(VklGraphics* graphics)
+void dvz_graphics_create(DvzGraphics* graphics)
 {
     ASSERT(graphics != NULL);
     ASSERT(graphics->gpu != NULL);
     ASSERT(graphics->gpu->device != VK_NULL_HANDLE);
     ASSERT(graphics->renderpass != NULL);
-    if (!vkl_obj_is_created(&graphics->slots.obj))
-        vkl_slots_create(&graphics->slots);
+    if (!dvz_obj_is_created(&graphics->slots.obj))
+        dvz_slots_create(&graphics->slots);
 
     log_trace("starting creation of graphics pipeline...");
 
@@ -2000,7 +2000,7 @@ void vkl_graphics_create(VklGraphics* graphics)
     vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
     // Vertex bindings.
-    VkVertexInputBindingDescription bindings_info[VKL_MAX_VERTEX_BINDINGS] = {0};
+    VkVertexInputBindingDescription bindings_info[DVZ_MAX_VERTEX_BINDINGS] = {0};
     for (uint32_t i = 0; i < graphics->vertex_binding_count; i++)
     {
         bindings_info[i].binding = graphics->vertex_bindings[i].binding;
@@ -2011,7 +2011,7 @@ void vkl_graphics_create(VklGraphics* graphics)
     vertex_input_info.pVertexBindingDescriptions = bindings_info;
 
     // Vertex attributes.
-    VkVertexInputAttributeDescription attrs_info[VKL_MAX_VERTEX_ATTRS] = {0};
+    VkVertexInputAttributeDescription attrs_info[DVZ_MAX_VERTEX_ATTRS] = {0};
     for (uint32_t i = 0; i < graphics->vertex_attr_count; i++)
     {
         attrs_info[i].binding = graphics->vertex_attrs[i].binding;
@@ -2023,7 +2023,7 @@ void vkl_graphics_create(VklGraphics* graphics)
     vertex_input_info.pVertexAttributeDescriptions = attrs_info;
 
     // Shaders.
-    VkPipelineShaderStageCreateInfo shader_stages[VKL_MAX_SHADERS_PER_GRAPHICS] = {0};
+    VkPipelineShaderStageCreateInfo shader_stages[DVZ_MAX_SHADERS_PER_GRAPHICS] = {0};
     for (uint32_t i = 0; i < graphics->shader_count; i++)
     {
         shader_stages[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -2074,20 +2074,20 @@ void vkl_graphics_create(VklGraphics* graphics)
     if (graphics->pipeline != VK_NULL_HANDLE)
     {
         log_trace("graphics pipeline created");
-        vkl_obj_created(&graphics->obj);
+        dvz_obj_created(&graphics->obj);
     }
     else
     {
-        graphics->obj.status = VKL_OBJECT_STATUS_INVALID;
+        graphics->obj.status = DVZ_OBJECT_STATUS_INVALID;
     }
 }
 
 
 
-void vkl_graphics_destroy(VklGraphics* graphics)
+void dvz_graphics_destroy(DvzGraphics* graphics)
 {
     ASSERT(graphics != NULL);
-    if (graphics->obj.status <= VKL_OBJECT_STATUS_INIT || graphics->gpu == NULL)
+    if (graphics->obj.status <= DVZ_OBJECT_STATUS_INIT || graphics->gpu == NULL)
     {
         // log_trace("skip destruction of already-destroyed graphics");
         return;
@@ -2111,10 +2111,10 @@ void vkl_graphics_destroy(VklGraphics* graphics)
     }
 
     // Destroy slots.
-    if (vkl_obj_is_created(&graphics->slots.obj))
-        vkl_slots_destroy(&graphics->slots);
+    if (dvz_obj_is_created(&graphics->slots.obj))
+        dvz_slots_destroy(&graphics->slots);
 
-    vkl_obj_destroyed(&graphics->obj);
+    dvz_obj_destroyed(&graphics->obj);
 }
 
 
@@ -2123,20 +2123,20 @@ void vkl_graphics_destroy(VklGraphics* graphics)
 /*  Barrier                                                                                      */
 /*************************************************************************************************/
 
-VklBarrier vkl_barrier(VklGpu* gpu)
+DvzBarrier dvz_barrier(DvzGpu* gpu)
 {
     ASSERT(gpu != NULL);
-    ASSERT(vkl_obj_is_created(&gpu->obj));
+    ASSERT(dvz_obj_is_created(&gpu->obj));
 
-    VklBarrier barrier = {0};
+    DvzBarrier barrier = {0};
     barrier.gpu = gpu;
     return barrier;
 }
 
 
 
-void vkl_barrier_stages(
-    VklBarrier* barrier, VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage)
+void dvz_barrier_stages(
+    DvzBarrier* barrier, VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage)
 {
     ASSERT(barrier != NULL);
     barrier->src_stage = src_stage;
@@ -2145,20 +2145,20 @@ void vkl_barrier_stages(
 
 
 
-void vkl_barrier_buffer(VklBarrier* barrier, VklBufferRegions br)
+void dvz_barrier_buffer(DvzBarrier* barrier, DvzBufferRegions br)
 {
     ASSERT(barrier != NULL);
-    VklBarrierBuffer* b = &barrier->buffer_barriers[barrier->buffer_barrier_count++];
+    DvzBarrierBuffer* b = &barrier->buffer_barriers[barrier->buffer_barrier_count++];
     b->br = br;
 }
 
 
 
-void vkl_barrier_buffer_queue(VklBarrier* barrier, uint32_t src_queue, uint32_t dst_queue)
+void dvz_barrier_buffer_queue(DvzBarrier* barrier, uint32_t src_queue, uint32_t dst_queue)
 {
     ASSERT(barrier != NULL);
 
-    VklBarrierBuffer* b = &barrier->buffer_barriers[barrier->buffer_barrier_count - 1];
+    DvzBarrierBuffer* b = &barrier->buffer_barriers[barrier->buffer_barrier_count - 1];
     ASSERT(b->br.buffer != NULL);
 
     b->queue_transfer = true;
@@ -2168,12 +2168,12 @@ void vkl_barrier_buffer_queue(VklBarrier* barrier, uint32_t src_queue, uint32_t 
 
 
 
-void vkl_barrier_buffer_access(
-    VklBarrier* barrier, VkAccessFlags src_access, VkAccessFlags dst_access)
+void dvz_barrier_buffer_access(
+    DvzBarrier* barrier, VkAccessFlags src_access, VkAccessFlags dst_access)
 {
     ASSERT(barrier != NULL);
 
-    VklBarrierBuffer* b = &barrier->buffer_barriers[barrier->buffer_barrier_count - 1];
+    DvzBarrierBuffer* b = &barrier->buffer_barriers[barrier->buffer_barrier_count - 1];
     ASSERT(b->br.buffer != NULL);
 
     b->src_access = src_access;
@@ -2182,23 +2182,23 @@ void vkl_barrier_buffer_access(
 
 
 
-void vkl_barrier_images(VklBarrier* barrier, VklImages* images)
+void dvz_barrier_images(DvzBarrier* barrier, DvzImages* images)
 {
     ASSERT(barrier != NULL);
 
-    VklBarrierImage* b = &barrier->image_barriers[barrier->image_barrier_count++];
+    DvzBarrierImage* b = &barrier->image_barriers[barrier->image_barrier_count++];
 
     b->images = images;
 }
 
 
 
-void vkl_barrier_images_layout(
-    VklBarrier* barrier, VkImageLayout src_layout, VkImageLayout dst_layout)
+void dvz_barrier_images_layout(
+    DvzBarrier* barrier, VkImageLayout src_layout, VkImageLayout dst_layout)
 {
     ASSERT(barrier != NULL);
 
-    VklBarrierImage* b = &barrier->image_barriers[barrier->image_barrier_count - 1];
+    DvzBarrierImage* b = &barrier->image_barriers[barrier->image_barrier_count - 1];
     ASSERT(b->images != NULL);
 
     b->src_layout = src_layout;
@@ -2207,12 +2207,12 @@ void vkl_barrier_images_layout(
 
 
 
-void vkl_barrier_images_access(
-    VklBarrier* barrier, VkAccessFlags src_access, VkAccessFlags dst_access)
+void dvz_barrier_images_access(
+    DvzBarrier* barrier, VkAccessFlags src_access, VkAccessFlags dst_access)
 {
     ASSERT(barrier != NULL);
 
-    VklBarrierImage* b = &barrier->image_barriers[barrier->image_barrier_count - 1];
+    DvzBarrierImage* b = &barrier->image_barriers[barrier->image_barrier_count - 1];
     ASSERT(b->images != NULL);
 
     b->src_access = src_access;
@@ -2221,11 +2221,11 @@ void vkl_barrier_images_access(
 
 
 
-void vkl_barrier_images_queue(VklBarrier* barrier, uint32_t src_queue, uint32_t dst_queue)
+void dvz_barrier_images_queue(DvzBarrier* barrier, uint32_t src_queue, uint32_t dst_queue)
 {
     ASSERT(barrier != NULL);
 
-    VklBarrierImage* b = &barrier->image_barriers[barrier->image_barrier_count - 1];
+    DvzBarrierImage* b = &barrier->image_barriers[barrier->image_barrier_count - 1];
     ASSERT(b->images != NULL);
 
     b->queue_transfer = true;
@@ -2239,15 +2239,15 @@ void vkl_barrier_images_queue(VklBarrier* barrier, uint32_t src_queue, uint32_t 
 /*  Semaphores                                                                                   */
 /*************************************************************************************************/
 
-VklSemaphores vkl_semaphores(VklGpu* gpu, uint32_t count)
+DvzSemaphores dvz_semaphores(DvzGpu* gpu, uint32_t count)
 {
     ASSERT(gpu != NULL);
-    ASSERT(vkl_obj_is_created(&gpu->obj));
+    ASSERT(dvz_obj_is_created(&gpu->obj));
 
     ASSERT(count > 0);
     log_trace("create set of %d semaphore(s)", count);
 
-    VklSemaphores semaphores = {0};
+    DvzSemaphores semaphores = {0};
     semaphores.gpu = gpu;
     semaphores.count = count;
 
@@ -2256,17 +2256,17 @@ VklSemaphores vkl_semaphores(VklGpu* gpu, uint32_t count)
     for (uint32_t i = 0; i < count; i++)
         VK_CHECK_RESULT(vkCreateSemaphore(gpu->device, &info, NULL, &semaphores.semaphores[i]));
 
-    vkl_obj_created(&semaphores.obj);
+    dvz_obj_created(&semaphores.obj);
 
     return semaphores;
 }
 
 
 
-void vkl_semaphores_destroy(VklSemaphores* semaphores)
+void dvz_semaphores_destroy(DvzSemaphores* semaphores)
 {
     ASSERT(semaphores != NULL);
-    if (!vkl_obj_is_created(&semaphores->obj))
+    if (!dvz_obj_is_created(&semaphores->obj))
     {
         log_trace("skip destruction of already-destroyed semaphores");
         return;
@@ -2283,7 +2283,7 @@ void vkl_semaphores_destroy(VklSemaphores* semaphores)
             semaphores->semaphores[i] = VK_NULL_HANDLE;
         }
     }
-    vkl_obj_destroyed(&semaphores->obj);
+    dvz_obj_destroyed(&semaphores->obj);
 }
 
 
@@ -2292,12 +2292,12 @@ void vkl_semaphores_destroy(VklSemaphores* semaphores)
 /*  Fences                                                                                       */
 /*************************************************************************************************/
 
-VklFences vkl_fences(VklGpu* gpu, uint32_t count)
+DvzFences dvz_fences(DvzGpu* gpu, uint32_t count)
 {
     ASSERT(gpu != NULL);
-    ASSERT(vkl_obj_is_created(&gpu->obj));
+    ASSERT(dvz_obj_is_created(&gpu->obj));
 
-    VklFences fences = {0};
+    DvzFences fences = {0};
 
     ASSERT(count > 0);
     log_trace("create set of %d fences(s)", count);
@@ -2312,14 +2312,14 @@ VklFences vkl_fences(VklGpu* gpu, uint32_t count)
     for (uint32_t i = 0; i < fences.count; i++)
         VK_CHECK_RESULT(vkCreateFence(fences.gpu->device, &info, NULL, &fences.fences[i]));
 
-    vkl_obj_created(&fences.obj);
+    dvz_obj_created(&fences.obj);
     return fences;
 }
 
 
 
-void vkl_fences_copy(
-    VklFences* src_fences, uint32_t src_idx, VklFences* dst_fences, uint32_t dst_idx)
+void dvz_fences_copy(
+    DvzFences* src_fences, uint32_t src_idx, DvzFences* dst_fences, uint32_t dst_idx)
 {
     ASSERT(src_fences != NULL);
     ASSERT(dst_fences != NULL);
@@ -2328,7 +2328,7 @@ void vkl_fences_copy(
     ASSERT(dst_idx < dst_fences->count);
 
     // Wait for the destination fence first (if it is not null).
-    // vkl_fences_wait(dst_fences, dst_idx);
+    // dvz_fences_wait(dst_fences, dst_idx);
 
     // log_trace("copy fence %d to %d", src_fences->fences[src_idx], dst_fences->fences[dst_idx]);
     dst_fences->fences[dst_idx] = src_fences->fences[src_idx];
@@ -2336,7 +2336,7 @@ void vkl_fences_copy(
 
 
 
-void vkl_fences_wait(VklFences* fences, uint32_t idx)
+void dvz_fences_wait(DvzFences* fences, uint32_t idx)
 {
     ASSERT(fences != NULL);
     ASSERT(idx < fences->count);
@@ -2353,7 +2353,7 @@ void vkl_fences_wait(VklFences* fences, uint32_t idx)
 
 
 
-bool vkl_fences_ready(VklFences* fences, uint32_t idx)
+bool dvz_fences_ready(DvzFences* fences, uint32_t idx)
 {
     ASSERT(fences != NULL);
     ASSERT(idx < fences->count);
@@ -2366,7 +2366,7 @@ bool vkl_fences_ready(VklFences* fences, uint32_t idx)
 
 
 
-void vkl_fences_reset(VklFences* fences, uint32_t idx)
+void dvz_fences_reset(DvzFences* fences, uint32_t idx)
 {
     ASSERT(fences != NULL);
     if (fences->fences[idx] != NULL)
@@ -2378,10 +2378,10 @@ void vkl_fences_reset(VklFences* fences, uint32_t idx)
 
 
 
-void vkl_fences_destroy(VklFences* fences)
+void dvz_fences_destroy(DvzFences* fences)
 {
     ASSERT(fences != NULL);
-    if (!vkl_obj_is_created(&fences->obj))
+    if (!dvz_obj_is_created(&fences->obj))
     {
         log_trace("skip destruction of already-destroyed fences");
         return;
@@ -2398,7 +2398,7 @@ void vkl_fences_destroy(VklFences* fences)
             fences->fences[i] = VK_NULL_HANDLE;
         }
     }
-    vkl_obj_destroyed(&fences->obj);
+    dvz_obj_destroyed(&fences->obj);
 }
 
 
@@ -2407,12 +2407,12 @@ void vkl_fences_destroy(VklFences* fences)
 /*  Renderpass                                                                                   */
 /*************************************************************************************************/
 
-VklRenderpass vkl_renderpass(VklGpu* gpu)
+DvzRenderpass dvz_renderpass(DvzGpu* gpu)
 {
     ASSERT(gpu != NULL);
-    ASSERT(vkl_obj_is_created(&gpu->obj));
+    ASSERT(dvz_obj_is_created(&gpu->obj));
 
-    VklRenderpass renderpass = {0};
+    DvzRenderpass renderpass = {0};
     renderpass.gpu = gpu;
 
     return renderpass;
@@ -2420,7 +2420,7 @@ VklRenderpass vkl_renderpass(VklGpu* gpu)
 
 
 
-void vkl_renderpass_clear(VklRenderpass* renderpass, VkClearValue value)
+void dvz_renderpass_clear(DvzRenderpass* renderpass, VkClearValue value)
 {
     ASSERT(renderpass != NULL);
     renderpass->clear_values[renderpass->clear_count++] = value;
@@ -2428,8 +2428,8 @@ void vkl_renderpass_clear(VklRenderpass* renderpass, VkClearValue value)
 
 
 
-void vkl_renderpass_attachment(
-    VklRenderpass* renderpass, uint32_t idx, VklRenderpassAttachmentType type, VkFormat format,
+void dvz_renderpass_attachment(
+    DvzRenderpass* renderpass, uint32_t idx, DvzRenderpassAttachmentType type, VkFormat format,
     VkImageLayout ref_layout)
 {
     ASSERT(renderpass != NULL);
@@ -2441,8 +2441,8 @@ void vkl_renderpass_attachment(
 
 
 
-void vkl_renderpass_attachment_layout(
-    VklRenderpass* renderpass, uint32_t idx, VkImageLayout src_layout, VkImageLayout dst_layout)
+void dvz_renderpass_attachment_layout(
+    DvzRenderpass* renderpass, uint32_t idx, VkImageLayout src_layout, VkImageLayout dst_layout)
 {
     ASSERT(renderpass != NULL);
     renderpass->attachments[idx].src_layout = src_layout;
@@ -2452,8 +2452,8 @@ void vkl_renderpass_attachment_layout(
 
 
 
-void vkl_renderpass_attachment_ops(
-    VklRenderpass* renderpass, uint32_t idx, //
+void dvz_renderpass_attachment_ops(
+    DvzRenderpass* renderpass, uint32_t idx, //
     VkAttachmentLoadOp load_op, VkAttachmentStoreOp store_op)
 {
     ASSERT(renderpass != NULL);
@@ -2464,8 +2464,8 @@ void vkl_renderpass_attachment_ops(
 
 
 
-void vkl_renderpass_subpass_attachment(
-    VklRenderpass* renderpass, uint32_t subpass_idx, uint32_t attachment_idx)
+void dvz_renderpass_subpass_attachment(
+    DvzRenderpass* renderpass, uint32_t subpass_idx, uint32_t attachment_idx)
 {
     ASSERT(renderpass != NULL);
     renderpass->subpasses[subpass_idx]
@@ -2475,8 +2475,8 @@ void vkl_renderpass_subpass_attachment(
 
 
 
-void vkl_renderpass_subpass_dependency(
-    VklRenderpass* renderpass, uint32_t dependency_idx, //
+void dvz_renderpass_subpass_dependency(
+    DvzRenderpass* renderpass, uint32_t dependency_idx, //
     uint32_t src_subpass, uint32_t dst_subpass)
 {
     ASSERT(renderpass != NULL);
@@ -2487,8 +2487,8 @@ void vkl_renderpass_subpass_dependency(
 
 
 
-void vkl_renderpass_subpass_dependency_access(
-    VklRenderpass* renderpass, uint32_t dependency_idx, //
+void dvz_renderpass_subpass_dependency_access(
+    DvzRenderpass* renderpass, uint32_t dependency_idx, //
     VkAccessFlags src_access, VkAccessFlags dst_access)
 {
     ASSERT(renderpass != NULL);
@@ -2498,8 +2498,8 @@ void vkl_renderpass_subpass_dependency_access(
 
 
 
-void vkl_renderpass_subpass_dependency_stage(
-    VklRenderpass* renderpass, uint32_t dependency_idx, //
+void dvz_renderpass_subpass_dependency_stage(
+    DvzRenderpass* renderpass, uint32_t dependency_idx, //
     VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage)
 {
     ASSERT(renderpass != NULL);
@@ -2509,7 +2509,7 @@ void vkl_renderpass_subpass_dependency_stage(
 
 
 
-void vkl_renderpass_create(VklRenderpass* renderpass)
+void dvz_renderpass_create(DvzRenderpass* renderpass)
 {
     ASSERT(renderpass != NULL);
 
@@ -2518,8 +2518,8 @@ void vkl_renderpass_create(VklRenderpass* renderpass)
     log_trace("starting creation of renderpass...");
 
     // Attachments.
-    VkAttachmentDescription attachments[VKL_MAX_ATTACHMENTS_PER_RENDERPASS] = {0};
-    VkAttachmentReference attachment_refs[VKL_MAX_ATTACHMENTS_PER_RENDERPASS] = {0};
+    VkAttachmentDescription attachments[DVZ_MAX_ATTACHMENTS_PER_RENDERPASS] = {0};
+    VkAttachmentReference attachment_refs[DVZ_MAX_ATTACHMENTS_PER_RENDERPASS] = {0};
     for (uint32_t i = 0; i < renderpass->attachment_count; i++)
     {
         attachments[i] = create_attachment(
@@ -2531,9 +2531,9 @@ void vkl_renderpass_create(VklRenderpass* renderpass)
     }
 
     // Subpasses.
-    VkSubpassDescription subpasses[VKL_MAX_SUBPASSES_PER_RENDERPASS] = {0};
-    VkAttachmentReference attachment_refs_matrix[VKL_MAX_ATTACHMENTS_PER_RENDERPASS]
-                                                [VKL_MAX_ATTACHMENTS_PER_RENDERPASS] = {0};
+    VkSubpassDescription subpasses[DVZ_MAX_SUBPASSES_PER_RENDERPASS] = {0};
+    VkAttachmentReference attachment_refs_matrix[DVZ_MAX_ATTACHMENTS_PER_RENDERPASS]
+                                                [DVZ_MAX_ATTACHMENTS_PER_RENDERPASS] = {0};
     uint32_t attachment = 0;
     uint32_t k = 0;
     for (uint32_t i = 0; i < renderpass->subpass_count; i++)
@@ -2544,7 +2544,7 @@ void vkl_renderpass_create(VklRenderpass* renderpass)
         {
             attachment = renderpass->subpasses[i].attachments[j];
             ASSERT(attachment < renderpass->attachment_count);
-            if (renderpass->attachments[attachment].type == VKL_RENDERPASS_ATTACHMENT_DEPTH)
+            if (renderpass->attachments[attachment].type == DVZ_RENDERPASS_ATTACHMENT_DEPTH)
             {
                 subpasses[i].pDepthStencilAttachment = &attachment_refs[j];
             }
@@ -2559,7 +2559,7 @@ void vkl_renderpass_create(VklRenderpass* renderpass)
     }
 
     // Dependencies.
-    VkSubpassDependency dependencies[VKL_MAX_DEPENDENCIES_PER_RENDERPASS] = {0};
+    VkSubpassDependency dependencies[DVZ_MAX_DEPENDENCIES_PER_RENDERPASS] = {0};
     for (uint32_t i = 0; i < renderpass->dependency_count; i++)
     {
         dependencies[i].srcSubpass = renderpass->dependencies[i].src_subpass;
@@ -2588,15 +2588,15 @@ void vkl_renderpass_create(VklRenderpass* renderpass)
         renderpass->gpu->device, &render_pass_info, NULL, &renderpass->renderpass));
 
     log_trace("renderpass created");
-    vkl_obj_created(&renderpass->obj);
+    dvz_obj_created(&renderpass->obj);
 }
 
 
 
-void vkl_renderpass_destroy(VklRenderpass* renderpass)
+void dvz_renderpass_destroy(DvzRenderpass* renderpass)
 {
     ASSERT(renderpass != NULL);
-    if (!vkl_obj_is_created(&renderpass->obj))
+    if (!dvz_obj_is_created(&renderpass->obj))
     {
         log_trace("skip destruction of already-destroyed renderpass");
         return;
@@ -2609,7 +2609,7 @@ void vkl_renderpass_destroy(VklRenderpass* renderpass)
         renderpass->renderpass = VK_NULL_HANDLE;
     }
 
-    vkl_obj_destroyed(&renderpass->obj);
+    dvz_obj_destroyed(&renderpass->obj);
 }
 
 
@@ -2618,12 +2618,12 @@ void vkl_renderpass_destroy(VklRenderpass* renderpass)
 /*  Framebuffers                                                                                 */
 /*************************************************************************************************/
 
-VklFramebuffers vkl_framebuffers(VklGpu* gpu)
+DvzFramebuffers dvz_framebuffers(DvzGpu* gpu)
 {
     ASSERT(gpu != NULL);
-    ASSERT(vkl_obj_is_created(&gpu->obj));
+    ASSERT(dvz_obj_is_created(&gpu->obj));
 
-    VklFramebuffers framebuffers = {0};
+    DvzFramebuffers framebuffers = {0};
     framebuffers.gpu = gpu;
 
     return framebuffers;
@@ -2631,8 +2631,8 @@ VklFramebuffers vkl_framebuffers(VklGpu* gpu)
 
 
 
-void vkl_framebuffers_attachment(
-    VklFramebuffers* framebuffers, uint32_t attachment_idx, VklImages* images)
+void dvz_framebuffers_attachment(
+    DvzFramebuffers* framebuffers, uint32_t attachment_idx, DvzImages* images)
 {
     ASSERT(framebuffers != NULL);
 
@@ -2641,7 +2641,7 @@ void vkl_framebuffers_attachment(
     ASSERT(images->width > 0);
     ASSERT(images->height > 0);
 
-    ASSERT(attachment_idx < VKL_MAX_ATTACHMENTS_PER_RENDERPASS);
+    ASSERT(attachment_idx < DVZ_MAX_ATTACHMENTS_PER_RENDERPASS);
     framebuffers->attachment_count = MAX(framebuffers->attachment_count, attachment_idx + 1);
     framebuffers->attachments[attachment_idx] = images;
 
@@ -2650,9 +2650,9 @@ void vkl_framebuffers_attachment(
 
 
 
-static void _framebuffers_create(VklFramebuffers* framebuffers)
+static void _framebuffers_create(DvzFramebuffers* framebuffers)
 {
-    VklRenderpass* renderpass = framebuffers->renderpass;
+    DvzRenderpass* renderpass = framebuffers->renderpass;
     ASSERT(renderpass != NULL);
 
     // The actual framebuffer size in pixels is determined by the first attachment (color images)
@@ -2667,8 +2667,8 @@ static void _framebuffers_create(VklFramebuffers* framebuffers)
     // Loop first over the framebuffers (swapchain images).
     for (uint32_t i = 0; i < framebuffers->framebuffer_count; i++)
     {
-        VklImages* images = NULL;
-        VkImageView attachments[VKL_MAX_ATTACHMENTS_PER_RENDERPASS] = {0};
+        DvzImages* images = NULL;
+        VkImageView attachments[DVZ_MAX_ATTACHMENTS_PER_RENDERPASS] = {0};
 
         // Loop over the attachments.
         for (uint32_t j = 0; j < framebuffers->attachment_count; j++)
@@ -2694,7 +2694,7 @@ static void _framebuffers_create(VklFramebuffers* framebuffers)
 
 
 
-static void _framebuffers_destroy(VklFramebuffers* framebuffers)
+static void _framebuffers_destroy(DvzFramebuffers* framebuffers)
 {
     for (uint32_t i = 0; i < framebuffers->framebuffer_count; i++)
     {
@@ -2708,7 +2708,7 @@ static void _framebuffers_destroy(VklFramebuffers* framebuffers)
 
 
 
-void vkl_framebuffers_create(VklFramebuffers* framebuffers, VklRenderpass* renderpass)
+void dvz_framebuffers_create(DvzFramebuffers* framebuffers, DvzRenderpass* renderpass)
 {
     ASSERT(framebuffers != NULL);
 
@@ -2716,7 +2716,7 @@ void vkl_framebuffers_create(VklFramebuffers* framebuffers, VklRenderpass* rende
     ASSERT(framebuffers->gpu->device != VK_NULL_HANDLE);
 
     ASSERT(renderpass != NULL);
-    ASSERT(vkl_obj_is_created(&renderpass->obj));
+    ASSERT(dvz_obj_is_created(&renderpass->obj));
 
     framebuffers->renderpass = renderpass;
 
@@ -2730,22 +2730,22 @@ void vkl_framebuffers_create(VklFramebuffers* framebuffers, VklRenderpass* rende
     log_trace("starting creation of %d framebuffer(s)", framebuffers->framebuffer_count);
     _framebuffers_create(framebuffers);
     log_trace("framebuffers created");
-    vkl_obj_created(&framebuffers->obj);
+    dvz_obj_created(&framebuffers->obj);
 }
 
 
 
-void vkl_framebuffers_destroy(VklFramebuffers* framebuffers)
+void dvz_framebuffers_destroy(DvzFramebuffers* framebuffers)
 {
     ASSERT(framebuffers != NULL);
-    if (!vkl_obj_is_created(&framebuffers->obj))
+    if (!dvz_obj_is_created(&framebuffers->obj))
     {
         log_trace("skip destruction of already-destroyed framebuffers");
         return;
     }
     log_trace("destroying %d framebuffers", framebuffers->framebuffer_count);
     _framebuffers_destroy(framebuffers);
-    vkl_obj_destroyed(&framebuffers->obj);
+    dvz_obj_destroyed(&framebuffers->obj);
 }
 
 
@@ -2754,12 +2754,12 @@ void vkl_framebuffers_destroy(VklFramebuffers* framebuffers)
 /*  Submit                                                                                       */
 /*************************************************************************************************/
 
-VklSubmit vkl_submit(VklGpu* gpu)
+DvzSubmit dvz_submit(DvzGpu* gpu)
 {
     ASSERT(gpu != NULL);
-    ASSERT(vkl_obj_is_created(&gpu->obj));
+    ASSERT(dvz_obj_is_created(&gpu->obj));
 
-    VklSubmit submit = {0};
+    DvzSubmit submit = {0};
     submit.gpu = gpu;
 
     return submit;
@@ -2767,13 +2767,13 @@ VklSubmit vkl_submit(VklGpu* gpu)
 
 
 
-void vkl_submit_commands(VklSubmit* submit, VklCommands* commands)
+void dvz_submit_commands(DvzSubmit* submit, DvzCommands* commands)
 {
     ASSERT(submit != NULL);
     ASSERT(commands != NULL);
 
     uint32_t n = submit->commands_count;
-    ASSERT(n < VKL_MAX_COMMANDS_PER_SUBMIT);
+    ASSERT(n < DVZ_MAX_COMMANDS_PER_SUBMIT);
     // log_trace("adding commands #%d to submit", n);
     submit->commands[n] = commands;
     submit->commands_count++;
@@ -2781,16 +2781,16 @@ void vkl_submit_commands(VklSubmit* submit, VklCommands* commands)
 
 
 
-void vkl_submit_wait_semaphores(
-    VklSubmit* submit, VkPipelineStageFlags stage, VklSemaphores* semaphores, uint32_t idx)
+void dvz_submit_wait_semaphores(
+    DvzSubmit* submit, VkPipelineStageFlags stage, DvzSemaphores* semaphores, uint32_t idx)
 {
     ASSERT(submit != NULL);
     ASSERT(semaphores != NULL);
 
     ASSERT(idx < semaphores->count);
-    ASSERT(idx < VKL_MAX_SEMAPHORES_PER_SET);
+    ASSERT(idx < DVZ_MAX_SEMAPHORES_PER_SET);
     uint32_t n = submit->wait_semaphores_count;
-    ASSERT(n < VKL_MAX_SEMAPHORES_PER_SUBMIT);
+    ASSERT(n < DVZ_MAX_SEMAPHORES_PER_SUBMIT);
 
     ASSERT(semaphores->semaphores[idx] != VK_NULL_HANDLE);
 
@@ -2803,13 +2803,13 @@ void vkl_submit_wait_semaphores(
 
 
 
-void vkl_submit_signal_semaphores(VklSubmit* submit, VklSemaphores* semaphores, uint32_t idx)
+void dvz_submit_signal_semaphores(DvzSubmit* submit, DvzSemaphores* semaphores, uint32_t idx)
 {
     ASSERT(submit != NULL);
 
-    ASSERT(idx < VKL_MAX_SEMAPHORES_PER_SET);
+    ASSERT(idx < DVZ_MAX_SEMAPHORES_PER_SET);
     uint32_t n = submit->signal_semaphores_count;
-    ASSERT(n < VKL_MAX_SEMAPHORES_PER_SUBMIT);
+    ASSERT(n < DVZ_MAX_SEMAPHORES_PER_SUBMIT);
 
     submit->signal_semaphores[n] = semaphores;
     submit->signal_semaphores_idx[n] = idx;
@@ -2819,7 +2819,7 @@ void vkl_submit_signal_semaphores(VklSubmit* submit, VklSemaphores* semaphores, 
 
 
 
-void vkl_submit_send(VklSubmit* submit, uint32_t cmd_idx, VklFences* fence, uint32_t fence_idx)
+void dvz_submit_send(DvzSubmit* submit, uint32_t cmd_idx, DvzFences* fence, uint32_t fence_idx)
 {
     ASSERT(submit != NULL);
     // log_trace("starting command buffer submission...");
@@ -2827,7 +2827,7 @@ void vkl_submit_send(VklSubmit* submit, uint32_t cmd_idx, VklFences* fence, uint
     VkSubmitInfo submit_info = {0};
     submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-    VkSemaphore wait_semaphores[VKL_MAX_SEMAPHORES_PER_SUBMIT] = {0};
+    VkSemaphore wait_semaphores[DVZ_MAX_SEMAPHORES_PER_SUBMIT] = {0};
     for (uint32_t i = 0; i < submit->wait_semaphores_count; i++)
     {
         wait_semaphores[i] =
@@ -2836,7 +2836,7 @@ void vkl_submit_send(VklSubmit* submit, uint32_t cmd_idx, VklFences* fence, uint
         ASSERT(submit->wait_stages[i] != VK_NULL_HANDLE);
     }
 
-    VkSemaphore signal_semaphores[VKL_MAX_SEMAPHORES_PER_SUBMIT] = {0};
+    VkSemaphore signal_semaphores[DVZ_MAX_SEMAPHORES_PER_SUBMIT] = {0};
     for (uint32_t i = 0; i < submit->signal_semaphores_count; i++)
     {
         signal_semaphores[i] =
@@ -2844,7 +2844,7 @@ void vkl_submit_send(VklSubmit* submit, uint32_t cmd_idx, VklFences* fence, uint
         // log_trace("signal semaphore %d", signal_semaphores[i]);
     }
 
-    VkCommandBuffer cmd_bufs[VKL_MAX_COMMANDS_PER_SUBMIT] = {0};
+    VkCommandBuffer cmd_bufs[DVZ_MAX_COMMANDS_PER_SUBMIT] = {0};
 
     // Find the queue to submit to.
     ASSERT(submit->commands_count > 0);
@@ -2872,8 +2872,8 @@ void vkl_submit_send(VklSubmit* submit, uint32_t cmd_idx, VklFences* fence, uint
 
     if (vfence != VK_NULL_HANDLE)
     {
-        vkl_fences_wait(fence, fence_idx);
-        vkl_fences_reset(fence, fence_idx);
+        dvz_fences_wait(fence, fence_idx);
+        dvz_fences_reset(fence, fence_idx);
     }
     // log_trace("submit queue and signal fence %d", vfence);
     VK_CHECK_RESULT(vkQueueSubmit(submit->gpu->queues.queues[queue_idx], 1, &submit_info, vfence));
@@ -2883,7 +2883,7 @@ void vkl_submit_send(VklSubmit* submit, uint32_t cmd_idx, VklFences* fence, uint
 
 
 
-void vkl_submit_reset(VklSubmit* submit)
+void dvz_submit_reset(DvzSubmit* submit)
 {
     ASSERT(submit != NULL);
     // log_trace("reset Submit instance");
@@ -2898,14 +2898,14 @@ void vkl_submit_reset(VklSubmit* submit)
 /*  Command buffer filling                                                                       */
 /*************************************************************************************************/
 
-void vkl_cmd_begin_renderpass(
-    VklCommands* cmds, uint32_t idx, VklRenderpass* renderpass, VklFramebuffers* framebuffers)
+void dvz_cmd_begin_renderpass(
+    DvzCommands* cmds, uint32_t idx, DvzRenderpass* renderpass, DvzFramebuffers* framebuffers)
 {
     ASSERT(renderpass != NULL);
     ASSERT(framebuffers != NULL);
 
-    ASSERT(vkl_obj_is_created(&renderpass->obj));
-    ASSERT(vkl_obj_is_created(&framebuffers->obj));
+    ASSERT(dvz_obj_is_created(&renderpass->obj));
+    ASSERT(dvz_obj_is_created(&framebuffers->obj));
     ASSERT(renderpass->renderpass != VK_NULL_HANDLE);
 
     // Find the framebuffer size.
@@ -2924,7 +2924,7 @@ void vkl_cmd_begin_renderpass(
 
 
 
-void vkl_cmd_end_renderpass(VklCommands* cmds, uint32_t idx)
+void dvz_cmd_end_renderpass(DvzCommands* cmds, uint32_t idx)
 {
     CMD_START
     vkCmdEndRenderPass(cb);
@@ -2933,7 +2933,7 @@ void vkl_cmd_end_renderpass(VklCommands* cmds, uint32_t idx)
 
 
 
-void vkl_cmd_compute(VklCommands* cmds, uint32_t idx, VklCompute* compute, uvec3 size)
+void dvz_cmd_compute(DvzCommands* cmds, uint32_t idx, DvzCompute* compute, uvec3 size)
 {
     ASSERT(compute->bindings != NULL);
     ASSERT(compute->bindings->dsets != NULL);
@@ -2952,16 +2952,16 @@ void vkl_cmd_compute(VklCommands* cmds, uint32_t idx, VklCompute* compute, uvec3
 
 
 
-void vkl_cmd_barrier(VklCommands* cmds, uint32_t idx, VklBarrier* barrier)
+void dvz_cmd_barrier(DvzCommands* cmds, uint32_t idx, DvzBarrier* barrier)
 {
     ASSERT(barrier != NULL);
-    VklQueues* q = &cmds->gpu->queues;
+    DvzQueues* q = &cmds->gpu->queues;
     CMD_START
 
     // Buffer barriers
-    VkBufferMemoryBarrier buffer_barriers[VKL_MAX_BARRIERS_PER_SET] = {0};
+    VkBufferMemoryBarrier buffer_barriers[DVZ_MAX_BARRIERS_PER_SET] = {0};
     VkBufferMemoryBarrier* buffer_barrier = NULL;
-    VklBarrierBuffer* buffer_info = NULL;
+    DvzBarrierBuffer* buffer_info = NULL;
 
     for (uint32_t j = 0; j < barrier->buffer_barrier_count; j++)
     {
@@ -2990,9 +2990,9 @@ void vkl_cmd_barrier(VklCommands* cmds, uint32_t idx, VklBarrier* barrier)
     }
 
     // Image barriers
-    VkImageMemoryBarrier image_barriers[VKL_MAX_BARRIERS_PER_SET] = {0};
+    VkImageMemoryBarrier image_barriers[DVZ_MAX_BARRIERS_PER_SET] = {0};
     VkImageMemoryBarrier* image_barrier = NULL;
-    VklBarrierImage* image_info = NULL;
+    DvzBarrierImage* image_info = NULL;
 
     for (uint32_t j = 0; j < barrier->image_barrier_count; j++)
     {
@@ -3035,8 +3035,8 @@ void vkl_cmd_barrier(VklCommands* cmds, uint32_t idx, VklBarrier* barrier)
 
 
 
-void vkl_cmd_copy_buffer_to_image(
-    VklCommands* cmds, uint32_t idx, VklBuffer* buffer, VklImages* images)
+void dvz_cmd_copy_buffer_to_image(
+    DvzCommands* cmds, uint32_t idx, DvzBuffer* buffer, DvzImages* images)
 {
     CMD_START_CLIP(images->count)
 
@@ -3067,8 +3067,8 @@ void vkl_cmd_copy_buffer_to_image(
 
 
 
-void vkl_cmd_copy_image_to_buffer(
-    VklCommands* cmds, uint32_t idx, VklImages* images, VklBuffer* buffer)
+void dvz_cmd_copy_image_to_buffer(
+    DvzCommands* cmds, uint32_t idx, DvzImages* images, DvzBuffer* buffer)
 {
     CMD_START_CLIP(images->count)
 
@@ -3099,7 +3099,7 @@ void vkl_cmd_copy_image_to_buffer(
 
 
 
-void vkl_cmd_copy_image(VklCommands* cmds, uint32_t idx, VklImages* src_img, VklImages* dst_img)
+void dvz_cmd_copy_image(DvzCommands* cmds, uint32_t idx, DvzImages* src_img, DvzImages* dst_img)
 {
     ASSERT(src_img != NULL);
     ASSERT(dst_img != NULL);
@@ -3136,7 +3136,7 @@ void vkl_cmd_copy_image(VklCommands* cmds, uint32_t idx, VklImages* src_img, Vkl
 
 
 
-void vkl_cmd_viewport(VklCommands* cmds, uint32_t idx, VkViewport viewport)
+void dvz_cmd_viewport(DvzCommands* cmds, uint32_t idx, VkViewport viewport)
 {
     CMD_START
     vkCmdSetViewport(cb, 0, 1, &viewport);
@@ -3148,19 +3148,19 @@ void vkl_cmd_viewport(VklCommands* cmds, uint32_t idx, VkViewport viewport)
 
 
 
-void vkl_cmd_bind_graphics(
-    VklCommands* cmds, uint32_t idx, VklGraphics* graphics, //
-    VklBindings* bindings, uint32_t dynamic_idx)
+void dvz_cmd_bind_graphics(
+    DvzCommands* cmds, uint32_t idx, DvzGraphics* graphics, //
+    DvzBindings* bindings, uint32_t dynamic_idx)
 {
     ASSERT(graphics != NULL);
-    VklSlots* slots = &graphics->slots;
+    DvzSlots* slots = &graphics->slots;
     ASSERT(slots != NULL);
     ASSERT(bindings != NULL);
 
     // Count the number of dynamic uniforms.
     uint32_t dyn_count = 0;
-    uint32_t dyn_offsets[VKL_MAX_BINDINGS_SIZE] = {0};
-    ASSERT(slots->slot_count <= VKL_MAX_BINDINGS_SIZE);
+    uint32_t dyn_offsets[DVZ_MAX_BINDINGS_SIZE] = {0};
+    ASSERT(slots->slot_count <= DVZ_MAX_BINDINGS_SIZE);
     for (uint32_t i = 0; i < slots->slot_count; i++)
     {
         if (slots->types[i] == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
@@ -3171,7 +3171,7 @@ void vkl_cmd_bind_graphics(
     }
 
     CMD_START_CLIP(bindings->dset_count)
-    if (vkl_obj_is_created(&graphics->obj))
+    if (dvz_obj_is_created(&graphics->obj))
         vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, graphics->pipeline);
     vkCmdBindDescriptorSets(
         cb, VK_PIPELINE_BIND_POINT_GRAPHICS, slots->pipeline_layout, //
@@ -3181,8 +3181,8 @@ void vkl_cmd_bind_graphics(
 
 
 
-void vkl_cmd_bind_vertex_buffer(
-    VklCommands* cmds, uint32_t idx, VklBufferRegions br, VkDeviceSize offset)
+void dvz_cmd_bind_vertex_buffer(
+    DvzCommands* cmds, uint32_t idx, DvzBufferRegions br, VkDeviceSize offset)
 {
     CMD_START_CLIP(br.count)
     VkDeviceSize offsets[] = {br.offsets[iclip] + offset};
@@ -3192,8 +3192,8 @@ void vkl_cmd_bind_vertex_buffer(
 
 
 
-void vkl_cmd_bind_index_buffer(
-    VklCommands* cmds, uint32_t idx, VklBufferRegions br, VkDeviceSize offset)
+void dvz_cmd_bind_index_buffer(
+    DvzCommands* cmds, uint32_t idx, DvzBufferRegions br, VkDeviceSize offset)
 {
     CMD_START_CLIP(br.count)
     vkCmdBindIndexBuffer(cb, br.buffer->buffer, br.offsets[iclip] + offset, VK_INDEX_TYPE_UINT32);
@@ -3202,7 +3202,7 @@ void vkl_cmd_bind_index_buffer(
 
 
 
-void vkl_cmd_draw(VklCommands* cmds, uint32_t idx, uint32_t first_vertex, uint32_t vertex_count)
+void dvz_cmd_draw(DvzCommands* cmds, uint32_t idx, uint32_t first_vertex, uint32_t vertex_count)
 {
     ASSERT(vertex_count > 0);
     CMD_START
@@ -3212,8 +3212,8 @@ void vkl_cmd_draw(VklCommands* cmds, uint32_t idx, uint32_t first_vertex, uint32
 
 
 
-void vkl_cmd_draw_indexed(
-    VklCommands* cmds, uint32_t idx, uint32_t first_index, uint32_t vertex_offset,
+void dvz_cmd_draw_indexed(
+    DvzCommands* cmds, uint32_t idx, uint32_t first_index, uint32_t vertex_offset,
     uint32_t index_count)
 {
     ASSERT(index_count > 0);
@@ -3224,7 +3224,7 @@ void vkl_cmd_draw_indexed(
 
 
 
-void vkl_cmd_draw_indirect(VklCommands* cmds, uint32_t idx, VklBufferRegions indirect)
+void dvz_cmd_draw_indirect(DvzCommands* cmds, uint32_t idx, DvzBufferRegions indirect)
 {
     CMD_START_CLIP(indirect.count)
     vkCmdDrawIndirect(cb, indirect.buffer->buffer, indirect.offsets[iclip], 1, 0);
@@ -3233,7 +3233,7 @@ void vkl_cmd_draw_indirect(VklCommands* cmds, uint32_t idx, VklBufferRegions ind
 
 
 
-void vkl_cmd_draw_indexed_indirect(VklCommands* cmds, uint32_t idx, VklBufferRegions indirect)
+void dvz_cmd_draw_indexed_indirect(DvzCommands* cmds, uint32_t idx, DvzBufferRegions indirect)
 {
     CMD_START_CLIP(indirect.count)
     vkCmdDrawIndexedIndirect(cb, indirect.buffer->buffer, indirect.offsets[iclip], 1, 0);
@@ -3242,10 +3242,10 @@ void vkl_cmd_draw_indexed_indirect(VklCommands* cmds, uint32_t idx, VklBufferReg
 
 
 
-void vkl_cmd_copy_buffer(
-    VklCommands* cmds, uint32_t idx,             //
-    VklBuffer* src_buf, VkDeviceSize src_offset, //
-    VklBuffer* dst_buf, VkDeviceSize dst_offset, //
+void dvz_cmd_copy_buffer(
+    DvzCommands* cmds, uint32_t idx,             //
+    DvzBuffer* src_buf, VkDeviceSize src_offset, //
+    DvzBuffer* dst_buf, VkDeviceSize dst_offset, //
     VkDeviceSize size)
 {
     ASSERT(cmds != NULL);
@@ -3266,8 +3266,8 @@ void vkl_cmd_copy_buffer(
 
 
 
-void vkl_cmd_push(
-    VklCommands* cmds, uint32_t idx, VklSlots* slots, VkShaderStageFlagBits shaders, //
+void dvz_cmd_push(
+    DvzCommands* cmds, uint32_t idx, DvzSlots* slots, VkShaderStageFlagBits shaders, //
     VkDeviceSize offset, VkDeviceSize size, const void* data)
 {
     CMD_START

@@ -2,8 +2,8 @@
 /*  Simple 3D mesh creation and manipulation                                                     */
 /*************************************************************************************************/
 
-#ifndef VKL_MESH_HEADER
-#define VKL_MESH_HEADER
+#ifndef DVZ_MESH_HEADER
+#define DVZ_MESH_HEADER
 
 #include "array.h"
 #include "graphics.h"
@@ -20,17 +20,17 @@ extern "C" {
 
 typedef enum
 {
-    VKL_MESH_CUSTOM,
-    VKL_MESH_CUBE,
-    VKL_MESH_SPHERE,
-    VKL_MESH_SURFACE,
-    VKL_MESH_CYLINDER,
-    VKL_MESH_CONE,
-    VKL_MESH_SQUARE,
-    VKL_MESH_DISC,
-    VKL_MESH_OBJ,
-    VKL_MESH_COUNT,
-} VklMeshType;
+    DVZ_MESH_CUSTOM,
+    DVZ_MESH_CUBE,
+    DVZ_MESH_SPHERE,
+    DVZ_MESH_SURFACE,
+    DVZ_MESH_CYLINDER,
+    DVZ_MESH_CONE,
+    DVZ_MESH_SQUARE,
+    DVZ_MESH_DISC,
+    DVZ_MESH_OBJ,
+    DVZ_MESH_COUNT,
+} DvzMeshType;
 
 
 
@@ -38,7 +38,7 @@ typedef enum
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct VklMesh VklMesh;
+typedef struct DvzMesh DvzMesh;
 
 
 
@@ -46,10 +46,10 @@ typedef struct VklMesh VklMesh;
 /*  Structs                                                                                */
 /*************************************************************************************************/
 
-struct VklMesh
+struct DvzMesh
 {
-    VklArray vertices;
-    VklArray indices;
+    DvzArray vertices;
+    DvzArray indices;
     mat4 transform;
 };
 
@@ -64,7 +64,7 @@ struct VklMesh
  *
  * @param mesh the mesh
  */
-VKY_EXPORT void vkl_mesh_transform_reset(VklMesh* mesh);
+DVZ_EXPORT void dvz_mesh_transform_reset(DvzMesh* mesh);
 
 /**
  * Append a mesh transformation.
@@ -72,7 +72,7 @@ VKY_EXPORT void vkl_mesh_transform_reset(VklMesh* mesh);
  * @param mesh the mesh
  * @param transform the transform matrix
  */
-VKY_EXPORT void vkl_mesh_transform_add(VklMesh* mesh, mat4 transform);
+DVZ_EXPORT void dvz_mesh_transform_add(DvzMesh* mesh, mat4 transform);
 
 /**
  * Append a translation transformation.
@@ -80,7 +80,7 @@ VKY_EXPORT void vkl_mesh_transform_add(VklMesh* mesh, mat4 transform);
  * @param mesh the mesh
  * @param translate the translation vector
  */
-VKY_EXPORT void vkl_mesh_translate(VklMesh* mesh, vec3 translate);
+DVZ_EXPORT void dvz_mesh_translate(DvzMesh* mesh, vec3 translate);
 
 /**
  * Append a scaling transformation.
@@ -88,7 +88,7 @@ VKY_EXPORT void vkl_mesh_translate(VklMesh* mesh, vec3 translate);
  * @param mesh the mesh
  * @param scale the scaling coefficients
  */
-VKY_EXPORT void vkl_mesh_scale(VklMesh* mesh, vec3 scale);
+DVZ_EXPORT void dvz_mesh_scale(DvzMesh* mesh, vec3 scale);
 
 /**
  * Append a rotation transformation.
@@ -97,14 +97,14 @@ VKY_EXPORT void vkl_mesh_scale(VklMesh* mesh, vec3 scale);
  * @param angle the rotation angle
  * @param axis the rotation axis
  */
-VKY_EXPORT void vkl_mesh_rotate(VklMesh* mesh, float angle, vec3 axis);
+DVZ_EXPORT void dvz_mesh_rotate(DvzMesh* mesh, float angle, vec3 axis);
 
 /**
  * Apply the transformation matrix to a mesh.
  *
  * @param mesh the mesh
  */
-VKY_EXPORT void vkl_mesh_transform(VklMesh* mesh);
+DVZ_EXPORT void dvz_mesh_transform(DvzMesh* mesh);
 
 
 
@@ -115,12 +115,12 @@ VKY_EXPORT void vkl_mesh_transform(VklMesh* mesh);
 /**
  * Create a new mesh.
  *
- * A mesh is represented by an array of vertices of type `VklGraphicsMeshVertex` and indices, where
+ * A mesh is represented by an array of vertices of type `DvzGraphicsMeshVertex` and indices, where
  * every triplet of vertex indices represents a triangular face of the mesh.
  *
  * @returns a mesh object
  */
-VKY_EXPORT VklMesh vkl_mesh(void);
+DVZ_EXPORT DvzMesh dvz_mesh(void);
 
 /**
  * Create a grid mesh.
@@ -132,7 +132,7 @@ VKY_EXPORT VklMesh vkl_mesh(void);
  * @param positions the 3D position of each vertex in the grid
  * @returns a mesh object
  */
-VKY_EXPORT VklMesh vkl_mesh_grid(uint32_t row_count, uint32_t col_count, const vec3* positions);
+DVZ_EXPORT DvzMesh dvz_mesh_grid(uint32_t row_count, uint32_t col_count, const vec3* positions);
 
 /**
  * Create a surface mesh.
@@ -144,14 +144,14 @@ VKY_EXPORT VklMesh vkl_mesh_grid(uint32_t row_count, uint32_t col_count, const v
  * @param heights the height of each vertex in the grid
  * @returns a mesh object
  */
-VKY_EXPORT VklMesh vkl_mesh_surface(uint32_t row_count, uint32_t col_count, const float* heights);
+DVZ_EXPORT DvzMesh dvz_mesh_surface(uint32_t row_count, uint32_t col_count, const float* heights);
 
 /**
  * Create a unit cube mesh (ranging [-0.5, +0.5]).
  *
  * @returns a mesh object
  */
-VKY_EXPORT VklMesh vkl_mesh_cube(void);
+DVZ_EXPORT DvzMesh dvz_mesh_cube(void);
 
 /**
  * Create a sphere mesh.
@@ -160,7 +160,7 @@ VKY_EXPORT VklMesh vkl_mesh_cube(void);
  * @param col_count number of columns
  * @returns a mesh object
  */
-VKY_EXPORT VklMesh vkl_mesh_sphere(uint32_t row_count, uint32_t col_count);
+DVZ_EXPORT DvzMesh dvz_mesh_sphere(uint32_t row_count, uint32_t col_count);
 
 /**
  * Create a cylinder mesh.
@@ -168,7 +168,7 @@ VKY_EXPORT VklMesh vkl_mesh_sphere(uint32_t row_count, uint32_t col_count);
  * @param count number of sides
  * @returns a mesh object
  */
-VKY_EXPORT VklMesh vkl_mesh_cylinder(uint32_t count);
+DVZ_EXPORT DvzMesh dvz_mesh_cylinder(uint32_t count);
 
 /**
  * Create a cone mesh.
@@ -176,14 +176,14 @@ VKY_EXPORT VklMesh vkl_mesh_cylinder(uint32_t count);
  * @param count number of sides
  * @returns a mesh object
  */
-VKY_EXPORT VklMesh vkl_mesh_cone(uint32_t count);
+DVZ_EXPORT DvzMesh dvz_mesh_cone(uint32_t count);
 
 /**
  * Create a square mesh.
  *
  * @returns a mesh object
  */
-VKY_EXPORT VklMesh vkl_mesh_square(void);
+DVZ_EXPORT DvzMesh dvz_mesh_square(void);
 
 /**
  * Create a disc mesh.
@@ -191,21 +191,21 @@ VKY_EXPORT VklMesh vkl_mesh_square(void);
  * @param count number of sides
  * @returns a mesh object
  */
-VKY_EXPORT VklMesh vkl_mesh_disc(uint32_t count);
+DVZ_EXPORT DvzMesh dvz_mesh_disc(uint32_t count);
 
 /**
  * Normalize a mesh.
  *
  * @param mesh the mesh
  */
-VKY_EXPORT void vkl_mesh_normalize(VklMesh* mesh);
+DVZ_EXPORT void dvz_mesh_normalize(DvzMesh* mesh);
 
 /**
  * Destroy a mesh.
  *
  * @param mesh the mesh
  */
-VKY_EXPORT void vkl_mesh_destroy(VklMesh* mesh);
+DVZ_EXPORT void dvz_mesh_destroy(DvzMesh* mesh);
 
 
 

@@ -1,4 +1,4 @@
-#include "../include/visky/panel.h"
+#include "../include/datoviz/panel.h"
 
 
 
@@ -6,14 +6,14 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static VklMVP MVP_ID = {
+static DvzMVP MVP_ID = {
     GLM_MAT4_IDENTITY_INIT, //
     GLM_MAT4_IDENTITY_INIT, //
     GLM_MAT4_IDENTITY_INIT};
 
 
 
-static void _check_viewport(VklViewport* viewport)
+static void _check_viewport(DvzViewport* viewport)
 {
     ASSERT(viewport != NULL);
 
@@ -29,12 +29,12 @@ static void _check_viewport(VklViewport* viewport)
 
 
 
-static void _update_viewport(VklPanel* panel)
+static void _update_viewport(DvzPanel* panel)
 {
-    VklCanvas* canvas = panel->grid->canvas;
+    DvzCanvas* canvas = panel->grid->canvas;
     ASSERT(canvas != NULL);
 
-    VklViewport* viewport = &panel->viewport;
+    DvzViewport* viewport = &panel->viewport;
 
     ASSERT(panel->width > 0);
     ASSERT(panel->height > 0);
@@ -63,11 +63,11 @@ static void _update_viewport(VklPanel* panel)
 
 
 
-static void _update_grid_panels(VklGrid* grid, VklGridAxis axis)
+static void _update_grid_panels(DvzGrid* grid, DvzGridAxis axis)
 {
     ASSERT(grid != NULL);
 
-    bool h = axis == VKL_GRID_HORIZONTAL;
+    bool h = axis == DVZ_GRID_HORIZONTAL;
     uint32_t n = h ? grid->n_cols : grid->n_rows;
     float total = 0.0f;
 
@@ -100,15 +100,15 @@ static void _update_grid_panels(VklGrid* grid, VklGridAxis axis)
     }
 
     // Update the panel positions and sizes.
-    VklPanel* panel = vkl_container_iter_init(&grid->panels);
+    DvzPanel* panel = dvz_container_iter_init(&grid->panels);
     while (panel != NULL)
     {
-        vkl_panel_update(panel);
-        panel = vkl_container_iter(&grid->panels);
+        dvz_panel_update(panel);
+        panel = dvz_container_iter(&grid->panels);
     }
     // NOTE: not sure if this is needed? Decommenting causes the command buffers to be recorded
     // twice.
-    // vkl_canvas_to_refill(grid->canvas);
+    // dvz_canvas_to_refill(grid->canvas);
     //
     // TODO: hide panels that are overlapped by hspan/vspan-ed panels
     // by setting STATUS_INACTIVE (with log warn)
@@ -116,20 +116,20 @@ static void _update_grid_panels(VklGrid* grid, VklGridAxis axis)
 
 
 
-static float _to_normalized_unit(VklPanel* panel, VklGridAxis axis, float size)
+static float _to_normalized_unit(DvzPanel* panel, DvzGridAxis axis, float size)
 {
     ASSERT(panel != NULL);
-    VklCanvas* canvas = panel->grid->canvas;
-    bool h = axis == VKL_GRID_HORIZONTAL;
+    DvzCanvas* canvas = panel->grid->canvas;
+    bool h = axis == DVZ_GRID_HORIZONTAL;
     switch (panel->size_unit)
     {
-    case VKL_PANEL_UNIT_NORMALIZED:
+    case DVZ_PANEL_UNIT_NORMALIZED:
         return size;
         break;
-    case VKL_PANEL_UNIT_FRAMEBUFFER:
+    case DVZ_PANEL_UNIT_FRAMEBUFFER:
         return size / (h ? canvas->swapchain.images->width : canvas->swapchain.images->height);
         break;
-    case VKL_PANEL_UNIT_SCREEN:
+    case DVZ_PANEL_UNIT_SCREEN:
         return size / (h ? canvas->window->width : canvas->window->height);
         break;
     default:
@@ -141,15 +141,15 @@ static float _to_normalized_unit(VklPanel* panel, VklGridAxis axis, float size)
 
 
 
-static VklPanel* _get_panel(VklGrid* grid, uint32_t row, uint32_t col)
+static DvzPanel* _get_panel(DvzGrid* grid, uint32_t row, uint32_t col)
 {
     ASSERT(grid != NULL);
-    VklPanel* panel = vkl_container_iter_init(&grid->panels);
+    DvzPanel* panel = dvz_container_iter_init(&grid->panels);
     while (panel != NULL)
     {
         if (panel->row == row && panel->col == col)
             return panel;
-        panel = vkl_container_iter(&grid->panels);
+        panel = dvz_container_iter(&grid->panels);
     }
     return NULL;
 }
@@ -160,54 +160,54 @@ static VklPanel* _get_panel(VklGrid* grid, uint32_t row, uint32_t col)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-VklGrid vkl_grid(VklCanvas* canvas, uint32_t rows, uint32_t cols)
+DvzGrid dvz_grid(DvzCanvas* canvas, uint32_t rows, uint32_t cols)
 {
     ASSERT(canvas != NULL);
-    VklGrid grid = {0};
+    DvzGrid grid = {0};
     grid.canvas = canvas;
     grid.n_rows = rows;
     grid.n_cols = cols;
-    grid.panels = vkl_container(VKL_MAX_PANELS, sizeof(VklPanel), VKL_OBJECT_TYPE_PANEL);
+    grid.panels = dvz_container(DVZ_MAX_PANELS, sizeof(DvzPanel), DVZ_OBJECT_TYPE_PANEL);
 
-    _update_grid_panels(&grid, VKL_GRID_HORIZONTAL);
-    _update_grid_panels(&grid, VKL_GRID_VERTICAL);
+    _update_grid_panels(&grid, DVZ_GRID_HORIZONTAL);
+    _update_grid_panels(&grid, DVZ_GRID_VERTICAL);
 
     return grid;
 }
 
 
 
-void vkl_grid_destroy(VklGrid* grid)
+void dvz_grid_destroy(DvzGrid* grid)
 {
     ASSERT(grid != NULL);
-    vkl_container_destroy(&grid->panels);
+    dvz_container_destroy(&grid->panels);
 }
 
 
 
-VklPanel* vkl_panel(VklGrid* grid, uint32_t row, uint32_t col)
+DvzPanel* dvz_panel(DvzGrid* grid, uint32_t row, uint32_t col)
 {
     ASSERT(grid != NULL);
-    VklCanvas* canvas = grid->canvas;
+    DvzCanvas* canvas = grid->canvas;
     ASSERT(canvas != NULL);
-    VklContext* ctx = canvas->gpu->context;
+    DvzContext* ctx = canvas->gpu->context;
 
     ASSERT(row < grid->n_rows);
     ASSERT(col < grid->n_cols);
 
-    VklPanel* panel = _get_panel(grid, row, col);
+    DvzPanel* panel = _get_panel(grid, row, col);
     if (panel != NULL)
         return panel;
 
-    panel = vkl_container_alloc(&grid->panels);
-    vkl_obj_created(&panel->obj);
+    panel = dvz_container_alloc(&grid->panels);
+    dvz_obj_created(&panel->obj);
 
     panel->grid = grid;
     panel->row = row;
     panel->col = col;
     panel->hspan = 1;
     panel->vspan = 1;
-    panel->mode = VKL_PANEL_GRID;
+    panel->mode = DVZ_PANEL_GRID;
 
     // Default data coords.
     for (uint32_t i = 0; i < 3; i++)
@@ -215,44 +215,44 @@ VklPanel* vkl_panel(VklGrid* grid, uint32_t row, uint32_t col)
         panel->data_coords.box.p0[i] = -1;
         panel->data_coords.box.p1[i] = +1;
     }
-    panel->data_coords.transform = VKL_TRANSFORM_CARTESIAN;
-    panel->data_coords.transpose = VKL_CDS_TRANSPOSE_NONE;
+    panel->data_coords.transform = DVZ_TRANSFORM_CARTESIAN;
+    panel->data_coords.transpose = DVZ_CDS_TRANSPOSE_NONE;
 
     // Default DPI scaling.
-    panel->viewport.dpi_scaling = VKL_DEFAULT_DPI_SCALING;
+    panel->viewport.dpi_scaling = DVZ_DEFAULT_DPI_SCALING;
 
     // NOTE: for now just use a single command buffer, as using multiple command buffers
     // is complicated since we need to use multiple render passes and framebuffers.
     panel->cmds = &grid->canvas->cmds_render;
-    // Tag the VklCommands instance with the panel index, so that the REFILL callback knows
-    // which VklCommands corresponds to which panel.
-    // panel->cmds = vkl_canvas_commands(
-    //     grid->canvas, VKL_DEFAULT_QUEUE_RENDER, VKL_COMMANDS_GROUP_PANELS, grid->panel_count -
+    // Tag the DvzCommands instance with the panel index, so that the REFILL callback knows
+    // which DvzCommands corresponds to which panel.
+    // panel->cmds = dvz_canvas_commands(
+    //     grid->canvas, DVZ_DEFAULT_QUEUE_RENDER, DVZ_COMMANDS_GROUP_PANELS, grid->panel_count -
     //     1);
 
     // MVP uniform buffer.
     uint32_t n = canvas->swapchain.img_count;
-    panel->br_mvp = vkl_ctx_buffers(ctx, VKL_BUFFER_TYPE_UNIFORM_MAPPABLE, n, sizeof(VklMVP));
+    panel->br_mvp = dvz_ctx_buffers(ctx, DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE, n, sizeof(DvzMVP));
     // Initialize with identity matrices. Will be later updated by the scene controllers at every
     // frame.
-    vkl_upload_buffers(canvas, panel->br_mvp, 0, panel->br_mvp.size, &MVP_ID);
+    dvz_upload_buffers(canvas, panel->br_mvp, 0, panel->br_mvp.size, &MVP_ID);
 
-    // Update the VklViewport.
-    vkl_panel_update(panel);
+    // Update the DvzViewport.
+    dvz_panel_update(panel);
     return panel;
 }
 
 
 
-void vkl_panel_update(VklPanel* panel)
+void dvz_panel_update(DvzPanel* panel)
 {
     ASSERT(panel != NULL);
-    VklGrid* grid = panel->grid;
+    DvzGrid* grid = panel->grid;
 
     ASSERT(panel->col < grid->n_cols);
     ASSERT(panel->row < grid->n_rows);
 
-    if (panel->mode == VKL_PANEL_GRID)
+    if (panel->mode == DVZ_PANEL_GRID)
     {
         panel->x = grid->xs[panel->col];
         panel->y = grid->ys[panel->row];
@@ -262,32 +262,32 @@ void vkl_panel_update(VklPanel* panel)
     // Update the viewport structures.
     _update_viewport(panel);
 
-    // NOTE: it is up to the scene to update the VklViewport struct on the GPU, for each visual
+    // NOTE: it is up to the scene to update the DvzViewport struct on the GPU, for each visual
 }
 
 
 
-void vkl_panel_dpi_scaling(VklPanel* panel, float scaling)
+void dvz_panel_dpi_scaling(DvzPanel* panel, float scaling)
 {
     ASSERT(panel != NULL);
     scaling = CLIP(scaling, .1, 100);
     ASSERT(scaling > 0);
     panel->viewport.dpi_scaling = scaling;
-    vkl_panel_update(panel);
+    dvz_panel_update(panel);
 }
 
 
 
-void vkl_panel_margins(VklPanel* panel, vec4 margins)
+void dvz_panel_margins(DvzPanel* panel, vec4 margins)
 {
     ASSERT(panel != NULL);
     glm_vec4_copy(margins, panel->viewport.margins);
-    vkl_panel_update(panel);
+    dvz_panel_update(panel);
 }
 
 
 
-void vkl_panel_unit(VklPanel* panel, VklPanelSizeUnit unit)
+void dvz_panel_unit(DvzPanel* panel, DvzPanelSizeUnit unit)
 {
     ASSERT(panel != NULL);
     panel->size_unit = unit;
@@ -295,7 +295,7 @@ void vkl_panel_unit(VklPanel* panel, VklPanelSizeUnit unit)
 
 
 
-void vkl_panel_mode(VklPanel* panel, VklPanelMode mode)
+void dvz_panel_mode(DvzPanel* panel, DvzPanelMode mode)
 {
 
     ASSERT(panel != NULL);
@@ -304,7 +304,7 @@ void vkl_panel_mode(VklPanel* panel, VklPanelMode mode)
 
 
 
-void vkl_panel_visual(VklPanel* panel, VklVisual* visual)
+void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual)
 {
 
     ASSERT(panel != NULL);
@@ -314,78 +314,78 @@ void vkl_panel_visual(VklPanel* panel, VklVisual* visual)
 
 
 
-void vkl_panel_pos(VklPanel* panel, float x, float y)
+void dvz_panel_pos(DvzPanel* panel, float x, float y)
 {
     ASSERT(panel != NULL);
-    panel->mode = VKL_PANEL_INSET;
+    panel->mode = DVZ_PANEL_INSET;
     panel->x = x;
     panel->y = y;
 
-    vkl_panel_update(panel);
+    dvz_panel_update(panel);
 }
 
 
 
-void vkl_panel_size(VklPanel* panel, VklGridAxis axis, float size)
+void dvz_panel_size(DvzPanel* panel, DvzGridAxis axis, float size)
 {
     ASSERT(panel != NULL);
 
-    if (panel->mode == VKL_PANEL_INSET)
+    if (panel->mode == DVZ_PANEL_INSET)
     {
-        if (axis == VKL_GRID_HORIZONTAL)
+        if (axis == DVZ_GRID_HORIZONTAL)
             panel->width = size;
 
-        else if (axis == VKL_GRID_VERTICAL)
+        else if (axis == DVZ_GRID_VERTICAL)
             panel->height = size;
     }
 
-    else if (panel->mode == VKL_PANEL_GRID)
+    else if (panel->mode == DVZ_PANEL_GRID)
     {
-        VklGrid* grid = panel->grid;
+        DvzGrid* grid = panel->grid;
 
         // The grid widths and heights are always in normalized coordinates.
         size = _to_normalized_unit(panel, axis, size);
-        if (axis == VKL_GRID_HORIZONTAL)
+        if (axis == DVZ_GRID_HORIZONTAL)
             grid->widths[panel->col] = size;
 
-        else if (axis == VKL_GRID_VERTICAL)
+        else if (axis == DVZ_GRID_VERTICAL)
             grid->heights[panel->row] = size;
 
         _update_grid_panels(grid, axis);
     }
-    // vkl_canvas_to_refill(panel->grid->canvas);
+    // dvz_canvas_to_refill(panel->grid->canvas);
 }
 
 
 
-void vkl_panel_span(VklPanel* panel, VklGridAxis axis, uint32_t span)
+void dvz_panel_span(DvzPanel* panel, DvzGridAxis axis, uint32_t span)
 {
     ASSERT(panel != NULL);
-    if (axis == VKL_GRID_HORIZONTAL)
+    if (axis == DVZ_GRID_HORIZONTAL)
         panel->hspan = span;
-    else if (axis == VKL_GRID_VERTICAL)
+    else if (axis == DVZ_GRID_VERTICAL)
         panel->vspan = span;
 
     _update_grid_panels(panel->grid, axis);
-    // vkl_canvas_to_refill(panel->grid->canvas);
+    // dvz_canvas_to_refill(panel->grid->canvas);
 }
 
 
 
-void vkl_panel_cell(VklPanel* panel, uint32_t row, uint32_t col)
+void dvz_panel_cell(DvzPanel* panel, uint32_t row, uint32_t col)
 {
     ASSERT(panel != NULL);
     panel->row = row;
     panel->col = col;
 
-    _update_grid_panels(panel->grid, VKL_GRID_HORIZONTAL);
-    _update_grid_panels(panel->grid, VKL_GRID_VERTICAL);
-    // vkl_canvas_to_refill(panel->grid->canvas);
+    _update_grid_panels(panel->grid, DVZ_GRID_HORIZONTAL);
+    _update_grid_panels(panel->grid, DVZ_GRID_VERTICAL);
+    // dvz_canvas_to_refill(panel->grid->canvas);
 }
 
 
 
-void vkl_panel_transpose(VklPanel* panel, VklCDSTranspose transpose)
+void dvz_panel_transpose(DvzPanel* panel, DvzCDSTranspose transpose)
 {
     ASSERT(panel != NULL);
     panel->data_coords.transpose = transpose;
@@ -393,7 +393,7 @@ void vkl_panel_transpose(VklPanel* panel, VklCDSTranspose transpose)
 
 
 
-VklViewport vkl_panel_viewport(VklPanel* panel)
+DvzViewport dvz_panel_viewport(DvzPanel* panel)
 {
     ASSERT(panel != NULL);
     return panel->viewport;
@@ -401,14 +401,14 @@ VklViewport vkl_panel_viewport(VklPanel* panel)
 
 
 
-bool vkl_panel_contains(VklPanel* panel, vec2 screen_pos)
+bool dvz_panel_contains(DvzPanel* panel, vec2 screen_pos)
 {
     return _pos_in_viewport(panel->viewport, screen_pos);
 }
 
 
 
-VklPanel* vkl_panel_at(VklGrid* grid, vec2 screen_pos)
+DvzPanel* dvz_panel_at(DvzGrid* grid, vec2 screen_pos)
 {
     ASSERT(grid != NULL);
 
@@ -416,24 +416,24 @@ VklPanel* vkl_panel_at(VklGrid* grid, vec2 screen_pos)
     // Otherwise we'll have an infinite loop.
     ASSERT(grid->panels._loop_idx == 0);
 
-    VklPanel* panel = vkl_container_iter_init(&grid->panels);
+    DvzPanel* panel = dvz_container_iter_init(&grid->panels);
     while (panel != NULL)
     {
-        if (vkl_panel_contains(panel, screen_pos))
+        if (dvz_panel_contains(panel, screen_pos))
             return panel;
-        panel = vkl_container_iter(&grid->panels);
+        panel = dvz_container_iter(&grid->panels);
     }
     return NULL;
 }
 
 
 
-void vkl_panel_destroy(VklPanel* panel)
+void dvz_panel_destroy(DvzPanel* panel)
 {
     ASSERT(panel != NULL);
     for (uint32_t i = 0; i < panel->visual_count; i++)
     {
-        vkl_visual_destroy(panel->visuals[i]);
+        dvz_visual_destroy(panel->visuals[i]);
     }
-    vkl_obj_destroyed(&panel->obj);
+    dvz_obj_destroyed(&panel->obj);
 }
