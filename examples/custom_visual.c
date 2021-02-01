@@ -9,52 +9,72 @@ static void _bake_callback(DvzVisual* visual, DvzVisualDataEvent ev)
 {
     ASSERT(visual != NULL);
 
-    // Get prop arrays, to be read.
+    // First, we obtain the array instances holding the prop data as specified by the user.
     DvzArray* arr_pos = dvz_prop_array(visual, DVZ_PROP_POS, 0);
-    DvzArray* arr_length = dvz_prop_array(visual, DVZ_PROP_LENGTH, 0);
     DvzArray* arr_color = dvz_prop_array(visual, DVZ_PROP_COLOR, 0);
+    DvzArray* arr_length = dvz_prop_array(visual, DVZ_PROP_LENGTH, 0);
 
-    // Get the vertex buffer array, to be written.
+    // We also get the array of the vertex buffer, which we'll need to fill with the triangulation.
     DvzArray* arr_vertex = dvz_source_array(visual, DVZ_SOURCE_TYPE_VERTEX, 0);
 
-    // Rectangle triangulation.
-    uint32_t rectangle_count = arr_pos->item_count;
-    dvz_array_resize(arr_vertex, 6 * rectangle_count);
+    // The number of rows in the 1D position array (set by the user) is the number of squares
+    // requested by the user.
+    uint32_t square_count = arr_pos->item_count;
 
-    // Input and output arrays.
-    dvec3* pos = NULL;    //(dvec3*)arr_pos->data;
-    float* length = NULL; //(float*)arr_length->data;
-    cvec4* color = NULL;  //(cvec4*)arr_color->data;
+    // We resize the vertex buffer array so that it holds six vertices per square (two triangles).
+    dvz_array_resize(arr_vertex, 6 * square_count);
+
+    // Pointers to the input data.
+    dvec3* pos = NULL;
+    cvec4* color = NULL;
+    float* length = NULL;
+
+    // Pointer to the output vertex.
     DvzVertex* vertex = (DvzVertex*)arr_vertex->data;
 
-    // Triangulate the squares.
+    // Here, we triangulate each square by computing the position of each square corner.
     float hl = 0;
-    for (uint32_t i = 0; i < rectangle_count; i++)
+    for (uint32_t i = 0; i < square_count; i++)
     {
+        // We get a pointer to the current item in each prop array.
         pos = dvz_array_item(arr_pos, i);
         color = dvz_array_item(arr_color, i);
         length = dvz_array_item(arr_length, i);
 
+        // This is the half of the square size.
         hl = (*length) / 2;
 
+        // First triangle:
+
+        // Bottom-left corner.
         vertex[6 * i + 0].pos[0] = pos[0][0] - hl;
         vertex[6 * i + 0].pos[1] = pos[0][1] - hl;
 
+        // Bottom-right corner.
         vertex[6 * i + 1].pos[0] = pos[0][0] + hl;
         vertex[6 * i + 1].pos[1] = pos[0][1] - hl;
 
+        // Top-right corner.
         vertex[6 * i + 2].pos[0] = pos[0][0] + hl;
         vertex[6 * i + 2].pos[1] = pos[0][1] + hl;
 
+        // Second triangle:
+
+        // Top-right corner again.
         vertex[6 * i + 3].pos[0] = pos[0][0] + hl;
         vertex[6 * i + 3].pos[1] = pos[0][1] + hl;
 
+        // Top-left corner.
         vertex[6 * i + 4].pos[0] = pos[0][0] - hl;
         vertex[6 * i + 4].pos[1] = pos[0][1] + hl;
 
+        // Bottom-left corner (again).
         vertex[6 * i + 5].pos[0] = pos[0][0] - hl;
         vertex[6 * i + 5].pos[1] = pos[0][1] - hl;
 
+        // We copy the square color to each of the six vertices making the current square.
+        // This is a choice made in this example, and it is up to the custom visual creator
+        // to define how the user data, passed via props, will be used to fill in the vertices.
         for (uint32_t j = 0; j < 6; j++)
             memcpy(vertex[6 * i + j].color, color, sizeof(cvec4));
     }
@@ -83,8 +103,8 @@ int main(int argc, char** argv)
 
         // Add some props.
         dvz_visual_prop(visual, DVZ_PROP_POS, 0, DVZ_DTYPE_DVEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
-        dvz_visual_prop(visual, DVZ_PROP_LENGTH, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_VERTEX, 0);
         dvz_visual_prop(visual, DVZ_PROP_COLOR, 0, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 0);
+        dvz_visual_prop(visual, DVZ_PROP_LENGTH, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_VERTEX, 0);
 
         // Custom baking functions.
         dvz_visual_callback_bake(visual, _bake_callback);
@@ -93,14 +113,20 @@ int main(int argc, char** argv)
     // Add the custom visual to the main panel.
     dvz_scene_visual_custom(panel, visual);
 
-    // Three rectangles.
-    dvz_visual_data(visual, DVZ_PROP_POS, 0, 3, (dvec3[]){{-.5, 0, 0}, {0, 0, 0}, {+.5, 0, 0}});
-    // Three different colors.
-    dvz_visual_data(
-        visual, DVZ_PROP_COLOR, 0, 3,
-        (cvec4[]){{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}});
-    // The same length (automatic "broadcasting" when the prop size is low)
-    dvz_visual_data(visual, DVZ_PROP_LENGTH, 0, 1, (float[]){.25});
+    // Set the visual data.
+    {
+        // Three squares.
+        dvz_visual_data(
+            visual, DVZ_PROP_POS, 0, 3, (dvec3[]){{-.5, 0, 0}, {0, 0, 0}, {+.5, 0, 0}});
+        // Three different colors.
+
+        dvz_visual_data(
+            visual, DVZ_PROP_COLOR, 0, 3,
+            (cvec4[]){{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}});
+
+        // The same length (automatic "broadcasting" when the prop size is low)
+        dvz_visual_data(visual, DVZ_PROP_LENGTH, 0, 1, (float[]){.25});
+    }
 
     dvz_app_run(app, 0);
 
