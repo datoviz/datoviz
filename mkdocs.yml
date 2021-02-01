@@ -7,9 +7,9 @@ theme:
   logo: images/logow.png
   features:
     - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.expand
     - toc.integrate
-    # - navigation.tabs.sticky
   icon:
     repo: fontawesome/brands/github
 extra_css:
@@ -49,7 +49,6 @@ nav:
   - Expert manual:
       - Introduction: 'expert/index.md'
       - Vulkan crash course: 'expert/vulkan.md'
-      - Vklite: 'expert/vklite.md'
       - Canvas: 'expert/canvas.md'
       - Custom visuals: 'expert/visual.md'
       - Graphics: 'expert/graphics.md'

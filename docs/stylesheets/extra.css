@@ -15,3 +15,7 @@ h3[id^=dvz_] {
 img[alt^=marker_] {
     width: 32px;
 }
+
+img[alt*=gpuopen] {
+    width: 512px;
+}

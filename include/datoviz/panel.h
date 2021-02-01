@@ -150,6 +150,7 @@ DVZ_EXPORT void dvz_grid_destroy(DvzGrid* grid);
  * @param grid the grid
  * @param row the row index in the grid
  * @param col the column index in the grid
+ * @returns the panel
  */
 DVZ_EXPORT DvzPanel* dvz_panel(DvzGrid* grid, uint32_t row, uint32_t col);
 
@@ -255,6 +256,7 @@ DVZ_EXPORT void dvz_panel_transpose(DvzPanel* panel, DvzCDSTranspose transpose);
  *
  * @param panel the panel
  * @param pos the position
+ * @returns a boolean
  */
 DVZ_EXPORT bool dvz_panel_contains(DvzPanel* panel, vec2 pos);
 
@@ -263,6 +265,7 @@ DVZ_EXPORT bool dvz_panel_contains(DvzPanel* panel, vec2 pos);
  *
  * @param grid the grid
  * @param pos the position in screen coordinates (pixels)
+ * @returns the panel
  */
 DVZ_EXPORT DvzPanel* dvz_panel_at(DvzGrid* grid, vec2 pos);
 

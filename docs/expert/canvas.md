@@ -1,11 +1,20 @@
 # The Canvas
 
-Although a Canvas is created in almost all applications, it is very rarely manipulated directly after its creation since it only provides a low-level API. In most scientific applications, one typically deals with the [**Scene**](scene.md), which provides a higher-level API.
+Datoviz provides three similar, but different abstractions:
 
-In this section, we show how to create a blank canvas in Python and C. Doing anything more useful requires either:
+* the **scene**,
+* the **canvas**,
+* the **window**.
 
-* to use the Scene API (as shown in the next sections of this user manual),
-* or to deal with the [**vklite**](../expert/vklite.md) wrapper to Vulkan (which is described in the [expert manual](../expert/index.md)).
+The **scene** provides a relatively high-level plotting interface that allows to arrange panels (subplots) in a grid, define controllers, and add visuals to the panels.
+
+The **canvas** is lower-level object that allows to use Vulkan directly via vklite. While the scene deals with *visual* elements, the canvas deals with *Vulkan* objects.
+
+The **window** is an abstraction provided by the backend windowing library, glfw at the moment. It is a bare window that doesn't allow for any kind rendering, unless manually creating a swapchain and so on by using Vulkan or vklite directly.
+
+**Most users will only need with the scene.** Advanced users will use the canvas to create custom applications, interactive animations, or even small video games. Finally, the window is only used internally and will probably never be used directly.
+
+On this page, we'll focus on the canvas.
 
 ## Creating a canvas
 
@@ -29,40 +38,37 @@ The following code snippet displays a blank window with a black background.
 
     int main()
     {
-        // Create an app with the default backend, which is the GLFW backend.
-        DvzApp* app = dvz_create_app(DVZ_DEFAULT_BACKEND);
+        // Create a singleton application with a GLFW backend.
+        DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
 
-        // Create a canvas with the default width and height.
-        DvzCanvas* canvas = dvz_create_canvas(app, DVZ_DEFAULT_WIDTH, DVZ_DEFAULT_HEIGHT);
+        // Use the first detected GPU. The last argument is the GPU index.
+        DvzGpu* gpu = dvz_gpu(app, 0);
 
-        // Run the event loop.
-        dvz_run_app(app);
+        // Create a new canvas with the size specified. The last argument is for optional flags.
+        DvzCanvas* canvas = dvz_canvas(gpu, 1280, 1024, 0);
 
-        // Once the event loop is finished, destroy the app and all canvases.
-        dvz_destroy_app(app);
+        // Run the main rendering loop.
+        dvz_app_run(app, 0);
+
+        // We need to clean up all objects handled by Datoviz at the end.
+        dvz_app_destroy(app);
 
         return 0;
     }
     ```
 
-The event loop is an infinite loop that continuously refreshes the canvas until the Escape key is pressed, at which point the canvas is closed. The canvas destruction logic (freeing the memory on the host and on the GPU) is called automatically as soon as the canvas is closed.
+The rendering loop is an infinite loop that continuously refreshes the canvas until the Escape key is pressed, at which point the canvas is closed. The canvas destruction logic (freeing the memory on the host and on the GPU) is called automatically as soon as the canvas is closed.
 
-Multiple canvases can be created. The application stops as soon as there is no remaining open canvas. In that case, the application is automatically destroyed.
+Multiple canvases can be created. The application stops as soon as there is no remaining open canvas.
 
 
 ## Changing the background color
 
-By default, when creating a Canvas without creating a Scene, the background color is black. Here is how to change it:
-
-=== "Python"
-    ```python
-    # TODO: not implemented yet
-    ```
+The C API provides a function to change the background color of a canvas.
 
 === "C"
     ```c
-    // Red background.
-    dvz_clear_color(canvas, (DvzColor) {{255, 0, 0}, 255});
+    dvz_canvas_clear_color(canvas, (VkClearColorValue){{1, 0, 0, 1}});
     ```
 
 
