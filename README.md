@@ -63,7 +63,7 @@ Long-term future (or shorter if there are community contributions):
 
 ## Credits and related projects
 
-Datoviz is developed primarily by [Cyrille Rossant](https://cyrille.rossant.net/) at the [International Brain Laboratory](https://www.internationalbrainlab.com/).
+Datoviz is developed primarily by [Cyrille Rossant](https://cyrille.rossant.net/) at the [International Brain Laboratory](https://www.internationalbrainlab.com/). The logo was graciously created by [Chiara Zini](https://www.linkedin.com/in/czini/).
 
 Datoviz borrows heavily ideas and code from other projects.
 

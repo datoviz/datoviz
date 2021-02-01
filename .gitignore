@@ -34,6 +34,8 @@ pydatoviz.c
 *.bin
 data.zip
 datoviz_example
+docs/images/visuals/*.png
+docs/images/graphics/*.png
 
 # Prerequisites
 *.d
