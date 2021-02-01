@@ -1,14 +1,10 @@
-# Integrated GUI
+# GUI
 
-Datoviz integrates the [Dear ImGUI C++ library](https://github.com/ocornut/imgui) developed by Omar Cornut. This library makes it possible to design basic to highly complex graphical user interfaces directly in Datoviz, without any other dependency such as Qt, wx, or similar. Dear ImGui supports a significant number of features and is improving at a rapid pace.
-
-Datoviz offers a light C wrapper on top of Dear ImGui for the most basic types of graphical interfaces. Using Dear ImGui directly is possible but requires to use C++.
+Datoviz integrates the [Dear ImGUI C++ library](https://github.com/ocornut/imgui) which allows one to create GUIs directly in a Datoviz canvas, without resorting to GUI backends such as Qt or wx. This reduces the number of required dependencies and allows for easy GUI integration.
 
 !!! note
-    Dear ImGui has a rapid pace of development. Currently Datoviz integrates it via a git submodule. It uses the `docking` branch, but with [a patch](https://github.com/martty/imgui/commit/f1f948bea715754ad5e83d4dd9f928aecb4ed1d3) applied to it in order to support creating GUIs with integrated Datoviz canvases. This version currently lives on a [fork](https://github.com/datoviz/imgui) in the datoviz GitHub organization.
+    Datoviz integrates Dear ImGUI via a git submodule ([fork](https://github.com/datoviz/imgui) in the Datoviz GitHub organization). There's a custom branch based on the `docking` upstream branch, which an additional [patch](https://github.com/martty/imgui/commit/f1f948bea715754ad5e83d4dd9f928aecb4ed1d3) applied to it in order to support creating GUIs with integrated Datoviz canvases.
 
-## Basic graphical interfaces
+## Creating a basic GUI
 
-## Prompt
-
-## Using the Dear ImGui API directly (C++)
+Coming soon!

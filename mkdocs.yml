@@ -48,7 +48,7 @@ nav:
   - Expert manual:
       - Introduction: 'expert/index.md'
       - Vulkan crash course: 'expert/vulkan.md'
-      - Dvzite: 'expert/vklite.md'
+      - Vklite: 'expert/vklite.md'
       - Canvas: 'expert/canvas.md'
       - Custom visuals: 'expert/visual.md'
       - Graphics: 'expert/graphics.md'
