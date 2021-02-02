@@ -222,9 +222,5 @@ vec4 colormap(int cmap, float x) {
     else if (cmap == DVZ_CMAP_SUMMER) return summer(x);
     else if (cmap == DVZ_CMAP_WINTER) return winter(x);
     else if (cmap == DVZ_CMAP_JET) return jet(x);
-    // Fallback to texture sampling from the colormap texture.
-    // NOTE: this may cause visual artifacts when the value x is itself sampled from a texture.
-    // Computing the colormap directly without fetching the color from a color texture
-    // does not result in such visual artifacts.
     else vec4(x, x, x, 1);
 }

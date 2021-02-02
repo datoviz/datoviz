@@ -95,6 +95,8 @@ vec4 to_vulkan(vec4 tr) {
     return tr;
 }
 
+
+
 vec4 transform(vec3 pos, vec2 shift, uint transform_mode) {
     mat4 mvp = mvp.proj * mvp.view * mvp.model;
     vec4 tr = vec4(pos, 1.0);

@@ -86,12 +86,13 @@ Glumpy, developed by Nicolas Rougier, provides [efficient implementations of hig
 
 ### Dependencies and algorithms
 
-* [LunarG Vulkan SDK](https://www.lunarg.com/vulkan-sdk/) (mandatory)
-* [GLFW](https://www.glfw.org/) (mandatory)
-* [libpng](http://www.libpng.org/pub/png/libpng.html) (optional)
-* [earcut](https://github.com/mapbox/earcut) (included)
-* [triangle](https://www.cs.cmu.edu/~quake/triangle.html), for Delaunay triangulations (included)
-* [extended Wilkinson algorithm](http://vis.stanford.edu/papers/tick-labels) for tick placement (included)
+* [LunarG Vulkan SDK](https://www.lunarg.com/vulkan-sdk/) **(mandatory)**
+* [GLFW](https://www.glfw.org/) **(mandatory)**
+* [libpng](http://www.libpng.org/pub/png/libpng.html) (optional), for making PNG screenshots
+* [glslang](https://github.com/KhronosGroup/glslang) (optional), for compiling GLSL shaders to SPIR-V on the fly
+* [earcut](https://github.com/mapbox/earcut) (included), for polygon triangulations
+* [triangle](https://www.cs.cmu.edu/~quake/triangle.html) (included), for Delaunay triangulations
+* [extended Wilkinson algorithm](http://vis.stanford.edu/papers/tick-labels) (included) for tick placement
 * [Dear ImGUI](https://github.com/ocornut/imgui) (included)
 * [antigrain geometry](https://en.wikipedia.org/wiki/Anti-Grain_Geometry) (GLSL implementation included)
 

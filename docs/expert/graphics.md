@@ -1,5 +1,10 @@
 # Graphics library
 
+This page lists all included graphics. The list is divided into:
+
+* **2D graphics**: high-quality antialiased 2D graphical elements,
+* **3D graphics**: meshes and volumes,
+* **Basic graphics**: basic, low-quality, aliased, but fast basic primitives (points, lines, triangles), useful for demo, testing, and when dealing with tens of millions of points
 
 !!! note
     If not specified, the default vertex structure is `DvzVertex`:
@@ -59,7 +64,7 @@ Mesh
 
 The mesh graphics supports the following features:
 
-- Blinn-Phong shading
+- Phong shading
 - Up to four textures
 - Customizable texture blending coefficients
 - Transparency (but does not play well with depth test)

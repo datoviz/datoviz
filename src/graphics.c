@@ -698,6 +698,8 @@ DvzGraphics* dvz_graphics_builtin(DvzCanvas* canvas, DvzGraphicsType type, int f
         _graphics_mesh(canvas, graphics);
         break;
 
+    case DVZ_GRAPHICS_CUSTOM:
+        break;
 
     default:
         log_error("no graphics type specified");

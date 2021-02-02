@@ -178,6 +178,7 @@ typedef enum
     DVZ_GRAPHICS_VOLUME,
 
     DVZ_GRAPHICS_COUNT,
+    DVZ_GRAPHICS_CUSTOM,
 } DvzGraphicsType;
 
 

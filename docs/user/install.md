@@ -68,14 +68,16 @@ Dependencies already included in the repository:
 9. Try a Python example: `python bindings/cython/examples/test.py`
 
 
+
 ## macOS
 
 ### Install the dependencies
 
 1. Type `git` in a terminal to install it.
 2. Install Xcode
-3. Install [Homebrew](https://brew.sh/) if you don't have it already
-4. Type `brew install cmake ninja`
+3. Install [git-lfs](https://git-lfs.github.com/) (to download large test/example datasets)
+4. Install [Homebrew](https://brew.sh/) if you don't have it already
+5. Type `brew install cmake ninja`
 
 
 ### Install Vulkan
