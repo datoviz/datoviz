@@ -22,59 +22,6 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static DvzRenderpass
-default_renderpass(DvzGpu* gpu, VkClearColorValue clear_color_value, VkFormat format, bool overlay)
-{
-    DvzRenderpass renderpass = dvz_renderpass(gpu);
-
-    VkClearValue clear_color = {0};
-    clear_color.color = clear_color_value;
-
-    VkClearValue clear_depth = {0};
-    clear_depth.depthStencil.depth = 1.0f;
-
-    dvz_renderpass_clear(&renderpass, clear_color);
-    dvz_renderpass_clear(&renderpass, clear_depth);
-
-    VkImageLayout layout =
-        overlay ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-    // Color attachment.
-    dvz_renderpass_attachment(
-        &renderpass, 0, //
-        DVZ_RENDERPASS_ATTACHMENT_COLOR, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-    dvz_renderpass_attachment_layout(&renderpass, 0, VK_IMAGE_LAYOUT_UNDEFINED, layout);
-    dvz_renderpass_attachment_ops(
-        &renderpass, 0, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
-
-    // Depth attachment.
-    dvz_renderpass_attachment(
-        &renderpass, 1, //
-        DVZ_RENDERPASS_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT,
-        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-    dvz_renderpass_attachment_layout(
-        &renderpass, 1, VK_IMAGE_LAYOUT_UNDEFINED,
-        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-    dvz_renderpass_attachment_ops(
-        &renderpass, 1, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
-
-    // Subpass.
-    dvz_renderpass_subpass_attachment(&renderpass, 0, 0);
-    dvz_renderpass_subpass_attachment(&renderpass, 0, 1);
-    dvz_renderpass_subpass_dependency(&renderpass, 0, VK_SUBPASS_EXTERNAL, 0);
-    dvz_renderpass_subpass_dependency_stage(
-        &renderpass, 0, //
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-    dvz_renderpass_subpass_dependency_access(
-        &renderpass, 0, 0,
-        VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
-
-    return renderpass;
-}
-
-
-
 static DvzRenderpass renderpass_overlay(DvzGpu* gpu, VkFormat format, VkImageLayout layout)
 {
     DvzRenderpass renderpass = dvz_renderpass(gpu);
@@ -906,6 +853,27 @@ void dvz_canvas_close_on_esc(DvzCanvas* canvas, bool value)
     ASSERT(canvas != NULL);
     ASSERT(canvas->window != NULL);
     canvas->window->close_on_esc = value;
+}
+
+
+
+DvzViewport dvz_viewport_default(uint32_t width, uint32_t height)
+{
+    DvzViewport viewport = {0};
+
+    viewport.viewport.x = 0;
+    viewport.viewport.y = 0;
+    viewport.viewport.minDepth = +0;
+    viewport.viewport.maxDepth = +1;
+
+    viewport.size_framebuffer[0] = viewport.viewport.width = (float)width;
+    viewport.size_framebuffer[1] = viewport.viewport.height = (float)height;
+    viewport.size_screen[0] = viewport.size_framebuffer[0];
+    viewport.size_screen[1] = viewport.size_framebuffer[1];
+
+    viewport.dpi_scaling = DVZ_DEFAULT_DPI_SCALING;
+
+    return viewport;
 }
 
 

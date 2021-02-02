@@ -15,6 +15,7 @@
 ## Misc
 
 ### `dvz_viewport_full()`
+### `dvz_viewport_default()`
 
 
 ## Event emitting

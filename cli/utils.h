@@ -506,7 +506,7 @@ static void _destroy_context(TestContext* context)
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static DvzRenderpass default_renderpass(
+static DvzRenderpass _renderpass(
     DvzGpu* gpu, VkClearColorValue clear_color_value, VkFormat format, VkImageLayout layout)
 {
     DvzRenderpass renderpass = dvz_renderpass(gpu);
@@ -580,7 +580,7 @@ static TestCanvas offscreen(DvzGpu* gpu)
     canvas.is_offscreen = true;
 
     canvas.renderpass =
-        default_renderpass(gpu, bgcolor, TEST_FORMAT, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+        _renderpass(gpu, bgcolor, TEST_FORMAT, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
     // Color attachment
     DvzImages images_struct = dvz_images(canvas.renderpass.gpu, VK_IMAGE_TYPE_2D, 1);
@@ -632,7 +632,7 @@ static TestCanvas glfw_canvas(DvzGpu* gpu, DvzWindow* window)
     ASSERT(framebuffer_height > 0);
 
     DvzRenderpass renderpass =
-        default_renderpass(gpu, bgcolor, TEST_FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+        _renderpass(gpu, bgcolor, TEST_FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
     canvas.renderpass = renderpass;
 
     canvas.swapchain = dvz_swapchain(canvas.renderpass.gpu, window, 3);
