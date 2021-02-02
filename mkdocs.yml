@@ -56,6 +56,7 @@ nav:
       - Library architecture: 'expert/architecture.md'
       - Mesh and triangulations: 'expert/mesh.md'
       - Developer notes: 'expert/developer.md'
+      - Standalone C examples: 'expert/standalone.md'
   - C API reference:
       - Index: 'api/index.md'
       - Scene API: 'api/scene.md'

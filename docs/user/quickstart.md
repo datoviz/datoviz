@@ -14,7 +14,7 @@ The following code example shows how to make a simple scatter plot in Python:
 
 ## First plot with the C API
 
-<!-- CODE_C examples/standalone.c -->
+<!-- CODE_C examples/standalone_scene.c -->
 
 <!-- IMAGE ../images/c_example.png -->
 
