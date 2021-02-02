@@ -51,7 +51,7 @@ nav:
       - Vulkan crash course: 'expert/vulkan.md'
       - Canvas: 'expert/canvas.md'
       - Custom visuals: 'expert/visual.md'
-      - Graphics: 'expert/graphics.md'
+      - Graphics library: 'expert/graphics.md'
       - Custom graphics: 'expert/glsl.md'
       - Library architecture: 'expert/architecture.md'
       - Mesh and triangulations: 'expert/mesh.md'

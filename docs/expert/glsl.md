@@ -365,5 +365,11 @@ We didn't yet cover these other aspects:
 * Other shaders (geometry shader, tesselation shader),
 * Indexed rendering,
 * Indirect rendering,
-* Fixed functions (depth testing), dynamic states, specialization constants,...
+* Fixed functions,
+* Depth testing,
+* Dynamic states,
+* Specialization constants,
+* Push constants,
+* Custom command buffers,
+* Interaction with compute shaders,
 * And many other topics...
