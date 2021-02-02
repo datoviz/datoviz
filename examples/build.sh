@@ -8,3 +8,6 @@ gcc $DVZ_EXAMPLE_FILE -I../include/ -I../external/cglm/include -I../build/_deps/
 
 glslc custom_point.vert -o custom_point.vert.spv
 glslc custom_point.frag -o custom_point.frag.spv
+
+glslc triangle.vert -o triangle.vert.spv
+glslc triangle.frag -o triangle.frag.spv

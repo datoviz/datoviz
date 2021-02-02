@@ -779,6 +779,7 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_GRAPHICS_FAKE_SPHERE = 15
         DVZ_GRAPHICS_VOLUME = 16
         DVZ_GRAPHICS_COUNT = 17
+        DVZ_GRAPHICS_CUSTOM = 18
 
     ctypedef enum DvzTextureAxis:
         DVZ_TEXTURE_AXIS_U = 0
