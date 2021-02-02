@@ -90,7 +90,7 @@ int main(int argc, char** argv)
     DvzPanel* panel = dvz_scene_panel(scene, 0, 0, DVZ_CONTROLLER_PANZOOM, 0);
 
     // Create a blank visual.
-    DvzVisual* visual = dvz_scene_visual_blank(scene, DVZ_VISUAL_FLAGS_TRANSFORM_NONE);
+    DvzVisual* visual = dvz_blank_visual(scene, DVZ_VISUAL_FLAGS_TRANSFORM_NONE);
 
     // Custom visual.
     {
@@ -111,7 +111,7 @@ int main(int argc, char** argv)
     }
 
     // Add the custom visual to the main panel.
-    dvz_scene_visual_custom(panel, visual);
+    dvz_custom_visual(panel, visual);
 
     // Set the visual data.
     {
