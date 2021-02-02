@@ -584,6 +584,7 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
     canvas->offscreen = offscreen;
     canvas->overlay = overlay;
     canvas->flags = flags;
+    bool show_fps = ((canvas->flags >> 1) & DVZ_CANVAS_FLAGS_FPS) != 0;
 
     // Initialize the canvas local clock.
     _clock_init(&canvas->clock);
@@ -634,7 +635,9 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
 
         if (!offscreen)
         {
-            dvz_swapchain_present_mode(&canvas->swapchain, DVZ_DEFAULT_PRESENT_MODE);
+            dvz_swapchain_present_mode(
+                &canvas->swapchain,
+                show_fps ? VK_PRESENT_MODE_IMMEDIATE_KHR : VK_PRESENT_MODE_FIFO_KHR);
             dvz_swapchain_create(&canvas->swapchain);
         }
         else
@@ -741,9 +744,11 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
     // FPS callback.
     {
         canvas->fps = 60;
+        // Compute FPS every 250 ms, even if FPS is not shown (so that the value remains accessible
+        // in callbacks if needed).
         dvz_event_callback(canvas, DVZ_EVENT_TIMER, .25, DVZ_EVENT_MODE_SYNC, _fps, NULL);
 
-        if (((canvas->flags >> 1) & DVZ_CANVAS_FLAGS_FPS) != 0)
+        if (show_fps)
             dvz_event_callback(
                 canvas, DVZ_EVENT_IMGUI, 0, DVZ_EVENT_MODE_SYNC, dvz_imgui_callback_fps, NULL);
     }

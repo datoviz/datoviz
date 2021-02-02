@@ -19,9 +19,10 @@
 // #endif
 
 // Pass N = FPS * DURATION frames before taking a test screenshot
-#define FPS         60
-#define DURATION    1
-#define MAX_RETRIES 10
+#define FPS          60
+#define DURATION     1
+#define MAX_RETRIES  10
+#define CANVAS_FLAGS (getenv("DVZ_FPS") != 0 ? DVZ_CANVAS_FLAGS_FPS : 0)
 
 #define IMAGE_RELPATH "images/tests"
 

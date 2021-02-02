@@ -31,11 +31,8 @@ extern "C" {
             0, .03, .07, 1.0f                                                                     \
         }                                                                                         \
     }
-#define DVZ_DEFAULT_IMAGE_FORMAT VK_FORMAT_B8G8R8A8_UNORM
-// #define DVZ_DEFAULT_PRESENT_MODE VK_PRESENT_MODE_FIFO_KHR
-#define DVZ_DEFAULT_DPI_SCALING 1.0f
-#define DVZ_DEFAULT_PRESENT_MODE                                                                  \
-    (getenv("DVZ_FPS") != NULL ? VK_PRESENT_MODE_IMMEDIATE_KHR : VK_PRESENT_MODE_FIFO_KHR)
+#define DVZ_DEFAULT_IMAGE_FORMAT      VK_FORMAT_B8G8R8A8_UNORM
+#define DVZ_DEFAULT_DPI_SCALING       1.0f
 #define DVZ_MIN_SWAPCHAIN_IMAGE_COUNT 3
 #define DVZ_SEMAPHORE_IMG_AVAILABLE   0
 #define DVZ_SEMAPHORE_RENDER_FINISHED 1

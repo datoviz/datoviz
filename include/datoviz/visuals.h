@@ -20,7 +20,7 @@
 #define DVZ_MAX_COMPUTES_PER_VISUAL 32
 #define DVZ_MAX_VISUAL_GROUPS       1024
 #define DVZ_MAX_VISUAL_PRIORITY     4
-
+#define DVZ_MAX_UNIFORM_SIZE        65536
 
 
 /*************************************************************************************************/

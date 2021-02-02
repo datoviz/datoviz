@@ -67,6 +67,9 @@ The rest of this page exposes the list of all visuals currently implemented in t
 
 #### Marker types
 
+!!! note
+    Marker shapes are computed in real-time in the fragment shader (vector graphics rather than bitmaps). The GLSL code is from [Rougier 2014, *Antialiased 2D Grid, Marker, and Arrow Shaders*](http://jcgt.org/published/0003/04/01/).
+
 | Marker | Value | Image |
 | ---- | ---- | ---- |
 | `disc` | 0 | ![marker_disc](../images/graphics/marker_disc.png) |
@@ -294,6 +297,8 @@ The **point** visual is a trimmed-downed version of the **marker** visual. It is
 | `pos` | 2 | `dvec3` | triangle position 2 |
 | `color` | 0 | `color` | triangle color |
 
+!!! note
+    The line strip is normally a single contiguous line. In this example, we use the following trick to show 2 apparently disjoint lines (the same trick would work with an arbitrary number of lines): we add an additional duplicate point at the end of the first line, and at the beginning of the second line, and both of these duplicate points have an alpha value of 0. The line joining these two points is therefore invisible. This trick allows us to use a single drawing command rather than 2 (or N).
 
 ### Triangle strip
 

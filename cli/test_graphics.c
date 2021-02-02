@@ -732,7 +732,7 @@ int test_graphics_text(TestContext* context)
     item.vertex.pos[0] = 0;
     item.vertex.pos[1] = 0;
     item.vertex.angle = 0;
-    item.font_size = 50;
+    item.font_size = 36;
     item.string = str;
     dvz_graphics_append(&data, &item);
     FREE(item.glyph_colors);

@@ -319,6 +319,20 @@ void dvz_visual_data_partial(
     DvzProp* prop = dvz_prop_get(visual, prop_type, prop_idx);
     ASSERT(prop != NULL);
 
+    // Get the associated source.
+    DvzSource* source = prop->source;
+    ASSERT(source != NULL);
+
+    if (source->source_kind == DVZ_SOURCE_KIND_UNIFORM && (first_item > 0 || item_count > 1))
+    {
+        log_warn(
+            "discarding uniform data after the first item (number of items was %d)", item_count);
+        first_item = 0;
+        item_count = 1;
+        data_item_count = 1;
+        count = 1;
+    }
+
     // Make sure the array has the right size.
     dvz_array_resize(&prop->arr_orig, count);
 
@@ -327,9 +341,6 @@ void dvz_visual_data_partial(
     // Mark the prop has set, will need to be transposed only once.
     prop->obj.request = 0;
 
-    // Get the associated source.
-    DvzSource* source = prop->source;
-    ASSERT(source != NULL);
     if (source != NULL)
     {
         log_trace("source type %d #%d handled by lib", source->source_type, source->source_idx);
