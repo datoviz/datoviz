@@ -33,5 +33,5 @@ def page_hook(markdown, page, config, files):
         return insert_enums_doc(markdown, config)
     elif 'api/' in path:
         return insert_functions_doc(markdown, config)
-    elif 'user/' in path:
+    elif 'user/' in path or 'expert/' in path and 'developer' not in path:
         return process_code_image(markdown, config)

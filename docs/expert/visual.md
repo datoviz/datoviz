@@ -7,6 +7,10 @@ In this section, we'll show how to create a custom visual based on an existing g
 
 The full source code for this example can be found in `examples/custom_visual.c`.
 
+We'll make a **square visual** that makes it easy to add uniformly-colored squares to the scene.
+
+![](../images/screenshots/custom_visual.png)
+
 
 
 ## Distinction between graphics and visuals
@@ -215,8 +219,6 @@ dvz_visual_data(visual, DVZ_PROP_LENGTH, 0, 1, (float[]){.25});
 ```
 
 Note that we used a single value for the last prop (edge length). Datoviz uses the convention that a prop may have less values than objects, in which case **the last value is repeated over**. In particular, defining a prop with a single element means using the same value for all items in the visual. This is a sort of "broadcasting" rule (following NumPy's terminology).
-
-![](../images/screenshots/custom_visual.png)
 
 ## Other topics
 

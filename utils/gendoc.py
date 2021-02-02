@@ -369,11 +369,13 @@ def process_code_image(markdown, config):
     def _repl_code(m):
         path = ROOT_DIR / m.group(2)
         lang = m.group(1).lower()
-        assert path.exists()
+        assert path.exists(), path
         code = path.read_text()
         if lang == 'python':
             comment = '#'
         elif lang == 'c':
+            comment = '//'
+        elif lang == 'glsl':
             comment = '//'
         else:
             raise NotImplementedError("unknown language")
