@@ -32,6 +32,7 @@ pydatoviz.c
 *.mp4
 *.ts
 *.bin
+*.spv
 data.zip
 datoviz_example
 docs/images/visuals/*.png

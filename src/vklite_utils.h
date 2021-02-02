@@ -1431,6 +1431,7 @@ static VkShaderModule create_shader_module_from_file(VkDevice device, const char
     log_trace("create shader module from file %s", filename);
     size_t size = 0;
     uint32_t* shader_code = (uint32_t*)dvz_read_file(filename, &size);
+    ASSERT(shader_code != NULL);
     VkShaderModule module = create_shader_module(device, size, shader_code);
     FREE(shader_code);
     return module;
