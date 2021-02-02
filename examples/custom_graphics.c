@@ -1,66 +1,87 @@
 /*************************************************************************************************/
-/*  Example of a custom visual.                                                                  */
+/*  Example of a custom graphics                                                                 */
 /*************************************************************************************************/
 
+// We include the library header file.
 #include <datoviz/datoviz.h>
 
+// We define the vertex structure for our graphics pipeline.
 typedef struct
 {
-    vec3 pos;
-    uint8_t size;
+    vec3 pos;     // 3D point position
+    uint8_t size; // point size, in pixels, between 0 and 255.
 } PointVertex;
 
+// Entry point of the standalone example.
 int main(int argc, char** argv)
 {
+    // We create an app, canvas, scene, panel.
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
     DvzGpu* gpu = dvz_gpu(app, 0);
     DvzCanvas* canvas = dvz_canvas(gpu, 1280, 1024, 0);
     DvzScene* scene = dvz_scene(canvas, 1, 1);
     DvzPanel* panel = dvz_scene_panel(scene, 0, 0, DVZ_CONTROLLER_PANZOOM, 0);
 
-    // Create a blank visual.
+    // We create a blank visual, to which we'll add our custom visual.
     DvzVisual* visual = dvz_blank_visual(scene, DVZ_VISUAL_FLAGS_TRANSFORM_NONE);
 
-    // Create a blank graphics to be added to the custom visual.
+    // We create a blank graphics that will become our custom graphics.
     DvzGraphics* graphics = dvz_blank_graphics(scene, 0);
 
-    // Custom graphics.
+    // Custom graphics creation.
     {
+        // The first step is to define the vertex and fragment shaders. When using
+        // dvz_graphics_shader(), one must specify a path to the compiled SPIR-V shaders.
+        // When writing the shaders in GLSL, it is thus necessary to compile them separately with
+        // glslc.
         dvz_graphics_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, "custom_point.vert.spv");
         dvz_graphics_shader(graphics, VK_SHADER_STAGE_FRAGMENT_BIT, "custom_point.frag.spv");
-        dvz_graphics_renderpass(graphics, &canvas->renderpass, 0);
+
+        // Define the graphics pipeline topology: point list here.
         dvz_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
 
-        // Vertex attributes.
+        // Next, we declare the size of our vertex structure.
         dvz_graphics_vertex_binding(graphics, 0, sizeof(PointVertex));
+
+        // We declare the vertex shader attributes, that should correspond to the different
+        // structure fields in the vertex structure.
+
+        // The first attribute is a vec3 in GLSL, and a vec3 in C too.
         dvz_graphics_vertex_attr(
             graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(PointVertex, pos));
+
+        // The second attribute is a float in GLSL, and a byte (uint8) in C. We use the special
+        // format VK_FORMAT_R8_USCALED to declare this.
         dvz_graphics_vertex_attr(
             graphics, 0, 1, VK_FORMAT_R8_USCALED, offsetof(PointVertex, size));
 
-        // Create the graphics.
+        // Now that we've set up the graphics, we create it.
         dvz_graphics_create(graphics);
     }
 
-    // Add the created graphics to the custom visual.
+    // We add our custom graphics to a custom visual.
     dvz_custom_graphics(visual, graphics);
 
-    // Add the custom visual to the panel.
+    // We add the custom visual to the panel.
     dvz_custom_visual(panel, visual);
 
-    // Set the vertex data.
-    const uint32_t N = 64;
-    PointVertex* vertices = calloc(N, sizeof(PointVertex));
+    // Now, we prepare the vertex data. We could have defined and used props, but we'll show
+    // another method instead. We create the vertex buffer directly, using the PointVertex
+    // structure we've created.
+    const uint32_t N = 64;                                  // number of points
+    PointVertex* vertices = calloc(N, sizeof(PointVertex)); // vertex buffer
     float t = 0;
     for (uint32_t i = 0; i < N; i++)
     {
         t = i / (float)(N - 1);
+        // vertex position
         vertices[i].pos[0] = -.75 + 1.25 * t * t;
         vertices[i].pos[1] = +.75 - 1.25 * t;
-        vertices[i].size = 4 * i;
+        // vertex size, in byte, between 0 and 255.
+        vertices[i].size = 4 * i + 1;
     }
 
-    // Set the vertices.
+    // Here is the crucial bit: we bind the GPU vertex buffer with our struct array.
     dvz_visual_data_source(visual, DVZ_SOURCE_TYPE_VERTEX, 0, 0, N, N, vertices);
     FREE(vertices);
 
