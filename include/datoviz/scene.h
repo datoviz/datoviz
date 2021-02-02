@@ -263,14 +263,6 @@ DVZ_EXPORT DvzPanel*
 dvz_scene_panel(DvzScene* scene, uint32_t row, uint32_t col, DvzControllerType type, int flags);
 
 /**
- * Create a blank visual (used when creating custom visuals).
- *
- * @param scene
- * @returns a blank visual
- */
-DVZ_EXPORT DvzVisual* dvz_scene_visual_blank(DvzScene* scene, int flags);
-
-/**
  * Create a builtin visual and add it to a panel.
  *
  * @param panel the panel
@@ -281,13 +273,38 @@ DVZ_EXPORT DvzVisual* dvz_scene_visual_blank(DvzScene* scene, int flags);
 DVZ_EXPORT DvzVisual* dvz_scene_visual(DvzPanel* panel, DvzVisualType type, int flags);
 
 /**
+ * Create a blank graphics (used when creating custom graphics and visuals).
+ *
+ * @param scene the scene
+ * @param flags graphics flags
+ * @returns a blank graphics
+ */
+DVZ_EXPORT DvzGraphics* dvz_blank_graphics(DvzScene* scene, int flags);
+
+/**
+ * Create a blank visual (used when creating custom visuals).
+ *
+ * @param scene the scene
+ * @param flags visual flags
+ * @returns a blank visual
+ */
+DVZ_EXPORT DvzVisual* dvz_blank_visual(DvzScene* scene, int flags);
+
+/**
+ * Make a custom graphics and add it to a visual.
+ *
+ * @param visual a visual
+ * @param graphics the custom graphics
+ */
+DVZ_EXPORT void dvz_custom_graphics(DvzVisual* visual, DvzGraphics* graphics);
+
+/**
  * Make a custom visual and add it to a panel.
  *
  * @param panel the panel
  * @param visual the custom visual
  */
-DVZ_EXPORT void dvz_scene_visual_custom(DvzPanel* panel, DvzVisual* visual);
-
+DVZ_EXPORT void dvz_custom_visual(DvzPanel* panel, DvzVisual* visual);
 
 
 // DVZ_EXPORT void dvz_visual_toggle(DvzVisual* visual, DvzVisualVisibility visibility);

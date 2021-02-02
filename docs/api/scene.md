@@ -16,10 +16,22 @@
 ### `dvz_app_destroy()`
 
 
+
 ## Set panels, add visuals
 
 ### `dvz_scene_panel()`
 ### `dvz_scene_visual()`
+
+
+
+## Custom visuals and graphics
+
+### `dvz_blank_graphics()`
+### `dvz_custom_graphics()`
+
+### `dvz_blank_visual()`
+### `dvz_custom_visual()`
+
 
 
 ## Grid and panels
@@ -43,7 +55,6 @@
 ### `dvz_panel_at()`
 ### `dvz_panel_destroy()`
 ### `dvz_panel_viewport()`
-
 
 
 

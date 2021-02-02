@@ -31,22 +31,6 @@
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
-// // Variants.
-// typedef enum
-// {
-//     DVZ_VISUAL_VARIANT_NONE = 0,
-
-//     DVZ_VISUAL_VARIANT_RAW = 0x0001,
-//     DVZ_VISUAL_VARIANT_AGG = 0x0002,
-//     DVZ_VISUAL_VARIANT_SHADED = 0x0004,
-
-//     DVZ_VISUAL_VARIANT_TEXTURED = 0x0010,
-//     DVZ_VISUAL_VARIANT_TEXTURED_MULTI = 0x0020,
-
-// } DvzVisualVariant;
-
-
-
 // Visual types.
 typedef enum
 {
@@ -110,18 +94,6 @@ typedef enum
 
 
 /*************************************************************************************************/
-/*  Typedefs                                                                                     */
-/*************************************************************************************************/
-
-
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-
-
-/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
@@ -135,14 +107,46 @@ typedef enum
 DVZ_EXPORT void dvz_visual_builtin(DvzVisual* visual, DvzVisualType type, int flags);
 
 
-/**
- * Create the common sources and props for a custom visual.
- *
- * This function *must* be called *after* setting at least 1 graphics pipeline.
- *
- * @param visual the visual to update
- */
-DVZ_EXPORT void dvz_visual_custom(DvzVisual* visual);
+
+/*************************************************************************************************/
+/*  Common utils                                                                                 */
+/*************************************************************************************************/
+
+static void _common_sources(DvzVisual* visual)
+{
+    ASSERT(visual != NULL);
+
+    // Binding #0: uniform buffer MVP
+    dvz_visual_source( //
+        visual, DVZ_SOURCE_TYPE_MVP, 0, DVZ_PIPELINE_GRAPHICS, 0, 0, sizeof(DvzMVP),
+        DVZ_SOURCE_FLAG_MAPPABLE);
+
+    // Binding #1: uniform buffer viewport
+    dvz_visual_source(
+        visual, DVZ_SOURCE_TYPE_VIEWPORT, 0, DVZ_PIPELINE_GRAPHICS, 0, 1, sizeof(DvzViewport), 0);
+}
+
+static void _common_props(DvzVisual* visual)
+{
+    DvzProp* prop = NULL;
+
+    // MVP
+    // Model.
+    prop = dvz_visual_prop(visual, DVZ_PROP_MODEL, 0, DVZ_DTYPE_MAT4, DVZ_SOURCE_TYPE_MVP, 0);
+    dvz_visual_prop_copy(prop, 0, offsetof(DvzMVP, model), DVZ_ARRAY_COPY_SINGLE, 1);
+
+    // View.
+    prop = dvz_visual_prop(visual, DVZ_PROP_VIEW, 0, DVZ_DTYPE_MAT4, DVZ_SOURCE_TYPE_MVP, 0);
+    dvz_visual_prop_copy(prop, 1, offsetof(DvzMVP, view), DVZ_ARRAY_COPY_SINGLE, 1);
+
+    // Proj.
+    prop = dvz_visual_prop(visual, DVZ_PROP_PROJ, 0, DVZ_DTYPE_MAT4, DVZ_SOURCE_TYPE_MVP, 0);
+    dvz_visual_prop_copy(prop, 2, offsetof(DvzMVP, proj), DVZ_ARRAY_COPY_SINGLE, 1);
+
+    // Time.
+    prop = dvz_visual_prop(visual, DVZ_PROP_TIME, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_MVP, 0);
+    dvz_visual_prop_copy(prop, 3, offsetof(DvzMVP, time), DVZ_ARRAY_COPY_SINGLE, 1);
+}
 
 
 

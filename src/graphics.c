@@ -60,7 +60,7 @@ static inline void _load_shader(
 /*  Common                                                                                       */
 /*************************************************************************************************/
 
-static void _common_bindings(DvzGraphics* graphics)
+static void _common_slots(DvzGraphics* graphics)
 {
     dvz_graphics_slot(graphics, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // MVP
     dvz_graphics_slot(graphics, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // viewport
@@ -87,7 +87,7 @@ static void _graphics_point(DvzCanvas* canvas, DvzGraphics* graphics)
     ATTR_POS(DvzVertex, pos)
     ATTR_COL(DvzVertex, color)
 
-    _common_bindings(graphics);
+    _common_slots(graphics);
     dvz_graphics_slot(graphics, DVZ_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
     CREATE
@@ -110,7 +110,7 @@ static void _graphics_basic(DvzCanvas* canvas, DvzGraphics* graphics, VkPrimitiv
     ATTR_POS(DvzVertex, pos)
     ATTR_COL(DvzVertex, color)
 
-    _common_bindings(graphics);
+    _common_slots(graphics);
 
     CREATE
 }
@@ -139,7 +139,7 @@ static void _graphics_marker(DvzCanvas* canvas, DvzGraphics* graphics)
     ATTR(DvzGraphicsMarkerVertex, VK_FORMAT_R8_UNORM, angle)
     ATTR(DvzGraphicsMarkerVertex, VK_FORMAT_R8_UINT, transform)
 
-    _common_bindings(graphics);
+    _common_slots(graphics);
     dvz_graphics_slot(graphics, DVZ_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
     CREATE
@@ -200,7 +200,7 @@ static void _graphics_segment(DvzCanvas* canvas, DvzGraphics* graphics)
     ATTR(DvzGraphicsSegmentVertex, VK_FORMAT_R32_SINT, cap1)
     ATTR(DvzGraphicsSegmentVertex, VK_FORMAT_R8_UINT, transform)
 
-    _common_bindings(graphics);
+    _common_slots(graphics);
     dvz_graphics_callback(graphics, _graphics_segment_callback);
 
     CREATE
@@ -276,7 +276,7 @@ static void _graphics_text(DvzCanvas* canvas, DvzGraphics* graphics)
     ATTR(DvzGraphicsTextVertex, VK_FORMAT_R16G16B16A16_UINT, glyph)
     ATTR(DvzGraphicsTextVertex, VK_FORMAT_R8_UINT, transform)
 
-    _common_bindings(graphics);
+    _common_slots(graphics);
     dvz_graphics_slot(graphics, DVZ_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
     dvz_graphics_slot(graphics, DVZ_USER_BINDING + 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
@@ -301,7 +301,7 @@ static void _graphics_image(DvzCanvas* canvas, DvzGraphics* graphics)
     ATTR_POS(DvzGraphicsImageVertex, pos)
     ATTR(DvzGraphicsImageVertex, VK_FORMAT_R32G32_SFLOAT, uv)
 
-    _common_bindings(graphics);
+    _common_slots(graphics);
     dvz_graphics_slot(graphics, DVZ_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
     for (uint32_t i = 1; i <= 4; i++)
         dvz_graphics_slot(
@@ -364,7 +364,7 @@ static void _graphics_volume_slice(DvzCanvas* canvas, DvzGraphics* graphics)
     ATTR_POS(DvzGraphicsVolumeSliceVertex, pos)
     ATTR(DvzGraphicsVolumeSliceVertex, VK_FORMAT_R32G32B32_SFLOAT, uvw)
 
-    _common_bindings(graphics);
+    _common_slots(graphics);
     dvz_graphics_slot(graphics, DVZ_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
     dvz_graphics_slot(graphics, DVZ_USER_BINDING + 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
     dvz_graphics_slot(graphics, DVZ_USER_BINDING + 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
@@ -471,7 +471,7 @@ static void _graphics_volume(DvzCanvas* canvas, DvzGraphics* graphics)
     ATTR_POS(DvzGraphicsVolumeVertex, pos)
     ATTR(DvzGraphicsVolumeVertex, VK_FORMAT_R32G32B32_SFLOAT, uvw)
 
-    _common_bindings(graphics);
+    _common_slots(graphics);
     dvz_graphics_slot(graphics, DVZ_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
     dvz_graphics_slot(graphics, DVZ_USER_BINDING + 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
     dvz_graphics_slot(graphics, DVZ_USER_BINDING + 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
@@ -502,7 +502,7 @@ static void _graphics_mesh(DvzCanvas* canvas, DvzGraphics* graphics)
     ATTR(DvzGraphicsMeshVertex, VK_FORMAT_R32G32_SFLOAT, uv)
     ATTR(DvzGraphicsMeshVertex, VK_FORMAT_R8_UNORM, alpha)
 
-    _common_bindings(graphics);
+    _common_slots(graphics);
     dvz_graphics_slot(graphics, DVZ_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
     for (uint32_t i = 1; i <= 4; i++)
         dvz_graphics_slot(
@@ -602,6 +602,9 @@ void dvz_graphics_append(DvzGraphicsData* data, const void* item)
 
 static DvzGraphics* _find_graphics(DvzCanvas* canvas, DvzGraphicsType type, int flags)
 {
+    ASSERT(canvas != NULL);
+    ASSERT(type != DVZ_GRAPHICS_CUSTOM);
+
     DvzGraphics* graphics = dvz_container_iter_init(&canvas->graphics);
     if (graphics != NULL)
     {

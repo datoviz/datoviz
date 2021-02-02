@@ -1,4 +1,5 @@
 #include "../include/datoviz/scene.h"
+#include "../include/datoviz/builtin_visuals.h"
 #include "../include/datoviz/canvas.h"
 #include "../include/datoviz/interact.h"
 #include "../include/datoviz/panel.h"
@@ -828,7 +829,7 @@ static void _add_visual(DvzPanel* panel, DvzVisual* visual)
 
 
 
-DvzVisual* dvz_scene_visual_blank(DvzScene* scene, int flags)
+DvzVisual* dvz_blank_visual(DvzScene* scene, int flags)
 {
     ASSERT(scene != NULL);
     DvzVisual* visual = dvz_container_alloc(&scene->visuals);
@@ -847,7 +848,7 @@ DvzVisual* dvz_scene_visual(DvzPanel* panel, DvzVisualType type, int flags)
     ASSERT(panel->scene != NULL);
 
     // Create a blank visual.
-    DvzVisual* visual = dvz_scene_visual_blank(panel->scene, flags);
+    DvzVisual* visual = dvz_blank_visual(panel->scene, flags);
 
     // Builtin visual.
     dvz_visual_builtin(visual, type, flags);
@@ -860,16 +861,57 @@ DvzVisual* dvz_scene_visual(DvzPanel* panel, DvzVisualType type, int flags)
 
 
 
-void dvz_scene_visual_custom(DvzPanel* panel, DvzVisual* visual)
+void dvz_custom_visual(DvzPanel* panel, DvzVisual* visual)
 {
     ASSERT(panel != NULL);
     ASSERT(visual != NULL);
 
     // Add common sources and props.
-    dvz_visual_custom(visual);
+    _common_sources(visual);
+    _common_props(visual);
 
     // Bind the scene data (mvp, viewport).
     _add_visual(panel, visual);
+}
+
+
+
+DvzGraphics* dvz_blank_graphics(DvzScene* scene, int flags)
+{
+    ASSERT(scene != NULL);
+    DvzCanvas* canvas = scene->canvas;
+    ASSERT(canvas != NULL);
+    DvzGraphics* graphics = dvz_container_alloc(&canvas->graphics);
+    *graphics = dvz_graphics(canvas->gpu);
+    graphics->type = DVZ_GRAPHICS_CUSTOM;
+    graphics->flags = flags;
+
+    // Common slots.
+    dvz_graphics_slot(graphics, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // MVP
+    dvz_graphics_slot(graphics, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // viewport
+
+    return graphics;
+}
+
+
+
+void dvz_custom_graphics(DvzVisual* visual, DvzGraphics* graphics)
+{
+    ASSERT(visual != NULL);
+    ASSERT(graphics != NULL);
+    ASSERT(dvz_obj_is_created(&graphics->obj));
+    ASSERT(graphics->type == DVZ_GRAPHICS_CUSTOM);
+
+    // Add the graphics to the visual.
+    dvz_visual_graphics(visual, graphics);
+
+    // Vertex buffer source.
+    // HACK: only support 1 attribute binding at the moment.
+    VkDeviceSize struct_size = graphics->vertex_bindings[0].stride;
+    dvz_visual_source(
+        visual, DVZ_SOURCE_TYPE_VERTEX, 0, DVZ_PIPELINE_GRAPHICS, 0, 0, struct_size, 0);
+
+    // Other sources will be set by dvz_custom_visual().
 }
 
 

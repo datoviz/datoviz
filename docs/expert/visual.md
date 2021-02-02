@@ -176,7 +176,7 @@ Here is the code to create the custom visual.
 ```c
 // We create a blank visual in the scene.
 // For demo purposes, we disable the automatic position normalization.
-DvzVisual* visual = dvz_scene_visual_blank(scene, DVZ_VISUAL_FLAGS_TRANSFORM_NONE);
+DvzVisual* visual = dvz_blank_visual(scene, DVZ_VISUAL_FLAGS_TRANSFORM_NONE);
 
 // We add the existing graphics triangle graphics pipeline.
 dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TRIANGLE, 0));
@@ -195,7 +195,7 @@ dvz_visual_prop(visual, DVZ_PROP_LENGTH, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_VER
 dvz_visual_callback_bake(visual, _bake_callback);
 
 // Finally, once the custom visual has been created, we can add it to the panel.
-dvz_scene_visual_custom(panel, visual);
+dvz_custom_visual(panel, visual);
 ```
 
 Once the custom visual has been created and added to the scene, the last step consists of setting some data, as usual:
