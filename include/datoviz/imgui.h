@@ -115,7 +115,7 @@ DVZ_EXPORT void dvz_gui_callback_fps(DvzCanvas* canvas, DvzEvent event);
 
 DVZ_EXPORT DvzGui* dvz_gui(DvzCanvas* canvas, const char* title, int flags);
 
-DVZ_EXPORT void dvz_gui_float_slider(DvzGui* gui, const char* name, float vmin, float vmax);
+DVZ_EXPORT void dvz_gui_float_slider(DvzGui* gui, const char* name, double vmin, double vmax);
 
 DVZ_EXPORT void dvz_gui_destroy(DvzGui* gui);
 

@@ -1,7 +1,7 @@
 #include <inttypes.h>
 
 #include "../include/datoviz/canvas.h"
-#include "imgui.h"
+#include "../include/datoviz/imgui.h"
 
 BEGIN_INCL_NO_WARN
 #include "../external/imgui/backends/imgui_impl_glfw.h"
@@ -268,7 +268,7 @@ DvzGui* dvz_gui(DvzCanvas* canvas, const char* title, int flags)
 
 
 
-void dvz_gui_float_slider(DvzGui* gui, const char* name, float vmin, float vmax)
+void dvz_gui_float_slider(DvzGui* gui, const char* name, double vmin, double vmax)
 {
     ASSERT(gui != NULL);
     ASSERT(vmin < vmax);
@@ -278,8 +278,8 @@ void dvz_gui_float_slider(DvzGui* gui, const char* name, float vmin, float vmax)
     control->name = name;
     control->type = DVZ_GUI_CONTROL_FLOAT_SLIDER;
     control->value = (float*)calloc(1, sizeof(float));
-    control->u.fs.vmin = vmin;
-    control->u.fs.vmax = vmax;
+    control->u.fs.vmin = (float)vmin;
+    control->u.fs.vmax = (float)vmax;
     ASSERT(control->u.fs.vmin < control->u.fs.vmax);
     *((float*)control->value) = .5 * (vmax + vmin);
 }

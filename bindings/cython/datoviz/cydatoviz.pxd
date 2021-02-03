@@ -11,6 +11,7 @@ cdef extern from "<datoviz/datoviz.h>":
 
     ctypedef char uint8_t
 
+
     ctypedef uint32_t[2] uvec2
     ctypedef uint32_t[3] uvec3
     ctypedef uint32_t[4] uvec4
@@ -472,6 +473,20 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_CAP_BUTT = 5
         DVZ_CAP_COUNT = 6
 
+    # from file: imgui.h
+
+    ctypedef enum DvzGuiStyle:
+        DVZ_GUI_STANDARD = 0
+        DVZ_GUI_PROMPT = 1
+        DVZ_GUI_FIXED_TL = 10
+        DVZ_GUI_FIXED_TR = 11
+        DVZ_GUI_FIXED_LL = 12
+        DVZ_GUI_FIXED_LR = 13
+
+    ctypedef enum DvzGuiControlType:
+        DVZ_GUI_CONTROL_NONE = 0
+        DVZ_GUI_CONTROL_FLOAT_SLIDER = 1
+
     # from file: keycode.h
 
     ctypedef enum DvzKeyCode:
@@ -926,6 +941,10 @@ cdef extern from "<datoviz/datoviz.h>":
     DvzTexture* dvz_ctx_texture(DvzContext* context, uint32_t dims, uvec3 size, VkFormat format)
     void dvz_texture_filter(DvzTexture* texture, DvzFilterType type, VkFilter filter)
     void dvz_texture_upload(DvzTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, const void* data)
+
+    # from file: imgui.h
+    DvzGui* dvz_gui(DvzCanvas* canvas, const char* title, int flags)
+    void dvz_gui_float_slider(DvzGui* gui, const char* name, double vmin, double vmax)
 
     # from file: panel.h
     void dvz_panel_transpose(DvzPanel* panel, DvzCDSTranspose transpose)

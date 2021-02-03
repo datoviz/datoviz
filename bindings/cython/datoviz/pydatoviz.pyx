@@ -12,7 +12,6 @@ cimport datoviz.cydatoviz as cv
 
 logger = logging.getLogger(__name__)
 
-
 DEFAULT_WIDTH = 1024
 DEFAULT_HEIGHT = 768
 
@@ -326,6 +325,7 @@ cdef class App:
         cdef int fps = 0
         if show_fps:
             fps = cv.DVZ_CANVAS_FLAGS_FPS
+        fps |= cv.DVZ_CANVAS_FLAGS_IMGUI
         c_canvas = cv.dvz_canvas(self._c_gpu, width, height, fps)
         if c_canvas is NULL:
             raise MemoryError()
@@ -402,6 +402,12 @@ cdef class Canvas:
         p.create(self._c_scene, c_panel)
         self._panels.append(p)
         return p
+
+    def gui(self, unicode title):
+        c_gui = cv.dvz_gui(self._c_canvas, title, 0)
+        gui = Gui()
+        gui.create(self._c_canvas, c_gui)
+        return gui
 
     def __dealloc__(self):
         self.destroy()
@@ -527,3 +533,22 @@ cdef class Visual:
         cdef cv.uvec3 DVZ_ZERO_OFFSET = [0, 0, 0]
         cv.dvz_texture_upload(texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, size * item_size, &value.data[0])
         cv.dvz_visual_texture(self._c_visual, cv.DVZ_SOURCE_TYPE_VOLUME, idx, texture)
+
+
+
+cdef class Gui:
+    cdef cv.DvzCanvas* _c_canvas
+    cdef cv.DvzGui* _c_gui
+
+    cdef create(self, cv.DvzCanvas* c_canvas, cv.DvzGui* c_gui):
+        self._c_canvas = c_canvas
+        self._c_gui = c_gui
+
+    def float_slider(self, unicode name, vmin=None, vmax=None):
+        cdef char* c_name = name
+
+        vmin = vmin if vmin is not None else 0
+        vmax = vmax if vmax is not None else 1
+        cdef double c_vmin = vmin
+        cdef double c_vmax = vmax
+        cv.dvz_gui_float_slider(self._c_gui, c_name, c_vmin, c_vmax)

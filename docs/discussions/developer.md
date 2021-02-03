@@ -23,6 +23,11 @@ All shaders include common GLSL files found in `include/datoviz/glsl/`. This pat
 Compiled shaders of the builtin graphics are bundled into the library, using a special CMake command. The binary contents of the SPIR-V-compiled shaders are integrated in `build/_shaders.c`, which is compiled along with the other C source files of the library.
 
 
+## Cython bindings
+
+* Strange bug when passing single-precision floats to functions defined in a C++ file and wrapped in Cython: the numbers are not passed correctly (garbage values). The problem doesn't arise when using double-precision numbers. So we try to use double types for user-exposed functions (especially GUI functions, defined in a C++ file).
+
+
 ## Dependencies
 
 
@@ -35,21 +40,26 @@ Datoviz integrates Dear ImGUI via a git submodule ([fork](https://github.com/dat
 
 A bash script `manage.sh` script at the repository root provides commands for build, test, doc generation, and so on.
 
+
 ## C formatting
 
 We use clang format to automatically format all C source files. The rules are defined in `.clang-format`.
+
 
 ## Documentation
 
 We use mkdocs, with material theme, and several markdown, theme, and mkdocs plugins. See `mkdocs.yml`. The site is generated in the `site/` subfolder. We use GitHub Pages to serve the website.
 
+
 ## Command-line tool
 
 Datoviz includes an executable that implements test and examples, implemented in the `cli/` subfolder.
 
+
 ## Shaders and binary resource embedding
 
 Important binary resources such as SPIR-V compiled shaders of all included graphics, and the colormap texture, are built directly into the compiled library object. A cmake script loads these files and generates big `build/_colortex.c` and `build/_shaders.c` files, which are then compiled and linked into the library.
+
 
 ## Documentation building
 
