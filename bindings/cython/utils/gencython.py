@@ -31,6 +31,7 @@ STRUCTS = (
     'DvzMouseMoveEvent',
     'DvzMouseWheelEvent',
     'DvzRefillEvent',
+    'DvzGuiEvent',
     'DvzResizeEvent',
     'DvzScreencastEvent',
     'DvzSubmitEvent',

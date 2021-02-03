@@ -66,6 +66,12 @@ cdef extern from "<datoviz/datoviz.h>":
         DvzCanvas* canvas
         DvzPanel* panel
 
+    ctypedef struct DvzGuiControl:
+        pass
+
+    ctypedef struct DvzGui:
+        pass
+
     ctypedef struct DvzSubmit:
         pass
 
@@ -224,20 +230,21 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_EVENT_INTERACT = 3
         DVZ_EVENT_FRAME = 4
         DVZ_EVENT_IMGUI = 5
-        DVZ_EVENT_SCREENCAST = 6
-        DVZ_EVENT_TIMER = 7
-        DVZ_EVENT_MOUSE_BUTTON = 8
-        DVZ_EVENT_MOUSE_MOVE = 9
-        DVZ_EVENT_MOUSE_WHEEL = 10
-        DVZ_EVENT_MOUSE_DRAG_BEGIN = 11
-        DVZ_EVENT_MOUSE_DRAG_END = 12
-        DVZ_EVENT_MOUSE_CLICK = 13
-        DVZ_EVENT_MOUSE_DOUBLE_CLICK = 14
-        DVZ_EVENT_KEY = 15
-        DVZ_EVENT_RESIZE = 16
-        DVZ_EVENT_PRE_SEND = 17
-        DVZ_EVENT_POST_SEND = 18
-        DVZ_EVENT_DESTROY = 19
+        DVZ_EVENT_GUI = 6
+        DVZ_EVENT_SCREENCAST = 7
+        DVZ_EVENT_TIMER = 8
+        DVZ_EVENT_MOUSE_BUTTON = 9
+        DVZ_EVENT_MOUSE_MOVE = 10
+        DVZ_EVENT_MOUSE_WHEEL = 11
+        DVZ_EVENT_MOUSE_DRAG_BEGIN = 12
+        DVZ_EVENT_MOUSE_DRAG_END = 13
+        DVZ_EVENT_MOUSE_CLICK = 14
+        DVZ_EVENT_MOUSE_DOUBLE_CLICK = 15
+        DVZ_EVENT_KEY = 16
+        DVZ_EVENT_RESIZE = 17
+        DVZ_EVENT_PRE_SEND = 18
+        DVZ_EVENT_POST_SEND = 19
+        DVZ_EVENT_DESTROY = 20
 
     ctypedef enum DvzEventMode:
         DVZ_EVENT_MODE_SYNC = 0
@@ -873,6 +880,10 @@ cdef extern from "<datoviz/datoviz.h>":
     ctypedef struct DvzSubmitEvent:
         DvzSubmit* submit
 
+    ctypedef struct DvzGuiEvent:
+        DvzGui* gui
+        DvzGuiControl* control
+
     ctypedef union DvzEventUnion:
         DvzFrameEvent f
         DvzFrameEvent t
@@ -886,6 +897,7 @@ cdef extern from "<datoviz/datoviz.h>":
         DvzResizeEvent r
         DvzScreencastEvent sc
         DvzSubmitEvent s
+        DvzGuiEvent g
 
     ctypedef struct DvzEvent:
         DvzEventType type
