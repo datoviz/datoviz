@@ -473,7 +473,7 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_CAP_BUTT = 5
         DVZ_CAP_COUNT = 6
 
-    # from file: imgui.h
+    # from file: gui.h
 
     ctypedef enum DvzGuiStyle:
         DVZ_GUI_STANDARD = 0
@@ -942,7 +942,7 @@ cdef extern from "<datoviz/datoviz.h>":
     void dvz_texture_filter(DvzTexture* texture, DvzFilterType type, VkFilter filter)
     void dvz_texture_upload(DvzTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, const void* data)
 
-    # from file: imgui.h
+    # from file: gui.h
     DvzGui* dvz_gui(DvzCanvas* canvas, const char* title, int flags)
     void dvz_gui_float_slider(DvzGui* gui, const char* name, double vmin, double vmax)
 

@@ -1,6 +1,6 @@
 #include "../include/datoviz/canvas.h"
 #include "../include/datoviz/context.h"
-#include "../include/datoviz/imgui.h"
+#include "../include/datoviz/gui.h"
 #include "../include/datoviz/vklite.h"
 #include "../src/vklite_utils.h"
 #include <stdlib.h>

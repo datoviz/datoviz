@@ -1,7 +1,7 @@
 #include "test_canvas.h"
 #include "../include/datoviz/canvas.h"
 #include "../include/datoviz/context.h"
-#include "../include/datoviz/imgui.h"
+#include "../include/datoviz/gui.h"
 #include "../src/vklite_utils.h"
 #include "utils.h"
 

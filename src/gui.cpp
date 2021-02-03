@@ -1,7 +1,7 @@
 #include <inttypes.h>
 
 #include "../include/datoviz/canvas.h"
-#include "../include/datoviz/imgui.h"
+#include "../include/datoviz/gui.h"
 
 BEGIN_INCL_NO_WARN
 #include "../external/imgui/backends/imgui_impl_glfw.h"
