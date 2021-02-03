@@ -252,13 +252,14 @@ void dvz_imgui_destroy()
 
 
 /*************************************************************************************************/
-/*  Gui controls                                                                                 */
+/*  Gui controls API                                                                             */
 /*************************************************************************************************/
 
 DvzGui* dvz_gui(DvzCanvas* canvas, const char* title, int flags)
 {
     ASSERT(canvas != NULL);
     DvzGui* gui = (DvzGui*)dvz_container_alloc(&canvas->guis);
+    gui->canvas = canvas;
     gui->title = title;
     gui->flags = flags;
     dvz_obj_init(&gui->obj);
@@ -285,10 +286,17 @@ void dvz_gui_float_slider(DvzGui* gui, const char* name, float vmin, float vmax)
 
 
 
-static void _emit_gui_event(DvzCanvas* canvas, DvzGuiControl* control)
+/*************************************************************************************************/
+/*  Gui controls implementation                                                                  */
+/*************************************************************************************************/
+
+static void _emit_gui_event(DvzGui* gui, DvzGuiControl* control)
 {
-    ASSERT(canvas != NULL);
+    ASSERT(gui != NULL);
     ASSERT(control != NULL);
+
+    DvzCanvas* canvas = gui->canvas;
+    ASSERT(canvas != NULL);
 
     DvzEvent ev;
     ev.type = DVZ_EVENT_GUI;
@@ -299,7 +307,7 @@ static void _emit_gui_event(DvzCanvas* canvas, DvzGuiControl* control)
 
 
 
-static void _show_float_slider(DvzGuiControl* control)
+static bool _show_float_slider(DvzGuiControl* control)
 {
     ASSERT(control != NULL);
     ASSERT(control->type == DVZ_GUI_CONTROL_FLOAT_SLIDER);
@@ -307,7 +315,8 @@ static void _show_float_slider(DvzGuiControl* control)
     float vmin = control->u.fs.vmin;
     float vmax = control->u.fs.vmax;
     ASSERT(vmin < vmax);
-    ImGui::SliderFloat(control->name, (float*)control->value, vmin, vmax, "%.3f", control->flags);
+    return ImGui::SliderFloat(
+        control->name, (float*)control->value, vmin, vmax, "%.3f", control->flags);
 }
 
 
@@ -316,19 +325,27 @@ static void _show_control(DvzGuiControl* control)
 {
     ASSERT(control != NULL);
     ASSERT(control->gui != NULL);
+    ASSERT(control->gui->canvas != NULL);
     ASSERT(control->name != NULL);
     ASSERT(control->value != NULL);
+
+    bool changed = false;
 
     switch (control->type)
     {
 
     case DVZ_GUI_CONTROL_FLOAT_SLIDER:
-        _show_float_slider(control);
+        changed = _show_float_slider(control);
         break;
 
     default:
         log_error("unknown GUI control");
         break;
+    }
+
+    if (changed)
+    {
+        _emit_gui_event(control->gui, control);
     }
 }
 

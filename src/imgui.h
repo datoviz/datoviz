@@ -85,6 +85,7 @@ struct DvzGuiControl
 struct DvzGui
 {
     DvzObject obj;
+    DvzCanvas* canvas;
 
     const char* title;
     int flags;

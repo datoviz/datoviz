@@ -1170,6 +1170,13 @@ int test_canvas_offscreen(TestContext* context)
 /*  Canvas GUI                                                                                   */
 /*************************************************************************************************/
 
+static void _gui_callback(DvzCanvas* canvas, DvzEvent ev)
+{
+    ASSERT(canvas != NULL);
+    float* value = ev.u.g.control->value;
+    log_info("value is %.3f", *value);
+}
+
 int test_canvas_gui_1(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
@@ -1178,7 +1185,9 @@ int test_canvas_gui_1(TestContext* context)
     AT(canvas != NULL);
 
     DvzGui* gui = dvz_gui(canvas, "Hello world", DVZ_GUI_STANDARD);
-    dvz_gui_float_slider(gui, "my slider", 0.0f, 1.0f);
+    dvz_gui_float_slider(gui, "my slider 1", 0.0f, 1.0f);
+    dvz_gui_float_slider(gui, "my slider 2", 10.0f, 20.0f);
+    dvz_event_callback(canvas, DVZ_EVENT_GUI, 0, DVZ_EVENT_MODE_SYNC, _gui_callback, NULL);
 
     dvz_app_run(app, 0);
 
