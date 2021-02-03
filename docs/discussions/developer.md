@@ -16,6 +16,11 @@
 * **DPI scaling factor**: Datoviz natively supports DPI scaling for linewidths, font size, axes, etc. Since automatic cross-platform DPI detection does not seem reliable, Datoviz simply uses sensible defaults but provides an easy way for the user to increase or decrease the DPI via this environment variable. This is useful on high-DPI/Retina monitors.
 
 
+## Shaders
+
+All shaders include common GLSL files found in `include/datoviz/glsl/`. This path must be passed to the `glslc` command with the `-I` flag. This is what the CMake script is using.
+
+
 ## Dependencies
 
 

@@ -360,7 +360,9 @@ foreach(shader_source ${shader_sources})
     set(shader_output "${SPIRV_DIR}/${shader_name}.spv")
     add_custom_command(
         OUTPUT ${shader_output}
-        COMMAND ${GLSLC} -o "${shader_output}" ${shader_source}
+        COMMAND ${GLSLC}
+            -o "${shader_output}" ${shader_source}
+            -I "${CMAKE_SOURCE_DIR}/include/datoviz/glsl"
         DEPENDS ${shader_source}
         IMPLICIT_DEPENDS ${shader_source}
         )

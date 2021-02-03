@@ -1,0 +1,1 @@
+NOTE: all shaders include common GLSL files found in `include/datoviz/glsl/`. This path must be passed to the `glslc` command with the `-I` flag. This is what the CMake script is using.
