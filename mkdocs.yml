@@ -38,22 +38,23 @@ plugins:
 nav:
   - Home: 'index.md'
   - Tutorials:
+    - INdex: 'tutorials/index.md'
     - Installation: 'tutorials/install.md'
     - Quickstart: 'tutorials/quickstart.md'
   - Examples:
     - Overview: 'examples/index.md'
   - How to guides:
     - Index: 'howto/index.md'
-    - Write a standalone C app: 'howto/standalone_scene.md'
-    - Write a custom visual: 'howto/visual.md'
-    - Write a custom graphics: 'howto/graphics.md'
-    - Use the canvas C API: 'howto/standalone_canvas.md'
-    - Use the vklite C API: 'howto/standalone_vklite.md'
-  - Reference:
+    - How to write a standalone C app: 'howto/standalone_scene.md'
+    - How to write a custom visual: 'howto/visual.md'
+    - How to write a custom graphics: 'howto/graphics.md'
+    - How to use the canvas C API: 'howto/standalone_canvas.md'
+    - How to use the vklite C API: 'howto/standalone_vklite.md'
+  - Visual library:
     - Index: 'reference/index.md'
-    - List of colormaps: 'reference/colormaps.md'
     - List of visuals: 'reference/visuals.md'
     - List of graphics: 'reference/graphics.md'
+    - List of colormaps: 'reference/colormaps.md'
   - C API reference:
     - Index: 'api/index.md'
     - Scene API: 'api/scene.md'

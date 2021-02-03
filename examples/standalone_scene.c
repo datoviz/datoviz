@@ -56,12 +56,11 @@ int main(int argc, char** argv)
     dvz_visual_data(visual, DVZ_PROP_COLOR, 0, N, color);
     dvz_visual_data(visual, DVZ_PROP_MARKER_SIZE, 0, N, size);
 
+    // dvz_app_run(app, 5);
+    // dvz_screenshot_file(canvas, "../docs/images/screenshots/standalone_scene.png");
+
     // We run the application. The last argument is the number of frames to run, or 0 for infinite
     // loop (stop when escape is pressed or when the window is closed).
-
-    // dvz_app_run(app, 5);
-    // dvz_screenshot_file(canvas, "c_example.png");
-
     dvz_app_run(app, 0);
 
     // We need to clean up all objects handled by Datoviz at the end.

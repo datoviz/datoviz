@@ -1,4 +1,7 @@
-# Writing custom visuals
+# How to write a custom visual
+
+!!! warning
+    You need to go through the [**Vulkan crash course**](../discussions/vulkan.md) before following this guide.
 
 In this section, we'll show how to create a custom visual based on an existing graphics pipeline, so **without writing custom GLSL shaders**.
 

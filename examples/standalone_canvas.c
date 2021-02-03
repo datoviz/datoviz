@@ -134,7 +134,7 @@ int main(int argc, char** argv)
     dvz_event_callback(canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, _triangle_refill, NULL);
 
     // dvz_app_run(app, 5);
-    // dvz_screenshot_file(canvas, "triangle.png");
+    // dvz_screenshot_file(canvas, "../docs/images/screenshots/standalone_canvas.png");
     dvz_app_run(app, 0);
 
     // We need to clean up all objects handled by Datoviz at the end.

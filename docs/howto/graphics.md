@@ -1,5 +1,9 @@
 # How to write a custom graphics
 
+!!! warning
+    You need to go through the [**Vulkan crash course**](../discussions/vulkan.md) before following this guide.
+    You also need to go through the [**how to write a custom visual guide**](visual.md) first.
+
 In this section, we'll show how to **create a custom graphics** by writing **custom GLSL shaders**. This is an advanced topic as it requires understanding the basic of GPU graphics programming.
 
 !!! note
