@@ -100,12 +100,11 @@ fi
 
 if [ $1 == "doc" ]
 then
-    # python3 utils/gendoc.py && \
+    ln -sf $(pwd)/data/screenshots $(pwd)/docs/images/
     mkdocs build
 fi
 
 if [ $1 == "docs" ]
 then
-    # python3 utils/gendoc.py && \
     mkdocs serve
 fi

@@ -8,6 +8,7 @@ wip
 data
 artifacts
 mouse_connectivity
+screenshots
 *~
 *.code-workspace
 *.ini
