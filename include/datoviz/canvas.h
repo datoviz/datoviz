@@ -612,6 +612,8 @@ struct DvzCanvas
     DvzThread event_thread;
     bool enable_lock;
     atomic(DvzEventType, event_processing);
+
+    bool captured; // if true, mouse and keyboard should not be processed
     DvzMouse mouse;
     DvzKeyboard keyboard;
 

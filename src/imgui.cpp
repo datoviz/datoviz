@@ -376,6 +376,11 @@ static void _show_gui(DvzGui* gui)
 void dvz_gui_callback(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
+
+    // When Dear ImGUI captures the mouse and keyboard, Datoviz should not process user events.
+    ImGuiIO& io = ImGui::GetIO();
+    canvas->captured = io.WantCaptureMouse || io.WantCaptureKeyboard;
+
     DvzGui* gui = (DvzGui*)dvz_container_iter_init(&canvas->guis);
     while (gui != NULL)
     {

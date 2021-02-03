@@ -1055,6 +1055,8 @@ void dvz_mouse_event(DvzMouse* mouse, DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(mouse != NULL);
     ASSERT(canvas != NULL);
+    if (canvas->captured)
+        return;
 
     // log_debug("mouse event %d", canvas->frame_idx);
     mouse->prev_state = mouse->cur_state;
@@ -1212,6 +1214,9 @@ void dvz_keyboard_event(DvzKeyboard* keyboard, DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(keyboard != NULL);
     ASSERT(canvas != NULL);
+
+    if (canvas->captured)
+        return;
 
     keyboard->prev_state = keyboard->cur_state;
 
