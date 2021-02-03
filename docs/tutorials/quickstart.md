@@ -1,49 +1,174 @@
 # Python tutorial
 
-Canvas
-Visual
-Data
-Another panel with diff controller and visual
-Callback
-GUI
+Once Datoviz has been properly installed, you can start to use it in a few lines of code!
 
-
-
-
-
-
-
-
-## First plot with the Python API
+In this tutorial, we'll show **how to make simple 2D and 3D plots with Datoviz in Python**, and we'll go through the most important notions in the library.
 
 !!! note
-    The Python bindings are still at a much earlier stage of development than the C API.
-
-The following code example shows how to make a simple scatter plot in Python:
-
-<!-- CODE_PYTHON bindings/cython/examples/test.py -->
-
-<!-- IMAGE ../images/python_example.png -->
+    The Python bindings are at an early stage of development. They will be significantly improved in the near future.
 
 
-## First plot with the C API
+## Opening IPython
 
-<!-- CODE_C examples/standalone_scene.c -->
+Datoviz can be used in a Python script, or interactively in an IPython terminal. Datoviz allows for interactive use of a canvas while using the IPython terminal (integrated event loop integration). Jupyter notebook integration has not been tested or implemented yet.
 
-<!-- IMAGE ../images/c_example.png -->
+In this tutorial, we'll use IPython. **Open an IPython terminal.**
 
-
-
-
-
-
+```bash
+$ ipython
+```
 
 
+## Importing the library
+
+First, we import NumPy and datoviz:
+
+```python
+import numpy as np
+import numpy.random as nr
+
+from datoviz import canvas, run, colormap
+```
+
+
+## Enabling the IPython event loop integration
+
+If using IPython interactively, we should enable the IPython event loop integration *after* importing datoviz:
+
+```python
+%gui datoviz
+```
+
+Otherwise we won't be able to use the IPython terminal while a canvas is open.
+
+
+## Creating a canvas
+
+We create a **canvas**:
+
+```python
+c = canvas(show_fps=False)
+```
+
+This should open a blank window. We can also specify the initial width and height of the window using keyword arguments to `canvas()`.
+
+
+
+## Creating a panel
+
+Next, we create a **panel**, which is another word for "subplot". By default, there is only one panel spanning the entire canvas, but we can also define multiple panels.
+
+```python
+panel = c.panel(controller='axes')
+```
+
+
+
+## Choosing one of the existing visuals
+
+We'll make a simple **scatter plot** with 2D random points, and different colors and marker sizes.
+
+We refer to [the list of all included visuals](../reference/visuals.md) provided by the Datoviz documentation, and we find that the **marker visual** is what we need for our scatter plot. We look at the **visual properties** (or **props**) for this visual: this is the data we'll need to feed to our visual.
+
+But first, we create our visual object by specifying its type:
+
+```python
+visual = panel.visual('marker')
+```
+
+
+
+## Preparing the visual data
+
+We'll set:
+
+* the **marker positions**: `pos` prop,
+* the **marker colors**: `color` prop,
+* the **marker sizes**: `ms` prop.
+
+First, we generate the data for this props.
+
+### Random positions
+
+```python
+N = 100_000
+pos = nr.randn(N, 3)
+```
+
+Note that **positions always have three dimensions** in Datoviz. When using 2D plotting, we can set the third component to zero.
+
+### Random marker size
+
+We define random marker sizes as an array of floating-point values:
+
+```python
+ms = nr.uniform(low=2, high=40, size=N)
+```
+
+### Colormap
+
+Let's define the colors. We could use random RGB values for the colors, but we'll use a **colormap** instead.
+
+
+```python
+color = colormap(nr.rand(N), vmin=0, vmax=1, alpha=.75 * np.ones(N), cmap='viridis')
+```
+
+The variable `color` is an `(N, 4)` array of `uint8` (byte values between 0 and 255).
+
+This line involved the following steps:
+
+* Choosing a colormap, here **viridis** (see the colormap reference page with the list of ~150 included colormaps),
+* Defining an array of scalar values to be feed to the colormap (random values between 0 and 1 here),
+* (Optional) Defining the colormap range (`[0, 1]` here),
+* (Optional) Setting an alpha transparency channel (0.75 here).
+
+
+
+## Set the visual data
+
+Finally, the most important bit is to **set the visual prop data with the arrays we just created**:
+
+```python
+visual.data('pos', pos)
+visual.data('color', color)
+visual.data('ms', ms)
+```
+
+<!-- IMAGE ../images/screenshots/standalone_scene.png -->
+
+
+## Add another panel
+
+```python
+```
+
+
+
+## Write event callbacks
+
+```python
+```
+
+
+
+## Adding a simple GUI
+
+```python
+```
 
 
 
 
-# The Canvas
+
+
+
+
+
+
+
+
+#### The Canvas
 
 Datoviz provides three similar, but different abstractions:
 
@@ -107,7 +232,7 @@ The rendering loop is an infinite loop that continuously refreshes the canvas un
 Multiple canvases can be created. The application stops as soon as there is no remaining open canvas.
 
 
-## Changing the background color
+#### Changing the background color
 
 The C API provides a function to change the background color of a canvas.
 
@@ -117,7 +242,7 @@ The C API provides a function to change the background color of a canvas.
     ```
 
 
-## Making screenshots
+#### Making screenshots
 
 Here is how to create a screenshot of the first frame, *before* rendering the rendering loop.
 
@@ -135,7 +260,7 @@ Creating a screenshot *during* the lifetime of a canvas will be implemented soon
 
 
 
-## Environment variables
+#### Environment variables
 
 !!! warning
     This section may be partly out of date.
@@ -150,7 +275,7 @@ Datoviz defines a few useful environment variables:
 | `DVZ_LOG_LEVEL=0`                 | Logging level                                         |
 | `DVZ_VSYNC=0`                     | Disable vertical sync                                 |
 
-### Notes
+#### Notes
 
 * **Vertical synchronization** is activated by default. The refresh rate is typically limited to 60 FPS. Deactivating it (which is automatic when using `DVZ_FPS=1`) leads to the event loop running as fast as possible, which is useful for benchmarking. It may lead to high CPU and GPU utilization, whereas vertical synchronization is typically light on CPU cycles. Note also that user interaction seems laggy when vertical synchronization is active (the default). When it comes to GUI interaction (mouse movements, drag and drop, and so on), we're used to lags lower than 10 milliseconds, which a frame rate of 60 FPS cannot achieve.
 * **Logging levels**: 0=trace, 1=debug, 2=info, 3=warning, 4=error
@@ -166,12 +291,12 @@ Datoviz defines a few useful environment variables:
 
 
 
-# The scene
+#### The scene
 
 The **scene** provides facilities to create **panels** (subplots) within a canvas, add visual elements to the panels in various coordinate systems, and define **controllers** (how to interact with the visuals in the panels).
 
 
-## Coordinate system
+#### Coordinate system
 
 Datoviz uses the standard OpenGL 3D coordinate system:
 
@@ -185,14 +310,14 @@ This convention makes it possible to use existing camera matrix routines impleme
 Other conventions for `x, y, z` axes will be supported in the future.
 
 
-## Data transforms
+#### Data transforms
 
 Position props are specified in the original data coordinate system corresponding to the scientific data to be visualized. Yet, Datoviz requires vertex positions to be in normalized coordinates (between -1 and 1) when sent to the GPU. Since the GPU only deals with single-precision floating point numbers, doing data normalization on the GPU would result in significant loss of precision and would harm performance.
 
 Therefore, Datoviz provides a system to make transformations on the CPU **in double precision** before uploading the data to the GPU. By default, the data is linearly transformed to fit the [-1, +1] cube. Other types of transformations will soon be implemented (polar coordinates, geographic coordinate systems, and so on).
 
 
-## Controllers
+#### Controllers
 
 When creating a new panel, one needs to specify a **Controller**. This object defines how the user interacts with the panel.
 
@@ -215,7 +340,7 @@ The controllers currently implemented are:
 
 More controllers will be implemented in the future. The C interface used to create custom controllers will be refined too.
 
-### Panzoom
+#### Panzoom
 
 The **panzoom controller** provides mouse interaction patterns for panning and zooming:
 
@@ -224,20 +349,20 @@ The **panzoom controller** provides mouse interaction patterns for panning and z
 * **Mouse wheel**: zoom in and out in both axes simultaneously
 * **Double-click with left button**: reset to initial view
 
-### Axes 2D
+#### Axes 2D
 
 The **axes 2D controller** displays ticks, tick labels, grid and provides panzoom interaction.
 
-### Arcball
+#### Arcball
 
 The arcball controller is used to rotate a 3D object in all directions using the mouse. It is implemented with quaternions.
 
-### First-person camera
+#### First-person camera
 
 Left-dragging controls the camera, the arrow keys control the position, the Z is controlled by the mouse wheel.
 
 
-## Subplots
+#### Subplots
 
 Panels are organized within a **grid** layout. Each panel is indexed by its row and column. By default, there is a single panel spanning the entire canvas.
 
@@ -254,7 +379,7 @@ By default, a regular grid is created. You can customize the size of each colum,
 
 
 
-# Callbacks
+#### Callbacks
 
 The canvas provides an event system where the user can specify callback functions to be called at specific times during the time course of the canvas.
 
@@ -266,7 +391,7 @@ An event callback may be registered as a sync or async callback.
 It is recommended to only use async callbacks when needed, as they come with some overhead. They are mostly useful with I/O-bound operations, for example, making a network request in response to a keyboard key press.
 
 
-## Registering a callback function
+#### Registering a callback function
 
 The callback function receives two arguments: the canvas, and a special struct containing information about the event. The special field `u` is a union containing information specific to the event type.
 
@@ -284,7 +409,7 @@ The callback function receives two arguments: the canvas, and a special struct c
     ```
 
 
-## List of events
+#### List of events
 
 | Name | Description |
 | ---- | ---- |
@@ -316,7 +441,7 @@ More events will be implemented/documented soon.
 
 
 
-## Next steps
+#### Next steps
 
 The simple examples above showed:
 

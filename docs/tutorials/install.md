@@ -1,28 +1,52 @@
 # Installation
 
+!!! warning
+    Datoviz is a very young project, and as such, we don't provide compiled packages yet. Manual compilation is required. Help would be hugely appreciated for packaging.
+
+Datoviz should work on most systems. It has been developed on Linux (Ubuntu 20.04), tested on macOS (Intel). Windows support is preliminary, help appreciated on this platform.
+
+## Python bindings
+
+Datoviz comprises two parts:
+
+* A full featured **C library**,
+* Light **Python bindings** written in Cython.
+
+The philosophy of Datoviz is to **implement all the logic and functionality in C**, and provide minimal bindings in high-level languages around this functionality. This design choice ensures that future bindings that might be developed in different languages would all share the same functionality (Julia, R, MATLAB, Rust, C#, and so on).
+
 !!! note
-    Making easy-to-install packages for common systems is a work in progress. Help needed! In the meantime, you need to manually compile the library. The best supported platform at the moment is Ubuntu 20.04.
+    Most efforts were so far dedicated to the C library, whereas the Python bindings are at still an early stage of development.
 
-Datoviz should work on most systems. It has been developed on Linux (Ubuntu 20.04), tested on macOS (Intel). Windows support is preliminary, help needed.
+**Dependencies of the Python bindings** are:
 
-## Dependencies
+* NumPy
+* IPython
 
-Mandatory dependencies that need to be installed before building the library:
+**Building the Cython bindings** manually (which is mandatory at the moment) requires the following additional dependencies:
+
+* cython
+* pyparsing
+* colorcet
+* imageio
+
+
+## Dependencies of the C library
+
+**Mandatory dependencies** that need to be installed before compiling the C library are:
 
 * **LunarG Vulkan SDK**
 * **cmake 3.16+** (build)
 * **ninja** (build)
 
-**The other dependencies below require no manual installation.**
-
-Optional dependencies (used by the current version or an upcoming version of the library):
+**Optional dependencies** (used as options in the next version) are:
 
 * **freetype** (optional)
 * **libpng** (optional)
 * **ffmpeg** (optional)
 * **Qt5** (optional, not supported on Ubuntu *strictly* below 20.04)
 
-Dependencies already included in the repository:
+
+The other dependencies below are already included in the library, so **you don't need to install them manually**:
 
 * **glfw3 3.3+**: cross-platform windowing system
 * **cglm**: basic types and math computations on vectors and matrices
@@ -33,7 +57,9 @@ Dependencies already included in the repository:
 * **tiny_obj_loader**: loading of `.obj` mesh files
 
 
-## Ubuntu 20.04
+## Manual compilation
+
+### Ubuntu 20.04+
 
 1. Install the latest graphics drivers.
 2. Install the build tools:
@@ -51,7 +77,7 @@ Dependencies already included in the repository:
     3. `./samples/build/Sample-Programs/Hologram/Hologram` (test an example)
     4. **Important**: add `source ~/vulkan/setup-env.sh` to your `~/.bashrc` so that the `$VULKAN_SDK` environment variable and other variables are properly set in your terminal.
 
-5. Clone the datoviz repository and build the library:
+5. Clone the Datoviz repository and build the library:
 
     1. `git clone --recursive git@github.com:datoviz/datoviz.git`
     2. `cd datoviz`
@@ -69,9 +95,9 @@ Dependencies already included in the repository:
 
 
 
-## macOS
+### macOS
 
-### Install the dependencies
+#### Install the dependencies
 
 1. Type `git` in a terminal to install it.
 2. Install Xcode
@@ -80,14 +106,14 @@ Dependencies already included in the repository:
 5. Type `brew install cmake ninja`
 
 
-### Install Vulkan
+#### Install Vulkan
 
 1. Install [the latest Vulkan SDK](https://vulkan.lunarg.com/sdk/home#mac)
 2. `cd /Volumes/vulkansdk-macos-1.2.154.0` (replace by appropriate version)
 3. `./install_vulkan.py`
 
 
-### Install Datoviz
+#### Install Datoviz
 
 1. `git clone --recursive git@github.com:datoviz/datoviz.git`
 2. `cd datoviz`
@@ -95,16 +121,19 @@ Dependencies already included in the repository:
 4. `./manage.sh example`
 
 
-### Build the Cython module
+#### Build the Cython module
 
 1. Compile the Cython module: `./manage.sh cython`
 2. Export the shared library path in your environment: `source setup-env.sh`
 3. Try a Python example: `python bindings/cython/examples/test.py`
 
 
-## Windows 10 (mingw-w64)
+### Windows 10
 
-**Help needed to fill in the details**.
+!!! warning
+    Only **mingw-w64** is supported at the moment. Microsoft Visual C++ is not yet supported.
+
+**Help needed to fill in the details below**:
 
 1. Install the latest graphics drivers for your system and hardware.
 2. Install [Winlibs](http://winlibs.com/), a Windows port of gcc, using mingw-w64.
@@ -127,7 +156,6 @@ Dependencies already included in the repository:
     build\datoviz.exe example (TODO)
     ```
 
-**Note**: Datoviz does not yet compile with Microsoft Visual C++ compiler, help appreciated.
 
 
 

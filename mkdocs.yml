@@ -38,7 +38,7 @@ plugins:
 nav:
   - Home: 'index.md'
   - Tutorials:
-    - INdex: 'tutorials/index.md'
+    - Index: 'tutorials/index.md'
     - Installation: 'tutorials/install.md'
     - Quickstart: 'tutorials/quickstart.md'
   - Examples:

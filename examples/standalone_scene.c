@@ -34,7 +34,7 @@ int main(int argc, char** argv)
     // - color (four bytes for r, g, b, a)
     // - size (a single precision floating point number with the marker size, in pixels)
     // There are many other settable visual properties, refer to the visual reference guide.
-    const uint32_t N = 10000;
+    const uint32_t N = 100000;
     dvec3* pos = (dvec3*)calloc(N, sizeof(dvec3));
     cvec4* color = (cvec4*)calloc(N, sizeof(cvec4));
     float* size = (float*)calloc(N, sizeof(float));

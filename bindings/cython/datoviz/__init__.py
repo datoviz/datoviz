@@ -1,7 +1,9 @@
 import atexit
 import logging
 import os.path as op
+import __main__ as main
 
+from IPython import get_ipython
 from IPython.terminal.pt_inputhooks import register
 
 try:
@@ -58,7 +60,8 @@ add_default_handler('DEBUG')
 
 _APP = None
 _EXITING = False
-_IN_IPYTHON = False
+_EVENT_LOOP_INTEGRATION = False
+# _IN_IPYTHON = False
 
 
 # Globals
@@ -73,13 +76,18 @@ def app(*args, **kwargs):
 
 
 def canvas(*args, **kwargs):
-    return app().canvas(*args, **kwargs)
+    c = app().canvas(*args, **kwargs)
+    # enable_ipython()
+    return c
 
 
 def run(**kwargs):
-    enable_ipython()
-    if not _IN_IPYTHON:
-        app().run(**kwargs)
+    global _EVENT_LOOP_INTEGRATION
+    if _EVENT_LOOP_INTEGRATION:
+        return
+    # enable_ipython()
+    # if not _IN_IPYTHON:
+    app().run(**kwargs)
 
 
 @atexit.register
@@ -95,32 +103,59 @@ def destroy():
 # IPython event loop integration
 # -------------------------------------------------------------------------------------------------
 
+def in_ipython():
+    try:
+        return __IPYTHON__
+    except NameError:
+        return False
+
+
+def is_interactive():
+    return not hasattr(main, '__file__')
+
+
 def inputhook(context):
-    global _APP, _EXITING
+    global _APP, _EXITING, _EVENT_LOOP_INTEGRATION
     if _EXITING:
         return
     if _APP is None:
         logger.debug("automatically creating a Datoviz app")
         _APP = app()
     assert _APP is not None
+    _EVENT_LOOP_INTEGRATION = True
     while not context.input_is_ready():
         _APP.run_one_frame()
 
 
+def enable_ipython():
+    ipython = get_ipython()
+    if ipython is not None:
+        ipython.magic('%gui datoviz')
+
+
+# _IN_IPYTHON = in_ipython()
 register('datoviz', inputhook)
 
+# print(is_interactive())
 
-def enable_ipython():
-    global _IN_IPYTHON
-    if _IN_IPYTHON:
-        return
-    try:
-        # Try to activate the GUI integration only if we are in IPython, and if
-        # IPython event loop has not yet been activated.
-        from IPython import get_ipython
-        ipython = get_ipython()
-        if ipython is not None:
-            ipython.magic('%gui datoviz')
-            _IN_IPYTHON = True
-    except Exception as e:
-        logger.debug("Couldn't enable IPython integration: %s" % str(e))
+# def enable_ipython():
+    # ipython = get_ipython()
+    # if ipython is not None:
+    #     ipython.magic('%gui datoviz')
+    # global _IN_IPYTHON
+    # if _IN_IPYTHON:
+    #     return
+    # try:
+    #     # Try to activate the GUI integration only if we are in IPython, and if
+    #     # IPython event loop has not yet been activated.
+    #     from IPython import get_ipython
+    #     ipython = get_ipython()
+    #     if ipython is not None:
+    #         ipython.magic('%gui datoviz')
+    #         print("IPython")
+    #         _IN_IPYTHON = True
+    # except Exception as e:
+    #     logger.debug("Couldn't enable IPython integration: %s" % str(e))
+
+
+# enable_ipython()
