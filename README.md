@@ -14,16 +14,18 @@ Datoviz is at an early stage of development. The library is quite usable but evo
 
 TODO
 
-See also the [**gallery**](docs/gallery.md).
-
 
 ## Documentation
 
 The documentation is divided into:
 
-* [**User manual**](docs/user/index.md): for regular users with no GPU knowledge, with a focus on scientific 2D/3D plotting
-* [**Expert manual**](docs/expert/index.md): for advanced users, with a focus on writing custom visuals, understanding Vulkan and the architecture of the library, creating entirely custom applications, making GPU optimizations, and more
-* [**C API reference**](docs/api/index.md): for anyone who needs to use the C API
+* **[Tutorials](docs/tutorials/index.md)**: install guide and first introduction to making scientific plots in Python,
+* **[Examples](docs/examples/index.md)**: gallery of screenshots and associated Python code,
+* **[How to guides](docs/howto/index.md)**: advanced topics for expert users, learning how to use C and Vulkan to make custom visuals and applications,
+* **[Reference](docs/reference/index.md)**: comprehensive list of included colormaps, visuals, and graphics,
+* **[C API reference](docs/api/index.md)**: list of all publicly available C functions,
+* **[Discussions](docs/discussions/index.md)**: explanations, Vulkan crash course, and notes.
+
 
 
 ## Features
@@ -90,11 +92,13 @@ Glumpy, developed by Nicolas Rougier, provides [efficient implementations of hig
 * [GLFW](https://www.glfw.org/) **(mandatory)**
 * [libpng](http://www.libpng.org/pub/png/libpng.html) (optional), for making PNG screenshots
 * [glslang](https://github.com/KhronosGroup/glslang) (optional), for compiling GLSL shaders to SPIR-V on the fly
-* [earcut](https://github.com/mapbox/earcut) (included), for polygon triangulations
-* [triangle](https://www.cs.cmu.edu/~quake/triangle.html) (included), for Delaunay triangulations
+* [earcut](https://github.com/mapbox/earcut) (included), developed by Mapbox, for polygon triangulations
+* [triangle](https://www.cs.cmu.edu/~quake/triangle.html) (included), developed by Jonathan Richard Shewchuk, for Delaunay triangulations
 * [extended Wilkinson algorithm](http://vis.stanford.edu/papers/tick-labels) (included) for tick placement
 * [Dear ImGUI](https://github.com/ocornut/imgui) (included)
 * [antigrain geometry](https://en.wikipedia.org/wiki/Anti-Grain_Geometry) (GLSL implementation included)
+
+
 
 An upcoming version will also have the following dependencies:
 

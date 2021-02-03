@@ -1,4 +1,4 @@
-# Writing custom graphics
+# How to write a custom graphics
 
 In this section, we'll show how to **create a custom graphics** by writing **custom GLSL shaders**. This is an advanced topic as it requires understanding the basic of GPU graphics programming.
 
