@@ -126,7 +126,7 @@ static void _presend(DvzCanvas* canvas, DvzEvent ev)
 /*  Dear ImGui functions                                                                         */
 /*************************************************************************************************/
 
-void dvz_imgui_init(DvzCanvas* canvas)
+void dvz_gui_init(DvzCanvas* canvas)
 {
     if (ImGui::GetCurrentContext() == NULL)
         _imgui_init_context();
@@ -160,7 +160,9 @@ void dvz_imgui_init(DvzCanvas* canvas)
     dvz_event_callback(canvas, DVZ_EVENT_PRE_SEND, 0, DVZ_EVENT_MODE_SYNC, _presend, cmds);
 }
 
-void dvz_imgui_begin(const char* title, DvzGuiStyle style)
+
+
+void dvz_gui_begin(const char* title, DvzGuiStyle style)
 {
     ASSERT(title != NULL);
     ASSERT(strlen(title) > 0);
@@ -224,17 +226,23 @@ void dvz_imgui_begin(const char* title, DvzGuiStyle style)
     ImGui::Begin(title, NULL, flags);
 }
 
-void dvz_imgui_end() { ImGui::End(); }
 
-void dvz_imgui_callback_fps(DvzCanvas* canvas, DvzEvent ev)
+
+void dvz_gui_end() { ImGui::End(); }
+
+
+
+void dvz_gui_callback_fps(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
-    dvz_imgui_begin("FPS", DVZ_GUI_FIXED_TR);
+    dvz_gui_begin("FPS", DVZ_GUI_FIXED_TR);
     ImGui::Text("FPS: %.1f", canvas->fps);
-    dvz_imgui_end();
+    dvz_gui_end();
 }
 
-void dvz_imgui_destroy()
+
+
+void dvz_gui_destroy()
 {
     if (ImGui::GetCurrentContext() == NULL)
         return;

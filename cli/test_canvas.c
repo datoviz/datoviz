@@ -1167,6 +1167,23 @@ int test_canvas_offscreen(TestContext* context)
 
 
 /*************************************************************************************************/
+/*  Canvas GUI                                                                                   */
+/*************************************************************************************************/
+
+int test_canvas_gui_1(TestContext* context)
+{
+    DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
+    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, DVZ_CANVAS_FLAGS_IMGUI);
+    AT(canvas != NULL);
+
+
+    TEST_END
+}
+
+
+
+/*************************************************************************************************/
 /*  Canvas screencast                                                                            */
 /*************************************************************************************************/
 

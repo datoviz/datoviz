@@ -685,7 +685,7 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
 
     if (overlay)
     {
-        dvz_imgui_init(canvas);
+        dvz_gui_init(canvas);
     }
 
     // FPS callback.
@@ -697,7 +697,7 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
 
         if (show_fps)
             dvz_event_callback(
-                canvas, DVZ_EVENT_IMGUI, 0, DVZ_EVENT_MODE_SYNC, dvz_imgui_callback_fps, NULL);
+                canvas, DVZ_EVENT_IMGUI, 0, DVZ_EVENT_MODE_SYNC, dvz_gui_callback_fps, NULL);
     }
 
     ASSERT(canvas->swapchain.images != NULL);
@@ -2089,7 +2089,7 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     dvz_fences_destroy(&canvas->fences_render_finished);
 
     if (canvas->overlay)
-        dvz_imgui_destroy();
+        dvz_gui_destroy();
 
     dvz_obj_destroyed(&canvas->obj);
 }

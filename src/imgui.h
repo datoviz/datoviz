@@ -29,15 +29,15 @@ typedef enum
 /*  ImGui functions                                                                              */
 /*************************************************************************************************/
 
-DVZ_EXPORT void dvz_imgui_init(DvzCanvas* canvas);
+DVZ_EXPORT void dvz_gui_init(DvzCanvas* canvas);
 
-DVZ_EXPORT void dvz_imgui_begin(const char* title, DvzGuiStyle style);
+DVZ_EXPORT void dvz_gui_begin(const char* title, DvzGuiStyle style);
 
-DVZ_EXPORT void dvz_imgui_end();
+DVZ_EXPORT void dvz_gui_end();
 
-DVZ_EXPORT void dvz_imgui_destroy();
+DVZ_EXPORT void dvz_gui_destroy();
 
-DVZ_EXPORT void dvz_imgui_callback_fps(DvzCanvas* canvas, DvzEvent);
+DVZ_EXPORT void dvz_gui_callback_fps(DvzCanvas* canvas, DvzEvent);
 
 
 
