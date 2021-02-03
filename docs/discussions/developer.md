@@ -20,6 +20,8 @@
 
 All shaders include common GLSL files found in `include/datoviz/glsl/`. This path must be passed to the `glslc` command with the `-I` flag. This is what the CMake script is using.
 
+Compiled shaders of the builtin graphics are bundled into the library, using a special CMake command. The binary contents of the SPIR-V-compiled shaders are integrated in `build/_shaders.c`, which is compiled along with the other C source files of the library.
+
 
 ## Dependencies
 

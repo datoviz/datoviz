@@ -6,8 +6,8 @@ gcc $DVZ_EXAMPLE_FILE -I../include/ -I../external/cglm/include -I../build/_deps/
     -L../build/ -L../build/_deps/glfw-build/src -lvulkan -lm -lglfw -ldatoviz -o datoviz_example
 #LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../build ./datoviz_example
 
-glslc custom_point.vert -o custom_point.vert.spv
-glslc custom_point.frag -o custom_point.frag.spv
+glslc custom_point.vert -o custom_point.vert.spv -I../include/datoviz/glsl
+glslc custom_point.frag -o custom_point.frag.spv -I../include/datoviz/glsl
 
-glslc triangle.vert -o triangle.vert.spv
-glslc triangle.frag -o triangle.frag.spv
+glslc triangle.vert -o triangle.vert.spv -I../include/datoviz/glsl
+glslc triangle.frag -o triangle.frag.spv -I../include/datoviz/glsl

@@ -1,5 +1,5 @@
 #version 450
-#include "../src/glsl/common.glsl"
+#include "common.glsl"
 
 // The "in" variables here MUST correspond to the "out" variables from the vertex shader.
 layout (location = 0) in vec4 in_color;

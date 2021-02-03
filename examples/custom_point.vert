@@ -3,11 +3,13 @@
 
 // To be compatible with the scene API, all graphics shaders must include a common GLSL include
 // file. It defines common uniform bindings and common functions (for example, transform()).
-#include "../src/glsl/common.glsl"
+// These .glsl files are found in `include/datoviz/glsl`, so one needs to pass
+// `-Ipath/to/datoviz/include/datoviz/glsl` to the `glslc` command (see build.sh script).
+#include "common.glsl"
 
 // Here, we also use GLSL colormaps to compute the square color directly in the vertex shader,
 // without using the colormap texture.
-#include "../src/glsl/colormaps.glsl"
+#include "colormaps.glsl"
 
 // Here, we describe the vertex shader attributes.
 layout (location = 0) in vec3 pos;   // x, y, z positions
