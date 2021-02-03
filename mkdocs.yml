@@ -50,11 +50,12 @@ nav:
     - How to write a custom graphics: 'howto/graphics.md'
     - How to use the canvas C API: 'howto/standalone_canvas.md'
     - How to use the vklite C API: 'howto/standalone_vklite.md'
-  - Visual library:
+  - Reference:
     - Index: 'reference/index.md'
     - List of visuals: 'reference/visuals.md'
     - List of graphics: 'reference/graphics.md'
     - List of colormaps: 'reference/colormaps.md'
+    - List of controllers: 'reference/controllers.md'
   - C API reference:
     - Index: 'api/index.md'
     - Scene API: 'api/scene.md'

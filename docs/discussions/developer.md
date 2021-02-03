@@ -1,5 +1,29 @@
 # Developer notes
 
+## Environment variables
+
+| Environment variable              | Description                                           |
+|-----------------------------------|-------------------------------------------------------|
+| `DVZ_DPI_FACTOR=1.5`              | Change the DPI scaling factor                         |
+| `DVZ_FPS=1`                       | Show the number of frames per second                  |
+| `DVZ_INVERSE_MOUSE_WHEEL=1`       | Inverse the mouse wheel direction                     |
+| `DVZ_LOG_LEVEL=0`                 | Logging level                                         |
+| `DVZ_VSYNC=0`                     | Disable vertical sync                                 |
+
+
+* **Vertical synchronization** is activated by default. The refresh rate is typically limited to 60 FPS. Deactivating it (which is automatic when using `DVZ_FPS=1`) leads to the event loop running as fast as possible, which is useful for benchmarking. It may lead to high CPU and GPU utilization, whereas vertical synchronization is typically light on CPU cycles. Note also that user interaction seems laggy when vertical synchronization is active (the default). When it comes to GUI interaction (mouse movements, drag and drop, and so on), we're used to lags lower than 10 milliseconds, which a frame rate of 60 FPS cannot achieve.
+* **Logging levels**: 0=trace, 1=debug, 2=info, 3=warning, 4=error
+* **DPI scaling factor**: Datoviz natively supports DPI scaling for linewidths, font size, axes, etc. Since automatic cross-platform DPI detection does not seem reliable, Datoviz simply uses sensible defaults but provides an easy way for the user to increase or decrease the DPI via this environment variable. This is useful on high-DPI/Retina monitors.
+
+
+## Dependencies
+
+
+### Dear ImGUI
+
+Datoviz integrates Dear ImGUI via a git submodule ([fork](https://github.com/datoviz/imgui) in the Datoviz GitHub organization). There's a custom branch based on the `docking` upstream branch, which an additional [patch](https://github.com/martty/imgui/commit/f1f948bea715754ad5e83d4dd9f928aecb4ed1d3) applied to it in order to support creating GUIs with integrated Datoviz canvases.
+
+
 ## Manage script
 
 A bash script `manage.sh` script at the repository root provides commands for build, test, doc generation, and so on.
