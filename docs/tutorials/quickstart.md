@@ -1,8 +1,10 @@
-# Python tutorial
+# Quickstart: using Datoviz in Python
 
 Once Datoviz has been properly installed, you can start to use it in a few lines of code!
 
 In this tutorial, we'll show **how to make simple 2D and 3D plots with Datoviz in Python**, and we'll go through the most important notions in the library.
+
+<!-- IMAGE ../images/screenshots/standalone_scene.png -->
 
 We'll cover the following steps:
 
@@ -175,17 +177,19 @@ Finally, we run the application by starting the main event loop
 run()
 ```
 
-<!-- IMAGE ../images/screenshots/standalone_scene.png -->
-
 
 
 ## Adding another panel
+
+Coming soon.
 
 ```python
 ```
 
 
 ## Specifying another controller type
+
+Coming soon.
 
 
 
