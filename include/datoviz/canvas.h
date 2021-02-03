@@ -170,6 +170,7 @@ typedef enum
     DVZ_EVENT_INTERACT,           // called at every frame, before event enqueue
     DVZ_EVENT_FRAME,              // called at every frame, after event enqueue
     DVZ_EVENT_IMGUI,              // called at every frame, after event enqueue
+    DVZ_EVENT_GUI,                // called whenever a GUI control changes or is activated
     DVZ_EVENT_SCREENCAST,         // called when a screenshot has been downloaded
     DVZ_EVENT_TIMER,              // called every X ms in the main thread, just after FRAME
     DVZ_EVENT_MOUSE_BUTTON,       // called when a mouse button is pressed or released
@@ -261,6 +262,7 @@ typedef struct DvzRefillEvent DvzRefillEvent;
 typedef struct DvzResizeEvent DvzResizeEvent;
 typedef struct DvzScreencastEvent DvzScreencastEvent;
 typedef struct DvzSubmitEvent DvzSubmitEvent;
+typedef struct DvzGuiEvent DvzGuiEvent;
 typedef struct DvzTimerEvent DvzTimerEvent;
 typedef struct DvzViewport DvzViewport;
 typedef union DvzEventUnion DvzEventUnion;
@@ -271,6 +273,9 @@ typedef struct DvzEventCallbackRegister DvzEventCallbackRegister;
 typedef struct DvzScreencast DvzScreencast;
 typedef struct DvzPendingRefill DvzPendingRefill;
 
+// Forward declarations.
+typedef struct DvzGui DvzGui;
+typedef struct DvzGuiControl DvzGuiControl;
 
 
 /*************************************************************************************************/
@@ -461,6 +466,14 @@ struct DvzSubmitEvent
 
 
 
+struct DvzGuiEvent
+{
+    DvzGui* gui;
+    DvzGuiControl* control;
+};
+
+
+
 union DvzEventUnion
 {
     DvzFrameEvent f;       // for FRAME events
@@ -475,6 +488,7 @@ union DvzEventUnion
     DvzResizeEvent r;      // for RESIZE events
     DvzScreencastEvent sc; // for SCREENCAST events
     DvzSubmitEvent s;      // for SUBMIT events
+    DvzGuiEvent g;         // for GUI events
 };
 
 
@@ -600,6 +614,8 @@ struct DvzCanvas
     atomic(DvzEventType, event_processing);
     DvzMouse mouse;
     DvzKeyboard keyboard;
+
+    DvzContainer guis;
 
     DvzScreencast* screencast;
     DvzPendingRefill refills;

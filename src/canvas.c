@@ -683,9 +683,13 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
     // Update the viewport field.
     canvas->viewport = dvz_viewport_full(canvas);
 
+    // GUI.
+    canvas->guis = dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzGui), DVZ_OBJECT_TYPE_GUI);
     if (overlay)
     {
-        dvz_gui_init(canvas);
+        dvz_imgui_init(canvas);
+        dvz_event_callback(
+            canvas, DVZ_EVENT_IMGUI, 0, DVZ_EVENT_MODE_SYNC, dvz_gui_callback, NULL);
     }
 
     // FPS callback.
@@ -2089,7 +2093,10 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     dvz_fences_destroy(&canvas->fences_render_finished);
 
     if (canvas->overlay)
-        dvz_gui_destroy();
+        dvz_imgui_destroy();
+    CONTAINER_DESTROY_ITEMS(DvzGui, canvas->guis, dvz_gui_destroy)
+    dvz_container_destroy(&canvas->guis);
+
 
     dvz_obj_destroyed(&canvas->obj);
 }

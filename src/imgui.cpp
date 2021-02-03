@@ -126,7 +126,7 @@ static void _presend(DvzCanvas* canvas, DvzEvent ev)
 /*  Dear ImGui functions                                                                         */
 /*************************************************************************************************/
 
-void dvz_gui_init(DvzCanvas* canvas)
+void dvz_imgui_init(DvzCanvas* canvas)
 {
     if (ImGui::GetCurrentContext() == NULL)
         _imgui_init_context();
@@ -174,7 +174,7 @@ void dvz_gui_begin(const char* title, DvzGuiStyle style)
     {
 
     case DVZ_GUI_STANDARD:
-        flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
+        // flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
         break;
 
     case DVZ_GUI_PROMPT:
@@ -242,9 +242,140 @@ void dvz_gui_callback_fps(DvzCanvas* canvas, DvzEvent ev)
 
 
 
-void dvz_gui_destroy()
+void dvz_imgui_destroy()
 {
     if (ImGui::GetCurrentContext() == NULL)
         return;
     _imgui_destroy();
+}
+
+
+
+/*************************************************************************************************/
+/*  Gui controls                                                                                 */
+/*************************************************************************************************/
+
+DvzGui* dvz_gui(DvzCanvas* canvas, const char* title, int flags)
+{
+    ASSERT(canvas != NULL);
+    DvzGui* gui = (DvzGui*)dvz_container_alloc(&canvas->guis);
+    gui->title = title;
+    gui->flags = flags;
+    dvz_obj_init(&gui->obj);
+    return gui;
+}
+
+
+
+void dvz_gui_float_slider(DvzGui* gui, const char* name, float vmin, float vmax)
+{
+    ASSERT(gui != NULL);
+    ASSERT(vmin < vmax);
+
+    DvzGuiControl* control = &gui->controls[gui->control_count++];
+    control->gui = gui;
+    control->name = name;
+    control->type = DVZ_GUI_CONTROL_FLOAT_SLIDER;
+    control->value = (float*)calloc(1, sizeof(float));
+    control->u.fs.vmin = vmin;
+    control->u.fs.vmax = vmax;
+    ASSERT(control->u.fs.vmin < control->u.fs.vmax);
+    *((float*)control->value) = .5 * (vmax + vmin);
+}
+
+
+
+static void _emit_gui_event(DvzCanvas* canvas, DvzGuiControl* control)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(control != NULL);
+
+    DvzEvent ev;
+    ev.type = DVZ_EVENT_GUI;
+    ev.u.g.gui = control->gui;
+    ev.u.g.control = control;
+    _event_produce(canvas, ev);
+}
+
+
+
+static void _show_float_slider(DvzGuiControl* control)
+{
+    ASSERT(control != NULL);
+    ASSERT(control->type == DVZ_GUI_CONTROL_FLOAT_SLIDER);
+
+    float vmin = control->u.fs.vmin;
+    float vmax = control->u.fs.vmax;
+    ASSERT(vmin < vmax);
+    ImGui::SliderFloat(control->name, (float*)control->value, vmin, vmax, "%.3f", control->flags);
+}
+
+
+
+static void _show_control(DvzGuiControl* control)
+{
+    ASSERT(control != NULL);
+    ASSERT(control->gui != NULL);
+    ASSERT(control->name != NULL);
+    ASSERT(control->value != NULL);
+
+    switch (control->type)
+    {
+
+    case DVZ_GUI_CONTROL_FLOAT_SLIDER:
+        _show_float_slider(control);
+        break;
+
+    default:
+        log_error("unknown GUI control");
+        break;
+    }
+}
+
+
+
+static void _show_gui(DvzGui* gui)
+{
+    ASSERT(gui != NULL);
+    ASSERT(gui->title != NULL);
+    ASSERT(strlen(gui->title) > 0);
+
+    // Start the GUI window.
+    dvz_gui_begin(gui->title, (DvzGuiStyle)gui->flags);
+
+    for (uint32_t i = 0; i < gui->control_count; i++)
+    {
+        _show_control(&gui->controls[i]);
+    }
+
+    // ImGui::ShowDemoWindow();
+
+    // End the GUI window.
+    dvz_gui_end();
+}
+
+
+
+void dvz_gui_callback(DvzCanvas* canvas, DvzEvent ev)
+{
+    ASSERT(canvas != NULL);
+    DvzGui* gui = (DvzGui*)dvz_container_iter_init(&canvas->guis);
+    while (gui != NULL)
+    {
+        ASSERT(gui != NULL);
+        ASSERT(gui->obj.type == DVZ_OBJECT_TYPE_GUI);
+        _show_gui(gui);
+        gui = (DvzGui*)dvz_container_iter(&canvas->guis);
+    }
+}
+
+
+
+void dvz_gui_destroy(DvzGui* gui)
+{
+    ASSERT(gui != NULL);
+    for (uint32_t i = 0; i < gui->control_count; i++)
+    {
+        FREE(gui->controls[i].value);
+    }
 }

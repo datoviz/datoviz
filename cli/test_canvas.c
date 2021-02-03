@@ -1177,6 +1177,10 @@ int test_canvas_gui_1(TestContext* context)
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, DVZ_CANVAS_FLAGS_IMGUI);
     AT(canvas != NULL);
 
+    DvzGui* gui = dvz_gui(canvas, "Hello world", DVZ_GUI_STANDARD);
+    dvz_gui_float_slider(gui, "my slider", 0.0f, 1.0f);
+
+    dvz_app_run(app, 0);
 
     TEST_END
 }
