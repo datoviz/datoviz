@@ -267,16 +267,6 @@ int test_scene_mesh(TestContext* context)
 
 
 
-// static void _gif(DvzCanvas* canvas, DvzEvent ev)
-// {
-//     if (ev.u.t.idx <= 5)
-//         return;
-//     GifWriter* g = (GifWriter*)ev.user_data;
-//     uint8_t* data = dvz_screenshot(canvas, true);
-//     GifWriteFrame(g, data, TEST_WIDTH, TEST_HEIGHT, g->delay);
-//     FREE(data);
-// }
-
 static void _screencast_callback(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
@@ -287,10 +277,12 @@ static void _screencast_callback(DvzCanvas* canvas, DvzEvent ev)
 
 int test_scene_axes(TestContext* context)
 {
+    uint32_t width = 1280;
+    uint32_t height = 1024;
+
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
     DvzGpu* gpu = dvz_gpu(app, 0);
-    DvzCanvas* canvas =
-        dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, CANVAS_FLAGS | DVZ_CANVAS_FLAGS_FPS);
+    DvzCanvas* canvas = dvz_canvas(gpu, width, height, CANVAS_FLAGS | DVZ_CANVAS_FLAGS_FPS);
     dvz_canvas_clear_color(canvas, 1, 1, 1);
     DvzContext* ctx = gpu->context;
     ASSERT(ctx != NULL);
@@ -303,38 +295,35 @@ int test_scene_axes(TestContext* context)
     const uint32_t N = 10000;
     dvec3* pos = calloc(N, sizeof(dvec3));
     cvec4* color = calloc(N, sizeof(cvec4));
-    float param = 10.0f;
+    float* ms = calloc(N, sizeof(float));
     for (uint32_t i = 0; i < N; i++)
     {
         RANDN_POS(pos[i])
         RAND_COLOR(color[i])
-        color[i][3] = 200;
+        ms[i] = 5 + 50 * dvz_rand_float();
+
+        color[i][3] = 196;
         pos[i][0] += 10;
     }
 
     dvz_visual_data(visual, DVZ_PROP_POS, 0, N, pos);
     dvz_visual_data(visual, DVZ_PROP_COLOR, 0, N, color);
-    dvz_visual_data(visual, DVZ_PROP_MARKER_SIZE, 0, 1, &param);
+    dvz_visual_data(visual, DVZ_PROP_MARKER_SIZE, 0, N, ms);
 
-    // GifWriter g;
-    // uint32_t delay = 10;
-    // GifBegin(&g, "a.gif", TEST_WIDTH, TEST_HEIGHT, delay);
-    // dvz_event_callback(canvas, DVZ_EVENT_TIMER, 1. / 10, DVZ_EVENT_MODE_ASYNC, _gif, &g);
-
-    int framerate = 60;
-    Video* video = create_video("scene.mp4", TEST_WIDTH, TEST_HEIGHT, framerate, 40000000);
+    int framerate = 30;
+    Video* video = create_video("scene.mp4", (int)width, (int)height, framerate, 10000000);
     dvz_event_callback(
         canvas, DVZ_EVENT_SCREENCAST, 0, DVZ_EVENT_MODE_SYNC, _screencast_callback, video);
     dvz_screencast(canvas, 1. / framerate, true);
 
     dvz_app_run(app, N_FRAMES);
 
-    // GifEnd(&g);
     dvz_scene_destroy(scene);
     end_video(video);
 
     FREE(pos);
     FREE(color);
+    FREE(ms);
     TEST_END
 }
 

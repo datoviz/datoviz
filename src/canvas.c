@@ -2007,8 +2007,8 @@ void dvz_app_run(DvzApp* app, uint64_t frame_count)
                 break;
             if (gpu->queues.queues[DVZ_DEFAULT_QUEUE_PRESENT] != VK_NULL_HANDLE &&
                 gpu->queues.queues[DVZ_DEFAULT_QUEUE_PRESENT] !=
-                    gpu->queues.queues[DVZ_DEFAULT_QUEUE_RENDER] &&
-                iter % DVZ_MAX_SWAPCHAIN_IMAGES == 0)
+                    gpu->queues.queues[DVZ_DEFAULT_QUEUE_RENDER])
+            // && iter % DVZ_MAX_SWAPCHAIN_IMAGES == 0)
             {
                 dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_PRESENT);
             }

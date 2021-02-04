@@ -2348,8 +2348,9 @@ void dvz_fences_wait(DvzFences* fences, uint32_t idx)
     ASSERT(idx < fences->count);
     if (fences->fences[idx] != VK_NULL_HANDLE)
     {
-        // log_trace(
-        //     "wait for fence %d: ready %d", fences->fences[idx], dvz_fences_ready(fences, idx));
+        // log_debug(
+        //     "wait for fence %d: ready %d", fences->fences[idx],
+        //     0); // dvz_fences_ready(fences, idx));
         vkWaitForFences(fences->gpu->device, 1, &fences->fences[idx], VK_TRUE, 1000000000);
         // log_trace("fence wait finished!");
     }
