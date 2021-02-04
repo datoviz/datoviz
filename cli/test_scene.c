@@ -300,6 +300,7 @@ int test_scene_axes(TestContext* context)
     {
         RANDN_POS(pos[i])
         RAND_COLOR(color[i])
+        dvz_colormap_scale(DVZ_CMAP_VIRIDIS, dvz_rand_float(), 0, 1, color[i]);
         ms[i] = 5 + 50 * dvz_rand_float();
 
         color[i][3] = 196;
@@ -311,7 +312,9 @@ int test_scene_axes(TestContext* context)
     dvz_visual_data(visual, DVZ_PROP_MARKER_SIZE, 0, N, ms);
 
     int framerate = 30;
-    Video* video = create_video("scene.mp4", (int)width, (int)height, framerate, 10000000);
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/scene.mp4", ARTIFACTS_DIR);
+    Video* video = create_video(path, (int)width, (int)height, framerate, 10000000);
     dvz_event_callback(
         canvas, DVZ_EVENT_SCREENCAST, 0, DVZ_EVENT_MODE_SYNC, _screencast_callback, video);
     dvz_screencast(canvas, 1. / framerate, true);
