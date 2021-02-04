@@ -1547,19 +1547,19 @@ static void _screencast_post_send(DvzCanvas* canvas, DvzEvent ev)
         log_trace("screencast await transfer and fence ready");
 
         // To be freed by the SCREENCAST event callback.
-        uint8_t* rgba =
+        uint8_t* rgb_a =
             calloc(screencast->staging.width * screencast->staging.height, 4 * sizeof(uint8_t));
 
         // Copy the image from the staging image to the CPU.
         log_trace("screencast CPU download");
-        dvz_images_download(&screencast->staging, 0, true, true, rgba);
+        dvz_images_download(&screencast->staging, 0, true, screencast->has_alpha, rgb_a);
 
         // Enqueue a special SCREENCAST public event with a pointer to the CPU buffer user
         DvzEvent sev = {0};
         sev.type = DVZ_EVENT_SCREENCAST;
         sev.u.sc.idx = screencast->frame_idx;
         sev.u.sc.interval = screencast->clock.interval;
-        sev.u.sc.rgba = rgba;
+        sev.u.sc.rgba = rgb_a;
         sev.u.sc.width = screencast->staging.width;
         sev.u.sc.height = screencast->staging.height;
         log_trace("send SCREENCAST event");
@@ -1602,7 +1602,7 @@ static void _screencast_destroy(DvzCanvas* canvas, DvzEvent ev)
 
 
 
-void dvz_screencast(DvzCanvas* canvas, double interval)
+void dvz_screencast(DvzCanvas* canvas, double interval, bool has_alpha)
 {
     ASSERT(canvas != NULL);
     ASSERT(canvas->gpu != NULL);
@@ -1613,6 +1613,7 @@ void dvz_screencast(DvzCanvas* canvas, double interval)
     canvas->screencast = calloc(1, sizeof(DvzScreencast));
     DvzScreencast* sc = canvas->screencast;
     sc->canvas = canvas;
+    sc->has_alpha = has_alpha;
 
     sc->staging = dvz_images(canvas->gpu, VK_IMAGE_TYPE_2D, 1);
     dvz_images_format(&sc->staging, images->format);

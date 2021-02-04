@@ -1220,7 +1220,7 @@ int test_canvas_screencast(TestContext* context)
     dvz_event_callback(
         canvas, DVZ_EVENT_SCREENCAST, 0, DVZ_EVENT_MODE_SYNC, _screencast_callback, NULL);
 
-    dvz_screencast(canvas, 1. / 30);
+    dvz_screencast(canvas, 1. / 30, false);
 
     dvz_app_run(app, N_FRAMES);
     TEST_END

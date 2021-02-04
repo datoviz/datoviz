@@ -522,6 +522,7 @@ struct DvzScreencast
 {
     DvzObject obj;
 
+    bool has_alpha;
     DvzCanvas* canvas;
     DvzCommands cmds;
     DvzSemaphores semaphore;
@@ -808,8 +809,9 @@ DVZ_EXPORT void dvz_canvas_to_close(DvzCanvas* canvas);
  *
  * @param canvas the canvas
  * @param interval screencast events interval
+ * @param has_alpha whether the screencast array is RGB or RGBA
  */
-DVZ_EXPORT void dvz_screencast(DvzCanvas* canvas, double interval);
+DVZ_EXPORT void dvz_screencast(DvzCanvas* canvas, double interval, bool has_alpha);
 
 /**
  * Destroy the screencast.
