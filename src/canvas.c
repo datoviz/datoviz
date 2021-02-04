@@ -1764,8 +1764,8 @@ static void _video_callback(DvzCanvas* canvas, DvzEvent ev)
 static void _video_destroy(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
-    ASSERT(ev.user_data != NULL);
-    end_video((Video*)ev.user_data);
+    if (ev.user_data != NULL)
+        end_video((Video*)ev.user_data);
 }
 
 void dvz_canvas_video(DvzCanvas* canvas, int framerate, int bitrate, const char* path)
@@ -1773,6 +1773,8 @@ void dvz_canvas_video(DvzCanvas* canvas, int framerate, int bitrate, const char*
     uvec2 size;
     dvz_canvas_size(canvas, DVZ_CANVAS_SIZE_FRAMEBUFFER, size);
     Video* video = create_video(path, (int)size[0], (int)size[1], framerate, bitrate);
+    if (video == NULL)
+        return;
 
     dvz_event_callback(
         canvas, DVZ_EVENT_SCREENCAST, 0, DVZ_EVENT_MODE_SYNC, _video_callback, video);

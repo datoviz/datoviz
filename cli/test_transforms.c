@@ -13,7 +13,7 @@
 
 int test_transforms_1(TestContext* context)
 {
-    const uint32_t n = 10000;
+    const uint32_t n = 100000;
     const double eps = 1e-3;
 
     // Compute the data bounds of an array of dvec3.
