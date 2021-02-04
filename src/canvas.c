@@ -1977,6 +1977,8 @@ void dvz_app_run(DvzApp* app, uint64_t frame_count)
                 // Update the DvzViewport struct and call RESIZE callbacks.
                 _event_resize(canvas);
                 canvas->resized = true;
+                if (canvas->screencast != NULL)
+                    log_error("resizing is not supported during a screencast");
 
                 // Refill the canvas after the DvzViewport has been updated.
                 // _refill_canvas(canvas, UINT32_MAX);
