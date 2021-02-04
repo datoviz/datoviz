@@ -133,8 +133,9 @@ This visual currently only uses a basic `triangle` underlying graphics. It perfo
 
 Features:
 
-* Up to four blendable textures.
+* Up to four blendable textures
 * Up to four lights
+* Automatic computation of normals (cross product of face vertices) if the `normal` prop is not provided
 
 #### Props
 

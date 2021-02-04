@@ -152,8 +152,11 @@ void dvz_mesh_normals(DvzMesh* mesh)
     DvzGraphicsMeshVertex *v0, *v1, *v2;
     vec3 u, v, n;
 
+    uint32_t vertex_count = mesh->vertices.item_count;
+    uint32_t face_count = mesh->indices.item_count / 3;
+
     // Go through all triangle faces.
-    for (uint32_t i = 0; i < mesh->indices.item_count / 3; i++)
+    for (uint32_t i = 0; i < face_count; i++)
     {
         i0 = ((DvzIndex*)mesh->indices.data)[3 * i + 0];
         i1 = ((DvzIndex*)mesh->indices.data)[3 * i + 1];
@@ -165,16 +168,21 @@ void dvz_mesh_normals(DvzMesh* mesh)
 
         glm_vec3_sub(v1->pos, v0->pos, u);
         glm_vec3_sub(v2->pos, v0->pos, v);
-        glm_vec3_crossn(u, v, n);
         // n is the normalized vector orthogonal to the current face
+        glm_vec3_crossn(u, v, n);
 
-        // For now, just copy that normal to the three vertices.
-        // An improved way would be to compute an average vector depending on the previous
-        // normals computed for the vertices, but we'd need to keep track of the number of
-        // faces each vertex belongs to.
-        glm_vec3_copy(n, v0->normal);
-        glm_vec3_copy(n, v1->normal);
-        glm_vec3_copy(n, v2->normal);
+        // Add the face normal to the current vertex normal.
+        glm_vec3_add(v0->normal, n, v0->normal);
+        glm_vec3_add(v1->normal, n, v1->normal);
+        glm_vec3_add(v2->normal, n, v2->normal);
+    }
+
+    // Normalize all normals since every vertex might contain the sum of many normals.
+    vec3* normal = NULL;
+    for (uint32_t i = 0; i < vertex_count; i++)
+    {
+        normal = &((DvzGraphicsMeshVertex*)dvz_array_item(&mesh->vertices, i))->normal;
+        glm_vec3_normalize(*normal);
     }
 }
 
