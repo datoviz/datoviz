@@ -38,6 +38,7 @@
 ### `dvz_screencast_destroy()`
 ### `dvz_screenshot()`
 ### `dvz_screenshot_file()`
+### `dvz_canvas_video()`
 
 
 ## Internal event loop

@@ -1,4 +1,5 @@
 #include "../include/datoviz/canvas.h"
+#include "../external/video.h"
 #include "../include/datoviz/context.h"
 #include "../include/datoviz/gui.h"
 #include "../include/datoviz/vklite.h"
@@ -1748,6 +1749,36 @@ uint8_t* dvz_screenshot(DvzCanvas* canvas, bool has_alpha)
     dvz_images_destroy(&staging);
     // NOTE: the caller MUST free the returned pointer.
     return rgba;
+}
+
+
+
+static void _video_callback(DvzCanvas* canvas, DvzEvent ev)
+{
+    ASSERT(canvas != NULL);
+    log_debug("video frame #%d", ev.u.sc.idx);
+    add_frame((Video*)ev.user_data, ev.u.sc.rgba);
+    FREE(ev.u.sc.rgba);
+}
+
+static void _video_destroy(DvzCanvas* canvas, DvzEvent ev)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(ev.user_data != NULL);
+    end_video((Video*)ev.user_data);
+}
+
+void dvz_canvas_video(DvzCanvas* canvas, int framerate, int bitrate, const char* path)
+{
+    uvec2 size;
+    dvz_canvas_size(canvas, DVZ_CANVAS_SIZE_FRAMEBUFFER, size);
+    Video* video = create_video(path, (int)size[0], (int)size[1], framerate, bitrate);
+
+    dvz_event_callback(
+        canvas, DVZ_EVENT_SCREENCAST, 0, DVZ_EVENT_MODE_SYNC, _video_callback, video);
+    dvz_event_callback(canvas, DVZ_EVENT_DESTROY, 0, DVZ_EVENT_MODE_SYNC, _video_destroy, video);
+
+    dvz_screencast(canvas, 1. / framerate, true);
 }
 
 

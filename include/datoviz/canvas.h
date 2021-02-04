@@ -847,6 +847,18 @@ DVZ_EXPORT uint8_t* dvz_screenshot(DvzCanvas* canvas, bool has_alpha);
  */
 DVZ_EXPORT void dvz_screenshot_file(DvzCanvas* canvas, const char* png_path);
 
+/**
+ * Make a screencast video.
+ *
+ * This function should be run *before* calling ` dvz_app_run()`.
+ *
+ * @param canvas the canvas
+ * @param framerate the framerate in images per second (30 recommended)
+ * @param bitrate the bitrate, in  bytes (10000000 for high quality)
+ * @param path path to the file (.mp4 extension recommended)
+ */
+DVZ_EXPORT void dvz_canvas_video(DvzCanvas* canvas, int framerate, int bitrate, const char* path);
+
 
 
 /*************************************************************************************************/

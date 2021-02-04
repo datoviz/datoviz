@@ -311,19 +311,14 @@ int test_scene_axes(TestContext* context)
     dvz_visual_data(visual, DVZ_PROP_COLOR, 0, N, color);
     dvz_visual_data(visual, DVZ_PROP_MARKER_SIZE, 0, N, ms);
 
-    int framerate = 30;
+    // Record a video.
     char path[1024];
     snprintf(path, sizeof(path), "%s/scene.mp4", ARTIFACTS_DIR);
-    Video* video = create_video(path, (int)width, (int)height, framerate, 10000000);
-    dvz_event_callback(
-        canvas, DVZ_EVENT_SCREENCAST, 0, DVZ_EVENT_MODE_SYNC, _screencast_callback, video);
-    dvz_screencast(canvas, 1. / framerate, true);
+    dvz_canvas_video(canvas, 30, 10000000, path);
 
     dvz_app_run(app, N_FRAMES);
 
     dvz_scene_destroy(scene);
-    end_video(video);
-
     FREE(pos);
     FREE(color);
     FREE(ms);
