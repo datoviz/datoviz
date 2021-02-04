@@ -1,4 +1,5 @@
 #include "test_scene.h"
+#include "../external/video.h"
 #include "../include/datoviz/builtin_visuals.h"
 #include "../include/datoviz/scene.h"
 #include "../src/ticks.h"
@@ -276,11 +277,20 @@ int test_scene_mesh(TestContext* context)
 //     FREE(data);
 // }
 
+static void _screencast_callback(DvzCanvas* canvas, DvzEvent ev)
+{
+    ASSERT(canvas != NULL);
+    log_info("screencast frame #%d", ev.u.sc.idx);
+    add_frame((Video*)ev.user_data, ev.u.sc.rgba);
+    FREE(ev.u.sc.rgba);
+}
+
 int test_scene_axes(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
     DvzGpu* gpu = dvz_gpu(app, 0);
-    DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, CANVAS_FLAGS);
+    DvzCanvas* canvas =
+        dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, CANVAS_FLAGS | DVZ_CANVAS_FLAGS_FPS);
     dvz_canvas_clear_color(canvas, 1, 1, 1);
     DvzContext* ctx = gpu->context;
     ASSERT(ctx != NULL);
@@ -311,10 +321,18 @@ int test_scene_axes(TestContext* context)
     // GifBegin(&g, "a.gif", TEST_WIDTH, TEST_HEIGHT, delay);
     // dvz_event_callback(canvas, DVZ_EVENT_TIMER, 1. / 10, DVZ_EVENT_MODE_ASYNC, _gif, &g);
 
+    int framerate = 60;
+    Video* video = create_video("scene.mp4", TEST_WIDTH, TEST_HEIGHT, framerate, 40000000);
+    dvz_event_callback(
+        canvas, DVZ_EVENT_SCREENCAST, 0, DVZ_EVENT_MODE_SYNC, _screencast_callback, video);
+    dvz_screencast(canvas, 1. / framerate, true);
+
     dvz_app_run(app, N_FRAMES);
 
     // GifEnd(&g);
     dvz_scene_destroy(scene);
+    end_video(video);
+
     FREE(pos);
     FREE(color);
     TEST_END

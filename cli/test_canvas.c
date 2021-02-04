@@ -1040,7 +1040,7 @@ int test_canvas_particles(TestContext* context)
     // Struct holding some pointers for compute command buffer submission.
     {
         tpc.br = dvz_ctx_buffers(gpu->context, DVZ_BUFFER_TYPE_STORAGE, 1, size);
-        tpc.fence = dvz_fences(gpu, 1);
+        tpc.fence = dvz_fences(gpu, 1, true);
         visual->user_data = calloc(1, sizeof(TestParticleCompute));
     }
 

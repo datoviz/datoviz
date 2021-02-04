@@ -747,7 +747,7 @@ static void show_canvas(TestCanvas canvas, FillCallback fill_commands, uint32_t 
     // Sync objects.
     DvzSemaphores sem_img_available = dvz_semaphores(gpu, DVZ_MAX_FRAMES_IN_FLIGHT);
     DvzSemaphores sem_render_finished = dvz_semaphores(gpu, DVZ_MAX_FRAMES_IN_FLIGHT);
-    DvzFences fences = dvz_fences(gpu, DVZ_MAX_FRAMES_IN_FLIGHT);
+    DvzFences fences = dvz_fences(gpu, DVZ_MAX_FRAMES_IN_FLIGHT, true);
     DvzFences bak_fences = {0};
     bak_fences.gpu = gpu;
     bak_fences.count = swapchain->img_count;
