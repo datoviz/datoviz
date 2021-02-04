@@ -280,7 +280,7 @@ int test_scene_mesh(TestContext* context)
 static void _screencast_callback(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
-    log_info("screencast frame #%d", ev.u.sc.idx);
+    log_debug("screencast frame #%d", ev.u.sc.idx);
     add_frame((Video*)ev.user_data, ev.u.sc.rgba);
     FREE(ev.u.sc.rgba);
 }
@@ -299,7 +299,7 @@ int test_scene_axes(TestContext* context)
     DvzPanel* panel = dvz_scene_panel(scene, 0, 0, DVZ_CONTROLLER_AXES_2D, 0);
 
     // Markers.
-    DvzVisual* visual = dvz_scene_visual(panel, DVZ_VISUAL_POINT, 0);
+    DvzVisual* visual = dvz_scene_visual(panel, DVZ_VISUAL_MARKER, 0);
     const uint32_t N = 10000;
     dvec3* pos = calloc(N, sizeof(dvec3));
     cvec4* color = calloc(N, sizeof(cvec4));

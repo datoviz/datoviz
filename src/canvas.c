@@ -1488,6 +1488,8 @@ static void _screencast_timer_callback(DvzCanvas* canvas, DvzEvent ev)
 
     log_trace("screencast timer frame #%d", screencast->frame_idx);
 
+    dvz_fences_wait(&screencast->fence, 0);
+
     DvzSubmit* submit = &screencast->submit;
     dvz_submit_reset(submit);
     dvz_submit_commands(submit, &screencast->cmds);
@@ -1528,14 +1530,14 @@ static void _screencast_post_send(DvzCanvas* canvas, DvzEvent ev)
     // Send the copy job
     if (screencast->status == DVZ_SCREENCAST_AWAIT_COPY)
     {
-        // log_trace("screencast await copy");
+        log_trace("screencast send");
         // The copy job waits for the current image to be ready.
         // It signals the screencast semaphore when the copy is done.
         // The present swapchain command must wait for the screencast semaphore rather than
         // the render_finished semaphore.
         // HACK: do not wait when submitting at the first frame.
-        dvz_submit_send(
-            &screencast->submit, img_idx, canvas->frame_idx == 0 ? NULL : &screencast->fence, 0);
+        dvz_submit_send(&screencast->submit, img_idx, &screencast->fence, 0);
+        // canvas->frame_idx == 0 ? NULL : &screencast->fence, 0);
 
         canvas->present_semaphores = &screencast->semaphore;
         screencast->status = DVZ_SCREENCAST_AWAIT_TRANSFER;
@@ -1636,8 +1638,8 @@ void dvz_screencast(DvzCanvas* canvas, double interval, bool has_alpha)
     // Transition the staging image to its layout.
     dvz_images_transition(&sc->staging);
 
-    sc->fence = dvz_fences(gpu, 1, false);
-    dvz_fences_reset(&sc->fence, 0);
+    sc->fence = dvz_fences(gpu, 1, true);
+    ASSERT(dvz_fences_ready(&sc->fence, 0));
     sc->semaphore = dvz_semaphores(gpu, 1);
 
     // NOTE: we predefine the transfer command buffers, one per swapchain image.
