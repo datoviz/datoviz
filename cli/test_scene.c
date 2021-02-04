@@ -4,6 +4,9 @@
 #include "../src/ticks.h"
 #include "utils.h"
 
+BEGIN_INCL_NO_WARN
+#include "../external/gif.h"
+END_INCL_NO_WARN
 
 
 /*************************************************************************************************/
@@ -263,6 +266,16 @@ int test_scene_mesh(TestContext* context)
 
 
 
+// static void _gif(DvzCanvas* canvas, DvzEvent ev)
+// {
+//     if (ev.u.t.idx <= 5)
+//         return;
+//     GifWriter* g = (GifWriter*)ev.user_data;
+//     uint8_t* data = dvz_screenshot(canvas, true);
+//     GifWriteFrame(g, data, TEST_WIDTH, TEST_HEIGHT, g->delay);
+//     FREE(data);
+// }
+
 int test_scene_axes(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
@@ -293,7 +306,14 @@ int test_scene_axes(TestContext* context)
     dvz_visual_data(visual, DVZ_PROP_COLOR, 0, N, color);
     dvz_visual_data(visual, DVZ_PROP_MARKER_SIZE, 0, 1, &param);
 
+    // GifWriter g;
+    // uint32_t delay = 10;
+    // GifBegin(&g, "a.gif", TEST_WIDTH, TEST_HEIGHT, delay);
+    // dvz_event_callback(canvas, DVZ_EVENT_TIMER, 1. / 10, DVZ_EVENT_MODE_ASYNC, _gif, &g);
+
     dvz_app_run(app, N_FRAMES);
+
+    // GifEnd(&g);
     dvz_scene_destroy(scene);
     FREE(pos);
     FREE(color);
