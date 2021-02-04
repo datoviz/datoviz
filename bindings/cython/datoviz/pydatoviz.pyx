@@ -334,11 +334,13 @@ cdef class App:
         self._canvases.append(c)
         return c
 
-    def run(self, int n_frames=0, unicode screenshot=None):
+    def run(self, int n_frames=0, unicode screenshot=None, unicode video=None):
         # HACK: run a few frames to render the image, make a screenshot, and run the event loop.
         if screenshot and self._canvases:
             cv.dvz_app_run(self._c_app, 5)
             self._canvases[0].screenshot(screenshot)
+        if video and self._canvases:
+            self._canvases[0].video(video)
         cv.dvz_app_run(self._c_app, n_frames)
 
     def run_one_frame(self):
@@ -390,6 +392,10 @@ cdef class Canvas:
     def screenshot(self, unicode path):
         cdef char* _c_path = path
         cv.dvz_screenshot_file(self._c_canvas, _c_path);
+
+    def video(self, unicode path):
+        cdef char* _c_path = path
+        cv.dvz_canvas_video(self._c_canvas, 30, 10000000, _c_path)
 
     def panel(self, int row=0, int col=0, controller='axes', transpose=None):
         ctl = _CONTROLLERS.get(controller, cv.DVZ_CONTROLLER_NONE)
