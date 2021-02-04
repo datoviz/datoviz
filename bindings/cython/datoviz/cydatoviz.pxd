@@ -73,6 +73,9 @@ cdef extern from "<datoviz/datoviz.h>":
     ctypedef struct DvzGui:
         pass
 
+    ctypedef struct DvzMesh:
+        pass
+
     ctypedef struct DvzSubmit:
         pass
 
@@ -614,6 +617,20 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_KEY_MENU = 348
         DVZ_KEY_LAST = 348
 
+    # from file: mesh.h
+
+    ctypedef enum DvzMeshType:
+        DVZ_MESH_CUSTOM = 0
+        DVZ_MESH_CUBE = 1
+        DVZ_MESH_SPHERE = 2
+        DVZ_MESH_SURFACE = 3
+        DVZ_MESH_CYLINDER = 4
+        DVZ_MESH_CONE = 5
+        DVZ_MESH_SQUARE = 6
+        DVZ_MESH_DISC = 7
+        DVZ_MESH_OBJ = 8
+        DVZ_MESH_COUNT = 9
+
     # from file: panel.h
 
     ctypedef enum DvzPanelMode:
@@ -945,6 +962,9 @@ cdef extern from "<datoviz/datoviz.h>":
     # from file: gui.h
     DvzGui* dvz_gui(DvzCanvas* canvas, const char* title, int flags)
     void dvz_gui_float_slider(DvzGui* gui, const char* name, double vmin, double vmax)
+
+    # from file: mesh.h
+    void dvz_mesh_normals(DvzMesh* mesh)
 
     # from file: panel.h
     void dvz_panel_transpose(DvzPanel* panel, DvzCDSTranspose transpose)

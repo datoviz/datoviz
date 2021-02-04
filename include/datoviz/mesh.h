@@ -106,6 +106,15 @@ DVZ_EXPORT void dvz_mesh_rotate(DvzMesh* mesh, float angle, vec3 axis);
  */
 DVZ_EXPORT void dvz_mesh_transform(DvzMesh* mesh);
 
+/**
+ * Compute the normals of a mesh from the vertices and faces, with cross-products.
+ *
+ * Useful when a mesh has no normal data, just vertex positions and face indices.
+ *
+ * @param mesh the mesh
+ */
+DVZ_EXPORT void dvz_mesh_normals(DvzMesh* mesh);
+
 
 
 /*************************************************************************************************/

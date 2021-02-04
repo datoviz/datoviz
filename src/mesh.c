@@ -25,10 +25,14 @@ DVZ_INLINE void texture_color(usvec2 ij, usvec2 nm, void* color)
     memcpy(color, (cvec4){x & 0xFF, (x >> 8) & 0xFF, y & 0xFF, (y >> 8) & 0xFF}, sizeof(cvec4));
 }
 
+
+
 DVZ_INLINE void transform_pos(DvzMesh* mesh, vec3 pos)
 {
     glm_mat4_mulv3(mesh->transform, pos, 1, pos);
 }
+
+
 
 DVZ_INLINE void transform_normal(DvzMesh* mesh, vec3 normal)
 {
@@ -39,12 +43,18 @@ DVZ_INLINE void transform_normal(DvzMesh* mesh, vec3 normal)
     glm_mat4_mulv3(tr, normal, 1, normal);
 }
 
+
+
 void dvz_mesh_transform_reset(DvzMesh* mesh) { glm_mat4_identity(mesh->transform); }
+
+
 
 void dvz_mesh_transform_add(DvzMesh* mesh, mat4 transform)
 {
     glm_mat4_mul(transform, mesh->transform, mesh->transform);
 }
+
+
 
 void dvz_mesh_translate(DvzMesh* mesh, vec3 translate)
 {
@@ -53,6 +63,8 @@ void dvz_mesh_translate(DvzMesh* mesh, vec3 translate)
     dvz_mesh_transform_add(mesh, tr);
 }
 
+
+
 void dvz_mesh_scale(DvzMesh* mesh, vec3 scale)
 {
     mat4 tr;
@@ -60,12 +72,16 @@ void dvz_mesh_scale(DvzMesh* mesh, vec3 scale)
     dvz_mesh_transform_add(mesh, tr);
 }
 
+
+
 void dvz_mesh_rotate(DvzMesh* mesh, float angle, vec3 axis)
 {
     mat4 tr;
     glm_rotate_make(tr, angle, axis);
     dvz_mesh_transform_add(mesh, tr);
 }
+
+
 
 void dvz_mesh_transform(DvzMesh* mesh)
 {
@@ -78,6 +94,8 @@ void dvz_mesh_transform(DvzMesh* mesh)
         transform_normal(mesh, vertex->normal);
     }
 }
+
+
 
 void dvz_mesh_normalize(DvzMesh* mesh)
 {
@@ -127,6 +145,41 @@ void dvz_mesh_normalize(DvzMesh* mesh)
 
 
 
+void dvz_mesh_normals(DvzMesh* mesh)
+{
+    ASSERT(mesh != NULL);
+    DvzIndex i0, i1, i2;
+    DvzGraphicsMeshVertex *v0, *v1, *v2;
+    vec3 u, v, n;
+
+    // Go through all triangle faces.
+    for (uint32_t i = 0; i < mesh->indices.item_count / 3; i++)
+    {
+        i0 = ((DvzIndex*)mesh->indices.data)[3 * i + 0];
+        i1 = ((DvzIndex*)mesh->indices.data)[3 * i + 1];
+        i2 = ((DvzIndex*)mesh->indices.data)[3 * i + 2];
+
+        v0 = &((DvzGraphicsMeshVertex*)mesh->vertices.data)[i0];
+        v1 = &((DvzGraphicsMeshVertex*)mesh->vertices.data)[i1];
+        v2 = &((DvzGraphicsMeshVertex*)mesh->vertices.data)[i2];
+
+        glm_vec3_sub(v1->pos, v0->pos, u);
+        glm_vec3_sub(v2->pos, v0->pos, v);
+        glm_vec3_crossn(u, v, n);
+        // n is the normalized vector orthogonal to the current face
+
+        // For now, just copy that normal to the three vertices.
+        // An improved way would be to compute an average vector depending on the previous
+        // normals computed for the vertices, but we'd need to keep track of the number of
+        // faces each vertex belongs to.
+        glm_vec3_copy(n, v0->normal);
+        glm_vec3_copy(n, v1->normal);
+        glm_vec3_copy(n, v2->normal);
+    }
+}
+
+
+
 /*************************************************************************************************/
 /*  Common shapes                                                                                */
 /*************************************************************************************************/
@@ -139,6 +192,8 @@ DvzMesh dvz_mesh()
     dvz_mesh_transform_reset(&mesh);
     return mesh;
 }
+
+
 
 DvzMesh dvz_mesh_grid(uint32_t row_count, uint32_t col_count, const vec3* positions)
 {
@@ -226,6 +281,8 @@ DvzMesh dvz_mesh_grid(uint32_t row_count, uint32_t col_count, const vec3* positi
     return mesh;
 }
 
+
+
 DvzMesh dvz_mesh_surface(uint32_t row_count, uint32_t col_count, const float* heights)
 {
     ASSERT(row_count > 0);
@@ -262,6 +319,8 @@ DvzMesh dvz_mesh_surface(uint32_t row_count, uint32_t col_count, const float* he
     FREE(positions);
     return mesh;
 }
+
+
 
 DvzMesh dvz_mesh_cube()
 {
@@ -324,6 +383,8 @@ DvzMesh dvz_mesh_cube()
     return mesh;
 }
 
+
+
 DvzMesh dvz_mesh_sphere(uint32_t row_count, uint32_t col_count)
 {
     float dphi, dtheta;
@@ -350,6 +411,8 @@ DvzMesh dvz_mesh_sphere(uint32_t row_count, uint32_t col_count)
     return mesh;
 }
 
+
+
 DvzMesh dvz_mesh_cylinder(uint32_t count)
 {
     float dphi;
@@ -375,6 +438,8 @@ DvzMesh dvz_mesh_cylinder(uint32_t count)
     FREE(positions);
     return mesh;
 }
+
+
 
 DvzMesh dvz_mesh_cone(uint32_t count)
 {
@@ -403,6 +468,8 @@ DvzMesh dvz_mesh_cone(uint32_t count)
     return mesh;
 }
 
+
+
 DvzMesh dvz_mesh_square()
 {
     DvzMesh mesh = dvz_mesh();
@@ -426,6 +493,8 @@ DvzMesh dvz_mesh_square()
     memcpy(vertex, vertices, sizeof(vertices));
     return mesh;
 }
+
+
 
 DvzMesh dvz_mesh_disc(uint32_t count)
 {
@@ -490,6 +559,8 @@ DvzMesh dvz_mesh_disc(uint32_t count)
     }
     return mesh;
 }
+
+
 
 void dvz_mesh_destroy(DvzMesh* mesh)
 {
