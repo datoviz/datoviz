@@ -50,7 +50,7 @@ static uint8_t* screenshot(DvzImages* image)
 
     // Now, we copy the staging image back onto the host.
     uint8_t* rgb = (uint8_t*)calloc(image->width * image->height, 3);
-    dvz_images_download(&staging, 0, true, rgb);
+    dvz_images_download(&staging, 0, true, false, rgb);
 
     // We can destroy the staging image.
     dvz_images_destroy(&staging);
@@ -273,7 +273,7 @@ int main(int argc, char** argv)
 
     // We make a screenshot and save it to a file.
     uint8_t* rgb = screenshot(&image);
-    dvz_write_ppm("triangle.ppm", width, height, rgb);
+    dvz_write_png("triangle.png", width, height, rgb);
 
     // We need to clean up all objects handled by Datoviz at the end.
     {

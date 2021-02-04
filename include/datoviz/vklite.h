@@ -1353,10 +1353,12 @@ DVZ_EXPORT void dvz_images_transition(DvzImages* images);
  *
  * @param staging the images to download the data from
  * @param idx the index of the image
- * @param swizzle whether the RGBA values need to be transposed
- * @param[out] rgba the buffer that will be filled with the image data (must be already allocated)
+ * @param swizzle whether the RGB(A) values need to be transposed
+ * @param has_alpha whether there is an Alpha component in the output buffer
+ * @param[out] out the buffer that will be filled with the image data (must be already allocated)
  */
-DVZ_EXPORT void dvz_images_download(DvzImages* staging, uint32_t idx, bool swizzle, uint8_t* rgba);
+DVZ_EXPORT void
+dvz_images_download(DvzImages* staging, uint32_t idx, bool swizzle, bool has_alpha, uint8_t* out);
 
 /**
  * Destroy images.

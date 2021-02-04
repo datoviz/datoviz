@@ -825,13 +825,13 @@ DVZ_EXPORT void dvz_screencast_destroy(DvzCanvas* canvas);
  * synchronization commands so this command should *not* be used for creating many successive
  * screenshots. For that, one should register a SCREENCAST event callback.
  *
- * !!! error
- *     This function is not yet implemented.
+ * !!! important
+ *     The caller MUST free the output pointer.
  *
  * @param canvas the canvas
  * @returns A pointer to the 24-bit RGB framebuffer.
  */
-DVZ_EXPORT uint8_t* dvz_screenshot(DvzCanvas* canvas);
+DVZ_EXPORT uint8_t* dvz_screenshot(DvzCanvas* canvas, bool has_alpha);
 
 /**
  * Make a screenshot and save it to a PNG file.

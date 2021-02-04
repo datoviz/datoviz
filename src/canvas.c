@@ -1552,7 +1552,7 @@ static void _screencast_post_send(DvzCanvas* canvas, DvzEvent ev)
 
         // Copy the image from the staging image to the CPU.
         log_trace("screencast CPU download");
-        dvz_images_download(&screencast->staging, 0, true, rgba);
+        dvz_images_download(&screencast->staging, 0, true, true, rgba);
 
         // Enqueue a special SCREENCAST public event with a pointer to the CPU buffer user
         DvzEvent sev = {0};
@@ -1674,8 +1674,17 @@ void dvz_screencast_destroy(DvzCanvas* canvas)
 void dvz_screenshot_file(DvzCanvas* canvas, const char* png_path)
 {
     log_info("saving screenshot of canvas to %s with full synchronization (slow)", png_path);
-    // TODO: more efficient screenshot saving with screencast
+    uint8_t* rgb = dvz_screenshot(canvas, false);
+    DvzImages* images = canvas->swapchain.images;
+    dvz_write_png(png_path, images->width, images->height, rgb);
+    FREE(rgb);
+}
 
+
+
+uint8_t* dvz_screenshot(DvzCanvas* canvas, bool has_alpha)
+{
+    // TODO: more efficient screenshot saving with screencast
     DvzGpu* gpu = canvas->gpu;
 
     dvz_gpu_wait(gpu);
@@ -1720,22 +1729,12 @@ void dvz_screenshot_file(DvzCanvas* canvas, const char* png_path)
     }
 
     // Make the screenshot.
-    {
-        uint8_t* rgba = calloc(staging.width * staging.height, 4 * sizeof(uint8_t));
-        dvz_images_download(&staging, 0, true, rgba);
-        dvz_gpu_wait(gpu);
-        dvz_write_png(png_path, images->width, images->height, rgba);
-        dvz_images_destroy(&staging);
-        FREE(rgba);
-    }
-}
-
-
-
-uint8_t* dvz_screenshot(DvzCanvas* canvas)
-{
-    log_error("not yet implemented");
-    return NULL;
+    uint8_t* rgba = calloc(staging.width * staging.height, (has_alpha ? 4 : 3) * sizeof(uint8_t));
+    dvz_images_download(&staging, 0, true, has_alpha, rgba);
+    dvz_gpu_wait(gpu);
+    dvz_images_destroy(&staging);
+    // NOTE: the caller MUST free the returned pointer.
+    return rgba;
 }
 
 

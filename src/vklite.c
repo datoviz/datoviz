@@ -1323,7 +1323,8 @@ void dvz_images_resize(DvzImages* images, uint32_t width, uint32_t height, uint3
 
 
 
-void dvz_images_download(DvzImages* staging, uint32_t idx, bool swizzle, uint8_t* rgb)
+void dvz_images_download(
+    DvzImages* staging, uint32_t idx, bool swizzle, bool has_alpha, uint8_t* out)
 {
     VkImageSubresource subResource = {0};
     subResource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -1363,24 +1364,26 @@ void dvz_images_download(DvzImages* staging, uint32_t idx, bool swizzle, uint8_t
             ASSERT(src_offset + 2 < w * h * 4);
             if (swizzle)
             {
-                rgb[dst_offset + 0] = image[src_offset + 2];
-                rgb[dst_offset + 1] = image[src_offset + 1];
-                rgb[dst_offset + 2] = image[src_offset + 0];
-                // rgba[dst_offset + 3] = image[src_offset + 3];
+                out[dst_offset + 0] = image[src_offset + 2];
+                out[dst_offset + 1] = image[src_offset + 1];
+                out[dst_offset + 2] = image[src_offset + 0];
+                if (has_alpha)
+                    out[dst_offset + 3] = 255;
             }
             else
             {
-                rgb[dst_offset + 0] = image[src_offset + 0];
-                rgb[dst_offset + 1] = image[src_offset + 1];
-                rgb[dst_offset + 2] = image[src_offset + 2];
-                // rgba[dst_offset + 3] = image[src_offset + 3];
+                out[dst_offset + 0] = image[src_offset + 0];
+                out[dst_offset + 1] = image[src_offset + 1];
+                out[dst_offset + 2] = image[src_offset + 2];
+                if (has_alpha)
+                    out[dst_offset + 3] = 255;
             }
             src_offset += 4;
-            dst_offset += 3;
+            dst_offset += has_alpha ? 4 : 3;
         }
         image += row_pitch;
     }
-    ASSERT(dst_offset == w * h * 3);
+    ASSERT(dst_offset == w * h * (has_alpha ? 4 : 3));
     FREE(image_orig);
 }
 

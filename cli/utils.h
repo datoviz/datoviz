@@ -707,12 +707,12 @@ static uint8_t* screenshot(DvzImages* images)
     dvz_cmd_submit_sync(&cmds, 0);
 
     // Now, copy the staging image into CPU memory.
-    uint8_t* rgba = (uint8_t*)calloc(images->width * images->height, 3);
-    dvz_images_download(staging, 0, true, rgba);
+    uint8_t* rgb = (uint8_t*)calloc(images->width * images->height, 3);
+    dvz_images_download(staging, 0, true, false, rgb);
 
     dvz_images_destroy(staging);
 
-    return rgba;
+    return rgb;
 }
 
 
