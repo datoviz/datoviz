@@ -878,31 +878,8 @@ static void create_swapchain(
     screateInfo.imageFormat = format;
     screateInfo.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 
-    ASSERT(pdevice != VK_NULL_HANDLE);
-    ASSERT(caps != NULL);
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(pdevice, surface, caps);
-
-    // Handle special case where glfw should give the framebuffer size here as image extent.
-    if (caps->currentExtent.width == UINT32_MAX)
-    {
-        screateInfo.imageExtent.width =
-            CLIP(requested_width, caps->minImageExtent.width, caps->maxImageExtent.width);
-        screateInfo.imageExtent.height =
-            CLIP(requested_height, caps->minImageExtent.height, caps->maxImageExtent.height);
-        log_trace(
-            "set swapchain extent to %dx%d", //
-            screateInfo.imageExtent.width, screateInfo.imageExtent.height);
-    }
-    else
-    {
-        screateInfo.imageExtent = caps->currentExtent;
-    }
-    // We return the final actual swapchain size.
-    *width = screateInfo.imageExtent.width;
-    *height = screateInfo.imageExtent.height;
     screateInfo.imageArrayLayers = 1;
     screateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-    screateInfo.preTransform = caps->currentTransform;
     screateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     screateInfo.presentMode = present_mode;
     screateInfo.clipped = VK_TRUE;
@@ -936,6 +913,38 @@ static void create_swapchain(
         log_trace("creating swapchain in exclusive image sharing mode");
         screateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     }
+
+    ASSERT(pdevice != VK_NULL_HANDLE);
+    ASSERT(caps != NULL);
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(pdevice, surface, caps);
+
+    // Handle special case where glfw should give the framebuffer size here as image extent.
+    if (caps->currentExtent.width == UINT32_MAX)
+    {
+        screateInfo.imageExtent.width =
+            CLIP(requested_width, caps->minImageExtent.width, caps->maxImageExtent.width);
+        screateInfo.imageExtent.height =
+            CLIP(requested_height, caps->minImageExtent.height, caps->maxImageExtent.height);
+        log_trace(
+            "set swapchain extent to %dx%d", //
+            screateInfo.imageExtent.width, screateInfo.imageExtent.height);
+    }
+    else
+    {
+        screateInfo.imageExtent = caps->currentExtent;
+    }
+
+    // Check.
+    ASSERT(caps->minImageExtent.width <= screateInfo.imageExtent.width);
+    ASSERT(caps->minImageExtent.height <= screateInfo.imageExtent.height);
+    ASSERT(screateInfo.imageExtent.width <= caps->maxImageExtent.width);
+    ASSERT(screateInfo.imageExtent.height <= caps->maxImageExtent.height);
+
+    // We return the final actual swapchain size.
+    *width = screateInfo.imageExtent.width;
+    *height = screateInfo.imageExtent.height;
+
+    screateInfo.preTransform = caps->currentTransform;
 
     log_trace("create swapchain");
     VK_CHECK_RESULT(vkCreateSwapchainKHR(device, &screateInfo, NULL, swapchain));
