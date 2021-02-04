@@ -963,7 +963,7 @@ void dvz_buffer_upload(DvzBuffer* buffer, VkDeviceSize offset, VkDeviceSize size
     ASSERT(buffer->buffer != VK_NULL_HANDLE);
     ASSERT(offset + size <= buffer->size);
 
-    log_trace("uploading %s to GPU buffer", pretty_size(size));
+    // log_trace("uploading %s to GPU buffer", pretty_size(size));
     void* mapped = NULL;
     bool need_unmap = false;
     if (buffer->mmap == NULL)

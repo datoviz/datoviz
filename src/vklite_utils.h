@@ -1354,7 +1354,7 @@ static void update_descriptor_set(
 
         if (is_descriptor_type_buffer(binding_type))
         {
-            log_trace("bind buffer for binding point %d", i);
+            // log_trace("bind buffer for binding point %d", i);
             if (buffer_regions[i].buffer == NULL)
             {
                 log_error("buffer of type %d #%d is not set", binding_type, i);
@@ -1370,7 +1370,7 @@ static void update_descriptor_set(
         }
         else if (is_descriptor_type_image(binding_type))
         {
-            log_trace("bind texture for binding point %d", i);
+            // log_trace("bind texture for binding point %d", i);
             ASSERT(images[i] != NULL);
             // if (images[i] != NULL)
             // {

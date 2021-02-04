@@ -16,7 +16,7 @@ set(CMAKE_C_STANDARD_REQUIRED True)
 # option(DATOVIZ_WITH_ASSIMP "Build Datoviz with ASSIMP support" OFF)
 # option(DATOVIZ_WITH_FREETYPE "Build Datoviz with Freetype support" OFF)
 option(DATOVIZ_WITH_PNG "Build Datoviz with PNG support" ON)
-option(DATOVIZ_WITH_FFMPEG "Build Datoviz with FFMPEG support" OFF)
+option(DATOVIZ_WITH_FFMPEG "Build Datoviz with FFMPEG support" ON)
 option(DATOVIZ_WITH_GLSLANG "Build Datoviz with glslang support" OFF)
 
 option(DATOVIZ_WITH_CLI "Build Datoviz command-line interface with tests and demos" ON)
@@ -319,10 +319,10 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
     SPIRV_DIR=\"${SPIRV_DIR}\"
     ARTIFACTS_DIR=\"${CMAKE_SOURCE_DIR}/build/artifacts\"
 
-    # HAS_FFMPEG=${HAS_FFMPEG}
     # HAS_VNC=${HAS_VNC}
     # HAS_QT=${HAS_QT}
     # HAS_ASSIMP=${HAS_ASSIMP}
+    HAS_FFMPEG=${HAS_FFMPEG}
     HAS_PNG=${HAS_PNG}
     HAS_GLSLANG=${HAS_GLSLANG}
 

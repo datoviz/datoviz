@@ -558,9 +558,9 @@ static void dvz_array_data(
 
     VkDeviceSize copy_size = MIN(item_count, data_item_count) * item_size;
     ASSERT(copy_size > 0);
-    log_trace(
-        "copy %d elements (%d bytes) into array[%d:%d]", //
-        data_item_count, copy_size, first_item, first_item + item_count);
+    // log_trace(
+    //     "copy %d elements (%d bytes) into array[%d:%d]", //
+    //     data_item_count, copy_size, first_item, first_item + item_count);
     ASSERT(array->buffer_size >= (first_item + item_count) * item_size);
     memcpy((void*)((int64_t)dst + (int64_t)(first_item * item_size)), src, copy_size);
 
