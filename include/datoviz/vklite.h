@@ -1863,9 +1863,10 @@ DVZ_EXPORT void dvz_semaphores_destroy(DvzSemaphores* semaphores);
  *
  * @param gpu the GPU
  * @param count the number of fences
+ * @param signaled whether the fences are created in the signaled state or not
  * @returns the fences
  */
-DVZ_EXPORT DvzFences dvz_fences(DvzGpu* gpu, uint32_t count);
+DVZ_EXPORT DvzFences dvz_fences(DvzGpu* gpu, uint32_t count, bool signaled);
 
 /**
  * Copy a fence from a set of fences to another.

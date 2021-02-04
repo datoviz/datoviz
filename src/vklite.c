@@ -2297,7 +2297,7 @@ void dvz_semaphores_destroy(DvzSemaphores* semaphores)
 /*  Fences                                                                                       */
 /*************************************************************************************************/
 
-DvzFences dvz_fences(DvzGpu* gpu, uint32_t count)
+DvzFences dvz_fences(DvzGpu* gpu, uint32_t count, bool signaled)
 {
     ASSERT(gpu != NULL);
     ASSERT(dvz_obj_is_created(&gpu->obj));
@@ -2312,7 +2312,8 @@ DvzFences dvz_fences(DvzGpu* gpu, uint32_t count)
 
     VkFenceCreateInfo info = {0};
     info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+    if (signaled)
+        info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
     for (uint32_t i = 0; i < fences.count; i++)
         VK_CHECK_RESULT(vkCreateFence(fences.gpu->device, &info, NULL, &fences.fences[i]));
