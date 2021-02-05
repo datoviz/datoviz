@@ -37,6 +37,9 @@ cdef extern from "<datoviz/datoviz.h>":
     ctypedef uint64_t VkDeviceSize
 
 
+    ctypedef struct DvzObject:
+        pass
+
     ctypedef struct DvzApp:
         pass
 
@@ -66,12 +69,6 @@ cdef extern from "<datoviz/datoviz.h>":
     ctypedef struct DvzVisual:
         DvzCanvas* canvas
         DvzPanel* panel
-
-    ctypedef struct DvzGuiControl:
-        pass
-
-    ctypedef struct DvzGui:
-        pass
 
     ctypedef struct DvzArray:
         void* data
@@ -940,6 +937,31 @@ cdef extern from "<datoviz/datoviz.h>":
         DvzEventType type
         void* user_data
         DvzEventUnion u
+
+    # from file: controls.h
+
+    ctypedef struct DvzGuiControlSliderFloat:
+        float vmin
+        float vmax
+
+    ctypedef union DvzGuiControlUnion:
+        DvzGuiControlSliderFloat sf
+
+    ctypedef struct DvzGuiControl:
+        DvzGui* gui
+        const char* name
+        int flags
+        void* value
+        DvzGuiControlType type
+        DvzGuiControlUnion u
+
+    ctypedef struct DvzGui:
+        DvzObject obj
+        DvzCanvas* canvas
+        const char* title
+        int flags
+        uint32_t control_count
+        DvzGuiControl controls[32]
 
 
     # STRUCT END

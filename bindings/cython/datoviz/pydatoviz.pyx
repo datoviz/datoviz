@@ -261,6 +261,7 @@ _EVENTS ={
     'mouse': cv.DVZ_EVENT_MOUSE_MOVE,
     'frame': cv.DVZ_EVENT_FRAME,
     'timer': cv.DVZ_EVENT_TIMER,
+    'gui': cv.DVZ_EVENT_GUI,
 }
 
 
@@ -351,15 +352,26 @@ cdef class App:
         cv.dvz_app_run(self._c_app, 1)
 
 
+
+cdef _get_ev_args(cv.DvzEvent c_ev):
+    cdef float* fvalue
+    dt = c_ev.type
+    if dt == cv.DVZ_EVENT_GUI:
+        if c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_SLIDER_FLOAT:
+            fvalue = <float*>c_ev.u.g.control.value
+            return (fvalue[0],)
+
+
+
 cdef _wrapped_callback(cv.DvzCanvas* c_canvas, cv.DvzEvent c_ev):
     cdef object tup
     if c_ev.user_data != NULL:
         tup = <object>c_ev.user_data
-        # pos = (<int>c_ev.u.m.pos[0], <int>c_ev.u.m.pos[1])
-        f, args = tup
+        # For each type of event, get the arguments to the function
+        ev_args = _get_ev_args(c_ev)
+        f, args = tup # NOTE: args not used for now
         try:
-            # f(pos)
-            f()
+            f(*ev_args)
         except Exception as e:
             print("Error: %s" % e)
 
@@ -577,3 +589,10 @@ cdef class Gui:
             c_vmin = kwargs.get('vmin', 0)
             c_vmax = kwargs.get('vmax', 1)
             cv.dvz_gui_slider_float(self._c_gui, c_name, c_vmin, c_vmax)
+
+        def wrap(f):
+            cdef cv.DvzEventType evtype
+            evtype = cv.DVZ_EVENT_GUI
+            _add_event_callback(self._c_canvas, evtype, 0, f, ())
+
+        return wrap

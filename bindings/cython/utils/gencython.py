@@ -22,6 +22,10 @@ HEADER_FILES = (
     'mesh.h', 'controls.h', 'graphics.h', 'builtin_visuals.h', 'panel.h',
     'visuals.h', 'scene.h')
 STRUCTS = (
+    'DvzGui',
+    'DvzGuiControl',
+    'DvzGuiControlUnion',
+    'DvzGuiControlSliderFloat',
     'DvzEvent',
     'DvzEventUnion',
     'DvzFrameEvent',
@@ -152,9 +156,10 @@ def _parse_struct(text):
     # syntax we don't want to see in the final parse tree
     LBRACE, RBRACE, COMMA, SEMICOLON = map(Suppress, "{},;")
     _struct = Literal("struct") ^ Literal("union")
+    const = Keyword("const")
     dtype = Word(alphanums + "_*")
     identifier = Word(alphanums + "_[]")
-    structDecl = Group(dtype("dtype") + identifier("name") + SEMICOLON)
+    structDecl = Group(Optional(const("const")) + dtype("dtype") + identifier("name") + SEMICOLON)
     structList = Group(structDecl + ZeroOrMore(structDecl))
     struct = _struct('struct') + identifier("struct_name") + LBRACE + \
         structList("names") + RBRACE + SEMICOLON
@@ -162,7 +167,7 @@ def _parse_struct(text):
     for item, start, stop in struct.scanString(text):
         l = []
         for i, entry in enumerate(item.names):
-            l.append((entry.dtype, entry.name))
+            l.append((entry.const, entry.dtype, entry.name))
         structs[item.struct_name] = (item.struct, l)
     return structs
 
@@ -172,42 +177,14 @@ def _gen_struct(structs):
     for name, (struct, l) in structs.items():
         if name in STRUCTS:
             out += f'ctypedef {struct} {name}:\n'
-            for dtype, identifier in l:
+            for const, dtype, identifier in l:
                 if dtype == 'bool':
                     dtype = 'bint'
+                if const:
+                    dtype = "const " + dtype
                 out += f'    {dtype} {identifier}\n'
             out += '\n'
     return out
-
-
-# def _parse_union(text):
-#     unions = {}
-#     # syntax we don't want to see in the final parse tree
-#     LBRACE, RBRACE, COMMA, SEMICOLON = map(Suppress, "{},;")
-#     _union = Suppress("union")
-#     dtype = Word(alphanums + "_*")
-#     identifier = Word(alphanums + "_")
-#     unionDecl = Group(dtype("dtype") + identifier("name") + SEMICOLON)
-#     unionList = Group(unionDecl + ZeroOrMore(unionDecl))
-#     union = _union + identifier("union_name") + LBRACE + \
-#         unionList("names") + RBRACE + SEMICOLON
-
-#     for item, start, stop in union.scanString(text):
-#         l = []
-#         for i, entry in enumerate(item.names):
-#             l.append((entry.dtype, entry.name))
-#         unions[item.union_name] = l
-#     return unions
-
-
-# def _gen_union(unions):
-#     out = ''
-#     for name, l in unions.items():
-#         out += f'ctypedef union {name}:\n'
-#         for dtype, identifier in l:
-#             out += f'    {dtype} {identifier}\n'
-#         out += '\n'
-#     return out
 
 
 def _parse_func(text, is_output=False):
@@ -317,6 +294,11 @@ if __name__ == '__main__':
         generated = _gen_struct(structs)
         if generated:
             structs_to_insert += f'# from file: {filename.name}\n\n{generated}'
+
+        if 'controls' in str(filename):
+            defines = parse_defines(text)
+            for key, val in defines.items():
+                structs_to_insert = structs_to_insert.replace(key, str(val))
 
         # Parse the functions
         funcs = _parse_func(text)

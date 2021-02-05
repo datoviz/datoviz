@@ -17,7 +17,7 @@ extern "C" {
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_MAX_GUI_CONTROLS 32
+#define CONTROL_MAX 32
 
 
 
@@ -96,7 +96,7 @@ struct DvzGui
     const char* title;
     int flags;
     uint32_t control_count;
-    DvzGuiControl controls[DVZ_MAX_GUI_CONTROLS];
+    DvzGuiControl controls[CONTROL_MAX];
 };
 
 
