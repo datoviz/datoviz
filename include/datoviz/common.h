@@ -578,7 +578,7 @@ static void* dvz_container_iter_init(DvzContainer* container)
  *
  * !!! warning
  *     All objects in the container must have been destroyed beforehand, since the generic
- *     container does not know how to properly destroy objects that were created on the GPU.
+ *     container does not know how to properly destroy objects that were created with Vulkan.
  *
  * @param container the container
  * @param idx the index of the object within the container
