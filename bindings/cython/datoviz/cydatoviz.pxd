@@ -439,6 +439,20 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_FILTER_MIN = 0
         DVZ_FILTER_MAG = 1
 
+    # from file: controls.h
+
+    ctypedef enum DvzGuiFlags:
+        DVZ_GUI_FLAGS_NONE = 0x0000
+        DVZ_GUI_FLAGS_FIXED = 0x0001
+        DVZ_GUI_FLAGS_CORNER_UL = 0x0010
+        DVZ_GUI_FLAGS_CORNER_UR = 0x0020
+        DVZ_GUI_FLAGS_CORNER_LR = 0x0030
+        DVZ_GUI_FLAGS_CORNER_LL = 0x0040
+
+    ctypedef enum DvzGuiControlType:
+        DVZ_GUI_CONTROL_NONE = 0
+        DVZ_GUI_CONTROL_SLIDER_FLOAT = 1
+
     # from file: graphics.h
 
     ctypedef enum DvzGraphicsFlags:
@@ -475,20 +489,6 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_CAP_SQUARE = 4
         DVZ_CAP_BUTT = 5
         DVZ_CAP_COUNT = 6
-
-    # from file: gui.h
-
-    ctypedef enum DvzGuiStyle:
-        DVZ_GUI_STANDARD = 0
-        DVZ_GUI_PROMPT = 1
-        DVZ_GUI_FIXED_TL = 10
-        DVZ_GUI_FIXED_TR = 11
-        DVZ_GUI_FIXED_LL = 12
-        DVZ_GUI_FIXED_LR = 13
-
-    ctypedef enum DvzGuiControlType:
-        DVZ_GUI_CONTROL_NONE = 0
-        DVZ_GUI_CONTROL_FLOAT_SLIDER = 1
 
     # from file: keycode.h
 
@@ -960,9 +960,9 @@ cdef extern from "<datoviz/datoviz.h>":
     void dvz_texture_filter(DvzTexture* texture, DvzFilterType type, VkFilter filter)
     void dvz_texture_upload(DvzTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, const void* data)
 
-    # from file: gui.h
+    # from file: controls.h
     DvzGui* dvz_gui(DvzCanvas* canvas, const char* title, int flags)
-    void dvz_gui_float_slider(DvzGui* gui, const char* name, double vmin, double vmax)
+    void dvz_gui_slider_float(DvzGui* gui, const char* name, double vmin, double vmax)
 
     # from file: mesh.h
     void dvz_mesh_normals(DvzMesh* mesh)

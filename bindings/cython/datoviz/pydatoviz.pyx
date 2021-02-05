@@ -95,6 +95,10 @@ _PROPS = {
     'clip': cv.DVZ_PROP_CLIP,
 }
 
+_CONTROLS = {
+    'slider_float': cv.DVZ_GUI_CONTROL_SLIDER_FLOAT,
+}
+
 _COLORMAPS = {
     'binary': cv.DVZ_CMAP_BINARY,
     'hsv': cv.DVZ_CMAP_HSV,
@@ -550,11 +554,11 @@ cdef class Gui:
         self._c_canvas = c_canvas
         self._c_gui = c_gui
 
-    def float_slider(self, unicode name, vmin=None, vmax=None):
+    def control(self, unicode ctype, unicode name, **kwargs):
+        ctrl = _CONTROLS.get(ctype, 0)
         cdef char* c_name = name
 
-        vmin = vmin if vmin is not None else 0
-        vmax = vmax if vmax is not None else 1
-        cdef double c_vmin = vmin
-        cdef double c_vmax = vmax
-        cv.dvz_gui_float_slider(self._c_gui, c_name, c_vmin, c_vmax)
+        if (ctype == 'slider_float'):
+            c_vmin = kwargs.get('vmin', 0)
+            c_vmax = kwargs.get('vmax', 1)
+            cv.dvz_gui_slider_float(self._c_gui, c_name, c_vmin, c_vmax)
