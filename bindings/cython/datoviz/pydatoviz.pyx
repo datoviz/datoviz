@@ -387,7 +387,7 @@ cdef _add_event_callback(cv.DvzCanvas* c_canvas, cv.DvzEventType evtype, double 
     Py_INCREF(tup)
 
     ptr_to_obj = <void*>tup
-    cv.dvz_event_callback(c_canvas, evtype, param, cv.DVZ_EVENT_MODE_SYNC, <cv.DvzEventCallback>_wrapped_callback, ptr_to_obj)
+    cv.dvz_event_callback(c_canvas, evtype, param, cv.DVZ_EVENT_MODE_ASYNC, <cv.DvzEventCallback>_wrapped_callback, ptr_to_obj)
 
 
 
