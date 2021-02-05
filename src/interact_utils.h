@@ -397,6 +397,8 @@ static void _arcball_reset(DvzArcball* arcball)
 {
     ASSERT(arcball != NULL);
 
+    glm_vec3_zero(arcball->translate);
+
     vec3 eye, center, up, dir, x_axis, y_axis, z_axis;
     glm_vec3_copy(DVZ_CAMERA_EYE, arcball->camera.eye);
     glm_vec3_copy(arcball->camera.eye, eye);
@@ -416,9 +418,6 @@ static void _arcball_reset(DvzArcball* arcball)
 
     glm_vec3_cross(z_axis, y_axis, x_axis);
     glm_vec3_normalize(x_axis);
-
-    glm_mat4_identity(arcball->center_translation);
-    glm_translate_make(arcball->translation, (vec3){0, 0, -glm_vec3_norm(dir)});
 
     mat3 m;
     glm_vec3_copy((vec3){-x_axis[0], -x_axis[1], -x_axis[2]}, m[0]);
@@ -458,17 +457,6 @@ static void _arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos)
 {
     ASSERT(arcball != NULL);
 
-    // // NOTE: need to invert the mouse normalized coordinates if the standard 3D view matrix
-    // is
-    // // also applied.
-    // if (arcball->which_matrix == DVZ_MVP_MODEL)
-    // {
-    //     cur_pos[0] *= -1;
-    //     cur_pos[1] *= -1;
-    //     last_pos[0] *= -1;
-    //     last_pos[1] *= -1;
-    // }
-
     versor mouse_cur_ball = {0}, mouse_prev_ball = {0};
     _screen_to_arcball(cur_pos, mouse_cur_ball);
     _screen_to_arcball(last_pos, mouse_prev_ball);
@@ -477,10 +465,25 @@ static void _arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos)
     glm_quat_mul(mouse_cur_ball, arcball->rotation, arcball->rotation);
 }
 
+static void _arcball_pan(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos)
+{
+    ASSERT(arcball != NULL);
+    vec2 delta;
+    glm_vec2_sub(last_pos, cur_pos, delta);
+    glm_vec2_scale(delta, -1, delta);
+    arcball->translate[0] += delta[0];
+    arcball->translate[1] += delta[1];
+}
+
+#define LMUL(A, B) glm_mat4_mul((B), (A), (A))
+
 static void _arcball_update_mvp(DvzArcball* arcball, DvzMVP* mvp)
 {
     ASSERT(arcball != NULL);
     glm_mat4_copy(arcball->mat, mvp->model);
+    mat4 tr;
+    glm_translate_make(tr, arcball->translate);
+    glm_mat4_mul(mvp->model, tr, mvp->model);
     dvz_mvp_camera(
         arcball->canvas->viewport, arcball->camera.eye, (vec3){0, 0, 0}, (vec2){0.1, 100}, mvp);
 }
@@ -510,6 +513,14 @@ static void _arcball_callback(
         is_active = true;
     }
 
+    // Pan.
+    if (press_active && mouse->cur_state == DVZ_MOUSE_STATE_DRAG &&
+        mouse->button == DVZ_MOUSE_BUTTON_RIGHT)
+    {
+        _arcball_pan(arcball, interact->mouse_local.cur_pos, interact->mouse_local.last_pos);
+        is_active = true;
+    }
+
     // Zoom.
     if (cur_active && mouse->cur_state == DVZ_MOUSE_STATE_WHEEL)
     {
@@ -530,28 +541,8 @@ static void _arcball_callback(
         is_active = true;
     }
 
-    // Compute the View matrix.
+    // Compute the matrix.
     glm_quat_mat4(arcball->rotation, arcball->mat);
-    // glm_mat4_mul(arcball->mat, arcball->center_translation, arcball->mat);
-    // glm_mat4_mul(arcball->translation, arcball->mat, arcball->mat);
-
-    // // Pan.
-    // if (press_active && mouse->cur_state == DVZ_MOUSE_STATE_DRAG &&
-    //     mouse->button == DVZ_MOUSE_BUTTON_RIGHT)
-    // {
-    //     // // TODO
-    //     // if (dvz_panel_from_mouse(scene, mouse->press_pos) != panel)
-    //     //     return;
-    //     // panel->status = DVZ_PANEL_STATUS_ACTIVE;
-
-    //     vec2 delta;
-    //     glm_vec2_sub(interact->mouse_local.cur_pos, interact->mouse_local.last_pos, delta);
-    //     float k = 5;
-    //     vec3 motion = {k * delta[0], k * delta[1], 0};
-    //     glm_vec3_add(arcball->camera.eye, motion, arcball->camera.eye);
-
-    //     is_active = true;
-    // }
 
     if (is_active)
         _arcball_update_mvp(arcball, &interact->mvp);
