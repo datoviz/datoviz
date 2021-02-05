@@ -37,6 +37,9 @@ cdef extern from "<datoviz/datoviz.h>":
     ctypedef uint64_t VkDeviceSize
 
 
+    ctypedef struct DvzObject:
+        pass
+
     ctypedef struct DvzApp:
         pass
 
@@ -67,14 +70,13 @@ cdef extern from "<datoviz/datoviz.h>":
         DvzCanvas* canvas
         DvzPanel* panel
 
-    ctypedef struct DvzGuiControl:
-        pass
-
-    ctypedef struct DvzGui:
-        pass
+    ctypedef struct DvzArray:
+        void* data
+        uint32_t item_count
 
     ctypedef struct DvzMesh:
-        pass
+        DvzArray vertices
+        DvzArray indices
 
     ctypedef struct DvzSubmit:
         pass
@@ -439,6 +441,21 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_FILTER_MIN = 0
         DVZ_FILTER_MAG = 1
 
+    # from file: controls.h
+
+    ctypedef enum DvzGuiFlags:
+        DVZ_GUI_FLAGS_NONE = 0x0000
+        DVZ_GUI_FLAGS_FIXED = 0x0001
+        DVZ_GUI_FLAGS_CORNER_UL = 0x0010
+        DVZ_GUI_FLAGS_CORNER_UR = 0x0020
+        DVZ_GUI_FLAGS_CORNER_LR = 0x0030
+        DVZ_GUI_FLAGS_CORNER_LL = 0x0040
+
+    ctypedef enum DvzGuiControlType:
+        DVZ_GUI_CONTROL_NONE = 0
+        DVZ_GUI_CONTROL_SLIDER_FLOAT = 1
+        DVZ_GUI_CONTROL_SLIDER_INT = 2
+
     # from file: graphics.h
 
     ctypedef enum DvzGraphicsFlags:
@@ -475,20 +492,6 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_CAP_SQUARE = 4
         DVZ_CAP_BUTT = 5
         DVZ_CAP_COUNT = 6
-
-    # from file: gui.h
-
-    ctypedef enum DvzGuiStyle:
-        DVZ_GUI_STANDARD = 0
-        DVZ_GUI_PROMPT = 1
-        DVZ_GUI_FIXED_TL = 10
-        DVZ_GUI_FIXED_TR = 11
-        DVZ_GUI_FIXED_LL = 12
-        DVZ_GUI_FIXED_LR = 13
-
-    ctypedef enum DvzGuiControlType:
-        DVZ_GUI_CONTROL_NONE = 0
-        DVZ_GUI_CONTROL_FLOAT_SLIDER = 1
 
     # from file: keycode.h
 
@@ -936,6 +939,36 @@ cdef extern from "<datoviz/datoviz.h>":
         void* user_data
         DvzEventUnion u
 
+    # from file: controls.h
+
+    ctypedef struct DvzGuiControlSliderFloat:
+        float vmin
+        float vmax
+
+    ctypedef struct DvzGuiControlSliderInt:
+        int vmin
+        int vmax
+
+    ctypedef union DvzGuiControlUnion:
+        DvzGuiControlSliderFloat sf
+        DvzGuiControlSliderInt si
+
+    ctypedef struct DvzGuiControl:
+        DvzGui* gui
+        const char* name
+        int flags
+        void* value
+        DvzGuiControlType type
+        DvzGuiControlUnion u
+
+    ctypedef struct DvzGui:
+        DvzObject obj
+        DvzCanvas* canvas
+        const char* title
+        int flags
+        uint32_t control_count
+        DvzGuiControl controls[32]
+
 
     # STRUCT END
 
@@ -960,12 +993,14 @@ cdef extern from "<datoviz/datoviz.h>":
     void dvz_texture_filter(DvzTexture* texture, DvzFilterType type, VkFilter filter)
     void dvz_texture_upload(DvzTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, const void* data)
 
-    # from file: gui.h
+    # from file: controls.h
     DvzGui* dvz_gui(DvzCanvas* canvas, const char* title, int flags)
-    void dvz_gui_float_slider(DvzGui* gui, const char* name, double vmin, double vmax)
+    void dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax)
+    void dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax)
 
     # from file: mesh.h
     void dvz_mesh_normals(DvzMesh* mesh)
+    DvzMesh dvz_mesh_obj(const char* file_path)
 
     # from file: panel.h
     void dvz_panel_transpose(DvzPanel* panel, DvzCDSTranspose transpose)
@@ -978,6 +1013,7 @@ cdef extern from "<datoviz/datoviz.h>":
 
     # from file: visuals.h
     void dvz_visual_data(DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx, uint32_t count, const void* data)
+    void dvz_visual_data_source(DvzVisual* visual, DvzSourceType source_type, uint32_t source_idx, uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data)
     void dvz_visual_texture(DvzVisual* visual, DvzSourceType source_type, uint32_t source_idx, DvzTexture* texture)
 
     # from file: vklite.h

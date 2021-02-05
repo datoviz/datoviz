@@ -290,6 +290,7 @@ typedef enum
 typedef struct DvzMVP DvzMVP;
 typedef struct DvzObject DvzObject;
 typedef struct DvzContainer DvzContainer;
+typedef struct DvzContainerIterator DvzContainerIterator;
 typedef struct DvzThread DvzThread;
 
 typedef void* (*DvzThreadCallback)(void*);
@@ -319,7 +320,15 @@ struct DvzContainer
     DvzObjectType type;
     void** items;
     size_t item_size;
-    uint32_t _loop_idx;
+};
+
+
+
+struct DvzContainerIterator
+{
+    DvzContainer* container;
+    uint32_t idx;
+    void* item;
 };
 
 
@@ -536,26 +545,30 @@ static void* dvz_container_get(DvzContainer* container, uint32_t idx)
  * @param container the container
  * @returns a pointer to the next object in the container, or NULL at the end
  */
-static void* dvz_container_iter(DvzContainer* container)
+static void dvz_container_iter(DvzContainerIterator* iterator)
 {
+    ASSERT(iterator != NULL);
+    DvzContainer* container = iterator->container;
     ASSERT(container != NULL);
     if (container->items == NULL || container->capacity == 0 || container->count == 0)
-        return NULL;
-    if (container->_loop_idx >= container->capacity)
-        return NULL;
-    ASSERT(container->_loop_idx <= container->capacity - 1);
-    for (uint32_t i = container->_loop_idx; i < container->capacity; i++)
+        return;
+    if (iterator->idx >= container->capacity)
+        return;
+    ASSERT(iterator->idx <= container->capacity - 1);
+    for (uint32_t i = iterator->idx; i < container->capacity; i++)
     {
         dvz_container_delete_if_destroyed(container, i);
         if (container->items[i] != NULL)
         {
-            container->_loop_idx = i + 1;
-            return container->items[i];
+            iterator->idx = i + 1;
+            // log_info("item %d: %d", i, container->items[i]);
+            iterator->item = container->items[i];
+            return;
         }
     }
     // End the outer loop, reset the internal idx.
-    container->_loop_idx = 0;
-    return NULL;
+    iterator->idx = 0;
+    iterator->item = NULL;
 }
 
 /**
@@ -564,11 +577,13 @@ static void* dvz_container_iter(DvzContainer* container)
  * @param container the container
  * @returns a pointer to the first object
  */
-static void* dvz_container_iter_init(DvzContainer* container)
+static DvzContainerIterator dvz_container_iterator(DvzContainer* container)
 {
     ASSERT(container != NULL);
-    container->_loop_idx = 0;
-    return dvz_container_iter(container);
+    DvzContainerIterator iterator = {0};
+    iterator.container = container;
+    dvz_container_iter(&iterator);
+    return iterator;
 }
 
 /**
@@ -578,7 +593,7 @@ static void* dvz_container_iter_init(DvzContainer* container)
  *
  * !!! warning
  *     All objects in the container must have been destroyed beforehand, since the generic
- *     container does not know how to properly destroy objects that were created on the GPU.
+ *     container does not know how to properly destroy objects that were created with Vulkan.
  *
  * @param container the container
  * @param idx the index of the object within the container
@@ -622,11 +637,13 @@ static void dvz_container_destroy(DvzContainer* container)
 
 #define CONTAINER_DESTROY_ITEMS(t, c, f)                                                          \
     {                                                                                             \
-        t* o = dvz_container_iter_init(&c);                                                       \
-        while (o != NULL)                                                                         \
+        DvzContainerIterator _iter = dvz_container_iterator(&c);                                  \
+        t* o = NULL;                                                                              \
+        while (_iter.item != NULL)                                                                \
         {                                                                                         \
+            o = _iter.item;                                                                       \
             f(o);                                                                                 \
-            o = dvz_container_iter(&c);                                                           \
+            dvz_container_iter(&_iter);                                                           \
         }                                                                                         \
     }
 

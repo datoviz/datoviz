@@ -347,7 +347,7 @@ void end_video(Video* video)
 
 Video* create_video(const char* filename, int width, int height, int fps, int bitrate)
 {
-    log_error("visky was not build with ffmpeg support");
+    log_error("datoviz was not compiled with ffmpeg support, unable to record a video");
     return NULL;
 }
 

@@ -959,14 +959,10 @@ static void _mesh_bake(DvzVisual* visual, DvzVisualDataEvent ev)
     DvzArray* arr_vertex = dvz_source_array(visual, DVZ_SOURCE_TYPE_VERTEX, 0);
     DvzArray* arr_index = dvz_source_array(visual, DVZ_SOURCE_TYPE_INDEX, 0);
 
-    // Length of the normal of the first vertex.
-    // float length = glm_vec3_norm2(((DvzGraphicsMeshVertex*)dvz_array_item(arr_vertex,
-    // 0))->normal);
     // Check if the first normal is 00
     vec3* normal = &((DvzGraphicsMeshVertex*)dvz_array_item(arr_vertex, 0))->normal;
     if (normal[0][0] == 0 && normal[0][1] == 0 && normal[0][2] == 0)
     {
-        log_debug("mesh has no normals, computing them from the faces");
         // Compute the normal from the faces.
         DvzMesh mesh = {0};
         mesh.vertices = *arr_vertex; // (DvzGraphicsMeshVertex*)arr_vertex->data;

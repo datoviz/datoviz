@@ -70,22 +70,26 @@ int test_container(TestContext* context)
     AT(container.items[2] == d);
     AT(container.items[3] == NULL);
 
-    // Iterate through items.
     for (uint32_t k = 0; k < 10; k++)
     {
-        TestObject* item = dvz_container_iter_init(&container);
+        DvzContainerIterator iter = dvz_container_iterator(&container);
         uint32_t i = 0;
-        while (item != NULL)
+        TestObject* obj = NULL;
+        // Iterate through items.
+        while (iter.item != NULL)
         {
-            AT(item != NULL);
+            obj = iter.item;
+            AT(obj != NULL);
+            // log_info("%d", obj);
             if (i == 0)
-                AT(item->x == 3);
+                AT(obj->x == 3);
             if (i == 1)
-                AT(item->x == 2);
+                //     DBG(obj->x);
+                AT(obj->x == 2);
             if (i == 2)
-                AT(item->x == 4);
+                AT(obj->x == 4);
             i++;
-            item = dvz_container_iter(&container);
+            dvz_container_iter(&iter);
         }
         ASSERT(i == 3);
     }

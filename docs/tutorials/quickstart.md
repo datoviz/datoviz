@@ -171,11 +171,36 @@ visual.data('ms', ms)
 
 ## Running the application
 
-Finally, we run the application by starting the main event loop
+Finally, we run the application by starting the main event loop:
 
 ```python
 run()
 ```
+
+
+### Making a screenshot
+
+We can easily make a screenshot of *the first frame* of the canvas.
+
+!!! note
+    Screenshot support will be improved soon.
+
+```python
+run(screenshot="screenshot.png")
+```
+
+
+### Recording a screencast video
+
+If the library was compiled with ffmpeg, we can easily make a live mp4 screencast of the canvas.
+
+!!! warning
+    The canvas should NOT be resized when doing a screencast, or the video will be corrupted.
+
+```python
+run(video="screencast.mp4")
+```
+
 
 
 

@@ -18,6 +18,7 @@ static void _canvas_fill(DvzCanvas* canvas, DvzEvent ev)
     DvzViewport viewport = {0};
     DvzCommands* cmds = NULL;
     DvzPanel* panel = NULL;
+    DvzContainerIterator iter;
     uint32_t img_idx = 0;
 
     // Go through all the current command buffers.
@@ -28,9 +29,10 @@ static void _canvas_fill(DvzCanvas* canvas, DvzEvent ev)
 
         dvz_visual_fill_begin(canvas, cmds, img_idx);
 
-        panel = dvz_container_iter_init(&grid->panels);
-        while (panel != NULL)
+        iter = dvz_container_iterator(&grid->panels);
+        while (iter.item != NULL)
         {
+            panel = iter.item;
             ASSERT(dvz_obj_is_created(&panel->obj));
             // Find the panel viewport.
             viewport = dvz_panel_viewport(panel);
@@ -42,7 +44,7 @@ static void _canvas_fill(DvzCanvas* canvas, DvzEvent ev)
                 dvz_visual_fill_event(
                     panel->visuals[k], ev.u.rf.clear_color, cmds, img_idx, viewport, NULL);
             }
-            panel = dvz_container_iter(&grid->panels);
+            dvz_container_iter(&iter);
         }
 
         dvz_visual_fill_end(canvas, cmds, img_idx);

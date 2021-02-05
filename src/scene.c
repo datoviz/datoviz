@@ -213,11 +213,11 @@ static void _transpose_visual(DvzPanel* panel, DvzVisual* visual)
     ASSERT(visual != NULL);
 
     DvzProp* prop = NULL;
-
     // Go through all visual props.
-    prop = dvz_container_iter_init(&visual->props);
-    while (prop != NULL)
+    DvzContainerIterator iter = dvz_container_iterator(&visual->props);
+    while (iter.item != NULL)
     {
+        prop = iter.item;
         // CDS transposition.
         if (prop->obj.request == 0 &&
             (prop->prop_type == DVZ_PROP_POS || prop->prop_type == DVZ_PROP_NORMAL))
@@ -226,7 +226,7 @@ static void _transpose_visual(DvzPanel* panel, DvzVisual* visual)
             prop->obj.request = 1; // HACK: we only transpose props once, after they've been set.
         }
 
-        prop = dvz_container_iter(&visual->props);
+        dvz_container_iter(&iter);
     }
 }
 
@@ -238,6 +238,7 @@ static void _panel_normalize_visuals(DvzPanel* panel, DvzBox box)
     ASSERT(panel != NULL);
     DvzVisual* visual = NULL;
     DvzProp* prop = NULL;
+    DvzContainerIterator iter;
 
     // Update the data coords box.
     panel->data_coords.box = box;
@@ -252,9 +253,10 @@ static void _panel_normalize_visuals(DvzPanel* panel, DvzBox box)
             continue;
 
         // Go through all visual props.
-        prop = dvz_container_iter_init(&visual->props);
-        while (prop != NULL)
+        iter = dvz_container_iterator(&visual->props);
+        while (iter.item != NULL)
         {
+            prop = iter.item;
             // Transform all POS props with the panel data coordinates.
             if (prop->prop_type == DVZ_PROP_POS)
             {
@@ -265,7 +267,7 @@ static void _panel_normalize_visuals(DvzPanel* panel, DvzBox box)
                 _visual_request(visual, panel, DVZ_VISUAL_REQUEST_UPLOAD);
             }
 
-            prop = dvz_container_iter(&visual->props);
+            dvz_container_iter(&iter);
         }
     }
 }
@@ -398,6 +400,7 @@ static void _scene_fill(DvzCanvas* canvas, DvzEvent ev)
     DvzViewport viewport = {0};
     DvzCommands* cmds = NULL;
     DvzPanel* panel = NULL;
+    DvzContainerIterator iter;
     DvzVisual* visual = NULL;
     uint32_t img_idx = 0;
 
@@ -410,9 +413,10 @@ static void _scene_fill(DvzCanvas* canvas, DvzEvent ev)
         log_trace("visual fill cmd %d begin %d", i, img_idx);
         dvz_visual_fill_begin(canvas, cmds, img_idx);
 
-        panel = dvz_container_iter_init(&grid->panels);
-        while (panel != NULL)
+        iter = dvz_container_iterator(&grid->panels);
+        while (iter.item != NULL)
         {
+            panel = iter.item;
             // Update the panel.
             dvz_panel_update(panel);
             ASSERT(dvz_obj_is_created(&panel->obj));
@@ -442,7 +446,7 @@ static void _scene_fill(DvzCanvas* canvas, DvzEvent ev)
                 }
             }
 
-            panel = dvz_container_iter(&grid->panels);
+            dvz_container_iter(&iter);
         }
         dvz_visual_fill_end(canvas, cmds, img_idx);
     }
@@ -461,11 +465,14 @@ static void _scene_frame(DvzCanvas* canvas, DvzEvent ev)
 
     // Go through all panels that need to be updated.
     // bool to_update = false;
-    DvzPanel* panel = dvz_container_iter_init(&grid->panels);
+    DvzPanel* panel = NULL;
+    DvzContainerIterator iter = dvz_container_iterator(&grid->panels);
     DvzSource* source = NULL;
     DvzVisual* visual = NULL;
-    while (panel != NULL)
+    while (iter.item != NULL)
     {
+        panel = iter.item;
+
         // Interactivity.
         if (panel->controller != NULL && panel->controller->callback != NULL)
         {
@@ -544,7 +551,7 @@ static void _scene_frame(DvzCanvas* canvas, DvzEvent ev)
         // Mark the panel as no longer needing to be updated.
         _panel_set(panel);
 
-        panel = dvz_container_iter(&grid->panels);
+        dvz_container_iter(&iter);
     }
 
     // Mark the scene as no longer needing to be updated.
@@ -567,9 +574,11 @@ static void _upload_mvp(DvzCanvas* canvas, DvzEvent ev)
     // DvzBufferRegions* br = NULL;
 
     // Go through all panels that need to be updated.
-    DvzPanel* panel = dvz_container_iter_init(&grid->panels);
-    while (panel != NULL)
+    DvzPanel* panel = NULL;
+    DvzContainerIterator iter = dvz_container_iterator(&grid->panels);
+    while (iter.item != NULL)
     {
+        panel = iter.item;
         if (panel->controller == NULL)
             continue;
         controller = panel->controller;
@@ -588,7 +597,7 @@ static void _upload_mvp(DvzCanvas* canvas, DvzEvent ev)
             // NOTE: we need to update the uniform buffer at every frame
             dvz_upload_buffers(canvas, panel->br_mvp, 0, panel->br_mvp.size, &interact->mvp);
         }
-        panel = dvz_container_iter(&grid->panels);
+        dvz_container_iter(&iter);
     }
 }
 
@@ -980,14 +989,16 @@ void dvz_scene_destroy(DvzScene* scene)
     ASSERT(grid != NULL);
 
     // Destroy all panels.
-    DvzPanel* panel = dvz_container_iter_init(&grid->panels);
-    while (panel != NULL)
+    DvzContainerIterator iter = dvz_container_iterator(&grid->panels);
+    DvzPanel* panel = NULL;
+    while (iter.item != NULL)
     {
+        panel = iter.item;
         if (panel->obj.status == DVZ_OBJECT_STATUS_NONE)
             break;
         // This also destroys all visuals in the panel.
         dvz_panel_destroy(panel);
-        panel = dvz_container_iter(&grid->panels);
+        dvz_container_iter(&iter);
     }
 
     // Destroy all controllers.

@@ -1,4 +1,4 @@
-#include "mesh_loader.h"
+#include "../include/datoviz/mesh.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
@@ -77,12 +77,14 @@ DvzMesh dvz_mesh_obj(const char* file_path)
     // Loop over shapes
     uint32_t i, index_offset, nf;
     tinyobj::index_t idx;
+    cvec3 color;
 
     // Vertices
     log_debug("loading %d vertices", nv);
     size_t nv_obj = attrib.vertices.size();
     size_t nn_obj = attrib.normals.size();
     size_t nt_obj = attrib.texcoords.size();
+    size_t nc_obj = attrib.colors.size();
 
     for (i = 0; i < nv; i++)
     {
@@ -104,6 +106,13 @@ DvzMesh dvz_mesh_obj(const char* file_path)
             ASSERT(2 * i + 1 < nt_obj);
             vertex->uv[0] = attrib.texcoords[2 * i + 0];
             vertex->uv[1] = attrib.texcoords[2 * i + 1];
+        }
+        else if (nc_obj > 0)
+        {
+            color[0] = TO_BYTE(attrib.colors[3 * i + 0]);
+            color[1] = TO_BYTE(attrib.colors[3 * i + 1]);
+            color[2] = TO_BYTE(attrib.colors[3 * i + 2]);
+            dvz_colormap_packuv(color, vertex->uv);
         }
 
         // Alpha value.

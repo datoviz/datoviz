@@ -41,6 +41,10 @@ We need to generate different types of data structures for colors:
 
 #include "common.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 
 /*************************************************************************************************/
@@ -442,5 +446,9 @@ DVZ_INLINE void dvz_colormap_packuv(cvec3 color, vec2 uv)
 }
 
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

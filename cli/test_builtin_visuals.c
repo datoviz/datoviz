@@ -1,8 +1,9 @@
 #include "test_builtin_visuals.h"
 #include "../include/datoviz/builtin_visuals.h"
 #include "../include/datoviz/interact.h"
+#include "../include/datoviz/mesh.h"
 #include "../src/interact_utils.h"
-#include "../src/mesh_loader.h"
+// #include "../src/mesh_loader.h"
 #include "test_visuals.h"
 #include "utils.h"
 

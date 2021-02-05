@@ -31,8 +31,8 @@
 ### `dvz_container_delete_if_destroyed()`
 ### `dvz_container_alloc()`
 ### `dvz_container_get()`
+### `dvz_container_iterator()`
 ### `dvz_container_iter()`
-### `dvz_container_iter_init()`
 ### `dvz_container_destroy()`
 
 

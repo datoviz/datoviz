@@ -319,7 +319,10 @@ void dvz_thread_unlock(DvzThread* thread)
         log_trace("release lock");
         pthread_mutex_unlock(&thread->lock);
     }
-    atomic_store(&thread->lock_idx, lock_idx - 1);
+    if (lock_idx >= 1)
+        atomic_store(&thread->lock_idx, lock_idx - 1);
+    else
+        log_error("lock_idx = 0 ???");
 }
 
 

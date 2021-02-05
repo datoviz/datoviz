@@ -605,12 +605,14 @@ static DvzGraphics* _find_graphics(DvzCanvas* canvas, DvzGraphicsType type, int 
     ASSERT(canvas != NULL);
     ASSERT(type != DVZ_GRAPHICS_CUSTOM);
 
-    DvzGraphics* graphics = dvz_container_iter_init(&canvas->graphics);
-    if (graphics != NULL)
+    DvzContainerIterator iter = dvz_container_iterator(&canvas->graphics);
+    DvzGraphics* graphics = NULL;
+    if (iter.item != NULL)
     {
+        graphics = iter.item;
         if (graphics->type == type && graphics->flags == flags)
             return graphics;
-        graphics = dvz_container_iter(&canvas->graphics);
+        dvz_container_iter(&iter);
     }
     return NULL;
 }

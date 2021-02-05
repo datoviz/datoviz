@@ -1,13 +1,19 @@
 # Simple test with Python
 
+import time
+
 import numpy as np
 import numpy.random as nr
 
 # Import the library.
 from datoviz import canvas, run, colormap
 
+# IMPORTANT
+# In interactive IPython, do (*after* importing datoviz):
+# %gui datoviz
+
 # Create a new canvas and scene. There's only 1 subplot (panel) by default.
-c = canvas(show_fps=False)
+c = canvas(show_fps=True)
 
 # Get a panel (by default, the one spanning the entire canvas) # We specify the type of controller
 # we want. Here, we want 2D axes.
@@ -28,7 +34,14 @@ visual.data('color', color)
 visual.data('ms', ms)
 
 gui = c.gui("hello world")
-gui.float_slider("my slider")
+
+@gui.control("slider_float", "my float slider")
+def on_change(value):
+    visual.data('ms', ms * value)
+
+@gui.control("slider_int", "my int slider", vmin=1, vmax=4)
+def on_change(value):
+    visual.data('ms', ms * value)
 
 # We run the main event loop, which will display the canvas until Escape is # pressed or the
 # window is closed.

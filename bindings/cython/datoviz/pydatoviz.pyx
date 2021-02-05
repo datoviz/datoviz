@@ -95,6 +95,11 @@ _PROPS = {
     'clip': cv.DVZ_PROP_CLIP,
 }
 
+_CONTROLS = {
+    'slider_float': cv.DVZ_GUI_CONTROL_SLIDER_FLOAT,
+    'slider_int': cv.DVZ_GUI_CONTROL_SLIDER_INT,
+}
+
 _COLORMAPS = {
     'binary': cv.DVZ_CMAP_BINARY,
     'hsv': cv.DVZ_CMAP_HSV,
@@ -257,6 +262,7 @@ _EVENTS ={
     'mouse': cv.DVZ_EVENT_MOUSE_MOVE,
     'frame': cv.DVZ_EVENT_FRAME,
     'timer': cv.DVZ_EVENT_TIMER,
+    'gui': cv.DVZ_EVENT_GUI,
 }
 
 
@@ -347,15 +353,31 @@ cdef class App:
         cv.dvz_app_run(self._c_app, 1)
 
 
+
+cdef _get_ev_args(cv.DvzEvent c_ev):
+    cdef float* fvalue
+    cdef int* ivalue
+    dt = c_ev.type
+    if dt == cv.DVZ_EVENT_GUI:
+        if c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_SLIDER_FLOAT:
+            fvalue = <float*>c_ev.u.g.control.value
+            return (fvalue[0],)
+        elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_SLIDER_INT:
+            ivalue = <int*>c_ev.u.g.control.value
+            return (ivalue[0],)
+    return ()
+
+
+
 cdef _wrapped_callback(cv.DvzCanvas* c_canvas, cv.DvzEvent c_ev):
     cdef object tup
     if c_ev.user_data != NULL:
         tup = <object>c_ev.user_data
-        # pos = (<int>c_ev.u.m.pos[0], <int>c_ev.u.m.pos[1])
-        f, args = tup
+        # For each type of event, get the arguments to the function
+        ev_args = _get_ev_args(c_ev)
+        f, args = tup # NOTE: args not used for now
         try:
-            # f(pos)
-            f()
+            f(*ev_args)
         except Exception as e:
             print("Error: %s" % e)
 
@@ -371,7 +393,7 @@ cdef _add_event_callback(cv.DvzCanvas* c_canvas, cv.DvzEventType evtype, double 
     Py_INCREF(tup)
 
     ptr_to_obj = <void*>tup
-    cv.dvz_event_callback(c_canvas, evtype, param, cv.DVZ_EVENT_MODE_SYNC, <cv.DvzEventCallback>_wrapped_callback, ptr_to_obj)
+    cv.dvz_event_callback(c_canvas, evtype, param, cv.DVZ_EVENT_MODE_ASYNC, <cv.DvzEventCallback>_wrapped_callback, ptr_to_obj)
 
 
 
@@ -540,6 +562,21 @@ cdef class Visual:
         cv.dvz_texture_upload(texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, size * item_size, &value.data[0])
         cv.dvz_visual_texture(self._c_visual, cv.DVZ_SOURCE_TYPE_VOLUME, idx, texture)
 
+    def load_obj(self, unicode path, compute_normals=False):
+        # TODO: check that it is a mesh visual
+
+        cdef cv.DvzMesh mesh = cv.dvz_mesh_obj(path);
+
+        if compute_normals:
+            print("computing normals")
+            cv.dvz_mesh_normals(&mesh)
+
+        nv = mesh.vertices.item_count;
+        ni = mesh.indices.item_count;
+
+        cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
+        cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
+
 
 
 cdef class Gui:
@@ -550,11 +587,22 @@ cdef class Gui:
         self._c_canvas = c_canvas
         self._c_gui = c_gui
 
-    def float_slider(self, unicode name, vmin=None, vmax=None):
+    def control(self, unicode ctype, unicode name, **kwargs):
+        ctrl = _CONTROLS.get(ctype, 0)
         cdef char* c_name = name
 
-        vmin = vmin if vmin is not None else 0
-        vmax = vmax if vmax is not None else 1
-        cdef double c_vmin = vmin
-        cdef double c_vmax = vmax
-        cv.dvz_gui_float_slider(self._c_gui, c_name, c_vmin, c_vmax)
+        if (ctype == 'slider_float'):
+            c_vmin = kwargs.get('vmin', 0)
+            c_vmax = kwargs.get('vmax', 1)
+            cv.dvz_gui_slider_float(self._c_gui, c_name, c_vmin, c_vmax)
+        elif (ctype == 'slider_int'):
+            c_vmin = kwargs.get('vmin', 0)
+            c_vmax = kwargs.get('vmax', 1)
+            cv.dvz_gui_slider_int(self._c_gui, c_name, c_vmin, c_vmax)
+
+        def wrap(f):
+            cdef cv.DvzEventType evtype
+            evtype = cv.DVZ_EVENT_GUI
+            _add_event_callback(self._c_canvas, evtype, 0, f, ())
+
+        return wrap

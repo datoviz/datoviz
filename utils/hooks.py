@@ -26,9 +26,7 @@ def page_hook(markdown, page, config, files):
     elif 'graphics' in path:
         return insert_graphics_doc(markdown, config)
     elif 'color' in path:
-        return (
-            markdown + '\n\n## List of colormaps and color palettes\n\n' +
-            generate_colormaps_doc())
+        return (markdown + '\n\n' + generate_colormaps_doc())
     elif 'enum' in path:
         return insert_enums_doc(markdown, config)
     elif 'api/' in path:

@@ -3,7 +3,7 @@
 #include "../include/datoviz/graphics.h"
 #include "../include/datoviz/mesh.h"
 #include "../src/interact_utils.h"
-#include "../src/mesh_loader.h"
+// #include "../src/mesh_loader.h"
 #include "utils.h"
 
 BEGIN_INCL_NO_WARN

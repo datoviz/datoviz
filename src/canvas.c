@@ -1,10 +1,13 @@
 #include "../include/datoviz/canvas.h"
 #include "../external/video.h"
 #include "../include/datoviz/context.h"
+#include "../include/datoviz/controls.h"
 #include "../include/datoviz/gui.h"
 #include "../include/datoviz/vklite.h"
 #include "../src/vklite_utils.h"
+
 #include <stdlib.h>
+
 
 
 /*************************************************************************************************/
@@ -1764,8 +1767,8 @@ static void _video_callback(DvzCanvas* canvas, DvzEvent ev)
 static void _video_destroy(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
-    ASSERT(ev.user_data != NULL);
-    end_video((Video*)ev.user_data);
+    if (ev.user_data != NULL)
+        end_video((Video*)ev.user_data);
 }
 
 void dvz_canvas_video(DvzCanvas* canvas, int framerate, int bitrate, const char* path)
@@ -1773,6 +1776,8 @@ void dvz_canvas_video(DvzCanvas* canvas, int framerate, int bitrate, const char*
     uvec2 size;
     dvz_canvas_size(canvas, DVZ_CANVAS_SIZE_FRAMEBUFFER, size);
     Video* video = create_video(path, (int)size[0], (int)size[1], framerate, bitrate);
+    if (video == NULL)
+        return;
 
     dvz_event_callback(
         canvas, DVZ_EVENT_SCREENCAST, 0, DVZ_EVENT_MODE_SYNC, _video_callback, video);
@@ -1910,6 +1915,7 @@ void dvz_app_run(DvzApp* app, uint64_t frame_count)
         frame_count = UINT64_MAX;
     ASSERT(frame_count > 0);
 
+    DvzContainerIterator iterator;
     DvzCanvas* canvas = NULL;
 
     // Main loop.
@@ -1919,13 +1925,15 @@ void dvz_app_run(DvzApp* app, uint64_t frame_count)
         n_canvas_active = 0;
 
         // Loop over the canvases.
-        canvas = dvz_container_iter_init(&app->canvases);
-        while (canvas != NULL)
+        iterator = dvz_container_iterator(&app->canvases);
+        canvas = NULL;
+        while (iterator.item != NULL)
         {
+            canvas = (DvzCanvas*)iterator.item;
             ASSERT(canvas != NULL);
             if (canvas->obj.status < DVZ_OBJECT_STATUS_CREATED)
             {
-                canvas = dvz_container_iter(&app->canvases);
+                dvz_container_iter(&iterator);
                 continue;
             }
             ASSERT(canvas->obj.status >= DVZ_OBJECT_STATUS_CREATED);
@@ -1962,7 +1970,7 @@ void dvz_app_run(DvzApp* app, uint64_t frame_count)
             {
                 log_trace("swapchain image acquisition failed, waiting and skipping this frame");
                 dvz_gpu_wait(canvas->gpu);
-                canvas = dvz_container_iter(&app->canvases);
+                dvz_container_iter(&iterator);
                 continue;
             }
 
@@ -1985,7 +1993,7 @@ void dvz_app_run(DvzApp* app, uint64_t frame_count)
                 dvz_canvas_to_refill(canvas);
 
                 n_canvas_active++;
-                canvas = dvz_container_iter(&app->canvases);
+                dvz_container_iter(&iterator);
                 continue;
             }
 
@@ -2009,7 +2017,7 @@ void dvz_app_run(DvzApp* app, uint64_t frame_count)
 
                 // Destroy the canvas.
                 dvz_canvas_destroy(canvas);
-                canvas = dvz_container_iter(&app->canvases);
+                dvz_container_iter(&iterator);
                 continue;
             }
 
@@ -2024,7 +2032,7 @@ void dvz_app_run(DvzApp* app, uint64_t frame_count)
             n_canvas_active++;
 
 
-            canvas = dvz_container_iter(&app->canvases);
+            dvz_container_iter(&iterator);
         }
 
         // IMPORTANT: we need to wait for the present queue to be idle, otherwise the GPU hangs
@@ -2033,9 +2041,11 @@ void dvz_app_run(DvzApp* app, uint64_t frame_count)
         // to fix this.
 
         // NOTE: this has never been tested with multiple GPUs yet.
-        DvzGpu* gpu = dvz_container_iter_init(&app->gpus);
-        while (gpu != NULL)
+        iterator = dvz_container_iterator(&app->gpus);
+        DvzGpu* gpu = NULL;
+        while (iterator.item != NULL)
         {
+            gpu = iterator.item;
             if (!dvz_obj_is_created(&gpu->obj))
                 break;
             if (gpu->queues.queues[DVZ_DEFAULT_QUEUE_PRESENT] != VK_NULL_HANDLE &&
@@ -2046,7 +2056,7 @@ void dvz_app_run(DvzApp* app, uint64_t frame_count)
                 dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_PRESENT);
             }
 
-            gpu = dvz_container_iter(&app->gpus);
+            dvz_container_iter(&iterator);
         }
 
         // Close the application if all canvases have been closed.

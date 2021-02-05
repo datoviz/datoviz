@@ -59,4 +59,9 @@ Datoviz provides a few functions to easily make colors out of scalar values:
     FREE(colors);
     ```
 
+## List of colormaps and color palettes
+
+!!! note
+    The row and col give the offset of the colormap or color palette within the 256x256 colormap texture.
+
 <!-- The list of colormaps is generated in a mkdocs hook from utils/export_colormap.py -->
