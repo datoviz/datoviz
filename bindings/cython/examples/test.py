@@ -8,6 +8,10 @@ import numpy.random as nr
 # Import the library.
 from datoviz import canvas, run, colormap
 
+# IMPORTANT
+# In interactive IPython, do (*after* importing datoviz):
+# %gui datoviz
+
 # Create a new canvas and scene. There's only 1 subplot (panel) by default.
 c = canvas(show_fps=True)
 
