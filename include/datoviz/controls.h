@@ -41,6 +41,7 @@ typedef enum
 {
     DVZ_GUI_CONTROL_NONE,
     DVZ_GUI_CONTROL_SLIDER_FLOAT,
+    DVZ_GUI_CONTROL_SLIDER_INT,
 } DvzGuiControlType;
 
 
@@ -53,6 +54,7 @@ typedef struct DvzGui DvzGui;
 typedef struct DvzGuiControl DvzGuiControl;
 
 typedef struct DvzGuiControlSliderFloat DvzGuiControlSliderFloat;
+typedef struct DvzGuiControlSliderInt DvzGuiControlSliderInt;
 typedef union DvzGuiControlUnion DvzGuiControlUnion;
 
 
@@ -69,9 +71,18 @@ struct DvzGuiControlSliderFloat
 
 
 
+struct DvzGuiControlSliderInt
+{
+    int vmin;
+    int vmax;
+};
+
+
+
 union DvzGuiControlUnion
 {
     DvzGuiControlSliderFloat sf;
+    DvzGuiControlSliderInt si;
 };
 
 
@@ -108,7 +119,9 @@ struct DvzGui
 
 DVZ_EXPORT DvzGui* dvz_gui(DvzCanvas* canvas, const char* title, int flags);
 
-DVZ_EXPORT void dvz_gui_slider_float(DvzGui* gui, const char* name, double vmin, double vmax);
+DVZ_EXPORT void dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax);
+
+DVZ_EXPORT void dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax);
 
 DVZ_EXPORT void dvz_gui_destroy(DvzGui* gui);
 

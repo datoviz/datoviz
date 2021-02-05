@@ -286,6 +286,17 @@ static bool _show_slider_float(DvzGuiControl* control)
         control->name, (float*)control->value, vmin, vmax, "%.3f", control->flags);
 }
 
+static bool _show_slider_int(DvzGuiControl* control)
+{
+    ASSERT(control != NULL);
+    ASSERT(control->type == DVZ_GUI_CONTROL_SLIDER_INT);
+
+    int vmin = control->u.si.vmin;
+    int vmax = control->u.si.vmax;
+    ASSERT(vmin < vmax);
+    return ImGui::SliderInt(control->name, (int*)control->value, vmin, vmax, "%d", control->flags);
+}
+
 
 
 static void _show_control(DvzGuiControl* control)
@@ -303,6 +314,10 @@ static void _show_control(DvzGuiControl* control)
 
     case DVZ_GUI_CONTROL_SLIDER_FLOAT:
         changed = _show_slider_float(control);
+        break;
+
+    case DVZ_GUI_CONTROL_SLIDER_INT:
+        changed = _show_slider_int(control);
         break;
 
     default:

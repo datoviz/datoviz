@@ -97,6 +97,7 @@ _PROPS = {
 
 _CONTROLS = {
     'slider_float': cv.DVZ_GUI_CONTROL_SLIDER_FLOAT,
+    'slider_int': cv.DVZ_GUI_CONTROL_SLIDER_INT,
 }
 
 _COLORMAPS = {
@@ -355,11 +356,15 @@ cdef class App:
 
 cdef _get_ev_args(cv.DvzEvent c_ev):
     cdef float* fvalue
+    cdef int* ivalue
     dt = c_ev.type
     if dt == cv.DVZ_EVENT_GUI:
         if c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_SLIDER_FLOAT:
             fvalue = <float*>c_ev.u.g.control.value
             return (fvalue[0],)
+        elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_SLIDER_INT:
+            ivalue = <int*>c_ev.u.g.control.value
+            return (ivalue[0],)
     return ()
 
 
@@ -590,6 +595,10 @@ cdef class Gui:
             c_vmin = kwargs.get('vmin', 0)
             c_vmax = kwargs.get('vmax', 1)
             cv.dvz_gui_slider_float(self._c_gui, c_name, c_vmin, c_vmax)
+        elif (ctype == 'slider_int'):
+            c_vmin = kwargs.get('vmin', 0)
+            c_vmax = kwargs.get('vmax', 1)
+            cv.dvz_gui_slider_int(self._c_gui, c_name, c_vmin, c_vmax)
 
         def wrap(f):
             cdef cv.DvzEventType evtype

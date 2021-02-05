@@ -1174,8 +1174,16 @@ int test_canvas_offscreen(TestContext* context)
 static void _gui_callback(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
-    float* value = ev.u.g.control->value;
-    log_info("value is %.3f", *value);
+    if (ev.u.g.control->type == DVZ_GUI_CONTROL_SLIDER_FLOAT)
+    {
+        float* value = ev.u.g.control->value;
+        log_info("value is %.3f", *value);
+    }
+    if (ev.u.g.control->type == DVZ_GUI_CONTROL_SLIDER_INT)
+    {
+        int* value = ev.u.g.control->value;
+        log_info("value is %d", *value);
+    }
 }
 
 int test_canvas_gui_1(TestContext* context)
@@ -1185,9 +1193,12 @@ int test_canvas_gui_1(TestContext* context)
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, DVZ_CANVAS_FLAGS_IMGUI);
     AT(canvas != NULL);
 
+    // Make a simple GUI.
     DvzGui* gui = dvz_gui(canvas, "Hello world", 0);
+
     dvz_gui_slider_float(gui, "my slider 1", 0.0f, 1.0f);
-    dvz_gui_slider_float(gui, "my slider 2", 10.0f, 20.0f);
+    dvz_gui_slider_int(gui, "my slider 2", 10, 20);
+
     dvz_event_callback(canvas, DVZ_EVENT_GUI, 0, DVZ_EVENT_MODE_SYNC, _gui_callback, NULL);
 
     dvz_app_run(app, N_FRAMES);

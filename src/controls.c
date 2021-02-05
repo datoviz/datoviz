@@ -24,20 +24,46 @@ DvzGui* dvz_gui(DvzCanvas* canvas, const char* title, int flags)
 
 
 
-void dvz_gui_slider_float(DvzGui* gui, const char* name, double vmin, double vmax)
+static DvzGuiControl* _add_control(
+    DvzGui* gui, DvzGuiControlType type, const char* name, VkDeviceSize item_size, void* value)
 {
     ASSERT(gui != NULL);
-    ASSERT(vmin < vmax);
 
     DvzGuiControl* control = &gui->controls[gui->control_count++];
     control->gui = gui;
     control->name = name;
-    control->type = DVZ_GUI_CONTROL_SLIDER_FLOAT;
-    control->value = (float*)calloc(1, sizeof(float));
-    control->u.sf.vmin = (float)vmin;
-    control->u.sf.vmax = (float)vmax;
-    ASSERT(control->u.sf.vmin < control->u.sf.vmax);
-    *((float*)control->value) = .5 * (vmax + vmin);
+    control->type = type;
+    control->value = calloc(1, item_size);
+    memcpy(control->value, value, item_size);
+    return control;
+}
+
+
+
+void dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax)
+{
+    ASSERT(gui != NULL);
+    ASSERT(vmin < vmax);
+
+    float value = .5 * (vmax + vmin);
+    DvzGuiControl* control =
+        _add_control(gui, DVZ_GUI_CONTROL_SLIDER_FLOAT, name, sizeof(float), &value);
+    control->u.sf.vmin = vmin;
+    control->u.sf.vmax = vmax;
+}
+
+
+
+void dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax)
+{
+    ASSERT(gui != NULL);
+    ASSERT(vmin < vmax);
+
+    int value = (vmax + vmin) / 2;
+    DvzGuiControl* control =
+        _add_control(gui, DVZ_GUI_CONTROL_SLIDER_INT, name, sizeof(int), &value);
+    control->u.si.vmin = vmin;
+    control->u.si.vmax = vmax;
 }
 
 

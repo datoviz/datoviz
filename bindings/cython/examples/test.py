@@ -31,9 +31,12 @@ visual.data('ms', ms)
 
 gui = c.gui("hello world")
 
-@gui.control("slider_float", "my slider")
+@gui.control("slider_float", "my float slider")
 def on_change(value):
-    # time.sleep(.5)
+    visual.data('ms', ms * value)
+
+@gui.control("slider_int", "my int slider", vmin=1, vmax=4)
+def on_change(value):
     visual.data('ms', ms * value)
 
 # We run the main event loop, which will display the canvas until Escape is # pressed or the

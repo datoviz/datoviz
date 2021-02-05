@@ -22,10 +22,6 @@ HEADER_FILES = (
     'mesh.h', 'controls.h', 'graphics.h', 'builtin_visuals.h', 'panel.h',
     'visuals.h', 'scene.h')
 STRUCTS = (
-    'DvzGui',
-    'DvzGuiControl',
-    'DvzGuiControlUnion',
-    'DvzGuiControlSliderFloat',
     'DvzEvent',
     'DvzEventUnion',
     'DvzFrameEvent',
@@ -175,7 +171,7 @@ def _parse_struct(text):
 def _gen_struct(structs):
     out = ''
     for name, (struct, l) in structs.items():
-        if name in STRUCTS:
+        if name in STRUCTS or name.startswith('DvzGui'):
             out += f'ctypedef {struct} {name}:\n'
             for const, dtype, identifier in l:
                 if dtype == 'bool':

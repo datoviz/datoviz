@@ -454,6 +454,7 @@ cdef extern from "<datoviz/datoviz.h>":
     ctypedef enum DvzGuiControlType:
         DVZ_GUI_CONTROL_NONE = 0
         DVZ_GUI_CONTROL_SLIDER_FLOAT = 1
+        DVZ_GUI_CONTROL_SLIDER_INT = 2
 
     # from file: graphics.h
 
@@ -944,8 +945,13 @@ cdef extern from "<datoviz/datoviz.h>":
         float vmin
         float vmax
 
+    ctypedef struct DvzGuiControlSliderInt:
+        int vmin
+        int vmax
+
     ctypedef union DvzGuiControlUnion:
         DvzGuiControlSliderFloat sf
+        DvzGuiControlSliderInt si
 
     ctypedef struct DvzGuiControl:
         DvzGui* gui
@@ -989,7 +995,8 @@ cdef extern from "<datoviz/datoviz.h>":
 
     # from file: controls.h
     DvzGui* dvz_gui(DvzCanvas* canvas, const char* title, int flags)
-    void dvz_gui_slider_float(DvzGui* gui, const char* name, double vmin, double vmax)
+    void dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax)
+    void dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax)
 
     # from file: mesh.h
     void dvz_mesh_normals(DvzMesh* mesh)
