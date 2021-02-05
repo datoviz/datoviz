@@ -39,9 +39,11 @@ void dvz_visual_destroy(DvzVisual* visual)
     ASSERT(visual != NULL);
 
     // Free the props.
-    DvzProp* prop = dvz_container_iter_init(&visual->props);
-    while (prop != NULL)
+    DvzProp* prop = NULL;
+    DvzContainerIterator iter = dvz_container_iterator(&visual->props);
+    while (iter.item != NULL)
     {
+        prop = iter.item;
         dvz_array_destroy(&prop->arr_orig);
         dvz_array_destroy(&prop->arr_trans);
         if (prop->default_value != NULL)
@@ -49,17 +51,19 @@ void dvz_visual_destroy(DvzVisual* visual)
             FREE(prop->default_value)
         }
         dvz_obj_destroyed(&prop->obj);
-        prop = dvz_container_iter(&visual->props);
+        dvz_container_iter(&iter);
     }
     dvz_container_destroy(&visual->props);
 
     // Free the data sources.
-    DvzSource* source = dvz_container_iter_init(&visual->sources);
-    while (source != NULL)
+    DvzSource* source = NULL;
+    iter = dvz_container_iterator(&visual->sources);
+    while (iter.item != NULL)
     {
+        source = iter.item;
         dvz_array_destroy(&source->arr);
         dvz_obj_destroyed(&source->obj);
-        source = dvz_container_iter(&visual->sources);
+        dvz_container_iter(&iter);
     }
     dvz_container_destroy(&visual->sources);
 
@@ -373,7 +377,7 @@ _assert_source_exists(DvzVisual* visual, DvzSourceType source_type, uint32_t sou
     // // Check if the requested source is not a shared source.
     // if (source == NULL)
     // {
-    //     DvzSource* src = dvz_container_iter_init(&visual->sources);
+    //     DvzSource* src = dvz_container_iterator(&visual->sources);
     //     while (src != NULL)
     //     {
     //         for (uint32_t j = 0; j < src->other_count; j++)
@@ -541,17 +545,19 @@ void dvz_visual_fill_end(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx)
 DvzSource* dvz_source_get(DvzVisual* visual, DvzSourceType source_type, uint32_t source_idx)
 {
     ASSERT(visual != NULL);
-    DvzSource* source = dvz_container_iter_init(&visual->sources);
+    DvzSource* source = NULL;
+    DvzContainerIterator iter = dvz_container_iterator(&visual->sources);
     DvzSource* out = NULL;
-    while (source != NULL)
+    while (iter.item != NULL)
     {
+        source = iter.item;
         if (source->source_type == source_type && source->source_idx == source_idx)
         {
             // Check there is only 1 source with a given type and idx.
             ASSERT(out == NULL);
             out = source;
         }
-        source = dvz_container_iter(&visual->sources);
+        dvz_container_iter(&iter);
     }
     return out;
 }
@@ -570,16 +576,18 @@ DvzArray* dvz_source_array(DvzVisual* visual, DvzSourceType source_type, uint32_
 DvzProp* dvz_prop_get(DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx)
 {
     ASSERT(visual != NULL);
-    DvzProp* prop = dvz_container_iter_init(&visual->props);
+    DvzProp* prop = NULL;
+    DvzContainerIterator iter = dvz_container_iterator(&visual->props);
     DvzProp* out = NULL;
-    while (prop != NULL)
+    while (iter.item != NULL)
     {
+        prop = iter.item;
         if (prop->prop_type == prop_type && prop->prop_idx == prop_idx)
         {
             ASSERT(out == NULL);
             out = prop;
         }
-        prop = dvz_container_iter(&visual->props);
+        dvz_container_iter(&iter);
     }
     if (out == NULL)
         log_trace("prop with type %d #%d not found", prop_type, prop_idx);
@@ -668,10 +676,12 @@ void dvz_visual_update(
     DvzTexture* texture = NULL;
     bool to_upload = false;
 
-    DvzSource* source = dvz_container_iter_init(&visual->sources);
+    DvzContainerIterator iter = dvz_container_iterator(&visual->sources);
+    DvzSource* source = NULL;
     DvzBindings* bindings = NULL;
-    while (source != NULL)
+    while (iter.item != NULL)
     {
+        source = iter.item;
         // No source set: using default source or skipping.
         if (source->origin == DVZ_SOURCE_ORIGIN_NONE)
         {
@@ -726,7 +736,7 @@ void dvz_visual_update(
                 // }
             }
 
-            source = dvz_container_iter(&visual->sources);
+            dvz_container_iter(&iter);
             continue;
         }
 
@@ -738,13 +748,13 @@ void dvz_visual_update(
             log_trace(
                 "skip data upload for source type %d #%d, origin %d, that is handled by user", //
                 source->source_type, source->source_idx, source->origin);
-            source = dvz_container_iter(&visual->sources);
+            dvz_container_iter(&iter);
             continue;
         }
         if (!_source_is_set(source))
         {
             log_error("data source %d #%d was never set", source->source_type, source->source_idx);
-            source = dvz_container_iter(&visual->sources);
+            dvz_container_iter(&iter);
             continue;
         }
         else if (!_source_has_changed(source))
@@ -752,7 +762,7 @@ void dvz_visual_update(
             log_trace(
                 "skip data upload for source %d that doesn't need to be updated",
                 source->source_type);
-            source = dvz_container_iter(&visual->sources);
+            dvz_container_iter(&iter);
             continue;
         }
 
@@ -764,7 +774,7 @@ void dvz_visual_update(
             if (arr->item_count == 0)
             {
                 log_debug("empty source %d", source->source_type);
-                source = dvz_container_iter(&visual->sources);
+                dvz_container_iter(&iter);
                 continue;
             }
 
@@ -823,7 +833,7 @@ void dvz_visual_update(
             _source_set(source);
         }
 
-        source = dvz_container_iter(&visual->sources);
+        dvz_container_iter(&iter);
     }
 
     // Update the bindings that need to be updated.

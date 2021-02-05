@@ -360,6 +360,7 @@ cdef _get_ev_args(cv.DvzEvent c_ev):
         if c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_SLIDER_FLOAT:
             fvalue = <float*>c_ev.u.g.control.value
             return (fvalue[0],)
+    return ()
 
 
 

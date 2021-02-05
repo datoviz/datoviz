@@ -1190,7 +1190,7 @@ int test_canvas_gui_1(TestContext* context)
     dvz_gui_slider_float(gui, "my slider 2", 10.0f, 20.0f);
     dvz_event_callback(canvas, DVZ_EVENT_GUI, 0, DVZ_EVENT_MODE_SYNC, _gui_callback, NULL);
 
-    dvz_app_run(app, 0);
+    dvz_app_run(app, N_FRAMES);
 
     TEST_END
 }

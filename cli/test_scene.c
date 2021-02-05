@@ -129,11 +129,13 @@ static void _panzoom(DvzCanvas* canvas, DvzEvent ev)
     // dvec2 pos_ur = {0};
 
 
-    DvzPanel* panel = dvz_container_iter_init(&grid->panels);
+    DvzContainerIterator iter = dvz_container_iterator(&grid->panels);
+    DvzPanel* panel = NULL;
     DvzPanel* other = NULL;
     uint32_t i = 0;
-    while (panel != NULL)
+    while (iter.item != NULL)
     {
+        panel = iter.item;
         controller = panel->controller;
         if (controller == NULL || controller->obj.status == DVZ_OBJECT_STATUS_NONE)
             break;
@@ -174,7 +176,7 @@ static void _panzoom(DvzCanvas* canvas, DvzEvent ev)
             }
         }
 
-        panel = dvz_container_iter(&grid->panels);
+        dvz_container_iter(&iter);
         i++;
     }
 }

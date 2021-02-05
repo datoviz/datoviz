@@ -94,9 +94,11 @@ static VkFormat _get_texture_format(DvzVisual* visual, DvzSource* source)
     ASSERT(_source_is_texture(source->source_kind));
     DvzDataType dtype = DVZ_DTYPE_NONE;
 
-    DvzProp* prop = dvz_container_iter_init(&visual->props);
-    while (prop != NULL)
+    DvzContainerIterator iter = dvz_container_iterator(&visual->props);
+    DvzProp* prop = NULL;
+    while (iter.item != NULL)
     {
+        prop = iter.item;
         if (prop->source == source)
         {
             // Check that there is only 1 prop associated to the texture source.
@@ -104,7 +106,7 @@ static VkFormat _get_texture_format(DvzVisual* visual, DvzSource* source)
                 log_error("multiple texture props not (yet) supported");
             dtype = prop->dtype;
         }
-        prop = dvz_container_iter(&visual->props);
+        dvz_container_iter(&iter);
     }
 
     ASSERT(dtype != DVZ_DTYPE_NONE);
@@ -197,16 +199,18 @@ static uint32_t _source_size(DvzVisual* visual, DvzSource* source)
     DvzArray* arr = NULL;
     uint32_t item_count = 0;
 
-    DvzProp* prop = dvz_container_iter_init(&visual->props);
-    while (prop != NULL)
+    DvzContainerIterator iter = dvz_container_iterator(&visual->props);
+    DvzProp* prop = NULL;
+    while (iter.item != NULL)
     {
+        prop = iter.item;
         if (prop->source == source)
         {
             arr = _prop_array(prop);
             ASSERT(arr != NULL);
             item_count = MAX(item_count, arr->item_count * MAX(1, prop->reps));
         }
-        prop = dvz_container_iter(&visual->props);
+        dvz_container_iter(&iter);
     }
     return item_count;
 }
@@ -409,12 +413,14 @@ static void _source_fill(DvzVisual* visual, DvzSource* source)
     ASSERT(source != NULL);
 
     // Copy all associated props to the source array.
-    DvzProp* prop = dvz_container_iter_init(&visual->props);
-    while (prop != NULL)
+    DvzProp* prop = NULL;
+    DvzContainerIterator iter = dvz_container_iterator(&visual->props);
+    while (iter.item != NULL)
     {
+        prop = iter.item;
         if (prop->source == source)
             _prop_copy(visual, prop);
-        prop = dvz_container_iter(&visual->props);
+        dvz_container_iter(&iter);
     }
 }
 
@@ -425,12 +431,14 @@ static DvzSource*
 _get_pipeline_source(DvzVisual* visual, DvzSourceType source_type, uint32_t pipeline_idx)
 {
     ASSERT(visual != NULL);
-    DvzSource* source = dvz_container_iter_init(&visual->sources);
-    while (source != NULL)
+    DvzSource* source = NULL;
+    DvzContainerIterator iter = dvz_container_iterator(&visual->sources);
+    while (iter.item != NULL)
     {
+        source = iter.item;
         if (source->source_type == source_type && source->pipeline_idx == pipeline_idx)
             return source;
-        source = dvz_container_iter(&visual->sources);
+        dvz_container_iter(&iter);
     }
     return NULL;
 }
@@ -474,15 +482,17 @@ static void _bake_source(DvzVisual* visual, DvzSource* source)
 
 static void _bake_uniforms(DvzVisual* visual)
 {
-    DvzSource* source = dvz_container_iter_init(&visual->sources);
+    DvzContainerIterator iter = dvz_container_iterator(&visual->sources);
+    DvzSource* source = NULL;
     // UNIFORM sources.
 
-    while (source != NULL)
+    while (iter.item != NULL)
     {
+        source = iter.item;
         if (source->obj.request != DVZ_VISUAL_REQUEST_UPLOAD)
         {
             log_trace("skip bake source for uniform source that doesn't need updating");
-            source = dvz_container_iter(&visual->sources);
+            dvz_container_iter(&iter);
             continue;
         }
 
@@ -496,7 +506,7 @@ static void _bake_uniforms(DvzVisual* visual)
             _source_alloc(visual, source, count);
             _source_fill(visual, source);
         }
-        source = dvz_container_iter(&visual->sources);
+        dvz_container_iter(&iter);
     }
 }
 

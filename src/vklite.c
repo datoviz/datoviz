@@ -210,11 +210,13 @@ void dvz_app_wait(DvzApp* app)
 {
     ASSERT(app != NULL);
     log_trace("wait for all GPUs to be idle");
-    DvzGpu* gpu = dvz_container_iter_init(&app->gpus);
-    while (gpu != NULL)
+    DvzGpu* gpu = NULL;
+    DvzContainerIterator iter = dvz_container_iterator(&app->gpus);
+    while (iter.item != NULL)
     {
+        gpu = iter.item;
         dvz_gpu_wait(gpu);
-        gpu = dvz_container_iter(&app->gpus);
+        dvz_container_iter(&iter);
     }
 }
 

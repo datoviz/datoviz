@@ -262,12 +262,14 @@ DvzBufferRegions dvz_ctx_buffers(
     ASSERT(buffer_type < DVZ_BUFFER_TYPE_COUNT);
 
     // Choose the first buffer with the requested type.
-    DvzBuffer* buffer = dvz_container_iter_init(&context->buffers);
-    while (buffer != NULL)
+    DvzContainerIterator iter = dvz_container_iterator(&context->buffers);
+    DvzBuffer* buffer = NULL;
+    while (iter.item != NULL)
     {
+        buffer = iter.item;
         if (dvz_obj_is_created(&buffer->obj) && buffer->type == buffer_type)
             break;
-        buffer = dvz_container_iter(&context->buffers);
+        dvz_container_iter(&iter);
     }
     if (buffer == NULL)
     {

@@ -348,12 +348,14 @@ void dvz_gui_callback(DvzCanvas* canvas, DvzEvent ev)
     ImGuiIO& io = ImGui::GetIO();
     canvas->captured = io.WantCaptureMouse || io.WantCaptureKeyboard;
 
-    DvzGui* gui = (DvzGui*)dvz_container_iter_init(&canvas->guis);
-    while (gui != NULL)
+    DvzGui* gui = NULL;
+    DvzContainerIterator iter = dvz_container_iterator(&canvas->guis);
+    while (iter.item != NULL)
     {
+        gui = (DvzGui*)iter.item;
         ASSERT(gui != NULL);
         ASSERT(gui->obj.type == DVZ_OBJECT_TYPE_GUI);
         _show_gui(gui);
-        gui = (DvzGui*)dvz_container_iter(&canvas->guis);
+        dvz_container_iter(&iter);
     }
 }

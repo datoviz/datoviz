@@ -100,11 +100,13 @@ static void _update_grid_panels(DvzGrid* grid, DvzGridAxis axis)
     }
 
     // Update the panel positions and sizes.
-    DvzPanel* panel = dvz_container_iter_init(&grid->panels);
-    while (panel != NULL)
+    DvzContainerIterator iter = dvz_container_iterator(&grid->panels);
+    DvzPanel* panel = NULL;
+    while (iter.item != NULL)
     {
+        panel = iter.item;
         dvz_panel_update(panel);
-        panel = dvz_container_iter(&grid->panels);
+        dvz_container_iter(&iter);
     }
     // NOTE: not sure if this is needed? Decommenting causes the command buffers to be recorded
     // twice.
@@ -144,12 +146,14 @@ static float _to_normalized_unit(DvzPanel* panel, DvzGridAxis axis, float size)
 static DvzPanel* _get_panel(DvzGrid* grid, uint32_t row, uint32_t col)
 {
     ASSERT(grid != NULL);
-    DvzPanel* panel = dvz_container_iter_init(&grid->panels);
-    while (panel != NULL)
+    DvzContainerIterator iter = dvz_container_iterator(&grid->panels);
+    DvzPanel* panel = NULL;
+    while (iter.item != NULL)
     {
+        panel = iter.item;
         if (panel->row == row && panel->col == col)
             return panel;
-        panel = dvz_container_iter(&grid->panels);
+        dvz_container_iter(&iter);
     }
     return NULL;
 }
@@ -411,17 +415,14 @@ bool dvz_panel_contains(DvzPanel* panel, vec2 screen_pos)
 DvzPanel* dvz_panel_at(DvzGrid* grid, vec2 screen_pos)
 {
     ASSERT(grid != NULL);
-
-    // HACK: ensure there is only 1  loop over the grid panels going on at the same time.
-    // Otherwise we'll have an infinite loop.
-    ASSERT(grid->panels._loop_idx == 0);
-
-    DvzPanel* panel = dvz_container_iter_init(&grid->panels);
-    while (panel != NULL)
+    DvzContainerIterator iter = dvz_container_iterator(&grid->panels);
+    DvzPanel* panel = NULL;
+    while (iter.item != NULL)
     {
+        panel = iter.item;
         if (dvz_panel_contains(panel, screen_pos))
             return panel;
-        panel = dvz_container_iter(&grid->panels);
+        dvz_container_iter(&iter);
     }
     return NULL;
 }
