@@ -22,7 +22,7 @@ panel = c.panel(controller='axes')
 # We create a new "marker" visual.
 visual = panel.visual('marker')
 
-# We set the visual data via "visual properties" (or props). Each visual # comes with a set of
+# We set the visual data via "visual properties" (or props). Each visual comes with a set of
 # predefined props. Here, we set the marker positions, colors (RGBA bytes), and size (in pixels)
 N = 100_000
 pos = nr.randn(N, 3)
@@ -33,16 +33,20 @@ visual.data('pos', pos)
 visual.data('color', color)
 visual.data('ms', ms)
 
+# We create a GUI dialog.
 gui = c.gui("hello world")
 
+# We add a control, a slider controlling a float between 0 and 1 (by default)
 @gui.control("slider_float", "my float slider")
 def on_change(value):
+    # Every time the slider value changes, we update the marker size
     visual.data('ms', ms * value)
 
+# We add another control, a slider controlling an int between 1 and 4
 @gui.control("slider_int", "my int slider", vmin=1, vmax=4)
 def on_change(value):
     visual.data('ms', ms * value)
 
-# We run the main event loop, which will display the canvas until Escape is # pressed or the
+# We run the main event loop, which will display the canvas until Escape is pressed or the
 # window is closed.
 run()

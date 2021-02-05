@@ -329,7 +329,7 @@ void dvz_visual_data_partial(
 
     if (source->source_kind == DVZ_SOURCE_KIND_UNIFORM && (first_item > 0 || item_count > 1))
     {
-        log_warn(
+        log_debug(
             "discarding uniform data after the first item (number of items was %d)", item_count);
         first_item = 0;
         item_count = 1;
