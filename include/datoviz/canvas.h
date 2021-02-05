@@ -848,7 +848,7 @@ DVZ_EXPORT uint8_t* dvz_screenshot(DvzCanvas* canvas, bool has_alpha);
 DVZ_EXPORT void dvz_screenshot_file(DvzCanvas* canvas, const char* png_path);
 
 /**
- * Make a screencast video.
+ * Record a live screencast video of the canvas.
  *
  * This function should be run *before* calling ` dvz_app_run()`.
  *
