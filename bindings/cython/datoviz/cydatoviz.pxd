@@ -995,8 +995,8 @@ cdef extern from "<datoviz/datoviz.h>":
 
     # from file: controls.h
     DvzGui* dvz_gui(DvzCanvas* canvas, const char* title, int flags)
-    void dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax)
-    void dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax)
+    void dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax, float value)
+    void dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax, int value)
 
     # from file: mesh.h
     void dvz_mesh_normals(DvzMesh* mesh)

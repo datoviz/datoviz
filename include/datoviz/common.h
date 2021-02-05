@@ -173,11 +173,11 @@ END_INCL_NO_WARN
 /*  Macros                                                                                       */
 /*************************************************************************************************/
 
-#define CLIP(x, a, b) fmax(fmin((x), (b)), (a))
 
-#define MIN(a, b) (((a) < (b)) ? (a) : (b))
-#define MAX(a, b) (((a) > (b)) ? (a) : (b))
-#define POS(a)    ((a) >= 0 ? (a) : 0)
+#define MIN(a, b)     (((a) < (b)) ? (a) : (b))
+#define MAX(a, b)     (((a) > (b)) ? (a) : (b))
+#define CLIP(x, a, b) MAX(MIN((x), (b)), (a))
+#define POS(a)        ((a) >= 0 ? (a) : 0)
 
 #define DBG(x)  printf("%d\n", (int)(x))
 #define DBGF(x) printf("%.8f\n", (double)(x))

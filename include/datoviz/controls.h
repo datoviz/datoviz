@@ -119,9 +119,10 @@ struct DvzGui
 
 DVZ_EXPORT DvzGui* dvz_gui(DvzCanvas* canvas, const char* title, int flags);
 
-DVZ_EXPORT void dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax);
+DVZ_EXPORT void
+dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax, float value);
 
-DVZ_EXPORT void dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax);
+DVZ_EXPORT void dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax, int value);
 
 DVZ_EXPORT void dvz_gui_destroy(DvzGui* gui);
 

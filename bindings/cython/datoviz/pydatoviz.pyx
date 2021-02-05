@@ -594,11 +594,13 @@ cdef class Gui:
         if (ctype == 'slider_float'):
             c_vmin = kwargs.get('vmin', 0)
             c_vmax = kwargs.get('vmax', 1)
-            cv.dvz_gui_slider_float(self._c_gui, c_name, c_vmin, c_vmax)
+            c_value = kwargs.get('value', .5)
+            cv.dvz_gui_slider_float(self._c_gui, c_name, c_vmin, c_vmax, c_value)
         elif (ctype == 'slider_int'):
             c_vmin = kwargs.get('vmin', 0)
             c_vmax = kwargs.get('vmax', 1)
-            cv.dvz_gui_slider_int(self._c_gui, c_name, c_vmin, c_vmax)
+            c_value = kwargs.get('value', c_vmin)
+            cv.dvz_gui_slider_int(self._c_gui, c_name, c_vmin, c_vmax, c_value)
 
         def wrap(f):
             cdef cv.DvzEventType evtype

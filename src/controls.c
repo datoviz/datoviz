@@ -40,12 +40,12 @@ static DvzGuiControl* _add_control(
 
 
 
-void dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax)
+void dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax, float value)
 {
     ASSERT(gui != NULL);
     ASSERT(vmin < vmax);
+    value = CLIP(value, vmin, vmax);
 
-    float value = .5 * (vmax + vmin);
     DvzGuiControl* control =
         _add_control(gui, DVZ_GUI_CONTROL_SLIDER_FLOAT, name, sizeof(float), &value);
     control->u.sf.vmin = vmin;
@@ -54,12 +54,12 @@ void dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax)
 
 
 
-void dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax)
+void dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax, int value)
 {
     ASSERT(gui != NULL);
     ASSERT(vmin < vmax);
+    value = CLIP(value, vmin, vmax);
 
-    int value = (vmax + vmin) / 2;
     DvzGuiControl* control =
         _add_control(gui, DVZ_GUI_CONTROL_SLIDER_INT, name, sizeof(int), &value);
     control->u.si.vmin = vmin;
