@@ -38,7 +38,7 @@ uv = np.c_[bg_data, np.ones(N) * cmap / 255.0 + .5 / 255]
 
 # Plot the data:
 
-c = canvas(show_fps=False, width=1600, height=1200)
+c = canvas(show_fps=False, width=1280, height=1024)
 panel = c.panel(controller='arcball')
 
 visual = panel.visual('mesh', transform='auto')
@@ -49,7 +49,7 @@ visual.data('index', faces.ravel())
 
 # Light parameters
 light_params = np.zeros((4, 4))  # up to 4 lights
-light_params[0, :] = (.4, .3, .3, 32)  # ambient, diffuse, specular, specular exponent
+light_params[0, :] = (.4, .4, .2, 64)  # ambient, diffuse, specular, specular exponent
 visual.data('light_params', light_params)
 
 run()

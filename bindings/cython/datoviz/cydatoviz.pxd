@@ -73,8 +73,13 @@ cdef extern from "<datoviz/datoviz.h>":
     ctypedef struct DvzGui:
         pass
 
+    ctypedef struct DvzArray:
+        void* data
+        uint32_t item_count
+
     ctypedef struct DvzMesh:
-        pass
+        DvzArray vertices
+        DvzArray indices
 
     ctypedef struct DvzSubmit:
         pass
@@ -966,6 +971,7 @@ cdef extern from "<datoviz/datoviz.h>":
 
     # from file: mesh.h
     void dvz_mesh_normals(DvzMesh* mesh)
+    DvzMesh dvz_mesh_obj(const char* file_path)
 
     # from file: panel.h
     void dvz_panel_transpose(DvzPanel* panel, DvzCDSTranspose transpose)
@@ -978,6 +984,7 @@ cdef extern from "<datoviz/datoviz.h>":
 
     # from file: visuals.h
     void dvz_visual_data(DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx, uint32_t count, const void* data)
+    void dvz_visual_data_source(DvzVisual* visual, DvzSourceType source_type, uint32_t source_idx, uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data)
     void dvz_visual_texture(DvzVisual* visual, DvzSourceType source_type, uint32_t source_idx, DvzTexture* texture)
 
     # from file: vklite.h

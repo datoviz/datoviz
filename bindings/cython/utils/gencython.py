@@ -19,7 +19,8 @@ EXTERNAL_HEADER_DIR = HEADER_DIR / '../../external'
 CYTHON_OUTPUT = (Path(__file__).parent / '../datoviz/cydatoviz.pxd').resolve()
 HEADER_FILES = (
     'app.h', 'vklite.h', 'context.h', 'canvas.h', 'keycode.h', 'transforms.h', 'colormaps.h',
-    'mesh.h', 'controls.h', 'graphics.h', 'builtin_visuals.h', 'panel.h', 'visuals.h', 'scene.h')
+    'mesh.h', 'controls.h', 'graphics.h', 'builtin_visuals.h', 'panel.h',
+    'visuals.h', 'scene.h')
 STRUCTS = (
     'DvzEvent',
     'DvzEventUnion',
