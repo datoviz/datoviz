@@ -16,6 +16,7 @@ extern "C" {
 #include "controls.h"
 #include "graphics.h"
 #include "interact.h"
+#include "mesh.h"
 #include "panel.h"
 #include "scene.h"
 #include "visuals.h"

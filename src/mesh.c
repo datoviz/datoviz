@@ -148,6 +148,8 @@ void dvz_mesh_normalize(DvzMesh* mesh)
 void dvz_mesh_normals(DvzMesh* mesh)
 {
     ASSERT(mesh != NULL);
+    log_debug("recompute mesh normals");
+
     DvzIndex i0, i1, i2;
     DvzGraphicsMeshVertex *v0, *v1, *v2;
     vec3 u, v, n;

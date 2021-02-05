@@ -216,6 +216,7 @@ DVZ_EXPORT void dvz_mesh_normalize(DvzMesh* mesh);
  */
 DVZ_EXPORT void dvz_mesh_destroy(DvzMesh* mesh);
 
+DVZ_EXPORT DvzMesh dvz_mesh_obj(const char* file_path);
 
 
 #ifdef __cplusplus
