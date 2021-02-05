@@ -166,7 +166,7 @@ static int _fixed_style(int corner)
 static int _gui_style(int flags)
 {
     bool fixed = ((flags >> 0) & DVZ_GUI_FLAGS_FIXED) != 0;
-    int corner = ((flags >> 1) & 7) - 1;
+    int corner = ((flags >> 4) & 7) - 1;
 
     if (fixed)
     {
