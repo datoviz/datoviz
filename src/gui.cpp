@@ -1,6 +1,7 @@
 #include <inttypes.h>
 
 #include "../include/datoviz/canvas.h"
+#include "../include/datoviz/controls.h"
 #include "../include/datoviz/gui.h"
 
 BEGIN_INCL_NO_WARN
@@ -123,6 +124,62 @@ static void _presend(DvzCanvas* canvas, DvzEvent ev)
 
 
 /*************************************************************************************************/
+/*  Gui creation                                                                                 */
+/*************************************************************************************************/
+
+/*
+prompt style:
+flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar |
+                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNav
+| ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNavInputs | ImGuiWindowFlags_NoDecoration |
+ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
+ImGuiWindowFlags_NoFocusOnAppearing; ImGui::SetNextWindowBgAlpha(0.25f);
+
+        ImVec2 window_pos = ImVec2(0, io.DisplaySize.y);
+        ImVec2 window_pos_pivot = ImVec2(0, 1);
+        ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+*/
+
+// 0 = TL, 1 = TR, 2 = LL, 3 = LR
+static int _fixed_style(int corner)
+{
+    ImGuiIO& io = ImGui::GetIO();
+
+    int flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar |
+                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNav |
+                ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNavInputs |
+                ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
+                ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing;
+    ImGui::SetNextWindowBgAlpha(0.5f);
+
+    float distance = 0;
+    ASSERT(corner >= 0);
+    ImVec2 window_pos = ImVec2(
+        (corner & 1) ? io.DisplaySize.x - distance : distance,
+        (corner & 2) ? io.DisplaySize.y - distance : distance);
+    ImVec2 window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
+    ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+
+    return flags;
+}
+
+static int _gui_style(int flags)
+{
+    bool fixed = ((flags >> 0) & DVZ_GUI_FLAGS_FIXED) != 0;
+    int corner = ((flags >> 1) & 7) - 1;
+
+    if (fixed)
+    {
+        ASSERT(corner >= 0);
+        return _fixed_style(corner);
+    }
+    else
+        return 0;
+}
+
+
+
+/*************************************************************************************************/
 /*  Dear ImGui functions                                                                         */
 /*************************************************************************************************/
 
@@ -162,68 +219,13 @@ void dvz_imgui_init(DvzCanvas* canvas)
 
 
 
-void dvz_gui_begin(const char* title, DvzGuiStyle style)
+void dvz_gui_begin(const char* title, int flags)
 {
     ASSERT(title != NULL);
     ASSERT(strlen(title) > 0);
 
-    ImGuiIO& io = ImGui::GetIO();
-    int flags = 0;
-
-    switch (style)
-    {
-
-    case DVZ_GUI_STANDARD:
-        // flags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
-        break;
-
-    case DVZ_GUI_PROMPT:
-    {
-        flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar |
-                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNav |
-                ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNavInputs |
-                ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
-                ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing;
-        ImGui::SetNextWindowBgAlpha(0.25f);
-
-        ImVec2 window_pos = ImVec2(0, io.DisplaySize.y);
-        ImVec2 window_pos_pivot = ImVec2(0, 1);
-        ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-
-        // ImVec2 size = ImVec2(io.DisplaySize.x, 30);
-        // ImGui::SetNextWindowSize(size);
-
-        break;
-    }
-
-    case DVZ_GUI_FIXED_TL:
-    case DVZ_GUI_FIXED_TR:
-    case DVZ_GUI_FIXED_LL:
-    case DVZ_GUI_FIXED_LR:
-    {
-        flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar |
-                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNav |
-                ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNavInputs |
-                ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
-                ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing;
-        ImGui::SetNextWindowBgAlpha(0.5f);
-
-        float distance = 0;
-        int corner = (int32_t)style - 10; // 0 = TL, 1 = TR, 2 = LL, 3 = LR
-        ASSERT(corner >= 0);
-        ImVec2 window_pos = ImVec2(
-            (corner & 1) ? io.DisplaySize.x - distance : distance,
-            (corner & 2) ? io.DisplaySize.y - distance : distance);
-        ImVec2 window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
-        ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-        break;
-    }
-    default:
-        log_error("unknown GUI style");
-        break;
-    }
-
-    ImGui::Begin(title, NULL, flags);
+    int imgui_flags = _gui_style(flags);
+    ImGui::Begin(title, NULL, imgui_flags);
 }
 
 
@@ -235,7 +237,7 @@ void dvz_gui_end() { ImGui::End(); }
 void dvz_gui_callback_fps(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
-    dvz_gui_begin("FPS", DVZ_GUI_FIXED_TR);
+    dvz_gui_begin("FPS", DVZ_GUI_FLAGS_FIXED | DVZ_GUI_FLAGS_CORNER_UR);
     ImGui::Text("FPS: %.1f", canvas->fps);
     dvz_gui_end();
 }
@@ -247,41 +249,6 @@ void dvz_imgui_destroy()
     if (ImGui::GetCurrentContext() == NULL)
         return;
     _imgui_destroy();
-}
-
-
-
-/*************************************************************************************************/
-/*  Gui controls API                                                                             */
-/*************************************************************************************************/
-
-DvzGui* dvz_gui(DvzCanvas* canvas, const char* title, int flags)
-{
-    ASSERT(canvas != NULL);
-    DvzGui* gui = (DvzGui*)dvz_container_alloc(&canvas->guis);
-    gui->canvas = canvas;
-    gui->title = title;
-    gui->flags = flags;
-    dvz_obj_init(&gui->obj);
-    return gui;
-}
-
-
-
-void dvz_gui_float_slider(DvzGui* gui, const char* name, double vmin, double vmax)
-{
-    ASSERT(gui != NULL);
-    ASSERT(vmin < vmax);
-
-    DvzGuiControl* control = &gui->controls[gui->control_count++];
-    control->gui = gui;
-    control->name = name;
-    control->type = DVZ_GUI_CONTROL_FLOAT_SLIDER;
-    control->value = (float*)calloc(1, sizeof(float));
-    control->u.fs.vmin = (float)vmin;
-    control->u.fs.vmax = (float)vmax;
-    ASSERT(control->u.fs.vmin < control->u.fs.vmax);
-    *((float*)control->value) = .5 * (vmax + vmin);
 }
 
 
@@ -307,13 +274,13 @@ static void _emit_gui_event(DvzGui* gui, DvzGuiControl* control)
 
 
 
-static bool _show_float_slider(DvzGuiControl* control)
+static bool _show_slider_float(DvzGuiControl* control)
 {
     ASSERT(control != NULL);
-    ASSERT(control->type == DVZ_GUI_CONTROL_FLOAT_SLIDER);
+    ASSERT(control->type == DVZ_GUI_CONTROL_SLIDER_FLOAT);
 
-    float vmin = control->u.fs.vmin;
-    float vmax = control->u.fs.vmax;
+    float vmin = control->u.sf.vmin;
+    float vmax = control->u.sf.vmax;
     ASSERT(vmin < vmax);
     return ImGui::SliderFloat(
         control->name, (float*)control->value, vmin, vmax, "%.3f", control->flags);
@@ -334,8 +301,8 @@ static void _show_control(DvzGuiControl* control)
     switch (control->type)
     {
 
-    case DVZ_GUI_CONTROL_FLOAT_SLIDER:
-        changed = _show_float_slider(control);
+    case DVZ_GUI_CONTROL_SLIDER_FLOAT:
+        changed = _show_slider_float(control);
         break;
 
     default:
@@ -358,7 +325,7 @@ static void _show_gui(DvzGui* gui)
     ASSERT(strlen(gui->title) > 0);
 
     // Start the GUI window.
-    dvz_gui_begin(gui->title, (DvzGuiStyle)gui->flags);
+    dvz_gui_begin(gui->title, gui->flags);
 
     for (uint32_t i = 0; i < gui->control_count; i++)
     {
@@ -388,16 +355,5 @@ void dvz_gui_callback(DvzCanvas* canvas, DvzEvent ev)
         ASSERT(gui->obj.type == DVZ_OBJECT_TYPE_GUI);
         _show_gui(gui);
         gui = (DvzGui*)dvz_container_iter(&canvas->guis);
-    }
-}
-
-
-
-void dvz_gui_destroy(DvzGui* gui)
-{
-    ASSERT(gui != NULL);
-    for (uint32_t i = 0; i < gui->control_count; i++)
-    {
-        FREE(gui->controls[i].value);
     }
 }

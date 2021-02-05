@@ -1,12 +1,13 @@
 #include "test_canvas.h"
 #include "../include/datoviz/canvas.h"
 #include "../include/datoviz/context.h"
-#include "../include/datoviz/gui.h"
+#include "../include/datoviz/controls.h"
 #include "../src/vklite_utils.h"
 #include "utils.h"
 
 
 typedef struct TestParticle TestParticle;
+
 
 
 struct TestParticle
@@ -1184,9 +1185,9 @@ int test_canvas_gui_1(TestContext* context)
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, DVZ_CANVAS_FLAGS_IMGUI);
     AT(canvas != NULL);
 
-    DvzGui* gui = dvz_gui(canvas, "Hello world", DVZ_GUI_STANDARD);
-    dvz_gui_float_slider(gui, "my slider 1", 0.0f, 1.0f);
-    dvz_gui_float_slider(gui, "my slider 2", 10.0f, 20.0f);
+    DvzGui* gui = dvz_gui(canvas, "Hello world", 0);
+    dvz_gui_slider_float(gui, "my slider 1", 0.0f, 1.0f);
+    dvz_gui_slider_float(gui, "my slider 2", 10.0f, 20.0f);
     dvz_event_callback(canvas, DVZ_EVENT_GUI, 0, DVZ_EVENT_MODE_SYNC, _gui_callback, NULL);
 
     dvz_app_run(app, 0);

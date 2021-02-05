@@ -13,6 +13,7 @@ extern "C" {
 #include "colormaps.h"
 #include "common.h"
 #include "context.h"
+#include "controls.h"
 #include "graphics.h"
 #include "interact.h"
 #include "panel.h"

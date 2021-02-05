@@ -1,10 +1,13 @@
 #include "../include/datoviz/canvas.h"
 #include "../external/video.h"
 #include "../include/datoviz/context.h"
+#include "../include/datoviz/controls.h"
 #include "../include/datoviz/gui.h"
 #include "../include/datoviz/vklite.h"
 #include "../src/vklite_utils.h"
+
 #include <stdlib.h>
+
 
 
 /*************************************************************************************************/
