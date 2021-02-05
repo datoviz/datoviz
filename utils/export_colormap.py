@@ -192,8 +192,8 @@ def img2b64(x):
     return base64.b64encode(rawBytes.read()).decode('ascii')
 
 
-def img2md(name, arr):
-    return f"| `{name.lower()}` | ![{name}](data:image/png;base64,{img2b64(arr)}) |"
+def img2md(row, col, name, arr):
+    return f"| `{name.lower()}` | {row}, {col} | ![{name}](data:image/png;base64,{img2b64(arr)}) |"
 
 
 def load_colormap_texture():
@@ -203,7 +203,7 @@ def load_colormap_texture():
 
 def generate_colormaps_doc():
     arr = load_colormap_texture()
-    out = "| Name | Colormap |\n| ---- | ---- |\n"
+    out = "| Name | Row, Col | Colormap |\n| ---- | ---- | ---- |\n"
     with open(ROOT_DIR / "data/textures/color_texture.csv", 'r') as f:
         r = csv.reader(f, delimiter=',')
         next(r)
@@ -216,7 +216,7 @@ def generate_colormaps_doc():
             cmap = np.repeat(cmap, 24, axis=0)
             cmap = np.repeat(cmap, 512 // cmap.shape[1], axis=1)
             # print(cmap.shape)
-            out += img2md(name, cmap) + '\n'
+            out += img2md(row, col, name, cmap) + '\n'
     return out
 
 
