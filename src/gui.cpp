@@ -25,12 +25,6 @@ static void _imgui_check_vk_result(VkResult err)
         abort();
 }
 
-static void _imgui_dpi(float dpi_factor)
-{
-    ImGuiStyle style = ImGui::GetStyle();
-    style.ScaleAllSizes(dpi_factor);
-}
-
 static void _imgui_init_context()
 {
     log_debug("initializing Dear ImGui");
@@ -192,8 +186,11 @@ void dvz_imgui_init(DvzCanvas* canvas)
     _imgui_enable(canvas);
     ImGuiIO& io = ImGui::GetIO();
 
+    // DPI scaling.
+    dvz_imgui_dpi_scaling(canvas, canvas->dpi_scaling);
+
     // Load Fonts
-    float font_size = 16;
+    float font_size = 16 * canvas->dpi_scaling;
     char path[1024];
     snprintf(path, sizeof(path), "%s/fonts/Roboto-Medium.ttf", DATA_DIR);
     io.Fonts->AddFontFromFileTTF(path, font_size);
@@ -241,6 +238,17 @@ void dvz_gui_callback_fps(DvzCanvas* canvas, DvzEvent ev)
 
 
 
+void dvz_imgui_dpi_scaling(DvzCanvas* canvas, float scaling)
+{
+    if (ImGui::GetCurrentContext() != NULL)
+    {
+        ImGuiStyle style = ImGui::GetStyle();
+        style.ScaleAllSizes(scaling);
+    }
+}
+
+
+
 void dvz_imgui_destroy()
 {
     if (ImGui::GetCurrentContext() == NULL)
@@ -251,7 +259,7 @@ void dvz_imgui_destroy()
 
 
 /*************************************************************************************************/
-/*  Gui controls implementation                                                                  */
+/*  Gui controls implementation                10 */
 /*************************************************************************************************/
 
 static void _emit_gui_event(DvzGui* gui, DvzGuiControl* control)
@@ -393,9 +401,6 @@ void dvz_gui_callback(DvzCanvas* canvas, DvzEvent ev)
     // When Dear ImGUI captures the mouse and keyboard, Datoviz should not process user events.
     ImGuiIO& io = ImGui::GetIO();
     canvas->captured = io.WantCaptureMouse || io.WantCaptureKeyboard;
-
-    // DPI scaling factor
-    _imgui_dpi(canvas->viewport.dpi_scaling);
 
     DvzGui* gui = NULL;
     DvzContainerIterator iter = dvz_container_iterator(&canvas->guis);

@@ -16,6 +16,8 @@ extern "C" {
 
 DVZ_EXPORT void dvz_imgui_init(DvzCanvas* canvas);
 
+DVZ_EXPORT void dvz_imgui_dpi_scaling(DvzCanvas* canvas, float scaling);
+
 DVZ_EXPORT void dvz_imgui_destroy();
 
 DVZ_EXPORT void dvz_gui_begin(const char* title, int flags);

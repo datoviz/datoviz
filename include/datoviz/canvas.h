@@ -54,6 +54,11 @@ typedef enum
     DVZ_CANVAS_FLAGS_NONE = 0x0000,
     DVZ_CANVAS_FLAGS_IMGUI = 0x0001,
     DVZ_CANVAS_FLAGS_FPS = 0x0003, // NOTE: 1 bit for ImGUI, 1 bit for FPS
+
+    DVZ_CANVAS_FLAGS_DPI_SCALE_050 = 0x1000,
+    DVZ_CANVAS_FLAGS_DPI_SCALE_100 = 0x2000,
+    DVZ_CANVAS_FLAGS_DPI_SCALE_150 = 0x3000,
+    DVZ_CANVAS_FLAGS_DPI_SCALE_200 = 0x4000,
 } DvzCanvasFlags;
 
 
@@ -350,8 +355,6 @@ struct DvzViewport
     // Used to discard transform on one axis
     int32_t interact_axis;
 
-    float dpi_scaling;
-
     // TODO: aspect ratio
 };
 
@@ -557,6 +560,7 @@ struct DvzCanvas
     bool offscreen;
     bool overlay;
     bool resized;
+    float dpi_scaling;
     int flags;
     void* user_data;
 
@@ -737,6 +741,14 @@ DVZ_EXPORT DvzViewport dvz_viewport_default(uint32_t width, uint32_t height);
  * @returns the viewport
  */
 DVZ_EXPORT DvzViewport dvz_viewport_full(DvzCanvas* canvas);
+
+/**
+ * Set the DPI scaling factor of a canvas.
+ *
+ * @param canvas the canvas
+ * @param scaling the scaling factor
+ */
+DVZ_EXPORT void dvz_canvas_dpi_scaling(DvzCanvas* canvas, float scaling);
 
 
 

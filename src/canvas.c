@@ -533,6 +533,12 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
     canvas->app = app;
     canvas->gpu = gpu;
     canvas->offscreen = offscreen;
+
+    canvas->dpi_scaling = DVZ_DEFAULT_DPI_SCALING;
+    int flag_dpi = flags >> 12;
+    if (flag_dpi > 0)
+        canvas->dpi_scaling *= (.5 * flag_dpi);
+
     canvas->overlay = overlay;
     canvas->flags = flags;
     bool show_fps = ((canvas->flags >> 1) & DVZ_CANVAS_FLAGS_FPS) != 0;
@@ -865,6 +871,16 @@ void dvz_canvas_close_on_esc(DvzCanvas* canvas, bool value)
 
 
 
+void dvz_canvas_dpi_scaling(DvzCanvas* canvas, float scaling)
+{
+    ASSERT(canvas != NULL);
+    scaling = CLIP(scaling, .01, 100);
+    ASSERT(scaling > 0);
+    canvas->dpi_scaling = scaling;
+}
+
+
+
 DvzViewport dvz_viewport_default(uint32_t width, uint32_t height)
 {
     DvzViewport viewport = {0};
@@ -878,8 +894,6 @@ DvzViewport dvz_viewport_default(uint32_t width, uint32_t height)
     viewport.size_framebuffer[1] = viewport.viewport.height = (float)height;
     viewport.size_screen[0] = viewport.size_framebuffer[0];
     viewport.size_screen[1] = viewport.size_framebuffer[1];
-
-    viewport.dpi_scaling = DVZ_DEFAULT_DPI_SCALING;
 
     return viewport;
 }
@@ -915,7 +929,6 @@ DvzViewport dvz_viewport_full(DvzCanvas* canvas)
         viewport.size_screen[1] = viewport.size_framebuffer[1];
     }
 
-    viewport.dpi_scaling = DVZ_DEFAULT_DPI_SCALING;
     viewport.clip = DVZ_VIEWPORT_FULL;
 
     return viewport;

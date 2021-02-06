@@ -20,11 +20,11 @@
 static void _viewport_print(DvzViewport v)
 {
     log_info(
-        "viewport clip %d, dpi %.2f, interact axis %d, margin top %.2f, wf %d, ws %d, viewport "
+        "viewport clip %d, interact axis %d, margin top %.2f, wf %d, ws %d, viewport "
         "%.2f %.2f %.2f %.2f %.2f %.2f",
-        v.clip, v.dpi_scaling, v.interact_axis, v.margins[0], v.size_framebuffer[0],
-        v.size_screen[0], v.viewport.width, v.viewport.height, v.viewport.x, v.viewport.y,
-        v.viewport.minDepth, v.viewport.maxDepth);
+        v.clip, v.interact_axis, v.margins[0], v.size_framebuffer[0], v.size_screen[0],
+        v.viewport.width, v.viewport.height, v.viewport.x, v.viewport.y, v.viewport.minDepth,
+        v.viewport.maxDepth);
 }
 
 

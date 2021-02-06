@@ -24,7 +24,6 @@ static void _check_viewport(DvzViewport* viewport)
     ASSERT(viewport->viewport.width > 0);
     ASSERT(viewport->viewport.height > 0);
     ASSERT(viewport->viewport.minDepth < viewport->viewport.maxDepth);
-    ASSERT(viewport->dpi_scaling > 0);
 }
 
 
@@ -222,9 +221,6 @@ DvzPanel* dvz_panel(DvzGrid* grid, uint32_t row, uint32_t col)
     panel->data_coords.transform = DVZ_TRANSFORM_CARTESIAN;
     panel->data_coords.transpose = DVZ_CDS_TRANSPOSE_NONE;
 
-    // Default DPI scaling.
-    panel->viewport.dpi_scaling = DVZ_DEFAULT_DPI_SCALING;
-
     // NOTE: for now just use a single command buffer, as using multiple command buffers
     // is complicated since we need to use multiple render passes and framebuffers.
     panel->cmds = &grid->canvas->cmds_render;
@@ -267,17 +263,6 @@ void dvz_panel_update(DvzPanel* panel)
     _update_viewport(panel);
 
     // NOTE: it is up to the scene to update the DvzViewport struct on the GPU, for each visual
-}
-
-
-
-void dvz_panel_dpi_scaling(DvzPanel* panel, float scaling)
-{
-    ASSERT(panel != NULL);
-    scaling = CLIP(scaling, .1, 100);
-    ASSERT(scaling > 0);
-    panel->viewport.dpi_scaling = scaling;
-    dvz_panel_update(panel);
 }
 
 

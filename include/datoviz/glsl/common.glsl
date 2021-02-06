@@ -78,7 +78,6 @@ layout (std140, binding = 1) uniform Viewport {
     // Options
     int clip;               // viewport clipping
     int interact_axis;
-    float dpi_scaling;      // DPI scaling
 } viewport;
 
 

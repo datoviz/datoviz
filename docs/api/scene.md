@@ -6,6 +6,8 @@
 
 ### `dvz_canvas()`
 ### `dvz_canvas_offscreen()`
+### `dvz_canvas_dpi_scaling()`
+
 
 ### `dvz_scene()`
 
@@ -42,7 +44,6 @@
 ### `dvz_panel()`
 ### `dvz_panel_update()`
 ### `dvz_panel_margins()`
-### `dvz_panel_dpi_scaling()`
 ### `dvz_panel_unit()`
 ### `dvz_panel_mode()`
 ### `dvz_panel_visual()`

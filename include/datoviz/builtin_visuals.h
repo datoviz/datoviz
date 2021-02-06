@@ -22,8 +22,8 @@
     }
 
 #define DPI_SCALE(x)                                                                              \
-    ASSERT(ev.viewport.dpi_scaling > 0);                                                          \
-    x *= ev.viewport.dpi_scaling;
+    ASSERT(canvas->dpi_scaling > 0);                                                              \
+    x *= canvas->dpi_scaling;
 
 
 

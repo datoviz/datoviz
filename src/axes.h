@@ -31,7 +31,7 @@ static DvzAxesContext _axes_context(DvzController* controller, DvzAxisCoord coor
     // Canvas size, used in tick computation.
     DvzCanvas* canvas = controller->panel->grid->canvas;
     ASSERT(canvas != NULL);
-    float dpi_scaling = controller->panel->viewport.dpi_scaling;
+    float dpi_scaling = canvas->dpi_scaling;
     uvec2 size = {0};
     dvz_canvas_size(canvas, DVZ_CANVAS_SIZE_FRAMEBUFFER, size);
     DvzViewport* viewport = &controller->panel->viewport;

@@ -510,6 +510,7 @@ static void _add_ticks(
 static void _visual_axes_2D_bake(DvzVisual* visual, DvzVisualDataEvent ev)
 {
     ASSERT(visual != NULL);
+    DvzCanvas* canvas = visual->canvas;
 
     // Data sources.
     DvzSource* seg_vert_src = dvz_source_get(visual, DVZ_SOURCE_TYPE_VERTEX, 0);

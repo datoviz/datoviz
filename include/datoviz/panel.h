@@ -172,14 +172,6 @@ DVZ_EXPORT void dvz_panel_update(DvzPanel* panel);
 DVZ_EXPORT void dvz_panel_margins(DvzPanel* panel, vec4 margins);
 
 /**
- * Set the DPI scaling factor for a panel.
- *
- * @param panel the panel
- * @param scaling the scaling factor (1 by default)
- */
-DVZ_EXPORT void dvz_panel_dpi_scaling(DvzPanel* panel, float scaling);
-
-/**
  * Set the unit in which the panel size is specified.
  *
  * @param panel the panel
