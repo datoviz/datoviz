@@ -1189,6 +1189,10 @@ static void _gui_callback(DvzCanvas* canvas, DvzEvent ev)
         bool* value = ev.u.g.control->value;
         log_info("value is %s", (*value) ? "checked" : "unchecked");
     }
+    if (ev.u.g.control->type == DVZ_GUI_CONTROL_BUTTON)
+    {
+        log_info("button pressed");
+    }
 }
 
 int test_canvas_gui_1(TestContext* context)
@@ -1206,6 +1210,7 @@ int test_canvas_gui_1(TestContext* context)
     dvz_gui_slider_float(gui, "my slider 1", 0.0f, 1.0f, .5);
     dvz_gui_slider_int(gui, "my slider 2", 10, 20, 10);
     dvz_gui_textbox(gui, "textbox", "some text");
+    dvz_gui_button(gui, "my button", 0);
     dvz_gui_colormap(gui, DVZ_CMAP_VIRIDIS);
 
     // dvz_gui_demo(gui);

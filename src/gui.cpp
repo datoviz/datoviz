@@ -327,11 +327,18 @@ static void _show_label(DvzGuiControl* control)
     ImGui::LabelText(control->name, (const char*)control->value);
 }
 
-static void _show_textbox(DvzGuiControl* control)
+static bool _show_textbox(DvzGuiControl* control)
 {
     ASSERT(control != NULL);
     ASSERT(control->type == DVZ_GUI_CONTROL_TEXTBOX);
-    ImGui::InputText(control->name, (char*)control->value, MAX_TEXT_LENGTH);
+    return ImGui::InputText(control->name, (char*)control->value, MAX_TEXT_LENGTH);
+}
+
+static bool _show_button(DvzGuiControl* control)
+{
+    ASSERT(control != NULL);
+    ASSERT(control->type == DVZ_GUI_CONTROL_BUTTON);
+    return ImGui::Button(control->name);
 }
 
 static void _show_colormap(DvzGuiControl* control)
@@ -387,12 +394,16 @@ static void _show_control(DvzGuiControl* control)
         changed = _show_slider_int(control);
         break;
 
-    case DVZ_GUI_CONTROL_LABEL:
-        _show_label(control);
+    case DVZ_GUI_CONTROL_TEXTBOX:
+        changed = _show_textbox(control);
         break;
 
-    case DVZ_GUI_CONTROL_TEXTBOX:
-        _show_textbox(control);
+    case DVZ_GUI_CONTROL_BUTTON:
+        changed = _show_button(control);
+        break;
+
+    case DVZ_GUI_CONTROL_LABEL:
+        _show_label(control);
         break;
 
     case DVZ_GUI_CONTROL_COLORMAP:

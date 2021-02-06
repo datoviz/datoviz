@@ -34,7 +34,8 @@ static DvzGuiControl* _add_control(
     control->name = name;
     control->type = type;
     control->value = calloc(1, item_size);
-    memcpy(control->value, value, item_size);
+    if (value != NULL)
+        memcpy(control->value, value, item_size);
     return control;
 }
 
@@ -98,6 +99,17 @@ void dvz_gui_textbox(DvzGui* gui, const char* name, char* text)
     ASSERT(text != NULL);
     DvzGuiControl* control =
         _add_control(gui, DVZ_GUI_CONTROL_TEXTBOX, name, MAX_TEXT_LENGTH * sizeof(char), text);
+    ASSERT(control != NULL);
+}
+
+
+
+void dvz_gui_button(DvzGui* gui, const char* name, int flags)
+{
+    ASSERT(gui != NULL);
+    ASSERT(name != NULL);
+    // TODO: flags
+    DvzGuiControl* control = _add_control(gui, DVZ_GUI_CONTROL_BUTTON, name, sizeof(int), NULL);
     ASSERT(control != NULL);
 }
 
