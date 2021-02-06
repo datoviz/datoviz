@@ -25,6 +25,7 @@ extern "C" {
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
+// GUI creation flags
 typedef enum
 {
     DVZ_GUI_FLAGS_NONE = 0x0000,
@@ -37,11 +38,13 @@ typedef enum
 
 
 
+// GUI control type
 typedef enum
 {
     DVZ_GUI_CONTROL_NONE,
     DVZ_GUI_CONTROL_SLIDER_FLOAT,
     DVZ_GUI_CONTROL_SLIDER_INT,
+    DVZ_GUI_CONTROL_LABEL,
 } DvzGuiControlType;
 
 
@@ -55,6 +58,7 @@ typedef struct DvzGuiControl DvzGuiControl;
 
 typedef struct DvzGuiControlSliderFloat DvzGuiControlSliderFloat;
 typedef struct DvzGuiControlSliderInt DvzGuiControlSliderInt;
+// typedef struct DvzGuiControlLabel DvzGuiControlLabel;
 typedef union DvzGuiControlUnion DvzGuiControlUnion;
 
 
@@ -79,10 +83,17 @@ struct DvzGuiControlSliderInt
 
 
 
+// struct DvzGuiControlLabel
+// {
+// };
+
+
+
 union DvzGuiControlUnion
 {
     DvzGuiControlSliderFloat sf;
     DvzGuiControlSliderInt si;
+    // DvzGuiControlLabel l;
 };
 
 
@@ -123,6 +134,8 @@ DVZ_EXPORT void
 dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax, float value);
 
 DVZ_EXPORT void dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax, int value);
+
+DVZ_EXPORT void dvz_gui_label(DvzGui* gui, const char* name, char* text);
 
 DVZ_EXPORT void dvz_gui_destroy(DvzGui* gui);
 

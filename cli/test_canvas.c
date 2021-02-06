@@ -1198,6 +1198,7 @@ int test_canvas_gui_1(TestContext* context)
 
     dvz_gui_slider_float(gui, "my slider 1", 0.0f, 1.0f, .5);
     dvz_gui_slider_int(gui, "my slider 2", 10, 20, 10);
+    dvz_gui_label(gui, "label", "hello world!");
 
     dvz_event_callback(canvas, DVZ_EVENT_GUI, 0, DVZ_EVENT_MODE_SYNC, _gui_callback, NULL);
 

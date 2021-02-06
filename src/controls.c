@@ -67,6 +67,16 @@ void dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax, int v
 }
 
 
+void dvz_gui_label(DvzGui* gui, const char* name, char* text)
+{
+    ASSERT(gui != NULL);
+    ASSERT(name != NULL);
+    ASSERT(text != NULL);
+    DvzGuiControl* control =
+        _add_control(gui, DVZ_GUI_CONTROL_LABEL, name, strlen(text) * sizeof(char), text);
+    ASSERT(control != NULL);
+}
+
 
 void dvz_gui_destroy(DvzGui* gui)
 {

@@ -297,6 +297,13 @@ static bool _show_slider_int(DvzGuiControl* control)
     return ImGui::SliderInt(control->name, (int*)control->value, vmin, vmax, "%d", control->flags);
 }
 
+static void _show_label(DvzGuiControl* control)
+{
+    ASSERT(control != NULL);
+    ASSERT(control->type == DVZ_GUI_CONTROL_LABEL);
+    ImGui::LabelText(control->name, (const char*)control->value);
+}
+
 
 
 static void _show_control(DvzGuiControl* control)
@@ -318,6 +325,10 @@ static void _show_control(DvzGuiControl* control)
 
     case DVZ_GUI_CONTROL_SLIDER_INT:
         changed = _show_slider_int(control);
+        break;
+
+    case DVZ_GUI_CONTROL_LABEL:
+        _show_label(control);
         break;
 
     default:
