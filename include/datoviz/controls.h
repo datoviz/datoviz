@@ -17,7 +17,8 @@ extern "C" {
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define CONTROL_MAX 32
+#define CONTROL_MAX     32
+#define MAX_TEXT_LENGTH 1024
 
 
 
@@ -46,6 +47,7 @@ typedef enum
     DVZ_GUI_CONTROL_SLIDER_FLOAT,
     DVZ_GUI_CONTROL_SLIDER_INT,
     DVZ_GUI_CONTROL_LABEL,
+    DVZ_GUI_CONTROL_TEXTBOX,
 } DvzGuiControlType;
 
 
@@ -139,6 +141,8 @@ dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax, floa
 DVZ_EXPORT void dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax, int value);
 
 DVZ_EXPORT void dvz_gui_label(DvzGui* gui, const char* name, char* text);
+
+DVZ_EXPORT void dvz_gui_textbox(DvzGui* gui, const char* name, char* value);
 
 DVZ_EXPORT void dvz_gui_destroy(DvzGui* gui);
 
