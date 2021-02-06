@@ -357,14 +357,36 @@ DVZ_INLINE void dvz_colormap_idx(DvzColormap cmap, uint8_t value, cvec2 out)
  *
  * @param cmap the colormap
  * @param value the value
- * @param[out] out the colormap coordinates within the texture
+ * @param[out] uv the colormap coordinates within the texture
  */
 DVZ_INLINE void dvz_colormap_uv(DvzColormap cmap, uint8_t value, vec2 uv)
 {
     cvec2 ij = {0};
     dvz_colormap_idx(cmap, value, ij);
-    uv[0] = (ij[1] + .5) / 256.;
-    uv[1] = (ij[0] + .5) / 256.;
+    uv[0] = (ij[1] + .5) / 255.;
+    uv[1] = (ij[0] + .5) / 255.;
+}
+
+/**
+ * Get the tex coords extent of a colormap.
+ *
+ * @param cmap the colormap
+ * @param[out] uvuv the texture coordinates of the upper-left and lower-right corners
+ */
+DVZ_INLINE void dvz_colormap_extent(DvzColormap cmap, vec4 uvuv)
+{
+    cvec2 row_col;
+    dvz_colormap_idx(cmap, 0, row_col);
+    uint8_t row, col0, col1;
+    row = row_col[0];
+    col0 = row_col[1];
+    uint8_t max = cmap >= CPAL032_OFS ? 31 : 255;
+    dvz_colormap_idx(cmap, max, row_col);
+    col1 = row_col[1];
+    uvuv[0] = (col0 + .5) / 255.;
+    uvuv[1] = (row + .5) / 255.;
+    uvuv[2] = (col1 + .5) / 255.;
+    uvuv[3] = (row + .5) / 255.;
 }
 
 /**

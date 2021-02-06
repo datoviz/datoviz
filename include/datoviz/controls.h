@@ -48,6 +48,7 @@ typedef enum
     DVZ_GUI_CONTROL_SLIDER_INT,
     DVZ_GUI_CONTROL_LABEL,
     DVZ_GUI_CONTROL_TEXTBOX,
+    DVZ_GUI_CONTROL_COLORMAP,
 } DvzGuiControlType;
 
 
@@ -144,6 +145,8 @@ DVZ_EXPORT void dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int 
 DVZ_EXPORT void dvz_gui_label(DvzGui* gui, const char* name, char* text);
 
 DVZ_EXPORT void dvz_gui_textbox(DvzGui* gui, const char* name, char* value);
+
+DVZ_EXPORT void dvz_gui_colormap(DvzGui* gui, DvzColormap cmap);
 
 DVZ_EXPORT void dvz_gui_demo(DvzGui* gui);
 

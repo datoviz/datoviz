@@ -2167,7 +2167,7 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     dvz_fences_destroy(&canvas->fences_render_finished);
 
     if (canvas->overlay)
-        dvz_imgui_destroy();
+        dvz_imgui_destroy(canvas);
     CONTAINER_DESTROY_ITEMS(DvzGui, canvas->guis, dvz_gui_destroy)
     dvz_container_destroy(&canvas->guis);
 

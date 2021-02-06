@@ -209,6 +209,16 @@ void dvz_imgui_init(DvzCanvas* canvas)
     DvzCommands* cmds =
         dvz_canvas_commands(canvas, DVZ_DEFAULT_QUEUE_RENDER, canvas->swapchain.img_count);
     dvz_event_callback(canvas, DVZ_EVENT_PRE_SEND, 0, DVZ_EVENT_MODE_SYNC, _presend, cmds);
+
+    // Make the colormap texture available.
+    DvzTexture* texture = canvas->gpu->context->color_texture.texture;
+    VkSampler sampler = texture->sampler->sampler;
+    VkImageView image_view = texture->image->image_views[0];
+
+    // GUI context.
+    canvas->gui_context = (DvzGuiContext*)calloc(1, sizeof(DvzGuiContext));
+    canvas->gui_context->colormap_texture =
+        ImGui_ImplVulkan_AddTexture(sampler, image_view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
 
@@ -249,11 +259,12 @@ void dvz_imgui_dpi_scaling(DvzCanvas* canvas, float scaling)
 
 
 
-void dvz_imgui_destroy()
+void dvz_imgui_destroy(DvzCanvas* canvas)
 {
     if (ImGui::GetCurrentContext() == NULL)
         return;
     _imgui_destroy();
+    FREE(canvas->gui_context);
 }
 
 
@@ -323,6 +334,32 @@ static void _show_textbox(DvzGuiControl* control)
     ImGui::InputText(control->name, (char*)control->value, MAX_TEXT_LENGTH);
 }
 
+static void _show_colormap(DvzGuiControl* control)
+{
+    ASSERT(control != NULL);
+    DvzCanvas* canvas = control->gui->canvas;
+    ASSERT(canvas != NULL);
+    // ImGuiIO& io = ImGui::GetIO();
+
+    float tex_w = 256;
+    float tex_h = 50;
+
+    DvzColormap cmap = *((DvzColormap*)control->value);
+    vec4 uvuv;
+    dvz_colormap_extent(cmap, uvuv);
+
+    ImVec2 uv_min = ImVec2(uvuv[0], uvuv[1]);           // Top-left
+    ImVec2 uv_max = ImVec2(uvuv[2], uvuv[3]);           // Lower-right
+    ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
+    ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.0f); // 50% opaque white
+
+    ASSERT(canvas->gui_context != NULL);
+    ASSERT(canvas->gui_context->colormap_texture != NULL);
+    ImGui::Image(
+        canvas->gui_context->colormap_texture, ImVec2(tex_w, tex_h), uv_min, uv_max, tint_col,
+        border_col);
+}
+
 
 
 static void _show_control(DvzGuiControl* control)
@@ -356,6 +393,10 @@ static void _show_control(DvzGuiControl* control)
 
     case DVZ_GUI_CONTROL_TEXTBOX:
         _show_textbox(control);
+        break;
+
+    case DVZ_GUI_CONTROL_COLORMAP:
+        _show_colormap(control);
         break;
 
     default:

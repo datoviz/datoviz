@@ -102,6 +102,17 @@ void dvz_gui_textbox(DvzGui* gui, const char* name, char* text)
 }
 
 
+
+void dvz_gui_colormap(DvzGui* gui, DvzColormap cmap)
+{
+    ASSERT(gui != NULL);
+    DvzGuiControl* control =
+        _add_control(gui, DVZ_GUI_CONTROL_COLORMAP, "", sizeof(DvzColormap), &cmap);
+    ASSERT(control != NULL);
+}
+
+
+
 void dvz_gui_demo(DvzGui* gui)
 {
     ASSERT(gui != NULL);

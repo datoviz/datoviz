@@ -2,11 +2,31 @@
 #define DVZ_IMGUI_HEADER
 
 #include "../include/datoviz/canvas.h"
-// #include "../include/datoviz/controls.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+
+/*************************************************************************************************/
+/*  Typedefs                                                                                     */
+/*************************************************************************************************/
+
+typedef struct DvzGuiContext DvzGuiContext;
+
+// Forward declarations.
+typedef void* ImTextureID;
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+struct DvzGuiContext
+{
+    ImTextureID colormap_texture;
+};
 
 
 
@@ -18,7 +38,7 @@ DVZ_EXPORT void dvz_imgui_init(DvzCanvas* canvas);
 
 DVZ_EXPORT void dvz_imgui_dpi_scaling(DvzCanvas* canvas, float scaling);
 
-DVZ_EXPORT void dvz_imgui_destroy();
+DVZ_EXPORT void dvz_imgui_destroy(DvzCanvas* canvas);
 
 DVZ_EXPORT void dvz_gui_begin(const char* title, int flags);
 

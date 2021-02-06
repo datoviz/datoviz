@@ -280,6 +280,7 @@ typedef struct DvzPendingRefill DvzPendingRefill;
 
 // Forward declarations.
 typedef struct DvzGui DvzGui;
+typedef struct DvzGuiContext DvzGuiContext;
 typedef struct DvzGuiControl DvzGuiControl;
 
 
@@ -622,6 +623,8 @@ struct DvzCanvas
     DvzMouse mouse;
     DvzKeyboard keyboard;
 
+    // GUIs.
+    DvzGuiContext* gui_context;
     DvzContainer guis;
 
     DvzScreencast* screencast;
