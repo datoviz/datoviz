@@ -1009,6 +1009,7 @@ cdef extern from "<datoviz/datoviz.h>":
 
     # from file: mesh.h
     void dvz_mesh_normals(DvzMesh* mesh)
+    DvzMesh dvz_mesh_grid(uint32_t row_count, uint32_t col_count, const vec3* positions)
     DvzMesh dvz_mesh_obj(const char* file_path)
 
     # from file: panel.h

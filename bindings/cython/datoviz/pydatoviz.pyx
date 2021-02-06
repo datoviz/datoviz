@@ -577,6 +577,35 @@ cdef class Visual:
         cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
         cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
 
+    def surface(self, np.ndarray[DOUBLE, ndim=2] x, np.ndarray[DOUBLE, ndim=2] y, np.ndarray[DOUBLE, ndim=2] z):
+        # TODO: check that it is a mesh visual
+        row_count = x.shape[0]
+        col_count = x.shape[1]
+
+        cdef np.ndarray positions = np.empty((row_count, col_count, 3), dtype=np.float32)
+        positions[..., 0] = x
+        positions[..., 1] = y
+        positions[..., 2] = z
+
+        cdef cv.DvzMesh mesh = cv.dvz_mesh_grid(row_count, col_count, <const cv.vec3*>(&positions.data[0]))
+
+        nv = mesh.vertices.item_count;
+        ni = mesh.indices.item_count;
+
+        # cdef double zmin = z.min()
+        # cdef double zmax = z.max()
+        # cdef double d = 1.0 / (zmax - zmin)
+
+        # cdef uint32 i = 0
+        # cdef uint32 j = 0
+        # for i in range(row_count):
+        #     for j in range(col_count):
+
+        #         dvz_colormap_uv(DVZ_CMAP_JET, int(255 * round(d * (z[i, j] - zmin))), vertices[i].uv);
+
+        cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
+        cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
+
 
 
 cdef class Gui:
