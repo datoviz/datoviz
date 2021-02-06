@@ -29,7 +29,7 @@ bg_data = (bg_data - bg_data.min()) / (bg_data.max() - bg_data.min())
 N = bg_data.shape[0]
 # HACK: uv tex coords to fetch the right colormap value. To be improved
 cmap = 0
-uv = np.c_[bg_data, np.ones(N) * cmap / 255.0 + .5 / 255]
+uv = np.c_[bg_data, np.ones(N) * cmap / 256.0 + .5 / 256.0]
 
 # Plot the data:
 c = canvas(show_fps=False, width=1024, height=768)
@@ -42,13 +42,17 @@ visual.data('index', faces.ravel())
 
 # Light parameters
 light_params = np.zeros((4, 4))  # up to 4 lights
-light_params[0, :] = (.4, .4, .2, 64)  # ambient, diffuse, specular, specular exponent
+# ambient, diffuse, specular, specular exponent
+light_params[0, :] = (.4, .4, .2, 64)
 visual.data('light_params', light_params)
 
 gui = c.gui("GUI")
+
+
 @gui.control("slider_float", "glossy", value=.2, vmin=0, vmax=1)
 def on_change(value):
     light_params[0, 2] = value
     visual.data('light_params', light_params.ravel())
+
 
 run()

@@ -363,8 +363,8 @@ DVZ_INLINE void dvz_colormap_uv(DvzColormap cmap, uint8_t value, vec2 uv)
 {
     cvec2 ij = {0};
     dvz_colormap_idx(cmap, value, ij);
-    uv[0] = (ij[1] + .5) / 255.;
-    uv[1] = (ij[0] + .5) / 255.;
+    uv[0] = (ij[1] + .5) / 256.;
+    uv[1] = (ij[0] + .5) / 256.;
 }
 
 /**
@@ -383,10 +383,10 @@ DVZ_INLINE void dvz_colormap_extent(DvzColormap cmap, vec4 uvuv)
     uint8_t max = cmap >= CPAL032_OFS ? 31 : 255;
     dvz_colormap_idx(cmap, max, row_col);
     col1 = row_col[1];
-    uvuv[0] = (col0 + .5) / 255.;
-    uvuv[1] = (row + .5) / 255.;
-    uvuv[2] = (col1 + .5) / 255.;
-    uvuv[3] = (row + .5) / 255.;
+    uvuv[0] = (col0 + .5) / 256.;
+    uvuv[1] = (row + .5) / 256.;
+    uvuv[2] = (col1 + .5) / 256.;
+    uvuv[3] = (row + .5) / 256.;
 }
 
 /**
