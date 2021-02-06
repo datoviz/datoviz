@@ -40,6 +40,17 @@ static DvzGuiControl* _add_control(
 
 
 
+void dvz_gui_checkbox(DvzGui* gui, const char* name, bool value)
+{
+    ASSERT(gui != NULL);
+    ASSERT(name != NULL);
+    DvzGuiControl* control =
+        _add_control(gui, DVZ_GUI_CONTROL_CHECKBOX, name, sizeof(bool), &value);
+    ASSERT(control != NULL);
+}
+
+
+
 void dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax, float value)
 {
     ASSERT(gui != NULL);

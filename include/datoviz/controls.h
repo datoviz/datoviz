@@ -42,6 +42,7 @@ typedef enum
 typedef enum
 {
     DVZ_GUI_CONTROL_NONE,
+    DVZ_GUI_CONTROL_CHECKBOX,
     DVZ_GUI_CONTROL_SLIDER_FLOAT,
     DVZ_GUI_CONTROL_SLIDER_INT,
     DVZ_GUI_CONTROL_LABEL,
@@ -129,6 +130,8 @@ struct DvzGui
 
 
 DVZ_EXPORT DvzGui* dvz_gui(DvzCanvas* canvas, const char* title, int flags);
+
+DVZ_EXPORT void dvz_gui_checkbox(DvzGui* gui, const char* name, bool value);
 
 DVZ_EXPORT void
 dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax, float value);

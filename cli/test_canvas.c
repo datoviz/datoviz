@@ -1184,6 +1184,11 @@ static void _gui_callback(DvzCanvas* canvas, DvzEvent ev)
         int* value = ev.u.g.control->value;
         log_info("value is %d", *value);
     }
+    if (ev.u.g.control->type == DVZ_GUI_CONTROL_CHECKBOX)
+    {
+        bool* value = ev.u.g.control->value;
+        log_info("value is %s", (*value) ? "checked" : "unchecked");
+    }
 }
 
 int test_canvas_gui_1(TestContext* context)
@@ -1196,9 +1201,10 @@ int test_canvas_gui_1(TestContext* context)
     // Make a simple GUI.
     DvzGui* gui = dvz_gui(canvas, "Hello world", 0);
 
+    dvz_gui_label(gui, "label", "hello world!");
+    dvz_gui_checkbox(gui, "my checkbox", true);
     dvz_gui_slider_float(gui, "my slider 1", 0.0f, 1.0f, .5);
     dvz_gui_slider_int(gui, "my slider 2", 10, 20, 10);
-    dvz_gui_label(gui, "label", "hello world!");
 
     dvz_event_callback(canvas, DVZ_EVENT_GUI, 0, DVZ_EVENT_MODE_SYNC, _gui_callback, NULL);
 

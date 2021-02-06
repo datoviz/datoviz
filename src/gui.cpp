@@ -304,6 +304,13 @@ static void _show_label(DvzGuiControl* control)
     ImGui::LabelText(control->name, (const char*)control->value);
 }
 
+static bool _show_checkbox(DvzGuiControl* control)
+{
+    ASSERT(control != NULL);
+    ASSERT(control->type == DVZ_GUI_CONTROL_CHECKBOX);
+    return ImGui::Checkbox(control->name, (bool*)control->value);
+}
+
 
 
 static void _show_control(DvzGuiControl* control)
@@ -318,6 +325,10 @@ static void _show_control(DvzGuiControl* control)
 
     switch (control->type)
     {
+
+    case DVZ_GUI_CONTROL_CHECKBOX:
+        changed = _show_checkbox(control);
+        break;
 
     case DVZ_GUI_CONTROL_SLIDER_FLOAT:
         changed = _show_slider_float(control);
