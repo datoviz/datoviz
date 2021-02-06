@@ -133,26 +133,96 @@ struct DvzGui
 /*  Gui functions                                                                              */
 /*************************************************************************************************/
 
-
+/**
+ * Create a new GUI dialog.
+ *
+ * @param canvas the canvas
+ * @param title the GUI title
+ * @param flags optional flags
+ * @returns the GUI
+ */
 DVZ_EXPORT DvzGui* dvz_gui(DvzCanvas* canvas, const char* title, int flags);
 
+/**
+ * Add a checkbox control.
+ *
+ * @param gui the GUI
+ * @param name the control label
+ * @param value whether the checkbox is initially checked
+ */
 DVZ_EXPORT void dvz_gui_checkbox(DvzGui* gui, const char* name, bool value);
 
+/**
+ * Add a slider for float number input.
+ *
+ * @param gui the GUI
+ * @param name the control label
+ * @param vmin the minimum value
+ * @param vmax the maximum value
+ * @param value the initial value
+ */
 DVZ_EXPORT void
 dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax, float value);
 
+/**
+ * Add a slider for integer input.
+ *
+ * @param gui the GUI
+ * @param name the control label
+ * @param vmin the minimum value
+ * @param vmax the maximum value
+ * @param value the initial value
+ */
 DVZ_EXPORT void dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax, int value);
 
+/**
+ * Add a static, non-modifiable label.
+ *
+ * @param gui the GUI
+ * @param name the control label
+ * @param text the control text
+ */
 DVZ_EXPORT void dvz_gui_label(DvzGui* gui, const char* name, char* text);
 
+/**
+ * Add a textbox control for text input.
+ *
+ * @param gui the GUI
+ * @param name the control label
+ * @param value the initial text
+ */
 DVZ_EXPORT void dvz_gui_textbox(DvzGui* gui, const char* name, char* value);
 
+/**
+ * Add a button.
+ *
+ * @param gui the GUI
+ * @param name the control label
+ * @param flags optional flags
+ */
 DVZ_EXPORT void dvz_gui_button(DvzGui* gui, const char* name, int flags);
 
+/**
+ * Add a colormap image.
+ *
+ * @param gui the GUI
+ * @param cmap the colormap
+ */
 DVZ_EXPORT void dvz_gui_colormap(DvzGui* gui, DvzColormap cmap);
 
+/**
+ * Display the Dear ImGUI demo with all supported controls.
+ *
+ * @param gui the GUI
+ */
 DVZ_EXPORT void dvz_gui_demo(DvzGui* gui);
 
+
+/**
+ * Destroy a GUI.
+ *
+ * @param gui the GUI
+ */
 DVZ_EXPORT void dvz_gui_destroy(DvzGui* gui);
 
 

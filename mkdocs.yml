@@ -61,6 +61,7 @@ nav:
     - Scene API: 'api/scene.md'
     - Visual API: 'api/visual.md'
     - Controller API: 'api/controller.md'
+    - GUI API: 'api/gui.md'
     - Canvas API: 'api/canvas.md'
     - GPU API: 'api/gpu.md'
     - vklite API: 'api/vklite.md'

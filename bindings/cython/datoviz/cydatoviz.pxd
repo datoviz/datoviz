@@ -177,6 +177,10 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_CANVAS_FLAGS_NONE = 0x0000
         DVZ_CANVAS_FLAGS_IMGUI = 0x0001
         DVZ_CANVAS_FLAGS_FPS = 0x0003
+        DVZ_CANVAS_FLAGS_DPI_SCALE_050 = 0x1000
+        DVZ_CANVAS_FLAGS_DPI_SCALE_100 = 0x2000
+        DVZ_CANVAS_FLAGS_DPI_SCALE_150 = 0x3000
+        DVZ_CANVAS_FLAGS_DPI_SCALE_200 = 0x4000
 
     ctypedef enum DvzCanvasSizeType:
         DVZ_CANVAS_SIZE_SCREEN = 0
@@ -453,8 +457,13 @@ cdef extern from "<datoviz/datoviz.h>":
 
     ctypedef enum DvzGuiControlType:
         DVZ_GUI_CONTROL_NONE = 0
-        DVZ_GUI_CONTROL_SLIDER_FLOAT = 1
-        DVZ_GUI_CONTROL_SLIDER_INT = 2
+        DVZ_GUI_CONTROL_CHECKBOX = 1
+        DVZ_GUI_CONTROL_SLIDER_FLOAT = 2
+        DVZ_GUI_CONTROL_SLIDER_INT = 3
+        DVZ_GUI_CONTROL_LABEL = 4
+        DVZ_GUI_CONTROL_TEXTBOX = 5
+        DVZ_GUI_CONTROL_BUTTON = 6
+        DVZ_GUI_CONTROL_COLORMAP = 7
 
     # from file: graphics.h
 
@@ -856,7 +865,6 @@ cdef extern from "<datoviz/datoviz.h>":
         uvec2 size_framebuffer
         DvzViewportClip clip
         int32_t interact_axis
-        float dpi_scaling
 
     ctypedef struct DvzMouseButtonEvent:
         DvzMouseButton button
@@ -968,6 +976,7 @@ cdef extern from "<datoviz/datoviz.h>":
         int flags
         uint32_t control_count
         DvzGuiControl controls[32]
+        bint show_imgui_demo
 
 
     # STRUCT END
