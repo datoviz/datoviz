@@ -192,9 +192,6 @@ void dvz_imgui_init(DvzCanvas* canvas)
     _imgui_enable(canvas);
     ImGuiIO& io = ImGui::GetIO();
 
-    // TODO: dpi scaling factor
-    _imgui_dpi(1);
-
     // Load Fonts
     float font_size = 16;
     char path[1024];
@@ -380,7 +377,8 @@ static void _show_gui(DvzGui* gui)
         _show_control(&gui->controls[i]);
     }
 
-    // ImGui::ShowDemoWindow();
+    if (gui->show_imgui_demo)
+        ImGui::ShowDemoWindow();
 
     // End the GUI window.
     dvz_gui_end();
@@ -395,6 +393,9 @@ void dvz_gui_callback(DvzCanvas* canvas, DvzEvent ev)
     // When Dear ImGUI captures the mouse and keyboard, Datoviz should not process user events.
     ImGuiIO& io = ImGui::GetIO();
     canvas->captured = io.WantCaptureMouse || io.WantCaptureKeyboard;
+
+    // DPI scaling factor
+    _imgui_dpi(canvas->viewport.dpi_scaling);
 
     DvzGui* gui = NULL;
     DvzContainerIterator iter = dvz_container_iterator(&canvas->guis);

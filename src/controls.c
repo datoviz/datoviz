@@ -102,6 +102,13 @@ void dvz_gui_textbox(DvzGui* gui, const char* name, char* text)
 }
 
 
+void dvz_gui_demo(DvzGui* gui)
+{
+    ASSERT(gui != NULL);
+    gui->show_imgui_demo = !gui->show_imgui_demo;
+}
+
+
 
 void dvz_gui_destroy(DvzGui* gui)
 {

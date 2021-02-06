@@ -122,6 +122,7 @@ struct DvzGui
     int flags;
     uint32_t control_count;
     DvzGuiControl controls[CONTROL_MAX];
+    bool show_imgui_demo;
 };
 
 
@@ -143,6 +144,8 @@ DVZ_EXPORT void dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int 
 DVZ_EXPORT void dvz_gui_label(DvzGui* gui, const char* name, char* text);
 
 DVZ_EXPORT void dvz_gui_textbox(DvzGui* gui, const char* name, char* value);
+
+DVZ_EXPORT void dvz_gui_demo(DvzGui* gui);
 
 DVZ_EXPORT void dvz_gui_destroy(DvzGui* gui);
 

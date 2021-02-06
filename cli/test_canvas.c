@@ -1207,6 +1207,8 @@ int test_canvas_gui_1(TestContext* context)
     dvz_gui_slider_int(gui, "my slider 2", 10, 20, 10);
     dvz_gui_textbox(gui, "textbox", "some text");
 
+    dvz_gui_demo(gui);
+
     dvz_event_callback(canvas, DVZ_EVENT_GUI, 0, DVZ_EVENT_MODE_SYNC, _gui_callback, NULL);
 
     dvz_app_run(app, N_FRAMES);
