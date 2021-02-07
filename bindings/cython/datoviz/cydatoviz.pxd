@@ -63,8 +63,12 @@ cdef extern from "<datoviz/datoviz.h>":
     ctypedef struct DvzGrid:
         DvzCanvas* canvas
 
+    ctypedef struct DvzDataCoords:
+        DvzTransformType transform;
+
     ctypedef struct DvzPanel:
         DvzGrid* grid
+        DvzDataCoords data_coords
 
     ctypedef struct DvzVisual:
         DvzCanvas* canvas

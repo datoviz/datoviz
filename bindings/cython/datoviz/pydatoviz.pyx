@@ -97,6 +97,10 @@ _PROPS = {
     'clip': cv.DVZ_PROP_CLIP,
 }
 
+_TRANSFORMS = {
+    'earth': cv.DVZ_TRANSFORM_EARTH_MERCATOR_WEB,
+}
+
 _CONTROLS = {
     'slider_float': cv.DVZ_GUI_CONTROL_SLIDER_FLOAT,
     'slider_int': cv.DVZ_GUI_CONTROL_SLIDER_INT,
@@ -425,12 +429,14 @@ cdef class Canvas:
         cdef char* _c_path = path
         cv.dvz_canvas_video(self._c_canvas, 30, 10000000, _c_path)
 
-    def panel(self, int row=0, int col=0, controller='axes', transpose=None):
+    def panel(self, int row=0, int col=0, controller='axes', transform=None, transpose=None):
         ctl = _CONTROLLERS.get(controller, cv.DVZ_CONTROLLER_NONE)
         trans = _TRANSPOSES.get(transpose, cv.DVZ_CDS_TRANSPOSE_NONE)
+        transf = _TRANSFORMS.get(transform, cv.DVZ_TRANSFORM_CARTESIAN)
         c_panel = cv.dvz_scene_panel(self._c_scene, row, col, ctl, 0)
         if c_panel is NULL:
             raise MemoryError()
+        c_panel.data_coords.transform = transf
         cv.dvz_panel_transpose(c_panel, trans)
         p = Panel()
         p.create(self._c_scene, c_panel)

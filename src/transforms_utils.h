@@ -128,6 +128,23 @@ static DvzBox _box_cube(DvzBox box)
 
 
 
+static void _project_lonlat(double lon, double lat, dvec2 out)
+{
+    // Web Mercator projection
+    double lonrad = lon / 180.0 * M_PI;
+    double latrad = lat / 180.0 * M_PI;
+
+    double x = 0, y = 0;
+    double zoom = 1;
+    double c = 256 / M_2PI * pow(2, zoom);
+    x = c * (lonrad + M_PI);
+    y = c * (M_PI - log(tan(M_PI / 4.0 + latrad / 2.0)));
+    out[0] = x;
+    out[1] = -y;
+}
+
+
+
 /*************************************************************************************************/
 /*  Internal transform API                                                                       */
 /*************************************************************************************************/
@@ -190,6 +207,11 @@ static inline void _transform_apply(DvzTransform* tr, dvec3 in, dvec3 out)
         ASSERT(!tr->inverse);
         // TODO: implement log scale? available in tr->flags
         _dmat4_mulv3(tr->mat, in, 1, out);
+    }
+    else if (tr->type == DVZ_TRANSFORM_EARTH_MERCATOR_WEB)
+    {
+        // NOTE: discard last out component as 2D transform
+        _project_lonlat(in[0], in[1], out);
     }
     else
     {

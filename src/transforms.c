@@ -16,7 +16,13 @@ void dvz_transform_data(DvzDataCoords coords, DvzArray* pos_in, DvzArray* pos_ou
     ASSERT(pos_out != NULL);
 
     log_debug("data normalization on %d position elements", pos_in->item_count);
-    DvzTransform tr = _transform_interp(coords.box, DVZ_BOX_NDC);
+    DvzTransform tr = {0};
+
+    if (coords.transform == DVZ_TRANSFORM_CARTESIAN)
+        tr = _transform_interp(coords.box, DVZ_BOX_NDC);
+    if (coords.transform == DVZ_TRANSFORM_EARTH_MERCATOR_WEB)
+        tr = _transform(coords.transform);
+
     if (inverse)
         tr = _transform_inv(&tr);
 
