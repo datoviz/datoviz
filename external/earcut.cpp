@@ -23,6 +23,7 @@ void dvz_triangulate_polygon(
     for (uint32_t i = 0; i < point_count; i++)
         polygon_v[0].push_back({{polygon[i][0], polygon[i][1], polygon[i][2]}});
     std::vector<uint32_t> indices = mapbox::earcut<uint32_t>(polygon_v);
+    ASSERT(indices.size() > 0);
     size_t size = indices.size() * sizeof(uint32_t);
     uint32_t* out = (uint32_t*)malloc(size);
     memcpy(out, indices.data(), size);

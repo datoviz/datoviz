@@ -59,6 +59,7 @@ _VISUALS = {
     'point': cv.DVZ_VISUAL_POINT,
     'marker': cv.DVZ_VISUAL_MARKER,
     'mesh': cv.DVZ_VISUAL_MESH,
+    'polygon': cv.DVZ_VISUAL_POLYGON,
     'volume_slice': cv.DVZ_VISUAL_VOLUME_SLICE,
 }
 
@@ -84,6 +85,7 @@ _PROPS = {
     'normal': cv.DVZ_PROP_NORMAL,
     'texcoords': cv.DVZ_PROP_TEXCOORDS,
     'index': cv.DVZ_PROP_INDEX,
+    'length': cv.DVZ_PROP_LENGTH,
     'light_params': cv.DVZ_PROP_LIGHT_PARAMS,
     'light_pos': cv.DVZ_PROP_LIGHT_POS,
     'texcoefs': cv.DVZ_PROP_TEXCOEFS,
@@ -256,6 +258,7 @@ _PROP_DTYPES = {
     'alpha': np.uint8,
     'index': np.uint32,
     'colormap': np.uint8,
+    'length': np.uint32,
 }
 
 _EVENTS ={
@@ -545,6 +548,7 @@ cdef class Visual:
 
         if not value.flags['C_CONTIGUOUS']:
             value = np.ascontiguousarray(value)
+        # TODO: check number of columns = number of components, as a function of the prop dtype
 
         prop = _get_prop(name)
         N = value.shape[0]
