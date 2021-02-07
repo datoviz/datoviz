@@ -281,6 +281,9 @@ def _get_prop(name):
 
 
 ctypedef np.double_t DOUBLE
+ctypedef np.uint8_t CHAR
+ctypedef np.uint8_t[4] CVEC4
+ctypedef np.uint32_t UINT
 
 def colormap(np.ndarray[DOUBLE, ndim=1] values, vmin=None, vmax=None, cmap=None, alpha=None):
     N = values.size
@@ -577,7 +580,15 @@ cdef class Visual:
         cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
         cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
 
-    def surface(self, np.ndarray[DOUBLE, ndim=2] x, np.ndarray[DOUBLE, ndim=2] y, np.ndarray[DOUBLE, ndim=2] z):
+    def surface(
+        self, np.ndarray[DOUBLE, ndim=2] x, np.ndarray[DOUBLE, ndim=2] y, np.ndarray[DOUBLE, ndim=2] z,
+        # np.ndarray[DOUBLE, ndim=1] values=None, cmap=None, vmin=None, vmax=None):
+        np.ndarray[DOUBLE, ndim=3] uv=None,
+        ):
+
+        # cmap_ = _COLORMAPS.get(cmap, cv.DVZ_CMAP_VIRIDIS)
+        # colormap(values, vmin=vmin, vmax=vmax, cmap=None, alpha=None):
+
         # TODO: check that it is a mesh visual
         row_count = x.shape[0]
         col_count = x.shape[1]
@@ -586,22 +597,21 @@ cdef class Visual:
         positions[..., 0] = x
         positions[..., 1] = y
         positions[..., 2] = z
+        # assert colors.shape[0] == row_count
 
-        cdef cv.DvzMesh mesh = cv.dvz_mesh_grid(row_count, col_count, <const cv.vec3*>(&positions.data[0]))
+        cdef np.ndarray texcoords = np.empty((row_count, col_count, 2), dtype=np.float32)
+
+        cdef const cv.vec2* p_uv = NULL
+        if uv is not None:
+            texcoords[..., 0] = uv[..., 0]
+            texcoords[..., 1] = uv[..., 1]
+            p_uv = <const cv.vec2*>(&texcoords.data[0])
+
+        cdef cv.DvzMesh mesh = cv.dvz_mesh_grid(
+            row_count, col_count, <const cv.vec3*>(&positions.data[0]), p_uv)
 
         nv = mesh.vertices.item_count;
         ni = mesh.indices.item_count;
-
-        # cdef double zmin = z.min()
-        # cdef double zmax = z.max()
-        # cdef double d = 1.0 / (zmax - zmin)
-
-        # cdef uint32 i = 0
-        # cdef uint32 j = 0
-        # for i in range(row_count):
-        #     for j in range(col_count):
-
-        #         dvz_colormap_uv(DVZ_CMAP_JET, int(255 * round(d * (z[i, j] - zmin))), vertices[i].uv);
 
         cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
         cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);

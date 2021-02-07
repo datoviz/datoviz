@@ -461,7 +461,7 @@ static void dvz_colormap_array(
  * @param color the RGB color
  * @param[out] uv the texture coordinates
  */
-DVZ_INLINE void dvz_colormap_packuv(cvec3 color, vec2 uv)
+static void dvz_colormap_packuv(cvec3 color, vec2 uv)
 {
     uv[1] = -1;
     uv[0] = color[0] + 256.0 * color[1] + 65536.0 * color[2];

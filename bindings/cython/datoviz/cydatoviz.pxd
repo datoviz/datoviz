@@ -984,6 +984,7 @@ cdef extern from "<datoviz/datoviz.h>":
 
     ctypedef void (*DvzEventCallback)(DvzCanvas*, DvzEvent)
     void dvz_colormap_array(DvzColormap cmap, uint32_t count, double* values, double vmin, double vmax, cvec4* out);
+    void dvz_colormap_packuv(cvec3 color, vec2 uv)
 
 
 
@@ -1009,7 +1010,7 @@ cdef extern from "<datoviz/datoviz.h>":
 
     # from file: mesh.h
     void dvz_mesh_normals(DvzMesh* mesh)
-    DvzMesh dvz_mesh_grid(uint32_t row_count, uint32_t col_count, const vec3* positions)
+    DvzMesh dvz_mesh_grid(uint32_t row_count, uint32_t col_count, const vec3* positions, const vec2* texcoords)
     DvzMesh dvz_mesh_obj(const char* file_path)
 
     # from file: panel.h

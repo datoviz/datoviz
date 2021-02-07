@@ -139,9 +139,11 @@ DVZ_EXPORT DvzMesh dvz_mesh(void);
  * @param row_count number of rows
  * @param col_count number of columns
  * @param positions the 3D position of each vertex in the grid
+ * @param texcoords the texture coordinates of each vertex
  * @returns a mesh object
  */
-DVZ_EXPORT DvzMesh dvz_mesh_grid(uint32_t row_count, uint32_t col_count, const vec3* positions);
+DVZ_EXPORT DvzMesh dvz_mesh_grid(
+    uint32_t row_count, uint32_t col_count, const vec3* positions, const vec2* texcoords);
 
 /**
  * Create a surface mesh.

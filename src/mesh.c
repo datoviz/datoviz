@@ -205,7 +205,8 @@ DvzMesh dvz_mesh()
 
 
 
-DvzMesh dvz_mesh_grid(uint32_t row_count, uint32_t col_count, const vec3* positions)
+DvzMesh
+dvz_mesh_grid(uint32_t row_count, uint32_t col_count, const vec3* positions, const vec2* texcoords)
 {
     DvzMesh mesh = dvz_mesh();
     const uint32_t nv = col_count * row_count;
@@ -232,10 +233,21 @@ DvzMesh dvz_mesh_grid(uint32_t row_count, uint32_t col_count, const vec3* positi
             // Position.
             ASSERT(point_idx < nv);
             _vec3_copy(positions[point_idx], vertex->pos);
-            uv[1] = i / (float)(row_count - 1);
-            uv[0] = j / (float)(col_count - 1);
 
+            // Texture coordinates.
+            if (texcoords == NULL)
+            {
+                uv[1] = i / (float)(row_count - 1);
+                uv[0] = j / (float)(col_count - 1);
+            }
+            else
+            {
+                uv[0] = texcoords[i][0];
+                uv[1] = texcoords[i][1];
+            }
             _vec3_copy(uv, vertex->uv);
+
+            // Alpha channel.
             vertex->alpha = 255;
 
             // Normals.
@@ -325,7 +337,7 @@ DvzMesh dvz_mesh_surface(uint32_t row_count, uint32_t col_count, const float* he
         }
     }
 
-    DvzMesh mesh = dvz_mesh_grid(row_count, col_count, (const vec3*)positions);
+    DvzMesh mesh = dvz_mesh_grid(row_count, col_count, (const vec3*)positions, NULL);
     FREE(positions);
     return mesh;
 }
@@ -416,7 +428,7 @@ DvzMesh dvz_mesh_sphere(uint32_t row_count, uint32_t col_count)
             _vec3_copy((vec3){x, y, z}, positions[col_count * i + j]);
         }
     }
-    DvzMesh mesh = dvz_mesh_grid(row_count, col_count, (const vec3*)positions);
+    DvzMesh mesh = dvz_mesh_grid(row_count, col_count, (const vec3*)positions, NULL);
     FREE(positions);
     return mesh;
 }
@@ -444,7 +456,7 @@ DvzMesh dvz_mesh_cylinder(uint32_t count)
             k++;
         }
     }
-    DvzMesh mesh = dvz_mesh_grid(2, count, (const vec3*)positions);
+    DvzMesh mesh = dvz_mesh_grid(2, count, (const vec3*)positions, NULL);
     FREE(positions);
     return mesh;
 }
@@ -473,7 +485,7 @@ DvzMesh dvz_mesh_cone(uint32_t count)
             k++;
         }
     }
-    DvzMesh mesh = dvz_mesh_grid(2, count, (const vec3*)positions);
+    DvzMesh mesh = dvz_mesh_grid(2, count, (const vec3*)positions, NULL);
     FREE(positions);
     return mesh;
 }
