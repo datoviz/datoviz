@@ -391,13 +391,13 @@ static void _camera_callback(
 /*  Arcball                                                                                      */
 /*************************************************************************************************/
 
-// adapted from https://github.com/Twinklebear/arcball-cpp/blob/master/arcball_panel.cpp
+// adapted from https://github.com/Twinklebear/arcball-cpp/blob/master/arcball_camera.cpp
 
 static void _arcball_reset(DvzArcball* arcball)
 {
     ASSERT(arcball != NULL);
 
-    glm_vec3_zero(arcball->translate);
+    glm_mat4_identity(arcball->translate);
 
     vec3 eye, center, up, dir, x_axis, y_axis, z_axis;
     glm_vec3_copy(DVZ_CAMERA_EYE, arcball->camera.eye);
@@ -468,22 +468,20 @@ static void _arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos)
 static void _arcball_pan(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos)
 {
     ASSERT(arcball != NULL);
-    vec2 delta;
+    vec3 delta = {0};
     glm_vec2_sub(last_pos, cur_pos, delta);
-    glm_vec2_scale(delta, -1, delta);
-    arcball->translate[0] += delta[0];
-    arcball->translate[1] += delta[1];
+    glm_vec2_scale(delta, -.5 * arcball->camera.eye[2], delta);
+    // Convert translation vector back to original coordinate system.
+    glm_mat4_mulv3(arcball->inv_model, delta, 1, delta);
+    glm_translate(arcball->translate, delta);
 }
-
-#define LMUL(A, B) glm_mat4_mul((B), (A), (A))
 
 static void _arcball_update_mvp(DvzArcball* arcball, DvzMVP* mvp)
 {
     ASSERT(arcball != NULL);
     glm_mat4_copy(arcball->mat, mvp->model);
-    mat4 tr;
-    glm_translate_make(tr, arcball->translate);
-    glm_mat4_mul(mvp->model, tr, mvp->model);
+    glm_mat4_inv(mvp->model, arcball->inv_model);
+    glm_mat4_mul(mvp->model, arcball->translate, mvp->model);
     dvz_mvp_camera(
         arcball->canvas->viewport, arcball->camera.eye, (vec3){0, 0, 0}, (vec2){0.1, 100}, mvp);
 }

@@ -108,8 +108,9 @@ struct DvzArcball
 {
     DvzCanvas* canvas;
     versor rotation;
-    vec3 translate;
+    mat4 translate;
     mat4 mat;
+    mat4 inv_model;
     DvzCamera camera;
 };
 
