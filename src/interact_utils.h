@@ -93,7 +93,7 @@ static void _panzoom_zoom(DvzPanzoom* panzoom, vec2 delta, vec2 center)
         panzoom->camera_pos[1] -= pan[1] / panzoom->zoom[1];
 }
 
-static void _panzoom_update_mvp(DvzPanzoom* panzoom, DvzMVP* mvp)
+static void _panzoom_update_mvp(DvzViewport viewport, DvzPanzoom* panzoom, DvzMVP* mvp)
 {
     ASSERT(panzoom != NULL);
     // View matrix (depends on the pan).
@@ -226,7 +226,7 @@ static void _panzoom_callback(
     }
 
     if (is_active)
-        _panzoom_update_mvp(panzoom, &interact->mvp);
+        _panzoom_update_mvp(viewport, panzoom, &interact->mvp);
     interact->is_active = is_active;
 }
 
@@ -253,12 +253,12 @@ static DvzCamera _camera(DvzCanvas* canvas, DvzInteractType type)
     return c;
 }
 
-static void _camera_update_mvp(DvzCamera* camera, DvzMVP* mvp)
+static void _camera_update_mvp(DvzViewport viewport, DvzCamera* camera, DvzMVP* mvp)
 {
     ASSERT(camera != NULL);
     vec3 center = {0};
     glm_vec3_add(camera->eye, camera->forward, center);
-    dvz_mvp_camera(camera->canvas->viewport, camera->eye, center, (vec2){0.1, 100}, mvp);
+    dvz_mvp_camera(viewport, camera->eye, center, (vec2){0.1, 100}, mvp);
 }
 
 static void _camera_callback(
@@ -381,7 +381,7 @@ static void _camera_callback(
         camera->target[1] = CLIP(camera->target[1], ymin, 10);
     }
 
-    _camera_update_mvp(camera, &interact->mvp);
+    _camera_update_mvp(viewport, camera, &interact->mvp);
     interact->is_active = is_active;
 }
 
@@ -476,14 +476,13 @@ static void _arcball_pan(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos)
     glm_translate(arcball->translate, delta);
 }
 
-static void _arcball_update_mvp(DvzArcball* arcball, DvzMVP* mvp)
+static void _arcball_update_mvp(DvzViewport viewport, DvzArcball* arcball, DvzMVP* mvp)
 {
     ASSERT(arcball != NULL);
     glm_mat4_copy(arcball->mat, mvp->model);
     glm_mat4_inv(mvp->model, arcball->inv_model);
     glm_mat4_mul(mvp->model, arcball->translate, mvp->model);
-    dvz_mvp_camera(
-        arcball->canvas->viewport, arcball->camera.eye, (vec3){0, 0, 0}, (vec2){0.1, 100}, mvp);
+    dvz_mvp_camera(viewport, arcball->camera.eye, (vec3){0, 0, 0}, (vec2){0.1, 100}, mvp);
 }
 
 static void _arcball_callback(
@@ -543,7 +542,7 @@ static void _arcball_callback(
     glm_quat_mat4(arcball->rotation, arcball->mat);
 
     if (is_active)
-        _arcball_update_mvp(arcball, &interact->mvp);
+        _arcball_update_mvp(viewport, arcball, &interact->mvp);
     interact->is_active = is_active;
 
     // if (mouse->cur_state == DVZ_MOUSE_STATE_INACTIVE)

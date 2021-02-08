@@ -41,7 +41,7 @@ extern "C" {
 /*************************************************************************************************/
 
 #define DVZ_MAX_BINDINGS_SIZE    32
-#define DVZ_MAX_DESCRIPTOR_SETS  64
+#define DVZ_MAX_DESCRIPTOR_SETS  1024
 #define DVZ_MAX_PRESENT_MODES    16
 #define DVZ_MAX_PUSH_CONSTANTS   16
 #define DVZ_MAX_QUEUE_FAMILIES   16

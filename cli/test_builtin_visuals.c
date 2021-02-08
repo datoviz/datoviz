@@ -652,7 +652,7 @@ int test_visuals_mesh(TestContext* context)
     glm_quatv(q, +M_PI / 6, (vec3){0, 1, 0});
     glm_quat_mul(arcball->rotation, q, arcball->rotation);
     arcball->camera.eye[2] = 3;
-    _arcball_update_mvp(arcball, &interact.mvp);
+    _arcball_update_mvp(canvas->viewport, arcball, &interact.mvp);
 
     RUN;
     SCREENSHOT("mesh")
@@ -729,7 +729,7 @@ int test_visuals_volume_slice(TestContext* context)
     glm_quatv(q, M_PI - M_PI / 6, (vec3){0, 1, 0});
     glm_quat_mul(arcball->rotation, q, arcball->rotation);
     arcball->camera.eye[2] = 3;
-    _arcball_update_mvp(arcball, &interact.mvp);
+    _arcball_update_mvp(canvas->viewport, arcball, &interact.mvp);
 
     RUN;
     SCREENSHOT("volume_slice")

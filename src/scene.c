@@ -949,7 +949,7 @@ void dvz_camera_pos(DvzPanel* panel, vec3 pos)
     DvzMVP* mvp = _panel_mvp(panel);
     DvzCamera* camera = &panel->controller->interacts[0].u.c;
     glm_vec3_copy(pos, camera->eye);
-    _camera_update_mvp(camera, mvp);
+    _camera_update_mvp(panel->viewport, camera, mvp);
 }
 
 
@@ -961,7 +961,7 @@ void dvz_camera_look(DvzPanel* panel, vec3 center)
     DvzMVP* mvp = _panel_mvp(panel);
     DvzCamera* camera = &panel->controller->interacts[0].u.c;
     glm_vec3_sub(center, camera->eye, camera->forward);
-    _camera_update_mvp(camera, mvp);
+    _camera_update_mvp(panel->viewport, camera, mvp);
 }
 
 
@@ -973,7 +973,7 @@ void dvz_arcball_rotate(DvzPanel* panel, float angle, vec3 axis)
     DvzMVP* mvp = _panel_mvp(panel);
     DvzArcball* arcball = &panel->controller->interacts[0].u.a;
     glm_quatv(arcball->rotation, angle, axis);
-    _arcball_update_mvp(arcball, mvp);
+    _arcball_update_mvp(panel->viewport, arcball, mvp);
 }
 
 
