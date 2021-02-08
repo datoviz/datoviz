@@ -206,6 +206,33 @@ int test_array_6(TestContext* context)
 
 
 
+int test_array_7(TestContext* context)
+{
+    int32_t values[] = {0, 1, 2, 3, 4, 5};
+
+    DvzArray arr = dvz_array(6, DVZ_DTYPE_INT);
+    dvz_array_data(&arr, 0, 6, 6, values);
+
+    DvzArray arr2 = dvz_array(10, DVZ_DTYPE_INT);
+
+    dvz_array_copy_region(&arr, &arr2, 4, 8, 2);
+    int32_t* a = NULL;
+    for (uint32_t i = 0; i < 8; i++)
+    {
+        a = dvz_array_item(&arr2, i);
+        AT(*a == 0);
+    }
+    a = dvz_array_item(&arr2, 8);
+    AT(*a == 4);
+    a = dvz_array_item(&arr2, 9);
+    AT(*a == 5);
+
+    dvz_array_destroy(&arr);
+    return 0;
+}
+
+
+
 int test_array_cast(TestContext* context)
 {
     // uint8, float32

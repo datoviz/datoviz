@@ -16,6 +16,7 @@ int test_array_3(TestContext* context);
 int test_array_4(TestContext* context);
 int test_array_5(TestContext* context);
 int test_array_6(TestContext* context);
+int test_array_7(TestContext* context);
 int test_array_cast(TestContext* context);
 int test_array_mvp(TestContext* context);
 int test_array_3D(TestContext* context);

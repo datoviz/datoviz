@@ -277,6 +277,22 @@ static DvzArray dvz_array(uint32_t item_count, DvzDataType dtype)
 
 
 /**
+ * Create a copy of an existing array.
+ *
+ * @param arr an array
+ * @returns a new array
+ */
+static DvzArray dvz_array_copy(DvzArray* arr)
+{
+    DvzArray arr_new = *arr; // struct copy
+    arr_new.data = malloc(arr->buffer_size);
+    memcpy(arr_new.data, arr->data, arr->buffer_size);
+    return arr_new;
+}
+
+
+
+/**
  * Create an array with a single dvec3 position.
  *
  * @param pos initial number of elements
@@ -497,6 +513,14 @@ static void dvz_array_reshape(DvzArray* array, uint32_t width, uint32_t height, 
 
 
 
+/**
+ * Insert data in an array.
+ *
+ * @param array the array
+ * @param offset the index of the first element of the inserted data in the new array
+ * @param size the number of elements to insert
+ * @param insert the data to insert
+ */
 static void dvz_array_insert(DvzArray* array, uint32_t offset, uint32_t size, void* insert)
 {
     ASSERT(array != NULL);
@@ -520,6 +544,35 @@ static void dvz_array_insert(DvzArray* array, uint32_t offset, uint32_t size, vo
     // Insert the data.
     ASSERT((int64_t)chunk1_bef + (int64_t)(size * array->item_size) == (int64_t)chunk1_aft);
     memcpy(chunk1_bef, insert, size * array->item_size);
+}
+
+
+
+/**
+ * Copy a region of an array into another.
+ *
+ * @param src_arr the source array
+ * @param dst_arr the destination array
+ * @param src_offset the index, in the source array, of the first item to copy
+ * @param dst_offset the destination index
+ * @param item_count the number of items to copy
+ */
+static void dvz_array_copy_region(
+    DvzArray* src_arr, DvzArray* dst_arr, uint32_t src_offset, uint32_t dst_offset,
+    uint32_t item_count)
+{
+    ASSERT(src_arr != NULL);
+    ASSERT(dst_arr != NULL);
+    ASSERT(item_count > 0);
+    ASSERT(src_offset + item_count <= src_arr->item_count);
+    ASSERT(dst_offset + item_count <= dst_arr->item_count);
+    ASSERT(src_arr->dtype == dst_arr->dtype);
+    ASSERT(src_arr->item_size == dst_arr->item_size);
+
+    void* src = (void*)((int64_t)src_arr->data + ((int64_t)(src_offset * src_arr->item_size)));
+    void* dst = (void*)((int64_t)dst_arr->data + ((int64_t)(dst_offset * dst_arr->item_size)));
+    VkDeviceSize size = item_count * src_arr->item_size;
+    memcpy(dst, src, size);
 }
 
 
