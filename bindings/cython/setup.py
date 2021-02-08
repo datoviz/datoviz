@@ -1,12 +1,17 @@
+import os 
 from pathlib import Path
 from setuptools import Extension, setup
+import distutils.cygwinccompiler
 import numpy as np
 from Cython.Build import cythonize
+
+distutils.cygwinccompiler.get_msvcr = lambda: []
 
 CYTHON_DIR = Path(__file__).parent
 ROOT_DIR = (CYTHON_DIR / '../../').resolve()
 INCLUDE_DIR = ROOT_DIR / 'include'
 BUILD_DIR = ROOT_DIR / 'build'
+VULKAN_DIR = Path(os.environ['VULKAN_SDK'])
 
 # NOTE: build with dynamic linking of datoviz. Need to add to LD_LIBRARY_PATH env variable
 # the path to the datoviz library (in <root>/build/).
@@ -26,6 +31,7 @@ setup(
             include_dirs=[
                 np.get_include(),
                 str(INCLUDE_DIR),
+                str(VULKAN_DIR / 'Include'),
                 str(ROOT_DIR / 'external/cglm/include'),
                 str(BUILD_DIR / '_deps/glfw-src/include'),
             ],
