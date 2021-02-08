@@ -324,7 +324,7 @@ static void _show_label(DvzGuiControl* control)
 {
     ASSERT(control != NULL);
     ASSERT(control->type == DVZ_GUI_CONTROL_LABEL);
-    ImGui::LabelText(control->name, (const char*)control->value);
+    ImGui::LabelText(control->name, "%s", (const char*)control->value);
 }
 
 static bool _show_textbox(DvzGuiControl* control)
