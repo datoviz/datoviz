@@ -124,6 +124,9 @@ static void _line_strip_bake(DvzVisual* visual, DvzVisualDataEvent ev)
 
     // Number of line strips.
     uint32_t n_strips = arr_length->item_count;
+    // Do nothing if the LENGTH prop is not set.
+    if (n_strips <= 1)
+        return;
     ASSERT(n_strips >= 2);
 
     // Source array.
@@ -136,26 +139,9 @@ static void _line_strip_bake(DvzVisual* visual, DvzVisualDataEvent ev)
     uint32_t n_vertices = arr_vertex->item_count;
     ASSERT(n_vertices > 0);
 
-    if (arr_length->item_count <= 1)
-    {
-        // Do nothing if the LENGTH prop is not set.
-        _default_visual_bake(visual, ev);
-        return;
-    }
-
     // New number of vertices, with the extra points.
     uint32_t n_vertices_new = n_vertices + 2 * (n_strips - 1);
     ASSERT(n_vertices_new > 0);
-
-    // The baking function doesn't run if the VERTEX source is handled by the user.
-    if (src_vertex->origin != DVZ_SOURCE_ORIGIN_LIB)
-        return;
-    if (src_vertex->obj.request != DVZ_VISUAL_REQUEST_UPLOAD)
-    {
-        log_trace(
-            "skip bake source for source %d that doesn't need updating", src_vertex->source_kind);
-        return;
-    }
 
     // Existing positions and colors.
     uint32_t* length = (uint32_t*)arr_length->data; // length of each line strip
