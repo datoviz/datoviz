@@ -136,27 +136,42 @@ The other dependencies below are already included in the library, so **you don't
 **Help needed to fill in the details below**:
 
 1. Install the latest graphics drivers for your system and hardware.
-2. Install [Winlibs](http://winlibs.com/), a Windows port of gcc, using mingw-w64.
+2. Install [Winlibs](http://winlibs.com/), a Windows port of gcc, using mingw-w64. Make sure the mingw executable is in the PATH.
 3. Install [CMake for Windows](https://cmake.org/download/)
 4. Install the latest [Lunarg Vulkan SDK](https://vulkan.lunarg.com/) (`.exe` executable).
-    Windows Universal C Runtime https://stackoverflow.com/a/52329698
-5. Clone the repository.
-6. Enter the following commands within the repository's directory:
+    * Install the Windows Universal C Runtime https://stackoverflow.com/a/52329698
+5. Clone the repository: `git clone --recursive git@github.com:datoviz/datoviz.git`
+6. Enter the following commands within the repository's directory (using the Windows terminal, **not** in Windows for Linux subsystem):
 
     ```
+    mkdir build
     cd build
     cmake .. -G "MinGW Makefiles"
     mingw32-make
     cd ..
     ```
+
 7. To run an example (the batch script will only work in cmd.exe, not Powershell):
 
     ```
     setup-env.bat
-    build\datoviz.exe example (TODO)
+    set DVZ_INTERACT=1
+    build\datoviz.exe test test_scene_ax
     ```
 
+8. To build the Cython package:
 
+    ```
+    setup-env.bat
+    cd bindings\cython
+    pip install -r requirements.txt
+    python setup.py build_ext -i -c mingw32
+    python setup.py develop
+    ```
+
+9. Copy `build\libdatoviz.dll` to `bindings\cython\datoviz\` (there has to be a better way)
+
+10. `python bindings\cython\examples\quickstart.py`
 
 
 ## Notes
