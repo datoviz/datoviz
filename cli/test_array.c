@@ -175,6 +175,37 @@ int test_array_5(TestContext* context)
 
 
 
+int test_array_6(TestContext* context)
+{
+    int32_t values[] = {1, 2, 3, 4, 5, 6};
+
+    DvzArray arr = dvz_array(3, DVZ_DTYPE_INT);
+    dvz_array_data(&arr, 0, 6, 6, values);
+
+    // Insert 3 values in the array.
+    // {1, 2, 10, 11, 12, 3, 4, 5, 6}
+
+    // Insertion index is the index of the first inserted element in the new, increased array.
+    dvz_array_insert(&arr, 2, 3, (int32_t[]){10, 11, 12});
+
+    // Check.
+    int32_t* arr_values = (int32_t*)arr.data;
+    AT(arr_values[0] == 1);
+    AT(arr_values[1] == 2);
+    AT(arr_values[2] == 10);
+    AT(arr_values[3] == 11);
+    AT(arr_values[4] == 12);
+    AT(arr_values[5] == 3);
+    AT(arr_values[6] == 4);
+    AT(arr_values[7] == 5);
+    AT(arr_values[8] == 6);
+
+    dvz_array_destroy(&arr);
+    return 0;
+}
+
+
+
 int test_array_cast(TestContext* context)
 {
     // uint8, float32

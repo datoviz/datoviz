@@ -106,6 +106,7 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_array_3),    //
     CASE_FIXTURE_NONE(test_array_4),    //
     CASE_FIXTURE_NONE(test_array_5),    //
+    CASE_FIXTURE_NONE(test_array_6),    //
     CASE_FIXTURE_NONE(test_array_cast), //
     CASE_FIXTURE_NONE(test_array_mvp),  //
     CASE_FIXTURE_NONE(test_array_3D),   //

@@ -497,6 +497,33 @@ static void dvz_array_reshape(DvzArray* array, uint32_t width, uint32_t height, 
 
 
 
+static void dvz_array_insert(DvzArray* array, uint32_t offset, uint32_t size, void* insert)
+{
+    ASSERT(array != NULL);
+
+    // Size of the chunk to move to make place for the inserted buffer.
+    VkDeviceSize chunk1_size = (array->item_count - offset) * array->item_size;
+
+    // Resize the array.
+    dvz_array_resize(array, array->item_count + size);
+
+    // Position of the second chunk before the insertion.
+    void* chunk1_bef = (void*)((int64_t)array->data + (int64_t)((offset + 0) * array->item_size));
+
+    // Position of the second chunk after the insertion.
+    void* chunk1_aft =
+        (void*)((int64_t)array->data + (int64_t)((offset + size) * array->item_size));
+
+    // Move the second chunk after the inserted data.
+    memmove(chunk1_aft, chunk1_bef, chunk1_size);
+
+    // Insert the data.
+    ASSERT((int64_t)chunk1_bef + (int64_t)(size * array->item_size) == (int64_t)chunk1_aft);
+    memcpy(chunk1_bef, insert, size * array->item_size);
+}
+
+
+
 /**
  * Copy data into an array.
  *

@@ -14,6 +14,7 @@
 ### `dvz_array_data()`
 ### `dvz_array_item()`
 ### `dvz_array_column()`
+### `dvz_array_insert()`
 ### `dvz_array_destroy()`
 
 
