@@ -224,25 +224,30 @@ int test_visuals_line_strip(TestContext* context)
     dvz_visual_builtin(&visual, DVZ_VISUAL_LINE_STRIP, 0);
 
     const uint32_t N = 1000;
-    dvec3* pos = calloc(2 * N, sizeof(dvec3));
-    cvec4* color = calloc(2 * N, sizeof(cvec4));
+    const uint32_t nreps = 5;
+    dvec3* pos = calloc(nreps * N, sizeof(dvec3));
+    cvec4* color = calloc(nreps * N, sizeof(cvec4));
     float t = 0;
 
     // 2 disjoint line strips.
-    for (uint32_t i = 0; i < 2 * N; i++)
+    for (uint32_t i = 0; i < nreps * N; i++)
     {
         t = -1 + 2 * (float)(i % N) / (N - 1);
-        pos[i][0] = -1 + 2 * t;
-        pos[i][1] = .5 * sin(8 * M_2PI * t) - .25 + .5 * (i / N);
-        dvz_colormap_scale(DVZ_CMAP_RAINBOW, t, 0, 1, color[i]);
+        pos[i][0] = .9 * t;
+        pos[i][1] = .5 * sin(2 * M_2PI * t) - .25 + .5 / (nreps - 1) * (i / N);
+        dvz_colormap_scale(DVZ_CMAP_RAINBOW, t, -1, 1, color[i]);
     }
 
     // Set visual data.
-    dvz_visual_data(&visual, DVZ_PROP_POS, 0, 2 * N, pos);
-    dvz_visual_data(&visual, DVZ_PROP_COLOR, 0, 2 * N, color);
-    dvz_visual_data(&visual, DVZ_PROP_LENGTH, 0, 2, (uint32_t[]){N, N});
+    dvz_visual_data(&visual, DVZ_PROP_POS, 0, nreps * N, pos);
+    dvz_visual_data(&visual, DVZ_PROP_COLOR, 0, nreps * N, color);
+    uint32_t* reps = calloc(nreps, sizeof(uint32_t));
+    for (uint32_t i = 0; i < nreps; i++)
+        reps[i] = N;
+    dvz_visual_data(&visual, DVZ_PROP_LENGTH, 0, nreps, reps);
 
     RUN;
+    FREE(reps);
     FREE(pos);
     FREE(color);
     SCREENSHOT("line_strip")

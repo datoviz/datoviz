@@ -61,6 +61,7 @@ _VISUALS = {
     'mesh': cv.DVZ_VISUAL_MESH,
     'polygon': cv.DVZ_VISUAL_POLYGON,
     'volume_slice': cv.DVZ_VISUAL_VOLUME_SLICE,
+    'line_strip': cv.DVZ_VISUAL_LINE_STRIP,
 }
 
 _CONTROLLERS = {
@@ -520,7 +521,9 @@ cdef class Panel:
         self._c_scene = c_scene
 
     def visual(self, vtype, depth_test=None, transform='auto'):
-        visual_type = _VISUALS.get(vtype, cv.DVZ_VISUAL_MARKER)
+        visual_type = _VISUALS.get(vtype, 0)
+        if not visual_type:
+            raise ValueError("unknown visual type")
         flags = 0
         if depth_test:
             flags |= cv.DVZ_GRAPHICS_FLAGS_DEPTH_TEST_ENABLE

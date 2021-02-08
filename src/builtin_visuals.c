@@ -112,71 +112,80 @@ static void _line_strip_bake(DvzVisual* visual, DvzVisualDataEvent ev)
 {
     ASSERT(visual != NULL);
 
-    // Default bake: filling the vertex buffer with the POS and COLOR props.
-    _default_visual_bake(visual, ev);
+    // Input arrays.
+    DvzArray* arr_pos = dvz_prop_array(visual, DVZ_PROP_POS, 0);
+    DvzArray* arr_color = dvz_prop_array(visual, DVZ_PROP_COLOR, 0);
+    DvzArray* arr_length = dvz_prop_array(visual, DVZ_PROP_LENGTH, 0); // uint
 
-    // Now, we will modify the vertex buffer to insert extra line endpoints between two consecutive
-    // line strips.
-
-    // Length PROP.
-    DvzProp* prop_length = dvz_prop_get(visual, DVZ_PROP_LENGTH, 0); // uint
-    DvzArray* arr_length = _prop_array(prop_length);
+    // Number of vertices.
+    uint32_t n_vertices = arr_pos->item_count;
+    ASSERT(n_vertices > 0);
 
     // Number of line strips.
     uint32_t n_strips = arr_length->item_count;
-    // Do nothing if the LENGTH prop is not set.
-    if (n_strips <= 1)
-        return;
-    ASSERT(n_strips >= 2);
 
-    // Source array.
-    DvzSource* src_vertex = dvz_source_get(visual, DVZ_SOURCE_TYPE_VERTEX, 0);
-
-    // Vertex buffer.
-    DvzArray* arr_vertex = &src_vertex->arr;
-
-    // Number of vertices.
-    uint32_t n_vertices = arr_vertex->item_count;
-    ASSERT(n_vertices > 0);
-
-    // New number of vertices, with the extra points.
-    uint32_t n_vertices_new = n_vertices + 2 * (n_strips - 1);
-    ASSERT(n_vertices_new > 0);
-
-    // Existing positions and colors.
-    uint32_t* length = (uint32_t*)arr_length->data; // length of each line strip
-
-    // Increase the size of the vertex buffer to contain the extra points.
-    ASSERT(arr_vertex->item_size > 0);
-    dvz_array_resize(arr_vertex, n_vertices_new);
-
-    // Pair of vertices to insert between every two line strips.
-    DvzVertex* insert = calloc(2, sizeof(DvzVertex));
-
-    uint32_t offset = length[0];
-    DvzVertex* point = NULL;
-    for (uint32_t i = 0; i < n_strips - 1; i++)
+    if (n_strips >= 2)
     {
-        // Last point of the current line strip.
-        point = dvz_array_item(arr_vertex, offset - 1);
+        // New number of vertices, with the extra points.
+        uint32_t n_vertices_new = n_vertices + 2 * (n_strips - 1);
+        ASSERT(n_vertices_new > 0);
 
-        // Duplicate it at the end of every line strip (except the last one).
-        glm_vec3_copy(point->pos, insert[0].pos);
-        insert[0].color[3] = 0;
+        // Make a copy of the input POS and COLOR arrays.
+        DvzArray arr_pos_input = dvz_array_copy(arr_pos);
+        DvzArray arr_color_input = dvz_array_copy(arr_color);
 
-        // First point of the next line strip.
-        point = dvz_array_item(arr_vertex, offset);
+        // Resize the pos and color transformed arrays.
+        dvz_array_resize(arr_pos, n_vertices_new);
+        dvz_array_resize(arr_color, n_vertices_new);
+        dvz_array_clear(arr_pos);
+        dvz_array_clear(arr_color);
 
-        // Duplicate it at the beggining of every line strip (except the first one).
-        glm_vec3_copy(point->pos, insert[1].pos);
-        insert[1].color[3] = 0;
+        // Lengths.
+        uint32_t* lengths = (uint32_t*)arr_length->data; // length of each line strip
 
-        // Make the insertion between the two consecutive line strips.
-        dvz_array_insert(arr_vertex, offset, 2, insert);
-        offset += (length[i + 1] + 2);
+        // Data to insert.
+        uint32_t src_offset = 0;
+        uint32_t dst_offset = 0;
+        uint32_t count = 0;
+        dvec3* pos = NULL;
+        // color of the invisible line joining two successive line strips:
+        cvec4 color = {0, 0, 0, 0};
+
+        for (uint32_t i = 0; i < n_strips; i++)
+        {
+            count = lengths[i];
+
+            // Copy the position and color values of the current line strip.
+            dvz_array_copy_region(&arr_pos_input, arr_pos, src_offset, dst_offset, count);
+            dvz_array_copy_region(&arr_color_input, arr_color, src_offset, dst_offset, count);
+
+            src_offset += count;
+            dst_offset += count;
+
+            // Add the extra elements.
+            // Last position of the current line strip.
+            pos = dvz_array_item(&arr_pos_input, src_offset - 1);
+            dvz_array_data(arr_pos, dst_offset, 1, 1, pos);
+            dvz_array_data(arr_color, dst_offset, 1, 1, color);
+
+            // First position of the next line strip.
+            if (i < n_strips - 1)
+            {
+                pos = dvz_array_item(&arr_pos_input, src_offset);
+                dvz_array_data(arr_pos, dst_offset + 1, 1, 1, pos);
+                dvz_array_data(arr_color, dst_offset + 1, 1, 1, color);
+                dst_offset += 2;
+            }
+        }
+        ASSERT(src_offset == n_vertices);
+        ASSERT(dst_offset == n_vertices_new);
+
+        // Destroy copy arrays.
+        dvz_array_destroy(&arr_pos_input);
+        dvz_array_destroy(&arr_color_input);
     }
-    ASSERT(offset == n_vertices_new);
-    FREE(insert);
+
+    _default_visual_bake(visual, ev);
 }
 
 static void _visual_line_strip(DvzVisual* visual)
@@ -203,7 +212,7 @@ static void _visual_line_strip(DvzVisual* visual)
 
     // Vertex color.
     prop = dvz_visual_prop(visual, DVZ_PROP_COLOR, 0, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 0);
-    dvz_visual_prop_copy(prop, 1, offsetof(DvzVertex, color), DVZ_ARRAY_COPY_REPEAT, 1);
+    dvz_visual_prop_copy(prop, 1, offsetof(DvzVertex, color), DVZ_ARRAY_COPY_SINGLE, 1);
 
     // Line strip length.
     prop = dvz_visual_prop(visual, DVZ_PROP_LENGTH, 0, DVZ_DTYPE_UINT, DVZ_SOURCE_TYPE_NONE, 0);
@@ -286,7 +295,7 @@ static void _visual_triangle_strip(DvzVisual* visual)
 
     // Vertex color.
     prop = dvz_visual_prop(visual, DVZ_PROP_COLOR, 0, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 0);
-    dvz_visual_prop_copy(prop, 1, offsetof(DvzVertex, color), DVZ_ARRAY_COPY_REPEAT, 1);
+    dvz_visual_prop_copy(prop, 1, offsetof(DvzVertex, color), DVZ_ARRAY_COPY_SINGLE, 1);
 
     // Common props.
     _common_props(visual);
@@ -322,7 +331,7 @@ static void _visual_triangle_fan(DvzVisual* visual)
 
     // Vertex color.
     prop = dvz_visual_prop(visual, DVZ_PROP_COLOR, 0, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 0);
-    dvz_visual_prop_copy(prop, 1, offsetof(DvzVertex, color), DVZ_ARRAY_COPY_REPEAT, 1);
+    dvz_visual_prop_copy(prop, 1, offsetof(DvzVertex, color), DVZ_ARRAY_COPY_SINGLE, 1);
 
     // Common props.
     _common_props(visual);
