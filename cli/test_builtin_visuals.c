@@ -224,37 +224,23 @@ int test_visuals_line_strip(TestContext* context)
     dvz_visual_builtin(&visual, DVZ_VISUAL_LINE_STRIP, 0);
 
     const uint32_t N = 1000;
-    dvec3* pos = calloc(2 * N + 2, sizeof(dvec3));
-    cvec4* color = calloc(2 * N + 2, sizeof(cvec4));
+    dvec3* pos = calloc(2 * N, sizeof(dvec3));
+    cvec4* color = calloc(2 * N, sizeof(cvec4));
     float t = 0;
-    for (uint32_t i = 0; i < N; i++)
+
+    // 2 disjoint line strips.
+    for (uint32_t i = 0; i < 2 * N; i++)
     {
-        t = -1 + 2 * (float)i / (N - 1);
+        t = -1 + 2 * (float)(i % N) / (N - 1);
         pos[i][0] = -1 + 2 * t;
-        pos[i][1] = .5 * sin(8 * M_2PI * t) - .25;
+        pos[i][1] = .5 * sin(8 * M_2PI * t) - .25 + .5 * (i / N);
         dvz_colormap_scale(DVZ_CMAP_RAINBOW, t, 0, 1, color[i]);
     }
-    // Trick to display multiple lines with a single visual/graphics/draw call: add duplicate
-    // points with alpha=0 at the end of line #i and the beginning of line #i+1. We need to add as
-    // many transition points as there are different lines.
-    pos[N][0] = pos[N - 1][0];
-    pos[N][1] = pos[N - 1][1];
-    color[N][3] = 0;
-
-    color[N + 1][3] = 0;
-    for (uint32_t i = 0; i < N; i++)
-    {
-        t = -1 + 2 * (float)i / (N - 1);
-        pos[i + N + 2][0] = -1 + 2 * t;
-        pos[i + N + 2][1] = .5 * sin(8 * M_2PI * t) + .25;
-        dvz_colormap_scale(DVZ_CMAP_RAINBOW, t, 0, 1, color[i + N + 2]);
-    }
-    pos[N + 1][0] = pos[N + 2][0];
-    pos[N + 1][1] = pos[N + 2][1];
 
     // Set visual data.
-    dvz_visual_data(&visual, DVZ_PROP_POS, 0, 2 * N + 2, pos);
-    dvz_visual_data(&visual, DVZ_PROP_COLOR, 0, 2 * N + 2, color);
+    dvz_visual_data(&visual, DVZ_PROP_POS, 0, 2 * N, pos);
+    dvz_visual_data(&visual, DVZ_PROP_COLOR, 0, 2 * N, color);
+    dvz_visual_data(&visual, DVZ_PROP_LENGTH, 0, 2, (uint32_t[]){N, N});
 
     RUN;
     FREE(pos);

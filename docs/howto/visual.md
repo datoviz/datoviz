@@ -22,7 +22,7 @@ The **visual** is the most important abstraction in Datoviz. It abstracts away t
 
 Adding a new visual to a panel involves the following steps:
 
-1. choosing one of the existing visuals on this page,
+1. choosing one of the existing visuals on the visual reference page,
 2. preparing the data to match the format expected by the visual properties,
 3. setting the visual properties with the data.
 
@@ -30,7 +30,7 @@ Adding a new visual to a panel involves the following steps:
 
 Each predefined visual comes with a set of predefined visual properties, also called **props**. For example, the `marker` visual has props for: point position, color, marker size, marker type, angle, and so on.
 
-This page presents the list of all predefined visuals along with their sets of props. You'll probably refer a lot to this page since it contains the most important information you'll need for your visualizations.
+The visual reference page presents the list of all predefined visuals along with their sets of props. You'll probably refer a lot to this page since it contains the most important information you'll need for your visualizations.
 
 Each prop is defined by:
 

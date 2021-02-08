@@ -224,7 +224,7 @@ Once the command buffers have been recorded, one needs to submit them to the GPU
 
 This step is actually one of the most complex ones in Vulkan, especially when there's a need to do it as efficiently as possible.
 
-First, one must assume that the window size is fixed. Resizing is a complex operation that requires destroying and recreating a large number of Vulkan objects, and it needs to be handled correctly in the rendering loop.
+First, one considers that the window size is fixed (until it is not). Resizing is a complex operation that requires destroying and recreating a large number of Vulkan objects, and it needs to be handled correctly in the rendering loop.
 
 Second, one needs to create a GPU image (like the object that is associated to a texture, but without a sampler) that the GPU will render to. This image will be presented to the screen. One must also define another special image of the same size for the *depth buffer*, essential with 3D rendering.
 
@@ -236,7 +236,7 @@ This logic must be, in part, implemented by the developer who uses the Vulkan AP
 
 Fifth, one needs to define a **render pass** and a set of **framebuffers**. The render pass defines the way the GPU renders an image, in one or several steps. The framebuffers represent the links between the GPU images and the render pass steps. The render pass must be specified when recording a rendering command buffer.
 
-Sixth, one needs to implement the main **rendering loop**. This is typically an infinite loop that where very iteration represents a frame. At every frame, the rendering loop performs the following (simplified) steps:
+Sixth, one needs to implement the main **rendering loop**. This is typically an infinite loop where every iteration represents a frame. At every frame, the rendering loop performs the following (simplified) steps:
 
 * Examine the user events (mouse, keyboard) that occurred in the window since the last frame,
 * Perform the resize if the window size has changed since the last frame,
@@ -244,7 +244,7 @@ Sixth, one needs to implement the main **rendering loop**. This is typically an 
 * Perform the pending transfers (upload/download of GPU buffers/textures) that have been requested since last frame, possibly from a background thread,
 * Optionally, record new command buffers,
 * Acquire a new swapchain image for rendering,
-* Wait until the previous frame has finished rendering,
+* Wait until the previous frame that was using the same swapchain image (might be 2 or 3 frames before) has finished rendering,
 * Submit the command buffers to their associated GPU queues, which will render the image,
 * Present the image to the screen, but only *after* the GPU has finished rendering it (asynchronous operation).
 

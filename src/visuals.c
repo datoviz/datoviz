@@ -182,14 +182,13 @@ DvzProp* dvz_visual_prop(
     prop->prop_idx = prop_idx;
     prop->dtype = dtype;
     prop->source = dvz_source_get(visual, source_type, source_idx);
-    if (prop->source == NULL)
+    if (prop->source == NULL && source_type != DVZ_SOURCE_TYPE_NONE)
     {
         log_error("source of type %d #%d not found", source_type, source_idx);
     }
-    ASSERT(prop->source != NULL);
 
     // NOTE: we do not use prop arrays for texture sources at the moment
-    if (prop->source->source_kind < DVZ_SOURCE_KIND_TEXTURE_1D)
+    if (prop->source == NULL || prop->source->source_kind < DVZ_SOURCE_KIND_TEXTURE_1D)
         prop->arr_orig = dvz_array(0, prop->dtype);
 
     return prop;
@@ -325,9 +324,9 @@ void dvz_visual_data_partial(
 
     // Get the associated source.
     DvzSource* source = prop->source;
-    ASSERT(source != NULL);
 
-    if (source->source_kind == DVZ_SOURCE_KIND_UNIFORM && (first_item > 0 || item_count > 1))
+    if (source != NULL && source->source_kind == DVZ_SOURCE_KIND_UNIFORM &&
+        (first_item > 0 || item_count > 1))
     {
         log_debug(
             "discarding uniform data after the first item (number of items was %d)", item_count);

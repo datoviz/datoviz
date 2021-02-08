@@ -108,6 +108,91 @@ static void _visual_line(DvzVisual* visual)
 /*  Line strip                                                                                   */
 /*************************************************************************************************/
 
+static void _line_strip_bake(DvzVisual* visual, DvzVisualDataEvent ev)
+{
+    ASSERT(visual != NULL);
+
+    // Default bake: filling the vertex buffer with the POS and COLOR props.
+    _default_visual_bake(visual, ev);
+
+    // Now, we will modify the vertex buffer to insert extra line endpoints between two consecutive
+    // line strips.
+
+    // Length PROP.
+    DvzProp* prop_length = dvz_prop_get(visual, DVZ_PROP_LENGTH, 0); // uint
+    DvzArray* arr_length = _prop_array(prop_length);
+
+    // Number of line strips.
+    uint32_t n_strips = arr_length->item_count;
+    ASSERT(n_strips >= 2);
+
+    // Source array.
+    DvzSource* src_vertex = dvz_source_get(visual, DVZ_SOURCE_TYPE_VERTEX, 0);
+
+    // Vertex buffer.
+    DvzArray* arr_vertex = &src_vertex->arr;
+
+    // Number of vertices.
+    uint32_t n_vertices = arr_vertex->item_count;
+    ASSERT(n_vertices > 0);
+
+    if (arr_length->item_count <= 1)
+    {
+        // Do nothing if the LENGTH prop is not set.
+        _default_visual_bake(visual, ev);
+        return;
+    }
+
+    // New number of vertices, with the extra points.
+    uint32_t n_vertices_new = n_vertices + 2 * (n_strips - 1);
+    ASSERT(n_vertices_new > 0);
+
+    // The baking function doesn't run if the VERTEX source is handled by the user.
+    if (src_vertex->origin != DVZ_SOURCE_ORIGIN_LIB)
+        return;
+    if (src_vertex->obj.request != DVZ_VISUAL_REQUEST_UPLOAD)
+    {
+        log_trace(
+            "skip bake source for source %d that doesn't need updating", src_vertex->source_kind);
+        return;
+    }
+
+    // Existing positions and colors.
+    uint32_t* length = (uint32_t*)arr_length->data; // length of each line strip
+
+    // Increase the size of the vertex buffer to contain the extra points.
+    ASSERT(arr_vertex->item_size > 0);
+    dvz_array_resize(arr_vertex, n_vertices_new);
+
+    // Pair of vertices to insert between every two line strips.
+    DvzVertex* insert = calloc(2, sizeof(DvzVertex));
+
+    uint32_t offset = length[0];
+    DvzVertex* point = NULL;
+    for (uint32_t i = 0; i < n_strips - 1; i++)
+    {
+        // Last point of the current line strip.
+        point = dvz_array_item(arr_vertex, offset - 1);
+
+        // Duplicate it at the end of every line strip (except the last one).
+        glm_vec3_copy(point->pos, insert[0].pos);
+        insert[0].color[3] = 0;
+
+        // First point of the next line strip.
+        point = dvz_array_item(arr_vertex, offset);
+
+        // Duplicate it at the beggining of every line strip (except the first one).
+        glm_vec3_copy(point->pos, insert[1].pos);
+        insert[1].color[3] = 0;
+
+        // Make the insertion between the two consecutive line strips.
+        dvz_array_insert(arr_vertex, offset, 2, insert);
+        offset += (length[i + 1] + 2);
+    }
+    ASSERT(offset == n_vertices_new);
+    FREE(insert);
+}
+
 static void _visual_line_strip(DvzVisual* visual)
 {
     ASSERT(visual != NULL);
@@ -134,8 +219,14 @@ static void _visual_line_strip(DvzVisual* visual)
     prop = dvz_visual_prop(visual, DVZ_PROP_COLOR, 0, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 0);
     dvz_visual_prop_copy(prop, 1, offsetof(DvzVertex, color), DVZ_ARRAY_COPY_REPEAT, 1);
 
+    // Line strip length.
+    prop = dvz_visual_prop(visual, DVZ_PROP_LENGTH, 0, DVZ_DTYPE_UINT, DVZ_SOURCE_TYPE_NONE, 0);
+
     // Common props.
     _common_props(visual);
+
+    // Baking function.
+    dvz_visual_callback_bake(visual, _line_strip_bake);
 }
 
 
