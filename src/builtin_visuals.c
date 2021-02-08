@@ -112,9 +112,18 @@ static void _line_strip_bake(DvzVisual* visual, DvzVisualDataEvent ev)
 {
     ASSERT(visual != NULL);
 
+    DvzProp* prop_pos = dvz_prop_get(visual, DVZ_PROP_POS, 0);
+    DvzProp* prop_color = dvz_prop_get(visual, DVZ_PROP_COLOR, 0);
+
     // Input arrays.
-    DvzArray* arr_pos = dvz_prop_array(visual, DVZ_PROP_POS, 0);
-    DvzArray* arr_color = dvz_prop_array(visual, DVZ_PROP_COLOR, 0);
+    DvzArray* arr_pos = &prop_pos->arr_trans;
+    if (arr_pos->item_size == 0)
+        arr_pos = &prop_pos->arr_orig;
+    DvzArray* arr_color = &prop_color->arr_trans;
+    if (arr_color->item_size == 0)
+        arr_color = &prop_color->arr_orig;
+
+    // Length prop.
     DvzArray* arr_length = dvz_prop_array(visual, DVZ_PROP_LENGTH, 0); // uint
 
     // Number of vertices.
@@ -130,15 +139,18 @@ static void _line_strip_bake(DvzVisual* visual, DvzVisualDataEvent ev)
         uint32_t n_vertices_new = n_vertices + 2 * (n_strips - 1);
         ASSERT(n_vertices_new > 0);
 
-        // Make a copy of the input POS and COLOR arrays.
-        DvzArray arr_pos_input = dvz_array_copy(arr_pos);
-        DvzArray arr_color_input = dvz_array_copy(arr_color);
+        // Create the staging arrays if needed.
+        if (prop_pos->arr_staging.item_size == 0)
+            prop_pos->arr_staging = dvz_array(arr_pos->item_count, arr_pos->dtype);
+        if (prop_color->arr_staging.item_size == 0)
+            prop_color->arr_staging = dvz_array(arr_color->item_count, arr_color->dtype);
+
+        DvzArray* arr_pos_out = &prop_pos->arr_staging;
+        DvzArray* arr_color_out = &prop_color->arr_staging;
 
         // Resize the pos and color transformed arrays.
-        dvz_array_resize(arr_pos, n_vertices_new);
-        dvz_array_resize(arr_color, n_vertices_new);
-        dvz_array_clear(arr_pos);
-        dvz_array_clear(arr_color);
+        dvz_array_resize(arr_pos_out, n_vertices_new);
+        dvz_array_resize(arr_color_out, n_vertices_new);
 
         // Lengths.
         uint32_t* lengths = (uint32_t*)arr_length->data; // length of each line strip
@@ -156,33 +168,29 @@ static void _line_strip_bake(DvzVisual* visual, DvzVisualDataEvent ev)
             count = lengths[i];
 
             // Copy the position and color values of the current line strip.
-            dvz_array_copy_region(&arr_pos_input, arr_pos, src_offset, dst_offset, count);
-            dvz_array_copy_region(&arr_color_input, arr_color, src_offset, dst_offset, count);
+            dvz_array_copy_region(arr_pos, arr_pos_out, src_offset, dst_offset, count);
+            dvz_array_copy_region(arr_color, arr_color_out, src_offset, dst_offset, count);
 
             src_offset += count;
             dst_offset += count;
 
             // Add the extra elements.
             // Last position of the current line strip.
-            pos = dvz_array_item(&arr_pos_input, src_offset - 1);
-            dvz_array_data(arr_pos, dst_offset, 1, 1, pos);
-            dvz_array_data(arr_color, dst_offset, 1, 1, color);
+            pos = dvz_array_item(arr_pos, src_offset - 1);
+            dvz_array_data(arr_pos_out, dst_offset, 1, 1, pos);
+            dvz_array_data(arr_color_out, dst_offset, 1, 1, color);
 
             // First position of the next line strip.
             if (i < n_strips - 1)
             {
-                pos = dvz_array_item(&arr_pos_input, src_offset);
-                dvz_array_data(arr_pos, dst_offset + 1, 1, 1, pos);
-                dvz_array_data(arr_color, dst_offset + 1, 1, 1, color);
+                pos = dvz_array_item(arr_pos, src_offset);
+                dvz_array_data(arr_pos_out, dst_offset + 1, 1, 1, pos);
+                dvz_array_data(arr_color_out, dst_offset + 1, 1, 1, color);
                 dst_offset += 2;
             }
         }
         ASSERT(src_offset == n_vertices);
         ASSERT(dst_offset == n_vertices_new);
-
-        // Destroy copy arrays.
-        dvz_array_destroy(&arr_pos_input);
-        dvz_array_destroy(&arr_color_input);
     }
 
     _default_visual_bake(visual, ev);

@@ -46,6 +46,7 @@ void dvz_visual_destroy(DvzVisual* visual)
         prop = iter.item;
         dvz_array_destroy(&prop->arr_orig);
         dvz_array_destroy(&prop->arr_trans);
+        dvz_array_destroy(&prop->arr_staging);
         if (prop->default_value != NULL)
         {
             FREE(prop->default_value)

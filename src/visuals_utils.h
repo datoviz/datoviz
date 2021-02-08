@@ -183,7 +183,9 @@ static DvzBindings* _get_bindings(DvzVisual* visual, DvzSource* source)
 static DvzArray* _prop_array(DvzProp* prop)
 {
     ASSERT(prop != NULL);
-    if (prop->arr_trans.item_count > 0)
+    if (prop->arr_staging.item_count > 0)
+        return &prop->arr_staging;
+    else if (prop->arr_trans.item_count > 0)
         return &prop->arr_trans;
     else
         return &prop->arr_orig;

@@ -237,8 +237,9 @@ struct DvzProp
     VkDeviceSize offset;
 
     void* default_value;
-    DvzArray arr_orig;  // original data array
-    DvzArray arr_trans; // transformed data array
+    DvzArray arr_orig;    // original data array
+    DvzArray arr_trans;   // transformed data array
+    DvzArray arr_staging; // optional modification made to the prop by the baking function
     // DvzArray arr_triang; // triangulated data array
 
     DvzDataType target_dtype; // used for casting during the copy to the vertex array
