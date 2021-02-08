@@ -26,10 +26,13 @@
 #include <string.h>
 #include <time.h>
 
+#include <datoviz/macros.h>
 #include <datoviz/log.h>
 
 #ifdef _WIN32
+BEGIN_INCL_NO_WARN
 #include "ansicolor-w32.h"
+END_INCL_NO_WARN
 #endif
 
 static struct
