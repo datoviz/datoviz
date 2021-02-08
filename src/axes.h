@@ -32,9 +32,12 @@ static DvzAxesContext _axes_context(DvzController* controller, DvzAxisCoord coor
     DvzCanvas* canvas = controller->panel->grid->canvas;
     ASSERT(canvas != NULL);
     float dpi_scaling = canvas->dpi_scaling;
-    uvec2 size = {0};
-    dvz_canvas_size(canvas, DVZ_CANVAS_SIZE_FRAMEBUFFER, size);
     DvzViewport* viewport = &controller->panel->viewport;
+    uint32_t size = 0;
+    if (coord == DVZ_AXES_COORD_X)
+        size = viewport->size_framebuffer[0];
+    else if (coord == DVZ_AXES_COORD_Y)
+        size = viewport->size_framebuffer[1];
     vec4 m = {0};
     glm_vec4_copy(viewport->margins, m);
 
@@ -42,7 +45,7 @@ static DvzAxesContext _axes_context(DvzController* controller, DvzAxisCoord coor
     DvzAxesContext ctx = {0};
     ctx.coord = coord;
     ctx.extensions = 1; // extend the range on the left/right and top/bottom
-    ctx.size_viewport = size[coord] - m[1 - coord] - m[3 - coord]; // remove the margins
+    ctx.size_viewport = size - m[1 - coord] - m[3 - coord]; // remove the margins
     ctx.scale_orig = controller->interacts[0].u.p.zoom[coord];
 
     // TODO: improve determination of glyph size
