@@ -667,7 +667,7 @@ int test_visuals_mesh(TestContext* context)
     dvz_visual_data(&visual, DVZ_PROP_LIGHT_PARAMS, 0, 1, &params.lights_params_0);
     dvz_visual_data(&visual, DVZ_PROP_LIGHT_POS, 0, 1, &params.lights_pos_0);
     dvz_visual_data(&visual, DVZ_PROP_TEXCOEFS, 0, 1, &params.tex_coefs);
-    dvz_visual_data(&visual, DVZ_PROP_VIEW_POS, 0, 1, &params.view_pos);
+    // dvz_visual_data(&visual, DVZ_PROP_VIEW_POS, 0, 1, &params.view_pos);
 
     DvzInteract interact = dvz_interact_builtin(canvas, DVZ_INTERACT_ARCBALL);
     visual.user_data = &interact;
@@ -702,8 +702,8 @@ static void _volume_interact(DvzCanvas* canvas, DvzEvent ev)
     DvzBufferRegions* br = &source->u.br;
     dvz_upload_buffers(canvas, *br, 0, br->size, &interact->mvp);
 
-    DvzArcball* arcball = &interact->u.a;
-    dvz_visual_data(visual, DVZ_PROP_VIEW_POS, 0, 1, arcball->camera.eye);
+    // DvzArcball* arcball = &interact->u.a;
+    // dvz_visual_data(visual, DVZ_PROP_VIEW_POS, 0, 1, arcball->camera.eye);
 
     dvz_visual_update(visual, canvas->viewport, (DvzDataCoords){0}, NULL);
 }
@@ -752,7 +752,7 @@ int test_visuals_volume_1(TestContext* context)
 
     // Params.
     DvzArcball* arcball = &interact.u.a;
-    dvz_visual_data(&visual, DVZ_PROP_VIEW_POS, 0, 1, arcball->camera.eye);
+    // dvz_visual_data(&visual, DVZ_PROP_VIEW_POS, 0, 1, arcball->camera.eye);
 
     DvzColormap cmap = DVZ_CMAP_BONE;
     dvz_visual_data(&visual, DVZ_PROP_COLORMAP, 0, 1, &cmap);

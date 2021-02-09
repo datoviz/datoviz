@@ -4,7 +4,7 @@
 layout (std140, binding = USER_BINDING) uniform Params {
     mat4 lights_pos_0; // lights 0-3
     mat4 lights_params_0; // for each light, coefs for ambient, diffuse, specular, specular expon
-    vec4 view_pos;
+    // vec4 view_pos;
     vec4 tex_coefs; // blending coefficients for the textures
     vec4 clip_coefs;
 } params;
@@ -69,7 +69,7 @@ void main() {
         diffuse = diff * light_color;
 
         // Specular component.
-        view_dir = normalize(params.view_pos.xyz - in_pos);
+        view_dir = normalize(-mvp.view[3].xyz - in_pos);
         reflect_dir = reflect(-light_dir, normal);
         // TODO: customizable specular exponent
         spec = pow(max(dot(view_dir, reflect_dir), 0.0), lpar.w);

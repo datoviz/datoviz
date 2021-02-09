@@ -93,7 +93,7 @@ _PROPS = {
     'light_pos': cv.DVZ_PROP_LIGHT_POS,
     'texcoefs': cv.DVZ_PROP_TEXCOEFS,
     'linewidth': cv.DVZ_PROP_LINE_WIDTH,
-    'view_pos': cv.DVZ_PROP_VIEW_POS,
+    # 'view_pos': cv.DVZ_PROP_VIEW_POS,
     'colormap': cv.DVZ_PROP_COLORMAP,
     'transferx': cv.DVZ_PROP_TRANSFER_X,
     'transfery': cv.DVZ_PROP_TRANSFER_Y,

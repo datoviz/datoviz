@@ -740,14 +740,13 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_PROP_LIGHT_POS = 21
         DVZ_PROP_LIGHT_PARAMS = 22
         DVZ_PROP_CLIP = 23
-        DVZ_PROP_VIEW_POS = 24
-        DVZ_PROP_MODEL = 25
-        DVZ_PROP_VIEW = 26
-        DVZ_PROP_PROJ = 27
-        DVZ_PROP_TIME = 28
-        DVZ_PROP_INDEX = 29
-        DVZ_PROP_SCALE = 30
-        DVZ_PROP_TRANSFORM = 31
+        DVZ_PROP_MODEL = 24
+        DVZ_PROP_VIEW = 25
+        DVZ_PROP_PROJ = 26
+        DVZ_PROP_TIME = 27
+        DVZ_PROP_INDEX = 28
+        DVZ_PROP_SCALE = 29
+        DVZ_PROP_TRANSFORM = 30
 
     ctypedef enum DvzSourceKind:
         DVZ_SOURCE_KIND_NONE = 0

@@ -24,7 +24,7 @@ visual.data('length', np.atleast_2d(shape).astype(np.float32))
 
 # HACK
 visual.data('colormap', np.atleast_2d(np.array([1], dtype=np.float32)))
-visual.data('view_pos', np.atleast_2d(np.array([0, 0, 3], dtype=np.float32)))
+# visual.data('view_pos', np.atleast_2d(np.array([0, 0, 3], dtype=np.float32)))
 
 ROOT = Path(__file__).parent.parent.parent.parent
 vol = np.fromfile(ROOT / "data/volume/atlas_25.img", dtype=np.uint16)

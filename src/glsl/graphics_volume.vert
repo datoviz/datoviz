@@ -3,7 +3,7 @@
 
 layout(std140, binding = USER_BINDING) uniform Params
 {
-    vec4 view_pos;
+    // vec4 view_pos;
     int cmap;
 }
 params;
@@ -21,5 +21,5 @@ void main()
     out_uvw = uvw;
 
     out_pos =  (mvp.model * vec4(pos, 1.0)).xyz;
-    out_ray = out_pos - params.view_pos.xyz;
+    out_ray = out_pos + mvp.view[3].xyz;
 }

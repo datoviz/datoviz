@@ -177,7 +177,6 @@ Features:
 | `index` | 0 | `uint32` | faces, as vertex indices |
 | `light_pos` | 0 | `mat4` | light positions (*uniform*) |
 | `light_params` | 0 | `mat4` | light coefficients (*uniform*) |
-| `view_pos` | 0 | `vec4` | camera position (*uniform*) |
 | `texcoefs` | 0 | `vec4` | texture blending coefficients (*uniform*) |
 | `clip` | 0 | `vec4` | clip vector (*uniform*) |
 

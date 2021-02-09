@@ -7,7 +7,6 @@
 
 layout(std140, binding = USER_BINDING) uniform Params
 {
-    vec4 view_pos;
     vec4 box_size;
     int cmap;
 }
@@ -60,7 +59,7 @@ void main()
 
     mat4 mi = inverse(mvp.model);
     vec3 u = (mi * vec4(normalize(in_ray), 1)).xyz;
-    vec3 o = (mi * vec4(params.view_pos.xyz, 1)).xyz;
+    vec3 o = (mi * vec4(-mvp.view[3].xyz, 1)).xyz;
 
     // // Inner cube example.
     // float r = .25;

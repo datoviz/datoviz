@@ -895,13 +895,14 @@ int test_graphics_volume_slice(TestContext* context)
 /*  Volume tests                                                                                 */
 /*************************************************************************************************/
 
-static void _volume_update_mvp(DvzCanvas* canvas, DvzEvent ev)
-{
-    TestGraphics* tg = ev.user_data;
-    glm_vec3_copy(
-        tg->interact.u.a.camera.eye, ((DvzGraphicsVolumeParams*)tg->params_data)->view_pos);
-    dvz_upload_buffers(canvas, tg->br_params, 0, sizeof(DvzGraphicsVolumeParams), tg->params_data);
-}
+// static void _volume_update_mvp(DvzCanvas* canvas, DvzEvent ev)
+// {
+//     TestGraphics* tg = ev.user_data;
+//     glm_vec3_copy(
+//         tg->interact.u.a.camera.eye, ((DvzGraphicsVolumeParams*)tg->params_data)->view_pos);
+//     dvz_upload_buffers(canvas, tg->br_params, 0, sizeof(DvzGraphicsVolumeParams),
+//     tg->params_data);
+// }
 
 int test_graphics_volume_1(TestContext* context)
 {
@@ -927,7 +928,7 @@ int test_graphics_volume_1(TestContext* context)
     // Parameters.
     tg.br_params =
         dvz_ctx_buffers(gpu->context, DVZ_BUFFER_TYPE_UNIFORM, 1, sizeof(DvzGraphicsVolumeParams));
-    glm_vec3_copy(tg.eye, params.view_pos);
+    // glm_vec3_copy(tg.eye, params.view_pos);
     tg.params_data = &params;
     dvz_upload_buffers(canvas, tg.br_params, 0, sizeof(DvzGraphicsVolumeParams), &params);
 
@@ -943,8 +944,8 @@ int test_graphics_volume_1(TestContext* context)
     // Interactivity.
     tg.interact = dvz_interact_builtin(canvas, DVZ_INTERACT_ARCBALL);
     dvz_event_callback(canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _interact_callback, &tg);
-    dvz_event_callback(
-        canvas, DVZ_EVENT_TIMER, 1. / 60, DVZ_EVENT_MODE_SYNC, _volume_update_mvp, &tg);
+    // dvz_event_callback(
+    //     canvas, DVZ_EVENT_TIMER, 1. / 60, DVZ_EVENT_MODE_SYNC, _volume_update_mvp, &tg);
     dvz_event_callback(canvas, DVZ_EVENT_RESIZE, 0, DVZ_EVENT_MODE_SYNC, _resize, &tg);
 
     DvzArcball* arcball = &tg.interact.u.a;
