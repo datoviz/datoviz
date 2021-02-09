@@ -321,8 +321,8 @@ void dvz_thread_unlock(DvzThread* thread)
     }
     if (lock_idx >= 1)
         atomic_store(&thread->lock_idx, lock_idx - 1);
-    else
-        log_error("lock_idx = 0 ???");
+    // else
+    //     log_error("lock_idx = 0 ???");
 }
 
 

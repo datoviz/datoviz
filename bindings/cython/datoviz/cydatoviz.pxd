@@ -110,6 +110,7 @@ cdef extern from "<datoviz/datoviz.h>":
     ctypedef enum VkFormat:
         VK_FORMAT_R8_UNORM = 9
         VK_FORMAT_R16_UNORM = 70
+        VK_FORMAT_R8G8B8A8_UNORM = 37
 
     ctypedef enum VkFilter:
         VK_FILTER_NEAREST = 0
@@ -1009,6 +1010,7 @@ cdef extern from "<datoviz/datoviz.h>":
 
     # from file: controls.h
     DvzGui* dvz_gui(DvzCanvas* canvas, const char* title, int flags)
+    void dvz_gui_checkbox(DvzGui* gui, const char* name, bint value)
     void dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax, float value)
     void dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax, int value)
 

@@ -60,6 +60,7 @@ _VISUALS = {
     'marker': cv.DVZ_VISUAL_MARKER,
     'mesh': cv.DVZ_VISUAL_MESH,
     'polygon': cv.DVZ_VISUAL_POLYGON,
+    'image': cv.DVZ_VISUAL_IMAGE,
     'volume_slice': cv.DVZ_VISUAL_VOLUME_SLICE,
     'line_strip': cv.DVZ_VISUAL_LINE_STRIP,
 }
@@ -105,6 +106,7 @@ _TRANSFORMS = {
 _CONTROLS = {
     'slider_float': cv.DVZ_GUI_CONTROL_SLIDER_FLOAT,
     'slider_int': cv.DVZ_GUI_CONTROL_SLIDER_INT,
+    'checkbox': cv.DVZ_GUI_CONTROL_CHECKBOX,
 }
 
 _COLORMAPS = {
@@ -368,6 +370,7 @@ cdef class App:
 cdef _get_ev_args(cv.DvzEvent c_ev):
     cdef float* fvalue
     cdef int* ivalue
+    cdef bint* bvalue
     dt = c_ev.type
     if dt == cv.DVZ_EVENT_GUI:
         if c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_SLIDER_FLOAT:
@@ -376,6 +379,9 @@ cdef _get_ev_args(cv.DvzEvent c_ev):
         elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_SLIDER_INT:
             ivalue = <int*>c_ev.u.g.control.value
             return (ivalue[0],)
+        elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_CHECKBOX:
+            bvalue = <bint*>c_ev.u.g.control.value
+            return (bvalue[0],)
     return ()
 
 
@@ -563,6 +569,33 @@ cdef class Visual:
         N = value.shape[0]
         cv.dvz_visual_data(self._c_visual, prop, idx, N, &value.data[0])
 
+    def image(self, np.ndarray[CHAR, ndim=3] value, int idx=0, filtering=None):
+        assert value.ndim == 3
+        assert value.shape[2] == 4
+        cdef cv.uvec3 shape
+        shape[0] = value.shape[0]
+        shape[1] = value.shape[1]
+        shape[2] = 1
+        cdef size = value.size
+        cdef item_size = np.dtype(value.dtype).itemsize
+        assert item_size == 1
+
+        # TODO: choose format as a function of the array dtype
+        texture = cv.dvz_ctx_texture(self._c_context, 2, shape, cv.VK_FORMAT_R8G8B8A8_UNORM)
+
+        cdef cv.VkFilter fil = cv.VK_FILTER_NEAREST
+        if filtering is None or filtering == 'nearest':
+            fil = cv.VK_FILTER_NEAREST
+        elif filtering == 'linear':
+            fil = cv.VK_FILTER_LINEAR
+
+        cv.dvz_texture_filter(texture, cv.DVZ_FILTER_MIN, fil);
+        cv.dvz_texture_filter(texture, cv.DVZ_FILTER_MAG, fil);
+
+        cdef cv.uvec3 DVZ_ZERO_OFFSET = [0, 0, 0]
+        cv.dvz_texture_upload(texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, size * item_size, &value.data[0])
+        cv.dvz_visual_texture(self._c_visual, cv.DVZ_SOURCE_TYPE_IMAGE, idx, texture)
+
     def volume(self, np.ndarray value, idx=0):
         assert value.ndim == 3
         # TODO: choose format as a function of the array dtype
@@ -653,6 +686,9 @@ cdef class Gui:
             c_vmax = kwargs.get('vmax', 1)
             c_value = kwargs.get('value', c_vmin)
             cv.dvz_gui_slider_int(self._c_gui, c_name, c_vmin, c_vmax, c_value)
+        elif (ctype == 'checkbox'):
+            c_value = kwargs.get('value', 0)
+            cv.dvz_gui_checkbox(self._c_gui, c_name, c_value)
 
         def wrap(f):
             cdef cv.DvzEventType evtype

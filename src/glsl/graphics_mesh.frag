@@ -47,7 +47,7 @@ void main() {
         color += params.tex_coefs.x * texture(tex_0, in_uv).xyz;
         color += params.tex_coefs.y * texture(tex_1, in_uv).xyz;
         color += params.tex_coefs.z * texture(tex_2, in_uv).xyz;
-        color += params.tex_coefs.t * texture(tex_3, in_uv).xyz;
+        color += params.tex_coefs.w * texture(tex_3, in_uv).xyz;
     }
 
     // Light position and params.
