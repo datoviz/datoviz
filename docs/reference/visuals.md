@@ -74,6 +74,34 @@ This visual currently only uses a basic `triangle` underlying graphics. It perfo
 
 
 
+### Image
+
+![](../images/visuals/image.png)
+
+
+#### Props
+
+| Type | Index | Type | Description |
+| ---- | ---- | ---- | ---- |
+| `pos` | 0 | `dvec3` | top left position |
+| `pos` | 1 | `dvec3` | top right position |
+| `pos` | 2 | `dvec3` | bottom right position |
+| `pos` | 3 | `dvec3` | bottom left position |
+| `texcoords` | 0 | `vec3` | top left texture coordinates |
+| `texcoords` | 1 | `vec3` | top right texture coordinates |
+| `texcoords` | 2 | `vec3` | bottom right texture coordinates |
+| `texcoords` | 3 | `vec3` | bottom left texture coordinates |
+
+#### Sources
+
+| Type | Index | Description |
+| ---- | ---- | ---- |
+| `vertex` | 0 | vertex buffer |
+| `param` | 0 | parameter struct |
+| `image` | 0..3 | 2D texture with image #i |
+
+
+
 ### Axes
 
 ![](../images/visuals/axes.png)
