@@ -720,7 +720,7 @@ int test_visuals_volume_1(TestContext* context)
     const uint32_t nk = MOUSE_VOLUME_DEPTH;
 
     float c = .004;
-    vec4 box_size = {c * ni, c * nj, c * nk, 0};
+    vec3 box_size = {c * ni, c * nj, c * nk};
     dvec3 p0 = {-c * ni / 2., -c * nj / 2., -c * nk / 2.};
     dvec3 p1 = {+c * ni / 2., +c * nj / 2., +c * nk / 2.};
 

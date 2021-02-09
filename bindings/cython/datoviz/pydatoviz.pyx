@@ -61,6 +61,7 @@ _VISUALS = {
     'mesh': cv.DVZ_VISUAL_MESH,
     'polygon': cv.DVZ_VISUAL_POLYGON,
     'image': cv.DVZ_VISUAL_IMAGE,
+    'volume': cv.DVZ_VISUAL_VOLUME,
     'volume_slice': cv.DVZ_VISUAL_VOLUME_SLICE,
     'line_strip': cv.DVZ_VISUAL_LINE_STRIP,
 }
@@ -605,8 +606,11 @@ cdef class Visual:
         shape[2] = value.shape[2]
         cdef size = value.size
         cdef item_size = np.dtype(value.dtype).itemsize
+
+        # TODO: choose format as a function of the NumPy dtype
         texture = cv.dvz_ctx_texture(self._c_context, 3, shape, cv.VK_FORMAT_R16_UNORM)
         cv.dvz_texture_filter(texture, cv.DVZ_FILTER_MAG, cv.VK_FILTER_LINEAR);
+
         cdef cv.uvec3 DVZ_ZERO_OFFSET = [0, 0, 0]
         cv.dvz_texture_upload(texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, size * item_size, &value.data[0])
         cv.dvz_visual_texture(self._c_visual, cv.DVZ_SOURCE_TYPE_VOLUME, idx, texture)

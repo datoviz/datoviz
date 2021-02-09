@@ -55,6 +55,9 @@ vec4 fetch_color(vec3 uvw) {
 
 void main()
 {
+    // out_color = vec4(params.box_size.xyz*1,1);
+    // return;
+
     mat4 mi = inverse(mvp.model);
     vec3 u = (mi * vec4(normalize(in_ray), 1)).xyz;
     vec3 o = (mi * vec4(params.view_pos.xyz, 1)).xyz;

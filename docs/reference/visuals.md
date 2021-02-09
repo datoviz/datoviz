@@ -195,6 +195,32 @@ Features:
 
 
 
+### Volume
+
+![](../images/visuals/volume.png)
+
+
+#### Props
+
+| Type | Index | Type | Description |
+| ---- | ---- | ---- | ---- |
+| `pos` | 0 | `dvec3` | first corner |
+| `pos` | 1 | `dvec3` | opposite corner |
+| `texcoords` | 0 | `vec3` | texture coordinates of the first corner |
+| `texcoords` | 1 | `vec3` | texture coordinates of the opposite corner |
+| `colormap` | 0 | `int` | colormap enum (*uniform*) |
+
+#### Sources
+
+| Type | Index | Description |
+| ---- | ---- | ---- |
+| `vertex` | 0 | vertex buffer |
+| `param` | 0 | parameter struct |
+| `color_texture` | 0 | 2D texture with the colormap texture |
+| `volume` | 0 | 3D texture with the volume |
+
+
+
 ### Volume slice
 
 ![](../images/visuals/volume_slice.png)

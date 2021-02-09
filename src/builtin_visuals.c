@@ -1382,7 +1382,11 @@ static void _visual_volume(DvzVisual* visual)
 
     // Tex coords.
     for (uint32_t i = 0; i < 2; i++)
-        dvz_visual_prop(visual, DVZ_PROP_TEXCOORDS, i, DVZ_DTYPE_VEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
+    {
+        prop = dvz_visual_prop(
+            visual, DVZ_PROP_TEXCOORDS, i, DVZ_DTYPE_VEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
+        dvz_visual_prop_default(prop, (vec4){i, i, i, 0});
+    }
 
     // Common props.
     _common_props(visual);
@@ -1391,16 +1395,16 @@ static void _visual_volume(DvzVisual* visual)
     // Params.
 
     // View pos.
-    prop = dvz_visual_prop(visual, DVZ_PROP_VIEW_POS, 0, DVZ_DTYPE_VEC4, DVZ_SOURCE_TYPE_PARAM, 0);
+    prop = dvz_visual_prop(visual, DVZ_PROP_VIEW_POS, 0, DVZ_DTYPE_VEC3, DVZ_SOURCE_TYPE_PARAM, 0);
     dvz_visual_prop_copy(
         prop, 0, offsetof(DvzGraphicsVolumeParams, view_pos), DVZ_ARRAY_COPY_SINGLE, 1);
-    dvz_visual_prop_default(prop, (vec4){0, 0, 0, 0});
+    dvz_visual_prop_default(prop, (vec3){0, 0, 3});
 
     // Box size.
-    prop = dvz_visual_prop(visual, DVZ_PROP_LENGTH, 0, DVZ_DTYPE_VEC4, DVZ_SOURCE_TYPE_PARAM, 0);
+    prop = dvz_visual_prop(visual, DVZ_PROP_LENGTH, 0, DVZ_DTYPE_VEC3, DVZ_SOURCE_TYPE_PARAM, 0);
     dvz_visual_prop_copy(
         prop, 1, offsetof(DvzGraphicsVolumeParams, box_size), DVZ_ARRAY_COPY_SINGLE, 1);
-    dvz_visual_prop_default(prop, (vec4){2, 2, 2, 0});
+    dvz_visual_prop_default(prop, (vec3){2, 2, 2});
 
     // Colormap value.
     prop = dvz_visual_prop(visual, DVZ_PROP_COLORMAP, 0, DVZ_DTYPE_INT, DVZ_SOURCE_TYPE_PARAM, 0);
