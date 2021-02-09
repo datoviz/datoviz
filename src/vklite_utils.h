@@ -692,6 +692,14 @@ static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
         queue_family_score[i] += (uint32_t)q->support_present[i];
     }
 
+    // DEBUG to check when there is only 1 family queue with 1 queue.
+    // q->queue_family_count = 1;
+    // queue_family_score[0] = 4;
+    // q->support_transfer[0] = 1;
+    // q->support_graphics[0] = 1;
+    // q->support_compute[0] = 1;
+    // q->support_present[0] = 1;
+    // q->max_queue_count[0] = 1;
 
     // Then, for each requested queue, we find the matching queue family with the lowest score.
     {
@@ -706,6 +714,11 @@ static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
             // For each possible queue family, determine whether it would fit for the current
             // requested queue.
             uint32_t qf = 0;
+
+            // a queue family that would match but that is full, so not possible to get a
+            // new queue, but could still use an existing queue
+            uint32_t qf_fallback = 0;
+
             for (uint32_t qfi = 0; qfi < q->queue_family_count; qfi++)
             {
                 // NOTE: go through queue families in reversed order so that, if multiple matching
@@ -722,9 +735,15 @@ static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
                     qf_match = false;
                 if ((q->queue_types[i] & DVZ_QUEUE_PRESENT) && !q->support_present[qf])
                     qf_match = false;
-                // The current queue family doesn't match because it is full.
+
                 if (queues_per_family[qf] >= q->max_queue_count[qf])
+                {
+                    log_trace(
+                        "the current queue family %d doesn't match because it's full (%d >= %d)",
+                        qf, queues_per_family[qf], q->max_queue_count[qf]);
                     qf_match = false;
+                    qf_fallback = qf;
+                }
 
                 // This queue family does not match, skipping.
                 if (!qf_match)
@@ -756,8 +775,11 @@ static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
             // max number of queues per family.
             if (lowest_score == 1000)
             {
-                log_error("could not find a matching queue family for requested queue #%d", i);
-                exit(1);
+                log_debug(
+                    "could not find a matching queue family for requested queue #%d, reusing an "
+                    "existing queue",
+                    i);
+                q->queue_families[i] = qf_fallback;
             }
         }
     }
