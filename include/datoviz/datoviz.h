@@ -14,6 +14,7 @@ extern "C" {
 #include "common.h"
 #include "context.h"
 #include "controls.h"
+#include "demo.h"
 #include "graphics.h"
 #include "interact.h"
 #include "mesh.h"
