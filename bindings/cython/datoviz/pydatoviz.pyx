@@ -85,6 +85,7 @@ _PROPS = {
     'color': cv.DVZ_PROP_COLOR,
     'alpha': cv.DVZ_PROP_ALPHA,
     'ms': cv.DVZ_PROP_MARKER_SIZE,
+    'marker_type': cv.DVZ_PROP_MARKER_TYPE,
     'normal': cv.DVZ_PROP_NORMAL,
     'texcoords': cv.DVZ_PROP_TEXCOORDS,
     'index': cv.DVZ_PROP_INDEX,
@@ -276,6 +277,10 @@ _EVENTS ={
     'gui': cv.DVZ_EVENT_GUI,
 }
 
+_MARKER_TYPES = {
+    'disc': cv.DVZ_MARKER_DISC,
+    'vbar': cv.DVZ_MARKER_VBAR,
+}
 
 
 def _key_name(key):

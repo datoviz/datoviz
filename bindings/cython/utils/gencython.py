@@ -286,7 +286,7 @@ if __name__ == '__main__':
 
         # Parse the structs
         structs = _parse_struct(text)
-        # Generate the Cython enum definitions
+        # Generate the Cython struct definitions
         generated = _gen_struct(structs)
         if generated:
             structs_to_insert += f'# from file: {filename.name}\n\n{generated}'
