@@ -33,6 +33,7 @@ int test_visuals_image(TestContext* context);
 
 // 3D visuals.
 int test_visuals_mesh(TestContext* context);
+int test_visuals_volume_1(TestContext* context);
 int test_visuals_volume_slice(TestContext* context);
 
 

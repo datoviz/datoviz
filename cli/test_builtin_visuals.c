@@ -619,7 +619,7 @@ int test_visuals_image(TestContext* context)
     dvz_visual_texture(&visual, DVZ_SOURCE_TYPE_IMAGE, 0, texture);
 
     RUN;
-    // SCREENSHOT("image")
+    SCREENSHOT("image")
     END;
 }
 
@@ -684,6 +684,91 @@ int test_visuals_mesh(TestContext* context)
 
     RUN;
     SCREENSHOT("mesh")
+    END;
+}
+
+
+
+static void _volume_interact(DvzCanvas* canvas, DvzEvent ev)
+{
+    ASSERT(canvas != NULL);
+    DvzVisual* visual = (DvzVisual*)ev.user_data;
+    ASSERT(visual != NULL);
+
+    DvzInteract* interact = visual->user_data;
+    dvz_interact_update(interact, canvas->viewport, &canvas->mouse, &canvas->keyboard);
+
+    DvzSource* source = dvz_source_get(visual, DVZ_SOURCE_TYPE_MVP, 0);
+    DvzBufferRegions* br = &source->u.br;
+    dvz_upload_buffers(canvas, *br, 0, br->size, &interact->mvp);
+
+    DvzArcball* arcball = &interact->u.a;
+    dvz_visual_data(visual, DVZ_PROP_VIEW_POS, 0, 1, arcball->camera.eye);
+
+    dvz_visual_update(visual, canvas->viewport, (DvzDataCoords){0}, NULL);
+}
+
+int test_visuals_volume_1(TestContext* context)
+{
+    INIT;
+
+    DvzVisual visual = dvz_visual(canvas);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_VOLUME, 0);
+
+    const uint32_t ni = MOUSE_VOLUME_WIDTH;
+    const uint32_t nj = MOUSE_VOLUME_HEIGHT;
+    const uint32_t nk = MOUSE_VOLUME_DEPTH;
+
+    float c = .004;
+    vec4 box_size = {c * ni, c * nj, c * nk, 0};
+    dvec3 p0 = {-c * ni / 2., -c * nj / 2., -c * nk / 2.};
+    dvec3 p1 = {+c * ni / 2., +c * nj / 2., +c * nk / 2.};
+
+    vec3 uvw0, uvw1;
+    uvw0[0] = 0, uvw0[1] = 0, uvw0[2] = 0;
+    uvw1[0] = 1, uvw1[1] = 1, uvw1[2] = 1;
+
+    // Visual data.
+    dvz_visual_data(&visual, DVZ_PROP_POS, 0, 1, p0);
+    dvz_visual_data(&visual, DVZ_PROP_POS, 1, 1, p1);
+
+    dvz_visual_data(&visual, DVZ_PROP_TEXCOORDS, 0, 1, uvw0);
+    dvz_visual_data(&visual, DVZ_PROP_TEXCOORDS, 1, 1, uvw1);
+
+    dvz_visual_data(&visual, DVZ_PROP_LENGTH, 0, 1, box_size);
+
+    // Colormap texture.
+    dvz_visual_texture(
+        &visual, DVZ_SOURCE_TYPE_COLOR_TEXTURE, 0, gpu->context->color_texture.texture);
+
+    // Volume texture.
+    DvzTexture* volume = _mouse_volume(canvas);
+    dvz_visual_texture(&visual, DVZ_SOURCE_TYPE_VOLUME, 0, volume);
+
+    // Arcball.
+    DvzInteract interact = dvz_interact_builtin(canvas, DVZ_INTERACT_ARCBALL);
+    visual.user_data = &interact;
+    dvz_event_callback(canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _volume_interact, &visual);
+
+    // Params.
+    DvzArcball* arcball = &interact.u.a;
+    dvz_visual_data(&visual, DVZ_PROP_VIEW_POS, 0, 1, arcball->camera.eye);
+
+    DvzColormap cmap = DVZ_CMAP_BONE;
+    dvz_visual_data(&visual, DVZ_PROP_COLORMAP, 0, 1, &cmap);
+
+    versor q;
+    glm_quatv(q, +M_PI / 2, (vec3){0, 0, 1});
+    glm_quat_mul(arcball->rotation, q, arcball->rotation);
+    glm_quatv(q, -M_PI / 8, (vec3){1, 0, 0});
+    glm_quat_mul(arcball->rotation, q, arcball->rotation);
+    glm_quatv(q, M_PI - M_PI / 6, (vec3){0, 1, 0});
+    glm_quat_mul(arcball->rotation, q, arcball->rotation);
+    arcball->camera.eye[2] = 3;
+    _arcball_update_mvp(canvas->viewport, arcball, &interact.mvp);
+
+    RUN;
+    SCREENSHOT("volume")
     END;
 }
 

@@ -1297,6 +1297,133 @@ static void _visual_mesh(DvzVisual* visual)
 
 
 /*************************************************************************************************/
+/*  Volume                                                                                       */
+/*************************************************************************************************/
+
+static void _visual_volume_bake(DvzVisual* visual, DvzVisualDataEvent ev)
+{
+    ASSERT(visual != NULL);
+
+    // Vertex buffer source.
+    DvzSource* source = dvz_source_get(visual, DVZ_SOURCE_TYPE_VERTEX, 0);
+    ASSERT(source->arr.item_size == sizeof(DvzGraphicsVolumeVertex));
+
+    // Get props.
+    DvzProp* pos0 = dvz_prop_get(visual, DVZ_PROP_POS, 0);
+    DvzProp* pos1 = dvz_prop_get(visual, DVZ_PROP_POS, 1);
+
+    DvzProp* uvw0 = dvz_prop_get(visual, DVZ_PROP_TEXCOORDS, 0);
+    DvzProp* uvw1 = dvz_prop_get(visual, DVZ_PROP_TEXCOORDS, 1);
+
+    ASSERT(pos0 != NULL);
+    ASSERT(pos1 != NULL);
+
+    ASSERT(uvw0 != NULL);
+    ASSERT(uvw1 != NULL);
+
+    // Number of images
+    uint32_t img_count = dvz_prop_size(pos0);
+    ASSERT(dvz_prop_size(pos1) == img_count);
+
+    // Graphics data.
+    DvzGraphicsData data = dvz_graphics_data(visual->graphics[0], &source->arr, NULL, NULL);
+    dvz_graphics_alloc(&data, img_count);
+
+    DvzGraphicsVolumeItem item = {0};
+    for (uint32_t i = 0; i < img_count; i++)
+    {
+        _vec3_cast((const dvec3*)dvz_prop_item(pos0, i), &item.pos0);
+        _vec3_cast((const dvec3*)dvz_prop_item(pos1, i), &item.pos1);
+
+        memcpy(&item.uvw0, dvz_prop_item(uvw0, i), sizeof(vec3));
+        memcpy(&item.uvw1, dvz_prop_item(uvw1, i), sizeof(vec3));
+
+        dvz_graphics_append(&data, &item);
+    }
+}
+
+static void _visual_volume(DvzVisual* visual)
+{
+    ASSERT(visual != NULL);
+    DvzCanvas* canvas = visual->canvas;
+    ASSERT(canvas != NULL);
+    DvzProp* prop = NULL;
+
+    // Graphics.
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_VOLUME, 0));
+
+    // Sources
+    dvz_visual_source(                                               // vertex buffer
+        visual, DVZ_SOURCE_TYPE_VERTEX, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+        0, sizeof(DvzGraphicsVolumeVertex), 0);                      //
+
+    _common_sources(visual); // common sources
+
+    dvz_visual_source(                                              // params
+        visual, DVZ_SOURCE_TYPE_PARAM, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+        DVZ_USER_BINDING, sizeof(DvzGraphicsVolumeParams), 0);      //
+
+    dvz_visual_source(                                                      // colormap texture
+        visual, DVZ_SOURCE_TYPE_COLOR_TEXTURE, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+        DVZ_USER_BINDING + 1, sizeof(uint8_t), 0);                          //
+
+
+    // TODO: customizable dtype for the volume
+    dvz_visual_source(                                               // volume source
+        visual, DVZ_SOURCE_TYPE_VOLUME, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+        DVZ_USER_BINDING + 2, sizeof(uint16_t), 0);                  //
+
+    // Props:
+
+    // Point positions.
+    // Top left, top right, bottom right, bottom left
+    for (uint32_t i = 0; i < 2; i++)
+        dvz_visual_prop(visual, DVZ_PROP_POS, i, DVZ_DTYPE_DVEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
+
+    // Tex coords.
+    for (uint32_t i = 0; i < 2; i++)
+        dvz_visual_prop(visual, DVZ_PROP_TEXCOORDS, i, DVZ_DTYPE_VEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
+
+    // Common props.
+    _common_props(visual);
+
+
+    // Params.
+
+    // View pos.
+    prop = dvz_visual_prop(visual, DVZ_PROP_VIEW_POS, 0, DVZ_DTYPE_VEC4, DVZ_SOURCE_TYPE_PARAM, 0);
+    dvz_visual_prop_copy(
+        prop, 0, offsetof(DvzGraphicsVolumeParams, view_pos), DVZ_ARRAY_COPY_SINGLE, 1);
+    dvz_visual_prop_default(prop, (vec4){0, 0, 0, 0});
+
+    // Box size.
+    prop = dvz_visual_prop(visual, DVZ_PROP_LENGTH, 0, DVZ_DTYPE_VEC4, DVZ_SOURCE_TYPE_PARAM, 0);
+    dvz_visual_prop_copy(
+        prop, 1, offsetof(DvzGraphicsVolumeParams, box_size), DVZ_ARRAY_COPY_SINGLE, 1);
+    dvz_visual_prop_default(prop, (vec4){2, 2, 2, 0});
+
+    // Colormap value.
+    prop = dvz_visual_prop(visual, DVZ_PROP_COLORMAP, 0, DVZ_DTYPE_INT, DVZ_SOURCE_TYPE_PARAM, 0);
+    dvz_visual_prop_copy(
+        prop, 2, offsetof(DvzGraphicsVolumeParams, cmap), DVZ_ARRAY_COPY_SINGLE, 1);
+    DvzColormap cmap = DVZ_CMAP_BINARY;
+    dvz_visual_prop_default(prop, &cmap);
+
+
+    // Colormap texture prop.
+    dvz_visual_prop(
+        visual, DVZ_PROP_COLOR_TEXTURE, 0, DVZ_DTYPE_CHAR, DVZ_SOURCE_TYPE_COLOR_TEXTURE, 0);
+
+    // 3D texture prop.
+    dvz_visual_prop(visual, DVZ_PROP_VOLUME, 0, DVZ_DTYPE_CHAR, DVZ_SOURCE_TYPE_VOLUME, 0);
+
+    // Baking function.
+    dvz_visual_callback_bake(visual, _visual_volume_bake);
+}
+
+
+
+/*************************************************************************************************/
 /*  Volume image                                                                                 */
 /*************************************************************************************************/
 
@@ -1518,6 +1645,10 @@ void dvz_visual_builtin(DvzVisual* visual, DvzVisualType type, int flags)
 
     case DVZ_VISUAL_MESH:
         _visual_mesh(visual);
+        break;
+
+    case DVZ_VISUAL_VOLUME:
+        _visual_volume(visual);
         break;
 
     case DVZ_VISUAL_VOLUME_SLICE:

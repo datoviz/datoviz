@@ -145,6 +145,7 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_visuals_axes_2D_update), //
 
     CASE_FIXTURE_NONE(test_visuals_mesh),         //
+    CASE_FIXTURE_NONE(test_visuals_volume_1),     //
     CASE_FIXTURE_NONE(test_visuals_volume_slice), //
 
     // axes

@@ -441,6 +441,8 @@ static void _graphics_volume_callback(DvzGraphicsData* data, uint32_t item_count
     float y1 = item_vert->pos1[1];
     float z1 = item_vert->pos1[2];
 
+    // TODO: other volume orientations
+
     float u0 = item_vert->uvw0[0];
     float v0 = item_vert->uvw0[1];
     float w0 = item_vert->uvw0[2];
