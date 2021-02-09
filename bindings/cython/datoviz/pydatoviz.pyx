@@ -266,7 +266,7 @@ _PROP_DTYPES = {
     'alpha': np.uint8,
     'index': np.uint32,
     'colormap': np.uint8,
-    'length': np.uint32,
+    # 'length': np.uint32,
 }
 
 _EVENTS ={
