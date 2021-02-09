@@ -241,3 +241,17 @@ mat4 get_ortho_matrix(vec2 size) {
 
     return ortho;
 }
+
+
+
+vec4 unpack_color(vec2 uv) {
+    // Return a vec4 R8G8B8A8 color from a vec2 texcoords where the first component is <0, and the
+    // second one is a float packing 3 uint8 (RGB).
+    // TODO: use the first float (-1 for now) for the alpha value?
+    vec4 out_color = vec4(1);
+    out_color.x = mod(uv.x, 256.0);
+    out_color.y = mod(floor(uv.x / 256.0), 256.0);
+    out_color.z = mod(floor(uv.x / 65536.0), 256.0);
+    out_color /= 256.0;
+    return out_color;
+}

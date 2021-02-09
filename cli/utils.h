@@ -4,6 +4,10 @@
 #include "../include/datoviz/datoviz.h"
 #include "../src/vklite_utils.h"
 
+BEGIN_INCL_NO_WARN
+#include "../external/stb_image.h"
+END_INCL_NO_WARN
+
 
 
 /*************************************************************************************************/
@@ -1044,6 +1048,24 @@ static DvzTexture* _mouse_volume(DvzCanvas* canvas)
         canvas, texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, //
         ni * nj * nk * sizeof(uint16_t), tex_data);
     FREE(tex_data);
+    return texture;
+}
+
+
+
+static DvzTexture* _earth_texture(DvzCanvas* canvas)
+{
+    DvzGpu* gpu = canvas->gpu;
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/textures/earth.jpg", DATA_DIR);
+    int width, height, depth;
+    uint8_t* tex_data = stbi_load(path, &width, &height, &depth, STBI_rgb_alpha);
+    uint32_t tex_size = (uint32_t)(width * height);
+    DvzTexture* texture = dvz_ctx_texture(
+        gpu->context, 2, (uvec3){(uint32_t)width, (uint32_t)height, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+    dvz_upload_texture(
+        canvas, texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, tex_size * sizeof(cvec4), tex_data);
+    FREE(tex_data)
     return texture;
 }
 

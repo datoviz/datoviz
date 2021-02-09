@@ -291,6 +291,42 @@ static void _graphics_text(DvzCanvas* canvas, DvzGraphics* graphics)
 /*  Image                                                                                        */
 /*************************************************************************************************/
 
+static void _graphics_image_callback(DvzGraphicsData* data, uint32_t item_count, const void* item)
+{
+    ASSERT(data != NULL);
+    ASSERT(data->vertices != NULL);
+
+    ASSERT(item_count > 0);
+    dvz_array_resize(data->vertices, 6 * item_count);
+
+    if (item == NULL)
+        return;
+    ASSERT(item != NULL);
+    ASSERT(data->current_idx < item_count);
+
+    const DvzGraphicsImageItem* item_vert = (const DvzGraphicsImageItem*)item;
+
+    DvzGraphicsImageVertex vertices[6] = {0};
+
+    _vec3_copy(item_vert->pos3, vertices[0].pos);
+    _vec3_copy(item_vert->pos2, vertices[1].pos);
+    _vec3_copy(item_vert->pos1, vertices[2].pos);
+    _vec3_copy(item_vert->pos1, vertices[3].pos);
+    _vec3_copy(item_vert->pos0, vertices[4].pos);
+    _vec3_copy(item_vert->pos3, vertices[5].pos);
+
+    _vec2_copy(item_vert->uv3, vertices[0].uv);
+    _vec2_copy(item_vert->uv2, vertices[1].uv);
+    _vec2_copy(item_vert->uv1, vertices[2].uv);
+    _vec2_copy(item_vert->uv1, vertices[3].uv);
+    _vec2_copy(item_vert->uv0, vertices[4].uv);
+    _vec2_copy(item_vert->uv3, vertices[5].uv);
+
+    dvz_array_data(data->vertices, 6 * data->current_idx, 6, 6, vertices);
+
+    data->current_idx++;
+}
+
 static void _graphics_image(DvzCanvas* canvas, DvzGraphics* graphics)
 {
     SHADER(VERTEX, "graphics_image_vert")
@@ -308,6 +344,8 @@ static void _graphics_image(DvzCanvas* canvas, DvzGraphics* graphics)
             graphics, DVZ_USER_BINDING + i, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
     CREATE
+
+    dvz_graphics_callback(graphics, _graphics_image_callback);
 }
 
 

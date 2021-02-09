@@ -95,6 +95,14 @@ typedef dvec4 dmat4[4];
 /*  Misc                                                                                         */
 /*************************************************************************************************/
 
+static inline void _vec2_copy(const vec2 a, vec2 b)
+{
+    b[0] = a[0];
+    b[1] = a[1];
+}
+
+
+
 static inline void _vec3_copy(const vec3 a, vec3 b)
 {
     b[0] = a[0];

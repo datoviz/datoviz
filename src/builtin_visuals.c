@@ -994,6 +994,126 @@ static void _visual_polygon(DvzVisual* visual)
 
 
 /*************************************************************************************************/
+/*  Image                                                                                        */
+/*************************************************************************************************/
+
+static void _visual_image_bake(DvzVisual* visual, DvzVisualDataEvent ev)
+{
+    ASSERT(visual != NULL);
+
+    // Vertex buffer source.
+    DvzSource* source = dvz_source_get(visual, DVZ_SOURCE_TYPE_VERTEX, 0);
+    ASSERT(source->arr.item_size == sizeof(DvzGraphicsImageVertex));
+
+    // Get props.
+    DvzProp* pos0 = dvz_prop_get(visual, DVZ_PROP_POS, 0);
+    DvzProp* pos1 = dvz_prop_get(visual, DVZ_PROP_POS, 1);
+    DvzProp* pos2 = dvz_prop_get(visual, DVZ_PROP_POS, 2);
+    DvzProp* pos3 = dvz_prop_get(visual, DVZ_PROP_POS, 3);
+
+    DvzProp* uv0 = dvz_prop_get(visual, DVZ_PROP_TEXCOORDS, 0);
+    DvzProp* uv1 = dvz_prop_get(visual, DVZ_PROP_TEXCOORDS, 1);
+    DvzProp* uv2 = dvz_prop_get(visual, DVZ_PROP_TEXCOORDS, 2);
+    DvzProp* uv3 = dvz_prop_get(visual, DVZ_PROP_TEXCOORDS, 3);
+
+    ASSERT(pos0 != NULL);
+    ASSERT(pos1 != NULL);
+    ASSERT(pos2 != NULL);
+    ASSERT(pos3 != NULL);
+
+    ASSERT(uv0 != NULL);
+    ASSERT(uv1 != NULL);
+    ASSERT(uv2 != NULL);
+    ASSERT(uv3 != NULL);
+
+    // Number of images
+    uint32_t img_count = dvz_prop_size(pos0);
+    ASSERT(dvz_prop_size(pos1) == img_count);
+    ASSERT(dvz_prop_size(pos2) == img_count);
+    ASSERT(dvz_prop_size(pos3) == img_count);
+
+    // Graphics data.
+    DvzGraphicsData data = dvz_graphics_data(visual->graphics[0], &source->arr, NULL, NULL);
+    dvz_graphics_alloc(&data, img_count);
+
+    DvzGraphicsImageItem item = {0};
+    for (uint32_t i = 0; i < img_count; i++)
+    {
+        _vec3_cast((const dvec3*)dvz_prop_item(pos0, i), &item.pos0);
+        _vec3_cast((const dvec3*)dvz_prop_item(pos1, i), &item.pos1);
+        _vec3_cast((const dvec3*)dvz_prop_item(pos2, i), &item.pos2);
+        _vec3_cast((const dvec3*)dvz_prop_item(pos3, i), &item.pos3);
+
+        memcpy(&item.uv0, dvz_prop_item(uv0, i), sizeof(vec2));
+        memcpy(&item.uv1, dvz_prop_item(uv1, i), sizeof(vec2));
+        memcpy(&item.uv2, dvz_prop_item(uv2, i), sizeof(vec2));
+        memcpy(&item.uv3, dvz_prop_item(uv3, i), sizeof(vec2));
+
+        dvz_graphics_append(&data, &item);
+    }
+}
+
+static void _visual_image(DvzVisual* visual)
+{
+    ASSERT(visual != NULL);
+    DvzCanvas* canvas = visual->canvas;
+    ASSERT(canvas != NULL);
+    DvzProp* prop = NULL;
+
+    // TODO: customizable dtype for the image
+
+    // Graphics.
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_IMAGE, 0));
+
+    // Sources
+    dvz_visual_source(                                               // vertex buffer
+        visual, DVZ_SOURCE_TYPE_VERTEX, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+        0, sizeof(DvzGraphicsImageVertex), 0);                       //
+
+    _common_sources(visual); // common sources
+
+    dvz_visual_source(                                              // params
+        visual, DVZ_SOURCE_TYPE_PARAM, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+        DVZ_USER_BINDING, sizeof(DvzGraphicsImageParams), 0);       //
+
+    for (uint32_t i = 0; i < 4; i++)
+        dvz_visual_source(                                              // textures
+            visual, DVZ_SOURCE_TYPE_IMAGE, i, DVZ_PIPELINE_GRAPHICS, 0, //
+            DVZ_USER_BINDING + i + 1, sizeof(uint8_t), 0);              //
+
+    // Props:
+
+    // Point positions.
+    // Top left, top right, bottom right, bottom left
+    for (uint32_t i = 0; i < 4; i++)
+        dvz_visual_prop(visual, DVZ_PROP_POS, i, DVZ_DTYPE_DVEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
+
+    // Tex coords.
+    for (uint32_t i = 0; i < 4; i++)
+        dvz_visual_prop(visual, DVZ_PROP_TEXCOORDS, i, DVZ_DTYPE_VEC2, DVZ_SOURCE_TYPE_VERTEX, 0);
+
+    // Common props.
+    _common_props(visual);
+
+    // Params.
+
+    // Texture coefficients.
+    prop = dvz_visual_prop(visual, DVZ_PROP_TEXCOEFS, 0, DVZ_DTYPE_VEC4, DVZ_SOURCE_TYPE_PARAM, 0);
+    dvz_visual_prop_copy(
+        prop, 0, offsetof(DvzGraphicsImageParams, tex_coefs), DVZ_ARRAY_COPY_SINGLE, 1);
+    dvz_visual_prop_default(prop, (vec4[]){{1, 0, 0, 0}});
+
+    // Texture props.
+    for (uint32_t i = 0; i < 4; i++)
+        dvz_visual_prop(visual, DVZ_PROP_IMAGE, i, DVZ_DTYPE_CHAR, DVZ_SOURCE_TYPE_IMAGE, i);
+
+    // Baking function.
+    dvz_visual_callback_bake(visual, _visual_image_bake);
+}
+
+
+
+/*************************************************************************************************/
 /*************************************************************************************************/
 /*  3D visuals                                                                                   */
 /*************************************************************************************************/
@@ -1384,6 +1504,10 @@ void dvz_visual_builtin(DvzVisual* visual, DvzVisualType type, int flags)
 
     case DVZ_VISUAL_POLYGON:
         _visual_polygon(visual);
+        break;
+
+    case DVZ_VISUAL_IMAGE:
+        _visual_image(visual);
         break;
 
     case DVZ_VISUAL_AXES_2D:

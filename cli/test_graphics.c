@@ -6,10 +6,6 @@
 // #include "../src/mesh_loader.h"
 #include "utils.h"
 
-BEGIN_INCL_NO_WARN
-#include "../external/stb_image.h"
-END_INCL_NO_WARN
-
 
 
 /*************************************************************************************************/
@@ -765,27 +761,21 @@ int test_graphics_image(TestContext* context)
 {
     INIT_GRAPHICS(DVZ_GRAPHICS_IMAGE, 0)
 
-    // Vertices.
-    uint32_t n = 6;
-    TestGraphics tg = {0};
-    tg.canvas = canvas;
-    tg.graphics = graphics;
-    tg.vertices = dvz_array_struct(n, sizeof(DvzGraphicsImageVertex));
-    ASSERT(tg.vertices.item_count == n);
-    tg.br_vert = dvz_ctx_buffers(
-        gpu->context, DVZ_BUFFER_TYPE_VERTEX, 1,
-        tg.vertices.item_count * sizeof(DvzGraphicsImageVertex));
-    float x = 1;
-    DvzGraphicsImageVertex vertices[] = {
-        {{-x, -x, 0}, {0, 1}}, //
-        {{+x, -x, 0}, {1, 1}}, //
-        {{+x, +x, 0}, {1, 0}}, //
-        {{+x, +x, 0}, {1, 0}}, //
-        {{-x, +x, 0}, {0, 0}}, //
-        {{-x, -x, 0}, {0, 1}}, //
-    };
-    dvz_upload_buffers(
-        canvas, tg.br_vert, 0, tg.vertices.item_count * sizeof(DvzGraphicsImageVertex), vertices);
+    const uint32_t N = 1;
+    BEGIN_DATA(DvzGraphicsImageVertex, N, NULL)
+    float x0, x1, z;
+    z = 0;
+    float w = 2.0 / (float)N;
+    for (uint32_t i = 0; i < N; i++)
+    {
+        x0 = -1 + i * w;
+        x1 = -1 + (i + 1) * w;
+        DvzGraphicsImageItem item =                              //
+            {{x0, x1, z}, {x1, x1, z}, {x1, x0, z}, {x0, x0, z}, //
+             {0, 0},      {1, 0},      {1, 1},      {0, 1}};     //
+        dvz_graphics_append(&data, &item);
+    }
+    END_DATA
 
     // Parameters.
     tg.br_params =
@@ -796,16 +786,7 @@ int test_graphics_image(TestContext* context)
 
     // Texture.
     // https://pixabay.com/illustrations/earth-planet-world-globe-space-1617121/
-    char path[1024];
-    snprintf(path, sizeof(path), "%s/textures/earth.jpg", DATA_DIR);
-    int width, height, depth;
-    uint8_t* tex_data = stbi_load(path, &width, &height, &depth, STBI_rgb_alpha);
-    uint32_t tex_size = (uint32_t)(width * height);
-    // const uint32_t nt = 16;
-    DvzTexture* texture = dvz_ctx_texture(
-        gpu->context, 2, (uvec3){(uint32_t)width, (uint32_t)height, 1}, VK_FORMAT_R8G8B8A8_UNORM);
-    dvz_upload_texture(
-        canvas, texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, tex_size * sizeof(cvec4), tex_data);
+    DvzTexture* texture = _earth_texture(canvas);
 
     // Bindings.
     _common_bindings(&tg);
@@ -816,7 +797,6 @@ int test_graphics_image(TestContext* context)
 
     RUN;
     SCREENSHOT("image")
-    FREE(tex_data)
     TEST_END
 }
 

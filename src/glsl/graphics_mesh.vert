@@ -35,10 +35,5 @@ void main() {
     // NOTE: if uv.y is negative, we take uv.x and unpack the 3 first bytes and interpret them as
     // custom colors
     if (uv.y < 0)
-    {
-        out_color.x = mod(uv.x, 256.0);
-        out_color.y = mod(floor(uv.x / 256.0), 256.0);
-        out_color.z = mod(floor(uv.x / 65536.0), 256.0);
-        out_color /= 256.0;
-    }
+        out_color = unpack_color(uv).xyz;
 }

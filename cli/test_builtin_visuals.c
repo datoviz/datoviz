@@ -597,6 +597,34 @@ int test_visuals_polygon(TestContext* context)
 
 
 
+int test_visuals_image(TestContext* context)
+{
+    INIT;
+
+    DvzVisual visual = dvz_visual(canvas);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_IMAGE, 0);
+
+    // Top left, top right, bottom right, bottom left
+    dvz_visual_data(&visual, DVZ_PROP_POS, 0, 2, (dvec3[]){{-1, +1, 0}, {0, 0, 0}});
+    dvz_visual_data(&visual, DVZ_PROP_POS, 1, 2, (dvec3[]){{0, +1, 0}, {1, 0, 0}});
+    dvz_visual_data(&visual, DVZ_PROP_POS, 2, 2, (dvec3[]){{0, 0, 0}, {1, -1, 0}});
+    dvz_visual_data(&visual, DVZ_PROP_POS, 3, 2, (dvec3[]){{-1, 0, 0}, {0, -1, 0}});
+
+    dvz_visual_data(&visual, DVZ_PROP_TEXCOORDS, 0, 2, (vec2[]){{0, 0}, {0, 0}});
+    dvz_visual_data(&visual, DVZ_PROP_TEXCOORDS, 1, 2, (vec2[]){{1, 0}, {1, 0}});
+    dvz_visual_data(&visual, DVZ_PROP_TEXCOORDS, 2, 2, (vec2[]){{1, 1}, {1, 1}});
+    dvz_visual_data(&visual, DVZ_PROP_TEXCOORDS, 3, 2, (vec2[]){{0, 1}, {0, 1}});
+
+    DvzTexture* texture = _earth_texture(canvas);
+    dvz_visual_texture(&visual, DVZ_SOURCE_TYPE_IMAGE, 0, texture);
+
+    RUN;
+    // SCREENSHOT("image")
+    END;
+}
+
+
+
 /*************************************************************************************************/
 /*  3D visual tests                                                                              */
 /*************************************************************************************************/
@@ -674,6 +702,7 @@ int test_visuals_volume_slice(TestContext* context)
     float t = 0;
     dvec3 p0[8], p1[8], p2[8], p3[8];
     vec3 uvw0[8], uvw1[8], uvw2[8], uvw3[8];
+    // Top left, top right, bottom right, bottom left
     for (uint32_t i = 0; i < 8; i++)
     {
         t = 1 - i / (float)(8 - 1);
