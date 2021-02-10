@@ -184,11 +184,20 @@ static DvzArray* _prop_array(DvzProp* prop)
 {
     ASSERT(prop != NULL);
     if (prop->arr_staging.item_count > 0)
+    {
+        log_debug("take staging array for prop %d", prop->prop_type);
         return &prop->arr_staging;
+    }
     else if (prop->arr_trans.item_count > 0)
+    {
+        log_debug("take transformed array for prop %d", prop->prop_type);
         return &prop->arr_trans;
+    }
     else
+    {
+        log_debug("take original array for prop %d", prop->prop_type);
         return &prop->arr_orig;
+    }
 }
 
 
@@ -385,6 +394,7 @@ static void _prop_copy(DvzVisual* visual, DvzProp* prop)
     ASSERT(source->arr.data != NULL);
     ASSERT(arr->item_count <= source->arr.item_count);
 
+    log_debug("copy prop type %d to source buffer", prop->prop_type);
     dvz_array_column(
         &source->arr, prop->offset, col_size, 0, source->arr.item_count, //
         arr->item_count, arr->data,                                      //

@@ -668,6 +668,7 @@ void dvz_visual_update(
 
     // Here, we assume that all sources are correctly allocated, which includes VERTEX and INDEX
     // arrays, and that they have their data ready for upload.
+
     // Upload the buffers and textures
     DvzArray* arr = NULL;
     DvzBufferRegions* br = NULL;
@@ -777,6 +778,7 @@ void dvz_visual_update(
                 dvz_container_iter(&iter);
                 continue;
             }
+            log_debug("uploading new data for source %d", source->source_type);
 
             br = &source->u.br;
 

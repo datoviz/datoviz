@@ -199,19 +199,71 @@ static DvzTransform _transform_inv(DvzTransform* tr)
 
 
 
+static inline void _transform_cartesian(DvzTransform* tr, dvec3 in, dvec3 out)
+{
+    ASSERT(!tr->inverse);
+    // TODO: implement log scale? available in tr->flags
+    _dmat4_mulv3(tr->mat, in, 1, out);
+}
+
+
+
+static inline void _transform_earth_mercator_web(DvzTransform* tr, dvec3 in, dvec3 out)
+{
+    // NOTE: discard last out component as 2D transform
+    _project_lonlat(in[0], in[1], out);
+}
+
+
+
+// NOTE: we use a macro here instead of doing a conditional test on the transform type at every
+// iteration, which is probably bad for performance
+#define MAKE_TRANSFORM_APPLY(func)                                                                \
+    static void _transform_array_##func(DvzTransform* tr, DvzArray* arr_in, DvzArray* arr_out)    \
+    {                                                                                             \
+        ASSERT(arr_in->dtype == DVZ_DTYPE_DVEC3);                                                 \
+        ASSERT(arr_out->dtype == DVZ_DTYPE_DVEC3);                                                \
+        dvec3* pos_in = (dvec3*)arr_in->data;                                                     \
+        dvec3* pos_out = (dvec3*)arr_out->data;                                                   \
+        for (uint32_t i = 0; i < arr_in->item_count; i++)                                         \
+        {                                                                                         \
+            _transform_##func(tr, pos_in[i], pos_out[i]);                                         \
+        }                                                                                         \
+    }
+
+
+MAKE_TRANSFORM_APPLY(cartesian)
+MAKE_TRANSFORM_APPLY(earth_mercator_web)
+
+static void _transform_array(DvzTransform* tr, DvzArray* arr_in, DvzArray* arr_out)
+{
+    ASSERT(tr != NULL);
+    if (tr->type == DVZ_TRANSFORM_CARTESIAN)
+    {
+        _transform_array_cartesian(tr, arr_in, arr_out);
+    }
+    else if (tr->type == DVZ_TRANSFORM_EARTH_MERCATOR_WEB)
+    {
+        _transform_array_earth_mercator_web(tr, arr_in, arr_out);
+    }
+    else
+    {
+        log_error("non-cartesian transforms not yet implemented");
+    }
+}
+
+
+
 static inline void _transform_apply(DvzTransform* tr, dvec3 in, dvec3 out)
 {
     ASSERT(tr != NULL);
     if (tr->type == DVZ_TRANSFORM_CARTESIAN)
     {
-        ASSERT(!tr->inverse);
-        // TODO: implement log scale? available in tr->flags
-        _dmat4_mulv3(tr->mat, in, 1, out);
+        _transform_cartesian(tr, in, out);
     }
     else if (tr->type == DVZ_TRANSFORM_EARTH_MERCATOR_WEB)
     {
-        // NOTE: discard last out component as 2D transform
-        _project_lonlat(in[0], in[1], out);
+        _transform_earth_mercator_web(tr, in, out);
     }
     else
     {

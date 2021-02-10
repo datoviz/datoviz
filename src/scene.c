@@ -174,7 +174,7 @@ static void _transform_pos_prop(DvzDataCoords coords, DvzProp* prop)
 
     // Create the transformed prop array.
     *arr_tr = dvz_array(arr->item_count, arr->dtype);
-    dvz_transform_data(coords, arr, arr_tr, false);
+    dvz_transform_pos(coords, arr, arr_tr, false);
 }
 
 

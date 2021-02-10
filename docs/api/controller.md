@@ -21,5 +21,5 @@
 
 ## Transform
 
-### `dvz_transform_data()`
+### `dvz_transform_pos()`
 ### `dvz_transform()`

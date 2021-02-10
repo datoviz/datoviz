@@ -181,6 +181,27 @@ static void _panzoom(DvzCanvas* canvas, DvzEvent ev)
     }
 }
 
+static void _change_pos(DvzCanvas* canvas, DvzEvent ev)
+{
+    ASSERT(canvas != NULL);
+    DvzVisual* visual = ev.user_data;
+    ASSERT(visual != NULL);
+
+    const uint32_t N = 1000;
+    dvec3* pos = calloc(N, sizeof(dvec3));
+    cvec4* color = calloc(N, sizeof(cvec4));
+    for (uint32_t i = 0; i < N; i++)
+    {
+        RANDN_POS(pos[i])
+        RAND_COLOR(color[i])
+        pos[i][0] *= 10; // NOTE: check automatic data normalization
+    }
+
+    dvz_visual_data(visual, DVZ_PROP_POS, 0, N, pos);
+    FREE(pos);
+    FREE(color);
+}
+
 int test_scene_1(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
@@ -212,12 +233,14 @@ int test_scene_1(TestContext* context)
 
     // Second panel.
     DvzPanel* panel2 = dvz_scene_panel(scene, 1, 1, DVZ_CONTROLLER_PANZOOM, 0);
-    dvz_panel_span(panel2, DVZ_GRID_VERTICAL, 2);
+    dvz_panel_span(panel2, DVZ_GRID_HORIZONTAL, 2);
 
     DvzVisual* visual2 = dvz_scene_visual(panel2, DVZ_VISUAL_POINT, 0);
     dvz_visual_data(visual2, DVZ_PROP_POS, 0, N, pos);
     dvz_visual_data(visual2, DVZ_PROP_COLOR, 0, N, color);
     dvz_visual_data(visual2, DVZ_PROP_MARKER_SIZE, 0, 1, &param);
+
+    dvz_event_callback(canvas, DVZ_EVENT_TIMER, .5, DVZ_EVENT_MODE_SYNC, _change_pos, visual2);
 
     dvz_app_run(app, N_FRAMES);
     dvz_visual_destroy(visual);

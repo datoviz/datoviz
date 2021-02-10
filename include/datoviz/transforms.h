@@ -202,7 +202,7 @@ MAKE_TRANSPOSE(vec3)
  * @param inverse whether to use the inverse or forward transformation
  */
 DVZ_EXPORT void
-dvz_transform_data(DvzDataCoords coords, DvzArray* pos_in, DvzArray* pos_out, bool inverse);
+dvz_transform_pos(DvzDataCoords coords, DvzArray* pos_in, DvzArray* pos_out, bool inverse);
 
 /**
  * Convert a 3D position from a coordinate system to another.
