@@ -1,67 +1,24 @@
 # Developer notes
 
-## Environment variables
-
-| Environment variable              | Description                                           |
-|-----------------------------------|-------------------------------------------------------|
-| `DVZ_DPI_FACTOR=1.5`              | Change the DPI scaling factor                         |
-| `DVZ_FPS=1`                       | Show the number of frames per second                  |
-| `DVZ_INVERSE_MOUSE_WHEEL=1`       | Inverse the mouse wheel direction                     |
-| `DVZ_LOG_LEVEL=0`                 | Logging level                                         |
-| `DVZ_VSYNC=0`                     | Disable vertical sync                                 |
-
-
-* **Vertical synchronization** is activated by default. The refresh rate is typically limited to 60 FPS. Deactivating it (which is automatic when using `DVZ_FPS=1`) leads to the event loop running as fast as possible, which is useful for benchmarking. It may lead to high CPU and GPU utilization, whereas vertical synchronization is typically light on CPU cycles. Note also that user interaction seems laggy when vertical synchronization is active (the default). When it comes to GUI interaction (mouse movements, drag and drop, and so on), we're used to lags lower than 10 milliseconds, which a frame rate of 60 FPS cannot achieve.
-* **Logging levels**: 0=trace, 1=debug, 2=info, 3=warning, 4=error
-* **DPI scaling factor**: Datoviz natively supports DPI scaling for linewidths, font size, axes, etc. Since automatic cross-platform DPI detection does not seem reliable, Datoviz simply uses sensible defaults but provides an easy way for the user to increase or decrease the DPI via this environment variable. This is useful on high-DPI/Retina monitors.
-
-
-## Shaders
-
-All shaders include common GLSL files found in `include/datoviz/glsl/`. This path must be passed to the `glslc` command with the `-I` flag. This is what the CMake script is using.
-
-Compiled shaders of the builtin graphics are bundled into the library, using a special CMake command. The binary contents of the SPIR-V-compiled shaders are integrated in `build/_shaders.c`, which is compiled along with the other C source files of the library.
-
-
-## Cython bindings
-
-* Strange bug when passing single-precision floats to functions defined in a C++ file and wrapped in Cython: the numbers are not passed correctly (garbage values). The problem doesn't arise when using double-precision numbers. So we try to use double types for user-exposed functions (especially GUI functions, defined in a C++ file).
-
-
-## Dependencies
-
-
-### Dear ImGUI
-
-Datoviz integrates Dear ImGUI via a git submodule ([fork](https://github.com/datoviz/imgui) in the Datoviz GitHub organization). There's a custom branch based on the `docking` upstream branch, which an additional [patch](https://github.com/martty/imgui/commit/f1f948bea715754ad5e83d4dd9f928aecb4ed1d3) applied to it in order to support creating GUIs with integrated Datoviz canvases.
+A few random notes for developers and contributors. This page needs to be reorganized a bit.
 
 
 ## Manage script
 
 A bash script `manage.sh` script at the repository root provides commands for build, test, doc generation, and so on.
 
-
-## C formatting
-
-We use clang format to automatically format all C source files. The rules are defined in `.clang-format`.
-
-
-## Documentation
-
-We use mkdocs, with material theme, and several markdown, theme, and mkdocs plugins. See `mkdocs.yml`. The site is generated in the `site/` subfolder. We use GitHub Pages to serve the website.
-
-
-## Command-line tool
-
-Datoviz includes an executable that implements test and examples, implemented in the `cli/` subfolder.
-
-
-## Shaders and binary resource embedding
-
-Important binary resources such as SPIR-V compiled shaders of all included graphics, and the colormap texture, are built directly into the compiled library object. A cmake script loads these files and generates big `build/_colortex.c` and `build/_shaders.c` files, which are then compiled and linked into the library.
+| Command | Description |
+| ---- | --- |
+| `./manage.sh build` | recompile the library |
+| `./manage.sh doc` | rebuild the doc website in `site/` |
+| `./manage.sh docs` | serve the website on `localhost:8000` |
+| `./manage.sh cython` | update the Cython binding definitions and recompile the Python module |
+| `./manage.sh test test_array_` | run all tests starting with the given string |
 
 
 ## Documentation building
+
+We use mkdocs, with material theme, and several markdown, theme, and mkdocs plugins. See `mkdocs.yml`. The site is generated in the `site/` subfolder. We use GitHub Pages to serve the website.
 
 Several parts of the documentation are auto-generated, via mkdocs hooks implemented in `utils/hooks.py`. Building the documentation requires Python dependencies found in `utils/requirements-build.txt`. In particular, we use the `mkdocs-simple-hooks` package to make it possible to use custom Python functions as mkdocs plugin hooks.
 
@@ -74,3 +31,49 @@ Several parts of the documentation are auto-generated, via mkdocs hooks implemen
 
 !!! note
     The API doc generation uses joblib to save time when live-regenerating the documentation. However the cache in `utils/.joblib` must be deleted (so that it's automatically recreated) whenever the Datoviz code/API changes. Otherwise, the API doc generation script may fail.
+
+
+## Shaders
+
+All shaders include common GLSL files found in `include/datoviz/glsl/`. This path must be passed to the `glslc` command with the `-I` flag. This is what the CMake script is using.
+
+Compiled shaders of the builtin graphics are bundled into the library, using a special CMake command. The binary contents of the SPIR-V-compiled shaders are integrated in `build/_shaders.c`, which is compiled along with the other C source files of the library.
+
+
+
+## Dependencies
+
+
+### Dear ImGUI
+
+Datoviz integrates Dear ImGUI via a git submodule ([fork](https://github.com/datoviz/imgui) in the Datoviz GitHub organization). There's a custom branch based on the `docking` upstream branch, which an additional [patch](https://github.com/martty/imgui/commit/f1f948bea715754ad5e83d4dd9f928aecb4ed1d3) applied to it in order to support creating GUIs with integrated Datoviz canvases.
+
+
+
+## C formatting
+
+We use clang format to automatically format all C source files. The rules are defined in `.clang-format`.
+
+
+## Command-line tool
+
+Datoviz includes an executable that implements test and examples, implemented in the `cli/` subfolder.
+
+
+## Shaders and binary resource embedding
+
+Important binary resources such as SPIR-V compiled shaders of all included graphics, and the colormap texture, are built directly into the compiled library object. A cmake script loads these files and generates big `build/_colortex.c` and `build/_shaders.c` files, which are then compiled and linked into the library.
+
+
+
+## Environment variables
+
+| Environment variable              | Description                                           |
+|-----------------------------------|-------------------------------------------------------|
+| `DVZ_FPS=1`                       | Show the number of frames per second                  |
+| `DVZ_LOG_LEVEL=0`                 | Logging level                                         |
+
+
+* **Vertical synchronization** is activated by default. The refresh rate is typically limited to 60 FPS. Deactivating it (which is automatic when using `DVZ_FPS=1`) leads to the event loop running as fast as possible, which is useful for benchmarking. It may lead to high CPU and GPU utilization, whereas vertical synchronization is typically light on CPU cycles. Note also that user interaction seems laggy when vertical synchronization is active (the default). When it comes to GUI interaction (mouse movements, drag and drop, and so on), we're used to lags lower than 10 milliseconds, which a frame rate of 60 FPS cannot achieve.
+* **Logging levels**: 0=trace, 1=debug, 2=info, 3=warning, 4=error
+* **DPI scaling factor**: Datoviz natively supports DPI scaling for linewidths, font size, axes, etc. Since automatic cross-platform DPI detection does not seem reliable, Datoviz simply uses sensible defaults but provides an easy way for the user to increase or decrease the DPI via this environment variable. This is useful on high-DPI/Retina monitors.

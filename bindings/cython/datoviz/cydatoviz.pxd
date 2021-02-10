@@ -133,6 +133,49 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_BACKEND_GLFW = 1
         DVZ_BACKEND_OFFSCREEN = 2
 
+    # from file: array.h
+
+    ctypedef enum DvzDataType:
+        DVZ_DTYPE_NONE = 0
+        DVZ_DTYPE_CUSTOM = 1
+        DVZ_DTYPE_STR = 2
+        DVZ_DTYPE_CHAR = 3
+        DVZ_DTYPE_CVEC2 = 4
+        DVZ_DTYPE_CVEC3 = 5
+        DVZ_DTYPE_CVEC4 = 6
+        DVZ_DTYPE_USHORT = 7
+        DVZ_DTYPE_USVEC2 = 8
+        DVZ_DTYPE_USVEC3 = 9
+        DVZ_DTYPE_USVEC4 = 10
+        DVZ_DTYPE_SHORT = 11
+        DVZ_DTYPE_SVEC2 = 12
+        DVZ_DTYPE_SVEC3 = 13
+        DVZ_DTYPE_SVEC4 = 14
+        DVZ_DTYPE_UINT = 15
+        DVZ_DTYPE_UVEC2 = 16
+        DVZ_DTYPE_UVEC3 = 17
+        DVZ_DTYPE_UVEC4 = 18
+        DVZ_DTYPE_INT = 19
+        DVZ_DTYPE_IVEC2 = 20
+        DVZ_DTYPE_IVEC3 = 21
+        DVZ_DTYPE_IVEC4 = 22
+        DVZ_DTYPE_FLOAT = 23
+        DVZ_DTYPE_VEC2 = 24
+        DVZ_DTYPE_VEC3 = 25
+        DVZ_DTYPE_VEC4 = 26
+        DVZ_DTYPE_DOUBLE = 27
+        DVZ_DTYPE_DVEC2 = 28
+        DVZ_DTYPE_DVEC3 = 29
+        DVZ_DTYPE_DVEC4 = 30
+        DVZ_DTYPE_MAT2 = 31
+        DVZ_DTYPE_MAT3 = 32
+        DVZ_DTYPE_MAT4 = 33
+
+    ctypedef enum DvzArrayCopyType:
+        DVZ_ARRAY_COPY_NONE = 0
+        DVZ_ARRAY_COPY_REPEAT = 1
+        DVZ_ARRAY_COPY_SINGLE = 2
+
     # from file: builtin_visuals.h
 
     ctypedef enum DvzVisualType:

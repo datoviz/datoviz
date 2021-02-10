@@ -81,24 +81,23 @@ _TRANSPOSES = {
 }
 
 _PROPS = {
-    'pos': cv.DVZ_PROP_POS,
-    'color': cv.DVZ_PROP_COLOR,
-    'alpha': cv.DVZ_PROP_ALPHA,
-    'ms': cv.DVZ_PROP_MARKER_SIZE,
-    'marker_type': cv.DVZ_PROP_MARKER_TYPE,
-    'normal': cv.DVZ_PROP_NORMAL,
-    'texcoords': cv.DVZ_PROP_TEXCOORDS,
-    'index': cv.DVZ_PROP_INDEX,
-    'length': cv.DVZ_PROP_LENGTH,
-    'light_params': cv.DVZ_PROP_LIGHT_PARAMS,
-    'light_pos': cv.DVZ_PROP_LIGHT_POS,
-    'texcoefs': cv.DVZ_PROP_TEXCOEFS,
-    'linewidth': cv.DVZ_PROP_LINE_WIDTH,
-    # 'view_pos': cv.DVZ_PROP_VIEW_POS,
-    'colormap': cv.DVZ_PROP_COLORMAP,
-    'transferx': cv.DVZ_PROP_TRANSFER_X,
-    'transfery': cv.DVZ_PROP_TRANSFER_Y,
-    'clip': cv.DVZ_PROP_CLIP,
+    'pos': (cv.DVZ_PROP_POS, np.float64, 3),
+    'color': (cv.DVZ_PROP_COLOR, np.uint8, 4),
+    'alpha': (cv.DVZ_PROP_ALPHA, np.float32, 1),
+    'ms': (cv.DVZ_PROP_MARKER_SIZE, np.float32, 1),
+    'marker_type': (cv.DVZ_PROP_MARKER_TYPE, np.int32, 1),
+    'normal': (cv.DVZ_PROP_NORMAL, np.float32, 3),
+    'texcoords': (cv.DVZ_PROP_TEXCOORDS, np.float32, 2), # sometimes 3, for 3D textures
+    'index': (cv.DVZ_PROP_INDEX, np.uint32, 1),
+    'length': (cv.DVZ_PROP_LENGTH, np.uint32, 1),  # various possibilities depending on the visual
+    'light_params': (cv.DVZ_PROP_LIGHT_PARAMS, np.float32, 3),
+    'light_pos': (cv.DVZ_PROP_LIGHT_POS, np.float32, 3),
+    'texcoefs': (cv.DVZ_PROP_TEXCOEFS, np.float32, 4),
+    'linewidth': (cv.DVZ_PROP_LINE_WIDTH, np.float32, 1),
+    'colormap': (cv.DVZ_PROP_COLORMAP, np.uint32, 3),
+    'transferx': (cv.DVZ_PROP_TRANSFER_X, np.float32, 4),
+    'transfery': (cv.DVZ_PROP_TRANSFER_Y, np.float32, 4),
+    'clip': (cv.DVZ_PROP_CLIP, np.float32, 4),
 }
 
 _TRANSFORMS = {
@@ -259,15 +258,6 @@ _COLORMAPS = {
     'category20b_20': cv.DVZ_CPAL032_CATEGORY20B_20,
     'category20c_20': cv.DVZ_CPAL032_CATEGORY20C_20,
     'colorblind8': cv.DVZ_CPAL032_COLORBLIND8,
-}
-
-_PROP_DTYPES = {
-    'pos': np.double,
-    'color': np.uint8,
-    'alpha': np.uint8,
-    'index': np.uint32,
-    'colormap': np.uint8,
-    # 'length': np.uint32,
 }
 
 _EVENTS ={
@@ -545,9 +535,43 @@ cdef class Panel:
         if c_visual is NULL:
             raise MemoryError()
         v = Visual()
-        v.create(self._c_panel, c_visual)
+        v.create(self._c_panel, c_visual, vtype)
         self._visuals.append(v)
         return v
+
+
+
+def _get_prop_info(visual_type, prop_name):
+    c_prop, dt, nc = _PROPS[prop_name]
+
+    # HACK: special cases
+    if prop_name == 'length':
+        if visual_type == 'axes':
+            # tick length
+            dt = np.float32
+        elif visual_type == 'volume':
+            # Box size: vec3
+            dt = np.float32
+            nc = 3
+    elif prop_name == 'texcoords':
+        if 'volume' in visual_type:
+            nc = 3
+
+    assert nc > 0
+    assert dt
+    assert c_prop > 0
+    return c_prop, dt, nc
+
+
+def _validate_data(dt, nc, data):
+    data = data.astype(dt)
+    if not data.flags['C_CONTIGUOUS']:
+        data = np.ascontiguousarray(data)
+    if data.ndim == 1:
+        data = data[:, np.newaxis]
+    assert data.ndim == 2, f"Incorrect array dimension {data.shape}"
+    assert data.shape[1] == nc, f"Incorrect array shape {data.shape}"
+    return data
 
 
 
@@ -555,25 +579,22 @@ cdef class Visual:
     cdef cv.DvzPanel* _c_panel
     cdef cv.DvzVisual* _c_visual
     cdef cv.DvzContext* _c_context
+    cdef unicode vtype
 
-    cdef create(self, cv.DvzPanel* c_panel, cv.DvzVisual* c_visual):
+    cdef create(self, cv.DvzPanel* c_panel, cv.DvzVisual* c_visual, unicode vtype):
         self._c_panel = c_panel
         self._c_visual = c_visual
         self._c_context = c_visual.canvas.gpu.context
+        self.vtype = vtype
 
     def data(self, name, np.ndarray value, idx=0):
-        dtype = _PROP_DTYPES.get(name, np.float32)
-        if value.dtype != dtype:
-            value = value.astype(dtype)
-        assert value.dtype == dtype
-
-        if not value.flags['C_CONTIGUOUS']:
-            value = np.ascontiguousarray(value)
-        # TODO: check number of columns = number of components, as a function of the prop dtype
-
-        prop = _get_prop(name)
+        # Validate the data.
+        c_prop, dt, nc = _get_prop_info(self.vtype, name)
+        value = _validate_data(dt, nc, value)
         N = value.shape[0]
-        cv.dvz_visual_data(self._c_visual, prop, idx, N, &value.data[0])
+        nd = value.shape[1]
+        # print(name, N, value.dtype, (N, nd))
+        cv.dvz_visual_data(self._c_visual, c_prop, idx, N, &value.data[0])
 
     def image(self, np.ndarray[CHAR, ndim=3] value, int idx=0, filtering=None):
         assert value.ndim == 3
