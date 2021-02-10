@@ -46,7 +46,7 @@ Compiled shaders of the builtin graphics are bundled into the library, using a s
 
 ### Dear ImGUI
 
-Datoviz integrates Dear ImGUI via a git submodule ([fork](https://github.com/datoviz/imgui) in the Datoviz GitHub organization). There's a custom branch based on the `docking` upstream branch, which an additional [patch](https://github.com/martty/imgui/commit/f1f948bea715754ad5e83d4dd9f928aecb4ed1d3) applied to it in order to support creating GUIs with integrated Datoviz canvases.
+Datoviz integrates Dear ImGUI via a git submodule ([fork](https://github.com/datoviz/imgui) in the Datoviz GitHub organization). There's a custom branch based on `master`, but which an additional [patch](https://github.com/martty/imgui/commit/f1f948bea715754ad5e83d4dd9f928aecb4ed1d3) applied to it in order to support creating GUIs with integrated Datoviz canvases (not yet implemented).
 
 
 
