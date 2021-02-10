@@ -54,6 +54,21 @@ typedef enum
 
 
 
+typedef enum
+{
+    DVZ_SCENE_UPDATE_NONE,
+    DVZ_SCENE_UPDATE_VISUAL_ADDED,
+    DVZ_SCENE_UPDATE_PROP_CHANGED,
+    DVZ_SCENE_UPDATE_VISIBILITY_CHANGED,
+    DVZ_SCENE_UPDATE_ITEM_COUNT_CHANGED,
+    DVZ_SCENE_UPDATE_PANEL_CHANGED,
+    DVZ_SCENE_UPDATE_INTERACT_CHANGED,
+    DVZ_SCENE_UPDATE_COORDS_CHANGED,
+    DVZ_SCENE_UPDATE_CANVAS_RESIZED,
+} DvzSceneUpdateType;
+
+
+
 /*
 flags bits range:
 
@@ -79,6 +94,7 @@ visual flags:
 /*************************************************************************************************/
 
 typedef struct DvzScene DvzScene;
+typedef struct DvzSceneUpdate DvzSceneUpdate;
 typedef struct DvzController DvzController;
 typedef struct DvzTransformOLD DvzTransformOLD;
 typedef struct DvzAxes2D DvzAxes2D;
@@ -91,6 +107,19 @@ typedef void (*DvzControllerCallback)(DvzController* controller, DvzEvent ev);
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
+
+struct DvzSceneUpdate
+{
+    DvzSceneUpdateType type;
+
+    DvzCanvas* scene;
+    DvzPanel* panel;
+    DvzVisual* visual;
+    DvzSource* source;
+    DvzProp* prop;
+};
+
+
 
 struct DvzAxes2D
 {
@@ -143,6 +172,9 @@ struct DvzScene
 
     // Controllers.
     DvzContainer controllers;
+
+    // FIFO queue with the pending scene updates.
+    DvzFifo update_fifo;
 };
 
 

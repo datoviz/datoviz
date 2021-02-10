@@ -10,6 +10,78 @@ extern "C" {
 
 
 /*************************************************************************************************/
+/*  Scene updates                                                                                */
+/*************************************************************************************************/
+
+static void _scene_update_enqueue(DvzScene* scene, DvzSceneUpdate update)
+{
+    ASSERT(scene != NULL);
+    DvzFifo* fifo = &scene->update_fifo;
+    ASSERT(fifo != NULL);
+    DvzSceneUpdate* up = (DvzSceneUpdate*)calloc(1, sizeof(DvzSceneUpdate));
+    *up = update;
+    dvz_fifo_enqueue(fifo, up);
+}
+
+static DvzSceneUpdate _scene_update_dequeue(DvzScene* scene)
+{
+    ASSERT(scene != NULL);
+    DvzFifo* fifo = &scene->update_fifo;
+    ASSERT(fifo != NULL);
+    DvzSceneUpdate* item = (DvzSceneUpdate*)dvz_fifo_dequeue(fifo, false);
+    DvzSceneUpdate out;
+    out.type = DVZ_SCENE_UPDATE_NONE;
+    if (item == NULL)
+        return out;
+    ASSERT(item != NULL);
+    out = *item;
+    FREE(item);
+    return out;
+}
+
+static void _process_visual_added(DvzSceneUpdate up) {}
+
+static void _process_prop_changed(DvzSceneUpdate up) {}
+
+static void _process_scene_update(DvzSceneUpdate up)
+{
+    switch (up.type)
+    {
+
+    case DVZ_SCENE_UPDATE_VISUAL_ADDED:
+        _process_visual_added(up);
+        break;
+
+    case DVZ_SCENE_UPDATE_PROP_CHANGED:
+        _process_prop_changed(up);
+        break;
+
+    case DVZ_SCENE_UPDATE_VISIBILITY_CHANGED:
+        // _process_visibility_changed(up);
+        break;
+
+    default:
+        break;
+    }
+}
+
+static void _process_scene_updates(DvzScene* scene)
+{
+    ASSERT(scene != NULL);
+    DvzFifo* fifo = &scene->update_fifo;
+    if (dvz_fifo_size(fifo) == 0)
+        return;
+    DvzSceneUpdate up = _scene_update_dequeue(scene);
+    while (up.type != DVZ_SCENE_UPDATE_NONE)
+    {
+        _process_scene_update(up);
+        up = _scene_update_dequeue(scene);
+    }
+}
+
+
+
+/*************************************************************************************************/
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 

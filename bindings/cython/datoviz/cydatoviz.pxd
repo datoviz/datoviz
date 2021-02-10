@@ -721,6 +721,17 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_VISUAL_FLAGS_TRANSFORM_AUTO = 0x0000
         DVZ_VISUAL_FLAGS_TRANSFORM_NONE = 0x0010
 
+    ctypedef enum DvzSceneUpdateType:
+        DVZ_SCENE_UPDATE_NONE = 0
+        DVZ_SCENE_UPDATE_VISUAL_ADDED = 1
+        DVZ_SCENE_UPDATE_PROP_CHANGED = 2
+        DVZ_SCENE_UPDATE_VISIBILITY_CHANGED = 3
+        DVZ_SCENE_UPDATE_ITEM_COUNT_CHANGED = 4
+        DVZ_SCENE_UPDATE_PANEL_CHANGED = 5
+        DVZ_SCENE_UPDATE_INTERACT_CHANGED = 6
+        DVZ_SCENE_UPDATE_COORDS_CHANGED = 7
+        DVZ_SCENE_UPDATE_CANVAS_RESIZED = 8
+
     # from file: transforms.h
 
     ctypedef enum DvzTransformType:
