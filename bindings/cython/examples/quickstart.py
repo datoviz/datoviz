@@ -50,6 +50,12 @@ def on_change(value):
     color = colormap(color_values, vmin=0, vmax=1, alpha=.75 * np.ones(N), cmap=cmaps[value])
     visual.data('color', color)
 
+# We add a control, a slider controlling a float between 0 and 1 (by default)
+@gui.control("button", "regenerate")
+def on_change(value):
+    pos = nr.randn(N, 3)
+    visual.data('pos', pos)
+
 # We run the main event loop, which will display the canvas until Escape is pressed or the
 # window is closed.
 run()

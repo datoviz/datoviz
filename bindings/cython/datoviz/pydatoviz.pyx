@@ -108,6 +108,7 @@ _CONTROLS = {
     'slider_float': cv.DVZ_GUI_CONTROL_SLIDER_FLOAT,
     'slider_int': cv.DVZ_GUI_CONTROL_SLIDER_INT,
     'checkbox': cv.DVZ_GUI_CONTROL_CHECKBOX,
+    'button': cv.DVZ_GUI_CONTROL_BUTTON,
 }
 
 _COLORMAPS = {
@@ -376,6 +377,9 @@ cdef _get_ev_args(cv.DvzEvent c_ev):
             ivalue = <int*>c_ev.u.g.control.value
             return (ivalue[0],)
         elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_CHECKBOX:
+            bvalue = <bint*>c_ev.u.g.control.value
+            return (bvalue[0],)
+        elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_BUTTON:
             bvalue = <bint*>c_ev.u.g.control.value
             return (bvalue[0],)
     return ()
@@ -731,6 +735,8 @@ cdef class Gui:
         elif (ctype == 'checkbox'):
             c_value = kwargs.get('value', 0)
             cv.dvz_gui_checkbox(self._c_gui, c_name, c_value)
+        elif (ctype == 'button'):
+            cv.dvz_gui_button(self._c_gui, c_name, 0)
 
         def wrap(f):
             cdef cv.DvzEventType evtype
