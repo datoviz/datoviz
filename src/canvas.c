@@ -4,6 +4,7 @@
 #include "../include/datoviz/controls.h"
 #include "../include/datoviz/gui.h"
 #include "../include/datoviz/vklite.h"
+#include "../src/canvas_utils.h"
 #include "../src/vklite_utils.h"
 
 #include <stdlib.h>

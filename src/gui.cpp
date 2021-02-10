@@ -3,6 +3,7 @@
 #include "../include/datoviz/canvas.h"
 #include "../include/datoviz/controls.h"
 #include "../include/datoviz/gui.h"
+#include "canvas_utils.h"
 
 BEGIN_INCL_NO_WARN
 #include "../external/imgui/backends/imgui_impl_glfw.h"
