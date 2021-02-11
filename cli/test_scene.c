@@ -236,7 +236,7 @@ static void _change_pos(DvzCanvas* canvas, DvzEvent ev)
     }
 
     dvz_visual_data(visual, DVZ_PROP_POS, 0, N, pos);
-    dvz_visual_data(visual, DVZ_PROP_COLOR, 0, N, color);
+    // dvz_visual_data(visual, DVZ_PROP_COLOR, 0, N, color);
     FREE(pos);
     FREE(color);
 }

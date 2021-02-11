@@ -305,8 +305,8 @@ void dvz_visual_data_partial(
 
     // Copy the specified array to the prop array.
     dvz_array_data(&prop->arr_orig, first_item, item_count, data_item_count, data);
-    // Mark the prop has set, will need to be transposed only once.
-    prop->obj.request = 0;
+
+    prop->obj.request = DVZ_VISUAL_REQUEST_UPLOAD;
 
     if (source != NULL)
     {

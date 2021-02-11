@@ -403,7 +403,6 @@ static void _enqueue_coords_changed(DvzPanel* panel)
 // Change the visual and source request, to be picked up by dvz_visual_data() later.
 static void _process_prop_changed(DvzSceneUpdate up)
 {
-    log_trace("process prop changed");
     ASSERT(up.panel != NULL);
     DvzDataCoords coords = up.panel->data_coords;
 
@@ -706,6 +705,8 @@ static void _enqueue_all_visuals_changed(DvzScene* scene)
     DvzPanel* panel = NULL;
     DvzContainerIterator iter = dvz_container_iterator(&grid->panels);
     DvzVisual* visual = NULL;
+    DvzContainerIterator iter_prop;
+    DvzProp* prop = NULL;
 
     // Go through all panels in the scene to detect the scene updates.
     while (iter.item != NULL)
@@ -722,6 +723,20 @@ static void _enqueue_all_visuals_changed(DvzScene* scene)
             // Process visual upload.
             if (visual->obj.request == DVZ_VISUAL_REQUEST_UPLOAD)
             {
+                // Check if the POS props have been changed.
+                iter_prop = dvz_container_iterator(&visual->props);
+                while (iter_prop.item != NULL)
+                {
+                    prop = iter_prop.item;
+                    if (prop->prop_type == DVZ_PROP_POS &&
+                        prop->obj.request == DVZ_VISUAL_REQUEST_UPLOAD)
+                    {
+                        _enqueue_prop_changed(panel, visual, prop);
+                        prop->obj.request = DVZ_VISUAL_REQUEST_SET;
+                    }
+                    dvz_container_iter(&iter_prop);
+                }
+
                 _enqueue_visual_changed(panel, visual);
             }
         }
