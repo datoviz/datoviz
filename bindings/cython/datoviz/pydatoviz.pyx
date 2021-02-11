@@ -90,7 +90,7 @@ _PROPS = {
     'texcoords': (cv.DVZ_PROP_TEXCOORDS, np.float32, 2), # sometimes 3, for 3D textures
     'index': (cv.DVZ_PROP_INDEX, np.uint32, 1),
     'length': (cv.DVZ_PROP_LENGTH, np.uint32, 1),  # various possibilities depending on the visual
-    'light_params': (cv.DVZ_PROP_LIGHT_PARAMS, np.float32, 3),
+    'light_params': (cv.DVZ_PROP_LIGHT_PARAMS, np.float32, 4),
     'light_pos': (cv.DVZ_PROP_LIGHT_POS, np.float32, 3),
     'texcoefs': (cv.DVZ_PROP_TEXCOEFS, np.float32, 4),
     'linewidth': (cv.DVZ_PROP_LINE_WIDTH, np.float32, 1),
@@ -584,9 +584,12 @@ def _validate_data(dt, nc, data):
     if not data.flags['C_CONTIGUOUS']:
         data = np.ascontiguousarray(data)
     if data.ndim == 1:
-        data = data[:, np.newaxis]
-    assert data.ndim == 2, f"Incorrect array dimension {data.shape}"
-    assert data.shape[1] == nc, f"Incorrect array shape {data.shape}"
+        if nc == 1:
+            data = data[:, np.newaxis]
+        elif nc == len(data):
+            data = data[np.newaxis, :]
+    assert data.ndim == 2, f"Incorrect array dimension {data.shape}, nc={nc}"
+    assert data.shape[1] == nc, f"Incorrect array shape {data.shape} instead of {nc}"
     return data
 
 
@@ -609,7 +612,6 @@ cdef class Visual:
         value = _validate_data(dt, nc, value)
         N = value.shape[0]
         nd = value.shape[1]
-        # print(name, N, value.dtype, (N, nd))
         cv.dvz_visual_data(self._c_visual, c_prop, idx, N, &value.data[0])
 
     def image(self, np.ndarray[CHAR, ndim=3] value, int idx=0, filtering=None):

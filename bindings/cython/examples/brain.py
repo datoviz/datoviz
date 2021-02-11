@@ -52,7 +52,7 @@ gui = c.gui("GUI")
 @gui.control("slider_float", "glossy", value=.2, vmin=0, vmax=1)
 def on_change(value):
     light_params[0, 2] = value
-    visual.data('light_params', light_params.ravel())
+    visual.data('light_params', light_params)
 
 
 run()
