@@ -21,7 +21,9 @@ void dvz_transform_pos(DvzDataCoords coords, DvzArray* pos_in, DvzArray* pos_out
     ASSERT(pos_out->dtype == DVZ_DTYPE_DVEC3);
 
     log_debug("data normalization on %d position elements", pos_in->item_count);
-    DvzTransform tr = {0};
+
+    // Default transform.
+    DvzTransform tr = _transform(DVZ_TRANSFORM_CARTESIAN);
 
     // First, handle non-cartesian transforms.
     if (coords.transform == DVZ_TRANSFORM_EARTH_MERCATOR_WEB)
@@ -33,8 +35,16 @@ void dvz_transform_pos(DvzDataCoords coords, DvzArray* pos_in, DvzArray* pos_out
     }
     // TODO: more non-cartesian transforms.
 
-    // Then, linearly rescale to NDC.
-    tr = _transform_interp(coords.box, DVZ_BOX_NDC);
+    // Transform the box.
+    // NOTE: assuming a box is transformed to a box...
+    DvzBox box = {0};
+    _transform_apply(&tr, coords.box.p0, box.p0);
+    _transform_apply(&tr, coords.box.p1, box.p1);
+
+    // Then, linearly rescale to NDC, using the transformed box.
+    tr = _transform_interp(box, DVZ_BOX_NDC);
+
+    // Apply the transformation.
     _transform_array(&tr, pos_in, pos_out);
 }
 

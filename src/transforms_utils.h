@@ -128,7 +128,7 @@ static DvzBox _box_cube(DvzBox box)
 
 
 
-static void _project_lonlat(double lon, double lat, dvec2 out)
+static inline void _project_lonlat(double lon, double lat, dvec2 out)
 {
     // Web Mercator projection
     double lonrad = lon / 180.0 * M_PI;

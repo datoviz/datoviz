@@ -15,7 +15,7 @@ extern "C" {
 
 static inline bool _is_visual_to_transform(DvzVisual* visual)
 {
-    return (visual->flags & DVZ_VISUAL_FLAGS_TRANSFORM_NONE) != 0;
+    return (visual->flags & DVZ_VISUAL_FLAGS_TRANSFORM_NONE) == 0;
 }
 
 
@@ -146,6 +146,7 @@ static void _transform_pos_prop(DvzDataCoords coords, DvzProp* prop)
 
     // Create the transformed prop array.
     log_trace("normalizing POS prop, %d items", arr->item_count);
+    // _box_print(coords.box);
     *arr_tr = dvz_array(arr->item_count, arr->dtype);
     dvz_transform_pos(coords, arr, arr_tr, false);
 }
@@ -177,6 +178,7 @@ static DvzBox _compute_panel_box(DvzPanel* panel)
 
     // Merge the visual box with the existing box.
     DvzBox box = _box_merge(count, boxes);
+    // _box_print(box);
     FREE(boxes);
 
     // Make the box square if needed.
@@ -269,7 +271,7 @@ static int _transform_flags(DvzControllerType type, int flags)
 // Enqueue a scene update.
 static void _scene_update_enqueue(DvzScene* scene, DvzSceneUpdate update)
 {
-    log_trace("enqueue scene update of type %d", update.type);
+    // log_trace("enqueue scene update of type %d", update.type);
     ASSERT(scene != NULL);
     DvzFifo* fifo = &scene->update_fifo;
     ASSERT(fifo != NULL);
@@ -328,7 +330,7 @@ static void _enqueue_prop_changed(DvzPanel* panel, DvzVisual* visual, DvzProp* p
     ASSERT(prop != NULL);
 
     DvzSceneUpdate up = {0};
-    up.type = DVZ_SCENE_UPDATE_VISUAL_ADDED;
+    up.type = DVZ_SCENE_UPDATE_PROP_CHANGED;
     up.scene = scene;
     up.canvas = scene->canvas;
     up.panel = panel;
@@ -439,7 +441,7 @@ static void _process_coords_changed(DvzSceneUpdate up)
         ASSERT(visual != NULL);
 
         // NOTE: skip visuals that should not be transformed.
-        if (_is_visual_to_transform(visual))
+        if (!_is_visual_to_transform(visual))
             continue;
 
         // Go through all visual props.
@@ -472,13 +474,13 @@ static void _process_coords_changed(DvzSceneUpdate up)
 // Called when a new visual is added.
 static void _process_visual_added(DvzSceneUpdate up)
 {
-    log_trace("enqueue visual added");
+    log_trace("process visual added");
 
     DvzVisual* visual = up.visual;
     ASSERT(visual != NULL);
 
     // Compute box of the new visual, taking visual transform flags into account
-    if (_is_visual_to_transform(visual))
+    if (!_is_visual_to_transform(visual))
         return;
 
     DvzPanel* panel = up.panel;
@@ -499,6 +501,7 @@ static void _process_visual_added(DvzSceneUpdate up)
     if (_has_coords_changed(&coords, &box))
     {
         // This function renormalizes all visuals.
+        panel->data_coords.box = box;
         _enqueue_coords_changed(panel);
     }
 
@@ -760,8 +763,11 @@ static void _process_scene_updates(DvzScene* scene)
 
     // Iteratively process the scene updates, which can trigger more visuals changes.
     DvzSceneUpdate up = {0};
+    uint32_t i = 0;
     while (dvz_fifo_size(fifo) > 0)
     {
+        log_info("scene update pass #%d", i);
+
         // Process all pending updates.
         up = _scene_update_dequeue(scene);
         while (up.type != DVZ_SCENE_UPDATE_NONE)
@@ -772,6 +778,8 @@ static void _process_scene_updates(DvzScene* scene)
 
         // Find all visuals that need update, and enqueue them.
         _enqueue_all_visuals_changed(scene);
+
+        i++;
     }
 }
 
@@ -799,14 +807,18 @@ static void _scene_init(DvzCanvas* canvas, DvzEvent ev)
     while (iter.item != NULL)
     {
         panel = iter.item;
+
+        // Trigger normalization of all visuals initially in the panel.
+        panel->data_coords.box = _compute_panel_box(panel);
+        _enqueue_coords_changed(panel);
+
         // Go through all visuals.
         for (uint32_t j = 0; j < panel->visual_count; j++)
         {
             // Init the item change detection.
             _init_item_count_change_detection(panel->visuals[j]);
-            panel->visuals[j]->obj.request = DVZ_VISUAL_REQUEST_UPLOAD;
-            dvz_container_iter(&iter);
         }
+        dvz_container_iter(&iter);
     }
 }
 
