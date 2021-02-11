@@ -18,7 +18,9 @@ void dvz_transform_pos(DvzDataCoords coords, DvzArray* pos_in, DvzArray* pos_out
     ASSERT(pos_out->item_size == pos_in->item_size);
     ASSERT(pos_out->dtype == pos_in->dtype);
 
-    log_debug("data normalization on %d position elements", pos_in->item_count);
+    log_debug(
+        "data normalization on %d position elements, transform %d", pos_in->item_count,
+        coords.transform);
 
     // Default transform.
     DvzTransform tr = _transform(DVZ_TRANSFORM_CARTESIAN);
@@ -45,6 +47,8 @@ void dvz_transform_pos(DvzDataCoords coords, DvzArray* pos_in, DvzArray* pos_out
     // TODO: support other dtypes
     ASSERT(pos_out->dtype == DVZ_DTYPE_DVEC3);
 
+    DvzArray* pos_temp = pos_in;
+
     // First, handle non-cartesian transforms.
     if (coords.transform == DVZ_TRANSFORM_EARTH_MERCATOR_WEB)
     {
@@ -52,6 +56,7 @@ void dvz_transform_pos(DvzDataCoords coords, DvzArray* pos_in, DvzArray* pos_out
         if (inverse)
             tr = _transform_inv(&tr);
         _transform_array(&tr, pos_in, pos_out);
+        pos_temp = pos_out;
     }
     // TODO: more non-cartesian transforms.
 
@@ -65,7 +70,9 @@ void dvz_transform_pos(DvzDataCoords coords, DvzArray* pos_in, DvzArray* pos_out
     tr = _transform_interp(box, DVZ_BOX_NDC);
 
     // Apply the transformation.
-    _transform_array(&tr, pos_in, pos_out);
+    _transform_array(&tr, pos_temp, pos_out);
+    // dvz_array_print(pos_temp);
+    // dvz_array_print(pos_out);
 }
 
 

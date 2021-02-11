@@ -789,6 +789,22 @@ static void dvz_array_column(
 
 
 
+static void dvz_array_print(DvzArray* array)
+{
+    ASSERT(array != NULL);
+    dvec3* item = NULL;
+    for (uint32_t i = 0; i < array->item_count; i++)
+    {
+        item = (dvec3*)dvz_array_item(array, i);
+        if (array->dtype == DVZ_DTYPE_DVEC3)
+        {
+            log_info("%f %f %f", item[0][0], item[0][1], item[0][2]);
+        }
+    }
+}
+
+
+
 /**
  * Destroy an array.
  *
