@@ -408,7 +408,8 @@ static void _process_prop_changed(DvzSceneUpdate up)
 
     // if POS prop, we do data normalization
     ASSERT(up.prop != NULL);
-    if (up.prop->prop_type == DVZ_PROP_POS)
+    ASSERT(up.visual != NULL);
+    if (up.prop->prop_type == DVZ_PROP_POS && _is_visual_to_transform(up.visual))
         _transform_pos_prop(coords, up.prop);
 
     // Mark the visual and source has needing update, for dvz_visual_update()
@@ -441,7 +442,10 @@ static void _process_coords_changed(DvzSceneUpdate up)
 
         // NOTE: skip visuals that should not be transformed.
         if (!_is_visual_to_transform(visual))
+        {
+            log_trace("skip visual transform when processing coords changed");
             continue;
+        }
 
         // Go through all visual props.
         iter = dvz_container_iterator(&visual->props);

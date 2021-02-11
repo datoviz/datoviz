@@ -372,6 +372,8 @@ static void _axes_visual(DvzController* controller, DvzAxisCoord coord)
     int flags = DVZ_VISUAL_FLAGS_TRANSFORM_NONE |
                 (coord == 0 ? DVZ_INTERACT_FIXED_AXIS_Y : DVZ_INTERACT_FIXED_AXIS_X) | //
                 (int)coord;
+    ASSERT((flags & DVZ_VISUAL_FLAGS_TRANSFORM_NONE) != 0);
+
     DvzVisual* visual = dvz_scene_visual(panel, DVZ_VISUAL_AXES_2D, flags);
     dvz_controller_visual(controller, visual);
     visual->priority = DVZ_MAX_VISUAL_PRIORITY;

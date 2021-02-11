@@ -17,13 +17,33 @@ void dvz_transform_pos(DvzDataCoords coords, DvzArray* pos_in, DvzArray* pos_out
     ASSERT(pos_out->item_count == pos_in->item_count);
     ASSERT(pos_out->item_size == pos_in->item_size);
     ASSERT(pos_out->dtype == pos_in->dtype);
-    // TODO: support other dtypes
-    ASSERT(pos_out->dtype == DVZ_DTYPE_DVEC3);
 
     log_debug("data normalization on %d position elements", pos_in->item_count);
 
     // Default transform.
     DvzTransform tr = _transform(DVZ_TRANSFORM_CARTESIAN);
+
+    // // HACK: for now we only support DVEC3. For axes we need support for FLOAT just for linear
+    // so
+    // // we do that here.
+    // if (pos_out->dtype == DVZ_DTYPE_DOUBLE && coords.transform == DVZ_TRANSFORM_CARTESIAN)
+    // {
+    //     _box_print(coords.box);
+    //     double a = 2. / (coords.box.p1[0] - coords.box.p0[0]);
+    //     double b = -1 - 2 * coords.box.p0[0] / (coords.box.p1[0] - coords.box.p0[0]);
+    //     double x = 0;
+    //     for (uint32_t i = 0; i < pos_in->item_count; i++)
+    //     {
+    //         x = ((double*)pos_in->data)[i];
+    //         ((double*)pos_out->data)[i] = a * x + b;
+    //         log_debug("%f %f", x, ((double*)pos_out->data)[i]);
+    //     }
+    //     return;
+    //     // -1 + 2 * (t - u) / (v - u);
+    // }
+
+    // TODO: support other dtypes
+    ASSERT(pos_out->dtype == DVZ_DTYPE_DVEC3);
 
     // First, handle non-cartesian transforms.
     if (coords.transform == DVZ_TRANSFORM_EARTH_MERCATOR_WEB)

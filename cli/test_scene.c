@@ -377,7 +377,7 @@ int test_scene_axes(TestContext* context)
     // Record a video.
     char path[1024];
     snprintf(path, sizeof(path), "%s/scene.mp4", ARTIFACTS_DIR);
-    dvz_canvas_video(canvas, 30, 10000000, path);
+    // dvz_canvas_video(canvas, 30, 10000000, path);
 
     dvz_app_run(app, N_FRAMES);
 
