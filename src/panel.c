@@ -58,6 +58,9 @@ static void _update_viewport(DvzPanel* panel)
     viewport->viewport.maxDepth = 1;
 
     _check_viewport(viewport);
+
+    // Mark the panel as changed.
+    panel->obj.request = DVZ_VISUAL_REQUEST_UPLOAD;
 }
 
 

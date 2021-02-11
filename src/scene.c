@@ -30,8 +30,14 @@ DvzScene* dvz_scene(DvzCanvas* canvas, uint32_t n_rows, uint32_t n_cols)
     canvas->scene->controllers = dvz_container(
         DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzController), DVZ_OBJECT_TYPE_CONTROLLER);
 
+    // INIT callback
+    dvz_event_callback(canvas, DVZ_EVENT_INIT, 0, DVZ_EVENT_MODE_SYNC, _scene_init, canvas->scene);
+
+    // REFILL callback
     dvz_event_callback(
         canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, _scene_fill, canvas->scene);
+
+    // FRAME callbacks
 
     // HACK: we use a param of 1 here as a way of putting a lower priority, so that the
     // _scene_frame callback is called *after* the user FRAME callbacks. If the user callbacks call
@@ -40,6 +46,7 @@ DvzScene* dvz_scene(DvzCanvas* canvas, uint32_t n_rows, uint32_t n_cols)
     dvz_event_callback(
         canvas, DVZ_EVENT_FRAME, 1, DVZ_EVENT_MODE_SYNC, _scene_frame, canvas->scene);
 
+    // Upload the MVP struct to the panels.
     dvz_event_callback(
         canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _upload_mvp, canvas->scene);
 
@@ -225,7 +232,7 @@ static void _add_visual(DvzPanel* panel, DvzVisual* visual)
 
     // Update the panel data coords as a function of the visual's data.
     if (panel->scene->canvas->app->is_running)
-        _panel_visual_added(panel, visual);
+        _enqueue_visual_changed(panel, visual);
 }
 
 

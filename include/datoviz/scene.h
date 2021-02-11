@@ -58,6 +58,7 @@ typedef enum
 {
     DVZ_SCENE_UPDATE_NONE,
     DVZ_SCENE_UPDATE_VISUAL_ADDED,
+    DVZ_SCENE_UPDATE_VISUAL_CHANGED,
     DVZ_SCENE_UPDATE_PROP_CHANGED,
     DVZ_SCENE_UPDATE_VISIBILITY_CHANGED,
     DVZ_SCENE_UPDATE_ITEM_COUNT_CHANGED,
@@ -112,7 +113,9 @@ struct DvzSceneUpdate
 {
     DvzSceneUpdateType type;
 
-    DvzCanvas* scene;
+    // DvzDataCoords coords;
+    DvzCanvas* canvas;
+    DvzScene* scene;
     DvzPanel* panel;
     DvzVisual* visual;
     DvzSource* source;

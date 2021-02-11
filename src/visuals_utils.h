@@ -76,6 +76,44 @@ static DvzSourceKind _get_source_kind(DvzSourceType type)
 
 
 
+static void _source_set_changed(DvzSource* source, bool value)
+{
+    ASSERT(source != NULL);
+    int req = value ? DVZ_VISUAL_REQUEST_UPLOAD : DVZ_VISUAL_REQUEST_NOT_SET;
+    source->obj.request = req;
+    ASSERT(source->visual != NULL);
+    // Mark the visual as to be changed to.
+    source->visual->obj.request = req;
+}
+
+
+
+static void _source_set(DvzSource* source)
+{
+    ASSERT(source != NULL);
+    source->obj.request = DVZ_VISUAL_REQUEST_SET;
+    ASSERT(source->visual != NULL);
+    source->visual->obj.request = DVZ_VISUAL_REQUEST_SET;
+}
+
+
+
+static bool _source_has_changed(DvzSource* source)
+{
+    ASSERT(source != NULL);
+    return source->obj.request == DVZ_VISUAL_REQUEST_UPLOAD;
+}
+
+
+
+static bool _source_is_set(DvzSource* source)
+{
+    ASSERT(source != NULL);
+    return source->obj.request != DVZ_VISUAL_REQUEST_NOT_SET;
+}
+
+
+
 static uint32_t _get_texture_ndims(DvzSourceKind source_kind)
 {
     uint32_t ndims = 1;

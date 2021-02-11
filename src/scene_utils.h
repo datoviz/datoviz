@@ -10,78 +10,6 @@ extern "C" {
 
 
 /*************************************************************************************************/
-/*  Scene updates                                                                                */
-/*************************************************************************************************/
-
-static void _scene_update_enqueue(DvzScene* scene, DvzSceneUpdate update)
-{
-    ASSERT(scene != NULL);
-    DvzFifo* fifo = &scene->update_fifo;
-    ASSERT(fifo != NULL);
-    DvzSceneUpdate* up = (DvzSceneUpdate*)calloc(1, sizeof(DvzSceneUpdate));
-    *up = update;
-    dvz_fifo_enqueue(fifo, up);
-}
-
-static DvzSceneUpdate _scene_update_dequeue(DvzScene* scene)
-{
-    ASSERT(scene != NULL);
-    DvzFifo* fifo = &scene->update_fifo;
-    ASSERT(fifo != NULL);
-    DvzSceneUpdate* item = (DvzSceneUpdate*)dvz_fifo_dequeue(fifo, false);
-    DvzSceneUpdate out;
-    out.type = DVZ_SCENE_UPDATE_NONE;
-    if (item == NULL)
-        return out;
-    ASSERT(item != NULL);
-    out = *item;
-    FREE(item);
-    return out;
-}
-
-static void _process_visual_added(DvzSceneUpdate up) {}
-
-static void _process_prop_changed(DvzSceneUpdate up) {}
-
-static void _process_scene_update(DvzSceneUpdate up)
-{
-    switch (up.type)
-    {
-
-    case DVZ_SCENE_UPDATE_VISUAL_ADDED:
-        _process_visual_added(up);
-        break;
-
-    case DVZ_SCENE_UPDATE_PROP_CHANGED:
-        _process_prop_changed(up);
-        break;
-
-    case DVZ_SCENE_UPDATE_VISIBILITY_CHANGED:
-        // _process_visibility_changed(up);
-        break;
-
-    default:
-        break;
-    }
-}
-
-static void _process_scene_updates(DvzScene* scene)
-{
-    ASSERT(scene != NULL);
-    DvzFifo* fifo = &scene->update_fifo;
-    if (dvz_fifo_size(fifo) == 0)
-        return;
-    DvzSceneUpdate up = _scene_update_dequeue(scene);
-    while (up.type != DVZ_SCENE_UPDATE_NONE)
-    {
-        _process_scene_update(up);
-        up = _scene_update_dequeue(scene);
-    }
-}
-
-
-
-/*************************************************************************************************/
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
@@ -93,99 +21,6 @@ static void _viewport_print(DvzViewport v)
         v.clip, v.interact_axis, v.margins[0], v.size_framebuffer[0], v.size_screen[0],
         v.viewport.width, v.viewport.height, v.viewport.x, v.viewport.y, v.viewport.minDepth,
         v.viewport.maxDepth);
-}
-
-
-
-static inline void _visual_request(DvzVisual* visual, DvzPanel* panel, DvzVisualRequest req)
-{
-    if (visual != NULL)
-    {
-        visual->obj.request = (int)req;
-    }
-    if (panel != NULL)
-    {
-        // Update the panel request when one of its visual need to be updated. Also mark the scene
-        // as needing an update. The scene frame callback checks, at every frame, what needs to be
-        // updated. The scene and panel requests lets it avoid doing a full scan at every frame.
-        panel->obj.request = (int)req;
-        if (panel->scene != NULL)
-            panel->scene->obj.request = (int)req;
-    }
-    if (req == DVZ_VISUAL_REQUEST_REFILL)
-        dvz_canvas_to_refill(visual->canvas);
-}
-
-
-
-static inline void _visual_set(DvzVisual* visual)
-{
-    ASSERT(visual != NULL);
-    visual->obj.request = DVZ_VISUAL_REQUEST_SET;
-}
-
-
-
-static inline bool _visual_has_request(DvzVisual* visual)
-{
-    ASSERT(visual != NULL);
-    return visual->obj.request != DVZ_VISUAL_REQUEST_SET &&
-           visual->obj.request != DVZ_VISUAL_REQUEST_NOT_SET;
-}
-
-
-
-static inline void _panel_set(DvzPanel* panel)
-{
-    ASSERT(panel != NULL);
-    panel->obj.request = DVZ_VISUAL_REQUEST_SET;
-}
-
-
-
-static inline bool _panel_has_request(DvzPanel* panel)
-{
-    ASSERT(panel != NULL);
-    return panel->obj.request == DVZ_VISUAL_REQUEST_SET ||
-           panel->obj.request == DVZ_VISUAL_REQUEST_NOT_SET;
-}
-
-
-
-static inline void _scene_set(DvzScene* scene)
-{
-    ASSERT(scene != NULL);
-    scene->obj.request = DVZ_VISUAL_REQUEST_SET;
-}
-
-
-
-static void _visual_detect_item_count_change(DvzVisual* visual)
-{
-    ASSERT(visual != NULL);
-    DvzCanvas* canvas = visual->canvas;
-    ASSERT(canvas != NULL);
-    DvzSource* source = NULL;
-    for (uint32_t pidx = 0; pidx < visual->graphics_count; pidx++)
-    {
-        // Detect a change in vertex_count.
-        source = dvz_source_get(visual, DVZ_SOURCE_TYPE_VERTEX, pidx);
-        if (source->arr.item_count != visual->prev_vertex_count[pidx])
-        {
-            log_debug("automatic detection of a change in vertex count, will trigger full refill");
-            _visual_request(visual, NULL, DVZ_VISUAL_REQUEST_REFILL);
-            visual->prev_vertex_count[pidx] = source->arr.item_count;
-        }
-
-        // Detect a change in index_count.
-        source = dvz_source_get(visual, DVZ_SOURCE_TYPE_INDEX, pidx);
-        if (source != NULL && source->arr.item_count != visual->prev_index_count[pidx])
-        {
-            log_debug("automatic detection of a change in index count, will trigger full refill");
-            _visual_request(visual, NULL, DVZ_VISUAL_REQUEST_REFILL);
-            visual->prev_index_count[pidx] = source->arr.item_count;
-        }
-    }
 }
 
 
@@ -229,6 +64,9 @@ static DvzBox _visual_box(DvzVisual* visual)
 // Renormalize a POS prop.
 static void _transform_pos_prop(DvzDataCoords coords, DvzProp* prop)
 {
+    ASSERT(prop != NULL);
+    ASSERT(prop->prop_type == DVZ_PROP_POS);
+
     DvzArray* arr = NULL;
     DvzArray* arr_tr = NULL;
 
@@ -247,144 +85,15 @@ static void _transform_pos_prop(DvzDataCoords coords, DvzProp* prop)
 
 
 
-// Transpose a POS or NORMAL prop.
-static void _transpose_pos(DvzCDSTranspose transpose, DvzProp* prop)
-{
-    if (transpose == DVZ_CDS_TRANSPOSE_NONE)
-        return;
-
-    ASSERT(prop != NULL);
-    DvzArray* arr = &prop->arr_orig;
-    ASSERT(arr != NULL);
-    if (arr->item_count == 0)
-        return;
-
-    // Make the transposition.
-    void* item = NULL;
-    log_debug("transposing %d elements to CDS transpose %d", arr->item_count, transpose);
-    for (uint32_t i = 0; i < arr->item_count; i++)
-    {
-        item = dvz_array_item(arr, i);
-        if (prop->dtype == DVZ_DTYPE_DVEC3)
-            _transpose_dvec3(transpose, (dvec3*)item, (dvec3*)item);
-        else if (prop->dtype == DVZ_DTYPE_VEC3)
-            _transpose_vec3(transpose, (vec3*)item, (vec3*)item);
-    }
-}
-
-
-
-// Transpose the POS and NORMAL panels, if needed.
-static void _transpose_visual(DvzPanel* panel, DvzVisual* visual)
+static DvzBox _compute_panel_box(DvzPanel* panel)
 {
     ASSERT(panel != NULL);
-    ASSERT(visual != NULL);
-
-    DvzProp* prop = NULL;
-    // Go through all visual props.
-    DvzContainerIterator iter = dvz_container_iterator(&visual->props);
-    while (iter.item != NULL)
-    {
-        prop = iter.item;
-        // CDS transposition.
-        if (prop->obj.request == 0 &&
-            (prop->prop_type == DVZ_PROP_POS || prop->prop_type == DVZ_PROP_NORMAL))
-        {
-            _transpose_pos(panel->data_coords.transpose, prop);
-            prop->obj.request = 1; // HACK: we only transpose props once, after they've been set.
-        }
-
-        dvz_container_iter(&iter);
-    }
-}
-
-
-
-// Renormalize all POS props of all visuals in the panel.
-static void _panel_normalize_visuals(DvzPanel* panel, DvzBox box)
-{
-    ASSERT(panel != NULL);
-    DvzVisual* visual = NULL;
-    DvzProp* prop = NULL;
-    DvzContainerIterator iter;
-
-    // Update the data coords box.
-    panel->data_coords.box = box;
-
-    // Go through all visuals in the panel.
-    for (uint32_t i = 0; i < panel->visual_count; i++)
-    {
-        visual = panel->visuals[i];
-
-        // NOTE: skip visuals that should not be transformed.
-        if ((visual->flags & DVZ_VISUAL_FLAGS_TRANSFORM_NONE) != 0)
-            continue;
-
-        // Go through all visual props.
-        iter = dvz_container_iterator(&visual->props);
-        while (iter.item != NULL)
-        {
-            prop = iter.item;
-            // Transform all POS props with the panel data coordinates.
-            if (prop->prop_type == DVZ_PROP_POS)
-            {
-                _transform_pos_prop(panel->data_coords, prop);
-
-                // Mark the visual has needing data update.
-                // visual->obj.status = DVZ_OBJECT_STATUS_NEED_UPDATE;
-                _visual_request(visual, panel, DVZ_VISUAL_REQUEST_UPLOAD);
-            }
-
-            dvz_container_iter(&iter);
-        }
-    }
-}
-
-
-
-// Update the DvzPanel.data_coords struct when a new visual is added.
-static void _panel_visual_added(DvzPanel* panel, DvzVisual* visual)
-{
-    ASSERT(panel != NULL);
-    ASSERT(visual != NULL);
-
     DvzDataCoords* coords = &panel->data_coords;
+    ASSERT(coords != NULL);
 
-    // NOTE: skip visuals that should not be transformed.
-    if ((visual->flags & DVZ_VISUAL_FLAGS_TRANSFORM_NONE) != 0)
-        return;
-
-    // Transpose the POS and NORMAL props, if needed.
-    _transpose_visual(panel, visual);
-
-    // Get the visual box.
-    DvzBox box = _visual_box(visual);
-
-    // Merge the visual box with the existing box.
-    box = _box_merge(2, (DvzBox[]){coords->box, box});
-
-    // Make the box square if needed.
-    if ((coords->flags & DVZ_TRANSFORM_FLAGS_FIXED_ASPECT) != 0)
-        box = _box_cube(box);
-
-    // If the panel box has changed, renormalize all visuals.
-    if (memcmp(&box, &coords->box, sizeof(DvzBox)) != 0)
-    {
-        // Renormalize all visuals in the panel.
-        _panel_normalize_visuals(panel, box);
-    }
-}
-
-
-
-// Update the DvzPanel.data_coords struct as a function of all of the visuals data.
-static void _panel_normalize(DvzPanel* panel)
-{
-    ASSERT(panel != NULL);
-    log_debug("full panel normalization on %d visuals", panel->visual_count);
-
-    DvzDataCoords* coords = &panel->data_coords;
+    // We'll compute the box surrounding each visual, and we'll merge them.
     DvzBox* boxes = calloc(panel->visual_count, sizeof(DvzBox));
+    // number of boxes to compute, depends on the number of visuals to be transformed
     uint32_t count = 0;
 
     // Get the bounding box of each visual.
@@ -392,11 +101,8 @@ static void _panel_normalize(DvzPanel* panel)
     {
         ASSERT(panel->visuals[i] != NULL);
 
-        // Transpose the POS and NORMAL props, if needed.
-        _transpose_visual(panel, panel->visuals[i]);
-
         // NOTE: skip visuals that should not be transformed.
-        if ((panel->visuals[i]->flags & DVZ_VISUAL_FLAGS_TRANSFORM_NONE) == 0)
+        if (_is_visual_to_transform(panel->visuals[i]))
         {
             boxes[count++] = _visual_box(panel->visuals[i]);
         }
@@ -404,25 +110,38 @@ static void _panel_normalize(DvzPanel* panel)
 
     // Merge the visual box with the existing box.
     DvzBox box = _box_merge(count, boxes);
+    FREE(boxes);
 
     // Make the box square if needed.
-    if ((coords->flags & DVZ_TRANSFORM_FLAGS_FIXED_ASPECT) != 0)
+    if (_is_aspect_fixed(coords))
         box = _box_cube(box);
 
-    // Renormalize all visuals in the panel.
-    _panel_normalize_visuals(panel, box);
-
-    // Update the axes.
-    if (panel->controller->type == DVZ_CONTROLLER_AXES_2D)
-    {
-        _axes_set(panel->controller, panel->data_coords.box);
-    }
-
-    FREE(boxes);
+    _check_box(box);
+    return box;
 }
 
 
 
+static void _init_item_count_change_detection(DvzVisual* visual)
+{
+    ASSERT(visual != NULL);
+
+    DvzSource* source = NULL;
+    // Initialize prev_vertex_count and prev_index_count.
+    for (uint32_t pidx = 0; pidx < visual->graphics_count; pidx++)
+    {
+        source = dvz_source_get(visual, DVZ_SOURCE_TYPE_VERTEX, pidx);
+        visual->prev_vertex_count[pidx] = source->arr.item_count;
+
+        source = dvz_source_get(visual, DVZ_SOURCE_TYPE_INDEX, pidx);
+        if (source != NULL)
+            visual->prev_index_count[pidx] = source->arr.item_count;
+    }
+}
+
+
+
+// Update the GPU viewport struct of a visual.
 static void _update_visual_viewport(DvzPanel* panel, DvzVisual* visual)
 {
     visual->viewport = panel->viewport;
@@ -456,6 +175,559 @@ static void _common_data(DvzPanel* panel, DvzVisual* visual)
 
 
 
+static int _transform_flags(DvzControllerType type, int flags)
+{
+    switch (type)
+    {
+
+    case DVZ_CONTROLLER_ARCBALL:
+    case DVZ_CONTROLLER_CAMERA:
+        // 3D panels: fixed aspect
+        flags |= DVZ_TRANSFORM_FLAGS_FIXED_ASPECT;
+        break;
+
+    default:
+        break;
+    }
+    return flags;
+}
+
+
+
+/*************************************************************************************************/
+/*  Test                                                                                         */
+/*************************************************************************************************/
+
+static inline bool _is_visual_to_transform(DvzVisual* visual)
+{
+    return (visual->flags & DVZ_VISUAL_FLAGS_TRANSFORM_NONE) != 0;
+}
+
+
+
+static inline bool _is_aspect_fixed(DvzDataCoords* coords)
+{
+    return (coords->flags & DVZ_TRANSFORM_FLAGS_FIXED_ASPECT) != 0;
+}
+
+
+
+static bool _has_item_count_changed(DvzVisual* visual)
+{
+    ASSERT(visual != NULL);
+
+    bool has_changed = false;
+    DvzSource* source = NULL;
+    for (uint32_t pidx = 0; pidx < visual->graphics_count; pidx++)
+    {
+        // Detect a change in vertex_count.
+        source = dvz_source_get(visual, DVZ_SOURCE_TYPE_VERTEX, pidx);
+        if (source->arr.item_count != visual->prev_vertex_count[pidx])
+        {
+            // log_debug("automatic detection of a change in vertex count, will trigger full
+            // refill");
+            has_changed = true;
+            visual->prev_vertex_count[pidx] = source->arr.item_count;
+        }
+
+        // Detect a change in index_count.
+        source = dvz_source_get(visual, DVZ_SOURCE_TYPE_INDEX, pidx);
+        if (source != NULL && source->arr.item_count != visual->prev_index_count[pidx])
+        {
+            // log_debug("automatic detection of a change in index count, will trigger full
+            // refill");
+            has_changed = true;
+            visual->prev_index_count[pidx] = source->arr.item_count;
+        }
+    }
+    return has_changed;
+}
+
+
+
+static inline bool _has_obj_changed(DvzObject* obj)
+{
+    ASSERT(obj != NULL);
+    return obj->request > DVZ_VISUAL_REQUEST_SET;
+}
+
+
+
+static inline bool _has_coords_changed(DvzDataCoords* coords, DvzBox* box)
+{
+    return memcmp(box, &coords->box, sizeof(DvzBox)) != 0;
+}
+
+
+
+/*************************************************************************************************/
+/*  Scene update enqueueing                                                                      */
+/*************************************************************************************************/
+
+// Enqueue a scene update.
+static void _scene_update_enqueue(DvzScene* scene, DvzSceneUpdate update)
+{
+    ASSERT(scene != NULL);
+    DvzFifo* fifo = &scene->update_fifo;
+    ASSERT(fifo != NULL);
+    DvzSceneUpdate* up = (DvzSceneUpdate*)calloc(1, sizeof(DvzSceneUpdate));
+    *up = update;
+    dvz_fifo_enqueue(fifo, up);
+}
+
+
+
+static void _enqueue_visual_changed(DvzPanel* panel, DvzVisual* visual)
+{
+    ASSERT(panel != NULL);
+    DvzScene* scene = panel->scene;
+    ASSERT(scene != NULL);
+    ASSERT(visual != NULL);
+
+    DvzSceneUpdate up = {0};
+    up.type = DVZ_SCENE_UPDATE_VISUAL_CHANGED;
+    up.scene = scene;
+    up.canvas = scene->canvas;
+    up.panel = panel;
+    up.visual = visual;
+    _scene_update_enqueue(scene, up);
+}
+
+
+
+static void _enqueue_visual_added(DvzPanel* panel, DvzVisual* visual)
+{
+    ASSERT(panel != NULL);
+    DvzScene* scene = panel->scene;
+    ASSERT(scene != NULL);
+    ASSERT(visual != NULL);
+
+    DvzSceneUpdate up = {0};
+    up.type = DVZ_SCENE_UPDATE_VISUAL_ADDED;
+    up.scene = scene;
+    up.canvas = scene->canvas;
+    up.panel = panel;
+    up.visual = visual;
+    _scene_update_enqueue(scene, up);
+}
+
+
+
+static void _enqueue_prop_changed(DvzPanel* panel, DvzVisual* visual, DvzProp* prop)
+{
+    ASSERT(panel != NULL);
+    DvzScene* scene = panel->scene;
+    ASSERT(scene != NULL);
+    ASSERT(visual != NULL);
+    ASSERT(prop != NULL);
+
+    DvzSceneUpdate up = {0};
+    up.type = DVZ_SCENE_UPDATE_VISUAL_ADDED;
+    up.scene = scene;
+    up.canvas = scene->canvas;
+    up.panel = panel;
+    up.visual = visual;
+    up.prop = prop;
+    up.source = prop->source;
+    _scene_update_enqueue(scene, up);
+}
+
+
+
+static void _enqueue_item_count_changed(DvzPanel* panel, DvzVisual* visual)
+{
+    ASSERT(panel != NULL);
+    DvzScene* scene = panel->scene;
+    ASSERT(scene != NULL);
+    ASSERT(visual != NULL);
+
+    DvzSceneUpdate up = {0};
+    up.type = DVZ_SCENE_UPDATE_ITEM_COUNT_CHANGED;
+    up.scene = scene;
+    up.canvas = scene->canvas;
+    up.panel = panel;
+    up.visual = visual;
+    _scene_update_enqueue(scene, up);
+}
+
+
+
+static void _enqueue_panel_changed(DvzPanel* panel)
+{
+    ASSERT(panel != NULL);
+    DvzScene* scene = panel->scene;
+    ASSERT(scene != NULL);
+
+    DvzSceneUpdate up = {0};
+    up.type = DVZ_SCENE_UPDATE_PANEL_CHANGED;
+    up.scene = scene;
+    up.canvas = scene->canvas;
+    up.panel = panel;
+    _scene_update_enqueue(scene, up);
+}
+
+
+
+static void _enqueue_coords_changed(DvzPanel* panel)
+{
+    ASSERT(panel != NULL);
+    DvzScene* scene = panel->scene;
+    ASSERT(scene != NULL);
+
+    DvzSceneUpdate up = {0};
+    up.type = DVZ_SCENE_UPDATE_COORDS_CHANGED;
+    up.scene = scene;
+    up.canvas = scene->canvas;
+    up.panel = panel;
+    _scene_update_enqueue(scene, up);
+}
+
+
+
+/*************************************************************************************************/
+/*  Processing scene updates                                                                     */
+/*************************************************************************************************/
+
+// Called when a prop's data has changed.
+// Change the visual and source request, to be picked up by dvz_visual_data() later.
+static void _process_prop_changed(DvzSceneUpdate up)
+{
+    ASSERT(up.panel != NULL);
+    DvzDataCoords coords = up.panel->data_coords;
+
+    // if POS prop, we do data normalization
+    ASSERT(up.prop != NULL);
+    if (up.prop->prop_type == DVZ_PROP_POS)
+        _transform_pos_prop(coords, up.prop);
+
+    // Mark the visual and source has needing update, for dvz_visual_update()
+    ASSERT(up.source != NULL);
+    _source_set_changed(up.source, true);
+}
+
+
+
+// Called when the box coords has changed and ALL visuals in a panel must be renormalized.
+static void _process_coords_changed(DvzSceneUpdate up)
+{
+    DvzPanel* panel = up.panel;
+    ASSERT(panel != NULL);
+
+    // We'll iterate through all visuals.
+    DvzVisual* visual = NULL;
+
+    // We'll iterate through all props of each visual.
+    DvzProp* prop = NULL;
+    DvzContainerIterator iter;
+
+    // Go through all visuals in the panel.
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        visual = panel->visuals[i];
+        ASSERT(visual != NULL);
+
+        // NOTE: skip visuals that should not be transformed.
+        if (_is_visual_to_transform(visual))
+            continue;
+
+        // Go through all visual props.
+        iter = dvz_container_iterator(&visual->props);
+        while (iter.item != NULL)
+        {
+            prop = iter.item;
+            ASSERT(prop != NULL);
+
+            // Transform all POS props with the panel data coordinates.
+            if (prop->prop_type == DVZ_PROP_POS)
+            {
+                _enqueue_prop_changed(panel, visual, prop);
+            }
+
+            dvz_container_iter(&iter);
+        }
+    }
+
+    // Update the axes.
+    if (panel->controller->type == DVZ_CONTROLLER_AXES_2D)
+    {
+        ASSERT(panel->controller != NULL);
+        _axes_set(panel->controller, panel->data_coords.box);
+    }
+}
+
+
+
+// Called when a new visual is added.
+static void _process_visual_added(DvzSceneUpdate up)
+{
+    DvzVisual* visual = up.visual;
+    ASSERT(visual != NULL);
+
+    // Compute box of the new visual, taking visual transform flags into account
+    if (_is_visual_to_transform(visual))
+        return;
+
+    DvzPanel* panel = up.panel;
+    ASSERT(panel != NULL);
+    DvzDataCoords coords = panel->data_coords;
+
+    // Get the visual box.
+    DvzBox box = _visual_box(visual);
+
+    // Take existing box of the panel and merge it with new box.
+    box = _box_merge(2, (DvzBox[]){coords.box, box});
+
+    // Make the box square if needed.
+    if (_is_aspect_fixed(&coords))
+        box = _box_cube(box);
+
+    // If the panel box has changed, renormalize all visuals.
+    if (_has_coords_changed(&coords, &box))
+    {
+        // This function renormalizes all visuals.
+        _enqueue_coords_changed(panel);
+    }
+
+    // Once added, we need to trigger the visual data upload.
+    _enqueue_visual_changed(panel, visual);
+}
+
+
+
+// Called when visual data has changed.
+static void _process_visual_changed(DvzSceneUpdate up)
+{
+    DvzVisual* visual = up.visual;
+    ASSERT(visual != NULL);
+    DvzPanel* panel = up.panel;
+    ASSERT(panel != NULL);
+
+    // Visual data GPU upload.
+    dvz_visual_update(visual, panel->viewport, panel->data_coords, NULL);
+
+    // Detect whether the number of vertices/indices has changed, in which case a command buffer
+    // refill will be needed.
+    if (_has_item_count_changed(visual))
+    {
+        _enqueue_item_count_changed(panel, visual);
+    }
+
+    // TODO: recompute the bounding box when changing the data?
+    // // If the panel box has changed, renormalize all visuals.
+    // if (_has_coords_changed(&coords, &box))
+    // {
+    //     // This function renormalizes all visuals.
+    //     _enqueue_coords_changed(panel);
+    // }
+}
+
+
+
+// Called when the visibility of a visual has changed.
+static void _process_visibility_changed(DvzSceneUpdate up)
+{
+    ASSERT(up.canvas != NULL);
+    // Refill command buffer.
+    dvz_canvas_to_refill(up.canvas);
+}
+
+
+
+// Called when the number of vertices/indices has changed.
+static void _process_item_count_changed(DvzSceneUpdate up)
+{
+    ASSERT(up.canvas != NULL);
+    // Refill command buffer.
+    dvz_canvas_to_refill(up.canvas);
+}
+
+
+
+// Called when a panel has changed.
+static void _process_panel_changed(DvzSceneUpdate up)
+{
+    DvzPanel* panel = up.panel;
+    ASSERT(panel != NULL);
+
+    // Recompute the panel viewport.
+    dvz_panel_update(panel);
+    ASSERT(dvz_obj_is_created(&panel->obj));
+
+    // Updat the GPU panel struct for all visuals in the panel.
+    for (uint32_t k = 0; k < panel->visual_count; k++)
+        _update_visual_viewport(panel, panel->visuals[k]);
+
+    // Refill command buffer.
+    ASSERT(up.canvas != NULL);
+    dvz_canvas_to_refill(up.canvas);
+}
+
+
+
+// Called when an interact has changed.
+static void _process_interact_changed(DvzSceneUpdate up)
+{
+    // TODO
+}
+
+
+
+// Called when a canvas has been resized.
+static void _process_canvas_resized(DvzSceneUpdate up)
+{
+    DvzScene* scene = up.scene;
+    ASSERT(scene != NULL);
+
+    DvzGrid* grid = &scene->grid;
+    ASSERT(grid != NULL);
+
+    // Go through all panels and recompute their viewport.
+    DvzPanel* panel = NULL;
+    DvzContainerIterator iter = dvz_container_iterator(&grid->panels);
+    while (iter.item != NULL)
+    {
+        panel = iter.item;
+        ASSERT(panel != NULL);
+        up.panel = panel;
+        _process_panel_changed(up);
+        dvz_container_iter(&iter);
+    }
+}
+
+
+
+// Called when anything in the scene has changed.
+static void _process_scene_update(DvzSceneUpdate up)
+{
+    switch (up.type)
+    {
+
+    case DVZ_SCENE_UPDATE_VISUAL_ADDED:
+        _process_visual_added(up);
+        break;
+
+    case DVZ_SCENE_UPDATE_VISUAL_CHANGED:
+        _process_visual_changed(up);
+        break;
+
+    case DVZ_SCENE_UPDATE_PROP_CHANGED:
+        _process_prop_changed(up);
+        break;
+
+    case DVZ_SCENE_UPDATE_VISIBILITY_CHANGED:
+        _process_visibility_changed(up);
+        break;
+
+    case DVZ_SCENE_UPDATE_ITEM_COUNT_CHANGED:
+        _process_item_count_changed(up);
+        break;
+
+    case DVZ_SCENE_UPDATE_PANEL_CHANGED:
+        _process_panel_changed(up);
+        break;
+
+    case DVZ_SCENE_UPDATE_INTERACT_CHANGED:
+        _process_interact_changed(up);
+        break;
+
+    case DVZ_SCENE_UPDATE_COORDS_CHANGED:
+        _process_coords_changed(up);
+        break;
+
+    case DVZ_SCENE_UPDATE_CANVAS_RESIZED:
+        _process_canvas_resized(up);
+        break;
+
+    default:
+        break;
+    }
+}
+
+
+
+/*************************************************************************************************/
+/*  Scene updates                                                                                */
+/*************************************************************************************************/
+
+// Dequeue a scene update.
+static DvzSceneUpdate _scene_update_dequeue(DvzScene* scene)
+{
+    ASSERT(scene != NULL);
+    DvzFifo* fifo = &scene->update_fifo;
+    ASSERT(fifo != NULL);
+    DvzSceneUpdate* item = (DvzSceneUpdate*)dvz_fifo_dequeue(fifo, false);
+    DvzSceneUpdate out;
+    out.type = DVZ_SCENE_UPDATE_NONE;
+    if (item == NULL)
+        return out;
+    ASSERT(item != NULL);
+    out = *item;
+    FREE(item);
+    return out;
+}
+
+
+
+// Process all pending scene updates.
+static void _process_scene_updates(DvzScene* scene)
+{
+    ASSERT(scene != NULL);
+    DvzFifo* fifo = &scene->update_fifo;
+
+    DvzSceneUpdate up = {0};
+    while (dvz_fifo_size(fifo) > 0)
+    {
+        // Process all pending updates.
+        up = _scene_update_dequeue(scene);
+        while (up.type != DVZ_SCENE_UPDATE_NONE)
+        {
+            _process_scene_update(up);
+            up = _scene_update_dequeue(scene);
+        }
+
+        // Find all visuals that need update, and enqueue them.
+        _enqueue_all_visuals_changed(scene);
+    }
+}
+
+
+
+/*************************************************************************************************/
+/*  Scene callbacks                                                                              */
+/*************************************************************************************************/
+
+// At initialization, we must initialize the item count change detector.
+static void _scene_init(DvzCanvas* canvas, DvzEvent ev)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(ev.user_data != NULL);
+
+    DvzScene* scene = (DvzScene*)ev.user_data;
+    ASSERT(scene != NULL);
+
+    DvzGrid* grid = &scene->grid;
+    ASSERT(grid != NULL);
+
+    // Go through all panels in the scene.
+    DvzPanel* panel = NULL;
+    DvzContainerIterator iter = dvz_container_iterator(&grid->panels);
+    while (iter.item != NULL)
+    {
+        panel = iter.item;
+        // Go through all visuals.
+        for (uint32_t j = 0; j < panel->visual_count; j++)
+        {
+            // Init the item change detection.
+            _init_item_count_change_detection(panel->visuals[j]);
+            dvz_container_iter(&iter);
+        }
+    }
+}
+
+
+
+// Refill the command buffer with all panels and visuals.
+// NOTE: the panel viewports must have been updated first.
 static void _scene_fill(DvzCanvas* canvas, DvzEvent ev)
 {
     log_debug("scene fill");
@@ -485,19 +757,10 @@ static void _scene_fill(DvzCanvas* canvas, DvzEvent ev)
         while (iter.item != NULL)
         {
             panel = iter.item;
-            // Update the panel.
-            dvz_panel_update(panel);
-            ASSERT(dvz_obj_is_created(&panel->obj));
 
             // Find the panel viewport.
             viewport = dvz_panel_viewport(panel);
             dvz_cmd_viewport(cmds, img_idx, viewport.viewport);
-
-            // Update visual DvzViewport struct and upload it, only once per visual.
-            // TODO: move this to a RESIZE callback instead
-            if (img_idx == 0)
-                for (uint32_t k = 0; k < panel->visual_count; k++)
-                    _update_visual_viewport(panel, panel->visuals[k]);
 
             // Go through all visuals in the panel.
             visual = NULL;
@@ -522,21 +785,16 @@ static void _scene_fill(DvzCanvas* canvas, DvzEvent ev)
 
 
 
-static void _scene_frame(DvzCanvas* canvas, DvzEvent ev)
+static void _callback_controllers(DvzScene* scene)
 {
-    ASSERT(canvas != NULL);
-    ASSERT(ev.user_data != NULL);
-    DvzScene* scene = (DvzScene*)ev.user_data;
     ASSERT(scene != NULL);
     DvzGrid* grid = &scene->grid;
-    DvzViewport viewport = {0};
 
     // Go through all panels that need to be updated.
-    // bool to_update = false;
     DvzPanel* panel = NULL;
     DvzContainerIterator iter = dvz_container_iterator(&grid->panels);
-    DvzSource* source = NULL;
-    DvzVisual* visual = NULL;
+
+    // Go through all panels in the scene to detect the scene updates.
     while (iter.item != NULL)
     {
         panel = iter.item;
@@ -547,87 +805,73 @@ static void _scene_frame(DvzCanvas* canvas, DvzEvent ev)
             // TODO: event struct
             panel->controller->callback(panel->controller, (DvzEvent){0});
         }
-
-        // TODO
-        // // Handle floating panels.
-        // if (panel->mode == DVZ_PANEL_FLOATING &&               //
-        //     canvas->mouse.cur_state == DVZ_MOUSE_STATE_DRAG && //
-        //     dvz_panel_contains(panel, canvas->mouse.press_pos))
-        // {
-        //     float x = canvas->mouse.cur_pos[0] / canvas->window->width;
-        //     float y = canvas->mouse.cur_pos[1] / canvas->window->height;
-        //     log_info("moving panel to %.1fx%.1f", x, y);
-        //     dvz_panel_pos(panel, x, y);
-        // }
-
-        // Initial normalization of all visuals in the panel.
-        if (canvas->frame_idx == 0)
-            _panel_normalize(panel);
-
-        // Process panel and visual requests.
-
-        // NOTE: dvz_visual_data() functions have no notion of panel and cannot update its request.
-        // So we are forced to scan through all panels and visuals to find visuals that need an
-        // update. That's why the following is commented out.
-        // // Skip the panel if there is no request.
-        // if (!_panel_has_request(panel))
-        //     continue;
-
-        // to_update = panel->obj.status == DVZ_OBJECT_STATUS_NEED_UPDATE;
-        viewport = panel->viewport;
-        for (uint32_t j = 0; j < panel->visual_count; j++)
-        {
-            visual = panel->visuals[j];
-
-            // First frame:
-            if (canvas->frame_idx == 0)
-            {
-                // Set all visuals to be updated.
-                _visual_request(visual, panel, DVZ_VISUAL_REQUEST_UPLOAD);
-
-                // Initialize prev_vertex_count and prev_index_count.
-                for (uint32_t pidx = 0; pidx < visual->graphics_count; pidx++)
-                {
-                    source = dvz_source_get(visual, DVZ_SOURCE_TYPE_VERTEX, pidx);
-                    visual->prev_vertex_count[pidx] = source->arr.item_count;
-
-                    source = dvz_source_get(visual, DVZ_SOURCE_TYPE_INDEX, pidx);
-                    if (source != NULL)
-                        visual->prev_index_count[pidx] = source->arr.item_count;
-                }
-            }
-
-            // Skip the visual if there is no request.
-            if (!_visual_has_request(visual))
-                continue;
-
-            // Process visual upload.
-            if (visual->obj.request == DVZ_VISUAL_REQUEST_UPLOAD)
-            {
-                // Update the visual's data.
-                dvz_visual_update(visual, viewport, panel->data_coords, NULL);
-
-                // Detect whether the number of vertices/indices has changed, in which case we need
-                // a refill in the current frame.
-                _visual_detect_item_count_change(visual);
-
-                // The visual no longer needs UPLOAD.
-                _visual_set(visual);
-            }
-        }
-
-        // Mark the panel as no longer needing to be updated.
-        _panel_set(panel);
-
         dvz_container_iter(&iter);
     }
-
-    // Mark the scene as no longer needing to be updated.
-    _scene_set(scene);
 }
 
 
 
+static void _enqueue_all_visuals_changed(DvzScene* scene)
+{
+    ASSERT(scene != NULL);
+    DvzGrid* grid = &scene->grid;
+
+    // Go through all panels that need to be updated.
+    DvzPanel* panel = NULL;
+    DvzContainerIterator iter = dvz_container_iterator(&grid->panels);
+    DvzSource* source = NULL;
+    DvzVisual* visual = NULL;
+
+    // Go through all panels in the scene to detect the scene updates.
+    while (iter.item != NULL)
+    {
+        panel = iter.item;
+
+        // Determine what has changed in the scene since last frame:
+
+        // Process panel and visual requests.
+        for (uint32_t j = 0; j < panel->visual_count; j++)
+        {
+            visual = panel->visuals[j];
+
+            // Process visual upload.
+            if (visual->obj.request == DVZ_VISUAL_REQUEST_UPLOAD)
+            {
+                _enqueue_visual_changed(panel, visual);
+            }
+        }
+        dvz_container_iter(&iter);
+    }
+}
+
+
+
+// Called at every frame, this important function checks if there are any scene updates, and
+// processes them if so. It also calls the controller callbacks for every panel.
+static void _scene_frame(DvzCanvas* canvas, DvzEvent ev)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(ev.user_data != NULL);
+    DvzScene* scene = (DvzScene*)ev.user_data;
+    ASSERT(scene != NULL);
+    DvzGrid* grid = &scene->grid;
+
+    // Go through all panels that need to be updated.
+    DvzPanel* panel = NULL;
+    DvzContainerIterator iter = dvz_container_iterator(&grid->panels);
+    DvzSource* source = NULL;
+    DvzVisual* visual = NULL;
+
+    // Call the controller callbacks of all panels.
+    _callback_controllers(scene);
+
+    // Process the scene updates.
+    _process_scene_updates(scene);
+}
+
+
+
+// Upload the MVP struct to the panels.
 static void _upload_mvp(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
@@ -667,25 +911,6 @@ static void _upload_mvp(DvzCanvas* canvas, DvzEvent ev)
         }
         dvz_container_iter(&iter);
     }
-}
-
-
-
-static int _transform_flags(DvzControllerType type, int flags)
-{
-    switch (type)
-    {
-
-    case DVZ_CONTROLLER_ARCBALL:
-    case DVZ_CONTROLLER_CAMERA:
-        // 3D panels: fixed aspect
-        flags |= DVZ_TRANSFORM_FLAGS_FIXED_ASPECT;
-        break;
-
-    default:
-        break;
-    }
-    return flags;
 }
 
 
