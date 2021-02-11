@@ -385,6 +385,15 @@ void dvz_panel_transpose(DvzPanel* panel, DvzCDSTranspose transpose)
 
 
 
+void dvz_panel_transform(DvzPanel* panel, DvzTransformType transform)
+{
+    ASSERT(panel != NULL);
+    panel->data_coords.transform = transform;
+    log_warn("panel transform not yet implemented");
+}
+
+
+
 DvzViewport dvz_panel_viewport(DvzPanel* panel)
 {
     ASSERT(panel != NULL);

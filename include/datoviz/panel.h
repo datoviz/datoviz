@@ -236,6 +236,17 @@ DVZ_EXPORT void dvz_panel_span(DvzPanel* panel, DvzGridAxis axis, uint32_t span)
 DVZ_EXPORT void dvz_panel_cell(DvzPanel* panel, uint32_t row, uint32_t col);
 
 /**
+ * Set the transform of a panel.
+ *
+ * !!! note
+ *     Not implemented yet.
+ *
+ * @param panel the panel
+ * @param transform the type of transform
+ */
+DVZ_EXPORT void dvz_panel_transform(DvzPanel* panel, DvzTransformType transform);
+
+/**
  * Set the coordinate system transposition (order and direction of the 3 xyz axes).
  *
  * @param panel the panel
