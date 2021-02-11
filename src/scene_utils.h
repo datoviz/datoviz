@@ -592,27 +592,27 @@ static void _process_interact_changed(DvzSceneUpdate up)
 
 
 
-// Called when a canvas has been resized.
-static void _process_canvas_resized(DvzSceneUpdate up)
-{
-    DvzScene* scene = up.scene;
-    ASSERT(scene != NULL);
+// // Called when a canvas has been resized.
+// static void _process_canvas_resized(DvzSceneUpdate up)
+// {
+//     DvzScene* scene = up.scene;
+//     ASSERT(scene != NULL);
 
-    DvzGrid* grid = &scene->grid;
-    ASSERT(grid != NULL);
+//     DvzGrid* grid = &scene->grid;
+//     ASSERT(grid != NULL);
 
-    // Go through all panels and recompute their viewport.
-    DvzPanel* panel = NULL;
-    DvzContainerIterator iter = dvz_container_iterator(&grid->panels);
-    while (iter.item != NULL)
-    {
-        panel = iter.item;
-        ASSERT(panel != NULL);
-        up.panel = panel;
-        _process_panel_changed(up);
-        dvz_container_iter(&iter);
-    }
-}
+//     // Go through all panels and recompute their viewport.
+//     DvzPanel* panel = NULL;
+//     DvzContainerIterator iter = dvz_container_iterator(&grid->panels);
+//     while (iter.item != NULL)
+//     {
+//         panel = iter.item;
+//         ASSERT(panel != NULL);
+//         up.panel = panel;
+//         _process_panel_changed(up);
+//         dvz_container_iter(&iter);
+//     }
+// }
 
 
 
@@ -654,9 +654,9 @@ static void _process_scene_update(DvzSceneUpdate up)
         _process_coords_changed(up);
         break;
 
-    case DVZ_SCENE_UPDATE_CANVAS_RESIZED:
-        _process_canvas_resized(up);
-        break;
+        // case DVZ_SCENE_UPDATE_CANVAS_RESIZED:
+        //     _process_canvas_resized(up);
+        //     break;
 
     default:
         break;
@@ -697,7 +697,7 @@ static void _callback_controllers(DvzScene* scene)
 
 static void _enqueue_all_visuals_changed(DvzScene* scene)
 {
-    log_trace("enqueue all visuals changed");
+    // log_trace("enqueue all visuals changed");
 
     ASSERT(scene != NULL);
     DvzGrid* grid = &scene->grid;
@@ -766,7 +766,7 @@ static void _process_scene_updates(DvzScene* scene)
     uint32_t i = 0;
     while (dvz_fifo_size(fifo) > 0)
     {
-        log_info("scene update pass #%d", i);
+        log_trace("scene update pass #%d", i);
 
         // Process all pending updates.
         up = _scene_update_dequeue(scene);
@@ -828,7 +828,7 @@ static void _scene_init(DvzCanvas* canvas, DvzEvent ev)
 // NOTE: the panel viewports must have been updated first.
 static void _scene_fill(DvzCanvas* canvas, DvzEvent ev)
 {
-    log_debug("scene fill");
+    log_trace("scene fill");
     ASSERT(canvas != NULL);
     ASSERT(ev.user_data != NULL);
     DvzScene* scene = (DvzScene*)ev.user_data;
@@ -878,6 +878,32 @@ static void _scene_fill(DvzCanvas* canvas, DvzEvent ev)
             dvz_container_iter(&iter);
         }
         dvz_visual_fill_end(canvas, cmds, img_idx);
+    }
+}
+
+
+static void _scene_resize(DvzCanvas* canvas, DvzEvent ev)
+{
+    log_trace("scene resize");
+
+    ASSERT(canvas != NULL);
+    ASSERT(ev.user_data != NULL);
+    DvzScene* scene = (DvzScene*)ev.user_data;
+    ASSERT(scene != NULL);
+    DvzGrid* grid = &scene->grid;
+
+    // Go through all panels and recompute their viewport.
+    DvzPanel* panel = NULL;
+    DvzContainerIterator iter = dvz_container_iterator(&grid->panels);
+    DvzSceneUpdate up = {0};
+    up.canvas = canvas;
+    while (iter.item != NULL)
+    {
+        panel = iter.item;
+        ASSERT(panel != NULL);
+        up.panel = panel;
+        _process_panel_changed(up);
+        dvz_container_iter(&iter);
     }
 }
 

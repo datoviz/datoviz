@@ -37,6 +37,10 @@ DvzScene* dvz_scene(DvzCanvas* canvas, uint32_t n_rows, uint32_t n_cols)
     // INIT callback
     dvz_event_callback(canvas, DVZ_EVENT_INIT, 0, DVZ_EVENT_MODE_SYNC, _scene_init, canvas->scene);
 
+    // RESIZE callback
+    dvz_event_callback(
+        canvas, DVZ_EVENT_RESIZE, 0, DVZ_EVENT_MODE_SYNC, _scene_resize, canvas->scene);
+
     // REFILL callback
     dvz_event_callback(
         canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, _scene_fill, canvas->scene);
