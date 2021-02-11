@@ -27,8 +27,12 @@ DvzScene* dvz_scene(DvzCanvas* canvas, uint32_t n_rows, uint32_t n_cols)
 
     canvas->scene->visuals =
         dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzVisual), DVZ_OBJECT_TYPE_VISUAL);
+
     canvas->scene->controllers = dvz_container(
         DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzController), DVZ_OBJECT_TYPE_CONTROLLER);
+
+    // Scene update FIFO queue.
+    canvas->scene->update_fifo = dvz_fifo(DVZ_MAX_FIFO_CAPACITY);
 
     // INIT callback
     dvz_event_callback(canvas, DVZ_EVENT_INIT, 0, DVZ_EVENT_MODE_SYNC, _scene_init, canvas->scene);
@@ -403,6 +407,8 @@ void dvz_scene_destroy(DvzScene* scene)
     // Destroy all controllers.
     CONTAINER_DESTROY_ITEMS(DvzController, scene->controllers, dvz_controller_destroy)
     dvz_container_destroy(&scene->controllers);
+
+    dvz_fifo_destroy(&scene->update_fifo);
 
     dvz_container_destroy(&scene->visuals);
     dvz_obj_destroyed(&scene->obj);

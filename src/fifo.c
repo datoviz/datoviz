@@ -100,7 +100,7 @@ int dvz_fifo_size(DvzFifo* fifo)
 {
     ASSERT(fifo != NULL);
     pthread_mutex_lock(&fifo->lock);
-    log_debug("head %d tail %d", fifo->head, fifo->tail);
+    // log_debug("head %d tail %d", fifo->head, fifo->tail);
     int size = fifo->head - fifo->tail;
     if (size < 0)
         size += fifo->capacity;

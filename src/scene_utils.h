@@ -269,6 +269,7 @@ static int _transform_flags(DvzControllerType type, int flags)
 // Enqueue a scene update.
 static void _scene_update_enqueue(DvzScene* scene, DvzSceneUpdate update)
 {
+    log_trace("enqueue scene update of type %d", update.type);
     ASSERT(scene != NULL);
     DvzFifo* fifo = &scene->update_fifo;
     ASSERT(fifo != NULL);
@@ -754,6 +755,10 @@ static void _process_scene_updates(DvzScene* scene)
     ASSERT(scene != NULL);
     DvzFifo* fifo = &scene->update_fifo;
 
+    // Find all visuals that need update, and enqueue them.
+    _enqueue_all_visuals_changed(scene);
+
+    // Iteratively process the scene updates, which can trigger more visuals changes.
     DvzSceneUpdate up = {0};
     while (dvz_fifo_size(fifo) > 0)
     {
@@ -799,6 +804,7 @@ static void _scene_init(DvzCanvas* canvas, DvzEvent ev)
         {
             // Init the item change detection.
             _init_item_count_change_detection(panel->visuals[j]);
+            panel->visuals[j]->obj.request = DVZ_VISUAL_REQUEST_UPLOAD;
             dvz_container_iter(&iter);
         }
     }

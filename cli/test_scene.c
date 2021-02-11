@@ -112,6 +112,44 @@ int test_axes_3(TestContext* context)
 /*  Scene tests                                                                                  */
 /*************************************************************************************************/
 
+int test_scene_0(TestContext* context)
+{
+    DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
+    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, CANVAS_FLAGS);
+    DvzContext* ctx = gpu->context;
+    ASSERT(ctx != NULL);
+
+    DvzScene* scene = dvz_scene(canvas, 1, 1);
+    DvzPanel* panel = dvz_scene_panel(scene, 0, 0, DVZ_CONTROLLER_PANZOOM, 0);
+    DvzVisual* visual = dvz_scene_visual(panel, DVZ_VISUAL_POINT, 0);
+
+    // Visual data.
+    const uint32_t N = 1000;
+    dvec3* pos = calloc(N, sizeof(dvec3));
+    cvec4* color = calloc(N, sizeof(cvec4));
+    float param = 10.0f;
+    for (uint32_t i = 0; i < N; i++)
+    {
+        RANDN_POS(pos[i])
+        RAND_COLOR(color[i])
+        pos[i][0] *= 10; // NOTE: check automatic data normalization
+    }
+
+    dvz_visual_data(visual, DVZ_PROP_POS, 0, N, pos);
+    dvz_visual_data(visual, DVZ_PROP_COLOR, 0, N, color);
+    dvz_visual_data(visual, DVZ_PROP_MARKER_SIZE, 0, 1, &param);
+
+    dvz_app_run(app, N_FRAMES);
+    dvz_visual_destroy(visual);
+    dvz_scene_destroy(scene);
+    FREE(pos);
+    FREE(color);
+    TEST_END
+}
+
+
+
 static void _panzoom(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
@@ -212,7 +250,6 @@ int test_scene_1(TestContext* context)
 
     DvzScene* scene = dvz_scene(canvas, 2, 3);
     DvzPanel* panel = dvz_scene_panel(scene, 0, 0, DVZ_CONTROLLER_PANZOOM, 0);
-    dvz_panel_mode(panel, DVZ_PANEL_FLOATING);
     DvzVisual* visual = dvz_scene_visual(panel, DVZ_VISUAL_POINT, 0);
 
     // Visual data.

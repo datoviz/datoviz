@@ -601,18 +601,12 @@ void dvz_visual_update(
     DvzVisual* visual, DvzViewport viewport, DvzDataCoords coords, const void* user_data)
 {
     ASSERT(visual != NULL);
+    log_debug("visual update");
 
     DvzVisualDataEvent ev = {0};
     ev.viewport = viewport;
     ev.coords = coords;
     ev.user_data = user_data;
-
-    // if (visual->callback_transform != NULL)
-    // {
-    //     log_debug("visual transform callback");
-    //     // This callback updates some props data_trans
-    //     visual->callback_transform(visual, ev);
-    // }
 
     if (visual->callback_bake != NULL)
     {
@@ -627,7 +621,6 @@ void dvz_visual_update(
     }
     // NOTE: we bake the UNIFORM sources here.
     _bake_uniforms(visual);
-
 
     // Here, we assume that all sources are correctly allocated, which includes VERTEX and INDEX
     // arrays, and that they have their data ready for upload.
