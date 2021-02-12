@@ -444,6 +444,344 @@ static void _visual_marker(DvzVisual* visual)
 
 
 /*************************************************************************************************/
+/*  Polygon                                                                                      */
+/*************************************************************************************************/
+
+static void _polygon_bake(DvzVisual* visual, DvzVisualDataEvent ev)
+{
+    ASSERT(visual != NULL);
+
+    DvzProp* prop_pos = dvz_prop_get(visual, DVZ_PROP_POS, 0);       // dvec3
+    DvzProp* prop_length = dvz_prop_get(visual, DVZ_PROP_LENGTH, 0); // uint
+    DvzProp* prop_color = dvz_prop_get(visual, DVZ_PROP_COLOR, 0);   // cvec4
+
+    DvzArray* arr_pos = _prop_array(prop_pos);
+    DvzArray* arr_length = _prop_array(prop_length);
+    DvzArray* arr_color = _prop_array(prop_color);
+
+    DvzSource* src_vertex = dvz_source_get(visual, DVZ_SOURCE_TYPE_VERTEX, 0);
+    DvzSource* src_index = dvz_source_get(visual, DVZ_SOURCE_TYPE_INDEX, 0);
+
+    // The baking function doesn't run if the VERTEX source is handled by the user.
+    if (src_vertex->origin != DVZ_SOURCE_ORIGIN_LIB)
+        return;
+    if (src_vertex->obj.request != DVZ_VISUAL_REQUEST_UPLOAD)
+    {
+        log_trace(
+            "skip bake source for source %d that doesn't need updating", src_vertex->source_kind);
+        return;
+    }
+
+    // Source arrays.
+    DvzArray* arr_vertex = &src_vertex->arr;
+    DvzArray* arr_index = &src_index->arr;
+
+    // Number of points and polygons.
+    uint32_t n_points = arr_pos->item_count;
+    uint32_t n_polys = arr_length->item_count;
+
+    ASSERT(n_points > 0);
+    ASSERT(n_polys > 0);
+
+    dvec3* points = (dvec3*)arr_pos->data;
+    uint32_t* poly_lengths = (uint32_t*)arr_length->data;
+
+    // Triangulate the polygons.
+    uint32_t index_count = 0;
+    uint32_t total_index_count = 0;
+    uint32_t* indices = NULL;
+    uint32_t* index_count_list = (uint32_t*)calloc(n_polys, sizeof(uint32_t));
+    uint32_t** indices_list = (uint32_t**)calloc(n_polys, sizeof(uint32_t*));
+    uint32_t offset = 0;
+
+    // Triangulate all polygons.
+    for (uint32_t i = 0; i < n_polys; i++)
+    {
+        dvz_triangulate_polygon(
+            poly_lengths[i], (const dvec3*)&points[offset], &index_count, &indices);
+        ASSERT(indices != NULL);
+        ASSERT(index_count > 0);
+        total_index_count += index_count;
+        // Save each triangulation's indices in order to concatenate them afterwards.
+        index_count_list[i] = index_count;
+        indices_list[i] = indices;
+        offset += poly_lengths[i];
+    }
+
+    // Concatenate all triangulations.
+    uint32_t* total_indices = (uint32_t*)calloc(total_index_count, sizeof(uint32_t));
+    offset = 0;
+    uint32_t voffset = 0;
+    for (uint32_t i = 0; i < n_polys; i++)
+    {
+        for (uint32_t j = 0; j < index_count_list[i]; j++)
+        {
+            total_indices[offset + j] = voffset + indices_list[i][j];
+        }
+        offset += index_count_list[i];
+        voffset += poly_lengths[i];
+        FREE(indices_list[i]);
+    }
+
+    // Reesize and fill the vertex buffer.
+    dvz_array_resize(arr_vertex, n_points);
+    // Copy the positions from the pos prop to the vertex buffer.
+    _prop_copy(visual, prop_pos);
+
+    // Resize and fill the index buffer.
+    dvz_array_resize(arr_index, total_index_count);
+    dvz_array_data(arr_index, 0, total_index_count, total_index_count, total_indices);
+
+    // Copy the polygon colors to the vertices.
+    cvec4* color = NULL;
+    // Go through the polygons.
+    uint32_t k = 0;
+    for (uint32_t i = 0; i < n_polys; i++)
+    {
+        // Color prop for the current polygon.
+        color = (cvec4*)dvz_array_item(arr_color, i);
+        // Copy the color to the vertex buffer, repeating it for each vertex in the polygon.
+        dvz_array_column(
+            arr_vertex, offsetof(DvzVertex, color), sizeof(cvec4), k, poly_lengths[i], 1, color,
+            DVZ_DTYPE_NONE, DVZ_DTYPE_NONE, DVZ_ARRAY_COPY_SINGLE, 1);
+        k += poly_lengths[i];
+    }
+
+    FREE(index_count_list);
+    FREE(indices_list);
+    FREE(total_indices);
+}
+
+static void _visual_polygon(DvzVisual* visual)
+{
+    ASSERT(visual != NULL);
+    DvzCanvas* canvas = visual->canvas;
+    ASSERT(canvas != NULL);
+    DvzProp* prop = NULL;
+
+    // Graphics.
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TRIANGLE, 0));
+
+    // Sources
+    dvz_visual_source(
+        visual, DVZ_SOURCE_TYPE_VERTEX, 0, DVZ_PIPELINE_GRAPHICS, 0, 0, sizeof(DvzVertex), 0);
+
+    dvz_visual_source(
+        visual, DVZ_SOURCE_TYPE_INDEX, 0, DVZ_PIPELINE_GRAPHICS, 0, 0, sizeof(DvzIndex), 0);
+
+    _common_sources(visual);
+
+    // Props:
+
+    // Polygon points, 1 position per point.
+    prop = dvz_visual_prop(visual, DVZ_PROP_POS, 0, DVZ_DTYPE_DVEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
+    // Copy the polygon points directly to the vertex buffer, as the triangulation only sets the
+    // vertex indices and does not change the vertices themselves.
+    dvz_visual_prop_cast(
+        prop, 0, offsetof(DvzVertex, pos), DVZ_DTYPE_VEC3, DVZ_ARRAY_COPY_SINGLE, 1);
+
+    // Polygon lengths, 1 length per polygon.
+    prop = dvz_visual_prop(visual, DVZ_PROP_LENGTH, 0, DVZ_DTYPE_UINT, DVZ_SOURCE_TYPE_VERTEX, 0);
+
+    // Polygon colors, 1 color per polygon.
+    prop = dvz_visual_prop(visual, DVZ_PROP_COLOR, 0, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 0);
+
+    // Common props.
+    _common_props(visual);
+
+    dvz_visual_callback_bake(visual, _polygon_bake);
+}
+
+
+
+/*************************************************************************************************/
+/*  Image                                                                                        */
+/*************************************************************************************************/
+
+static void _visual_image_bake(DvzVisual* visual, DvzVisualDataEvent ev)
+{
+    ASSERT(visual != NULL);
+
+    // Vertex buffer source.
+    DvzSource* source = dvz_source_get(visual, DVZ_SOURCE_TYPE_VERTEX, 0);
+    ASSERT(source->arr.item_size == sizeof(DvzGraphicsImageVertex));
+
+    // Get props.
+    DvzProp* pos0 = dvz_prop_get(visual, DVZ_PROP_POS, 0);
+    DvzProp* pos1 = dvz_prop_get(visual, DVZ_PROP_POS, 1);
+    DvzProp* pos2 = dvz_prop_get(visual, DVZ_PROP_POS, 2);
+    DvzProp* pos3 = dvz_prop_get(visual, DVZ_PROP_POS, 3);
+
+    DvzProp* uv0 = dvz_prop_get(visual, DVZ_PROP_TEXCOORDS, 0);
+    DvzProp* uv1 = dvz_prop_get(visual, DVZ_PROP_TEXCOORDS, 1);
+    DvzProp* uv2 = dvz_prop_get(visual, DVZ_PROP_TEXCOORDS, 2);
+    DvzProp* uv3 = dvz_prop_get(visual, DVZ_PROP_TEXCOORDS, 3);
+
+    ASSERT(pos0 != NULL);
+    ASSERT(pos1 != NULL);
+    ASSERT(pos2 != NULL);
+    ASSERT(pos3 != NULL);
+
+    ASSERT(uv0 != NULL);
+    ASSERT(uv1 != NULL);
+    ASSERT(uv2 != NULL);
+    ASSERT(uv3 != NULL);
+
+    // Number of images
+    uint32_t img_count = dvz_prop_size(pos0);
+    ASSERT(dvz_prop_size(pos1) == img_count);
+    ASSERT(dvz_prop_size(pos2) == img_count);
+    ASSERT(dvz_prop_size(pos3) == img_count);
+
+    // Graphics data.
+    DvzGraphicsData data = dvz_graphics_data(visual->graphics[0], &source->arr, NULL, NULL);
+    dvz_graphics_alloc(&data, img_count);
+
+    DvzGraphicsImageItem item = {0};
+    for (uint32_t i = 0; i < img_count; i++)
+    {
+        _vec3_cast((const dvec3*)dvz_prop_item(pos0, i), &item.pos0);
+        _vec3_cast((const dvec3*)dvz_prop_item(pos1, i), &item.pos1);
+        _vec3_cast((const dvec3*)dvz_prop_item(pos2, i), &item.pos2);
+        _vec3_cast((const dvec3*)dvz_prop_item(pos3, i), &item.pos3);
+
+        memcpy(&item.uv0, dvz_prop_item(uv0, i), sizeof(vec2));
+        memcpy(&item.uv1, dvz_prop_item(uv1, i), sizeof(vec2));
+        memcpy(&item.uv2, dvz_prop_item(uv2, i), sizeof(vec2));
+        memcpy(&item.uv3, dvz_prop_item(uv3, i), sizeof(vec2));
+
+        dvz_graphics_append(&data, &item);
+    }
+}
+
+static void _visual_image(DvzVisual* visual)
+{
+    ASSERT(visual != NULL);
+    DvzCanvas* canvas = visual->canvas;
+    ASSERT(canvas != NULL);
+    DvzProp* prop = NULL;
+
+    // TODO: customizable dtype for the image
+
+    // Graphics.
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_IMAGE, 0));
+
+    // Sources
+    dvz_visual_source(                                               // vertex buffer
+        visual, DVZ_SOURCE_TYPE_VERTEX, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+        0, sizeof(DvzGraphicsImageVertex), 0);                       //
+
+    _common_sources(visual); // common sources
+
+    dvz_visual_source(                                              // params
+        visual, DVZ_SOURCE_TYPE_PARAM, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+        DVZ_USER_BINDING, sizeof(DvzGraphicsImageParams), 0);       //
+
+    for (uint32_t i = 0; i < 4; i++)
+        dvz_visual_source(                                              // textures
+            visual, DVZ_SOURCE_TYPE_IMAGE, i, DVZ_PIPELINE_GRAPHICS, 0, //
+            DVZ_USER_BINDING + i + 1, sizeof(uint8_t), 0);              //
+
+    // Props:
+
+    // Point positions.
+    // Top left, top right, bottom right, bottom left
+    for (uint32_t i = 0; i < 4; i++)
+        dvz_visual_prop(visual, DVZ_PROP_POS, i, DVZ_DTYPE_DVEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
+
+    // Tex coords.
+    for (uint32_t i = 0; i < 4; i++)
+        dvz_visual_prop(visual, DVZ_PROP_TEXCOORDS, i, DVZ_DTYPE_VEC2, DVZ_SOURCE_TYPE_VERTEX, 0);
+
+    // Common props.
+    _common_props(visual);
+
+    // Params.
+
+    // Texture coefficients.
+    prop = dvz_visual_prop(visual, DVZ_PROP_TEXCOEFS, 0, DVZ_DTYPE_VEC4, DVZ_SOURCE_TYPE_PARAM, 0);
+    dvz_visual_prop_copy(
+        prop, 0, offsetof(DvzGraphicsImageParams, tex_coefs), DVZ_ARRAY_COPY_SINGLE, 1);
+    dvz_visual_prop_default(prop, (vec4[]){{1, 0, 0, 0}});
+
+    // Texture props.
+    for (uint32_t i = 0; i < 4; i++)
+        dvz_visual_prop(visual, DVZ_PROP_IMAGE, i, DVZ_DTYPE_CHAR, DVZ_SOURCE_TYPE_IMAGE, i);
+
+    // Baking function.
+    dvz_visual_callback_bake(visual, _visual_image_bake);
+}
+
+static void _visual_image_cmap(DvzVisual* visual)
+{
+    ASSERT(visual != NULL);
+    DvzCanvas* canvas = visual->canvas;
+    ASSERT(canvas != NULL);
+    DvzProp* prop = NULL;
+
+    // TODO: customizable dtype for the image
+
+    // Graphics.
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_IMAGE_CMAP, 0));
+
+    // Sources
+    dvz_visual_source(                                               // vertex buffer
+        visual, DVZ_SOURCE_TYPE_VERTEX, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+        0, sizeof(DvzGraphicsImageVertex), 0);                       //
+
+    _common_sources(visual); // common sources
+
+    dvz_visual_source(                                              // params
+        visual, DVZ_SOURCE_TYPE_PARAM, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+        DVZ_USER_BINDING, sizeof(DvzGraphicsImageCmapParams), 0);   //
+
+    dvz_visual_source(                                                      // colormap texture
+        visual, DVZ_SOURCE_TYPE_COLOR_TEXTURE, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+        DVZ_USER_BINDING + 1, sizeof(uint8_t), 0);                          //
+
+    dvz_visual_source(                                              // image
+        visual, DVZ_SOURCE_TYPE_IMAGE, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+        DVZ_USER_BINDING + 2, sizeof(uint8_t), 0);                  //
+
+    // Props:
+
+    // Point positions.
+    // Top left, top right, bottom right, bottom left
+    for (uint32_t i = 0; i < 4; i++)
+        dvz_visual_prop(visual, DVZ_PROP_POS, i, DVZ_DTYPE_DVEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
+
+    // Tex coords.
+    for (uint32_t i = 0; i < 4; i++)
+        dvz_visual_prop(visual, DVZ_PROP_TEXCOORDS, i, DVZ_DTYPE_VEC2, DVZ_SOURCE_TYPE_VERTEX, 0);
+
+    // Common props.
+    _common_props(visual);
+
+    // Params.
+
+    // Range.
+    prop = dvz_visual_prop(visual, DVZ_PROP_RANGE, 0, DVZ_DTYPE_VEC2, DVZ_SOURCE_TYPE_PARAM, 0);
+    dvz_visual_prop_copy(
+        prop, 0, offsetof(DvzGraphicsImageCmapParams, vrange), DVZ_ARRAY_COPY_SINGLE, 1);
+    dvz_visual_prop_default(prop, (vec2){0, 1});
+
+    // Colormap value.
+    prop = dvz_visual_prop(visual, DVZ_PROP_COLORMAP, 0, DVZ_DTYPE_INT, DVZ_SOURCE_TYPE_PARAM, 0);
+    dvz_visual_prop_copy(
+        prop, 1, offsetof(DvzGraphicsImageCmapParams, cmap), DVZ_ARRAY_COPY_SINGLE, 1);
+    DvzColormap cmap = DVZ_CMAP_VIRIDIS;
+    dvz_visual_prop_default(prop, &cmap);
+
+    // Texture prop.
+    dvz_visual_prop(visual, DVZ_PROP_IMAGE, 0, DVZ_DTYPE_CHAR, DVZ_SOURCE_TYPE_IMAGE, 0);
+
+    // Baking function.
+    dvz_visual_callback_bake(visual, _visual_image_bake);
+}
+
+
+
+/*************************************************************************************************/
 /*  Axes 2D                                                                                      */
 /*************************************************************************************************/
 
@@ -838,277 +1176,6 @@ static void _visual_axes_2D(DvzVisual* visual)
     }
 
     dvz_visual_callback_bake(visual, _visual_axes_2D_bake);
-}
-
-
-
-/*************************************************************************************************/
-/*  Polygon                                                                                      */
-/*************************************************************************************************/
-
-static void _polygon_bake(DvzVisual* visual, DvzVisualDataEvent ev)
-{
-    ASSERT(visual != NULL);
-
-    DvzProp* prop_pos = dvz_prop_get(visual, DVZ_PROP_POS, 0);       // dvec3
-    DvzProp* prop_length = dvz_prop_get(visual, DVZ_PROP_LENGTH, 0); // uint
-    DvzProp* prop_color = dvz_prop_get(visual, DVZ_PROP_COLOR, 0);   // cvec4
-
-    DvzArray* arr_pos = _prop_array(prop_pos);
-    DvzArray* arr_length = _prop_array(prop_length);
-    DvzArray* arr_color = _prop_array(prop_color);
-
-    DvzSource* src_vertex = dvz_source_get(visual, DVZ_SOURCE_TYPE_VERTEX, 0);
-    DvzSource* src_index = dvz_source_get(visual, DVZ_SOURCE_TYPE_INDEX, 0);
-
-    // The baking function doesn't run if the VERTEX source is handled by the user.
-    if (src_vertex->origin != DVZ_SOURCE_ORIGIN_LIB)
-        return;
-    if (src_vertex->obj.request != DVZ_VISUAL_REQUEST_UPLOAD)
-    {
-        log_trace(
-            "skip bake source for source %d that doesn't need updating", src_vertex->source_kind);
-        return;
-    }
-
-    // Source arrays.
-    DvzArray* arr_vertex = &src_vertex->arr;
-    DvzArray* arr_index = &src_index->arr;
-
-    // Number of points and polygons.
-    uint32_t n_points = arr_pos->item_count;
-    uint32_t n_polys = arr_length->item_count;
-
-    ASSERT(n_points > 0);
-    ASSERT(n_polys > 0);
-
-    dvec3* points = (dvec3*)arr_pos->data;
-    uint32_t* poly_lengths = (uint32_t*)arr_length->data;
-
-    // Triangulate the polygons.
-    uint32_t index_count = 0;
-    uint32_t total_index_count = 0;
-    uint32_t* indices = NULL;
-    uint32_t* index_count_list = (uint32_t*)calloc(n_polys, sizeof(uint32_t));
-    uint32_t** indices_list = (uint32_t**)calloc(n_polys, sizeof(uint32_t*));
-    uint32_t offset = 0;
-
-    // Triangulate all polygons.
-    for (uint32_t i = 0; i < n_polys; i++)
-    {
-        dvz_triangulate_polygon(
-            poly_lengths[i], (const dvec3*)&points[offset], &index_count, &indices);
-        ASSERT(indices != NULL);
-        ASSERT(index_count > 0);
-        total_index_count += index_count;
-        // Save each triangulation's indices in order to concatenate them afterwards.
-        index_count_list[i] = index_count;
-        indices_list[i] = indices;
-        offset += poly_lengths[i];
-    }
-
-    // Concatenate all triangulations.
-    uint32_t* total_indices = (uint32_t*)calloc(total_index_count, sizeof(uint32_t));
-    offset = 0;
-    uint32_t voffset = 0;
-    for (uint32_t i = 0; i < n_polys; i++)
-    {
-        for (uint32_t j = 0; j < index_count_list[i]; j++)
-        {
-            total_indices[offset + j] = voffset + indices_list[i][j];
-        }
-        offset += index_count_list[i];
-        voffset += poly_lengths[i];
-        FREE(indices_list[i]);
-    }
-
-    // Reesize and fill the vertex buffer.
-    dvz_array_resize(arr_vertex, n_points);
-    // Copy the positions from the pos prop to the vertex buffer.
-    _prop_copy(visual, prop_pos);
-
-    // Resize and fill the index buffer.
-    dvz_array_resize(arr_index, total_index_count);
-    dvz_array_data(arr_index, 0, total_index_count, total_index_count, total_indices);
-
-    // Copy the polygon colors to the vertices.
-    cvec4* color = NULL;
-    // Go through the polygons.
-    uint32_t k = 0;
-    for (uint32_t i = 0; i < n_polys; i++)
-    {
-        // Color prop for the current polygon.
-        color = (cvec4*)dvz_array_item(arr_color, i);
-        // Copy the color to the vertex buffer, repeating it for each vertex in the polygon.
-        dvz_array_column(
-            arr_vertex, offsetof(DvzVertex, color), sizeof(cvec4), k, poly_lengths[i], 1, color,
-            DVZ_DTYPE_NONE, DVZ_DTYPE_NONE, DVZ_ARRAY_COPY_SINGLE, 1);
-        k += poly_lengths[i];
-    }
-
-    FREE(index_count_list);
-    FREE(indices_list);
-    FREE(total_indices);
-}
-
-static void _visual_polygon(DvzVisual* visual)
-{
-    ASSERT(visual != NULL);
-    DvzCanvas* canvas = visual->canvas;
-    ASSERT(canvas != NULL);
-    DvzProp* prop = NULL;
-
-    // Graphics.
-    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TRIANGLE, 0));
-
-    // Sources
-    dvz_visual_source(
-        visual, DVZ_SOURCE_TYPE_VERTEX, 0, DVZ_PIPELINE_GRAPHICS, 0, 0, sizeof(DvzVertex), 0);
-
-    dvz_visual_source(
-        visual, DVZ_SOURCE_TYPE_INDEX, 0, DVZ_PIPELINE_GRAPHICS, 0, 0, sizeof(DvzIndex), 0);
-
-    _common_sources(visual);
-
-    // Props:
-
-    // Polygon points, 1 position per point.
-    prop = dvz_visual_prop(visual, DVZ_PROP_POS, 0, DVZ_DTYPE_DVEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
-    // Copy the polygon points directly to the vertex buffer, as the triangulation only sets the
-    // vertex indices and does not change the vertices themselves.
-    dvz_visual_prop_cast(
-        prop, 0, offsetof(DvzVertex, pos), DVZ_DTYPE_VEC3, DVZ_ARRAY_COPY_SINGLE, 1);
-
-    // Polygon lengths, 1 length per polygon.
-    prop = dvz_visual_prop(visual, DVZ_PROP_LENGTH, 0, DVZ_DTYPE_UINT, DVZ_SOURCE_TYPE_VERTEX, 0);
-
-    // Polygon colors, 1 color per polygon.
-    prop = dvz_visual_prop(visual, DVZ_PROP_COLOR, 0, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 0);
-
-    // Common props.
-    _common_props(visual);
-
-    dvz_visual_callback_bake(visual, _polygon_bake);
-}
-
-
-
-/*************************************************************************************************/
-/*  Image                                                                                        */
-/*************************************************************************************************/
-
-static void _visual_image_bake(DvzVisual* visual, DvzVisualDataEvent ev)
-{
-    ASSERT(visual != NULL);
-
-    // Vertex buffer source.
-    DvzSource* source = dvz_source_get(visual, DVZ_SOURCE_TYPE_VERTEX, 0);
-    ASSERT(source->arr.item_size == sizeof(DvzGraphicsImageVertex));
-
-    // Get props.
-    DvzProp* pos0 = dvz_prop_get(visual, DVZ_PROP_POS, 0);
-    DvzProp* pos1 = dvz_prop_get(visual, DVZ_PROP_POS, 1);
-    DvzProp* pos2 = dvz_prop_get(visual, DVZ_PROP_POS, 2);
-    DvzProp* pos3 = dvz_prop_get(visual, DVZ_PROP_POS, 3);
-
-    DvzProp* uv0 = dvz_prop_get(visual, DVZ_PROP_TEXCOORDS, 0);
-    DvzProp* uv1 = dvz_prop_get(visual, DVZ_PROP_TEXCOORDS, 1);
-    DvzProp* uv2 = dvz_prop_get(visual, DVZ_PROP_TEXCOORDS, 2);
-    DvzProp* uv3 = dvz_prop_get(visual, DVZ_PROP_TEXCOORDS, 3);
-
-    ASSERT(pos0 != NULL);
-    ASSERT(pos1 != NULL);
-    ASSERT(pos2 != NULL);
-    ASSERT(pos3 != NULL);
-
-    ASSERT(uv0 != NULL);
-    ASSERT(uv1 != NULL);
-    ASSERT(uv2 != NULL);
-    ASSERT(uv3 != NULL);
-
-    // Number of images
-    uint32_t img_count = dvz_prop_size(pos0);
-    ASSERT(dvz_prop_size(pos1) == img_count);
-    ASSERT(dvz_prop_size(pos2) == img_count);
-    ASSERT(dvz_prop_size(pos3) == img_count);
-
-    // Graphics data.
-    DvzGraphicsData data = dvz_graphics_data(visual->graphics[0], &source->arr, NULL, NULL);
-    dvz_graphics_alloc(&data, img_count);
-
-    DvzGraphicsImageItem item = {0};
-    for (uint32_t i = 0; i < img_count; i++)
-    {
-        _vec3_cast((const dvec3*)dvz_prop_item(pos0, i), &item.pos0);
-        _vec3_cast((const dvec3*)dvz_prop_item(pos1, i), &item.pos1);
-        _vec3_cast((const dvec3*)dvz_prop_item(pos2, i), &item.pos2);
-        _vec3_cast((const dvec3*)dvz_prop_item(pos3, i), &item.pos3);
-
-        memcpy(&item.uv0, dvz_prop_item(uv0, i), sizeof(vec2));
-        memcpy(&item.uv1, dvz_prop_item(uv1, i), sizeof(vec2));
-        memcpy(&item.uv2, dvz_prop_item(uv2, i), sizeof(vec2));
-        memcpy(&item.uv3, dvz_prop_item(uv3, i), sizeof(vec2));
-
-        dvz_graphics_append(&data, &item);
-    }
-}
-
-static void _visual_image(DvzVisual* visual)
-{
-    ASSERT(visual != NULL);
-    DvzCanvas* canvas = visual->canvas;
-    ASSERT(canvas != NULL);
-    DvzProp* prop = NULL;
-
-    // TODO: customizable dtype for the image
-
-    // Graphics.
-    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_IMAGE, 0));
-
-    // Sources
-    dvz_visual_source(                                               // vertex buffer
-        visual, DVZ_SOURCE_TYPE_VERTEX, 0, DVZ_PIPELINE_GRAPHICS, 0, //
-        0, sizeof(DvzGraphicsImageVertex), 0);                       //
-
-    _common_sources(visual); // common sources
-
-    dvz_visual_source(                                              // params
-        visual, DVZ_SOURCE_TYPE_PARAM, 0, DVZ_PIPELINE_GRAPHICS, 0, //
-        DVZ_USER_BINDING, sizeof(DvzGraphicsImageParams), 0);       //
-
-    for (uint32_t i = 0; i < 4; i++)
-        dvz_visual_source(                                              // textures
-            visual, DVZ_SOURCE_TYPE_IMAGE, i, DVZ_PIPELINE_GRAPHICS, 0, //
-            DVZ_USER_BINDING + i + 1, sizeof(uint8_t), 0);              //
-
-    // Props:
-
-    // Point positions.
-    // Top left, top right, bottom right, bottom left
-    for (uint32_t i = 0; i < 4; i++)
-        dvz_visual_prop(visual, DVZ_PROP_POS, i, DVZ_DTYPE_DVEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
-
-    // Tex coords.
-    for (uint32_t i = 0; i < 4; i++)
-        dvz_visual_prop(visual, DVZ_PROP_TEXCOORDS, i, DVZ_DTYPE_VEC2, DVZ_SOURCE_TYPE_VERTEX, 0);
-
-    // Common props.
-    _common_props(visual);
-
-    // Params.
-
-    // Texture coefficients.
-    prop = dvz_visual_prop(visual, DVZ_PROP_TEXCOEFS, 0, DVZ_DTYPE_VEC4, DVZ_SOURCE_TYPE_PARAM, 0);
-    dvz_visual_prop_copy(
-        prop, 0, offsetof(DvzGraphicsImageParams, tex_coefs), DVZ_ARRAY_COPY_SINGLE, 1);
-    dvz_visual_prop_default(prop, (vec4[]){{1, 0, 0, 0}});
-
-    // Texture props.
-    for (uint32_t i = 0; i < 4; i++)
-        dvz_visual_prop(visual, DVZ_PROP_IMAGE, i, DVZ_DTYPE_CHAR, DVZ_SOURCE_TYPE_IMAGE, i);
-
-    // Baking function.
-    dvz_visual_callback_bake(visual, _visual_image_bake);
 }
 
 
@@ -1639,6 +1706,10 @@ void dvz_visual_builtin(DvzVisual* visual, DvzVisualType type, int flags)
 
     case DVZ_VISUAL_IMAGE:
         _visual_image(visual);
+        break;
+
+    case DVZ_VISUAL_IMAGE_CMAP:
+        _visual_image_cmap(visual);
         break;
 
     case DVZ_VISUAL_AXES_2D:

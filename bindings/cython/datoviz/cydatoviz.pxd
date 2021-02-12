@@ -880,12 +880,13 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_GRAPHICS_PATH = 10
         DVZ_GRAPHICS_TEXT = 11
         DVZ_GRAPHICS_IMAGE = 12
-        DVZ_GRAPHICS_VOLUME_SLICE = 13
-        DVZ_GRAPHICS_MESH = 14
-        DVZ_GRAPHICS_FAKE_SPHERE = 15
-        DVZ_GRAPHICS_VOLUME = 16
-        DVZ_GRAPHICS_COUNT = 17
-        DVZ_GRAPHICS_CUSTOM = 18
+        DVZ_GRAPHICS_IMAGE_CMAP = 13
+        DVZ_GRAPHICS_VOLUME_SLICE = 14
+        DVZ_GRAPHICS_MESH = 15
+        DVZ_GRAPHICS_FAKE_SPHERE = 16
+        DVZ_GRAPHICS_VOLUME = 17
+        DVZ_GRAPHICS_COUNT = 18
+        DVZ_GRAPHICS_CUSTOM = 19
 
     ctypedef enum DvzTextureAxis:
         DVZ_TEXTURE_AXIS_U = 0

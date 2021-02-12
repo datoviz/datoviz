@@ -597,7 +597,7 @@ int test_visuals_polygon(TestContext* context)
 
 
 
-int test_visuals_image(TestContext* context)
+int test_visuals_image_1(TestContext* context)
 {
     INIT;
 
@@ -620,6 +620,50 @@ int test_visuals_image(TestContext* context)
 
     RUN;
     SCREENSHOT("image")
+    END;
+}
+
+
+
+int test_visuals_image_cmap(TestContext* context)
+{
+    INIT;
+
+    DvzVisual visual = dvz_visual(canvas);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_IMAGE_CMAP, 0);
+
+    // Top left, top right, bottom right, bottom left
+    dvz_visual_data(&visual, DVZ_PROP_POS, 0, 2, (dvec3[]){{-1, +1, 0}, {0, 0, 0}});
+    dvz_visual_data(&visual, DVZ_PROP_POS, 1, 2, (dvec3[]){{0, +1, 0}, {1, 0, 0}});
+    dvz_visual_data(&visual, DVZ_PROP_POS, 2, 2, (dvec3[]){{0, 0, 0}, {1, -1, 0}});
+    dvz_visual_data(&visual, DVZ_PROP_POS, 3, 2, (dvec3[]){{-1, 0, 0}, {0, -1, 0}});
+
+    dvz_visual_data(&visual, DVZ_PROP_TEXCOORDS, 0, 2, (vec2[]){{0, 0}, {1, 0}});
+    dvz_visual_data(&visual, DVZ_PROP_TEXCOORDS, 1, 2, (vec2[]){{1, 0}, {0, 0}});
+    dvz_visual_data(&visual, DVZ_PROP_TEXCOORDS, 2, 2, (vec2[]){{1, 1}, {0, 1}});
+    dvz_visual_data(&visual, DVZ_PROP_TEXCOORDS, 3, 2, (vec2[]){{0, 1}, {1, 1}});
+
+    // First texture.
+    dvz_visual_texture(
+        &visual, DVZ_SOURCE_TYPE_COLOR_TEXTURE, 0, gpu->context->color_texture.texture);
+
+    // Random texture.
+    const uint32_t S = 16;
+    VkDeviceSize size = S * S * 1;
+    uint8_t* tex_data = calloc(size, sizeof(uint8_t));
+    for (uint32_t i = 0; i < size; i++)
+        tex_data[i] = (uint8_t)((i * 12) % 256);
+    uvec3 shape = {S, S, 1};
+    DvzTexture* texture = dvz_ctx_texture(gpu->context, 2, shape, VK_FORMAT_R8_UNORM);
+    dvz_upload_texture(
+        canvas, texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, size * sizeof(uint8_t), tex_data);
+
+    // Second texture.
+    dvz_visual_texture(&visual, DVZ_SOURCE_TYPE_IMAGE, 0, texture);
+
+    RUN;
+    FREE(tex_data);
+    // SCREENSHOT("image_cmap")
     END;
 }
 

@@ -78,6 +78,8 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_graphics_line_strip),     //
     CASE_FIXTURE_NONE(test_graphics_triangle),       //
     CASE_FIXTURE_NONE(test_graphics_triangle_strip), //
+
+// NOTE: macOS does not support triangle_fan primitive
 #if !OS_MACOS
     CASE_FIXTURE_NONE(test_graphics_triangle_fan), //
 #endif
@@ -142,7 +144,8 @@ static TestCase TEST_CASES[] = {
 
     CASE_FIXTURE_NONE(test_visuals_marker),         //
     CASE_FIXTURE_NONE(test_visuals_polygon),        //
-    CASE_FIXTURE_NONE(test_visuals_image),          //
+    CASE_FIXTURE_NONE(test_visuals_image_1),        //
+    CASE_FIXTURE_NONE(test_visuals_image_cmap),     //
     CASE_FIXTURE_NONE(test_visuals_axes_2D_1),      //
     CASE_FIXTURE_NONE(test_visuals_axes_2D_update), //
 
