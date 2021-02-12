@@ -380,7 +380,7 @@ int test_visuals_triangle_fan(TestContext* context)
 
 
 /*************************************************************************************************/
-/*  2D visual tests                                                                              */
+/* Axes visual tests                                                                             */
 /*************************************************************************************************/
 
 int test_visuals_axes_2D_1(TestContext* context)
@@ -546,6 +546,63 @@ int test_visuals_axes_2D_update(TestContext* context)
 
 
 
+/*************************************************************************************************/
+/* Path visual tests                                                                            */
+/*************************************************************************************************/
+
+int test_visuals_path(TestContext* context)
+{
+    INIT;
+
+    DvzVisual visual = dvz_visual(canvas);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_PATH, 0);
+
+    // Set paths.
+    const uint32_t n_paths = 5;
+    const uint32_t n_points = 1000;
+    const uint32_t N = n_paths * n_points;
+
+    dvec3* points = calloc(N, sizeof(dvec3));
+    cvec4* colors = calloc(N, sizeof(cvec4));
+
+    uint32_t k = 0;
+    double t = 0;
+    double h = 0;
+    for (uint32_t i = 0; i < n_paths; i++)
+    {
+        h = -.5 + i / (float)(n_paths - 1);
+        for (uint32_t j = 0; j < n_points; j++)
+        {
+            t = -1 + 2 * j / (float)(n_points - 1);
+            points[k][0] = .9 * t;
+            points[k][1] = .35 * sin(M_2PI * t) + h;
+            dvz_colormap_scale(DVZ_CMAP_HSV, j, 0, n_points - 1, colors[k]);
+            k++;
+        }
+    }
+
+    // Path lengths.
+    uint32_t* path_lengths = calloc(n_paths, sizeof(uint32_t));
+    for (uint32_t i = 0; i < n_paths; i++)
+        path_lengths[i] = n_points;
+
+    // Set visual data.
+    dvz_visual_data(&visual, DVZ_PROP_POS, 0, N, points);
+    dvz_visual_data(&visual, DVZ_PROP_COLOR, 0, N, colors);
+    dvz_visual_data(&visual, DVZ_PROP_LENGTH, 0, n_paths, path_lengths);
+    dvz_visual_data(&visual, DVZ_PROP_LINE_WIDTH, 0, 1, (float[]){10});
+
+    RUN;
+    SCREENSHOT("path")
+    END;
+}
+
+
+
+/*************************************************************************************************/
+/* Polygon visual tests                                                                          */
+/*************************************************************************************************/
+
 static void _add_polygon(dvec3* points, uint32_t n, double angle, dvec3 offset, double ratio)
 {
     for (uint32_t i = 0; i < n; i++)
@@ -596,6 +653,10 @@ int test_visuals_polygon(TestContext* context)
 }
 
 
+
+/*************************************************************************************************/
+/* Image visual tests                                                                            */
+/*************************************************************************************************/
 
 int test_visuals_image_1(TestContext* context)
 {
@@ -671,7 +732,7 @@ int test_visuals_image_cmap(TestContext* context)
 
 
 /*************************************************************************************************/
-/*  3D visual tests                                                                              */
+/*  Mesh visual tests                                                                            */
 /*************************************************************************************************/
 
 static void _update_interact(DvzCanvas* canvas, DvzEvent ev)
@@ -733,6 +794,10 @@ int test_visuals_mesh(TestContext* context)
 }
 
 
+
+/*************************************************************************************************/
+/* Volume visual tests                                                                           */
+/*************************************************************************************************/
 
 static void _volume_interact(DvzCanvas* canvas, DvzEvent ev)
 {

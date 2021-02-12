@@ -34,6 +34,14 @@ Marker
 Segment
 ```
 
+### Path
+
+![](../images/graphics/path.png)
+
+```c
+Path
+```
+
 ### Text
 
 ![](../images/graphics/text.png)

@@ -595,6 +595,232 @@ static void _visual_polygon(DvzVisual* visual)
 
 
 /*************************************************************************************************/
+/*  Path                                                                                         */
+/*************************************************************************************************/
+
+static void _path_bake(DvzVisual* visual, DvzVisualDataEvent ev)
+{
+    ASSERT(visual != NULL);
+
+    DvzProp* prop_pos = dvz_prop_get(visual, DVZ_PROP_POS, 0);     // dvec3
+    DvzProp* prop_color = dvz_prop_get(visual, DVZ_PROP_COLOR, 0); // cvec4
+
+    DvzProp* prop_length = dvz_prop_get(visual, DVZ_PROP_LENGTH, 0);     // uint
+    DvzProp* prop_topology = dvz_prop_get(visual, DVZ_PROP_TOPOLOGY, 0); // int
+
+    DvzArray* arr_pos = _prop_array(prop_pos);
+    DvzArray* arr_color = _prop_array(prop_color);
+    DvzArray* arr_length = _prop_array(prop_length);
+    DvzArray* arr_topology = _prop_array(prop_topology);
+
+    DvzSource* src_vertex = dvz_source_get(visual, DVZ_SOURCE_TYPE_VERTEX, 0);
+
+    // The baking function doesn't run if the VERTEX source is handled by the user.
+    if (src_vertex->origin != DVZ_SOURCE_ORIGIN_LIB)
+        return;
+    if (src_vertex->obj.request != DVZ_VISUAL_REQUEST_UPLOAD)
+    {
+        log_trace(
+            "skip bake source for source %d that doesn't need updating", src_vertex->source_kind);
+        return;
+    }
+
+    // Source arrays.
+    DvzArray* arr_vertex = &src_vertex->arr;
+
+    // Number of points and paths.
+    uint32_t n_points = arr_pos->item_count;   // number of points
+    uint32_t n_paths = arr_length->item_count; // number of paths
+    if (n_paths == 0)
+        n_paths = 1;
+    // number of points, incl invisible join points
+    uint32_t n_points_tot = n_points + 0 * (n_paths);
+
+
+    ASSERT(n_points > 0);
+    ASSERT(n_paths > 0);
+
+    dvec3* point = NULL;
+    cvec4* color = NULL;
+    uint32_t* path_length = NULL;
+    int32_t* is_closed = NULL;
+
+    // Reesize and fill the vertex buffer.
+    dvz_array_resize(arr_vertex, n_points);
+    // Copy the positions from the pos prop to the vertex buffer.
+    _prop_copy(visual, prop_pos);
+
+    // Graphics data.
+    DvzGraphicsData data = dvz_graphics_data(visual->graphics[0], arr_vertex, NULL, NULL);
+    dvz_graphics_alloc(&data, n_points_tot);
+
+    DvzGraphicsPathVertex item = {0};
+    int32_t path_size = 0;
+    bool closed = false;
+    int32_t j0, j1, j2, j3;
+    int32_t idx = 0; // index of the first point in the current path
+
+    for (uint32_t i = 0; i < n_paths; i++)
+    {
+        log_info("path #%d", i);
+
+        // Per-path data.
+        path_length = dvz_array_item(arr_length, i);
+        path_size = path_length != NULL ? (int32_t)*path_length : (int32_t)n_points;
+
+        is_closed = dvz_array_item(arr_topology, i);
+        closed = is_closed != NULL ? *is_closed : false;
+
+        // Add join point at the beginning of each path.
+        {
+            point = dvz_array_item(arr_pos, (uint32_t)idx);
+
+            _vec3_cast((const dvec3*)point, &item.p0);
+            _vec3_cast((const dvec3*)point, &item.p1);
+            _vec3_cast((const dvec3*)point, &item.p2);
+            _vec3_cast((const dvec3*)point, &item.p3);
+
+            memset(item.color, 0, sizeof(cvec4));
+
+            // dvz_graphics_append(&data, &item);
+        }
+
+        // Add all points in the path.
+        for (int32_t j = 0; j < (int32_t)path_size; j++)
+        {
+            // Compute p0, p1, p2, p3.
+            j0 = j - 1;
+            j1 = j;
+            j2 = j + 1;
+            j3 = j + 2;
+
+            if (!closed)
+            {
+                j0 = j0 < 0 ? 0 : j0;
+                j2 = j2 >= path_size ? (path_size - 1) : j2;
+                j3 = j3 >= path_size ? (path_size - 1) : j3;
+            }
+            else
+            {
+                j0 = j0 < 0 ? (path_size - 2) : j0;
+                j2 = j2 >= path_size ? 0 : j2;
+                j3 = j3 >= path_size ? 1 : j3;
+            }
+
+            ASSERT(0 <= j0 && j0 < path_size);
+            ASSERT(0 <= j1 && j1 < path_size);
+            ASSERT(0 <= j2 && j2 < path_size);
+            ASSERT(0 <= j3 && j3 < path_size);
+
+            point = dvz_array_item(arr_pos, (uint32_t)(idx + j0));
+            _vec3_cast((const dvec3*)point, &item.p0);
+
+            point = dvz_array_item(arr_pos, (uint32_t)(idx + j1));
+            _vec3_cast((const dvec3*)point, &item.p1);
+
+            point = dvz_array_item(arr_pos, (uint32_t)(idx + j2));
+            _vec3_cast((const dvec3*)point, &item.p2);
+
+            point = dvz_array_item(arr_pos, (uint32_t)(idx + j3));
+            _vec3_cast((const dvec3*)point, &item.p3);
+
+            color = dvz_array_item(arr_color, (uint32_t)(idx + j1));
+            memcpy(item.color, color, sizeof(cvec4));
+
+            dvz_graphics_append(&data, &item);
+        }
+
+        // Add join point at the end of each path.
+        {
+            point = dvz_array_item(arr_pos, (uint32_t)(idx + path_size - 1));
+
+            _vec3_cast((const dvec3*)point, &item.p0);
+            _vec3_cast((const dvec3*)point, &item.p1);
+            _vec3_cast((const dvec3*)point, &item.p2);
+            _vec3_cast((const dvec3*)point, &item.p3);
+
+            memset(item.color, 0, sizeof(cvec4));
+
+            // dvz_graphics_append(&data, &item);
+        }
+
+        idx += path_size;
+    }
+    ASSERT(idx == (int32_t)n_points);
+}
+
+static void _visual_path(DvzVisual* visual)
+{
+    ASSERT(visual != NULL);
+    DvzCanvas* canvas = visual->canvas;
+    ASSERT(canvas != NULL);
+    DvzProp* prop = NULL;
+
+    // Graphics.
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_PATH, 0));
+
+    // Sources
+    dvz_visual_source(
+        visual, DVZ_SOURCE_TYPE_VERTEX, 0, DVZ_PIPELINE_GRAPHICS, 0, 0,
+        sizeof(DvzGraphicsPathVertex), 0);
+
+    _common_sources(visual);
+
+    dvz_visual_source(                                              // params
+        visual, DVZ_SOURCE_TYPE_PARAM, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+        DVZ_USER_BINDING, sizeof(DvzGraphicsPathParams), 0);        //
+
+    // Props:
+
+    // Path points, 1 position per point.
+    prop = dvz_visual_prop(visual, DVZ_PROP_POS, 0, DVZ_DTYPE_DVEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
+
+    // Path colors, 1 color per point.
+    prop = dvz_visual_prop(visual, DVZ_PROP_COLOR, 0, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_default(prop, (cvec4[]){{255, 0, 0, 255}});
+
+    // Path lengths, 1 length per path.
+    prop = dvz_visual_prop(visual, DVZ_PROP_LENGTH, 0, DVZ_DTYPE_UINT, DVZ_SOURCE_TYPE_VERTEX, 0);
+
+    // Path topology, 1 value per path.
+    prop = dvz_visual_prop(visual, DVZ_PROP_TOPOLOGY, 0, DVZ_DTYPE_INT, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_default(prop, (int32_t[]){DVZ_PATH_OPEN});
+
+    // Common props.
+    _common_props(visual);
+
+    // Line width.
+    prop =
+        dvz_visual_prop(visual, DVZ_PROP_LINE_WIDTH, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_PARAM, 0);
+    dvz_visual_prop_copy(
+        prop, 0, offsetof(DvzGraphicsPathParams, linewidth), DVZ_ARRAY_COPY_SINGLE, 1);
+    dvz_visual_prop_default(prop, (float[]){5.0f});
+
+    // Miter limit.
+    prop = dvz_visual_prop(
+        visual, DVZ_PROP_MITER_LIMIT, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_PARAM, 0);
+    dvz_visual_prop_copy(
+        prop, 1, offsetof(DvzGraphicsPathParams, miter_limit), DVZ_ARRAY_COPY_SINGLE, 1);
+    dvz_visual_prop_default(prop, (float[]){4.0f});
+
+    // Cap type.
+    prop = dvz_visual_prop(visual, DVZ_PROP_CAP_TYPE, 0, DVZ_DTYPE_INT, DVZ_SOURCE_TYPE_PARAM, 0);
+    dvz_visual_prop_copy(
+        prop, 2, offsetof(DvzGraphicsPathParams, cap_type), DVZ_ARRAY_COPY_SINGLE, 1);
+    dvz_visual_prop_default(prop, (int32_t[]){DVZ_CAP_ROUND});
+
+    // Cap type.
+    prop = dvz_visual_prop(visual, DVZ_PROP_JOIN_TYPE, 0, DVZ_DTYPE_INT, DVZ_SOURCE_TYPE_PARAM, 0);
+    dvz_visual_prop_copy(
+        prop, 3, offsetof(DvzGraphicsPathParams, round_join), DVZ_ARRAY_COPY_SINGLE, 1);
+    dvz_visual_prop_default(prop, (int32_t[]){DVZ_JOIN_ROUND});
+
+    dvz_visual_callback_bake(visual, _path_bake);
+}
+
+
+
+/*************************************************************************************************/
 /*  Image                                                                                        */
 /*************************************************************************************************/
 
@@ -1702,6 +1928,10 @@ void dvz_visual_builtin(DvzVisual* visual, DvzVisualType type, int flags)
 
     case DVZ_VISUAL_POLYGON:
         _visual_polygon(visual);
+        break;
+
+    case DVZ_VISUAL_PATH:
+        _visual_path(visual);
         break;
 
     case DVZ_VISUAL_IMAGE:

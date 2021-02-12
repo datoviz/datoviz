@@ -87,6 +87,15 @@ typedef enum
 
 
 
+// Path topology.
+typedef enum
+{
+    DVZ_PATH_OPEN,
+    DVZ_PATH_CLOSED,
+} DvzPathTopology;
+
+
+
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
@@ -211,27 +220,19 @@ struct DvzGraphicsSegmentVertex
 
 struct DvzGraphicsPathVertex
 {
-    vec3 p0;
-    vec3 p1;
-    vec3 p2;
-    vec3 p3;
-    cvec4 color;
+    vec3 p0;     /* previous position */
+    vec3 p1;     /* current position */
+    vec3 p2;     /* next position */
+    vec3 p3;     /* next next position */
+    cvec4 color; /* point color */
 };
-
-// // Represents a single path.
-// struct DvzGraphicsPathItem
-// {
-//     uint32_t point_count;
-//     vec3* pos;
-//     cvec4* color;
-// };
 
 struct DvzGraphicsPathParams
 {
-    float linewidth;
-    float miter_limit;
-    int32_t cap_type;
-    int32_t round_join;
+    float linewidth;    /* line width in pixels */
+    float miter_limit;  /* miter limit for joins */
+    int32_t cap_type;   /* type of the ends of the path */
+    int32_t round_join; /* whether to use round joins */
 };
 
 

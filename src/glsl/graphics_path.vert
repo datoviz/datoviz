@@ -48,6 +48,10 @@ float line_distance(vec2 p0, vec2 p1, vec2 p) {
 }
 
 void main() {
+    // gl_PointSize = 10;
+    // gl_Position = vec4(p1_ndc, 1);
+    // return;
+
     int index = gl_VertexIndex % 4;
 
     mat4 ortho = get_ortho_matrix(viewport.size);
