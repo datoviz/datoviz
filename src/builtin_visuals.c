@@ -809,7 +809,7 @@ static void _visual_path(DvzVisual* visual)
         prop, 2, offsetof(DvzGraphicsPathParams, cap_type), DVZ_ARRAY_COPY_SINGLE, 1);
     dvz_visual_prop_default(prop, (int32_t[]){DVZ_CAP_ROUND});
 
-    // Cap type.
+    // Join type.
     prop = dvz_visual_prop(visual, DVZ_PROP_JOIN_TYPE, 0, DVZ_DTYPE_INT, DVZ_SOURCE_TYPE_PARAM, 0);
     dvz_visual_prop_copy(
         prop, 3, offsetof(DvzGraphicsPathParams, round_join), DVZ_ARRAY_COPY_SINGLE, 1);

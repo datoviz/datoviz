@@ -58,6 +58,24 @@ This page lists all visuals currently implemented in the library.
 
 
 
+### Path
+
+![](../images/visuals/path.png)
+
+#### Props
+
+| Type | Index | Type | Description |
+| ---- | ---- | ---- | ---- |
+| `pos` | 0 | `dvec3` | all path points, concatenated |
+| `length` | 0 | `uint` | path lengths, one integer per path |
+| `color` | 0 | `cvec4` | point colors, one per point |
+| `topology` | 0 | `DvzPathTopology` (int) | topology of each path (0=open, 1=closed) |
+| `line_width` | 0 | `float` | line width of all paths (*uniform*) |
+| `cap_type` | 0 | `DvzCapType` (int) | cap type (*uniform*) |
+| `join_type` | 0 | `DvzJoinType` (int) | join type (*uniform*) |
+
+
+
 ### Polygon
 
 ![](../images/visuals/polygon.png)

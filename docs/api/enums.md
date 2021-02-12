@@ -10,6 +10,12 @@
 
 ### `DvzMarkerType`
 
+### `DvzJoinType`
+
+### `DvzCapType`
+
+### `DvzPathTopology`
+
 
 
 ## Miscellaneous
