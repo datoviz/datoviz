@@ -193,24 +193,25 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_VISUAL_PATH = 11
         DVZ_VISUAL_TEXT = 12
         DVZ_VISUAL_IMAGE = 13
-        DVZ_VISUAL_DISC = 14
-        DVZ_VISUAL_SECTOR = 15
-        DVZ_VISUAL_MESH = 16
-        DVZ_VISUAL_POLYGON = 17
-        DVZ_VISUAL_PSLG = 18
-        DVZ_VISUAL_HISTOGRAM = 19
-        DVZ_VISUAL_AREA = 20
-        DVZ_VISUAL_CANDLE = 21
-        DVZ_VISUAL_GRAPH = 22
-        DVZ_VISUAL_SURFACE = 23
-        DVZ_VISUAL_VOLUME_SLICE = 24
-        DVZ_VISUAL_VOLUME = 25
-        DVZ_VISUAL_FAKE_SPHERE = 26
-        DVZ_VISUAL_AXES_2D = 27
-        DVZ_VISUAL_AXES_3D = 28
-        DVZ_VISUAL_COLORMAP = 29
-        DVZ_VISUAL_COUNT = 30
-        DVZ_VISUAL_CUSTOM = 31
+        DVZ_VISUAL_IMAGE_CMAP = 14
+        DVZ_VISUAL_DISC = 15
+        DVZ_VISUAL_SECTOR = 16
+        DVZ_VISUAL_MESH = 17
+        DVZ_VISUAL_POLYGON = 18
+        DVZ_VISUAL_PSLG = 19
+        DVZ_VISUAL_HISTOGRAM = 20
+        DVZ_VISUAL_AREA = 21
+        DVZ_VISUAL_CANDLE = 22
+        DVZ_VISUAL_GRAPH = 23
+        DVZ_VISUAL_SURFACE = 24
+        DVZ_VISUAL_VOLUME_SLICE = 25
+        DVZ_VISUAL_VOLUME = 26
+        DVZ_VISUAL_FAKE_SPHERE = 27
+        DVZ_VISUAL_AXES_2D = 28
+        DVZ_VISUAL_AXES_3D = 29
+        DVZ_VISUAL_COLORMAP = 30
+        DVZ_VISUAL_COUNT = 31
+        DVZ_VISUAL_CUSTOM = 32
 
     ctypedef enum DvzAxisLevel:
         DVZ_AXES_LEVEL_MINOR = 0
@@ -550,6 +551,14 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_CAP_BUTT = 5
         DVZ_CAP_COUNT = 6
 
+    ctypedef enum DvzJoinType:
+        DVZ_JOIN_SQUARE = False
+        DVZ_JOIN_ROUND = True
+
+    ctypedef enum DvzPathTopology:
+        DVZ_PATH_OPEN = 0
+        DVZ_PATH_CLOSED = 1
+
     # from file: keycode.h
 
     ctypedef enum DvzKeyCode:
@@ -781,26 +790,31 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_PROP_TEXT = 8
         DVZ_PROP_TEXT_SIZE = 9
         DVZ_PROP_LINE_WIDTH = 10
-        DVZ_PROP_LENGTH = 11
-        DVZ_PROP_MARGIN = 12
-        DVZ_PROP_NORMAL = 13
-        DVZ_PROP_TEXCOORDS = 14
-        DVZ_PROP_TEXCOEFS = 15
-        DVZ_PROP_IMAGE = 16
-        DVZ_PROP_VOLUME = 17
-        DVZ_PROP_COLOR_TEXTURE = 18
-        DVZ_PROP_TRANSFER_X = 19
-        DVZ_PROP_TRANSFER_Y = 20
-        DVZ_PROP_LIGHT_POS = 21
-        DVZ_PROP_LIGHT_PARAMS = 22
-        DVZ_PROP_CLIP = 23
-        DVZ_PROP_MODEL = 24
-        DVZ_PROP_VIEW = 25
-        DVZ_PROP_PROJ = 26
-        DVZ_PROP_TIME = 27
-        DVZ_PROP_INDEX = 28
-        DVZ_PROP_SCALE = 29
-        DVZ_PROP_TRANSFORM = 30
+        DVZ_PROP_MITER_LIMIT = 11
+        DVZ_PROP_CAP_TYPE = 12
+        DVZ_PROP_JOIN_TYPE = 13
+        DVZ_PROP_TOPOLOGY = 14
+        DVZ_PROP_LENGTH = 15
+        DVZ_PROP_RANGE = 16
+        DVZ_PROP_MARGIN = 17
+        DVZ_PROP_NORMAL = 18
+        DVZ_PROP_TEXCOORDS = 19
+        DVZ_PROP_TEXCOEFS = 20
+        DVZ_PROP_IMAGE = 21
+        DVZ_PROP_VOLUME = 22
+        DVZ_PROP_COLOR_TEXTURE = 23
+        DVZ_PROP_TRANSFER_X = 24
+        DVZ_PROP_TRANSFER_Y = 25
+        DVZ_PROP_LIGHT_POS = 26
+        DVZ_PROP_LIGHT_PARAMS = 27
+        DVZ_PROP_CLIP = 28
+        DVZ_PROP_MODEL = 29
+        DVZ_PROP_VIEW = 30
+        DVZ_PROP_PROJ = 31
+        DVZ_PROP_TIME = 32
+        DVZ_PROP_INDEX = 33
+        DVZ_PROP_SCALE = 34
+        DVZ_PROP_TRANSFORM = 35
 
     ctypedef enum DvzSourceKind:
         DVZ_SOURCE_KIND_NONE = 0

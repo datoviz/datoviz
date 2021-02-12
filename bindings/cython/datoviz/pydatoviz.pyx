@@ -397,7 +397,7 @@ cdef _wrapped_callback(cv.DvzCanvas* c_canvas, cv.DvzEvent c_ev):
         f, args = tup
 
         # This is the control type the callback was registered for.
-        callback_control_type = args[0]
+        callback_control_type = args[0] if args else None
 
         # NOTE: only call the callback if the raised GUI event is for that control.
         dt = c_ev.type

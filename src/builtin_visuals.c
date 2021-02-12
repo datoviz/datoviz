@@ -662,7 +662,7 @@ static void _path_bake(DvzVisual* visual, DvzVisualDataEvent ev)
 
     for (uint32_t i = 0; i < n_paths; i++)
     {
-        log_info("path #%d", i);
+        // log_info("path #%d", i);
 
         // Per-path data.
         path_length = dvz_array_item(arr_length, i);

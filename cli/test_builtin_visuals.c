@@ -568,6 +568,9 @@ int test_visuals_path(TestContext* context)
     uint32_t k = 0;
     double t = 0;
     double h = 0;
+    DvzColormap cmaps[] = {
+        DVZ_CMAP_HSV, DVZ_CMAP_HOT, DVZ_CMAP_VIRIDIS, DVZ_CMAP_JET, DVZ_CMAP_COOL
+    };
     for (uint32_t i = 0; i < n_paths; i++)
     {
         h = -.5 + i / (float)(n_paths - 1);
@@ -576,7 +579,7 @@ int test_visuals_path(TestContext* context)
             t = -1 + 2 * j / (float)(n_points - 1);
             points[k][0] = .9 * t;
             points[k][1] = .35 * sin(M_2PI * t) + h;
-            dvz_colormap_scale(DVZ_CMAP_HSV, j, 0, n_points - 1, colors[k]);
+            dvz_colormap_scale(cmaps[i % 5], j, 0, n_points - 1, colors[k]);
             k++;
         }
     }
@@ -590,7 +593,7 @@ int test_visuals_path(TestContext* context)
     dvz_visual_data(&visual, DVZ_PROP_POS, 0, N, points);
     dvz_visual_data(&visual, DVZ_PROP_COLOR, 0, N, colors);
     dvz_visual_data(&visual, DVZ_PROP_LENGTH, 0, n_paths, path_lengths);
-    dvz_visual_data(&visual, DVZ_PROP_LINE_WIDTH, 0, 1, (float[]){10});
+    dvz_visual_data(&visual, DVZ_PROP_LINE_WIDTH, 0, 1, (float[]){20});
 
     RUN;
     SCREENSHOT("path")
