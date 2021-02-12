@@ -20,22 +20,6 @@ layout(location = 0) in vec3 in_uvw;
 
 layout(location = 0) out vec4 out_color;
 
-float transfer(float x, vec4 xcoefs, vec4 ycoefs)
-{
-    if (x < xcoefs.x)
-        return ycoefs.x;
-    else if (x < xcoefs.y)
-        return ycoefs.x + (ycoefs.y - ycoefs.x) / (xcoefs.y - xcoefs.x) * (x - xcoefs.x);
-    else if (x < xcoefs.z)
-        return ycoefs.y + (ycoefs.z - ycoefs.y) / (xcoefs.z - xcoefs.y) * (x - xcoefs.y);
-    else if (x < xcoefs.w)
-        return ycoefs.z + (ycoefs.w - ycoefs.z) / (xcoefs.w - xcoefs.z) * (x - xcoefs.z);
-    else
-        return ycoefs.w;
-}
-
-#define sum(x) (dot(x, vec4(1, 1, 1, 1)))
-
 void main()
 {
     // Fetch the value from the texture.

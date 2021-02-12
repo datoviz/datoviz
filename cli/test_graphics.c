@@ -757,7 +757,7 @@ int test_graphics_text(TestContext* context)
 /*  Image tests                                                                                  */
 /*************************************************************************************************/
 
-int test_graphics_image(TestContext* context)
+int test_graphics_image_1(TestContext* context)
 {
     INIT_GRAPHICS(DVZ_GRAPHICS_IMAGE, 0)
 
@@ -797,6 +797,59 @@ int test_graphics_image(TestContext* context)
 
     RUN;
     SCREENSHOT("image")
+    TEST_END
+}
+
+
+
+int test_graphics_image_cmap(TestContext* context)
+{
+    INIT_GRAPHICS(DVZ_GRAPHICS_IMAGE_CMAP, 0)
+
+    const uint32_t N = 1;
+    BEGIN_DATA(DvzGraphicsImageVertex, N, NULL)
+    float x0, x1, z;
+    z = 0;
+    float w = 2.0 / (float)N;
+    for (uint32_t i = 0; i < N; i++)
+    {
+        x0 = -1 + i * w;
+        x1 = -1 + (i + 1) * w;
+        DvzGraphicsImageItem item =                              //
+            {{x0, x1, z}, {x1, x1, z}, {x1, x0, z}, {x0, x0, z}, //
+             {0, 0},      {1, 0},      {1, 1},      {0, 1}};     //
+        dvz_graphics_append(&data, &item);
+    }
+    END_DATA
+
+    // Parameters.
+    tg.br_params = dvz_ctx_buffers(
+        gpu->context, DVZ_BUFFER_TYPE_UNIFORM, 1, sizeof(DvzGraphicsImageCmapParams));
+    DvzGraphicsImageCmapParams params = {0};
+    params.cmap = DVZ_CMAP_HSV;
+    params.scale = 1;
+    dvz_upload_buffers(canvas, tg.br_params, 0, sizeof(DvzGraphicsImageCmapParams), &params);
+
+    // Random texture.
+    const uint32_t S = 16;
+    VkDeviceSize size = S * S * 1;
+    uint8_t* tex_data = calloc(size, sizeof(uint8_t));
+    for (uint32_t i = 0; i < size; i++)
+        tex_data[i] = (uint8_t)((i * 12) % 256);
+    uvec3 shape = {S, S, 1};
+    DvzTexture* tex = dvz_ctx_texture(gpu->context, 2, shape, VK_FORMAT_R8_UNORM);
+    dvz_upload_texture(canvas, tex, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, size, tex_data);
+    FREE(tex_data);
+
+    // Bindings.
+    _common_bindings(&tg);
+    dvz_bindings_buffer(&tg.bindings, DVZ_USER_BINDING, tg.br_params);
+    dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 1, gpu->context->color_texture.texture);
+    dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 2, tex);
+    dvz_bindings_update(&tg.bindings);
+
+    RUN;
+    // SCREENSHOT("image_cmap")
     TEST_END
 }
 

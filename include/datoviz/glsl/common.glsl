@@ -49,6 +49,9 @@
     }
 
 
+#define sum(x) (dot(x, vec4(1, 1, 1, 1)))
+
+
 
 /*************************************************************************************************/
 /*  Common bindings                                                                              */
@@ -254,4 +257,20 @@ vec4 unpack_color(vec2 uv) {
     out_color.z = mod(floor(uv.x / 65536.0), 256.0);
     out_color /= 256.0;
     return out_color;
+}
+
+
+
+float transfer(float x, vec4 xcoefs, vec4 ycoefs)
+{
+    if (x < xcoefs.x)
+        return ycoefs.x;
+    else if (x < xcoefs.y)
+        return ycoefs.x + (ycoefs.y - ycoefs.x) / (xcoefs.y - xcoefs.x) * (x - xcoefs.x);
+    else if (x < xcoefs.z)
+        return ycoefs.y + (ycoefs.z - ycoefs.y) / (xcoefs.z - xcoefs.y) * (x - xcoefs.y);
+    else if (x < xcoefs.w)
+        return ycoefs.z + (ycoefs.w - ycoefs.z) / (xcoefs.w - xcoefs.z) * (x - xcoefs.z);
+    else
+        return ycoefs.w;
 }

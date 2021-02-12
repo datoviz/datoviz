@@ -350,6 +350,34 @@ static void _graphics_image(DvzCanvas* canvas, DvzGraphics* graphics)
 
 
 
+static void _graphics_image_cmap(DvzCanvas* canvas, DvzGraphics* graphics)
+{
+    SHADER(VERTEX, "graphics_image_cmap_vert")
+    SHADER(FRAGMENT, "graphics_image_cmap_frag")
+    PRIMITIVE(TRIANGLE_LIST)
+
+    ATTR_BEGIN(DvzGraphicsImageVertex)
+    ATTR_POS(DvzGraphicsImageVertex, pos)
+    ATTR(DvzGraphicsImageVertex, VK_FORMAT_R32G32_SFLOAT, uv)
+
+    _common_slots(graphics);
+
+    // Params buffer.
+    dvz_graphics_slot(graphics, DVZ_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+
+    // Colormap texture.
+    dvz_graphics_slot(graphics, DVZ_USER_BINDING + 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+
+    // Scalar image.
+    dvz_graphics_slot(graphics, DVZ_USER_BINDING + 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+
+    CREATE
+
+    dvz_graphics_callback(graphics, _graphics_image_callback);
+}
+
+
+
 /*************************************************************************************************/
 /*  Volume slice                                                                                 */
 /*************************************************************************************************/
@@ -725,6 +753,11 @@ DvzGraphics* dvz_graphics_builtin(DvzCanvas* canvas, DvzGraphicsType type, int f
         // Image
     case DVZ_GRAPHICS_IMAGE:
         _graphics_image(canvas, graphics);
+        break;
+
+        // Image cmap
+    case DVZ_GRAPHICS_IMAGE_CMAP:
+        _graphics_image_cmap(canvas, graphics);
         break;
 
         // Volume slice

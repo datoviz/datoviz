@@ -86,9 +86,11 @@ static TestCase TEST_CASES[] = {
     // generate marker screenshots:
     CASE_FIXTURE_NONE(test_graphics_marker_screenshots), //
 
-    CASE_FIXTURE_NONE(test_graphics_segment),      //
-    CASE_FIXTURE_NONE(test_graphics_text),         //
-    CASE_FIXTURE_NONE(test_graphics_image),        //
+    CASE_FIXTURE_NONE(test_graphics_segment),    //
+    CASE_FIXTURE_NONE(test_graphics_text),       //
+    CASE_FIXTURE_NONE(test_graphics_image_1),    //
+    CASE_FIXTURE_NONE(test_graphics_image_cmap), //
+
     CASE_FIXTURE_NONE(test_graphics_volume_1),     //
     CASE_FIXTURE_NONE(test_graphics_volume_slice), //
     CASE_FIXTURE_NONE(test_graphics_mesh),         //

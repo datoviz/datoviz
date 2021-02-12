@@ -94,6 +94,7 @@ typedef struct DvzGraphicsSegmentVertex DvzGraphicsSegmentVertex;
 typedef struct DvzGraphicsImageItem DvzGraphicsImageItem;
 typedef struct DvzGraphicsImageVertex DvzGraphicsImageVertex;
 typedef struct DvzGraphicsImageParams DvzGraphicsImageParams;
+typedef struct DvzGraphicsImageCmapParams DvzGraphicsImageCmapParams;
 
 typedef struct DvzGraphicsVolumeSliceItem DvzGraphicsVolumeSliceItem;
 typedef struct DvzGraphicsVolumeSliceVertex DvzGraphicsVolumeSliceVertex;
@@ -249,6 +250,12 @@ struct DvzGraphicsImageVertex
 struct DvzGraphicsImageParams
 {
     vec4 tex_coefs; /* blending coefficients for the four images */
+};
+
+struct DvzGraphicsImageCmapParams
+{
+    int cmap;    /* colormap number */
+    float scale; /* value scaling before colormap */
 };
 
 

@@ -20,11 +20,16 @@ int test_graphics_line_strip(TestContext* context);
 int test_graphics_triangle(TestContext* context);
 int test_graphics_triangle_strip(TestContext* context);
 int test_graphics_triangle_fan(TestContext* context);
+
+// 2D graphics.
 int test_graphics_marker_1(TestContext* context);
 int test_graphics_marker_screenshots(TestContext* context);
 int test_graphics_segment(TestContext* context);
 int test_graphics_text(TestContext* context);
-int test_graphics_image(TestContext* context);
+int test_graphics_image_1(TestContext* context);
+int test_graphics_image_cmap(TestContext* context);
+
+// 3D graphics.
 int test_graphics_volume_slice(TestContext* context);
 int test_graphics_volume_1(TestContext* context);
 int test_graphics_mesh(TestContext* context);
