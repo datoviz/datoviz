@@ -377,3 +377,41 @@ We didn't yet cover these other aspects:
 * Custom command buffers,
 * Interaction with compute shaders,
 * And many other topics...
+
+
+
+## Checklist for Datoviz contributors
+
+This is a handy checklist for developers when adding new graphics to the library (via a pull request).
+
+* `graphics.h`:
+    * Add the typedef of the vertex, item, params structures
+    * Add new section and structs for vertex, item, params structures
+        * Make sure all fields in the params struct have a byte size that is not 3 or divisible by 3
+    * Put comments after each struct field (used by automatic documentation generator)
+* `vklite.h`:
+    * Make sure the `DvzGraphicsType` enum exists, or create a new one
+* Shaders: `graphics_xxx.vert|frag`:
+    * The first user binding should be params, should match exactly the struct
+    * Tther bindings should me numbered with USER_BINDING+1 etc
+* `graphics.c`:
+    * Add new section, with `_graphics_xxx()` and `_graphics_xxx_callback()` if there is a non-default graphics callback function
+    * Write the main graphics function
+        * Specify the shaders
+        * Specify the primitive type
+        * Specify the vertex attributes, should match the vertex shader
+        * Add the common slots
+        * Add slots for params/textures
+        * Specify the graphics callback function
+    * (optional) Write the graphics callback function
+        * This function is called when a new item is added to the graphics. What an "item" is is up to the create of a graphics. It's typically the smallest bit of data that has a meaning in the context of the graphics. The graphics callback is mostly used for pre-upload CPU-side "triangulation" of the data, so that the visuals that reuse this graphics don't have to know the details of the triangulation.
+    * Add the switch case in `dvz_graphics_builtin()`
+* `test_graphics.h`:
+    * Add the new graphics test declaration
+* `test_graphics.c`:
+    * Write the body of the test function
+    * Set to save the screenshot with the graphics name
+* `main.c`:
+    * Add the new test to the list of test functions
+* Test the graphics without interactivity and save the graphics screenshot
+* Add graphics section in `docs/reference/graphics.md`
