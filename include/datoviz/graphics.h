@@ -254,8 +254,8 @@ struct DvzGraphicsImageParams
 
 struct DvzGraphicsImageCmapParams
 {
+    vec2 vrange; /* value range */
     int cmap;    /* colormap number */
-    float scale; /* value scaling before colormap */
 };
 
 

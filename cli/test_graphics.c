@@ -827,7 +827,8 @@ int test_graphics_image_cmap(TestContext* context)
         gpu->context, DVZ_BUFFER_TYPE_UNIFORM, 1, sizeof(DvzGraphicsImageCmapParams));
     DvzGraphicsImageCmapParams params = {0};
     params.cmap = DVZ_CMAP_HSV;
-    params.scale = 1;
+    params.vrange[0] = 0;
+    params.vrange[1] = 1;
     dvz_upload_buffers(canvas, tg.br_params, 0, sizeof(DvzGraphicsImageCmapParams), &params);
 
     // Random texture.
