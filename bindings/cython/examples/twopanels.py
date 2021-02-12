@@ -1,4 +1,7 @@
-# Simple test with Python
+"""
+# Test with two panels and different controllers
+
+"""
 
 import numpy as np
 import numpy.random as nr

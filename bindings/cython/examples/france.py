@@ -1,3 +1,7 @@
+"""
+# France departements as polygons
+"""
+
 from pathlib import Path
 
 import numpy as np

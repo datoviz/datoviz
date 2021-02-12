@@ -1,4 +1,6 @@
 """
+# 3D high-res brain mesh
+
 Showing a ultra-high resolution mesh of a human brain, acquired with a 7 Tesla MRI.
 
 The data is not yet publicly available.
@@ -8,7 +10,7 @@ Data courtesy of Anneke Alkemade et al.:
     Alkemade A, Pine K, Kirilina E, Keuken MC, Mulder MJ, Balesar R, Groot JM, Bleys RLAW,
     Trampel R, Weiskopf N, Herrler A, Möller HE, Bazin P-L and Forstmann BU (2020)
 
-    "7 Tesla MRI Followed by Histological 3D Reconstructions in Whole-Brain Specimens"
+    *7 Tesla MRI Followed by Histological 3D Reconstructions in Whole-Brain Specimens*
 
     Front. Neuroanat. 14:536838
     doi: 10.3389/fnana.2020.536838

@@ -1,3 +1,9 @@
+"""
+# 3D brain mesh
+
+
+"""
+
 import numpy as np
 
 from nilearn import datasets

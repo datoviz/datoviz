@@ -1,4 +1,7 @@
-# Signals.
+"""
+# Digital signals
+
+"""
 
 import numpy as np
 import numpy.random as nr

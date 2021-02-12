@@ -19,6 +19,8 @@ HEADER_DIR = ROOT_DIR / 'include/datoviz'
 INTERNAL_HEADER_DIR = ROOT_DIR / 'src'
 EXTERNAL_HEADER_DIR = ROOT_DIR / 'external'
 API_OUTPUT = ROOT_DIR / 'docs/api.md'
+EXAMPLES_DIR = ROOT_DIR / 'docs/examples/'
+PYTHON_EXAMPLES_DIR = ROOT_DIR / 'bindings/cython/examples'
 # HEADER_FILES = (
 #     'app.h', 'array.h', 'vklite.h', 'context.h', 'canvas.h', 'colormaps.h',
 #     'panel.h', 'visuals.h', 'scene.h')
@@ -32,6 +34,17 @@ MAX_LINE_LENGTH = 76
 INDEX_LINK = re.compile(r'\]\(docs/([^\)]+\.md)\)')
 INSERT_CODE = re.compile(r'<!-- CODE_([^ ]+) ([^ ]+) -->')
 INSERT_IMAGE = re.compile(r'<!-- IMAGE ([^ ]+) -->')
+PYTHON_EXAMPLE_TEMPLATE = '''
+{description}
+
+```python
+# from `bindings/python/examples/{path}`{code}
+```
+
+![](../images/screenshots/{name}.png)
+
+'''.strip()
+PYTHON_DESC_REGEX = re.compile(r'"""([^"]+)"""')
 
 
 
@@ -388,3 +401,45 @@ def process_code_image(markdown, config):
     markdown = INSERT_CODE.sub(_repl_code, markdown)
     markdown = INSERT_IMAGE.sub(_repl_image, markdown)
     return markdown
+
+
+def generate_examples():
+    print("generating Python example markdown pages")
+    for f in sorted(PYTHON_EXAMPLES_DIR.glob("*.py")):
+        code = f.read_text()
+        m = PYTHON_DESC_REGEX.match(code)
+        assert m
+        desc = m.group(1)
+
+        code = PYTHON_DESC_REGEX.sub('', code)
+        doc = PYTHON_EXAMPLE_TEMPLATE.format(description=desc, code=code, path=f.name, name=f.stem)
+
+        dst = EXAMPLES_DIR / f"{f.stem}.md"
+        dst.write_text(doc)
+
+
+# def example_list(markdown, config):
+#     l = []
+#     for f in sorted(PYTHON_EXAMPLES_DIR.glob("*.py")):
+#         code = f.read_text()
+#         name = code.splitlines()[1][2:]
+#         l.append((name, f.with_suffix('.md').name))
+#     return '# Examples gallery\n\n' + '\n'.join(f'* [{name}]({path})' for name, path in l) + '\n'
+
+
+# def nav_example_list():
+#     l = []
+#     for f in sorted(PYTHON_EXAMPLES_DIR.glob("*.py")):
+#         code = f.read_text()
+#         name = code.splitlines()[1][2:]
+#         l.append((name, f'examples/{f.with_suffix(".md").name}'))
+#     return l
+
+
+if __name__ == '__main__':
+    import sys
+    if len(sys.argv) < 2:
+        exit(1)
+    cmd = sys.argv[1]
+    if cmd == 'examples':
+        generate_examples()
