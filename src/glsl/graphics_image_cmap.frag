@@ -24,6 +24,8 @@ void main()
     value = v0 + clamp(value, v0, v1) * (v1 - v0);
 
     // Sampling from the color texture.
+    // NOTE: this won't work on color palettes
+    // TODO: refactor this in a proper cmap2uv() function that takes into account color palettes
     out_color = texture(tex_cmap, vec2(value, (params.cmap + .5) / 256.0));
 
     // Or computing directly in the shader. Limited to a few colormaps. Not sure which is faster.

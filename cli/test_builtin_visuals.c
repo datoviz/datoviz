@@ -648,22 +648,23 @@ int test_visuals_image_cmap(TestContext* context)
         &visual, DVZ_SOURCE_TYPE_COLOR_TEXTURE, 0, gpu->context->color_texture.texture);
 
     // Random texture.
+    // NOTE: use a uint16 texture here
     const uint32_t S = 16;
     VkDeviceSize size = S * S * 1;
-    uint8_t* tex_data = calloc(size, sizeof(uint8_t));
+    uint16_t* tex_data = calloc(size, sizeof(uint16_t));
     for (uint32_t i = 0; i < size; i++)
-        tex_data[i] = (uint8_t)((i * 12) % 256);
+        tex_data[i] = (uint16_t)((i * 3000) % 65536);
     uvec3 shape = {S, S, 1};
-    DvzTexture* texture = dvz_ctx_texture(gpu->context, 2, shape, VK_FORMAT_R8_UNORM);
+    DvzTexture* texture = dvz_ctx_texture(gpu->context, 2, shape, VK_FORMAT_R16_UNORM);
     dvz_upload_texture(
-        canvas, texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, size * sizeof(uint8_t), tex_data);
+        canvas, texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, size * sizeof(uint16_t), tex_data);
 
     // Second texture.
     dvz_visual_texture(&visual, DVZ_SOURCE_TYPE_IMAGE, 0, texture);
 
     RUN;
     FREE(tex_data);
-    // SCREENSHOT("image_cmap")
+    SCREENSHOT("image_cmap")
     END;
 }
 

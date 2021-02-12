@@ -850,7 +850,7 @@ int test_graphics_image_cmap(TestContext* context)
     dvz_bindings_update(&tg.bindings);
 
     RUN;
-    // SCREENSHOT("image_cmap")
+    SCREENSHOT("image_cmap")
     TEST_END
 }
 
