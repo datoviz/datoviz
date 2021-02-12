@@ -1,10 +1,12 @@
 
-#include "../include/datoviz/scene.h"
 #include "../include/datoviz/demo.h"
+#include "../include/datoviz/scene.h"
 
 
-void dvz_demo_scatter(uint32_t N, dvec3* pos)
+void dvz_demo_scatter(int32_t n, dvec3* pos)
 {
+    // HACK: some wrapping languages do not support uint types well
+    uint32_t N = (uint32_t)n;
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
     DvzGpu* gpu = dvz_gpu(app, 0);
     DvzCanvas* canvas = dvz_canvas(gpu, 1280, 1024, 0);
@@ -14,9 +16,10 @@ void dvz_demo_scatter(uint32_t N, dvec3* pos)
 
     cvec4* color = (cvec4*)calloc(N, sizeof(cvec4));
     float* size = (float*)calloc(N, sizeof(float));
+
     for (uint32_t i = 0; i < N; i++)
     {
-        dvz_colormap_scale(DVZ_CMAP_JET, dvz_rand_float(), 0, 1, color[i]);
+        dvz_colormap_scale(DVZ_CMAP_VIRIDIS, dvz_rand_float(), 0, 1, color[i]);
         size[i] = 2 + 38 * dvz_rand_float();
     }
 

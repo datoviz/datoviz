@@ -1,0 +1,5 @@
+## Julia binding proof of concept
+
+We just make a dynamic C API call to dvz_demo_scatter() and pass a Julia array as a pointer.
+
+Real-world bindings should probably use a more robust wrapping method.

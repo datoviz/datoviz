@@ -22,10 +22,10 @@
 /**
  * Scatter demo.
  *
- * @param n number of points
+ * @param N number of points
  * @param pos point positions
  */
-DVZ_EXPORT void dvz_demo_scatter(uint32_t N, dvec3* pos);
+DVZ_EXPORT void dvz_demo_scatter(int32_t N, dvec3* pos);
 
 
 
