@@ -2,4 +2,6 @@
 
 We just make a dynamic C API call to dvz_demo_scatter() and pass a Julia array as a pointer.
 
+Run with `julia scatter.jl`
+
 Real-world bindings should probably use a more robust wrapping method.

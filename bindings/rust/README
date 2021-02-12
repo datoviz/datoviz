@@ -1,0 +1,7 @@
+## Rust binding proof of concept
+
+We just make an (unsafe) dynamic C API call to dvz_demo_scatter() and pass a Rust array as a pointer.
+
+Run with `./run.sh`
+
+Real-world bindings should probably use a more robust wrapping method.
