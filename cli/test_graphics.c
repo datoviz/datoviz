@@ -677,6 +677,72 @@ int test_graphics_segment(TestContext* context)
 
 
 /*************************************************************************************************/
+/*  Agg path tests                                                                               */
+/*************************************************************************************************/
+
+int test_graphics_path(TestContext* context)
+{
+    INIT_GRAPHICS(DVZ_GRAPHICS_PATH, 0)
+    const uint32_t N = 1000;
+    BEGIN_DATA(DvzGraphicsPathVertex, N, NULL)
+
+    DvzGraphicsPathVertex vertex = {0};
+    float t0, t1, t2, t3;
+    int32_t i0, i1, i2, i3;
+    float d = 1.0 / (float)(N - 1);
+    // float y = 0;
+    int32_t n = (int32_t)N;
+    for (int32_t i = 0; i < n; i++)
+    {
+        i0 = i >= 1 ? i - 1 : 0;
+        i1 = i + 0;
+        i2 = i < n - 1 ? i + 1 : n - 1;
+        i3 = i < n - 2 ? i + 2 : n - 1;
+
+        t0 = -.9 + 1.8 * i0 * d;
+        t1 = -.9 + 1.8 * i1 * d;
+        t2 = -.9 + 1.8 * i2 * d;
+        t3 = -.9 + 1.8 * i3 * d;
+
+        vertex.p0[0] = t0;
+        vertex.p1[0] = t1;
+        vertex.p2[0] = t2;
+        vertex.p3[0] = t3;
+
+        vertex.p0[1] = .35 * sin(M_2PI * t0 / .9);
+        vertex.p1[1] = .35 * sin(M_2PI * t1 / .9);
+        vertex.p2[1] = .35 * sin(M_2PI * t2 / .9);
+        vertex.p3[1] = .35 * sin(M_2PI * t3 / .9);
+
+        dvz_colormap_scale(DVZ_CMAP_RAINBOW, i, 0, N - 1, vertex.color);
+        dvz_graphics_append(&data, &vertex);
+    }
+    END_DATA
+
+    tg.br_params =
+        dvz_ctx_buffers(gpu->context, DVZ_BUFFER_TYPE_UNIFORM, 1, sizeof(DvzGraphicsPathParams));
+    BINDINGS_PARAMS
+
+    DvzGraphicsPathParams params = {0};
+    params.cap_type = DVZ_CAP_ROUND;
+    params.linewidth = 50;
+    params.miter_limit = 4;
+    params.round_join = DVZ_JOIN_ROUND;
+    dvz_upload_buffers(canvas, tg.br_params, 0, sizeof(DvzGraphicsPathParams), &params);
+
+    dvz_event_callback(canvas, DVZ_EVENT_RESIZE, 0, DVZ_EVENT_MODE_SYNC, _resize, &tg);
+
+    tg.interact = dvz_interact_builtin(canvas, DVZ_INTERACT_PANZOOM);
+    dvz_event_callback(canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _interact_callback, &tg);
+
+    RUN;
+    SCREENSHOT("path")
+    TEST_END
+}
+
+
+
+/*************************************************************************************************/
 /*  Text tests                                                                                   */
 /*************************************************************************************************/
 

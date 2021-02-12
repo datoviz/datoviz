@@ -209,6 +209,56 @@ static void _graphics_segment(DvzCanvas* canvas, DvzGraphics* graphics)
 
 
 /*************************************************************************************************/
+/*  Path graphics                                                                                */
+/*************************************************************************************************/
+
+// Called when adding a single point to the path.
+// NOTE: item_count is the TOTAL number of points, including junction points.
+static void _graphics_path_callback(DvzGraphicsData* data, uint32_t item_count, const void* item)
+{
+    ASSERT(data != NULL);
+    ASSERT(data->vertices != NULL);
+
+    ASSERT(item_count > 0);
+    dvz_array_resize(data->vertices, 4 * item_count); // 4 vertices per point
+    // no indices
+
+    if (item == NULL)
+        return;
+    ASSERT(item != NULL);
+    ASSERT(data->current_idx < item_count);
+
+    // SImply repeat the vertex 4 times.
+    dvz_array_data(data->vertices, 4 * data->current_idx, 4, 1, item);
+
+    data->current_idx++;
+}
+
+static void _graphics_path(DvzCanvas* canvas, DvzGraphics* graphics)
+{
+    SHADER(VERTEX, "graphics_path_vert")
+    SHADER(FRAGMENT, "graphics_path_frag")
+    PRIMITIVE(TRIANGLE_STRIP)
+    // PRIMITIVE(POINT_LIST)
+
+    ATTR_BEGIN(DvzGraphicsPathVertex)
+    ATTR_POS(DvzGraphicsPathVertex, p0)
+    ATTR_POS(DvzGraphicsPathVertex, p1)
+    ATTR_POS(DvzGraphicsPathVertex, p2)
+    ATTR_POS(DvzGraphicsPathVertex, p3)
+    ATTR_COL(DvzGraphicsPathVertex, color)
+
+    _common_slots(graphics);
+    dvz_graphics_slot(graphics, DVZ_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+
+    dvz_graphics_callback(graphics, _graphics_path_callback);
+
+    CREATE
+}
+
+
+
+/*************************************************************************************************/
 /*  Text graphics                                                                             */
 /*************************************************************************************************/
 
@@ -743,6 +793,10 @@ DvzGraphics* dvz_graphics_builtin(DvzCanvas* canvas, DvzGraphicsType type, int f
 
     case DVZ_GRAPHICS_SEGMENT:
         _graphics_segment(canvas, graphics);
+        break;
+
+    case DVZ_GRAPHICS_PATH:
+        _graphics_path(canvas, graphics);
         break;
 
     case DVZ_GRAPHICS_TEXT:

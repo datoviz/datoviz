@@ -78,6 +78,15 @@ typedef enum
 
 
 
+// Joint type.
+typedef enum
+{
+    DVZ_JOIN_SQUARE = false,
+    DVZ_JOIN_ROUND = true,
+} DvzJoinType;
+
+
+
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
@@ -90,6 +99,10 @@ typedef struct DvzGraphicsMarkerVertex DvzGraphicsMarkerVertex;
 typedef struct DvzGraphicsMarkerParams DvzGraphicsMarkerParams;
 
 typedef struct DvzGraphicsSegmentVertex DvzGraphicsSegmentVertex;
+
+typedef struct DvzGraphicsPathVertex DvzGraphicsPathVertex;
+typedef struct DvzGraphicsPathParams DvzGraphicsPathParams;
+// typedef struct DvzGraphicsPathItem DvzGraphicsPathItem;
 
 typedef struct DvzGraphicsImageItem DvzGraphicsImageItem;
 typedef struct DvzGraphicsImageVertex DvzGraphicsImageVertex;
@@ -188,6 +201,37 @@ struct DvzGraphicsSegmentVertex
     DvzCapType cap0;   /* start cap enum */
     DvzCapType cap1;   /* end cap enum */
     uint8_t transform; /* transform enum */
+};
+
+
+
+/*************************************************************************************************/
+/*  Graphics segment                                                                             */
+/*************************************************************************************************/
+
+struct DvzGraphicsPathVertex
+{
+    vec3 p0;
+    vec3 p1;
+    vec3 p2;
+    vec3 p3;
+    cvec4 color;
+};
+
+// // Represents a single path.
+// struct DvzGraphicsPathItem
+// {
+//     uint32_t point_count;
+//     vec3* pos;
+//     cvec4* color;
+// };
+
+struct DvzGraphicsPathParams
+{
+    float linewidth;
+    float miter_limit;
+    int32_t cap_type;
+    int32_t round_join;
 };
 
 

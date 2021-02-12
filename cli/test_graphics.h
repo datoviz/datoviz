@@ -25,6 +25,7 @@ int test_graphics_triangle_fan(TestContext* context);
 int test_graphics_marker_1(TestContext* context);
 int test_graphics_marker_screenshots(TestContext* context);
 int test_graphics_segment(TestContext* context);
+int test_graphics_path(TestContext* context);
 int test_graphics_text(TestContext* context);
 int test_graphics_image_1(TestContext* context);
 int test_graphics_image_cmap(TestContext* context);
