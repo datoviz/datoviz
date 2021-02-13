@@ -421,6 +421,9 @@ static VkImageType image_type_from_dims(uint32_t dims)
 DvzTexture* dvz_ctx_texture(DvzContext* context, uint32_t dims, uvec3 size, VkFormat format)
 {
     ASSERT(context != NULL);
+    log_debug(
+        "creating %dD texture with shape %dx%dx%d and format %d", //
+        dims, size[0], size[1], size[2], format);
 
     DvzTexture* texture = dvz_container_alloc(&context->textures);
     DvzImages* image = dvz_container_alloc(&context->images);

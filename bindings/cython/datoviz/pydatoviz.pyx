@@ -22,9 +22,13 @@ logger = logging.getLogger(__name__)
 # Types
 # -------------------------------------------------------------------------------------------------
 
+ctypedef np.float32_t FLOAT
 ctypedef np.double_t DOUBLE
 ctypedef np.uint8_t CHAR
 ctypedef np.uint8_t[4] CVEC4
+ctypedef np.int16_t SHORT
+ctypedef np.uint16_t USHORT
+ctypedef np.int32_t INT
 ctypedef np.uint32_t UINT
 
 
@@ -325,6 +329,26 @@ _COLORMAPS = {
     'colorblind8': cv.DVZ_CPAL032_COLORBLIND8,
 }
 
+_TEXTURE_FILTERS = {
+    'nearest': cv.VK_FILTER_NEAREST,
+    'linear': cv.VK_FILTER_LINEAR,
+}
+
+_SOURCE_TYPES = {
+    'image': (cv.DVZ_SOURCE_TYPE_IMAGE, 2),
+    'volume': (cv.DVZ_SOURCE_TYPE_VOLUME, 3),
+}
+
+_FORMATS = {
+    (np.dtype(np.uint8), 1): cv.VK_FORMAT_R8_UNORM,
+    (np.dtype(np.uint8), 3): cv.VK_FORMAT_R8G8B8_UNORM,
+    (np.dtype(np.uint8), 4): cv.VK_FORMAT_R8G8B8A8_UNORM,
+    (np.dtype(np.uint16), 1): cv.VK_FORMAT_R16_UNORM,
+    (np.dtype(np.int16), 1): cv.VK_FORMAT_R16_SNORM,
+    (np.dtype(np.uint32), 1): cv.VK_FORMAT_R32_UINT,
+    (np.dtype(np.int32), 1): cv.VK_FORMAT_R32_SINT,
+}
+
 _EVENTS ={
     'mouse': cv.DVZ_EVENT_MOUSE_MOVE,
     'frame': cv.DVZ_EVENT_FRAME,
@@ -368,7 +392,7 @@ def _validate_data(dt, nc, data):
     if not hasattr(nc, '__len__'):
         nc = (nc,)
     nd = len(nc)  # expected dimension of the data - 1
-    if len(nc) == 1 and data.ndim == 1:
+    if nc[0] == 1 and data.ndim == 1:
         data = data.reshape((-1, 1))
     if data.ndim < nd + 1:
         data = data[np.newaxis, :]
@@ -661,6 +685,40 @@ cdef class Panel:
 
 
 # -------------------------------------------------------------------------------------------------
+# Texture
+# -------------------------------------------------------------------------------------------------
+
+cdef class Texture:
+    cdef cv.DvzTexture* _c_texture
+    cdef cv.DvzVisual* _c_visual
+    cdef cv.DvzSourceType _c_source_type
+    cdef UINT _c_source_idx
+
+    cdef create(self, cv.DvzVisual* c_visual, cv.DvzTexture* c_texture,
+        cv.DvzSourceType c_source_type, UINT c_source_idx):
+        self._c_visual = c_visual
+        self._c_texture = c_texture
+        self._c_source_type = c_source_type
+        self._c_source_idx = c_source_idx
+
+        # Bind the texture with the visual for the specified source.
+        cv.dvz_visual_texture(c_visual, c_source_type, c_source_idx, c_texture)
+
+    def set_filter(self, name):
+        cv.dvz_texture_filter(self._c_texture, cv.DVZ_FILTER_MIN, _TEXTURE_FILTERS[name])
+        cv.dvz_texture_filter(self._c_texture, cv.DVZ_FILTER_MAG, _TEXTURE_FILTERS[name])
+
+    def set_data(self, np.ndarray value):
+        cdef cv.uvec3 DVZ_ZERO_OFFSET = [0, 0, 0]
+
+        cdef size = value.size
+        cdef item_size = np.dtype(value.dtype).itemsize
+
+        cv.dvz_texture_upload(
+            self._c_texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, size * item_size, &value.data[0])
+
+
+# -------------------------------------------------------------------------------------------------
 # Visual
 # -------------------------------------------------------------------------------------------------
 
@@ -669,6 +727,7 @@ cdef class Visual:
     cdef cv.DvzVisual* _c_visual
     cdef cv.DvzContext* _c_context
     cdef unicode vtype
+    _textures = {}
 
     cdef create(self, cv.DvzPanel* c_panel, cv.DvzVisual* c_visual, unicode vtype):
         self._c_panel = c_panel
@@ -684,101 +743,148 @@ cdef class Visual:
         N = value.shape[0]
         cv.dvz_visual_data(self._c_visual, prop_type, idx, N, &value.data[0])
 
-    def image(self, np.ndarray[CHAR, ndim=3] value, int idx=0, filtering=None):
-        assert value.ndim == 3
-        assert value.shape[2] == 4
-        cdef cv.uvec3 shape
-        shape[0] = value.shape[0]
-        shape[1] = value.shape[1]
-        shape[2] = 1
-        cdef size = value.size
-        cdef item_size = np.dtype(value.dtype).itemsize
-        assert item_size == 1
+    def _create_texture(self, source_type, arr, idx=0):
+        # Find the Vulkan format for the texture
+        c_source_type, ndim = _SOURCE_TYPES[source_type]
+        assert 1 <= ndim <= 3
+        if ndim <= arr.ndim - 1:
+            nc = arr.shape[ndim]
+        else:
+            nc = 1
+        assert (arr.dtype, nc) in _FORMATS, (ndim, nc, arr.dtype, arr.shape)
+        c_format = _FORMATS[arr.dtype, nc]
 
-        # TODO: choose format as a function of the array dtype
-        texture = cv.dvz_ctx_texture(self._c_context, 2, shape, cv.VK_FORMAT_R8G8B8A8_UNORM)
+        # Find the shape
+        cdef np.uint32_t shape[3]
+        #  = (1, 1, 1)
+        for i in range(ndim):
+            shape[i] = arr.shape[i]
+        for i in range(ndim, 3):
+            shape[i] = 1
 
-        cdef cv.VkFilter fil = cv.VK_FILTER_NEAREST
-        if filtering is None or filtering == 'nearest':
-            fil = cv.VK_FILTER_NEAREST
-        elif filtering == 'linear':
-            fil = cv.VK_FILTER_LINEAR
+        # Create the Datoviz texture.
+        c_texture = cv.dvz_ctx_texture(self._c_context, ndim, &shape[0], c_format)
 
-        cv.dvz_texture_filter(texture, cv.DVZ_FILTER_MIN, fil);
-        cv.dvz_texture_filter(texture, cv.DVZ_FILTER_MAG, fil);
+        # Create the texture Cython wrapper and return it.
+        tex = Texture()
+        tex.create(self._c_visual, c_texture, c_source_type, idx)
+        return tex
 
-        cdef cv.uvec3 DVZ_ZERO_OFFSET = [0, 0, 0]
-        cv.dvz_texture_upload(texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, size * item_size, &value.data[0])
-        cv.dvz_visual_texture(self._c_visual, cv.DVZ_SOURCE_TYPE_IMAGE, idx, texture)
+    def texture(self, source_type, arr, idx=0):
+        if (source_type, idx) not in self._textures:
+            self._textures[source_type, idx] = self._create_texture(source_type, arr, idx=idx)
+        assert (source_type, idx) in self._textures
+        tex = self._textures[source_type, idx]
+        tex.set_data(arr)
+        return tex
 
-    def volume(self, np.ndarray value, idx=0):
-        assert value.ndim == 3
-        # TODO: choose format as a function of the array dtype
-        cdef cv.uvec3 shape
-        shape[0] = value.shape[0]
-        shape[1] = value.shape[1]
-        shape[2] = value.shape[2]
-        cdef size = value.size
-        cdef item_size = np.dtype(value.dtype).itemsize
+    def image(self, arr, idx=0, filtering=None):
+        assert arr.ndim >= 2
+        tex = self.texture('image', arr, idx=idx)
+        tex.set_filter(filtering)
+        return tex
 
-        # TODO: choose format as a function of the NumPy dtype
-        texture = cv.dvz_ctx_texture(self._c_context, 3, shape, cv.VK_FORMAT_R16_UNORM)
-        cv.dvz_texture_filter(texture, cv.DVZ_FILTER_MAG, cv.VK_FILTER_LINEAR);
+    def volume(self, arr, idx=0, filtering=None):
+        assert arr.ndim >= 3
+        tex = self.texture('volume', arr, idx=idx)
+        tex.set_filter(filtering)
+        return tex
 
-        cdef cv.uvec3 DVZ_ZERO_OFFSET = [0, 0, 0]
-        cv.dvz_texture_upload(texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, size * item_size, &value.data[0])
-        cv.dvz_visual_texture(self._c_visual, cv.DVZ_SOURCE_TYPE_VOLUME, idx, texture)
+    # def image(self, np.ndarray[CHAR, ndim=3] value, int idx=0, filtering=None):
+    #     assert value.ndim == 3
+    #     assert value.shape[2] == 4
+    #     cdef cv.uvec3 shape
+    #     shape[0] = value.shape[0]
+    #     shape[1] = value.shape[1]
+    #     shape[2] = 1
+    #     cdef size = value.size
+    #     cdef item_size = np.dtype(value.dtype).itemsize
+    #     assert item_size == 1
 
-    def load_obj(self, unicode path, compute_normals=False):
-        # TODO: check that it is a mesh visual
+    #     # TODO: choose format as a function of the array dtype
+    #     texture = cv.dvz_ctx_texture(self._c_context, 2, shape, cv.VK_FORMAT_R8G8B8A8_UNORM)
 
-        cdef cv.DvzMesh mesh = cv.dvz_mesh_obj(path);
+    #     cdef cv.VkFilter fil = cv.VK_FILTER_NEAREST
+    #     if filtering is None or filtering == 'nearest':
+    #         fil = cv.VK_FILTER_NEAREST
+    #     elif filtering == 'linear':
+    #         fil = cv.VK_FILTER_LINEAR
 
-        if compute_normals:
-            print("computing normals")
-            cv.dvz_mesh_normals(&mesh)
+    #     cv.dvz_texture_filter(texture, cv.DVZ_FILTER_MIN, fil);
+    #     cv.dvz_texture_filter(texture, cv.DVZ_FILTER_MAG, fil);
 
-        nv = mesh.vertices.item_count;
-        ni = mesh.indices.item_count;
+    #     cdef cv.uvec3 DVZ_ZERO_OFFSET = [0, 0, 0]
+    #     cv.dvz_texture_upload(texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, size * item_size, &value.data[0])
+    #     cv.dvz_visual_texture(self._c_visual, cv.DVZ_SOURCE_TYPE_IMAGE, idx, texture)
 
-        cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
-        cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
+    # def volume(self, np.ndarray value, idx=0):
+    #     assert value.ndim == 3
+    #     # TODO: choose format as a function of the array dtype
+    #     cdef cv.uvec3 shape
+    #     shape[0] = value.shape[0]
+    #     shape[1] = value.shape[1]
+    #     shape[2] = value.shape[2]
+    #     cdef size = value.size
+    #     cdef item_size = np.dtype(value.dtype).itemsize
 
-    def surface(
-        self, np.ndarray[DOUBLE, ndim=2] x, np.ndarray[DOUBLE, ndim=2] y, np.ndarray[DOUBLE, ndim=2] z,
-        # np.ndarray[DOUBLE, ndim=1] values=None, cmap=None, vmin=None, vmax=None):
-        np.ndarray[DOUBLE, ndim=3] uv=None,
-        ):
+    #     # TODO: choose format as a function of the NumPy dtype
+    #     texture = cv.dvz_ctx_texture(self._c_context, 3, shape, cv.VK_FORMAT_R16_UNORM)
+    #     cv.dvz_texture_filter(texture, cv.DVZ_FILTER_MAG, cv.VK_FILTER_LINEAR);
 
-        # cmap_ = _COLORMAPS.get(cmap, cv.DVZ_CMAP_VIRIDIS)
-        # colormap(values, vmin=vmin, vmax=vmax, cmap=None, alpha=None):
+    #     cdef cv.uvec3 DVZ_ZERO_OFFSET = [0, 0, 0]
+    #     cv.dvz_texture_upload(texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, size * item_size, &value.data[0])
+    #     cv.dvz_visual_texture(self._c_visual, cv.DVZ_SOURCE_TYPE_VOLUME, idx, texture)
 
-        # TODO: check that it is a mesh visual
-        row_count = x.shape[0]
-        col_count = x.shape[1]
+    # def load_obj(self, unicode path, compute_normals=False):
+    #     # TODO: check that it is a mesh visual
 
-        cdef np.ndarray positions = np.empty((row_count, col_count, 3), dtype=np.float32)
-        positions[..., 0] = x
-        positions[..., 1] = y
-        positions[..., 2] = z
-        # assert colors.shape[0] == row_count
+    #     cdef cv.DvzMesh mesh = cv.dvz_mesh_obj(path);
 
-        cdef np.ndarray texcoords = np.empty((row_count, col_count, 2), dtype=np.float32)
+    #     if compute_normals:
+    #         print("computing normals")
+    #         cv.dvz_mesh_normals(&mesh)
 
-        cdef const cv.vec2* p_uv = NULL
-        if uv is not None:
-            texcoords[..., 0] = uv[..., 0]
-            texcoords[..., 1] = uv[..., 1]
-            p_uv = <const cv.vec2*>(&texcoords.data[0])
+    #     nv = mesh.vertices.item_count;
+    #     ni = mesh.indices.item_count;
 
-        cdef cv.DvzMesh mesh = cv.dvz_mesh_grid(
-            row_count, col_count, <const cv.vec3*>(&positions.data[0]), p_uv)
+    #     cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
+    #     cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
 
-        nv = mesh.vertices.item_count;
-        ni = mesh.indices.item_count;
+    # def surface(
+    #     self, np.ndarray[DOUBLE, ndim=2] x, np.ndarray[DOUBLE, ndim=2] y, np.ndarray[DOUBLE, ndim=2] z,
+    #     # np.ndarray[DOUBLE, ndim=1] values=None, cmap=None, vmin=None, vmax=None):
+    #     np.ndarray[DOUBLE, ndim=3] uv=None,
+    #     ):
 
-        cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
-        cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
+    #     # cmap_ = _COLORMAPS.get(cmap, cv.DVZ_CMAP_VIRIDIS)
+    #     # colormap(values, vmin=vmin, vmax=vmax, cmap=None, alpha=None):
+
+    #     # TODO: check that it is a mesh visual
+    #     row_count = x.shape[0]
+    #     col_count = x.shape[1]
+
+    #     cdef np.ndarray positions = np.empty((row_count, col_count, 3), dtype=np.float32)
+    #     positions[..., 0] = x
+    #     positions[..., 1] = y
+    #     positions[..., 2] = z
+    #     # assert colors.shape[0] == row_count
+
+    #     cdef np.ndarray texcoords = np.empty((row_count, col_count, 2), dtype=np.float32)
+
+    #     cdef const cv.vec2* p_uv = NULL
+    #     if uv is not None:
+    #         texcoords[..., 0] = uv[..., 0]
+    #         texcoords[..., 1] = uv[..., 1]
+    #         p_uv = <const cv.vec2*>(&texcoords.data[0])
+
+    #     cdef cv.DvzMesh mesh = cv.dvz_mesh_grid(
+    #         row_count, col_count, <const cv.vec3*>(&positions.data[0]), p_uv)
+
+    #     nv = mesh.vertices.item_count;
+    #     ni = mesh.indices.item_count;
+
+    #     cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
+    #     cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
 
 
 

@@ -5,6 +5,7 @@
 
 import numpy as np
 import numpy.random as nr
+
 from datoviz import canvas, run, colormap
 
 c = canvas(show_fps=True)
@@ -43,8 +44,10 @@ visual.data('texcoefs', np.array([1, .5, 0, 0]).astype(np.float32))
 # Control the blending via a GUI.
 gui = c.gui("GUI")
 
+
 @gui.control("slider_float", "blending", vmin=0, vmax=1)
 def on_change(value):
     visual.data('texcoefs', np.array([1 - value, value, 0, 0]))
+
 
 run()

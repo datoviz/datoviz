@@ -114,8 +114,13 @@ cdef extern from "<datoviz/datoviz.h>":
     # HACK: manual copy for now
     ctypedef enum VkFormat:
         VK_FORMAT_R8_UNORM = 9
-        VK_FORMAT_R16_UNORM = 70
+        VK_FORMAT_R8_SNORM = 10
+        VK_FORMAT_R8G8B8_UNORM = 23
         VK_FORMAT_R8G8B8A8_UNORM = 37
+        VK_FORMAT_R16_UNORM = 70
+        VK_FORMAT_R16_SNORM = 71
+        VK_FORMAT_R32_UINT = 98,
+        VK_FORMAT_R32_SINT = 99,
 
     ctypedef enum VkFilter:
         VK_FILTER_NEAREST = 0
