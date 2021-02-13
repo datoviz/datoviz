@@ -178,14 +178,16 @@ typedef enum
     DVZ_EVENT_GUI,                // called whenever a GUI control changes or is activated
     DVZ_EVENT_SCREENCAST,         // called when a screenshot has been downloaded
     DVZ_EVENT_TIMER,              // called every X ms in the main thread, just after FRAME
-    DVZ_EVENT_MOUSE_BUTTON,       // called when a mouse button is pressed or released
+    DVZ_EVENT_MOUSE_PRESS,        // called when a mouse button is pressed
+    DVZ_EVENT_MOUSE_RELEASE,      // called when a mouse button is released
     DVZ_EVENT_MOUSE_MOVE,         // called when the mouse moves
     DVZ_EVENT_MOUSE_WHEEL,        // called when the mouse wheel is used
     DVZ_EVENT_MOUSE_DRAG_BEGIN,   // called when a drag event starts
     DVZ_EVENT_MOUSE_DRAG_END,     // called when a drag event stops
     DVZ_EVENT_MOUSE_CLICK,        // called after a click (called once during a double click)
     DVZ_EVENT_MOUSE_DOUBLE_CLICK, // called after a double click
-    DVZ_EVENT_KEY,                // called after a keyboard key pressed or released
+    DVZ_EVENT_KEY_PRESS,          // called after a keyboard key press
+    DVZ_EVENT_KEY_RELEASE,        // called after a keyboard key release
     DVZ_EVENT_RESIZE,             // called at every resize
     DVZ_EVENT_PRE_SEND,           // called before sending the commands buffers
     DVZ_EVENT_POST_SEND,          // called after sending the commands buffers
@@ -200,24 +202,6 @@ typedef enum
     DVZ_EVENT_MODE_SYNC,
     DVZ_EVENT_MODE_ASYNC,
 } DvzEventMode;
-
-
-
-// Key type
-typedef enum
-{
-    DVZ_KEY_RELEASE,
-    DVZ_KEY_PRESS,
-} DvzKeyType;
-
-
-
-// Mouse button type
-typedef enum
-{
-    DVZ_MOUSE_RELEASE,
-    DVZ_MOUSE_PRESS,
-} DvzMouseButtonType;
 
 
 
@@ -368,7 +352,6 @@ struct DvzViewport
 struct DvzMouseButtonEvent
 {
     DvzMouseButton button;
-    DvzMouseButtonType type;
     int modifiers;
 };
 
@@ -407,7 +390,6 @@ struct DvzMouseClickEvent
 
 struct DvzKeyEvent
 {
-    DvzKeyType type;
     DvzKeyCode key_code;
     int modifiers;
 };
@@ -948,15 +930,22 @@ DVZ_EXPORT void dvz_keyboard_event(DvzKeyboard* keyboard, DvzCanvas* canvas, Dvz
 /*************************************************************************************************/
 
 /**
- * Emit a mouse button event.
+ * Emit a mouse press event.
  *
  * @param canvas the canvas
- * @param type whether this is a press or release event
  * @param button the mouse button
  * @param modifiers flags with the active keyboard modifiers
  */
-DVZ_EXPORT void dvz_event_mouse_button(
-    DvzCanvas* canvas, DvzMouseButtonType type, DvzMouseButton button, int modifiers);
+DVZ_EXPORT void dvz_event_mouse_press(DvzCanvas* canvas, DvzMouseButton button, int modifiers);
+
+/**
+ * Emit a mouse release event.
+ *
+ * @param canvas the canvas
+ * @param button the mouse button
+ * @param modifiers flags with the active keyboard modifiers
+ */
+DVZ_EXPORT void dvz_event_mouse_release(DvzCanvas* canvas, DvzMouseButton button, int modifiers);
 
 /**
  * Emit a mouse move event.
@@ -1011,15 +1000,22 @@ DVZ_EXPORT void dvz_event_mouse_drag(DvzCanvas* canvas, vec2 pos, DvzMouseButton
 DVZ_EXPORT void dvz_event_mouse_drag_end(DvzCanvas* canvas, vec2 pos, DvzMouseButton button);
 
 /**
- * Emit a keyboard event.
+ * Emit a key press event.
  *
  * @param canvas the canvas
- * @param type press or release
  * @param key_code the key
  * @param modifiers flags with the active keyboard modifiers
  */
-DVZ_EXPORT void
-dvz_event_key(DvzCanvas* canvas, DvzKeyType type, DvzKeyCode key_code, int modifiers);
+DVZ_EXPORT void dvz_event_key_press(DvzCanvas* canvas, DvzKeyCode key_code, int modifiers);
+
+/**
+ * Emit a key release event.
+ *
+ * @param canvas the canvas
+ * @param key_code the key
+ * @param modifiers flags with the active keyboard modifiers
+ */
+DVZ_EXPORT void dvz_event_key_release(DvzCanvas* canvas, DvzKeyCode key_code, int modifiers);
 
 /**
  * Emit a frame event.

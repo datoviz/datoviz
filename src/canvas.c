@@ -127,21 +127,17 @@ static void _glfw_key_callback(GLFWwindow* window, int key, int scancode, int ac
         return;
     }
 
-    DvzKeyType type = {0};
     DvzKeyCode key_code = {0};
-
-    // Find the key event type.
-    if (action == GLFW_PRESS || action == GLFW_REPEAT)
-        type = DVZ_KEY_PRESS;
-    else
-        type = DVZ_KEY_RELEASE;
 
     // NOTE: we use the GLFW key codes here, should actually do a proper mapping between GLFW
     // key codes and Datoviz key codes.
     key_code = key;
 
-    // Enqueue the key event.
-    dvz_event_key(canvas, type, key_code, mods);
+    // Find the key event type.
+    if (action == GLFW_PRESS || action == GLFW_REPEAT)
+        dvz_event_key_press(canvas, key_code, mods);
+    else
+        dvz_event_key_release(canvas, key_code, mods);
 }
 
 static void _glfw_wheel_callback(GLFWwindow* window, double dx, double dy)
@@ -159,13 +155,6 @@ static void _glfw_button_callback(GLFWwindow* window, int button, int action, in
     ASSERT(canvas != NULL);
     ASSERT(canvas->window != NULL);
 
-    // Find mouse button action type
-    DvzMouseButtonType type = {0};
-    if (action == GLFW_PRESS)
-        type = DVZ_MOUSE_PRESS;
-    else
-        type = DVZ_MOUSE_RELEASE;
-
     // Map mouse button.
     DvzMouseButton b = {0};
     if (button == GLFW_MOUSE_BUTTON_LEFT)
@@ -175,8 +164,12 @@ static void _glfw_button_callback(GLFWwindow* window, int button, int action, in
     if (button == GLFW_MOUSE_BUTTON_MIDDLE)
         b = DVZ_MOUSE_BUTTON_MIDDLE;
 
+    // Find mouse button action type
     // NOTE: Datoviz modifiers code must match GLFW
-    dvz_event_mouse_button(canvas, type, b, mods);
+    if (action == GLFW_PRESS)
+        dvz_event_mouse_press(canvas, b, mods);
+    else
+        dvz_event_mouse_release(canvas, b, mods);
 }
 
 static void _glfw_move_callback(GLFWwindow* window, double xpos, double ypos)
@@ -1098,61 +1091,60 @@ void dvz_mouse_event(DvzMouse* mouse, DvzCanvas* canvas, DvzEvent ev)
     switch (ev.type)
     {
 
-    case DVZ_EVENT_MOUSE_BUTTON:
+    case DVZ_EVENT_MOUSE_PRESS:
 
         // Press event.
-        if (ev.u.b.type == DVZ_MOUSE_PRESS && mouse->press_time == DVZ_NEVER)
+        if (mouse->press_time == DVZ_NEVER)
         {
             glm_vec2_copy(mouse->cur_pos, mouse->press_pos);
             mouse->press_time = time;
             mouse->button = ev.u.b.button;
         }
-
-        // Release event.
-        else if (ev.u.b.type == DVZ_MOUSE_RELEASE)
-        {
-            // End drag.
-            if (mouse->cur_state == DVZ_MOUSE_STATE_DRAG)
-            {
-                log_trace("end drag event");
-                mouse->cur_state = DVZ_MOUSE_STATE_INACTIVE;
-                mouse->button = DVZ_MOUSE_BUTTON_NONE;
-                dvz_event_mouse_drag_end(canvas, mouse->cur_pos, mouse->button);
-            }
-
-            // Double click event.
-            else if (time - mouse->click_time < DVZ_MOUSE_DOUBLE_CLICK_MAX_DELAY)
-            {
-                // NOTE: when releasing, current button is NONE so we must use the previously set
-                // button in mouse->button.
-                log_trace("double click event on button %d", mouse->button);
-                mouse->cur_state = DVZ_MOUSE_STATE_DOUBLE_CLICK;
-                mouse->click_time = time;
-                dvz_event_mouse_double_click(canvas, mouse->cur_pos, mouse->button);
-            }
-
-            // Click event.
-            else if (
-                time - mouse->press_time < DVZ_MOUSE_CLICK_MAX_DELAY &&
-                mouse->shift_length < DVZ_MOUSE_CLICK_MAX_SHIFT)
-            {
-                log_trace("click event on button %d", mouse->button);
-                mouse->cur_state = DVZ_MOUSE_STATE_CLICK;
-                mouse->click_time = time;
-                dvz_event_mouse_click(canvas, mouse->cur_pos, mouse->button);
-            }
-
-            else
-            {
-                // Reset the mouse button state.
-                mouse->button = DVZ_MOUSE_BUTTON_NONE;
-            }
-            mouse->press_time = DVZ_NEVER;
-        }
         mouse->shift_length = 0;
-        // mouse->button = ev.u.b.button;
+        break;
 
-        // log_trace("mouse button %d", mouse->button);
+    case DVZ_EVENT_MOUSE_RELEASE:
+        // Release event.
+
+        // End drag.
+        if (mouse->cur_state == DVZ_MOUSE_STATE_DRAG)
+        {
+            log_trace("end drag event");
+            mouse->cur_state = DVZ_MOUSE_STATE_INACTIVE;
+            mouse->button = DVZ_MOUSE_BUTTON_NONE;
+            dvz_event_mouse_drag_end(canvas, mouse->cur_pos, mouse->button);
+        }
+
+        // Double click event.
+        else if (time - mouse->click_time < DVZ_MOUSE_DOUBLE_CLICK_MAX_DELAY)
+        {
+            // NOTE: when releasing, current button is NONE so we must use the previously set
+            // button in mouse->button.
+            log_trace("double click event on button %d", mouse->button);
+            mouse->cur_state = DVZ_MOUSE_STATE_DOUBLE_CLICK;
+            mouse->click_time = time;
+            dvz_event_mouse_double_click(canvas, mouse->cur_pos, mouse->button);
+        }
+
+        // Click event.
+        else if (
+            time - mouse->press_time < DVZ_MOUSE_CLICK_MAX_DELAY &&
+            mouse->shift_length < DVZ_MOUSE_CLICK_MAX_SHIFT)
+        {
+            log_trace("click event on button %d", mouse->button);
+            mouse->cur_state = DVZ_MOUSE_STATE_CLICK;
+            mouse->click_time = time;
+            dvz_event_mouse_click(canvas, mouse->cur_pos, mouse->button);
+        }
+
+        else
+        {
+            // Reset the mouse button state.
+            mouse->button = DVZ_MOUSE_BUTTON_NONE;
+        }
+
+        mouse->press_time = DVZ_NEVER;
+        mouse->shift_length = 0;
         break;
 
 
@@ -1241,7 +1233,7 @@ void dvz_keyboard_event(DvzKeyboard* keyboard, DvzCanvas* canvas, DvzEvent ev)
     double time = canvas->clock.elapsed;
     DvzKeyCode key = ev.u.k.key_code;
 
-    if (ev.u.k.type == DVZ_KEY_PRESS && time - keyboard->press_time > .025)
+    if (ev.type == DVZ_EVENT_KEY_PRESS && time - keyboard->press_time > .025)
     {
         log_trace("key pressed %d mods %d", key, ev.u.k.modifiers);
         keyboard->key_code = key;
@@ -1263,15 +1255,30 @@ void dvz_keyboard_event(DvzKeyboard* keyboard, DvzCanvas* canvas, DvzEvent ev)
 /*  Event system                                                                                 */
 /*************************************************************************************************/
 
-void dvz_event_mouse_button(
-    DvzCanvas* canvas, DvzMouseButtonType type, DvzMouseButton button, int modifiers)
+void dvz_event_mouse_press(DvzCanvas* canvas, DvzMouseButton button, int modifiers)
 {
     ASSERT(canvas != NULL);
 
     DvzEvent event = {0};
-    event.type = DVZ_EVENT_MOUSE_BUTTON;
+    event.type = DVZ_EVENT_MOUSE_PRESS;
     event.u.b.button = button;
-    event.u.b.type = type;
+    event.u.b.modifiers = modifiers;
+
+    // Update the mouse state.
+    dvz_mouse_event(&canvas->mouse, canvas, event);
+
+    _event_produce(canvas, event);
+}
+
+
+
+void dvz_event_mouse_release(DvzCanvas* canvas, DvzMouseButton button, int modifiers)
+{
+    ASSERT(canvas != NULL);
+
+    DvzEvent event = {0};
+    event.type = DVZ_EVENT_MOUSE_RELEASE;
+    event.u.b.button = button;
     event.u.b.modifiers = modifiers;
 
     // Update the mouse state.
@@ -1370,13 +1377,29 @@ void dvz_event_mouse_drag_end(DvzCanvas* canvas, vec2 pos, DvzMouseButton button
 
 
 
-void dvz_event_key(DvzCanvas* canvas, DvzKeyType type, DvzKeyCode key_code, int modifiers)
+void dvz_event_key_press(DvzCanvas* canvas, DvzKeyCode key_code, int modifiers)
 {
     ASSERT(canvas != NULL);
 
     DvzEvent event = {0};
-    event.type = DVZ_EVENT_KEY;
-    event.u.k.type = type;
+    event.type = DVZ_EVENT_KEY_PRESS;
+    event.u.k.key_code = key_code;
+    event.u.k.modifiers = modifiers;
+
+    // Update the keyboard state.
+    dvz_keyboard_event(&canvas->keyboard, canvas, event);
+
+    _event_produce(canvas, event);
+}
+
+
+
+void dvz_event_key_release(DvzCanvas* canvas, DvzKeyCode key_code, int modifiers)
+{
+    ASSERT(canvas != NULL);
+
+    DvzEvent event = {0};
+    event.type = DVZ_EVENT_KEY_RELEASE;
     event.u.k.key_code = key_code;
     event.u.k.modifiers = modifiers;
 

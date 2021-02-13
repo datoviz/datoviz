@@ -115,8 +115,7 @@ static void _frame_callback(DvzCanvas* canvas, DvzEvent ev)
 
 static void _key_callback(DvzCanvas* canvas, DvzEvent ev)
 {
-    if (ev.u.k.type == DVZ_KEY_PRESS)
-        log_debug("key code %d", ev.u.k.key_code);
+    log_debug("key code %d", ev.u.k.key_code);
 }
 
 int test_canvas_1(TestContext* context)
@@ -147,8 +146,8 @@ int test_canvas_1(TestContext* context)
     dvz_app_run(app, 8);
 
     // Send a mock key press event.
-    dvz_event_callback(canvas, DVZ_EVENT_KEY, 0, DVZ_EVENT_MODE_SYNC, _key_callback, NULL);
-    dvz_event_key(canvas, DVZ_KEY_PRESS, DVZ_KEY_A, 0);
+    dvz_event_callback(canvas, DVZ_EVENT_KEY_PRESS, 0, DVZ_EVENT_MODE_SYNC, _key_callback, NULL);
+    dvz_event_key_press(canvas, DVZ_KEY_A, 0);
 
     // Second canvas.
     log_debug("global clock elapsed %.6f interval %.6f", app->clock.elapsed, app->clock.interval);
@@ -183,8 +182,7 @@ static void _wheel_callback(DvzCanvas* canvas, DvzEvent ev)
 
 static void _button_callback(DvzCanvas* canvas, DvzEvent ev)
 {
-    if (ev.u.b.type == DVZ_MOUSE_PRESS)
-        log_debug("clicked %d mods %d", ev.u.b.button, ev.u.b.modifiers);
+    log_debug("clicked %d mods %d", ev.u.b.button, ev.u.b.modifiers);
 }
 
 static void _cursor_callback(DvzCanvas* canvas, DvzEvent ev)
@@ -210,11 +208,11 @@ int test_canvas_2(TestContext* context)
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
 
     dvz_event_callback(canvas, DVZ_EVENT_INIT, 0, DVZ_EVENT_MODE_SYNC, _init_callback, NULL);
-    dvz_event_callback(canvas, DVZ_EVENT_KEY, 0, DVZ_EVENT_MODE_SYNC, _key_callback, NULL);
+    dvz_event_callback(canvas, DVZ_EVENT_KEY_PRESS, 0, DVZ_EVENT_MODE_SYNC, _key_callback, NULL);
     dvz_event_callback(
         canvas, DVZ_EVENT_MOUSE_WHEEL, 0, DVZ_EVENT_MODE_SYNC, _wheel_callback, NULL);
     dvz_event_callback(
-        canvas, DVZ_EVENT_MOUSE_BUTTON, 0, DVZ_EVENT_MODE_SYNC, _button_callback, NULL);
+        canvas, DVZ_EVENT_MOUSE_PRESS, 0, DVZ_EVENT_MODE_SYNC, _button_callback, NULL);
     dvz_event_callback(
         canvas, DVZ_EVENT_MOUSE_MOVE, 0, DVZ_EVENT_MODE_SYNC, _cursor_callback, NULL);
 

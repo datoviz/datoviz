@@ -350,14 +350,16 @@ _FORMATS = {
 }
 
 _EVENTS ={
-    'mouse_button': cv.DVZ_EVENT_MOUSE_BUTTON,
+    'mouse_press': cv.DVZ_EVENT_MOUSE_PRESS,
+    'mouse_release': cv.DVZ_EVENT_MOUSE_RELEASE,
     'mouse_move': cv.DVZ_EVENT_MOUSE_MOVE,
     'mouse_wheel': cv.DVZ_EVENT_MOUSE_WHEEL,
     'mouse_drag_begin': cv.DVZ_EVENT_MOUSE_DRAG_BEGIN,
     'mouse_drag_end': cv.DVZ_EVENT_MOUSE_DRAG_END,
     'mouse_click': cv.DVZ_EVENT_MOUSE_CLICK,
     'mouse_double_click': cv.DVZ_EVENT_MOUSE_DOUBLE_CLICK,
-    'key': cv.DVZ_EVENT_KEY,
+    'key_press': cv.DVZ_EVENT_KEY_PRESS,
+    'key_release': cv.DVZ_EVENT_KEY_RELEASE,
     'frame': cv.DVZ_EVENT_FRAME,
     'timer': cv.DVZ_EVENT_TIMER,
     'gui': cv.DVZ_EVENT_GUI,

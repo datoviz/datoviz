@@ -44,11 +44,11 @@ int test_interact_1(TestContext* context)
     dvz_event_callback(
         canvas, DVZ_EVENT_MOUSE_MOVE, 0, DVZ_EVENT_MODE_SYNC, _mouse_callback, &mouse);
     dvz_event_callback(
-        canvas, DVZ_EVENT_MOUSE_BUTTON, 0, DVZ_EVENT_MODE_SYNC, _mouse_callback, &mouse);
+        canvas, DVZ_EVENT_MOUSE_PRESS, 0, DVZ_EVENT_MODE_SYNC, _mouse_callback, &mouse);
     dvz_event_callback(
         canvas, DVZ_EVENT_MOUSE_WHEEL, 0, DVZ_EVENT_MODE_SYNC, _mouse_callback, &mouse);
     dvz_event_callback(
-        canvas, DVZ_EVENT_KEY, 0, DVZ_EVENT_MODE_SYNC, _keyboard_callback, &keyboard);
+        canvas, DVZ_EVENT_KEY_PRESS, 0, DVZ_EVENT_MODE_SYNC, _keyboard_callback, &keyboard);
 
     dvz_app_run(app, N_FRAMES);
 

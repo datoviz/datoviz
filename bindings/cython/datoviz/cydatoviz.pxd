@@ -302,30 +302,24 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_EVENT_GUI = 6
         DVZ_EVENT_SCREENCAST = 7
         DVZ_EVENT_TIMER = 8
-        DVZ_EVENT_MOUSE_BUTTON = 9
-        DVZ_EVENT_MOUSE_MOVE = 10
-        DVZ_EVENT_MOUSE_WHEEL = 11
-        DVZ_EVENT_MOUSE_DRAG_BEGIN = 12
-        DVZ_EVENT_MOUSE_DRAG_END = 13
-        DVZ_EVENT_MOUSE_CLICK = 14
-        DVZ_EVENT_MOUSE_DOUBLE_CLICK = 15
-        DVZ_EVENT_KEY = 16
-        DVZ_EVENT_RESIZE = 17
-        DVZ_EVENT_PRE_SEND = 18
-        DVZ_EVENT_POST_SEND = 19
-        DVZ_EVENT_DESTROY = 20
+        DVZ_EVENT_MOUSE_PRESS = 9
+        DVZ_EVENT_MOUSE_RELEASE = 10
+        DVZ_EVENT_MOUSE_MOVE = 11
+        DVZ_EVENT_MOUSE_WHEEL = 12
+        DVZ_EVENT_MOUSE_DRAG_BEGIN = 13
+        DVZ_EVENT_MOUSE_DRAG_END = 14
+        DVZ_EVENT_MOUSE_CLICK = 15
+        DVZ_EVENT_MOUSE_DOUBLE_CLICK = 16
+        DVZ_EVENT_KEY_PRESS = 17
+        DVZ_EVENT_KEY_RELEASE = 18
+        DVZ_EVENT_RESIZE = 19
+        DVZ_EVENT_PRE_SEND = 20
+        DVZ_EVENT_POST_SEND = 21
+        DVZ_EVENT_DESTROY = 22
 
     ctypedef enum DvzEventMode:
         DVZ_EVENT_MODE_SYNC = 0
         DVZ_EVENT_MODE_ASYNC = 1
-
-    ctypedef enum DvzKeyType:
-        DVZ_KEY_RELEASE = 0
-        DVZ_KEY_PRESS = 1
-
-    ctypedef enum DvzMouseButtonType:
-        DVZ_MOUSE_RELEASE = 0
-        DVZ_MOUSE_PRESS = 1
 
     ctypedef enum DvzKeyModifiers:
         DVZ_KEY_MODIFIER_NONE = 0x00000000
@@ -945,7 +939,6 @@ cdef extern from "<datoviz/datoviz.h>":
 
     ctypedef struct DvzMouseButtonEvent:
         DvzMouseButton button
-        DvzMouseButtonType type
         int modifiers
 
     ctypedef struct DvzMouseMoveEvent:
@@ -964,7 +957,6 @@ cdef extern from "<datoviz/datoviz.h>":
         bint double_click
 
     ctypedef struct DvzKeyEvent:
-        DvzKeyType type
         DvzKeyCode key_code
         int modifiers
 
