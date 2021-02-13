@@ -800,21 +800,18 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_PROP_NORMAL = 18
         DVZ_PROP_TEXCOORDS = 19
         DVZ_PROP_TEXCOEFS = 20
-        DVZ_PROP_IMAGE = 21
-        DVZ_PROP_VOLUME = 22
-        DVZ_PROP_COLOR_TEXTURE = 23
-        DVZ_PROP_TRANSFER_X = 24
-        DVZ_PROP_TRANSFER_Y = 25
-        DVZ_PROP_LIGHT_POS = 26
-        DVZ_PROP_LIGHT_PARAMS = 27
-        DVZ_PROP_CLIP = 28
-        DVZ_PROP_MODEL = 29
-        DVZ_PROP_VIEW = 30
-        DVZ_PROP_PROJ = 31
-        DVZ_PROP_TIME = 32
-        DVZ_PROP_INDEX = 33
-        DVZ_PROP_SCALE = 34
-        DVZ_PROP_TRANSFORM = 35
+        DVZ_PROP_TRANSFER_X = 21
+        DVZ_PROP_TRANSFER_Y = 22
+        DVZ_PROP_LIGHT_POS = 23
+        DVZ_PROP_LIGHT_PARAMS = 24
+        DVZ_PROP_CLIP = 25
+        DVZ_PROP_MODEL = 26
+        DVZ_PROP_VIEW = 27
+        DVZ_PROP_PROJ = 28
+        DVZ_PROP_TIME = 29
+        DVZ_PROP_INDEX = 30
+        DVZ_PROP_SCALE = 31
+        DVZ_PROP_TRANSFORM = 32
 
     ctypedef enum DvzSourceKind:
         DVZ_SOURCE_KIND_NONE = 0

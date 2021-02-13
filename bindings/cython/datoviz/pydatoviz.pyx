@@ -1,5 +1,9 @@
 # cython: c_string_type=unicode, c_string_encoding=ascii
 
+# -------------------------------------------------------------------------------------------------
+# Imports
+# -------------------------------------------------------------------------------------------------
+
 from functools import wraps, partial
 import logging
 
@@ -11,6 +15,23 @@ cimport datoviz.cydatoviz as cv
 
 
 logger = logging.getLogger(__name__)
+
+
+
+# -------------------------------------------------------------------------------------------------
+# Types
+# -------------------------------------------------------------------------------------------------
+
+ctypedef np.double_t DOUBLE
+ctypedef np.uint8_t CHAR
+ctypedef np.uint8_t[4] CVEC4
+ctypedef np.uint32_t UINT
+
+
+
+# -------------------------------------------------------------------------------------------------
+# Constants
+# -------------------------------------------------------------------------------------------------
 
 DEFAULT_WIDTH = 1024
 DEFAULT_HEIGHT = 768
@@ -59,8 +80,10 @@ _VISUALS = {
     'point': cv.DVZ_VISUAL_POINT,
     'marker': cv.DVZ_VISUAL_MARKER,
     'mesh': cv.DVZ_VISUAL_MESH,
+    'path': cv.DVZ_VISUAL_PATH,
     'polygon': cv.DVZ_VISUAL_POLYGON,
     'image': cv.DVZ_VISUAL_IMAGE,
+    'image_cmap': cv.DVZ_VISUAL_IMAGE_CMAP,
     'volume': cv.DVZ_VISUAL_VOLUME,
     'volume_slice': cv.DVZ_VISUAL_VOLUME_SLICE,
     'line_strip': cv.DVZ_VISUAL_LINE_STRIP,
@@ -274,6 +297,11 @@ _MARKER_TYPES = {
 }
 
 
+
+# -------------------------------------------------------------------------------------------------
+# Constant utils
+# -------------------------------------------------------------------------------------------------
+
 def _key_name(key):
     return _KEYS.get(key, key)
 
@@ -287,10 +315,112 @@ def _get_prop(name):
     return _PROPS[name]
 
 
-ctypedef np.double_t DOUBLE
-ctypedef np.uint8_t CHAR
-ctypedef np.uint8_t[4] CVEC4
-ctypedef np.uint32_t UINT
+
+# -------------------------------------------------------------------------------------------------
+# Util functions
+# -------------------------------------------------------------------------------------------------
+
+def _get_prop_info(visual_type, prop_name):
+    c_prop, dt, nc = _PROPS[prop_name]
+
+    # HACK: special cases
+    if prop_name == 'length':
+        if visual_type == 'axes':
+            # tick length
+            dt = np.float32
+        elif visual_type == 'volume':
+            # Box size: vec3
+            dt = np.float32
+            nc = 3
+    elif prop_name == 'texcoords':
+        if 'volume' in visual_type:
+            nc = 3
+
+    assert nc > 0
+    assert dt
+    assert c_prop > 0
+    return c_prop, dt, nc
+
+
+def _validate_data(dt, nc, data):
+    data = data.astype(dt)
+    if not data.flags['C_CONTIGUOUS']:
+        data = np.ascontiguousarray(data)
+    if data.ndim == 1:
+        if nc == 1:
+            data = data[:, np.newaxis]
+        elif nc == len(data):
+            data = data[np.newaxis, :]
+    assert data.ndim == 2, f"Incorrect array dimension {data.shape}, nc={nc}"
+    assert data.shape[1] == nc, f"Incorrect array shape {data.shape} instead of {nc}"
+    return data
+
+
+cdef _wrapped_callback(cv.DvzCanvas* c_canvas, cv.DvzEvent c_ev):
+    cdef object tup
+    if c_ev.user_data != NULL:
+        tup = <object>c_ev.user_data
+
+        # For each type of event, get the arguments to the function
+        ev_args = _get_ev_args(c_ev)
+
+        f, args = tup
+
+        # This is the control type the callback was registered for.
+        callback_control_type = args[0] if args else None
+
+        # NOTE: only call the callback if the raised GUI event is for that control.
+        dt = c_ev.type
+        if dt == cv.DVZ_EVENT_GUI:
+            if c_ev.u.g.control.type != callback_control_type:
+                return
+
+        try:
+            f(*ev_args)
+        except Exception as e:
+            print("Error: %s" % e)
+
+
+
+cdef _add_event_callback(cv.DvzCanvas* c_canvas, cv.DvzEventType evtype, double param, f, args):
+    cdef void* ptr_to_obj
+    tup = (f, args)
+
+    # IMPORTANT: need to either keep a reference of this tuple object somewhere in the class,
+    # or increase the ref, otherwise this tuple will be deleted by the time we call it in the
+    # C callback function.
+    Py_INCREF(tup)
+
+    ptr_to_obj = <void*>tup
+    cv.dvz_event_callback(c_canvas, evtype, param, cv.DVZ_EVENT_MODE_ASYNC, <cv.DvzEventCallback>_wrapped_callback, ptr_to_obj)
+
+
+
+cdef _get_ev_args(cv.DvzEvent c_ev):
+    cdef float* fvalue
+    cdef int* ivalue
+    cdef bint* bvalue
+    dt = c_ev.type
+    if dt == cv.DVZ_EVENT_GUI:
+        if c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_SLIDER_FLOAT:
+            fvalue = <float*>c_ev.u.g.control.value
+            return (fvalue[0],)
+        elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_SLIDER_INT:
+            ivalue = <int*>c_ev.u.g.control.value
+            return (ivalue[0],)
+        elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_CHECKBOX:
+            bvalue = <bint*>c_ev.u.g.control.value
+            return (bvalue[0],)
+        elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_BUTTON:
+            bvalue = <bint*>c_ev.u.g.control.value
+            return (bvalue[0],)
+    return ()
+
+
+
+# -------------------------------------------------------------------------------------------------
+# Public functions
+# -------------------------------------------------------------------------------------------------
 
 def colormap(np.ndarray[DOUBLE, ndim=1] values, vmin=None, vmax=None, cmap=None, alpha=None):
     N = values.size
@@ -309,6 +439,11 @@ def colormap(np.ndarray[DOUBLE, ndim=1] values, vmin=None, vmax=None, cmap=None,
         out[:, 3] = alpha
     return out
 
+
+
+# -------------------------------------------------------------------------------------------------
+# App
+# -------------------------------------------------------------------------------------------------
 
 cdef class App:
 
@@ -364,67 +499,9 @@ cdef class App:
 
 
 
-cdef _get_ev_args(cv.DvzEvent c_ev):
-    cdef float* fvalue
-    cdef int* ivalue
-    cdef bint* bvalue
-    dt = c_ev.type
-    if dt == cv.DVZ_EVENT_GUI:
-        if c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_SLIDER_FLOAT:
-            fvalue = <float*>c_ev.u.g.control.value
-            return (fvalue[0],)
-        elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_SLIDER_INT:
-            ivalue = <int*>c_ev.u.g.control.value
-            return (ivalue[0],)
-        elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_CHECKBOX:
-            bvalue = <bint*>c_ev.u.g.control.value
-            return (bvalue[0],)
-        elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_BUTTON:
-            bvalue = <bint*>c_ev.u.g.control.value
-            return (bvalue[0],)
-    return ()
-
-
-
-cdef _wrapped_callback(cv.DvzCanvas* c_canvas, cv.DvzEvent c_ev):
-    cdef object tup
-    if c_ev.user_data != NULL:
-        tup = <object>c_ev.user_data
-
-        # For each type of event, get the arguments to the function
-        ev_args = _get_ev_args(c_ev)
-
-        f, args = tup
-
-        # This is the control type the callback was registered for.
-        callback_control_type = args[0] if args else None
-
-        # NOTE: only call the callback if the raised GUI event is for that control.
-        dt = c_ev.type
-        if dt == cv.DVZ_EVENT_GUI:
-            if c_ev.u.g.control.type != callback_control_type:
-                return
-
-        try:
-            f(*ev_args)
-        except Exception as e:
-            print("Error: %s" % e)
-
-
-
-cdef _add_event_callback(cv.DvzCanvas* c_canvas, cv.DvzEventType evtype, double param, f, args):
-    cdef void* ptr_to_obj
-    tup = (f, args)
-
-    # IMPORTANT: need to either keep a reference of this tuple object somewhere in the class,
-    # or increase the ref, otherwise this tuple will be deleted by the time we call it in the
-    # C callback function.
-    Py_INCREF(tup)
-
-    ptr_to_obj = <void*>tup
-    cv.dvz_event_callback(c_canvas, evtype, param, cv.DVZ_EVENT_MODE_ASYNC, <cv.DvzEventCallback>_wrapped_callback, ptr_to_obj)
-
-
+# -------------------------------------------------------------------------------------------------
+# Canvas
+# -------------------------------------------------------------------------------------------------
 
 cdef class Canvas:
 
@@ -527,6 +604,11 @@ cdef class Canvas:
     #     _add_frame_callback(self._c_canvas, self._wrap_mouse(f), (self,))
 
 
+
+# -------------------------------------------------------------------------------------------------
+# Panel
+# -------------------------------------------------------------------------------------------------
+
 cdef class Panel:
 
     cdef cv.DvzScene* _c_scene
@@ -557,42 +639,9 @@ cdef class Panel:
 
 
 
-def _get_prop_info(visual_type, prop_name):
-    c_prop, dt, nc = _PROPS[prop_name]
-
-    # HACK: special cases
-    if prop_name == 'length':
-        if visual_type == 'axes':
-            # tick length
-            dt = np.float32
-        elif visual_type == 'volume':
-            # Box size: vec3
-            dt = np.float32
-            nc = 3
-    elif prop_name == 'texcoords':
-        if 'volume' in visual_type:
-            nc = 3
-
-    assert nc > 0
-    assert dt
-    assert c_prop > 0
-    return c_prop, dt, nc
-
-
-def _validate_data(dt, nc, data):
-    data = data.astype(dt)
-    if not data.flags['C_CONTIGUOUS']:
-        data = np.ascontiguousarray(data)
-    if data.ndim == 1:
-        if nc == 1:
-            data = data[:, np.newaxis]
-        elif nc == len(data):
-            data = data[np.newaxis, :]
-    assert data.ndim == 2, f"Incorrect array dimension {data.shape}, nc={nc}"
-    assert data.shape[1] == nc, f"Incorrect array shape {data.shape} instead of {nc}"
-    return data
-
-
+# -------------------------------------------------------------------------------------------------
+# Visual
+# -------------------------------------------------------------------------------------------------
 
 cdef class Visual:
     cdef cv.DvzPanel* _c_panel
@@ -711,6 +760,10 @@ cdef class Visual:
         cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
 
 
+
+# -------------------------------------------------------------------------------------------------
+# GUI
+# -------------------------------------------------------------------------------------------------
 
 cdef class Gui:
     cdef cv.DvzCanvas* _c_canvas
