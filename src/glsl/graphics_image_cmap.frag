@@ -17,7 +17,9 @@ layout(location = 0) out vec4 out_color;
 
 void main()
 {
-    // // Fetch the value from the texture.
+    CLIP
+
+    // Fetch the value from the texture.
     float value = texture(tex, in_uv).r; // we assume the texture format rescales in [0, 1]
     float v0 = params.vrange.x;
     float v1 = params.vrange.y;

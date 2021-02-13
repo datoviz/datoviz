@@ -392,8 +392,10 @@ This is a handy checklist for developers when adding new graphics to the library
 * `vklite.h`:
     * Make sure the `DvzGraphicsType` enum exists, or create a new one
 * Shaders: `graphics_xxx.vert|frag`:
+    * Don't forget to import `common.glsl` in all shaders
     * The first user binding should be params, should match exactly the struct
-    * Tther bindings should me numbered with USER_BINDING+1 etc
+    * The next bindings should be numbered with USER_BINDING+1 etc
+    * The body of the main fragment shader function should always begin with `CLIP`
 * `graphics.c`:
     * Add new section, with `_graphics_xxx()` and `_graphics_xxx_callback()` if there is a non-default graphics callback function
     * Write the main graphics function

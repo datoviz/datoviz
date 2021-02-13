@@ -26,6 +26,8 @@ layout (location = 0) out vec4 out_color;
 const float eps = .00001;
 
 void main() {
+    CLIP
+
     if (in_clip < -eps)
         discard;
 

@@ -22,6 +22,8 @@ layout(location = 0) out vec4 out_color;
 
 void main()
 {
+    CLIP
+
     // Fetch the value from the texture.
     float value = params.scale * texture(tex, in_uvw).r;
 

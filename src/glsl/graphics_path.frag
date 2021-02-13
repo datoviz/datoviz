@@ -29,8 +29,7 @@ layout (location = 0) out vec4 out_color;
 
 
 void main() {
-    // out_color = vec4(1,1,0,1);
-    // return;
+    CLIP
 
     float distance = in_texcoord.y;
     vec4 color = in_color;

@@ -15,6 +15,8 @@ layout (location = 0) in vec2 in_uv;
 layout (location = 0) out vec4 out_color;
 
 void main() {
+    CLIP
+
     out_color = vec4(0);
     if (params.tex_coefs.x > 0)
         out_color += params.tex_coefs.x * texture(tex_0, in_uv);

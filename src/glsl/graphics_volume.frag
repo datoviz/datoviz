@@ -54,6 +54,8 @@ vec4 fetch_color(vec3 uvw) {
 
 void main()
 {
+    CLIP
+
     mat4 mi = inverse(mvp.model);
     vec3 u = (mi * vec4(normalize(in_ray), 1)).xyz;
     vec3 o = (mi * vec4(-mvp.view[3].xyz, 1)).xyz;
