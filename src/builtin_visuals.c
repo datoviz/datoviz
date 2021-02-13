@@ -930,9 +930,9 @@ static void _visual_image(DvzVisual* visual)
         prop, 0, offsetof(DvzGraphicsImageParams, tex_coefs), DVZ_ARRAY_COPY_SINGLE, 1);
     dvz_visual_prop_default(prop, (vec4[]){{1, 0, 0, 0}});
 
-    // Texture props.
-    for (uint32_t i = 0; i < 4; i++)
-        dvz_visual_prop(visual, DVZ_PROP_IMAGE, i, DVZ_DTYPE_CHAR, DVZ_SOURCE_TYPE_IMAGE, i);
+    // // Texture props.
+    // for (uint32_t i = 0; i < 4; i++)
+    //     dvz_visual_prop(visual, DVZ_PROP_IMAGE, i, DVZ_DTYPE_CHAR, DVZ_SOURCE_TYPE_IMAGE, i);
 
     // Baking function.
     dvz_visual_callback_bake(visual, _visual_image_bake);
@@ -998,8 +998,8 @@ static void _visual_image_cmap(DvzVisual* visual)
     DvzColormap cmap = DVZ_CMAP_VIRIDIS;
     dvz_visual_prop_default(prop, &cmap);
 
-    // Texture prop.
-    dvz_visual_prop(visual, DVZ_PROP_IMAGE, 0, DVZ_DTYPE_CHAR, DVZ_SOURCE_TYPE_IMAGE, 0);
+    // // Texture prop.
+    // dvz_visual_prop(visual, DVZ_PROP_IMAGE, 0, DVZ_DTYPE_CHAR, DVZ_SOURCE_TYPE_IMAGE, 0);
 
     // Baking function.
     dvz_visual_callback_bake(visual, _visual_image_bake);
@@ -1580,9 +1580,9 @@ static void _visual_mesh(DvzVisual* visual)
     dvz_visual_prop_copy(
         prop, 4, offsetof(DvzGraphicsMeshParams, clip_coefs), DVZ_ARRAY_COPY_SINGLE, 1);
 
-    // Texture props.
-    for (uint32_t i = 0; i < 4; i++)
-        dvz_visual_prop(visual, DVZ_PROP_IMAGE, i, DVZ_DTYPE_UINT, DVZ_SOURCE_TYPE_IMAGE, i);
+    // // Texture props.
+    // for (uint32_t i = 0; i < 4; i++)
+    //     dvz_visual_prop(visual, DVZ_PROP_IMAGE, i, DVZ_DTYPE_UINT, DVZ_SOURCE_TYPE_IMAGE, i);
 
     dvz_visual_callback_bake(visual, _mesh_bake);
 }
@@ -1707,12 +1707,12 @@ static void _visual_volume(DvzVisual* visual)
     dvz_visual_prop_default(prop, &cmap);
 
 
-    // Colormap texture prop.
-    dvz_visual_prop(
-        visual, DVZ_PROP_COLOR_TEXTURE, 0, DVZ_DTYPE_CHAR, DVZ_SOURCE_TYPE_COLOR_TEXTURE, 0);
+    // // Colormap texture prop.
+    // dvz_visual_prop(
+    //     visual, DVZ_PROP_COLOR_TEXTURE, 0, DVZ_DTYPE_CHAR, DVZ_SOURCE_TYPE_COLOR_TEXTURE, 0);
 
-    // 3D texture prop.
-    dvz_visual_prop(visual, DVZ_PROP_VOLUME, 0, DVZ_DTYPE_CHAR, DVZ_SOURCE_TYPE_VOLUME, 0);
+    // // 3D texture prop.
+    // dvz_visual_prop(visual, DVZ_PROP_VOLUME, 0, DVZ_DTYPE_CHAR, DVZ_SOURCE_TYPE_VOLUME, 0);
 
     // Baking function.
     dvz_visual_callback_bake(visual, _visual_volume_bake);
@@ -1871,12 +1871,12 @@ static void _visual_volume_slice(DvzVisual* visual)
 
 
 
-    // Colormap texture prop.
-    dvz_visual_prop(
-        visual, DVZ_PROP_COLOR_TEXTURE, 0, DVZ_DTYPE_CHAR, DVZ_SOURCE_TYPE_COLOR_TEXTURE, 0);
+    // // Colormap texture prop.
+    // dvz_visual_prop(
+    //     visual, DVZ_PROP_COLOR_TEXTURE, 0, DVZ_DTYPE_CHAR, DVZ_SOURCE_TYPE_COLOR_TEXTURE, 0);
 
-    // 3D texture prop.
-    dvz_visual_prop(visual, DVZ_PROP_VOLUME, 0, DVZ_DTYPE_CHAR, DVZ_SOURCE_TYPE_VOLUME, 0);
+    // // 3D texture prop.
+    // dvz_visual_prop(visual, DVZ_PROP_VOLUME, 0, DVZ_DTYPE_CHAR, DVZ_SOURCE_TYPE_VOLUME, 0);
 
     // Baking function.
     dvz_visual_callback_bake(visual, _visual_volume_slice_bake);
