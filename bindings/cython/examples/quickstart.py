@@ -41,23 +41,32 @@ visual.data('ms', ms)
 gui = c.gui("hello world")
 
 # We add a control, a slider controlling a float between 0 and 1 (by default)
+
+
 @gui.control("slider_float", "my float slider")
 def on_change(value):
     # Every time the slider value changes, we update the marker size
     visual.data('ms', ms * value)
 
+
 # We add another control, a slider controlling an int between 1 and 4
 cmaps = ['viridis', 'cividis', 'autumn', 'winter']
+
+
 @gui.control("slider_int", "my int slider", vmin=0, vmax=3)
 def on_change(value):
-    color = colormap(color_values, vmin=0, vmax=1, alpha=.75 * np.ones(N), cmap=cmaps[value])
+    color = colormap(color_values, vmin=0, vmax=1,
+                     alpha=.75 * np.ones(N), cmap=cmaps[value])
     visual.data('color', color)
 
 # We add a control, a slider controlling a float between 0 and 1 (by default)
+
+
 @gui.control("button", "regenerate")
 def on_change(value):
     pos = nr.randn(N, 3)
     visual.data('pos', pos)
+
 
 # We run the main event loop, which will display the canvas until Escape is pressed or the
 # window is closed.

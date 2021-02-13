@@ -155,7 +155,8 @@ def _parse_struct(text):
     const = Keyword("const")
     dtype = Word(alphanums + "_*")
     identifier = Word(alphanums + "_[]")
-    structDecl = Group(Optional(const("const")) + dtype("dtype") + identifier("name") + SEMICOLON)
+    structDecl = Group(Optional(const("const")) +
+                       dtype("dtype") + identifier("name") + SEMICOLON)
     structList = Group(structDecl + ZeroOrMore(structDecl))
     struct = _struct('struct') + identifier("struct_name") + LBRACE + \
         structList("names") + RBRACE + SEMICOLON

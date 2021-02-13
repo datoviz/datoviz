@@ -70,6 +70,11 @@ cdef extern from "<datoviz/datoviz.h>":
         DvzGrid* grid
         DvzDataCoords data_coords
 
+    ctypedef struct DvzProp:
+        DvzPropType prop_type
+        uint32_t prop_idx
+        DvzDataType dtype
+
     ctypedef struct DvzVisual:
         DvzCanvas* canvas
         DvzPanel* panel
@@ -1095,6 +1100,7 @@ cdef extern from "<datoviz/datoviz.h>":
     void dvz_visual_data(DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx, uint32_t count, const void* data)
     void dvz_visual_data_source(DvzVisual* visual, DvzSourceType source_type, uint32_t source_idx, uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data)
     void dvz_visual_texture(DvzVisual* visual, DvzSourceType source_type, uint32_t source_idx, DvzTexture* texture)
+    DvzProp* dvz_prop_get(DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx)
 
     # from file: vklite.h
     DvzApp* dvz_app(DvzBackend backend)

@@ -104,23 +104,64 @@ _TRANSPOSES = {
 }
 
 _PROPS = {
-    'pos': (cv.DVZ_PROP_POS, np.float64, 3),
-    'color': (cv.DVZ_PROP_COLOR, np.uint8, 4),
-    'alpha': (cv.DVZ_PROP_ALPHA, np.float32, 1),
-    'ms': (cv.DVZ_PROP_MARKER_SIZE, np.float32, 1),
-    'marker_type': (cv.DVZ_PROP_MARKER_TYPE, np.int32, 1),
-    'normal': (cv.DVZ_PROP_NORMAL, np.float32, 3),
-    'texcoords': (cv.DVZ_PROP_TEXCOORDS, np.float32, 2), # sometimes 3, for 3D textures
-    'index': (cv.DVZ_PROP_INDEX, np.uint32, 1),
-    'length': (cv.DVZ_PROP_LENGTH, np.uint32, 1),  # various possibilities depending on the visual
-    'light_params': (cv.DVZ_PROP_LIGHT_PARAMS, np.float32, 4),
-    'light_pos': (cv.DVZ_PROP_LIGHT_POS, np.float32, 3),
-    'texcoefs': (cv.DVZ_PROP_TEXCOEFS, np.float32, 4),
-    'linewidth': (cv.DVZ_PROP_LINE_WIDTH, np.float32, 1),
-    'colormap': (cv.DVZ_PROP_COLORMAP, np.uint32, 3),
-    'transferx': (cv.DVZ_PROP_TRANSFER_X, np.float32, 4),
-    'transfery': (cv.DVZ_PROP_TRANSFER_Y, np.float32, 4),
-    'clip': (cv.DVZ_PROP_CLIP, np.float32, 4),
+    'pos': cv.DVZ_PROP_POS,
+    'color': cv.DVZ_PROP_COLOR,
+    'alpha': cv.DVZ_PROP_ALPHA,
+    'ms': cv.DVZ_PROP_MARKER_SIZE,
+    'marker_type': cv.DVZ_PROP_MARKER_TYPE,
+    'normal': cv.DVZ_PROP_NORMAL,
+    'texcoords': cv.DVZ_PROP_TEXCOORDS,
+    'index': cv.DVZ_PROP_INDEX,
+    'length': cv.DVZ_PROP_LENGTH,
+    'light_params': cv.DVZ_PROP_LIGHT_PARAMS,
+    'light_pos': cv.DVZ_PROP_LIGHT_POS,
+    'texcoefs': cv.DVZ_PROP_TEXCOEFS,
+    'linewidth': cv.DVZ_PROP_LINE_WIDTH,
+    'colormap': cv.DVZ_PROP_COLORMAP,
+    'transferx': cv.DVZ_PROP_TRANSFER_X,
+    'transfery': cv.DVZ_PROP_TRANSFER_Y,
+    'clip': cv.DVZ_PROP_CLIP,
+}
+
+_DTYPES = {
+    cv.DVZ_DTYPE_CHAR: (np.uint8, 1),
+    cv.DVZ_DTYPE_CVEC2: (np.uint8, 2),
+    cv.DVZ_DTYPE_CVEC3: (np.uint8, 3),
+    cv.DVZ_DTYPE_CVEC4: (np.uint8, 4),
+
+    cv.DVZ_DTYPE_USHORT: (np.uint16, 1),
+    cv.DVZ_DTYPE_USVEC2: (np.uint16, 2),
+    cv.DVZ_DTYPE_USVEC3: (np.uint16, 3),
+    cv.DVZ_DTYPE_USVEC4: (np.uint16, 4),
+
+    cv.DVZ_DTYPE_SHORT: (np.int16, 1),
+    cv.DVZ_DTYPE_SVEC2: (np.int16, 2),
+    cv.DVZ_DTYPE_SVEC3: (np.int16, 3),
+    cv.DVZ_DTYPE_SVEC4: (np.int16, 4),
+
+    cv.DVZ_DTYPE_UINT: (np.uint32, 1),
+    cv.DVZ_DTYPE_UVEC2: (np.uint32, 2),
+    cv.DVZ_DTYPE_UVEC3: (np.uint32, 3),
+    cv.DVZ_DTYPE_UVEC4: (np.uint32, 4),
+
+    cv.DVZ_DTYPE_INT: (np.int32, 1),
+    cv.DVZ_DTYPE_IVEC2: (np.int32, 2),
+    cv.DVZ_DTYPE_IVEC3: (np.int32, 3),
+    cv.DVZ_DTYPE_IVEC4: (np.int32, 4),
+
+    cv.DVZ_DTYPE_FLOAT: (np.float32, 1),
+    cv.DVZ_DTYPE_VEC2: (np.float32, 2),
+    cv.DVZ_DTYPE_VEC3: (np.float32, 3),
+    cv.DVZ_DTYPE_VEC4: (np.float32, 4),
+
+    cv.DVZ_DTYPE_DOUBLE: (np.double, 1),
+    cv.DVZ_DTYPE_DVEC2: (np.double, 2),
+    cv.DVZ_DTYPE_DVEC3: (np.double, 3),
+    cv.DVZ_DTYPE_DVEC4: (np.double, 4),
+
+    cv.DVZ_DTYPE_MAT2: (np.float32, (2, 2)),
+    cv.DVZ_DTYPE_MAT3: (np.float32, (3, 3)),
+    cv.DVZ_DTYPE_MAT4: (np.float32, (4, 4)),
 }
 
 _TRANSFORMS = {
@@ -320,39 +361,19 @@ def _get_prop(name):
 # Util functions
 # -------------------------------------------------------------------------------------------------
 
-def _get_prop_info(visual_type, prop_name):
-    c_prop, dt, nc = _PROPS[prop_name]
-
-    # HACK: special cases
-    if prop_name == 'length':
-        if visual_type == 'axes':
-            # tick length
-            dt = np.float32
-        elif visual_type == 'volume':
-            # Box size: vec3
-            dt = np.float32
-            nc = 3
-    elif prop_name == 'texcoords':
-        if 'volume' in visual_type:
-            nc = 3
-
-    assert nc > 0
-    assert dt
-    assert c_prop > 0
-    return c_prop, dt, nc
-
-
 def _validate_data(dt, nc, data):
     data = data.astype(dt)
     if not data.flags['C_CONTIGUOUS']:
         data = np.ascontiguousarray(data)
-    if data.ndim == 1:
-        if nc == 1:
-            data = data[:, np.newaxis]
-        elif nc == len(data):
-            data = data[np.newaxis, :]
-    assert data.ndim == 2, f"Incorrect array dimension {data.shape}, nc={nc}"
-    assert data.shape[1] == nc, f"Incorrect array shape {data.shape} instead of {nc}"
+    if not hasattr(nc, '__len__'):
+        nc = (nc,)
+    nd = len(nc)  # expected dimension of the data - 1
+    if len(nc) == 1 and data.ndim == 1:
+        data = data.reshape((-1, 1))
+    if data.ndim < nd + 1:
+        data = data[np.newaxis, :]
+    assert data.ndim == nd + 1, f"Incorrect array dimension {data.shape}, nc={nc}"
+    assert data.shape[1:] == nc, f"Incorrect array shape {data.shape} instead of {nc}"
     return data
 
 
@@ -656,12 +677,12 @@ cdef class Visual:
         self.vtype = vtype
 
     def data(self, name, np.ndarray value, idx=0):
-        # Validate the data.
-        c_prop, dt, nc = _get_prop_info(self.vtype, name)
-        value = _validate_data(dt, nc, value)
+        prop_type = _get_prop(name)
+        c_prop = cv.dvz_prop_get(self._c_visual, prop_type, idx)
+        dtype, nc = _DTYPES[c_prop.dtype]
+        value = _validate_data(dtype, nc, value)
         N = value.shape[0]
-        nd = value.shape[1]
-        cv.dvz_visual_data(self._c_visual, c_prop, idx, N, &value.data[0])
+        cv.dvz_visual_data(self._c_visual, prop_type, idx, N, &value.data[0])
 
     def image(self, np.ndarray[CHAR, ndim=3] value, int idx=0, filtering=None):
         assert value.ndim == 3
