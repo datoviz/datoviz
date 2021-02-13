@@ -350,7 +350,14 @@ _FORMATS = {
 }
 
 _EVENTS ={
-    'mouse': cv.DVZ_EVENT_MOUSE_MOVE,
+    'mouse_button': cv.DVZ_EVENT_MOUSE_BUTTON,
+    'mouse_move': cv.DVZ_EVENT_MOUSE_MOVE,
+    'mouse_wheel': cv.DVZ_EVENT_MOUSE_WHEEL,
+    'mouse_drag_begin': cv.DVZ_EVENT_MOUSE_DRAG_BEGIN,
+    'mouse_drag_end': cv.DVZ_EVENT_MOUSE_DRAG_END,
+    'mouse_click': cv.DVZ_EVENT_MOUSE_CLICK,
+    'mouse_double_click': cv.DVZ_EVENT_MOUSE_DOUBLE_CLICK,
+    'key': cv.DVZ_EVENT_KEY,
     'frame': cv.DVZ_EVENT_FRAME,
     'timer': cv.DVZ_EVENT_TIMER,
     'gui': cv.DVZ_EVENT_GUI,
@@ -401,6 +408,29 @@ def _validate_data(dt, nc, data):
     return data
 
 
+
+cdef _get_ev_args(cv.DvzEvent c_ev):
+    cdef float* fvalue
+    cdef int* ivalue
+    cdef bint* bvalue
+    dt = c_ev.type
+    if dt == cv.DVZ_EVENT_GUI:
+        if c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_SLIDER_FLOAT:
+            fvalue = <float*>c_ev.u.g.control.value
+            return (fvalue[0],)
+        elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_SLIDER_INT:
+            ivalue = <int*>c_ev.u.g.control.value
+            return (ivalue[0],)
+        elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_CHECKBOX:
+            bvalue = <bint*>c_ev.u.g.control.value
+            return (bvalue[0],)
+        elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_BUTTON:
+            bvalue = <bint*>c_ev.u.g.control.value
+            return (bvalue[0],)
+    return ()
+
+
+
 cdef _wrapped_callback(cv.DvzCanvas* c_canvas, cv.DvzEvent c_ev):
     cdef object tup
     if c_ev.user_data != NULL:
@@ -438,28 +468,6 @@ cdef _add_event_callback(cv.DvzCanvas* c_canvas, cv.DvzEventType evtype, double 
 
     ptr_to_obj = <void*>tup
     cv.dvz_event_callback(c_canvas, evtype, param, cv.DVZ_EVENT_MODE_ASYNC, <cv.DvzEventCallback>_wrapped_callback, ptr_to_obj)
-
-
-
-cdef _get_ev_args(cv.DvzEvent c_ev):
-    cdef float* fvalue
-    cdef int* ivalue
-    cdef bint* bvalue
-    dt = c_ev.type
-    if dt == cv.DVZ_EVENT_GUI:
-        if c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_SLIDER_FLOAT:
-            fvalue = <float*>c_ev.u.g.control.value
-            return (fvalue[0],)
-        elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_SLIDER_INT:
-            ivalue = <int*>c_ev.u.g.control.value
-            return (ivalue[0],)
-        elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_CHECKBOX:
-            bvalue = <bint*>c_ev.u.g.control.value
-            return (bvalue[0],)
-        elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_BUTTON:
-            bvalue = <bint*>c_ev.u.g.control.value
-            return (bvalue[0],)
-    return ()
 
 
 
