@@ -3,10 +3,15 @@
 
 """
 
+from pathlib import Path
 import numpy as np
 import numpy.random as nr
+import imageio
+
 
 from datoviz import canvas, run, colormap
+
+ROOT = Path(__file__).parent.parent.parent.parent
 
 c = canvas(show_fps=True)
 panel = c.panel(controller='panzoom')
@@ -23,20 +28,20 @@ visual.data('texcoords', np.atleast_2d([1, 0]), idx=1)
 visual.data('texcoords', np.atleast_2d([1, 1]), idx=2)
 visual.data('texcoords', np.atleast_2d([0, 1]), idx=3)
 
-n = 256
-
 # First texture.
-img = nr.randint(low=0, high=255, size=(n, n, 4)).astype(np.uint8)
-img[:, :, 3] = 255
+img = imageio.imread(ROOT / 'data/textures/earth.jpg')
+img = np.dstack((img, 255 * np.ones(img.shape[:2])))
+img = np.transpose(img, (1, 0, 2))
+img = img.astype(np.uint8)
 visual.image(img, filtering='nearest', idx=0)
 
 # Second texture.
+n = 256
 t = np.linspace(-1, +1, n)
 x, y = np.meshgrid(t, t)
-z = np.exp(-x * x - y * y)
+z = np.exp(-2 * (x * x + y * y))
 z = (z * 255).astype(np.uint8)
-img[:, :, :3] = z[..., np.newaxis]
-img[:, :, 3] = 255
+img = np.dstack((z, z, z, 255 * np.ones_like(z))).astype(np.uint8)
 visual.image(img, filtering='nearest', idx=1)
 
 visual.data('texcoefs', np.array([1, .5, 0, 0]).astype(np.float32))

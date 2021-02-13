@@ -790,20 +790,20 @@ cdef class Visual:
         tex.set_filter(filtering)
         return tex
 
-    # def load_obj(self, unicode path, compute_normals=False):
-    #     # TODO: check that it is a mesh visual
+    def load_obj(self, unicode path, compute_normals=False):
+        # TODO: check that it is a mesh visual
 
-    #     cdef cv.DvzMesh mesh = cv.dvz_mesh_obj(path);
+        cdef cv.DvzMesh mesh = cv.dvz_mesh_obj(path);
 
-    #     if compute_normals:
-    #         print("computing normals")
-    #         cv.dvz_mesh_normals(&mesh)
+        if compute_normals:
+            print("computing normals")
+            cv.dvz_mesh_normals(&mesh)
 
-    #     nv = mesh.vertices.item_count;
-    #     ni = mesh.indices.item_count;
+        nv = mesh.vertices.item_count;
+        ni = mesh.indices.item_count;
 
-    #     cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
-    #     cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
+        cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
+        cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
 
     # def surface(
     #     self, np.ndarray[DOUBLE, ndim=2] x, np.ndarray[DOUBLE, ndim=2] y, np.ndarray[DOUBLE, ndim=2] z,
