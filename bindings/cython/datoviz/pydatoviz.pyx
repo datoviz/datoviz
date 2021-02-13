@@ -790,51 +790,6 @@ cdef class Visual:
         tex.set_filter(filtering)
         return tex
 
-    # def image(self, np.ndarray[CHAR, ndim=3] value, int idx=0, filtering=None):
-    #     assert value.ndim == 3
-    #     assert value.shape[2] == 4
-    #     cdef cv.uvec3 shape
-    #     shape[0] = value.shape[0]
-    #     shape[1] = value.shape[1]
-    #     shape[2] = 1
-    #     cdef size = value.size
-    #     cdef item_size = np.dtype(value.dtype).itemsize
-    #     assert item_size == 1
-
-    #     # TODO: choose format as a function of the array dtype
-    #     texture = cv.dvz_ctx_texture(self._c_context, 2, shape, cv.VK_FORMAT_R8G8B8A8_UNORM)
-
-    #     cdef cv.VkFilter fil = cv.VK_FILTER_NEAREST
-    #     if filtering is None or filtering == 'nearest':
-    #         fil = cv.VK_FILTER_NEAREST
-    #     elif filtering == 'linear':
-    #         fil = cv.VK_FILTER_LINEAR
-
-    #     cv.dvz_texture_filter(texture, cv.DVZ_FILTER_MIN, fil);
-    #     cv.dvz_texture_filter(texture, cv.DVZ_FILTER_MAG, fil);
-
-    #     cdef cv.uvec3 DVZ_ZERO_OFFSET = [0, 0, 0]
-    #     cv.dvz_texture_upload(texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, size * item_size, &value.data[0])
-    #     cv.dvz_visual_texture(self._c_visual, cv.DVZ_SOURCE_TYPE_IMAGE, idx, texture)
-
-    # def volume(self, np.ndarray value, idx=0):
-    #     assert value.ndim == 3
-    #     # TODO: choose format as a function of the array dtype
-    #     cdef cv.uvec3 shape
-    #     shape[0] = value.shape[0]
-    #     shape[1] = value.shape[1]
-    #     shape[2] = value.shape[2]
-    #     cdef size = value.size
-    #     cdef item_size = np.dtype(value.dtype).itemsize
-
-    #     # TODO: choose format as a function of the NumPy dtype
-    #     texture = cv.dvz_ctx_texture(self._c_context, 3, shape, cv.VK_FORMAT_R16_UNORM)
-    #     cv.dvz_texture_filter(texture, cv.DVZ_FILTER_MAG, cv.VK_FILTER_LINEAR);
-
-    #     cdef cv.uvec3 DVZ_ZERO_OFFSET = [0, 0, 0]
-    #     cv.dvz_texture_upload(texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, size * item_size, &value.data[0])
-    #     cv.dvz_visual_texture(self._c_visual, cv.DVZ_SOURCE_TYPE_VOLUME, idx, texture)
-
     # def load_obj(self, unicode path, compute_normals=False):
     #     # TODO: check that it is a mesh visual
 
