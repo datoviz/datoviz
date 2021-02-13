@@ -416,6 +416,7 @@ cdef _get_ev_args(cv.DvzEvent c_ev):
     cdef int* ivalue
     cdef bint* bvalue
     dt = c_ev.type
+    # GUI events.
     if dt == cv.DVZ_EVENT_GUI:
         if c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_SLIDER_FLOAT:
             fvalue = <float*>c_ev.u.g.control.value
@@ -429,6 +430,26 @@ cdef _get_ev_args(cv.DvzEvent c_ev):
         elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_BUTTON:
             bvalue = <bint*>c_ev.u.g.control.value
             return (bvalue[0],)
+    # Key events.
+    elif dt == cv.DVZ_EVENT_KEY_PRESS or dt == cv.DVZ_EVENT_KEY_RELEASE:
+        key_code = c_ev.u.k.key_code
+        modifiers = c_ev.u.k.modifiers
+        return (key_code, modifiers)
+    # Mouse button events.
+    elif dt == cv.DVZ_EVENT_MOUSE_PRESS or dt == cv.DVZ_EVENT_MOUSE_RELEASE:
+        button = c_ev.u.b.button
+        modifiers = c_ev.u.b.modifiers
+        return (button, modifiers)
+    # Mouse move event.
+    elif dt == cv.DVZ_EVENT_MOUSE_MOVE:
+        x = c_ev.u.m.pos[0]
+        y = c_ev.u.m.pos[1]
+        return (x, y)
+    # Mouse wheel event.
+    elif dt == cv.DVZ_EVENT_MOUSE_WHEEL:
+        dx = c_ev.u.w.dir[0]
+        dy = c_ev.u.w.dir[1]
+        return (dx, dy)
     return ()
 
 
@@ -628,35 +649,6 @@ cdef class Canvas:
         cdef cv.DvzEventType evtype
         evtype = _EVENTS.get(evtype_py, 0)
         _add_event_callback(self._c_canvas, evtype, param, f, ())
-
-    # def _wrap_keyboard(self, f):
-    #     @wraps(f)
-    #     def wrapped(c):
-    #         cdef cv.DvzKeyboard* keyboard
-    #         cdef cv.DvzKey key
-    #         keyboard = cv.dvz_event_keyboard(self._c_canvas)
-    #         key = keyboard.key
-    #         if keyboard.cur_state != cv.DVZ_KEYBOARD_STATE_CAPTURE and key not in _EXCLUDED_KEYS:
-    #             # TODO: modifiers
-    #             f(_key_name(key))
-    #     return wrapped
-
-    # def _wrap_mouse(self, f):
-    #     @wraps(f)
-    #     def wrapped(c):
-    #         cdef cv.DvzMouse* mouse
-    #         mouse = cv.dvz_event_mouse(self._c_canvas)
-    #         button = _button_name(mouse.button)
-    #         pos = tuple(mouse.cur_pos)
-    #         info = {'state': _mouse_state(mouse.cur_state)}
-    #         f(button, pos, **info)
-    #     return wrapped
-
-    # def on_key(self, f):
-    #     _add_frame_callback(self._c_canvas, self._wrap_keyboard(f), (self,))
-
-    # def on_mouse(self, f):
-    #     _add_frame_callback(self._c_canvas, self._wrap_mouse(f), (self,))
 
 
 
