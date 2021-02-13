@@ -43,41 +43,57 @@ DEFAULT_HEIGHT = 768
 
 # TODO: add more keys
 _KEYS = {
-    # cv.DVZ_KEY_LEFT: 'left',
-    # cv.DVZ_KEY_RIGHT: 'right',
-    # cv.DVZ_KEY_UP: 'up',
-    # cv.DVZ_KEY_DOWN: 'down',
-    # cv.DVZ_KEY_HOME: 'home',
-    # cv.DVZ_KEY_END: 'end',
-    # cv.DVZ_KEY_KP_ADD: '+',
-    # cv.DVZ_KEY_KP_SUBTRACT: '-',
-    # cv.DVZ_KEY_G: 'g',
+    cv.DVZ_KEY_LEFT: 'left',
+    cv.DVZ_KEY_RIGHT: 'right',
+    cv.DVZ_KEY_UP: 'up',
+    cv.DVZ_KEY_DOWN: 'down',
+    cv.DVZ_KEY_HOME: 'home',
+    cv.DVZ_KEY_END: 'end',
+    cv.DVZ_KEY_KP_ADD: '+',
+    cv.DVZ_KEY_KP_SUBTRACT: '-',
+    cv.DVZ_KEY_G: 'g',
 }
 
 # HACK: these keys do not raise a Python key event
 _EXCLUDED_KEYS = (
-    # cv.DVZ_KEY_NONE,
-    # cv.DVZ_KEY_LEFT_SHIFT,
-    # cv.DVZ_KEY_LEFT_CONTROL,
-    # cv.DVZ_KEY_LEFT_ALT,
-    # cv.DVZ_KEY_LEFT_SUPER,
-    # cv.DVZ_KEY_RIGHT_SHIFT,
-    # cv.DVZ_KEY_RIGHT_CONTROL,
-    # cv.DVZ_KEY_RIGHT_ALT,
-    # cv.DVZ_KEY_RIGHT_SUPER,
+    cv.DVZ_KEY_NONE,
+    cv.DVZ_KEY_LEFT_SHIFT,
+    cv.DVZ_KEY_LEFT_CONTROL,
+    cv.DVZ_KEY_LEFT_ALT,
+    cv.DVZ_KEY_LEFT_SUPER,
+    cv.DVZ_KEY_RIGHT_SHIFT,
+    cv.DVZ_KEY_RIGHT_CONTROL,
+    cv.DVZ_KEY_RIGHT_ALT,
+    cv.DVZ_KEY_RIGHT_SUPER,
 )
 
 _BUTTONS = {
-    # cv.DVZ_MOUSE_BUTTON_LEFT: 'left',
-    # cv.DVZ_MOUSE_BUTTON_MIDDLE: 'middle',
-    # cv.DVZ_MOUSE_BUTTON_RIGHT: 'right',
+    cv.DVZ_MOUSE_BUTTON_LEFT: 'left',
+    cv.DVZ_MOUSE_BUTTON_MIDDLE: 'middle',
+    cv.DVZ_MOUSE_BUTTON_RIGHT: 'right',
 }
 
-_MOUSE_STATES = {
-    # cv.DVZ_MOUSE_STATE_DRAG: 'drag',
-    # cv.DVZ_MOUSE_STATE_WHEEL: 'wheel',
-    # cv.DVZ_MOUSE_STATE_CLICK: 'click',
-    # cv.DVZ_MOUSE_STATE_DOUBLE_CLICK: 'double_click',
+# _MOUSE_STATES = {
+#     cv.DVZ_MOUSE_STATE_DRAG: 'drag',
+#     cv.DVZ_MOUSE_STATE_WHEEL: 'wheel',
+#     cv.DVZ_MOUSE_STATE_CLICK: 'click',
+#     cv.DVZ_MOUSE_STATE_DOUBLE_CLICK: 'double_click',
+# }
+
+_EVENTS ={
+    'mouse_press': cv.DVZ_EVENT_MOUSE_PRESS,
+    'mouse_release': cv.DVZ_EVENT_MOUSE_RELEASE,
+    'mouse_move': cv.DVZ_EVENT_MOUSE_MOVE,
+    'mouse_wheel': cv.DVZ_EVENT_MOUSE_WHEEL,
+    'mouse_drag_begin': cv.DVZ_EVENT_MOUSE_DRAG_BEGIN,
+    'mouse_drag_end': cv.DVZ_EVENT_MOUSE_DRAG_END,
+    'mouse_click': cv.DVZ_EVENT_MOUSE_CLICK,
+    'mouse_double_click': cv.DVZ_EVENT_MOUSE_DOUBLE_CLICK,
+    'key_press': cv.DVZ_EVENT_KEY_PRESS,
+    'key_release': cv.DVZ_EVENT_KEY_RELEASE,
+    'frame': cv.DVZ_EVENT_FRAME,
+    'timer': cv.DVZ_EVENT_TIMER,
+    'gui': cv.DVZ_EVENT_GUI,
 }
 
 _VISUALS = {
@@ -349,22 +365,6 @@ _FORMATS = {
     (np.dtype(np.int32), 1): cv.VK_FORMAT_R32_SINT,
 }
 
-_EVENTS ={
-    'mouse_press': cv.DVZ_EVENT_MOUSE_PRESS,
-    'mouse_release': cv.DVZ_EVENT_MOUSE_RELEASE,
-    'mouse_move': cv.DVZ_EVENT_MOUSE_MOVE,
-    'mouse_wheel': cv.DVZ_EVENT_MOUSE_WHEEL,
-    'mouse_drag_begin': cv.DVZ_EVENT_MOUSE_DRAG_BEGIN,
-    'mouse_drag_end': cv.DVZ_EVENT_MOUSE_DRAG_END,
-    'mouse_click': cv.DVZ_EVENT_MOUSE_CLICK,
-    'mouse_double_click': cv.DVZ_EVENT_MOUSE_DOUBLE_CLICK,
-    'key_press': cv.DVZ_EVENT_KEY_PRESS,
-    'key_release': cv.DVZ_EVENT_KEY_RELEASE,
-    'frame': cv.DVZ_EVENT_FRAME,
-    'timer': cv.DVZ_EVENT_TIMER,
-    'gui': cv.DVZ_EVENT_GUI,
-}
-
 _MARKER_TYPES = {
     'disc': cv.DVZ_MARKER_DISC,
     'vbar': cv.DVZ_MARKER_VBAR,
@@ -382,8 +382,8 @@ def _key_name(key):
 def _button_name(button):
     return _BUTTONS.get(button, None)
 
-def _mouse_state(state):
-    return _MOUSE_STATES.get(state, None)
+# def _mouse_state(state):
+#     return _MOUSE_STATES.get(state, None)
 
 def _get_prop(name):
     return _PROPS[name]
@@ -420,37 +420,44 @@ cdef _get_ev_args(cv.DvzEvent c_ev):
     if dt == cv.DVZ_EVENT_GUI:
         if c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_SLIDER_FLOAT:
             fvalue = <float*>c_ev.u.g.control.value
-            return (fvalue[0],)
+            return (fvalue[0],), {}
         elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_SLIDER_INT:
             ivalue = <int*>c_ev.u.g.control.value
-            return (ivalue[0],)
+            return (ivalue[0],), {}
         elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_CHECKBOX:
             bvalue = <bint*>c_ev.u.g.control.value
-            return (bvalue[0],)
+            return (bvalue[0],), {}
         elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_BUTTON:
             bvalue = <bint*>c_ev.u.g.control.value
-            return (bvalue[0],)
+            return (bvalue[0],), {}
     # Key events.
     elif dt == cv.DVZ_EVENT_KEY_PRESS or dt == cv.DVZ_EVENT_KEY_RELEASE:
         key_code = c_ev.u.k.key_code
         modifiers = c_ev.u.k.modifiers
-        return (key_code, modifiers)
+        return (key_code, modifiers), {}
     # Mouse button events.
     elif dt == cv.DVZ_EVENT_MOUSE_PRESS or dt == cv.DVZ_EVENT_MOUSE_RELEASE:
-        button = c_ev.u.b.button
+        button = _button_name(c_ev.u.b.button)
         modifiers = c_ev.u.b.modifiers
-        return (button, modifiers)
+        return (button, modifiers), {}
+    # Mouse button events.
+    elif dt == cv.DVZ_EVENT_MOUSE_CLICK or dt == cv.DVZ_EVENT_MOUSE_DOUBLE_CLICK:
+        x = c_ev.u.c.pos[0]
+        y = c_ev.u.c.pos[1]
+        button = _button_name(c_ev.u.c.button)
+        dbl = c_ev.u.c.double_click
+        return (x, y), dict(button=button)  #, double_click=dbl)
     # Mouse move event.
     elif dt == cv.DVZ_EVENT_MOUSE_MOVE:
         x = c_ev.u.m.pos[0]
         y = c_ev.u.m.pos[1]
-        return (x, y)
+        return (x, y), {}
     # Mouse wheel event.
     elif dt == cv.DVZ_EVENT_MOUSE_WHEEL:
         dx = c_ev.u.w.dir[0]
         dy = c_ev.u.w.dir[1]
-        return (dx, dy)
-    return ()
+        return (dx, dy), {}
+    return (), {}
 
 
 
@@ -460,7 +467,7 @@ cdef _wrapped_callback(cv.DvzCanvas* c_canvas, cv.DvzEvent c_ev):
         tup = <object>c_ev.user_data
 
         # For each type of event, get the arguments to the function
-        ev_args = _get_ev_args(c_ev)
+        ev_args, ev_kwargs = _get_ev_args(c_ev)
 
         f, args = tup
 
@@ -474,7 +481,7 @@ cdef _wrapped_callback(cv.DvzCanvas* c_canvas, cv.DvzEvent c_ev):
                 return
 
         try:
-            f(*ev_args)
+            f(*ev_args, **ev_kwargs)
         except Exception as e:
             print("Error: %s" % e)
 
@@ -649,6 +656,21 @@ cdef class Canvas:
         cdef cv.DvzEventType evtype
         evtype = _EVENTS.get(evtype_py, 0)
         _add_event_callback(self._c_canvas, evtype, param, f, ())
+
+    def on_mouse_move(self, f):
+        return self.connect('mouse_move', f)
+
+    def on_mouse_press(self, f):
+        return self.connect('mouse_press', f)
+
+    def on_mouse_release(self, f):
+        return self.connect('mouse_release', f)
+
+    def on_mouse_click(self, f):
+        return self.connect('mouse_click', f)
+
+    def on_mouse_move(self, f):
+        return self.connect('mouse_move', f)
 
 
 
