@@ -1,6 +1,6 @@
 # Datoviz: scientific visualization with Vulkan
 
-**Datoviz** is an open-source **high-performance interactive scientific data visualization library** leveraging the graphics processing unit (**GPU**) for speed, visual quality, and scalability. It supports both 2D and 3D rendering.
+**Datoviz** is an open-source **high-performance interactive scientific data visualization library** leveraging the graphics processing unit (**GPU**) for speed, visual quality, and scalability. It supports both 2D and 3D rendering, as well as minimal graphical user interfaces (using the Dear ImGUI library).
 
 Datoviz has been tested on Linux, macOS (Intel), and to a lesser extent, Windows. It should work on most computers, with or without a discrete GPU (but with up-to-date graphics drivers).
 
@@ -12,7 +12,7 @@ Datoviz is at an early stage of development. The library is quite usable but evo
 
 ## Screenshots
 
-TODO
+![](images/screenshots/datoviz.jpg)
 
 
 ## Documentation
@@ -30,7 +30,7 @@ The documentation is divided into:
 
 ## Features
 
-* **High-quality antialiased 2D visuals**: markers, paths, lines, text, arrows, polygons, and more (implementation from [glumpy](https://glumpy.github.io/))
+* **High-quality antialiased 2D visuals**: markers, paths, lines, text, polygons, and more (visuals originally implemented in [Glumpy](https://glumpy.github.io/))
 * **3D visuals**: meshes, surfaces, volumes
 * **Mixing 2D and 3D** plots seamlessly in the same window
 * **~150 colormaps** included (from matplotlib, colorcet, MATLAB)
@@ -41,19 +41,19 @@ The documentation is divided into:
 * **GUIs** integrated via the **Dear ImGUI** C++ library (Qt or other backends not required)
 * **Custom visuals**, with custom shaders and/or custom data transformations
 * Initial support for multiple canvases
+* Initial builtin support for screencasts and video recording with ffmpeg (optional dependency)
 * Initial support for offscreen rendering and CPU emulation via swiftshader
 
 Upcoming features:
 
-* More visuals: triangulations, planar straight-line graphs (PSLG), histograms, areas, graphs...
+* More visuals: arrows, triangulations, planar straight-line graphs (PSLG), histograms, areas, graphs...
 * Further data transformations: logarithmic, polar, basic Earth coordinate systems for geographical data
 * Colorbars
 * 3D axes
 * Mouse picking
-* Screencast and video recording with ffmpeg (optional dependency)
 * Better support of multiple GPUs
 * Qt integration
-* Continuous integration, more robust testing...
+* Continuous integration, more robust testing
 
 Long-term future (or shorter if there are community contributions):
 
@@ -90,6 +90,7 @@ Glumpy, developed by Nicolas Rougier, provides [efficient implementations of hig
 
 * [LunarG Vulkan SDK](https://www.lunarg.com/vulkan-sdk/) **(mandatory)**
 * [GLFW](https://www.glfw.org/) **(mandatory)**
+* [ffmpeg](https://ffmpeg.org/) (optional), for making live screencasts
 * [libpng](http://www.libpng.org/pub/png/libpng.html) (optional), for making PNG screenshots
 * [glslang](https://github.com/KhronosGroup/glslang) (optional), for compiling GLSL shaders to SPIR-V on the fly
 * [earcut](https://github.com/mapbox/earcut) (included), developed by Mapbox, for polygon triangulations
@@ -99,11 +100,9 @@ Glumpy, developed by Nicolas Rougier, provides [efficient implementations of hig
 * [antigrain geometry](https://en.wikipedia.org/wiki/Anti-Grain_Geometry) (GLSL implementation included)
 
 
-
 An upcoming version will also have the following dependencies:
 
 * [freetype](https://www.freetype.org/) (optional)
-* [ffmpeg](https://ffmpeg.org/) (optional)
 
 
 ### Related projects
