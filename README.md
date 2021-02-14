@@ -1,18 +1,17 @@
 # Datoviz: scientific visualization with Vulkan
 
-**Datoviz** is an open-source **high-performance interactive scientific data visualization library** leveraging the graphics processing unit (**GPU**) for speed, visual quality, and scalability. It supports both 2D and 3D rendering, as well as minimal graphical user interfaces (using the Dear ImGUI library).
-
-Datoviz has been tested on Linux, macOS (Intel), and to a lesser extent, Windows. It should work on most computers, with or without a discrete GPU (but with up-to-date graphics drivers).
+**Datoviz** is an open-source **high-performance interactive scientific data visualization library** leveraging the graphics processing unit (**GPU**) for speed, visual quality, and scalability. It supports both 2D and 3D rendering, as well as minimal graphical user interfaces (using the [Dear ImGUI library](https://github.com/ocornut/imgui)).
 
 **Written in C**, Datoviz has been designed from the group up for **performance**. It provides native **Python bindings** (based on Cython). Bindings to other languages could be developed thanks to community efforts (Julia, R, MATLAB, Rust, C#, and so on). Datoviz uses the [**Vulkan graphics API**](https://www.khronos.org/vulkan/) created by the Khronos consortium, successor of OpenGL. Supporting other modern graphics API, such as WebGPU, would constitute interesting developments.
 
 Datoviz is currently being developed mostly by [Cyrille Rossant](https://cyrille.rossant.net) at the [International Brain Laboratory](http://internationalbrainlab.org/), a consortium of neuroscience research labs around the world.
 
-Datoviz is at an early stage of development. The library is quite usable but evolves quickly. Many more features will come later and the documentation will be improved. Contributions are highly welcome!
+Datoviz is at an early stage of development. The library is quite usable but evolves quickly. Datoviz has been tested on Linux, macOS (Intel), and to a lesser extent, Windows. It should work on most computers, with or without a discrete GPU (but with up-to-date graphics drivers). Many more features will come later and the documentation will be improved. Contributions are highly welcome!
 
 ## Screenshots
 
 ![](images/screenshots/datoviz.jpg)
+*Credits: mouse brain volume: [Allen SDK](https://alleninstitute.github.io/AllenSDK/). France: [Natural Earth](https://www.naturalearthdata.com/). Molecule: [Crystal structure of S. pyogenes Cas9 from PDB](https://www.rcsb.org/structure/4cmp) (thanks to Eric for conversion to OBJ mesh). Earth: [Pixabay](https://pixabay.com/fr/illustrations/terre-planet-monde-globe-espace-1617121/). Raster plot: IBL. 3D human brain: [Anneke Alkemade et al. 2020](https://www.frontiersin.org/articles/10.3389/fnana.2020.536838/full), thanks to Pierre-Louis Bazin and Julia Huntenburg.*
 
 
 ## Documentation
@@ -21,7 +20,7 @@ The documentation is divided into:
 
 * **[Tutorials](docs/tutorials/index.md)**: install guide and first introduction to making scientific plots in Python,
 * **[Examples](docs/examples/index.md)**: gallery of screenshots and associated Python code,
-* **[How to guides](docs/howto/index.md)**: advanced topics for expert users, learning how to use C and Vulkan to make custom visuals and applications,
+* **[How to guides](docs/howto/index.md)**: advanced topics for expert users, explaining how to use C and Vulkan for making custom visuals and applications,
 * **[Reference](docs/reference/index.md)**: comprehensive list of included colormaps, visuals, and graphics,
 * **[C API reference](docs/api/index.md)**: list of all publicly available C functions,
 * **[Discussions](docs/discussions/index.md)**: explanations, Vulkan crash course, and notes.
@@ -113,6 +112,7 @@ An upcoming version will also have the following dependencies:
 * [vedo](https://github.com/marcomusy/vedo)
 * [ipygany](https://ipygany.readthedocs.io/en/latest/)
 * [ipyvolume](https://github.com/maartenbreddels/ipyvolume)
+* [Makie.jl](http://makie.juliaplots.org/stable/)
 
 
 Glossary:

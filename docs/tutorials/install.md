@@ -1,9 +1,11 @@
 # Installation
 
 !!! warning
-    Datoviz is a very young project, and as such, we don't provide compiled packages yet. Manual compilation is required. Help would be hugely appreciated for packaging.
+    Datoviz is at an early stage of development and doesn't yet provide precompiled packages. Manual compilation is required.
 
 Datoviz should work on most systems. It has been developed on Linux (Ubuntu 20.04), tested on macOS (Intel). Windows support is preliminary, help appreciated on this platform.
+
+This section describes how to compile Datoviz on different operating systems.
 
 ## Python bindings
 
@@ -38,7 +40,7 @@ The philosophy of Datoviz is to **implement all the logic and functionality in C
 * **cmake 3.16+** (build)
 * **ninja** (build)
 
-**Optional dependencies** (used as options in the next version) are:
+**Optional dependencies** are:
 
 * **freetype** (optional)
 * **libpng** (optional)
@@ -85,13 +87,13 @@ The other dependencies below are already included in the library, so **you don't
 
 6. Check that the compilation worked by running an example:
 
-    1. (TODO) `./manage.sh example`
+    1. `./manage.sh demo`
 
     Note: this will only work if Vulkan SDK's `setup-env.sh` file is source-ed in the terminal.
 
 7. Compile the Cython module: `./manage.sh cython`
 8. Export the shared library path in your environment: `source setup-env.sh`
-9. Try a Python example: `python bindings/cython/examples/test.py`
+9. Try a Python example: `python bindings/cython/examples/quickstart.py`
 
 
 
@@ -118,14 +120,14 @@ The other dependencies below are already included in the library, so **you don't
 1. `git clone --recursive git@github.com:datoviz/datoviz.git`
 2. `cd datoviz`
 3. `./manage.sh build`
-4. `./manage.sh example`
+4. `./manage.sh demo`
 
 
 #### Build the Cython module
 
 1. Compile the Cython module: `./manage.sh cython`
 2. Export the shared library path in your environment: `source setup-env.sh`
-3. Try a Python example: `python bindings/cython/examples/test.py`
+3. Try a Python example: `python bindings/cython/examples/quickstart.py`
 
 
 ### Windows 10

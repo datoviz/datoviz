@@ -20,7 +20,7 @@ void dvz_demo_scatter(int32_t n, dvec3* pos)
     for (uint32_t i = 0; i < N; i++)
     {
         dvz_colormap_scale(DVZ_CMAP_VIRIDIS, dvz_rand_float(), 0, 1, color[i]);
-        size[i] = 2 + 38 * dvz_rand_float();
+        size[i] = 10 + 40 * dvz_rand_float();
     }
 
     dvz_visual_data(visual, DVZ_PROP_POS, 0, N, pos);

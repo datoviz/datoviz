@@ -294,22 +294,26 @@ static int test(int argc, char** argv)
 
 static int info(int argc, char** argv)
 {
-    // DvzGpu gpu = dvz_create_device(0, NULL);
-    // printf("GPU: %s\n", gpu.device_properties.deviceName);
-    // dvz_destroy_device(&gpu);
+    DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
+    for (uint32_t i = 0; i < app->gpus.count; i++)
+    {
+        DvzGpu* gpu = dvz_gpu(app, i);
+        printf("GPU #%d: %s\n", i, gpu->name);
+    }
+    dvz_app_destroy(app);
     return 0;
 }
 
 static int demo(int argc, char** argv)
 {
-    // if (argc <= 1)
-    // {
-    //     log_error("please specify a demo name");
-    //     return 1;
-    // }
-    // TestContext context = _create_context(true);
-    // launcher(&context, argv[1]);
-    // _destroy_context(&context);
+    const uint32_t N = 50000;
+    dvec3* pos = calloc(N, sizeof(dvec3));
+    for (uint32_t i = 0; i < N; i++)
+    {
+        RANDN_POS(pos[i]);
+    }
+    dvz_demo_scatter(N, pos);
+    FREE(pos);
     return 0;
 }
 
