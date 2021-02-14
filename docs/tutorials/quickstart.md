@@ -2,7 +2,7 @@
 
 Once Datoviz has been properly installed, you can start to use it in a few lines of code!
 
-In this tutorial, we'll show **how to make simple 2D and 3D plots with Datoviz in Python**, and we'll go through the most important notions in the library.
+In this tutorial, we'll show **how to make simple 2D and 3D plots with Datoviz in Python**, and we'll go through the most important features of the library.
 
 <!-- IMAGE ../images/screenshots/standalone_scene.png -->
 
@@ -25,18 +25,10 @@ Creating custom visuals, creating standalone C applications with Datoviz are adv
     The Python bindings are at an early stage of development. They will be significantly improved in the near future.
 
 
-## Opening IPython
-
-Datoviz can be used in a Python script, or interactively in an IPython terminal. Datoviz allows for interactive use of a canvas while using the IPython terminal (integrated event loop integration). Jupyter notebook integration has not been tested or implemented yet.
-
-In this tutorial, we'll use IPython. **Open an IPython terminal.**
-
-```bash
-$ ipython
-```
-
-
 ## Importing the library
+
+!!! note
+    For now, Datoviz should be used from a Python script. Integration with IPython and Jupyter is still a work in progress.
 
 First, we import NumPy and datoviz:
 
@@ -48,17 +40,6 @@ from datoviz import canvas, run, colormap
 ```
 
 
-## Enabling the IPython event loop integration
-
-If using IPython interactively, we should enable the IPython event loop integration *after* importing datoviz:
-
-```python
-%gui datoviz
-```
-
-Otherwise we won't be able to use the IPython terminal while a canvas is open.
-
-
 ## Creating a canvas
 
 We create a **canvas**:
@@ -67,13 +48,14 @@ We create a **canvas**:
 c = canvas(show_fps=False)
 ```
 
-This should open a blank window. We can also specify the initial width and height of the window using keyword arguments to `canvas()`.
-
+We can also specify the initial width and height of the window using keyword arguments to `canvas()`.
 
 
 ## Creating a panel
 
 Next, we create a **panel**, which is another word for "subplot". By default, there is only one panel spanning the entire canvas, but we can also define multiple panels.
+
+We also specify the panel's **controller**, which defines how we interact with it. The `axes` controller displays axes and ticks for 2D graphics.
 
 ```python
 panel = c.panel(controller='axes')
@@ -85,7 +67,7 @@ panel = c.panel(controller='axes')
 
 We'll make a simple **scatter plot** with 2D random points, and different colors and marker sizes.
 
-We refer to [the list of all included visuals](../reference/visuals.md) provided by the Datoviz documentation, and we find that the **marker visual** is what we need for our scatter plot. We look at the **visual properties** (or **props**) for this visual: this is the data we'll need to feed to our visual.
+We refer to [the list of all included visuals](../reference/visuals.md) provided by the Datoviz documentation, and we find that the **marker visual** is what we want for our scatter plot. We look at the **visual properties** (or **props**) for this visual: this is the data we'll need to feed to our visual.
 
 But first, we create our visual object by specifying its type:
 
@@ -103,7 +85,7 @@ We'll set:
 * the **marker colors**: `color` prop,
 * the **marker sizes**: `ms` prop.
 
-First, we generate the data for this props.
+First, we generate the data for these props.
 
 ### Random positions
 
@@ -112,7 +94,7 @@ N = 100_000
 pos = nr.randn(N, 3)
 ```
 
-Note that **positions always have three dimensions** in Datoviz. When using 2D plotting, we can set the third component to zero.
+Note that **positions always have three dimensions** in Datoviz. When using 2D plotting, we set the third component to zero.
 
 Datoviz uses the standard OpenGL 3D coordinate system:
 
@@ -120,7 +102,7 @@ Datoviz uses the standard OpenGL 3D coordinate system:
 *Datoviz coordinate system*
 
 !!! note
-    Note that this is different from the Vulkan coordinate system, where y and z go in the opposite direction. The other difference is that in Datoviz, all axes range in the interval `[-1, +1]`. In the original Vulkan coordinate system, `z` goes from 0 to 1 instead. This convention makes it possible to use existing camera matrix routines implemented in the cglm library. The GPU code of all included shaders include the final OpenGL->Vulkan transformation right before the vertex shader output. Other conventions for `x, y, z` axes will be supported in the future.
+    Note that this is different from the Vulkan coordinate system, where y and z go in the opposite direction. The other difference is that in Datoviz, all axes range in the interval `[-1, +1]`. In the original Vulkan coordinate system, `z` goes from 0 to 1 instead. The convention used in Datoviz makes it possible to use existing camera matrix routines implemented in the cglm library. The GPU code of all included shaders include the final OpenGL->Vulkan transformation right before the vertex shader output. Other conventions for `x, y, z` axes will be supported in the future.
 
 Position props are specified in the original data coordinate system corresponding to the scientific data to be visualized. Yet, Datoviz requires vertex positions to be in normalized coordinates (between -1 and 1) when sent to the GPU. Since the GPU only deals with single-precision floating point numbers, doing data normalization on the GPU would result in significant loss of precision and would harm performance.
 
@@ -139,7 +121,7 @@ ms = nr.uniform(low=2, high=40, size=N)
 
 ### Colormap
 
-Let's define the colors. We could use random RGB values for the colors, but we'll use a **colormap** instead.
+Let's define the colors. We could use random RGBA values for the colors, but we'll use one of the built-in **colormap** instead.
 
 
 ```python
@@ -151,7 +133,7 @@ The variable `color` is an `(N, 4)` array of `uint8` (byte values between 0 and 
 This line involves the following steps:
 
 * Choosing a colormap, here **viridis** (see the [colormap reference page](../reference/colormaps.md) with the list of ~150 included colormaps),
-* Defining an array of scalar values to be feed to the colormap (random values between 0 and 1 here),
+* Defining an array of scalar values to be fed to the colormap (random values between 0 and 1 here),
 * (Optional) Defining the colormap range (`[0, 1]` here),
 * (Optional) Setting an alpha transparency channel (0.75 here).
 
@@ -225,30 +207,16 @@ The canvas provides an event system where the user can specify callback function
 
 An event callback may be registered as a sync or async callback.
 
-* **Sync callbacks** are called directly when an event is raised by the library.
+* **Sync callbacks** are called directly by the main loop in the main thread when an event is raised by the library. They should execute quickly as rendering stops when they run.
 * **Async callbacks** are called in a background thread managed by the library. The events are pushed to a thread-safe FIFO queue, and they are consumed by the background thread.
 
-It is recommended to only use async callbacks when needed, as they come with some overhead. They are mostly useful with I/O-bound operations, for example, making a network request in response to a keyboard key press.
+Currently, the Python bindings use async callbacks by default, so that long-lasting I/O-bound callbacks do not block the main UI thread.
 
+Coming soon.
 
-#### Registering a callback function
+```python
 
-The callback function receives two arguments: the canvas, and a special struct containing information about the event. The special field `u` is a union containing information specific to the event type.
-
-=== "C"
-    ```c
-    void void callback(DvzCanvas* canvas, DvzEvent ev)
-    {
-        double time = ev.u.t.time;
-        // ...
-    }
-
-    // ...
-
-    dvz_event_callback(canvas, DVZ_EVENT_TIMER, 1, DVZ_EVENT_MODE_SYNC, callback, NULL);
-    ```
-
-
+```
 
 
 ## Adding a simple GUI
@@ -258,4 +226,5 @@ Datoviz integrates the [Dear ImGUI library](https://github.com/ocornut/imgui) wh
 Coming soon.
 
 ```python
+
 ```

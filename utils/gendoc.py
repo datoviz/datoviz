@@ -37,11 +37,11 @@ INSERT_IMAGE = re.compile(r'<!-- IMAGE ([^ ]+) -->')
 PYTHON_EXAMPLE_TEMPLATE = '''
 {description}
 
+![](../images/screenshots/{name}.png)
+
 ```python
 # from `bindings/python/examples/{path}`{code}
 ```
-
-![](../images/screenshots/{name}.png)
 
 '''.strip()
 PYTHON_DESC_REGEX = re.compile(r'"""([^"]+)"""')
@@ -383,6 +383,7 @@ def process_code_image(markdown, config):
         path = ROOT_DIR / m.group(2)
         lang = m.group(1).lower()
         assert path.exists(), path
+        print(f"Insert code from {path}")
         code = path.read_text()
         if lang == 'python':
             comment = '#'

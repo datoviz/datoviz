@@ -20,7 +20,7 @@ We'll make a **square visual** that makes it easy to add uniformly-colored squar
 
 The **visual** is the most important abstraction in Datoviz. It abstracts away the internal details related to GPU rendering and proposes a user-friendly interface to set up visual elements.
 
-Adding a new visual to a panel involves the following steps:
+Generally speaking, adding a new visual to a panel involves the following steps:
 
 1. choosing one of the existing visuals on the visual reference page,
 2. preparing the data to match the format expected by the visual properties,
@@ -30,7 +30,7 @@ Adding a new visual to a panel involves the following steps:
 
 Each predefined visual comes with a set of predefined visual properties, also called **props**. For example, the `marker` visual has props for: point position, color, marker size, marker type, angle, and so on.
 
-The visual reference page presents the list of all predefined visuals along with their sets of props. You'll probably refer a lot to this page since it contains the most important information you'll need for your visualizations.
+The [visual reference page](../reference/visuals.md) presents the list of all predefined visuals along with their sets of props. You'll probably refer a lot to this page since it contains the most important information you'll need for your visualizations.
 
 Each prop is defined by:
 
@@ -45,8 +45,8 @@ Each prop is defined by:
 
 Another crucial notion related to visuals is **batch rendering**. For performance reasons, it is recommended **to use as few visuals as possible in a given scene**. For example:
 
-* to display a scatter plot with 100 points, use a single `marker` visual with 100 points, instead of ~~using 100 visuals with one point~~,
-* to display 100 polygons, use a single `polygon` visual with 100 items (each containing an arbitrary number of points), instead of ~~using 100 visuals~~,
+* to display a scatter plot with 100 points, use a single `marker` visual with 100 points, instead of ~~100 visuals with one point~~,
+* to display 100 polygons, use a single `polygon` visual with 100 items (each containing an arbitrary number of points), instead of ~~100 visuals~~,
 * similarly with paths, images, meshes, text, and so on.
 
 This allows the GPU to render all of these different objects of the same type in a single draw command (with the same GPU transformation matrices).
@@ -120,7 +120,7 @@ The vertex shader executes in parallel over all structure elements stored in the
 
 We'll see in the custom graphics page more details about how we link this C structure to the GLSL attributes.
 
-The main role of the **visual** is to **copy the user-specified props data into the vertex buffer**. This is sometimes straightforward, like in the `marker` visual, where each marker corresponds to one marker, but it is more often less trivial. In the example covered in this page, where we need to transform squares into triangles, our custom visual will need to **create six vertices in the vertex buffer for every square passed by the user**. This is implemented in the **visual baking function**.
+The main role of the **visual** is to **copy the user-specified props data into the vertex buffer**. This is sometimes straightforward, like in the `marker` visual, where each vertex corresponds to one marker, but it is often less trivial. In the example covered in this page, where we need to transform squares into triangles, our custom visual will need to **create six vertices in the vertex buffer for every square passed by the user**. This is implemented in the **visual baking function**.
 
 
 
@@ -128,7 +128,7 @@ The main role of the **visual** is to **copy the user-specified props data into 
 
 Once the props are defined, the most important step when creating a custom visual is to implement the **baking function**.
 
-The baking function takes the props data as input, and fills in the vertex buffer, as well as, possibly, other GPU data sources (uniforms, storage buffers, textures).
+**The baking function takes the props data as input, and fills in the vertex buffer**, as well as, possibly, other GPU data sources (uniforms, storage buffers, textures).
 
 Here, the square baking function must recover the `pos` and `length` props in order to compute the four corner position of each square, and make the triangulation with two triangles per square.
 
