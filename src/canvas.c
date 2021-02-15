@@ -703,6 +703,10 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
         // in callbacks if needed).
         dvz_event_callback(canvas, DVZ_EVENT_TIMER, .25, DVZ_EVENT_MODE_SYNC, _fps, NULL);
 
+        // GUI playback control when recording screencast
+        dvz_event_callback(
+            canvas, DVZ_EVENT_IMGUI, 0, DVZ_EVENT_MODE_SYNC, dvz_gui_callback_player, NULL);
+
         if (show_fps)
             dvz_event_callback(
                 canvas, DVZ_EVENT_IMGUI, 0, DVZ_EVENT_MODE_SYNC, dvz_gui_callback_fps, NULL);
@@ -1837,13 +1841,13 @@ static void _video_callback(DvzCanvas* canvas, DvzEvent ev)
 static void _video_destroy(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
-    if (ev.user_data != NULL)
-        end_video((Video*)ev.user_data);
+    if (canvas->screencast != NULL && canvas->screencast->user_data != NULL)
+        end_video((Video*)canvas->screencast->user_data);
 }
 
 
 
-void dvz_canvas_video(DvzCanvas* canvas, int framerate, int bitrate, const char* path)
+void dvz_canvas_video(DvzCanvas* canvas, int framerate, int bitrate, const char* path, bool record)
 {
     ASSERT(canvas != NULL);
     uvec2 size;
@@ -1854,10 +1858,11 @@ void dvz_canvas_video(DvzCanvas* canvas, int framerate, int bitrate, const char*
 
     dvz_event_callback(
         canvas, DVZ_EVENT_SCREENCAST, 0, DVZ_EVENT_MODE_SYNC, _video_callback, video);
-    dvz_event_callback(canvas, DVZ_EVENT_DESTROY, 0, DVZ_EVENT_MODE_SYNC, _video_destroy, video);
+    dvz_event_callback(canvas, DVZ_EVENT_DESTROY, 0, DVZ_EVENT_MODE_SYNC, _video_destroy, NULL);
 
     dvz_screencast(canvas, 1. / framerate, true);
     ASSERT(canvas->screencast != NULL);
+    canvas->screencast->is_active = record;
     canvas->screencast->user_data = video;
 }
 
@@ -1873,6 +1878,7 @@ void dvz_canvas_pause(DvzCanvas* canvas, bool record)
     }
     ASSERT(canvas->screencast != NULL);
     canvas->screencast->is_active = record;
+    log_info("%s screencast", record ? "record" : "pause");
 }
 
 
@@ -1889,6 +1895,7 @@ void dvz_canvas_stop(DvzCanvas* canvas)
     canvas->screencast->is_active = false;
     ASSERT(canvas->screencast->user_data != NULL);
     // This call frees the pointer.
+    log_info("stop screencast");
     end_video((Video*)canvas->screencast->user_data);
     canvas->screencast->user_data = NULL;
 }

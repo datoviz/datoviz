@@ -48,6 +48,8 @@ DVZ_EXPORT void dvz_gui_callback(DvzCanvas* canvas, DvzEvent event);
 
 DVZ_EXPORT void dvz_gui_callback_fps(DvzCanvas* canvas, DvzEvent event);
 
+DVZ_EXPORT void dvz_gui_callback_player(DvzCanvas* canvas, DvzEvent ev);
+
 
 
 #ifdef __cplusplus

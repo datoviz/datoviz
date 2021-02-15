@@ -866,8 +866,10 @@ DVZ_EXPORT void dvz_screenshot_file(DvzCanvas* canvas, const char* png_path);
  * @param framerate the framerate in images per second (30 recommended)
  * @param bitrate the bitrate, in  bytes (10000000 for high quality)
  * @param path path to the file (.mp4 extension recommended)
+ * @param record whether to start recording immediately or not
  */
-DVZ_EXPORT void dvz_canvas_video(DvzCanvas* canvas, int framerate, int bitrate, const char* path);
+DVZ_EXPORT void
+dvz_canvas_video(DvzCanvas* canvas, int framerate, int bitrate, const char* path, bool record);
 
 /**
  * Pause the live video screencast.

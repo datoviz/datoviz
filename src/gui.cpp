@@ -6,6 +6,7 @@
 #include "canvas_utils.h"
 
 BEGIN_INCL_NO_WARN
+#include "../external/IconsFontAwesome.h"
 #include "../external/imgui/backends/imgui_impl_glfw.h"
 #include "../external/imgui/backends/imgui_impl_vulkan.h"
 #include "../external/imgui/imgui.h"
@@ -190,11 +191,19 @@ void dvz_imgui_init(DvzCanvas* canvas)
     // DPI scaling.
     dvz_imgui_dpi_scaling(canvas, canvas->dpi_scaling);
 
-    // Load Fonts
+    // Load Fonts.
     float font_size = 16 * canvas->dpi_scaling;
     char path[1024];
     snprintf(path, sizeof(path), "%s/fonts/Roboto-Medium.ttf", DATA_DIR);
     io.Fonts->AddFontFromFileTTF(path, font_size);
+
+    // Font awesome icons.
+    ImFontConfig config;
+    config.MergeMode = true;
+    // config.GlyphMinAdvanceX = font_size; // Use if you want to make the icon monospaced
+    static const ImWchar icon_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
+    snprintf(path, sizeof(path), "%s/fonts/fontawesome-webfont.ttf", DATA_DIR);
+    io.Fonts->AddFontFromFileTTF(path, font_size, &config, icon_ranges);
 
     // Upload Fonts
     DvzCommands cmd = dvz_commands(canvas->gpu, DVZ_DEFAULT_QUEUE_RENDER, 1);
@@ -244,6 +253,33 @@ void dvz_gui_callback_fps(DvzCanvas* canvas, DvzEvent ev)
     ASSERT(canvas != NULL);
     dvz_gui_begin("FPS", DVZ_GUI_FLAGS_FIXED | DVZ_GUI_FLAGS_CORNER_UR);
     ImGui::Text("FPS: %.1f", canvas->fps);
+    dvz_gui_end();
+}
+
+
+
+void dvz_gui_callback_player(DvzCanvas* canvas, DvzEvent ev)
+{
+    ASSERT(canvas != NULL);
+    if (canvas->screencast == NULL)
+        return;
+    ASSERT(canvas->screencast != NULL);
+    dvz_gui_begin("Screencast recording", DVZ_GUI_FLAGS_FIXED | DVZ_GUI_FLAGS_CORNER_LR);
+
+    // Play/pause button.
+    if (ImGui::Button(canvas->screencast->is_active ? ICON_FA_PAUSE : ICON_FA_PLAY))
+    {
+        dvz_canvas_pause(canvas, !canvas->screencast->is_active);
+    }
+
+    ImGui::SameLine();
+
+    // Stop button.
+    if (ImGui::Button(ICON_FA_STOP))
+    {
+        dvz_canvas_stop(canvas);
+    }
+
     dvz_gui_end();
 }
 
