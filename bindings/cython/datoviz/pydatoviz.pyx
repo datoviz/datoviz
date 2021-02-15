@@ -598,6 +598,7 @@ cdef class Canvas:
 
     cdef cv.DvzCanvas* _c_canvas
     cdef cv.DvzScene* _c_scene
+    cdef cv.DvzGrid* _c_grid
     cdef object _app
 
     _panels = []
@@ -605,6 +606,7 @@ cdef class Canvas:
     cdef create(self, app, cv.DvzCanvas* c_canvas, int rows, int cols):
         self._c_canvas = c_canvas
         self._c_scene = cv.dvz_scene(c_canvas, rows, cols)
+        self._c_grid = &self._c_scene.grid
         self._app = app
         # _add_close_callback(self._c_canvas, self._destroy_wrapper, ())
 
@@ -660,6 +662,19 @@ cdef class Canvas:
             cv.dvz_canvas_to_close(self._c_canvas)
             self._c_canvas = NULL
 
+    def panel_at(self, x, y):
+        # Find the panel
+        cdef cv.vec2 pos
+        pos[0] = x
+        pos[1] = y
+        c_panel = cv.dvz_panel_at(self._c_grid, pos)
+
+        cdef Panel panel
+        for p in self._panels:
+            panel = p
+            if panel._c_panel == c_panel:
+                return panel
+
     def _connect(self, evtype_py, f, param=0):
         cdef cv.DvzEventType evtype
         evtype = _EVENTS.get(evtype_py, 0)
@@ -704,7 +719,7 @@ cdef class Panel:
         self._visuals.append(v)
         return v
 
-    def pick(self, x, y, target_cds):
+    def pick(self, x, y, target_cds='data'):
         cdef cv.dvec3 pos_in
         cdef cv.dvec3 pos_out
         pos_in[0] = x
@@ -713,7 +728,7 @@ cdef class Panel:
         source = cv.DVZ_CDS_WINDOW
         target = _COORDINATE_SYSTEMS[target_cds]
         cv.dvz_transform(self._c_panel, source, pos_in, target, pos_out)
-        return (pos_out[0], pos_out[1])
+        return pos_out[0], pos_out[1]
 
 
 

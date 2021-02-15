@@ -36,6 +36,18 @@ visual.data('pos', pos)
 visual.data('color', color)
 visual.data('ms', ms)
 
+@c.connect
+def on_mouse_click(x, y, button):
+    # x, y are in pixel coordinates
+    # First, we find the picked panel
+    p = c.panel_at(x, y)
+    if p:
+        # Then, we transform into the data coordinate system
+        # Supported coordinate systems
+        # target_cds='data' / 'scene' / 'vulkan' / 'framebuffer' / 'window'
+        xd, yd = p.pick(x, y)
+        print(f"Pick at ({xd:.4f}, {yd:.4f})")
+
 # We create a GUI dialog.
 gui = c.gui("hello world")
 

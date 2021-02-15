@@ -57,11 +57,12 @@ cdef extern from "<datoviz/datoviz.h>":
         DvzApp* app
         DvzGpu* gpu
 
-    ctypedef struct DvzScene:
-        DvzCanvas* canvas
-
     ctypedef struct DvzGrid:
         DvzCanvas* canvas
+
+    ctypedef struct DvzScene:
+        DvzCanvas* canvas
+        DvzGrid grid
 
     ctypedef struct DvzDataCoords:
         DvzTransformType transform;
@@ -1086,6 +1087,7 @@ cdef extern from "<datoviz/datoviz.h>":
 
     # from file: panel.h
     void dvz_panel_transpose(DvzPanel* panel, DvzCDSTranspose transpose)
+    DvzPanel* dvz_panel_at(DvzGrid* grid, vec2 pos)
 
     # from file: scene.h
     DvzScene* dvz_scene(DvzCanvas* canvas, uint32_t n_rows, uint32_t n_cols)
