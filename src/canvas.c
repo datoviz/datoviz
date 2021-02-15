@@ -1737,8 +1737,15 @@ void dvz_screencast_destroy(DvzCanvas* canvas)
 
 void dvz_screenshot_file(DvzCanvas* canvas, const char* png_path)
 {
+    ASSERT(canvas != NULL);
+
     log_info("saving screenshot of canvas to %s with full synchronization (slow)", png_path);
     uint8_t* rgb = dvz_screenshot(canvas, false);
+    if (rgb == NULL)
+    {
+        log_error("screenshot failed");
+        return;
+    }
     DvzImages* images = canvas->swapchain.images;
     dvz_write_png(png_path, images->width, images->height, rgb);
     FREE(rgb);
@@ -1748,6 +1755,13 @@ void dvz_screenshot_file(DvzCanvas* canvas, const char* png_path)
 
 uint8_t* dvz_screenshot(DvzCanvas* canvas, bool has_alpha)
 {
+    ASSERT(canvas != NULL);
+    if (canvas->app->is_running)
+    {
+        log_error("cannot do screenshot while the canvas is running for now");
+        return NULL;
+    }
+
     // TODO: more efficient screenshot saving with screencast
     DvzGpu* gpu = canvas->gpu;
 
