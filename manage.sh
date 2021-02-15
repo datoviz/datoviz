@@ -110,3 +110,10 @@ then
     python3 utils/gendoc.py examples
     mkdocs serve
 fi
+
+if [ $1 == "publish" ]
+then
+    cd ../datoviz.github.io/
+    mkdocs gh-deploy --config-file ../datoviz/mkdocs.yml --remote-branch main
+    cd ../datoviz
+fi
