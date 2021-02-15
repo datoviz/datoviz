@@ -216,9 +216,26 @@ static void close_stream(AVFormatContext* oc, OutputStream* ost)
 }
 
 // Public functions.
-
-Video* create_video(const char* filename, int width, int height, int fps, int bitrate)
+Video* init_video(const char* filename, int width, int height, int fps, int bitrate)
 {
+    Video* video = calloc(1, sizeof(Video));
+    video->filename = filename;
+    video->fps = fps;
+    video->bitrate = bitrate;
+    video->width = width;
+    video->height = height;
+    return video;
+}
+
+void create_video(Video* video)
+{
+    ASSERT(video != NULL);
+    ASSERT(video->filename != NULL);
+    ASSERT(video->fps > 0);
+    ASSERT(video->bitrate > 0);
+    ASSERT(video->width > 0);
+    ASSERT(video->height > 0);
+
     OutputStream* ost = calloc(1, sizeof(OutputStream));
     AVOutputFormat* fmt = NULL;
     AVFormatContext* oc = NULL;
@@ -227,14 +244,14 @@ Video* create_video(const char* filename, int width, int height, int fps, int bi
     int ret = 0;
 
     /* allocate the output media context */
-    avformat_alloc_output_context2(&oc, NULL, NULL, filename);
+    avformat_alloc_output_context2(&oc, NULL, NULL, video->filename);
     if (!oc)
     {
         printf("Could not deduce output format from file extension: using MPEG.\n");
-        avformat_alloc_output_context2(&oc, NULL, "mpeg", filename);
+        avformat_alloc_output_context2(&oc, NULL, "mpeg", video->filename);
     }
     if (!oc)
-        return NULL;
+        return;
 
     fmt = oc->oformat;
 
@@ -243,23 +260,25 @@ Video* create_video(const char* filename, int width, int height, int fps, int bi
     if (fmt->video_codec != AV_CODEC_ID_NONE)
     {
         // fprintf(stdout, "fallback to default H264 codec\n");
-        add_stream(ost, oc, &video_codec, AV_CODEC_ID_H264, width, height, fps, bitrate);
+        add_stream(
+            ost, oc, &video_codec, AV_CODEC_ID_H264, //
+            video->width, video->height, video->fps, video->bitrate);
     }
 
     /* Now that all the parameters are set, we can open the audio and
      * video codecs and allocate the necessary encode buffers. */
     open_video(oc, video_codec, ost, opt);
 
-    av_dump_format(oc, 0, filename, 1);
+    av_dump_format(oc, 0, video->filename, 1);
 
     /* open the output file, if needed */
     if (!(fmt->flags & AVFMT_NOFILE))
     {
-        ret = avio_open(&oc->pb, filename, AVIO_FLAG_WRITE);
+        ret = avio_open(&oc->pb, video->filename, AVIO_FLAG_WRITE);
         if (ret < 0)
         {
-            fprintf(stderr, "Could not open '%s': %s\n", filename, av_err2str(ret));
-            return NULL;
+            fprintf(stderr, "Could not open '%s': %s\n", video->filename, av_err2str(ret));
+            return;
         }
     }
 
@@ -268,17 +287,11 @@ Video* create_video(const char* filename, int width, int height, int fps, int bi
     if (ret < 0)
     {
         fprintf(stderr, "Error occurred when opening output file: %s\n", av_err2str(ret));
-        return NULL;
+        return;
     }
 
-    Video* video = calloc(1, sizeof(Video));
     ost->oc = oc;
     video->ost = ost;
-    video->fps = fps;
-    video->width = width;
-    video->height = height;
-
-    return video;
 }
 
 void add_frame(Video* video, uint8_t* image)
@@ -345,11 +358,13 @@ void end_video(Video* video)
 // No FFMPEG support
 #else
 
-Video* create_video(const char* filename, int width, int height, int fps, int bitrate)
+Video* init_video(const char* filename, int width, int height, int fps, int bitrate)
 {
     log_error("datoviz was not compiled with ffmpeg support, unable to record a video");
     return NULL;
 }
+
+void create_video(Video* video) { return; }
 
 void add_frame(Video* video, uint8_t* image) {}
 

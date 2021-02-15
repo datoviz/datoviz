@@ -1835,7 +1835,20 @@ static void _video_callback(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
     log_debug("video frame #%d", ev.u.sc.idx);
-    add_frame((Video*)ev.user_data, ev.u.sc.rgba);
+
+    Video* video = (Video*)canvas->screencast->user_data;
+    if (video == NULL)
+        return;
+    ASSERT(video != NULL);
+
+    // Create the video if needed.
+    if (video->ost == NULL)
+    {
+        create_video(video);
+    }
+    ASSERT(video->ost != NULL);
+
+    add_frame(video, ev.u.sc.rgba);
     FREE(ev.u.sc.rgba);
 }
 
@@ -1853,12 +1866,12 @@ void dvz_canvas_video(DvzCanvas* canvas, int framerate, int bitrate, const char*
     ASSERT(canvas != NULL);
     uvec2 size;
     dvz_canvas_size(canvas, DVZ_CANVAS_SIZE_FRAMEBUFFER, size);
-    Video* video = create_video(path, (int)size[0], (int)size[1], framerate, bitrate);
+    Video* video = init_video(path, (int)size[0], (int)size[1], framerate, bitrate);
     if (video == NULL)
         return;
 
     dvz_event_callback(
-        canvas, DVZ_EVENT_SCREENCAST, 0, DVZ_EVENT_MODE_SYNC, _video_callback, video);
+        canvas, DVZ_EVENT_SCREENCAST, 0, DVZ_EVENT_MODE_SYNC, _video_callback, NULL);
     dvz_event_callback(canvas, DVZ_EVENT_DESTROY, 0, DVZ_EVENT_MODE_SYNC, _video_destroy, NULL);
 
     dvz_screencast(canvas, 1. / framerate, true);

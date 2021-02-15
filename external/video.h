@@ -36,13 +36,16 @@ typedef struct Video Video;
 struct Video
 {
     OutputStream* ost;
-    int width, height, fps;
+    const char* filename;
+    int width, height, fps, bitrate;
     int linesize;
     uint8_t* image;
     AVFrame* frame;
 };
 
-Video* create_video(const char* filename, int width, int height, int fps, int bitrate);
+Video* init_video(const char* filename, int width, int height, int fps, int bitrate);
+
+void create_video(Video* video);
 
 void add_frame(Video* video, uint8_t* image);
 
