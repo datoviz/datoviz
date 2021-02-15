@@ -18,12 +18,15 @@ Datoviz is at an early stage of development. The library is quite usable but evo
 
 The documentation is divided into:
 
-* **[Tutorials](docs/tutorials/index.md)**: install guide and first introduction to making scientific plots in Python,
-* **[Examples](docs/examples/index.md)**: gallery of screenshots and associated Python code,
-* **[How to guides](docs/howto/index.md)**: advanced topics for expert users, explaining how to use C and Vulkan for making custom visuals and applications,
-* **[Reference](docs/reference/index.md)**: comprehensive list of included colormaps, visuals, and graphics,
-* **[C API reference](docs/api/index.md)**: list of all publicly available C functions,
-* **[Discussions](docs/discussions/index.md)**: explanations, Vulkan crash course, and notes.
+* **[Installation](https://datoviz.org/tutorials/install/)**: install guide (no precompiled packages yet, coming soon),
+* **[Tutorials](https://datoviz.org/tutorials/quickstart)**: quickstart Python tutorial,
+* **[Examples](https://datoviz.org/examples/)**: gallery of screenshots and associated Python code,
+* **[How to guides](https://datoviz.org/howto/)**: advanced topics for expert users, explaining how to use C and Vulkan for making custom visuals and applications,
+* **[Reference](https://datoviz.org/reference/)**: comprehensive list of included colormaps, visuals, and graphics,
+* **[C API reference](https://datoviz.org/api/)**: list of all publicly available C functions,
+* **[Discussions](https://datoviz.org/discussions/)**: explanations, Vulkan crash course, and notes.
+
+<!-- NOTE: we use absolute URLs so that the links work both on the GitHub README and on the website -->
 
 
 ## Preliminary performance results

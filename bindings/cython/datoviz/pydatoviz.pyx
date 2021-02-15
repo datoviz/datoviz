@@ -354,6 +354,7 @@ _COLORMAPS = {
 }
 
 _TEXTURE_FILTERS = {
+    None: cv.VK_FILTER_NEAREST,
     'nearest': cv.VK_FILTER_NEAREST,
     'linear': cv.VK_FILTER_LINEAR,
 }
