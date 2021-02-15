@@ -1880,6 +1880,7 @@ void dvz_canvas_pause(DvzCanvas* canvas, bool record)
     ASSERT(canvas->screencast != NULL);
     canvas->screencast->is_active = record;
     log_info("%s screencast", record ? "record" : "pause");
+    log_warn("please do NOT resize the canvas while recording the video");
 }
 
 

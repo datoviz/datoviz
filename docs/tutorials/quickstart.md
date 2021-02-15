@@ -2,7 +2,7 @@
 
 Once Datoviz has been properly installed, you can start to use it in a few lines of code!
 
-In this tutorial, we'll show **how to make simple 2D and 3D plots with Datoviz in Python**, and we'll go through the most important features of the library.
+In this tutorial, we'll show **how to make a simple 2D plot with Datoviz in Python**, and we'll go through the most important features of the library.
 
 <!-- IMAGE ../images/screenshots/standalone_scene.png -->
 
@@ -15,7 +15,10 @@ We'll cover the following steps:
 * how to use colormaps,
 * how to set visual data,
 * how to run the application,
-* how to create subplots,
+* how to create a minimal GUI,
+* how to specify event callbacks,
+* how to use mouse picking,
+* how to make a live screencast video (*requires compilation with ffmpeg*),
 * and more.
 
 Creating custom visuals, creating standalone C applications with Datoviz are advanced topics, they are covered in the **How to** section of the documentation.
@@ -183,48 +186,117 @@ If the library was compiled with ffmpeg, we can easily make a live mp4 screencas
 run(video="screencast.mp4")
 ```
 
+This command **does not** start the video recording, one needs to press the *Play* button at the bottom right corner. We can pause and resume at any time. When we're done, we press the *Stop* button and the video will be saved to disk.
+
+![Playback buttons for screencast](https://user-images.githubusercontent.com/1942359/107956919-2cae4100-6fa0-11eb-97d5-e83a70e01183.png)
 
 
 
-## Adding another panel
+## Event callbacks and mouse picking
 
-Coming soon.
+!!! important
+    From now on, all the code snippets below needs to be added **before** calling `run()`.
 
-```python
-```
-
-
-## Specifying another controller type
-
-Coming soon.
-
-
-
-## Writing event callbacks
-
-
-The canvas provides an event system where the user can specify callback functions to be called at specific times during the time course of the canvas.
-
-An event callback may be registered as a sync or async callback.
-
-* **Sync callbacks** are called directly by the main loop in the main thread when an event is raised by the library. They should execute quickly as rendering stops when they run.
-* **Async callbacks** are called in a background thread managed by the library. The events are pushed to a thread-safe FIFO queue, and they are consumed by the background thread.
-
-Currently, the Python bindings use async callbacks by default, so that long-lasting I/O-bound callbacks do not block the main UI thread.
-
-Coming soon.
+We'll write a callback function that is called when the user clicks in the canvas, and that prints the coordinates of the clicked point in the original data coordinate system.
 
 ```python
-
+# We define an event callback to implement mouse picking
+@c.connect
+def on_mouse_click(x, y, button, modifiers=()):
+    # x, y are in pixel coordinates
+    # First, we find the picked panel
+    p = c.panel_at(x, y)
+    if not p:
+        return
+    # Then, we transform into the data coordinate system
+    # Supported coordinate systems:
+    #   target_cds='data' / 'scene' / 'vulkan' / 'framebuffer' / 'window'
+    xd, yd = p.pick(x, y)
+    print(f"Pick at ({xd:.4f}, {yd:.4f}), modifiers={modifiers}")
 ```
+
+Clicking somewhere shows in the terminal output: `Pick at (0.4605, -0.1992), modifiers=()`
+
+### Coordinate systems
+
+By default, the `panel.pick()` function converts coordinates from the window coordinate system (used by the event callbacks) to the data coordinate system. There are other coordinate systems that you can convert to using the `target_cds` keyword argument to `pick()`:
+
+| Name | Description |
+| ---- | ---- |
+| `data` | original coordinates of the data |
+| `scene` | the coordinates *before* controller transformation (panzoom etc) in `[-1, +1]` |
+| `vulkan` | the coordinates *after* controller transformation, in `[-1, +1]` |
+| `framebuffer` | the coordinates in framebuffer pixel coordinates |
+| `window` | the coordinates in screen pixel coordinates |
+
+A few technical notes:
+
+* The `scene` coordinate system corresponds to the **vertex shader input**.
+* The `vulkan` coordinate system corresponds to the **vertex shader output**.
+* There's a difference between the `framebuffer` and `window` systems with high-DPI monitors. This depends on the OS.
+
+For now, DPI support is semi-manual. Datoviz supports a special `dpi_scaling` variable that rescales the visual elements depending on this value, and that can be adjusted manually (to be documented later).
 
 
 ## Adding a simple GUI
 
 Datoviz integrates the [Dear ImGUI library](https://github.com/ocornut/imgui) which allows one to create GUIs directly in a Datoviz canvas, without using external dependencies such as Qt.
 
-Coming soon.
+### Adding a GUI dialog
+
+We create a new GUI dialog.
 
 ```python
-
+# We create a GUI dialog.
+gui = c.gui("Test GUI")
 ```
+
+
+### Adding a control to the GUI
+
+We add a slider to change the visual marker size.
+
+```python
+# We add a control, a slider controlling a float
+@gui.control("slider_float", "marker size", vmin=.5, vmax=2)
+def on_change(value):
+    # Every time the slider value changes, we update the visual's marker size
+    visual.data('ms', ms * value)
+    # NOTE: an upcoming version will support partial updates
+```
+
+![float slider](https://user-images.githubusercontent.com/1942359/107957858-82cfb400-6fa1-11eb-8369-effe0e0c1950.png)
+
+
+
+We add another slider, using integers this time, to change the colormap.
+
+```python
+# We add another control, a slider controlling an int between 1 and 4, to change the colormap.
+# NOTE: an upcoming version will provide a dropdown menu control
+cmaps = ['viridis', 'cividis', 'autumn', 'winter']
+
+@gui.control("slider_int", "colormap", vmin=0, vmax=3)
+def on_change(value):
+    # Recompute the colors.
+    color = colormap(
+        color_values, vmin=0, vmax=1, alpha=.75 * np.ones(N), cmap=cmaps[value])
+    # Update the color visual
+    visual.data('color', color)
+```
+
+![int slider](https://user-images.githubusercontent.com/1942359/107957994-ac88db00-6fa1-11eb-9b00-62fc41e77a35.png)
+
+
+
+Finally we add a button to regenerate the marker positions.
+
+```python
+# We add a button to regenerate the marker positions
+@gui.control("button", "new positions")
+def on_change(value):
+    pos = nr.randn(N, 3)
+    visual.data('pos', pos)
+```
+
+![](https://user-images.githubusercontent.com/1942359/107958095-d17d4e00-6fa1-11eb-9a90-b1b6ba07785d.png)

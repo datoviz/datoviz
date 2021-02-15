@@ -6,6 +6,7 @@ This provisional roadmap may be updated at any time depending on user feedback a
 
 *Spring 2021*
 
+* Proper IPython terminal event-loop integration
 * More visuals
     * Text (graphics already implemented)
     * Segments (graphics already implemented)
@@ -14,9 +15,10 @@ This provisional roadmap may be updated at any time depending on user feedback a
     * Alternative colormap mesh with just vec3 pos and float value in vertex struct
 * More GUI controls
     * Table
+* Fixed aspect ratio
+* More robust error handling
 * More robust testing
 * Continuous integration
-* Fixed aspect ratio
 * Packaging
 * Finish documentation
 * First public 0.1 release
