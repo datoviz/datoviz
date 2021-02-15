@@ -634,7 +634,7 @@ cdef class Canvas:
 
     def video(self, unicode path):
         cdef char* _c_path = path
-        cv.dvz_canvas_video(self._c_canvas, 30, 10000000, _c_path)
+        cv.dvz_canvas_video(self._c_canvas, 30, 10000000, _c_path, False)
         self._video_recording = True
 
     def pause(self):

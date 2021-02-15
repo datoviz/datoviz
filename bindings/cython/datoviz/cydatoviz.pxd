@@ -506,8 +506,8 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_GUI_FLAGS_FIXED = 0x0001
         DVZ_GUI_FLAGS_CORNER_UL = 0x0010
         DVZ_GUI_FLAGS_CORNER_UR = 0x0020
-        DVZ_GUI_FLAGS_CORNER_LR = 0x0030
-        DVZ_GUI_FLAGS_CORNER_LL = 0x0040
+        DVZ_GUI_FLAGS_CORNER_LR = 0x0040
+        DVZ_GUI_FLAGS_CORNER_LL = 0x0030
 
     ctypedef enum DvzGuiControlType:
         DVZ_GUI_CONTROL_NONE = 0
@@ -1069,7 +1069,7 @@ cdef extern from "<datoviz/datoviz.h>":
     void dvz_event_callback(DvzCanvas* canvas, DvzEventType type, double param, DvzEventMode mode, DvzEventCallback callback, void* user_data)
     void dvz_canvas_to_close(DvzCanvas* canvas)
     void dvz_screenshot_file(DvzCanvas* canvas, const char* png_path)
-    void dvz_canvas_video(DvzCanvas* canvas, int framerate, int bitrate, const char* path)
+    void dvz_canvas_video(DvzCanvas* canvas, int framerate, int bitrate, const char* path, bint record)
     void dvz_canvas_pause(DvzCanvas* canvas, bint record)
     void dvz_canvas_stop(DvzCanvas* canvas)
     void dvz_app_run(DvzApp* app, uint64_t frame_count)
