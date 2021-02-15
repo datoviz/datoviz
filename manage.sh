@@ -113,7 +113,8 @@ fi
 
 if [ $1 == "publish" ]
 then
-    cd ../datoviz.github.io/
-    mkdocs gh-deploy --config-file ../datoviz/mkdocs.yml --remote-branch main
+    mkdocs build
+    cd ../datoviz.github.io
+    ghp-import -b main -p ../datoviz/site
     cd ../datoviz
 fi
