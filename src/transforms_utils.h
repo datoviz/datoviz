@@ -339,10 +339,10 @@ static DvzTransform _transform_cds(DvzPanel* panel, DvzCDS source)
             ASSERT(h > 0);
 
             // Margins.
-            double mt = 2 * viewport.margins[0] / h;
-            double mr = 2 * viewport.margins[1] / w;
-            double mb = 2 * viewport.margins[2] / h;
-            double ml = 2 * viewport.margins[3] / w;
+            double mt = viewport.margins[0];
+            double mr = viewport.margins[1];
+            double mb = viewport.margins[2];
+            double ml = viewport.margins[3];
 
             DvzBox box0 = (DvzBox){{-1, -1, 0}, {+1, +1, 1}};
             DvzBox box1 = (DvzBox){{x + ml, y + mt, 0}, {x + w - mr, y + h - mb, 1}};
