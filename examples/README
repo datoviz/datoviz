@@ -1,1 +1,8 @@
-Examples of standalone C applications, described in the how to section of the documentation.
+# Examples of standalone C applications, described in the how to section of the documentation.
+
+Usage (Linux only for now):
+
+`./build.sh standalone_scene.c`
+`./build.sh custom_graphics.c`
+
+etc.

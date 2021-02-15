@@ -5,6 +5,7 @@
 #include <datoviz/datoviz.h>
 
 
+// Baking callback function.
 static void _bake_callback(DvzVisual* visual, DvzVisualDataEvent ev)
 {
     ASSERT(visual != NULL);

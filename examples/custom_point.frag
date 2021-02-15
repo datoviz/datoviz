@@ -11,6 +11,7 @@ layout (location = 0) out vec4 out_color;
 void main()
 {
     // This macro is used to implement clipping in the inner viewport, when using panel margins.
+    // All fragment shader of all graphics must include this macro for now.
     CLIP
 
     // Here, we simply pass the varying color (already computed by the vertex shader) to the

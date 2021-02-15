@@ -692,8 +692,13 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
     if (overlay)
     {
         dvz_imgui_init(canvas);
+
         dvz_event_callback(
             canvas, DVZ_EVENT_IMGUI, 0, DVZ_EVENT_MODE_SYNC, dvz_gui_callback, NULL);
+
+        // GUI playback control when recording screencast
+        dvz_event_callback(
+            canvas, DVZ_EVENT_IMGUI, 0, DVZ_EVENT_MODE_SYNC, dvz_gui_callback_player, NULL);
     }
 
     // FPS callback.
@@ -702,10 +707,6 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
         // Compute FPS every 250 ms, even if FPS is not shown (so that the value remains accessible
         // in callbacks if needed).
         dvz_event_callback(canvas, DVZ_EVENT_TIMER, .25, DVZ_EVENT_MODE_SYNC, _fps, NULL);
-
-        // GUI playback control when recording screencast
-        dvz_event_callback(
-            canvas, DVZ_EVENT_IMGUI, 0, DVZ_EVENT_MODE_SYNC, dvz_gui_callback_player, NULL);
 
         if (show_fps)
             dvz_event_callback(
