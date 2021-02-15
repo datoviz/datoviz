@@ -306,9 +306,9 @@ static int info(int argc, char** argv)
 
 static int demo(int argc, char** argv)
 {
-    const uint32_t N = 50000;
-    dvec3* pos = calloc(N, sizeof(dvec3));
-    for (uint32_t i = 0; i < N; i++)
+    const int32_t N = 50000;
+    dvec3* pos = calloc((uint32_t)N, sizeof(dvec3));
+    for (int32_t i = 0; i < N; i++)
     {
         RANDN_POS(pos[i]);
     }

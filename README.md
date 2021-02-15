@@ -62,6 +62,15 @@ Long-term future (or shorter if there are community contributions):
 * Remote desktop integration?
 
 
+**Preliminary performance results**:
+
+* scatter plot with 10M points: **250 FPS** (`point` visual)
+* high-resolution 3D mesh with 10M triangles and 5M vertices: **400 FPS**
+* 1000 signals with 30K points each (30M vertices): **200 FPS**
+
+*GPU: 2019 NVIDIA GeForce RTX 2070 SUPER. Window size: 1024x768.*
+
+
 ## Credits and related projects
 
 Datoviz is developed primarily by [Cyrille Rossant](https://cyrille.rossant.net/) at the [International Brain Laboratory](https://www.internationalbrainlab.com/). The logo was graciously created by [Chiara Zini](https://www.linkedin.com/in/czini/).

@@ -32,6 +32,13 @@ ROOT = Path(__file__).parent.parent.parent.parent
 pos = np.load(ROOT / "data/mesh/brain_highres.vert.npy")
 faces = np.load(ROOT / "data/mesh/brain_highres.faces.npy")
 
+assert pos.ndim == 2
+assert pos.shape[1] == 3
+assert faces.ndim == 2
+assert faces.shape[1] == 3
+
+print(f"Mesh has {len(faces)} triangles and {len(pos)} vertices")
+
 visual.data('pos', pos)
 visual.data('index', faces.ravel())
 visual.data('clip', np.array([0, 0, 1, 1]))
