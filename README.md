@@ -105,6 +105,8 @@ Glumpy, developed by Nicolas Rougier, provides [efficient implementations of hig
 * [extended Wilkinson algorithm](http://vis.stanford.edu/papers/tick-labels) (included) for tick placement
 * [Dear ImGUI](https://github.com/ocornut/imgui) (included)
 * [antigrain geometry](https://en.wikipedia.org/wiki/Anti-Grain_Geometry) (GLSL implementation included)
+* [msdfgen](https://github.com/Chlumsky/msdfgen): multi-channel signed distance field (to do: bundle as submodule?)
+
 
 
 An upcoming version will also have the following dependencies:

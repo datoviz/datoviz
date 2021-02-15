@@ -82,5 +82,6 @@ nav:
     - Vulkan crash course: 'discussions/vulkan.md'
     - Best practices: 'discussions/practices.md'
     - Library architecture: 'discussions/architecture.md'
+    - Roadmap: 'discussions/roadmap.md'
     - Developer notes: 'discussions/developer.md'
     - FAQ: 'discussions/faq.md'
