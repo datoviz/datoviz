@@ -944,17 +944,21 @@ cdef extern from "<datoviz/datoviz.h>":
 
     ctypedef struct DvzMouseMoveEvent:
         vec2 pos
+        int modifiers
 
     ctypedef struct DvzMouseWheelEvent:
         vec2 dir
+        int modifiers
 
     ctypedef struct DvzMouseDragEvent:
         vec2 pos
         DvzMouseButton button
+        int modifiers
 
     ctypedef struct DvzMouseClickEvent:
         vec2 pos
         DvzMouseButton button
+        int modifiers
         bint double_click
 
     ctypedef struct DvzKeyEvent:

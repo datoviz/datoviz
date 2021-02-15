@@ -280,6 +280,7 @@ struct DvzMouse
     vec2 cur_pos;
     vec2 wheel_delta;
     float shift_length;
+    int modifiers;
 
     DvzMouseStateType prev_state;
     DvzMouseStateType cur_state;
@@ -360,6 +361,7 @@ struct DvzMouseButtonEvent
 struct DvzMouseMoveEvent
 {
     vec2 pos;
+    int modifiers;
 };
 
 
@@ -367,6 +369,7 @@ struct DvzMouseMoveEvent
 struct DvzMouseWheelEvent
 {
     vec2 dir;
+    int modifiers;
 };
 
 
@@ -375,6 +378,7 @@ struct DvzMouseDragEvent
 {
     vec2 pos;
     DvzMouseButton button;
+    int modifiers;
 };
 
 
@@ -383,6 +387,7 @@ struct DvzMouseClickEvent
 {
     vec2 pos;
     DvzMouseButton button;
+    int modifiers;
     bool double_click;
 };
 
@@ -952,16 +957,18 @@ DVZ_EXPORT void dvz_event_mouse_release(DvzCanvas* canvas, DvzMouseButton button
  *
  * @param canvas the canvas
  * @param pos the current mouse position, in pixels
+ * @param modifiers flags with the active keyboard modifiers
  */
-DVZ_EXPORT void dvz_event_mouse_move(DvzCanvas* canvas, vec2 pos);
+DVZ_EXPORT void dvz_event_mouse_move(DvzCanvas* canvas, vec2 pos, int modifiers);
 
 /**
  * Emit a mouse wheel event.
  *
  * @param canvas the canvas
  * @param dir the mouse wheel direction
+ * @param modifiers flags with the active keyboard modifiers
  */
-DVZ_EXPORT void dvz_event_mouse_wheel(DvzCanvas* canvas, vec2 dir);
+DVZ_EXPORT void dvz_event_mouse_wheel(DvzCanvas* canvas, vec2 dir, int modifiers);
 
 /**
  * Emit a mouse click event.
@@ -969,8 +976,10 @@ DVZ_EXPORT void dvz_event_mouse_wheel(DvzCanvas* canvas, vec2 dir);
  * @param canvas the canvas
  * @param pos the click position
  * @param button the mouse button
+ * @param modifiers flags with the active keyboard modifiers
  */
-DVZ_EXPORT void dvz_event_mouse_click(DvzCanvas* canvas, vec2 pos, DvzMouseButton button);
+DVZ_EXPORT void
+dvz_event_mouse_click(DvzCanvas* canvas, vec2 pos, DvzMouseButton button, int modifiers);
 
 /**
  * Emit a mouse double-click event.
@@ -978,8 +987,10 @@ DVZ_EXPORT void dvz_event_mouse_click(DvzCanvas* canvas, vec2 pos, DvzMouseButto
  * @param canvas the canvas
  * @param pos the double-click position
  * @param button the mouse button
+ * @param modifiers flags with the active keyboard modifiers
  */
-DVZ_EXPORT void dvz_event_mouse_double_click(DvzCanvas* canvas, vec2 pos, DvzMouseButton button);
+DVZ_EXPORT void
+dvz_event_mouse_double_click(DvzCanvas* canvas, vec2 pos, DvzMouseButton button, int modifiers);
 
 /**
  * Emit a mouse drag event.
@@ -987,8 +998,10 @@ DVZ_EXPORT void dvz_event_mouse_double_click(DvzCanvas* canvas, vec2 pos, DvzMou
  * @param canvas the canvas
  * @param pos the drag start position
  * @param button the mouse button
+ * @param modifiers flags with the active keyboard modifiers
  */
-DVZ_EXPORT void dvz_event_mouse_drag(DvzCanvas* canvas, vec2 pos, DvzMouseButton button);
+DVZ_EXPORT void
+dvz_event_mouse_drag(DvzCanvas* canvas, vec2 pos, DvzMouseButton button, int modifiers);
 
 /**
  * Emit a mouse drag end event.
@@ -996,8 +1009,10 @@ DVZ_EXPORT void dvz_event_mouse_drag(DvzCanvas* canvas, vec2 pos, DvzMouseButton
  * @param canvas the canvas
  * @param pos the drag end position
  * @param button the mouse button
+ * @param modifiers flags with the active keyboard modifiers
  */
-DVZ_EXPORT void dvz_event_mouse_drag_end(DvzCanvas* canvas, vec2 pos, DvzMouseButton button);
+DVZ_EXPORT void
+dvz_event_mouse_drag_end(DvzCanvas* canvas, vec2 pos, DvzMouseButton button, int modifiers);
 
 /**
  * Emit a key press event.

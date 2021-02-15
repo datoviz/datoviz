@@ -146,7 +146,7 @@ static void _glfw_wheel_callback(GLFWwindow* window, double dx, double dy)
     ASSERT(canvas != NULL);
     ASSERT(canvas->window != NULL);
 
-    dvz_event_mouse_wheel(canvas, (vec2){dx, dy});
+    dvz_event_mouse_wheel(canvas, (vec2){dx, dy}, canvas->mouse.modifiers);
 }
 
 static void _glfw_button_callback(GLFWwindow* window, int button, int action, int mods)
@@ -178,7 +178,7 @@ static void _glfw_move_callback(GLFWwindow* window, double xpos, double ypos)
     ASSERT(canvas != NULL);
     ASSERT(canvas->window != NULL);
 
-    dvz_event_mouse_move(canvas, (vec2){xpos, ypos});
+    dvz_event_mouse_move(canvas, (vec2){xpos, ypos}, canvas->mouse.modifiers);
 }
 
 static void _glfw_frame_callback(DvzCanvas* canvas, DvzEvent ev)
@@ -197,7 +197,7 @@ static void _glfw_frame_callback(DvzCanvas* canvas, DvzEvent ev)
     glfwGetCursorPos(w, &xpos, &ypos);
     vec2 pos = {xpos, ypos};
     if (canvas->mouse.cur_pos[0] != pos[0] || canvas->mouse.cur_pos[1] != pos[1])
-        dvz_event_mouse_move(canvas, pos);
+        dvz_event_mouse_move(canvas, pos, canvas->mouse.modifiers);
 
     // TODO
     // // Reset click events as soon as the next loop iteration after they were raised.
@@ -1099,6 +1099,8 @@ void dvz_mouse_event(DvzMouse* mouse, DvzCanvas* canvas, DvzEvent ev)
             glm_vec2_copy(mouse->cur_pos, mouse->press_pos);
             mouse->press_time = time;
             mouse->button = ev.u.b.button;
+            // Keep track of the modifiers used for the press event.
+            mouse->modifiers = ev.u.b.modifiers;
         }
         mouse->shift_length = 0;
         break;
@@ -1112,7 +1114,8 @@ void dvz_mouse_event(DvzMouse* mouse, DvzCanvas* canvas, DvzEvent ev)
             log_trace("end drag event");
             mouse->cur_state = DVZ_MOUSE_STATE_INACTIVE;
             mouse->button = DVZ_MOUSE_BUTTON_NONE;
-            dvz_event_mouse_drag_end(canvas, mouse->cur_pos, mouse->button);
+            mouse->modifiers = 0; // Reset the mouse key modifiers
+            dvz_event_mouse_drag_end(canvas, mouse->cur_pos, mouse->button, mouse->modifiers);
         }
 
         // Double click event.
@@ -1123,7 +1126,7 @@ void dvz_mouse_event(DvzMouse* mouse, DvzCanvas* canvas, DvzEvent ev)
             log_trace("double click event on button %d", mouse->button);
             mouse->cur_state = DVZ_MOUSE_STATE_DOUBLE_CLICK;
             mouse->click_time = time;
-            dvz_event_mouse_double_click(canvas, mouse->cur_pos, mouse->button);
+            dvz_event_mouse_double_click(canvas, mouse->cur_pos, mouse->button, mouse->modifiers);
         }
 
         // Click event.
@@ -1134,7 +1137,7 @@ void dvz_mouse_event(DvzMouse* mouse, DvzCanvas* canvas, DvzEvent ev)
             log_trace("click event on button %d", mouse->button);
             mouse->cur_state = DVZ_MOUSE_STATE_CLICK;
             mouse->click_time = time;
-            dvz_event_mouse_click(canvas, mouse->cur_pos, mouse->button);
+            dvz_event_mouse_click(canvas, mouse->cur_pos, mouse->button, mouse->modifiers);
         }
 
         else
@@ -1167,7 +1170,7 @@ void dvz_mouse_event(DvzMouse* mouse, DvzCanvas* canvas, DvzEvent ev)
         {
             log_trace("drag event on button %d", mouse->button);
             mouse->cur_state = DVZ_MOUSE_STATE_DRAG;
-            dvz_event_mouse_drag(canvas, mouse->cur_pos, mouse->button);
+            dvz_event_mouse_drag(canvas, mouse->cur_pos, mouse->button, mouse->modifiers);
         }
         // log_trace("mouse mouse %.1fx%.1f", mouse->cur_pos[0], mouse->cur_pos[1]);
         break;
@@ -1289,7 +1292,7 @@ void dvz_event_mouse_release(DvzCanvas* canvas, DvzMouseButton button, int modif
 
 
 
-void dvz_event_mouse_move(DvzCanvas* canvas, vec2 pos)
+void dvz_event_mouse_move(DvzCanvas* canvas, vec2 pos, int modifiers)
 {
     ASSERT(canvas != NULL);
 
@@ -1297,6 +1300,7 @@ void dvz_event_mouse_move(DvzCanvas* canvas, vec2 pos)
     event.type = DVZ_EVENT_MOUSE_MOVE;
     event.u.m.pos[0] = pos[0];
     event.u.m.pos[1] = pos[1];
+    event.u.m.modifiers = modifiers;
 
     // Update the mouse state.
     dvz_mouse_event(&canvas->mouse, canvas, event);
@@ -1306,7 +1310,7 @@ void dvz_event_mouse_move(DvzCanvas* canvas, vec2 pos)
 
 
 
-void dvz_event_mouse_wheel(DvzCanvas* canvas, vec2 dir)
+void dvz_event_mouse_wheel(DvzCanvas* canvas, vec2 dir, int modifiers)
 {
     ASSERT(canvas != NULL);
 
@@ -1314,6 +1318,7 @@ void dvz_event_mouse_wheel(DvzCanvas* canvas, vec2 dir)
     event.type = DVZ_EVENT_MOUSE_WHEEL;
     event.u.w.dir[0] = dir[0];
     event.u.w.dir[1] = dir[1];
+    event.u.w.modifiers = modifiers;
 
     // Update the mouse state.
     dvz_mouse_event(&canvas->mouse, canvas, event);
@@ -1323,7 +1328,7 @@ void dvz_event_mouse_wheel(DvzCanvas* canvas, vec2 dir)
 
 
 
-void dvz_event_mouse_click(DvzCanvas* canvas, vec2 pos, DvzMouseButton button)
+void dvz_event_mouse_click(DvzCanvas* canvas, vec2 pos, DvzMouseButton button, int modifiers)
 {
     ASSERT(canvas != NULL);
     DvzEvent event = {0};
@@ -1331,13 +1336,15 @@ void dvz_event_mouse_click(DvzCanvas* canvas, vec2 pos, DvzMouseButton button)
     event.u.c.pos[0] = pos[0];
     event.u.c.pos[1] = pos[1];
     event.u.c.button = button;
+    event.u.c.modifiers = modifiers;
     event.u.c.double_click = false;
     _event_produce(canvas, event);
 }
 
 
 
-void dvz_event_mouse_double_click(DvzCanvas* canvas, vec2 pos, DvzMouseButton button)
+void dvz_event_mouse_double_click(
+    DvzCanvas* canvas, vec2 pos, DvzMouseButton button, int modifiers)
 {
     ASSERT(canvas != NULL);
     DvzEvent event = {0};
@@ -1345,32 +1352,35 @@ void dvz_event_mouse_double_click(DvzCanvas* canvas, vec2 pos, DvzMouseButton bu
     event.u.c.pos[0] = pos[0];
     event.u.c.pos[1] = pos[1];
     event.u.c.button = button;
+    event.u.c.modifiers = modifiers;
     event.u.c.double_click = true;
     _event_produce(canvas, event);
 }
 
 
 
-void dvz_event_mouse_drag(DvzCanvas* canvas, vec2 pos, DvzMouseButton button)
+void dvz_event_mouse_drag(DvzCanvas* canvas, vec2 pos, DvzMouseButton button, int modifiers)
 {
     ASSERT(canvas != NULL);
     DvzEvent event = {0};
     event.type = DVZ_EVENT_MOUSE_DRAG_BEGIN;
     event.u.d.pos[0] = pos[0];
     event.u.d.pos[1] = pos[1];
+    event.u.d.modifiers = modifiers;
     event.u.d.button = button;
     _event_produce(canvas, event);
 }
 
 
 
-void dvz_event_mouse_drag_end(DvzCanvas* canvas, vec2 pos, DvzMouseButton button)
+void dvz_event_mouse_drag_end(DvzCanvas* canvas, vec2 pos, DvzMouseButton button, int modifiers)
 {
     ASSERT(canvas != NULL);
     DvzEvent event = {0};
     event.type = DVZ_EVENT_MOUSE_DRAG_END;
     event.u.d.pos[0] = pos[0];
     event.u.d.pos[1] = pos[1];
+    event.u.d.modifiers = modifiers;
     event.u.d.button = button;
     _event_produce(canvas, event);
 }

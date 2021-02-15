@@ -390,6 +390,18 @@ def _key_name(key):
 def _button_name(button):
     return _BUTTONS.get(button, None)
 
+def _get_modifiers(mods):
+    mods_py = []
+    if mods & cv.DVZ_KEY_MODIFIER_SHIFT:
+        mods_py.append('shift')
+    if mods & cv.DVZ_KEY_MODIFIER_CONTROL:
+        mods_py.append('control')
+    if mods & cv.DVZ_KEY_MODIFIER_ALT:
+        mods_py.append('alt')
+    if mods & cv.DVZ_KEY_MODIFIER_SUPER:
+        mods_py.append('super')
+    return tuple(mods_py)
+
 # def _mouse_state(state):
 #     return _MOUSE_STATES.get(state, None)
 
@@ -441,30 +453,33 @@ cdef _get_ev_args(cv.DvzEvent c_ev):
     # Key events.
     elif dt == cv.DVZ_EVENT_KEY_PRESS or dt == cv.DVZ_EVENT_KEY_RELEASE:
         key_code = c_ev.u.k.key_code
-        modifiers = c_ev.u.k.modifiers
+        modifiers = _get_modifiers(c_ev.u.k.modifiers)
         return (key_code, modifiers), {}
     # Mouse button events.
     elif dt == cv.DVZ_EVENT_MOUSE_PRESS or dt == cv.DVZ_EVENT_MOUSE_RELEASE:
         button = _button_name(c_ev.u.b.button)
-        modifiers = c_ev.u.b.modifiers
+        modifiers = _get_modifiers(c_ev.u.b.modifiers)
         return (button, modifiers), {}
     # Mouse button events.
     elif dt == cv.DVZ_EVENT_MOUSE_CLICK or dt == cv.DVZ_EVENT_MOUSE_DOUBLE_CLICK:
         x = c_ev.u.c.pos[0]
         y = c_ev.u.c.pos[1]
         button = _button_name(c_ev.u.c.button)
+        modifiers = _get_modifiers(c_ev.u.c.modifiers)
         dbl = c_ev.u.c.double_click
-        return (x, y), dict(button=button)  #, double_click=dbl)
+        return (x, y), dict(button=button, modifiers=modifiers)  #, double_click=dbl)
     # Mouse move event.
     elif dt == cv.DVZ_EVENT_MOUSE_MOVE:
         x = c_ev.u.m.pos[0]
         y = c_ev.u.m.pos[1]
-        return (x, y), {}
+        modifiers = _get_modifiers(c_ev.u.m.modifiers)
+        return (x, y), dict(modifiers=modifiers)
     # Mouse wheel event.
     elif dt == cv.DVZ_EVENT_MOUSE_WHEEL:
         dx = c_ev.u.w.dir[0]
         dy = c_ev.u.w.dir[1]
-        return (dx, dy), {}
+        modifiers = _get_modifiers(c_ev.u.w.modifiers)
+        return (dx, dy), dict(modifiers=modifiers)
     return (), {}
 
 
@@ -505,7 +520,9 @@ cdef _add_event_callback(cv.DvzCanvas* c_canvas, cv.DvzEventType evtype, double 
     Py_INCREF(tup)
 
     ptr_to_obj = <void*>tup
-    cv.dvz_event_callback(c_canvas, evtype, param, cv.DVZ_EVENT_MODE_ASYNC, <cv.DvzEventCallback>_wrapped_callback, ptr_to_obj)
+    cv.dvz_event_callback(
+        c_canvas, evtype, param, cv.DVZ_EVENT_MODE_ASYNC,
+        <cv.DvzEventCallback>_wrapped_callback, ptr_to_obj)
 
 
 
