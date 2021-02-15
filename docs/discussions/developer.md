@@ -54,6 +54,8 @@ Datoviz integrates Dear ImGUI via a git submodule ([fork](https://github.com/dat
 
 We use clang format to automatically format all C source files. The rules are defined in `.clang-format`.
 
+[We follow loosely this coding guide.](https://developer.lsst.io/cpp/api-docs.html)
+
 
 ## Command-line tool
 
