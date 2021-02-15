@@ -50,6 +50,6 @@ def f():
     i += 1
     i = i % (n_points // k)
 
-c.connect('timer', f, .05)
+c._connect('timer', f, .05)
 
 run()

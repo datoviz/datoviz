@@ -1093,6 +1093,9 @@ cdef extern from "<datoviz/datoviz.h>":
     DvzPanel* dvz_scene_panel(DvzScene* scene, uint32_t row, uint32_t col, DvzControllerType type, int flags)
     DvzVisual* dvz_scene_visual(DvzPanel* panel, DvzVisualType type, int flags)
 
+    # from file: transforms.h
+    void dvz_transform(DvzPanel* panel, DvzCDS source, dvec3 pos_in, DvzCDS target, dvec3 pos_out)
+
     # from file: visuals.h
     void dvz_visual_data(DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx, uint32_t count, const void* data)
     void dvz_visual_data_source(DvzVisual* visual, DvzSourceType source_type, uint32_t source_idx, uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data)

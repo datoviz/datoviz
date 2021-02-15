@@ -213,7 +213,8 @@ dvz_transform_pos(DvzDataCoords coords, DvzArray* pos_in, DvzArray* pos_out, boo
  * @param target the target coordinate system
  * @param[out] out the output (transformed) position
  */
-DVZ_EXPORT void dvz_transform(DvzPanel* panel, DvzCDS source, dvec3 in, DvzCDS target, dvec3 out);
+DVZ_EXPORT void
+dvz_transform(DvzPanel* panel, DvzCDS source, dvec3 pos_in, DvzCDS target, dvec3 pos_out);
 
 
 

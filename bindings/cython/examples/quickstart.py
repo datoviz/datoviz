@@ -25,7 +25,7 @@ visual = panel.visual('marker')
 # and size (in pixels).
 N = 100_000
 pos = nr.randn(N, 3)
-ms = nr.uniform(low=2, high=40, size=N)
+ms = nr.uniform(low=2, high=35, size=N)
 color_values = nr.rand(N)
 
 # Use a built-in colormap

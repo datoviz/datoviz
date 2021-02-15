@@ -77,9 +77,9 @@ void dvz_transform_pos(DvzDataCoords coords, DvzArray* pos_in, DvzArray* pos_out
 
 
 
-void dvz_transform(DvzPanel* panel, DvzCDS source, dvec3 in, DvzCDS target, dvec3 out)
+void dvz_transform(DvzPanel* panel, DvzCDS source, dvec3 pos_in, DvzCDS target, dvec3 pos_out)
 {
     ASSERT(panel != NULL);
     DvzTransformChain tc = _transforms_cds(panel, source, target);
-    _transforms_apply(&tc, in, out);
+    _transforms_apply(&tc, pos_in, pos_out);
 }

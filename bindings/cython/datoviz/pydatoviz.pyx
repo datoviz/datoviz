@@ -123,6 +123,14 @@ _TRANSPOSES = {
     'xlybzd': cv.DVZ_CDS_TRANSPOSE_XLYBZD,
 }
 
+_COORDINATE_SYSTEMS = {
+    'data': cv.DVZ_CDS_DATA,
+    'scene': cv.DVZ_CDS_SCENE,
+    'vulkan': cv.DVZ_CDS_VULKAN,
+    'framebuffer': cv.DVZ_CDS_FRAMEBUFFER,
+    'window': cv.DVZ_CDS_WINDOW,
+}
+
 _PROPS = {
     'pos': cv.DVZ_PROP_POS,
     'color': cv.DVZ_PROP_COLOR,
@@ -652,25 +660,15 @@ cdef class Canvas:
             cv.dvz_canvas_to_close(self._c_canvas)
             self._c_canvas = NULL
 
-    def connect(self, evtype_py, f, param=0):
+    def _connect(self, evtype_py, f, param=0):
         cdef cv.DvzEventType evtype
         evtype = _EVENTS.get(evtype_py, 0)
         _add_event_callback(self._c_canvas, evtype, param, f, ())
 
-    def on_mouse_move(self, f):
-        return self.connect('mouse_move', f)
-
-    def on_mouse_press(self, f):
-        return self.connect('mouse_press', f)
-
-    def on_mouse_release(self, f):
-        return self.connect('mouse_release', f)
-
-    def on_mouse_click(self, f):
-        return self.connect('mouse_click', f)
-
-    def on_mouse_move(self, f):
-        return self.connect('mouse_move', f)
+    def connect(self, f):
+        assert f.__name__.startswith('on_')
+        ev_name = f.__name__[3:]
+        self._connect(ev_name, f)
 
 
 
@@ -705,6 +703,17 @@ cdef class Panel:
         v.create(self._c_panel, c_visual, vtype)
         self._visuals.append(v)
         return v
+
+    def pick(self, x, y, target_cds):
+        cdef cv.dvec3 pos_in
+        cdef cv.dvec3 pos_out
+        pos_in[0] = x
+        pos_in[1] = y
+        pos_in[2] = 0
+        source = cv.DVZ_CDS_WINDOW
+        target = _COORDINATE_SYSTEMS[target_cds]
+        cv.dvz_transform(self._c_panel, source, pos_in, target, pos_out)
+        return (pos_out[0], pos_out[1])
 
 
 
