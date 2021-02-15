@@ -1536,6 +1536,8 @@ static void _screencast_timer_callback(DvzCanvas* canvas, DvzEvent ev)
     ASSERT(screencast != NULL);
     ASSERT(screencast->canvas != NULL);
     ASSERT(screencast->canvas->gpu != NULL);
+    if (!screencast->is_active)
+        return;
 
     log_trace("screencast timer frame #%d", screencast->frame_idx);
 
@@ -1567,6 +1569,8 @@ static void _screencast_post_send(DvzCanvas* canvas, DvzEvent ev)
     ASSERT(screencast != NULL);
     ASSERT(screencast->canvas != NULL);
     ASSERT(screencast->canvas->gpu != NULL);
+    if (!screencast->is_active)
+        return;
 
     uint32_t img_idx = canvas->swapchain.img_idx;
     // Always make sure the present semaphore is reset to its original value.
@@ -1673,6 +1677,7 @@ void dvz_screencast(DvzCanvas* canvas, double interval, bool has_alpha)
 
     canvas->screencast = calloc(1, sizeof(DvzScreencast));
     DvzScreencast* sc = canvas->screencast;
+    sc->is_active = true;
     sc->canvas = canvas;
     sc->has_alpha = has_alpha;
 
@@ -1817,6 +1822,10 @@ uint8_t* dvz_screenshot(DvzCanvas* canvas, bool has_alpha)
 
 
 
+/*************************************************************************************************/
+/*  Video screencast                                                                             */
+/*************************************************************************************************/
+
 static void _video_callback(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
@@ -1832,8 +1841,11 @@ static void _video_destroy(DvzCanvas* canvas, DvzEvent ev)
         end_video((Video*)ev.user_data);
 }
 
+
+
 void dvz_canvas_video(DvzCanvas* canvas, int framerate, int bitrate, const char* path)
 {
+    ASSERT(canvas != NULL);
     uvec2 size;
     dvz_canvas_size(canvas, DVZ_CANVAS_SIZE_FRAMEBUFFER, size);
     Video* video = create_video(path, (int)size[0], (int)size[1], framerate, bitrate);
@@ -1845,6 +1857,40 @@ void dvz_canvas_video(DvzCanvas* canvas, int framerate, int bitrate, const char*
     dvz_event_callback(canvas, DVZ_EVENT_DESTROY, 0, DVZ_EVENT_MODE_SYNC, _video_destroy, video);
 
     dvz_screencast(canvas, 1. / framerate, true);
+    ASSERT(canvas->screencast != NULL);
+    canvas->screencast->user_data = video;
+}
+
+
+
+void dvz_canvas_pause(DvzCanvas* canvas, bool record)
+{
+    ASSERT(canvas != NULL);
+    if (canvas->screencast == NULL)
+    {
+        log_error("cannot pause, there is no screencast");
+        return;
+    }
+    ASSERT(canvas->screencast != NULL);
+    canvas->screencast->is_active = record;
+}
+
+
+
+void dvz_canvas_stop(DvzCanvas* canvas)
+{
+    ASSERT(canvas != NULL);
+    if (canvas->screencast == NULL)
+    {
+        log_error("cannot pause, there is no screencast");
+        return;
+    }
+    ASSERT(canvas->screencast != NULL);
+    canvas->screencast->is_active = false;
+    ASSERT(canvas->screencast->user_data != NULL);
+    // This call frees the pointer.
+    end_video((Video*)canvas->screencast->user_data);
+    canvas->screencast->user_data = NULL;
 }
 
 

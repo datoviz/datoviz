@@ -512,6 +512,7 @@ struct DvzEventCallbackRegister
 struct DvzScreencast
 {
     DvzObject obj;
+    bool is_active;
 
     bool has_alpha;
     DvzCanvas* canvas;
@@ -523,6 +524,7 @@ struct DvzScreencast
     uint64_t frame_idx;
     DvzClock clock;
     DvzScreencastStatus status;
+    void* user_data;
 };
 
 
@@ -849,6 +851,12 @@ DVZ_EXPORT uint8_t* dvz_screenshot(DvzCanvas* canvas, bool has_alpha);
  */
 DVZ_EXPORT void dvz_screenshot_file(DvzCanvas* canvas, const char* png_path);
 
+
+
+/*************************************************************************************************/
+/*  Video                                                                                        */
+/*************************************************************************************************/
+
 /**
  * Record a live screencast video of the canvas.
  *
@@ -860,6 +868,21 @@ DVZ_EXPORT void dvz_screenshot_file(DvzCanvas* canvas, const char* png_path);
  * @param path path to the file (.mp4 extension recommended)
  */
 DVZ_EXPORT void dvz_canvas_video(DvzCanvas* canvas, int framerate, int bitrate, const char* path);
+
+/**
+ * Pause the live video screencast.
+ *
+ * @param canvas the canvas
+ * @param record whether to pause or continue the recording
+ */
+DVZ_EXPORT void dvz_canvas_pause(DvzCanvas* canvas, bool record);
+
+/**
+ * Stop the live video screencast and save the file.
+ *
+ * @param canvas the canvas
+ */
+DVZ_EXPORT void dvz_canvas_stop(DvzCanvas* canvas);
 
 
 

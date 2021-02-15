@@ -1070,6 +1070,8 @@ cdef extern from "<datoviz/datoviz.h>":
     void dvz_canvas_to_close(DvzCanvas* canvas)
     void dvz_screenshot_file(DvzCanvas* canvas, const char* png_path)
     void dvz_canvas_video(DvzCanvas* canvas, int framerate, int bitrate, const char* path)
+    void dvz_canvas_pause(DvzCanvas* canvas, bint record)
+    void dvz_canvas_stop(DvzCanvas* canvas)
     void dvz_app_run(DvzApp* app, uint64_t frame_count)
 
     # from file: context.h

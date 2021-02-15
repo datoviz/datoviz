@@ -617,6 +617,7 @@ cdef class Canvas:
     cdef cv.DvzScene* _c_scene
     cdef cv.DvzGrid* _c_grid
     cdef object _app
+    cdef bint _video_recording
 
     _panels = []
 
@@ -634,6 +635,14 @@ cdef class Canvas:
     def video(self, unicode path):
         cdef char* _c_path = path
         cv.dvz_canvas_video(self._c_canvas, 30, 10000000, _c_path)
+        self._video_recording = True
+
+    def pause(self):
+        self._video_recording = not self._video_recording
+        cv.dvz_canvas_pause(self._c_canvas, self._video_recording)
+
+    def stop(self):
+        cv.dvz_canvas_stop(self._c_canvas)
 
     def panel(self, int row=0, int col=0, controller='axes', transform=None, transpose=None):
         ctl = _CONTROLLERS.get(controller, cv.DVZ_CONTROLLER_NONE)
