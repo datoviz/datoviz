@@ -1,4 +1,4 @@
-# Datoviz: scientific visualization with Vulkan
+# Datoviz: GPU interactive scientific data visualization with Vulkan
 
 **Datoviz** is an open-source **high-performance interactive scientific data visualization library** leveraging the graphics processing unit (**GPU**) for speed, visual quality, and scalability. It supports both 2D and 3D rendering, as well as minimal graphical user interfaces (using the [Dear ImGUI library](https://github.com/ocornut/imgui)).
 
@@ -10,7 +10,7 @@ Datoviz is at an early stage of development. The library is quite usable but evo
 
 ## Screenshots
 
-![](images/screenshots/datoviz.jpg)
+![](https://raw.githubusercontent.com/datoviz/data/master/screenshots/datoviz.jpg)
 *Credits: mouse brain volume: [Allen SDK](https://alleninstitute.github.io/AllenSDK/). France: [Natural Earth](https://www.naturalearthdata.com/). Molecule: [Crystal structure of S. pyogenes Cas9 from PDB](https://www.rcsb.org/structure/4cmp) (thanks to Eric for conversion to OBJ mesh). Earth: [Pixabay](https://pixabay.com/fr/illustrations/terre-planet-monde-globe-espace-1617121/). Raster plot: IBL. 3D human brain: [Anneke Alkemade et al. 2020](https://www.frontiersin.org/articles/10.3389/fnana.2020.536838/full), thanks to Pierre-Louis Bazin and Julia Huntenburg.*
 
 
@@ -26,6 +26,14 @@ The documentation is divided into:
 * **[Discussions](docs/discussions/index.md)**: explanations, Vulkan crash course, and notes.
 
 
+## Preliminary performance results
+
+* scatter plot with 10M points: **250 FPS** (`point` visual)
+* high-resolution 3D mesh with 10M triangles and 5M vertices: **400 FPS**
+* 1000 signals with 30K points each (30M vertices): **200 FPS**
+
+*GPU: 2019 NVIDIA GeForce RTX 2070 SUPER. Window size: 1024x768.*
+
 
 ## Features
 
@@ -39,6 +47,7 @@ The documentation is divided into:
 * **DPI-aware**: partial support for high-resolution monitors
 * **GUIs** integrated via the **Dear ImGUI** C++ library (Qt or other backends not required)
 * **Custom visuals**, with custom shaders and/or custom data transformations
+* Mouse picking
 * Initial support for multiple canvases
 * Initial builtin support for screencasts and video recording with ffmpeg (optional dependency)
 * Initial support for offscreen rendering and CPU emulation via swiftshader
@@ -49,7 +58,6 @@ Upcoming features:
 * Further data transformations: logarithmic, polar, basic Earth coordinate systems for geographical data
 * Colorbars
 * 3D axes
-* Mouse picking
 * Better support of multiple GPUs
 * Qt integration
 * Continuous integration, more robust testing
@@ -60,15 +68,6 @@ Long-term future (or shorter if there are community contributions):
 * Jupyter notebook integration
 * Web integration via WebGPU?
 * Remote desktop integration?
-
-
-**Preliminary performance results**:
-
-* scatter plot with 10M points: **250 FPS** (`point` visual)
-* high-resolution 3D mesh with 10M triangles and 5M vertices: **400 FPS**
-* 1000 signals with 30K points each (30M vertices): **200 FPS**
-
-*GPU: 2019 NVIDIA GeForce RTX 2070 SUPER. Window size: 1024x768.*
 
 
 ## Credits and related projects

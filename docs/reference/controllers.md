@@ -49,11 +49,13 @@ Left-dragging controls the camera, the arrow keys control the position, the Z is
 | `refill` | called when the command buffers need to be recreated (e.g. window resize) |
 | `resize` | called when the window is resized |
 | `timer` | called in the main loop at regular time intervals |
-| `mouse_button` | called when a mouse button is pressed or released |
+| `mouse_press` | called when a mouse button is pressed |
+| `mouse_release` | called when a mouse button is released |
 | `mouse_move` | called when the mouse moves |
 | `mouse_wheel` | called when the mouse wheel moves |
 | `mouse_drag_begin` | called when a mouse drag operation begins |
 | `mouse_drag_end` | called when a mouse drag operation ends |
 | `mouse_click` | called after a single click |
 | `mouse_double_click` | called after a double click |
-| `key` | called when a key is pressed or released |
+| `key_press` | called when a key is pressed |
+| `key_release` | called when a key is released |

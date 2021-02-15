@@ -6,9 +6,9 @@ This page proposes a high-level, simplified overview of Vulkan for beginners. Un
 
 ## Using the GPU for scientific visualization
 
-The GPU is a massively parallel computing unit specialized in rendering graphics in real-time. Vulkan is a low-level graphics API that provides extensive control on the GPU for rendering and compute. It is harder to user than older APIs like OpenGL because it proposes a relatively low level of abstraction. This design choice gives more control to the developer and helps achieving higher performance.
+The GPU is a massively parallel computing unit dedicated to real-time graphics rendering. Vulkan is a low-level graphics API that provides extensive control on the GPU for rendering and compute. It is harder to user than older APIs like OpenGL because it proposes a relatively low level of abstraction. This design choice gives more control to the developer and helps achieving higher performance.
 
-The GPU is typically used by video games, rendering complex, animated 3D meshes with real-time special effects and low latency. The GPU can also be used for scientific applications, which has quite different requirements. Scenes are typically less dynamic, there is less heterogeneity in the types of objects rendered in the scene, and high visual accuracy is an absolute requirement.
+The GPU is typically used by video games, which render complex, animated 3D meshes with real-time special effects and low latency. The GPU can also be used for scientific applications, which has quite different requirements. Scenes are typically less dynamic, there is less heterogeneity in the types of objects rendered in the scene, and high visual accuracy is an absolute requirement.
 
 How to use the GPU for scientific visualization? At a high level, the user has some scientific data: a set of 2D or 3D points, a graph, a volume, an image, and so on. On the other hand, **the GPU can only render three types of primitives**:
 
@@ -91,7 +91,7 @@ For example, to render a thick line, one must triangulate the path, taking care 
 
 A similar principle is used for markers and text. For text, signed distance functions of each glyph are stored in a texture and used by the fragment shader.
 
-In Datoviz, high-quality antialiased 2D graphics are implemented with GLSL code originally written by Nicolas Rougier in his Glumpy library (GPU implementation of *agg*, antigrain geometry), and published in computer graphics articles.
+In Datoviz, high-quality antialiased 2D graphics are implemented with GLSL code originally written by [Nicolas Rougier](https://www.labri.fr/perso/nrougier/) in his [Glumpy](https://glumpy.github.io/) library (GPU implementation of *agg*, antigrain geometry), and published in [computer graphics articles](https://glumpy.github.io/resources.html#scientific-articles).
 
 A fundamental principle of Datoviz is to **abstract away these low-level details to the user, who can reuse directly these existing graphics for the most common types of scientific visualizations**.
 
@@ -103,7 +103,7 @@ We've now seen the basic principles of using the GPU for scientific visualizatio
 
 Vulkan is a low-level graphics API that has a high entry barrier given the large number of abstractions provided. These abstractions mostly relate to internal details of GPU hardware, but they are essential when one focuses on achieving high performance, which is the main selling point of Datoviz.
 
-Here is, for your information only, the ~30 types of objects used by Vulkan:
+Here is, for your information only, the ~30 types of objects used in Vulkan:
 
 ![Adam Sawicki, gpuopen](../images/vulkan-diagram.png)
 *[Diagram by Adam Sawicki, for gpuopen](https://gpuopen.com/learn/understanding-vulkan-objects/)*
@@ -228,7 +228,7 @@ First, one considers that the window size is fixed (until it is not). Resizing i
 
 Second, one needs to create a GPU image (like the object that is associated to a texture, but without a sampler) that the GPU will render to. This image will be presented to the screen. One must also define another special image of the same size for the *depth buffer*, essential with 3D rendering.
 
-Third, one must acquire a *surface*, a special Vulkan object that is used to render something to the window. Creating a window is an OS-dependent operation. Datoviz uses the **glfw** windowing library that abstracts these details away and offers an easy way to create windows and to deal with user inputs (mouse, keyboard).
+Third, one must acquire a *surface*, a special Vulkan object that is used to render something to the window. Creating a window is an OS-dependent operation. Datoviz uses the **glfw** window library that abstracts these details away and offers an easy way to create windows and to deal with user inputs (mouse, keyboard).
 
 Fourth, one needs to create a **swapchain**. This object provides a way to implement a technique sometimes called double-buffering, or triple-buffering, depending on the number of images used in the swapchain. The idea is to **avoid making the GPU wait while an image is being presented to the screen**. For example, with a frame rate of 60 images per second, each image remains on screen during about 16 milliseconds. During this time, the GPU is not expected to render to the same image, unless it makes a copy. That's basically the idea of the swapchain: providing a set of 2, 3 or more images that are *almost* identical. While the image 0 is presented to the screen, the GPU can render the *next frame* on image 1. When it finishes, it presents image 1 to the screen, while image 0 is being rewritten for the next frame (double buffering), or while it waits until the GPU requests it.
 

@@ -20,14 +20,16 @@
 
 ## Event emitting
 
-### `dvz_event_mouse_button()`
+### `dvz_event_mouse_press()`
+### `dvz_event_mouse_release()`
 ### `dvz_event_mouse_move()`
 ### `dvz_event_mouse_wheel()`
 ### `dvz_event_mouse_click()`
 ### `dvz_event_mouse_double_click()`
 ### `dvz_event_mouse_drag()`
 ### `dvz_event_mouse_drag_end()`
-### `dvz_event_key()`
+### `dvz_event_key_press()`
+### `dvz_event_key_release()`
 ### `dvz_event_frame()`
 ### `dvz_event_timer()`
 
@@ -39,6 +41,8 @@
 ### `dvz_screenshot()`
 ### `dvz_screenshot_file()`
 ### `dvz_canvas_video()`
+### `dvz_canvas_pause()`
+### `dvz_canvas_stop()`
 
 
 ## Internal event loop
