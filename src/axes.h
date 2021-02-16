@@ -290,10 +290,9 @@ static bool _axes_collision(DvzController* controller, DvzAxisCoord coord, dvec2
 
 
 // Callback called at every frame.
-static void _axes_callback(DvzController* controller, DvzEvent ev)
+static void _axes_refresh(DvzController* controller, bool force)
 {
     ASSERT(controller != NULL);
-    _default_controller_callback(controller, ev);
     ASSERT(controller->interacts != NULL);
     ASSERT(controller->interact_count >= 1);
     ASSERT(controller->panel != NULL);
@@ -305,7 +304,7 @@ static void _axes_callback(DvzController* controller, DvzEvent ev)
     DvzPanel* panel = controller->panel;
     ASSERT(panel != NULL);
 
-    if (!controller->interacts[0].is_active && !canvas->resized)
+    if (!force && !controller->interacts[0].is_active && !canvas->resized)
         return;
 
     // Check label collision
@@ -330,14 +329,10 @@ static void _axes_callback(DvzController* controller, DvzEvent ev)
         range[i][1] = out_tr[i];
 
         update[i] = _axes_collision(controller, (DvzAxisCoord)i, range[i]);
-
-        // DEBUG
-        // if (i == 0)
-        //     log_info("%d %f %f %d", i, range[i][0], range[i][1], update[i]);
     }
 
     // Force axes ticks refresh when resizing.
-    if (canvas->resized)
+    if (canvas->resized || force)
     {
         update[0] = true;
         update[1] = true;
@@ -353,6 +348,16 @@ static void _axes_callback(DvzController* controller, DvzEvent ev)
         // TODO: what else to do here? update a request??
         // canvas->obj.status = DVZ_OBJECT_STATUS_NEED_UPDATE;
     }
+}
+
+
+
+// Callback called at every frame.
+static void _axes_callback(DvzController* controller, DvzEvent ev)
+{
+    ASSERT(controller != NULL);
+    _default_controller_callback(controller, ev);
+    _axes_refresh(controller, false);
 }
 
 

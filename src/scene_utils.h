@@ -410,7 +410,24 @@ static void _process_prop_changed(DvzSceneUpdate up)
     ASSERT(up.prop != NULL);
     ASSERT(up.visual != NULL);
     if (up.prop->prop_type == DVZ_PROP_POS && _is_visual_to_transform(up.visual))
+    {
         _transform_pos_prop(coords, up.prop);
+
+        // Recompute the visual box.
+        DvzBox box = _visual_box(up.visual);
+
+        // Make the box square if needed.
+        if (_is_aspect_fixed(&coords))
+            box = _box_cube(box);
+
+        // If the new box has changed, renormalize all visuals.
+        if (_has_coords_changed(&coords, &box))
+        {
+            // Update the data coords.
+            up.panel->data_coords.box = box;
+            _enqueue_coords_changed(up.panel);
+        }
+    }
 
     // Mark the visual and source has needing update, for dvz_visual_update()
     ASSERT(up.source != NULL);
@@ -469,6 +486,7 @@ static void _process_coords_changed(DvzSceneUpdate up)
     {
         ASSERT(panel->controller != NULL);
         _axes_set(panel->controller, panel->data_coords.box);
+        _axes_refresh(panel->controller, true);
     }
 }
 
