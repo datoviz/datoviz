@@ -970,3 +970,6 @@ cdef class Gui:
             _add_event_callback(self._c_canvas, evtype, 0, f, (ctrl,))
 
         return wrap
+
+    def demo(self):
+        cv.dvz_gui_demo(self._c_gui)
