@@ -91,6 +91,9 @@ cdef extern from "<datoviz/datoviz.h>":
     ctypedef struct DvzSubmit:
         pass
 
+    ctypedef struct DvzBufferRegions:
+        pass
+
     ctypedef struct DvzCommands:
         pass
 
@@ -746,6 +749,17 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_SCENE_UPDATE_INTERACT_CHANGED = 7
         DVZ_SCENE_UPDATE_COORDS_CHANGED = 8
 
+    # from file: transfers.h
+
+    ctypedef enum DvzDataTransferType:
+        DVZ_TRANSFER_NONE = 0
+        DVZ_TRANSFER_BUFFER_UPLOAD = 1
+        DVZ_TRANSFER_BUFFER_DOWNLOAD = 2
+        DVZ_TRANSFER_BUFFER_COPY = 3
+        DVZ_TRANSFER_TEXTURE_UPLOAD = 4
+        DVZ_TRANSFER_TEXTURE_DOWNLOAD = 5
+        DVZ_TRANSFER_TEXTURE_COPY = 6
+
     # from file: transforms.h
 
     ctypedef enum DvzTransformType:
@@ -1100,6 +1114,14 @@ cdef extern from "<datoviz/datoviz.h>":
     void dvz_scene_destroy(DvzScene* scene)
     DvzPanel* dvz_scene_panel(DvzScene* scene, uint32_t row, uint32_t col, DvzControllerType type, int flags)
     DvzVisual* dvz_scene_visual(DvzPanel* panel, DvzVisualType type, int flags)
+
+    # from file: transfers.h
+    void dvz_upload_buffers(DvzCanvas* canvas, DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data)
+    void dvz_download_buffers(DvzCanvas* canvas, DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data)
+    void dvz_copy_buffers(DvzCanvas* canvas, DvzBufferRegions src, VkDeviceSize src_offset, DvzBufferRegions dst, VkDeviceSize dst_offset, VkDeviceSize size)
+    void dvz_upload_texture(DvzCanvas* canvas, DvzTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data)
+    void dvz_download_texture(DvzCanvas* canvas, DvzTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data)
+    void dvz_copy_texture(DvzCanvas* canvas, DvzTexture* src, uvec3 src_offset, DvzTexture* dst, uvec3 dst_offset, uvec3 shape, VkDeviceSize size)
 
     # from file: transforms.h
     void dvz_transform(DvzPanel* panel, DvzCDS source, dvec3 pos_in, DvzCDS target, dvec3 pos_out)

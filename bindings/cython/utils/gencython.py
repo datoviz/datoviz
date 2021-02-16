@@ -20,7 +20,7 @@ CYTHON_OUTPUT = (Path(__file__).parent / '../datoviz/cydatoviz.pxd').resolve()
 HEADER_FILES = (
     'app.h', 'vklite.h', 'context.h', 'canvas.h', 'keycode.h', 'transforms.h', 'colormaps.h',
     'array.h', 'mesh.h', 'controls.h', 'graphics.h', 'builtin_visuals.h', 'panel.h',
-    'visuals.h', 'scene.h')
+    'visuals.h', 'scene.h', 'transfers.h')
 STRUCTS = (
     'DvzEvent',
     'DvzEventUnion',

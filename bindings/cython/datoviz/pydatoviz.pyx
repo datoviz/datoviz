@@ -10,6 +10,7 @@ import logging
 cimport numpy as np
 import numpy as np
 from cpython.ref cimport Py_INCREF
+from libc.stdio cimport printf
 
 cimport datoviz.cydatoviz as cv
 
@@ -454,9 +455,9 @@ cdef _get_ev_args(cv.DvzEvent c_ev):
             return (bvalue[0],), {}
     # Key events.
     elif dt == cv.DVZ_EVENT_KEY_PRESS or dt == cv.DVZ_EVENT_KEY_RELEASE:
-        key_code = c_ev.u.k.key_code
+        key = _key_name(c_ev.u.k.key_code)
         modifiers = _get_modifiers(c_ev.u.k.modifiers)
-        return (key_code, modifiers), {}
+        return (key, modifiers), {}
     # Mouse button events.
     elif dt == cv.DVZ_EVENT_MOUSE_PRESS or dt == cv.DVZ_EVENT_MOUSE_RELEASE:
         button = _button_name(c_ev.u.b.button)
@@ -765,6 +766,7 @@ cdef class Panel:
 # -------------------------------------------------------------------------------------------------
 
 cdef class Texture:
+    cdef cv.DvzCanvas* _c_canvas
     cdef cv.DvzTexture* _c_texture
     cdef cv.DvzVisual* _c_visual
     cdef cv.DvzSourceType _c_source_type
@@ -774,6 +776,7 @@ cdef class Texture:
         cv.DvzSourceType c_source_type, UINT c_source_idx):
         self._c_visual = c_visual
         self._c_texture = c_texture
+        self._c_canvas = c_visual.canvas
         self._c_source_type = c_source_type
         self._c_source_idx = c_source_idx
 
@@ -790,8 +793,12 @@ cdef class Texture:
         cdef size = value.size
         cdef item_size = np.dtype(value.dtype).itemsize
 
-        cv.dvz_texture_upload(
-            self._c_texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, size * item_size, &value.data[0])
+        cdef int s
+        s = size * item_size
+        # printf("canvas=%d, tex=%d, size=%d, data=%d\n", self._c_canvas, self._c_texture, s, &value.data[0])
+        cv.dvz_upload_texture(
+            self._c_canvas, self._c_texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET,
+            size * item_size, &value.data[0])
 
 
 # -------------------------------------------------------------------------------------------------
@@ -861,13 +868,15 @@ cdef class Visual:
     def image(self, arr, idx=0, filtering=None):
         assert arr.ndim >= 2
         tex = self.texture('image', arr, idx=idx)
-        tex.set_filter(filtering)
+        # NOTE: this does not yet work from a background thread
+        # tex.set_filter(filtering)
         return tex
 
     def volume(self, arr, idx=0, filtering=None):
         assert arr.ndim >= 3
         tex = self.texture('volume', arr, idx=idx)
-        tex.set_filter(filtering)
+        # NOTE: this does not yet work from a background thread
+        # tex.set_filter(filtering)
         return tex
 
     def load_obj(self, unicode path, compute_normals=False):
