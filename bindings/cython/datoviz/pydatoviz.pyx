@@ -140,6 +140,7 @@ _PROPS = {
     'normal': cv.DVZ_PROP_NORMAL,
     'texcoords': cv.DVZ_PROP_TEXCOORDS,
     'index': cv.DVZ_PROP_INDEX,
+    'range': cv.DVZ_PROP_RANGE,
     'length': cv.DVZ_PROP_LENGTH,
     'light_params': cv.DVZ_PROP_LIGHT_PARAMS,
     'light_pos': cv.DVZ_PROP_LIGHT_POS,
@@ -836,6 +837,10 @@ cdef class Visual:
             shape[i] = arr.shape[i]
         for i in range(ndim, 3):
             shape[i] = 1
+
+        # NOTE: Vulkan considers textures as (width, height, depth) whereas NumPy
+        # considers them as (height, width, depth), hence the need to transpose here.
+        shape[0], shape[1] = shape[1], shape[0]
 
         # Create the Datoviz texture.
         c_texture = cv.dvz_ctx_texture(self._c_context, ndim, &shape[0], c_format)
