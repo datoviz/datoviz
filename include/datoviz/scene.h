@@ -54,6 +54,7 @@ typedef enum
 
 
 
+// Scene updates.
 typedef enum
 {
     DVZ_SCENE_UPDATE_NONE,
@@ -375,6 +376,8 @@ DVZ_EXPORT void dvz_camera_look(DvzPanel* panel, vec3 center);
  */
 DVZ_EXPORT void dvz_arcball_rotate(DvzPanel* panel, float angle, vec3 axis);
 
+
+DVZ_EXPORT void dvz_axes_flags(DvzPanel* panel, int flags);
 // TODO: panzoom functions
 
 

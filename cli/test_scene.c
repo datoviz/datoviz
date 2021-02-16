@@ -379,6 +379,8 @@ int test_scene_axes(TestContext* context)
     snprintf(path, sizeof(path), "%s/scene.mp4", ARTIFACTS_DIR);
     // dvz_canvas_video(canvas, 30, 10000000, path);
 
+    // dvz_axes_flags(panel, 0);
+
     dvz_app_run(app, N_FRAMES);
 
     dvz_scene_destroy(scene);

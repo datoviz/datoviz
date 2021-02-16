@@ -1208,6 +1208,10 @@ static void _visual_axes_2D_bake(DvzVisual* visual, DvzVisualDataEvent ev)
 
     DvzProp* prop = NULL;
     uint32_t tick_count = 0;
+    int flags = ((visual->flags >> 2) & 0x0003);
+    bool hide_minor = flags & 0x1;
+    bool hide_grid = flags & 0x2;
+
     for (uint32_t level = 0; level < DVZ_AXES_LEVEL_COUNT; level++)
     {
         // Take the tick positions.
@@ -1222,6 +1226,8 @@ static void _visual_axes_2D_bake(DvzVisual* visual, DvzVisualDataEvent ev)
         PARAM(float, lw, LINE_WIDTH, level)
         DPI_SCALE(lw)
 
+        // if (!((level == DVZ_AXES_LEVEL_MINOR && hide_minor) ||
+        //       (level == DVZ_AXES_LEVEL_GRID && hide_grid)))
         _add_ticks(prop, &seg_data, (DvzAxisLevel)level, coord, color, lw, tick_length);
     }
 
