@@ -134,7 +134,7 @@ Datoviz is being developed at the International Brain Laboratory, with funding f
 
 ![](https://raw.githubusercontent.com/datoviz/datoviz/main/docs/images/simons.png)
 ![](https://raw.githubusercontent.com/datoviz/datoviz/main/docs/images/flatiron.png)
-![](https://raw.githubusercontent.com/datoviz/datoviz/main/docs/images/wellcome.png)
+![](https://raw.githubusercontent.com/datoviz/datoviz/main/docs/images/wellcome.jpg)
 ![](https://raw.githubusercontent.com/datoviz/datoviz/main/docs/images/incf.jpg)
 
 
