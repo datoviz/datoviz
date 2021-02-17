@@ -557,6 +557,14 @@ DVZ_EXPORT void dvz_visual_buffer(
 DVZ_EXPORT void dvz_visual_texture(
     DvzVisual* visual, DvzSourceType source_type, uint32_t source_idx, DvzTexture* texture);
 
+/**
+ * Set visual flags.
+ *
+ * @param visual the visual
+ * @param flags visual flags
+ */
+DVZ_EXPORT void dvz_visual_flags(DvzVisual* visual, int flags);
+
 
 
 /*************************************************************************************************/

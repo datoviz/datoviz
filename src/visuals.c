@@ -442,6 +442,17 @@ void dvz_visual_texture(
 
 
 
+void dvz_visual_flags(DvzVisual* visual, int flags)
+{
+    ASSERT(visual != NULL);
+    visual->flags = flags;
+    // Update the vertex buffer at the next call to dvz_visual_update().
+    DvzSource* source = _get_pipeline_source(visual, DVZ_SOURCE_TYPE_VERTEX, 0);
+    _source_set_changed(source, true);
+}
+
+
+
 /*************************************************************************************************/
 /*  Visual events                                                                                */
 /*************************************************************************************************/

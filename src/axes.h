@@ -371,12 +371,18 @@ static void _axes_visual(DvzController* controller, DvzAxisCoord coord)
     DvzContext* ctx = panel->grid->canvas->gpu->context;
 
     // Axes visual flags
-    // 0x000X: coordinate
+    // 0x000X: coordinate (X=0/1)
     // 0x00X0: no CPU pos normalization
     // 0xX0000: interact fixed axis
     int flags = DVZ_VISUAL_FLAGS_TRANSFORM_NONE |
                 (coord == 0 ? DVZ_INTERACT_FIXED_AXIS_Y : DVZ_INTERACT_FIXED_AXIS_X) | //
                 (int)coord;
+
+    // NOTE: here, we take the controller flags, in the 0x0X00 range, and we shift them to the
+    // visual-specific bit range in 0x000X, noting that the first bit is reserved to the axis
+    // coordinate.
+    flags |= (controller->flags >> 8);
+
     ASSERT((flags & DVZ_VISUAL_FLAGS_TRANSFORM_NONE) != 0);
 
     DvzVisual* visual = dvz_scene_visual(panel, DVZ_VISUAL_AXES_2D, flags);

@@ -152,6 +152,7 @@ DvzController dvz_controller_builtin(DvzPanel* panel, DvzControllerType type, in
     ASSERT(panel != NULL);
     DvzController controller = dvz_controller(panel);
     controller.type = type;
+    controller.flags = flags;
 
     switch (type)
     {
@@ -212,7 +213,7 @@ dvz_scene_panel(DvzScene* scene, uint32_t row, uint32_t col, DvzControllerType t
     if (type == DVZ_CONTROLLER_AXES_2D)
         dvz_canvas_clear_color(scene->canvas, 1, 1, 1);
 
-    // Set panel transform flags depending on the contrller type.
+    // Set panel transform flags depending on the controller type.
     flags = _transform_flags(type, flags);
     panel->data_coords.flags = flags;
 
@@ -382,6 +383,20 @@ void dvz_arcball_rotate(DvzPanel* panel, float angle, vec3 axis)
     glm_quatv(arcball->rotation, angle, axis);
     _arcball_update_mvp(panel->viewport, arcball, mvp);
 }
+
+
+
+// void dvz_axes_flags(DvzPanel* panel, int flags)
+// {
+//     ASSERT(panel != NULL);
+//     if (panel->controller->type != DVZ_CONTROLLER_AXES_2D)
+//     {
+//         log_error("panel doesn't have an axes 2D controller");
+//         return;
+//     }
+//     DvzVisual* vx = panel->controller->visuals[0];
+//     DvzVisual* vy = panel->controller->visuals[1];
+// }
 
 
 
