@@ -491,6 +491,8 @@ cdef _get_ev_args(cv.DvzEvent c_ev):
 
 
 
+# NOTE: this function may run in a background thread if using async callbacks
+# It should not acquire the GIL
 cdef _wrapped_callback(cv.DvzCanvas* c_canvas, cv.DvzEvent c_ev):
     cdef object tup
     if c_ev.user_data != NULL:
@@ -719,7 +721,7 @@ cdef class Canvas:
             if panel._c_panel == c_panel:
                 return panel
 
-    def _connect(self, evtype_py, f, param=0, cv.DvzEventMode mode=cv.DVZ_EVENT_MODE_SYNC):
+    def _connect(self, evtype_py, f, param=0, cv.DvzEventMode mode=cv.DVZ_EVENT_MODE_ASYNC):
         cdef cv.DvzEventType evtype
         evtype = _EVENTS.get(evtype_py, 0)
         _add_event_callback(self._c_canvas, evtype, param, f, (), mode=mode)
@@ -729,10 +731,10 @@ cdef class Canvas:
         ev_name = f.__name__[3:]
         self._connect(ev_name, f)
 
-    def connect_async(self, f):
-        assert f.__name__.startswith('on_')
-        ev_name = f.__name__[3:]
-        self._connect(ev_name, f, mode=cv.DVZ_EVENT_MODE_ASYNC)
+    # def connect_async(self, f):
+    #     assert f.__name__.startswith('on_')
+    #     ev_name = f.__name__[3:]
+    #     self._connect(ev_name, f, mode=cv.DVZ_EVENT_MODE_ASYNC)
 
 
 
@@ -990,8 +992,8 @@ cdef class Gui:
 
     def control(self, unicode ctype, unicode name, **kwargs):
         cdef cv.DvzEventMode mode
-        is_async = kwargs.pop('mode', None) == 'async'
-        mode = cv.DVZ_EVENT_MODE_ASYNC if is_async else cv.DVZ_EVENT_MODE_SYNC
+        # is_async = kwargs.pop('mode', None) == 'async'
+        mode = cv.DVZ_EVENT_MODE_ASYNC #  if is_async else cv.DVZ_EVENT_MODE_SYNC
         ctrl = _CONTROLS.get(ctype, 0)
         cdef char* c_name = name
 
