@@ -3,6 +3,7 @@
 # This build script should be improved, use cmake perhaps
 export DVZ_EXAMPLE_FILE=$1
 gcc $DVZ_EXAMPLE_FILE -I../include/ -I../external/cglm/include -I../build/_deps/glfw-src/include \
+    -I../external/imgui/ -I../external/ \
     -L../build/ -L../build/_deps/glfw-build/src -lvulkan -lm -lglfw -ldatoviz -o datoviz_example
 
 glslc custom_point.vert -o custom_point.vert.spv -I../include/datoviz/glsl

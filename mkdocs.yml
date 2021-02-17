@@ -56,6 +56,7 @@ nav:
   - How to guides:
     - Index: 'howto/index.md'
     - How to write a standalone C app: 'howto/standalone_scene.md'
+    - How to use Dear ImGui directly: 'howto/standalone_imgui.md'
     - How to write a custom visual: 'howto/visual.md'
     - How to write a custom graphics: 'howto/graphics.md'
     - How to use the canvas C API: 'howto/standalone_canvas.md'

@@ -132,10 +132,10 @@ An upcoming version will also have the following dependencies:
 
 Datoviz is being developed at the International Brain Laboratory, with funding from the Simons Foundation, the Flatiron Institute, the Wellcome Trust, INCF.
 
-![](docs/images/simons.png)
-![](docs/images/flatiron.png)
-![](docs/images/wellcome.jpg)
-![](docs/images/incf.jpg)
+![](https://raw.githubusercontent.com/datoviz/datoviz/main/docs/images/simons.png)
+![](https://raw.githubusercontent.com/datoviz/datoviz/main/docs/images/flatiron.png)
+![](https://raw.githubusercontent.com/datoviz/datoviz/main/docs/images/wellcome.png)
+![](https://raw.githubusercontent.com/datoviz/datoviz/main/docs/images/incf.jpg)
 
 
 Glossary:
