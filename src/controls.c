@@ -40,19 +40,28 @@ static DvzGuiControl* _add_control(
 }
 
 
+void* dvz_gui_value(DvzGuiControl* control)
+{
+    ASSERT(control != NULL);
+    return control->value;
+}
 
-void dvz_gui_checkbox(DvzGui* gui, const char* name, bool value)
+
+
+DvzGuiControl* dvz_gui_checkbox(DvzGui* gui, const char* name, bool value)
 {
     ASSERT(gui != NULL);
     ASSERT(name != NULL);
     DvzGuiControl* control =
         _add_control(gui, DVZ_GUI_CONTROL_CHECKBOX, name, sizeof(bool), &value);
     ASSERT(control != NULL);
+    return control;
 }
 
 
 
-void dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax, float value)
+DvzGuiControl*
+dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax, float value)
 {
     ASSERT(gui != NULL);
     ASSERT(vmin < vmax);
@@ -62,11 +71,13 @@ void dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax,
         _add_control(gui, DVZ_GUI_CONTROL_SLIDER_FLOAT, name, sizeof(float), &value);
     control->u.sf.vmin = vmin;
     control->u.sf.vmax = vmax;
+    return control;
 }
 
 
 
-void dvz_gui_input_float(DvzGui* gui, const char* name, float step, float step_fast, float value)
+DvzGuiControl*
+dvz_gui_input_float(DvzGui* gui, const char* name, float step, float step_fast, float value)
 {
     ASSERT(gui != NULL);
     ASSERT(step > 0);
@@ -75,11 +86,12 @@ void dvz_gui_input_float(DvzGui* gui, const char* name, float step, float step_f
         _add_control(gui, DVZ_GUI_CONTROL_INPUT_FLOAT, name, sizeof(float), &value);
     control->u.f.step = step;
     control->u.f.step_fast = step_fast;
+    return control;
 }
 
 
 
-void dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax, int value)
+DvzGuiControl* dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax, int value)
 {
     ASSERT(gui != NULL);
     ASSERT(vmin < vmax);
@@ -89,11 +101,12 @@ void dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax, int v
         _add_control(gui, DVZ_GUI_CONTROL_SLIDER_INT, name, sizeof(int), &value);
     control->u.si.vmin = vmin;
     control->u.si.vmax = vmax;
+    return control;
 }
 
 
 
-void dvz_gui_label(DvzGui* gui, const char* name, char* text)
+DvzGuiControl* dvz_gui_label(DvzGui* gui, const char* name, char* text)
 {
     ASSERT(gui != NULL);
     ASSERT(name != NULL);
@@ -101,11 +114,12 @@ void dvz_gui_label(DvzGui* gui, const char* name, char* text)
     DvzGuiControl* control =
         _add_control(gui, DVZ_GUI_CONTROL_LABEL, name, MAX_TEXT_LENGTH * sizeof(char), text);
     ASSERT(control != NULL);
+    return control;
 }
 
 
 
-void dvz_gui_textbox(DvzGui* gui, const char* name, char* text)
+DvzGuiControl* dvz_gui_textbox(DvzGui* gui, const char* name, char* text)
 {
     ASSERT(gui != NULL);
     ASSERT(name != NULL);
@@ -113,27 +127,30 @@ void dvz_gui_textbox(DvzGui* gui, const char* name, char* text)
     DvzGuiControl* control =
         _add_control(gui, DVZ_GUI_CONTROL_TEXTBOX, name, MAX_TEXT_LENGTH * sizeof(char), text);
     ASSERT(control != NULL);
+    return control;
 }
 
 
 
-void dvz_gui_button(DvzGui* gui, const char* name, int flags)
+DvzGuiControl* dvz_gui_button(DvzGui* gui, const char* name, int flags)
 {
     ASSERT(gui != NULL);
     ASSERT(name != NULL);
     // TODO: flags
     DvzGuiControl* control = _add_control(gui, DVZ_GUI_CONTROL_BUTTON, name, sizeof(int), NULL);
     ASSERT(control != NULL);
+    return control;
 }
 
 
 
-void dvz_gui_colormap(DvzGui* gui, DvzColormap cmap)
+DvzGuiControl* dvz_gui_colormap(DvzGui* gui, DvzColormap cmap)
 {
     ASSERT(gui != NULL);
     DvzGuiControl* control =
         _add_control(gui, DVZ_GUI_CONTROL_COLORMAP, "", sizeof(DvzColormap), &cmap);
     ASSERT(control != NULL);
+    return control;
 }
 
 

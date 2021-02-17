@@ -153,8 +153,13 @@ struct DvzGui
  * @returns the GUI
  */
 DVZ_EXPORT DvzGui* dvz_gui(DvzCanvas* canvas, const char* title, int flags);
-
-
+/**
+ * Return the pointer to the control's value.
+ *
+ * @param control the GUI
+ * @returns the pointer to the value
+ */
+DVZ_EXPORT void* dvz_gui_value(DvzGuiControl* control);
 
 /**
  * Add a checkbox control.
@@ -162,8 +167,9 @@ DVZ_EXPORT DvzGui* dvz_gui(DvzCanvas* canvas, const char* title, int flags);
  * @param gui the GUI
  * @param name the control label
  * @param value whether the checkbox is initially checked
+ * @returns the control
  */
-DVZ_EXPORT void dvz_gui_checkbox(DvzGui* gui, const char* name, bool value);
+DVZ_EXPORT DvzGuiControl* dvz_gui_checkbox(DvzGui* gui, const char* name, bool value);
 
 /**
  * Add a slider for float number input.
@@ -173,8 +179,9 @@ DVZ_EXPORT void dvz_gui_checkbox(DvzGui* gui, const char* name, bool value);
  * @param vmin the minimum value
  * @param vmax the maximum value
  * @param value the initial value
+ * @returns the control
  */
-DVZ_EXPORT void
+DVZ_EXPORT DvzGuiControl*
 dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax, float value);
 
 /**
@@ -185,8 +192,10 @@ dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax, floa
  * @param vmin the minimum value
  * @param vmax the maximum value
  * @param value the initial value
+ * @returns the control
  */
-DVZ_EXPORT void dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax, int value);
+DVZ_EXPORT DvzGuiControl*
+dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax, int value);
 
 /**
  * Add an input float control.
@@ -196,8 +205,9 @@ DVZ_EXPORT void dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int 
  * @param step the step
  * @param step_fast the step for fast scrolling
  * @param value the initial value
+ * @returns the control
  */
-DVZ_EXPORT void
+DVZ_EXPORT DvzGuiControl*
 dvz_gui_input_float(DvzGui* gui, const char* name, float step, float step_fast, float value);
 
 /**
@@ -206,8 +216,9 @@ dvz_gui_input_float(DvzGui* gui, const char* name, float step, float step_fast, 
  * @param gui the GUI
  * @param name the control label
  * @param text the control text
+ * @returns the control
  */
-DVZ_EXPORT void dvz_gui_label(DvzGui* gui, const char* name, char* text);
+DVZ_EXPORT DvzGuiControl* dvz_gui_label(DvzGui* gui, const char* name, char* text);
 
 /**
  * Add a textbox control for text input.
@@ -215,8 +226,9 @@ DVZ_EXPORT void dvz_gui_label(DvzGui* gui, const char* name, char* text);
  * @param gui the GUI
  * @param name the control label
  * @param value the initial text
+ * @returns the control
  */
-DVZ_EXPORT void dvz_gui_textbox(DvzGui* gui, const char* name, char* value);
+DVZ_EXPORT DvzGuiControl* dvz_gui_textbox(DvzGui* gui, const char* name, char* value);
 
 /**
  * Add a button.
@@ -224,16 +236,18 @@ DVZ_EXPORT void dvz_gui_textbox(DvzGui* gui, const char* name, char* value);
  * @param gui the GUI
  * @param name the control label
  * @param flags optional flags
+ * @returns the control
  */
-DVZ_EXPORT void dvz_gui_button(DvzGui* gui, const char* name, int flags);
+DVZ_EXPORT DvzGuiControl* dvz_gui_button(DvzGui* gui, const char* name, int flags);
 
 /**
  * Add a colormap image.
  *
  * @param gui the GUI
  * @param cmap the colormap
+ * @returns the control
  */
-DVZ_EXPORT void dvz_gui_colormap(DvzGui* gui, DvzColormap cmap);
+DVZ_EXPORT DvzGuiControl* dvz_gui_colormap(DvzGui* gui, DvzColormap cmap);
 
 
 
