@@ -26,6 +26,7 @@ then
     cd bindings/cython && \
     python3 utils/gencython.py && \
     python3 setup.py build_ext -i && \
+    python3 setup.py develop --user && \
     cd ../..
 fi
 
