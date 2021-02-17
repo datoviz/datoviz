@@ -1191,7 +1191,7 @@ static void _visual_axes_2D_bake(DvzVisual* visual, DvzVisualDataEvent ev)
     dvz_graphics_alloc(&seg_data, count);
 
     // Visual coordinate.
-    DvzAxisCoord coord = (DvzAxisCoord)(visual->flags & 0xF);
+    DvzAxisCoord coord = (DvzAxisCoord)(visual->flags & 0x1);
     ASSERT(coord < 2);
 
     // Params
@@ -1226,8 +1226,11 @@ static void _visual_axes_2D_bake(DvzVisual* visual, DvzVisualDataEvent ev)
         PARAM(float, lw, LINE_WIDTH, level)
         DPI_SCALE(lw)
 
-        // if (!((level == DVZ_AXES_LEVEL_MINOR && hide_minor) ||
-        //       (level == DVZ_AXES_LEVEL_GRID && hide_grid)))
+        // Hide minor and/or grid depending on the visual flags.
+        if ((level == DVZ_AXES_LEVEL_MINOR && hide_minor) ||
+            (level == DVZ_AXES_LEVEL_GRID && hide_grid))
+            color[3] = 0;
+
         _add_ticks(prop, &seg_data, (DvzAxisLevel)level, coord, color, lw, tick_length);
     }
 

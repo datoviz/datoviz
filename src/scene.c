@@ -152,6 +152,7 @@ DvzController dvz_controller_builtin(DvzPanel* panel, DvzControllerType type, in
     ASSERT(panel != NULL);
     DvzController controller = dvz_controller(panel);
     controller.type = type;
+    controller.flags = flags;
 
     switch (type)
     {
@@ -385,19 +386,17 @@ void dvz_arcball_rotate(DvzPanel* panel, float angle, vec3 axis)
 
 
 
-void dvz_axes_flags(DvzPanel* panel, int flags)
-{
-    ASSERT(panel != NULL);
-    if (panel->controller->type != DVZ_CONTROLLER_AXES_2D)
-    {
-        log_error("panel doesn't have an axes 2D controller");
-        return;
-    }
-    DvzVisual* vx = panel->controller->visuals[0];
-    DvzVisual* vy = panel->controller->visuals[1];
-    dvz_visual_flags(vx, flags);
-    dvz_visual_flags(vy, flags);
-}
+// void dvz_axes_flags(DvzPanel* panel, int flags)
+// {
+//     ASSERT(panel != NULL);
+//     if (panel->controller->type != DVZ_CONTROLLER_AXES_2D)
+//     {
+//         log_error("panel doesn't have an axes 2D controller");
+//         return;
+//     }
+//     DvzVisual* vx = panel->controller->visuals[0];
+//     DvzVisual* vy = panel->controller->visuals[1];
+// }
 
 
 

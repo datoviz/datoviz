@@ -351,7 +351,9 @@ int test_scene_axes(TestContext* context)
     ASSERT(ctx != NULL);
 
     DvzScene* scene = dvz_scene(canvas, 1, 1);
-    DvzPanel* panel = dvz_scene_panel(scene, 0, 0, DVZ_CONTROLLER_AXES_2D, 0);
+    // NOTE: hide axes grid
+    DvzPanel* panel =
+        dvz_scene_panel(scene, 0, 0, DVZ_CONTROLLER_AXES_2D, DVZ_AXES_FLAGS_HIDE_GRID);
 
     // Markers.
     DvzVisual* visual = dvz_scene_visual(panel, DVZ_VISUAL_MARKER, 0);
@@ -378,8 +380,6 @@ int test_scene_axes(TestContext* context)
     char path[1024];
     snprintf(path, sizeof(path), "%s/scene.mp4", ARTIFACTS_DIR);
     // dvz_canvas_video(canvas, 30, 10000000, path);
-
-    // dvz_axes_flags(panel, 0);
 
     dvz_app_run(app, N_FRAMES);
 
