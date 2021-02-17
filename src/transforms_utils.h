@@ -19,6 +19,24 @@ static void _check_box(DvzBox box)
 
 
 
+static void _box_enlarge(DvzBox* box, float rel_increase)
+{
+    ASSERT(box != NULL);
+    if (rel_increase <= 0)
+        return;
+    double d = 0;
+    double h = 0;
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        d = box->p1[i] - box->p0[i];
+        h = d * rel_increase * .5;
+        box->p0[i] -= h;
+        box->p1[i] += h;
+    }
+}
+
+
+
 // Return the bounding box of a set of dvec3 points.
 static DvzBox _box_bounding(DvzArray* points_in)
 {
@@ -38,6 +56,10 @@ static DvzBox _box_bounding(DvzArray* points_in)
             box.p1[j] = MAX(box.p1[j], (*pos)[j]);
         }
     }
+
+    // Enlarge the box by 10%.
+    _box_enlarge(&box, .1);
+
     return box;
 }
 
