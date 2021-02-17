@@ -31,7 +31,6 @@ visual.data('texcoords', np.atleast_2d([0, 1]), idx=3)
 # First texture.
 img = imageio.imread(ROOT / 'data/textures/earth.jpg')
 img = np.dstack((img, 255 * np.ones(img.shape[:2])))
-img = np.transpose(img, (1, 0, 2))
 img = img.astype(np.uint8)
 visual.image(img, filtering='nearest', idx=0)
 
