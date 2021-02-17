@@ -513,7 +513,10 @@ cdef _wrapped_callback(cv.DvzCanvas* c_canvas, cv.DvzEvent c_ev):
 
 
 
-cdef _add_event_callback(cv.DvzCanvas* c_canvas, cv.DvzEventType evtype, double param, f, args):
+cdef _add_event_callback(
+    cv.DvzCanvas* c_canvas, cv.DvzEventType evtype, double param, f, args,
+    cv.DvzEventMode mode=cv.DVZ_EVENT_MODE_SYNC):
+
     cdef void* ptr_to_obj
     tup = (f, args)
 
@@ -524,7 +527,7 @@ cdef _add_event_callback(cv.DvzCanvas* c_canvas, cv.DvzEventType evtype, double 
 
     ptr_to_obj = <void*>tup
     cv.dvz_event_callback(
-        c_canvas, evtype, param, cv.DVZ_EVENT_MODE_ASYNC,
+        c_canvas, evtype, param, mode,
         <cv.DvzEventCallback>_wrapped_callback, ptr_to_obj)
 
 
@@ -704,15 +707,20 @@ cdef class Canvas:
             if panel._c_panel == c_panel:
                 return panel
 
-    def _connect(self, evtype_py, f, param=0):
+    def _connect(self, evtype_py, f, param=0, cv.DvzEventMode mode=cv.DVZ_EVENT_MODE_SYNC):
         cdef cv.DvzEventType evtype
         evtype = _EVENTS.get(evtype_py, 0)
-        _add_event_callback(self._c_canvas, evtype, param, f, ())
+        _add_event_callback(self._c_canvas, evtype, param, f, (), mode=mode)
 
     def connect(self, f):
         assert f.__name__.startswith('on_')
         ev_name = f.__name__[3:]
         self._connect(ev_name, f)
+
+    def connect_async(self, f):
+        assert f.__name__.startswith('on_')
+        ev_name = f.__name__[3:]
+        self._connect(ev_name, f, mode=cv.DVZ_EVENT_MODE_ASYNC)
 
 
 
@@ -945,6 +953,9 @@ cdef class Gui:
         self._c_gui = c_gui
 
     def control(self, unicode ctype, unicode name, **kwargs):
+        cdef cv.DvzEventMode mode
+        is_async = kwargs.pop('async', False)
+        mode = cv.DVZ_EVENT_MODE_ASYNC if is_async else cv.DVZ_EVENT_MODE_SYNC
         ctrl = _CONTROLS.get(ctype, 0)
         cdef char* c_name = name
 
@@ -967,7 +978,7 @@ cdef class Gui:
         def wrap(f):
             cdef cv.DvzEventType evtype
             evtype = cv.DVZ_EVENT_GUI
-            _add_event_callback(self._c_canvas, evtype, 0, f, (ctrl,))
+            _add_event_callback(self._c_canvas, evtype, 0, f, (ctrl,), mode=mode)
 
         return wrap
 

@@ -300,3 +300,7 @@ def on_change(value):
 ```
 
 ![](https://user-images.githubusercontent.com/1942359/107958095-d17d4e00-6fa1-11eb-9a90-b1b6ba07785d.png)
+
+
+!!! note Async callbacks
+    For now, the callbacks are synchronous by default: they run in the main thread. Any long-lasting callback will block the UI. In `gui.control()`, the keyword argument `async=True` allows to declare a callback as asynchronous. It will run in a background thread. **This feature is still experimental.** Currently, the only functionality available in async callbacks is doing data transfers with `visual.data()`. More async features will be implemented later.
