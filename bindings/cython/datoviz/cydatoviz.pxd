@@ -234,6 +234,11 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_AXES_LEVEL_LIM = 3
         DVZ_AXES_LEVEL_COUNT = 4
 
+    ctypedef enum DvzAxesFlags:
+        DVZ_AXES_FLAGS_DEFAULT = 0x0000
+        DVZ_AXES_FLAGS_HIDE_MINOR = 0x0400
+        DVZ_AXES_FLAGS_HIDE_GRID = 0x0800
+
     # from file: canvas.h
 
     ctypedef enum DvzCanvasFlags:

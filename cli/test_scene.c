@@ -345,7 +345,8 @@ int test_scene_axes(TestContext* context)
 
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
     DvzGpu* gpu = dvz_gpu(app, 0);
-    DvzCanvas* canvas = dvz_canvas(gpu, width, height, CANVAS_FLAGS | DVZ_CANVAS_FLAGS_FPS);
+    DvzCanvas* canvas = dvz_canvas(
+        gpu, width, height, CANVAS_FLAGS | DVZ_CANVAS_FLAGS_FPS | DVZ_CANVAS_FLAGS_DPI_SCALE_200);
     dvz_canvas_clear_color(canvas, 1, 1, 1);
     DvzContext* ctx = gpu->context;
     ASSERT(ctx != NULL);
@@ -377,9 +378,7 @@ int test_scene_axes(TestContext* context)
     dvz_visual_data(visual, DVZ_PROP_MARKER_SIZE, 0, N, ms);
 
     // Record a video.
-    char path[1024];
-    snprintf(path, sizeof(path), "%s/scene.mp4", ARTIFACTS_DIR);
-    // dvz_canvas_video(canvas, 30, 10000000, path);
+    // dvz_canvas_video(canvas, 10, 10000000, "scene.mp4", true);
 
     dvz_app_run(app, N_FRAMES);
 

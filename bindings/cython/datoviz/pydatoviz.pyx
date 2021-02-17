@@ -647,11 +647,19 @@ cdef class Canvas:
     def stop(self):
         cv.dvz_canvas_stop(self._c_canvas)
 
-    def panel(self, int row=0, int col=0, controller='axes', transform=None, transpose=None):
+    def panel(self, int row=0, int col=0, controller='axes', transform=None, transpose=None, **kwargs):
+        cdef int flags
+        flags = 0
+        if controller == 'axes':
+            if kwargs.pop('hide_minor_ticks', False):
+                flags |= cv.DVZ_AXES_FLAGS_HIDE_MINOR
+            if kwargs.pop('hide_grid', False):
+                flags |= cv.DVZ_AXES_FLAGS_HIDE_GRID
+
         ctl = _CONTROLLERS.get(controller, cv.DVZ_CONTROLLER_NONE)
         trans = _TRANSPOSES.get(transpose, cv.DVZ_CDS_TRANSPOSE_NONE)
         transf = _TRANSFORMS.get(transform, cv.DVZ_TRANSFORM_CARTESIAN)
-        c_panel = cv.dvz_scene_panel(self._c_scene, row, col, ctl, 0)
+        c_panel = cv.dvz_scene_panel(self._c_scene, row, col, ctl, flags)
         if c_panel is NULL:
             raise MemoryError()
         c_panel.data_coords.transform = transf

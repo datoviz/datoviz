@@ -71,26 +71,6 @@ typedef enum
 
 
 
-/*
-flags bits range:
-
-panel flags:
-0x00XX: transform
-0xXX00: controller flags
-
-
-visual flags:
-0x00XX: visual level
-    0x000X: visual specific
-    0x00X0: auto CPU normalize
-0xXX00: graphics level
-    0x0100: depth test
-    0xX000: interact axes
-
-*/
-
-
-
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/

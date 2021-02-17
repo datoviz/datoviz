@@ -213,7 +213,7 @@ dvz_scene_panel(DvzScene* scene, uint32_t row, uint32_t col, DvzControllerType t
     if (type == DVZ_CONTROLLER_AXES_2D)
         dvz_canvas_clear_color(scene->canvas, 1, 1, 1);
 
-    // Set panel transform flags depending on the contrller type.
+    // Set panel transform flags depending on the controller type.
     flags = _transform_flags(type, flags);
     panel->data_coords.flags = flags;
 
