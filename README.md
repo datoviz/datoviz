@@ -128,6 +128,16 @@ An upcoming version will also have the following dependencies:
 * [Makie.jl](http://makie.juliaplots.org/stable/)
 
 
+## Funding
+
+Datoviz is being developed at the International Brain Laboratory, with funding from the Simons Foundation, the Flatiron Institute, the Wellcome Trust, INCF.
+
+![](docs/images/simons.png)
+![](docs/images/flatiron.png)
+![](docs/images/wellcome.jpg)
+![](docs/images/incf.jpg)
+
+
 Glossary:
 
 *[Vulkan]: Low-level graphics API created by Khronos, and successor of OpenGL
