@@ -1232,7 +1232,6 @@ void dvz_keyboard_event(DvzKeyboard* keyboard, DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(keyboard != NULL);
     ASSERT(canvas != NULL);
-
     if (canvas->captured)
         return;
 
@@ -1266,6 +1265,8 @@ void dvz_keyboard_event(DvzKeyboard* keyboard, DvzCanvas* canvas, DvzEvent ev)
 void dvz_event_mouse_press(DvzCanvas* canvas, DvzMouseButton button, int modifiers)
 {
     ASSERT(canvas != NULL);
+    if (canvas->captured)
+        return;
 
     DvzEvent event = {0};
     event.type = DVZ_EVENT_MOUSE_PRESS;
@@ -1283,6 +1284,8 @@ void dvz_event_mouse_press(DvzCanvas* canvas, DvzMouseButton button, int modifie
 void dvz_event_mouse_release(DvzCanvas* canvas, DvzMouseButton button, int modifiers)
 {
     ASSERT(canvas != NULL);
+    if (canvas->captured)
+        return;
 
     DvzEvent event = {0};
     event.type = DVZ_EVENT_MOUSE_RELEASE;
@@ -1300,6 +1303,8 @@ void dvz_event_mouse_release(DvzCanvas* canvas, DvzMouseButton button, int modif
 void dvz_event_mouse_move(DvzCanvas* canvas, vec2 pos, int modifiers)
 {
     ASSERT(canvas != NULL);
+    if (canvas->captured)
+        return;
 
     DvzEvent event = {0};
     event.type = DVZ_EVENT_MOUSE_MOVE;
@@ -1318,6 +1323,8 @@ void dvz_event_mouse_move(DvzCanvas* canvas, vec2 pos, int modifiers)
 void dvz_event_mouse_wheel(DvzCanvas* canvas, vec2 dir, int modifiers)
 {
     ASSERT(canvas != NULL);
+    if (canvas->captured)
+        return;
 
     DvzEvent event = {0};
     event.type = DVZ_EVENT_MOUSE_WHEEL;
@@ -1336,6 +1343,9 @@ void dvz_event_mouse_wheel(DvzCanvas* canvas, vec2 dir, int modifiers)
 void dvz_event_mouse_click(DvzCanvas* canvas, vec2 pos, DvzMouseButton button, int modifiers)
 {
     ASSERT(canvas != NULL);
+    if (canvas->captured)
+        return;
+
     DvzEvent event = {0};
     event.type = DVZ_EVENT_MOUSE_CLICK;
     event.u.c.pos[0] = pos[0];
@@ -1352,6 +1362,9 @@ void dvz_event_mouse_double_click(
     DvzCanvas* canvas, vec2 pos, DvzMouseButton button, int modifiers)
 {
     ASSERT(canvas != NULL);
+    if (canvas->captured)
+        return;
+
     DvzEvent event = {0};
     event.type = DVZ_EVENT_MOUSE_DOUBLE_CLICK;
     event.u.c.pos[0] = pos[0];
@@ -1367,6 +1380,9 @@ void dvz_event_mouse_double_click(
 void dvz_event_mouse_drag(DvzCanvas* canvas, vec2 pos, DvzMouseButton button, int modifiers)
 {
     ASSERT(canvas != NULL);
+    if (canvas->captured)
+        return;
+
     DvzEvent event = {0};
     event.type = DVZ_EVENT_MOUSE_DRAG_BEGIN;
     event.u.d.pos[0] = pos[0];
@@ -1395,6 +1411,8 @@ void dvz_event_mouse_drag_end(DvzCanvas* canvas, vec2 pos, DvzMouseButton button
 void dvz_event_key_press(DvzCanvas* canvas, DvzKeyCode key_code, int modifiers)
 {
     ASSERT(canvas != NULL);
+    if (canvas->captured)
+        return;
 
     DvzEvent event = {0};
     event.type = DVZ_EVENT_KEY_PRESS;
