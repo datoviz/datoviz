@@ -522,10 +522,11 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_GUI_CONTROL_CHECKBOX = 1
         DVZ_GUI_CONTROL_SLIDER_FLOAT = 2
         DVZ_GUI_CONTROL_SLIDER_INT = 3
-        DVZ_GUI_CONTROL_LABEL = 4
-        DVZ_GUI_CONTROL_TEXTBOX = 5
-        DVZ_GUI_CONTROL_BUTTON = 6
-        DVZ_GUI_CONTROL_COLORMAP = 7
+        DVZ_GUI_CONTROL_INPUT_FLOAT = 4
+        DVZ_GUI_CONTROL_LABEL = 5
+        DVZ_GUI_CONTROL_TEXTBOX = 6
+        DVZ_GUI_CONTROL_BUTTON = 7
+        DVZ_GUI_CONTROL_COLORMAP = 8
 
     # from file: graphics.h
 
@@ -1050,9 +1051,14 @@ cdef extern from "<datoviz/datoviz.h>":
         int vmin
         int vmax
 
+    ctypedef struct DvzGuiControlInputFloat:
+        float step
+        float step_fast
+
     ctypedef union DvzGuiControlUnion:
         DvzGuiControlSliderFloat sf
         DvzGuiControlSliderInt si
+        DvzGuiControlInputFloat f
 
     ctypedef struct DvzGuiControl:
         DvzGui* gui
@@ -1103,6 +1109,7 @@ cdef extern from "<datoviz/datoviz.h>":
     void dvz_gui_checkbox(DvzGui* gui, const char* name, bint value)
     void dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax, float value)
     void dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax, int value)
+    void dvz_gui_input_float(DvzGui* gui, const char* name, float step, float step_fast, float value)
     void dvz_gui_button(DvzGui* gui, const char* name, int flags)
     void dvz_gui_demo(DvzGui* gui)
 

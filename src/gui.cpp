@@ -346,6 +346,16 @@ static bool _show_slider_float(DvzGuiControl* control)
         control->name, (float*)control->value, vmin, vmax, "%.3f", control->flags);
 }
 
+static bool _show_input_float(DvzGuiControl* control)
+{
+    ASSERT(control != NULL);
+    ASSERT(control->type == DVZ_GUI_CONTROL_INPUT_FLOAT);
+
+    float step = control->u.f.step;
+    float step_fast = control->u.f.step_fast;
+    return ImGui::InputFloat(control->name, (float*)control->value, step, step_fast, "%.3f");
+}
+
 static bool _show_slider_int(DvzGuiControl* control)
 {
     ASSERT(control != NULL);
@@ -425,6 +435,10 @@ static void _show_control(DvzGuiControl* control)
 
     case DVZ_GUI_CONTROL_SLIDER_FLOAT:
         changed = _show_slider_float(control);
+        break;
+
+    case DVZ_GUI_CONTROL_INPUT_FLOAT:
+        changed = _show_input_float(control);
         break;
 
     case DVZ_GUI_CONTROL_SLIDER_INT:

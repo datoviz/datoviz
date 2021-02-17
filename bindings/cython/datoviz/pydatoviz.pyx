@@ -201,6 +201,7 @@ _TRANSFORMS = {
 _CONTROLS = {
     'slider_float': cv.DVZ_GUI_CONTROL_SLIDER_FLOAT,
     'slider_int': cv.DVZ_GUI_CONTROL_SLIDER_INT,
+    'input_float': cv.DVZ_GUI_CONTROL_INPUT_FLOAT,
     'checkbox': cv.DVZ_GUI_CONTROL_CHECKBOX,
     'button': cv.DVZ_GUI_CONTROL_BUTTON,
 }
@@ -447,6 +448,9 @@ cdef _get_ev_args(cv.DvzEvent c_ev):
         elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_SLIDER_INT:
             ivalue = <int*>c_ev.u.g.control.value
             return (ivalue[0],), {}
+        elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_INPUT_FLOAT:
+            fvalue = <float*>c_ev.u.g.control.value
+            return (fvalue[0],), {}
         elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_CHECKBOX:
             bvalue = <bint*>c_ev.u.g.control.value
             return (bvalue[0],), {}
@@ -962,7 +966,7 @@ cdef class Gui:
 
     def control(self, unicode ctype, unicode name, **kwargs):
         cdef cv.DvzEventMode mode
-        is_async = kwargs.pop('async', False)
+        is_async = kwargs.pop('mode', None) == 'async'
         mode = cv.DVZ_EVENT_MODE_ASYNC if is_async else cv.DVZ_EVENT_MODE_SYNC
         ctrl = _CONTROLS.get(ctype, 0)
         cdef char* c_name = name
@@ -970,13 +974,18 @@ cdef class Gui:
         if (ctype == 'slider_float'):
             c_vmin = kwargs.get('vmin', 0)
             c_vmax = kwargs.get('vmax', 1)
-            c_value = kwargs.get('value', .5)
+            c_value = kwargs.get('value', (c_vmin + c_vmax) / 2.0)
             cv.dvz_gui_slider_float(self._c_gui, c_name, c_vmin, c_vmax, c_value)
         elif (ctype == 'slider_int'):
             c_vmin = kwargs.get('vmin', 0)
             c_vmax = kwargs.get('vmax', 1)
             c_value = kwargs.get('value', c_vmin)
             cv.dvz_gui_slider_int(self._c_gui, c_name, c_vmin, c_vmax, c_value)
+        elif (ctype == 'input_float'):
+            c_step = kwargs.get('step', .1)
+            c_step_fast = kwargs.get('step_fast', 1)
+            c_value = kwargs.get('value', 0)
+            cv.dvz_gui_input_float(self._c_gui, c_name, c_step, c_step_fast, c_value)
         elif (ctype == 'checkbox'):
             c_value = kwargs.get('value', 0)
             cv.dvz_gui_checkbox(self._c_gui, c_name, c_value)

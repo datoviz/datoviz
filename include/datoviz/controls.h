@@ -46,6 +46,7 @@ typedef enum
     DVZ_GUI_CONTROL_CHECKBOX,
     DVZ_GUI_CONTROL_SLIDER_FLOAT,
     DVZ_GUI_CONTROL_SLIDER_INT,
+    DVZ_GUI_CONTROL_INPUT_FLOAT,
     DVZ_GUI_CONTROL_LABEL,
     DVZ_GUI_CONTROL_TEXTBOX,
     DVZ_GUI_CONTROL_BUTTON,
@@ -62,9 +63,10 @@ typedef struct DvzGui DvzGui;
 typedef struct DvzGuiControl DvzGuiControl;
 
 typedef struct DvzGuiControlSliderFloat DvzGuiControlSliderFloat;
+typedef struct DvzGuiControlInputFloat DvzGuiControlInputFloat;
 typedef struct DvzGuiControlSliderInt DvzGuiControlSliderInt;
-// typedef struct DvzGuiControlLabel DvzGuiControlLabel;
 typedef union DvzGuiControlUnion DvzGuiControlUnion;
+// typedef struct DvzGuiControlLabel DvzGuiControlLabel;
 
 
 
@@ -88,9 +90,11 @@ struct DvzGuiControlSliderInt
 
 
 
-// struct DvzGuiControlLabel
-// {
-// };
+struct DvzGuiControlInputFloat
+{
+    float step;
+    float step_fast;
+};
 
 
 
@@ -98,8 +102,15 @@ union DvzGuiControlUnion
 {
     DvzGuiControlSliderFloat sf;
     DvzGuiControlSliderInt si;
+    DvzGuiControlInputFloat f;
     // DvzGuiControlLabel l;
 };
+
+
+
+// struct DvzGuiControlLabel
+// {
+// };
 
 
 
@@ -130,7 +141,7 @@ struct DvzGui
 
 
 /*************************************************************************************************/
-/*  Gui functions                                                                              */
+/*  Gui functions                                                                                */
 /*************************************************************************************************/
 
 /**
@@ -142,6 +153,8 @@ struct DvzGui
  * @returns the GUI
  */
 DVZ_EXPORT DvzGui* dvz_gui(DvzCanvas* canvas, const char* title, int flags);
+
+
 
 /**
  * Add a checkbox control.
@@ -174,6 +187,18 @@ dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax, floa
  * @param value the initial value
  */
 DVZ_EXPORT void dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax, int value);
+
+/**
+ * Add an input float control.
+ *
+ * @param gui the GUI
+ * @param name the control label
+ * @param step the step
+ * @param step_fast the step for fast scrolling
+ * @param value the initial value
+ */
+DVZ_EXPORT void
+dvz_gui_input_float(DvzGui* gui, const char* name, float step, float step_fast, float value);
 
 /**
  * Add a static, non-modifiable label.
@@ -210,13 +235,14 @@ DVZ_EXPORT void dvz_gui_button(DvzGui* gui, const char* name, int flags);
  */
 DVZ_EXPORT void dvz_gui_colormap(DvzGui* gui, DvzColormap cmap);
 
+
+
 /**
  * Display the Dear ImGUI demo with all supported controls.
  *
  * @param gui the GUI
  */
 DVZ_EXPORT void dvz_gui_demo(DvzGui* gui);
-
 
 /**
  * Destroy a GUI.

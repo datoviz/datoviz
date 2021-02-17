@@ -66,6 +66,19 @@ void dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax,
 
 
 
+void dvz_gui_input_float(DvzGui* gui, const char* name, float step, float step_fast, float value)
+{
+    ASSERT(gui != NULL);
+    ASSERT(step > 0);
+    ASSERT(step_fast > 0);
+    DvzGuiControl* control =
+        _add_control(gui, DVZ_GUI_CONTROL_INPUT_FLOAT, name, sizeof(float), &value);
+    control->u.f.step = step;
+    control->u.f.step_fast = step_fast;
+}
+
+
+
 void dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax, int value)
 {
     ASSERT(gui != NULL);

@@ -1207,6 +1207,7 @@ int test_canvas_gui_1(TestContext* context)
     dvz_gui_checkbox(gui, "my checkbox", true);
     dvz_gui_slider_float(gui, "my slider 1", 0.0f, 1.0f, .5);
     dvz_gui_slider_int(gui, "my slider 2", 10, 20, 10);
+    dvz_gui_input_float(gui, "enter a float", 1, 10, 0);
     dvz_gui_textbox(gui, "textbox", "some text");
     dvz_gui_button(gui, "my button", 0);
     dvz_gui_colormap(gui, DVZ_CMAP_VIRIDIS);
