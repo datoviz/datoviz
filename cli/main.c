@@ -48,6 +48,7 @@ static TestCase TEST_CASES[] = {
     // context
     CASE_FIXTURE_NONE(test_fifo_1),      //
     CASE_FIXTURE_NONE(test_fifo_2),      //
+    CASE_FIXTURE_NONE(test_fifo_3),      //
     CASE_FIXTURE_NONE(test_default_app), //
 
     // canvas

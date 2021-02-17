@@ -17,7 +17,7 @@ extern "C" {
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_MAX_FIFO_CAPACITY 64
+#define DVZ_MAX_FIFO_CAPACITY 256
 
 
 

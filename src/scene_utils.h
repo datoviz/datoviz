@@ -977,7 +977,6 @@ static void _upload_mvp(DvzCanvas* canvas, DvzEvent ev)
 
     DvzInteract* interact = NULL;
     DvzController* controller = NULL;
-    // DvzBufferRegions* br = NULL;
 
     // Go through all panels that need to be updated.
     DvzPanel* panel = NULL;
@@ -1001,6 +1000,12 @@ static void _upload_mvp(DvzCanvas* canvas, DvzEvent ev)
             interact->mvp.time = canvas->clock.elapsed;
 
             // NOTE: we need to update the uniform buffer at every frame
+
+            // NOTE: this is implemented with a FIFO queue even when using a single thread,
+            // which is overkill here. An optimization would be to use a function that updates the
+            // buffer region directly here, although one should make sure that GPU synchronization
+            // is properly taken care of.
+
             dvz_upload_buffers(canvas, panel->br_mvp, 0, panel->br_mvp.size, &interact->mvp);
         }
         dvz_container_iter(&iter);

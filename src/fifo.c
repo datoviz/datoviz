@@ -31,14 +31,46 @@ void dvz_fifo_enqueue(DvzFifo* fifo, void* item)
     ASSERT(fifo != NULL);
     pthread_mutex_lock(&fifo->lock);
 
+    // Old size
+    int size = fifo->head - fifo->tail;
+    if (size < 0)
+        size += fifo->capacity;
+
+    // Old capacity
+    int old_cap = fifo->capacity;
+
+    // Resize if queue is full.
     if ((fifo->head + 1) % fifo->capacity == fifo->tail)
     {
         ASSERT(fifo->items != NULL);
+        ASSERT(size == fifo->capacity - 1);
+
+        // NOTE: we hard-code the maximum size of FIFO queues for now as the canvas has an array of
+        // fixed size for the event objects stored in the FIFO queue.
+        // TODO: fix this by making the canvas event array enlargeable.
+        ASSERT(fifo->capacity <= DVZ_MAX_FIFO_CAPACITY);
+
         fifo->capacity *= 2;
         log_debug("FIFO queue is full, enlarging it to %d", fifo->capacity);
         REALLOC(fifo->items, (uint32_t)fifo->capacity * sizeof(void*));
     }
 
+    if ((fifo->head + 1) % fifo->capacity == fifo->tail)
+    {
+        // Here, the queue buffer has been resized, but the new space should be used instead of the
+        // part of the buffer before the tail.
+
+        ASSERT(fifo->head > 0);
+        ASSERT(old_cap < fifo->capacity);
+        memcpy(&fifo->items[old_cap], &fifo->items[0], (uint32_t)fifo->head * sizeof(void*));
+
+        // Move the head to the new position.
+        fifo->head += old_cap;
+
+        // Check new size.
+        ASSERT(fifo->head - fifo->tail > 0);
+        ASSERT(fifo->head - fifo->tail == size);
+    }
     ASSERT((fifo->head + 1) % fifo->capacity != fifo->tail);
     fifo->items[fifo->head] = item;
     fifo->head++;

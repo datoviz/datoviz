@@ -14,4 +14,14 @@ int test_container(TestContext* context);
 
 
 
+/*************************************************************************************************/
+/*  FIFO queue                                                                                   */
+/*************************************************************************************************/
+
+int test_fifo_1(TestContext* context);
+int test_fifo_2(TestContext* context);
+int test_fifo_3(TestContext* context);
+
+
+
 #endif

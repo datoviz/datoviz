@@ -31,14 +31,6 @@ int test_basic_canvas_triangle(TestContext* context);
 int test_shader_compile(TestContext* context);
 
 
-/*************************************************************************************************/
-/*  FIFO queue                                                                                   */
-/*************************************************************************************************/
-
-int test_fifo_1(TestContext* context);
-int test_fifo_2(TestContext* context);
-
-
 
 /*************************************************************************************************/
 /*  Context                                                                                   */
