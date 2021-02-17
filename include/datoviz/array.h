@@ -654,6 +654,29 @@ static void dvz_array_data(
 }
 
 
+/**
+ * Multiply all array elements by a scaling factor.
+ *
+ * !!! note
+ *     Only FLOAT dtype is supported for now.
+ *
+ * @param array the array
+ * @param scaling scaling factor
+ */
+static void dvz_array_scale(DvzArray* arr, float scaling)
+{
+    ASSERT(arr != NULL);
+    // TODO: support other dtypes.
+    if (arr->dtype == DVZ_DTYPE_FLOAT)
+    {
+        for (uint32_t i = 0; i < arr->item_count; i++)
+        {
+            ((float*)arr->data)[i] *= scaling;
+        }
+    }
+}
+
+
 
 /**
  * Retrieve a single element from an array.

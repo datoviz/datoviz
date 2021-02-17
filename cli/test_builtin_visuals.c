@@ -569,8 +569,7 @@ int test_visuals_path(TestContext* context)
     double t = 0;
     double h = 0;
     DvzColormap cmaps[] = {
-        DVZ_CMAP_HSV, DVZ_CMAP_HOT, DVZ_CMAP_VIRIDIS, DVZ_CMAP_JET, DVZ_CMAP_COOL
-    };
+        DVZ_CMAP_HSV, DVZ_CMAP_HOT, DVZ_CMAP_VIRIDIS, DVZ_CMAP_JET, DVZ_CMAP_COOL};
     for (uint32_t i = 0; i < n_paths; i++)
     {
         h = -.5 + i / (float)(n_paths - 1);

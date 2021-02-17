@@ -345,8 +345,7 @@ int test_scene_axes(TestContext* context)
 
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
     DvzGpu* gpu = dvz_gpu(app, 0);
-    DvzCanvas* canvas = dvz_canvas(
-        gpu, width, height, CANVAS_FLAGS | DVZ_CANVAS_FLAGS_FPS | DVZ_CANVAS_FLAGS_DPI_SCALE_200);
+    DvzCanvas* canvas = dvz_canvas(gpu, width, height, CANVAS_FLAGS | DVZ_CANVAS_FLAGS_FPS);
     dvz_canvas_clear_color(canvas, 1, 1, 1);
     DvzContext* ctx = gpu->context;
     ASSERT(ctx != NULL);

@@ -432,6 +432,14 @@ static void _prop_copy(DvzVisual* visual, DvzProp* prop)
     ASSERT(source->arr.data != NULL);
     ASSERT(arr->item_count <= source->arr.item_count);
 
+    // Implement DPI scaling here.
+    if (prop->dpi_scaling != 1)
+    {
+        prop->arr_staging = dvz_array_copy(arr);
+        arr = &prop->arr_staging;
+        dvz_array_scale(arr, prop->dpi_scaling);
+    }
+
     log_debug("copy prop type %d to source buffer", prop->prop_type);
     dvz_array_column(
         &source->arr, prop->offset, col_size, 0, source->arr.item_count, //

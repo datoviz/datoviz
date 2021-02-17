@@ -55,6 +55,7 @@ static void _visual_point(DvzVisual* visual)
         visual, DVZ_PROP_MARKER_SIZE, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_PARAM, 0);
     dvz_visual_prop_copy(
         prop, 0, offsetof(DvzGraphicsPointParams, point_size), DVZ_ARRAY_COPY_SINGLE, 1);
+    dvz_visual_prop_dpi(prop, canvas->dpi_scaling);
     float size = 5;
     dvz_visual_prop_default(prop, &size);
 }
@@ -398,6 +399,7 @@ static void _visual_marker(DvzVisual* visual)
         visual, DVZ_PROP_MARKER_SIZE, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_VERTEX, 0);
     dvz_visual_prop_copy(
         prop, 1, offsetof(DvzGraphicsMarkerVertex, size), DVZ_ARRAY_COPY_SINGLE, 1);
+    dvz_visual_prop_dpi(prop, canvas->dpi_scaling);
     float size = 20;
     dvz_visual_prop_default(prop, &size);
 
@@ -437,6 +439,7 @@ static void _visual_marker(DvzVisual* visual)
         dvz_visual_prop(visual, DVZ_PROP_LINE_WIDTH, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_PARAM, 0);
     dvz_visual_prop_copy(
         prop, 0, offsetof(DvzGraphicsMarkerParams, edge_width), DVZ_ARRAY_COPY_SINGLE, 1);
+    dvz_visual_prop_dpi(prop, canvas->dpi_scaling);
     float edge_width = 1;
     dvz_visual_prop_default(prop, &edge_width);
 }
@@ -794,6 +797,7 @@ static void _visual_path(DvzVisual* visual)
         dvz_visual_prop(visual, DVZ_PROP_LINE_WIDTH, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_PARAM, 0);
     dvz_visual_prop_copy(
         prop, 0, offsetof(DvzGraphicsPathParams, linewidth), DVZ_ARRAY_COPY_SINGLE, 1);
+    dvz_visual_prop_dpi(prop, canvas->dpi_scaling);
     dvz_visual_prop_default(prop, (float[]){5.0f});
 
     // Miter limit.

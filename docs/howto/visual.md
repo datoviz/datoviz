@@ -295,8 +295,10 @@ This is a handy checklist for developers when adding new visuals to the library 
             * Add a length prop if there are multiple objects
             * Add the common props
             * Add the param props
+            * Specify the props that need DPI scaling
         * Specify the baking callback function (optional)
     * Write the baking callback function
+        * Take DPI scaling into account for props that require it
     * Add a new switch case in `dvz_visual_builtin()`
 * `test_builtin_visuals.h`:
     * Add a new visual test declaration

@@ -145,6 +145,7 @@ DvzProp* dvz_visual_prop(
     prop->prop_type = prop_type;
     prop->prop_idx = prop_idx;
     prop->dtype = dtype;
+    prop->dpi_scaling = 1;
     prop->source = dvz_source_get(visual, source_type, source_idx);
     if (prop->source == NULL && source_type != DVZ_SOURCE_TYPE_NONE)
     {
@@ -202,6 +203,15 @@ void dvz_visual_prop_cast(
     prop->copy_type = copy_type;
     prop->reps = reps;
     prop->target_dtype = target_dtype;
+}
+
+
+
+void dvz_visual_prop_dpi(DvzProp* prop, float dpi_scaling)
+{
+    ASSERT(prop != NULL);
+    ASSERT(dpi_scaling > 0);
+    prop->dpi_scaling = dpi_scaling;
 }
 
 

@@ -241,6 +241,8 @@ struct DvzProp
     DvzDataType dtype;
     VkDeviceSize offset;
 
+    float dpi_scaling; // 1 by default, otherwise may be set to canvas->dpi_scaling
+
     void* default_value;
     DvzArray arr_orig;    // original data array
     DvzArray arr_trans;   // transformed data array
@@ -446,6 +448,8 @@ DVZ_EXPORT void dvz_visual_prop_copy(
 DVZ_EXPORT void dvz_visual_prop_cast(
     DvzProp* prop, uint32_t field_idx, VkDeviceSize offset, //
     DvzDataType target_dtype, DvzArrayCopyType copy_type, uint32_t reps);
+
+DVZ_EXPORT void dvz_visual_prop_dpi(DvzProp* prop, float dpi_scaling);
 
 /**
  * Add a graphics pipeline to a visual.
