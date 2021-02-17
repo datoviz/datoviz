@@ -1106,11 +1106,12 @@ cdef extern from "<datoviz/datoviz.h>":
 
     # from file: controls.h
     DvzGui* dvz_gui(DvzCanvas* canvas, const char* title, int flags)
-    void dvz_gui_checkbox(DvzGui* gui, const char* name, bint value)
-    void dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax, float value)
-    void dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax, int value)
-    void dvz_gui_input_float(DvzGui* gui, const char* name, float step, float step_fast, float value)
-    void dvz_gui_button(DvzGui* gui, const char* name, int flags)
+    void* dvz_gui_value(DvzGuiControl* control)
+    DvzGuiControl* dvz_gui_checkbox(DvzGui* gui, const char* name, bint value)
+    DvzGuiControl* dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax, float value)
+    DvzGuiControl* dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax, int value)
+    DvzGuiControl* dvz_gui_input_float(DvzGui* gui, const char* name, float step, float step_fast, float value)
+    DvzGuiControl* dvz_gui_button(DvzGui* gui, const char* name, int flags)
     void dvz_gui_demo(DvzGui* gui)
 
     # from file: mesh.h

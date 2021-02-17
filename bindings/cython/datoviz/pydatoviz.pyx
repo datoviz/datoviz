@@ -956,9 +956,33 @@ cdef class Visual:
 # GUI
 # -------------------------------------------------------------------------------------------------
 
+cdef class GuiControl:
+    cdef cv.DvzGui* _c_gui
+    cdef cv.DvzGuiControl* _c_control
+    cdef unicode ctype
+
+    cdef create(self, cv.DvzGui* c_gui, cv.DvzGuiControl* c_control, unicode ctype):
+        self._c_gui = c_gui
+        self._c_control = c_control
+        self.ctype = ctype
+
+    def get(self):
+        cdef void* ptr
+        ptr = cv.dvz_gui_value(self._c_control)
+        if self.ctype == 'input_float':
+            return (<float*>ptr)[0]
+
+    def set(self, obj):
+        cdef void* ptr
+        ptr = cv.dvz_gui_value(self._c_control)
+        if self.ctype == 'input_float':
+            (<float*>ptr)[0] = <float>float(obj)
+
+
 cdef class Gui:
     cdef cv.DvzCanvas* _c_canvas
     cdef cv.DvzGui* _c_gui
+    _controls = {}
 
     cdef create(self, cv.DvzCanvas* c_canvas, cv.DvzGui* c_gui):
         self._c_canvas = c_canvas
@@ -971,26 +995,32 @@ cdef class Gui:
         ctrl = _CONTROLS.get(ctype, 0)
         cdef char* c_name = name
 
+        cdef cv.DvzGuiControl* c
         if (ctype == 'slider_float'):
             c_vmin = kwargs.get('vmin', 0)
             c_vmax = kwargs.get('vmax', 1)
             c_value = kwargs.get('value', (c_vmin + c_vmax) / 2.0)
-            cv.dvz_gui_slider_float(self._c_gui, c_name, c_vmin, c_vmax, c_value)
+            c = cv.dvz_gui_slider_float(self._c_gui, c_name, c_vmin, c_vmax, c_value)
         elif (ctype == 'slider_int'):
             c_vmin = kwargs.get('vmin', 0)
             c_vmax = kwargs.get('vmax', 1)
             c_value = kwargs.get('value', c_vmin)
-            cv.dvz_gui_slider_int(self._c_gui, c_name, c_vmin, c_vmax, c_value)
+            c = cv.dvz_gui_slider_int(self._c_gui, c_name, c_vmin, c_vmax, c_value)
         elif (ctype == 'input_float'):
             c_step = kwargs.get('step', .1)
             c_step_fast = kwargs.get('step_fast', 1)
             c_value = kwargs.get('value', 0)
-            cv.dvz_gui_input_float(self._c_gui, c_name, c_step, c_step_fast, c_value)
+            c = cv.dvz_gui_input_float(self._c_gui, c_name, c_step, c_step_fast, c_value)
         elif (ctype == 'checkbox'):
             c_value = kwargs.get('value', 0)
-            cv.dvz_gui_checkbox(self._c_gui, c_name, c_value)
+            c = cv.dvz_gui_checkbox(self._c_gui, c_name, c_value)
         elif (ctype == 'button'):
-            cv.dvz_gui_button(self._c_gui, c_name, 0)
+            c = cv.dvz_gui_button(self._c_gui, c_name, 0)
+
+        # Gui control object
+        w = GuiControl()
+        w.create(self._c_gui, c, ctype)
+        self._controls[name] = w
 
         def wrap(f):
             cdef cv.DvzEventType evtype
@@ -998,6 +1028,18 @@ cdef class Gui:
             _add_event_callback(self._c_canvas, evtype, 0, f, (ctrl,), mode=mode)
 
         return wrap
+
+    def get_value(self, name):
+        if name not in self._controls:
+            raise ValueError("unknown control %s", name)
+        c = self._controls[name]
+        return c.get()
+
+    def set_value(self, name, value):
+        if name not in self._controls:
+            raise ValueError("unknown control %s", name)
+        c = self._controls[name]
+        return c.set(value)
 
     def demo(self):
         cv.dvz_gui_demo(self._c_gui)
