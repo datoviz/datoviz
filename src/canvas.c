@@ -114,6 +114,20 @@ static inline bool _all_true(uint32_t n, bool* arr)
 /*  Backend-specific event callbacks                                                             */
 /*************************************************************************************************/
 
+static int _key_modifiers(int key_code)
+{
+    int mods = 0;
+    if (key_code == DVZ_KEY_LEFT_CONTROL || key_code == DVZ_KEY_RIGHT_CONTROL)
+        mods |= DVZ_KEY_MODIFIER_CONTROL;
+    if (key_code == DVZ_KEY_LEFT_SHIFT || key_code == DVZ_KEY_RIGHT_SHIFT)
+        mods |= DVZ_KEY_MODIFIER_SHIFT;
+    if (key_code == DVZ_KEY_LEFT_ALT || key_code == DVZ_KEY_RIGHT_ALT)
+        mods |= DVZ_KEY_MODIFIER_ALT;
+    if (key_code == DVZ_KEY_LEFT_SUPER || key_code == DVZ_KEY_RIGHT_SUPER)
+        mods |= DVZ_KEY_MODIFIER_SUPER;
+    return mods;
+}
+
 static void _glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     DvzCanvas* canvas = (DvzCanvas*)glfwGetWindowUserPointer(window);
@@ -146,7 +160,12 @@ static void _glfw_wheel_callback(GLFWwindow* window, double dx, double dy)
     ASSERT(canvas != NULL);
     ASSERT(canvas->window != NULL);
 
-    dvz_event_mouse_wheel(canvas, (vec2){dx, dy}, canvas->mouse.modifiers);
+    // HACK: glfw doesn't seem to give a way to probe the keyboard modifiers while using the mouse
+    // wheel, so we have to determine the modifiers manually.
+    // Limitation: a single modifier is allowed here.
+    // TODO: allow for multiple simultlaneous modifiers, will require updating the keyboard struct
+    // so that it supports multiple simultaneous keys
+    dvz_event_mouse_wheel(canvas, (vec2){dx, dy}, _key_modifiers(canvas->keyboard.key_code));
 }
 
 static void _glfw_button_callback(GLFWwindow* window, int button, int action, int mods)
@@ -1251,6 +1270,7 @@ void dvz_keyboard_event(DvzKeyboard* keyboard, DvzCanvas* canvas, DvzEvent ev)
     }
     else
     {
+        keyboard->key_code = DVZ_KEY_NONE;
         if (keyboard->cur_state == DVZ_KEYBOARD_STATE_ACTIVE)
             keyboard->cur_state = DVZ_KEYBOARD_STATE_INACTIVE;
     }

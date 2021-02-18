@@ -1876,11 +1876,13 @@ static void _visual_volume_slice(DvzVisual* visual)
     prop = dvz_visual_prop(visual, DVZ_PROP_COLORMAP, 0, DVZ_DTYPE_INT, DVZ_SOURCE_TYPE_PARAM, 0);
     dvz_visual_prop_copy(
         prop, 4, offsetof(DvzGraphicsVolumeSliceParams, cmap), DVZ_ARRAY_COPY_SINGLE, 1);
+    dvz_visual_prop_default(prop, (DvzColormap[]){DVZ_CMAP_BONE}); //
 
     // Scaling factor.
     prop = dvz_visual_prop(visual, DVZ_PROP_SCALE, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_PARAM, 0);
     dvz_visual_prop_copy(
         prop, 5, offsetof(DvzGraphicsVolumeSliceParams, scale), DVZ_ARRAY_COPY_SINGLE, 1);
+    dvz_visual_prop_default(prop, (float[]){1}); //
 
 
 
