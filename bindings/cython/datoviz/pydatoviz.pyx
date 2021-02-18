@@ -375,6 +375,7 @@ _FORMATS = {
     (np.dtype(np.int16), 1): cv.VK_FORMAT_R16_SNORM,
     (np.dtype(np.uint32), 1): cv.VK_FORMAT_R32_UINT,
     (np.dtype(np.int32), 1): cv.VK_FORMAT_R32_SINT,
+    (np.dtype(np.float32), 1): cv.VK_FORMAT_R32_SFLOAT,
 }
 
 _MARKER_TYPES = {
@@ -856,7 +857,7 @@ cdef class Visual:
             nc = arr.shape[ndim]
         else:
             nc = 1
-        assert (arr.dtype, nc) in _FORMATS, (ndim, nc, arr.dtype, arr.shape)
+        assert (arr.dtype, nc) in _FORMATS, ((arr.dtype, nc), ndim, arr.shape)
         c_format = _FORMATS[arr.dtype, nc]
 
         # Find the shape

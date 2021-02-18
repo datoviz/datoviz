@@ -125,6 +125,7 @@ cdef extern from "<datoviz/datoviz.h>":
         VK_FORMAT_R16_SNORM = 71
         VK_FORMAT_R32_UINT = 98,
         VK_FORMAT_R32_SINT = 99,
+        VK_FORMAT_R32_SFLOAT = 100,
 
     ctypedef enum VkFilter:
         VK_FILTER_NEAREST = 0
