@@ -70,6 +70,8 @@ cdef extern from "<datoviz/datoviz.h>":
     ctypedef struct DvzPanel:
         DvzGrid* grid
         DvzDataCoords data_coords
+        uint32_t row
+        uint32_t col
 
     ctypedef struct DvzProp:
         DvzPropType prop_type

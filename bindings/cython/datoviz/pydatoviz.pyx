@@ -755,6 +755,14 @@ cdef class Panel:
         self._c_panel = c_panel
         self._c_scene = c_scene
 
+    @property
+    def row(self):
+        return self._c_panel.row
+
+    @property
+    def col(self):
+        return self._c_panel.col
+
     def visual(self, vtype, depth_test=None, transform='auto'):
         visual_type = _VISUALS.get(vtype, 0)
         if not visual_type:
