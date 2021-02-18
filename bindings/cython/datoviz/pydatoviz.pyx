@@ -594,16 +594,21 @@ cdef class App:
 
     def canvas(
             self, int width=DEFAULT_WIDTH, int height=DEFAULT_HEIGHT, int rows=1, int cols=1,
-            bint show_fps=False):
+            bint show_fps=False, clear_color=None):
         cdef int fps = 0
         if show_fps:
             fps = cv.DVZ_CANVAS_FLAGS_FPS
         fps |= cv.DVZ_CANVAS_FLAGS_IMGUI
         c_canvas = cv.dvz_canvas(self._c_gpu, width, height, fps)
+
+        # Canvas clear color.
+        if clear_color == 'white':
+            cv.dvz_canvas_clear_color(c_canvas, 1, 1, 1)
+
         if c_canvas is NULL:
             raise MemoryError()
         c = Canvas()
-        c.create(self, c_canvas, rows, cols)
+        c.create(self, c_canvas, rows, cols, clear_color)
         self._canvases.append(c)
         return c
 
@@ -626,20 +631,21 @@ cdef class App:
 # -------------------------------------------------------------------------------------------------
 
 cdef class Canvas:
-
     cdef cv.DvzCanvas* _c_canvas
     cdef cv.DvzScene* _c_scene
     cdef cv.DvzGrid* _c_grid
     cdef object _app
     cdef bint _video_recording
+    cdef object _clear_color
 
     _panels = []
 
-    cdef create(self, app, cv.DvzCanvas* c_canvas, int rows, int cols):
+    cdef create(self, app, cv.DvzCanvas* c_canvas, int rows, int cols, clear_color):
         self._c_canvas = c_canvas
         self._c_scene = cv.dvz_scene(c_canvas, rows, cols)
         self._c_grid = &self._c_scene.grid
         self._app = app
+        self._clear_color = clear_color
         # _add_close_callback(self._c_canvas, self._destroy_wrapper, ())
 
     def screenshot(self, unicode path):
@@ -666,6 +672,9 @@ cdef class Canvas:
                 flags |= cv.DVZ_AXES_FLAGS_HIDE_MINOR
             if kwargs.pop('hide_grid', False):
                 flags |= cv.DVZ_AXES_FLAGS_HIDE_GRID
+
+        if controller == 'axes' and self._clear_color is None:
+            cv.dvz_canvas_clear_color(self._c_canvas, 1, 1, 1)
 
         ctl = _CONTROLLERS.get(controller, cv.DVZ_CONTROLLER_NONE)
         trans = _TRANSPOSES.get(transpose, cv.DVZ_CDS_TRANSPOSE_NONE)

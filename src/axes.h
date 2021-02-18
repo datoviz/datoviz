@@ -362,12 +362,24 @@ static void _axes_callback(DvzController* controller, DvzEvent ev)
 
 
 
+static bool _is_white_background(DvzCanvas* canvas)
+{
+    // TODO: refactor this and put elsewhere
+    ASSERT(canvas != NULL);
+    float* color = canvas->renderpass.clear_values->color.float32;
+    return color[0] == 1 && color[1] == 1 && color[2] == 1;
+}
+
+
+
 static void _axes_visual(DvzController* controller, DvzAxisCoord coord)
 {
     ASSERT(controller != NULL);
     DvzPanel* panel = controller->panel;
     ASSERT(panel != NULL);
     ASSERT(panel->scene != NULL);
+    DvzCanvas* canvas = panel->scene->canvas;
+    ASSERT(canvas != NULL);
     DvzContext* ctx = panel->grid->canvas->gpu->context;
 
     // Axes visual flags
@@ -406,6 +418,18 @@ static void _axes_visual(DvzController* controller, DvzAxisCoord coord)
     params.tex_size[0] = (int32_t)atlas->width;
     params.tex_size[1] = (int32_t)atlas->height;
     dvz_visual_data_source(visual, DVZ_SOURCE_TYPE_PARAM, 0, 0, 1, 1, &params);
+
+    if (!_is_white_background(canvas))
+    {
+        log_info("dark background detected, putting axes in white");
+        for (uint32_t i = 0; i < 4; i++)
+        {
+            if (i == 2)
+                continue;
+            dvz_visual_data(visual, DVZ_PROP_COLOR, i, 1, (cvec4[]){{255, 255, 255, 255}});
+        }
+        dvz_visual_data(visual, DVZ_PROP_COLOR, 4, 1, (cvec4[]){{255, 255, 255, 255}});
+    }
 }
 
 

@@ -1017,7 +1017,7 @@ static void _visual_image_cmap(DvzVisual* visual)
 
 // TODO: customizable params
 static cvec4 DVZ_DEFAULT_AXES_COLOR[] = {
-    {0, 0, 0, 255}, {0, 0, 0, 255}, {128, 128, 128, 255}, {0, 0, 0, 255}};
+    {0, 0, 0, 255}, {0, 0, 0, 255}, {128, 128, 128, 255}, {0, 0, 0, 255}, {0, 0, 0, 255}};
 static vec4 DVZ_DEFAULT_AXES_LINE_WIDTH = {2.0f, 4.0f, 1.0f, 2.0f};
 static vec2 DVZ_DEFAULT_AXES_TICK_LENGTH = {10.0f, 15.0f};
 static float DVZ_DEFAULT_AXES_FONT_SIZE = 12.0f;
@@ -1290,7 +1290,10 @@ static void _visual_axes_2D_bake(DvzVisual* visual, DvzVisualDataEvent ev)
         str_item.vertex.anchor[0] = -1;
         str_item.vertex.shift[0] = -10;
     }
-    str_item.vertex.color[3] = 255;
+
+    // Text color.
+    PARAM(cvec4, str_item.vertex.color, COLOR, 4)
+
     for (uint32_t i = 0; i < n_text; i++)
     {
         // Add text.
@@ -1412,6 +1415,11 @@ static void _visual_axes_2D(DvzVisual* visual)
         prop = dvz_visual_prop(
             visual, DVZ_PROP_TEXT_SIZE, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_VERTEX, 1);
         dvz_visual_prop_default(prop, &DVZ_DEFAULT_AXES_FONT_SIZE);
+
+        // text color
+        prop =
+            dvz_visual_prop(visual, DVZ_PROP_COLOR, 4, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 1);
+        dvz_visual_prop_default(prop, &DVZ_DEFAULT_AXES_COLOR[4]);
     }
 
     dvz_visual_callback_bake(visual, _visual_axes_2D_bake);

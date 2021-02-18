@@ -32,7 +32,7 @@ N = len(length)
 color = colormap(nr.rand(N), vmin=0, vmax=1, cmap='viridis')
 
 c = canvas(show_fps=False)
-panel = c.panel(controller='axes')
+panel = c.panel(controller='panzoom')
 visual = panel.visual('polygon')
 
 visual.data('pos', pos)
