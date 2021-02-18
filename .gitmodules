@@ -4,3 +4,6 @@
 [submodule "external/cglm"]
 	path = external/cglm
 	url = git@github.com:recp/cglm.git
+[submodule "data"]
+	path = data
+	url = git@github.com:datoviz/datoviz-data.git
