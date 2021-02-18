@@ -143,6 +143,7 @@ _PROPS = {
     'index': cv.DVZ_PROP_INDEX,
     'range': cv.DVZ_PROP_RANGE,
     'length': cv.DVZ_PROP_LENGTH,
+    'scale': cv.DVZ_PROP_SCALE,
     'light_params': cv.DVZ_PROP_LIGHT_PARAMS,
     'light_pos': cv.DVZ_PROP_LIGHT_POS,
     'texcoefs': cv.DVZ_PROP_TEXCOEFS,
