@@ -870,8 +870,8 @@ cdef class Texture:
         cv.dvz_texture_filter(self._c_texture, cv.DVZ_FILTER_MAG, _TEXTURE_FILTERS[name])
 
     def set_data(self, np.ndarray arr):
-        if not arr.flags['C_CONTIGUOUS']:
-            arr = np.ascontiguousarray(arr)
+        # if not arr.flags['C_CONTIGUOUS']:
+        #     arr = np.ascontiguousarray(arr)
 
         c_source_type, c_format, ndim = _get_tex_info(self.source_type, arr)
         assert c_source_type == self._c_source_type
