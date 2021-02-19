@@ -695,6 +695,18 @@ cdef class Canvas:
         gui.create(self._c_canvas, c_gui)
         return gui
 
+    def _texture(self, source_type, arr, filtering='nearest'):
+        tex = Texture()
+        tex.create(self._c_canvas, source_type, arr)
+        tex.set_filter(filtering)
+        return tex
+
+    def image(self, arr, **kwargs):
+        return self._texture('image', arr, **kwargs)
+
+    def volume(self, arr, **kwargs):
+        return self._texture('volume', arr, **kwargs)
+
     def __dealloc__(self):
         self.destroy()
 
@@ -806,40 +818,73 @@ cdef class Panel:
 # Texture
 # -------------------------------------------------------------------------------------------------
 
+cdef _get_tex_info(unicode source_type, np.ndarray arr):
+    # Find the Vulkan format for the texture
+    c_source_type, ndim = _SOURCE_TYPES[source_type]
+
+    # Find the format from the array shape and dtype
+    assert 1 <= ndim <= 3
+    if ndim <= arr.ndim - 1:
+        nc = arr.shape[ndim]
+    else:
+        nc = 1
+    # assert (arr.dtype, nc) in _FORMATS, ((arr.dtype, nc), ndim, arr.shape)
+    c_format = _FORMATS[arr.dtype, nc]
+    return c_source_type, c_format, ndim
+
+
+
 cdef class Texture:
     cdef cv.DvzCanvas* _c_canvas
+    cdef cv.DvzContext* _c_context
     cdef cv.DvzTexture* _c_texture
-    cdef cv.DvzVisual* _c_visual
+    cdef cv.VkFormat _c_format
     cdef cv.DvzSourceType _c_source_type
-    cdef UINT _c_source_idx
+    cdef unicode source_type
 
-    cdef create(self, cv.DvzVisual* c_visual, cv.DvzTexture* c_texture,
-        cv.DvzSourceType c_source_type, UINT c_source_idx):
-        self._c_visual = c_visual
-        self._c_texture = c_texture
-        self._c_canvas = c_visual.canvas
-        self._c_source_type = c_source_type
-        self._c_source_idx = c_source_idx
+    cdef create(self, cv.DvzCanvas* c_canvas, unicode source_type, np.ndarray arr):
+        self._c_canvas = c_canvas
+        self._c_context = c_canvas.gpu.context
+        self.source_type = source_type
 
-        # Bind the texture with the visual for the specified source.
-        cv.dvz_visual_texture(c_visual, c_source_type, c_source_idx, c_texture)
+        # Find the texture information from the NumPy array spec.
+        self._c_source_type, self._c_format, ndim = _get_tex_info(source_type, arr)
+
+        # Find the shape
+        cdef np.uint32_t shape[3]
+        for i in range(ndim):
+            shape[i] = arr.shape[i]
+        for i in range(ndim, 3):
+            shape[i] = 1
+        # NOTE: Vulkan considers textures as (width, height, depth) whereas NumPy
+        # considers them as (height, width, depth), hence the need to transpose here.
+        shape[0], shape[1] = shape[1], shape[0]
+
+        # Create the Datoviz texture.
+        self._c_texture = cv.dvz_ctx_texture(self._c_context, ndim, &shape[0], self._c_format)
+
+        self.set_data(arr)
 
     def set_filter(self, name):
         cv.dvz_texture_filter(self._c_texture, cv.DVZ_FILTER_MIN, _TEXTURE_FILTERS[name])
         cv.dvz_texture_filter(self._c_texture, cv.DVZ_FILTER_MAG, _TEXTURE_FILTERS[name])
 
-    def set_data(self, np.ndarray value):
+    def set_data(self, np.ndarray arr):
+        c_source_type, c_format, ndim = _get_tex_info(self.source_type, arr)
+        assert c_source_type == self._c_source_type
+        assert c_format == self._c_format
+
         cdef cv.uvec3 DVZ_ZERO_OFFSET = [0, 0, 0]
 
-        cdef size = value.size
-        cdef item_size = np.dtype(value.dtype).itemsize
+        cdef size = arr.size
+        cdef item_size = np.dtype(arr.dtype).itemsize
 
         cdef int s
         s = size * item_size
         # printf("canvas=%d, tex=%d, size=%d, data=%d\n", self._c_canvas, self._c_texture, s, &value.data[0])
         cv.dvz_upload_texture(
             self._c_canvas, self._c_texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET,
-            size * item_size, &value.data[0])
+            size * item_size, &arr.data[0])
 
 
 # -------------------------------------------------------------------------------------------------
@@ -867,58 +912,10 @@ cdef class Visual:
         N = value.shape[0]
         cv.dvz_visual_data(self._c_visual, prop_type, idx, N, &value.data[0])
 
-    def _create_texture(self, source_type, arr, idx=0):
-        # Find the Vulkan format for the texture
-        c_source_type, ndim = _SOURCE_TYPES[source_type]
-        assert 1 <= ndim <= 3
-        if ndim <= arr.ndim - 1:
-            nc = arr.shape[ndim]
-        else:
-            nc = 1
-        assert (arr.dtype, nc) in _FORMATS, ((arr.dtype, nc), ndim, arr.shape)
-        c_format = _FORMATS[arr.dtype, nc]
-
-        # Find the shape
-        cdef np.uint32_t shape[3]
-        #  = (1, 1, 1)
-        for i in range(ndim):
-            shape[i] = arr.shape[i]
-        for i in range(ndim, 3):
-            shape[i] = 1
-
-        # NOTE: Vulkan considers textures as (width, height, depth) whereas NumPy
-        # considers them as (height, width, depth), hence the need to transpose here.
-        shape[0], shape[1] = shape[1], shape[0]
-
-        # Create the Datoviz texture.
-        c_texture = cv.dvz_ctx_texture(self._c_context, ndim, &shape[0], c_format)
-
-        # Create the texture Cython wrapper and return it.
-        tex = Texture()
-        tex.create(self._c_visual, c_texture, c_source_type, idx)
-        return tex
-
-    def texture(self, source_type, arr, idx=0):
-        if (source_type, idx) not in self._textures:
-            self._textures[source_type, idx] = self._create_texture(source_type, arr, idx=idx)
-        assert (source_type, idx) in self._textures
-        tex = self._textures[source_type, idx]
-        tex.set_data(arr)
-        return tex
-
-    def image(self, arr, idx=0, filtering=None):
-        assert arr.ndim >= 2
-        tex = self.texture('image', arr, idx=idx)
-        # NOTE: this does not yet work from a background thread
-        # tex.set_filter(filtering)
-        return tex
-
-    def volume(self, arr, idx=0, filtering=None):
-        assert arr.ndim >= 3
-        tex = self.texture('volume', arr, idx=idx)
-        # NOTE: this does not yet work from a background thread
-        # tex.set_filter(filtering)
-        return tex
+    def texture(self, Texture tex, idx=0):
+        # Bind the texture with the visual for the specified source.
+        cv.dvz_visual_texture(
+            self._c_visual, tex._c_source_type, idx, tex._c_texture)
 
     def load_obj(self, unicode path, compute_normals=False):
         # TODO: check that it is a mesh visual

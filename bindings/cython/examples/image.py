@@ -1,6 +1,10 @@
 """
 # Image
 
+This example shows how to display two superimposed images of different sizes
+(but automatically rescaled), with simple blending done on the GPU, with a slider
+controlling the blending parameter.
+
 """
 
 from pathlib import Path
@@ -32,7 +36,8 @@ visual.data('texcoords', np.atleast_2d([0, 1]), idx=3)
 img = imageio.imread(ROOT / 'data/textures/earth.jpg')
 img = np.dstack((img, 255 * np.ones(img.shape[:2])))
 img = img.astype(np.uint8)
-visual.image(img, filtering='nearest', idx=0)
+tex = c.image(img, filtering='nearest')
+visual.texture(tex, idx=0)
 
 # Second texture.
 n = 256
@@ -41,17 +46,17 @@ x, y = np.meshgrid(t, t)
 z = np.exp(-2 * (x * x + y * y))
 z = (z * 255).astype(np.uint8)
 img = np.dstack((z, z, z, 255 * np.ones_like(z))).astype(np.uint8)
-visual.image(img, filtering='nearest', idx=1)
+tex2 = c.image(img, filtering='nearest')
+visual.texture(tex2, idx=1)
 
 visual.data('texcoefs', np.array([1, .5, 0, 0]).astype(np.float32))
 
 # Control the blending via a GUI.
 gui = c.gui("GUI")
 
-
-@gui.control("slider_float", "blending", vmin=0, vmax=1)
+@gui.control("slider_float", "blending", value=0, vmin=0, vmax=1)
 def on_change(value):
+    # Convex combination of the two images.
     visual.data('texcoefs', np.array([1 - value, value, 0, 0]))
-
 
 run()
