@@ -994,13 +994,13 @@ cdef class GuiControl:
     def get(self):
         cdef void* ptr
         ptr = cv.dvz_gui_value(self._c_control)
-        if self.ctype == 'input_float':
+        if self.ctype == 'input_float' or self.ctype == 'slider_float':
             return (<float*>ptr)[0]
 
     def set(self, obj):
         cdef void* ptr
         ptr = cv.dvz_gui_value(self._c_control)
-        if self.ctype == 'input_float':
+        if self.ctype == 'input_float' or self.ctype == 'slider_float':
             (<float*>ptr)[0] = <float>float(obj)
 
 
