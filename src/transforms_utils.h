@@ -58,7 +58,7 @@ static DvzBox _box_bounding(DvzArray* points_in)
     }
 
     // Enlarge the box by 10%.
-    _box_enlarge(&box, .1);
+    // _box_enlarge(&box, .1);
 
     return box;
 }
