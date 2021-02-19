@@ -26,15 +26,20 @@ void main()
 
     // Fetch the value from the texture.
     float value = params.scale * texture(tex, in_uvw).r;
+    value = clamp(value, 0, .999999);
 
     // Transfer function on the texture value.
-    if (sum(params.x_cmap) != 0)
+    if (sum(params.x_cmap) != 0) {
         value = transfer(value, params.x_cmap, params.y_cmap);
+        value = clamp(value, 0, .999999);
+    }
 
-    // Transfer function on the texture value.
+    // Transfer function on the alpha value.
     float alpha = 1.0;
-    if (sum(params.x_alpha) != 0)
+    if (sum(params.x_alpha) != 0) {
         alpha = transfer(value, params.x_alpha, params.y_alpha);
+        alpha = clamp(alpha, 0, 1);
+    }
 
     // Sampling from the color texture.
     out_color = texture(tex_cmap, vec2(value, (params.cmap + .5) / 256.0));
