@@ -26,8 +26,8 @@
 #include <string.h>
 #include <time.h>
 
-#include <datoviz/macros.h>
 #include <datoviz/log.h>
+#include <datoviz/macros.h>
 
 #ifdef _WIN32
 BEGIN_INCL_NO_WARN
@@ -100,7 +100,10 @@ void log_log(int level, const char* file, int line, const char* fmt, ...)
     {
         va_list args;
         char buf[16];
-        buf[strftime(buf, sizeof(buf), "%H:%M:%S", lt)] = '\0';
+        clock_t uptime = (clock() / (CLOCKS_PER_SEC / 1000)) % 1000;
+        buf[strftime(buf, sizeof(buf), "%H:%M:%S.    ", lt)] = '\0';
+        snprintf(&buf[9], 4, "%03d", (int)uptime);
+
 #ifdef LOG_USE_COLOR
         fprintf(
             stderr, "%s %s%-1s\x1b[0m \x1b[90m%18s:%04d:\x1b[0m %s", buf, level_colors[level],
