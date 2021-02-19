@@ -11,18 +11,19 @@ from datoviz import canvas, run, colormap
 c = canvas(show_fps=True)
 
 panel = c.panel(controller='panzoom')
-visual = panel.visual('line_strip', transform='init')
+visual = panel.visual('line_strip', transform=None)
 
-n_signals = 200
-n_points = 2000
+n_signals = 100
+n_points = 2_000
 n_vert = n_signals * n_points
 
-t = np.linspace(0, 5, n_points)
+t = np.linspace(-1, 1, n_points)
 x = np.tile(t, (n_signals,))
 assert x.ndim == 1
 
-y = .2 * nr.randn(n_signals, n_points)
-offsets = np.tile(np.arange(n_signals)[:, np.newaxis], (1, n_points))
+coef = .5 / n_signals
+y = coef * nr.randn(n_signals, n_points)
+offsets = np.tile(np.linspace(-1, +1, n_signals)[:, np.newaxis], (1, n_points))
 y += offsets
 pos = np.c_[x, y.ravel(), np.zeros(n_vert)]
 
@@ -41,8 +42,8 @@ i = 0
 k = 50
 def f():
     global i
-    yk = .2 * nr.randn(n_signals, k)
-    offsets = np.tile(np.arange(n_signals)[:, np.newaxis], (1, k))
+    yk = coef * nr.randn(n_signals, k)
+    offsets = np.tile(np.linspace(-1, +1, n_signals)[:, np.newaxis], (1, k))
     yk += offsets
     y[:, i * k:(i + 1) * k] = yk
     pos[:, 1] = y.ravel()

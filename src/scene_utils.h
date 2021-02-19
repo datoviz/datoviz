@@ -922,6 +922,7 @@ static void _scene_fill(DvzCanvas* canvas, DvzEvent ev)
 }
 
 
+
 static void _scene_resize(DvzCanvas* canvas, DvzEvent ev)
 {
     log_trace("scene resize");
