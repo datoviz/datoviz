@@ -506,12 +506,12 @@ cdef _wrapped_callback(cv.DvzCanvas* c_canvas, cv.DvzEvent c_ev):
         f, args = tup
 
         # This is the control type the callback was registered for.
-        callback_control_type = args[0] if args else None
+        name = args[0] if args else None
 
         # NOTE: only call the callback if the raised GUI event is for that control.
         dt = c_ev.type
         if dt == cv.DVZ_EVENT_GUI:
-            if c_ev.u.g.control.type != callback_control_type:
+            if c_ev.u.g.control.name != name:
                 return
 
         try:
@@ -1046,7 +1046,7 @@ cdef class Gui:
         def wrap(f):
             cdef cv.DvzEventType evtype
             evtype = cv.DVZ_EVENT_GUI
-            _add_event_callback(self._c_canvas, evtype, 0, f, (ctrl,), mode=mode)
+            _add_event_callback(self._c_canvas, evtype, 0, f, (name,), mode=mode)
 
         return wrap
 
