@@ -421,7 +421,7 @@ static void _axes_visual(DvzController* controller, DvzAxisCoord coord)
 
     if (!_is_white_background(canvas))
     {
-        log_info("dark background detected, putting axes in white");
+        log_debug("dark background detected, putting axes in white");
         for (uint32_t i = 0; i < 4; i++)
         {
             if (i == 2)
