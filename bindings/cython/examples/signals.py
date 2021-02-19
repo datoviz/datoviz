@@ -11,7 +11,7 @@ from datoviz import canvas, run, colormap
 c = canvas(show_fps=True)
 
 panel = c.panel(controller='panzoom')
-visual = panel.visual('line_strip')
+visual = panel.visual('line_strip', transform='init')
 
 n_signals = 200
 n_points = 2000
@@ -50,6 +50,6 @@ def f():
     i += 1
     i = i % (n_points // k)
 
-c._connect('timer', f, .05)
+c._connect('timer', f, .20)
 
 run()

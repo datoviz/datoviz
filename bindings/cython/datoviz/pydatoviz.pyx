@@ -793,6 +793,10 @@ cdef class Panel:
             flags |= cv.DVZ_GRAPHICS_FLAGS_DEPTH_TEST_ENABLE
         if transform is None:
             flags |= cv.DVZ_VISUAL_FLAGS_TRANSFORM_NONE
+        # This keyword means that the panel box will NOT be recomputed every time the POS prop
+        # changes
+        elif transform == 'init':
+            flags |= cv.DVZ_VISUAL_FLAGS_TRANSFORM_BOX_INIT
         c_visual = cv.dvz_scene_visual(self._c_panel, visual_type, flags)
         if c_visual is NULL:
             raise MemoryError()

@@ -413,19 +413,22 @@ static void _process_prop_changed(DvzSceneUpdate up)
     {
         _transform_pos_prop(coords, up.prop);
 
-        // Recompute the visual box.
-        DvzBox box = _visual_box(up.visual);
-
-        // Make the box square if needed.
-        if (_is_aspect_fixed(&coords))
-            box = _box_cube(box);
-
-        // If the new box has changed, renormalize all visuals.
-        if (_has_coords_changed(&coords, &box))
+        if ((up.visual->flags & DVZ_VISUAL_FLAGS_TRANSFORM_BOX_INIT) == 0)
         {
-            // Update the data coords.
-            up.panel->data_coords.box = box;
-            _enqueue_coords_changed(up.panel);
+            // Recompute the visual box.
+            DvzBox box = _visual_box(up.visual);
+
+            // Make the box square if needed.
+            if (_is_aspect_fixed(&coords))
+                box = _box_cube(box);
+
+            // If the new box has changed, renormalize all visuals.
+            if (_has_coords_changed(&coords, &box))
+            {
+                // Update the data coords.
+                up.panel->data_coords.box = box;
+                _enqueue_coords_changed(up.panel);
+            }
         }
     }
 

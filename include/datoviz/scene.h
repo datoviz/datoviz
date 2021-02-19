@@ -50,6 +50,8 @@ typedef enum
 {
     DVZ_VISUAL_FLAGS_TRANSFORM_AUTO = 0x0000,
     DVZ_VISUAL_FLAGS_TRANSFORM_NONE = 0x0010,
+    DVZ_VISUAL_FLAGS_TRANSFORM_BOX_INIT = 0x0020, // do not recompute the panel box whenever
+                                                  // the POS prop changes
 } DvzVisualFlags;
 
 

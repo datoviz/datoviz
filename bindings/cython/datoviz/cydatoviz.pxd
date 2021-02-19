@@ -746,6 +746,7 @@ cdef extern from "<datoviz/datoviz.h>":
     ctypedef enum DvzVisualFlags:
         DVZ_VISUAL_FLAGS_TRANSFORM_AUTO = 0x0000
         DVZ_VISUAL_FLAGS_TRANSFORM_NONE = 0x0010
+        DVZ_VISUAL_FLAGS_TRANSFORM_BOX_INIT = 0x0020
 
     ctypedef enum DvzSceneUpdateType:
         DVZ_SCENE_UPDATE_NONE = 0
