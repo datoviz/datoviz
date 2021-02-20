@@ -24,6 +24,14 @@ void main()
 {
     CLIP
 
+    vec4 sampled = texture(tex, in_uvw);
+
+    // Direct sample from RGB values
+    if (params.cmap < 0) {
+        out_color = sampled;
+        return;
+    }
+
     // Fetch the value from the texture.
     float value = params.scale * texture(tex, in_uvw).r;
     value = clamp(value, 0, .999999);
