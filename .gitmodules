@@ -1,9 +1,9 @@
 [submodule "external/imgui"]
 	path = external/imgui
-	url = git@github.com:datoviz/imgui.git
+	url = https://github.com/datoviz/imgui
 [submodule "external/cglm"]
 	path = external/cglm
-	url = git@github.com:recp/cglm.git
+	url = https://github.com/recp/cglm
 [submodule "data"]
 	path = data
-	url = git@github.com:datoviz/data.git
+	url = https://github.com/datoviz/datoviz
