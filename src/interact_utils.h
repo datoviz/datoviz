@@ -177,7 +177,7 @@ static void _panzoom_callback(
             is_active = true;
         }
         // Mouse wheel.
-        else if (cur_active && mouse->cur_state == DVZ_MOUSE_STATE_WHEEL)
+        else if (cur_active && mouse->cur_state == DVZ_MOUSE_STATE_WHEEL && mouse->modifiers == 0)
         {
             // TODO
             // Restrict the panzoom updates to cases when the mouse press position was in the

@@ -1203,6 +1203,7 @@ void dvz_mouse_event(DvzMouse* mouse, DvzCanvas* canvas, DvzEvent ev)
     case DVZ_EVENT_MOUSE_WHEEL:
         glm_vec2_copy(ev.u.w.dir, mouse->wheel_delta);
         mouse->cur_state = DVZ_MOUSE_STATE_WHEEL;
+        mouse->modifiers = ev.u.w.modifiers;
         break;
 
     default:
