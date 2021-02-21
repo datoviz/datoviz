@@ -971,6 +971,7 @@ cdef extern from "<datoviz/datoviz.h>":
         int modifiers
 
     ctypedef struct DvzMouseWheelEvent:
+        vec2 pos
         vec2 dir
         int modifiers
 

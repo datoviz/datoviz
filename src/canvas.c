@@ -165,7 +165,8 @@ static void _glfw_wheel_callback(GLFWwindow* window, double dx, double dy)
     // Limitation: a single modifier is allowed here.
     // TODO: allow for multiple simultlaneous modifiers, will require updating the keyboard struct
     // so that it supports multiple simultaneous keys
-    dvz_event_mouse_wheel(canvas, (vec2){dx, dy}, _key_modifiers(canvas->keyboard.key_code));
+    dvz_event_mouse_wheel(
+        canvas, canvas->mouse.cur_pos, (vec2){dx, dy}, _key_modifiers(canvas->keyboard.key_code));
 }
 
 static void _glfw_button_callback(GLFWwindow* window, int button, int action, int mods)
@@ -1201,6 +1202,7 @@ void dvz_mouse_event(DvzMouse* mouse, DvzCanvas* canvas, DvzEvent ev)
 
 
     case DVZ_EVENT_MOUSE_WHEEL:
+        glm_vec2_copy(ev.u.w.pos, mouse->cur_pos);
         glm_vec2_copy(ev.u.w.dir, mouse->wheel_delta);
         mouse->cur_state = DVZ_MOUSE_STATE_WHEEL;
         mouse->modifiers = ev.u.w.modifiers;
@@ -1341,7 +1343,7 @@ void dvz_event_mouse_move(DvzCanvas* canvas, vec2 pos, int modifiers)
 
 
 
-void dvz_event_mouse_wheel(DvzCanvas* canvas, vec2 dir, int modifiers)
+void dvz_event_mouse_wheel(DvzCanvas* canvas, vec2 pos, vec2 dir, int modifiers)
 {
     ASSERT(canvas != NULL);
     if (canvas->captured)
@@ -1349,6 +1351,8 @@ void dvz_event_mouse_wheel(DvzCanvas* canvas, vec2 dir, int modifiers)
 
     DvzEvent event = {0};
     event.type = DVZ_EVENT_MOUSE_WHEEL;
+    event.u.w.pos[0] = pos[0];
+    event.u.w.pos[1] = pos[1];
     event.u.w.dir[0] = dir[0];
     event.u.w.dir[1] = dir[1];
     event.u.w.modifiers = modifiers;

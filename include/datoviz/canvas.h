@@ -368,6 +368,7 @@ struct DvzMouseMoveEvent
 
 struct DvzMouseWheelEvent
 {
+    vec2 pos;
     vec2 dir;
     int modifiers;
 };
@@ -990,10 +991,11 @@ DVZ_EXPORT void dvz_event_mouse_move(DvzCanvas* canvas, vec2 pos, int modifiers)
  * Emit a mouse wheel event.
  *
  * @param canvas the canvas
+ * @param pos the current mouse position, in pixels
  * @param dir the mouse wheel direction
  * @param modifiers flags with the active keyboard modifiers
  */
-DVZ_EXPORT void dvz_event_mouse_wheel(DvzCanvas* canvas, vec2 dir, int modifiers);
+DVZ_EXPORT void dvz_event_mouse_wheel(DvzCanvas* canvas, vec2 pos, vec2 dir, int modifiers);
 
 /**
  * Emit a mouse click event.

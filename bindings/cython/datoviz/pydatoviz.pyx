@@ -74,13 +74,6 @@ _BUTTONS = {
     cv.DVZ_MOUSE_BUTTON_RIGHT: 'right',
 }
 
-# _MOUSE_STATES = {
-#     cv.DVZ_MOUSE_STATE_DRAG: 'drag',
-#     cv.DVZ_MOUSE_STATE_WHEEL: 'wheel',
-#     cv.DVZ_MOUSE_STATE_CLICK: 'click',
-#     cv.DVZ_MOUSE_STATE_DOUBLE_CLICK: 'double_click',
-# }
-
 _EVENTS ={
     'mouse_press': cv.DVZ_EVENT_MOUSE_PRESS,
     'mouse_release': cv.DVZ_EVENT_MOUSE_RELEASE,
@@ -485,10 +478,12 @@ cdef _get_ev_args(cv.DvzEvent c_ev):
         return (x, y), dict(modifiers=modifiers)
     # Mouse wheel event.
     elif dt == cv.DVZ_EVENT_MOUSE_WHEEL:
+        x = c_ev.u.w.pos[0]
+        y = c_ev.u.w.pos[1]
         dx = c_ev.u.w.dir[0]
         dy = c_ev.u.w.dir[1]
         modifiers = _get_modifiers(c_ev.u.w.modifiers)
-        return (dx, dy), dict(modifiers=modifiers)
+        return (x, y, dx, dy), dict(modifiers=modifiers)
     return (), {}
 
 
