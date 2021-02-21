@@ -6,4 +6,4 @@
 	url = https://github.com/recp/cglm
 [submodule "data"]
 	path = data
-	url = https://github.com/datoviz/datoviz
+	url = https://github.com/datoviz/data
