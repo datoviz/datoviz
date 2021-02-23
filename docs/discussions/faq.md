@@ -18,3 +18,11 @@ The **window** is an abstraction provided by the backend windowing library, glfw
     With the Python bindings, a scene is automatically created when creating a canvas.
 
 **Most users will only work at the scene level.** Advanced users will use the canvas to create custom applications, interactive animations, or even small video games. Finally, the window is only used internally and will probably never be used directly.
+
+
+## What is the difference between the FPS and eFPS?
+
+* The **FPS** is the **number of Frames Per Second**. It is used to evaluate the raw rendering performance.
+* The **eFPS** is the **effective Frames Per Second**. It indicates the rendering smoothness as *perceived* by the user.
+
+The eFPS is computed from the average maximum delay between two consecutive frames. If every second, five frames take 100 ms to render, but all other frames render in 1 ms, the rendering will be perceived as slow as an application at ~10 FPS, even though the total frame count would be close to 1000 FPS.

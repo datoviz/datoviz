@@ -562,17 +562,21 @@ struct DvzCanvas
 
     DvzWindow* window;
 
-    // Swapchain
+    // Swapchain.
     DvzSwapchain swapchain;
     DvzImages depth_image;
     DvzFramebuffers framebuffers;
     DvzFramebuffers framebuffers_overlay; // used by the overlay renderpass
     DvzSubmit submit;
 
+    // FPS.
     uint32_t cur_frame; // current frame within the images in flight
     uint64_t frame_idx;
+    uint64_t last_frame_idx;
     DvzClock clock;
-    float fps;
+    double fps, efps;
+    double max_delay; // used to compute the effective frames per second (eFPS)
+    double max_delay_roll[10];
 
     // Renderpasses.
     DvzRenderpass renderpass;         // default renderpass

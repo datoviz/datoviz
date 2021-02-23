@@ -58,8 +58,8 @@ struct DvzClock
     double interval; // interval since the last clock update
 
     struct timeval start, current;
-    double checkpoint_time;
-    uint64_t checkpoint_value;
+    // double checkpoint_time;
+    // uint64_t checkpoint_value;
 };
 
 
