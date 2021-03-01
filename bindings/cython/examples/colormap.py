@@ -37,4 +37,4 @@ visual.data('color', color)
 visual.data('linewidth', np.array([50]))
 visual.data('cap_type', np.array([0]))
 
-run(screenshot='colormap.png')
+run()
