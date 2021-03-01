@@ -3,7 +3,6 @@
 
 layout(std140, binding = USER_BINDING) uniform Params
 {
-    // vec4 view_pos;
     int cmap;
 }
 params;

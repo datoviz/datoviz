@@ -22,6 +22,7 @@ layout(location = 2) in vec3 in_ray;
 layout(location = 0) out vec4 out_color;
 
 
+
 bool intersect_box(vec3 origin, vec3 dir, vec3 box_min, vec3 box_max, out float t0, out float t1)
 {
     vec3 inv_r = 1.0 / dir;

@@ -363,7 +363,6 @@ struct DvzGraphicsVolumeVertex
 
 struct DvzGraphicsVolumeParams
 {
-    // vec4 view_pos; /* camera position */
     vec4 box_size; /* size of the box containing the volume, in NDC */
     int32_t cmap;  /* colormap */
 };
@@ -386,9 +385,8 @@ struct DvzGraphicsMeshParams
 {
     mat4 lights_pos_0;    /* positions of each of the maximum four lights */
     mat4 lights_params_0; /* ambient, diffuse, specular coefs for each light */
-    // vec4 view_pos;        /* camera position */
-    vec4 tex_coefs;  /* blending coefficients for the four textures */
-    vec4 clip_coefs; /* clip coefficients */
+    vec4 tex_coefs;       /* blending coefficients for the four textures */
+    vec4 clip_coefs;      /* clip coefficients */
 };
 
 static DvzGraphicsMeshParams default_graphics_mesh_params(vec3 eye)
@@ -402,7 +400,6 @@ static DvzGraphicsMeshParams default_graphics_mesh_params(vec3 eye)
     params.lights_pos_0[0][1] = 1;       //
     params.lights_pos_0[0][2] = +10;     //
     params.tex_coefs[0] = 1;             // texture blending coefficients
-    // glm_vec3_copy(eye, params.view_pos); // camera position
     return params;
 }
 

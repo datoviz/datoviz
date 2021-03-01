@@ -1584,12 +1584,6 @@ static void _visual_mesh(DvzVisual* visual)
         prop, 1, offsetof(DvzGraphicsMeshParams, lights_params_0), DVZ_ARRAY_COPY_SINGLE, 1);
     dvz_visual_prop_default(prop, &params.lights_params_0);
 
-    // // View pos.
-    // prop = dvz_visual_prop(visual, DVZ_PROP_VIEW_POS, 0, DVZ_DTYPE_VEC4, DVZ_SOURCE_TYPE_PARAM,
-    // 0); dvz_visual_prop_copy(
-    //     prop, 2, offsetof(DvzGraphicsMeshParams, view_pos), DVZ_ARRAY_COPY_SINGLE, 1);
-    // dvz_visual_prop_default(prop, &params.view_pos);
-
     // Texture coefficients.
     prop = dvz_visual_prop(visual, DVZ_PROP_TEXCOEFS, 0, DVZ_DTYPE_VEC4, DVZ_SOURCE_TYPE_PARAM, 0);
     dvz_visual_prop_copy(
@@ -1707,12 +1701,6 @@ static void _visual_volume(DvzVisual* visual)
 
 
     // Params.
-
-    // // View pos.
-    // prop = dvz_visual_prop(visual, DVZ_PROP_VIEW_POS, 0, DVZ_DTYPE_VEC3, DVZ_SOURCE_TYPE_PARAM,
-    // 0); dvz_visual_prop_copy(
-    //     prop, 0, offsetof(DvzGraphicsVolumeParams, view_pos), DVZ_ARRAY_COPY_SINGLE, 1);
-    // dvz_visual_prop_default(prop, (vec3){0, 0, 3});
 
     // Box size.
     prop = dvz_visual_prop(visual, DVZ_PROP_LENGTH, 0, DVZ_DTYPE_VEC3, DVZ_SOURCE_TYPE_PARAM, 0);

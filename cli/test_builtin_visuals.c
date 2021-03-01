@@ -775,7 +775,6 @@ int test_visuals_mesh(TestContext* context)
     dvz_visual_data(&visual, DVZ_PROP_LIGHT_PARAMS, 0, 1, &params.lights_params_0);
     dvz_visual_data(&visual, DVZ_PROP_LIGHT_POS, 0, 1, &params.lights_pos_0);
     dvz_visual_data(&visual, DVZ_PROP_TEXCOEFS, 0, 1, &params.tex_coefs);
-    // dvz_visual_data(&visual, DVZ_PROP_VIEW_POS, 0, 1, &params.view_pos);
 
     DvzInteract interact = dvz_interact_builtin(canvas, DVZ_INTERACT_ARCBALL);
     visual.user_data = &interact;
