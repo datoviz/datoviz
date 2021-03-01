@@ -654,7 +654,7 @@ DVZ_EXPORT uint8_t* dvz_read_ppm(const char* filename, int* width, int* height);
 DVZ_EXPORT const unsigned char* dvz_resource_shader(const char* name, unsigned long* size);
 
 // Defined in cmake-generated file build/_colortex.c
-DVZ_EXPORT const unsigned char* dvz_resource_texture(const char* name, unsigned long* size);
+DVZ_EXPORT unsigned char* dvz_resource_texture(const char* name, unsigned long* size);
 
 
 

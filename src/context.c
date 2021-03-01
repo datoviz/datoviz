@@ -202,11 +202,22 @@ DvzContext* dvz_context(DvzGpu* gpu, DvzWindow* window)
     dvz_texture_address_mode(
         context->color_texture.texture, DVZ_TEXTURE_AXIS_V,
         VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
+    dvz_context_colormap(context);
+
+    return context;
+}
+
+
+
+void dvz_context_colormap(DvzContext* context)
+{
+    ASSERT(context != NULL);
+    ASSERT(context->color_texture.texture != NULL);
+    ASSERT(context->color_texture.arr != NULL);
+
     dvz_texture_upload(
         context->color_texture.texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, 256 * 256 * 4,
         context->color_texture.arr);
-
-    return context;
 }
 
 

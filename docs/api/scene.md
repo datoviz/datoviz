@@ -68,3 +68,5 @@
 ### `dvz_colormap_array()`
 ### `dvz_colormap_packuv()`
 ### `dvz_colormap_extent()`
+### `dvz_colormap_set()`
+### `dvz_colormap_custom()`

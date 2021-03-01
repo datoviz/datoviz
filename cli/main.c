@@ -45,11 +45,14 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_basic_canvas_triangle), //
     CASE_FIXTURE_NONE(test_shader_compile),        //
 
+    // FIFO queue
+    CASE_FIXTURE_NONE(test_fifo_1), //
+    CASE_FIXTURE_NONE(test_fifo_2), //
+    CASE_FIXTURE_NONE(test_fifo_3), //
+
     // context
-    CASE_FIXTURE_NONE(test_fifo_1),      //
-    CASE_FIXTURE_NONE(test_fifo_2),      //
-    CASE_FIXTURE_NONE(test_fifo_3),      //
-    CASE_FIXTURE_NONE(test_default_app), //
+    CASE_FIXTURE_NONE(test_default_app),      //
+    CASE_FIXTURE_NONE(test_context_colormap), //
 
     // canvas
     CASE_FIXTURE_NONE(test_canvas_transfer_buffer),  //

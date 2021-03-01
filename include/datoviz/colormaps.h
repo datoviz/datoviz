@@ -70,23 +70,30 @@ extern "C" {
 #define CPAL032_OFS     (CPAL256_OFS + CPAL256_TOT) // 240
 #define CPAL032_NAT     8                           //   8
 #define CPAL032_USR_OFS (CPAL032_OFS + CPAL032_NAT) // 248
-#define CPAL032_USR     8                           // 8
-#define CPAL032_PER_ROW 8                           // 8
-#define CPAL032_SIZ     32                          // 32
-#define CPAL032_TOT     (CPAL032_NAT + CPAL032_USR) // 16
-
-#define TO_BYTE(x) (uint8_t) round(CLIP((x), 0, 1) * 255)
+#define CPAL032_USR     8                           //   8
+#define CPAL032_PER_ROW 8                           //   8
+#define CPAL032_SIZ     32                          //  32
+#define CPAL032_TOT     (CPAL032_NAT + CPAL032_USR) //  16
 
 #define CMAP_COUNT 256
 
+// Custom colormaps.
+#define CMAP_CUSTOM_COUNT 16
+#define CMAP_CUSTOM       (CMAP_TOT - CMAP_CUSTOM_COUNT)    // 160
+#define CPAL256_CUSTOM    (CPAL032_OFS - CMAP_CUSTOM_COUNT) // 224
+// TODO: CPAL032 custom
+
+#define TO_BYTE(x) (uint8_t) round(CLIP((x), 0, 1) * 255)
+
+
 #pragma GCC visibility push(default)
-static const unsigned char* DVZ_COLORMAP_ARRAY;
+static unsigned char* DVZ_COLORMAP_ARRAY;
 #pragma GCC visibility pop
 
 
 
 /*************************************************************************************************/
-/*  Color enums                                                                                  */
+/*  Colormap enums                                                                               */
 /*************************************************************************************************/
 
 typedef enum
@@ -247,6 +254,8 @@ typedef enum
     DVZ_CMAP_KINDLMANN,
     DVZ_CMAP_EXTENDED_KINDLMANN,
 
+    DVZ_CMAP_CUSTOM = CMAP_CUSTOM,
+
     // colorcet palettes with 256 colors
 
     DVZ_CPAL256_GLASBEY = CPAL256_OFS,
@@ -255,6 +264,8 @@ typedef enum
     DVZ_CPAL256_GLASBEY_HV,
     DVZ_CPAL256_GLASBEY_LIGHT,
     DVZ_CPAL256_GLASBEY_WARM,
+
+    DVZ_CPAL256_CUSTOM = CPAL256_CUSTOM,
 
     // matplotlib palettes with <= 32 colors
 
@@ -297,7 +308,7 @@ typedef enum
 
 
 /*************************************************************************************************/
-/*  Color utils                                                                                  */
+/*  Colormap utils                                                                               */
 /*************************************************************************************************/
 
 // Rescale a double value to a byte.
@@ -316,7 +327,7 @@ static uint8_t _scale_uint8(double value, double vmin, double vmax)
 }
 
 // Load the colormap array.
-static const unsigned char* _load_colormaps()
+static unsigned char* _load_colormaps()
 {
     if (DVZ_COLORMAP_ARRAY != NULL)
         return DVZ_COLORMAP_ARRAY;
@@ -326,6 +337,12 @@ static const unsigned char* _load_colormaps()
     ASSERT(size > 0);
     return DVZ_COLORMAP_ARRAY;
 }
+
+
+
+/*************************************************************************************************/
+/*  Colormap functions                                                                           */
+/*************************************************************************************************/
 
 /**
  * Get the texture integer coordinates corresponding to a colormap and value.
@@ -352,6 +369,8 @@ DVZ_INLINE void dvz_colormap_idx(DvzColormap cmap, uint8_t value, cvec2 out)
     out[1] = col;
 }
 
+
+
 /**
  * Get the texture normalized coordinates corresponding to a colormap and value.
  *
@@ -366,6 +385,8 @@ DVZ_INLINE void dvz_colormap_uv(DvzColormap cmap, uint8_t value, vec2 uv)
     uv[0] = (ij[1] + .5) / 256.;
     uv[1] = (ij[0] + .5) / 256.;
 }
+
+
 
 /**
  * Get the tex coords extent of a colormap.
@@ -388,6 +409,8 @@ DVZ_INLINE void dvz_colormap_extent(DvzColormap cmap, vec4 uvuv)
     uvuv[2] = (col1 + .5) / 256.;
     uvuv[3] = (row + .5) / 256.;
 }
+
+
 
 /**
  * Fetch a color from a colormap and a value.
@@ -415,6 +438,8 @@ DVZ_INLINE void dvz_colormap(DvzColormap cmap, uint8_t value, cvec4 color)
     color[3] = 255;
 }
 
+
+
 /**
  * Fetch a color from a colormap and an interpolated value.
  *
@@ -430,6 +455,8 @@ dvz_colormap_scale(DvzColormap cmap, double value, double vmin, double vmax, cve
     uint8_t u_value = _scale_uint8(value, vmin, vmax);
     dvz_colormap(cmap, u_value, color);
 }
+
+
 
 /**
  * Fetch colors from a colormap and an array of values.
@@ -450,6 +477,8 @@ static void dvz_colormap_array(
         dvz_colormap_scale(cmap, values[i], vmin, vmax, out[i]);
 }
 
+
+
 /**
  * Pack an arbitrary RGB color into a special uv texture coordinates
  *
@@ -465,6 +494,57 @@ static void dvz_colormap_packuv(cvec3 color, vec2 uv)
 {
     uv[1] = -1;
     uv[0] = color[0] + 256.0 * color[1] + 65536.0 * color[2];
+}
+
+
+/**
+ * Modify a color in the colormap array (on the CPU only).
+ *
+ * @param row the row index in the colormap array
+ * @param col the column index in the colormap array
+ * @param color the color
+ */
+
+DVZ_INLINE void dvz_colormap_set(uint8_t row, uint8_t col, cvec4 color)
+{
+    // Make sure the colormap array is loaded in memory.
+    _load_colormaps();
+    ASSERT(DVZ_COLORMAP_ARRAY != NULL);
+
+    uint32_t offset = (uint32_t)row * 256 * 4 + (uint32_t)col * 4;
+    ASSERT(offset < 256 * 256 * 4 - 4);
+    DVZ_COLORMAP_ARRAY[offset + 0] = color[0];
+    DVZ_COLORMAP_ARRAY[offset + 1] = color[1];
+    DVZ_COLORMAP_ARRAY[offset + 2] = color[2];
+    DVZ_COLORMAP_ARRAY[offset + 3] = color[3];
+}
+
+
+
+/**
+ * Add a custom colormap.
+ *
+ * The cmap index must be between 160 and 175 for continuous colormaps, or between 224 and 239 for
+ * categorical colormaps. The maximum number of colors in the colormap is 256.
+ *
+ * @param cmap the custom colormap index
+ * @param color_count the number of colors in the custom colormap
+ * @param colors the colors
+ */
+static void dvz_colormap_custom(uint8_t cmap, uint8_t color_count, cvec4* colors)
+{
+    ASSERT(
+        (cmap >= CMAP_CUSTOM && cmap < CMAP_TOT) ||
+        (cmap >= CPAL256_CUSTOM && cmap < CPAL032_OFS));
+    ASSERT(color_count > 0);
+    ASSERT(colors != NULL);
+
+    cvec2 ij = {0};
+    for (uint8_t i = 0; i < color_count; i++)
+    {
+        dvz_colormap_idx((DvzColormap)cmap, i, ij);
+        dvz_colormap_set(ij[0], ij[1], colors[i]);
+    }
 }
 
 

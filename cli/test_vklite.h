@@ -36,15 +36,16 @@ int test_shader_compile(TestContext* context);
 /*  Context                                                                                   */
 /*************************************************************************************************/
 
-int test_context_buffer_1(TestContext* context);
-int test_context_buffer_2(TestContext* context);
-int test_context_texture(TestContext* context);
-int test_context_transfer_sync(TestContext* context);
-int test_context_copy(TestContext* context);
-int test_context_transfer_async_nothread(TestContext* context);
-int test_context_transfer_async_thread(TestContext* context);
-int test_context_download(TestContext* context);
+// int test_context_buffer_1(TestContext* context);
+// int test_context_buffer_2(TestContext* context);
+// int test_context_texture(TestContext* context);
+// int test_context_transfer_sync(TestContext* context);
+// int test_context_copy(TestContext* context);
+// int test_context_transfer_async_nothread(TestContext* context);
+// int test_context_transfer_async_thread(TestContext* context);
+// int test_context_download(TestContext* context);
 
+int test_context_colormap(TestContext* context);
 int test_default_app(TestContext* context);
 
 

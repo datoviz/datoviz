@@ -88,7 +88,7 @@ struct DvzFontAtlas
 
 struct DvzColorTexture
 {
-    const unsigned char* arr;
+    unsigned char* arr;
     DvzTexture* texture;
 };
 
@@ -365,6 +365,13 @@ DVZ_EXPORT DvzContext* dvz_context(DvzGpu* gpu, DvzWindow* window);
  * @param context the context
  */
 DVZ_EXPORT void dvz_context_reset(DvzContext* context);
+
+/**
+ * Update the colormap texture on the GPU after it has changed on the CPU.
+ *
+ * @param context the context
+ */
+DVZ_EXPORT void dvz_context_colormap(DvzContext* context);
 
 
 

@@ -22,12 +22,12 @@ function(create_resources files prefix output)
         # Convert hex data for C compatibility
         string(REGEX REPLACE "([0-9a-f][0-9a-f])" "0x\\1," filedata ${filedata})
         # Append data to output file
-        file(APPEND ${output} "const unsigned char DVZ_RESOURCE_${prefix}_${filename}[] = {${filedata}};\n")
-        file(APPEND ${output} "const unsigned long DVZ_RESOURCE_${prefix}_${filename}_size = ${filesize};\n")
+        file(APPEND ${output} "unsigned char DVZ_RESOURCE_${prefix}_${filename}[] = {${filedata}};\n")
+        file(APPEND ${output} "unsigned long DVZ_RESOURCE_${prefix}_${filename}_size = ${filesize};\n")
     endforeach()
 
     # Loading function.
-    file(APPEND ${output} "const unsigned char* dvz_resource_${prefix}(const char* name, unsigned long* size)\n")
+    file(APPEND ${output} "unsigned char* dvz_resource_${prefix}(const char* name, unsigned long* size)\n")
     file(APPEND ${output} "{\n")
     #file(APPEND ${output} "printf(\"%s\\n\", name);\n")
     # Iterate through input files
