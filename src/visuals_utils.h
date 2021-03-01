@@ -59,6 +59,9 @@ static DvzSourceKind _get_source_kind(DvzSourceType type)
     case DVZ_SOURCE_TYPE_INDEX:
         return DVZ_SOURCE_KIND_INDEX;
 
+    case DVZ_SOURCE_TYPE_TRANSFER:
+        return DVZ_SOURCE_KIND_TEXTURE_1D;
+
     case DVZ_SOURCE_TYPE_IMAGE:
     case DVZ_SOURCE_TYPE_COLOR_TEXTURE:
     case DVZ_SOURCE_TYPE_FONT_ATLAS:

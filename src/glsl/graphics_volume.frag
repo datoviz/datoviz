@@ -14,8 +14,9 @@ layout(std140, binding = USER_BINDING) uniform Params
 }
 params;
 
-layout(binding = (USER_BINDING + 1)) uniform sampler2D tex_cmap; // colormap texture
-layout(binding = (USER_BINDING + 2)) uniform sampler3D tex;      // 3D volume
+layout(binding = (USER_BINDING + 1)) uniform sampler2D tex_cmap;        // colormap texture
+layout(binding = (USER_BINDING + 2)) uniform sampler1D tex_transfer;    // transfer function
+layout(binding = (USER_BINDING + 3)) uniform sampler3D tex;             // 3D volume
 
 layout(location = 0) in vec3 in_pos;
 layout(location = 1) in vec3 in_ray;
@@ -43,6 +44,9 @@ bool intersect_box(vec3 origin, vec3 dir, vec3 box_min, vec3 box_max, out float 
 vec4 fetch_color(vec3 uvw) {
     float v = texture(tex, uvw).r;
     v = clamp(v, 0, 1);
+
+    // Transfer function.
+    v = texture(tex_transfer, v).r;
 
     // Color component: colormap.
     vec4 color = colormap(params.cmap, v);

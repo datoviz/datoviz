@@ -861,10 +861,11 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_SOURCE_TYPE_INDEX = 5
         DVZ_SOURCE_TYPE_IMAGE = 6
         DVZ_SOURCE_TYPE_VOLUME = 7
-        DVZ_SOURCE_TYPE_COLOR_TEXTURE = 8
-        DVZ_SOURCE_TYPE_FONT_ATLAS = 9
-        DVZ_SOURCE_TYPE_OTHER = 10
-        DVZ_SOURCE_TYPE_COUNT = 11
+        DVZ_SOURCE_TYPE_TRANSFER = 8
+        DVZ_SOURCE_TYPE_COLOR_TEXTURE = 9
+        DVZ_SOURCE_TYPE_FONT_ATLAS = 10
+        DVZ_SOURCE_TYPE_OTHER = 11
+        DVZ_SOURCE_TYPE_COUNT = 12
 
     ctypedef enum DvzSourceOrigin:
         DVZ_SOURCE_ORIGIN_NONE = 0

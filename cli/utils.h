@@ -1053,6 +1053,23 @@ static DvzTexture* _mouse_volume(DvzCanvas* canvas)
 
 
 
+static DvzTexture* _transfer_texture(DvzCanvas* canvas)
+{
+    DvzGpu* gpu = canvas->gpu;
+    DvzTexture* texture_transfer =
+        dvz_ctx_texture(gpu->context, 1, (uvec3){256, 1, 1}, VK_FORMAT_R32_SFLOAT);
+    float* tex_data = calloc(256, sizeof(float));
+    for (uint32_t i = 0; i < 256; i++)
+        tex_data[i] = i / 255.0;
+    dvz_upload_texture(
+        canvas, texture_transfer, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, //
+        256 * sizeof(float), tex_data);
+    FREE(tex_data);
+    return texture_transfer;
+}
+
+
+
 static DvzTexture* _earth_texture(DvzCanvas* canvas)
 {
     DvzGpu* gpu = canvas->gpu;

@@ -1044,13 +1044,18 @@ int test_graphics_volume_1(TestContext* context)
     tg.params_data = &params;
     dvz_upload_buffers(canvas, tg.br_params, 0, sizeof(DvzGraphicsVolumeParams), &params);
 
+    // 3D texture.
     DvzTexture* texture = _mouse_volume(canvas);
+
+    // 1D transfer function.
+    DvzTexture* texture_transfer = _transfer_texture(canvas);
 
     // Bindings.
     _common_bindings(&tg);
     dvz_bindings_buffer(&tg.bindings, DVZ_USER_BINDING, tg.br_params);
     dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 1, gpu->context->color_texture.texture);
-    dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 2, texture);
+    dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 2, texture_transfer);
+    dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 3, texture);
     dvz_bindings_update(&tg.bindings);
 
     // Interactivity.

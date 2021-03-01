@@ -1666,11 +1666,13 @@ static void _visual_volume(DvzVisual* visual)
         visual, DVZ_SOURCE_TYPE_COLOR_TEXTURE, 0, DVZ_PIPELINE_GRAPHICS, 0, //
         DVZ_USER_BINDING + 1, sizeof(uint8_t), 0);                          //
 
+    dvz_visual_source(                                                 // transfer function
+        visual, DVZ_SOURCE_TYPE_TRANSFER, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+        DVZ_USER_BINDING + 2, sizeof(float), 0);                       //
 
-    // TODO: customizable dtype for the volume
     dvz_visual_source(                                               // volume source
         visual, DVZ_SOURCE_TYPE_VOLUME, 0, DVZ_PIPELINE_GRAPHICS, 0, //
-        DVZ_USER_BINDING + 2, sizeof(uint16_t), 0);                  //
+        DVZ_USER_BINDING + 3, sizeof(uint16_t), 0);                  //
 
     // Props:
 

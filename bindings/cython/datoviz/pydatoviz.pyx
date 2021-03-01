@@ -358,6 +358,7 @@ _TEXTURE_FILTERS = {
 }
 
 _SOURCE_TYPES = {
+    'transfer': (cv.DVZ_SOURCE_TYPE_TRANSFER, 1),
     'image': (cv.DVZ_SOURCE_TYPE_IMAGE, 2),
     'volume': (cv.DVZ_SOURCE_TYPE_VOLUME, 3),
 }
@@ -719,6 +720,9 @@ cdef class Canvas:
         tex.set_filter(filtering)
         return tex
 
+    def transfer(self, arr, **kwargs):
+        return self._texture('transfer', arr, **kwargs)
+
     def image(self, arr, **kwargs):
         return self._texture('image', arr, **kwargs)
 
@@ -851,6 +855,7 @@ cdef _get_tex_info(unicode source_type, np.ndarray arr):
     else:
         nc = 1
     # assert (arr.dtype, nc) in _FORMATS, ((arr.dtype, nc), ndim, arr.shape)
+    assert nc <= 4
     c_format = _FORMATS[arr.dtype, nc]
     return c_source_type, c_format, ndim
 
@@ -878,9 +883,11 @@ cdef class Texture:
             shape[i] = arr.shape[i]
         for i in range(ndim, 3):
             shape[i] = 1
-        # NOTE: Vulkan considers textures as (width, height, depth) whereas NumPy
-        # considers them as (height, width, depth), hence the need to transpose here.
-        shape[0], shape[1] = shape[1], shape[0]
+
+        if ndim > 1:
+            # NOTE: Vulkan considers textures as (width, height, depth) whereas NumPy
+            # considers them as (height, width, depth), hence the need to transpose here.
+            shape[0], shape[1] = shape[1], shape[0]
 
         # Create the Datoviz texture.
         self._c_texture = cv.dvz_ctx_texture(self._c_context, ndim, &shape[0], self._c_format)

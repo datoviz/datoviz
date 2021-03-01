@@ -852,6 +852,10 @@ int test_visuals_volume_1(TestContext* context)
     DvzTexture* volume = _mouse_volume(canvas);
     dvz_visual_texture(&visual, DVZ_SOURCE_TYPE_VOLUME, 0, volume);
 
+    // 1D transfer function.
+    DvzTexture* texture_transfer = _transfer_texture(canvas);
+    dvz_visual_texture(&visual, DVZ_SOURCE_TYPE_TRANSFER, 0, texture_transfer);
+
     // Arcball.
     DvzInteract interact = dvz_interact_builtin(canvas, DVZ_INTERACT_ARCBALL);
     visual.user_data = &interact;
