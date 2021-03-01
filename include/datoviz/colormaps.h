@@ -52,28 +52,28 @@ extern "C" {
 /*************************************************************************************************/
 
 // Colormaps: native, user-defined, total.
-#define CMAP_OFS     0
-#define CMAP_NAT     144
-#define CMAP_USR_OFS CMAP_NAT
-#define CMAP_USR     32
-#define CMAP_TOT     (CMAP_NAT + CMAP_USR)
+#define CMAP_OFS     0                     //   0
+#define CMAP_NAT     144                   // 144
+#define CMAP_USR_OFS CMAP_NAT              // 144
+#define CMAP_USR     32                    //  32
+#define CMAP_TOT     (CMAP_NAT + CMAP_USR) // 176
 
 // Color palettes with 256 colors each: native, user-defined, total.
-#define CPAL256_OFS     CMAP_TOT
-#define CPAL256_NAT     32
-#define CPAL256_USR_OFS (CPAL256_OFS + CPAL256_NAT)
-#define CPAL256_USR     32
-#define CPAL256_TOT     (CPAL256_NAT + CPAL256_USR)
+#define CPAL256_OFS     CMAP_TOT                    // 176
+#define CPAL256_NAT     32                          //  32
+#define CPAL256_USR_OFS (CPAL256_OFS + CPAL256_NAT) // 208
+#define CPAL256_USR     32                          //  32
+#define CPAL256_TOT     (CPAL256_NAT + CPAL256_USR) //  64
 
 // Color palettes with 32 colors each: native, user-defined, total.
 // There are 8 palettes per row in the texture (8*32=256)
-#define CPAL032_OFS     (CPAL256_OFS + CPAL256_TOT)
-#define CPAL032_NAT     8
-#define CPAL032_USR_OFS (CPAL032_OFS + CPAL032_NAT)
-#define CPAL032_USR     8
-#define CPAL032_PER_ROW 8
-#define CPAL032_SIZ     32
-#define CPAL032_TOT     (CPAL032_NAT + CPAL032_USR)
+#define CPAL032_OFS     (CPAL256_OFS + CPAL256_TOT) // 240
+#define CPAL032_NAT     8                           //   8
+#define CPAL032_USR_OFS (CPAL032_OFS + CPAL032_NAT) // 248
+#define CPAL032_USR     8                           // 8
+#define CPAL032_PER_ROW 8                           // 8
+#define CPAL032_SIZ     32                          // 32
+#define CPAL032_TOT     (CPAL032_NAT + CPAL032_USR) // 16
 
 #define TO_BYTE(x) (uint8_t) round(CLIP((x), 0, 1) * 255)
 

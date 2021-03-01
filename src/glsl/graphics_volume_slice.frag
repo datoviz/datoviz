@@ -50,7 +50,8 @@ void main()
     }
 
     // Sampling from the color texture.
-    out_color = texture(tex_cmap, vec2(value, (params.cmap + .5) / 256.0));
+    // out_color = colormap(params.cmap, value);
+    out_color = colormap_fetch(tex_cmap, params.cmap, value);
 
     // Or computing directly in the shader. Limited to a few colormaps. Not sure which is faster.
     // out_color = colormap(params.cmap, value);

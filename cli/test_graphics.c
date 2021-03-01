@@ -941,7 +941,7 @@ int test_graphics_volume_slice(TestContext* context)
 {
     INIT_GRAPHICS(DVZ_GRAPHICS_VOLUME_SLICE, 0)
     const uint32_t N = 8;
-    BEGIN_DATA(DvzGraphicsVolumeVertex, N, NULL)
+    BEGIN_DATA(DvzGraphicsVolumeSliceVertex, N, NULL)
     float x = MOUSE_VOLUME_DEPTH / (float)MOUSE_VOLUME_HEIGHT;
     float y = 1;
     float z = 0;

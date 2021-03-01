@@ -73,7 +73,7 @@ static void _common_data(DvzVisual* visual)
 #define INIT                                                                                      \
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);                                                      \
     DvzGpu* gpu = dvz_gpu(app, 0);                                                                \
-    DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);                              \
+    DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, DVZ_CANVAS_FLAGS_FPS);           \
     DvzContext* ctx = gpu->context;                                                               \
     ASSERT(ctx != NULL);
 
@@ -841,6 +841,9 @@ int test_visuals_volume_1(TestContext* context)
 
     dvz_visual_data(&visual, DVZ_PROP_LENGTH, 0, 1, box_size);
 
+    DvzColormap cmap = DVZ_CMAP_BONE;
+    dvz_visual_data(&visual, DVZ_PROP_COLORMAP, 0, 1, &cmap);
+
     // Colormap texture.
     dvz_visual_texture(
         &visual, DVZ_SOURCE_TYPE_COLOR_TEXTURE, 0, gpu->context->color_texture.texture);
@@ -854,7 +857,6 @@ int test_visuals_volume_1(TestContext* context)
     visual.user_data = &interact;
     dvz_event_callback(canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _volume_interact, &visual);
 
-    // Params.
     DvzArcball* arcball = &interact.u.a;
 
     versor q;

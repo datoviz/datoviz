@@ -42,10 +42,11 @@ bool intersect_box(vec3 origin, vec3 dir, vec3 box_min, vec3 box_max, out float 
 
 vec4 fetch_color(vec3 uvw) {
     float v = texture(tex, uvw).r;
+    v = clamp(v, 0, 1);
 
     // Color component: colormap.
     vec4 color = colormap(params.cmap, v);
-    // vec4 color = texture(tex_cmap, vec2(v, (params.cmap + .5) / 256.0));
+    // vec4 color = colormap_fetch(tex_cmap, params.cmap, v);
 
     // Alpha value: value.
     color.a = v;

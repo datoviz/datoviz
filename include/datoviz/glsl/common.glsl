@@ -18,6 +18,10 @@
 #define DVZ_INTERACT_FIXED_AXIS_ALL 0x7
 #define DVZ_INTERACT_FIXED_AXIS_NONE 0x8
 
+#define CPAL032_OFS         240
+#define CPAL032_SIZ          32
+#define CPAL032_PER_ROW       8
+
 #define USER_BINDING 2
 
 // NOTE:needs to be a macro and not a function so that it can be safely included in both
@@ -257,6 +261,42 @@ vec4 unpack_color(vec2 uv) {
     out_color.z = mod(floor(uv.x / 65536.0), 256.0);
     out_color /= 256.0;
     return out_color;
+}
+
+
+
+ivec2 colormap_idx(int cmap, int value)
+{
+    int row = 0, col = 0;
+    if (cmap >= CPAL032_OFS)
+    {
+        // For 32-color palettes, we need to alter the cmap and value.
+        row = (CPAL032_OFS + (cmap - CPAL032_OFS) / CPAL032_PER_ROW);
+        col = CPAL032_SIZ * ((cmap - CPAL032_OFS) % CPAL032_PER_ROW) + value;
+    }
+    else
+    {
+        row = cmap;
+        col = value;
+    }
+    return ivec2(row, col);
+}
+
+
+
+vec2 colormap_uv(int cmap, int value)
+{
+    ivec2 ij = colormap_idx(cmap, value);
+    return vec2((ij[1] + .5) / 256., (ij[0] + .5) / 256.);
+}
+
+
+
+vec4 colormap_fetch(sampler2D tex, int cmap, float value) {
+    int ivalue = int(256 * value);
+    vec2 uv = colormap_uv(cmap, ivalue);
+    // return vec4(uv, 0, 1);
+    return texture(tex, uv);
 }
 
 
