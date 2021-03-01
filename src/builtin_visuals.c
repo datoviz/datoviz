@@ -1709,8 +1709,7 @@ static void _visual_volume(DvzVisual* visual)
     prop = dvz_visual_prop(visual, DVZ_PROP_COLORMAP, 0, DVZ_DTYPE_INT, DVZ_SOURCE_TYPE_PARAM, 0);
     dvz_visual_prop_copy(
         prop, 3, offsetof(DvzGraphicsVolumeParams, cmap), DVZ_ARRAY_COPY_SINGLE, 1);
-    DvzColormap cmap = DVZ_CMAP_BINARY;
-    dvz_visual_prop_default(prop, &cmap);
+    dvz_visual_prop_default(prop, (DvzColormap[]){DVZ_CMAP_BONE});
 
 
     // Baking function.

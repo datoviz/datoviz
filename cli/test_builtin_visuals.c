@@ -856,10 +856,6 @@ int test_visuals_volume_1(TestContext* context)
 
     // Params.
     DvzArcball* arcball = &interact.u.a;
-    // dvz_visual_data(&visual, DVZ_PROP_VIEW_POS, 0, 1, arcball->camera.eye);
-
-    DvzColormap cmap = DVZ_CMAP_BONE;
-    dvz_visual_data(&visual, DVZ_PROP_COLORMAP, 0, 1, &cmap);
 
     versor q;
     glm_quatv(q, +M_PI / 2, (vec3){0, 0, 1});
