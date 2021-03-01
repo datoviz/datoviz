@@ -1023,16 +1023,18 @@ int test_graphics_volume_1(TestContext* context)
 
     DvzGraphicsVolumeParams params = {0};
     float c = .005;
-    vec4 box_size = {c * ni, c * nj, c * nk, 0};
+    vec4 box_size = {c * ni, c * nj, 1 * c * nk, 0};
     glm_vec4_copy(box_size, params.box_size);
     params.cmap = DVZ_CMAP_BONE;
-    vec3 p0 = {-c * ni / 2., -c * nj / 2., -c * nk / 2.};
-    vec3 p1 = {+c * ni / 2., +c * nj / 2., +c * nk / 2.};
+    params.uvw1[0] = 1;
+    params.uvw1[1] = 1;
+    params.uvw1[2] = 1;
+    vec3 p0 = {-c * ni / 2., -c * nj / 2., -1 * c * nk / 2.};
+    vec3 p1 = {+c * ni / 2., +c * nj / 2., +1 * c * nk / 2.};
 
     INIT_GRAPHICS(DVZ_GRAPHICS_VOLUME, 0)
     BEGIN_DATA(DvzGraphicsVolumeVertex, 1, NULL)
-    DvzGraphicsVolumeItem item = {
-        {p0[0], p0[1], p0[2]}, {p1[0], p1[1], p1[2]}, {0, 0, 0}, {1, 1, 1}};
+    DvzGraphicsVolumeItem item = {{p0[0], p0[1], p0[2]}, {p1[0], p1[1], p1[2]}};
     dvz_graphics_append(&data, &item);
     END_DATA
 
@@ -1054,8 +1056,6 @@ int test_graphics_volume_1(TestContext* context)
     // Interactivity.
     tg.interact = dvz_interact_builtin(canvas, DVZ_INTERACT_ARCBALL);
     dvz_event_callback(canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _interact_callback, &tg);
-    // dvz_event_callback(
-    //     canvas, DVZ_EVENT_TIMER, 1. / 60, DVZ_EVENT_MODE_SYNC, _volume_update_mvp, &tg);
     dvz_event_callback(canvas, DVZ_EVENT_RESIZE, 0, DVZ_EVENT_MODE_SYNC, _resize, &tg);
 
     DvzArcball* arcball = &tg.interact.u.a;

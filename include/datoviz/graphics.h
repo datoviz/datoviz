@@ -351,19 +351,18 @@ struct DvzGraphicsVolumeItem
     // top left front, bottom right back
     vec3 pos0; /* top left front position */
     vec3 pos1; /* bottom right back position */
-    vec3 uvw0; /* tex coordinates of the top left front corner */
-    vec3 uvw1; /* tex coordinates of the bottom right back position */
 };
 
 struct DvzGraphicsVolumeVertex
 {
     vec3 pos; /* position */
-    vec3 uvw; /* tex coords */
 };
 
 struct DvzGraphicsVolumeParams
 {
     vec4 box_size; /* size of the box containing the volume, in NDC */
+    vec4 uvw0;     /* texture coordinates of the 2 corner points */
+    vec4 uvw1;     /* texture coordinates of the 2 corner points */
     int32_t cmap;  /* colormap */
 };
 

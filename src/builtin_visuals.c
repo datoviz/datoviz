@@ -1620,14 +1620,8 @@ static void _visual_volume_bake(DvzVisual* visual, DvzVisualDataEvent ev)
     DvzProp* pos0 = dvz_prop_get(visual, DVZ_PROP_POS, 0);
     DvzProp* pos1 = dvz_prop_get(visual, DVZ_PROP_POS, 1);
 
-    DvzProp* uvw0 = dvz_prop_get(visual, DVZ_PROP_TEXCOORDS, 0);
-    DvzProp* uvw1 = dvz_prop_get(visual, DVZ_PROP_TEXCOORDS, 1);
-
     ASSERT(pos0 != NULL);
     ASSERT(pos1 != NULL);
-
-    ASSERT(uvw0 != NULL);
-    ASSERT(uvw1 != NULL);
 
     // Number of images
     uint32_t img_count = dvz_prop_size(pos0);
@@ -1642,9 +1636,6 @@ static void _visual_volume_bake(DvzVisual* visual, DvzVisualDataEvent ev)
     {
         _vec3_cast((const dvec3*)dvz_prop_item(pos0, i), &item.pos0);
         _vec3_cast((const dvec3*)dvz_prop_item(pos1, i), &item.pos1);
-
-        memcpy(&item.uvw0, dvz_prop_item(uvw0, i), sizeof(vec3));
-        memcpy(&item.uvw1, dvz_prop_item(uvw1, i), sizeof(vec3));
 
         dvz_graphics_append(&data, &item);
     }
@@ -1688,14 +1679,6 @@ static void _visual_volume(DvzVisual* visual)
     for (uint32_t i = 0; i < 2; i++)
         dvz_visual_prop(visual, DVZ_PROP_POS, i, DVZ_DTYPE_DVEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
 
-    // Tex coords.
-    for (uint32_t i = 0; i < 2; i++)
-    {
-        prop = dvz_visual_prop(
-            visual, DVZ_PROP_TEXCOORDS, i, DVZ_DTYPE_VEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
-        dvz_visual_prop_default(prop, (vec4){i, i, i, 0});
-    }
-
     // Common props.
     _common_props(visual);
 
@@ -1705,23 +1688,30 @@ static void _visual_volume(DvzVisual* visual)
     // Box size.
     prop = dvz_visual_prop(visual, DVZ_PROP_LENGTH, 0, DVZ_DTYPE_VEC3, DVZ_SOURCE_TYPE_PARAM, 0);
     dvz_visual_prop_copy(
-        prop, 1, offsetof(DvzGraphicsVolumeParams, box_size), DVZ_ARRAY_COPY_SINGLE, 1);
+        prop, 0, offsetof(DvzGraphicsVolumeParams, box_size), DVZ_ARRAY_COPY_SINGLE, 1);
     dvz_visual_prop_default(prop, (vec3){2, 2, 2});
+
+    // 3D texture coordinates of the first corner.
+    prop =
+        dvz_visual_prop(visual, DVZ_PROP_TEXCOORDS, 0, DVZ_DTYPE_VEC3, DVZ_SOURCE_TYPE_PARAM, 0);
+    dvz_visual_prop_copy(
+        prop, 1, offsetof(DvzGraphicsVolumeParams, uvw0), DVZ_ARRAY_COPY_SINGLE, 1);
+    dvz_visual_prop_default(prop, (vec3[]){{0, 0, 0}});
+
+    // 3D texture coordinates of the second corner.
+    prop =
+        dvz_visual_prop(visual, DVZ_PROP_TEXCOORDS, 1, DVZ_DTYPE_VEC3, DVZ_SOURCE_TYPE_PARAM, 0);
+    dvz_visual_prop_copy(
+        prop, 2, offsetof(DvzGraphicsVolumeParams, uvw1), DVZ_ARRAY_COPY_SINGLE, 1);
+    dvz_visual_prop_default(prop, (vec3[]){{1, 1, 1}});
 
     // Colormap value.
     prop = dvz_visual_prop(visual, DVZ_PROP_COLORMAP, 0, DVZ_DTYPE_INT, DVZ_SOURCE_TYPE_PARAM, 0);
     dvz_visual_prop_copy(
-        prop, 2, offsetof(DvzGraphicsVolumeParams, cmap), DVZ_ARRAY_COPY_SINGLE, 1);
+        prop, 3, offsetof(DvzGraphicsVolumeParams, cmap), DVZ_ARRAY_COPY_SINGLE, 1);
     DvzColormap cmap = DVZ_CMAP_BINARY;
     dvz_visual_prop_default(prop, &cmap);
 
-
-    // // Colormap texture prop.
-    // dvz_visual_prop(
-    //     visual, DVZ_PROP_COLOR_TEXTURE, 0, DVZ_DTYPE_CHAR, DVZ_SOURCE_TYPE_COLOR_TEXTURE, 0);
-
-    // // 3D texture prop.
-    // dvz_visual_prop(visual, DVZ_PROP_VOLUME, 0, DVZ_DTYPE_CHAR, DVZ_SOURCE_TYPE_VOLUME, 0);
 
     // Baking function.
     dvz_visual_callback_bake(visual, _visual_volume_bake);

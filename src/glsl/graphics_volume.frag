@@ -8,6 +8,8 @@
 layout(std140, binding = USER_BINDING) uniform Params
 {
     vec4 box_size;
+    vec4 uvw0;
+    vec4 uvw1;
     int cmap;
 }
 params;
@@ -16,8 +18,7 @@ layout(binding = (USER_BINDING + 1)) uniform sampler2D tex_cmap; // colormap tex
 layout(binding = (USER_BINDING + 2)) uniform sampler3D tex;      // 3D volume
 
 layout(location = 0) in vec3 in_pos;
-layout(location = 1) in vec3 in_uvw;
-layout(location = 2) in vec3 in_ray;
+layout(location = 1) in vec3 in_ray;
 
 layout(location = 0) out vec4 out_color;
 
@@ -67,7 +68,7 @@ void main()
     // vec3 b1 = vec3(+r);
     // bool b = intersect_box(o, u, b0, b1);
     // float a = b ? .75 : .25;
-    // out_color = vec4(in_uvw, 1);
+    // out_color = vec4(0);
     // out_color.xyz *= a;
     // // Inner sphere example.
     // // float delta = pow(dot(u, o-c), 2) - (dot(o-c, o-c)-r*r);
@@ -90,7 +91,10 @@ void main()
     vec4 acc = vec4(0);
     float alpha = 0;
     for (int i = 0; i < MAX_ITER && travel > 0.0; ++i, pos += dl, travel -= STEP_SIZE) {
+        // Normalize 3D pos within cube in [0,1]^3
         uvw = (pos - b0) / (b1 - b0);
+        // Now, normalize between uvw0 and uvw1.
+        uvw = params.uvw0.xyz + uvw * (params.uvw1 - params.uvw0).xyz;
         s = fetch_color(uvw);
         alpha = s.a;
         acc = s + (1 - alpha) * acc;

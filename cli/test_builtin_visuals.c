@@ -835,16 +835,9 @@ int test_visuals_volume_1(TestContext* context)
     dvec3 p0 = {-c * ni / 2., -c * nj / 2., -c * nk / 2.};
     dvec3 p1 = {+c * ni / 2., +c * nj / 2., +c * nk / 2.};
 
-    vec3 uvw0, uvw1;
-    uvw0[0] = 0, uvw0[1] = 0, uvw0[2] = 0;
-    uvw1[0] = 1, uvw1[1] = 1, uvw1[2] = 1;
-
     // Visual data.
     dvz_visual_data(&visual, DVZ_PROP_POS, 0, 1, p0);
     dvz_visual_data(&visual, DVZ_PROP_POS, 1, 1, p1);
-
-    dvz_visual_data(&visual, DVZ_PROP_TEXCOORDS, 0, 1, uvw0);
-    dvz_visual_data(&visual, DVZ_PROP_TEXCOORDS, 1, 1, uvw1);
 
     dvz_visual_data(&visual, DVZ_PROP_LENGTH, 0, 1, box_size);
 

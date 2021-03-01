@@ -519,59 +519,49 @@ static void _graphics_volume_callback(DvzGraphicsData* data, uint32_t item_count
     float y1 = item_vert->pos1[1];
     float z1 = item_vert->pos1[2];
 
-    // TODO: other volume orientations
-
-    float u0 = item_vert->uvw0[0];
-    float v0 = item_vert->uvw0[1];
-    float w0 = item_vert->uvw0[2];
-
-    float u1 = item_vert->uvw1[0];
-    float v1 = item_vert->uvw1[1];
-    float w1 = item_vert->uvw1[2];
-
-    // pos, uvw
+    // pos
     DvzGraphicsVolumeVertex vertices[36] = {
-        {{x0, y0, z1}, {u0, v0, w1}}, // front
-        {{x1, y0, z1}, {u1, v0, w1}}, //
-        {{x1, y1, z1}, {u1, v1, w1}}, //
-        {{x1, y1, z1}, {u1, v1, w1}}, //
-        {{x0, y1, z1}, {u0, v1, w1}}, //
-        {{x0, y0, z1}, {u0, v0, w1}}, //
-                                      //
-        {{x1, y0, z1}, {u1, v0, w1}}, // right
-        {{x1, y0, z0}, {u1, v0, w0}}, //
-        {{x1, y1, z0}, {u1, v1, w0}}, //
-        {{x1, y1, z0}, {u1, v1, w0}}, //
-        {{x1, y1, z1}, {u1, v1, w1}}, //
-        {{x1, y0, z1}, {u1, v0, w1}}, //
-                                      //
-        {{x0, y1, z0}, {u0, v1, w0}}, // back
-        {{x1, y1, z0}, {u1, v1, w0}}, //
-        {{x1, y0, z0}, {u1, v0, w0}}, //
-        {{x1, y0, z0}, {u1, v0, w0}}, //
-        {{x0, y0, z0}, {u0, v0, w0}}, //
-        {{x0, y1, z0}, {u0, v1, w0}}, //
-                                      //
-        {{x0, y0, z0}, {u0, v0, w0}}, // left
-        {{x0, y0, z1}, {u0, v0, w1}}, //
-        {{x0, y1, z1}, {u0, v1, w1}}, //
-        {{x0, y1, z1}, {u0, v1, w1}}, //
-        {{x0, y1, z0}, {u0, v1, w0}}, //
-        {{x0, y0, z0}, {u0, v0, w0}}, //
-                                      //
-        {{x0, y0, z0}, {u0, v0, w0}}, // bottom
-        {{x1, y0, z0}, {u1, v0, w0}}, //
-        {{x1, y0, z1}, {u1, v0, w1}}, //
-        {{x1, y0, z1}, {u1, v0, w1}}, //
-        {{x0, y0, z1}, {u0, v0, w1}}, //
-        {{x0, y0, z0}, {u0, v0, w0}}, //
-                                      //
-        {{x0, y1, z1}, {u0, v1, w1}}, // top
-        {{x1, y1, z1}, {u1, v1, w1}}, //
-        {{x1, y1, z0}, {u1, v1, w0}}, //
-        {{x1, y1, z0}, {u1, v1, w0}}, //
-        {{x0, y1, z0}, {u0, v1, w0}}, //
-        {{x0, y1, z1}, {u0, v1, w1}}, //
+        {{x0, y0, z1}}, // front
+        {{x1, y0, z1}}, //
+        {{x1, y1, z1}}, //
+        {{x1, y1, z1}}, //
+        {{x0, y1, z1}}, //
+        {{x0, y0, z1}}, //
+                        //
+        {{x1, y0, z1}}, // right
+        {{x1, y0, z0}}, //
+        {{x1, y1, z0}}, //
+        {{x1, y1, z0}}, //
+        {{x1, y1, z1}}, //
+        {{x1, y0, z1}}, //
+                        //
+        {{x0, y1, z0}}, // back
+        {{x1, y1, z0}}, //
+        {{x1, y0, z0}}, //
+        {{x1, y0, z0}}, //
+        {{x0, y0, z0}}, //
+        {{x0, y1, z0}}, //
+                        //
+        {{x0, y0, z0}}, // left
+        {{x0, y0, z1}}, //
+        {{x0, y1, z1}}, //
+        {{x0, y1, z1}}, //
+        {{x0, y1, z0}}, //
+        {{x0, y0, z0}}, //
+                        //
+        {{x0, y0, z0}}, // bottom
+        {{x1, y0, z0}}, //
+        {{x1, y0, z1}}, //
+        {{x1, y0, z1}}, //
+        {{x0, y0, z1}}, //
+        {{x0, y0, z0}}, //
+                        //
+        {{x0, y1, z1}}, // top
+        {{x1, y1, z1}}, //
+        {{x1, y1, z0}}, //
+        {{x1, y1, z0}}, //
+        {{x0, y1, z0}}, //
+        {{x0, y1, z1}}, //
     };
 
     dvz_array_data(data->vertices, 36 * data->current_idx, 36, 36, vertices);
@@ -587,7 +577,6 @@ static void _graphics_volume(DvzCanvas* canvas, DvzGraphics* graphics)
 
     ATTR_BEGIN(DvzGraphicsVolumeVertex)
     ATTR_POS(DvzGraphicsVolumeVertex, pos)
-    ATTR(DvzGraphicsVolumeVertex, VK_FORMAT_R32G32B32_SFLOAT, uvw)
 
     _common_slots(graphics);
     dvz_graphics_slot(graphics, DVZ_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
