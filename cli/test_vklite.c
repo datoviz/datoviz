@@ -683,7 +683,7 @@ int test_context_colormap(TestContext* context)
     DvzContext* ctx = dvz_context(gpu, NULL);
 
     // Make a custom colormap.
-    uint8_t cmap = DVZ_CMAP_CUSTOM;
+    uint8_t cmap = CMAP_CUSTOM;
     uint8_t color_count = 3;
     cvec4 colors[3] = {
         {255, 0, 0, 255},

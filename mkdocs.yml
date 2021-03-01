@@ -45,6 +45,7 @@ nav:
   - Examples:
     - Overview: 'examples/index.md'
     - Simple test with Python: 'examples/quickstart.md'
+    - Custom colormap: 'examples/colormap.md'
     - Digital signals: 'examples/signals.md'
     - Image: 'examples/image.md'
     - France departements: 'examples/france.md'

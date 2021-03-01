@@ -29,7 +29,7 @@ def page_hook(markdown, page, config, files):
         return process_index_page(markdown, config)
     elif 'graphics/' in path:
         return insert_graphics_doc(markdown, config)
-    elif 'color' in path:
+    elif 'reference/colormap' in path:
         return (markdown + '\n\n' + generate_colormaps_doc())
     elif 'enum' in path:
         return insert_enums_doc(markdown, config)

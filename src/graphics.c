@@ -30,7 +30,7 @@ static inline void _load_shader(
 #define SHADER(stage, x)                                                                          \
     {                                                                                             \
         unsigned long size = 0;                                                                   \
-        const unsigned char* buffer = dvz_resource_shader(x, &size);                              \
+        unsigned char* buffer = dvz_resource_shader(x, &size);                                    \
         ASSERT(size > 0);                                                                         \
         ASSERT(buffer != NULL);                                                                   \
         _load_shader(graphics, VK_SHADER_STAGE_##stage##_BIT, size, buffer);                      \

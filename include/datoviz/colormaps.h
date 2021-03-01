@@ -254,8 +254,6 @@ typedef enum
     DVZ_CMAP_KINDLMANN,
     DVZ_CMAP_EXTENDED_KINDLMANN,
 
-    DVZ_CMAP_CUSTOM = CMAP_CUSTOM,
-
     // colorcet palettes with 256 colors
 
     DVZ_CPAL256_GLASBEY = CPAL256_OFS,
@@ -264,8 +262,6 @@ typedef enum
     DVZ_CPAL256_GLASBEY_HV,
     DVZ_CPAL256_GLASBEY_LIGHT,
     DVZ_CPAL256_GLASBEY_WARM,
-
-    DVZ_CPAL256_CUSTOM = CPAL256_CUSTOM,
 
     // matplotlib palettes with <= 32 colors
 
@@ -325,6 +321,8 @@ static uint8_t _scale_uint8(double value, double vmin, double vmax)
     ASSERT(0 <= x && x < 1);
     return (uint8_t)(x * 256);
 }
+
+
 
 // Load the colormap array.
 static unsigned char* _load_colormaps()
@@ -531,16 +529,17 @@ DVZ_INLINE void dvz_colormap_set(uint8_t row, uint8_t col, cvec4 color)
  * @param color_count the number of colors in the custom colormap
  * @param colors the colors
  */
-static void dvz_colormap_custom(uint8_t cmap, uint8_t color_count, cvec4* colors)
+static void dvz_colormap_custom(uint8_t cmap, uint32_t color_count, cvec4* colors)
 {
     ASSERT(
         (cmap >= CMAP_CUSTOM && cmap < CMAP_TOT) ||
         (cmap >= CPAL256_CUSTOM && cmap < CPAL032_OFS));
     ASSERT(color_count > 0);
     ASSERT(colors != NULL);
+    log_debug("setting custom colormap #%d with %d colors", cmap, color_count);
 
     cvec2 ij = {0};
-    for (uint8_t i = 0; i < color_count; i++)
+    for (uint32_t i = 0; i < color_count; i++)
     {
         dvz_colormap_idx((DvzColormap)cmap, i, ij);
         dvz_colormap_set(ij[0], ij[1], colors[i]);

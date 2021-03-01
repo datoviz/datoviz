@@ -137,6 +137,7 @@ _PROPS = {
     'range': cv.DVZ_PROP_RANGE,
     'length': cv.DVZ_PROP_LENGTH,
     'scale': cv.DVZ_PROP_SCALE,
+    'cap_type': cv.DVZ_PROP_CAP_TYPE,
     'light_params': cv.DVZ_PROP_LIGHT_PARAMS,
     'light_pos': cv.DVZ_PROP_LIGHT_POS,
     'texcoefs': cv.DVZ_PROP_TEXCOEFS,
@@ -377,6 +378,8 @@ _MARKER_TYPES = {
     'vbar': cv.DVZ_MARKER_VBAR,
 }
 
+_CUSTOM_COLORMAPS = {}
+
 
 
 # -------------------------------------------------------------------------------------------------
@@ -541,7 +544,12 @@ cdef _add_event_callback(
 
 def colormap(np.ndarray[DOUBLE, ndim=1] values, vmin=None, vmax=None, cmap=None, alpha=None):
     N = values.size
-    cmap_ = _COLORMAPS.get(cmap, cv.DVZ_CMAP_VIRIDIS)
+    if cmap in _COLORMAPS:
+        cmap_ = _COLORMAPS[cmap]
+    elif cmap in _CUSTOM_COLORMAPS:
+        cmap_ = _CUSTOM_COLORMAPS[cmap]
+    else:
+        cmap_ = cv.DVZ_CMAP_VIRIDIS
     # TODO: ndarrays
     cdef np.ndarray out = np.zeros((N, 4), dtype=np.uint8)
     if vmin is None:
@@ -658,6 +666,21 @@ cdef class Canvas:
 
     def stop(self):
         cv.dvz_canvas_stop(self._c_canvas)
+
+    def colormap(self, unicode name, np.ndarray[CHAR, ndim=2] colors):
+        assert colors.shape[1] == 4
+        color_count = colors.shape[0]
+        assert color_count > 0
+        assert color_count <= 256
+        colors = colors.astype(np.uint8)
+        if not colors.flags['C_CONTIGUOUS']:
+            colors = np.ascontiguousarray(colors)
+
+        # TODO: use constant CMAP_CUSTOM instead of hard-coded value
+        cmap = 160 + len(_CUSTOM_COLORMAPS)
+        _CUSTOM_COLORMAPS[name] = cmap
+        cv.dvz_colormap_custom(cmap, color_count, <cv.cvec4*>&colors.data[0])
+        cv.dvz_context_colormap(self._c_canvas.gpu.context)
 
     def panel(self, int row=0, int col=0, controller='axes', transform=None, transpose=None, **kwargs):
         cdef int flags

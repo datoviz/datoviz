@@ -90,16 +90,22 @@ def parse_defines(text):
     defines = dict(defines)
     defines = {k: v.replace('(', '').replace(')', '')
                for k, v in defines.items()}
+    defines = {k: v.strip()
+               for k, v in defines.items()
+               if k.startswith('CMAP') or
+               k.startswith('CPAL') or
+               k == 'CONTROL_MAX'}
     for k, v in defines.items():
         if v.isdigit():
             defines[k] = int(v)
     for k, v in defines.items():
-        if isinstance(v, str) and '+' not in v:
+        if isinstance(v, str) and '+' not in v and '-' not in v:
             defines[k] = defines[v]
     for k, v in defines.items():
         if isinstance(v, str) and '+' in v:
-            defines[k] = defines[v.split(' + ')[0]] + \
-                defines[v.split(' + ')[1]]
+            defines[k] = defines[v.split(' + ')[0]] + defines[v.split(' + ')[1]]
+        if isinstance(v, str) and '-' in v:
+            defines[k] = defines[v.split(' - ')[0]] - defines[v.split(' - ')[1]]
     return defines
 
 
