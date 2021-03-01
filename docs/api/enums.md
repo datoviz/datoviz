@@ -18,9 +18,41 @@
 
 
 
+
+## Colormaps
+
+The following colormaps, in addition to being stored in the colormap texture, are also implemented directly in GLSL. They may thereby be used directly from shaders without using the colormap texture. Avoiding texture lookup is sometimes faster.
+
+This is implemented in the function `vec4 colormap(int cmap, float x)` in `colormaps.glsl`.
+
+| Colormap |
+| ---- |
+| `DVZ_CMAP_HSV` |
+| `DVZ_CMAP_CIVIDIS` |
+| `DVZ_CMAP_INFERNO` |
+| `DVZ_CMAP_MAGMA` |
+| `DVZ_CMAP_PLASMA` |
+| `DVZ_CMAP_VIRIDIS` |
+| `DVZ_CMAP_AUTUMN` |
+| `DVZ_CMAP_BONE` |
+| `DVZ_CMAP_COOL` |
+| `DVZ_CMAP_COPPER` |
+| `DVZ_CMAP_HOT` |
+| `DVZ_CMAP_SPRING` |
+| `DVZ_CMAP_SUMMER` |
+| `DVZ_CMAP_WINTER` |
+| `DVZ_CMAP_JET` |
+
+
+
+
 ## Miscellaneous
 
 ### `DvzDataType`
+
+
+
+
 
 
 ## Flags
