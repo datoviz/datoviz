@@ -43,14 +43,15 @@ typedef enum
 typedef enum
 {
     DVZ_GUI_CONTROL_NONE,
-    DVZ_GUI_CONTROL_CHECKBOX,
-    DVZ_GUI_CONTROL_SLIDER_FLOAT,
-    DVZ_GUI_CONTROL_SLIDER_INT,
-    DVZ_GUI_CONTROL_INPUT_FLOAT,
-    DVZ_GUI_CONTROL_LABEL,
-    DVZ_GUI_CONTROL_TEXTBOX,
-    DVZ_GUI_CONTROL_BUTTON,
-    DVZ_GUI_CONTROL_COLORMAP,
+    DVZ_GUI_CONTROL_CHECKBOX,      /* checkbox */
+    DVZ_GUI_CONTROL_SLIDER_FLOAT,  /* slider for 1 float */
+    DVZ_GUI_CONTROL_SLIDER_FLOAT2, /* sliders for 2 floats */
+    DVZ_GUI_CONTROL_SLIDER_INT,    /* slider for 1 int */
+    DVZ_GUI_CONTROL_INPUT_FLOAT,   /* textbox for 1 float */
+    DVZ_GUI_CONTROL_LABEL,         /* static text */
+    DVZ_GUI_CONTROL_TEXTBOX,       /* input text */
+    DVZ_GUI_CONTROL_BUTTON,        /* button */
+    DVZ_GUI_CONTROL_COLORMAP,      /* static gradient with a preexisting colormap */
 } DvzGuiControlType;
 
 
@@ -63,6 +64,7 @@ typedef struct DvzGui DvzGui;
 typedef struct DvzGuiControl DvzGuiControl;
 
 typedef struct DvzGuiControlSliderFloat DvzGuiControlSliderFloat;
+typedef struct DvzGuiControlSliderFloat2 DvzGuiControlSliderFloat2;
 typedef struct DvzGuiControlInputFloat DvzGuiControlInputFloat;
 typedef struct DvzGuiControlSliderInt DvzGuiControlSliderInt;
 typedef union DvzGuiControlUnion DvzGuiControlUnion;
@@ -75,6 +77,14 @@ typedef union DvzGuiControlUnion DvzGuiControlUnion;
 /*************************************************************************************************/
 
 struct DvzGuiControlSliderFloat
+{
+    float vmin;
+    float vmax;
+};
+
+
+
+struct DvzGuiControlSliderFloat2
 {
     float vmin;
     float vmax;
@@ -101,6 +111,7 @@ struct DvzGuiControlInputFloat
 union DvzGuiControlUnion
 {
     DvzGuiControlSliderFloat sf;
+    DvzGuiControlSliderFloat2 sf2;
     DvzGuiControlSliderInt si;
     DvzGuiControlInputFloat f;
     // DvzGuiControlLabel l;
@@ -135,7 +146,6 @@ struct DvzGui
     int flags;
     uint32_t control_count;
     DvzGuiControl controls[CONTROL_MAX];
-    bool show_imgui_demo;
 };
 
 
@@ -183,6 +193,19 @@ DVZ_EXPORT DvzGuiControl* dvz_gui_checkbox(DvzGui* gui, const char* name, bool v
  */
 DVZ_EXPORT DvzGuiControl*
 dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax, float value);
+
+/**
+ * Add a slider for 2 float numbers.
+ *
+ * @param gui the GUI
+ * @param name the control label
+ * @param vmin the minimum value
+ * @param vmax the maximum value
+ * @param values the initial values
+ * @returns the control
+ */
+DVZ_EXPORT DvzGuiControl*
+dvz_gui_slider_float2(DvzGui* gui, const char* name, float vmin, float vmax, vec2 value);
 
 /**
  * Add a slider for integer input.
@@ -250,13 +273,6 @@ DVZ_EXPORT DvzGuiControl* dvz_gui_button(DvzGui* gui, const char* name, int flag
 DVZ_EXPORT DvzGuiControl* dvz_gui_colormap(DvzGui* gui, DvzColormap cmap);
 
 
-
-/**
- * Display the Dear ImGUI demo with all supported controls.
- *
- * @param gui the GUI
- */
-DVZ_EXPORT void dvz_gui_demo(DvzGui* gui);
 
 /**
  * Destroy a GUI.

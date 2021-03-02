@@ -259,6 +259,10 @@ void dvz_gui_callback_fps(DvzCanvas* canvas, DvzEvent ev)
 
 
 
+void dvz_gui_callback_demo(DvzCanvas* canvas, DvzEvent ev) { ImGui::ShowDemoWindow(); }
+
+
+
 void dvz_gui_callback_player(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
@@ -307,6 +311,15 @@ void dvz_imgui_destroy(DvzCanvas* canvas)
 
 
 
+void dvz_imgui_demo(DvzCanvas* canvas)
+{
+    ASSERT(canvas != NULL);
+    dvz_event_callback(
+        canvas, DVZ_EVENT_IMGUI, 0, DVZ_EVENT_MODE_SYNC, dvz_gui_callback_demo, NULL);
+}
+
+
+
 /*************************************************************************************************/
 /*  Gui controls implementation                10 */
 /*************************************************************************************************/
@@ -345,6 +358,18 @@ static bool _show_slider_float(DvzGuiControl* control)
     ASSERT(vmin < vmax);
     return ImGui::SliderFloat(
         control->name, (float*)control->value, vmin, vmax, "%.5f", control->flags);
+}
+
+static bool _show_slider_float2(DvzGuiControl* control)
+{
+    ASSERT(control != NULL);
+    ASSERT(control->type == DVZ_GUI_CONTROL_SLIDER_FLOAT2);
+
+    float vmin = control->u.sf2.vmin;
+    float vmax = control->u.sf2.vmax;
+    float* vp = (float*)control->value;
+    ASSERT(vmin < vmax);
+    return ImGui::SliderFloat2(control->name, vp, vmin, vmax, "%.5f", control->flags);
 }
 
 static bool _show_input_float(DvzGuiControl* control)
@@ -438,6 +463,10 @@ static void _show_control(DvzGuiControl* control)
         changed = _show_slider_float(control);
         break;
 
+    case DVZ_GUI_CONTROL_SLIDER_FLOAT2:
+        changed = _show_slider_float2(control);
+        break;
+
     case DVZ_GUI_CONTROL_INPUT_FLOAT:
         changed = _show_input_float(control);
         break;
@@ -488,9 +517,6 @@ static void _show_gui(DvzGui* gui)
     {
         _show_control(&gui->controls[i]);
     }
-
-    if (gui->show_imgui_demo)
-        ImGui::ShowDemoWindow();
 
     // End the GUI window.
     dvz_gui_end();

@@ -1,6 +1,6 @@
 
 #include "../include/datoviz/demo.h"
-#include "../include/datoviz/controls.h"
+#include "../include/datoviz/gui.h"
 #include "../include/datoviz/scene.h"
 
 
@@ -40,8 +40,7 @@ void dvz_demo_gui(void)
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
     DvzGpu* gpu = dvz_gpu(app, 0);
     DvzCanvas* canvas = dvz_canvas(gpu, 1280, 1024, DVZ_CANVAS_FLAGS_IMGUI);
-    DvzGui* gui = dvz_gui(canvas, "Hello world", 0);
-    dvz_gui_demo(gui);
+    dvz_imgui_demo(canvas);
     dvz_app_run(app, 0);
     dvz_app_destroy(app);
 }

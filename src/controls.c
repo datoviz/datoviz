@@ -77,6 +77,25 @@ dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax, floa
 
 
 DvzGuiControl*
+dvz_gui_slider_float2(DvzGui* gui, const char* name, float vmin, float vmax, vec2 value)
+{
+    ASSERT(gui != NULL);
+    ASSERT(vmin < vmax);
+    for (uint32_t i = 0; i < 2; i++)
+    {
+        value[i] = CLIP(value[i], vmin, vmax);
+    }
+
+    DvzGuiControl* control =
+        _add_control(gui, DVZ_GUI_CONTROL_SLIDER_FLOAT2, name, sizeof(vec2), value);
+    control->u.sf2.vmin = vmin;
+    control->u.sf2.vmax = vmax;
+    return control;
+}
+
+
+
+DvzGuiControl*
 dvz_gui_input_float(DvzGui* gui, const char* name, float step, float step_fast, float value)
 {
     ASSERT(gui != NULL);
@@ -151,14 +170,6 @@ DvzGuiControl* dvz_gui_colormap(DvzGui* gui, DvzColormap cmap)
         _add_control(gui, DVZ_GUI_CONTROL_COLORMAP, "", sizeof(DvzColormap), &cmap);
     ASSERT(control != NULL);
     return control;
-}
-
-
-
-void dvz_gui_demo(DvzGui* gui)
-{
-    ASSERT(gui != NULL);
-    gui->show_imgui_demo = !gui->show_imgui_demo;
 }
 
 

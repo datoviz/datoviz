@@ -88,7 +88,7 @@
 * `controls.c`:
     * Write the body of the `dvz_gui_xxx()` function
 * `gui.cpp`:
-    * In `show_control()`, add a new switch case and call `_show_xxx()`
+    * In `_show_control()`, add a new switch case and call `_show_xxx()`
     * Implement `_show_xxx()`
 * `test_canvas.c`:
     * In `test_canvas_gui_1()`, add the new control with a call to `dvz_gui_xxx()`
