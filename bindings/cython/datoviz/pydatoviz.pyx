@@ -195,6 +195,7 @@ _TRANSFORMS = {
 
 _CONTROLS = {
     'slider_float': cv.DVZ_GUI_CONTROL_SLIDER_FLOAT,
+    'slider_float2': cv.DVZ_GUI_CONTROL_SLIDER_FLOAT2,
     'slider_int': cv.DVZ_GUI_CONTROL_SLIDER_INT,
     'input_float': cv.DVZ_GUI_CONTROL_INPUT_FLOAT,
     'checkbox': cv.DVZ_GUI_CONTROL_CHECKBOX,
@@ -444,6 +445,9 @@ cdef _get_ev_args(cv.DvzEvent c_ev):
         if c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_SLIDER_FLOAT:
             fvalue = <float*>c_ev.u.g.control.value
             return (fvalue[0],), {}
+        elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_SLIDER_FLOAT2:
+            fvalue = <float*>c_ev.u.g.control.value
+            return (fvalue[0], fvalue[1]), {}
         elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_SLIDER_INT:
             ivalue = <int*>c_ev.u.g.control.value
             return (ivalue[0],), {}
@@ -713,6 +717,9 @@ cdef class Canvas:
         gui = Gui()
         gui.create(self._c_canvas, c_gui)
         return gui
+
+    def demo_gui(self):
+        cv.dvz_imgui_demo(self._c_canvas)
 
     def _texture(self, source_type, arr, filtering='nearest'):
         tex = Texture()
@@ -1046,11 +1053,21 @@ cdef class Gui:
         cdef char* c_name = name
 
         cdef cv.DvzGuiControl* c
+        cdef cv.vec2 vec2_value
+
         if (ctype == 'slider_float'):
             c_vmin = kwargs.get('vmin', 0)
             c_vmax = kwargs.get('vmax', 1)
             c_value = kwargs.get('value', (c_vmin + c_vmax) / 2.0)
             c = cv.dvz_gui_slider_float(self._c_gui, c_name, c_vmin, c_vmax, c_value)
+        elif (ctype == 'slider_float2'):
+            c_vmin = kwargs.get('vmin', 0)
+            c_vmax = kwargs.get('vmax', 1)
+            c_value = kwargs.get('value', (c_vmin, c_vmax))
+            c_force = kwargs.get('force_increasing', False)
+            vec2_value[0] = c_value[0]
+            vec2_value[1] = c_value[1]
+            c = cv.dvz_gui_slider_float2(self._c_gui, c_name, c_vmin, c_vmax, vec2_value, c_force)
         elif (ctype == 'slider_int'):
             c_vmin = kwargs.get('vmin', 0)
             c_vmax = kwargs.get('vmax', 1)
@@ -1090,6 +1107,3 @@ cdef class Gui:
             raise ValueError("unknown control %s", name)
         c = self._controls[name]
         return c.set(value)
-
-    def demo(self):
-        cv.dvz_gui_demo(self._c_gui)

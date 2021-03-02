@@ -11,5 +11,4 @@
 ### `dvz_gui_textbox()`
 ### `dvz_gui_button()`
 ### `dvz_gui_colormap()`
-### `dvz_gui_demo()`
 ### `dvz_gui_destroy()`

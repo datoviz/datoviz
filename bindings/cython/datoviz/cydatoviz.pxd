@@ -524,12 +524,13 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_GUI_CONTROL_NONE = 0
         DVZ_GUI_CONTROL_CHECKBOX = 1
         DVZ_GUI_CONTROL_SLIDER_FLOAT = 2
-        DVZ_GUI_CONTROL_SLIDER_INT = 3
-        DVZ_GUI_CONTROL_INPUT_FLOAT = 4
-        DVZ_GUI_CONTROL_LABEL = 5
-        DVZ_GUI_CONTROL_TEXTBOX = 6
-        DVZ_GUI_CONTROL_BUTTON = 7
-        DVZ_GUI_CONTROL_COLORMAP = 8
+        DVZ_GUI_CONTROL_SLIDER_FLOAT2 = 3
+        DVZ_GUI_CONTROL_SLIDER_INT = 4
+        DVZ_GUI_CONTROL_INPUT_FLOAT = 5
+        DVZ_GUI_CONTROL_LABEL = 6
+        DVZ_GUI_CONTROL_TEXTBOX = 7
+        DVZ_GUI_CONTROL_BUTTON = 8
+        DVZ_GUI_CONTROL_COLORMAP = 9
 
     # from file: graphics.h
 
@@ -1053,6 +1054,11 @@ cdef extern from "<datoviz/datoviz.h>":
         float vmin
         float vmax
 
+    ctypedef struct DvzGuiControlSliderFloat2:
+        float vmin
+        float vmax
+        bint force_increasing
+
     ctypedef struct DvzGuiControlSliderInt:
         int vmin
         int vmax
@@ -1063,6 +1069,7 @@ cdef extern from "<datoviz/datoviz.h>":
 
     ctypedef union DvzGuiControlUnion:
         DvzGuiControlSliderFloat sf
+        DvzGuiControlSliderFloat2 sf2
         DvzGuiControlSliderInt si
         DvzGuiControlInputFloat f
 
@@ -1081,7 +1088,6 @@ cdef extern from "<datoviz/datoviz.h>":
         int flags
         uint32_t control_count
         DvzGuiControl controls[32]
-        bint show_imgui_demo
 
 
     # STRUCT END
@@ -1092,6 +1098,7 @@ cdef extern from "<datoviz/datoviz.h>":
     void dvz_colormap_packuv(cvec3 color, vec2 uv)
     void dvz_colormap_custom(uint8_t cmap, uint32_t color_count, cvec4* colors)
     void dvz_context_colormap(DvzContext* context)
+    void dvz_imgui_demo(DvzCanvas* canvas)
 
 
 
@@ -1118,10 +1125,10 @@ cdef extern from "<datoviz/datoviz.h>":
     void* dvz_gui_value(DvzGuiControl* control)
     DvzGuiControl* dvz_gui_checkbox(DvzGui* gui, const char* name, bint value)
     DvzGuiControl* dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax, float value)
+    DvzGuiControl* dvz_gui_slider_float2(DvzGui* gui, const char* name, float vmin, float vmax, vec2 value, bint force_increasing)
     DvzGuiControl* dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax, int value)
     DvzGuiControl* dvz_gui_input_float(DvzGui* gui, const char* name, float step, float step_fast, float value)
     DvzGuiControl* dvz_gui_button(DvzGui* gui, const char* name, int flags)
-    void dvz_gui_demo(DvzGui* gui)
 
     # from file: mesh.h
     void dvz_mesh_normals(DvzMesh* mesh)
