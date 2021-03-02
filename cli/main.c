@@ -310,6 +310,12 @@ static int info(int argc, char** argv)
 
 static int demo(int argc, char** argv)
 {
+    if (strcmp(argv[argc - 1], "gui") == 0)
+    {
+        dvz_demo_gui();
+        return 0;
+    }
+
     const int32_t N = 50000;
     dvec3* pos = calloc((uint32_t)N, sizeof(dvec3));
     for (int32_t i = 0; i < N; i++)

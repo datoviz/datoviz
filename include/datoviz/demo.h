@@ -27,6 +27,11 @@
  */
 DVZ_EXPORT void dvz_demo_scatter(int32_t N, dvec3* pos);
 
+/**
+ * Gui demo (Dear ImGui).
+ */
+DVZ_EXPORT void dvz_demo_gui(void);
+
 
 
 #endif
