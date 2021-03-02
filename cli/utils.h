@@ -1038,9 +1038,9 @@ static DvzTexture* _mouse_volume(DvzCanvas* canvas)
     // WARNING: nearest filter causes visual artifacts when sampling from a 3D texture close to the
     // boundaries between different values
     dvz_texture_filter(texture, DVZ_FILTER_MAG, VK_FILTER_LINEAR);
-    dvz_texture_address_mode(texture, DVZ_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    dvz_texture_address_mode(texture, DVZ_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    dvz_texture_address_mode(texture, DVZ_TEXTURE_AXIS_W, VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    dvz_texture_address_mode(texture, DVZ_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_texture_address_mode(texture, DVZ_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_texture_address_mode(texture, DVZ_TEXTURE_AXIS_W, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
     uint16_t* tex_data = (uint16_t*)dvz_read_file(path, NULL);
     for (uint32_t i = 0; i < (ni * nj * nk); i++)
         tex_data[i] *= 10;
@@ -1056,16 +1056,17 @@ static DvzTexture* _mouse_volume(DvzCanvas* canvas)
 static DvzTexture* _transfer_texture(DvzCanvas* canvas)
 {
     DvzGpu* gpu = canvas->gpu;
-    DvzTexture* texture_transfer =
+    DvzTexture* texture =
         dvz_ctx_texture(gpu->context, 1, (uvec3){256, 1, 1}, VK_FORMAT_R32_SFLOAT);
     float* tex_data = calloc(256, sizeof(float));
     for (uint32_t i = 0; i < 256; i++)
         tex_data[i] = i / 255.0;
+    dvz_texture_address_mode(texture, DVZ_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
     dvz_upload_texture(
-        canvas, texture_transfer, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, //
+        canvas, texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, //
         256 * sizeof(float), tex_data);
     FREE(tex_data);
-    return texture_transfer;
+    return texture;
 }
 
 

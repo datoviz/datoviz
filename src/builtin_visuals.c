@@ -1707,10 +1707,18 @@ static void _visual_volume(DvzVisual* visual)
         prop, 2, offsetof(DvzGraphicsVolumeParams, uvw1), DVZ_ARRAY_COPY_SINGLE, 1);
     dvz_visual_prop_default(prop, (vec3[]){{1, 1, 1}});
 
+    // Transfer xrange.
+    prop =
+        dvz_visual_prop(visual, DVZ_PROP_TRANSFER_X, 0, DVZ_DTYPE_VEC2, DVZ_SOURCE_TYPE_PARAM, 0);
+    dvz_visual_prop_copy(
+        prop, 3, offsetof(DvzGraphicsVolumeParams, transfer_xrange), DVZ_ARRAY_COPY_SINGLE, 1);
+    // If both values are equal, disable the transfer function on the GPU.
+    dvz_visual_prop_default(prop, (vec2){0, 0});
+
     // Colormap value.
     prop = dvz_visual_prop(visual, DVZ_PROP_COLORMAP, 0, DVZ_DTYPE_INT, DVZ_SOURCE_TYPE_PARAM, 0);
     dvz_visual_prop_copy(
-        prop, 3, offsetof(DvzGraphicsVolumeParams, cmap), DVZ_ARRAY_COPY_SINGLE, 1);
+        prop, 4, offsetof(DvzGraphicsVolumeParams, cmap), DVZ_ARRAY_COPY_SINGLE, 1);
     dvz_visual_prop_default(prop, (DvzColormap[]){DVZ_CMAP_BONE});
 
 

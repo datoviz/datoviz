@@ -10,6 +10,7 @@ layout(std140, binding = USER_BINDING) uniform Params
     vec4 box_size;
     vec4 uvw0;
     vec4 uvw1;
+    vec2 transfer_xrange;
     int cmap;
 }
 params;
@@ -46,7 +47,10 @@ vec4 fetch_color(vec3 uvw) {
     v = clamp(v, 0, 1);
 
     // Transfer function.
-    v = texture(tex_transfer, v).r;
+    float x0 = params.transfer_xrange.x;
+    float x1 = params.transfer_xrange.y;
+    if (x0 < x1)
+        v = texture(tex_transfer, (v - x0) / (x1 - x0)).r;
 
     // Color component: colormap.
     vec4 color = colormap(params.cmap, v);
