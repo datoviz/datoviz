@@ -76,8 +76,8 @@ dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax, floa
 
 
 
-DvzGuiControl*
-dvz_gui_slider_float2(DvzGui* gui, const char* name, float vmin, float vmax, vec2 value)
+DvzGuiControl* dvz_gui_slider_float2(
+    DvzGui* gui, const char* name, float vmin, float vmax, vec2 value, bool force_increasing)
 {
     ASSERT(gui != NULL);
     ASSERT(vmin < vmax);
@@ -90,6 +90,7 @@ dvz_gui_slider_float2(DvzGui* gui, const char* name, float vmin, float vmax, vec
         _add_control(gui, DVZ_GUI_CONTROL_SLIDER_FLOAT2, name, sizeof(vec2), value);
     control->u.sf2.vmin = vmin;
     control->u.sf2.vmax = vmax;
+    control->u.sf2.force_increasing = force_increasing;
     return control;
 }
 

@@ -1,6 +1,7 @@
 #include <inttypes.h>
 
 #include "../include/datoviz/canvas.h"
+#include "../include/datoviz/common.h"
 #include "../include/datoviz/controls.h"
 #include "../include/datoviz/gui.h"
 #include "canvas_utils.h"
@@ -368,6 +369,13 @@ static bool _show_slider_float2(DvzGuiControl* control)
     float vmin = control->u.sf2.vmin;
     float vmax = control->u.sf2.vmax;
     float* vp = (float*)control->value;
+    if (control->u.sf2.force_increasing)
+    {
+        float m = .5 * (vp[0] + vp[1]);
+        if (vp[0] > vp[1])
+            vp[0] = vp[1] = m;
+        vp[1] = CLIP(vp[1], vp[0], vmax);
+    }
     ASSERT(vmin < vmax);
     return ImGui::SliderFloat2(control->name, vp, vmin, vmax, "%.5f", control->flags);
 }

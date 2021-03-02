@@ -88,6 +88,7 @@ struct DvzGuiControlSliderFloat2
 {
     float vmin;
     float vmax;
+    bool force_increasing;
 };
 
 
@@ -202,10 +203,11 @@ dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax, floa
  * @param vmin the minimum value
  * @param vmax the maximum value
  * @param values the initial values
+ * @param force_increasing whether the first value must always be lower than the second
  * @returns the control
  */
-DVZ_EXPORT DvzGuiControl*
-dvz_gui_slider_float2(DvzGui* gui, const char* name, float vmin, float vmax, vec2 value);
+DVZ_EXPORT DvzGuiControl* dvz_gui_slider_float2(
+    DvzGui* gui, const char* name, float vmin, float vmax, vec2 value, bool force_increasing);
 
 /**
  * Add a slider for integer input.
