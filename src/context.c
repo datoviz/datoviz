@@ -204,6 +204,9 @@ DvzContext* dvz_context(DvzGpu* gpu, DvzWindow* window)
         VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
     dvz_context_colormap(context);
 
+    // Default 1D texture, for transfer functions.
+    context->transfer_texture = _default_transfer_texture(context);
+
     return context;
 }
 

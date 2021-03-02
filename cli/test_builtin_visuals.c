@@ -1,9 +1,9 @@
 #include "test_builtin_visuals.h"
 #include "../include/datoviz/builtin_visuals.h"
+#include "../include/datoviz/context.h"
 #include "../include/datoviz/interact.h"
 #include "../include/datoviz/mesh.h"
 #include "../src/interact_utils.h"
-// #include "../src/mesh_loader.h"
 #include "test_visuals.h"
 #include "utils.h"
 
@@ -852,10 +852,6 @@ int test_visuals_volume_1(TestContext* context)
     // Volume texture.
     DvzTexture* volume = _mouse_volume(canvas);
     dvz_visual_texture(&visual, DVZ_SOURCE_TYPE_VOLUME, 0, volume);
-
-    // 1D transfer function.
-    DvzTexture* texture_transfer = _transfer_texture(canvas);
-    dvz_visual_texture(&visual, DVZ_SOURCE_TYPE_TRANSFER, 0, texture_transfer);
 
     // Arcball.
     DvzInteract interact = dvz_interact_builtin(canvas, DVZ_INTERACT_ARCBALL);

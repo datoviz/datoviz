@@ -666,16 +666,18 @@ void dvz_visual_update(
             if (_source_is_texture(source->source_kind))
             {
                 log_warn(
-                    "source type %d #%d is not set, using default texture (colormap array)",
-                    source->source_type, source->source_idx);
-                ASSERT(ctx->color_texture.texture != NULL);
-                ASSERT(ctx->color_texture.texture->image != NULL);
-                ASSERT(ctx->color_texture.texture->image->images[0] != VK_NULL_HANDLE);
-                ASSERT(ctx->color_texture.texture->sampler != NULL);
-                ASSERT(dvz_obj_is_created(&ctx->color_texture.texture->obj));
+                    "source type %d #%d is not set, using default texture", source->source_type,
+                    source->source_idx);
 
-                dvz_visual_texture(
-                    visual, source->source_type, source->source_idx, ctx->color_texture.texture);
+                DvzTexture* default_tex = _default_source_texture(ctx, source->source_kind);
+
+                ASSERT(default_tex != NULL);
+                ASSERT(default_tex->image != NULL);
+                ASSERT(default_tex->image->images[0] != VK_NULL_HANDLE);
+                ASSERT(default_tex->sampler != NULL);
+                ASSERT(dvz_obj_is_created(&default_tex->obj));
+
+                dvz_visual_texture(visual, source->source_type, source->source_idx, default_tex);
             }
             else if (_source_is_buffer(source->source_kind))
             {

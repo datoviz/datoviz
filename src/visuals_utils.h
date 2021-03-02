@@ -207,6 +207,29 @@ static VkFormat _get_texture_format(DvzVisual* visual, DvzSource* source)
 
 
 
+static DvzTexture* _default_source_texture(DvzContext* ctx, DvzSourceKind kind)
+{
+    uint32_t ndims = _get_texture_ndims(kind);
+    DvzTexture* tex = NULL;
+    switch (ndims)
+    {
+    case 1:
+        tex = ctx->transfer_texture;
+        break;
+    case 2:
+        tex = ctx->color_texture.texture;
+        break;
+    case 3:
+        log_warn("not implemented yet: default 3D texture");
+        break;
+    default:
+        break;
+    }
+    return tex;
+}
+
+
+
 static DvzBindings* _get_bindings(DvzVisual* visual, DvzSource* source)
 {
     ASSERT(source != NULL);

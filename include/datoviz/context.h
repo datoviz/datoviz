@@ -61,7 +61,7 @@ typedef enum
 
 
 /*************************************************************************************************/
-/*  Typedefs */
+/*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
 typedef struct DvzFontAtlas DvzFontAtlas;
@@ -110,6 +110,7 @@ struct DvzContext
     // Font atlas.
     DvzFontAtlas font_atlas;
     DvzColorTexture color_texture;
+    DvzTexture* transfer_texture; // Default linear 1D texture
 };
 
 
@@ -515,6 +516,22 @@ DVZ_EXPORT void dvz_texture_copy(
  * @param texture the texture
  */
 DVZ_EXPORT void dvz_texture_destroy(DvzTexture* texture);
+
+
+
+static DvzTexture* _default_transfer_texture(DvzContext* context)
+{
+    uvec3 shape = {256, 1, 1};
+    DvzTexture* texture = dvz_ctx_texture(context, 1, shape, VK_FORMAT_R32_SFLOAT);
+    float* tex_data = (float*)calloc(256, sizeof(float));
+    for (uint32_t i = 0; i < 256; i++)
+        tex_data[i] = i / 255.0;
+    dvz_texture_address_mode(texture, DVZ_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    uvec3 offset = {0, 0, 0};
+    dvz_texture_upload(texture, offset, offset, 256 * sizeof(float), tex_data);
+    FREE(tex_data);
+    return texture;
+}
 
 
 
