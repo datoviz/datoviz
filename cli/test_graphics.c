@@ -1029,6 +1029,8 @@ int test_graphics_volume_1(TestContext* context)
     params.uvw1[0] = 1;
     params.uvw1[1] = 1;
     params.uvw1[2] = 1;
+    params.clip[1] = +1;
+    params.clip[3] = 0;
     vec3 p0 = {-c * ni / 2., -c * nj / 2., -1 * c * nk / 2.};
     vec3 p1 = {+c * ni / 2., +c * nj / 2., +1 * c * nk / 2.};
 

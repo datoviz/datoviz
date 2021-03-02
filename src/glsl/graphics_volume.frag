@@ -10,6 +10,7 @@ layout(std140, binding = USER_BINDING) uniform Params
     vec4 box_size;
     vec4 uvw0;
     vec4 uvw1;
+    vec4 clip;
     vec2 transfer_xrange;
     int cmap;
 }
@@ -68,8 +69,10 @@ void main()
     CLIP
 
     mat4 mi = inverse(mvp.model);
-    vec3 u = (mi * vec4(normalize(in_ray), 1)).xyz;
-    vec3 o = (mi * vec4(-mvp.view[3].xyz, 1)).xyz;
+    vec4 u_ = mi * vec4(normalize(in_ray), 1);
+    vec3 u = u_.xyz / u_.w;
+    vec4 o_ = mi * vec4(-mvp.view[3].xyz, 1);
+    vec3 o = o_.xyz / o_.w;
 
     // // Inner cube example.
     // float r = .25;
@@ -102,8 +105,13 @@ void main()
     for (int i = 0; i < MAX_ITER && travel > 0.0; ++i, pos += dl, travel -= STEP_SIZE) {
         // Normalize 3D pos within cube in [0,1]^3
         uvw = (pos - b0) / (b1 - b0);
+
+        if (dot(vec4(uvw, 1), params.clip) < 0) continue;
+
         // Now, normalize between uvw0 and uvw1.
         uvw = params.uvw0.xyz + uvw * (params.uvw1 - params.uvw0).xyz;
+
+        // Fetch the color from the 3D texture.
         s = fetch_color(uvw);
         alpha = s.a;
         acc = s + (1 - alpha) * acc;

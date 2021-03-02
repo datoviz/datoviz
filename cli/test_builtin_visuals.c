@@ -841,6 +841,7 @@ int test_visuals_volume_1(TestContext* context)
 
     dvz_visual_data(&visual, DVZ_PROP_LENGTH, 0, 1, box_size);
     dvz_visual_data(&visual, DVZ_PROP_TRANSFER_X, 0, 1, (vec2){0.0, 1.0});
+    dvz_visual_data(&visual, DVZ_PROP_CLIP, 0, 1, (vec4){0.0, 0.0, 1.0, -0.0});
 
     DvzColormap cmap = DVZ_CMAP_BONE;
     dvz_visual_data(&visual, DVZ_PROP_COLORMAP, 0, 1, &cmap);
