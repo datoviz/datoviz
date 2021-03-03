@@ -3145,7 +3145,11 @@ void dvz_cmd_copy_image_to_buffer(
 
 
 
-void dvz_cmd_copy_image(DvzCommands* cmds, uint32_t idx, DvzImages* src_img, DvzImages* dst_img)
+void dvz_cmd_copy_image_region(
+    DvzCommands* cmds, uint32_t idx,      //
+    DvzImages* src_img, ivec3 src_offset, //
+    DvzImages* dst_img, ivec3 dst_offset, //
+    uvec3 shape)
 {
     ASSERT(src_img != NULL);
     ASSERT(dst_img != NULL);
@@ -3169,15 +3173,33 @@ void dvz_cmd_copy_image(DvzCommands* cmds, uint32_t idx, DvzImages* src_img, Dvz
     imageCopyRegion.srcSubresource.layerCount = 1;
     imageCopyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     imageCopyRegion.dstSubresource.layerCount = 1;
-    imageCopyRegion.extent.width = src_img->width;
-    imageCopyRegion.extent.height = src_img->height;
-    imageCopyRegion.extent.depth = 1;
+
+    imageCopyRegion.srcOffset.x = src_offset[0];
+    imageCopyRegion.srcOffset.y = src_offset[1];
+    imageCopyRegion.srcOffset.z = src_offset[2];
+
+    imageCopyRegion.dstOffset.x = dst_offset[0];
+    imageCopyRegion.dstOffset.y = dst_offset[1];
+    imageCopyRegion.dstOffset.z = dst_offset[2];
+
+    imageCopyRegion.extent.width = shape[0];
+    imageCopyRegion.extent.height = shape[1];
+    imageCopyRegion.extent.depth = shape[2];
     vkCmdCopyImage(
         cb,                                                        //
         src_img->images[i0], VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, //
         dst_img->images[i1], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, //
         1, &imageCopyRegion);
     CMD_END
+}
+
+
+
+void dvz_cmd_copy_image(DvzCommands* cmds, uint32_t idx, DvzImages* src_img, DvzImages* dst_img)
+{
+    dvz_cmd_copy_image_region(
+        cmds, idx, src_img, (ivec3){0, 0, 0}, dst_img, (ivec3){0, 0, 0},
+        (uvec3){src_img->width, src_img->height, src_img->depth});
 }
 
 

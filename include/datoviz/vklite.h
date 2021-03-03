@@ -2229,6 +2229,23 @@ DVZ_EXPORT void dvz_cmd_copy_image_to_buffer(
  * @param cmds the set of command buffers to record
  * @param idx the index of the command buffer to record
  * @param src_img the source image
+ * @param src_offset the offset in the source image
+ * @param dst_img the destination image
+ * @param dst_offset the offset in the target image
+ * @param shape the shape of the region to copy
+ */
+DVZ_EXPORT void dvz_cmd_copy_image_region(
+    DvzCommands* cmds, uint32_t idx,      //
+    DvzImages* src_img, ivec3 src_offset, //
+    DvzImages* dst_img, ivec3 dst_offset, //
+    uvec3 shape);
+
+/**
+ * Copy a GPU image to another.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
+ * @param src_img the source image
  * @param dst_img the destination image
  */
 DVZ_EXPORT void
