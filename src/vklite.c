@@ -2047,9 +2047,12 @@ void dvz_graphics_create(DvzGraphics* graphics)
     VkPipelineRasterizationStateCreateInfo rasterizer =
         create_rasterizer(graphics->cull_mode, graphics->front_face);
     VkPipelineMultisampleStateCreateInfo multisampling = create_multisampling();
-    VkPipelineColorBlendAttachmentState color_blend_attachment = create_color_blend_attachment();
+
+    // Blend attachments.
+    VkPipelineColorBlendAttachmentState color_attachment = create_color_blend_attachment();
     VkPipelineColorBlendStateCreateInfo color_blending =
-        create_color_blending(&color_blend_attachment);
+        create_color_blending(1, (VkPipelineColorBlendAttachmentState[]){color_attachment});
+
     VkPipelineDepthStencilStateCreateInfo depth_stencil =
         create_depth_stencil((bool)graphics->depth_test);
     VkPipelineViewportStateCreateInfo viewport_state = create_viewport_state();
@@ -2547,10 +2550,11 @@ void dvz_renderpass_create(DvzRenderpass* renderpass)
                                                 [DVZ_MAX_ATTACHMENTS_PER_RENDERPASS] = {0};
     uint32_t attachment = 0;
     uint32_t k = 0;
-    for (uint32_t i = 0; i < renderpass->subpass_count; i++)
+    for (uint32_t i = 0; i < renderpass->subpass_count; i++) // i is the subpass index
     {
         k = 0;
         subpasses[i].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        // j is the attachment index
         for (uint32_t j = 0; j < renderpass->subpasses[i].attachment_count; j++)
         {
             attachment = renderpass->subpasses[i].attachments[j];
@@ -2562,7 +2566,7 @@ void dvz_renderpass_create(DvzRenderpass* renderpass)
             else
             {
                 attachment_refs_matrix[i][k++] =
-                    create_attachment_ref(i, renderpass->attachments[i].ref_layout);
+                    create_attachment_ref(j, renderpass->attachments[i].ref_layout);
             }
         }
         subpasses[i].colorAttachmentCount = k;
