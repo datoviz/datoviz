@@ -859,6 +859,20 @@ DVZ_EXPORT uint8_t* dvz_screenshot(DvzCanvas* canvas, bool has_alpha);
  */
 DVZ_EXPORT void dvz_screenshot_file(DvzCanvas* canvas, const char* png_path);
 
+/**
+ * Pick a pixel in a canvas from a pixel position.
+ *
+ * !!! note
+ *     If the canvas has been created with the `DVZ_CANVAS_FLAGS_PICK` flag, this function returns
+ *     the pixel value from the picking attachment. Otherwise, it returns the image color at that
+ *     point.
+ *
+ * @param canvas the canvas
+ * @param pos_screen the coordinates of the point, in pixel coordinates
+ * @param[out] picked the color component at the requested position
+ */
+DVZ_EXPORT void dvz_canvas_pick(DvzCanvas* canvas, uvec2 pos_screen, vec4 picked);
+
 
 
 /*************************************************************************************************/

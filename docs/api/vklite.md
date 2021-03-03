@@ -224,6 +224,7 @@ Vulkan terminology: descriptor sets
 ### `dvz_cmd_copy_buffer_to_image()`
 ### `dvz_cmd_copy_image_to_buffer()`
 ### `dvz_cmd_copy_image()`
+### `dvz_cmd_copy_image_region()`
 ### `dvz_cmd_viewport()`
 ### `dvz_cmd_bind_graphics()`
 ### `dvz_cmd_bind_vertex_buffer()`

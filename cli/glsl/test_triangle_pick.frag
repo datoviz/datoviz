@@ -9,5 +9,5 @@ layout (location = 1) out vec4 out_pick;
 void main()
 {
     out_color = in_color;
-    out_pick = in_index;
+    out_pick = vec4(1,2,1,2);
 }
