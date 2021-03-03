@@ -24,6 +24,7 @@ layout(location = 0) in vec3 in_pos;
 layout(location = 1) in vec3 in_ray;
 
 layout(location = 0) out vec4 out_color;
+layout(location = 1) out ivec4 out_pick;
 
 
 
@@ -102,11 +103,15 @@ void main()
     vec4 s = vec4(0);
     vec4 acc = vec4(0);
     float alpha = 0;
+    vec3 uvw_clip = vec3(0);
     for (int i = 0; i < MAX_ITER && travel > 0.0; ++i, pos += dl, travel -= STEP_SIZE) {
         // Normalize 3D pos within cube in [0,1]^3
         uvw = (pos - b0) / (b1 - b0);
 
-        if (dot(vec4(uvw, 1), params.clip) < 0) continue;
+        if (dot(vec4(uvw, 1), params.clip) < 0) {
+            continue;
+        }
+        uvw_clip = uvw;
 
         // Now, normalize between uvw0 and uvw1.
         uvw = params.uvw0.xyz + uvw * (params.uvw1 - params.uvw0).xyz;
@@ -125,4 +130,5 @@ void main()
     // if (max_intensity < .001)
     //     discard;
     out_color = acc;
+    out_pick = ivec4(255 * uvw_clip, 0);
 }

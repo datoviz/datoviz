@@ -574,6 +574,7 @@ static void _graphics_volume(DvzCanvas* canvas, DvzGraphics* graphics)
     SHADER(FRAGMENT, "graphics_volume_frag")
     PRIMITIVE(TRIANGLE_LIST)
     dvz_graphics_depth_test(graphics, DVZ_DEPTH_TEST_DISABLE);
+    dvz_graphics_pick(graphics, true);
 
     ATTR_BEGIN(DvzGraphicsVolumeVertex)
     ATTR_POS(DvzGraphicsVolumeVertex, pos)
