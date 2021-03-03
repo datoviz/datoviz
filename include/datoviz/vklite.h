@@ -1698,6 +1698,11 @@ DVZ_EXPORT void dvz_graphics_depth_test(DvzGraphics* graphics, DvzDepthTest dept
 /**
  * Set whether the graphics pipeline supports picking.
  *
+ * !!! note
+ *     Picking support is currently all or nothing: all graphics of a canvas must either support
+ *     picking or not. In addition, the canvas must have been created with the
+ *     DVZ_CANVAS_FLAGS_PICK flag.
+ *
  * @param graphics the graphics pipeline
  * @param support_pick whether the graphics pipeline supports picking
  */

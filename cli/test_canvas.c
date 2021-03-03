@@ -806,6 +806,50 @@ int test_canvas_depth(TestContext* context)
 
 
 /*************************************************************************************************/
+/*  Canvas triangle with picking                                                                 */
+/*************************************************************************************************/
+
+int test_canvas_pick(TestContext* context)
+{
+    DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
+    DvzGpu* gpu = dvz_gpu(app, 0);
+    // First, we need to enable picking at the canvas level (renderpass attachment).
+    DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, DVZ_CANVAS_FLAGS_PICK);
+    AT(canvas != NULL);
+
+    TestVisual visual = {0};
+    visual.gpu = canvas->gpu;
+    visual.n_vertices = 3;
+    visual.renderpass = &canvas->renderpass;
+    visual.framebuffers = &canvas->framebuffers;
+
+    _triangle_graphics(&visual, "_pick");
+
+    // Create the bindings.
+    visual.bindings = dvz_bindings(&visual.graphics.slots, 1);
+    dvz_bindings_update(&visual.bindings);
+
+    // We also need to enable picking in the graphics pipeline.
+    dvz_graphics_pick(&visual.graphics, true);
+
+    // Create the graphics pipeline.
+    dvz_graphics_create(&visual.graphics);
+
+    _triangle_buffer(&visual);
+
+    canvas->user_data = &visual;
+    dvz_event_callback(
+        canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, _triangle_refill, &visual);
+
+    dvz_app_run(app, N_FRAMES);
+    dvz_graphics_destroy(&visual.graphics);
+    destroy_visual(&visual);
+    TEST_END
+}
+
+
+
+/*************************************************************************************************/
 /*  Canvas triangle with vertex buffer update                                                    */
 /*************************************************************************************************/
 

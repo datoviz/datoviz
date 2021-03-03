@@ -496,6 +496,18 @@ static void _fps_callback(DvzCanvas* canvas, DvzEvent ev)
 /*  Canvas creation                                                                              */
 /*************************************************************************************************/
 
+static bool _show_fps(DvzCanvas* canvas)
+{
+    ASSERT(canvas != NULL);
+    return ((canvas->flags >> 1) & 1) != 0;
+}
+
+static bool _support_pick(DvzCanvas* canvas)
+{
+    ASSERT(canvas != NULL);
+    return ((canvas->flags >> 2) & 1) != 0;
+}
+
 static DvzCanvas*
 _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overlay, int flags)
 {
@@ -523,8 +535,9 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
 
     canvas->overlay = overlay;
     canvas->flags = flags;
-    bool show_fps = ((canvas->flags >> 1) & DVZ_CANVAS_FLAGS_FPS) != 0;
-    bool support_pick = ((canvas->flags >> 2) & DVZ_CANVAS_FLAGS_PICK) != 0;
+    bool show_fps = _show_fps(canvas);
+    log_info("DEBUG: show_fps %d", show_fps);
+    bool support_pick = _support_pick(canvas);
     log_info("DEBUG: pick %d", support_pick);
 
     // Initialize the canvas local clock.
@@ -748,7 +761,7 @@ void dvz_canvas_recreate(DvzCanvas* canvas)
     DvzRenderpass* renderpass = &canvas->renderpass;
     DvzFramebuffers* framebuffers_overlay = &canvas->framebuffers_overlay;
     DvzRenderpass* renderpass_overlay = &canvas->renderpass_overlay;
-    bool support_pick = ((canvas->flags >> 2) & DVZ_CANVAS_FLAGS_PICK) != 0;
+    bool support_pick = _support_pick(canvas);
 
     ASSERT(window != NULL);
     ASSERT(gpu != NULL);
@@ -798,7 +811,6 @@ void dvz_canvas_recreate(DvzCanvas* canvas)
         dvz_images_size(&canvas->pick_image, width, height, 1);
         dvz_images_create(&canvas->pick_image);
     }
-
 
     // Recreate the framebuffers with the new size.
     for (uint32_t i = 0; i < framebuffers->attachment_count; i++)
