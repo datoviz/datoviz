@@ -50,7 +50,7 @@ static uint8_t* screenshot(DvzImages* image)
 
     // Now, we copy the staging image back onto the host.
     uint8_t* rgb = (uint8_t*)calloc(image->width * image->height, 3);
-    dvz_images_download(&staging, 0, true, false, rgb);
+    dvz_images_download(&staging, 0, 1, true, false, rgb);
 
     // We can destroy the staging image.
     dvz_images_destroy(&staging);

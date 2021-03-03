@@ -1326,8 +1326,14 @@ void dvz_images_resize(DvzImages* images, uint32_t width, uint32_t height, uint3
 
 
 void dvz_images_download(
-    DvzImages* staging, uint32_t idx, bool swizzle, bool has_alpha, uint8_t* out)
+    DvzImages* staging, uint32_t idx, VkDeviceSize bytes_per_component, //
+    bool swizzle, bool has_alpha, void* out)
 {
+    // NOTE: we make the following assumptions:
+    // - bytes_per_component is the same between the source and target
+    // - source always has alpha
+    // - parameter "has_alpha" only refers to the source buffer
+
     VkImageSubresource subResource = {0};
     subResource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     VkSubresourceLayout subResourceLayout = {0};
@@ -1344,48 +1350,61 @@ void dvz_images_download(
 
     uint32_t w = staging->width;
     uint32_t h = staging->height;
+    uint32_t n_components = has_alpha ? 4 : 3;
+
     ASSERT(w > 0);
     ASSERT(h > 0);
-    ASSERT(row_pitch >= w * 4);
+    ASSERT(row_pitch >= w * n_components * bytes_per_component);
 
     // First, memcopy from the GPU to the CPU.
-    uint8_t* image = calloc(row_pitch * h, 1);
-    uint8_t* image_orig = image;
-    memcpy(image, data, row_pitch * h);
+    void* image = calloc(row_pitch * h, bytes_per_component);
+    void* image_orig = image;
+    memcpy(image, data, row_pitch * h * bytes_per_component);
     vkUnmapMemory(staging->gpu->device, staging->memories[idx]);
 
     // Then, swizzle.
-    image += offset;
+    image = (void*)((uint64_t)image + offset);
     uint32_t src_offset = 0;
     uint32_t dst_offset = 0;
-    for (uint32_t y = 0; y < h; y++)
+    uint32_t y, x, k, l;
+    for (y = 0; y < h; y++)
     {
         src_offset = 0;
-        for (uint32_t x = 0; x < w; x++)
+        for (x = 0; x < w; x++)
         {
             ASSERT(src_offset + 2 < w * h * 4);
-            if (swizzle)
+            for (k = 0; k < n_components; k++)
             {
-                out[dst_offset + 0] = image[src_offset + 2];
-                out[dst_offset + 1] = image[src_offset + 1];
-                out[dst_offset + 2] = image[src_offset + 0];
-                if (has_alpha)
-                    out[dst_offset + 3] = 255;
+                l = swizzle ? 2 - k : k;
+                memcpy(
+                    (void*)((uint64_t)out + (dst_offset + k) * bytes_per_component),
+                    (void*)((uint64_t)image + (src_offset + l) * bytes_per_component),
+                    bytes_per_component);
             }
-            else
-            {
-                out[dst_offset + 0] = image[src_offset + 0];
-                out[dst_offset + 1] = image[src_offset + 1];
-                out[dst_offset + 2] = image[src_offset + 2];
-                if (has_alpha)
-                    out[dst_offset + 3] = 255;
-            }
-            src_offset += 4;
-            dst_offset += has_alpha ? 4 : 3;
+
+            // if (swizzle)
+            // {
+            // out[dst_offset + 0] = image[src_offset + 2];
+            // out[dst_offset + 1] = image[src_offset + 1];
+            // out[dst_offset + 2] = image[src_offset + 0];
+            // if (has_alpha)
+            //     out[dst_offset + 3] = 255;
+            // }
+            // else
+            // {
+            //     out[dst_offset + 0] = image[src_offset + 0];
+            //     out[dst_offset + 1] = image[src_offset + 1];
+            //     out[dst_offset + 2] = image[src_offset + 2];
+            //     if (has_alpha)
+            //         out[dst_offset + 3] = 255;
+            // }
+
+            src_offset += 4;            // we assume RGBA in the source array
+            dst_offset += n_components; // either RGB or RGBA in the target array
         }
-        image += row_pitch;
+        image = (void*)((uint64_t)image + row_pitch);
     }
-    ASSERT(dst_offset == w * h * (has_alpha ? 4 : 3));
+    ASSERT(dst_offset == w * h * n_components);
     FREE(image_orig);
 }
 

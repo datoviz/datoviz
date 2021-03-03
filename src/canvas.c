@@ -536,9 +536,7 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
     canvas->overlay = overlay;
     canvas->flags = flags;
     bool show_fps = _show_fps(canvas);
-    log_info("DEBUG: show_fps %d", show_fps);
     bool support_pick = _support_pick(canvas);
-    log_info("DEBUG: pick %d", support_pick);
 
     // Initialize the canvas local clock.
     _clock_init(&canvas->clock);
@@ -1674,7 +1672,7 @@ static void _screencast_post_send(DvzCanvas* canvas, DvzEvent ev)
 
         // Copy the image from the staging image to the CPU.
         log_trace("screencast CPU download");
-        dvz_images_download(&screencast->staging, 0, true, screencast->has_alpha, rgb_a);
+        dvz_images_download(&screencast->staging, 0, 1, true, screencast->has_alpha, rgb_a);
 
         // Enqueue a special SCREENCAST public event with a pointer to the CPU buffer user
         DvzEvent sev = {0};
@@ -1870,7 +1868,7 @@ uint8_t* dvz_screenshot(DvzCanvas* canvas, bool has_alpha)
 
     // Make the screenshot.
     uint8_t* rgba = calloc(staging.width * staging.height, (has_alpha ? 4 : 3) * sizeof(uint8_t));
-    dvz_images_download(&staging, 0, true, has_alpha, rgba);
+    dvz_images_download(&staging, 0, 1, true, has_alpha, rgba);
     dvz_gpu_wait(gpu);
     dvz_images_destroy(&staging);
     // NOTE: the caller MUST free the returned pointer.
