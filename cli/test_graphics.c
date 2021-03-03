@@ -128,7 +128,7 @@ static void _interact_callback(DvzCanvas* canvas, DvzEvent ev)
 #define INIT_GRAPHICS(type, flags)                                                                \
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);                                                      \
     DvzGpu* gpu = dvz_gpu(app, 0);                                                                \
-    DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);                              \
+    DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, DVZ_CANVAS_FLAGS_FPS);           \
     DvzGraphics* graphics = dvz_graphics_builtin(canvas, type, flags);
 
 #define BEGIN_DATA(type, n, user_data)                                                            \
@@ -1034,7 +1034,11 @@ int test_graphics_volume_1(TestContext* context)
     vec3 p0 = {-c * ni / 2., -c * nj / 2., -1 * c * nk / 2.};
     vec3 p1 = {+c * ni / 2., +c * nj / 2., +1 * c * nk / 2.};
 
-    INIT_GRAPHICS(DVZ_GRAPHICS_VOLUME, 0)
+    DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
+    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, DVZ_CANVAS_FLAGS_FPS);
+    DvzGraphics* graphics = dvz_graphics_builtin(canvas, DVZ_GRAPHICS_VOLUME, 0);
+
     BEGIN_DATA(DvzGraphicsVolumeVertex, 1, NULL)
     DvzGraphicsVolumeItem item = {{p0[0], p0[1], p0[2]}, {p1[0], p1[1], p1[2]}};
     dvz_graphics_append(&data, &item);

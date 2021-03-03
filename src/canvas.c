@@ -535,8 +535,10 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
 
     canvas->overlay = overlay;
     canvas->flags = flags;
+
     bool show_fps = _show_fps(canvas);
     bool support_pick = _support_pick(canvas);
+    log_trace("creating canvas with show_fps=%d, support_pick=%d", show_fps, support_pick);
 
     // Initialize the canvas local clock.
     _clock_init(&canvas->clock);
@@ -576,8 +578,8 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
     canvas->renderpass = default_renderpass(
         gpu, DVZ_DEFAULT_BACKGROUND, DVZ_DEFAULT_IMAGE_FORMAT, overlay, support_pick);
     if (overlay)
-        canvas->renderpass_overlay = renderpass_overlay(
-            gpu, DVZ_DEFAULT_IMAGE_FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, support_pick);
+        canvas->renderpass_overlay =
+            renderpass_overlay(gpu, DVZ_DEFAULT_IMAGE_FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
     // Create swapchain
     {
@@ -649,9 +651,6 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
             canvas->framebuffers_overlay = dvz_framebuffers(gpu);
             dvz_framebuffers_attachment(
                 &canvas->framebuffers_overlay, 0, canvas->swapchain.images);
-            dvz_framebuffers_attachment(&canvas->framebuffers_overlay, 1, &canvas->depth_image);
-            if (support_pick)
-                dvz_framebuffers_attachment(&canvas->framebuffers_overlay, 2, &canvas->pick_image);
             dvz_framebuffers_create(&canvas->framebuffers_overlay, &canvas->renderpass_overlay);
         }
     }

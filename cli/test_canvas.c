@@ -830,7 +830,10 @@ int test_canvas_pick(TestContext* context)
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
     DvzGpu* gpu = dvz_gpu(app, 0);
     // First, we need to enable picking at the canvas level (renderpass attachment).
-    DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, pick ? DVZ_CANVAS_FLAGS_PICK : 0);
+    int flags = DVZ_CANVAS_FLAGS_FPS;
+    if (pick)
+        flags |= DVZ_CANVAS_FLAGS_PICK;
+    DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, flags);
     AT(canvas != NULL);
 
     TestVisual visual = {0};

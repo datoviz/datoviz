@@ -276,8 +276,7 @@ static DvzRenderpass default_renderpass(
 
 
 
-static DvzRenderpass
-renderpass_overlay(DvzGpu* gpu, VkFormat format, VkImageLayout layout, bool pick)
+static DvzRenderpass renderpass_overlay(DvzGpu* gpu, VkFormat format, VkImageLayout layout)
 {
     DvzRenderpass renderpass = dvz_renderpass(gpu);
 
@@ -290,35 +289,8 @@ renderpass_overlay(DvzGpu* gpu, VkFormat format, VkImageLayout layout, bool pick
     dvz_renderpass_attachment_ops(
         &renderpass, 0, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE);
 
-    // Depth attachment.
-    dvz_renderpass_attachment(
-        &renderpass, 1, //
-        DVZ_RENDERPASS_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT,
-        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-    dvz_renderpass_attachment_layout(
-        &renderpass, 1, VK_IMAGE_LAYOUT_UNDEFINED,
-        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-    dvz_renderpass_attachment_ops(
-        &renderpass, 1, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE);
-
-    // Pick attachment.
-    if (pick)
-    {
-        dvz_renderpass_attachment(
-            &renderpass, 2, //
-            DVZ_RENDERPASS_ATTACHMENT_PICK, DVZ_PICK_IMAGE_FORMAT,
-            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-        dvz_renderpass_attachment_layout(
-            &renderpass, 2, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-        dvz_renderpass_attachment_ops(
-            &renderpass, 2, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
-    }
-
     // Subpass.
     dvz_renderpass_subpass_attachment(&renderpass, 0, 0);
-    dvz_renderpass_subpass_attachment(&renderpass, 0, 1);
-    if (pick)
-        dvz_renderpass_subpass_attachment(&renderpass, 0, 2);
     dvz_renderpass_subpass_dependency(&renderpass, 0, VK_SUBPASS_EXTERNAL, 0);
     dvz_renderpass_subpass_dependency_stage(
         &renderpass, 0, //

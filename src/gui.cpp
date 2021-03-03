@@ -44,6 +44,7 @@ static void _imgui_init_context()
 static void _imgui_enable(DvzCanvas* canvas)
 {
     ASSERT(canvas != NULL);
+    ASSERT(canvas->overlay);
     DvzGpu* gpu = canvas->gpu;
     ASSERT(gpu != NULL);
     DvzApp* app = gpu->app;
@@ -64,7 +65,7 @@ static void _imgui_enable(DvzCanvas* canvas)
     init_info.MinImageCount = canvas->swapchain.img_count;
     init_info.ImageCount = canvas->swapchain.img_count;
     init_info.CheckVkResultFn = _imgui_check_vk_result;
-    ImGui_ImplVulkan_Init(&init_info, canvas->renderpass.renderpass);
+    ImGui_ImplVulkan_Init(&init_info, canvas->renderpass_overlay.renderpass);
 }
 
 static void _imgui_destroy()
