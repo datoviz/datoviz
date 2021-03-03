@@ -155,6 +155,7 @@ typedef enum
 typedef enum
 {
     DVZ_GRAPHICS_FLAGS_DEPTH_TEST = 0x0100,
+    DVZ_GRAPHICS_FLAGS_PICK = 0x0200,
 } DvzGraphicsFlags;
 
 
@@ -561,6 +562,7 @@ struct DvzGraphics
 
     DvzGraphicsType type;
     int flags;
+    bool support_pick;
 
     DvzRenderpass* renderpass;
     uint32_t subpass;
@@ -1692,6 +1694,14 @@ DVZ_EXPORT void dvz_graphics_blend(DvzGraphics* graphics, DvzBlendType blend_typ
  * @param depth_test the depth test
  */
 DVZ_EXPORT void dvz_graphics_depth_test(DvzGraphics* graphics, DvzDepthTest depth_test);
+
+/**
+ * Set whether the graphics pipeline supports picking.
+ *
+ * @param graphics the graphics pipeline
+ * @param support_pick whether the graphics pipeline supports picking
+ */
+DVZ_EXPORT void dvz_graphics_pick(DvzGraphics* graphics, bool support_pick);
 
 /**
  * Set the graphics polygon mode.

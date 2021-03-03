@@ -1951,6 +1951,16 @@ void dvz_graphics_depth_test(DvzGraphics* graphics, DvzDepthTest depth_test)
 
 
 
+void dvz_graphics_pick(DvzGraphics* graphics, bool support_pick)
+{
+    ASSERT(graphics != NULL);
+    if (support_pick)
+        log_debug("enable picking in graphics pipeline");
+    graphics->support_pick = support_pick;
+}
+
+
+
 void dvz_graphics_polygon_mode(DvzGraphics* graphics, VkPolygonMode polygon_mode)
 {
     ASSERT(graphics != NULL);
@@ -2052,7 +2062,8 @@ void dvz_graphics_create(DvzGraphics* graphics)
     VkPipelineColorBlendAttachmentState color_attachment = create_color_blend_attachment();
     VkPipelineColorBlendAttachmentState pick_attachment = create_color_blend_attachment();
     VkPipelineColorBlendStateCreateInfo color_blending = create_color_blending(
-        2, (VkPipelineColorBlendAttachmentState[]){color_attachment, pick_attachment});
+        graphics->support_pick ? 2 : 1,
+        (VkPipelineColorBlendAttachmentState[]){color_attachment, pick_attachment});
 
     VkPipelineDepthStencilStateCreateInfo depth_stencil =
         create_depth_stencil((bool)graphics->depth_test);

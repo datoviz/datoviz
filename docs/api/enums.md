@@ -60,6 +60,18 @@ This is implemented in the function `vec4 colormap(int cmap, float x)` in `color
 !!! note
     Flags specification for the canvas, scene, visuals, controllers are still being improved and may change at any time.
 
+### Canvas flags
+
+```
+0x0001: ImGUI
+0x0002: FPS
+0x0003: FPS+FPS GUI
+0x0004: enable picking
+0xD000: DPI scaling (D=1..4 for 50%, 100%, 150%, 200%)
+```
+
+
+
 ### Panel flags
 
 ```
@@ -73,7 +85,7 @@ This is implemented in the function `vec4 colormap(int cmap, float x)` in `color
 ```
 0x000X: visual-specific flags
 0x00X0: POS prop transformation flags
-0x0X00: graphics depth test
+0x0X00: graphics flags (0x0100: enable depth test)
 0xX000: interact axes
 ```
 

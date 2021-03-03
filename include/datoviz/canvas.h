@@ -32,6 +32,7 @@ extern "C" {
         }                                                                                         \
     }
 #define DVZ_DEFAULT_IMAGE_FORMAT      VK_FORMAT_B8G8R8A8_UNORM
+#define DVZ_PICK_IMAGE_FORMAT         VK_FORMAT_R32G32B32A32_SFLOAT
 #define DVZ_DEFAULT_DPI_SCALING       1.0f
 #define DVZ_MIN_SWAPCHAIN_IMAGE_COUNT 3
 #define DVZ_SEMAPHORE_IMG_AVAILABLE   0
@@ -54,6 +55,7 @@ typedef enum
     DVZ_CANVAS_FLAGS_NONE = 0x0000,
     DVZ_CANVAS_FLAGS_IMGUI = 0x0001,
     DVZ_CANVAS_FLAGS_FPS = 0x0003, // NOTE: 1 bit for ImGUI, 1 bit for FPS
+    DVZ_CANVAS_FLAGS_PICK = 0x0004,
 
     DVZ_CANVAS_FLAGS_DPI_SCALE_050 = 0x1000,
     DVZ_CANVAS_FLAGS_DPI_SCALE_100 = 0x2000,
