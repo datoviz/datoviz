@@ -51,9 +51,20 @@ static DvzRenderpass renderpass_overlay(DvzGpu* gpu, VkFormat format, VkImageLay
     dvz_renderpass_attachment_ops(
         &renderpass, 1, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE);
 
+    // Pick attachment.
+    dvz_renderpass_attachment(
+        &renderpass, 2, //
+        DVZ_RENDERPASS_ATTACHMENT_PICK, VK_FORMAT_R32G32B32A32_UINT,
+        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    dvz_renderpass_attachment_layout(
+        &renderpass, 2, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    dvz_renderpass_attachment_ops(
+        &renderpass, 2, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+
     // Subpass.
     dvz_renderpass_subpass_attachment(&renderpass, 0, 0);
     dvz_renderpass_subpass_attachment(&renderpass, 0, 1);
+    dvz_renderpass_subpass_attachment(&renderpass, 0, 2);
     dvz_renderpass_subpass_dependency(&renderpass, 0, VK_SUBPASS_EXTERNAL, 0);
     dvz_renderpass_subpass_dependency_stage(
         &renderpass, 0, //
@@ -80,6 +91,22 @@ depth_image(DvzImages* depth_images, DvzRenderpass* renderpass, uint32_t width, 
     dvz_images_aspect(depth_images, VK_IMAGE_ASPECT_DEPTH_BIT);
     dvz_images_queue_access(depth_images, 0);
     dvz_images_create(depth_images);
+}
+
+
+
+static void pick_image(DvzImages* pick, DvzRenderpass* renderpass, uint32_t width, uint32_t height)
+{
+    // Depth attachment
+    dvz_images_format(pick, renderpass->attachments[2].format);
+    dvz_images_size(pick, width, height, 1);
+    dvz_images_tiling(pick, VK_IMAGE_TILING_OPTIMAL);
+    dvz_images_usage(pick, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+    dvz_images_memory(pick, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    dvz_images_layout(pick, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    dvz_images_aspect(pick, VK_IMAGE_ASPECT_COLOR_BIT);
+    dvz_images_queue_access(pick, 0);
+    dvz_images_create(pick);
 }
 
 
@@ -661,6 +688,12 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
         depth_image(
             &canvas->depth_image, &canvas->renderpass, //
             canvas->swapchain.images->width, canvas->swapchain.images->height);
+
+        // Pick attachment.
+        canvas->pick_image = dvz_images(gpu, VK_IMAGE_TYPE_2D, 1);
+        pick_image(
+            &canvas->pick_image, &canvas->renderpass, //
+            canvas->swapchain.images->width, canvas->swapchain.images->height);
     }
 
     // Create renderpass.
@@ -673,6 +706,7 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
         canvas->framebuffers = dvz_framebuffers(gpu);
         dvz_framebuffers_attachment(&canvas->framebuffers, 0, canvas->swapchain.images);
         dvz_framebuffers_attachment(&canvas->framebuffers, 1, &canvas->depth_image);
+        dvz_framebuffers_attachment(&canvas->framebuffers, 2, &canvas->pick_image);
         dvz_framebuffers_create(&canvas->framebuffers, &canvas->renderpass);
 
         if (overlay)
@@ -681,6 +715,7 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
             dvz_framebuffers_attachment(
                 &canvas->framebuffers_overlay, 0, canvas->swapchain.images);
             dvz_framebuffers_attachment(&canvas->framebuffers_overlay, 1, &canvas->depth_image);
+            dvz_framebuffers_attachment(&canvas->framebuffers_overlay, 2, &canvas->pick_image);
             dvz_framebuffers_create(&canvas->framebuffers_overlay, &canvas->renderpass_overlay);
         }
     }
@@ -813,6 +848,7 @@ void dvz_canvas_recreate(DvzCanvas* canvas)
     if (canvas->overlay)
         dvz_framebuffers_destroy(&canvas->framebuffers_overlay);
     dvz_images_destroy(&canvas->depth_image);
+    dvz_images_destroy(&canvas->pick_image);
     dvz_images_destroy(canvas->swapchain.images);
 
     // Recreate the swapchain. This will automatically set the swapchain->images new size.
@@ -829,11 +865,16 @@ void dvz_canvas_recreate(DvzCanvas* canvas)
     dvz_images_size(&canvas->depth_image, width, height, 1);
     dvz_images_create(&canvas->depth_image);
 
+    // Need to recreate the pick image with the new size.
+    dvz_images_size(&canvas->pick_image, width, height, 1);
+    dvz_images_create(&canvas->pick_image);
+
     // Recreate the framebuffers with the new size.
-    ASSERT(framebuffers->attachments[0]->width == width);
-    ASSERT(framebuffers->attachments[0]->height == height);
-    ASSERT(framebuffers->attachments[1]->width == width);
-    ASSERT(framebuffers->attachments[1]->height == height);
+    for (uint32_t i = 0; i < framebuffers->attachment_count; i++)
+    {
+        ASSERT(framebuffers->attachments[i]->width == width);
+        ASSERT(framebuffers->attachments[i]->height == height);
+    }
     dvz_framebuffers_create(framebuffers, renderpass);
     if (canvas->overlay)
         dvz_framebuffers_create(framebuffers_overlay, renderpass_overlay);
@@ -2314,6 +2355,7 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
 
     // Destroy the depth image.
     dvz_images_destroy(&canvas->depth_image);
+    dvz_images_destroy(&canvas->pick_image);
 
     // Destroy the renderpasses.
     log_trace("canvas destroy renderpass");

@@ -214,8 +214,11 @@ default_renderpass(DvzGpu* gpu, VkClearColorValue clear_color_value, VkFormat fo
     VkClearValue clear_depth = {0};
     clear_depth.depthStencil.depth = 1.0f;
 
+    VkClearValue clear_color_pick = {0};
+
     dvz_renderpass_clear(&renderpass, clear_color);
     dvz_renderpass_clear(&renderpass, clear_depth);
+    dvz_renderpass_clear(&renderpass, clear_color_pick);
 
     VkImageLayout layout =
         overlay ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
@@ -239,17 +242,28 @@ default_renderpass(DvzGpu* gpu, VkClearColorValue clear_color_value, VkFormat fo
     dvz_renderpass_attachment_ops(
         &renderpass, 1, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
 
+    // Pick attachment.
+    dvz_renderpass_attachment(
+        &renderpass, 2, //
+        DVZ_RENDERPASS_ATTACHMENT_PICK, VK_FORMAT_R32G32B32A32_UINT,
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    dvz_renderpass_attachment_layout(
+        &renderpass, 2, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    dvz_renderpass_attachment_ops(
+        &renderpass, 2, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+
     // Subpass.
     dvz_renderpass_subpass_attachment(&renderpass, 0, 0);
     dvz_renderpass_subpass_attachment(&renderpass, 0, 1);
+    dvz_renderpass_subpass_attachment(&renderpass, 0, 2);
     dvz_renderpass_subpass_dependency(&renderpass, 0, VK_SUBPASS_EXTERNAL, 0);
     dvz_renderpass_subpass_dependency_stage(
         &renderpass, 0, //
         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
     dvz_renderpass_subpass_dependency_access(
-        &renderpass, 0, 0,
-        VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+        &renderpass, 0, //
+        0, VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
 
     return renderpass;
 }

@@ -565,6 +565,7 @@ struct DvzCanvas
     // Swapchain.
     DvzSwapchain swapchain;
     DvzImages depth_image;
+    DvzImages pick_image;
     DvzFramebuffers framebuffers;
     DvzFramebuffers framebuffers_overlay; // used by the overlay renderpass
     DvzSubmit submit;

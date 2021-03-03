@@ -2050,8 +2050,9 @@ void dvz_graphics_create(DvzGraphics* graphics)
 
     // Blend attachments.
     VkPipelineColorBlendAttachmentState color_attachment = create_color_blend_attachment();
-    VkPipelineColorBlendStateCreateInfo color_blending =
-        create_color_blending(1, (VkPipelineColorBlendAttachmentState[]){color_attachment});
+    VkPipelineColorBlendAttachmentState pick_attachment = create_color_blend_attachment();
+    VkPipelineColorBlendStateCreateInfo color_blending = create_color_blending(
+        2, (VkPipelineColorBlendAttachmentState[]){color_attachment, pick_attachment});
 
     VkPipelineDepthStencilStateCreateInfo depth_stencil =
         create_depth_stencil((bool)graphics->depth_test);
