@@ -1906,7 +1906,7 @@ void dvz_screenshot_file(DvzCanvas* canvas, const char* png_path)
 
 
 
-void dvz_canvas_pick(DvzCanvas* canvas, uvec2 pos_screen, vec4 picked)
+void dvz_canvas_pick(DvzCanvas* canvas, uvec2 pos_screen, ivec4 picked)
 {
     ASSERT(canvas != NULL);
     DvzGpu* gpu = canvas->gpu;
@@ -1936,13 +1936,9 @@ void dvz_canvas_pick(DvzCanvas* canvas, uvec2 pos_screen, vec4 picked)
     ivec3 offset = {x - k, y - k, 0};
     _copy_image_to_staging(canvas, images, &staging, offset, shape);
 
-    // Make the screenshot.
-    VkDeviceSize comp_size = has_pick ? sizeof(float) : sizeof(uint8_t);
+    VkDeviceSize comp_size = has_pick ? sizeof(int32_t) : sizeof(uint8_t);
+    // NOTE: pick attachment has alpha, color does not
     uint32_t n_comp = 3 + (uint32_t)has_pick;
-
-    // DEBUG
-    if (has_pick)
-        ASSERT(n_comp * comp_size == 16);
 
     void* buf = calloc(staging.width * staging.height, n_comp * comp_size);
 
@@ -1957,19 +1953,23 @@ void dvz_canvas_pick(DvzCanvas* canvas, uvec2 pos_screen, vec4 picked)
     uint32_t offs = staging_size * staging_size / 2;
     if (has_pick)
     {
-        // DEBUG
-        // for (uint32_t i = 0; i < staging_size * staging_size * 16; i++)
+        // // DEBUG
+        // for (uint32_t i = 0; i < staging_size * staging_size * n_comp * comp_size; i++)
         // {
         //     printf("%d ", ((uint8_t*)buf)[i]);
         // }
         // printf("\n");
-        glm_vec4_copy(((vec4*)buf)[offs], picked);
+
+        ivec4* color = &((ivec4*)buf)[offs];
+        for (uint32_t i = 0; i < 4; i++)
+            picked[i] = (float)color[0][i];
     }
     else
     {
         cvec3* color = &((cvec3*)buf)[offs];
-        for (uint32_t i = 0; i < 3; i++)
-            picked[i] = color[0][i] / 255.0;
+        for (uint32_t i = 0; i < 2; i++)
+            picked[i] = color[0][i];
+        picked[3] = 255;
     }
     FREE(buf);
 }

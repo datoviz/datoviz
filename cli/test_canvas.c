@@ -818,9 +818,9 @@ static void _triangle_click(DvzCanvas* canvas, DvzEvent ev)
     pos[0] = (uint32_t)ev.u.c.pos[0];
     pos[1] = (uint32_t)ev.u.c.pos[1];
 
-    vec4 picked = {0};
+    ivec4 picked = {0};
     dvz_canvas_pick(canvas, pos, picked);
-    glm_vec4_print(picked, stdout);
+    log_info("picked %d %d %d %d", picked[0], picked[1], picked[2], picked[3]);
 }
 
 int test_canvas_pick(TestContext* context)

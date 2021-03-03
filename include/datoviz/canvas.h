@@ -32,7 +32,7 @@ extern "C" {
         }                                                                                         \
     }
 #define DVZ_DEFAULT_IMAGE_FORMAT      VK_FORMAT_B8G8R8A8_UNORM
-#define DVZ_PICK_IMAGE_FORMAT         VK_FORMAT_R32G32B32A32_SFLOAT
+#define DVZ_PICK_IMAGE_FORMAT         VK_FORMAT_R32G32B32A32_SINT
 #define DVZ_DEFAULT_DPI_SCALING       1.0f
 #define DVZ_MIN_SWAPCHAIN_IMAGE_COUNT 3
 #define DVZ_SEMAPHORE_IMG_AVAILABLE   0
@@ -42,7 +42,6 @@ extern "C" {
 #define DVZ_DEFAULT_COMMANDS_TRANSFER 0
 #define DVZ_DEFAULT_COMMANDS_RENDER   1
 #define DVZ_MAX_FRAMES_IN_FLIGHT      2
-
 
 
 /*************************************************************************************************/
@@ -869,9 +868,9 @@ DVZ_EXPORT void dvz_screenshot_file(DvzCanvas* canvas, const char* png_path);
  *
  * @param canvas the canvas
  * @param pos_screen the coordinates of the point, in pixel coordinates
- * @param[out] picked the color component at the requested position
+ * @param[out] picked the components at the requested position
  */
-DVZ_EXPORT void dvz_canvas_pick(DvzCanvas* canvas, uvec2 pos_screen, vec4 picked);
+DVZ_EXPORT void dvz_canvas_pick(DvzCanvas* canvas, uvec2 pos_screen, ivec4 picked);
 
 
 
