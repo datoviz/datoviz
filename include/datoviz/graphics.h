@@ -27,15 +27,6 @@
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
-// Graphics flags.
-typedef enum
-{
-    DVZ_GRAPHICS_FLAGS_DEPTH_TEST_DISABLE = 0x0000,
-    DVZ_GRAPHICS_FLAGS_DEPTH_TEST_ENABLE = 0x0100,
-} DvzGraphicsFlags;
-
-
-
 // Marker type.
 // NOTE: the numbers need to correspond to markers.glsl at the bottom.
 typedef enum

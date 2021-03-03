@@ -279,7 +279,7 @@ static void _graphics_3D_callback(DvzCanvas* canvas, DvzEvent ev)
 
 int test_graphics_3D(TestContext* context)
 {
-    INIT_GRAPHICS(DVZ_GRAPHICS_POINT, DVZ_GRAPHICS_FLAGS_DEPTH_TEST_ENABLE)
+    INIT_GRAPHICS(DVZ_GRAPHICS_POINT, DVZ_GRAPHICS_FLAGS_DEPTH_TEST)
     BEGIN_DATA(DvzVertex, 3, NULL)
     {
         // Top red

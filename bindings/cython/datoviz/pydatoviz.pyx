@@ -819,7 +819,7 @@ cdef class Panel:
             raise ValueError("unknown visual type")
         flags = 0
         if depth_test:
-            flags |= cv.DVZ_GRAPHICS_FLAGS_DEPTH_TEST_ENABLE
+            flags |= cv.DVZ_GRAPHICS_FLAGS_DEPTH_TEST
         if transform is None:
             flags |= cv.DVZ_VISUAL_FLAGS_TRANSFORM_NONE
         # This keyword means that the panel box will NOT be recomputed every time the POS prop

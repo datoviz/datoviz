@@ -535,8 +535,7 @@ cdef extern from "<datoviz/datoviz.h>":
     # from file: graphics.h
 
     ctypedef enum DvzGraphicsFlags:
-        DVZ_GRAPHICS_FLAGS_DEPTH_TEST_DISABLE = 0x0000
-        DVZ_GRAPHICS_FLAGS_DEPTH_TEST_ENABLE = 0x0100
+        DVZ_GRAPHICS_FLAGS_DEPTH_TEST = 0x0100
 
     ctypedef enum DvzMarkerType:
         DVZ_MARKER_DISC = 0

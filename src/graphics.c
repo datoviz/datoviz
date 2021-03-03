@@ -80,7 +80,7 @@ static void _graphics_point(DvzCanvas* canvas, DvzGraphics* graphics)
     PRIMITIVE(POINT_LIST)
 
     // Depth test flag.
-    if ((graphics->flags & DVZ_GRAPHICS_FLAGS_DEPTH_TEST_ENABLE) != 0)
+    if ((graphics->flags & DVZ_GRAPHICS_FLAGS_DEPTH_TEST) != 0)
         dvz_graphics_depth_test(graphics, DVZ_DEPTH_TEST_ENABLE);
 
     ATTR_BEGIN(DvzVertex)
@@ -103,7 +103,7 @@ static void _graphics_basic(DvzCanvas* canvas, DvzGraphics* graphics, VkPrimitiv
     dvz_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
 
     // Depth test flag.
-    if ((graphics->flags & DVZ_GRAPHICS_FLAGS_DEPTH_TEST_ENABLE) != 0)
+    if ((graphics->flags & DVZ_GRAPHICS_FLAGS_DEPTH_TEST) != 0)
         dvz_graphics_depth_test(graphics, DVZ_DEPTH_TEST_ENABLE);
 
     ATTR_BEGIN(DvzVertex)
@@ -128,7 +128,7 @@ static void _graphics_marker(DvzCanvas* canvas, DvzGraphics* graphics)
     PRIMITIVE(POINT_LIST)
 
     // Depth test flag.
-    if ((graphics->flags & DVZ_GRAPHICS_FLAGS_DEPTH_TEST_ENABLE) != 0)
+    if ((graphics->flags & DVZ_GRAPHICS_FLAGS_DEPTH_TEST) != 0)
         dvz_graphics_depth_test(graphics, DVZ_DEPTH_TEST_ENABLE);
 
     ATTR_BEGIN(DvzGraphicsMarkerVertex)
