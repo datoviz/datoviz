@@ -479,7 +479,7 @@ static void create_instance(
     bool has_validation = false;
     if (ENABLE_VALIDATION_LAYERS)
     {
-        has_validation = check_validation_layer_support(1, DVZ_LAYERS);
+        has_validation = check_validation_layer_support(ARRAY_COUNT(DVZ_LAYERS), DVZ_LAYERS);
         if (!has_validation)
             log_error(
                 "validation layer support missing, make sure you have exported the environment "
@@ -533,7 +533,7 @@ static void create_instance(
 
     if (has_validation)
     {
-        createInfo.enabledLayerCount = 1;
+        createInfo.enabledLayerCount = ARRAY_COUNT(DVZ_LAYERS);
         createInfo.ppEnabledLayerNames = DVZ_LAYERS;
         createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debug_create_info;
     }
@@ -854,7 +854,7 @@ static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
     // Device extensions and layers
     device_info.enabledExtensionCount = (uint32_t)has_surface;
     device_info.ppEnabledExtensionNames = has_surface ? DVZ_DEVICE_EXTENSIONS : NULL;
-    device_info.enabledLayerCount = (uint32_t)has_validation;
+    device_info.enabledLayerCount = has_validation ? ARRAY_COUNT(DVZ_LAYERS) : 0;
     device_info.ppEnabledLayerNames = has_validation ? DVZ_LAYERS : NULL;
 
     // Create the device

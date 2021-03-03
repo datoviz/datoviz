@@ -121,10 +121,11 @@ END_INCL_NO_WARN
 /*************************************************************************************************/
 
 
-#define MIN(a, b)     (((a) < (b)) ? (a) : (b))
-#define MAX(a, b)     (((a) > (b)) ? (a) : (b))
-#define CLIP(x, a, b) MAX(MIN((x), (b)), (a))
-#define POS(a)        ((a) >= 0 ? (a) : 0)
+#define MIN(a, b)        (((a) < (b)) ? (a) : (b))
+#define MAX(a, b)        (((a) > (b)) ? (a) : (b))
+#define CLIP(x, a, b)    MAX(MIN((x), (b)), (a))
+#define POS(a)           ((a) >= 0 ? (a) : 0)
+#define ARRAY_COUNT(arr) sizeof((arr)) / sizeof((arr)[0])
 
 #define DBG(x)  printf("%d\n", (int)(x))
 #define DBGF(x) printf("%.8f\n", (double)(x))
