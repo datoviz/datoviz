@@ -38,10 +38,10 @@ The philosophy of Datoviz is to **implement all the logic and functionality in C
 
 * **LunarG Vulkan SDK**
 * **cmake 3.16+** (build)
-* **ninja** (build)
 
 **Optional dependencies** are:
 
+* **ninja** (build)
 * **freetype** (optional)
 * **libpng** (optional)
 * **ffmpeg** (optional)
