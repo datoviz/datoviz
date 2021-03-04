@@ -248,6 +248,7 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_CANVAS_FLAGS_NONE = 0x0000
         DVZ_CANVAS_FLAGS_IMGUI = 0x0001
         DVZ_CANVAS_FLAGS_FPS = 0x0003
+        DVZ_CANVAS_FLAGS_PICK = 0x0004
         DVZ_CANVAS_FLAGS_DPI_SCALE_050 = 0x1000
         DVZ_CANVAS_FLAGS_DPI_SCALE_100 = 0x2000
         DVZ_CANVAS_FLAGS_DPI_SCALE_150 = 0x3000
@@ -533,9 +534,6 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_GUI_CONTROL_COLORMAP = 9
 
     # from file: graphics.h
-
-    ctypedef enum DvzGraphicsFlags:
-        DVZ_GRAPHICS_FLAGS_DEPTH_TEST = 0x0100
 
     ctypedef enum DvzMarkerType:
         DVZ_MARKER_DISC = 0
@@ -907,6 +905,10 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE = 6
         DVZ_BUFFER_TYPE_COUNT = 7
 
+    ctypedef enum DvzGraphicsFlags:
+        DVZ_GRAPHICS_FLAGS_DEPTH_TEST = 0x0100
+        DVZ_GRAPHICS_FLAGS_PICK = 0x0200
+
     ctypedef enum DvzGraphicsType:
         DVZ_GRAPHICS_NONE = 0
         DVZ_GRAPHICS_POINT = 1
@@ -945,6 +947,7 @@ cdef extern from "<datoviz/datoviz.h>":
     ctypedef enum DvzRenderpassAttachmentType:
         DVZ_RENDERPASS_ATTACHMENT_COLOR = 0
         DVZ_RENDERPASS_ATTACHMENT_DEPTH = 1
+        DVZ_RENDERPASS_ATTACHMENT_PICK = 2
 
 
     # ENUM END
@@ -1109,6 +1112,7 @@ cdef extern from "<datoviz/datoviz.h>":
     void dvz_event_callback(DvzCanvas* canvas, DvzEventType type, double param, DvzEventMode mode, DvzEventCallback callback, void* user_data)
     void dvz_canvas_to_close(DvzCanvas* canvas)
     void dvz_screenshot_file(DvzCanvas* canvas, const char* png_path)
+    void dvz_canvas_pick(DvzCanvas* canvas, uvec2 pos_screen, ivec4 picked)
     void dvz_canvas_video(DvzCanvas* canvas, int framerate, int bitrate, const char* path, bint record)
     void dvz_canvas_pause(DvzCanvas* canvas, bint record)
     void dvz_canvas_stop(DvzCanvas* canvas)

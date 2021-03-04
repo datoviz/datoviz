@@ -526,7 +526,7 @@ cdef _wrapped_callback(cv.DvzCanvas* c_canvas, cv.DvzEvent c_ev):
 
 cdef _add_event_callback(
     cv.DvzCanvas* c_canvas, cv.DvzEventType evtype, double param, f, args,
-    cv.DvzEventMode mode=cv.DVZ_EVENT_MODE_SYNC):
+    cv.DvzEventMode mode=cv.DVZ_EVENT_MODE_ASYNC):
 
     cdef void* ptr_to_obj
     tup = (f, args)
@@ -602,10 +602,12 @@ cdef class App:
 
     def canvas(
             self, int width=DEFAULT_WIDTH, int height=DEFAULT_HEIGHT, int rows=1, int cols=1,
-            bint show_fps=False, clear_color=None):
+            bint show_fps=False, clear_color=None, bint pick=False):
         cdef int fps = 0
         if show_fps:
             fps = cv.DVZ_CANVAS_FLAGS_FPS
+        if pick:
+            fps = cv.DVZ_CANVAS_FLAGS_PICK
         fps |= cv.DVZ_CANVAS_FLAGS_IMGUI
         c_canvas = cv.dvz_canvas(self._c_gpu, width, height, fps)
 
@@ -711,6 +713,21 @@ cdef class Canvas:
         p.create(self._c_scene, c_panel)
         self._panels.append(p)
         return p
+
+    def pick(self, cv.uint32_t x, cv.uint32_t y):
+        cdef cv.uvec2 xy
+        cdef cv.ivec4 rgba
+        xy[0] = x
+        xy[1] = y
+        cv.dvz_canvas_pick(self._c_canvas, xy, rgba)
+
+        cdef cv.int32_t r, g, b, a
+        r = rgba[0]
+        g = rgba[1]
+        b = rgba[2]
+        a = rgba[3]
+
+        return (r, g, b, a)
 
     def gui(self, unicode title):
         c_gui = cv.dvz_gui(self._c_canvas, title, 0)
