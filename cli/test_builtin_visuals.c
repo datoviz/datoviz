@@ -821,7 +821,10 @@ static void _volume_interact(DvzCanvas* canvas, DvzEvent ev)
 
 int test_visuals_volume_1(TestContext* context)
 {
-    INIT;
+    DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
+    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzCanvas* canvas =
+        dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, DVZ_CANVAS_FLAGS_FPS | DVZ_CANVAS_FLAGS_PICK);
 
     DvzVisual visual = dvz_visual(canvas);
     dvz_visual_builtin(&visual, DVZ_VISUAL_VOLUME, 0);
