@@ -24,6 +24,11 @@ int test_vklite_app(TestContext* context)
     dvz_gpu_queue(gpu, 2, DVZ_QUEUE_COMPUTE);
     dvz_gpu_create(gpu, 0);
 
+    gpu = dvz_gpu_best(app);
+    ASSERT(gpu != NULL);
+    log_info("Best GPU is %s with %d VRAM", gpu->name, gpu->vram);
+    ASSERT(gpu->name != NULL);
+
     TEST_END
 }
 

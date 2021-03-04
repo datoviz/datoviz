@@ -340,6 +340,7 @@ struct DvzGpu
     VkPhysicalDeviceProperties device_properties;
     VkPhysicalDeviceFeatures device_features;
     VkPhysicalDeviceMemoryProperties memory_properties;
+    VkDeviceSize vram; // amount of VRAM
 
     uint32_t present_mode_count;
     VkPresentModeKHR present_modes[DVZ_MAX_PRESENT_MODES];
@@ -798,6 +799,7 @@ DVZ_EXPORT int dvz_app_destroy(DvzApp* app);
 /*************************************************************************************************/
 /*  GPU                                                                                          */
 /*************************************************************************************************/
+
 /**
  * Initialize a GPU.
  *
@@ -809,6 +811,18 @@ DVZ_EXPORT int dvz_app_destroy(DvzApp* app);
  */
 
 DVZ_EXPORT DvzGpu* dvz_gpu(DvzApp* app, uint32_t idx);
+
+/**
+ * Find the "best" GPU on the system.
+ *
+ * For now, this is just the discrete GPU with the most VRAM, or the GPU with the most VRAM if
+ * there are no discrete GPUs.
+ *
+ * @param app the app
+ * @returns a pointer to the best GPU object
+ */
+
+DVZ_EXPORT DvzGpu* dvz_gpu_best(DvzApp* app);
 
 /**
  * Request some features before creating the GPU instance.

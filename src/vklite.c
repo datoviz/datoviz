@@ -130,6 +130,52 @@ DvzGpu* dvz_gpu(DvzApp* app, uint32_t idx)
 
 
 
+DvzGpu* dvz_gpu_best(DvzApp* app)
+{
+    ASSERT(app != NULL);
+    log_trace("start looking for the best GPU on the system among %d GPU(s)", app->gpus.count);
+
+    DvzGpu* gpu = NULL;
+    DvzGpu* best_gpu = NULL;
+    DvzGpu* best_gpu_discrete = NULL;
+    VkDeviceSize best_vram = 0;
+    VkDeviceSize best_vram_discrete = 0;
+
+    ASSERT(app->gpus.count > 0);
+    for (uint32_t i = 0; i < app->gpus.count; i++)
+    {
+        gpu = dvz_gpu(app, i);
+        ASSERT(gpu != NULL);
+        ASSERT(gpu->vram > 0);
+
+        // Find the discrete GPU with the most VRAM.
+        if (gpu->device_properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+        {
+            if (gpu->vram > best_vram_discrete)
+            {
+                log_trace("best discrete GPU so far: %s with %d VRAM", gpu->name, gpu->vram);
+                best_vram_discrete = gpu->vram;
+                best_gpu_discrete = gpu;
+            }
+        }
+
+        // Find the GPU with the most VRAM.
+        if (gpu->vram > best_vram)
+        {
+            log_trace("best GPU so far: %s with %d VRAM", gpu->name, gpu->vram);
+            best_vram = gpu->vram;
+            best_gpu = gpu;
+        }
+    }
+
+    best_gpu = best_gpu_discrete != NULL ? best_gpu_discrete : best_gpu;
+    ASSERT(best_gpu != NULL);
+    log_trace("best GPU: %s with %d VRAM", best_gpu->name, best_gpu->vram);
+    return best_gpu;
+}
+
+
+
 void dvz_gpu_request_features(DvzGpu* gpu, VkPhysicalDeviceFeatures requested_features)
 {
     gpu->requested_features = requested_features;
