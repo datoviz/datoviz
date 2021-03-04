@@ -1351,6 +1351,9 @@ void dvz_images_download(
     uint32_t w = staging->width;
     uint32_t h = staging->height;
     uint32_t n_components = has_alpha ? 4 : 3;
+    log_debug(
+        "starting download of RGB%s image %dx%d with %d components of %d bytes each",
+        has_alpha ? "A" : "", w, h, n_components, bytes_per_component);
 
     ASSERT(w > 0);
     ASSERT(h > 0);
@@ -1373,9 +1376,11 @@ void dvz_images_download(
         for (x = 0; x < w; x++)
         {
             ASSERT(src_offset + 2 < w * h * 4);
-            for (k = 0; k < n_components; k++)
+            for (k = 0; k < 3; k++)
             {
                 l = swizzle ? 2 - k : k;
+                ASSERT(k <= 2);
+                ASSERT(l <= 2);
                 memcpy(
                     (void*)((uint64_t)out + (dst_offset + k) * bytes_per_component),
                     (void*)((uint64_t)image + (src_offset + l) * bytes_per_component),
