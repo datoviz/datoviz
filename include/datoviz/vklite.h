@@ -151,6 +151,15 @@ typedef enum
 
 
 
+// Graphics flags.
+typedef enum
+{
+    DVZ_GRAPHICS_FLAGS_DEPTH_TEST = 0x0100,
+    DVZ_GRAPHICS_FLAGS_PICK = 0x0200,
+} DvzGraphicsFlags;
+
+
+
 // Graphics builtins
 typedef enum
 {
@@ -218,6 +227,7 @@ typedef enum
 {
     DVZ_RENDERPASS_ATTACHMENT_COLOR,
     DVZ_RENDERPASS_ATTACHMENT_DEPTH,
+    DVZ_RENDERPASS_ATTACHMENT_PICK,
 } DvzRenderpassAttachmentType;
 
 
@@ -552,6 +562,7 @@ struct DvzGraphics
 
     DvzGraphicsType type;
     int flags;
+    bool support_pick;
 
     DvzRenderpass* renderpass;
     uint32_t subpass;
@@ -1355,12 +1366,14 @@ DVZ_EXPORT void dvz_images_transition(DvzImages* images);
  *
  * @param staging the images to download the data from
  * @param idx the index of the image
+ * @param bytes_per_component number of bytes per component
  * @param swizzle whether the RGB(A) values need to be transposed
  * @param has_alpha whether there is an Alpha component in the output buffer
  * @param[out] out the buffer that will be filled with the image data (must be already allocated)
  */
-DVZ_EXPORT void
-dvz_images_download(DvzImages* staging, uint32_t idx, bool swizzle, bool has_alpha, uint8_t* out);
+DVZ_EXPORT void dvz_images_download(
+    DvzImages* staging, uint32_t idx, VkDeviceSize bytes_per_component, bool swizzle,
+    bool has_alpha, void* out);
 
 /**
  * Destroy images.
@@ -1683,6 +1696,19 @@ DVZ_EXPORT void dvz_graphics_blend(DvzGraphics* graphics, DvzBlendType blend_typ
  * @param depth_test the depth test
  */
 DVZ_EXPORT void dvz_graphics_depth_test(DvzGraphics* graphics, DvzDepthTest depth_test);
+
+/**
+ * Set whether the graphics pipeline supports picking.
+ *
+ * !!! note
+ *     Picking support is currently all or nothing: all graphics of a canvas must either support
+ *     picking or not. In addition, the canvas must have been created with the
+ *     DVZ_CANVAS_FLAGS_PICK flag.
+ *
+ * @param graphics the graphics pipeline
+ * @param support_pick whether the graphics pipeline supports picking
+ */
+DVZ_EXPORT void dvz_graphics_pick(DvzGraphics* graphics, bool support_pick);
 
 /**
  * Set the graphics polygon mode.
@@ -2196,6 +2222,23 @@ DVZ_EXPORT void dvz_cmd_copy_buffer_to_image(
  */
 DVZ_EXPORT void dvz_cmd_copy_image_to_buffer(
     DvzCommands* cmds, uint32_t idx, DvzImages* images, DvzBuffer* buffer);
+
+/**
+ * Copy a GPU image to another.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
+ * @param src_img the source image
+ * @param src_offset the offset in the source image
+ * @param dst_img the destination image
+ * @param dst_offset the offset in the target image
+ * @param shape the shape of the region to copy
+ */
+DVZ_EXPORT void dvz_cmd_copy_image_region(
+    DvzCommands* cmds, uint32_t idx,      //
+    DvzImages* src_img, ivec3 src_offset, //
+    DvzImages* dst_img, ivec3 dst_offset, //
+    uvec3 shape);
 
 /**
  * Copy a GPU image to another.

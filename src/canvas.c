@@ -27,61 +27,6 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static DvzRenderpass renderpass_overlay(DvzGpu* gpu, VkFormat format, VkImageLayout layout)
-{
-    DvzRenderpass renderpass = dvz_renderpass(gpu);
-
-    // Color attachment.
-    dvz_renderpass_attachment(
-        &renderpass, 0, //
-        DVZ_RENDERPASS_ATTACHMENT_COLOR, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-    dvz_renderpass_attachment_layout(
-        &renderpass, 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, layout);
-    dvz_renderpass_attachment_ops(
-        &renderpass, 0, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE);
-
-    // Depth attachment.
-    dvz_renderpass_attachment(
-        &renderpass, 1, //
-        DVZ_RENDERPASS_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT,
-        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-    dvz_renderpass_attachment_layout(
-        &renderpass, 1, VK_IMAGE_LAYOUT_UNDEFINED,
-        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-    dvz_renderpass_attachment_ops(
-        &renderpass, 1, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE);
-
-    // Subpass.
-    dvz_renderpass_subpass_attachment(&renderpass, 0, 0);
-    dvz_renderpass_subpass_attachment(&renderpass, 0, 1);
-    dvz_renderpass_subpass_dependency(&renderpass, 0, VK_SUBPASS_EXTERNAL, 0);
-    dvz_renderpass_subpass_dependency_stage(
-        &renderpass, 0, //
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-    dvz_renderpass_subpass_dependency_access(
-        &renderpass, 0, 0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
-
-    return renderpass;
-}
-
-
-
-static void
-depth_image(DvzImages* depth_images, DvzRenderpass* renderpass, uint32_t width, uint32_t height)
-{
-    // Depth attachment
-    dvz_images_format(depth_images, renderpass->attachments[1].format);
-    dvz_images_size(depth_images, width, height, 1);
-    dvz_images_tiling(depth_images, VK_IMAGE_TILING_OPTIMAL);
-    dvz_images_usage(depth_images, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
-    dvz_images_memory(depth_images, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    dvz_images_layout(depth_images, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-    dvz_images_aspect(depth_images, VK_IMAGE_ASPECT_DEPTH_BIT);
-    dvz_images_queue_access(depth_images, 0);
-    dvz_images_create(depth_images);
-}
-
 
 
 static void blank_commands(DvzCanvas* canvas, DvzCommands* cmds, uint32_t cmd_idx)
@@ -551,6 +496,18 @@ static void _fps_callback(DvzCanvas* canvas, DvzEvent ev)
 /*  Canvas creation                                                                              */
 /*************************************************************************************************/
 
+static bool _show_fps(DvzCanvas* canvas)
+{
+    ASSERT(canvas != NULL);
+    return ((canvas->flags >> 1) & 1) != 0;
+}
+
+static bool _support_pick(DvzCanvas* canvas)
+{
+    ASSERT(canvas != NULL);
+    return ((canvas->flags >> 2) & 1) != 0;
+}
+
 static DvzCanvas*
 _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overlay, int flags)
 {
@@ -578,7 +535,10 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
 
     canvas->overlay = overlay;
     canvas->flags = flags;
-    bool show_fps = ((canvas->flags >> 1) & DVZ_CANVAS_FLAGS_FPS) != 0;
+
+    bool show_fps = _show_fps(canvas);
+    bool support_pick = _support_pick(canvas);
+    log_trace("creating canvas with show_fps=%d, support_pick=%d", show_fps, support_pick);
 
     // Initialize the canvas local clock.
     _clock_init(&canvas->clock);
@@ -615,8 +575,8 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
     }
 
     // Create default renderpass.
-    canvas->renderpass =
-        default_renderpass(gpu, DVZ_DEFAULT_BACKGROUND, DVZ_DEFAULT_IMAGE_FORMAT, overlay);
+    canvas->renderpass = default_renderpass(
+        gpu, DVZ_DEFAULT_BACKGROUND, DVZ_DEFAULT_IMAGE_FORMAT, overlay, support_pick);
     if (overlay)
         canvas->renderpass_overlay =
             renderpass_overlay(gpu, DVZ_DEFAULT_IMAGE_FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
@@ -661,6 +621,15 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
         depth_image(
             &canvas->depth_image, &canvas->renderpass, //
             canvas->swapchain.images->width, canvas->swapchain.images->height);
+
+        // Pick attachment.
+        if (support_pick)
+        {
+            canvas->pick_image = dvz_images(gpu, VK_IMAGE_TYPE_2D, 1);
+            pick_image(
+                &canvas->pick_image, &canvas->renderpass, //
+                canvas->swapchain.images->width, canvas->swapchain.images->height);
+        }
     }
 
     // Create renderpass.
@@ -673,6 +642,8 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
         canvas->framebuffers = dvz_framebuffers(gpu);
         dvz_framebuffers_attachment(&canvas->framebuffers, 0, canvas->swapchain.images);
         dvz_framebuffers_attachment(&canvas->framebuffers, 1, &canvas->depth_image);
+        if (support_pick)
+            dvz_framebuffers_attachment(&canvas->framebuffers, 2, &canvas->pick_image);
         dvz_framebuffers_create(&canvas->framebuffers, &canvas->renderpass);
 
         if (overlay)
@@ -680,7 +651,6 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
             canvas->framebuffers_overlay = dvz_framebuffers(gpu);
             dvz_framebuffers_attachment(
                 &canvas->framebuffers_overlay, 0, canvas->swapchain.images);
-            dvz_framebuffers_attachment(&canvas->framebuffers_overlay, 1, &canvas->depth_image);
             dvz_framebuffers_create(&canvas->framebuffers_overlay, &canvas->renderpass_overlay);
         }
     }
@@ -788,6 +758,7 @@ void dvz_canvas_recreate(DvzCanvas* canvas)
     DvzRenderpass* renderpass = &canvas->renderpass;
     DvzFramebuffers* framebuffers_overlay = &canvas->framebuffers_overlay;
     DvzRenderpass* renderpass_overlay = &canvas->renderpass_overlay;
+    bool support_pick = _support_pick(canvas);
 
     ASSERT(window != NULL);
     ASSERT(gpu != NULL);
@@ -813,6 +784,8 @@ void dvz_canvas_recreate(DvzCanvas* canvas)
     if (canvas->overlay)
         dvz_framebuffers_destroy(&canvas->framebuffers_overlay);
     dvz_images_destroy(&canvas->depth_image);
+    if (support_pick)
+        dvz_images_destroy(&canvas->pick_image);
     dvz_images_destroy(canvas->swapchain.images);
 
     // Recreate the swapchain. This will automatically set the swapchain->images new size.
@@ -829,11 +802,19 @@ void dvz_canvas_recreate(DvzCanvas* canvas)
     dvz_images_size(&canvas->depth_image, width, height, 1);
     dvz_images_create(&canvas->depth_image);
 
+    if (support_pick)
+    {
+        // Need to recreate the pick image with the new size.
+        dvz_images_size(&canvas->pick_image, width, height, 1);
+        dvz_images_create(&canvas->pick_image);
+    }
+
     // Recreate the framebuffers with the new size.
-    ASSERT(framebuffers->attachments[0]->width == width);
-    ASSERT(framebuffers->attachments[0]->height == height);
-    ASSERT(framebuffers->attachments[1]->width == width);
-    ASSERT(framebuffers->attachments[1]->height == height);
+    for (uint32_t i = 0; i < framebuffers->attachment_count; i++)
+    {
+        ASSERT(framebuffers->attachments[i]->width == width);
+        ASSERT(framebuffers->attachments[i]->height == height);
+    }
     dvz_framebuffers_create(framebuffers, renderpass);
     if (canvas->overlay)
         dvz_framebuffers_create(framebuffers_overlay, renderpass_overlay);
@@ -1690,7 +1671,7 @@ static void _screencast_post_send(DvzCanvas* canvas, DvzEvent ev)
 
         // Copy the image from the staging image to the CPU.
         log_trace("screencast CPU download");
-        dvz_images_download(&screencast->staging, 0, true, screencast->has_alpha, rgb_a);
+        dvz_images_download(&screencast->staging, 0, 1, true, screencast->has_alpha, rgb_a);
 
         // Enqueue a special SCREENCAST public event with a pointer to the CPU buffer user
         DvzEvent sev = {0};
@@ -1813,6 +1794,99 @@ void dvz_screencast_destroy(DvzCanvas* canvas)
 
 
 
+/*************************************************************************************************/
+/*  Screenshot                                                                                   */
+/*************************************************************************************************/
+
+static DvzImages
+_staging_image(DvzCanvas* canvas, VkFormat format, uint32_t width, uint32_t height)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(width > 0);
+    ASSERT(height > 0);
+
+    DvzImages staging = dvz_images(canvas->gpu, VK_IMAGE_TYPE_2D, 1);
+    dvz_images_format(&staging, format);
+    dvz_images_size(&staging, width, height, 1);
+    dvz_images_tiling(&staging, VK_IMAGE_TILING_LINEAR);
+    dvz_images_usage(&staging, VK_IMAGE_USAGE_TRANSFER_DST_BIT);
+    dvz_images_layout(&staging, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    dvz_images_memory(
+        &staging, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    dvz_images_create(&staging);
+    dvz_images_transition(&staging);
+    return staging;
+}
+
+
+
+static void _copy_image_to_staging(
+    DvzCanvas* canvas, DvzImages* images, DvzImages* staging, ivec3 offset, uvec3 shape)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(images != NULL);
+    ASSERT(staging != NULL);
+    ASSERT(shape[0] > 0);
+    ASSERT(shape[1] > 0);
+    ASSERT(shape[2] > 0);
+
+    DvzBarrier barrier = dvz_barrier(canvas->gpu);
+    dvz_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    dvz_barrier_images(&barrier, images);
+
+    DvzCommands* cmds = &canvas->cmds_transfer;
+    dvz_cmd_reset(cmds, 0);
+    dvz_cmd_begin(cmds, 0);
+    dvz_barrier_images_layout(
+        &barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    dvz_barrier_images_access(&barrier, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT);
+    dvz_cmd_barrier(cmds, 0, &barrier);
+    dvz_cmd_copy_image_region(cmds, 0, images, offset, staging, (ivec3){0, 0, 0}, shape);
+    dvz_barrier_images_layout(
+        &barrier, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    dvz_barrier_images_access(&barrier, VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_TRANSFER_WRITE_BIT);
+    dvz_cmd_barrier(cmds, 0, &barrier);
+    dvz_cmd_end(cmds, 0);
+    dvz_cmd_submit_sync(cmds, 0);
+}
+
+
+
+uint8_t* dvz_screenshot(DvzCanvas* canvas, bool has_alpha)
+{
+    // WARNING: this function is SLOW because it recreates a staging buffer at every call.
+    // Also because it forces a hard synchronization on the whole GPU.
+    // TODO: more efficient screenshot saving with screencast
+
+    ASSERT(canvas != NULL);
+
+    DvzGpu* gpu = canvas->gpu;
+    ASSERT(gpu != NULL);
+
+    // Hard GPU synchronization.
+    dvz_gpu_wait(gpu);
+
+    DvzImages* images = canvas->swapchain.images;
+    ASSERT(images != NULL);
+
+    // Staging images.
+    DvzImages staging = _staging_image(canvas, images->format, images->width, images->height);
+
+    // Copy from the swapchain image to the staging image.
+    uvec3 shape = {images->width, images->height, images->depth};
+    _copy_image_to_staging(canvas, images, &staging, (ivec3){0, 0, 0}, shape);
+
+    // Make the screenshot.
+    uint8_t* rgba = calloc(staging.width * staging.height, (has_alpha ? 4 : 3) * sizeof(uint8_t));
+    dvz_images_download(&staging, 0, sizeof(uint8_t), true, has_alpha, rgba);
+    dvz_gpu_wait(gpu);
+    dvz_images_destroy(&staging);
+    // NOTE: the caller MUST free the returned pointer.
+    return rgba;
+}
+
+
+
 void dvz_screenshot_file(DvzCanvas* canvas, const char* png_path)
 {
     ASSERT(canvas != NULL);
@@ -1831,66 +1905,72 @@ void dvz_screenshot_file(DvzCanvas* canvas, const char* png_path)
 
 
 
-uint8_t* dvz_screenshot(DvzCanvas* canvas, bool has_alpha)
+void dvz_canvas_pick(DvzCanvas* canvas, uvec2 pos_screen, ivec4 picked)
 {
     ASSERT(canvas != NULL);
-    if (canvas->app->is_running)
-    {
-        log_error("cannot do screenshot while the canvas is running for now");
-        return NULL;
-    }
-
-    // TODO: more efficient screenshot saving with screencast
     DvzGpu* gpu = canvas->gpu;
+    ASSERT(gpu != NULL);
 
+    // Hard GPU synchronization.
     dvz_gpu_wait(gpu);
-    DvzImages* images = canvas->swapchain.images;
-    DvzImages staging = dvz_images(canvas->gpu, VK_IMAGE_TYPE_2D, 1);
+
+    bool has_pick = _support_pick(canvas);
+
+    // Source image : pick image if pick support, otherwise swapchain image.
+    DvzImages* images = has_pick ? &canvas->pick_image : canvas->swapchain.images;
+    ASSERT(images != NULL);
 
     // Staging images.
-    {
-        dvz_images_format(&staging, images->format);
-        dvz_images_size(&staging, images->width, images->height, images->depth);
-        dvz_images_tiling(&staging, VK_IMAGE_TILING_LINEAR);
-        dvz_images_usage(&staging, VK_IMAGE_USAGE_TRANSFER_DST_BIT);
-        dvz_images_layout(&staging, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-        dvz_images_memory(
-            &staging, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-        dvz_images_create(&staging);
-        dvz_images_transition(&staging);
-    }
+    uint32_t staging_size = 8;
+    ASSERT(images->width >= staging_size);
+    ASSERT(images->height >= staging_size);
+    ASSERT(images->depth == 1);
+    DvzImages staging = _staging_image(canvas, images->format, staging_size, staging_size);
 
-    // Copy from the swapchain image to the staging image.
-    {
-        DvzBarrier barrier = dvz_barrier(canvas->gpu);
-        dvz_barrier_stages(
-            &barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
-        dvz_barrier_images(&barrier, images);
-        DvzCommands* cmds = &canvas->cmds_transfer;
-        dvz_cmd_reset(cmds, 0);
-        dvz_cmd_begin(cmds, 0);
-        dvz_barrier_images_layout(
-            &barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-        dvz_barrier_images_access(
-            &barrier, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT);
-        dvz_cmd_barrier(cmds, 0, &barrier);
-        dvz_cmd_copy_image(cmds, 0, images, &staging);
-        dvz_barrier_images_layout(
-            &barrier, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-        dvz_barrier_images_access(
-            &barrier, VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_TRANSFER_WRITE_BIT);
-        dvz_cmd_barrier(cmds, 0, &barrier);
-        dvz_cmd_end(cmds, 0);
-        dvz_cmd_submit_sync(cmds, 0);
-    }
+    // Copy from the source image to the staging image.
+    uvec3 shape = {staging_size, staging_size, 1};
+    int32_t k = (int32_t)staging_size / 2;
+    int32_t x = (int32_t)pos_screen[0];
+    int32_t y = (int32_t)pos_screen[1];
+    ivec3 offset = {x - k, y - k, 0};
+    _copy_image_to_staging(canvas, images, &staging, offset, shape);
 
-    // Make the screenshot.
-    uint8_t* rgba = calloc(staging.width * staging.height, (has_alpha ? 4 : 3) * sizeof(uint8_t));
-    dvz_images_download(&staging, 0, true, has_alpha, rgba);
+    VkDeviceSize comp_size = has_pick ? sizeof(int32_t) : sizeof(uint8_t);
+    // NOTE: pick attachment has alpha, color does not
+    uint32_t n_comp = 3 + (uint32_t)has_pick;
+
+    void* buf = calloc(staging.width * staging.height, n_comp * comp_size);
+
+    // NOTE: we do not swizzle if pick attachment, but we do if normal image attachment
+    // The pick attachment has alpha value, the RGB does not
+    dvz_images_download(&staging, 0, comp_size, !has_pick, has_pick, buf);
+
     dvz_gpu_wait(gpu);
     dvz_images_destroy(&staging);
-    // NOTE: the caller MUST free the returned pointer.
-    return rgba;
+
+    // Retrieve the requested value.
+    uint32_t offs = staging_size * staging_size / 2;
+    if (has_pick)
+    {
+        // // DEBUG
+        // for (uint32_t i = 0; i < staging_size * staging_size * n_comp * comp_size; i++)
+        // {
+        //     printf("%d ", ((uint8_t*)buf)[i]);
+        // }
+        // printf("\n");
+
+        ivec4* color = &((ivec4*)buf)[offs];
+        for (uint32_t i = 0; i < 4; i++)
+            picked[i] = (float)color[0][i];
+    }
+    else
+    {
+        cvec3* color = &((cvec3*)buf)[offs];
+        for (uint32_t i = 0; i < 2; i++)
+            picked[i] = color[0][i];
+        picked[3] = 255;
+    }
+    FREE(buf);
 }
 
 
@@ -2314,6 +2394,7 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
 
     // Destroy the depth image.
     dvz_images_destroy(&canvas->depth_image);
+    dvz_images_destroy(&canvas->pick_image);
 
     // Destroy the renderpasses.
     log_trace("canvas destroy renderpass");

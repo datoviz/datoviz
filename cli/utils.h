@@ -666,7 +666,7 @@ static TestCanvas glfw_canvas(DvzGpu* gpu, DvzWindow* window)
 
 
 
-static uint8_t* screenshot(DvzImages* images)
+static void* screenshot(DvzImages* images, VkDeviceSize bytes_per_component)
 {
     // NOTE: the caller must free the output
 
@@ -711,8 +711,8 @@ static uint8_t* screenshot(DvzImages* images)
     dvz_cmd_submit_sync(&cmds, 0);
 
     // Now, copy the staging image into CPU memory.
-    uint8_t* rgb = (uint8_t*)calloc(images->width * images->height, 3);
-    dvz_images_download(staging, 0, true, false, rgb);
+    void* rgb = calloc(images->width * images->height, 3 * bytes_per_component);
+    dvz_images_download(staging, 0, bytes_per_component, true, false, rgb);
 
     dvz_images_destroy(staging);
 
@@ -726,7 +726,7 @@ static void save_screenshot(DvzFramebuffers* framebuffers, const char* path)
     log_debug("saving screenshot to %s", path);
     // Make a screenshot of the color attachment.
     DvzImages* images = framebuffers->attachments[0];
-    uint8_t* rgba = screenshot(images);
+    uint8_t* rgba = (uint8_t*)screenshot(images, 1);
     dvz_write_ppm(path, images->width, images->height, rgba);
     FREE(rgba);
 }

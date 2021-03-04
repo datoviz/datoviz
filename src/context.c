@@ -148,6 +148,14 @@ static void _destroy_resources(DvzContext* context)
 
 
 
+static void _gpu_default_features(DvzGpu* gpu)
+{
+    ASSERT(gpu != NULL);
+    dvz_gpu_request_features(gpu, (VkPhysicalDeviceFeatures){.independentBlend = true});
+}
+
+
+
 DvzContext* dvz_context(DvzGpu* gpu, DvzWindow* window)
 {
     ASSERT(gpu != NULL);
@@ -171,6 +179,9 @@ DvzContext* dvz_context(DvzGpu* gpu, DvzWindow* window)
 
     // Specify the default queues.
     _context_default_queues(gpu, window);
+
+    // Default features
+    _gpu_default_features(gpu);
 
     // Create the GPU after the default queues have been set.
     if (!dvz_obj_is_created(&gpu->obj))

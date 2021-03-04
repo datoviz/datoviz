@@ -806,6 +806,71 @@ int test_canvas_depth(TestContext* context)
 
 
 /*************************************************************************************************/
+/*  Canvas triangle with picking                                                                 */
+/*************************************************************************************************/
+
+static void _triangle_click(DvzCanvas* canvas, DvzEvent ev)
+{
+    ASSERT(canvas != NULL);
+
+    // Mouse coordinates.
+    uvec2 pos = {0};
+    pos[0] = (uint32_t)ev.u.c.pos[0];
+    pos[1] = (uint32_t)ev.u.c.pos[1];
+
+    ivec4 picked = {0};
+    dvz_canvas_pick(canvas, pos, picked);
+    log_info("picked %d %d %d %d", picked[0], picked[1], picked[2], picked[3]);
+}
+
+int test_canvas_pick(TestContext* context)
+{
+    bool pick = true;
+
+    DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
+    DvzGpu* gpu = dvz_gpu(app, 0);
+    // First, we need to enable picking at the canvas level (renderpass attachment).
+    int flags = DVZ_CANVAS_FLAGS_FPS;
+    if (pick)
+        flags |= DVZ_CANVAS_FLAGS_PICK;
+    DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, flags);
+    AT(canvas != NULL);
+
+    TestVisual visual = {0};
+    visual.gpu = canvas->gpu;
+    visual.n_vertices = 3;
+    visual.renderpass = &canvas->renderpass;
+    visual.framebuffers = &canvas->framebuffers;
+
+    _triangle_graphics(&visual, pick ? "_pick" : "");
+
+    // Create the bindings.
+    visual.bindings = dvz_bindings(&visual.graphics.slots, 1);
+    dvz_bindings_update(&visual.bindings);
+
+    // We also need to enable picking in the graphics pipeline.
+    dvz_graphics_pick(&visual.graphics, pick);
+
+    // Create the graphics pipeline.
+    dvz_graphics_create(&visual.graphics);
+
+    _triangle_buffer(&visual);
+
+    canvas->user_data = &visual;
+    dvz_event_callback(
+        canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, _triangle_refill, &visual);
+    dvz_event_callback(
+        canvas, DVZ_EVENT_MOUSE_CLICK, 0, DVZ_EVENT_MODE_SYNC, _triangle_click, &visual);
+
+    dvz_app_run(app, N_FRAMES);
+    dvz_graphics_destroy(&visual.graphics);
+    destroy_visual(&visual);
+    TEST_END
+}
+
+
+
+/*************************************************************************************************/
 /*  Canvas triangle with vertex buffer update                                                    */
 /*************************************************************************************************/
 

@@ -128,7 +128,7 @@ static void _interact_callback(DvzCanvas* canvas, DvzEvent ev)
 #define INIT_GRAPHICS(type, flags)                                                                \
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);                                                      \
     DvzGpu* gpu = dvz_gpu(app, 0);                                                                \
-    DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);                              \
+    DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, DVZ_CANVAS_FLAGS_FPS);           \
     DvzGraphics* graphics = dvz_graphics_builtin(canvas, type, flags);
 
 #define BEGIN_DATA(type, n, user_data)                                                            \
@@ -279,7 +279,7 @@ static void _graphics_3D_callback(DvzCanvas* canvas, DvzEvent ev)
 
 int test_graphics_3D(TestContext* context)
 {
-    INIT_GRAPHICS(DVZ_GRAPHICS_POINT, DVZ_GRAPHICS_FLAGS_DEPTH_TEST_ENABLE)
+    INIT_GRAPHICS(DVZ_GRAPHICS_POINT, DVZ_GRAPHICS_FLAGS_DEPTH_TEST)
     BEGIN_DATA(DvzVertex, 3, NULL)
     {
         // Top red
@@ -1015,6 +1015,20 @@ int test_graphics_volume_slice(TestContext* context)
 /*  Volume tests                                                                                 */
 /*************************************************************************************************/
 
+static void _volume_click(DvzCanvas* canvas, DvzEvent ev)
+{
+    ASSERT(canvas != NULL);
+
+    // Mouse coordinates.
+    uvec2 pos = {0};
+    pos[0] = (uint32_t)ev.u.c.pos[0];
+    pos[1] = (uint32_t)ev.u.c.pos[1];
+
+    ivec4 picked = {0};
+    dvz_canvas_pick(canvas, pos, picked);
+    log_info("picked %d %d %d %d", picked[0], picked[1], picked[2], picked[3]);
+}
+
 int test_graphics_volume_1(TestContext* context)
 {
     const uint32_t ni = MOUSE_VOLUME_WIDTH;
@@ -1034,7 +1048,12 @@ int test_graphics_volume_1(TestContext* context)
     vec3 p0 = {-c * ni / 2., -c * nj / 2., -1 * c * nk / 2.};
     vec3 p1 = {+c * ni / 2., +c * nj / 2., +1 * c * nk / 2.};
 
-    INIT_GRAPHICS(DVZ_GRAPHICS_VOLUME, 0)
+    DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
+    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzCanvas* canvas =
+        dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, DVZ_CANVAS_FLAGS_FPS | DVZ_CANVAS_FLAGS_PICK);
+    DvzGraphics* graphics = dvz_graphics_builtin(canvas, DVZ_GRAPHICS_VOLUME, 0);
+
     BEGIN_DATA(DvzGraphicsVolumeVertex, 1, NULL)
     DvzGraphicsVolumeItem item = {{p0[0], p0[1], p0[2]}, {p1[0], p1[1], p1[2]}};
     dvz_graphics_append(&data, &item);
@@ -1061,6 +1080,7 @@ int test_graphics_volume_1(TestContext* context)
     tg.interact = dvz_interact_builtin(canvas, DVZ_INTERACT_ARCBALL);
     dvz_event_callback(canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _interact_callback, &tg);
     dvz_event_callback(canvas, DVZ_EVENT_RESIZE, 0, DVZ_EVENT_MODE_SYNC, _resize, &tg);
+    dvz_event_callback(canvas, DVZ_EVENT_MOUSE_CLICK, 0, DVZ_EVENT_MODE_SYNC, _volume_click, &tg);
 
     DvzArcball* arcball = &tg.interact.u.a;
     versor q;

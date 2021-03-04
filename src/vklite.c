@@ -1326,8 +1326,14 @@ void dvz_images_resize(DvzImages* images, uint32_t width, uint32_t height, uint3
 
 
 void dvz_images_download(
-    DvzImages* staging, uint32_t idx, bool swizzle, bool has_alpha, uint8_t* out)
+    DvzImages* staging, uint32_t idx, VkDeviceSize bytes_per_component, //
+    bool swizzle, bool has_alpha, void* out)
 {
+    // NOTE: we make the following assumptions:
+    // - bytes_per_component is the same between the source and target
+    // - source always has alpha
+    // - parameter "has_alpha" only refers to the source buffer
+
     VkImageSubresource subResource = {0};
     subResource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     VkSubresourceLayout subResourceLayout = {0};
@@ -1344,48 +1350,61 @@ void dvz_images_download(
 
     uint32_t w = staging->width;
     uint32_t h = staging->height;
+    uint32_t n_components = has_alpha ? 4 : 3;
+
     ASSERT(w > 0);
     ASSERT(h > 0);
-    ASSERT(row_pitch >= w * 4);
+    ASSERT(row_pitch >= w * n_components * bytes_per_component);
 
     // First, memcopy from the GPU to the CPU.
-    uint8_t* image = calloc(row_pitch * h, 1);
-    uint8_t* image_orig = image;
-    memcpy(image, data, row_pitch * h);
+    void* image = calloc(row_pitch * h, bytes_per_component);
+    void* image_orig = image;
+    memcpy(image, data, row_pitch * h * bytes_per_component);
     vkUnmapMemory(staging->gpu->device, staging->memories[idx]);
 
     // Then, swizzle.
-    image += offset;
+    image = (void*)((uint64_t)image + offset);
     uint32_t src_offset = 0;
     uint32_t dst_offset = 0;
-    for (uint32_t y = 0; y < h; y++)
+    uint32_t y, x, k, l;
+    for (y = 0; y < h; y++)
     {
         src_offset = 0;
-        for (uint32_t x = 0; x < w; x++)
+        for (x = 0; x < w; x++)
         {
             ASSERT(src_offset + 2 < w * h * 4);
-            if (swizzle)
+            for (k = 0; k < n_components; k++)
             {
-                out[dst_offset + 0] = image[src_offset + 2];
-                out[dst_offset + 1] = image[src_offset + 1];
-                out[dst_offset + 2] = image[src_offset + 0];
-                if (has_alpha)
-                    out[dst_offset + 3] = 255;
+                l = swizzle ? 2 - k : k;
+                memcpy(
+                    (void*)((uint64_t)out + (dst_offset + k) * bytes_per_component),
+                    (void*)((uint64_t)image + (src_offset + l) * bytes_per_component),
+                    bytes_per_component);
             }
-            else
-            {
-                out[dst_offset + 0] = image[src_offset + 0];
-                out[dst_offset + 1] = image[src_offset + 1];
-                out[dst_offset + 2] = image[src_offset + 2];
-                if (has_alpha)
-                    out[dst_offset + 3] = 255;
-            }
-            src_offset += 4;
-            dst_offset += has_alpha ? 4 : 3;
+
+            // if (swizzle)
+            // {
+            // out[dst_offset + 0] = image[src_offset + 2];
+            // out[dst_offset + 1] = image[src_offset + 1];
+            // out[dst_offset + 2] = image[src_offset + 0];
+            // if (has_alpha)
+            //     out[dst_offset + 3] = 255;
+            // }
+            // else
+            // {
+            //     out[dst_offset + 0] = image[src_offset + 0];
+            //     out[dst_offset + 1] = image[src_offset + 1];
+            //     out[dst_offset + 2] = image[src_offset + 2];
+            //     if (has_alpha)
+            //         out[dst_offset + 3] = 255;
+            // }
+
+            src_offset += 4;            // we assume RGBA in the source array
+            dst_offset += n_components; // either RGB or RGBA in the target array
         }
-        image += row_pitch;
+        image = (void*)((uint64_t)image + row_pitch);
     }
-    ASSERT(dst_offset == w * h * (has_alpha ? 4 : 3));
+    ASSERT(dst_offset == w * h * n_components);
     FREE(image_orig);
 }
 
@@ -1951,6 +1970,16 @@ void dvz_graphics_depth_test(DvzGraphics* graphics, DvzDepthTest depth_test)
 
 
 
+void dvz_graphics_pick(DvzGraphics* graphics, bool support_pick)
+{
+    ASSERT(graphics != NULL);
+    if (support_pick)
+        log_debug("enable picking in graphics pipeline");
+    graphics->support_pick = support_pick;
+}
+
+
+
 void dvz_graphics_polygon_mode(DvzGraphics* graphics, VkPolygonMode polygon_mode)
 {
     ASSERT(graphics != NULL);
@@ -2049,9 +2078,11 @@ void dvz_graphics_create(DvzGraphics* graphics)
     VkPipelineMultisampleStateCreateInfo multisampling = create_multisampling();
 
     // Blend attachments.
-    VkPipelineColorBlendAttachmentState color_attachment = create_color_blend_attachment();
-    VkPipelineColorBlendStateCreateInfo color_blending =
-        create_color_blending(1, (VkPipelineColorBlendAttachmentState[]){color_attachment});
+    VkPipelineColorBlendAttachmentState color_attachment = create_color_blend_attachment(true);
+    VkPipelineColorBlendAttachmentState pick_attachment = create_color_blend_attachment(false);
+    VkPipelineColorBlendStateCreateInfo color_blending = create_color_blending(
+        graphics->support_pick ? 2 : 1,
+        (VkPipelineColorBlendAttachmentState[]){color_attachment, pick_attachment});
 
     VkPipelineDepthStencilStateCreateInfo depth_stencil =
         create_depth_stencil((bool)graphics->depth_test);
@@ -3114,7 +3145,11 @@ void dvz_cmd_copy_image_to_buffer(
 
 
 
-void dvz_cmd_copy_image(DvzCommands* cmds, uint32_t idx, DvzImages* src_img, DvzImages* dst_img)
+void dvz_cmd_copy_image_region(
+    DvzCommands* cmds, uint32_t idx,      //
+    DvzImages* src_img, ivec3 src_offset, //
+    DvzImages* dst_img, ivec3 dst_offset, //
+    uvec3 shape)
 {
     ASSERT(src_img != NULL);
     ASSERT(dst_img != NULL);
@@ -3138,15 +3173,33 @@ void dvz_cmd_copy_image(DvzCommands* cmds, uint32_t idx, DvzImages* src_img, Dvz
     imageCopyRegion.srcSubresource.layerCount = 1;
     imageCopyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     imageCopyRegion.dstSubresource.layerCount = 1;
-    imageCopyRegion.extent.width = src_img->width;
-    imageCopyRegion.extent.height = src_img->height;
-    imageCopyRegion.extent.depth = 1;
+
+    imageCopyRegion.srcOffset.x = src_offset[0];
+    imageCopyRegion.srcOffset.y = src_offset[1];
+    imageCopyRegion.srcOffset.z = src_offset[2];
+
+    imageCopyRegion.dstOffset.x = dst_offset[0];
+    imageCopyRegion.dstOffset.y = dst_offset[1];
+    imageCopyRegion.dstOffset.z = dst_offset[2];
+
+    imageCopyRegion.extent.width = shape[0];
+    imageCopyRegion.extent.height = shape[1];
+    imageCopyRegion.extent.depth = shape[2];
     vkCmdCopyImage(
         cb,                                                        //
         src_img->images[i0], VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, //
         dst_img->images[i1], VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, //
         1, &imageCopyRegion);
     CMD_END
+}
+
+
+
+void dvz_cmd_copy_image(DvzCommands* cmds, uint32_t idx, DvzImages* src_img, DvzImages* dst_img)
+{
+    dvz_cmd_copy_image_region(
+        cmds, idx, src_img, (ivec3){0, 0, 0}, dst_img, (ivec3){0, 0, 0},
+        (uvec3){src_img->width, src_img->height, src_img->depth});
 }
 
 

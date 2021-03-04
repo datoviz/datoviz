@@ -413,8 +413,7 @@ int test_scene_logistic(TestContext* context)
     DvzPanel* panel = dvz_scene_panel(scene, 0, 0, DVZ_CONTROLLER_PANZOOM, 0);
 
     // Markers.
-    DvzVisual* visual =
-        dvz_scene_visual(panel, DVZ_VISUAL_POINT, DVZ_GRAPHICS_FLAGS_DEPTH_TEST_DISABLE);
+    DvzVisual* visual = dvz_scene_visual(panel, DVZ_VISUAL_POINT, 0);
 
     const uint32_t N = 1000000;
     dvec3* pos = calloc(N, sizeof(dvec3));

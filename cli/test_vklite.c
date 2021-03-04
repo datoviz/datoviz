@@ -549,7 +549,7 @@ int test_vklite_blank(TestContext* context)
     empty_commands(&canvas, &cmds, 0);
     dvz_cmd_submit_sync(&cmds, 0);
 
-    uint8_t* rgba = screenshot(framebuffers->attachments[0]);
+    uint8_t* rgba = screenshot(framebuffers->attachments[0], 1);
 
     for (uint32_t i = 0; i < TEST_WIDTH * TEST_HEIGHT * 3; i++)
         AT(rgba[i] >= 100);

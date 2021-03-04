@@ -1533,18 +1533,21 @@ static VkPipelineMultisampleStateCreateInfo create_multisampling()
 }
 
 
-static VkPipelineColorBlendAttachmentState create_color_blend_attachment()
+static VkPipelineColorBlendAttachmentState create_color_blend_attachment(bool enable)
 {
     VkPipelineColorBlendAttachmentState attachment = {0};
     attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
                                 VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-    attachment.blendEnable = VK_TRUE;
-    attachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-    attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-    attachment.colorBlendOp = VK_BLEND_OP_ADD;
-    attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-    attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-    attachment.alphaBlendOp = VK_BLEND_OP_ADD;
+    attachment.blendEnable = enable;
+    if (enable)
+    {
+        attachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+        attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        attachment.colorBlendOp = VK_BLEND_OP_ADD;
+        attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+        attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        attachment.alphaBlendOp = VK_BLEND_OP_ADD;
+    }
     return attachment;
 }
 

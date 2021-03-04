@@ -132,6 +132,7 @@ Vulkan terminology: descriptor sets
 ### `dvz_graphics_vertex_attr()`
 ### `dvz_graphics_blend()`
 ### `dvz_graphics_depth_test()`
+### `dvz_graphics_pick()`
 ### `dvz_graphics_polygon_mode()`
 ### `dvz_graphics_cull_mode()`
 ### `dvz_graphics_front_face()`
@@ -223,6 +224,7 @@ Vulkan terminology: descriptor sets
 ### `dvz_cmd_copy_buffer_to_image()`
 ### `dvz_cmd_copy_image_to_buffer()`
 ### `dvz_cmd_copy_image()`
+### `dvz_cmd_copy_image_region()`
 ### `dvz_cmd_viewport()`
 ### `dvz_cmd_bind_graphics()`
 ### `dvz_cmd_bind_vertex_buffer()`

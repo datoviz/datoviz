@@ -23,6 +23,7 @@ int test_canvas_8(TestContext* context);
 int test_canvas_depth(TestContext* context);
 int test_canvas_append(TestContext* context);
 int test_canvas_particles(TestContext* context);
+int test_canvas_pick(TestContext* context);
 int test_canvas_offscreen(TestContext* context);
 int test_canvas_gui_1(TestContext* context);
 int test_canvas_screencast(TestContext* context);
