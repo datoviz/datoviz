@@ -526,7 +526,7 @@ cdef _wrapped_callback(cv.DvzCanvas* c_canvas, cv.DvzEvent c_ev):
 
 cdef _add_event_callback(
     cv.DvzCanvas* c_canvas, cv.DvzEventType evtype, double param, f, args,
-    cv.DvzEventMode mode=cv.DVZ_EVENT_MODE_ASYNC):
+    cv.DvzEventMode mode=cv.DVZ_EVENT_MODE_SYNC):
 
     cdef void* ptr_to_obj
     tup = (f, args)
@@ -790,7 +790,7 @@ cdef class Canvas:
             if panel._c_panel == c_panel:
                 return panel
 
-    def _connect(self, evtype_py, f, param=0, cv.DvzEventMode mode=cv.DVZ_EVENT_MODE_ASYNC):
+    def _connect(self, evtype_py, f, param=0, cv.DvzEventMode mode=cv.DVZ_EVENT_MODE_SYNC):
         cdef cv.DvzEventType evtype
         evtype = _EVENTS.get(evtype_py, 0)
         _add_event_callback(self._c_canvas, evtype, param, f, (), mode=mode)
@@ -1065,7 +1065,7 @@ cdef class Gui:
     def control(self, unicode ctype, unicode name, **kwargs):
         cdef cv.DvzEventMode mode
         # is_async = kwargs.pop('mode', None) == 'async'
-        mode = cv.DVZ_EVENT_MODE_ASYNC #  if is_async else cv.DVZ_EVENT_MODE_SYNC
+        mode = cv.DVZ_EVENT_MODE_SYNC #  if is_async else cv.DVZ_EVENT_MODE_SYNC
         ctrl = _CONTROLS.get(ctype, 0)
         cdef char* c_name = name
 
