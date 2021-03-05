@@ -586,7 +586,7 @@ cdef class App:
         self._c_app = cv.dvz_app(cv.DVZ_BACKEND_GLFW)
         if self._c_app is NULL:
             raise MemoryError()
-        self._c_gpu = cv.dvz_gpu(self._c_app, 0);
+        self._c_gpu = cv.dvz_gpu_best(self._c_app);
         if self._c_gpu is NULL:
             raise MemoryError()
 

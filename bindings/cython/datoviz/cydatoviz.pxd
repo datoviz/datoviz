@@ -1169,6 +1169,7 @@ cdef extern from "<datoviz/datoviz.h>":
     DvzApp* dvz_app(DvzBackend backend)
     int dvz_app_destroy(DvzApp* app)
     DvzGpu* dvz_gpu(DvzApp* app, uint32_t idx)
+    DvzGpu* dvz_gpu_best(DvzApp* app)
 
 
     # FUNCTION END

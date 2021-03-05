@@ -9,7 +9,7 @@ void dvz_demo_scatter(int32_t n, dvec3* pos)
     // HACK: some wrapping languages do not support uint types well
     uint32_t N = (uint32_t)n;
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, 1280, 1024, 0);
     DvzScene* scene = dvz_scene(canvas, 1, 1);
     DvzPanel* panel = dvz_scene_panel(scene, 0, 0, DVZ_CONTROLLER_AXES_2D, 0);
@@ -38,7 +38,7 @@ void dvz_demo_scatter(int32_t n, dvec3* pos)
 void dvz_demo_gui(void)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, 1280, 1024, DVZ_CANVAS_FLAGS_IMGUI);
     dvz_imgui_demo(canvas);
     dvz_app_run(app, 0);

@@ -166,7 +166,7 @@ int test_transforms_4(TestContext* context)
 int test_transforms_5(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     DvzGrid grid = dvz_grid(canvas, 2, 4);
     DvzPanel* panel = dvz_panel(&grid, 1, 2);

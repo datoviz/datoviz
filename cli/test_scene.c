@@ -115,7 +115,7 @@ int test_axes_3(TestContext* context)
 int test_scene_0(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, CANVAS_FLAGS);
     DvzContext* ctx = gpu->context;
     ASSERT(ctx != NULL);
@@ -244,7 +244,7 @@ static void _change_pos(DvzCanvas* canvas, DvzEvent ev)
 int test_scene_1(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, CANVAS_FLAGS);
     DvzContext* ctx = gpu->context;
     ASSERT(ctx != NULL);
@@ -302,7 +302,7 @@ static void _rotate(DvzCanvas* canvas, DvzEvent ev)
 int test_scene_mesh(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     DvzContext* ctx = gpu->context;
     ASSERT(ctx != NULL);
@@ -344,7 +344,7 @@ int test_scene_axes(TestContext* context)
     uint32_t height = 1024;
 
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, width, height, CANVAS_FLAGS | DVZ_CANVAS_FLAGS_FPS);
     dvz_canvas_clear_color(canvas, 1, 1, 1);
     DvzContext* ctx = gpu->context;
@@ -403,7 +403,7 @@ static void _logistic(DvzCanvas* canvas, DvzEvent ev)
 int test_scene_logistic(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, CANVAS_FLAGS);
     dvz_canvas_clear_color(canvas, 1, 1, 1);
     DvzContext* ctx = gpu->context;

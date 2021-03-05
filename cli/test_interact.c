@@ -35,7 +35,7 @@ static void _keyboard_callback(DvzCanvas* canvas, DvzEvent ev)
 int test_interact_1(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
 
     DvzMouse mouse = dvz_mouse();
@@ -123,7 +123,7 @@ static void _add_visual(
 int test_interact_panzoom(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
 
     TestScene scene = {0};
@@ -152,7 +152,7 @@ int test_interact_panzoom(TestContext* context)
 int test_interact_arcball(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, DVZ_CANVAS_FLAGS_FPS);
 
     TestScene scene = {0};
@@ -181,7 +181,7 @@ int test_interact_arcball(TestContext* context)
 int test_interact_camera(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
 
     TestScene scene = {0};

@@ -26,7 +26,7 @@ struct TestParticle
 int test_canvas_transfer_buffer(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
 
     VkDeviceSize size = 16;
@@ -64,7 +64,7 @@ int test_canvas_transfer_buffer(TestContext* context)
 int test_canvas_transfer_texture(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     DvzContext* ctx = gpu->context;
 
@@ -121,7 +121,7 @@ static void _key_callback(DvzCanvas* canvas, DvzEvent ev)
 int test_canvas_1(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     ASSERT(canvas->window != NULL);
     ASSERT(canvas->app != NULL);
@@ -204,7 +204,7 @@ static void _timer_callback(DvzCanvas* canvas, DvzEvent ev)
 int test_canvas_2(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
 
     dvz_event_callback(canvas, DVZ_EVENT_INIT, 0, DVZ_EVENT_MODE_SYNC, _init_callback, NULL);
@@ -268,7 +268,7 @@ static void _triangle_refill(DvzCanvas* canvas, DvzEvent ev)
 int test_canvas_3(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     AT(canvas != NULL);
 
@@ -338,7 +338,7 @@ static void _wait(DvzCanvas* canvas, DvzEvent ev) { dvz_sleep(50); }
 int test_canvas_4(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     AT(canvas != NULL);
 
@@ -419,7 +419,7 @@ static void _vertex_cursor_callback(DvzCanvas* canvas, DvzEvent ev)
 int test_canvas_5(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     AT(canvas != NULL);
 
@@ -494,7 +494,7 @@ static void _uniform_frame_callback(DvzCanvas* canvas, DvzEvent ev)
 int test_canvas_6(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     AT(canvas != NULL);
     uint32_t img_count = canvas->swapchain.img_count;
@@ -592,7 +592,7 @@ static void _triangle_compute_refill(DvzCanvas* canvas, DvzEvent ev)
 int test_canvas_7(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     AT(canvas != NULL);
 
@@ -651,7 +651,7 @@ static void _triangle_compute(DvzCanvas* canvas, DvzEvent ev)
 int test_canvas_8(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     AT(canvas != NULL);
 
@@ -704,7 +704,7 @@ int test_canvas_8(TestContext* context)
 int test_canvas_depth(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     AT(canvas != NULL);
     uint32_t img_count = canvas->swapchain.img_count;
@@ -828,7 +828,7 @@ int test_canvas_pick(TestContext* context)
     bool pick = true;
 
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     // First, we need to enable picking at the canvas level (renderpass attachment).
     int flags = DVZ_CANVAS_FLAGS_FPS;
     if (pick)
@@ -914,7 +914,7 @@ static void _append_callback(DvzCanvas* canvas, DvzEvent ev)
 int test_canvas_append(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     AT(canvas != NULL);
 
@@ -1061,7 +1061,7 @@ static void _particle_refill(DvzCanvas* canvas, DvzEvent ev)
 int test_canvas_particles(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     AT(canvas != NULL);
 
@@ -1214,7 +1214,7 @@ int test_canvas_particles(TestContext* context)
 int test_canvas_offscreen(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_OFFSCREEN);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
 
     dvz_event_callback(canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _frame_callback, NULL);
@@ -1261,7 +1261,7 @@ static void _gui_callback(DvzCanvas* canvas, DvzEvent ev)
 int test_canvas_gui_1(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, DVZ_CANVAS_FLAGS_IMGUI);
     AT(canvas != NULL);
 
@@ -1303,7 +1303,7 @@ static void _screencast_callback(DvzCanvas* canvas, DvzEvent ev)
 int test_canvas_screencast(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
 
     dvz_event_callback(

@@ -20,7 +20,7 @@ static void _wait(DvzCanvas* canvas, DvzEvent ev) { dvz_sleep(500); }
 int test_visuals_1(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     DvzContext* ctx = gpu->context;
     ASSERT(ctx != NULL);
@@ -96,7 +96,7 @@ int test_visuals_1(TestContext* context)
 int test_visuals_2(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     DvzContext* ctx = gpu->context;
     ASSERT(ctx != NULL);
@@ -170,7 +170,7 @@ static void _timer_callback(DvzCanvas* canvas, DvzEvent ev)
 int test_visuals_3(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     DvzContext* ctx = gpu->context;
     ASSERT(ctx != NULL);
@@ -258,7 +258,7 @@ static void _visual_update(DvzCanvas* canvas, DvzEvent ev)
 int test_visuals_4(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     DvzContext* ctx = gpu->context;
     ASSERT(ctx != NULL);
@@ -333,7 +333,7 @@ static void _visual_append(DvzCanvas* canvas, DvzEvent ev)
 int test_visuals_5(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     DvzContext* ctx = gpu->context;
     ASSERT(ctx != NULL);

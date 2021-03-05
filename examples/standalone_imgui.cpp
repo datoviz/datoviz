@@ -25,7 +25,7 @@ int main(int argc, char** argv)
 {
     // Create an app as usual.
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
 
     // NOTE: we must set the IMGUI flag in order to use Dear ImGUI.
     DvzCanvas* canvas = dvz_canvas(gpu, 1280, 1024, DVZ_CANVAS_FLAGS_IMGUI);

@@ -3,6 +3,7 @@
 ## GPU
 
 ### `dvz_gpu()`
+### `dvz_gpu_best()`
 ### `dvz_gpu_request_features()`
 ### `dvz_gpu_queue()`
 ### `dvz_gpu_create()`

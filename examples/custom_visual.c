@@ -85,7 +85,7 @@ static void _bake_callback(DvzVisual* visual, DvzVisualDataEvent ev)
 int main(int argc, char** argv)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, 1280, 1024, 0);
     DvzScene* scene = dvz_scene(canvas, 1, 1);
     DvzPanel* panel = dvz_scene_panel(scene, 0, 0, DVZ_CONTROLLER_PANZOOM, 0);

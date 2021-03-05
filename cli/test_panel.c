@@ -75,7 +75,7 @@ static void _canvas_click(DvzCanvas* canvas, DvzEvent ev)
 int test_panel_1(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);
     DvzContext* ctx = gpu->context;
     ASSERT(ctx != NULL);

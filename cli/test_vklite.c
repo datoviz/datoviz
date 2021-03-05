@@ -18,7 +18,7 @@ int test_vklite_app(TestContext* context)
     AT(((DvzGpu*)(app->gpus.items[0]))->name != NULL);
     AT(((DvzGpu*)(app->gpus.items[0]))->obj.status == DVZ_OBJECT_STATUS_INIT);
 
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_TRANSFER);
     dvz_gpu_queue(gpu, 1, DVZ_QUEUE_GRAPHICS | DVZ_QUEUE_COMPUTE);
     dvz_gpu_queue(gpu, 2, DVZ_QUEUE_COMPUTE);
@@ -37,7 +37,7 @@ int test_vklite_app(TestContext* context)
 int test_vklite_surface(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_ALL);
 
     // Create a GLFW window and surface.
@@ -73,7 +73,7 @@ int test_vklite_swapchain(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
     DvzWindow* window = dvz_window(app, 100, 100);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_queue(gpu, 1, DVZ_QUEUE_PRESENT);
     dvz_gpu_create(gpu, window->surface);
@@ -92,7 +92,7 @@ int test_vklite_swapchain(TestContext* context)
 int test_vklite_commands(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
     DvzCommands cmds = dvz_commands(gpu, 0, 3);
@@ -109,7 +109,7 @@ int test_vklite_commands(TestContext* context)
 int test_vklite_buffer_1(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
 
@@ -148,7 +148,7 @@ int test_vklite_buffer_1(TestContext* context)
 int test_vklite_buffer_resize(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
 
@@ -203,7 +203,7 @@ int test_vklite_buffer_resize(TestContext* context)
 int test_vklite_compute(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_COMPUTE);
     dvz_gpu_create(gpu, 0);
 
@@ -269,7 +269,7 @@ int test_vklite_compute(TestContext* context)
 int test_vklite_push(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_COMPUTE);
     dvz_gpu_create(gpu, 0);
 
@@ -338,7 +338,7 @@ int test_vklite_push(TestContext* context)
 int test_vklite_images(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
 
@@ -361,7 +361,7 @@ int test_vklite_images(TestContext* context)
 int test_vklite_sampler(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
 
@@ -381,7 +381,7 @@ int test_vklite_sampler(TestContext* context)
 int test_vklite_barrier(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
 
@@ -438,7 +438,7 @@ int test_vklite_barrier(TestContext* context)
 int test_vklite_submit(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_COMPUTE);
     dvz_gpu_queue(gpu, 1, DVZ_QUEUE_COMPUTE);
     dvz_gpu_create(gpu, 0);
@@ -543,7 +543,7 @@ int test_vklite_submit(TestContext* context)
 int test_vklite_blank(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
 
@@ -585,7 +585,7 @@ static void _make_triangle(TestCanvas* canvas, TestVisual* visual)
 int test_vklite_graphics(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
 
@@ -614,7 +614,7 @@ int test_basic_canvas_1(TestContext* context)
 
     DvzWindow* window = dvz_window(app, TEST_WIDTH, TEST_HEIGHT);
 
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_queue(gpu, 1, DVZ_QUEUE_PRESENT);
     dvz_gpu_create(gpu, window->surface);
@@ -636,7 +636,7 @@ int test_basic_canvas_triangle(TestContext* context)
 
     DvzWindow* window = dvz_window(app, TEST_WIDTH, TEST_HEIGHT);
 
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_queue(gpu, 1, DVZ_QUEUE_PRESENT);
     dvz_gpu_create(gpu, window->surface);
@@ -659,7 +659,7 @@ int test_shader_compile(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_OFFSCREEN);
 
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, VK_NULL_HANDLE);
 
@@ -684,7 +684,7 @@ int test_shader_compile(TestContext* context)
 int test_context_colormap(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzContext* ctx = dvz_context(gpu, NULL);
 
     // Make a custom colormap.
@@ -728,7 +728,7 @@ int test_context_colormap(TestContext* context)
 int test_default_app(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzContext* ctx = dvz_context(gpu, NULL);
 
     char path[1024];

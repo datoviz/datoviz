@@ -72,7 +72,7 @@ static void _common_data(DvzVisual* visual)
 
 #define INIT                                                                                      \
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);                                                      \
-    DvzGpu* gpu = dvz_gpu(app, 0);                                                                \
+    DvzGpu* gpu = dvz_gpu_best(app);                                                                \
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, DVZ_CANVAS_FLAGS_FPS);           \
     DvzContext* ctx = gpu->context;                                                               \
     ASSERT(ctx != NULL);
@@ -822,7 +822,7 @@ static void _volume_interact(DvzCanvas* canvas, DvzEvent ev)
 int test_visuals_volume_1(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas =
         dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, DVZ_CANVAS_FLAGS_FPS | DVZ_CANVAS_FLAGS_PICK);
 

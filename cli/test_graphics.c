@@ -127,7 +127,7 @@ static void _interact_callback(DvzCanvas* canvas, DvzEvent ev)
 
 #define INIT_GRAPHICS(type, flags)                                                                \
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);                                                      \
-    DvzGpu* gpu = dvz_gpu(app, 0);                                                                \
+    DvzGpu* gpu = dvz_gpu_best(app);                                                                \
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, DVZ_CANVAS_FLAGS_FPS);           \
     DvzGraphics* graphics = dvz_graphics_builtin(canvas, type, flags);
 
@@ -580,7 +580,7 @@ int test_graphics_marker_1(TestContext* context)
 int test_graphics_marker_screenshots(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, 128, 128, 0);
     dvz_canvas_clear_color(canvas, 1, 1, 1);
     DvzGraphics* graphics = dvz_graphics_builtin(canvas, DVZ_GRAPHICS_MARKER, 0);
@@ -1049,7 +1049,7 @@ int test_graphics_volume_1(TestContext* context)
     vec3 p1 = {+c * ni / 2., +c * nj / 2., +1 * c * nk / 2.};
 
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas =
         dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, DVZ_CANVAS_FLAGS_FPS | DVZ_CANVAS_FLAGS_PICK);
     DvzGraphics* graphics = dvz_graphics_builtin(canvas, DVZ_GRAPHICS_VOLUME, 0);

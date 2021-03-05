@@ -58,7 +58,7 @@ int main(int argc, char** argv)
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
 
     // We use the first detected GPU. The last argument is the GPU index.
-    DvzGpu* gpu = dvz_gpu(app, 0);
+    DvzGpu* gpu = dvz_gpu_best(app);
 
     // We create a new canvas with the size specified. The last argument is for optional flags.
     DvzCanvas* canvas = dvz_canvas(gpu, 1280, 1024, 0);
