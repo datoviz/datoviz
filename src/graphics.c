@@ -584,6 +584,7 @@ static void _graphics_volume(DvzCanvas* canvas, DvzGraphics* graphics)
     dvz_graphics_slot(graphics, DVZ_USER_BINDING + 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
     dvz_graphics_slot(graphics, DVZ_USER_BINDING + 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
     dvz_graphics_slot(graphics, DVZ_USER_BINDING + 3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+    dvz_graphics_slot(graphics, DVZ_USER_BINDING + 4, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
     CREATE
 

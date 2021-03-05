@@ -1664,15 +1664,19 @@ static void _visual_volume(DvzVisual* visual)
 
     dvz_visual_source(                                                      // colormap texture
         visual, DVZ_SOURCE_TYPE_COLOR_TEXTURE, 0, DVZ_PIPELINE_GRAPHICS, 0, //
-        DVZ_USER_BINDING + 1, sizeof(uint8_t), 0);                          //
+        DVZ_USER_BINDING + 1, 0, 0);                                        //
 
     dvz_visual_source(                                                 // transfer function
         visual, DVZ_SOURCE_TYPE_TRANSFER, 0, DVZ_PIPELINE_GRAPHICS, 0, //
-        DVZ_USER_BINDING + 2, sizeof(float), 0);                       //
+        DVZ_USER_BINDING + 2, 0, 0);                                   //
 
     dvz_visual_source(                                               // volume source
         visual, DVZ_SOURCE_TYPE_VOLUME, 0, DVZ_PIPELINE_GRAPHICS, 0, //
-        DVZ_USER_BINDING + 3, sizeof(uint16_t), 0);                  //
+        DVZ_USER_BINDING + 3, 0, 0);                                 //
+
+    dvz_visual_source(                                               // volume slice source
+        visual, DVZ_SOURCE_TYPE_VOLUME, 1, DVZ_PIPELINE_GRAPHICS, 0, //
+        DVZ_USER_BINDING + 4, 0, 0);                                 //
 
     // Props:
 

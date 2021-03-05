@@ -19,6 +19,7 @@ params;
 layout(binding = (USER_BINDING + 1)) uniform sampler2D tex_cmap;        // colormap texture
 layout(binding = (USER_BINDING + 2)) uniform sampler1D tex_transfer;    // transfer function
 layout(binding = (USER_BINDING + 3)) uniform sampler3D tex;             // 3D volume
+layout(binding = (USER_BINDING + 4)) uniform sampler3D tex_label;       // 3D volume for labeling
 
 layout(location = 0) in vec3 in_pos;
 layout(location = 1) in vec3 in_ray;
@@ -155,9 +156,9 @@ void main()
 
     // Clipping slice image.
     if (in_clip && clip_front) {
-        out_color = fetch_color(uvw_pick);
+        out_color = texture(tex_label, uvw_pick);
         if (out_color.a > .001) {
-            acc = out_color * 20;
+            acc = out_color;
         }
     }
 

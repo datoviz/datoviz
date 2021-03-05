@@ -1069,6 +1069,7 @@ int test_graphics_volume_1(TestContext* context)
 
     // 3D texture.
     DvzTexture* texture = _mouse_volume(canvas);
+    DvzTexture* texture_label = _mouse_label(canvas);
 
     // Bindings.
     _common_bindings(&tg);
@@ -1076,6 +1077,7 @@ int test_graphics_volume_1(TestContext* context)
     dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 1, gpu->context->color_texture.texture);
     dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 2, gpu->context->transfer_texture);
     dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 3, texture);
+    dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 4, texture_label);
     dvz_bindings_update(&tg.bindings);
 
     // Interactivity.

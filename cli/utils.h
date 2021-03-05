@@ -1044,9 +1044,36 @@ static DvzTexture* _mouse_volume(DvzCanvas* canvas)
     uint16_t* tex_data = (uint16_t*)dvz_read_file(path, NULL);
     for (uint32_t i = 0; i < (ni * nj * nk); i++)
         tex_data[i] *= 10;
-    dvz_upload_texture(
-        canvas, texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, //
+    dvz_texture_upload(
+        texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, //
         ni * nj * nk * sizeof(uint16_t), tex_data);
+    FREE(tex_data);
+    return texture;
+}
+
+
+
+static DvzTexture* _mouse_label(DvzCanvas* canvas)
+{
+    DvzGpu* gpu = canvas->gpu;
+
+    const uint32_t ni = MOUSE_VOLUME_WIDTH;
+    const uint32_t nj = MOUSE_VOLUME_HEIGHT;
+    const uint32_t nk = MOUSE_VOLUME_DEPTH;
+
+    // Texture.
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/volume/%s", DATA_DIR, "atlas_25_label.img");
+    DvzTexture* texture =
+        dvz_ctx_texture(gpu->context, 3, (uvec3){ni, nj, nk}, VK_FORMAT_R8G8B8A8_UNORM);
+    dvz_texture_filter(texture, DVZ_FILTER_MAG, VK_FILTER_NEAREST);
+    dvz_texture_address_mode(texture, DVZ_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_texture_address_mode(texture, DVZ_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_texture_address_mode(texture, DVZ_TEXTURE_AXIS_W, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    VkDeviceSize size = 0;
+    uint8_t* tex_data = (uint8_t*)dvz_read_file(path, &size);
+    ASSERT(size == ni * nj * nk * 4 * sizeof(uint8_t));
+    dvz_texture_upload(texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, size, tex_data);
     FREE(tex_data);
     return texture;
 }
