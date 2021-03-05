@@ -153,7 +153,9 @@ DvzGpu* dvz_gpu_best(DvzApp* app)
         {
             if (gpu->vram > best_vram_discrete)
             {
-                log_trace("best discrete GPU so far: %s with %d VRAM", gpu->name, gpu->vram);
+                log_trace(
+                    "best discrete GPU so far: %s with %s VRAM", gpu->name,
+                    pretty_size(gpu->vram));
                 best_vram_discrete = gpu->vram;
                 best_gpu_discrete = gpu;
             }
@@ -162,7 +164,7 @@ DvzGpu* dvz_gpu_best(DvzApp* app)
         // Find the GPU with the most VRAM.
         if (gpu->vram > best_vram)
         {
-            log_trace("best GPU so far: %s with %d VRAM", gpu->name, gpu->vram);
+            log_trace("best GPU so far: %s with %s VRAM", gpu->name, pretty_size(gpu->vram));
             best_vram = gpu->vram;
             best_gpu = gpu;
         }
@@ -170,7 +172,7 @@ DvzGpu* dvz_gpu_best(DvzApp* app)
 
     best_gpu = best_gpu_discrete != NULL ? best_gpu_discrete : best_gpu;
     ASSERT(best_gpu != NULL);
-    log_trace("best GPU: %s with %d VRAM", best_gpu->name, best_gpu->vram);
+    log_trace("best GPU: %s with %s VRAM", best_gpu->name, pretty_size(best_gpu->vram));
     return best_gpu;
 }
 

@@ -26,7 +26,7 @@ int test_vklite_app(TestContext* context)
 
     gpu = dvz_gpu_best(app);
     ASSERT(gpu != NULL);
-    log_info("Best GPU is %s with %d VRAM", gpu->name, gpu->vram);
+    log_info("Best GPU is %s with %s VRAM", gpu->name, pretty_size(gpu->vram));
     ASSERT(gpu->name != NULL);
 
     TEST_END

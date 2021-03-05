@@ -19,6 +19,7 @@ extern "C" {
 #endif
 
 #include <assert.h>
+#include <inttypes.h>
 #include <math.h>
 #include <pthread.h>
 #include <stddef.h>
@@ -127,7 +128,8 @@ END_INCL_NO_WARN
 #define POS(a)           ((a) >= 0 ? (a) : 0)
 #define ARRAY_COUNT(arr) sizeof((arr)) / sizeof((arr)[0])
 
-#define DBG(x)  printf("%d\n", (int)(x))
+#define DBG(x)  printf("%" PRIu64 "\n", (x));
+#define DBGS(x) printf("%" PRId64 "\n", (x));
 #define DBGF(x) printf("%.8f\n", (double)(x))
 #define PRT(x)  printf("%s\n", (x))
 

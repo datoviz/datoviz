@@ -618,13 +618,15 @@ static void discover_gpu(VkPhysicalDevice physical_device, DvzGpu* gpu)
     gpu->physical_device = physical_device;
     gpu->name = gpu->device_properties.deviceName;
 
-    // Find the amount of VRAM.
+    // Find the total amount of VRAM.
+    VkMemoryHeap* heap = NULL;
     for (uint32_t j = 0; j < gpu->memory_properties.memoryHeapCount; j++)
     {
-        if ((gpu->memory_properties.memoryHeaps[j].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) != 0)
+        heap = &gpu->memory_properties.memoryHeaps[j];
+        if (heap->size > 0 && ((heap->flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) != 0))
         {
-            gpu->vram = gpu->memory_properties.memoryHeaps[j].size;
-            break;
+            ASSERT(heap->size > 0);
+            gpu->vram += heap->size;
         }
     }
 
