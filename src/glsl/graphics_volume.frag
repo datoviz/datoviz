@@ -89,8 +89,22 @@ void main()
     float t0, t1;
     vec3 b0 = -params.box_size.xyz / 2;
     vec3 b1 = +params.box_size.xyz / 2;
+    vec3 d = vec3(1) / (b1 - b0);
     intersect_box(o, u, b0, b1, t0, t1);
     if (t0 < 0 || t1 < 0) discard;
+
+    // Detect clipping plane.
+    // vec3 c = params.clip.xyz;
+    // vec3 dc = d * c;
+    // float tclip = -params.clip.w - dot(dc, o - b0) / dot(dc, u);
+    // vec3 uvw_clip = d * (o + u * tclip - b1);
+    // if (t0 <= tclip && tclip <= t1) {
+    //     // out_color = fetch_color(uvw_clip);
+    //     out_color = vec4(1,0,0,1);
+    //     return;
+    // }
+    // out_color = vec4((tclip - t0)/(t1-t0),1,0,1);
+    // return;
 
     vec3 ray_start = o + u * t0;
     vec3 ray_stop = o + u * t1;
@@ -103,15 +117,22 @@ void main()
     vec4 s = vec4(0);
     vec4 acc = vec4(0);
     float alpha = 0;
-    vec3 uvw_clip = vec3(0);
+    vec3 uvw_pick = vec3(0);
+    bool in_clip = false;
+    bool clip_front = false;
     for (int i = 0; i < MAX_ITER && travel > 0.0; ++i, pos += dl, travel -= STEP_SIZE) {
         // Normalize 3D pos within cube in [0,1]^3
-        uvw = (pos - b0) / (b1 - b0);
+        uvw = (pos - b0) * d;
 
+        // Determine the position of the fragment compared to the clipping plane.
         if (dot(vec4(uvw, 1), params.clip) < 0) {
+            in_clip = true;
             continue;
         }
-        uvw_clip = uvw;
+        else if (i == 0) {
+            clip_front = true;
+        }
+        uvw_pick = uvw;
 
         // Now, normalize between uvw0 and uvw1.
         uvw = params.uvw0.xyz + uvw * (params.uvw1 - params.uvw0).xyz;
@@ -127,8 +148,19 @@ void main()
         }
 
     }
-    // if (max_intensity < .001)
-    //     discard;
+
+    // Remove fragments outside the clipping plane.
+    if (dot(uvw_pick, uvw_pick) == 0)
+        discard;
+
+    // Clipping slice image.
+    if (in_clip && clip_front) {
+        out_color = fetch_color(uvw_pick);
+        if (out_color.a > .001) {
+            acc = out_color * 20;
+        }
+    }
+
     out_color = acc;
-    out_pick = ivec4(255 * uvw_clip, 0);
+    out_pick = ivec4(255 * uvw_pick, 0);
 }

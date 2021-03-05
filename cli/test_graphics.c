@@ -127,7 +127,7 @@ static void _interact_callback(DvzCanvas* canvas, DvzEvent ev)
 
 #define INIT_GRAPHICS(type, flags)                                                                \
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);                                                      \
-    DvzGpu* gpu = dvz_gpu_best(app);                                                                \
+    DvzGpu* gpu = dvz_gpu_best(app);                                                              \
     DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, DVZ_CANVAS_FLAGS_FPS);           \
     DvzGraphics* graphics = dvz_graphics_builtin(canvas, type, flags);
 
@@ -1043,8 +1043,10 @@ int test_graphics_volume_1(TestContext* context)
     params.uvw1[0] = 1;
     params.uvw1[1] = 1;
     params.uvw1[2] = 1;
-    params.clip[1] = +1;
-    params.clip[3] = 0;
+
+    params.clip[2] = +1;
+    params.clip[3] = -.5;
+
     vec3 p0 = {-c * ni / 2., -c * nj / 2., -1 * c * nk / 2.};
     vec3 p1 = {+c * ni / 2., +c * nj / 2., +1 * c * nk / 2.};
 
