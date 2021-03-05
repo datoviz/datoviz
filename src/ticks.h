@@ -167,6 +167,7 @@ DVZ_INLINE double leg(DvzTickFormat format, uint32_t precision, double x)
     {
     case DVZ_TICK_FORMAT_DECIMAL:
         l = ax > 1e-4 && ax < 1e6 ? 1 : 0;
+        l = (int)floor(log10(ax)) < -(int)precision ? 0 : l;
         break;
 
     case DVZ_TICK_FORMAT_SCIENTIFIC:
