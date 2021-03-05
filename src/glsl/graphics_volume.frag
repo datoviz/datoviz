@@ -2,7 +2,7 @@
 #include "common.glsl"
 #include "colormaps.glsl"
 
-#define STEP_SIZE 0.005
+#define STEP_SIZE 0.01
 #define MAX_ITER 10 / STEP_SIZE
 
 layout(std140, binding = USER_BINDING) uniform Params

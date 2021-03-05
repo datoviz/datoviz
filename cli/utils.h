@@ -1070,10 +1070,10 @@ static DvzTexture* _mouse_region_colors(DvzCanvas* canvas)
     dvz_texture_address_mode(texture, DVZ_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
     dvz_texture_address_mode(texture, DVZ_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
     dvz_texture_address_mode(texture, DVZ_TEXTURE_AXIS_W, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-    VkDeviceSize size = 0;
+    size_t size = 0;
     uint8_t* tex_data = (uint8_t*)dvz_read_file(path, &size);
     ASSERT(size == ni * nj * nk * 4 * sizeof(uint8_t));
-    dvz_texture_upload(texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, size, tex_data);
+    dvz_texture_upload(texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, (VkDeviceSize)size, tex_data);
     FREE(tex_data);
     return texture;
 }

@@ -1046,8 +1046,8 @@ int test_graphics_volume_1(TestContext* context)
     params.clip[2] = +1;
     params.clip[3] = -.5;
 
-    params.transfer_xrange[0] = 0;
-    params.transfer_xrange[1] = 1.5;
+    // params.transfer_xrange[0] = 0;
+    // params.transfer_xrange[1] = 1.5;
     params.color_coef = .01;
 
     vec3 p0 = {-c * ni / 2., -c * nj / 2., -1 * c * nk / 2.};
