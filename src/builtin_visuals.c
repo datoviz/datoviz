@@ -1662,21 +1662,21 @@ static void _visual_volume(DvzVisual* visual)
         visual, DVZ_SOURCE_TYPE_PARAM, 0, DVZ_PIPELINE_GRAPHICS, 0, //
         DVZ_USER_BINDING, sizeof(DvzGraphicsVolumeParams), 0);      //
 
-    dvz_visual_source(                                                      // colormap texture
-        visual, DVZ_SOURCE_TYPE_COLOR_TEXTURE, 0, DVZ_PIPELINE_GRAPHICS, 0, //
-        DVZ_USER_BINDING + 1, 0, 0);                                        //
+    // dvz_visual_source(                                                      // colormap texture
+    //     visual, DVZ_SOURCE_TYPE_COLOR_TEXTURE, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+    //     DVZ_USER_BINDING + 1, 0, 0);                                        //
+
+    dvz_visual_source(                                               // 3D volume with density
+        visual, DVZ_SOURCE_TYPE_VOLUME, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+        DVZ_USER_BINDING + 1, 0, 0);                                 //
+
+    dvz_visual_source(                                               // 3D volume with vox color
+        visual, DVZ_SOURCE_TYPE_VOLUME, 1, DVZ_PIPELINE_GRAPHICS, 0, //
+        DVZ_USER_BINDING + 2, 0, 0);                                 //
 
     dvz_visual_source(                                                 // transfer function
         visual, DVZ_SOURCE_TYPE_TRANSFER, 0, DVZ_PIPELINE_GRAPHICS, 0, //
-        DVZ_USER_BINDING + 2, 0, 0);                                   //
-
-    dvz_visual_source(                                               // volume source
-        visual, DVZ_SOURCE_TYPE_VOLUME, 0, DVZ_PIPELINE_GRAPHICS, 0, //
-        DVZ_USER_BINDING + 3, 0, 0);                                 //
-
-    dvz_visual_source(                                               // volume slice source
-        visual, DVZ_SOURCE_TYPE_VOLUME, 1, DVZ_PIPELINE_GRAPHICS, 0, //
-        DVZ_USER_BINDING + 4, 0, 0);                                 //
+        DVZ_USER_BINDING + 3, 0, 0);                                   //
 
     // Props:
 
@@ -1726,11 +1726,17 @@ static void _visual_volume(DvzVisual* visual)
     // If both values are equal, disable the transfer function on the GPU.
     dvz_visual_prop_default(prop, (vec2){0, 0});
 
-    // Colormap value.
-    prop = dvz_visual_prop(visual, DVZ_PROP_COLORMAP, 0, DVZ_DTYPE_INT, DVZ_SOURCE_TYPE_PARAM, 0);
+    // // Colormap value.
+    // prop = dvz_visual_prop(visual, DVZ_PROP_COLORMAP, 0, DVZ_DTYPE_INT, DVZ_SOURCE_TYPE_PARAM,
+    // 0); dvz_visual_prop_copy(
+    //     prop, 5, offsetof(DvzGraphicsVolumeParams, cmap), DVZ_ARRAY_COPY_SINGLE, 1);
+    // dvz_visual_prop_default(prop, (DvzColormap[]){DVZ_CMAP_BONE});
+
+    // Color coefficient.
+    prop = dvz_visual_prop(visual, DVZ_PROP_SCALE, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_PARAM, 0);
     dvz_visual_prop_copy(
-        prop, 5, offsetof(DvzGraphicsVolumeParams, cmap), DVZ_ARRAY_COPY_SINGLE, 1);
-    dvz_visual_prop_default(prop, (DvzColormap[]){DVZ_CMAP_BONE});
+        prop, 5, offsetof(DvzGraphicsVolumeParams, color_coef), DVZ_ARRAY_COPY_SINGLE, 1);
+    dvz_visual_prop_default(prop, (float[]){.01});
 
 
     // Baking function.

@@ -1039,13 +1039,16 @@ int test_graphics_volume_1(TestContext* context)
     float c = .005;
     vec4 box_size = {c * ni, c * nj, 1 * c * nk, 0};
     glm_vec4_copy(box_size, params.box_size);
-    params.cmap = DVZ_CMAP_BONE;
     params.uvw1[0] = 1;
     params.uvw1[1] = 1;
     params.uvw1[2] = 1;
 
     params.clip[2] = +1;
     params.clip[3] = -.5;
+
+    params.transfer_xrange[0] = 0;
+    params.transfer_xrange[1] = 1.5;
+    params.color_coef = .01;
 
     vec3 p0 = {-c * ni / 2., -c * nj / 2., -1 * c * nk / 2.};
     vec3 p1 = {+c * ni / 2., +c * nj / 2., +1 * c * nk / 2.};
@@ -1068,16 +1071,15 @@ int test_graphics_volume_1(TestContext* context)
     dvz_upload_buffers(canvas, tg.br_params, 0, sizeof(DvzGraphicsVolumeParams), &params);
 
     // 3D texture.
-    DvzTexture* texture = _mouse_volume(canvas);
-    DvzTexture* texture_label = _mouse_label(canvas);
+    DvzTexture* tex_density = _mouse_volume(canvas);
+    DvzTexture* tex_colors = _mouse_region_colors(canvas);
 
     // Bindings.
     _common_bindings(&tg);
     dvz_bindings_buffer(&tg.bindings, DVZ_USER_BINDING, tg.br_params);
-    dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 1, gpu->context->color_texture.texture);
-    dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 2, gpu->context->transfer_texture);
-    dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 3, texture);
-    dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 4, texture_label);
+    dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 1, tex_density);
+    dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 2, tex_colors);
+    dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 3, gpu->context->transfer_texture);
     dvz_bindings_update(&tg.bindings);
 
     // Interactivity.

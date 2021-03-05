@@ -845,20 +845,14 @@ int test_visuals_volume_1(TestContext* context)
     dvz_visual_data(&visual, DVZ_PROP_LENGTH, 0, 1, box_size);
     dvz_visual_data(&visual, DVZ_PROP_TRANSFER_X, 0, 1, (vec2){0.0, 1.0});
     dvz_visual_data(&visual, DVZ_PROP_CLIP, 0, 1, (vec4){0.0, 0.0, 1.0, -0.4});
+    dvz_visual_data(&visual, DVZ_PROP_SCALE, 0, 1, (float[]){.01});
 
-    DvzColormap cmap = DVZ_CMAP_BONE;
-    dvz_visual_data(&visual, DVZ_PROP_COLORMAP, 0, 1, &cmap);
+    // Volume textures.
+    DvzTexture* tex_density = _mouse_volume(canvas);
+    DvzTexture* tex_colors = _mouse_region_colors(canvas);
 
-    // Colormap texture.
-    dvz_visual_texture(
-        &visual, DVZ_SOURCE_TYPE_COLOR_TEXTURE, 0, gpu->context->color_texture.texture);
-
-    // Volume texture.
-    DvzTexture* volume = _mouse_volume(canvas);
-    dvz_visual_texture(&visual, DVZ_SOURCE_TYPE_VOLUME, 0, volume);
-
-    DvzTexture* volume_label = _mouse_label(canvas);
-    dvz_visual_texture(&visual, DVZ_SOURCE_TYPE_VOLUME, 1, volume_label);
+    dvz_visual_texture(&visual, DVZ_SOURCE_TYPE_VOLUME, 0, tex_density);
+    dvz_visual_texture(&visual, DVZ_SOURCE_TYPE_VOLUME, 1, tex_colors);
 
     // Arcball.
     DvzInteract interact = dvz_interact_builtin(canvas, DVZ_INTERACT_ARCBALL);

@@ -1053,7 +1053,7 @@ static DvzTexture* _mouse_volume(DvzCanvas* canvas)
 
 
 
-static DvzTexture* _mouse_label(DvzCanvas* canvas)
+static DvzTexture* _mouse_region_colors(DvzCanvas* canvas)
 {
     DvzGpu* gpu = canvas->gpu;
 
