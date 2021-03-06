@@ -895,7 +895,7 @@ void dvz_buffer_create(DvzBuffer* buffer)
 void dvz_buffer_resize(DvzBuffer* buffer, VkDeviceSize size, DvzCommands* cmds)
 {
     ASSERT(buffer != NULL);
-    log_debug("[SLOW] resize buffer to size %d", size);
+    log_debug("[SLOW] resize buffer to size %s", pretty_size(size));
     DvzGpu* gpu = buffer->gpu;
 
     // Create the new buffer with the new size.
@@ -1292,6 +1292,15 @@ static void _images_create(DvzImages* images)
             create_image_view2(
                 gpu->device, images->images[i], images->view_type, images->format, images->aspect,
                 &images->image_views[i]);
+
+        // Store the size in bytes of each create image (which should be the same).
+        VkMemoryRequirements memRequirements = {0};
+        vkGetImageMemoryRequirements(images->gpu->device, images->images[i], &memRequirements);
+        if (images->size == 0)
+            images->size = memRequirements.size;
+        else
+            ASSERT(images->size == memRequirements.size);
+
     }
 }
 
@@ -1403,17 +1412,21 @@ void dvz_images_download(
         "starting download of RGB%s image %dx%d with %d components of %d bytes each",
         has_alpha ? "A" : "", w, h, n_components, bytes_per_component);
 
+    // Size of the buffer to copy.
+    VkDeviceSize size = row_pitch * h;
     ASSERT(w > 0);
     ASSERT(h > 0);
     ASSERT(row_pitch >= w * n_components * bytes_per_component);
+    // Ensure that the staging buffer has the right size.
+    ASSERT(staging->size >= size);
 
     // First, memcopy from the GPU to the CPU.
-    void* image = calloc(row_pitch * h, bytes_per_component);
+    void* image = calloc(row_pitch * h, 1);
     void* image_orig = image;
-    memcpy(image, data, row_pitch * h * bytes_per_component);
+    memcpy(image, data, size);
     vkUnmapMemory(staging->gpu->device, staging->memories[idx]);
 
-    // Then, swizzle.
+    // Then, convert the image to the requested format, into a contiguous array of pixels.
     image = (void*)((uint64_t)image + offset);
     uint32_t src_offset = 0;
     uint32_t dst_offset = 0;
@@ -1424,11 +1437,14 @@ void dvz_images_download(
         for (x = 0; x < w; x++)
         {
             ASSERT(src_offset + 2 < w * h * 4);
-            for (k = 0; k < 3; k++)
+            for (k = 0; k < 4; k++)
             {
-                l = swizzle ? 2 - k : k;
-                ASSERT(k <= 2);
-                ASSERT(l <= 2);
+                l = k <= 2 ? (swizzle ? 2 - k : k) : 3;
+                ASSERT(k <= 3);
+                ASSERT(l <= 3);
+                ASSERT(k < 3 || l == 3);
+                if (k == 3 && n_components == 3)
+                    continue;
                 memcpy(
                     (void*)((uint64_t)out + (dst_offset + k) * bytes_per_component),
                     (void*)((uint64_t)image + (src_offset + l) * bytes_per_component),

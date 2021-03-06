@@ -1961,7 +1961,7 @@ void dvz_canvas_pick(DvzCanvas* canvas, uvec2 pos_screen, ivec4 picked)
 
         ivec4* color = &((ivec4*)buf)[offs];
         for (uint32_t i = 0; i < 4; i++)
-            picked[i] = (float)color[0][i];
+            picked[i] = color[0][i];
     }
     else
     {

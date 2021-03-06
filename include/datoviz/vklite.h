@@ -462,6 +462,7 @@ struct DvzImages
     VkImageUsageFlags usage;
     VkMemoryPropertyFlags memory;
     VkImageAspectFlags aspect;
+    VkDeviceSize size;
 
     VkImage images[DVZ_MAX_IMAGES_PER_SET];
     VkDeviceMemory memories[DVZ_MAX_IMAGES_PER_SET];
