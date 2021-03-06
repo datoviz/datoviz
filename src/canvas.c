@@ -508,6 +508,26 @@ static bool _support_pick(DvzCanvas* canvas)
     return ((canvas->flags >> 2) & 1) != 0;
 }
 
+static DvzImages
+_staging_image(DvzCanvas* canvas, VkFormat format, uint32_t width, uint32_t height)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(width > 0);
+    ASSERT(height > 0);
+
+    DvzImages staging = dvz_images(canvas->gpu, VK_IMAGE_TYPE_2D, 1);
+    dvz_images_format(&staging, format);
+    dvz_images_size(&staging, width, height, 1);
+    dvz_images_tiling(&staging, VK_IMAGE_TILING_LINEAR);
+    dvz_images_usage(&staging, VK_IMAGE_USAGE_TRANSFER_DST_BIT);
+    dvz_images_layout(&staging, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    dvz_images_memory(
+        &staging, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    dvz_images_create(&staging);
+    dvz_images_transition(&staging);
+    return staging;
+}
+
 static DvzCanvas*
 _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overlay, int flags)
 {
@@ -629,6 +649,8 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
             pick_image(
                 &canvas->pick_image, &canvas->renderpass, //
                 canvas->swapchain.images->width, canvas->swapchain.images->height);
+            canvas->pick_staging = _staging_image(
+                canvas, canvas->pick_image.format, DVZ_PICK_STAGING_SIZE, DVZ_PICK_STAGING_SIZE);
         }
     }
 
@@ -1798,28 +1820,6 @@ void dvz_screencast_destroy(DvzCanvas* canvas)
 /*  Screenshot                                                                                   */
 /*************************************************************************************************/
 
-static DvzImages
-_staging_image(DvzCanvas* canvas, VkFormat format, uint32_t width, uint32_t height)
-{
-    ASSERT(canvas != NULL);
-    ASSERT(width > 0);
-    ASSERT(height > 0);
-
-    DvzImages staging = dvz_images(canvas->gpu, VK_IMAGE_TYPE_2D, 1);
-    dvz_images_format(&staging, format);
-    dvz_images_size(&staging, width, height, 1);
-    dvz_images_tiling(&staging, VK_IMAGE_TILING_LINEAR);
-    dvz_images_usage(&staging, VK_IMAGE_USAGE_TRANSFER_DST_BIT);
-    dvz_images_layout(&staging, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-    dvz_images_memory(
-        &staging, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    dvz_images_create(&staging);
-    dvz_images_transition(&staging);
-    return staging;
-}
-
-
-
 static void _copy_image_to_staging(
     DvzCanvas* canvas, DvzImages* images, DvzImages* staging, ivec3 offset, uvec3 shape)
 {
@@ -1921,11 +1921,13 @@ void dvz_canvas_pick(DvzCanvas* canvas, uvec2 pos_screen, ivec4 picked)
     ASSERT(images != NULL);
 
     // Staging images.
-    uint32_t staging_size = 8;
+    uint32_t staging_size = DVZ_PICK_STAGING_SIZE;
     ASSERT(images->width >= staging_size);
     ASSERT(images->height >= staging_size);
     ASSERT(images->depth == 1);
-    DvzImages staging = _staging_image(canvas, images->format, staging_size, staging_size);
+    DvzImages* staging = &canvas->pick_staging;
+    ASSERT(staging != NULL);
+    ASSERT(staging->images[0] != NULL);
 
     // Copy from the source image to the staging image.
     uvec3 shape = {staging_size, staging_size, 1};
@@ -1933,20 +1935,19 @@ void dvz_canvas_pick(DvzCanvas* canvas, uvec2 pos_screen, ivec4 picked)
     int32_t x = (int32_t)pos_screen[0];
     int32_t y = (int32_t)pos_screen[1];
     ivec3 offset = {x - k, y - k, 0};
-    _copy_image_to_staging(canvas, images, &staging, offset, shape);
+    _copy_image_to_staging(canvas, images, staging, offset, shape);
 
     VkDeviceSize comp_size = has_pick ? sizeof(int32_t) : sizeof(uint8_t);
     // NOTE: pick attachment has alpha, color does not
     uint32_t n_comp = 3 + (uint32_t)has_pick;
 
-    void* buf = calloc(staging.width * staging.height, n_comp * comp_size);
+    void* buf = calloc(staging->width * staging->height, n_comp * comp_size);
 
     // NOTE: we do not swizzle if pick attachment, but we do if normal image attachment
     // The pick attachment has alpha value, the RGB does not
-    dvz_images_download(&staging, 0, comp_size, !has_pick, has_pick, buf);
+    dvz_images_download(staging, 0, comp_size, !has_pick, has_pick, buf);
 
     dvz_gpu_wait(gpu);
-    dvz_images_destroy(&staging);
 
     // Retrieve the requested value.
     uint32_t offs = staging_size * staging_size / 2;
@@ -2392,9 +2393,10 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     CONTAINER_DESTROY_ITEMS(DvzGraphics, canvas->graphics, dvz_graphics_destroy)
     dvz_container_destroy(&canvas->graphics);
 
-    // Destroy the depth image.
+    // Destroy the depth and pick images.
     dvz_images_destroy(&canvas->depth_image);
     dvz_images_destroy(&canvas->pick_image);
+    dvz_images_destroy(&canvas->pick_staging);
 
     // Destroy the renderpasses.
     log_trace("canvas destroy renderpass");

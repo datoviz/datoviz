@@ -1300,7 +1300,6 @@ static void _images_create(DvzImages* images)
             images->size = memRequirements.size;
         else
             ASSERT(images->size == memRequirements.size);
-
     }
 }
 
@@ -1411,6 +1410,7 @@ void dvz_images_download(
     log_debug(
         "starting download of RGB%s image %dx%d with %d components of %d bytes each",
         has_alpha ? "A" : "", w, h, n_components, bytes_per_component);
+    log_trace("offset is %d, row pitch is %d", offset, row_pitch);
 
     // Size of the buffer to copy.
     VkDeviceSize size = row_pitch * h;
