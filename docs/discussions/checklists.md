@@ -99,5 +99,6 @@
     * Update the `_CONTROLS` dictionary
     * In `Gui.control()`, add a new if statement and make the binding
     * In `_get_ev_args()`, add a new if statement and make the callback argument binding
+    * In `GuiControl.set()` , add a new if statement and set the control value
 * Run `./manage.sh cython`
 * Test in a Python example `gui.control('xxx', 'name', ...)`

@@ -10,6 +10,7 @@ import logging
 cimport numpy as np
 import numpy as np
 from cpython.ref cimport Py_INCREF
+from libc.string cimport memcpy
 from libc.stdio cimport printf
 
 cimport datoviz.cydatoviz as cv
@@ -200,6 +201,7 @@ _CONTROLS = {
     'input_float': cv.DVZ_GUI_CONTROL_INPUT_FLOAT,
     'checkbox': cv.DVZ_GUI_CONTROL_CHECKBOX,
     'button': cv.DVZ_GUI_CONTROL_BUTTON,
+    'label': cv.DVZ_GUI_CONTROL_LABEL,
 }
 
 _COLORMAPS = {
@@ -1034,6 +1036,7 @@ cdef class GuiControl:
     cdef cv.DvzGui* _c_gui
     cdef cv.DvzGuiControl* _c_control
     cdef unicode ctype
+    cdef bytes str_ascii
 
     cdef create(self, cv.DvzGui* c_gui, cv.DvzGuiControl* c_control, unicode ctype):
         self._c_gui = c_gui
@@ -1048,9 +1051,17 @@ cdef class GuiControl:
 
     def set(self, obj):
         cdef void* ptr
+        cdef char* c_str
         ptr = cv.dvz_gui_value(self._c_control)
         if self.ctype == 'input_float' or self.ctype == 'slider_float':
             (<float*>ptr)[0] = <float>float(obj)
+        elif self.ctype == 'label':
+            self.str_ascii = obj.encode('ascii')
+            if len(self.str_ascii) >= 1024:
+                self.str_ascii = self.str_ascii[:1024]
+            c_str = self.str_ascii
+            # HACK: +1 for string null termination
+            memcpy(ptr, c_str, len(self.str_ascii) + 1)
 
 
 cdef class Gui:
@@ -1100,6 +1111,9 @@ cdef class Gui:
             c = cv.dvz_gui_checkbox(self._c_gui, c_name, c_value)
         elif (ctype == 'button'):
             c = cv.dvz_gui_button(self._c_gui, c_name, 0)
+        elif (ctype == 'label'):
+            c_value = kwargs.get('value', "")
+            c = cv.dvz_gui_label(self._c_gui, c_name, c_value)
 
         # Gui control object
         w = GuiControl()

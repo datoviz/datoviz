@@ -1131,6 +1131,7 @@ cdef extern from "<datoviz/datoviz.h>":
     DvzGuiControl* dvz_gui_slider_float2(DvzGui* gui, const char* name, float vmin, float vmax, vec2 value, bint force_increasing)
     DvzGuiControl* dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax, int value)
     DvzGuiControl* dvz_gui_input_float(DvzGui* gui, const char* name, float step, float step_fast, float value)
+    DvzGuiControl* dvz_gui_label(DvzGui* gui, const char* name, char* text)
     DvzGuiControl* dvz_gui_button(DvzGui* gui, const char* name, int flags)
 
     # from file: mesh.h
