@@ -53,6 +53,7 @@ _KEYS = {
     cv.DVZ_KEY_END: 'end',
     cv.DVZ_KEY_KP_ADD: '+',
     cv.DVZ_KEY_KP_SUBTRACT: '-',
+    cv.DVZ_KEY_F: 'f',
     cv.DVZ_KEY_G: 'g',
 }
 
