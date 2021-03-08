@@ -1278,6 +1278,7 @@ void dvz_images_queue_access(DvzImages* images, uint32_t queue_idx)
 static void _images_create(DvzImages* images)
 {
     DvzGpu* gpu = images->gpu;
+    VkDeviceSize size = 0;
     for (uint32_t i = 0; i < images->count; i++)
     {
         if (!images->is_swapchain)
@@ -1296,11 +1297,12 @@ static void _images_create(DvzImages* images)
         // Store the size in bytes of each create image (which should be the same).
         VkMemoryRequirements memRequirements = {0};
         vkGetImageMemoryRequirements(images->gpu->device, images->images[i], &memRequirements);
-        if (images->size == 0)
-            images->size = memRequirements.size;
+        if (size == 0)
+            size = memRequirements.size;
         else
-            ASSERT(images->size == memRequirements.size);
+            ASSERT(size == memRequirements.size);
     }
+    images->size = size;
 }
 
 
