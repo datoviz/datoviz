@@ -325,7 +325,7 @@ DvzMesh dvz_mesh_surface(uint32_t row_count, uint32_t col_count, const float* he
         for (uint32_t j = 0; j < col_count; j++)
         {
             v = (float)j / (col_count - 1);
-            h = heights[col_count * i + j];
+            h = heights != NULL ? heights[col_count * i + j] : 0;
 
             x = p00[0] + p[0] * u + q[0] * v + r[0] * h;
             y = p00[1] + p[1] * u + q[1] * v + r[1] * h;

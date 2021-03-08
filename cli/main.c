@@ -101,7 +101,8 @@ static TestCase TEST_CASES[] = {
 
     CASE_FIXTURE_NONE(test_graphics_volume_1),     //
     CASE_FIXTURE_NONE(test_graphics_volume_slice), //
-    CASE_FIXTURE_NONE(test_graphics_mesh),         //
+    CASE_FIXTURE_NONE(test_graphics_mesh_1),       //
+    CASE_FIXTURE_NONE(test_graphics_mesh_2),       //
 
     // transforms
     CASE_FIXTURE_NONE(test_transforms_1), //

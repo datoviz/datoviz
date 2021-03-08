@@ -1172,7 +1172,7 @@ static DvzMesh _graphics_mesh_example(DvzMeshType type)
     return (DvzMesh){0};
 }
 
-int test_graphics_mesh(TestContext* context)
+int test_graphics_mesh_1(TestContext* context)
 {
     INIT_GRAPHICS(DVZ_GRAPHICS_MESH, 0)
 
@@ -1270,5 +1270,89 @@ int test_graphics_mesh(TestContext* context)
 
     RUN;
     SCREENSHOT("mesh")
+    TEST_END
+}
+
+
+
+int test_graphics_mesh_2(TestContext* context)
+{
+    INIT_GRAPHICS(DVZ_GRAPHICS_MESH, 0)
+
+    TestGraphics tg = {0};
+    tg.canvas = canvas;
+    tg.eye[2] = 3;
+    tg.up[1] = 1;
+    tg.graphics = graphics;
+
+    const uint32_t N = 250;
+    uint32_t col_count = N + 1;
+    uint32_t row_count = N + 1;
+    DvzMesh mesh = dvz_mesh_surface(row_count, col_count, NULL);
+
+    // Uniform mesh color.
+    cvec3 color = {32, 64, 128};
+    DvzGraphicsMeshVertex* vertex = (DvzGraphicsMeshVertex*)mesh.vertices.data;
+    for (uint32_t i = 0; i < mesh.vertices.item_count; i++)
+        dvz_colormap_packuv(color, vertex[i].uv);
+
+    // Vertex and index buffers.
+    tg.vertices = mesh.vertices;
+    tg.indices = mesh.indices;
+    uint32_t vertex_count = tg.vertices.item_count;
+    uint32_t index_count = tg.indices.item_count;
+    tg.br_vert = dvz_ctx_buffers(
+        gpu->context, DVZ_BUFFER_TYPE_VERTEX, 1, vertex_count * sizeof(DvzGraphicsMeshVertex));
+    if (index_count > 0)
+        tg.br_index = dvz_ctx_buffers(
+            gpu->context, DVZ_BUFFER_TYPE_INDEX, 1, index_count * sizeof(DvzIndex));
+
+    // Upload the vertex and index buffers.
+    dvz_upload_buffers(
+        canvas, tg.br_vert, 0, vertex_count * tg.vertices.item_size, tg.vertices.data);
+    if (index_count > 0)
+        dvz_upload_buffers(
+            canvas, tg.br_index, 0, index_count * tg.indices.item_size, tg.indices.data);
+
+    // Create the bindings.
+    tg.bindings = dvz_bindings(&graphics->slots, canvas->swapchain.img_count);
+
+    // Binding resources.
+    tg.br_mvp = dvz_ctx_buffers(
+        gpu->context, DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE, canvas->swapchain.img_count,
+        sizeof(DvzMVP));
+    tg.br_viewport =
+        dvz_ctx_buffers(gpu->context, DVZ_BUFFER_TYPE_UNIFORM, 1, sizeof(DvzViewport));
+
+    // Parameters.
+    DvzGraphicsMeshParams params = default_graphics_mesh_params(tg.eye);
+    tg.br_params =
+        dvz_ctx_buffers(gpu->context, DVZ_BUFFER_TYPE_UNIFORM, 1, sizeof(DvzGraphicsMeshParams));
+    dvz_upload_buffers(canvas, tg.br_params, 0, sizeof(DvzGraphicsMeshParams), &params);
+
+    // Bindings
+    dvz_bindings_buffer(&tg.bindings, 0, tg.br_mvp);
+    dvz_bindings_buffer(&tg.bindings, 1, tg.br_viewport);
+    dvz_bindings_buffer(&tg.bindings, DVZ_USER_BINDING, tg.br_params);
+    for (uint32_t i = 1; i <= 4; i++)
+        dvz_bindings_texture(
+            &tg.bindings, DVZ_USER_BINDING + i, gpu->context->color_texture.texture);
+    dvz_bindings_update(&tg.bindings);
+
+    // Interactivity.
+    tg.interact = dvz_interact_builtin(canvas, DVZ_INTERACT_ARCBALL);
+    dvz_event_callback(canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _interact_callback, &tg);
+
+    // Initial rotation of the model.
+    DvzArcball* arcball = &tg.interact.u.a;
+    versor q;
+    glm_quatv(q, M_PI / 6, (vec3){1, 0, 0});
+    glm_quat_mul(arcball->rotation, q, arcball->rotation);
+    glm_quatv(q, M_PI / 6, (vec3){0, 1, 0});
+    glm_quat_mul(arcball->rotation, q, arcball->rotation);
+    arcball->camera.eye[2] = 3;
+    _arcball_update_mvp(canvas->viewport, arcball, &tg.interact.mvp);
+
+    RUN;
     TEST_END
 }

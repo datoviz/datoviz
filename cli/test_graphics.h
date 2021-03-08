@@ -33,7 +33,8 @@ int test_graphics_image_cmap(TestContext* context);
 // 3D graphics.
 int test_graphics_volume_slice(TestContext* context);
 int test_graphics_volume_1(TestContext* context);
-int test_graphics_mesh(TestContext* context);
+int test_graphics_mesh_1(TestContext* context);
+int test_graphics_mesh_2(TestContext* context);
 
 
 
