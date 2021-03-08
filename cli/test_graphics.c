@@ -28,6 +28,7 @@ struct TestGraphics
     DvzGraphics* graphics;
     DvzCompute* compute;
     DvzBufferRegions br_vert;
+    DvzBufferRegions br_vert_comp;
     DvzBufferRegions br_index;
     DvzBufferRegions br_mvp;
     DvzBufferRegions br_viewport;
@@ -128,7 +129,7 @@ static void _interact_callback(DvzCanvas* canvas, DvzEvent ev)
 #define INIT_GRAPHICS(type, flags)                                                                \
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);                                                      \
     DvzGpu* gpu = dvz_gpu_best(app);                                                              \
-    DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, DVZ_CANVAS_FLAGS_FPS);           \
+    DvzCanvas* canvas = dvz_canvas(gpu, TEST_WIDTH, TEST_HEIGHT, 0);                              \
     DvzGraphics* graphics = dvz_graphics_builtin(canvas, type, flags);
 
 #define BEGIN_DATA(type, n, user_data)                                                            \
@@ -1275,6 +1276,16 @@ int test_graphics_mesh_1(TestContext* context)
 
 
 
+typedef struct TestComputeParams TestComputeParams;
+struct TestComputeParams
+{
+    float t;
+    float dt;
+    int iter;
+};
+
+static TestComputeParams comp_params = {0};
+
 static void _compute_callback(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
@@ -1283,8 +1294,11 @@ static void _compute_callback(DvzCanvas* canvas, DvzEvent ev)
 
     dvz_interact_update(&tg->interact, canvas->viewport, &canvas->mouse, &canvas->keyboard);
     dvz_upload_buffers(canvas, tg->br_mvp, 0, sizeof(DvzMVP), &tg->interact.mvp);
-    dvz_upload_buffers(
-        canvas, tg->br_comp, 0, sizeof(float), (float[]){(float)canvas->clock.elapsed});
+
+    comp_params.dt = canvas->clock.elapsed;
+    comp_params.t = canvas->clock.interval;
+    dvz_upload_buffers(canvas, tg->br_comp, 0, sizeof(TestComputeParams), &comp_params);
+    comp_params.iter++;
 }
 
 static void _graphics_compute_refill(DvzCanvas* canvas, DvzEvent ev)
@@ -1318,7 +1332,6 @@ static void _graphics_compute_refill(DvzCanvas* canvas, DvzEvent ev)
     dvz_cmd_end(cmds, idx);
 }
 
-
 int test_graphics_mesh_2(TestContext* context)
 {
     INIT_GRAPHICS(DVZ_GRAPHICS_MESH, 0)
@@ -1332,10 +1345,25 @@ int test_graphics_mesh_2(TestContext* context)
     const uint32_t N = 256;
     uint32_t col_count = N;
     uint32_t row_count = N;
-    DvzMesh mesh = dvz_mesh_surface(row_count, col_count, NULL);
+    float* heights = calloc(N * N, sizeof(float));
+    float w = 1;
+    float x, y, z;
+    for (uint32_t i = 0; i < row_count; i++)
+    {
+        x = (float)i / (row_count - 1);
+        x = -w + 2 * w * x;
+        for (uint32_t j = 0; j < col_count; j++)
+        {
+            y = (float)j / (col_count - 1);
+            y = -w + 2 * w * y;
+            z = 1 * exp(-10 * (x * x + y * y));
+            heights[col_count * i + j] = z;
+        }
+    }
+    DvzMesh mesh = dvz_mesh_surface(row_count, col_count, heights);
 
     // Uniform mesh color.
-    cvec3 color = {32, 64, 128};
+    cvec3 color = {64, 128, 255};
     DvzGraphicsMeshVertex* vertex = (DvzGraphicsMeshVertex*)mesh.vertices.data;
     for (uint32_t i = 0; i < mesh.vertices.item_count; i++)
         dvz_colormap_packuv(color, vertex[i].uv);
@@ -1373,10 +1401,24 @@ int test_graphics_mesh_2(TestContext* context)
     dvz_upload_buffers(canvas, tg.br_params, 0, sizeof(DvzGraphicsMeshParams), &params);
 
     // Compute resources.
+    vec2* zero = calloc(N * N, sizeof(vec2));
     {
         tg.n_vert_comp[0] = col_count;
         tg.n_vert_comp[1] = row_count;
         tg.n_vert_comp[2] = 1;
+
+        tg.br_vert_comp =
+            dvz_ctx_buffers(gpu->context, DVZ_BUFFER_TYPE_VERTEX, 1, vertex_count * sizeof(vec2));
+        for (uint32_t i = 0; i < row_count; i++)
+        {
+            for (uint32_t j = 0; j < col_count; j++)
+            {
+                zero[col_count * i + j][0] = heights[col_count * i + j];
+                // zero[col_count * i + j][1] = heights[col_count * i + j];
+            }
+        }
+        ASSERT(vertex_count == N * N);
+        dvz_upload_buffers(canvas, tg.br_vert_comp, 0, N * N * sizeof(vec2), zero);
 
         // Create compute object.
         char path[1024] = {0};
@@ -1385,19 +1427,21 @@ int test_graphics_mesh_2(TestContext* context)
 
         // Slots
         dvz_compute_slot(tg.compute, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER); // vertex buffer
-        dvz_compute_slot(tg.compute, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // UBO
+        dvz_compute_slot(tg.compute, 1, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER); // vertex buffer
+        dvz_compute_slot(tg.compute, 2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // UBO
         dvz_compute_push(tg.compute, 0, sizeof(uvec3), VK_SHADER_STAGE_COMPUTE_BIT); // push
 
         // UBO for compute.
         tg.br_comp = dvz_ctx_buffers(
             gpu->context, DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE, canvas->swapchain.img_count,
-            sizeof(float));
-        dvz_upload_buffers(canvas, tg.br_comp, 0, sizeof(float), (float[]){0});
+            sizeof(TestComputeParams));
+        dvz_upload_buffers(canvas, tg.br_comp, 0, sizeof(TestComputeParams), &comp_params);
 
         // Create the bindings.
         tg.bindings_comp = dvz_bindings(&tg.compute->slots, canvas->swapchain.img_count);
         dvz_bindings_buffer(&tg.bindings_comp, 0, tg.br_vert);
-        dvz_bindings_buffer(&tg.bindings_comp, 1, tg.br_comp);
+        dvz_bindings_buffer(&tg.bindings_comp, 1, tg.br_vert_comp);
+        dvz_bindings_buffer(&tg.bindings_comp, 2, tg.br_comp);
         dvz_bindings_update(&tg.bindings_comp);
 
         // Create the compute pipeline.
@@ -1434,5 +1478,7 @@ int test_graphics_mesh_2(TestContext* context)
     dvz_array_destroy(&tg.vertices);
     dvz_array_destroy(&tg.indices);
 
+    FREE(heights);
+    FREE(zero);
     TEST_END
 }
