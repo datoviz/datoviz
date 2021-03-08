@@ -368,8 +368,9 @@ struct DvzGraphicsVolumeParams
 
 struct DvzGraphicsMeshVertex
 {
-    vec3 pos;      /* position */
-    vec3 normal;   /* normal vector */
+    // HACK: use vec4 for alignment when accessing from compute shader (need std140 on GPU)
+    vec4 pos;      /* position */
+    vec4 normal;   /* normal vector */
     vec2 uv;       /* tex coords */
     uint8_t alpha; /* transparency value */
 };

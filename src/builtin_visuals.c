@@ -1489,7 +1489,7 @@ static void _mesh_bake(DvzVisual* visual, DvzVisualDataEvent ev)
     DvzArray* arr_index = dvz_source_array(visual, DVZ_SOURCE_TYPE_INDEX, 0);
 
     // Check if the first normal is 00
-    vec3* normal = &((DvzGraphicsMeshVertex*)dvz_array_item(arr_vertex, 0))->normal;
+    vec4* normal = &((DvzGraphicsMeshVertex*)dvz_array_item(arr_vertex, 0))->normal;
     if (normal[0][0] == 0 && normal[0][1] == 0 && normal[0][2] == 0)
     {
         // Compute the normal from the faces.

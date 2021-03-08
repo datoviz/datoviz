@@ -3056,6 +3056,9 @@ void dvz_cmd_compute(DvzCommands* cmds, uint32_t idx, DvzCompute* compute, uvec3
     ASSERT(compute->bindings->dsets != NULL);
     ASSERT(compute->pipeline != VK_NULL_HANDLE);
     ASSERT(compute->slots.pipeline_layout != VK_NULL_HANDLE);
+    ASSERT(size[0] > 0);
+    ASSERT(size[1] > 0);
+    ASSERT(size[2] > 0);
 
     CMD_START
 

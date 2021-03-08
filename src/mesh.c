@@ -180,7 +180,7 @@ void dvz_mesh_normals(DvzMesh* mesh)
     }
 
     // Normalize all normals since every vertex might contain the sum of many normals.
-    vec3* normal = NULL;
+    vec4* normal = NULL;
     for (uint32_t i = 0; i < vertex_count; i++)
     {
         normal = &((DvzGraphicsMeshVertex*)dvz_array_item(&mesh->vertices, i))->normal;
