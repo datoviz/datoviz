@@ -208,11 +208,9 @@ DvzContext* dvz_context(DvzGpu* gpu, DvzWindow* window)
     context->color_texture.texture =
         dvz_ctx_texture(context, 2, (uvec3){256, 256, 1}, VK_FORMAT_R8G8B8A8_UNORM);
     dvz_texture_address_mode(
-        context->color_texture.texture, DVZ_TEXTURE_AXIS_U,
-        VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
+        context->color_texture.texture, DVZ_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
     dvz_texture_address_mode(
-        context->color_texture.texture, DVZ_TEXTURE_AXIS_V,
-        VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
+        context->color_texture.texture, DVZ_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
     dvz_context_colormap(context);
 
     // Default 1D texture, for transfer functions.

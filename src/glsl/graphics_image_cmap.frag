@@ -23,7 +23,10 @@ void main()
     float value = texture(tex, in_uv).r; // we assume the texture format rescales in [0, 1]
     float v0 = params.vrange.x;
     float v1 = params.vrange.y;
-    value = v0 + clamp(value, v0, v1) * (v1 - v0);
+
+    // Scaling.
+    value = clamp(value, min(v0, v1), max(v0, v1));
+    value = (value - v0) / (v1 - v0);
 
     // Sampling from the color texture.
     // NOTE: this won't work on color palettes
