@@ -8,6 +8,7 @@ fi
 
 if [ $1 == "build" ]
 then
+    rm -rf build
     mkdir -p build &&
     cd build && \
     cmake .. -GNinja && \
