@@ -1,5 +1,6 @@
 #version 450
 #include "constants.glsl"
+#include "common.glsl"
 
 #define WORKGROUP_SIZE 8
 
@@ -8,8 +9,8 @@ layout (local_size_x=WORKGROUP_SIZE, local_size_y=WORKGROUP_SIZE, local_size_z=1
 // NOTE: padding is required in the corresponding CPU struct
 struct Vertex
 {
-    vec3 pos;      /* position */
-    vec3 normal;   /* normal vector */
+    vec4 pos;      /* position */
+    vec4 normal;   /* normal vector */
     vec2 uv;       /* tex coords */
     uint alpha;    /* transparency value */
 };
@@ -22,8 +23,8 @@ layout(std140, binding = 0) buffer buf {
    Vertex vertex[];
 };
 
-layout(std140, binding = 1) buffer buf_prev {
-   vec2 bak[]; // value at prev time step, and at prev prev time step
+layout(std140, binding = 1) buffer pde {
+   vec4 u[]; // values at current time step, previous time step, previous previous time step
 };
 
 layout (std140, binding = 2) uniform UBO {
@@ -32,68 +33,117 @@ layout (std140, binding = 2) uniform UBO {
     int iter;
 } ubo;
 
-uint get_vert_idx(uvec3 idx) {
-    uvec3 nv = push.n_vertices;
+
+
+uint get_vert_idx(ivec3 idx) {
+    ivec3 nv = ivec3(push.n_vertices);
     return nv.x * clamp(idx.y, 0, nv.y - 1) + clamp(idx.x, 0, nv.x - 1);
 }
 
-// vec2 get_pos(uvec3 idx) {
-//     uint vidx = get_vert_idx(idx);
-//     return bak[vidx];
-// }
+
+
+vec3 get_pos(ivec3 idx) {
+    uint vidx = get_vert_idx(idx);
+    return vertex[vidx].pos.xyz;
+}
+
+void set_pos(ivec3 idx, vec3 pos) {
+    uint vidx = get_vert_idx(idx);
+    vertex[vidx].pos.xyz = pos;
+}
+
+void set_normal(ivec3 idx, vec3 normal) {
+    uint vidx = get_vert_idx(idx);
+    vertex[vidx].normal.xyz = normal;
+}
+
+
+
+float get_val(ivec3 idx, uint comp) {
+    uint vidx = get_vert_idx(idx);
+    return u[vidx][comp];
+}
+
+void set_val(ivec3 idx, uint comp, float w) {
+    uint vidx = get_vert_idx(idx);
+    u[vidx][comp] = w;
+}
+
+
 
 void main() {
-    uvec3 nv = push.n_vertices;
-    uvec3 idx = gl_GlobalInvocationID;
+    // algorithm from
+    // https://github.com/hplgit/fdm-book/blob/master/src/wave/wave2D_u0/wave2D_u0.py
+
+    ivec3 nv = ivec3(push.n_vertices);
+    ivec3 idx = ivec3(gl_GlobalInvocationID);
     if (idx.x >= nv.x || idx.y >= nv.y)
         return;
-    uint vidx = get_vert_idx(idx);
-    // float t = ubo.t;
-    // float dt = .1 * ubo.dt;
 
-    // float c = 1.0;
-    // float dx = 20.0 / nv.x;
-    // float dy = 20.0 / nv.y;
+    float t = ubo.t;
+    // float dt = .01 * ubo.dt;
+    // float c = 1;
+    // float dx = 200.0 / nv.x;
+    // float dy = 200.0 / nv.y;
     // float Cx2 = pow(c * dt / dx, 2);
     // float Cy2 = pow(c * dt / dy, 2);
-    // float D1 = 2;
-    // float D2 = 1;
+    float Cx2 = .01;
+    float Cy2 = Cx2;
+    float D1 = 2;
+    float D2 = 1;
 
-    // Prev and prevprev vertex.
-    // vec2 p = get_pos(idx);
-    // float prev1 = p.x;
-    // float prev2 = p.y;
+    // Get the current and previous values.
+    uint vidx = get_vert_idx(idx);
+    vec3 uu = u[vidx].xyz; // current value, previous value, previous previous value
+    float u0 = uu.x; // current
+    float u1 = uu.y; // previous
+    float u2 = uu.z; // previous previous
 
-    if (ubo.iter >= 2) return;
-    // if (ubo.iter <= 1) {
-    //     Cx2 = 0.5 * Cx2;
-    //     Cy2 = 0.5 * Cy2;
-    //     D1 = 1;
-    //     D2 = 0;
-    //     prev1 = vertex[vidx].pos.y;
-    //     prev2 = vertex[vidx].pos.y;
-    // }
+    if (ubo.iter == 0) {
+        Cx2 = 0.5 * Cx2;
+        Cy2 = 0.5 * Cy2;
+        D1 = 1;
+        D2 = 0;
+    }
 
-    // // Neighbor vertices.
-    // float pl = get_pos(idx + ivec3(-1, 0, 0)).x;
-    // float pr = get_pos(idx + ivec3(+1, 0, 0)).x;
-    // float pu = get_pos(idx + ivec3(0, -1, 0)).x;
-    // float pd = get_pos(idx + ivec3(0, +1, 0)).x;
+    // Neighbor vertices.
+    float pu = get_val(idx + ivec3(-1, 0, 0), 1);
+    float pd = get_val(idx + ivec3(+1, 0, 0), 1);
+    float pl = get_val(idx + ivec3(0, -1, 0), 1);
+    float pr = get_val(idx + ivec3(0, +1, 0), 1);
 
-    // float pxx = pl + pr - 2 * prev1;
-    // float pyy = pu + pd - 2 * prev1;
-    vertex[vidx].pos.y = bak[vidx].x;
-    // vertex[vidx].pos.y = D1 * prev1 - D2 * prev2 + Cx2 * pxx + Cy2 * pyy;
+    // Update u.
+    float pxx = pl + pr - 2 * u1;
+    float pyy = pu + pd - 2 * u1;
+    u0 = D1 * u1 - D2 * u2 + Cx2 * pxx + Cy2 * pyy;
+
+    // Boundary conditions.
+    if (idx.x == 0)
+        u0 = pd;
+    else if (idx.x == nv.x - 1)
+        u0 = pu;
+    else if (idx.y == 0)
+        u0 = pr;
+    else if (idx.y == nv.y - 1)
+        u0 = pl;
+
+    // Update vertex buffer with the new value.
+    vertex[vidx].pos.y = u0;
 
     // Update normals.
-    uint vidxn = vidx;
-    vec3 p0 = vertex[vidxn].pos;
-    vidxn = get_vert_idx(idx + ivec3(+1, 0, 0));
-    vec3 p1 = vertex[vidxn].pos;
-    vidxn = get_vert_idx(idx + ivec3(0, +1, 0));
-    vec3 p2 = vertex[vidxn].pos;
-    vertex[vidx].normal = cross(p1 - p0, p2 - p0);
+    vec3 p0 = get_pos(idx + ivec3(0, 0, 0));
+    vec3 p1 = get_pos(idx + ivec3(1, 0, 0));
+    vec3 p2 = get_pos(idx + ivec3(0, 1, 0));
+    p0.y = u1;
+    p1.y = pd;
+    p2.y = pr;
+    vec3 normal = cross(normalize(p1 - p0), normalize(p2 - p0));
+    set_normal(idx, normal);
 
-    // bak[vidx].y = bak[vidx].x;
-    // bak[vidx].x = vertex[vidx].pos.y;
+    // Update the u vec3 array with current, prev, prev prev.
+    u[vidx].x = u2;
+    u[vidx].y = u0;
+    u[vidx].z = u1;
+
+    // if (abs(u0) < .0000001) u[vidx] = vec4(0);
 }
