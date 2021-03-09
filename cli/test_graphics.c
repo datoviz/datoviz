@@ -1298,7 +1298,7 @@ static void _compute_callback(DvzCanvas* canvas, DvzEvent ev)
 
     comp_params->dt = canvas->clock.elapsed;
     comp_params->t = canvas->clock.interval;
-    comp_params->drop[0] = canvas->frame_idx % 10000 == 0;
+    comp_params->drop[0] = canvas->frame_idx % 1000 == 0;
     comp_params->drop[1] = -1 + 2 * dvz_rand_float();
     comp_params->drop[2] = -1 + 2 * dvz_rand_float();
     comp_params->drop[3] = .000001 * (2 * dvz_rand_float() - 1);
@@ -1361,8 +1361,8 @@ int test_graphics_mesh_2(TestContext* context)
         {
             y = (float)j / (col_count - 1);
             y = -w + 2 * w * y;
-            z = +.1 * exp(-60 * (x * x + y * y));
-            heights[col_count * i + j] = z + .001 * dvz_rand_float();
+            z = +.25 * exp(-20 * (x * x + y * y));
+            heights[col_count * i + j] = z;
         }
     }
     DvzMesh mesh = dvz_mesh_surface(row_count, col_count, heights);

@@ -83,7 +83,7 @@ void main() {
 
     float t = ubo.t;
     float dt = ubo.dt;
-    float Cx2 = .01;
+    float Cx2 = .01 * dt;
     float Cy2 = Cx2;
     float D1 = 2;
     float D2 = 1;
@@ -105,10 +105,10 @@ void main() {
     // }
 
     // Neighbor vertices.
-    float pu = get_val(idx + ivec3(-1, 0, 0), 1);
     float pd = get_val(idx + ivec3(+1, 0, 0), 1);
-    float pl = get_val(idx + ivec3(0, -1, 0), 1);
+    float pu = get_val(idx + ivec3(-1, 0, 0), 1);
     float pr = get_val(idx + ivec3(0, +1, 0), 1);
+    float pl = get_val(idx + ivec3(0, -1, 0), 1);
 
     // Update u.
     float pxx = pl + pr - 2 * u1;
@@ -126,20 +126,20 @@ void main() {
     bool cx1 = idx.x == nv.x - 1;
     bool cy0 = idx.y == 0;
     bool cy1 = idx.y == nv.y - 1;
-    if (cx0) u0 = pd;
-    if (cx1) u0 = pu;
-    if (cy0) u0 = pr;
-    if (cy1) u0 = pl;
-    if (cx0 && cy0) u0 = get_val(idx + ivec3(+1, +1, 0), 1);
-    if (cx0 && cy1) u0 = get_val(idx + ivec3(+1, -1, 0), 1);
-    if (cx1 && cy0) u0 = get_val(idx + ivec3(-1, +1, 0), 1);
-    if (cx1 && cy1) u0 = get_val(idx + ivec3(-1, -1, 0), 1);
+    if (cx0) { u0 = pd; }
+    if (cx1) { u0 = pu; }
+    if (cy0) { u0 = pr; }
+    if (cy1) { u0 = pl; }
+    // if (cx0 && cy0) { u0 = get_val(idx + ivec3(+1, +1, 0), 1); }
+    // if (cx0 && cy1) { u0 = get_val(idx + ivec3(+1, -1, 0), 1); }
+    // if (cx1 && cy0) { u0 = get_val(idx + ivec3(-1, +1, 0), 1); }
+    // if (cx1 && cy1) { u0 = get_val(idx + ivec3(-1, -1, 0), 1); }
 
     // Update vertex buffer with the new value.
     vertex[vidx].pos.y = u0;
 
     // Update the vertex color.
-    vertex[vidx].uv = colormap_uv(7, 255 - int(clamp(1000 * (u0 - .001), 0, 255)));
+    vertex[vidx].uv = colormap_uv(7, 128 - int(clamp(500 * (u0), 0, 255)));
 
     // Update normals.
     vec3 p0 = get_pos(idx + ivec3(0, 0, 0));
