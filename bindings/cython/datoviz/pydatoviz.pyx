@@ -605,14 +605,16 @@ cdef class App:
 
     def canvas(
             self, int width=DEFAULT_WIDTH, int height=DEFAULT_HEIGHT, int rows=1, int cols=1,
-            bint show_fps=False, clear_color=None, bint pick=False):
-        cdef int fps = 0
+            bint show_fps=False, clear_color=None, bint pick=False, bint high_dpi=False):
+        cdef int flags = 0
+        flags |= cv.DVZ_CANVAS_FLAGS_IMGUI
         if show_fps:
-            fps = cv.DVZ_CANVAS_FLAGS_FPS
+            flags |= cv.DVZ_CANVAS_FLAGS_FPS
         if pick:
-            fps = cv.DVZ_CANVAS_FLAGS_PICK
-        fps |= cv.DVZ_CANVAS_FLAGS_IMGUI
-        c_canvas = cv.dvz_canvas(self._c_gpu, width, height, fps)
+            flags |= cv.DVZ_CANVAS_FLAGS_PICK
+        if high_dpi:
+            flags |= cv.DVZ_CANVAS_FLAGS_DPI_SCALE_200
+        c_canvas = cv.dvz_canvas(self._c_gpu, width, height, flags)
 
         # Canvas clear color.
         if clear_color == 'white':
