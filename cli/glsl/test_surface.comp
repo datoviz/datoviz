@@ -28,6 +28,7 @@ layout(std140, binding = 1) buffer pde {
 };
 
 layout (std140, binding = 2) uniform UBO {
+    vec4 drop; // 0 or 1, x, y, a
     float t;
     float dt;
     int iter;
@@ -81,10 +82,13 @@ void main() {
         return;
 
     float t = ubo.t;
+    float dt = ubo.dt;
     float Cx2 = .01;
     float Cy2 = Cx2;
     float D1 = 2;
     float D2 = 1;
+    float x = -1 + 2 * (idx.x / float(nv.x - 1));
+    float y = -1 + 2 * (idx.y / float(nv.y - 1));
 
     // Get the current and previous values.
     uint vidx = get_vert_idx(idx);
@@ -111,6 +115,12 @@ void main() {
     float pyy = pu + pd - 2 * u1;
     u0 = D1 * u1 - D2 * u2 + Cx2 * pxx + Cy2 * pyy;
 
+    if (ubo.drop.x > 0) {
+        x -= ubo.drop.y;
+        y -= ubo.drop.z;
+        u0 -= dt*dt * ubo.drop.w * exp(-200 * (x*x+y*y));
+    }
+
     // Boundary conditions.
     bool cx0 = idx.x == 0;
     bool cx1 = idx.x == nv.x - 1;
@@ -129,7 +139,7 @@ void main() {
     vertex[vidx].pos.y = u0;
 
     // Update the vertex color.
-    vertex[vidx].uv = colormap_uv(2, int(clamp(1000 * u0, 0, 255)));
+    vertex[vidx].uv = colormap_uv(7, 255 - int(clamp(1000 * (u0 - .001), 0, 255)));
 
     // Update normals.
     vec3 p0 = get_pos(idx + ivec3(0, 0, 0));

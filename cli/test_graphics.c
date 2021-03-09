@@ -1279,6 +1279,7 @@ int test_graphics_mesh_1(TestContext* context)
 typedef struct TestComputeParams TestComputeParams;
 struct TestComputeParams
 {
+    vec4 drop;
     float t;
     float dt;
     int iter;
@@ -1297,6 +1298,10 @@ static void _compute_callback(DvzCanvas* canvas, DvzEvent ev)
 
     comp_params->dt = canvas->clock.elapsed;
     comp_params->t = canvas->clock.interval;
+    comp_params->drop[0] = canvas->frame_idx % 10000 == 0;
+    comp_params->drop[1] = -1 + 2 * dvz_rand_float();
+    comp_params->drop[2] = -1 + 2 * dvz_rand_float();
+    comp_params->drop[3] = .000001 * (2 * dvz_rand_float() - 1);
     dvz_upload_buffers(canvas, tg->br_comp, 0, sizeof(TestComputeParams), comp_params);
     comp_params->iter++;
 }
@@ -1356,7 +1361,7 @@ int test_graphics_mesh_2(TestContext* context)
         {
             y = (float)j / (col_count - 1);
             y = -w + 2 * w * y;
-            z = +.5 * exp(-120 * (x * x + y * y));
+            z = +.1 * exp(-60 * (x * x + y * y));
             heights[col_count * i + j] = z + .001 * dvz_rand_float();
         }
     }
@@ -1414,7 +1419,6 @@ int test_graphics_mesh_2(TestContext* context)
     vec4* u = calloc(vertex_count, sizeof(vec4));
     for (uint32_t i = 0; i < vertex_count; i++)
     {
-        // u[i][0] = heights[i];
         u[i][1] = heights[i];
         u[i][2] = heights[i];
     }
