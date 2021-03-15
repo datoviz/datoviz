@@ -1,5 +1,5 @@
-#include "test_common.h"
 #include "../include/datoviz/common.h"
+#include "tests.h"
 
 
 
@@ -110,6 +110,7 @@ int test_container(TestContext* context)
 /*  FIFO queue                                                                                   */
 /*************************************************************************************************/
 
+/*
 static void* _fifo_thread_1(void* arg)
 {
     DvzFifo* fifo = arg;
@@ -232,3 +233,4 @@ int test_fifo_3(TestContext* context)
     dvz_fifo_destroy(&fifo);
     return 0;
 }
+*/
