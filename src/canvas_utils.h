@@ -48,6 +48,8 @@ static DvzEvent _event_dequeue(DvzCanvas* canvas, bool wait)
 // Whether there is at least one async callback.
 static bool _has_async_callbacks(DvzCanvas* canvas, DvzEventType type)
 {
+    if (canvas == NULL)
+        return false;
     ASSERT(canvas != NULL);
     for (uint32_t i = 0; i < canvas->callbacks_count; i++)
     {
