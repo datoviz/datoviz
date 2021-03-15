@@ -26,10 +26,21 @@
 /*  Test declarations                                                                            */
 /*************************************************************************************************/
 
+// Test utils.
 int test_utils_container(TestContext*);
 int test_utils_fifo_1(TestContext*);
 int test_utils_fifo_2(TestContext*);
 int test_utils_fifo_3(TestContext*);
+int test_utils_array_1(TestContext*);
+int test_utils_array_2(TestContext*);
+int test_utils_array_3(TestContext*);
+int test_utils_array_4(TestContext*);
+int test_utils_array_5(TestContext*);
+int test_utils_array_6(TestContext*);
+int test_utils_array_7(TestContext*);
+int test_utils_array_cast(TestContext*);
+int test_utils_array_mvp(TestContext*);
+int test_utils_array_3D(TestContext*);
 
 
 
@@ -43,10 +54,21 @@ int test_utils_fifo_3(TestContext*);
     }
 
 static TestCase TEST_CASES[] = {
-    CASE_FIXTURE_NONE(test_utils_container),
-    CASE_FIXTURE_NONE(test_utils_fifo_1),
-    CASE_FIXTURE_NONE(test_utils_fifo_2),
-    CASE_FIXTURE_NONE(test_utils_fifo_3),
+    CASE_FIXTURE_NONE(test_utils_container),  //
+    CASE_FIXTURE_NONE(test_utils_fifo_1),     //
+    CASE_FIXTURE_NONE(test_utils_fifo_2),     //
+    CASE_FIXTURE_NONE(test_utils_fifo_3),     //
+    CASE_FIXTURE_NONE(test_utils_array_1),    //
+    CASE_FIXTURE_NONE(test_utils_array_2),    //
+    CASE_FIXTURE_NONE(test_utils_array_3),    //
+    CASE_FIXTURE_NONE(test_utils_array_4),    //
+    CASE_FIXTURE_NONE(test_utils_array_5),    //
+    CASE_FIXTURE_NONE(test_utils_array_6),    //
+    CASE_FIXTURE_NONE(test_utils_array_7),    //
+    CASE_FIXTURE_NONE(test_utils_array_cast), //
+    CASE_FIXTURE_NONE(test_utils_array_mvp),  //
+    CASE_FIXTURE_NONE(test_utils_array_3D),   //
+
 };
 
 static uint32_t N_TESTS = sizeof(TEST_CASES) / sizeof(TestCase);

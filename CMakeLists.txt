@@ -527,7 +527,7 @@ if (DATOVIZ_WITH_CLI)
     # file(GLOB cli "cli/*.c" "cli/*.cpp" "cli/*.h" "cli/*.hpp" "tests/*.c*" "tests/*.h*")
     file(GLOB cli
         "cli/main.c"
-        "tests/test_common.c"
+        "tests/test_utils.c"
     )
     add_executable(datovizcli ${cli})
     target_datoviz(datovizcli)
