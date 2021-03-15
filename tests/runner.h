@@ -102,7 +102,7 @@ static void print_end(int index, int res)
 /*  Test runner                                                                                  */
 /*************************************************************************************************/
 
-static TestCase get_test_case(uint32_t n_tests, TestCase* cases, const char* name)
+static TestCase find_test_case(uint32_t n_tests, TestCase* cases, const char* name)
 {
     ASSERT(cases != NULL);
 
@@ -119,24 +119,22 @@ static TestCase get_test_case(uint32_t n_tests, TestCase* cases, const char* nam
 
 
 
-static int run_test(TestContext* tc, const char* name)
+static int run_test_case(TestContext* tc, TestCase* test_case)
 {
     ASSERT(tc != NULL);
+    ASSERT(test_case != NULL);
+
     srand(0);
 
-    TestCase test_case = get_test_case(tc->n_tests, tc->cases, name);
-    if (test_case.function == NULL)
+    if (test_case->function == NULL)
         return 1;
-
-    ASSERT(name != NULL);
 
     // Make sure either the canvas or panel is set up if the test case requires it.
     // _setup(tc, test_case.fixture);
 
     // Run the test case on the canvas.
     int res = 1;
-    ASSERT(test_case.function != NULL);
-    res = test_case.function(tc);
+    res = test_case->function(tc);
 
     /*
     // Run the app.

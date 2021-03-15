@@ -26,7 +26,10 @@
 /*  Test declarations                                                                            */
 /*************************************************************************************************/
 
-int test_container(TestContext* context);
+int test_utils_container(TestContext*);
+int test_utils_fifo_1(TestContext*);
+int test_utils_fifo_2(TestContext*);
+int test_utils_fifo_3(TestContext*);
 
 
 
@@ -40,14 +43,21 @@ int test_container(TestContext* context);
     }
 
 static TestCase TEST_CASES[] = {
-    CASE_FIXTURE_NONE(test_container),
+    CASE_FIXTURE_NONE(test_utils_container),
+    CASE_FIXTURE_NONE(test_utils_fifo_1),
+    CASE_FIXTURE_NONE(test_utils_fifo_2),
+    CASE_FIXTURE_NONE(test_utils_fifo_3),
 };
 
 static uint32_t N_TESTS = sizeof(TEST_CASES) / sizeof(TestCase);
 
 
 
-static TestContext _create_context()
+/*************************************************************************************************/
+/* Test context                                                                                  */
+/*************************************************************************************************/
+
+static TestContext _test_context()
 {
     TestContext tc = {0};
     tc.n_tests = N_TESTS;
@@ -55,14 +65,11 @@ static TestContext _create_context()
     return tc;
 }
 
+static void _test_context_destroy(TestContext* tc) { return; }
+
+
 
 /*
-static TestCase TEST_CASES[] = {
-
-    // common tests
-    CASE_FIXTURE_NONE(test_container),
-
-    // vklite2
     CASE_FIXTURE_NONE(test_vklite_app),            //
     CASE_FIXTURE_NONE(test_vklite_surface),        //
     CASE_FIXTURE_NONE(test_vklite_window),         //
@@ -209,9 +216,6 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_scene_mesh),     //
     CASE_FIXTURE_NONE(test_scene_axes),     //
     CASE_FIXTURE_NONE(test_scene_logistic), //
-
-};
-static uint32_t N_TESTS = sizeof(TEST_CASES) / sizeof(TestCase);
 */
 
 

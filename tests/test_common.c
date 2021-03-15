@@ -1,5 +1,26 @@
 #include "../include/datoviz/common.h"
+#include "../include/datoviz/fifo.h"
 #include "tests.h"
+
+
+
+/*************************************************************************************************/
+/*  Typedefs                                                                                     */
+/*************************************************************************************************/
+
+typedef struct TestObject TestObject;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+struct TestObject
+{
+    DvzObject obj;
+    float x;
+};
 
 
 
@@ -7,14 +28,7 @@
 /*  Common tests                                                                                 */
 /*************************************************************************************************/
 
-typedef struct TestObject TestObject;
-struct TestObject
-{
-    DvzObject obj;
-    float x;
-};
-
-int test_container(TestContext* context)
+int test_utils_container(TestContext* tc)
 {
     uint32_t capacity = 2;
 
@@ -110,7 +124,6 @@ int test_container(TestContext* context)
 /*  FIFO queue                                                                                   */
 /*************************************************************************************************/
 
-/*
 static void* _fifo_thread_1(void* arg)
 {
     DvzFifo* fifo = arg;
@@ -140,7 +153,7 @@ static void* _fifo_thread_2(void* arg)
 
 
 
-int test_fifo_1(TestContext* context)
+int test_utils_fifo_1(TestContext* tc)
 {
     DvzFifo fifo = dvz_fifo(8);
     uint8_t item = 12;
@@ -186,7 +199,7 @@ int test_fifo_1(TestContext* context)
 
 
 
-int test_fifo_2(TestContext* context)
+int test_utils_fifo_2(TestContext* tc)
 {
     DvzFifo fifo = dvz_fifo(8);
     uint32_t numbers[64] = {0};
@@ -209,7 +222,7 @@ int test_fifo_2(TestContext* context)
 
 
 
-int test_fifo_3(TestContext* context)
+int test_utils_fifo_3(TestContext* tc)
 {
     DvzFifo fifo = dvz_fifo(8);
     uint32_t numbers[256] = {0};
@@ -233,4 +246,3 @@ int test_fifo_3(TestContext* context)
     dvz_fifo_destroy(&fifo);
     return 0;
 }
-*/

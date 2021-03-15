@@ -28,7 +28,7 @@ static int test(int argc, char** argv)
     print_start();
 
     // Create the test context.
-    TestContext tc = _create_context();
+    TestContext tc = _test_context();
 
     // Start the tests.
     int cur_res = 0;
@@ -42,7 +42,7 @@ static int test(int argc, char** argv)
         if (argc == 1 || strstr(tc.cases[i].name, argv[1]) != NULL)
         {
             print_case(index, tc.cases[i].name);
-            cur_res = run_test(&tc, tc.cases[i].name);
+            cur_res = run_test_case(&tc, &tc.cases[i]);
             print_res(index, tc.cases[i].name, cur_res);
             res += cur_res == 0 ? 0 : 1;
             index++;
@@ -50,11 +50,13 @@ static int test(int argc, char** argv)
     }
     print_end(index, res);
 
-    // Destroy the app if needed.
-    // _destroy_context(&context);
+    // Destroy the test context.
+    _test_context_destroy(&tc);
 
     return res;
 }
+
+
 
 static int info(int argc, char** argv)
 {
