@@ -20,6 +20,9 @@
 
 #define AC(x, y, eps) AIN((x - y), -eps, +eps)
 
+#define WIDTH  800
+#define HEIGHT 600
+
 
 
 /*************************************************************************************************/
@@ -58,6 +61,10 @@ int test_vklite_images(TestContext*);
 int test_vklite_sampler(TestContext*);
 int test_vklite_barrier(TestContext*);
 int test_vklite_submit(TestContext*);
+int test_vklite_offscreen(TestContext*);
+int test_vklite_window(TestContext*);
+int test_vklite_surface(TestContext*);
+int test_vklite_swapchain(TestContext*);
 
 
 
@@ -113,6 +120,9 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_vklite_sampler),       //
     CASE_FIXTURE_NONE(test_vklite_barrier),       //
     CASE_FIXTURE_NONE(test_vklite_submit),        //
+    CASE_FIXTURE_NONE(test_vklite_window),        //
+    CASE_FIXTURE_NONE(test_vklite_surface),       //
+    CASE_FIXTURE_NONE(test_vklite_swapchain),     //
 
 };
 
