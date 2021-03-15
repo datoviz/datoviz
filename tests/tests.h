@@ -65,6 +65,9 @@ int test_vklite_offscreen(TestContext*);
 int test_vklite_window(TestContext*);
 int test_vklite_surface(TestContext*);
 int test_vklite_swapchain(TestContext*);
+int test_vklite_graphics(TestContext*);
+int test_vklite_canvas_blank(TestContext*);
+int test_vklite_canvas_triangle(TestContext*);
 
 
 
@@ -110,19 +113,22 @@ static TestCase TEST_CASES[] = {
     // CASE_FIXTURE_NONE(test_utils_transforms_5), //
 
     // vklite.
-    CASE_FIXTURE_NONE(test_vklite_app),           //
-    CASE_FIXTURE_NONE(test_vklite_commands),      //
-    CASE_FIXTURE_NONE(test_vklite_buffer_1),      //
-    CASE_FIXTURE_NONE(test_vklite_buffer_resize), //
-    CASE_FIXTURE_NONE(test_vklite_compute),       //
-    CASE_FIXTURE_NONE(test_vklite_push),          //
-    CASE_FIXTURE_NONE(test_vklite_images),        //
-    CASE_FIXTURE_NONE(test_vklite_sampler),       //
-    CASE_FIXTURE_NONE(test_vklite_barrier),       //
-    CASE_FIXTURE_NONE(test_vklite_submit),        //
-    CASE_FIXTURE_NONE(test_vklite_window),        //
-    CASE_FIXTURE_NONE(test_vklite_surface),       //
-    CASE_FIXTURE_NONE(test_vklite_swapchain),     //
+    CASE_FIXTURE_NONE(test_vklite_app),             //
+    CASE_FIXTURE_NONE(test_vklite_commands),        //
+    CASE_FIXTURE_NONE(test_vklite_buffer_1),        //
+    CASE_FIXTURE_NONE(test_vklite_buffer_resize),   //
+    CASE_FIXTURE_NONE(test_vklite_compute),         //
+    CASE_FIXTURE_NONE(test_vklite_push),            //
+    CASE_FIXTURE_NONE(test_vklite_images),          //
+    CASE_FIXTURE_NONE(test_vklite_sampler),         //
+    CASE_FIXTURE_NONE(test_vklite_barrier),         //
+    CASE_FIXTURE_NONE(test_vklite_submit),          //
+    CASE_FIXTURE_NONE(test_vklite_window),          //
+    CASE_FIXTURE_NONE(test_vklite_surface),         //
+    CASE_FIXTURE_NONE(test_vklite_swapchain),       //
+    CASE_FIXTURE_NONE(test_vklite_graphics),        //
+    CASE_FIXTURE_NONE(test_vklite_canvas_blank),    //
+    CASE_FIXTURE_NONE(test_vklite_canvas_triangle), //
 
 };
 
