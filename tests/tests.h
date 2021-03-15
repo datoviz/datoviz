@@ -58,6 +58,16 @@ int test_utils_transforms_4(TestContext*);
         .name = #func, .function = func,                                                          \
     }
 
+#define CASE_FIXTURE_APP(func)                                                                    \
+    {                                                                                             \
+        .name = #func, .function = func, .fixture = TEST_FIXTURE_APP,                             \
+    }
+
+#define CASE_FIXTURE_CANVAS(func)                                                                 \
+    {                                                                                             \
+        .name = #func, .function = func, .fixture = TEST_FIXTURE_CANVAS,                          \
+    }
+
 static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_utils_container),    //
     CASE_FIXTURE_NONE(test_utils_fifo_1),       //
@@ -97,7 +107,20 @@ static TestContext _test_context()
     return tc;
 }
 
-static void _test_context_destroy(TestContext* tc) { return; }
+static void _test_context_destroy(TestContext* tc)
+{
+    ASSERT(tc != NULL);
+    if (tc->canvas != NULL)
+    {
+        dvz_canvas_destroy(tc->canvas);
+        tc->canvas = NULL;
+    }
+    if (tc->app != NULL)
+    {
+        dvz_app_destroy(tc->app);
+        tc->app = NULL;
+    }
+}
 
 
 

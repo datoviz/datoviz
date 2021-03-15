@@ -14,6 +14,19 @@
 
 
 /*************************************************************************************************/
+/*  Enums                                                                                        */
+/*************************************************************************************************/
+
+typedef enum
+{
+    TEST_FIXTURE_NONE,
+    TEST_FIXTURE_APP,
+    TEST_FIXTURE_CANVAS,
+} TestFixture;
+
+
+
+/*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
@@ -34,14 +47,12 @@ typedef int (*TestFunction)(TestContext*);
 
 struct TestContext
 {
-    DvzApp* app;
-
     uint32_t n_tests;
     TestCase* cases;
 
-    // DvzCanvas* canvas;
-    // DvzScene* scene;
-    // DvzPanel* panel;
+    DvzApp* app;
+    DvzCanvas* canvas;
+
     // DvzScreenshot* screenshot;
     // bool is_live;
 };
@@ -51,8 +62,8 @@ struct TestContext
 struct TestCase
 {
     const char* name;
-    // TestFixture fixture;
     TestFunction function;
+    TestFixture fixture;
     // TestFunction destroy;
     // bool save_screenshot;
 };
@@ -119,6 +130,26 @@ static TestCase find_test_case(uint32_t n_tests, TestCase* cases, const char* na
 
 
 
+static void _set_fixture(TestContext* tc, TestCase* test_case)
+{
+    ASSERT(tc != NULL);
+    ASSERT(test_case != NULL);
+
+    switch (test_case->fixture)
+    {
+
+    case TEST_FIXTURE_APP:
+        if (tc->app == NULL)
+            tc->app = dvz_app(DVZ_BACKEND_GLFW);
+        break;
+
+    default:
+        break;
+    }
+}
+
+
+
 static int run_test_case(TestContext* tc, TestCase* test_case)
 {
     ASSERT(tc != NULL);
@@ -131,6 +162,8 @@ static int run_test_case(TestContext* tc, TestCase* test_case)
 
     // Make sure either the canvas or panel is set up if the test case requires it.
     // _setup(tc, test_case.fixture);
+
+    _set_fixture(tc, test_case);
 
     // Run the test case on the canvas.
     int res = 1;
