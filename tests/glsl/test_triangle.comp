@@ -1,0 +1,24 @@
+#version 450
+
+#define WORKGROUP_SIZE 32
+
+// NOTE: the number of items could be passed via a push constant or uniform buffer, or even
+// as the first element of the storage buffer.
+#define ITEM_COUNT 20
+
+layout (local_size_x=WORKGROUP_SIZE, local_size_y=1, local_size_z=1) in;
+
+struct Vertex{
+    vec3 pos;
+    vec4 color;
+};
+
+layout(binding = 0) buffer buf {
+   Vertex vertex[];
+};
+
+void main() {
+    if(gl_GlobalInvocationID.x >= ITEM_COUNT)
+        return;
+    vertex[gl_GlobalInvocationID.x].pos *= .999;
+}
