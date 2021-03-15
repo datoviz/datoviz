@@ -18,10 +18,14 @@
 
 #define AIN(x, m, M) AT((m) <= (x) && (x) <= (M))
 
-#define AC(x, y, eps) AIN((x - y), -eps, +eps)
+#define AC(x, y, eps) AIN(((x) - (y)), -(eps), +(eps))
+#define ACn(n, x, y, eps)                                                                         \
+    for (uint32_t i = 0; i < (n); i++)                                                            \
+        AC((x)[i], (y)[i], (eps));
 
 #define WIDTH  800
 #define HEIGHT 600
+#define EPS    1e-6
 
 
 
@@ -73,6 +77,7 @@ int test_vklite_canvas_triangle(TestContext*);
 // Test vklite.
 int test_canvas_blank(TestContext*);
 int test_canvas_multiple(TestContext*);
+int test_canvas_events(TestContext*);
 
 
 
@@ -140,6 +145,7 @@ static TestCase TEST_CASES[] = {
     // Canvas.
     CASE_FIXTURE_APP(test_canvas_blank),    //
     CASE_FIXTURE_APP(test_canvas_multiple), //
+    CASE_FIXTURE_APP(test_canvas_events),   //
 
 };
 

@@ -14,11 +14,24 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
+typedef struct EventHolder EventHolder;
+
 
 
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
+
+struct EventHolder
+{
+    DvzEvent init;
+    DvzEvent key;
+    DvzEvent wheel;
+    DvzEvent button;
+    DvzEvent move;
+    DvzEvent timer;
+    DvzEvent frame;
+};
 
 
 
@@ -97,6 +110,131 @@ int test_canvas_multiple(TestContext* tc)
     }
     FREE(rgb0);
     FREE(rgb1);
+
+    return 0;
+}
+
+
+
+static void _init_callback(DvzCanvas* canvas, DvzEvent ev)
+{
+    log_debug("init event for canvas");
+    ASSERT(canvas != NULL);
+    EventHolder* events = (EventHolder*)ev.user_data;
+    ASSERT(events != NULL);
+    events->init = ev;
+}
+
+static void _wheel_callback(DvzCanvas* canvas, DvzEvent ev)
+{
+    log_debug("wheel %.3f", ev.u.w.dir[1]);
+    ASSERT(canvas != NULL);
+    EventHolder* events = (EventHolder*)ev.user_data;
+    ASSERT(events != NULL);
+    events->wheel = ev;
+}
+
+static void _button_callback(DvzCanvas* canvas, DvzEvent ev)
+{
+    log_debug("clicked %d mods %d", ev.u.b.button, ev.u.b.modifiers);
+    ASSERT(canvas != NULL);
+    EventHolder* events = (EventHolder*)ev.user_data;
+    ASSERT(events != NULL);
+    events->button = ev;
+}
+
+static void _move_callback(DvzCanvas* canvas, DvzEvent ev)
+{
+    ASSERT(canvas != NULL);
+    EventHolder* events = (EventHolder*)ev.user_data;
+    ASSERT(events != NULL);
+    events->move = ev;
+}
+
+static void _timer_callback(DvzCanvas* canvas, DvzEvent ev)
+{
+    log_trace("timer callback #%d time %.3f", ev.u.t.idx, ev.u.t.time);
+    ASSERT(canvas != NULL);
+    EventHolder* events = (EventHolder*)ev.user_data;
+    ASSERT(events != NULL);
+    events->timer = ev;
+}
+
+static void _frame_callback(DvzCanvas* canvas, DvzEvent ev)
+{
+    log_debug(
+        "canvas #%d, frame callback #%d, time %.6f, interval %.6f", //
+        canvas->obj.id, ev.u.f.idx, ev.u.f.time, ev.u.f.interval);
+    ASSERT(canvas != NULL);
+    EventHolder* events = (EventHolder*)ev.user_data;
+    ASSERT(events != NULL);
+    events->frame = ev;
+}
+
+static void _key_callback(DvzCanvas* canvas, DvzEvent ev)
+{
+    log_debug("key code %d", ev.u.k.key_code);
+    ASSERT(canvas != NULL);
+    EventHolder* events = (EventHolder*)ev.user_data;
+    ASSERT(events != NULL);
+    events->key = ev;
+}
+
+
+
+int test_canvas_events(TestContext* tc)
+{
+    DvzApp* app = tc->app;
+    DvzGpu* gpu = dvz_gpu_best(app);
+
+    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
+
+    EventHolder events = {0};
+    dvz_event_callback( //
+        canvas, DVZ_EVENT_INIT, 0, DVZ_EVENT_MODE_SYNC, _init_callback, &events);
+    dvz_event_callback( //
+        canvas, DVZ_EVENT_TIMER, .05, DVZ_EVENT_MODE_SYNC, _timer_callback, &events);
+    dvz_event_callback( //
+        canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _frame_callback, &events);
+    dvz_event_callback( //
+        canvas, DVZ_EVENT_KEY_PRESS, 0, DVZ_EVENT_MODE_SYNC, _key_callback, &events);
+    dvz_event_callback( //
+        canvas, DVZ_EVENT_MOUSE_WHEEL, 0, DVZ_EVENT_MODE_SYNC, _wheel_callback, &events);
+    dvz_event_callback( //
+        canvas, DVZ_EVENT_MOUSE_MOVE, 0, DVZ_EVENT_MODE_SYNC, _move_callback, &events);
+    dvz_event_callback( //
+        canvas, DVZ_EVENT_MOUSE_PRESS, 0, DVZ_EVENT_MODE_SYNC, _button_callback, &events);
+
+    dvz_app_run(app, N_FRAMES);
+
+    // Init, timer, frame events.
+    AT(events.init.type == DVZ_EVENT_INIT);
+    AT(events.timer.u.t.idx > 0);
+    AT(events.frame.u.f.idx == 4);
+
+    // Key press.
+    dvz_event_key_press(canvas, DVZ_KEY_A, 0);
+    // dvz_app_run(app, 3);
+    AT(events.key.u.k.key_code == DVZ_KEY_A);
+
+    // Mouse wheel.
+    vec2 pos = {10, 10};
+    vec2 dir = {0, -2};
+    dvz_event_mouse_wheel(canvas, pos, dir, 0);
+    // dvz_app_run(app, 3);
+    ACn(2, events.wheel.u.w.dir, dir, EPS);
+
+    // Mouse move.
+    pos[0] = 20;
+    dvz_event_mouse_move(canvas, pos, 0);
+    // dvz_app_run(app, 3);
+    ACn(2, events.move.u.m.pos, pos, EPS);
+
+    // Mouse press.
+    dvz_event_mouse_press(canvas, DVZ_MOUSE_BUTTON_LEFT, 0);
+    AT(events.button.u.b.button == DVZ_MOUSE_BUTTON_LEFT);
+
+    // TODO: more events.
 
     return 0;
 }
