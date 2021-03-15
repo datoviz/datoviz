@@ -529,6 +529,7 @@ if (DATOVIZ_WITH_CLI)
         "cli/main.c"
         "tests/test_utils.c"
         "tests/test_vklite.c"
+        "tests/test_canvas.c"
     )
     add_executable(datovizcli ${cli})
     target_datoviz(datovizcli)
