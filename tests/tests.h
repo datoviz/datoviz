@@ -47,6 +47,18 @@ int test_utils_transforms_3(TestContext*);
 int test_utils_transforms_4(TestContext*);
 // int test_utils_transforms_5(TestContext*);
 
+// Test vklite.
+int test_vklite_app(TestContext*);
+int test_vklite_commands(TestContext*);
+int test_vklite_buffer_1(TestContext*);
+int test_vklite_buffer_resize(TestContext*);
+int test_vklite_compute(TestContext*);
+int test_vklite_push(TestContext*);
+int test_vklite_images(TestContext*);
+int test_vklite_sampler(TestContext*);
+int test_vklite_barrier(TestContext*);
+int test_vklite_submit(TestContext*);
+
 
 
 /*************************************************************************************************/
@@ -60,15 +72,16 @@ int test_utils_transforms_4(TestContext*);
 
 #define CASE_FIXTURE_APP(func)                                                                    \
     {                                                                                             \
-        .name = #func, .function = func, .fixture = TEST_FIXTURE_APP,                             \
+        .name = #func, .function = func, .fixture = TEST_FIXTURE_APP                              \
     }
 
 #define CASE_FIXTURE_CANVAS(func)                                                                 \
     {                                                                                             \
-        .name = #func, .function = func, .fixture = TEST_FIXTURE_CANVAS,                          \
+        .name = #func, .function = func, .fixture = TEST_FIXTURE_CANVAS                           \
     }
 
 static TestCase TEST_CASES[] = {
+    // Utils.
     CASE_FIXTURE_NONE(test_utils_container),    //
     CASE_FIXTURE_NONE(test_utils_fifo_1),       //
     CASE_FIXTURE_NONE(test_utils_fifo_2),       //
@@ -88,6 +101,18 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_utils_transforms_3), //
     CASE_FIXTURE_NONE(test_utils_transforms_4), //
     // CASE_FIXTURE_NONE(test_utils_transforms_5), //
+
+    // vklite.
+    CASE_FIXTURE_NONE(test_vklite_app),           //
+    CASE_FIXTURE_NONE(test_vklite_commands),      //
+    CASE_FIXTURE_NONE(test_vklite_buffer_1),      //
+    CASE_FIXTURE_NONE(test_vklite_buffer_resize), //
+    CASE_FIXTURE_NONE(test_vklite_compute),       //
+    CASE_FIXTURE_NONE(test_vklite_push),          //
+    CASE_FIXTURE_NONE(test_vklite_images),        //
+    CASE_FIXTURE_NONE(test_vklite_sampler),       //
+    CASE_FIXTURE_NONE(test_vklite_barrier),       //
+    CASE_FIXTURE_NONE(test_vklite_submit),        //
 
 };
 

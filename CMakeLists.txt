@@ -528,6 +528,7 @@ if (DATOVIZ_WITH_CLI)
     file(GLOB cli
         "cli/main.c"
         "tests/test_utils.c"
+        "tests/test_vklite.c"
     )
     add_executable(datovizcli ${cli})
     target_datoviz(datovizcli)
