@@ -503,6 +503,8 @@ static void create_instance(
         extensions[required_extension_count] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
     }
 
+    extensions[extension_count++] = "VK_KHR_get_physical_device_properties2";
+
     // Prepare the creation of the Vulkan instance.
     VkApplicationInfo appInfo = {0};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -864,8 +866,46 @@ static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
     device_info.pEnabledFeatures = &gpu->requested_features;
 
     // Device extensions and layers
-    device_info.enabledExtensionCount = (uint32_t)has_surface;
-    device_info.ppEnabledExtensionNames = has_surface ? DVZ_DEVICE_EXTENSIONS : NULL;
+    char* extensions[16] = {0};
+    uint32_t n_extensions = 0;
+
+    if (has_surface)
+    {
+        uint32_t n = ARRAY_COUNT(DVZ_DEVICE_EXTENSIONS);
+        log_trace("has surface, will add %d extensions", n);
+        ASSERT(n < 16);
+        memcpy(extensions, DVZ_DEVICE_EXTENSIONS, n * sizeof(char*));
+        n_extensions += n;
+    }
+
+    // Fix for the following validation error (macOS):
+    // If the [VK_KHR_portability_subset] extension is included in pProperties of
+    // vkEnumerateDeviceExtensionProperties, ppEnabledExtensions must include
+    // "VK_KHR_portability_subset"
+    {
+        log_trace("getting device extensions properties");
+        uint32_t n = 0;
+        vkEnumerateDeviceExtensionProperties(gpu->physical_device, NULL, &n, NULL);
+        VkExtensionProperties* ext = calloc(n, sizeof(VkExtensionProperties));
+        VK_CHECK_RESULT(vkEnumerateDeviceExtensionProperties(gpu->physical_device, NULL, &n, ext));
+        for (uint32_t i = 0; i < n; i++)
+        {
+            if (strncmp(
+                ext[i].extensionName, "VK_KHR_portability_subset",
+                strnlen("VK_KHR_portability_subset", 32)) == 0)
+            {
+                log_trace("found portability subset, will need to add extension VK_KHR_portability_subset");
+                //extensions[n_extensions++] = "VK_KHR_get_physical_device_properties2";
+                extensions[n_extensions++] = "VK_KHR_portability_subset";
+                break;
+            }
+        }
+        FREE(ext);
+    }
+
+    device_info.enabledExtensionCount = n_extensions;
+    device_info.ppEnabledExtensionNames = (const char* const*)extensions;
+
     device_info.enabledLayerCount = has_validation ? ARRAY_COUNT(DVZ_LAYERS) : 0;
     device_info.ppEnabledLayerNames = has_validation ? DVZ_LAYERS : NULL;
 

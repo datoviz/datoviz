@@ -704,7 +704,7 @@ void dvz_cmd_reset(DvzCommands* cmds, uint32_t idx)
     ASSERT(cmds != NULL);
     ASSERT(cmds->count > 0);
 
-    log_trace("reset %d command buffer(s)", cmds->count);
+    log_trace("reset command buffer #%d", idx);
     ASSERT(cmds->cmds[idx] != VK_NULL_HANDLE);
     VK_CHECK_RESULT(vkResetCommandBuffer(cmds->cmds[idx], 0));
 }
