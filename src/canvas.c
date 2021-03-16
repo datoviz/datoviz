@@ -1915,6 +1915,7 @@ void dvz_canvas_pick(DvzCanvas* canvas, uvec2 pos_screen, ivec4 picked)
     dvz_gpu_wait(gpu);
 
     bool has_pick = _support_pick(canvas);
+    log_trace("pick at %u, %u", pos_screen[0], pos_screen[1]);
 
     // Source image : pick image if pick support, otherwise swapchain image.
     DvzImages* images = has_pick ? &canvas->pick_image : canvas->swapchain.images;
@@ -1934,7 +1935,8 @@ void dvz_canvas_pick(DvzCanvas* canvas, uvec2 pos_screen, ivec4 picked)
     int32_t k = (int32_t)staging_size / 2;
     int32_t x = (int32_t)pos_screen[0];
     int32_t y = (int32_t)pos_screen[1];
-    ivec3 offset = {x - k, y - k, 0};
+    ivec3 offset = {
+        CLIP(x - k, 0, (int32_t)images->width), CLIP(y - k, 0, (int32_t)images->height), 0};
     _copy_image_to_staging(canvas, images, staging, offset, shape);
 
     VkDeviceSize comp_size = has_pick ? sizeof(int32_t) : sizeof(uint8_t);

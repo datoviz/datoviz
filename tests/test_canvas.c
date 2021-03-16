@@ -550,10 +550,70 @@ int test_canvas_triangle_compute(TestContext* tc)
     // Run.
     dvz_event_callback(
         canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, triangle_refill_compute, &visual);
-    dvz_app_run(app, 0);
+    dvz_app_run(app, N_FRAMES);
 
     // Destroy.
     dvz_bindings_destroy(&bindings);
+    destroy_visual(&visual);
+    dvz_canvas_destroy(canvas);
+    return 0;
+}
+
+
+
+static void _triangle_click(DvzCanvas* canvas, DvzEvent ev)
+{
+    ASSERT(canvas != NULL);
+
+    // Mouse coordinates.
+    uvec2 pos = {0};
+    pos[0] = (uint32_t)round(ev.u.c.pos[0]);
+    pos[1] = (uint32_t)round(ev.u.c.pos[1]);
+
+    ASSERT(canvas->user_data != NULL);
+    dvz_canvas_pick(canvas, pos, canvas->user_data);
+    int32_t* picked = canvas->user_data;
+    log_info("picked %d %d %d %d", picked[0], picked[1], picked[2], picked[3]);
+}
+
+int test_canvas_triangle_pick(TestContext* tc)
+{
+    DvzApp* app = tc->app;
+    DvzGpu* gpu = dvz_gpu_best(app);
+    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_PICK);
+    TestVisual visual = triangle(canvas, "_pick");
+
+    // Bindings and graphics pipeline.
+    visual.bindings = dvz_bindings(&visual.graphics.slots, 1);
+    dvz_bindings_update(&visual.bindings);
+    dvz_graphics_pick(&visual.graphics, true);
+    dvz_graphics_create(&visual.graphics);
+
+    // Triangle data.
+    triangle_upload(canvas, &visual);
+
+    // Run.
+    ivec4 picked = {0};
+    canvas->user_data = (void*)picked;
+    dvz_event_callback(canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, triangle_refill, &visual);
+    dvz_event_callback(
+        canvas, DVZ_EVENT_MOUSE_CLICK, 0, DVZ_EVENT_MODE_SYNC, _triangle_click, &visual);
+    dvz_app_run(app, N_FRAMES);
+
+    // Test picking.
+    ivec4 exp = {0};
+    float w = (float)canvas->swapchain.images[0].width;
+    float h = (float)canvas->swapchain.images[0].height;
+    ASSERT(w > 0 && h > 0);
+
+    // TODO: multiple clicks (doesn't work for now)
+
+    dvz_event_mouse_click(canvas, (vec2){w / 2, h / 2}, DVZ_MOUSE_BUTTON_LEFT, 0);
+    AIN(picked[1], 60, 68);
+    AIN(picked[2], 60, 68);
+    AIN(picked[3], 123, 131);
+
+    // Destroy.
     destroy_visual(&visual);
     dvz_canvas_destroy(canvas);
     return 0;

@@ -15,6 +15,10 @@
         log_error("assertion '%s' failed", #x);                                                   \
         return 1;                                                                                 \
     }
+#define AEn(n, x, y)                                                                              \
+    for (uint32_t i = 0; i < (n); i++)                                                            \
+        AT((x)[i] == (y)[i]);
+
 
 #define AIN(x, m, M) AT((m) <= (x) && (x) <= (M))
 
@@ -83,6 +87,7 @@ int test_canvas_triangle_push(TestContext*);
 int test_canvas_triangle_upload(TestContext*);
 int test_canvas_triangle_uniform(TestContext*);
 int test_canvas_triangle_compute(TestContext*);
+int test_canvas_triangle_pick(TestContext*);
 
 
 
@@ -156,6 +161,7 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_APP(test_canvas_triangle_upload),  //
     CASE_FIXTURE_APP(test_canvas_triangle_uniform), //
     CASE_FIXTURE_APP(test_canvas_triangle_compute), //
+    CASE_FIXTURE_APP(test_canvas_triangle_pick),    //
 
 };
 
