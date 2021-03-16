@@ -287,3 +287,45 @@ int test_canvas_triangle_1(TestContext* tc)
     dvz_canvas_destroy(canvas);
     return 0;
 }
+
+
+
+static void _push_cursor_callback(DvzCanvas* canvas, DvzEvent ev)
+{
+    uvec2 size = {0};
+    dvz_canvas_size(canvas, DVZ_CANVAS_SIZE_SCREEN, size);
+    double x = ev.u.m.pos[0] / (double)size[0];
+    double y = ev.u.m.pos[1] / (double)size[1];
+    float* push_vec = (float*)canvas->user_data;
+    push_vec[0] = x;
+    push_vec[1] = y;
+    push_vec[2] = 1;
+    dvz_canvas_to_refill(canvas);
+}
+
+int test_canvas_triangle_push(TestContext* tc)
+{
+    DvzApp* app = tc->app;
+    DvzGpu* gpu = dvz_gpu_best(app);
+
+    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
+
+    TestVisual visual = triangle_visual(gpu, &canvas->renderpass, &canvas->framebuffers, "_push");
+    visual.br.buffer = &visual.buffer;
+    visual.br.size = visual.buffer.size;
+    visual.br.count = 1;
+
+    vec3 push_vec = {0};
+    visual.graphics.user_data = &push_vec;
+    canvas->user_data = &push_vec;
+
+    dvz_event_callback(canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, triangle_refill, &visual);
+    dvz_event_callback(
+        canvas, DVZ_EVENT_MOUSE_MOVE, 0, DVZ_EVENT_MODE_SYNC, _push_cursor_callback, NULL);
+
+    dvz_app_run(app, 0);
+
+    destroy_visual(&visual);
+    dvz_canvas_destroy(canvas);
+    return 0;
+}

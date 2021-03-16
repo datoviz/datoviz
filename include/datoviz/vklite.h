@@ -565,6 +565,7 @@ struct DvzGraphics
     DvzGraphicsType type;
     int flags;
     bool support_pick;
+    void* user_data;
 
     DvzRenderpass* renderpass;
     uint32_t subpass;

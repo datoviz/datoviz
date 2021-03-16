@@ -119,6 +119,9 @@ static TestVisual triangle_visual(
     // Make the graphics.
     visual.graphics = triangle_graphics(gpu, renderpass, suffix);
 
+    if (strncmp(suffix, "_push", 5) == 0)
+        dvz_graphics_push(&visual.graphics, 0, sizeof(vec3), VK_SHADER_STAGE_VERTEX_BIT);
+
     // Create the bindings.
     visual.bindings = dvz_bindings(&visual.graphics.slots, 1);
     dvz_bindings_update(&visual.bindings);
@@ -181,6 +184,12 @@ static void triangle_commands(
     dvz_cmd_viewport(cmds, idx, (VkViewport){0, 0, width, height, 0, 1});
     dvz_cmd_bind_vertex_buffer(cmds, idx, br, 0);
     dvz_cmd_bind_graphics(cmds, idx, graphics, bindings, 0);
+
+    if (graphics->slots.push_count > 0)
+        dvz_cmd_push(
+            cmds, idx, &graphics->slots, VK_SHADER_STAGE_VERTEX_BIT, 0, //
+            sizeof(vec3), graphics->user_data);
+
     dvz_cmd_draw(cmds, idx, 0, 3);
     dvz_cmd_end_renderpass(cmds, idx);
     dvz_cmd_end(cmds, idx);
