@@ -207,7 +207,6 @@ int test_canvas_events(TestContext* tc)
 {
     DvzApp* app = tc->app;
     DvzGpu* gpu = dvz_gpu_best(app);
-
     DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
 
     EventHolder events = {0};
@@ -271,7 +270,6 @@ int test_canvas_triangle_1(TestContext* tc)
 {
     DvzApp* app = tc->app;
     DvzGpu* gpu = dvz_gpu_best(app);
-
     DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
 
     TestVisual visual = triangle_visual(gpu, &canvas->renderpass, &canvas->framebuffers, "");
@@ -307,7 +305,6 @@ int test_canvas_triangle_push(TestContext* tc)
 {
     DvzApp* app = tc->app;
     DvzGpu* gpu = dvz_gpu_best(app);
-
     DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
 
     TestVisual visual = triangle_visual(gpu, &canvas->renderpass, &canvas->framebuffers, "_push");
@@ -323,7 +320,60 @@ int test_canvas_triangle_push(TestContext* tc)
     dvz_event_callback(
         canvas, DVZ_EVENT_MOUSE_MOVE, 0, DVZ_EVENT_MODE_SYNC, _push_cursor_callback, NULL);
 
-    dvz_app_run(app, 0);
+    dvz_app_run(app, N_FRAMES);
+
+    destroy_visual(&visual);
+    dvz_canvas_destroy(canvas);
+    return 0;
+}
+
+
+
+static void _vertex_cursor_callback(DvzCanvas* canvas, DvzEvent ev)
+{
+    uvec2 size = {0};
+    dvz_canvas_size(canvas, DVZ_CANVAS_SIZE_SCREEN, size);
+    double x = ev.u.m.pos[0] / (double)size[0];
+    double y = ev.u.m.pos[1] / (double)size[1];
+
+    TestVisual* visual = ev.user_data;
+    ASSERT(visual != NULL);
+
+    TestVertex* data = (TestVertex*)visual->data;
+    ASSERT(data != NULL);
+
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        data[i].color[0] = x;
+        data[i].color[1] = y;
+        data[i].color[2] = 1;
+    }
+    dvz_upload_buffers(canvas, visual->br, 0, 3 * sizeof(TestVertex), data);
+}
+
+int test_canvas_triangle_upload(TestContext* tc)
+{
+    DvzApp* app = tc->app;
+    DvzGpu* gpu = dvz_gpu_best(app);
+    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
+
+    TestVisual visual = triangle_visual(gpu, &canvas->renderpass, &canvas->framebuffers, "");
+    visual.br.buffer = &visual.buffer;
+    visual.br.size = visual.buffer.size;
+    visual.br.count = 1;
+
+    TestVertex data[3] = {
+        {{-1, +1, 0}, {1, 0, 0, 1}},
+        {{+1, +1, 0}, {0, 1, 0, 1}},
+        {{+0, -1, 0}, {0, 0, 1, 1}},
+    };
+    visual.data = (void*)data;
+
+    dvz_event_callback(canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, triangle_refill, &visual);
+    dvz_event_callback(
+        canvas, DVZ_EVENT_MOUSE_MOVE, 0, DVZ_EVENT_MODE_SYNC, _vertex_cursor_callback, &visual);
+
+    dvz_app_run(app, N_FRAMES);
 
     destroy_visual(&visual);
     dvz_canvas_destroy(canvas);

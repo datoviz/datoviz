@@ -134,7 +134,10 @@ static TestVisual triangle_visual(
     VkDeviceSize size = 3 * sizeof(TestVertex);
     dvz_buffer_size(&visual.buffer, size);
     dvz_buffer_usage(
-        &visual.buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+        &visual.buffer,                          //
+        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |      //
+            VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | //
+            VK_BUFFER_USAGE_TRANSFER_DST_BIT);
     dvz_buffer_memory(
         &visual.buffer,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
