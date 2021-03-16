@@ -11,6 +11,12 @@
 
 #define N_FRAMES 5
 
+#define TRIANGLE_VERTICES                                                                         \
+    {                                                                                             \
+        {{-1, +1, 0}, {1, 0, 0, 1}}, {{+1, +1, 0}, {0, 1, 0, 1}}, {{+0, -1, 0}, {0, 0, 1, 1}},    \
+    }
+
+
 
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */
@@ -144,11 +150,7 @@ static TestVisual triangle_visual(
     dvz_buffer_create(&visual.buffer);
 
     // Upload the triangle data.
-    TestVertex data[3] = {
-        {{-1, +1, 0}, {1, 0, 0, 1}},
-        {{+1, +1, 0}, {0, 1, 0, 1}},
-        {{+0, -1, 0}, {0, 0, 1, 1}},
-    };
+    TestVertex data[] = TRIANGLE_VERTICES;
     dvz_buffer_upload(&visual.buffer, 0, size, data);
 
     return visual;
