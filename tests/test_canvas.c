@@ -294,9 +294,12 @@ static void triangle_upload(DvzCanvas* canvas, TestVisual* visual)
     VkDeviceSize size = 3 * sizeof(TestVertex);
     visual->br = dvz_ctx_buffers(gpu->context, DVZ_BUFFER_TYPE_VERTEX, 1, size);
     TestVertex data[3] = TRIANGLE_VERTICES;
-    visual->data = (void*)data;
+    visual->data = calloc(size, 1);
+    memcpy(visual->data, data, size);
     dvz_upload_buffers(canvas, visual->br, 0, size, data);
 }
+
+
 
 int test_canvas_triangle_1(TestContext* tc)
 {
@@ -327,6 +330,7 @@ int test_canvas_triangle_1(TestContext* tc)
 
 static void _push_cursor_callback(DvzCanvas* canvas, DvzEvent ev)
 {
+    ASSERT(canvas != NULL);
     uvec2 size = {0};
     dvz_canvas_size(canvas, DVZ_CANVAS_SIZE_SCREEN, size);
     double x = ev.u.m.pos[0] / (double)size[0];
@@ -343,22 +347,29 @@ int test_canvas_triangle_push(TestContext* tc)
     DvzApp* app = tc->app;
     DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
+    TestVisual visual = triangle(canvas, "_push");
 
-    TestVisual visual = triangle_visual(gpu, &canvas->renderpass, &canvas->framebuffers, "_push");
-    visual.br.buffer = &visual.buffer;
-    visual.br.size = visual.buffer.size;
-    visual.br.count = 1;
+    // Bindings and graphics pipeline.
+    dvz_graphics_push(&visual.graphics, 0, sizeof(vec3), VK_SHADER_STAGE_VERTEX_BIT);
+    visual.bindings = dvz_bindings(&visual.graphics.slots, 1);
+    dvz_bindings_update(&visual.bindings);
+    dvz_graphics_create(&visual.graphics);
 
+    // Triangle data.
+    triangle_upload(canvas, &visual);
+
+    // Push constant.
     vec3 push_vec = {0};
     visual.graphics.user_data = &push_vec;
     canvas->user_data = &push_vec;
 
+    // Run.
     dvz_event_callback(canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, triangle_refill, &visual);
     dvz_event_callback(
         canvas, DVZ_EVENT_MOUSE_MOVE, 0, DVZ_EVENT_MODE_SYNC, _push_cursor_callback, NULL);
-
     dvz_app_run(app, N_FRAMES);
 
+    // Destroy.
     destroy_visual(&visual);
     dvz_canvas_destroy(canvas);
     return 0;
@@ -368,6 +379,7 @@ int test_canvas_triangle_push(TestContext* tc)
 
 static void _vertex_cursor_callback(DvzCanvas* canvas, DvzEvent ev)
 {
+    ASSERT(canvas != NULL);
     uvec2 size = {0};
     dvz_canvas_size(canvas, DVZ_CANVAS_SIZE_SCREEN, size);
     double x = ev.u.m.pos[0] / (double)size[0];
@@ -393,21 +405,23 @@ int test_canvas_triangle_upload(TestContext* tc)
     DvzApp* app = tc->app;
     DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
+    TestVisual visual = triangle(canvas, "");
 
-    TestVisual visual = triangle_visual(gpu, &canvas->renderpass, &canvas->framebuffers, "");
-    visual.br.buffer = &visual.buffer;
-    visual.br.size = visual.buffer.size;
-    visual.br.count = 1;
+    // Bindings and graphics pipeline.
+    visual.bindings = dvz_bindings(&visual.graphics.slots, 1);
+    dvz_bindings_update(&visual.bindings);
+    dvz_graphics_create(&visual.graphics);
 
-    TestVertex data[] = TRIANGLE_VERTICES;
-    visual.data = (void*)data;
+    // Triangle data.
+    triangle_upload(canvas, &visual);
 
+    // Run.
     dvz_event_callback(canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, triangle_refill, &visual);
     dvz_event_callback(
         canvas, DVZ_EVENT_MOUSE_MOVE, 0, DVZ_EVENT_MODE_SYNC, _vertex_cursor_callback, &visual);
-
     dvz_app_run(app, N_FRAMES);
 
+    // Destroy
     destroy_visual(&visual);
     dvz_canvas_destroy(canvas);
     return 0;
@@ -415,26 +429,69 @@ int test_canvas_triangle_upload(TestContext* tc)
 
 
 
+static void _uniform_cursor_callback(DvzCanvas* canvas, DvzEvent ev)
+{
+    ASSERT(canvas != NULL);
+    uvec2 size = {0};
+    dvz_canvas_size(canvas, DVZ_CANVAS_SIZE_SCREEN, size);
+    double x = ev.u.m.pos[0] / (double)size[0];
+    double y = ev.u.m.pos[1] / (double)size[1];
+
+    float* vec = canvas->user_data;
+    ASSERT(vec != NULL);
+    vec[0] = x;
+    vec[1] = y;
+    vec[2] = 1;
+    vec[3] = 1;
+}
+
+static void _uniform_frame_callback(DvzCanvas* canvas, DvzEvent ev)
+{
+    ASSERT(canvas != NULL);
+    TestVisual* visual = ev.user_data;
+    ASSERT(visual != NULL);
+
+    float* vec = canvas->user_data;
+    ASSERT(vec != NULL);
+
+    dvz_upload_buffers(canvas, visual->br_u, 0, sizeof(vec4), vec);
+}
+
 int test_canvas_triangle_uniform(TestContext* tc)
 {
-    // DvzApp* app = tc->app;
-    // DvzGpu* gpu = dvz_gpu_best(app);
-    // DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
+    DvzApp* app = tc->app;
+    DvzGpu* gpu = dvz_gpu_best(app);
+    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
+    TestVisual visual = triangle(canvas, "_ubo");
 
-    // TestVisual visual = triangle_visual(gpu, &canvas->renderpass, &canvas->framebuffers,
-    // "_ubo"); visual.br.buffer = &visual.buffer; visual.br.size = visual.buffer.size;
-    // visual.br.count = 1;
+    // Uniform buffer.
+    vec4 vec = {1, 0, 1, 1};
+    canvas->user_data = (void*)vec;
+    dvz_graphics_slot(&visual.graphics, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    visual.br_u = dvz_ctx_buffers(
+        gpu->context, DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE, canvas->swapchain.img_count, sizeof(vec4));
+    ASSERT(visual.br_u.aligned_size >= visual.br_u.size);
+    dvz_upload_buffers(canvas, visual.br_u, 0, sizeof(vec4), vec);
 
-    // TestVertex data[] = TRIANGLE_VERTICES;
-    // visual.data = (void*)data;
+    // Bindings and graphics pipeline.
+    visual.bindings = dvz_bindings(&visual.graphics.slots, canvas->swapchain.img_count);
+    dvz_bindings_buffer(&visual.bindings, 0, visual.br_u);
+    dvz_bindings_update(&visual.bindings);
+    dvz_graphics_create(&visual.graphics);
 
-    // dvz_event_callback(canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, triangle_refill,
-    // &visual); dvz_event_callback(
-    //     canvas, DVZ_EVENT_MOUSE_MOVE, 0, DVZ_EVENT_MODE_SYNC, _vertex_cursor_callback, &visual);
+    // Triangle data.
+    triangle_upload(canvas, &visual);
 
-    // dvz_app_run(app, N_FRAMES);
+    // Run.
+    dvz_event_callback(canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, triangle_refill, &visual);
+    dvz_event_callback(
+        canvas, DVZ_EVENT_MOUSE_MOVE, 0, DVZ_EVENT_MODE_SYNC, _uniform_cursor_callback, &visual);
+    dvz_event_callback(
+        canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _uniform_frame_callback, &visual);
+    dvz_app_run(app, N_FRAMES);
 
-    // destroy_visual(&visual);
-    // dvz_canvas_destroy(canvas);
+    // Destroy.
+    destroy_visual(&visual);
+    dvz_canvas_destroy(canvas);
     return 0;
 }
