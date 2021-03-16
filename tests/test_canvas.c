@@ -39,10 +39,28 @@ struct EventHolder
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
+static void triangle_refill(DvzCanvas* canvas, DvzEvent ev)
+{
+    ASSERT(canvas != NULL);
+    // Take the first command buffers, which corresponds to the default canvas render command//
+    // buffer.
+    ASSERT(ev.u.rf.cmd_count == 1);
+    DvzCommands* cmds = ev.u.rf.cmds[0];
+    ASSERT(cmds->queue_idx == DVZ_DEFAULT_QUEUE_RENDER);
+    uint32_t idx = ev.u.rf.img_idx;
+
+    TestVisual* visual = (TestVisual*)ev.user_data;
+    ASSERT(visual != NULL);
+
+    triangle_commands(
+        cmds, idx, &canvas->renderpass, &canvas->framebuffers, //
+        &visual->graphics, &visual->bindings, visual->br);
+}
+
 
 
 /*************************************************************************************************/
-/*  Test canvas                                                                                  */
+/*  Blank canvas                                                                                 */
 /*************************************************************************************************/
 
 int test_canvas_blank(TestContext* tc)
@@ -79,6 +97,7 @@ int test_canvas_blank(TestContext* tc)
     }
     FREE(rgb);
 
+    dvz_canvas_destroy(canvas);
     return 0;
 }
 
@@ -111,6 +130,8 @@ int test_canvas_multiple(TestContext* tc)
     FREE(rgb0);
     FREE(rgb1);
 
+    dvz_canvas_destroy(canvas0);
+    dvz_canvas_destroy(canvas1);
     return 0;
 }
 
@@ -193,7 +214,7 @@ int test_canvas_events(TestContext* tc)
     dvz_event_callback( //
         canvas, DVZ_EVENT_INIT, 0, DVZ_EVENT_MODE_SYNC, _init_callback, &events);
     dvz_event_callback( //
-        canvas, DVZ_EVENT_TIMER, .05, DVZ_EVENT_MODE_SYNC, _timer_callback, &events);
+        canvas, DVZ_EVENT_TIMER, .001, DVZ_EVENT_MODE_SYNC, _timer_callback, &events);
     dvz_event_callback( //
         canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _frame_callback, &events);
     dvz_event_callback( //
@@ -236,5 +257,33 @@ int test_canvas_events(TestContext* tc)
 
     // TODO: more events.
 
+    dvz_canvas_destroy(canvas);
+    return 0;
+}
+
+
+
+/*************************************************************************************************/
+/*  Canvas with triangle                                                                         */
+/*************************************************************************************************/
+
+int test_canvas_triangle_1(TestContext* tc)
+{
+    DvzApp* app = tc->app;
+    DvzGpu* gpu = dvz_gpu_best(app);
+
+    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
+
+    TestVisual visual = triangle_visual(gpu, &canvas->renderpass, &canvas->framebuffers, "");
+    visual.br.buffer = &visual.buffer;
+    visual.br.size = visual.buffer.size;
+    visual.br.count = 1;
+
+    dvz_event_callback(canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, triangle_refill, &visual);
+
+    dvz_app_run(app, N_FRAMES);
+
+    destroy_visual(&visual);
+    dvz_canvas_destroy(canvas);
     return 0;
 }

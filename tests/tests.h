@@ -78,6 +78,7 @@ int test_vklite_canvas_triangle(TestContext*);
 int test_canvas_blank(TestContext*);
 int test_canvas_multiple(TestContext*);
 int test_canvas_events(TestContext*);
+int test_canvas_triangle_1(TestContext*);
 
 
 
@@ -143,9 +144,10 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_vklite_canvas_triangle), //
 
     // Canvas.
-    CASE_FIXTURE_APP(test_canvas_blank),    //
-    CASE_FIXTURE_APP(test_canvas_multiple), //
-    CASE_FIXTURE_APP(test_canvas_events),   //
+    CASE_FIXTURE_APP(test_canvas_blank),      //
+    CASE_FIXTURE_APP(test_canvas_multiple),   //
+    CASE_FIXTURE_APP(test_canvas_events),     //
+    CASE_FIXTURE_APP(test_canvas_triangle_1), //
 
 };
 

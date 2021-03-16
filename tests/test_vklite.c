@@ -1032,11 +1032,20 @@ int test_vklite_graphics(TestContext* context)
     dvz_gpu_create(gpu, 0);
 
     TestCanvas canvas = offscreen(gpu);
-    TestVisual visual = {0};
-    triangle_visual(&canvas, &visual, "");
+    TestVisual visual = triangle_visual(gpu, &canvas.renderpass, &canvas.framebuffers, "");
+    visual.br.buffer = &visual.buffer;
+    visual.br.size = visual.buffer.size;
+    visual.br.count = 1;
+    canvas.data = &visual;
+    canvas.br = visual.br;
+    ASSERT(canvas.br.buffer->buffer != VK_NULL_HANDLE);
+    canvas.graphics = &visual.graphics;
+    canvas.bindings = &visual.bindings;
 
     DvzCommands cmds = dvz_commands(gpu, 0, 1);
-    triangle_commands(&canvas, &cmds, 0);
+    triangle_commands(
+        &cmds, 0, &canvas.renderpass, &canvas.framebuffers, //
+        canvas.graphics, canvas.bindings, canvas.br);
     dvz_cmd_submit_sync(&cmds, 0);
 
     char path[1024];
@@ -1080,6 +1089,14 @@ int test_vklite_canvas_blank(TestContext* context)
 
 
 
+static void _fill_triangle(TestCanvas* canvas, DvzCommands* cmds, uint32_t idx)
+{
+    ASSERT(canvas != NULL);
+    triangle_commands(
+        cmds, idx, &canvas->renderpass, &canvas->framebuffers, //
+        canvas->graphics, canvas->bindings, canvas->br);
+}
+
 int test_vklite_canvas_triangle(TestContext* context)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
@@ -1092,10 +1109,16 @@ int test_vklite_canvas_triangle(TestContext* context)
     dvz_gpu_create(gpu, window->surface);
 
     TestCanvas canvas = test_canvas_create(gpu, window);
-    TestVisual visual = {0};
-    triangle_visual(&canvas, &visual, "");
+    TestVisual visual = triangle_visual(gpu, &canvas.renderpass, &canvas.framebuffers, "");
+    visual.br.buffer = &visual.buffer;
+    visual.br.size = visual.br.size;
+    visual.br.count = 1;
+    canvas.data = &visual;
+    canvas.br = visual.br;
+    canvas.graphics = &visual.graphics;
+    canvas.bindings = &visual.bindings;
 
-    test_canvas_show(canvas, triangle_commands, N_FRAMES);
+    test_canvas_show(canvas, _fill_triangle, N_FRAMES);
 
     destroy_visual(&visual);
     test_canvas_destroy(&canvas);

@@ -108,32 +108,34 @@ static DvzGraphics triangle_graphics(DvzGpu* gpu, DvzRenderpass* renderpass, con
 
 
 
-static void triangle_visual(TestCanvas* canvas, TestVisual* visual, const char* suffix)
+static TestVisual triangle_visual(
+    DvzGpu* gpu, DvzRenderpass* renderpass, DvzFramebuffers* framebuffers, const char* suffix)
 {
-    visual->gpu = canvas->gpu;
-    visual->renderpass = &canvas->renderpass;
-    visual->framebuffers = &canvas->framebuffers;
+    TestVisual visual = {0};
+    visual.gpu = gpu;
+    visual.renderpass = renderpass;
+    visual.framebuffers = framebuffers;
 
     // Make the graphics.
-    visual->graphics = triangle_graphics(visual->gpu, visual->renderpass, suffix);
+    visual.graphics = triangle_graphics(gpu, renderpass, suffix);
 
     // Create the bindings.
-    visual->bindings = dvz_bindings(&visual->graphics.slots, 1);
-    dvz_bindings_update(&visual->bindings);
+    visual.bindings = dvz_bindings(&visual.graphics.slots, 1);
+    dvz_bindings_update(&visual.bindings);
 
     // Create the graphics pipeline.
-    dvz_graphics_create(&visual->graphics);
+    dvz_graphics_create(&visual.graphics);
 
     // Create the buffer.
-    visual->buffer = dvz_buffer(canvas->gpu);
+    visual.buffer = dvz_buffer(gpu);
     VkDeviceSize size = 3 * sizeof(TestVertex);
-    dvz_buffer_size(&visual->buffer, size);
+    dvz_buffer_size(&visual.buffer, size);
     dvz_buffer_usage(
-        &visual->buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+        &visual.buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
     dvz_buffer_memory(
-        &visual->buffer,
+        &visual.buffer,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    dvz_buffer_create(&visual->buffer);
+    dvz_buffer_create(&visual.buffer);
 
     // Upload the triangle data.
     TestVertex data[3] = {
@@ -141,36 +143,44 @@ static void triangle_visual(TestCanvas* canvas, TestVisual* visual, const char* 
         {{+1, +1, 0}, {0, 1, 0, 1}},
         {{+0, -1, 0}, {0, 0, 1, 1}},
     };
-    dvz_buffer_upload(&visual->buffer, 0, size, data);
+    dvz_buffer_upload(&visual.buffer, 0, size, data);
 
-    visual->br.buffer = &visual->buffer;
-    visual->br.size = size;
-    visual->br.count = 1;
-
-    canvas->data = visual;
-    canvas->br = visual->br;
-    canvas->graphics = &visual->graphics;
-    canvas->bindings = &visual->bindings;
+    return visual;
 }
 
 
 
-static void triangle_commands(TestCanvas* canvas, DvzCommands* cmds, uint32_t idx)
+static void triangle_commands(
+    DvzCommands* cmds, uint32_t idx, DvzRenderpass* renderpass, DvzFramebuffers* framebuffers,
+    DvzGraphics* graphics, DvzBindings* bindings, DvzBufferRegions br)
 {
-    ASSERT(canvas->br.buffer != NULL);
-    ASSERT(canvas->graphics != NULL);
-    ASSERT(canvas->bindings != NULL);
+    ASSERT(renderpass != NULL);
+    ASSERT(renderpass->renderpass != VK_NULL_HANDLE);
+
+    ASSERT(framebuffers != NULL);
+    ASSERT(framebuffers->framebuffers[0] != VK_NULL_HANDLE);
+
+    ASSERT(graphics != NULL);
+    ASSERT(graphics->pipeline != VK_NULL_HANDLE);
+
+    ASSERT(bindings != NULL);
+    ASSERT(bindings->dsets != VK_NULL_HANDLE);
+
+    ASSERT(br.buffer != NULL);
+    ASSERT(br.buffer->buffer != VK_NULL_HANDLE);
+
+    uint32_t width = framebuffers->attachments[0]->width;
+    uint32_t height = framebuffers->attachments[0]->height;
+
+    ASSERT(width > 0);
+    ASSERT(height > 0);
 
     // Commands.
     dvz_cmd_begin(cmds, idx);
-    dvz_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, &canvas->framebuffers);
-    dvz_cmd_viewport(
-        cmds, idx,
-        (VkViewport){
-            0, 0, canvas->framebuffers.attachments[0]->width,
-            canvas->framebuffers.attachments[0]->height, 0, 1});
-    dvz_cmd_bind_vertex_buffer(cmds, idx, canvas->br, 0);
-    dvz_cmd_bind_graphics(cmds, idx, canvas->graphics, canvas->bindings, 0);
+    dvz_cmd_begin_renderpass(cmds, idx, renderpass, framebuffers);
+    dvz_cmd_viewport(cmds, idx, (VkViewport){0, 0, width, height, 0, 1});
+    dvz_cmd_bind_vertex_buffer(cmds, idx, br, 0);
+    dvz_cmd_bind_graphics(cmds, idx, graphics, bindings, 0);
     dvz_cmd_draw(cmds, idx, 0, 3);
     dvz_cmd_end_renderpass(cmds, idx);
     dvz_cmd_end(cmds, idx);
