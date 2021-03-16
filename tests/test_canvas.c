@@ -39,6 +39,23 @@ struct EventHolder
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
+static TestVisual triangle(DvzCanvas* canvas, const char* suffix)
+{
+    ASSERT(canvas != NULL);
+    DvzGpu* gpu = canvas->gpu;
+    ASSERT(gpu != NULL);
+
+    TestVisual visual = {0};
+    visual.gpu = gpu;
+    visual.renderpass = &canvas->renderpass;
+    visual.framebuffers = &canvas->framebuffers;
+
+    // Make the graphics.
+    visual.graphics = triangle_graphics(gpu, visual.renderpass, suffix);
+
+    return visual;
+}
+
 static void triangle_refill(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
@@ -55,6 +72,22 @@ static void triangle_refill(DvzCanvas* canvas, DvzEvent ev)
     triangle_commands(
         cmds, idx, &canvas->renderpass, &canvas->framebuffers, //
         &visual->graphics, &visual->bindings, visual->br);
+}
+
+static void triangle_upload(DvzCanvas* canvas, TestVisual* visual)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(visual != NULL);
+    DvzGpu* gpu = visual->gpu;
+    ASSERT(gpu != NULL);
+
+    // Create the buffer.
+    VkDeviceSize size = 3 * sizeof(TestVertex);
+    visual->br = dvz_ctx_buffers(gpu->context, DVZ_BUFFER_TYPE_VERTEX, 1, size);
+    TestVertex data[3] = TRIANGLE_VERTICES;
+    visual->data = calloc(size, 1);
+    memcpy(visual->data, data, size);
+    dvz_upload_buffers(canvas, visual->br, 0, size, data);
 }
 
 
@@ -266,41 +299,6 @@ int test_canvas_events(TestContext* tc)
 /*  Canvas with triangle                                                                         */
 /*************************************************************************************************/
 
-static TestVisual triangle(DvzCanvas* canvas, const char* suffix)
-{
-    ASSERT(canvas != NULL);
-    DvzGpu* gpu = canvas->gpu;
-    ASSERT(gpu != NULL);
-
-    TestVisual visual = {0};
-    visual.gpu = gpu;
-    visual.renderpass = &canvas->renderpass;
-    visual.framebuffers = &canvas->framebuffers;
-
-    // Make the graphics.
-    visual.graphics = triangle_graphics(gpu, visual.renderpass, suffix);
-
-    return visual;
-}
-
-static void triangle_upload(DvzCanvas* canvas, TestVisual* visual)
-{
-    ASSERT(canvas != NULL);
-    ASSERT(visual != NULL);
-    DvzGpu* gpu = visual->gpu;
-    ASSERT(gpu != NULL);
-
-    // Create the buffer.
-    VkDeviceSize size = 3 * sizeof(TestVertex);
-    visual->br = dvz_ctx_buffers(gpu->context, DVZ_BUFFER_TYPE_VERTEX, 1, size);
-    TestVertex data[3] = TRIANGLE_VERTICES;
-    visual->data = calloc(size, 1);
-    memcpy(visual->data, data, size);
-    dvz_upload_buffers(canvas, visual->br, 0, size, data);
-}
-
-
-
 int test_canvas_triangle_1(TestContext* tc)
 {
     DvzApp* app = tc->app;
@@ -491,6 +489,71 @@ int test_canvas_triangle_uniform(TestContext* tc)
     dvz_app_run(app, N_FRAMES);
 
     // Destroy.
+    destroy_visual(&visual);
+    dvz_canvas_destroy(canvas);
+    return 0;
+}
+
+
+
+static void triangle_refill_compute(DvzCanvas* canvas, DvzEvent ev)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(ev.u.rf.cmd_count == 1);
+    DvzCommands* cmds = ev.u.rf.cmds[0];
+    ASSERT(cmds->queue_idx == DVZ_DEFAULT_QUEUE_RENDER);
+    uint32_t idx = ev.u.rf.img_idx;
+
+    TestVisual* visual = (TestVisual*)ev.user_data;
+    ASSERT(visual != NULL);
+
+    dvz_cmd_begin(cmds, idx);
+    dvz_cmd_compute(cmds, idx, visual->compute, (uvec3){3, 1, 1});
+    dvz_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, &canvas->framebuffers);
+    dvz_cmd_viewport(cmds, idx, canvas->viewport.viewport);
+    dvz_cmd_bind_vertex_buffer(cmds, idx, visual->br, 0);
+    dvz_cmd_bind_graphics(cmds, idx, &visual->graphics, &visual->bindings, 0);
+    dvz_cmd_draw(cmds, idx, 0, 3);
+    dvz_cmd_end_renderpass(cmds, idx);
+    dvz_cmd_end(cmds, idx);
+}
+
+int test_canvas_triangle_compute(TestContext* tc)
+{
+    DvzApp* app = tc->app;
+    DvzGpu* gpu = dvz_gpu_best(app);
+    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
+    TestVisual visual = triangle(canvas, "");
+
+    // Bindings and graphics pipeline.
+    visual.bindings = dvz_bindings(&visual.graphics.slots, 1);
+    dvz_bindings_update(&visual.bindings);
+    dvz_graphics_create(&visual.graphics);
+
+    // Triangle data.
+    triangle_upload(canvas, &visual);
+
+    // Create compute object.
+    DvzBindings bindings = {0};
+    {
+        char path[1024];
+        snprintf(path, sizeof(path), "%s/test_triangle.comp.spv", SPIRV_DIR);
+        visual.compute = dvz_ctx_compute(gpu->context, path);
+        dvz_compute_slot(visual.compute, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+        bindings = dvz_bindings(&visual.compute->slots, 1);
+        dvz_bindings_buffer(&bindings, 0, visual.br);
+        dvz_bindings_update(&bindings);
+        dvz_compute_bindings(visual.compute, &bindings);
+        dvz_compute_create(visual.compute);
+    }
+
+    // Run.
+    dvz_event_callback(
+        canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, triangle_refill_compute, &visual);
+    dvz_app_run(app, 0);
+
+    // Destroy.
+    dvz_bindings_destroy(&bindings);
     destroy_visual(&visual);
     dvz_canvas_destroy(canvas);
     return 0;
