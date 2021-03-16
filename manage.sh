@@ -6,6 +6,16 @@ if [ $# -eq 0 ]
     exit
 fi
 
+if [ $1 == "rebuild" ]
+then
+    rm -rf build
+    mkdir -p build &&
+    cd build && \
+    cmake .. -GNinja && \
+    DVZ_EXAMPLE= ninja && \
+    cd ..
+fi
+
 if [ $1 == "build" ]
 then
     mkdir -p build &&
