@@ -319,7 +319,7 @@ int test_canvas_triangle_1(TestContext* tc)
     dvz_app_run(app, N_FRAMES);
 
     // Check screenshot.
-    int res =check_canvas(canvas, "test_canvas_triangle_1");
+    int res = check_canvas(canvas, "test_canvas_triangle_1");
 
     // Destroy.
     destroy_visual(&visual);
@@ -431,10 +431,18 @@ int test_canvas_triangle_upload(TestContext* tc)
         canvas, DVZ_EVENT_MOUSE_MOVE, 0, DVZ_EVENT_MODE_SYNC, _vertex_cursor_callback, &visual);
     dvz_app_run(app, N_FRAMES);
 
+    // Move mouse.
+    vec2 pos = {WIDTH / 2, HEIGHT / 2};
+    dvz_event_mouse_move(canvas, pos, 0);
+    dvz_app_run(app, N_FRAMES);
+
+    // Check screenshot.
+    int res = check_canvas(canvas, "test_canvas_triangle_upload");
+
     // Destroy
     destroy_visual(&visual);
     dvz_canvas_destroy(canvas);
-    return 0;
+    return res;
 }
 
 
@@ -500,10 +508,18 @@ int test_canvas_triangle_uniform(TestContext* tc)
         canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _uniform_frame_callback, &visual);
     dvz_app_run(app, N_FRAMES);
 
+    // Move mouse.
+    vec2 pos = {WIDTH / 2, HEIGHT / 2};
+    dvz_event_mouse_move(canvas, pos, 0);
+    dvz_app_run(app, N_FRAMES);
+
+    // Check screenshot.
+    int res = check_canvas(canvas, "test_canvas_triangle_uniform");
+
     // Destroy.
     destroy_visual(&visual);
     dvz_canvas_destroy(canvas);
-    return 0;
+    return res;
 }
 
 
@@ -564,11 +580,14 @@ int test_canvas_triangle_compute(TestContext* tc)
         canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, triangle_refill_compute, &visual);
     dvz_app_run(app, N_FRAMES);
 
+    // Check screenshot.
+    int res = check_canvas(canvas, "test_canvas_triangle_compute");
+
     // Destroy.
     dvz_bindings_destroy(&bindings);
     destroy_visual(&visual);
     dvz_canvas_destroy(canvas);
-    return 0;
+    return res;
 }
 
 
@@ -693,8 +712,11 @@ int test_canvas_triangle_append(TestContext* tc)
 
     dvz_app_run(app, N_FRAMES);
 
+    // Check screenshot.
+    int res = check_canvas(canvas, "test_canvas_triangle_append");
+
     // Destroy.
     destroy_visual(&visual);
     dvz_canvas_destroy(canvas);
-    return 0;
+    return res;
 }
