@@ -88,6 +88,7 @@ int test_canvas_triangle_upload(TestContext*);
 int test_canvas_triangle_uniform(TestContext*);
 int test_canvas_triangle_compute(TestContext*);
 int test_canvas_triangle_pick(TestContext*);
+int test_canvas_triangle_append(TestContext*);
 
 
 
@@ -162,6 +163,7 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_APP(test_canvas_triangle_uniform), //
     CASE_FIXTURE_APP(test_canvas_triangle_compute), //
     CASE_FIXTURE_APP(test_canvas_triangle_pick),    //
+    CASE_FIXTURE_APP(test_canvas_triangle_append),  //
 
 };
 

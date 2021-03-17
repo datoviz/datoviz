@@ -601,7 +601,7 @@ int test_canvas_triangle_pick(TestContext* tc)
     dvz_app_run(app, N_FRAMES);
 
     // Test picking.
-    ivec4 exp = {0};
+    // ivec4 exp = {0};
     float w = (float)canvas->swapchain.images[0].width;
     float h = (float)canvas->swapchain.images[0].height;
     ASSERT(w > 0 && h > 0);
@@ -612,6 +612,74 @@ int test_canvas_triangle_pick(TestContext* tc)
     AIN(picked[1], 60, 68);
     AIN(picked[2], 60, 68);
     AIN(picked[3], 123, 131);
+
+    // Destroy.
+    destroy_visual(&visual);
+    dvz_canvas_destroy(canvas);
+    return 0;
+}
+
+
+
+static void triangle_append(DvzCanvas* canvas, DvzEvent ev)
+{
+    ASSERT(canvas != NULL);
+    TestVisual* visual = ev.user_data;
+    ASSERT(visual != NULL);
+
+    const uint32_t N = 3 + ev.u.t.idx % 24;
+    visual->n_vertices = 3 * N;
+    TestVertex* data = calloc(visual->n_vertices, sizeof(TestVertex));
+    float t = 0, t2 = 0;
+    for (uint32_t i = 0; i < N; i++)
+    {
+        t = i / (float)N;
+        t2 = (i + 1) / (float)N;
+
+        data[3 * i + 0].color[0] = 1;
+        data[3 * i + 0].color[3] = 1;
+
+        data[3 * i + 1].color[1] = 1;
+        data[3 * i + 1].color[3] = 1;
+        data[3 * i + 1].pos[0] = .5 * cos(M_2PI * t);
+        data[3 * i + 1].pos[1] = .5 * sin(M_2PI * t);
+
+        data[3 * i + 2].color[2] = 1;
+        data[3 * i + 2].color[3] = 1;
+        data[3 * i + 2].pos[0] = .5 * cos(M_2PI * t2);
+        data[3 * i + 2].pos[1] = .5 * sin(M_2PI * t2);
+    }
+    FREE(visual->data);
+    visual->data = data;
+    VkDeviceSize size = visual->n_vertices * sizeof(TestVertex);
+    visual->br = dvz_ctx_buffers(canvas->gpu->context, DVZ_BUFFER_TYPE_VERTEX, 1, size);
+    dvz_upload_buffers(canvas, visual->br, 0, size, data);
+
+    // NOTE: important, we need to refill the canvas after the vertex count has changed.
+    dvz_canvas_to_refill(canvas);
+}
+
+int test_canvas_triangle_append(TestContext* tc)
+{
+    DvzApp* app = tc->app;
+    DvzGpu* gpu = dvz_gpu_best(app);
+    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
+    TestVisual visual = triangle(canvas, "");
+    visual.n_vertices = 3;
+
+    // Bindings and graphics pipeline.
+    visual.bindings = dvz_bindings(&visual.graphics.slots, 1);
+    dvz_bindings_update(&visual.bindings);
+    dvz_graphics_create(&visual.graphics);
+
+    // Triangle data.
+    triangle_upload(canvas, &visual);
+
+    // Run.
+    dvz_event_callback(canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, triangle_refill, &visual);
+    dvz_event_callback(canvas, DVZ_EVENT_TIMER, .1, DVZ_EVENT_MODE_SYNC, triangle_append, &visual);
+
+    dvz_app_run(app, 0);
 
     // Destroy.
     destroy_visual(&visual);
