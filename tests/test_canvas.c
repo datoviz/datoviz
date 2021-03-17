@@ -318,10 +318,14 @@ int test_canvas_triangle_1(TestContext* tc)
     dvz_event_callback(canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, triangle_refill, &visual);
     dvz_app_run(app, N_FRAMES);
 
+    // Check screenshot.
+    int res =check_canvas(canvas, "test_canvas_triangle_1");
+
     // Destroy.
     destroy_visual(&visual);
     dvz_canvas_destroy(canvas);
-    return 0;
+
+    return res;
 }
 
 
@@ -367,10 +371,18 @@ int test_canvas_triangle_push(TestContext* tc)
         canvas, DVZ_EVENT_MOUSE_MOVE, 0, DVZ_EVENT_MODE_SYNC, _push_cursor_callback, NULL);
     dvz_app_run(app, N_FRAMES);
 
+    // Move mouse.
+    vec2 pos = {WIDTH / 2, HEIGHT / 2};
+    dvz_event_mouse_move(canvas, pos, 0);
+    dvz_app_run(app, N_FRAMES);
+
+    // Check screenshot.
+    int res = check_canvas(canvas, "test_canvas_triangle_push");
+
     // Destroy.
     destroy_visual(&visual);
     dvz_canvas_destroy(canvas);
-    return 0;
+    return res;
 }
 
 
@@ -679,7 +691,7 @@ int test_canvas_triangle_append(TestContext* tc)
     dvz_event_callback(canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, triangle_refill, &visual);
     dvz_event_callback(canvas, DVZ_EVENT_TIMER, .1, DVZ_EVENT_MODE_SYNC, triangle_append, &visual);
 
-    dvz_app_run(app, 0);
+    dvz_app_run(app, N_FRAMES);
 
     // Destroy.
     destroy_visual(&visual);

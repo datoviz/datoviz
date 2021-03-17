@@ -4,13 +4,6 @@
 #include "../include/datoviz/common.h"
 // NOTE: do not include tests.h (circular import)
 
-// #include "../include/datoviz/datoviz.h"
-// #include "../src/vklite_utils.h"
-
-// BEGIN_INCL_NO_WARN
-// #include "../external/stb_image.h"
-// END_INCL_NO_WARN
-
 
 
 /*************************************************************************************************/
