@@ -297,7 +297,7 @@ int test_canvas_events(TestContext* tc)
 
 static void _frame_screencast_callback(DvzCanvas* canvas, DvzEvent ev)
 {
-    ASSERT(canvas != NULL); //
+    ASSERT(canvas != NULL);
     cvec4 color = {0};
     dvz_colormap(DVZ_CMAP_HSV, (ev.u.f.idx / 3) % 256, color);
     dvz_canvas_clear_color(canvas, color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
@@ -341,6 +341,37 @@ int test_canvas_screencast(TestContext* tc)
 
     dvz_canvas_destroy(canvas);
     return res;
+}
+
+
+
+static void _video_callback(DvzCanvas* canvas, DvzEvent ev)
+{
+    ASSERT(canvas != NULL);
+    cvec4 color = {0};
+    dvz_colormap(DVZ_CMAP_HSV, ev.u.t.idx % 256, color);
+    dvz_canvas_clear_color(canvas, color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
+}
+
+int test_canvas_video(TestContext* tc)
+{
+    DvzApp* app = tc->app;
+    DvzGpu* gpu = dvz_gpu_best(app);
+    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_IMGUI);
+    dvz_canvas_clear_color(canvas, 0, 1, 0);
+
+    dvz_event_callback(canvas, DVZ_EVENT_TIMER, 0.01, DVZ_EVENT_MODE_SYNC, _video_callback, NULL);
+
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/test_canvas_video.mp4", ARTIFACTS_DIR);
+    dvz_canvas_video(canvas, 30, 10000000, path, true);
+
+    dvz_app_run(app, 60);
+
+    AT(file_exists(path));
+
+    dvz_canvas_destroy(canvas);
+    return 0;
 }
 
 

@@ -254,8 +254,8 @@ void dvz_gui_callback_fps(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
     dvz_gui_begin("FPS", DVZ_GUI_FLAGS_FIXED | DVZ_GUI_FLAGS_CORNER_UR);
-    ImGui::Text("  FPS: %.0f", canvas->fps);
-    ImGui::Text("eFPS: %.0f", canvas->efps);
+    ImGui::Text("  FPS: %04.0f", canvas->fps);
+    ImGui::Text("eFPS: %04.0f", canvas->efps);
     dvz_gui_end();
 }
 
