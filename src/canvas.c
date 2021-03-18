@@ -854,12 +854,9 @@ void dvz_canvas_resize(DvzCanvas* canvas, uint32_t width, uint32_t height)
     DvzBackend backend = canvas->app->backend;
     DvzWindow* window = canvas->window;
 
-    // Wait until the device is ready and the window fully resized.
-    dvz_gpu_wait(canvas->gpu);
-
-    // Window new size.
+    dvz_app_wait(canvas->app);
     backend_window_set_size(backend, window->backend_window, width, height);
-
+    dvz_app_wait(canvas->app);
     // dvz_canvas_recreate(canvas);
 }
 

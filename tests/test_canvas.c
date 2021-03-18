@@ -342,10 +342,11 @@ int test_canvas_gui(TestContext* tc)
 
     dvz_event_callback(canvas, DVZ_EVENT_GUI, 0, DVZ_EVENT_MODE_SYNC, _gui_callback, NULL);
 
-    dvz_app_run(app, 0);
+    dvz_app_run(app, N_FRAMES);
+    int res = check_canvas(canvas, "test_canvas_gui");
 
     dvz_canvas_destroy(canvas);
-    return 0;
+    return res;
 }
 
 
@@ -502,16 +503,14 @@ int test_canvas_triangle_resize(TestContext* tc)
 
     // Resize to a smaller size.
     dvz_canvas_resize(canvas, WIDTH / 2, HEIGHT / 2);
-    dvz_app_run(app, N_FRAMES);
+    dvz_app_run(app, 20);
     int res = check_canvas(canvas, "test_canvas_triangle_resize_1");
 
     // Resize to a larger size.
+    dvz_app_wait(canvas->app);
     dvz_canvas_resize(canvas, 1000, 1000);
-    dvz_app_run(app, N_FRAMES);
-    dvz_app_run(app, N_FRAMES);
+    dvz_app_run(app, 20);
     res = res || check_canvas(canvas, "test_canvas_triangle_resize_2");
-
-    dvz_app_run(app, 0);
 
     // Destroy.
     destroy_visual(&visual);

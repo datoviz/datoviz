@@ -247,7 +247,11 @@ static int image_diff(uvec2 size, const uint8_t* image_0, const char* path)
     ASSERT(height > 0);
 
     uint8_t* image_1 = dvz_read_ppm(path, &w, &h);
-    ASSERT(w == (int)width && h == (int)height);
+    if (w != (int)width || h != (int)height)
+    {
+        log_error("image size do not match! %dx%d vs %dx%d", width, height, w, h);
+        return 1;
+    }
 
     // Fast byte-to-byte comparison of the images.
     if (memcmp(image_0, image_1, (size_t)(width * height * 3 * sizeof(uint8_t))) == 0)
