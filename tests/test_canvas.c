@@ -295,6 +295,56 @@ int test_canvas_events(TestContext* tc)
 
 
 
+static void _frame_screencast_callback(DvzCanvas* canvas, DvzEvent ev)
+{
+    ASSERT(canvas != NULL); //
+    cvec4 color = {0};
+    dvz_colormap(DVZ_CMAP_HSV, (ev.u.f.idx / 3) % 256, color);
+    dvz_canvas_clear_color(canvas, color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
+}
+
+static void _screencast_callback(DvzCanvas* canvas, DvzEvent ev)
+{
+    ASSERT(canvas != NULL); //
+    bool ok = false;
+    cvec4 color = {0};
+    dvz_colormap(DVZ_CMAP_HSV, (canvas->frame_idx / 3) % 256, color);
+
+    ok =
+        (abs((int)color[0] - (int)ev.u.sc.rgba[0]) <= 16 &&
+         abs((int)color[1] - (int)ev.u.sc.rgba[1]) <= 16 &&
+         abs((int)color[2] - (int)ev.u.sc.rgba[2]) <= 16);
+
+    FREE(ev.u.sc.rgba);
+    if (((int*)ev.user_data)[0] == 0)
+        ((int*)ev.user_data)[0] = ok ? 0 : 1;
+}
+
+int test_canvas_screencast(TestContext* tc)
+{
+    DvzApp* app = tc->app;
+    DvzGpu* gpu = dvz_gpu_best(app);
+    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_FPS);
+    dvz_canvas_clear_color(canvas, 0, 1, 0);
+
+    dvz_event_callback(
+        canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _frame_screencast_callback, NULL);
+
+    int res = 0;
+    dvz_event_callback(
+        canvas, DVZ_EVENT_SCREENCAST, 0, DVZ_EVENT_MODE_SYNC, _screencast_callback, &res);
+    AT(res == 0);
+
+    dvz_screencast(canvas, 1.0 / 30.0, false);
+
+    dvz_app_run(app, 120);
+
+    dvz_canvas_destroy(canvas);
+    return res;
+}
+
+
+
 /*************************************************************************************************/
 /*  Canvas with triangle                                                                         */
 /*************************************************************************************************/
