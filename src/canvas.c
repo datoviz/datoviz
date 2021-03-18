@@ -844,6 +844,27 @@ void dvz_canvas_recreate(DvzCanvas* canvas)
 
 
 
+void dvz_canvas_resize(DvzCanvas* canvas, uint32_t width, uint32_t height)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(width > 0);
+    ASSERT(height > 0);
+    log_info("resize canvas to %ux%u", width, height);
+
+    DvzBackend backend = canvas->app->backend;
+    DvzWindow* window = canvas->window;
+
+    // Wait until the device is ready and the window fully resized.
+    dvz_gpu_wait(canvas->gpu);
+
+    // Window new size.
+    backend_window_set_size(backend, window->backend_window, width, height);
+
+    // dvz_canvas_recreate(canvas);
+}
+
+
+
 DvzCommands* dvz_canvas_commands(DvzCanvas* canvas, uint32_t queue_idx, uint32_t count)
 {
     ASSERT(canvas != NULL);

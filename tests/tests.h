@@ -59,6 +59,7 @@ int test_canvas_screencast(TestContext*);
 int test_canvas_video(TestContext*);
 
 int test_canvas_triangle_1(TestContext*);
+int test_canvas_triangle_resize(TestContext*);
 int test_canvas_triangle_offscreen(TestContext*);
 int test_canvas_triangle_push(TestContext*);
 int test_canvas_triangle_upload(TestContext*);
@@ -138,6 +139,7 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_APP(test_canvas_video),      //
 
     CASE_FIXTURE_APP(test_canvas_triangle_1),         //
+    CASE_FIXTURE_APP(test_canvas_triangle_resize),    //
     CASE_FIXTURE_APP(test_canvas_triangle_offscreen), //
     CASE_FIXTURE_APP(test_canvas_triangle_push),      //
     CASE_FIXTURE_APP(test_canvas_triangle_upload),    //
@@ -234,25 +236,30 @@ static int64_t file_size(const char* path)
 static const double NORM3_255 = 1. / (3 * 255.0 * 255.0);
 static const double NORM3_THRESHOLD = 1e-5;
 
-static int image_diff(const uint8_t* image_0, const char* path)
+static int image_diff(uvec2 size, const uint8_t* image_0, const char* path)
 {
     int w = 0, h = 0;
+    uint32_t width = size[0];
+    uint32_t height = size[1];
+    ASSERT(width > 0);
+    ASSERT(height > 0);
+
     uint8_t* image_1 = dvz_read_ppm(path, &w, &h);
-    ASSERT(w == WIDTH && h == HEIGHT);
+    ASSERT(w == (int)width && h == (int)height);
 
     // Fast byte-to-byte comparison of the images.
-    if (memcmp(image_0, image_1, (size_t)(WIDTH * HEIGHT * 3 * sizeof(uint8_t))) == 0)
+    if (memcmp(image_0, image_1, (size_t)(width * height * 3 * sizeof(uint8_t))) == 0)
         return 0;
     log_debug("images were not byte-to-byte equivalent: computing the error distance");
 
     uint8_t rgb0[3], rgb1[3];
     double err = 0.0;
-    for (uint32_t i = 0; i < HEIGHT; i++)
+    for (uint32_t i = 0; i < height; i++)
     {
-        for (uint32_t j = 0; j < WIDTH; j++)
+        for (uint32_t j = 0; j < width; j++)
         {
-            memcpy(rgb0, &image_0[3 * i * WIDTH + 3 * j], sizeof(rgb0));
-            memcpy(rgb1, &image_1[3 * i * WIDTH + 3 * j], sizeof(rgb1));
+            memcpy(rgb0, &image_0[3 * i * width + 3 * j], sizeof(rgb0));
+            memcpy(rgb1, &image_1[3 * i * width + 3 * j], sizeof(rgb1));
             // Fast byte-to-byte comparison of the RGB values for that pixel.
             if (memcmp(rgb0, rgb1, sizeof(rgb0)) != 0)
             {
@@ -263,7 +270,7 @@ static int image_diff(const uint8_t* image_0, const char* path)
             }
         }
     }
-    err /= (WIDTH * HEIGHT);
+    err /= (width * height);
     log_debug("image diff was %.20f", err);
     free(image_1);
     return err < NORM3_THRESHOLD ? 0 : 1;
@@ -293,14 +300,19 @@ static void strins(char* dest, char* ins, size_t offset)
 
 
 // Check the image with the reference image, create/delete a fail image if needed.
-static int check_image(const uint8_t* image, const char* path)
+static int check_image(uvec2 size, const uint8_t* image, const char* path)
 {
+    uint32_t width = size[0];
+    uint32_t height = size[1];
+    ASSERT(width > 0);
+    ASSERT(height > 0);
+
     int diff = 0;
     // If there is no existing saved screenshot, save it and skip the test.
     if (!file_exists(path))
     {
         log_debug("file %s didn't exist, creating it and skipping test", path);
-        if (dvz_write_ppm(path, WIDTH, HEIGHT, image) != 0)
+        if (dvz_write_ppm(path, width, height, image) != 0)
             log_error("failed creating %s", path);
         else
             log_info("created %s\n", path);
@@ -308,7 +320,7 @@ static int check_image(const uint8_t* image, const char* path)
     // Otherwise, compare the images.
     else
     {
-        diff = image_diff(image, path);
+        diff = image_diff(size, image, path);
     }
 
     // If the test failed, save the discrepant image.
@@ -323,7 +335,7 @@ static int check_image(const uint8_t* image, const char* path)
     if (diff != 0)
     {
         log_error("test failed for %s, writing failing image", path);
-        if (dvz_write_ppm(path_failed, WIDTH, HEIGHT, image) != 0)
+        if (dvz_write_ppm(path_failed, width, height, image) != 0)
             log_error("failed creating %s", path_failed);
         else
             log_debug("created %s", path_failed);
@@ -346,7 +358,11 @@ static int check_canvas(DvzCanvas* canvas, const char* test_name)
     ASSERT(image != NULL);
     char path[1024];
     snprintf(path, sizeof(path), "%s/%s.ppm", ARTIFACTS_DIR, test_name);
-    int diff = check_image(image, path);
+
+    uvec2 size = {0};
+    dvz_canvas_size(canvas, DVZ_CANVAS_SIZE_FRAMEBUFFER, size);
+
+    int diff = check_image(size, image, path);
     FREE(image);
     return diff;
 }

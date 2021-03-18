@@ -667,6 +667,15 @@ dvz_canvas_offscreen(DvzGpu* gpu, uint32_t width, uint32_t height, int flags);
 DVZ_EXPORT void dvz_canvas_recreate(DvzCanvas* canvas);
 
 /**
+ * Resize a canvas.
+ *
+ * @param canvas the canvas to resize
+ * @param width the new width
+ * @param height the new height
+ */
+DVZ_EXPORT void dvz_canvas_resize(DvzCanvas* canvas, uint32_t width, uint32_t height);
+
+/**
  * Create a set of Vulkan command buffers on a given GPU queue.
  *
  * @param canvas the canvas

@@ -365,6 +365,14 @@ void dvz_window_get_size(
 
 
 
+void dvz_window_set_size(DvzWindow* window, uint32_t width, uint32_t height)
+{
+    ASSERT(window != NULL);
+    backend_window_set_size(window->app->backend, window->backend_window, width, height);
+}
+
+
+
 void dvz_window_poll_events(DvzWindow* window)
 {
     ASSERT(window != NULL);

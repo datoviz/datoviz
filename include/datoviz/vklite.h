@@ -921,6 +921,15 @@ DVZ_EXPORT void
 dvz_window_get_size(DvzWindow* window, uint32_t* framebuffer_width, uint32_t* framebuffer_height);
 
 /**
+ * Set the window size, in pixels.
+ *
+ * @param window the window
+ * @param width the width, in pixels
+ * @param height the height, in pixels
+ */
+DVZ_EXPORT void dvz_window_set_size(DvzWindow* window, uint32_t width, uint32_t height);
+
+/**
  * Process the pending windowing events by the backend (glfw by default).
  *
  * @param window the window

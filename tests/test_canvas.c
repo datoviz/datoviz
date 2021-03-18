@@ -427,6 +427,47 @@ int test_canvas_triangle_1(TestContext* tc)
 
 
 
+int test_canvas_triangle_resize(TestContext* tc)
+{
+    DvzApp* app = tc->app;
+    DvzGpu* gpu = dvz_gpu_best(app);
+    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
+    TestVisual visual = triangle(canvas, "");
+
+    // Bindings and graphics pipeline.
+    visual.bindings = dvz_bindings(&visual.graphics.slots, 1);
+    dvz_bindings_update(&visual.bindings);
+    dvz_graphics_create(&visual.graphics);
+
+    // Triangle data.
+    triangle_upload(canvas, &visual);
+
+    // Run.
+    dvz_event_callback(canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, triangle_refill, &visual);
+    dvz_app_run(app, N_FRAMES);
+
+    // Resize to a smaller size.
+    dvz_canvas_resize(canvas, WIDTH / 2, HEIGHT / 2);
+    dvz_app_run(app, N_FRAMES);
+    int res = check_canvas(canvas, "test_canvas_triangle_resize_1");
+
+    // Resize to a larger size.
+    dvz_canvas_resize(canvas, 1000, 1000);
+    dvz_app_run(app, N_FRAMES);
+    dvz_app_run(app, N_FRAMES);
+    res = res || check_canvas(canvas, "test_canvas_triangle_resize_2");
+
+    dvz_app_run(app, 0);
+
+    // Destroy.
+    destroy_visual(&visual);
+    dvz_canvas_destroy(canvas);
+
+    return res;
+}
+
+
+
 int test_canvas_triangle_offscreen(TestContext* tc)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_OFFSCREEN);

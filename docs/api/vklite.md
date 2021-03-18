@@ -21,6 +21,7 @@
 
 ### `dvz_window()`
 ### `dvz_window_get_size()`
+### `dvz_window_set_size()`
 ### `dvz_window_poll_events()`
 ### `dvz_window_destroy()`
 

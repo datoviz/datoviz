@@ -443,6 +443,27 @@ static void backend_window_get_size(
         log_trace("framebuffer size is %dx%d", w, h);
 
         break;
+
+    default:
+        break;
+    }
+}
+
+
+
+static void
+backend_window_set_size(DvzBackend backend, void* window, uint32_t width, uint32_t height)
+{
+    log_trace("setting the size of backend window...");
+
+    switch (backend)
+    {
+    case DVZ_BACKEND_GLFW:;
+        int w = (int)width, h = (int)height;
+        log_trace("set window size to %dx%d", w, h);
+        glfwSetWindowSize(window, w, h);
+        break;
+
     default:
         break;
     }
@@ -891,11 +912,12 @@ static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
         for (uint32_t i = 0; i < n; i++)
         {
             if (strncmp(
-                ext[i].extensionName, "VK_KHR_portability_subset",
-                strnlen("VK_KHR_portability_subset", 32)) == 0)
+                    ext[i].extensionName, "VK_KHR_portability_subset",
+                    strnlen("VK_KHR_portability_subset", 32)) == 0)
             {
-                log_trace("found portability subset, will need to add extension VK_KHR_portability_subset");
-                //extensions[n_extensions++] = "VK_KHR_get_physical_device_properties2";
+                log_trace("found portability subset, will need to add extension "
+                          "VK_KHR_portability_subset");
+                // extensions[n_extensions++] = "VK_KHR_get_physical_device_properties2";
                 extensions[n_extensions++] = "VK_KHR_portability_subset";
                 break;
             }
