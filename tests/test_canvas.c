@@ -1,6 +1,7 @@
 #include "../include/datoviz/canvas.h"
 #include "proto.h"
 #include "tests.h"
+#include "video.h"
 
 
 
@@ -353,22 +354,37 @@ static void _video_callback(DvzCanvas* canvas, DvzEvent ev)
     dvz_canvas_clear_color(canvas, color[0] / 255.0, color[1] / 255.0, color[2] / 255.0);
 }
 
+static void _video_read_callback(int frame_idx, int width, int height, int wrap, uint8_t* image)
+{
+    log_info("%d", frame_idx);
+}
+
 int test_canvas_video(TestContext* tc)
 {
     DvzApp* app = tc->app;
     DvzGpu* gpu = dvz_gpu_best(app);
-    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_IMGUI);
-    dvz_canvas_clear_color(canvas, 0, 1, 0);
+    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
+    dvz_canvas_clear_color(canvas, 1, 0, 0);
 
     dvz_event_callback(canvas, DVZ_EVENT_TIMER, 0.01, DVZ_EVENT_MODE_SYNC, _video_callback, NULL);
 
+#ifdef HAS_FFMPEG
     char path[1024];
     snprintf(path, sizeof(path), "%s/test_canvas_video.mp4", ARTIFACTS_DIR);
     dvz_canvas_video(canvas, 30, 10000000, path, true);
 
-    dvz_app_run(app, 60);
+    dvz_app_run(app, 120);
+    dvz_canvas_stop(canvas);
 
-    AT(file_exists(path));
+    AT(file_exists(path))
+    AT(file_size(path) > 4096)
+
+    // // Try to open the video file.
+    // Video* video = read_video(path);
+    // read_frames(video, _video_read_callback);
+    // close_video(video);
+
+#endif
 
     dvz_canvas_destroy(canvas);
     return 0;

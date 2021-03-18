@@ -217,6 +217,20 @@ static bool file_exists(const char* path) { return access(path, F_OK) != -1; }
 
 
 
+static int64_t file_size(const char* path)
+{
+    long int sz = 0;
+    FILE* fp = fopen(path, "rb");
+    if (fp == NULL)
+        return 1;
+    fseek(fp, 0L, SEEK_END);
+    sz = ftell(fp);
+    fclose(fp);
+    return sz;
+}
+
+
+
 static const double NORM3_255 = 1. / (3 * 255.0 * 255.0);
 static const double NORM3_THRESHOLD = 1e-5;
 
