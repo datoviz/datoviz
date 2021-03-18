@@ -56,6 +56,7 @@ int test_canvas_blank(TestContext*);
 int test_canvas_multiple(TestContext*);
 int test_canvas_events(TestContext*);
 int test_canvas_triangle_1(TestContext*);
+int test_canvas_triangle_offscreen(TestContext*);
 int test_canvas_triangle_push(TestContext*);
 int test_canvas_triangle_upload(TestContext*);
 int test_canvas_triangle_uniform(TestContext*);
@@ -127,16 +128,17 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_vklite_canvas_triangle), //
 
     // Canvas.
-    CASE_FIXTURE_APP(test_canvas_blank),            //
-    CASE_FIXTURE_APP(test_canvas_multiple),         //
-    CASE_FIXTURE_APP(test_canvas_events),           //
-    CASE_FIXTURE_APP(test_canvas_triangle_1),       //
-    CASE_FIXTURE_APP(test_canvas_triangle_push),    //
-    CASE_FIXTURE_APP(test_canvas_triangle_upload),  //
-    CASE_FIXTURE_APP(test_canvas_triangle_uniform), //
-    CASE_FIXTURE_APP(test_canvas_triangle_compute), //
-    CASE_FIXTURE_APP(test_canvas_triangle_pick),    //
-    CASE_FIXTURE_APP(test_canvas_triangle_append),  //
+    CASE_FIXTURE_APP(test_canvas_blank),              //
+    CASE_FIXTURE_APP(test_canvas_multiple),           //
+    CASE_FIXTURE_APP(test_canvas_events),             //
+    CASE_FIXTURE_APP(test_canvas_triangle_1),         //
+    CASE_FIXTURE_APP(test_canvas_triangle_offscreen), //
+    CASE_FIXTURE_APP(test_canvas_triangle_push),      //
+    CASE_FIXTURE_APP(test_canvas_triangle_upload),    //
+    CASE_FIXTURE_APP(test_canvas_triangle_uniform),   //
+    CASE_FIXTURE_APP(test_canvas_triangle_compute),   //
+    CASE_FIXTURE_APP(test_canvas_triangle_pick),      //
+    CASE_FIXTURE_APP(test_canvas_triangle_append),    //
 
 };
 
@@ -262,8 +264,9 @@ static void strins(char* dest, char* ins, size_t offset)
 
     char* dest_cpy = malloc(strlen(dest));
     strncpy(dest_cpy, dest, strlen(dest) + 1);
-    strncpy(&dest[offset + strlen(ins)], &dest_cpy[offset], strlen(&dest_cpy[offset]));
+    strncpy(&dest[offset + strlen(ins)], &dest_cpy[offset], strlen(&dest_cpy[offset]) + 1);
     strncpy(&dest[offset], ins, strlen(ins));
+    ASSERT(strlen(dest) == strlen(dest_cpy) + strlen(ins));
     FREE(dest_cpy);
 }
 

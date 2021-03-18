@@ -20,5 +20,5 @@ layout(binding = 0) buffer buf {
 void main() {
     if(gl_GlobalInvocationID.x >= ITEM_COUNT)
         return;
-    vertex[gl_GlobalInvocationID.x].pos *= .999;
+    vertex[gl_GlobalInvocationID.x].pos *= .99;
 }
