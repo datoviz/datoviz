@@ -1,7 +1,8 @@
+#include "../external/video.h"
 #include "../include/datoviz/canvas.h"
+#include "../include/datoviz/controls.h"
 #include "proto.h"
 #include "tests.h"
-#include "video.h"
 
 
 
@@ -289,6 +290,59 @@ int test_canvas_events(TestContext* tc)
     AT(events.button.u.b.button == DVZ_MOUSE_BUTTON_LEFT);
 
     // TODO: more events.
+
+    dvz_canvas_destroy(canvas);
+    return 0;
+}
+
+
+
+static void _gui_callback(DvzCanvas* canvas, DvzEvent ev)
+{
+    ASSERT(canvas != NULL);
+    if (ev.u.g.control->type == DVZ_GUI_CONTROL_SLIDER_FLOAT)
+    {
+        float* value = ev.u.g.control->value;
+        log_info("value is %.3f", *value);
+    }
+    if (ev.u.g.control->type == DVZ_GUI_CONTROL_SLIDER_INT)
+    {
+        int* value = ev.u.g.control->value;
+        log_info("value is %d", *value);
+    }
+    if (ev.u.g.control->type == DVZ_GUI_CONTROL_CHECKBOX)
+    {
+        bool* value = ev.u.g.control->value;
+        log_info("value is %s", (*value) ? "checked" : "unchecked");
+    }
+    if (ev.u.g.control->type == DVZ_GUI_CONTROL_BUTTON)
+    {
+        log_info("button pressed");
+    }
+}
+
+int test_canvas_gui(TestContext* tc)
+{
+    DvzApp* app = tc->app;
+    DvzGpu* gpu = dvz_gpu_best(app);
+    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_IMGUI);
+
+    // Make a simple GUI.
+    DvzGui* gui = dvz_gui(canvas, "Hello world", 0);
+
+    dvz_gui_label(gui, "label", "hello world!");
+    dvz_gui_checkbox(gui, "my checkbox", true);
+    dvz_gui_slider_float(gui, "my slider 1", 0.0f, 1.0f, .5);
+    dvz_gui_slider_float2(gui, "my slider bis", 0.0f, 1.0f, (vec2){.25, .75}, true);
+    dvz_gui_slider_int(gui, "my slider 2", 10, 20, 10);
+    dvz_gui_input_float(gui, "enter a float", 1, 10, 0);
+    dvz_gui_textbox(gui, "textbox", "some text");
+    dvz_gui_button(gui, "my button", 0);
+    dvz_gui_colormap(gui, DVZ_CMAP_VIRIDIS);
+
+    dvz_event_callback(canvas, DVZ_EVENT_GUI, 0, DVZ_EVENT_MODE_SYNC, _gui_callback, NULL);
+
+    dvz_app_run(app, 0);
 
     dvz_canvas_destroy(canvas);
     return 0;
