@@ -212,6 +212,28 @@ static VkResult create_debug_utils_messenger_EXT(
 
 
 
+static inline int _log_level(int sev)
+{
+    switch (sev)
+    {
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+        return LOG_TRACE;
+        break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+        return LOG_INFO;
+        break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+        return LOG_WARN;
+        break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+        return LOG_ERROR;
+        break;
+    default:
+        break;
+    }
+    return LOG_ERROR;
+}
+
 static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -219,10 +241,11 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
 {
     // HACK: hide harmless warning message on Ubuntu:
     // validation layer: /usr/lib/i386-linux-gnu/libvulkan_radeon.so: wrong ELF class: ELFCLASS32
-    if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT &&
-        strstr(pCallbackData->pMessage, "ELFCLASS32") == NULL)
+    if (strstr(pCallbackData->pMessage, "ELFCLASS32") == NULL)
     {
-        log_error("validation layer: %s", pCallbackData->pMessage);
+        log_log(
+            _log_level(messageSeverity), __FILENAME__, __LINE__, "validation layer: %s",
+            pCallbackData->pMessage);
         if (pUserData != NULL)
         {
             uint32_t* n_errors = (uint32_t*)pUserData;
@@ -564,10 +587,12 @@ static void create_instance(
         info_inst.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&info_debug;
 
         // https://vulkan.lunarg.com/doc/sdk/1.2.170.0/linux/best_practices.html
-        enables[0] = VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT;
-        enables[1] = VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT;
+        enables[0] = VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT;
+        enables[1] = VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT;
+        enables[2] = VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT;
+
         features.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
-        features.enabledValidationFeatureCount = 2;
+        features.enabledValidationFeatureCount = 3;
         features.pEnabledValidationFeatures = enables;
         info_inst.pNext = &features;
     }
@@ -691,11 +716,11 @@ static void
 create_command_pool(VkDevice device, uint32_t queue_family_index, VkCommandPool* cmd_pool)
 {
     log_trace("create command pool for queue family index #%d", queue_family_index);
-    VkCommandPoolCreateInfo command_pool_info = {0};
-    command_pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    command_pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-    command_pool_info.queueFamilyIndex = queue_family_index;
-    VK_CHECK_RESULT(vkCreateCommandPool(device, &command_pool_info, NULL, cmd_pool));
+    VkCommandPoolCreateInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    info.queueFamilyIndex = queue_family_index;
+    VK_CHECK_RESULT(vkCreateCommandPool(device, &info, NULL, cmd_pool));
 }
 
 
@@ -954,6 +979,27 @@ static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
 /*  Swapchain                                                                                    */
 /*************************************************************************************************/
 
+static bool check_surface_format(VkPhysicalDevice pdevice, VkSurfaceKHR surface, VkFormat format)
+{
+    uint32_t n_formats = 0;
+    VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(pdevice, surface, &n_formats, NULL));
+    ASSERT(n_formats > 0);
+    VkSurfaceFormatKHR* formats = calloc(n_formats, sizeof(VkSurfaceFormatKHR));
+    VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(pdevice, surface, &n_formats, formats));
+    bool found = false;
+    for (uint32_t i = 0; i < n_formats; i++)
+    {
+        if (formats[i].format == format)
+        {
+            found = true;
+            break;
+        }
+    }
+    if (!found)
+        log_error("format %d is not supported by the surface", format);
+    return found;
+}
+
 static void create_swapchain(
     VkDevice device, VkPhysicalDevice pdevice,                              //
     VkSurfaceKHR surface, uint32_t image_count,                             //
@@ -976,6 +1022,9 @@ static void create_swapchain(
     // states: surface must be a surface that is supported by the device as determined using
     // vkGetPhysicalDeviceSurfaceSupportKHR
     find_present_queue_family(pdevice, surface, queues);
+
+    // Find formats supported by the surface.
+    ASSERT(check_surface_format(pdevice, surface, format));
 
     // Swap chain.
     VkSwapchainCreateInfoKHR screateInfo = {0};
@@ -1071,12 +1120,12 @@ static void allocate_command_buffers(
     ASSERT(command_pool != VK_NULL_HANDLE);
     ASSERT(count > 0);
 
-    VkCommandBufferAllocateInfo alloc_info = {0};
-    alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    alloc_info.commandPool = command_pool;
-    alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    alloc_info.commandBufferCount = count;
-    VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &alloc_info, cmd_bufs));
+    VkCommandBufferAllocateInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    info.commandPool = command_pool;
+    info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    info.commandBufferCount = count;
+    VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &info, cmd_bufs));
 }
 
 
@@ -1155,22 +1204,21 @@ static void create_buffer2(
 {
     ASSERT(queues != NULL);
 
-    VkBufferCreateInfo binfo = {0};
-    binfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    binfo.size = size;
-    binfo.usage = usage;
+    VkBufferCreateInfo buf_info = {0};
+    buf_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    buf_info.size = size;
+    buf_info.usage = usage;
 
-    // binfo.pQueueFamilyIndices = calloc(DVZ_MAX_QUEUE_FAMILIES, sizeof(uint32_t));
     uint32_t queue_families[DVZ_MAX_QUEUE_FAMILIES];
     make_shared(
         queues, queue_count, queue_indices, //
-        &binfo.sharingMode, &binfo.queueFamilyIndexCount, queue_families);
-    binfo.pQueueFamilyIndices = queue_families;
+        &buf_info.sharingMode, &buf_info.queueFamilyIndexCount, queue_families);
+    buf_info.pQueueFamilyIndices = queue_families;
 
     log_trace(
         "create buffer with size %s, sharing mode %s", pretty_size(size),
-        binfo.sharingMode == 0 ? "exclusive" : "concurrent");
-    VK_CHECK_RESULT(vkCreateBuffer(device, &binfo, NULL, buffer));
+        buf_info.sharingMode == 0 ? "exclusive" : "concurrent");
+    VK_CHECK_RESULT(vkCreateBuffer(device, &buf_info, NULL, buffer));
 
     VkMemoryRequirements memRequirements = {0};
     vkGetBufferMemoryRequirements(device, *buffer, &memRequirements);
@@ -1301,28 +1349,28 @@ static void create_texture_sampler2(
     VkSamplerAddressMode* address_modes, bool anisotropy, VkSampler* sampler)
 {
     log_trace("create texture sampler");
-    VkSamplerCreateInfo sampler_info = {0};
-    sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    VkSamplerCreateInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 
-    sampler_info.magFilter = mag_filter;
-    sampler_info.minFilter = min_filter;
+    info.magFilter = mag_filter;
+    info.minFilter = min_filter;
 
-    sampler_info.addressModeU = address_modes[0];
-    sampler_info.addressModeV = address_modes[1];
-    sampler_info.addressModeW = address_modes[2];
+    info.addressModeU = address_modes[0];
+    info.addressModeV = address_modes[1];
+    info.addressModeW = address_modes[2];
 
-    sampler_info.anisotropyEnable = anisotropy;
-    sampler_info.maxAnisotropy = 16;
-    sampler_info.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-    sampler_info.unnormalizedCoordinates = VK_FALSE;
-    sampler_info.compareEnable = VK_FALSE;
-    sampler_info.compareOp = VK_COMPARE_OP_ALWAYS;
-    sampler_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    sampler_info.mipLodBias = 0.0f;
-    sampler_info.minLod = 0.0f;
-    sampler_info.maxLod = 0.0f;
+    info.anisotropyEnable = anisotropy;
+    info.maxAnisotropy = 16;
+    info.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+    info.unnormalizedCoordinates = VK_FALSE;
+    info.compareEnable = VK_FALSE;
+    info.compareOp = VK_COMPARE_OP_ALWAYS;
+    info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    info.mipLodBias = 0.0f;
+    info.minLod = 0.0f;
+    info.maxLod = 0.0f;
 
-    VK_CHECK_RESULT(vkCreateSampler(device, &sampler_info, NULL, sampler));
+    VK_CHECK_RESULT(vkCreateSampler(device, &info, NULL, sampler));
 }
 
 
@@ -1346,16 +1394,16 @@ static void create_descriptor_pool(VkDevice device, VkDescriptorPool* dset_pool)
         {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, DVZ_MAX_DESCRIPTOR_SETS},
         {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, DVZ_MAX_DESCRIPTOR_SETS},
         {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, DVZ_MAX_DESCRIPTOR_SETS}};
-    VkDescriptorPoolCreateInfo descriptor_pool_info = {0};
-    descriptor_pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    descriptor_pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-    descriptor_pool_info.poolSizeCount = 11;
-    descriptor_pool_info.pPoolSizes = poolSizes;
-    descriptor_pool_info.maxSets = DVZ_MAX_DESCRIPTOR_SETS * descriptor_pool_info.poolSizeCount;
+    VkDescriptorPoolCreateInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+    info.poolSizeCount = 11;
+    info.pPoolSizes = poolSizes;
+    info.maxSets = DVZ_MAX_DESCRIPTOR_SETS * info.poolSizeCount;
 
     // Create descriptor pool.
     log_trace("create descriptor pool");
-    VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptor_pool_info, NULL, dset_pool));
+    VK_CHECK_RESULT(vkCreateDescriptorPool(device, &info, NULL, dset_pool));
 }
 
 
@@ -1397,13 +1445,13 @@ static void create_descriptor_set_layout(
     }
 
     // Create descriptor set layout.
-    VkDescriptorSetLayoutCreateInfo layout_info = {0};
-    layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layout_info.bindingCount = binding_count;
-    layout_info.pBindings = layout_bindings;
+    VkDescriptorSetLayoutCreateInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    info.bindingCount = binding_count;
+    info.pBindings = layout_bindings;
 
     log_trace("create descriptor set layout");
-    VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &layout_info, NULL, dset_layout));
+    VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &info, NULL, dset_layout));
     FREE(layout_bindings);
 }
 
@@ -1418,15 +1466,15 @@ static void allocate_descriptor_sets(
     for (uint32_t i = 0; i < count; i++)
         layouts[i] = dset_layout;
 
-    VkDescriptorSetAllocateInfo alloc_info = {0};
-    alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    VkDescriptorSetAllocateInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     ASSERT(dset_pool != VK_NULL_HANDLE);
-    alloc_info.descriptorPool = dset_pool;
-    alloc_info.descriptorSetCount = count;
-    alloc_info.pSetLayouts = layouts;
+    info.descriptorPool = dset_pool;
+    info.descriptorSetCount = count;
+    info.pSetLayouts = layouts;
 
     log_trace("allocate descriptor sets");
-    VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &alloc_info, dsets));
+    VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &info, dsets));
     FREE(layouts);
 }
 
@@ -1737,15 +1785,15 @@ static void begin_render_pass(
     ASSERT(width > 0);
     ASSERT(height > 0);
 
-    VkRenderPassBeginInfo render_pass_info = {0};
-    render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    render_pass_info.renderPass = renderpass;
-    render_pass_info.framebuffer = framebuffer;
+    VkRenderPassBeginInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    info.renderPass = renderpass;
+    info.framebuffer = framebuffer;
     VkRect2D renderArea = {{0, 0}, {width, height}};
-    render_pass_info.renderArea = renderArea;
-    render_pass_info.clearValueCount = clear_count;
-    render_pass_info.pClearValues = clear_colors;
-    vkCmdBeginRenderPass(cmd_buf, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+    info.renderArea = renderArea;
+    info.clearValueCount = clear_count;
+    info.pClearValues = clear_colors;
+    vkCmdBeginRenderPass(cmd_buf, &info, VK_SUBPASS_CONTENTS_INLINE);
 }
 
 #endif
