@@ -765,14 +765,15 @@ int test_vklite_barrier_buffer(TestContext* tc)
     DvzBuffer buffer1 = dvz_buffer(gpu);
     _make_buffer(&buffer0);
     _make_buffer(&buffer1);
-    const VkDeviceSize size = buffer0.size;
+    const VkDeviceSize size = 20 * sizeof(float);
 
     // Send some data to the buffer.
     float* data0 = calloc(size, sizeof(1));
     for (uint32_t i = 0; i < size; i++)
         data0[i] = (float)i;
-    dvz_buffer_upload(&buffer0, 0, size, data0);
-    dvz_buffer_upload(&buffer1, 0, size, data0);
+    VkDeviceSize offset = 32;
+    dvz_buffer_upload(&buffer0, offset, size, data0);
+    dvz_buffer_upload(&buffer1, offset, size, data0);
 
     // Create the compute pipeline.
     char path[1024];
@@ -785,7 +786,7 @@ int test_vklite_barrier_buffer(TestContext* tc)
     // Create the bindings.
     DvzBindings bindings = dvz_bindings(&compute.slots, 1);
     DvzBufferRegions br = {.buffer = &buffer0, .size = size, .count = 1};
-    br.offsets[0] = 0;
+    br.offsets[0] = offset;
     dvz_bindings_buffer(&bindings, 0, br);
     dvz_bindings_update(&bindings);
 
@@ -806,13 +807,13 @@ int test_vklite_barrier_buffer(TestContext* tc)
         &barrier, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
     dvz_barrier_buffer_access(&barrier, VK_ACCESS_MEMORY_WRITE_BIT, VK_ACCESS_MEMORY_READ_BIT);
     dvz_cmd_barrier(&cmds, 0, &barrier);
-    dvz_cmd_copy_buffer(&cmds, 0, &buffer0, 0, &buffer1, 0, size);
+    dvz_cmd_copy_buffer(&cmds, 0, &buffer0, offset, &buffer1, offset, size);
     dvz_cmd_end(&cmds, 0);
     dvz_cmd_submit_sync(&cmds, 0);
 
     // Get back the data.
     float* data1 = calloc(size, sizeof(1));
-    dvz_buffer_download(&buffer1, 0, size, data1);
+    dvz_buffer_download(&buffer1, offset, size, data1);
     for (uint32_t i = 0; i < 20; i++)
         AT(data1[i] == 2 * data0[i]);
 
