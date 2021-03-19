@@ -30,6 +30,13 @@ int test_utils_transforms_2(TestContext*);
 int test_utils_transforms_3(TestContext*);
 int test_utils_transforms_4(TestContext*);
 // int test_utils_transforms_5(TestContext*);
+int test_utils_colormap_idx(TestContext*);
+int test_utils_colormap_uv(TestContext*);
+int test_utils_colormap_extent(TestContext*);
+int test_utils_colormap_default(TestContext*);
+int test_utils_colormap_scale(TestContext*);
+int test_utils_colormap_packuv(TestContext*);
+int test_utils_colormap_array(TestContext*);
 
 // Test vklite.
 int test_vklite_app(TestContext*);
@@ -96,24 +103,31 @@ int test_canvas_triangle_append(TestContext*);
 
 static TestCase TEST_CASES[] = {
     // Utils.
-    CASE_FIXTURE_NONE(test_utils_container),    //
-    CASE_FIXTURE_NONE(test_utils_fifo_1),       //
-    CASE_FIXTURE_NONE(test_utils_fifo_2),       //
-    CASE_FIXTURE_NONE(test_utils_fifo_3),       //
-    CASE_FIXTURE_NONE(test_utils_array_1),      //
-    CASE_FIXTURE_NONE(test_utils_array_2),      //
-    CASE_FIXTURE_NONE(test_utils_array_3),      //
-    CASE_FIXTURE_NONE(test_utils_array_4),      //
-    CASE_FIXTURE_NONE(test_utils_array_5),      //
-    CASE_FIXTURE_NONE(test_utils_array_6),      //
-    CASE_FIXTURE_NONE(test_utils_array_7),      //
-    CASE_FIXTURE_NONE(test_utils_array_cast),   //
-    CASE_FIXTURE_NONE(test_utils_array_mvp),    //
-    CASE_FIXTURE_NONE(test_utils_array_3D),     //
-    CASE_FIXTURE_NONE(test_utils_transforms_1), //
-    CASE_FIXTURE_NONE(test_utils_transforms_2), //
-    CASE_FIXTURE_NONE(test_utils_transforms_3), //
-    CASE_FIXTURE_NONE(test_utils_transforms_4), //
+    CASE_FIXTURE_NONE(test_utils_container),        //
+    CASE_FIXTURE_NONE(test_utils_fifo_1),           //
+    CASE_FIXTURE_NONE(test_utils_fifo_2),           //
+    CASE_FIXTURE_NONE(test_utils_fifo_3),           //
+    CASE_FIXTURE_NONE(test_utils_array_1),          //
+    CASE_FIXTURE_NONE(test_utils_array_2),          //
+    CASE_FIXTURE_NONE(test_utils_array_3),          //
+    CASE_FIXTURE_NONE(test_utils_array_4),          //
+    CASE_FIXTURE_NONE(test_utils_array_5),          //
+    CASE_FIXTURE_NONE(test_utils_array_6),          //
+    CASE_FIXTURE_NONE(test_utils_array_7),          //
+    CASE_FIXTURE_NONE(test_utils_array_cast),       //
+    CASE_FIXTURE_NONE(test_utils_array_mvp),        //
+    CASE_FIXTURE_NONE(test_utils_array_3D),         //
+    CASE_FIXTURE_NONE(test_utils_transforms_1),     //
+    CASE_FIXTURE_NONE(test_utils_transforms_2),     //
+    CASE_FIXTURE_NONE(test_utils_transforms_3),     //
+    CASE_FIXTURE_NONE(test_utils_transforms_4),     //
+    CASE_FIXTURE_NONE(test_utils_colormap_idx),     //
+    CASE_FIXTURE_NONE(test_utils_colormap_uv),      //
+    CASE_FIXTURE_NONE(test_utils_colormap_extent),  //
+    CASE_FIXTURE_NONE(test_utils_colormap_default), //
+    CASE_FIXTURE_NONE(test_utils_colormap_scale),   //
+    CASE_FIXTURE_NONE(test_utils_colormap_packuv),  //
+    CASE_FIXTURE_NONE(test_utils_colormap_array),   //
     // CASE_FIXTURE_NONE(test_utils_transforms_5), //
 
     // vklite.
@@ -175,8 +189,10 @@ static uint32_t N_TESTS = sizeof(TEST_CASES) / sizeof(TestCase);
         return 1;                                                                                 \
     }
 #define AEn(n, x, y)                                                                              \
-    for (uint32_t i = 0; i < (n); i++)                                                            \
-        AT((x)[i] == (y)[i]);
+    {                                                                                             \
+        for (uint32_t k = 0; k < (n); k++)                                                        \
+            AT((x)[k] == (y)[k]);                                                                 \
+    }
 
 
 #define AIN(x, m, M) AT((m) <= (x) && (x) <= (M))
