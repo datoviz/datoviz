@@ -220,7 +220,7 @@ static inline int _log_level(int sev)
         return LOG_TRACE;
         break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
-        return LOG_INFO;
+        return LOG_DEBUG;
         break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
         return LOG_WARN;
@@ -246,7 +246,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
         log_log(
             _log_level(messageSeverity), __FILENAME__, __LINE__, "validation layer: %s",
             pCallbackData->pMessage);
-        if (pUserData != NULL)
+        if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT && pUserData != NULL)
         {
             uint32_t* n_errors = (uint32_t*)pUserData;
             (*n_errors)++;

@@ -72,22 +72,22 @@ static DvzRenderpass make_renderpass(
         DVZ_RENDERPASS_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT,
         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     dvz_renderpass_attachment_layout(
-        &renderpass, 1, VK_IMAGE_LAYOUT_UNDEFINED,
-        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+        &renderpass, 1, //
+        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     dvz_renderpass_attachment_ops(
         &renderpass, 1, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
 
     // Subpass.
     dvz_renderpass_subpass_attachment(&renderpass, 0, 0);
     dvz_renderpass_subpass_attachment(&renderpass, 0, 1);
-    dvz_renderpass_subpass_dependency(&renderpass, 0, VK_SUBPASS_EXTERNAL, 0);
-    dvz_renderpass_subpass_dependency_stage(
-        &renderpass, 0, //
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-    dvz_renderpass_subpass_dependency_access(
-        &renderpass, 0, 0,
-        VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+    // dvz_renderpass_subpass_dependency(&renderpass, 0, VK_SUBPASS_EXTERNAL, 0);
+    // dvz_renderpass_subpass_dependency_stage(
+    //     &renderpass, 0, //
+    //     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+    //     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+    // dvz_renderpass_subpass_dependency_access(
+    //     &renderpass, 0, 0,
+    //     VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
 
     return renderpass;
 }
