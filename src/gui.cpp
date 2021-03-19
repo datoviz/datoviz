@@ -183,6 +183,9 @@ static int _gui_style(int flags)
 
 void dvz_imgui_init(DvzCanvas* canvas)
 {
+    ASSERT(canvas != NULL);
+    ASSERT(canvas->gpu != NULL);
+
     if (ImGui::GetCurrentContext() == NULL)
         _imgui_init_context();
     ASSERT(canvas->overlay);
@@ -223,8 +226,13 @@ void dvz_imgui_init(DvzCanvas* canvas)
     dvz_event_callback(canvas, DVZ_EVENT_PRE_SEND, 0, DVZ_EVENT_MODE_SYNC, _presend, cmds);
 
     // Make the colormap texture available.
+    ASSERT(canvas->gpu->context != NULL);
     DvzTexture* texture = canvas->gpu->context->color_texture.texture;
+    ASSERT(texture != NULL);
+
+    ASSERT(texture->sampler != NULL);
     VkSampler sampler = texture->sampler->sampler;
+    ASSERT(texture->image != NULL);
     VkImageView image_view = texture->image->image_views[0];
 
     // GUI context.

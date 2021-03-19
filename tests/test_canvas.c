@@ -571,7 +571,7 @@ int test_canvas_triangle_push(TestContext* tc)
 {
     DvzApp* app = tc->app;
     DvzGpu* gpu = dvz_gpu_best(app);
-    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_FPS);
+    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
     TestVisual visual = triangle(canvas, "_push");
 
     // Bindings and graphics pipeline.
@@ -637,7 +637,7 @@ int test_canvas_triangle_upload(TestContext* tc)
 {
     DvzApp* app = tc->app;
     DvzGpu* gpu = dvz_gpu_best(app);
-    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_FPS);
+    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
     TestVisual visual = triangle(canvas, "");
 
     // Bindings and graphics pipeline.
@@ -702,7 +702,7 @@ int test_canvas_triangle_uniform(TestContext* tc)
 {
     DvzApp* app = tc->app;
     DvzGpu* gpu = dvz_gpu_best(app);
-    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_FPS);
+    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
     TestVisual visual = triangle(canvas, "_ubo");
 
     // Uniform buffer.
@@ -747,6 +747,8 @@ int test_canvas_triangle_uniform(TestContext* tc)
 
 
 
+// dir=0: read then write
+// dir=1: write then read
 static void _buffer_barrier(TestVisual* visual, DvzCommands* cmds, uint32_t idx, int dir)
 {
     VkPipelineStageFlags stages[] = {
@@ -788,6 +790,7 @@ static void triangle_refill_compute(DvzCanvas* canvas, DvzEvent ev)
     dvz_cmd_bind_graphics(cmds, idx, &visual->graphics, &visual->bindings, 0);
     dvz_cmd_draw(cmds, idx, 0, 3);
     dvz_cmd_end_renderpass(cmds, idx);
+
     dvz_cmd_end(cmds, idx);
 }
 
@@ -904,7 +907,10 @@ static void triangle_append(DvzCanvas* canvas, DvzEvent ev)
     TestVisual* visual = ev.user_data;
     ASSERT(visual != NULL);
 
-    const uint32_t N = 3 + ev.u.t.idx % 24;
+    if (ev.u.t.idx >= 8)
+        return;
+
+    const uint32_t N = 3 + ev.u.t.idx;
     visual->n_vertices = 3 * N;
     TestVertex* data = calloc(visual->n_vertices, sizeof(TestVertex));
     float t = 0, t2 = 0;
@@ -957,7 +963,7 @@ int test_canvas_triangle_append(TestContext* tc)
     dvz_event_callback(
         canvas, DVZ_EVENT_TIMER, .01, DVZ_EVENT_MODE_SYNC, triangle_append, &visual);
 
-    dvz_app_run(app, N_FRAMES);
+    dvz_app_run(app, 30);
 
     // Check screenshot.
     int res = check_canvas(canvas, "test_canvas_triangle_append");

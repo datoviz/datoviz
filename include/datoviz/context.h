@@ -369,6 +369,13 @@ DVZ_EXPORT DvzContext* dvz_context(DvzGpu* gpu, DvzWindow* window);
 DVZ_EXPORT void dvz_context_reset(DvzContext* context);
 
 /**
+ * Reset all GPUs.
+ *
+ * @param app the application instance
+ */
+DVZ_EXPORT void dvz_app_reset(DvzApp* app);
+
+/**
  * Update the colormap texture on the GPU after it has changed on the CPU.
  *
  * @param context the context

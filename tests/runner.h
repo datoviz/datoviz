@@ -157,6 +157,7 @@ static int run_test_case(TestContext* tc, TestCase* test_case)
     // Make sure either the canvas or panel is set up if the test case requires it.
     // _setup(tc, test_case.fixture);
 
+    // Set the case fixture.
     _set_fixture(tc, test_case);
 
     // Run the test case on the canvas.
@@ -167,6 +168,9 @@ static int run_test_case(TestContext* tc, TestCase* test_case)
     {
         res += (int)tc->app->n_errors;
     }
+
+    if (tc->app != NULL)
+        dvz_app_reset(tc->app);
 
     return res;
 }

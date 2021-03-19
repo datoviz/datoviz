@@ -133,12 +133,12 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_vklite_canvas_triangle), //
 
     // Canvas.
-    CASE_FIXTURE_APP(test_canvas_blank),      //
-    CASE_FIXTURE_APP(test_canvas_multiple),   //
-    CASE_FIXTURE_APP(test_canvas_events),     //
-    CASE_FIXTURE_APP(test_canvas_gui),        //
-    CASE_FIXTURE_APP(test_canvas_screencast), //
-    CASE_FIXTURE_APP(test_canvas_video),      //
+    CASE_FIXTURE_APP(test_canvas_blank),    //
+    CASE_FIXTURE_APP(test_canvas_multiple), //
+    CASE_FIXTURE_APP(test_canvas_events),   //
+    CASE_FIXTURE_APP(test_canvas_gui),      //
+    // CASE_FIXTURE_APP(test_canvas_screencast), //
+    // CASE_FIXTURE_APP(test_canvas_video),      //
 
     CASE_FIXTURE_APP(test_canvas_triangle_1),         //
     CASE_FIXTURE_APP(test_canvas_triangle_resize),    //
@@ -295,10 +295,11 @@ static void strins(char* dest, char* ins, size_t offset)
     ASSERT(n_dest > 0);
     ASSERT(offset <= n_dest);
 
-    char* dest_cpy = malloc(strlen(dest));
-    strncpy(dest_cpy, dest, strlen(dest) + 1);
-    memcpy(&dest[offset + strlen(ins)], &dest_cpy[offset], strlen(&dest_cpy[offset]) + 1);
+    char* dest_cpy = calloc(strlen(dest) + 1, 1);
+    strncpy(dest_cpy, dest, strlen(dest));
+    strncpy(&dest[offset + strlen(ins)], &dest_cpy[offset], strlen(&dest_cpy[offset]));
     strncpy(&dest[offset], ins, strlen(ins));
+    dest[n_dest + n_ins] = 0;
     ASSERT(strlen(dest) == strlen(dest_cpy) + strlen(ins));
     FREE(dest_cpy);
 }
@@ -331,12 +332,12 @@ static int check_image(uvec2 size, const uint8_t* image, const char* path)
 
     // If the test failed, save the discrepant image.
     // Construct the failing path.
-    char path_failed[1024];
+    char path_failed[1024] = {0};
     ASSERT(strlen(path) < 1000);
-    strncpy(path_failed, path, strlen(path));
-    char* subs = ".fail";
+    strncpy(path_failed, path, strlen(path) + 1);
+    // char* subs = ".fail";
     char* ext = strrchr(path_failed, '.');
-    strins(path_failed, subs, (uint64_t)ext - (uint64_t)path_failed);
+    strins(path_failed, ".fail", (uint64_t)ext - (uint64_t)path_failed);
 
     if (diff != 0)
     {

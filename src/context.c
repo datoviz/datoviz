@@ -126,6 +126,32 @@ static void _context_default_buffers(DvzContext* context)
 
 
 
+static void _context_default_resources(DvzContext* context)
+{
+    ASSERT(context != NULL);
+
+    // Create the default buffers.
+    _context_default_buffers(context);
+
+    // Create the font atlas and assign it to the context.
+    context->font_atlas = dvz_font_atlas(context);
+
+    // Color texture.
+    context->color_texture.arr = _load_colormaps();
+    context->color_texture.texture =
+        dvz_ctx_texture(context, 2, (uvec3){256, 256, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+    dvz_texture_address_mode(
+        context->color_texture.texture, DVZ_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_texture_address_mode(
+        context->color_texture.texture, DVZ_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_context_colormap(context);
+
+    // Default 1D texture, for transfer functions.
+    context->transfer_texture = _default_transfer_texture(context);
+}
+
+
+
 static void _destroy_resources(DvzContext* context)
 {
     ASSERT(context != NULL);
@@ -192,29 +218,12 @@ DvzContext* dvz_context(DvzGpu* gpu, DvzWindow* window)
         dvz_gpu_create(gpu, surface);
     }
 
-    // Create the default buffers.
-    _context_default_buffers(context);
-
     context->transfer_cmd = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_TRANSFER, 1);
 
     gpu->context = context;
     dvz_obj_created(&context->obj);
 
-    // Create the font atlas and assign it to the context.
-    context->font_atlas = dvz_font_atlas(context);
-
-    // Color texture.
-    context->color_texture.arr = _load_colormaps();
-    context->color_texture.texture =
-        dvz_ctx_texture(context, 2, (uvec3){256, 256, 1}, VK_FORMAT_R8G8B8A8_UNORM);
-    dvz_texture_address_mode(
-        context->color_texture.texture, DVZ_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-    dvz_texture_address_mode(
-        context->color_texture.texture, DVZ_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-    dvz_context_colormap(context);
-
-    // Default 1D texture, for transfer functions.
-    context->transfer_texture = _default_transfer_texture(context);
+    _context_default_resources(context);
 
     return context;
 }
@@ -239,7 +248,26 @@ void dvz_context_reset(DvzContext* context)
     ASSERT(context != NULL);
     log_trace("reset the context");
     _destroy_resources(context);
-    _context_default_buffers(context);
+    _context_default_resources(context);
+}
+
+
+
+void dvz_app_reset(DvzApp* app)
+{
+    ASSERT(app != NULL);
+    dvz_app_wait(app);
+    DvzContainerIterator iter = dvz_container_iterator(&app->gpus);
+    DvzGpu* gpu = NULL;
+    while (iter.item != NULL)
+    {
+        gpu = iter.item;
+        ASSERT(gpu != NULL);
+        if (dvz_obj_is_created(&gpu->obj) && gpu->context != NULL)
+            dvz_context_reset(gpu->context);
+        dvz_container_iter(&iter);
+    }
+    dvz_app_wait(app);
 }
 
 

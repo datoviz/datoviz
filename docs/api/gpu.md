@@ -5,6 +5,7 @@
 
 ### `dvz_context()`
 ### `dvz_context_reset()`
+### `dvz_app_reset()`
 ### `dvz_context_destroy()`
 
 
