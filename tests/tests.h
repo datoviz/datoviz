@@ -297,7 +297,7 @@ static void strins(char* dest, char* ins, size_t offset)
 
     char* dest_cpy = malloc(strlen(dest));
     strncpy(dest_cpy, dest, strlen(dest) + 1);
-    strncpy(&dest[offset + strlen(ins)], &dest_cpy[offset], strlen(&dest_cpy[offset]) + 1);
+    memcpy(&dest[offset + strlen(ins)], &dest_cpy[offset], strlen(&dest_cpy[offset]) + 1);
     strncpy(&dest[offset], ins, strlen(ins));
     ASSERT(strlen(dest) == strlen(dest_cpy) + strlen(ins));
     FREE(dest_cpy);

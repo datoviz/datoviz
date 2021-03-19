@@ -242,7 +242,7 @@ int test_canvas_events(TestContext* tc)
 {
     DvzApp* app = tc->app;
     DvzGpu* gpu = dvz_gpu_best(app);
-    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
+    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_FPS);
 
     EventHolder events = {0};
     dvz_event_callback( //
@@ -571,7 +571,7 @@ int test_canvas_triangle_push(TestContext* tc)
 {
     DvzApp* app = tc->app;
     DvzGpu* gpu = dvz_gpu_best(app);
-    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
+    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_FPS);
     TestVisual visual = triangle(canvas, "_push");
 
     // Bindings and graphics pipeline.
@@ -637,7 +637,7 @@ int test_canvas_triangle_upload(TestContext* tc)
 {
     DvzApp* app = tc->app;
     DvzGpu* gpu = dvz_gpu_best(app);
-    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
+    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_FPS);
     TestVisual visual = triangle(canvas, "");
 
     // Bindings and graphics pipeline.
@@ -702,7 +702,7 @@ int test_canvas_triangle_uniform(TestContext* tc)
 {
     DvzApp* app = tc->app;
     DvzGpu* gpu = dvz_gpu_best(app);
-    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
+    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_FPS);
     TestVisual visual = triangle(canvas, "_ubo");
 
     // Uniform buffer.
@@ -773,7 +773,7 @@ int test_canvas_triangle_compute(TestContext* tc)
 {
     DvzApp* app = tc->app;
     DvzGpu* gpu = dvz_gpu_best(app);
-    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
+    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_FPS);
     TestVisual visual = triangle(canvas, "");
 
     // Bindings and graphics pipeline.
@@ -834,7 +834,8 @@ int test_canvas_triangle_pick(TestContext* tc)
 {
     DvzApp* app = tc->app;
     DvzGpu* gpu = dvz_gpu_best(app);
-    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_PICK);
+    DvzCanvas* canvas =
+        dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_FPS | DVZ_CANVAS_FLAGS_PICK);
     TestVisual visual = triangle(canvas, "_pick");
 
     // Bindings and graphics pipeline.
@@ -917,7 +918,7 @@ int test_canvas_triangle_append(TestContext* tc)
 {
     DvzApp* app = tc->app;
     DvzGpu* gpu = dvz_gpu_best(app);
-    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
+    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_FPS);
     TestVisual visual = triangle(canvas, "");
     visual.n_vertices = 3;
 

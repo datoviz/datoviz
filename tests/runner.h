@@ -134,6 +134,7 @@ static void _set_fixture(TestContext* tc, TestCase* test_case)
     case TEST_FIXTURE_APP:
         if (tc->app == NULL)
             tc->app = dvz_app(DVZ_BACKEND_GLFW);
+        tc->app->n_errors = 0;
         break;
 
     default:
@@ -162,45 +163,10 @@ static int run_test_case(TestContext* tc, TestCase* test_case)
     int res = 1;
     res = test_case->function(tc);
 
-    /*
-    // Run the app.
-    if (test_case.fixture >= DVZ_TEST_FIXTURE_CANVAS)
+    if (tc->app != NULL)
     {
-        ASSERT(tc->canvas != NULL);
-        run_canvas(tc->canvas);
+        res += (int)tc->app->n_errors;
     }
-
-        // Only continue here when offscreen mode.
-        if (!tc->is_live)
-        {
-            // If the function passed and needs to be compared with the screenshot, do it.
-            if (res == 0 && test_case.save_screenshot)
-            {
-                // TODO OPTIM: create the screenshot only once, when creating the canvas
-                uint8_t* rgb = make_screenshot(tc);
-
-                // Test fails if image is blank, not even need to compare with screenshot.
-                if (is_blank(rgb))
-                {
-                    log_debug("image was blank, test failed");
-                    res = 1;
-                }
-                else
-                {
-                    res = compare_images(name, rgb);
-                    log_debug("image comparison %s", res == 0 ? "succeeded" : "failed");
-                }
-                FREE(rgb);
-            }
-        }
-
-        // Call the test case-specific destruction function if there is one.
-        if (test_case.destroy != NULL)
-            test_case.destroy(tc);
-
-        // Tear down the fixture (mainly resetting the canvas or destroying the scene).
-        _teardown(tc, test_case.fixture);
-    */
 
     return res;
 }

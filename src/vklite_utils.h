@@ -696,7 +696,7 @@ static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
     ASSERT(gpu->app != NULL);
 
     bool has_surface = surface != NULL;
-    bool has_validation = gpu->app->debug_messenger != NULL;
+    // bool has_validation = gpu->app->debug_messenger != NULL;
 
     // Find the supported present modes.
     if (surface != NULL)
@@ -928,8 +928,8 @@ static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
     device_info.enabledExtensionCount = n_extensions;
     device_info.ppEnabledExtensionNames = (const char* const*)extensions;
 
-    device_info.enabledLayerCount = has_validation ? ARRAY_COUNT(DVZ_LAYERS) : 0;
-    device_info.ppEnabledLayerNames = has_validation ? DVZ_LAYERS : NULL;
+    // device_info.enabledLayerCount = has_validation ? ARRAY_COUNT(DVZ_LAYERS) : 0;
+    // device_info.ppEnabledLayerNames = has_validation ? DVZ_LAYERS : NULL;
 
     // Create the device
     VK_CHECK_RESULT(vkCreateDevice(gpu->physical_device, &device_info, NULL, &gpu->device));
