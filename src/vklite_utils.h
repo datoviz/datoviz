@@ -535,47 +535,58 @@ static void create_instance(
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.apiVersion = VK_API_VERSION_1_0;
 
-    VkInstanceCreateInfo createInfo = {0};
-    createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    createInfo.pApplicationInfo = &appInfo;
-    createInfo.enabledExtensionCount = extension_count;
-    createInfo.ppEnabledExtensionNames = extensions;
+    VkInstanceCreateInfo info_inst = {0};
+    info_inst.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    info_inst.pApplicationInfo = &appInfo;
+    info_inst.enabledExtensionCount = extension_count;
+    info_inst.ppEnabledExtensionNames = extensions;
 
     // Validation layers.
-    VkDebugUtilsMessengerCreateInfoEXT debug_create_info = {0};
-    debug_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    debug_create_info.flags = 0;
-    debug_create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
-                                        VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-                                        VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-    debug_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-                                    VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-                                    VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-    debug_create_info.pfnUserCallback = debug_callback;
-    debug_create_info.pUserData = debug_data;
+    VkDebugUtilsMessengerCreateInfoEXT info_debug = {0};
+    info_debug.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    info_debug.flags = 0;
+    info_debug.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+                                 VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+                                 VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    info_debug.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+                             VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+                             VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+    info_debug.pfnUserCallback = debug_callback;
+    info_debug.pUserData = debug_data;
+
+    VkValidationFeatureEnableEXT enables[16] = {0};
+    VkValidationFeaturesEXT features = {0};
 
     if (has_validation)
     {
-        createInfo.enabledLayerCount = ARRAY_COUNT(DVZ_LAYERS);
-        createInfo.ppEnabledLayerNames = DVZ_LAYERS;
-        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debug_create_info;
+        info_inst.enabledLayerCount = ARRAY_COUNT(DVZ_LAYERS);
+        info_inst.ppEnabledLayerNames = DVZ_LAYERS;
+        info_inst.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&info_debug;
+
+        // https://vulkan.lunarg.com/doc/sdk/1.2.170.0/linux/best_practices.html
+        enables[0] = VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT;
+        enables[1] = VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT;
+        features.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
+        features.enabledValidationFeatureCount = 2;
+        features.pEnabledValidationFeatures = enables;
+        info_inst.pNext = &features;
     }
     else
     {
-        createInfo.enabledLayerCount = 0;
-        createInfo.pNext = NULL;
+        info_inst.enabledLayerCount = 0;
+        info_inst.pNext = NULL;
     }
 
     // Create the Vulkan instance.
     log_trace("create instance");
-    VK_CHECK_RESULT(vkCreateInstance(&createInfo, NULL, instance));
+    VK_CHECK_RESULT(vkCreateInstance(&info_inst, NULL, instance));
 
     // Create the debug utils messenger.
     if (has_validation)
     {
         log_trace("create debug utils messenger");
-        VK_CHECK_RESULT(create_debug_utils_messenger_EXT(
-            *instance, &debug_create_info, NULL, debug_messenger));
+        VK_CHECK_RESULT(
+            create_debug_utils_messenger_EXT(*instance, &info_debug, NULL, debug_messenger));
     }
 
     log_trace("instance created");
