@@ -194,7 +194,7 @@ int test_utils_fifo_1(TestContext* tc)
     ASSERT(fifo.tail == 0);
     uint8_t* data = dvz_fifo_dequeue(&fifo, true);
     AT(fifo.is_empty);
-    ASSERT(*data = item);
+    ASSERT(*data == item);
 
     // Enqueue in the main thread, dequeue in a background thread.
     pthread_t thread = {0};

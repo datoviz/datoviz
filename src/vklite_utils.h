@@ -244,6 +244,7 @@ static const char* VALIDATION_IGNORES[] = {
     "BestPractices-vkBindMemory-small-dedicated-allocation",  //
     "BestPractices-vkAllocateMemory-small-allocation",        //
     "BestPractices-vkCreateCommandPool-command-buffer-reset", //
+    "BestPractices-vkCreateInstance-specialuse-extension",    //
 };
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
@@ -375,19 +376,18 @@ static void* backend_window(
     {
     case DVZ_BACKEND_GLFW:
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        GLFWwindow* backend_window =
-            glfwCreateWindow((int)width, (int)height, APPLICATION_NAME, NULL, NULL);
-        ASSERT(backend_window != NULL);
-        if (glfwCreateWindowSurface(instance, backend_window, NULL, surface) != VK_SUCCESS)
+        GLFWwindow* bwin = glfwCreateWindow((int)width, (int)height, APPLICATION_NAME, NULL, NULL);
+        ASSERT(bwin != NULL);
+        if (glfwCreateWindowSurface(instance, bwin, NULL, surface) != VK_SUCCESS)
             log_error("error creating the GLFW surface");
 
-        glfwSetWindowUserPointer(backend_window, window);
+        glfwSetWindowUserPointer(bwin, window);
 
         // Callback that marks the window to close if ESC is pressed, but only if
         // DvzWindow.close_on_esc=true
-        glfwSetKeyCallback(backend_window, _glfw_esc_callback);
+        glfwSetKeyCallback(bwin, _glfw_esc_callback);
 
-        return backend_window;
+        return bwin;
         break;
     default:
         break;
@@ -601,7 +601,6 @@ static void create_instance(
     {
         info_inst.enabledLayerCount = ARRAY_COUNT(DVZ_LAYERS);
         info_inst.ppEnabledLayerNames = DVZ_LAYERS;
-        info_inst.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&info_debug;
 
         // https://vulkan.lunarg.com/doc/sdk/1.2.170.0/linux/best_practices.html
         enables[0] = VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT;
@@ -611,6 +610,9 @@ static void create_instance(
         features.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
         features.enabledValidationFeatureCount = 3;
         features.pEnabledValidationFeatures = enables;
+
+        // pNext chain
+        features.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&info_debug;
         info_inst.pNext = &features;
     }
     else

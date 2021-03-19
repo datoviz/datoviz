@@ -44,7 +44,8 @@ static void _process_buffer_upload(DvzCanvas* canvas, DvzTransfer tr)
     ASSERT(canvas != NULL);
     DvzGpu* gpu = canvas->gpu;
     ASSERT(gpu != NULL);
-    DvzContext* context = canvas->gpu->context;
+    DvzContext* context = gpu->context;
+    ASSERT(context != NULL);
     ASSERT(tr.type == DVZ_TRANSFER_BUFFER_UPLOAD);
     DvzBufferRegions br = tr.u.buf.regions;
     uint32_t idx = canvas->swapchain.img_idx;
@@ -120,7 +121,8 @@ static void _process_buffer_download(DvzCanvas* canvas, DvzTransfer tr)
     ASSERT(canvas != NULL);
     DvzGpu* gpu = canvas->gpu;
     ASSERT(gpu != NULL);
-    DvzContext* context = canvas->gpu->context;
+    DvzContext* context = gpu->context;
+    ASSERT(context != NULL);
     ASSERT(tr.type == DVZ_TRANSFER_BUFFER_DOWNLOAD);
     DvzBufferRegions br = tr.u.buf.regions;
     uint32_t idx = canvas->swapchain.img_idx;
@@ -187,7 +189,8 @@ static void _process_buffer_copy(DvzCanvas* canvas, DvzTransfer tr)
     ASSERT(canvas != NULL);
     DvzGpu* gpu = canvas->gpu;
     ASSERT(gpu != NULL);
-    DvzContext* context = canvas->gpu->context;
+    DvzContext* context = gpu->context;
+    ASSERT(context != NULL);
     ASSERT(tr.type == DVZ_TRANSFER_BUFFER_COPY);
 
     DvzBufferRegions* src = &tr.u.buf_copy.src;
@@ -245,7 +248,7 @@ void dvz_process_transfers(DvzCanvas* canvas)
     ASSERT(canvas != NULL);
     DvzGpu* gpu = canvas->gpu;
     ASSERT(gpu != NULL);
-    DvzContext* context = canvas->gpu->context;
+    DvzContext* context = gpu->context;
     ASSERT(context != NULL);
     DvzFifo* fifo = &canvas->transfers;
     // Do nothing if there are no pending transfers.

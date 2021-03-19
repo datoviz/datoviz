@@ -371,7 +371,7 @@ DVZ_EXPORT void dvz_visual_destroy(DvzVisual* visual);
  * index of the pipeline among all pipelines of the same type within the visual.
  *
  * @param visual the visual
- * @param type the source type
+ * @param source_type the source type
  * @param source_idx the index of the source
  * @param pipeline the pipeline type
  * @param pipeline_idx the index of the pipeline
@@ -380,8 +380,8 @@ DVZ_EXPORT void dvz_visual_destroy(DvzVisual* visual);
  * @param flags the source creation flags
  */
 DVZ_EXPORT void dvz_visual_source(
-    DvzVisual* visual, DvzSourceType type, uint32_t source_idx, //
-    DvzPipelineType pipeline, uint32_t pipeline_idx,            //
+    DvzVisual* visual, DvzSourceType source_type, uint32_t source_idx, //
+    DvzPipelineType pipeline, uint32_t pipeline_idx,                   //
     uint32_t slot_idx, VkDeviceSize item_size, int flags);
 
 /**

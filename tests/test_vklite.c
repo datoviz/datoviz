@@ -765,13 +765,14 @@ int test_vklite_barrier_buffer(TestContext* tc)
     DvzBuffer buffer1 = dvz_buffer(gpu);
     _make_buffer(&buffer0);
     _make_buffer(&buffer1);
-    const VkDeviceSize size = 20 * sizeof(float);
+    const uint32_t N = 20;
+    const VkDeviceSize size = N * sizeof(float);
 
     // Send some data to the buffer.
-    float* data0 = calloc(size, sizeof(1));
-    for (uint32_t i = 0; i < size; i++)
+    float* data0 = calloc(size, 1);
+    for (uint32_t i = 0; i < N; i++)
         data0[i] = (float)i;
-    VkDeviceSize offset = 32;
+    VkDeviceSize offset = 16;
     dvz_buffer_upload(&buffer0, offset, size, data0);
     dvz_buffer_upload(&buffer1, offset, size, data0);
 
@@ -802,7 +803,7 @@ int test_vklite_barrier_buffer(TestContext* tc)
     // Command buffers.
     DvzCommands cmds = dvz_commands(gpu, 0, 1);
     dvz_cmd_begin(&cmds, 0);
-    dvz_cmd_compute(&cmds, 0, &compute, (uvec3){20, 1, 1});
+    dvz_cmd_compute(&cmds, 0, &compute, (uvec3){N, 1, 1});
     dvz_barrier_stages(
         &barrier, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
     dvz_barrier_buffer_access(&barrier, VK_ACCESS_MEMORY_WRITE_BIT, VK_ACCESS_MEMORY_READ_BIT);
@@ -812,9 +813,9 @@ int test_vklite_barrier_buffer(TestContext* tc)
     dvz_cmd_submit_sync(&cmds, 0);
 
     // Get back the data.
-    float* data1 = calloc(size, sizeof(1));
+    float* data1 = calloc(size, 1);
     dvz_buffer_download(&buffer1, offset, size, data1);
-    for (uint32_t i = 0; i < 20; i++)
+    for (uint32_t i = 0; i < N; i++)
         AT(data1[i] == 2 * data0[i]);
 
     FREE(data0);
@@ -1213,7 +1214,7 @@ int test_vklite_canvas_triangle(TestContext* context)
     TestCanvas canvas = test_canvas_create(gpu, window);
     TestVisual visual = triangle_visual(gpu, &canvas.renderpass, &canvas.framebuffers, "");
     visual.br.buffer = &visual.buffer;
-    visual.br.size = visual.br.size;
+    visual.br.size = visual.buffer.size;
     visual.br.count = 1;
     canvas.data = &visual;
     canvas.br = visual.br;

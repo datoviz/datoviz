@@ -141,7 +141,7 @@ ImGuiWindowFlags_NoFocusOnAppearing; ImGui::SetNextWindowBgAlpha(0.25f);
 // 0 = TL, 1 = TR, 2 = LL, 3 = LR
 static int _fixed_style(int corner)
 {
-    ImGuiIO& io = ImGui::GetIO();
+    const ImGuiIO& io = ImGui::GetIO();
 
     int flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar |
                 ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNav |
@@ -546,7 +546,7 @@ void dvz_gui_callback(DvzCanvas* canvas, DvzEvent ev)
     ASSERT(canvas != NULL);
 
     // When Dear ImGUI captures the mouse and keyboard, Datoviz should not process user events.
-    ImGuiIO& io = ImGui::GetIO();
+    const ImGuiIO& io = ImGui::GetIO();
     canvas->captured = io.WantCaptureMouse || io.WantCaptureKeyboard;
 
     DvzGui* gui = NULL;

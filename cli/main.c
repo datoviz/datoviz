@@ -64,7 +64,7 @@ static int info(int argc, char** argv)
     for (uint32_t i = 0; i < app->gpus.count; i++)
     {
         DvzGpu* gpu = dvz_gpu(app, i);
-        printf("GPU #%d: %s\n", i, gpu->name);
+        printf("GPU #%u: %s\n", i, gpu->name);
     }
     dvz_app_destroy(app);
     return 0;

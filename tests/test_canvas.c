@@ -218,10 +218,10 @@ static void _timer_callback(DvzCanvas* canvas, DvzEvent ev)
 
 static void _frame_callback(DvzCanvas* canvas, DvzEvent ev)
 {
+    ASSERT(canvas != NULL);
     log_debug(
         "canvas #%d, frame callback #%d, time %.6f, interval %.6f", //
         canvas->obj.id, ev.u.f.idx, ev.u.f.time, ev.u.f.interval);
-    ASSERT(canvas != NULL);
     EventHolder* events = (EventHolder*)ev.user_data;
     ASSERT(events != NULL);
     events->frame = ev;
@@ -229,8 +229,8 @@ static void _frame_callback(DvzCanvas* canvas, DvzEvent ev)
 
 static void _key_callback(DvzCanvas* canvas, DvzEvent ev)
 {
-    log_debug("key code %d", ev.u.k.key_code);
     ASSERT(canvas != NULL);
+    log_debug("key code %d", ev.u.k.key_code);
     EventHolder* events = (EventHolder*)ev.user_data;
     ASSERT(events != NULL);
     events->key = ev;

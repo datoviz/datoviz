@@ -272,8 +272,8 @@ void dvz_app_wait(DvzApp* app)
 
 void dvz_gpu_destroy(DvzGpu* gpu)
 {
-    log_trace("starting destruction of GPU #%d...", gpu->idx);
     ASSERT(gpu != NULL);
+    log_trace("starting destruction of GPU #%d...", gpu->idx);
     if (!dvz_obj_is_created(&gpu->obj))
     {
 
@@ -643,8 +643,7 @@ void dvz_swapchain_destroy(DvzSwapchain* swapchain)
         swapchain->images = VK_NULL_HANDLE;
     }
 
-    if (swapchain->swapchain != VK_NULL_HANDLE)
-        swapchain->swapchain = VK_NULL_HANDLE;
+    swapchain->swapchain = VK_NULL_HANDLE;
 
     dvz_obj_destroyed(&swapchain->obj);
     log_trace("swapchain destroyed");
@@ -862,8 +861,8 @@ static void _buffer_destroy(DvzBuffer* buffer)
         buffer->device_memory = VK_NULL_HANDLE;
     }
 
-    buffer->buffer = VK_NULL_HANDLE;
-    buffer->device_memory = VK_NULL_HANDLE;
+    ASSERT(buffer->buffer == VK_NULL_HANDLE);
+    ASSERT(buffer->device_memory == VK_NULL_HANDLE);
 }
 
 
@@ -2944,7 +2943,7 @@ void dvz_submit_signal_semaphores(DvzSubmit* submit, DvzSemaphores* semaphores, 
 
 
 
-void dvz_submit_send(DvzSubmit* submit, uint32_t cmd_idx, DvzFences* fence, uint32_t fence_idx)
+void dvz_submit_send(DvzSubmit* submit, uint32_t cmd_idx, DvzFences* fences, uint32_t fence_idx)
 {
     ASSERT(submit != NULL);
     // log_trace("starting command buffer submission...");
@@ -2993,12 +2992,12 @@ void dvz_submit_send(DvzSubmit* submit, uint32_t cmd_idx, DvzFences* fence, uint
     submit_info.signalSemaphoreCount = submit->signal_semaphores_count;
     submit_info.pSignalSemaphores = signal_semaphores;
 
-    VkFence vfence = fence == NULL ? 0 : fence->fences[fence_idx];
+    VkFence vfence = fences == NULL ? 0 : fences->fences[fence_idx];
 
     if (vfence != VK_NULL_HANDLE)
     {
-        dvz_fences_wait(fence, fence_idx);
-        dvz_fences_reset(fence, fence_idx);
+        dvz_fences_wait(fences, fence_idx);
+        dvz_fences_reset(fences, fence_idx);
     }
     // log_trace("submit queue and signal fence %d", vfence);
     VK_CHECK_RESULT(vkQueueSubmit(submit->gpu->queues.queues[queue_idx], 1, &submit_info, vfence));
@@ -3235,8 +3234,13 @@ void dvz_cmd_copy_image_region(
     ASSERT(src_img != NULL);
     ASSERT(dst_img != NULL);
 
-    ASSERT(src_img->width = dst_img->width);
-    ASSERT(src_img->height = dst_img->height);
+    ASSERT(src_offset[0] + (int)shape[0] <= (int)src_img->width);
+    ASSERT(src_offset[1] + (int)shape[1] <= (int)src_img->height);
+    ASSERT(src_offset[2] + (int)shape[2] <= (int)src_img->depth);
+
+    ASSERT(dst_offset[0] + (int)shape[0] <= (int)dst_img->width);
+    ASSERT(dst_offset[1] + (int)shape[1] <= (int)dst_img->height);
+    ASSERT(dst_offset[2] + (int)shape[2] <= (int)dst_img->depth);
 
     CMD_START_CLIP(src_img->count)
 

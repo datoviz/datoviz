@@ -95,7 +95,7 @@ int dvz_write_ppm(const char* filename, uint32_t width, uint32_t height, const u
         return 1;
     // ppm header
     char buffer[100];
-    sprintf(buffer, "P6\n%d\n%d\n255\n", width, height);
+    sprintf(buffer, "P6\n%d\n%d\n255\n", (int)width, (int)height);
     fwrite(buffer, strlen(buffer), 1, fp);
     // Write the RGB image.
     fwrite(image, width * height * 3, 1, fp);

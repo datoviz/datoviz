@@ -167,10 +167,8 @@ static int run_test_case(TestContext* tc, TestCase* test_case)
     if (tc->app != NULL)
     {
         res += (int)tc->app->n_errors;
-    }
-
-    if (tc->app != NULL)
         dvz_app_reset(tc->app);
+    }
 
     return res;
 }

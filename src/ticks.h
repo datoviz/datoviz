@@ -258,7 +258,7 @@ DVZ_INLINE void _get_tick_format(DvzTickFormat format, uint32_t precision, char*
 {
     uint32_t offset = 4;
     strcpy(fmt, "%s%.XF"); // [2] = precision, [3] = f or e
-    snprintf(&fmt[offset], 4, "%d", precision);
+    snprintf(&fmt[offset], 4, "%u", precision);
     switch (format)
     {
     case DVZ_TICK_FORMAT_DECIMAL:

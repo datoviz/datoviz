@@ -258,19 +258,19 @@ DVZ_EXPORT void dvz_panel_transpose(DvzPanel* panel, DvzCDSTranspose transpose);
  * Returns whether a point is contained in a panel.
  *
  * @param panel the panel
- * @param pos the position
+ * @param screen_pos the position in screen pixel coordinates
  * @returns a boolean
  */
-DVZ_EXPORT bool dvz_panel_contains(DvzPanel* panel, vec2 pos);
+DVZ_EXPORT bool dvz_panel_contains(DvzPanel* panel, vec2 screen_pos);
 
 /**
  * Return the panel at a given position within the canvas.
  *
  * @param grid the grid
- * @param pos the position in screen coordinates (pixels)
+ * @param screen_pos the position in screen pixel coordinates
  * @returns the panel
  */
-DVZ_EXPORT DvzPanel* dvz_panel_at(DvzGrid* grid, vec2 pos);
+DVZ_EXPORT DvzPanel* dvz_panel_at(DvzGrid* grid, vec2 screen_pos);
 
 /**
  * Destroy a panel and all visuals inside it.

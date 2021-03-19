@@ -278,7 +278,7 @@ static DvzRenderpass default_renderpass(
 
 
 
-static DvzRenderpass renderpass_overlay(DvzGpu* gpu, VkFormat format, VkImageLayout layout)
+static DvzRenderpass default_renderpass_overlay(DvzGpu* gpu, VkFormat format, VkImageLayout layout)
 {
     DvzRenderpass renderpass = dvz_renderpass(gpu);
 

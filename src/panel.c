@@ -47,8 +47,8 @@ static void _update_viewport(DvzPanel* panel)
     viewport->offset_screen[1] = panel->y * canvas->window->height;
 
     // Size in framebuffer pixel coordinates.
-    float win_width = panel->grid->canvas->swapchain.images->width;
-    float win_height = panel->grid->canvas->swapchain.images->height;
+    float win_width = canvas->swapchain.images->width;
+    float win_height = canvas->swapchain.images->height;
 
     viewport->offset_framebuffer[0] = viewport->viewport.x = panel->x * win_width;
     viewport->offset_framebuffer[1] = viewport->viewport.y = panel->y * win_height;
@@ -166,13 +166,13 @@ static DvzPanel* _get_panel(DvzGrid* grid, uint32_t row, uint32_t col)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzGrid dvz_grid(DvzCanvas* canvas, uint32_t rows, uint32_t cols)
+DvzGrid dvz_grid(DvzCanvas* canvas, uint32_t row_count, uint32_t col_count)
 {
     ASSERT(canvas != NULL);
     DvzGrid grid = {0};
     grid.canvas = canvas;
-    grid.n_rows = rows;
-    grid.n_cols = cols;
+    grid.n_rows = row_count;
+    grid.n_cols = col_count;
     grid.panels = dvz_container(DVZ_MAX_PANELS, sizeof(DvzPanel), DVZ_OBJECT_TYPE_PANEL);
 
     _update_grid_panels(&grid, DVZ_GRID_HORIZONTAL);

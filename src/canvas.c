@@ -598,8 +598,8 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
     canvas->renderpass = default_renderpass(
         gpu, DVZ_DEFAULT_BACKGROUND, DVZ_DEFAULT_IMAGE_FORMAT, overlay, support_pick);
     if (overlay)
-        canvas->renderpass_overlay =
-            renderpass_overlay(gpu, DVZ_DEFAULT_IMAGE_FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+        canvas->renderpass_overlay = default_renderpass_overlay(
+            gpu, DVZ_DEFAULT_IMAGE_FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
     // Create swapchain
     {
