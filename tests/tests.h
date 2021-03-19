@@ -138,7 +138,7 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_APP(test_canvas_events),     //
     CASE_FIXTURE_APP(test_canvas_gui),        //
     CASE_FIXTURE_APP(test_canvas_screencast), //
-    // CASE_FIXTURE_APP(test_canvas_video),      //
+    CASE_FIXTURE_APP(test_canvas_video),      //
 
     CASE_FIXTURE_APP(test_canvas_triangle_1),         //
     CASE_FIXTURE_APP(test_canvas_triangle_resize),    //
