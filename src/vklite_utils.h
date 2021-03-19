@@ -234,23 +234,40 @@ static inline int _log_level(int sev)
     return LOG_ERROR;
 }
 
+// Ignore some validation warnings.
+static const char* VALIDATION_IGNORES[] = {
+
+    // HACK: hide harmless warning message on Ubuntu:
+    // validation layer: /usr/lib/i386-linux-gnu/libvulkan_radeon.so: wrong ELF class: ELFCLASS32
+    "ELFCLASS32", //
+
+    "BestPractices-vkBindMemory-small-dedicated-allocation",  //
+    "BestPractices-vkAllocateMemory-small-allocation",        //
+    "BestPractices-vkCreateCommandPool-command-buffer-reset", //
+};
+
 static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     VkDebugUtilsMessageTypeFlagsEXT messageType,
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
-    // HACK: hide harmless warning message on Ubuntu:
-    // validation layer: /usr/lib/i386-linux-gnu/libvulkan_radeon.so: wrong ELF class: ELFCLASS32
-    if (strstr(pCallbackData->pMessage, "ELFCLASS32") == NULL)
+    int level = _log_level(messageSeverity);
+
+    // NOTE: force TRACE level if ignored message.
+    for (uint32_t i = 0; i < ARRAY_COUNT(VALIDATION_IGNORES); i++)
     {
-        log_log(
-            _log_level(messageSeverity), __FILENAME__, __LINE__, "validation layer: %s",
-            pCallbackData->pMessage);
-        if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT && pUserData != NULL)
+        if (strstr(pCallbackData->pMessage, VALIDATION_IGNORES[i]) != NULL)
         {
-            uint32_t* n_errors = (uint32_t*)pUserData;
-            (*n_errors)++;
+            level = LOG_TRACE;
+            break;
         }
+    }
+
+    log_log(level, __FILENAME__, __LINE__, "validation layer: %s", pCallbackData->pMessage);
+    if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT && pUserData != NULL)
+    {
+        uint32_t* n_errors = (uint32_t*)pUserData;
+        (*n_errors)++;
     }
     return VK_FALSE;
 }
