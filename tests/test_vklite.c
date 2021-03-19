@@ -991,6 +991,8 @@ int test_vklite_submit(TestContext* tc)
     dvz_compute_destroy(&compute1);
     dvz_compute_destroy(&compute2);
 
+    FREE(data);
+    FREE(data2);
     dvz_app_destroy(app);
     return 0;
 }

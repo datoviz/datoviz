@@ -1014,6 +1014,7 @@ static bool check_surface_format(VkPhysicalDevice pdevice, VkSurfaceKHR surface,
     }
     if (!found)
         log_error("format %d is not supported by the surface", format);
+    FREE(formats);
     return found;
 }
 

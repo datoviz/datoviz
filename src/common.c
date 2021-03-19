@@ -121,6 +121,7 @@ uint8_t* dvz_read_ppm(const char* filename, int* width, int* height)
     if (!fgets(buff, sizeof(buff), fp))
     {
         log_error("unable to read image form in  %s", filename);
+        fclose(fp);
         return NULL;
     }
 
@@ -128,6 +129,7 @@ uint8_t* dvz_read_ppm(const char* filename, int* width, int* height)
     if (buff[0] != 'P' || buff[1] != '6')
     {
         log_error("invalid image format (must be 'P6') in  %s", filename);
+        fclose(fp);
         return NULL;
     }
 

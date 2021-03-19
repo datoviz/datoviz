@@ -54,7 +54,7 @@ then
     find examples/ test/ src/ include/ -iname *.h -o -iname *.c | xargs clang-format -i
 fi
 
-if [ $1 == "memcheck" ]
+if [ $1 == "valgrind" ]
 then
     valgrind --leak-check=full \
          --show-leak-kinds=all \
@@ -63,6 +63,12 @@ then
          --suppressions=.valgrind.exceptions.txt \
          --log-file=.valgrind.out.txt \
          ${@:2}
+fi
+
+if [ $1 == "cppcheck" ]
+then
+    cppcheck --enable=all --inconclusive src/ include/ cli/ tests/ -i exclude 2> .cppcheck.out.txt
+    echo ".cppcheck.out.txt saved"
 fi
 
 if [ $1 == "test" ]

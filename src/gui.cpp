@@ -98,7 +98,7 @@ static void _presend(DvzCanvas* canvas, DvzEvent ev)
 
     // Call the IMGUI private callbacks to render the GUI.
     {
-        DvzEvent ev_imgui;
+        DvzEvent ev_imgui = {};
         ev_imgui.type = DVZ_EVENT_IMGUI;
         ev_imgui.u.f.idx = canvas->frame_idx;
         ev_imgui.u.f.interval = canvas->clock.interval;
@@ -342,7 +342,7 @@ static void _emit_gui_event(DvzGui* gui, DvzGuiControl* control)
     DvzCanvas* canvas = gui->canvas;
     ASSERT(canvas != NULL);
 
-    DvzEvent ev;
+    DvzEvent ev = {};
     ev.type = DVZ_EVENT_GUI;
     ev.u.g.gui = control->gui;
     ev.u.g.control = control;
