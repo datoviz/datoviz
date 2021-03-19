@@ -1794,7 +1794,7 @@ void dvz_screencast(DvzCanvas* canvas, double interval, bool has_alpha)
 
     // NOTE: we predefine the transfer command buffers, one per swapchain image.
     sc->cmds =
-        dvz_commands(canvas->gpu, DVZ_DEFAULT_QUEUE_PRESENT, canvas->swapchain.images->count);
+        dvz_commands(canvas->gpu, DVZ_DEFAULT_QUEUE_TRANSFER, canvas->swapchain.images->count);
     _screencast_cmds(sc);
     sc->submit = dvz_submit(canvas->gpu);
 

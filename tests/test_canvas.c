@@ -366,6 +366,9 @@ static void _screencast_callback(DvzCanvas* canvas, DvzEvent ev)
     cvec4 color = {0};
     dvz_colormap(DVZ_CMAP_HSV, (canvas->frame_idx / 3) % 256, color);
 
+    // log_info("%d %d %d %d", color[0], color[1], color[2], color[3]);
+    // log_info("%d %d %d %d", ev.u.sc.rgba[0], ev.u.sc.rgba[1], ev.u.sc.rgba[2], ev.u.sc.rgba[3]);
+
     ok =
         (abs((int)color[0] - (int)ev.u.sc.rgba[0]) <= 16 &&
          abs((int)color[1] - (int)ev.u.sc.rgba[1]) <= 16 &&
@@ -380,7 +383,7 @@ int test_canvas_screencast(TestContext* tc)
 {
     DvzApp* app = tc->app;
     DvzGpu* gpu = dvz_gpu_best(app);
-    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_FPS);
+    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
     dvz_canvas_clear_color(canvas, 0, 1, 0);
 
     dvz_event_callback(
@@ -393,7 +396,7 @@ int test_canvas_screencast(TestContext* tc)
 
     dvz_screencast(canvas, 1.0 / 30.0, false);
 
-    dvz_app_run(app, 120);
+    dvz_app_run(app, 60);
 
     dvz_canvas_destroy(canvas);
     return res;
