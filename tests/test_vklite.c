@@ -160,7 +160,7 @@ static void* screenshot(DvzImages* images, VkDeviceSize bytes_per_component)
     dvz_images_download(staging, 0, bytes_per_component, true, false, rgb);
 
     dvz_images_destroy(staging);
-
+    FREE(staging);
     return rgb;
 }
 
@@ -392,11 +392,15 @@ static void test_canvas_show(TestCanvas canvas, FillCallback fill_commands, uint
 static void test_canvas_destroy(TestCanvas* canvas)
 {
     log_trace("destroy canvas");
+
     if (canvas->is_offscreen)
     {
         dvz_images_destroy(canvas->images);
+        FREE(canvas->images);
     }
+
     dvz_images_destroy(canvas->depth);
+    FREE(canvas->depth);
 
     dvz_renderpass_destroy(&canvas->renderpass);
     dvz_swapchain_destroy(&canvas->swapchain);
@@ -559,7 +563,7 @@ int test_vklite_compute(TestContext* tc)
 
     // Create the compute pipeline.
     char path[1024];
-    snprintf(path, sizeof(path), "%s/test_square.comp.spv", SPIRV_DIR);
+    snprintf(path, sizeof(path), "%s/test_double.comp.spv", SPIRV_DIR);
     DvzCompute compute = dvz_compute(gpu, path);
 
     // Create the buffers
@@ -606,6 +610,8 @@ int test_vklite_compute(TestContext* tc)
     dvz_buffer_download(&buffer, 0, size, data2);
     for (uint32_t i = 0; i < n; i++)
         AT(data2[i] == 2 * data[i]);
+    FREE(data);
+    FREE(data2);
 
     dvz_bindings_destroy(&bindings);
     dvz_compute_destroy(&compute);
@@ -676,6 +682,8 @@ int test_vklite_push(TestContext* tc)
     dvz_buffer_download(&buffer, 0, size, data2);
     for (uint32_t i = 0; i < n; i++)
         AT(fabs(data2[i] - pow(data[i], power)) < .01);
+    FREE(data);
+    FREE(data2);
 
     dvz_bindings_destroy(&bindings);
     dvz_compute_destroy(&compute);
@@ -732,7 +740,98 @@ int test_vklite_sampler(TestContext* tc)
 
 
 
-int test_vklite_barrier(TestContext* tc)
+static void _make_buffer(DvzBuffer* buffer)
+{
+    const VkDeviceSize size = 256 * sizeof(float);
+    dvz_buffer_size(buffer, size);
+    dvz_buffer_usage(
+        buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                    VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+    dvz_buffer_memory(
+        buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    dvz_buffer_queue_access(buffer, 0);
+    dvz_buffer_create(buffer);
+}
+
+int test_vklite_barrier_buffer(TestContext* tc)
+{
+    DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
+    DvzGpu* gpu = dvz_gpu_best(app);
+    dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
+    dvz_gpu_create(gpu, 0);
+
+    // Buffers.
+    DvzBuffer buffer0 = dvz_buffer(gpu);
+    DvzBuffer buffer1 = dvz_buffer(gpu);
+    _make_buffer(&buffer0);
+    _make_buffer(&buffer1);
+    const VkDeviceSize size = buffer0.size;
+
+    // Send some data to the buffer.
+    float* data0 = calloc(size, sizeof(1));
+    for (uint32_t i = 0; i < size; i++)
+        data0[i] = (float)i;
+    dvz_buffer_upload(&buffer0, 0, size, data0);
+    dvz_buffer_upload(&buffer1, 0, size, data0);
+
+    // Create the compute pipeline.
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/test_double.comp.spv", SPIRV_DIR);
+    DvzCompute compute = dvz_compute(gpu, path);
+
+    // Create the slots.
+    dvz_compute_slot(&compute, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+
+    // Create the bindings.
+    DvzBindings bindings = dvz_bindings(&compute.slots, 1);
+    DvzBufferRegions br = {.buffer = &buffer0, .size = size, .count = 1};
+    br.offsets[0] = 0;
+    dvz_bindings_buffer(&bindings, 0, br);
+    dvz_bindings_update(&bindings);
+
+    // Link the bindings to the compute pipeline and create it.
+    dvz_compute_bindings(&compute, &bindings);
+    dvz_compute_create(&compute);
+
+    // Barrier.
+    DvzBarrier barrier = dvz_barrier(gpu);
+    dvz_barrier_buffer(&barrier, br);
+    dvz_barrier_buffer_queue(&barrier, 0, 0);
+
+    // Command buffers.
+    DvzCommands cmds = dvz_commands(gpu, 0, 1);
+    dvz_cmd_begin(&cmds, 0);
+    dvz_cmd_compute(&cmds, 0, &compute, (uvec3){20, 1, 1});
+    dvz_barrier_stages(
+        &barrier, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    dvz_barrier_buffer_access(&barrier, VK_ACCESS_MEMORY_WRITE_BIT, VK_ACCESS_MEMORY_READ_BIT);
+    dvz_cmd_barrier(&cmds, 0, &barrier);
+    dvz_cmd_copy_buffer(&cmds, 0, &buffer0, 0, &buffer1, 0, size);
+    dvz_cmd_end(&cmds, 0);
+    dvz_cmd_submit_sync(&cmds, 0);
+
+    // Get back the data.
+    float* data1 = calloc(size, sizeof(1));
+    dvz_buffer_download(&buffer1, 0, size, data1);
+    for (uint32_t i = 0; i < 20; i++)
+        AT(data1[i] == 2 * data0[i]);
+
+    FREE(data0);
+    FREE(data1);
+
+    dvz_bindings_destroy(&bindings);
+    dvz_compute_destroy(&compute);
+
+    dvz_buffer_destroy(&buffer0);
+    dvz_buffer_destroy(&buffer1);
+
+    dvz_app_destroy(app);
+    return 0;
+}
+
+
+
+int test_vklite_barrier_image(TestContext* tc)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
     DvzGpu* gpu = dvz_gpu_best(app);
@@ -765,6 +864,7 @@ int test_vklite_barrier(TestContext* tc)
     for (uint32_t i = 0; i < size; i++)
         data[i] = i % 256;
     dvz_buffer_upload(&buffer, 0, size, data);
+    FREE(data);
 
     // Image transition.
     DvzBarrier barrier = dvz_barrier(gpu);
@@ -800,7 +900,7 @@ int test_vklite_submit(TestContext* tc)
 
     // Create the compute pipeline.
     char path[1024];
-    snprintf(path, sizeof(path), "%s/test_square.comp.spv", SPIRV_DIR);
+    snprintf(path, sizeof(path), "%s/test_double.comp.spv", SPIRV_DIR);
     DvzCompute compute1 = dvz_compute(gpu, path);
 
     snprintf(path, sizeof(path), "%s/test_sum.comp.spv", SPIRV_DIR);
@@ -911,7 +1011,6 @@ int test_vklite_offscreen(TestContext* tc)
     dvz_cmd_submit_sync(&cmds, 0);
 
     uint8_t* rgba = screenshot(framebuffers->attachments[0], 1);
-
     for (uint32_t i = 0; i < WIDTH * HEIGHT * 3; i++)
         AT(rgba[i] >= 100);
 

@@ -40,7 +40,8 @@ int test_vklite_compute(TestContext*);
 int test_vklite_push(TestContext*);
 int test_vklite_images(TestContext*);
 int test_vklite_sampler(TestContext*);
-int test_vklite_barrier(TestContext*);
+int test_vklite_barrier_buffer(TestContext*);
+int test_vklite_barrier_image(TestContext*);
 int test_vklite_submit(TestContext*);
 int test_vklite_offscreen(TestContext*);
 int test_vklite_shader(TestContext*);
@@ -121,7 +122,8 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_vklite_push),            //
     CASE_FIXTURE_NONE(test_vklite_images),          //
     CASE_FIXTURE_NONE(test_vklite_sampler),         //
-    CASE_FIXTURE_NONE(test_vklite_barrier),         //
+    CASE_FIXTURE_NONE(test_vklite_barrier_buffer),  //
+    CASE_FIXTURE_NONE(test_vklite_barrier_image),   //
     CASE_FIXTURE_NONE(test_vklite_submit),          //
     CASE_FIXTURE_NONE(test_vklite_offscreen),       //
     CASE_FIXTURE_NONE(test_vklite_shader),          //
