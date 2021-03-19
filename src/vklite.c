@@ -3096,11 +3096,10 @@ void dvz_cmd_barrier(DvzCommands* cmds, uint32_t idx, DvzBarrier* barrier)
         buffer_barrier = &buffer_barriers[j];
         buffer_info = &barrier->buffer_barriers[j];
 
-        buffer_barrier->sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        buffer_barrier->sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
         buffer_barrier->buffer = buffer_info->br.buffer->buffer;
         buffer_barrier->size = buffer_info->br.size;
-        ASSERT(i < buffer_info->br.count);
-        buffer_barrier->offset = buffer_info->br.offsets[i];
+        buffer_barrier->offset = buffer_info->br.offsets[MIN(i, cmds->count - 1)];
 
         buffer_barrier->srcAccessMask = buffer_info->src_access;
         buffer_barrier->dstAccessMask = buffer_info->dst_access;

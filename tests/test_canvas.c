@@ -747,6 +747,24 @@ int test_canvas_triangle_uniform(TestContext* tc)
 
 
 
+static void _buffer_barrier(TestVisual* visual, DvzCommands* cmds, uint32_t idx, int dir)
+{
+    VkPipelineStageFlags stages[] = {
+        VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT};
+    VkPipelineStageFlags bef = stages[dir];
+    VkPipelineStageFlags aft = stages[1 - dir];
+
+    VkAccessFlags access[] = {VK_ACCESS_MEMORY_READ_BIT, VK_ACCESS_MEMORY_WRITE_BIT};
+    VkAccessFlags src = access[dir];
+    VkAccessFlags dst = access[1 - dir];
+
+    DvzBarrier barrier = dvz_barrier(visual->gpu);
+    dvz_barrier_stages(&barrier, bef, aft);
+    dvz_barrier_buffer(&barrier, visual->br);
+    dvz_barrier_buffer_access(&barrier, src, dst);
+    dvz_cmd_barrier(cmds, idx, &barrier);
+}
+
 static void triangle_refill_compute(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
@@ -759,7 +777,11 @@ static void triangle_refill_compute(DvzCanvas* canvas, DvzEvent ev)
     ASSERT(visual != NULL);
 
     dvz_cmd_begin(cmds, idx);
+
+    _buffer_barrier(visual, cmds, idx, 0);
     dvz_cmd_compute(cmds, idx, visual->compute, (uvec3){3, 1, 1});
+    _buffer_barrier(visual, cmds, idx, 1);
+
     dvz_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, &canvas->framebuffers);
     dvz_cmd_viewport(cmds, idx, canvas->viewport.viewport);
     dvz_cmd_bind_vertex_buffer(cmds, idx, visual->br, 0);
@@ -773,7 +795,7 @@ int test_canvas_triangle_compute(TestContext* tc)
 {
     DvzApp* app = tc->app;
     DvzGpu* gpu = dvz_gpu_best(app);
-    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_FPS);
+    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
     TestVisual visual = triangle(canvas, "");
 
     // Bindings and graphics pipeline.
@@ -801,7 +823,7 @@ int test_canvas_triangle_compute(TestContext* tc)
     // Run.
     dvz_event_callback(
         canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, triangle_refill_compute, &visual);
-    dvz_app_run(app, 30);
+    dvz_app_run(app, 20);
 
     // Check screenshot.
     int res = check_canvas(canvas, "test_canvas_triangle_compute");
@@ -918,7 +940,7 @@ int test_canvas_triangle_append(TestContext* tc)
 {
     DvzApp* app = tc->app;
     DvzGpu* gpu = dvz_gpu_best(app);
-    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_FPS);
+    DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
     TestVisual visual = triangle(canvas, "");
     visual.n_vertices = 3;
 
@@ -932,7 +954,8 @@ int test_canvas_triangle_append(TestContext* tc)
 
     // Run.
     dvz_event_callback(canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, triangle_refill, &visual);
-    dvz_event_callback(canvas, DVZ_EVENT_TIMER, .1, DVZ_EVENT_MODE_SYNC, triangle_append, &visual);
+    dvz_event_callback(
+        canvas, DVZ_EVENT_TIMER, .01, DVZ_EVENT_MODE_SYNC, triangle_append, &visual);
 
     dvz_app_run(app, N_FRAMES);
 
