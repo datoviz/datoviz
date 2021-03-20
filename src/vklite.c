@@ -486,7 +486,7 @@ void dvz_swapchain_present_mode(DvzSwapchain* swapchain, VkPresentModeKHR presen
             return;
         }
     }
-    log_error("unsupported swapchain present mode VkPresentModeKHR #%02d", present_mode);
+    log_warn("unsupported swapchain present mode VkPresentModeKHR #%02d", present_mode);
 }
 
 

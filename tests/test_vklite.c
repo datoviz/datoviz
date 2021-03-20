@@ -772,7 +772,7 @@ int test_vklite_barrier_buffer(TestContext* tc)
     float* data0 = calloc(size, 1);
     for (uint32_t i = 0; i < N; i++)
         data0[i] = (float)i;
-    VkDeviceSize offset = 16;
+    VkDeviceSize offset = 32;
     dvz_buffer_upload(&buffer0, offset, size, data0);
     dvz_buffer_upload(&buffer1, offset, size, data0);
 
