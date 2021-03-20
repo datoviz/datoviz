@@ -67,7 +67,7 @@ fi
 
 if [ $1 == "cppcheck" ]
 then
-    cppcheck --enable=all --inconclusive src/ include/ cli/ tests/ -i exclude 2> .cppcheck.out.txt
+    cppcheck --enable=all --inconclusive src/ include/ cli/ tests/ -i external 2> .cppcheck.out.txt && \
     echo ".cppcheck.out.txt saved"
 fi
 
