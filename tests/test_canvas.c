@@ -426,7 +426,7 @@ int test_canvas_video(TestContext* tc)
 
     dvz_event_callback(canvas, DVZ_EVENT_TIMER, 0.01, DVZ_EVENT_MODE_SYNC, _video_callback, NULL);
 
-#ifdef HAS_FFMPEG
+#if HAS_FFMPEG
     char path[1024];
     snprintf(path, sizeof(path), "%s/test_canvas_video.mp4", ARTIFACTS_DIR);
     dvz_canvas_video(canvas, 30, 10000000, path, true);

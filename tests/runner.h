@@ -134,6 +134,8 @@ static void _set_fixture(TestContext* tc, TestCase* test_case)
     case TEST_FIXTURE_APP:
         if (tc->app == NULL)
             tc->app = dvz_app(DVZ_BACKEND_GLFW);
+        else
+            dvz_app_reset(tc->app);
         tc->app->n_errors = 0;
         break;
 
@@ -167,7 +169,6 @@ static int run_test_case(TestContext* tc, TestCase* test_case)
     if (tc->app != NULL)
     {
         res += (int)tc->app->n_errors;
-        dvz_app_reset(tc->app);
     }
 
     return res;

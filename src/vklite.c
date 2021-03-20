@@ -569,7 +569,8 @@ void dvz_swapchain_acquire(
         swapchain->obj.status = DVZ_OBJECT_STATUS_NEED_RECREATE;
         break;
     case VK_SUBOPTIMAL_KHR:
-        log_warn("suboptimal frame, but do nothing");
+        log_warn("suboptimal frame, recreate swapchain");
+        swapchain->obj.status = DVZ_OBJECT_STATUS_NEED_RECREATE;
         break;
     default:
         log_error("failed acquiring the swapchain image");
@@ -2382,6 +2383,34 @@ DvzSemaphores dvz_semaphores(DvzGpu* gpu, uint32_t count)
 
 
 
+void dvz_semaphores_recreate(DvzSemaphores* semaphores)
+{
+    ASSERT(semaphores != NULL);
+    if (!dvz_obj_is_created(&semaphores->obj))
+    {
+        log_trace("skip destruction of already-destroyed semaphores");
+        return;
+    }
+    DvzGpu* gpu = semaphores->gpu;
+    ASSERT(gpu != NULL);
+
+    ASSERT(semaphores->count > 0);
+    log_trace("recreate set of %d semaphore(s)", semaphores->count);
+
+    VkSemaphoreCreateInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    for (uint32_t i = 0; i < semaphores->count; i++)
+    {
+        if (semaphores->semaphores[i] != VK_NULL_HANDLE)
+        {
+            vkDestroySemaphore(gpu->device, semaphores->semaphores[i], NULL);
+            VK_CHECK_RESULT(vkCreateSemaphore(gpu->device, &info, NULL, &semaphores->semaphores[i]));
+        }
+    }
+}
+
+
+
 void dvz_semaphores_destroy(DvzSemaphores* semaphores)
 {
     ASSERT(semaphores != NULL);
@@ -2462,15 +2491,14 @@ void dvz_fences_wait(DvzFences* fences, uint32_t idx)
     ASSERT(idx < fences->count);
     if (fences->fences[idx] != VK_NULL_HANDLE)
     {
-        // log_debug(
-        //     "wait for fence %d: ready %d", fences->fences[idx],
-        //     0); // dvz_fences_ready(fences, idx));
+        log_trace("wait for fence %u", fences->fences[idx]);
+        // dvz_fences_ready(fences, idx));
         vkWaitForFences(fences->gpu->device, 1, &fences->fences[idx], VK_TRUE, 1000000000);
         // log_trace("fence wait finished!");
     }
     else
     {
-        log_trace("skip wait for fence");
+        log_trace("skip wait for fence %u", fences->fences[idx]);
     }
 }
 
@@ -2999,7 +3027,9 @@ void dvz_submit_send(DvzSubmit* submit, uint32_t cmd_idx, DvzFences* fences, uin
         dvz_fences_wait(fences, fence_idx);
         dvz_fences_reset(fences, fence_idx);
     }
-    // log_trace("submit queue and signal fence %d", vfence);
+    log_trace(
+        "submit queue with %d cmd bufs (%d) and signal fence %d",
+        submit->commands_count, cmd_idx, vfence);
     VK_CHECK_RESULT(vkQueueSubmit(submit->gpu->queues.queues[queue_idx], 1, &submit_info, vfence));
 
     // log_trace("submit done");

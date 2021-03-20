@@ -840,6 +840,12 @@ void dvz_canvas_recreate(DvzCanvas* canvas)
     dvz_framebuffers_create(framebuffers, renderpass);
     if (canvas->overlay)
         dvz_framebuffers_create(framebuffers_overlay, renderpass_overlay);
+
+    // Recreate the semaphores.
+    dvz_app_wait(canvas->app);
+    dvz_semaphores_recreate(&canvas->sem_img_available);
+    dvz_semaphores_recreate(&canvas->sem_render_finished);
+    canvas->present_semaphores = &canvas->sem_render_finished;
 }
 
 
@@ -2095,6 +2101,7 @@ void dvz_canvas_frame(DvzCanvas* canvas)
     ASSERT(canvas != NULL);
     ASSERT(canvas->app != NULL);
     ASSERT(canvas->gpu != NULL);
+    log_debug("start frame %u", canvas->frame_idx);
 
     // Update the global and local clocks.
     // These calls update canvas->clock.elapsed and canvas->clock.interval, the latter is
@@ -2255,15 +2262,14 @@ void dvz_app_run(DvzApp* app, uint64_t frame_count)
 
             // NOTE: swapchain image acquisition happens here
 
-            // Wait for fence.
-            dvz_fences_wait(&canvas->fences_render_finished, canvas->cur_frame);
-
             // We acquire the next swapchain image.
             // NOTE: this call modifies swapchain->img_idx
             if (!canvas->offscreen)
                 dvz_swapchain_acquire(
-                    &canvas->swapchain, &canvas->sem_img_available, //
-                    canvas->cur_frame, NULL, 0);
+                    &canvas->swapchain, &canvas->sem_img_available, canvas->cur_frame, NULL, 0);
+
+            // Wait for fence.
+            dvz_fences_wait(&canvas->fences_flight, canvas->swapchain.img_idx);
 
             // If there is a problem with swapchain image acquisition, wait and try again later.
             if (canvas->swapchain.obj.status == DVZ_OBJECT_STATUS_INVALID)

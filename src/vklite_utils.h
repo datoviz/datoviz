@@ -212,7 +212,7 @@ static VkResult create_debug_utils_messenger_EXT(
 
 
 
-static inline int _log_level(int sev)
+static inline int _log_level(VkDebugUtilsMessageSeverityFlagBitsEXT sev)
 {
     switch (sev)
     {

@@ -1899,6 +1899,13 @@ dvz_barrier_images_access(DvzBarrier* barrier, VkAccessFlags src_access, VkAcces
 DVZ_EXPORT DvzSemaphores dvz_semaphores(DvzGpu* gpu, uint32_t count);
 
 /**
+ * Recreate semaphores.
+ *
+ * @param semaphores the semaphores
+ */
+DVZ_EXPORT void dvz_semaphores_recreate(DvzSemaphores* semaphores);
+
+/**
  * Destroy semaphores.
  *
  * @param semaphores the semaphores
