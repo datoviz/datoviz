@@ -91,8 +91,7 @@ fi
 
 if [ $1 == "prof" ]
 then
-    # valgrind --tool=callgrind --dump-instr=yes --simulate-cache=yes --collect-jumps=yes $2
-    gprof build/datoviz -Al > prof.txt
+    echo "TODO"
 fi
 
 if [ $1 == "docker" ]

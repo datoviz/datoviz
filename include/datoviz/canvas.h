@@ -289,6 +289,7 @@ struct DvzMouse
 
     double press_time;
     double click_time;
+    bool is_active;
 };
 
 
@@ -314,6 +315,7 @@ struct DvzKeyboard
     DvzKeyboardStateType cur_state;
 
     double press_time;
+    bool is_active;
 };
 
 
@@ -932,6 +934,14 @@ DVZ_EXPORT void dvz_canvas_stop(DvzCanvas* canvas);
 DVZ_EXPORT DvzMouse dvz_mouse(void);
 
 /**
+ * Active or deactivate interactive mouse events.
+ *
+ * @param mouse the mouse object
+ * @param enable whether to activate or deactivate mouse events
+ */
+DVZ_EXPORT void dvz_mouse_toggle(DvzMouse* mouse, bool enable);
+
+/**
  * Reset the mouse state.
  *
  * @param mouse the mouse object
@@ -968,6 +978,14 @@ DVZ_EXPORT void dvz_mouse_local(
  * @returns keyboard object
  */
 DVZ_EXPORT DvzKeyboard dvz_keyboard(void);
+
+/**
+ * Active or deactivate interactive keyboard events.
+ *
+ * @param keyboard the keyboard object
+ * @param enable whether to activate or deactivate keyboard events
+ */
+DVZ_EXPORT void dvz_keyboard_toggle(DvzKeyboard* keyboard, bool enable);
 
 /**
  * Reset the keyboard state

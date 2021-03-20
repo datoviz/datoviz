@@ -59,10 +59,12 @@
 ### `dvz_event_stop()`
 
 ### `dvz_mouse()`
+### `dvz_mouse_toggle()`
 ### `dvz_mouse_reset()`
 ### `dvz_mouse_event()`
 ### `dvz_mouse_local()`
 
 ### `dvz_keyboard()`
+### `dvz_keyboard_toggle()`
 ### `dvz_keyboard_reset()`
 ### `dvz_keyboard_event()`

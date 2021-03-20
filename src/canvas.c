@@ -78,6 +78,8 @@ static void _glfw_key_callback(GLFWwindow* window, int key, int scancode, int ac
     DvzCanvas* canvas = (DvzCanvas*)glfwGetWindowUserPointer(window);
     ASSERT(canvas != NULL);
     ASSERT(canvas->window != NULL);
+    if (!canvas->keyboard.is_active)
+        return;
 
     // Special handling of ESC key.
     if (canvas->window->close_on_esc && action == GLFW_PRESS && key == GLFW_KEY_ESCAPE)
@@ -104,6 +106,8 @@ static void _glfw_wheel_callback(GLFWwindow* window, double dx, double dy)
     DvzCanvas* canvas = (DvzCanvas*)glfwGetWindowUserPointer(window);
     ASSERT(canvas != NULL);
     ASSERT(canvas->window != NULL);
+    if (!canvas->mouse.is_active)
+        return;
 
     // HACK: glfw doesn't seem to give a way to probe the keyboard modifiers while using the mouse
     // wheel, so we have to determine the modifiers manually.
@@ -119,6 +123,8 @@ static void _glfw_button_callback(GLFWwindow* window, int button, int action, in
     DvzCanvas* canvas = (DvzCanvas*)glfwGetWindowUserPointer(window);
     ASSERT(canvas != NULL);
     ASSERT(canvas->window != NULL);
+    if (!canvas->mouse.is_active)
+        return;
 
     // Map mouse button.
     DvzMouseButton b = {0};
@@ -142,6 +148,8 @@ static void _glfw_move_callback(GLFWwindow* window, double xpos, double ypos)
     DvzCanvas* canvas = (DvzCanvas*)glfwGetWindowUserPointer(window);
     ASSERT(canvas != NULL);
     ASSERT(canvas->window != NULL);
+    if (!canvas->mouse.is_active)
+        return;
 
     dvz_event_mouse_move(canvas, (vec2){xpos, ypos}, canvas->mouse.modifiers);
 }
@@ -149,6 +157,8 @@ static void _glfw_move_callback(GLFWwindow* window, double xpos, double ypos)
 static void _glfw_frame_callback(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
+    if (!canvas->mouse.is_active)
+        return;
     GLFWwindow* w = canvas->window->backend_window;
     ASSERT(w != NULL);
 
@@ -1124,6 +1134,14 @@ DvzMouse dvz_mouse()
 
 
 
+void dvz_mouse_toggle(DvzMouse* mouse, bool enable)
+{
+    ASSERT(mouse != NULL);
+    mouse->is_active = enable;
+}
+
+
+
 void dvz_mouse_reset(DvzMouse* mouse)
 {
     ASSERT(mouse != NULL);
@@ -1135,6 +1153,7 @@ void dvz_mouse_reset(DvzMouse* mouse)
     mouse->cur_state = DVZ_MOUSE_STATE_INACTIVE;
     mouse->press_time = DVZ_NEVER;
     mouse->click_time = DVZ_NEVER;
+    mouse->is_active = true;
 }
 
 
@@ -1291,6 +1310,14 @@ DvzKeyboard dvz_keyboard()
 
 
 
+void dvz_keyboard_toggle(DvzKeyboard* keyboard, bool enable)
+{
+    ASSERT(keyboard != NULL);
+    keyboard->is_active = enable;
+}
+
+
+
 void dvz_keyboard_reset(DvzKeyboard* keyboard)
 {
     ASSERT(keyboard != NULL);
@@ -1298,6 +1325,7 @@ void dvz_keyboard_reset(DvzKeyboard* keyboard)
     // keyboard->key_code = DVZ_KEY_NONE;
     // keyboard->modifiers = 0;
     keyboard->press_time = DVZ_NEVER;
+    keyboard->is_active = true;
 }
 
 

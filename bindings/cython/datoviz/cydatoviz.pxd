@@ -1141,7 +1141,7 @@ cdef extern from "<datoviz/datoviz.h>":
 
     # from file: panel.h
     void dvz_panel_transpose(DvzPanel* panel, DvzCDSTranspose transpose)
-    DvzPanel* dvz_panel_at(DvzGrid* grid, vec2 pos)
+    DvzPanel* dvz_panel_at(DvzGrid* grid, vec2 screen_pos)
 
     # from file: scene.h
     DvzScene* dvz_scene(DvzCanvas* canvas, uint32_t n_rows, uint32_t n_cols)
