@@ -8,10 +8,15 @@ fi
 
 if [ $1 == "build" ]
 then
+    # Make sure macOS uses clang and not gcc
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        export CC=/usr/bin/clang
+        export CXX=/usr/bin/clang++
+    fi
     mkdir -p build &&
     cd build && \
     cmake .. -GNinja && \
-    DVZ_EXAMPLE= ninja && \
+    ninja && \
     cd ..
 fi
 
@@ -28,15 +33,6 @@ then
     python3 setup.py build_ext -i && \
     python3 setup.py develop --user && \
     cd ../..
-fi
-
-if [ $1 == "clang" ]
-then
-    mkdir -p build_clang &&
-    cd build_clang && \
-    CC=/usr/bin/clang CXX=/usr/bin/clang++ cmake .. -GNinja && \
-    ninja && \
-    cd ..
 fi
 
 if [ $1 == "download" ]
