@@ -601,8 +601,6 @@ static DvzAxesTicks wilk_ext(double dmin, double dmax, int32_t m, DvzAxesContext
 
     best_ticks.value_count = tick_count(best_ticks.lmin_in, best_ticks.lmax_in, best_ticks.lstep);
     make_labels(&best_ticks, &ctx, false);
-    // debug_ticks(&best_ticks, &ctx);
-
     return best_ticks;
 }
 
@@ -663,9 +661,20 @@ static DvzAxesTicks dvz_ticks(double dmin, double dmax, DvzAxesContext ctx)
     ASSERT(dmin < dmax);
     ASSERT(ctx.coord <= DVZ_AXES_COORD_Y);
     ASSERT(ctx.size_glyph > 0);
-    ASSERT(ctx.size_viewport > 0);
 
     bool x_axis = ctx.coord == DVZ_AXES_COORD_X;
+
+    DvzAxesTicks ticks = {0};
+    ticks.lmin_in = dmin;
+    ticks.lmax_in = dmax;
+    ticks.lstep = dmax - dmin;
+    ticks.value_count = 2;
+
+    if (ctx.size_viewport <= 10)
+    {
+        log_warn("viewport empty, skipping ticks positioning algorithm");
+        return ticks;
+    }
 
     // NOTE: factor Y because we average 6 characters per tick, and this only counts on the x axis.
     // This number is only an initial guess, the algorithm will find a proper one.
@@ -677,7 +686,17 @@ static DvzAxesTicks dvz_ticks(double dmin, double dmax, DvzAxesContext ctx)
         "running extended Wilkinson algorithm on axis %d with %d labels on range [%.3f, %.3f], "
         "viewport size %.1f, glyph size %.1f, extension %d",
         ctx.coord, label_count_req, dmin, dmax, ctx.size_viewport, ctx.size_glyph, ctx.extensions);
-    DvzAxesTicks ticks = wilk_ext(dmin, dmax, label_count_req, ctx);
+    ticks = wilk_ext(dmin, dmax, label_count_req, ctx);
+
+    if (ticks.value_count == 0)
+    {
+        log_warn(
+            "automatic tick positioning on interval [%.6f, %.6f] failed (found [%.6f-%.6f] with "
+            "step %.6f",
+            dmin, dmax, ticks.lmin_in, ticks.lmax_in, ticks.lstep);
+        return ticks;
+    }
+
     ASSERT(ticks.lstep > 0);
     ASSERT(ticks.lmin_in < ticks.lmax_in);
     ASSERT(ticks.value_count > 0);
