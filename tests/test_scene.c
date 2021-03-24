@@ -1,4 +1,4 @@
-#include "../include/datoviz/visuals.h"
+#include "../include/datoviz/scene.h"
 #include "proto.h"
 #include "tests.h"
 
@@ -32,4 +32,4 @@
 /*  Visuals tests                                                                                */
 /*************************************************************************************************/
 
-int test_visuals_1(TestContext* context) { return 0; }
+int test_scene_1(TestContext* context) { return 0; }
