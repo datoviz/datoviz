@@ -524,14 +524,15 @@ endfunction()
 # -------------------------------------------------------------------------------------------------
 
 if (DATOVIZ_WITH_CLI)
-    # file(GLOB cli "cli/*.c" "cli/*.cpp" "cli/*.h" "cli/*.hpp" "tests/*.c*" "tests/*.h*")
-    file(GLOB cli
-        "cli/main.c"
-        "tests/test_utils.c"
-        "tests/test_vklite.c"
-        "tests/test_context.c"
-        "tests/test_canvas.c"
-    )
+    file(GLOB cli "cli/*.c" "tests/*.c*")
+    # file(GLOB cli
+    #     "cli/main.c"
+    #     "tests/test_utils.c"
+    #     "tests/test_vklite.c"
+    #     "tests/test_context.c"
+    #     "tests/test_canvas.c"
+    #     "tests/test_interact.c"
+    # )
     add_executable(datovizcli ${cli})
     target_datoviz(datovizcli)
     set_target_properties(datovizcli PROPERTIES OUTPUT_NAME "datoviz")

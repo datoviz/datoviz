@@ -80,6 +80,15 @@ int test_canvas_triangle_compute(TestContext*);
 int test_canvas_triangle_pick(TestContext*);
 int test_canvas_triangle_append(TestContext*);
 
+// Test interact.
+int test_interact_panzoom(TestContext*);
+
+// Test graphics.
+int test_graphics_point(TestContext*);
+
+// Test visuals.
+int test_visuals_1(TestContext*);
+
 
 
 /*************************************************************************************************/
@@ -171,6 +180,15 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_APP(test_canvas_triangle_compute),   //
     CASE_FIXTURE_APP(test_canvas_triangle_pick),      //
     CASE_FIXTURE_APP(test_canvas_triangle_append),    //
+
+    // Interact.
+    CASE_FIXTURE_NONE(test_interact_panzoom), //
+
+    // Graphics.
+    CASE_FIXTURE_APP(test_graphics_point), //
+
+    // Visuals.
+    CASE_FIXTURE_APP(test_visuals_1), //
 
 };
 
