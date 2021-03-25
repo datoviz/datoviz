@@ -43,7 +43,8 @@ int test_utils_colormap_array(TestContext*);
 
 int test_utils_ticks_1(TestContext*);
 int test_utils_ticks_2(TestContext*);
-int test_utils_ticks_3(TestContext*);
+int test_utils_ticks_duplicate(TestContext*);
+int test_utils_ticks_extend(TestContext*);
 
 // Test vklite.
 int test_vklite_app(TestContext*);
@@ -151,9 +152,10 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_NONE(test_utils_colormap_packuv),  //
     CASE_FIXTURE_NONE(test_utils_colormap_array),   //
     // CASE_FIXTURE_NONE(test_utils_transforms_5), //
-    CASE_FIXTURE_NONE(test_utils_ticks_1), //
-    CASE_FIXTURE_NONE(test_utils_ticks_2), //
-    CASE_FIXTURE_NONE(test_utils_ticks_3), //
+    CASE_FIXTURE_NONE(test_utils_ticks_1),         //
+    CASE_FIXTURE_NONE(test_utils_ticks_2),         //
+    CASE_FIXTURE_NONE(test_utils_ticks_duplicate), //
+    CASE_FIXTURE_NONE(test_utils_ticks_extend),    //
 
     // vklite.
     CASE_FIXTURE_NONE(test_vklite_app),             //

@@ -87,7 +87,7 @@ fi
 
 if [ $1 == "prof" ]
 then
-    echo "TODO"
+    gprof build/datoviz gmon.out
 fi
 
 if [ $1 == "docker" ]

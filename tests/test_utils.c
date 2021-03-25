@@ -997,16 +997,34 @@ int test_utils_ticks_1(TestContext* context)
     const uint32_t N = tick_count(ticks.lmin_in, ticks.lmax_in, ticks.lstep);
     ticks.value_count = N;
 
-    ticks.format = DVZ_TICK_FORMAT_SCIENTIFIC;
-    ticks.precision = 3;
     ticks.labels = calloc(N * MAX_GLYPHS_PER_TICK, sizeof(char));
-    make_labels(&ticks, &ctx, false);
-    for (uint32_t i = 0; i < N; i++)
+    ticks.precision = 3;
+
+    for (bool scientific = false; scientific; scientific = true)
     {
-        if (strlen(&ticks.labels[i * MAX_GLYPHS_PER_TICK]) == 0)
-            break;
-        log_debug("%s ", &ticks.labels[i * MAX_GLYPHS_PER_TICK]);
+        ticks.format = scientific ? DVZ_TICK_FORMAT_SCIENTIFIC : DVZ_TICK_FORMAT_DECIMAL;
+        make_labels(&ticks, &ctx, false);
+        char* s = NULL;
+        for (uint32_t i = 0; i < N; i++)
+        {
+            s = &ticks.labels[i * MAX_GLYPHS_PER_TICK];
+            if (strlen(s) == 0)
+                break;
+            log_debug("%s ", s);
+            if (i > 0)
+            {
+                if (scientific)
+                {
+                    AT(strchr(s, 'e') != NULL);
+                }
+                else
+                {
+                    AT(strchr(s, 'e') == NULL);
+                }
+            }
+        }
     }
+
     FREE(ticks.labels);
     return 0;
 }
@@ -1014,6 +1032,24 @@ int test_utils_ticks_1(TestContext* context)
 
 
 int test_utils_ticks_2(TestContext* context)
+{
+    DvzAxesContext ctx = {0};
+    ctx.coord = DVZ_AXES_COORD_X;
+    ctx.size_viewport = 5000;
+    ctx.size_glyph = 5;
+    ctx.extensions = 0;
+
+    double x = 1.23456;
+    DvzAxesTicks ticks = dvz_ticks(x, x + 1e-8, ctx);
+    AT(ticks.format == DVZ_TICK_FORMAT_DECIMAL);
+    for (uint32_t i = 0; i < ticks.value_count; i++)
+        log_debug("tick #%02d: %s", i, &ticks.labels[i * MAX_GLYPHS_PER_TICK]);
+    return 0;
+}
+
+
+
+int test_utils_ticks_duplicate(TestContext* context)
 {
     DvzAxesContext ctx = {0};
     ctx.coord = DVZ_AXES_COORD_X;
@@ -1041,7 +1077,7 @@ int test_utils_ticks_2(TestContext* context)
 
 
 
-int test_utils_ticks_3(TestContext* context)
+int test_utils_ticks_extend(TestContext* context)
 {
     DvzAxesContext ctx = {0};
     ctx.coord = DVZ_AXES_COORD_X;
