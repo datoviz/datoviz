@@ -3,11 +3,11 @@
 ## Implementing a new visual
 
 * Determine the graphics you'll be using, and the list of source and props
-* `builtin_visuals.h`:
+* `vislib.h`:
     * Make sure the `DvzVisualType` enum exists, or create a new one
 * `visuals.h`:
     * Check that all prop types exist, otherwise add them
-* `builtin_visuals.c`:
+* `vislib.c`:
     * Make a new section for the visual code
     * Write the main visual function
         * Specify the graphics pipeline(s)
@@ -27,9 +27,9 @@
     * Write the baking callback function
         * Take DPI scaling into account for props that require it
     * Add a new switch case in `dvz_visual_builtin()`
-* `test_builtin_visuals.h`:
+* `test_vislib.h`:
     * Add a new visual test declaration
-* `test_builtin_visuals.c`:
+* `test_vislib.c`:
     * Write the body of the test function
 * `main.c`:
     * Add the new test to the list of test functions

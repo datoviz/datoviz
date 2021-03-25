@@ -1,5 +1,5 @@
 #include "../include/datoviz/scene.h"
-#include "../include/datoviz/builtin_visuals.h"
+#include "../include/datoviz/vislib.h"
 #include "../include/datoviz/canvas.h"
 #include "../include/datoviz/interact.h"
 #include "../include/datoviz/panel.h"

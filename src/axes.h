@@ -200,7 +200,7 @@ static void _axes_ticks_init(DvzController* controller)
     ASSERT(controller->panel != NULL);
     DvzAxes2D* axes = &controller->u.axes_2D;
 
-    // NOTE: get the font size which was set by in builtin_visuals.c as a prop.
+    // NOTE: get the font size which was set by in vislib.c as a prop.
     DvzProp* prop = dvz_prop_get(controller->visuals[0], DVZ_PROP_TEXT_SIZE, 0);
     ASSERT(prop != NULL);
     float* font_size = dvz_prop_item(prop, 0);

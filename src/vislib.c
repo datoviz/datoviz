@@ -1,4 +1,4 @@
-#include "../include/datoviz/builtin_visuals.h"
+#include "../include/datoviz/vislib.h"
 #include "../include/datoviz/array.h"
 #include "../include/datoviz/interact.h"
 #include "../include/datoviz/mesh.h"

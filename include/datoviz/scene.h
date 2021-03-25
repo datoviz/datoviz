@@ -5,7 +5,7 @@
 #ifndef DVZ_SCENE_HEADER
 #define DVZ_SCENE_HEADER
 
-#include "builtin_visuals.h"
+#include "vislib.h"
 #include "interact.h"
 #include "panel.h"
 #include "ticks_types.h"

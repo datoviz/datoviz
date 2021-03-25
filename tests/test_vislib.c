@@ -32,4 +32,4 @@
 /*  Visuals tests                                                                                */
 /*************************************************************************************************/
 
-int test_builtin_visuals_1(TestContext* context) { return 0; }
+int test_vislib_1(TestContext* context) { return 0; }

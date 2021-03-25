@@ -90,7 +90,7 @@ int test_graphics_point(TestContext*);
 int test_visuals_1(TestContext*);
 
 // Test builtin visuals.
-int test_builtin_visuals_1(TestContext*);
+int test_vislib_1(TestContext*);
 
 // Test scene.
 int test_scene_1(TestContext*);
@@ -197,7 +197,7 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE_APP(test_visuals_1), //
 
     // Builtin visuals.
-    CASE_FIXTURE_APP(test_builtin_visuals_1), //
+    CASE_FIXTURE_APP(test_vislib_1), //
 
     // Scene.
     CASE_FIXTURE_APP(test_scene_1), //

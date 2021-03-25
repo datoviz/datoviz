@@ -193,7 +193,7 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_ARRAY_COPY_REPEAT = 1
         DVZ_ARRAY_COPY_SINGLE = 2
 
-    # from file: builtin_visuals.h
+    # from file: vislib.h
 
     ctypedef enum DvzVisualType:
         DVZ_VISUAL_NONE = 0
