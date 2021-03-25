@@ -22,6 +22,7 @@ https://github.com/quantenschaum/ctplot/blob/master/ctplot/ticks.py
 #include <stdlib.h>
 
 #include "../include/datoviz/common.h"
+#include "../include/datoviz/ticks_types.h"
 
 
 
