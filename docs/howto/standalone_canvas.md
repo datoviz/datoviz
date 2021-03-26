@@ -8,4 +8,4 @@ This example shows how to **write a standalone C app using only the canvas API**
 
 <!-- IMAGE ../images/screenshots/standalone_canvas.png -->
 
-<!-- CODE_C examples/standalone_canvas.c -->
+<!-- CODE_C examples/standalone/standalone_canvas.c -->

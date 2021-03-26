@@ -21,4 +21,4 @@ This "hello world" script is about 250 lines long (without comments), about 4x s
 
 <!-- IMAGE ../images/screenshots/standalone_vklite.png -->
 
-<!-- CODE_C examples/standalone_vklite.c -->
+<!-- CODE_C examples/standalone/standalone_vklite.c -->

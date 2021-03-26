@@ -9,4 +9,4 @@ This example shows how to **make a scatter plot using the scene C API** in a sta
 
 ## Full source code
 
-<!-- CODE_C examples/standalone_scene.c -->
+<!-- CODE_C examples/standalone/standalone_scene.c -->
