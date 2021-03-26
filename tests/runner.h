@@ -23,8 +23,7 @@ typedef enum
 {
     TEST_FIXTURE_NONE,
     TEST_FIXTURE_APP,
-    // TEST_FIXTURE_GPU_OFFSCREEN,
-    // TEST_FIXTURE_GPU_WINDOW,
+    TEST_FIXTURE_CONTEXT,
     TEST_FIXTURE_CANVAS,
 } TestFixture;
 
@@ -55,6 +54,7 @@ struct TestContext
     TestCase* cases;
 
     DvzApp* app;
+    DvzContext* context;
     DvzCanvas* canvas;
 };
 
@@ -127,35 +127,23 @@ static void _fixture_app(TestContext* tc)
     tc->app->n_errors = 0;
 }
 
-// static void _fixture_gpu_offscreen(TestContext* tc)
-// {
-//     ASSERT(tc != NULL);
-//     ASSERT(tc->app != NULL);
+static void _fixture_context(TestContext* tc)
+{
+    ASSERT(tc != NULL);
+    ASSERT(tc->app != NULL);
 
-//     if (tc->gpu == NULL)
-//     {
-//         tc->gpu = dvz_gpu_best(tc->app);
-//     }
+    // Select the GPU.
+    DvzGpu* gpu = dvz_gpu_best(tc->app);
+    ASSERT(gpu != NULL);
 
-//     if (tc->gpu->context == NULL)
-//     {
-//         tc->gpu->context = dvz_context(tc->gpu);
-//     }
-// }
-
-// static void _fixture_gpu_window(TestContext* tc)
-// {
-//     ASSERT(tc != NULL);
-//     ASSERT(tc->app != NULL);
-
-//     if (tc->gpu == NULL)
-//         tc->gpu = dvz_gpu_best(tc->app);
-
-//     if (tc->gpu->context != NULL)
-//     {
-//         dvz_context_reset(tc->gpu->context);
-//     }
-// }
+    // Ensure the context is created.
+    if (tc->context == NULL)
+    {
+        // Recreate the GPU and context.
+        dvz_gpu_default(gpu, NULL);
+        tc->context = dvz_context(gpu);
+    }
+}
 
 static void _fixture_canvas(TestContext* tc)
 {
@@ -164,16 +152,16 @@ static void _fixture_canvas(TestContext* tc)
 
     if (tc->canvas == NULL)
     {
-        // ASSERT(tc->gpu != NULL);
         tc->canvas = dvz_canvas(dvz_gpu_best(tc->app), WIDTH, HEIGHT, 0);
     }
-    // ASSERT(tc->gpu != NULL);
-
-    // ASSERT(tc->gpu->context != NULL);
-    // dvz_context_reset(tc->gpu->context);
+    else
+    {
+        ASSERT(tc->canvas->gpu != NULL);
+        dvz_context_reset(tc->canvas->gpu->context);
+    }
 }
 
-static void _set_fixture(TestContext* tc, TestCase* test_case)
+static void _fixture_begin(TestContext* tc, TestCase* test_case)
 {
     ASSERT(tc != NULL);
     ASSERT(test_case != NULL);
@@ -186,22 +174,44 @@ static void _set_fixture(TestContext* tc, TestCase* test_case)
         _fixture_app(tc);
         break;
 
-        //     // GPU fixture.
-        // case TEST_FIXTURE_GPU_OFFSCREEN:
-        //     _fixture_app(tc);
-        //     _fixture_gpu_offscreen(tc);
-        //     break;
-
-        // case TEST_FIXTURE_GPU_WINDOW:
-        //     _fixture_app(tc);
-        //     _fixture_gpu_window(tc);
-        //     break;
+        // Context fixture.
+    case TEST_FIXTURE_CONTEXT:
+        _fixture_app(tc);
+        _fixture_context(tc);
+        break;
 
         // Canvas fixture.
     case TEST_FIXTURE_CANVAS:
         _fixture_app(tc);
-        // _fixture_gpu_window(tc);
         _fixture_canvas(tc);
+        break;
+
+    default:
+        break;
+    }
+}
+
+static void _fixture_end(TestContext* tc, TestCase* test_case)
+{
+    ASSERT(tc != NULL);
+    ASSERT(test_case != NULL);
+
+    switch (test_case->fixture)
+    {
+
+        // App fixture.
+    case TEST_FIXTURE_APP:
+        break;
+
+        // Context fixture.
+    case TEST_FIXTURE_CONTEXT:
+        ASSERT(tc->context);
+        dvz_gpu_destroy(tc->context->gpu);
+        tc->context = NULL;
+        break;
+
+        // Canvas fixture.
+    case TEST_FIXTURE_CANVAS:
         break;
 
     default:
@@ -245,8 +255,8 @@ static int run_test_case(TestContext* tc, TestCase* test_case)
     // Make sure either the canvas or panel is set up if the test case requires it.
     // _setup(tc, test_case.fixture);
 
-    // Set the case fixture.
-    _set_fixture(tc, test_case);
+    // Begin the fixture.
+    _fixture_begin(tc, test_case);
 
     // Run the test case on the canvas.
     int res = 1;
@@ -256,6 +266,9 @@ static int run_test_case(TestContext* tc, TestCase* test_case)
     {
         res += (int)tc->app->n_errors;
     }
+
+    // End the fixture.
+    _fixture_end(tc, test_case);
 
     return res;
 }

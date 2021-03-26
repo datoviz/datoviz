@@ -5,21 +5,18 @@
 
 
 /*************************************************************************************************/
+/*  Utils                                                                                        */
+/*************************************************************************************************/
+
+
+
+/*************************************************************************************************/
 /*  Buffer                                                                                       */
 /*************************************************************************************************/
 
 int test_context_buffer_default(TestContext* tc)
 {
-    DvzApp* app = tc->app;
-    ASSERT(app != NULL);
-    DvzGpu* gpu = dvz_gpu_best(app);
-    ASSERT(gpu != NULL);
-    dvz_gpu_default(gpu, NULL);
-    DvzContext* ctx = dvz_context(gpu);
-    ASSERT(ctx != NULL);
-
-    dvz_gpu_destroy(gpu);
-    return 0;
+    return 0; //
 }
 
 
@@ -30,11 +27,7 @@ int test_context_buffer_default(TestContext* tc)
 
 int test_context_colormap_custom(TestContext* tc)
 {
-    DvzApp* app = tc->app;
-    ASSERT(app != NULL);
-    DvzGpu* gpu = dvz_gpu_best(app);
-    dvz_gpu_default(gpu, NULL);
-    DvzContext* ctx = dvz_context(gpu);
+    DvzContext* ctx = tc->context; // dvz_context(gpu);
     ASSERT(ctx != NULL);
 
     // Make a custom colormap.
@@ -70,6 +63,5 @@ int test_context_colormap_custom(TestContext* tc)
     AT(memcmp(&arr[256 * ij[0] + ij[1]], colors, 3 * sizeof(cvec4)) == 0);
     FREE(arr);
 
-    dvz_gpu_destroy(gpu);
     return 0;
 }

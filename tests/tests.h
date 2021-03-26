@@ -174,8 +174,8 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE(NONE, test_vklite_canvas_triangle), //
 
     // Context.
-    CASE_FIXTURE(APP, test_context_buffer_default),  //
-    CASE_FIXTURE(APP, test_context_colormap_custom), //
+    CASE_FIXTURE(CONTEXT, test_context_buffer_default),  //
+    CASE_FIXTURE(CONTEXT, test_context_colormap_custom), //
 
     // Canvas.
     CASE_FIXTURE(APP, test_canvas_blank),              //
@@ -265,10 +265,10 @@ static void _test_context_destroy(TestContext* tc)
         tc->canvas = NULL;
     }
 
-    // if (tc->gpu != NULL)
+    // if (tc->context != NULL)
     // {
-    //     dvz_gpu_destroy(tc->gpu);
-    //     tc->gpu = NULL;
+    //     dvz_context_destroy(tc->context);
+    //     tc->context = NULL;
     // }
 
     if (tc->app != NULL)
