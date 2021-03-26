@@ -14,7 +14,7 @@
 /*  Buffer                                                                                       */
 /*************************************************************************************************/
 
-int test_context_buffer_default(TestContext* tc)
+int test_context_buffer(TestContext* tc)
 {
     DvzContext* ctx = tc->context;
     ASSERT(ctx != NULL);
@@ -39,6 +39,72 @@ int test_context_buffer_default(TestContext* tc)
     dvz_buffer_download(br.buffer, 64, 32, data_2);
     for (uint32_t i = 0; i < 32; i++)
         AT(data_2[i] == i);
+
+    return 0;
+}
+
+
+
+/*************************************************************************************************/
+/*  Compute                                                                                      */
+/*************************************************************************************************/
+
+int test_context_compute(TestContext* tc)
+{
+    DvzContext* ctx = tc->context;
+    ASSERT(ctx != NULL);
+
+    char path[1024] = {0};
+    snprintf(path, sizeof(path), "%s/test_double.comp.spv", SPIRV_DIR);
+    dvz_ctx_compute(ctx, path);
+
+    return 0;
+}
+
+
+
+/*************************************************************************************************/
+/*  Texture                                                                                      */
+/*************************************************************************************************/
+
+int test_context_texture(TestContext* tc)
+{
+    DvzContext* ctx = tc->context;
+    ASSERT(ctx != NULL);
+
+    uvec3 size = {16, 48, 1};
+    uvec3 offset = {0, 16, 0};
+    uvec3 shape = {16, 16, 1};
+    VkFormat format = VK_FORMAT_R8G8B8A8_UINT;
+
+    // Texture.
+    DvzTexture* tex = dvz_ctx_texture(ctx, 2, size, format);
+    dvz_texture_filter(tex, DVZ_FILTER_MAG, VK_FILTER_LINEAR);
+    dvz_texture_address_mode(tex, DVZ_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+
+    // Texture data.
+    uint8_t data[256] = {0};
+    for (uint32_t i = 0; i < 256; i++)
+        data[i] = i;
+    dvz_texture_upload(tex, offset, shape, 256, data);
+
+    // Download data.
+    uint8_t data_2[256] = {0};
+    dvz_texture_download(tex, offset, shape, 256, data_2);
+    for (uint32_t i = 0; i < 256; i++)
+        AT(data_2[i] == i);
+
+    // // Second texture.
+    // DvzTexture* tex_2 = dvz_ctx_texture(ctx, 2, (uvec3){16, 16, 1}, format);
+    // dvz_texture_copy(tex, offset, tex_2, DVZ_ZERO_OFFSET, shape);
+
+    // // Download data.
+    // memset(data_2, 0, 256);
+    // dvz_texture_download(tex, offset, shape, 256, data_2);
+    // for (uint32_t i = 0; i < 256; i++)
+    //     AT(data_2[i] == i);
+
+    // dvz_texture_resize(tex, size);
 
     return 0;
 }

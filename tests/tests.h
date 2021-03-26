@@ -68,11 +68,8 @@ int test_vklite_canvas_blank(TestContext*);
 int test_vklite_canvas_triangle(TestContext*);
 
 // Test context.
-int test_context_buffer_default(TestContext*);
-int test_context_buffer_resize(TestContext*);
-int test_context_texture_default(TestContext*);
-int test_context_texture_filter(TestContext*);
-int test_context_texture_resize(TestContext*);
+int test_context_buffer(TestContext*);
+int test_context_texture(TestContext*);
 int test_context_compute(TestContext*);
 int test_context_colormap_custom(TestContext*);
 
@@ -174,7 +171,9 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE(NONE, test_vklite_canvas_triangle), //
 
     // Context.
-    CASE_FIXTURE(CONTEXT, test_context_buffer_default),  //
+    CASE_FIXTURE(CONTEXT, test_context_buffer),          //
+    CASE_FIXTURE(CONTEXT, test_context_compute),         //
+    CASE_FIXTURE(CONTEXT, test_context_texture),         //
     CASE_FIXTURE(CONTEXT, test_context_colormap_custom), //
 
     // Canvas.
