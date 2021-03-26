@@ -137,12 +137,11 @@ static void _fixture_context(TestContext* tc)
     ASSERT(gpu != NULL);
 
     // Ensure the context is created.
-    if (tc->context == NULL)
-    {
-        // Recreate the GPU and context.
-        dvz_gpu_default(gpu, NULL);
-        tc->context = dvz_context(gpu);
-    }
+    ASSERT(tc->context == NULL);
+
+    // Recreate the GPU and context.
+    dvz_gpu_default(gpu, NULL);
+    tc->context = dvz_context(gpu);
 }
 
 static void _fixture_canvas(TestContext* tc)

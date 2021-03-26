@@ -16,7 +16,31 @@
 
 int test_context_buffer_default(TestContext* tc)
 {
-    return 0; //
+    DvzContext* ctx = tc->context;
+    ASSERT(ctx != NULL);
+
+    // Allocate buffers.
+    DvzBufferRegions br = dvz_ctx_buffers(ctx, DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE, 1, 128);
+    AT(br.aligned_size == 128);
+    AT(br.count == 1);
+
+    // Upload data.
+    uint8_t data[128] = {0};
+    for (uint32_t i = 0; i < 128; i++)
+        data[i] = i;
+    dvz_buffer_upload(br.buffer, 64, 32, data);
+
+    // Resize buffer.
+    dvz_ctx_buffers_resize(ctx, &br, 64);
+    dvz_ctx_buffers_resize(ctx, &br, 256);
+
+    // Download data.
+    uint8_t data_2[32] = {0};
+    dvz_buffer_download(br.buffer, 64, 32, data_2);
+    for (uint32_t i = 0; i < 32; i++)
+        AT(data_2[i] == i);
+
+    return 0;
 }
 
 
@@ -27,7 +51,7 @@ int test_context_buffer_default(TestContext* tc)
 
 int test_context_colormap_custom(TestContext* tc)
 {
-    DvzContext* ctx = tc->context; // dvz_context(gpu);
+    DvzContext* ctx = tc->context;
     ASSERT(ctx != NULL);
 
     // Make a custom colormap.
