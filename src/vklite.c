@@ -319,7 +319,9 @@ void dvz_gpu_destroy(DvzGpu* gpu)
     }
 
 
-    dvz_obj_destroyed(&gpu->obj);
+    // dvz_obj_destroyed(&gpu->obj);
+    dvz_obj_init(&gpu->obj);
+    gpu->queues.queue_count = 0;
     log_trace("GPU #%d destroyed", gpu->idx);
 }
 
@@ -2404,7 +2406,8 @@ void dvz_semaphores_recreate(DvzSemaphores* semaphores)
         if (semaphores->semaphores[i] != VK_NULL_HANDLE)
         {
             vkDestroySemaphore(gpu->device, semaphores->semaphores[i], NULL);
-            VK_CHECK_RESULT(vkCreateSemaphore(gpu->device, &info, NULL, &semaphores->semaphores[i]));
+            VK_CHECK_RESULT(
+                vkCreateSemaphore(gpu->device, &info, NULL, &semaphores->semaphores[i]));
         }
     }
 }
@@ -3028,8 +3031,8 @@ void dvz_submit_send(DvzSubmit* submit, uint32_t cmd_idx, DvzFences* fences, uin
         dvz_fences_reset(fences, fence_idx);
     }
     log_trace(
-        "submit queue with %d cmd bufs (%d) and signal fence %d",
-        submit->commands_count, cmd_idx, vfence);
+        "submit queue with %d cmd bufs (%d) and signal fence %d", submit->commands_count, cmd_idx,
+        vfence);
     VK_CHECK_RESULT(vkQueueSubmit(submit->gpu->queues.queues[queue_idx], 1, &submit_info, vfence));
 
     // log_trace("submit done");

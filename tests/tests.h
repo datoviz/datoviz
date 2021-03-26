@@ -68,6 +68,12 @@ int test_vklite_canvas_blank(TestContext*);
 int test_vklite_canvas_triangle(TestContext*);
 
 // Test context.
+int test_context_buffer_default(TestContext*);
+int test_context_buffer_resize(TestContext*);
+int test_context_texture_default(TestContext*);
+int test_context_texture_filter(TestContext*);
+int test_context_texture_resize(TestContext*);
+int test_context_compute(TestContext*);
 int test_context_colormap_custom(TestContext*);
 
 // Test canvas.
@@ -109,110 +115,99 @@ int test_scene_1(TestContext*);
 /*  List of tests                                                                                */
 /*************************************************************************************************/
 
-#define CASE_FIXTURE_NONE(func)                                                                   \
+#define CASE_FIXTURE(fixt, func)                                                                  \
     {                                                                                             \
-        .name = #func, .function = func,                                                          \
-    }
-
-#define CASE_FIXTURE_APP(func)                                                                    \
-    {                                                                                             \
-        .name = #func, .function = func, .fixture = TEST_FIXTURE_APP                              \
-    }
-
-#define CASE_FIXTURE_CANVAS(func)                                                                 \
-    {                                                                                             \
-        .name = #func, .function = func, .fixture = TEST_FIXTURE_CANVAS                           \
+        .name = #func, .function = func, .fixture = TEST_FIXTURE_##fixt                           \
     }
 
 static TestCase TEST_CASES[] = {
     // Utils.
-    CASE_FIXTURE_NONE(test_utils_container),        //
-    CASE_FIXTURE_NONE(test_utils_fifo_1),           //
-    CASE_FIXTURE_NONE(test_utils_fifo_2),           //
-    CASE_FIXTURE_NONE(test_utils_fifo_3),           //
-    CASE_FIXTURE_NONE(test_utils_array_1),          //
-    CASE_FIXTURE_NONE(test_utils_array_2),          //
-    CASE_FIXTURE_NONE(test_utils_array_3),          //
-    CASE_FIXTURE_NONE(test_utils_array_4),          //
-    CASE_FIXTURE_NONE(test_utils_array_5),          //
-    CASE_FIXTURE_NONE(test_utils_array_6),          //
-    CASE_FIXTURE_NONE(test_utils_array_7),          //
-    CASE_FIXTURE_NONE(test_utils_array_cast),       //
-    CASE_FIXTURE_NONE(test_utils_array_mvp),        //
-    CASE_FIXTURE_NONE(test_utils_array_3D),         //
-    CASE_FIXTURE_NONE(test_utils_transforms_1),     //
-    CASE_FIXTURE_NONE(test_utils_transforms_2),     //
-    CASE_FIXTURE_NONE(test_utils_transforms_3),     //
-    CASE_FIXTURE_NONE(test_utils_transforms_4),     //
-    CASE_FIXTURE_NONE(test_utils_colormap_idx),     //
-    CASE_FIXTURE_NONE(test_utils_colormap_uv),      //
-    CASE_FIXTURE_NONE(test_utils_colormap_extent),  //
-    CASE_FIXTURE_NONE(test_utils_colormap_default), //
-    CASE_FIXTURE_NONE(test_utils_colormap_scale),   //
-    CASE_FIXTURE_NONE(test_utils_colormap_packuv),  //
-    CASE_FIXTURE_NONE(test_utils_colormap_array),   //
-    // CASE_FIXTURE_NONE(test_utils_transforms_5), //
-    CASE_FIXTURE_NONE(test_utils_ticks_1),         //
-    CASE_FIXTURE_NONE(test_utils_ticks_2),         //
-    CASE_FIXTURE_NONE(test_utils_ticks_duplicate), //
-    CASE_FIXTURE_NONE(test_utils_ticks_extend),    //
+    CASE_FIXTURE(NONE, test_utils_container),        //
+    CASE_FIXTURE(NONE, test_utils_fifo_1),           //
+    CASE_FIXTURE(NONE, test_utils_fifo_2),           //
+    CASE_FIXTURE(NONE, test_utils_fifo_3),           //
+    CASE_FIXTURE(NONE, test_utils_array_1),          //
+    CASE_FIXTURE(NONE, test_utils_array_2),          //
+    CASE_FIXTURE(NONE, test_utils_array_3),          //
+    CASE_FIXTURE(NONE, test_utils_array_4),          //
+    CASE_FIXTURE(NONE, test_utils_array_5),          //
+    CASE_FIXTURE(NONE, test_utils_array_6),          //
+    CASE_FIXTURE(NONE, test_utils_array_7),          //
+    CASE_FIXTURE(NONE, test_utils_array_cast),       //
+    CASE_FIXTURE(NONE, test_utils_array_mvp),        //
+    CASE_FIXTURE(NONE, test_utils_array_3D),         //
+    CASE_FIXTURE(NONE, test_utils_transforms_1),     //
+    CASE_FIXTURE(NONE, test_utils_transforms_2),     //
+    CASE_FIXTURE(NONE, test_utils_transforms_3),     //
+    CASE_FIXTURE(NONE, test_utils_transforms_4),     //
+    CASE_FIXTURE(NONE, test_utils_colormap_idx),     //
+    CASE_FIXTURE(NONE, test_utils_colormap_uv),      //
+    CASE_FIXTURE(NONE, test_utils_colormap_extent),  //
+    CASE_FIXTURE(NONE, test_utils_colormap_default), //
+    CASE_FIXTURE(NONE, test_utils_colormap_scale),   //
+    CASE_FIXTURE(NONE, test_utils_colormap_packuv),  //
+    CASE_FIXTURE(NONE, test_utils_colormap_array),   //
+    CASE_FIXTURE(NONE, test_utils_ticks_1),          //
+    CASE_FIXTURE(NONE, test_utils_ticks_2),          //
+    CASE_FIXTURE(NONE, test_utils_ticks_duplicate),  //
+    CASE_FIXTURE(NONE, test_utils_ticks_extend),     //
 
     // vklite.
-    CASE_FIXTURE_NONE(test_vklite_app),             //
-    CASE_FIXTURE_NONE(test_vklite_commands),        //
-    CASE_FIXTURE_NONE(test_vklite_buffer_1),        //
-    CASE_FIXTURE_NONE(test_vklite_buffer_resize),   //
-    CASE_FIXTURE_NONE(test_vklite_compute),         //
-    CASE_FIXTURE_NONE(test_vklite_push),            //
-    CASE_FIXTURE_NONE(test_vklite_images),          //
-    CASE_FIXTURE_NONE(test_vklite_sampler),         //
-    CASE_FIXTURE_NONE(test_vklite_barrier_buffer),  //
-    CASE_FIXTURE_NONE(test_vklite_barrier_image),   //
-    CASE_FIXTURE_NONE(test_vklite_submit),          //
-    CASE_FIXTURE_NONE(test_vklite_offscreen),       //
-    CASE_FIXTURE_NONE(test_vklite_shader),          //
-    CASE_FIXTURE_NONE(test_vklite_surface),         //
-    CASE_FIXTURE_NONE(test_vklite_window),          //
-    CASE_FIXTURE_NONE(test_vklite_swapchain),       //
-    CASE_FIXTURE_NONE(test_vklite_graphics),        //
-    CASE_FIXTURE_NONE(test_vklite_canvas_blank),    //
-    CASE_FIXTURE_NONE(test_vklite_canvas_triangle), //
+    CASE_FIXTURE(NONE, test_vklite_app),             //
+    CASE_FIXTURE(NONE, test_vklite_commands),        //
+    CASE_FIXTURE(NONE, test_vklite_buffer_1),        //
+    CASE_FIXTURE(NONE, test_vklite_buffer_resize),   //
+    CASE_FIXTURE(NONE, test_vklite_compute),         //
+    CASE_FIXTURE(NONE, test_vklite_push),            //
+    CASE_FIXTURE(NONE, test_vklite_images),          //
+    CASE_FIXTURE(NONE, test_vklite_sampler),         //
+    CASE_FIXTURE(NONE, test_vklite_barrier_buffer),  //
+    CASE_FIXTURE(NONE, test_vklite_barrier_image),   //
+    CASE_FIXTURE(NONE, test_vklite_submit),          //
+    CASE_FIXTURE(NONE, test_vklite_offscreen),       //
+    CASE_FIXTURE(NONE, test_vklite_shader),          //
+    CASE_FIXTURE(NONE, test_vklite_surface),         //
+    CASE_FIXTURE(NONE, test_vklite_window),          //
+    CASE_FIXTURE(NONE, test_vklite_swapchain),       //
+    CASE_FIXTURE(NONE, test_vklite_graphics),        //
+    CASE_FIXTURE(NONE, test_vklite_canvas_blank),    //
+    CASE_FIXTURE(NONE, test_vklite_canvas_triangle), //
 
     // Context.
-    CASE_FIXTURE_NONE(test_context_colormap_custom), //
+    CASE_FIXTURE(APP, test_context_buffer_default),  //
+    CASE_FIXTURE(APP, test_context_colormap_custom), //
 
     // Canvas.
-    CASE_FIXTURE_APP(test_canvas_blank),      //
-    CASE_FIXTURE_APP(test_canvas_multiple),   //
-    CASE_FIXTURE_APP(test_canvas_events),     //
-    CASE_FIXTURE_APP(test_canvas_gui),        //
-    CASE_FIXTURE_APP(test_canvas_screencast), //
-    CASE_FIXTURE_APP(test_canvas_video),      //
-
-    CASE_FIXTURE_APP(test_canvas_triangle_1),         //
-    CASE_FIXTURE_APP(test_canvas_triangle_resize),    //
-    CASE_FIXTURE_APP(test_canvas_triangle_offscreen), //
-    CASE_FIXTURE_APP(test_canvas_triangle_push),      //
-    CASE_FIXTURE_APP(test_canvas_triangle_upload),    //
-    CASE_FIXTURE_APP(test_canvas_triangle_uniform),   //
-    CASE_FIXTURE_APP(test_canvas_triangle_compute),   //
-    CASE_FIXTURE_APP(test_canvas_triangle_pick),      //
-    CASE_FIXTURE_APP(test_canvas_triangle_append),    //
+    CASE_FIXTURE(APP, test_canvas_blank),              //
+    CASE_FIXTURE(APP, test_canvas_multiple),           //
+    CASE_FIXTURE(APP, test_canvas_events),             //
+    CASE_FIXTURE(APP, test_canvas_gui),                //
+    CASE_FIXTURE(APP, test_canvas_screencast),         //
+    CASE_FIXTURE(APP, test_canvas_video),              //
+    CASE_FIXTURE(APP, test_canvas_triangle_1),         //
+    CASE_FIXTURE(APP, test_canvas_triangle_resize),    //
+    CASE_FIXTURE(APP, test_canvas_triangle_offscreen), //
+    CASE_FIXTURE(APP, test_canvas_triangle_push),      //
+    CASE_FIXTURE(APP, test_canvas_triangle_upload),    //
+    CASE_FIXTURE(APP, test_canvas_triangle_uniform),   //
+    CASE_FIXTURE(APP, test_canvas_triangle_compute),   //
+    CASE_FIXTURE(APP, test_canvas_triangle_pick),      //
+    CASE_FIXTURE(APP, test_canvas_triangle_append),    //
 
     // Interact.
-    CASE_FIXTURE_NONE(test_interact_panzoom), //
+    CASE_FIXTURE(NONE, test_interact_panzoom), //
 
     // Graphics.
-    CASE_FIXTURE_APP(test_graphics_point), //
+    CASE_FIXTURE(CANVAS, test_graphics_point), //
 
     // Visuals.
-    CASE_FIXTURE_APP(test_visuals_1), //
+    CASE_FIXTURE(CANVAS, test_visuals_1), //
 
     // Builtin visuals.
-    CASE_FIXTURE_APP(test_vislib_1), //
+    CASE_FIXTURE(CANVAS, test_vislib_1), //
 
     // Scene.
-    CASE_FIXTURE_APP(test_scene_1), //
+    CASE_FIXTURE(CANVAS, test_scene_1), //
 
 };
 
@@ -244,9 +239,7 @@ static uint32_t N_TESTS = sizeof(TEST_CASES) / sizeof(TestCase);
     for (uint32_t i = 0; i < (n); i++)                                                            \
         AC((x)[i], (y)[i], (eps));
 
-#define WIDTH  800
-#define HEIGHT 600
-#define EPS    1e-6
+#define EPS 1e-6
 
 
 
@@ -265,11 +258,19 @@ static TestContext _test_context()
 static void _test_context_destroy(TestContext* tc)
 {
     ASSERT(tc != NULL);
+
     if (tc->canvas != NULL)
     {
         dvz_canvas_destroy(tc->canvas);
         tc->canvas = NULL;
     }
+
+    // if (tc->gpu != NULL)
+    // {
+    //     dvz_gpu_destroy(tc->gpu);
+    //     tc->gpu = NULL;
+    // }
+
     if (tc->app != NULL)
     {
         dvz_app_destroy(tc->app);

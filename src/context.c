@@ -9,12 +9,12 @@
 /*  Context                                                                                      */
 /*************************************************************************************************/
 
-static void _context_default_queues(DvzGpu* gpu, DvzWindow* window)
+static void _context_default_queues(DvzGpu* gpu, bool has_present_queue)
 {
     dvz_gpu_queue(gpu, DVZ_DEFAULT_QUEUE_TRANSFER, DVZ_QUEUE_TRANSFER);
     dvz_gpu_queue(gpu, DVZ_DEFAULT_QUEUE_COMPUTE, DVZ_QUEUE_COMPUTE);
     dvz_gpu_queue(gpu, DVZ_DEFAULT_QUEUE_RENDER, DVZ_QUEUE_RENDER);
-    if (window != NULL)
+    if (has_present_queue)
         dvz_gpu_queue(gpu, DVZ_DEFAULT_QUEUE_PRESENT, DVZ_QUEUE_PRESENT);
 }
 
@@ -182,29 +182,12 @@ static void _gpu_default_features(DvzGpu* gpu)
 
 
 
-DvzContext* dvz_context(DvzGpu* gpu, DvzWindow* window)
+void dvz_gpu_default(DvzGpu* gpu, DvzWindow* window)
 {
     ASSERT(gpu != NULL);
-    ASSERT(!dvz_obj_is_created(&gpu->obj));
-    log_trace("creating context");
-
-    DvzContext* context = calloc(1, sizeof(DvzContext));
-    context->gpu = gpu;
-
-    // Allocate memory for buffers, textures, and computes.
-    context->buffers =
-        dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzBuffer), DVZ_OBJECT_TYPE_BUFFER);
-    context->images =
-        dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzImages), DVZ_OBJECT_TYPE_IMAGES);
-    context->samplers =
-        dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzSampler), DVZ_OBJECT_TYPE_SAMPLER);
-    context->textures =
-        dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzTexture), DVZ_OBJECT_TYPE_TEXTURE);
-    context->computes =
-        dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzCompute), DVZ_OBJECT_TYPE_COMPUTE);
 
     // Specify the default queues.
-    _context_default_queues(gpu, window);
+    _context_default_queues(gpu, window != NULL);
 
     // Default features
     _gpu_default_features(gpu);
@@ -217,12 +200,41 @@ DvzContext* dvz_context(DvzGpu* gpu, DvzWindow* window)
             surface = window->surface;
         dvz_gpu_create(gpu, surface);
     }
+}
 
+
+
+DvzContext* dvz_context(DvzGpu* gpu)
+{
+    ASSERT(gpu != NULL);
+    ASSERT(dvz_obj_is_created(&gpu->obj));
+    log_trace("creating context");
+
+    DvzContext* context = calloc(1, sizeof(DvzContext));
+    context->gpu = gpu;
+
+    // Allocate memory for buffers, textures, and computes.
+    {
+        context->buffers =
+            dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzBuffer), DVZ_OBJECT_TYPE_BUFFER);
+        context->images =
+            dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzImages), DVZ_OBJECT_TYPE_IMAGES);
+        context->samplers = dvz_container(
+            DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzSampler), DVZ_OBJECT_TYPE_SAMPLER);
+        context->textures = dvz_container(
+            DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzTexture), DVZ_OBJECT_TYPE_TEXTURE);
+        context->computes = dvz_container(
+            DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzCompute), DVZ_OBJECT_TYPE_COMPUTE);
+    }
+
+    // Transfer command buffer.
     context->transfer_cmd = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_TRANSFER, 1);
 
+    // Create the context.
     gpu->context = context;
     dvz_obj_created(&context->obj);
 
+    // Create the default resources.
     _context_default_resources(context);
 
     return context;
@@ -253,25 +265,6 @@ void dvz_context_reset(DvzContext* context)
 
 
 
-void dvz_app_reset(DvzApp* app)
-{
-    ASSERT(app != NULL);
-    dvz_app_wait(app);
-    DvzContainerIterator iter = dvz_container_iterator(&app->gpus);
-    DvzGpu* gpu = NULL;
-    while (iter.item != NULL)
-    {
-        gpu = iter.item;
-        ASSERT(gpu != NULL);
-        if (dvz_obj_is_created(&gpu->obj) && gpu->context != NULL)
-            dvz_context_reset(gpu->context);
-        dvz_container_iter(&iter);
-    }
-    dvz_app_wait(app);
-}
-
-
-
 void dvz_context_destroy(DvzContext* context)
 {
     if (context == NULL)
@@ -295,6 +288,25 @@ void dvz_context_destroy(DvzContext* context)
     dvz_container_destroy(&context->samplers);
     dvz_container_destroy(&context->textures);
     dvz_container_destroy(&context->computes);
+}
+
+
+
+void dvz_app_reset(DvzApp* app)
+{
+    ASSERT(app != NULL);
+    dvz_app_wait(app);
+    DvzContainerIterator iter = dvz_container_iterator(&app->gpus);
+    DvzGpu* gpu = NULL;
+    while (iter.item != NULL)
+    {
+        gpu = iter.item;
+        ASSERT(gpu != NULL);
+        if (dvz_obj_is_created(&gpu->obj) && gpu->context != NULL)
+            dvz_context_reset(gpu->context);
+        dvz_container_iter(&iter);
+    }
+    dvz_app_wait(app);
 }
 
 

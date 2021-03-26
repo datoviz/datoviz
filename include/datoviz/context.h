@@ -354,12 +354,22 @@ static void _copy_texture_to_staging(
 /*************************************************************************************************/
 
 /**
- * Create a context associated to a GPU.
+ * Create a GPU with default queues and features.
  *
  * @param gpu the GPU
- * @param window the window with the surface attached to the GPU
+ * @param window the associated window (optional)
  */
-DVZ_EXPORT DvzContext* dvz_context(DvzGpu* gpu, DvzWindow* window);
+DVZ_EXPORT void dvz_gpu_default(DvzGpu* gpu, DvzWindow* window);
+
+/**
+ * Create a context associated to a GPU.
+ *
+ * !!! note
+ *     The GPU must have been created beforehand.
+ *
+ * @param gpu the GPU
+ */
+DVZ_EXPORT DvzContext* dvz_context(DvzGpu* gpu);
 
 /**
  * Destroy all GPU resources in a GPU context.

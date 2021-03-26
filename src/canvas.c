@@ -598,10 +598,17 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
         ASSERT(framebuffer_height > 0);
     }
 
+    // Automatic creation of GPU with default queues and features.
+    if (!dvz_obj_is_created(&gpu->obj))
+    {
+        dvz_gpu_default(gpu, window);
+    }
+
+    // Automatic creation of GPU context.
     if (gpu->context == NULL || !dvz_obj_is_created(&gpu->context->obj))
     {
         log_trace("canvas automatically create the GPU context");
-        gpu->context = dvz_context(gpu, window);
+        gpu->context = dvz_context(gpu);
     }
 
     // Create default renderpass.

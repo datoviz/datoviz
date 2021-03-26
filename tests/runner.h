@@ -7,6 +7,15 @@
 
 
 /*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define WIDTH  800
+#define HEIGHT 600
+
+
+
+/*************************************************************************************************/
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
@@ -14,6 +23,8 @@ typedef enum
 {
     TEST_FIXTURE_NONE,
     TEST_FIXTURE_APP,
+    // TEST_FIXTURE_GPU_OFFSCREEN,
+    // TEST_FIXTURE_GPU_WINDOW,
     TEST_FIXTURE_CANVAS,
 } TestFixture;
 
@@ -45,9 +56,6 @@ struct TestContext
 
     DvzApp* app;
     DvzCanvas* canvas;
-
-    // DvzScreenshot* screenshot;
-    // bool is_live;
 };
 
 
@@ -57,8 +65,6 @@ struct TestCase
     const char* name;
     TestFunction function;
     TestFixture fixture;
-    // TestFunction destroy;
-    // bool save_screenshot;
 };
 
 
@@ -103,6 +109,109 @@ static void print_end(int index, int res)
 
 
 /*************************************************************************************************/
+/*  Test fixtures                                                                                */
+/*************************************************************************************************/
+
+static void _fixture_app(TestContext* tc)
+{
+    ASSERT(tc != NULL);
+    if (tc->app == NULL)
+    {
+        tc->app = dvz_app(DVZ_BACKEND_GLFW);
+    }
+    else
+    {
+        // This call resets the context of all GPUs.
+        dvz_app_reset(tc->app);
+    }
+    tc->app->n_errors = 0;
+}
+
+// static void _fixture_gpu_offscreen(TestContext* tc)
+// {
+//     ASSERT(tc != NULL);
+//     ASSERT(tc->app != NULL);
+
+//     if (tc->gpu == NULL)
+//     {
+//         tc->gpu = dvz_gpu_best(tc->app);
+//     }
+
+//     if (tc->gpu->context == NULL)
+//     {
+//         tc->gpu->context = dvz_context(tc->gpu);
+//     }
+// }
+
+// static void _fixture_gpu_window(TestContext* tc)
+// {
+//     ASSERT(tc != NULL);
+//     ASSERT(tc->app != NULL);
+
+//     if (tc->gpu == NULL)
+//         tc->gpu = dvz_gpu_best(tc->app);
+
+//     if (tc->gpu->context != NULL)
+//     {
+//         dvz_context_reset(tc->gpu->context);
+//     }
+// }
+
+static void _fixture_canvas(TestContext* tc)
+{
+    ASSERT(tc != NULL);
+    ASSERT(tc->app != NULL);
+
+    if (tc->canvas == NULL)
+    {
+        // ASSERT(tc->gpu != NULL);
+        tc->canvas = dvz_canvas(dvz_gpu_best(tc->app), WIDTH, HEIGHT, 0);
+    }
+    // ASSERT(tc->gpu != NULL);
+
+    // ASSERT(tc->gpu->context != NULL);
+    // dvz_context_reset(tc->gpu->context);
+}
+
+static void _set_fixture(TestContext* tc, TestCase* test_case)
+{
+    ASSERT(tc != NULL);
+    ASSERT(test_case != NULL);
+
+    switch (test_case->fixture)
+    {
+
+        // App fixture.
+    case TEST_FIXTURE_APP:
+        _fixture_app(tc);
+        break;
+
+        //     // GPU fixture.
+        // case TEST_FIXTURE_GPU_OFFSCREEN:
+        //     _fixture_app(tc);
+        //     _fixture_gpu_offscreen(tc);
+        //     break;
+
+        // case TEST_FIXTURE_GPU_WINDOW:
+        //     _fixture_app(tc);
+        //     _fixture_gpu_window(tc);
+        //     break;
+
+        // Canvas fixture.
+    case TEST_FIXTURE_CANVAS:
+        _fixture_app(tc);
+        // _fixture_gpu_window(tc);
+        _fixture_canvas(tc);
+        break;
+
+    default:
+        break;
+    }
+}
+
+
+
+/*************************************************************************************************/
 /*  Test runner                                                                                  */
 /*************************************************************************************************/
 
@@ -119,29 +228,6 @@ static TestCase find_test_case(uint32_t n_tests, TestCase* cases, const char* na
     }
     log_error("test case %s not found!", name);
     return (TestCase){0};
-}
-
-
-
-static void _set_fixture(TestContext* tc, TestCase* test_case)
-{
-    ASSERT(tc != NULL);
-    ASSERT(test_case != NULL);
-
-    switch (test_case->fixture)
-    {
-
-    case TEST_FIXTURE_APP:
-        if (tc->app == NULL)
-            tc->app = dvz_app(DVZ_BACKEND_GLFW);
-        else
-            dvz_app_reset(tc->app);
-        tc->app->n_errors = 0;
-        break;
-
-    default:
-        break;
-    }
 }
 
 

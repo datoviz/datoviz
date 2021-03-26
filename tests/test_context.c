@@ -5,38 +5,37 @@
 
 
 /*************************************************************************************************/
-/*  Macros                                                                                       */
+/*  Buffer                                                                                       */
 /*************************************************************************************************/
 
-
-
-/*************************************************************************************************/
-/*  Typedefs                                                                                     */
-/*************************************************************************************************/
-
-
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-
-
-/*************************************************************************************************/
-/*  Utils                                                                                        */
-/*************************************************************************************************/
-
-
-
-/*************************************************************************************************/
-/*  Context                                                                                      */
-/*************************************************************************************************/
-
-int test_context_colormap_custom(TestContext* context)
+int test_context_buffer_default(TestContext* tc)
 {
-    DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
+    DvzApp* app = tc->app;
+    ASSERT(app != NULL);
     DvzGpu* gpu = dvz_gpu_best(app);
-    DvzContext* ctx = dvz_context(gpu, NULL);
+    ASSERT(gpu != NULL);
+    dvz_gpu_default(gpu, NULL);
+    DvzContext* ctx = dvz_context(gpu);
+    ASSERT(ctx != NULL);
+
+    dvz_gpu_destroy(gpu);
+    return 0;
+}
+
+
+
+/*************************************************************************************************/
+/*  Colormap                                                                                     */
+/*************************************************************************************************/
+
+int test_context_colormap_custom(TestContext* tc)
+{
+    DvzApp* app = tc->app;
+    ASSERT(app != NULL);
+    DvzGpu* gpu = dvz_gpu_best(app);
+    dvz_gpu_default(gpu, NULL);
+    DvzContext* ctx = dvz_context(gpu);
+    ASSERT(ctx != NULL);
 
     // Make a custom colormap.
     uint8_t cmap = CMAP_CUSTOM;
@@ -64,13 +63,13 @@ int test_context_colormap_custom(TestContext* context)
     // Check that the GPU texture has been updated.
     cvec4* arr = calloc(256 * 256, sizeof(cvec4));
     dvz_texture_download(
-        ctx->color_texture.texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, 256 * 256 * sizeof(cvec4),
-        arr);
+        ctx->color_texture.texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, //
+        256 * 256 * sizeof(cvec4), arr);
     cvec2 ij = {0};
     dvz_colormap_idx(cmap, 0, ij);
     AT(memcmp(&arr[256 * ij[0] + ij[1]], colors, 3 * sizeof(cvec4)) == 0);
     FREE(arr);
 
-    dvz_app_destroy(app);
+    dvz_gpu_destroy(gpu);
     return 0;
 }
