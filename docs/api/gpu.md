@@ -24,6 +24,7 @@
 ### `dvz_texture_upload()`
 ### `dvz_texture_download()`
 ### `dvz_texture_copy()`
+### `dvz_texture_transition()`
 ### `dvz_texture_destroy()`
 
 

@@ -525,24 +525,7 @@ DvzTexture* dvz_ctx_texture(DvzContext* context, uint32_t dims, uvec3 size, VkFo
     dvz_obj_created(&texture->obj);
 
     // Immediately transition the image to its layout.
-    {
-        DvzGpu* gpu = context->gpu;
-        DvzCommands* cmds = &context->transfer_cmd;
-
-        dvz_cmd_reset(cmds, 0);
-        dvz_cmd_begin(cmds, 0);
-
-        DvzBarrier barrier = dvz_barrier(gpu);
-        dvz_barrier_stages(
-            &barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
-        dvz_barrier_images(&barrier, image);
-        dvz_barrier_images_layout(&barrier, VK_IMAGE_LAYOUT_UNDEFINED, image->layout);
-        dvz_barrier_images_access(&barrier, 0, VK_ACCESS_TRANSFER_READ_BIT);
-        dvz_cmd_barrier(cmds, 0, &barrier);
-
-        dvz_cmd_end(cmds, 0);
-        dvz_cmd_submit_sync(cmds, 0);
-    }
+    dvz_texture_transition(texture);
 
     return texture;
 }
@@ -665,16 +648,19 @@ void dvz_texture_copy(
     // Source image transition.
     if (src->image->layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
     {
+        log_trace("source image %d transition", src->image->images[0]);
         dvz_barrier_images_layout(
             &src_barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+        dvz_barrier_images_access(&src_barrier, 0, VK_ACCESS_TRANSFER_READ_BIT);
         dvz_cmd_barrier(cmds, 0, &src_barrier);
     }
 
     // Destination image transition.
     {
-        log_trace("destination image transition");
+        log_trace("destination image %d transition", dst->image->images[0]);
         dvz_barrier_images_layout(
             &dst_barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        dvz_barrier_images_access(&dst_barrier, 0, VK_ACCESS_TRANSFER_WRITE_BIT);
         dvz_cmd_barrier(cmds, 0, &dst_barrier);
     }
 
@@ -693,6 +679,7 @@ void dvz_texture_copy(
     copy.dstOffset.x = (int32_t)dst_offset[0];
     copy.dstOffset.y = (int32_t)dst_offset[1];
     copy.dstOffset.z = (int32_t)dst_offset[2];
+
     vkCmdCopyImage(
         cmds->cmds[0],                                               //
         src->image->images[0], VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, //
@@ -700,19 +687,25 @@ void dvz_texture_copy(
         1, &copy);
 
     // Source image transition.
-    if (src->image->layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+    if (src->image->layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL &&
+        src->image->layout != VK_IMAGE_LAYOUT_UNDEFINED)
     {
+        log_trace("source image transition back");
         dvz_barrier_images_layout(
             &src_barrier, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, src->image->layout);
+        dvz_barrier_images_access(
+            &src_barrier, VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_TRANSFER_WRITE_BIT);
         dvz_cmd_barrier(cmds, 0, &src_barrier);
     }
 
     // Destination image transition.
-    if (dst->image->layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+    if (dst->image->layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
+        dst->image->layout != VK_IMAGE_LAYOUT_UNDEFINED)
     {
         log_trace("destination image transition back");
         dvz_barrier_images_layout(
             &dst_barrier, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, dst->image->layout);
+        dvz_barrier_images_access(&dst_barrier, VK_ACCESS_TRANSFER_WRITE_BIT, 0);
         dvz_cmd_barrier(cmds, 0, &dst_barrier);
     }
 
@@ -729,6 +722,30 @@ void dvz_texture_copy(
 
     // Wait for the transfer queue to be idle.
     dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
+}
+
+
+
+void dvz_texture_transition(DvzTexture* tex)
+{
+    ASSERT(tex != NULL);
+    ASSERT(tex->context != NULL);
+    DvzGpu* gpu = tex->context->gpu;
+    ASSERT(gpu != NULL);
+    DvzCommands* cmds = &tex->context->transfer_cmd;
+
+    dvz_cmd_reset(cmds, 0);
+    dvz_cmd_begin(cmds, 0);
+
+    DvzBarrier barrier = dvz_barrier(gpu);
+    dvz_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    dvz_barrier_images(&barrier, tex->image);
+    dvz_barrier_images_layout(&barrier, VK_IMAGE_LAYOUT_UNDEFINED, tex->image->layout);
+    dvz_barrier_images_access(&barrier, 0, VK_ACCESS_TRANSFER_READ_BIT);
+    dvz_cmd_barrier(cmds, 0, &barrier);
+
+    dvz_cmd_end(cmds, 0);
+    dvz_cmd_submit_sync(cmds, 0);
 }
 
 

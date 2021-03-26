@@ -94,17 +94,25 @@ int test_context_texture(TestContext* tc)
     for (uint32_t i = 0; i < 256; i++)
         AT(data_2[i] == i);
 
-    // // Second texture.
-    // DvzTexture* tex_2 = dvz_ctx_texture(ctx, 2, (uvec3){16, 16, 1}, format);
-    // dvz_texture_copy(tex, offset, tex_2, DVZ_ZERO_OFFSET, shape);
+    // Second texture.
+    log_debug("copy texture");
+    DvzTexture* tex_2 = dvz_ctx_texture(ctx, 2, shape, format);
+    dvz_texture_copy(tex, offset, tex_2, DVZ_ZERO_OFFSET, shape);
 
-    // // Download data.
-    // memset(data_2, 0, 256);
-    // dvz_texture_download(tex, offset, shape, 256, data_2);
-    // for (uint32_t i = 0; i < 256; i++)
-    //     AT(data_2[i] == i);
+    // Download data.
+    memset(data_2, 0, 256);
+    dvz_texture_download(tex, offset, shape, 256, data_2);
+    for (uint32_t i = 0; i < 256; i++)
+        AT(data_2[i] == i);
 
-    // dvz_texture_resize(tex, size);
+    // Resize the texture.
+    // NOTE: for now, the texture data is LOST when resizing.
+    size[1] = 64;
+    dvz_texture_resize(tex, size);
+    dvz_texture_download(tex, offset, shape, 256, data_2);
+    for (uint32_t i = 0; i < 256; i++)
+        AT(data_2[i] == 0);
+
 
     return 0;
 }

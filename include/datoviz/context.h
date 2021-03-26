@@ -529,6 +529,13 @@ DVZ_EXPORT void dvz_texture_copy(
     DvzTexture* src, uvec3 src_offset, DvzTexture* dst, uvec3 dst_offset, uvec3 shape);
 
 /**
+ * Transition a texture to its layout.
+ *
+ * @param texture the texture to transition
+ */
+DVZ_EXPORT void dvz_texture_transition(DvzTexture* tex);
+
+/**
  * Destroy a texture.
  *
  * @param texture the texture

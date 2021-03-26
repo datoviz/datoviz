@@ -252,6 +252,10 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
     VkDebugUtilsMessageTypeFlagsEXT messageType,
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
+    // Hide long list of extensions.
+    if (strstr(pCallbackData->pMessage, "Extension: VK_") != NULL)
+        return VK_FALSE;
+
     int level = _log_level(messageSeverity);
 
     // NOTE: force TRACE level if ignored message.
