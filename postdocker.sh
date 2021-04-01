@@ -1,4 +1,4 @@
-git clone --recursive git@github.com:datoviz/datoviz.git
+git clone --recursive https://github.com/datoviz/datoviz.git
 cd datoviz
 ./manage.sh build
 cp data/swiftshader/linux/* build/

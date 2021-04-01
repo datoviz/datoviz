@@ -81,7 +81,7 @@ The other dependencies below are already included in the library, so **you don't
 
 5. Clone the Datoviz repository and build the library:
 
-    1. `git clone --recursive git@github.com:datoviz/datoviz.git`
+    1. `git clone --recursive https://github.com/datoviz/datoviz.git`
     2. `cd datoviz`
     3. `./manage.sh build`
 
@@ -117,7 +117,7 @@ The other dependencies below are already included in the library, so **you don't
 
 #### Install Datoviz
 
-1. `git clone --recursive git@github.com:datoviz/datoviz.git`
+1. `git clone --recursive https://github.com/datoviz/datoviz.git`
 2. `cd datoviz`
 3. `./manage.sh build`
 4. `./manage.sh demo`
@@ -142,7 +142,7 @@ The other dependencies below are already included in the library, so **you don't
 3. Install [CMake for Windows](https://cmake.org/download/)
 4. Install the latest [Lunarg Vulkan SDK](https://vulkan.lunarg.com/) (`.exe` executable).
     * Install the Windows Universal C Runtime https://stackoverflow.com/a/52329698
-5. Clone the repository: `git clone --recursive git@github.com:datoviz/datoviz.git`
+5. Clone the repository: `git clone --recursive https://github.com/datoviz/datoviz.git`
 6. Enter the following commands within the repository's directory (using the Windows terminal, **not** in Windows for Linux subsystem):
 
     ```
