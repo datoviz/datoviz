@@ -606,7 +606,7 @@ struct DvzCanvas
     DvzContainer graphics;
 
     // Data transfers.
-    DvzFifo transfers;
+    // DvzFifo transfers;
 
     // Event callbacks, running in the background thread, may be slow, for end-users.
     uint32_t callbacks_count;

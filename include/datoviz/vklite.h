@@ -1181,9 +1181,8 @@ DVZ_EXPORT void dvz_buffer_create(DvzBuffer* buffer);
  *
  * @param buffer the buffer
  * @param size the new buffer size, in bytes
- * @param cmds the command buffers to use for the GPU-GPU data copy transfer
  */
-DVZ_EXPORT void dvz_buffer_resize(DvzBuffer* buffer, VkDeviceSize size, DvzCommands* cmds);
+DVZ_EXPORT void dvz_buffer_resize(DvzBuffer* buffer, VkDeviceSize size);
 
 /**
  * Memory-map a buffer.
@@ -1268,6 +1267,19 @@ DVZ_EXPORT void dvz_buffer_regions_unmap(DvzBufferRegions* br);
  * @param data the data to upload
  */
 DVZ_EXPORT void dvz_buffer_regions_upload(DvzBufferRegions* br, uint32_t idx, const void* data);
+
+/**
+ * Copy data between two buffer region.
+ *
+ * @param src the source buffer regions
+ * @param src_offset, the offset, in bytes
+ * @param dst the destination buffer regions
+ * @param dst_offset, the offset, in bytes
+ * @param size the size, in bytes
+ */
+DVZ_EXPORT void dvz_buffer_regions_copy(
+    DvzBufferRegions* src, VkDeviceSize src_offset, //
+    DvzBufferRegions* dst, VkDeviceSize dst_offset, VkDeviceSize size);
 
 
 

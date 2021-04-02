@@ -1010,7 +1010,11 @@ static void _upload_mvp(DvzCanvas* canvas, DvzEvent ev)
             // buffer region directly here, although one should make sure that GPU synchronization
             // is properly taken care of.
 
-            dvz_upload_buffers(canvas, panel->br_mvp, 0, panel->br_mvp.size, &interact->mvp);
+
+            // TODO REFACTOR: use mappable buffer upload here instead
+
+
+            // dvz_upload_buffers(canvas, panel->br_mvp, 0, panel->br_mvp.size, &interact->mvp);
         }
         dvz_container_iter(&iter);
     }

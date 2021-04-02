@@ -479,10 +479,12 @@ int test_vklite_buffer_1(TestContext* tc)
     for (uint32_t i = 0; i < size; i++)
         data[i] = i;
     dvz_buffer_upload(&buffer, 0, size, data);
+    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
 
     // Recover the data.
     void* data2 = calloc(size, 1);
     dvz_buffer_download(&buffer, 0, size, data2);
+    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
 
     // Check that the data downloaded from the GPU is the same.
     AT(memcmp(data2, data, size) == 0);
@@ -522,13 +524,14 @@ int test_vklite_buffer_resize(TestContext* tc)
     for (uint32_t i = 0; i < size; i++)
         data[i] = i;
     dvz_buffer_upload(&buffer, 0, size, data);
+    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
     ASSERT(buffer.mmap != NULL);
     void* old_mmap = buffer.mmap;
 
     // Resize the buffer.
-    DvzCommands cmds = dvz_commands(gpu, 0, 1);
+    // DvzCommands cmds = dvz_commands(gpu, 0, 1);
     // NOTE: this should automatically unmap, delete, create, remap, copy old data to new.
-    dvz_buffer_resize(&buffer, 2 * size, &cmds);
+    dvz_buffer_resize(&buffer, 2 * size);
     ASSERT(buffer.size == 2 * size);
     ASSERT(buffer.mmap != NULL);
     ASSERT(buffer.mmap != old_mmap);
@@ -536,6 +539,7 @@ int test_vklite_buffer_resize(TestContext* tc)
     // Recover the data.
     void* data2 = calloc(size, 1);
     dvz_buffer_download(&buffer, 0, size, data2);
+    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
 
     // Check that the data downloaded from the GPU is the same.
     AT(memcmp(data2, data, size) == 0);
@@ -584,6 +588,7 @@ int test_vklite_compute(TestContext* tc)
     for (uint32_t i = 0; i < n; i++)
         data[i] = (float)i;
     dvz_buffer_upload(&buffer, 0, size, data);
+    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
 
     // Create the slots.
     dvz_compute_slot(&compute, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
@@ -608,6 +613,7 @@ int test_vklite_compute(TestContext* tc)
     // Get back the data.
     float* data2 = calloc(n, sizeof(float));
     dvz_buffer_download(&buffer, 0, size, data2);
+    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
     for (uint32_t i = 0; i < n; i++)
         AT(data2[i] == 2 * data[i]);
     FREE(data);
@@ -653,6 +659,7 @@ int test_vklite_push(TestContext* tc)
     for (uint32_t i = 0; i < n; i++)
         data[i] = (float)i;
     dvz_buffer_upload(&buffer, 0, size, data);
+    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
 
     // Create the slots.
     dvz_compute_slot(&compute, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
@@ -680,6 +687,7 @@ int test_vklite_push(TestContext* tc)
     // Get back the data.
     float* data2 = calloc(n, sizeof(float));
     dvz_buffer_download(&buffer, 0, size, data2);
+    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
     for (uint32_t i = 0; i < n; i++)
         AT(fabs(data2[i] - pow(data[i], power)) < .01);
     FREE(data);
@@ -775,6 +783,7 @@ int test_vklite_barrier_buffer(TestContext* tc)
     VkDeviceSize offset = 32;
     dvz_buffer_upload(&buffer0, offset, size, data0);
     dvz_buffer_upload(&buffer1, offset, size, data0);
+    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
 
     // Create the compute pipeline.
     char path[1024];
@@ -815,6 +824,7 @@ int test_vklite_barrier_buffer(TestContext* tc)
     // Get back the data.
     float* data1 = calloc(size, 1);
     dvz_buffer_download(&buffer1, offset, size, data1);
+    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
     for (uint32_t i = 0; i < N; i++)
         AT(data1[i] == 2 * data0[i]);
 
@@ -866,6 +876,7 @@ int test_vklite_barrier_image(TestContext* tc)
     for (uint32_t i = 0; i < size; i++)
         data[i] = i % 256;
     dvz_buffer_upload(&buffer, 0, size, data);
+    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
     FREE(data);
 
     // Image transition.
@@ -927,6 +938,7 @@ int test_vklite_submit(TestContext* tc)
     for (uint32_t i = 0; i < n; i++)
         data[i] = (float)i;
     dvz_buffer_upload(&buffer, 0, size, data);
+    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
 
     // Create the slots.
     dvz_compute_slot(&compute1, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
@@ -981,6 +993,7 @@ int test_vklite_submit(TestContext* tc)
     // Get back the data.
     float* data2 = calloc(n, sizeof(float));
     dvz_buffer_download(&buffer, 0, size, data2);
+    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
     for (uint32_t i = 0; i < n; i++)
         AT(data2[i] == 2 * i + 1);
 

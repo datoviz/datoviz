@@ -781,7 +781,7 @@ void dvz_visual_update(
                 "%d #%d", //
                 arr->item_count, br->size, source->source_type, source->source_idx);
 
-            dvz_upload_buffers(canvas, *br, 0, size, arr->data);
+            dvz_upload_buffers(ctx, *br, 0, size, arr->data);
             _source_set(source);
             // source->obj.status = DVZ_OBJECT_STATUS_CREATED;
             // visual->obj.status = DVZ_OBJECT_STATUS_CREATED;
@@ -809,8 +809,8 @@ void dvz_visual_update(
                 source->source_type, source->source_idx,                                  //
                 arr->shape[0], arr->shape[1], arr->shape[2]);
             dvz_upload_texture(
-                canvas, texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET,
-                arr->item_count * arr->item_size, arr->data);
+                ctx, texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, arr->item_count * arr->item_size,
+                arr->data);
             _source_set(source);
         }
 

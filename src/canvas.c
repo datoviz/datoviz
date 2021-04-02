@@ -721,7 +721,12 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
     // Default submit instance.
     canvas->submit = dvz_submit(gpu);
 
-    canvas->transfers = dvz_fifo(DVZ_MAX_FIFO_CAPACITY);
+
+    // TODO: REFACTOR
+
+    // canvas->transfers = dvz_fifo(DVZ_MAX_FIFO_CAPACITY);
+
+
 
     // Event system.
     {
@@ -2162,9 +2167,6 @@ void dvz_canvas_frame(DvzCanvas* canvas)
     if (canvas->frame_idx == 0)
         dvz_canvas_to_refill(canvas);
 
-    // Pending transfers.
-    dvz_process_transfers(canvas);
-
     // Refill if needed, only 1 swapchain command buffer per frame to avoid waiting on the device.
     _refill_frame(canvas);
 }
@@ -2389,6 +2391,12 @@ void dvz_app_run(DvzApp* app, uint64_t frame_count)
             gpu = iterator.item;
             if (!dvz_obj_is_created(&gpu->obj))
                 break;
+
+            // Pending transfers.
+            ASSERT(gpu->context != NULL);
+            // NOTE: the function below uses hard GPU synchronization primitives
+            dvz_process_transfers(gpu->context);
+
             if (gpu->queues.queues[DVZ_DEFAULT_QUEUE_PRESENT] != VK_NULL_HANDLE &&
                 gpu->queues.queues[DVZ_DEFAULT_QUEUE_PRESENT] !=
                     gpu->queues.queues[DVZ_DEFAULT_QUEUE_RENDER])
@@ -2442,9 +2450,6 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     dvz_event_stop(canvas);
     dvz_thread_join(&canvas->event_thread);
     dvz_fifo_destroy(&canvas->event_queue);
-
-    // Destroy the transfers queue.
-    dvz_fifo_destroy(&canvas->transfers);
 
     // Destroy callbacks.
     _destroy_callbacks(canvas);

@@ -113,7 +113,7 @@ struct DvzTransfer
  * @param data pointer to the data to upload to the GPU
  */
 DVZ_EXPORT void dvz_upload_buffers(
-    DvzCanvas* canvas, DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data);
+    DvzContext* context, DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data);
 
 /**
  * Download data from a buffer region to the CPU while the app event loop is running.
@@ -125,7 +125,7 @@ DVZ_EXPORT void dvz_upload_buffers(
  * @param[out] data pointer to a buffer already allocated to contain `size` bytes
  */
 DVZ_EXPORT void dvz_download_buffers(
-    DvzCanvas* canvas, DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data);
+    DvzContext* context, DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data);
 
 /**
  * Copy data between two GPU buffer regions.
@@ -140,7 +140,7 @@ DVZ_EXPORT void dvz_download_buffers(
  * @param size the size of the data to copy
  */
 DVZ_EXPORT void dvz_copy_buffers(
-    DvzCanvas* canvas, DvzBufferRegions src, VkDeviceSize src_offset, //
+    DvzContext* context, DvzBufferRegions src, VkDeviceSize src_offset, //
     DvzBufferRegions dst, VkDeviceSize dst_offset, VkDeviceSize size);
 
 /**
@@ -154,7 +154,7 @@ DVZ_EXPORT void dvz_copy_buffers(
  * @param data pointer to the data to upload to the GPU
  */
 DVZ_EXPORT void dvz_upload_texture(
-    DvzCanvas* canvas, DvzTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size,
+    DvzContext* context, DvzTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size,
     void* data);
 
 /**
@@ -168,7 +168,7 @@ DVZ_EXPORT void dvz_upload_texture(
  * @param[out] data pointer to the buffer that will hold the downloaded data
  */
 DVZ_EXPORT void dvz_download_texture(
-    DvzCanvas* canvas, DvzTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size,
+    DvzContext* context, DvzTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size,
     void* data);
 
 /**
@@ -185,7 +185,7 @@ DVZ_EXPORT void dvz_download_texture(
  * @param size the corresponding size of that part, in bytes
  */
 DVZ_EXPORT void dvz_copy_texture(
-    DvzCanvas* canvas, DvzTexture* src, uvec3 src_offset, DvzTexture* dst, uvec3 dst_offset,
+    DvzContext* context, DvzTexture* src, uvec3 src_offset, DvzTexture* dst, uvec3 dst_offset,
     uvec3 shape, VkDeviceSize size);
 
 /**
@@ -202,7 +202,7 @@ DVZ_EXPORT void dvz_copy_texture(
  * @param size the size of the data to upload, in bytes
  * @param data pointer to the data to upload to the GPU
  */
-DVZ_EXPORT void dvz_process_transfers(DvzCanvas* canvas);
+DVZ_EXPORT void dvz_process_transfers(DvzContext* context);
 
 
 

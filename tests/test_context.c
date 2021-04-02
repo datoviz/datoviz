@@ -18,10 +18,12 @@ int test_context_buffer(TestContext* tc)
 {
     DvzContext* ctx = tc->context;
     ASSERT(ctx != NULL);
+    DvzGpu* gpu = ctx->gpu;
+    ASSERT(gpu != NULL);
 
     // Allocate buffers.
     DvzBufferRegions br = dvz_ctx_buffers(ctx, DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE, 1, 128);
-    AT(br.aligned_size == 128);
+    // AT(br.aligned_size == 128);
     AT(br.count == 1);
 
     // Upload data.
@@ -29,6 +31,7 @@ int test_context_buffer(TestContext* tc)
     for (uint32_t i = 0; i < 128; i++)
         data[i] = i;
     dvz_buffer_upload(br.buffer, 64, 32, data);
+    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
 
     // Resize buffer.
     dvz_ctx_buffers_resize(ctx, &br, 64);
@@ -37,6 +40,36 @@ int test_context_buffer(TestContext* tc)
     // Download data.
     uint8_t data_2[32] = {0};
     dvz_buffer_download(br.buffer, 64, 32, data_2);
+    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
+    for (uint32_t i = 0; i < 32; i++)
+        AT(data_2[i] == i);
+
+    return 0;
+}
+
+
+
+int test_context_transfer_buffer(TestContext* tc)
+{
+    DvzContext* ctx = tc->context;
+    ASSERT(ctx != NULL);
+
+    // Allocate buffers.
+    DvzBufferRegions br = dvz_ctx_buffers(ctx, DVZ_BUFFER_TYPE_STORAGE, 1, 128);
+    AT(br.count == 1);
+
+    // Upload data.
+    uint8_t data[128] = {0};
+    for (uint32_t i = 0; i < 128; i++)
+        data[i] = i;
+
+    // NOTE: when the app main loop is not running (which is the case here), these transfer
+    // functions process the transfers immediately.
+    dvz_upload_buffers(ctx, br, 64, 32, data);
+
+    // Download data.
+    uint8_t data_2[32] = {0};
+    dvz_download_buffers(ctx, br, 64, 32, data_2);
     for (uint32_t i = 0; i < 32; i++)
         AT(data_2[i] == i);
 
@@ -71,6 +104,8 @@ int test_context_texture(TestContext* tc)
 {
     DvzContext* ctx = tc->context;
     ASSERT(ctx != NULL);
+    DvzGpu* gpu = ctx->gpu;
+    ASSERT(gpu != NULL);
 
     uvec3 size = {16, 48, 1};
     uvec3 offset = {0, 16, 0};
@@ -87,10 +122,12 @@ int test_context_texture(TestContext* tc)
     for (uint32_t i = 0; i < 256; i++)
         data[i] = i;
     dvz_texture_upload(tex, offset, shape, 256, data);
+    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
 
     // Download data.
     uint8_t data_2[256] = {0};
     dvz_texture_download(tex, offset, shape, 256, data_2);
+    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
     for (uint32_t i = 0; i < 256; i++)
         AT(data_2[i] == i);
 
@@ -98,10 +135,12 @@ int test_context_texture(TestContext* tc)
     log_debug("copy texture");
     DvzTexture* tex_2 = dvz_ctx_texture(ctx, 2, shape, format);
     dvz_texture_copy(tex, offset, tex_2, DVZ_ZERO_OFFSET, shape);
+    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
 
     // Download data.
     memset(data_2, 0, 256);
     dvz_texture_download(tex, offset, shape, 256, data_2);
+    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
     for (uint32_t i = 0; i < 256; i++)
         AT(data_2[i] == i);
 
@@ -110,9 +149,41 @@ int test_context_texture(TestContext* tc)
     size[1] = 64;
     dvz_texture_resize(tex, size);
     dvz_texture_download(tex, offset, shape, 256, data_2);
+    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
     for (uint32_t i = 0; i < 256; i++)
         AT(data_2[i] == 0);
 
+    return 0;
+}
+
+
+
+int test_context_transfer_texture(TestContext* tc)
+{
+    DvzContext* ctx = tc->context;
+    ASSERT(ctx != NULL);
+    DvzGpu* gpu = ctx->gpu;
+    ASSERT(gpu != NULL);
+
+    uvec3 size = {16, 48, 1};
+    uvec3 offset = {0, 16, 0};
+    uvec3 shape = {16, 16, 1};
+    VkFormat format = VK_FORMAT_R8G8B8A8_UINT;
+
+    // Texture.
+    DvzTexture* tex = dvz_ctx_texture(ctx, 2, size, format);
+
+    // Texture data.
+    uint8_t data[256] = {0};
+    for (uint32_t i = 0; i < 256; i++)
+        data[i] = i;
+    dvz_upload_texture(ctx, tex, offset, shape, 256, data);
+
+    // Download data.
+    uint8_t data_2[256] = {0};
+    dvz_download_texture(ctx, tex, offset, shape, 256, data_2);
+    for (uint32_t i = 0; i < 256; i++)
+        AT(data_2[i] == i);
 
     return 0;
 }
@@ -127,6 +198,8 @@ int test_context_colormap_custom(TestContext* tc)
 {
     DvzContext* ctx = tc->context;
     ASSERT(ctx != NULL);
+    DvzGpu* gpu = ctx->gpu;
+    ASSERT(gpu != NULL);
 
     // Make a custom colormap.
     uint8_t cmap = CMAP_CUSTOM;
@@ -156,6 +229,7 @@ int test_context_colormap_custom(TestContext* tc)
     dvz_texture_download(
         ctx->color_texture.texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, //
         256 * 256 * sizeof(cvec4), arr);
+    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
     cvec2 ij = {0};
     dvz_colormap_idx(cmap, 0, ij);
     AT(memcmp(&arr[256 * ij[0] + ij[1]], colors, 3 * sizeof(cvec4)) == 0);

@@ -1,6 +1,7 @@
 #ifndef DVZ_TEST_PROTO_HEADER
 #define DVZ_TEST_PROTO_HEADER
 
+#include "../include/datoviz/context.h"
 #include "../include/datoviz/vklite.h"
 
 
@@ -152,6 +153,7 @@ static TestVisual triangle_visual(
     // Upload the triangle data.
     TestVertex data[] = TRIANGLE_VERTICES;
     dvz_buffer_upload(&visual.buffer, 0, size, data);
+    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
 
     return visual;
 }

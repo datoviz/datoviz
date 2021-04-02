@@ -1,5 +1,6 @@
 #include "../include/datoviz/context.h"
 #include "../include/datoviz/atlas.h"
+#include "context_utils.h"
 #include "vklite_utils.h"
 #include <stdlib.h>
 
@@ -228,7 +229,14 @@ DvzContext* dvz_context(DvzGpu* gpu)
     }
 
     // Transfer command buffer.
-    context->transfer_cmd = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_TRANSFER, 1);
+    // context->transfer_cmd = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_TRANSFER, 1);
+
+    // FIFO queue with the pending transfers.
+    context->transfers = dvz_fifo(DVZ_MAX_FIFO_CAPACITY);
+
+    // HACK: the vklite module makes the assumption that the queue #0 supports transfers.
+    // Here, in the context, we make the same assumption. The first queue is reserved to transfers.
+    ASSERT(DVZ_DEFAULT_QUEUE_TRANSFER == 0);
 
     // Create the context.
     gpu->context = context;
@@ -251,6 +259,7 @@ void dvz_context_colormap(DvzContext* context)
     dvz_texture_upload(
         context->color_texture.texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, 256 * 256 * 4,
         context->color_texture.arr);
+    dvz_queue_wait(context->gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
 }
 
 
@@ -281,6 +290,9 @@ void dvz_context_destroy(DvzContext* context)
 
     // Destroy the buffers, images, samplers, textures, computes.
     _destroy_resources(context);
+
+    // Destroy the transfers queue.
+    dvz_fifo_destroy(&context->transfers);
 
     // Free the allocated memory.
     dvz_container_destroy(&context->buffers);
@@ -379,7 +391,7 @@ DvzBufferRegions dvz_ctx_buffers(
     {
         VkDeviceSize new_size = dvz_next_pow2(offset + alsize * buffer_count);
         log_info("reallocating buffer %d to %s", buffer_type, pretty_size(new_size));
-        dvz_buffer_resize(regions.buffer, new_size, &context->transfer_cmd);
+        dvz_buffer_resize(regions.buffer, new_size);
     }
 
     log_debug(
@@ -424,7 +436,7 @@ void dvz_ctx_buffers_resize(DvzContext* context, DvzBufferRegions* br, VkDeviceS
         {
             VkDeviceSize bs = dvz_next_pow2(br->offsets[0] + old_size);
             log_info("reallocating buffer #%d to %s", br->buffer->type, pretty_size(bs));
-            dvz_buffer_resize(br->buffer, bs, &context->transfer_cmd);
+            dvz_buffer_resize(br->buffer, bs);
         }
     }
 
@@ -596,6 +608,10 @@ void dvz_texture_upload(
 
     // Copy from the staging buffer to the texture.
     _copy_texture_from_staging(context, texture, offset, shape, size);
+
+    // IMPORTANT: need to wait for the texture to be copied to the staging buffer, *before*
+    // downloading the data from the staging buffer.
+    dvz_queue_wait(context->gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
 }
 
 
@@ -615,6 +631,10 @@ void dvz_texture_download(
     // Copy from the staging buffer to the texture.
     _copy_texture_to_staging(context, texture, offset, shape, size);
 
+    // IMPORTANT: need to wait for the texture to be copied to the staging buffer, *before*
+    // downloading the data from the staging buffer.
+    dvz_queue_wait(context->gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
+
     // Memcpy into the staging buffer.
     dvz_buffer_download(staging, 0, size, data);
 }
@@ -631,7 +651,8 @@ void dvz_texture_copy(
     ASSERT(context != NULL);
 
     // Take transfer cmd buf.
-    DvzCommands* cmds = &context->transfer_cmd;
+    DvzCommands cmds_ = dvz_commands(gpu, 0, 1);
+    DvzCommands* cmds = &cmds_;
     dvz_cmd_reset(cmds, 0);
     dvz_cmd_begin(cmds, 0);
 
@@ -712,7 +733,7 @@ void dvz_texture_copy(
     dvz_cmd_end(cmds, 0);
 
     // Wait for the render queue to be idle.
-    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_RENDER);
+    // dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_RENDER);
 
     // Submit the commands to the transfer queue.
     DvzSubmit submit = dvz_submit(gpu);
@@ -721,7 +742,7 @@ void dvz_texture_copy(
     dvz_submit_send(&submit, 0, NULL, 0);
 
     // Wait for the transfer queue to be idle.
-    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
+    // dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
 }
 
 
@@ -732,7 +753,8 @@ void dvz_texture_transition(DvzTexture* tex)
     ASSERT(tex->context != NULL);
     DvzGpu* gpu = tex->context->gpu;
     ASSERT(gpu != NULL);
-    DvzCommands* cmds = &tex->context->transfer_cmd;
+    DvzCommands cmds_ = dvz_commands(gpu, 0, 1);
+    DvzCommands* cmds = &cmds_;
 
     dvz_cmd_reset(cmds, 0);
     dvz_cmd_begin(cmds, 0);

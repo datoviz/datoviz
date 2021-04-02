@@ -902,7 +902,7 @@ void dvz_buffer_create(DvzBuffer* buffer)
 
 
 
-void dvz_buffer_resize(DvzBuffer* buffer, VkDeviceSize size, DvzCommands* cmds)
+void dvz_buffer_resize(DvzBuffer* buffer, VkDeviceSize size)
 {
     ASSERT(buffer != NULL);
     log_debug("[SLOW] resize buffer to size %s", pretty_size(size));
@@ -912,11 +912,12 @@ void dvz_buffer_resize(DvzBuffer* buffer, VkDeviceSize size, DvzCommands* cmds)
     DvzBuffer new_buffer = dvz_buffer(gpu);
     _buffer_copy(buffer, &new_buffer);
     // Make sure we can copy to the new buffer.
+    bool proceed = true;
     if ((new_buffer.usage & VK_BUFFER_USAGE_TRANSFER_DST_BIT) == 0)
     {
         log_warn("buffer was not created with VK_BUFFER_USAGE_TRANSFER_DST_BIT and therefore the "
                  "data cannot be kept while resizing it");
-        cmds = NULL;
+        proceed = false;
     }
     new_buffer.size = size;
     _buffer_create(&new_buffer);
@@ -935,7 +936,11 @@ void dvz_buffer_resize(DvzBuffer* buffer, VkDeviceSize size, DvzCommands* cmds)
 
     // If a DvzCommands object was passed for the data transfer, transfer the data from the
     // old buffer to the new, by flushing the corresponding queue and waiting for completion.
-    if (cmds != NULL)
+
+    // HACK: use queue 0 for transfers (convention)
+    DvzCommands cmds_ = dvz_commands(gpu, 0, 1);
+    DvzCommands* cmds = &cmds_;
+    if (proceed)
     {
         uint32_t queue_idx = cmds->queue_idx;
         log_debug("copying data from the old buffer to the new one before destroying the old one");
@@ -1185,6 +1190,53 @@ void dvz_buffer_regions_upload(DvzBufferRegions* br, uint32_t idx, const void* d
 
 
 
+void dvz_buffer_regions_copy(
+    DvzBufferRegions* src, VkDeviceSize src_offset, //
+    DvzBufferRegions* dst, VkDeviceSize dst_offset, VkDeviceSize size)
+{
+    ASSERT(src != NULL);
+    ASSERT(dst != NULL);
+    ASSERT(src->buffer->gpu != NULL);
+    ASSERT(src->buffer->gpu == dst->buffer->gpu);
+    DvzGpu* gpu = src->buffer->gpu;
+    ASSERT(gpu != NULL);
+    ASSERT(size > 0);
+
+    // HACK: use queue 0 for transfers (convention)
+    DvzCommands cmds_ = dvz_commands(gpu, 0, 1);
+    DvzCommands* cmds = &cmds_;
+
+    dvz_cmd_reset(cmds, 0);
+    dvz_cmd_begin(cmds, 0);
+
+    // Copy buffer command.
+    VkBufferCopy* regions = (VkBufferCopy*)calloc(src->count, sizeof(VkBufferCopy));
+    for (uint32_t i = 0; i < src->count; i++)
+    {
+        regions[i].size = size;
+        regions[i].srcOffset = src->offsets[i] + src_offset;
+        regions[i].dstOffset = dst->offsets[i] + dst_offset;
+    }
+    vkCmdCopyBuffer(cmds->cmds[0], src->buffer->buffer, dst->buffer->buffer, src->count, regions);
+
+    dvz_cmd_end(cmds, 0);
+    FREE(regions);
+
+    // Wait for the render queue to be idle.
+    // dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_RENDER);
+
+    // Submit the commands to the transfer queue.
+    DvzSubmit submit = dvz_submit(gpu);
+    dvz_submit_commands(&submit, cmds);
+    log_debug("copy %s between 2 buffers", pretty_size(size));
+    dvz_submit_send(&submit, 0, NULL, 0);
+
+    // Wait for the transfer queue to be idle.
+    // dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
+}
+
+
+
 /*************************************************************************************************/
 /*  Images                                                                                       */
 /*************************************************************************************************/
@@ -1364,6 +1416,7 @@ void dvz_images_transition(DvzImages* images)
     ASSERT(gpu != NULL);
 
     // Start the image transition command buffer.
+    // HACK: use queue 0 for transfer (convention)
     DvzCommands cmds = dvz_commands(gpu, 0, 1);
     DvzBarrier barrier = dvz_barrier(gpu);
 
