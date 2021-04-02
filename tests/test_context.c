@@ -22,7 +22,9 @@ int test_context_buffer(TestContext* tc)
     ASSERT(gpu != NULL);
 
     // Allocate buffers.
-    DvzBufferRegions br = dvz_ctx_buffers(ctx, DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE, 1, 128);
+    DvzBufferRegions br = dvz_ctx_buffers(ctx, DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE, 1, 1024);
+    VkDeviceSize offset = br.alignment;
+    // DBG(br.alignment);
     // AT(br.aligned_size == 128);
     AT(br.count == 1);
 
@@ -30,16 +32,16 @@ int test_context_buffer(TestContext* tc)
     uint8_t data[128] = {0};
     for (uint32_t i = 0; i < 128; i++)
         data[i] = i;
-    dvz_buffer_upload(br.buffer, 64, 32, data);
+    dvz_buffer_upload(br.buffer, offset, 32, data);
     dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
 
     // Resize buffer.
-    dvz_ctx_buffers_resize(ctx, &br, 64);
-    dvz_ctx_buffers_resize(ctx, &br, 256);
+    dvz_ctx_buffers_resize(ctx, &br, br.alignment);
+    dvz_ctx_buffers_resize(ctx, &br, 1024 * 2);
 
     // Download data.
     uint8_t data_2[32] = {0};
-    dvz_buffer_download(br.buffer, 64, 32, data_2);
+    dvz_buffer_download(br.buffer, br.alignment, 32, data_2);
     dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
     for (uint32_t i = 0; i < 32; i++)
         AT(data_2[i] == i);
