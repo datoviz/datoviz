@@ -42,6 +42,7 @@ extern "C" {
 // Default queue.
 typedef enum
 {
+    // NOTE: by convention in vklite, the first queue MUST support transfers
     DVZ_DEFAULT_QUEUE_TRANSFER,
     DVZ_DEFAULT_QUEUE_COMPUTE,
     DVZ_DEFAULT_QUEUE_RENDER,

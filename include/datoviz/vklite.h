@@ -1060,6 +1060,12 @@ DVZ_EXPORT void dvz_swapchain_destroy(DvzSwapchain* swapchain);
 /**
  * Create a set of command buffers.
  *
+ * !!! note
+ *     We use the following convention in vklite and elsewhere in datoviz: the queue #0 **must**
+ *     support transfer tasks. This convention makes the implementation a bit simpler.
+ *     This convention is respected by the context module, where the first default queue
+ *     is the transfer queue, dedicated to transfer tasks.
+ *
  * @param gpu the GPU
  * @param queue the queue index within the GPU
  * @param count the number of command buffers to create
@@ -1203,6 +1209,12 @@ DVZ_EXPORT void dvz_buffer_unmap(DvzBuffer* buffer);
 /**
  * Download a buffer data to the CPU.
  *
+ * !!! important
+ *     This function does **not** use any GPU synchronization primitive: this is the responsibility
+ *     of the caller. A simple (but not optimal) method is just to call the following function
+ *     after every call to this function:
+ *     `dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);`
+ *
  * @param buffer the buffer
  * @param offset the offset within the buffer, in bytes
  * @param size the size of the region to download, in bytes
@@ -1213,6 +1225,12 @@ dvz_buffer_download(DvzBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, v
 
 /**
  * Upload data to a GPU buffer.
+ *
+ * !!! important
+ *     This function does **not** use any GPU synchronization primitive: this is the responsibility
+ *     of the caller. A simple (but not optimal) method is just to call the following function
+ *     after every call to this function:
+ *     `dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);`
  *
  * @param buffer the buffer
  * @param offset the offset within the buffer, in bytes
@@ -1261,6 +1279,12 @@ DVZ_EXPORT void dvz_buffer_regions_unmap(DvzBufferRegions* br);
 
 /**
  * Upload data to a buffer region.
+ *
+ * !!! important
+ *     This function does **not** use any GPU synchronization primitive: this is the responsibility
+ *     of the caller. A simple (but not optimal) method is just to call the following function
+ *     after every call to this function:
+ *     `dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);`
  *
  * @param br the set of buffer regions
  * @param idx the index of the buffer region to upload data to
