@@ -721,13 +721,6 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
     // Default submit instance.
     canvas->submit = dvz_submit(gpu);
 
-
-    // TODO: REFACTOR
-
-    // canvas->transfers = dvz_fifo(DVZ_MAX_FIFO_CAPACITY);
-
-
-
     // Event system.
     {
         canvas->event_queue = dvz_fifo(DVZ_MAX_FIFO_CAPACITY);
@@ -896,6 +889,27 @@ DvzCommands* dvz_canvas_commands(DvzCanvas* canvas, uint32_t queue_idx, uint32_t
     DvzCommands* commands = dvz_container_alloc(&canvas->commands);
     *commands = dvz_commands(canvas->gpu, queue_idx, count);
     return commands;
+}
+
+
+void dvz_canvas_buffers(
+    DvzCanvas* canvas, DvzBufferRegions br, //
+    VkDeviceSize offset, VkDeviceSize size, const void* data)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(size > 0);
+    ASSERT(data != NULL);
+    ASSERT(br.buffer != NULL);
+    ASSERT(br.count == canvas->swapchain.img_count);
+    if (br.buffer->type != DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE)
+    {
+        log_error("dvz_canvas_buffers() can only be used on mappable buffers.");
+        return;
+    }
+    ASSERT(br.buffer->mmap != NULL);
+    uint32_t idx = canvas->swapchain.img_idx;
+    ASSERT(idx < br.count);
+    dvz_buffer_upload(br.buffer, br.offsets[idx] + offset, size, data);
 }
 
 

@@ -701,14 +701,11 @@ static void _uniform_frame_callback(DvzCanvas* canvas, DvzEvent ev)
     float* vec = canvas->user_data;
     ASSERT(vec != NULL);
 
-    dvz_upload_buffers(canvas->gpu->context, visual->br_u, 0, sizeof(vec4), vec);
+    dvz_canvas_buffers(canvas, visual->br_u, 0, sizeof(vec4), vec);
 }
 
 int test_canvas_triangle_uniform(TestContext* tc)
 {
-    // TODO: REFACTOR
-    return 0;
-
     DvzApp* app = tc->app;
     DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
@@ -722,7 +719,6 @@ int test_canvas_triangle_uniform(TestContext* tc)
     visual.br_u = dvz_ctx_buffers(
         gpu->context, DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE, canvas->swapchain.img_count, sizeof(vec4));
     ASSERT(visual.br_u.aligned_size >= visual.br_u.size);
-    dvz_upload_buffers(canvas->gpu->context, visual.br_u, 0, sizeof(vec4), vec);
 
     // Bindings and graphics pipeline.
     visual.bindings = dvz_bindings(&visual.graphics.slots, canvas->swapchain.img_count);

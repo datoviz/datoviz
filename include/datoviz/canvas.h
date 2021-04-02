@@ -687,6 +687,27 @@ DVZ_EXPORT void dvz_canvas_resize(DvzCanvas* canvas, uint32_t width, uint32_t he
  */
 DVZ_EXPORT DvzCommands* dvz_canvas_commands(DvzCanvas* canvas, uint32_t queue_idx, uint32_t count);
 
+/**
+ * Upload fast-changing data to a special mappable buffer at every canvas frame.
+ *
+ * This function is used to upload MVP matrices at every frame in the scene interface.
+ *
+ * There are several constraints:
+ *
+ * - the buffer must have the uniform mappable type
+ * - there must be as many buffer regions as there are swapchain images in the canvas
+ * - this function **must** be called at every frame.
+ *
+ * @param canvas the canvas
+ * @param br the buffer regions
+ * @param offset the offset
+ * @param size the data size
+ * @param data the data to upload
+ */
+DVZ_EXPORT void dvz_canvas_buffers(
+    DvzCanvas* canvas, DvzBufferRegions br, //
+    VkDeviceSize offset, VkDeviceSize size, const void* data);
+
 
 
 /*************************************************************************************************/
@@ -723,6 +744,12 @@ DVZ_EXPORT void dvz_canvas_size(DvzCanvas* canvas, DvzCanvasSizeType type, uvec2
  * @param value the boolean value
  */
 DVZ_EXPORT void dvz_canvas_close_on_esc(DvzCanvas* canvas, bool value);
+
+
+
+/*************************************************************************************************/
+/*  Viewport                                                                                     */
+/*************************************************************************************************/
 
 // screen coordinates
 static inline bool _pos_in_viewport(DvzViewport viewport, vec2 screen_pos)

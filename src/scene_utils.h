@@ -1003,18 +1003,8 @@ static void _upload_mvp(DvzCanvas* canvas, DvzEvent ev)
             // NOTE: update MVP.time here.
             interact->mvp.time = canvas->clock.elapsed;
 
-            // NOTE: we need to update the uniform buffer at every frame
-
-            // NOTE: this is implemented with a FIFO queue even when using a single thread,
-            // which is overkill here. An optimization would be to use a function that updates the
-            // buffer region directly here, although one should make sure that GPU synchronization
-            // is properly taken care of.
-
-
-            // TODO REFACTOR: use mappable buffer upload here instead
-
-
-            // dvz_upload_buffers(canvas, panel->br_mvp, 0, panel->br_mvp.size, &interact->mvp);
+            // IMPORTANT: we **must** update the uniform buffer at every frame.
+            dvz_canvas_buffers(canvas, panel->br_mvp, 0, panel->br_mvp.size, &interact->mvp);
         }
         dvz_container_iter(&iter);
     }
