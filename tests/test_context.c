@@ -65,11 +65,11 @@ int test_context_transfer_buffer(TestContext* tc)
 
     // NOTE: when the app main loop is not running (which is the case here), these transfer
     // functions process the transfers immediately.
-    dvz_upload_buffers(ctx, br, 64, 32, data);
+    dvz_upload_buffer(ctx, br, 64, 32, data);
 
     // Download data.
     uint8_t data_2[32] = {0};
-    dvz_download_buffers(ctx, br, 64, 32, data_2);
+    dvz_download_buffer(ctx, br, 64, 32, data_2);
     for (uint32_t i = 0; i < 32; i++)
         AT(data_2[i] == i);
 

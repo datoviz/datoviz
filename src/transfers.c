@@ -169,7 +169,7 @@ void dvz_process_transfers(DvzContext* context)
     // WARNING: comment below OBSOLETE.
 
     // This function is to be called at every frame, after the FRAME callbacks (so that FRAME
-    // callbacks calling dvz_upload_buffers() have their transfers processed immediately in the
+    // callbacks calling dvz_upload_buffer() have their transfers processed immediately in the
     // same frame), but before queue submit, so that we may get a chance to ask for a command
     // buffer refill before submission (if a transfer requires a refill, e.g. after a vertex buffer
     // count change)
@@ -224,7 +224,7 @@ void dvz_process_transfers(DvzContext* context)
 /*  Canvas buffer transfers                                                                      */
 /*************************************************************************************************/
 
-static void _enqueue_buffers_transfer(
+static void _enqueue_buffer_transfer(
     DvzContext* context, DvzDataTransferType type, DvzBufferRegions br, //
     VkDeviceSize offset, VkDeviceSize size, void* data)
 {
@@ -244,21 +244,16 @@ static void _enqueue_buffers_transfer(
     tr.u.buf.size = size;
     tr.u.buf.data = data;
 
-    // HACK: when uploading buffers when the app is not running (for example at initialization)
-    // we upload all copies of the DvzBufferRegions. This is used when using UNIFORM_MAPPABLE
-    // buffers that are not continuously updated in each frame.
-    // tr.u.buf.update_all_buffers = !canvas->app->is_running;
-
     _transfer_enqueue(&context->transfers, tr);
 }
 
 
 
 // WARNING: these functions require that the pointer lives through the next frame (no copy)
-void dvz_upload_buffers(
+void dvz_upload_buffer(
     DvzContext* context, DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data)
 {
-    _enqueue_buffers_transfer(context, DVZ_TRANSFER_BUFFER_UPLOAD, br, offset, size, data);
+    _enqueue_buffer_transfer(context, DVZ_TRANSFER_BUFFER_UPLOAD, br, offset, size, data);
 
     if (!context->gpu->app->is_running)
         dvz_process_transfers(context);
@@ -266,10 +261,10 @@ void dvz_upload_buffers(
 
 
 
-void dvz_download_buffers(
+void dvz_download_buffer(
     DvzContext* context, DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data)
 {
-    _enqueue_buffers_transfer(context, DVZ_TRANSFER_BUFFER_DOWNLOAD, br, offset, size, data);
+    _enqueue_buffer_transfer(context, DVZ_TRANSFER_BUFFER_DOWNLOAD, br, offset, size, data);
 
     if (!context->gpu->app->is_running)
         dvz_process_transfers(context);
@@ -277,7 +272,7 @@ void dvz_download_buffers(
 
 
 
-void dvz_copy_buffers(
+void dvz_copy_buffer(
     DvzContext* context, DvzBufferRegions src, VkDeviceSize src_offset, //
     DvzBufferRegions dst, VkDeviceSize dst_offset, VkDeviceSize size)
 {

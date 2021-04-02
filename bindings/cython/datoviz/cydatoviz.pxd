@@ -1150,8 +1150,8 @@ cdef extern from "<datoviz/datoviz.h>":
     DvzVisual* dvz_scene_visual(DvzPanel* panel, DvzVisualType type, int flags)
 
     # from file: transfers.h
-    void dvz_upload_buffers(DvzCanvas* canvas, DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data)
-    void dvz_download_buffers(DvzCanvas* canvas, DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data)
+    void dvz_upload_buffer(DvzCanvas* canvas, DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data)
+    void dvz_download_buffer(DvzCanvas* canvas, DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data)
     void dvz_copy_buffers(DvzCanvas* canvas, DvzBufferRegions src, VkDeviceSize src_offset, DvzBufferRegions dst, VkDeviceSize dst_offset, VkDeviceSize size)
     void dvz_upload_texture(DvzCanvas* canvas, DvzTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data)
     void dvz_download_texture(DvzCanvas* canvas, DvzTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data)

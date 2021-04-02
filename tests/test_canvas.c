@@ -89,7 +89,7 @@ static void triangle_upload(DvzCanvas* canvas, TestVisual* visual)
     TestVertex data[3] = TRIANGLE_VERTICES;
     visual->data = calloc(size, 1);
     memcpy(visual->data, data, size);
-    dvz_upload_buffers(gpu->context, visual->br, 0, size, data);
+    dvz_upload_buffer(gpu->context, visual->br, 0, size, data);
 }
 
 
@@ -634,7 +634,7 @@ static void _vertex_cursor_callback(DvzCanvas* canvas, DvzEvent ev)
         data[i].color[1] = y;
         data[i].color[2] = 1;
     }
-    dvz_upload_buffers(
+    dvz_upload_buffer(
         canvas->gpu->context->gpu->context, visual->br, 0, 3 * sizeof(TestVertex), data);
 }
 
@@ -944,7 +944,7 @@ static void triangle_append(DvzCanvas* canvas, DvzEvent ev)
     visual->data = data;
     VkDeviceSize size = visual->n_vertices * sizeof(TestVertex);
     visual->br = dvz_ctx_buffers(canvas->gpu->context, DVZ_BUFFER_TYPE_VERTEX, 1, size);
-    dvz_upload_buffers(canvas->gpu->context, visual->br, 0, size, data);
+    dvz_upload_buffer(canvas->gpu->context, visual->br, 0, size, data);
 
     // NOTE: important, we need to refill the canvas after the vertex count has changed.
     dvz_canvas_to_refill(canvas);

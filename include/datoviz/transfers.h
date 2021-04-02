@@ -49,7 +49,7 @@ struct DvzTransferBuffer
 {
     DvzBufferRegions regions;
     VkDeviceSize offset, size;
-    bool update_all_buffers;
+    // bool update_all_buffer;
     void* data;
 };
 
@@ -112,7 +112,7 @@ struct DvzTransfer
  * @param size the size of the data to upload, in bytes
  * @param data pointer to the data to upload to the GPU
  */
-DVZ_EXPORT void dvz_upload_buffers(
+DVZ_EXPORT void dvz_upload_buffer(
     DvzContext* context, DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data);
 
 /**
@@ -124,7 +124,7 @@ DVZ_EXPORT void dvz_upload_buffers(
  * @param size the size of the data to upload, in bytes
  * @param[out] data pointer to a buffer already allocated to contain `size` bytes
  */
-DVZ_EXPORT void dvz_download_buffers(
+DVZ_EXPORT void dvz_download_buffer(
     DvzContext* context, DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data);
 
 /**
@@ -139,7 +139,7 @@ DVZ_EXPORT void dvz_download_buffers(
  * @param dst_offset the offset within the target buffer region
  * @param size the size of the data to copy
  */
-DVZ_EXPORT void dvz_copy_buffers(
+DVZ_EXPORT void dvz_copy_buffer(
     DvzContext* context, DvzBufferRegions src, VkDeviceSize src_offset, //
     DvzBufferRegions dst, VkDeviceSize dst_offset, VkDeviceSize size);
 

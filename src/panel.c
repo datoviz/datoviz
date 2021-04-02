@@ -238,7 +238,7 @@ DvzPanel* dvz_panel(DvzGrid* grid, uint32_t row, uint32_t col)
     panel->br_mvp = dvz_ctx_buffers(ctx, DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE, n, sizeof(DvzMVP));
     // Initialize with identity matrices. Will be later updated by the scene controllers at every
     // frame.
-    dvz_upload_buffers(ctx, panel->br_mvp, 0, panel->br_mvp.size, &MVP_ID);
+    dvz_upload_buffer(ctx, panel->br_mvp, 0, panel->br_mvp.size, &MVP_ID);
 
     // Update the DvzViewport.
     dvz_panel_update(panel);

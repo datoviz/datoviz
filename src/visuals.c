@@ -781,7 +781,7 @@ void dvz_visual_update(
                 "%d #%d", //
                 arr->item_count, br->size, source->source_type, source->source_idx);
 
-            dvz_upload_buffers(ctx, *br, 0, size, arr->data);
+            dvz_upload_buffer(ctx, *br, 0, size, arr->data);
             _source_set(source);
             // source->obj.status = DVZ_OBJECT_STATUS_CREATED;
             // visual->obj.status = DVZ_OBJECT_STATUS_CREATED;
