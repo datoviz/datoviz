@@ -2155,7 +2155,7 @@ void dvz_canvas_frame(DvzCanvas* canvas)
     ASSERT(canvas != NULL);
     ASSERT(canvas->app != NULL);
     ASSERT(canvas->gpu != NULL);
-    log_debug("start frame %u", canvas->frame_idx);
+    log_trace("start frame %u", canvas->frame_idx);
 
     // Update the global and local clocks.
     // These calls update canvas->clock.elapsed and canvas->clock.interval, the latter is

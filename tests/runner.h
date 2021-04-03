@@ -152,6 +152,8 @@ static void _fixture_canvas(TestContext* tc)
     if (tc->canvas == NULL)
     {
         tc->canvas = dvz_canvas(dvz_gpu_best(tc->app), WIDTH, HEIGHT, 0);
+        tc->context = tc->canvas->gpu->context;
+        ASSERT(tc->context != NULL);
     }
     else
     {
