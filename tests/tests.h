@@ -98,8 +98,9 @@ int test_interact_panzoom(TestContext*);
 
 // Test graphics.
 int test_graphics_point(TestContext*);
-int test_graphics_line(TestContext*);
+int test_graphics_line_list(TestContext*);
 int test_graphics_line_strip(TestContext*);
+int test_graphics_triangle_list(TestContext*);
 
 // Test visuals.
 int test_visuals_1(TestContext*);
@@ -204,8 +205,9 @@ static TestCase TEST_CASES[] = {
 
     // Graphics.
     CASE_FIXTURE(CANVAS, test_graphics_point), //
-    CASE_FIXTURE(CANVAS, test_graphics_line), //
+    CASE_FIXTURE(CANVAS, test_graphics_line_list), //
     CASE_FIXTURE(CANVAS, test_graphics_line_strip), //
+    CASE_FIXTURE(CANVAS, test_graphics_triangle_list), //
 
     // Visuals.
     CASE_FIXTURE(CANVAS, test_visuals_1), //
