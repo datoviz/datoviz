@@ -42,14 +42,13 @@ struct TestGraphics
     DvzBindings bindings_comp;
 
     DvzInteract interact;
-    // DvzMVP mvp;
-    // vec3 eye, center, up;
 
+    uint32_t item_count;
     uvec3 n_vert_comp;
     DvzArray vertices;
     DvzArray indices;
 
-    float param;
+    // float param;
     void* data;
     void* params_data;
 };
@@ -95,7 +94,7 @@ static void _graphics_refill(DvzCanvas* canvas, DvzEvent ev)
     dvz_cmd_end(cmds, idx);
 }
 
-static void _common_bindings(TestGraphics* tg)
+static void _graphics_bindings(TestGraphics* tg)
 {
     DvzGpu* gpu = tg->graphics->gpu;
     DvzGraphics* graphics = tg->graphics;
@@ -132,6 +131,95 @@ static void _interact_callback(DvzCanvas* canvas, DvzEvent ev)
     dvz_canvas_buffers(canvas, tg->br_mvp, 0, sizeof(DvzMVP), &tg->interact.mvp);
 }
 
+static void _graphics_create(
+    TestGraphics* tg, VkDeviceSize size, uint32_t n, DvzInteractType interact_type)
+{
+    ASSERT(tg != NULL);
+
+    DvzContext* context = tg->canvas->gpu->context;
+    ASSERT(context != NULL);
+
+    tg->interact = dvz_interact_builtin(tg->canvas, interact_type);
+    tg->vertices = dvz_array_struct(0, sizeof(DvzVertex));
+    tg->indices = dvz_array_struct(0, sizeof(DvzIndex));
+
+    DvzGraphicsData data = dvz_graphics_data(tg->graphics, &tg->vertices, &tg->indices, NULL);
+    dvz_graphics_alloc(&data, n);
+    tg->item_count = n;
+    uint32_t item_count = n;
+    uint32_t vertex_count = tg->vertices.item_count;
+    uint32_t index_count = tg->indices.item_count;
+
+    ASSERT(item_count > 0);
+    ASSERT(vertex_count > 0);
+    ASSERT(index_count == 0 || index_count > 0);
+    ASSERT(tg->vertices.data != NULL);
+
+    tg->br_vert =
+        dvz_ctx_buffers(context, DVZ_BUFFER_TYPE_VERTEX, 1, vertex_count * sizeof(DvzVertex));
+    if (index_count > 0)
+        tg->br_index = dvz_ctx_buffers(
+            context, DVZ_BUFFER_TYPE_INDEX, 1, index_count * sizeof(DvzIndex));
+}
+
+static void _graphics_upload(TestGraphics* tg)
+{
+    ASSERT(tg != NULL);
+
+    DvzContext* context = tg->canvas->gpu->context;
+    ASSERT(context != NULL);
+
+    uint32_t vertex_count = tg->vertices.item_count;
+    uint32_t index_count = tg->indices.item_count;
+
+    dvz_upload_buffer(
+        context, tg->br_vert, 0, vertex_count * tg->vertices.item_size, tg->vertices.data);
+    if (index_count > 0)
+        dvz_upload_buffer(
+            context, tg->br_index, 0, index_count * tg->indices.item_size, tg->indices.data);
+}
+
+static void _graphics_params(TestGraphics* tg, VkDeviceSize size, void* data)
+{
+    ASSERT(tg != NULL);
+
+    DvzContext* context = tg->canvas->gpu->context;
+    ASSERT(context != NULL);
+
+    tg->br_params =
+        dvz_ctx_buffers(context, DVZ_BUFFER_TYPE_UNIFORM, 1, size);
+    dvz_bindings_buffer(&tg->bindings, DVZ_USER_BINDING, tg->br_params);
+    dvz_upload_buffer(context, tg->br_params, 0, size, data);
+}
+
+static void _graphics_run(TestGraphics* tg, uint32_t n_frames)
+{
+    ASSERT(tg != NULL);
+    DvzCanvas* canvas = tg->canvas;
+    ASSERT(canvas != NULL);
+
+    dvz_bindings_update(&tg->bindings);
+    dvz_event_callback(canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _interact_callback, tg);
+    dvz_event_callback(canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, _graphics_refill, tg);
+    dvz_app_run(canvas->app, n_frames);
+
+    dvz_array_destroy(&tg->vertices);
+    dvz_array_destroy(&tg->indices);
+}
+
+static int _graphics_screenshot(TestGraphics* tg, const char* name)
+{
+    ASSERT(tg != NULL);
+    ASSERT(tg->canvas != NULL);
+
+    char path[1024];
+    snprintf(path, sizeof(path), "test_graphics_%s", name);
+    int res = check_canvas(tg->canvas, path);
+    snprintf(path, sizeof(path), "%s/docs/images/graphics/%s.png", ROOT_DIR, name);
+    dvz_screenshot_file(tg->canvas, path);
+    return res;
+}
+
 
 
 /*************************************************************************************************/
@@ -146,64 +234,39 @@ int test_graphics_point(TestContext* tc)
     ASSERT(canvas != NULL);
     ASSERT(context != NULL);
 
+    // Create the graphics pipeline.
     DvzGraphics* graphics = dvz_graphics_builtin(canvas, DVZ_GRAPHICS_POINT, 0);
     ASSERT(graphics != NULL);
 
-    TestGraphics tg = {0};
-    tg.canvas = canvas;
-    tg.graphics = graphics;
-    tg.vertices = dvz_array_struct(0, sizeof(DvzVertex));
-    tg.indices = dvz_array_struct(0, sizeof(DvzIndex));
-
+    // Vertex count and params.
     uint32_t n = 20;
-    tg.param = 100.0f;
+    DvzGraphicsPointParams params = {.point_size = 50};
 
-    DvzGraphicsData data = dvz_graphics_data(graphics, &tg.vertices, &tg.indices, NULL);
-    dvz_graphics_alloc(&data, n);
-    uint32_t item_count = n;
-    uint32_t vertex_count = tg.vertices.item_count;
-    uint32_t index_count = tg.indices.item_count;
-    tg.br_vert =
-        dvz_ctx_buffers(context, DVZ_BUFFER_TYPE_VERTEX, 1, vertex_count * sizeof(DvzVertex));
-    if (index_count > 0)
-        tg.br_index = dvz_ctx_buffers(
-            context, DVZ_BUFFER_TYPE_INDEX, 1, index_count * sizeof(DvzIndex));
+    // Create the graphics struct.
+    TestGraphics tg = {.canvas = canvas, .graphics = graphics};
+    _graphics_create(&tg, sizeof(DvzVertex), n, DVZ_INTERACT_PANZOOM);
+
+    // Graphics data.
     DvzVertex* vertices = tg.vertices.data;
-
     double t = 0;
-    for (uint32_t i = 0; i < vertex_count; i++)
+    for (uint32_t i = 0; i < n; i++)
     {
         t = i / (float)(n);
         vertices[i].pos[0] = .75 * cos(M_2PI * t);
         vertices[i].pos[1] = .75 * sin(M_2PI * t);
         dvz_colormap(DVZ_CMAP_HSV, TO_BYTE(t), vertices[i].color);
     }
-    ASSERT(item_count > 0);
-    ASSERT(vertex_count > 0);
-    ASSERT(index_count == 0 || index_count > 0);
-    ASSERT(vertices != NULL);
-    dvz_upload_buffer(
-        context, tg.br_vert, 0, vertex_count* tg.vertices.item_size, tg.vertices.data);
-    if (index_count > 0)
-        dvz_upload_buffer(
-            context, tg.br_index, 0, index_count* tg.indices.item_size, tg.indices.data);
+    _graphics_upload(&tg);
 
-    tg.br_params =
-        dvz_ctx_buffers(context, DVZ_BUFFER_TYPE_UNIFORM, 1, sizeof(DvzGraphicsPointParams));
-    _common_bindings(&tg);
-    dvz_bindings_buffer(&tg.bindings, DVZ_USER_BINDING, tg.br_params);
-    dvz_bindings_update(&tg.bindings);
+    // Graphics bindings.
+    _graphics_bindings(&tg);
+    _graphics_params(&tg, sizeof(DvzGraphicsPointParams), &params);
 
-    DvzGraphicsPointParams params = {.point_size = tg.param};
-    dvz_upload_buffer(context, tg.br_params, 0, sizeof(DvzGraphicsPointParams), &params);
+    // Run the test.
+    _graphics_run(&tg, N_FRAMES);
 
-    tg.interact = dvz_interact_builtin(canvas, DVZ_INTERACT_PANZOOM);
-    dvz_event_callback(canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _interact_callback, &tg);
+    // Check screenshot and save it for the documentation.
+    int res = _graphics_screenshot(&tg, "point");
 
-    dvz_event_callback(canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, _graphics_refill, &tg);
-    dvz_app_run(tc->app, 0);
-
-    dvz_array_destroy(&tg.vertices);
-    dvz_array_destroy(&tg.indices);
-    return 0;
+    return res;
 }
