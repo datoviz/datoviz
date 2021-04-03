@@ -98,6 +98,7 @@ int test_interact_panzoom(TestContext*);
 
 // Test graphics.
 int test_graphics_point(TestContext*);
+int test_graphics_line(TestContext*);
 
 // Test visuals.
 int test_visuals_1(TestContext*);
@@ -202,6 +203,7 @@ static TestCase TEST_CASES[] = {
 
     // Graphics.
     CASE_FIXTURE(CANVAS, test_graphics_point), //
+    CASE_FIXTURE(CANVAS, test_graphics_line), //
 
     // Visuals.
     CASE_FIXTURE(CANVAS, test_visuals_1), //
