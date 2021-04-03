@@ -315,3 +315,48 @@ int test_graphics_line(TestContext* tc)
 
     return res;
 }
+
+
+
+int test_graphics_line_strip(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    DvzContext* context = tc->context;
+
+    ASSERT(canvas != NULL);
+    ASSERT(context != NULL);
+
+    // Create the graphics pipeline.
+    DvzGraphics* graphics = dvz_graphics_builtin(canvas, DVZ_GRAPHICS_LINE_STRIP, 0);
+    ASSERT(graphics != NULL);
+
+    // Vertex count and params.
+    uint32_t n = 1000;
+
+    // Create the graphics struct.
+    TestGraphics tg = {.canvas = canvas, .graphics = graphics};
+    _graphics_create(&tg, sizeof(DvzVertex), n, DVZ_INTERACT_PANZOOM);
+
+    // Graphics data.
+    DvzVertex* vertices = tg.vertices.data;
+    double t = 0;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        t = i / (double)n;
+        vertices[i].pos[0] = -1 + 2 * t;
+        vertices[i].pos[1] = .5 * sin(8 * M_2PI * t);
+        dvz_colormap_scale(DVZ_CMAP_HSV, t, 0, 1, vertices[i].color);
+    }
+    _graphics_upload(&tg);
+
+    // Graphics bindings.
+    _graphics_bindings(&tg);
+
+    // Run the test.
+    _graphics_run(&tg, N_FRAMES);
+
+    // Check screenshot and save it for the documentation.
+    int res = _graphics_screenshot(&tg, "line_strip");
+
+    return res;
+}
