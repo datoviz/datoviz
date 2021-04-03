@@ -158,7 +158,8 @@ static void _fixture_canvas(TestContext* tc)
     else
     {
         ASSERT(tc->canvas->gpu != NULL);
-        dvz_context_reset(tc->canvas->gpu->context);
+        // dvz_context_reset(tc->canvas->gpu->context);
+        dvz_canvas_reset(tc->canvas);
     }
 }
 

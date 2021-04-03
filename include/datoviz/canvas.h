@@ -669,6 +669,13 @@ dvz_canvas_offscreen(DvzGpu* gpu, uint32_t width, uint32_t height, int flags);
 DVZ_EXPORT void dvz_canvas_recreate(DvzCanvas* canvas);
 
 /**
+ * Reset the canvas.
+ *
+ * @param canvas the canvas to reset
+ */
+DVZ_EXPORT void dvz_canvas_reset(DvzCanvas* canvas);
+
+/**
  * Resize a canvas.
  *
  * @param canvas the canvas to resize

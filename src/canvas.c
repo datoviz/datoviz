@@ -865,6 +865,28 @@ void dvz_canvas_recreate(DvzCanvas* canvas)
 
 
 
+void dvz_canvas_reset(DvzCanvas* canvas)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(canvas->app != NULL);
+    dvz_app_wait(canvas->app);
+
+    ASSERT(canvas->gpu != NULL);
+    ASSERT(canvas->gpu->context != NULL);
+    dvz_context_reset(canvas->gpu->context);
+
+    _clock_init(&canvas->clock);
+    atomic_store(&canvas->to_close, false);
+    atomic_store(&canvas->refills.status, DVZ_REFILL_NONE);
+    canvas->callbacks_count = 0;
+    canvas->cur_frame = 0;
+    dvz_fifo_reset(&canvas->event_queue);
+    canvas->frame_idx = 0;
+    canvas->last_frame_idx = 0;
+}
+
+
+
 void dvz_canvas_resize(DvzCanvas* canvas, uint32_t width, uint32_t height)
 {
     ASSERT(canvas != NULL);
