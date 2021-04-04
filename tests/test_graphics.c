@@ -42,6 +42,7 @@ struct TestGraphics
     DvzBindings bindings_comp;
 
     DvzInteract interact;
+    DvzGraphicsData graphics_data;
 
     uint32_t item_count;
     uvec3 n_vert_comp;
@@ -114,6 +115,9 @@ static void _graphics_bindings(TestGraphics* tg)
         context, DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE, canvas->swapchain.img_count, sizeof(DvzMVP));
     tg->br_viewport = dvz_ctx_buffers(context, DVZ_BUFFER_TYPE_UNIFORM, 1, sizeof(DvzViewport));
 
+    // Viewport.
+    dvz_upload_buffer(context, tg->br_viewport, 0, sizeof(DvzViewport), &canvas->viewport);
+
     // Bindings
     dvz_bindings_buffer(&tg->bindings, 0, tg->br_mvp);
     dvz_bindings_buffer(&tg->bindings, 1, tg->br_viewport);
@@ -141,14 +145,12 @@ _graphics_create(TestGraphics* tg, VkDeviceSize size, uint32_t n, DvzInteractTyp
     tg->vertices = dvz_array_struct(0, size);
     tg->indices = dvz_array_struct(0, sizeof(DvzIndex));
 
-    DvzGraphicsData data = dvz_graphics_data(tg->graphics, &tg->vertices, &tg->indices, NULL);
-    dvz_graphics_alloc(&data, n);
+    tg->graphics_data = dvz_graphics_data(tg->graphics, &tg->vertices, &tg->indices, NULL);
+    dvz_graphics_alloc(&tg->graphics_data, n);
     tg->item_count = n;
-    uint32_t item_count = n;
     uint32_t vertex_count = tg->vertices.item_count;
     uint32_t index_count = tg->indices.item_count;
 
-    ASSERT(item_count > 0);
     ASSERT(vertex_count > 0);
     ASSERT(index_count == 0 || index_count > 0);
     ASSERT(tg->vertices.data != NULL);
@@ -169,6 +171,8 @@ static void _graphics_upload(TestGraphics* tg)
 
     uint32_t vertex_count = tg->vertices.item_count;
     uint32_t index_count = tg->indices.item_count;
+
+    ASSERT(vertex_count > 0);
 
     dvz_upload_buffer(
         context, tg->br_vert, 0, vertex_count * tg->vertices.item_size, tg->vertices.data);
@@ -604,7 +608,52 @@ int test_graphics_marker(TestContext* tc)
 
 int test_graphics_segment(TestContext* tc)
 {
-    return 0;
+    DvzCanvas* canvas = tc->canvas;
+    DvzContext* context = tc->context;
+
+    ASSERT(canvas != NULL);
+    ASSERT(context != NULL);
+
+    // Create the graphics pipeline.
+    DvzGraphics* graphics = dvz_graphics_builtin(canvas, DVZ_GRAPHICS_SEGMENT, 0);
+    ASSERT(graphics != NULL);
+
+    // Vertex count and params.
+    uint32_t n = 16;
+
+    // Create the graphics struct.
+    TestGraphics tg = {.canvas = canvas, .graphics = graphics};
+    _graphics_create(&tg, sizeof(DvzGraphicsSegmentVertex), n, DVZ_INTERACT_PANZOOM);
+
+    // Graphics data.
+    DvzGraphicsSegmentVertex vertex = {0};
+    double t = 0;
+    double x = 0;
+    double y = 0.75;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        t = i / (double)(n - 1);
+        x = .75 * (-1 + 2 * t);
+        vertex.P0[0] = vertex.P1[0] = x;
+        vertex.P0[1] = y;
+        vertex.P1[1] = -y;
+        vertex.linewidth = 5 + 30 * t;
+        dvz_colormap_scale(DVZ_CMAP_HSV, t, 0, 1, vertex.color);
+        vertex.cap0 = vertex.cap1 = i % DVZ_CAP_COUNT;
+        dvz_graphics_append(&tg.graphics_data, &vertex);
+    }
+    _graphics_upload(&tg);
+
+    // Graphics bindings.
+    _graphics_bindings(&tg);
+
+    // Run the test.
+    _graphics_run(&tg, N_FRAMES);
+
+    // Check screenshot and save it for the documentation.
+    int res = _graphics_screenshot(&tg, "segment");
+
+    return res;
 }
 
 
