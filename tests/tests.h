@@ -206,12 +206,12 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE(NONE, test_interact_panzoom), //
 
     // Graphics.
-    CASE_FIXTURE(CANVAS, test_graphics_point), //
-    CASE_FIXTURE(CANVAS, test_graphics_line_list), //
-    CASE_FIXTURE(CANVAS, test_graphics_line_strip), //
-    CASE_FIXTURE(CANVAS, test_graphics_triangle_list), //
+    CASE_FIXTURE(CANVAS, test_graphics_point),          //
+    CASE_FIXTURE(CANVAS, test_graphics_line_list),      //
+    CASE_FIXTURE(CANVAS, test_graphics_line_strip),     //
+    CASE_FIXTURE(CANVAS, test_graphics_triangle_list),  //
     CASE_FIXTURE(CANVAS, test_graphics_triangle_strip), //
-    CASE_FIXTURE(CANVAS, test_graphics_triangle_fan), //
+    CASE_FIXTURE(CANVAS, test_graphics_triangle_fan),   //
 
     // Visuals.
     CASE_FIXTURE(CANVAS, test_visuals_1), //

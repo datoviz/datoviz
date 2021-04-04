@@ -47,7 +47,7 @@ fi
 
 if [ $1 == "format" ]
 then
-    find examples/ test/ src/ include/ -iname *.h -o -iname *.c | xargs clang-format -i
+    find examples/ tests/ src/ include/ -iname *.h -o -iname *.c | xargs clang-format -i
 fi
 
 if [ $1 == "valgrind" ]

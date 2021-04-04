@@ -111,10 +111,8 @@ static void _graphics_bindings(TestGraphics* tg)
 
     // Binding resources.
     tg->br_mvp = dvz_ctx_buffers(
-        context, DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE, canvas->swapchain.img_count,
-        sizeof(DvzMVP));
-    tg->br_viewport =
-        dvz_ctx_buffers(context, DVZ_BUFFER_TYPE_UNIFORM, 1, sizeof(DvzViewport));
+        context, DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE, canvas->swapchain.img_count, sizeof(DvzMVP));
+    tg->br_viewport = dvz_ctx_buffers(context, DVZ_BUFFER_TYPE_UNIFORM, 1, sizeof(DvzViewport));
 
     // Bindings
     dvz_bindings_buffer(&tg->bindings, 0, tg->br_mvp);
@@ -131,8 +129,8 @@ static void _interact_callback(DvzCanvas* canvas, DvzEvent ev)
     dvz_canvas_buffers(canvas, tg->br_mvp, 0, sizeof(DvzMVP), &tg->interact.mvp);
 }
 
-static void _graphics_create(
-    TestGraphics* tg, VkDeviceSize size, uint32_t n, DvzInteractType interact_type)
+static void
+_graphics_create(TestGraphics* tg, VkDeviceSize size, uint32_t n, DvzInteractType interact_type)
 {
     ASSERT(tg != NULL);
 
@@ -158,8 +156,8 @@ static void _graphics_create(
     tg->br_vert =
         dvz_ctx_buffers(context, DVZ_BUFFER_TYPE_VERTEX, 1, vertex_count * sizeof(DvzVertex));
     if (index_count > 0)
-        tg->br_index = dvz_ctx_buffers(
-            context, DVZ_BUFFER_TYPE_INDEX, 1, index_count * sizeof(DvzIndex));
+        tg->br_index =
+            dvz_ctx_buffers(context, DVZ_BUFFER_TYPE_INDEX, 1, index_count * sizeof(DvzIndex));
 }
 
 static void _graphics_upload(TestGraphics* tg)
@@ -186,8 +184,7 @@ static void _graphics_params(TestGraphics* tg, VkDeviceSize size, void* data)
     DvzContext* context = tg->canvas->gpu->context;
     ASSERT(context != NULL);
 
-    tg->br_params =
-        dvz_ctx_buffers(context, DVZ_BUFFER_TYPE_UNIFORM, 1, size);
+    tg->br_params = dvz_ctx_buffers(context, DVZ_BUFFER_TYPE_UNIFORM, 1, size);
     dvz_bindings_buffer(&tg->bindings, DVZ_USER_BINDING, tg->br_params);
     dvz_upload_buffer(context, tg->br_params, 0, size, data);
 }
@@ -464,7 +461,6 @@ int test_graphics_triangle_strip(TestContext* tc)
     // Graphics data.
     DvzVertex* vertices = tg.vertices.data;
     double t = 0, a = 0;
-    double ms = .1;
     double m = .1;
     double y = canvas->swapchain.images->width / (float)canvas->swapchain.images->height;
     for (uint32_t i = 0; i < n; i++)
@@ -513,7 +509,6 @@ int test_graphics_triangle_fan(TestContext* tc)
     // Graphics data.
     DvzVertex* vertices = tg.vertices.data;
     double t = 0, a = 0;
-    double ms = .1;
     double y = canvas->swapchain.images->width / (float)canvas->swapchain.images->height;
     for (uint32_t i = 0; i < n; i++)
     {
