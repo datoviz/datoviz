@@ -138,7 +138,7 @@ _graphics_create(TestGraphics* tg, VkDeviceSize size, uint32_t n, DvzInteractTyp
     ASSERT(context != NULL);
 
     tg->interact = dvz_interact_builtin(tg->canvas, interact_type);
-    tg->vertices = dvz_array_struct(0, sizeof(DvzVertex));
+    tg->vertices = dvz_array_struct(0, size);
     tg->indices = dvz_array_struct(0, sizeof(DvzIndex));
 
     DvzGraphicsData data = dvz_graphics_data(tg->graphics, &tg->vertices, &tg->indices, NULL);
@@ -154,7 +154,7 @@ _graphics_create(TestGraphics* tg, VkDeviceSize size, uint32_t n, DvzInteractTyp
     ASSERT(tg->vertices.data != NULL);
 
     tg->br_vert =
-        dvz_ctx_buffers(context, DVZ_BUFFER_TYPE_VERTEX, 1, vertex_count * sizeof(DvzVertex));
+        dvz_ctx_buffers(context, DVZ_BUFFER_TYPE_VERTEX, 1, vertex_count * size);
     if (index_count > 0)
         tg->br_index =
             dvz_ctx_buffers(context, DVZ_BUFFER_TYPE_INDEX, 1, index_count * sizeof(DvzIndex));
@@ -540,7 +540,64 @@ int test_graphics_triangle_fan(TestContext* tc)
 
 int test_graphics_marker(TestContext* tc)
 {
-    return 0;
+    DvzCanvas* canvas = tc->canvas;
+    DvzContext* context = tc->context;
+
+    ASSERT(canvas != NULL);
+    ASSERT(context != NULL);
+
+    // Create the graphics pipeline.
+    DvzGraphics* graphics = dvz_graphics_builtin(canvas, DVZ_GRAPHICS_MARKER, 0);
+    ASSERT(graphics != NULL);
+
+    // Vertex count and params.
+    uint32_t n_sizes = 10;
+    uint32_t n_markers = DVZ_MARKER_COUNT;
+    uint32_t n = n_sizes * n_markers;
+    DvzGraphicsMarkerParams params = {.edge_color = {1, 1, 1, 1}, .edge_width = 2};
+
+    // Create the graphics struct.
+    TestGraphics tg = {.canvas = canvas, .graphics = graphics};
+    _graphics_create(&tg, sizeof(DvzGraphicsMarkerVertex), n, DVZ_INTERACT_PANZOOM);
+
+    // Graphics data.
+    DvzGraphicsMarkerVertex* vertices = tg.vertices.data;
+    DvzMarkerType marker = DVZ_MARKER_DISC;
+    uint32_t k = 0;
+    double x = 0, y = 0;
+    for (uint32_t i = 0; i < n_markers; i++)
+    {
+        marker = (DvzMarkerType)i;
+        x = .9 * (-1 + 2 * i / (float)(n_markers - 1));
+        for (uint32_t j = 0; j < n_sizes; j++)
+        {
+            ASSERT(k < n);
+            y = .9 * (+1 - 2 * j / (float)(n_sizes - 1));
+
+            vertices[k].pos[0] = x;
+            vertices[k].pos[1] = y;
+
+            dvz_colormap_scale(DVZ_CMAP_HSV, j, 0, n_sizes, vertices[k].color);
+            vertices[k].size = 10 + 3 * j;
+            vertices[k].angle = (j * 64) % 256;
+            vertices[k].marker = marker;
+            k++;
+        }
+    }
+    ASSERT(k == n);
+    _graphics_upload(&tg);
+
+    // Graphics bindings.
+    _graphics_bindings(&tg);
+    _graphics_params(&tg, sizeof(DvzGraphicsMarkerParams), &params);
+
+    // Run the test.
+    _graphics_run(&tg, N_FRAMES);
+
+    // Check screenshot and save it for the documentation.
+    int res = _graphics_screenshot(&tg, "marker");
+
+    return res;
 }
 
 
