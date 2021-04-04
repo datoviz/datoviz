@@ -744,7 +744,84 @@ int test_graphics_path(TestContext* tc)
 
 int test_graphics_text(TestContext* tc)
 {
-    return 0;
+    DvzCanvas* canvas = tc->canvas;
+    DvzContext* context = tc->context;
+
+    ASSERT(canvas != NULL);
+    ASSERT(context != NULL);
+
+    // Create the graphics pipeline.
+    DvzGraphics* graphics = dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TEXT, 0);
+    ASSERT(graphics != NULL);
+
+    // Vertex count and params.
+    const uint32_t N = 26;
+    const char str[] = "Hello world!";
+    const uint32_t offset = strlen(str);
+
+    // Font atlas
+    DvzFontAtlas* atlas = &context->font_atlas;
+
+    DvzGraphicsTextParams params = {0};
+    params.grid_size[0] = (int32_t)atlas->rows;
+    params.grid_size[1] = (int32_t)atlas->cols;
+    params.tex_size[0] = (int32_t)atlas->width;
+    params.tex_size[1] = (int32_t)atlas->height;
+
+    // Create the graphics struct.
+    TestGraphics tg = {.canvas = canvas, .graphics = graphics};
+    _graphics_create(&tg, sizeof(DvzGraphicsTextVertex), N + offset, DVZ_INTERACT_PANZOOM);
+
+    // Graphics data.
+    double t = 0;
+    double a = 0, x = 0, y = 0;
+    DvzGraphicsTextItem item = {0};
+    for (uint32_t i = 0; i < N; i++)
+    {
+        t = i / (double)N;
+        a = M_2PI * t;
+        x = .75 * cos(a);
+        y = .75 * sin(a);
+        item.vertex.pos[0] = x;
+        item.vertex.pos[1] = y;
+        item.vertex.angle = -a;
+        item.font_size = 30;
+        char s[2] = {0};
+        s[0] = (char)(65 + i);
+        item.string = s;
+        dvz_colormap_scale(DVZ_CMAP_HSV, t, 0, 1, item.vertex.color);
+
+        dvz_graphics_append(&tg.graphics_data, &item);
+    }
+
+    // Hello world
+    item.glyph_colors = calloc(offset, sizeof(cvec4));
+    for (uint32_t i = 0; i < offset; i++)
+    {
+        dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, offset, item.glyph_colors[i]);
+    }
+    item.vertex.pos[0] = 0;
+    item.vertex.pos[1] = 0;
+    item.vertex.angle = 0;
+    item.font_size = 36;
+    item.string = str;
+    dvz_graphics_append(&tg.graphics_data, &item);
+    FREE(item.glyph_colors);
+
+    _graphics_upload(&tg);
+
+    // Graphics bindings.
+    _graphics_bindings(&tg);
+    _graphics_params(&tg, sizeof(DvzGraphicsTextParams), &params);
+    dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 1, atlas->texture);
+
+    // Run the test.
+    _graphics_run(&tg, N_FRAMES);
+
+    // Check screenshot and save it for the documentation.
+    int res = _graphics_screenshot(&tg, "text");
+
+    return res;
 }
 
 
