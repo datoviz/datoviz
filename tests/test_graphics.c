@@ -220,7 +220,7 @@ static int _graphics_screenshot(TestGraphics* tg, const char* name)
 
 
 /*************************************************************************************************/
-/*  Graphics tests                                                                               */
+/*  Basic graphics tests                                                                         */
 /*************************************************************************************************/
 
 int test_graphics_point(TestContext* tc)
@@ -530,4 +530,75 @@ int test_graphics_triangle_fan(TestContext* tc)
     int res = _graphics_screenshot(&tg, "triangle_fan");
 
     return res;
+}
+
+
+
+/*************************************************************************************************/
+/*  2D graphics tests                                                                            */
+/*************************************************************************************************/
+
+int test_graphics_marker(TestContext* tc)
+{
+    return 0;
+}
+
+
+
+int test_graphics_segment(TestContext* tc)
+{
+    return 0;
+}
+
+
+
+int test_graphics_path(TestContext* tc)
+{
+    return 0;
+}
+
+
+
+int test_graphics_text(TestContext* tc)
+{
+    return 0;
+}
+
+
+
+int test_graphics_image(TestContext* tc)
+{
+    return 0;
+}
+
+
+
+int test_graphics_image_cmap(TestContext* tc)
+{
+    return 0;
+}
+
+
+
+/*************************************************************************************************/
+/*  3D graphics tests                                                                            */
+/*************************************************************************************************/
+
+int test_graphics_volume_slice(TestContext* tc)
+{
+    return 0;
+}
+
+
+
+int test_graphics_volume(TestContext* tc)
+{
+    return 0;
+}
+
+
+
+int test_graphics_mesh(TestContext* tc)
+{
+    return 0;
 }
