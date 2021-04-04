@@ -293,7 +293,7 @@ int test_graphics_line_list(TestContext* tc)
 
     // Graphics data.
     DvzVertex* vertices = tg.vertices.data;
-    double t = 0, r = .5;
+    double t = 0, r = .75;
     double y = canvas->swapchain.images->width / (float)canvas->swapchain.images->height;
     for (uint32_t i = 0; i < n; i++)
     {
