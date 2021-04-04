@@ -581,7 +581,7 @@ int test_graphics_marker(TestContext* tc)
             vertices[k].pos[0] = x;
             vertices[k].pos[1] = y;
 
-            dvz_colormap_scale(DVZ_CMAP_HSV, j, 0, n_sizes, vertices[k].color);
+            dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, n_markers, vertices[k].color);
             vertices[k].size = 10 + 3 * j;
             vertices[k].angle = (j * 64) % 256;
             vertices[k].marker = marker;
@@ -629,11 +629,11 @@ int test_graphics_segment(TestContext* tc)
     DvzGraphicsSegmentVertex vertex = {0};
     double t = 0;
     double x = 0;
-    double y = 0.75;
+    double y = 0.9;
     for (uint32_t i = 0; i < n; i++)
     {
         t = i / (double)(n - 1);
-        x = .75 * (-1 + 2 * t);
+        x = y * (-1 + 2 * t);
         vertex.P0[0] = vertex.P1[0] = x;
         vertex.P0[1] = y;
         vertex.P1[1] = -y;
@@ -660,7 +660,84 @@ int test_graphics_segment(TestContext* tc)
 
 int test_graphics_path(TestContext* tc)
 {
-    return 0;
+    DvzCanvas* canvas = tc->canvas;
+    DvzContext* context = tc->context;
+
+    ASSERT(canvas != NULL);
+    ASSERT(context != NULL);
+
+    // Create the graphics pipeline.
+    DvzGraphics* graphics = dvz_graphics_builtin(canvas, DVZ_GRAPHICS_PATH, 0);
+    ASSERT(graphics != NULL);
+
+    // Vertex count and params.
+    uint32_t N = 1000;
+    uint32_t n_paths = 11;
+
+    DvzGraphicsPathParams params = {0};
+    params.cap_type = DVZ_CAP_ROUND;
+    params.linewidth = 10;
+    params.miter_limit = 4;
+    params.round_join = DVZ_JOIN_ROUND;
+
+    // Create the graphics struct.
+    TestGraphics tg = {.canvas = canvas, .graphics = graphics};
+    _graphics_create(&tg, sizeof(DvzGraphicsPathVertex), N * n_paths, DVZ_INTERACT_PANZOOM);
+
+    // Graphics data.
+    DvzGraphicsPathVertex vertex = {0};
+    double t0, t1, t2, t3;
+    int32_t i0, i1, i2, i3;
+    double d = 1.0 / (double)(N - 1);
+    int32_t n = (int32_t)N;
+    double a = .15;
+    double offset = 0;
+    for (uint32_t j = 0; j < n_paths; j++)
+    {
+        offset = -.75 + 1.5 * j / (double)(n_paths - 1);
+        for (int32_t i = 0; i < n; i++)
+        {
+            i0 = i >= 1 ? i - 1 : 0;
+            i1 = i + 0;
+            i2 = i < n - 1 ? i + 1 : n - 1;
+            i3 = i < n - 2 ? i + 2 : n - 1;
+
+            t0 = -.9 + 1.8 * i0 * d;
+            t1 = -.9 + 1.8 * i1 * d;
+            t2 = -.9 + 1.8 * i2 * d;
+            t3 = -.9 + 1.8 * i3 * d;
+
+            vertex.p0[0] = t0;
+            vertex.p1[0] = t1;
+            vertex.p2[0] = t2;
+            vertex.p3[0] = t3;
+
+            vertex.p0[1] = a * sin(M_2PI * t0 / .9) + offset;
+            vertex.p1[1] = a * sin(M_2PI * t1 / .9) + offset;
+            vertex.p2[1] = a * sin(M_2PI * t2 / .9) + offset;
+            vertex.p3[1] = a * sin(M_2PI * t3 / .9) + offset;
+
+            if (j == 0)
+                dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, N - 1, vertex.color);
+            else
+                dvz_colormap_scale(DVZ_CMAP_HSV, j, 1, n_paths, vertex.color);
+
+            dvz_graphics_append(&tg.graphics_data, &vertex);
+        }
+    }
+    _graphics_upload(&tg);
+
+    // Graphics bindings.
+    _graphics_bindings(&tg);
+    _graphics_params(&tg, sizeof(DvzGraphicsPathParams), &params);
+
+    // Run the test.
+    _graphics_run(&tg, N_FRAMES);
+
+    // Check screenshot and save it for the documentation.
+    int res = _graphics_screenshot(&tg, "path");
+
+    return res;
 }
 
 
