@@ -101,6 +101,8 @@ int test_graphics_point(TestContext*);
 int test_graphics_line_list(TestContext*);
 int test_graphics_line_strip(TestContext*);
 int test_graphics_triangle_list(TestContext*);
+int test_graphics_triangle_strip(TestContext*);
+int test_graphics_triangle_fan(TestContext*);
 
 // Test visuals.
 int test_visuals_1(TestContext*);
@@ -208,6 +210,8 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE(CANVAS, test_graphics_line_list), //
     CASE_FIXTURE(CANVAS, test_graphics_line_strip), //
     CASE_FIXTURE(CANVAS, test_graphics_triangle_list), //
+    CASE_FIXTURE(CANVAS, test_graphics_triangle_strip), //
+    CASE_FIXTURE(CANVAS, test_graphics_triangle_fan), //
 
     // Visuals.
     CASE_FIXTURE(CANVAS, test_visuals_1), //

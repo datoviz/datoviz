@@ -1659,6 +1659,13 @@ static VkPipelineInputAssemblyStateCreateInfo create_input_assembly(VkPrimitiveT
     VkPipelineInputAssemblyStateCreateInfo input_assembly = {0};
     input_assembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     input_assembly.topology = topology;
+#if OS_MACOS
+    if (topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN)
+    {
+        log_error("macOS does not support triangle fan topology, falling back to triangle list!");
+        input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    }
+#endif
     input_assembly.primitiveRestartEnable = VK_FALSE;
     return input_assembly;
 }

@@ -249,11 +249,12 @@ int test_graphics_point(TestContext* tc)
     // Graphics data.
     DvzVertex* vertices = tg.vertices.data;
     double t = 0;
+    double y = canvas->swapchain.images->width / (float)canvas->swapchain.images->height;
     for (uint32_t i = 0; i < n; i++)
     {
         t = i / (float)(n);
-        vertices[i].pos[0] = .75 * cos(M_2PI * t);
-        vertices[i].pos[1] = .75 * sin(M_2PI * t);
+        vertices[i].pos[0] = .5 * cos(M_2PI * t);
+        vertices[i].pos[1] = y * .5 * sin(M_2PI * t);
         dvz_colormap(DVZ_CMAP_HSV, TO_BYTE(t), vertices[i].color);
         vertices[i].color[3] = 128;
     }
@@ -295,15 +296,16 @@ int test_graphics_line_list(TestContext* tc)
 
     // Graphics data.
     DvzVertex* vertices = tg.vertices.data;
-    double t = 0, r = .9;
+    double t = 0, r = .5;
+    double y = canvas->swapchain.images->width / (float)canvas->swapchain.images->height;
     for (uint32_t i = 0; i < n; i++)
     {
         t = .5 * i / (double)n;
         vertices[2 * i].pos[0] = r * cos(M_2PI * t);
-        vertices[2 * i].pos[1] = r * sin(M_2PI * t);
+        vertices[2 * i].pos[1] = y * r * sin(M_2PI * t);
 
-        vertices[2 * i + 1].pos[0] = -r * cos(M_2PI * t);
-        vertices[2 * i + 1].pos[1] = -r * sin(M_2PI * t);
+        vertices[2 * i + 1].pos[0] = -vertices[2 * i].pos[0];
+        vertices[2 * i + 1].pos[1] = -vertices[2 * i].pos[1];
 
         dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, n, vertices[2 * i].color);
         dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, n, vertices[2 * i + 1].color);
@@ -347,12 +349,13 @@ int test_graphics_line_strip(TestContext* tc)
     DvzVertex* vertices = tg.vertices.data;
     double t = 0, r = 0;
     uint32_t k = 16;
+    double y = canvas->swapchain.images->width / (float)canvas->swapchain.images->height;
     for (uint32_t i = 0; i < n; i++)
     {
         t = i / (double)n;
-        r = .9 * t;
+        r = .75 * t;
         vertices[i].pos[0] = r * cos(M_2PI * k * t);
-        vertices[i].pos[1] = r * sin(M_2PI * k * t);
+        vertices[i].pos[1] = y * r * sin(M_2PI * k * t);
         dvz_colormap_scale(DVZ_CMAP_HSV, t, 0, 1, vertices[i].color);
     }
     _graphics_upload(&tg);
@@ -394,12 +397,14 @@ int test_graphics_triangle_list(TestContext* tc)
     DvzVertex* vertices = tg.vertices.data;
     double t = 0;
     double ms = .1;
+    double y = canvas->swapchain.images->width / (float)canvas->swapchain.images->height;
+    double r = .5;
     for (uint32_t i = 0; i < n; i++)
     {
         t = i / (double)n;
 
-        vertices[3 * i].pos[0] = .75 * cos(M_2PI * t);
-        vertices[3 * i].pos[1] = .75 * sin(M_2PI * t);
+        vertices[3 * i].pos[0] = r * cos(M_2PI * t);
+        vertices[3 * i].pos[1] = r * sin(M_2PI * t);
         dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, n, vertices[3 * i].color);
         vertices[3 * i].color[3] = 128;
 
@@ -416,6 +421,10 @@ int test_graphics_triangle_list(TestContext* tc)
         vertices[3 * i + 1].pos[1] -= ms;
         vertices[3 * i + 2].pos[0] += 0;
         vertices[3 * i + 2].pos[1] += ms;
+
+        vertices[3 * i + 0].pos[1] *= y;
+        vertices[3 * i + 1].pos[1] *= y;
+        vertices[3 * i + 2].pos[1] *= y;
     }
     _graphics_upload(&tg);
 
@@ -427,6 +436,103 @@ int test_graphics_triangle_list(TestContext* tc)
 
     // Check screenshot and save it for the documentation.
     int res = _graphics_screenshot(&tg, "triangle");
+
+    return res;
+}
+
+
+
+int test_graphics_triangle_strip(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    DvzContext* context = tc->context;
+
+    ASSERT(canvas != NULL);
+    ASSERT(context != NULL);
+
+    // Create the graphics pipeline.
+    DvzGraphics* graphics = dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TRIANGLE_STRIP, 0);
+    ASSERT(graphics != NULL);
+
+    // Vertex count and params.
+    uint32_t n = 40;
+
+    // Create the graphics struct.
+    TestGraphics tg = {.canvas = canvas, .graphics = graphics};
+    _graphics_create(&tg, sizeof(DvzVertex), n, DVZ_INTERACT_PANZOOM);
+
+    // Graphics data.
+    DvzVertex* vertices = tg.vertices.data;
+    double t = 0, a = 0;
+    double ms = .1;
+    double m = .1;
+    double y = canvas->swapchain.images->width / (float)canvas->swapchain.images->height;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        t = i / (double)(n - 1);
+        a = M_2PI * t;
+        vertices[i].pos[0] = (.5 + (i % 2 == 0 ? +m : -m)) * cos(a);
+        vertices[i].pos[1] = y * (.5 + (i % 2 == 0 ? +m : -m)) * sin(a);
+        dvz_colormap_scale(DVZ_CMAP_HSV, t, 0, 1, vertices[i].color);
+    }
+    _graphics_upload(&tg);
+
+    // Graphics bindings.
+    _graphics_bindings(&tg);
+
+    // Run the test.
+    _graphics_run(&tg, N_FRAMES);
+
+    // Check screenshot and save it for the documentation.
+    int res = _graphics_screenshot(&tg, "triangle_strip");
+
+    return res;
+}
+
+
+
+int test_graphics_triangle_fan(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    DvzContext* context = tc->context;
+
+    ASSERT(canvas != NULL);
+    ASSERT(context != NULL);
+
+    // Create the graphics pipeline.
+    DvzGraphics* graphics = dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TRIANGLE_FAN, 0);
+    ASSERT(graphics != NULL);
+
+    // Vertex count and params.
+    uint32_t n = 30;
+
+    // Create the graphics struct.
+    TestGraphics tg = {.canvas = canvas, .graphics = graphics};
+    _graphics_create(&tg, sizeof(DvzVertex), 3 * n, DVZ_INTERACT_PANZOOM);
+
+    // Graphics data.
+    DvzVertex* vertices = tg.vertices.data;
+    double t = 0, a = 0;
+    double ms = .1;
+    double y = canvas->swapchain.images->width / (float)canvas->swapchain.images->height;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        t = i / (double)(n - 1);
+        a = M_2PI * t;
+        vertices[i].pos[0] = .5 * cos(a);
+        vertices[i].pos[1] = y * .5 * sin(a);
+        dvz_colormap_scale(DVZ_CMAP_HSV, t, 0, 1, vertices[i].color);
+    }
+    _graphics_upload(&tg);
+
+    // Graphics bindings.
+    _graphics_bindings(&tg);
+
+    // Run the test.
+    _graphics_run(&tg, N_FRAMES);
+
+    // Check screenshot and save it for the documentation.
+    int res = _graphics_screenshot(&tg, "triangle_fan");
 
     return res;
 }
