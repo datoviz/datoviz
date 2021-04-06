@@ -3,6 +3,10 @@
 #include "proto.h"
 #include "tests.h"
 
+BEGIN_INCL_NO_WARN
+#include "../external/stb_image.h"
+END_INCL_NO_WARN
+
 
 
 /*************************************************************************************************/
@@ -155,8 +159,7 @@ _graphics_create(TestGraphics* tg, VkDeviceSize size, uint32_t n, DvzInteractTyp
     ASSERT(index_count == 0 || index_count > 0);
     ASSERT(tg->vertices.data != NULL);
 
-    tg->br_vert =
-        dvz_ctx_buffers(context, DVZ_BUFFER_TYPE_VERTEX, 1, vertex_count * size);
+    tg->br_vert = dvz_ctx_buffers(context, DVZ_BUFFER_TYPE_VERTEX, 1, vertex_count * size);
     if (index_count > 0)
         tg->br_index =
             dvz_ctx_buffers(context, DVZ_BUFFER_TYPE_INDEX, 1, index_count * sizeof(DvzIndex));
@@ -219,6 +222,24 @@ static int _graphics_screenshot(TestGraphics* tg, const char* name)
     snprintf(path, sizeof(path), "%s/docs/images/graphics/%s.png", ROOT_DIR, name);
     dvz_screenshot_file(tg->canvas, path);
     return res;
+}
+
+
+
+static DvzTexture* _earth_texture(DvzContext* context)
+{
+    DvzGpu* gpu = context->gpu;
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/textures/earth.jpg", DATA_DIR);
+    int width, height, depth;
+    uint8_t* tex_data = stbi_load(path, &width, &height, &depth, STBI_rgb_alpha);
+    uint32_t tex_size = (uint32_t)(width * height);
+    DvzTexture* texture = dvz_ctx_texture(
+        gpu->context, 2, (uvec3){(uint32_t)width, (uint32_t)height, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+    dvz_upload_texture(
+        context, texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, tex_size * sizeof(cvec4), tex_data);
+    FREE(tex_data)
+    return texture;
 }
 
 
@@ -828,15 +849,59 @@ int test_graphics_text(TestContext* tc)
 
 int test_graphics_image(TestContext* tc)
 {
-    return 0;
+    DvzCanvas* canvas = tc->canvas;
+    DvzContext* context = tc->context;
+
+    ASSERT(canvas != NULL);
+    ASSERT(context != NULL);
+
+    // Create the graphics pipeline.
+    DvzGraphics* graphics = dvz_graphics_builtin(canvas, DVZ_GRAPHICS_IMAGE, 0);
+    ASSERT(graphics != NULL);
+
+    // Vertex count and params.
+    DvzGraphicsImageParams params = {.tex_coefs = {1, 0, 0, 0}};
+
+    // Create the graphics struct.
+    TestGraphics tg = {.canvas = canvas, .graphics = graphics};
+    _graphics_create(&tg, sizeof(DvzGraphicsImageVertex), 1, DVZ_INTERACT_PANZOOM);
+
+    // Graphics data.
+    const uint32_t n = 1;
+    float x0 = 0, x1 = 0, z = 0, w = 2.0 / (float)n;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        x0 = -1 + i * w;
+        x1 = -1 + (i + 1) * w;
+        DvzGraphicsImageItem item =                              //
+            {{x0, x1, z}, {x1, x1, z}, {x1, x0, z}, {x0, x0, z}, //
+             {0, 0},      {1, 0},      {1, 1},      {0, 1}};     //
+        dvz_graphics_append(&tg.graphics_data, &item);
+    }
+    _graphics_upload(&tg);
+
+    // Texture.
+    // https://pixabay.com/illustrations/earth-planet-world-globe-space-1617121/
+    DvzTexture* texture = _earth_texture(context);
+
+    // Graphics bindings.
+    _graphics_bindings(&tg);
+    _graphics_params(&tg, sizeof(DvzGraphicsImageParams), &params);
+    for (uint32_t i = 1; i <= 4; i++)
+        dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + i, texture);
+
+    // Run the test.
+    _graphics_run(&tg, N_FRAMES);
+
+    // Check screenshot and save it for the documentation.
+    int res = _graphics_screenshot(&tg, "image");
+
+    return res;
 }
 
 
 
-int test_graphics_image_cmap(TestContext* tc)
-{
-    return 0;
-}
+int test_graphics_image_cmap(TestContext* tc) { return 0; }
 
 
 
@@ -844,21 +909,12 @@ int test_graphics_image_cmap(TestContext* tc)
 /*  3D graphics tests                                                                            */
 /*************************************************************************************************/
 
-int test_graphics_volume_slice(TestContext* tc)
-{
-    return 0;
-}
+int test_graphics_volume_slice(TestContext* tc) { return 0; }
 
 
 
-int test_graphics_volume(TestContext* tc)
-{
-    return 0;
-}
+int test_graphics_volume(TestContext* tc) { return 0; }
 
 
 
-int test_graphics_mesh(TestContext* tc)
-{
-    return 0;
-}
+int test_graphics_mesh(TestContext* tc) { return 0; }
