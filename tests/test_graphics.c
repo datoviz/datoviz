@@ -901,7 +901,73 @@ int test_graphics_image(TestContext* tc)
 
 
 
-int test_graphics_image_cmap(TestContext* tc) { return 0; }
+int test_graphics_image_cmap(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    DvzContext* context = tc->context;
+
+    ASSERT(canvas != NULL);
+    ASSERT(context != NULL);
+
+    // Create the graphics pipeline.
+    DvzGraphics* graphics = dvz_graphics_builtin(canvas, DVZ_GRAPHICS_IMAGE_CMAP, 0);
+    ASSERT(graphics != NULL);
+
+    // Vertex count and params.
+    DvzGraphicsImageCmapParams params = {.vrange = {-1, 1}, .cmap = DVZ_CMAP_VIRIDIS};
+
+    // Create the graphics struct.
+    TestGraphics tg = {.canvas = canvas, .graphics = graphics};
+    _graphics_create(&tg, sizeof(DvzGraphicsImageVertex), 1, DVZ_INTERACT_PANZOOM);
+
+    // Graphics data.
+    const uint32_t n = 1;
+    float x0 = 0, x1 = 0, z = 0, w = 2.0 / (float)n;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        x0 = -1 + i * w;
+        x1 = -1 + (i + 1) * w;
+        DvzGraphicsImageItem item =                              //
+            {{x0, x1, z}, {x1, x1, z}, {x1, x0, z}, {x0, x0, z}, //
+             {0, 0},      {1, 0},      {1, 1},      {0, 1}};     //
+        dvz_graphics_append(&tg.graphics_data, &item);
+    }
+    _graphics_upload(&tg);
+
+    // Texture.
+    const uint32_t S = 1024;
+    DvzTexture* texture = dvz_ctx_texture(context, 2, (uvec3){S, S, 1}, VK_FORMAT_R32_SFLOAT);
+    VkDeviceSize size = S * S * sizeof(float);
+    float* tex_data = malloc(size);
+    double x = 0, y = 0;
+    uint32_t k = 0;
+    for (uint32_t i = 0; i < S; i++)
+    {
+        x = -1 + 2 * i / (double)(S - 1);
+        for (uint32_t j = 0; j < S; j++)
+        {
+            y = +1 - 2 * j / (double)(S - 1);
+            tex_data[k++] = exp(-2 * (x * x + y * y)) * cos(M_2PI * 3 * x) * sin(M_2PI * 3 * y);
+        }
+    }
+    dvz_upload_texture(
+        context, texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, size, tex_data);
+    FREE(tex_data)
+
+    // Graphics bindings.
+    _graphics_bindings(&tg);
+    _graphics_params(&tg, sizeof(DvzGraphicsImageCmapParams), &params);
+    dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 1, context->color_texture.texture);
+    dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 2, texture);
+
+    // Run the test.
+    _graphics_run(&tg, N_FRAMES);
+
+    // Check screenshot and save it for the documentation.
+    int res = _graphics_screenshot(&tg, "image_cmap");
+
+    return res;
+}
 
 
 
