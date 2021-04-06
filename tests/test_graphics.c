@@ -1,5 +1,6 @@
 #include "../include/datoviz/graphics.h"
 #include "../include/datoviz/interact.h"
+#include "../include/datoviz/mesh.h"
 #include "proto.h"
 #include "tests.h"
 
@@ -983,4 +984,62 @@ int test_graphics_volume(TestContext* tc) { return 0; }
 
 
 
-int test_graphics_mesh(TestContext* tc) { return 0; }
+int test_graphics_mesh(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    DvzContext* context = tc->context;
+
+    ASSERT(canvas != NULL);
+    ASSERT(context != NULL);
+
+    // Create the graphics pipeline.
+    DvzGraphics* graphics = dvz_graphics_builtin(canvas, DVZ_GRAPHICS_MESH, 0);
+    ASSERT(graphics != NULL);
+
+    // Mesh.
+    DvzMesh mesh = dvz_mesh_cube();
+    ASSERT(mesh.vertices.item_count > 0);
+
+    // Create the graphics struct.
+    TestGraphics tg = {.canvas = canvas, .graphics = graphics};
+    tg.interact = dvz_interact_builtin(canvas, DVZ_INTERACT_ARCBALL);
+    tg.vertices = mesh.vertices;
+    tg.br_vert = dvz_ctx_buffers(
+        context, DVZ_BUFFER_TYPE_VERTEX, 1,
+        tg.vertices.item_count * sizeof(DvzGraphicsMeshVertex));
+    ASSERT(tg.vertices.item_count > 0);
+    // ASSERT(mesh.indices.item_count > 0);
+    // tg.indices = mesh.indices;
+    // tg.br_index = dvz_ctx_buffers(
+    //     context, DVZ_BUFFER_TYPE_INDEX, 1, tg.indices.item_count * sizeof(DvzIndex));
+    // ASSERT(tg.indices.item_count > 0);
+    _graphics_upload(&tg);
+
+    // Params.
+    DvzGraphicsMeshParams params = default_graphics_mesh_params(tg.interact.u.a.camera.eye);
+
+    // Texture.
+    DvzTexture* texture = dvz_ctx_texture(context, 2, (uvec3){2, 2, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+    cvec4 tex_data[] = {
+        {255, 0, 0, 255}, //
+        {0, 255, 0, 255},
+        {0, 0, 255, 255},
+        {255, 255, 0, 255},
+    };
+    dvz_upload_texture(
+        context, texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, sizeof(tex_data), tex_data);
+
+    // Graphics bindings.
+    _graphics_bindings(&tg);
+    _graphics_params(&tg, sizeof(DvzGraphicsMeshParams), &params);
+    for (uint32_t i = 1; i <= 4; i++)
+        dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + i, texture);
+
+    // Run the test.
+    _graphics_run(&tg, N_FRAMES);
+
+    // Check screenshot and save it for the documentation.
+    int res = _graphics_screenshot(&tg, "mesh");
+
+    return res;
+}
