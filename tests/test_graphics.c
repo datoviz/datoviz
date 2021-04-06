@@ -1,6 +1,7 @@
 #include "../include/datoviz/graphics.h"
 #include "../include/datoviz/interact.h"
 #include "../include/datoviz/mesh.h"
+#include "../src/interact_utils.h"
 #include "proto.h"
 #include "tests.h"
 
@@ -1034,6 +1035,10 @@ int test_graphics_mesh(TestContext* tc)
     _graphics_params(&tg, sizeof(DvzGraphicsMeshParams), &params);
     for (uint32_t i = 1; i <= 4; i++)
         dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + i, texture);
+
+    // Arcball rotation.
+    vec3 angles = {M_PI / 8, -M_PI / 8, 0};
+    _arcball_from_angles(&tg.interact.u.a, angles);
 
     // Run the test.
     _graphics_run(&tg, N_FRAMES);
