@@ -107,10 +107,10 @@ int test_graphics_marker(TestContext*);
 int test_graphics_segment(TestContext*);
 int test_graphics_path(TestContext*);
 int test_graphics_text(TestContext*);
-int test_graphics_image(TestContext*);
+int test_graphics_image_1(TestContext*);
 int test_graphics_image_cmap(TestContext*);
 int test_graphics_volume_slice(TestContext*);
-int test_graphics_volume(TestContext*);
+int test_graphics_volume_1(TestContext*);
 int test_graphics_mesh(TestContext*);
 
 // Test visuals.
@@ -225,10 +225,10 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE(CANVAS, test_graphics_segment),        //
     CASE_FIXTURE(CANVAS, test_graphics_path),           //
     CASE_FIXTURE(CANVAS, test_graphics_text),           //
-    CASE_FIXTURE(CANVAS, test_graphics_image),          //
+    CASE_FIXTURE(CANVAS, test_graphics_image_1),        //
     CASE_FIXTURE(CANVAS, test_graphics_image_cmap),     //
     CASE_FIXTURE(CANVAS, test_graphics_volume_slice),   //
-    CASE_FIXTURE(CANVAS, test_graphics_volume),         //
+    CASE_FIXTURE(CANVAS, test_graphics_volume_1),       //
     CASE_FIXTURE(CANVAS, test_graphics_mesh),           //
 
     // Visuals.

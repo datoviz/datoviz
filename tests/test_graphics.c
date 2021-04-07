@@ -244,6 +244,40 @@ static DvzTexture* _earth_texture(DvzContext* context)
     return texture;
 }
 
+static DvzTexture* _volume_texture(DvzContext* context, int kind)
+{
+    const uint32_t S = 64;
+    VkDeviceSize size = S * S * S * sizeof(uint8_t);
+    DvzTexture* texture = dvz_ctx_texture(context, 3, (uvec3){S, S, S}, VK_FORMAT_R8_UNORM);
+    uint8_t* tex_data = calloc(S * S * S, sizeof(uint8_t));
+    uint32_t l = 0;
+    double x, y, z, w;
+    double c = S / 2;
+    for (uint32_t i = 0; i < S; i++)
+    {
+        for (uint32_t j = 0; j < S; j++)
+        {
+            for (uint32_t k = 0; k < S; k++)
+            {
+                x = ((double)i - c) / c;
+                y = ((double)j - c) / c;
+                z = ((double)k - c) / c;
+                w = exp(-4 * (x * x + y * y + z * z));
+
+                if (kind == 0)
+                    tex_data[l++] = TO_BYTE(w);
+                else
+                    tex_data[l++] = dvz_rand_byte() % 3;
+
+                // tex_data[l++] = (i & j) | (i & k) | (j & k) ? 0 : 32;
+            }
+        }
+    }
+    dvz_upload_texture(context, texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, size, tex_data);
+    FREE(tex_data);
+    return texture;
+}
+
 
 
 /*************************************************************************************************/
@@ -849,7 +883,7 @@ int test_graphics_text(TestContext* tc)
 
 
 
-int test_graphics_image(TestContext* tc)
+int test_graphics_image_1(TestContext* tc)
 {
     DvzCanvas* canvas = tc->canvas;
     DvzContext* context = tc->context;
@@ -952,8 +986,7 @@ int test_graphics_image_cmap(TestContext* tc)
             tex_data[k++] = exp(-2 * (x * x + y * y)) * cos(M_2PI * 3 * x) * sin(M_2PI * 3 * y);
         }
     }
-    dvz_upload_texture(
-        context, texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, size, tex_data);
+    dvz_upload_texture(context, texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, size, tex_data);
     FREE(tex_data)
 
     // Graphics bindings.
@@ -1009,43 +1042,10 @@ int test_graphics_volume_slice(TestContext* tc)
     _graphics_upload(&tg);
 
     // Params.
-    DvzGraphicsVolumeSliceParams params = {
-        .cmap = DVZ_CMAP_BONE, .scale = 1
-    };
-    // Transfer function for the alpha channel.
-    // params.x_alpha[0] = 0;
-    // params.x_alpha[1] = 0;
-    // params.x_alpha[2] = 1;
-    // params.x_alpha[3] = 1;
-    // params.y_alpha[0] = 0.5;
-    // params.y_alpha[1] = 0.5;
-    // params.y_alpha[2] = 1;
-    // params.y_alpha[3] = 1;
+    DvzGraphicsVolumeSliceParams params = {.cmap = DVZ_CMAP_BONE, .scale = 1};
 
     // Texture.
-    const uint32_t S = 64;
-    VkDeviceSize size = S * S * S * sizeof(uint8_t);
-    DvzTexture* texture = dvz_ctx_texture(
-        context, 3, (uvec3){S, S, S}, VK_FORMAT_R8_UNORM);
-    uint8_t* tex_data = calloc(S * S * S, sizeof(uint8_t));
-    uint32_t l = 0;
-    double c = S / 2;
-    for (uint32_t i = 0; i < S; i++)
-    {
-        for (uint32_t j = 0; j < S; j++)
-        {
-            for (uint32_t k = 0; k < S; k++)
-            {
-                x = ((double)i - c);
-                y = ((double)j - c);
-                z = ((double)k - c);
-                tex_data[l++] = TO_BYTE(exp(-.002 * (x*x+y*y+z*z)));
-            }
-        }
-    }
-    dvz_upload_texture(
-        context, texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, size, tex_data);
-    FREE(tex_data);
+    DvzTexture* texture = _volume_texture(context, 0);
 
     // Graphics bindings.
     _graphics_bindings(&tg);
@@ -1068,7 +1068,63 @@ int test_graphics_volume_slice(TestContext* tc)
 
 
 
-int test_graphics_volume(TestContext* tc) { return 0; }
+int test_graphics_volume_1(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    DvzContext* context = tc->context;
+
+    ASSERT(canvas != NULL);
+    ASSERT(context != NULL);
+
+    // Create the graphics pipeline.
+    DvzGraphics* graphics = dvz_graphics_builtin(canvas, DVZ_GRAPHICS_VOLUME, 0);
+    ASSERT(graphics != NULL);
+
+    // Params.
+    uint32_t ni = 64, nj = 64, nk = 64;
+    DvzGraphicsVolumeParams params = {0};
+    float c = .01;
+    vec4 box_size = {c * ni, c * nj, 1 * c * nk, 0};
+    glm_vec4_copy(box_size, params.box_size);
+    params.uvw1[0] = 1;
+    params.uvw1[1] = 1;
+    params.uvw1[2] = 1;
+    params.color_coef = 1;
+
+    // Create the graphics struct.
+    TestGraphics tg = {.canvas = canvas, .graphics = graphics};
+    _graphics_create(&tg, sizeof(DvzGraphicsVolumeVertex), 1, DVZ_INTERACT_ARCBALL);
+
+    // Graphics data.
+    vec3 p0 = {-c * ni / 2., -c * nj / 2., -1 * c * nk / 2.};
+    vec3 p1 = {+c * ni / 2., +c * nj / 2., +1 * c * nk / 2.};
+    DvzGraphicsVolumeItem item = {{p0[0], p0[1], p0[2]}, {p1[0], p1[1], p1[2]}};
+    dvz_graphics_append(&tg.graphics_data, &item);
+    _graphics_upload(&tg);
+
+    // Texture.
+    DvzTexture* texture = _volume_texture(context, 1);
+
+    // Graphics bindings.
+    _graphics_bindings(&tg);
+    _graphics_params(&tg, sizeof(DvzGraphicsVolumeParams), &params);
+    dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 1, texture);
+    dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 2, texture);
+    dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 3, context->transfer_texture);
+
+    // Arcball rotation.
+    vec3 angles = {+M_PI / 6, -M_PI / 4, 0};
+    _arcball_from_angles(&tg.interact.u.a, angles);
+    tg.interact.u.a.camera.eye[2] = 2;
+
+    // Run the test.
+    _graphics_run(&tg, N_FRAMES);
+
+    // Check screenshot and save it for the documentation.
+    int res = _graphics_screenshot(&tg, "volume");
+
+    return res;
+}
 
 
 
