@@ -212,7 +212,7 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE(APP, test_canvas_triangle_append),    //
 
     // Interact.
-    CASE_FIXTURE(NONE, test_interact_panzoom), //
+    CASE_FIXTURE(CANVAS, test_interact_panzoom), //
 
     // Graphics.
     CASE_FIXTURE(CANVAS, test_graphics_point),          //
