@@ -977,7 +977,94 @@ int test_graphics_image_cmap(TestContext* tc)
 /*  3D graphics tests                                                                            */
 /*************************************************************************************************/
 
-int test_graphics_volume_slice(TestContext* tc) { return 0; }
+int test_graphics_volume_slice(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    DvzContext* context = tc->context;
+
+    ASSERT(canvas != NULL);
+    ASSERT(context != NULL);
+
+    // Create the graphics pipeline.
+    DvzGraphics* graphics = dvz_graphics_builtin(canvas, DVZ_GRAPHICS_VOLUME_SLICE, 0);
+    ASSERT(graphics != NULL);
+
+    // Create the graphics struct.
+    TestGraphics tg = {.canvas = canvas, .graphics = graphics};
+    const uint32_t n = 5;
+    _graphics_create(&tg, sizeof(DvzGraphicsVolumeSliceVertex), n - 2, DVZ_INTERACT_ARCBALL);
+
+    // Graphics data.
+    double x = 1, y = 1, z = 0, t = 0;
+    for (uint32_t i = 1; i < n - 1; i++)
+    {
+        t = 1 - i / (double)(n - 1);
+        z = -1 + 2 * t;
+        t = .1 + .8 * t;
+        DvzGraphicsVolumeSliceItem item =                        //
+            {{-x, -y, z}, {+x, -y, z}, {+x, +y, z}, {-x, +y, z}, //
+             {1, 0, t},   {1, 1, t},   {0, 1, t},   {0, 0, t}};  //
+        dvz_graphics_append(&tg.graphics_data, &item);
+    }
+    _graphics_upload(&tg);
+
+    // Params.
+    DvzGraphicsVolumeSliceParams params = {
+        .cmap = DVZ_CMAP_BONE, .scale = 1
+    };
+    // Transfer function for the alpha channel.
+    // params.x_alpha[0] = 0;
+    // params.x_alpha[1] = 0;
+    // params.x_alpha[2] = 1;
+    // params.x_alpha[3] = 1;
+    // params.y_alpha[0] = 0.5;
+    // params.y_alpha[1] = 0.5;
+    // params.y_alpha[2] = 1;
+    // params.y_alpha[3] = 1;
+
+    // Texture.
+    const uint32_t S = 64;
+    VkDeviceSize size = S * S * S * sizeof(uint8_t);
+    DvzTexture* texture = dvz_ctx_texture(
+        context, 3, (uvec3){S, S, S}, VK_FORMAT_R8_UNORM);
+    uint8_t* tex_data = calloc(S * S * S, sizeof(uint8_t));
+    uint32_t l = 0;
+    double c = S / 2;
+    for (uint32_t i = 0; i < S; i++)
+    {
+        for (uint32_t j = 0; j < S; j++)
+        {
+            for (uint32_t k = 0; k < S; k++)
+            {
+                x = ((double)i - c);
+                y = ((double)j - c);
+                z = ((double)k - c);
+                tex_data[l++] = TO_BYTE(exp(-.002 * (x*x+y*y+z*z)));
+            }
+        }
+    }
+    dvz_upload_texture(
+        context, texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, size, tex_data);
+    FREE(tex_data);
+
+    // Graphics bindings.
+    _graphics_bindings(&tg);
+    _graphics_params(&tg, sizeof(DvzGraphicsVolumeSliceParams), &params);
+    dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 1, context->color_texture.texture);
+    dvz_bindings_texture(&tg.bindings, DVZ_USER_BINDING + 2, texture);
+
+    // Arcball rotation.
+    vec3 angles = {+M_PI / 12, -M_PI / 4, 0};
+    _arcball_from_angles(&tg.interact.u.a, angles);
+
+    // Run the test.
+    _graphics_run(&tg, N_FRAMES);
+
+    // Check screenshot and save it for the documentation.
+    int res = _graphics_screenshot(&tg, "volume_slice");
+
+    return res;
+}
 
 
 
