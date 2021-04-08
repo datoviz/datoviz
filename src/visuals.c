@@ -145,6 +145,7 @@ DvzProp* dvz_visual_prop(
     prop->prop_type = prop_type;
     prop->prop_idx = prop_idx;
     prop->dtype = dtype;
+    prop->item_size = _get_dtype_size(dtype);
     prop->dpi_scaling = 1;
     prop->source = dvz_source_get(visual, source_type, source_idx);
     if (prop->source == NULL && source_type != DVZ_SOURCE_TYPE_NONE)
@@ -153,7 +154,8 @@ DvzProp* dvz_visual_prop(
     }
 
     // NOTE: we do not use prop arrays for texture sources at the moment
-    if (prop->source == NULL || prop->source->source_kind < DVZ_SOURCE_KIND_TEXTURE_1D)
+    if ((prop->source == NULL || prop->source->source_kind < DVZ_SOURCE_KIND_TEXTURE_1D) &&
+        prop->dtype != DVZ_DTYPE_CUSTOM)
         prop->arr_orig = dvz_array(0, prop->dtype);
 
     return prop;
@@ -188,6 +190,19 @@ void dvz_visual_prop_copy(
     prop->copy_type = copy_type;
     prop->reps = reps;
     prop->target_dtype = DVZ_DTYPE_NONE;
+}
+
+
+
+void dvz_visual_prop_size(DvzProp* prop, VkDeviceSize item_size)
+{
+    ASSERT(prop != NULL);
+    ASSERT(item_size > 0);
+
+    prop->item_size = item_size;
+
+    if (prop->source == NULL || prop->source->source_kind < DVZ_SOURCE_KIND_TEXTURE_1D)
+        prop->arr_orig = dvz_array_struct(0, prop->item_size);
 }
 
 

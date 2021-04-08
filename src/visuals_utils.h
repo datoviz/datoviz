@@ -440,7 +440,7 @@ static void _prop_copy(DvzVisual* visual, DvzProp* prop)
     DvzSource* source = prop->source;
     ASSERT(source != NULL);
 
-    VkDeviceSize col_size = _get_dtype_size(prop->dtype);
+    VkDeviceSize col_size = prop->item_size;
     ASSERT(col_size > 0);
 
     DvzArray* arr = _prop_array(prop);

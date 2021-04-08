@@ -71,6 +71,7 @@ typedef enum
     DVZ_PROP_MODEL,
     DVZ_PROP_VIEW,
     DVZ_PROP_PROJ,
+    DVZ_PROP_VIEWPORT,
     DVZ_PROP_TIME,
     DVZ_PROP_INDEX,
     DVZ_PROP_SCALE,
@@ -241,6 +242,7 @@ struct DvzProp
     uint32_t field_idx;
     DvzDataType dtype;
     VkDeviceSize offset;
+    VkDeviceSize item_size;
 
     float dpi_scaling; // 1 by default, otherwise may be set to canvas->dpi_scaling
 
@@ -435,6 +437,14 @@ DVZ_EXPORT void dvz_visual_prop_default(DvzProp* prop, void* default_value);
 DVZ_EXPORT void dvz_visual_prop_copy(
     DvzProp* prop, uint32_t field_idx, VkDeviceSize offset, //
     DvzArrayCopyType copy_type, uint32_t reps);
+
+/**
+ * Set the item size, in bytes, of a custom dtype.
+ *
+ * @param prop the prop
+ * @param item_size the size of each prop item, in bytes
+ */
+DVZ_EXPORT void dvz_visual_prop_size(DvzProp* prop, VkDeviceSize item_size);
 
 /**
  * Set up how a prop should be cast when it is copied to its source.

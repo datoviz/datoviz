@@ -56,6 +56,7 @@ static void _marker_visual(DvzVisual* visual)
             dvz_visual_prop(visual, DVZ_PROP_COLOR, 0, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 0);
         dvz_visual_prop_copy(prop, 1, offsetof(DvzVertex, color), DVZ_ARRAY_COPY_SINGLE, 1);
 
+
         // MVP
         // Model.
         prop = dvz_visual_prop(visual, DVZ_PROP_MODEL, 0, DVZ_DTYPE_MAT4, DVZ_SOURCE_TYPE_MVP, 0);
@@ -69,11 +70,11 @@ static void _marker_visual(DvzVisual* visual)
         prop = dvz_visual_prop(visual, DVZ_PROP_PROJ, 0, DVZ_DTYPE_MAT4, DVZ_SOURCE_TYPE_MVP, 0);
         dvz_visual_prop_copy(prop, 2, offsetof(DvzMVP, proj), DVZ_ARRAY_COPY_SINGLE, 1);
 
-        // // Viewport.
-        // prop = dvz_visual_prop(visual, DVZ_PROP_VIEWPORT, 0, DVZ_DTYPE_CUSTOM,
-        // DVZ_SOURCE_TYPE_VIEWPORT, 0); dvz_visual_prop_copy(prop, 0, 0, DVZ_ARRAY_COPY_SINGLE,
-        // 1);
-
+        // Viewport.
+        prop = dvz_visual_prop(
+            visual, DVZ_PROP_VIEWPORT, 0, DVZ_DTYPE_CUSTOM, DVZ_SOURCE_TYPE_VIEWPORT, 0);
+        dvz_visual_prop_size(prop, sizeof(DvzViewport));
+        dvz_visual_prop_copy(prop, 0, 0, DVZ_ARRAY_COPY_SINGLE, 1);
 
 
         // Param: marker size.
@@ -147,16 +148,63 @@ static void _visual_viewport_buffer(DvzVisual* visual)
     dvz_visual_buffer(visual, DVZ_SOURCE_TYPE_VIEWPORT, 0, br_viewport);
 }
 
-static DvzVertex* _visual_data(DvzVisual* visual, uint32_t N)
+static void _visual_bindings(DvzVisual* visual)
+{
+    ASSERT(visual != NULL);
+    DvzCanvas* canvas = visual->canvas;
+
+    // Binding resources.
+    mat4 id = GLM_MAT4_IDENTITY_INIT;
+    dvz_visual_data(visual, DVZ_PROP_MODEL, 0, 1, id);
+    dvz_visual_data(visual, DVZ_PROP_VIEW, 0, 1, id);
+    dvz_visual_data(visual, DVZ_PROP_PROJ, 0, 1, id);
+    dvz_visual_data(visual, DVZ_PROP_MARKER_SIZE, 0, 1, (float[]){50});
+    dvz_visual_data(visual, DVZ_PROP_VIEWPORT, 0, 1, &canvas->viewport);
+}
+
+static inline void _visual_pos(DvzVisual* visual, uint32_t i, uint32_t N, vec3* pos)
+{
+    pos[0][0] = .9 * (-1 + 2 * i / ((float)N - 1));
+}
+
+static inline void _visual_dpos(DvzVisual* visual, uint32_t i, uint32_t N, dvec3* pos)
+{
+    pos[0][0] = .9 * (-1 + 2 * i / ((float)N - 1));
+}
+
+static inline void _visual_color(DvzVisual* visual, uint32_t i, uint32_t N, cvec4* color)
+{
+    dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, N, color[0]);
+}
+
+static DvzVertex* _visual_data_source(DvzVisual* visual, uint32_t N)
 {
     DvzVertex* vertices = calloc(N, sizeof(DvzVertex));
     for (uint32_t i = 0; i < N; i++)
     {
-        vertices[i].pos[0] = .9 * (-1 + 2 * i / ((float)N - 1));
-        dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, N, vertices[i].color);
+        _visual_pos(visual, i, N, &vertices[i].pos);
+        _visual_color(visual, i, N, &vertices[i].color);
     }
 
     return vertices;
+}
+
+static void _visual_data(DvzVisual* visual, uint32_t N)
+{
+    dvec3* pos = calloc(N, sizeof(dvec3));
+    cvec4* color = calloc(N, sizeof(cvec4));
+
+    for (uint32_t i = 0; i < N; i++)
+    {
+        _visual_dpos(visual, i, N, &pos[i]);
+        _visual_color(visual, i, N, &color[i]);
+    }
+
+    dvz_visual_data(visual, DVZ_PROP_POS, 0, N, pos);
+    dvz_visual_data(visual, DVZ_PROP_COLOR, 0, N, color);
+
+    FREE(pos);
+    FREE(color);
 }
 
 static void _visual_run(DvzVisual* visual)
@@ -188,7 +236,7 @@ int test_visuals_1(TestContext* tc)
 
     // Vertex data.
     const uint32_t N = 12;
-    DvzVertex* vertices = _visual_data(&visual, N);
+    DvzVertex* vertices = _visual_data_source(&visual, N);
 
     // Set visual data ia user-provided data (underlying vertex buffer created automatically).
     dvz_visual_data_source(&visual, DVZ_SOURCE_TYPE_VERTEX, 0, 0, N, N, vertices);
@@ -216,22 +264,11 @@ int test_visuals_2(TestContext* tc)
     // Create the visual.
     DvzVisual visual = dvz_visual(canvas);
     _marker_visual(&visual);
-
-    // Binding resources.
-    mat4 id = GLM_MAT4_IDENTITY_INIT;
-    dvz_visual_data(&visual, DVZ_PROP_MODEL, 0, 1, id);
-    dvz_visual_data(&visual, DVZ_PROP_VIEW, 0, 1, id);
-    dvz_visual_data(&visual, DVZ_PROP_PROJ, 0, 1, id);
-    dvz_visual_data_source(&visual, DVZ_SOURCE_TYPE_VIEWPORT, 0, 0, 1, 1, &canvas->viewport);
-    dvz_visual_data(&visual, DVZ_PROP_MARKER_SIZE, 0, 1, (float[]){50});
+    _visual_bindings(&visual);
 
     // Vertex data.
     const uint32_t N = 12;
-    DvzVertex* vertices = _visual_data(&visual, N);
-
-    // Set visual data as user-provided data (underlying vertex buffer created automatically).
-    dvz_visual_data_source(&visual, DVZ_SOURCE_TYPE_VERTEX, 0, 0, N, N, vertices);
-    FREE(vertices);
+    _visual_data(&visual, N);
 
     // Run the app.
     _visual_run(&visual);
