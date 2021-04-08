@@ -99,22 +99,70 @@ static void _visual_canvas_fill(DvzCanvas* canvas, DvzEvent ev)
 
 
 
-// static int _visual_screenshot(DvzCanvas* canvas, const char* name)
-// {
-//     ASSERT(canvas != NULL);
-
-//     char path[1024];
-//     int res = check_canvas(canvas, name);
-//     snprintf(path, sizeof(path), "%s/docs/images/graphics/%s.png", ROOT_DIR, name);
-//     dvz_screenshot_file(tg->canvas, path);
-//     return res;
-// }
-
-
-
 /*************************************************************************************************/
 /*  Visuals tests                                                                                */
 /*************************************************************************************************/
+
+static void _visual_mvp_buffer(DvzVisual* visual)
+{
+    DvzCanvas* canvas = visual->canvas;
+    DvzContext* context = canvas->gpu->context;
+
+    // Binding data.
+    DvzMVP mvp = {0};
+    DvzBufferRegions br_mvp = dvz_ctx_buffers(
+        context, DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE, canvas->swapchain.img_count, sizeof(DvzMVP));
+    glm_mat4_identity(mvp.model);
+    glm_mat4_identity(mvp.view);
+    glm_mat4_identity(mvp.proj);
+    dvz_canvas_buffers(canvas, br_mvp, 0, sizeof(DvzMVP), &mvp);
+    dvz_visual_buffer(visual, DVZ_SOURCE_TYPE_MVP, 0, br_mvp);
+}
+
+static void _visual_params_buffer(DvzVisual* visual)
+{
+    DvzCanvas* canvas = visual->canvas;
+    DvzContext* context = canvas->gpu->context;
+
+    // Upload params.
+    DvzGraphicsPointParams params = {.point_size = 50};
+    DvzBufferRegions br_params =
+        dvz_ctx_buffers(context, DVZ_BUFFER_TYPE_UNIFORM, 1, sizeof(DvzGraphicsPointParams));
+    dvz_upload_buffer(context, br_params, 0, sizeof(DvzGraphicsPointParams), &params);
+    dvz_visual_buffer(visual, DVZ_SOURCE_TYPE_PARAM, 0, br_params);
+}
+
+static void _visual_viewport_buffer(DvzVisual* visual)
+{
+    DvzCanvas* canvas = visual->canvas;
+    DvzContext* context = canvas->gpu->context;
+
+    // Upload the data to the GPU.
+    DvzBufferRegions br_viewport = dvz_ctx_buffers(context, DVZ_BUFFER_TYPE_UNIFORM, 1, 16);
+    dvz_visual_buffer(visual, DVZ_SOURCE_TYPE_VIEWPORT, 0, br_viewport);
+}
+
+static DvzVertex* _visual_data(DvzVisual* visual, uint32_t N)
+{
+    DvzVertex* vertices = calloc(N, sizeof(DvzVertex));
+    for (uint32_t i = 0; i < N; i++)
+    {
+        vertices[i].pos[0] = .9 * (-1 + 2 * i / ((float)N - 1));
+        dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, N, vertices[i].color);
+    }
+
+    return vertices;
+}
+
+static void _visual_run(DvzVisual* visual)
+{
+    DvzCanvas* canvas = visual->canvas;
+
+    dvz_visual_update(visual, canvas->viewport, (DvzDataCoords){0}, NULL);
+    dvz_event_callback(
+        canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, _visual_canvas_fill, visual);
+    dvz_app_run(canvas->app, N_FRAMES);
+}
 
 int test_visuals_1(TestContext* tc)
 {
@@ -124,55 +172,28 @@ int test_visuals_1(TestContext* tc)
     ASSERT(canvas != NULL);
     ASSERT(context != NULL);
 
+    // Create the visual.
     DvzVisual visual = dvz_visual(canvas);
     _marker_visual(&visual);
 
     // Binding resources.
-    DvzBufferRegions br_mvp = dvz_ctx_buffers(
-        context, DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE, canvas->swapchain.img_count, sizeof(DvzMVP));
-    DvzBufferRegions br_viewport = dvz_ctx_buffers(context, DVZ_BUFFER_TYPE_UNIFORM, 1, 16);
-    DvzBufferRegions br_params =
-        dvz_ctx_buffers(context, DVZ_BUFFER_TYPE_UNIFORM, 1, sizeof(DvzGraphicsPointParams));
-
-    // Binding data.
-    DvzMVP mvp = {0};
-    DvzGraphicsPointParams params = {.point_size = 50};
-    glm_mat4_identity(mvp.model);
-    glm_mat4_identity(mvp.view);
-    glm_mat4_identity(mvp.proj);
-    dvz_canvas_buffers(canvas, br_mvp, 0, sizeof(DvzMVP), &mvp);
-
-    // Upload params.
-    dvz_upload_buffer(context, br_params, 0, sizeof(DvzGraphicsPointParams), &params);
+    _visual_mvp_buffer(&visual);
+    _visual_params_buffer(&visual);
+    _visual_viewport_buffer(&visual);
 
     // Vertex data.
     const uint32_t N = 12;
-    DvzVertex* vertices = calloc(N, sizeof(DvzVertex));
-    for (uint32_t i = 0; i < N; i++)
-    {
-        vertices[i].pos[0] = .9 * (-1 + 2 * i / ((float)N - 1));
-        dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, N, vertices[i].color);
-    }
+    DvzVertex* vertices = _visual_data(&visual, N);
 
     // Set visual data ia user-provided data (underlying vertex buffer created automatically).
     dvz_visual_data_source(&visual, DVZ_SOURCE_TYPE_VERTEX, 0, 0, N, N, vertices);
-
-    // Set uniform buffers.
-    dvz_visual_buffer(&visual, DVZ_SOURCE_TYPE_MVP, 0, br_mvp);
-    dvz_visual_buffer(&visual, DVZ_SOURCE_TYPE_VIEWPORT, 0, br_viewport);
-    dvz_visual_buffer(&visual, DVZ_SOURCE_TYPE_PARAM, 0, br_params);
-
-    // Upload the data to the GPU.
-    dvz_visual_update(&visual, canvas->viewport, (DvzDataCoords){0}, NULL);
-
-    dvz_event_callback(
-        canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, _visual_canvas_fill, &visual);
+    FREE(vertices);
 
     // Run the app.
-    dvz_app_run(canvas->app, N_FRAMES);
+    _visual_run(&visual);
 
     // Check screenshot.
-    check_canvas(canvas, "test_visuals_1");
+    int res = check_canvas(canvas, "test_visuals_1");
 
-    return 0;
+    return res;
 }
