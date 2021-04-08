@@ -10,7 +10,9 @@
 /*  Macros                                                                                       */
 /*************************************************************************************************/
 
-#define N_FRAMES (getenv("DVZ_DEBUG") != NULL ? 0 : 5)
+#define DEBUG_TEST (getenv("DVZ_DEBUG") != NULL)
+
+#define N_FRAMES (DEBUG_TEST ? 0 : 5)
 
 #define TRIANGLE_VERTICES                                                                         \
     {                                                                                             \

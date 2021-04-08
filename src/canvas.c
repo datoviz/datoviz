@@ -405,7 +405,10 @@ static void _refill_canvas(DvzCanvas* canvas, uint32_t img_idx)
     {
         log_debug("complete refill of the canvas");
         for (img_idx = 0; img_idx < img_count; img_idx++)
+        {
+            ev.u.rf.img_idx = img_idx;
             _event_refill(canvas, ev);
+        }
     }
     else
     {
@@ -418,6 +421,11 @@ static void _refill_canvas(DvzCanvas* canvas, uint32_t img_idx)
 
 static void _refill_frame(DvzCanvas* canvas)
 {
+    // ASSERT(canvas != NULL);
+    // dvz_gpu_wait(canvas->gpu);
+    // _refill_canvas(canvas, UINT32_MAX);
+    // return;
+
     uint32_t img_idx = canvas->swapchain.img_idx;
     // Only proceed if the current swapchain image has not been processed yet.
     if (atomic_load(&canvas->refills.status) == DVZ_REFILL_REQUESTED ||

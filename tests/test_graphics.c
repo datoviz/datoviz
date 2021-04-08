@@ -215,6 +215,9 @@ static void _graphics_run(TestGraphics* tg, uint32_t n_frames)
 
 static int _graphics_screenshot(TestGraphics* tg, const char* name)
 {
+    if (DEBUG_TEST)
+        return 0;
+
     ASSERT(tg != NULL);
     ASSERT(tg->canvas != NULL);
 

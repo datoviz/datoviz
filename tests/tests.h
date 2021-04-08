@@ -2,6 +2,7 @@
 #define DVZ_TEST_HEADER
 
 #include "../include/datoviz/canvas.h"
+#include "proto.h"
 #include "runner.h"
 
 
@@ -118,7 +119,8 @@ int test_graphics_mesh(TestContext*);
 // Test visuals.
 int test_visuals_sources(TestContext*);
 int test_visuals_props(TestContext*);
-int test_visuals_prop_update(TestContext*);
+int test_visuals_update_color(TestContext*);
+int test_visuals_update_pos(TestContext*);
 
 // Test builtin visuals.
 int test_vislib_1(TestContext*);
@@ -238,9 +240,10 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE(CANVAS, test_graphics_mesh),           //
 
     // Visuals.
-    CASE_FIXTURE(CANVAS, test_visuals_sources),     //
-    CASE_FIXTURE(CANVAS, test_visuals_props),       //
-    CASE_FIXTURE(CANVAS, test_visuals_prop_update), //
+    CASE_FIXTURE(CANVAS, test_visuals_sources),      //
+    CASE_FIXTURE(CANVAS, test_visuals_props),        //
+    CASE_FIXTURE(CANVAS, test_visuals_update_color), //
+    CASE_FIXTURE(CANVAS, test_visuals_update_pos),   //
 
     // Builtin visuals.
     CASE_FIXTURE(CANVAS, test_vislib_1), //
@@ -291,7 +294,7 @@ static TestContext _test_context()
     TestContext tc = {0};
     tc.n_tests = N_TESTS;
     tc.cases = TEST_CASES;
-    tc.debug = getenv("DVZ_DEBUG") != NULL;
+    tc.debug = DEBUG_TEST;
     return tc;
 }
 
@@ -467,6 +470,9 @@ static int check_image(uvec2 size, const uint8_t* image, const char* path)
 
 static int check_canvas(DvzCanvas* canvas, const char* test_name)
 {
+    if (DEBUG_TEST)
+        return 0;
+
     ASSERT(canvas != NULL);
     uint8_t* image = dvz_screenshot(canvas, false);
     ASSERT(image != NULL);

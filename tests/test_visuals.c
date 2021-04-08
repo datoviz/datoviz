@@ -1,4 +1,5 @@
 #include "../include/datoviz/colormaps.h"
+#include "../include/datoviz/interact.h"
 #include "../include/datoviz/visuals.h"
 #include "proto.h"
 #include "tests.h"
@@ -6,11 +7,34 @@
 
 
 /*************************************************************************************************/
+/*  Typedefs                                                                                     */
+/*************************************************************************************************/
+
+typedef struct TestScene TestScene;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+struct TestScene
+{
+    DvzBufferRegions br_mvp;
+    // DvzMVP mvp;
+    DvzInteract interact;
+};
+
+
+
+/*************************************************************************************************/
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static void _marker_visual(DvzVisual* visual)
+static void _visual_create(DvzVisual* visual)
 {
+    ASSERT(visual != NULL);
+
     DvzCanvas* canvas = visual->canvas;
     DvzProp* prop = NULL;
 
@@ -83,7 +107,18 @@ static void _marker_visual(DvzVisual* visual)
         dvz_visual_prop_copy(
             prop, 0, offsetof(DvzGraphicsPointParams, point_size), DVZ_ARRAY_COPY_SINGLE, 1);
     }
+
+    visual->user_data = calloc(1, sizeof(TestScene));
+    ((TestScene*)visual->user_data)->interact = dvz_interact_builtin(canvas, DVZ_INTERACT_PANZOOM);
 }
+
+static void _visual_destroy(DvzVisual* visual)
+{
+    ASSERT(visual != NULL);
+    FREE(visual->user_data);
+}
+
+
 
 static void _visual_canvas_fill(DvzCanvas* canvas, DvzEvent ev)
 {
@@ -103,22 +138,21 @@ static void _visual_canvas_fill(DvzCanvas* canvas, DvzEvent ev)
     }
 }
 
-
-
 static void _visual_mvp_buffer(DvzVisual* visual)
 {
     DvzCanvas* canvas = visual->canvas;
     DvzContext* context = canvas->gpu->context;
+    TestScene* scene = visual->user_data;
+    ASSERT(scene != NULL);
 
     // Binding data.
-    DvzMVP mvp = {0};
-    DvzBufferRegions br_mvp = dvz_ctx_buffers(
+    scene->br_mvp = dvz_ctx_buffers(
         context, DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE, canvas->swapchain.img_count, sizeof(DvzMVP));
-    glm_mat4_identity(mvp.model);
-    glm_mat4_identity(mvp.view);
-    glm_mat4_identity(mvp.proj);
-    dvz_canvas_buffers(canvas, br_mvp, 0, sizeof(DvzMVP), &mvp);
-    dvz_visual_buffer(visual, DVZ_SOURCE_TYPE_MVP, 0, br_mvp);
+    glm_mat4_identity(scene->interact.mvp.model);
+    glm_mat4_identity(scene->interact.mvp.view);
+    glm_mat4_identity(scene->interact.mvp.proj);
+    dvz_canvas_buffers(canvas, scene->br_mvp, 0, sizeof(DvzMVP), &scene->interact.mvp);
+    dvz_visual_buffer(visual, DVZ_SOURCE_TYPE_MVP, 0, scene->br_mvp);
 }
 
 static void _visual_params_buffer(DvzVisual* visual)
@@ -150,12 +184,14 @@ static void _visual_bindings(DvzVisual* visual)
     DvzCanvas* canvas = visual->canvas;
 
     // Binding resources.
-    mat4 id = GLM_MAT4_IDENTITY_INIT;
-    dvz_visual_data(visual, DVZ_PROP_MODEL, 0, 1, id);
-    dvz_visual_data(visual, DVZ_PROP_VIEW, 0, 1, id);
-    dvz_visual_data(visual, DVZ_PROP_PROJ, 0, 1, id);
+    // mat4 id = GLM_MAT4_IDENTITY_INIT;
+    // dvz_visual_data(visual, DVZ_PROP_MODEL, 0, 1, id);
+    // dvz_visual_data(visual, DVZ_PROP_VIEW, 0, 1, id);
+    // dvz_visual_data(visual, DVZ_PROP_PROJ, 0, 1, id);
     dvz_visual_data(visual, DVZ_PROP_MARKER_SIZE, 0, 1, (float[]){50});
     dvz_visual_data(visual, DVZ_PROP_VIEWPORT, 0, 1, &canvas->viewport);
+
+    _visual_mvp_buffer(visual);
 }
 
 static inline void _visual_pos(DvzVisual* visual, uint32_t i, uint32_t N, vec3* pos)
@@ -203,6 +239,19 @@ static void _visual_data(DvzVisual* visual, uint32_t N)
     FREE(color);
 }
 
+static void _visual_frame(DvzCanvas* canvas, DvzEvent ev)
+{
+    ASSERT(canvas != NULL);
+    DvzVisual* visual = ev.user_data;
+    ASSERT(visual != NULL);
+
+    TestScene* scene = visual->user_data;
+    ASSERT(scene != NULL);
+
+    dvz_interact_update(&scene->interact, canvas->viewport, &canvas->mouse, &canvas->keyboard);
+    dvz_canvas_buffers(canvas, scene->br_mvp, 0, sizeof(DvzMVP), &scene->interact.mvp);
+}
+
 static void _visual_run(DvzVisual* visual, uint32_t n_frames)
 {
     DvzCanvas* canvas = visual->canvas;
@@ -210,7 +259,9 @@ static void _visual_run(DvzVisual* visual, uint32_t n_frames)
     dvz_visual_update(visual, canvas->viewport, (DvzDataCoords){0}, NULL);
     dvz_event_callback(
         canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, _visual_canvas_fill, visual);
+    dvz_event_callback(canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _visual_frame, visual);
     dvz_app_run(canvas->app, n_frames);
+    _visual_destroy(visual);
 }
 
 
@@ -229,7 +280,7 @@ int test_visuals_sources(TestContext* tc)
 
     // Create the visual.
     DvzVisual visual = dvz_visual(canvas);
-    _marker_visual(&visual);
+    _visual_create(&visual);
 
     // Binding resources.
     _visual_mvp_buffer(&visual);
@@ -265,7 +316,7 @@ int test_visuals_props(TestContext* tc)
 
     // Create the visual.
     DvzVisual visual = dvz_visual(canvas);
-    _marker_visual(&visual);
+    _visual_create(&visual);
     _visual_bindings(&visual);
 
     // Vertex data.
@@ -283,7 +334,7 @@ int test_visuals_props(TestContext* tc)
 
 
 
-static void _visual_frame(DvzCanvas* canvas, DvzEvent ev)
+static void _visual_frame_color(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
     DvzVisual* visual = ev.user_data;
@@ -300,7 +351,7 @@ static void _visual_frame(DvzCanvas* canvas, DvzEvent ev)
     dvz_visual_update(visual, canvas->viewport, (DvzDataCoords){0}, NULL);
 }
 
-int test_visuals_prop_update(TestContext* tc)
+int test_visuals_update_color(TestContext* tc)
 {
     DvzCanvas* canvas = tc->canvas;
     DvzContext* context = tc->context;
@@ -310,20 +361,68 @@ int test_visuals_prop_update(TestContext* tc)
 
     // Create the visual.
     DvzVisual visual = dvz_visual(canvas);
-    _marker_visual(&visual);
+    _visual_create(&visual);
     _visual_bindings(&visual);
 
     // Vertex data.
     const uint32_t N = 12;
     _visual_data(&visual, N);
 
-    dvz_event_callback(canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _visual_frame, &visual);
+    dvz_event_callback(
+        canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _visual_frame_color, &visual);
 
     // Run the app.
     _visual_run(&visual, 3 + N / 2);
 
     // Check screenshot.
-    int res = check_canvas(canvas, "test_visuals_prop_update");
+    int res = check_canvas(canvas, "test_visuals_update_color");
+
+    return res;
+}
+
+
+
+static void _visual_frame_pos(DvzCanvas* canvas, DvzEvent ev)
+{
+    ASSERT(canvas != NULL);
+    DvzVisual* visual = ev.user_data;
+    ASSERT(visual != NULL);
+
+    if (ev.u.f.idx % 10 != 0)
+        return;
+
+    uint32_t N = 3 + (ev.u.f.idx / 10) % 12;
+    _visual_data(visual, N);
+
+    dvz_visual_update(visual, canvas->viewport, (DvzDataCoords){0}, NULL);
+    dvz_canvas_to_refill(visual->canvas);
+}
+
+int test_visuals_update_pos(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    DvzContext* context = tc->context;
+
+    ASSERT(canvas != NULL);
+    ASSERT(context != NULL);
+
+    // Create the visual.
+    DvzVisual visual = dvz_visual(canvas);
+    _visual_create(&visual);
+    _visual_bindings(&visual);
+
+    // Vertex data.
+    const uint32_t N = 3;
+    _visual_data(&visual, N);
+
+    dvz_event_callback(
+        canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _visual_frame_pos, &visual);
+
+    // Run the app.
+    _visual_run(&visual, N_FRAMES);
+
+    // Check screenshot.
+    int res = check_canvas(canvas, "test_visuals_update_pos");
 
     return res;
 }
