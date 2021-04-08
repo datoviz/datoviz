@@ -116,8 +116,9 @@ int test_graphics_volume_1(TestContext*);
 int test_graphics_mesh(TestContext*);
 
 // Test visuals.
-int test_visuals_1(TestContext*);
-int test_visuals_2(TestContext*);
+int test_visuals_sources(TestContext*);
+int test_visuals_props(TestContext*);
+int test_visuals_prop_update(TestContext*);
 
 // Test builtin visuals.
 int test_vislib_1(TestContext*);
@@ -237,8 +238,9 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE(CANVAS, test_graphics_mesh),           //
 
     // Visuals.
-    CASE_FIXTURE(CANVAS, test_visuals_1), //
-    CASE_FIXTURE(CANVAS, test_visuals_2), //
+    CASE_FIXTURE(CANVAS, test_visuals_sources),     //
+    CASE_FIXTURE(CANVAS, test_visuals_props),       //
+    CASE_FIXTURE(CANVAS, test_visuals_prop_update), //
 
     // Builtin visuals.
     CASE_FIXTURE(CANVAS, test_vislib_1), //
@@ -289,6 +291,7 @@ static TestContext _test_context()
     TestContext tc = {0};
     tc.n_tests = N_TESTS;
     tc.cases = TEST_CASES;
+    tc.debug = getenv("DVZ_DEBUG") != NULL;
     return tc;
 }
 

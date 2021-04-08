@@ -105,10 +105,6 @@ static void _visual_canvas_fill(DvzCanvas* canvas, DvzEvent ev)
 
 
 
-/*************************************************************************************************/
-/*  Visuals tests                                                                                */
-/*************************************************************************************************/
-
 static void _visual_mvp_buffer(DvzVisual* visual)
 {
     DvzCanvas* canvas = visual->canvas;
@@ -207,17 +203,23 @@ static void _visual_data(DvzVisual* visual, uint32_t N)
     FREE(color);
 }
 
-static void _visual_run(DvzVisual* visual)
+static void _visual_run(DvzVisual* visual, uint32_t n_frames)
 {
     DvzCanvas* canvas = visual->canvas;
 
     dvz_visual_update(visual, canvas->viewport, (DvzDataCoords){0}, NULL);
     dvz_event_callback(
         canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, _visual_canvas_fill, visual);
-    dvz_app_run(canvas->app, N_FRAMES);
+    dvz_app_run(canvas->app, n_frames);
 }
 
-int test_visuals_1(TestContext* tc)
+
+
+/*************************************************************************************************/
+/*  Visuals tests                                                                                */
+/*************************************************************************************************/
+
+int test_visuals_sources(TestContext* tc)
 {
     DvzCanvas* canvas = tc->canvas;
     DvzContext* context = tc->context;
@@ -243,17 +245,17 @@ int test_visuals_1(TestContext* tc)
     FREE(vertices);
 
     // Run the app.
-    _visual_run(&visual);
+    _visual_run(&visual, N_FRAMES);
 
     // Check screenshot.
-    int res = check_canvas(canvas, "test_visuals_1");
+    int res = check_canvas(canvas, "test_visuals_sources");
 
     return res;
 }
 
 
 
-int test_visuals_2(TestContext* tc)
+int test_visuals_props(TestContext* tc)
 {
     DvzCanvas* canvas = tc->canvas;
     DvzContext* context = tc->context;
@@ -271,10 +273,57 @@ int test_visuals_2(TestContext* tc)
     _visual_data(&visual, N);
 
     // Run the app.
-    _visual_run(&visual);
+    _visual_run(&visual, N_FRAMES);
 
     // Check screenshot.
-    int res = check_canvas(canvas, "test_visuals_2");
+    int res = check_canvas(canvas, "test_visuals_props");
+
+    return res;
+}
+
+
+
+static void _visual_frame(DvzCanvas* canvas, DvzEvent ev)
+{
+    ASSERT(canvas != NULL);
+    DvzVisual* visual = ev.user_data;
+    ASSERT(visual != NULL);
+
+    uint32_t N = dvz_visual_item_count(visual);
+
+    cvec4* color = calloc(N, sizeof(cvec4));
+    for (uint32_t i = 0; i < N; i++)
+        _visual_color(visual, (i + ev.u.f.idx) % N, N, &color[i]);
+    dvz_visual_data(visual, DVZ_PROP_COLOR, 0, N, color);
+    FREE(color);
+
+    dvz_visual_update(visual, canvas->viewport, (DvzDataCoords){0}, NULL);
+}
+
+int test_visuals_prop_update(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    DvzContext* context = tc->context;
+
+    ASSERT(canvas != NULL);
+    ASSERT(context != NULL);
+
+    // Create the visual.
+    DvzVisual visual = dvz_visual(canvas);
+    _marker_visual(&visual);
+    _visual_bindings(&visual);
+
+    // Vertex data.
+    const uint32_t N = 12;
+    _visual_data(&visual, N);
+
+    dvz_event_callback(canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _visual_frame, &visual);
+
+    // Run the app.
+    _visual_run(&visual, 3 + N / 2);
+
+    // Check screenshot.
+    int res = check_canvas(canvas, "test_visuals_prop_update");
 
     return res;
 }

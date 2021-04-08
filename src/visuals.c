@@ -478,6 +478,14 @@ void dvz_visual_flags(DvzVisual* visual, int flags)
 
 
 
+uint32_t dvz_visual_item_count(DvzVisual* visual)
+{
+    DvzProp* prop = dvz_prop_get(visual, DVZ_PROP_POS, 0);
+    return dvz_prop_size(prop);
+}
+
+
+
 /*************************************************************************************************/
 /*  Visual events                                                                                */
 /*************************************************************************************************/

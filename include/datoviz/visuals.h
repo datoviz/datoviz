@@ -580,6 +580,15 @@ DVZ_EXPORT void dvz_visual_texture(
  */
 DVZ_EXPORT void dvz_visual_flags(DvzVisual* visual, int flags);
 
+/**
+ * Return the number of items in a visual.
+ *
+ * @param visual the visual
+ * @returns the number of items in the POS prop
+ */
+
+DVZ_EXPORT uint32_t dvz_visual_item_count(DvzVisual* visual);
+
 
 
 /*************************************************************************************************/

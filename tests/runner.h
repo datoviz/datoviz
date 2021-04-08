@@ -56,6 +56,8 @@ struct TestContext
     DvzApp* app;
     DvzContext* context;
     DvzCanvas* canvas;
+
+    bool debug;
 };
 
 
@@ -186,7 +188,8 @@ static void _fixture_begin(TestContext* tc, TestCase* test_case)
     case TEST_FIXTURE_CANVAS:
         _fixture_app(tc);
         // HACK: offscreen canvas fixture.
-        tc->app->backend = DVZ_BACKEND_OFFSCREEN;
+        if (!tc->debug)
+            tc->app->backend = DVZ_BACKEND_OFFSCREEN;
         _fixture_canvas(tc);
         break;
 
@@ -216,7 +219,8 @@ static void _fixture_end(TestContext* tc, TestCase* test_case)
 
         // Canvas fixture.
     case TEST_FIXTURE_CANVAS:
-        tc->app->backend = DVZ_BACKEND_GLFW;
+        if (!tc->debug)
+            tc->app->backend = DVZ_BACKEND_GLFW;
         break;
 
     default:
