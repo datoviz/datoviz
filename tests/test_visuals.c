@@ -69,6 +69,11 @@ static void _marker_visual(DvzVisual* visual)
         prop = dvz_visual_prop(visual, DVZ_PROP_PROJ, 0, DVZ_DTYPE_MAT4, DVZ_SOURCE_TYPE_MVP, 0);
         dvz_visual_prop_copy(prop, 2, offsetof(DvzMVP, proj), DVZ_ARRAY_COPY_SINGLE, 1);
 
+        // // Viewport.
+        // prop = dvz_visual_prop(visual, DVZ_PROP_VIEWPORT, 0, DVZ_DTYPE_CUSTOM,
+        // DVZ_SOURCE_TYPE_VIEWPORT, 0); dvz_visual_prop_copy(prop, 0, 0, DVZ_ARRAY_COPY_SINGLE,
+        // 1);
+
 
 
         // Param: marker size.
@@ -194,6 +199,45 @@ int test_visuals_1(TestContext* tc)
 
     // Check screenshot.
     int res = check_canvas(canvas, "test_visuals_1");
+
+    return res;
+}
+
+
+
+int test_visuals_2(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    DvzContext* context = tc->context;
+
+    ASSERT(canvas != NULL);
+    ASSERT(context != NULL);
+
+    // Create the visual.
+    DvzVisual visual = dvz_visual(canvas);
+    _marker_visual(&visual);
+
+    // Binding resources.
+    mat4 id = GLM_MAT4_IDENTITY_INIT;
+    dvz_visual_data(&visual, DVZ_PROP_MODEL, 0, 1, id);
+    dvz_visual_data(&visual, DVZ_PROP_VIEW, 0, 1, id);
+    dvz_visual_data(&visual, DVZ_PROP_PROJ, 0, 1, id);
+    dvz_visual_data_source(&visual, DVZ_SOURCE_TYPE_VIEWPORT, 0, 0, 1, 1, &canvas->viewport);
+    dvz_visual_data(&visual, DVZ_PROP_MARKER_SIZE, 0, 1, (float[]){50});
+
+    // Vertex data.
+    const uint32_t N = 12;
+    DvzVertex* vertices = _visual_data(&visual, N);
+
+    // Set visual data as user-provided data (underlying vertex buffer created automatically).
+    dvz_visual_data_source(&visual, DVZ_SOURCE_TYPE_VERTEX, 0, 0, N, N, vertices);
+    FREE(vertices);
+
+    // Run the app.
+    _visual_run(&visual);
+
+    // Check screenshot.
+    int res = check_canvas(canvas, "test_visuals_2");
 
     return res;
 }

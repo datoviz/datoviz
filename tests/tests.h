@@ -117,6 +117,7 @@ int test_graphics_mesh(TestContext*);
 
 // Test visuals.
 int test_visuals_1(TestContext*);
+int test_visuals_2(TestContext*);
 
 // Test builtin visuals.
 int test_vislib_1(TestContext*);
@@ -237,6 +238,7 @@ static TestCase TEST_CASES[] = {
 
     // Visuals.
     CASE_FIXTURE(CANVAS, test_visuals_1), //
+    CASE_FIXTURE(CANVAS, test_visuals_2), //
 
     // Builtin visuals.
     CASE_FIXTURE(CANVAS, test_vislib_1), //
