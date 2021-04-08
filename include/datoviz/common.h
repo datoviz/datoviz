@@ -500,6 +500,11 @@ static void dvz_container_iter(DvzContainerIterator* iterator)
     ASSERT(iterator != NULL);
     DvzContainer* container = iterator->container;
     ASSERT(container != NULL);
+
+    // IMPORTANT: make sure the item is reset to null if we return early in this function, so that
+    // the infinite while loop stops.
+    iterator->item = NULL;
+
     if (container->items == NULL || container->capacity == 0 || container->count == 0)
         return;
     if (iterator->idx >= container->capacity)
