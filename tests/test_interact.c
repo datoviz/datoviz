@@ -152,3 +152,56 @@ int test_interact_arcball(TestContext* context)
     dvz_interact_destroy(&interact);
     return 0;
 }
+
+
+
+/*************************************************************************************************/
+/*  Camera tests                                                                                 */
+/*************************************************************************************************/
+
+int test_interact_camera(TestContext* context)
+{
+    ASSERT(context != NULL);
+
+    DvzCanvas* canvas = context->canvas;
+
+    DvzInteract interact = dvz_interact_builtin(canvas, DVZ_INTERACT_FLY);
+    DvzMouse* mouse = &canvas->mouse;
+
+    float eps = 1e-6;
+    vec3 forward = {0, 0, -1};
+
+
+    // Move camera target with left drag.
+    dvz_event_mouse_move(canvas, (vec2){10, 10}, 0);
+    dvz_event_mouse_press(canvas, DVZ_MOUSE_BUTTON_LEFT, 0);
+    AT(mouse->cur_state == DVZ_MOUSE_STATE_INACTIVE);
+    // glm_vec3_print(interact.u.c.forward, stdout);
+    AT(glm_vec3_distance2(interact.u.c.forward, forward) < eps);
+
+    dvz_event_mouse_move(canvas, (vec2){100, 20}, 0);
+    AT(mouse->cur_state == DVZ_MOUSE_STATE_DRAG);
+    dvz_interact_update(&interact, canvas->viewport, &canvas->mouse, &canvas->keyboard);
+    // glm_vec3_print(interact.u.c.forward, stdout);
+    AIN(interact.u.c.forward[0], .1, .5);
+    AIN(interact.u.c.forward[1], -.1, -.01);
+    AIN(interact.u.c.forward[2], -1, -.9);
+
+    dvz_event_mouse_release(canvas, DVZ_MOUSE_BUTTON_LEFT, 0);
+    AT(mouse->cur_state == DVZ_MOUSE_STATE_INACTIVE);
+
+
+    // TODO: keyboard move camera position
+
+
+    // Reset with double-click.
+    dvz_event_mouse_double_click(canvas, (vec2){10, 10}, DVZ_MOUSE_BUTTON_LEFT, 0);
+    dvz_interact_update(&interact, canvas->viewport, &canvas->mouse, &canvas->keyboard);
+    dvz_interact_update(&interact, canvas->viewport, &canvas->mouse, &canvas->keyboard);
+    // glm_vec3_print(interact.u.c.forward, stdout);
+    AT(glm_vec3_distance2(interact.u.c.forward, forward) < eps);
+
+
+    dvz_interact_destroy(&interact);
+    return 0;
+}
