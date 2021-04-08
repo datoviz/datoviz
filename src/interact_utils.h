@@ -398,6 +398,7 @@ static void _arcball_from_camera(DvzArcball* arcball, vec3 eye, vec3 center, vec
     ASSERT(arcball != NULL);
 
     glm_mat4_identity(arcball->translate);
+    glm_mat4_identity(arcball->mat);
 
     vec3 dir, x_axis, y_axis, z_axis;
     glm_vec3_copy(eye, arcball->camera.eye);
