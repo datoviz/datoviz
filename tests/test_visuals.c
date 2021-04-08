@@ -388,10 +388,12 @@ static void _visual_frame_pos(DvzCanvas* canvas, DvzEvent ev)
     DvzVisual* visual = ev.user_data;
     ASSERT(visual != NULL);
 
-    if (ev.u.f.idx % 10 != 0)
+    uint32_t k = 1;
+
+    if (ev.u.f.idx % k != 0)
         return;
 
-    uint32_t N = 3 + (ev.u.f.idx / 10) % 12;
+    uint32_t N = 3 + (ev.u.f.idx / k) % 12;
     _visual_data(visual, N);
 
     dvz_visual_update(visual, canvas->viewport, (DvzDataCoords){0}, NULL);
@@ -426,3 +428,11 @@ int test_visuals_update_pos(TestContext* tc)
 
     return res;
 }
+
+
+
+int test_visuals_partial(TestContext* tc) { return 0; }
+
+int test_visuals_append(TestContext* tc) { return 0; }
+
+int test_visuals_texture(TestContext* tc) { return 0; }
