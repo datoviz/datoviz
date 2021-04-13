@@ -157,6 +157,12 @@ static void _common_props(DvzVisual* visual)
     // Time.
     prop = dvz_visual_prop(visual, DVZ_PROP_TIME, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_MVP, 0);
     dvz_visual_prop_copy(prop, 3, offsetof(DvzMVP, time), DVZ_ARRAY_COPY_SINGLE, 1);
+
+    // Viewport.
+    prop = dvz_visual_prop(
+        visual, DVZ_PROP_VIEWPORT, 0, DVZ_DTYPE_CUSTOM, DVZ_SOURCE_TYPE_VIEWPORT, 0);
+    dvz_visual_prop_size(prop, sizeof(DvzViewport));
+    dvz_visual_prop_copy(prop, 0, 0, DVZ_ARRAY_COPY_SINGLE, 1);
 }
 
 
