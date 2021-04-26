@@ -660,7 +660,73 @@ int test_vislib_image_cmap(TestContext* tc)
 
 
 
-int test_vislib_axes(TestContext* tc) { return 0; }
+int test_vislib_axes(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    ASSERT(canvas != NULL);
+
+    // Make visual.
+    DvzVisual visual = dvz_visual(canvas);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_AXES_2D, DVZ_AXES_COORD_X);
+    _visual_common(&visual);
+
+
+
+    // Font atlas.
+    DvzFontAtlas* atlas = &canvas->gpu->context->font_atlas;
+    ASSERT(atlas != NULL);
+    ASSERT(atlas->font_str != NULL);
+    ASSERT(strlen(atlas->font_str) > 0);
+    ASSERT(atlas->texture != NULL);
+
+    dvz_visual_texture(&visual, DVZ_SOURCE_TYPE_FONT_ATLAS, 0, atlas->texture);
+
+
+    // Prepare the data.
+    const uint32_t N = 5;
+    const uint32_t MAX_GLYPHS = 12;
+    const uint32_t N_minor = 3 * (N - 1);
+    double t = 0;
+
+    double* xticks = calloc(N, sizeof(double));
+    double* xticks_minor = calloc(N_minor, sizeof(double));
+    char** strings = calloc(N, sizeof(char*));
+    char* text = calloc(N * MAX_GLYPHS, sizeof(char));
+
+    for (uint32_t i = 0; i < N; i++)
+    {
+        t = -1 + 2 * (double)i / (N - 1);
+        xticks[i] = t;
+        if (i < N - 1)
+            for (uint32_t j = 0; j < 3; j++)
+                xticks_minor[3 * i + j] = t + (j + 1) * .5 / (N - 1);
+        strings[i] = &text[MAX_GLYPHS * i];
+        snprintf(strings[i], MAX_GLYPHS, "%.3f", t);
+    }
+
+    // Set the visual data.
+    dvz_visual_data(&visual, DVZ_PROP_POS, DVZ_AXES_LEVEL_MINOR, N_minor, xticks_minor);
+    dvz_visual_data(&visual, DVZ_PROP_POS, DVZ_AXES_LEVEL_MAJOR, N, xticks);
+    dvz_visual_data(&visual, DVZ_PROP_POS, DVZ_AXES_LEVEL_GRID, N, xticks);
+    dvz_visual_data(&visual, DVZ_PROP_TEXT, 0, N, strings);
+
+    FREE(xticks);
+    FREE(xticks_minor);
+    FREE(text);
+    FREE(strings);
+
+    // Text params.
+    DvzGraphicsTextParams params = {0};
+    params.grid_size[0] = (int32_t)atlas->rows;
+    params.grid_size[1] = (int32_t)atlas->cols;
+    params.tex_size[0] = (int32_t)atlas->width;
+    params.tex_size[1] = (int32_t)atlas->height;
+    dvz_visual_data_source(&visual, DVZ_SOURCE_TYPE_PARAM, 0, 0, 1, 1, &params);
+
+
+
+    return _visual_run(&visual, "axes_2D");
+}
 
 
 
