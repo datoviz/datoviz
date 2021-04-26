@@ -448,10 +448,9 @@ int test_visuals_partial(TestContext* tc)
     const uint32_t N = 12;
     _visual_data(&visual, N);
 
-    {
-        dvec3 pos = {0, .5, 0};
-        dvz_visual_data_partial(&visual, DVZ_PROP_POS, 0, 3, 6, 1, pos);
-    }
+    // Partial data update.
+    dvec3 pos = {0, .5, 0};
+    dvz_visual_data_partial(&visual, DVZ_PROP_POS, 0, 3, 6, 1, pos);
 
     // Run the app.
     _visual_run(&visual, N_FRAMES);
@@ -464,6 +463,56 @@ int test_visuals_partial(TestContext* tc)
 
 
 
-int test_visuals_append(TestContext* tc) { return 0; }
+static void _visual_append(DvzCanvas* canvas, DvzEvent ev)
+{
+    ASSERT(canvas != NULL);
+    DvzVisual* visual = ev.user_data;
+    ASSERT(visual != NULL);
+
+    uint32_t N = 12;
+    uint32_t i = ev.u.f.idx;
+    if (i >= N)
+        return;
+
+    // Append an element.
+    dvec3 pos = {0};
+    _visual_dpos(visual, i, N, &pos);
+    dvz_visual_data_append(visual, DVZ_PROP_POS, 0, 1, &pos);
+
+    cvec4 color = {0};
+    _visual_color(visual, i, N, &color);
+    dvz_visual_data_append(visual, DVZ_PROP_COLOR, 0, 1, &color);
+
+    dvz_visual_update(visual, canvas->viewport, (DvzDataCoords){0}, NULL);
+    dvz_canvas_to_refill(visual->canvas);
+}
+
+int test_visuals_append(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    DvzContext* context = tc->context;
+
+    ASSERT(canvas != NULL);
+    ASSERT(context != NULL);
+
+    // Create the visual.
+    DvzVisual visual = dvz_visual(canvas);
+    _visual_create(&visual);
+    _visual_bindings(&visual);
+
+    // Vertex data.
+    const uint32_t N = 1;
+    _visual_data(&visual, N);
+
+    dvz_event_callback(canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _visual_append, &visual);
+
+    // Run the app.
+    _visual_run(&visual, 13);
+
+    // Check screenshot.
+    int res = check_canvas(canvas, "test_visuals_append");
+
+    return res;
+}
 
 int test_visuals_texture(TestContext* tc) { return 0; }
