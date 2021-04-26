@@ -127,10 +127,10 @@ int test_vislib_point(TestContext* tc)
     dvec3* pos = calloc(n, sizeof(dvec3));
     cvec4* color = calloc(n, sizeof(cvec4));
     double t = 0;
-    double y = canvas->swapchain.images->width / (float)canvas->swapchain.images->height;
+    double y = canvas->swapchain.images->width / (double)canvas->swapchain.images->height;
     for (uint32_t i = 0; i < n; i++)
     {
-        t = i / (float)(n);
+        t = i / (double)(n);
         pos[i][0] = .5 * cos(M_2PI * t);
         pos[i][1] = y * .5 * sin(M_2PI * t);
         dvz_colormap(DVZ_CMAP_HSV, TO_BYTE(t), color[i]);
@@ -153,7 +153,45 @@ int test_vislib_point(TestContext* tc)
 
 
 
-int test_vislib_line_list(TestContext* tc) { return 0; }
+int test_vislib_line_list(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    ASSERT(canvas != NULL);
+
+    // Make visual.
+    DvzVisual visual = dvz_visual(canvas);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_LINE, 0);
+    _visual_common(&visual);
+
+    // Create visual data.
+    uint32_t n = 4 * 16;
+    dvec3* pos = calloc(2 * n, sizeof(dvec3));
+    cvec4* color = calloc(2 * n, sizeof(cvec4));
+    double t = 0, r = .75;
+    double y = canvas->swapchain.images->width / (float)canvas->swapchain.images->height;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        t = .5 * i / (double)n;
+        pos[2 * i + 0][0] = r * cos(M_2PI * t);
+        pos[2 * i + 0][1] = y * r * sin(M_2PI * t);
+
+        pos[2 * i + 1][0] = -pos[2 * i + 0][0];
+        pos[2 * i + 1][1] = -pos[2 * i + 0][1];
+
+        dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, n, color[2 * i + 0]);
+        dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, n, color[2 * i + 1]);
+    }
+
+    // Set visual data.
+    dvz_visual_data(&visual, DVZ_PROP_POS, 0, 2 * n, pos);
+    dvz_visual_data(&visual, DVZ_PROP_COLOR, 0, 2 * n, color);
+
+    // Free the arrays.
+    FREE(pos);
+    FREE(color);
+
+    return _visual_run(&visual, "line");
+}
 
 
 
