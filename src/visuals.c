@@ -454,8 +454,6 @@ void dvz_visual_texture(
     source->u.tex = texture;
     source->origin = DVZ_SOURCE_ORIGIN_USER;
     _source_set_changed(source, true);
-    // source->obj.status = DVZ_OBJECT_STATUS_NEED_UPDATE;
-    // visual->obj.status = DVZ_OBJECT_STATUS_NEED_UPDATE;
 
     DvzBindings* bindings = _get_bindings(visual, source);
     ASSERT(bindings != NULL);

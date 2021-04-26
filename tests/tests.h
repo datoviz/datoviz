@@ -123,7 +123,6 @@ int test_visuals_update_color(TestContext*);
 int test_visuals_update_pos(TestContext*);
 int test_visuals_partial(TestContext*);
 int test_visuals_append(TestContext*);
-int test_visuals_texture(TestContext*);
 
 // Test builtin visuals.
 int test_vislib_point(TestContext*);
@@ -263,24 +262,23 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE(CANVAS, test_visuals_update_pos),   //
     CASE_FIXTURE(CANVAS, test_visuals_partial),      //
     CASE_FIXTURE(CANVAS, test_visuals_append),       //
-    CASE_FIXTURE(CANVAS, test_visuals_texture),      //
 
     // Builtin visuals.
-    CASE_FIXTURE(CANVAS, test_vislib_point), //
-    CASE_FIXTURE(CANVAS, test_vislib_line_list), //
-    CASE_FIXTURE(CANVAS, test_vislib_line_strip), //
-    CASE_FIXTURE(CANVAS, test_vislib_triangle_list), //
+    CASE_FIXTURE(CANVAS, test_vislib_point),          //
+    CASE_FIXTURE(CANVAS, test_vislib_line_list),      //
+    CASE_FIXTURE(CANVAS, test_vislib_line_strip),     //
+    CASE_FIXTURE(CANVAS, test_vislib_triangle_list),  //
     CASE_FIXTURE(CANVAS, test_vislib_triangle_strip), //
-    CASE_FIXTURE(CANVAS, test_vislib_triangle_fan), //
-    CASE_FIXTURE(CANVAS, test_vislib_marker), //
-    CASE_FIXTURE(CANVAS, test_vislib_polygon), //
-    CASE_FIXTURE(CANVAS, test_vislib_path), //
-    CASE_FIXTURE(CANVAS, test_vislib_image), //
-    CASE_FIXTURE(CANVAS, test_vislib_image_cmap), //
-    CASE_FIXTURE(CANVAS, test_vislib_axes), //
-    CASE_FIXTURE(CANVAS, test_vislib_mesh), //
-    CASE_FIXTURE(CANVAS, test_vislib_volume), //
-    CASE_FIXTURE(CANVAS, test_vislib_volume_slice), //
+    CASE_FIXTURE(CANVAS, test_vislib_triangle_fan),   //
+    CASE_FIXTURE(CANVAS, test_vislib_marker),         //
+    CASE_FIXTURE(CANVAS, test_vislib_polygon),        //
+    CASE_FIXTURE(CANVAS, test_vislib_path),           //
+    CASE_FIXTURE(CANVAS, test_vislib_image),          //
+    CASE_FIXTURE(CANVAS, test_vislib_image_cmap),     //
+    CASE_FIXTURE(CANVAS, test_vislib_axes),           //
+    CASE_FIXTURE(CANVAS, test_vislib_mesh),           //
+    CASE_FIXTURE(CANVAS, test_vislib_volume),         //
+    CASE_FIXTURE(CANVAS, test_vislib_volume_slice),   //
 
     // Scene.
     CASE_FIXTURE(CANVAS, test_scene_1), //

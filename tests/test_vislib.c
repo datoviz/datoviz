@@ -1,5 +1,5 @@
-#include "../include/datoviz/visuals.h"
 #include "../include/datoviz/vislib.h"
+#include "../include/datoviz/visuals.h"
 #include "proto.h"
 #include "tests.h"
 
@@ -35,12 +35,6 @@ struct TestScene
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-// static void _refill(DvzCanvas* canvas, DvzEvent ev)
-// {
-//     ASSERT(canvas->viewport.viewport.minDepth < canvas->viewport.viewport.maxDepth);
-//     dvz_upload_buffer(canvas, br_viewport, 0, sizeof(DvzViewport), &canvas->viewport);
-// }
-
 static void _visual_canvas_fill(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
@@ -62,8 +56,10 @@ static void _visual_canvas_fill(DvzCanvas* canvas, DvzEvent ev)
 static void _visual_common(DvzVisual* visual)
 {
     ASSERT(visual != NULL);
+
     DvzCanvas* canvas = visual->canvas;
     ASSERT(canvas != NULL);
+
     DvzContext* ctx = canvas->gpu->context;
     ASSERT(ctx != NULL);
 
@@ -73,21 +69,41 @@ static void _visual_common(DvzVisual* visual)
     dvz_visual_data(visual, DVZ_PROP_TIME, 0, 1, (float[]){0});
     dvz_visual_data(visual, DVZ_PROP_VIEWPORT, 0, 1, &canvas->viewport);
 
-    // // Viewport.
-    // DvzBufferRegions br_viewport = dvz_ctx_buffers(
-    //     ctx, DVZ_BUFFER_TYPE_UNIFORM, 1, sizeof(DvzViewport));
-
-    // // For the tests, share the same viewport buffer region among all graphics pipelines of the
-    // // visual.
-    // for (uint32_t pidx = 0; pidx < visual->graphics_count; pidx++)
-    // {
-    //     dvz_visual_buffer(visual, DVZ_SOURCE_TYPE_VIEWPORT, pidx, br_viewport);
-    // }
-    // dvz_upload_buffer(canvas, br_viewport, 0, sizeof(DvzViewport), &canvas->viewport);
-    dvz_visual_update(visual, canvas->viewport, (DvzDataCoords){0}, NULL);
-
     dvz_event_callback(
         canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, _visual_canvas_fill, visual);
+}
+
+static int _visual_screenshot(DvzVisual* visual, const char* name)
+{
+    ASSERT(visual != NULL);
+    DvzCanvas* canvas = visual->canvas;
+
+    char path[1024];
+    snprintf(path, sizeof(path), "test_visuals_%s", name);
+    int res = check_canvas(canvas, path);
+    snprintf(path, sizeof(path), "%s/docs/images/visuals/%s.png", ROOT_DIR, name);
+    dvz_screenshot_file(canvas, path);
+    return res;
+}
+
+static int _visual_run(DvzVisual* visual, const char* name)
+{
+    ASSERT(visual != NULL);
+
+    DvzCanvas* canvas = visual->canvas;
+    ASSERT(canvas != NULL);
+
+    // Update the visual's data.
+    dvz_visual_update(visual, canvas->viewport, (DvzDataCoords){0}, NULL);
+
+    // Run app.
+    dvz_app_run(canvas->app, N_FRAMES);
+
+    // Screenshot.
+    int res = _visual_screenshot(visual, name);
+
+    dvz_visual_destroy(visual);
+    return res;
 }
 
 
@@ -99,21 +115,15 @@ static void _visual_common(DvzVisual* visual)
 int test_vislib_point(TestContext* tc)
 {
     DvzCanvas* canvas = tc->canvas;
-    DvzContext* context = tc->context;
-
     ASSERT(canvas != NULL);
-    ASSERT(context != NULL);
 
     // Make visual.
     DvzVisual visual = dvz_visual(canvas);
     dvz_visual_builtin(&visual, DVZ_VISUAL_POINT, 0);
     _visual_common(&visual);
 
-    // TestScene scene = {0};
-    // visual.user_data
-
     // Create visual data.
-    uint32_t n = 1;
+    uint32_t n = 50;
     dvec3* pos = calloc(n, sizeof(dvec3));
     cvec4* color = calloc(n, sizeof(cvec4));
     double t = 0;
@@ -131,25 +141,14 @@ int test_vislib_point(TestContext* tc)
     dvz_visual_data(&visual, DVZ_PROP_POS, 0, n, pos);
     dvz_visual_data(&visual, DVZ_PROP_COLOR, 0, n, color);
 
-    // Params.
-    dvz_visual_data(&visual, DVZ_PROP_MARKER_SIZE, 0, 1, (float[]){20});
-
-    // Run app.
-    // dvz_event_callback(canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, _resize, NULL);
-    dvz_app_run(canvas->app, N_FRAMES);
-
-    char path[1024];
-    const char* name = "point";
-    snprintf(path, sizeof(path), "test_visuals_%s", name);
-    int res = check_canvas(canvas, path);
-    snprintf(path, sizeof(path), "%s/docs/images/visuals/%s.png", ROOT_DIR, name);
-    dvz_screenshot_file(canvas, path);
-
-    dvz_visual_destroy(&visual);
+    // Free the arrays.
     FREE(pos);
     FREE(color);
 
-    return res;
+    // Params.
+    dvz_visual_data(&visual, DVZ_PROP_MARKER_SIZE, 0, 1, (float[]){50});
+
+    return _visual_run(&visual, "point");
 }
 
 

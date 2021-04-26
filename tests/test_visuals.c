@@ -372,7 +372,7 @@ int test_visuals_update_color(TestContext* tc)
         canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _visual_frame_color, &visual);
 
     // Run the app.
-    _visual_run(&visual, 3 + N / 2);
+    _visual_run(&visual, DEBUG_TEST ? 0 : 3 + N / 2);
 
     // Check screenshot.
     int res = check_canvas(canvas, "test_visuals_update_color");
@@ -514,5 +514,3 @@ int test_visuals_append(TestContext* tc)
 
     return res;
 }
-
-int test_visuals_texture(TestContext* tc) { return 0; }
