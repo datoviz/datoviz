@@ -165,29 +165,35 @@ int test_vislib_line_list(TestContext* tc)
 
     // Create visual data.
     uint32_t n = 4 * 16;
-    dvec3* pos = calloc(2 * n, sizeof(dvec3));
-    cvec4* color = calloc(2 * n, sizeof(cvec4));
+
     double t = 0, r = .75;
     double aspect = dvz_canvas_aspect(canvas);
+
+    dvec3* p0 = calloc(n, sizeof(dvec3));
+    dvec3* p1 = calloc(n, sizeof(dvec3));
+    cvec4* color = calloc(n, sizeof(cvec4));
+
     for (uint32_t i = 0; i < n; i++)
     {
         t = .5 * i / (double)n;
-        pos[2 * i + 0][0] = r * cos(M_2PI * t);
-        pos[2 * i + 0][1] = aspect * r * sin(M_2PI * t);
 
-        pos[2 * i + 1][0] = -pos[2 * i + 0][0];
-        pos[2 * i + 1][1] = -pos[2 * i + 0][1];
+        p0[i][0] = r * cos(M_2PI * t);
+        p0[i][1] = aspect * r * sin(M_2PI * t);
 
-        dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, n, color[2 * i + 0]);
-        dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, n, color[2 * i + 1]);
+        p1[i][0] = -p0[i][0];
+        p1[i][1] = -p0[i][1];
+
+        dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, n, color[i]);
     }
 
     // Set visual data.
-    dvz_visual_data(&visual, DVZ_PROP_POS, 0, 2 * n, pos);
-    dvz_visual_data(&visual, DVZ_PROP_COLOR, 0, 2 * n, color);
+    dvz_visual_data(&visual, DVZ_PROP_POS, 0, n, p0);
+    dvz_visual_data(&visual, DVZ_PROP_POS, 1, n, p1);
+    dvz_visual_data(&visual, DVZ_PROP_COLOR, 0, n, color);
 
     // Free the arrays.
-    FREE(pos);
+    FREE(p0);
+    FREE(p1);
     FREE(color);
 
     return _visual_run(&visual, "line");
@@ -238,7 +244,70 @@ int test_vislib_line_strip(TestContext* tc)
 
 
 
-int test_vislib_triangle_list(TestContext* tc) { return 0; }
+int test_vislib_triangle_list(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    ASSERT(canvas != NULL);
+
+    // Make visual.
+    DvzVisual visual = dvz_visual(canvas);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_TRIANGLE, 0);
+    _visual_common(&visual);
+
+    // Create visual data.
+    uint32_t n = 50;
+
+    double t = 0;
+    double ms = .1;
+    double aspect = dvz_canvas_aspect(canvas);
+    double r = .5;
+
+    dvec3* p0 = calloc(n, sizeof(dvec3));
+    dvec3* p1 = calloc(n, sizeof(dvec3));
+    dvec3* p2 = calloc(n, sizeof(dvec3));
+    cvec4* color = calloc(n, sizeof(cvec4));
+
+    for (uint32_t i = 0; i < n; i++)
+    {
+        t = i / (double)n;
+
+        p0[i][0] = r * cos(M_2PI * t);
+        p0[i][1] = r * sin(M_2PI * t);
+
+        dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, n, color[i]);
+        color[i][3] = 128;
+
+        // Copy the 2 other points per triangle.
+        memcpy(p1[i], p0[i], sizeof(dvec3));
+        memcpy(p2[i], p0[i], sizeof(dvec3));
+
+        // Shift the points.
+        p0[i][0] -= ms;
+        p0[i][1] -= ms;
+        p1[i][0] += ms;
+        p1[i][1] -= ms;
+        p2[i][0] += 0;
+        p2[i][1] += ms;
+
+        p0[i][1] *= aspect;
+        p1[i][1] *= aspect;
+        p2[i][1] *= aspect;
+    }
+
+    // Set visual data.
+    dvz_visual_data(&visual, DVZ_PROP_POS, 0, n, p0);
+    dvz_visual_data(&visual, DVZ_PROP_POS, 1, n, p1);
+    dvz_visual_data(&visual, DVZ_PROP_POS, 2, n, p2);
+    dvz_visual_data(&visual, DVZ_PROP_COLOR, 0, n, color);
+
+    // Free the arrays.
+    FREE(p0);
+    FREE(p1);
+    FREE(p2);
+    FREE(color);
+
+    return _visual_run(&visual, "triangle");
+}
 
 
 
