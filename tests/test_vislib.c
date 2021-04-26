@@ -396,7 +396,71 @@ int test_vislib_triangle_fan(TestContext* tc)
 
 
 
-int test_vislib_marker(TestContext* tc) { return 0; }
+int test_vislib_marker(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    ASSERT(canvas != NULL);
+
+    // Make visual.
+    DvzVisual visual = dvz_visual(canvas);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_MARKER, 0);
+    _visual_common(&visual);
+
+    // Create visual data.
+    uint32_t n_sizes = 10;
+    uint32_t n_markers = DVZ_MARKER_COUNT;
+    uint32_t n = n_sizes * n_markers;
+    DvzMarkerType marker = DVZ_MARKER_DISC;
+    uint32_t k = 0;
+    double x = 0, y = 0;
+
+    dvec3* pos = calloc(n, sizeof(dvec3));
+    cvec4* color = calloc(n, sizeof(cvec4));
+    float* ms = calloc(n, sizeof(float));
+    char* angle = calloc(n, sizeof(char));
+    char* markers = calloc(n, sizeof(char));
+
+    for (uint32_t i = 0; i < n_markers; i++)
+    {
+        marker = (DvzMarkerType)i;
+        x = .9 * (-1 + 2 * i / (float)(n_markers - 1));
+        for (uint32_t j = 0; j < n_sizes; j++)
+        {
+            ASSERT(k < n);
+            y = .9 * (+1 - 2 * j / (float)(n_sizes - 1));
+
+            pos[k][0] = x;
+            pos[k][1] = y;
+
+            dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, n_markers, color[k]);
+            ms[k] = 10 + 3 * j;
+            angle[k] = (j * 64) % 256;
+            markers[k] = marker;
+            k++;
+        }
+    }
+    ASSERT(k == n);
+
+    // Set visual data.
+    dvz_visual_data(&visual, DVZ_PROP_POS, 0, n, pos);
+    dvz_visual_data(&visual, DVZ_PROP_COLOR, 0, n, color);
+    dvz_visual_data(&visual, DVZ_PROP_MARKER_SIZE, 0, n, ms);
+    dvz_visual_data(&visual, DVZ_PROP_ANGLE, 0, n, angle);
+    dvz_visual_data(&visual, DVZ_PROP_MARKER_TYPE, 0, n, markers);
+
+    // Free the arrays.
+    FREE(pos);
+    FREE(color);
+    FREE(ms);
+    FREE(angle);
+    FREE(markers);
+
+    // Params.
+    dvz_visual_data(&visual, DVZ_PROP_LINE_WIDTH, 0, 1, (float[]){2});
+    dvz_visual_data(&visual, DVZ_PROP_COLOR, 1, 1, (vec4){1, 1, 1, 1});
+
+    return _visual_run(&visual, "marker");
+}
 
 
 
