@@ -516,7 +516,75 @@ int test_vislib_polygon(TestContext* tc)
 
 
 
-int test_vislib_path(TestContext* tc) { return 0; }
+int test_vislib_path(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    ASSERT(canvas != NULL);
+
+    // Make visual.
+    DvzVisual visual = dvz_visual(canvas);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_PATH, 0);
+    _visual_common(&visual);
+
+    // Set paths.
+    uint32_t N = 1000;
+    uint32_t n_paths = 11;
+
+    // Allocations.
+    dvec3* points = calloc(N * n_paths, sizeof(dvec3));
+    cvec4* colors = calloc(N * n_paths, sizeof(cvec4));
+    uint32_t* path_lengths = calloc(n_paths, sizeof(uint32_t));
+
+    // Make data
+    double t = 0;
+    double d = 1.0 / (double)(N - 1);
+    double a = .15;
+    double offset = 0;
+    int32_t n = (int32_t)N;
+    uint32_t k = 0;
+
+    for (uint32_t j = 0; j < n_paths; j++)
+    {
+        offset = -.75 + 1.5 * j / (double)(n_paths - 1);
+        for (int32_t i = 0; i < n; i++)
+        {
+            t = -.9 + 1.8 * i * d;
+
+            points[k][0] = t;
+            points[k][1] = a * sin(M_2PI * t / .9) + offset;
+
+            if (j == 0)
+                dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, N - 1, colors[k]);
+            else
+                dvz_colormap_scale(DVZ_CMAP_HSV, j, 1, n_paths, colors[k]);
+
+            k++;
+        }
+    }
+    ASSERT(k == N * n_paths);
+
+    // Path lengths.
+    for (uint32_t i = 0; i < n_paths; i++)
+        path_lengths[i] = N;
+
+    // Set visual data.
+    dvz_visual_data(&visual, DVZ_PROP_POS, 0, N * n_paths, points);
+    dvz_visual_data(&visual, DVZ_PROP_COLOR, 0, N * n_paths, colors);
+    dvz_visual_data(&visual, DVZ_PROP_LENGTH, 0, n_paths, path_lengths);
+
+    // Free the arrays.
+    FREE(points);
+    FREE(colors);
+    FREE(path_lengths);
+
+    // Params.
+    dvz_visual_data(&visual, DVZ_PROP_LINE_WIDTH, 0, 1, (float[]){10});
+    dvz_visual_data(&visual, DVZ_PROP_CAP_TYPE, 0, 1, (int32_t[]){DVZ_CAP_ROUND});
+    dvz_visual_data(&visual, DVZ_PROP_MITER_LIMIT, 0, 1, (float[]){4});
+    dvz_visual_data(&visual, DVZ_PROP_JOIN_TYPE, 0, 1, (int32_t[]){DVZ_JOIN_ROUND});
+
+    return _visual_run(&visual, "path");
+}
 
 
 
