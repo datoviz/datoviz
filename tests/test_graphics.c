@@ -568,7 +568,7 @@ int test_graphics_triangle_fan(TestContext* tc)
 
     // Create the graphics struct.
     TestGraphics tg = {.canvas = canvas, .graphics = graphics};
-    _graphics_create(&tg, sizeof(DvzVertex), 3 * n, DVZ_INTERACT_PANZOOM);
+    _graphics_create(&tg, sizeof(DvzVertex), n, DVZ_INTERACT_PANZOOM);
 
     // Graphics data.
     DvzVertex* vertices = tg.vertices.data;

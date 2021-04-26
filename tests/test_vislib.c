@@ -353,7 +353,46 @@ int test_vislib_triangle_strip(TestContext* tc)
 
 
 
-int test_vislib_triangle_fan(TestContext* tc) { return 0; }
+int test_vislib_triangle_fan(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    ASSERT(canvas != NULL);
+
+    // Make visual.
+    DvzVisual visual = dvz_visual(canvas);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_TRIANGLE_FAN, 0);
+    _visual_common(&visual);
+
+    // Create visual data.
+    uint32_t n = 30;
+
+    double t = 0, a = 0;
+    double aspect = dvz_canvas_aspect(canvas);
+
+    dvec3* pos = calloc(n, sizeof(dvec3));
+    cvec4* color = calloc(n, sizeof(cvec4));
+
+    for (uint32_t i = 0; i < n; i++)
+    {
+        t = i / (double)(n - 1);
+        a = M_2PI * t;
+
+        pos[i][0] = .5 * cos(a);
+        pos[i][1] = aspect * .5 * sin(a);
+
+        dvz_colormap_scale(DVZ_CMAP_HSV, t, 0, 1, color[i]);
+    }
+
+    // Set visual data.
+    dvz_visual_data(&visual, DVZ_PROP_POS, 0, n, pos);
+    dvz_visual_data(&visual, DVZ_PROP_COLOR, 0, n, color);
+
+    // Free the arrays.
+    FREE(pos);
+    FREE(color);
+
+    return _visual_run(&visual, "triangle_fan");
+}
 
 
 
