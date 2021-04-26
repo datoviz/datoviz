@@ -241,6 +241,36 @@ static DvzTexture* _earth_texture(DvzContext* context)
 }
 
 
+static DvzTexture* _synthetic_texture(DvzContext* context)
+{
+    ASSERT(context != NULL);
+
+    // Texture.
+    const uint32_t S = 1024;
+    DvzTexture* texture = dvz_ctx_texture(context, 2, (uvec3){S, S, 1}, VK_FORMAT_R32_SFLOAT);
+    VkDeviceSize size = S * S * sizeof(float);
+
+    float* tex_data = malloc(size);
+    double x = 0, y = 0;
+    uint32_t k = 0;
+
+    for (uint32_t i = 0; i < S; i++)
+    {
+        x = -1 + 2 * i / (double)(S - 1);
+        for (uint32_t j = 0; j < S; j++)
+        {
+            y = +1 - 2 * j / (double)(S - 1);
+            tex_data[k++] = exp(-2 * (x * x + y * y)) * cos(M_2PI * 3 * x) * sin(M_2PI * 3 * y);
+        }
+    }
+
+    dvz_upload_texture(context, texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, size, tex_data);
+    FREE(tex_data)
+
+    return texture;
+}
+
+
 
 static DvzTexture* _volume_texture(DvzContext* context, int kind)
 {

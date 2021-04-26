@@ -588,6 +588,30 @@ int test_vislib_path(TestContext* tc)
 
 
 
+static void _image_data(DvzVisual* visual, uint32_t n)
+{
+    ASSERT(visual != NULL);
+    ASSERT(n > 0);
+
+    float x0 = 0, x1 = 0, z = 0, w = 2.0 / (float)n;
+
+    for (uint32_t i = 0; i < n; i++)
+    {
+        x0 = -1 + i * w;
+        x1 = -1 + (i + 1) * w;
+
+        dvz_visual_data_append(visual, DVZ_PROP_POS, 0, 1, (double[]){x0, x1, z});
+        dvz_visual_data_append(visual, DVZ_PROP_POS, 1, 1, (double[]){x1, x1, z});
+        dvz_visual_data_append(visual, DVZ_PROP_POS, 2, 1, (double[]){x1, x0, z});
+        dvz_visual_data_append(visual, DVZ_PROP_POS, 3, 1, (double[]){x0, x0, z});
+
+        dvz_visual_data_append(visual, DVZ_PROP_TEXCOORDS, 0, 1, (float[]){0, 0});
+        dvz_visual_data_append(visual, DVZ_PROP_TEXCOORDS, 1, 1, (float[]){1, 0});
+        dvz_visual_data_append(visual, DVZ_PROP_TEXCOORDS, 2, 1, (float[]){1, 1});
+        dvz_visual_data_append(visual, DVZ_PROP_TEXCOORDS, 3, 1, (float[]){0, 1});
+    }
+}
+
 int test_vislib_image_1(TestContext* tc)
 {
     DvzCanvas* canvas = tc->canvas;
@@ -599,23 +623,7 @@ int test_vislib_image_1(TestContext* tc)
     _visual_common(&visual);
 
     // Create visual data.
-    const uint32_t n = 1;
-    float x0 = 0, x1 = 0, z = 0, w = 2.0 / (float)n;
-    for (uint32_t i = 0; i < n; i++)
-    {
-        x0 = -1 + i * w;
-        x1 = -1 + (i + 1) * w;
-
-        dvz_visual_data_append(&visual, DVZ_PROP_POS, 0, 1, (double[]){x0, x1, z});
-        dvz_visual_data_append(&visual, DVZ_PROP_POS, 1, 1, (double[]){x1, x1, z});
-        dvz_visual_data_append(&visual, DVZ_PROP_POS, 2, 1, (double[]){x1, x0, z});
-        dvz_visual_data_append(&visual, DVZ_PROP_POS, 3, 1, (double[]){x0, x0, z});
-
-        dvz_visual_data_append(&visual, DVZ_PROP_TEXCOORDS, 0, 1, (float[]){0, 0});
-        dvz_visual_data_append(&visual, DVZ_PROP_TEXCOORDS, 1, 1, (float[]){1, 0});
-        dvz_visual_data_append(&visual, DVZ_PROP_TEXCOORDS, 2, 1, (float[]){1, 1});
-        dvz_visual_data_append(&visual, DVZ_PROP_TEXCOORDS, 3, 1, (float[]){0, 1});
-    }
+    _image_data(&visual, 1);
 
     // Texture.
     // https://pixabay.com/illustrations/earth-planet-world-globe-space-1617121/
@@ -627,7 +635,28 @@ int test_vislib_image_1(TestContext* tc)
 
 
 
-int test_vislib_image_cmap(TestContext* tc) { return 0; }
+int test_vislib_image_cmap(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    ASSERT(canvas != NULL);
+
+    // Make visual.
+    DvzVisual visual = dvz_visual(canvas);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_IMAGE_CMAP, 0);
+    _visual_common(&visual);
+
+    // Create visual data.
+    _image_data(&visual, 1);
+
+    // Texture.
+    DvzTexture* texture = _synthetic_texture(canvas->gpu->context);
+    dvz_visual_texture(&visual, DVZ_SOURCE_TYPE_IMAGE, 0, texture);
+
+    // Params
+    dvz_visual_data(&visual, DVZ_PROP_RANGE, 0, 1, (float[]){-1, +1});
+
+    return _visual_run(&visual, "image_cmap");
+}
 
 
 
