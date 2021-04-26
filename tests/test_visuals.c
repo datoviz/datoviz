@@ -431,7 +431,38 @@ int test_visuals_update_pos(TestContext* tc)
 
 
 
-int test_visuals_partial(TestContext* tc) { return 0; }
+int test_visuals_partial(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    DvzContext* context = tc->context;
+
+    ASSERT(canvas != NULL);
+    ASSERT(context != NULL);
+
+    // Create the visual.
+    DvzVisual visual = dvz_visual(canvas);
+    _visual_create(&visual);
+    _visual_bindings(&visual);
+
+    // Vertex data.
+    const uint32_t N = 12;
+    _visual_data(&visual, N);
+
+    {
+        dvec3 pos = {0, .5, 0};
+        dvz_visual_data_partial(&visual, DVZ_PROP_POS, 0, 3, 6, 1, pos);
+    }
+
+    // Run the app.
+    _visual_run(&visual, N_FRAMES);
+
+    // Check screenshot.
+    int res = check_canvas(canvas, "test_visuals_partial");
+
+    return res;
+}
+
+
 
 int test_visuals_append(TestContext* tc) { return 0; }
 

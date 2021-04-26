@@ -326,6 +326,7 @@ void dvz_visual_data_partial(
     }
 
     // Make sure the array has the right size.
+    count = MAX(count, prop->arr_orig.item_count);
     dvz_array_resize(&prop->arr_orig, count);
 
     // Copy the specified array to the prop array.
@@ -337,8 +338,6 @@ void dvz_visual_data_partial(
     {
         log_trace("source type %d #%d handled by lib", source->source_type, source->source_idx);
         source->origin = DVZ_SOURCE_ORIGIN_LIB;
-        // source->obj.status = DVZ_OBJECT_STATUS_NEED_UPDATE;
-        // visual->obj.status = DVZ_OBJECT_STATUS_NEED_UPDATE;
         _source_set_changed(source, true);
     }
 }
