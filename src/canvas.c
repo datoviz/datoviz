@@ -999,6 +999,16 @@ void dvz_canvas_size(DvzCanvas* canvas, DvzCanvasSizeType type, uvec2 size)
 
 
 
+double dvz_canvas_aspect(DvzCanvas* canvas)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(canvas->swapchain.images->width > 0);
+    ASSERT(canvas->swapchain.images->height > 0);
+    return canvas->swapchain.images->width / (double)canvas->swapchain.images->height;
+}
+
+
+
 void dvz_canvas_close_on_esc(DvzCanvas* canvas, bool value)
 {
     ASSERT(canvas != NULL);

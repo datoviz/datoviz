@@ -5,6 +5,7 @@
 ### `dvz_canvas_commands()`
 ### `dvz_canvas_clear_color()`
 ### `dvz_canvas_size()`
+### `dvz_canvas_aspect()`
 ### `dvz_canvas_close_on_esc()`
 ### `dvz_canvas_recreate()`
 ### `dvz_canvas_resize()`

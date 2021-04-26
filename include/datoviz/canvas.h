@@ -745,6 +745,14 @@ DVZ_EXPORT void dvz_canvas_clear_color(DvzCanvas* canvas, float red, float green
 DVZ_EXPORT void dvz_canvas_size(DvzCanvas* canvas, DvzCanvasSizeType type, uvec2 size);
 
 /**
+ * Get the canvas aspect ratio.
+ *
+ * @param canvas the canvas
+ * @param[out] ratio the canvas aspect ratio (width / height)
+ */
+DVZ_EXPORT double dvz_canvas_aspect(DvzCanvas* canvas);
+
+/**
  * Whether the canvas should close when Escape is pressed.
  *
  * @param canvas the canvas
