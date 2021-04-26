@@ -464,7 +464,55 @@ int test_vislib_marker(TestContext* tc)
 
 
 
-int test_vislib_polygon(TestContext* tc) { return 0; }
+static void _add_polygon(dvec3* points, uint32_t n, double angle, dvec3 offset, double ratio)
+{
+    for (uint32_t i = 0; i < n; i++)
+    {
+        points[i][0] = offset[0] + .25 * cos(angle + M_2PI * (float)i / (n - 1));
+        points[i][1] = offset[1] + ratio * .25 * sin(angle + M_2PI * (float)i / (n - 1));
+        points[i][2] = offset[2];
+    }
+}
+
+int test_vislib_polygon(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    ASSERT(canvas != NULL);
+
+    // Make visual.
+    DvzVisual visual = dvz_visual(canvas);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_POLYGON, 0);
+    _visual_common(&visual);
+
+    // Set polygons.
+    const uint32_t n0 = 4, n1 = 5, n2 = 6;
+    uint32_t point_count = n0 + n1 + n2;
+    dvec3 points[4 + 5 + 6];
+    double aspect = dvz_canvas_aspect(canvas);
+    _add_polygon(points, n0, M_PI / 2, (dvec3){-.65, 0, 0}, aspect);
+    _add_polygon(points + n0, n1, M_PI / 4, (dvec3){0, 0, 0}, aspect);
+    _add_polygon(points + n0 + n1, n2, M_PI / 2, (dvec3){+.65, 0, 0}, aspect);
+
+    // Polygon lengths.
+    uint32_t poly_lengths[3] = {0};
+    poly_lengths[0] = n0;
+    poly_lengths[1] = n1;
+    poly_lengths[2] = n2;
+
+    // Polygon colors.
+    cvec4 color[3] = {0};
+    DvzColormap cmap = DVZ_CPAL256_GLASBEY;
+    dvz_colormap(cmap, 0, color[0]);
+    dvz_colormap(cmap, 1, color[1]);
+    dvz_colormap(cmap, 2, color[2]);
+
+    // Set visual data.
+    dvz_visual_data(&visual, DVZ_PROP_POS, 0, point_count, points);
+    dvz_visual_data(&visual, DVZ_PROP_LENGTH, 0, 3, poly_lengths);
+    dvz_visual_data(&visual, DVZ_PROP_COLOR, 0, 3, color);
+
+    return _visual_run(&visual, "polygon");
+}
 
 
 
