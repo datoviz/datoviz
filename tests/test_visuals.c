@@ -566,13 +566,13 @@ int test_visuals_shared(TestContext* tc)
         dvz_visual_source(
             visual, DVZ_SOURCE_TYPE_MVP, 1, DVZ_PIPELINE_GRAPHICS, 1, //
             0, sizeof(DvzMVP), DVZ_SOURCE_FLAG_MAPPABLE);
-        // dvz_visual_source_share(visual, DVZ_SOURCE_TYPE_MVP, 0, 1);
+        dvz_visual_source_share(visual, DVZ_SOURCE_TYPE_MVP, 0, 1);
 
         // Binding #1: shared uniform buffer viewport
         dvz_visual_source(
             visual, DVZ_SOURCE_TYPE_VIEWPORT, 1, DVZ_PIPELINE_GRAPHICS, 1, //
             1, sizeof(DvzViewport), 0);
-        // dvz_visual_source_share(visual, DVZ_SOURCE_TYPE_VIEWPORT, 0, 1);
+        dvz_visual_source_share(visual, DVZ_SOURCE_TYPE_VIEWPORT, 0, 1);
     }
 
     DvzProp* prop = NULL;
@@ -629,12 +629,6 @@ int test_visuals_shared(TestContext* tc)
     TestScene* scene = (TestScene*)visual->user_data;
     ((TestScene*)visual->user_data)->interact = dvz_interact_builtin(canvas, DVZ_INTERACT_PANZOOM);
 
-
-
-    // Binding resources.
-    // _visual_mvp_buffer(visual);
-    // _visual_viewport_buffer(visual);
-
     // Vertex data.
     cvec4 colors[] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
 
@@ -645,30 +639,22 @@ int test_visuals_shared(TestContext* tc)
     dvz_visual_data(visual, DVZ_PROP_POS, 1, 3, (dvec3[]){{0, -1, 0}, {1, -1, 0}, {+.5, 0, 0}});
     dvz_visual_data(visual, DVZ_PROP_COLOR, 1, 3, colors);
 
-    // // Shared props.
-    // dvz_visual_data(visual, DVZ_PROP_MODEL, 0, 1, GLM_MAT4_IDENTITY);
-    // dvz_visual_data(visual, DVZ_PROP_VIEW, 0, 1, GLM_MAT4_IDENTITY);
-    // dvz_visual_data(visual, DVZ_PROP_PROJ, 0, 1, GLM_MAT4_IDENTITY);
-    // dvz_visual_data(visual, DVZ_PROP_VIEWPORT, 0, 1, &canvas->viewport);
+    // Shared props.
+    // NOTE: this data is set to the first graphics pipeline, but since the MVP and viewport
+    // buffers are shared, they will be used by the second graphics pipeline too.
+    dvz_visual_data(visual, DVZ_PROP_MODEL, 0, 1, GLM_MAT4_IDENTITY);
+    dvz_visual_data(visual, DVZ_PROP_VIEW, 0, 1, GLM_MAT4_IDENTITY);
+    dvz_visual_data(visual, DVZ_PROP_PROJ, 0, 1, GLM_MAT4_IDENTITY);
+    dvz_visual_data(visual, DVZ_PROP_VIEWPORT, 0, 1, &canvas->viewport);
 
-
-
-    // Binding data.
+    // HACK: this buffer is not used by the visual, but we need here because the testing code here
+    // updates this buffer at every frame. Therefore the interactivity will not work in this test.
     scene->br_mvp = dvz_ctx_buffers(
         context, DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE, canvas->swapchain.img_count, sizeof(DvzMVP));
     glm_mat4_identity(scene->interact.mvp.model);
     glm_mat4_identity(scene->interact.mvp.view);
     glm_mat4_identity(scene->interact.mvp.proj);
     dvz_canvas_buffers(canvas, scene->br_mvp, 0, sizeof(DvzMVP), &scene->interact.mvp);
-    dvz_visual_buffer(visual, DVZ_SOURCE_TYPE_MVP, 0, scene->br_mvp);
-    dvz_visual_buffer(visual, DVZ_SOURCE_TYPE_MVP, 1, scene->br_mvp);
-
-    // Upload the data to the GPU.
-    DvzBufferRegions br_viewport = dvz_ctx_buffers(context, DVZ_BUFFER_TYPE_UNIFORM, 1, 16);
-    dvz_visual_buffer(visual, DVZ_SOURCE_TYPE_VIEWPORT, 0, br_viewport);
-    dvz_visual_buffer(visual, DVZ_SOURCE_TYPE_VIEWPORT, 1, br_viewport);
-
-
 
     // Run the app.
     _visual_run(visual, N_FRAMES);
