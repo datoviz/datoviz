@@ -343,13 +343,13 @@ static void _point_data(DvzVisual* visual)
     uint32_t n = 50;
     dvec3* pos = calloc(n, sizeof(dvec3));
     cvec4* color = calloc(n, sizeof(cvec4));
-    double t = 0;
-    double aspect = dvz_canvas_aspect(visual->canvas);
+    double t = 0, r = .9;
+    // double aspect = dvz_canvas_aspect(visual->canvas);
     for (uint32_t i = 0; i < n; i++)
     {
         t = i / (double)(n);
-        pos[i][0] = .5 * cos(M_2PI * t);
-        pos[i][1] = aspect * .5 * sin(M_2PI * t);
+        pos[i][0] = r * cos(M_2PI * t);
+        pos[i][1] = r * sin(M_2PI * t);
         dvz_colormap(DVZ_CMAP_HSV, TO_BYTE(t), color[i]);
         color[i][3] = 128;
     }
