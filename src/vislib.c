@@ -1323,7 +1323,7 @@ static void _visual_axes_2D(DvzVisual* visual)
     dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_SEGMENT, 0));
     dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TEXT, 0));
 
-    // Segment graphics.
+    // Segment graphics: sources.
     {
         // Vertex buffer.
         dvz_visual_source(
@@ -1336,7 +1336,7 @@ static void _visual_axes_2D(DvzVisual* visual)
             0, sizeof(DvzIndex), 0);
     }
 
-    // Text graphics.
+    // Text graphics: sources.
     {
         // Vertex buffer.
         dvz_visual_source(
@@ -1354,17 +1354,20 @@ static void _visual_axes_2D(DvzVisual* visual)
             DVZ_USER_BINDING + 1, sizeof(cvec4), 0);
     }
 
-    // Uniform buffers. // set MVP and Viewport sources for pipeline #0
+    // Uniform buffers.
+    // Set MVP and Viewport sources for pipeline #0.
     _common_sources(visual);
 
-    // Binding #0: uniform buffer MVP
+    // Set MVP and Viewport sources for pipeline #1:
+
+    // Binding #0: uniform buffer MVP, shared from pipeline #0
     dvz_visual_source( //
         visual, DVZ_SOURCE_TYPE_MVP, 1, DVZ_PIPELINE_GRAPHICS, 1, 0, sizeof(DvzMVP),
         DVZ_SOURCE_FLAG_MAPPABLE);
     // Share the MVP source with the second graphics pipeline.
     dvz_visual_source_share(visual, DVZ_SOURCE_TYPE_MVP, 0, 1);
 
-    // NOTE: the viewport source is not shared, as we want different clipping for both graphics.
+    // Binding #1: viewport source, NOT shared, as we want different clipping for both graphics.
     dvz_visual_source(
         visual, DVZ_SOURCE_TYPE_VIEWPORT, 1, DVZ_PIPELINE_GRAPHICS, 1, 1, sizeof(DvzViewport), 0);
 
@@ -1420,6 +1423,12 @@ static void _visual_axes_2D(DvzVisual* visual)
         prop =
             dvz_visual_prop(visual, DVZ_PROP_COLOR, 4, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 1);
         dvz_visual_prop_default(prop, &DVZ_DEFAULT_AXES_COLOR[4]);
+
+        // Viewport.
+        prop = dvz_visual_prop(
+            visual, DVZ_PROP_VIEWPORT, 1, DVZ_DTYPE_CUSTOM, DVZ_SOURCE_TYPE_VIEWPORT, 1);
+        dvz_visual_prop_size(prop, sizeof(DvzViewport));
+        dvz_visual_prop_copy(prop, 0, 0, DVZ_ARRAY_COPY_SINGLE, 1);
     }
 
     dvz_visual_callback_bake(visual, _visual_axes_2D_bake);

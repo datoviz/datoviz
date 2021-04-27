@@ -79,7 +79,7 @@ static int _visual_screenshot(DvzVisual* visual, const char* name)
     DvzCanvas* canvas = visual->canvas;
 
     char path[1024];
-    snprintf(path, sizeof(path), "test_visuals_%s", name);
+    snprintf(path, sizeof(path), "test_vislib_%s", name);
     int res = check_canvas(canvas, path);
     snprintf(path, sizeof(path), "%s/docs/images/visuals/%s.png", ROOT_DIR, name);
     dvz_screenshot_file(canvas, path);
@@ -660,16 +660,21 @@ int test_vislib_image_cmap(TestContext* tc)
 
 
 
-int test_vislib_axes(TestContext* tc)
+static int _vislib_axes(TestContext* tc, DvzAxisCoord coord, const char* name)
 {
     DvzCanvas* canvas = tc->canvas;
     ASSERT(canvas != NULL);
+    dvz_canvas_clear_color(canvas, 1, 1, 1);
+    canvas->viewport.margins[0] = 25;
+    canvas->viewport.margins[1] = 25;
+    canvas->viewport.margins[2] = 100;
+    canvas->viewport.margins[3] = 100;
 
     // Make visual.
     DvzVisual visual = dvz_visual(canvas);
-    dvz_visual_builtin(&visual, DVZ_VISUAL_AXES_2D, DVZ_AXES_COORD_X);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_AXES_2D, coord);
     _visual_common(&visual);
-
+    dvz_visual_data(&visual, DVZ_PROP_VIEWPORT, 1, 1, &canvas->viewport);
 
 
     // Font atlas.
@@ -691,6 +696,7 @@ int test_vislib_axes(TestContext* tc)
     double* xticks = calloc(N, sizeof(double));
     double* xticks_minor = calloc(N_minor, sizeof(double));
     char** strings = calloc(N, sizeof(char*));
+    // NOTE: the text array must live through the entire test.
     char* text = calloc(N * MAX_GLYPHS, sizeof(char));
 
     for (uint32_t i = 0; i < N; i++)
@@ -710,11 +716,6 @@ int test_vislib_axes(TestContext* tc)
     dvz_visual_data(&visual, DVZ_PROP_POS, DVZ_AXES_LEVEL_GRID, N, xticks);
     dvz_visual_data(&visual, DVZ_PROP_TEXT, 0, N, strings);
 
-    FREE(xticks);
-    FREE(xticks_minor);
-    FREE(text);
-    FREE(strings);
-
     // Text params.
     DvzGraphicsTextParams params = {0};
     params.grid_size[0] = (int32_t)atlas->rows;
@@ -725,7 +726,29 @@ int test_vislib_axes(TestContext* tc)
 
 
 
-    return _visual_run(&visual, "axes_2D");
+    int res = _visual_run(&visual, name);
+
+    FREE(xticks);
+    FREE(xticks_minor);
+    FREE(text);
+    FREE(strings);
+
+    dvz_canvas_clear_color(canvas, 0, 0, 0);
+    return res;
+}
+
+
+
+int test_vislib_axes_2D_x(TestContext* tc)
+{
+    return _vislib_axes(tc, DVZ_AXES_COORD_X, "axes_2D_x");
+}
+
+
+
+int test_vislib_axes_2D_y(TestContext* tc)
+{
+    return _vislib_axes(tc, DVZ_AXES_COORD_Y, "axes_2D_y");
 }
 
 

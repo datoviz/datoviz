@@ -137,7 +137,8 @@ int test_vislib_polygon(TestContext*);
 int test_vislib_path(TestContext*);
 int test_vislib_image_1(TestContext*);
 int test_vislib_image_cmap(TestContext*);
-int test_vislib_axes(TestContext*);
+int test_vislib_axes_2D_x(TestContext*);
+int test_vislib_axes_2D_y(TestContext*);
 int test_vislib_mesh(TestContext*);
 int test_vislib_volume(TestContext*);
 int test_vislib_volume_slice(TestContext*);
@@ -277,7 +278,8 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE(CANVAS, test_vislib_path),           //
     CASE_FIXTURE(CANVAS, test_vislib_image_1),        //
     CASE_FIXTURE(CANVAS, test_vislib_image_cmap),     //
-    CASE_FIXTURE(CANVAS, test_vislib_axes),           //
+    CASE_FIXTURE(CANVAS, test_vislib_axes_2D_x),      //
+    CASE_FIXTURE(CANVAS, test_vislib_axes_2D_y),      //
     CASE_FIXTURE(CANVAS, test_vislib_mesh),           //
     CASE_FIXTURE(CANVAS, test_vislib_volume),         //
     CASE_FIXTURE(CANVAS, test_vislib_volume_slice),   //
