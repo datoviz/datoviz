@@ -123,6 +123,7 @@ int test_visuals_update_color(TestContext*);
 int test_visuals_update_pos(TestContext*);
 int test_visuals_partial(TestContext*);
 int test_visuals_append(TestContext*);
+int test_visuals_shared(TestContext*);
 
 // Test builtin visuals.
 int test_vislib_point(TestContext*);
@@ -262,6 +263,7 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE(CANVAS, test_visuals_update_pos),   //
     CASE_FIXTURE(CANVAS, test_visuals_partial),      //
     CASE_FIXTURE(CANVAS, test_visuals_append),       //
+    CASE_FIXTURE(CANVAS, test_visuals_shared),       //
 
     // Builtin visuals.
     CASE_FIXTURE(CANVAS, test_vislib_point),          //

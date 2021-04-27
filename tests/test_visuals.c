@@ -175,6 +175,7 @@ static void _visual_viewport_buffer(DvzVisual* visual)
 
     // Upload the data to the GPU.
     DvzBufferRegions br_viewport = dvz_ctx_buffers(context, DVZ_BUFFER_TYPE_UNIFORM, 1, 16);
+    dvz_upload_buffer(context, br_viewport, 0, sizeof(DvzViewport), &canvas->viewport);
     dvz_visual_buffer(visual, DVZ_SOURCE_TYPE_VIEWPORT, 0, br_viewport);
 }
 
@@ -511,6 +512,169 @@ int test_visuals_append(TestContext* tc)
 
     // Check screenshot.
     int res = check_canvas(canvas, "test_visuals_append");
+
+    return res;
+}
+
+
+
+int test_visuals_shared(TestContext* tc)
+{
+    /* In this test, we create a visual with 2 identical triangle graphics pipelines with
+     * independent vertex buffers, but that share the same GPU buffers for MVP and viewport.
+     */
+    DvzCanvas* canvas = tc->canvas;
+    DvzContext* context = tc->context;
+
+    ASSERT(canvas != NULL);
+    ASSERT(context != NULL);
+
+    // Create the visual.
+    DvzVisual visual_ = dvz_visual(canvas);
+    DvzVisual* visual = &visual_;
+
+    // Graphics.
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TRIANGLE, 0));
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TRIANGLE, 0));
+
+    // Sources for graphics #0.
+    {
+        // Vertex buffer.
+        dvz_visual_source(                                               //
+            visual, DVZ_SOURCE_TYPE_VERTEX, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+            0, sizeof(DvzVertex), 0);
+
+        // Binding #0: uniform buffer MVP
+        dvz_visual_source(                                            //
+            visual, DVZ_SOURCE_TYPE_MVP, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+            0, sizeof(DvzMVP), DVZ_SOURCE_FLAG_MAPPABLE);
+
+        // Binding #1: uniform buffer viewport
+        dvz_visual_source(
+            visual, DVZ_SOURCE_TYPE_VIEWPORT, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+            1, sizeof(DvzViewport), 0);
+    }
+
+    // Sources for graphics #1.
+    {
+        // Vertex buffer.
+        dvz_visual_source(                                               //
+            visual, DVZ_SOURCE_TYPE_VERTEX, 1, DVZ_PIPELINE_GRAPHICS, 1, //
+            0, sizeof(DvzVertex), 0);
+
+        // Binding #0: shared uniform buffer MVP
+        dvz_visual_source(
+            visual, DVZ_SOURCE_TYPE_MVP, 1, DVZ_PIPELINE_GRAPHICS, 1, //
+            0, sizeof(DvzMVP), DVZ_SOURCE_FLAG_MAPPABLE);
+        // dvz_visual_source_share(visual, DVZ_SOURCE_TYPE_MVP, 0, 1);
+
+        // Binding #1: shared uniform buffer viewport
+        dvz_visual_source(
+            visual, DVZ_SOURCE_TYPE_VIEWPORT, 1, DVZ_PIPELINE_GRAPHICS, 1, //
+            1, sizeof(DvzViewport), 0);
+        // dvz_visual_source_share(visual, DVZ_SOURCE_TYPE_VIEWPORT, 0, 1);
+    }
+
+    DvzProp* prop = NULL;
+
+    // Props for graphics #0.
+    {
+        // Vertex pos.
+        prop =
+            dvz_visual_prop(visual, DVZ_PROP_POS, 0, DVZ_DTYPE_DVEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
+        dvz_visual_prop_cast(
+            prop, 0, offsetof(DvzVertex, pos), DVZ_DTYPE_VEC3, DVZ_ARRAY_COPY_SINGLE, 1);
+
+        // Vertex color.
+        prop =
+            dvz_visual_prop(visual, DVZ_PROP_COLOR, 0, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 0);
+        dvz_visual_prop_copy(prop, 1, offsetof(DvzVertex, color), DVZ_ARRAY_COPY_SINGLE, 1);
+
+
+        // MVP
+        // Model.
+        prop = dvz_visual_prop(visual, DVZ_PROP_MODEL, 0, DVZ_DTYPE_MAT4, DVZ_SOURCE_TYPE_MVP, 0);
+        dvz_visual_prop_copy(prop, 0, offsetof(DvzMVP, model), DVZ_ARRAY_COPY_SINGLE, 1);
+
+        // View.
+        prop = dvz_visual_prop(visual, DVZ_PROP_VIEW, 0, DVZ_DTYPE_MAT4, DVZ_SOURCE_TYPE_MVP, 0);
+        dvz_visual_prop_copy(prop, 1, offsetof(DvzMVP, view), DVZ_ARRAY_COPY_SINGLE, 1);
+
+        // Proj.
+        prop = dvz_visual_prop(visual, DVZ_PROP_PROJ, 0, DVZ_DTYPE_MAT4, DVZ_SOURCE_TYPE_MVP, 0);
+        dvz_visual_prop_copy(prop, 2, offsetof(DvzMVP, proj), DVZ_ARRAY_COPY_SINGLE, 1);
+
+        // Viewport.
+        prop = dvz_visual_prop(
+            visual, DVZ_PROP_VIEWPORT, 0, DVZ_DTYPE_CUSTOM, DVZ_SOURCE_TYPE_VIEWPORT, 0);
+        dvz_visual_prop_size(prop, sizeof(DvzViewport));
+        dvz_visual_prop_copy(prop, 0, 0, DVZ_ARRAY_COPY_SINGLE, 1);
+    }
+
+    // Props for graphics #1.
+    {
+        // Vertex pos.
+        prop =
+            dvz_visual_prop(visual, DVZ_PROP_POS, 1, DVZ_DTYPE_DVEC3, DVZ_SOURCE_TYPE_VERTEX, 1);
+        dvz_visual_prop_cast(
+            prop, 0, offsetof(DvzVertex, pos), DVZ_DTYPE_VEC3, DVZ_ARRAY_COPY_SINGLE, 1);
+
+        // Vertex color.
+        prop =
+            dvz_visual_prop(visual, DVZ_PROP_COLOR, 1, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 1);
+        dvz_visual_prop_copy(prop, 1, offsetof(DvzVertex, color), DVZ_ARRAY_COPY_SINGLE, 1);
+    }
+
+    visual->user_data = calloc(1, sizeof(TestScene));
+    TestScene* scene = (TestScene*)visual->user_data;
+    ((TestScene*)visual->user_data)->interact = dvz_interact_builtin(canvas, DVZ_INTERACT_PANZOOM);
+
+
+
+    // Binding resources.
+    // _visual_mvp_buffer(visual);
+    // _visual_viewport_buffer(visual);
+
+    // Vertex data.
+    cvec4 colors[] = {{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}};
+
+    // Data props.
+    dvz_visual_data(visual, DVZ_PROP_POS, 0, 3, (dvec3[]){{-1, 0, 0}, {0, 0, 0}, {-.5, 1, 0}});
+    dvz_visual_data(visual, DVZ_PROP_COLOR, 0, 3, colors);
+
+    dvz_visual_data(visual, DVZ_PROP_POS, 1, 3, (dvec3[]){{0, -1, 0}, {1, -1, 0}, {+.5, 0, 0}});
+    dvz_visual_data(visual, DVZ_PROP_COLOR, 1, 3, colors);
+
+    // // Shared props.
+    // dvz_visual_data(visual, DVZ_PROP_MODEL, 0, 1, GLM_MAT4_IDENTITY);
+    // dvz_visual_data(visual, DVZ_PROP_VIEW, 0, 1, GLM_MAT4_IDENTITY);
+    // dvz_visual_data(visual, DVZ_PROP_PROJ, 0, 1, GLM_MAT4_IDENTITY);
+    // dvz_visual_data(visual, DVZ_PROP_VIEWPORT, 0, 1, &canvas->viewport);
+
+
+
+    // Binding data.
+    scene->br_mvp = dvz_ctx_buffers(
+        context, DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE, canvas->swapchain.img_count, sizeof(DvzMVP));
+    glm_mat4_identity(scene->interact.mvp.model);
+    glm_mat4_identity(scene->interact.mvp.view);
+    glm_mat4_identity(scene->interact.mvp.proj);
+    dvz_canvas_buffers(canvas, scene->br_mvp, 0, sizeof(DvzMVP), &scene->interact.mvp);
+    dvz_visual_buffer(visual, DVZ_SOURCE_TYPE_MVP, 0, scene->br_mvp);
+    dvz_visual_buffer(visual, DVZ_SOURCE_TYPE_MVP, 1, scene->br_mvp);
+
+    // Upload the data to the GPU.
+    DvzBufferRegions br_viewport = dvz_ctx_buffers(context, DVZ_BUFFER_TYPE_UNIFORM, 1, 16);
+    dvz_visual_buffer(visual, DVZ_SOURCE_TYPE_VIEWPORT, 0, br_viewport);
+    dvz_visual_buffer(visual, DVZ_SOURCE_TYPE_VIEWPORT, 1, br_viewport);
+
+
+
+    // Run the app.
+    _visual_run(visual, N_FRAMES);
+
+    // Check screenshot.
+    int res = check_canvas(canvas, "test_visuals_shared");
 
     return res;
 }
