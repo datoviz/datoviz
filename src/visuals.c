@@ -805,7 +805,11 @@ void dvz_visual_update(
                 arr->item_count, br->size, source->source_type, source->source_idx);
 
             if (br->buffer->type == DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE)
-                dvz_canvas_buffers(canvas, *br, 0, size, arr->data);
+            {
+                // dvz_canvas_buffers(canvas, *br, 0, size, arr->data);
+                for (uint32_t i = 0; i < canvas->swapchain.img_count; i++)
+                    dvz_buffer_upload(br->buffer, br->offsets[i], size, arr->data);
+            }
             else
                 dvz_upload_buffer(ctx, *br, 0, size, arr->data);
             _source_set(source);
