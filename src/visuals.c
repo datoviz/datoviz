@@ -289,18 +289,10 @@ void dvz_visual_group(DvzVisual* visual, uint32_t group_idx, uint32_t size)
 
 
 
-void dvz_visual_data(
-    DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx, uint32_t count, const void* data)
-{
-    ASSERT(visual != NULL);
-    dvz_visual_data_partial(visual, prop_type, prop_idx, 0, count, count, data);
-}
-
-
-
-void dvz_visual_data_partial(
+static void _visual_data(
     DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx, //
-    uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data)
+    uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data,
+    bool do_resize)
 {
     ASSERT(visual != NULL);
     uint32_t count = first_item + item_count;
@@ -329,7 +321,8 @@ void dvz_visual_data_partial(
     }
 
     // Make sure the array has the right size.
-    count = MAX(count, prop->arr_orig.item_count);
+    if (!do_resize)
+        count = MAX(count, prop->arr_orig.item_count);
     dvz_array_resize(&prop->arr_orig, count);
 
     // Copy the specified array to the prop array.
@@ -343,6 +336,25 @@ void dvz_visual_data_partial(
         source->origin = DVZ_SOURCE_ORIGIN_LIB;
         _source_set_changed(source, true);
     }
+}
+
+
+
+void dvz_visual_data(
+    DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx, uint32_t count, const void* data)
+{
+    ASSERT(visual != NULL);
+    _visual_data(visual, prop_type, prop_idx, 0, count, count, data, true);
+}
+
+
+
+void dvz_visual_data_partial(
+    DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx, //
+    uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data)
+{
+    _visual_data(
+        visual, prop_type, prop_idx, first_item, item_count, data_item_count, data, false);
 }
 
 
