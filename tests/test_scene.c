@@ -27,13 +27,32 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
+static int _scene_run(DvzScene* scene, const char* name)
+{
+    ASSERT(scene != NULL);
+    DvzCanvas* canvas = scene->canvas;
+
+    // Run the app.
+    dvz_app_run(canvas->app, N_FRAMES);
+
+    // Screenshot.
+    char path[1024];
+    snprintf(path, sizeof(path), "test_scene_%s", name);
+    int res = check_canvas(canvas, path);
+
+    // Destroy the scene (also destroy all panels and all visuals in the panels).
+    dvz_scene_destroy(scene);
+
+    return res;
+}
+
 
 
 /*************************************************************************************************/
 /*  Visuals tests                                                                                */
 /*************************************************************************************************/
 
-int test_scene_1(TestContext* tc)
+int test_scene_single(TestContext* tc)
 {
     DvzCanvas* canvas = tc->canvas;
     ASSERT(canvas != NULL);
@@ -44,9 +63,5 @@ int test_scene_1(TestContext* tc)
     DvzVisual* visual = dvz_scene_visual(panel, DVZ_VISUAL_POINT, DVZ_VISUAL_FLAGS_TRANSFORM_NONE);
     _point_data(visual);
 
-    dvz_app_run(canvas->app, N_FRAMES);
-
-    dvz_visual_destroy(visual);
-    dvz_scene_destroy(scene);
-    return 0;
+    return _scene_run(scene, "single");
 }
