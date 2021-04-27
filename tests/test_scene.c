@@ -107,3 +107,18 @@ int test_scene_different_size(TestContext* tc)
 
     return _scene_run(scene, "different_size");
 }
+
+
+
+int test_scene_different_controllers(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    ASSERT(canvas != NULL);
+
+    DvzScene* scene = dvz_scene(canvas, 1, 2);
+
+    _add_visual(dvz_scene_panel(scene, 0, 0, DVZ_CONTROLLER_AXES_2D, 0));
+    _add_visual(dvz_scene_panel(scene, 0, 1, DVZ_CONTROLLER_PANZOOM, 0));
+
+    return _scene_run(scene, "different_controllers");
+}
