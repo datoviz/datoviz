@@ -124,32 +124,7 @@ int test_vislib_point(TestContext* tc)
     DvzVisual visual = dvz_visual(canvas);
     dvz_visual_builtin(&visual, DVZ_VISUAL_POINT, 0);
     _visual_common(&visual);
-
-    // Create visual data.
-    uint32_t n = 50;
-    dvec3* pos = calloc(n, sizeof(dvec3));
-    cvec4* color = calloc(n, sizeof(cvec4));
-    double t = 0;
-    double aspect = dvz_canvas_aspect(canvas);
-    for (uint32_t i = 0; i < n; i++)
-    {
-        t = i / (double)(n);
-        pos[i][0] = .5 * cos(M_2PI * t);
-        pos[i][1] = aspect * .5 * sin(M_2PI * t);
-        dvz_colormap(DVZ_CMAP_HSV, TO_BYTE(t), color[i]);
-        color[i][3] = 128;
-    }
-
-    // Set visual data.
-    dvz_visual_data(&visual, DVZ_PROP_POS, 0, n, pos);
-    dvz_visual_data(&visual, DVZ_PROP_COLOR, 0, n, color);
-
-    // Free the arrays.
-    FREE(pos);
-    FREE(color);
-
-    // Params.
-    dvz_visual_data(&visual, DVZ_PROP_MARKER_SIZE, 0, 1, (float[]){50});
+    _point_data(&visual);
 
     return _visual_run(&visual, "point");
 }

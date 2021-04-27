@@ -6,13 +6,6 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static DvzMVP MVP_ID = {
-    GLM_MAT4_IDENTITY_INIT, //
-    GLM_MAT4_IDENTITY_INIT, //
-    GLM_MAT4_IDENTITY_INIT};
-
-
-
 static void _check_viewport(DvzViewport* viewport)
 {
     ASSERT(viewport != NULL);
@@ -34,19 +27,25 @@ static void _update_viewport(DvzPanel* panel)
     ASSERT(canvas != NULL);
 
     DvzViewport* viewport = &panel->viewport;
+    ASSERT(viewport != NULL);
 
     ASSERT(panel->width > 0);
     ASSERT(panel->height > 0);
-    ASSERT(canvas->window->width > 0);
-    ASSERT(canvas->window->height > 0);
+
+    // Canvas size in screen pixels.
+    uvec2 size_screen = {0};
+    dvz_canvas_size(canvas, DVZ_CANVAS_SIZE_SCREEN, size_screen);
+    ASSERT(size_screen[0] > 0);
+    ASSERT(size_screen[1] > 0);
 
     // Size in screen coordinates.
-    viewport->size_screen[0] = panel->width * canvas->window->width;
-    viewport->size_screen[1] = panel->height * canvas->window->height;
-    viewport->offset_screen[0] = panel->x * canvas->window->width;
-    viewport->offset_screen[1] = panel->y * canvas->window->height;
+    viewport->size_screen[0] = panel->width * size_screen[0];
+    viewport->size_screen[1] = panel->height * size_screen[1];
+    viewport->offset_screen[0] = panel->x * size_screen[0];
+    viewport->offset_screen[1] = panel->y * size_screen[1];
 
     // Size in framebuffer pixel coordinates.
+    ASSERT(canvas->swapchain.images != NULL);
     float win_width = canvas->swapchain.images->width;
     float win_height = canvas->swapchain.images->height;
 
@@ -238,7 +237,7 @@ DvzPanel* dvz_panel(DvzGrid* grid, uint32_t row, uint32_t col)
     panel->br_mvp = dvz_ctx_buffers(ctx, DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE, n, sizeof(DvzMVP));
     // Initialize with identity matrices. Will be later updated by the scene controllers at every
     // frame.
-    dvz_upload_buffer(ctx, panel->br_mvp, 0, panel->br_mvp.size, &MVP_ID);
+    // dvz_canvas_buffers(canvas, panel->br_mvp, 0, panel->br_mvp.size, &MVP_ID);
 
     // Update the DvzViewport.
     dvz_panel_update(panel);
@@ -250,7 +249,9 @@ DvzPanel* dvz_panel(DvzGrid* grid, uint32_t row, uint32_t col)
 void dvz_panel_update(DvzPanel* panel)
 {
     ASSERT(panel != NULL);
+
     DvzGrid* grid = panel->grid;
+    ASSERT(grid != NULL);
 
     ASSERT(panel->col < grid->n_cols);
     ASSERT(panel->row < grid->n_rows);
