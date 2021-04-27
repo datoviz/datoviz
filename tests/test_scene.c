@@ -66,12 +66,18 @@ int test_scene_single(TestContext* tc)
     DvzCanvas* canvas = tc->canvas;
     ASSERT(canvas != NULL);
 
+    _white_background(canvas);
+
     DvzScene* scene = dvz_scene(canvas, 1, 1);
-    DvzPanel* panel = dvz_scene_panel(scene, 0, 0, DVZ_CONTROLLER_PANZOOM, 0);
+    DvzPanel* panel = dvz_scene_panel(scene, 0, 0, DVZ_CONTROLLER_AXES_2D, 0);
 
     _add_visual(panel);
 
-    return _scene_run(scene, "single");
+    int res = _scene_run(scene, "single");
+
+    _dark_background(canvas);
+
+    return res;
 }
 
 

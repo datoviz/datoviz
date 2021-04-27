@@ -650,7 +650,7 @@ static int _vislib_axes(TestContext* tc, DvzAxisCoord coord, const char* name)
 {
     DvzCanvas* canvas = tc->canvas;
     ASSERT(canvas != NULL);
-    dvz_canvas_clear_color(canvas, 1, 1, 1);
+    _white_background(canvas);
     canvas->viewport.margins[0] = 25;
     canvas->viewport.margins[1] = 25;
     canvas->viewport.margins[2] = 100;
@@ -719,7 +719,7 @@ static int _vislib_axes(TestContext* tc, DvzAxisCoord coord, const char* name)
     FREE(text);
     FREE(strings);
 
-    dvz_canvas_clear_color(canvas, 0, 0, 0);
+    _dark_background(canvas);
     return res;
 }
 

@@ -46,6 +46,10 @@ static int test(int argc, char** argv)
             print_res(index, tc.cases[i].name, cur_res);
             res += cur_res == 0 ? 0 : 1;
             index++;
+
+            // HACK: only 1 test case if in interactive mode.
+            if (tc.debug)
+                break;
         }
     }
     print_end(index, res);
