@@ -1,5 +1,8 @@
+#include "../include/datoviz/interact.h"
+#include "../include/datoviz/mesh.h"
 #include "../include/datoviz/vislib.h"
 #include "../include/datoviz/visuals.h"
+#include "../src/interact_utils.h"
 #include "proto.h"
 #include "tests.h"
 
@@ -109,7 +112,7 @@ static int _visual_run(DvzVisual* visual, const char* name)
 
 
 /*************************************************************************************************/
-/*  Visuals tests                                                                                */
+/*  Basic visuals tests                                                                          */
 /*************************************************************************************************/
 
 int test_vislib_point(TestContext* tc)
@@ -396,6 +399,10 @@ int test_vislib_triangle_fan(TestContext* tc)
 
 
 
+/*************************************************************************************************/
+/*  2D visuals tests                                                                             */
+/*************************************************************************************************/
+
 int test_vislib_marker(TestContext* tc)
 {
     DvzCanvas* canvas = tc->canvas;
@@ -660,6 +667,10 @@ int test_vislib_image_cmap(TestContext* tc)
 
 
 
+/*************************************************************************************************/
+/*  Axes visuals tests                                                                           */
+/*************************************************************************************************/
+
 static int _vislib_axes(TestContext* tc, DvzAxisCoord coord, const char* name)
 {
     DvzCanvas* canvas = tc->canvas;
@@ -753,7 +764,54 @@ int test_vislib_axes_2D_y(TestContext* tc)
 
 
 
-int test_vislib_mesh(TestContext* tc) { return 0; }
+/*************************************************************************************************/
+/*  3D visuals tests                                                                             */
+/*************************************************************************************************/
+
+int test_vislib_mesh(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    ASSERT(canvas != NULL);
+
+    // Make visual.
+    DvzVisual visual = dvz_visual(canvas);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_MESH, 0);
+    _visual_common(&visual);
+
+    DvzMesh mesh = dvz_mesh_cube();
+
+    // Vertex buffer.
+    dvz_visual_data_source(
+        &visual, DVZ_SOURCE_TYPE_VERTEX, 0, 0, mesh.vertices.item_count, mesh.vertices.item_count,
+        mesh.vertices.data);
+
+    // Index buffer.
+    if (mesh.indices.item_count > 0)
+        dvz_visual_data_source(
+            &visual, DVZ_SOURCE_TYPE_INDEX, 0, 0, mesh.indices.item_count, mesh.indices.item_count,
+            mesh.indices.data);
+
+    // Params.
+    DvzGraphicsMeshParams params = default_graphics_mesh_params((vec3){0, 0, 3});
+    dvz_visual_data_source(&visual, DVZ_SOURCE_TYPE_PARAM, 0, 0, 1, 1, &params);
+
+    // Texture.
+    DvzTexture* texture = _mock_texture(canvas->gpu->context);
+    dvz_visual_texture(&visual, DVZ_SOURCE_TYPE_IMAGE, 0, texture);
+
+    // Arcball interact and rotation.
+    DvzInteract interact = dvz_interact_builtin(canvas, DVZ_INTERACT_ARCBALL);
+    DvzArcball* arcball = &interact.u.a;
+    vec3 angles = {M_PI / 8, -M_PI / 8, 0};
+    _arcball_from_angles(arcball, angles);
+    glm_quat_mat4(arcball->rotation, arcball->mat);
+    _arcball_update_mvp(canvas->viewport, arcball, &interact.mvp);
+    dvz_visual_data(&visual, DVZ_PROP_MODEL, 0, 1, interact.mvp.model);
+    dvz_visual_data(&visual, DVZ_PROP_VIEW, 0, 1, interact.mvp.view);
+    dvz_visual_data(&visual, DVZ_PROP_PROJ, 0, 1, interact.mvp.proj);
+
+    return _visual_run(&visual, "mesh");
+}
 
 
 

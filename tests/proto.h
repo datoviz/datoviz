@@ -272,6 +272,24 @@ static DvzTexture* _synthetic_texture(DvzContext* context)
 
 
 
+static DvzTexture* _mock_texture(DvzContext* context)
+{
+    ASSERT(context != NULL);
+
+    DvzTexture* texture = dvz_ctx_texture(context, 2, (uvec3){2, 2, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+    cvec4 tex_data[] = {
+        {255, 0, 0, 255}, //
+        {0, 255, 0, 255},
+        {0, 0, 255, 255},
+        {255, 255, 0, 255},
+    };
+    dvz_upload_texture(
+        context, texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, sizeof(tex_data), tex_data);
+    return texture;
+}
+
+
+
 static DvzTexture* _volume_texture(DvzContext* context, int kind)
 {
     const uint32_t S = 64;
