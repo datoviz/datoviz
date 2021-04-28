@@ -9,6 +9,7 @@
 ### `dvz_canvas_close_on_esc()`
 ### `dvz_canvas_recreate()`
 ### `dvz_canvas_resize()`
+### `dvz_canvas_buffers()`
 ### `dvz_canvas_to_refill()`
 ### `dvz_canvas_to_close()`
 ### `dvz_canvases_destroy()`
