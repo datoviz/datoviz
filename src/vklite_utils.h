@@ -1126,8 +1126,12 @@ static void create_swapchain(
 
     screateInfo.preTransform = caps->currentTransform;
 
+#if SWIFTSHADER
+    log_trace("NOT swapchain as using swiftshader");
+#else
     log_trace("create swapchain");
     VK_CHECK_RESULT(vkCreateSwapchainKHR(device, &screateInfo, NULL, swapchain));
+#endif
 }
 
 

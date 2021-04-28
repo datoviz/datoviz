@@ -12,7 +12,7 @@ then
     mkdir -p build &&
     cd build && \
     cmake .. -GNinja && \
-    DVZ_EXAMPLE= ninja && \
+    ninja && \
     cd ..
 fi
 
@@ -26,6 +26,15 @@ then
     mkdir -p build &&
     cd build && \
     cmake .. -GNinja && \
+    ninja && \
+    cd ..
+fi
+
+if [ $1 == "swiftshader" ]
+then
+    mkdir -p build &&
+    cd build && \
+    cmake .. -GNinja -DSWIFTSHADER=1 && \
     ninja && \
     cd ..
 fi
