@@ -34,7 +34,14 @@ extern "C" {
 #define DVZ_DEFAULT_IMAGE_FORMAT      VK_FORMAT_B8G8R8A8_UNORM
 #define DVZ_PICK_IMAGE_FORMAT         VK_FORMAT_R32G32B32A32_SINT
 #define DVZ_PICK_STAGING_SIZE         8
+
+// HACK: support Retina — to improve...
+#if OS_MACOS
+#define DVZ_DEFAULT_DPI_SCALING       1.25f
+#else
 #define DVZ_DEFAULT_DPI_SCALING       1.0f
+#endif
+
 #define DVZ_MIN_SWAPCHAIN_IMAGE_COUNT 3
 #define DVZ_SEMAPHORE_IMG_AVAILABLE   0
 #define DVZ_SEMAPHORE_RENDER_FINISHED 1

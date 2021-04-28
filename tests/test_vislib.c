@@ -658,7 +658,7 @@ static int _vislib_axes(TestContext* tc, DvzAxisCoord coord, const char* name)
 
     // Make visual.
     DvzVisual visual = dvz_visual(canvas);
-    dvz_visual_builtin(&visual, DVZ_VISUAL_AXES_2D, coord);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_AXES_2D, (int)coord);
     _visual_common(&visual);
     dvz_visual_data(&visual, DVZ_PROP_VIEWPORT, 1, 1, &canvas->viewport);
 
