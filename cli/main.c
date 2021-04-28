@@ -15,6 +15,8 @@
     if (argc >= 1 && strcmp(argv[1], #arg) == 0)                                                  \
         res = arg(argc - 1, &argv[1]);
 
+#define SWITCH_DEMO(name) strcmp(argv[argc - 1], name) == 0
+
 
 
 /*************************************************************************************************/
@@ -78,22 +80,32 @@ static int info(int argc, char** argv)
 
 static int demo(int argc, char** argv)
 {
-    if (strcmp(argv[argc - 1], "gui") == 0)
+    // Default demo: scatter plot.
+    if (argc == 1)
     {
-        dvz_demo_gui();
-        return 0;
+        const int32_t N = 50000;
+        log_info("running scatter plot demo with %d points", N);
+
+        dvec3* pos = calloc((uint32_t)N, sizeof(dvec3));
+        for (int32_t i = 0; i < N; i++)
+        {
+            pos[i][0] = .25 * dvz_rand_normal();
+            pos[i][1] = .25 * dvz_rand_normal();
+            pos[i][2] = .25 * dvz_rand_normal();
+        }
+        dvz_demo_scatter(N, pos);
+        FREE(pos);
     }
 
-    const int32_t N = 50000;
-    dvec3* pos = calloc((uint32_t)N, sizeof(dvec3));
-    for (int32_t i = 0; i < N; i++)
+    // GUI demo.
+    else if (SWITCH_DEMO("gui"))
     {
-        pos[i][0] = .25 * dvz_rand_normal();
-        pos[i][1] = .25 * dvz_rand_normal();
-        pos[i][2] = .25 * dvz_rand_normal();
+        log_info("running Dear ImGUI demo");
+        dvz_demo_gui();
     }
-    dvz_demo_scatter(N, pos);
-    FREE(pos);
+
+    // Other C examples.
+
     return 0;
 }
 
