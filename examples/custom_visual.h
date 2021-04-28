@@ -2,11 +2,18 @@
 /*  Example of a custom visual.                                                                  */
 /*************************************************************************************************/
 
+// NOTE: ignore this.
+#ifndef SCREENSHOT
+#define SCREENSHOT(name)
+#endif
+
+// We include the library header file.
 #include <datoviz/datoviz.h>
 
 
+
 // Baking callback function.
-static void _bake_callback(DvzVisual* visual, DvzVisualDataEvent ev)
+static void _custom_visual_bake(DvzVisual* visual, DvzVisualDataEvent ev)
 {
     ASSERT(visual != NULL);
 
@@ -82,7 +89,8 @@ static void _bake_callback(DvzVisual* visual, DvzVisualDataEvent ev)
 }
 
 
-int main(int argc, char** argv)
+
+static int demo_custom_visual()
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
     DvzGpu* gpu = dvz_gpu_best(app);
@@ -108,7 +116,7 @@ int main(int argc, char** argv)
         dvz_visual_prop(visual, DVZ_PROP_LENGTH, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_VERTEX, 0);
 
         // Custom baking functions.
-        dvz_visual_callback_bake(visual, _bake_callback);
+        dvz_visual_callback_bake(visual, _custom_visual_bake);
     }
 
     // Add the custom visual to the main panel.
@@ -129,6 +137,7 @@ int main(int argc, char** argv)
         dvz_visual_data(visual, DVZ_PROP_LENGTH, 0, 1, (float[]){.25});
     }
 
+    SCREENSHOT("custom_visual")
     dvz_app_run(app, 0);
 
     dvz_app_destroy(app);

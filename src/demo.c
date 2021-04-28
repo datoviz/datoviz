@@ -4,7 +4,7 @@
 #include "../include/datoviz/scene.h"
 
 
-void dvz_demo_scatter(int32_t n, dvec3* pos)
+int dvz_demo_scatter(int32_t n, dvec3* pos)
 {
     // HACK: some wrapping languages do not support uint types well
     uint32_t N = (uint32_t)n;
@@ -33,11 +33,12 @@ void dvz_demo_scatter(int32_t n, dvec3* pos)
     dvz_app_run(app, 0);
 
     dvz_app_destroy(app);
+    return 0;
 }
 
 
 
-void dvz_demo_gui(void)
+int dvz_demo_gui(void)
 {
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
     DvzGpu* gpu = dvz_gpu_best(app);
@@ -45,4 +46,5 @@ void dvz_demo_gui(void)
     dvz_imgui_demo(canvas);
     dvz_app_run(app, 0);
     dvz_app_destroy(app);
+    return 0;
 }

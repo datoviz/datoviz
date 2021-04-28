@@ -1,6 +1,7 @@
 #include <datoviz/datoviz.h>
 #include <unistd.h>
 
+#include "../examples/examples.h"
 #include "../tests/runner.h"
 #include "../tests/tests.h"
 #include "main.h"
@@ -15,7 +16,7 @@
     if (argc >= 1 && strcmp(argv[1], #arg) == 0)                                                  \
         res = arg(argc - 1, &argv[1]);
 
-#define SWITCH_DEMO(name) strcmp(argv[argc - 1], name) == 0
+#define SWITCH_DEMO(name) strstr(name, argv[argc - 1]) != NULL
 
 
 
@@ -80,6 +81,8 @@ static int info(int argc, char** argv)
 
 static int demo(int argc, char** argv)
 {
+    int res = 0;
+
     // Default demo: scatter plot.
     if (argc == 1)
     {
@@ -93,7 +96,7 @@ static int demo(int argc, char** argv)
             pos[i][1] = .25 * dvz_rand_normal();
             pos[i][2] = .25 * dvz_rand_normal();
         }
-        dvz_demo_scatter(N, pos);
+        res = dvz_demo_scatter(N, pos);
         FREE(pos);
     }
 
@@ -101,12 +104,16 @@ static int demo(int argc, char** argv)
     else if (SWITCH_DEMO("gui"))
     {
         log_info("running Dear ImGUI demo");
-        dvz_demo_gui();
+        res = dvz_demo_gui();
     }
 
     // Other C examples.
+    else if (SWITCH_DEMO("custom_visual"))
+        res = demo_custom_visual();
+    else if (SWITCH_DEMO("custom_graphics"))
+        res = demo_custom_graphics();
 
-    return 0;
+    return res;
 }
 
 

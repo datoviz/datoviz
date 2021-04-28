@@ -86,7 +86,7 @@ then
         for filename in standalone_*.c*; do
             ./build.sh $filename automated
         done
-        cd ..
+        cd ../..
     fi
 fi
 

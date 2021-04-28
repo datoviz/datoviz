@@ -25,12 +25,12 @@
  * @param n number of points
  * @param pos point positions
  */
-DVZ_EXPORT void dvz_demo_scatter(int32_t n, dvec3* pos);
+DVZ_EXPORT int dvz_demo_scatter(int32_t n, dvec3* pos);
 
 /**
  * Gui demo (Dear ImGui).
  */
-DVZ_EXPORT void dvz_demo_gui(void);
+DVZ_EXPORT int dvz_demo_gui(void);
 
 
 
