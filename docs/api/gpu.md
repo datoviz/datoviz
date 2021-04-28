@@ -37,7 +37,7 @@
 
 ### `dvz_upload_buffer()`
 ### `dvz_download_buffer()`
-### `dvz_copy_buffers()`
+### `dvz_copy_buffer()`
 ### `dvz_upload_texture()`
 ### `dvz_download_texture()`
 ### `dvz_copy_texture()`

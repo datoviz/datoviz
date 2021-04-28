@@ -15,7 +15,6 @@ from libc.stdio cimport printf
 
 cimport datoviz.cydatoviz as cv
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -627,6 +626,11 @@ cdef class App:
         self._canvases.append(c)
         return c
 
+    def context(self):
+        c = Context()
+        c.create(self._c_app, self._c_gpu, self._c_gpu.context)
+        return c
+
     def run(self, int n_frames=0, unicode screenshot=None, unicode video=None):
         # HACK: run a few frames to render the image, make a screenshot, and run the event loop.
         if screenshot and self._canvases:
@@ -638,6 +642,129 @@ cdef class App:
 
     def run_one_frame(self):
         cv.dvz_app_run(self._c_app, 1)
+
+
+
+# -------------------------------------------------------------------------------------------------
+# Context
+# -------------------------------------------------------------------------------------------------
+
+cdef class Context:
+    cdef cv.DvzApp* _c_app
+    cdef cv.DvzGpu* _c_gpu
+    cdef cv.DvzContext* _c_context
+
+    cdef create(self, cv.DvzApp* c_app, cv.DvzGpu* c_gpu, cv.DvzContext* c_context):
+        self._c_app = c_app
+        self._c_gpu = c_gpu
+        self._c_context = c_context
+
+    def _texture(self, source_type, arr, filtering='nearest'):
+        tex = Texture()
+        tex.create(self._c_context, source_type, arr)
+        tex.set_filter(filtering)
+        return tex
+
+    def transfer(self, arr, **kwargs):
+        return self._texture('transfer', arr, **kwargs)
+
+    def image(self, arr, **kwargs):
+        return self._texture('image', arr, **kwargs)
+
+    def volume(self, arr, **kwargs):
+        return self._texture('volume', arr, **kwargs)
+
+    def colormap(self, unicode name, np.ndarray[CHAR, ndim=2] colors):
+        assert colors.shape[1] == 4
+        color_count = colors.shape[0]
+        assert color_count > 0
+        assert color_count <= 256
+        colors = colors.astype(np.uint8)
+        if not colors.flags['C_CONTIGUOUS']:
+            colors = np.ascontiguousarray(colors)
+
+        # TODO: use constant CMAP_CUSTOM instead of hard-coded value
+        cmap = 160 + len(_CUSTOM_COLORMAPS)
+        _CUSTOM_COLORMAPS[name] = cmap
+        cv.dvz_colormap_custom(cmap, color_count, <cv.cvec4*>&colors.data[0])
+        cv.dvz_context_colormap(self._c_context)
+
+
+
+# -------------------------------------------------------------------------------------------------
+# Texture
+# -------------------------------------------------------------------------------------------------
+
+cdef _get_tex_info(unicode source_type, np.ndarray arr):
+    # Find the Vulkan format for the texture
+    c_source_type, ndim = _SOURCE_TYPES[source_type]
+
+    # Find the format from the array shape and dtype
+    assert 1 <= ndim <= 3
+    if ndim <= arr.ndim - 1:
+        nc = arr.shape[ndim]
+    else:
+        nc = 1
+    # assert (arr.dtype, nc) in _FORMATS, ((arr.dtype, nc), ndim, arr.shape)
+    assert nc <= 4
+    c_format = _FORMATS[arr.dtype, nc]
+    return c_source_type, c_format, ndim
+
+
+
+cdef class Texture:
+    cdef cv.DvzContext* _c_context
+    cdef cv.DvzTexture* _c_texture
+    cdef cv.VkFormat _c_format
+    cdef cv.DvzSourceType _c_source_type
+    cdef unicode source_type
+
+    cdef create(self, cv.DvzContext* c_context, unicode source_type, np.ndarray arr):
+        self._c_context = c_context
+        self.source_type = source_type
+
+        # Find the texture information from the NumPy array spec.
+        self._c_source_type, self._c_format, ndim = _get_tex_info(source_type, arr)
+
+        # Find the shape
+        cdef np.uint32_t shape[3]
+        for i in range(ndim):
+            shape[i] = arr.shape[i]
+        for i in range(ndim, 3):
+            shape[i] = 1
+
+        if ndim > 1:
+            # NOTE: Vulkan considers textures as (width, height, depth) whereas NumPy
+            # considers them as (height, width, depth), hence the need to transpose here.
+            shape[0], shape[1] = shape[1], shape[0]
+
+        # Create the Datoviz texture.
+        self._c_texture = cv.dvz_ctx_texture(self._c_context, ndim, &shape[0], self._c_format)
+
+        self.set_data(arr)
+
+    def set_filter(self, name):
+        cv.dvz_texture_filter(self._c_texture, cv.DVZ_FILTER_MIN, _TEXTURE_FILTERS[name])
+        cv.dvz_texture_filter(self._c_texture, cv.DVZ_FILTER_MAG, _TEXTURE_FILTERS[name])
+
+    def set_data(self, np.ndarray arr):
+        # if not arr.flags['C_CONTIGUOUS']:
+        #     arr = np.ascontiguousarray(arr)
+
+        c_source_type, c_format, ndim = _get_tex_info(self.source_type, arr)
+        assert c_source_type == self._c_source_type
+        assert c_format == self._c_format
+
+        cdef cv.uvec3 DVZ_ZERO_OFFSET = [0, 0, 0]
+
+        cdef size = arr.size
+        cdef item_size = np.dtype(arr.dtype).itemsize
+
+        cdef int s
+        s = size * item_size
+        cv.dvz_upload_texture(
+            self._c_context, self._c_texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET,
+            size * item_size, &arr.data[0])
 
 
 
@@ -678,21 +805,6 @@ cdef class Canvas:
 
     def stop(self):
         cv.dvz_canvas_stop(self._c_canvas)
-
-    def colormap(self, unicode name, np.ndarray[CHAR, ndim=2] colors):
-        assert colors.shape[1] == 4
-        color_count = colors.shape[0]
-        assert color_count > 0
-        assert color_count <= 256
-        colors = colors.astype(np.uint8)
-        if not colors.flags['C_CONTIGUOUS']:
-            colors = np.ascontiguousarray(colors)
-
-        # TODO: use constant CMAP_CUSTOM instead of hard-coded value
-        cmap = 160 + len(_CUSTOM_COLORMAPS)
-        _CUSTOM_COLORMAPS[name] = cmap
-        cv.dvz_colormap_custom(cmap, color_count, <cv.cvec4*>&colors.data[0])
-        cv.dvz_context_colormap(self._c_canvas.gpu.context)
 
     def panel(self, int row=0, int col=0, controller='axes', transform=None, transpose=None, **kwargs):
         cdef int flags
@@ -742,21 +854,6 @@ cdef class Canvas:
 
     def demo_gui(self):
         cv.dvz_imgui_demo(self._c_canvas)
-
-    def _texture(self, source_type, arr, filtering='nearest'):
-        tex = Texture()
-        tex.create(self._c_canvas, source_type, arr)
-        tex.set_filter(filtering)
-        return tex
-
-    def transfer(self, arr, **kwargs):
-        return self._texture('transfer', arr, **kwargs)
-
-    def image(self, arr, **kwargs):
-        return self._texture('image', arr, **kwargs)
-
-    def volume(self, arr, **kwargs):
-        return self._texture('volume', arr, **kwargs)
 
     def __dealloc__(self):
         self.destroy()
@@ -867,85 +964,6 @@ cdef class Panel:
         cv.dvz_transform(self._c_panel, source, pos_in, target, pos_out)
         return pos_out[0], pos_out[1]
 
-
-
-# -------------------------------------------------------------------------------------------------
-# Texture
-# -------------------------------------------------------------------------------------------------
-
-cdef _get_tex_info(unicode source_type, np.ndarray arr):
-    # Find the Vulkan format for the texture
-    c_source_type, ndim = _SOURCE_TYPES[source_type]
-
-    # Find the format from the array shape and dtype
-    assert 1 <= ndim <= 3
-    if ndim <= arr.ndim - 1:
-        nc = arr.shape[ndim]
-    else:
-        nc = 1
-    # assert (arr.dtype, nc) in _FORMATS, ((arr.dtype, nc), ndim, arr.shape)
-    assert nc <= 4
-    c_format = _FORMATS[arr.dtype, nc]
-    return c_source_type, c_format, ndim
-
-
-
-cdef class Texture:
-    cdef cv.DvzCanvas* _c_canvas
-    cdef cv.DvzContext* _c_context
-    cdef cv.DvzTexture* _c_texture
-    cdef cv.VkFormat _c_format
-    cdef cv.DvzSourceType _c_source_type
-    cdef unicode source_type
-
-    cdef create(self, cv.DvzCanvas* c_canvas, unicode source_type, np.ndarray arr):
-        self._c_canvas = c_canvas
-        self._c_context = c_canvas.gpu.context
-        self.source_type = source_type
-
-        # Find the texture information from the NumPy array spec.
-        self._c_source_type, self._c_format, ndim = _get_tex_info(source_type, arr)
-
-        # Find the shape
-        cdef np.uint32_t shape[3]
-        for i in range(ndim):
-            shape[i] = arr.shape[i]
-        for i in range(ndim, 3):
-            shape[i] = 1
-
-        if ndim > 1:
-            # NOTE: Vulkan considers textures as (width, height, depth) whereas NumPy
-            # considers them as (height, width, depth), hence the need to transpose here.
-            shape[0], shape[1] = shape[1], shape[0]
-
-        # Create the Datoviz texture.
-        self._c_texture = cv.dvz_ctx_texture(self._c_context, ndim, &shape[0], self._c_format)
-
-        self.set_data(arr)
-
-    def set_filter(self, name):
-        cv.dvz_texture_filter(self._c_texture, cv.DVZ_FILTER_MIN, _TEXTURE_FILTERS[name])
-        cv.dvz_texture_filter(self._c_texture, cv.DVZ_FILTER_MAG, _TEXTURE_FILTERS[name])
-
-    def set_data(self, np.ndarray arr):
-        # if not arr.flags['C_CONTIGUOUS']:
-        #     arr = np.ascontiguousarray(arr)
-
-        c_source_type, c_format, ndim = _get_tex_info(self.source_type, arr)
-        assert c_source_type == self._c_source_type
-        assert c_format == self._c_format
-
-        cdef cv.uvec3 DVZ_ZERO_OFFSET = [0, 0, 0]
-
-        cdef size = arr.size
-        cdef item_size = np.dtype(arr.dtype).itemsize
-
-        cdef int s
-        s = size * item_size
-        # printf("canvas=%d, tex=%d, size=%d, data=%d\n", self._c_canvas, self._c_texture, s, &value.data[0])
-        cv.dvz_upload_texture(
-            self._c_canvas, self._c_texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET,
-            size * item_size, &arr.data[0])
 
 
 # -------------------------------------------------------------------------------------------------
