@@ -367,16 +367,22 @@ foreach(shader_source ${shader_sources})
         IMPLICIT_DEPENDS ${shader_source}
         )
     list(APPEND shader_outputs ${shader_output})
+
+    # if(${shader_name} MATCHES "graphics_")
+    #     list(APPEND embed_spirv ${shader_output})
+    # endif()
 endforeach()
 add_custom_target(shaders_spirv DEPENDS ${shader_outputs})
 
-# TODO: separate between builtin shaders and example/test visuals
-
+# NOTE: Only include graphics shaders in the embed resources files.
+# file(GLOB embed_spirv "${SPIRV_DIR}/graphics_*.spv")
+# message(${embed_spirv})
 set(path_shadersc "${CMAKE_BINARY_DIR}/_shaders.c")
 add_custom_command(
     OUTPUT ${path_shadersc}
     COMMAND ${CMAKE_COMMAND}
     -D DIR="${SPIRV_DIR}/*"
+    # -D DIR=${embed_spirv}
     -D PREFIX="shader"
     -D OUTPUT=${path_shadersc}
     -P "${CMAKE_SOURCE_DIR}/cmake/embed_resources.cmake"

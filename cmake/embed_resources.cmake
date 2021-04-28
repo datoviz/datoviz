@@ -12,6 +12,12 @@ function(create_resources files prefix output)
     foreach(bin ${bins})
         # Get short filename
         string(REGEX MATCH "([^/]+)$" filename ${bin})
+
+        # HACK: do not include non graphics shaders in the embeded resources files.
+        if(${filename} MATCHES ".spv" AND NOT ${filename} MATCHES "graphics_")
+            continue()
+        endif()
+
         # Remove the file extension
         string(REGEX REPLACE "\\.[^.]*$" "" filename ${filename})
         # Replace filename spaces & extension separator for C compatibility
@@ -33,6 +39,12 @@ function(create_resources files prefix output)
     # Iterate through input files
     foreach(bin ${bins})
         string(REGEX MATCH "([^/]+)$" filename ${bin})
+
+        # HACK: do not include non graphics shaders in the embeded resources files.
+        if(${filename} MATCHES ".spv" AND NOT ${filename} MATCHES "graphics_")
+            continue()
+        endif()
+
         string(REGEX REPLACE "\\.[^.]*$" "" filename ${filename})
         string(REGEX REPLACE "\\.| |-" "_" filename ${filename})
         file(APPEND ${output} "if (strcmp(name, \"${filename}\") == 0) {*size = DVZ_RESOURCE_${prefix}_${filename}_size; return DVZ_RESOURCE_${prefix}_${filename};}\n")

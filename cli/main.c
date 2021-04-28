@@ -19,12 +19,16 @@
 #define SWITCH_DEMO(name)                                                                         \
     if (argc == 1 || strstr(#name, argv[argc - 1]) != NULL)                                       \
     {                                                                                             \
-        char* s = "DVZ_RUN_SCREENSHOT=%s/docs/images/screenshots/%s.png";                         \
-        char path[1024];                                                                          \
-        snprintf(path, sizeof(path), s, ROOT_DIR, #name);                                         \
-        putenv(path);                                                                             \
+        if (argc == 1)                                                                            \
+        {                                                                                         \
+            char* s = "DVZ_RUN_SCREENSHOT=%s/docs/images/screenshots/%s.png";                     \
+            char path[1024];                                                                      \
+            snprintf(path, sizeof(path), s, ROOT_DIR, #name);                                     \
+            putenv(path);                                                                         \
+        }                                                                                         \
         res = demo_##name();                                                                      \
-        unsetenv("DVZ_RUN_SCREENSHOT");                                                           \
+        if (argc == 1)                                                                            \
+            unsetenv("DVZ_RUN_SCREENSHOT");                                                       \
     }
 
 
@@ -63,6 +67,7 @@ static int demo(int argc, char** argv)
     SWITCH_DEMO(gui)
     SWITCH_DEMO(custom_visual)
     SWITCH_DEMO(custom_graphics)
+    SWITCH_DEMO(mandelbrot)
 
     if (argc == 1)
         unsetenv("DVZ_RUN_NFRAMES");
