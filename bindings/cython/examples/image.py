@@ -13,9 +13,9 @@ import numpy.random as nr
 import imageio
 
 
-from datoviz import canvas, run, colormap
+from datoviz import canvas, run, colormap, context
 
-ROOT = Path(__file__).parent.parent.parent.parent
+ROOT = Path(__file__).resolve().parent.parent.parent.parent
 
 c = canvas(show_fps=True)
 panel = c.panel(controller='panzoom')
@@ -36,7 +36,7 @@ visual.data('texcoords', np.atleast_2d([0, 1]), idx=3)
 img = imageio.imread(ROOT / 'data/textures/earth.jpg')
 img = np.dstack((img, 255 * np.ones(img.shape[:2])))
 img = img.astype(np.uint8)
-tex = c.image(img, filtering='nearest')
+tex = context().image(img, filtering='nearest')
 visual.texture(tex, idx=0)
 
 # Second texture.
@@ -46,7 +46,7 @@ x, y = np.meshgrid(t, t)
 z = np.exp(-2 * (x * x + y * y))
 z = (z * 255).astype(np.uint8)
 img = np.dstack((z, z, z, 255 * np.ones_like(z))).astype(np.uint8)
-tex2 = c.image(img, filtering='nearest')
+tex2 = context().image(img, filtering='nearest')
 visual.texture(tex2, idx=1)
 
 visual.data('texcoefs', np.array([1, .5, 0, 0]).astype(np.float32))

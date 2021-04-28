@@ -81,6 +81,14 @@ def canvas(*args, **kwargs):
     return c
 
 
+def custom_colormap(*args, **kwargs):
+    return app().context().colormap(*args, **kwargs)
+
+
+def context():
+    return app().context()
+
+
 def run(**kwargs):
     global _EVENT_LOOP_INTEGRATION
     if _EVENT_LOOP_INTEGRATION:

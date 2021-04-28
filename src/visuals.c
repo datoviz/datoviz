@@ -305,9 +305,10 @@ static void _visual_data(
 
     // Get the associated source.
     DvzSource* source = prop->source;
-    log_trace(
-        "found source type %d #%d for prop type %d #%d", //
-        source->source_type, source->source_idx, prop_type, prop_idx);
+    if (source != NULL)
+        log_trace(
+            "found source type %d #%d for prop type %d #%d", //
+            source->source_type, source->source_idx, prop_type, prop_idx);
 
     if (source != NULL && source->source_kind == DVZ_SOURCE_KIND_UNIFORM &&
         (first_item > 0 || item_count > 1))
