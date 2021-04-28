@@ -27,7 +27,7 @@ def page_hook(markdown, page, config, files):
     path = page.file.abs_src_path
     if 'docs/index.md' in path:
         return process_index_page(markdown, config)
-    elif 'graphics/' in path:
+    elif 'reference/graphics' in path:
         return insert_graphics_doc(markdown, config)
     elif 'reference/colormap' in path:
         return (markdown + '\n\n' + generate_colormaps_doc())
