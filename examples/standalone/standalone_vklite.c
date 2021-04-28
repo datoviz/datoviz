@@ -5,6 +5,49 @@
 /// Import the library public header.
 #include <datoviz/datoviz.h>
 
+
+
+// Utility function to create the renderpass for offscreen rendering.
+static void create_renderpass(DvzRenderpass* renderpass)
+{
+    // Background color.
+    VkClearValue clear_color = {0};
+    clear_color.color.float32[3] = 1;
+
+    VkClearValue clear_depth = {0};
+    clear_depth.depthStencil.depth = 1.0f;
+
+    dvz_renderpass_clear(renderpass, clear_color);
+    dvz_renderpass_clear(renderpass, clear_depth);
+
+    // Color attachment.
+    dvz_renderpass_attachment(
+        renderpass, 0, //
+        DVZ_RENDERPASS_ATTACHMENT_COLOR, VK_FORMAT_B8G8R8A8_UNORM,
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    dvz_renderpass_attachment_layout(
+        renderpass, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    dvz_renderpass_attachment_ops(
+        renderpass, 0, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+
+    // Depth attachment.
+    dvz_renderpass_attachment(
+        renderpass, 1, //
+        DVZ_RENDERPASS_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT,
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    dvz_renderpass_attachment_layout(
+        renderpass, 1, VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    dvz_renderpass_attachment_ops(
+        renderpass, 1, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
+
+    // Subpass.
+    dvz_renderpass_subpass_attachment(renderpass, 0, 0);
+    dvz_renderpass_subpass_attachment(renderpass, 0, 1);
+}
+
+
+
 // This function downloads the contents of the GPU image on which we have rendered to.
 static uint8_t* screenshot(DvzImages* image)
 {
@@ -58,6 +101,8 @@ static uint8_t* screenshot(DvzImages* image)
     return rgb;
 }
 
+
+
 int main(int argc, char** argv)
 {
     // We create a singleton application with a GLFW backend.
@@ -85,8 +130,6 @@ int main(int argc, char** argv)
 
     // We are going to create a renderpass.
     DvzRenderpass renderpass = dvz_renderpass(gpu);
-    VkClearValue clear_color = {0};
-    VkClearValue clear_depth = {0};
 
     // We create a GPU image that we will render onto.
     DvzImages image = dvz_images(gpu, VK_IMAGE_TYPE_2D, 1);
@@ -96,46 +139,10 @@ int main(int argc, char** argv)
     DvzFramebuffers framebuffers = dvz_framebuffers(gpu);
 
     // Renderpass creation.
+    create_renderpass(&renderpass);
+
+    // Create attachments and framebuffers.
     {
-        // Clear colors.
-        clear_color.color.float32[3] = 1;
-        clear_depth.depthStencil.depth = 1.0f;
-        dvz_renderpass_clear(&renderpass, clear_color);
-        dvz_renderpass_clear(&renderpass, clear_depth);
-
-        // Color attachment.
-        dvz_renderpass_attachment(
-            &renderpass, 0, //
-            DVZ_RENDERPASS_ATTACHMENT_COLOR, VK_FORMAT_B8G8R8A8_UNORM,
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-        dvz_renderpass_attachment_layout(
-            &renderpass, 0, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-        dvz_renderpass_attachment_ops(
-            &renderpass, 0, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
-
-        // Depth attachment.
-        dvz_renderpass_attachment(
-            &renderpass, 1, //
-            DVZ_RENDERPASS_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT,
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-        dvz_renderpass_attachment_layout(
-            &renderpass, 1, VK_IMAGE_LAYOUT_UNDEFINED,
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-        dvz_renderpass_attachment_ops(
-            &renderpass, 1, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
-
-        // Subpass.
-        dvz_renderpass_subpass_attachment(&renderpass, 0, 0);
-        dvz_renderpass_subpass_attachment(&renderpass, 0, 1);
-        dvz_renderpass_subpass_dependency(&renderpass, 0, VK_SUBPASS_EXTERNAL, 0);
-        dvz_renderpass_subpass_dependency_stage(
-            &renderpass, 0, //
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-        dvz_renderpass_subpass_dependency_access(
-            &renderpass, 0, 0,
-            VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
-
         // Color attachment
         dvz_images_format(&image, renderpass.attachments[0].format);
         dvz_images_size(&image, width, height, 1);
@@ -207,6 +214,7 @@ int main(int argc, char** argv)
     DvzBuffer buffer = dvz_buffer(gpu);
     DvzBufferRegions vertex_buffer;
 
+    // Vertex data and GPU buffer.
     {
         // There will be three vertices for 1 triangle.
         VkDeviceSize size = 3 * sizeof(DvzVertex);
