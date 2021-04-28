@@ -272,8 +272,8 @@ void dvz_app_wait(DvzApp* app)
 
 void dvz_gpu_destroy(DvzGpu* gpu)
 {
-    log_trace("starting destruction of GPU #%d...", gpu->idx);
     ASSERT(gpu != NULL);
+    log_trace("starting destruction of GPU #%d...", gpu->idx);
     if (!dvz_obj_is_created(&gpu->obj))
     {
 
@@ -319,7 +319,9 @@ void dvz_gpu_destroy(DvzGpu* gpu)
     }
 
 
-    dvz_obj_destroyed(&gpu->obj);
+    // dvz_obj_destroyed(&gpu->obj);
+    dvz_obj_init(&gpu->obj);
+    gpu->queues.queue_count = 0;
     log_trace("GPU #%d destroyed", gpu->idx);
 }
 
@@ -361,6 +363,14 @@ void dvz_window_get_size(
         window->app->backend, window->backend_window, //
         &window->width, &window->height,              //
         framebuffer_width, framebuffer_height);
+}
+
+
+
+void dvz_window_set_size(DvzWindow* window, uint32_t width, uint32_t height)
+{
+    ASSERT(window != NULL);
+    backend_window_set_size(window->app->backend, window->backend_window, width, height);
 }
 
 
@@ -478,7 +488,7 @@ void dvz_swapchain_present_mode(DvzSwapchain* swapchain, VkPresentModeKHR presen
             return;
         }
     }
-    log_error("unsupported swapchain present mode VkPresentModeKHR #%02d", present_mode);
+    log_warn("unsupported swapchain present mode VkPresentModeKHR #%02d", present_mode);
 }
 
 
@@ -561,7 +571,8 @@ void dvz_swapchain_acquire(
         swapchain->obj.status = DVZ_OBJECT_STATUS_NEED_RECREATE;
         break;
     case VK_SUBOPTIMAL_KHR:
-        log_warn("suboptimal frame, but do nothing");
+        log_warn("suboptimal frame, recreate swapchain");
+        swapchain->obj.status = DVZ_OBJECT_STATUS_NEED_RECREATE;
         break;
     default:
         log_error("failed acquiring the swapchain image");
@@ -635,8 +646,7 @@ void dvz_swapchain_destroy(DvzSwapchain* swapchain)
         swapchain->images = VK_NULL_HANDLE;
     }
 
-    if (swapchain->swapchain != VK_NULL_HANDLE)
-        swapchain->swapchain = VK_NULL_HANDLE;
+    swapchain->swapchain = VK_NULL_HANDLE;
 
     dvz_obj_destroyed(&swapchain->obj);
     log_trace("swapchain destroyed");
@@ -704,7 +714,7 @@ void dvz_cmd_reset(DvzCommands* cmds, uint32_t idx)
     ASSERT(cmds != NULL);
     ASSERT(cmds->count > 0);
 
-    log_trace("reset %d command buffer(s)", cmds->count);
+    log_trace("reset command buffer #%d", idx);
     ASSERT(cmds->cmds[idx] != VK_NULL_HANDLE);
     VK_CHECK_RESULT(vkResetCommandBuffer(cmds->cmds[idx], 0));
 }
@@ -854,8 +864,8 @@ static void _buffer_destroy(DvzBuffer* buffer)
         buffer->device_memory = VK_NULL_HANDLE;
     }
 
-    buffer->buffer = VK_NULL_HANDLE;
-    buffer->device_memory = VK_NULL_HANDLE;
+    ASSERT(buffer->buffer == VK_NULL_HANDLE);
+    ASSERT(buffer->device_memory == VK_NULL_HANDLE);
 }
 
 
@@ -892,7 +902,7 @@ void dvz_buffer_create(DvzBuffer* buffer)
 
 
 
-void dvz_buffer_resize(DvzBuffer* buffer, VkDeviceSize size, DvzCommands* cmds)
+void dvz_buffer_resize(DvzBuffer* buffer, VkDeviceSize size)
 {
     ASSERT(buffer != NULL);
     log_debug("[SLOW] resize buffer to size %s", pretty_size(size));
@@ -902,11 +912,12 @@ void dvz_buffer_resize(DvzBuffer* buffer, VkDeviceSize size, DvzCommands* cmds)
     DvzBuffer new_buffer = dvz_buffer(gpu);
     _buffer_copy(buffer, &new_buffer);
     // Make sure we can copy to the new buffer.
+    bool proceed = true;
     if ((new_buffer.usage & VK_BUFFER_USAGE_TRANSFER_DST_BIT) == 0)
     {
         log_warn("buffer was not created with VK_BUFFER_USAGE_TRANSFER_DST_BIT and therefore the "
                  "data cannot be kept while resizing it");
-        cmds = NULL;
+        proceed = false;
     }
     new_buffer.size = size;
     _buffer_create(&new_buffer);
@@ -925,7 +936,11 @@ void dvz_buffer_resize(DvzBuffer* buffer, VkDeviceSize size, DvzCommands* cmds)
 
     // If a DvzCommands object was passed for the data transfer, transfer the data from the
     // old buffer to the new, by flushing the corresponding queue and waiting for completion.
-    if (cmds != NULL)
+
+    // HACK: use queue 0 for transfers (convention)
+    DvzCommands cmds_ = dvz_commands(gpu, 0, 1);
+    DvzCommands* cmds = &cmds_;
+    if (proceed)
     {
         uint32_t queue_idx = cmds->queue_idx;
         log_debug("copying data from the old buffer to the new one before destroying the old one");
@@ -1175,6 +1190,53 @@ void dvz_buffer_regions_upload(DvzBufferRegions* br, uint32_t idx, const void* d
 
 
 
+void dvz_buffer_regions_copy(
+    DvzBufferRegions* src, VkDeviceSize src_offset, //
+    DvzBufferRegions* dst, VkDeviceSize dst_offset, VkDeviceSize size)
+{
+    ASSERT(src != NULL);
+    ASSERT(dst != NULL);
+    ASSERT(src->buffer->gpu != NULL);
+    ASSERT(src->buffer->gpu == dst->buffer->gpu);
+    DvzGpu* gpu = src->buffer->gpu;
+    ASSERT(gpu != NULL);
+    ASSERT(size > 0);
+
+    // HACK: use queue 0 for transfers (convention)
+    DvzCommands cmds_ = dvz_commands(gpu, 0, 1);
+    DvzCommands* cmds = &cmds_;
+
+    dvz_cmd_reset(cmds, 0);
+    dvz_cmd_begin(cmds, 0);
+
+    // Copy buffer command.
+    VkBufferCopy* regions = (VkBufferCopy*)calloc(src->count, sizeof(VkBufferCopy));
+    for (uint32_t i = 0; i < src->count; i++)
+    {
+        regions[i].size = size;
+        regions[i].srcOffset = src->offsets[i] + src_offset;
+        regions[i].dstOffset = dst->offsets[i] + dst_offset;
+    }
+    vkCmdCopyBuffer(cmds->cmds[0], src->buffer->buffer, dst->buffer->buffer, src->count, regions);
+
+    dvz_cmd_end(cmds, 0);
+    FREE(regions);
+
+    // Wait for the render queue to be idle.
+    // dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_RENDER);
+
+    // Submit the commands to the transfer queue.
+    DvzSubmit submit = dvz_submit(gpu);
+    dvz_submit_commands(&submit, cmds);
+    log_debug("copy %s between 2 buffers", pretty_size(size));
+    dvz_submit_send(&submit, 0, NULL, 0);
+
+    // Wait for the transfer queue to be idle.
+    // dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
+}
+
+
+
 /*************************************************************************************************/
 /*  Images                                                                                       */
 /*************************************************************************************************/
@@ -1354,6 +1416,7 @@ void dvz_images_transition(DvzImages* images)
     ASSERT(gpu != NULL);
 
     // Start the image transition command buffer.
+    // HACK: use queue 0 for transfer (convention)
     DvzCommands cmds = dvz_commands(gpu, 0, 1);
     DvzBarrier barrier = dvz_barrier(gpu);
 
@@ -2375,6 +2438,35 @@ DvzSemaphores dvz_semaphores(DvzGpu* gpu, uint32_t count)
 
 
 
+void dvz_semaphores_recreate(DvzSemaphores* semaphores)
+{
+    ASSERT(semaphores != NULL);
+    if (!dvz_obj_is_created(&semaphores->obj))
+    {
+        log_trace("skip destruction of already-destroyed semaphores");
+        return;
+    }
+    DvzGpu* gpu = semaphores->gpu;
+    ASSERT(gpu != NULL);
+
+    ASSERT(semaphores->count > 0);
+    log_trace("recreate set of %d semaphore(s)", semaphores->count);
+
+    VkSemaphoreCreateInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    for (uint32_t i = 0; i < semaphores->count; i++)
+    {
+        if (semaphores->semaphores[i] != VK_NULL_HANDLE)
+        {
+            vkDestroySemaphore(gpu->device, semaphores->semaphores[i], NULL);
+            VK_CHECK_RESULT(
+                vkCreateSemaphore(gpu->device, &info, NULL, &semaphores->semaphores[i]));
+        }
+    }
+}
+
+
+
 void dvz_semaphores_destroy(DvzSemaphores* semaphores)
 {
     ASSERT(semaphores != NULL);
@@ -2455,15 +2547,14 @@ void dvz_fences_wait(DvzFences* fences, uint32_t idx)
     ASSERT(idx < fences->count);
     if (fences->fences[idx] != VK_NULL_HANDLE)
     {
-        // log_debug(
-        //     "wait for fence %d: ready %d", fences->fences[idx],
-        //     0); // dvz_fences_ready(fences, idx));
+        log_trace("wait for fence %u", fences->fences[idx]);
+        // dvz_fences_ready(fences, idx));
         vkWaitForFences(fences->gpu->device, 1, &fences->fences[idx], VK_TRUE, 1000000000);
         // log_trace("fence wait finished!");
     }
     else
     {
-        log_trace("skip wait for fence");
+        log_trace("skip wait for fence %u", fences->fences[idx]);
     }
 }
 
@@ -2936,7 +3027,7 @@ void dvz_submit_signal_semaphores(DvzSubmit* submit, DvzSemaphores* semaphores, 
 
 
 
-void dvz_submit_send(DvzSubmit* submit, uint32_t cmd_idx, DvzFences* fence, uint32_t fence_idx)
+void dvz_submit_send(DvzSubmit* submit, uint32_t cmd_idx, DvzFences* fences, uint32_t fence_idx)
 {
     ASSERT(submit != NULL);
     // log_trace("starting command buffer submission...");
@@ -2985,14 +3076,16 @@ void dvz_submit_send(DvzSubmit* submit, uint32_t cmd_idx, DvzFences* fence, uint
     submit_info.signalSemaphoreCount = submit->signal_semaphores_count;
     submit_info.pSignalSemaphores = signal_semaphores;
 
-    VkFence vfence = fence == NULL ? 0 : fence->fences[fence_idx];
+    VkFence vfence = fences == NULL ? 0 : fences->fences[fence_idx];
 
     if (vfence != VK_NULL_HANDLE)
     {
-        dvz_fences_wait(fence, fence_idx);
-        dvz_fences_reset(fence, fence_idx);
+        dvz_fences_wait(fences, fence_idx);
+        dvz_fences_reset(fences, fence_idx);
     }
-    // log_trace("submit queue and signal fence %d", vfence);
+    log_trace(
+        "submit queue with %d cmd bufs (%d) and signal fence %d", submit->commands_count, cmd_idx,
+        vfence);
     VK_CHECK_RESULT(vkQueueSubmit(submit->gpu->queues.queues[queue_idx], 1, &submit_info, vfence));
 
     // log_trace("submit done");
@@ -3088,11 +3181,10 @@ void dvz_cmd_barrier(DvzCommands* cmds, uint32_t idx, DvzBarrier* barrier)
         buffer_barrier = &buffer_barriers[j];
         buffer_info = &barrier->buffer_barriers[j];
 
-        buffer_barrier->sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        buffer_barrier->sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
         buffer_barrier->buffer = buffer_info->br.buffer->buffer;
         buffer_barrier->size = buffer_info->br.size;
-        ASSERT(i < buffer_info->br.count);
-        buffer_barrier->offset = buffer_info->br.offsets[i];
+        buffer_barrier->offset = buffer_info->br.offsets[MIN(i, cmds->count - 1)];
 
         buffer_barrier->srcAccessMask = buffer_info->src_access;
         buffer_barrier->dstAccessMask = buffer_info->dst_access;
@@ -3228,8 +3320,13 @@ void dvz_cmd_copy_image_region(
     ASSERT(src_img != NULL);
     ASSERT(dst_img != NULL);
 
-    ASSERT(src_img->width = dst_img->width);
-    ASSERT(src_img->height = dst_img->height);
+    ASSERT(src_offset[0] + (int)shape[0] <= (int)src_img->width);
+    ASSERT(src_offset[1] + (int)shape[1] <= (int)src_img->height);
+    ASSERT(src_offset[2] + (int)shape[2] <= (int)src_img->depth);
+
+    ASSERT(dst_offset[0] + (int)shape[0] <= (int)dst_img->width);
+    ASSERT(dst_offset[1] + (int)shape[1] <= (int)dst_img->height);
+    ASSERT(dst_offset[2] + (int)shape[2] <= (int)dst_img->depth);
 
     CMD_START_CLIP(src_img->count)
 

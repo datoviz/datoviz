@@ -440,7 +440,7 @@ static void _prop_copy(DvzVisual* visual, DvzProp* prop)
     DvzSource* source = prop->source;
     ASSERT(source != NULL);
 
-    VkDeviceSize col_size = _get_dtype_size(prop->dtype);
+    VkDeviceSize col_size = prop->item_size;
     ASSERT(col_size > 0);
 
     DvzArray* arr = _prop_array(prop);
@@ -605,12 +605,23 @@ static void _default_visual_bake(DvzVisual* visual, DvzVisualDataEvent ev)
     ASSERT(visual != NULL);
 
     // VERTEX source.
-    DvzSource* source = dvz_source_get(visual, DVZ_SOURCE_TYPE_VERTEX, 0);
-    _bake_source(visual, source);
+    DvzSource* source = NULL;
+    for (uint32_t i = 0; i < visual->sources.count; i++)
+    {
+        source = dvz_source_get(visual, DVZ_SOURCE_TYPE_VERTEX, i);
+        if (source == NULL)
+            break;
+        _bake_source(visual, source);
+    }
 
     // INDEX source.
-    source = dvz_source_get(visual, DVZ_SOURCE_TYPE_INDEX, 0);
-    _bake_source(visual, source);
+    for (uint32_t i = 0; i < visual->sources.count; i++)
+    {
+        source = dvz_source_get(visual, DVZ_SOURCE_TYPE_INDEX, i);
+        if (source == NULL)
+            break;
+        _bake_source(visual, source);
+    }
 }
 
 

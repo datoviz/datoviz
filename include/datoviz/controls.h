@@ -253,7 +253,7 @@ DVZ_EXPORT DvzGuiControl* dvz_gui_label(DvzGui* gui, const char* name, char* tex
  * @param value the initial text
  * @returns the control
  */
-DVZ_EXPORT DvzGuiControl* dvz_gui_textbox(DvzGui* gui, const char* name, char* value);
+DVZ_EXPORT DvzGuiControl* dvz_gui_textbox(DvzGui* gui, const char* name, char* text);
 
 /**
  * Add a button.

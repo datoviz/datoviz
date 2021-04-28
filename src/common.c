@@ -95,7 +95,7 @@ int dvz_write_ppm(const char* filename, uint32_t width, uint32_t height, const u
         return 1;
     // ppm header
     char buffer[100];
-    sprintf(buffer, "P6\n%d\n%d\n255\n", width, height);
+    sprintf(buffer, "P6\n%d\n%d\n255\n", (int)width, (int)height);
     fwrite(buffer, strlen(buffer), 1, fp);
     // Write the RGB image.
     fwrite(image, width * height * 3, 1, fp);
@@ -121,6 +121,7 @@ uint8_t* dvz_read_ppm(const char* filename, int* width, int* height)
     if (!fgets(buff, sizeof(buff), fp))
     {
         log_error("unable to read image form in  %s", filename);
+        fclose(fp);
         return NULL;
     }
 
@@ -128,6 +129,7 @@ uint8_t* dvz_read_ppm(const char* filename, int* width, int* height)
     if (buff[0] != 'P' || buff[1] != '6')
     {
         log_error("invalid image format (must be 'P6') in  %s", filename);
+        fclose(fp);
         return NULL;
     }
 

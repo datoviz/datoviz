@@ -18,10 +18,15 @@ fi
 
 if [ $1 == "build" ]
 then
+    # Make sure macOS uses clang and not gcc
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        export CC=/usr/bin/clang
+        export CXX=/usr/bin/clang++
+    fi
     mkdir -p build &&
     cd build && \
     cmake .. -GNinja && \
-    DVZ_EXAMPLE= ninja && \
+    ninja && \
     cd ..
 fi
 
@@ -40,15 +45,6 @@ then
     cd ../..
 fi
 
-if [ $1 == "clang" ]
-then
-    mkdir -p build_clang &&
-    cd build_clang && \
-    CC=/usr/bin/clang CXX=/usr/bin/clang++ cmake .. -GNinja && \
-    ninja && \
-    cd ..
-fi
-
 if [ $1 == "download" ]
 then
     wget https://github.com/datoviz/datoviz-data/archive/master.zip -o data.zip && unzip data.zip && rm data.zip
@@ -61,10 +57,10 @@ fi
 
 if [ $1 == "format" ]
 then
-    find examples/ test/ src/ include/ -iname *.h -o -iname *.c | xargs clang-format -i
+    find examples/ tests/ src/ include/ -iname *.h -o -iname *.c | xargs clang-format -i
 fi
 
-if [ $1 == "memcheck" ]
+if [ $1 == "valgrind" ]
 then
     valgrind --leak-check=full \
          --show-leak-kinds=all \
@@ -73,6 +69,12 @@ then
          --suppressions=.valgrind.exceptions.txt \
          --log-file=.valgrind.out.txt \
          ${@:2}
+fi
+
+if [ $1 == "cppcheck" ]
+then
+    cppcheck --enable=all --inconclusive src/ include/ cli/ tests/ -i external 2> .cppcheck.out.txt && \
+    echo ".cppcheck.out.txt saved"
 fi
 
 if [ $1 == "test" ]
@@ -86,6 +88,17 @@ then
         fi
     fi
     VK_INSTANCE_LAYERS=$dump ./build/datoviz test $2
+
+    # When running all tests, also compile and run the standalone examples.
+    if [ -z "$2" ]
+    then
+        cd examples/standalone/
+        for filename in standalone_*.c*; do
+            ./build.sh $filename automated
+        done
+        cd ../..
+        ./build/datoviz demo
+    fi
 fi
 
 if [ $1 == "demo" ]
@@ -95,8 +108,7 @@ fi
 
 if [ $1 == "prof" ]
 then
-    # valgrind --tool=callgrind --dump-instr=yes --simulate-cache=yes --collect-jumps=yes $2
-    gprof build/datoviz -Al > prof.txt
+    gprof build/datoviz gmon.out
 fi
 
 if [ $1 == "docker" ]

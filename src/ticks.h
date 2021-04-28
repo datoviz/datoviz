@@ -22,6 +22,7 @@ https://github.com/quantenschaum/ctplot/blob/master/ctplot/ticks.py
 #include <stdlib.h>
 
 #include "../include/datoviz/common.h"
+#include "../include/datoviz/ticks_types.h"
 
 
 
@@ -258,7 +259,7 @@ DVZ_INLINE void _get_tick_format(DvzTickFormat format, uint32_t precision, char*
 {
     uint32_t offset = 4;
     strcpy(fmt, "%s%.XF"); // [2] = precision, [3] = f or e
-    snprintf(&fmt[offset], 4, "%d", precision);
+    snprintf(&fmt[offset], 4, "%u", precision);
     switch (format)
     {
     case DVZ_TICK_FORMAT_DECIMAL:
@@ -290,7 +291,7 @@ DVZ_INLINE void _tick_label(double x, char* tick_format, char* out)
 
 
 
-static void make_labels(DvzAxesTicks* ticks, DvzAxesContext* ctx, bool extended)
+static inline void make_labels(DvzAxesTicks* ticks, DvzAxesContext* ctx, bool extended)
 {
     ASSERT(ticks->labels != NULL);
     char tick_format[12] = {0};
@@ -319,7 +320,7 @@ static void make_labels(DvzAxesTicks* ticks, DvzAxesContext* ctx, bool extended)
 
 
 // Return whether there are duplicate labels.
-static bool duplicate_labels(DvzAxesTicks* ticks, DvzAxesContext* ctx)
+static inline bool duplicate_labels(DvzAxesTicks* ticks, DvzAxesContext* ctx)
 {
     uint32_t n = ticks->value_count;
     char* s0 = NULL;
@@ -338,7 +339,7 @@ static bool duplicate_labels(DvzAxesTicks* ticks, DvzAxesContext* ctx)
 
 
 
-static double legibility(DvzAxesTicks* ticks, DvzAxesContext* ctx)
+static inline double legibility(DvzAxesTicks* ticks, DvzAxesContext* ctx)
 {
     uint32_t n = ticks->value_count;
     double lmin = ticks->lmin_in;
@@ -387,7 +388,7 @@ static double legibility(DvzAxesTicks* ticks, DvzAxesContext* ctx)
 /*  Algorithm                                                                                    */
 /*************************************************************************************************/
 
-static double
+static inline double
 score(dvec4 weights, double simplicity, double coverage, double density, double legibility)
 {
     double s = weights[0] * simplicity + weights[1] * coverage + //
@@ -400,7 +401,7 @@ score(dvec4 weights, double simplicity, double coverage, double density, double 
 
 
 // Optimize ticks->format|precision wrt to legibility.
-static void opt_format(DvzAxesTicks* ticks, DvzAxesContext* ctx)
+static inline void opt_format(DvzAxesTicks* ticks, DvzAxesContext* ctx)
 {
     double l = -INF, best_l = -INF;
     DvzTickFormat best_format = DVZ_TICK_FORMAT_UNDEFINED;
@@ -601,8 +602,6 @@ static DvzAxesTicks wilk_ext(double dmin, double dmax, int32_t m, DvzAxesContext
 
     best_ticks.value_count = tick_count(best_ticks.lmin_in, best_ticks.lmax_in, best_ticks.lstep);
     make_labels(&best_ticks, &ctx, false);
-    // debug_ticks(&best_ticks, &ctx);
-
     return best_ticks;
 }
 
@@ -663,9 +662,20 @@ static DvzAxesTicks dvz_ticks(double dmin, double dmax, DvzAxesContext ctx)
     ASSERT(dmin < dmax);
     ASSERT(ctx.coord <= DVZ_AXES_COORD_Y);
     ASSERT(ctx.size_glyph > 0);
-    ASSERT(ctx.size_viewport > 0);
 
     bool x_axis = ctx.coord == DVZ_AXES_COORD_X;
+
+    DvzAxesTicks ticks = {0};
+    ticks.lmin_in = dmin;
+    ticks.lmax_in = dmax;
+    ticks.lstep = dmax - dmin;
+    ticks.value_count = 2;
+
+    if (ctx.size_viewport <= 10)
+    {
+        log_warn("viewport empty, skipping ticks positioning algorithm");
+        return ticks;
+    }
 
     // NOTE: factor Y because we average 6 characters per tick, and this only counts on the x axis.
     // This number is only an initial guess, the algorithm will find a proper one.
@@ -674,18 +684,33 @@ static DvzAxesTicks dvz_ticks(double dmin, double dmax, DvzAxesContext ctx)
     label_count_req = MAX(2, label_count_req);
 
     log_debug(
-        "running extended Wilkinson algorithm on axis %d with %d labels on range [%.3f, %.3f], "
+        "running extended Wilkinson algorithm on axis %d with %d labels on range [%.9f, %.9f], "
         "viewport size %.1f, glyph size %.1f, extension %d",
         ctx.coord, label_count_req, dmin, dmax, ctx.size_viewport, ctx.size_glyph, ctx.extensions);
-    DvzAxesTicks ticks = wilk_ext(dmin, dmax, label_count_req, ctx);
+    ticks = wilk_ext(dmin, dmax, label_count_req, ctx);
+
+    if (ticks.value_count == 0)
+    {
+        log_warn(
+            "automatic tick positioning on interval [%.6f, %.6f] failed (found [%.6f-%.6f] with "
+            "step %.6f",
+            dmin, dmax, ticks.lmin_in, ticks.lmax_in, ticks.lstep);
+        return ticks;
+    }
+
     ASSERT(ticks.lstep > 0);
     ASSERT(ticks.lmin_in < ticks.lmax_in);
     ASSERT(ticks.value_count > 0);
     ASSERT(ticks.values != NULL);
     ASSERT(ticks.labels != NULL);
 
+    if (duplicate_labels(&ticks, &ctx))
+    {
+        log_debug("duplicate labels found in the ticks");
+    }
+
     log_debug(
-        "found %d labels, [%.5f, %.5f] with step %.5f", //
+        "found %d labels, [%.9f, %.9f] with step %.9f", //
         ticks.value_count, ticks.lmin_in, ticks.lmax_in, ticks.lstep);
     return extend_ticks(ticks, ctx);
 }

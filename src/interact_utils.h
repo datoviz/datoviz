@@ -393,17 +393,15 @@ static void _camera_callback(
 
 // adapted from https://github.com/Twinklebear/arcball-cpp/blob/master/arcball_camera.cpp
 
-static void _arcball_reset(DvzArcball* arcball)
+static void _arcball_from_camera(DvzArcball* arcball, vec3 eye, vec3 center, vec3 up)
 {
     ASSERT(arcball != NULL);
 
     glm_mat4_identity(arcball->translate);
+    glm_mat4_identity(arcball->mat);
 
-    vec3 eye, center, up, dir, x_axis, y_axis, z_axis;
-    glm_vec3_copy(DVZ_CAMERA_EYE, arcball->camera.eye);
-    glm_vec3_copy(arcball->camera.eye, eye);
-    glm_vec3_copy((vec3){0, 0, 0}, center);
-    glm_vec3_copy(DVZ_CAMERA_UP, up);
+    vec3 dir, x_axis, y_axis, z_axis;
+    glm_vec3_copy(eye, arcball->camera.eye);
 
     glm_vec3_sub(center, eye, dir);
     glm_vec3_copy(dir, z_axis);
@@ -427,6 +425,26 @@ static void _arcball_reset(DvzArcball* arcball)
     glm_mat3_transpose(m);
     glm_mat3_quat(m, arcball->rotation);
     glm_quat_normalize(arcball->rotation);
+}
+
+static void _arcball_from_angles(DvzArcball* arcball, vec3 angles)
+{
+    ASSERT(arcball != NULL);
+    mat4 m4;
+    glm_vec3_negate(angles);
+    glm_euler(angles, m4);
+    mat3 m;
+    glm_mat4_pick3(m4, m);
+    glm_mat3_transpose(m);
+    glm_mat3_quat(m, arcball->rotation);
+    glm_quat_normalize(arcball->rotation);
+}
+
+static void _arcball_reset(DvzArcball* arcball)
+{
+    ASSERT(arcball != NULL);
+    // TODO: use angles instead, and deprecate camera?
+    _arcball_from_camera(arcball, DVZ_CAMERA_EYE, (vec3){0, 0, 0}, DVZ_CAMERA_UP);
 }
 
 static DvzArcball _arcball(DvzCanvas* canvas)

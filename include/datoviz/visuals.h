@@ -71,6 +71,7 @@ typedef enum
     DVZ_PROP_MODEL,
     DVZ_PROP_VIEW,
     DVZ_PROP_PROJ,
+    DVZ_PROP_VIEWPORT,
     DVZ_PROP_TIME,
     DVZ_PROP_INDEX,
     DVZ_PROP_SCALE,
@@ -241,6 +242,7 @@ struct DvzProp
     uint32_t field_idx;
     DvzDataType dtype;
     VkDeviceSize offset;
+    VkDeviceSize item_size;
 
     float dpi_scaling; // 1 by default, otherwise may be set to canvas->dpi_scaling
 
@@ -371,7 +373,7 @@ DVZ_EXPORT void dvz_visual_destroy(DvzVisual* visual);
  * index of the pipeline among all pipelines of the same type within the visual.
  *
  * @param visual the visual
- * @param type the source type
+ * @param source_type the source type
  * @param source_idx the index of the source
  * @param pipeline the pipeline type
  * @param pipeline_idx the index of the pipeline
@@ -380,8 +382,8 @@ DVZ_EXPORT void dvz_visual_destroy(DvzVisual* visual);
  * @param flags the source creation flags
  */
 DVZ_EXPORT void dvz_visual_source(
-    DvzVisual* visual, DvzSourceType type, uint32_t source_idx, //
-    DvzPipelineType pipeline, uint32_t pipeline_idx,            //
+    DvzVisual* visual, DvzSourceType source_type, uint32_t source_idx, //
+    DvzPipelineType pipeline, uint32_t pipeline_idx,                   //
     uint32_t slot_idx, VkDeviceSize item_size, int flags);
 
 /**
@@ -435,6 +437,14 @@ DVZ_EXPORT void dvz_visual_prop_default(DvzProp* prop, void* default_value);
 DVZ_EXPORT void dvz_visual_prop_copy(
     DvzProp* prop, uint32_t field_idx, VkDeviceSize offset, //
     DvzArrayCopyType copy_type, uint32_t reps);
+
+/**
+ * Set the item size, in bytes, of a custom dtype.
+ *
+ * @param prop the prop
+ * @param item_size the size of each prop item, in bytes
+ */
+DVZ_EXPORT void dvz_visual_prop_size(DvzProp* prop, VkDeviceSize item_size);
 
 /**
  * Set up how a prop should be cast when it is copied to its source.
@@ -569,6 +579,15 @@ DVZ_EXPORT void dvz_visual_texture(
  * @param flags visual flags
  */
 DVZ_EXPORT void dvz_visual_flags(DvzVisual* visual, int flags);
+
+/**
+ * Return the number of items in a visual.
+ *
+ * @param visual the visual
+ * @returns the number of items in the POS prop
+ */
+
+DVZ_EXPORT uint32_t dvz_visual_item_count(DvzVisual* visual);
 
 
 

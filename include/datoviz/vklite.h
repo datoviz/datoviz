@@ -565,6 +565,7 @@ struct DvzGraphics
     DvzGraphicsType type;
     int flags;
     bool support_pick;
+    void* user_data;
 
     DvzRenderpass* renderpass;
     uint32_t subpass;
@@ -920,6 +921,15 @@ DVZ_EXPORT void
 dvz_window_get_size(DvzWindow* window, uint32_t* framebuffer_width, uint32_t* framebuffer_height);
 
 /**
+ * Set the window size, in pixels.
+ *
+ * @param window the window
+ * @param width the width, in pixels
+ * @param height the height, in pixels
+ */
+DVZ_EXPORT void dvz_window_set_size(DvzWindow* window, uint32_t width, uint32_t height);
+
+/**
  * Process the pending windowing events by the backend (glfw by default).
  *
  * @param window the window
@@ -1050,6 +1060,12 @@ DVZ_EXPORT void dvz_swapchain_destroy(DvzSwapchain* swapchain);
 /**
  * Create a set of command buffers.
  *
+ * !!! note
+ *     We use the following convention in vklite and elsewhere in datoviz: the queue #0 **must**
+ *     support transfer tasks. This convention makes the implementation a bit simpler.
+ *     This convention is respected by the context module, where the first default queue
+ *     is the transfer queue, dedicated to transfer tasks.
+ *
  * @param gpu the GPU
  * @param queue the queue index within the GPU
  * @param count the number of command buffers to create
@@ -1171,9 +1187,8 @@ DVZ_EXPORT void dvz_buffer_create(DvzBuffer* buffer);
  *
  * @param buffer the buffer
  * @param size the new buffer size, in bytes
- * @param cmds the command buffers to use for the GPU-GPU data copy transfer
  */
-DVZ_EXPORT void dvz_buffer_resize(DvzBuffer* buffer, VkDeviceSize size, DvzCommands* cmds);
+DVZ_EXPORT void dvz_buffer_resize(DvzBuffer* buffer, VkDeviceSize size);
 
 /**
  * Memory-map a buffer.
@@ -1194,6 +1209,12 @@ DVZ_EXPORT void dvz_buffer_unmap(DvzBuffer* buffer);
 /**
  * Download a buffer data to the CPU.
  *
+ * !!! important
+ *     This function does **not** use any GPU synchronization primitive: this is the responsibility
+ *     of the caller. A simple (but not optimal) method is just to call the following function
+ *     after every call to this function:
+ *     `dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);`
+ *
  * @param buffer the buffer
  * @param offset the offset within the buffer, in bytes
  * @param size the size of the region to download, in bytes
@@ -1204,6 +1225,12 @@ dvz_buffer_download(DvzBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, v
 
 /**
  * Upload data to a GPU buffer.
+ *
+ * !!! important
+ *     This function does **not** use any GPU synchronization primitive: this is the responsibility
+ *     of the caller. A simple (but not optimal) method is just to call the following function
+ *     after every call to this function:
+ *     `dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);`
  *
  * @param buffer the buffer
  * @param offset the offset within the buffer, in bytes
@@ -1253,11 +1280,30 @@ DVZ_EXPORT void dvz_buffer_regions_unmap(DvzBufferRegions* br);
 /**
  * Upload data to a buffer region.
  *
+ * !!! important
+ *     This function does **not** use any GPU synchronization primitive: this is the responsibility
+ *     of the caller. A simple (but not optimal) method is just to call the following function
+ *     after every call to this function:
+ *     `dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);`
+ *
  * @param br the set of buffer regions
  * @param idx the index of the buffer region to upload data to
  * @param data the data to upload
  */
 DVZ_EXPORT void dvz_buffer_regions_upload(DvzBufferRegions* br, uint32_t idx, const void* data);
+
+/**
+ * Copy data between two buffer region.
+ *
+ * @param src the source buffer regions
+ * @param src_offset, the offset, in bytes
+ * @param dst the destination buffer regions
+ * @param dst_offset, the offset, in bytes
+ * @param size the size, in bytes
+ */
+DVZ_EXPORT void dvz_buffer_regions_copy(
+    DvzBufferRegions* src, VkDeviceSize src_offset, //
+    DvzBufferRegions* dst, VkDeviceSize dst_offset, VkDeviceSize size);
 
 
 
@@ -1887,6 +1933,13 @@ dvz_barrier_images_access(DvzBarrier* barrier, VkAccessFlags src_access, VkAcces
  * @returns the semaphores
  */
 DVZ_EXPORT DvzSemaphores dvz_semaphores(DvzGpu* gpu, uint32_t count);
+
+/**
+ * Recreate semaphores.
+ *
+ * @param semaphores the semaphores
+ */
+DVZ_EXPORT void dvz_semaphores_recreate(DvzSemaphores* semaphores);
 
 /**
  * Destroy semaphores.

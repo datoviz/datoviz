@@ -25,9 +25,11 @@
 #include "../include/datoviz/log.h"
 
 #define NUM_THREADS 8
+#define INBUF_SIZE  4096
 
 #if HAS_FFMPEG
 
+#include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libavutil/avassert.h>
 #include <libavutil/channel_layout.h>
@@ -36,7 +38,11 @@
 #include <libavutil/timestamp.h>
 #include <libswscale/swscale.h>
 
-// Static util functions.
+
+
+/*************************************************************************************************/
+/*  Video writer                                                                                 */
+/*************************************************************************************************/
 
 static int
 write_frame(AVFormatContext* fmt_ctx, const AVRational* time_base, AVStream* st, AVPacket* pkt)
@@ -355,8 +361,201 @@ void end_video(Video* video)
     return;
 }
 
-// No FFMPEG support
+
+/*************************************************************************************************/
+/*  Video reader                                                                                 */
+/*************************************************************************************************/
+
+static void _decode(AVCodecContext* dec_ctx, AVFrame* frame, AVPacket* pkt, VideoCallback callback)
+{
+    int ret;
+
+    ret = avcodec_send_packet(dec_ctx, pkt);
+    if (ret < 0)
+    {
+        fprintf(stderr, "Error sending a packet for decoding\n");
+        exit(1);
+    }
+
+    while (ret >= 0)
+    {
+        ret = avcodec_receive_frame(dec_ctx, frame);
+        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
+            return;
+        else if (ret < 0)
+        {
+            log_error("Error during decoding");
+            exit(1);
+        }
+
+        log_debug("decoding frame #%d", dec_ctx->frame_number);
+        callback(
+            dec_ctx->frame_number, frame->width, frame->height, frame->linesize[0],
+            frame->data[0]);
+    }
+}
+
+
+
+Video* read_video(const char* filename)
+{
+    ASSERT(filename != NULL);
+    log_debug("open video %s for reading", filename);
+
+    Video* video = calloc(1, sizeof(Video));
+    video->filename = filename;
+
+    const AVCodec* codec;
+    AVCodecParserContext* parser;
+    AVCodecContext* c = NULL;
+    FILE* f;
+    AVFrame* frame;
+    AVPacket* pkt;
+
+    pkt = av_packet_alloc();
+    if (!pkt)
+        exit(1);
+
+    /* find the video decoder */
+    codec = avcodec_find_decoder(AV_CODEC_ID_H264);
+    if (!codec)
+    {
+        log_error("Codec not found");
+        exit(1);
+    }
+
+    parser = av_parser_init(codec->id);
+    if (!parser)
+    {
+        log_error("parser not found");
+        exit(1);
+    }
+
+    c = avcodec_alloc_context3(codec);
+    if (!c)
+    {
+        log_error("Could not allocate video codec context");
+        exit(1);
+    }
+
+    /* For some codecs, such as msmpeg4 and mpeg4, width and height
+       MUST be initialized there because this information is not
+       available in the bitstream. */
+
+    /* open it */
+    if (avcodec_open2(c, codec, NULL) < 0)
+    {
+        log_error("Could not open codec\n");
+        exit(1);
+    }
+
+    f = fopen(filename, "rb");
+    if (!f)
+    {
+        log_error("Could not open %s\n", filename);
+        exit(1);
+    }
+
+    frame = av_frame_alloc();
+    if (!frame)
+    {
+        fprintf(stderr, "Could not allocate video frame\n");
+        exit(1);
+    }
+
+    // TODO: after first frame?
+    // video->width = frame->width;
+    // video->height = frame->height;
+
+    video->frame = frame;
+
+    video->reader.c = c;
+    video->reader.f = f;
+    video->reader.codec = codec;
+    video->reader.parser = parser;
+    video->reader.pkt = pkt;
+
+    return video;
+}
+
+
+
+void read_frames(Video* video, VideoCallback callback)
+{
+    // TODO: only read part of the file
+    // TODO: random seek in the file (hard!)
+
+    ASSERT(video != NULL);
+    uint8_t inbuf[INBUF_SIZE + AV_INPUT_BUFFER_PADDING_SIZE];
+    uint8_t* data;
+    size_t data_size;
+    int ret;
+
+    AVCodecContext* c = video->reader.c;
+    // FILE* f = video->reader.f;
+    // const AVCodec* codec = video->reader.codec;
+    AVCodecParserContext* parser = video->reader.parser;
+    AVPacket* pkt = video->reader.pkt;
+    AVFrame* frame = video->frame;
+
+    /* set end of buffer to 0 (this ensures that no overreading happens for damaged MPEG
+     * streams)
+     */
+    memset(inbuf + INBUF_SIZE, 0, AV_INPUT_BUFFER_PADDING_SIZE);
+
+    while (!feof(video->reader.f))
+    {
+        /* read raw data from the input file */
+        data_size = fread(inbuf, 1, INBUF_SIZE, video->reader.f);
+        if (!data_size)
+            break;
+
+        /* use the parser to split the data into frames */
+        data = inbuf;
+        while (data_size > 0)
+        {
+            ret = av_parser_parse2(
+                parser, c, &pkt->data, &pkt->size, data, data_size, AV_NOPTS_VALUE, AV_NOPTS_VALUE,
+                0);
+            if (ret < 0)
+            {
+                log_error("Error while parsing");
+                exit(1);
+            }
+            log_debug("read %d bytes, pkt size %d", ret, pkt->size);
+
+            data += ret;
+            data_size -= (size_t)ret;
+
+            if (pkt->size)
+                _decode(c, frame, pkt, callback);
+        }
+    }
+
+    /* flush the decoder */
+    _decode(c, frame, NULL, callback);
+}
+
+
+
+void close_video(Video* video)
+{
+    ASSERT(video != NULL);
+    fclose(video->reader.f);
+
+    av_parser_close(video->reader.parser);
+    avcodec_free_context(&video->reader.c);
+    av_frame_free(&video->frame);
+    av_packet_free(&video->reader.pkt);
+}
+
+
+
 #else
+
+/*************************************************************************************************/
+/*  FFMPEG unavailable                                                                           */
+/*************************************************************************************************/
 
 Video* init_video(const char* filename, int width, int height, int fps, int bitrate)
 {
@@ -369,5 +568,17 @@ void create_video(Video* video) { return; }
 void add_frame(Video* video, uint8_t* image) {}
 
 void end_video(Video* video) {}
+
+Video* read_video(const char* filename)
+{
+    log_error("datoviz was not compiled with ffmpeg support, unable to read a video file");
+    return NULL;
+}
+
+void read_frames(Video* video, VideoCallback callback) {}
+
+void close_video(Video* video) {}
+
+
 
 #endif

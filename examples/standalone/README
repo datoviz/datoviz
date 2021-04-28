@@ -1,0 +1,5 @@
+# Examples of standalone C applications, described in the "How to?" section of the documentation.
+
+Usage example (Linux only for now):
+
+`./build.sh standalone_scene.c`

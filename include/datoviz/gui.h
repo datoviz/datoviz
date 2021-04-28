@@ -46,11 +46,11 @@ DVZ_EXPORT void dvz_gui_begin(const char* title, int flags);
 
 DVZ_EXPORT void dvz_gui_end();
 
-DVZ_EXPORT void dvz_gui_callback(DvzCanvas* canvas, DvzEvent event);
+DVZ_EXPORT void dvz_gui_callback(DvzCanvas* canvas, DvzEvent ev);
 
-DVZ_EXPORT void dvz_gui_callback_fps(DvzCanvas* canvas, DvzEvent event);
+DVZ_EXPORT void dvz_gui_callback_fps(DvzCanvas* canvas, DvzEvent ev);
 
-DVZ_EXPORT void dvz_gui_callback_demo(DvzCanvas* canvas, DvzEvent event);
+DVZ_EXPORT void dvz_gui_callback_demo(DvzCanvas* canvas, DvzEvent ev);
 
 DVZ_EXPORT void dvz_gui_callback_player(DvzCanvas* canvas, DvzEvent ev);
 

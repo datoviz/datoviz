@@ -193,55 +193,6 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_ARRAY_COPY_REPEAT = 1
         DVZ_ARRAY_COPY_SINGLE = 2
 
-    # from file: builtin_visuals.h
-
-    ctypedef enum DvzVisualType:
-        DVZ_VISUAL_NONE = 0
-        DVZ_VISUAL_POINT = 1
-        DVZ_VISUAL_LINE = 2
-        DVZ_VISUAL_LINE_STRIP = 3
-        DVZ_VISUAL_TRIANGLE = 4
-        DVZ_VISUAL_TRIANGLE_STRIP = 5
-        DVZ_VISUAL_TRIANGLE_FAN = 6
-        DVZ_VISUAL_RECTANGLE = 7
-        DVZ_VISUAL_MARKER = 8
-        DVZ_VISUAL_SEGMENT = 9
-        DVZ_VISUAL_ARROW = 10
-        DVZ_VISUAL_PATH = 11
-        DVZ_VISUAL_TEXT = 12
-        DVZ_VISUAL_IMAGE = 13
-        DVZ_VISUAL_IMAGE_CMAP = 14
-        DVZ_VISUAL_DISC = 15
-        DVZ_VISUAL_SECTOR = 16
-        DVZ_VISUAL_MESH = 17
-        DVZ_VISUAL_POLYGON = 18
-        DVZ_VISUAL_PSLG = 19
-        DVZ_VISUAL_HISTOGRAM = 20
-        DVZ_VISUAL_AREA = 21
-        DVZ_VISUAL_CANDLE = 22
-        DVZ_VISUAL_GRAPH = 23
-        DVZ_VISUAL_SURFACE = 24
-        DVZ_VISUAL_VOLUME_SLICE = 25
-        DVZ_VISUAL_VOLUME = 26
-        DVZ_VISUAL_FAKE_SPHERE = 27
-        DVZ_VISUAL_AXES_2D = 28
-        DVZ_VISUAL_AXES_3D = 29
-        DVZ_VISUAL_COLORMAP = 30
-        DVZ_VISUAL_COUNT = 31
-        DVZ_VISUAL_CUSTOM = 32
-
-    ctypedef enum DvzAxisLevel:
-        DVZ_AXES_LEVEL_MINOR = 0
-        DVZ_AXES_LEVEL_MAJOR = 1
-        DVZ_AXES_LEVEL_GRID = 2
-        DVZ_AXES_LEVEL_LIM = 3
-        DVZ_AXES_LEVEL_COUNT = 4
-
-    ctypedef enum DvzAxesFlags:
-        DVZ_AXES_FLAGS_DEFAULT = 0x0000
-        DVZ_AXES_FLAGS_HIDE_MINOR = 0x0400
-        DVZ_AXES_FLAGS_HIDE_GRID = 0x0800
-
     # from file: canvas.h
 
     ctypedef enum DvzCanvasFlags:
@@ -799,6 +750,55 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_CDS_TRANSPOSE_XBYDZL = 2
         DVZ_CDS_TRANSPOSE_XLYBZD = 3
 
+    # from file: vislib.h
+
+    ctypedef enum DvzVisualType:
+        DVZ_VISUAL_NONE = 0
+        DVZ_VISUAL_POINT = 1
+        DVZ_VISUAL_LINE = 2
+        DVZ_VISUAL_LINE_STRIP = 3
+        DVZ_VISUAL_TRIANGLE = 4
+        DVZ_VISUAL_TRIANGLE_STRIP = 5
+        DVZ_VISUAL_TRIANGLE_FAN = 6
+        DVZ_VISUAL_RECTANGLE = 7
+        DVZ_VISUAL_MARKER = 8
+        DVZ_VISUAL_SEGMENT = 9
+        DVZ_VISUAL_ARROW = 10
+        DVZ_VISUAL_PATH = 11
+        DVZ_VISUAL_TEXT = 12
+        DVZ_VISUAL_IMAGE = 13
+        DVZ_VISUAL_IMAGE_CMAP = 14
+        DVZ_VISUAL_DISC = 15
+        DVZ_VISUAL_SECTOR = 16
+        DVZ_VISUAL_MESH = 17
+        DVZ_VISUAL_POLYGON = 18
+        DVZ_VISUAL_PSLG = 19
+        DVZ_VISUAL_HISTOGRAM = 20
+        DVZ_VISUAL_AREA = 21
+        DVZ_VISUAL_CANDLE = 22
+        DVZ_VISUAL_GRAPH = 23
+        DVZ_VISUAL_SURFACE = 24
+        DVZ_VISUAL_VOLUME_SLICE = 25
+        DVZ_VISUAL_VOLUME = 26
+        DVZ_VISUAL_FAKE_SPHERE = 27
+        DVZ_VISUAL_AXES_2D = 28
+        DVZ_VISUAL_AXES_3D = 29
+        DVZ_VISUAL_COLORMAP = 30
+        DVZ_VISUAL_COUNT = 31
+        DVZ_VISUAL_CUSTOM = 32
+
+    ctypedef enum DvzAxisLevel:
+        DVZ_AXES_LEVEL_MINOR = 0
+        DVZ_AXES_LEVEL_MAJOR = 1
+        DVZ_AXES_LEVEL_GRID = 2
+        DVZ_AXES_LEVEL_LIM = 3
+        DVZ_AXES_LEVEL_COUNT = 4
+
+    ctypedef enum DvzAxesFlags:
+        DVZ_AXES_FLAGS_DEFAULT = 0x0000
+        DVZ_AXES_FLAGS_HIDE_MINOR = 0x0400
+        DVZ_AXES_FLAGS_HIDE_GRID = 0x0800
+
     # from file: visuals.h
 
     ctypedef enum DvzPipelineType:
@@ -835,10 +835,11 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_PROP_MODEL = 26
         DVZ_PROP_VIEW = 27
         DVZ_PROP_PROJ = 28
-        DVZ_PROP_TIME = 29
-        DVZ_PROP_INDEX = 30
-        DVZ_PROP_SCALE = 31
-        DVZ_PROP_TRANSFORM = 32
+        DVZ_PROP_VIEWPORT = 29
+        DVZ_PROP_TIME = 30
+        DVZ_PROP_INDEX = 31
+        DVZ_PROP_SCALE = 32
+        DVZ_PROP_TRANSFORM = 33
 
     ctypedef enum DvzSourceKind:
         DVZ_SOURCE_KIND_NONE = 0
@@ -1141,7 +1142,7 @@ cdef extern from "<datoviz/datoviz.h>":
 
     # from file: panel.h
     void dvz_panel_transpose(DvzPanel* panel, DvzCDSTranspose transpose)
-    DvzPanel* dvz_panel_at(DvzGrid* grid, vec2 pos)
+    DvzPanel* dvz_panel_at(DvzGrid* grid, vec2 screen_pos)
 
     # from file: scene.h
     DvzScene* dvz_scene(DvzCanvas* canvas, uint32_t n_rows, uint32_t n_cols)
@@ -1150,12 +1151,12 @@ cdef extern from "<datoviz/datoviz.h>":
     DvzVisual* dvz_scene_visual(DvzPanel* panel, DvzVisualType type, int flags)
 
     # from file: transfers.h
-    void dvz_upload_buffers(DvzCanvas* canvas, DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data)
-    void dvz_download_buffers(DvzCanvas* canvas, DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data)
-    void dvz_copy_buffers(DvzCanvas* canvas, DvzBufferRegions src, VkDeviceSize src_offset, DvzBufferRegions dst, VkDeviceSize dst_offset, VkDeviceSize size)
-    void dvz_upload_texture(DvzCanvas* canvas, DvzTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data)
-    void dvz_download_texture(DvzCanvas* canvas, DvzTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data)
-    void dvz_copy_texture(DvzCanvas* canvas, DvzTexture* src, uvec3 src_offset, DvzTexture* dst, uvec3 dst_offset, uvec3 shape, VkDeviceSize size)
+    void dvz_upload_buffer(DvzContext* context, DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data)
+    void dvz_download_buffer(DvzContext* context, DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data)
+    void dvz_copy_buffer(DvzContext* context, DvzBufferRegions src, VkDeviceSize src_offset, DvzBufferRegions dst, VkDeviceSize dst_offset, VkDeviceSize size)
+    void dvz_upload_texture(DvzContext* context, DvzTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data)
+    void dvz_download_texture(DvzContext* context, DvzTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data)
+    void dvz_copy_texture(DvzContext* context, DvzTexture* src, uvec3 src_offset, DvzTexture* dst, uvec3 dst_offset, uvec3 shape, VkDeviceSize size)
 
     # from file: transforms.h
     void dvz_transform(DvzPanel* panel, DvzCDS source, dvec3 pos_in, DvzCDS target, dvec3 pos_out)

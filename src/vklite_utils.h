@@ -212,22 +212,67 @@ static VkResult create_debug_utils_messenger_EXT(
 
 
 
+static inline int _log_level(VkDebugUtilsMessageSeverityFlagBitsEXT sev)
+{
+    switch (sev)
+    {
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+        return LOG_TRACE;
+        break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+        return LOG_DEBUG;
+        break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+        return LOG_WARN;
+        break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+        return LOG_ERROR;
+        break;
+    default:
+        break;
+    }
+    return LOG_ERROR;
+}
+
+// Ignore some validation warnings.
+static const char* VALIDATION_IGNORES[] = {
+
+    // HACK: hide harmless warning message on Ubuntu:
+    // validation layer: /usr/lib/i386-linux-gnu/libvulkan_radeon.so: wrong ELF class: ELFCLASS32
+    "ELFCLASS32", //
+
+    "BestPractices-vkBindMemory-small-dedicated-allocation",  //
+    "BestPractices-vkAllocateMemory-small-allocation",        //
+    "BestPractices-vkCreateCommandPool-command-buffer-reset", //
+    "BestPractices-vkCreateInstance-specialuse-extension",    //
+};
+
 static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
     VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
     VkDebugUtilsMessageTypeFlagsEXT messageType,
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
-    // HACK: hide harmless warning message on Ubuntu:
-    // validation layer: /usr/lib/i386-linux-gnu/libvulkan_radeon.so: wrong ELF class: ELFCLASS32
-    if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT &&
-        strstr(pCallbackData->pMessage, "ELFCLASS32") == NULL)
+    // Hide long list of extensions.
+    if (strstr(pCallbackData->pMessage, "Extension: VK_") != NULL)
+        return VK_FALSE;
+
+    int level = _log_level(messageSeverity);
+
+    // NOTE: force TRACE level if ignored message.
+    for (uint32_t i = 0; i < ARRAY_COUNT(VALIDATION_IGNORES); i++)
     {
-        log_error("validation layer: %s", pCallbackData->pMessage);
-        if (pUserData != NULL)
+        if (strstr(pCallbackData->pMessage, VALIDATION_IGNORES[i]) != NULL)
         {
-            uint32_t* n_errors = (uint32_t*)pUserData;
-            (*n_errors)++;
+            level = LOG_TRACE;
+            break;
         }
+    }
+
+    log_log(level, __FILENAME__, __LINE__, "validation layer: %s", pCallbackData->pMessage);
+    if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT && pUserData != NULL)
+    {
+        uint32_t* n_errors = (uint32_t*)pUserData;
+        (*n_errors)++;
     }
     return VK_FALSE;
 }
@@ -335,19 +380,18 @@ static void* backend_window(
     {
     case DVZ_BACKEND_GLFW:
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        GLFWwindow* backend_window =
-            glfwCreateWindow((int)width, (int)height, APPLICATION_NAME, NULL, NULL);
-        ASSERT(backend_window != NULL);
-        if (glfwCreateWindowSurface(instance, backend_window, NULL, surface) != VK_SUCCESS)
+        GLFWwindow* bwin = glfwCreateWindow((int)width, (int)height, APPLICATION_NAME, NULL, NULL);
+        ASSERT(bwin != NULL);
+        if (glfwCreateWindowSurface(instance, bwin, NULL, surface) != VK_SUCCESS)
             log_error("error creating the GLFW surface");
 
-        glfwSetWindowUserPointer(backend_window, window);
+        glfwSetWindowUserPointer(bwin, window);
 
         // Callback that marks the window to close if ESC is pressed, but only if
         // DvzWindow.close_on_esc=true
-        glfwSetKeyCallback(backend_window, _glfw_esc_callback);
+        glfwSetKeyCallback(bwin, _glfw_esc_callback);
 
-        return backend_window;
+        return bwin;
         break;
     default:
         break;
@@ -443,6 +487,27 @@ static void backend_window_get_size(
         log_trace("framebuffer size is %dx%d", w, h);
 
         break;
+
+    default:
+        break;
+    }
+}
+
+
+
+static void
+backend_window_set_size(DvzBackend backend, void* window, uint32_t width, uint32_t height)
+{
+    log_trace("setting the size of backend window...");
+
+    switch (backend)
+    {
+    case DVZ_BACKEND_GLFW:;
+        int w = (int)width, h = (int)height;
+        log_trace("set window size to %dx%d", w, h);
+        glfwSetWindowSize(window, w, h);
+        break;
+
     default:
         break;
     }
@@ -503,6 +568,8 @@ static void create_instance(
         extensions[required_extension_count] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
     }
 
+    extensions[extension_count++] = "VK_KHR_get_physical_device_properties2";
+
     // Prepare the creation of the Vulkan instance.
     VkApplicationInfo appInfo = {0};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -512,47 +579,62 @@ static void create_instance(
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.apiVersion = VK_API_VERSION_1_0;
 
-    VkInstanceCreateInfo createInfo = {0};
-    createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    createInfo.pApplicationInfo = &appInfo;
-    createInfo.enabledExtensionCount = extension_count;
-    createInfo.ppEnabledExtensionNames = extensions;
+    VkInstanceCreateInfo info_inst = {0};
+    info_inst.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    info_inst.pApplicationInfo = &appInfo;
+    info_inst.enabledExtensionCount = extension_count;
+    info_inst.ppEnabledExtensionNames = extensions;
 
     // Validation layers.
-    VkDebugUtilsMessengerCreateInfoEXT debug_create_info = {0};
-    debug_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    debug_create_info.flags = 0;
-    debug_create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
-                                        VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-                                        VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-    debug_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-                                    VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-                                    VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-    debug_create_info.pfnUserCallback = debug_callback;
-    debug_create_info.pUserData = debug_data;
+    VkDebugUtilsMessengerCreateInfoEXT info_debug = {0};
+    info_debug.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    info_debug.flags = 0;
+    info_debug.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+                                 VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+                                 VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    info_debug.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+                             VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+                             VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+    info_debug.pfnUserCallback = debug_callback;
+    info_debug.pUserData = debug_data;
+
+    VkValidationFeatureEnableEXT enables[16] = {0};
+    VkValidationFeaturesEXT features = {0};
 
     if (has_validation)
     {
-        createInfo.enabledLayerCount = ARRAY_COUNT(DVZ_LAYERS);
-        createInfo.ppEnabledLayerNames = DVZ_LAYERS;
-        createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debug_create_info;
+        info_inst.enabledLayerCount = ARRAY_COUNT(DVZ_LAYERS);
+        info_inst.ppEnabledLayerNames = DVZ_LAYERS;
+
+        // https://vulkan.lunarg.com/doc/sdk/1.2.170.0/linux/best_practices.html
+        enables[0] = VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT;
+        enables[1] = VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT;
+        enables[2] = VK_VALIDATION_FEATURE_ENABLE_SYNCHRONIZATION_VALIDATION_EXT;
+
+        features.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
+        features.enabledValidationFeatureCount = 3;
+        features.pEnabledValidationFeatures = enables;
+
+        // pNext chain
+        features.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&info_debug;
+        info_inst.pNext = &features;
     }
     else
     {
-        createInfo.enabledLayerCount = 0;
-        createInfo.pNext = NULL;
+        info_inst.enabledLayerCount = 0;
+        info_inst.pNext = NULL;
     }
 
     // Create the Vulkan instance.
     log_trace("create instance");
-    VK_CHECK_RESULT(vkCreateInstance(&createInfo, NULL, instance));
+    VK_CHECK_RESULT(vkCreateInstance(&info_inst, NULL, instance));
 
     // Create the debug utils messenger.
     if (has_validation)
     {
         log_trace("create debug utils messenger");
-        VK_CHECK_RESULT(create_debug_utils_messenger_EXT(
-            *instance, &debug_create_info, NULL, debug_messenger));
+        VK_CHECK_RESULT(
+            create_debug_utils_messenger_EXT(*instance, &info_debug, NULL, debug_messenger));
     }
 
     log_trace("instance created");
@@ -657,11 +739,11 @@ static void
 create_command_pool(VkDevice device, uint32_t queue_family_index, VkCommandPool* cmd_pool)
 {
     log_trace("create command pool for queue family index #%d", queue_family_index);
-    VkCommandPoolCreateInfo command_pool_info = {0};
-    command_pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    command_pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-    command_pool_info.queueFamilyIndex = queue_family_index;
-    VK_CHECK_RESULT(vkCreateCommandPool(device, &command_pool_info, NULL, cmd_pool));
+    VkCommandPoolCreateInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    info.queueFamilyIndex = queue_family_index;
+    VK_CHECK_RESULT(vkCreateCommandPool(device, &info, NULL, cmd_pool));
 }
 
 
@@ -673,7 +755,7 @@ static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
     ASSERT(gpu->app != NULL);
 
     bool has_surface = surface != NULL;
-    bool has_validation = gpu->app->debug_messenger != NULL;
+    // bool has_validation = gpu->app->debug_messenger != NULL;
 
     // Find the supported present modes.
     if (surface != NULL)
@@ -864,10 +946,49 @@ static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
     device_info.pEnabledFeatures = &gpu->requested_features;
 
     // Device extensions and layers
-    device_info.enabledExtensionCount = (uint32_t)has_surface;
-    device_info.ppEnabledExtensionNames = has_surface ? DVZ_DEVICE_EXTENSIONS : NULL;
-    device_info.enabledLayerCount = has_validation ? ARRAY_COUNT(DVZ_LAYERS) : 0;
-    device_info.ppEnabledLayerNames = has_validation ? DVZ_LAYERS : NULL;
+    char* extensions[16] = {0};
+    uint32_t n_extensions = 0;
+
+    if (has_surface)
+    {
+        uint32_t n = ARRAY_COUNT(DVZ_DEVICE_EXTENSIONS);
+        log_trace("has surface, will add %d extensions", n);
+        ASSERT(n < 16);
+        memcpy(extensions, DVZ_DEVICE_EXTENSIONS, n * sizeof(char*));
+        n_extensions += n;
+    }
+
+    // Fix for the following validation error (macOS):
+    // If the [VK_KHR_portability_subset] extension is included in pProperties of
+    // vkEnumerateDeviceExtensionProperties, ppEnabledExtensions must include
+    // "VK_KHR_portability_subset"
+    {
+        log_trace("getting device extensions properties");
+        uint32_t n = 0;
+        vkEnumerateDeviceExtensionProperties(gpu->physical_device, NULL, &n, NULL);
+        VkExtensionProperties* ext = calloc(n, sizeof(VkExtensionProperties));
+        VK_CHECK_RESULT(vkEnumerateDeviceExtensionProperties(gpu->physical_device, NULL, &n, ext));
+        for (uint32_t i = 0; i < n; i++)
+        {
+            if (strncmp(
+                    ext[i].extensionName, "VK_KHR_portability_subset",
+                    strnlen("VK_KHR_portability_subset", 32)) == 0)
+            {
+                log_trace("found portability subset, will need to add extension "
+                          "VK_KHR_portability_subset");
+                // extensions[n_extensions++] = "VK_KHR_get_physical_device_properties2";
+                extensions[n_extensions++] = "VK_KHR_portability_subset";
+                break;
+            }
+        }
+        FREE(ext);
+    }
+
+    device_info.enabledExtensionCount = n_extensions;
+    device_info.ppEnabledExtensionNames = (const char* const*)extensions;
+
+    // device_info.enabledLayerCount = has_validation ? ARRAY_COUNT(DVZ_LAYERS) : 0;
+    // device_info.ppEnabledLayerNames = has_validation ? DVZ_LAYERS : NULL;
 
     // Create the device
     VK_CHECK_RESULT(vkCreateDevice(gpu->physical_device, &device_info, NULL, &gpu->device));
@@ -880,6 +1001,28 @@ static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
 /*************************************************************************************************/
 /*  Swapchain                                                                                    */
 /*************************************************************************************************/
+
+static bool check_surface_format(VkPhysicalDevice pdevice, VkSurfaceKHR surface, VkFormat format)
+{
+    uint32_t n_formats = 0;
+    VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(pdevice, surface, &n_formats, NULL));
+    ASSERT(n_formats > 0);
+    VkSurfaceFormatKHR* formats = calloc(n_formats, sizeof(VkSurfaceFormatKHR));
+    VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(pdevice, surface, &n_formats, formats));
+    bool found = false;
+    for (uint32_t i = 0; i < n_formats; i++)
+    {
+        if (formats[i].format == format)
+        {
+            found = true;
+            break;
+        }
+    }
+    if (!found)
+        log_error("format %d is not supported by the surface", format);
+    FREE(formats);
+    return found;
+}
 
 static void create_swapchain(
     VkDevice device, VkPhysicalDevice pdevice,                              //
@@ -903,6 +1046,9 @@ static void create_swapchain(
     // states: surface must be a surface that is supported by the device as determined using
     // vkGetPhysicalDeviceSurfaceSupportKHR
     find_present_queue_family(pdevice, surface, queues);
+
+    // Find formats supported by the surface.
+    ASSERT(check_surface_format(pdevice, surface, format));
 
     // Swap chain.
     VkSwapchainCreateInfoKHR screateInfo = {0};
@@ -998,12 +1144,12 @@ static void allocate_command_buffers(
     ASSERT(command_pool != VK_NULL_HANDLE);
     ASSERT(count > 0);
 
-    VkCommandBufferAllocateInfo alloc_info = {0};
-    alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    alloc_info.commandPool = command_pool;
-    alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    alloc_info.commandBufferCount = count;
-    VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &alloc_info, cmd_bufs));
+    VkCommandBufferAllocateInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    info.commandPool = command_pool;
+    info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    info.commandBufferCount = count;
+    VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &info, cmd_bufs));
 }
 
 
@@ -1082,22 +1228,21 @@ static void create_buffer2(
 {
     ASSERT(queues != NULL);
 
-    VkBufferCreateInfo binfo = {0};
-    binfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    binfo.size = size;
-    binfo.usage = usage;
+    VkBufferCreateInfo buf_info = {0};
+    buf_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    buf_info.size = size;
+    buf_info.usage = usage;
 
-    // binfo.pQueueFamilyIndices = calloc(DVZ_MAX_QUEUE_FAMILIES, sizeof(uint32_t));
     uint32_t queue_families[DVZ_MAX_QUEUE_FAMILIES];
     make_shared(
         queues, queue_count, queue_indices, //
-        &binfo.sharingMode, &binfo.queueFamilyIndexCount, queue_families);
-    binfo.pQueueFamilyIndices = queue_families;
+        &buf_info.sharingMode, &buf_info.queueFamilyIndexCount, queue_families);
+    buf_info.pQueueFamilyIndices = queue_families;
 
     log_trace(
         "create buffer with size %s, sharing mode %s", pretty_size(size),
-        binfo.sharingMode == 0 ? "exclusive" : "concurrent");
-    VK_CHECK_RESULT(vkCreateBuffer(device, &binfo, NULL, buffer));
+        buf_info.sharingMode == 0 ? "exclusive" : "concurrent");
+    VK_CHECK_RESULT(vkCreateBuffer(device, &buf_info, NULL, buffer));
 
     VkMemoryRequirements memRequirements = {0};
     vkGetBufferMemoryRequirements(device, *buffer, &memRequirements);
@@ -1228,28 +1373,28 @@ static void create_texture_sampler2(
     VkSamplerAddressMode* address_modes, bool anisotropy, VkSampler* sampler)
 {
     log_trace("create texture sampler");
-    VkSamplerCreateInfo sampler_info = {0};
-    sampler_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    VkSamplerCreateInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 
-    sampler_info.magFilter = mag_filter;
-    sampler_info.minFilter = min_filter;
+    info.magFilter = mag_filter;
+    info.minFilter = min_filter;
 
-    sampler_info.addressModeU = address_modes[0];
-    sampler_info.addressModeV = address_modes[1];
-    sampler_info.addressModeW = address_modes[2];
+    info.addressModeU = address_modes[0];
+    info.addressModeV = address_modes[1];
+    info.addressModeW = address_modes[2];
 
-    sampler_info.anisotropyEnable = anisotropy;
-    sampler_info.maxAnisotropy = 16;
-    sampler_info.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-    sampler_info.unnormalizedCoordinates = VK_FALSE;
-    sampler_info.compareEnable = VK_FALSE;
-    sampler_info.compareOp = VK_COMPARE_OP_ALWAYS;
-    sampler_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    sampler_info.mipLodBias = 0.0f;
-    sampler_info.minLod = 0.0f;
-    sampler_info.maxLod = 0.0f;
+    info.anisotropyEnable = anisotropy;
+    info.maxAnisotropy = 16;
+    info.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+    info.unnormalizedCoordinates = VK_FALSE;
+    info.compareEnable = VK_FALSE;
+    info.compareOp = VK_COMPARE_OP_ALWAYS;
+    info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    info.mipLodBias = 0.0f;
+    info.minLod = 0.0f;
+    info.maxLod = 0.0f;
 
-    VK_CHECK_RESULT(vkCreateSampler(device, &sampler_info, NULL, sampler));
+    VK_CHECK_RESULT(vkCreateSampler(device, &info, NULL, sampler));
 }
 
 
@@ -1273,16 +1418,16 @@ static void create_descriptor_pool(VkDevice device, VkDescriptorPool* dset_pool)
         {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, DVZ_MAX_DESCRIPTOR_SETS},
         {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, DVZ_MAX_DESCRIPTOR_SETS},
         {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, DVZ_MAX_DESCRIPTOR_SETS}};
-    VkDescriptorPoolCreateInfo descriptor_pool_info = {0};
-    descriptor_pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    descriptor_pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-    descriptor_pool_info.poolSizeCount = 11;
-    descriptor_pool_info.pPoolSizes = poolSizes;
-    descriptor_pool_info.maxSets = DVZ_MAX_DESCRIPTOR_SETS * descriptor_pool_info.poolSizeCount;
+    VkDescriptorPoolCreateInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+    info.poolSizeCount = 11;
+    info.pPoolSizes = poolSizes;
+    info.maxSets = DVZ_MAX_DESCRIPTOR_SETS * info.poolSizeCount;
 
     // Create descriptor pool.
     log_trace("create descriptor pool");
-    VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptor_pool_info, NULL, dset_pool));
+    VK_CHECK_RESULT(vkCreateDescriptorPool(device, &info, NULL, dset_pool));
 }
 
 
@@ -1324,13 +1469,13 @@ static void create_descriptor_set_layout(
     }
 
     // Create descriptor set layout.
-    VkDescriptorSetLayoutCreateInfo layout_info = {0};
-    layout_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layout_info.bindingCount = binding_count;
-    layout_info.pBindings = layout_bindings;
+    VkDescriptorSetLayoutCreateInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    info.bindingCount = binding_count;
+    info.pBindings = layout_bindings;
 
     log_trace("create descriptor set layout");
-    VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &layout_info, NULL, dset_layout));
+    VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &info, NULL, dset_layout));
     FREE(layout_bindings);
 }
 
@@ -1345,15 +1490,15 @@ static void allocate_descriptor_sets(
     for (uint32_t i = 0; i < count; i++)
         layouts[i] = dset_layout;
 
-    VkDescriptorSetAllocateInfo alloc_info = {0};
-    alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    VkDescriptorSetAllocateInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     ASSERT(dset_pool != VK_NULL_HANDLE);
-    alloc_info.descriptorPool = dset_pool;
-    alloc_info.descriptorSetCount = count;
-    alloc_info.pSetLayouts = layouts;
+    info.descriptorPool = dset_pool;
+    info.descriptorSetCount = count;
+    info.pSetLayouts = layouts;
 
     log_trace("allocate descriptor sets");
-    VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &alloc_info, dsets));
+    VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &info, dsets));
     FREE(layouts);
 }
 
@@ -1514,6 +1659,13 @@ static VkPipelineInputAssemblyStateCreateInfo create_input_assembly(VkPrimitiveT
     VkPipelineInputAssemblyStateCreateInfo input_assembly = {0};
     input_assembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     input_assembly.topology = topology;
+#if OS_MACOS
+    if (topology == VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN)
+    {
+        log_error("macOS does not support triangle fan topology, falling back to triangle list!");
+        input_assembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    }
+#endif
     input_assembly.primitiveRestartEnable = VK_FALSE;
     return input_assembly;
 }
@@ -1664,15 +1816,15 @@ static void begin_render_pass(
     ASSERT(width > 0);
     ASSERT(height > 0);
 
-    VkRenderPassBeginInfo render_pass_info = {0};
-    render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    render_pass_info.renderPass = renderpass;
-    render_pass_info.framebuffer = framebuffer;
+    VkRenderPassBeginInfo info = {0};
+    info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    info.renderPass = renderpass;
+    info.framebuffer = framebuffer;
     VkRect2D renderArea = {{0, 0}, {width, height}};
-    render_pass_info.renderArea = renderArea;
-    render_pass_info.clearValueCount = clear_count;
-    render_pass_info.pClearValues = clear_colors;
-    vkCmdBeginRenderPass(cmd_buf, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+    info.renderArea = renderArea;
+    info.clearValueCount = clear_count;
+    info.pClearValues = clear_colors;
+    vkCmdBeginRenderPass(cmd_buf, &info, VK_SUBPASS_CONTENTS_INLINE);
 }
 
 #endif

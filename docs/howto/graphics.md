@@ -119,7 +119,7 @@ You'll find more information here:
 
 We're now ready to write the vertex shader. Here is the full source code of the vertex shader:
 
-<!-- CODE_GLSL examples/custom_point.vert -->
+<!-- CODE_GLSL examples/glsl/custom_point.vert -->
 
 A few comments can be found below.
 
@@ -207,7 +207,7 @@ The `colormap()` function is implemented in `colormaps.glsl`. It provides a GLSL
 
 We now pass to the fragment shader. Here is the code:
 
-<!-- CODE_GLSL examples/custom_point.frag -->
+<!-- CODE_GLSL examples/glsl/custom_point.frag -->
 
 
 Here are a few comments.

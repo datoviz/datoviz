@@ -317,9 +317,9 @@ static uint8_t _scale_uint8(double value, double vmin, double vmax)
     }
     double x = (CLIP(value, vmin, vmax) - vmin) / (vmax - vmin);
     if (x == 1)
-        x = .99999999;
+        x = 0.99999999;
     ASSERT(0 <= x && x < 1);
-    return (uint8_t)(x * 256);
+    return (uint8_t)floor(x * 256);
 }
 
 

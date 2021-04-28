@@ -6,13 +6,6 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static DvzMVP MVP_ID = {
-    GLM_MAT4_IDENTITY_INIT, //
-    GLM_MAT4_IDENTITY_INIT, //
-    GLM_MAT4_IDENTITY_INIT};
-
-
-
 static void _check_viewport(DvzViewport* viewport)
 {
     ASSERT(viewport != NULL);
@@ -34,26 +27,34 @@ static void _update_viewport(DvzPanel* panel)
     ASSERT(canvas != NULL);
 
     DvzViewport* viewport = &panel->viewport;
+    ASSERT(viewport != NULL);
 
     ASSERT(panel->width > 0);
     ASSERT(panel->height > 0);
-    ASSERT(canvas->window->width > 0);
-    ASSERT(canvas->window->height > 0);
+
+    // Canvas size in screen pixels.
+    uvec2 size_screen = {0};
+    dvz_canvas_size(canvas, DVZ_CANVAS_SIZE_SCREEN, size_screen);
+    ASSERT(size_screen[0] > 0);
+    ASSERT(size_screen[1] > 0);
 
     // Size in screen coordinates.
-    viewport->size_screen[0] = panel->width * canvas->window->width;
-    viewport->size_screen[1] = panel->height * canvas->window->height;
-    viewport->offset_screen[0] = panel->x * canvas->window->width;
-    viewport->offset_screen[1] = panel->y * canvas->window->height;
+    viewport->size_screen[0] = panel->width * size_screen[0];
+    viewport->size_screen[1] = panel->height * size_screen[1];
+    viewport->offset_screen[0] = panel->x * size_screen[0];
+    viewport->offset_screen[1] = panel->y * size_screen[1];
 
-    // Size in framebuffer pixel coordinates.
-    float win_width = panel->grid->canvas->swapchain.images->width;
-    float win_height = panel->grid->canvas->swapchain.images->height;
+    // Canvas size in framebuffer pixels.
+    uvec2 size_framebuffer = {0};
+    dvz_canvas_size(canvas, DVZ_CANVAS_SIZE_FRAMEBUFFER, size_framebuffer);
+    ASSERT(size_framebuffer[0] > 0);
+    ASSERT(size_framebuffer[1] > 0);
 
-    viewport->offset_framebuffer[0] = viewport->viewport.x = panel->x * win_width;
-    viewport->offset_framebuffer[1] = viewport->viewport.y = panel->y * win_height;
-    viewport->size_framebuffer[0] = viewport->viewport.width = panel->width * win_width;
-    viewport->size_framebuffer[1] = viewport->viewport.height = panel->height * win_height;
+    viewport->offset_framebuffer[0] = viewport->viewport.x = panel->x * size_framebuffer[0];
+    viewport->offset_framebuffer[1] = viewport->viewport.y = panel->y * size_framebuffer[1];
+    viewport->size_framebuffer[0] = viewport->viewport.width = panel->width * size_framebuffer[0];
+    viewport->size_framebuffer[1] = viewport->viewport.height =
+        panel->height * size_framebuffer[1];
     viewport->viewport.minDepth = 0;
     viewport->viewport.maxDepth = 1;
 
@@ -65,19 +66,29 @@ static void _update_viewport(DvzPanel* panel)
 
 
 
+static double _array_sum(uint32_t count, double* array)
+{
+    double total = 0.0f;
+    for (uint32_t i = 0; i < count; i++)
+        total += array[i];
+    return total;
+}
+
+
+
 static void _update_grid_panels(DvzGrid* grid, DvzGridAxis axis)
 {
     ASSERT(grid != NULL);
 
     bool h = axis == DVZ_GRID_HORIZONTAL;
     uint32_t n = h ? grid->n_cols : grid->n_rows;
-    float total = 0.0f;
+    double total = 0.0f;
 
     for (uint32_t i = 0; i < n; i++)
     {
-        float s = h ? grid->widths[i] : grid->heights[i];
+        double s = h ? grid->widths[i] : grid->heights[i];
         if (s == 0.0f)
-            s = 1.0f / n;
+            s = 1.0f;
         ASSERT(s > 0);
         if (h)
         {
@@ -92,14 +103,20 @@ static void _update_grid_panels(DvzGrid* grid, DvzGridAxis axis)
         total += s;
     }
 
-    // Renormalize in [0, 1].
-    for (uint32_t i = 0; i < n; i++)
-    {
-        if (h)
-            grid->widths[i] /= total;
-        else
-            grid->heights[i] /= total;
-    }
+    // // Renormalize in [0, 1].
+    // for (uint32_t i = 0; i < n; i++)
+    // {
+    //     if (h)
+    //     {
+    //         grid->xs[i] /= total;
+    //         grid->widths[i] /= total;
+    //     }
+    //     else
+    //     {
+    //         grid->ys[i] /= total;
+    //         grid->heights[i] /= total;
+    //     }
+    // }
 
     // Update the panel positions and sizes.
     DvzContainerIterator iter = dvz_container_iterator(&grid->panels);
@@ -125,16 +142,30 @@ static float _to_normalized_unit(DvzPanel* panel, DvzGridAxis axis, float size)
     ASSERT(panel != NULL);
     DvzCanvas* canvas = panel->grid->canvas;
     bool h = axis == DVZ_GRID_HORIZONTAL;
+    uvec2 wh = {0};
+
     switch (panel->size_unit)
     {
     case DVZ_PANEL_UNIT_NORMALIZED:
         return size;
         break;
     case DVZ_PANEL_UNIT_FRAMEBUFFER:
-        return size / (h ? canvas->swapchain.images->width : canvas->swapchain.images->height);
+
+        // Canvas size in framebuffer pixels.
+        dvz_canvas_size(canvas, DVZ_CANVAS_SIZE_FRAMEBUFFER, wh);
+        ASSERT(wh[0] > 0);
+        ASSERT(wh[1] > 0);
+
+        return size / (h ? wh[0] : wh[1]);
         break;
     case DVZ_PANEL_UNIT_SCREEN:
-        return size / (h ? canvas->window->width : canvas->window->height);
+
+        // Canvas size in screen pixels.
+        dvz_canvas_size(canvas, DVZ_CANVAS_SIZE_SCREEN, wh);
+        ASSERT(wh[0] > 0);
+        ASSERT(wh[1] > 0);
+
+        return size / (h ? wh[0] : wh[1]);
         break;
     default:
         break;
@@ -166,13 +197,13 @@ static DvzPanel* _get_panel(DvzGrid* grid, uint32_t row, uint32_t col)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzGrid dvz_grid(DvzCanvas* canvas, uint32_t rows, uint32_t cols)
+DvzGrid dvz_grid(DvzCanvas* canvas, uint32_t row_count, uint32_t col_count)
 {
     ASSERT(canvas != NULL);
     DvzGrid grid = {0};
     grid.canvas = canvas;
-    grid.n_rows = rows;
-    grid.n_cols = cols;
+    grid.n_rows = row_count;
+    grid.n_cols = col_count;
     grid.panels = dvz_container(DVZ_MAX_PANELS, sizeof(DvzPanel), DVZ_OBJECT_TYPE_PANEL);
 
     _update_grid_panels(&grid, DVZ_GRID_HORIZONTAL);
@@ -238,7 +269,7 @@ DvzPanel* dvz_panel(DvzGrid* grid, uint32_t row, uint32_t col)
     panel->br_mvp = dvz_ctx_buffers(ctx, DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE, n, sizeof(DvzMVP));
     // Initialize with identity matrices. Will be later updated by the scene controllers at every
     // frame.
-    dvz_upload_buffers(canvas, panel->br_mvp, 0, panel->br_mvp.size, &MVP_ID);
+    // dvz_canvas_buffers(canvas, panel->br_mvp, 0, panel->br_mvp.size, &MVP_ID);
 
     // Update the DvzViewport.
     dvz_panel_update(panel);
@@ -250,17 +281,22 @@ DvzPanel* dvz_panel(DvzGrid* grid, uint32_t row, uint32_t col)
 void dvz_panel_update(DvzPanel* panel)
 {
     ASSERT(panel != NULL);
+
     DvzGrid* grid = panel->grid;
+    ASSERT(grid != NULL);
 
     ASSERT(panel->col < grid->n_cols);
     ASSERT(panel->row < grid->n_rows);
 
     if (panel->mode == DVZ_PANEL_GRID)
     {
-        panel->x = grid->xs[panel->col];
-        panel->y = grid->ys[panel->row];
-        panel->width = grid->widths[panel->col] * panel->hspan;
-        panel->height = grid->heights[panel->row] * panel->vspan;
+        double wtot = _array_sum(grid->n_cols, grid->widths);
+        double htot = _array_sum(grid->n_rows, grid->heights);
+
+        panel->x = grid->xs[panel->col] / wtot;
+        panel->y = grid->ys[panel->row] / htot;
+        panel->width = grid->widths[panel->col] * panel->hspan / wtot;
+        panel->height = grid->heights[panel->row] * panel->vspan / htot;
     }
     // Update the viewport structures.
     _update_viewport(panel);
@@ -337,6 +373,7 @@ void dvz_panel_size(DvzPanel* panel, DvzGridAxis axis, float size)
 
         // The grid widths and heights are always in normalized coordinates.
         size = _to_normalized_unit(panel, axis, size);
+
         if (axis == DVZ_GRID_HORIZONTAL)
             grid->widths[panel->col] = size;
 

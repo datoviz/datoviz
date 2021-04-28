@@ -1,5 +1,6 @@
 #include "../include/datoviz/context.h"
 #include "../include/datoviz/atlas.h"
+#include "context_utils.h"
 #include "vklite_utils.h"
 #include <stdlib.h>
 
@@ -9,12 +10,12 @@
 /*  Context                                                                                      */
 /*************************************************************************************************/
 
-static void _context_default_queues(DvzGpu* gpu, DvzWindow* window)
+static void _context_default_queues(DvzGpu* gpu, bool has_present_queue)
 {
     dvz_gpu_queue(gpu, DVZ_DEFAULT_QUEUE_TRANSFER, DVZ_QUEUE_TRANSFER);
     dvz_gpu_queue(gpu, DVZ_DEFAULT_QUEUE_COMPUTE, DVZ_QUEUE_COMPUTE);
     dvz_gpu_queue(gpu, DVZ_DEFAULT_QUEUE_RENDER, DVZ_QUEUE_RENDER);
-    if (window != NULL)
+    if (has_present_queue)
         dvz_gpu_queue(gpu, DVZ_DEFAULT_QUEUE_PRESENT, DVZ_QUEUE_PRESENT);
 }
 
@@ -126,6 +127,32 @@ static void _context_default_buffers(DvzContext* context)
 
 
 
+static void _context_default_resources(DvzContext* context)
+{
+    ASSERT(context != NULL);
+
+    // Create the default buffers.
+    _context_default_buffers(context);
+
+    // Create the font atlas and assign it to the context.
+    context->font_atlas = dvz_font_atlas(context);
+
+    // Color texture.
+    context->color_texture.arr = _load_colormaps();
+    context->color_texture.texture =
+        dvz_ctx_texture(context, 2, (uvec3){256, 256, 1}, VK_FORMAT_R8G8B8A8_UNORM);
+    dvz_texture_address_mode(
+        context->color_texture.texture, DVZ_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_texture_address_mode(
+        context->color_texture.texture, DVZ_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_context_colormap(context);
+
+    // Default 1D texture, for transfer functions.
+    context->transfer_texture = _default_transfer_texture(context);
+}
+
+
+
 static void _destroy_resources(DvzContext* context)
 {
     ASSERT(context != NULL);
@@ -156,29 +183,12 @@ static void _gpu_default_features(DvzGpu* gpu)
 
 
 
-DvzContext* dvz_context(DvzGpu* gpu, DvzWindow* window)
+void dvz_gpu_default(DvzGpu* gpu, DvzWindow* window)
 {
     ASSERT(gpu != NULL);
-    ASSERT(!dvz_obj_is_created(&gpu->obj));
-    log_trace("creating context");
-
-    DvzContext* context = calloc(1, sizeof(DvzContext));
-    context->gpu = gpu;
-
-    // Allocate memory for buffers, textures, and computes.
-    context->buffers =
-        dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzBuffer), DVZ_OBJECT_TYPE_BUFFER);
-    context->images =
-        dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzImages), DVZ_OBJECT_TYPE_IMAGES);
-    context->samplers =
-        dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzSampler), DVZ_OBJECT_TYPE_SAMPLER);
-    context->textures =
-        dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzTexture), DVZ_OBJECT_TYPE_TEXTURE);
-    context->computes =
-        dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzCompute), DVZ_OBJECT_TYPE_COMPUTE);
 
     // Specify the default queues.
-    _context_default_queues(gpu, window);
+    _context_default_queues(gpu, window != NULL);
 
     // Default features
     _gpu_default_features(gpu);
@@ -191,30 +201,49 @@ DvzContext* dvz_context(DvzGpu* gpu, DvzWindow* window)
             surface = window->surface;
         dvz_gpu_create(gpu, surface);
     }
+}
 
-    // Create the default buffers.
-    _context_default_buffers(context);
 
-    context->transfer_cmd = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_TRANSFER, 1);
 
+DvzContext* dvz_context(DvzGpu* gpu)
+{
+    ASSERT(gpu != NULL);
+    ASSERT(dvz_obj_is_created(&gpu->obj));
+    log_trace("creating context");
+
+    DvzContext* context = calloc(1, sizeof(DvzContext));
+    context->gpu = gpu;
+
+    // Allocate memory for buffers, textures, and computes.
+    {
+        context->buffers =
+            dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzBuffer), DVZ_OBJECT_TYPE_BUFFER);
+        context->images =
+            dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzImages), DVZ_OBJECT_TYPE_IMAGES);
+        context->samplers = dvz_container(
+            DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzSampler), DVZ_OBJECT_TYPE_SAMPLER);
+        context->textures = dvz_container(
+            DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzTexture), DVZ_OBJECT_TYPE_TEXTURE);
+        context->computes = dvz_container(
+            DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzCompute), DVZ_OBJECT_TYPE_COMPUTE);
+    }
+
+    // Transfer command buffer.
+    // context->transfer_cmd = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_TRANSFER, 1);
+
+    // FIFO queue with the pending transfers.
+    context->transfers = dvz_fifo(DVZ_MAX_FIFO_CAPACITY);
+
+    // HACK: the vklite module makes the assumption that the queue #0 supports transfers.
+    // Here, in the context, we make the same assumption. The first queue is reserved to transfers.
+    ASSERT(DVZ_DEFAULT_QUEUE_TRANSFER == 0);
+
+    // Create the context.
     gpu->context = context;
     dvz_obj_created(&context->obj);
 
-    // Create the font atlas and assign it to the context.
-    context->font_atlas = dvz_font_atlas(context);
-
-    // Color texture.
-    context->color_texture.arr = _load_colormaps();
-    context->color_texture.texture =
-        dvz_ctx_texture(context, 2, (uvec3){256, 256, 1}, VK_FORMAT_R8G8B8A8_UNORM);
-    dvz_texture_address_mode(
-        context->color_texture.texture, DVZ_TEXTURE_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-    dvz_texture_address_mode(
-        context->color_texture.texture, DVZ_TEXTURE_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-    dvz_context_colormap(context);
-
-    // Default 1D texture, for transfer functions.
-    context->transfer_texture = _default_transfer_texture(context);
+    // Create the default resources.
+    _context_default_resources(context);
 
     return context;
 }
@@ -230,6 +259,7 @@ void dvz_context_colormap(DvzContext* context)
     dvz_texture_upload(
         context->color_texture.texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, 256 * 256 * 4,
         context->color_texture.arr);
+    dvz_queue_wait(context->gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
 }
 
 
@@ -239,7 +269,7 @@ void dvz_context_reset(DvzContext* context)
     ASSERT(context != NULL);
     log_trace("reset the context");
     _destroy_resources(context);
-    _context_default_buffers(context);
+    _context_default_resources(context);
 }
 
 
@@ -261,12 +291,34 @@ void dvz_context_destroy(DvzContext* context)
     // Destroy the buffers, images, samplers, textures, computes.
     _destroy_resources(context);
 
+    // Destroy the transfers queue.
+    dvz_fifo_destroy(&context->transfers);
+
     // Free the allocated memory.
     dvz_container_destroy(&context->buffers);
     dvz_container_destroy(&context->images);
     dvz_container_destroy(&context->samplers);
     dvz_container_destroy(&context->textures);
     dvz_container_destroy(&context->computes);
+}
+
+
+
+void dvz_app_reset(DvzApp* app)
+{
+    ASSERT(app != NULL);
+    dvz_app_wait(app);
+    DvzContainerIterator iter = dvz_container_iterator(&app->gpus);
+    DvzGpu* gpu = NULL;
+    while (iter.item != NULL)
+    {
+        gpu = iter.item;
+        ASSERT(gpu != NULL);
+        if (dvz_obj_is_created(&gpu->obj) && gpu->context != NULL)
+            dvz_context_reset(gpu->context);
+        dvz_container_iter(&iter);
+    }
+    dvz_app_wait(app);
 }
 
 
@@ -339,7 +391,7 @@ DvzBufferRegions dvz_ctx_buffers(
     {
         VkDeviceSize new_size = dvz_next_pow2(offset + alsize * buffer_count);
         log_info("reallocating buffer %d to %s", buffer_type, pretty_size(new_size));
-        dvz_buffer_resize(regions.buffer, new_size, &context->transfer_cmd);
+        dvz_buffer_resize(regions.buffer, new_size);
     }
 
     log_debug(
@@ -384,7 +436,7 @@ void dvz_ctx_buffers_resize(DvzContext* context, DvzBufferRegions* br, VkDeviceS
         {
             VkDeviceSize bs = dvz_next_pow2(br->offsets[0] + old_size);
             log_info("reallocating buffer #%d to %s", br->buffer->type, pretty_size(bs));
-            dvz_buffer_resize(br->buffer, bs, &context->transfer_cmd);
+            dvz_buffer_resize(br->buffer, bs);
         }
     }
 
@@ -485,24 +537,7 @@ DvzTexture* dvz_ctx_texture(DvzContext* context, uint32_t dims, uvec3 size, VkFo
     dvz_obj_created(&texture->obj);
 
     // Immediately transition the image to its layout.
-    {
-        DvzGpu* gpu = context->gpu;
-        DvzCommands* cmds = &context->transfer_cmd;
-
-        dvz_cmd_reset(cmds, 0);
-        dvz_cmd_begin(cmds, 0);
-
-        DvzBarrier barrier = dvz_barrier(gpu);
-        dvz_barrier_stages(
-            &barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
-        dvz_barrier_images(&barrier, image);
-        dvz_barrier_images_layout(&barrier, VK_IMAGE_LAYOUT_UNDEFINED, image->layout);
-        dvz_barrier_images_access(&barrier, 0, VK_ACCESS_TRANSFER_READ_BIT);
-        dvz_cmd_barrier(cmds, 0, &barrier);
-
-        dvz_cmd_end(cmds, 0);
-        dvz_cmd_submit_sync(cmds, 0);
-    }
+    dvz_texture_transition(texture);
 
     return texture;
 }
@@ -573,6 +608,10 @@ void dvz_texture_upload(
 
     // Copy from the staging buffer to the texture.
     _copy_texture_from_staging(context, texture, offset, shape, size);
+
+    // IMPORTANT: need to wait for the texture to be copied to the staging buffer, *before*
+    // downloading the data from the staging buffer.
+    dvz_queue_wait(context->gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
 }
 
 
@@ -592,6 +631,10 @@ void dvz_texture_download(
     // Copy from the staging buffer to the texture.
     _copy_texture_to_staging(context, texture, offset, shape, size);
 
+    // IMPORTANT: need to wait for the texture to be copied to the staging buffer, *before*
+    // downloading the data from the staging buffer.
+    dvz_queue_wait(context->gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
+
     // Memcpy into the staging buffer.
     dvz_buffer_download(staging, 0, size, data);
 }
@@ -608,7 +651,8 @@ void dvz_texture_copy(
     ASSERT(context != NULL);
 
     // Take transfer cmd buf.
-    DvzCommands* cmds = &context->transfer_cmd;
+    DvzCommands cmds_ = dvz_commands(gpu, 0, 1);
+    DvzCommands* cmds = &cmds_;
     dvz_cmd_reset(cmds, 0);
     dvz_cmd_begin(cmds, 0);
 
@@ -625,16 +669,19 @@ void dvz_texture_copy(
     // Source image transition.
     if (src->image->layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
     {
+        log_trace("source image %d transition", src->image->images[0]);
         dvz_barrier_images_layout(
             &src_barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+        dvz_barrier_images_access(&src_barrier, 0, VK_ACCESS_TRANSFER_READ_BIT);
         dvz_cmd_barrier(cmds, 0, &src_barrier);
     }
 
     // Destination image transition.
     {
-        log_trace("destination image transition");
+        log_trace("destination image %d transition", dst->image->images[0]);
         dvz_barrier_images_layout(
             &dst_barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        dvz_barrier_images_access(&dst_barrier, 0, VK_ACCESS_TRANSFER_WRITE_BIT);
         dvz_cmd_barrier(cmds, 0, &dst_barrier);
     }
 
@@ -653,6 +700,7 @@ void dvz_texture_copy(
     copy.dstOffset.x = (int32_t)dst_offset[0];
     copy.dstOffset.y = (int32_t)dst_offset[1];
     copy.dstOffset.z = (int32_t)dst_offset[2];
+
     vkCmdCopyImage(
         cmds->cmds[0],                                               //
         src->image->images[0], VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, //
@@ -660,26 +708,32 @@ void dvz_texture_copy(
         1, &copy);
 
     // Source image transition.
-    if (src->image->layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+    if (src->image->layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL &&
+        src->image->layout != VK_IMAGE_LAYOUT_UNDEFINED)
     {
+        log_trace("source image transition back");
         dvz_barrier_images_layout(
             &src_barrier, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, src->image->layout);
+        dvz_barrier_images_access(
+            &src_barrier, VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_TRANSFER_WRITE_BIT);
         dvz_cmd_barrier(cmds, 0, &src_barrier);
     }
 
     // Destination image transition.
-    if (dst->image->layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+    if (dst->image->layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
+        dst->image->layout != VK_IMAGE_LAYOUT_UNDEFINED)
     {
         log_trace("destination image transition back");
         dvz_barrier_images_layout(
             &dst_barrier, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, dst->image->layout);
+        dvz_barrier_images_access(&dst_barrier, VK_ACCESS_TRANSFER_WRITE_BIT, 0);
         dvz_cmd_barrier(cmds, 0, &dst_barrier);
     }
 
     dvz_cmd_end(cmds, 0);
 
     // Wait for the render queue to be idle.
-    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_RENDER);
+    // dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_RENDER);
 
     // Submit the commands to the transfer queue.
     DvzSubmit submit = dvz_submit(gpu);
@@ -688,7 +742,32 @@ void dvz_texture_copy(
     dvz_submit_send(&submit, 0, NULL, 0);
 
     // Wait for the transfer queue to be idle.
-    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
+    // dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
+}
+
+
+
+void dvz_texture_transition(DvzTexture* tex)
+{
+    ASSERT(tex != NULL);
+    ASSERT(tex->context != NULL);
+    DvzGpu* gpu = tex->context->gpu;
+    ASSERT(gpu != NULL);
+    DvzCommands cmds_ = dvz_commands(gpu, 0, 1);
+    DvzCommands* cmds = &cmds_;
+
+    dvz_cmd_reset(cmds, 0);
+    dvz_cmd_begin(cmds, 0);
+
+    DvzBarrier barrier = dvz_barrier(gpu);
+    dvz_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    dvz_barrier_images(&barrier, tex->image);
+    dvz_barrier_images_layout(&barrier, VK_IMAGE_LAYOUT_UNDEFINED, tex->image->layout);
+    dvz_barrier_images_access(&barrier, 0, VK_ACCESS_TRANSFER_READ_BIT);
+    dvz_cmd_barrier(cmds, 0, &barrier);
+
+    dvz_cmd_end(cmds, 0);
+    dvz_cmd_submit_sync(cmds, 0);
 }
 
 

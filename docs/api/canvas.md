@@ -5,8 +5,11 @@
 ### `dvz_canvas_commands()`
 ### `dvz_canvas_clear_color()`
 ### `dvz_canvas_size()`
+### `dvz_canvas_aspect()`
 ### `dvz_canvas_close_on_esc()`
 ### `dvz_canvas_recreate()`
+### `dvz_canvas_resize()`
+### `dvz_canvas_buffers()`
 ### `dvz_canvas_to_refill()`
 ### `dvz_canvas_to_close()`
 ### `dvz_canvases_destroy()`
@@ -58,10 +61,12 @@
 ### `dvz_event_stop()`
 
 ### `dvz_mouse()`
+### `dvz_mouse_toggle()`
 ### `dvz_mouse_reset()`
 ### `dvz_mouse_event()`
 ### `dvz_mouse_local()`
 
 ### `dvz_keyboard()`
+### `dvz_keyboard_toggle()`
 ### `dvz_keyboard_reset()`
 ### `dvz_keyboard_event()`

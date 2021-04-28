@@ -45,6 +45,7 @@ extern "C" {
 #define DVZ_MAX_FRAMES_IN_FLIGHT      2
 
 
+
 /*************************************************************************************************/
 /*  Enums                                                                                        */
 /*************************************************************************************************/
@@ -289,6 +290,7 @@ struct DvzMouse
 
     double press_time;
     double click_time;
+    bool is_active;
 };
 
 
@@ -314,6 +316,7 @@ struct DvzKeyboard
     DvzKeyboardStateType cur_state;
 
     double press_time;
+    bool is_active;
 };
 
 
@@ -604,7 +607,7 @@ struct DvzCanvas
     DvzContainer graphics;
 
     // Data transfers.
-    DvzFifo transfers;
+    // DvzFifo transfers;
 
     // Event callbacks, running in the background thread, may be slow, for end-users.
     uint32_t callbacks_count;
@@ -667,6 +670,22 @@ dvz_canvas_offscreen(DvzGpu* gpu, uint32_t width, uint32_t height, int flags);
 DVZ_EXPORT void dvz_canvas_recreate(DvzCanvas* canvas);
 
 /**
+ * Reset the canvas.
+ *
+ * @param canvas the canvas to reset
+ */
+DVZ_EXPORT void dvz_canvas_reset(DvzCanvas* canvas);
+
+/**
+ * Resize a canvas.
+ *
+ * @param canvas the canvas to resize
+ * @param width the new width
+ * @param height the new height
+ */
+DVZ_EXPORT void dvz_canvas_resize(DvzCanvas* canvas, uint32_t width, uint32_t height);
+
+/**
  * Create a set of Vulkan command buffers on a given GPU queue.
  *
  * @param canvas the canvas
@@ -675,6 +694,27 @@ DVZ_EXPORT void dvz_canvas_recreate(DvzCanvas* canvas);
  * @returns the set of created command buffers
  */
 DVZ_EXPORT DvzCommands* dvz_canvas_commands(DvzCanvas* canvas, uint32_t queue_idx, uint32_t count);
+
+/**
+ * Upload fast-changing data to a special mappable buffer at every canvas frame.
+ *
+ * This function is used to upload MVP matrices at every frame in the scene interface.
+ *
+ * There are several constraints:
+ *
+ * - the buffer must have the uniform mappable type
+ * - there must be as many buffer regions as there are swapchain images in the canvas
+ * - this function **must** be called at every frame.
+ *
+ * @param canvas the canvas
+ * @param br the buffer regions
+ * @param offset the offset
+ * @param size the data size
+ * @param data the data to upload
+ */
+DVZ_EXPORT void dvz_canvas_buffers(
+    DvzCanvas* canvas, DvzBufferRegions br, //
+    VkDeviceSize offset, VkDeviceSize size, const void* data);
 
 
 
@@ -706,12 +746,26 @@ DVZ_EXPORT void dvz_canvas_clear_color(DvzCanvas* canvas, float red, float green
 DVZ_EXPORT void dvz_canvas_size(DvzCanvas* canvas, DvzCanvasSizeType type, uvec2 size);
 
 /**
+ * Get the canvas aspect ratio.
+ *
+ * @param canvas the canvas
+ * @param[out] ratio the canvas aspect ratio (width / height)
+ */
+DVZ_EXPORT double dvz_canvas_aspect(DvzCanvas* canvas);
+
+/**
  * Whether the canvas should close when Escape is pressed.
  *
  * @param canvas the canvas
  * @param value the boolean value
  */
 DVZ_EXPORT void dvz_canvas_close_on_esc(DvzCanvas* canvas, bool value);
+
+
+
+/*************************************************************************************************/
+/*  Viewport                                                                                     */
+/*************************************************************************************************/
 
 // screen coordinates
 static inline bool _pos_in_viewport(DvzViewport viewport, vec2 screen_pos)
@@ -923,6 +977,14 @@ DVZ_EXPORT void dvz_canvas_stop(DvzCanvas* canvas);
 DVZ_EXPORT DvzMouse dvz_mouse(void);
 
 /**
+ * Active or deactivate interactive mouse events.
+ *
+ * @param mouse the mouse object
+ * @param enable whether to activate or deactivate mouse events
+ */
+DVZ_EXPORT void dvz_mouse_toggle(DvzMouse* mouse, bool enable);
+
+/**
  * Reset the mouse state.
  *
  * @param mouse the mouse object
@@ -959,6 +1021,14 @@ DVZ_EXPORT void dvz_mouse_local(
  * @returns keyboard object
  */
 DVZ_EXPORT DvzKeyboard dvz_keyboard(void);
+
+/**
+ * Active or deactivate interactive keyboard events.
+ *
+ * @param keyboard the keyboard object
+ * @param enable whether to activate or deactivate keyboard events
+ */
+DVZ_EXPORT void dvz_keyboard_toggle(DvzKeyboard* keyboard, bool enable);
 
 /**
  * Reset the keyboard state

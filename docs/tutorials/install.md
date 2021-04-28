@@ -36,7 +36,7 @@ The philosophy of Datoviz is to **implement all the logic and functionality in C
 
 **Mandatory dependencies** that need to be installed before compiling the C library are:
 
-* **LunarG Vulkan SDK**
+* **LunarG Vulkan SDK 1.2.170+**
 * **cmake 3.16+** (build)
 
 **Optional dependencies** are:
@@ -111,7 +111,7 @@ The other dependencies below are already included in the library, so **you don't
 #### Install Vulkan
 
 1. Install [the latest Vulkan SDK](https://vulkan.lunarg.com/sdk/home#mac)
-2. `cd /Volumes/vulkansdk-macos-1.2.154.0` (replace by appropriate version)
+2. `cd /Volumes/vulkansdk-macos-1.2.170.0` (replace by appropriate version)
 3. `./install_vulkan.py`
 
 

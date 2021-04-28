@@ -98,7 +98,7 @@ static void _presend(DvzCanvas* canvas, DvzEvent ev)
 
     // Call the IMGUI private callbacks to render the GUI.
     {
-        DvzEvent ev_imgui;
+        DvzEvent ev_imgui = {};
         ev_imgui.type = DVZ_EVENT_IMGUI;
         ev_imgui.u.f.idx = canvas->frame_idx;
         ev_imgui.u.f.interval = canvas->clock.interval;
@@ -141,7 +141,7 @@ ImGuiWindowFlags_NoFocusOnAppearing; ImGui::SetNextWindowBgAlpha(0.25f);
 // 0 = TL, 1 = TR, 2 = LL, 3 = LR
 static int _fixed_style(int corner)
 {
-    ImGuiIO& io = ImGui::GetIO();
+    const ImGuiIO& io = ImGui::GetIO();
 
     int flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar |
                 ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNav |
@@ -183,6 +183,9 @@ static int _gui_style(int flags)
 
 void dvz_imgui_init(DvzCanvas* canvas)
 {
+    ASSERT(canvas != NULL);
+    ASSERT(canvas->gpu != NULL);
+
     if (ImGui::GetCurrentContext() == NULL)
         _imgui_init_context();
     ASSERT(canvas->overlay);
@@ -223,8 +226,13 @@ void dvz_imgui_init(DvzCanvas* canvas)
     dvz_event_callback(canvas, DVZ_EVENT_PRE_SEND, 0, DVZ_EVENT_MODE_SYNC, _presend, cmds);
 
     // Make the colormap texture available.
+    ASSERT(canvas->gpu->context != NULL);
     DvzTexture* texture = canvas->gpu->context->color_texture.texture;
+    ASSERT(texture != NULL);
+
+    ASSERT(texture->sampler != NULL);
     VkSampler sampler = texture->sampler->sampler;
+    ASSERT(texture->image != NULL);
     VkImageView image_view = texture->image->image_views[0];
 
     // GUI context.
@@ -254,8 +262,8 @@ void dvz_gui_callback_fps(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
     dvz_gui_begin("FPS", DVZ_GUI_FLAGS_FIXED | DVZ_GUI_FLAGS_CORNER_UR);
-    ImGui::Text("  FPS: %.0f", canvas->fps);
-    ImGui::Text("eFPS: %.0f", canvas->efps);
+    ImGui::Text("  FPS: %04.0f", canvas->fps);
+    ImGui::Text("eFPS: %04.0f", canvas->efps);
     dvz_gui_end();
 }
 
@@ -334,7 +342,7 @@ static void _emit_gui_event(DvzGui* gui, DvzGuiControl* control)
     DvzCanvas* canvas = gui->canvas;
     ASSERT(canvas != NULL);
 
-    DvzEvent ev;
+    DvzEvent ev = {};
     ev.type = DVZ_EVENT_GUI;
     ev.u.g.gui = control->gui;
     ev.u.g.control = control;
@@ -538,7 +546,7 @@ void dvz_gui_callback(DvzCanvas* canvas, DvzEvent ev)
     ASSERT(canvas != NULL);
 
     // When Dear ImGUI captures the mouse and keyboard, Datoviz should not process user events.
-    ImGuiIO& io = ImGui::GetIO();
+    const ImGuiIO& io = ImGui::GetIO();
     canvas->captured = io.WantCaptureMouse || io.WantCaptureKeyboard;
 
     DvzGui* gui = NULL;

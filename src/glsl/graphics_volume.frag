@@ -13,7 +13,7 @@ layout(std140, binding = USER_BINDING) uniform Params
     vec4 clip;              /* plane normal vector for volume slicing */
     vec2 transfer_xrange;   /* x coords of the endpoints of the transfer function */
     float color_coef;       /* scaling coefficient when fetching voxel color */
-    // int cmap;               /* colormap */
+    int cmap;               /* colormap */
 }
 params;
 
@@ -26,7 +26,7 @@ layout(location = 0) in vec3 in_pos;
 layout(location = 1) in vec3 in_ray;
 
 layout(location = 0) out vec4 out_color;
-layout(location = 1) out ivec4 out_pick;
+// layout(location = 1) out ivec4 out_pick;
 
 
 
@@ -57,7 +57,8 @@ vec4 fetch_color(vec3 uvw) {
         v = texture(tex_transfer, (v - x0) / (x1 - x0)).r;
 
     // Color component.
-    vec4 color = params.color_coef * texture(tex_colors, uvw);
+    // vec4 color = params.color_coef * texture(tex_colors, uvw);
+    vec4 color = params.color_coef * colormap(params.cmap, v);
 
     // Alpha value: value.
     color.a = v;
@@ -171,5 +172,5 @@ void main()
     }
 
     out_color = acc;
-    out_pick = ivec4(255 * uvw_pick, 0);
+    // out_pick = ivec4(255 * uvw_pick, 0);
 }

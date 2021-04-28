@@ -145,6 +145,7 @@ DvzProp* dvz_visual_prop(
     prop->prop_type = prop_type;
     prop->prop_idx = prop_idx;
     prop->dtype = dtype;
+    prop->item_size = _get_dtype_size(dtype);
     prop->dpi_scaling = 1;
     prop->source = dvz_source_get(visual, source_type, source_idx);
     if (prop->source == NULL && source_type != DVZ_SOURCE_TYPE_NONE)
@@ -153,7 +154,8 @@ DvzProp* dvz_visual_prop(
     }
 
     // NOTE: we do not use prop arrays for texture sources at the moment
-    if (prop->source == NULL || prop->source->source_kind < DVZ_SOURCE_KIND_TEXTURE_1D)
+    if ((prop->source == NULL || prop->source->source_kind < DVZ_SOURCE_KIND_TEXTURE_1D) &&
+        prop->dtype != DVZ_DTYPE_CUSTOM)
         prop->arr_orig = dvz_array(0, prop->dtype);
 
     return prop;
@@ -188,6 +190,19 @@ void dvz_visual_prop_copy(
     prop->copy_type = copy_type;
     prop->reps = reps;
     prop->target_dtype = DVZ_DTYPE_NONE;
+}
+
+
+
+void dvz_visual_prop_size(DvzProp* prop, VkDeviceSize item_size)
+{
+    ASSERT(prop != NULL);
+    ASSERT(item_size > 0);
+
+    prop->item_size = item_size;
+
+    if (prop->source == NULL || prop->source->source_kind < DVZ_SOURCE_KIND_TEXTURE_1D)
+        prop->arr_orig = dvz_array_struct(0, prop->item_size);
 }
 
 
@@ -274,18 +289,10 @@ void dvz_visual_group(DvzVisual* visual, uint32_t group_idx, uint32_t size)
 
 
 
-void dvz_visual_data(
-    DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx, uint32_t count, const void* data)
-{
-    ASSERT(visual != NULL);
-    dvz_visual_data_partial(visual, prop_type, prop_idx, 0, count, count, data);
-}
-
-
-
-void dvz_visual_data_partial(
+static void _visual_data(
     DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx, //
-    uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data)
+    uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data,
+    bool do_resize)
 {
     ASSERT(visual != NULL);
     uint32_t count = first_item + item_count;
@@ -298,6 +305,10 @@ void dvz_visual_data_partial(
 
     // Get the associated source.
     DvzSource* source = prop->source;
+    if (source != NULL)
+        log_trace(
+            "found source type %d #%d for prop type %d #%d", //
+            source->source_type, source->source_idx, prop_type, prop_idx);
 
     if (source != NULL && source->source_kind == DVZ_SOURCE_KIND_UNIFORM &&
         (first_item > 0 || item_count > 1))
@@ -311,6 +322,8 @@ void dvz_visual_data_partial(
     }
 
     // Make sure the array has the right size.
+    if (!do_resize)
+        count = MAX(count, prop->arr_orig.item_count);
     dvz_array_resize(&prop->arr_orig, count);
 
     // Copy the specified array to the prop array.
@@ -322,10 +335,27 @@ void dvz_visual_data_partial(
     {
         log_trace("source type %d #%d handled by lib", source->source_type, source->source_idx);
         source->origin = DVZ_SOURCE_ORIGIN_LIB;
-        // source->obj.status = DVZ_OBJECT_STATUS_NEED_UPDATE;
-        // visual->obj.status = DVZ_OBJECT_STATUS_NEED_UPDATE;
         _source_set_changed(source, true);
     }
+}
+
+
+
+void dvz_visual_data(
+    DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx, uint32_t count, const void* data)
+{
+    ASSERT(visual != NULL);
+    _visual_data(visual, prop_type, prop_idx, 0, count, count, data, true);
+}
+
+
+
+void dvz_visual_data_partial(
+    DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx, //
+    uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data)
+{
+    _visual_data(
+        visual, prop_type, prop_idx, first_item, item_count, data_item_count, data, false);
 }
 
 
@@ -440,8 +470,6 @@ void dvz_visual_texture(
     source->u.tex = texture;
     source->origin = DVZ_SOURCE_ORIGIN_USER;
     _source_set_changed(source, true);
-    // source->obj.status = DVZ_OBJECT_STATUS_NEED_UPDATE;
-    // visual->obj.status = DVZ_OBJECT_STATUS_NEED_UPDATE;
 
     DvzBindings* bindings = _get_bindings(visual, source);
     ASSERT(bindings != NULL);
@@ -459,6 +487,14 @@ void dvz_visual_flags(DvzVisual* visual, int flags)
     // Update the vertex buffer at the next call to dvz_visual_update().
     DvzSource* source = _get_pipeline_source(visual, DVZ_SOURCE_TYPE_VERTEX, 0);
     _source_set_changed(source, true);
+}
+
+
+
+uint32_t dvz_visual_item_count(DvzVisual* visual)
+{
+    DvzProp* prop = dvz_prop_get(visual, DVZ_PROP_POS, 0);
+    return dvz_prop_size(prop);
 }
 
 
@@ -781,7 +817,14 @@ void dvz_visual_update(
                 "%d #%d", //
                 arr->item_count, br->size, source->source_type, source->source_idx);
 
-            dvz_upload_buffers(canvas, *br, 0, size, arr->data);
+            if (br->buffer->type == DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE)
+            {
+                // dvz_canvas_buffers(canvas, *br, 0, size, arr->data);
+                for (uint32_t i = 0; i < canvas->swapchain.img_count; i++)
+                    dvz_buffer_upload(br->buffer, br->offsets[i], size, arr->data);
+            }
+            else
+                dvz_upload_buffer(ctx, *br, 0, size, arr->data);
             _source_set(source);
             // source->obj.status = DVZ_OBJECT_STATUS_CREATED;
             // visual->obj.status = DVZ_OBJECT_STATUS_CREATED;
@@ -809,8 +852,8 @@ void dvz_visual_update(
                 source->source_type, source->source_idx,                                  //
                 arr->shape[0], arr->shape[1], arr->shape[2]);
             dvz_upload_texture(
-                canvas, texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET,
-                arr->item_count * arr->item_size, arr->data);
+                ctx, texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET, arr->item_count * arr->item_size,
+                arr->data);
             _source_set(source);
         }
 

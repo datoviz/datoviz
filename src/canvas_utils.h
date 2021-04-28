@@ -48,6 +48,8 @@ static DvzEvent _event_dequeue(DvzCanvas* canvas, bool wait)
 // Whether there is at least one async callback.
 static bool _has_async_callbacks(DvzCanvas* canvas, DvzEventType type)
 {
+    if (canvas == NULL)
+        return false;
     ASSERT(canvas != NULL);
     for (uint32_t i = 0; i < canvas->callbacks_count; i++)
     {
@@ -262,21 +264,21 @@ static DvzRenderpass default_renderpass(
     dvz_renderpass_subpass_attachment(&renderpass, 0, 1);
     if (pick)
         dvz_renderpass_subpass_attachment(&renderpass, 0, 2);
-    dvz_renderpass_subpass_dependency(&renderpass, 0, VK_SUBPASS_EXTERNAL, 0);
-    dvz_renderpass_subpass_dependency_stage(
-        &renderpass, 0, //
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-    dvz_renderpass_subpass_dependency_access(
-        &renderpass, 0, //
-        0, VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+    // dvz_renderpass_subpass_dependency(&renderpass, 0, VK_SUBPASS_EXTERNAL, 0);
+    // dvz_renderpass_subpass_dependency_stage(
+    //     &renderpass, 0, //
+    //     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+    //     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+    // dvz_renderpass_subpass_dependency_access(
+    //     &renderpass, 0, //
+    //     0, VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
 
     return renderpass;
 }
 
 
 
-static DvzRenderpass renderpass_overlay(DvzGpu* gpu, VkFormat format, VkImageLayout layout)
+static DvzRenderpass default_renderpass_overlay(DvzGpu* gpu, VkFormat format, VkImageLayout layout)
 {
     DvzRenderpass renderpass = dvz_renderpass(gpu);
 
@@ -291,13 +293,13 @@ static DvzRenderpass renderpass_overlay(DvzGpu* gpu, VkFormat format, VkImageLay
 
     // Subpass.
     dvz_renderpass_subpass_attachment(&renderpass, 0, 0);
-    dvz_renderpass_subpass_dependency(&renderpass, 0, VK_SUBPASS_EXTERNAL, 0);
-    dvz_renderpass_subpass_dependency_stage(
-        &renderpass, 0, //
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-    dvz_renderpass_subpass_dependency_access(
-        &renderpass, 0, 0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+    // dvz_renderpass_subpass_dependency(&renderpass, 0, VK_SUBPASS_EXTERNAL, 0);
+    // dvz_renderpass_subpass_dependency_stage(
+    //     &renderpass, 0, //
+    //     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+    //     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+    // dvz_renderpass_subpass_dependency_access(
+    //     &renderpass, 0, 0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
 
     return renderpass;
 }

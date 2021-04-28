@@ -111,22 +111,22 @@ else ()
         -Wshadow -Wsign-conversion -Wstrict-overflow=5 -Wundef -Wno-unused-parameter -Wno-unused-function")
     # GCC-specific
     if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
-    set(COMMON_FLAGS "${COMMON_FLAGS} -Wlogical-op -fdiagnostics-color=always")
+        set(COMMON_FLAGS "${COMMON_FLAGS} -Wlogical-op -fdiagnostics-color=always")
     if (NOT WIN32)
-    set(COMMON_FLAGS "${COMMON_FLAGS} -pg")
+        set(COMMON_FLAGS "${COMMON_FLAGS} -pg")
     endif()
     set(CC_GCC 1)
     # Clang-specific
     elseif ("${CMAKE_C_COMPILER_ID}" MATCHES "Clang")
-    set(COMMON_FLAGS "${COMMON_FLAGS} -Wno-unused-parameter -fcolor-diagnostics -Wno-missing-braces")
-    set(CC_CLANG 1)
+        set(COMMON_FLAGS "${COMMON_FLAGS} -Wno-unused-parameter -fcolor-diagnostics -Wno-missing-braces")
+        set(CC_CLANG 1)
     endif()
 
     # The following seems to be required for nanosleep()
     if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu11")
     else()
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
     endif()
 
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMMON_FLAGS} -Wmissing-prototypes")
@@ -367,16 +367,22 @@ foreach(shader_source ${shader_sources})
         IMPLICIT_DEPENDS ${shader_source}
         )
     list(APPEND shader_outputs ${shader_output})
+
+    # if(${shader_name} MATCHES "graphics_")
+    #     list(APPEND embed_spirv ${shader_output})
+    # endif()
 endforeach()
 add_custom_target(shaders_spirv DEPENDS ${shader_outputs})
 
-# TODO: separate between builtin shaders and example/test visuals
-
+# NOTE: Only include graphics shaders in the embed resources files.
+# file(GLOB embed_spirv "${SPIRV_DIR}/graphics_*.spv")
+# message(${embed_spirv})
 set(path_shadersc "${CMAKE_BINARY_DIR}/_shaders.c")
 add_custom_command(
     OUTPUT ${path_shadersc}
     COMMAND ${CMAKE_COMMAND}
     -D DIR="${SPIRV_DIR}/*"
+    # -D DIR=${embed_spirv}
     -D PREFIX="shader"
     -D OUTPUT=${path_shadersc}
     -P "${CMAKE_SOURCE_DIR}/cmake/embed_resources.cmake"
@@ -524,7 +530,15 @@ endfunction()
 # -------------------------------------------------------------------------------------------------
 
 if (DATOVIZ_WITH_CLI)
-    file(GLOB cli "cli/*.c" "cli/*.cpp" "cli/*.h" "cli/*.hpp")
+    file(GLOB cli "cli/*.c" "tests/*.c*")
+    # file(GLOB cli
+    #     "cli/main.c"
+    #     "tests/test_utils.c"
+    #     "tests/test_vklite.c"
+    #     "tests/test_context.c"
+    #     "tests/test_canvas.c"
+    #     "tests/test_interact.c"
+    # )
     add_executable(datovizcli ${cli})
     target_datoviz(datovizcli)
     set_target_properties(datovizcli PROPERTIES OUTPUT_NAME "datoviz")

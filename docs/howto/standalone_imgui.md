@@ -6,4 +6,4 @@ This example shows how to **write a standalone C++ application using Dear ImGui 
 
 ## Full source code
 
-<!-- CODE_C examples/standalone_imgui.cpp -->
+<!-- CODE_C examples/standalone/standalone_imgui.cpp -->

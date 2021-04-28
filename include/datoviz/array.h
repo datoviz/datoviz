@@ -180,7 +180,7 @@ static VkDeviceSize _get_dtype_size(DvzDataType dtype)
     }
 
     if (dtype != DVZ_DTYPE_NONE)
-        log_error("could not find the size of dtype %d", dtype);
+        log_trace("could not find the size of dtype %d, are we creating a struct array?", dtype);
     return 0;
 }
 
@@ -250,6 +250,7 @@ static DvzArray _create_array(uint32_t item_count, DvzDataType dtype, VkDeviceSi
     arr.dtype = dtype;
     arr.components = _get_components(dtype);
     arr.item_size = item_size;
+    ASSERT(item_size > 0);
     arr.item_count = item_count;
     arr.buffer_size = item_count * arr.item_size;
     if (item_count > 0)

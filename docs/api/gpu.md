@@ -5,6 +5,7 @@
 
 ### `dvz_context()`
 ### `dvz_context_reset()`
+### `dvz_app_reset()`
 ### `dvz_context_destroy()`
 
 
@@ -23,6 +24,7 @@
 ### `dvz_texture_upload()`
 ### `dvz_texture_download()`
 ### `dvz_texture_copy()`
+### `dvz_texture_transition()`
 ### `dvz_texture_destroy()`
 
 
@@ -33,9 +35,9 @@
 
 ## Data transfers
 
-### `dvz_upload_buffers()`
-### `dvz_download_buffers()`
-### `dvz_copy_buffers()`
+### `dvz_upload_buffer()`
+### `dvz_download_buffer()`
+### `dvz_copy_buffer()`
 ### `dvz_upload_texture()`
 ### `dvz_download_texture()`
 ### `dvz_copy_texture()`

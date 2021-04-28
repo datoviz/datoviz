@@ -78,6 +78,8 @@ static void _glfw_key_callback(GLFWwindow* window, int key, int scancode, int ac
     DvzCanvas* canvas = (DvzCanvas*)glfwGetWindowUserPointer(window);
     ASSERT(canvas != NULL);
     ASSERT(canvas->window != NULL);
+    if (!canvas->keyboard.is_active)
+        return;
 
     // Special handling of ESC key.
     if (canvas->window->close_on_esc && action == GLFW_PRESS && key == GLFW_KEY_ESCAPE)
@@ -104,6 +106,8 @@ static void _glfw_wheel_callback(GLFWwindow* window, double dx, double dy)
     DvzCanvas* canvas = (DvzCanvas*)glfwGetWindowUserPointer(window);
     ASSERT(canvas != NULL);
     ASSERT(canvas->window != NULL);
+    if (!canvas->mouse.is_active)
+        return;
 
     // HACK: glfw doesn't seem to give a way to probe the keyboard modifiers while using the mouse
     // wheel, so we have to determine the modifiers manually.
@@ -119,6 +123,8 @@ static void _glfw_button_callback(GLFWwindow* window, int button, int action, in
     DvzCanvas* canvas = (DvzCanvas*)glfwGetWindowUserPointer(window);
     ASSERT(canvas != NULL);
     ASSERT(canvas->window != NULL);
+    if (!canvas->mouse.is_active)
+        return;
 
     // Map mouse button.
     DvzMouseButton b = {0};
@@ -142,6 +148,8 @@ static void _glfw_move_callback(GLFWwindow* window, double xpos, double ypos)
     DvzCanvas* canvas = (DvzCanvas*)glfwGetWindowUserPointer(window);
     ASSERT(canvas != NULL);
     ASSERT(canvas->window != NULL);
+    if (!canvas->mouse.is_active)
+        return;
 
     dvz_event_mouse_move(canvas, (vec2){xpos, ypos}, canvas->mouse.modifiers);
 }
@@ -149,6 +157,8 @@ static void _glfw_move_callback(GLFWwindow* window, double xpos, double ypos)
 static void _glfw_frame_callback(DvzCanvas* canvas, DvzEvent ev)
 {
     ASSERT(canvas != NULL);
+    if (!canvas->mouse.is_active)
+        return;
     GLFWwindow* w = canvas->window->backend_window;
     ASSERT(w != NULL);
 
@@ -395,7 +405,10 @@ static void _refill_canvas(DvzCanvas* canvas, uint32_t img_idx)
     {
         log_debug("complete refill of the canvas");
         for (img_idx = 0; img_idx < img_count; img_idx++)
+        {
+            ev.u.rf.img_idx = img_idx;
             _event_refill(canvas, ev);
+        }
     }
     else
     {
@@ -408,6 +421,11 @@ static void _refill_canvas(DvzCanvas* canvas, uint32_t img_idx)
 
 static void _refill_frame(DvzCanvas* canvas)
 {
+    // ASSERT(canvas != NULL);
+    // dvz_gpu_wait(canvas->gpu);
+    // _refill_canvas(canvas, UINT32_MAX);
+    // return;
+
     uint32_t img_idx = canvas->swapchain.img_idx;
     // Only proceed if the current swapchain image has not been processed yet.
     if (atomic_load(&canvas->refills.status) == DVZ_REFILL_REQUESTED ||
@@ -588,18 +606,25 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
         ASSERT(framebuffer_height > 0);
     }
 
+    // Automatic creation of GPU with default queues and features.
+    if (!dvz_obj_is_created(&gpu->obj))
+    {
+        dvz_gpu_default(gpu, window);
+    }
+
+    // Automatic creation of GPU context.
     if (gpu->context == NULL || !dvz_obj_is_created(&gpu->context->obj))
     {
         log_trace("canvas automatically create the GPU context");
-        gpu->context = dvz_context(gpu, window);
+        gpu->context = dvz_context(gpu);
     }
 
     // Create default renderpass.
     canvas->renderpass = default_renderpass(
         gpu, DVZ_DEFAULT_BACKGROUND, DVZ_DEFAULT_IMAGE_FORMAT, overlay, support_pick);
     if (overlay)
-        canvas->renderpass_overlay =
-            renderpass_overlay(gpu, DVZ_DEFAULT_IMAGE_FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+        canvas->renderpass_overlay = default_renderpass_overlay(
+            gpu, DVZ_DEFAULT_IMAGE_FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
     // Create swapchain
     {
@@ -703,8 +728,6 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
 
     // Default submit instance.
     canvas->submit = dvz_submit(gpu);
-
-    canvas->transfers = dvz_fifo(DVZ_MAX_FIFO_CAPACITY);
 
     // Event system.
     {
@@ -840,6 +863,52 @@ void dvz_canvas_recreate(DvzCanvas* canvas)
     dvz_framebuffers_create(framebuffers, renderpass);
     if (canvas->overlay)
         dvz_framebuffers_create(framebuffers_overlay, renderpass_overlay);
+
+    // Recreate the semaphores.
+    dvz_app_wait(canvas->app);
+    dvz_semaphores_recreate(&canvas->sem_img_available);
+    dvz_semaphores_recreate(&canvas->sem_render_finished);
+    canvas->present_semaphores = &canvas->sem_render_finished;
+}
+
+
+
+void dvz_canvas_reset(DvzCanvas* canvas)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(canvas->app != NULL);
+    dvz_app_wait(canvas->app);
+
+    ASSERT(canvas->gpu != NULL);
+    ASSERT(canvas->gpu->context != NULL);
+    dvz_context_reset(canvas->gpu->context);
+
+    _clock_init(&canvas->clock);
+    atomic_store(&canvas->to_close, false);
+    atomic_store(&canvas->refills.status, DVZ_REFILL_NONE);
+    canvas->callbacks_count = 0;
+    canvas->cur_frame = 0;
+    dvz_fifo_reset(&canvas->event_queue);
+    canvas->frame_idx = 0;
+    canvas->last_frame_idx = 0;
+}
+
+
+
+void dvz_canvas_resize(DvzCanvas* canvas, uint32_t width, uint32_t height)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(width > 0);
+    ASSERT(height > 0);
+    log_info("resize canvas to %ux%u", width, height);
+
+    DvzBackend backend = canvas->app->backend;
+    DvzWindow* window = canvas->window;
+
+    dvz_app_wait(canvas->app);
+    backend_window_set_size(backend, window->backend_window, width, height);
+    dvz_app_wait(canvas->app);
+    // dvz_canvas_recreate(canvas);
 }
 
 
@@ -850,6 +919,27 @@ DvzCommands* dvz_canvas_commands(DvzCanvas* canvas, uint32_t queue_idx, uint32_t
     DvzCommands* commands = dvz_container_alloc(&canvas->commands);
     *commands = dvz_commands(canvas->gpu, queue_idx, count);
     return commands;
+}
+
+
+void dvz_canvas_buffers(
+    DvzCanvas* canvas, DvzBufferRegions br, //
+    VkDeviceSize offset, VkDeviceSize size, const void* data)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(size > 0);
+    ASSERT(data != NULL);
+    ASSERT(br.buffer != NULL);
+    ASSERT(br.count == canvas->swapchain.img_count);
+    if (br.buffer->type != DVZ_BUFFER_TYPE_UNIFORM_MAPPABLE)
+    {
+        log_error("dvz_canvas_buffers() can only be used on mappable buffers.");
+        return;
+    }
+    ASSERT(br.buffer->mmap != NULL);
+    uint32_t idx = canvas->swapchain.img_idx;
+    ASSERT(idx < br.count);
+    dvz_buffer_upload(br.buffer, br.offsets[idx] + offset, size, data);
 }
 
 
@@ -905,6 +995,16 @@ void dvz_canvas_size(DvzCanvas* canvas, DvzCanvasSizeType type, uvec2 size)
         log_warn("unknown size type %d", type);
         break;
     }
+}
+
+
+
+double dvz_canvas_aspect(DvzCanvas* canvas)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(canvas->swapchain.images->width > 0);
+    ASSERT(canvas->swapchain.images->height > 0);
+    return canvas->swapchain.images->width / (double)canvas->swapchain.images->height;
 }
 
 
@@ -1100,6 +1200,14 @@ DvzMouse dvz_mouse()
 
 
 
+void dvz_mouse_toggle(DvzMouse* mouse, bool enable)
+{
+    ASSERT(mouse != NULL);
+    mouse->is_active = enable;
+}
+
+
+
 void dvz_mouse_reset(DvzMouse* mouse)
 {
     ASSERT(mouse != NULL);
@@ -1111,6 +1219,7 @@ void dvz_mouse_reset(DvzMouse* mouse)
     mouse->cur_state = DVZ_MOUSE_STATE_INACTIVE;
     mouse->press_time = DVZ_NEVER;
     mouse->click_time = DVZ_NEVER;
+    mouse->is_active = true;
 }
 
 
@@ -1165,7 +1274,6 @@ void dvz_mouse_event(DvzMouse* mouse, DvzCanvas* canvas, DvzEvent ev)
         if (mouse->cur_state == DVZ_MOUSE_STATE_DRAG)
         {
             log_trace("end drag event");
-            mouse->cur_state = DVZ_MOUSE_STATE_INACTIVE;
             mouse->button = DVZ_MOUSE_BUTTON_NONE;
             mouse->modifiers = 0; // Reset the mouse key modifiers
             dvz_event_mouse_drag_end(canvas, mouse->cur_pos, mouse->button, mouse->modifiers);
@@ -1177,7 +1285,6 @@ void dvz_mouse_event(DvzMouse* mouse, DvzCanvas* canvas, DvzEvent ev)
             // NOTE: when releasing, current button is NONE so we must use the previously set
             // button in mouse->button.
             log_trace("double click event on button %d", mouse->button);
-            mouse->cur_state = DVZ_MOUSE_STATE_DOUBLE_CLICK;
             mouse->click_time = time;
             dvz_event_mouse_double_click(canvas, mouse->cur_pos, mouse->button, mouse->modifiers);
         }
@@ -1222,7 +1329,6 @@ void dvz_mouse_event(DvzMouse* mouse, DvzCanvas* canvas, DvzEvent ev)
               mouse->shift_length < DVZ_MOUSE_CLICK_MAX_SHIFT))
         {
             log_trace("drag event on button %d", mouse->button);
-            mouse->cur_state = DVZ_MOUSE_STATE_DRAG;
             dvz_event_mouse_drag(canvas, mouse->cur_pos, mouse->button, mouse->modifiers);
         }
         // log_trace("mouse mouse %.1fx%.1f", mouse->cur_pos[0], mouse->cur_pos[1]);
@@ -1267,6 +1373,14 @@ DvzKeyboard dvz_keyboard()
 
 
 
+void dvz_keyboard_toggle(DvzKeyboard* keyboard, bool enable)
+{
+    ASSERT(keyboard != NULL);
+    keyboard->is_active = enable;
+}
+
+
+
 void dvz_keyboard_reset(DvzKeyboard* keyboard)
 {
     ASSERT(keyboard != NULL);
@@ -1274,6 +1388,7 @@ void dvz_keyboard_reset(DvzKeyboard* keyboard)
     // keyboard->key_code = DVZ_KEY_NONE;
     // keyboard->modifiers = 0;
     keyboard->press_time = DVZ_NEVER;
+    keyboard->is_active = true;
 }
 
 
@@ -1425,6 +1540,9 @@ void dvz_event_mouse_double_click(
     event.u.c.button = button;
     event.u.c.modifiers = modifiers;
     event.u.c.double_click = true;
+
+    canvas->mouse.cur_state = DVZ_MOUSE_STATE_DOUBLE_CLICK;
+
     _event_produce(canvas, event);
 }
 
@@ -1442,6 +1560,9 @@ void dvz_event_mouse_drag(DvzCanvas* canvas, vec2 pos, DvzMouseButton button, in
     event.u.d.pos[1] = pos[1];
     event.u.d.modifiers = modifiers;
     event.u.d.button = button;
+
+    canvas->mouse.cur_state = DVZ_MOUSE_STATE_DRAG;
+
     _event_produce(canvas, event);
 }
 
@@ -1456,6 +1577,9 @@ void dvz_event_mouse_drag_end(DvzCanvas* canvas, vec2 pos, DvzMouseButton button
     event.u.d.pos[1] = pos[1];
     event.u.d.modifiers = modifiers;
     event.u.d.button = button;
+
+    canvas->mouse.cur_state = DVZ_MOUSE_STATE_INACTIVE;
+
     _event_produce(canvas, event);
 }
 
@@ -1625,7 +1749,7 @@ static void _screencast_timer_callback(DvzCanvas* canvas, DvzEvent ev)
 
     // Wait for "image_ready" semaphore
     dvz_submit_wait_semaphores(
-        submit, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, //
+        submit, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, //
         &canvas->sem_render_finished, canvas->cur_frame);
 
     // Signal screencast_finished semaphore
@@ -1915,6 +2039,7 @@ void dvz_canvas_pick(DvzCanvas* canvas, uvec2 pos_screen, ivec4 picked)
     dvz_gpu_wait(gpu);
 
     bool has_pick = _support_pick(canvas);
+    log_trace("pick at %u, %u", pos_screen[0], pos_screen[1]);
 
     // Source image : pick image if pick support, otherwise swapchain image.
     DvzImages* images = has_pick ? &canvas->pick_image : canvas->swapchain.images;
@@ -1934,7 +2059,8 @@ void dvz_canvas_pick(DvzCanvas* canvas, uvec2 pos_screen, ivec4 picked)
     int32_t k = (int32_t)staging_size / 2;
     int32_t x = (int32_t)pos_screen[0];
     int32_t y = (int32_t)pos_screen[1];
-    ivec3 offset = {x - k, y - k, 0};
+    ivec3 offset = {
+        CLIP(x - k, 0, (int32_t)images->width), CLIP(y - k, 0, (int32_t)images->height), 0};
     _copy_image_to_staging(canvas, images, staging, offset, shape);
 
     VkDeviceSize comp_size = has_pick ? sizeof(int32_t) : sizeof(uint8_t);
@@ -2075,6 +2201,7 @@ void dvz_canvas_frame(DvzCanvas* canvas)
     ASSERT(canvas != NULL);
     ASSERT(canvas->app != NULL);
     ASSERT(canvas->gpu != NULL);
+    log_trace("start frame %u", canvas->frame_idx);
 
     // Update the global and local clocks.
     // These calls update canvas->clock.elapsed and canvas->clock.interval, the latter is
@@ -2099,9 +2226,6 @@ void dvz_canvas_frame(DvzCanvas* canvas)
     // Refill all command buffers at the first iteration.
     if (canvas->frame_idx == 0)
         dvz_canvas_to_refill(canvas);
-
-    // Pending transfers.
-    dvz_process_transfers(canvas);
 
     // Refill if needed, only 1 swapchain command buffer per frame to avoid waiting on the device.
     _refill_frame(canvas);
@@ -2235,15 +2359,14 @@ void dvz_app_run(DvzApp* app, uint64_t frame_count)
 
             // NOTE: swapchain image acquisition happens here
 
-            // Wait for fence.
-            dvz_fences_wait(&canvas->fences_render_finished, canvas->cur_frame);
-
             // We acquire the next swapchain image.
             // NOTE: this call modifies swapchain->img_idx
             if (!canvas->offscreen)
                 dvz_swapchain_acquire(
-                    &canvas->swapchain, &canvas->sem_img_available, //
-                    canvas->cur_frame, NULL, 0);
+                    &canvas->swapchain, &canvas->sem_img_available, canvas->cur_frame, NULL, 0);
+
+            // Wait for fence.
+            dvz_fences_wait(&canvas->fences_flight, canvas->swapchain.img_idx);
 
             // If there is a problem with swapchain image acquisition, wait and try again later.
             if (canvas->swapchain.obj.status == DVZ_OBJECT_STATUS_INVALID)
@@ -2328,6 +2451,12 @@ void dvz_app_run(DvzApp* app, uint64_t frame_count)
             gpu = iterator.item;
             if (!dvz_obj_is_created(&gpu->obj))
                 break;
+
+            // Pending transfers.
+            ASSERT(gpu->context != NULL);
+            // NOTE: the function below uses hard GPU synchronization primitives
+            dvz_process_transfers(gpu->context);
+
             if (gpu->queues.queues[DVZ_DEFAULT_QUEUE_PRESENT] != VK_NULL_HANDLE &&
                 gpu->queues.queues[DVZ_DEFAULT_QUEUE_PRESENT] !=
                     gpu->queues.queues[DVZ_DEFAULT_QUEUE_RENDER])
@@ -2381,9 +2510,6 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     dvz_event_stop(canvas);
     dvz_thread_join(&canvas->event_thread);
     dvz_fifo_destroy(&canvas->event_queue);
-
-    // Destroy the transfers queue.
-    dvz_fifo_destroy(&canvas->transfers);
 
     // Destroy callbacks.
     _destroy_callbacks(canvas);

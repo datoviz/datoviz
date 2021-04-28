@@ -155,7 +155,8 @@ This visual is similar to the image visual, except that it accepts scalar images
 
 ### Axes
 
-![](../images/visuals/axes.png)
+![](../images/visuals/axes_2D_x.png)
+![](../images/visuals/axes_2D_y.png)
 
 #### Tick level
 
@@ -244,10 +245,12 @@ Features:
 | `image` | 0..3 | 2D texture with image #i |
 
 
+<!--
 
 ### Volume
 
 ![](../images/visuals/volume.png)
+
 
 
 #### Props
@@ -304,7 +307,7 @@ Features:
 | `color_texture` | 0 | 2D texture with the colormap texture |
 | `volume` | 0 | 3D texture with the volume |
 
-
+-->
 
 
 

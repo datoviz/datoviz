@@ -28,7 +28,7 @@ c = canvas(show_fps=True, width=1024, height=768)
 panel = c.panel(controller='arcball')
 visual = panel.visual('mesh', transform='auto')
 
-ROOT = Path(__file__).parent.parent.parent.parent
+ROOT = Path(__file__).resolve().parent.parent.parent.parent
 pos = np.load(ROOT / "data/mesh/brain_highres.vert.npy")
 faces = np.load(ROOT / "data/mesh/brain_highres.faces.npy")
 
