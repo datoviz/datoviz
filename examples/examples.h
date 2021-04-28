@@ -11,6 +11,7 @@
 #include "../include/datoviz/demo.h"
 #include "custom_graphics.h"
 #include "custom_visual.h"
+#include "mandelbrot.h"
 
 
 
