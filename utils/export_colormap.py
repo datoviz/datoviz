@@ -112,22 +112,33 @@ def get_cmap(n):
     print("name %s not found!" % n)
 
 
+def _remove_comments(text):
+    return '\n'.join([l.split('//')[0].rstrip() for l in text.splitlines()])
+
+
 def parse_defines(text):
+    text = _remove_comments(text)
     defines = re.findall(
         r"#define (C[A-Z\_0-9]+)\s+([^\n]+)", text, re.MULTILINE)
     defines = dict(defines)
     defines = {k: v.replace('(', '').replace(')', '')
                for k, v in defines.items()}
+    defines = {k: v.strip()
+               for k, v in defines.items()
+               if k.startswith('CMAP') or
+               k.startswith('CPAL') or
+               k == 'CONTROL_MAX'}
     for k, v in defines.items():
         if v.isdigit():
             defines[k] = int(v)
     for k, v in defines.items():
-        if isinstance(v, str) and '+' not in v:
+        if isinstance(v, str) and '+' not in v and '-' not in v:
             defines[k] = defines[v]
     for k, v in defines.items():
         if isinstance(v, str) and '+' in v:
-            defines[k] = defines[v.split(' + ')[0]] + \
-                defines[v.split(' + ')[1]]
+            defines[k] = defines[v.split(' + ')[0]] + defines[v.split(' + ')[1]]
+        if isinstance(v, str) and '-' in v:
+            defines[k] = defines[v.split(' - ')[0]] - defines[v.split(' - ')[1]]
     return defines
 
 
@@ -176,7 +187,7 @@ def generate_binary():
     print("%s created." % texture_path.with_suffix(".png"))
 
     csv_path = Path(__file__).parent.parent / \
-        "../data/textures/color_texture.csv"
+        "data/textures/color_texture.csv"
     print(csv_path.resolve())
     with open(csv_path, 'w') as f:
         f.write('name,row,col,size\n')
@@ -221,6 +232,6 @@ def generate_colormaps_doc():
 
 
 if __name__ == '__main__':
-    # generate_binary()
-    # generate_colormaps_doc()
+    generate_binary()
+    generate_colormaps_doc()
     pass
