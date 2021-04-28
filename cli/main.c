@@ -16,7 +16,59 @@
     if (argc >= 1 && strcmp(argv[1], #arg) == 0)                                                  \
         res = arg(argc - 1, &argv[1]);
 
-#define SWITCH_DEMO(name) strstr(name, argv[argc - 1]) != NULL
+#define SWITCH_DEMO(name)                                                                         \
+    if (argc == 1 || strstr(#name, argv[argc - 1]) != NULL)                                       \
+    {                                                                                             \
+        char* s = "DVZ_RUN_SCREENSHOT=%s/docs/images/screenshots/%s.png";                         \
+        char path[1024];                                                                          \
+        snprintf(path, sizeof(path), s, ROOT_DIR, #name);                                         \
+        putenv(path);                                                                             \
+        res = demo_##name();                                                                      \
+        unsetenv("DVZ_RUN_SCREENSHOT");                                                           \
+    }
+
+
+
+/*************************************************************************************************/
+/*  Demo functions                                                                               */
+/*************************************************************************************************/
+
+static int demo_scatter()
+{
+    const int32_t N = 50000;
+    log_info("running scatter plot demo with %d points", N);
+
+    dvec3* pos = calloc((uint32_t)N, sizeof(dvec3));
+    for (int32_t i = 0; i < N; i++)
+    {
+        pos[i][0] = .25 * dvz_rand_normal();
+        pos[i][1] = .25 * dvz_rand_normal();
+        pos[i][2] = .25 * dvz_rand_normal();
+    }
+    int res = dvz_demo_scatter(N, pos);
+    FREE(pos);
+    return res;
+}
+
+static int demo_gui() { return dvz_demo_gui(); }
+
+static int demo(int argc, char** argv)
+{
+    int res = 0;
+
+    if (argc == 1)
+        putenv("DVZ_RUN_NFRAMES=5");
+
+    SWITCH_DEMO(scatter)
+    SWITCH_DEMO(gui)
+    SWITCH_DEMO(custom_visual)
+    SWITCH_DEMO(custom_graphics)
+
+    if (argc == 1)
+        unsetenv("DVZ_RUN_NFRAMES");
+
+    return res;
+}
 
 
 
@@ -75,45 +127,6 @@ static int info(int argc, char** argv)
     }
     dvz_app_destroy(app);
     return 0;
-}
-
-
-
-static int demo(int argc, char** argv)
-{
-    int res = 0;
-
-    // Default demo: scatter plot.
-    if (argc == 1)
-    {
-        const int32_t N = 50000;
-        log_info("running scatter plot demo with %d points", N);
-
-        dvec3* pos = calloc((uint32_t)N, sizeof(dvec3));
-        for (int32_t i = 0; i < N; i++)
-        {
-            pos[i][0] = .25 * dvz_rand_normal();
-            pos[i][1] = .25 * dvz_rand_normal();
-            pos[i][2] = .25 * dvz_rand_normal();
-        }
-        res = dvz_demo_scatter(N, pos);
-        FREE(pos);
-    }
-
-    // GUI demo.
-    else if (SWITCH_DEMO("gui"))
-    {
-        log_info("running Dear ImGUI demo");
-        res = dvz_demo_gui();
-    }
-
-    // Other C examples.
-    else if (SWITCH_DEMO("custom_visual"))
-        res = demo_custom_visual();
-    else if (SWITCH_DEMO("custom_graphics"))
-        res = demo_custom_graphics();
-
-    return res;
 }
 
 

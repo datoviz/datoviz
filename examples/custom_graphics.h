@@ -4,7 +4,10 @@
 
 // NOTE: ignore this.
 #ifndef SCREENSHOT
-#define SCREENSHOT(name)
+#define SCREENSHOT
+#endif
+#ifndef NFRAMES
+#define NFRAMES 0
 #endif
 #ifndef SPIRV_DIR
 #define SPIRV_DIR ""
@@ -105,8 +108,8 @@ static int demo_custom_graphics()
         FREE(vertices);
     }
 
-    SCREENSHOT("custom_graphics")
-    dvz_app_run(app, 0);
+    SCREENSHOT
+    dvz_app_run(app, NFRAMES);
 
     // dvz_graphics_destroy(graphics);
     dvz_app_destroy(app);

@@ -4,8 +4,13 @@
 
 // NOTE: ignore this.
 #ifndef SCREENSHOT
-#define SCREENSHOT(name)
+#define SCREENSHOT
 #endif
+#ifndef NFRAMES
+#define NFRAMES 0
+#endif
+
+
 
 // We include the library header file.
 #include <datoviz/datoviz.h>
@@ -137,8 +142,8 @@ static int demo_custom_visual()
         dvz_visual_data(visual, DVZ_PROP_LENGTH, 0, 1, (float[]){.25});
     }
 
-    SCREENSHOT("custom_visual")
-    dvz_app_run(app, 0);
+    SCREENSHOT
+    dvz_app_run(app, NFRAMES);
 
     dvz_app_destroy(app);
     return 0;
