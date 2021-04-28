@@ -77,7 +77,17 @@ then
             dump="VK_LAYER_LUNARG_api_dump"
         fi
     fi
-    VK_INSTANCE_LAYERS=$dump ./build/datoviz test $2
+    # VK_INSTANCE_LAYERS=$dump ./build/datoviz test $2
+
+    # When running all tests, also compile and run the standalone examples.
+    if [ -z "$2" ]
+    then
+        cd examples/standalone/
+        for filename in standalone_*.c*; do
+            ./build.sh $filename automated
+        done
+        cd ..
+    fi
 fi
 
 if [ $1 == "demo" ]

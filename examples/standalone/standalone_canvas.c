@@ -147,9 +147,25 @@ int main(int argc, char** argv)
     // the triangle.
     dvz_event_callback(canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, _triangle_refill, NULL);
 
-    // dvz_app_run(app, 5);
-    // dvz_screenshot_file(canvas, "../docs/images/screenshots/standalone_canvas.png");
+
+
+// NOTE: ignore this part, it is exclusively for the building and testing process.
+#ifdef AUTOMATED
+    log_info("saving standalone canvas screenshot");
+
+    // Instead of opening a live interactive canvas, save a screenshot and close the canvas
+    // immediately.
+    dvz_app_run(app, 5);
+    dvz_screenshot_file(canvas, "../../docs/images/screenshots/standalone_canvas.png");
+#else
+    log_info("running standalone canvas example");
+
+    // We run the application. The last argument is the number of frames to run, or 0 for infinite
+    // loop (stop when escape is pressed or when the window is closed).
     dvz_app_run(app, 0);
+#endif
+
+
 
     // We need to clean up all objects handled by Datoviz at the end.
     dvz_graphics_destroy(&graphics);

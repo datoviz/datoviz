@@ -282,8 +282,9 @@ int main(int argc, char** argv)
 
     // We make a screenshot and save it to a file.
     uint8_t* rgb = screenshot(&image);
-    dvz_write_png("triangle.png", width, height, rgb);
-    log_info("offscreen rendered image written to: `triangle.png`");
+    const char* path = "../../docs/images/screenshots/standalone_vklite.png";
+    dvz_write_png(path, width, height, rgb);
+    log_info("offscreen rendered image written to: `%s`", path);
 
     // We need to clean up all objects handled by Datoviz at the end.
     {

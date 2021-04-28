@@ -13,13 +13,13 @@ int main(int argc, char** argv)
     // Create a singleton application with a GLFW backend.
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
 
-    // Use the first detected GPU. The last argument is the GPU index.
+    // Automatically choose the most capable GPU.
     DvzGpu* gpu = dvz_gpu_best(app);
 
     // Create a new canvas with the size specified. The last argument is for optional flags.
     DvzCanvas* canvas = dvz_canvas(gpu, 1280, 1024, 0);
 
-    // White background color.
+    // We use a white background color (r, g, b floating-point values in [0, 1]).
     dvz_canvas_clear_color(canvas, 1, 1, 1);
 
     // Create a new scene, which allows to define several subplots (panels) organized within a
@@ -69,14 +69,25 @@ int main(int argc, char** argv)
         FREE(size);
     }
 
+
+
+// NOTE: ignore this part, it is exclusively for the building and testing process.
+#ifdef AUTOMATED
+    log_info("saving standalone scene screenshot");
+
     // Instead of opening a live interactive canvas, save a screenshot and close the canvas
     // immediately.
-    // dvz_app_run(app, 5); dvz_screenshot_file(canvas,
-    // "../docs/images/screenshots/standalone_scene.png");
+    dvz_app_run(app, 5);
+    dvz_screenshot_file(canvas, "../../docs/images/screenshots/standalone_scene.png");
+#else
+    log_info("running standalone scene example");
 
     // We run the application. The last argument is the number of frames to run, or 0 for infinite
     // loop (stop when escape is pressed or when the window is closed).
     dvz_app_run(app, 0);
+#endif
+
+
 
     // We need to clean up all objects handled by Datoviz at the end.
     dvz_app_destroy(app);
