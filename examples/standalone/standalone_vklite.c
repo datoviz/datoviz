@@ -1,5 +1,6 @@
 /*************************************************************************************************/
 /*  Example of a standalone application using the vklite API in a canvas.                        */
+/*  This script writes a triangle.png file rendered with the GPU.                                */
 /*************************************************************************************************/
 
 /// Import the library public header.

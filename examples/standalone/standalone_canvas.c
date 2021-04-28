@@ -1,15 +1,20 @@
 /*************************************************************************************************/
 /*  Example of a standalone application using the vklite API in a canvas.                        */
+/*  This script opens a live canvas with a triangle rendered on the GPU.                         */
 /*************************************************************************************************/
 
 /// Import the library public header.
 #include <datoviz/datoviz.h>
 
-// Objects we'll need in the refill callback. Using static global variables is not a good practice
-// in real-world applications...
+
+
+// Objects we'll need in the refill callback.
+// NOTE: Using static global variables in production code is bad practice.
 static DvzBufferRegions vertex_buffer;
 static DvzGraphics graphics;
 static DvzBindings bindings;
+
+
 
 // Refill callback. This function is called by the canvas whenever it needs to recreate its command
 // buffers, for example when initializing the canvas, and when resizing it.
@@ -52,6 +57,8 @@ static void _triangle_refill(DvzCanvas* canvas, DvzEvent ev)
     dvz_cmd_end(cmds, idx);
 }
 
+
+
 int main(int argc, char** argv)
 {
     // We create a singleton application with a GLFW backend.
@@ -63,70 +70,77 @@ int main(int argc, char** argv)
     // We create a new canvas with the size specified. The last argument is for optional flags.
     DvzCanvas* canvas = dvz_canvas(gpu, 1280, 1024, 0);
 
-    // We create a new graphics pipeline.
-    graphics = dvz_graphics(gpu);
+    // Graphics pipeline.
+    {
+        // We create a new graphics pipeline.
+        graphics = dvz_graphics(gpu);
 
-    // We set the renderpass.
-    dvz_graphics_renderpass(&graphics, &canvas->renderpass, 0);
+        // We set the renderpass.
+        dvz_graphics_renderpass(&graphics, &canvas->renderpass, 0);
 
-    // We specify the primitive.
-    dvz_graphics_topology(&graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+        // We specify the primitive.
+        dvz_graphics_topology(&graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 
-    // We set the shaders.
-    dvz_graphics_shader(&graphics, VK_SHADER_STAGE_VERTEX_BIT, "triangle.vert.spv");
-    dvz_graphics_shader(&graphics, VK_SHADER_STAGE_FRAGMENT_BIT, "triangle.frag.spv");
+        // We set the shaders.
+        dvz_graphics_shader(&graphics, VK_SHADER_STAGE_VERTEX_BIT, "triangle.vert.spv");
+        dvz_graphics_shader(&graphics, VK_SHADER_STAGE_FRAGMENT_BIT, "triangle.frag.spv");
 
-    // We specify the vertex structure size.
-    dvz_graphics_vertex_binding(&graphics, 0, sizeof(DvzVertex));
+        // We specify the vertex structure size.
+        dvz_graphics_vertex_binding(&graphics, 0, sizeof(DvzVertex));
 
-    // We specify the two vertex attributes.
-    dvz_graphics_vertex_attr(
-        &graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(DvzVertex, pos));
-    dvz_graphics_vertex_attr(
-        &graphics, 0, 1, VK_FORMAT_R8G8B8A8_UNORM, offsetof(DvzVertex, color));
+        // We specify the two vertex attributes.
+        dvz_graphics_vertex_attr(
+            &graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(DvzVertex, pos));
+        dvz_graphics_vertex_attr(
+            &graphics, 0, 1, VK_FORMAT_R8G8B8A8_UNORM, offsetof(DvzVertex, color));
 
-    // Once we've set up the graphics pipeline, we create it.
-    dvz_graphics_create(&graphics);
+        // Once we've set up the graphics pipeline, we create it.
+        dvz_graphics_create(&graphics);
+    }
 
     // We create the (empty) bindings: the shaders do not necessitate any uniform or
     // texture in this example.
     bindings = dvz_bindings(&graphics.slots, 1);
     dvz_bindings_update(&bindings);
 
-    // We create the GPU buffer holding the vertex data.
-    // NOTE: in real applications, once should use few, even a single large vertex buffer for all
-    // graphics pipelines in the application. Defining many small GPU buffers is bad practice.
+    // Vertex data and GPU buffer.
     DvzBuffer buffer = dvz_buffer(gpu);
+    {
+        // We create the GPU buffer holding the vertex data.
+        // NOTE: in real applications, once should use few, even a single large vertex buffer for
+        // all graphics pipelines in the application. Defining many small GPU buffers is bad
+        // practice.
 
-    // There will be three vertices for 1 triangle.
-    VkDeviceSize size = 3 * sizeof(DvzVertex);
-    dvz_buffer_size(&buffer, size);
+        // There will be three vertices for 1 triangle.
+        VkDeviceSize size = 3 * sizeof(DvzVertex);
+        dvz_buffer_size(&buffer, size);
 
-    // We declare that the buffer will be used as a vertex buffer.
-    dvz_buffer_usage(&buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+        // We declare that the buffer will be used as a vertex buffer.
+        dvz_buffer_usage(&buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
 
-    // The buffer should be accessible directly from the CPU in this example (bad practice in real
-    // applications).
-    dvz_buffer_memory(
-        &buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+        // The buffer should be accessible directly from the CPU in this example (bad practice in
+        // real applications).
+        dvz_buffer_memory(
+            &buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-    // Once set up, we create the GPU buffer.
-    dvz_buffer_create(&buffer);
+        // Once set up, we create the GPU buffer.
+        dvz_buffer_create(&buffer);
 
-    // We define a view (buffer region) on the entire buffer.
-    vertex_buffer = dvz_buffer_regions(&buffer, 1, 0, size, 0);
+        // We define a view (buffer region) on the entire buffer.
+        vertex_buffer = dvz_buffer_regions(&buffer, 1, 0, size, 0);
 
-    // Define the vertex data.
-    // NOTE: in this example, we don't include the common.glsl shader and we use raw Vulkan
-    // shaders. So the Vulkan coordinate system is used, with the y axis going down.
-    DvzVertex data[3] = {
-        {{-1, +1, 0}, {255, 0, 0, 255}}, // bottom left, red
-        {{+1, +1, 0}, {0, 255, 0, 255}}, // bottom right, green
-        {{+0, -1, 0}, {0, 0, 255, 255}}, // top, blue
-    };
+        // Define the vertex data.
+        // NOTE: in this example, we don't include the common.glsl shader and we use raw Vulkan
+        // shaders. So the Vulkan coordinate system is used, with the y axis going down.
+        DvzVertex data[3] = {
+            {{-1, +1, 0}, {255, 0, 0, 255}}, // bottom left, red
+            {{+1, +1, 0}, {0, 255, 0, 255}}, // bottom right, green
+            {{+0, -1, 0}, {0, 0, 255, 255}}, // top, blue
+        };
 
-    // We upload the data to the GPU vertex buffer.
-    dvz_buffer_regions_upload(&vertex_buffer, 0, data);
+        // We upload the data to the GPU vertex buffer.
+        dvz_buffer_regions_upload(&vertex_buffer, 0, data);
+    }
 
     // We set the command buffer refill callback, the function that will be called whenever the
     // canvas needs to refill its command buffers. The callback generates the GPU commands to draw
