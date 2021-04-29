@@ -37,6 +37,7 @@ ctypedef np.uint32_t UINT
 # -------------------------------------------------------------------------------------------------
 # Constants
 # -------------------------------------------------------------------------------------------------
+# region  # folding in VSCode
 
 DEFAULT_WIDTH = 1024
 DEFAULT_HEIGHT = 768
@@ -384,6 +385,8 @@ _MARKER_TYPES = {
 
 _CUSTOM_COLORMAPS = {}
 
+#endregion
+
 
 
 # -------------------------------------------------------------------------------------------------
@@ -391,12 +394,15 @@ _CUSTOM_COLORMAPS = {}
 # -------------------------------------------------------------------------------------------------
 
 def _key_name(key):
+    """From key code used by Datoviz to key name."""
     return _KEYS.get(key, key)
 
 def _button_name(button):
+    """From button code used by Datoviz to button name."""
     return _BUTTONS.get(button, None)
 
 def _get_modifiers(mods):
+    """From modifier flag to a tuple of strings."""
     mods_py = []
     if mods & cv.DVZ_KEY_MODIFIER_SHIFT:
         mods_py.append('shift')
@@ -408,40 +414,23 @@ def _get_modifiers(mods):
         mods_py.append('super')
     return tuple(mods_py)
 
-# def _mouse_state(state):
-#     return _MOUSE_STATES.get(state, None)
-
 def _get_prop(name):
+    """From prop name to prop enum for Datoviz."""
     return _PROPS[name]
 
 
 
 # -------------------------------------------------------------------------------------------------
-# Util functions
+# Python event callbacks
 # -------------------------------------------------------------------------------------------------
 
-def _validate_data(dt, nc, data):
-    data = data.astype(dt)
-    if not data.flags['C_CONTIGUOUS']:
-        data = np.ascontiguousarray(data)
-    if not hasattr(nc, '__len__'):
-        nc = (nc,)
-    nd = len(nc)  # expected dimension of the data - 1
-    if nc[0] == 1 and data.ndim == 1:
-        data = data.reshape((-1, 1))
-    if data.ndim < nd + 1:
-        data = data[np.newaxis, :]
-    assert data.ndim == nd + 1, f"Incorrect array dimension {data.shape}, nc={nc}"
-    assert data.shape[1:] == nc, f"Incorrect array shape {data.shape} instead of {nc}"
-    return data
-
-
-
-cdef _get_ev_args(cv.DvzEvent c_ev):
+cdef _get_event_args(cv.DvzEvent c_ev):
+    """Prepare the arguments to the Python event callbacks from the Datoviz DvzEvent struct."""
     cdef float* fvalue
     cdef int* ivalue
     cdef bint* bvalue
     dt = c_ev.type
+
     # GUI events.
     if dt == cv.DVZ_EVENT_GUI:
         if c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_SLIDER_FLOAT:
@@ -462,16 +451,19 @@ cdef _get_ev_args(cv.DvzEvent c_ev):
         elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_BUTTON:
             bvalue = <bint*>c_ev.u.g.control.value
             return (bvalue[0],), {}
+
     # Key events.
     elif dt == cv.DVZ_EVENT_KEY_PRESS or dt == cv.DVZ_EVENT_KEY_RELEASE:
         key = _key_name(c_ev.u.k.key_code)
         modifiers = _get_modifiers(c_ev.u.k.modifiers)
         return (key, modifiers), {}
+
     # Mouse button events.
     elif dt == cv.DVZ_EVENT_MOUSE_PRESS or dt == cv.DVZ_EVENT_MOUSE_RELEASE:
         button = _button_name(c_ev.u.b.button)
         modifiers = _get_modifiers(c_ev.u.b.modifiers)
         return (button, modifiers), {}
+
     # Mouse button events.
     elif dt == cv.DVZ_EVENT_MOUSE_CLICK or dt == cv.DVZ_EVENT_MOUSE_DOUBLE_CLICK:
         x = c_ev.u.c.pos[0]
@@ -480,12 +472,14 @@ cdef _get_ev_args(cv.DvzEvent c_ev):
         modifiers = _get_modifiers(c_ev.u.c.modifiers)
         dbl = c_ev.u.c.double_click
         return (x, y), dict(button=button, modifiers=modifiers)  #, double_click=dbl)
+
     # Mouse move event.
     elif dt == cv.DVZ_EVENT_MOUSE_MOVE:
         x = c_ev.u.m.pos[0]
         y = c_ev.u.m.pos[1]
         modifiers = _get_modifiers(c_ev.u.m.modifiers)
         return (x, y), dict(modifiers=modifiers)
+
     # Mouse wheel event.
     elif dt == cv.DVZ_EVENT_MOUSE_WHEEL:
         x = c_ev.u.w.pos[0]
@@ -494,31 +488,39 @@ cdef _get_ev_args(cv.DvzEvent c_ev):
         dy = c_ev.u.w.dir[1]
         modifiers = _get_modifiers(c_ev.u.w.modifiers)
         return (x, y, dx, dy), dict(modifiers=modifiers)
+
     return (), {}
 
 
 
-# NOTE: this function may run in a background thread if using async callbacks
-# It should not acquire the GIL
 cdef _wrapped_callback(cv.DvzCanvas* c_canvas, cv.DvzEvent c_ev):
+    """C callback function that wraps a Python callback function."""
+
+    # NOTE: this function may run in a background thread if using async callbacks
+    # It should not acquire the GIL.
+
     cdef object tup
     if c_ev.user_data != NULL:
+
+        # The Python function and its arguments are wrapped in this Python object.
         tup = <object>c_ev.user_data
 
         # For each type of event, get the arguments to the function
-        ev_args, ev_kwargs = _get_ev_args(c_ev)
+        ev_args, ev_kwargs = _get_event_args(c_ev)
 
+        # Recover the Python function and arguments.
         f, args = tup
 
         # This is the control type the callback was registered for.
         name = args[0] if args else None
 
-        # NOTE: only call the callback if the raised GUI event is for that control.
+        # NOTE: we only call the callback if the raised GUI event is for that control.
         dt = c_ev.type
         if dt == cv.DVZ_EVENT_GUI:
             if c_ev.u.g.control.name != name:
                 return
 
+        # We run the registered Python function on the event arguments.
         try:
             f(*ev_args, **ev_kwargs)
         except Exception as e:
@@ -529,7 +531,9 @@ cdef _wrapped_callback(cv.DvzCanvas* c_canvas, cv.DvzEvent c_ev):
 cdef _add_event_callback(
     cv.DvzCanvas* c_canvas, cv.DvzEventType evtype, double param, f, args,
     cv.DvzEventMode mode=cv.DVZ_EVENT_MODE_SYNC):
+    """Register a Python callback function using the Datoviz C API."""
 
+    # Create a tuple with the Python function, and the arguments.
     cdef void* ptr_to_obj
     tup = (f, args)
 
@@ -538,6 +542,7 @@ cdef _add_event_callback(
     # C callback function.
     Py_INCREF(tup)
 
+    # Call the Datoviz C API to register the C-wrapped callback function.
     ptr_to_obj = <void*>tup
     cv.dvz_event_callback(
         c_canvas, evtype, param, mode,
@@ -574,10 +579,48 @@ def colormap(np.ndarray[DOUBLE, ndim=1] values, vmin=None, vmax=None, cmap=None,
 
 
 # -------------------------------------------------------------------------------------------------
+# Util functions
+# -------------------------------------------------------------------------------------------------
+
+def _validate_data(dt, nc, data):
+    """Ensure a NumPy array has a given dtype and shape and is contiguous."""
+    data = data.astype(dt)
+    if not data.flags['C_CONTIGUOUS']:
+        data = np.ascontiguousarray(data)
+    if not hasattr(nc, '__len__'):
+        nc = (nc,)
+    nd = len(nc)  # expected dimension of the data - 1
+    if nc[0] == 1 and data.ndim == 1:
+        data = data.reshape((-1, 1))
+    if data.ndim < nd + 1:
+        data = data[np.newaxis, :]
+    assert data.ndim == nd + 1, f"Incorrect array dimension {data.shape}, nc={nc}"
+    assert data.shape[1:] == nc, f"Incorrect array shape {data.shape} instead of {nc}"
+    assert data.dtype == dt, f"Array dtype is {data.dtype} instead of {dt}"
+    return data
+
+
+
+cdef _canvas_flags(show_fps=None, pick=None, high_dpi=None):
+    cdef int flags = 0
+    flags |= cv.DVZ_CANVAS_FLAGS_IMGUI
+    if show_fps:
+        flags |= cv.DVZ_CANVAS_FLAGS_FPS
+    if pick:
+        flags |= cv.DVZ_CANVAS_FLAGS_PICK
+    if high_dpi:
+        flags |= cv.DVZ_CANVAS_FLAGS_DPI_SCALE_200
+    return flags
+
+
+
+# -------------------------------------------------------------------------------------------------
 # App
 # -------------------------------------------------------------------------------------------------
 
 cdef class App:
+    """Singleton object that gives access to the GPU, context, and allows to create
+    GPU objects and canvases."""
 
     cdef cv.DvzApp* _c_app
     cdef cv.DvzGpu* _c_gpu
@@ -585,6 +628,7 @@ cdef class App:
     _canvases = []
 
     def __cinit__(self):
+        """Create a Datoviz app and automatically select the best GPU."""
         self._c_app = cv.dvz_app(cv.DVZ_BACKEND_GLFW)
         if self._c_app is NULL:
             raise MemoryError()
@@ -596,6 +640,7 @@ cdef class App:
         self.destroy()
 
     def destroy(self):
+        """Destroy the app and all canvases."""
         if self._c_app is not NULL:
             for c in self._canvases:
                 c.destroy()
@@ -603,16 +648,23 @@ cdef class App:
             self._c_app = NULL
 
     def canvas(
-            self, int width=DEFAULT_WIDTH, int height=DEFAULT_HEIGHT, int rows=1, int cols=1,
-            bint show_fps=False, clear_color=None, bint pick=False, bint high_dpi=False):
+            self,
+            int width=DEFAULT_WIDTH,
+            int height=DEFAULT_HEIGHT,
+            int rows=1,
+            int cols=1,
+            bint show_fps=False,
+            bint pick=False,
+            bint high_dpi=False,
+            clear_color=None,
+        ):
+        """Create a new canvas."""
+
+        # Canvas flags.
         cdef int flags = 0
-        flags |= cv.DVZ_CANVAS_FLAGS_IMGUI
-        if show_fps:
-            flags |= cv.DVZ_CANVAS_FLAGS_FPS
-        if pick:
-            flags |= cv.DVZ_CANVAS_FLAGS_PICK
-        if high_dpi:
-            flags |= cv.DVZ_CANVAS_FLAGS_DPI_SCALE_200
+        flags = _canvas_flags(show_fps=show_fps, pick=pick, high_dpi=high_dpi)
+
+        # Create the canvas using the Datoviz C API.
         c_canvas = cv.dvz_canvas(self._c_gpu, width, height, flags)
 
         # Canvas clear color.
@@ -621,6 +673,8 @@ cdef class App:
 
         if c_canvas is NULL:
             raise MemoryError()
+
+        # Create and return the Canvas Cython wrapper.
         c = Canvas()
         c.create(self, c_canvas, rows, cols, clear_color)
         self._canvases.append(c)
