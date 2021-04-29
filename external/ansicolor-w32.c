@@ -358,4 +358,6 @@ _fputs_w32(FILE* fp, const char* s) {
   r += __write_w32(fp, "\n");
   return r;
 }
+#else
+#include <stdio.h>
 #endif

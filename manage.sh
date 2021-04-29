@@ -36,7 +36,8 @@ then
     cd build && \
     cmake .. -GNinja -DSWIFTSHADER=1 && \
     ninja && \
-    cd ..
+    cd .. && \
+    LD_LIBRARY_PATH=data/swiftshader/linux ./build/datoviz test
 fi
 
 if [ $1 == "gencython" ]
