@@ -104,9 +104,13 @@ int test_canvas_blank(TestContext* tc)
     DvzGpu* gpu = dvz_gpu_best(app);
 
     DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
-    ASSERT(canvas->window != NULL);
     ASSERT(canvas->app != NULL);
-    ASSERT(canvas->window->app != NULL);
+
+    if (app->backend != DVZ_BACKEND_OFFSCREEN)
+    {
+        ASSERT(canvas->window != NULL);
+        ASSERT(canvas->window->app != NULL);
+    }
 
     uvec2 size = {0};
 
@@ -248,7 +252,7 @@ int test_canvas_events(TestContext* tc)
     dvz_event_callback( //
         canvas, DVZ_EVENT_INIT, 0, DVZ_EVENT_MODE_SYNC, _init_callback, &events);
     dvz_event_callback( //
-        canvas, DVZ_EVENT_TIMER, .001, DVZ_EVENT_MODE_SYNC, _timer_callback, &events);
+        canvas, DVZ_EVENT_TIMER, .00001, DVZ_EVENT_MODE_SYNC, _timer_callback, &events);
     dvz_event_callback( //
         canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, _frame_callback, &events);
     dvz_event_callback( //
@@ -382,6 +386,10 @@ static void _screencast_callback(DvzCanvas* canvas, DvzEvent ev)
 int test_canvas_screencast(TestContext* tc)
 {
     DvzApp* app = tc->app;
+
+    // TODO: fix screencast/video in offscreen mode
+    OFFSCREEN_SKIP
+
     DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
     dvz_canvas_clear_color(canvas, 0, 1, 0);
@@ -420,6 +428,10 @@ static void _video_read_callback(int frame_idx, int width, int height, int wrap,
 int test_canvas_video(TestContext* tc)
 {
     DvzApp* app = tc->app;
+
+    // TODO: fix screencast/video in offscreen mode
+    OFFSCREEN_SKIP
+
     DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
     dvz_canvas_clear_color(canvas, 1, 0, 0);
@@ -488,6 +500,9 @@ int test_canvas_triangle_1(TestContext* tc)
 int test_canvas_triangle_resize(TestContext* tc)
 {
     DvzApp* app = tc->app;
+
+    OFFSCREEN_SKIP
+
     DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
     TestVisual visual = triangle(canvas, "");
@@ -915,10 +930,10 @@ static void triangle_append(DvzCanvas* canvas, DvzEvent ev)
     TestVisual* visual = ev.user_data;
     ASSERT(visual != NULL);
 
-    if (ev.u.t.idx >= 8)
+    if (ev.u.f.idx >= 8)
         return;
 
-    const uint32_t N = 3 + ev.u.t.idx;
+    const uint32_t N = 3 + ev.u.f.idx;
     visual->n_vertices = 3 * N;
     TestVertex* data = calloc(visual->n_vertices, sizeof(TestVertex));
     float t = 0, t2 = 0;
@@ -968,8 +983,7 @@ int test_canvas_triangle_append(TestContext* tc)
 
     // Run.
     dvz_event_callback(canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, triangle_refill, &visual);
-    dvz_event_callback(
-        canvas, DVZ_EVENT_TIMER, .01, DVZ_EVENT_MODE_SYNC, triangle_append, &visual);
+    dvz_event_callback(canvas, DVZ_EVENT_FRAME, 0, DVZ_EVENT_MODE_SYNC, triangle_append, &visual);
 
     dvz_app_run(app, 30);
 

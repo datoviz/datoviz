@@ -25,6 +25,14 @@ END_INCL_NO_WARN
     }
 
 
+#define OFFSCREEN_SKIP                                                                            \
+    if (app->backend == DVZ_BACKEND_OFFSCREEN)                                                    \
+    {                                                                                             \
+        log_warn("offscreen backend is active: skipping test");                                   \
+        return 0;                                                                                 \
+    }
+
+
 
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */

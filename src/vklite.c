@@ -16,6 +16,15 @@ DvzApp* dvz_app(DvzBackend backend)
     DvzApp* app = calloc(1, sizeof(DvzApp));
     dvz_obj_init(&app->obj);
     app->obj.type = DVZ_OBJECT_TYPE_APP;
+
+#if SWIFTSHADER
+    if (backend != DVZ_BACKEND_OFFSCREEN)
+    {
+        log_warn("when the library is compiled for switshader, offscreen rendering is mandatory");
+        backend = DVZ_BACKEND_OFFSCREEN;
+    }
+#endif
+
     app->backend = backend;
 
     // Initialize the global clock.

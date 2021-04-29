@@ -787,6 +787,13 @@ DvzCanvas* dvz_canvas(DvzGpu* gpu, uint32_t width, uint32_t height, int flags)
     ASSERT(gpu != NULL);
     bool offscreen = gpu->app->backend == DVZ_BACKEND_GLFW ? false : true;
     bool overlay = (flags & DVZ_CANVAS_FLAGS_IMGUI) > 0;
+
+#if SWIFTSHADER
+    log_warn("swiftshader mode is active, forcing offscreen rendering");
+    offscreen = true;
+    overlay = false;
+#endif
+
     return _canvas(gpu, width, height, offscreen, overlay, flags);
 }
 
@@ -1093,12 +1100,14 @@ void dvz_event_callback(
 {
     ASSERT(canvas != NULL);
 
+#if !SWIFTSHADER
     if (type == DVZ_EVENT_IMGUI && !canvas->overlay)
     {
-        log_error("the canvas must be created with the DVZ_CANVAS_FLAGS_IMGUI flag before a GUI "
-                  "can be shown");
+        log_warn("the canvas must be created with the DVZ_CANVAS_FLAGS_IMGUI flag before a GUI "
+                 "can be shown");
         return;
     }
+#endif
 
     DvzEventCallbackRegister r = {0};
     r.callback = callback;
@@ -2311,6 +2320,13 @@ void dvz_canvas_frame_submit(DvzCanvas* canvas)
 
 void dvz_app_run(DvzApp* app, uint64_t frame_count)
 {
+    // HACK: prevent infinite loop with offscreen rendering.
+    if (app->backend == DVZ_BACKEND_OFFSCREEN && frame_count == 0)
+    {
+        log_warn("infinite rendering loop forbidden with the offscreen backend");
+        frame_count = 10;
+    }
+
     if (frame_count > 1)
         log_debug("start main loop with %d frames", frame_count);
     ASSERT(app != NULL);

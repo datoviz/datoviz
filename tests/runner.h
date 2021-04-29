@@ -119,7 +119,11 @@ static void _fixture_app(TestContext* tc)
     ASSERT(tc != NULL);
     if (tc->app == NULL)
     {
+#if SWIFTSHADER
+        tc->app = dvz_app(DVZ_BACKEND_OFFSCREEN);
+#else
         tc->app = dvz_app(DVZ_BACKEND_GLFW);
+#endif
     }
     else
     {

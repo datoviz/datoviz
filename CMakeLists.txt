@@ -71,6 +71,8 @@ if (WIN32 OR APPLE)
 endif()
 
 
+# Flag to compile with support for swiftshader, which makes mandatory the use of offscreen
+# rendering. All features related to swapchains etc are forbidden.
 set(USE_SWIFTSHADER 0)
 if(SWIFTSHADER)
 set(USE_SWIFTSHADER 1)

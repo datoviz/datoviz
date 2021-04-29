@@ -124,7 +124,7 @@ static int test(int argc, char** argv)
 
 static int info(int argc, char** argv)
 {
-    DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
+    DvzApp* app = dvz_app(DVZ_BACKEND_OFFSCREEN);
     for (uint32_t i = 0; i < app->gpus.count; i++)
     {
         DvzGpu* gpu = dvz_gpu(app, i);
