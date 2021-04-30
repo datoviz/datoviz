@@ -23,6 +23,7 @@ then
         export CC=/usr/bin/clang
         export CXX=/usr/bin/clang++
     fi
+    ln -sf $(pwd)/data/screenshots $(pwd)/docs/images/ &&
     mkdir -p build &&
     cd build && \
     cmake .. -GNinja && \
@@ -133,7 +134,6 @@ fi
 
 if [ $1 == "doc" ]
 then
-    ln -sf $(pwd)/data/screenshots $(pwd)/docs/images/
     python3 utils/gendoc.py examples
     mkdocs build
 fi
