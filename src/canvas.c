@@ -2205,7 +2205,7 @@ void dvz_canvas_stop(DvzCanvas* canvas)
 /*  Event loop                                                                                   */
 /*************************************************************************************************/
 
-void dvz_canvas_frame(DvzCanvas* canvas)
+static void _canvas_frame_logic(DvzCanvas* canvas)
 {
     ASSERT(canvas != NULL);
     ASSERT(canvas->app != NULL);
@@ -2318,6 +2318,157 @@ void dvz_canvas_frame_submit(DvzCanvas* canvas)
 
 
 
+static void _process_gpu_transfers(DvzApp* app)
+{
+    // NOTE: this has never been tested with multiple GPUs yet.
+    DvzContainerIterator iterator = dvz_container_iterator(&app->gpus);
+    DvzGpu* gpu = NULL;
+    while (iterator.item != NULL)
+    {
+        gpu = iterator.item;
+        if (!dvz_obj_is_created(&gpu->obj))
+            break;
+
+        // Pending transfers.
+        ASSERT(gpu->context != NULL);
+        // NOTE: the function below uses hard GPU synchronization primitives
+        dvz_process_transfers(gpu->context);
+
+        // IMPORTANT: we need to wait for the present queue to be idle, otherwise the GPU hangs
+        // when waiting for fences (not sure why). The problem only arises when using different
+        // queues for command buffer submission and swapchain present. There has be a better
+        // way to fix this.
+        if (gpu->queues.queues[DVZ_DEFAULT_QUEUE_PRESENT] != VK_NULL_HANDLE &&
+            gpu->queues.queues[DVZ_DEFAULT_QUEUE_PRESENT] !=
+                gpu->queues.queues[DVZ_DEFAULT_QUEUE_RENDER])
+        // && iter % DVZ_MAX_SWAPCHAIN_IMAGES == 0)
+        {
+            dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_PRESENT);
+        }
+
+        dvz_container_iter(&iterator);
+    }
+}
+
+
+
+int dvz_canvas_frame(DvzCanvas* canvas)
+{
+    // Return 0? all good, the canvas is still active.
+    // Return 1? the frame was not successfully displayed, should try again.
+
+    ASSERT(canvas != NULL);
+    DvzApp* app = canvas->app;
+    ASSERT(app != NULL);
+
+    // Check that the canvas is valid.
+    if (canvas->obj.status < DVZ_OBJECT_STATUS_CREATED)
+        return 1;
+    ASSERT(canvas->obj.status >= DVZ_OBJECT_STATUS_CREATED);
+
+    // INIT event at the first frame
+    if (canvas->frame_idx == 0)
+    {
+        // Call RESIZE callbacks at initialization.
+        _event_resize(canvas);
+
+        DvzEvent ev = {0};
+        ev.type = DVZ_EVENT_INIT;
+        _event_produce(canvas, ev);
+    }
+
+    // Poll events.
+    if (canvas->window != NULL)
+        dvz_window_poll_events(canvas->window);
+
+    // NOTE: swapchain image acquisition happens here
+
+    // We acquire the next swapchain image.
+    // NOTE: this call modifies swapchain->img_idx
+    if (!canvas->offscreen)
+        dvz_swapchain_acquire(
+            &canvas->swapchain, &canvas->sem_img_available, canvas->cur_frame, NULL, 0);
+
+    // Wait for fence.
+    dvz_fences_wait(&canvas->fences_flight, canvas->swapchain.img_idx);
+
+    // If there is a problem with swapchain image acquisition, wait and try again later.
+    if (canvas->swapchain.obj.status == DVZ_OBJECT_STATUS_INVALID)
+    {
+        log_trace("swapchain image acquisition failed, waiting and skipping this frame");
+        dvz_gpu_wait(canvas->gpu);
+
+        // dvz_container_iter(&iterator);
+        // continue;
+        return 1;
+    }
+
+    // If the swapchain needs to be recreated (for example, after a resize), do it.
+    if (canvas->swapchain.obj.status == DVZ_OBJECT_STATUS_NEED_RECREATE)
+    {
+        log_trace("swapchain image acquisition failed, recreating the canvas");
+
+        // Recreate the canvas.
+        dvz_canvas_recreate(canvas);
+
+        // Update the DvzViewport struct and call RESIZE callbacks.
+        _event_resize(canvas);
+        canvas->resized = true;
+        if (canvas->screencast != NULL)
+            log_error("resizing is not supported during a screencast");
+
+        // Refill the canvas after the DvzViewport has been updated.
+        // _refill_canvas(canvas, UINT32_MAX);
+        dvz_canvas_to_refill(canvas);
+
+        // n_canvas_active++;
+        // dvz_container_iter(&iterator);
+        // continue;
+        return 0;
+    }
+
+    // Destroy the canvas if needed.
+    if (canvas->window != NULL)
+    {
+        if (backend_window_should_close(app->backend, canvas->window->backend_window))
+            canvas->window->obj.status = DVZ_OBJECT_STATUS_NEED_DESTROY;
+        if (canvas->window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
+            canvas->obj.status = DVZ_OBJECT_STATUS_NEED_DESTROY;
+    }
+    if (canvas->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
+    {
+        log_trace("destroying canvas");
+
+        // Stop the transfer queue.
+        dvz_event_stop(canvas);
+
+        // Wait for all GPUs to be idle.
+        dvz_app_wait(app);
+
+        // Destroy the canvas.
+        dvz_canvas_destroy(canvas);
+
+        // dvz_container_iter(&iterator);
+        // continue;
+        return 1;
+    }
+
+    // Frame logic.
+    _canvas_frame_logic(canvas);
+    canvas->resized = false;
+
+    // Submit the command buffers and swapchain logic.
+    // log_trace("submitting frame for canvas #%d", canvas_idx);
+    dvz_canvas_frame_submit(canvas);
+
+    canvas->frame_idx++;
+
+    // n_canvas_active++;
+    return 0;
+}
+
+
+
 void dvz_app_run(DvzApp* app, uint64_t frame_count)
 {
     // HACK: prevent infinite loop with offscreen rendering.
@@ -2351,138 +2502,18 @@ void dvz_app_run(DvzApp* app, uint64_t frame_count)
         {
             canvas = (DvzCanvas*)iterator.item;
             ASSERT(canvas != NULL);
-            if (canvas->obj.status < DVZ_OBJECT_STATUS_CREATED)
-            {
-                dvz_container_iter(&iterator);
-                continue;
-            }
-            ASSERT(canvas->obj.status >= DVZ_OBJECT_STATUS_CREATED);
 
-            // INIT event at the first frame
-            if (canvas->frame_idx == 0)
-            {
-                // Call RESIZE callbacks at initialization.
-                _event_resize(canvas);
-
-                DvzEvent ev = {0};
-                ev.type = DVZ_EVENT_INIT;
-                _event_produce(canvas, ev);
-            }
-
-            // Poll events.
-            if (canvas->window != NULL)
-                dvz_window_poll_events(canvas->window);
-
-            // NOTE: swapchain image acquisition happens here
-
-            // We acquire the next swapchain image.
-            // NOTE: this call modifies swapchain->img_idx
-            if (!canvas->offscreen)
-                dvz_swapchain_acquire(
-                    &canvas->swapchain, &canvas->sem_img_available, canvas->cur_frame, NULL, 0);
-
-            // Wait for fence.
-            dvz_fences_wait(&canvas->fences_flight, canvas->swapchain.img_idx);
-
-            // If there is a problem with swapchain image acquisition, wait and try again later.
-            if (canvas->swapchain.obj.status == DVZ_OBJECT_STATUS_INVALID)
-            {
-                log_trace("swapchain image acquisition failed, waiting and skipping this frame");
-                dvz_gpu_wait(canvas->gpu);
-                dvz_container_iter(&iterator);
-                continue;
-            }
-
-            // If the swapchain needs to be recreated (for example, after a resize), do it.
-            if (canvas->swapchain.obj.status == DVZ_OBJECT_STATUS_NEED_RECREATE)
-            {
-                log_trace("swapchain image acquisition failed, recreating the canvas");
-
-                // Recreate the canvas.
-                dvz_canvas_recreate(canvas);
-
-                // Update the DvzViewport struct and call RESIZE callbacks.
-                _event_resize(canvas);
-                canvas->resized = true;
-                if (canvas->screencast != NULL)
-                    log_error("resizing is not supported during a screencast");
-
-                // Refill the canvas after the DvzViewport has been updated.
-                // _refill_canvas(canvas, UINT32_MAX);
-                dvz_canvas_to_refill(canvas);
-
+            // Run and present the next canvas frame, and count the canvas as active if the
+            // presentation was successfull.
+            if (dvz_canvas_frame(canvas) == 0)
                 n_canvas_active++;
-                dvz_container_iter(&iterator);
-                continue;
-            }
 
-            // Destroy the canvas if needed.
-            if (canvas->window != NULL)
-            {
-                if (backend_window_should_close(app->backend, canvas->window->backend_window))
-                    canvas->window->obj.status = DVZ_OBJECT_STATUS_NEED_DESTROY;
-                if (canvas->window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
-                    canvas->obj.status = DVZ_OBJECT_STATUS_NEED_DESTROY;
-            }
-            if (canvas->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
-            {
-                log_trace("destroying canvas");
-
-                // Stop the transfer queue.
-                dvz_event_stop(canvas);
-
-                // Wait for all GPUs to be idle.
-                dvz_app_wait(app);
-
-                // Destroy the canvas.
-                dvz_canvas_destroy(canvas);
-                dvz_container_iter(&iterator);
-                continue;
-            }
-
-            // Frame logic.
-            dvz_canvas_frame(canvas);
-            canvas->resized = false;
-
-            // Submit the command buffers and swapchain logic.
-            // log_trace("submitting frame for canvas #%d", canvas_idx);
-            dvz_canvas_frame_submit(canvas);
-            canvas->frame_idx++;
-            n_canvas_active++;
-
-
+            // Go to the next canvas.
             dvz_container_iter(&iterator);
         }
 
-        // IMPORTANT: we need to wait for the present queue to be idle, otherwise the GPU hangs
-        // when waiting for fences (not sure why). The problem only arises when using different
-        // queues for command buffer submission and swapchain present. There has be a better way
-        // to fix this.
-
-        // NOTE: this has never been tested with multiple GPUs yet.
-        iterator = dvz_container_iterator(&app->gpus);
-        DvzGpu* gpu = NULL;
-        while (iterator.item != NULL)
-        {
-            gpu = iterator.item;
-            if (!dvz_obj_is_created(&gpu->obj))
-                break;
-
-            // Pending transfers.
-            ASSERT(gpu->context != NULL);
-            // NOTE: the function below uses hard GPU synchronization primitives
-            dvz_process_transfers(gpu->context);
-
-            if (gpu->queues.queues[DVZ_DEFAULT_QUEUE_PRESENT] != VK_NULL_HANDLE &&
-                gpu->queues.queues[DVZ_DEFAULT_QUEUE_PRESENT] !=
-                    gpu->queues.queues[DVZ_DEFAULT_QUEUE_RENDER])
-            // && iter % DVZ_MAX_SWAPCHAIN_IMAGES == 0)
-            {
-                dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_PRESENT);
-            }
-
-            dvz_container_iter(&iterator);
-        }
+        // Process the pending GPU transfers after all canvases have executed their frame.
+        _process_gpu_transfers(app);
 
         // Close the application if all canvases have been closed.
         if (n_canvas_active == 0)

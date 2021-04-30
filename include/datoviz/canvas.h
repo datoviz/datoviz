@@ -31,15 +31,15 @@ extern "C" {
             0, .03, .07, 1.0f                                                                     \
         }                                                                                         \
     }
-#define DVZ_DEFAULT_IMAGE_FORMAT      VK_FORMAT_B8G8R8A8_UNORM
-#define DVZ_PICK_IMAGE_FORMAT         VK_FORMAT_R32G32B32A32_SINT
-#define DVZ_PICK_STAGING_SIZE         8
+#define DVZ_DEFAULT_IMAGE_FORMAT VK_FORMAT_B8G8R8A8_UNORM
+#define DVZ_PICK_IMAGE_FORMAT    VK_FORMAT_R32G32B32A32_SINT
+#define DVZ_PICK_STAGING_SIZE    8
 
 // HACK: support Retina — to improve...
 #if OS_MACOS
-#define DVZ_DEFAULT_DPI_SCALING       1.25f
+#define DVZ_DEFAULT_DPI_SCALING 1.25f
 #else
-#define DVZ_DEFAULT_DPI_SCALING       1.0f
+#define DVZ_DEFAULT_DPI_SCALING 1.0f
 #endif
 
 #define DVZ_MIN_SWAPCHAIN_IMAGE_COUNT 3
@@ -1208,13 +1208,14 @@ DVZ_EXPORT void dvz_event_stop(DvzCanvas* canvas);
 /*************************************************************************************************/
 
 /**
- * Process a single frame in the event loop.
+ * Process a single frame in the event loop and present it to the window.
  *
  * This function probably never needs to be called directly, unless writing a custom backend.
  *
  * @param canvas the canvas
+ * @returns 0 if the frame was successfully presented, 1 othersiwe
  */
-DVZ_EXPORT void dvz_canvas_frame(DvzCanvas* canvas);
+DVZ_EXPORT int dvz_canvas_frame(DvzCanvas* canvas);
 
 /**
  * Submit the rendered frame to the swapchain system.
