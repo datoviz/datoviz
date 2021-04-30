@@ -13,7 +13,7 @@ from datoviz import canvas, run, colormap
 
 c = canvas(show_fps=True)
 
-panel = c.panel(controller='axes')
+panel = c.scene().panel(controller='axes')
 visual = panel.visual('point')
 
 amps = np.load(ROOT / "data/misc/spikes.amps.npy")

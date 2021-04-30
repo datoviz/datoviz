@@ -39,7 +39,7 @@ uv = np.c_[bg_data, np.ones(N) * cmap / 256.0 + .5 / 256.0]
 
 # Plot the data:
 c = canvas(show_fps=False, width=1024, height=768)
-panel = c.panel(controller='arcball')
+panel = c.scene().panel(controller='arcball')
 visual = panel.visual('mesh', transform='auto')
 
 visual.data('pos', coords)

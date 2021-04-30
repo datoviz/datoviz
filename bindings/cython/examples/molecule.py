@@ -11,7 +11,7 @@ from datoviz import canvas, run, colormap
 ROOT = Path(__file__).resolve().parent.parent.parent.parent
 
 c = canvas(show_fps=False)
-panel = c.panel(controller='arcball')
+panel = c.scene().panel(controller='arcball')
 visual = panel.visual('mesh')
 visual.load_obj(str(ROOT / "data/mesh/cas9_guide.obj"))
 

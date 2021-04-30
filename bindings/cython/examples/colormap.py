@@ -12,7 +12,7 @@ from datoviz import canvas, run, colormap, custom_colormap
 
 c = canvas(show_fps=True)
 
-panel = c.panel(controller='panzoom')
+panel = c.scene().panel(controller='panzoom')
 visual = panel.visual('path')
 
 # Create a horizontal thick line.

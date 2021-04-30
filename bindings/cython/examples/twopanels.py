@@ -15,10 +15,11 @@ ms = nr.uniform(low=2, high=40, size=N)
 color = colormap(nr.rand(N), vmin=0, vmax=1, alpha=.75 * np.ones(N))
 
 
-c = canvas(rows=1, cols=2, show_fps=True)
+c = canvas(show_fps=True)
+s = c.scene(1, 2)
 
-panel0 = c.panel(0, 0, controller='axes')
-panel1 = c.panel(0, 1, controller='arcball')
+panel0 = s.panel(0, 0, controller='axes')
+panel1 = s.panel(0, 1, controller='arcball')
 
 visual = panel0.visual('marker')
 visual.data('pos', pos)

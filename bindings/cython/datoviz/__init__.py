@@ -82,7 +82,7 @@ def canvas(*args, **kwargs):
 
 
 def custom_colormap(*args, **kwargs):
-    return app().context().colormap(*args, **kwargs)
+    return app().gpu().context().colormap(*args, **kwargs)
 
 
 def context():

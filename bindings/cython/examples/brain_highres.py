@@ -25,7 +25,7 @@ import numpy as np
 from datoviz import canvas, run, colormap
 
 c = canvas(show_fps=True, width=1024, height=768)
-panel = c.panel(controller='arcball')
+panel = c.scene().panel(controller='arcball')
 visual = panel.visual('mesh', transform='auto')
 
 ROOT = Path(__file__).resolve().parent.parent.parent.parent

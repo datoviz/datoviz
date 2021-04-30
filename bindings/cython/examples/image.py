@@ -18,7 +18,7 @@ from datoviz import canvas, run, colormap, context
 ROOT = Path(__file__).resolve().parent.parent.parent.parent
 
 c = canvas(show_fps=True)
-panel = c.panel(controller='panzoom')
+panel = c.scene().panel(controller='panzoom')
 visual = panel.visual('image')
 
 # Top left, top right, bottom right, bottom left

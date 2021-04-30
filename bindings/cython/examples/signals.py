@@ -10,7 +10,7 @@ from datoviz import canvas, run, colormap
 
 c = canvas(show_fps=True)
 
-panel = c.panel(controller='panzoom')
+panel = c.scene().panel(controller='panzoom')
 visual = panel.visual('line_strip', transform=None)
 
 n_signals = 100
