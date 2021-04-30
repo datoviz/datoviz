@@ -674,6 +674,7 @@ static DvzAxesTicks dvz_ticks(double dmin, double dmax, DvzAxesContext ctx)
     if (ctx.size_viewport <= 10)
     {
         log_warn("viewport empty, skipping ticks positioning algorithm");
+        ticks = create_ticks(dmin, dmax, 2, ctx);
         return ticks;
     }
 

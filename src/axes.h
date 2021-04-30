@@ -117,13 +117,17 @@ static void _axes_upload(DvzController* controller, DvzAxisCoord coord)
 
     DvzAxesTicks* axticks = &axes->ticks[coord];
     uint32_t N = axticks->value_count;
+    ASSERT(N > 0);
 
     // Range used for normalization of the ticks (corresponds to init panzoom).
     double vmin = axes->box.p0[coord];
     double vmax = axes->box.p1[coord];
+    ASSERT(vmin < vmax);
 
+    ASSERT(axticks->values != NULL);
     // Normalize the tick values to fit in NDC range.
     double* ticks = (double*)calloc(N, sizeof(double));
+    ASSERT(ticks != NULL);
     for (uint32_t i = 0; i < N; i++)
     {
         ticks[i] = -1 + 2 * (axticks->values[i] - vmin) / (vmax - vmin);
@@ -240,6 +244,8 @@ static bool _axes_collision(DvzController* controller, DvzAxisCoord coord, dvec2
     float scale = controller->interacts[0].u.p.zoom[coord] / ctx.scale_orig;
     ASSERT(scale > 0);
     ctx.size_viewport *= scale;
+    if (ctx.size_viewport <= 0)
+        return false;
     ASSERT(ctx.size_viewport > 0);
     // ASSERT(ctx.labels != NULL);
 
