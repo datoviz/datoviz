@@ -2495,7 +2495,7 @@ void dvz_app_run(DvzApp* app, uint64_t frame_count)
     {
         n_canvas_active = 0;
 
-        // Loop over the canvases.
+        // Loop over all canvases.
         iterator = dvz_container_iterator(&app->canvases);
         canvas = NULL;
         while (iterator.item != NULL)

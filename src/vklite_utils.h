@@ -245,6 +245,11 @@ static const char* VALIDATION_IGNORES[] = {
     "BestPractices-vkAllocateMemory-small-allocation",        //
     "BestPractices-vkCreateCommandPool-command-buffer-reset", //
     "BestPractices-vkCreateInstance-specialuse-extension",    //
+
+    // prevent unnecessary error messages when quickly resizing a window (race condition, fix to be
+    // done probably in the validation layers)
+    // https://github.com/KhronosGroup/Vulkan-ValidationLayers/issues/624
+    "VUID-VkSwapchainCreateInfoKHR-imageExtent", //
 };
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
@@ -1051,18 +1056,18 @@ static void create_swapchain(
     ASSERT(check_surface_format(pdevice, surface, format));
 
     // Swap chain.
-    VkSwapchainCreateInfoKHR screateInfo = {0};
-    screateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    screateInfo.surface = surface;
-    screateInfo.minImageCount = image_count;
-    screateInfo.imageFormat = format;
-    screateInfo.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+    VkSwapchainCreateInfoKHR info = {0};
+    info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+    info.surface = surface;
+    info.minImageCount = image_count;
+    info.imageFormat = format;
+    info.imageColorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 
-    screateInfo.imageArrayLayers = 1;
-    screateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-    screateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-    screateInfo.presentMode = present_mode;
-    screateInfo.clipped = VK_TRUE;
+    info.imageArrayLayers = 1;
+    info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+    info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    info.presentMode = present_mode;
+    info.clipped = VK_TRUE;
 
     // Determine which queue families have access to the swapchain images.
     // If there is at least one queue family that supports PRESENT but not GRAPHICS, then the
@@ -1084,53 +1089,54 @@ static void create_swapchain(
     if (n >= 2)
     {
         log_trace("creating swapchain in concurrent image sharing mode");
-        screateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-        screateInfo.queueFamilyIndexCount = n;
-        screateInfo.pQueueFamilyIndices = queue_families;
+        info.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+        info.queueFamilyIndexCount = n;
+        info.pQueueFamilyIndices = queue_families;
     }
     else
     {
         log_trace("creating swapchain in exclusive image sharing mode");
-        screateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     }
 
     ASSERT(pdevice != VK_NULL_HANDLE);
     ASSERT(caps != NULL);
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(pdevice, surface, caps);
+    VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(pdevice, surface, caps));
+    log_trace("caps window size is %dx%d", caps->currentExtent.width, caps->currentExtent.height);
 
     // Handle special case where glfw should give the framebuffer size here as image extent.
     if (caps->currentExtent.width == UINT32_MAX)
     {
-        screateInfo.imageExtent.width =
+        info.imageExtent.width =
             CLIP(requested_width, caps->minImageExtent.width, caps->maxImageExtent.width);
-        screateInfo.imageExtent.height =
+        info.imageExtent.height =
             CLIP(requested_height, caps->minImageExtent.height, caps->maxImageExtent.height);
         log_trace(
             "set swapchain extent to %dx%d", //
-            screateInfo.imageExtent.width, screateInfo.imageExtent.height);
+            info.imageExtent.width, info.imageExtent.height);
     }
     else
     {
-        screateInfo.imageExtent = caps->currentExtent;
+        info.imageExtent = caps->currentExtent;
     }
 
     // Check.
-    ASSERT(caps->minImageExtent.width <= screateInfo.imageExtent.width);
-    ASSERT(caps->minImageExtent.height <= screateInfo.imageExtent.height);
-    ASSERT(screateInfo.imageExtent.width <= caps->maxImageExtent.width);
-    ASSERT(screateInfo.imageExtent.height <= caps->maxImageExtent.height);
+    ASSERT(info.imageExtent.width >= caps->minImageExtent.width);
+    ASSERT(info.imageExtent.height >= caps->minImageExtent.height);
+    ASSERT(info.imageExtent.width <= caps->maxImageExtent.width);
+    ASSERT(info.imageExtent.height <= caps->maxImageExtent.height);
 
     // We return the final actual swapchain size.
-    *width = screateInfo.imageExtent.width;
-    *height = screateInfo.imageExtent.height;
+    *width = info.imageExtent.width;
+    *height = info.imageExtent.height;
 
-    screateInfo.preTransform = caps->currentTransform;
+    info.preTransform = caps->currentTransform;
 
 #if SWIFTSHADER
     log_trace("NOT swapchain as using swiftshader");
 #else
     log_trace("create swapchain");
-    VK_CHECK_RESULT(vkCreateSwapchainKHR(device, &screateInfo, NULL, swapchain));
+    VK_CHECK_RESULT(vkCreateSwapchainKHR(device, &info, NULL, swapchain));
 #endif
 }
 
