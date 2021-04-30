@@ -2469,7 +2469,7 @@ int dvz_canvas_frame(DvzCanvas* canvas)
 
 
 
-void dvz_app_run(DvzApp* app, uint64_t frame_count)
+int dvz_app_run(DvzApp* app, uint64_t frame_count)
 {
     // HACK: prevent infinite loop with offscreen rendering.
     if (app->backend == DVZ_BACKEND_OFFSCREEN && frame_count == 0)
@@ -2526,6 +2526,8 @@ void dvz_app_run(DvzApp* app, uint64_t frame_count)
 
     dvz_app_wait(app);
     app->is_running = false;
+
+    return (int)n_canvas_active;
 }
 
 

@@ -672,7 +672,7 @@ cdef class App:
 
     def run_one_frame(self):
         """Run a single frame for all canvases."""
-        cv.dvz_app_run(self._c_app, 1)
+        return cv.dvz_app_run(self._c_app, 1)
 
 
 

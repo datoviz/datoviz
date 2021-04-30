@@ -1231,8 +1231,9 @@ DVZ_EXPORT void dvz_canvas_frame_submit(DvzCanvas* canvas);
  *
  * @param app the app
  * @param frame_count number of frames to process (0 for infinite loop)
+ * @returns the number of active canvases at the time the function returns
  */
-DVZ_EXPORT void dvz_app_run(DvzApp* app, uint64_t frame_count);
+DVZ_EXPORT int dvz_app_run(DvzApp* app, uint64_t frame_count);
 
 
 

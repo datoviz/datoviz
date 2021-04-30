@@ -98,6 +98,10 @@ def run(**kwargs):
     app().run(**kwargs)
 
 
+def next_frame():
+    return app().run_one_frame()
+
+
 @atexit.register
 def destroy():
     global _APP, _EXITING
