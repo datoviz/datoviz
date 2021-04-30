@@ -555,6 +555,7 @@ cdef _add_event_callback(
 # -------------------------------------------------------------------------------------------------
 
 def colormap(np.ndarray[DOUBLE, ndim=1] values, vmin=None, vmax=None, cmap=None, alpha=None):
+    """Apply a colormap to a 1D array of values."""
     N = values.size
     if cmap in _COLORMAPS:
         cmap_ = _COLORMAPS[cmap]
@@ -639,14 +640,15 @@ cdef class App:
     def destroy(self):
         """Destroy the app."""
         if self._c_app is not NULL:
-            # Destroy all GPUs.
-            for gpu in self._gpus.values():
-                gpu.destroy()
-            self._gpus.clear()
+            # # Destroy all GPUs.
+            # for gpu in self._gpus.values():
+            #     gpu.destroy()
+            # self._gpus.clear()
             cv.dvz_app_destroy(self._c_app)
             self._c_app = NULL
 
     def gpu(self, idx=None):
+        """Get a GPU, identified by its index, or the "best" one by default."""
         if idx in self._gpus:
             return self._gpus[idx]
         g = GPU()
@@ -659,15 +661,17 @@ cdef class App:
         return g
 
     def run(self, int n_frames=0, unicode screenshot=None, unicode video=None):
-        # # HACK: run a few frames to render the image, make a screenshot, and run the event loop.
-        # if screenshot and self._canvases:
-        #     cv.dvz_app_run(self._c_app, 5)
-        #     self._canvases[0].screenshot(screenshot)
-        # if video and self._canvases:
-        #     self._canvases[0].video(video)
+        """Start the rendering loop."""
+        # HACK: run a few frames to render the image, make a screenshot, and run the event loop.
+        if screenshot and self._canvases:
+            cv.dvz_app_run(self._c_app, 5)
+            self._canvases[0].screenshot(screenshot)
+        if video and self._canvases:
+            self._canvases[0].video(video)
         cv.dvz_app_run(self._c_app, n_frames)
 
     def run_one_frame(self):
+        """Run a single frame for all canvases."""
         cv.dvz_app_run(self._c_app, 1)
 
 
@@ -682,6 +686,7 @@ cdef class GPU:
     cdef cv.DvzApp* _c_app
     cdef cv.DvzGpu* _c_gpu
 
+    cdef object _context
     _canvases = []
 
     cdef create(self, cv.DvzApp* c_app, int idx):
@@ -700,10 +705,12 @@ cdef class GPU:
         if self._c_gpu is NULL:
             raise MemoryError()
 
-    def destroy(self):
-        if self._c_gpu is not NULL:
-            for c in self._canvases:
-                c.destroy()
+    # def destroy(self):
+    #     """Destroy the GPU and delete all GPU resources."""
+    #     if self._c_gpu is not NULL:
+    #         for c in self._canvases:
+    #             c.destroy()
+    #         cv.dvz_gpu_destroy(self._c_gpu)
 
     def canvas(
             self,
@@ -737,8 +744,12 @@ cdef class GPU:
         return c
 
     def context(self):
+        """Return the GPU context object, used to create GPU buffers and textures."""
+        if self._context is not None:
+            return self._context
         c = Context()
         c.create(self._c_app, self._c_gpu, self._c_gpu.context)
+        self._context = c
         return c
 
 
@@ -748,6 +759,7 @@ cdef class GPU:
 # -------------------------------------------------------------------------------------------------
 
 cdef class Context:
+    """A Context is attached to a GPU and allows to create GPU buffers and textures."""
     cdef cv.DvzApp* _c_app
     cdef cv.DvzGpu* _c_gpu
     cdef cv.DvzContext* _c_context
@@ -758,21 +770,26 @@ cdef class Context:
         self._c_context = c_context
 
     def _texture(self, source_type, arr, filtering='nearest'):
+        """Create a texture."""
         tex = Texture()
         tex.create(self._c_context, source_type, arr)
         tex.set_filter(filtering)
         return tex
 
     def transfer(self, arr, **kwargs):
+        """Create a 1D texture, typically used for transfer functions."""
         return self._texture('transfer', arr, **kwargs)
 
     def image(self, arr, **kwargs):
+        """Create a 2D texture, typically used for images."""
         return self._texture('image', arr, **kwargs)
 
     def volume(self, arr, **kwargs):
+        """Create a 3D texture, typically used for volumes."""
         return self._texture('volume', arr, **kwargs)
 
     def colormap(self, unicode name, np.ndarray[CHAR, ndim=2] colors):
+        """Create a custom colormap"""
         assert colors.shape[1] == 4
         color_count = colors.shape[0]
         assert color_count > 0
@@ -794,6 +811,9 @@ cdef class Context:
 # -------------------------------------------------------------------------------------------------
 
 cdef _get_tex_info(unicode source_type, np.ndarray arr):
+    """Return the source type, image format, and dimension count of a NumPy array to be used
+    as a texture."""
+
     # Find the Vulkan format for the texture
     c_source_type, ndim = _SOURCE_TYPES[source_type]
 
@@ -811,6 +831,8 @@ cdef _get_tex_info(unicode source_type, np.ndarray arr):
 
 
 cdef class Texture:
+    """A 1D, 2D, or 3D GPU texture."""
+
     cdef cv.DvzContext* _c_context
     cdef cv.DvzTexture* _c_texture
     cdef cv.VkFormat _c_format
@@ -818,6 +840,7 @@ cdef class Texture:
     cdef unicode source_type
 
     cdef create(self, cv.DvzContext* c_context, unicode source_type, np.ndarray arr):
+        """Create a texture."""
         self._c_context = c_context
         self.source_type = source_type
 
@@ -842,12 +865,12 @@ cdef class Texture:
         self.set_data(arr)
 
     def set_filter(self, name):
+        """Change the filtering of the texture."""
         cv.dvz_texture_filter(self._c_texture, cv.DVZ_FILTER_MIN, _TEXTURE_FILTERS[name])
         cv.dvz_texture_filter(self._c_texture, cv.DVZ_FILTER_MAG, _TEXTURE_FILTERS[name])
 
     def set_data(self, np.ndarray arr):
-        # if not arr.flags['C_CONTIGUOUS']:
-        #     arr = np.ascontiguousarray(arr)
+        """Set the texture data from a NumPy array."""
 
         c_source_type, c_format, ndim = _get_tex_info(self.source_type, arr)
         assert c_source_type == self._c_source_type
@@ -858,6 +881,7 @@ cdef class Texture:
         cdef size = arr.size
         cdef item_size = np.dtype(arr.dtype).itemsize
 
+        # Upload the array to the texture.
         cdef int s
         s = size * item_size
         cv.dvz_upload_texture(
@@ -871,18 +895,22 @@ cdef class Texture:
 # -------------------------------------------------------------------------------------------------
 
 cdef class Canvas:
+    """A canvas."""
+
     cdef cv.DvzCanvas* _c_canvas
     cdef object _gpu
     cdef bint _video_recording
     cdef object _scene
 
     cdef create(self, gpu, cv.DvzCanvas* c_canvas):
+        """Create a canvas."""
         self._c_canvas = c_canvas
         self._gpu = gpu
         self._scene = None
         # _add_close_callback(self._c_canvas, self._destroy_wrapper, ())
 
     def scene(self, rows=1, cols=1):
+        """Create a scene, which allows to use subplots, controllers, visuals, and so on."""
         if self._scene is not None:
             logger.debug("reusing existing Scene object, discarding rows and cols")
             return self._scene
@@ -891,22 +919,28 @@ cdef class Canvas:
         return s
 
     def screenshot(self, unicode path):
+        """Make a screenshot and save it to a PNG file."""
         cdef char* _c_path = path
         cv.dvz_screenshot_file(self._c_canvas, _c_path);
 
     def video(self, unicode path):
+        """Start a high-quality video recording."""
+        # TODO: customizable video parameters.
         cdef char* _c_path = path
         cv.dvz_canvas_video(self._c_canvas, 30, 10000000, _c_path, False)
         self._video_recording = True
 
     def pause(self):
+        """Pause the video recording."""
         self._video_recording = not self._video_recording
         cv.dvz_canvas_pause(self._c_canvas, self._video_recording)
 
     def stop(self):
+        """Stop the video recording and save the video to disk."""
         cv.dvz_canvas_stop(self._c_canvas)
 
     def pick(self, cv.uint32_t x, cv.uint32_t y):
+        """If the canvas was created with picking support, get the color value at a given pixel."""
         cdef cv.uvec2 xy
         cdef cv.ivec4 rgba
         xy[0] = x
@@ -922,12 +956,14 @@ cdef class Canvas:
         return (r, g, b, a)
 
     def gui(self, unicode title):
+        """Create a new GUI."""
         c_gui = cv.dvz_gui(self._c_canvas, title, 0)
         gui = Gui()
         gui.create(self._c_canvas, c_gui)
         return gui
 
     def demo_gui(self):
+        """Show the Dear ImGui demo."""
         cv.dvz_imgui_demo(self._c_canvas)
 
     def __dealloc__(self):
@@ -941,6 +977,7 @@ cdef class Canvas:
         self._gpu._canvases.remove(self)
 
     def destroy(self):
+        """Destroy the canvas."""
         # This is called when the canvas is closed from Python.
         # The event loop will close the canvas and destroy it at the next frame.
         # However this doesn't work when the canvas is closed from C (for example by pressing Esc)
@@ -953,19 +990,16 @@ cdef class Canvas:
             self._c_canvas = NULL
 
     def _connect(self, evtype_py, f, param=0, cv.DvzEventMode mode=cv.DVZ_EVENT_MODE_SYNC):
+        # NOTE: only SYNC callbacks for now.
         cdef cv.DvzEventType evtype
         evtype = _EVENTS.get(evtype_py, 0)
         _add_event_callback(self._c_canvas, evtype, param, f, (), mode=mode)
 
     def connect(self, f):
+        """Add an event callback function."""
         assert f.__name__.startswith('on_')
         ev_name = f.__name__[3:]
         self._connect(ev_name, f)
-
-    # def connect_async(self, f):
-    #     assert f.__name__.startswith('on_')
-    #     ev_name = f.__name__[3:]
-    #     self._connect(ev_name, f, mode=cv.DVZ_EVENT_MODE_ASYNC)
 
 
 
@@ -974,6 +1008,9 @@ cdef class Canvas:
 # -------------------------------------------------------------------------------------------------
 
 cdef class Scene:
+    """The Scene is attached to a canvas, and provides high-level scientific
+    plotting facilities."""
+
     cdef cv.DvzCanvas* _c_canvas
     cdef cv.DvzScene* _c_scene
     cdef cv.DvzGrid* _c_grid
@@ -982,17 +1019,20 @@ cdef class Scene:
     _panels = []
 
     cdef create(self, canvas, cv.DvzCanvas* c_canvas, int rows, int cols):
+        """Create the scene."""
         self._canvas = canvas
         self._c_canvas = c_canvas
         self._c_scene = cv.dvz_scene(c_canvas, rows, cols)
         self._c_grid = &self._c_scene.grid
 
     def destroy(self):
+        """Destroy the scene."""
         if self._c_scene is not NULL:
             cv.dvz_scene_destroy(self._c_scene)
             self._c_scene = NULL
 
     def panel(self, int row=0, int col=0, controller='axes', transform=None, transpose=None, **kwargs):
+        """Add a new panel with a controller."""
         cdef int flags
         flags = 0
         if controller == 'axes':
@@ -1015,7 +1055,7 @@ cdef class Scene:
         return p
 
     def panel_at(self, x, y):
-        # Find the panel
+        """Find the panel at a given pixel position."""
         cdef cv.vec2 pos
         pos[0] = x
         pos[1] = y
@@ -1034,6 +1074,7 @@ cdef class Scene:
 # -------------------------------------------------------------------------------------------------
 
 cdef class Panel:
+    """The Panel is a subplot in the Scene."""
 
     cdef cv.DvzScene* _c_scene
     cdef cv.DvzPanel* _c_panel
@@ -1041,18 +1082,22 @@ cdef class Panel:
     _visuals = []
 
     cdef create(self, cv.DvzScene* c_scene, cv.DvzPanel* c_panel):
+        """Create the panel."""
         self._c_panel = c_panel
         self._c_scene = c_scene
 
     @property
     def row(self):
+        """Get the panel's row index."""
         return self._c_panel.row
 
     @property
     def col(self):
+        """Get the panel's column index."""
         return self._c_panel.col
 
     def visual(self, vtype, depth_test=None, transform='auto'):
+        """Add a visual to the panel."""
         visual_type = _VISUALS.get(vtype, 0)
         if not visual_type:
             raise ValueError("unknown visual type")
@@ -1074,6 +1119,8 @@ cdef class Panel:
         return v
 
     def pick(self, x, y, target_cds='data'):
+        """Convert a position in pixels to the data coordinate system, or another
+        coordinate system."""
         cdef cv.dvec3 pos_in
         cdef cv.dvec3 pos_out
         pos_in[0] = x
@@ -1091,6 +1138,7 @@ cdef class Panel:
 # -------------------------------------------------------------------------------------------------
 
 cdef class Visual:
+    """A visual is added to a given panel."""
     cdef cv.DvzPanel* _c_panel
     cdef cv.DvzVisual* _c_visual
     cdef cv.DvzContext* _c_context
@@ -1098,12 +1146,14 @@ cdef class Visual:
     _textures = {}
 
     cdef create(self, cv.DvzPanel* c_panel, cv.DvzVisual* c_visual, unicode vtype):
+        """Create a visual."""
         self._c_panel = c_panel
         self._c_visual = c_visual
         self._c_context = c_visual.canvas.gpu.context
         self.vtype = vtype
 
     def data(self, name, np.ndarray value, idx=0):
+        """Set the data of the visual associated to a given property."""
         prop_type = _get_prop(name)
         c_prop = cv.dvz_prop_get(self._c_visual, prop_type, idx)
         dtype, nc = _DTYPES[c_prop.dtype]
@@ -1112,12 +1162,14 @@ cdef class Visual:
         cv.dvz_visual_data(self._c_visual, prop_type, idx, N, &value.data[0])
 
     def texture(self, Texture tex, idx=0):
+        """Attach a texture to a visual."""
         # Bind the texture with the visual for the specified source.
         cv.dvz_visual_texture(
             self._c_visual, tex._c_source_type, idx, tex._c_texture)
 
     def load_obj(self, unicode path, compute_normals=False):
-        # TODO: check that it is a mesh visual
+        """Load a mesh from an OBJ file."""
+        # TODO: move to subclass Mesh?
 
         cdef cv.DvzMesh mesh = cv.dvz_mesh_obj(path);
 
@@ -1174,23 +1226,27 @@ cdef class Visual:
 # -------------------------------------------------------------------------------------------------
 
 cdef class GuiControl:
+    """A GUI control."""
     cdef cv.DvzGui* _c_gui
     cdef cv.DvzGuiControl* _c_control
     cdef unicode ctype
     cdef bytes str_ascii
 
     cdef create(self, cv.DvzGui* c_gui, cv.DvzGuiControl* c_control, unicode ctype):
+        """Create a GUI control."""
         self._c_gui = c_gui
         self._c_control = c_control
         self.ctype = ctype
 
     def get(self):
+        """Get the current value."""
         cdef void* ptr
         ptr = cv.dvz_gui_value(self._c_control)
         if self.ctype == 'input_float' or self.ctype == 'slider_float':
             return (<float*>ptr)[0]
 
     def set(self, obj):
+        """Set the control's value."""
         cdef void* ptr
         cdef char* c_str
         ptr = cv.dvz_gui_value(self._c_control)
@@ -1203,19 +1259,27 @@ cdef class GuiControl:
             c_str = self.str_ascii
             # HACK: +1 for string null termination
             memcpy(ptr, c_str, len(self.str_ascii) + 1)
+        else:
+            raise NotImplementedError(
+                f"Setting the value for a GUI control `{self.ctype}` is not implemented yet.")
 
 
 
 cdef class Gui:
+    """A GUI dialog."""
     cdef cv.DvzCanvas* _c_canvas
     cdef cv.DvzGui* _c_gui
     _controls = {}
 
     cdef create(self, cv.DvzCanvas* c_canvas, cv.DvzGui* c_gui):
+        """Create a GUI."""
         self._c_canvas = c_canvas
         self._c_gui = c_gui
 
     def control(self, unicode ctype, unicode name, **kwargs):
+        """Add a GUI control."""
+        # TODO: refactor this and return a GuiControl object instead.
+
         cdef cv.DvzEventMode mode
         # is_async = kwargs.pop('mode', None) == 'async'
         mode = cv.DVZ_EVENT_MODE_SYNC #  if is_async else cv.DVZ_EVENT_MODE_SYNC
@@ -1270,12 +1334,14 @@ cdef class Gui:
         return wrap
 
     def get_value(self, name):
+        """Get the value of a control."""
         if name not in self._controls:
             raise ValueError("unknown control %s", name)
         c = self._controls[name]
         return c.get()
 
     def set_value(self, name, value):
+        """Set the value of a control."""
         if name not in self._controls:
             raise ValueError("unknown control %s", name)
         c = self._controls[name]
