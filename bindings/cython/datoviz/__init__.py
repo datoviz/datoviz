@@ -76,7 +76,7 @@ def app(*args, **kwargs):
 
 
 def canvas(*args, **kwargs):
-    c = app().canvas(*args, **kwargs)
+    c = app().gpu().canvas(*args, **kwargs)
     # enable_ipython()
     return c
 
@@ -86,7 +86,7 @@ def custom_colormap(*args, **kwargs):
 
 
 def context():
-    return app().context()
+    return app().gpu().context()
 
 
 def run(**kwargs):

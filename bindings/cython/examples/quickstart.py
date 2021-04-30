@@ -13,10 +13,11 @@ from datoviz import canvas, run, colormap
 
 # Create a new canvas and scene. There's only 1 subplot (panel) by default.
 c = canvas(show_fps=True)
+s = c.scene()
 
 # Get a panel (by default, the one spanning the entire canvas)
 # We specify the type of controller we want. Here, we want 2D axes.
-panel = c.panel(controller='axes')
+panel = s.panel(controller='axes')
 
 # We create a new "marker" visual.
 visual = panel.visual('marker')
@@ -41,7 +42,7 @@ visual.data('ms', ms)
 def on_mouse_click(x, y, button, modifiers=()):
     # x, y are in pixel coordinates
     # First, we find the picked panel
-    p = c.panel_at(x, y)
+    p = s.panel_at(x, y)
     if not p:
         return
     # Then, we transform into the data coordinate system

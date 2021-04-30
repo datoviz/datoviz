@@ -602,6 +602,7 @@ def _validate_data(dt, nc, data):
 
 
 cdef _canvas_flags(show_fps=None, pick=None, high_dpi=None):
+    """Make the canvas flags from the Python keyword arguments to the canvas creation function."""
     cdef int flags = 0
     flags |= cv.DVZ_CANVAS_FLAGS_IMGUI
     if show_fps:
@@ -619,40 +620,97 @@ cdef _canvas_flags(show_fps=None, pick=None, high_dpi=None):
 # -------------------------------------------------------------------------------------------------
 
 cdef class App:
-    """Singleton object that gives access to the GPU, context, and allows to create
-    GPU objects and canvases."""
+    """Singleton object that gives access to the GPUs."""
 
     cdef cv.DvzApp* _c_app
-    cdef cv.DvzGpu* _c_gpu
 
-    _canvases = []
+    _gpus = {}
 
     def __cinit__(self):
-        """Create a Datoviz app and automatically select the best GPU."""
+        """Create a Datoviz app."""
+        # TODO: selection of the backend
         self._c_app = cv.dvz_app(cv.DVZ_BACKEND_GLFW)
         if self._c_app is NULL:
-            raise MemoryError()
-        self._c_gpu = cv.dvz_gpu_best(self._c_app);
-        if self._c_gpu is NULL:
             raise MemoryError()
 
     def __dealloc__(self):
         self.destroy()
 
     def destroy(self):
-        """Destroy the app and all canvases."""
+        """Destroy the app."""
         if self._c_app is not NULL:
-            for c in self._canvases:
-                c.destroy()
+            # Destroy all GPUs.
+            for gpu in self._gpus.values():
+                gpu.destroy()
+            self._gpus.clear()
             cv.dvz_app_destroy(self._c_app)
             self._c_app = NULL
+
+    def gpu(self, idx=None):
+        if idx in self._gpus:
+            return self._gpus[idx]
+        g = GPU()
+        if idx is None:
+            g.create_best(self._c_app)
+        else:
+            assert idx >= 0
+            g.create(self._c_app, idx)
+        self._gpus[idx] = g
+        return g
+
+    def run(self, int n_frames=0, unicode screenshot=None, unicode video=None):
+        # # HACK: run a few frames to render the image, make a screenshot, and run the event loop.
+        # if screenshot and self._canvases:
+        #     cv.dvz_app_run(self._c_app, 5)
+        #     self._canvases[0].screenshot(screenshot)
+        # if video and self._canvases:
+        #     self._canvases[0].video(video)
+        cv.dvz_app_run(self._c_app, n_frames)
+
+    def run_one_frame(self):
+        cv.dvz_app_run(self._c_app, 1)
+
+
+
+# -------------------------------------------------------------------------------------------------
+# GPU
+# -------------------------------------------------------------------------------------------------
+
+cdef class GPU:
+    """The GPU object allows to create GPU objects and canvases."""
+
+    cdef cv.DvzApp* _c_app
+    cdef cv.DvzGpu* _c_gpu
+
+    _canvases = []
+
+    cdef create(self, cv.DvzApp* c_app, int idx):
+        """Create a GPU."""
+        assert c_app is not NULL
+        self._c_app = c_app
+        self._c_gpu = cv.dvz_gpu(self._c_app, idx);
+        if self._c_gpu is NULL:
+            raise MemoryError()
+
+    cdef create_best(self, cv.DvzApp* c_app):
+        """Create the best GPU found."""
+        assert c_app is not NULL
+        self._c_app = c_app
+        self._c_gpu = cv.dvz_gpu_best(self._c_app);
+        if self._c_gpu is NULL:
+            raise MemoryError()
+
+    def destroy(self):
+        if self._c_gpu is not NULL:
+            for c in self._canvases:
+                c.destroy()
 
     def canvas(
             self,
             int width=DEFAULT_WIDTH,
             int height=DEFAULT_HEIGHT,
-            int rows=1,
-            int cols=1,
+            # int rows=1,
+            # int cols=1,
             bint show_fps=False,
             bint pick=False,
             bint high_dpi=False,
@@ -676,7 +734,7 @@ cdef class App:
 
         # Create and return the Canvas Cython wrapper.
         c = Canvas()
-        c.create(self, c_canvas, rows, cols, clear_color)
+        c.create(self, c_canvas, clear_color)
         self._canvases.append(c)
         return c
 
@@ -684,18 +742,6 @@ cdef class App:
         c = Context()
         c.create(self._c_app, self._c_gpu, self._c_gpu.context)
         return c
-
-    def run(self, int n_frames=0, unicode screenshot=None, unicode video=None):
-        # HACK: run a few frames to render the image, make a screenshot, and run the event loop.
-        if screenshot and self._canvases:
-            cv.dvz_app_run(self._c_app, 5)
-            self._canvases[0].screenshot(screenshot)
-        if video and self._canvases:
-            self._canvases[0].video(video)
-        cv.dvz_app_run(self._c_app, n_frames)
-
-    def run_one_frame(self):
-        cv.dvz_app_run(self._c_app, 1)
 
 
 
@@ -828,21 +874,30 @@ cdef class Texture:
 
 cdef class Canvas:
     cdef cv.DvzCanvas* _c_canvas
-    cdef cv.DvzScene* _c_scene
-    cdef cv.DvzGrid* _c_grid
-    cdef object _app
+    cdef object _gpu
     cdef bint _video_recording
     cdef object _clear_color
+    cdef object _scene
+    # _clear_color = None
+    # _scene = None
 
-    _panels = []
-
-    cdef create(self, app, cv.DvzCanvas* c_canvas, int rows, int cols, clear_color):
+    cdef create(self, gpu, cv.DvzCanvas* c_canvas, clear_color):
         self._c_canvas = c_canvas
-        self._c_scene = cv.dvz_scene(c_canvas, rows, cols)
-        self._c_grid = &self._c_scene.grid
-        self._app = app
+        self._gpu = gpu
         self._clear_color = clear_color
+        self._scene = None
         # _add_close_callback(self._c_canvas, self._destroy_wrapper, ())
+
+    def scene(self, rows=1, cols=1):
+        if self._scene is not None:
+            logger.debug("reusing existing Scene object, discarding rows and cols")
+            return self._scene
+        s = Scene()
+        s.create(self, self._c_canvas, rows, cols)
+        return s
+
+    def clear_color(self):
+        return self._clear_color
 
     def screenshot(self, unicode path):
         cdef char* _c_path = path
@@ -859,31 +914,6 @@ cdef class Canvas:
 
     def stop(self):
         cv.dvz_canvas_stop(self._c_canvas)
-
-    def panel(self, int row=0, int col=0, controller='axes', transform=None, transpose=None, **kwargs):
-        cdef int flags
-        flags = 0
-        if controller == 'axes':
-            if kwargs.pop('hide_minor_ticks', False):
-                flags |= cv.DVZ_AXES_FLAGS_HIDE_MINOR
-            if kwargs.pop('hide_grid', False):
-                flags |= cv.DVZ_AXES_FLAGS_HIDE_GRID
-
-        if controller == 'axes' and self._clear_color is None:
-            cv.dvz_canvas_clear_color(self._c_canvas, 1, 1, 1)
-
-        ctl = _CONTROLLERS.get(controller, cv.DVZ_CONTROLLER_NONE)
-        trans = _TRANSPOSES.get(transpose, cv.DVZ_CDS_TRANSPOSE_NONE)
-        transf = _TRANSFORMS.get(transform, cv.DVZ_TRANSFORM_CARTESIAN)
-        c_panel = cv.dvz_scene_panel(self._c_scene, row, col, ctl, flags)
-        if c_panel is NULL:
-            raise MemoryError()
-        c_panel.data_coords.transform = transf
-        cv.dvz_panel_transpose(c_panel, trans)
-        p = Panel()
-        p.create(self._c_scene, c_panel)
-        self._panels.append(p)
-        return p
 
     def pick(self, cv.uint32_t x, cv.uint32_t y):
         cdef cv.uvec2 xy
@@ -917,7 +947,7 @@ cdef class Canvas:
         # destruction, but we need the Python object to be destroyed as well and the
         # canvas to be removed from the canvas list in the App.
         self._c_canvas = NULL
-        self._app._canvases.remove(self)
+        self._gpu._canvases.remove(self)
 
     def destroy(self):
         # This is called when the canvas is closed from Python.
@@ -927,24 +957,9 @@ cdef class Canvas:
         # destroy the Python via the close callback, which is called when the C library
         # is about to destroy the canvas, to give Python a chance to destroy the Python wrapper
         # as well.
-        if self._c_scene is not NULL:
-            cv.dvz_scene_destroy(self._c_scene)
         if self._c_canvas is not NULL:
             cv.dvz_canvas_to_close(self._c_canvas)
             self._c_canvas = NULL
-
-    def panel_at(self, x, y):
-        # Find the panel
-        cdef cv.vec2 pos
-        pos[0] = x
-        pos[1] = y
-        c_panel = cv.dvz_panel_at(self._c_grid, pos)
-
-        cdef Panel panel
-        for p in self._panels:
-            panel = p
-            if panel._c_panel == c_panel:
-                return panel
 
     def _connect(self, evtype_py, f, param=0, cv.DvzEventMode mode=cv.DVZ_EVENT_MODE_SYNC):
         cdef cv.DvzEventType evtype
@@ -960,6 +975,69 @@ cdef class Canvas:
     #     assert f.__name__.startswith('on_')
     #     ev_name = f.__name__[3:]
     #     self._connect(ev_name, f, mode=cv.DVZ_EVENT_MODE_ASYNC)
+
+
+
+# -------------------------------------------------------------------------------------------------
+# Scene
+# -------------------------------------------------------------------------------------------------
+
+cdef class Scene:
+    cdef cv.DvzCanvas* _c_canvas
+    cdef cv.DvzScene* _c_scene
+    cdef cv.DvzGrid* _c_grid
+    cdef object _canvas
+
+    _panels = []
+
+    cdef create(self, canvas, cv.DvzCanvas* c_canvas, int rows, int cols):
+        self._canvas = canvas
+        self._c_canvas = c_canvas
+        self._c_scene = cv.dvz_scene(c_canvas, rows, cols)
+        self._c_grid = &self._c_scene.grid
+
+    def destroy(self):
+        if self._c_scene is not NULL:
+            cv.dvz_scene_destroy(self._c_scene)
+            self._c_scene = NULL
+
+    def panel(self, int row=0, int col=0, controller='axes', transform=None, transpose=None, **kwargs):
+        cdef int flags
+        flags = 0
+        if controller == 'axes':
+            if kwargs.pop('hide_minor_ticks', False):
+                flags |= cv.DVZ_AXES_FLAGS_HIDE_MINOR
+            if kwargs.pop('hide_grid', False):
+                flags |= cv.DVZ_AXES_FLAGS_HIDE_GRID
+
+        if controller == 'axes' and self._canvas.clear_color is None:
+            cv.dvz_canvas_clear_color(self._c_canvas, 1, 1, 1)
+
+        ctl = _CONTROLLERS.get(controller, cv.DVZ_CONTROLLER_NONE)
+        trans = _TRANSPOSES.get(transpose, cv.DVZ_CDS_TRANSPOSE_NONE)
+        transf = _TRANSFORMS.get(transform, cv.DVZ_TRANSFORM_CARTESIAN)
+        c_panel = cv.dvz_scene_panel(self._c_scene, row, col, ctl, flags)
+        if c_panel is NULL:
+            raise MemoryError()
+        c_panel.data_coords.transform = transf
+        cv.dvz_panel_transpose(c_panel, trans)
+        p = Panel()
+        p.create(self._c_scene, c_panel)
+        self._panels.append(p)
+        return p
+
+    def panel_at(self, x, y):
+        # Find the panel
+        cdef cv.vec2 pos
+        pos[0] = x
+        pos[1] = y
+        c_panel = cv.dvz_panel_at(self._c_grid, pos)
+
+        cdef Panel panel
+        for p in self._panels:
+            panel = p
+            if panel._c_panel == c_panel:
+                return panel
 
 
 
@@ -1137,6 +1215,7 @@ cdef class GuiControl:
             c_str = self.str_ascii
             # HACK: +1 for string null termination
             memcpy(ptr, c_str, len(self.str_ascii) + 1)
+
 
 
 cdef class Gui:
