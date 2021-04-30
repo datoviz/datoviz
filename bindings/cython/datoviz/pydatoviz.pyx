@@ -709,8 +709,6 @@ cdef class GPU:
             self,
             int width=DEFAULT_WIDTH,
             int height=DEFAULT_HEIGHT,
-            # int rows=1,
-            # int cols=1,
             bint show_fps=False,
             bint pick=False,
             bint high_dpi=False,
@@ -734,7 +732,7 @@ cdef class GPU:
 
         # Create and return the Canvas Cython wrapper.
         c = Canvas()
-        c.create(self, c_canvas, clear_color)
+        c.create(self, c_canvas)
         self._canvases.append(c)
         return c
 
@@ -876,15 +874,11 @@ cdef class Canvas:
     cdef cv.DvzCanvas* _c_canvas
     cdef object _gpu
     cdef bint _video_recording
-    cdef object _clear_color
     cdef object _scene
-    # _clear_color = None
-    # _scene = None
 
-    cdef create(self, gpu, cv.DvzCanvas* c_canvas, clear_color):
+    cdef create(self, gpu, cv.DvzCanvas* c_canvas):
         self._c_canvas = c_canvas
         self._gpu = gpu
-        self._clear_color = clear_color
         self._scene = None
         # _add_close_callback(self._c_canvas, self._destroy_wrapper, ())
 
@@ -895,9 +889,6 @@ cdef class Canvas:
         s = Scene()
         s.create(self, self._c_canvas, rows, cols)
         return s
-
-    def clear_color(self):
-        return self._clear_color
 
     def screenshot(self, unicode path):
         cdef char* _c_path = path
@@ -1009,9 +1000,6 @@ cdef class Scene:
                 flags |= cv.DVZ_AXES_FLAGS_HIDE_MINOR
             if kwargs.pop('hide_grid', False):
                 flags |= cv.DVZ_AXES_FLAGS_HIDE_GRID
-
-        if controller == 'axes' and self._canvas.clear_color is None:
-            cv.dvz_canvas_clear_color(self._c_canvas, 1, 1, 1)
 
         ctl = _CONTROLLERS.get(controller, cv.DVZ_CONTROLLER_NONE)
         trans = _TRANSPOSES.get(transpose, cv.DVZ_CDS_TRANSPOSE_NONE)

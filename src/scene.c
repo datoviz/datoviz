@@ -201,6 +201,12 @@ dvz_scene_panel(DvzScene* scene, uint32_t row, uint32_t col, DvzControllerType t
     - data coords (transform)
     */
     ASSERT(scene != NULL);
+    ASSERT(scene->canvas != NULL);
+
+    // HACK: white background if axes controller.
+    if (type == DVZ_CONTROLLER_AXES_2D)
+        dvz_canvas_clear_color(scene->canvas, 1, 1, 1);
+
     DvzPanel* panel = dvz_panel(&scene->grid, row, col);
     panel->scene = scene;
 
@@ -208,10 +214,6 @@ dvz_scene_panel(DvzScene* scene, uint32_t row, uint32_t col, DvzControllerType t
     *controller = dvz_controller_builtin(panel, type, flags);
     controller->flags = flags;
     panel->controller = controller;
-
-    // // HACK: white background if axes controller.
-    // if (type == DVZ_CONTROLLER_AXES_2D)
-    //     dvz_canvas_clear_color(scene->canvas, 1, 1, 1);
 
     // Set panel transform flags depending on the controller type.
     flags = _transform_flags(type, flags);
