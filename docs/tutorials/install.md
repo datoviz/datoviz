@@ -79,6 +79,16 @@ The other dependencies below are already included in the library, so **you don't
     3. `./samples/build/Sample-Programs/Hologram/Hologram` (test an example)
     4. **Important**: add `source ~/vulkan/setup-env.sh` to your `~/.bashrc` so that the `$VULKAN_SDK` environment variable and other variables are properly set in your terminal.
 
+    **Note**: you may need to perform the following steps as well:
+
+    ```bash
+    sudo cp -r $VULKAN_SDK/include/vulkan/ /usr/local/include/
+    sudo cp -P $VULKAN_SDK/lib/libvulkan.so* /usr/local/lib/
+    sudo cp $VULKAN_SDK/lib/libVkLayer_*.so /usr/local/lib/
+    sudo mkdir -p /usr/local/share/vulkan/explicit_layer.d
+    sudo cp $VULKAN_SDK/etc/vulkan/explicit_layer.d/VkLayer_*.json /usr/local/share/vulkan/explicit_layer.d
+    ```
+
 5. Clone the Datoviz repository and build the library:
 
     1. `git clone --recursive https://github.com/datoviz/datoviz.git`
