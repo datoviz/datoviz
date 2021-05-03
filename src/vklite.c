@@ -25,6 +25,13 @@ DvzApp* dvz_app(DvzBackend backend)
     }
 #endif
 
+    if (getenv("DVZ_RUN_OFFSCREEN") != NULL)
+    {
+
+        log_info("forcing offscreen backend because DVZ_RUN_OFFSCREEN env variable is set");
+        backend = DVZ_BACKEND_OFFSCREEN;
+    }
+
     app->backend = backend;
 
     // Initialize the global clock.
