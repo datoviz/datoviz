@@ -3,20 +3,25 @@
 
 """
 
+# Imports.
 import time
-
 import numpy as np
 import numpy.random as nr
 
 # Import the library.
-from datoviz import canvas, run, colormap
+from datoviz import canvas, run, colormap, enable_ipython
 
-# Create a new canvas and scene. There's only 1 subplot (panel) by default.
+# Create a new canvas. The entry point of the Python API is the `app()` function with returns a
+# singleton App instance. This object allows to access the GPU(s) available on the system.
+# By default, the "best" (most capable) GPU is selected. The GPU allows to create canvases and
+# GPU objects. Every canvas is associated to a given GPU for image presentation.
 c = canvas(show_fps=True)
+
+# Create a scene, which provides plotting capabilities and allows to organize the canvas into a
+# grid of subplots. By default there is only a single panel spanning the whole canvas.
 s = c.scene()
 
-# Get a panel (by default, the one spanning the entire canvas)
-# We specify the type of controller we want. Here, we want 2D axes.
+# We create a panel with 2D axes.
 panel = s.panel(controller='axes')
 
 # We create a new "marker" visual.
@@ -29,10 +34,10 @@ pos = nr.randn(N, 3)
 ms = nr.uniform(low=2, high=35, size=N)
 color_values = nr.rand(N)
 
-# Use a built-in colormap
+# We use a built-in colormap
 color = colormap(color_values, vmin=0, vmax=1, alpha=.75 * np.ones(N), cmap='viridis')
 
-# Set the visual props.
+# We set the visual props.
 visual.data('pos', pos)
 visual.data('color', color)
 visual.data('ms', ms)
@@ -79,9 +84,6 @@ def on_change(value):
     pos = nr.randn(N, 3)
     visual.data('pos', pos)
 
-# We run the main event loop, which will display the canvas until Escape is pressed or the
+# We run the main rendering loop, which will display the canvas until Escape is pressed or the
 # window is closed.
-# We start a screencast. This will add playback buttons at the bottom right corner.
-# NOTE: the video DOESN'T START until you press the play button.
-# run(video="screencast.mp4")
 run()

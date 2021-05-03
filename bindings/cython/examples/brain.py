@@ -4,15 +4,17 @@
 
 """
 
+# Imports.
 import numpy as np
-
 from nilearn import datasets
 from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
 from nilearn import plotting
 
-from datoviz import canvas, run, colormap
+from datoviz import canvas, run, colormap, enable_ipython
 
-# Get the data:
+
+
+# We get the data.
 fsaverage = datasets.fetch_surf_fsaverage()
 
 # Left hemisphere.
@@ -37,9 +39,15 @@ N = bg_data.shape[0]
 cmap = 0
 uv = np.c_[bg_data, np.ones(N) * cmap / 256.0 + .5 / 256.0]
 
-# Plot the data:
+
+
+# We create a canvas.
 c = canvas(show_fps=False, width=1024, height=768)
+
+# We create an arcball panel.
 panel = c.scene().panel(controller='arcball')
+
+# We add a mesh visual.
 visual = panel.visual('mesh', transform='auto')
 
 visual.data('pos', coords)
@@ -52,13 +60,14 @@ light_params = np.zeros((4, 4))  # up to 4 lights
 light_params[0, :] = (.4, .4, .2, 64)
 visual.data('light_params', light_params)
 
+# We create a GUI.
 gui = c.gui("GUI")
 
-
+# We add a slider to change the lighting parameters.
 @gui.control("slider_float", "glossy", value=.2, vmin=0, vmax=1)
 def on_change(value):
     light_params[0, 2] = value
     visual.data('light_params', light_params)
 
-
+# We run the app.
 run()

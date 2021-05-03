@@ -13,7 +13,7 @@ import numpy.random as nr
 import imageio
 
 
-from datoviz import canvas, run, colormap, context
+from datoviz import app, canvas, run, colormap
 
 ROOT = Path(__file__).resolve().parent.parent.parent.parent
 
@@ -36,7 +36,7 @@ visual.data('texcoords', np.atleast_2d([0, 1]), idx=3)
 img = imageio.imread(ROOT / 'data/textures/earth.jpg')
 img = np.dstack((img, 255 * np.ones(img.shape[:2])))
 img = img.astype(np.uint8)
-tex = context().image(img, filtering='nearest')
+tex = app().gpu().context().image(img, filtering='nearest')
 visual.texture(tex, idx=0)
 
 # Second texture.
@@ -46,7 +46,7 @@ x, y = np.meshgrid(t, t)
 z = np.exp(-2 * (x * x + y * y))
 z = (z * 255).astype(np.uint8)
 img = np.dstack((z, z, z, 255 * np.ones_like(z))).astype(np.uint8)
-tex2 = context().image(img, filtering='nearest')
+tex2 = app().gpu().context().image(img, filtering='nearest')
 visual.texture(tex2, idx=1)
 
 visual.data('texcoefs', np.array([1, .5, 0, 0]).astype(np.float32))

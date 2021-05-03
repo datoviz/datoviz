@@ -41,7 +41,7 @@ cdef extern from "<datoviz/datoviz.h>":
         pass
 
     ctypedef struct DvzApp:
-        pass
+        bint is_running
 
     ctypedef struct DvzContext:
         DvzGpu* gpu
@@ -1087,7 +1087,7 @@ cdef extern from "<datoviz/datoviz.h>":
     ctypedef struct DvzGui:
         DvzObject obj
         DvzCanvas* canvas
-        const char* title
+        char* title
         int flags
         uint32_t control_count
         DvzGuiControl controls[32]

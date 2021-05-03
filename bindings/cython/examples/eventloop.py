@@ -4,7 +4,7 @@ import aiohttp
 
 import numpy as np
 import numpy.random as nr
-from datoviz import app, next_frame, canvas, run, colormap
+from datoviz import app, canvas, run, colormap
 
 
 async def fetch(session, url):
@@ -42,7 +42,7 @@ def on_change(value):
 
 async def periodic():
     print("start datoviz event loop")
-    while next_frame():
+    while app().next_frame():
         await asyncio.sleep(0.001)
 
 

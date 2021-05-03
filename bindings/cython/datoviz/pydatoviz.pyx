@@ -670,9 +670,13 @@ cdef class App:
             self._canvases[0].video(video)
         cv.dvz_app_run(self._c_app, n_frames)
 
-    def run_one_frame(self):
+    def next_frame(self):
         """Run a single frame for all canvases."""
         return cv.dvz_app_run(self._c_app, 1)
+
+    def _set_running(self, bint running):
+        """Manually set whether the app is running or not."""
+        self._c_app.is_running = running
 
 
 

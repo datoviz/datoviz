@@ -8,7 +8,7 @@ This example shows how to create and use a custom colormap.
 import numpy as np
 import numpy.random as nr
 
-from datoviz import canvas, run, colormap, custom_colormap
+from datoviz import app, canvas, run, colormap
 
 c = canvas(show_fps=True)
 
@@ -27,7 +27,7 @@ cmap = np.c_[np.arange(256), np.arange(256)[::-1], np.zeros(256), 255 * np.ones(
 cmap = cmap.astype(np.uint8)
 
 # Register the custom colormap.
-custom_colormap('mycmap', cmap)
+app().gpu().context().colormap('mycmap', cmap)
 
 # Use the custom colormap in the visual.
 color = colormap(np.linspace(0, 1, n), cmap='mycmap')
