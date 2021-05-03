@@ -143,7 +143,7 @@ struct DvzGui
     DvzObject obj;
     DvzCanvas* canvas;
 
-    const char* title;
+    char* title;
     int flags;
     uint32_t control_count;
     DvzGuiControl controls[CONTROL_MAX];

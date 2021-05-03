@@ -16,7 +16,12 @@ DvzGui* dvz_gui(DvzCanvas* canvas, const char* title, int flags)
     ASSERT(canvas != NULL);
     DvzGui* gui = (DvzGui*)dvz_container_alloc(&canvas->guis);
     gui->canvas = canvas;
-    gui->title = title;
+
+    // Make a copy of the string to the GUI to avoid dangling pointer.
+    gui->title = calloc(MAX_TEXT_LENGTH, sizeof(char));
+    ASSERT(strlen(title) < 1024);
+    strncpy((char*)gui->title, title, 1024);
+
     gui->flags = flags;
     dvz_obj_init(&gui->obj);
     return gui;
@@ -178,6 +183,8 @@ DvzGuiControl* dvz_gui_colormap(DvzGui* gui, DvzColormap cmap)
 void dvz_gui_destroy(DvzGui* gui)
 {
     ASSERT(gui != NULL);
+    ASSERT(gui->title != NULL);
+    FREE(gui->title);
     for (uint32_t i = 0; i < gui->control_count; i++)
     {
         FREE(gui->controls[i].value);
