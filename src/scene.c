@@ -221,6 +221,11 @@ dvz_scene_panel(DvzScene* scene, uint32_t row, uint32_t col, DvzControllerType t
 
     panel->scene = scene;
     panel->prority_max = DVZ_MAX_VISUAL_PRIORITY;
+
+    // NOTE: mark the panel as needing to be updated by the scene update system (scene_utils.h)
+    // panel->obj.request = 1;
+    _enqueue_panel_changed(panel);
+
     return panel;
 }
 
@@ -242,8 +247,9 @@ static void _add_visual(DvzPanel* panel, DvzVisual* visual)
         visual->clip[pidx] = DVZ_VIEWPORT_INNER;
 
     // Update the panel data coords as a function of the visual's data.
-    if (panel->scene->canvas->app->is_running)
-        _enqueue_visual_changed(panel, visual);
+    // if (panel->scene->canvas->app->is_running)
+    // log_info("%d %d", visual->graphics[0]->type, visual->clip[0]);
+    _enqueue_visual_added(panel, visual);
 }
 
 

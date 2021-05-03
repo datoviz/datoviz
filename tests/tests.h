@@ -148,6 +148,7 @@ int test_scene_single(TestContext*);
 int test_scene_double(TestContext*);
 int test_scene_different_size(TestContext*);
 int test_scene_different_controllers(TestContext*);
+int test_scene_dynamic_axes(TestContext*);
 
 
 
@@ -292,6 +293,7 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE(CANVAS, test_scene_double),                //
     CASE_FIXTURE(CANVAS, test_scene_different_size),        //
     CASE_FIXTURE(CANVAS, test_scene_different_controllers), //
+    CASE_FIXTURE(CANVAS, test_scene_dynamic_axes),          //
 
 };
 

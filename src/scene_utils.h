@@ -503,15 +503,18 @@ static void _process_visual_added(DvzSceneUpdate up)
     DvzVisual* visual = up.visual;
     ASSERT(visual != NULL);
 
+    DvzPanel* panel = up.panel;
+    ASSERT(panel != NULL);
+
+    // Update the visual viewport.
+    _update_visual_viewport(panel, visual);
+
     // Compute box of the new visual, taking visual transform flags into account
     if (!_is_visual_to_transform(visual))
         return;
 
-    DvzPanel* panel = up.panel;
-    ASSERT(panel != NULL);
-    DvzDataCoords coords = panel->data_coords;
-
     // Get the visual box.
+    DvzDataCoords coords = panel->data_coords;
     DvzBox box = _visual_box(visual);
 
     // Take existing box of the panel and merge it with new box.
@@ -600,6 +603,9 @@ static void _process_panel_changed(DvzSceneUpdate up)
     // Updat the GPU panel struct for all visuals in the panel.
     for (uint32_t k = 0; k < panel->visual_count; k++)
         _update_visual_viewport(panel, panel->visuals[k]);
+
+    // // The panel no longer needs to be updated.
+    // panel->obj.request = 0;
 
     // Refill command buffer.
     ASSERT(up.canvas != NULL);
@@ -728,15 +734,15 @@ static void _enqueue_all_visuals_changed(DvzScene* scene)
 
     // Go through all panels that need to be updated.
     DvzPanel* panel = NULL;
-    DvzContainerIterator iter = dvz_container_iterator(&grid->panels);
+    DvzContainerIterator iter_panel = dvz_container_iterator(&grid->panels);
     DvzVisual* visual = NULL;
     DvzContainerIterator iter_prop;
     DvzProp* prop = NULL;
 
     // Go through all panels in the scene to detect the scene updates.
-    while (iter.item != NULL)
+    while (iter_panel.item != NULL)
     {
-        panel = iter.item;
+        panel = iter_panel.item;
 
         // Determine what has changed in the scene since last frame:
 
@@ -744,6 +750,10 @@ static void _enqueue_all_visuals_changed(DvzScene* scene)
         for (uint32_t j = 0; j < panel->visual_count; j++)
         {
             visual = panel->visuals[j];
+
+            // // Require panel update?
+            // if (panel->obj.request == 1)
+            //     _enqueue_panel_changed(panel);
 
             // Process visual upload.
             if (visual->obj.request == DVZ_VISUAL_REQUEST_UPLOAD)
@@ -765,7 +775,7 @@ static void _enqueue_all_visuals_changed(DvzScene* scene)
                 _enqueue_visual_changed(panel, visual);
             }
         }
-        dvz_container_iter(&iter);
+        dvz_container_iter(&iter_panel);
     }
 }
 

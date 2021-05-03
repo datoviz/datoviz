@@ -1,5 +1,6 @@
 #include "../include/datoviz/scene.h"
 #include "../include/datoviz/visuals.h"
+#include "../src/interact_utils.h"
 #include "proto.h"
 #include "tests.h"
 
@@ -127,4 +128,48 @@ int test_scene_different_controllers(TestContext* tc)
     _add_visual(dvz_scene_panel(scene, 0, 1, DVZ_CONTROLLER_PANZOOM, 0));
 
     return _scene_run(scene, "different_controllers");
+}
+
+
+
+/*************************************************************************************************/
+/*  Dynamic scene tests                                                                          */
+/*************************************************************************************************/
+
+int test_scene_dynamic_axes(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    ASSERT(canvas != NULL);
+    _white_background(canvas);
+
+    // Run a few frames.
+    dvz_app_run(canvas->app, 5);
+
+    // Create the scene.
+    DvzScene* scene = dvz_scene(canvas, 1, 1);
+
+    // Run a few frames.
+    dvz_app_run(canvas->app, 5);
+
+    // Add a panel.
+    DvzPanel* panel = dvz_scene_panel(scene, 0, 0, DVZ_CONTROLLER_AXES_2D, 0);
+
+    // Run a few frames.
+    dvz_app_run(canvas->app, 5);
+
+    // Add the visual.
+    _add_visual(panel);
+
+    // Pan.
+    // NOTE: improve API for manual interact update.
+    _panzoom_pan(&panel->controller->interacts[0].u.p, (vec2){-.5, 0});
+    _panzoom_update_mvp(
+        canvas->viewport, &panel->controller->interacts[0].u.p,
+        &panel->controller->interacts[0].mvp);
+
+    // Run the test and check the screenshot.
+    int res = _scene_run(scene, "dynamic_axes");
+
+    _dark_background(canvas);
+    return res;
 }
