@@ -2,6 +2,7 @@
 #include "../include/datoviz/canvas.h"
 #include "../include/datoviz/gui.h"
 #include "../include/datoviz/scene.h"
+// #include "../src/runenv.h"
 
 
 
@@ -35,8 +36,8 @@ int dvz_demo_scatter(int32_t n, dvec3* pos)
     dvz_visual_data(visual, DVZ_PROP_COLOR, 0, N, color);
     dvz_visual_data(visual, DVZ_PROP_MARKER_SIZE, 0, N, size);
 
-    SCREENSHOT
-    dvz_app_run(app, NFRAMES);
+    // SCREENSHOT
+    dvz_app_run(app, 0);
 
     dvz_app_destroy(app);
     return 0;
@@ -51,8 +52,8 @@ int dvz_demo_gui(void)
     DvzCanvas* canvas = dvz_canvas(gpu, 1280, 1024, DVZ_CANVAS_FLAGS_IMGUI);
     dvz_imgui_demo(canvas);
 
-    SCREENSHOT
-    dvz_app_run(app, NFRAMES);
+    // SCREENSHOT
+    dvz_app_run(app, 0);
 
     dvz_app_destroy(app);
     return 0;

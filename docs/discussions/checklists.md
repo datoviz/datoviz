@@ -115,14 +115,6 @@
     /*  My new example.                                                                              */
     /*************************************************************************************************/
 
-    // NOTE: ignore this.
-    #ifndef SCREENSHOT
-    #define SCREENSHOT
-    #endif
-    #ifndef NFRAMES
-    #define NFRAMES 0
-    #endif
-
     // We include the library header file.
     #include <datoviz/datoviz.h>
 
@@ -136,8 +128,7 @@
 
         // Add your code here.
 
-        SCREENSHOT
-        dvz_app_run(app, NFRAMES);
+        dvz_app_run(app, 0);
 
         dvz_app_destroy(app);
         return 0;

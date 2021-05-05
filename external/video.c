@@ -224,6 +224,9 @@ static void close_stream(AVFormatContext* oc, OutputStream* ost)
 // Public functions.
 Video* init_video(const char* filename, int width, int height, int fps, int bitrate)
 {
+    ASSERT(filename != NULL);
+    ASSERT(strlen(filename) > 0);
+
     Video* video = calloc(1, sizeof(Video));
     video->filename = filename;
     video->fps = fps;

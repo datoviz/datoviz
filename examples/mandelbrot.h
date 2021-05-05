@@ -2,13 +2,13 @@
 /*  Mandelbrot fractal example.                                                                  */
 /*************************************************************************************************/
 
-// NOTE: ignore this.
-#ifndef SCREENSHOT
-#define SCREENSHOT
-#endif
-#ifndef NFRAMES
-#define NFRAMES 0
-#endif
+// // NOTE: ignore this.
+// #ifndef SCREENSHOT
+// #define SCREENSHOT
+// #endif
+// #ifndef NFRAMES
+// #define NFRAMES 0
+// #endif
 
 
 
@@ -57,8 +57,8 @@ static int demo_mandelbrot()
     dvz_visual_data_source(visual, DVZ_SOURCE_TYPE_VERTEX, 0, 0, 4, 4, vertices);
 
     // Run.
-    SCREENSHOT
-    dvz_app_run(app, NFRAMES);
+    // SCREENSHOT
+    dvz_app_run(app, 0);
 
     // Destroy and quit.
     dvz_app_destroy(app);

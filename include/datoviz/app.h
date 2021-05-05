@@ -23,6 +23,12 @@
 extern "C" {
 #endif
 
+/*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define DVZ_PATH_MAX_LEN 1024
+
 
 
 /*************************************************************************************************/
@@ -30,6 +36,7 @@ extern "C" {
 /*************************************************************************************************/
 
 typedef struct DvzApp DvzApp;
+typedef struct DvzAutorun DvzAutorun;
 typedef struct DvzClock DvzClock;
 
 
@@ -92,6 +99,17 @@ static inline void _clock_set(DvzClock* clock)
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+struct DvzAutorun
+{
+    bool enable;                       // whether to enable autorun or not
+    bool offscreen;                    // whether the autorun is done in offscreen mode or not
+    char screenshot[DVZ_PATH_MAX_LEN]; // automatic saving of screenshot
+    char video[DVZ_PATH_MAX_LEN];      // automatic saving of screencast
+    uint64_t n_frames;                 // total number of frames for the autorun
+};
+
+
+
 struct DvzApp
 {
     DvzObject obj;
@@ -99,6 +117,10 @@ struct DvzApp
 
     // Backend
     DvzBackend backend;
+
+    // Override the application running in order to automate running and generate automatic
+    // screenshots or videos.
+    DvzAutorun autorun;
 
     // Global clock
     DvzClock clock;

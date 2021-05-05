@@ -3,12 +3,12 @@
 /*************************************************************************************************/
 
 // NOTE: ignore this.
-#ifndef SCREENSHOT
-#define SCREENSHOT
-#endif
-#ifndef NFRAMES
-#define NFRAMES 0
-#endif
+// #ifndef SCREENSHOT
+// #define SCREENSHOT
+// #endif
+// #ifndef NFRAMES
+// #define NFRAMES 0
+// #endif
 #ifndef SPIRV_DIR
 #define SPIRV_DIR ""
 #endif
@@ -108,8 +108,8 @@ static int demo_custom_graphics()
         FREE(vertices);
     }
 
-    SCREENSHOT
-    dvz_app_run(app, NFRAMES);
+    // SCREENSHOT
+    dvz_app_run(app, 0);
 
     // dvz_graphics_destroy(graphics);
     dvz_app_destroy(app);

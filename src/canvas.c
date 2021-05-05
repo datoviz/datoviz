@@ -2023,6 +2023,8 @@ uint8_t* dvz_screenshot(DvzCanvas* canvas, bool has_alpha)
 void dvz_screenshot_file(DvzCanvas* canvas, const char* png_path)
 {
     ASSERT(canvas != NULL);
+    ASSERT(png_path != NULL);
+    ASSERT(strlen(png_path) > 0);
 
     log_info("saving screenshot of canvas to %s with full synchronization (slow)", png_path);
     uint8_t* rgb = dvz_screenshot(canvas, false);
@@ -2148,9 +2150,11 @@ static void _video_destroy(DvzCanvas* canvas, DvzEvent ev)
 void dvz_canvas_video(DvzCanvas* canvas, int framerate, int bitrate, const char* path, bool record)
 {
     ASSERT(canvas != NULL);
+
     uvec2 size;
     dvz_canvas_size(canvas, DVZ_CANVAS_SIZE_FRAMEBUFFER, size);
     Video* video = init_video(path, (int)size[0], (int)size[1], framerate, bitrate);
+    log_info("initialize video `%s`", path);
     if (video == NULL)
         return;
 
@@ -2469,15 +2473,55 @@ int dvz_canvas_frame(DvzCanvas* canvas)
 
 
 
+static int _app_autorun(DvzApp* app)
+{
+    ASSERT(app != NULL);
+    if (!app->autorun.enable)
+        return 1;
+    log_info("autorun mode activated");
+
+    // HACK: avoid infinite recursion.
+    app->autorun.enable = false;
+    app->is_running = false;
+
+    // HACK: the autorun only applies to the first canvas.
+    // Get the first canvas.
+    DvzContainerIterator iterator = dvz_container_iterator(&app->canvases);
+    DvzCanvas* canvas = (DvzCanvas*)iterator.item;
+    ASSERT(canvas != NULL);
+
+    if (strlen(app->autorun.screenshot) > 0)
+    {
+        dvz_app_run(app, 5);
+        dvz_screenshot_file(canvas, app->autorun.screenshot);
+    }
+
+    if (strlen(app->autorun.video) > 0 && app->autorun.n_frames > 0)
+    {
+        // TODO: customizable video params.
+        dvz_canvas_video(canvas, 30, 10000000, app->autorun.video, true);
+        dvz_app_run(app, app->autorun.n_frames);
+        dvz_canvas_stop(canvas);
+    }
+
+    return 0;
+}
+
 int dvz_app_run(DvzApp* app, uint64_t frame_count)
 {
     ASSERT(app != NULL);
+
+    // Single run of this function at a given time.
     if (app->is_running && frame_count != 1)
     {
         log_debug("discard dvz_app_run() as the app seems to be already running");
         return -1;
     }
     app->is_running = true;
+
+    // Autorun mode.
+    if (frame_count == 0 && _app_autorun(app) == 0)
+        return 0;
 
     // HACK: prevent infinite loop with offscreen rendering.
     if (app->backend == DVZ_BACKEND_OFFSCREEN && frame_count == 0)
@@ -2486,16 +2530,16 @@ int dvz_app_run(DvzApp* app, uint64_t frame_count)
         frame_count = 10;
     }
 
+    // Number of frames.
     if (frame_count > 1)
         log_debug("start main loop with %d frames", frame_count);
     if (frame_count == 0)
         frame_count = UINT64_MAX;
     ASSERT(frame_count > 0);
 
+    // Main loop.
     DvzContainerIterator iterator;
     DvzCanvas* canvas = NULL;
-
-    // Main loop.
     uint32_t n_canvas_active = 0;
     uint64_t iter = 0;
     for (iter = 0; iter < frame_count; iter++)

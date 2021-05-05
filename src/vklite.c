@@ -1,4 +1,5 @@
 #include "../include/datoviz/vklite.h"
+// #include "runenv.h"
 #include "spirv.h"
 #include "vklite_utils.h"
 #include <stdlib.h>
@@ -6,8 +7,48 @@
 
 
 /*************************************************************************************************/
+/*  Macros                                                                                       */
+/*************************************************************************************************/
+
+#define COPY_STR(env, dst)                                                                        \
+    s = getenv(env);                                                                              \
+    if (s != NULL && strlen(s) > 0)                                                               \
+    {                                                                                             \
+        ASSERT(strlen(s) < DVZ_PATH_MAX_LEN);                                                     \
+        strncpy(dst, s, DVZ_PATH_MAX_LEN);                                                        \
+    }
+
+
+
+/*************************************************************************************************/
 /*  App                                                                                          */
 /*************************************************************************************************/
+
+void dvz_app_setup(DvzApp* app)
+{
+    ASSERT(app != NULL);
+    char* s = NULL;
+
+    // Offscreen?
+    s = getenv("DVZ_RUN_OFFSCREEN");
+    if (s)
+        app->autorun.offscreen = true;
+
+    // Number of frames.
+    s = getenv("DVZ_RUN_NFRAMES");
+    if (s)
+        app->autorun.n_frames = strtoull(s, NULL, 10);
+
+    // Screenshot and video.
+    COPY_STR("DVZ_RUN_SCREENSHOT", app->autorun.screenshot)
+    COPY_STR("DVZ_RUN_VIDEO", app->autorun.video)
+
+    // Enable the autorun?
+    app->autorun.enable = app->autorun.offscreen || app->autorun.n_frames > 0 ||
+                          strlen(app->autorun.screenshot) > 0 || strlen(app->autorun.video) > 0;
+}
+
+
 
 DvzApp* dvz_app(DvzBackend backend)
 {
@@ -25,9 +66,12 @@ DvzApp* dvz_app(DvzBackend backend)
     }
 #endif
 
-    if (getenv("DVZ_RUN_OFFSCREEN") != NULL)
-    {
+    // Fill the app.autorun struct with DVZ_RUN_* environment variables.
+    dvz_app_setup(app);
 
+    // Take env variable "DVZ_RUN_OFFSCREEN" into account, forcing offscreen backend in this case.
+    if (app->autorun.enable && app->autorun.offscreen)
+    {
         log_info("forcing offscreen backend because DVZ_RUN_OFFSCREEN env variable is set");
         backend = DVZ_BACKEND_OFFSCREEN;
     }

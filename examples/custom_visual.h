@@ -2,13 +2,13 @@
 /*  Example of a custom visual.                                                                  */
 /*************************************************************************************************/
 
-// NOTE: ignore this.
-#ifndef SCREENSHOT
-#define SCREENSHOT
-#endif
-#ifndef NFRAMES
-#define NFRAMES 0
-#endif
+// // NOTE: ignore this.
+// #ifndef SCREENSHOT
+// #define SCREENSHOT
+// #endif
+// #ifndef NFRAMES
+// #define NFRAMES 0
+// #endif
 
 
 
@@ -132,8 +132,8 @@ static int demo_custom_visual()
         // Three squares.
         dvz_visual_data(
             visual, DVZ_PROP_POS, 0, 3, (dvec3[]){{-.5, 0, 0}, {0, 0, 0}, {+.5, 0, 0}});
-        // Three different colors.
 
+        // Three different colors.
         dvz_visual_data(
             visual, DVZ_PROP_COLOR, 0, 3,
             (cvec4[]){{255, 0, 0, 255}, {0, 255, 0, 255}, {0, 0, 255, 255}});
@@ -142,8 +142,8 @@ static int demo_custom_visual()
         dvz_visual_data(visual, DVZ_PROP_LENGTH, 0, 1, (float[]){.25});
     }
 
-    SCREENSHOT
-    dvz_app_run(app, NFRAMES);
+    // SCREENSHOT
+    dvz_app_run(app, 0);
 
     dvz_app_destroy(app);
     return 0;
