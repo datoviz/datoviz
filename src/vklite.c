@@ -24,7 +24,7 @@
 /*  App                                                                                          */
 /*************************************************************************************************/
 
-void dvz_app_setup(DvzApp* app)
+void dvz_autorun_env(DvzApp* app)
 {
     ASSERT(app != NULL);
     char* s = NULL;
@@ -50,6 +50,14 @@ void dvz_app_setup(DvzApp* app)
 
 
 
+void dvz_autorun_setup(DvzApp* app, DvzAutorun autorun)
+{
+    ASSERT(app != NULL);
+    app->autorun = autorun;
+}
+
+
+
 DvzApp* dvz_app(DvzBackend backend)
 {
     log_set_level_env();
@@ -67,7 +75,7 @@ DvzApp* dvz_app(DvzBackend backend)
 #endif
 
     // Fill the app.autorun struct with DVZ_RUN_* environment variables.
-    dvz_app_setup(app);
+    dvz_autorun_env(app);
 
     // Take env variable "DVZ_RUN_OFFSCREEN" into account, forcing offscreen backend in this case.
     if (app->autorun.enable && app->autorun.offscreen)
@@ -134,6 +142,8 @@ DvzApp* dvz_app(DvzBackend backend)
 
 int dvz_app_destroy(DvzApp* app)
 {
+    ASSERT(app != NULL);
+
     log_debug("starting destruction of app...");
     dvz_app_wait(app);
 

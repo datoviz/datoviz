@@ -788,10 +788,10 @@ struct DvzTexture
 DVZ_EXPORT DvzApp* dvz_app(DvzBackend backend);
 
 /**
- * Parse the DVZ_RUN_* environment variables to setup the application autorun structure.
+ * Parse the DVZ_RUN_* environment variables and setup the application autorun accordingly.
  *
- * The DVZ_RUN_* variables may override the backend, number of frames during the run, and automatic
- * saving of screenshot or video.
+ * The DVZ_RUN_* variables may override the backend (offscreen or not), number of frames during the
+ * run, and automatic saving of screenshot or video.
  *
  * !!! note
  *     Currently, this function is automatically called by `dvz_app()`, and there is no need to
@@ -799,7 +799,15 @@ DVZ_EXPORT DvzApp* dvz_app(DvzBackend backend);
  *
  * @param app the app
  */
-DVZ_EXPORT void dvz_app_setup(DvzApp* app);
+DVZ_EXPORT void dvz_autorun_env(DvzApp* app);
+
+/**
+ * Manually setup the application autorun.
+ *
+ * @param app the app
+ * @param autorun a `DvzAutorun` struct
+ */
+DVZ_EXPORT void dvz_autorun_setup(DvzApp* app, DvzAutorun autorun);
 
 /**
  * Destroy the application.
