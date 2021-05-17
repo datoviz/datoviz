@@ -12,6 +12,7 @@ import re
 import sys
 from textwrap import indent
 
+from tqdm import tqdm
 import pyparsing as pp
 from pyparsing import (
     Suppress, Word, alphas, alphanums, nums, Optional, Group, ZeroOrMore, empty, restOfLine,
@@ -73,6 +74,10 @@ def _resolve_defines(defines):
 
 # File explorer and manipulation
 # -------------------------------------------------------------------------------------------------
+
+def count_header_files():
+    return len(list(HEADER_DIR.glob('*.h')) + list(INTERNAL_HEADER_DIR.glob('*.h')))
+
 
 def iter_header_files():
     for h in sorted(HEADER_DIR.glob('*.h')):
@@ -168,11 +173,8 @@ def parse_structs(text):
     return structs
 
 
-def parse_functions(text):  # , is_output=False):
-    # if is_output:
-    #     text = text[text.index(FUNCTION_START):text.index(FUNCTION_END)]
+def parse_functions(text):
     funcs = {}
-    # LPAR, RPAR, LBRACE, RBRACE, COMMA, SEMICOLON = map(Suppress, "(){},;")
     const = Keyword("const")
     dtype = Word(alphanums + "_*")
     identifier = Word(alphanums + "_")
@@ -182,10 +184,7 @@ def parse_functions(text):  # , is_output=False):
         Optional(identifier("name")
                  ) + Optional(COMMA))
     args = Group(ZeroOrMore(argDecl))
-    # if not is_output:
     func = Suppress("DVZ_EXPORT")
-    # else:
-    # func = Empty()
     func = func + \
         dtype("out") + \
         identifier("name") + \
@@ -212,8 +211,9 @@ def parse_functions(text):  # , is_output=False):
 
 def parse_headers():
     headers = {}
-    for filename in iter_header_files():
-        print(f"Reading {filename}...")
+    for filename in tqdm(
+            iter_header_files(), total=count_header_files(), desc="Parsing C headers"):
+        # print(f"Reading {filename}...")
         text = read_file(filename)
 
         headers[filename.name] = {
@@ -228,5 +228,24 @@ def parse_headers():
     print(f"Saved {CACHE_PATH}.")
 
 
+# Object getter
+# -------------------------------------------------------------------------------------------------
+
+@lru_cache
+def load_headers():
+    with open(CACHE_PATH, 'r') as f:
+        return json.load(f)
+
+
+@lru_cache
+def get_var(name):
+    for fn, d in load_headers().items():
+        for t in d:
+            for f, v in d[t].items():
+                if f == name:
+                    return v
+
+
 if __name__ == '__main__':
-    parse_headers()
+    # parse_headers()
+    print(get_var("DvzAutorun"))
