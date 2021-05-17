@@ -49,8 +49,8 @@ fi
 
 if [ $1 == "cython" ]
 then
+    python3 utils/generate_cython.py && \
     cd bindings/cython && \
-    python3 utils/gencython.py && \
     python3 setup.py build_ext -i && \
     python3 setup.py develop --user && \
     cd ../..

@@ -1,8 +1,8 @@
 # WARNING: parts of this file are auto-generated
 
 cdef extern from "<datoviz/datoviz.h>":
+    # Numerical types:
 
-    # Numerical types
     ctypedef long int32_t
     ctypedef long long int64_t
 
@@ -37,7 +37,17 @@ cdef extern from "<datoviz/datoviz.h>":
     ctypedef uint64_t VkDeviceSize
 
 
+    # Callbacks:
+
+    ctypedef void (*DvzEventCallback)(DvzCanvas*, DvzEvent)
+
+
+    # Semi-opaque structs:
+
     ctypedef struct DvzObject:
+        pass
+
+    ctypedef struct DvzContainer:
         pass
 
     ctypedef struct DvzApp:
@@ -49,6 +59,9 @@ cdef extern from "<datoviz/datoviz.h>":
     ctypedef struct DvzGpu:
         DvzApp* app
         DvzContext* context
+
+    ctypedef struct DvzWindow:
+        pass
 
     ctypedef struct DvzTexture:
         DvzGpu* gpu
@@ -112,6 +125,9 @@ cdef extern from "<datoviz/datoviz.h>":
         int32_t     int32[4]
         uint32_t    uint32[4]
 
+    ctypedef struct ImTextureID:
+        pass
+
 
     # ---------------------------------------------------------------------------------------------
     # Vulkan enums:
@@ -133,24 +149,31 @@ cdef extern from "<datoviz/datoviz.h>":
         VK_FILTER_NEAREST = 0
         VK_FILTER_LINEAR = 1
 
+    ctypedef struct VkPhysicalDeviceFeatures:
+        pass
+
+    ctypedef struct VkSurfaceKHR:
+        pass
 
 
     # ---------------------------------------------------------------------------------------------
-    # AUTOMATICALLY-GENERATED PART:
+    # ---------------------------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------------------------
+    # !!!!!!!!!!!!!!!!!!!! AUTOMATICALLY-GENERATED PART: DO NOT EDIT MANUALLY !!!!!!!!!!!!!!!!!!!!
+    # ---------------------------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------------------------
     # ---------------------------------------------------------------------------------------------
 
 
 
+    # Enumerations
+    # ---------------------------------------------------------------------------------------------
 
     # ENUM START
-    # from file: app.h
-
     ctypedef enum DvzBackend:
         DVZ_BACKEND_NONE = 0
         DVZ_BACKEND_GLFW = 1
         DVZ_BACKEND_OFFSCREEN = 2
-
-    # from file: array.h
 
     ctypedef enum DvzDataType:
         DVZ_DTYPE_NONE = 0
@@ -192,8 +215,6 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_ARRAY_COPY_NONE = 0
         DVZ_ARRAY_COPY_REPEAT = 1
         DVZ_ARRAY_COPY_SINGLE = 2
-
-    # from file: canvas.h
 
     ctypedef enum DvzCanvasFlags:
         DVZ_CANVAS_FLAGS_NONE = 0x0000
@@ -297,8 +318,6 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_MOUSE_BUTTON_LEFT = 1
         DVZ_MOUSE_BUTTON_MIDDLE = 2
         DVZ_MOUSE_BUTTON_RIGHT = 3
-
-    # from file: colormaps.h
 
     ctypedef enum DvzColormap:
         DVZ_CMAP_BINARY = 0
@@ -425,13 +444,13 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_CMAP_BLACK_BODY = 121
         DVZ_CMAP_KINDLMANN = 122
         DVZ_CMAP_EXTENDED_KINDLMANN = 123
-        DVZ_CPAL256_GLASBEY = 176
+        DVZ_CPAL256_GLASBEY = 176  # CPAL256_OFS
         DVZ_CPAL256_GLASBEY_COOL = 125
         DVZ_CPAL256_GLASBEY_DARK = 126
         DVZ_CPAL256_GLASBEY_HV = 127
         DVZ_CPAL256_GLASBEY_LIGHT = 128
         DVZ_CPAL256_GLASBEY_WARM = 129
-        DVZ_CPAL032_ACCENT = 240
+        DVZ_CPAL032_ACCENT = 240  # CPAL032_OFS
         DVZ_CPAL032_DARK2 = 131
         DVZ_CPAL032_PAIRED = 132
         DVZ_CPAL032_PASTEL1 = 133
@@ -449,7 +468,56 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_CPAL032_CATEGORY20C_20 = 145
         DVZ_CPAL032_COLORBLIND8 = 146
 
-    # from file: context.h
+    ctypedef enum DvzAxisCoord:
+        DVZ_AXES_COORD_X = 0
+        DVZ_AXES_COORD_Y = 1
+
+    ctypedef enum DvzObjectType:
+        DVZ_OBJECT_TYPE_UNDEFINED = 0
+        DVZ_OBJECT_TYPE_APP = 1
+        DVZ_OBJECT_TYPE_GPU = 2
+        DVZ_OBJECT_TYPE_WINDOW = 3
+        DVZ_OBJECT_TYPE_SWAPCHAIN = 4
+        DVZ_OBJECT_TYPE_CANVAS = 5
+        DVZ_OBJECT_TYPE_COMMANDS = 6
+        DVZ_OBJECT_TYPE_BUFFER = 7
+        DVZ_OBJECT_TYPE_TEXTURE = 8
+        DVZ_OBJECT_TYPE_IMAGES = 9
+        DVZ_OBJECT_TYPE_SAMPLER = 10
+        DVZ_OBJECT_TYPE_BINDINGS = 11
+        DVZ_OBJECT_TYPE_COMPUTE = 12
+        DVZ_OBJECT_TYPE_GRAPHICS = 13
+        DVZ_OBJECT_TYPE_BARRIER = 14
+        DVZ_OBJECT_TYPE_FENCES = 15
+        DVZ_OBJECT_TYPE_SEMAPHORES = 16
+        DVZ_OBJECT_TYPE_RENDERPASS = 17
+        DVZ_OBJECT_TYPE_FRAMEBUFFER = 18
+        DVZ_OBJECT_TYPE_SUBMIT = 19
+        DVZ_OBJECT_TYPE_SCREENCAST = 20
+        DVZ_OBJECT_TYPE_ARRAY = 21
+        DVZ_OBJECT_TYPE_VISUAL = 22
+        DVZ_OBJECT_TYPE_PROP = 23
+        DVZ_OBJECT_TYPE_SOURCE = 24
+        DVZ_OBJECT_TYPE_SCENE = 25
+        DVZ_OBJECT_TYPE_GRID = 26
+        DVZ_OBJECT_TYPE_PANEL = 27
+        DVZ_OBJECT_TYPE_CONTROLLER = 28
+        DVZ_OBJECT_TYPE_AXES_2D = 29
+        DVZ_OBJECT_TYPE_AXES_3D = 30
+        DVZ_OBJECT_TYPE_GUI = 31
+        DVZ_OBJECT_TYPE_CUSTOM = 32
+
+    ctypedef enum DvzObjectStatus:
+        DVZ_OBJECT_STATUS_NONE = 0
+        DVZ_OBJECT_STATUS_ALLOC = 1
+        DVZ_OBJECT_STATUS_DESTROYED = 2
+        DVZ_OBJECT_STATUS_INIT = 3
+        DVZ_OBJECT_STATUS_CREATED = 4
+        DVZ_OBJECT_STATUS_NEED_RECREATE = 5
+        DVZ_OBJECT_STATUS_NEED_UPDATE = 6
+        DVZ_OBJECT_STATUS_NEED_DESTROY = 7
+        DVZ_OBJECT_STATUS_INACTIVE = 8
+        DVZ_OBJECT_STATUS_INVALID = 9
 
     ctypedef enum DvzDefaultQueue:
         DVZ_DEFAULT_QUEUE_TRANSFER = 0
@@ -461,8 +529,6 @@ cdef extern from "<datoviz/datoviz.h>":
     ctypedef enum DvzFilterType:
         DVZ_FILTER_MIN = 0
         DVZ_FILTER_MAG = 1
-
-    # from file: controls.h
 
     ctypedef enum DvzGuiFlags:
         DVZ_GUI_FLAGS_NONE = 0x0000
@@ -483,8 +549,6 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_GUI_CONTROL_TEXTBOX = 7
         DVZ_GUI_CONTROL_BUTTON = 8
         DVZ_GUI_CONTROL_COLORMAP = 9
-
-    # from file: graphics.h
 
     ctypedef enum DvzMarkerType:
         DVZ_MARKER_DISC = 0
@@ -525,7 +589,14 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_PATH_OPEN = 0
         DVZ_PATH_CLOSED = 1
 
-    # from file: keycode.h
+    ctypedef enum DvzInteractType:
+        DVZ_INTERACT_NONE = 0
+        DVZ_INTERACT_PANZOOM = 1
+        DVZ_INTERACT_PANZOOM_FIXED_ASPECT = 2
+        DVZ_INTERACT_ARCBALL = 3
+        DVZ_INTERACT_TURNTABLE = 4
+        DVZ_INTERACT_FLY = 5
+        DVZ_INTERACT_FPS = 6
 
     ctypedef enum DvzKeyCode:
         DVZ_KEY_UNKNOWN = -1
@@ -652,8 +723,6 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_KEY_MENU = 348
         DVZ_KEY_LAST = 348
 
-    # from file: mesh.h
-
     ctypedef enum DvzMeshType:
         DVZ_MESH_CUSTOM = 0
         DVZ_MESH_CUBE = 1
@@ -665,8 +734,6 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_MESH_DISC = 7
         DVZ_MESH_OBJ = 8
         DVZ_MESH_COUNT = 9
-
-    # from file: panel.h
 
     ctypedef enum DvzPanelMode:
         DVZ_PANEL_GRID = 0
@@ -681,8 +748,6 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_PANEL_UNIT_NORMALIZED = 0
         DVZ_PANEL_UNIT_FRAMEBUFFER = 1
         DVZ_PANEL_UNIT_SCREEN = 2
-
-    # from file: scene.h
 
     ctypedef enum DvzControllerType:
         DVZ_CONTROLLER_NONE = 0
@@ -708,7 +773,10 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_SCENE_UPDATE_INTERACT_CHANGED = 7
         DVZ_SCENE_UPDATE_COORDS_CHANGED = 8
 
-    # from file: transfers.h
+    ctypedef enum DvzTickFormat:
+        DVZ_TICK_FORMAT_UNDEFINED = 0
+        DVZ_TICK_FORMAT_DECIMAL = 1
+        DVZ_TICK_FORMAT_SCIENTIFIC = 2
 
     ctypedef enum DvzDataTransferType:
         DVZ_TRANSFER_NONE = 0
@@ -718,8 +786,6 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_TRANSFER_TEXTURE_UPLOAD = 4
         DVZ_TRANSFER_TEXTURE_DOWNLOAD = 5
         DVZ_TRANSFER_TEXTURE_COPY = 6
-
-    # from file: transforms.h
 
     ctypedef enum DvzTransformType:
         DVZ_TRANSFORM_NONE = 0
@@ -749,8 +815,6 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_CDS_TRANSPOSE_XFYRZU = 1
         DVZ_CDS_TRANSPOSE_XBYDZL = 2
         DVZ_CDS_TRANSPOSE_XLYBZD = 3
-
-    # from file: vislib.h
 
     ctypedef enum DvzVisualType:
         DVZ_VISUAL_NONE = 0
@@ -798,8 +862,6 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_AXES_FLAGS_DEFAULT = 0x0000
         DVZ_AXES_FLAGS_HIDE_MINOR = 0x0400
         DVZ_AXES_FLAGS_HIDE_GRID = 0x0800
-
-    # from file: visuals.h
 
     ctypedef enum DvzPipelineType:
         DVZ_PIPELINE_GRAPHICS = 0
@@ -880,8 +942,6 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_VISUAL_REQUEST_SET = 0x0001
         DVZ_VISUAL_REQUEST_UPLOAD = 0x0002
 
-    # from file: vklite.h
-
     ctypedef enum DvzQueueType:
         DVZ_QUEUE_TRANSFER = 0x01
         DVZ_QUEUE_GRAPHICS = 0x02
@@ -954,8 +1014,17 @@ cdef extern from "<datoviz/datoviz.h>":
     # ENUM END
 
 
+
+    # Structures
+    # ---------------------------------------------------------------------------------------------
+
     # STRUCT START
-    # from file: canvas.h
+    ctypedef struct DvzAutorun:
+        bint enable
+        bint offscreen
+        char screenshot
+        char video
+        uint64_t n_frames
 
     ctypedef struct DvzViewport:
         VkViewport viewport
@@ -1016,7 +1085,7 @@ cdef extern from "<datoviz/datoviz.h>":
     ctypedef struct DvzRefillEvent:
         uint32_t img_idx
         uint32_t cmd_count
-        DvzCommands* cmds[32]
+        DvzCommands* cmds
         DvzViewport viewport
         VkClearColorValue clear_color
 
@@ -1051,7 +1120,13 @@ cdef extern from "<datoviz/datoviz.h>":
         void* user_data
         DvzEventUnion u
 
-    # from file: controls.h
+    ctypedef struct DvzEventCallbackRegister:
+        DvzEventType type
+        uint64_t idx
+        double param
+        DvzEventMode mode
+        DvzEventCallback callback
+        void* user_data
 
     ctypedef struct DvzGuiControlSliderFloat:
         float vmin
@@ -1090,89 +1165,223 @@ cdef extern from "<datoviz/datoviz.h>":
         char* title
         int flags
         uint32_t control_count
-        DvzGuiControl controls[32]
+        DvzGuiControl controls
+
+    ctypedef struct DvzGuiContext:
+        ImTextureID colormap_texture
 
 
     # STRUCT END
 
 
-    ctypedef void (*DvzEventCallback)(DvzCanvas*, DvzEvent)
-    void dvz_colormap_array(DvzColormap cmap, uint32_t count, double* values, double vmin, double vmax, cvec4* out);
-    void dvz_colormap_packuv(cvec3 color, vec2 uv)
-    void dvz_colormap_custom(uint8_t cmap, uint32_t color_count, cvec4* colors)
-    void dvz_context_colormap(DvzContext* context)
-    void dvz_imgui_demo(DvzCanvas* canvas)
 
-
-
+    # Functions
+    # ---------------------------------------------------------------------------------------------
 
     # FUNCTION START
-    # from file: canvas.h
     DvzCanvas* dvz_canvas(DvzGpu* gpu, uint32_t width, uint32_t height, int flags)
+
+    DvzCanvas* dvz_canvas_offscreen(DvzGpu* gpu, uint32_t width, uint32_t height, int flags)
+
+    void dvz_canvas_recreate(DvzCanvas* canvas)
+
+    void dvz_canvas_reset(DvzCanvas* canvas)
+
+    void dvz_canvas_resize(DvzCanvas* canvas, uint32_t width, uint32_t height)
+
+    DvzCommands* dvz_canvas_commands(DvzCanvas* canvas, uint32_t queue_idx, uint32_t count)
+
+    void dvz_canvas_buffers(DvzCanvas* canvas, DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size, const void* data)
+
     void dvz_canvas_clear_color(DvzCanvas* canvas, float red, float green, float blue)
+
+    void dvz_canvas_size(DvzCanvas* canvas, DvzCanvasSizeType type, uvec2 size)
+
+    double dvz_canvas_aspect(DvzCanvas* canvas)
+
+    void dvz_canvas_close_on_esc(DvzCanvas* canvas, bint value)
+
+    void dvz_canvas_dpi_scaling(DvzCanvas* canvas, float scaling)
+
     void dvz_event_callback(DvzCanvas* canvas, DvzEventType type, double param, DvzEventMode mode, DvzEventCallback callback, void* user_data)
+
+    void dvz_canvas_to_refill(DvzCanvas* canvas)
+
     void dvz_canvas_to_close(DvzCanvas* canvas)
+
     void dvz_screenshot_file(DvzCanvas* canvas, const char* png_path)
+
     void dvz_canvas_pick(DvzCanvas* canvas, uvec2 pos_screen, ivec4 picked)
+
     void dvz_canvas_video(DvzCanvas* canvas, int framerate, int bitrate, const char* path, bint record)
+
     void dvz_canvas_pause(DvzCanvas* canvas, bint record)
+
     void dvz_canvas_stop(DvzCanvas* canvas)
+
     int dvz_canvas_frame(DvzCanvas* canvas)
+
+    void dvz_canvas_frame_submit(DvzCanvas* canvas)
+
     int dvz_app_run(DvzApp* app, uint64_t frame_count)
 
-    # from file: context.h
+    void dvz_colormap_array(DvzColormap cmap, uint32_t count, double* values, double vmin, double vmax, cvec4* out)
+
+    void dvz_colormap_packuv(cvec3 color, vec2 uv)
+
+    void dvz_colormap_custom(uint8_t cmap, uint32_t color_count, cvec4* colors)
+
+    void dvz_gpu_default(DvzGpu* gpu, DvzWindow* window)
+
+    void dvz_app_reset(DvzApp* app)
+
+    void dvz_context_colormap(DvzContext* context)
+
     DvzTexture* dvz_ctx_texture(DvzContext* context, uint32_t dims, uvec3 size, VkFormat format)
+
     void dvz_texture_filter(DvzTexture* texture, DvzFilterType type, VkFilter filter)
+
     void dvz_texture_upload(DvzTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, const void* data)
 
-    # from file: controls.h
     DvzGui* dvz_gui(DvzCanvas* canvas, const char* title, int flags)
+
     void* dvz_gui_value(DvzGuiControl* control)
+
     DvzGuiControl* dvz_gui_checkbox(DvzGui* gui, const char* name, bint value)
+
     DvzGuiControl* dvz_gui_slider_float(DvzGui* gui, const char* name, float vmin, float vmax, float value)
+
     DvzGuiControl* dvz_gui_slider_float2(DvzGui* gui, const char* name, float vmin, float vmax, vec2 value, bint force_increasing)
+
     DvzGuiControl* dvz_gui_slider_int(DvzGui* gui, const char* name, int vmin, int vmax, int value)
+
     DvzGuiControl* dvz_gui_input_float(DvzGui* gui, const char* name, float step, float step_fast, float value)
+
     DvzGuiControl* dvz_gui_label(DvzGui* gui, const char* name, char* text)
+
+    DvzGuiControl* dvz_gui_textbox(DvzGui* gui, const char* name, char* text)
+
     DvzGuiControl* dvz_gui_button(DvzGui* gui, const char* name, int flags)
 
-    # from file: mesh.h
+    DvzGuiControl* dvz_gui_colormap(DvzGui* gui, DvzColormap cmap)
+
+    void dvz_gui_destroy(DvzGui* gui)
+
+    void dvz_imgui_demo(DvzCanvas* canvas)
+
+    void dvz_gui_begin(const char* title, int flags)
+
+    void dvz_gui_end()
+
+    void dvz_gui_callback(DvzCanvas* canvas, DvzEvent ev)
+
+    void dvz_gui_callback_fps(DvzCanvas* canvas, DvzEvent ev)
+
+    void dvz_gui_callback_demo(DvzCanvas* canvas, DvzEvent ev)
+
+    void dvz_gui_callback_player(DvzCanvas* canvas, DvzEvent ev)
+
+    void dvz_mesh_transform_reset(DvzMesh* mesh)
+
+    void dvz_mesh_transform_add(DvzMesh* mesh, mat4 transform)
+
+    void dvz_mesh_translate(DvzMesh* mesh, vec3 translate)
+
+    void dvz_mesh_scale(DvzMesh* mesh, vec3 scale)
+
+    void dvz_mesh_rotate(DvzMesh* mesh, float angle, vec3 axis)
+
+    void dvz_mesh_transform(DvzMesh* mesh)
+
     void dvz_mesh_normals(DvzMesh* mesh)
+
+    DvzMesh dvz_mesh()
+
     DvzMesh dvz_mesh_grid(uint32_t row_count, uint32_t col_count, const vec3* positions, const vec2* texcoords)
+
+    DvzMesh dvz_mesh_surface(uint32_t row_count, uint32_t col_count, const float* heights)
+
+    DvzMesh dvz_mesh_cube()
+
+    DvzMesh dvz_mesh_sphere(uint32_t row_count, uint32_t col_count)
+
+    DvzMesh dvz_mesh_cylinder(uint32_t count)
+
+    DvzMesh dvz_mesh_cone(uint32_t count)
+
+    DvzMesh dvz_mesh_square()
+
+    DvzMesh dvz_mesh_disc(uint32_t count)
+
+    void dvz_mesh_normalize(DvzMesh* mesh)
+
+    void dvz_mesh_destroy(DvzMesh* mesh)
+
     DvzMesh dvz_mesh_obj(const char* file_path)
 
-    # from file: panel.h
     void dvz_panel_transpose(DvzPanel* panel, DvzCDSTranspose transpose)
+
     DvzPanel* dvz_panel_at(DvzGrid* grid, vec2 screen_pos)
 
-    # from file: scene.h
     DvzScene* dvz_scene(DvzCanvas* canvas, uint32_t n_rows, uint32_t n_cols)
+
     void dvz_scene_destroy(DvzScene* scene)
+
     DvzPanel* dvz_scene_panel(DvzScene* scene, uint32_t row, uint32_t col, DvzControllerType type, int flags)
+
     DvzVisual* dvz_scene_visual(DvzPanel* panel, DvzVisualType type, int flags)
 
-    # from file: transfers.h
     void dvz_upload_buffer(DvzContext* context, DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data)
+
     void dvz_download_buffer(DvzContext* context, DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data)
+
     void dvz_copy_buffer(DvzContext* context, DvzBufferRegions src, VkDeviceSize src_offset, DvzBufferRegions dst, VkDeviceSize dst_offset, VkDeviceSize size)
+
     void dvz_upload_texture(DvzContext* context, DvzTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data)
+
     void dvz_download_texture(DvzContext* context, DvzTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data)
+
     void dvz_copy_texture(DvzContext* context, DvzTexture* src, uvec3 src_offset, DvzTexture* dst, uvec3 dst_offset, uvec3 shape, VkDeviceSize size)
 
-    # from file: transforms.h
+    void dvz_transform_pos(DvzDataCoords coords, DvzArray* pos_in, DvzArray* pos_out, bint inverse)
+
     void dvz_transform(DvzPanel* panel, DvzCDS source, dvec3 pos_in, DvzCDS target, dvec3 pos_out)
 
-    # from file: visuals.h
     void dvz_visual_data(DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx, uint32_t count, const void* data)
+
+    void dvz_visual_data_partial(DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx, uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data)
+
+    void dvz_visual_data_append(DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx, uint32_t count, const void* data)
+
     void dvz_visual_data_source(DvzVisual* visual, DvzSourceType source_type, uint32_t source_idx, uint32_t first_item, uint32_t item_count, uint32_t data_item_count, const void* data)
+
     void dvz_visual_texture(DvzVisual* visual, DvzSourceType source_type, uint32_t source_idx, DvzTexture* texture)
+
     DvzProp* dvz_prop_get(DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx)
 
-    # from file: vklite.h
     DvzApp* dvz_app(DvzBackend backend)
+
     int dvz_app_destroy(DvzApp* app)
+
     DvzGpu* dvz_gpu(DvzApp* app, uint32_t idx)
+
     DvzGpu* dvz_gpu_best(DvzApp* app)
+
+    void dvz_gpu_request_features(DvzGpu* gpu, VkPhysicalDeviceFeatures requested_features)
+
+    void dvz_gpu_queue(DvzGpu* gpu, uint32_t idx, DvzQueueType type)
+
+    void dvz_gpu_create(DvzGpu* gpu, VkSurfaceKHR surface)
+
+    void dvz_app_wait(DvzApp* app)
+
+    void dvz_gpu_wait(DvzGpu* gpu)
+
+    void dvz_gpu_destroy(DvzGpu* gpu)
+
+    void dvz_canvas_destroy(DvzCanvas* canvas)
+
+    void dvz_canvases_destroy(DvzContainer* canvases)
 
 
     # FUNCTION END

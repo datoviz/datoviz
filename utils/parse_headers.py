@@ -106,7 +106,7 @@ def parse_defines(text):
     # LBRACE, RBRACE, EQ, COMMA, SEMICOLON, SPACE = map(Suppress, "{}=,; ")
     _define = Suppress("#define")
     identifier = Word(alphanums + "_")
-    value = Word(alphanums + "_+-*/ ()")
+    value = Word(alphanums + "._+-*/ ()")
     # defineName = identifier("name") + Optional(Suppress(cStyleComment))
     define = _define + identifier("name") + value("value")
     for item, start, stop in define.scanString(text):
@@ -169,7 +169,7 @@ def parse_structs(text):
             if entry.array_name:
                 b.count = entry.array_name
             l.append(b)
-        structs[item.struct_name] = Bunch(name=item.struct_name, type=item.struct, args=l)
+        structs[item.struct_name] = Bunch(name=item.struct_name, type=item.struct, fields=l)
     return structs
 
 
@@ -184,7 +184,7 @@ def parse_functions(text):
         Optional(identifier("name")
                  ) + Optional(COMMA))
     args = Group(ZeroOrMore(argDecl))
-    func = Suppress("DVZ_EXPORT")
+    func = Suppress("DVZ_EXPORT") | Suppress("static")
     func = func + \
         dtype("out") + \
         identifier("name") + \
@@ -224,7 +224,7 @@ def parse_headers():
         }
 
     with open(CACHE_PATH, 'w') as f:
-        json.dump(headers, f, indent=1, sort_keys=True)
+        json.dump(headers, f, indent=1)
     print(f"Saved {CACHE_PATH}.")
 
 
@@ -233,12 +233,13 @@ def parse_headers():
 
 @lru_cache
 def load_headers():
+    if not Path(CACHE_PATH).exists():
+        parse_headers()
     with open(CACHE_PATH, 'r') as f:
         return json.load(f)
 
 
-@lru_cache
-def get_var(name):
+def _get(name):
     for fn, d in load_headers().items():
         for t in d:
             for f, v in d[t].items():
@@ -246,6 +247,24 @@ def get_var(name):
                     return v
 
 
+@lru_cache
+def get_var(name):
+    v = _get(name)
+    if v is None:
+        print(f"Variable {name} not found, reparsing the headers.")
+        parse_headers()
+        load_headers.cache_clear()
+        return _get(name)
+    else:
+        return v
+
+
+def iter_vars(vtype):
+    headers = load_headers()
+    for fn, d in load_headers().items():
+        yield from d[vtype].items()
+
+
 if __name__ == '__main__':
-    # parse_headers()
-    print(get_var("DvzAutorun"))
+    parse_headers()
+    # print(get_var("DvzAutorun"))
