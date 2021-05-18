@@ -59,6 +59,8 @@ cdef extern from "<datoviz/datoviz.h>":
     ctypedef struct DvzGpu:
         DvzApp* app
         DvzContext* context
+        uint32_t idx
+        const char* name
 
     ctypedef struct DvzWindow:
         pass

@@ -678,6 +678,9 @@ cdef class App:
         """Manually set whether the app is running or not."""
         self._c_app.is_running = running
 
+    def __repr__(self):
+        return "<Datoviz App>"
+
 
 
 # -------------------------------------------------------------------------------------------------
@@ -708,6 +711,10 @@ cdef class GPU:
         self._c_gpu = cv.dvz_gpu_best(self._c_app);
         if self._c_gpu is NULL:
             raise MemoryError()
+
+    @property
+    def name(self):
+        return self._c_gpu.name
 
     # def destroy(self):
     #     """Destroy the GPU and delete all GPU resources."""
@@ -755,6 +762,9 @@ cdef class GPU:
         c.create(self._c_app, self._c_gpu, self._c_gpu.context)
         self._context = c
         return c
+
+    def __repr__(self):
+        return f"<GPU \"{self.name}\">"
 
 
 
@@ -808,6 +818,9 @@ cdef class Context:
         cv.dvz_colormap_custom(cmap, color_count, <cv.cvec4*>&colors.data[0])
         cv.dvz_context_colormap(self._c_context)
 
+    def __repr__(self):
+        return f"<Context for GPU \"{self._c_gpu.name}\">"
+
 
 
 # -------------------------------------------------------------------------------------------------
@@ -842,6 +855,7 @@ cdef class Texture:
     cdef cv.VkFormat _c_format
     cdef cv.DvzSourceType _c_source_type
     cdef unicode source_type
+    cdef np.uint32_t _shape[3]
 
     cdef create(self, cv.DvzContext* c_context, unicode source_type, np.ndarray arr):
         """Create a texture."""
@@ -852,19 +866,18 @@ cdef class Texture:
         self._c_source_type, self._c_format, ndim = _get_tex_info(source_type, arr)
 
         # Find the shape
-        cdef np.uint32_t shape[3]
         for i in range(ndim):
-            shape[i] = arr.shape[i]
+            self._shape[i] = arr.shape[i]
         for i in range(ndim, 3):
-            shape[i] = 1
+            self._shape[i] = 1
 
         if ndim > 1:
             # NOTE: Vulkan considers textures as (width, height, depth) whereas NumPy
             # considers them as (height, width, depth), hence the need to transpose here.
-            shape[0], shape[1] = shape[1], shape[0]
+            self._shape[0], self._shape[1] = self._shape[1], self._shape[0]
 
         # Create the Datoviz texture.
-        self._c_texture = cv.dvz_ctx_texture(self._c_context, ndim, &shape[0], self._c_format)
+        self._c_texture = cv.dvz_ctx_texture(self._c_context, ndim, &self._shape[0], self._c_format)
 
         self.set_data(arr)
 
@@ -891,6 +904,10 @@ cdef class Texture:
         cv.dvz_upload_texture(
             self._c_context, self._c_texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET,
             size * item_size, &arr.data[0])
+
+    @property
+    def shape(self):
+        return (self._shape[0], self._shape[1], self._shape[2])
 
 
 
