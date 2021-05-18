@@ -1235,6 +1235,10 @@ cdef extern from "<datoviz/datoviz.h>":
 
     void dvz_gpu_default(DvzGpu* gpu, DvzWindow* window)
 
+    DvzContext* dvz_context(DvzGpu* gpu)
+
+    void dvz_context_reset(DvzContext* context)
+
     void dvz_app_reset(DvzApp* app)
 
     void dvz_context_colormap(DvzContext* context)
@@ -1384,6 +1388,8 @@ cdef extern from "<datoviz/datoviz.h>":
     void dvz_canvas_destroy(DvzCanvas* canvas)
 
     void dvz_canvases_destroy(DvzContainer* canvases)
+
+    void dvz_context_destroy(DvzContext* context)
 
 
     # FUNCTION END

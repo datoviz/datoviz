@@ -759,7 +759,17 @@ cdef class GPU:
         if self._context is not None:
             return self._context
         c = Context()
+
+        assert self._c_gpu is not NULL
+
+        # If the context has not been created, it means we must create the GPU in offscreen mode.
+        if self._c_gpu.context is NULL:
+            # Create the GPU without a surface.
+            cv.dvz_gpu_default(self._c_gpu, NULL)
+            # Create the context.
+            cv.dvz_context(self._c_gpu)
         c.create(self._c_app, self._c_gpu, self._c_gpu.context)
+
         self._context = c
         return c
 
@@ -779,6 +789,10 @@ cdef class Context:
     cdef cv.DvzContext* _c_context
 
     cdef create(self, cv.DvzApp* c_app, cv.DvzGpu* c_gpu, cv.DvzContext* c_context):
+        assert c_app is not NULL
+        assert c_gpu is not NULL
+        assert c_context is not NULL
+
         self._c_app = c_app
         self._c_gpu = c_gpu
         self._c_context = c_context
@@ -859,6 +873,7 @@ cdef class Texture:
 
     cdef create(self, cv.DvzContext* c_context, unicode source_type, np.ndarray arr):
         """Create a texture."""
+        assert c_context is not NULL
         self._c_context = c_context
         self.source_type = source_type
 
@@ -879,14 +894,14 @@ cdef class Texture:
         # Create the Datoviz texture.
         self._c_texture = cv.dvz_ctx_texture(self._c_context, ndim, &self._shape[0], self._c_format)
 
-        self.set_data(arr)
+        self.upload(arr)
 
     def set_filter(self, name):
         """Change the filtering of the texture."""
         cv.dvz_texture_filter(self._c_texture, cv.DVZ_FILTER_MIN, _TEXTURE_FILTERS[name])
         cv.dvz_texture_filter(self._c_texture, cv.DVZ_FILTER_MAG, _TEXTURE_FILTERS[name])
 
-    def set_data(self, np.ndarray arr):
+    def upload(self, np.ndarray arr):
         """Set the texture data from a NumPy array."""
 
         c_source_type, c_format, ndim = _get_tex_info(self.source_type, arr)
