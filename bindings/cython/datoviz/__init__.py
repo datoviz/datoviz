@@ -27,7 +27,7 @@ logger = logging.getLogger('datoviz')
 logger.setLevel(logging.DEBUG)
 logger.addHandler(logging.NullHandler())
 
-_logger_fmt = '%(asctime)s.%(msecs)03d [%(levelname)s] %(caller)s %(message)s'
+_logger_fmt = '%(asctime)s.%(msecs)03d %(levelname)s %(caller)s %(message)s'
 _logger_date_fmt = '%H:%M:%S'
 
 
@@ -36,7 +36,7 @@ class _Formatter(logging.Formatter):
         # Only keep the first character in the level name.
         record.levelname = record.levelname[0]
         filename = op.splitext(op.basename(record.pathname))[0]
-        record.caller = '{:s}:{:d}'.format(filename, record.lineno).ljust(20)
+        record.caller = '{:>18s}:{:04d}:'.format(filename, record.lineno).ljust(22)
         message = super(_Formatter, self).format(record)
         color_code = {'D': '90', 'I': '0', 'W': '33',
                       'E': '31'}.get(record.levelname, '7')

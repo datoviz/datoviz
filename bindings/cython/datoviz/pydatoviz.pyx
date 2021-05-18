@@ -764,6 +764,7 @@ cdef class GPU:
 
         # If the context has not been created, it means we must create the GPU in offscreen mode.
         if self._c_gpu.context is NULL:
+            logger.debug("Automatically creating a GPU context with no surface (offscreen only)")
             # Create the GPU without a surface.
             cv.dvz_gpu_default(self._c_gpu, NULL)
             # Create the context.
