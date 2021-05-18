@@ -1230,7 +1230,7 @@ static void make_shared(
 
 
 
-static void create_buffer2(
+static void create_buffer(
     VkDevice device, DvzQueues* queues, uint32_t queue_count, uint32_t* queue_indices, //
     VkBufferUsageFlags usage, VkMemoryPropertyFlags properties,
     VkPhysicalDeviceMemoryProperties memory_properties, VkDeviceSize size, //
@@ -1299,7 +1299,7 @@ static void check_dims(VkImageType image_type, uint32_t width, uint32_t height, 
 
 
 
-static void create_image2(
+static void create_image(
     VkDevice device, DvzQueues* queues, uint32_t queue_count, uint32_t* queue_indices,        //
     VkImageType image_type, uint32_t width, uint32_t height, uint32_t depth, VkFormat format, //
     VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties,          //
@@ -1348,7 +1348,7 @@ static void create_image2(
 
 
 
-static void create_image_view2(
+static void create_image_view(
     VkDevice device, VkImage image, VkImageViewType view_type, VkFormat format,
     VkImageAspectFlags aspect_flags, VkImageView* image_view)
 {
@@ -1378,7 +1378,7 @@ static void create_image_view2(
 /*  Sampler                                                                                      */
 /*************************************************************************************************/
 
-static void create_texture_sampler2(
+static void create_texture_sampler(
     VkDevice device, VkFilter mag_filter, VkFilter min_filter, //
     VkSamplerAddressMode* address_modes, bool anisotropy, VkSampler* sampler)
 {

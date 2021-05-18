@@ -905,7 +905,7 @@ void dvz_buffer_queue_access(DvzBuffer* buffer, uint32_t queue_idx)
 
 static void _buffer_create(DvzBuffer* buffer)
 {
-    create_buffer2(
+    create_buffer(
         buffer->gpu->device,                                           //
         &buffer->gpu->queues, buffer->queue_count, buffer->queues,     //
         buffer->usage, buffer->memory, buffer->gpu->memory_properties, //
@@ -1411,10 +1411,21 @@ static void _images_create(DvzImages* images)
 {
     DvzGpu* gpu = images->gpu;
     VkDeviceSize size = 0;
+
+    // Check whether the image format is supported.
+    VkImageFormatProperties props = {0};
+    VkResult res = vkGetPhysicalDeviceImageFormatProperties(
+        gpu->physical_device, images->format, images->image_type, images->tiling, //
+        images->usage, 0, &props);
+    if (res != VK_SUCCESS)
+    {
+        log_error("unable to create image, format not supported");
+    }
+
     for (uint32_t i = 0; i < images->count; i++)
     {
         if (!images->is_swapchain)
-            create_image2(
+            create_image(
                 gpu->device, &gpu->queues, images->queue_count, images->queues, images->image_type,
                 images->width, images->height, images->depth, images->format, images->tiling,
                 images->usage, images->memory, gpu->memory_properties, &images->images[i],
@@ -1422,7 +1433,7 @@ static void _images_create(DvzImages* images)
 
         // HACK: staging images do not require an image view
         if (images->tiling != VK_IMAGE_TILING_LINEAR)
-            create_image_view2(
+            create_image_view(
                 gpu->device, images->images[i], images->view_type, images->format, images->aspect,
                 &images->image_views[i]);
 
@@ -1681,7 +1692,7 @@ void dvz_sampler_create(DvzSampler* sampler)
 
     log_trace("starting creation of sampler...");
 
-    create_texture_sampler2(
+    create_texture_sampler(
         sampler->gpu->device, sampler->mag_filter, sampler->min_filter, //
         sampler->address_modes, false, &sampler->sampler);
 
