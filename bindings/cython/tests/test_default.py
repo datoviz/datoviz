@@ -37,31 +37,40 @@ def teardown():
 # Tests
 # -------------------------------------------------------------------------------------------------
 
+# HACK: calling the gpu.context() automatically creates a context with NO support for surface if
+# there isn't already a context. A crash occurs when trying to create a canvas AFTER a context
+# with NO support for surface has been created. At the moment the context can only be created
+# once.
+
 def test_gpu():
     a = app()
+    print(a)
 
     g = a.gpu()
     assert g.name
     print(g)
     assert str(g).startswith("<GPU")
 
-    ctx = g.context()
-    print(ctx)
-    assert str(ctx).startswith("<Context")
 
 
 def test_canvas():
     c = canvas()
     app().run(10)
-    c.destroy()
+    # c.close()
+    # app().run(1)
+    # del c
+    # c.destroy()
+
 
 
 def test_texture():
-    context = app().gpu().context()
+    ctx = app().gpu().context()
+    print(ctx)
+    assert str(ctx).startswith("<Context")
 
     # Create texture.
     h, w = 16, 32
-    tex = context.texture(h, w)
+    tex = ctx.texture(h, w)
     assert tex.item_size == 1
     assert tex.shape == (h, w, 4)
     assert tex.size == h * w * 4
@@ -79,3 +88,10 @@ def test_texture():
     assert arr2.dtype == arr.dtype
     assert arr2.shape == arr.shape
     ae(arr2, arr)
+
+
+
+def test_gui_demo():
+    c = canvas()
+    c.gui_demo()
+    app().run(10)

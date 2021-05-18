@@ -720,13 +720,6 @@ cdef class GPU:
     def name(self):
         return self._c_gpu.name
 
-    # def destroy(self):
-    #     """Destroy the GPU and delete all GPU resources."""
-    #     if self._c_gpu is not NULL:
-    #         for c in self._canvases:
-    #             c.destroy()
-    #         cv.dvz_gpu_destroy(self._c_gpu)
-
     def canvas(
             self,
             int width=DEFAULT_WIDTH,
@@ -965,7 +958,6 @@ cdef class Canvas:
         self._c_canvas = c_canvas
         self._gpu = gpu
         self._scene = None
-        # _add_close_callback(self._c_canvas, self._destroy_wrapper, ())
 
     def scene(self, rows=1, cols=1):
         """Create a scene, which allows to use subplots, controllers, visuals, and so on."""
@@ -1020,32 +1012,18 @@ cdef class Canvas:
         gui.create(self._c_canvas, c_gui)
         return gui
 
-    def demo_gui(self):
+    def gui_demo(self):
         """Show the Dear ImGui demo."""
         cv.dvz_imgui_demo(self._c_canvas)
 
     def __dealloc__(self):
-        self.destroy()
-
-    def _destroy_wrapper(self):
-        # This is called when the user presses Esc, Datoviz organizes the canvas closing and
-        # destruction, but we need the Python object to be destroyed as well and the
-        # canvas to be removed from the canvas list in the App.
+        self.close()
+        cv.dvz_app_run(self._c_canvas.app, 1)
         self._c_canvas = NULL
-        self._gpu._canvases.remove(self)
 
-    def destroy(self):
-        """Destroy the canvas."""
-        # This is called when the canvas is closed from Python.
-        # The event loop will close the canvas and destroy it at the next frame.
-        # However this doesn't work when the canvas is closed from C (for example by pressing Esc)
-        # because then the C object will be destroyed, but not the Python one. We need to
-        # destroy the Python via the close callback, which is called when the C library
-        # is about to destroy the canvas, to give Python a chance to destroy the Python wrapper
-        # as well.
+    def close(self):
         if self._c_canvas is not NULL:
             cv.dvz_canvas_to_close(self._c_canvas)
-            self._c_canvas = NULL
 
     def _connect(self, evtype_py, f, param=0, cv.DvzEventMode mode=cv.DVZ_EVENT_MODE_SYNC):
         # NOTE: only SYNC callbacks for now.
