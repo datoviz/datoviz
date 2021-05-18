@@ -6,6 +6,7 @@
 import time
 
 import numpy as np
+from numpy.testing import assert_array_equal as ae
 import numpy.random as nr
 from pytest import fixture
 
@@ -58,5 +59,23 @@ def test_canvas():
 def test_texture():
     context = app().gpu().context()
 
-    arr = nr.randint(low=0, high=255, size=(16, 32, 4)).astype(np.uint8)
-    tex = context.image(arr)
+    # Create texture.
+    h, w = 16, 32
+    tex = context.texture(h, w)
+    assert tex.item_size == 1
+    assert tex.shape == (h, w, 4)
+    assert tex.size == h * w * 4
+    print(tex)
+    assert str(tex) == f"<Texture 2D {h}x{w}x4 (uint8)>"
+
+    # Upload texture data.
+    arr = nr.randint(low=0, high=255, size=(h, w, 4)).astype(np.uint8)
+    tex.upload(arr)
+
+    # Download the data.
+    arr2 = tex.download()
+
+    # Check.
+    assert arr2.dtype == arr.dtype
+    assert arr2.shape == arr.shape
+    ae(arr2, arr)

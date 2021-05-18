@@ -76,6 +76,7 @@ FUNCTIONS = (
     'dvz_mesh',
     'dvz_panel_at',
     'dvz_panel_transpose',
+    'dvz_process_transfers',
     'dvz_prop_get',
     'dvz_scene_destroy',
     'dvz_scene_panel',

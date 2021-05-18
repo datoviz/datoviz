@@ -65,8 +65,14 @@ cdef extern from "<datoviz/datoviz.h>":
     ctypedef struct DvzWindow:
         pass
 
+    ctypedef struct DvzImages:
+        uint32_t width, height, depth
+        VkFormat format
+        VkDeviceSize size
+
     ctypedef struct DvzTexture:
         DvzGpu* gpu
+        DvzImages* images
 
     ctypedef struct DvzCanvas:
         DvzApp* app
@@ -1348,6 +1354,8 @@ cdef extern from "<datoviz/datoviz.h>":
     void dvz_download_texture(DvzContext* context, DvzTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data)
 
     void dvz_copy_texture(DvzContext* context, DvzTexture* src, uvec3 src_offset, DvzTexture* dst, uvec3 dst_offset, uvec3 shape, VkDeviceSize size)
+
+    void dvz_process_transfers(DvzContext* context)
 
     void dvz_transform_pos(DvzDataCoords coords, DvzArray* pos_in, DvzArray* pos_out, bint inverse)
 

@@ -31,6 +31,7 @@ ctypedef np.int16_t SHORT
 ctypedef np.uint16_t USHORT
 ctypedef np.int32_t INT
 ctypedef np.uint32_t UINT
+ctypedef np.uint32_t[3] TEX_SHAPE
 
 
 
@@ -41,6 +42,9 @@ ctypedef np.uint32_t UINT
 
 DEFAULT_WIDTH = 1024
 DEFAULT_HEIGHT = 768
+
+cdef TEX_SHAPE DVZ_ZERO_OFFSET = (0, 0, 0)
+
 
 
 # TODO: add more keys
@@ -362,9 +366,9 @@ _TEXTURE_FILTERS = {
 }
 
 _SOURCE_TYPES = {
-    'transfer': (cv.DVZ_SOURCE_TYPE_TRANSFER, 1),
-    'image': (cv.DVZ_SOURCE_TYPE_IMAGE, 2),
-    'volume': (cv.DVZ_SOURCE_TYPE_VOLUME, 3),
+    1: cv.DVZ_SOURCE_TYPE_TRANSFER,
+    2: cv.DVZ_SOURCE_TYPE_IMAGE,
+    3: cv.DVZ_SOURCE_TYPE_VOLUME,
 }
 
 _FORMATS = {
@@ -798,24 +802,29 @@ cdef class Context:
         self._c_gpu = c_gpu
         self._c_context = c_context
 
-    def _texture(self, source_type, arr, filtering='nearest'):
-        """Create a texture."""
+    def texture(
+            self, int height, int width=1, int depth=1,
+            int ncomp=4, np.dtype dtype=None, int ndim=2):
+        """Create a 1D, 2D, or 3D texture."""
+
+        dtype = np.dtype(dtype or np.uint8)
+
         tex = Texture()
-        tex.create(self._c_context, source_type, arr)
-        tex.set_filter(filtering)
+
+        # Texture shape.
+        assert width > 0
+        assert height > 0
+        assert depth > 0
+        cdef TEX_SHAPE shape
+        # NOTE: shape is in Vulkan convention.
+        shape[0] = width
+        shape[1] = height
+        shape[2] = depth
+
+        # Create the texture.
+        tex.create(self._c_context, ndim, ncomp, shape, dtype)
+        logging.debug(f"Create a {str(tex)}")
         return tex
-
-    def transfer(self, arr, **kwargs):
-        """Create a 1D texture, typically used for transfer functions."""
-        return self._texture('transfer', arr, **kwargs)
-
-    def image(self, arr, **kwargs):
-        """Create a 2D texture, typically used for images."""
-        return self._texture('image', arr, **kwargs)
-
-    def volume(self, arr, **kwargs):
-        """Create a 3D texture, typically used for volumes."""
-        return self._texture('volume', arr, **kwargs)
 
     def colormap(self, unicode name, np.ndarray[CHAR, ndim=2] colors):
         """Create a custom colormap"""
@@ -842,60 +851,70 @@ cdef class Context:
 # Texture
 # -------------------------------------------------------------------------------------------------
 
-cdef _get_tex_info(unicode source_type, np.ndarray arr):
-    """Return the source type, image format, and dimension count of a NumPy array to be used
-    as a texture."""
-
-    # Find the Vulkan format for the texture
-    c_source_type, ndim = _SOURCE_TYPES[source_type]
-
-    # Find the format from the array shape and dtype
-    assert 1 <= ndim <= 3
-    if ndim <= arr.ndim - 1:
-        nc = arr.shape[ndim]
-    else:
-        nc = 1
-    # assert (arr.dtype, nc) in _FORMATS, ((arr.dtype, nc), ndim, arr.shape)
-    assert nc <= 4
-    c_format = _FORMATS[arr.dtype, nc]
-    return c_source_type, c_format, ndim
-
-
-
 cdef class Texture:
     """A 1D, 2D, or 3D GPU texture."""
 
     cdef cv.DvzContext* _c_context
     cdef cv.DvzTexture* _c_texture
-    cdef cv.VkFormat _c_format
-    cdef cv.DvzSourceType _c_source_type
-    cdef unicode source_type
-    cdef np.uint32_t _shape[3]
 
-    cdef create(self, cv.DvzContext* c_context, unicode source_type, np.ndarray arr):
+    cdef TEX_SHAPE _c_shape # always 3 values: width, height, depth (WARNING, reversed in NumPy)
+    cdef np.dtype dtype
+    cdef int ndim  # 1D, 2D, or 3D texture
+    cdef int ncomp  # 1-4 (eg 3 for RGB, 4 for RGBA)
+
+    cdef cv.DvzSourceType _c_source_type
+
+    cdef create(self, cv.DvzContext* c_context, int ndim, int ncomp, TEX_SHAPE shape, np.dtype dtype):
         """Create a texture."""
         assert c_context is not NULL
         self._c_context = c_context
-        self.source_type = source_type
 
-        # Find the texture information from the NumPy array spec.
-        self._c_source_type, self._c_format, ndim = _get_tex_info(source_type, arr)
+        assert 1 <= ndim <= 3
+        assert 1 <= ncomp <= 4
+        self.ndim = ndim
+        self.ncomp = ncomp
 
-        # Find the shape
+        # Store the shape.
         for i in range(ndim):
-            self._shape[i] = arr.shape[i]
+            self._c_shape[i] = shape[i]
         for i in range(ndim, 3):
-            self._shape[i] = 1
+            self._c_shape[i] = 1
 
-        if ndim > 1:
-            # NOTE: Vulkan considers textures as (width, height, depth) whereas NumPy
-            # considers them as (height, width, depth), hence the need to transpose here.
-            self._shape[0], self._shape[1] = self._shape[1], self._shape[0]
+        # Find the source type.
+        assert ndim in _SOURCE_TYPES
+        self._c_source_type = _SOURCE_TYPES[ndim]
+
+        # Find the Vulkan format.
+        cdef cv.VkFormat c_format
+        self.dtype = dtype
+        assert (dtype, ncomp) in _FORMATS
+        c_format = _FORMATS[dtype, ncomp]
 
         # Create the Datoviz texture.
-        self._c_texture = cv.dvz_ctx_texture(self._c_context, ndim, &self._shape[0], self._c_format)
+        self._c_texture = cv.dvz_ctx_texture(self._c_context, ndim, &shape[0], c_format)
 
-        self.upload(arr)
+    @property
+    def item_size(self):
+        """Size, in bytes, of every value."""
+        return np.dtype(self.dtype).itemsize
+
+    @property
+    def size(self):
+        """Total number of values in the texture (including the number of color components)."""
+        return np.prod(self.shape)
+
+    @property
+    def shape(self):
+        """Shape (NumPy convention: height, width, depth).
+        Also, the last dimension is the number of color components."""
+        shape = [1, 1, 1]
+        for i in range(3):
+            shape[i] = self._c_shape[i]
+        if self.ndim > 1:
+            # NOTE: Vulkan considers textures as (width, height, depth) whereas NumPy
+            # considers them as (height, width, depth), hence the need to transpose here.
+            shape[0], shape[1] = shape[1], shape[0]
+        return tuple(shape[:self.ndim]) + (self.ncomp,)
 
     def set_filter(self, name):
         """Change the filtering of the texture."""
@@ -904,26 +923,28 @@ cdef class Texture:
 
     def upload(self, np.ndarray arr):
         """Set the texture data from a NumPy array."""
-
-        c_source_type, c_format, ndim = _get_tex_info(self.source_type, arr)
-        assert c_source_type == self._c_source_type
-        assert c_format == self._c_format
-
-        cdef cv.uvec3 DVZ_ZERO_OFFSET = [0, 0, 0]
-
-        cdef size = arr.size
-        cdef item_size = np.dtype(arr.dtype).itemsize
-
-        # Upload the array to the texture.
-        cdef int s
-        s = size * item_size
+        assert arr.dtype == self.dtype
+        for i in range(self.ndim):
+            assert arr.shape[i] == self.shape[i]
+        logger.debug(f"Upload NumPy array to {self}.")
         cv.dvz_upload_texture(
-            self._c_context, self._c_texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET,
-            size * item_size, &arr.data[0])
+            self._c_context, self._c_texture, &DVZ_ZERO_OFFSET[0], &DVZ_ZERO_OFFSET[0],
+            self.size * self.item_size, &arr.data[0])
 
-    @property
-    def shape(self):
-        return (self._shape[0], self._shape[1], self._shape[2])
+    def download(self):
+        """Download the texture data to a NumPy array."""
+        cdef np.ndarray arr
+        arr = np.empty(self.shape, dtype=self.dtype)
+        logger.debug(f"Download {self}.")
+        cv.dvz_download_texture(
+            self._c_context, self._c_texture, &DVZ_ZERO_OFFSET[0], &DVZ_ZERO_OFFSET[0],
+            self.size * self.item_size, &arr.data[0])
+        cv.dvz_process_transfers(self._c_context)
+        return arr
+
+    def __repr__(self):
+        """The shape axes are in the following order: height, width, depth, ncomp."""
+        return f"<Texture {self.ndim}D {'x'.join(map(str, self.shape))} ({self.dtype})>"
 
 
 
