@@ -15,6 +15,12 @@ END_INCL_NO_WARN
 
 
 
+#define CHECK_IMGUI                                                                               \
+    if (!_check_imgui_context())                                                                  \
+        return;
+
+
+
 /*************************************************************************************************/
 /*  Utils                                                                                        */
 /*************************************************************************************************/
@@ -30,8 +36,22 @@ static void _imgui_check_vk_result(VkResult err)
 
 
 
+static inline bool _check_imgui_context()
+{
+    if (ImGui::GetCurrentContext() == NULL)
+    {
+        log_error("no more ImGui context, skipping Dear ImGui callback");
+        return false;
+    }
+    return true;
+}
+
+
+
 static void _presend(DvzCanvas* canvas, DvzEvent ev)
 {
+    bool has_imgui_context = _check_imgui_context();
+
     ASSERT(canvas != NULL);
     if (!canvas->overlay)
         return;
@@ -44,6 +64,7 @@ static void _presend(DvzCanvas* canvas, DvzEvent ev)
         cmds, idx, &canvas->renderpass_overlay, &canvas->framebuffers_overlay);
 
     // Begin new frame.
+    if (has_imgui_context)
     {
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -61,6 +82,7 @@ static void _presend(DvzCanvas* canvas, DvzEvent ev)
     }
 
     // End frame.
+    if (has_imgui_context)
     {
         ImGui::Render();
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmds->cmds[idx]);
@@ -71,6 +93,62 @@ static void _presend(DvzCanvas* canvas, DvzEvent ev)
 
     ASSERT(canvas != NULL);
     dvz_submit_commands(&canvas->submit, cmds);
+}
+
+
+
+/*************************************************************************************************/
+/*  Gui style                                                                                    */
+/*************************************************************************************************/
+
+/*
+prompt style:
+flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar |
+                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNav
+| ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNavInputs | ImGuiWindowFlags_NoDecoration |
+ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
+ImGuiWindowFlags_NoFocusOnAppearing; ImGui::SetNextWindowBgAlpha(0.25f);
+
+        ImVec2 window_pos = ImVec2(0, io.DisplaySize.y);
+        ImVec2 window_pos_pivot = ImVec2(0, 1);
+        ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+*/
+
+// 0 = TL, 1 = TR, 2 = LL, 3 = LR
+static int _fixed_style(int corner)
+{
+    const ImGuiIO& io = ImGui::GetIO();
+
+    int flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar |
+                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNav |
+                ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNavInputs |
+                ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
+                ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing;
+    ImGui::SetNextWindowBgAlpha(0.5f);
+
+    float distance = 0;
+    ASSERT(corner >= 0);
+    ImVec2 window_pos = ImVec2(
+        (corner & 1) ? io.DisplaySize.x - distance : distance,
+        (corner & 2) ? io.DisplaySize.y - distance : distance);
+    ImVec2 window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
+    ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+
+    return flags;
+}
+
+static int _gui_style(int flags)
+{
+    bool fixed = ((flags >> 0) & DVZ_GUI_FLAGS_FIXED) != 0;
+    int corner = ((flags >> 4) & 7) - 1;
+
+    if (fixed)
+    {
+        ASSERT(corner >= 0);
+        return _fixed_style(corner);
+    }
+    else
+        return 0;
 }
 
 
@@ -220,62 +298,6 @@ static void _imgui_canvas_enable(DvzCanvas* canvas)
 
 
 /*************************************************************************************************/
-/*  Gui creation                                                                                 */
-/*************************************************************************************************/
-
-/*
-prompt style:
-flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar |
-                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNav
-| ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNavInputs | ImGuiWindowFlags_NoDecoration |
-ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
-ImGuiWindowFlags_NoFocusOnAppearing; ImGui::SetNextWindowBgAlpha(0.25f);
-
-        ImVec2 window_pos = ImVec2(0, io.DisplaySize.y);
-        ImVec2 window_pos_pivot = ImVec2(0, 1);
-        ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-*/
-
-// 0 = TL, 1 = TR, 2 = LL, 3 = LR
-static int _fixed_style(int corner)
-{
-    const ImGuiIO& io = ImGui::GetIO();
-
-    int flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar |
-                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNav |
-                ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNavInputs |
-                ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
-                ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing;
-    ImGui::SetNextWindowBgAlpha(0.5f);
-
-    float distance = 0;
-    ASSERT(corner >= 0);
-    ImVec2 window_pos = ImVec2(
-        (corner & 1) ? io.DisplaySize.x - distance : distance,
-        (corner & 2) ? io.DisplaySize.y - distance : distance);
-    ImVec2 window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
-    ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-
-    return flags;
-}
-
-static int _gui_style(int flags)
-{
-    bool fixed = ((flags >> 0) & DVZ_GUI_FLAGS_FIXED) != 0;
-    int corner = ((flags >> 4) & 7) - 1;
-
-    if (fixed)
-    {
-        ASSERT(corner >= 0);
-        return _fixed_style(corner);
-    }
-    else
-        return 0;
-}
-
-
-
-/*************************************************************************************************/
 /*  Dear ImGui functions                                                                         */
 /*************************************************************************************************/
 
@@ -336,6 +358,8 @@ void dvz_imgui_demo(DvzCanvas* canvas)
 
 void dvz_gui_begin(const char* title, int flags)
 {
+    CHECK_IMGUI
+
     ASSERT(title != NULL);
     ASSERT(strlen(title) > 0);
 
@@ -347,13 +371,17 @@ void dvz_gui_begin(const char* title, int flags)
 
 void dvz_gui_end()
 {
-    ImGui::End(); //
+    CHECK_IMGUI
+
+    ImGui::End();
 }
 
 
 
 void dvz_gui_callback_fps(DvzCanvas* canvas, DvzEvent ev)
 {
+    CHECK_IMGUI
+
     ASSERT(canvas != NULL);
     dvz_gui_begin("FPS", DVZ_GUI_FLAGS_FIXED | DVZ_GUI_FLAGS_CORNER_UR);
     ImGui::Text("  FPS: %04.0f", canvas->fps);
@@ -365,6 +393,8 @@ void dvz_gui_callback_fps(DvzCanvas* canvas, DvzEvent ev)
 
 void dvz_gui_callback_demo(DvzCanvas* canvas, DvzEvent ev)
 {
+    CHECK_IMGUI
+
     ImGui::ShowDemoWindow(); //
 }
 
@@ -372,6 +402,8 @@ void dvz_gui_callback_demo(DvzCanvas* canvas, DvzEvent ev)
 
 void dvz_gui_callback_player(DvzCanvas* canvas, DvzEvent ev)
 {
+    CHECK_IMGUI
+
     ASSERT(canvas != NULL);
     if (canvas->screencast == NULL)
         return;
@@ -398,7 +430,7 @@ void dvz_gui_callback_player(DvzCanvas* canvas, DvzEvent ev)
 
 
 /*************************************************************************************************/
-/*  Gui controls implementation                                                                  */
+/*  GUI controls implementation                                                                  */
 /*************************************************************************************************/
 
 static void _emit_gui_event(DvzGui* gui, DvzGuiControl* control)
@@ -609,6 +641,8 @@ static void _show_gui(DvzGui* gui)
 
 void dvz_gui_callback(DvzCanvas* canvas, DvzEvent ev)
 {
+    CHECK_IMGUI
+
     ASSERT(canvas != NULL);
 
     // When Dear ImGUI captures the mouse and keyboard, Datoviz should not process user events.

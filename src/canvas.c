@@ -2434,11 +2434,15 @@ int dvz_canvas_frame(DvzCanvas* canvas)
     // Destroy the canvas if needed.
     if (canvas->window != NULL)
     {
-        if (backend_window_should_close(app->backend, canvas->window->backend_window))
+        // Check canvas.to_close, and whether the user as requested to close the window.
+        if (atomic_load(&canvas->to_close) ||
+            backend_window_should_close(app->backend, canvas->window->backend_window))
             canvas->window->obj.status = DVZ_OBJECT_STATUS_NEED_DESTROY;
+
         if (canvas->window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
             canvas->obj.status = DVZ_OBJECT_STATUS_NEED_DESTROY;
     }
+
     if (canvas->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
     {
         log_trace("destroying canvas");
@@ -2594,7 +2598,7 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
         log_trace("skip destruction of already-destroyed canvas");
         return;
     }
-    log_trace("destroying canvas");
+    log_debug("destroying canvas");
 
     // DEBUG: only in non offscreen mode
     if (!canvas->offscreen)
