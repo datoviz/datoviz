@@ -61,6 +61,7 @@ def test_gpu():
 def test_canvas():
     c = canvas()
     app().run(10)
+    c.close()
 
 
 
@@ -129,7 +130,21 @@ def test_gui_demo():
 
 
 
-def test_gui_visual_marker():
+def test_gui_custom():
+    c = canvas()
+
+    gui = c.gui("Test GUI")
+
+    gui.control("slider_float", "slider float", vmin=0, vmax=10)
+    gui.control("slider_int", "slider int", vmin=0, vmax=3)
+    gui.control("button", "click me")
+
+    app().run(10)
+    c.close()
+
+
+
+def test_visual_marker():
     c = canvas()
     s = c.scene()
     p = s.panel()
@@ -144,7 +159,7 @@ def test_gui_visual_marker():
 
 
 
-def test_gui_visual_image():
+def test_visual_image():
     a = app()
     g = a.gpu()
     c = g.canvas()
