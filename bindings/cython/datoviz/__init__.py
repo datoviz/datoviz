@@ -65,6 +65,7 @@ add_default_handler('DEBUG')
 _APP = None
 _EXITING = False
 _EVENT_LOOP_INTEGRATION = False
+_ASYNCIO_LOOP = None
 
 
 # Main functions
@@ -145,6 +146,9 @@ register('datoviz', inputhook)
 # -------------------------------------------------------------------------------------------------
 
 def run_asyncio(n_frames=0):
+    global _ASYNCIO_LOOP
+    if _ASYNCIO_LOOP is None:
+        _ASYNCIO_LOOP = asyncio.get_event_loop()
 
     async def _event_loop():
         logger.debug("start datoviz asyncio event loop")
@@ -153,13 +157,19 @@ def run_asyncio(n_frames=0):
             await asyncio.sleep(0.005)
             i += 1
 
-    loop = asyncio.get_event_loop()
-    task = loop.create_task(_event_loop())
+    task = _ASYNCIO_LOOP.create_task(_event_loop())
 
     try:
-        loop.run_until_complete(task)
+        _ASYNCIO_LOOP.run_until_complete(task)
     except asyncio.CancelledError:
         pass
+
+
+def do_async(task):
+    global _ASYNCIO_LOOP
+    if _ASYNCIO_LOOP is None:
+        _ASYNCIO_LOOP = asyncio.get_event_loop()
+    _ASYNCIO_LOOP.create_task(task)
 
 
 def run_native(n_frames=0):
