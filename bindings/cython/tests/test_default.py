@@ -3,14 +3,19 @@
 # Imports
 # -------------------------------------------------------------------------------------------------
 
+from pathlib import Path
 import time
 
 import numpy as np
 from numpy.testing import assert_array_equal as ae
 import numpy.random as nr
 from pytest import fixture
+import imageio
 
 from datoviz import App, app, canvas, colormap
+
+ROOT_PATH = Path(__file__).resolve().parent.parent.parent.parent
+print(ROOT_PATH)
 
 
 # -------------------------------------------------------------------------------------------------
@@ -107,7 +112,7 @@ def test_gui_demo():
 
 
 
-def test_gui_visual():
+def test_gui_visual_marker():
     c = canvas()
     s = c.scene()
     p = s.panel()
@@ -117,6 +122,39 @@ def test_gui_visual():
     v.data('pos', np.c_[nr.normal(size=(n, 2)), np.zeros(n)])
     v.data('ms', nr.uniform(size=n, low=5, high=30))
     v.data('color', nr.randint(size=(n, 4), low=100, high=255))
+    app().run(10)
+    c.close()
+
+
+
+def test_gui_visual_image():
+    a = app()
+    g = a.gpu()
+    c = g.canvas()
+    ctx = g.context()
+    s = c.scene()
+    p = s.panel(controller='panzoom')
+    v = p.visual('image')
+
+    # Top left, top right, bottom right, bottom left
+    v.data('pos', np.array([[-1, +1, 0]]), idx=0)
+    v.data('pos', np.array([[+1, +1, 0]]), idx=1)
+    v.data('pos', np.array([[+1, -1, 0]]), idx=2)
+    v.data('pos', np.array([[-1, -1, 0]]), idx=3)
+
+    v.data('texcoords', np.atleast_2d([0, 0]), idx=0)
+    v.data('texcoords', np.atleast_2d([1, 0]), idx=1)
+    v.data('texcoords', np.atleast_2d([1, 1]), idx=2)
+    v.data('texcoords', np.atleast_2d([0, 1]), idx=3)
+
+    # First texture.
+    img = imageio.imread(ROOT_PATH / 'data/textures/earth.jpg')
+    img = np.dstack((img, 255 * np.ones(img.shape[:2])))
+    img = img.astype(np.uint8)
+    tex = ctx.texture(img.shape[0], img.shape[1])
+    tex.upload(img)
+    v.texture(tex)
+
     app().run(10)
     c.close()
 
