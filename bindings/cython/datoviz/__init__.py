@@ -4,6 +4,7 @@ import logging
 import os
 import os.path as op
 import sys
+import time
 import __main__ as main
 
 from IPython import get_ipython
@@ -91,6 +92,55 @@ def destroy():
     _APP = None
 
 
+# IPython event loop integration
+# -------------------------------------------------------------------------------------------------
+
+def inputhook(context):
+    global _APP, _EXITING, _EVENT_LOOP_INTEGRATION
+    if _EXITING:
+        return
+    if _APP is None:
+        logger.debug("automatically creating a Datoviz app")
+        _APP = app()
+    assert _APP
+    _EVENT_LOOP_INTEGRATION = True
+    while not context.input_is_ready():
+        _APP.next_frame()
+        # HACK: prevent the app.is_running flag to be reset to False at the end of next_frame()
+        _APP._set_running(True)
+        time.sleep(0.005)
+
+
+def enable_ipython():
+    ipython = get_ipython()
+    if ipython:
+        logger.info("Enabling Datoviz IPython event loop integration")
+        app()._set_running(True)
+        ipython.magic('%gui datoviz')
+
+
+def in_ipython():
+    try:
+        return __IPYTHON__
+    except NameError:
+        return False
+
+
+def is_interactive():
+    if not in_ipython():
+        return hasattr(sys, 'ps1')
+    else:
+        if '-i' in sys.argv:
+            return True
+        # return sys.__stdin__.isatty()
+        # return hasattr(sys, 'ps1')
+        return not hasattr(main, '__file__')
+
+
+# print(f"In IPython: {in_ipython()}, is interactive: {is_interactive()}")
+register('datoviz', inputhook)
+
+
 # Event loops
 # -------------------------------------------------------------------------------------------------
 
@@ -119,55 +169,9 @@ def run_native(n_frames=0):
 
 def run(n_frames=0, event_loop=None):
     event_loop = event_loop or 'native'
-    if event_loop == 'native':
+    if event_loop == 'ipython' or is_interactive():
+        enable_ipython()
+    elif event_loop == 'native':
         run_native(n_frames)
     elif event_loop == 'asyncio':
         run_asyncio(n_frames)
-
-
-# IPython event loop integration
-# -------------------------------------------------------------------------------------------------
-
-def inputhook(context):
-    global _APP, _EXITING, _EVENT_LOOP_INTEGRATION
-    if _EXITING:
-        return
-    if _APP is None:
-        logger.debug("automatically creating a Datoviz app")
-        _APP = app()
-    assert _APP is not None
-    _EVENT_LOOP_INTEGRATION = True
-    while not context.input_is_ready():
-        _APP.next_frame()
-        # HACK: prevent the app.is_running flag to be reset to False at the end of next_frame()
-        _APP._set_running(True)
-
-
-def enable_ipython():
-    ipython = get_ipython()
-    if ipython is not None:
-        logger.info("Enabling Datoviz IPython event loop integration")
-        app()._set_running(True)
-        ipython.magic('%gui datoviz')
-
-
-def in_ipython():
-    try:
-        return __IPYTHON__
-    except NameError:
-        return False
-
-
-def is_interactive():
-    if not in_ipython():
-        return hasattr(sys, 'ps1')
-    else:
-        if '-i' in sys.argv:
-            return True
-        # return sys.__stdin__.isatty()
-        # return hasattr(sys, 'ps1')
-        return not hasattr(main, '__file__')
-
-
-# print(f"In IPython: {in_ipython()}, is interactive: {is_interactive()}")
-register('datoviz', inputhook)
