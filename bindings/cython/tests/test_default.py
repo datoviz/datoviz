@@ -3,6 +3,7 @@
 # Imports
 # -------------------------------------------------------------------------------------------------
 
+import logging
 from pathlib import Path
 import time
 
@@ -12,7 +13,11 @@ import numpy.random as nr
 from pytest import fixture
 import imageio
 
-from datoviz import App, app, canvas, colormap
+from datoviz import app, canvas, colormap, run
+
+logger = logging.getLogger(__name__)
+
+
 
 ROOT_PATH = Path(__file__).resolve().parent.parent.parent.parent
 print(ROOT_PATH)
@@ -204,3 +209,11 @@ def test_subplots():
         v.data('ms', nr.uniform(size=n, low=5, high=30))
         v.data('color', colormap(nr.rand(n), alpha=.75))
     app().run(10)
+
+
+
+def test_event_loop():
+    c = canvas(show_fps=True)
+    for event_loop in ('native', 'asyncio'):
+        run(10, event_loop=event_loop)
+    c.close()

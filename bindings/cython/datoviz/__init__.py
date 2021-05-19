@@ -1,3 +1,4 @@
+import asyncio
 import atexit
 import logging
 import os
@@ -80,13 +81,6 @@ def canvas(*args, **kwargs):
     return app().gpu().canvas(*args, **kwargs)
 
 
-def run(*args, **kwargs):
-    interact = kwargs.pop('interactive', None)
-    if interact is True:
-        enable_ipython()
-    app().run()
-
-
 @atexit.register
 def destroy():
     global _APP, _EXITING
@@ -95,6 +89,40 @@ def destroy():
         logger.debug("destroying the app now")
         _APP.destroy()
     _APP = None
+
+
+# Event loops
+# -------------------------------------------------------------------------------------------------
+
+def run_asyncio(n_frames=0):
+
+    async def _event_loop():
+        logger.debug("start datoviz asyncio event loop")
+        i = 0
+        while app().next_frame() and (n_frames == 0 or i < n_frames):
+            await asyncio.sleep(0.005)
+            i += 1
+
+    loop = asyncio.get_event_loop()
+    task = loop.create_task(_event_loop())
+
+    try:
+        loop.run_until_complete(task)
+    except asyncio.CancelledError:
+        pass
+
+
+def run_native(n_frames=0):
+    logger.debug("start datoviz native event loop")
+    app().run(n_frames)
+
+
+def run(n_frames=0, event_loop=None):
+    event_loop = event_loop or 'native'
+    if event_loop == 'native':
+        run_native(n_frames)
+    elif event_loop == 'asyncio':
+        run_asyncio(n_frames)
 
 
 # IPython event loop integration
@@ -142,6 +170,4 @@ def is_interactive():
 
 
 # print(f"In IPython: {in_ipython()}, is interactive: {is_interactive()}")
-
-
 register('datoviz', inputhook)
