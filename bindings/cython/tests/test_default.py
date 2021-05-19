@@ -56,10 +56,6 @@ def test_gpu():
 def test_canvas():
     c = canvas()
     app().run(10)
-    # c.close()
-    # app().run(1)
-    # del c
-    # c.destroy()
 
 
 
@@ -94,4 +90,18 @@ def test_texture():
 def test_gui_demo():
     c = canvas()
     c.gui_demo()
+    app().run(10)
+
+
+
+def test_visual():
+    c = canvas()
+    s = c.scene()
+    p = s.panel()
+    v = p.visual('marker')
+    n = 10000
+    nr.seed(0)
+    v.data('pos', np.c_[nr.normal(size=(n, 2)), np.zeros(n)])
+    v.data('ms', nr.uniform(size=n, low=5, high=30))
+    v.data('color', nr.randint(size=(n, 4), low=100, high=255))
     app().run(10)
