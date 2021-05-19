@@ -639,7 +639,6 @@ static void _path_bake(DvzVisual* visual, DvzVisualDataEvent ev)
     // number of points, incl invisible join points
     uint32_t n_points_tot = n_points + 0 * (n_paths);
 
-
     ASSERT(n_points > 0);
     ASSERT(n_paths > 0);
 
@@ -859,6 +858,8 @@ static void _visual_image_bake(DvzVisual* visual, DvzVisualDataEvent ev)
 
     // Number of images
     uint32_t img_count = dvz_prop_size(pos0);
+    if (img_count == 0)
+        return;
     ASSERT(dvz_prop_size(pos1) == img_count);
     ASSERT(dvz_prop_size(pos2) == img_count);
     ASSERT(dvz_prop_size(pos3) == img_count);
@@ -1185,7 +1186,8 @@ static void _visual_axes_2D_bake(DvzVisual* visual, DvzVisualDataEvent ev)
     // Count the total number of segments.
     // NOTE: the number of segments is determined by the POS prop.
     uint32_t count = _count_prop_items(visual, 1, (DvzPropType[]){DVZ_PROP_POS}, 4);
-
+    if (count == 0)
+        return;
 
     // Segment graphics.
     // -----------------
@@ -1634,6 +1636,8 @@ static void _visual_volume_bake(DvzVisual* visual, DvzVisualDataEvent ev)
 
     // Number of images
     uint32_t img_count = dvz_prop_size(pos0);
+    if (img_count == 0)
+        return;
     ASSERT(dvz_prop_size(pos1) == img_count);
 
     // Graphics data.
@@ -1789,6 +1793,8 @@ static void _visual_volume_slice_bake(DvzVisual* visual, DvzVisualDataEvent ev)
 
     // Number of images
     uint32_t img_count = dvz_prop_size(pos0);
+    if (img_count == 0)
+        return;
     ASSERT(dvz_prop_size(pos1) == img_count);
     ASSERT(dvz_prop_size(pos2) == img_count);
     ASSERT(dvz_prop_size(pos3) == img_count);

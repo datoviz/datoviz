@@ -62,6 +62,27 @@ static void _add_visual(DvzPanel* panel)
 /*  Visuals tests                                                                                */
 /*************************************************************************************************/
 
+int test_scene_empty(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    ASSERT(canvas != NULL);
+
+    _white_background(canvas);
+
+    DvzScene* scene = dvz_scene(canvas, 1, 1);
+    DvzPanel* panel = dvz_scene_panel(scene, 0, 0, DVZ_CONTROLLER_AXES_2D, 0);
+    DvzVisual* visual = dvz_scene_visual(panel, DVZ_VISUAL_IMAGE, 0);
+    ASSERT(visual);
+
+    dvz_app_run(canvas->app, 10);
+    int res = _scene_run(scene, "empty");
+
+    _dark_background(canvas);
+    return res;
+}
+
+
+
 int test_scene_single(TestContext* tc)
 {
     DvzCanvas* canvas = tc->canvas;

@@ -254,12 +254,12 @@ static DvzArray* _prop_array(DvzProp* prop)
     }
     else if (prop->arr_trans.item_count > 0)
     {
-        log_trace("take transformed array for prop %d", prop->prop_type);
+        // log_trace("take transformed array for prop %d", prop->prop_type);
         return &prop->arr_trans;
     }
     else
     {
-        log_trace("take original array for prop %d", prop->prop_type);
+        // log_trace("take original array for prop %d", prop->prop_type);
         return &prop->arr_orig;
     }
 }

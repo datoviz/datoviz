@@ -144,6 +144,7 @@ int test_vislib_volume(TestContext*);
 int test_vislib_volume_slice(TestContext*);
 
 // Test scene.
+int test_scene_empty(TestContext*);
 int test_scene_single(TestContext*);
 int test_scene_double(TestContext*);
 int test_scene_different_size(TestContext*);
@@ -289,6 +290,7 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE(CANVAS, test_vislib_volume_slice),   //
 
     // Scene.
+    CASE_FIXTURE(CANVAS, test_scene_empty),                 //
     CASE_FIXTURE(CANVAS, test_scene_single),                //
     CASE_FIXTURE(CANVAS, test_scene_double),                //
     CASE_FIXTURE(CANVAS, test_scene_different_size),        //

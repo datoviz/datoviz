@@ -723,6 +723,12 @@ void dvz_visual_update(
                 {
                     log_warn("skipping visual data upload as VERTEX source is not set");
                     visual->obj.status = DVZ_OBJECT_STATUS_INVALID;
+
+                    // NOTE: this is needed to avoid an infinite loop. We need to let
+                    // _enqueue_all_visuals_changed() that this visual is invalid and should not
+                    // trigger a visual_changed event.
+                    _source_set_changed(source, false);
+
                     return;
                 }
             }
