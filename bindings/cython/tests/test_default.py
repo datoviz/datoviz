@@ -10,7 +10,7 @@ from numpy.testing import assert_array_equal as ae
 import numpy.random as nr
 from pytest import fixture
 
-from datoviz import App, app, canvas
+from datoviz import App, app, canvas, colormap
 
 
 # -------------------------------------------------------------------------------------------------
@@ -59,6 +59,18 @@ def test_canvas():
 
 
 
+def test_colormap():
+    n = 1000
+    values = np.linspace(-1, 1, n)
+    alpha = np.linspace(+1, +.5, n)
+    colors = colormap(values, vmin=-1, vmax=+1, cmap='viridis', alpha=alpha)
+    assert colors.dtype == np.uint8
+    assert colors.shape == (n, 4)
+    ae(colors[0], (68, 1, 84, 255))
+    ae(colors[-1], (253, 231, 36, 127))
+
+
+
 def test_texture():
     ctx = app().gpu().context()
     print(ctx)
@@ -91,10 +103,11 @@ def test_gui_demo():
     c = canvas()
     c.gui_demo()
     app().run(10)
+    c.close()
 
 
 
-def test_visual():
+def test_gui_visual():
     c = canvas()
     s = c.scene()
     p = s.panel()
@@ -104,4 +117,20 @@ def test_visual():
     v.data('pos', np.c_[nr.normal(size=(n, 2)), np.zeros(n)])
     v.data('ms', nr.uniform(size=n, low=5, high=30))
     v.data('color', nr.randint(size=(n, 4), low=100, high=255))
+    app().run(10)
+    c.close()
+
+
+
+def test_subplots():
+    c = canvas(show_fps=True)
+    s = c.scene(1, 2)
+    p0, p1 = s.panel(col=0), s.panel(col=1, controller='arcball')
+    n = 10000
+    for p in (p0, p1):
+        nr.seed(0)
+        v = p.visual('marker', depth_test=p == p1)
+        v.data('pos', nr.normal(size=(n, 3)))
+        v.data('ms', nr.uniform(size=n, low=5, high=30))
+        v.data('color', colormap(nr.rand(n), alpha=.75))
     app().run(10)

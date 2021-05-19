@@ -666,12 +666,12 @@ cdef class App:
 
     def run(self, int n_frames=0, unicode screenshot=None, unicode video=None):
         """Start the rendering loop."""
-        # HACK: run a few frames to render the image, make a screenshot, and run the event loop.
-        if screenshot and self._canvases:
-            cv.dvz_app_run(self._c_app, 5)
-            self._canvases[0].screenshot(screenshot)
-        if video and self._canvases:
-            self._canvases[0].video(video)
+        # # HACK: run a few frames to render the image, make a screenshot, and run the event loop.
+        # if screenshot and self._canvases:
+        #     cv.dvz_app_run(self._c_app, 5)
+        #     self._canvases[0].screenshot(screenshot)
+        # if video and self._canvases:
+        #     self._canvases[0].video(video)
         cv.dvz_app_run(self._c_app, n_frames)
 
     def next_frame(self):
@@ -698,7 +698,7 @@ cdef class GPU:
     cdef cv.DvzGpu* _c_gpu
 
     cdef object _context
-    _canvases = []
+    # _canvases = []
 
     cdef create(self, cv.DvzApp* c_app, int idx):
         """Create a GPU."""
@@ -748,7 +748,7 @@ cdef class GPU:
         # Create and return the Canvas Cython wrapper.
         c = Canvas()
         c.create(self, c_canvas)
-        self._canvases.append(c)
+        # self._canvases.append(c)
         return c
 
     def context(self):
@@ -1016,14 +1016,16 @@ cdef class Canvas:
         """Show the Dear ImGui demo."""
         cv.dvz_imgui_demo(self._c_canvas)
 
-    def __dealloc__(self):
-        self.close()
-        cv.dvz_app_run(self._c_canvas.app, 1)
-        self._c_canvas = NULL
+    # def __dealloc__(self):
+    #     self.close()
+    #     cv.dvz_app_run(self._c_canvas.app, 1)
+    #     self._c_canvas = NULL
 
     def close(self):
         if self._c_canvas is not NULL:
             cv.dvz_canvas_to_close(self._c_canvas)
+            cv.dvz_app_run(self._c_canvas.app, 1)
+            self._c_canvas = NULL
 
     def _connect(self, evtype_py, f, param=0, cv.DvzEventMode mode=cv.DVZ_EVENT_MODE_SYNC):
         # NOTE: only SYNC callbacks for now.
