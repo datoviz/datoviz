@@ -76,6 +76,23 @@ def test_colormap():
 
 
 
+def test_colormap_custom():
+    # Create a custom color map, ranging from red to green.
+    cmap = np.c_[np.arange(256), np.arange(256)[::-1], np.zeros(256), 255 * np.ones(256)]
+    cmap = cmap.astype(np.uint8)
+
+    # Register the custom colormap.
+    app().gpu().context().colormap('mycmap', cmap)
+
+    # Test the custom colormap.
+    n = 256
+    colors = colormap(np.linspace(0, 1, n), cmap='mycmap')
+    ae(colors[:, 0], np.arange(256))
+    ae(colors[::-1, 1], np.arange(256))
+    assert np.all(colors[:, 2] == 0)
+
+
+
 def test_texture():
     ctx = app().gpu().context()
     print(ctx)
