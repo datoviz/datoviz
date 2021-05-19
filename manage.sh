@@ -73,13 +73,14 @@ fi
 
 if [ $1 == "valgrind" ]
 then
-    valgrind --leak-check=full \
-         --show-leak-kinds=all \
-         --track-origins=yes \
-         --verbose \
-         --suppressions=.valgrind.exceptions.txt \
-         --log-file=.valgrind.out.txt \
-         ${@:2}
+    valgrind \
+        --leak-check=full \
+        --show-leak-kinds=all \
+        --track-origins=yes \
+        --verbose \
+        --suppressions=.valgrind.exceptions.txt \
+        --log-file=.valgrind.out.txt \
+        ${@:2}
 fi
 
 if [ $1 == "cppcheck" ]

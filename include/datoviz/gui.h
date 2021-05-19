@@ -19,6 +19,7 @@ typedef struct DvzGuiContext DvzGuiContext;
 typedef void* ImTextureID;
 
 
+
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
@@ -34,13 +35,13 @@ struct DvzGuiContext
 /*  Dear ImGUI C wrapper                                                                         */
 /*************************************************************************************************/
 
-DVZ_EXPORT void dvz_imgui_init(DvzCanvas* canvas);
+DVZ_EXPORT void dvz_imgui_enable(DvzCanvas* canvas);
 
 DVZ_EXPORT void dvz_imgui_dpi_scaling(DvzCanvas* canvas, float scaling);
 
-DVZ_EXPORT void dvz_imgui_destroy(DvzCanvas* canvas);
-
 DVZ_EXPORT void dvz_imgui_demo(DvzCanvas* canvas);
+
+
 
 DVZ_EXPORT void dvz_gui_begin(const char* title, int flags);
 

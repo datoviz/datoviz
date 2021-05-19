@@ -749,7 +749,7 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
     canvas->guis = dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzGui), DVZ_OBJECT_TYPE_GUI);
     if (overlay)
     {
-        dvz_imgui_init(canvas);
+        dvz_imgui_enable(canvas);
 
         dvz_event_callback(
             canvas, DVZ_EVENT_IMGUI, 0, DVZ_EVENT_MODE_SYNC, dvz_gui_callback, NULL);
@@ -2603,9 +2603,11 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
         ASSERT(canvas->window->app != NULL);
     }
 
-    // Stop the event thread.
     ASSERT(canvas != NULL);
+    ASSERT(canvas->app != NULL);
     ASSERT(canvas->gpu != NULL);
+
+    // Stop the event thread.
     dvz_gpu_wait(canvas->gpu);
     dvz_event_stop(canvas);
     dvz_thread_join(&canvas->event_thread);
@@ -2640,6 +2642,14 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     if (canvas->overlay)
         dvz_framebuffers_destroy(&canvas->framebuffers_overlay);
 
+    // Destroy the Dear ImGui context if it was initialized.
+
+    // HACK: we should NOT destroy imgui when using multiple DvzApp, since Dear ImGui uses
+    // global context shared by all DvzApps. In practice, this is for now equivalent to using the
+    // offscreen backend (which does not support Dear ImGui at the moment anyway).
+    if (canvas->app->backend != DVZ_BACKEND_OFFSCREEN)
+        dvz_imgui_destroy();
+
     // Destroy the window.
     log_trace("canvas destroy window");
     if (canvas->window != NULL)
@@ -2661,8 +2671,9 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     log_trace("canvas destroy fences");
     dvz_fences_destroy(&canvas->fences_render_finished);
 
-    if (canvas->overlay)
-        dvz_imgui_destroy(canvas);
+    // Free the GUI context if it has been set.
+    FREE(canvas->gui_context);
+
     CONTAINER_DESTROY_ITEMS(DvzGui, canvas->guis, dvz_gui_destroy)
     dvz_container_destroy(&canvas->guis);
 

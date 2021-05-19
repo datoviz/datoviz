@@ -613,9 +613,6 @@ struct DvzCanvas
     // Graphics pipelines.
     DvzContainer graphics;
 
-    // Data transfers.
-    // DvzFifo transfers;
-
     // Event callbacks, running in the background thread, may be slow, for end-users.
     uint32_t callbacks_count;
     DvzEventCallbackRegister callbacks[DVZ_MAX_EVENT_CALLBACKS];

@@ -818,6 +818,11 @@ DVZ_EXPORT void dvz_autorun_setup(DvzApp* app, DvzAutorun autorun);
  */
 DVZ_EXPORT int dvz_app_destroy(DvzApp* app);
 
+/**
+ * Destroy the Dear ImGui global context if it was ever initialized.
+ */
+DVZ_EXPORT void dvz_imgui_destroy();
+
 
 
 /*************************************************************************************************/

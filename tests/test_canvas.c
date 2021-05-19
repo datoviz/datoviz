@@ -147,8 +147,8 @@ int test_canvas_multiple(TestContext* tc)
     DvzApp* app = tc->app;
     DvzGpu* gpu = dvz_gpu_best(app);
 
-    DvzCanvas* canvas0 = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
-    DvzCanvas* canvas1 = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
+    DvzCanvas* canvas0 = dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_IMGUI);
+    DvzCanvas* canvas1 = dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_IMGUI);
 
     uvec2 size = {0};
     dvz_canvas_size(canvas0, DVZ_CANVAS_SIZE_FRAMEBUFFER, size);

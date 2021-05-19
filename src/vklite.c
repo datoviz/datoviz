@@ -354,6 +354,7 @@ void dvz_gpu_destroy(DvzGpu* gpu)
     VkDevice device = gpu->device;
     ASSERT(device != VK_NULL_HANDLE);
 
+    // Destroy the context.
     if (gpu->context != NULL)
     {
         dvz_context_destroy(gpu->context);
@@ -361,6 +362,7 @@ void dvz_gpu_destroy(DvzGpu* gpu)
         gpu->context = NULL;
     }
 
+    // Destroy the command pools.
     log_trace("GPU destroy %d command pool(s)", gpu->queues.queue_family_count);
     for (uint32_t i = 0; i < gpu->queues.queue_family_count; i++)
     {
@@ -371,14 +373,13 @@ void dvz_gpu_destroy(DvzGpu* gpu)
         }
     }
 
-
+    // Destroy the descriptor pools.
     if (gpu->dset_pool != VK_NULL_HANDLE)
     {
         log_trace("destroy descriptor pool");
         vkDestroyDescriptorPool(gpu->device, gpu->dset_pool, NULL);
         gpu->dset_pool = VK_NULL_HANDLE;
     }
-
 
     // Destroy the device.
     log_trace("destroy device");
@@ -387,7 +388,6 @@ void dvz_gpu_destroy(DvzGpu* gpu)
         vkDestroyDevice(gpu->device, NULL);
         gpu->device = VK_NULL_HANDLE;
     }
-
 
     // dvz_obj_destroyed(&gpu->obj);
     dvz_obj_init(&gpu->obj);
