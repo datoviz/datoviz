@@ -22,8 +22,6 @@ except ImportError:
 # Logging
 # -------------------------------------------------------------------------------------------------
 
-logger = logging.getLogger(__name__)
-
 # Set a null handler on the root logger
 logger = logging.getLogger('datoviz')
 logger.setLevel(logging.DEBUG)
@@ -56,6 +54,7 @@ def add_default_handler(level='INFO', logger=logger):
     logger.addHandler(handler)
 
 
+# DEBUG
 add_default_handler('DEBUG')
 
 

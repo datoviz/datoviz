@@ -4,7 +4,9 @@
 # -------------------------------------------------------------------------------------------------
 
 import logging
+import os
 from pathlib import Path
+import shutil
 import time
 
 import numpy as np
@@ -13,9 +15,10 @@ import numpy.random as nr
 from pytest import fixture
 import imageio
 
-from datoviz import app, canvas, colormap, run
+from datoviz import app, canvas, colormap, run, add_default_handler
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('datoviz')
+# add_default_handler('DEBUG')
 
 
 ROOT_PATH = Path(__file__).resolve().parent.parent.parent.parent
@@ -29,7 +32,6 @@ IMAGES_PATH = CYTHON_PATH / 'images'
 
 def clear_loggers():
     """Remove handlers from all loggers"""
-    import logging
     loggers = [logging.getLogger()] + list(logging.Logger.manager.loggerDict.values())
     for logger in loggers:
         handlers = getattr(logger, 'handlers', [])
@@ -40,19 +42,53 @@ def clear_loggers():
 def teardown():
     # HACK: fixes pytest bug
     # see https://github.com/pytest-dev/pytest/issues/5502#issuecomment-647157873
+    logger.debug("Teardown.")
     clear_loggers()
+
+
+def check_screenshot(filename):
+    assert filename.exists
+    filename_ref = filename.with_suffix('').with_suffix('').with_suffix('.png')
+    if not filename_ref.exists():
+        logger.debug(f"Reference image {filename_ref} didn't exist, skipping image check.")
+        shutil.copy(filename, filename_ref)
+        return True
+    img_new = imageio.imread(filename)
+    img_ref = imageio.imread(filename_ref)
+    if img_new.shape != img_ref.shape:
+        logger.debug(f"Image size is different: {img_new.shape} != {img_ref.shape}")
+        return False
+    return np.all(img_new == img_ref)
+
+
+def check_canvas(ca, test_name):
+    if not IMAGES_PATH.exists():
+        IMAGES_PATH.mkdir(exist_ok=True, parents=True)
+    screenshot = IMAGES_PATH / f'{test_name}.new.png'
+
+    # Run and save the screenshot.
+    app().run(10, screenshot=str(screenshot))
+
+    # Close the canvas.
+    ca.close()
+
+    # Check the screenshot.
+    res = check_screenshot(screenshot)
+    assert res, f"Screenshot check failed for {test_name}"
+
+    # Delete the new screenshot if it matched the reference image.
+    if res:
+        logger.debug(f"Screenshot check succeedeed for {test_name}")
+        os.remove(screenshot)
 
 
 @fixture
 def c(request):
+    # Create the canvas.
     ca = canvas()
     yield ca
-    test_name = request.node.name
-    if not IMAGES_PATH.exists():
-        IMAGES_PATH.mkdir(exist_ok=True, parents=True)
-    screenshot = IMAGES_PATH / f'{test_name}.png'
-    app().run(10, screenshot=str(screenshot))
-    ca.close()
+    # Check screenshot.
+    check_canvas(ca, request.node.name)
 
 
 # -------------------------------------------------------------------------------------------------
@@ -137,30 +173,25 @@ def test_texture():
 
 
 
-def test_gui_demo():
-    c = canvas()
+# -------------------------------------------------------------------------------------------------
+# Tests with canvas
+# -------------------------------------------------------------------------------------------------
+
+def test_gui_demo(c):
     c.gui_demo()
-    app().run(10)
-    c.close()
 
 
 
-def test_gui_custom():
-    c = canvas()
-
+def test_gui_custom(c):
     gui = c.gui("Test GUI")
 
     gui.control("slider_float", "slider float", vmin=0, vmax=10)
     gui.control("slider_int", "slider int", vmin=0, vmax=3)
     gui.control("button", "click me")
 
-    app().run(10)
-    c.close()
 
 
-
-def test_visual_marker():
-    c = canvas()
+def test_visual_marker(c):
     s = c.scene()
     p = s.panel()
     v = p.visual('marker')
@@ -169,16 +200,11 @@ def test_visual_marker():
     v.data('pos', np.c_[nr.normal(size=(n, 2)), np.zeros(n)])
     v.data('ms', nr.uniform(size=n, low=5, high=30))
     v.data('color', nr.randint(size=(n, 4), low=100, high=255))
-    app().run(10)
-    c.close()
 
 
 
-def test_visual_image():
-    a = app()
-    g = a.gpu()
-    c = g.canvas()
-    ctx = g.context()
+def test_visual_image(c):
+    ctx = c.gpu().context()
     s = c.scene()
     p = s.panel(controller='panzoom')
     v = p.visual('image')
@@ -202,13 +228,9 @@ def test_visual_image():
     tex.upload(img)
     v.texture(tex)
 
-    app().run(10)
-    c.close()
 
 
-
-def test_subplots():
-    c = canvas(show_fps=True)
+def test_subplots(c):
     s = c.scene(1, 2)
     p0, p1 = s.panel(col=0), s.panel(col=1, controller='arcball')
     n = 10000
@@ -218,7 +240,6 @@ def test_subplots():
         v.data('pos', nr.normal(size=(n, 3)))
         v.data('ms', nr.uniform(size=n, low=5, high=30))
         v.data('color', colormap(nr.rand(n), alpha=.75))
-    app().run(10)
 
 
 

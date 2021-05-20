@@ -15,7 +15,7 @@ from libc.stdio cimport printf
 
 cimport datoviz.cydatoviz as cv
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('datoviz')
 
 
 
@@ -972,6 +972,9 @@ cdef class Canvas:
         self._c_canvas = c_canvas
         self._gpu = gpu
         self._scene = None
+
+    def gpu(self):
+        return self._gpu
 
     def scene(self, rows=1, cols=1):
         """Create a scene, which allows to use subplots, controllers, visuals, and so on."""
