@@ -458,9 +458,9 @@ static void _polygon_bake(DvzVisual* visual, DvzVisualDataEvent ev)
     DvzProp* prop_length = dvz_prop_get(visual, DVZ_PROP_LENGTH, 0); // uint
     DvzProp* prop_color = dvz_prop_get(visual, DVZ_PROP_COLOR, 0);   // cvec4
 
-    DvzArray* arr_pos = _prop_array(prop_pos);
-    DvzArray* arr_length = _prop_array(prop_length);
-    DvzArray* arr_color = _prop_array(prop_color);
+    DvzArray* arr_pos = _prop_array(prop_pos, DVZ_PROP_ARRAY_DEFAULT);
+    DvzArray* arr_length = _prop_array(prop_length, DVZ_PROP_ARRAY_DEFAULT);
+    DvzArray* arr_color = _prop_array(prop_color, DVZ_PROP_ARRAY_DEFAULT);
 
     DvzSource* src_vertex = dvz_source_get(visual, DVZ_SOURCE_TYPE_VERTEX, 0);
     DvzSource* src_index = dvz_source_get(visual, DVZ_SOURCE_TYPE_INDEX, 0);
@@ -611,10 +611,10 @@ static void _path_bake(DvzVisual* visual, DvzVisualDataEvent ev)
     DvzProp* prop_length = dvz_prop_get(visual, DVZ_PROP_LENGTH, 0);     // uint
     DvzProp* prop_topology = dvz_prop_get(visual, DVZ_PROP_TOPOLOGY, 0); // int
 
-    DvzArray* arr_pos = _prop_array(prop_pos);
-    DvzArray* arr_color = _prop_array(prop_color);
-    DvzArray* arr_length = _prop_array(prop_length);
-    DvzArray* arr_topology = _prop_array(prop_topology);
+    DvzArray* arr_pos = _prop_array(prop_pos, DVZ_PROP_ARRAY_DEFAULT);
+    DvzArray* arr_color = _prop_array(prop_color, DVZ_PROP_ARRAY_DEFAULT);
+    DvzArray* arr_length = _prop_array(prop_length, DVZ_PROP_ARRAY_DEFAULT);
+    DvzArray* arr_topology = _prop_array(prop_topology, DVZ_PROP_ARRAY_DEFAULT);
 
     DvzSource* src_vertex = dvz_source_get(visual, DVZ_SOURCE_TYPE_VERTEX, 0);
 
@@ -1245,7 +1245,8 @@ static void _visual_axes_2D_bake(DvzVisual* visual, DvzVisualDataEvent ev)
         dvz_graphics_data(visual->graphics[1], &text_vert_src->arr, NULL, visual);
 
     // Text prop.
-    DvzArray* arr_text = _prop_array(dvz_prop_get(visual, DVZ_PROP_TEXT, 0));
+    DvzArray* arr_text =
+        _prop_array(dvz_prop_get(visual, DVZ_PROP_TEXT, 0), DVZ_PROP_ARRAY_DEFAULT);
     ASSERT(prop != NULL);
 
     // Major tick prop.
@@ -1457,9 +1458,9 @@ static void _mesh_bake(DvzVisual* visual, DvzVisualDataEvent ev)
     DvzProp* prop_texcoords = dvz_prop_get(visual, DVZ_PROP_TEXCOORDS, 0); // vec2
     DvzProp* prop_alpha = dvz_prop_get(visual, DVZ_PROP_ALPHA, 0);         // uint8_t
 
-    DvzArray* arr_color = _prop_array(prop_color);
-    DvzArray* arr_texcoords = _prop_array(prop_texcoords);
-    DvzArray* arr_alpha = _prop_array(prop_alpha);
+    DvzArray* arr_color = _prop_array(prop_color, DVZ_PROP_ARRAY_DEFAULT);
+    DvzArray* arr_texcoords = _prop_array(prop_texcoords, DVZ_PROP_ARRAY_DEFAULT);
+    DvzArray* arr_alpha = _prop_array(prop_alpha, DVZ_PROP_ARRAY_DEFAULT);
 
     // If colors have been specified, we need to override texcoords.
     uint32_t N = arr_color->item_count;

@@ -80,6 +80,17 @@ typedef enum
 
 
 
+// Prop array type.
+typedef enum
+{
+    DVZ_PROP_ARRAY_DEFAULT,     // by default, take staging OR transformed OR original
+    DVZ_PROP_ARRAY_STAGING,     // force getting the staging array
+    DVZ_PROP_ARRAY_TRANSFORMED, // force getting the transformed array
+    DVZ_PROP_ARRAY_ORIGINAL,    // force getting the original array
+} DvzPropArray;
+
+
+
 // Source kinds.
 typedef enum
 {
@@ -248,14 +259,12 @@ struct DvzProp
 
     void* default_value;
     DvzArray arr_orig;    // original data array
-    DvzArray arr_trans;   // transformed data array
-    DvzArray arr_staging; // optional modification made to the prop by the baking function
-    // DvzArray arr_triang; // triangulated data array
+    DvzArray arr_trans;   // array after transformation by the scene (pos transform)
+    DvzArray arr_staging; // array (optional) after modification by the visual's baking function
 
     DvzDataType target_dtype; // used for casting during the copy to the vertex array
     DvzArrayCopyType copy_type;
     uint32_t reps; // number of repeats when copying
-    // bool is_set; // whether the user has set this prop
 };
 
 

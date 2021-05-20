@@ -621,14 +621,14 @@ DvzArray* dvz_prop_array(DvzVisual* visual, DvzPropType prop_type, uint32_t prop
 {
     ASSERT(visual != NULL);
     DvzProp* prop = dvz_prop_get(visual, prop_type, prop_idx);
-    return _prop_array(prop);
+    return _prop_array(prop, DVZ_PROP_ARRAY_DEFAULT);
 }
 
 
 
 uint32_t dvz_prop_size(DvzProp* prop)
 {
-    DvzArray* arr = _prop_array(prop);
+    DvzArray* arr = _prop_array(prop, DVZ_PROP_ARRAY_DEFAULT);
     return arr->item_count;
 }
 
@@ -637,7 +637,7 @@ uint32_t dvz_prop_size(DvzProp* prop)
 void* dvz_prop_item(DvzProp* prop, uint32_t prop_idx)
 {
     ASSERT(prop != NULL);
-    DvzArray* arr = _prop_array(prop);
+    DvzArray* arr = _prop_array(prop, DVZ_PROP_ARRAY_DEFAULT);
     void* res = prop->default_value;
     if (prop_idx < arr->item_count)
         res = dvz_array_item(arr, prop_idx);
