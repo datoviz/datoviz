@@ -387,8 +387,12 @@ static void* backend_window(
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         GLFWwindow* bwin = glfwCreateWindow((int)width, (int)height, APPLICATION_NAME, NULL, NULL);
         ASSERT(bwin != NULL);
-        if (glfwCreateWindowSurface(instance, bwin, NULL, surface) != VK_SUCCESS)
-            log_error("error creating the GLFW surface");
+        VkResult res = glfwCreateWindowSurface(instance, bwin, NULL, surface);
+        // log_info(
+        //     "%d %d %d %d", GLFW_NOT_INITIALIZED, GLFW_API_UNAVAILABLE, GLFW_PLATFORM_ERROR,
+        //     GLFW_INVALID_VALUE);
+        if (res != VK_SUCCESS)
+            log_error("error creating the GLFW surface, result was %d", res);
 
         glfwSetWindowUserPointer(bwin, window);
 

@@ -2,6 +2,7 @@ mkdocs
 mkdocs-material
 mkdocs-material-extensions
 mkdocs-simple-hooks
+auditwheel
 ghp-import
 imageio
 pyparsing

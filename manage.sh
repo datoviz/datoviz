@@ -56,6 +56,15 @@ then
     cd ../..
 fi
 
+if [ $1 == "wheel" ]
+then
+    cd bindings/cython && \
+    rm -rf dist datoviz.egg-info build && \
+    python3 setup.py sdist bdist_wheel && \
+    auditwheel repair dist/datoviz*.whl --plat linux_x86_64 && \
+    cd ../..
+fi
+
 if [ $1 == "download" ]
 then
     wget https://github.com/datoviz/datoviz-data/archive/master.zip -o data.zip && unzip data.zip && rm data.zip
