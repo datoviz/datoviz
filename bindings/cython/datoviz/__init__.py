@@ -145,7 +145,9 @@ register('datoviz', inputhook)
 # Event loops
 # -------------------------------------------------------------------------------------------------
 
-def run_asyncio(n_frames=0):
+def run_asyncio(n_frames=0, **kwargs):
+    # TODO: support kwargs options (autorun)
+
     global _ASYNCIO_LOOP
     if _ASYNCIO_LOOP is None:
         _ASYNCIO_LOOP = asyncio.get_event_loop()
@@ -172,16 +174,16 @@ def do_async(task):
     _ASYNCIO_LOOP.create_task(task)
 
 
-def run_native(n_frames=0):
+def run_native(n_frames=0, **kwargs):
     logger.debug("start datoviz native event loop")
-    app().run(n_frames)
+    app().run(n_frames, **kwargs)
 
 
-def run(n_frames=0, event_loop=None):
+def run(n_frames=0, event_loop=None, **kwargs):
     event_loop = event_loop or 'native'
     if event_loop == 'ipython' or is_interactive():
         enable_ipython()
     elif event_loop == 'native':
-        run_native(n_frames)
+        run_native(n_frames, **kwargs)
     elif event_loop == 'asyncio':
         run_asyncio(n_frames)

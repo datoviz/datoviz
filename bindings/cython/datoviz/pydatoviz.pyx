@@ -664,14 +664,28 @@ cdef class App:
         self._gpus[idx] = g
         return g
 
-    def run(self, int n_frames=0, unicode screenshot=None, unicode video=None):
+    def run(
+            self, int n_frames=0, unicode screenshot=None, unicode video=None,
+            bint offscreen=False):
         """Start the rendering loop."""
-        # # HACK: run a few frames to render the image, make a screenshot, and run the event loop.
-        # if screenshot and self._canvases:
-        #     cv.dvz_app_run(self._c_app, 5)
-        #     self._canvases[0].screenshot(screenshot)
-        # if video and self._canvases:
-        #     self._canvases[0].video(video)
+
+        # Autorun struct.
+        cdef cv.DvzAutorun autorun
+        if screenshot or video:
+            logger.debug("Enabling autorun")
+            autorun.enable = True
+            autorun.n_frames = n_frames
+            autorun.offscreen = offscreen
+            if screenshot:
+                ss = screenshot.encode('UTF-8')
+                autorun.screenshot[:len(ss)] = ss
+                logger.debug(f"Autorun screenshot: {ss}")
+            if video:
+                sv = video.encode('UTF-8')
+                autorun.video[:len(sv)] = sv
+                logger.debug(f"Autorun video: {sv}")
+            cv.dvz_autorun_setup(self._c_app, autorun)
+
         cv.dvz_app_run(self._c_app, n_frames)
 
     def next_frame(self):

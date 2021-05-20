@@ -49,6 +49,7 @@ FUNCTIONS = (
     'dvz_app_destroy',
     'dvz_app_run',
     'dvz_app',
+    'dvz_autorun_setup',
     'dvz_canvas_clear_color',
     'dvz_canvas_frame',
     'dvz_canvas_pause',
@@ -156,7 +157,7 @@ def _generate_enum(enum, defines=None):
     return out
 
 
-def _generate_struct(struct):
+def _generate_struct(struct, defines=None):
     assert struct
     name = struct['name']
     out = ''
@@ -164,12 +165,17 @@ def _generate_struct(struct):
     for field in struct['fields']:
         const = field.get('const', None)
         dtype = field.get('dtype', None)
+        count = field.get('count', '')
         identifier = field.get('name', None)
         if dtype == 'bool':
             dtype = 'bint'
         if const:
             dtype = "const " + dtype
-        out += f'    {dtype} {identifier}\n'
+        if count:
+            if defines and count in defines:
+                count = defines[count]
+            count = f'[{count}]'
+        out += f'    {dtype} {identifier}{count}\n'
     out += '\n'
     return out
 
@@ -225,9 +231,10 @@ def generate_enums():
 
 def generate_structs():
     out = ''
+    defines = dict(iter_vars("defines"))
     for n, v in iter_vars('structs'):
         if _keep(n, STRUCTS):
-            out += _generate_struct(v)
+            out += _generate_struct(v, defines=defines)
     return out
 
 

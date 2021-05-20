@@ -2496,7 +2496,8 @@ static int _app_autorun(DvzApp* app)
 
     if (strlen(app->autorun.screenshot) > 0)
     {
-        dvz_app_run(app, 5);
+        // Run n_frames, then do a screenshot.
+        dvz_app_run(app, app->autorun.n_frames > 0 ? app->autorun.n_frames : 5);
         dvz_screenshot_file(canvas, app->autorun.screenshot);
     }
 
@@ -2523,8 +2524,9 @@ int dvz_app_run(DvzApp* app, uint64_t frame_count)
     }
     app->is_running = true;
 
-    // Autorun mode.
-    if (frame_count == 0 && _app_autorun(app) == 0)
+    // Check if autorun is enabled.
+    // HACK: disable dvz_app_run(app, 0) in autorun mode.
+    if (_app_autorun(app) == 0 && frame_count == 0)
         return 0;
 
     // HACK: prevent infinite loop with offscreen rendering.

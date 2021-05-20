@@ -1030,8 +1030,8 @@ cdef extern from "<datoviz/datoviz.h>":
     ctypedef struct DvzAutorun:
         bint enable
         bint offscreen
-        char screenshot
-        char video
+        char screenshot[1024]
+        char video[1024]
         uint64_t n_frames
 
     ctypedef struct DvzViewport:
@@ -1093,7 +1093,7 @@ cdef extern from "<datoviz/datoviz.h>":
     ctypedef struct DvzRefillEvent:
         uint32_t img_idx
         uint32_t cmd_count
-        DvzCommands* cmds
+        DvzCommands* cmds[32]
         DvzViewport viewport
         VkClearColorValue clear_color
 
@@ -1173,7 +1173,7 @@ cdef extern from "<datoviz/datoviz.h>":
         char* title
         int flags
         uint32_t control_count
-        DvzGuiControl controls
+        DvzGuiControl controls[32]
 
     ctypedef struct DvzGuiContext:
         ImTextureID colormap_texture
@@ -1374,6 +1374,8 @@ cdef extern from "<datoviz/datoviz.h>":
     DvzProp* dvz_prop_get(DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx)
 
     DvzApp* dvz_app(DvzBackend backend)
+
+    void dvz_autorun_setup(DvzApp* app, DvzAutorun autorun)
 
     int dvz_app_destroy(DvzApp* app)
 
