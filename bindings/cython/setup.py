@@ -13,6 +13,9 @@ INCLUDE_DIR = ROOT_DIR / 'include'
 BUILD_DIR = ROOT_DIR / 'build'
 VULKAN_DIR = Path(os.environ.get('VULKAN_SDK', '.'))
 
+with open('requirements.txt') as f:
+    require = [x.strip() for x in f.readlines() if not x.startswith('git+')]
+
 # NOTE: build with dynamic linking of datoviz. Need to add to LD_LIBRARY_PATH env variable
 # the path to the datoviz library (in <root>/build/).
 setup(
@@ -24,6 +27,8 @@ setup(
     url='https://datoviz.org',
     long_description='''Scientific visualization''',
     packages=['datoviz'],
+    install_requires=require,
+    package_data = {'': ['*.so*']},
     ext_modules=cythonize(
         [Extension(
             'datoviz.pydatoviz', ['datoviz/pydatoviz.pyx'],
