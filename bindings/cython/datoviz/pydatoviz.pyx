@@ -678,11 +678,11 @@ cdef class App:
             autorun.offscreen = offscreen
             if screenshot:
                 ss = screenshot.encode('UTF-8')
-                autorun.screenshot[:len(ss)] = ss
+                autorun.screenshot[:len(ss) + 1] = ss
                 logger.debug(f"Autorun screenshot: {ss}")
             if video:
                 sv = video.encode('UTF-8')
-                autorun.video[:len(sv)] = sv
+                autorun.video[:len(sv) + 1] = sv
                 logger.debug(f"Autorun video: {sv}")
             cv.dvz_autorun_setup(self._c_app, autorun)
 

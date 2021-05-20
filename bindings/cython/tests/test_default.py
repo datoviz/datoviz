@@ -18,9 +18,9 @@ from datoviz import app, canvas, colormap, run
 logger = logging.getLogger(__name__)
 
 
-
 ROOT_PATH = Path(__file__).resolve().parent.parent.parent.parent
-print(ROOT_PATH)
+CYTHON_PATH = Path(__file__).resolve().parent.parent
+IMAGES_PATH = CYTHON_PATH / 'images'
 
 
 # -------------------------------------------------------------------------------------------------
@@ -43,6 +43,18 @@ def teardown():
     clear_loggers()
 
 
+@fixture
+def c(request):
+    ca = canvas()
+    yield ca
+    test_name = request.node.name
+    if not IMAGES_PATH.exists():
+        IMAGES_PATH.mkdir(exist_ok=True, parents=True)
+    screenshot = IMAGES_PATH / f'{test_name}.png'
+    app().run(10, screenshot=str(screenshot))
+    ca.close()
+
+
 # -------------------------------------------------------------------------------------------------
 # Tests
 # -------------------------------------------------------------------------------------------------
@@ -63,10 +75,8 @@ def test_gpu():
 
 
 
-def test_canvas():
-    c = canvas()
-    app().run(10)
-    c.close()
+def test_canvas(c):
+    assert c
 
 
 
