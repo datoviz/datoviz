@@ -28,6 +28,7 @@ setup(
     long_description='''Scientific visualization''',
     packages=['datoviz'],
     install_requires=require,
+    package_data = {'': ['*.so*']},
     ext_modules=cythonize(
         [Extension(
             'datoviz.pydatoviz', ['datoviz/pydatoviz.pyx'],
