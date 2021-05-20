@@ -66,6 +66,13 @@ def check_canvas(ca, test_name):
         IMAGES_PATH.mkdir(exist_ok=True, parents=True)
     screenshot = IMAGES_PATH / f'{test_name}.new.png'
 
+    # Interactive mode if debug.
+    debug = os.environ.get('DVZ_DEBUG', None)
+    if debug:
+        app().run()
+        ca.close()
+        return
+
     # Run and save the screenshot.
     app().run(10, screenshot=str(screenshot))
 
@@ -187,7 +194,13 @@ def test_gui_custom(c):
 
     gui.control("slider_float", "slider float", vmin=0, vmax=10)
     gui.control("slider_int", "slider int", vmin=0, vmax=3)
-    gui.control("button", "click me")
+    button = gui.control("button", "click me")
+
+    @button.connect
+    def on_click(value):
+        print("clicked!")
+
+    # TODO: mock click and test button callback
 
 
 

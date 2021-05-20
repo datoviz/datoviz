@@ -1033,11 +1033,6 @@ cdef class Canvas:
         """Show the Dear ImGui demo."""
         cv.dvz_imgui_demo(self._c_canvas)
 
-    # def __dealloc__(self):
-    #     self.close()
-    #     cv.dvz_app_run(self._c_canvas.app, 1)
-    #     self._c_canvas = NULL
-
     def close(self):
         if self._c_canvas is not NULL:
             cv.dvz_canvas_to_close(self._c_canvas)
@@ -1238,42 +1233,6 @@ cdef class Visual:
         cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
         cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
 
-    # def surface(
-    #     self, np.ndarray[DOUBLE, ndim=2] x, np.ndarray[DOUBLE, ndim=2] y, np.ndarray[DOUBLE, ndim=2] z,
-    #     # np.ndarray[DOUBLE, ndim=1] values=None, cmap=None, vmin=None, vmax=None):
-    #     np.ndarray[DOUBLE, ndim=3] uv=None,
-    #     ):
-
-    #     # cmap_ = _COLORMAPS.get(cmap, cv.DVZ_CMAP_VIRIDIS)
-    #     # colormap(values, vmin=vmin, vmax=vmax, cmap=None, alpha=None):
-
-    #     # TODO: check that it is a mesh visual
-    #     row_count = x.shape[0]
-    #     col_count = x.shape[1]
-
-    #     cdef np.ndarray positions = np.empty((row_count, col_count, 3), dtype=np.float32)
-    #     positions[..., 0] = x
-    #     positions[..., 1] = y
-    #     positions[..., 2] = z
-    #     # assert colors.shape[0] == row_count
-
-    #     cdef np.ndarray texcoords = np.empty((row_count, col_count, 2), dtype=np.float32)
-
-    #     cdef const cv.vec2* p_uv = NULL
-    #     if uv is not None:
-    #         texcoords[..., 0] = uv[..., 0]
-    #         texcoords[..., 1] = uv[..., 1]
-    #         p_uv = <const cv.vec2*>(&texcoords.data[0])
-
-    #     cdef cv.DvzMesh mesh = cv.dvz_mesh_grid(
-    #         row_count, col_count, <const cv.vec3*>(&positions.data[0]), p_uv)
-
-    #     nv = mesh.vertices.item_count;
-    #     ni = mesh.indices.item_count;
-
-    #     cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
-    #     cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
-
 
 
 # -------------------------------------------------------------------------------------------------
@@ -1283,15 +1242,20 @@ cdef class Visual:
 cdef class GuiControl:
     """A GUI control."""
     cdef cv.DvzGui* _c_gui
+    cdef cv.DvzCanvas* _c_canvas
     cdef cv.DvzGuiControl* _c_control
+    cdef unicode name
     cdef unicode ctype
     cdef bytes str_ascii
 
-    cdef create(self, cv.DvzGui* c_gui, cv.DvzGuiControl* c_control, unicode ctype):
+    cdef create(self, cv.DvzGui* c_gui, cv.DvzGuiControl* c_control, unicode name, unicode ctype):
         """Create a GUI control."""
         self._c_gui = c_gui
+        self._c_canvas = c_gui.canvas
+        assert self._c_canvas is not NULL
         self._c_control = c_control
         self.ctype = ctype
+        self.name = name
 
     def get(self):
         """Get the current value."""
@@ -1318,13 +1282,15 @@ cdef class GuiControl:
             raise NotImplementedError(
                 f"Setting the value for a GUI control `{self.ctype}` is not implemented yet.")
 
+    def connect(self, f):
+        _add_event_callback(self._c_canvas, cv.DVZ_EVENT_GUI, 0, f, (self.name,))
+
 
 
 cdef class Gui:
     """A GUI dialog."""
     cdef cv.DvzCanvas* _c_canvas
     cdef cv.DvzGui* _c_gui
-    _controls = {}
 
     cdef create(self, cv.DvzCanvas* c_canvas, cv.DvzGui* c_gui):
         """Create a GUI."""
@@ -1333,14 +1299,8 @@ cdef class Gui:
 
     def control(self, unicode ctype, unicode name, **kwargs):
         """Add a GUI control."""
-        # TODO: refactor this and return a GuiControl object instead.
-
-        cdef cv.DvzEventMode mode
-        # is_async = kwargs.pop('mode', None) == 'async'
-        mode = cv.DVZ_EVENT_MODE_SYNC #  if is_async else cv.DVZ_EVENT_MODE_SYNC
         ctrl = _CONTROLS.get(ctype, 0)
         cdef char* c_name = name
-
         cdef cv.DvzGuiControl* c
         cdef cv.vec2 vec2_value
 
@@ -1378,26 +1338,5 @@ cdef class Gui:
 
         # Gui control object
         w = GuiControl()
-        w.create(self._c_gui, c, ctype)
-        self._controls[name] = w
-
-        def wrap(f):
-            cdef cv.DvzEventType evtype
-            evtype = cv.DVZ_EVENT_GUI
-            _add_event_callback(self._c_canvas, evtype, 0, f, (name,), mode=mode)
-
-        return wrap
-
-    def get_value(self, name):
-        """Get the value of a control."""
-        if name not in self._controls:
-            raise ValueError("unknown control %s", name)
-        c = self._controls[name]
-        return c.get()
-
-    def set_value(self, name, value):
-        """Set the value of a control."""
-        if name not in self._controls:
-            raise ValueError("unknown control %s", name)
-        c = self._controls[name]
-        return c.set(value)
+        w.create(self._c_gui, c, name, ctype)
+        return w
