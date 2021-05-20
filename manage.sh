@@ -60,8 +60,12 @@ if [ $1 == "wheel" ]
 then
     cd bindings/cython && \
     rm -rf dist datoviz.egg-info build && \
-    python3 setup.py sdist bdist_wheel && \
-    auditwheel repair dist/datoviz*.whl --plat linux_x86_64 && \
+    python3 setup.py sdist bdist_wheel
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        delocate-listdeps dist/datoviz*.whl
+    else
+        auditwheel repair dist/datoviz*.whl --plat linux_x86_64
+    fi
     cd ../..
 fi
 
