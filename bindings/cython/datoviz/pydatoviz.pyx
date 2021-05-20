@@ -80,6 +80,15 @@ _BUTTONS = {
     cv.DVZ_MOUSE_BUTTON_RIGHT: 'right',
 }
 
+_MODIFIERS = {
+    cv.DVZ_KEY_MODIFIER_SHIFT: 'shift',
+    cv.DVZ_KEY_MODIFIER_CONTROL: 'control',
+    cv.DVZ_KEY_MODIFIER_ALT: 'alt',
+    cv.DVZ_KEY_MODIFIER_SUPER: 'super',
+}
+
+_BUTTONS_INV = {v: k for k, v in _BUTTONS.items()}
+
 _EVENTS ={
     'mouse_press': cv.DVZ_EVENT_MOUSE_PRESS,
     'mouse_release': cv.DVZ_EVENT_MOUSE_RELEASE,
@@ -405,18 +414,21 @@ def _button_name(button):
     """From button code used by Datoviz to button name."""
     return _BUTTONS.get(button, None)
 
-def _get_modifiers(mods):
+def _get_modifiers(mod):
     """From modifier flag to a tuple of strings."""
     mods_py = []
-    if mods & cv.DVZ_KEY_MODIFIER_SHIFT:
-        mods_py.append('shift')
-    if mods & cv.DVZ_KEY_MODIFIER_CONTROL:
-        mods_py.append('control')
-    if mods & cv.DVZ_KEY_MODIFIER_ALT:
-        mods_py.append('alt')
-    if mods & cv.DVZ_KEY_MODIFIER_SUPER:
-        mods_py.append('super')
+    for c_enum, name in _MODIFIERS.items():
+        if mod & c_enum:
+            mods_py.append(name)
     return tuple(mods_py)
+
+def _c_modifiers(*mods):
+    cdef int mod, c_enum
+    mod = 0
+    for c_enum, name in _MODIFIERS.items():
+        if name in mods:
+            mod |= c_enum
+    return mod
 
 def _get_prop(name):
     """From prop name to prop enum for Datoviz."""
@@ -492,6 +504,11 @@ cdef _get_event_args(cv.DvzEvent c_ev):
         dy = c_ev.u.w.dir[1]
         modifiers = _get_modifiers(c_ev.u.w.modifiers)
         return (x, y, dx, dy), dict(modifiers=modifiers)
+
+    # Frame event.
+    elif dt == cv.DVZ_EVENT_FRAME:
+        idx = c_ev.u.f.idx
+        return (idx,), {}
 
     return (), {}
 
@@ -1051,6 +1068,18 @@ cdef class Canvas:
         ev_name = f.__name__[3:]
         self._connect(ev_name, f)
 
+    def click(self, float x, float y, button='left', modifiers=()):
+        """Simulate a mouse click at a given position."""
+        cdef cv.vec2 pos
+        cdef int mod
+        cdef cv.DvzMouseButton c_button
+
+        pos[0] = x
+        pos[1] = y
+        c_button = _BUTTONS_INV.get(button, 0)
+        mod = _c_modifiers(*modifiers)
+        cv.dvz_event_mouse_click(self._c_canvas, pos, c_button, mod)
+
 
 
 # -------------------------------------------------------------------------------------------------
@@ -1247,6 +1276,7 @@ cdef class GuiControl:
     cdef unicode name
     cdef unicode ctype
     cdef bytes str_ascii
+    cdef object _callback
 
     cdef create(self, cv.DvzGui* c_gui, cv.DvzGuiControl* c_control, unicode name, unicode ctype):
         """Create a GUI control."""
@@ -1283,7 +1313,30 @@ cdef class GuiControl:
                 f"Setting the value for a GUI control `{self.ctype}` is not implemented yet.")
 
     def connect(self, f):
+        """Bind a callback function to the control."""
+        self._callback = f
         _add_event_callback(self._c_canvas, cv.DVZ_EVENT_GUI, 0, f, (self.name,))
+
+    def press(self):
+        """For buttons only: simulate a press."""
+        if self.ctype == 'button' and self._callback:
+            self._callback(False)
+
+    @property
+    def pos(self):
+        """The x, y coordinates of the widget, in screen coordinates."""
+        cdef float x, y
+        x = self._c_control.pos[0]
+        y = self._c_control.pos[1]
+        return (x, y)
+
+    @property
+    def size(self):
+        """The width and height of the widget, in screen coordinates."""
+        cdef float w, h
+        w = self._c_control.size[0]
+        h = self._c_control.size[1]
+        return (w, h)
 
 
 

@@ -911,6 +911,12 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_PROP_SCALE = 32
         DVZ_PROP_TRANSFORM = 33
 
+    ctypedef enum DvzPropArray:
+        DVZ_PROP_ARRAY_DEFAULT = 0
+        DVZ_PROP_ARRAY_STAGING = 1
+        DVZ_PROP_ARRAY_TRANSFORMED = 2
+        DVZ_PROP_ARRAY_ORIGINAL = 3
+
     ctypedef enum DvzSourceKind:
         DVZ_SOURCE_KIND_NONE = 0
         DVZ_SOURCE_KIND_VERTEX = 0x0010
@@ -1164,6 +1170,8 @@ cdef extern from "<datoviz/datoviz.h>":
         const char* name
         int flags
         void* value
+        vec2 pos
+        vec2 size
         DvzGuiControlType type
         DvzGuiControlUnion u
 
@@ -1226,6 +1234,34 @@ cdef extern from "<datoviz/datoviz.h>":
     void dvz_canvas_pause(DvzCanvas* canvas, bint record)
 
     void dvz_canvas_stop(DvzCanvas* canvas)
+
+    void dvz_event_mouse_press(DvzCanvas* canvas, DvzMouseButton button, int modifiers)
+
+    void dvz_event_mouse_release(DvzCanvas* canvas, DvzMouseButton button, int modifiers)
+
+    void dvz_event_mouse_move(DvzCanvas* canvas, vec2 pos, int modifiers)
+
+    void dvz_event_mouse_wheel(DvzCanvas* canvas, vec2 pos, vec2 dir, int modifiers)
+
+    void dvz_event_mouse_click(DvzCanvas* canvas, vec2 pos, DvzMouseButton button, int modifiers)
+
+    void dvz_event_mouse_double_click(DvzCanvas* canvas, vec2 pos, DvzMouseButton button, int modifiers)
+
+    void dvz_event_mouse_drag(DvzCanvas* canvas, vec2 pos, DvzMouseButton button, int modifiers)
+
+    void dvz_event_mouse_drag_end(DvzCanvas* canvas, vec2 pos, DvzMouseButton button, int modifiers)
+
+    void dvz_event_key_press(DvzCanvas* canvas, DvzKeyCode key_code, int modifiers)
+
+    void dvz_event_key_release(DvzCanvas* canvas, DvzKeyCode key_code, int modifiers)
+
+    void dvz_event_frame(DvzCanvas* canvas, uint64_t idx, double time, double interval)
+
+    void dvz_event_timer(DvzCanvas* canvas, uint64_t idx, double time, double interval)
+
+    int dvz_event_pending(DvzCanvas* canvas, DvzEventType type)
+
+    void dvz_event_stop(DvzCanvas* canvas)
 
     int dvz_canvas_frame(DvzCanvas* canvas)
 

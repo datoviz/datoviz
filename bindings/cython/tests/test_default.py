@@ -196,11 +196,26 @@ def test_gui_custom(c):
     gui.control("slider_int", "slider int", vmin=0, vmax=3)
     button = gui.control("button", "click me")
 
+    _clicked = []
+
     @button.connect
     def on_click(value):
         print("clicked!")
+        _clicked.append(0)
 
-    # TODO: mock click and test button callback
+    @c.connect
+    def on_frame(idx):
+        if idx == 3:
+            x, y = button.pos
+            w, h = button.size
+            x += w / 2.
+            y += h / 2.
+            c.click(x, y)
+            # HACK: manual click doesn't work with Dear ImGui, need to simulate GUI actions
+            # manually
+            button.press()
+        if idx == 6:
+            assert _clicked and _clicked[0] == 0
 
 
 

@@ -611,6 +611,16 @@ static void _show_control(DvzGuiControl* control)
         break;
     }
 
+    // Get the control position and size.
+    {
+        ImVec2 pos = ImGui::GetItemRectMin();
+        ImVec2 size = ImGui::GetItemRectSize();
+        control->pos[0] = pos.x;
+        control->pos[1] = pos.y;
+        control->size[0] = size.x;
+        control->size[1] = size.y;
+    }
+
     if (changed)
     {
         _emit_gui_event(control->gui, control);
@@ -660,3 +670,51 @@ void dvz_gui_callback(DvzCanvas* canvas, DvzEvent ev)
         dvz_container_iter(&iter);
     }
 }
+
+
+
+/*
+static inline int _imgui_button(DvzMouseButton button)
+{
+    int b = 0;
+    switch (button)
+    {
+    case DVZ_MOUSE_BUTTON_LEFT:
+        b = 0;
+        break;
+    case DVZ_MOUSE_BUTTON_RIGHT:
+        b = 1;
+        break;
+    case DVZ_MOUSE_BUTTON_MIDDLE:
+        b = 2;
+        break;
+    default:
+        break;
+    }
+    return b;
+}
+
+void _imgui_set_mouse_pos(vec2 pos)
+{
+    CHECK_IMGUI
+    ImGuiIO& io = ImGui::GetIO();
+    io.MousePos[0] = pos[0];
+    io.MousePos[1] = pos[1];
+}
+
+void _imgui_set_mouse_down(DvzMouseButton button, bool is_down)
+{
+    CHECK_IMGUI
+    ImGuiIO& io = ImGui::GetIO();
+    io.MouseDown[_imgui_button(button)] = is_down;
+}
+
+void _imgui_set_mouse_click(vec2 pos, DvzMouseButton button)
+{
+    CHECK_IMGUI
+    ImGuiIO& io = ImGui::GetIO();
+    int b = _imgui_button(button);
+    io.MouseDownDuration[b] = 0;
+    ASSERT(ImGui::IsMouseClicked(b, false));
+}
+*/

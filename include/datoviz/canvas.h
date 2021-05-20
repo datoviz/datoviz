@@ -1234,6 +1234,20 @@ DVZ_EXPORT int dvz_app_run(DvzApp* app, uint64_t frame_count);
 
 
 
+/*************************************************************************************************/
+/*  ImGui C++ helpers that need to be accessible in canvas.c, but defined in gui.cpp             */
+/*************************************************************************************************/
+
+/*
+void _imgui_set_mouse_pos(vec2 pos);
+
+void _imgui_set_mouse_down(DvzMouseButton button, bool is_down);
+
+void _imgui_set_mouse_click(vec2 pos, DvzMouseButton button);
+*/
+
+
+
 #ifdef __cplusplus
 }
 #endif

@@ -68,11 +68,11 @@ FUNCTIONS = (
     'dvz_ctx_texture',
     'dvz_download_buffer',
     'dvz_download_texture',
-    'dvz_event_callback',
+    'dvz_event',  # all dvz_event_*() functions
     'dvz_gpu_best',
     'dvz_gpu_default',
     'dvz_gpu',
-    'dvz_gui',
+    'dvz_gui',  # all dvz_gui*() functions
     'dvz_imgui_demo',
     'dvz_mesh',
     'dvz_panel_at',
