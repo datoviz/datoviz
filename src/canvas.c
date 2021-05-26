@@ -2524,6 +2524,9 @@ int dvz_app_run(DvzApp* app, uint64_t frame_count)
     }
     app->is_running = true;
 
+    if (frame_count == 0 && app->autorun.n_frames > 0)
+        frame_count = app->autorun.n_frames;
+
     // Check if autorun is enabled.
     // HACK: disable dvz_app_run(app, 0) in autorun mode.
     if (_app_autorun(app) == 0 && frame_count == 0)

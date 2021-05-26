@@ -41,12 +41,6 @@ then
     LD_LIBRARY_PATH=data/swiftshader/linux ./build/datoviz test
 fi
 
-if [ $1 == "gencython" ]
-then
-    cd bindings/cython && \
-    python3 utils/gencython.py
-fi
-
 if [ $1 == "cython" ]
 then
     python3 utils/generate_cython.py && \
