@@ -701,7 +701,7 @@ void dvz_visual_update(
         {
             if (_source_is_texture(source->source_kind))
             {
-                log_warn(
+                log_debug(
                     "source type %d #%d is not set, using default texture", source->source_type,
                     source->source_idx);
 

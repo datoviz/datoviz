@@ -17,6 +17,7 @@ n_signals = 100
 n_points = 2_000
 n_vert = n_signals * n_points
 
+# Create the signals data.
 t = np.linspace(-1, 1, n_points)
 x = np.tile(t, (n_signals,))
 assert x.ndim == 1
@@ -38,6 +39,7 @@ visual.data('pos', pos)
 visual.data('color', color)
 visual.data('length', length)
 
+# Animation function.
 i = 0
 k = 50
 def f():

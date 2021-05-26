@@ -64,9 +64,11 @@ visual.data('light_params', light_params)
 gui = c.gui("GUI")
 
 # We add a slider to change the lighting parameters.
-@gui.control("slider_float", "glossy", value=.2, vmin=0, vmax=1)
+slider = gui.control("slider_float", "glossy", value=.2, vmin=0, vmax=1)
+
+@slider.connect
 def on_change(value):
-    light_params[0, 2] = value
+    light_params[0, 2] = value  # first light, third parameter is specular component
     visual.data('light_params', light_params)
 
 # We run the app.

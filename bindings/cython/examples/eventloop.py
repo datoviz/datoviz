@@ -61,12 +61,14 @@ async def update():
 
 # GUI
 gui = c.gui("Test GUI")
-@gui.control("button", "update the visual")
+
+button = gui.control("button", "update the visual")
+
+@button.connect
 def on_change(value):
     # The special do_async() function, provided by datoviz, takes an asynchronous task and runs it
     # in the asyncio event loop.
     do_async(update())
-
 
 # Start the asyncio event loop.
 run(event_loop='asyncio')

@@ -10,6 +10,7 @@ from datoviz import canvas, run, colormap
 
 ROOT = Path(__file__).resolve().parent.parent.parent.parent
 
+# Load the France dataset.
 pos = np.fromfile(
     ROOT / "data/misc/departements.polypoints.bin", dtype=np.float64)
 pos = pos.reshape((-1, 2))
@@ -26,12 +27,15 @@ x = c * (lonrad + np.pi)
 y = -c * (np.pi - np.log(np.tan(np.pi / 4.0 + latrad / 2.0)))
 pos = np.c_[x, y, _]
 
+# Load the length of each polygon.
 length = np.fromfile(
     ROOT / "data/misc/departements.polylengths.bin", dtype=np.uint32)
+# Make the polygon colors.
 N = len(length)
 color = colormap(nr.rand(N), vmin=0, vmax=1, cmap='viridis')
 
-c = canvas(show_fps=False)
+# Create a polygon visual.
+c = canvas(width=650, height=600, show_fps=False)
 panel = c.scene().panel(controller='panzoom')
 visual = panel.visual('polygon')
 
