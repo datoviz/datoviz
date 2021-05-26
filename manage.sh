@@ -62,7 +62,7 @@ then
 
     # Make the wheel
     cd bindings/cython && \
-    rm -rf dist datoviz.egg-info build && \
+    rm -rf dist datoviz.egg-info build dist && \
     python3 setup.py sdist bdist_wheel
 
     # Make backup of the wheel before repairing it.
@@ -81,12 +81,12 @@ fi
 
 if [ $1 == "testwheel" ]
 then
-    # Make the wheel
+    # Test the wheel
     cd bindings/cython
     source venv/bin/activate
     pip uninstall datoviz -y
     pip install dist/datoviz*.whl --upgrade
-    python3 -c "from datoviz import canvas, run; canvas(); run(10)"
+    python3 -c "from datoviz import canvas, run; canvas().gui_demo(); run(30)"
     deactivate
     cd ../..
 fi
