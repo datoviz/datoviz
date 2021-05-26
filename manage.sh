@@ -114,8 +114,9 @@ then
     FILENAME=$(ls dist/*.whl)
     cp $FILENAME $FILENAME~
 
+    # Add libdatoviz in the wheel.
     if [[ "$OSTYPE" == "darwin"* ]]; then
-        delocate-listdeps dist/datoviz*.whl
+        DYLD_LIBRARY_PATH=../../build/ delocate-wheel dist/datoviz*.whl
     else
         # Include libdatoviz (and no other dependencies, otherwise there are runtime errors)
         # in the wheel.
@@ -127,13 +128,13 @@ fi
 if [ $1 == "testwheel" ]
 then
     # Test the wheel
-    cd bindings/cython
-    source venv/bin/activate
-    pip uninstall datoviz -y
-    pip install dist/datoviz*.whl --upgrade
-    python3 -c "from datoviz import canvas, run; canvas().gui_demo(); run(30)"
-    deactivate
-    cd ../..
+    cd bindings/cython/dist
+    # source venv/bin/activate
+    ../venv/bin/pip uninstall datoviz -y
+    ../venv/bin/pip install datoviz*.whl --upgrade
+    ../venv/bin/python -c "from datoviz import canvas, run; canvas().gui_demo(); run(30)"
+    # source deactivate
+    cd ../../..
 fi
 
 
