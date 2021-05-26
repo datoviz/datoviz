@@ -40,19 +40,16 @@ visual.data('color', color)
 visual.data('length', length)
 
 # Animation function.
-i = 0
-k = 50
-def f():
-    global i
+k = 10
+
+@c.connect
+def on_frame(i):
+    i = i % (n_points // k)
     yk = coef * nr.randn(n_signals, k)
     offsets = np.tile(np.linspace(-1, +1, n_signals)[:, np.newaxis], (1, k))
     yk += offsets
     y[:, i * k:(i + 1) * k] = yk
     pos[:, 1] = y.ravel()
     visual.data('pos', pos)
-    i += 1
-    i = i % (n_points // k)
-
-c._connect('timer', f, .05)
 
 run()

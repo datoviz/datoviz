@@ -6,6 +6,12 @@ if [ $# -eq 0 ]
     exit
 fi
 
+
+
+# -------------------------------------------------------------------------------------------------
+# Building
+# -------------------------------------------------------------------------------------------------
+
 if [ $1 == "rebuild" ]
 then
     rm -rf build
@@ -41,6 +47,46 @@ then
     LD_LIBRARY_PATH=data/swiftshader/linux ./build/datoviz test
 fi
 
+
+
+# -------------------------------------------------------------------------------------------------
+# Code quality
+# -------------------------------------------------------------------------------------------------
+
+if [ $1 == "format" ]
+then
+    find examples/ tests/ src/ include/ -iname *.h -o -iname *.c | xargs clang-format -i
+fi
+
+if [ $1 == "valgrind" ]
+then
+    valgrind \
+        --leak-check=full \
+        --show-leak-kinds=all \
+        --track-origins=yes \
+        --verbose \
+        --suppressions=.valgrind.exceptions.txt \
+        --log-file=.valgrind.out.txt \
+        ${@:2}
+fi
+
+if [ $1 == "cppcheck" ]
+then
+    cppcheck --enable=all --inconclusive src/ include/ cli/ tests/ -i external 2> .cppcheck.out.txt && \
+    echo ".cppcheck.out.txt saved"
+fi
+
+if [ $1 == "prof" ]
+then
+    gprof build/datoviz gmon.out
+fi
+
+
+
+# -------------------------------------------------------------------------------------------------
+# Python bindings
+# -------------------------------------------------------------------------------------------------
+
 if [ $1 == "cython" ]
 then
     python3 utils/generate_cython.py && \
@@ -48,6 +94,11 @@ then
     python3 setup.py build_ext -i && \
     python3 setup.py develop --user && \
     cd ../..
+fi
+
+if [ $1 == "pytest" ]
+then
+    pytest bindings/cython/ -vv
 fi
 
 if [ $1 == "wheel" ]
@@ -85,38 +136,11 @@ then
     cd ../..
 fi
 
-if [ $1 == "download" ]
-then
-    wget https://github.com/datoviz/datoviz-data/archive/master.zip -o data.zip && unzip data.zip && rm data.zip
-fi
 
-if [ $1 == "fixtest" ]
-then
-    mv test/screenshots/$2_fail.ppm test/screenshots/$2.ppm
-fi
 
-if [ $1 == "format" ]
-then
-    find examples/ tests/ src/ include/ -iname *.h -o -iname *.c | xargs clang-format -i
-fi
-
-if [ $1 == "valgrind" ]
-then
-    valgrind \
-        --leak-check=full \
-        --show-leak-kinds=all \
-        --track-origins=yes \
-        --verbose \
-        --suppressions=.valgrind.exceptions.txt \
-        --log-file=.valgrind.out.txt \
-        ${@:2}
-fi
-
-if [ $1 == "cppcheck" ]
-then
-    cppcheck --enable=all --inconclusive src/ include/ cli/ tests/ -i external 2> .cppcheck.out.txt && \
-    echo ".cppcheck.out.txt saved"
-fi
+# -------------------------------------------------------------------------------------------------
+# Testing
+# -------------------------------------------------------------------------------------------------
 
 if [ $1 == "test" ]
 then
@@ -147,10 +171,11 @@ then
     ./build/datoviz demo $2
 fi
 
-if [ $1 == "prof" ]
-then
-    gprof build/datoviz gmon.out
-fi
+
+
+# -------------------------------------------------------------------------------------------------
+# Docker
+# -------------------------------------------------------------------------------------------------
 
 if [ $1 == "docker" ]
 then
@@ -161,6 +186,12 @@ if [ $1 == "dockerrun" ]
 then
     docker run -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY -h $HOSTNAME -v $HOME/.Xauthority:/home/datoviz/.Xauthority -it datoviz
 fi
+
+
+
+# -------------------------------------------------------------------------------------------------
+# Documentation
+# -------------------------------------------------------------------------------------------------
 
 if [ $1 == "doc" ]
 then
@@ -181,3 +212,15 @@ then
     ghp-import -b main -p ../datoviz/site
     cd ../datoviz
 fi
+
+
+
+# if [ $1 == "download" ]
+# then
+#     wget https://github.com/datoviz/datoviz-data/archive/master.zip -o data.zip && unzip data.zip && rm data.zip
+# fi
+
+# if [ $1 == "fixtest" ]
+# then
+#     mv test/screenshots/$2_fail.ppm test/screenshots/$2.ppm
+# fi
