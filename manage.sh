@@ -58,14 +58,36 @@ fi
 
 if [ $1 == "wheel" ]
 then
+    # NOTE: this required source-ing setup-env.sh first
+
+    # Make the wheel
     cd bindings/cython && \
     rm -rf dist datoviz.egg-info build && \
     python3 setup.py sdist bdist_wheel
+
+    # Make backup of the wheel before repairing it.
+    FILENAME=$(ls dist/*.whl)
+    cp $FILENAME $FILENAME~
+
     if [[ "$OSTYPE" == "darwin"* ]]; then
         delocate-listdeps dist/datoviz*.whl
     else
-        auditwheel repair dist/datoviz*.whl --plat linux_x86_64
+        # Include libdatoviz (and no other dependencies, otherwise there are runtime errors)
+        # in the wheel.
+        auditwheel repair dist/datoviz*.whl --plat linux_x86_64 --include libdatoviz -w dist/
     fi
+    cd ../..
+fi
+
+if [ $1 == "testwheel" ]
+then
+    # Make the wheel
+    cd bindings/cython
+    source venv/bin/activate
+    pip uninstall datoviz -y
+    pip install dist/datoviz*.whl --upgrade
+    python3 -c "from datoviz import canvas, run; canvas(); run(10)"
+    deactivate
     cd ../..
 fi
 
