@@ -555,7 +555,7 @@ static void create_instance(
     {
         has_validation = check_validation_layer_support(ARRAY_COUNT(DVZ_LAYERS), DVZ_LAYERS);
         if (!has_validation)
-            log_error(
+            log_debug(
                 "validation layer support missing, make sure you have exported the environment "
                 "variable VK_LAYER_PATH=\"$VULKAN_SDK/etc/vulkan/explicit_layer.d\"");
     }

@@ -66,7 +66,7 @@ The other dependencies below are already included in the library, so **you don't
 1. Install the latest graphics drivers.
 2. Install the build tools:
 
-    `sudo apt install build-essential cmake ninja-build xcb libx11-xcb-dev libglfw3-dev`
+    `sudo apt install build-essential cmake ninja-build xcb libx11-xcb-dev libglfw3-dev patchelf`
 
 3. Install the optional dependencies:
 
