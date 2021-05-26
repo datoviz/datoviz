@@ -87,7 +87,6 @@ def destroy():
     global _APP, _EXITING
     _EXITING = True
     if _APP:
-        logger.debug("destroying the app now")
         _APP.destroy()
     _APP = None
 

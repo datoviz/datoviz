@@ -21,14 +21,14 @@ s = c.scene(1, 2)
 panel0 = s.panel(0, 0, controller='axes')
 panel1 = s.panel(0, 1, controller='arcball')
 
-visual = panel0.visual('marker')
+visual = panel0.visual('point')
 visual.data('pos', pos)
 visual.data('color', color)
-visual.data('ms', ms)
+visual.data('ms', np.array([10]))
 
-visual1 = panel1.visual('marker', depth_test=True)
+visual1 = panel1.visual('point', depth_test=True)
 visual1.data('pos', pos)
 visual1.data('color', color)
-visual1.data('ms', ms)
+# visual1.data('ms', ms)
 
 run()

@@ -95,4 +95,4 @@ def on_change(value):
 # asynchronous callbacks.
 # In IPython or Jupyter, use the `ipython` event loop (experimental). Otherwise, you can use
 # the `asyncio` event loop (experimental).
-run(event_loop='asyncio')
+run()

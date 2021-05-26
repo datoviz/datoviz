@@ -1,3 +1,8 @@
+
+# -------------------------------------------------------------------------------------------------
+# Imports
+# -------------------------------------------------------------------------------------------------
+
 import logging
 import os
 from pathlib import Path
@@ -12,10 +17,15 @@ from datoviz import app, canvas
 ROOT_PATH = Path(__file__).resolve().parent.parent.parent.parent
 CYTHON_PATH = Path(__file__).resolve().parent.parent
 IMAGES_PATH = CYTHON_PATH / 'images'
+SCREENSHOTS_PATH = ROOT_PATH / 'data/screenshots'
 
 
 logger = logging.getLogger('datoviz')
 
+
+# -------------------------------------------------------------------------------------------------
+# Util functions
+# -------------------------------------------------------------------------------------------------
 
 def check_screenshot(filename):
     """Compare a new screenshot with the reference image."""
@@ -34,12 +44,13 @@ def check_screenshot(filename):
     return np.all(img_new == img_ref)
 
 
-def check_canvas(ca, test_name):
+def check_canvas(ca, test_name, output_dir=None):
     """Run a canvas, make a screenshot, and check it with respect to the reference image."""
 
-    if not IMAGES_PATH.exists():
-        IMAGES_PATH.mkdir(exist_ok=True, parents=True)
-    screenshot = IMAGES_PATH / f'{test_name}.new.png'
+    output_dir = output_dir or IMAGES_PATH
+    if not output_dir.exists():
+        output_dir.mkdir(exist_ok=True, parents=True)
+    screenshot = output_dir / f'{test_name}.new.png'
 
     # Interactive mode if debug.
     debug = os.environ.get('DVZ_DEBUG', None)

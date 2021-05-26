@@ -6,59 +6,19 @@
 import logging
 import os
 from pathlib import Path
-import shutil
-import time
 
 import numpy as np
 from numpy.testing import assert_array_equal as ae
 import numpy.random as nr
-from pytest import fixture
 import imageio
 
-from datoviz import app, canvas, colormap, run, add_default_handler
+from datoviz import app, canvas, colormap, run
 from .utils import check_canvas, ROOT_PATH
+
+logger = logging.getLogger('datoviz')
 
 CUR_DIR = Path(__file__).parent
 
-logger = logging.getLogger('datoviz')
-# add_default_handler('DEBUG')
-
-
-
-# -------------------------------------------------------------------------------------------------
-# Test utils
-# -------------------------------------------------------------------------------------------------
-
-def clear_loggers():
-    """Remove handlers from all loggers"""
-    loggers = [logging.getLogger()] + list(logging.Logger.manager.loggerDict.values())
-    for logger in loggers:
-        handlers = getattr(logger, 'handlers', [])
-        for handler in handlers:
-            logger.removeHandler(handler)
-
-
-def setup():
-    path = CUR_DIR / '../imgui.ini'
-    if path.exists():
-        os.remove(path)
-
-
-
-def teardown():
-    # HACK: fixes pytest bug
-    # see https://github.com/pytest-dev/pytest/issues/5502#issuecomment-647157873
-    logger.debug("Teardown.")
-    clear_loggers()
-
-
-@fixture
-def c(request):
-    # Create the canvas.
-    ca = canvas()
-    yield ca
-    # Check screenshot.
-    check_canvas(ca, request.node.name)
 
 
 # -------------------------------------------------------------------------------------------------
