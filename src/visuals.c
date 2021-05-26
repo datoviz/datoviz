@@ -342,7 +342,8 @@ static void _visual_data(
 
 
 void dvz_visual_data(
-    DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx, uint32_t count, const void* data)
+    DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx, //
+    uint32_t count, const void* data)
 {
     ASSERT(visual != NULL);
     _visual_data(visual, prop_type, prop_idx, 0, count, count, data, true);
@@ -361,7 +362,8 @@ void dvz_visual_data_partial(
 
 
 void dvz_visual_data_append(
-    DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx, uint32_t count, const void* data)
+    DvzVisual* visual, DvzPropType prop_type, uint32_t prop_idx, //
+    uint32_t count, const void* data)
 {
     ASSERT(visual != NULL);
     DvzProp* prop = dvz_prop_get(visual, prop_type, prop_idx);

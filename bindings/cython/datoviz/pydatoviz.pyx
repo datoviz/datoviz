@@ -1231,14 +1231,31 @@ cdef class Visual:
         self._c_context = c_visual.canvas.gpu.context
         self.vtype = vtype
 
-    def data(self, name, np.ndarray value, idx=0):
+    def data(self, name, np.ndarray value, idx=0, mode=None, range=None):
         """Set the data of the visual associated to a given property."""
         prop_type = _get_prop(name)
         c_prop = cv.dvz_prop_get(self._c_visual, prop_type, idx)
         dtype, nc = _DTYPES[c_prop.dtype]
         value = _validate_data(dtype, nc, value)
         N = value.shape[0]
-        cv.dvz_visual_data(self._c_visual, prop_type, idx, N, &value.data[0])
+        if mode == 'append':
+            cv.dvz_visual_data_append(self._c_visual, prop_type, idx, N, &value.data[0])
+        elif mode == 'partial' and range is not None:
+            first_item, last_item = range
+            assert first_item < last_item
+            n_items = last_item - first_item
+            cv.dvz_visual_data_partial(
+                self._c_visual, prop_type, idx, first_item, n_items, N, &value.data[0])
+        else:
+            cv.dvz_visual_data(self._c_visual, prop_type, idx, N, &value.data[0])
+
+    def append(self, *args, **kwargs):
+        """Add some data to a visual prop's data."""
+        return self.data(*args, **kwargs, mode='append')
+
+    def partial(self, *args, **kwargs):
+        """Make a partial data update."""
+        return self.data(*args, **kwargs, mode='partial')
 
     def texture(self, Texture tex, idx=0):
         """Attach a texture to a visual."""

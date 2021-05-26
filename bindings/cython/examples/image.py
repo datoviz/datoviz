@@ -16,6 +16,7 @@ from datoviz import app, canvas, run, colormap
 
 ROOT = Path(__file__).resolve().parent.parent.parent.parent
 
+
 def load_image(path):
     """This function loads an image with imageio, and uploads it to a new GPU texture."""
     img = imageio.imread(path)
@@ -24,6 +25,7 @@ def load_image(path):
     tex = app().gpu().context().texture(img.shape[0], img.shape[1])
     tex.upload(img)
     return tex
+
 
 c = canvas(show_fps=True)
 panel = c.scene().panel(controller='panzoom')

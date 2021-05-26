@@ -18,6 +18,8 @@ import imageio
 from datoviz import app, canvas, colormap, run, add_default_handler
 from .utils import check_canvas, ROOT_PATH
 
+CUR_DIR = Path(__file__).parent
+
 logger = logging.getLogger('datoviz')
 # add_default_handler('DEBUG')
 
@@ -34,6 +36,13 @@ def clear_loggers():
         handlers = getattr(logger, 'handlers', [])
         for handler in handlers:
             logger.removeHandler(handler)
+
+
+def setup():
+    path = CUR_DIR / '../imgui.ini'
+    if path.exists():
+        os.remove(path)
+
 
 
 def teardown():
@@ -182,6 +191,51 @@ def test_visual_marker(c):
     v.data('pos', np.c_[nr.normal(size=(n, 2)), np.zeros(n)])
     v.data('ms', nr.uniform(size=n, low=5, high=30))
     v.data('color', nr.randint(size=(n, 4), low=100, high=255))
+
+
+
+def test_visual_partial(c):
+    s = c.scene()
+    p = s.panel()
+    v = p.visual('marker')
+    n = 1000
+    nr.seed(0)
+
+    # Add a first group of points.
+    v.data('pos', np.c_[nr.normal(size=(n, 2)), np.zeros(n)])
+    v.data('ms', np.linspace(5, 30, n))
+    v.data('color', nr.randint(size=(n, 4), low=100, high=255))
+
+    # Partial update of the colors.
+    assert n % 4 == 0
+    color = np.zeros((n // 2, 4), dtype=np.uint8)
+    color[:, 0] = 255
+    color[:, 3] = 255
+    v.partial('color', color, range=(n // 4, 3 * n // 4))
+
+
+
+def test_visual_append(c):
+    s = c.scene()
+    p = s.panel()
+    v = p.visual('marker')
+    n = 1000
+    nr.seed(0)
+
+    # Add a first group of points.
+    v.data('pos', np.c_[nr.normal(size=(n, 2)), np.zeros(n)])
+    v.data('ms', nr.uniform(size=n, low=5, high=30))
+    color = np.zeros((n, 4), dtype=np.uint8)
+    color[:, 0] = 255
+    color[:, 3] = 128
+    v.data('color', color)
+
+    # Append a second group.
+    v.append('pos', np.c_[nr.normal(size=(n, 2)), np.zeros(n)])
+    v.append('ms', nr.uniform(size=n, low=5, high=30))
+    color[:, 0] = 0
+    color[:, 1] = 255
+    v.append('color', color)
 
 
 
