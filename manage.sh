@@ -195,13 +195,13 @@ fi
 
 if [ $1 == "doc" ]
 then
-    python3 utils/gendoc.py examples
+    python3 utils/generate_doc.py && \
     mkdocs build
 fi
 
 if [ $1 == "docs" ]
 then
-    python3 utils/gendoc.py examples
+    python3 utils/generate_doc.py && \
     mkdocs serve
 fi
 

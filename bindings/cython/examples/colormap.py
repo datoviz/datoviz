@@ -46,7 +46,7 @@ cmap = np.c_[np.zeros(256), np.arange(256), np.arange(256)[::-1], 255 * np.ones(
 ctx.colormap('mycmap1', cmap.astype(np.uint8))
 
 # Add a second line.
-pos[:, 1] += .25
+pos[:, 1] += .5
 # NOTE: note the use of the .append() method here, to concatenate the array to the existing data.
 visual.append('pos', pos)
 visual.append('color', colormap(np.linspace(0, 1, n), cmap='mycmap1'))

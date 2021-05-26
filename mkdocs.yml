@@ -51,6 +51,7 @@ nav:
     - France departements: 'examples/france.md'
     - 3D brain mesh: 'examples/brain.md'
     - Two panels: 'examples/twopanels.md'
+    - Async event loop: 'examples/eventloop.md'
   - How to guides:
     - Index: 'howto/index.md'
     - How to write a standalone C app: 'howto/standalone_scene.md'
