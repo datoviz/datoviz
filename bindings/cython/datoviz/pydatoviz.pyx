@@ -839,6 +839,8 @@ cdef class Context:
         assert width > 0
         assert height > 0
         assert depth > 0
+        if depth > 1:
+            ndim = 3
         cdef TEX_SHAPE shape
         # NOTE: shape is in Vulkan convention.
         shape[0] = width
