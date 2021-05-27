@@ -597,13 +597,24 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
     if (!offscreen)
     {
         window = dvz_window(app, width, height);
-        ASSERT(window->app == app);
-        ASSERT(window->app != NULL);
-        canvas->window = window;
-        uint32_t framebuffer_width, framebuffer_height;
-        dvz_window_get_size(window, &framebuffer_width, &framebuffer_height);
-        ASSERT(framebuffer_width > 0);
-        ASSERT(framebuffer_height > 0);
+
+        if (window == NULL)
+        {
+            log_error("window creation failed, switching to offscreen backend");
+            offscreen = true;
+            canvas->offscreen = true;
+            app->backend = DVZ_BACKEND_OFFSCREEN;
+        }
+        else
+        {
+            ASSERT(window->app == app);
+            ASSERT(window->app != NULL);
+            canvas->window = window;
+            uint32_t framebuffer_width, framebuffer_height;
+            dvz_window_get_size(window, &framebuffer_width, &framebuffer_height);
+            ASSERT(framebuffer_width > 0);
+            ASSERT(framebuffer_height > 0);
+        }
     }
 
     // Automatic creation of GPU with default queues and features.

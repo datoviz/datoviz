@@ -318,7 +318,14 @@ void dvz_imgui_enable(DvzCanvas* canvas)
 {
     ASSERT(canvas != NULL);
     ASSERT(canvas->gpu != NULL);
+    ASSERT(canvas->app != NULL);
     ASSERT(canvas->overlay);
+
+    if (canvas->app->backend == DVZ_BACKEND_OFFSCREEN)
+    {
+        log_error("cannot enable imgui in offscreen mode at the moment");
+        return;
+    }
 
     // Enable Dear ImGui for the canvas, making sure the Dear ImGui global context and objects are
     // only initialized once.

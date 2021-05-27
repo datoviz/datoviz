@@ -420,6 +420,13 @@ DvzWindow* dvz_window(DvzApp* app, uint32_t width, uint32_t height)
     window->backend_window =
         backend_window(app->instance, app->backend, width, height, window, &window->surface);
 
+    if (window->surface == VK_NULL_HANDLE)
+    {
+        log_error("could not create window surface");
+        dvz_window_destroy(window);
+        return NULL;
+    }
+
     return window;
 }
 
@@ -463,7 +470,6 @@ void dvz_window_destroy(DvzWindow* window)
     }
     ASSERT(window != NULL);
     ASSERT(window->app != NULL);
-    ASSERT(window->surface != NULL);
     backend_window_destroy(
         window->app->instance, window->app->backend, window->backend_window, window->surface);
     dvz_obj_destroyed(&window->obj);

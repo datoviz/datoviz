@@ -145,6 +145,8 @@ int test_canvas_blank(TestContext* tc)
 int test_canvas_multiple(TestContext* tc)
 {
     DvzApp* app = tc->app;
+    OFFSCREEN_SKIP
+
     DvzGpu* gpu = dvz_gpu_best(app);
 
     DvzCanvas* canvas0 = dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_IMGUI);
@@ -245,6 +247,8 @@ static void _key_callback(DvzCanvas* canvas, DvzEvent ev)
 int test_canvas_events(TestContext* tc)
 {
     DvzApp* app = tc->app;
+    OFFSCREEN_SKIP
+
     DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_FPS);
 
@@ -328,6 +332,8 @@ static void _gui_callback(DvzCanvas* canvas, DvzEvent ev)
 int test_canvas_gui(TestContext* tc)
 {
     DvzApp* app = tc->app;
+    OFFSCREEN_SKIP
+
     DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_IMGUI);
 
@@ -880,6 +886,8 @@ static void _triangle_click(DvzCanvas* canvas, DvzEvent ev)
 int test_canvas_triangle_pick(TestContext* tc)
 {
     DvzApp* app = tc->app;
+    OFFSCREEN_SKIP
+
     DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas =
         dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_FPS | DVZ_CANVAS_FLAGS_PICK);
