@@ -239,17 +239,21 @@ static const char* VALIDATION_IGNORES[] = {
 
     // HACK: hide harmless warning message on Ubuntu:
     // validation layer: /usr/lib/i386-linux-gnu/libvulkan_radeon.so: wrong ELF class: ELFCLASS32
-    "ELFCLASS32", //
+    "ELFCLASS32",
 
-    "BestPractices-vkBindMemory-small-dedicated-allocation",  //
-    "BestPractices-vkAllocateMemory-small-allocation",        //
-    "BestPractices-vkCreateCommandPool-command-buffer-reset", //
-    "BestPractices-vkCreateInstance-specialuse-extension",    //
+    "BestPractices-vkBindMemory-small-dedicated-allocation",
+    "BestPractices-vkAllocateMemory-small-allocation",
+    "BestPractices-vkCreateCommandPool-command-buffer-reset",
+    "BestPractices-vkCreateInstance-specialuse-extension",
 
     // prevent unnecessary error messages when quickly resizing a window (race condition, fix to be
     // done probably in the validation layers)
     // https://github.com/KhronosGroup/Vulkan-ValidationLayers/issues/624
-    "VUID-VkSwapchainCreateInfoKHR-imageExtent", //
+    "VUID-VkSwapchainCreateInfoKHR-imageExtent",
+
+    // https://github.com/datoviz/datoviz/issues/17#issuecomment-849213008
+    // https://www.gitmemory.com/issue/KhronosGroup/Vulkan-ValidationLayers/2729/824406355
+    "invalid layer manifest file",
 };
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
