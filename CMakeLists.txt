@@ -16,7 +16,7 @@ set(CMAKE_C_STANDARD_REQUIRED True)
 # option(DATOVIZ_WITH_ASSIMP "Build Datoviz with ASSIMP support" OFF)
 # option(DATOVIZ_WITH_FREETYPE "Build Datoviz with Freetype support" OFF)
 option(DATOVIZ_WITH_PNG "Build Datoviz with PNG support" ON)
-option(DATOVIZ_WITH_FFMPEG "Build Datoviz with FFMPEG support" ON)
+option(DATOVIZ_WITH_FFMPEG "Build Datoviz with FFMPEG support" OFF)
 option(DATOVIZ_WITH_GLSLANG "Build Datoviz with glslang support" OFF)
 
 option(DATOVIZ_WITH_CLI "Build Datoviz command-line interface with tests and demos" ON)
@@ -58,17 +58,17 @@ endif()
 add_subdirectory(external/cglm/)
 
 # glfw3 dependency on Windows
-if (WIN32 OR APPLE)
-    set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-    set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+# if (WIN32 OR APPLE)
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
-    FetchContent_Declare(
-    glfw
-    GIT_REPOSITORY https://github.com/glfw/glfw/
-    )
-    FetchContent_MakeAvailable(glfw)
-endif()
+FetchContent_Declare(
+glfw
+GIT_REPOSITORY https://github.com/glfw/glfw/
+)
+FetchContent_MakeAvailable(glfw)
+# endif()
 
 
 # Flag to compile with support for swiftshader, which makes mandatory the use of offscreen
@@ -93,13 +93,13 @@ endif()
 
 # HACK: ensure correct version of glfw3 >= 3.3
 set(GLFW_GT_33 1)
-if(UNIX AND NOT APPLE)
-    find_package(glfw3)
-    if (${glfw3_VERSION} VERSION_GREATER "3.3")
-    else()
-    set(GLFW_GT_33 0)
-    endif()
-endif()
+# if(UNIX AND NOT APPLE)
+#     find_package(glfw3)
+#     if (${glfw3_VERSION} VERSION_GREATER "3.3")
+#     else()
+#     set(GLFW_GT_33 0)
+#     endif()
+# endif()
 
 
 set(CC_GCC 0)

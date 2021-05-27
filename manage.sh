@@ -103,26 +103,32 @@ fi
 
 if [ $1 == "wheel" ]
 then
-    # NOTE: this requires source-ing setup-env.sh first
+    DOCKER_IMAGE=quay.io/pypa/manylinux_2_24_x86_64
+    sudo docker pull $DOCKER_IMAGE
+    echo $DOCKER_IMAGE
+    echo $(pwd)
+    sudo docker run --rm -v `pwd`:/io $DOCKER_IMAGE /io/make-wheel.sh
+    # sudo docker exec -v `pwd`:/io $DOCKER_IMAGE /io/make-wheel.sh
 
-    # Make the wheel
-    cd bindings/cython && \
-    rm -rf dist datoviz.egg-info build dist && \
-    python3 setup.py sdist bdist_wheel
+    # # NOTE: this requires source-ing setup-env.sh first
+    # # Make the wheel
+    # cd bindings/cython && \
+    # rm -rf dist datoviz.egg-info build dist && \
+    # python3 setup.py sdist bdist_wheel
 
-    # Make backup of the wheel before repairing it.
-    FILENAME=$(ls dist/*.whl)
-    cp $FILENAME $FILENAME~
+    # # Make backup of the wheel before repairing it.
+    # FILENAME=$(ls dist/*.whl)
+    # cp $FILENAME $FILENAME~
 
-    # Add libdatoviz in the wheel.
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        DYLD_LIBRARY_PATH=../../build/ delocate-wheel dist/datoviz*.whl
-    else
-        # Include libdatoviz (and no other dependencies, otherwise there are runtime errors)
-        # in the wheel.
-        auditwheel repair dist/datoviz*.whl --plat linux_x86_64 --include libdatoviz -w dist/
-    fi
-    cd ../..
+    # # Add libdatoviz in the wheel.
+    # if [[ "$OSTYPE" == "darwin"* ]]; then
+    #     DYLD_LIBRARY_PATH=../../build/ delocate-wheel dist/datoviz*.whl
+    # else
+    #     # Include libdatoviz (and no other dependencies, otherwise there are runtime errors)
+    #     # in the wheel.
+    #     auditwheel repair dist/datoviz*.whl --plat linux_x86_64 --include libdatoviz -w dist/
+    # fi
+    # cd ../..
 fi
 
 if [ $1 == "testwheel" ]
