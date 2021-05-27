@@ -1,8 +1,4 @@
 numpy
 ipython
-cython
-pyparsing
-colorcet
 imageio
-git+https://github.com/rossant/auditwheel.git@include-exclude
-git+https://github.com/rossant/delocate.git@exclude
+colorcet

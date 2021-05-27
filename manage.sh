@@ -103,7 +103,7 @@ fi
 
 if [ $1 == "wheel" ]
 then
-    # NOTE: this required source-ing setup-env.sh first
+    # NOTE: this requires source-ing setup-env.sh first
 
     # Make the wheel
     cd bindings/cython && \
@@ -213,6 +213,19 @@ then
     ghp-import -b main -p ../datoviz/site
     cd ../datoviz
 fi
+
+
+
+# -------------------------------------------------------------------------------------------------
+# Release
+# -------------------------------------------------------------------------------------------------
+
+if [ $1 == "testpypi" ]
+then
+    cd bindings/cython
+    twine upload --repository testpypi dist/*.whl dist/*.tar.gz
+fi
+
 
 
 
