@@ -372,6 +372,7 @@ _TEXTURE_FILTERS = {
     None: cv.VK_FILTER_NEAREST,
     'nearest': cv.VK_FILTER_NEAREST,
     'linear': cv.VK_FILTER_LINEAR,
+    # 'cubic': cv.VK_FILTER_CUBIC_EXT,  # requires extension VK_EXT_filter_cubic
 }
 
 _SOURCE_TYPES = {
