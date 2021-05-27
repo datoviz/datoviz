@@ -19,7 +19,7 @@ from pyparsing import (
     Keyword, cStyleComment, Empty, Literal
 )
 
-from parse_headers import ROOT_DIR, load_headers, iter_vars
+from .parse_headers import ROOT_DIR, iter_vars
 
 
 # Objects to wrap

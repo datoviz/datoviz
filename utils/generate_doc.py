@@ -20,85 +20,12 @@ from pyparsing import (
     Keyword, cStyleComment, Empty, Literal
 )
 
-from parse_headers import ROOT_DIR, load_headers, iter_vars
-
-
-# Objects to wrap
-# -------------------------------------------------------------------------------------------------
-
-STRUCTS = (
-    'DvzAutorun',
-    'DvzEvent',
-    'DvzEventUnion',
-    'DvzFrameEvent',
-    'DvzGui',  # all structs that start with this
-    'DvzKeyEvent',
-    'DvzMouseButtonEvent',
-    'DvzMouseClickEvent',
-    'DvzMouseDragEvent',
-    'DvzMouseMoveEvent',
-    'DvzMouseWheelEvent',
-    'DvzRefillEvent',
-    'DvzResizeEvent',
-    'DvzScreencastEvent',
-    'DvzSubmitEvent',
-    'DvzTimerEvent',
-    'DvzViewport',
-)
-
-FUNCTIONS = (
-    'dvz_app_destroy',
-    'dvz_app_run',
-    'dvz_app',
-    'dvz_autorun_setup',
-    'dvz_canvas_clear_color',
-    'dvz_canvas_frame',
-    'dvz_canvas_pause',
-    'dvz_canvas_pick',
-    'dvz_canvas_stop',
-    'dvz_canvas_to_close',
-    'dvz_canvas_video',
-    'dvz_canvas',
-    'dvz_colormap_array',
-    'dvz_colormap_custom',
-    'dvz_colormap_packuv',
-    'dvz_context_colormap',
-    'dvz_context',
-    'dvz_copy_buffer',
-    'dvz_copy_texture',
-    'dvz_ctx_texture',
-    'dvz_download_buffer',
-    'dvz_download_texture',
-    'dvz_event',  # all dvz_event_*() functions
-    'dvz_gpu_best',
-    'dvz_gpu_default',
-    'dvz_gpu',
-    'dvz_gui',  # all dvz_gui*() functions
-    'dvz_imgui_demo',
-    'dvz_mesh',
-    'dvz_panel_at',
-    'dvz_panel_transpose',
-    'dvz_process_transfers',
-    'dvz_prop_get',
-    'dvz_scene_destroy',
-    'dvz_scene_panel',
-    'dvz_scene_visual',
-    'dvz_scene',
-    'dvz_screenshot_file',
-    'dvz_texture_filter',
-    'dvz_texture_upload',
-    'dvz_transform',
-    'dvz_upload_buffer',
-    'dvz_upload_texture',
-    'dvz_visual_data_source',
-    'dvz_visual_data',
-    'dvz_visual_texture',
-)
 
 
 # Constants
 # -------------------------------------------------------------------------------------------------
 
+ROOT_DIR = Path(__file__).parent.parent
 API_OUTPUT = ROOT_DIR / 'docs/api.md'
 EXAMPLES_DIR = ROOT_DIR / 'docs/examples/'
 PYTHON_EXAMPLES_DIR = ROOT_DIR / 'bindings/cython/examples'
@@ -187,7 +114,16 @@ def _generate_struct(struct, defines=None):
     out = ''
     out += f'ctypedef {struct["type"]} {name}:\n'
     out = f'#### {name}\n\n| Field | Type | Description |\n| ---- | ---- | ---- |\n'
-    for dtype, field, desc in struct['fields'][1]:
+    for field in struct['fields']:
+        const = field.get('const', None)
+        dtype = field.get('dtype', None)
+        count = field.get('count', '')
+        desc = field.get('desc', '')
+        identifier = field.get('name', None)
+        if const:
+            dtype = "const " + dtype
+        if count:
+            count = f'[{count}]'
         desc = desc.replace('/*', '').replace('*/', '').strip()
         out += f'| `{field}` | `{dtype}` | {desc} |\n'
     return out.strip() + '\n\n'
@@ -197,17 +133,17 @@ def _generate_function(func):
     # Generate the function documentation
     assert func
     name = func['name']
-    out = func.out
-    args = func.args
-    docstring = func.docstring
+    out = func.get('returns', None) or 'void'
+    args = func['args']
+    docstring = func['docstring']
     docstring = docstring if docstring.startswith('/**\n') else ''
     docstring = '\n'.join(_[3:] for _ in docstring.splitlines())
     docstring = docstring.strip()
 
     def _arg_type(n):
         for arg in args:
-            if arg.name == n:
-                return arg.dtype
+            if arg['name'] == n:
+                return arg['dtype']
 
     # Extract the argument docstring from the whole docstring, @param keywords etc.
     lines = docstring.splitlines()
@@ -230,7 +166,8 @@ def _generate_function(func):
 
     # Signature
     args_s = ', '.join(
-        f"{'const ' if args.const else ''}{arg.dtype} {arg.name}" for arg in args)
+        f"{'const ' if arg.get('const', None) else ''}{arg['dtype']} {arg['name']}"
+        for arg in args)
     # Split long lines
     if len(out) + len(name) + len(args_s) >= MAX_LINE_LENGTH:
         if len(args_s) >= MAX_LINE_LENGTH - 4:
@@ -273,6 +210,7 @@ def _generate_function(func):
 # -------------------------------------------------------------------------------------------------
 
 def insert_functions_doc(markdown, config):
+    from .parse_headers import get_var
     funcs_to_output = _parse_markdown(markdown)
     out = markdown
     # Output text, copy of the original text
@@ -282,13 +220,14 @@ def insert_functions_doc(markdown, config):
         r = re.compile(r'^#+\s+`%s\(\)`' % name, flags=re.MULTILINE)
         m2 = r.search(out)
         i = m2.end(0)
-        insert = _gen_func_doc(name, config['gendoc']['functions'][name])
+        insert = _generate_function(get_var(name))
         out = insert_text(out, i, f'\n\n{insert}\n\n')
     out = out.strip() + '\n'
     return out
 
 
 def insert_enums_doc(markdown, config):
+    from .parse_headers import get_var
     enums_to_output = _parse_markdown_enums(markdown)
     out = markdown
     # Output text, copy of the original text
@@ -298,21 +237,23 @@ def insert_enums_doc(markdown, config):
         r = re.compile(r'^#+\s+`%s`' % name, flags=re.MULTILINE)
         m2 = r.search(out)
         i = m2.end(0)
-        insert = _gen_enum(name, config['gendoc']['enums'][name])
+        insert = _generate_enum(get_var(name))
         out = insert_text(out, i, f'\n\n{insert}\n\n')
     out = out.strip() + '\n'
     return out
 
 
 def insert_graphics_doc(markdown, config):
+    from .parse_headers import get_var
     def _sub_graphics_code(m):
         n = m.group(1)
         out = ''
         for h in ('Item', 'Vertex', 'Params'):
             s = f'DvzGraphics{n}{h}'
-            struct = config['gendoc']['structs'].get(s, None)
+            struct = get_var(s)
             if struct:
-                out += _gen_struct(f'{h} structure: `{s}`', struct)
+                struct[s] = f'{h} structure: `{s}`'
+                out += _generate_struct(struct)
         return out
 
     return GRAPHICS_CODE.sub(_sub_graphics_code, markdown)

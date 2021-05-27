@@ -152,7 +152,8 @@ def parse_structs(text):
         dtype("dtype") +
         identifier("name") +
         Optional(array("array")) +
-        SEMICOLON)
+        SEMICOLON +
+        Optional(cStyleComment("desc")))
     structList = Group(structDecl + ZeroOrMore(structDecl))
     struct = _struct('struct') + identifier("struct_name") + LBRACE + \
         structList("names") + RBRACE + SEMICOLON
@@ -168,6 +169,8 @@ def parse_structs(text):
                 b.const = entry.const
             if entry.array_name:
                 b.count = entry.array_name
+            if entry.desc:
+                b.desc = entry.desc[2:-2].strip()
             l.append(b)
         structs[item.struct_name] = Bunch(name=item.struct_name, type=item.struct, fields=l)
     return structs
@@ -176,6 +179,8 @@ def parse_structs(text):
 def parse_functions(text):
     funcs = {}
     const = Keyword("const")
+    static = Keyword("static")
+    inline = Keyword("inline")
     dtype = Word(alphanums + "_*")
     identifier = Word(alphanums + "_")
     argDecl = Group(
@@ -184,13 +189,16 @@ def parse_functions(text):
         Optional(identifier("name")
                  ) + Optional(COMMA))
     args = Group(ZeroOrMore(argDecl))
-    func = Suppress("DVZ_EXPORT") | Suppress("static")
-    func = func + \
+    func = Optional(Suppress("DVZ_EXPORT")) + \
+        Optional(Suppress("DVZ_INLINE"))
+    signature = Optional(static("static")) + \
+        Optional(inline("inline")) + \
         dtype("out") + \
         identifier("name") + \
         LPAR + args("args") + RPAR + \
         Optional(SEMICOLON)
-
+    func = cStyleComment("docstring") + func + \
+        signature("signature")
     for item, start, stop in func.scanString(text):
         args = []
         for i, entry in enumerate(item.args):
@@ -203,6 +211,7 @@ def parse_functions(text):
         funcs[item.name] = Bunch(
             name=item.name,
             args=args,
+            docstring=item.docstring,
         )
         if item.out:
             funcs[item.name].returns = item.out
@@ -251,12 +260,12 @@ def _get(name):
 def get_var(name):
     v = _get(name)
     if v is None:
-        print(f"Variable {name} not found, reparsing the headers.")
-        parse_headers()
-        load_headers.cache_clear()
-        return _get(name)
-    else:
-        return v
+        print(f"Variable {name} not found in headers.json.")
+    #     parse_headers()
+    #     load_headers.cache_clear()
+    #     return _get(name)
+    # else:
+    return v
 
 
 def iter_vars(vtype):
