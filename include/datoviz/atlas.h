@@ -74,8 +74,11 @@ static DvzTexture* _font_texture(DvzContext* ctx, DvzFontAtlas* atlas)
 static DvzFontAtlas dvz_font_atlas(DvzContext* ctx)
 {
     // Font texture
+    ASSERT(DATA_DIR);
+    ASSERT(strlen(DATA_DIR) > 0);
     char path[1024];
     snprintf(path, sizeof(path), "%s/textures/%s", DATA_DIR, "font_inconsolata.png");
+    log_trace("loading %s", path);
 
     int width, height, depth;
 

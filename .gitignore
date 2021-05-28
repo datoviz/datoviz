@@ -1,5 +1,5 @@
 .vscode
-build
+build*
 dist
 venv
 *_old*
@@ -39,6 +39,7 @@ pydatoviz.c
 *.spv
 data.zip
 datoviz_example
+bindings/cython/images/
 docs/images/visuals/*.png
 docs/images/graphics/*.png
 docs/examples/*.md

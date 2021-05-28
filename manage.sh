@@ -98,49 +98,43 @@ fi
 
 if [ $1 == "pytest" ]
 then
+    rm imgui.ini
+    rm bindings/cython/imgui.ini
     pytest bindings/cython/ -vv
 fi
 
 if [ $1 == "wheel" ]
 then
-    DOCKER_IMAGE=quay.io/pypa/manylinux_2_24_x86_64
-    sudo docker pull $DOCKER_IMAGE
-    echo $DOCKER_IMAGE
-    echo $(pwd)
-    sudo docker run --rm -v `pwd`:/io $DOCKER_IMAGE /io/make-wheel.sh
-    # sudo docker exec -v `pwd`:/io $DOCKER_IMAGE /io/make-wheel.sh
+    ROOT_DIR=`pwd`
 
-    # # NOTE: this requires source-ing setup-env.sh first
-    # # Make the wheel
-    # cd bindings/cython && \
-    # rm -rf dist datoviz.egg-info build dist && \
-    # python3 setup.py sdist bdist_wheel
+    # Build the docker image.
+    sudo docker build -t datoviz_wheel -f Dockerfile_wheel .
 
-    # # Make backup of the wheel before repairing it.
-    # FILENAME=$(ls dist/*.whl)
-    # cp $FILENAME $FILENAME~
+    # Clean up the Cython bindings before running the docker container.
+    cd bindings/cython && \
+    python3 setup.py clean --all && \
+    rm -rf build dist datoviz.egg-info datoviz/*.c datoviz/*.so datoviz/__pycache__ && \
+    cd ../../
 
-    # # Add libdatoviz in the wheel.
-    # if [[ "$OSTYPE" == "darwin"* ]]; then
-    #     DYLD_LIBRARY_PATH=../../build/ delocate-wheel dist/datoviz*.whl
-    # else
-    #     # Include libdatoviz (and no other dependencies, otherwise there are runtime errors)
-    #     # in the wheel.
-    #     auditwheel repair dist/datoviz*.whl --plat linux_x86_64 --include libdatoviz -w dist/
-    # fi
-    # cd ../..
+    # Make the wheel and repair it.
+    # Build a container based on a manylinux image, + Vulkan and other things needed by the
+    # datoviz build script.
+    sudo docker run --rm -v $ROOT_DIR:/io datoviz_wheel /io/wheel.sh && \
+    sudo chown -R `users`:`users` bindings/cython/dist
+
 fi
 
 if [ $1 == "testwheel" ]
 then
     # Test the wheel
     cd bindings/cython/dist
-    # source venv/bin/activate
-    ../venv/bin/pip uninstall datoviz -y
-    ../venv/bin/pip install datoviz*.whl --upgrade
-    ../venv/bin/python -c "from datoviz import canvas, run; canvas().gui_demo(); run(30)"
-    # source deactivate
-    cd ../../..
+    rm -rf venv
+    virtualenv venv
+    venv/bin/python -m pip install --upgrade pip
+    venv/bin/pip install datoviz*.whl --upgrade
+    venv/bin/python -c "from datoviz import canvas, run; canvas().gui_demo(); run(30)"
+    # rm -rf venv
+    # cd ../../..
 fi
 
 
@@ -234,6 +228,9 @@ fi
 
 
 
+# -------------------------------------------------------------------------------------------------
+# Leftovers
+# -------------------------------------------------------------------------------------------------
 
 # if [ $1 == "download" ]
 # then
@@ -244,3 +241,30 @@ fi
 # then
 #     mv test/screenshots/$2_fail.ppm test/screenshots/$2.ppm
 # fi
+
+# DOCKER_IMAGE=quay.io/pypa/manylinux_2_24_x86_64
+# sudo docker pull $DOCKER_IMAGE
+# echo $DOCKER_IMAGE
+# echo $(pwd)
+# sudo docker run --rm -v `pwd`:/io $DOCKER_IMAGE /io/wheel.sh
+# sudo docker exec -v `pwd`:/io $DOCKER_IMAGE /io/wheel.sh
+
+# # NOTE: this requires source-ing setup-env.sh first
+# # Make the wheel
+# cd bindings/cython && \
+# rm -rf dist datoviz.egg-info build dist && \
+# python3 setup.py sdist bdist_wheel
+
+# # Make backup of the wheel before repairing it.
+# FILENAME=$(ls dist/*.whl)
+# cp $FILENAME $FILENAME~
+
+# # Add libdatoviz in the wheel.
+# if [[ "$OSTYPE" == "darwin"* ]]; then
+#     DYLD_LIBRARY_PATH=../../build/ delocate-wheel dist/datoviz*.whl
+# else
+#     # Include libdatoviz (and no other dependencies, otherwise there are runtime errors)
+#     # in the wheel.
+#     auditwheel repair dist/datoviz*.whl --plat linux_x86_64 --include libdatoviz -w dist/
+# fi
+# cd ../..
