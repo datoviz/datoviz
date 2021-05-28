@@ -108,7 +108,14 @@ then
 
     # macOS
     if [[ "$OSTYPE" == "darwin"* ]]; then
-        DYLD_LIBRARY_PATH=../../build/ delocate-wheel dist/datoviz*.whl
+        cd bindings/cython/
+        python3 setup.py sdist bdist_wheel
+        cd dist/
+        FILENAME=`ls datoviz*.whl`
+        echo $FILENAME
+        cp $FILENAME "$FILENAME~"
+        DYLD_LIBRARY_PATH=../../../build/ delocate-wheel $FILENAME -e libvulkan -w .
+        cd ../../../
 
     # TODO: Windows
     elif [[ "$OSTYPE" == "msys" ]]; then
@@ -143,7 +150,7 @@ then
     virtualenv venv
     venv/bin/python -m pip install --upgrade pip
     venv/bin/pip install datoviz*.whl --upgrade
-    venv/bin/python -c "from datoviz import canvas, run; canvas().gui_demo(); run(30)"
+    venv/bin/python -c "from datoviz import canvas, run; canvas().gui_demo(); run(0)"
     # rm -rf venv
     # cd ../../..
 fi
