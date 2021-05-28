@@ -9,19 +9,10 @@ from Cython.Build import cythonize
 
 distutils.cygwinccompiler.get_msvcr = lambda: []
 
-# TO DELETE?
-# if '--build-dir' in sys.argv:
-#     build_dir = sys.argv[sys.argv.index('--build-dir') + 1]
-# else:
-#     build_dir = 'build'
-build_dir = 'build'
-
-
-
 CYTHON_DIR = Path(__file__).parent
 ROOT_DIR = (CYTHON_DIR / '../../').resolve()
 INCLUDE_DIR = ROOT_DIR / 'include'
-BUILD_DIR = ROOT_DIR / build_dir
+BUILD_DIR = ROOT_DIR / 'build'
 VULKAN_DIR = Path(os.environ.get('VULKAN_SDK', '.'))
 
 DESCRIPTION = 'High-performance interactive scientific visualization with Vulkan'

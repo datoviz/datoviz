@@ -23,15 +23,18 @@ ENV PATH="$VULKAN_SDK/bin:$PATH" \
     LD_LIBRARY_PATH="$VULKAN_SDK/lib:${LD_LIBRARY_PATH:-}" \
     VK_LAYER_PATH="$VULKAN_SDK/etc/vulkan/explicit_layer.d"
 
+# Use a given version of Python (todo: support other version of Python).
 ENV PYTHON='/opt/python/cp38-cp38/bin/python3' \
     PIP='/opt/python/cp38-cp38/bin/pip'
 
+# Install the patched version of auditwheel to include just specific libraries in the wheel.
 RUN $PYTHON -m pip install --upgrade pip
 RUN $PIP uninstall auditwheel
 RUN $PIP install git+https://github.com/rossant/auditwheel.git@include-exclude --user
 
 ENV AUDITWHEEL='/root/.local/bin/auditwheel'
 
+# Install build Python dependencies.
 RUN $PIP install \
     bokeh \
     colorcet \
