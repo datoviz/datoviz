@@ -1,6 +1,9 @@
 # Developer notes
 
-A few random notes for developers and contributors. This page needs to be reorganized a bit.
+!!! note
+    This page needs to be cleaned up.
+
+This page contains useful notes for developers and contributors.
 
 
 ## Manage script
@@ -74,7 +77,36 @@ On Linux, go to the Datoviz root folder, and do `./manage.sh cython`.
 
 This script essentially does `python3 setup.py build_ext -i` after automatically updating the Cython low-level wrapper with a Python script.
 
-To make a pip-installable wheel on Linux, go to the datoviz root folder, and do `./manage.sh wheel`. This script uses auditwheel to bundle libdatoviz as a dependency into the Cython extension module.
+
+
+## Making a pip package
+
+Goal: make Datoviz easily installable with `pip install datoviz` or `conda install datoviz`.
+
+This is challenging given that Datoviz is written in C, has some dependencies, and that the Python bindings use Cython.
+
+This is a work in progress.
+
+
+### Linux
+
+* The first option I've tried is to make a manylinux pip wheel. This wheel is supposed to work on a large variety of relatively modern Linux distributions.
+* A major complication is that the built Cython package depends on the compiled C library (dynamic linking to libdatoviz) and has other system dependencies (Vulkan, etc).
+* The only option to build a manylinux is basically to use Docker, because a manylinux wheel needs to be built on an old minimal Linux distribution.
+
+Here are the steps I've followed so far:
+
+1. I start from the `quay.io/pypa/manylinux_2_24_x86_64` Docker image (this Docker image is based on Debian, all the others seem to be based on CentOS, but Vulkan doesn't work well on old CentOS distributions).
+2. In the `Dockerfile_wheel` file, I install a few apt packages needed for building (related to X11, ninja, etc), and I install Vulkan.
+3. In the Docker image, I also install the Python dependencies.
+4. The Docker image contains the auditwheel tool provided by the PyPA. This tool allows to "repair" a wheel on Linux by integrating all dependencies in it so as to avoid compatibility issues between different variants of Linux distribution. However, this tools misses an option to select the included dependencies. It includes libraries such as libvulkan which should *not* be bundled in the wheel, they are supposed to be in the client system (GPU driver) in order to access the GPU. There are apparently other such libraries that should not be included, but I haven't had time to find out which exactly. So I've submitted a [patch](https://github.com/pypa/auditwheel/pull/310) to auditwheel in order to implement `--include` and `--exclude` command-line options to auditwheel. The Docker image installs the patched auditwheel tool, that will be used at the end of the process (see below).
+5. Now, to create the manylinux wheel, one must create a Docker container, mount the Datoviz root directory in it, and run a special script, `wheel.sh`.
+6. Here's what this script does (it runs in the Docker container). First, it builds the Datoviz C library in the `build_wheel` subfolder.
+7. Then, it copies the headers, the build directory, and the Cython source files in a temporary directory in the container so as to avoid polluting the main Datoviz directory.
+8. Next, it builds the Cython package and it creates a wheel.
+9. The wheel doesn't include any dependency so it will *not* work on another system.
+10. Therefore, we use the patched auditwheel tool to bundle libdatoviz and a few other needed dependencies (note: we'll have to test the wheel on various fresh distributions to ensure it works on as many systems as possible).
+11. Finally, it copies the repaired wheel into `bindings/cython/dist`. This wheel is theoretically uploadable to PyPI, [*but* we have to make sure it works on different systems first](https://github.com/pypa/auditwheel/pull/310#issuecomment-849858348). We may run into issues and we may have to include more dependencies in the auditwheel repair process. So for now, we will only upload the wheel on GitHub.
 
 
 
