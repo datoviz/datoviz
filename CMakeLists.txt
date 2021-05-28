@@ -30,6 +30,12 @@ set(DATOVIZ_VERSION 0.0.1)
 project(datoviz VERSION ${DATOVIZ_VERSION} DESCRIPTION "datoviz")
 
 
+# glfw: download it on Windows and macOS
+if (WIN32 OR APPLE)
+set(DATOVIZ_DOWNLOAD_GLFW 1)
+endif()
+
+
 # DEBUG
 set(DEBUG 1)
 set(CMAKE_BUILD_TYPE Debug)
@@ -60,7 +66,7 @@ add_subdirectory(external/cglm/)
 
 # glfw3 dependency on Windows
 # NOTE: on Linux, we currently prefer using the apt libglfw-dev instead of compiling it ourselves
-if (DATOVIZ_DOWNLOAD_GLFW OR WIN32 OR APPLE)
+if (DATOVIZ_DOWNLOAD_GLFW)
     set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
     set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
     set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
