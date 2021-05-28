@@ -7,9 +7,12 @@ function(create_resources files prefix output)
     file(APPEND ${output} "#include \"../include/datoviz/common.h\"\n")
 
     # Collect input files
-    file(GLOB bins ${files})
+    # file(GLOB bins ${files})
     # Iterate through input files
-    foreach(bin ${bins})
+    set(files_l ${files})
+    separate_arguments(files_l)
+
+    foreach(bin ${files_l})
         # Get short filename
         string(REGEX MATCH "([^/]+)$" filename ${bin})
 
@@ -37,7 +40,7 @@ function(create_resources files prefix output)
     file(APPEND ${output} "{\n")
     #file(APPEND ${output} "printf(\"%s\\n\", name);\n")
     # Iterate through input files
-    foreach(bin ${bins})
+    foreach(bin ${files_l})
         string(REGEX MATCH "([^/]+)$" filename ${bin})
 
         # HACK: do not include non graphics shaders in the embeded resources files.

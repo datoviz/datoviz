@@ -427,6 +427,21 @@ add_custom_command(
 )
 
 
+# Fonts.
+set(path_fonts "${CMAKE_BINARY_DIR}/_fonts.c")
+set(font_files
+    "${CMAKE_SOURCE_DIR}/data/textures/font_inconsolata.png"
+    "${CMAKE_SOURCE_DIR}/data/fonts/Roboto-Medium.ttf"
+    "${CMAKE_SOURCE_DIR}/data/fonts/fontawesome-webfont.ttf")
+add_custom_command(
+    OUTPUT ${path_fonts}
+    COMMAND ${CMAKE_COMMAND}
+    -D DIR="${font_files}"
+    -D PREFIX="font"
+    -D OUTPUT=${path_fonts}
+    -P "${CMAKE_SOURCE_DIR}/cmake/embed_resources.cmake"
+)
+
 
 # Define the datoviz library target
 file(GLOB sources
@@ -446,7 +461,7 @@ file(GLOB imgui_sources
 
 set_source_files_properties(${imgui_sources} PROPERTIES COMPILE_FLAGS -w)
 
-add_library(datoviz SHARED ${sources} ${path_shadersc} ${path_colortex})
+add_library(datoviz SHARED ${sources} ${path_shadersc} ${path_colortex} ${path_fonts})
 
 
 # -------------------------------------------------------------------------------------------------
