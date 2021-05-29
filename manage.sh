@@ -98,7 +98,7 @@ fi
 
 if [ $1 == "pytest" ]
 then
-    rm -f imgui.ini bindings/cython/imgui.ini
+    rm -f imgui.ini bindings/cython/imgui.ini bindings/cython/dist/imgui.ini
     pytest bindings/cython/ -vv
 fi
 
