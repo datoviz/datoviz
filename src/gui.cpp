@@ -232,19 +232,23 @@ static void _imgui_fonts_upload(DvzCanvas* canvas)
     }
 
     // Load font awesome font for icons.
-    config.MergeMode = true;
-    // config.GlyphMinAdvanceX = font_size; // Use if you want to make the icon monospaced
-    static const ImWchar icon_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
-    char path[1024];
+    // NOTE: this doesn't work
+    if (1)
     {
-        // unsigned long file_size = 0;
-        // unsigned char* buffer = dvz_resource_font("fontawesome_webfont", &file_size);
-        // ASSERT(file_size > 0);
-        // ASSERT(buffer != NULL);
-        // io.Fonts->AddFontFromMemoryTTF(buffer, file_size, font_size, &config, icon_ranges);
+        config.MergeMode = true;
+        // config.GlyphMinAdvanceX = font_size; // Use if you want to make the icon monospaced
+        static const ImWchar icon_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
+        // char path[1024];
+        {
+            unsigned long file_size = 0;
+            unsigned char* buffer = dvz_resource_font("fontawesome_webfont", &file_size);
+            ASSERT(file_size > 0);
+            ASSERT(buffer != NULL);
+            io.Fonts->AddFontFromMemoryTTF(buffer, file_size, font_size, &config, icon_ranges);
 
-        // snprintf(path, sizeof(path), "%s/fonts/fontawesome-webfont.ttf", DATA_DIR);
-        // io.Fonts->AddFontFromFileTTF(path, font_size, &config, icon_ranges);
+            // snprintf(path, sizeof(path), "%s/fonts/fontawesome-webfont.ttf", DATA_DIR);
+            // io.Fonts->AddFontFromFileTTF(path, font_size, &config, icon_ranges);
+        }
     }
 
     // Upload Fonts

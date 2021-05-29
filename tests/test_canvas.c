@@ -460,6 +460,8 @@ int test_canvas_video(TestContext* tc)
     // read_frames(video, _video_read_callback);
     // close_video(video);
 
+#else
+    log_warn("skipping ffmpeg video, datoviz was not compiled with ffmpeg support");
 #endif
 
     dvz_canvas_destroy(canvas);

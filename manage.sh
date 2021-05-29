@@ -41,7 +41,7 @@ if [ $1 == "swiftshader" ]
 then
     mkdir -p build &&
     cd build && \
-    cmake .. -GNinja -DSWIFTSHADER=1 && \
+    cmake .. -GNinja -DDATOVIZ_WITH_SWIFTSHADER=1 && \
     ninja && \
     cd .. && \
     LD_LIBRARY_PATH=data/swiftshader/linux ./build/datoviz test
