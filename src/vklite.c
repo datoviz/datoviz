@@ -53,6 +53,11 @@ void dvz_autorun_env(DvzApp* app)
 void dvz_autorun_setup(DvzApp* app, DvzAutorun autorun)
 {
     ASSERT(app != NULL);
+    log_trace("autorun setup: enable %d", autorun.enable);
+    log_trace("autorun setup: n_frames %d", autorun.n_frames);
+    log_trace("autorun setup: offscreen %d", autorun.offscreen);
+    log_trace("autorun setup: screenshot %s", autorun.screenshot);
+    log_trace("autorun setup: video %s", autorun.video);
     app->autorun = autorun;
 }
 

@@ -691,7 +691,7 @@ cdef class App:
         """Start the rendering loop."""
 
         # Autorun struct.
-        cdef cv.DvzAutorun autorun
+        cdef cv.DvzAutorun autorun = [0, 0]
         if screenshot or video:
             logger.debug("Enabling autorun")
             autorun.enable = True
@@ -701,6 +701,7 @@ cdef class App:
                 ss = screenshot.encode('UTF-8')
                 autorun.screenshot[:len(ss) + 1] = ss
                 logger.debug(f"Autorun screenshot: {ss}")
+                autorun.video[0] = 0
             if video:
                 sv = video.encode('UTF-8')
                 autorun.video[:len(sv) + 1] = sv

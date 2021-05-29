@@ -2507,6 +2507,7 @@ static int _app_autorun(DvzApp* app)
 
     if (strlen(app->autorun.screenshot) > 0)
     {
+        log_debug("autorun screenshot %s", app->autorun.screenshot);
         // Run n_frames, then do a screenshot.
         dvz_app_run(app, app->autorun.n_frames > 0 ? app->autorun.n_frames : 5);
         dvz_screenshot_file(canvas, app->autorun.screenshot);
@@ -2514,6 +2515,7 @@ static int _app_autorun(DvzApp* app)
 
     if (strlen(app->autorun.video) > 0 && app->autorun.n_frames > 0)
     {
+        log_debug("autorun video %s", app->autorun.video);
         // TODO: customizable video params.
         dvz_canvas_video(canvas, 30, 10000000, app->autorun.video, true);
         dvz_app_run(app, app->autorun.n_frames);
