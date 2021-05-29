@@ -1,4 +1,5 @@
 import os
+import shutil
 import sys
 from pathlib import Path
 from setuptools import Extension, setup
@@ -20,6 +21,12 @@ DESCRIPTION = 'High-performance interactive scientific visualization with Vulkan
 with open('requirements.txt') as f:
     require = [x.strip() for x in f.readlines() if not x.startswith('git+')]
 
+# On Windows, copy libdatoviz.dll alonside the Cython module and bundle it in the wheel.
+package_data = {}
+if sys.platform == 'win32':
+    shutil.copy(BUILD_DIR / 'libdatoviz.dll', CYTHON_DIR / 'datoviz/libdatoviz.dll')
+    package_data = {'datoviz': ['*.dll']}
+
 # NOTE: build with dynamic linking of datoviz. Need to add to LD_LIBRARY_PATH env variable
 # the path to the datoviz library (in <root>/build/).
 setup(
@@ -31,6 +38,7 @@ setup(
     url='https://datoviz.org',
     long_description=DESCRIPTION,
     packages=['datoviz'],
+    package_data=package_data,
     install_requires=require,
     ext_modules=cythonize(
         [Extension(
