@@ -232,8 +232,10 @@ static void _imgui_fonts_upload(DvzCanvas* canvas)
     }
 
     // Load font awesome font for icons.
-    // NOTE: this doesn't work
-    if (1)
+    // NOTE: this doesn't seem to work on macOS:
+    // Assertion failed: (font_offset >= 0 && "FontData is incorrect, or FontNo cannot be found."),
+    // function ImFontAtlasBuildWithStbTruetype, file ../external/imgui/imgui_draw.cpp, line 2372.
+    if (!OS_MACOS)
     {
         config.MergeMode = true;
         // config.GlyphMinAdvanceX = font_size; // Use if you want to make the icon monospaced
