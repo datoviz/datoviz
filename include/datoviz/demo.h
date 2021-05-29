@@ -15,6 +15,11 @@
 /*************************************************************************************************/
 
 /**
+ * Standalone demo with a scatter plot.
+ */
+DVZ_EXPORT int dvz_demo_standalone(void);
+
+/**
  * Scatter demo.
  *
  * @param n number of points

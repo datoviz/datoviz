@@ -66,6 +66,7 @@ FUNCTIONS = (
     'dvz_copy_buffer',
     'dvz_copy_texture',
     'dvz_ctx_texture',
+    'dvz_demo',  # all dvz_demo_*() functions
     'dvz_download_buffer',
     'dvz_download_texture',
     'dvz_event',  # all dvz_event_*() functions

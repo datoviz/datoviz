@@ -11,7 +11,7 @@ from IPython import get_ipython
 from IPython.terminal.pt_inputhooks import register
 
 try:
-    from .pydatoviz import App, colormap
+    from .pydatoviz import App, colormap, demo
 except ImportError:
     raise ImportError(
         "Unable to load the shared library, make sure to run in your terminal:\n"

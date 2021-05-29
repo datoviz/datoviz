@@ -1316,6 +1316,12 @@ cdef extern from "<datoviz/datoviz.h>":
 
     void dvz_gui_destroy(DvzGui* gui)
 
+    int dvz_demo_standalone()
+
+    int dvz_demo_scatter(int32_t n, dvec3* pos)
+
+    int dvz_demo_gui()
+
     void dvz_imgui_demo(DvzCanvas* canvas)
 
     void dvz_gui_begin(const char* title, int flags)

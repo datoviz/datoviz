@@ -599,6 +599,9 @@ def colormap(np.ndarray[DOUBLE, ndim=1] values, vmin=None, vmax=None, cmap=None,
         out[:, 3] = alpha
     return out
 
+def demo():
+    cv.dvz_demo_standalone()
+
 
 
 # -------------------------------------------------------------------------------------------------
