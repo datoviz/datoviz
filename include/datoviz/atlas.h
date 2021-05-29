@@ -81,8 +81,8 @@ static DvzFontAtlas dvz_font_atlas(DvzContext* ctx)
     ASSERT(file_size > 0);
     ASSERT(buffer != NULL);
 
-    atlas.font_texture = stbi_load_from_memory(
-        buffer, file_size, &width, &height, &depth, STBI_rgb_alpha);
+    atlas.font_texture =
+        stbi_load_from_memory(buffer, file_size, &width, &height, &depth, STBI_rgb_alpha);
     ASSERT(width > 0);
     ASSERT(height > 0);
     ASSERT(depth > 0);
