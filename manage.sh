@@ -109,6 +109,7 @@ then
     # macOS
     if [[ "$OSTYPE" == "darwin"* ]]; then
         cd bindings/cython/
+        python3 setup.py build_ext -i
         python3 setup.py sdist bdist_wheel
         cd dist/
         FILENAME=`ls datoviz*.whl`
