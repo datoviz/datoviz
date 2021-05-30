@@ -2,13 +2,8 @@
 
 This page lists all visuals currently implemented in the library.
 
-## Technical notes
-
-* In a given visual, a prop is entirely defined by its type and its index. A visual may have multiple props of the same type. For example, the `segment` visual has a first prop `pos` with the segment start position, and another with the segment end position. The tables below specify the role of these indices in each case.
-* A **visual source** corresponds to a GPU object holding the data for the visual. Common source types include: vertex buffer, index buffer, uniform buffer, texture. In a given visual, a source is entirely defined by its type and its index. Each prop is typically linked to a given source. Most props correspond either to shader attributes, in which case they are associated with the vertex buffer, or to global variables, in which case they are associated with uniform buffers.
-* A visual is composed of one or several **pipelines**: graphics pipelines (or just **graphics**), and optionally compute pipelines (or just **computes**). A graphics pipeline corresponds to a vertex shader, a fragment shader, and possibly other shaders. In a given visual, each pipeline is entirely defined by its type (graphics or compute) and its index. The tables below specify the different pipelines when there are several of them in a given visual. For example, the axes visual contains a `segment` graphics for tick segments, and a `text` graphics for tick labels.
-* Props marked *uniform* below can only receive a single value. They correspond to struct fields in a uniform buffer, and they are thus shared across all vertices of a given visual.
-
+!!! important
+    Be sure to read the technical notes at the end of this page.
 
 ## 2D visuals
 
@@ -465,3 +460,11 @@ The sources and props below are shared by all builtin visuals.
 | `mat4` | 32 | 512 | 4x4 matrix of floats |
 | `custom` | - | - | used by structured/record arrays (heterogeneous types) |
 | `str` | 64 | 64 | pointer to `char` |
+
+
+## Technical notes
+
+* In a given visual, a prop is entirely defined by its type and its index. A visual may have multiple props of the same type. For example, the `segment` visual has a first prop `pos` with the segment start position, and another with the segment end position. The tables below specify the role of these indices in each case.
+* A **visual source** corresponds to a GPU object holding the data for the visual. Common source types include: vertex buffer, index buffer, uniform buffer, texture. In a given visual, a source is entirely defined by its type and its index. Each prop is typically linked to a given source. Most props correspond either to shader attributes, in which case they are associated with the vertex buffer, or to global variables, in which case they are associated with uniform buffers.
+* A visual is composed of one or several **pipelines**: graphics pipelines (or just **graphics**), and optionally compute pipelines (or just **computes**). A graphics pipeline corresponds to a vertex shader, a fragment shader, and possibly other shaders. In a given visual, each pipeline is entirely defined by its type (graphics or compute) and its index. The tables below specify the different pipelines when there are several of them in a given visual. For example, the axes visual contains a `segment` graphics for tick segments, and a `text` graphics for tick labels.
+* Props marked *uniform* below can only receive a single value. They correspond to struct fields in a uniform buffer, and they are thus shared across all vertices of a given visual.
