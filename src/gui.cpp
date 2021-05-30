@@ -217,7 +217,7 @@ static void _imgui_fonts_upload(DvzCanvas* canvas)
     ImGuiIO& io = ImGui::GetIO();
 
     // Load Fonts.
-    float font_size = 16 * canvas->dpi_scaling;
+    float font_size = 11 * canvas->dpi_scaling;
     ASSERT(font_size > 0);
 
     // Load first fond.

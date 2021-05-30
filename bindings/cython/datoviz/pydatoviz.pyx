@@ -40,8 +40,8 @@ ctypedef np.uint32_t[3] TEX_SHAPE
 # -------------------------------------------------------------------------------------------------
 # region  # folding in VSCode
 
-DEFAULT_WIDTH = 1024
-DEFAULT_HEIGHT = 768
+DEFAULT_WIDTH = 800
+DEFAULT_HEIGHT = 600
 
 cdef TEX_SHAPE DVZ_ZERO_OFFSET = (0, 0, 0)
 
@@ -1248,9 +1248,9 @@ cdef class Visual:
         if mode == 'append':
             cv.dvz_visual_data_append(self._c_visual, prop_type, idx, N, &value.data[0])
         elif mode == 'partial' and range is not None:
-            first_item, last_item = range
-            assert first_item < last_item
-            n_items = last_item - first_item
+            first_item, n_items = range
+            assert first_item >= 0, "first item should be positive"
+            assert length > 0, "length should be strictly positive"
             cv.dvz_visual_data_partial(
                 self._c_visual, prop_type, idx, first_item, n_items, N, &value.data[0])
         else:

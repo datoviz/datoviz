@@ -37,7 +37,7 @@ extern "C" {
 
 // HACK: support Retina — to improve...
 #if OS_MACOS
-#define DVZ_DEFAULT_DPI_SCALING 1.25f
+#define DVZ_DEFAULT_DPI_SCALING 1.2f
 #else
 #define DVZ_DEFAULT_DPI_SCALING 1.0f
 #endif

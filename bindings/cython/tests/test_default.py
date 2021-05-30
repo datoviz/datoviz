@@ -171,7 +171,7 @@ def test_visual_partial(c):
     color = np.zeros((n // 2, 4), dtype=np.uint8)
     color[:, 0] = 255
     color[:, 3] = 255
-    v.partial('color', color, range=(n // 4, 3 * n // 4))
+    v.partial('color', color, range=(n // 4, n // 2))
 
 
 

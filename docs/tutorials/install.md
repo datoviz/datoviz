@@ -7,10 +7,10 @@
 
 Datoviz is made of:
 
-* a **C library** called libdatoviz,
-* a **Python wrapper** called datoviz (via Cython)
+* a **C library** (also called libdatoviz),
+* a **Python wrapper** (written in Cython)
 
-The philosophy of Datoviz is to **implement all the logic and functionality in C**, and provide minimal bindings in high-level languages around this functionality. This design choice ensures that future bindings that might be developed in different languages would all share the same functionality (Julia, R, MATLAB, Rust, C#, and so on).
+The philosophy of Datoviz is to **implement all the logic and functionality in C**, and provide minimal bindings in high-level languages. This will ensure that all wrappers share the same functionality.
 
 
 === "Linux"
@@ -105,7 +105,7 @@ The philosophy of Datoviz is to **implement all the logic and functionality in C
         ```
 
     6. Download [the latest Vulkan SDK](https://vulkan.lunarg.com/sdk/home#mac).
-    7. Install the Vulkan SDK as follows:
+    7. Install the Vulkan SDK:
 
         ```bash
         cd /Volumes/vulkansdk-macos-*
@@ -113,7 +113,7 @@ The philosophy of Datoviz is to **implement all the logic and functionality in C
         cd ~
         ```
 
-    8. Clone the Datoviz repository as follows:
+    8. Clone the Datoviz repository:
 
         ```bash
         git clone --recursive https://github.com/datoviz/datoviz.git
@@ -173,13 +173,13 @@ The philosophy of Datoviz is to **implement all the logic and functionality in C
         cd datoviz
         ```
 
-    9. Build the C library as follows:
+    9. Build the C library:
 
         ```bat
         manage.bat build
         ```
 
-    10. Build the Cython module and create a wheel as follows:
+    10. Build the Cython module and create a wheel:
 
         ```bat
         manage.bat wheel
@@ -221,12 +221,12 @@ The philosophy of Datoviz is to **implement all the logic and functionality in C
 ## CPU emulation with Swiftshader
 
 !!! note
-    Swiftshader is still highly experimental.
+    Swiftshader support is still experimental.
 
-CPU Vulkan emulation is useful on computers with no GPUs or on continuous integration servers, for testing purposes only. It is provided by the Swiftshader library developed by Google.
+Software emulation of Vulkan is useful on computers with no GPUs or on continuous integration servers, for testing purposes. Datoviz has preliminary support for [Swiftshader](https://github.com/google/swiftshader), an emulation library developed by Google.
 
-1. Compile Datoviz with Swiftshader support
-2. Build Swiftshader, see https://github.com/google/swiftshader
+1. Compile Datoviz with Swiftshader support.
+2. Compile Swiftshader.
 3. Temporarily override your native Vulkan driver with the SwiftShader one:
 
     * Linux: `export LD_LIBRARY_PATH=/path/to/swiftshader/build/Linux/:$LD_LIBRARY_PATH`

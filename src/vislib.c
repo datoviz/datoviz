@@ -633,6 +633,11 @@ static void _path_bake(DvzVisual* visual, DvzVisualDataEvent ev)
 
     // Number of points and paths.
     uint32_t n_points = arr_pos->item_count;   // number of points
+    if (n_points == 0)
+    {
+        log_debug("empty path visual");
+        return;
+    }
     uint32_t n_paths = arr_length->item_count; // number of paths
     if (n_paths == 0)
         n_paths = 1;
