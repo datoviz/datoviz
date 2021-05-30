@@ -1,18 +1,23 @@
 """
 # 3D brain mesh
 
+This example shows how to render a 3D mesh from a nilearn dataset.
 
 """
 
 # Imports.
 import numpy as np
-from nilearn import datasets
-from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
-from nilearn import plotting
-
 from datoviz import canvas, run, colormap, enable_ipython
+try:
+    from nilearn import datasets
+    from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
+    from nilearn import plotting
+except ImportError:
+    raise ImportError("You need to install nilearn to run this example")
 
 
+# Data loading
+# ----------------------------------------------------------------------------
 
 # We get the data.
 fsaverage = datasets.fetch_surf_fsaverage()
@@ -40,6 +45,8 @@ cmap = 0
 uv = np.c_[bg_data, np.ones(N) * cmap / 256.0 + .5 / 256.0]
 
 
+# Datoviz rendering
+# ----------------------------------------------------------------------------
 
 # We create a canvas.
 c = canvas(show_fps=False, width=1024, height=768)
@@ -50,6 +57,7 @@ panel = c.scene().panel(controller='arcball')
 # We add a mesh visual.
 visual = panel.visual('mesh', transform='auto')
 
+# We set the data.
 visual.data('pos', coords)
 visual.data('texcoords', uv)
 visual.data('index', faces.ravel())

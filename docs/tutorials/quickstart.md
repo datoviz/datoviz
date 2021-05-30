@@ -1,6 +1,6 @@
 # Quickstart: using Datoviz in Python
 
-In this tutorial, we'll cover the most important features of Datoviz by **creating a simple 2D plot in Python**.
+In this tutorial, we'll cover the most important features of Datoviz by **creating a 2D raster plot in Python**.
 
 <!-- IMAGE ../images/screenshots/standalone_scene.png -->
 
@@ -139,7 +139,7 @@ Colors are specified as either:
 * RGBA components, as `uint8` bytes (four bytes per color),
 * **colormaps**.
 
-Datoviz includes [a library of ~150 colormaps commonly used in popular scientific plotting software]((../reference/colormaps.md)). You can also define a custom colormap manually.
+Datoviz includes [a library of ~150 colormaps commonly used in popular scientific plotting software](../reference/colormaps.md). You can also define a custom colormap manually.
 
 Here, we'll use the **viridis colormap**.
 

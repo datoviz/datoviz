@@ -1,12 +1,11 @@
 """
-# Asynchronous visual data update
+# Asynchronous event loop
 
-This example shows how to make asynchronous updates to the data by using the asyncio event loop.
+This example shows how to make asynchronous updates to the data by using the `asyncio` event loop.
 
-There is only one thread. With the asyncio event loop, the event loop is running in Python
-instead of C. We can use a special HTTP request library in Python, aiohttp, that fully supports
-asyncio so that we can make asynchronous HTTP requests and avoid blocking the UI while waiting for
-the server's response. When the response is ready, we update the visual's data.
+Here, the event loop runs in Python instead of C (the default). Asynchronous HTTP requests can be
+done via the the [aiohttp](https://docs.aiohttp.org/en/stable/) library. HTTP requests are done
+asynchronously and do not block the UI. Once the response is ready, we update the visual's data.
 
 """
 import asyncio
@@ -18,13 +17,11 @@ import numpy as np
 import numpy.random as nr
 from datoviz import app, canvas, run, colormap, do_async
 
-
 async def make_request(url):
     """Make an asynchronous HTTP GET request and return the response as text."""
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
             return(await response.text())
-
 
 def update_data(N=10_000):
     """Update the visual's data with a given number of points."""
@@ -37,13 +34,11 @@ def update_data(N=10_000):
     visual.data('color', color)
     visual.data('ms', ms)
 
-
 # Make the canvas and visual.
 c = canvas(show_fps=True)
 panel = c.scene().panel(controller='axes')
 visual = panel.visual('marker')
 update_data()
-
 
 async def update():
     """This callback function is called asynchronously when clicking on a button.
@@ -58,10 +53,8 @@ async def update():
     print(f"Show {n} points")
     update_data(n)
 
-
 # GUI
 gui = c.gui("Test GUI")
-
 button = gui.control("button", "update the visual")
 
 @button.connect

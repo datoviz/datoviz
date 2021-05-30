@@ -1,21 +1,20 @@
 """
 # Image
 
-This example shows how to display two superimposed images of different sizes
-(but automatically rescaled), with simple blending done on the GPU, with a slider
-controlling the blending parameter.
+This example shows how to display two superimposed images, with simple blending done on the GPU,
+and a slider controlling the blending parameter.
 
 """
 
+# Imports
 from pathlib import Path
 import numpy as np
 import numpy.random as nr
 import imageio
-
 from datoviz import app, canvas, run, colormap
 
+# Path to the root git directory so as to load the images.
 ROOT = Path(__file__).resolve().parent.parent.parent.parent
-
 
 def load_image(path):
     """This function loads an image with imageio, and uploads it to a new GPU texture."""
@@ -26,7 +25,7 @@ def load_image(path):
     tex.upload(img)
     return tex
 
-
+# Create the canvas, panel, and visual.
 c = canvas(show_fps=True)
 panel = c.scene().panel(controller='panzoom')
 visual = panel.visual('image')
@@ -54,7 +53,6 @@ visual.data('texcoefs', np.array([1, 0, 0, 0]).astype(np.float32))
 
 # Control the blending via a GUI.
 gui = c.gui("GUI")
-
 slider = gui.control("slider_float", "GPU blending", value=0, vmin=0, vmax=1)
 
 @slider.connect
