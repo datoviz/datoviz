@@ -64,10 +64,10 @@ nav:
       - How to write a custom graphics: 'howto/graphics.md'
   - Reference:
     - Index: 'reference/index.md'
-    - List of visuals: 'reference/visuals.md'
-    - List of graphics: 'reference/graphics.md'
-    - List of colormaps: 'reference/colormaps.md'
-    - List of controllers: 'reference/controllers.md'
+    - Library of visuals: 'reference/visuals.md'
+    - Library of graphics: 'reference/graphics.md'
+    - Library of colormaps: 'reference/colormaps.md'
+    - Library of controllers: 'reference/controllers.md'
   - C API reference:
     - Index: 'api/index.md'
     - Scene API: 'api/scene.md'

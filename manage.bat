@@ -28,6 +28,6 @@ IF "%arg%"=="testwheel" (
     python -m venv venv
     venv\Scripts\python -m pip install --upgrade pip
     venv\Scripts\pip install datoviz*.whl
-    venv\Scripts\python -c "from datoviz import canvas, run; canvas().gui_demo(); run(0)"
+    venv\Scripts\python -c "from datoviz import canvas, run; canvas().gui_demo(); run()"
     cd ..\..\..
 )
