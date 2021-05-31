@@ -180,6 +180,8 @@ canvas().gui_demo()
 run()
 ```
 
+Make sure you have the latest versions of pip and virtualenv.
+
 
 ### Windows
 
