@@ -217,7 +217,8 @@ static void _imgui_fonts_upload(DvzCanvas* canvas)
     ImGuiIO& io = ImGui::GetIO();
 
     // Load Fonts.
-    float font_size = 11 * canvas->dpi_scaling;
+    // HACK: support Retina display on macOS
+    float font_size = (OS_MACOS ? 11 : 14) * canvas->dpi_scaling;
     ASSERT(font_size > 0);
 
     // Load first fond.

@@ -1250,7 +1250,7 @@ cdef class Visual:
         elif mode == 'partial' and range is not None:
             first_item, n_items = range
             assert first_item >= 0, "first item should be positive"
-            assert length > 0, "length should be strictly positive"
+            assert n_items > 0, "n_items should be strictly positive"
             cv.dvz_visual_data_partial(
                 self._c_visual, prop_type, idx, first_item, n_items, N, &value.data[0])
         else:

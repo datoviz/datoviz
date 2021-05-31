@@ -2,6 +2,7 @@
 #include "../include/datoviz/array.h"
 #include "../include/datoviz/interact.h"
 #include "../include/datoviz/mesh.h"
+#include "axes.h"
 #include "visuals_utils.h"
 
 
@@ -632,7 +633,7 @@ static void _path_bake(DvzVisual* visual, DvzVisualDataEvent ev)
     DvzArray* arr_vertex = &src_vertex->arr;
 
     // Number of points and paths.
-    uint32_t n_points = arr_pos->item_count;   // number of points
+    uint32_t n_points = arr_pos->item_count; // number of points
     if (n_points == 0)
     {
         log_debug("empty path visual");
@@ -1021,13 +1022,6 @@ static void _visual_image_cmap(DvzVisual* visual)
 /*  Axes 2D                                                                                      */
 /*************************************************************************************************/
 
-// TODO: customizable params
-static cvec4 DVZ_DEFAULT_AXES_COLOR[] = {
-    {0, 0, 0, 255}, {0, 0, 0, 255}, {128, 128, 128, 255}, {0, 0, 0, 255}, {0, 0, 0, 255}};
-static vec4 DVZ_DEFAULT_AXES_LINE_WIDTH = {2.0f, 4.0f, 1.0f, 2.0f};
-static vec2 DVZ_DEFAULT_AXES_TICK_LENGTH = {10.0f, 15.0f};
-static float DVZ_DEFAULT_AXES_FONT_SIZE = 12.0f;
-
 static uint32_t _count_prop_items(
     DvzVisual* visual, uint32_t prop_count, DvzPropType* prop_types, //
     uint32_t idx_count)
@@ -1381,6 +1375,9 @@ static void _visual_axes_2D(DvzVisual* visual)
 
     // Segment graphics props.
     {
+        vec4 line_widths = {
+            DVZ_DEFAULT_AXES_LINE_WIDTH_MINOR, DVZ_DEFAULT_AXES_LINE_WIDTH_MAJOR,
+            DVZ_DEFAULT_AXES_LINE_WIDTH_GRID, DVZ_DEFAULT_AXES_LINE_WIDTH_LIM};
         for (uint32_t level = 0; level < DVZ_AXES_LEVEL_COUNT; level++)
         {
             // xticks
@@ -1390,25 +1387,26 @@ static void _visual_axes_2D(DvzVisual* visual)
             // color
             prop = dvz_visual_prop(
                 visual, DVZ_PROP_COLOR, level, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 0);
-            dvz_visual_prop_default(prop, &DVZ_DEFAULT_AXES_COLOR[level]);
+            dvz_visual_prop_default(
+                prop, level == 2 ? DVZ_DEFAULT_AXES_COLOR_GRAY : DVZ_DEFAULT_AXES_COLOR_BLACK);
 
             // line width
             prop = dvz_visual_prop(
                 visual, DVZ_PROP_LINE_WIDTH, level, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_VERTEX, 0);
-            dvz_visual_prop_default(prop, &DVZ_DEFAULT_AXES_LINE_WIDTH[level]);
+            dvz_visual_prop_default(prop, &line_widths[level]);
         }
 
         // minor tick length
         prop = dvz_visual_prop(
             visual, DVZ_PROP_LENGTH, DVZ_AXES_LEVEL_MINOR, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_VERTEX,
             0);
-        dvz_visual_prop_default(prop, &DVZ_DEFAULT_AXES_TICK_LENGTH[0]);
+        dvz_visual_prop_default(prop, (float[]){DVZ_DEFAULT_AXES_TICK_LENGTH_MINOR});
 
         // major tick length
         prop = dvz_visual_prop(
             visual, DVZ_PROP_LENGTH, DVZ_AXES_LEVEL_MAJOR, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_VERTEX,
             0);
-        dvz_visual_prop_default(prop, &DVZ_DEFAULT_AXES_TICK_LENGTH[1]);
+        dvz_visual_prop_default(prop, (float[]){DVZ_DEFAULT_AXES_TICK_LENGTH_MAJOR});
 
         // tick h margin
         // dvz_visual_prop(visual, DVZ_PROP_MARGIN, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_VERTEX, 0);
@@ -1425,12 +1423,12 @@ static void _visual_axes_2D(DvzVisual* visual)
         // tick text size
         prop = dvz_visual_prop(
             visual, DVZ_PROP_TEXT_SIZE, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_VERTEX, 1);
-        dvz_visual_prop_default(prop, &DVZ_DEFAULT_AXES_FONT_SIZE);
+        dvz_visual_prop_default(prop, (float[]){DVZ_DEFAULT_AXES_FONT_SIZE});
 
         // text color
         prop =
             dvz_visual_prop(visual, DVZ_PROP_COLOR, 4, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 1);
-        dvz_visual_prop_default(prop, &DVZ_DEFAULT_AXES_COLOR[4]);
+        dvz_visual_prop_default(prop, DVZ_DEFAULT_AXES_COLOR_BLACK);
 
         // Viewport.
         prop = dvz_visual_prop(

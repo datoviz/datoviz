@@ -87,6 +87,11 @@ fi
 # Python bindings
 # -------------------------------------------------------------------------------------------------
 
+if [ $1 == "parseheaders" ]
+then
+    python3 utils/parse_headers.py
+fi
+
 if [ $1 == "cython" ]
 then
     python3 utils/generate_cython.py && \

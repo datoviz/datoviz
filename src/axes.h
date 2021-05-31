@@ -16,6 +16,27 @@
 
 
 /*************************************************************************************************/
+/*  Axes parameters                                                                              */
+/*************************************************************************************************/
+
+// TODO: customizable params
+#define DVZ_DEFAULT_AXES_MARGINS                                                                  \
+    (vec4) { 20, 20, 50, 100 }
+#define DVZ_DEFAULT_AXES_LINE_WIDTH_MINOR  2.0f
+#define DVZ_DEFAULT_AXES_LINE_WIDTH_MAJOR  4.0f
+#define DVZ_DEFAULT_AXES_LINE_WIDTH_GRID   1.0f
+#define DVZ_DEFAULT_AXES_LINE_WIDTH_LIM    2.0f
+#define DVZ_DEFAULT_AXES_TICK_LENGTH_MINOR 10.0f
+#define DVZ_DEFAULT_AXES_TICK_LENGTH_MAJOR 15.0f
+#define DVZ_DEFAULT_AXES_FONT_SIZE         10.0f
+#define DVZ_DEFAULT_AXES_COLOR_BLACK                                                              \
+    (cvec4) { 0, 0, 0, 255 }
+#define DVZ_DEFAULT_AXES_COLOR_GRAY                                                               \
+    (cvec4) { 128, 128, 128, 255 }
+
+
+
+/*************************************************************************************************/
 /*  Axes functions                                                                               */
 /*************************************************************************************************/
 
@@ -451,7 +472,7 @@ static void _add_axes(DvzController* controller)
     DvzContext* ctx = panel->grid->canvas->gpu->context;
     ASSERT(ctx != NULL);
 
-    dvz_panel_margins(panel, (vec4){25, 25, 100, 100});
+    dvz_panel_margins(panel, DVZ_DEFAULT_AXES_MARGINS);
 
     for (uint32_t coord = 0; coord < 2; coord++)
         _axes_visual(controller, (DvzAxisCoord)coord);
