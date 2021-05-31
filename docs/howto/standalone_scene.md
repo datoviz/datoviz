@@ -1,4 +1,4 @@
-# How to write a standalone C app
+# How to use the scene C API
 
 This example shows how to **make a scatter plot using the scene C API** in a standalone application.
 

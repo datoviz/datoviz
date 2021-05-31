@@ -54,12 +54,14 @@ nav:
     - Async event loop: 'examples/eventloop.md'
   - How to guides:
     - Index: 'howto/index.md'
-    - How to write a standalone C app: 'howto/standalone_scene.md'
-    - How to use Dear ImGui directly: 'howto/standalone_imgui.md'
-    - How to write a custom visual: 'howto/visual.md'
-    - How to write a custom graphics: 'howto/graphics.md'
-    - How to use the canvas C API: 'howto/standalone_canvas.md'
-    - How to use the vklite C API: 'howto/standalone_vklite.md'
+    - Standalone C apps:
+      - How to use the scene C API: 'howto/standalone_scene.md'
+      - How to use the canvas C API: 'howto/standalone_canvas.md'
+      - How to use the vklite C API: 'howto/standalone_vklite.md'
+      - How to use Dear ImGui directly: 'howto/standalone_imgui.md'
+    - Custom visuals and graphics:
+      - How to write a custom visual: 'howto/visual.md'
+      - How to write a custom graphics: 'howto/graphics.md'
   - Reference:
     - Index: 'reference/index.md'
     - List of visuals: 'reference/visuals.md'
