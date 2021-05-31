@@ -2,23 +2,12 @@
 /*  Example of a custom graphics                                                                 */
 /*************************************************************************************************/
 
-// NOTE: ignore this.
-// #ifndef SCREENSHOT
-// #define SCREENSHOT
-// #endif
-// #ifndef NFRAMES
-// #define NFRAMES 0
-// #endif
 #ifndef SPIRV_DIR
 #define SPIRV_DIR ""
 #endif
 
-
-
 // We include the library header file.
 #include <datoviz/datoviz.h>
-
-
 
 // We define the vertex structure for our graphics pipeline.
 typedef struct
@@ -26,8 +15,6 @@ typedef struct
     vec3 pos;     // 3D point position
     uint8_t size; // point size, in pixels, between 0 and 255.
 } PointVertex;
-
-
 
 // Entry point of the standalone example.
 static int demo_custom_graphics()
@@ -108,7 +95,6 @@ static int demo_custom_graphics()
         FREE(vertices);
     }
 
-    // SCREENSHOT
     dvz_app_run(app, 0);
 
     // dvz_graphics_destroy(graphics);

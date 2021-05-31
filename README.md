@@ -52,6 +52,7 @@ The documentation is divided into:
 * **DPI-aware**: preliminary support for high-resolution monitors
 * **GUIs** integrated via the **Dear ImGUI** C++ library (Qt or other backends not required)
 * **Custom visuals**, with custom shaders and/or custom data transformations
+* IPython event-loop integration
 * Mouse picking
 * Initial support for multiple canvases
 * Initial builtin support for screencasts and video recording with ffmpeg (optional dependency)

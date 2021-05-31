@@ -2,11 +2,11 @@
 
 This provisional roadmap may be updated at any time depending on user feedback and internal needs at the International Brain Laboratory.
 
+
 ## Short term
 
-*Spring 2021*
+*Fall 2021*
 
-* Proper IPython terminal event-loop integration
 * More visuals
     * Text (graphics already implemented)
     * Segments (graphics already implemented)
@@ -16,17 +16,11 @@ This provisional roadmap may be updated at any time depending on user feedback a
 * More GUI controls
     * Table
 * Fixed aspect ratio
-* More robust error handling
-* More robust testing
-* Continuous integration
-* Packaging
-* Finish documentation
-* First public 0.1 release
 
 
 ## Medium term
 
-*Fall 2021*
+*Winter 2021*
 
 * "Infinite zooming" with axes 2D
 * Axes 3D
@@ -40,14 +34,14 @@ This provisional roadmap may be updated at any time depending on user feedback a
 * Qt integration
 * Wrapper proof of concepts
     * MATLAB
-* Benchmark suite
 
 
 ## Long term
 
 *2022 and beyond*
 
+* Benchmark suite
 * Video reader visual
 * Jupyter backend
-* Remove visualization server
-* CUDA interop
+* Remote visualization server
+* CUDA-Vulkan interoperability example
