@@ -115,6 +115,7 @@ static void _visual_create(DvzVisual* visual)
 static void _visual_destroy(DvzVisual* visual)
 {
     ASSERT(visual != NULL);
+    dvz_visual_destroy(visual);
     FREE(visual->user_data);
 }
 

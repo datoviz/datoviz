@@ -34,42 +34,42 @@ DvzVisual dvz_visual(DvzCanvas* canvas)
 
 
 
+static void dvz_prop_destroy(DvzProp* prop)
+{
+    ASSERT(prop != NULL);
+    log_trace("destroy prop");
+    dvz_array_destroy(&prop->arr_orig);
+    dvz_array_destroy(&prop->arr_trans);
+    dvz_array_destroy(&prop->arr_staging);
+    if (prop->default_value != NULL)
+        FREE(prop->default_value)
+    dvz_obj_destroyed(&prop->obj);
+}
+
+static void dvz_source_destroy(DvzSource* source)
+{
+    ASSERT(source != NULL);
+    log_trace("destroy source");
+    dvz_array_destroy(&source->arr);
+    dvz_obj_destroyed(&source->obj);
+}
+
 void dvz_visual_destroy(DvzVisual* visual)
 {
     ASSERT(visual != NULL);
+    log_trace("destroy visual");
 
-    // Free the props.
-    DvzProp* prop = NULL;
-    DvzContainerIterator iter = dvz_container_iterator(&visual->props);
-    while (iter.item != NULL)
-    {
-        prop = iter.item;
-        dvz_array_destroy(&prop->arr_orig);
-        dvz_array_destroy(&prop->arr_trans);
-        dvz_array_destroy(&prop->arr_staging);
-        if (prop->default_value != NULL)
-        {
-            FREE(prop->default_value)
-        }
-        dvz_obj_destroyed(&prop->obj);
-        dvz_container_iter(&iter);
-    }
+    CONTAINER_DESTROY_ITEMS(DvzProp, visual->props, dvz_prop_destroy)
     dvz_container_destroy(&visual->props);
 
-    // Free the data sources.
-    DvzSource* source = NULL;
-    iter = dvz_container_iterator(&visual->sources);
-    while (iter.item != NULL)
-    {
-        source = iter.item;
-        dvz_array_destroy(&source->arr);
-        dvz_obj_destroyed(&source->obj);
-        dvz_container_iter(&iter);
-    }
+    CONTAINER_DESTROY_ITEMS(DvzSource, visual->sources, dvz_source_destroy)
     dvz_container_destroy(&visual->sources);
 
     CONTAINER_DESTROY_ITEMS(DvzBindings, visual->bindings, dvz_bindings_destroy)
+    dvz_container_destroy(&visual->bindings);
+
     CONTAINER_DESTROY_ITEMS(DvzBindings, visual->bindings_comp, dvz_bindings_destroy)
+    dvz_container_destroy(&visual->bindings_comp);
 
     dvz_obj_destroyed(&visual->obj);
 }

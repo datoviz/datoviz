@@ -17,11 +17,11 @@
         res = arg(argc - 1, &argv[1]);
 
 #if OS_WIN32
-    #define UNSET_SCREENSHOT putenv("DVZ_RUN_SCREENSHOT=")
-    #define UNSET_NFRAMES putenv("DVZ_RUN_NFRAMES=")
-#else 
-    #define UNSET_SCREENSHOT unsetenv("DVZ_RUN_SCREENSHOT")
-    #define UNSET_NFRAMES unsetenv("DVZ_RUN_NFRAMES")
+#define UNSET_SCREENSHOT putenv("DVZ_RUN_SCREENSHOT=")
+#define UNSET_NFRAMES    putenv("DVZ_RUN_NFRAMES=")
+#else
+#define UNSET_SCREENSHOT unsetenv("DVZ_RUN_SCREENSHOT")
+#define UNSET_NFRAMES    unsetenv("DVZ_RUN_NFRAMES")
 #endif
 
 #define SWITCH_DEMO(name)                                                                         \
