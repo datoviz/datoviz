@@ -143,7 +143,8 @@ then
         # Build a container based on a manylinux image, + Vulkan and other things needed by the
         # datoviz build script.
         sudo docker run --rm -v $ROOT_DIR:/io datoviz_wheel /io/wheel.sh && \
-        sudo chown -R `users`:`users` bindings/cython/dist
+        USER=`users | awk '{print $1}'`
+        sudo chown -R $USER:$USER bindings/cython/dist
 
     fi
 fi
