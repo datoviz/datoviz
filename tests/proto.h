@@ -227,8 +227,8 @@ static void destroy_visual(TestVisual* visual)
     dvz_graphics_destroy(&visual->graphics);
     dvz_bindings_destroy(&visual->bindings);
     dvz_buffer_destroy(&visual->buffer);
-    if (visual->user_data != NULL)
-        FREE(visual->user_data);
+    FREE(visual->user_data);
+    FREE(visual->data);
 }
 
 

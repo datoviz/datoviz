@@ -561,6 +561,7 @@ static void dvz_container_destroy(DvzContainer* container)
     ASSERT(container->items != NULL);
     // log_trace("container destroy");
     // Check all elements have been destroyed, and free them if necessary.
+    uint32_t count = container->count;
     DvzObject* item = NULL;
     for (uint32_t i = 0; i < container->capacity; i++)
     {
@@ -587,6 +588,7 @@ static void dvz_container_destroy(DvzContainer* container)
     ASSERT(container->count == 0);
     // log_trace("free container items");
     FREE(container->items);
+    log_trace("container destroy (%d elements)", count);
     container->capacity = 0;
 }
 
@@ -663,6 +665,9 @@ DVZ_EXPORT unsigned char* dvz_resource_shader(const char* name, unsigned long* s
 
 // Defined in cmake-generated file build/_colortex.c
 DVZ_EXPORT unsigned char* dvz_resource_texture(const char* name, unsigned long* size);
+
+// Defined in cmake-generated file build/_fonts.c
+DVZ_EXPORT unsigned char* dvz_resource_font(const char* name, unsigned long* size);
 
 
 

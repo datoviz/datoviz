@@ -1,22 +1,32 @@
 """
-# Image
+# Image blending
 
-This example shows how to display two superimposed images of different sizes
-(but automatically rescaled), with simple blending done on the GPU, with a slider
-controlling the blending parameter.
+This example shows how to display two superimposed images, with simple blending done on the GPU,
+and a slider controlling the blending parameter.
 
 """
 
+# Imports
 from pathlib import Path
 import numpy as np
 import numpy.random as nr
 import imageio
-
-
 from datoviz import app, canvas, run, colormap
 
+# Path to the root git directory so as to load the images.
 ROOT = Path(__file__).resolve().parent.parent.parent.parent
 
+def load_image(path):
+    """This function loads an image with imageio, and uploads it to a new GPU texture."""
+    img = imageio.imread(path)
+    img = np.dstack((img, 255 * np.ones(img.shape[:2])))
+    img = img.astype(np.uint8)
+    tex = app().gpu().context().texture(img.shape[0], img.shape[1])
+    tex.set_filter('linear')
+    tex.upload(img)
+    return tex
+
+# Create the canvas, panel, and visual.
 c = canvas(show_fps=True)
 panel = c.scene().panel(controller='panzoom')
 visual = panel.visual('image')
@@ -33,28 +43,22 @@ visual.data('texcoords', np.atleast_2d([1, 1]), idx=2)
 visual.data('texcoords', np.atleast_2d([0, 1]), idx=3)
 
 # First texture.
-img = imageio.imread(ROOT / 'data/textures/earth.jpg')
-img = np.dstack((img, 255 * np.ones(img.shape[:2])))
-img = img.astype(np.uint8)
-tex = app().gpu().context().image(img, filtering='nearest')
-visual.texture(tex, idx=0)
+tex0 = load_image(ROOT / 'data/textures/earth.jpg')
+visual.texture(tex0, idx=0)  # set the first texture slot of the image visual
 
 # Second texture.
-n = 256
-t = np.linspace(-1, +1, n)
-x, y = np.meshgrid(t, t)
-z = np.exp(-2 * (x * x + y * y))
-z = (z * 255).astype(np.uint8)
-img = np.dstack((z, z, z, 255 * np.ones_like(z))).astype(np.uint8)
-tex2 = app().gpu().context().image(img, filtering='nearest')
-visual.texture(tex2, idx=1)
+tex1 = load_image(ROOT / 'data/textures/landscape.jpg')
+visual.texture(tex1, idx=1)  # set the second texture slot of the image visual
 
-visual.data('texcoefs', np.array([1, .5, 0, 0]).astype(np.float32))
+# Initial blending value.
+value = .25
+visual.data('texcoefs', np.array([1 - value, value, 0, 0]))
 
 # Control the blending via a GUI.
 gui = c.gui("GUI")
+slider = gui.control("slider_float", "GPU blending", value=value, vmin=0, vmax=1)
 
-@gui.control("slider_float", "blending", value=0, vmin=0, vmax=1)
+@slider.connect
 def on_change(value):
     # Convex combination of the two images.
     visual.data('texcoefs', np.array([1 - value, value, 0, 0]))

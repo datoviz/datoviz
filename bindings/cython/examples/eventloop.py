@@ -1,67 +1,67 @@
-from pathlib import Path
-import asyncio
-import aiohttp
+"""
+# Asynchronous event loop
 
+This example shows how to make asynchronous updates to the data by using the `asyncio` event loop.
+
+Here, the event loop runs in Python instead of C (the default). Asynchronous HTTP requests can be
+done via the the [aiohttp](https://docs.aiohttp.org/en/stable/) library. HTTP requests are done
+asynchronously and do not block the UI. Once the response is ready, we update the visual's data.
+
+"""
+import asyncio
+import json
+from pathlib import Path
+
+import aiohttp
 import numpy as np
 import numpy.random as nr
-from datoviz import app, canvas, run, colormap
+from datoviz import app, canvas, run, colormap, do_async
 
-
-async def fetch(session, url):
-    async with session.get(url) as response:
-        return await response.text()
-
-
-async def make_request():
-    url = 'http://httpbin.org/get'
+async def make_request(url):
+    """Make an asynchronous HTTP GET request and return the response as text."""
     async with aiohttp.ClientSession() as session:
-        print(await fetch(session, url))
+        async with session.get(url) as response:
+            return(await response.text())
 
+def update_data(N=10_000):
+    """Update the visual's data with a given number of points."""
+    pos = nr.randn(N, 3)
+    ms = nr.uniform(low=2, high=35, size=N)
+    color_values = nr.rand(N)
+    color = colormap(color_values, vmin=0, vmax=1, alpha=.75 * np.ones(N), cmap='viridis')
 
+    visual.data('pos', pos)
+    visual.data('color', color)
+    visual.data('ms', ms)
+
+# Make the canvas and visual.
 c = canvas(show_fps=True)
 panel = c.scene().panel(controller='axes')
 visual = panel.visual('marker')
+update_data()
 
-N = 10_000
-pos = nr.randn(N, 3)
-ms = nr.uniform(low=2, high=35, size=N)
-color_values = nr.rand(N)
-color = colormap(color_values, vmin=0, vmax=1, alpha=.75 * np.ones(N), cmap='viridis')
+async def update():
+    """This callback function is called asynchronously when clicking on a button.
 
-visual.data('pos', pos)
-visual.data('color', color)
-visual.data('ms', ms)
+    It makes an asynchronous HTTP GET request to a website generating random numbers.
+    When the reply is ready, we update the visual with the returned number of points.
 
+    """
+    print("Making HTTP request to get random number...")
+    text = await make_request('https://random-data-api.com/api/number/random_number')
+    n = int(json.loads(text)['positive'])
+    print(f"Show {n} points")
+    update_data(n)
 
+# GUI
 gui = c.gui("Test GUI")
-@gui.control("button", "click here")
+button = gui.control("button", "update the visual")
+
+@button.connect
 def on_change(value):
-    print("make HTTP request")
-    loop.create_task(make_request())
+    # The special do_async() function, provided by datoviz, takes an asynchronous task and runs it
+    # in the asyncio event loop.
+    do_async(update())
 
-
-async def periodic():
-    print("start datoviz event loop")
-    while app().next_frame():
-        await asyncio.sleep(0.001)
-
-
-loop = asyncio.get_event_loop()
-task = loop.create_task(periodic())
-
-
-# async def main():
-#     async with aiohttp.ClientSession() as session:
-#         await asyncio.gather(
-#             periodic(),
-#             make_request(session),
-#         )
-# def stop():
-#     task.cancel()
-# loop.call_later(3, stop)
-
-
-try:
-    loop.run_until_complete(task)
-except asyncio.CancelledError:
-    pass
+# Start the asyncio event loop.
+run(event_loop='asyncio')

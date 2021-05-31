@@ -34,4 +34,4 @@ for filename in *.vert *.frag; do
 done
 
 # NOTE: libdatoviz must be in the linker path before running the example (dynamic linking)
-LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DVZ_ROOT/build ./datoviz_example
+# LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DVZ_ROOT/build ./datoviz_example

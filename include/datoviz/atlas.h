@@ -73,14 +73,16 @@ static DvzTexture* _font_texture(DvzContext* ctx, DvzFontAtlas* atlas)
 
 static DvzFontAtlas dvz_font_atlas(DvzContext* ctx)
 {
-    // Font texture
-    char path[1024];
-    snprintf(path, sizeof(path), "%s/textures/%s", DATA_DIR, "font_inconsolata.png");
-
     int width, height, depth;
-
     DvzFontAtlas atlas = {0};
-    atlas.font_texture = stbi_load(path, &width, &height, &depth, STBI_rgb_alpha);
+
+    unsigned long file_size = 0;
+    unsigned char* buffer = dvz_resource_font("font_inconsolata", &file_size);
+    ASSERT(file_size > 0);
+    ASSERT(buffer != NULL);
+
+    atlas.font_texture =
+        stbi_load_from_memory(buffer, file_size, &width, &height, &depth, STBI_rgb_alpha);
     ASSERT(width > 0);
     ASSERT(height > 0);
     ASSERT(depth > 0);

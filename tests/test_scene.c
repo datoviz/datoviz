@@ -49,11 +49,12 @@ static int _scene_run(DvzScene* scene, const char* name)
 
 
 
-static void _add_visual(DvzPanel* panel)
+static DvzVisual* _add_visual(DvzPanel* panel)
 {
     ASSERT(panel != NULL);
     DvzVisual* visual = dvz_scene_visual(panel, DVZ_VISUAL_POINT, DVZ_VISUAL_FLAGS_TRANSFORM_NONE);
     _point_data(visual);
+    return visual;
 }
 
 
@@ -62,7 +63,7 @@ static void _add_visual(DvzPanel* panel)
 /*  Visuals tests                                                                                */
 /*************************************************************************************************/
 
-int test_scene_single(TestContext* tc)
+int test_scene_empty(TestContext* tc)
 {
     DvzCanvas* canvas = tc->canvas;
     ASSERT(canvas != NULL);
@@ -71,11 +72,40 @@ int test_scene_single(TestContext* tc)
 
     DvzScene* scene = dvz_scene(canvas, 1, 1);
     DvzPanel* panel = dvz_scene_panel(scene, 0, 0, DVZ_CONTROLLER_AXES_2D, 0);
+    DvzVisual* visual = dvz_scene_visual(panel, DVZ_VISUAL_IMAGE, 0);
+    ASSERT(visual);
 
-    _add_visual(panel);
+    dvz_app_run(canvas->app, 10);
+    int res = _scene_run(scene, "empty");
+
+    _dark_background(canvas);
+    return res;
+}
+
+
+
+int test_scene_single(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    ASSERT(canvas != NULL);
+
+    _white_background(canvas);
+    dvz_canvas_dpi_scaling(canvas, 1.5);
+
+    DvzScene* scene = dvz_scene(canvas, 1, 1);
+    DvzPanel* panel = dvz_scene_panel(scene, 0, 0, DVZ_CONTROLLER_AXES_2D, 0);
+
+    // BUG FIX: check that the DPI > 1 doesn't cause the marker size to increase at each call.
+    DvzVisual* visual = _add_visual(panel);
+    for (uint32_t i = 0; i < 5; i++)
+    {
+        _point_data(visual);
+        dvz_app_run(canvas->app, 5);
+    }
 
     int res = _scene_run(scene, "single");
 
+    dvz_canvas_dpi_scaling(canvas, 1);
     _dark_background(canvas);
 
     return res;

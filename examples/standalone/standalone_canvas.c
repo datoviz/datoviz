@@ -6,15 +6,11 @@
 /// Import the library public header.
 #include <datoviz/datoviz.h>
 
-
-
 // Objects we'll need in the refill callback.
 // NOTE: Using static global variables in production code is bad practice.
 static DvzBufferRegions vertex_buffer;
 static DvzGraphics graphics;
 static DvzBindings bindings;
-
-
 
 // Refill callback. This function is called by the canvas whenever it needs to recreate its command
 // buffers, for example when initializing the canvas, and when resizing it.
@@ -57,8 +53,7 @@ static void _triangle_refill(DvzCanvas* canvas, DvzEvent ev)
     dvz_cmd_end(cmds, idx);
 }
 
-
-
+// Entry point.
 int main(int argc, char** argv)
 {
     // We create a singleton application with a GLFW backend.
@@ -68,7 +63,7 @@ int main(int argc, char** argv)
     DvzGpu* gpu = dvz_gpu_best(app);
 
     // We create a new canvas with the size specified. The last argument is for optional flags.
-    DvzCanvas* canvas = dvz_canvas(gpu, 1280, 1024, 0);
+    DvzCanvas* canvas = dvz_canvas(gpu, 1024, 768, 0);
 
     // Graphics pipeline.
     {
@@ -147,25 +142,9 @@ int main(int argc, char** argv)
     // the triangle.
     dvz_event_callback(canvas, DVZ_EVENT_REFILL, 0, DVZ_EVENT_MODE_SYNC, _triangle_refill, NULL);
 
-
-
-// NOTE: ignore this part, it is exclusively for the building and testing process.
-#ifdef AUTOMATED
-    log_info("saving standalone canvas screenshot");
-
-    // Instead of opening a live interactive canvas, save a screenshot and close the canvas
-    // immediately.
-    dvz_app_run(app, 5);
-    dvz_screenshot_file(canvas, "../../docs/images/screenshots/standalone_canvas.png");
-#else
-    log_info("running standalone canvas example");
-
     // We run the application. The last argument is the number of frames to run, or 0 for infinite
     // loop (stop when escape is pressed or when the window is closed).
     dvz_app_run(app, 0);
-#endif
-
-
 
     // We need to clean up all objects handled by Datoviz at the end.
     dvz_graphics_destroy(&graphics);

@@ -132,6 +132,8 @@ struct DvzGuiControl
     const char* name;
     int flags;
     void* value;
+    vec2 pos;
+    vec2 size;
     DvzGuiControlType type;
     DvzGuiControlUnion u;
 };

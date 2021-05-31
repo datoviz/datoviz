@@ -597,13 +597,24 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
     if (!offscreen)
     {
         window = dvz_window(app, width, height);
-        ASSERT(window->app == app);
-        ASSERT(window->app != NULL);
-        canvas->window = window;
-        uint32_t framebuffer_width, framebuffer_height;
-        dvz_window_get_size(window, &framebuffer_width, &framebuffer_height);
-        ASSERT(framebuffer_width > 0);
-        ASSERT(framebuffer_height > 0);
+
+        if (window == NULL)
+        {
+            log_error("window creation failed, switching to offscreen backend");
+            offscreen = true;
+            canvas->offscreen = true;
+            app->backend = DVZ_BACKEND_OFFSCREEN;
+        }
+        else
+        {
+            ASSERT(window->app == app);
+            ASSERT(window->app != NULL);
+            canvas->window = window;
+            uint32_t framebuffer_width, framebuffer_height;
+            dvz_window_get_size(window, &framebuffer_width, &framebuffer_height);
+            ASSERT(framebuffer_width > 0);
+            ASSERT(framebuffer_height > 0);
+        }
     }
 
     // Automatic creation of GPU with default queues and features.
@@ -749,7 +760,7 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
     canvas->guis = dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzGui), DVZ_OBJECT_TYPE_GUI);
     if (overlay)
     {
-        dvz_imgui_init(canvas);
+        dvz_imgui_enable(canvas);
 
         dvz_event_callback(
             canvas, DVZ_EVENT_IMGUI, 0, DVZ_EVENT_MODE_SYNC, dvz_gui_callback, NULL);
@@ -2023,6 +2034,8 @@ uint8_t* dvz_screenshot(DvzCanvas* canvas, bool has_alpha)
 void dvz_screenshot_file(DvzCanvas* canvas, const char* png_path)
 {
     ASSERT(canvas != NULL);
+    ASSERT(png_path != NULL);
+    ASSERT(strlen(png_path) > 0);
 
     log_info("saving screenshot of canvas to %s with full synchronization (slow)", png_path);
     uint8_t* rgb = dvz_screenshot(canvas, false);
@@ -2148,9 +2161,11 @@ static void _video_destroy(DvzCanvas* canvas, DvzEvent ev)
 void dvz_canvas_video(DvzCanvas* canvas, int framerate, int bitrate, const char* path, bool record)
 {
     ASSERT(canvas != NULL);
+
     uvec2 size;
     dvz_canvas_size(canvas, DVZ_CANVAS_SIZE_FRAMEBUFFER, size);
     Video* video = init_video(path, (int)size[0], (int)size[1], framerate, bitrate);
+    log_info("initialize video `%s`", path);
     if (video == NULL)
         return;
 
@@ -2430,11 +2445,15 @@ int dvz_canvas_frame(DvzCanvas* canvas)
     // Destroy the canvas if needed.
     if (canvas->window != NULL)
     {
-        if (backend_window_should_close(app->backend, canvas->window->backend_window))
+        // Check canvas.to_close, and whether the user as requested to close the window.
+        if (atomic_load(&canvas->to_close) ||
+            backend_window_should_close(app->backend, canvas->window->backend_window))
             canvas->window->obj.status = DVZ_OBJECT_STATUS_NEED_DESTROY;
+
         if (canvas->window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
             canvas->obj.status = DVZ_OBJECT_STATUS_NEED_DESTROY;
     }
+
     if (canvas->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
     {
         log_trace("destroying canvas");
@@ -2469,15 +2488,62 @@ int dvz_canvas_frame(DvzCanvas* canvas)
 
 
 
+static int _app_autorun(DvzApp* app)
+{
+    ASSERT(app != NULL);
+    if (!app->autorun.enable)
+        return 1;
+    log_info("autorun mode activated");
+
+    // HACK: avoid infinite recursion.
+    app->autorun.enable = false;
+    app->is_running = false;
+
+    // HACK: the autorun only applies to the first canvas.
+    // Get the first canvas.
+    DvzContainerIterator iterator = dvz_container_iterator(&app->canvases);
+    DvzCanvas* canvas = (DvzCanvas*)iterator.item;
+    ASSERT(canvas != NULL);
+
+    if (strlen(app->autorun.screenshot) > 0)
+    {
+        log_debug("autorun screenshot %s", app->autorun.screenshot);
+        // Run n_frames, then do a screenshot.
+        dvz_app_run(app, app->autorun.n_frames > 0 ? app->autorun.n_frames : 5);
+        dvz_screenshot_file(canvas, app->autorun.screenshot);
+    }
+
+    if (strlen(app->autorun.video) > 0 && app->autorun.n_frames > 0)
+    {
+        log_debug("autorun video %s", app->autorun.video);
+        // TODO: customizable video params.
+        dvz_canvas_video(canvas, 30, 10000000, app->autorun.video, true);
+        dvz_app_run(app, app->autorun.n_frames);
+        dvz_canvas_stop(canvas);
+    }
+
+    return 0;
+}
+
 int dvz_app_run(DvzApp* app, uint64_t frame_count)
 {
     ASSERT(app != NULL);
+
+    // Single run of this function at a given time.
     if (app->is_running && frame_count != 1)
     {
         log_debug("discard dvz_app_run() as the app seems to be already running");
         return -1;
     }
     app->is_running = true;
+
+    if (frame_count == 0 && app->autorun.n_frames > 0)
+        frame_count = app->autorun.n_frames;
+
+    // Check if autorun is enabled.
+    // HACK: disable dvz_app_run(app, 0) in autorun mode.
+    if (_app_autorun(app) == 0 && frame_count == 0)
+        return 0;
 
     // HACK: prevent infinite loop with offscreen rendering.
     if (app->backend == DVZ_BACKEND_OFFSCREEN && frame_count == 0)
@@ -2486,16 +2552,16 @@ int dvz_app_run(DvzApp* app, uint64_t frame_count)
         frame_count = 10;
     }
 
+    // Number of frames.
     if (frame_count > 1)
         log_debug("start main loop with %d frames", frame_count);
     if (frame_count == 0)
         frame_count = UINT64_MAX;
     ASSERT(frame_count > 0);
 
+    // Main loop.
     DvzContainerIterator iterator;
     DvzCanvas* canvas = NULL;
-
-    // Main loop.
     uint32_t n_canvas_active = 0;
     uint64_t iter = 0;
     for (iter = 0; iter < frame_count; iter++)
@@ -2550,7 +2616,7 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
         log_trace("skip destruction of already-destroyed canvas");
         return;
     }
-    log_trace("destroying canvas");
+    log_debug("destroying canvas");
 
     // DEBUG: only in non offscreen mode
     if (!canvas->offscreen)
@@ -2559,9 +2625,11 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
         ASSERT(canvas->window->app != NULL);
     }
 
-    // Stop the event thread.
     ASSERT(canvas != NULL);
+    ASSERT(canvas->app != NULL);
     ASSERT(canvas->gpu != NULL);
+
+    // Stop the event thread.
     dvz_gpu_wait(canvas->gpu);
     dvz_event_stop(canvas);
     dvz_thread_join(&canvas->event_thread);
@@ -2596,6 +2664,14 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     if (canvas->overlay)
         dvz_framebuffers_destroy(&canvas->framebuffers_overlay);
 
+    // Destroy the Dear ImGui context if it was initialized.
+
+    // HACK: we should NOT destroy imgui when using multiple DvzApp, since Dear ImGui uses
+    // global context shared by all DvzApps. In practice, this is for now equivalent to using the
+    // offscreen backend (which does not support Dear ImGui at the moment anyway).
+    if (canvas->app->backend != DVZ_BACKEND_OFFSCREEN)
+        dvz_imgui_destroy();
+
     // Destroy the window.
     log_trace("canvas destroy window");
     if (canvas->window != NULL)
@@ -2617,8 +2693,9 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     log_trace("canvas destroy fences");
     dvz_fences_destroy(&canvas->fences_render_finished);
 
-    if (canvas->overlay)
-        dvz_imgui_destroy(canvas);
+    // Free the GUI context if it has been set.
+    FREE(canvas->gui_context);
+
     CONTAINER_DESTROY_ITEMS(DvzGui, canvas->guis, dvz_gui_destroy)
     dvz_container_destroy(&canvas->guis);
 

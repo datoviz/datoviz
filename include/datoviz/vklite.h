@@ -788,6 +788,28 @@ struct DvzTexture
 DVZ_EXPORT DvzApp* dvz_app(DvzBackend backend);
 
 /**
+ * Parse the DVZ_RUN_* environment variables and setup the application autorun accordingly.
+ *
+ * The DVZ_RUN_* variables may override the backend (offscreen or not), number of frames during the
+ * run, and automatic saving of screenshot or video.
+ *
+ * !!! note
+ *     Currently, this function is automatically called by `dvz_app()`, and there is no need to
+ *     call it manually.
+ *
+ * @param app the app
+ */
+DVZ_EXPORT void dvz_autorun_env(DvzApp* app);
+
+/**
+ * Manually setup the application autorun.
+ *
+ * @param app the app
+ * @param autorun a `DvzAutorun` struct
+ */
+DVZ_EXPORT void dvz_autorun_setup(DvzApp* app, DvzAutorun autorun);
+
+/**
  * Destroy the application.
  *
  * This function automatically destroys all objects created within the application.
@@ -795,6 +817,11 @@ DVZ_EXPORT DvzApp* dvz_app(DvzBackend backend);
  * @param app the application to destroy
  */
 DVZ_EXPORT int dvz_app_destroy(DvzApp* app);
+
+/**
+ * Destroy the Dear ImGui global context if it was ever initialized.
+ */
+DVZ_EXPORT void dvz_imgui_destroy();
 
 
 

@@ -437,7 +437,9 @@ void dvz_scene_destroy(DvzScene* scene)
 
     dvz_fifo_destroy(&scene->update_fifo);
 
+    CONTAINER_DESTROY_ITEMS(DvzVisual, scene->visuals, dvz_visual_destroy)
     dvz_container_destroy(&scene->visuals);
+
     dvz_obj_destroyed(&scene->obj);
     FREE(scene);
 }

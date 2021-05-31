@@ -244,9 +244,19 @@ static DvzBindings* _get_bindings(DvzVisual* visual, DvzSource* source)
 
 
 // Return the prop array, transformed if it exists, otherwise original.
-static DvzArray* _prop_array(DvzProp* prop)
+static DvzArray* _prop_array(DvzProp* prop, DvzPropArray choice)
 {
     ASSERT(prop != NULL);
+
+    // Force choice of the prop array.
+    if (choice == DVZ_PROP_ARRAY_STAGING)
+        return &prop->arr_staging;
+    else if (choice == DVZ_PROP_ARRAY_TRANSFORMED)
+        return &prop->arr_trans;
+    else if (choice == DVZ_PROP_ARRAY_ORIGINAL)
+        return &prop->arr_orig;
+
+    // Or by default, follow this strategy.
     if (prop->arr_staging.item_count > 0)
     {
         log_debug("take staging array for prop %d", prop->prop_type);
@@ -254,12 +264,12 @@ static DvzArray* _prop_array(DvzProp* prop)
     }
     else if (prop->arr_trans.item_count > 0)
     {
-        log_trace("take transformed array for prop %d", prop->prop_type);
+        // log_trace("take transformed array for prop %d", prop->prop_type);
         return &prop->arr_trans;
     }
     else
     {
-        log_trace("take original array for prop %d", prop->prop_type);
+        // log_trace("take original array for prop %d", prop->prop_type);
         return &prop->arr_orig;
     }
 }
@@ -281,7 +291,7 @@ static uint32_t _source_size(DvzVisual* visual, DvzSource* source)
         prop = iter.item;
         if (prop->source == source)
         {
-            arr = _prop_array(prop);
+            arr = _prop_array(prop, DVZ_PROP_ARRAY_DEFAULT);
             ASSERT(arr != NULL);
             item_count = MAX(item_count, arr->item_count * MAX(1, prop->reps));
         }
@@ -443,7 +453,7 @@ static void _prop_copy(DvzVisual* visual, DvzProp* prop)
     VkDeviceSize col_size = prop->item_size;
     ASSERT(col_size > 0);
 
-    DvzArray* arr = _prop_array(prop);
+    DvzArray* arr = _prop_array(prop, DVZ_PROP_ARRAY_DEFAULT);
     if (arr->data == NULL)
     {
         log_debug("visual prop %d #%d not set", prop->prop_type, prop->prop_idx);
@@ -461,8 +471,12 @@ static void _prop_copy(DvzVisual* visual, DvzProp* prop)
     // Implement DPI scaling here.
     if (prop->dpi_scaling != 1)
     {
+        arr = _prop_array(prop, DVZ_PROP_ARRAY_TRANSFORMED);
+        if (arr->item_count == 0)
+            arr = _prop_array(prop, DVZ_PROP_ARRAY_ORIGINAL);
+
         prop->arr_staging = dvz_array_copy(arr);
-        arr = &prop->arr_staging;
+        arr = _prop_array(prop, DVZ_PROP_ARRAY_STAGING);
         dvz_array_scale(arr, prop->dpi_scaling);
     }
 

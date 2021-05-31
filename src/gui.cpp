@@ -15,6 +15,12 @@ END_INCL_NO_WARN
 
 
 
+#define CHECK_IMGUI                                                                               \
+    if (!_check_imgui_context())                                                                  \
+        return;
+
+
+
 /*************************************************************************************************/
 /*  Utils                                                                                        */
 /*************************************************************************************************/
@@ -28,56 +34,24 @@ static void _imgui_check_vk_result(VkResult err)
         abort();
 }
 
-static void _imgui_init_context()
-{
-    log_debug("initializing Dear ImGui");
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
 
-    // Enable docking, requires the docking branch of imgui
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-    io.ConfigDockingWithShift = false;
-    ImGui::StyleColorsDark();
+
+static inline bool _check_imgui_context()
+{
+    if (ImGui::GetCurrentContext() == NULL)
+    {
+        log_error("no more ImGui context, skipping Dear ImGui callback");
+        return false;
+    }
+    return true;
 }
 
-static void _imgui_enable(DvzCanvas* canvas)
-{
-    ASSERT(canvas != NULL);
-    ASSERT(canvas->overlay);
-    DvzGpu* gpu = canvas->gpu;
-    ASSERT(gpu != NULL);
-    DvzApp* app = gpu->app;
-    ASSERT(app != NULL);
 
-    if (canvas->app->backend == DVZ_BACKEND_GLFW)
-        ImGui_ImplGlfw_InitForVulkan((GLFWwindow*)canvas->window->backend_window, true);
-
-    ImGui_ImplVulkan_InitInfo init_info = {0};
-    init_info.Instance = app->instance;
-    init_info.PhysicalDevice = gpu->physical_device;
-    init_info.Device = gpu->device;
-    init_info.QueueFamily = gpu->queues.queue_families[DVZ_DEFAULT_QUEUE_RENDER];
-    init_info.Queue = gpu->queues.queues[DVZ_DEFAULT_QUEUE_RENDER];
-    init_info.DescriptorPool = gpu->dset_pool;
-    // init_info.PipelineCache = gpu->pipeline_cache;
-    // init_info.Allocator = gpu->allocator;
-    init_info.MinImageCount = canvas->swapchain.img_count;
-    init_info.ImageCount = canvas->swapchain.img_count;
-    init_info.CheckVkResultFn = _imgui_check_vk_result;
-    ImGui_ImplVulkan_Init(&init_info, canvas->renderpass_overlay.renderpass);
-}
-
-static void _imgui_destroy()
-{
-    log_debug("shutting down Dear ImGui");
-    ImGui_ImplVulkan_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
-}
 
 static void _presend(DvzCanvas* canvas, DvzEvent ev)
 {
+    bool has_imgui_context = _check_imgui_context();
+
     ASSERT(canvas != NULL);
     if (!canvas->overlay)
         return;
@@ -90,6 +64,7 @@ static void _presend(DvzCanvas* canvas, DvzEvent ev)
         cmds, idx, &canvas->renderpass_overlay, &canvas->framebuffers_overlay);
 
     // Begin new frame.
+    if (has_imgui_context)
     {
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -107,6 +82,7 @@ static void _presend(DvzCanvas* canvas, DvzEvent ev)
     }
 
     // End frame.
+    if (has_imgui_context)
     {
         ImGui::Render();
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmds->cmds[idx]);
@@ -122,7 +98,7 @@ static void _presend(DvzCanvas* canvas, DvzEvent ev)
 
 
 /*************************************************************************************************/
-/*  Gui creation                                                                                 */
+/*  Gui style                                                                                    */
 /*************************************************************************************************/
 
 /*
@@ -178,37 +154,105 @@ static int _gui_style(int flags)
 
 
 /*************************************************************************************************/
-/*  Dear ImGui functions                                                                         */
+/*  Dear ImGui canvas activation                                                                 */
 /*************************************************************************************************/
 
-void dvz_imgui_init(DvzCanvas* canvas)
+static void _imgui_init()
+{
+    if (ImGui::GetCurrentContext() != NULL)
+        return;
+    log_debug("initializing Dear ImGui");
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+
+    // Enable docking, requires the docking branch of imgui
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    // io.ConfigDockingWithShift = false;  // DEPRECATED
+    ImGui::StyleColorsDark();
+}
+
+
+
+static void _imgui_context(DvzCanvas* canvas)
 {
     ASSERT(canvas != NULL);
     ASSERT(canvas->gpu != NULL);
 
-    if (ImGui::GetCurrentContext() == NULL)
-        _imgui_init_context();
-    ASSERT(canvas->overlay);
+    ASSERT(canvas->gpu->context != NULL);
 
-    _imgui_enable(canvas);
+    // The GUI context must be created only once per canvas.
+    if (canvas->gui_context != NULL)
+    {
+        log_debug("skip creation of the already-existing GUI context for the canvas");
+        return;
+    }
+
+    // Retrieve the pointer to the color texture.
+    log_debug("creating the Dear ImGui context, with the colormap texture");
+    DvzTexture* texture = canvas->gpu->context->color_texture.texture;
+
+    ASSERT(texture != NULL);
+    ASSERT(texture->sampler != NULL);
+    ASSERT(texture->image != NULL);
+
+    VkSampler sampler = texture->sampler->sampler;
+    VkImageView image_view = texture->image->image_views[0];
+
+    ASSERT(sampler != VK_NULL_HANDLE);
+    ASSERT(image_view != VK_NULL_HANDLE);
+
+    // GUI context for the GPU.
+    canvas->gui_context = (DvzGuiContext*)calloc(1, sizeof(DvzGuiContext));
+    canvas->gui_context->colormap_texture =
+        ImGui_ImplVulkan_AddTexture(sampler, image_view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+}
+
+
+
+static void _imgui_fonts_upload(DvzCanvas* canvas)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(ImGui::GetCurrentContext() != NULL);
     ImGuiIO& io = ImGui::GetIO();
 
-    // DPI scaling.
-    dvz_imgui_dpi_scaling(canvas, canvas->dpi_scaling);
-
     // Load Fonts.
-    float font_size = 16 * canvas->dpi_scaling;
-    char path[1024];
-    snprintf(path, sizeof(path), "%s/fonts/Roboto-Medium.ttf", DATA_DIR);
-    io.Fonts->AddFontFromFileTTF(path, font_size);
+    // HACK: support Retina display on macOS
+    float font_size = (OS_MACOS ? 11 : 14) * canvas->dpi_scaling;
+    ASSERT(font_size > 0);
 
-    // Font awesome icons.
-    ImFontConfig config;
-    config.MergeMode = true;
-    // config.GlyphMinAdvanceX = font_size; // Use if you want to make the icon monospaced
-    static const ImWchar icon_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
-    snprintf(path, sizeof(path), "%s/fonts/fontawesome-webfont.ttf", DATA_DIR);
-    io.Fonts->AddFontFromFileTTF(path, font_size, &config, icon_ranges);
+    // Load first fond.
+    ImFontConfig config = {};
+    config.FontDataOwnedByAtlas = false; // Important!
+    {
+        unsigned long file_size = 0;
+        unsigned char* buffer = dvz_resource_font("Roboto_Medium", &file_size);
+        ASSERT(file_size > 0);
+        ASSERT(buffer != NULL);
+        io.Fonts->AddFontFromMemoryTTF(buffer, file_size, font_size, &config);
+    }
+
+    // Load font awesome font for icons.
+    // NOTE: this doesn't seem to work on macOS:
+    // Assertion failed: (font_offset >= 0 && "FontData is incorrect, or FontNo cannot be found."),
+    // function ImFontAtlasBuildWithStbTruetype, file ../external/imgui/imgui_draw.cpp, line 2372.
+    if (!OS_MACOS)
+    {
+        config.MergeMode = true;
+        // config.GlyphMinAdvanceX = font_size; // Use if you want to make the icon monospaced
+        static const ImWchar icon_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
+        // char path[1024];
+        {
+            unsigned long file_size = 0;
+            unsigned char* buffer = dvz_resource_font("fontawesome_webfont", &file_size);
+            ASSERT(file_size > 0);
+            ASSERT(buffer != NULL);
+            io.Fonts->AddFontFromMemoryTTF(buffer, file_size, font_size, &config, icon_ranges);
+
+            // snprintf(path, sizeof(path), "%s/fonts/fontawesome-webfont.ttf", DATA_DIR);
+            // io.Fonts->AddFontFromFileTTF(path, font_size, &config, icon_ranges);
+        }
+    }
 
     // Upload Fonts
     DvzCommands cmd = dvz_commands(canvas->gpu, DVZ_DEFAULT_QUEUE_RENDER, 1);
@@ -219,32 +263,133 @@ void dvz_imgui_init(DvzCanvas* canvas)
 
     ImGui_ImplVulkan_DestroyFontUploadObjects();
     dvz_commands_destroy(&cmd);
+}
+
+
+
+// Enable ImGUI in a given canvas.
+static void _imgui_canvas_enable(DvzCanvas* canvas)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(canvas->overlay);
+
+    // Do we need to initialize Dear ImGui?
+    bool need_init = ImGui::GetCurrentContext() == NULL;
+    if (need_init)
+        _imgui_init();
+
+    // To run on every canvas:
+    if (canvas->app->backend == DVZ_BACKEND_GLFW)
+        ImGui_ImplGlfw_InitForVulkan((GLFWwindow*)canvas->window->backend_window, true);
+
+    if (need_init)
+    {
+        // To run on the first canvas only:
+        log_debug("initialize Dear ImGui for the first canvas only");
+
+        // HACK: the following must be called only once, for the first canvas.
+        DvzGpu* gpu = canvas->gpu;
+        ASSERT(gpu != NULL);
+        DvzApp* app = gpu->app;
+        ASSERT(app != NULL);
+
+        ImGui_ImplVulkan_InitInfo init_info = {0};
+        init_info.Instance = app->instance;
+        init_info.PhysicalDevice = gpu->physical_device;
+        init_info.Device = gpu->device;
+        init_info.QueueFamily = gpu->queues.queue_families[DVZ_DEFAULT_QUEUE_RENDER];
+        init_info.Queue = gpu->queues.queues[DVZ_DEFAULT_QUEUE_RENDER];
+        init_info.DescriptorPool = gpu->dset_pool;
+        // init_info.PipelineCache = gpu->pipeline_cache;
+        // init_info.Allocator = gpu->allocator;
+        init_info.MinImageCount = canvas->swapchain.img_count;
+        init_info.ImageCount = canvas->swapchain.img_count;
+        init_info.CheckVkResultFn = _imgui_check_vk_result;
+        ImGui_ImplVulkan_Init(&init_info, canvas->renderpass_overlay.renderpass);
+
+        // Only need to run once, for the first canvas, as Dear ImGui uses a global context.
+        _imgui_fonts_upload(canvas);
+
+        // DPI scaling, using the first canvas only again.
+        dvz_imgui_dpi_scaling(canvas, canvas->dpi_scaling);
+    }
+
+    // Create the ImGui context for every canvas, after initialization of Dear ImGui.
+    _imgui_context(canvas);
+}
+
+
+
+/*************************************************************************************************/
+/*  Dear ImGui functions                                                                         */
+/*************************************************************************************************/
+
+void dvz_imgui_destroy()
+{
+    if (ImGui::GetCurrentContext() == NULL)
+        return;
+    log_debug("destroying the Dear ImGui global context");
+    ImGui_ImplVulkan_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+    ASSERT(ImGui::GetCurrentContext() == NULL);
+}
+
+
+
+void dvz_imgui_enable(DvzCanvas* canvas)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(canvas->gpu != NULL);
+    ASSERT(canvas->app != NULL);
+    ASSERT(canvas->overlay);
+
+    if (canvas->app->backend == DVZ_BACKEND_OFFSCREEN)
+    {
+        log_error("cannot enable imgui in offscreen mode at the moment");
+        return;
+    }
+
+    // Enable Dear ImGui for the canvas, making sure the Dear ImGui global context and objects are
+    // only initialized once.
+    _imgui_canvas_enable(canvas);
 
     // PRE_SEND callback that will call the IMGUI callbacks.
     DvzCommands* cmds =
         dvz_canvas_commands(canvas, DVZ_DEFAULT_QUEUE_RENDER, canvas->swapchain.img_count);
     dvz_event_callback(canvas, DVZ_EVENT_PRE_SEND, 0, DVZ_EVENT_MODE_SYNC, _presend, cmds);
-
-    // Make the colormap texture available.
-    ASSERT(canvas->gpu->context != NULL);
-    DvzTexture* texture = canvas->gpu->context->color_texture.texture;
-    ASSERT(texture != NULL);
-
-    ASSERT(texture->sampler != NULL);
-    VkSampler sampler = texture->sampler->sampler;
-    ASSERT(texture->image != NULL);
-    VkImageView image_view = texture->image->image_views[0];
-
-    // GUI context.
-    canvas->gui_context = (DvzGuiContext*)calloc(1, sizeof(DvzGuiContext));
-    canvas->gui_context->colormap_texture =
-        ImGui_ImplVulkan_AddTexture(sampler, image_view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
 
 
+void dvz_imgui_dpi_scaling(DvzCanvas* canvas, float scaling)
+{
+    if (ImGui::GetCurrentContext() != NULL)
+    {
+        ImGuiStyle style = ImGui::GetStyle();
+        style.ScaleAllSizes(scaling);
+    }
+}
+
+
+
+void dvz_imgui_demo(DvzCanvas* canvas)
+{
+    ASSERT(canvas != NULL);
+    dvz_event_callback(
+        canvas, DVZ_EVENT_IMGUI, 0, DVZ_EVENT_MODE_SYNC, dvz_gui_callback_demo, NULL);
+}
+
+
+
+/*************************************************************************************************/
+/*  GUI functions                                                                                */
+/*************************************************************************************************/
+
 void dvz_gui_begin(const char* title, int flags)
 {
+    CHECK_IMGUI
+
     ASSERT(title != NULL);
     ASSERT(strlen(title) > 0);
 
@@ -254,12 +399,19 @@ void dvz_gui_begin(const char* title, int flags)
 
 
 
-void dvz_gui_end() { ImGui::End(); }
+void dvz_gui_end()
+{
+    CHECK_IMGUI
+
+    ImGui::End();
+}
 
 
 
 void dvz_gui_callback_fps(DvzCanvas* canvas, DvzEvent ev)
 {
+    CHECK_IMGUI
+
     ASSERT(canvas != NULL);
     dvz_gui_begin("FPS", DVZ_GUI_FLAGS_FIXED | DVZ_GUI_FLAGS_CORNER_UR);
     ImGui::Text("  FPS: %04.0f", canvas->fps);
@@ -269,12 +421,19 @@ void dvz_gui_callback_fps(DvzCanvas* canvas, DvzEvent ev)
 
 
 
-void dvz_gui_callback_demo(DvzCanvas* canvas, DvzEvent ev) { ImGui::ShowDemoWindow(); }
+void dvz_gui_callback_demo(DvzCanvas* canvas, DvzEvent ev)
+{
+    CHECK_IMGUI
+
+    ImGui::ShowDemoWindow(); //
+}
 
 
 
 void dvz_gui_callback_player(DvzCanvas* canvas, DvzEvent ev)
 {
+    CHECK_IMGUI
+
     ASSERT(canvas != NULL);
     if (canvas->screencast == NULL)
         return;
@@ -300,38 +459,8 @@ void dvz_gui_callback_player(DvzCanvas* canvas, DvzEvent ev)
 
 
 
-void dvz_imgui_dpi_scaling(DvzCanvas* canvas, float scaling)
-{
-    if (ImGui::GetCurrentContext() != NULL)
-    {
-        ImGuiStyle style = ImGui::GetStyle();
-        style.ScaleAllSizes(scaling);
-    }
-}
-
-
-
-void dvz_imgui_destroy(DvzCanvas* canvas)
-{
-    if (ImGui::GetCurrentContext() == NULL)
-        return;
-    _imgui_destroy();
-    FREE(canvas->gui_context);
-}
-
-
-
-void dvz_imgui_demo(DvzCanvas* canvas)
-{
-    ASSERT(canvas != NULL);
-    dvz_event_callback(
-        canvas, DVZ_EVENT_IMGUI, 0, DVZ_EVENT_MODE_SYNC, dvz_gui_callback_demo, NULL);
-}
-
-
-
 /*************************************************************************************************/
-/*  Gui controls implementation                10 */
+/*  GUI controls implementation                                                                  */
 /*************************************************************************************************/
 
 static void _emit_gui_event(DvzGui* gui, DvzGuiControl* control)
@@ -436,7 +565,6 @@ static void _show_colormap(DvzGuiControl* control)
     ASSERT(control != NULL);
     DvzCanvas* canvas = control->gui->canvas;
     ASSERT(canvas != NULL);
-    // ImGuiIO& io = ImGui::GetIO();
 
     float tex_w = 256;
     float tex_h = 50;
@@ -513,6 +641,16 @@ static void _show_control(DvzGuiControl* control)
         break;
     }
 
+    // Get the control position and size.
+    {
+        ImVec2 pos = ImGui::GetItemRectMin();
+        ImVec2 size = ImGui::GetItemRectSize();
+        control->pos[0] = pos.x;
+        control->pos[1] = pos.y;
+        control->size[0] = size.x;
+        control->size[1] = size.y;
+    }
+
     if (changed)
     {
         _emit_gui_event(control->gui, control);
@@ -543,6 +681,8 @@ static void _show_gui(DvzGui* gui)
 
 void dvz_gui_callback(DvzCanvas* canvas, DvzEvent ev)
 {
+    CHECK_IMGUI
+
     ASSERT(canvas != NULL);
 
     // When Dear ImGUI captures the mouse and keyboard, Datoviz should not process user events.
@@ -560,3 +700,51 @@ void dvz_gui_callback(DvzCanvas* canvas, DvzEvent ev)
         dvz_container_iter(&iter);
     }
 }
+
+
+
+/*
+static inline int _imgui_button(DvzMouseButton button)
+{
+    int b = 0;
+    switch (button)
+    {
+    case DVZ_MOUSE_BUTTON_LEFT:
+        b = 0;
+        break;
+    case DVZ_MOUSE_BUTTON_RIGHT:
+        b = 1;
+        break;
+    case DVZ_MOUSE_BUTTON_MIDDLE:
+        b = 2;
+        break;
+    default:
+        break;
+    }
+    return b;
+}
+
+void _imgui_set_mouse_pos(vec2 pos)
+{
+    CHECK_IMGUI
+    ImGuiIO& io = ImGui::GetIO();
+    io.MousePos[0] = pos[0];
+    io.MousePos[1] = pos[1];
+}
+
+void _imgui_set_mouse_down(DvzMouseButton button, bool is_down)
+{
+    CHECK_IMGUI
+    ImGuiIO& io = ImGui::GetIO();
+    io.MouseDown[_imgui_button(button)] = is_down;
+}
+
+void _imgui_set_mouse_click(vec2 pos, DvzMouseButton button)
+{
+    CHECK_IMGUI
+    ImGuiIO& io = ImGui::GetIO();
+    int b = _imgui_button(button);
+    io.MouseDownDuration[b] = 0;
+    ASSERT(ImGui::IsMouseClicked(b, false));
+}
+*/

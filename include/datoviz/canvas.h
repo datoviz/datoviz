@@ -37,7 +37,7 @@ extern "C" {
 
 // HACK: support Retina — to improve...
 #if OS_MACOS
-#define DVZ_DEFAULT_DPI_SCALING 1.25f
+#define DVZ_DEFAULT_DPI_SCALING 1.2f
 #else
 #define DVZ_DEFAULT_DPI_SCALING 1.0f
 #endif
@@ -612,9 +612,6 @@ struct DvzCanvas
 
     // Graphics pipelines.
     DvzContainer graphics;
-
-    // Data transfers.
-    // DvzFifo transfers;
 
     // Event callbacks, running in the background thread, may be slow, for end-users.
     uint32_t callbacks_count;
@@ -1234,6 +1231,20 @@ DVZ_EXPORT void dvz_canvas_frame_submit(DvzCanvas* canvas);
  * @returns the number of active canvases at the time the function returns
  */
 DVZ_EXPORT int dvz_app_run(DvzApp* app, uint64_t frame_count);
+
+
+
+/*************************************************************************************************/
+/*  ImGui C++ helpers that need to be accessible in canvas.c, but defined in gui.cpp             */
+/*************************************************************************************************/
+
+/*
+void _imgui_set_mouse_pos(vec2 pos);
+
+void _imgui_set_mouse_down(DvzMouseButton button, bool is_down);
+
+void _imgui_set_mouse_click(vec2 pos, DvzMouseButton button);
+*/
 
 
 

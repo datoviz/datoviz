@@ -144,6 +144,7 @@ int test_vislib_volume(TestContext*);
 int test_vislib_volume_slice(TestContext*);
 
 // Test scene.
+int test_scene_empty(TestContext*);
 int test_scene_single(TestContext*);
 int test_scene_double(TestContext*);
 int test_scene_different_size(TestContext*);
@@ -289,6 +290,7 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE(CANVAS, test_vislib_volume_slice),   //
 
     // Scene.
+    CASE_FIXTURE(CANVAS, test_scene_empty),                 //
     CASE_FIXTURE(CANVAS, test_scene_single),                //
     CASE_FIXTURE(CANVAS, test_scene_double),                //
     CASE_FIXTURE(CANVAS, test_scene_different_size),        //
@@ -409,7 +411,10 @@ static int image_diff(uvec2 size, const uint8_t* image_0, const char* path)
 
     // Fast byte-to-byte comparison of the images.
     if (memcmp(image_0, image_1, (size_t)(width * height * 3 * sizeof(uint8_t))) == 0)
+    {
+        FREE(image_1);
         return 0;
+    }
     log_debug("images were not byte-to-byte equivalent: computing the error distance");
 
     uint8_t rgb0[3], rgb1[3];
@@ -432,7 +437,7 @@ static int image_diff(uvec2 size, const uint8_t* image_0, const char* path)
     }
     err /= (width * height);
     log_debug("image diff was %.20f", err);
-    free(image_1);
+    FREE(image_1);
     return err < NORM3_THRESHOLD ? 0 : 1;
 }
 

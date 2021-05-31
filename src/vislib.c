@@ -2,6 +2,7 @@
 #include "../include/datoviz/array.h"
 #include "../include/datoviz/interact.h"
 #include "../include/datoviz/mesh.h"
+#include "axes.h"
 #include "visuals_utils.h"
 
 
@@ -458,9 +459,9 @@ static void _polygon_bake(DvzVisual* visual, DvzVisualDataEvent ev)
     DvzProp* prop_length = dvz_prop_get(visual, DVZ_PROP_LENGTH, 0); // uint
     DvzProp* prop_color = dvz_prop_get(visual, DVZ_PROP_COLOR, 0);   // cvec4
 
-    DvzArray* arr_pos = _prop_array(prop_pos);
-    DvzArray* arr_length = _prop_array(prop_length);
-    DvzArray* arr_color = _prop_array(prop_color);
+    DvzArray* arr_pos = _prop_array(prop_pos, DVZ_PROP_ARRAY_DEFAULT);
+    DvzArray* arr_length = _prop_array(prop_length, DVZ_PROP_ARRAY_DEFAULT);
+    DvzArray* arr_color = _prop_array(prop_color, DVZ_PROP_ARRAY_DEFAULT);
 
     DvzSource* src_vertex = dvz_source_get(visual, DVZ_SOURCE_TYPE_VERTEX, 0);
     DvzSource* src_index = dvz_source_get(visual, DVZ_SOURCE_TYPE_INDEX, 0);
@@ -611,10 +612,10 @@ static void _path_bake(DvzVisual* visual, DvzVisualDataEvent ev)
     DvzProp* prop_length = dvz_prop_get(visual, DVZ_PROP_LENGTH, 0);     // uint
     DvzProp* prop_topology = dvz_prop_get(visual, DVZ_PROP_TOPOLOGY, 0); // int
 
-    DvzArray* arr_pos = _prop_array(prop_pos);
-    DvzArray* arr_color = _prop_array(prop_color);
-    DvzArray* arr_length = _prop_array(prop_length);
-    DvzArray* arr_topology = _prop_array(prop_topology);
+    DvzArray* arr_pos = _prop_array(prop_pos, DVZ_PROP_ARRAY_DEFAULT);
+    DvzArray* arr_color = _prop_array(prop_color, DVZ_PROP_ARRAY_DEFAULT);
+    DvzArray* arr_length = _prop_array(prop_length, DVZ_PROP_ARRAY_DEFAULT);
+    DvzArray* arr_topology = _prop_array(prop_topology, DVZ_PROP_ARRAY_DEFAULT);
 
     DvzSource* src_vertex = dvz_source_get(visual, DVZ_SOURCE_TYPE_VERTEX, 0);
 
@@ -632,13 +633,17 @@ static void _path_bake(DvzVisual* visual, DvzVisualDataEvent ev)
     DvzArray* arr_vertex = &src_vertex->arr;
 
     // Number of points and paths.
-    uint32_t n_points = arr_pos->item_count;   // number of points
+    uint32_t n_points = arr_pos->item_count; // number of points
+    if (n_points == 0)
+    {
+        log_debug("empty path visual");
+        return;
+    }
     uint32_t n_paths = arr_length->item_count; // number of paths
     if (n_paths == 0)
         n_paths = 1;
     // number of points, incl invisible join points
     uint32_t n_points_tot = n_points + 0 * (n_paths);
-
 
     ASSERT(n_points > 0);
     ASSERT(n_paths > 0);
@@ -859,6 +864,8 @@ static void _visual_image_bake(DvzVisual* visual, DvzVisualDataEvent ev)
 
     // Number of images
     uint32_t img_count = dvz_prop_size(pos0);
+    if (img_count == 0)
+        return;
     ASSERT(dvz_prop_size(pos1) == img_count);
     ASSERT(dvz_prop_size(pos2) == img_count);
     ASSERT(dvz_prop_size(pos3) == img_count);
@@ -1014,13 +1021,6 @@ static void _visual_image_cmap(DvzVisual* visual)
 /*************************************************************************************************/
 /*  Axes 2D                                                                                      */
 /*************************************************************************************************/
-
-// TODO: customizable params
-static cvec4 DVZ_DEFAULT_AXES_COLOR[] = {
-    {0, 0, 0, 255}, {0, 0, 0, 255}, {128, 128, 128, 255}, {0, 0, 0, 255}, {0, 0, 0, 255}};
-static vec4 DVZ_DEFAULT_AXES_LINE_WIDTH = {2.0f, 4.0f, 1.0f, 2.0f};
-static vec2 DVZ_DEFAULT_AXES_TICK_LENGTH = {10.0f, 15.0f};
-static float DVZ_DEFAULT_AXES_FONT_SIZE = 12.0f;
 
 static uint32_t _count_prop_items(
     DvzVisual* visual, uint32_t prop_count, DvzPropType* prop_types, //
@@ -1185,7 +1185,8 @@ static void _visual_axes_2D_bake(DvzVisual* visual, DvzVisualDataEvent ev)
     // Count the total number of segments.
     // NOTE: the number of segments is determined by the POS prop.
     uint32_t count = _count_prop_items(visual, 1, (DvzPropType[]){DVZ_PROP_POS}, 4);
-
+    if (count == 0)
+        return;
 
     // Segment graphics.
     // -----------------
@@ -1243,7 +1244,8 @@ static void _visual_axes_2D_bake(DvzVisual* visual, DvzVisualDataEvent ev)
         dvz_graphics_data(visual->graphics[1], &text_vert_src->arr, NULL, visual);
 
     // Text prop.
-    DvzArray* arr_text = _prop_array(dvz_prop_get(visual, DVZ_PROP_TEXT, 0));
+    DvzArray* arr_text =
+        _prop_array(dvz_prop_get(visual, DVZ_PROP_TEXT, 0), DVZ_PROP_ARRAY_DEFAULT);
     ASSERT(prop != NULL);
 
     // Major tick prop.
@@ -1373,6 +1375,9 @@ static void _visual_axes_2D(DvzVisual* visual)
 
     // Segment graphics props.
     {
+        vec4 line_widths = {
+            DVZ_DEFAULT_AXES_LINE_WIDTH_MINOR, DVZ_DEFAULT_AXES_LINE_WIDTH_MAJOR,
+            DVZ_DEFAULT_AXES_LINE_WIDTH_GRID, DVZ_DEFAULT_AXES_LINE_WIDTH_LIM};
         for (uint32_t level = 0; level < DVZ_AXES_LEVEL_COUNT; level++)
         {
             // xticks
@@ -1382,25 +1387,26 @@ static void _visual_axes_2D(DvzVisual* visual)
             // color
             prop = dvz_visual_prop(
                 visual, DVZ_PROP_COLOR, level, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 0);
-            dvz_visual_prop_default(prop, &DVZ_DEFAULT_AXES_COLOR[level]);
+            dvz_visual_prop_default(
+                prop, level == 2 ? DVZ_DEFAULT_AXES_COLOR_GRAY : DVZ_DEFAULT_AXES_COLOR_BLACK);
 
             // line width
             prop = dvz_visual_prop(
                 visual, DVZ_PROP_LINE_WIDTH, level, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_VERTEX, 0);
-            dvz_visual_prop_default(prop, &DVZ_DEFAULT_AXES_LINE_WIDTH[level]);
+            dvz_visual_prop_default(prop, &line_widths[level]);
         }
 
         // minor tick length
         prop = dvz_visual_prop(
             visual, DVZ_PROP_LENGTH, DVZ_AXES_LEVEL_MINOR, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_VERTEX,
             0);
-        dvz_visual_prop_default(prop, &DVZ_DEFAULT_AXES_TICK_LENGTH[0]);
+        dvz_visual_prop_default(prop, (float[]){DVZ_DEFAULT_AXES_TICK_LENGTH_MINOR});
 
         // major tick length
         prop = dvz_visual_prop(
             visual, DVZ_PROP_LENGTH, DVZ_AXES_LEVEL_MAJOR, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_VERTEX,
             0);
-        dvz_visual_prop_default(prop, &DVZ_DEFAULT_AXES_TICK_LENGTH[1]);
+        dvz_visual_prop_default(prop, (float[]){DVZ_DEFAULT_AXES_TICK_LENGTH_MAJOR});
 
         // tick h margin
         // dvz_visual_prop(visual, DVZ_PROP_MARGIN, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_VERTEX, 0);
@@ -1417,12 +1423,12 @@ static void _visual_axes_2D(DvzVisual* visual)
         // tick text size
         prop = dvz_visual_prop(
             visual, DVZ_PROP_TEXT_SIZE, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_VERTEX, 1);
-        dvz_visual_prop_default(prop, &DVZ_DEFAULT_AXES_FONT_SIZE);
+        dvz_visual_prop_default(prop, (float[]){DVZ_DEFAULT_AXES_FONT_SIZE});
 
         // text color
         prop =
             dvz_visual_prop(visual, DVZ_PROP_COLOR, 4, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 1);
-        dvz_visual_prop_default(prop, &DVZ_DEFAULT_AXES_COLOR[4]);
+        dvz_visual_prop_default(prop, DVZ_DEFAULT_AXES_COLOR_BLACK);
 
         // Viewport.
         prop = dvz_visual_prop(
@@ -1455,9 +1461,9 @@ static void _mesh_bake(DvzVisual* visual, DvzVisualDataEvent ev)
     DvzProp* prop_texcoords = dvz_prop_get(visual, DVZ_PROP_TEXCOORDS, 0); // vec2
     DvzProp* prop_alpha = dvz_prop_get(visual, DVZ_PROP_ALPHA, 0);         // uint8_t
 
-    DvzArray* arr_color = _prop_array(prop_color);
-    DvzArray* arr_texcoords = _prop_array(prop_texcoords);
-    DvzArray* arr_alpha = _prop_array(prop_alpha);
+    DvzArray* arr_color = _prop_array(prop_color, DVZ_PROP_ARRAY_DEFAULT);
+    DvzArray* arr_texcoords = _prop_array(prop_texcoords, DVZ_PROP_ARRAY_DEFAULT);
+    DvzArray* arr_alpha = _prop_array(prop_alpha, DVZ_PROP_ARRAY_DEFAULT);
 
     // If colors have been specified, we need to override texcoords.
     uint32_t N = arr_color->item_count;
@@ -1634,6 +1640,8 @@ static void _visual_volume_bake(DvzVisual* visual, DvzVisualDataEvent ev)
 
     // Number of images
     uint32_t img_count = dvz_prop_size(pos0);
+    if (img_count == 0)
+        return;
     ASSERT(dvz_prop_size(pos1) == img_count);
 
     // Graphics data.
@@ -1789,6 +1797,8 @@ static void _visual_volume_slice_bake(DvzVisual* visual, DvzVisualDataEvent ev)
 
     // Number of images
     uint32_t img_count = dvz_prop_size(pos0);
+    if (img_count == 0)
+        return;
     ASSERT(dvz_prop_size(pos1) == img_count);
     ASSERT(dvz_prop_size(pos2) == img_count);
     ASSERT(dvz_prop_size(pos3) == img_count);

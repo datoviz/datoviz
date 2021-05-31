@@ -1,4 +1,5 @@
 #include "../include/datoviz/vklite.h"
+// #include "runenv.h"
 #include "spirv.h"
 #include "vklite_utils.h"
 #include <stdlib.h>
@@ -6,8 +7,61 @@
 
 
 /*************************************************************************************************/
+/*  Macros                                                                                       */
+/*************************************************************************************************/
+
+#define COPY_STR(env, dst)                                                                        \
+    s = getenv(env);                                                                              \
+    if (s != NULL && strlen(s) > 0)                                                               \
+    {                                                                                             \
+        ASSERT(strlen(s) < DVZ_PATH_MAX_LEN);                                                     \
+        strncpy(dst, s, DVZ_PATH_MAX_LEN);                                                        \
+    }
+
+
+
+/*************************************************************************************************/
 /*  App                                                                                          */
 /*************************************************************************************************/
+
+void dvz_autorun_env(DvzApp* app)
+{
+    ASSERT(app != NULL);
+    char* s = NULL;
+
+    // Offscreen?
+    s = getenv("DVZ_RUN_OFFSCREEN");
+    if (s)
+        app->autorun.offscreen = true;
+
+    // Number of frames.
+    s = getenv("DVZ_RUN_NFRAMES");
+    if (s)
+        app->autorun.n_frames = strtoull(s, NULL, 10);
+
+    // Screenshot and video.
+    COPY_STR("DVZ_RUN_SCREENSHOT", app->autorun.screenshot)
+    COPY_STR("DVZ_RUN_VIDEO", app->autorun.video)
+
+    // Enable the autorun?
+    app->autorun.enable = app->autorun.offscreen || app->autorun.n_frames > 0 ||
+                          strlen(app->autorun.screenshot) > 0 || strlen(app->autorun.video) > 0;
+}
+
+
+
+void dvz_autorun_setup(DvzApp* app, DvzAutorun autorun)
+{
+    ASSERT(app != NULL);
+    log_trace("autorun setup: enable %d", autorun.enable);
+    log_trace("autorun setup: n_frames %d", autorun.n_frames);
+    log_trace("autorun setup: offscreen %d", autorun.offscreen);
+    log_trace("autorun setup: screenshot %s", autorun.screenshot);
+    log_trace("autorun setup: video %s", autorun.video);
+    app->autorun = autorun;
+}
+
+
 
 DvzApp* dvz_app(DvzBackend backend)
 {
@@ -25,9 +79,12 @@ DvzApp* dvz_app(DvzBackend backend)
     }
 #endif
 
-    if (getenv("DVZ_RUN_OFFSCREEN") != NULL)
-    {
+    // Fill the app.autorun struct with DVZ_RUN_* environment variables.
+    dvz_autorun_env(app);
 
+    // Take env variable "DVZ_RUN_OFFSCREEN" into account, forcing offscreen backend in this case.
+    if (app->autorun.enable && app->autorun.offscreen)
+    {
         log_info("forcing offscreen backend because DVZ_RUN_OFFSCREEN env variable is set");
         backend = DVZ_BACKEND_OFFSCREEN;
     }
@@ -90,6 +147,8 @@ DvzApp* dvz_app(DvzBackend backend)
 
 int dvz_app_destroy(DvzApp* app)
 {
+    ASSERT(app != NULL);
+
     log_debug("starting destruction of app...");
     dvz_app_wait(app);
 
@@ -300,6 +359,7 @@ void dvz_gpu_destroy(DvzGpu* gpu)
     VkDevice device = gpu->device;
     ASSERT(device != VK_NULL_HANDLE);
 
+    // Destroy the context.
     if (gpu->context != NULL)
     {
         dvz_context_destroy(gpu->context);
@@ -307,6 +367,7 @@ void dvz_gpu_destroy(DvzGpu* gpu)
         gpu->context = NULL;
     }
 
+    // Destroy the command pools.
     log_trace("GPU destroy %d command pool(s)", gpu->queues.queue_family_count);
     for (uint32_t i = 0; i < gpu->queues.queue_family_count; i++)
     {
@@ -317,14 +378,13 @@ void dvz_gpu_destroy(DvzGpu* gpu)
         }
     }
 
-
+    // Destroy the descriptor pools.
     if (gpu->dset_pool != VK_NULL_HANDLE)
     {
         log_trace("destroy descriptor pool");
         vkDestroyDescriptorPool(gpu->device, gpu->dset_pool, NULL);
         gpu->dset_pool = VK_NULL_HANDLE;
     }
-
 
     // Destroy the device.
     log_trace("destroy device");
@@ -333,7 +393,6 @@ void dvz_gpu_destroy(DvzGpu* gpu)
         vkDestroyDevice(gpu->device, NULL);
         gpu->device = VK_NULL_HANDLE;
     }
-
 
     // dvz_obj_destroyed(&gpu->obj);
     dvz_obj_init(&gpu->obj);
@@ -365,6 +424,13 @@ DvzWindow* dvz_window(DvzApp* app, uint32_t width, uint32_t height)
     // Create the window, depending on the backend.
     window->backend_window =
         backend_window(app->instance, app->backend, width, height, window, &window->surface);
+
+    if (window->surface == VK_NULL_HANDLE)
+    {
+        log_error("could not create window surface");
+        dvz_window_destroy(window);
+        return NULL;
+    }
 
     return window;
 }
@@ -409,7 +475,6 @@ void dvz_window_destroy(DvzWindow* window)
     }
     ASSERT(window != NULL);
     ASSERT(window->app != NULL);
-    ASSERT(window->surface != NULL);
     backend_window_destroy(
         window->app->instance, window->app->backend, window->backend_window, window->surface);
     dvz_obj_destroyed(&window->obj);
@@ -851,7 +916,7 @@ void dvz_buffer_queue_access(DvzBuffer* buffer, uint32_t queue_idx)
 
 static void _buffer_create(DvzBuffer* buffer)
 {
-    create_buffer2(
+    create_buffer(
         buffer->gpu->device,                                           //
         &buffer->gpu->queues, buffer->queue_count, buffer->queues,     //
         buffer->usage, buffer->memory, buffer->gpu->memory_properties, //
@@ -1357,10 +1422,25 @@ static void _images_create(DvzImages* images)
 {
     DvzGpu* gpu = images->gpu;
     VkDeviceSize size = 0;
+
+    // Check whether the image format is supported.
+
+    if (!images->is_swapchain)
+    {
+        VkImageFormatProperties props = {0};
+        VkResult res = vkGetPhysicalDeviceImageFormatProperties(
+            gpu->physical_device, images->format, images->image_type, images->tiling, //
+            images->usage, 0, &props);
+        if (res != VK_SUCCESS)
+        {
+            log_error("unable to create image, format not supported");
+        }
+    }
+
     for (uint32_t i = 0; i < images->count; i++)
     {
         if (!images->is_swapchain)
-            create_image2(
+            create_image(
                 gpu->device, &gpu->queues, images->queue_count, images->queues, images->image_type,
                 images->width, images->height, images->depth, images->format, images->tiling,
                 images->usage, images->memory, gpu->memory_properties, &images->images[i],
@@ -1368,7 +1448,7 @@ static void _images_create(DvzImages* images)
 
         // HACK: staging images do not require an image view
         if (images->tiling != VK_IMAGE_TILING_LINEAR)
-            create_image_view2(
+            create_image_view(
                 gpu->device, images->images[i], images->view_type, images->format, images->aspect,
                 &images->image_views[i]);
 
@@ -1627,7 +1707,7 @@ void dvz_sampler_create(DvzSampler* sampler)
 
     log_trace("starting creation of sampler...");
 
-    create_texture_sampler2(
+    create_texture_sampler(
         sampler->gpu->device, sampler->mag_filter, sampler->min_filter, //
         sampler->address_modes, false, &sampler->sampler);
 

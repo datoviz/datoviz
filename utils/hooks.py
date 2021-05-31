@@ -4,26 +4,15 @@ from joblib import Memory
 from mkdocs.structure.files import File
 from mkdocs.structure.pages import Page
 
-from .gendoc import (
+from .generate_doc import (
     insert_functions_doc, insert_enums_doc, insert_graphics_doc,
-    parse_headers, process_index_page, process_code_image,
-    # example_list, nav_example_list,
+    process_index_page, process_code_image
 )
 from .export_colormap import generate_colormaps_doc
 
 
-cachedir = Path(__file__).parent / '.joblib'
-MEM = Memory(cachedir)
-parse_headers = MEM.cache(parse_headers)
-
-
-def config_hook(config):
-    config['gendoc'] = parse_headers()
-    return config
-
-
 def page_hook(markdown, page, config, files):
-    assert 'gendoc' in config
+    # assert 'gendoc' in config
     path = page.file.abs_src_path
     if 'docs/index.md' in path:
         return process_index_page(markdown, config)
@@ -35,8 +24,6 @@ def page_hook(markdown, page, config, files):
         return insert_enums_doc(markdown, config)
     elif 'api/' in path:
         return insert_functions_doc(markdown, config)
-    # elif 'examples/index.md' in path:
-    #     return example_list(markdown, config)
     elif 'developer' not in path:
         return process_code_image(markdown, config)
 

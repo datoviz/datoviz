@@ -11,39 +11,13 @@
 
 
 /*************************************************************************************************/
-/*  Macros                                                                                       */
-/*************************************************************************************************/
-
-static uint64_t _get_nframes()
-{
-    const char* s = getenv("DVZ_RUN_NFRAMES");
-    if (s == NULL)
-        return 0;
-    ASSERT(s != NULL);
-    return strtoull(s, NULL, 10);
-}
-
-#define NFRAMES (_get_nframes())
-
-static void _screenshot(DvzCanvas* canvas)
-{
-    ASSERT(canvas != NULL);
-    ASSERT(canvas->app != NULL);
-    const char* path = getenv("DVZ_RUN_SCREENSHOT");
-    if (path != NULL)
-    {
-        dvz_app_run(canvas->app, 5);
-        dvz_screenshot_file(canvas, path);
-    }
-}
-
-#define SCREENSHOT _screenshot(canvas);
-
-
-
-/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
+
+/**
+ * Standalone demo with a scatter plot.
+ */
+DVZ_EXPORT int dvz_demo_standalone(void);
 
 /**
  * Scatter demo.

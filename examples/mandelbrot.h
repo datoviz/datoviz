@@ -2,21 +2,10 @@
 /*  Mandelbrot fractal example.                                                                  */
 /*************************************************************************************************/
 
-// NOTE: ignore this.
-#ifndef SCREENSHOT
-#define SCREENSHOT
-#endif
-#ifndef NFRAMES
-#define NFRAMES 0
-#endif
-
-
-
 // We include the library header file.
 #include <datoviz/datoviz.h>
 
-
-
+// Entry point.
 static int demo_mandelbrot()
 {
     // Initialization.
@@ -57,10 +46,10 @@ static int demo_mandelbrot()
     dvz_visual_data_source(visual, DVZ_SOURCE_TYPE_VERTEX, 0, 0, 4, 4, vertices);
 
     // Run.
-    SCREENSHOT
-    dvz_app_run(app, NFRAMES);
+    dvz_app_run(app, 0);
 
     // Destroy and quit.
     dvz_app_destroy(app);
+
     return 0;
 }

@@ -7,9 +7,19 @@ function(create_resources files prefix output)
     file(APPEND ${output} "#include \"../include/datoviz/common.h\"\n")
 
     # Collect input files
-    file(GLOB bins ${files})
-    # Iterate through input files
-    foreach(bin ${bins})
+    # HACK: if "files" has a * in it, it should be interpreted as a GLOB
+    # otherwise, it is a list of files
+    # We need this distinction because for shaders, the glob must be done at call time rathen than
+    # at CMakeLists.txt evaluation time since the shaders are first compiled by glslc by CMake.
+    if(<${files}|string> MATCHES "\\*")
+        file(GLOB files_l ${files})
+    else()
+        # Iterate through input files
+        set(files_l ${files})
+        separate_arguments(files_l)
+    endif()
+
+    foreach(bin ${files_l})
         # Get short filename
         string(REGEX MATCH "([^/]+)$" filename ${bin})
 
@@ -37,7 +47,7 @@ function(create_resources files prefix output)
     file(APPEND ${output} "{\n")
     #file(APPEND ${output} "printf(\"%s\\n\", name);\n")
     # Iterate through input files
-    foreach(bin ${bins})
+    foreach(bin ${files_l})
         string(REGEX MATCH "([^/]+)$" filename ${bin})
 
         # HACK: do not include non graphics shaders in the embeded resources files.

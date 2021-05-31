@@ -33,38 +33,41 @@ plugins:
   - search
   - mkdocs-simple-hooks:
       hooks:
-        on_config: "utils.hooks:config_hook"
+        # on_config: "utils.hooks:config_hook"
         # on_nav: "utils.hooks:nav_hook"
         on_page_markdown: "utils.hooks:page_hook"
 nav:
   - Home: 'index.md'
-  - Tutorials:
+  - Getting started:
     - Index: 'tutorials/index.md'
     - Installation: 'tutorials/install.md'
     - Quickstart: 'tutorials/quickstart.md'
   - Examples:
     - Overview: 'examples/index.md'
-    - Simple test with Python: 'examples/quickstart.md'
-    - Custom colormap: 'examples/colormap.md'
-    - Digital signals: 'examples/signals.md'
-    - Image: 'examples/image.md'
+    - Quickstart tutorial: 'examples/quickstart.md'
+    - Image blending: 'examples/image.md'
     - France departements: 'examples/france.md'
+    - Digital signals: 'examples/signals.md'
     - 3D brain mesh: 'examples/brain.md'
     - Two panels: 'examples/twopanels.md'
+    - Custom colormap: 'examples/colormap.md'
+    - Async event loop: 'examples/eventloop.md'
   - How to guides:
     - Index: 'howto/index.md'
-    - How to write a standalone C app: 'howto/standalone_scene.md'
-    - How to use Dear ImGui directly: 'howto/standalone_imgui.md'
-    - How to write a custom visual: 'howto/visual.md'
-    - How to write a custom graphics: 'howto/graphics.md'
-    - How to use the canvas C API: 'howto/standalone_canvas.md'
-    - How to use the vklite C API: 'howto/standalone_vklite.md'
+    - Standalone C apps:
+      - How to use the scene C API: 'howto/standalone_scene.md'
+      - How to use the canvas C API: 'howto/standalone_canvas.md'
+      - How to use the vklite C API: 'howto/standalone_vklite.md'
+      - How to use Dear ImGui directly: 'howto/standalone_imgui.md'
+    - Custom visuals and graphics:
+      - How to write a custom visual: 'howto/visual.md'
+      - How to write a custom graphics: 'howto/graphics.md'
   - Reference:
     - Index: 'reference/index.md'
-    - List of visuals: 'reference/visuals.md'
-    - List of graphics: 'reference/graphics.md'
-    - List of colormaps: 'reference/colormaps.md'
-    - List of controllers: 'reference/controllers.md'
+    - Library of visuals: 'reference/visuals.md'
+    - Library of graphics: 'reference/graphics.md'
+    - Library of colormaps: 'reference/colormaps.md'
+    - Library of controllers: 'reference/controllers.md'
   - C API reference:
     - Index: 'api/index.md'
     - Scene API: 'api/scene.md'
@@ -78,10 +81,12 @@ nav:
     - Enumerations: 'api/enums.md'
   - Discussions:
     - Index: 'discussions/index.md'
-    - Vulkan crash course: 'discussions/vulkan.md'
-    - Best practices: 'discussions/practices.md'
-    - Library architecture: 'discussions/architecture.md'
-    - Roadmap: 'discussions/roadmap.md'
-    - Developer notes: 'discussions/developer.md'
-    - Developer checklists: 'discussions/checklists.md'
-    - FAQ: 'discussions/faq.md'
+    - For users:
+      - Vulkan crash course: 'discussions/vulkan.md'
+      - Roadmap: 'discussions/roadmap.md'
+      - Best practices: 'discussions/practices.md'
+      - FAQ: 'discussions/faq.md'
+    - For developers:
+      - Library architecture: 'discussions/architecture.md'
+      - Developer notes: 'discussions/developer.md'
+      - Developer checklists: 'discussions/checklists.md'

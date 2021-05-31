@@ -16,6 +16,14 @@
     if (argc >= 1 && strcmp(argv[1], #arg) == 0)                                                  \
         res = arg(argc - 1, &argv[1]);
 
+#if OS_WIN32
+#define UNSET_SCREENSHOT putenv("DVZ_RUN_SCREENSHOT=")
+#define UNSET_NFRAMES    putenv("DVZ_RUN_NFRAMES=")
+#else
+#define UNSET_SCREENSHOT unsetenv("DVZ_RUN_SCREENSHOT")
+#define UNSET_NFRAMES    unsetenv("DVZ_RUN_NFRAMES")
+#endif
+
 #define SWITCH_DEMO(name)                                                                         \
     if (argc == 1 || strstr(#name, argv[argc - 1]) != NULL)                                       \
     {                                                                                             \
@@ -28,7 +36,7 @@
         }                                                                                         \
         res = demo_##name();                                                                      \
         if (argc == 1)                                                                            \
-            unsetenv("DVZ_RUN_SCREENSHOT");                                                       \
+            UNSET_SCREENSHOT;                                                                     \
     }
 
 
@@ -70,7 +78,7 @@ static int demo(int argc, char** argv)
     SWITCH_DEMO(mandelbrot)
 
     if (argc == 1)
-        unsetenv("DVZ_RUN_NFRAMES");
+        UNSET_NFRAMES;
 
     return res;
 }

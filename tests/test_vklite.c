@@ -1121,6 +1121,8 @@ int test_vklite_swapchain(TestContext* context)
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
     OFFSCREEN_SKIP
     DvzWindow* window = dvz_window(app, 100, 100);
+    AT(window != NULL);
+
     DvzGpu* gpu = dvz_gpu_best(app);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_queue(gpu, 1, DVZ_QUEUE_PRESENT);
@@ -1191,6 +1193,7 @@ int test_vklite_canvas_blank(TestContext* context)
     OFFSCREEN_SKIP
 
     DvzWindow* window = dvz_window(app, WIDTH, HEIGHT);
+    AT(window != NULL);
 
     DvzGpu* gpu = dvz_gpu_best(app);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
@@ -1223,6 +1226,7 @@ int test_vklite_canvas_triangle(TestContext* context)
     OFFSCREEN_SKIP
 
     DvzWindow* window = dvz_window(app, WIDTH, HEIGHT);
+    AT(window != NULL);
 
     DvzGpu* gpu = dvz_gpu_best(app);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);

@@ -145,10 +145,12 @@ int test_canvas_blank(TestContext* tc)
 int test_canvas_multiple(TestContext* tc)
 {
     DvzApp* app = tc->app;
+    OFFSCREEN_SKIP
+
     DvzGpu* gpu = dvz_gpu_best(app);
 
-    DvzCanvas* canvas0 = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
-    DvzCanvas* canvas1 = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
+    DvzCanvas* canvas0 = dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_IMGUI);
+    DvzCanvas* canvas1 = dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_IMGUI);
 
     uvec2 size = {0};
     dvz_canvas_size(canvas0, DVZ_CANVAS_SIZE_FRAMEBUFFER, size);
@@ -245,6 +247,8 @@ static void _key_callback(DvzCanvas* canvas, DvzEvent ev)
 int test_canvas_events(TestContext* tc)
 {
     DvzApp* app = tc->app;
+    OFFSCREEN_SKIP
+
     DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_FPS);
 
@@ -328,6 +332,8 @@ static void _gui_callback(DvzCanvas* canvas, DvzEvent ev)
 int test_canvas_gui(TestContext* tc)
 {
     DvzApp* app = tc->app;
+    OFFSCREEN_SKIP
+
     DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas = dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_IMGUI);
 
@@ -454,6 +460,8 @@ int test_canvas_video(TestContext* tc)
     // read_frames(video, _video_read_callback);
     // close_video(video);
 
+#else
+    log_warn("skipping ffmpeg video, datoviz was not compiled with ffmpeg support");
 #endif
 
     dvz_canvas_destroy(canvas);
@@ -880,6 +888,8 @@ static void _triangle_click(DvzCanvas* canvas, DvzEvent ev)
 int test_canvas_triangle_pick(TestContext* tc)
 {
     DvzApp* app = tc->app;
+    OFFSCREEN_SKIP
+
     DvzGpu* gpu = dvz_gpu_best(app);
     DvzCanvas* canvas =
         dvz_canvas(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_FPS | DVZ_CANVAS_FLAGS_PICK);

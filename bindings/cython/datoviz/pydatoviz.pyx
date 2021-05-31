@@ -15,7 +15,7 @@ from libc.stdio cimport printf
 
 cimport datoviz.cydatoviz as cv
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('datoviz')
 
 
 
@@ -31,6 +31,7 @@ ctypedef np.int16_t SHORT
 ctypedef np.uint16_t USHORT
 ctypedef np.int32_t INT
 ctypedef np.uint32_t UINT
+ctypedef np.uint32_t[3] TEX_SHAPE
 
 
 
@@ -39,8 +40,11 @@ ctypedef np.uint32_t UINT
 # -------------------------------------------------------------------------------------------------
 # region  # folding in VSCode
 
-DEFAULT_WIDTH = 1024
-DEFAULT_HEIGHT = 768
+DEFAULT_WIDTH = 800
+DEFAULT_HEIGHT = 600
+
+cdef TEX_SHAPE DVZ_ZERO_OFFSET = (0, 0, 0)
+
 
 
 # TODO: add more keys
@@ -75,6 +79,15 @@ _BUTTONS = {
     cv.DVZ_MOUSE_BUTTON_MIDDLE: 'middle',
     cv.DVZ_MOUSE_BUTTON_RIGHT: 'right',
 }
+
+_MODIFIERS = {
+    cv.DVZ_KEY_MODIFIER_SHIFT: 'shift',
+    cv.DVZ_KEY_MODIFIER_CONTROL: 'control',
+    cv.DVZ_KEY_MODIFIER_ALT: 'alt',
+    cv.DVZ_KEY_MODIFIER_SUPER: 'super',
+}
+
+_BUTTONS_INV = {v: k for k, v in _BUTTONS.items()}
 
 _EVENTS ={
     'mouse_press': cv.DVZ_EVENT_MOUSE_PRESS,
@@ -359,12 +372,13 @@ _TEXTURE_FILTERS = {
     None: cv.VK_FILTER_NEAREST,
     'nearest': cv.VK_FILTER_NEAREST,
     'linear': cv.VK_FILTER_LINEAR,
+    # 'cubic': cv.VK_FILTER_CUBIC_EXT,  # requires extension VK_EXT_filter_cubic
 }
 
 _SOURCE_TYPES = {
-    'transfer': (cv.DVZ_SOURCE_TYPE_TRANSFER, 1),
-    'image': (cv.DVZ_SOURCE_TYPE_IMAGE, 2),
-    'volume': (cv.DVZ_SOURCE_TYPE_VOLUME, 3),
+    1: cv.DVZ_SOURCE_TYPE_TRANSFER,
+    2: cv.DVZ_SOURCE_TYPE_IMAGE,
+    3: cv.DVZ_SOURCE_TYPE_VOLUME,
 }
 
 _FORMATS = {
@@ -401,18 +415,21 @@ def _button_name(button):
     """From button code used by Datoviz to button name."""
     return _BUTTONS.get(button, None)
 
-def _get_modifiers(mods):
+def _get_modifiers(mod):
     """From modifier flag to a tuple of strings."""
     mods_py = []
-    if mods & cv.DVZ_KEY_MODIFIER_SHIFT:
-        mods_py.append('shift')
-    if mods & cv.DVZ_KEY_MODIFIER_CONTROL:
-        mods_py.append('control')
-    if mods & cv.DVZ_KEY_MODIFIER_ALT:
-        mods_py.append('alt')
-    if mods & cv.DVZ_KEY_MODIFIER_SUPER:
-        mods_py.append('super')
+    for c_enum, name in _MODIFIERS.items():
+        if mod & c_enum:
+            mods_py.append(name)
     return tuple(mods_py)
+
+def _c_modifiers(*mods):
+    cdef int mod, c_enum
+    mod = 0
+    for c_enum, name in _MODIFIERS.items():
+        if name in mods:
+            mod |= c_enum
+    return mod
 
 def _get_prop(name):
     """From prop name to prop enum for Datoviz."""
@@ -488,6 +505,11 @@ cdef _get_event_args(cv.DvzEvent c_ev):
         dy = c_ev.u.w.dir[1]
         modifiers = _get_modifiers(c_ev.u.w.modifiers)
         return (x, y, dx, dy), dict(modifiers=modifiers)
+
+    # Frame event.
+    elif dt == cv.DVZ_EVENT_FRAME:
+        idx = c_ev.u.f.idx
+        return (idx,), {}
 
     return (), {}
 
@@ -577,6 +599,9 @@ def colormap(np.ndarray[DOUBLE, ndim=1] values, vmin=None, vmax=None, cmap=None,
         out[:, 3] = alpha
     return out
 
+def demo():
+    cv.dvz_demo_standalone()
+
 
 
 # -------------------------------------------------------------------------------------------------
@@ -660,14 +685,29 @@ cdef class App:
         self._gpus[idx] = g
         return g
 
-    def run(self, int n_frames=0, unicode screenshot=None, unicode video=None):
+    def run(
+            self, int n_frames=0, unicode screenshot=None, unicode video=None,
+            bint offscreen=False):
         """Start the rendering loop."""
-        # HACK: run a few frames to render the image, make a screenshot, and run the event loop.
-        if screenshot and self._canvases:
-            cv.dvz_app_run(self._c_app, 5)
-            self._canvases[0].screenshot(screenshot)
-        if video and self._canvases:
-            self._canvases[0].video(video)
+
+        # Autorun struct.
+        cdef cv.DvzAutorun autorun = [0, 0]
+        if screenshot or video:
+            logger.debug("Enabling autorun")
+            autorun.enable = True
+            autorun.n_frames = n_frames
+            autorun.offscreen = offscreen
+            if screenshot:
+                ss = screenshot.encode('UTF-8')
+                autorun.screenshot[:len(ss) + 1] = ss
+                logger.debug(f"Autorun screenshot: {ss}")
+                autorun.video[0] = 0
+            if video:
+                sv = video.encode('UTF-8')
+                autorun.video[:len(sv) + 1] = sv
+                logger.debug(f"Autorun video: {sv}")
+            cv.dvz_autorun_setup(self._c_app, autorun)
+
         cv.dvz_app_run(self._c_app, n_frames)
 
     def next_frame(self):
@@ -677,6 +717,9 @@ cdef class App:
     def _set_running(self, bint running):
         """Manually set whether the app is running or not."""
         self._c_app.is_running = running
+
+    def __repr__(self):
+        return "<Datoviz App>"
 
 
 
@@ -691,7 +734,7 @@ cdef class GPU:
     cdef cv.DvzGpu* _c_gpu
 
     cdef object _context
-    _canvases = []
+    # _canvases = []
 
     cdef create(self, cv.DvzApp* c_app, int idx):
         """Create a GPU."""
@@ -709,12 +752,9 @@ cdef class GPU:
         if self._c_gpu is NULL:
             raise MemoryError()
 
-    # def destroy(self):
-    #     """Destroy the GPU and delete all GPU resources."""
-    #     if self._c_gpu is not NULL:
-    #         for c in self._canvases:
-    #             c.destroy()
-    #         cv.dvz_gpu_destroy(self._c_gpu)
+    @property
+    def name(self):
+        return self._c_gpu.name
 
     def canvas(
             self,
@@ -744,7 +784,7 @@ cdef class GPU:
         # Create and return the Canvas Cython wrapper.
         c = Canvas()
         c.create(self, c_canvas)
-        self._canvases.append(c)
+        # self._canvases.append(c)
         return c
 
     def context(self):
@@ -752,9 +792,23 @@ cdef class GPU:
         if self._context is not None:
             return self._context
         c = Context()
+
+        assert self._c_gpu is not NULL
+
+        # If the context has not been created, it means we must create the GPU in offscreen mode.
+        if self._c_gpu.context is NULL:
+            logger.debug("Automatically creating a GPU context with no surface (offscreen only)")
+            # Create the GPU without a surface.
+            cv.dvz_gpu_default(self._c_gpu, NULL)
+            # Create the context.
+            cv.dvz_context(self._c_gpu)
         c.create(self._c_app, self._c_gpu, self._c_gpu.context)
+
         self._context = c
         return c
+
+    def __repr__(self):
+        return f"<GPU \"{self.name}\">"
 
 
 
@@ -769,28 +823,39 @@ cdef class Context:
     cdef cv.DvzContext* _c_context
 
     cdef create(self, cv.DvzApp* c_app, cv.DvzGpu* c_gpu, cv.DvzContext* c_context):
+        assert c_app is not NULL
+        assert c_gpu is not NULL
+        assert c_context is not NULL
+
         self._c_app = c_app
         self._c_gpu = c_gpu
         self._c_context = c_context
 
-    def _texture(self, source_type, arr, filtering='nearest'):
-        """Create a texture."""
+    def texture(
+            self, int height, int width=1, int depth=1,
+            int ncomp=4, np.dtype dtype=None, int ndim=2):
+        """Create a 1D, 2D, or 3D texture."""
+
+        dtype = np.dtype(dtype or np.uint8)
+
         tex = Texture()
-        tex.create(self._c_context, source_type, arr)
-        tex.set_filter(filtering)
+
+        # Texture shape.
+        assert width > 0
+        assert height > 0
+        assert depth > 0
+        if depth > 1:
+            ndim = 3
+        cdef TEX_SHAPE shape
+        # NOTE: shape is in Vulkan convention.
+        shape[0] = width
+        shape[1] = height
+        shape[2] = depth
+
+        # Create the texture.
+        tex.create(self._c_context, ndim, ncomp, shape, dtype)
+        logging.debug(f"Create a {str(tex)}")
         return tex
-
-    def transfer(self, arr, **kwargs):
-        """Create a 1D texture, typically used for transfer functions."""
-        return self._texture('transfer', arr, **kwargs)
-
-    def image(self, arr, **kwargs):
-        """Create a 2D texture, typically used for images."""
-        return self._texture('image', arr, **kwargs)
-
-    def volume(self, arr, **kwargs):
-        """Create a 3D texture, typically used for volumes."""
-        return self._texture('volume', arr, **kwargs)
 
     def colormap(self, unicode name, np.ndarray[CHAR, ndim=2] colors):
         """Create a custom colormap"""
@@ -808,89 +873,109 @@ cdef class Context:
         cv.dvz_colormap_custom(cmap, color_count, <cv.cvec4*>&colors.data[0])
         cv.dvz_context_colormap(self._c_context)
 
+    def __repr__(self):
+        return f"<Context for GPU \"{self._c_gpu.name}\">"
+
 
 
 # -------------------------------------------------------------------------------------------------
 # Texture
 # -------------------------------------------------------------------------------------------------
 
-cdef _get_tex_info(unicode source_type, np.ndarray arr):
-    """Return the source type, image format, and dimension count of a NumPy array to be used
-    as a texture."""
-
-    # Find the Vulkan format for the texture
-    c_source_type, ndim = _SOURCE_TYPES[source_type]
-
-    # Find the format from the array shape and dtype
-    assert 1 <= ndim <= 3
-    if ndim <= arr.ndim - 1:
-        nc = arr.shape[ndim]
-    else:
-        nc = 1
-    # assert (arr.dtype, nc) in _FORMATS, ((arr.dtype, nc), ndim, arr.shape)
-    assert nc <= 4
-    c_format = _FORMATS[arr.dtype, nc]
-    return c_source_type, c_format, ndim
-
-
-
 cdef class Texture:
     """A 1D, 2D, or 3D GPU texture."""
 
     cdef cv.DvzContext* _c_context
     cdef cv.DvzTexture* _c_texture
-    cdef cv.VkFormat _c_format
+
+    cdef TEX_SHAPE _c_shape # always 3 values: width, height, depth (WARNING, reversed in NumPy)
+    cdef np.dtype dtype
+    cdef int ndim  # 1D, 2D, or 3D texture
+    cdef int ncomp  # 1-4 (eg 3 for RGB, 4 for RGBA)
+
     cdef cv.DvzSourceType _c_source_type
-    cdef unicode source_type
 
-    cdef create(self, cv.DvzContext* c_context, unicode source_type, np.ndarray arr):
+    cdef create(self, cv.DvzContext* c_context, int ndim, int ncomp, TEX_SHAPE shape, np.dtype dtype):
         """Create a texture."""
+        assert c_context is not NULL
         self._c_context = c_context
-        self.source_type = source_type
 
-        # Find the texture information from the NumPy array spec.
-        self._c_source_type, self._c_format, ndim = _get_tex_info(source_type, arr)
+        assert 1 <= ndim <= 3
+        assert 1 <= ncomp <= 4
+        self.ndim = ndim
+        self.ncomp = ncomp
 
-        # Find the shape
-        cdef np.uint32_t shape[3]
+        # Store the shape.
         for i in range(ndim):
-            shape[i] = arr.shape[i]
+            self._c_shape[i] = shape[i]
         for i in range(ndim, 3):
-            shape[i] = 1
+            self._c_shape[i] = 1
 
-        if ndim > 1:
+        # Find the source type.
+        assert ndim in _SOURCE_TYPES
+        self._c_source_type = _SOURCE_TYPES[ndim]
+
+        # Find the Vulkan format.
+        cdef cv.VkFormat c_format
+        self.dtype = dtype
+        assert (dtype, ncomp) in _FORMATS
+        c_format = _FORMATS[dtype, ncomp]
+
+        # Create the Datoviz texture.
+        self._c_texture = cv.dvz_ctx_texture(self._c_context, ndim, &shape[0], c_format)
+
+    @property
+    def item_size(self):
+        """Size, in bytes, of every value."""
+        return np.dtype(self.dtype).itemsize
+
+    @property
+    def size(self):
+        """Total number of values in the texture (including the number of color components)."""
+        return np.prod(self.shape)
+
+    @property
+    def shape(self):
+        """Shape (NumPy convention: height, width, depth).
+        Also, the last dimension is the number of color components."""
+        shape = [1, 1, 1]
+        for i in range(3):
+            shape[i] = self._c_shape[i]
+        if self.ndim > 1:
             # NOTE: Vulkan considers textures as (width, height, depth) whereas NumPy
             # considers them as (height, width, depth), hence the need to transpose here.
             shape[0], shape[1] = shape[1], shape[0]
-
-        # Create the Datoviz texture.
-        self._c_texture = cv.dvz_ctx_texture(self._c_context, ndim, &shape[0], self._c_format)
-
-        self.set_data(arr)
+        return tuple(shape[:self.ndim]) + (self.ncomp,)
 
     def set_filter(self, name):
         """Change the filtering of the texture."""
         cv.dvz_texture_filter(self._c_texture, cv.DVZ_FILTER_MIN, _TEXTURE_FILTERS[name])
         cv.dvz_texture_filter(self._c_texture, cv.DVZ_FILTER_MAG, _TEXTURE_FILTERS[name])
 
-    def set_data(self, np.ndarray arr):
+    def upload(self, np.ndarray arr):
         """Set the texture data from a NumPy array."""
-
-        c_source_type, c_format, ndim = _get_tex_info(self.source_type, arr)
-        assert c_source_type == self._c_source_type
-        assert c_format == self._c_format
-
-        cdef cv.uvec3 DVZ_ZERO_OFFSET = [0, 0, 0]
-
-        cdef size = arr.size
-        cdef item_size = np.dtype(arr.dtype).itemsize
-
-        # Upload the array to the texture.
-        cdef int s
-        s = size * item_size
+        assert arr.dtype == self.dtype
+        for i in range(self.ndim):
+            assert arr.shape[i] == self.shape[i]
+        logger.debug(f"Upload NumPy array to {self}.")
         cv.dvz_upload_texture(
-            self._c_context, self._c_texture, DVZ_ZERO_OFFSET, DVZ_ZERO_OFFSET,
-            size * item_size, &arr.data[0])
+            self._c_context, self._c_texture, &DVZ_ZERO_OFFSET[0], &DVZ_ZERO_OFFSET[0],
+            self.size * self.item_size, &arr.data[0])
+
+    def download(self):
+        """Download the texture data to a NumPy array."""
+        cdef np.ndarray arr
+        arr = np.empty(self.shape, dtype=self.dtype)
+        logger.debug(f"Download {self}.")
+        cv.dvz_download_texture(
+            self._c_context, self._c_texture, &DVZ_ZERO_OFFSET[0], &DVZ_ZERO_OFFSET[0],
+            self.size * self.item_size, &arr.data[0])
+        cv.dvz_process_transfers(self._c_context)
+        return arr
+
+    def __repr__(self):
+        """The shape axes are in the following order: height, width, depth, ncomp."""
+        return f"<Texture {self.ndim}D {'x'.join(map(str, self.shape))} ({self.dtype})>"
 
 
 
@@ -911,7 +996,9 @@ cdef class Canvas:
         self._c_canvas = c_canvas
         self._gpu = gpu
         self._scene = None
-        # _add_close_callback(self._c_canvas, self._destroy_wrapper, ())
+
+    def gpu(self):
+        return self._gpu
 
     def scene(self, rows=1, cols=1):
         """Create a scene, which allows to use subplots, controllers, visuals, and so on."""
@@ -966,31 +1053,14 @@ cdef class Canvas:
         gui.create(self._c_canvas, c_gui)
         return gui
 
-    def demo_gui(self):
+    def gui_demo(self):
         """Show the Dear ImGui demo."""
         cv.dvz_imgui_demo(self._c_canvas)
 
-    def __dealloc__(self):
-        self.destroy()
-
-    def _destroy_wrapper(self):
-        # This is called when the user presses Esc, Datoviz organizes the canvas closing and
-        # destruction, but we need the Python object to be destroyed as well and the
-        # canvas to be removed from the canvas list in the App.
-        self._c_canvas = NULL
-        self._gpu._canvases.remove(self)
-
-    def destroy(self):
-        """Destroy the canvas."""
-        # This is called when the canvas is closed from Python.
-        # The event loop will close the canvas and destroy it at the next frame.
-        # However this doesn't work when the canvas is closed from C (for example by pressing Esc)
-        # because then the C object will be destroyed, but not the Python one. We need to
-        # destroy the Python via the close callback, which is called when the C library
-        # is about to destroy the canvas, to give Python a chance to destroy the Python wrapper
-        # as well.
+    def close(self):
         if self._c_canvas is not NULL:
             cv.dvz_canvas_to_close(self._c_canvas)
+            cv.dvz_app_run(self._c_canvas.app, 1)
             self._c_canvas = NULL
 
     def _connect(self, evtype_py, f, param=0, cv.DvzEventMode mode=cv.DVZ_EVENT_MODE_SYNC):
@@ -1004,6 +1074,18 @@ cdef class Canvas:
         assert f.__name__.startswith('on_')
         ev_name = f.__name__[3:]
         self._connect(ev_name, f)
+
+    def click(self, float x, float y, button='left', modifiers=()):
+        """Simulate a mouse click at a given position."""
+        cdef cv.vec2 pos
+        cdef int mod
+        cdef cv.DvzMouseButton c_button
+
+        pos[0] = x
+        pos[1] = y
+        c_button = _BUTTONS_INV.get(button, 0)
+        mod = _c_modifiers(*modifiers)
+        cv.dvz_event_mouse_click(self._c_canvas, pos, c_button, mod)
 
 
 
@@ -1156,14 +1238,31 @@ cdef class Visual:
         self._c_context = c_visual.canvas.gpu.context
         self.vtype = vtype
 
-    def data(self, name, np.ndarray value, idx=0):
+    def data(self, name, np.ndarray value, idx=0, mode=None, range=None):
         """Set the data of the visual associated to a given property."""
         prop_type = _get_prop(name)
         c_prop = cv.dvz_prop_get(self._c_visual, prop_type, idx)
         dtype, nc = _DTYPES[c_prop.dtype]
         value = _validate_data(dtype, nc, value)
         N = value.shape[0]
-        cv.dvz_visual_data(self._c_visual, prop_type, idx, N, &value.data[0])
+        if mode == 'append':
+            cv.dvz_visual_data_append(self._c_visual, prop_type, idx, N, &value.data[0])
+        elif mode == 'partial' and range is not None:
+            first_item, n_items = range
+            assert first_item >= 0, "first item should be positive"
+            assert n_items > 0, "n_items should be strictly positive"
+            cv.dvz_visual_data_partial(
+                self._c_visual, prop_type, idx, first_item, n_items, N, &value.data[0])
+        else:
+            cv.dvz_visual_data(self._c_visual, prop_type, idx, N, &value.data[0])
+
+    def append(self, *args, **kwargs):
+        """Add some data to a visual prop's data."""
+        return self.data(*args, **kwargs, mode='append')
+
+    def partial(self, *args, **kwargs):
+        """Make a partial data update."""
+        return self.data(*args, **kwargs, mode='partial')
 
     def texture(self, Texture tex, idx=0):
         """Attach a texture to a visual."""
@@ -1187,42 +1286,6 @@ cdef class Visual:
         cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
         cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
 
-    # def surface(
-    #     self, np.ndarray[DOUBLE, ndim=2] x, np.ndarray[DOUBLE, ndim=2] y, np.ndarray[DOUBLE, ndim=2] z,
-    #     # np.ndarray[DOUBLE, ndim=1] values=None, cmap=None, vmin=None, vmax=None):
-    #     np.ndarray[DOUBLE, ndim=3] uv=None,
-    #     ):
-
-    #     # cmap_ = _COLORMAPS.get(cmap, cv.DVZ_CMAP_VIRIDIS)
-    #     # colormap(values, vmin=vmin, vmax=vmax, cmap=None, alpha=None):
-
-    #     # TODO: check that it is a mesh visual
-    #     row_count = x.shape[0]
-    #     col_count = x.shape[1]
-
-    #     cdef np.ndarray positions = np.empty((row_count, col_count, 3), dtype=np.float32)
-    #     positions[..., 0] = x
-    #     positions[..., 1] = y
-    #     positions[..., 2] = z
-    #     # assert colors.shape[0] == row_count
-
-    #     cdef np.ndarray texcoords = np.empty((row_count, col_count, 2), dtype=np.float32)
-
-    #     cdef const cv.vec2* p_uv = NULL
-    #     if uv is not None:
-    #         texcoords[..., 0] = uv[..., 0]
-    #         texcoords[..., 1] = uv[..., 1]
-    #         p_uv = <const cv.vec2*>(&texcoords.data[0])
-
-    #     cdef cv.DvzMesh mesh = cv.dvz_mesh_grid(
-    #         row_count, col_count, <const cv.vec3*>(&positions.data[0]), p_uv)
-
-    #     nv = mesh.vertices.item_count;
-    #     ni = mesh.indices.item_count;
-
-    #     cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_VERTEX, 0, 0, nv, nv, mesh.vertices.data);
-    #     cv.dvz_visual_data_source(self._c_visual, cv.DVZ_SOURCE_TYPE_INDEX, 0, 0, ni, ni, mesh.indices.data);
-
 
 
 # -------------------------------------------------------------------------------------------------
@@ -1232,15 +1295,21 @@ cdef class Visual:
 cdef class GuiControl:
     """A GUI control."""
     cdef cv.DvzGui* _c_gui
+    cdef cv.DvzCanvas* _c_canvas
     cdef cv.DvzGuiControl* _c_control
+    cdef unicode name
     cdef unicode ctype
     cdef bytes str_ascii
+    cdef object _callback
 
-    cdef create(self, cv.DvzGui* c_gui, cv.DvzGuiControl* c_control, unicode ctype):
+    cdef create(self, cv.DvzGui* c_gui, cv.DvzGuiControl* c_control, unicode name, unicode ctype):
         """Create a GUI control."""
         self._c_gui = c_gui
+        self._c_canvas = c_gui.canvas
+        assert self._c_canvas is not NULL
         self._c_control = c_control
         self.ctype = ctype
+        self.name = name
 
     def get(self):
         """Get the current value."""
@@ -1267,13 +1336,38 @@ cdef class GuiControl:
             raise NotImplementedError(
                 f"Setting the value for a GUI control `{self.ctype}` is not implemented yet.")
 
+    def connect(self, f):
+        """Bind a callback function to the control."""
+        self._callback = f
+        _add_event_callback(self._c_canvas, cv.DVZ_EVENT_GUI, 0, f, (self.name,))
+
+    def press(self):
+        """For buttons only: simulate a press."""
+        if self.ctype == 'button' and self._callback:
+            self._callback(False)
+
+    @property
+    def pos(self):
+        """The x, y coordinates of the widget, in screen coordinates."""
+        cdef float x, y
+        x = self._c_control.pos[0]
+        y = self._c_control.pos[1]
+        return (x, y)
+
+    @property
+    def size(self):
+        """The width and height of the widget, in screen coordinates."""
+        cdef float w, h
+        w = self._c_control.size[0]
+        h = self._c_control.size[1]
+        return (w, h)
+
 
 
 cdef class Gui:
     """A GUI dialog."""
     cdef cv.DvzCanvas* _c_canvas
     cdef cv.DvzGui* _c_gui
-    _controls = {}
 
     cdef create(self, cv.DvzCanvas* c_canvas, cv.DvzGui* c_gui):
         """Create a GUI."""
@@ -1282,14 +1376,8 @@ cdef class Gui:
 
     def control(self, unicode ctype, unicode name, **kwargs):
         """Add a GUI control."""
-        # TODO: refactor this and return a GuiControl object instead.
-
-        cdef cv.DvzEventMode mode
-        # is_async = kwargs.pop('mode', None) == 'async'
-        mode = cv.DVZ_EVENT_MODE_SYNC #  if is_async else cv.DVZ_EVENT_MODE_SYNC
         ctrl = _CONTROLS.get(ctype, 0)
         cdef char* c_name = name
-
         cdef cv.DvzGuiControl* c
         cdef cv.vec2 vec2_value
 
@@ -1327,26 +1415,5 @@ cdef class Gui:
 
         # Gui control object
         w = GuiControl()
-        w.create(self._c_gui, c, ctype)
-        self._controls[name] = w
-
-        def wrap(f):
-            cdef cv.DvzEventType evtype
-            evtype = cv.DVZ_EVENT_GUI
-            _add_event_callback(self._c_canvas, evtype, 0, f, (name,), mode=mode)
-
-        return wrap
-
-    def get_value(self, name):
-        """Get the value of a control."""
-        if name not in self._controls:
-            raise ValueError("unknown control %s", name)
-        c = self._controls[name]
-        return c.get()
-
-    def set_value(self, name, value):
-        """Set the value of a control."""
-        if name not in self._controls:
-            raise ValueError("unknown control %s", name)
-        c = self._controls[name]
-        return c.set(value)
+        w.create(self._c_gui, c, name, ctype)
+        return w

@@ -1,6 +1,4 @@
 numpy
 ipython
-cython
-pyparsing
-colorcet
 imageio
+colorcet

@@ -1,5 +1,7 @@
 .vscode
-build/*
+build*
+dist
+venv
 *_old*
 __pycache__
 *.egg-info
@@ -21,6 +23,7 @@ Testing
 msdfgen
 bindings/r
 _skbuild
+headers.json
 site
 _shaders.h
 pydatoviz.c
@@ -36,6 +39,7 @@ pydatoviz.c
 *.spv
 data.zip
 datoviz_example
+bindings/cython/images/
 docs/images/visuals/*.png
 docs/images/graphics/*.png
 docs/examples/*.md

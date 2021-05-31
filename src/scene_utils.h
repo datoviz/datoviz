@@ -727,7 +727,7 @@ static void _callback_controllers(DvzScene* scene)
 
 static void _enqueue_all_visuals_changed(DvzScene* scene)
 {
-    // log_trace("enqueue all visuals changed");
+    log_trace("enqueue all visuals changed");
 
     ASSERT(scene != NULL);
     DvzGrid* grid = &scene->grid;
@@ -814,7 +814,7 @@ static void _process_scene_updates(DvzScene* scene)
     // Iteratively process the scene updates, which can trigger more visuals changes.
     DvzSceneUpdate up = {0};
     uint32_t i = 0;
-    while (dvz_fifo_size(fifo) > 0)
+    while (dvz_fifo_size(fifo) > 0 && i <= 1000) // HACK: avoid infinite loop
     {
         log_trace("scene update pass #%d", i);
 

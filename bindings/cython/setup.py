@@ -1,7 +1,10 @@
 import os
+import shutil
+import sys
 from pathlib import Path
 from setuptools import Extension, setup
 import distutils.cygwinccompiler
+
 import numpy as np
 from Cython.Build import cythonize
 
@@ -13,17 +16,30 @@ INCLUDE_DIR = ROOT_DIR / 'include'
 BUILD_DIR = ROOT_DIR / 'build'
 VULKAN_DIR = Path(os.environ.get('VULKAN_SDK', '.'))
 
+DESCRIPTION = 'High-performance interactive scientific visualization with Vulkan'
+
+with open('requirements.txt') as f:
+    require = [x.strip() for x in f.readlines() if not x.startswith('git+')]
+
+# On Windows, copy libdatoviz.dll alonside the Cython module and bundle it in the wheel.
+package_data = {}
+if sys.platform == 'win32':
+    shutil.copy(BUILD_DIR / 'libdatoviz.dll', CYTHON_DIR / 'datoviz/libdatoviz.dll')
+    package_data = {'datoviz': ['*.dll']}
+
 # NOTE: build with dynamic linking of datoviz. Need to add to LD_LIBRARY_PATH env variable
 # the path to the datoviz library (in <root>/build/).
 setup(
     name='datoviz',
-    version='0.0.0a0',
-    description='Scientific visualization',
-    author='Cyrille Rossant',
+    version='0.1.0a0',
+    description=DESCRIPTION,
+    author='Cyrille Rossant, International Brain Laboratory',
     author_email='rossant@users.noreply.github.com',
     url='https://datoviz.org',
-    long_description='''Scientific visualization''',
+    long_description=DESCRIPTION,
     packages=['datoviz'],
+    package_data=package_data,
+    install_requires=require,
     ext_modules=cythonize(
         [Extension(
             'datoviz.pydatoviz', ['datoviz/pydatoviz.pyx'],
@@ -31,7 +47,7 @@ setup(
             include_dirs=[
                 np.get_include(),
                 str(INCLUDE_DIR),
-                str(VULKAN_DIR / 'Include'),
+                str(VULKAN_DIR / 'include'),
                 str(ROOT_DIR / 'external/cglm/include'),
                 str(BUILD_DIR / '_deps/glfw-src/include'),
             ],

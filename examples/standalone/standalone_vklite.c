@@ -6,8 +6,6 @@
 /// Import the library public header.
 #include <datoviz/datoviz.h>
 
-
-
 // Utility function to create the renderpass for offscreen rendering.
 static void create_renderpass(DvzRenderpass* renderpass)
 {
@@ -46,8 +44,6 @@ static void create_renderpass(DvzRenderpass* renderpass)
     dvz_renderpass_subpass_attachment(renderpass, 0, 0);
     dvz_renderpass_subpass_attachment(renderpass, 0, 1);
 }
-
-
 
 // This function downloads the contents of the GPU image on which we have rendered to.
 static uint8_t* screenshot(DvzImages* image)
@@ -102,8 +98,7 @@ static uint8_t* screenshot(DvzImages* image)
     return rgb;
 }
 
-
-
+// Entry point.
 int main(int argc, char** argv)
 {
     // We create a singleton application with a GLFW backend.

@@ -239,17 +239,21 @@ static const char* VALIDATION_IGNORES[] = {
 
     // HACK: hide harmless warning message on Ubuntu:
     // validation layer: /usr/lib/i386-linux-gnu/libvulkan_radeon.so: wrong ELF class: ELFCLASS32
-    "ELFCLASS32", //
+    "ELFCLASS32",
 
-    "BestPractices-vkBindMemory-small-dedicated-allocation",  //
-    "BestPractices-vkAllocateMemory-small-allocation",        //
-    "BestPractices-vkCreateCommandPool-command-buffer-reset", //
-    "BestPractices-vkCreateInstance-specialuse-extension",    //
+    "BestPractices-vkBindMemory-small-dedicated-allocation",
+    "BestPractices-vkAllocateMemory-small-allocation",
+    "BestPractices-vkCreateCommandPool-command-buffer-reset",
+    "BestPractices-vkCreateInstance-specialuse-extension",
 
     // prevent unnecessary error messages when quickly resizing a window (race condition, fix to be
     // done probably in the validation layers)
     // https://github.com/KhronosGroup/Vulkan-ValidationLayers/issues/624
-    "VUID-VkSwapchainCreateInfoKHR-imageExtent", //
+    "VUID-VkSwapchainCreateInfoKHR-imageExtent",
+
+    // https://github.com/datoviz/datoviz/issues/17#issuecomment-849213008
+    // https://www.gitmemory.com/issue/KhronosGroup/Vulkan-ValidationLayers/2729/824406355
+    "invalid layer manifest file",
 };
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
@@ -387,8 +391,12 @@ static void* backend_window(
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         GLFWwindow* bwin = glfwCreateWindow((int)width, (int)height, APPLICATION_NAME, NULL, NULL);
         ASSERT(bwin != NULL);
-        if (glfwCreateWindowSurface(instance, bwin, NULL, surface) != VK_SUCCESS)
-            log_error("error creating the GLFW surface");
+        VkResult res = glfwCreateWindowSurface(instance, bwin, NULL, surface);
+        // log_info(
+        //     "%d %d %d %d", GLFW_NOT_INITIALIZED, GLFW_API_UNAVAILABLE, GLFW_PLATFORM_ERROR,
+        //     GLFW_INVALID_VALUE);
+        if (res != VK_SUCCESS)
+            log_error("error creating the GLFW surface, result was %d", res);
 
         glfwSetWindowUserPointer(bwin, window);
 
@@ -551,7 +559,7 @@ static void create_instance(
     {
         has_validation = check_validation_layer_support(ARRAY_COUNT(DVZ_LAYERS), DVZ_LAYERS);
         if (!has_validation)
-            log_error(
+            log_debug(
                 "validation layer support missing, make sure you have exported the environment "
                 "variable VK_LAYER_PATH=\"$VULKAN_SDK/etc/vulkan/explicit_layer.d\"");
     }
@@ -1230,7 +1238,7 @@ static void make_shared(
 
 
 
-static void create_buffer2(
+static void create_buffer(
     VkDevice device, DvzQueues* queues, uint32_t queue_count, uint32_t* queue_indices, //
     VkBufferUsageFlags usage, VkMemoryPropertyFlags properties,
     VkPhysicalDeviceMemoryProperties memory_properties, VkDeviceSize size, //
@@ -1299,7 +1307,7 @@ static void check_dims(VkImageType image_type, uint32_t width, uint32_t height, 
 
 
 
-static void create_image2(
+static void create_image(
     VkDevice device, DvzQueues* queues, uint32_t queue_count, uint32_t* queue_indices,        //
     VkImageType image_type, uint32_t width, uint32_t height, uint32_t depth, VkFormat format, //
     VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties,          //
@@ -1348,7 +1356,7 @@ static void create_image2(
 
 
 
-static void create_image_view2(
+static void create_image_view(
     VkDevice device, VkImage image, VkImageViewType view_type, VkFormat format,
     VkImageAspectFlags aspect_flags, VkImageView* image_view)
 {
@@ -1378,7 +1386,7 @@ static void create_image_view2(
 /*  Sampler                                                                                      */
 /*************************************************************************************************/
 
-static void create_texture_sampler2(
+static void create_texture_sampler(
     VkDevice device, VkFilter mag_filter, VkFilter min_filter, //
     VkSamplerAddressMode* address_modes, bool anisotropy, VkSampler* sampler)
 {

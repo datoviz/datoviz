@@ -1,5 +1,75 @@
 # Developer checklists
 
+
+## Adding a new Python example
+
+* Create a new `bindings/cython/examples/mynewexample.py` file
+    * Here is a template code snippet:
+
+    ```python
+    """
+    # My new example
+
+    This example shows ...
+    The text here will be copied automatically to the corresponding page in the documentation.
+
+    """
+
+    # Imports.
+    import numpy as np
+    import numpy.random as nr
+    from datoviz import canvas, run, colormap
+
+    # Add your code here...
+
+    # Start the event loop.
+    run()
+    ```
+
+* `mkdocs.yml`:
+    * Add your new example to `nav > Examples`
+* Test
+    * Your new example is automatically added to the Python testing suite. As such, your example will run and a screenshot will be made automatically for the documentation website.
+    * Run `DVZ_DEBUG=1 pytest -vvsk mynewexample` to test your example interactively.
+    * Run `./manage.sh pytest` to check that the full Python testing suite passes.
+    * Run `/.manage.sh docs` to regenerate the documentation and run it locally. Check that your example has been automatically included in the website.
+
+
+## Adding a new C example
+
+* Create a new `examples/mynewexample.h` file
+    * Here is a template code snippet:
+
+    ```c
+    /*************************************************************************************************/
+    /*  My new example.                                                                              */
+    /*************************************************************************************************/
+
+    // We include the library header file.
+    #include <datoviz/datoviz.h>
+
+    static int demo_mynewexample()
+    {
+        DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
+        DvzGpu* gpu = dvz_gpu_best(app);
+        DvzCanvas* canvas = dvz_canvas(gpu, 1280, 1024, 0);
+        DvzScene* scene = dvz_scene(canvas, 1, 1);
+        DvzPanel* panel = dvz_scene_panel(scene, 0, 0, DVZ_CONTROLLER_PANZOOM, 0);
+
+        // Add your code here.
+
+        dvz_app_run(app, 0);
+        dvz_app_destroy(app);
+        return 0;
+    }
+    ```
+
+* `examples/examples.h`
+    * add `#include "mynewexample.h"`
+* `cli/main.c`
+    * In `demo()`, add a new line with `SWITCH_DEMO(mynewexample)`
+
+
 ## Implementing a new visual
 
 * Determine the graphics you'll be using, and the list of source and props
@@ -35,7 +105,8 @@
     * Add the new test to the list of test functions
 * Test the new visual without interactivity and save a visual screenshot
 * Add a section in the visual reference `docs/reference/visuals.md`, document the props, sources, etc.
-
+* `pydatoviz.pyx`:
+    * Add your new visual to the `_VISUALS` dictionary
 
 
 ## Implementing a new graphics
@@ -49,11 +120,12 @@
     * Make sure the `DvzGraphicsType` enum exists, or create a new one
 * Shaders: `graphics_xxx.vert|frag`:
     * Don't forget to import `common.glsl` in all shaders
-    * The first user binding should be params, should match exactly the struct
-    * The next bindings should be numbered with USER_BINDING+1 etc
+    * If there are parameters, they should be implemented as a struct in the **first user binding** `USER_BINDING`
+    * Make sure the GLSL parameters struct matches exactly the one you just defined in `graphics.h`
+    * The next bindings should be numbered with `USER_BINDING+1` etc
     * The body of the main fragment shader function should always begin with `CLIP`
 * `graphics.c`:
-    * Add new section, with `_graphics_xxx()` and `_graphics_xxx_callback()` if there is a non-default graphics callback function
+    * Add a new section, with `_graphics_xxx()` and `_graphics_xxx_callback()` if there is a non-default graphics callback function
     * Write the main graphics function
         * Specify the shaders
         * Specify the primitive type
@@ -75,7 +147,6 @@
 * Add graphics section in `docs/reference/graphics.md`
 
 
-
 ## Implementing a new GUI control
 
 * `controls.h`:
@@ -91,60 +162,13 @@
     * In `_show_control()`, add a new switch case and call `_show_xxx()`
     * Implement `_show_xxx()`
 * `test_canvas.c`:
-    * In `test_canvas_gui_1()`, add the new control with a call to `dvz_gui_xxx()`
-    * Try the next test with `DVZ_INTERACT=1 ./manage.sh test test_canvas_gui_1`
-* `cydatoviz.pxd`:
-    * After `# FUNCTION START`, add `void dvz_gui_xxx()` (no need to put the arguments, the Cython bindings generator will do it automatically)
+    * In `test_canvas_gui()`, add the new control with a call to `dvz_gui_xxx()`
+    * Try the next test with `DVZ_DEBUG=1 ./manage.sh test test_canvas_gui`
 * `pydatoviz.pyx`:
-    * Update the `_CONTROLS` dictionary
+    * Add your new control to the `_CONTROLS` dictionary
+    * In `_get_event_args()`, add a new if statement and make the callback argument binding
     * In `Gui.control()`, add a new if statement and make the binding
-    * In `_get_ev_args()`, add a new if statement and make the callback argument binding
-    * In `GuiControl.set()` , add a new if statement and set the control value
+    * (*Optional*) In `GuiControl.get()` , add a new if statement and get the control value
+    * (*Optional*) In `GuiControl.set()` , add a new if statement and set the control value
 * Run `./manage.sh cython`
 * Test in a Python example `gui.control('xxx', 'name', ...)`
-
-
-
-## Adding a new C example
-
-* Create a new `examples/mynewexample.h` file
-    * Here is a template code snippet:
-
-    ```c
-    /*************************************************************************************************/
-    /*  My new example.                                                                              */
-    /*************************************************************************************************/
-
-    // NOTE: ignore this.
-    #ifndef SCREENSHOT
-    #define SCREENSHOT
-    #endif
-    #ifndef NFRAMES
-    #define NFRAMES 0
-    #endif
-
-    // We include the library header file.
-    #include <datoviz/datoviz.h>
-
-    static int demo_mynewexample()
-    {
-        DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-        DvzGpu* gpu = dvz_gpu_best(app);
-        DvzCanvas* canvas = dvz_canvas(gpu, 1280, 1024, 0);
-        DvzScene* scene = dvz_scene(canvas, 1, 1);
-        DvzPanel* panel = dvz_scene_panel(scene, 0, 0, DVZ_CONTROLLER_PANZOOM, 0);
-
-        // Add your code here.
-
-        SCREENSHOT
-        dvz_app_run(app, NFRAMES);
-
-        dvz_app_destroy(app);
-        return 0;
-    }
-    ```
-
-* `examples/examples.h`
-    * add `#include "mynewexample.h"`
-* `cli/main.c`
-    * In `demo()`, add a new `SWITCH_DEMO(mynewexample)` line
