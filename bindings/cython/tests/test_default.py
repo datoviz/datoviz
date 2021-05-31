@@ -46,6 +46,15 @@ def test_canvas(c):
 
 
 
+def test_video():
+    c = canvas()
+    c.gui_demo()
+    # c.video("test.avi", fps=24)
+    app().run(10)
+    c.close()
+
+
+
 def test_colormap():
     n = 1000
     values = np.linspace(-1, 1, n)

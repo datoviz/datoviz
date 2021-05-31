@@ -69,6 +69,7 @@ struct Video
     int linesize;
     uint8_t* image;
     AVFrame* frame;
+    FILE* fp;
 };
 
 
@@ -86,7 +87,6 @@ void create_video(Video* video);
 void add_frame(Video* video, uint8_t* image);
 
 void end_video(Video* video);
-
 
 
 Video* read_video(const char* filename);

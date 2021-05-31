@@ -1014,12 +1014,16 @@ cdef class Canvas:
         cdef char* _c_path = path
         cv.dvz_screenshot_file(self._c_canvas, _c_path);
 
-    def video(self, unicode path):
+    def video(self, unicode path, int fps=30, int bitrate=10000000):
         """Start a high-quality video recording."""
-        # TODO: customizable video parameters.
         cdef char* _c_path = path
-        cv.dvz_canvas_video(self._c_canvas, 30, 10000000, _c_path, False)
+        cv.dvz_canvas_video(self._c_canvas, fps, bitrate, _c_path, False)
+        self._video_recording = False
+
+    def record(self):
+        """Start or restart the video recording."""
         self._video_recording = True
+        cv.dvz_canvas_pause(self._c_canvas, self._video_recording)
 
     def pause(self):
         """Pause the video recording."""

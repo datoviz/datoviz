@@ -2138,12 +2138,16 @@ static void _video_callback(DvzCanvas* canvas, DvzEvent ev)
         return;
     ASSERT(video != NULL);
 
-    // Create the video if needed.
+// Create the video if needed.
+#if HAS_FFMPEG
     if (video->ost == NULL)
-    {
         create_video(video);
-    }
     ASSERT(video->ost != NULL);
+#else
+    if (video->fp == NULL)
+        create_video(video);
+    ASSERT(video->fp != NULL);
+#endif
 
     add_frame(video, ev.u.sc.rgba);
     FREE(ev.u.sc.rgba);

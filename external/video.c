@@ -27,6 +27,25 @@
 #define NUM_THREADS 8
 #define INBUF_SIZE  4096
 
+
+
+// Public functions.
+Video* init_video(const char* filename, int width, int height, int fps, int bitrate)
+{
+    ASSERT(filename != NULL);
+    ASSERT(strlen(filename) > 0);
+
+    Video* video = calloc(1, sizeof(Video));
+    video->filename = filename;
+    video->fps = fps;
+    video->bitrate = bitrate;
+    video->width = width;
+    video->height = height;
+    return video;
+}
+
+
+
 #if HAS_FFMPEG
 
 #include <libavcodec/avcodec.h>
@@ -219,21 +238,6 @@ static void close_stream(AVFormatContext* oc, OutputStream* ost)
     avcodec_free_context(&ost->enc);
     av_frame_free(&ost->frame);
     sws_freeContext(ost->sws_ctx);
-}
-
-// Public functions.
-Video* init_video(const char* filename, int width, int height, int fps, int bitrate)
-{
-    ASSERT(filename != NULL);
-    ASSERT(strlen(filename) > 0);
-
-    Video* video = calloc(1, sizeof(Video));
-    video->filename = filename;
-    video->fps = fps;
-    video->bitrate = bitrate;
-    video->width = width;
-    video->height = height;
-    return video;
 }
 
 void create_video(Video* video)
@@ -556,21 +560,45 @@ void close_video(Video* video)
 
 #else
 
+// #include "jo_mpeg.h"
+
+
 /*************************************************************************************************/
-/*  FFMPEG unavailable                                                                           */
+/*  FFMPEG unavailable: fallback video creation functions                                        */
 /*************************************************************************************************/
 
-Video* init_video(const char* filename, int width, int height, int fps, int bitrate)
+void create_video(Video* video)
 {
-    log_error("datoviz was not compiled with ffmpeg support, unable to record a video");
-    return NULL;
+    ASSERT(video != NULL);
+    ASSERT(video->filename != NULL);
+    ASSERT(strlen(video->filename) > 0);
+    log_info("creating video file with a simple MPEG writer");
+    video->fp = fopen(video->filename, "wb");
 }
 
-void create_video(Video* video) { return; }
+void add_frame(Video* video, uint8_t* image)
+{
+    ASSERT(video != NULL);
+    ASSERT(video->fp != NULL);
+    ASSERT(video->width > 0);
+    ASSERT(video->height > 0);
+    ASSERT(video->fps > 0);
+    // jo_write_mpeg(video->fp, image, video->width, video->height, video->fps);
+}
 
-void add_frame(Video* video, uint8_t* image) {}
+void end_video(Video* video)
+{
+    ASSERT(video != NULL);
+    ASSERT(video->fp != NULL);
+    fclose(video->fp);
+    video->fp = NULL;
+}
 
-void end_video(Video* video) {}
+
+
+/*************************************************************************************************/
+/*  Video reading (not used yet)                                                                 */
+/*************************************************************************************************/
 
 Video* read_video(const char* filename)
 {
