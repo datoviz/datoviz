@@ -6,7 +6,8 @@
 
 Datoviz is currently being developed mostly by [Cyrille Rossant](https://cyrille.rossant.net) at the [International Brain Laboratory](http://internationalbrainlab.org/), a consortium of neuroscience research labs around the world.
 
-!!! Datoviz is at an early stage of development. The API may be subject to minor changes regularly at this stage. The current stage is testing on a wider range of systems and environments.
+!!! note
+    Datoviz is at an early stage of development. The API may be subject to minor changes. In addition, we are in the process of testing Datoviz on a wider range of systems and environments.
 
 
 ## Screenshots
@@ -20,7 +21,7 @@ Datoviz is currently being developed mostly by [Cyrille Rossant](https://cyrille
 The documentation is divided into:
 
 * **[Installation](https://datoviz.org/tutorials/install/)**: install guide,
-* **[Tutorials](https://datoviz.org/tutorials/quickstart)**: quickstart Python tutorial,
+* **[Quick start tutorial](https://datoviz.org/tutorials/quickstart)** with Python,
 * **[Examples](https://datoviz.org/examples/)**: gallery of Python examples,
 * **[How to guides](https://datoviz.org/howto/)**: advanced topics explaining how to use the C API, how to create custom visuals...
 * **[Reference](https://datoviz.org/reference/)**: comprehensive list of included colormaps, visuals, and graphics pipelines,
@@ -56,7 +57,7 @@ The documentation is divided into:
 * Initial builtin support for screencasts and video recording with ffmpeg (optional dependency)
 * Initial support for offscreen rendering and CPU emulation via swiftshader
 
-Upcoming features:
+**Upcoming features:**
 
 * More visuals: arrows, triangulations, planar straight-line graphs (PSLG), histograms, areas, graphs...
 * Further data transformations: logarithmic, polar, basic Earth coordinate systems for geographical data
@@ -66,7 +67,7 @@ Upcoming features:
 * Qt integration
 * Continuous integration, more robust testing
 
-Long-term future:
+**Longer-term future:**
 
 * Support for other languages (Julia, R, MATLAB, Rust...)
 * Jupyter notebook integration

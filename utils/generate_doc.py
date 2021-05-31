@@ -299,7 +299,8 @@ def generate_examples():
         assert m
         desc = m.group(1)
 
-        code = PYTHON_DESC_REGEX.sub('', code)
+        # NOTE: only remove the first docstring.
+        code = PYTHON_DESC_REGEX.sub('', code, count=1)
         doc = PYTHON_EXAMPLE_TEMPLATE.format(description=desc, code=code, path=f.name, name=f.stem)
 
         dst = EXAMPLES_DIR / f"{f.stem}.md"

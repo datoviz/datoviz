@@ -38,19 +38,19 @@ plugins:
         on_page_markdown: "utils.hooks:page_hook"
 nav:
   - Home: 'index.md'
-  - Tutorials:
+  - Getting started:
     - Index: 'tutorials/index.md'
     - Installation: 'tutorials/install.md'
     - Quickstart: 'tutorials/quickstart.md'
   - Examples:
     - Overview: 'examples/index.md'
-    - Simple test with Python: 'examples/quickstart.md'
-    - Custom colormap: 'examples/colormap.md'
-    - Digital signals: 'examples/signals.md'
-    - Image: 'examples/image.md'
+    - Quickstart tutorial: 'examples/quickstart.md'
+    - Image blending: 'examples/image.md'
     - France departements: 'examples/france.md'
+    - Digital signals: 'examples/signals.md'
     - 3D brain mesh: 'examples/brain.md'
     - Two panels: 'examples/twopanels.md'
+    - Custom colormap: 'examples/colormap.md'
     - Async event loop: 'examples/eventloop.md'
   - How to guides:
     - Index: 'howto/index.md'

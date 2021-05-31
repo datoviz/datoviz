@@ -1,5 +1,5 @@
 """
-# Image
+# Image blending
 
 This example shows how to display two superimposed images, with simple blending done on the GPU,
 and a slider controlling the blending parameter.
@@ -22,6 +22,7 @@ def load_image(path):
     img = np.dstack((img, 255 * np.ones(img.shape[:2])))
     img = img.astype(np.uint8)
     tex = app().gpu().context().texture(img.shape[0], img.shape[1])
+    tex.set_filter('linear')
     tex.upload(img)
     return tex
 
@@ -49,11 +50,13 @@ visual.texture(tex0, idx=0)  # set the first texture slot of the image visual
 tex1 = load_image(ROOT / 'data/textures/landscape.jpg')
 visual.texture(tex1, idx=1)  # set the second texture slot of the image visual
 
-visual.data('texcoefs', np.array([1, 0, 0, 0]).astype(np.float32))
+# Initial blending value.
+value = .25
+visual.data('texcoefs', np.array([1 - value, value, 0, 0]))
 
 # Control the blending via a GUI.
 gui = c.gui("GUI")
-slider = gui.control("slider_float", "GPU blending", value=0, vmin=0, vmax=1)
+slider = gui.control("slider_float", "GPU blending", value=value, vmin=0, vmax=1)
 
 @slider.connect
 def on_change(value):

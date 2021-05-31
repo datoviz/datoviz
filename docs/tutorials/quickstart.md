@@ -56,6 +56,9 @@ In order to draw something on the canvas, we need to define a **scene** which im
 
 The scene contains subplots (also known as **panels**) organized in a two-dimensional grid layout. The number of rows and columns may be specified by the `rows` and `cols` keyword arguments to the `c.scene()` method. By default, `rows=1` and `cols=1`.
 
+!!! note "Canvas vs Scene"
+    Why is there a distinction between the canvas and the scene? The canvas may be used by advanced users who need direct Vulkan access for anything that is not standard scientific visualization (interactive demos, video games, animations...) and who don't need/want the overhead of the scene API.
+
 
 ## Creating a panel
 
@@ -65,36 +68,42 @@ Each "cell" in the grid layout of the scene is a panel. Every panel has a **cont
 panel = c.panel(controller='axes')
 ```
 
+!!! note Controllers
+    The controllers that are currently supported are: `static`, `panzoom`, `axes`, `arcbcall`, `camera`.
 
 ## Choosing one of the existing visuals
 
-The next step is to add a visual.
+The next step is to **add a visual to a panel**.
 
 Here, we'll make a **scatter plot** with random points in different colors and sizes.
 
-Datoviz comes with a [library of built-in visuals](../reference/visuals.md). For our scatter plot, we'll choose a **marker visual**. We could also have used a **point visual**, which is faster and more lightweight, but only supports square markers.
+Datoviz comes with a [library of built-in visuals](../reference/visuals.md). For our scatter plot, we'll choose a **marker visual**:
+
 
 ```python
 visual = panel.visual('marker')
 ```
 
+!!! note Marker visual vs Point visual
+    We could also have used a **point visual**, which is faster and more lightweight, but only supports square markers. Another limitation is that all squares must have the same size in the visual (this limitation may be lifted in the future).
+
 
 ## Preparing the visual data
 
-Once the visual has been created and added to the panel, we need to set its data. Visual data is specified with **visual props** (properties). The documentation lists all props supported by each visual.
+Once the visual has been created and added to the panel, we need to set its data. Visual data is specified with **visual props** (properties). The [visual documentation](../reference/visuals.md) provides all props supported by each visual.
 
 Except from the universal `pos` prop which refers to the point positions, most props are optional and come with sensible defaults.
 
 In this example, we'll just set:
 
-* `pos`: the **marker positions**
-* `color`: the **marker colors**
-* `ms`: the **marker sizes**
+* `pos`: the **marker positions**,
+* `ms`: the **marker sizes**,
+* `color`: the **marker colors**.
 
 We generate the data as NumPy arrays, and we pass them to the visual.
 
 
-### Random positions
+### Marker positions
 
 ```python
 N = 10_000
@@ -111,20 +120,20 @@ Datoviz uses the standard OpenGL 3D coordinate system, with coordinates in `[-1,
 !!! note Vulkan coordinate system
     Vulkan uses a slightly different coordinate system, the main differences are:
 
-    * `y` and `z` go in the opposition direction
-    * `z` is in `[0, 1]`
+    * `y` and `z` go in the opposition direction,
+    * `z` is in `[0, 1]`.
 
     The conventions chosen in Datoviz are closer to existing graphics libraries.
 
     The transformation from the Datoviz coordinate system to the Vulkan coordinate system is done at the final stage of data transformation in the vertex shader of all included visuals.
 
-The point positions that are passed to Datoviz are defined in a **data coordinate system**. Datoviz takes care of the transformation to a normalized coordinate system that is more amenable to GPU interactive graphics.
+The point positions that are passed to Datoviz are defined in a **data coordinate system**. Datoviz takes care of the transformation into a normalized coordinate system that is more amenable to GPU interactive graphics.
 
 !!! note
     The data transformation pipeline in Datoviz only supports linear transformations at the moment. It will be improved soon.
 
 
-### Random marker size
+### Marker sizes
 
 We define random marker sizes (in pixels) as an array of floating-point values:
 
@@ -132,11 +141,11 @@ We define random marker sizes (in pixels) as an array of floating-point values:
 ms = nr.uniform(low=2, high=40, size=N)
 ```
 
-### Colormaps
+### Marker colors
 
-Colors are specified as either:
+In Datoviz, colors are specified as either:
 
-* RGBA components, as `uint8` bytes (four bytes per color),
+* arbitrary RGBA components, as `uint8` bytes (four bytes per color),
 * **colormaps**.
 
 Datoviz includes [a library of ~150 colormaps commonly used in popular scientific plotting software](../reference/colormaps.md). You can also define a custom colormap manually.
@@ -155,7 +164,7 @@ We also prepare the alpha channel for transparency, from 0 (invisible) to 1 (opa
 alpha = .75 * np.ones(N)
 ```
 
-Then, we get the RGBA colors with the colormap:
+Next, we compute the RGBA colors using the colormap:
 
 ```python
 color = colormap(
@@ -171,8 +180,8 @@ Once the data has been prepared, we can pass it to the visual:
 
 ```python
 visual.data('pos', pos)
-visual.data('color', color)
 visual.data('ms', ms)
+visual.data('color', color)
 ```
 
 
@@ -191,7 +200,7 @@ run()
 ## Event callbacks and mouse picking
 
 !!! important
-    From now on, all of the code snippets need to be added **before** calling `run()`.
+    From now on, all of the code snippets need to be added **before** `run()`.
 
 We'll write a callback function that runs whenever the user clicks somewhere in the canvas. It will display the coordinates of the clicked point in the original data coordinate system.
 

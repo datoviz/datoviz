@@ -1,7 +1,9 @@
 """
 # 3D brain mesh
 
-This example shows how to render a 3D mesh from a nilearn dataset.
+This example shows how to render a 3D mesh of a brain obtained from the
+[nilearn library](https://nilearn.github.io/index.html).
+There is also a slider controlling the lighting parameters.
 
 """
 

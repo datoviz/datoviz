@@ -1,7 +1,7 @@
 """
-# Test with two panels and different controllers
+# Two panels
 
-This example shows how to display two different panels with different controllers side to side.
+This example shows how to display two different panels (2D and 3D) with different controllers side to side.
 
 """
 

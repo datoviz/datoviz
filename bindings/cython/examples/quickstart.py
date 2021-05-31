@@ -38,8 +38,8 @@ color = colormap(color_values, vmin=0, vmax=1, alpha=alpha, cmap='viridis')
 
 # We set the visual props.
 visual.data('pos', pos)
-visual.data('color', color)
 visual.data('ms', ms)
+visual.data('color', color)
 
 # We define an event callback to implement mouse picking
 @c.connect
