@@ -24,7 +24,8 @@ with open('requirements.txt') as f:
 # On Windows, copy libdatoviz.dll alonside the Cython module and bundle it in the wheel.
 package_data = {}
 if sys.platform == 'win32':
-    shutil.copy(BUILD_DIR / 'libdatoviz.dll', CYTHON_DIR / 'datoviz/libdatoviz.dll')
+    shutil.copy(BUILD_DIR / 'libdatoviz.dll',
+                CYTHON_DIR / 'datoviz/libdatoviz.dll')
     package_data = {'datoviz': ['*.dll']}
 
 # NOTE: build with dynamic linking of datoviz. Need to add to LD_LIBRARY_PATH env variable
@@ -48,7 +49,7 @@ setup(
                 np.get_include(),
                 str(INCLUDE_DIR),
                 str(VULKAN_DIR / 'include'),
-                str(ROOT_DIR / 'external/cglm/include'),
+                str(BUILD_DIR / '_deps/cglm-src/include'),
                 str(BUILD_DIR / '_deps/glfw-src/include'),
             ],
             library_dirs=[str(BUILD_DIR)],

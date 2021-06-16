@@ -35,7 +35,7 @@ mkdir -p $OUT_DIR
 cd $ROOT_DIR
 rm -rf $BUILD_DIR && mkdir -p $BUILD_DIR
 cd $BUILD_DIR && pwd
-cmake .. -GNinja -DDATOVIZ_DOWNLOAD_GLFW=1 && ninja && cd ..
+cmake .. -GNinja && ninja && cd ..
 
 
 # Copy the Cython bindings to the container.
