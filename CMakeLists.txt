@@ -15,7 +15,6 @@ option(DATOVIZ_WITH_PNG "Build Datoviz with PNG support" ON)
 option(DATOVIZ_WITH_FFMPEG "Build Datoviz with FFMPEG support" ON)
 option(DATOVIZ_WITH_GLSLANG "Build Datoviz with glslang support" OFF)
 option(DATOVIZ_WITH_SWIFTSHADER "Build Datoviz with Swiftshader support" OFF)
-option(DATOVIZ_DOWNLOAD_GLFW "Whether to download glfw, or to use the system one" OFF)
 option(DATOVIZ_WITH_CLI "Build Datoviz command-line interface with tests and demos" ON)
 
 # Swiftshader boolean
@@ -30,7 +29,7 @@ endif()
 set(DATOVIZ_VERSION 0.0.1)
 project(datoviz VERSION ${DATOVIZ_VERSION} DESCRIPTION "datoviz")
 
-# DEBUG
+# DEBUG/RELEASE
 set(DEBUG 1)
 set(CMAKE_BUILD_TYPE Debug)
 
@@ -38,11 +37,6 @@ set(CMAKE_BUILD_TYPE Debug)
 # -------------------------------------------------------------------------------------------------
 # Dependencies
 # -------------------------------------------------------------------------------------------------
-
-# glfw: download it on Windows and macOS
-if (WIN32 OR APPLE)
-set(DATOVIZ_DOWNLOAD_GLFW 1)
-endif()
 
 # Vulkan
 find_package(Vulkan)
@@ -53,31 +47,23 @@ else()
 endif()
 
 # cglm
-add_subdirectory(external/cglm/)
+FetchContent_Declare(
+    cglm
+    GIT_REPOSITORY  https://github.com/recp/cglm/
+    GIT_TAG         v0.8.3
+)
+FetchContent_MakeAvailable(cglm)
 
 # glfw3
-# NOTE: on Linux, we currently prefer using the apt libglfw-dev instead of compiling it ourselves
-# TODO: just use a submodule for glfw?
-if (DATOVIZ_DOWNLOAD_GLFW)
-    set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-    set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-
-    FetchContent_Declare(
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+FetchContent_Declare(
     glfw
-    GIT_REPOSITORY https://github.com/glfw/glfw/
-    )
-    FetchContent_MakeAvailable(glfw)
-endif()
-# HACK: ensure correct version of glfw3 >= 3.3
-set(GLFW_GT_33 1)
-if(NOT DATOVIZ_DOWNLOAD_GLFW)
-    find_package(glfw3)
-    if (${glfw3_VERSION} VERSION_GREATER "3.3")
-    else()
-    set(GLFW_GT_33 0)
-    endif()
-endif()
+    GIT_REPOSITORY  https://github.com/glfw/glfw/
+    GIT_TAG         3.3.4
+)
+FetchContent_MakeAvailable(glfw)
 
 # glslc
 set(HAS_GLSLANG 0)
@@ -282,7 +268,6 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
     CLANG=${CC_CLANG}
 
     SWIFTSHADER=${SWIFTSHADER}
-    GLFW_GT_33=${GLFW_GT_33}
 )
 
 

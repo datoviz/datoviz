@@ -120,7 +120,8 @@ then
         FILENAME=`ls datoviz*.whl`
         echo $FILENAME
         cp $FILENAME "$FILENAME~"
-        DYLD_LIBRARY_PATH=../../../build/ delocate-wheel $FILENAME -e libvulkan -w .
+        # broken: remove libvulkan from the wheel?? "-e libvulkan"
+        DYLD_LIBRARY_PATH=../../../build/ delocate-wheel $FILENAME -w .
         cd ../../../
 
     # TODO: Windows
