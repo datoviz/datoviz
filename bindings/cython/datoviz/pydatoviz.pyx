@@ -627,7 +627,7 @@ def _validate_data(dt, nc, data):
 
 
 
-cdef _canvas_flags(show_fps=None, pick=None, high_dpi=None):
+cdef _canvas_flags(show_fps=None, pick=None, high_dpi=None, offscreen=None):
     """Make the canvas flags from the Python keyword arguments to the canvas creation function."""
     cdef int flags = 0
     flags |= cv.DVZ_CANVAS_FLAGS_IMGUI
@@ -637,6 +637,8 @@ cdef _canvas_flags(show_fps=None, pick=None, high_dpi=None):
         flags |= cv.DVZ_CANVAS_FLAGS_PICK
     if high_dpi:
         flags |= cv.DVZ_CANVAS_FLAGS_DPI_SCALE_200
+    if offscreen:
+        flags |= cv.DVZ_CANVAS_FLAGS_OFFSCREEN
     return flags
 
 
@@ -763,13 +765,14 @@ cdef class GPU:
             bint show_fps=False,
             bint pick=False,
             bint high_dpi=False,
+            bint offscreen=False,
             clear_color=None,
         ):
         """Create a new canvas."""
 
         # Canvas flags.
         cdef int flags = 0
-        flags = _canvas_flags(show_fps=show_fps, pick=pick, high_dpi=high_dpi)
+        flags = _canvas_flags(show_fps=show_fps, pick=pick, high_dpi=high_dpi, offscreen=offscreen)
 
         # Create the canvas using the Datoviz C API.
         c_canvas = cv.dvz_canvas(self._c_gpu, width, height, flags)

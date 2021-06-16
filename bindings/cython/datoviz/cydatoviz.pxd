@@ -230,6 +230,7 @@ cdef extern from "<datoviz/datoviz.h>":
         DVZ_CANVAS_FLAGS_IMGUI = 0x0001
         DVZ_CANVAS_FLAGS_FPS = 0x0003
         DVZ_CANVAS_FLAGS_PICK = 0x0004
+        DVZ_CANVAS_FLAGS_OFFSCREEN = 0x0008
         DVZ_CANVAS_FLAGS_DPI_SCALE_050 = 0x1000
         DVZ_CANVAS_FLAGS_DPI_SCALE_100 = 0x2000
         DVZ_CANVAS_FLAGS_DPI_SCALE_150 = 0x3000
@@ -1197,8 +1198,6 @@ cdef extern from "<datoviz/datoviz.h>":
 
     # FUNCTION START
     DvzCanvas* dvz_canvas(DvzGpu* gpu, uint32_t width, uint32_t height, int flags)
-
-    DvzCanvas* dvz_canvas_offscreen(DvzGpu* gpu, uint32_t width, uint32_t height, int flags)
 
     void dvz_canvas_recreate(DvzCanvas* canvas)
 
