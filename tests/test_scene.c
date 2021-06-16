@@ -83,6 +83,32 @@ int test_scene_empty(TestContext* tc)
 }
 
 
+int test_scene_empty_visuals(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    ASSERT(canvas != NULL);
+
+    DvzScene* scene = dvz_scene(canvas, 1, 1);
+    DvzPanel* panel = dvz_scene_panel(scene, 0, 0, DVZ_CONTROLLER_PANZOOM, 0);
+
+    DvzVisual* visual_0 = dvz_scene_visual(panel, DVZ_VISUAL_MARKER, 0);
+    dvz_app_run(canvas->app, 3);
+
+    DvzVisual* visual_1 = dvz_scene_visual(panel, DVZ_VISUAL_POINT, 0);
+    dvz_app_run(canvas->app, 3);
+
+    // NOTE: the call below causes an infinite loop and crash. The scene update system needs to be
+    // refactored.
+    // _point_data(visual_0);
+
+    ASSERT(visual_0);
+    ASSERT(visual_1);
+
+    int res = _scene_run(scene, "empty_visuals");
+    return res;
+}
+
+
 
 int test_scene_single(TestContext* tc)
 {
