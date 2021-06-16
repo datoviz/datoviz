@@ -168,8 +168,12 @@ static void _imgui_init()
 
     // Enable docking, requires the docking branch of imgui
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-    // io.ConfigDockingWithShift = false;  // DEPRECATED
     ImGui::StyleColorsDark();
+
+    // io.ConfigDockingWithShift = false;  // DEPRECATED
+
+    // TODO: make this customizable
+    io.IniFilename = NULL;
 }
 
 

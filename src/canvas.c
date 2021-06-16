@@ -203,7 +203,8 @@ static void backend_event_callbacks(DvzCanvas* canvas)
     switch (canvas->app->backend)
     {
     case DVZ_BACKEND_GLFW:;
-        ASSERT(canvas->window != NULL);
+        if (canvas->window == NULL)
+            return;
         GLFWwindow* w = canvas->window->backend_window;
 
         // The canvas pointer will be available to callback functions.
@@ -796,8 +797,14 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
 DvzCanvas* dvz_canvas(DvzGpu* gpu, uint32_t width, uint32_t height, int flags)
 {
     ASSERT(gpu != NULL);
-    bool offscreen = gpu->app->backend == DVZ_BACKEND_GLFW ? false : true;
-    bool overlay = (flags & DVZ_CANVAS_FLAGS_IMGUI) > 0;
+    bool offscreen = ((flags & DVZ_CANVAS_FLAGS_OFFSCREEN) != 0) ||
+                     (gpu->app->backend == DVZ_BACKEND_GLFW ? false : true);
+    bool overlay = (flags & DVZ_CANVAS_FLAGS_IMGUI) != 0;
+    if (offscreen && overlay)
+    {
+        log_warn("overlay is not supported in offscreen mode, disabling it");
+        overlay = false;
+    }
 
 #if SWIFTSHADER
     log_warn("swiftshader mode is active, forcing offscreen rendering");
@@ -958,18 +965,6 @@ void dvz_canvas_buffers(
     uint32_t idx = canvas->swapchain.img_idx;
     ASSERT(idx < br.count);
     dvz_buffer_upload(br.buffer, br.offsets[idx] + offset, size, data);
-}
-
-
-
-/*************************************************************************************************/
-/*  Offscreen                                                                                    */
-/*************************************************************************************************/
-
-DvzCanvas* dvz_canvas_offscreen(DvzGpu* gpu, uint32_t width, uint32_t height, int flags)
-{
-    // NOTE: no overlay for now in offscreen canvas
-    return _canvas(gpu, width, height, true, false, 0);
 }
 
 
@@ -2443,16 +2438,17 @@ int dvz_canvas_frame(DvzCanvas* canvas)
     }
 
     // Destroy the canvas if needed.
-    if (canvas->window != NULL)
+    // Check canvas.to_close, and whether the user as requested to close the window.
+    if (atomic_load(&canvas->to_close) ||
+        (canvas->window != NULL &&
+         backend_window_should_close(app->backend, canvas->window->backend_window)))
     {
-        // Check canvas.to_close, and whether the user as requested to close the window.
-        if (atomic_load(&canvas->to_close) ||
-            backend_window_should_close(app->backend, canvas->window->backend_window))
+        canvas->obj.status = DVZ_OBJECT_STATUS_NEED_DESTROY;
+        if (canvas->window != NULL)
             canvas->window->obj.status = DVZ_OBJECT_STATUS_NEED_DESTROY;
-
-        if (canvas->window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
-            canvas->obj.status = DVZ_OBJECT_STATUS_NEED_DESTROY;
     }
+    if (canvas->window != NULL && canvas->window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
+        canvas->obj.status = DVZ_OBJECT_STATUS_NEED_DESTROY;
 
     if (canvas->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
     {
@@ -2467,8 +2463,6 @@ int dvz_canvas_frame(DvzCanvas* canvas)
         // Destroy the canvas.
         dvz_canvas_destroy(canvas);
 
-        // dvz_container_iter(&iterator);
-        // continue;
         return 1;
     }
 
@@ -2482,7 +2476,6 @@ int dvz_canvas_frame(DvzCanvas* canvas)
 
     canvas->frame_idx++;
 
-    // n_canvas_active++;
     return 0;
 }
 
