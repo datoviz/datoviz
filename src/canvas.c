@@ -2220,7 +2220,7 @@ static void _canvas_frame_logic(DvzCanvas* canvas)
     ASSERT(canvas != NULL);
     ASSERT(canvas->app != NULL);
     ASSERT(canvas->gpu != NULL);
-    log_trace("start frame %u", canvas->frame_idx);
+    // log_trace("start frame %u", canvas->frame_idx);
 
     // Update the global and local clocks.
     // These calls update canvas->clock.elapsed and canvas->clock.interval, the latter is
@@ -2582,16 +2582,19 @@ int dvz_app_run(DvzApp* app, uint64_t frame_count)
         _process_gpu_transfers(app);
 
         // Close the application if all canvases have been closed.
-        if (n_canvas_active == 0)
+        if (n_canvas_active == 0 && frame_count != 1)
         {
             log_trace("no more active canvas, closing the app");
             break;
         }
     }
-    log_trace("end main loop");
 
-    dvz_app_wait(app);
-    app->is_running = false;
+    if (frame_count != 1)
+    {
+        log_trace("end main loop");
+        dvz_app_wait(app);
+        app->is_running = false;
+    }
 
     return (int)n_canvas_active;
 }

@@ -727,7 +727,7 @@ static void _callback_controllers(DvzScene* scene)
 
 static void _enqueue_all_visuals_changed(DvzScene* scene)
 {
-    log_trace("enqueue all visuals changed");
+    // log_trace("enqueue all visuals changed");
 
     ASSERT(scene != NULL);
     DvzGrid* grid = &scene->grid;
