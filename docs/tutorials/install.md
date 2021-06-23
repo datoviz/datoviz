@@ -77,7 +77,7 @@ The philosophy of Datoviz is to **implement all the logic and functionality in C
 
         ```bash
         sudo apt install build-essential cmake ninja-build \
-            xcb libx11-xcb-dev libglfw3-dev patchelf
+            xcb libx11-xcb-dev libxcursor-dev libxi-dev patchelf
         ```
 
     3. Install the optional dependencies:
