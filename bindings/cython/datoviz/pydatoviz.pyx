@@ -707,6 +707,7 @@ cdef class App:
             if video:
                 sv = video.encode('UTF-8')
                 autorun.video[:len(sv) + 1] = sv
+                autorun.screenshot[0] = 0
                 logger.debug(f"Autorun video: {sv}")
             cv.dvz_autorun_setup(self._c_app, autorun)
 
