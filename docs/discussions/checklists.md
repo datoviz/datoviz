@@ -172,3 +172,33 @@
     * (*Optional*) In `GuiControl.set()` , add a new if statement and set the control value
 * Run `./manage.sh cython`
 * Test in a Python example `gui.control('xxx', 'name', ...)`
+
+
+## Adding a new attribute to an existing graphics pipeline
+
+* `graphics_xxx.vert` (GLSL vertex shader file):
+    * Choose an appropriate C type for the attribute, for example `vec2` (two single-precision floating-point values)
+    * Add the attribute to the shader by adding a line with `layout (location = N) in vec2 attribute_name;` (use the appropriate type, the appropriate attribute number)
+    * Make sure the attributelocations are strictly increasing (0, 1, 2, 3...)
+* `graphics.h`:
+    * Find the relevant `DvzGraphicsXXXVertex` structure
+    * Add the field with the same type and name, following the same order as in the shader attributes list
+* `graphics.c`:
+    * Find the `static void _graphics_xxx()` function body
+    * Determine the appropriate Vulkan format corresponding to the C format that you have chosen ([see the documentation](https://datoviz.org/howto/graphics/#attribute-format))
+    * Add a line with `ATTR(DvzGraphicsXXXVertex, VK_FORMAT_R32G32_SFLOAT, attribute_name)`
+* _The following steps are optional: follow them if you want to add visual props to the visuals that depend on the graphics pipeline_
+* `vislib.c`:
+    * Go through all visuals involving the graphics
+    * For each visual, add a prop corresponding to the new attribute, for example: (make sure to modify the appropriate parameters when needed)
+
+        ```c
+        // Document the prop.
+        prop = dvz_visual_prop(visual, DVZ_PROP_XXX, 0, DVZ_DTYPE_VEC2, DVZ_SOURCE_TYPE_VERTEX, 0);
+        dvz_visual_prop_copy(prop, 1, offsetof(DvzGraphicsXXXVertex, attribute_name), DVZ_ARRAY_COPY_SINGLE, 1);
+        dvz_visual_prop_default(prop, (vec2){0, 1});
+        ```
+
+* `test_vislib.c`:
+    * Go through all tests involving the affected visuals, in `test_vislib_xxx()`
+    * Set the prop data for the new prop
