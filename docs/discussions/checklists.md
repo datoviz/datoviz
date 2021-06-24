@@ -202,3 +202,67 @@
 * `test_vislib.c`:
     * Go through all tests involving the affected visuals, in `test_vislib_xxx()`
     * Set the prop data for the new prop
+
+
+## Adding a new uniform parameter to an existing graphics pipeline
+
+* `graphics_xxx.yyy` (GLSL shader file, vertex or fragment shader):
+    * Choose an appropriate C type for the uniform, for example `vec2` (two single-precision floating-point values)
+    * **Make sure not to use a type with a 3 in it**, so as to avoid misalignment problems
+    * Add the uniform field to the Params structure
+    * If the params uniform is used in both the vertex and fragment shader, make sure both are updated accordingly
+* `graphics.h`:
+    * Find the relevant `DvzGraphicsXXXParams` structure
+    * Add the field with the same type and name, following the same order as in the shader
+* `graphics.c`:
+    * There's nothing to change in this file
+* _The following steps are optional: follow them if you want to add visual props to the visuals that depend on the graphics pipeline_
+* `vislib.c`:
+    * Go through all visuals involving the graphics
+    * For each visual, add a prop corresponding to the new uniform, for example: (make sure to modify the appropriate parameters when needed)
+
+        ```c
+        // Document the prop.
+        prop = dvz_visual_prop(visual, DVZ_PROP_XXX, 0, DVZ_DTYPE_VEC2, DVZ_SOURCE_TYPE_PARAM, 0);
+        dvz_visual_prop_copy(prop, 1, offsetof(DvzGraphicsXXXParams, uniform_name), DVZ_ARRAY_COPY_SINGLE, 1);
+        dvz_visual_prop_default(prop, (vec2){0, 1});
+        ```
+
+* `test_vislib.c`:
+    * Go through all tests involving the affected visuals, in `test_vislib_xxx()`
+    * Set the prop data for the new prop
+
+
+## Adding a new texture to an existing graphics pipeline
+
+* `graphics_xxx.frag` (GLSL fragment shader file):
+    * Choose an appropriate texture dimension (1D, 2D, 3D)
+    * Add a new binding slot in the shader by adding a line with `layout(binding = (USER_BINDING + 2)) uniform sampler2D my_tex;` (make sure to use the appropriate number in `USER_BINDING + N`)
+    * Make sure you use the `USER_BINDING` constant rather than hard-coding values: this is the number of bindings that are shared by all graphics pipelines in Datoviz
+    * Make sure that the N is strictly increasing in the consecutive `layout(binding=...)` lines (N=0, 1, 2, 3...)
+    * Use the new texture in the fragment shader, with a call to `texture(my_tex, in_uv)` (make sure to use the appropriate texel coordinates variable)
+* `graphics.h`:
+    * There's nothing to change in this file
+* `graphics.c`:
+    * Find the `static void _graphics_xxx()` function body
+    * Before the call to the `CREATE` macro, add a line with: (make sure to use the same number in `DVZ_USER_BINDING + N` as in the shader)
+
+        ```c
+        dvz_graphics_slot(graphics, DVZ_USER_BINDING + 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+        ```
+
+* _The following steps are optional: follow them if you want to add visual props to the visuals that depend on the graphics pipeline_
+* `vislib.c`:
+    * Go through all visuals involving the graphics
+    * For each visual, add a source corresponding to the new texture, for example: (make sure to modify the appropriate parameters when needed)
+
+        ```c
+        dvz_visual_source(                              // image
+            visual, DVZ_SOURCE_TYPE_IMAGE, 0,           // 0 for the first sampler in the shader, 1 for the next, and so on
+            DVZ_PIPELINE_GRAPHICS, 0,                   // 0 for the first graphics pipeline of the visual, 1 for the next, and so on
+            DVZ_USER_BINDING + 2, sizeof(uint8_t), 0);  // make sure to use the same +N as above
+        ```
+
+* `test_vislib.c`:
+    * Go through all tests involving the affected visuals, in `test_vislib_xxx()`
+    * Set the texture data
