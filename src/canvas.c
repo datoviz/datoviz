@@ -2006,7 +2006,11 @@ uint8_t* dvz_screenshot(DvzCanvas* canvas, bool has_alpha)
     dvz_gpu_wait(gpu);
 
     DvzImages* images = canvas->swapchain.images;
-    ASSERT(images != NULL);
+    if (images == NULL)
+    {
+        log_error("empty swapchain images, aborting screenshot creation");
+        return NULL;
+    }
 
     // Staging images.
     DvzImages staging = _staging_image(canvas, images->format, images->width, images->height);
@@ -2016,10 +2020,19 @@ uint8_t* dvz_screenshot(DvzCanvas* canvas, bool has_alpha)
     _copy_image_to_staging(canvas, images, &staging, (ivec3){0, 0, 0}, shape);
 
     // Make the screenshot.
-    uint8_t* rgba = calloc(staging.width * staging.height, (has_alpha ? 4 : 3) * sizeof(uint8_t));
+    VkDeviceSize size = staging.width * staging.height * (has_alpha ? 4 : 3) * sizeof(uint8_t);
+    uint8_t* rgba = calloc(size, 1);
     dvz_images_download(&staging, 0, sizeof(uint8_t), true, has_alpha, rgba);
     dvz_gpu_wait(gpu);
     dvz_images_destroy(&staging);
+
+    {
+        uint8_t* null = calloc(size, 1);
+        if (memcmp(rgba, null, size) == 0)
+            log_warn("screenshot was blank");
+        FREE(null);
+    }
+
     // NOTE: the caller MUST free the returned pointer.
     return rgba;
 }

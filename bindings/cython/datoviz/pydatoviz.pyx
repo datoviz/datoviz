@@ -1063,8 +1063,10 @@ cdef class Canvas:
 
     def close(self):
         if self._c_canvas is not NULL:
-            cv.dvz_canvas_to_close(self._c_canvas)
-            cv.dvz_app_run(self._c_canvas.app, 1)
+            logger.debug("Closing canvas")
+            cv.dvz_canvas_destroy(self._c_canvas)
+            # cv.dvz_canvas_to_close(self._c_canvas)
+            # cv.dvz_app_run(self._c_canvas.app, 1)
             self._c_canvas = NULL
 
     def _connect(self, evtype_py, f, param=0, cv.DvzEventMode mode=cv.DVZ_EVENT_MODE_SYNC):

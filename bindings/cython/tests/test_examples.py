@@ -41,7 +41,7 @@ def canvas_nofps(*args, **kwargs):
 
 
 def check_example(name):
-    glob = globals()
+    glob = globals().copy()
 
     # HACK: monkey patch of the run function to control the execution.
     glob['datoviz'].run = mock_run
