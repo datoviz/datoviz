@@ -44,10 +44,6 @@ void dvz_fifo_enqueue(DvzFifo* fifo, void* item)
     {
         ASSERT(fifo->items != NULL);
         ASSERT(size == fifo->capacity - 1);
-
-        // NOTE: we hard-code the maximum size of FIFO queues for now as the canvas has an array of
-        // fixed size for the event objects stored in the FIFO queue.
-        // TODO: fix this by making the canvas event array enlargeable.
         ASSERT(fifo->capacity <= DVZ_MAX_FIFO_CAPACITY);
 
         fifo->capacity *= 2;
@@ -118,11 +114,11 @@ void* dvz_fifo_dequeue(DvzFifo* fifo, bool wait)
         fifo->tail -= fifo->capacity;
 
     ASSERT(0 <= fifo->tail && fifo->tail < fifo->capacity);
-    pthread_mutex_unlock(&fifo->lock);
 
     if (fifo->head == fifo->tail)
         fifo->is_empty = true;
 
+    pthread_mutex_unlock(&fifo->lock);
     return item;
 }
 
@@ -186,4 +182,173 @@ void dvz_fifo_destroy(DvzFifo* fifo)
 
     ASSERT(fifo->items != NULL);
     FREE(fifo->items);
+}
+
+
+
+/*************************************************************************************************/
+/*  Dequeues                                                                                     */
+/*************************************************************************************************/
+
+static DvzFifo* _deq_fifo(DvzDeq* deq, uint32_t deq_idx)
+{
+    ASSERT(deq != NULL);
+    ASSERT(deq_idx < deq->queue_count);
+
+    DvzFifo* fifo = &deq->queues[deq_idx];
+    ASSERT(fifo != NULL);
+    ASSERT(fifo->capacity > 0);
+    return fifo;
+}
+
+
+
+// Call all callback functions registered with a deq_idx and type on a deq item.
+static void _deq_callbacks(DvzDeq* deq, DvzDeqItem item_s)
+{
+    ASSERT(deq != NULL);
+    ASSERT(item_s.item != NULL);
+    DvzDeqCallbackRegister* reg = NULL;
+    for (uint32_t i = 0; i < deq->callback_count; i++)
+    {
+        reg = &deq->callbacks[i];
+        ASSERT(reg != NULL);
+        if (reg->deq_idx == item_s.deq_idx && reg->type == item_s.type)
+        {
+            reg->callback(deq, item_s.item, reg->user_data);
+        }
+    }
+}
+
+
+
+DvzDeq dvz_deq(uint32_t nq)
+{
+    DvzDeq deq = {0};
+    deq.queue_count = nq;
+    for (uint32_t i = 0; i < nq; i++)
+        deq.queues[i] = dvz_fifo(DVZ_MAX_FIFO_CAPACITY);
+    return deq;
+}
+
+
+
+void dvz_deq_callback(
+    DvzDeq* deq, uint32_t deq_idx, int type, DvzDeqCallback callback, void* user_data)
+{
+    ASSERT(deq != NULL);
+    ASSERT(callback != NULL);
+
+    DvzDeqCallbackRegister* reg = &deq->callbacks[deq->callback_count++];
+    ASSERT(reg != NULL);
+
+    reg->deq_idx = deq_idx;
+    reg->type = type;
+    reg->callback = callback;
+    reg->user_data = user_data;
+}
+
+
+
+void dvz_deq_enqueue(DvzDeq* deq, uint32_t deq_idx, int type, void* item)
+{
+    ASSERT(deq != NULL);
+    ASSERT(deq_idx < deq->queue_count);
+    DvzFifo* fifo = _deq_fifo(deq, deq_idx);
+    DvzDeqItem* deq_item = calloc(1, sizeof(DvzDeqItem));
+    ASSERT(deq_item != NULL);
+    deq_item->deq_idx = deq_idx;
+    deq_item->type = type;
+    deq_item->item = item;
+    dvz_fifo_enqueue(fifo, deq_item);
+}
+
+
+
+void dvz_deq_enqueue_last(DvzDeq* deq, uint32_t deq_idx, int type, void* item)
+{
+    ASSERT(deq != NULL);
+    ASSERT(deq_idx < deq->queue_count);
+    DvzFifo* fifo = _deq_fifo(deq, deq_idx);
+    // TODO
+    log_error("not implemented yet");
+}
+
+
+
+void dvz_deq_discard(DvzDeq* deq, uint32_t deq_idx, uint32_t first, uint32_t count)
+{
+    ASSERT(deq != NULL);
+    ASSERT(deq_idx < deq->queue_count);
+    DvzFifo* fifo = _deq_fifo(deq, deq_idx);
+    // TODO
+    log_error("not implemented yet");
+}
+
+
+
+DvzDeqItem dvz_deq_peek_first(DvzDeq* deq, uint32_t deq_idx)
+{
+    ASSERT(deq != NULL);
+    ASSERT(deq_idx < deq->queue_count);
+    DvzFifo* fifo = _deq_fifo(deq, deq_idx);
+    return *((DvzDeqItem*)(fifo->items[fifo->tail]));
+}
+
+
+
+DvzDeqItem dvz_deq_peek_last(DvzDeq* deq, uint32_t deq_idx)
+{
+    ASSERT(deq != NULL);
+    ASSERT(deq_idx < deq->queue_count);
+    DvzFifo* fifo = _deq_fifo(deq, deq_idx);
+    int32_t last = fifo->head - 1;
+    if (last < 0)
+        last += fifo->capacity;
+    ASSERT(0 <= last && last < fifo->capacity);
+    return *((DvzDeqItem*)(fifo->items[last]));
+}
+
+
+
+DvzDeqItem dvz_deq_dequeue(DvzDeq* deq)
+{
+    ASSERT(deq != NULL);
+
+    DvzFifo* fifo = NULL;
+    DvzDeqItem* deq_item = NULL;
+    DvzDeqItem item_s = {0};
+
+    // Find the first non-empty FIFO queue, and dequeue it.
+    for (uint32_t deq_idx = 0; deq_idx < deq->queue_count; deq_idx++)
+    {
+        fifo = _deq_fifo(deq, deq_idx);
+        deq_item = dvz_fifo_dequeue(fifo, false);
+        if (deq_item != NULL)
+        {
+            item_s = *deq_item;
+            log_trace(
+                "dequeue item from FIFO queue #%d with type %d", item_s.deq_idx, item_s.type);
+            ASSERT(item_s.item != NULL);
+            FREE(deq_item);
+            break;
+        }
+    }
+
+    // Call the associated callbacks automatically.
+    if (item_s.item != NULL)
+    {
+        _deq_callbacks(deq, item_s);
+    }
+
+    return item_s;
+}
+
+
+
+void dvz_deq_destroy(DvzDeq* deq)
+{
+    ASSERT(deq != NULL);
+    for (uint32_t i = 0; i < deq->queue_count; i++)
+        dvz_fifo_destroy(&deq->queues[i]);
 }

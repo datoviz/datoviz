@@ -620,7 +620,7 @@ struct DvzCanvas
 
     // Event queue.
     DvzFifo event_queue;
-    DvzEvent events[DVZ_MAX_FIFO_CAPACITY];
+    // DvzEvent events[DVZ_MAX_FIFO_CAPACITY];
     DvzThread event_thread;
     bool enable_lock;
     atomic(DvzEventType, event_processing);
