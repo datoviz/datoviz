@@ -107,6 +107,14 @@ DVZ_EXPORT DvzFifo dvz_fifo(int32_t capacity);
 DVZ_EXPORT void dvz_fifo_enqueue(DvzFifo* fifo, void* item);
 
 /**
+ * Enqueue an object first in a queue.
+ *
+ * @param fifo the FIFO queue
+ * @param item the pointer to the object to enqueue
+ */
+DVZ_EXPORT void dvz_fifo_enqueue_first(DvzFifo* fifo, void* item);
+
+/**
  * Dequeue an object from a queue.
  *
  * @param fifo the FIFO queue
@@ -160,9 +168,9 @@ DVZ_EXPORT void dvz_deq_callback(
 
 DVZ_EXPORT void dvz_deq_enqueue(DvzDeq* deq, uint32_t deq_idx, int type, void* item);
 
-DVZ_EXPORT void dvz_deq_enqueue_last(DvzDeq* deq, uint32_t deq_idx, int type, void* item);
+DVZ_EXPORT void dvz_deq_enqueue_first(DvzDeq* deq, uint32_t deq_idx, int type, void* item);
 
-DVZ_EXPORT void dvz_deq_discard(DvzDeq* deq, uint32_t deq_idx, uint32_t count);
+DVZ_EXPORT void dvz_deq_discard(DvzDeq* deq, uint32_t deq_idx, int max_size);
 
 DVZ_EXPORT DvzDeqItem dvz_deq_peek_first(DvzDeq* deq, uint32_t deq_idx);
 

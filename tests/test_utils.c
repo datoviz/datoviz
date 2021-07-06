@@ -306,6 +306,23 @@ int test_utils_fifo_discard(TestContext* tc)
 
 
 
+int test_utils_fifo_first(TestContext* tc)
+{
+    DvzFifo fifo = dvz_fifo(8);
+    dvz_fifo_enqueue(&fifo, (int[]){1});
+    dvz_fifo_enqueue(&fifo, (int[]){2});
+    dvz_fifo_enqueue(&fifo, (int[]){3});
+
+    AT(*((int*)dvz_fifo_dequeue(&fifo, false)) == 1);
+    dvz_fifo_enqueue_first(&fifo, (int[]){4});
+    AT(*((int*)dvz_fifo_dequeue(&fifo, false)) == 4);
+
+    dvz_fifo_destroy(&fifo);
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Deq tests                                                                                    */
 /*************************************************************************************************/

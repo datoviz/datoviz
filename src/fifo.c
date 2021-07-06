@@ -26,11 +26,8 @@ DvzFifo dvz_fifo(int32_t capacity)
 
 
 
-void dvz_fifo_enqueue(DvzFifo* fifo, void* item)
+static void _fifo_resize(DvzFifo* fifo)
 {
-    ASSERT(fifo != NULL);
-    pthread_mutex_lock(&fifo->lock);
-
     // Old size
     int size = fifo->tail - fifo->head;
     if (size < 0)
@@ -67,6 +64,18 @@ void dvz_fifo_enqueue(DvzFifo* fifo, void* item)
         ASSERT(fifo->tail - fifo->head > 0);
         ASSERT(fifo->tail - fifo->head == size);
     }
+}
+
+
+
+void dvz_fifo_enqueue(DvzFifo* fifo, void* item)
+{
+    ASSERT(fifo != NULL);
+    pthread_mutex_lock(&fifo->lock);
+
+    // Resize the FIFO queue if needed.
+    _fifo_resize(fifo);
+
     ASSERT((fifo->tail + 1) % fifo->capacity != fifo->head);
     fifo->items[fifo->tail] = item;
     fifo->tail++;
@@ -75,6 +84,35 @@ void dvz_fifo_enqueue(DvzFifo* fifo, void* item)
     fifo->is_empty = false;
 
     ASSERT(0 <= fifo->tail && fifo->tail < fifo->capacity);
+    pthread_cond_signal(&fifo->cond);
+    pthread_mutex_unlock(&fifo->lock);
+}
+
+
+
+void dvz_fifo_enqueue_first(DvzFifo* fifo, void* item)
+{
+    ASSERT(fifo != NULL);
+    pthread_mutex_lock(&fifo->lock);
+
+    // Resize the FIFO queue if needed.
+    _fifo_resize(fifo);
+
+    ASSERT((fifo->tail + 1) % fifo->capacity != fifo->head);
+    fifo->head--;
+    if (fifo->head < 0)
+        fifo->head += fifo->capacity;
+    ASSERT(0 <= fifo->head && fifo->head < fifo->capacity);
+
+    fifo->items[fifo->head] = item;
+    fifo->is_empty = false;
+
+    ASSERT(0 <= fifo->tail && fifo->tail < fifo->capacity);
+    int size = fifo->tail - fifo->head;
+    if (size < 0)
+        size += fifo->capacity;
+    ASSERT(0 <= size && size < fifo->capacity);
+
     pthread_cond_signal(&fifo->cond);
     pthread_mutex_unlock(&fifo->lock);
 }
@@ -265,24 +303,27 @@ void dvz_deq_enqueue(DvzDeq* deq, uint32_t deq_idx, int type, void* item)
 
 
 
-void dvz_deq_enqueue_last(DvzDeq* deq, uint32_t deq_idx, int type, void* item)
+void dvz_deq_enqueue_first(DvzDeq* deq, uint32_t deq_idx, int type, void* item)
 {
     ASSERT(deq != NULL);
     ASSERT(deq_idx < deq->queue_count);
     DvzFifo* fifo = _deq_fifo(deq, deq_idx);
-    // TODO
-    log_error("not implemented yet");
+    DvzDeqItem* deq_item = calloc(1, sizeof(DvzDeqItem));
+    ASSERT(deq_item != NULL);
+    deq_item->deq_idx = deq_idx;
+    deq_item->type = type;
+    deq_item->item = item;
+    dvz_fifo_enqueue_first(fifo, deq_item);
 }
 
 
 
-void dvz_deq_discard(DvzDeq* deq, uint32_t deq_idx, uint32_t count)
+void dvz_deq_discard(DvzDeq* deq, uint32_t deq_idx, int max_size)
 {
     ASSERT(deq != NULL);
     ASSERT(deq_idx < deq->queue_count);
     DvzFifo* fifo = _deq_fifo(deq, deq_idx);
-    // TODO
-    log_error("not implemented yet");
+    dvz_fifo_discard(fifo, max_size);
 }
 
 
