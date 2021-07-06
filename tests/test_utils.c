@@ -191,8 +191,8 @@ int test_utils_fifo_1(TestContext* tc)
     AT(fifo.is_empty);
     dvz_fifo_enqueue(&fifo, &item);
     AT(!fifo.is_empty);
-    ASSERT(fifo.head == 1);
-    ASSERT(fifo.tail == 0);
+    ASSERT(fifo.tail == 1);
+    ASSERT(fifo.head == 0);
     uint8_t* data = dvz_fifo_dequeue(&fifo, true);
     AT(fifo.is_empty);
     ASSERT(*data == item);

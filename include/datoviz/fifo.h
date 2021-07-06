@@ -42,7 +42,7 @@ typedef void (*DvzDeqCallback)(DvzDeq* deq, void* item, void* user_data);
 
 struct DvzFifo
 {
-    int32_t head, tail;
+    int32_t tail, head;
     int32_t capacity;
     void** items;
     void* user_data;

@@ -1657,15 +1657,15 @@ int dvz_event_pending(DvzCanvas* canvas, DvzEventType type)
     DvzFifo* fifo = &canvas->event_queue;
     pthread_mutex_lock(&fifo->lock);
     int i, j;
-    if (fifo->tail <= fifo->head)
-    {
-        i = fifo->tail;
-        j = fifo->head;
-    }
-    else
+    if (fifo->head <= fifo->tail)
     {
         i = fifo->head;
         j = fifo->tail;
+    }
+    else
+    {
+        i = fifo->tail;
+        j = fifo->head;
     }
     ASSERT(i <= j);
     // Count the pending events with the given type.

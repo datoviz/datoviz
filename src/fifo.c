@@ -32,7 +32,7 @@ void dvz_fifo_enqueue(DvzFifo* fifo, void* item)
     pthread_mutex_lock(&fifo->lock);
 
     // Old size
-    int size = fifo->head - fifo->tail;
+    int size = fifo->tail - fifo->head;
     if (size < 0)
         size += fifo->capacity;
 
@@ -40,7 +40,7 @@ void dvz_fifo_enqueue(DvzFifo* fifo, void* item)
     int old_cap = fifo->capacity;
 
     // Resize if queue is full.
-    if ((fifo->head + 1) % fifo->capacity == fifo->tail)
+    if ((fifo->tail + 1) % fifo->capacity == fifo->head)
     {
         ASSERT(fifo->items != NULL);
         ASSERT(size == fifo->capacity - 1);
@@ -51,30 +51,30 @@ void dvz_fifo_enqueue(DvzFifo* fifo, void* item)
         REALLOC(fifo->items, (uint32_t)fifo->capacity * sizeof(void*));
     }
 
-    if ((fifo->head + 1) % fifo->capacity == fifo->tail)
+    if ((fifo->tail + 1) % fifo->capacity == fifo->head)
     {
         // Here, the queue buffer has been resized, but the new space should be used instead of the
-        // part of the buffer before the tail.
+        // part of the buffer before the head.
 
-        ASSERT(fifo->head > 0);
+        ASSERT(fifo->tail > 0);
         ASSERT(old_cap < fifo->capacity);
-        memcpy(&fifo->items[old_cap], &fifo->items[0], (uint32_t)fifo->head * sizeof(void*));
+        memcpy(&fifo->items[old_cap], &fifo->items[0], (uint32_t)fifo->tail * sizeof(void*));
 
-        // Move the head to the new position.
-        fifo->head += old_cap;
+        // Move the tail to the new position.
+        fifo->tail += old_cap;
 
         // Check new size.
-        ASSERT(fifo->head - fifo->tail > 0);
-        ASSERT(fifo->head - fifo->tail == size);
+        ASSERT(fifo->tail - fifo->head > 0);
+        ASSERT(fifo->tail - fifo->head == size);
     }
-    ASSERT((fifo->head + 1) % fifo->capacity != fifo->tail);
-    fifo->items[fifo->head] = item;
-    fifo->head++;
-    if (fifo->head >= fifo->capacity)
-        fifo->head -= fifo->capacity;
+    ASSERT((fifo->tail + 1) % fifo->capacity != fifo->head);
+    fifo->items[fifo->tail] = item;
+    fifo->tail++;
+    if (fifo->tail >= fifo->capacity)
+        fifo->tail -= fifo->capacity;
     fifo->is_empty = false;
 
-    ASSERT(0 <= fifo->head && fifo->head < fifo->capacity);
+    ASSERT(0 <= fifo->tail && fifo->tail < fifo->capacity);
     pthread_cond_signal(&fifo->cond);
     pthread_mutex_unlock(&fifo->lock);
 }
@@ -90,12 +90,12 @@ void* dvz_fifo_dequeue(DvzFifo* fifo, bool wait)
     if (wait)
     {
         log_trace("waiting for the queue to be non-empty");
-        while (fifo->head == fifo->tail)
+        while (fifo->tail == fifo->head)
             pthread_cond_wait(&fifo->cond, &fifo->lock);
     }
 
     // Empty queue.
-    if (fifo->head == fifo->tail)
+    if (fifo->tail == fifo->head)
     {
         // log_trace("FIFO queue was empty");
         // Don't forget to unlock the mutex before exiting this function.
@@ -104,18 +104,18 @@ void* dvz_fifo_dequeue(DvzFifo* fifo, bool wait)
         return NULL;
     }
 
-    ASSERT(0 <= fifo->tail && fifo->tail < fifo->capacity);
+    ASSERT(0 <= fifo->head && fifo->head < fifo->capacity);
 
-    // log_trace("dequeue item, head %d, tail %d", fifo->head, fifo->tail);
-    void* item = fifo->items[fifo->tail];
+    // log_trace("dequeue item, tail %d, head %d", fifo->tail, fifo->head);
+    void* item = fifo->items[fifo->head];
 
-    fifo->tail++;
-    if (fifo->tail >= fifo->capacity)
-        fifo->tail -= fifo->capacity;
+    fifo->head++;
+    if (fifo->head >= fifo->capacity)
+        fifo->head -= fifo->capacity;
 
-    ASSERT(0 <= fifo->tail && fifo->tail < fifo->capacity);
+    ASSERT(0 <= fifo->head && fifo->head < fifo->capacity);
 
-    if (fifo->head == fifo->tail)
+    if (fifo->tail == fifo->head)
         fifo->is_empty = true;
 
     pthread_mutex_unlock(&fifo->lock);
@@ -128,8 +128,8 @@ int dvz_fifo_size(DvzFifo* fifo)
 {
     ASSERT(fifo != NULL);
     pthread_mutex_lock(&fifo->lock);
-    // log_debug("head %d tail %d", fifo->head, fifo->tail);
-    int size = fifo->head - fifo->tail;
+    // log_debug("tail %d head %d", fifo->tail, fifo->head);
+    int size = fifo->tail - fifo->head;
     if (size < 0)
         size += fifo->capacity;
     ASSERT(0 <= size && size <= fifo->capacity);
@@ -145,7 +145,7 @@ void dvz_fifo_discard(DvzFifo* fifo, int max_size)
     if (max_size == 0)
         return;
     pthread_mutex_lock(&fifo->lock);
-    int size = fifo->head - fifo->tail;
+    int size = fifo->tail - fifo->head;
     if (size < 0)
         size += fifo->capacity;
     ASSERT(0 <= size && size <= fifo->capacity);
@@ -153,9 +153,9 @@ void dvz_fifo_discard(DvzFifo* fifo, int max_size)
     {
         log_trace(
             "discarding %d items in the FIFO queue which is getting overloaded", size - max_size);
-        fifo->tail = fifo->head - max_size;
-        if (fifo->tail < 0)
-            fifo->tail += fifo->capacity;
+        fifo->head = fifo->tail - max_size;
+        if (fifo->head < 0)
+            fifo->head += fifo->capacity;
     }
     pthread_mutex_unlock(&fifo->lock);
 }
@@ -166,8 +166,8 @@ void dvz_fifo_reset(DvzFifo* fifo)
 {
     ASSERT(fifo != NULL);
     pthread_mutex_lock(&fifo->lock);
-    fifo->head = 0;
     fifo->tail = 0;
+    fifo->head = 0;
     pthread_cond_signal(&fifo->cond);
     pthread_mutex_unlock(&fifo->lock);
 }
@@ -292,7 +292,7 @@ DvzDeqItem dvz_deq_peek_first(DvzDeq* deq, uint32_t deq_idx)
     ASSERT(deq != NULL);
     ASSERT(deq_idx < deq->queue_count);
     DvzFifo* fifo = _deq_fifo(deq, deq_idx);
-    return *((DvzDeqItem*)(fifo->items[fifo->tail]));
+    return *((DvzDeqItem*)(fifo->items[fifo->head]));
 }
 
 
@@ -302,7 +302,7 @@ DvzDeqItem dvz_deq_peek_last(DvzDeq* deq, uint32_t deq_idx)
     ASSERT(deq != NULL);
     ASSERT(deq_idx < deq->queue_count);
     DvzFifo* fifo = _deq_fifo(deq, deq_idx);
-    int32_t last = fifo->head - 1;
+    int32_t last = fifo->tail - 1;
     if (last < 0)
         last += fifo->capacity;
     ASSERT(0 <= last && last < fifo->capacity);
