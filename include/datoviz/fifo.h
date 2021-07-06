@@ -162,7 +162,7 @@ DVZ_EXPORT void dvz_deq_enqueue(DvzDeq* deq, uint32_t deq_idx, int type, void* i
 
 DVZ_EXPORT void dvz_deq_enqueue_last(DvzDeq* deq, uint32_t deq_idx, int type, void* item);
 
-DVZ_EXPORT void dvz_deq_discard(DvzDeq* deq, uint32_t deq_idx, uint32_t first, uint32_t count);
+DVZ_EXPORT void dvz_deq_discard(DvzDeq* deq, uint32_t deq_idx, uint32_t count);
 
 DVZ_EXPORT DvzDeqItem dvz_deq_peek_first(DvzDeq* deq, uint32_t deq_idx);
 

@@ -251,7 +251,7 @@ int test_utils_fifo_2(TestContext* tc)
 
 
 
-int test_utils_fifo_3(TestContext* tc)
+int test_utils_fifo_resize(TestContext* tc)
 {
     DvzFifo fifo = dvz_fifo(8);
     uint32_t numbers[256] = {0};
@@ -272,6 +272,34 @@ int test_utils_fifo_3(TestContext* tc)
         AT(*n == i + 32);
         i++;
     }
+    dvz_fifo_destroy(&fifo);
+    return 0;
+}
+
+
+
+int test_utils_fifo_discard(TestContext* tc)
+{
+    DvzFifo fifo = dvz_fifo(8);
+    uint32_t numbers[8] = {0};
+    for (uint32_t i = 0; i < 7; i++)
+    {
+        numbers[i] = i;
+        dvz_fifo_enqueue(&fifo, &numbers[i]);
+    }
+    AT(fifo.capacity == 8);
+
+    // First item is 0.
+    AT(dvz_fifo_size(&fifo) == 7);
+    AT(*((int*)dvz_fifo_dequeue(&fifo, false)) == 0);
+
+    // Discard 2 elements (from size 7 to 5).
+    dvz_fifo_discard(&fifo, 5);
+
+    // First item is 2.
+    AT(dvz_fifo_size(&fifo) == 5);
+    AT(*((int*)dvz_fifo_dequeue(&fifo, false)) == 2);
+
     dvz_fifo_destroy(&fifo);
     return 0;
 }

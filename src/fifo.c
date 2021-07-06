@@ -276,7 +276,7 @@ void dvz_deq_enqueue_last(DvzDeq* deq, uint32_t deq_idx, int type, void* item)
 
 
 
-void dvz_deq_discard(DvzDeq* deq, uint32_t deq_idx, uint32_t first, uint32_t count)
+void dvz_deq_discard(DvzDeq* deq, uint32_t deq_idx, uint32_t count)
 {
     ASSERT(deq != NULL);
     ASSERT(deq_idx < deq->queue_count);
