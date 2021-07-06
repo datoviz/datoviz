@@ -372,7 +372,12 @@ int test_utils_deq_1(TestContext* tc)
     item = dvz_deq_dequeue(&deq);
     AT(item.deq_idx == 0);
     AT(item.type == 10);
+    AT(item.item != NULL);
     AT(data == 4);
+
+    // Supbsequent dequeues are empty.
+    item = dvz_deq_dequeue(&deq);
+    AT(item.item == NULL);
 
     dvz_deq_destroy(&deq);
     return 0;
