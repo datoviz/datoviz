@@ -5,7 +5,6 @@
 ### `dvz_app()`
 
 ### `dvz_canvas()`
-### `dvz_canvas_offscreen()`
 ### `dvz_canvas_dpi_scaling()`
 
 

@@ -120,7 +120,8 @@ then
         FILENAME=`ls datoviz*.whl`
         echo $FILENAME
         cp $FILENAME "$FILENAME~"
-        DYLD_LIBRARY_PATH=../../../build/ delocate-wheel $FILENAME -e libvulkan -w .
+        # broken: remove libvulkan from the wheel?? "-e libvulkan"
+        DYLD_LIBRARY_PATH=../../../build/ delocate-wheel $FILENAME -w .
         cd ../../../
 
     # TODO: Windows
@@ -143,7 +144,8 @@ then
         # Build a container based on a manylinux image, + Vulkan and other things needed by the
         # datoviz build script.
         sudo docker run --rm -v $ROOT_DIR:/io datoviz_wheel /io/wheel.sh && \
-        sudo chown -R `users`:`users` bindings/cython/dist
+        USER=`users | awk '{print $1}'`
+        sudo chown -R $USER:$USER bindings/cython/dist
 
     fi
 fi

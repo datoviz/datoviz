@@ -37,6 +37,9 @@ def check_screenshot(filename):
         shutil.copy(filename, filename_ref)
         return True
     img_new = imageio.imread(filename)
+    if img_new.sum() == 0:
+        logger.warning("Screenshot is empty")
+        return False
     img_ref = imageio.imread(filename_ref)
     if img_new.shape != img_ref.shape:
         logger.debug(f"Image size is different: {img_new.shape} != {img_ref.shape}")
@@ -60,9 +63,9 @@ def check_canvas(ca, test_name, output_dir=None):
         return
 
     # Run and save the screenshot.
-    app().run(10, screenshot=str(screenshot))
-
-    # Close the canvas.
+    # app().run(10, screenshot=str(screenshot))
+    app().run(n_frames=5)
+    ca.screenshot(str(screenshot))
     ca.close()
 
     # Check the screenshot.

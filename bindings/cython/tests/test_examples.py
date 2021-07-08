@@ -25,7 +25,6 @@ CUR_DIR = Path(__file__).parent
 logger = logging.getLogger('datoviz')
 
 
-
 # -------------------------------------------------------------------------------------------------
 # Test utils
 # -------------------------------------------------------------------------------------------------
@@ -36,11 +35,13 @@ def mock_run(*args, **kwargs):
 
 def canvas_nofps(*args, **kwargs):
     kwargs.pop('show_fps', None)
+    if not os.environ.get('DVZ_DEBUG', None):
+        kwargs['offscreen'] = True
     return canvas_real(*args, **kwargs)
 
 
 def check_example(name):
-    glob = globals()
+    glob = globals().copy()
 
     # HACK: monkey patch of the run function to control the execution.
     glob['datoviz'].run = mock_run
@@ -51,7 +52,6 @@ def check_example(name):
     c = ret.get('c', None)
     assert c
     check_canvas(c, f'py_{name}', output_dir=SCREENSHOTS_PATH)
-
 
 
 # -------------------------------------------------------------------------------------------------

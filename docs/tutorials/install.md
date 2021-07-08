@@ -1,9 +1,63 @@
 # Installation
 
-!!! note
-    We are in the process of creating easy-to-install Python wheel packages for all operating systems. In the meantime, you need to compile Datoviz from source.
+## How to install Datoviz?
 
-## How to compile Datoviz?
+!!! note
+    Binary packages are still experimental. They are currently uploaded on GitHub releases, but not yet on PyPI. They will, once they have been sufficiently tested. In the meantime, please open an issue on GitHub if you have any problem.
+
+=== "Linux"
+
+    1. If you don't already have a **Python distribution**, install one. For example, [download the miniconda installer](https://docs.conda.io/en/latest/miniconda.html#linux-installers) for Linux 64-bit and install it.
+    2. Open a terminal.
+    3. Type the following to install Datoviz:
+
+        ```bash
+        pip install http://dl.datoviz.org/v0.1.0-alpha.0/datoviz-0.1.0a0-cp38-cp38-manylinux_2_24_x86_64.whl
+        ```
+
+    4. Type the following to test Datoviz:
+
+        ```bash
+        python -c "import datoviz; datoviz.demo()"
+        ```
+
+
+=== "macOS"
+
+    1. If you don't already have a **Python distribution**, install one. For example, [download the miniconda pkg installer](https://docs.conda.io/en/latest/miniconda.html#macosx-installers) for macOS and install it.
+    2. Open a terminal.
+    3. Type the following to install Datoviz:
+
+        ```bash
+        pip install http://dl.datoviz.org/v0.1.0-alpha.0/datoviz-0.1.0a0-cp38-cp38-macosx_10_9_x86_64.whl
+        ```
+
+    4. Type the following to test Datoviz:
+
+        ```bash
+        python -c "import datoviz; datoviz.demo()"
+        ```
+
+
+=== "Windows"
+
+    1. If you don't already have a **Python distribution**, install one. For example, [download the miniconda installer](https://docs.conda.io/en/latest/miniconda.html#windows-installers) for Windows 64-bit and install it.
+    2. Open an Anaconda prompt.
+    3. Type the following to install Datoviz:
+
+        ```bash
+        pip install http://dl.datoviz.org/v0.1.0-alpha.0/datoviz-0.1.0a0-cp38-cp38-win_amd64.whl
+        ```
+
+    4. Type the following to test Datoviz:
+
+        ```bash
+        python -c "import datoviz; datoviz.demo()"
+        ```
+
+
+
+## How to build Datoviz from source?
 
 Datoviz is made of:
 
@@ -23,7 +77,7 @@ The philosophy of Datoviz is to **implement all the logic and functionality in C
 
         ```bash
         sudo apt install build-essential cmake ninja-build \
-            xcb libx11-xcb-dev libglfw3-dev patchelf
+            xcb libx11-xcb-dev libxcursor-dev libxi-dev patchelf
         ```
 
     3. Install the optional dependencies:

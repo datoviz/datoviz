@@ -13,7 +13,7 @@
 static void _transfer_enqueue(DvzFifo* fifo, DvzTransfer transfer)
 {
     ASSERT(fifo->capacity > 0);
-    ASSERT(0 <= fifo->head && fifo->head < fifo->capacity);
+    ASSERT(0 <= fifo->tail && fifo->tail < fifo->capacity);
     DvzTransfer* tr = (DvzTransfer*)calloc(1, sizeof(DvzTransfer));
     *tr = transfer;
     dvz_fifo_enqueue(fifo, tr);

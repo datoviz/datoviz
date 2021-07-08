@@ -627,7 +627,7 @@ def _validate_data(dt, nc, data):
 
 
 
-cdef _canvas_flags(show_fps=None, pick=None, high_dpi=None):
+cdef _canvas_flags(show_fps=None, pick=None, high_dpi=None, offscreen=None):
     """Make the canvas flags from the Python keyword arguments to the canvas creation function."""
     cdef int flags = 0
     flags |= cv.DVZ_CANVAS_FLAGS_IMGUI
@@ -637,6 +637,8 @@ cdef _canvas_flags(show_fps=None, pick=None, high_dpi=None):
         flags |= cv.DVZ_CANVAS_FLAGS_PICK
     if high_dpi:
         flags |= cv.DVZ_CANVAS_FLAGS_DPI_SCALE_200
+    if offscreen:
+        flags |= cv.DVZ_CANVAS_FLAGS_OFFSCREEN
     return flags
 
 
@@ -705,6 +707,7 @@ cdef class App:
             if video:
                 sv = video.encode('UTF-8')
                 autorun.video[:len(sv) + 1] = sv
+                autorun.screenshot[0] = 0
                 logger.debug(f"Autorun video: {sv}")
             cv.dvz_autorun_setup(self._c_app, autorun)
 
@@ -763,13 +766,14 @@ cdef class GPU:
             bint show_fps=False,
             bint pick=False,
             bint high_dpi=False,
+            bint offscreen=False,
             clear_color=None,
         ):
         """Create a new canvas."""
 
         # Canvas flags.
         cdef int flags = 0
-        flags = _canvas_flags(show_fps=show_fps, pick=pick, high_dpi=high_dpi)
+        flags = _canvas_flags(show_fps=show_fps, pick=pick, high_dpi=high_dpi, offscreen=offscreen)
 
         # Create the canvas using the Datoviz C API.
         c_canvas = cv.dvz_canvas(self._c_gpu, width, height, flags)
@@ -1063,8 +1067,10 @@ cdef class Canvas:
 
     def close(self):
         if self._c_canvas is not NULL:
-            cv.dvz_canvas_to_close(self._c_canvas)
-            cv.dvz_app_run(self._c_canvas.app, 1)
+            logger.debug("Closing canvas")
+            cv.dvz_canvas_destroy(self._c_canvas)
+            # cv.dvz_canvas_to_close(self._c_canvas)
+            # cv.dvz_app_run(self._c_canvas.app, 1)
             self._c_canvas = NULL
 
     def _connect(self, evtype_py, f, param=0, cv.DvzEventMode mode=cv.DVZ_EVENT_MODE_SYNC):

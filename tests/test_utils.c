@@ -149,6 +149,27 @@ int test_utils_container(TestContext* tc)
 
 
 
+static void* _thread_callback(void* user_data)
+{
+    ASSERT(user_data != NULL);
+    dvz_sleep(10);
+    *((int*)user_data) = 42;
+    log_debug("from thread");
+    return NULL;
+}
+
+int test_utils_thread(TestContext* tc)
+{
+    int data = 0;
+    DvzThread thread = dvz_thread(_thread_callback, &data);
+    AT(data == 0);
+    dvz_thread_join(&thread);
+    AT(data == 42);
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  FIFO queue                                                                                   */
 /*************************************************************************************************/
@@ -191,8 +212,8 @@ int test_utils_fifo_1(TestContext* tc)
     AT(fifo.is_empty);
     dvz_fifo_enqueue(&fifo, &item);
     AT(!fifo.is_empty);
-    ASSERT(fifo.head == 1);
-    ASSERT(fifo.tail == 0);
+    ASSERT(fifo.tail == 1);
+    ASSERT(fifo.head == 0);
     uint8_t* data = dvz_fifo_dequeue(&fifo, true);
     AT(fifo.is_empty);
     ASSERT(*data == item);
@@ -251,7 +272,7 @@ int test_utils_fifo_2(TestContext* tc)
 
 
 
-int test_utils_fifo_3(TestContext* tc)
+int test_utils_fifo_resize(TestContext* tc)
 {
     DvzFifo fifo = dvz_fifo(8);
     uint32_t numbers[256] = {0};
@@ -273,6 +294,146 @@ int test_utils_fifo_3(TestContext* tc)
         i++;
     }
     dvz_fifo_destroy(&fifo);
+    return 0;
+}
+
+
+
+int test_utils_fifo_discard(TestContext* tc)
+{
+    DvzFifo fifo = dvz_fifo(8);
+    uint32_t numbers[8] = {0};
+    for (uint32_t i = 0; i < 7; i++)
+    {
+        numbers[i] = i;
+        dvz_fifo_enqueue(&fifo, &numbers[i]);
+    }
+    AT(fifo.capacity == 8);
+
+    // First item is 0.
+    AT(dvz_fifo_size(&fifo) == 7);
+    AT(*((int*)dvz_fifo_dequeue(&fifo, false)) == 0);
+
+    // Discard 2 elements (from size 7 to 5).
+    dvz_fifo_discard(&fifo, 5);
+
+    // First item is 2.
+    AT(dvz_fifo_size(&fifo) == 5);
+    AT(*((int*)dvz_fifo_dequeue(&fifo, false)) == 2);
+
+    dvz_fifo_destroy(&fifo);
+    return 0;
+}
+
+
+
+int test_utils_fifo_first(TestContext* tc)
+{
+    DvzFifo fifo = dvz_fifo(8);
+    dvz_fifo_enqueue(&fifo, (int[]){1});
+    dvz_fifo_enqueue(&fifo, (int[]){2});
+    dvz_fifo_enqueue(&fifo, (int[]){3});
+
+    AT(*((int*)dvz_fifo_dequeue(&fifo, false)) == 1);
+    dvz_fifo_enqueue_first(&fifo, (int[]){4});
+    AT(*((int*)dvz_fifo_dequeue(&fifo, false)) == 4);
+
+    dvz_fifo_destroy(&fifo);
+    return 0;
+}
+
+
+
+/*************************************************************************************************/
+/*  Deq tests                                                                                    */
+/*************************************************************************************************/
+
+static void _deq_1_callback(DvzDeq* deq, void* item, void* user_data)
+{
+    ASSERT(deq != NULL);
+    ASSERT(item != NULL);
+    ASSERT(user_data != NULL);
+    int* data = (int*)user_data;
+    *data = *((int*)item);
+}
+
+int test_utils_deq_1(TestContext* tc)
+{
+    DvzDeq deq = dvz_deq(2);
+    DvzDeqItem item = {0};
+
+    int data = 0;
+    dvz_deq_callback(&deq, 0, 0, _deq_1_callback, &data);
+    AT(data == 0);
+
+    // Enqueue in the queue with a callback.
+    dvz_deq_enqueue(&deq, 0, 0, (int[]){2});
+    item = dvz_deq_dequeue(&deq, false);
+    AT(item.deq_idx == 0);
+    AT(item.type == 0);
+    AT(data == 2);
+
+    // Enqueue in the queue without a callback.
+    data = 0;
+    dvz_deq_enqueue(&deq, 1, 10, (int[]){2});
+    item = dvz_deq_dequeue(&deq, false);
+    AT(item.deq_idx == 1);
+    AT(item.type == 10);
+    AT(data == 0);
+
+    // Enqueue in the queue with a callback.
+    dvz_deq_enqueue(&deq, 0, 10, (int[]){3});
+    item = dvz_deq_dequeue(&deq, false);
+    AT(item.deq_idx == 0);
+    AT(item.type == 10);
+    AT(data == 0);
+
+    dvz_deq_callback(&deq, 0, 10, _deq_1_callback, &data);
+    dvz_deq_enqueue(&deq, 0, 10, (int[]){4});
+    item = dvz_deq_dequeue(&deq, false);
+    AT(item.deq_idx == 0);
+    AT(item.type == 10);
+    AT(item.item != NULL);
+    AT(data == 4);
+
+    // Supbsequent dequeues are empty.
+    item = dvz_deq_dequeue(&deq, false);
+    AT(item.item == NULL);
+
+    dvz_deq_destroy(&deq);
+    return 0;
+}
+
+
+
+int test_utils_deq_2(TestContext* tc)
+{
+    DvzDeq deq = dvz_deq(2);
+    DvzDeqItem item = {0};
+
+    // Enqueue in the queue with a callback.
+    dvz_deq_enqueue(&deq, 0, 0, (int[]){1});
+    dvz_deq_enqueue(&deq, 1, 0, (int[]){2});
+    dvz_deq_enqueue(&deq, 0, 10, (int[]){3});
+    dvz_deq_enqueue(&deq, 1, 10, (int[]){4});
+
+    // First queue.
+    item = dvz_deq_peek_first(&deq, 0);
+    AT(item.type == 0);
+    AT(*(int*)(item.item) == 1);
+    item = dvz_deq_peek_last(&deq, 0);
+    AT(item.type == 10);
+    AT(*(int*)(item.item) == 3);
+
+    // Second queue.
+    item = dvz_deq_peek_first(&deq, 1);
+    AT(item.type == 0);
+    AT(*(int*)(item.item) == 2);
+    item = dvz_deq_peek_last(&deq, 1);
+    AT(item.type == 10);
+    AT(*(int*)(item.item) == 4);
+
+    dvz_deq_destroy(&deq);
     return 0;
 }
 

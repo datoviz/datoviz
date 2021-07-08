@@ -27,7 +27,9 @@ IF "%arg%"=="testwheel" (
     rmdir /s /q venv
     python -m venv venv
     venv\Scripts\python -m pip install --upgrade pip
-    venv\Scripts\pip install datoviz*.whl
+    REM venv\Scripts\pip install datoviz*.whl
+    REM Find the whl package and install it
+    for /r %%f in (datoviz*.whl) do venv\Scripts\pip install "%%f"
     venv\Scripts\python -c "from datoviz import canvas, run; canvas().gui_demo(); run()"
     cd ..\..\..
 )

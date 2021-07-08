@@ -36,7 +36,8 @@ class _Formatter(logging.Formatter):
         # Only keep the first character in the level name.
         record.levelname = record.levelname[0]
         filename = op.splitext(op.basename(record.pathname))[0]
-        record.caller = '{:>18s}:{:04d}:'.format(filename, record.lineno).ljust(22)
+        record.caller = '{:>18s}:{:04d}:'.format(
+            filename, record.lineno).ljust(22)
         message = super(_Formatter, self).format(record)
         color_code = {'D': '90', 'I': '0', 'W': '33',
                       'E': '31'}.get(record.levelname, '7')
@@ -94,6 +95,9 @@ def destroy():
 # IPython event loop integration
 # -------------------------------------------------------------------------------------------------
 
+_SLEEP = .001
+
+
 def inputhook(context):
     global _APP, _EXITING, _EVENT_LOOP_INTEGRATION
     if _EXITING:
@@ -107,7 +111,7 @@ def inputhook(context):
         _APP.next_frame()
         # HACK: prevent the app.is_running flag to be reset to False at the end of next_frame()
         _APP._set_running(True)
-        time.sleep(0.005)
+        time.sleep(_SLEEP)
 
 
 def enable_ipython():
@@ -154,7 +158,7 @@ def run_asyncio(n_frames=0, **kwargs):
         logger.debug("start datoviz asyncio event loop")
         i = 0
         while app().next_frame() and (n_frames == 0 or i < n_frames):
-            await asyncio.sleep(0.005)
+            await asyncio.sleep(_SLEEP)
             i += 1
 
     task = _ASYNCIO_LOOP.create_task(_event_loop())

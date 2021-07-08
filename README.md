@@ -16,6 +16,28 @@ Datoviz is currently being developed mostly by [Cyrille Rossant](https://cyrille
 *Credits: mouse brain volume: [Allen SDK](https://alleninstitute.github.io/AllenSDK/). France: [Natural Earth](https://www.naturalearthdata.com/). Molecule: [Crystal structure of S. pyogenes Cas9 from PDB](https://www.rcsb.org/structure/4cmp) (thanks to Eric for conversion to OBJ mesh). Earth: [Pixabay](https://pixabay.com/fr/illustrations/terre-planet-monde-globe-espace-1617121/). Raster plot: IBL. 3D human brain: [Anneke Alkemade et al. 2020](https://www.frontiersin.org/articles/10.3389/fnana.2020.536838/full), thanks to Pierre-Louis Bazin and Julia Huntenburg.*
 
 
+## Code example
+
+```python
+import numpy as np
+from datoviz import canvas, run, colormap
+
+panel = canvas(show_fps=True).scene().panel()
+visual = panel.visual('marker')
+
+N = 10_000
+pos = np.random.randn(N, 3)
+ms = np.random.uniform(low=2, high=35, size=N)
+color = colormap(np.random.rand(N), cmap='viridis')
+
+visual.data('pos', pos)
+visual.data('ms', ms)
+visual.data('color', color)
+
+run()
+```
+
+
 ## Documentation
 
 The documentation is divided into:

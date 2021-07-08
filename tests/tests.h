@@ -13,9 +13,14 @@
 
 // Test utils.
 int test_utils_container(TestContext*);
+int test_utils_thread(TestContext*);
 int test_utils_fifo_1(TestContext*);
 int test_utils_fifo_2(TestContext*);
-int test_utils_fifo_3(TestContext*);
+int test_utils_fifo_resize(TestContext*);
+int test_utils_fifo_discard(TestContext*);
+int test_utils_fifo_first(TestContext*);
+int test_utils_deq_1(TestContext*);
+int test_utils_deq_2(TestContext*);
 
 int test_utils_array_1(TestContext*);
 int test_utils_array_2(TestContext*);
@@ -145,6 +150,7 @@ int test_vislib_volume_slice(TestContext*);
 
 // Test scene.
 int test_scene_empty(TestContext*);
+int test_scene_empty_visuals(TestContext*);
 int test_scene_single(TestContext*);
 int test_scene_double(TestContext*);
 int test_scene_different_size(TestContext*);
@@ -165,9 +171,14 @@ int test_scene_dynamic_axes(TestContext*);
 static TestCase TEST_CASES[] = {
     // Utils.
     CASE_FIXTURE(NONE, test_utils_container),        //
+    CASE_FIXTURE(NONE, test_utils_thread),           //
     CASE_FIXTURE(NONE, test_utils_fifo_1),           //
     CASE_FIXTURE(NONE, test_utils_fifo_2),           //
-    CASE_FIXTURE(NONE, test_utils_fifo_3),           //
+    CASE_FIXTURE(NONE, test_utils_fifo_resize),      //
+    CASE_FIXTURE(NONE, test_utils_fifo_discard),     //
+    CASE_FIXTURE(NONE, test_utils_fifo_first),       //
+    CASE_FIXTURE(NONE, test_utils_deq_1),            //
+    CASE_FIXTURE(NONE, test_utils_deq_2),            //
     CASE_FIXTURE(NONE, test_utils_array_1),          //
     CASE_FIXTURE(NONE, test_utils_array_2),          //
     CASE_FIXTURE(NONE, test_utils_array_3),          //
@@ -291,6 +302,7 @@ static TestCase TEST_CASES[] = {
 
     // Scene.
     CASE_FIXTURE(CANVAS, test_scene_empty),                 //
+    CASE_FIXTURE(CANVAS, test_scene_empty_visuals),         //
     CASE_FIXTURE(CANVAS, test_scene_single),                //
     CASE_FIXTURE(CANVAS, test_scene_double),                //
     CASE_FIXTURE(CANVAS, test_scene_different_size),        //

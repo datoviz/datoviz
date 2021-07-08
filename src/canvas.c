@@ -203,7 +203,8 @@ static void backend_event_callbacks(DvzCanvas* canvas)
     switch (canvas->app->backend)
     {
     case DVZ_BACKEND_GLFW:;
-        ASSERT(canvas->window != NULL);
+        if (canvas->window == NULL)
+            return;
         GLFWwindow* w = canvas->window->backend_window;
 
         // The canvas pointer will be available to callback functions.
@@ -796,8 +797,14 @@ _canvas(DvzGpu* gpu, uint32_t width, uint32_t height, bool offscreen, bool overl
 DvzCanvas* dvz_canvas(DvzGpu* gpu, uint32_t width, uint32_t height, int flags)
 {
     ASSERT(gpu != NULL);
-    bool offscreen = gpu->app->backend == DVZ_BACKEND_GLFW ? false : true;
-    bool overlay = (flags & DVZ_CANVAS_FLAGS_IMGUI) > 0;
+    bool offscreen = ((flags & DVZ_CANVAS_FLAGS_OFFSCREEN) != 0) ||
+                     (gpu->app->backend == DVZ_BACKEND_GLFW ? false : true);
+    bool overlay = (flags & DVZ_CANVAS_FLAGS_IMGUI) != 0;
+    if (offscreen && overlay)
+    {
+        log_warn("overlay is not supported in offscreen mode, disabling it");
+        overlay = false;
+    }
 
 #if SWIFTSHADER
     log_warn("swiftshader mode is active, forcing offscreen rendering");
@@ -958,18 +965,6 @@ void dvz_canvas_buffers(
     uint32_t idx = canvas->swapchain.img_idx;
     ASSERT(idx < br.count);
     dvz_buffer_upload(br.buffer, br.offsets[idx] + offset, size, data);
-}
-
-
-
-/*************************************************************************************************/
-/*  Offscreen                                                                                    */
-/*************************************************************************************************/
-
-DvzCanvas* dvz_canvas_offscreen(DvzGpu* gpu, uint32_t width, uint32_t height, int flags)
-{
-    // NOTE: no overlay for now in offscreen canvas
-    return _canvas(gpu, width, height, true, false, 0);
 }
 
 
@@ -1662,15 +1657,15 @@ int dvz_event_pending(DvzCanvas* canvas, DvzEventType type)
     DvzFifo* fifo = &canvas->event_queue;
     pthread_mutex_lock(&fifo->lock);
     int i, j;
-    if (fifo->tail <= fifo->head)
-    {
-        i = fifo->tail;
-        j = fifo->head;
-    }
-    else
+    if (fifo->head <= fifo->tail)
     {
         i = fifo->head;
         j = fifo->tail;
+    }
+    else
+    {
+        i = fifo->tail;
+        j = fifo->head;
     }
     ASSERT(i <= j);
     // Count the pending events with the given type.
@@ -2011,7 +2006,11 @@ uint8_t* dvz_screenshot(DvzCanvas* canvas, bool has_alpha)
     dvz_gpu_wait(gpu);
 
     DvzImages* images = canvas->swapchain.images;
-    ASSERT(images != NULL);
+    if (images == NULL)
+    {
+        log_error("empty swapchain images, aborting screenshot creation");
+        return NULL;
+    }
 
     // Staging images.
     DvzImages staging = _staging_image(canvas, images->format, images->width, images->height);
@@ -2021,10 +2020,19 @@ uint8_t* dvz_screenshot(DvzCanvas* canvas, bool has_alpha)
     _copy_image_to_staging(canvas, images, &staging, (ivec3){0, 0, 0}, shape);
 
     // Make the screenshot.
-    uint8_t* rgba = calloc(staging.width * staging.height, (has_alpha ? 4 : 3) * sizeof(uint8_t));
+    VkDeviceSize size = staging.width * staging.height * (has_alpha ? 4 : 3) * sizeof(uint8_t);
+    uint8_t* rgba = calloc(size, 1);
     dvz_images_download(&staging, 0, sizeof(uint8_t), true, has_alpha, rgba);
     dvz_gpu_wait(gpu);
     dvz_images_destroy(&staging);
+
+    {
+        uint8_t* null = calloc(size, 1);
+        if (memcmp(rgba, null, size) == 0)
+            log_warn("screenshot was blank");
+        FREE(null);
+    }
+
     // NOTE: the caller MUST free the returned pointer.
     return rgba;
 }
@@ -2229,7 +2237,7 @@ static void _canvas_frame_logic(DvzCanvas* canvas)
     ASSERT(canvas != NULL);
     ASSERT(canvas->app != NULL);
     ASSERT(canvas->gpu != NULL);
-    log_trace("start frame %u", canvas->frame_idx);
+    // log_trace("start frame %u", canvas->frame_idx);
 
     // Update the global and local clocks.
     // These calls update canvas->clock.elapsed and canvas->clock.interval, the latter is
@@ -2447,16 +2455,17 @@ int dvz_canvas_frame(DvzCanvas* canvas)
     }
 
     // Destroy the canvas if needed.
-    if (canvas->window != NULL)
+    // Check canvas.to_close, and whether the user as requested to close the window.
+    if (atomic_load(&canvas->to_close) ||
+        (canvas->window != NULL &&
+         backend_window_should_close(app->backend, canvas->window->backend_window)))
     {
-        // Check canvas.to_close, and whether the user as requested to close the window.
-        if (atomic_load(&canvas->to_close) ||
-            backend_window_should_close(app->backend, canvas->window->backend_window))
+        canvas->obj.status = DVZ_OBJECT_STATUS_NEED_DESTROY;
+        if (canvas->window != NULL)
             canvas->window->obj.status = DVZ_OBJECT_STATUS_NEED_DESTROY;
-
-        if (canvas->window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
-            canvas->obj.status = DVZ_OBJECT_STATUS_NEED_DESTROY;
     }
+    if (canvas->window != NULL && canvas->window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
+        canvas->obj.status = DVZ_OBJECT_STATUS_NEED_DESTROY;
 
     if (canvas->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
     {
@@ -2471,8 +2480,6 @@ int dvz_canvas_frame(DvzCanvas* canvas)
         // Destroy the canvas.
         dvz_canvas_destroy(canvas);
 
-        // dvz_container_iter(&iterator);
-        // continue;
         return 1;
     }
 
@@ -2486,7 +2493,6 @@ int dvz_canvas_frame(DvzCanvas* canvas)
 
     canvas->frame_idx++;
 
-    // n_canvas_active++;
     return 0;
 }
 
@@ -2593,16 +2599,19 @@ int dvz_app_run(DvzApp* app, uint64_t frame_count)
         _process_gpu_transfers(app);
 
         // Close the application if all canvases have been closed.
-        if (n_canvas_active == 0)
+        if (n_canvas_active == 0 && frame_count != 1)
         {
             log_trace("no more active canvas, closing the app");
             break;
         }
     }
-    log_trace("end main loop");
 
-    dvz_app_wait(app);
-    app->is_running = false;
+    if (frame_count != 1)
+    {
+        log_trace("end main loop");
+        dvz_app_wait(app);
+        app->is_running = false;
+    }
 
     return (int)n_canvas_active;
 }

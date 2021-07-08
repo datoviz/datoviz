@@ -2643,7 +2643,7 @@ void dvz_fences_wait(DvzFences* fences, uint32_t idx)
     ASSERT(idx < fences->count);
     if (fences->fences[idx] != VK_NULL_HANDLE)
     {
-        log_trace("wait for fence %u", fences->fences[idx]);
+        // log_trace("wait for fence %u", fences->fences[idx]);
         // dvz_fences_ready(fences, idx));
         vkWaitForFences(fences->gpu->device, 1, &fences->fences[idx], VK_TRUE, 1000000000);
         // log_trace("fence wait finished!");
@@ -3179,9 +3179,9 @@ void dvz_submit_send(DvzSubmit* submit, uint32_t cmd_idx, DvzFences* fences, uin
         dvz_fences_wait(fences, fence_idx);
         dvz_fences_reset(fences, fence_idx);
     }
-    log_trace(
-        "submit queue with %d cmd bufs (%d) and signal fence %d", submit->commands_count, cmd_idx,
-        vfence);
+    // log_trace(
+    //     "submit queue with %d cmd bufs (%d) and signal fence %d", submit->commands_count,
+    //     cmd_idx, vfence);
     VK_CHECK_RESULT(vkQueueSubmit(submit->gpu->queues.queues[queue_idx], 1, &submit_info, vfence));
 
     // log_trace("submit done");

@@ -64,6 +64,7 @@ typedef enum
     DVZ_CANVAS_FLAGS_IMGUI = 0x0001,
     DVZ_CANVAS_FLAGS_FPS = 0x0003, // NOTE: 1 bit for ImGUI, 1 bit for FPS
     DVZ_CANVAS_FLAGS_PICK = 0x0004,
+    DVZ_CANVAS_FLAGS_OFFSCREEN = 0x0008,
 
     DVZ_CANVAS_FLAGS_DPI_SCALE_050 = 0x1000,
     DVZ_CANVAS_FLAGS_DPI_SCALE_100 = 0x2000,
@@ -619,7 +620,7 @@ struct DvzCanvas
 
     // Event queue.
     DvzFifo event_queue;
-    DvzEvent events[DVZ_MAX_FIFO_CAPACITY];
+    // DvzEvent events[DVZ_MAX_FIFO_CAPACITY];
     DvzThread event_thread;
     bool enable_lock;
     atomic(DvzEventType, event_processing);
@@ -654,17 +655,6 @@ struct DvzCanvas
  * @param flags the creation flags for the canvas
  */
 DVZ_EXPORT DvzCanvas* dvz_canvas(DvzGpu* gpu, uint32_t width, uint32_t height, int flags);
-
-/**
- * Create an offscreen canvas.
- *
- * @param gpu the GPU to use for swapchain presentation
- * @param width the canvas width, in pixels
- * @param height the canvas height, in pixels
- * @param flags the creation flags for the canvas
- */
-DVZ_EXPORT DvzCanvas*
-dvz_canvas_offscreen(DvzGpu* gpu, uint32_t width, uint32_t height, int flags);
 
 /**
  * Recreate the canvas GPU resources and swapchain.
