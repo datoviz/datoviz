@@ -149,6 +149,27 @@ int test_utils_container(TestContext* tc)
 
 
 
+static void* _thread_callback(void* user_data)
+{
+    ASSERT(user_data != NULL);
+    dvz_sleep(10);
+    *((int*)user_data) = 42;
+    log_debug("from thread");
+    return NULL;
+}
+
+int test_utils_thread(TestContext* tc)
+{
+    int data = 0;
+    DvzThread thread = dvz_thread(_thread_callback, &data);
+    AT(data == 0);
+    dvz_thread_join(&thread);
+    AT(data == 42);
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  FIFO queue                                                                                   */
 /*************************************************************************************************/

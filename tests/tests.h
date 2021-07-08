@@ -13,6 +13,7 @@
 
 // Test utils.
 int test_utils_container(TestContext*);
+int test_utils_thread(TestContext*);
 int test_utils_fifo_1(TestContext*);
 int test_utils_fifo_2(TestContext*);
 int test_utils_fifo_resize(TestContext*);
@@ -170,6 +171,7 @@ int test_scene_dynamic_axes(TestContext*);
 static TestCase TEST_CASES[] = {
     // Utils.
     CASE_FIXTURE(NONE, test_utils_container),        //
+    CASE_FIXTURE(NONE, test_utils_thread),           //
     CASE_FIXTURE(NONE, test_utils_fifo_1),           //
     CASE_FIXTURE(NONE, test_utils_fifo_2),           //
     CASE_FIXTURE(NONE, test_utils_fifo_resize),      //
