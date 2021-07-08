@@ -176,7 +176,7 @@ DVZ_EXPORT DvzDeqItem dvz_deq_peek_first(DvzDeq* deq, uint32_t deq_idx);
 
 DVZ_EXPORT DvzDeqItem dvz_deq_peek_last(DvzDeq* deq, uint32_t deq_idx);
 
-DVZ_EXPORT DvzDeqItem dvz_deq_dequeue(DvzDeq* deq);
+DVZ_EXPORT DvzDeqItem dvz_deq_dequeue(DvzDeq* deq, bool wait);
 
 DVZ_EXPORT void dvz_deq_destroy(DvzDeq* deq);
 

@@ -352,7 +352,7 @@ DvzDeqItem dvz_deq_peek_last(DvzDeq* deq, uint32_t deq_idx)
 
 
 
-DvzDeqItem dvz_deq_dequeue(DvzDeq* deq)
+DvzDeqItem dvz_deq_dequeue(DvzDeq* deq, bool wait)
 {
     ASSERT(deq != NULL);
 
@@ -364,7 +364,7 @@ DvzDeqItem dvz_deq_dequeue(DvzDeq* deq)
     for (uint32_t deq_idx = 0; deq_idx < deq->queue_count; deq_idx++)
     {
         fifo = _deq_fifo(deq, deq_idx);
-        deq_item = dvz_fifo_dequeue(fifo, false);
+        deq_item = dvz_fifo_dequeue(fifo, wait);
         if (deq_item != NULL)
         {
             item_s = *deq_item;
