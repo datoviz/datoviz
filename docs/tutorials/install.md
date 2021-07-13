@@ -246,6 +246,16 @@ The philosophy of Datoviz is to **implement all the logic and functionality in C
         ```
 
 
+## How to update Datoviz when it was compiled from source?
+
+```
+git pull
+./manage.sh build
+./manage.sh parseheaders
+./manage.sh cython
+```
+
+
 ## What are the dependencies of Datoviz?
 
 **Mandatory dependencies** are required for compilation:
