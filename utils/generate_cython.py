@@ -76,8 +76,7 @@ FUNCTIONS = (
     'dvz_gui',  # all dvz_gui*() functions
     'dvz_imgui_demo',
     'dvz_mesh',
-    'dvz_panel_at',
-    'dvz_panel_transpose',
+    'dvz_panel',  # all dvz_panel_*() functions
     'dvz_process_transfers',
     'dvz_prop_get',
     'dvz_scene_destroy',
@@ -186,6 +185,8 @@ def _generate_function(func):
     name = func['name']
     args_s = []
     out = func.get('returns', None) or 'void'
+    if out == 'bool':
+        out = 'bint'
     for arg in func['args']:
         const = arg.get('const', None)
         dtype = arg.get('dtype', None)

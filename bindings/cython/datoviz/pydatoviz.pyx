@@ -1223,6 +1223,9 @@ cdef class Panel:
         cv.dvz_transform(self._c_panel, source, pos_in, target, pos_out)
         return pos_out[0], pos_out[1]
 
+    def link_to(self, Panel panel):
+        cv.dvz_panel_link(&self._c_scene.grid, self._c_panel, panel._c_panel)
+
 
 
 # -------------------------------------------------------------------------------------------------

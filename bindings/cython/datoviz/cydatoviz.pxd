@@ -1373,9 +1373,39 @@ cdef extern from "<datoviz/datoviz.h>":
 
     DvzMesh dvz_mesh_obj(const char* file_path)
 
+    DvzPanel* dvz_panel(DvzGrid* grid, uint32_t row, uint32_t col)
+
+    void dvz_panel_update(DvzPanel* panel)
+
+    void dvz_panel_margins(DvzPanel* panel, vec4 margins)
+
+    void dvz_panel_unit(DvzPanel* panel, DvzPanelSizeUnit unit)
+
+    void dvz_panel_mode(DvzPanel* panel, DvzPanelMode mode)
+
+    void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual)
+
+    void dvz_panel_pos(DvzPanel* panel, float x, float y)
+
+    void dvz_panel_size(DvzPanel* panel, DvzGridAxis axis, float size)
+
+    void dvz_panel_span(DvzPanel* panel, DvzGridAxis axis, uint32_t span)
+
+    void dvz_panel_cell(DvzPanel* panel, uint32_t row, uint32_t col)
+
+    void dvz_panel_transform(DvzPanel* panel, DvzTransformType transform)
+
     void dvz_panel_transpose(DvzPanel* panel, DvzCDSTranspose transpose)
 
+    bint dvz_panel_contains(DvzPanel* panel, vec2 screen_pos)
+
     DvzPanel* dvz_panel_at(DvzGrid* grid, vec2 screen_pos)
+
+    void dvz_panel_link(DvzGrid* grid, DvzPanel* source, DvzPanel* target)
+
+    void dvz_panel_destroy(DvzPanel* panel)
+
+    DvzViewport dvz_panel_viewport(DvzPanel* panel)
 
     DvzScene* dvz_scene(DvzCanvas* canvas, uint32_t n_rows, uint32_t n_cols)
 
