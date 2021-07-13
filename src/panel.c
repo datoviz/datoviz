@@ -463,6 +463,20 @@ DvzPanel* dvz_panel_at(DvzGrid* grid, vec2 screen_pos)
 
 
 
+void dvz_panel_link(DvzGrid* grid, DvzPanel* source, DvzPanel* target)
+{
+    ASSERT(grid != NULL);
+    ASSERT(source != NULL);
+    ASSERT(target != NULL);
+
+    DvzPanelLink* link = &grid->links[grid->link_count++];
+    link->grid = grid;
+    link->source = source;
+    link->target = target;
+}
+
+
+
 void dvz_panel_destroy(DvzPanel* panel)
 {
     ASSERT(panel != NULL);

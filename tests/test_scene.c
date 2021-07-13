@@ -188,6 +188,29 @@ int test_scene_different_controllers(TestContext* tc)
 
 
 
+int test_scene_link(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    ASSERT(canvas != NULL);
+
+    DvzScene* scene = dvz_scene(canvas, 1, 3);
+
+    DvzPanel* p0 = dvz_scene_panel(scene, 0, 0, DVZ_CONTROLLER_ARCBALL, 0);
+    DvzPanel* p1 = dvz_scene_panel(scene, 0, 1, DVZ_CONTROLLER_ARCBALL, 0);
+    DvzPanel* p2 = dvz_scene_panel(scene, 0, 2, DVZ_CONTROLLER_ARCBALL, 0);
+
+    _add_visual(p0);
+    _add_visual(p1);
+    _add_visual(p2);
+
+    dvz_panel_link(&scene->grid, p0, p1);
+    dvz_panel_link(&scene->grid, p0, p2);
+
+    return _scene_run(scene, "link");
+}
+
+
+
 /*************************************************************************************************/
 /*  Dynamic scene tests                                                                          */
 /*************************************************************************************************/
