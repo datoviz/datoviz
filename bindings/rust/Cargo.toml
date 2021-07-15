@@ -1,5 +1,5 @@
 [package]
-name = "datoviz_rust_demo"
+name = "datoviz"
 version = "0.0.1"
 authors = ["Me <me@me.com>"]
 edition = "2018"
