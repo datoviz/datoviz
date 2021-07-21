@@ -102,6 +102,7 @@ int test_canvas_triangle_append(TestContext*);
 // Test interact.
 int test_interact_panzoom(TestContext*);
 int test_interact_arcball(TestContext*);
+int test_interact_turntable(TestContext*);
 int test_interact_camera(TestContext*);
 
 // Test graphics.
@@ -255,6 +256,7 @@ static TestCase TEST_CASES[] = {
     // Interact.
     CASE_FIXTURE(CANVAS, test_interact_panzoom), //
     CASE_FIXTURE(CANVAS, test_interact_arcball), //
+    CASE_FIXTURE(CANVAS, test_interact_turntable),  //
     CASE_FIXTURE(CANVAS, test_interact_camera),  //
 
     // Graphics.
