@@ -49,9 +49,13 @@ DvzInteract dvz_interact_builtin(DvzCanvas* canvas, DvzInteractType type)
         interact.callback = _arcball_callback;
         break;
 
+    case DVZ_INTERACT_TURNTABLE:
+        interact.u.t = _turntable(canvas);
+        interact.callback = _turntable_callback;
+        break;
+
     case DVZ_INTERACT_FLY:
     case DVZ_INTERACT_FPS:
-    case DVZ_INTERACT_TURNTABLE:
         interact.u.c = _camera(canvas, type);
         interact.callback = _camera_callback;
         break;

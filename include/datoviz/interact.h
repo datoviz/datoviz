@@ -31,6 +31,7 @@
 /*************************************************************************************************/
 
 typedef struct DvzPanzoom DvzPanzoom;
+typedef struct DvzTurntable DvzTurntable;
 typedef struct DvzArcball DvzArcball;
 typedef struct DvzCamera DvzCamera;
 typedef struct DvzInteract DvzInteract;
@@ -101,6 +102,23 @@ struct DvzCamera
 
 
 /*************************************************************************************************/
+/*  Turntable                                                                                    */
+/*************************************************************************************************/
+
+struct DvzTurntable
+{
+    DvzCanvas* canvas;
+    vec3 axis;
+    float angle;
+    mat4 translate;
+    mat4 mat;
+    mat4 inv_model;
+    DvzCamera camera;
+};
+
+
+
+/*************************************************************************************************/
 /*  Arcball                                                                                      */
 /*************************************************************************************************/
 
@@ -123,6 +141,7 @@ struct DvzArcball
 union DvzInteractUnion
 {
     DvzPanzoom p;
+    DvzTurntable t;
     DvzArcball a;
     DvzCamera c;
 };

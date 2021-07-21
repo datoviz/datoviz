@@ -571,4 +571,128 @@ static void _arcball_callback(
 
 
 
+/*************************************************************************************************/
+/*  Turntable                                                                                    */
+/*************************************************************************************************/
+
+static void _turntable_from_angle(DvzTurntable* turntable, float angle)
+{
+    ASSERT(turntable != NULL);
+    turntable->angle = angle;
+    glm_rotate_make(turntable->mat, turntable->angle, turntable->axis);
+}
+
+static void _turntable_reset(DvzTurntable* turntable)
+{
+    ASSERT(turntable != NULL);
+    _turntable_from_angle(turntable, 0);
+
+    glm_mat4_identity(turntable->translate);
+    glm_mat4_identity(turntable->mat);
+    glm_mat4_identity(turntable->inv_model);
+
+    glm_vec3_copy(DVZ_CAMERA_EYE, turntable->camera.eye);
+}
+
+static DvzTurntable _turntable(DvzCanvas* canvas)
+{
+    DvzTurntable turntable = {0};
+    turntable.canvas = canvas;
+    _turntable_reset(&turntable);
+    return turntable;
+}
+
+static void _turntable_rotate(DvzTurntable* turntable, vec2 cur_pos, vec2 last_pos)
+{
+    ASSERT(turntable != NULL);
+    // TODO: improve this.
+    float angle = .1 * (last_pos[1] - last_pos[0]);
+    _turntable_from_angle(turntable, angle);
+}
+
+static void _turntable_pan(DvzTurntable* turntable, vec2 cur_pos, vec2 last_pos)
+{
+    ASSERT(turntable != NULL);
+    vec3 delta = {0};
+    glm_vec2_sub(last_pos, cur_pos, delta);
+    glm_vec2_scale(delta, -.5 * turntable->camera.eye[2], delta);
+    // Convert translation vector back to original coordinate system.
+    glm_mat4_mulv3(turntable->inv_model, delta, 1, delta);
+    glm_translate(turntable->translate, delta);
+}
+
+static void _turntable_update_mvp(DvzViewport viewport, DvzTurntable* turntable, DvzMVP* mvp)
+{
+    ASSERT(turntable != NULL);
+    glm_mat4_copy(turntable->mat, mvp->model);
+    glm_mat4_inv(mvp->model, turntable->inv_model);
+    glm_mat4_mul(mvp->model, turntable->translate, mvp->model);
+    dvz_mvp_camera(viewport, turntable->camera.eye, (vec3){0, 0, 0}, (vec2){0.1, 100}, mvp);
+}
+
+static void _turntable_callback(
+    DvzInteract* interact, DvzViewport viewport, DvzMouse* mouse, DvzKeyboard* keyboard)
+{
+    ASSERT(interact != NULL);
+    ASSERT(interact->type == DVZ_INTERACT_TURNTABLE);
+    DvzTurntable* turntable = &interact->u.t;
+    bool is_active = true;
+
+    bool cur_active = _pos_in_viewport(viewport, mouse->cur_pos);
+    bool press_active = _pos_in_viewport(viewport, mouse->press_pos);
+
+    // Rotate.
+    if (press_active && mouse->cur_state == DVZ_MOUSE_STATE_DRAG &&
+        mouse->button == DVZ_MOUSE_BUTTON_LEFT)
+    {
+        // // TODO
+        // // Restrict the panzoom updates to cases when the mouse press position was in the panel.
+        // if (dvz_panel_from_mouse(scene, mouse->press_pos) != panel)
+        //     return;
+        // panel->status = DVZ_PANEL_STATUS_ACTIVE;
+
+        _turntable_rotate(turntable, interact->mouse_local.cur_pos, interact->mouse_local.last_pos);
+        is_active = true;
+    }
+
+    // Pan.
+    if (press_active && mouse->cur_state == DVZ_MOUSE_STATE_DRAG &&
+        mouse->button == DVZ_MOUSE_BUTTON_RIGHT)
+    {
+        _turntable_pan(turntable, interact->mouse_local.cur_pos, interact->mouse_local.last_pos);
+        is_active = true;
+    }
+
+    // Zoom.
+    if (cur_active && mouse->cur_state == DVZ_MOUSE_STATE_WHEEL)
+    {
+        // // TODO
+        // // Restrict the panzoom updates to cases when the mouse press position was in the panel.
+        // if (dvz_panel_from_mouse(scene, mouse->cur_pos) != panel)
+        //     return;
+        // panel->status = DVZ_PANEL_STATUS_ACTIVE;
+        glm_vec3_scale(turntable->camera.eye, exp(.1 * mouse->wheel_delta[1]), turntable->camera.eye);
+        is_active = true;
+    }
+
+    // Reset with double-click.
+    if (mouse->cur_state == DVZ_MOUSE_STATE_DOUBLE_CLICK)
+    {
+        _turntable_reset(turntable);
+        // panel->status = DVZ_PANEL_STATUS_RESET;
+        is_active = true;
+    }
+
+    if (is_active)
+        _turntable_update_mvp(viewport, turntable, &interact->mvp);
+    interact->is_active = is_active;
+
+    // if (mouse->cur_state == DVZ_MOUSE_STATE_INACTIVE)
+    // {
+    //     panel->status = DVZ_PANEL_STATUS_NONE;
+    // }
+}
+
+
+
 #endif

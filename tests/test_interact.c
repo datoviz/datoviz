@@ -173,8 +173,8 @@ int test_interact_turntable(TestContext* context)
     dvz_event_mouse_move(canvas, (vec2){10, 10}, 0);
     dvz_event_mouse_press(canvas, DVZ_MOUSE_BUTTON_LEFT, 0);
     AT(mouse->cur_state == DVZ_MOUSE_STATE_INACTIVE);
-    glm_mat4_print(interact.u.a.mat, stdout);
-    // AC(glm_mat4_trace(interact.u.a.mat), 4, 1e-6);
+    // glm_mat4_print(interact.u.a.mat, stdout);
+    AC(glm_mat4_trace(interact.u.a.mat), 4, 1e-6);
 
     dvz_event_mouse_move(canvas, (vec2){100, 20}, 0);
     AT(mouse->cur_state == DVZ_MOUSE_STATE_DRAG);
@@ -193,8 +193,8 @@ int test_interact_turntable(TestContext* context)
     dvz_event_mouse_double_click(canvas, (vec2){10, 10}, DVZ_MOUSE_BUTTON_LEFT, 0);
     dvz_interact_update(&interact, canvas->viewport, &canvas->mouse, &canvas->keyboard);
     dvz_interact_update(&interact, canvas->viewport, &canvas->mouse, &canvas->keyboard);
-    glm_mat4_print(interact.u.a.mat, stdout);
-    // AC(glm_mat4_trace(interact.u.a.mat), 4, 1e-6);
+    // glm_mat4_print(interact.u.a.mat, stdout);
+    AC(glm_mat4_trace(interact.u.a.mat), 4, 1e-6);
 
 
     dvz_interact_destroy(&interact);
