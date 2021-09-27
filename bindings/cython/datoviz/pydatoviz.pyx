@@ -1009,8 +1009,11 @@ cdef class Canvas:
         if self._scene is not None:
             logger.debug("reusing existing Scene object, discarding rows and cols")
             return self._scene
+        else:
+            logger.debug("creating new scene")
         s = Scene()
         s.create(self, self._c_canvas, rows, cols)
+        self._scene = s
         return s
 
     def screenshot(self, unicode path):

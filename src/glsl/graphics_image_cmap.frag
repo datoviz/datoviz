@@ -20,7 +20,8 @@ void main()
     CLIP
 
     // Fetch the value from the texture.
-    float value = texture(tex, in_uv).r; // we assume the texture format rescales in [0, 1]
+    // NOTE: we assume the texture format rescales in [0, 1] or [-1, 1]
+    float value = texture(tex, in_uv).r;
     float v0 = params.vrange.x;
     float v1 = params.vrange.y;
 
