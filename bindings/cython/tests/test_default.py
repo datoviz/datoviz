@@ -248,6 +248,20 @@ def test_subplots(c):
 
 
 
+def test_link(c):
+    s = c.scene(1, 2)
+    p0, p1 = s.panel(col=0, controller='arcball'), s.panel(col=1, controller='arcball')
+    p0.link_to(p1)
+    n = 100
+    for p in (p0, p1):
+        nr.seed(0)
+        v = p.visual('point', depth_test=True)
+        v.data('pos', nr.normal(size=(n, 3)))
+        v.data('ms', np.array([20]))
+        v.data('color', colormap(nr.rand(n)))
+
+
+
 def test_event_loop():
     c = canvas(show_fps=True)
     for event_loop in ('native', 'asyncio'):

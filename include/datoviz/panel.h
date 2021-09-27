@@ -17,6 +17,7 @@
 #define DVZ_GRID_MAX_COLS         64
 #define DVZ_GRID_MAX_ROWS         64
 #define DVZ_MAX_PANELS            1024
+#define DVZ_MAX_LINKS             16
 #define DVZ_MAX_VISUALS_PER_PANEL 64
 
 // Group index of the set of panel DvzCommands objects.
@@ -63,6 +64,7 @@ typedef enum
 
 typedef struct DvzGrid DvzGrid;
 typedef struct DvzPanel DvzPanel;
+typedef struct DvzPanelLink DvzPanelLink;
 typedef struct DvzController DvzController;
 
 
@@ -107,6 +109,15 @@ struct DvzPanel
 
 
 
+struct DvzPanelLink
+{
+    DvzGrid* grid;
+    DvzPanel* source;
+    DvzPanel* target;
+};
+
+
+
 struct DvzGrid
 {
     DvzCanvas* canvas;
@@ -117,6 +128,9 @@ struct DvzGrid
     float ys[DVZ_GRID_MAX_ROWS];
     double widths[DVZ_GRID_MAX_COLS];
     double heights[DVZ_GRID_MAX_ROWS];
+
+    uint32_t link_count;
+    DvzPanelLink links[DVZ_MAX_LINKS];
 
     DvzContainer panels;
 };
@@ -271,6 +285,15 @@ DVZ_EXPORT bool dvz_panel_contains(DvzPanel* panel, vec2 screen_pos);
  * @returns the panel
  */
 DVZ_EXPORT DvzPanel* dvz_panel_at(DvzGrid* grid, vec2 screen_pos);
+
+/**
+ * Add a link between two panels.
+ *
+ * @param grid the grid
+ * @param source the source panel
+ * @param source the source panel
+ */
+DVZ_EXPORT void dvz_panel_link(DvzGrid* grid, DvzPanel* source, DvzPanel* target);
 
 /**
  * Destroy a panel and all visuals inside it.

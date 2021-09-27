@@ -721,6 +721,16 @@ static void _callback_controllers(DvzScene* scene)
         }
         dvz_container_iter(&iter);
     }
+
+    DvzPanel* target = NULL;
+    for (uint32_t i = 0; i < grid->link_count; i++)
+    {
+        panel = grid->links[i].source;
+        target = grid->links[i].target;
+        ASSERT(panel != NULL);
+        ASSERT(target != NULL);
+        target->controller->interacts[0].mvp = panel->controller->interacts[0].mvp;
+    }
 }
 
 
