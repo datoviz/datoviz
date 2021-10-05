@@ -858,7 +858,7 @@ cdef class Context:
 
         # Create the texture.
         tex.create(self._c_context, ndim, ncomp, shape, dtype)
-        logging.debug(f"Create a {str(tex)}")
+        logger.debug(f"Create a {str(tex)}")
         return tex
 
     def colormap(self, unicode name, np.ndarray[CHAR, ndim=2] colors):
@@ -909,11 +909,7 @@ cdef class Texture:
         self.ndim = ndim
         self.ncomp = ncomp
 
-        # Store the shape.
-        for i in range(ndim):
-            self._c_shape[i] = shape[i]
-        for i in range(ndim, 3):
-            self._c_shape[i] = 1
+        self._update_shape(shape)
 
         # Find the source type.
         assert ndim in _SOURCE_TYPES
@@ -927,6 +923,13 @@ cdef class Texture:
 
         # Create the Datoviz texture.
         self._c_texture = cv.dvz_ctx_texture(self._c_context, ndim, &shape[0], c_format)
+
+    cdef _update_shape(self, TEX_SHAPE shape):
+        # Store the shape.
+        for i in range(self.ndim):
+            self._c_shape[i] = shape[i]
+        for i in range(self.ndim, 3):
+            self._c_shape[i] = 1
 
     @property
     def item_size(self):
@@ -955,6 +958,14 @@ cdef class Texture:
         """Change the filtering of the texture."""
         cv.dvz_texture_filter(self._c_texture, cv.DVZ_FILTER_MIN, _TEXTURE_FILTERS[name])
         cv.dvz_texture_filter(self._c_texture, cv.DVZ_FILTER_MAG, _TEXTURE_FILTERS[name])
+
+    def resize(self, w=1, h=1, d=1):
+        cdef TEX_SHAPE shape
+        shape[0] = h
+        shape[1] = w
+        shape[2] = d
+        cv.dvz_texture_resize(self._c_texture, &shape[0])
+        self._update_shape(shape)
 
     def upload(self, np.ndarray arr):
         """Set the texture data from a NumPy array."""

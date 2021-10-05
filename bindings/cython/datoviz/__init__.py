@@ -24,8 +24,6 @@ except ImportError:
 
 # Set a null handler on the root logger
 logger = logging.getLogger('datoviz')
-logger.setLevel(logging.DEBUG)
-logger.addHandler(logging.NullHandler())
 
 _logger_fmt = '%(asctime)s.%(msecs)03d %(levelname)s %(caller)s %(message)s'
 _logger_date_fmt = '%H:%M:%S'

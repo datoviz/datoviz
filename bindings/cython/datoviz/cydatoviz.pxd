@@ -1287,6 +1287,8 @@ cdef extern from "<datoviz/datoviz.h>":
 
     DvzTexture* dvz_ctx_texture(DvzContext* context, uint32_t dims, uvec3 size, VkFormat format)
 
+    void dvz_texture_resize(DvzTexture* texture, uvec3 size)
+
     void dvz_texture_filter(DvzTexture* texture, DvzFilterType type, VkFilter filter)
 
     void dvz_texture_upload(DvzTexture* texture, uvec3 offset, uvec3 shape, VkDeviceSize size, const void* data)

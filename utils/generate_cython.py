@@ -85,6 +85,7 @@ FUNCTIONS = (
     'dvz_scene',
     'dvz_screenshot_file',
     'dvz_texture_filter',
+    'dvz_texture_resize',
     'dvz_texture_upload',
     'dvz_transform',
     'dvz_upload_buffer',
