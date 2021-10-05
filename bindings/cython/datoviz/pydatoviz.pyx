@@ -591,6 +591,9 @@ def colormap(np.ndarray[DOUBLE, ndim=1] values, vmin=None, vmax=None, cmap=None,
         vmin = values.min()
     if vmax is None:
         vmax = values.max()
+    if vmin >= vmax:
+        logger.warn("colormap vmin is larger than or equal to vmax")
+        vmax = vmin + 1
     cv.dvz_colormap_array(cmap_, N, <double*>&values.data[0], vmin, vmax, <cv.cvec4*>&out.data[0])
     if alpha is not None:
         if not isinstance(alpha, np.ndarray):

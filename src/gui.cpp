@@ -119,11 +119,17 @@ static int _fixed_style(int corner)
 {
     const ImGuiIO& io = ImGui::GetIO();
 
-    int flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar |
-                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNav |
-                ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNavInputs |
-                ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
-                ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing;
+    int flags = ImGuiWindowFlags_NoTitleBar |       //
+                ImGuiWindowFlags_NoScrollbar |      //
+                ImGuiWindowFlags_NoResize |         //
+                ImGuiWindowFlags_NoCollapse |       //
+                ImGuiWindowFlags_NoNav |            //
+                ImGuiWindowFlags_NoMove |           //
+                ImGuiWindowFlags_NoNavInputs |      //
+                ImGuiWindowFlags_NoDecoration |     //
+                ImGuiWindowFlags_AlwaysAutoResize | //
+                ImGuiWindowFlags_NoSavedSettings |  //
+                ImGuiWindowFlags_NoFocusOnAppearing;
     ImGui::SetNextWindowBgAlpha(0.5f);
 
     float distance = 0;
