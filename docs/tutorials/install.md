@@ -159,14 +159,7 @@ The philosophy of Datoviz is to **implement all the logic and functionality in C
         ```
 
     6. Download [the latest Vulkan SDK](https://vulkan.lunarg.com/sdk/home#mac).
-    7. Install the Vulkan SDK:
-
-        ```bash
-        cd /Volumes/vulkansdk-macos-*
-        ./install_vulkan.py
-        cd ~
-        ```
-
+    7. Install it.
     8. Clone the Datoviz repository:
 
         ```bash
