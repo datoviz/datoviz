@@ -162,11 +162,16 @@ int test_scene_multiple(TestContext* tc)
     DvzScene* scene = dvz_scene(canvas, 1, 1);
     DvzPanel* panel = dvz_scene_panel(scene, 0, 0, DVZ_CONTROLLER_AXES_2D, 0);
 
+    // Create two visuals.
     DvzVisual* v0 = dvz_scene_visual(panel, DVZ_VISUAL_POINT, 0);
     DvzVisual* v1 = dvz_scene_visual(panel, DVZ_VISUAL_POINT, 0);
 
+    // Marker size.
+    dvz_visual_data(v0, DVZ_PROP_MARKER_SIZE, 0, 1, (float[]){20});
+    dvz_visual_data(v1, DVZ_PROP_MARKER_SIZE, 0, 1, (float[]){20});
+
     // Create visual data.
-    uint32_t n = 10;
+    uint32_t n = 11;
     dvec3* pos = calloc(n, sizeof(dvec3));
     cvec4* color = calloc(n, sizeof(cvec4));
     for (uint32_t i = 0; i < n; i++)

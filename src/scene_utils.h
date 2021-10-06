@@ -70,6 +70,8 @@ static inline bool _has_obj_changed(DvzObject* obj)
 
 static inline bool _has_coords_changed(DvzDataCoords* coords, DvzBox* box)
 {
+    // _box_print(*box);
+    // _box_print(coords->box);
     return memcmp(box, &coords->box, sizeof(DvzBox)) != 0;
 }
 
@@ -403,7 +405,9 @@ static void _enqueue_coords_changed(DvzPanel* panel)
 // Change the visual and source request, to be picked up by dvz_visual_data() later.
 static void _process_prop_changed(DvzSceneUpdate up)
 {
+    log_trace("process prop changed");
     ASSERT(up.panel != NULL);
+    // Panel coords.
     DvzDataCoords coords = up.panel->data_coords;
 
     // if POS prop, we do data normalization
@@ -418,11 +422,14 @@ static void _process_prop_changed(DvzSceneUpdate up)
             // Recompute the visual box.
             DvzBox box = _visual_box(up.visual);
 
-            // Make the box square if needed.
+            // Merge the visual box with the panel box.
+            box = _box_merge(2, (DvzBox[]){box, coords.box});
+
+            // Make the panel box square if needed.
             if (_is_aspect_fixed(&coords))
                 box = _box_cube(box);
 
-            // If the new box has changed, renormalize all visuals.
+            // If the panel box has changed, renormalize all visuals.
             if (_has_coords_changed(&coords, &box))
             {
                 // Update the data coords.
