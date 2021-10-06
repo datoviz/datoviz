@@ -165,6 +165,7 @@ def run_asyncio(n_frames=0, **kwargs):
         _ASYNCIO_LOOP.run_until_complete(task)
     except asyncio.CancelledError:
         pass
+    logger.debug("asyncio event loop stopped")
 
 
 def do_async(task):
