@@ -53,7 +53,7 @@ static DvzVisual* _add_visual(DvzPanel* panel)
 {
     ASSERT(panel != NULL);
     DvzVisual* visual = dvz_scene_visual(panel, DVZ_VISUAL_POINT, DVZ_VISUAL_FLAGS_TRANSFORM_NONE);
-    _point_data(visual);
+    _point_data(visual, 50);
     return visual;
 }
 
@@ -125,7 +125,7 @@ int test_scene_single(TestContext* tc)
     DvzVisual* visual = _add_visual(panel);
     for (uint32_t i = 0; i < 5; i++)
     {
-        _point_data(visual);
+        _point_data(visual, 50);
         dvz_app_run(canvas->app, 5);
     }
 
@@ -150,6 +150,44 @@ int test_scene_double(TestContext* tc)
     _add_visual(dvz_scene_panel(scene, 0, 1, DVZ_CONTROLLER_PANZOOM, 0));
 
     return _scene_run(scene, "double");
+}
+
+
+
+int test_scene_multiple(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    ASSERT(canvas != NULL);
+
+    DvzScene* scene = dvz_scene(canvas, 1, 1);
+    DvzPanel* panel = dvz_scene_panel(scene, 0, 0, DVZ_CONTROLLER_AXES_2D, 0);
+
+    DvzVisual* v0 = dvz_scene_visual(panel, DVZ_VISUAL_POINT, 0);
+    DvzVisual* v1 = dvz_scene_visual(panel, DVZ_VISUAL_POINT, 0);
+
+    // Create visual data.
+    uint32_t n = 10;
+    dvec3* pos = calloc(n, sizeof(dvec3));
+    cvec4* color = calloc(n, sizeof(cvec4));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        pos[i][0] = -1 + 2 * (float)i / (n - 1);
+        pos[i][1] = 0;
+        dvz_colormap(DVZ_CMAP_HSV, i * 4, color[i]);
+    }
+
+    // Set visual data.
+    dvz_visual_data(v0, DVZ_PROP_POS, 0, n / 2, &pos[n / 2]);
+    dvz_visual_data(v0, DVZ_PROP_COLOR, 0, n / 2, &color[n / 2]);
+
+    dvz_visual_data(v1, DVZ_PROP_POS, 0, n / 2, pos);
+    dvz_visual_data(v1, DVZ_PROP_COLOR, 0, n / 2, color);
+
+    // Free the arrays.
+    FREE(pos);
+    FREE(color);
+
+    return _scene_run(scene, "multiple");
 }
 
 

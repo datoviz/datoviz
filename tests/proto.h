@@ -359,12 +359,11 @@ static DvzTexture* _volume_texture(DvzContext* context, int kind)
 /*  Test data                                                                                    */
 /*************************************************************************************************/
 
-static void _point_data(DvzVisual* visual)
+static void _point_data(DvzVisual* visual, uint32_t n)
 {
     ASSERT(visual != NULL);
 
     // Create visual data.
-    uint32_t n = 50;
     dvec3* pos = calloc(n, sizeof(dvec3));
     cvec4* color = calloc(n, sizeof(cvec4));
     double t = 0, r = .9;

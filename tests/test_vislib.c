@@ -124,7 +124,7 @@ int test_vislib_point(TestContext* tc)
     DvzVisual visual = dvz_visual(canvas);
     dvz_visual_builtin(&visual, DVZ_VISUAL_POINT, 0);
     _visual_common(&visual);
-    _point_data(&visual);
+    _point_data(&visual, 50);
 
     return _visual_run(&visual, "point");
 }
