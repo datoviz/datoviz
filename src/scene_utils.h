@@ -81,6 +81,19 @@ static inline bool _has_coords_changed(DvzDataCoords* coords, DvzBox* box)
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
+static uint32_t _count_visuals_to_transform(DvzPanel* panel)
+{
+    ASSERT(panel != NULL);
+    uint32_t n = 0;
+    for (uint32_t i = 0; i < panel->visual_count; i++)
+    {
+        n += _is_visual_to_transform(panel->visuals[i]);
+    }
+    return n;
+}
+
+
+
 static void _viewport_print(DvzViewport v)
 {
     log_info(
@@ -155,7 +168,7 @@ static void _transform_pos_prop(DvzDataCoords coords, DvzProp* prop)
 
 
 
-static DvzBox _compute_panel_box(DvzPanel* panel)
+static DvzBox _compute_panel_box(DvzPanel* panel, DvzVisual* skip_visual)
 {
     ASSERT(panel != NULL);
     DvzDataCoords* coords = &panel->data_coords;
@@ -167,14 +180,20 @@ static DvzBox _compute_panel_box(DvzPanel* panel)
     uint32_t count = 0;
 
     // Get the bounding box of each visual.
+    DvzVisual* visual = NULL;
     for (uint32_t i = 0; i < panel->visual_count; i++)
     {
-        ASSERT(panel->visuals[i] != NULL);
+        visual = panel->visuals[i];
+        ASSERT(visual != NULL);
+
+        // Skip a visual.
+        if (visual == skip_visual)
+            continue;
 
         // NOTE: skip visuals that should not be transformed.
-        if (_is_visual_to_transform(panel->visuals[i]))
+        if (_is_visual_to_transform(visual))
         {
-            boxes[count++] = _visual_box(panel->visuals[i]);
+            boxes[count++] = _visual_box(visual);
         }
     }
 
@@ -422,8 +441,16 @@ static void _process_prop_changed(DvzSceneUpdate up)
             // Recompute the visual box.
             DvzBox box = _visual_box(up.visual);
 
-            // Merge the visual box with the panel box.
-            box = _box_merge(2, (DvzBox[]){box, coords.box});
+            // Compute the new panel box: all existing visuals (except the current one), and the
+            // current visual with the *new* box.
+            // _box_merge(2, (DvzBox[]){box, coords.box});
+            uint32_t n = _count_visuals_to_transform(up.panel);
+            if (n >= 2)
+            {
+                DvzBox box_other = coords.box;
+                box_other = _compute_panel_box(up.panel, up.visual);
+                box = _box_merge(2, (DvzBox[]){box, box_other});
+            }
 
             // Make the panel box square if needed.
             if (_is_aspect_fixed(&coords))
@@ -876,7 +903,7 @@ static void _scene_init(DvzCanvas* canvas, DvzEvent ev)
         panel = iter.item;
 
         // Trigger normalization of all visuals initially in the panel.
-        panel->data_coords.box = _compute_panel_box(panel);
+        panel->data_coords.box = _compute_panel_box(panel, NULL);
         _enqueue_coords_changed(panel);
 
         // Go through all visuals.
