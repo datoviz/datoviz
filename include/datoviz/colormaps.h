@@ -478,6 +478,24 @@ static void dvz_colormap_array(
 
 
 /**
+ * Fetch colors from a color palette and an array of values.
+ *
+ * @param cpal the color palette
+ * @param count the number of values
+ * @param values pointer to the array of int numbers
+ * @param[out] out the fetched colors
+ */
+static void dvz_colorpal_array(DvzColormap cpal, uint32_t count, int32_t* values, cvec4* out)
+{
+    ASSERT(values != NULL);
+    ASSERT(out != NULL);
+    for (uint32_t i = 0; i < count; i++)
+        dvz_colormap(cpal, (uint8_t)(values[i] % 256), out[i]);
+}
+
+
+
+/**
  * Pack an arbitrary RGB color into a special uv texture coordinates
  *
  * This is used by the mesh visual, that only accepts texture coordinates in its vertices. When

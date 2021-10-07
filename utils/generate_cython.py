@@ -61,6 +61,7 @@ FUNCTIONS = (
     'dvz_colormap_array',
     'dvz_colormap_custom',
     'dvz_colormap_packuv',
+    'dvz_colorpal_array',
     'dvz_context_colormap',
     'dvz_context',
     'dvz_copy_buffer',

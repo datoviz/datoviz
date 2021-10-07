@@ -1271,6 +1271,8 @@ cdef extern from "<datoviz/datoviz.h>":
 
     void dvz_colormap_array(DvzColormap cmap, uint32_t count, double* values, double vmin, double vmax, cvec4* out)
 
+    void dvz_colorpal_array(DvzColormap cpal, uint32_t count, int32_t* values, cvec4* out)
+
     void dvz_colormap_packuv(cvec3 color, vec2 uv)
 
     void dvz_colormap_custom(uint8_t cmap, uint32_t color_count, cvec4* colors)

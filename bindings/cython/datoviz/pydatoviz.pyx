@@ -602,6 +602,27 @@ def colormap(np.ndarray[DOUBLE, ndim=1] values, vmin=None, vmax=None, cmap=None,
         out[:, 3] = alpha
     return out
 
+
+def colorpal(np.ndarray[INT, ndim=1] values, cpal=None, alpha=None):
+    """Apply a colormap to a 1D array of values."""
+    N = values.size
+    if cpal in _COLORMAPS:
+        cpal_ = _COLORMAPS[cpal]
+    elif cpal in _CUSTOM_COLORMAPS:
+        cpal_ = _CUSTOM_COLORMAPS[cpal]
+    else:
+        cpal_ = cv.DVZ_CPAL256_GLASBEY
+    # TODO: ndarrays
+    cdef np.ndarray out = np.zeros((N, 4), dtype=np.uint8)
+    cv.dvz_colorpal_array(cpal_, N, <cv.int32_t*>&values.data[0], <cv.cvec4*>&out.data[0])
+    if alpha is not None:
+        if not isinstance(alpha, np.ndarray):
+            alpha = np.array(alpha)
+        alpha = (alpha * 255).astype(np.uint8)
+        out[:, 3] = alpha
+    return out
+
+
 def demo():
     cv.dvz_demo_standalone()
 
