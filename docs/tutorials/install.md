@@ -155,7 +155,7 @@ The philosophy of Datoviz is to **implement all the logic and functionality in C
     5. Install the build dependencies:
 
         ```bash
-        brew install cmake ninja
+        brew install cmake ninja libpng
         ```
 
     6. Download [the latest Vulkan SDK](https://vulkan.lunarg.com/sdk/home#mac).
