@@ -11,9 +11,10 @@ set(CMAKE_C_STANDARD_REQUIRED True)
 
 
 # Options
+option(DATOVIZ_WITH_VULKAN_SDK "Use the Vulkan SDK, otherwise use bundled Vulkan toolchain" ON)
+option(DATOVIZ_WITH_GLSLANG "Build Datoviz with glslang support" OFF)  # TODO: remove?
 option(DATOVIZ_WITH_PNG "Build Datoviz with PNG support" ON)
 option(DATOVIZ_WITH_FFMPEG "Build Datoviz with FFMPEG support" ON)
-option(DATOVIZ_WITH_GLSLANG "Build Datoviz with glslang support" OFF)
 option(DATOVIZ_WITH_SWIFTSHADER "Build Datoviz with Swiftshader support" OFF)
 option(DATOVIZ_WITH_CLI "Build Datoviz command-line interface with tests and demos" ON)
 
@@ -38,14 +39,6 @@ set(CMAKE_BUILD_TYPE Debug)
 # Dependencies
 # -------------------------------------------------------------------------------------------------
 
-# Vulkan
-find_package(Vulkan)
-if (Vulkan_FOUND)
-    message(STATUS "Found Vulkan")
-else()
-    message(FATAL_ERROR "-- Could NOT find Vulkan")
-endif()
-
 # cglm
 FetchContent_Declare(
     cglm
@@ -65,16 +58,94 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glfw)
 
-# glslc
+# Vulkan
+if (DATOVIZ_WITH_VULKAN_SDK)
+    find_package(Vulkan)
+endif()
 set(HAS_GLSLANG 0)
-if (DATOVIZ_WITH_GLSLANG)
+if (Vulkan_FOUND)
+    message(STATUS "Found Vulkan")
+
+    find_program(GLSLC glslc)
+    if (NOT GLSLC)
+        message(FATAL_ERROR "-- glslc executable NOT found")
+    endif()
+
+    # glslang
+    # TODO: remove?
+    set(glslangValidator "")
+    if (DATOVIZ_WITH_GLSLANG)
+        FetchContent_Declare(
+            glslang
+            GIT_REPOSITORY https://github.com/KhronosGroup/glslang
+            GIT_TAG        11.6.0
+        )
+        FetchContent_MakeAvailable(glslang)
+        set(HAS_GLSLANG 1)
+    endif()
+else()
+    message(
+        WARNING "-- Could not find Vulkan SDK, fallback to manual download/build of Vulkan loader")
+
+    # Vulkan headers
     FetchContent_Declare(
-    glslang
-    GIT_REPOSITORY https://github.com/KhronosGroup/glslang
-    GIT_TAG        master-tot
+        vulkan-headers
+        GIT_REPOSITORY  https://github.com/KhronosGroup/Vulkan-Headers.git
+        GIT_TAG         v1.2.195 # main
+    )
+    FetchContent_MakeAvailable(vulkan-headers)
+
+    # Vulkan loader
+    FetchContent_Declare(
+        vulkan-loader
+        GIT_REPOSITORY  https://github.com/KhronosGroup/Vulkan-Loader.git
+        GIT_TAG         v1.2.195 # master
+    )
+    FetchContent_MakeAvailable(vulkan-loader)
+
+    # SPIRV-Headers
+    FetchContent_Declare(
+        SPIRV-Headers
+        GIT_REPOSITORY  https://github.com/KhronosGroup/SPIRV-Headers.git
+        GIT_TAG         master # 1.5.4.raytracing.fixed
+    )
+    FetchContent_MakeAvailable(SPIRV-Headers)
+
+    # SPIRV-Tools
+    FetchContent_Declare(
+        SPIRV-Tools
+        # GIT_REPOSITORY  https://github.com/KhronosGroup/SPIRV-Tools.git
+        # GIT_TAG         master # v2021.3
+        # TEMPORARY FIX https://github.com/KhronosGroup/SPIRV-Tools/issues/4565
+        GIT_REPOSITORY  https://github.com/jaebaek/SPIRV-Tools.git
+        GIT_TAG         fix_ci_failure
+    )
+    FetchContent_MakeAvailable(SPIRV-Tools)
+
+    # glslang
+    FetchContent_Declare(
+        glslang
+        GIT_REPOSITORY https://github.com/KhronosGroup/glslang
+        GIT_TAG        master # 11.6.0
     )
     FetchContent_MakeAvailable(glslang)
-    set(HAS_GLSLANG 1)
+    if (DATOVIZ_WITH_GLSLANG)
+        set(HAS_GLSLANG 1)
+    endif()
+
+    # glslc
+    set(SHADERC_SKIP_TESTS ON CACHE BOOL "" FORCE)
+    set(SHADERC_SKIP_EXAMPLES ON CACHE BOOL "" FORCE)
+    set(SHADERC_SKIP_INSTALL ON CACHE BOOL "" FORCE)
+    FetchContent_Declare(
+        glslc
+        GIT_REPOSITORY https://github.com/google/shaderc
+        GIT_TAG        main # v2021.2
+        )
+    FetchContent_MakeAvailable(glslc)
+
+    set(GLSLC glslc_exe)
+
 endif()
 
 
@@ -96,7 +167,8 @@ else ()
         -Wcast-align -Wcast-qual -Wredundant-decls -Wswitch-default -Wdisabled-optimization \
         -Wformat=2 -Winit-self -Wno-missing-field-initializers -Wno-unused-result \
         -Wmissing-declarations -Wmissing-include-dirs -Wno-format-nonliteral \
-        -Wshadow -Wsign-conversion -Wstrict-overflow=5 -Wundef -Wno-unused-parameter -Wno-unused-function")
+        -Wshadow -Wsign-conversion -Wstrict-overflow=5 -Wundef -Wno-unused-parameter \
+        -Wno-unused-function")
     # GCC-specific
     if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
         set(COMMON_FLAGS "${COMMON_FLAGS} -Wlogical-op -fdiagnostics-color=always")
@@ -132,7 +204,7 @@ set(COMMON_FLAGS "${COMMON_FLAGS} -fvisibility=hidden")
 set(INCL_DIRS
     ${CMAKE_SOURCE_DIR}/external ${CMAKE_SOURCE_DIR}/external/imgui
     ${CMAKE_SOURCE_DIR}/external/imgui/backends ${CMAKE_SOURCE_DIR}/include/)
-set(LINK_LIBS m glfw cglm Vulkan::Vulkan pthread)
+set(LINK_LIBS m glfw cglm vulkan pthread)
 if(NOT ${WIN32})
     set(LINK_LIBS dl ${LINK_LIBS})
 endif()
@@ -210,7 +282,8 @@ if(DATOVIZ_WITH_FFMPEG)
     find_library(FFMPEG_LIBAVFORMAT NAMES avformat libavformat PATH_SUFFIXES ffmpeg/libavformat)
     find_library(FFMPEG_LIBAVUTIL NAMES avutil libavutil PATH_SUFFIXES ffmpeg/libavutil)
     find_library(FFMPEG_LIBSWSCALE NAMES swscale libswscale PATH_SUFFIXES ffmpeg/libswscale)
-    find_library(FFMPEG_LIBSWRESAMPLE NAMES NAMES swresample libswresample PATH_SUFFIXES ffmpeg/libswresample)
+    find_library(FFMPEG_LIBSWRESAMPLE NAMES NAMES swresample libswresample
+                 PATH_SUFFIXES ffmpeg/libswresample)
     if((
         FFMPEG_LIBAVCODEC AND
         FFMPEG_LIBAVFILTER AND
@@ -275,7 +348,6 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
 # Shaders compilation
 # -------------------------------------------------------------------------------------------------
 
-find_program(GLSLC glslc)
 file(GLOB shader_sources
     "*/glsl/*.vert"
     "*/glsl/*.geom"
@@ -289,11 +361,11 @@ foreach(shader_source ${shader_sources})
     set(shader_output "${SPIRV_DIR}/${shader_name}.spv")
     add_custom_command(
         OUTPUT ${shader_output}
-        COMMAND ${GLSLC}
+        COMMAND ${GLSLC}  # this is a target declared by the glslc fetch module
             -o "${shader_output}" ${shader_source}
             -I "${CMAKE_SOURCE_DIR}/include/datoviz/glsl"
-        DEPENDS ${shader_source}
-        IMPLICIT_DEPENDS ${shader_source}
+        DEPENDS ${shader_source} ${glslang}
+        IMPLICIT_DEPENDS ${shader_source} ${glslang}
         )
     list(APPEND shader_outputs ${shader_output})
 endforeach()
