@@ -6,6 +6,8 @@
 
 from functools import wraps, partial
 import logging
+import traceback
+import sys
 
 cimport numpy as np
 import numpy as np
@@ -546,7 +548,7 @@ cdef _wrapped_callback(cv.DvzCanvas* c_canvas, cv.DvzEvent c_ev):
         try:
             f(*ev_args, **ev_kwargs)
         except Exception as e:
-            print("Error: %s" % e)
+            print(traceback.format_exc())
 
 
 
