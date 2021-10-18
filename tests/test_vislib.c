@@ -374,6 +374,66 @@ int test_vislib_triangle_fan(TestContext* tc)
 
 
 
+int test_vislib_rectangle(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    ASSERT(canvas != NULL);
+
+    // Make visual.
+    DvzVisual visual = dvz_visual(canvas);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_RECTANGLE, 0);
+    _visual_common(&visual);
+
+    // Create visual data.
+    uint32_t n = 50;
+
+    double t = 0;
+    double ms = .1;
+    double aspect = dvz_canvas_aspect(canvas);
+    double r = .5;
+
+    dvec3* p0 = calloc(n, sizeof(dvec3));
+    dvec3* p1 = calloc(n, sizeof(dvec3));
+    cvec4* color = calloc(n, sizeof(cvec4));
+
+    for (uint32_t i = 0; i < n; i++)
+    {
+        t = i / (double)n;
+
+        p0[i][0] = r * cos(M_2PI * t);
+        p0[i][1] = r * sin(M_2PI * t);
+
+        dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, n, color[i]);
+        color[i][3] = 128;
+
+        // Copy the other point for each rectangle.
+        memcpy(p1[i], p0[i], sizeof(dvec3));
+
+        // Shift the points.
+        p0[i][0] -= ms;
+        p0[i][1] -= ms;
+        p1[i][0] += ms;
+        p1[i][1] += ms;
+
+        p0[i][1] *= aspect;
+        p1[i][1] *= aspect;
+    }
+
+    // Set visual data.
+    dvz_visual_data(&visual, DVZ_PROP_POS, 0, n, p0);
+    dvz_visual_data(&visual, DVZ_PROP_POS, 1, n, p1);
+    dvz_visual_data(&visual, DVZ_PROP_COLOR, 0, n, color);
+
+    // Free the arrays.
+    FREE(p0);
+    FREE(p1);
+    FREE(color);
+
+    return _visual_run(&visual, "rectangle");
+}
+
+
+
 /*************************************************************************************************/
 /*  2D visuals tests                                                                             */
 /*************************************************************************************************/

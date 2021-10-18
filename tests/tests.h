@@ -137,6 +137,7 @@ int test_vislib_line_strip(TestContext*);
 int test_vislib_triangle_list(TestContext*);
 int test_vislib_triangle_strip(TestContext*);
 int test_vislib_triangle_fan(TestContext*);
+int test_vislib_rectangle(TestContext*);
 int test_vislib_marker(TestContext*);
 int test_vislib_polygon(TestContext*);
 int test_vislib_path(TestContext*);
@@ -291,6 +292,7 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE(CANVAS, test_vislib_triangle_list),  //
     CASE_FIXTURE(CANVAS, test_vislib_triangle_strip), //
     CASE_FIXTURE(CANVAS, test_vislib_triangle_fan),   //
+    CASE_FIXTURE(CANVAS, test_vislib_rectangle),   //
     CASE_FIXTURE(CANVAS, test_vislib_marker),         //
     CASE_FIXTURE(CANVAS, test_vislib_polygon),        //
     CASE_FIXTURE(CANVAS, test_vislib_path),           //

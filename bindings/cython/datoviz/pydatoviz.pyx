@@ -118,6 +118,7 @@ _VISUALS = {
     'volume': cv.DVZ_VISUAL_VOLUME,
     'volume_slice': cv.DVZ_VISUAL_VOLUME_SLICE,
     'line_strip': cv.DVZ_VISUAL_LINE_STRIP,
+    'rectangle': cv.DVZ_VISUAL_RECTANGLE,
 }
 
 _CONTROLLERS = {

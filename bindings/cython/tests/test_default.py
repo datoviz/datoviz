@@ -163,6 +163,19 @@ def test_visual_marker(c):
 
 
 
+def test_visual_rectangle(c):
+    s = c.scene()
+    p = s.panel()
+    v = p.visual('rectangle')
+    n = 1000
+    nr.seed(0)
+    p = np.c_[nr.normal(size=(n, 2)), np.zeros(n)]
+    v.data('pos', p, idx=0)
+    v.data('pos', p + .25, idx=1)
+    v.data('color', nr.randint(size=(n, 4), low=100, high=255))
+
+
+
 def test_visual_partial(c):
     s = c.scene()
     p = s.panel()

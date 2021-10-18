@@ -350,6 +350,114 @@ static void _visual_triangle_fan(DvzVisual* visual)
 
 
 /*************************************************************************************************/
+/*  Rectangle                                                                                    */
+/*************************************************************************************************/
+
+static void _rectangle_bake(DvzVisual* visual, DvzVisualDataEvent ev)
+{
+    ASSERT(visual != NULL);
+
+    // First, we obtain the array instances holding the prop data as specified by the user.
+    DvzArray* arr_p0 = dvz_prop_array(visual, DVZ_PROP_POS, 0);
+    DvzArray* arr_p1 = dvz_prop_array(visual, DVZ_PROP_POS, 1);
+    DvzArray* arr_color = dvz_prop_array(visual, DVZ_PROP_COLOR, 0);
+
+    // We also get the array of the vertex buffer, which we'll need to fill with the triangulation.
+    DvzArray* arr_vertex = dvz_source_array(visual, DVZ_SOURCE_TYPE_VERTEX, 0);
+
+    // The number of rows in the 1D position array (set by the user) is the number of rectangles
+    // requested by the user.
+    uint32_t rectangle_count = arr_p0->item_count;
+
+    // We resize the vertex buffer array so that it holds six vertices per rectangle (two triangles).
+    dvz_array_resize(arr_vertex, 6 * rectangle_count);
+
+    // Pointers to the input data.
+    dvec3* p0 = NULL;
+    dvec3* p1 = NULL;
+    cvec4* color = NULL;
+
+    // Pointer to the output vertex.
+    DvzVertex* vertex = (DvzVertex*)arr_vertex->data;
+
+    // Here, we triangulate each rectangle by computing the position of each rectangle corner.
+    for (uint32_t i = 0; i < rectangle_count; i++)
+    {
+        // We get a pointer to the current item in each prop array.
+        p0 = dvz_array_item(arr_p0, i);
+        p1 = dvz_array_item(arr_p1, i);
+        color = dvz_array_item(arr_color, i);
+
+        // First triangle:
+
+        // Bottom-left corner.
+        vertex[6 * i + 0].pos[0] = p0[0][0];
+        vertex[6 * i + 0].pos[1] = p0[0][1];
+
+        // Bottom-right corner.
+        vertex[6 * i + 1].pos[0] = p1[0][0];
+        vertex[6 * i + 1].pos[1] = p0[0][1];
+
+        // Top-right corner.
+        vertex[6 * i + 2].pos[0] = p1[0][0];
+        vertex[6 * i + 2].pos[1] = p1[0][1];
+
+        // Second triangle:
+
+        // Top-right corner again.
+        vertex[6 * i + 3].pos[0] = p1[0][0];
+        vertex[6 * i + 3].pos[1] = p1[0][1];
+
+        // Top-left corner.
+        vertex[6 * i + 4].pos[0] = p0[0][0];
+        vertex[6 * i + 4].pos[1] = p1[0][1];
+
+        // Bottom-left corner (again).
+        vertex[6 * i + 5].pos[0] = p0[0][0];
+        vertex[6 * i + 5].pos[1] = p0[0][1];
+
+        // We copy the rectangle color to each of the six vertices making the current rectangle.
+        // This is a choice made in this example, and it is up to the custom visual creator
+        // to define how the user data, passed via props, will be used to fill in the vertices.
+        for (uint32_t j = 0; j < 6; j++)
+            memcpy(vertex[6 * i + j].color, color, sizeof(cvec4));
+    }
+}
+
+static void _visual_rectangle(DvzVisual* visual)
+{
+    ASSERT(visual != NULL);
+    DvzCanvas* canvas = visual->canvas;
+    ASSERT(canvas != NULL);
+    DvzProp* prop = NULL;
+
+    // Graphics.
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TRIANGLE, 0));
+
+    // Sources
+    dvz_visual_source(
+        visual, DVZ_SOURCE_TYPE_VERTEX, 0, DVZ_PIPELINE_GRAPHICS, 0, 0, sizeof(DvzVertex), 0);
+    _common_sources(visual);
+
+    // Props:
+    // Add some props.
+    dvz_visual_prop(visual, DVZ_PROP_POS, 0, DVZ_DTYPE_DVEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop(visual, DVZ_PROP_POS, 1, DVZ_DTYPE_DVEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
+
+    // Custom baking functions.
+    dvz_visual_callback_bake(visual, _rectangle_bake);
+
+    // Vertex color.
+    prop = dvz_visual_prop(visual, DVZ_PROP_COLOR, 0, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_copy(prop, 1, offsetof(DvzVertex, color), DVZ_ARRAY_COPY_REPEAT, 3);
+
+    // Common props.
+    _common_props(visual);
+}
+
+
+
+/*************************************************************************************************/
 /*************************************************************************************************/
 /*  Antialiased 2D visuals                                                                       */
 /*************************************************************************************************/
@@ -1964,6 +2072,10 @@ void dvz_visual_builtin(DvzVisual* visual, DvzVisualType type, int flags)
 
     case DVZ_VISUAL_TRIANGLE_FAN:
         _visual_triangle_fan(visual);
+        break;
+
+    case DVZ_VISUAL_RECTANGLE:
+        _visual_rectangle(visual);
         break;
 
 
