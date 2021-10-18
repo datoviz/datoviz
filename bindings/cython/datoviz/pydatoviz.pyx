@@ -1263,6 +1263,14 @@ cdef class Panel:
             c_axis = cv.DVZ_GRID_VERTICAL
         cv.dvz_panel_size(self._c_panel, c_axis, value)
 
+    def span(self, axis, int n):
+        cdef cv.DvzGridAxis c_axis
+        if axis == 'x':
+            c_axis = cv.DVZ_GRID_HORIZONTAL
+        else:
+            c_axis = cv.DVZ_GRID_VERTICAL
+        cv.dvz_panel_span(self._c_panel, c_axis, n)
+
     def pick(self, x, y, target_cds='data'):
         """Convert a position in pixels to the data coordinate system, or another
         coordinate system."""
