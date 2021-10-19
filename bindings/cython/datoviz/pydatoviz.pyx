@@ -1125,6 +1125,7 @@ cdef class Canvas:
         assert f.__name__.startswith('on_')
         ev_name = f.__name__[3:]
         self._connect(ev_name, f)
+        return f
 
     def click(self, float x, float y, button='left', modifiers=()):
         """Simulate a mouse click at a given position."""
@@ -1410,6 +1411,7 @@ cdef class GuiControl:
         """Bind a callback function to the control."""
         self._callback = f
         _add_event_callback(self._c_canvas, cv.DVZ_EVENT_GUI, 0, f, (self.name,))
+        return f
 
     def press(self):
         """For buttons only: simulate a press."""
