@@ -62,40 +62,56 @@ The documentation is divided into:
 *GPU: 2019 NVIDIA GeForce RTX 2070 SUPER. Window size: 1024x768.*
 
 
-## Features and roadmap
+## Features
 
-* **High-quality antialiased 2D visuals**: markers, paths, lines, text, polygons, and more (contribution by Nicolas P. Rougier, code from [Glumpy](https://glumpy.github.io/))
-* **3D visuals**: meshes, surfaces, volumes (experimental)
+### Current features
+
+* **High-quality antialiased 2D visuals**: markers, paths, lines (contributions by Nicolas P. Rougier, code from [Glumpy](https://glumpy.github.io/))
+* **3D visuals**: meshes
 * **Mixing 2D and 3D** plots seamlessly in the same window
 * **~150 colormaps** included (from matplotlib, colorcet, MATLAB)
 * **High-level interactivity**: pan & zoom, mouse arcball, first-person cameras
 * **Axes**: ticks, grids, labels
 * **Subplots** organized in a grid layout
-* **DPI-aware**: preliminary support for high-resolution monitors
 * **GUIs** integrated via the **Dear ImGUI** C++ library (Qt or other backends not required)
 * **Custom visuals**, with custom shaders and/or custom data transformations
-* IPython event-loop integration
+
+### Experimental/work-in-progress features
+
+* Multiple canvases
+* Builtin creencasts and video recording with ffmpeg (optional dependency)
+* Offscreen rendering and CPU emulation via swiftshader
 * Mouse picking
-* Initial support for multiple canvases
-* Initial builtin support for screencasts and video recording with ffmpeg (optional dependency)
-* Initial support for offscreen rendering and CPU emulation via swiftshader
+* IPython event-loop integration
+* DPI-aware canvases
+* Continuous integration and continuous building
+* Panel linking, shared axes
 
-**Upcoming features:**
+### Longer-term features
 
-* More visuals: arrows, triangulations, planar straight-line graphs (PSLG), histograms, areas, graphs...
+* More visuals: arrows, triangulations, planar straight-line graphs (PSLG), histograms, areas, graphs, fake 3D spheres...
 * Further data transformations: logarithmic, polar, basic Earth coordinate systems for geographical data
+* Fixed aspect ratio
 * Colorbars
 * 3D axes
+* Deep zooming
+* CUDA-Vulkan interoperability example
 * Better support of multiple GPUs
 * Qt integration
-* Continuous integration, more robust testing
+* Bindings in other languages (Julia, R, MATLAB, Rust...)
+* Automated benchmarkes
+* Distributed architecture (integration in the web browser, Jupyter...)
 
-**Longer-term future:**
 
-* Support for other languages (Julia, R, MATLAB, Rust...)
-* Jupyter notebook integration
-* Web integration via WebGPU
-* Remote desktop integration
+## History and roadmap
+
+* late 2019: first experiments with using Vulkan for scientific visualization
+* 2020: multiple cycles of prototyping and refactoring
+* **17 Feb 2021**: first public experimental release (manual compilation required)
+* **31 May 2021**: first experimental release `v0.1.0-alpha.0` with precompiled pip wheels for Linux, Windows, macOS
+* **20 Oct 2021?**: new experimental release `v0.1.0-alpha.1` with bug fixes and minor improvements
+* early 2022? `v0.1.0` release
+* late 2022?: redesigned internal architecture for multithreading and distributed environments (still a work-in-progress)
 
 
 

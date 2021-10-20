@@ -3,7 +3,6 @@
 ## For users
 
 * [**Vulkan crash course**](vulkan.md): an accessible overview of Vulkan for scientific computing, a **must-read requirement** before writing custom visuals,
-* [**Roadmap**](roadmap.md): development roadmap,
 * [**Best practices**](practices.md): a review of best practices when using Datoviz and writing custom visuals,
 * [**FAQ**](faq.md): frequently-asqued questions
 

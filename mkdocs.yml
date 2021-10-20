@@ -83,7 +83,6 @@ nav:
     - Index: 'discussions/index.md'
     - For users:
       - Vulkan crash course: 'discussions/vulkan.md'
-      - Roadmap: 'discussions/roadmap.md'
       - Best practices: 'discussions/practices.md'
       - FAQ: 'discussions/faq.md'
     - For developers:
