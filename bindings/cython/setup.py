@@ -32,7 +32,7 @@ if sys.platform == 'win32':
 # the path to the datoviz library (in <root>/build/).
 setup(
     name='datoviz',
-    version='0.1.0dev',
+    version='0.1.0.a1',
     description=DESCRIPTION,
     author='Cyrille Rossant, International Brain Laboratory',
     author_email='rossant@users.noreply.github.com',

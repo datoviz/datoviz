@@ -202,9 +202,18 @@ set(COMMON_FLAGS "${COMMON_FLAGS} -fvisibility=hidden")
 # -------------------------------------------------------------------------------------------------
 
 set(INCL_DIRS
-    ${CMAKE_SOURCE_DIR}/external ${CMAKE_SOURCE_DIR}/external/imgui
-    ${CMAKE_SOURCE_DIR}/external/imgui/backends ${CMAKE_SOURCE_DIR}/include/)
-set(LINK_LIBS m glfw cglm vulkan pthread)
+    ${CMAKE_SOURCE_DIR}/external
+    ${CMAKE_SOURCE_DIR}/external/imgui
+    ${CMAKE_SOURCE_DIR}/external/imgui/backends
+    ${CMAKE_SOURCE_DIR}/include/
+    ${Vulkan_INCLUDE_DIRS}
+)
+set(LINK_LIBS m glfw cglm pthread)
+if(DATOVIZ_WITH_VULKAN_SDK)
+    set(LINK_LIBS ${LINK_LIBS} Vulkan::Vulkan)
+else()
+    set(LINK_LIBS ${LINK_LIBS} vulkan)
+endif()
 if(NOT ${WIN32})
     set(LINK_LIBS dl ${LINK_LIBS})
 endif()

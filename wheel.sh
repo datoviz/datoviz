@@ -35,6 +35,8 @@ mkdir -p $OUT_DIR
 cd $ROOT_DIR
 rm -rf $BUILD_DIR && mkdir -p $BUILD_DIR
 cd $BUILD_DIR && pwd
+echo "***** BUILDING DATOVIZ *****"
+echo "VULKAN_SDK=$VULKAN_SDK"
 cmake .. -GNinja && ninja && cd ..
 
 

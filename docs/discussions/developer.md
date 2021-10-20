@@ -183,56 +183,55 @@ run()
 Make sure you have the latest versions of pip and virtualenv.
 
 
-### Windows
+=== "Linux"
 
-Creating a Python wheel for Windows should be as easy as running the following commands:
+    On Linux, we need to bundle dynamic libraries to the wheel, but *not* libvulkan as well as other graphics-related libraries.
 
-```
-manage.bat build
-manage.bat wheel
-manage.bat testwheel
-```
+    While delocate is provided for macOS, the Python developers provide the [**auditwheel**](https://github.com/pypa/auditwheel/) tool to bundle dependencies into Python wheels. We need a [patched version of auditwheel](https://github.com/pypa/auditwheel/pull/310) so that we can exclude some libraries.
 
-On Windows, the `setup.py` script automatically bundles the file `libdatoviz.dll` (created by the build script) into the wheel.
+    Another complication is that, in order to build a manylinux wheel, it is basically required to use Docker. The wheel needs to be compiled on an old Linux distribution so as to be compatible with as many Linux distributions as possible.
 
-The wheel creating script uses the following command to create the wheel: `python setup.py bdist_wheel`.
+    On Linux, the `./manage.sh wheel` script involves the following step:
+
+    1. Build a Docker image based on `quay.io/pypa/manylinux_2_24_x86_64` (provided by the Python developers). This image is based on Debian. Other Docker images are available, but they are based on CentOS, and Vulkan doesn't work well on old CentOS distributions.
+    2. We add a few extra packages to that Docker image that are required for building Datoviz (see the `/Dockerfile_wheel` file), including:
+        * the Vulkan SDK,
+        * a few Python libraries,
+        * our patched version of auditwheel.
+    3. We create a Docker container based on this custom image, and we mount the git repository in the container.
+    4. We run a script in the container: `/wheel.sh`. This script does the following:
+        * Build the Datoviz C library in the `/build_wheel` subfolder.
+        * Copy the C headers, the build directory, and the Cython source files in a temporary directory in the container so as to avoid polluting the main Datoviz directory.
+        * Build the Cython module.
+        * Create a Python wheel.
+        * Run the patched version of auditwheel to bundle libdatoviz in it.
+        * Copy the repaired wheel to `/bindings/cython/dist`.
+
+    The resulting manylinux wheel may be uploadable to PyPI, [*but* we have to make sure it works on different Linux-based systems first](https://github.com/pypa/auditwheel/pull/310#issuecomment-849858348). We're likely to run into issues and we may have to include more dependencies via auditwheel. Until then, we only upload the wheel on GitHub.
 
 
-### macOS
+=== "macOS"
 
-On macOS, in addition to running the standard wheel creation command `python setup.py bdist_wheel`, we also need to bundle `libdatoviz.dylib` into the wheel.
+    On macOS, in addition to running the standard wheel creation command `python setup.py bdist_wheel`, we also need to bundle `libdatoviz.dylib` into the wheel.
 
-The [**delocate**](https://github.com/matthew-brett/delocate) script does just that. However, it will also bundle other dependencies such as libvulkan, which wouldn't work as Datoviz needs to use the system's libvulkan.
+    The [**delocate**](https://github.com/matthew-brett/delocate) script does just that. However, it will also bundle other dependencies such as libvulkan, which wouldn't work as Datoviz needs to use the system's libvulkan.
 
-For this reason, we provide a [patch to delocate](https://github.com/matthew-brett/delocate/pull/106) which allows us to exclude libvulkan from the wheel. The patched version of delocate needs to be installed before running `./manage.sh wheel`.
+    For this reason, we provide a [patch to delocate](https://github.com/matthew-brett/delocate/pull/106) which allows us to exclude libvulkan from the wheel. The patched version of delocate needs to be installed before running `./manage.sh wheel`.
 
 
-### Linux
+=== "Windows"
 
-On Linux, like on macOS, we need to bundle dynamic libraries to the wheel, but *not* libvulkan as well as other graphics-related libraries.
+    Creating a Python wheel for Windows should be as easy as running the following commands:
 
-While delocate is provided for macOS, the Python developers provide the [**auditwheel**](https://github.com/pypa/auditwheel/) tool to bundle dependencies into Python wheels. We need a [patched version of auditwheel](https://github.com/pypa/auditwheel/pull/310) so that we can exclude some libraries.
+    ```
+    manage.bat build
+    manage.bat wheel
+    manage.bat testwheel
+    ```
 
-Another complication is that, in order to build a manylinux wheel, it is basically required to use Docker. The wheel needs to be compiled on an old Linux distribution so as to be compatible with as many Linux distributions as possible.
+    On Windows, the `setup.py` script automatically bundles the file `libdatoviz.dll` (created by the build script) into the wheel.
 
-On Linux, the `./manage.sh wheel` script involves the following step:
-
-1. Build a Docker image based on `quay.io/pypa/manylinux_2_24_x86_64` (provided by the Python developers). This image is based on Debian. Other Docker images are available, but they are based on CentOS, and Vulkan doesn't work well on old CentOS distributions.
-2. We add a few extra packages to that Docker image that are required for building Datoviz (see the `/Dockerfile_wheel` file), including:
-    * the Vulkan SDK,
-    * a few Python libraries,
-    * our patched version of auditwheel.
-3. We create a Docker container based on this custom image, and we mount the git repository in the container.
-4. We run a script in the container: `/wheel.sh`. This script does the following:
-    * Build the Datoviz C library in the `/build_wheel` subfolder.
-    * Copy the C headers, the build directory, and the Cython source files in a temporary directory in the container so as to avoid polluting the main Datoviz directory.
-    * Build the Cython module.
-    * Create a Python wheel.
-    * Run the patched version of auditwheel to bundle libdatoviz in it.
-    * Copy the repaired wheel to `/bindings/cython/dist`.
-
-The resulting manylinux wheel may be uploadable to PyPI, [*but* we have to make sure it works on different Linux-based systems first](https://github.com/pypa/auditwheel/pull/310#issuecomment-849858348). We're likely to run into issues and we may have to include more dependencies via auditwheel. Until then, we only upload the wheel on GitHub.
-
+    The wheel creating script uses the following command to create the wheel: `python setup.py bdist_wheel`.
 
 
 ## Environment variables
