@@ -2,12 +2,12 @@
 
 **Datoviz** is an open-source **high-performance interactive scientific data visualization library** leveraging the graphics processing unit (**GPU**) for speed, visual quality, and scalability. It supports both 2D and 3D rendering, as well as minimal graphical user interfaces (using the [Dear ImGUI library](https://github.com/ocornut/imgui)).
 
-**Written in C**, Datoviz has been designed from the ground up for **performance**. It provides native **Python bindings** (based on Cython). Bindings to other languages could be developed thanks to community efforts (Julia, R, MATLAB, Rust, C#, and so on). Datoviz uses the [**Vulkan graphics API**](https://www.khronos.org/vulkan/) created by the Khronos consortium, successor of OpenGL. Supporting other modern graphics API, such as WebGPU, would constitute interesting developments.
+**Written in C/C++**, Datoviz has been designed from the ground up for **performance**. It provides native **Python bindings** (based on Cython). Bindings to other languages could be developed thanks to community efforts (Julia, R, MATLAB, Rust, C#, and so on). Datoviz uses the [**Vulkan graphics API**](https://www.khronos.org/vulkan/) created by the Khronos consortium, successor of OpenGL. Supporting other modern graphics API, such as WebGPU, would constitute interesting developments.
 
 Datoviz is currently being developed mostly by [Cyrille Rossant](https://cyrille.rossant.net) at the [International Brain Laboratory](http://internationalbrainlab.org/), a consortium of neuroscience research labs around the world.
 
 !!! note
-    Datoviz is at an early stage of development. The API may be subject to minor changes. In addition, we are in the process of testing Datoviz on a wider range of systems and environments.
+    Datoviz is at an early stage of development and the API is not yet stabilized. Use at your own risks, but feel free to share your feedback, suggestions, use-cases, feature requests on GitHub.
 
 
 ## Screenshots
@@ -98,26 +98,19 @@ The documentation is divided into:
 * Remote desktop integration
 
 
-## Credits and related projects
 
-Datoviz is developed primarily by [Cyrille Rossant](https://cyrille.rossant.net/) at the [International Brain Laboratory](https://www.internationalbrainlab.com/). The logo was graciously created by [Chiara Zini](https://www.linkedin.com/in/czini/).
+## Credits and related projects
 
 Datoviz borrows heavily ideas and code from other projects.
 
+
 ### VisPy
 
-[**VisPy**](https://vispy.org/) is a Python scientific visualization library created in 2013 by Luke Campagnola (developer of [**pyqtgraph**](http://www.pyqtgraph.org/)), Almar Klein (developer of [**visvis**](https://github.com/almarklein/visvis)), Nicolas Rougier (developer of [**glumpy**](https://glumpy.github.io/)), and myself (Cyrille Rossant, developer of **galry**). We joined forces to create a single library unifying all of our approaches, which proved to be challenging.
+[**VisPy**](https://vispy.org/) is a Python scientific visualization library created in 2013 by Luke Campagnola (developer of [**pyqtgraph**](http://www.pyqtgraph.org/)), Almar Klein (developer of [**visvis**](https://github.com/almarklein/visvis)), Nicolas Rougier (developer of [**glumpy**](https://glumpy.github.io/)), and myself (Cyrille Rossant, developer of **galry**). We joined forces to create a single library unifying all of our approaches. There is today a community of users and projects based on VisPy ([napari](https://napari.org/)). David Hoese and some of the original VisPy developers are currently maintaining the library. The current version of VisPy suffers from the limitations of OpenGL, a 30-year-old technology.
 
-There is today a community of users and projects based on VisPy ([napari](https://napari.org/)), and the library is currently being maintained by David Hoese, Eric Larson, and others. VisPy recently received [funding from the **Chan Zuckerberg Initiative**](https://chanzuckerberg.com/eoss/proposals/rebuilding-the-community-behind-vispys-fast-interactive-visualizations/) to improve the documentation and knowledge base.
+In 2020, VisPy received a 1-year [funding from the **Chan Zuckerberg Initiative (CZI)**](https://chanzuckerberg.com/eoss/proposals/rebuilding-the-community-behind-vispys-fast-interactive-visualizations/) to improve the documentation and knowledge base.
 
-VisPy is written entirely in Python and it is based on OpenGL, a 30-year-old technology. Vulkan was first released in 2016 by the Khronos consortium and it can be seen, to some extent, as a successor to OpenGL. However, Vulkan is a lower-level library and it is harder to use. This is the price to pay to reach better GPU performance.
-
-Datoviz is slightly lower-level than VisPy, matplotlib, and similar plotting libraries. Rather than directly targetting scientist end-users, Datoviz is expected to be wrapped by third-party higher-level libraries. In particular, Datoviz could eventually become a low-level backend for VisPy.
-
-Whereas VisPy is pure Python and is based on OpenGL, Datoviz is written in **C**, and it uses **Vulkan**:
-
-* The main advantages of C compared to Python are: ability to bind to any other language beyond Python; performance; possibility to use the Vulkan C API directly rather than via a wrapper.
-* The main advantages of Vulkan compared to OpenGL are: modern API, more adapted to today's hardware; performance. However, it is more complex and less user-friendly. Datoviz abstracts a lot of that complexity away.
+In 2021, VisPy received another [CZI grant](https://chanzuckerberg.com/eoss/proposals/vispy-2-0-next-generation-interactive-scientific-visualization-in-python/) for building VisPy 2.0, a completely redesigned library leveraging newer GPU technology such as Vulkan and WebGPU. The current strategy is to rebuild VisPy on top of Datoviz, pygfx (a WebGPU-based library developed by Almar Klein), and other backends.
 
 
 ### Glumpy
@@ -141,7 +134,6 @@ Glumpy, developed by Nicolas Rougier, provides [efficient implementations of hig
 * [freetype](https://www.freetype.org/) (optional)
 
 
-
 ### Related projects
 
 * [mayavi](https://docs.enthought.com/mayavi/mayavi/)
@@ -155,7 +147,7 @@ Glumpy, developed by Nicolas Rougier, provides [efficient implementations of hig
 
 ## Funding
 
-Datoviz is being developed at the International Brain Laboratory, with funding from the Simons Foundation, the Flatiron Institute, the Wellcome Trust, INCF.
+Datoviz is being developed by [Cyrille Rossant](https://cyrille.rossant.net/) at the [International Brain Laboratory](https://www.internationalbrainlab.com/), with funding from the Simons Foundation, the Flatiron Institute, the Wellcome Trust, INCF. The logo was graciously created by [Chiara Zini](https://www.linkedin.com/in/czini/).
 
 ![](https://raw.githubusercontent.com/datoviz/datoviz/main/docs/images/simons.png)
 ![](https://raw.githubusercontent.com/datoviz/datoviz/main/docs/images/flatiron.png)
