@@ -238,10 +238,11 @@ fi
 
 if [ $1 == "publish" ]
 then
+    SOURCE=`pwd`
     mkdocs build
     cd ../datoviz.github.io
-    ghp-import -b main -p ../datoviz/site
-    cd ../datoviz
+    ghp-import -b main -p $SOURCE/site
+    cd $SOURCE
 fi
 
 

@@ -24,6 +24,7 @@
 
 === "macOS"
 
+    0. Install [the Vulkan SDK for macOS](https://sdk.lunarg.com/sdk/download/latest/mac/vulkan-sdk.dmg) (we'll try to remove this requirement in the near future)
     1. If you don't already have a **Python distribution**, install one. For example, [download the miniconda pkg installer](https://docs.conda.io/en/latest/miniconda.html#macosx-installers) for macOS and install it.
     2. Open a terminal.
     3. Type the following to install Datoviz:
