@@ -109,9 +109,9 @@ The documentation is divided into:
 * 2020: multiple cycles of prototyping and refactoring
 * **17 Feb 2021**: first public experimental release (manual compilation required)
 * **31 May 2021**: first experimental release `v0.1.0-alpha.0` with precompiled pip wheels for Linux, Windows, macOS
-* **20 Oct 2021?**: new experimental release `v0.1.0-alpha.1` with bug fixes and minor improvements
-* early 2022? `v0.1.0` release
-* late 2022?: redesigned internal architecture for multithreading and distributed environments (still a work-in-progress)
+* **20 Oct 2021**: new experimental release `v0.1.0-alpha.1` with bug fixes and minor improvements
+* **early 2022?**: final `v0.1.0` release
+* **late 2022?**: redesigned internal architecture for multithreading and distributed environments (still a work-in-progress)
 
 
 

@@ -12,7 +12,7 @@
     3. Type the following to install Datoviz:
 
         ```bash
-        pip install http://dl.datoviz.org/v0.1.0-alpha.0/datoviz-0.1.0a0-cp38-cp38-manylinux_2_24_x86_64.whl
+        pip install http://dl.datoviz.org/v0.1.0-alpha.1/datoviz-0.1.0a1-cp38-cp38-manylinux_2_24_x86_64.whl
         ```
 
     4. Type the following to test Datoviz:
@@ -29,7 +29,7 @@
     3. Type the following to install Datoviz:
 
         ```bash
-        pip install http://dl.datoviz.org/v0.1.0-alpha.0/datoviz-0.1.0a0-cp38-cp38-macosx_10_9_x86_64.whl
+        pip install http://dl.datoviz.org/v0.1.0-alpha.1/datoviz-0.1.0a1-cp38-cp38-macosx_10_14_x86_64.whl
         ```
 
     4. Type the following to test Datoviz:
@@ -46,7 +46,7 @@
     3. Type the following to install Datoviz:
 
         ```bash
-        pip install http://dl.datoviz.org/v0.1.0-alpha.0/datoviz-0.1.0a0-cp38-cp38-win_amd64.whl
+        pip install http://dl.datoviz.org/v0.1.0-alpha.1/datoviz-0.1.0a1-cp38-cp38-win_amd64.whl
         ```
 
     4. Type the following to test Datoviz:
