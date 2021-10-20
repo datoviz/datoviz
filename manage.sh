@@ -121,7 +121,7 @@ then
         echo $FILENAME
         cp $FILENAME "$FILENAME~"
         # broken: remove libvulkan from the wheel?? "-e libvulkan"
-        DYLD_LIBRARY_PATH=../../../build/ delocate-wheel $FILENAME -w .
+        DYLD_LIBRARY_PATH=../../../build/ delocate-wheel $FILENAME -w . -e libvulkan
         cd ../../../
 
     # TODO: Windows
