@@ -99,6 +99,10 @@ then
     python3 setup.py build_ext -i && \
     python3 setup.py develop --user && \
     cd ../..
+
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        install_name_tool -add_rpath `pwd`/build bindings/cython/datoviz/pydatoviz.*.so
+    fi
 fi
 
 if [ $1 == "pytest" ]
