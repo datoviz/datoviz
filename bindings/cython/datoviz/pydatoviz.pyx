@@ -148,7 +148,7 @@ _PROPS = {
     'color': cv.DVZ_PROP_COLOR,
     'alpha': cv.DVZ_PROP_ALPHA,
     'ms': cv.DVZ_PROP_MARKER_SIZE,
-    'marker_type': cv.DVZ_PROP_MARKER_TYPE,
+    'marker': cv.DVZ_PROP_MARKER_TYPE,
     'normal': cv.DVZ_PROP_NORMAL,
     'texcoords': cv.DVZ_PROP_TEXCOORDS,
     'index': cv.DVZ_PROP_INDEX,
@@ -398,6 +398,7 @@ _FORMATS = {
 _MARKER_TYPES = {
     'disc': cv.DVZ_MARKER_DISC,
     'vbar': cv.DVZ_MARKER_VBAR,
+    'cross': cv.DVZ_MARKER_CROSS,
 }
 
 _CUSTOM_COLORMAPS = {}
