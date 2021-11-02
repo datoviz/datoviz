@@ -1396,6 +1396,9 @@ cdef class GuiControl:
         ptr = cv.dvz_gui_value(self._c_control)
         if self.ctype == 'input_float' or self.ctype == 'slider_float':
             (<float*>ptr)[0] = <float>float(obj)
+        elif self.ctype == 'slider_float2':
+            (<float*>ptr)[0] = <float>float(obj[0])
+            (<float*>ptr)[1] = <float>float(obj[1])
         elif self.ctype == 'label':
             self.str_ascii = obj.encode('ascii')
             if len(self.str_ascii) >= 1024:
