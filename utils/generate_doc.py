@@ -125,7 +125,7 @@ def _generate_struct(struct, defines=None):
         if count:
             count = f'[{count}]'
         desc = desc.replace('/*', '').replace('*/', '').strip()
-        out += f'| `{field}` | `{dtype}` | {desc} |\n'
+        out += f'| `{identifier}` | `{dtype}` | {desc} |\n'
     return out.strip() + '\n\n'
 
 
