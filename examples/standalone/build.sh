@@ -20,7 +20,7 @@ fi
 gcc $DVZ_EXAMPLE_FILE \
     $AUTOMATED \
     -I$DVZ_ROOT/include/ \
-    -I$DVZ_ROOT/external/cglm/include \
+    -I$DVZ_ROOT/build/_deps/cglm-src/include \
     -I$DVZ_ROOT/build/_deps/glfw-src/include \
     -I$DVZ_ROOT/external/imgui/ \
     -I$DVZ_ROOT/external/ \
