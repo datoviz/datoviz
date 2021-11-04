@@ -141,6 +141,7 @@ int test_vislib_rectangle(TestContext*);
 int test_vislib_marker(TestContext*);
 int test_vislib_polygon(TestContext*);
 int test_vislib_path(TestContext*);
+int test_vislib_text(TestContext*);
 int test_vislib_image_1(TestContext*);
 int test_vislib_image_cmap(TestContext*);
 int test_vislib_axes_2D_x(TestContext*);
@@ -292,10 +293,11 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE(CANVAS, test_vislib_triangle_list),  //
     CASE_FIXTURE(CANVAS, test_vislib_triangle_strip), //
     CASE_FIXTURE(CANVAS, test_vislib_triangle_fan),   //
-    CASE_FIXTURE(CANVAS, test_vislib_rectangle),   //
+    CASE_FIXTURE(CANVAS, test_vislib_rectangle),      //
     CASE_FIXTURE(CANVAS, test_vislib_marker),         //
     CASE_FIXTURE(CANVAS, test_vislib_polygon),        //
     CASE_FIXTURE(CANVAS, test_vislib_path),           //
+    CASE_FIXTURE(CANVAS, test_vislib_text),           //
     CASE_FIXTURE(CANVAS, test_vislib_image_1),        //
     CASE_FIXTURE(CANVAS, test_vislib_image_cmap),     //
     CASE_FIXTURE(CANVAS, test_vislib_axes_2D_x),      //
@@ -309,7 +311,7 @@ static TestCase TEST_CASES[] = {
     CASE_FIXTURE(CANVAS, test_scene_empty_visuals),         //
     CASE_FIXTURE(CANVAS, test_scene_single),                //
     CASE_FIXTURE(CANVAS, test_scene_double),                //
-    CASE_FIXTURE(CANVAS, test_scene_multiple),                //
+    CASE_FIXTURE(CANVAS, test_scene_multiple),              //
     CASE_FIXTURE(CANVAS, test_scene_link),                  //
     CASE_FIXTURE(CANVAS, test_scene_different_size),        //
     CASE_FIXTURE(CANVAS, test_scene_different_controllers), //

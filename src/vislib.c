@@ -1,5 +1,6 @@
 #include "../include/datoviz/vislib.h"
 #include "../include/datoviz/array.h"
+#include "../include/datoviz/graphics.h"
 #include "../include/datoviz/interact.h"
 #include "../include/datoviz/mesh.h"
 #include "axes.h"
@@ -369,7 +370,8 @@ static void _rectangle_bake(DvzVisual* visual, DvzVisualDataEvent ev)
     // requested by the user.
     uint32_t rectangle_count = arr_p0->item_count;
 
-    // We resize the vertex buffer array so that it holds six vertices per rectangle (two triangles).
+    // We resize the vertex buffer array so that it holds six vertices per rectangle (two
+    // triangles).
     dvz_array_resize(arr_vertex, 6 * rectangle_count);
 
     // Pointers to the input data.
@@ -933,6 +935,187 @@ static void _visual_path(DvzVisual* visual)
     dvz_visual_prop_default(prop, (int32_t[]){DVZ_JOIN_ROUND});
 
     dvz_visual_callback_bake(visual, _path_bake);
+}
+
+
+
+/*************************************************************************************************/
+/*  Text                                                                                         */
+/*************************************************************************************************/
+
+static void _text_bake(DvzVisual* visual, DvzVisualDataEvent ev)
+{
+    ASSERT(visual != NULL);
+
+    DvzProp* prop_pos = dvz_prop_get(visual, DVZ_PROP_POS, 0);        // dvec3
+    DvzProp* prop_text = dvz_prop_get(visual, DVZ_PROP_TEXT, 0);      // str
+    DvzProp* prop_color = dvz_prop_get(visual, DVZ_PROP_COLOR, 0);    // cvec4
+    DvzProp* prop_size = dvz_prop_get(visual, DVZ_PROP_TEXT_SIZE, 0); // float
+    DvzProp* prop_anchor = dvz_prop_get(visual, DVZ_PROP_ANCHOR, 0);  // vec2
+    DvzProp* prop_angle = dvz_prop_get(visual, DVZ_PROP_ANGLE, 0);    // float
+
+    DvzArray* arr_pos = _prop_array(prop_pos, DVZ_PROP_ARRAY_DEFAULT);
+    DvzArray* arr_text = _prop_array(prop_text, DVZ_PROP_ARRAY_DEFAULT);
+    DvzArray* arr_color = _prop_array(prop_color, DVZ_PROP_ARRAY_DEFAULT);
+    DvzArray* arr_size = _prop_array(prop_size, DVZ_PROP_ARRAY_DEFAULT);
+    DvzArray* arr_anchor = _prop_array(prop_anchor, DVZ_PROP_ARRAY_DEFAULT);
+    DvzArray* arr_angle = _prop_array(prop_angle, DVZ_PROP_ARRAY_DEFAULT);
+
+    DvzSource* src_vertex = dvz_source_get(visual, DVZ_SOURCE_TYPE_VERTEX, 0);
+
+    // The baking function doesn't run if the VERTEX source is handled by the user.
+    if (src_vertex->origin != DVZ_SOURCE_ORIGIN_LIB)
+        return;
+    if (src_vertex->obj.request != DVZ_VISUAL_REQUEST_UPLOAD)
+    {
+        log_trace(
+            "skip bake source for source %d that doesn't need updating", src_vertex->source_kind);
+        return;
+    }
+
+    // Source arrays.
+    DvzArray* arr_vertex = &src_vertex->arr;
+
+    // Number of strings.
+    uint32_t n_strings = arr_text->item_count; // number of strings
+    if (n_strings == 0)
+    {
+        log_debug("empty text visual");
+        return;
+    }
+    ASSERT(n_strings > 0);
+    log_info("found %d string(s) in text visual", n_strings);
+
+    // Count the total number of characters, so that we can resize the vertex source array.
+    uint32_t n_chars = 0;
+    char* str = NULL;
+    for (uint32_t i = 0; i < n_strings; i++)
+    {
+        str = *(char**)dvz_array_item(arr_text, i);
+        ASSERT(str != NULL);
+        // WARNING: not safe
+        n_chars += strlen(str);
+    }
+    log_info("found %d total character(s) in text visual", n_chars);
+    ASSERT(n_chars > 0);
+
+    // Graphics data.
+    DvzGraphicsData data = dvz_graphics_data(visual->graphics[0], arr_vertex, NULL, NULL);
+    dvz_graphics_alloc(&data, n_chars);
+
+    DvzGraphicsTextItem item = {0};
+    // Add all of the strings.
+    cvec4* colors = calloc(n_chars, sizeof(cvec4));
+    cvec4* color = NULL;
+    uint32_t string_len = 0;
+    for (uint32_t i = 0; i < n_strings; i++)
+    {
+        // String.
+        item.string = *(char**)dvz_array_item(arr_text, i);
+
+        // Font size for this string.
+        item.font_size = *(float*)dvz_array_item(arr_size, i);
+
+        // String position.
+        _vec3_cast(dvz_array_item(arr_pos, i), &item.vertex.pos);
+
+        // Anchor.
+        memcpy(item.vertex.anchor, dvz_array_item(arr_anchor, i), sizeof(vec2));
+
+        // Angle.
+        item.vertex.angle = *(float*)dvz_array_item(arr_angle, i);
+
+        // Repeat the color for each glyph.
+        color = (cvec4*)dvz_array_item(arr_color, i);
+        string_len = strlen(item.string);
+        for (uint32_t j = 0; j < string_len; j++)
+        {
+            memcpy(colors[j], color, sizeof(cvec4));
+        }
+        item.glyph_colors = colors;
+
+        dvz_graphics_append(&data, &item);
+    }
+    FREE(colors);
+}
+
+static void _visual_text(DvzVisual* visual)
+{
+    ASSERT(visual != NULL);
+    DvzCanvas* canvas = visual->canvas;
+    ASSERT(canvas != NULL);
+    DvzProp* prop = NULL;
+
+    // Graphics.
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TEXT, 0));
+
+    // Sources.
+
+    // Vertex buffer.
+    dvz_visual_source(
+        visual, DVZ_SOURCE_TYPE_VERTEX, 0, DVZ_PIPELINE_GRAPHICS, 0, 0,
+        sizeof(DvzGraphicsTextVertex), 0);
+
+    // Common sources.
+    _common_sources(visual);
+
+    // Params source.
+    dvz_visual_source(                                              //
+        visual, DVZ_SOURCE_TYPE_PARAM, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+        DVZ_USER_BINDING, sizeof(DvzGraphicsTextParams), 0);        //
+
+    // Font atlas source.
+    dvz_visual_source(                                                   //
+        visual, DVZ_SOURCE_TYPE_FONT_ATLAS, 0, DVZ_PIPELINE_GRAPHICS, 0, //
+        DVZ_USER_BINDING + 1, sizeof(cvec4), 0);                         //
+
+
+    // Props:
+
+    // Text position, 1 per string.
+    prop = dvz_visual_prop(visual, DVZ_PROP_POS, 0, DVZ_DTYPE_DVEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
+
+    // Text strings.
+    prop = dvz_visual_prop(visual, DVZ_PROP_TEXT, 0, DVZ_DTYPE_STR, DVZ_SOURCE_TYPE_VERTEX, 0);
+
+    // Text colors, 1 per string.
+    prop = dvz_visual_prop(visual, DVZ_PROP_COLOR, 0, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_default(prop, (cvec4[]){{127, 127, 127, 255}});
+
+    // Text size, 1 per string.
+    prop =
+        dvz_visual_prop(visual, DVZ_PROP_TEXT_SIZE, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_default(prop, (float[]){16.0f});
+
+    // String anchor.
+    prop = dvz_visual_prop(visual, DVZ_PROP_ANCHOR, 0, DVZ_DTYPE_VEC2, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_default(prop, (vec2[]){{0, 0}});
+
+    // String angle.
+    prop = dvz_visual_prop(visual, DVZ_PROP_ANGLE, 0, DVZ_DTYPE_FLOAT, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_default(prop, (float[]){0});
+
+    // Common props.
+    _common_props(visual);
+
+    dvz_visual_callback_bake(visual, _text_bake);
+
+
+    // Connect the font atlas to the FONT_ATLAS and PARAM sources of the text visual.
+    // Text params.
+    ASSERT(canvas->gpu != NULL);
+    ASSERT(canvas->gpu->context != NULL);
+    DvzFontAtlas* atlas = &canvas->gpu->context->font_atlas;
+    ASSERT(atlas != NULL);
+    ASSERT(strlen(atlas->font_str) > 0);
+    dvz_visual_texture(visual, DVZ_SOURCE_TYPE_FONT_ATLAS, 0, atlas->texture);
+
+    DvzGraphicsTextParams params = {0};
+    params.grid_size[0] = (int32_t)atlas->rows;
+    params.grid_size[1] = (int32_t)atlas->cols;
+    params.tex_size[0] = (int32_t)atlas->width;
+    params.tex_size[1] = (int32_t)atlas->height;
+    dvz_visual_data_source(visual, DVZ_SOURCE_TYPE_PARAM, 0, 0, 1, 1, &params);
 }
 
 
@@ -2098,6 +2281,10 @@ void dvz_visual_builtin(DvzVisual* visual, DvzVisualType type, int flags)
 
     case DVZ_VISUAL_IMAGE_CMAP:
         _visual_image_cmap(visual);
+        break;
+
+    case DVZ_VISUAL_TEXT:
+        _visual_text(visual);
         break;
 
     case DVZ_VISUAL_AXES_2D:

@@ -630,6 +630,78 @@ int test_vislib_path(TestContext* tc)
 
 
 
+int test_vislib_text(TestContext* tc)
+{
+    DvzCanvas* canvas = tc->canvas;
+    ASSERT(canvas != NULL);
+
+    // Make visual.
+    DvzVisual visual = dvz_visual(canvas);
+    dvz_visual_builtin(&visual, DVZ_VISUAL_TEXT, 0);
+    _visual_common(&visual);
+
+    // Vertex count and params.
+    const uint32_t N = 26;
+    char str[] = "Hello world!\0";
+    char alphabet[] =
+        "a\0b\0c\0d\0e\0f\0g\0h\0i\0j\0k\0l\0m\0n\0o\0p\0q\0r\0s\0t\0u\0v\0w\0x\0y\0z\0";
+
+    dvec3* pos = calloc(N + 1, sizeof(dvec3));
+    cvec4* color = calloc(N + 1, sizeof(cvec4));
+    float* angle = calloc(N + 1, sizeof(float));
+    float* text_size = calloc(N + 1, sizeof(float));
+    float* anchor = calloc(N + 1, sizeof(vec2));
+    char** text = calloc(N + 1, sizeof(char*));
+
+    // Graphics data.
+    double t = 0;
+    double a = 0, x = 0, y = 0;
+
+    // One string per letter.
+    for (uint32_t i = 0; i < N; i++)
+    {
+        t = i / (double)N;
+        a = M_2PI * t;
+        x = .75 * cos(a);
+        y = .75 * sin(a);
+        pos[i][0] = x;
+        pos[i][1] = y;
+        angle[i] = (float)-a;
+        text_size[i] = 30;
+        text[i] = &alphabet[2 * i];
+        dvz_colormap_scale(DVZ_CMAP_HSV, t, 0, 1, color[i]);
+    }
+
+    // Last string with "Hello world!"
+    color[N][0] = 255;
+    color[N][3] = 255;
+    pos[N][0] = 0;
+    pos[N][1] = 0;
+    angle[N] = 0;
+    text_size[N] = 36;
+    text[N] = str;
+
+    // Set visual data.
+    dvz_visual_data(&visual, DVZ_PROP_POS, 0, N + 1, pos);
+    dvz_visual_data(&visual, DVZ_PROP_COLOR, 0, N + 1, color);
+    dvz_visual_data(&visual, DVZ_PROP_ANGLE, 0, N + 1, angle);
+    dvz_visual_data(&visual, DVZ_PROP_TEXT_SIZE, 0, N + 1, text_size);
+    dvz_visual_data(&visual, DVZ_PROP_ANCHOR, 0, N + 1, anchor);
+    dvz_visual_data(&visual, DVZ_PROP_TEXT, 0, N + 1, text);
+
+    // Free the arrays.
+    FREE(pos);
+    FREE(color);
+    FREE(angle);
+    FREE(text_size);
+    FREE(anchor);
+    FREE(text);
+
+    return _visual_run(&visual, "text");
+}
+
+
+
 static void _image_data(DvzVisual* visual, uint32_t n)
 {
     ASSERT(visual != NULL);
