@@ -156,6 +156,7 @@ _PROPS = {
     'range': cv.DVZ_PROP_RANGE,
     'length': cv.DVZ_PROP_LENGTH,
     'text': cv.DVZ_PROP_TEXT,
+    'glyph': cv.DVZ_PROP_GLYPH,
     'text_size': cv.DVZ_PROP_TEXT_SIZE,
     'scale': cv.DVZ_PROP_SCALE,
     'cap_type': cv.DVZ_PROP_CAP_TYPE,
@@ -1321,21 +1322,6 @@ cdef class Visual:
         c_prop = cv.dvz_prop_get(self._c_visual, prop_type, idx)
         dtype, nc = _DTYPES[c_prop.dtype]
         value = _validate_data(dtype, nc, value)
-
-        # # HACK: convert NumPy array of strings to array of pointers to char*
-        # # TODO: improve string handling!
-        # if value.dtype.char == 'S':
-        #     n_strings = value.shape[0]
-        #     print(f"{n_strings}")
-        #     n_cols = value.shape[1]
-        #     print(f"{n_cols}")
-        #     pointers = np.zeros(n_strings, dtype=np.uint64)
-        #     for i in range(n_strings):
-        #         print("value i = ", value[i])
-        #         pointers[i] = &value.data[i * n_cols * value.strides[0]];
-        #         print(f"{i}, {pointers[i]}")
-        #     value = pointers
-
         N = value.shape[0]
         if mode == 'append':
             cv.dvz_visual_data_append(self._c_visual, prop_type, idx, N, &value.data[0])

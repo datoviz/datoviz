@@ -163,11 +163,17 @@ def test_visual_marker(c):
 
 
 
-# def test_visual_text(c):
-#     s = c.scene()
-#     p = s.panel()
-#     v = p.visual('text')
-#     v.data('text', np.array([[b'a']], dtype='|S1'))
+def test_visual_text(c):
+    s = c.scene()
+    p = s.panel(controller='panzoom')
+    v = p.visual('text')
+    s = "Hello world!"
+    # HACK: glyph index within the font atlas currently used natively in Datoviz
+    v.data('glyph', np.array([ord(i) - 32 for i in s], dtype=np.uint16))
+    v.data('length', np.array([len(s)], dtype=np.uint32))
+    v.data('pos', np.array([[0, 0, 0]], dtype=np.double))
+    v.data('color', np.array([[255, 0, 0, 255]], dtype=np.uint8))
+    v.data('text_size', np.array([[32]], dtype=np.float32))
 
 
 

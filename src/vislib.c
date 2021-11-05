@@ -1020,7 +1020,7 @@ static void _text_bake(DvzVisual* visual, DvzVisualDataEvent ev)
 
     ASSERT(n_strings > 0);
     ASSERT(n_chars > 0);
-    log_info("found %d string(s) in text visual, for a total of %d chars", n_strings, n_chars);
+    log_debug("found %d string(s) in text visual, for a total of %d chars", n_strings, n_chars);
 
     // Graphics data.
     DvzGraphicsData data = dvz_graphics_data(visual->graphics[0], arr_vertex, NULL, NULL);
