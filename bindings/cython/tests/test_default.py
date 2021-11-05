@@ -163,11 +163,11 @@ def test_visual_marker(c):
 
 
 
-def test_visual_text(c):
-    s = c.scene()
-    p = s.panel()
-    v = p.visual('text')
-    v.data('text', np.array([[b'a']], dtype='|S1'))
+# def test_visual_text(c):
+#     s = c.scene()
+#     p = s.panel()
+#     v = p.visual('text')
+#     v.data('text', np.array([[b'a']], dtype='|S1'))
 
 
 

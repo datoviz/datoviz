@@ -612,7 +612,7 @@ DvzProp* dvz_prop_get(DvzVisual* visual, DvzPropType prop_type, uint32_t prop_id
         dvz_container_iter(&iter);
     }
     if (out == NULL)
-        log_trace("prop with type %d #%d not found", prop_type, prop_idx);
+        log_debug("prop with type %d #%d not found", prop_type, prop_idx);
     // ASSERT(out != NULL);
     return out;
 }
