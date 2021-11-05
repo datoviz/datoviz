@@ -250,6 +250,8 @@ struct DvzGraphicsTextItem
     cvec4* glyph_colors;          /* glyph colors */
     float font_size;              /* font size */
     const char* string;           /* text string */
+    uint32_t strlen;              /* string size (only used if glyphs is set instead of string) */
+    const uint16_t* glyphs;       /* glyph indices within the font atlas */
 };
 
 struct DvzGraphicsTextParams

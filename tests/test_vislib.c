@@ -642,16 +642,22 @@ int test_vislib_text(TestContext* tc)
 
     // Vertex count and params.
     const uint32_t N = 26;
-    char str[] = "Hello world!\0";
+    char str[] = "Hello world!\0"; // 12 chars + null char
     char alphabet[] =
-        "a\0b\0c\0d\0e\0f\0g\0h\0i\0j\0k\0l\0m\0n\0o\0p\0q\0r\0s\0t\0u\0v\0w\0x\0y\0z\0";
+        "A\0B\0C\0D\0E\0F\0G\0H\0I\0J\0K\0L\0M\0N\0O\0P\0Q\0R\0S\0T\0U\0V\0W\0X\0Y\0Z\0";
 
     dvec3* pos = calloc(N + 1, sizeof(dvec3));
     cvec4* color = calloc(N + 1, sizeof(cvec4));
     float* angle = calloc(N + 1, sizeof(float));
     float* text_size = calloc(N + 1, sizeof(float));
     float* anchor = calloc(N + 1, sizeof(vec2));
+
+    // Method 1:
     char** text = calloc(N + 1, sizeof(char*));
+
+    // Method 2:
+    uint16_t* glyph = calloc(N + 1, sizeof(uint16_t));
+    uint32_t* length = calloc(N + 1, sizeof(uint32_t));
 
     // Graphics data.
     double t = 0;
@@ -668,7 +674,14 @@ int test_vislib_text(TestContext* tc)
         pos[i][1] = y;
         angle[i] = (float)-a;
         text_size[i] = 30;
+
+        // Method 1:
         text[i] = &alphabet[2 * i];
+
+        // // Method 2:
+        // glyph[i] = 33 + i; // HACK: 33 because that's the current index of A in the font atlas
+        // length[i] = 1;
+
         dvz_colormap_scale(DVZ_CMAP_HSV, t, 0, 1, color[i]);
     }
 
@@ -687,7 +700,13 @@ int test_vislib_text(TestContext* tc)
     dvz_visual_data(&visual, DVZ_PROP_ANGLE, 0, N + 1, angle);
     dvz_visual_data(&visual, DVZ_PROP_TEXT_SIZE, 0, N + 1, text_size);
     dvz_visual_data(&visual, DVZ_PROP_ANCHOR, 0, N + 1, anchor);
+
+    // Method 1:
     dvz_visual_data(&visual, DVZ_PROP_TEXT, 0, N + 1, text);
+
+    // // Method 2:
+    // dvz_visual_data(&visual, DVZ_PROP_GLYPH, 0, N, glyph);
+    // dvz_visual_data(&visual, DVZ_PROP_LENGTH, 0, N, length);
 
     // Free the arrays.
     FREE(pos);
@@ -696,6 +715,8 @@ int test_vislib_text(TestContext* tc)
     FREE(text_size);
     FREE(anchor);
     FREE(text);
+    FREE(glyph);
+    FREE(length);
 
     return _visual_run(&visual, "text");
 }

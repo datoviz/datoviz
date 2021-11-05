@@ -279,16 +279,25 @@ static void _graphics_text_callback(DvzGraphicsData* data, uint32_t item_count, 
     ASSERT(item != NULL);
     ASSERT(data->current_idx < item_count);
 
-    // const char* str = item;
     const DvzGraphicsTextItem* str_item = item;
-    uint32_t n = strlen(str_item->string);
-    DvzGraphicsTextVertex vertex = {0};
-    vertex = str_item->vertex;
+    // Whether the string is set or the glyph indices directly.
+    bool glyph = str_item->string == NULL;
+    if (glyph)
+    {
+        ASSERT(str_item->strlen > 0);
+        ASSERT(str_item->glyphs != NULL);
+    }
+    uint32_t n = glyph ? str_item->strlen : strlen(str_item->string);
     ASSERT(n > 0);
     ASSERT(data->current_idx + n <= item_count);
+
+    // Make a copy of the vertex stored in the text item. We'll copy a modified version of it to
+    // the source array buffer.
+    DvzGraphicsTextVertex vertex = {0};
+    vertex = str_item->vertex;
     for (uint32_t i = 0; i < n; i++)
     {
-        size_t g = _font_atlas_glyph(atlas, str_item->string, i);
+        size_t g = glyph ? str_item->glyphs[i] : _font_atlas_glyph(atlas, str_item->string, i);
 
         // Glyph size.
         _font_atlas_glyph_size(atlas, str_item->font_size, vertex.glyph_size);

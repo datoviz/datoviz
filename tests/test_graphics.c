@@ -763,6 +763,12 @@ int test_graphics_text(TestContext* tc)
     const char str[] = "Hello world!";
     const uint32_t offset = strlen(str);
 
+    // Alternative way of setting the string: with glyph indices (in the font atlas).
+    uint16_t glyphs[26] = {0}; // one glyph for each letter in the alphabet
+    for (uint32_t i = 0; i < 26; i++)
+        glyphs[i] = 33 + i; // HACK: 33 because that's the current index of A in the font atlas
+    ASSERT(glyphs != NULL);
+
     // Font atlas
     DvzFontAtlas* atlas = &context->font_atlas;
 
@@ -792,7 +798,16 @@ int test_graphics_text(TestContext* tc)
         item.font_size = 30;
         char s[2] = {0};
         s[0] = (char)(65 + i);
+
+
+        // First way of setting the string:
         item.string = s;
+
+        // // Second way of setting the glyph indices directly:
+        // item.strlen = 1;
+        // item.glyphs = &glyphs[i];
+
+
         dvz_colormap_scale(DVZ_CMAP_HSV, t, 0, 1, item.vertex.color);
 
         dvz_graphics_append(&tg.graphics_data, &item);

@@ -949,6 +949,8 @@ static void _text_bake(DvzVisual* visual, DvzVisualDataEvent ev)
 
     DvzProp* prop_pos = dvz_prop_get(visual, DVZ_PROP_POS, 0);        // dvec3
     DvzProp* prop_text = dvz_prop_get(visual, DVZ_PROP_TEXT, 0);      // str
+    DvzProp* prop_glyph = dvz_prop_get(visual, DVZ_PROP_GLYPH, 0);    // char
+    DvzProp* prop_length = dvz_prop_get(visual, DVZ_PROP_LENGTH, 0);  // uint
     DvzProp* prop_color = dvz_prop_get(visual, DVZ_PROP_COLOR, 0);    // cvec4
     DvzProp* prop_size = dvz_prop_get(visual, DVZ_PROP_TEXT_SIZE, 0); // float
     DvzProp* prop_anchor = dvz_prop_get(visual, DVZ_PROP_ANCHOR, 0);  // vec2
@@ -956,6 +958,8 @@ static void _text_bake(DvzVisual* visual, DvzVisualDataEvent ev)
 
     DvzArray* arr_pos = _prop_array(prop_pos, DVZ_PROP_ARRAY_DEFAULT);
     DvzArray* arr_text = _prop_array(prop_text, DVZ_PROP_ARRAY_DEFAULT);
+    DvzArray* arr_glyph = _prop_array(prop_glyph, DVZ_PROP_ARRAY_DEFAULT);
+    DvzArray* arr_length = _prop_array(prop_length, DVZ_PROP_ARRAY_DEFAULT);
     DvzArray* arr_color = _prop_array(prop_color, DVZ_PROP_ARRAY_DEFAULT);
     DvzArray* arr_size = _prop_array(prop_size, DVZ_PROP_ARRAY_DEFAULT);
     DvzArray* arr_anchor = _prop_array(prop_anchor, DVZ_PROP_ARRAY_DEFAULT);
@@ -978,26 +982,45 @@ static void _text_bake(DvzVisual* visual, DvzVisualDataEvent ev)
 
     // Number of strings.
     uint32_t n_strings = arr_text->item_count; // number of strings
+    // Total number of characters, so that we can resize the vertex source array.
+    uint32_t n_chars = 0;
+
+    // Alternatively, look at the GLYPH prop instead of TEXT.
+    bool glyphs = false; // whether the user has set glyphs directly instead of text
+
+    // Glyphs are set directly:
     if (n_strings == 0)
+    {
+        glyphs = true;
+        // NOTE: when setting glyphs directly, there is no notion of \0 null-termination of strings
+        n_chars = arr_glyph->item_count;
+        // NOTE: must compute n_strings
+        n_strings = arr_length->item_count;
+    }
+
+    // Or strings are used instead:
+    else
+    {
+        // NOTE: must compute n_chars
+        char* str = NULL;
+        for (uint32_t i = 0; i < n_strings; i++)
+        {
+            str = *(char**)dvz_array_item(arr_text, i);
+            ASSERT(str != NULL);
+            // WARNING: not safe
+            n_chars += strlen(str);
+        }
+    }
+
+    if (n_strings == 0 || n_chars == 0)
     {
         log_debug("empty text visual");
         return;
     }
-    ASSERT(n_strings > 0);
-    log_info("found %d string(s) in text visual", n_strings);
 
-    // Count the total number of characters, so that we can resize the vertex source array.
-    uint32_t n_chars = 0;
-    char* str = NULL;
-    for (uint32_t i = 0; i < n_strings; i++)
-    {
-        str = *(char**)dvz_array_item(arr_text, i);
-        ASSERT(str != NULL);
-        // WARNING: not safe
-        n_chars += strlen(str);
-    }
-    log_info("found %d total character(s) in text visual", n_chars);
+    ASSERT(n_strings > 0);
     ASSERT(n_chars > 0);
+    log_info("found %d string(s) in text visual, for a total of %d chars", n_strings, n_chars);
 
     // Graphics data.
     DvzGraphicsData data = dvz_graphics_data(visual->graphics[0], arr_vertex, NULL, NULL);
@@ -1008,17 +1031,30 @@ static void _text_bake(DvzVisual* visual, DvzVisualDataEvent ev)
     cvec4* colors = calloc(n_chars, sizeof(cvec4));
     cvec4* color = NULL;
     uint32_t string_len = 0;
+    uint32_t k = 0;
     for (uint32_t i = 0; i < n_strings; i++)
     {
         // String.
-        item.string = *(char**)dvz_array_item(arr_text, i);
+        if (glyphs)
+        {
+            string_len = *(uint32_t*)dvz_array_item(arr_length, i);
+            item.strlen = string_len;
+            ASSERT(item.strlen > 0);
+            // NOTE: pointer to the glyph array, increasing of strlen at every string.
+            item.glyphs = (uint16_t*)dvz_array_item(arr_glyph, k);
+            k += item.strlen;
+        }
+        else
+        {
+            item.string = *(char**)dvz_array_item(arr_text, i);
+            string_len = strlen(item.string);
+        }
 
         // Font size for this string.
         item.font_size = *(float*)dvz_array_item(arr_size, i);
 
         // String position.
         _vec3_cast(dvz_array_item(arr_pos, i), &item.vertex.pos);
-
         // Anchor.
         memcpy(item.vertex.anchor, dvz_array_item(arr_anchor, i), sizeof(vec2));
 
@@ -1027,7 +1063,6 @@ static void _text_bake(DvzVisual* visual, DvzVisualDataEvent ev)
 
         // Repeat the color for each glyph.
         color = (cvec4*)dvz_array_item(arr_color, i);
-        string_len = strlen(item.string);
         for (uint32_t j = 0; j < string_len; j++)
         {
             memcpy(colors[j], color, sizeof(cvec4));
@@ -1080,6 +1115,12 @@ static void _visual_text(DvzVisual* visual)
     // Each element is a pointer to a char buffer.
     // WARNING: these pointers must not be freed during the lifetime of the visual!
     prop = dvz_visual_prop(visual, DVZ_PROP_TEXT, 0, DVZ_DTYPE_STR, DVZ_SOURCE_TYPE_VERTEX, 0);
+
+    // Alternatively to setting text strings, one can directly set the glyph index within the font
+    // atlas (useful for wrappers).
+    prop = dvz_visual_prop(visual, DVZ_PROP_GLYPH, 0, DVZ_DTYPE_USHORT, DVZ_SOURCE_TYPE_VERTEX, 0);
+    // Length of each string (glyphs are grouped per string).
+    prop = dvz_visual_prop(visual, DVZ_PROP_LENGTH, 0, DVZ_DTYPE_UINT, DVZ_SOURCE_TYPE_VERTEX, 0);
 
     // Text colors, 1 per string.
     prop = dvz_visual_prop(visual, DVZ_PROP_COLOR, 0, DVZ_DTYPE_CVEC4, DVZ_SOURCE_TYPE_VERTEX, 0);
