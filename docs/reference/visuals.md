@@ -71,6 +71,23 @@ This page lists all visuals currently implemented in the library.
 
 
 
+### Text
+
+![](../images/visuals/path.png)
+
+#### Props
+
+| Type | Index | Type | Description |
+| ---- | ---- | ---- | ---- |
+| `pos` | 0 | `dvec3` | string positions |
+| `text` | 0 | `str` | strings |
+| `color` | 0 | `cvec4` | string colors |
+| `text_size` | 0 | `float` | string text size |
+| `anchor` | 0 | `vec2` | relative string anchor (x, y) |
+| `angle` | 0 | `float` | string rotation angle |
+
+
+
 ### Polygon
 
 ![](../images/visuals/polygon.png)
