@@ -1074,8 +1074,11 @@ static void _visual_text(DvzVisual* visual)
 
     // Text position, 1 per string.
     prop = dvz_visual_prop(visual, DVZ_PROP_POS, 0, DVZ_DTYPE_DVEC3, DVZ_SOURCE_TYPE_VERTEX, 0);
+    dvz_visual_prop_default(prop, (dvec3[]){{0, 0, 0}});
 
     // Text strings.
+    // Each element is a pointer to a char buffer.
+    // WARNING: these pointers must not be freed during the lifetime of the visual!
     prop = dvz_visual_prop(visual, DVZ_PROP_TEXT, 0, DVZ_DTYPE_STR, DVZ_SOURCE_TYPE_VERTEX, 0);
 
     // Text colors, 1 per string.

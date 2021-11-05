@@ -155,6 +155,7 @@ _PROPS = {
     'index': cv.DVZ_PROP_INDEX,
     'range': cv.DVZ_PROP_RANGE,
     'length': cv.DVZ_PROP_LENGTH,
+    'text': cv.DVZ_PROP_TEXT,
     'text_size': cv.DVZ_PROP_TEXT_SIZE,
     'scale': cv.DVZ_PROP_SCALE,
     'cap_type': cv.DVZ_PROP_CAP_TYPE,
@@ -207,6 +208,8 @@ _DTYPES = {
     cv.DVZ_DTYPE_MAT2: (np.float32, (2, 2)),
     cv.DVZ_DTYPE_MAT3: (np.float32, (3, 3)),
     cv.DVZ_DTYPE_MAT4: (np.float32, (4, 4)),
+
+    cv.DVZ_DTYPE_STR: (np.dtype('S1'), 1),
 }
 
 _TRANSFORMS = {
@@ -1312,17 +1315,32 @@ cdef class Visual:
         self._c_context = c_visual.canvas.gpu.context
         self.vtype = vtype
 
-    def data(self, name, np.ndarray value, idx=0, mode=None, range=None):
+    def data(self, name, np.ndarray value, idx=0, mode=None, drange=None):
         """Set the data of the visual associated to a given property."""
         prop_type = _get_prop(name)
         c_prop = cv.dvz_prop_get(self._c_visual, prop_type, idx)
         dtype, nc = _DTYPES[c_prop.dtype]
         value = _validate_data(dtype, nc, value)
+
+        # # HACK: convert NumPy array of strings to array of pointers to char*
+        # # TODO: improve string handling!
+        # if value.dtype.char == 'S':
+        #     n_strings = value.shape[0]
+        #     print(f"{n_strings}")
+        #     n_cols = value.shape[1]
+        #     print(f"{n_cols}")
+        #     pointers = np.zeros(n_strings, dtype=np.uint64)
+        #     for i in range(n_strings):
+        #         print("value i = ", value[i])
+        #         pointers[i] = &value.data[i * n_cols * value.strides[0]];
+        #         print(f"{i}, {pointers[i]}")
+        #     value = pointers
+
         N = value.shape[0]
         if mode == 'append':
             cv.dvz_visual_data_append(self._c_visual, prop_type, idx, N, &value.data[0])
-        elif mode == 'partial' and range is not None:
-            first_item, n_items = range
+        elif mode == 'partial' and drange is not None:
+            first_item, n_items = drange
             assert first_item >= 0, "first item should be positive"
             assert n_items > 0, "n_items should be strictly positive"
             cv.dvz_visual_data_partial(
