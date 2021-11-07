@@ -55,5 +55,5 @@ visual.data('pos', pos)
 visual.data('color', color)
 visual.data('length', length)
 
-# We run the vent loop.
+# We run the event loop.
 run()
