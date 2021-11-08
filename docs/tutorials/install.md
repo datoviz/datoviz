@@ -131,6 +131,7 @@ The philosophy of Datoviz is to **implement all the logic and functionality in C
     11. Once the C library is compiled, you need to compile the Cython module:
 
         ```bash
+        pip install -r requirements-build.txt
         ./manage.sh cython
         ```
 
@@ -183,6 +184,7 @@ The philosophy of Datoviz is to **implement all the logic and functionality in C
     11. Once the C library is compiled, you need to compile the Cython module:
 
         ```bash
+        pip install -r requirements-build.txt
         ./manage.sh cython
         ```
 
@@ -224,6 +226,7 @@ The philosophy of Datoviz is to **implement all the logic and functionality in C
     9. Build the C library:
 
         ```bat
+        pip install -r requirements-build.txt
         manage.bat build
         ```
 
