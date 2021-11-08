@@ -1,2 +1,3 @@
 # datoviz-distributed
-Experiments on a possible distributed version of Datoviz
+
+Experiments on a possible distributed version of Datoviz.

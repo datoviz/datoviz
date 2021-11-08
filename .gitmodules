@@ -1,6 +1,3 @@
-[submodule "external/cglm"]
-	path = external/cglm
-	url = https://github.com/recp/cglm
 [submodule "external/imgui"]
 	path = external/imgui
 	url = https://github.com/ocornut/imgui
