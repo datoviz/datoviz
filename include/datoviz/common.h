@@ -42,6 +42,9 @@ MUTE_OFF
 #include "_debug.h"
 #include "_log.h"
 #include "_math.h"
+#include "_obj.h"
+#include "_thread.h"
+#include "_time.h"
 #include "_types.h"
 
 
