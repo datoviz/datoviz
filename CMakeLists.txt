@@ -230,6 +230,7 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
 # Define the datoviz library target
 file(GLOB sources
     "src/common.c"
+    "src/fileio.c"
 
     # "external/*.c*"
     # "external/imgui/*.c*"
