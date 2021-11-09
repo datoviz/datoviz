@@ -23,6 +23,9 @@ build () {
     cd ..
 }
 
+rmbuild () {
+    rm -rf build
+}
 
 
 # -------------------------------------------------------------------------------------------------
@@ -31,5 +34,9 @@ build () {
 
 if [ $1 == "build" ]
 then
+    build
+elif [ $1 == "rebuild" ]
+then
+    rmbuild
     build
 fi
