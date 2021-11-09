@@ -11,7 +11,7 @@ set(CMAKE_C_STANDARD_REQUIRED True)
 
 
 # Options
-option(DATOVIZ_WITH_PNG "Build Datoviz with PNG support" ON)
+option(DATOVIZ_WITH_PNG "Build Datoviz with PNG support" OFF)
 option(DATOVIZ_WITH_GLSLANG "Build Datoviz with glslang support" OFF)
 option(DATOVIZ_WITH_SWIFTSHADER "Build Datoviz with Swiftshader support" OFF)
 option(DATOVIZ_WITH_CLI "Build Datoviz command-line interface with tests and demos" ON)
@@ -131,7 +131,7 @@ set(COMMON_FLAGS "${COMMON_FLAGS} -fvisibility=hidden")
 set(INCL_DIRS
     ${CMAKE_SOURCE_DIR}/external ${CMAKE_SOURCE_DIR}/external/imgui
     ${CMAKE_SOURCE_DIR}/external/imgui/backends ${CMAKE_SOURCE_DIR}/include/datoviz)
-set(LINK_LIBS m glfw cglm Vulkan::Vulkan pthread)
+set(LINK_LIBS m glfw cglm pthread) # Vulkan::Vulkan
 if(NOT ${WIN32})
     set(LINK_LIBS dl ${LINK_LIBS})
 endif()
@@ -229,6 +229,7 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
 
 # Define the datoviz library target
 file(GLOB sources
+    "src/log.c"
     "src/common.c"
     "src/fileio.c"
 
@@ -240,9 +241,9 @@ file(GLOB sources
 
 file(GLOB cpp_sources
     "external/*.c*"
-    "external/imgui/*.h*" "external/imgui/*.c*"
-    "external/imgui/backends/imgui_impl_glfw.*"
-    "external/imgui/backends/imgui_impl_vulkan.*"
+    # "external/imgui/*.h*" "external/imgui/*.c*"
+    # "external/imgui/backends/imgui_impl_glfw.*"
+    # "external/imgui/backends/imgui_impl_vulkan.*"
 )
 
 set_source_files_properties(${cpp_sources} PROPERTIES COMPILE_FLAGS -w)

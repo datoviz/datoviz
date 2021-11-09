@@ -1,9 +1,15 @@
 #!/bin/bash
+
+# -------------------------------------------------------------------------------------------------
+# Management script
+# -------------------------------------------------------------------------------------------------
+
 if [ $# -eq 0 ]
   then
     echo "No arguments supplied"
     exit
 fi
+
 
 # -------------------------------------------------------------------------------------------------
 # Building
@@ -11,10 +17,10 @@ fi
 
 build () {
     # Make sure macOS uses clang and not gcc
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        export CC=/usr/bin/clang
-        export CXX=/usr/bin/clang++
-    fi
+    # if [[ "$OSTYPE" == "darwin"* ]]; then
+    #     export CC=/usr/bin/clang
+    #     export CXX=/usr/bin/clang++
+    # fi
     ln -sf $(pwd)/data/screenshots $(pwd)/docs/images/ &&
     mkdir -p build &&
     cd build && \
