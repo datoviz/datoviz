@@ -27,20 +27,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/syscall.h>
-#include <sys/types.h>
 #include <time.h>
+
+#if OS_LINUX
+// #include <sys/types.h>
+#include <sys/syscall.h>
 #include <unistd.h>
+#endif
 
 #include "_log.h"
 #include "_macros.h"
 
 #define MAX_THREADS 64
 
-#ifdef _WIN32
-BEGIN_INCL_NO_WARN
-#include "ansicolor-w32.h"
-END_INCL_NO_WARN
+#ifdef OS_WIN32
+MUTE_ON
+// #include "ansicolor-w32.h"
+MUTE_OFF
 #endif
 
 static struct
