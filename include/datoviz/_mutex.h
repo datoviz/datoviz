@@ -39,6 +39,7 @@ struct DvzCond
     // pthread_mutex_t mutex;
 #else
     // TODO
+    int a;
 #endif
 };
 
@@ -51,7 +52,8 @@ struct DvzCond
 #if USE_PTHREAD
 #define DvzMutex pthread_mutex_t
 #else
-#define DvzMutex TODO
+// WARNING TODO
+#define DvzMutex int
 #endif
 
 

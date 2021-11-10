@@ -83,8 +83,10 @@
 #define MUTE_OFF _Pragma("clang diagnostic pop")
 #else
 // MSVC: TODO
-#define MUTE_ON  #pragma warning(push)
-#define MUTE_OFF #pragma warning(pop)
+#define MUTE_ON
+//#pragma warning(push)
+#define MUTE_OFF
+//#pragma warning(pop)
 #endif
 
 
