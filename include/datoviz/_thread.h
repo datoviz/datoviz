@@ -13,6 +13,10 @@
 
 #include "_obj.h"
 
+#define USE_PTHREAD 1
+#if USE_PTHREAD
+#include <pthread.h>
+#endif
 
 
 /*************************************************************************************************/
@@ -32,9 +36,11 @@ typedef void* (*DvzThreadCallback)(void*);
 struct DvzThread
 {
     DvzObject obj;
+#if USE_PTHREAD
     pthread_t thread;
     pthread_mutex_t lock;
-    atomic(int, lock_idx); // used to allow nested callbacks and avoid deadlocks: only 1 lock
+#endif
+    DvzAtomic lock_idx; // used to allow nested callbacks and avoid deadlocks: only 1 lock
 };
 
 
@@ -59,7 +65,7 @@ static inline DvzThread dvz_thread(DvzThreadCallback callback, void* user_data)
         log_error("thread creation failed");
     if (pthread_mutex_init(&thread.lock, NULL) != 0)
         log_error("mutex creation failed");
-    atomic_init(&thread.lock_idx, 0);
+    dvz_atomic_init(&thread.lock_idx);
     dvz_obj_created(&thread.obj);
     return thread;
 }
@@ -78,14 +84,14 @@ static inline void dvz_thread_lock(DvzThread* thread)
         return;
     // The lock idx is used to ensure that nested thread_lock() will work as expected. Only the
     // first lock is effective. Only the last unlock is effective.
-    int lock_idx = atomic_load(&thread->lock_idx);
+    int lock_idx = dvz_atomic_get(&thread->lock_idx);
     ASSERT(lock_idx >= 0);
     if (lock_idx == 0)
     {
         log_trace("acquire lock");
         pthread_mutex_lock(&thread->lock);
     }
-    atomic_store(&thread->lock_idx, lock_idx + 1);
+    dvz_atomic_set(&thread->lock_idx, lock_idx + 1);
 }
 
 
@@ -100,7 +106,7 @@ static inline void dvz_thread_unlock(DvzThread* thread)
     ASSERT(thread != NULL);
     if (!dvz_obj_is_created(&thread->obj))
         return;
-    int lock_idx = atomic_load(&thread->lock_idx);
+    int lock_idx = dvz_atomic_get(&thread->lock_idx);
     ASSERT(lock_idx >= 0);
     if (lock_idx == 1)
     {
@@ -108,7 +114,7 @@ static inline void dvz_thread_unlock(DvzThread* thread)
         pthread_mutex_unlock(&thread->lock);
     }
     if (lock_idx >= 1)
-        atomic_store(&thread->lock_idx, lock_idx - 1);
+        dvz_atomic_set(&thread->lock_idx, lock_idx - 1);
     // else
     //     log_error("lock_idx = 0 ???");
 }

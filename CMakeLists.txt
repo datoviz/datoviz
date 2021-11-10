@@ -152,7 +152,7 @@ set(COMMON_FLAGS "-g -m64 -pedantic -Wall -Wextra -Werror=vla \
     -Wshadow -Wsign-conversion -Wstrict-overflow=5 -Wundef -Wno-unused-parameter -Wno-unused-function")
 
 # ---- compiler-specific options ------------------------------------------------------------------
-if(CC_GNU)
+if(CC_GCC)
     # gcc
     set(COMMON_FLAGS "${COMMON_FLAGS} -Wlogical-op -fdiagnostics-color=always")
     if (NOT OS_WIN32)
