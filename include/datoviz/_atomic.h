@@ -32,9 +32,9 @@
 /*  C++ atomic                                                                                   */
 /*************************************************************************************************/
 #define ATOMIC_CPP
-#include <atomic>
 // #define atomic(t, x) std::atomic<t> x
-#define DvzAtomic   std::atomic<int32_t>
+// Forward reference.
+typedef struct DvzAtomic DvzAtomic;
 #define ATOMIC_DECL DVZ_EXPORT
 #endif
 

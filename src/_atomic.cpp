@@ -8,6 +8,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <atomic>
 #include <cstddef>
 
 #include "_atomic.h"
@@ -16,17 +17,32 @@
 
 
 /*************************************************************************************************/
+/*  C struct wrapper                                                                             */
+/*************************************************************************************************/
+
+struct DvzAtomic
+{
+    std::atomic<int32_t> atom;
+};
+
+
+
+/*************************************************************************************************/
 /*  Atomic functions                                                                             */
 /*************************************************************************************************/
 
-void dvz_atomic_init(DvzAtomic* atomic) { ASSERT(atomic != NULL); }
+void dvz_atomic_init(DvzAtomic* atomic)
+{
+    ASSERT(atomic != NULL);
+    atomic->atom = 0;
+}
 
 
 
 void dvz_atomic_set(DvzAtomic* atomic, int32_t value)
 {
     ASSERT(atomic != NULL);
-    (*atomic) = value;
+    atomic->atom = value;
 }
 
 
@@ -34,6 +50,6 @@ void dvz_atomic_set(DvzAtomic* atomic, int32_t value)
 int32_t dvz_atomic_get(DvzAtomic* atomic)
 {
     ASSERT(atomic != NULL);
-    int32_t value = (*atomic);
+    int32_t value = atomic->atom;
     return value;
 }
