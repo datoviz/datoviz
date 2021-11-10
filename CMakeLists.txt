@@ -129,8 +129,12 @@ set(COMMON_FLAGS "${COMMON_FLAGS} -fvisibility=hidden")
 # -------------------------------------------------------------------------------------------------
 
 set(INCL_DIRS
-    ${CMAKE_SOURCE_DIR}/external ${CMAKE_SOURCE_DIR}/external/imgui
-    ${CMAKE_SOURCE_DIR}/external/imgui/backends ${CMAKE_SOURCE_DIR}/include/datoviz)
+    ${CMAKE_SOURCE_DIR}/external
+    ${CMAKE_SOURCE_DIR}/external/imgui
+    ${CMAKE_SOURCE_DIR}/external/imgui/backends
+    ${CMAKE_SOURCE_DIR}/include/datoviz
+    # ${CMAKE_SOURCE_DIR}/tests
+)
 set(LINK_LIBS m glfw cglm pthread) # Vulkan::Vulkan
 if(NOT ${WIN32})
     set(LINK_LIBS dl ${LINK_LIBS})
@@ -224,14 +228,14 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
 
 
 # -------------------------------------------------------------------------------------------------
-# Datoviz build
+# Datoviz library build
 # -------------------------------------------------------------------------------------------------
 
 # Define the datoviz library target
 file(GLOB sources
     "src/log.c"
-    "src/common.c"
     "src/fileio.c"
+    "cli/main.c"
 
     # "external/*.c*"
     # "external/imgui/*.c*"
@@ -260,4 +264,47 @@ target_include_directories(datoviz PUBLIC ${INCL_DIRS})
 target_link_libraries(datoviz ${LINK_LIBS})
 if(${WIN32})
     target_link_libraries(datoviz -static gcc stdc++ winpthread -dynamic)
+endif()
+
+
+
+# -------------------------------------------------------------------------------------------------
+# CLI tool build
+# -------------------------------------------------------------------------------------------------
+
+set(COMMON_FLAGS "${COMMON_FLAGS_VISIBLE}")
+
+function(target_datoviz target_name)
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        add_compile_options(-fcolor-diagnostics)
+    endif()
+    target_link_libraries(${target_name} datoviz)
+endfunction()
+
+
+set(DVZ_EXAMPLE $ENV{DVZ_EXAMPLE})
+
+# Compilation function .
+function(compile_example example_file)
+    message("Compile example ${example_file}")
+    get_filename_component(example_name ${example_file} NAME_WE)
+    if(WIN32)
+        add_executable(${example_name} WIN32 ${example_file})
+    else()
+        add_executable(${example_name} ${example_file})
+    endif()
+    target_datoviz(${example_name})
+endfunction()
+
+
+if (DATOVIZ_WITH_CLI)
+    file(GLOB cli
+        "cli/main.c"
+        # "tests/test_*.c"
+    )
+
+    add_executable(datovizcli ${cli})
+    target_datoviz(datovizcli)
+    set_target_properties(datovizcli PROPERTIES OUTPUT_NAME "datoviz")
+    # add_test(NAME datoviz_test COMMAND datovizcli test)
 endif()
