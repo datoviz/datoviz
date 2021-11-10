@@ -11,12 +11,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "_macros.h"
+#include "_mutex.h"
 #include "_obj.h"
 
-#define USE_PTHREAD 1
-#if USE_PTHREAD
-#include <pthread.h>
-#endif
 
 
 /*************************************************************************************************/
@@ -38,8 +36,8 @@ struct DvzThread
     DvzObject obj;
 #if USE_PTHREAD
     pthread_t thread;
-    pthread_mutex_t lock;
 #endif
+    DvzMutex lock;
     DvzAtomic lock_idx; // used to allow nested callbacks and avoid deadlocks: only 1 lock
 };
 
@@ -61,10 +59,12 @@ struct DvzThread
 static inline DvzThread dvz_thread(DvzThreadCallback callback, void* user_data)
 {
     DvzThread thread = {0};
+#if USE_PTHREAD
     if (pthread_create(&thread.thread, NULL, callback, user_data) != 0)
         log_error("thread creation failed");
-    if (pthread_mutex_init(&thread.lock, NULL) != 0)
+    if (dvz_mutex_init(&thread.lock) != 0)
         log_error("mutex creation failed");
+#endif
     dvz_atomic_init(&thread.lock_idx);
     dvz_obj_created(&thread.obj);
     return thread;
@@ -89,7 +89,9 @@ static inline void dvz_thread_lock(DvzThread* thread)
     if (lock_idx == 0)
     {
         log_trace("acquire lock");
-        pthread_mutex_lock(&thread->lock);
+#if USE_PTHREAD
+        dvz_mutex_lock(&thread->lock);
+#endif
     }
     dvz_atomic_set(&thread->lock_idx, lock_idx + 1);
 }
@@ -111,7 +113,9 @@ static inline void dvz_thread_unlock(DvzThread* thread)
     if (lock_idx == 1)
     {
         log_trace("release lock");
-        pthread_mutex_unlock(&thread->lock);
+#if USE_PTHREAD
+        dvz_mutex_unlock(&thread->lock);
+#endif
     }
     if (lock_idx >= 1)
         dvz_atomic_set(&thread->lock_idx, lock_idx - 1);
@@ -130,7 +134,9 @@ static inline void dvz_thread_join(DvzThread* thread)
 {
     ASSERT(thread != NULL);
     pthread_join(thread->thread, NULL);
-    pthread_mutex_destroy(&thread->lock);
+#if USE_PTHREAD
+    dvz_mutex_destroy(&thread->lock);
+#endif
     dvz_obj_destroyed(&thread->obj);
 }
 
