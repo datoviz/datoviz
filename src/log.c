@@ -37,6 +37,7 @@
 
 #include "_log.h"
 #include "_macros.h"
+#include "_mutex.h"
 
 #define MAX_THREADS 64
 
@@ -188,14 +189,14 @@ void log_log(int level, const char* file, int line, const char* fmt, ...)
 
 // Use a mutex for the logging lock, prevent multiple threads from simultaneously writing to the
 // standard output.
-static pthread_mutex_t mutex;
+static DvzMutex mutex;
 
 static void _lock(void* udata, int lock)
 {
     if (lock)
-        pthread_mutex_lock(&mutex);
+        dvz_mutex_lock(&mutex);
     else
-        pthread_mutex_unlock(&mutex);
+        dvz_mutex_unlock(&mutex);
 }
 
 void log_set_level_env(void)
