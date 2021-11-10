@@ -22,7 +22,7 @@
 /*************************************************************************************************/
 
 // Time utils.
-#if MSVC
+#if CC_MSVC
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <stdint.h> // portable: uint64_t   MSVC: __int64

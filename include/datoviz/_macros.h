@@ -19,7 +19,7 @@
 /*  Symbol macros                                                                                */
 /*************************************************************************************************/
 
-#if MSVC
+#if CC_MSVC
 #ifdef DVZ_SHARED
 #define DVZ_EXPORT __declspec(dllexport)
 #else
@@ -42,7 +42,7 @@
 /*  Mute macros                                                                                  */
 /*************************************************************************************************/
 
-#if GCC
+#if CC_GCC
 #define MUTE_ON                                                                                   \
     _Pragma("GCC diagnostic push") _Pragma("GCC diagnostic ignored \"-Wsign-conversion\"")        \
         _Pragma("GCC diagnostic ignored \"-Wundef\"")                                             \
@@ -56,7 +56,7 @@
                                         _Pragma("GCC diagnostic ignored \"-Wmissing-braces\"")
 
 #define MUTE_OFF _Pragma("GCC diagnostic pop")
-#elif CLANG
+#elif CC_CLANG
 #define MUTE_ON                                                                                   \
     _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wsign-conversion\"")    \
         _Pragma("clang diagnostic ignored \"-Wcast-qual\"")                                       \
