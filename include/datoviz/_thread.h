@@ -11,6 +11,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "_atomic.h"
 #include "_macros.h"
 #include "_mutex.h"
 #include "_obj.h"

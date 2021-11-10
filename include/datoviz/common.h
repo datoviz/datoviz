@@ -37,7 +37,7 @@ MUTE_OFF
 /*  Internal includes                                                                            */
 /*************************************************************************************************/
 
-#include "_atomic.h"
+//#include "_atomic.h"
 #include "_debug.h"
 #include "_log.h"
 #include "_math.h"

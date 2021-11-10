@@ -54,3 +54,4 @@ dkms.conf
 # Datoviz-specific
 build
 screenshots
+/.vs
