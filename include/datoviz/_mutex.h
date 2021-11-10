@@ -148,7 +148,7 @@ static inline int dvz_cond_signal(DvzCond* cond)
 {
     ASSERT(cond != NULL);
 #if USE_PTHREAD
-    pthread_cond_signal(&cond->cond);
+    return pthread_cond_signal(&cond->cond);
 #endif
 }
 
@@ -163,7 +163,7 @@ static inline int dvz_cond_wait(DvzCond* cond, DvzMutex* mutex)
 {
     ASSERT(cond != NULL);
 #if USE_PTHREAD
-    pthread_cond_wait(&cond->cond, mutex);
+    return pthread_cond_wait(&cond->cond, mutex);
 #endif
 }
 
@@ -194,7 +194,7 @@ static inline int dvz_cond_destroy(DvzCond* cond)
 {
     ASSERT(cond != NULL);
 #if USE_PTHREAD
-    pthread_cond_destroy(&cond->cond);
+    return pthread_cond_destroy(&cond->cond);
 #endif
 }
 
