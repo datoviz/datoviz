@@ -97,7 +97,7 @@ struct DvzClock
  */
 static inline void dvz_sleep(int milliseconds)
 {
-#ifdef WIN32
+#if OS_WIN32
     Sleep((uint32_t)milliseconds);
 #else
     struct timespec ts;

@@ -42,7 +42,11 @@
  *
  * @param atomic the atomic variable to initialize
  */
-static inline void dvz_atomic_init(DvzAtomic* atomic) { atomic_init(atomic, 0); }
+static inline void dvz_atomic_init(DvzAtomic* atomic)
+{
+    ASSERT(atomic != NULL);
+    atomic_init(atomic, 0);
+}
 
 
 
@@ -54,6 +58,7 @@ static inline void dvz_atomic_init(DvzAtomic* atomic) { atomic_init(atomic, 0); 
  */
 static inline void dvz_atomic_set(DvzAtomic* atomic, int32_t value)
 {
+    ASSERT(atomic != NULL);
     atomic_store(atomic, value);
 }
 
@@ -65,7 +70,11 @@ static inline void dvz_atomic_set(DvzAtomic* atomic, int32_t value)
  * @param atomic the atomic variable
  * @returns the value
  */
-static inline int32_t dvz_atomic_get(DvzAtomic* atomic) { return atomic_load(atomic); }
+static inline int32_t dvz_atomic_get(DvzAtomic* atomic)
+{
+    ASSERT(atomic != NULL);
+    return atomic_load(atomic);
+}
 
 
 

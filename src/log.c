@@ -40,7 +40,7 @@
 
 #define MAX_THREADS 64
 
-#ifdef OS_WIN32
+#if OS_WIN32
 MUTE_ON
 // #include "ansicolor-w32.h"
 MUTE_OFF
