@@ -16,11 +16,7 @@ fi
 # -------------------------------------------------------------------------------------------------
 
 build () {
-    # Make sure macOS uses clang and not gcc
-    # if [[ "$OSTYPE" == "darwin"* ]]; then
-    #     export CC=/usr/bin/clang
-    #     export CXX=/usr/bin/clang++
-    # fi
+    mkdir -p docs/images &&
     ln -sf $(pwd)/data/screenshots $(pwd)/docs/images/ &&
     mkdir -p build &&
     cd build && \
