@@ -31,9 +31,20 @@
 #define DVZ_INLINE static inline __attribute((always_inline))
 #endif
 
-
 #ifndef __STDC_VERSION__
 #define __STDC_VERSION__ 0
+#endif
+
+
+
+/*************************************************************************************************/
+/*  C or C++                                                                                     */
+/*************************************************************************************************/
+
+#ifdef __cplusplus
+#define LANG_CPP 1
+#else
+#define LANG_C 1
 #endif
 
 

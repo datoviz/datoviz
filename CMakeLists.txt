@@ -247,8 +247,10 @@ endif("${isSystemDir}" STREQUAL "-1")
 # -------------------------------------------------------------------------------------------------
 
 file(GLOB sources
+    "src/_atomic.cpp"
     "src/log.c"
     "src/fileio.c"
+
     "cli/main.c"
 
     # "external/*.c*"
