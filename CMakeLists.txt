@@ -258,12 +258,13 @@ file(GLOB sources
 
     "cli/main.c"
 
-    # "external/*.c*"
+    "external/*.c"
 )
 
 
 file(GLOB cpp_sources
-    "external/*.c*"
+    "external/*.c"
+    "external/*.cpp"
 )
 
 
