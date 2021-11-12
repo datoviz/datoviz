@@ -71,14 +71,15 @@
 #define MUTE_ON                                                                                   \
     _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wsign-conversion\"")    \
         _Pragma("clang diagnostic ignored \"-Wcast-qual\"")                                       \
-            _Pragma("clang diagnostic ignored \"-Wredundant-decls\"")                             \
-                _Pragma("clang diagnostic ignored \"-Wcast-qual\"")                               \
-                    _Pragma("clang diagnostic ignored \"-Wstrict-overflow\"")                     \
-                        _Pragma("clang diagnostic ignored \"-Wswitch-default\"")                  \
-                            _Pragma("clang diagnostic ignored \"-Wcast-align\"") _Pragma(         \
-                                "clang diagnostic ignored \"-Wundef\"")                           \
-                                _Pragma("clang diagnostic ignored \"-Wmissing-braces\"") _Pragma( \
-                                    "clang diagnostic ignored \"-Wnullability-extension\"")
+            _Pragma("clang diagnostic ignored \"-Wredundant-decls\"") _Pragma(                    \
+                "clang diagnostic ignored \"-Wcast-qual\"")                                       \
+                _Pragma("clang diagnostic ignored \"-Wstrict-overflow\"") _Pragma(                \
+                    "clang diagnostic ignored \"-Wswitch-default\"")                              \
+                    _Pragma("clang diagnostic ignored \"-Wcast-align\"") _Pragma(                 \
+                        "clang diagnostic ignored \"-Wundef\"")                                   \
+                        _Pragma("clang diagnostic ignored \"-Wmissing-braces\"") _Pragma(         \
+                            "clang diagnostic ignored \"-Wnullability-extension\"")               \
+                            _Pragma("clang diagnostic ignored \"-Wunguarded-availability-new\"")
 
 #define MUTE_OFF _Pragma("clang diagnostic pop")
 #else

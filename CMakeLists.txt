@@ -149,7 +149,8 @@ set(COMMON_FLAGS "-g -m64 -pedantic -Wall -Wextra -Werror=vla \
     -Wcast-align -Wcast-qual -Wredundant-decls -Wswitch-default -Wdisabled-optimization \
     -Wformat=2 -Winit-self -Wno-missing-field-initializers -Wno-unused-result \
     -Wmissing-declarations -Wmissing-include-dirs -Wno-format-nonliteral \
-    -Wshadow -Wsign-conversion -Wstrict-overflow=5 -Wundef -Wno-unused-parameter -Wno-unused-function")
+    -Wshadow -Wsign-conversion -Wstrict-overflow=5 -Wundef -Wno-unused-parameter \
+    -Wno-unused-function")
 
 # ---- compiler-specific options ------------------------------------------------------------------
 if(CC_GCC)
@@ -164,9 +165,13 @@ if(CC_GCC)
 
 elseif(CC_CLANG)
     # clang
-    set(COMMON_FLAGS "${COMMON_FLAGS} -Wno-unused-parameter -fcolor-diagnostics -Wno-missing-braces")
+    set(COMMON_FLAGS "${COMMON_FLAGS} -Wno-unused-parameter -fcolor-diagnostics -Wno-missing-braces -Wmissing-prototypes")
 
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMMON_FLAGS} -std=c11 -Wmissing-prototypes")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMMON_FLAGS} -std=c11")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAGS}")
+    set(CMAKE_OBJC_FLAGS
+        "${CMAKE_OBJC_FLAGS} ${COMMON_FLAGS}
+        -Wno-partial-availability -Wno-unguarded-availability-new")
 
 elseif(CC_MSVC)
     # MSVC
