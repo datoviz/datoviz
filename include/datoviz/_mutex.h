@@ -14,9 +14,7 @@
 #include "_macros.h"
 #include "_time.h"
 
-#if USE_PTHREAD
-#include <pthread.h>
-#endif
+#include "tinycthread.h"
 
 
 
@@ -24,24 +22,7 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct DvzCond DvzCond;
-
-
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-struct DvzCond
-{
-#if USE_PTHREAD
-    pthread_cond_t cond;
-    // pthread_mutex_t mutex;
-#else
-    // TODO
-    int a;
-#endif
-};
+typedef cnd_t DvzCond;
 
 
 
@@ -49,12 +30,7 @@ struct DvzCond
 /*  Macros                                                                                       */
 /*************************************************************************************************/
 
-#if USE_PTHREAD
-#define DvzMutex pthread_mutex_t
-#else
-// WARNING TODO
-#define DvzMutex int
-#endif
+typedef mtx_t DvzMutex;
 
 
 
@@ -70,9 +46,7 @@ struct DvzCond
 static inline int dvz_mutex_init(DvzMutex* mutex)
 {
     ASSERT(mutex != NULL);
-#if USE_PTHREAD
-    return pthread_mutex_init(mutex, 0);
-#endif
+    return mtx_init(mutex, 0);
 }
 
 
@@ -85,9 +59,7 @@ static inline int dvz_mutex_init(DvzMutex* mutex)
 static inline int dvz_mutex_lock(DvzMutex* mutex)
 {
     ASSERT(mutex != NULL);
-#if USE_PTHREAD
-    return pthread_mutex_lock(mutex);
-#endif
+    return mtx_lock(mutex);
 }
 
 
@@ -100,9 +72,7 @@ static inline int dvz_mutex_lock(DvzMutex* mutex)
 static inline int dvz_mutex_unlock(DvzMutex* mutex)
 {
     ASSERT(mutex != NULL);
-#if USE_PTHREAD
-    return pthread_mutex_unlock(mutex);
-#endif
+    return mtx_unlock(mutex);
 }
 
 
@@ -112,12 +82,10 @@ static inline int dvz_mutex_unlock(DvzMutex* mutex)
  *
  * @param mutex the mutex to destroy
  */
-static inline int dvz_mutex_destroy(DvzMutex* mutex)
+static inline void dvz_mutex_destroy(DvzMutex* mutex)
 {
     ASSERT(mutex != NULL);
-#if USE_PTHREAD
-    return pthread_mutex_destroy(mutex);
-#endif
+    mtx_destroy(mutex);
 }
 
 
@@ -134,9 +102,7 @@ static inline int dvz_mutex_destroy(DvzMutex* mutex)
 static inline int dvz_cond_init(DvzCond* cond)
 {
     ASSERT(cond != NULL);
-#if USE_PTHREAD
-    return pthread_cond_init(&cond->cond, 0);
-#endif
+    return cnd_init(cond);
 }
 
 
@@ -149,9 +115,7 @@ static inline int dvz_cond_init(DvzCond* cond)
 static inline int dvz_cond_signal(DvzCond* cond)
 {
     ASSERT(cond != NULL);
-#if USE_PTHREAD
-    return pthread_cond_signal(&cond->cond);
-#endif
+    return cnd_signal(cond);
 }
 
 
@@ -164,9 +128,7 @@ static inline int dvz_cond_signal(DvzCond* cond)
 static inline int dvz_cond_wait(DvzCond* cond, DvzMutex* mutex)
 {
     ASSERT(cond != NULL);
-#if USE_PTHREAD
-    return pthread_cond_wait(&cond->cond, mutex);
-#endif
+    return cnd_wait(cond, mutex);
 }
 
 
@@ -180,9 +142,7 @@ static inline int dvz_cond_wait(DvzCond* cond, DvzMutex* mutex)
 static inline int dvz_cond_timedwait(DvzCond* cond, DvzMutex* mutex, struct timespec* wait)
 {
     ASSERT(cond != NULL);
-#if USE_PTHREAD
-    return pthread_cond_timedwait(&cond->cond, mutex, wait);
-#endif
+    return cnd_timedwait(cond, mutex, wait);
 }
 
 
@@ -192,12 +152,10 @@ static inline int dvz_cond_timedwait(DvzCond* cond, DvzMutex* mutex, struct time
  *
  * @param cond the cond
  */
-static inline int dvz_cond_destroy(DvzCond* cond)
+static inline void dvz_cond_destroy(DvzCond* cond)
 {
     ASSERT(cond != NULL);
-#if USE_PTHREAD
-    return pthread_cond_destroy(&cond->cond);
-#endif
+    cnd_destroy(cond);
 }
 
 
