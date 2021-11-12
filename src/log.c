@@ -32,6 +32,8 @@
 // #include <sys/types.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+#elif OS_MACOS
+#include <pthread.h>
 #endif
 
 #include "_log.h"
