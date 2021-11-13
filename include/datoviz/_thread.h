@@ -59,7 +59,7 @@ struct DvzThread
 static inline DvzThread dvz_thread(DvzThreadCallback callback, void* user_data)
 {
     DvzThread thread = {0};
-    if (thrd_create(&thread.thread, callback, user_data) != 0)
+    if (thrd_create(&thread.thread, callback, user_data) != thrd_success)
         log_error("thread creation failed");
     if (dvz_mutex_init(&thread.lock) != 0)
         log_error("mutex creation failed");

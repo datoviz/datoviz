@@ -13,6 +13,29 @@
 
 #define TST_DEFAULT_CAPACITY 32
 
+#define AT(x)                                                                                     \
+    if (!(x))                                                                                     \
+    {                                                                                             \
+        log_error("assertion '%s' failed", #x);                                                   \
+        return 1;                                                                                 \
+    }
+
+#define AEn(n, x, y)                                                                              \
+    {                                                                                             \
+        for (uint32_t k = 0; k < (n); k++)                                                        \
+            AT((x)[k] == (y)[k]);                                                                 \
+    }
+
+#define AIN(x, m, M) AT((m) <= (x) && (x) <= (M))
+
+#define AC(x, y, eps) AIN(((x) - (y)), -(eps), +(eps))
+
+#define ACn(n, x, y, eps)                                                                         \
+    for (uint32_t i = 0; i < (n); i++)                                                            \
+        AC((x)[i], (y)[i], (eps));
+
+#define EPS 1e-6
+
 
 
 /*************************************************************************************************/

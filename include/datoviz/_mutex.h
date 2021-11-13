@@ -46,7 +46,8 @@ typedef mtx_t DvzMutex;
 static inline int dvz_mutex_init(DvzMutex* mutex)
 {
     ASSERT(mutex != NULL);
-    return mtx_init(mutex, 0);
+    // NOTE: thrd_success is 1, not 0 (!?)
+    return mtx_init(mutex, 0) != thrd_success;
 }
 
 
@@ -59,7 +60,7 @@ static inline int dvz_mutex_init(DvzMutex* mutex)
 static inline int dvz_mutex_lock(DvzMutex* mutex)
 {
     ASSERT(mutex != NULL);
-    return mtx_lock(mutex);
+    return mtx_lock(mutex) != thrd_success;
 }
 
 
@@ -72,7 +73,7 @@ static inline int dvz_mutex_lock(DvzMutex* mutex)
 static inline int dvz_mutex_unlock(DvzMutex* mutex)
 {
     ASSERT(mutex != NULL);
-    return mtx_unlock(mutex);
+    return mtx_unlock(mutex) != thrd_success;
 }
 
 
