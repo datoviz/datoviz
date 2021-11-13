@@ -256,8 +256,6 @@ file(GLOB sources
     "src/log.c"
     "src/fileio.c"
 
-    "cli/main.c"
-
     "external/*.c"
 )
 
@@ -291,9 +289,11 @@ target_link_libraries(datoviz ${LINK_LIBS})
 if (DATOVIZ_WITH_CLI)
     file(GLOB cli
         "cli/main.c"
+        "tests/tests.c"
     )
 
     add_executable(datovizcli ${cli})
+    target_include_directories(datovizcli PUBLIC ${INCL_DIRS} ${CMAKE_SOURCE_DIR}/tests)
     target_link_libraries(datovizcli datoviz)
     set_target_properties(datovizcli PROPERTIES OUTPUT_NAME "datoviz")
 endif()

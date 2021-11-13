@@ -9,13 +9,19 @@
 /*************************************************************************************************/
 
 #include "main.h"
+#include "_macros.h"
 #include "common.h"
+#include "tests.h"
 
 
 
 /*************************************************************************************************/
 /*  Macros                                                                                       */
 /*************************************************************************************************/
+
+#define SWITCH_CLI_ARG(arg)                                                                       \
+    if (argc >= 1 && strcmp(argv[1], #arg) == 0)                                                  \
+        res = arg(argc - 1, &argv[1]);
 
 
 
@@ -25,7 +31,7 @@
 
 static int test(int argc, char** argv)
 {
-    // TODO
+    dvz_run_tests();
     return 0;
 }
 
@@ -49,6 +55,8 @@ int main(int argc, char** argv)
     }
     ASSERT(argc >= 2);
     int res = 0;
-    // TODO
+    // SWITCH_CLI_ARG(info)
+    SWITCH_CLI_ARG(test)
+    // SWITCH_CLI_ARG(demo)
     return res;
 }
