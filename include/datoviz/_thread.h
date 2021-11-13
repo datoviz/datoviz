@@ -131,6 +131,7 @@ static inline void dvz_thread_join(DvzThread* thread)
     ASSERT(thread != NULL);
     thrd_join(thread->thread, NULL);
     dvz_mutex_destroy(&thread->lock);
+    dvz_atomic_destroy(thread->lock_idx);
     dvz_obj_destroyed(&thread->obj);
 }
 

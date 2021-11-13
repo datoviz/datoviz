@@ -92,3 +92,15 @@ int dvz_test_cond_1(TstSuite* suite)
     dvz_cond_destroy(&cond);
     return 0;
 }
+
+
+
+int dvz_test_atomic_1(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+    DvzAtomic* atomic = dvz_atomic();
+    dvz_atomic_set(atomic, 42);
+    AT(dvz_atomic_get(atomic) == 42)
+    dvz_atomic_destroy(atomic);
+    return 0;
+}

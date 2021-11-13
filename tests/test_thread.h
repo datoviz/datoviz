@@ -22,6 +22,7 @@
 int dvz_test_thread_1(TstSuite*);
 int dvz_test_mutex_1(TstSuite*);
 int dvz_test_cond_1(TstSuite*);
+int dvz_test_atomic_1(TstSuite*);
 
 
 

@@ -34,10 +34,11 @@ int dvz_run_tests()
 {
     TstSuite suite = tst_suite();
 
-    // Testing thread.
+    // Testing thread utils.
     TEST(thread_1)
     TEST(mutex_1)
     TEST(cond_1)
+    TEST(atomic_1)
 
     // Testing obj.
     TEST(obj_1)
