@@ -261,8 +261,7 @@ set(sources
 
 
 set(cpp_sources
-    "src/_atomic.cpp"
-    "external/tinycthread.c"
+    ${sources}
 )
 
 
@@ -289,6 +288,7 @@ target_link_libraries(libdatoviz ${LINK_LIBS})
 if (DATOVIZ_WITH_CLI)
     set(cli
         "cli/main.c"
+        "external/tinycthread.c"  # NOTE: for mutex functions not exported in libdatoviz
         "tests/test_thread.c"
         "tests/test_obj.c"
         "tests/test.c"
