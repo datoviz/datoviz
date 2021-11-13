@@ -43,6 +43,32 @@ int dvz_test_thread_1(TstSuite* suite)
 
 
 
+static int _mutex_callback(void* user_data)
+{
+    ASSERT(user_data != NULL);
+    DvzMutex* mutex = (DvzMutex*)user_data;
+    dvz_sleep(10);
+    dvz_mutex_lock(mutex);
+    return 0;
+}
+
+int dvz_test_mutex_1(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+    DvzMutex mutex = dvz_mutex();
+
+    DvzThread thread = dvz_thread(_mutex_callback, &mutex);
+    dvz_mutex_lock(&mutex);
+    dvz_sleep(20);
+    dvz_mutex_unlock(&mutex);
+
+    dvz_thread_join(&thread);
+    dvz_mutex_destroy(&mutex);
+    return 0;
+}
+
+
+
 static int _cond_callback(void* user_data)
 {
     ASSERT(user_data != NULL);

@@ -34,6 +34,7 @@ int dvz_run_tests()
     TstSuite suite = tst_suite();
 
     TEST(thread_1)
+    TEST(mutex_1)
     TEST(cond_1)
 
     tst_suite_run(&suite, NULL);
