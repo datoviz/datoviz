@@ -12,6 +12,7 @@
 
 #include "_thread.h"
 #include "test.h"
+#include "test_obj.h"
 #include "test_thread.h"
 #include "testing.h"
 
@@ -33,9 +34,13 @@ int dvz_run_tests()
 {
     TstSuite suite = tst_suite();
 
+    // Testing thread.
     TEST(thread_1)
     TEST(mutex_1)
     TEST(cond_1)
+
+    // Testing obj.
+    TEST(obj_1)
 
     tst_suite_run(&suite, NULL);
     tst_suite_destroy(&suite);

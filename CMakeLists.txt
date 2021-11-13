@@ -290,6 +290,7 @@ if (DATOVIZ_WITH_CLI)
     file(GLOB cli
         "cli/main.c"
         "tests/test_thread.c"
+        "tests/test_obj.c"
         "tests/test.c"
     )
 
