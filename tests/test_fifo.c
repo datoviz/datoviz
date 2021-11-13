@@ -18,6 +18,18 @@
 
 
 /*************************************************************************************************/
+/*  Utilstests                                                                                   */
+/*************************************************************************************************/
+
+static bool _is_empty(DvzFifo* fifo)
+{
+    ASSERT(fifo != NULL);
+    return dvz_atomic_get(fifo->is_empty) == 1;
+}
+
+
+
+/*************************************************************************************************/
 /*  FIFO tests                                                                                   */
 /*************************************************************************************************/
 
@@ -58,11 +70,11 @@ int test_utils_fifo_1(TstSuite* suite)
     // Enqueue + dequeue in the same thread.
     AT(fifo.is_empty);
     dvz_fifo_enqueue(&fifo, &item);
-    AT(!fifo.is_empty);
+    AT(!_is_empty(&fifo));
     ASSERT(fifo.tail == 1);
     ASSERT(fifo.head == 0);
     uint8_t* data = dvz_fifo_dequeue(&fifo, true);
-    AT(fifo.is_empty);
+    AT(_is_empty(&fifo));
     ASSERT(*data == item);
 
     // Enqueue in the main thread, dequeue in a background thread.
@@ -70,7 +82,7 @@ int test_utils_fifo_1(TstSuite* suite)
     ASSERT(fifo.user_data == NULL);
     pthread_create(&thread, NULL, _fifo_thread_1, &fifo);
     dvz_fifo_enqueue(&fifo, &item);
-    AT(!fifo.is_empty);
+    AT(!_is_empty(&fifo));
     pthread_join(thread, NULL);
     ASSERT(fifo.user_data != NULL);
     ASSERT(fifo.user_data == &item);
@@ -108,11 +120,11 @@ int test_utils_fifo_2(TstSuite* suite)
     uint32_t* res = NULL;
     for (uint32_t i = 0; i < 64; i++)
     {
-        AT(!fifo.is_empty);
+        AT(!_is_empty(&fifo));
         res = dvz_fifo_dequeue(&fifo, false);
         AT(*res == i);
     }
-    AT(fifo.is_empty);
+    AT(_is_empty(&fifo));
     dvz_fifo_destroy(&fifo);
     return 0;
 }

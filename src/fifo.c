@@ -23,8 +23,13 @@ DvzFifo dvz_fifo(int32_t capacity)
     DvzFifo fifo = {0};
     ASSERT(capacity <= DVZ_MAX_FIFO_CAPACITY);
     fifo.capacity = capacity;
-    fifo.is_empty = true;
     fifo.items = calloc((uint32_t)capacity, sizeof(void*));
+
+    // Create atomic variables.
+    fifo.is_empty = dvz_atomic();
+    dvz_atomic_set(fifo.is_empty, 1);
+
+    fifo.is_processing = dvz_atomic();
 
     if (pthread_mutex_init(&fifo.lock, NULL) != 0)
         log_error("mutex creation failed");
@@ -91,7 +96,7 @@ void dvz_fifo_enqueue(DvzFifo* fifo, void* item)
     fifo->tail++;
     if (fifo->tail >= fifo->capacity)
         fifo->tail -= fifo->capacity;
-    fifo->is_empty = false;
+    dvz_atomic_set(fifo->is_empty, 0);
 
     ASSERT(0 <= fifo->tail && fifo->tail < fifo->capacity);
     pthread_cond_signal(&fifo->cond);
@@ -115,7 +120,7 @@ void dvz_fifo_enqueue_first(DvzFifo* fifo, void* item)
     ASSERT(0 <= fifo->head && fifo->head < fifo->capacity);
 
     fifo->items[fifo->head] = item;
-    fifo->is_empty = false;
+    dvz_atomic_set(fifo->is_empty, 0);
 
     ASSERT(0 <= fifo->tail && fifo->tail < fifo->capacity);
     int size = fifo->tail - fifo->head;
@@ -148,7 +153,7 @@ void* dvz_fifo_dequeue(DvzFifo* fifo, bool wait)
         // log_trace("FIFO queue was empty");
         // Don't forget to unlock the mutex before exiting this function.
         pthread_mutex_unlock(&fifo->lock);
-        fifo->is_empty = true;
+        dvz_atomic_set(fifo->is_empty, 1);
         return NULL;
     }
 
@@ -164,7 +169,7 @@ void* dvz_fifo_dequeue(DvzFifo* fifo, bool wait)
     ASSERT(0 <= fifo->head && fifo->head < fifo->capacity);
 
     if (fifo->tail == fifo->head)
-        fifo->is_empty = true;
+        dvz_atomic_set(fifo->is_empty, 1);
 
     pthread_mutex_unlock(&fifo->lock);
     return item;

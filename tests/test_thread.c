@@ -99,7 +99,7 @@ int test_utils_cond_1(TstSuite* suite)
 int test_utils_atomic_1(TstSuite* suite)
 {
     ASSERT(suite != NULL);
-    DvzAtomic* atomic = dvz_atomic();
+    DvzAtomic atomic = dvz_atomic();
     dvz_atomic_set(atomic, 42);
     AT(dvz_atomic_get(atomic) == 42)
     dvz_atomic_destroy(atomic);

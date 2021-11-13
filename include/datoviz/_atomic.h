@@ -29,7 +29,7 @@
 #define ATOMIC_C
 #include <stdatomic.h>
 // #define atomic(t, x) _Atomic t x
-#define DvzAtomic   _Atomic int32_t
+#define DvzAtomic_  _Atomic int32_t
 #define ATOMIC_DECL static inline
 #else
 /*  C++ atomic                                                                                   */
@@ -37,9 +37,11 @@
 #define ATOMIC_CPP
 // #define atomic(t, x) std::atomic<t> x
 // Forward reference.
-typedef struct DvzAtomic DvzAtomic;
+typedef struct DvzAtomic_ DvzAtomic_;
 #define ATOMIC_DECL DVZ_EXPORT
 #endif
+
+#define DvzAtomic DvzAtomic_*
 
 
 
@@ -49,12 +51,14 @@ typedef struct DvzAtomic DvzAtomic;
 
 EXTERN_C_ON
 
+
+
 /**
  * Initialize an atomic.
  *
  * @param atomic the atomic variable to initialize
  */
-ATOMIC_DECL void dvz_atomic_init(DvzAtomic* atomic)
+ATOMIC_DECL void dvz_atomic_init(DvzAtomic atomic)
 #ifdef ATOMIC_C
 {
     ASSERT(atomic != NULL);
@@ -71,10 +75,10 @@ ATOMIC_DECL void dvz_atomic_init(DvzAtomic* atomic)
  *
  * @returns the atomic
  */
-ATOMIC_DECL DvzAtomic* dvz_atomic()
+ATOMIC_DECL DvzAtomic dvz_atomic()
 #ifdef ATOMIC_C
 {
-    DvzAtomic* atomic = (DvzAtomic*)calloc(1, sizeof(DvzAtomic));
+    DvzAtomic atomic = (DvzAtomic)calloc(1, sizeof(DvzAtomic));
     dvz_atomic_init(atomic);
     return atomic;
 }
@@ -90,7 +94,7 @@ ATOMIC_DECL DvzAtomic* dvz_atomic()
  * @param atomic the atomic variable
  * @param value the value
  */
-ATOMIC_DECL void dvz_atomic_set(DvzAtomic* atomic, int32_t value)
+ATOMIC_DECL void dvz_atomic_set(DvzAtomic atomic, int32_t value)
 #ifdef ATOMIC_C
 {
     ASSERT(atomic != NULL);
@@ -108,7 +112,7 @@ ATOMIC_DECL void dvz_atomic_set(DvzAtomic* atomic, int32_t value)
  * @param atomic the atomic variable
  * @returns the value
  */
-ATOMIC_DECL int32_t dvz_atomic_get(DvzAtomic* atomic)
+ATOMIC_DECL int32_t dvz_atomic_get(DvzAtomic atomic)
 #ifdef ATOMIC_C
 {
     ASSERT(atomic != NULL);
@@ -125,7 +129,7 @@ ATOMIC_DECL int32_t dvz_atomic_get(DvzAtomic* atomic)
  *
  * @param atomic the atomic variable
  */
-ATOMIC_DECL void dvz_atomic_destroy(DvzAtomic* atomic)
+ATOMIC_DECL void dvz_atomic_destroy(DvzAtomic atomic)
 #ifdef ATOMIC_C
 {
     ASSERT(atomic != NULL);
@@ -135,7 +139,8 @@ ATOMIC_DECL void dvz_atomic_destroy(DvzAtomic* atomic)
     ;
 #endif
 
-EXTERN_C_OFF
 
+
+EXTERN_C_OFF
 
 #endif

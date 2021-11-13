@@ -38,7 +38,7 @@ struct DvzThread
     DvzObject obj;
     thrd_t thread;
     DvzMutex lock;
-    DvzAtomic* lock_idx; // used to allow nested callbacks and avoid deadlocks: only 1 lock
+    DvzAtomic lock_idx; // used to allow nested callbacks and avoid deadlocks: only 1 lock
 };
 
 
