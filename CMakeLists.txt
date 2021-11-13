@@ -208,9 +208,9 @@ endif()
 # Linking libraries
 # -------------------------------------------------------------------------------------------------
 
-set(LINK_LIBS m glfw cglm pthread) # Vulkan::Vulkan
+set(LINK_LIBS glfw cglm) # Vulkan::Vulkan
 if(NOT ${WIN32})
-    set(LINK_LIBS dl ${LINK_LIBS})
+    set(LINK_LIBS m dl pthread ${LINK_LIBS})
 endif()
 
 # ---- OS-specific linking libraries --------------------------------------------------------------
@@ -218,7 +218,7 @@ if(${OS_MACOS})
     link_directories(/usr/local/lib)
 elseif(${OS_WIN32})
     link_directories($ENV{CGLM_LIB} $ENV{VULKAN_SDK}\\Lib $ENV{VULKAN_SDK}\\Bin ${MINGW_DIR})
-    set(LINK_LIBS dl ${LINK_LIBS} "-static gcc stdc++ winpthread -dynamic")
+    set(LINK_LIBS ${LINK_LIBS})
 endif()
 
 
@@ -261,6 +261,7 @@ file(GLOB sources
 
 
 file(GLOB cpp_sources
+    "src/_atomic.cpp"
     "external/*.c"
     "external/*.cpp"
 )
@@ -270,16 +271,16 @@ file(GLOB cpp_sources
 # Datoviz shared library
 # -------------------------------------------------------------------------------------------------
 
-add_library(datoviz SHARED ${sources})
+add_library(libdatoviz SHARED ${sources})
 set_source_files_properties(${cpp_sources} PROPERTIES COMPILE_FLAGS -w)
-set_target_properties(datoviz PROPERTIES
+set_target_properties(libdatoviz PROPERTIES
     VERSION ${DATOVIZ_VERSION}
     SOVERSION 1
     # PUBLIC_HEADER include/datoviz/datoviz.h
     )
-target_compile_definitions(datoviz PUBLIC ${COMPILE_DEFINITIONS})
-target_include_directories(datoviz PUBLIC ${INCL_DIRS})
-target_link_libraries(datoviz ${LINK_LIBS})
+target_compile_definitions(libdatoviz PUBLIC ${COMPILE_DEFINITIONS})
+target_include_directories(libdatoviz PUBLIC ${INCL_DIRS})
+target_link_libraries(libdatoviz ${LINK_LIBS})
 
 
 # -------------------------------------------------------------------------------------------------
@@ -298,5 +299,5 @@ if (DATOVIZ_WITH_CLI)
     set_target_properties(datovizcli PROPERTIES OUTPUT_NAME "datoviz")
     target_compile_definitions(datovizcli PUBLIC ${COMPILE_DEFINITIONS})
     target_include_directories(datovizcli PUBLIC ${INCL_DIRS} ${CMAKE_SOURCE_DIR}/tests)
-    target_link_libraries(datovizcli datoviz)
+    target_link_libraries(datovizcli libdatoviz)
 endif()
