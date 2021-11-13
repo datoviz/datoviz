@@ -2,8 +2,8 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_TEST_THREAD
-#define DVZ_HEADER_TEST_THREAD
+#ifndef DVZ_HEADER_TEST_FIFO
+#define DVZ_HEADER_TEST_FIFO
 
 
 
@@ -16,16 +16,28 @@
 
 
 /*************************************************************************************************/
-/*  Tests                                                                                        */
+/*  FIFO tests                                                                                   */
 /*************************************************************************************************/
 
-int test_utils_thread_1(TstSuite*);
+int test_utils_fifo_1(TstSuite*);
 
-int test_utils_mutex_1(TstSuite*);
+int test_utils_fifo_2(TstSuite*);
 
-int test_utils_cond_1(TstSuite*);
+int test_utils_fifo_resize(TstSuite*);
 
-int test_utils_atomic_1(TstSuite*);
+int test_utils_fifo_discard(TstSuite*);
+
+int test_utils_fifo_first(TstSuite*);
+
+
+
+/*************************************************************************************************/
+/*  Deq tests                                                                                    */
+/*************************************************************************************************/
+
+int test_utils_deq_1(TstSuite*);
+
+int test_utils_deq_2(TstSuite*);
 
 
 

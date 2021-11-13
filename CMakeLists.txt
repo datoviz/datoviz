@@ -255,6 +255,7 @@ set(sources
     "src/_atomic.cpp"
     "src/log.c"
     "src/fileio.c"
+    "src/fifo.c"
 
     "external/tinycthread.c"
 )
@@ -291,6 +292,7 @@ if (DATOVIZ_WITH_CLI)
         "external/tinycthread.c"  # NOTE: for mutex functions not exported in libdatoviz
         "tests/test_thread.c"
         "tests/test_obj.c"
+        "tests/test_fifo.c"
         "tests/test.c"
     )
 

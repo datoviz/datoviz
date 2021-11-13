@@ -40,7 +40,7 @@ struct TestObject
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int dvz_test_obj_1(TstSuite* suite)
+int test_utils_obj_1(TstSuite* suite)
 {
     ASSERT(suite != NULL);
 
