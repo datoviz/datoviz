@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 
+#include "_mutex.h"
 #include "_thread.h"
 #include "test.h"
 #include "test_thread.h"

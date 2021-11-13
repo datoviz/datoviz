@@ -15,6 +15,8 @@ extern "C" {
 #include <stdarg.h>
 #include <stdio.h>
 
+#include "_macros.h"
+
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 
 typedef void (*log_LockFn)(void* udata, int lock);
@@ -48,7 +50,7 @@ void log_set_fp(FILE* fp);
 void log_set_level(int level);
 void log_set_quiet(int enable);
 
-void log_log(int level, const char* file, int line, const char* fmt, ...);
+DVZ_EXPORT void log_log(int level, const char* file, int line, const char* fmt, ...);
 
 void log_set_level_env(void);
 

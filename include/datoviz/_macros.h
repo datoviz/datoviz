@@ -14,8 +14,6 @@
 #include <assert.h>
 #include <string.h>
 
-#include "_log.h"
-
 
 
 /*************************************************************************************************/
@@ -120,7 +118,7 @@
     {                                                                                             \
         void* _new = realloc((x), (s));                                                           \
         if (_new == NULL)                                                                         \
-            log_error("error reallocating %s to %d bytes", #x, (s));                              \
+            printf("error reallocating %s to %d bytes\n", #x, (s));                               \
         else                                                                                      \
             x = _new;                                                                             \
     }
