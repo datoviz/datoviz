@@ -11,8 +11,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <stdlib.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #include "_macros.h"
 
@@ -46,6 +46,8 @@ typedef struct DvzAtomic DvzAtomic;
 /*************************************************************************************************/
 /*  Atomic functions                                                                             */
 /*************************************************************************************************/
+
+EXTERN_C_ON
 
 /**
  * Initialize an atomic.
@@ -133,6 +135,7 @@ ATOMIC_DECL void dvz_atomic_destroy(DvzAtomic* atomic)
     ;
 #endif
 
+EXTERN_C_OFF
 
 
 #endif

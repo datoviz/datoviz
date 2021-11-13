@@ -47,6 +47,8 @@ struct DvzThread
 /*  Thread functions                                                                             */
 /*************************************************************************************************/
 
+EXTERN_C_ON
+
 /**
  * Create a thread.
  *
@@ -135,6 +137,7 @@ static inline void dvz_thread_join(DvzThread* thread)
     dvz_obj_destroyed(&thread->obj);
 }
 
+EXTERN_C_OFF
 
 
 #endif
