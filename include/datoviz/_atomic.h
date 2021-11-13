@@ -11,6 +11,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdlib.h>
+
 #include "_macros.h"
 
 
@@ -60,6 +62,25 @@ ATOMIC_DECL void dvz_atomic_init(DvzAtomic* atomic)
 #endif
 
 
+
+/**
+ * Create an atomic.
+ *
+ * @returns the atomic
+ */
+ATOMIC_DECL DvzAtomic* dvz_atomic()
+#ifdef ATOMIC_C
+{
+    DvzAtomic* atomic = (DvzAtomic*)calloc(1, sizeof(DvzAtomic));
+    dvz_atomic_init(atomic);
+    return atomic;
+}
+#else
+    ;
+#endif
+
+
+
 /**
  * Set an atomic variable to a given value.
  *
@@ -89,6 +110,23 @@ ATOMIC_DECL int32_t dvz_atomic_get(DvzAtomic* atomic)
 {
     ASSERT(atomic != NULL);
     return atomic_load(atomic);
+}
+#else
+    ;
+#endif
+
+
+
+/**
+ * Destroy an atomic.
+ *
+ * @param atomic the atomic variable
+ */
+ATOMIC_DECL void dvz_atomic_destroy(DvzAtomic* atomic)
+#ifdef ATOMIC_C
+{
+    ASSERT(atomic != NULL);
+    FREE(atomic);
 }
 #else
     ;

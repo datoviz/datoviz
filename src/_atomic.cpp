@@ -39,6 +39,15 @@ void dvz_atomic_init(DvzAtomic* atomic)
 
 
 
+DvzAtomic* dvz_atomic()
+{
+    DvzAtomic* atomic = (DvzAtomic*)calloc(1, sizeof(DvzAtomic));
+    dvz_atomic_init(atomic);
+    return atomic;
+}
+
+
+
 void dvz_atomic_set(DvzAtomic* atomic, int32_t value)
 {
     ASSERT(atomic != NULL);
@@ -52,4 +61,12 @@ int32_t dvz_atomic_get(DvzAtomic* atomic)
     ASSERT(atomic != NULL);
     int32_t value = atomic->atom;
     return value;
+}
+
+
+
+void dvz_atomic_destroy(DvzAtomic* atomic)
+{
+    ASSERT(atomic != NULL);
+    FREE(atomic);
 }
