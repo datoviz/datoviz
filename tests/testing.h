@@ -32,11 +32,11 @@
 
 typedef enum
 {
-    TST_FIXTURE_NONE,
-    TST_FIXTURE_TEST,
-    TST_FIXTURE_SETUP,
-    TST_FIXTURE_TEARDOWN,
-} TstFixtureType;
+    TST_ITEM_NONE,
+    TST_ITEM_TEST,
+    TST_ITEM_SETUP,
+    TST_ITEM_TEARDOWN,
+} TstItemType;
 
 
 
@@ -86,7 +86,7 @@ union TstItemUnion
 
 struct TstItem
 {
-    TstFixtureType type;
+    TstItemType type;
     TstItemUnion u;
 };
 
@@ -94,9 +94,10 @@ struct TstItem
 
 struct TstSuite
 {
-    uint32_t n_tests;
-    TstItem* items;
-    void* context;
+    uint32_t n_items;  // number of items
+    uint32_t capacity; // size of the allocated array TstSuite.items
+    TstItem* items;    // array of items
+    void* context;     // user-specified custom context
 };
 
 
@@ -114,23 +115,60 @@ static TstSuite tst_suite(void)
 
 
 
-static void tst_suite_setup(TstSuite* suite, TstFunction setup)
+static TstItem* _append(TstSuite* suite, TstItemType type, TstFunction function, void* user_data)
 {
-    ASSERT(suite != NULL); //
+    ASSERT(suite != NULL);
+    // Resize the array if needed.
+    if (suite->capacity == suite->n_items)
+    {
+        REALLOC(suite->items, 2 * suite->n_items);
+        suite->capacity *= 2;
+    }
+    ASSERT(suite->n_items < suite->capacity);
+    TstItem* item = &suite->items[suite->n_items++];
+    item->type = type;
+    switch (type)
+    {
+    case TST_ITEM_SETUP:
+    case TST_ITEM_TEARDOWN:
+        item->u.f.function = function;
+        item->u.f.user_data = user_data;
+        break;
+
+    case TST_ITEM_TEST:
+        item->u.t.function = function;
+        item->u.t.user_data = user_data;
+        break;
+
+    default:
+        break;
+    }
+    return item;
 }
 
 
 
-static void tst_suite_add(TstSuite* suite, TstFunction test)
+static void tst_suite_setup(TstSuite* suite, TstFunction setup, void* user_data)
 {
-    ASSERT(suite != NULL); //
+    ASSERT(suite != NULL);
+    _append(suite, TST_ITEM_SETUP, setup, user_data);
 }
 
 
 
-static void tst_suite_teardown(TstSuite* suite, TstFunction teardown)
+static void tst_suite_add(TstSuite* suite, const char* name, TstFunction test, void* user_data)
 {
-    ASSERT(suite != NULL); //
+    ASSERT(suite != NULL);
+    TstItem* item = _append(suite, TST_ITEM_TEST, test, user_data);
+    item->u.t.name = name;
+}
+
+
+
+static void tst_suite_teardown(TstSuite* suite, TstFunction teardown, void* user_data)
+{
+    ASSERT(suite != NULL);
+    _append(suite, TST_ITEM_TEARDOWN, teardown, user_data);
 }
 
 
@@ -145,6 +183,9 @@ static void tst_suite_run(TstSuite* suite)
 static void tst_suite_destroy(TstSuite* suite)
 {
     ASSERT(suite != NULL);
+    ASSERT(suite->items != NULL);
+    suite->n_items = 0;
+    suite->capacity = 0;
     FREE(suite->items);
 }
 

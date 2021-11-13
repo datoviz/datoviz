@@ -150,7 +150,7 @@ set(COMMON_FLAGS "-g -m64 -pedantic -Wall -Wextra -Werror=vla \
     -Wformat=2 -Winit-self -Wno-missing-field-initializers -Wno-unused-result \
     -Wmissing-declarations -Wmissing-include-dirs -Wno-format-nonliteral \
     -Wshadow -Wsign-conversion -Wstrict-overflow=5 -Wundef -Wno-unused-parameter \
-    -Wno-unused-function")
+    -Wno-unused-function -Wno-variadic-macros")
 
 # ---- compiler-specific options ------------------------------------------------------------------
 if(CC_GCC)
@@ -293,7 +293,8 @@ if (DATOVIZ_WITH_CLI)
     )
 
     add_executable(datovizcli ${cli})
+    set_target_properties(datovizcli PROPERTIES OUTPUT_NAME "datoviz")
+    target_compile_definitions(datovizcli PUBLIC ${COMPILE_DEFINITIONS})
     target_include_directories(datovizcli PUBLIC ${INCL_DIRS} ${CMAKE_SOURCE_DIR}/tests)
     target_link_libraries(datovizcli datoviz)
-    set_target_properties(datovizcli PROPERTIES OUTPUT_NAME "datoviz")
 endif()
