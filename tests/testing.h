@@ -11,7 +11,7 @@
 /*  MACROS                                                                                       */
 /*************************************************************************************************/
 
-#define TST_DEFAULT_N_TESTS 64
+#define TST_DEFAULT_CAPACITY 32
 
 
 
@@ -19,6 +19,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -109,7 +110,8 @@ struct TstSuite
 static TstSuite tst_suite(void)
 {
     TstSuite suite = {0};
-    suite.items = calloc(TST_DEFAULT_N_TESTS, sizeof(TstItem));
+    suite.items = calloc(TST_DEFAULT_CAPACITY, sizeof(TstItem));
+    suite.capacity = TST_DEFAULT_CAPACITY;
     return suite;
 }
 
@@ -175,7 +177,31 @@ static void tst_suite_teardown(TstSuite* suite, TstFunction teardown, void* user
 
 static void tst_suite_run(TstSuite* suite)
 {
-    ASSERT(suite != NULL); //
+    ASSERT(suite != NULL);
+    TstItem* item = NULL;
+    bool pass = false;
+    // TODO: print run init
+    for (uint32_t i = 0; i < suite->n_items; i++)
+    {
+        item = &suite->items[i];
+        // TODO: pattern matching
+        switch (item->type)
+        {
+        case TST_ITEM_SETUP:
+        case TST_ITEM_TEARDOWN:
+            item->u.f.function(suite);
+            break;
+
+        case TST_ITEM_TEST:
+            pass = item->u.t.res = item->u.t.function(suite);
+            break;
+
+        default:
+            break;
+        }
+        // TODO: mark as PASS or FAIL depending on the res
+    }
+    // TODO: print run end
 }
 
 
