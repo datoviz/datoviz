@@ -1,5 +1,5 @@
 /*************************************************************************************************/
-/*  Testing suite                                                                                */
+/*  Testing thread                                                                               */
 /*************************************************************************************************/
 
 
@@ -11,16 +11,9 @@
 #include <stdio.h>
 
 #include "_thread.h"
+#include "test.h"
+#include "test_thread.h"
 #include "testing.h"
-#include "tests.h"
-
-
-
-/*************************************************************************************************/
-/*  Macros                                                                                       */
-/*************************************************************************************************/
-
-#define TEST(x) tst_suite_add(&suite, #x, dvz_test_##x, NULL);
 
 
 
@@ -71,23 +64,5 @@ int dvz_test_cond_1(TstSuite* suite)
     dvz_thread_join(&thread);
     dvz_mutex_destroy(&mutex);
     dvz_cond_destroy(&cond);
-    return 0;
-}
-
-
-
-/*************************************************************************************************/
-/*  Entry-point                                                                                  */
-/*************************************************************************************************/
-
-int dvz_run_tests()
-{
-    TstSuite suite = tst_suite();
-
-    TEST(thread_1)
-    TEST(cond_1)
-
-    tst_suite_run(&suite, NULL);
-    tst_suite_destroy(&suite);
     return 0;
 }

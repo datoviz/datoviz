@@ -1,9 +1,6 @@
 /*************************************************************************************************/
-/*  Tests                                                                                        */
+/*  Testing suite                                                                                */
 /*************************************************************************************************/
-
-#ifndef DVZ_HEADER_TESTS
-#define DVZ_HEADER_TESTS
 
 
 
@@ -11,17 +8,20 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_macros.h"
+#include <stdio.h>
+
+#include "_thread.h"
+#include "test.h"
+#include "test_thread.h"
 #include "testing.h"
 
 
 
 /*************************************************************************************************/
-/*  Tests                                                                                        */
+/*  Macros                                                                                       */
 /*************************************************************************************************/
 
-int dvz_test_thread_1(TstSuite*);
-int dvz_test_cond_1(TstSuite*);
+#define TEST(x) tst_suite_add(&suite, #x, dvz_test_##x, NULL);
 
 
 
@@ -29,8 +29,14 @@ int dvz_test_cond_1(TstSuite*);
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
 
-DVZ_EXPORT int dvz_run_tests(void);
+int dvz_run_tests()
+{
+    TstSuite suite = tst_suite();
 
+    TEST(thread_1)
+    TEST(cond_1)
 
-
-#endif
+    tst_suite_run(&suite, NULL);
+    tst_suite_destroy(&suite);
+    return 0;
+}

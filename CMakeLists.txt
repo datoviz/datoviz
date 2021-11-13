@@ -289,7 +289,8 @@ target_link_libraries(datoviz ${LINK_LIBS})
 if (DATOVIZ_WITH_CLI)
     file(GLOB cli
         "cli/main.c"
-        "tests/tests.c"
+        "tests/test_thread.c"
+        "tests/test.c"
     )
 
     add_executable(datovizcli ${cli})

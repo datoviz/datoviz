@@ -11,7 +11,7 @@
 #include "main.h"
 #include "_macros.h"
 #include "common.h"
-#include "tests.h"
+#include "test.h"
 
 
 
