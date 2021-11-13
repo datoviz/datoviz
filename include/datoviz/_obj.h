@@ -128,6 +128,8 @@ struct DvzContainerIterator
 /*  Object functions                                                                             */
 /*************************************************************************************************/
 
+EXTERN_C_ON
+
 /**
  * Initialize an object.
  *
@@ -470,5 +472,7 @@ static inline void dvz_container_destroy(DvzContainer* container)
     }
 
 
+
+EXTERN_C_OFF
 
 #endif

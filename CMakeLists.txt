@@ -217,7 +217,7 @@ endif()
 if(${OS_MACOS})
     link_directories(/usr/local/lib)
 elseif(${OS_WIN32})
-    link_directories($ENV{CGLM_LIB} $ENV{VULKAN_SDK}\\Lib $ENV{VULKAN_SDK}\\Bin ${MINGW_DIR})
+    link_directories($ENV{VULKAN_SDK}\\Lib $ENV{VULKAN_SDK}\\Bin) # $ENV{CGLM_LIB} ${MINGW_DIR})
     set(LINK_LIBS ${LINK_LIBS})
 endif()
 
@@ -251,19 +251,18 @@ endif("${isSystemDir}" STREQUAL "-1")
 # Source files
 # -------------------------------------------------------------------------------------------------
 
-file(GLOB sources
+set(sources
     "src/_atomic.cpp"
     "src/log.c"
     "src/fileio.c"
 
-    "external/*.c"
+    "external/tinycthread.c"
 )
 
 
-file(GLOB cpp_sources
+set(cpp_sources
     "src/_atomic.cpp"
-    "external/*.c"
-    "external/*.cpp"
+    "external/tinycthread.c"
 )
 
 
@@ -288,7 +287,7 @@ target_link_libraries(libdatoviz ${LINK_LIBS})
 # -------------------------------------------------------------------------------------------------
 
 if (DATOVIZ_WITH_CLI)
-    file(GLOB cli
+    set(cli
         "cli/main.c"
         "tests/test_thread.c"
         "tests/test_obj.c"

@@ -22,6 +22,8 @@
 /*  Generic file I/O utils                                                                       */
 /*************************************************************************************************/
 
+EXTERN_C_ON
+
 /**
  * Read a binary file.
  *
@@ -103,5 +105,7 @@ DVZ_EXPORT unsigned char* dvz_resource_texture(const char* name, unsigned long* 
 DVZ_EXPORT unsigned char* dvz_resource_font(const char* name, unsigned long* size);
 
 
+
+EXTERN_C_OFF
 
 #endif

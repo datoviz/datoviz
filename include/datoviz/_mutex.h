@@ -38,6 +38,8 @@ typedef mtx_t DvzMutex;
 /*  Mutex functions                                                                              */
 /*************************************************************************************************/
 
+EXTERN_C_ON
+
 /**
  * Initialize an mutex.
  *
@@ -188,5 +190,7 @@ static inline void dvz_cond_destroy(DvzCond* cond)
 }
 
 
+
+EXTERN_C_OFF
 
 #endif
