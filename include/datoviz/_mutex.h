@@ -53,6 +53,20 @@ static inline int dvz_mutex_init(DvzMutex* mutex)
 
 
 /**
+ * Create a mutex.
+ *
+ * @returns mutex
+ */
+static inline DvzMutex dvz_mutex()
+{
+    DvzMutex mutex = {0};
+    dvz_mutex_init(&mutex);
+    return mutex;
+}
+
+
+
+/**
  * Lock a mutex.
  *
  * @param mutex the mutex
@@ -104,6 +118,20 @@ static inline int dvz_cond_init(DvzCond* cond)
 {
     ASSERT(cond != NULL);
     return cnd_init(cond);
+}
+
+
+
+/**
+ * Create a cond.
+ *
+ * @returns cond
+ */
+static inline DvzCond dvz_cond()
+{
+    DvzCond cond = {0};
+    dvz_cond_init(&cond);
+    return cond;
 }
 
 

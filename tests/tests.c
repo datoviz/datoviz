@@ -17,6 +17,14 @@
 
 
 /*************************************************************************************************/
+/*  Macros                                                                                       */
+/*************************************************************************************************/
+
+#define TEST(x) tst_suite_add(&suite, #x, dvz_test_##x, NULL);
+
+
+
+/*************************************************************************************************/
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
@@ -42,6 +50,32 @@ int dvz_test_thread_1(TstSuite* suite)
 
 
 
+static int _cond_callback(void* user_data)
+{
+    ASSERT(user_data != NULL);
+    DvzCond* cond = (DvzCond*)user_data;
+    dvz_sleep(10);
+    dvz_cond_signal(cond);
+    return 0;
+}
+
+int dvz_test_cond_1(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+    DvzCond cond = dvz_cond();
+    DvzMutex mutex = dvz_mutex();
+
+    DvzThread thread = dvz_thread(_cond_callback, &cond);
+    dvz_cond_wait(&cond, &mutex);
+
+    dvz_thread_join(&thread);
+    dvz_mutex_destroy(&mutex);
+    dvz_cond_destroy(&cond);
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
@@ -50,7 +84,8 @@ int dvz_run_tests()
 {
     TstSuite suite = tst_suite();
 
-    tst_suite_add(&suite, "test_1", dvz_test_thread_1, NULL);
+    TEST(thread_1)
+    TEST(cond_1)
 
     tst_suite_run(&suite, NULL);
     tst_suite_destroy(&suite);
