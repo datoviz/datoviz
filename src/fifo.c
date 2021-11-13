@@ -31,10 +31,8 @@ DvzFifo dvz_fifo(int32_t capacity)
 
     fifo.is_processing = dvz_atomic();
 
-    if (pthread_mutex_init(&fifo.lock, NULL) != 0)
-        log_error("mutex creation failed");
-    if (pthread_cond_init(&fifo.cond, NULL) != 0)
-        log_error("cond creation failed");
+    fifo.lock = dvz_mutex();
+    fifo.cond = dvz_cond();
 
     return fifo;
 }
@@ -86,7 +84,7 @@ static void _fifo_resize(DvzFifo* fifo)
 void dvz_fifo_enqueue(DvzFifo* fifo, void* item)
 {
     ASSERT(fifo != NULL);
-    pthread_mutex_lock(&fifo->lock);
+    dvz_mutex_lock(&fifo->lock);
 
     // Resize the FIFO queue if needed.
     _fifo_resize(fifo);
@@ -99,8 +97,8 @@ void dvz_fifo_enqueue(DvzFifo* fifo, void* item)
     dvz_atomic_set(fifo->is_empty, 0);
 
     ASSERT(0 <= fifo->tail && fifo->tail < fifo->capacity);
-    pthread_cond_signal(&fifo->cond);
-    pthread_mutex_unlock(&fifo->lock);
+    dvz_cond_signal(&fifo->cond);
+    dvz_mutex_unlock(&fifo->lock);
 }
 
 
@@ -108,7 +106,7 @@ void dvz_fifo_enqueue(DvzFifo* fifo, void* item)
 void dvz_fifo_enqueue_first(DvzFifo* fifo, void* item)
 {
     ASSERT(fifo != NULL);
-    pthread_mutex_lock(&fifo->lock);
+    dvz_mutex_lock(&fifo->lock);
 
     // Resize the FIFO queue if needed.
     _fifo_resize(fifo);
@@ -128,8 +126,8 @@ void dvz_fifo_enqueue_first(DvzFifo* fifo, void* item)
         size += fifo->capacity;
     ASSERT(0 <= size && size < fifo->capacity);
 
-    pthread_cond_signal(&fifo->cond);
-    pthread_mutex_unlock(&fifo->lock);
+    dvz_cond_signal(&fifo->cond);
+    dvz_mutex_unlock(&fifo->lock);
 }
 
 
@@ -137,14 +135,14 @@ void dvz_fifo_enqueue_first(DvzFifo* fifo, void* item)
 void* dvz_fifo_dequeue(DvzFifo* fifo, bool wait)
 {
     ASSERT(fifo != NULL);
-    pthread_mutex_lock(&fifo->lock);
+    dvz_mutex_lock(&fifo->lock);
 
     // Wait until the queue is not empty.
     if (wait)
     {
         log_trace("waiting for the queue to be non-empty");
         while (fifo->tail == fifo->head)
-            pthread_cond_wait(&fifo->cond, &fifo->lock);
+            dvz_cond_wait(&fifo->cond, &fifo->lock);
     }
 
     // Empty queue.
@@ -152,7 +150,7 @@ void* dvz_fifo_dequeue(DvzFifo* fifo, bool wait)
     {
         // log_trace("FIFO queue was empty");
         // Don't forget to unlock the mutex before exiting this function.
-        pthread_mutex_unlock(&fifo->lock);
+        dvz_mutex_unlock(&fifo->lock);
         dvz_atomic_set(fifo->is_empty, 1);
         return NULL;
     }
@@ -171,7 +169,7 @@ void* dvz_fifo_dequeue(DvzFifo* fifo, bool wait)
     if (fifo->tail == fifo->head)
         dvz_atomic_set(fifo->is_empty, 1);
 
-    pthread_mutex_unlock(&fifo->lock);
+    dvz_mutex_unlock(&fifo->lock);
     return item;
 }
 
@@ -180,13 +178,13 @@ void* dvz_fifo_dequeue(DvzFifo* fifo, bool wait)
 int dvz_fifo_size(DvzFifo* fifo)
 {
     ASSERT(fifo != NULL);
-    pthread_mutex_lock(&fifo->lock);
+    dvz_mutex_lock(&fifo->lock);
     // log_debug("tail %d head %d", fifo->tail, fifo->head);
     int size = fifo->tail - fifo->head;
     if (size < 0)
         size += fifo->capacity;
     ASSERT(0 <= size && size <= fifo->capacity);
-    pthread_mutex_unlock(&fifo->lock);
+    dvz_mutex_unlock(&fifo->lock);
     return size;
 }
 
@@ -197,7 +195,7 @@ void dvz_fifo_discard(DvzFifo* fifo, int max_size)
     ASSERT(fifo != NULL);
     if (max_size == 0)
         return;
-    pthread_mutex_lock(&fifo->lock);
+    dvz_mutex_lock(&fifo->lock);
     int size = fifo->tail - fifo->head;
     if (size < 0)
         size += fifo->capacity;
@@ -210,7 +208,7 @@ void dvz_fifo_discard(DvzFifo* fifo, int max_size)
         if (fifo->head < 0)
             fifo->head += fifo->capacity;
     }
-    pthread_mutex_unlock(&fifo->lock);
+    dvz_mutex_unlock(&fifo->lock);
 }
 
 
@@ -218,11 +216,11 @@ void dvz_fifo_discard(DvzFifo* fifo, int max_size)
 void dvz_fifo_reset(DvzFifo* fifo)
 {
     ASSERT(fifo != NULL);
-    pthread_mutex_lock(&fifo->lock);
+    dvz_mutex_lock(&fifo->lock);
     fifo->tail = 0;
     fifo->head = 0;
-    pthread_cond_signal(&fifo->cond);
-    pthread_mutex_unlock(&fifo->lock);
+    dvz_cond_signal(&fifo->cond);
+    dvz_mutex_unlock(&fifo->lock);
 }
 
 
@@ -230,8 +228,8 @@ void dvz_fifo_reset(DvzFifo* fifo)
 void dvz_fifo_destroy(DvzFifo* fifo)
 {
     ASSERT(fifo != NULL);
-    pthread_mutex_destroy(&fifo->lock);
-    pthread_cond_destroy(&fifo->cond);
+    dvz_mutex_destroy(&fifo->lock);
+    dvz_cond_destroy(&fifo->cond);
 
     ASSERT(fifo->items != NULL);
     FREE(fifo->items);

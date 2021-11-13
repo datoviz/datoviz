@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 
+#include "_thread.h"
 #include "fifo.h"
 #include "test.h"
 #include "test_fifo.h"
@@ -33,19 +34,19 @@ static bool _is_empty(DvzFifo* fifo)
 /*  FIFO tests                                                                                   */
 /*************************************************************************************************/
 
-static void* _fifo_thread_1(void* arg)
+static int _fifo_thread_1(void* arg)
 {
     DvzFifo* fifo = arg;
     uint8_t* data = dvz_fifo_dequeue(fifo, true);
     ASSERT(*data == 12);
     // Signal to the caller thread that the dequeue was successfull.
     fifo->user_data = data;
-    return NULL;
+    return 0;
 }
 
 
 
-static void* _fifo_thread_2(void* arg)
+static int _fifo_thread_2(void* arg)
 {
     DvzFifo* fifo = arg;
     uint8_t* numbers = calloc(5, sizeof(uint8_t));
@@ -57,7 +58,7 @@ static void* _fifo_thread_2(void* arg)
         dvz_sleep(10);
     }
     dvz_fifo_enqueue(fifo, NULL);
-    return NULL;
+    return 0;
 }
 
 
@@ -78,17 +79,15 @@ int test_utils_fifo_1(TstSuite* suite)
     ASSERT(*data == item);
 
     // Enqueue in the main thread, dequeue in a background thread.
-    pthread_t thread = {0};
-    ASSERT(fifo.user_data == NULL);
-    pthread_create(&thread, NULL, _fifo_thread_1, &fifo);
+    DvzThread thread = dvz_thread(_fifo_thread_1, &fifo);
     dvz_fifo_enqueue(&fifo, &item);
     AT(!_is_empty(&fifo));
-    pthread_join(thread, NULL);
+    dvz_thread_join(&thread);
     ASSERT(fifo.user_data != NULL);
     ASSERT(fifo.user_data == &item);
 
     // Multiple enqueues in the background thread, dequeue in the main thread.
-    pthread_create(&thread, NULL, _fifo_thread_2, &fifo);
+    thread = dvz_thread(_fifo_thread_2, &fifo);
     uint8_t* dequeued = NULL;
     uint32_t i = 0;
     do
@@ -99,7 +98,7 @@ int test_utils_fifo_1(TstSuite* suite)
         AT(*dequeued == i);
         i++;
     } while (dequeued != NULL);
-    pthread_join(thread, NULL);
+    dvz_thread_join(&thread);
     FREE(fifo.user_data);
 
     dvz_fifo_destroy(&fifo);
