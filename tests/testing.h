@@ -104,7 +104,59 @@ struct TstSuite
 
 
 /*************************************************************************************************/
-/*  Entry-point                                                                                  */
+/*  Test printing                                                                                */
+/*************************************************************************************************/
+
+static void print_start()
+{
+    printf("--- Starting tests -------------------------------\n"); //
+}
+
+
+
+static void print_test(int index, const char* name)
+{
+    printf("- Running test #%03d %28s\n", index, name);
+}
+
+
+
+static void print_res(int index, const char* name, int res)
+{
+    printf("%50s", name);
+    printf("\x1b[%dm %s\x1b[0m\n", res == 0 ? 32 : 31, res == 0 ? "passed!" : "FAILED!");
+}
+
+
+
+static void print_end(int index, int res)
+{
+    printf("--------------------------------------------------\n");
+    if (index > 0 && res == 0)
+        printf("\x1b[32m%d/%d tests PASSED.\x1b[0m\n", index, index);
+    else if (index > 0)
+        printf("\x1b[31m%d/%d tests FAILED.\x1b[0m\n", res, index);
+    else
+        printf("\x1b[31mThere were no tests.\x1b[0m\n");
+}
+
+
+
+/*************************************************************************************************/
+/*  Util functions                                                                               */
+/*************************************************************************************************/
+
+static inline bool test_name_matches(TstTest* test, const char* str)
+{
+    ASSERT(test != NULL);
+    ASSERT(str != NULL);
+    return strstr(test->name, str) != NULL;
+}
+
+
+
+/*************************************************************************************************/
+/*  Main testing functions                                                                       */
 /*************************************************************************************************/
 
 static TstSuite tst_suite(void)
@@ -175,16 +227,16 @@ static void tst_suite_teardown(TstSuite* suite, TstFunction teardown, void* user
 
 
 
-static void tst_suite_run(TstSuite* suite)
+static void tst_suite_run(TstSuite* suite, const char* match)
 {
     ASSERT(suite != NULL);
     TstItem* item = NULL;
-    bool pass = false;
-    // TODO: print run init
+    int index = 0;
+    int res = 0, cur_res = 0;
+    print_start();
     for (uint32_t i = 0; i < suite->n_items; i++)
     {
         item = &suite->items[i];
-        // TODO: pattern matching
         switch (item->type)
         {
         case TST_ITEM_SETUP:
@@ -193,7 +245,14 @@ static void tst_suite_run(TstSuite* suite)
             break;
 
         case TST_ITEM_TEST:
-            pass = item->u.t.res = item->u.t.function(suite);
+            if (match == NULL || test_name_matches(&item->u.t, match))
+            {
+                item->u.t.res = item->u.t.function(suite);
+                cur_res = item->u.t.res;
+                print_res(index, item->u.t.name, cur_res);
+                res += cur_res == 0 ? 0 : 1;
+                index++;
+            }
             break;
 
         default:
@@ -201,7 +260,7 @@ static void tst_suite_run(TstSuite* suite)
         }
         // TODO: mark as PASS or FAIL depending on the res
     }
-    // TODO: print run end
+    print_end(index, res);
 }
 
 

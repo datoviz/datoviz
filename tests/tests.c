@@ -38,7 +38,7 @@ int dvz_run_tests()
 
     tst_suite_add(&suite, "test_1", dvz_test_1, NULL);
 
-    tst_suite_run(&suite);
+    tst_suite_run(&suite, NULL);
     tst_suite_destroy(&suite);
     return 0;
 }
