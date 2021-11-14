@@ -64,16 +64,18 @@ if(DATOVIZ_WITH_PNG)
 endif()
 
 # ---- glfw ---------------------------------------------------------------------------------------
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+if(DATOVIZ_WITH_GLFW)
+    set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
-FetchContent_Declare(
-    glfw
-    GIT_REPOSITORY  https://github.com/glfw/glfw/
-    GIT_TAG         3.3.5
-)
-FetchContent_MakeAvailable(glfw)
+    FetchContent_Declare(
+        glfw
+        GIT_REPOSITORY  https://github.com/glfw/glfw/
+        GIT_TAG         3.3.5
+    )
+    FetchContent_MakeAvailable(glfw)
+endif()
 
 # ---- Vulkan (SDK or bundled) --------------------------------------------------------------------
 
@@ -88,18 +90,18 @@ if (Vulkan_FOUND)
         message(FATAL_ERROR "-- glslc executable NOT found")
     endif()
 
-    # glslang
-    # TODO: remove?
-    set(glslangValidator "")
-    if (DATOVIZ_WITH_GLSLANG)
-        FetchContent_Declare(
-            glslang
-            GIT_REPOSITORY https://github.com/KhronosGroup/glslang
-            GIT_TAG        11.6.0
-        )
-        FetchContent_MakeAvailable(glslang)
-        set(HAS_GLSLANG 1)
-    endif()
+    # # glslang
+    # # TODO: remove?
+    # set(glslangValidator "")
+    # if (DATOVIZ_WITH_GLSLANG)
+    #     FetchContent_Declare(
+    #         glslang
+    #         GIT_REPOSITORY https://github.com/KhronosGroup/glslang
+    #         GIT_TAG        11.6.0
+    #     )
+    #     FetchContent_MakeAvailable(glslang)
+    #     set(HAS_GLSLANG 1)
+    # endif()
 else()
 
     # Vulkan headers
@@ -144,9 +146,9 @@ else()
         GIT_TAG        master # 11.6.0
     )
     FetchContent_MakeAvailable(glslang)
-    if (DATOVIZ_WITH_GLSLANG)
-        set(HAS_GLSLANG 1)
-    endif()
+    # if (DATOVIZ_WITH_GLSLANG)
+    #     set(HAS_GLSLANG 1)
+    # endif()
 
     # glslc
     set(SHADERC_SKIP_TESTS ON CACHE BOOL "" FORCE)
