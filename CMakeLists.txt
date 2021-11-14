@@ -24,9 +24,11 @@ project(datoviz VERSION ${DATOVIZ_VERSION} DESCRIPTION "datoviz")
 
 # TODO: refactor these options
 option(DATOVIZ_WITH_PNG "Build Datoviz with PNG support" OFF)
-option(DATOVIZ_WITH_GLSLANG "Build Datoviz with glslang support" OFF)
-option(DATOVIZ_WITH_SWIFTSHADER "Build Datoviz with Swiftshader support" OFF)
+option(DATOVIZ_WITH_GLFW "Build Datoviz with glfw" ON)
 option(DATOVIZ_WITH_CLI "Build Datoviz command-line interface with tests and demos" ON)
+option(DATOVIZ_WITH_VULKAN_SDK "Build Datoviz with Vulkan SDK" ON)
+# option(DATOVIZ_WITH_GLSLANG "Build Datoviz with glslang support" OFF)
+# option(DATOVIZ_WITH_SWIFTSHADER "Build Datoviz with Swiftshader support" OFF)
 
 
 # -------------------------------------------------------------------------------------------------
@@ -44,27 +46,6 @@ set(PNG_ARM_NEON_OPT off CACHE INTERNAL "")
 # Build dependencies
 # -------------------------------------------------------------------------------------------------
 
-# ---- Vulkan -------------------------------------------------------------------------------------
-# find_package(Vulkan)
-# if (Vulkan_FOUND)
-# message(STATUS "Found Vulkan")
-# else()
-# message(FATAL_ERROR "-- Could NOT find Vulkan")
-# endif()
-
-# TODO: PNG
-# find_package(PNG REQUIRED)
-# include_directories(${PNG_INCLUDE_DIR})
-# target_link_libraries(${MY_EXEC} ${PNG_LIBRARY})
-
-# ---- libpng -------------------------------------------------------------------------------------
-FetchContent_Declare(
-    libpng
-    GIT_REPOSITORY  https://github.com/glennrp/libpng
-    # GIT_TAG         macos-fix-crosscompile
-)
-FetchContent_MakeAvailable(libpng)
-
 # ---- cglm ---------------------------------------------------------------------------------------
 FetchContent_Declare(
     cglm
@@ -72,6 +53,15 @@ FetchContent_Declare(
     GIT_TAG         v0.8.3
 )
 FetchContent_MakeAvailable(cglm)
+
+# ---- libpng (OPTIONAL) --------------------------------------------------------------------------
+if(DATOVIZ_WITH_PNG)
+    FetchContent_Declare(
+        libpng
+        GIT_REPOSITORY  https://github.com/glennrp/libpng
+    )
+    FetchContent_MakeAvailable(libpng)
+endif()
 
 # ---- glfw ---------------------------------------------------------------------------------------
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -85,78 +75,93 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glfw)
 
-# # ---- glslc --------------------------------------------------------------------------------------
-# if (DATOVIZ_WITH_GLSLANG)
-#     FetchContent_Declare(
-#         glslang
-#         GIT_REPOSITORY https://github.com/KhronosGroup/glslang
-#         GIT_TAG        master-tot
-#     )
-#     FetchContent_MakeAvailable(glslang)
-# endif()
+# ---- Vulkan (SDK or bundled) --------------------------------------------------------------------
 
-
-# Vulkan headers
-FetchContent_Declare(
-    vulkan-headers
-    GIT_REPOSITORY  https://github.com/KhronosGroup/Vulkan-Headers.git
-    GIT_TAG         v1.2.195 # main
-)
-FetchContent_MakeAvailable(vulkan-headers)
-
-# Vulkan loader
-FetchContent_Declare(
-    vulkan-loader
-    GIT_REPOSITORY  https://github.com/KhronosGroup/Vulkan-Loader.git
-    GIT_TAG         v1.2.195 # master
-)
-FetchContent_MakeAvailable(vulkan-loader)
-
-# SPIRV-Headers
-FetchContent_Declare(
-    SPIRV-Headers
-    GIT_REPOSITORY  https://github.com/KhronosGroup/SPIRV-Headers.git
-    GIT_TAG         master # 1.5.4.raytracing.fixed
-)
-FetchContent_MakeAvailable(SPIRV-Headers)
-
-# SPIRV-Tools
-FetchContent_Declare(
-    SPIRV-Tools
-    GIT_REPOSITORY  https://github.com/KhronosGroup/SPIRV-Tools.git
-    GIT_TAG         master # v2021.3
-    # # TEMPORARY FIX https://github.com/KhronosGroup/SPIRV-Tools/issues/4565
-    # GIT_REPOSITORY  https://github.com/jaebaek/SPIRV-Tools.git
-    # GIT_TAG         fix_ci_failure
-)
-FetchContent_MakeAvailable(SPIRV-Tools)
-
-# glslang
-FetchContent_Declare(
-    glslang
-    GIT_REPOSITORY https://github.com/KhronosGroup/glslang
-    GIT_TAG        master # 11.6.0
-)
-FetchContent_MakeAvailable(glslang)
-if (DATOVIZ_WITH_GLSLANG)
-    set(HAS_GLSLANG 1)
+if (DATOVIZ_WITH_VULKAN_SDK)
+    find_package(Vulkan)
 endif()
+if (Vulkan_FOUND)
+    message(STATUS "Found Vulkan")
 
-# glslc
-set(SHADERC_SKIP_TESTS ON CACHE BOOL "" FORCE)
-set(SHADERC_SKIP_EXAMPLES ON CACHE BOOL "" FORCE)
-set(SHADERC_SKIP_INSTALL ON CACHE BOOL "" FORCE)
-FetchContent_Declare(
-    glslc
-    GIT_REPOSITORY https://github.com/google/shaderc
-    GIT_TAG        main # v2021.2
+    find_program(GLSLC glslc)
+    if (NOT GLSLC)
+        message(FATAL_ERROR "-- glslc executable NOT found")
+    endif()
+
+    # glslang
+    # TODO: remove?
+    set(glslangValidator "")
+    if (DATOVIZ_WITH_GLSLANG)
+        FetchContent_Declare(
+            glslang
+            GIT_REPOSITORY https://github.com/KhronosGroup/glslang
+            GIT_TAG        11.6.0
+        )
+        FetchContent_MakeAvailable(glslang)
+        set(HAS_GLSLANG 1)
+    endif()
+else()
+
+    # Vulkan headers
+    FetchContent_Declare(
+        vulkan-headers
+        GIT_REPOSITORY  https://github.com/KhronosGroup/Vulkan-Headers.git
+        GIT_TAG         v1.2.195 # main
     )
-FetchContent_MakeAvailable(glslc)
+    FetchContent_MakeAvailable(vulkan-headers)
 
-set(GLSLC glslc_exe)
+    # Vulkan loader
+    FetchContent_Declare(
+        vulkan-loader
+        GIT_REPOSITORY  https://github.com/KhronosGroup/Vulkan-Loader.git
+        GIT_TAG         v1.2.195 # master
+    )
+    FetchContent_MakeAvailable(vulkan-loader)
 
+    # SPIRV-Headers
+    FetchContent_Declare(
+        SPIRV-Headers
+        GIT_REPOSITORY  https://github.com/KhronosGroup/SPIRV-Headers.git
+        GIT_TAG         master # 1.5.4.raytracing.fixed
+    )
+    FetchContent_MakeAvailable(SPIRV-Headers)
 
+    # SPIRV-Tools
+    FetchContent_Declare(
+        SPIRV-Tools
+        GIT_REPOSITORY  https://github.com/KhronosGroup/SPIRV-Tools.git
+        GIT_TAG         master # v2021.3
+        # # TEMPORARY FIX https://github.com/KhronosGroup/SPIRV-Tools/issues/4565
+        # GIT_REPOSITORY  https://github.com/jaebaek/SPIRV-Tools.git
+        # GIT_TAG         fix_ci_failure
+    )
+    FetchContent_MakeAvailable(SPIRV-Tools)
 
+    # glslang
+    FetchContent_Declare(
+        glslang
+        GIT_REPOSITORY https://github.com/KhronosGroup/glslang
+        GIT_TAG        master # 11.6.0
+    )
+    FetchContent_MakeAvailable(glslang)
+    if (DATOVIZ_WITH_GLSLANG)
+        set(HAS_GLSLANG 1)
+    endif()
+
+    # glslc
+    set(SHADERC_SKIP_TESTS ON CACHE BOOL "" FORCE)
+    set(SHADERC_SKIP_EXAMPLES ON CACHE BOOL "" FORCE)
+    set(SHADERC_SKIP_INSTALL ON CACHE BOOL "" FORCE)
+    FetchContent_Declare(
+        glslc
+        GIT_REPOSITORY https://github.com/google/shaderc
+        GIT_TAG        main # v2021.2
+        )
+    FetchContent_MakeAvailable(glslc)
+
+    set(GLSLC glslc_exe)
+
+endif()
 
 
 # -------------------------------------------------------------------------------------------------
@@ -284,6 +289,12 @@ endif()
 set(LINK_LIBS glfw cglm) # Vulkan::Vulkan
 if(NOT ${WIN32})
     set(LINK_LIBS m dl pthread ${LINK_LIBS})
+endif()
+
+if(Vulkan_FOUND)
+    set(LINK_LIBS ${LINK_LIBS} Vulkan::Vulkan)
+else()
+    set(LINK_LIBS ${LINK_LIBS} vulkan)
 endif()
 
 # ---- OS-specific linking libraries --------------------------------------------------------------
