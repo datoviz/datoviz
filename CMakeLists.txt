@@ -45,12 +45,12 @@ set(PNG_ARM_NEON_OPT off CACHE INTERNAL "")
 # -------------------------------------------------------------------------------------------------
 
 # ---- Vulkan -------------------------------------------------------------------------------------
-find_package(Vulkan)
-if (Vulkan_FOUND)
-message(STATUS "Found Vulkan")
-else()
-message(FATAL_ERROR "-- Could NOT find Vulkan")
-endif()
+# find_package(Vulkan)
+# if (Vulkan_FOUND)
+# message(STATUS "Found Vulkan")
+# else()
+# message(FATAL_ERROR "-- Could NOT find Vulkan")
+# endif()
 
 # TODO: PNG
 # find_package(PNG REQUIRED)
@@ -85,15 +85,78 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glfw)
 
-# ---- glslc --------------------------------------------------------------------------------------
+# # ---- glslc --------------------------------------------------------------------------------------
+# if (DATOVIZ_WITH_GLSLANG)
+#     FetchContent_Declare(
+#         glslang
+#         GIT_REPOSITORY https://github.com/KhronosGroup/glslang
+#         GIT_TAG        master-tot
+#     )
+#     FetchContent_MakeAvailable(glslang)
+# endif()
+
+
+# Vulkan headers
+FetchContent_Declare(
+    vulkan-headers
+    GIT_REPOSITORY  https://github.com/KhronosGroup/Vulkan-Headers.git
+    GIT_TAG         v1.2.195 # main
+)
+FetchContent_MakeAvailable(vulkan-headers)
+
+# Vulkan loader
+FetchContent_Declare(
+    vulkan-loader
+    GIT_REPOSITORY  https://github.com/KhronosGroup/Vulkan-Loader.git
+    GIT_TAG         v1.2.195 # master
+)
+FetchContent_MakeAvailable(vulkan-loader)
+
+# SPIRV-Headers
+FetchContent_Declare(
+    SPIRV-Headers
+    GIT_REPOSITORY  https://github.com/KhronosGroup/SPIRV-Headers.git
+    GIT_TAG         master # 1.5.4.raytracing.fixed
+)
+FetchContent_MakeAvailable(SPIRV-Headers)
+
+# SPIRV-Tools
+FetchContent_Declare(
+    SPIRV-Tools
+    GIT_REPOSITORY  https://github.com/KhronosGroup/SPIRV-Tools.git
+    GIT_TAG         master # v2021.3
+    # # TEMPORARY FIX https://github.com/KhronosGroup/SPIRV-Tools/issues/4565
+    # GIT_REPOSITORY  https://github.com/jaebaek/SPIRV-Tools.git
+    # GIT_TAG         fix_ci_failure
+)
+FetchContent_MakeAvailable(SPIRV-Tools)
+
+# glslang
+FetchContent_Declare(
+    glslang
+    GIT_REPOSITORY https://github.com/KhronosGroup/glslang
+    GIT_TAG        master # 11.6.0
+)
+FetchContent_MakeAvailable(glslang)
 if (DATOVIZ_WITH_GLSLANG)
-    FetchContent_Declare(
-        glslang
-        GIT_REPOSITORY https://github.com/KhronosGroup/glslang
-        GIT_TAG        master-tot
-    )
-    FetchContent_MakeAvailable(glslang)
+    set(HAS_GLSLANG 1)
 endif()
+
+# glslc
+set(SHADERC_SKIP_TESTS ON CACHE BOOL "" FORCE)
+set(SHADERC_SKIP_EXAMPLES ON CACHE BOOL "" FORCE)
+set(SHADERC_SKIP_INSTALL ON CACHE BOOL "" FORCE)
+FetchContent_Declare(
+    glslc
+    GIT_REPOSITORY https://github.com/google/shaderc
+    GIT_TAG        main # v2021.2
+    )
+FetchContent_MakeAvailable(glslc)
+
+set(GLSLC glslc_exe)
+
+
+
 
 
 # -------------------------------------------------------------------------------------------------
@@ -208,7 +271,7 @@ set(INCL_DIRS
 if(${OS_MACOS})
     set(INCL_DIRS ${INCL_DIRS} /usr/local/include)
 elseif(${OS_WIN32})
-    set(INCL_DIRS ${INCL_DIRS} $ENV{VULKAN_SDK}/include $ENV{CGLM_INCLUDE})
+    set(INCL_DIRS ${INCL_DIRS}) #$ENV{VULKAN_SDK}/include $ENV{CGLM_INCLUDE})
     find_path(MINGW_DIR NAMES "gcc.exe")
 
 endif()
@@ -227,7 +290,7 @@ endif()
 if(${OS_MACOS})
     link_directories(/usr/local/lib)
 elseif(${OS_WIN32})
-    link_directories($ENV{VULKAN_SDK}\\Lib $ENV{VULKAN_SDK}\\Bin) # $ENV{CGLM_LIB} ${MINGW_DIR})
+    # link_directories($ENV{VULKAN_SDK}\\Lib $ENV{VULKAN_SDK}\\Bin) # $ENV{CGLM_LIB} ${MINGW_DIR})
     set(LINK_LIBS ${LINK_LIBS})
 endif()
 
