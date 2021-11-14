@@ -364,6 +364,12 @@ set_target_properties(libdatoviz PROPERTIES
     # PUBLIC_HEADER include/datoviz/datoviz.h
     OUTPUT_NAME "datoviz"
     )
+if(${OS_WIN32})
+    set_target_properties(
+        libdatoviz PROPERTIES
+        OUTPUT_NAME "libdatoviz"
+    )
+endif()
 target_compile_definitions(libdatoviz PUBLIC ${COMPILE_DEFINITIONS})
 target_include_directories(libdatoviz PUBLIC ${INCL_DIRS})
 target_link_libraries(libdatoviz ${LINK_LIBS})
