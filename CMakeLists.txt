@@ -36,6 +36,8 @@ option(DATOVIZ_WITH_CLI "Build Datoviz command-line interface with tests and dem
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_C_STANDARD)
 set(CMAKE_C_STANDARD_REQUIRED True)
+set(PNG_ARM_NEON off CACHE INTERNAL "")
+set(PNG_ARM_NEON_OPT off CACHE INTERNAL "")
 
 
 # -------------------------------------------------------------------------------------------------
@@ -55,13 +57,21 @@ endif()
 # include_directories(${PNG_INCLUDE_DIR})
 # target_link_libraries(${MY_EXEC} ${PNG_LIBRARY})
 
+# ---- libpng -------------------------------------------------------------------------------------
+FetchContent_Declare(
+    libpng
+    GIT_REPOSITORY  https://github.com/glennrp/libpng
+    # GIT_TAG         macos-fix-crosscompile
+)
+FetchContent_MakeAvailable(libpng)
+
 # ---- cglm ---------------------------------------------------------------------------------------
 FetchContent_Declare(
     cglm
     GIT_REPOSITORY  https://github.com/recp/cglm/
     GIT_TAG         v0.8.3
-    )
-    FetchContent_MakeAvailable(cglm)
+)
+FetchContent_MakeAvailable(cglm)
 
 # ---- glfw ---------------------------------------------------------------------------------------
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -72,15 +82,15 @@ FetchContent_Declare(
     glfw
     GIT_REPOSITORY  https://github.com/glfw/glfw/
     GIT_TAG         3.3.5
-    )
-    FetchContent_MakeAvailable(glfw)
+)
+FetchContent_MakeAvailable(glfw)
 
 # ---- glslc --------------------------------------------------------------------------------------
 if (DATOVIZ_WITH_GLSLANG)
     FetchContent_Declare(
-    glslang
-    GIT_REPOSITORY https://github.com/KhronosGroup/glslang
-    GIT_TAG        master-tot
+        glslang
+        GIT_REPOSITORY https://github.com/KhronosGroup/glslang
+        GIT_TAG        master-tot
     )
     FetchContent_MakeAvailable(glslang)
 endif()
@@ -276,6 +286,7 @@ set_target_properties(libdatoviz PROPERTIES
     VERSION ${DATOVIZ_VERSION}
     SOVERSION 1
     # PUBLIC_HEADER include/datoviz/datoviz.h
+    OUTPUT_NAME "datoviz"
     )
 target_compile_definitions(libdatoviz PUBLIC ${COMPILE_DEFINITIONS})
 target_include_directories(libdatoviz PUBLIC ${INCL_DIRS})
