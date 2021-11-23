@@ -342,6 +342,7 @@ set(sources
     "src/log.c"
     "src/fileio.c"
     "src/fifo.c"
+    "src/vklite.c"
 
     "external/tinycthread.c"
 )
@@ -386,6 +387,7 @@ if (DATOVIZ_WITH_CLI)
         "tests/test_thread.c"
         "tests/test_obj.c"
         "tests/test_fifo.c"
+        "tests/test_vklite.c"
         "tests/test.c"
     )
 

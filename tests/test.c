@@ -15,15 +15,8 @@
 #include "test_fifo.h"
 #include "test_obj.h"
 #include "test_thread.h"
+#include "test_vklite.h"
 #include "testing.h"
-
-
-
-/*************************************************************************************************/
-/*  Macros                                                                                       */
-/*************************************************************************************************/
-
-#define TEST(x) tst_suite_add(&suite, #x, test_##x, NULL);
 
 
 
@@ -31,7 +24,7 @@
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
 
-int dvz_run_tests()
+int dvz_run_tests(const char* match)
 {
     TstSuite suite = tst_suite();
 
@@ -54,7 +47,10 @@ int dvz_run_tests()
     TEST(utils_deq_1)
     TEST(utils_deq_2)
 
-    tst_suite_run(&suite, NULL);
+    // Testing vklite.
+    TEST(vklite_1)
+
+    tst_suite_run(&suite, match);
     tst_suite_destroy(&suite);
     return 0;
 }
