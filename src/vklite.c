@@ -181,6 +181,22 @@ DvzHost* dvz_host(DvzBackend backend)
 
 
 
+void dvz_host_wait(DvzHost* host)
+{
+    ASSERT(host != NULL);
+    log_trace("wait for all GPUs to be idle");
+    DvzGpu* gpu = NULL;
+    DvzContainerIterator iter = dvz_container_iterator(&host->gpus);
+    while (iter.item != NULL)
+    {
+        gpu = iter.item;
+        dvz_gpu_wait(gpu);
+        dvz_container_iter(&iter);
+    }
+}
+
+
+
 int dvz_host_destroy(DvzHost* host)
 {
     ASSERT(host != NULL);
@@ -232,6 +248,7 @@ int dvz_host_destroy(DvzHost* host)
 
     return res;
 }
+
 
 
 /*************************************************************************************************/
@@ -384,22 +401,6 @@ void dvz_gpu_wait(DvzGpu* gpu)
     log_trace("waiting for device");
     if (gpu->device != VK_NULL_HANDLE)
         vkDeviceWaitIdle(gpu->device);
-}
-
-
-
-void dvz_host_wait(DvzHost* host)
-{
-    ASSERT(host != NULL);
-    log_trace("wait for all GPUs to be idle");
-    DvzGpu* gpu = NULL;
-    DvzContainerIterator iter = dvz_container_iterator(&host->gpus);
-    while (iter.item != NULL)
-    {
-        gpu = iter.item;
-        dvz_gpu_wait(gpu);
-        dvz_container_iter(&iter);
-    }
 }
 
 
