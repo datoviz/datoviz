@@ -103,6 +103,16 @@ typedef void (*DvzGraphicsCallback)(DvzGraphicsData* data, uint32_t item_count, 
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
+// Backend.
+typedef enum
+{
+    DVZ_BACKEND_NONE,
+    DVZ_BACKEND_GLFW,
+    DVZ_BACKEND_OFFSCREEN,
+} DvzBackend;
+
+
+
 // Queue type.
 typedef enum
 {
@@ -241,7 +251,7 @@ struct DvzHost
     uint32_t n_errors;
 
     // Backend
-    // DvzBackend backend;
+    DvzBackend backend;
 
     // Global clock
     DvzClock clock;
@@ -253,7 +263,7 @@ struct DvzHost
 
     // Containers.
     DvzContainer gpus;
-    // DvzContainer windows;  // to remove
+    DvzContainer windows;
     // DvzContainer canvases; // to remove
 
     // DvzRun* run;
@@ -325,7 +335,7 @@ struct DvzGpu
 struct DvzWindow
 {
     DvzObject obj;
-    DvzHost* host;
+    DvzGpu* gpu;
 
     void* backend_window;
     uint32_t width, height; // in screen coordinates
@@ -847,12 +857,12 @@ DVZ_EXPORT void dvz_gpu_destroy(DvzGpu* gpu);
  * no functionality that allows one to render to it with Vulkan. One needs a swapchain, an event
  * loop, and so on, which are provided instead at the level of the Canvas.
  *
- * @param host the host
+ * @param gpu the GPU
  * @param width the window width, in pixels
  * @param height the window height, in pixels
  * @returns the window
  */
-DVZ_EXPORT DvzWindow* dvz_window(DvzHost* host, uint32_t width, uint32_t height);
+DVZ_EXPORT DvzWindow* dvz_window(DvzGpu* gpu, uint32_t width, uint32_t height);
 
 /**
  * Get the window size, in pixels.
@@ -2459,6 +2469,19 @@ DVZ_EXPORT void dvz_cmd_copy_buffer(
 DVZ_EXPORT void dvz_cmd_push(
     DvzCommands* cmds, uint32_t idx, DvzSlots* slots, VkShaderStageFlagBits shaders, //
     VkDeviceSize offset, VkDeviceSize size, const void* data);
+
+
+
+/*************************************************************************************************/
+/*  Context and transfers                                                                        */
+/*************************************************************************************************/
+
+/**
+ * Destroy a context.
+ *
+ * @param context the context
+ */
+DVZ_EXPORT void dvz_context_destroy(DvzContext* context);
 
 
 
