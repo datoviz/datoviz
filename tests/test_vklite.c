@@ -12,6 +12,7 @@
 
 #include "test_vklite.h"
 #include "testing.h"
+#include "vklite.h"
 
 
 
@@ -22,7 +23,7 @@
 int test_vklite_app(TstSuite* suite)
 {
     ASSERT(suite != NULL);
-    // DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
+    DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
 
     // AT(app->obj.status == DVZ_OBJECT_STATUS_CREATED);
     // AT(app->gpus.count >= 1);
@@ -40,7 +41,7 @@ int test_vklite_app(TstSuite* suite)
     // log_info("Best GPU is %s with %s VRAM", gpu->name, pretty_size(gpu->vram));
     // ASSERT(gpu->name != NULL);
 
-    // dvz_app_destroy(app);
+    dvz_host_destroy(host);
     return 0;
 }
 

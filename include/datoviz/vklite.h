@@ -753,10 +753,59 @@ struct DvzSubmit
 
 
 /*************************************************************************************************/
-/*  GPU                                                                                          */
+/*  Host                                                                                         */
 /*************************************************************************************************/
 
 EXTERN_C_ON
+
+/**
+ * Create a host.
+ *
+ * This object represents a computer with one or multiple GPUs.
+ * It holds the Vulkan instance and it is responsible for discovering the available GPUs.
+ *
+ * @param backend the backend
+ * @returns a pointer to the created host
+ */
+DVZ_EXPORT DvzHost* dvz_host(DvzBackend backend);
+
+/**
+ * Full synchronization on all GPUs.
+ *
+ * This function waits on all queues of all GPUs. The strongest, least efficient of the
+ * synchronization methods.
+ *
+ * @param host the host
+ */
+DVZ_EXPORT void dvz_host_wait(DvzHost* host);
+
+/**
+ * Destroy the host.
+ *
+ * This function automatically destroys all objects created within the host.
+ *
+ * @param host the host to destroy
+ */
+DVZ_EXPORT int dvz_host_destroy(DvzHost* host);
+
+/**
+ * Destroy the run.
+ *
+ * !!! important
+ *     This function should never be called by the user. It is always called automatically by
+ *     dvz_app_destroy() at the last moment, AFTER all canvases have been destroyed. Otherwise,
+ *     canvas callbacks may try to access the run before the canvases are destroyed, but after the
+ *     run has been destroyed, resulting in a segmentation fault.
+ *
+ * @param the run instance
+ */
+// DVZ_EXPORT void dvz_run_destroy(DvzRun* run);
+
+
+
+/*************************************************************************************************/
+/*  GPU                                                                                          */
+/*************************************************************************************************/
 
 /**
  * Initialize a GPU.
@@ -817,16 +866,6 @@ DVZ_EXPORT void dvz_gpu_create(DvzGpu* gpu, VkSurfaceKHR surface);
  * @param queue_idx the queue index
  */
 DVZ_EXPORT void dvz_queue_wait(DvzGpu* gpu, uint32_t queue_idx);
-
-/**
- * Full synchronization on all GPUs.
- *
- * This function waits on all queues of all GPUs. The strongest, least efficient of the
- * synchronization methods.
- *
- * @param host the host
- */
-DVZ_EXPORT void dvz_host_wait(DvzHost* host);
 
 /**
  * Full synchronization on a given GPU.
