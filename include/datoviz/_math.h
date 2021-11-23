@@ -48,6 +48,47 @@ MUTE_OFF
 
 
 /*************************************************************************************************/
+/*  Byte size                                                                                    */
+/*************************************************************************************************/
+
+#define GB 1073741824
+#define MB 1048576
+#define KB 1024
+
+static char _PRETTY_SIZE[64] = {0};
+
+typedef uint64_t DvzSize;
+
+static inline char* pretty_size(DvzSize size)
+{
+    float s = (float)size;
+    const char* u;
+    if (size >= GB)
+    {
+        s /= GB;
+        u = "GB";
+    }
+    else if (size >= MB)
+    {
+        s /= MB;
+        u = "MB";
+    }
+    else if (size >= KB)
+    {
+        s /= KB;
+        u = "KB";
+    }
+    else
+    {
+        u = "bytes";
+    }
+    snprintf(_PRETTY_SIZE, 64, "%.1f %s", s, u);
+    return _PRETTY_SIZE;
+}
+
+
+
+/*************************************************************************************************/
 /*  8-bit integers                                                                               */
 /*************************************************************************************************/
 

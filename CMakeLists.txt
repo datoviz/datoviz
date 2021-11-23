@@ -345,6 +345,7 @@ set(sources
     "src/vklite.c"
 
     "external/tinycthread.c"
+    "external/vk_mem_alloc.cpp"
 )
 
 
