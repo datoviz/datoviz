@@ -31,7 +31,8 @@
 
 static int test(int argc, char** argv)
 {
-    dvz_run_tests();
+    const char* match = argc >= 2 ? argv[1] : NULL;
+    dvz_run_tests(match);
     return 0;
 }
 
@@ -55,8 +56,10 @@ int main(int argc, char** argv)
     }
     ASSERT(argc >= 2);
     int res = 0;
+
     // SWITCH_CLI_ARG(info)
     SWITCH_CLI_ARG(test)
     // SWITCH_CLI_ARG(demo)
+
     return res;
 }

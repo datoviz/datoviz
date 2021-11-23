@@ -15,7 +15,7 @@ fi
 # Building
 # -------------------------------------------------------------------------------------------------
 
-build () {
+function build {
     mkdir -p docs/images &&
     ln -sf $(pwd)/data/screenshots $(pwd)/docs/images/ &&
     mkdir -p build &&
@@ -25,9 +25,14 @@ build () {
     cd ..
 }
 
-rmbuild () {
+function rmbuild {
     rm -rf build
 }
+
+function test {
+    ./build/datoviz test $2
+}
+
 
 
 # -------------------------------------------------------------------------------------------------
@@ -41,4 +46,7 @@ elif [ $1 == "rebuild" ]
 then
     rmbuild
     build
+elif [ $1 == "test" ]
+then
+    test
 fi
