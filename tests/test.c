@@ -48,7 +48,7 @@ int dvz_run_tests(const char* match)
     TEST(utils_deq_2)
 
     // Testing vklite.
-    TEST(vklite_1)
+    TEST(vklite_app)
 
     tst_suite_run(&suite, match);
     tst_suite_destroy(&suite);
