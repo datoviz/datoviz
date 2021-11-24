@@ -268,7 +268,7 @@ static void create_instance(
     appInfo.pApplicationName = APPLICATION_NAME;
     appInfo.applicationVersion = APPLICATION_VERSION;
     appInfo.pEngineName = ENGINE_NAME;
-    appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+    appInfo.engineVersion = APPLICATION_VERSION;
     appInfo.apiVersion = DVZ_VULKAN_API;
 
     VkInstanceCreateInfo info_inst = {0};

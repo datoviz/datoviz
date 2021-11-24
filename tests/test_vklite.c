@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 
+#include "../src/vklite_utils.h"
 #include "test.h"
 #include "test_vklite.h"
 #include "testing.h"
@@ -175,6 +176,30 @@ int test_vklite_buffer_resize(TstSuite* suite)
 
     dvz_gpu_destroy(gpu);
     // dvz_host_destroy(host);
+    return 0;
+}
+
+
+
+int test_vklite_load_shader(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+    DvzHost* host = get_host(suite);
+    ASSERT(host != NULL);
+
+    DvzGpu* gpu = dvz_gpu_best(host);
+    dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
+    dvz_gpu_create(gpu, 0);
+
+    // Create a shader module.
+    char shader_path[1024] = {0};
+    snprintf(shader_path, sizeof(shader_path), "%s/test_pow.comp.spv", SPIRV_DIR);
+    VkShaderModule module = create_shader_module_from_file(gpu->device, shader_path);
+
+    // Destroy the shader module.
+    vkDestroyShaderModule(gpu->device, module, NULL);
+
+    dvz_gpu_destroy(gpu);
     return 0;
 }
 

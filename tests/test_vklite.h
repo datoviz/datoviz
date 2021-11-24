@@ -23,6 +23,7 @@ int test_vklite_host(TstSuite*);
 int test_vklite_commands(TstSuite*);
 int test_vklite_buffer_1(TstSuite*);
 int test_vklite_buffer_resize(TstSuite*);
+int test_vklite_load_shader(TstSuite*);
 int test_vklite_compute(TstSuite*);
 int test_vklite_push(TstSuite*);
 int test_vklite_images(TstSuite*);

@@ -11,6 +11,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "fileio.h"
 #include "vklite.h"
 #include "vkutils.h"
 #include "window.h"
