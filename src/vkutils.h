@@ -260,8 +260,6 @@ static void create_instance(
         extensions[required_extension_count] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
     }
 
-    extensions[extension_count++] = "VK_KHR_get_physical_device_properties2";
-
     // Prepare the creation of the Vulkan instance.
     VkApplicationInfo appInfo = {0};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
