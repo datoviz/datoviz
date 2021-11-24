@@ -15,6 +15,7 @@
 #include "test_fifo.h"
 #include "test_obj.h"
 #include "test_thread.h"
+#include "test_window.h"
 // #include "test_vklite.h"
 #include "testing.h"
 
@@ -46,6 +47,9 @@ int dvz_run_tests(const char* match)
     TEST(utils_fifo_first)
     TEST(utils_deq_1)
     TEST(utils_deq_2)
+
+    // Testing window.
+    TEST(window_1)
 
     // // Testing vklite.
     // TEST(vklite_host)
