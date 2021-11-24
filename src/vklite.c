@@ -5,6 +5,7 @@
 #include "vklite.h"
 #include "common.h"
 #include "vklite_utils.h"
+#include "vkutils.h"
 #include "window.h"
 
 
@@ -43,6 +44,7 @@
         ASSERT(strlen(s) < DVZ_PATH_MAX_LEN);                                                     \
         strncpy(dst, s, DVZ_PATH_MAX_LEN);                                                        \
     }
+
 
 
 /*************************************************************************************************/

@@ -402,7 +402,7 @@ if (DATOVIZ_WITH_CLI)
         "tests/test_obj.c"
         "tests/test_fifo.c"
         "tests/test_window.c"
-        # "tests/test_vklite.c"
+        "tests/test_vklite.c"
         "tests/test.c"
     )
 

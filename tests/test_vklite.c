@@ -13,6 +13,7 @@
 #include "test_vklite.h"
 #include "testing.h"
 #include "vklite.h"
+#include "window.h"
 
 
 
