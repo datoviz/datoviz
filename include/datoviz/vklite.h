@@ -25,7 +25,7 @@ MUTE_OFF
 /*************************************************************************************************/
 
 // TODO: update
-#define DVZ_VULKAN_API VK_API_VERSION_1_2
+#define DVZ_VULKAN_API VK_API_VERSION_1_1
 
 #define DVZ_MAX_BINDINGS_SIZE    32
 #define DVZ_MAX_DESCRIPTOR_SETS  1024

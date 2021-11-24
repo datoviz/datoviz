@@ -74,7 +74,7 @@ if(DATOVIZ_WITH_GLFW)
     FetchContent_Declare(
         glfw
         GIT_REPOSITORY  https://github.com/glfw/glfw/
-        GIT_TAG         3.3.5
+        GIT_TAG         3.3.4
     )
     FetchContent_MakeAvailable(glfw)
 endif()
@@ -273,7 +273,7 @@ elseif(CC_CLANG)
     set(COMMON_FLAGS "${COMMON_FLAGS} -Wno-unused-parameter -fcolor-diagnostics -Wno-missing-braces -Wmissing-prototypes")
 
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMMON_FLAGS} -std=c11")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAGS} -std=c++17")
     set(CMAKE_OBJC_FLAGS
         "${CMAKE_OBJC_FLAGS} ${COMMON_FLAGS}
         -Wno-partial-availability -Wno-unguarded-availability-new")
