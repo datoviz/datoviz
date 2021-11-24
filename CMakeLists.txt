@@ -64,7 +64,9 @@ if(DATOVIZ_WITH_PNG)
 endif()
 
 # ---- glfw ---------------------------------------------------------------------------------------
+set(HAS_GLFW 0)
 if(DATOVIZ_WITH_GLFW)
+    set(HAS_GLFW 1)
     set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
     set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
     set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
@@ -217,7 +219,7 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
     CC_GCC=${CC_GCC}
     CC_CLANG=${CC_CLANG}
 
-    HAS_GLFW=${DATOVIZ_WITH_GLFW}
+    HAS_GLFW=${HAS_GLFW}
 )
 
 
