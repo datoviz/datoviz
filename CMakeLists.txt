@@ -216,6 +216,8 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
     CC_MSVC=${CC_MSVC}
     CC_GCC=${CC_GCC}
     CC_CLANG=${CC_CLANG}
+
+    HAS_GLFW=${DATOVIZ_WITH_GLFW}
 )
 
 
@@ -288,11 +290,19 @@ endif()
 # Linking libraries
 # -------------------------------------------------------------------------------------------------
 
-set(LINK_LIBS glfw cglm) # Vulkan::Vulkan
+set(LINK_LIBS cglm)
+
+# Link with glfw.
+if(DATOVIZ_WITH_GLFW)
+    set(LINK_LIBS ${LINK_LIBS} glfw)
+endif()
+
+# Link with system libraries.
 if(NOT ${WIN32})
     set(LINK_LIBS m dl pthread ${LINK_LIBS})
 endif()
 
+# Link with Vulkan.
 if(Vulkan_FOUND)
     set(LINK_LIBS ${LINK_LIBS} Vulkan::Vulkan)
 else()
@@ -342,7 +352,8 @@ set(sources
     "src/log.c"
     "src/fileio.c"
     "src/fifo.c"
-    "src/vklite.c"
+    "src/window.c"
+    # "src/vklite.c"
 
     "external/tinycthread.c"
     "external/vk_mem_alloc.cpp"
@@ -388,7 +399,7 @@ if (DATOVIZ_WITH_CLI)
         "tests/test_thread.c"
         "tests/test_obj.c"
         "tests/test_fifo.c"
-        "tests/test_vklite.c"
+        # "tests/test_vklite.c"
         "tests/test.c"
     )
 

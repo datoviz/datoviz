@@ -56,3 +56,4 @@ build
 screenshots
 .vs
 .vscode
+perf.*
