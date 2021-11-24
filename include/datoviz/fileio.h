@@ -91,6 +91,7 @@ DVZ_EXPORT int
 dvz_write_png(const char* filename, uint32_t width, uint32_t height, const uint8_t* image);
 
 
+
 // Defined in cmake-generated file build/_shaders.c
 DVZ_EXPORT unsigned char* dvz_resource_shader(const char* name, unsigned long* size);
 

@@ -203,22 +203,43 @@ endif()
 
 
 # -------------------------------------------------------------------------------------------------
+# Directories
+# -------------------------------------------------------------------------------------------------
+
+set(DATA_DIR "${CMAKE_SOURCE_DIR}/data")
+set(SPIRV_DIR ${CMAKE_BINARY_DIR}/spirv)
+set(ARTIFACTS_DIR "${CMAKE_BINARY_DIR}/artifacts")
+
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR})
+file(MAKE_DIRECTORY ${SPIRV_DIR})
+file(MAKE_DIRECTORY "${ARTIFACTS_DIR}")
+
+
+# -------------------------------------------------------------------------------------------------
 # Compile definitions
 # -------------------------------------------------------------------------------------------------
 
 set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
     LOG_USE_COLOR
     ENABLE_VALIDATION_LAYERS=1
-    ROOT_DIR=\"${CMAKE_SOURCE_DIR}\"
 
+    # Directories.
+    ROOT_DIR=\"${CMAKE_SOURCE_DIR}\"
+    DATA_DIR=\"${DATA_DIR}\"
+    SPIRV_DIR=\"${SPIRV_DIR}\"
+    ARTIFACTS_DIR=\"${ARTIFACTS_DIR}\"
+
+    # OS.
     OS_LINUX=${OS_LINUX}
     OS_MACOS=${OS_MACOS}
     OS_WIN32=${OS_WIN32}
 
+    # Compiler.
     CC_MSVC=${CC_MSVC}
     CC_GCC=${CC_GCC}
     CC_CLANG=${CC_CLANG}
 
+    # Dependencies.
     HAS_GLFW=${HAS_GLFW}
 )
 
@@ -346,6 +367,51 @@ endif("${isSystemDir}" STREQUAL "-1")
 
 
 # -------------------------------------------------------------------------------------------------
+# Shaders compilation
+# -------------------------------------------------------------------------------------------------
+
+find_program(GLSLC glslc)
+file(GLOB shader_sources
+    "*/glsl/*.vert"
+    "*/glsl/*.geom"
+    "*/glsl/*.comp"
+    "*/glsl/*.frag"
+)
+foreach(shader_source ${shader_sources})
+    get_filename_component(shader_name ${shader_source} NAME)
+    # NOTE: there was a bug because the shader output was a relative path, not a full path
+    # and cmake believed the output was not properly created by the custom command glslc.
+    set(shader_output "${SPIRV_DIR}/${shader_name}.spv")
+    add_custom_command(
+        OUTPUT ${shader_output}
+        COMMAND ${GLSLC}
+            -o "${shader_output}" ${shader_source}
+            -I "${CMAKE_SOURCE_DIR}/include/datoviz/glsl"
+        DEPENDS ${shader_source}
+        IMPLICIT_DEPENDS ${shader_source}
+        )
+    list(APPEND shader_outputs ${shader_output})
+endforeach()
+add_custom_target(shaders_spirv DEPENDS ${shader_outputs})
+
+# NOTE: Only include graphics shaders in the embed resources files.
+# file(GLOB embed_spirv "${SPIRV_DIR}/graphics_*.spv")
+# message(${embed_spirv})
+set(path_shadersc "${CMAKE_BINARY_DIR}/_shaders.c")
+add_custom_command(
+    OUTPUT ${path_shadersc}
+    COMMAND ${CMAKE_COMMAND}
+    -D DIR="${SPIRV_DIR}/*"
+    -D PREFIX="shader"
+    -D OUTPUT=${path_shadersc}
+    -P "${CMAKE_SOURCE_DIR}/cmake/embed_resources.cmake"
+    DEPENDS shaders_spirv ${shader_sources}
+    IMPLICIT_DEPENDS shaders_spirv ${shader_sources}
+)
+add_custom_target(shaders DEPENDS ${path_shadersc})
+
+
+# -------------------------------------------------------------------------------------------------
 # Source files
 # -------------------------------------------------------------------------------------------------
 
@@ -371,7 +437,7 @@ set(cpp_sources
 # Datoviz shared library
 # -------------------------------------------------------------------------------------------------
 
-add_library(libdatoviz SHARED ${sources})
+add_library(libdatoviz SHARED ${sources} ${path_shadersc})
 set_source_files_properties(${cpp_sources} PROPERTIES COMPILE_FLAGS -w)
 set_target_properties(libdatoviz PROPERTIES
     VERSION ${DATOVIZ_VERSION}
@@ -385,6 +451,7 @@ if(${OS_WIN32})
         OUTPUT_NAME "libdatoviz"
     )
 endif()
+add_dependencies(libdatoviz shaders)
 target_compile_definitions(libdatoviz PUBLIC ${COMPILE_DEFINITIONS})
 target_include_directories(libdatoviz PUBLIC ${INCL_DIRS})
 target_link_libraries(libdatoviz ${LINK_LIBS})

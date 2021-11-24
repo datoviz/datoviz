@@ -2237,6 +2237,7 @@ void dvz_compute_create(DvzCompute* compute)
         compute->shader_module =
             create_shader_module_from_file(compute->gpu->device, compute->shader_path);
     }
+    ASSERT(compute->shader_module != NULL);
 
     create_compute_pipeline(
         compute->gpu->device, compute->shader_module, //

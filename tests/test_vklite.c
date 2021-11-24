@@ -196,6 +196,7 @@ int test_vklite_compute(TstSuite* suite)
     snprintf(path, sizeof(path), "%s/test_double.comp.spv", SPIRV_DIR);
     DvzCompute compute = dvz_compute(gpu, path);
 
+
     // Create the buffers
     DvzBuffer buffer = dvz_buffer(gpu);
     const uint32_t n = 20;

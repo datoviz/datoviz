@@ -5,6 +5,7 @@ function(create_resources files prefix output)
     file(WRITE ${output} "")
     file(APPEND ${output} "#include <string.h>\n")
     file(APPEND ${output} "#include \"../include/datoviz/common.h\"\n")
+    file(APPEND ${output} "#include \"../include/datoviz/fileio.h\"\n")
 
     # Collect input files
     # HACK: if "files" has a * in it, it should be interpreted as a GLOB
