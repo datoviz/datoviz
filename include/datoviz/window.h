@@ -11,6 +11,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include <vulkan/vulkan.h>
+
 #include "common.h"
 
 
@@ -19,6 +21,7 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
+typedef struct DvzHost DvzHost;
 typedef struct DvzWindow DvzWindow;
 typedef struct DvzGpu DvzGpu;
 
@@ -31,6 +34,32 @@ typedef struct DvzHost DvzHost;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+struct DvzHost
+{
+    DvzObject obj;
+    uint32_t n_errors;
+
+    // Backend
+    DvzBackend backend;
+
+    // Global clock
+    DvzClock clock;
+    // bool is_running;
+
+    // Vulkan objects.
+    VkInstance instance;
+    VkDebugUtilsMessengerEXT debug_messenger;
+
+    // Containers.
+    DvzContainer gpus;
+    DvzContainer windows;
+    // DvzContainer canvases; // to remove
+
+    // DvzRun* run;
+};
+
+
+
 struct DvzWindow
 {
     DvzObject obj;
@@ -40,8 +69,57 @@ struct DvzWindow
     uint32_t width, height; // in screen coordinates
 
     bool close_on_esc;
-    uint64_t surface; // VkSurfaceKHR
+    VkSurfaceKHR surface;
 };
+
+
+
+/*************************************************************************************************/
+/*  Host                                                                                         */
+/*************************************************************************************************/
+
+/**
+ * Create a host.
+ *
+ * This object represents a computer with one or multiple GPUs.
+ * It holds the Vulkan instance and it is responsible for discovering the available GPUs.
+ *
+ * @param backend the backend
+ * @returns a pointer to the created host
+ */
+DVZ_EXPORT DvzHost* dvz_host(DvzBackend backend);
+
+/**
+ * Full synchronization on all GPUs.
+ *
+ * This function waits on all queues of all GPUs. The strongest, least efficient of the
+ * synchronization methods.
+ *
+ * @param host the host
+ */
+DVZ_EXPORT void dvz_host_wait(DvzHost* host);
+
+/**
+ * Destroy the host.
+ *
+ * This function automatically destroys all objects created within the host.
+ *
+ * @param host the host to destroy
+ */
+DVZ_EXPORT int dvz_host_destroy(DvzHost* host);
+
+/**
+ * Destroy the run.
+ *
+ * !!! important
+ *     This function should never be called by the user. It is always called automatically by
+ *     dvz_app_destroy() at the last moment, AFTER all canvases have been destroyed. Otherwise,
+ *     canvas callbacks may try to access the run before the canvases are destroyed, but after the
+ *     run has been destroyed, resulting in a segmentation fault.
+ *
+ * @param the run instance
+ */
+// DVZ_EXPORT void dvz_run_destroy(DvzRun* run);
 
 
 

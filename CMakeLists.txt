@@ -353,7 +353,7 @@ set(sources
     "src/fileio.c"
     "src/fifo.c"
     "src/window.c"
-    # "src/vklite.c"
+    "src/vklite.c"
 
     "external/tinycthread.c"
     "external/vk_mem_alloc.cpp"

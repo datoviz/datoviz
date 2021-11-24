@@ -29,6 +29,55 @@ typedef struct GLFWwindow GLFWwindow;
 
 
 /*************************************************************************************************/
+/*  Backend-specific initialization                                                              */
+/*************************************************************************************************/
+
+static void _glfw_error(int error_code, const char* description)
+{
+    log_error("glfw error code #%d: %s", error_code, description);
+}
+
+
+
+static void backend_init(DvzBackend backend)
+{
+    switch (backend)
+    {
+    case DVZ_BACKEND_GLFW:
+#if HAS_GLFW
+        log_debug("initialize glfw");
+        glfwSetErrorCallback(_glfw_error);
+        if (!glfwInit())
+        {
+            exit(1);
+        }
+#endif
+        break;
+    default:
+        break;
+    }
+}
+
+
+
+static void backend_terminate(DvzBackend backend)
+{
+    switch (backend)
+    {
+    case DVZ_BACKEND_GLFW:
+#if HAS_GLFW
+        log_debug("terminate glfw");
+        glfwTerminate();
+#endif
+        break;
+    default:
+        break;
+    }
+}
+
+
+
+/*************************************************************************************************/
 /*  Backend-specific code                                                                        */
 /*************************************************************************************************/
 
