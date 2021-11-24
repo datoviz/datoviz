@@ -2,8 +2,8 @@
 /*  Generic testing framework                                                                    */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_TESTING
-#define DVZ_HEADER_TESTING
+#ifndef TST_HEADER
+#define TST_HEADER
 
 
 
@@ -35,6 +35,12 @@
         AC((x)[i], (y)[i], (eps));
 
 #define EPS 1e-6
+
+#define TEST(x) tst_suite_add(&suite, #x, x, NULL);
+
+#define SETUP(x) tst_suite_setup(&suite, x, NULL);
+
+#define TEARDOWN(x) tst_suite_teardown(&suite, x, NULL);
 
 
 

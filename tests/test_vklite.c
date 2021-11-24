@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 
+#include "test.h"
 #include "test_vklite.h"
 #include "testing.h"
 #include "vklite.h"
@@ -51,7 +52,9 @@ int test_vklite_host(TstSuite* suite)
 int test_vklite_commands(TstSuite* suite)
 {
     ASSERT(suite != NULL);
-    DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
+    // Use the host setup fixture.
+    DvzHost* host = get_host(suite);
+
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
@@ -61,7 +64,7 @@ int test_vklite_commands(TstSuite* suite)
     dvz_cmd_reset(&cmds, 0);
     dvz_cmd_free(&cmds);
 
-    dvz_host_destroy(host);
+    dvz_gpu_destroy(gpu);
     return 0;
 }
 
@@ -70,7 +73,9 @@ int test_vklite_commands(TstSuite* suite)
 int test_vklite_buffer_1(TstSuite* suite)
 {
     ASSERT(suite != NULL);
-    DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
+    // Use the host setup fixture.
+    DvzHost* host = get_host(suite);
+
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
@@ -105,7 +110,7 @@ int test_vklite_buffer_1(TstSuite* suite)
 
     dvz_buffer_destroy(&buffer);
 
-    dvz_host_destroy(host);
+    dvz_gpu_destroy(gpu);
     return 0;
 }
 
@@ -114,7 +119,10 @@ int test_vklite_buffer_1(TstSuite* suite)
 int test_vklite_buffer_resize(TstSuite* suite)
 {
     ASSERT(suite != NULL);
-    DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
+    // DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
+    // Use the host setup fixture.
+    DvzHost* host = get_host(suite);
+
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
@@ -165,7 +173,8 @@ int test_vklite_buffer_resize(TstSuite* suite)
     buffer.mmap = NULL;
     dvz_buffer_destroy(&buffer);
 
-    dvz_host_destroy(host);
+    dvz_gpu_destroy(gpu);
+    // dvz_host_destroy(host);
     return 0;
 }
 
@@ -174,7 +183,10 @@ int test_vklite_buffer_resize(TstSuite* suite)
 int test_vklite_compute(TstSuite* suite)
 {
     ASSERT(suite != NULL);
-    DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
+    // DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
+    // Use the host setup fixture.
+    DvzHost* host = get_host(suite);
+
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_COMPUTE);
     dvz_gpu_create(gpu, 0);
@@ -238,7 +250,8 @@ int test_vklite_compute(TstSuite* suite)
     dvz_compute_destroy(&compute);
     dvz_buffer_destroy(&buffer);
 
-    dvz_host_destroy(host);
+    dvz_gpu_destroy(gpu);
+    // dvz_host_destroy(host);
     return 0;
 }
 
@@ -247,7 +260,10 @@ int test_vklite_compute(TstSuite* suite)
 int test_vklite_push(TstSuite* suite)
 {
     ASSERT(suite != NULL);
-    DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
+    // DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
+    // Use the host setup fixture.
+    DvzHost* host = get_host(suite);
+
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_COMPUTE);
     dvz_gpu_create(gpu, 0);
@@ -314,7 +330,8 @@ int test_vklite_push(TstSuite* suite)
     dvz_compute_destroy(&compute);
     dvz_buffer_destroy(&buffer);
 
-    dvz_host_destroy(host);
+    dvz_gpu_destroy(gpu);
+    // dvz_host_destroy(host);
     return 0;
 }
 
@@ -323,7 +340,9 @@ int test_vklite_push(TstSuite* suite)
 int test_vklite_images(TstSuite* suite)
 {
     ASSERT(suite != NULL);
-    DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
+    // Use the host setup fixture.
+    DvzHost* host = get_host(suite);
+    // DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
@@ -339,7 +358,8 @@ int test_vklite_images(TstSuite* suite)
 
     dvz_images_destroy(&images);
 
-    dvz_host_destroy(host);
+    dvz_gpu_destroy(gpu);
+    // dvz_host_destroy(host);
     return 0;
 }
 
@@ -348,7 +368,9 @@ int test_vklite_images(TstSuite* suite)
 int test_vklite_sampler(TstSuite* suite)
 {
     ASSERT(suite != NULL);
-    DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
+    // Use the host setup fixture.
+    DvzHost* host = get_host(suite);
+    // DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
@@ -361,7 +383,8 @@ int test_vklite_sampler(TstSuite* suite)
 
     dvz_sampler_destroy(&sampler);
 
-    dvz_host_destroy(host);
+    dvz_gpu_destroy(gpu);
+    // dvz_host_destroy(host);
     return 0;
 }
 
@@ -384,7 +407,10 @@ static void _make_buffer(DvzBuffer* buffer)
 int test_vklite_barrier_buffer(TstSuite* suite)
 {
     ASSERT(suite != NULL);
-    DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
+    // DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
+    // Use the host setup fixture.
+    DvzHost* host = get_host(suite);
+
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
@@ -458,7 +484,8 @@ int test_vklite_barrier_buffer(TstSuite* suite)
     dvz_buffer_destroy(&buffer0);
     dvz_buffer_destroy(&buffer1);
 
-    dvz_host_destroy(host);
+    dvz_gpu_destroy(gpu);
+    // dvz_host_destroy(host);
     return 0;
 }
 
@@ -467,7 +494,9 @@ int test_vklite_barrier_buffer(TstSuite* suite)
 int test_vklite_barrier_image(TstSuite* suite)
 {
     ASSERT(suite != NULL);
-    DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
+    // DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
+    // Use the host setup fixture.
+    DvzHost* host = get_host(suite);
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
@@ -521,7 +550,8 @@ int test_vklite_barrier_image(TstSuite* suite)
     dvz_buffer_destroy(&buffer);
     dvz_images_destroy(&images);
 
-    dvz_host_destroy(host);
+    dvz_gpu_destroy(gpu);
+    // dvz_host_destroy(host);
     return 0;
 }
 
@@ -530,7 +560,9 @@ int test_vklite_barrier_image(TstSuite* suite)
 int test_vklite_submit(TstSuite* suite)
 {
     ASSERT(suite != NULL);
-    DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
+    // DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
+    // Use the host setup fixture.
+    DvzHost* host = get_host(suite);
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_COMPUTE);
     dvz_gpu_queue(gpu, 1, DVZ_QUEUE_COMPUTE);
@@ -633,7 +665,9 @@ int test_vklite_submit(TstSuite* suite)
 
     FREE(data);
     FREE(data2);
-    dvz_host_destroy(host);
+
+    dvz_gpu_destroy(gpu);
+    // dvz_host_destroy(host);
     return 0;
 }
 

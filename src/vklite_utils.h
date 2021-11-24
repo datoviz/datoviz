@@ -29,6 +29,26 @@ static const char* DVZ_DEVICE_EXTENSIONS[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
 
 /*************************************************************************************************/
+/*  Typedefs                                                                                     */
+/*************************************************************************************************/
+
+typedef struct DvzPointer DvzPointer;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+struct DvzPointer
+{
+    void* pointer;
+    bool aligned;
+};
+
+
+
+/*************************************************************************************************/
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
@@ -101,13 +121,6 @@ static VkDeviceSize aligned_size(VkDeviceSize size, VkDeviceSize alignment)
 }
 
 
-
-typedef struct DvzPointer DvzPointer;
-struct DvzPointer
-{
-    void* pointer;
-    bool aligned;
-};
 
 /*
 WARNING: returns a wrapped pointer specifiying whether the pointer was aligned or not.

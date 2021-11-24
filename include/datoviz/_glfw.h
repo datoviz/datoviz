@@ -90,7 +90,7 @@ static const char** backend_extensions(DvzBackend backend, uint32_t* required_ex
     {
     case DVZ_BACKEND_GLFW:
 #if HAS_GLFW
-        ASSERT(glfwVulkanSupported() != 0);
+        // ASSERT(glfwVulkanSupported() != 0);
         required_extensions = glfwGetRequiredInstanceExtensions(required_extension_count);
         log_trace("%d extension(s) required by backend GLFW", *required_extension_count);
 #endif
