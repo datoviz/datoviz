@@ -185,6 +185,7 @@ int dvz_host_destroy(DvzHost* host)
 
 DvzWindow* dvz_window(DvzHost* host, uint32_t width, uint32_t height)
 {
+    // *** Comment below obsolete?? ***
     // NOTE: an offscreen canvas has NO DvzWindow, so this function should NEVER be called with an
     // offscreen backend, or for an offscreen canvas.
 
@@ -208,9 +209,9 @@ DvzWindow* dvz_window(DvzHost* host, uint32_t width, uint32_t height)
 
     if (window->surface == NULL)
     {
-        log_error("could not create window surface");
-        dvz_window_destroy(window);
-        return NULL;
+        log_warn("could not create window surface");
+        // dvz_window_destroy(window);
+        // return NULL;
     }
 
     return window;
