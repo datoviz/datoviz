@@ -52,6 +52,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "_log.h"
 #include "_macros.h"
 
 
@@ -193,6 +194,7 @@ static TstSuite tst_suite(void)
     TstSuite suite = {0};
     suite.items = calloc(TST_DEFAULT_CAPACITY, sizeof(TstItem));
     suite.capacity = TST_DEFAULT_CAPACITY;
+    suite.n_items = 0;
     return suite;
 }
 
@@ -201,10 +203,16 @@ static TstSuite tst_suite(void)
 static TstItem* _append(TstSuite* suite, TstItemType type, TstFunction function, void* user_data)
 {
     ASSERT(suite != NULL);
+    // log_trace(
+    //     "append one test item to suite with %d items, capacity %d", //
+    //     suite->n_items, suite->capacity);
     // Resize the array if needed.
     if (suite->capacity == suite->n_items)
     {
-        REALLOC(suite->items, 2 * suite->n_items);
+        log_trace("reallocate memory for test suite items");
+        ASSERT(suite->items != NULL);
+        ASSERT(suite->n_items > 0);
+        REALLOC(suite->items, 2 * suite->n_items * sizeof(TstItem));
         suite->capacity *= 2;
     }
     ASSERT(suite->n_items < suite->capacity);

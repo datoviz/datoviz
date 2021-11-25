@@ -132,7 +132,7 @@
     {                                                                                             \
         void* _new = realloc((x), (s));                                                           \
         if (_new == NULL)                                                                         \
-            printf("error reallocating %s to %d bytes\n", #x, (s));                               \
+            printf("error reallocating %s to %lu bytes\n", #x, (s));                              \
         else                                                                                      \
             x = _new;                                                                             \
     }
