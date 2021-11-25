@@ -254,7 +254,7 @@ static void backend_window_get_size(
         ASSERT(bwin != NULL);
 
         // Get window size.
-        glfwGetWindowSize((GLFWwindow*)window, &w, &h);
+        glfwGetWindowSize((GLFWwindow*)bwin, &w, &h);
         while (w == 0 || h == 0)
         {
             log_trace("waiting for end of window resize event");
