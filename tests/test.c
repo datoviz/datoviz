@@ -73,6 +73,8 @@ int dvz_run_tests(const char* match)
     TEST(test_vklite_window)
     TEST(test_vklite_swapchain)
     TEST(test_vklite_graphics)
+    TEST(test_vklite_canvas_blank)
+    TEST(test_vklite_canvas_triangle)
     TEARDOWN(teardown_host)
 
     tst_suite_run(&suite, match);

@@ -352,20 +352,20 @@ static TestCanvas test_canvas_create(DvzGpu* gpu, DvzWindow* window)
 
 
 
-static void test_canvas_show(TestCanvas canvas, FillCallback fill_commands, uint32_t n_frames)
+static void test_canvas_show(TestCanvas* canvas, FillCallback fill_commands, uint32_t n_frames)
 {
-    DvzGpu* gpu = canvas.gpu;
-    DvzWindow* window = canvas.window;
-    DvzRenderpass* renderpass = &canvas.renderpass;
-    DvzFramebuffers* framebuffers = &canvas.framebuffers;
-    DvzSwapchain* swapchain = &canvas.swapchain;
+    DvzGpu* gpu = canvas->gpu;
+    DvzWindow* window = canvas->window;
+    DvzRenderpass* renderpass = &canvas->renderpass;
+    DvzFramebuffers* framebuffers = &canvas->framebuffers;
+    DvzSwapchain* swapchain = &canvas->swapchain;
 
     ASSERT(swapchain != NULL);
     ASSERT(swapchain->img_count > 0);
 
     DvzCommands cmds = dvz_commands(gpu, 0, swapchain->img_count);
     for (uint32_t i = 0; i < cmds.count; i++)
-        fill_commands(&canvas, &cmds, i);
+        fill_commands(canvas, &cmds, i);
 
     // Sync objects.
     DvzSemaphores sem_img_available = dvz_semaphores(gpu, DVZ_MAX_FRAMES_IN_FLIGHT);
@@ -376,9 +376,10 @@ static void test_canvas_show(TestCanvas canvas, FillCallback fill_commands, uint
     bak_fences.count = swapchain->img_count;
     uint32_t cur_frame = 0;
 
-    for (uint32_t frame = 0; frame < n_frames; frame++)
+    for (uint32_t frame = 0; frame < n_frames || INFINITY; frame++)
     {
         log_debug("iteration %d", frame);
+        ASSERT(swapchain->images == canvas->images);
 
         backend_poll_events(window);
 
@@ -412,23 +413,23 @@ static void test_canvas_show(TestCanvas canvas, FillCallback fill_commands, uint
 
             // Destroy swapchain resources.
             dvz_framebuffers_destroy(framebuffers);
-            dvz_images_destroy(canvas.depth);
-            dvz_images_destroy(canvas.images);
-            dvz_swapchain_destroy(swapchain);
+            dvz_images_destroy(canvas->depth);
+            dvz_images_destroy(canvas->images);
+            // dvz_swapchain_destroy(swapchain);
 
             // Recreate the swapchain. This will automatically set the swapchain->images new
             // size.
-            dvz_swapchain_create(swapchain);
+            dvz_swapchain_recreate(swapchain);
             // Find the new framebuffer size as determined by the swapchain recreation.
             width = swapchain->images->shape[0];
             height = swapchain->images->shape[1];
 
             // The instance should be the same.
-            ASSERT(swapchain->images == canvas.images);
+            ASSERT(swapchain->images == canvas->images);
 
             // Need to recreate the depth image with the new size.
-            dvz_images_size(canvas.depth, (uvec3){width, height, 1});
-            dvz_images_create(canvas.depth);
+            dvz_images_size(canvas->depth, (uvec3){width, height, 1});
+            dvz_images_create(canvas->depth);
 
             // Recreate the framebuffers with the new size.
             ASSERT(framebuffers->attachments[0]->shape[0] == width);
@@ -439,7 +440,7 @@ static void test_canvas_show(TestCanvas canvas, FillCallback fill_commands, uint
             for (uint32_t i = 0; i < cmds.count; i++)
             {
                 dvz_cmd_reset(&cmds, i);
-                fill_commands(&canvas, &cmds, i);
+                fill_commands(canvas, &cmds, i);
             }
         }
         else

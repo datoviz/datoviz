@@ -896,6 +896,7 @@ int test_vklite_canvas_blank(TstSuite* suite)
 
     DvzWindow* window = dvz_window(host, WIDTH, HEIGHT);
     AT(window != NULL);
+    AT(window->surface != VK_NULL_HANDLE);
 
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
@@ -904,7 +905,7 @@ int test_vklite_canvas_blank(TstSuite* suite)
 
     TestCanvas canvas = test_canvas_create(gpu, window);
 
-    test_canvas_show(canvas, empty_commands, N_FRAMES);
+    test_canvas_show(&canvas, empty_commands, N_FRAMES);
 
     test_canvas_destroy(&canvas);
 
@@ -946,7 +947,7 @@ int test_vklite_canvas_triangle(TstSuite* suite)
     canvas.graphics = &visual.graphics;
     canvas.bindings = &visual.bindings;
 
-    test_canvas_show(canvas, _fill_triangle, N_FRAMES);
+    test_canvas_show(&canvas, _fill_triangle, N_FRAMES);
 
     destroy_visual(&visual);
     test_canvas_destroy(&canvas);

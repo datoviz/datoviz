@@ -275,6 +275,7 @@ static void _swapchain_create(DvzSwapchain* swapchain)
         swapchain->img_count, swapchain->format, swapchain->present_mode, &swapchain->gpu->queues,
         swapchain->requested_width, swapchain->requested_height, //
         &swapchain->caps, &swapchain->swapchain, &width, &height);
+    log_trace("created swapchain %d", swapchain->swapchain);
 
     swapchain->support_transfer =
         (swapchain->caps.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_SRC_BIT) != 0;
@@ -303,10 +304,17 @@ static void _swapchain_create(DvzSwapchain* swapchain)
 
 static void _swapchain_destroy(DvzSwapchain* swapchain)
 {
+    ASSERT(swapchain != NULL);
+    ASSERT(swapchain->gpu != NULL);
+
     if (swapchain->images != NULL)
         dvz_images_destroy(swapchain->images);
     if (swapchain->swapchain != VK_NULL_HANDLE)
+    {
+        log_trace("destroying swapchain");
         vkDestroySwapchainKHR(swapchain->gpu->device, swapchain->swapchain, NULL);
+        swapchain->swapchain = VK_NULL_HANDLE;
+    }
 }
 
 
