@@ -837,3 +837,121 @@ int test_vklite_swapchain(TstSuite* suite)
     // dvz_host_destroy(host);
     return 0;
 }
+
+
+
+/*************************************************************************************************/
+/*  Tests canvas                                                                                 */
+/*************************************************************************************************/
+
+int test_vklite_graphics(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+    DvzHost* host = get_host(suite);
+    DvzGpu* gpu = dvz_gpu_best(host);
+    dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
+    dvz_gpu_create(gpu, 0);
+
+    TestCanvas canvas = offscreen(gpu);
+    TestVisual visual = triangle_visual(gpu, &canvas.renderpass, &canvas.framebuffers, "");
+    visual.br.buffer = &visual.buffer;
+    visual.br.size = visual.buffer.size;
+    visual.br.count = 1;
+    canvas.data = &visual;
+    canvas.br = visual.br;
+    ASSERT(canvas.br.buffer->buffer != VK_NULL_HANDLE);
+    canvas.graphics = &visual.graphics;
+    canvas.bindings = &visual.bindings;
+
+    DvzCommands cmds = dvz_commands(gpu, 0, 1);
+    triangle_commands(
+        &cmds, 0, &canvas.renderpass, &canvas.framebuffers, //
+        canvas.graphics, canvas.bindings, canvas.br);
+    dvz_cmd_submit_sync(&cmds, 0);
+
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/screenshot.ppm", ARTIFACTS_DIR);
+
+    log_debug("saving screenshot to %s", path);
+    // Make a screenshot of the color attachment.
+    DvzImages* images = visual.framebuffers->attachments[0];
+    uint8_t* rgba = (uint8_t*)screenshot(images, 1);
+    dvz_write_ppm(path, images->shape[0], images->shape[1], rgba);
+    FREE(rgba);
+
+    destroy_visual(&visual);
+    test_canvas_destroy(&canvas);
+
+    dvz_gpu_destroy(gpu);
+    // dvz_host_destroy(host);
+    return 0;
+}
+
+
+
+int test_vklite_canvas_blank(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+    DvzHost* host = get_host(suite);
+
+    DvzWindow* window = dvz_window(host, WIDTH, HEIGHT);
+    AT(window != NULL);
+
+    DvzGpu* gpu = dvz_gpu_best(host);
+    dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
+    dvz_gpu_queue(gpu, 1, DVZ_QUEUE_PRESENT);
+    dvz_gpu_create(gpu, window->surface);
+
+    TestCanvas canvas = test_canvas_create(gpu, window);
+
+    test_canvas_show(canvas, empty_commands, N_FRAMES);
+
+    test_canvas_destroy(&canvas);
+
+    dvz_gpu_destroy(gpu);
+    // dvz_host_destroy(host);
+    return 0;
+}
+
+
+
+static void _fill_triangle(TestCanvas* canvas, DvzCommands* cmds, uint32_t idx)
+{
+    ASSERT(canvas != NULL);
+    triangle_commands(
+        cmds, idx, &canvas->renderpass, &canvas->framebuffers, //
+        canvas->graphics, canvas->bindings, canvas->br);
+}
+
+int test_vklite_canvas_triangle(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+    DvzHost* host = get_host(suite);
+
+    DvzWindow* window = dvz_window(host, WIDTH, HEIGHT);
+    AT(window != NULL);
+
+    DvzGpu* gpu = dvz_gpu_best(host);
+    dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
+    dvz_gpu_queue(gpu, 1, DVZ_QUEUE_PRESENT);
+    dvz_gpu_create(gpu, window->surface);
+
+    TestCanvas canvas = test_canvas_create(gpu, window);
+    TestVisual visual = triangle_visual(gpu, &canvas.renderpass, &canvas.framebuffers, "");
+    visual.br.buffer = &visual.buffer;
+    visual.br.size = visual.buffer.size;
+    visual.br.count = 1;
+    canvas.data = &visual;
+    canvas.br = visual.br;
+    canvas.graphics = &visual.graphics;
+    canvas.bindings = &visual.bindings;
+
+    test_canvas_show(canvas, _fill_triangle, N_FRAMES);
+
+    destroy_visual(&visual);
+    test_canvas_destroy(&canvas);
+
+    dvz_gpu_destroy(gpu);
+    // dvz_host_destroy(host);
+    return 0;
+}
