@@ -68,6 +68,8 @@ int dvz_run_tests(const char* match)
     TEST(test_vklite_barrier_buffer)
     TEST(test_vklite_barrier_image)
     TEST(test_vklite_submit)
+    TEST(test_vklite_offscreen)
+    TEST(test_vklite_shader)
     TEARDOWN(teardown_host)
 
     tst_suite_run(&suite, match);

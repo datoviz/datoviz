@@ -24,18 +24,15 @@ MUTE_OFF
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-// TODO: update
 #define DVZ_VULKAN_API VK_API_VERSION_1_1
 
-#define DVZ_MAX_BINDINGS_SIZE    32
-#define DVZ_MAX_DESCRIPTOR_SETS  1024
-#define DVZ_MAX_PRESENT_MODES    16
-#define DVZ_MAX_PUSH_CONSTANTS   16
-#define DVZ_MAX_QUEUE_FAMILIES   16
-#define DVZ_MAX_QUEUES           16
-#define DVZ_MAX_SWAPCHAIN_IMAGES 8
-
-// Maximum number of command buffers per DvzCommands struct
+#define DVZ_MAX_BINDINGS_SIZE               32
+#define DVZ_MAX_DESCRIPTOR_SETS             1024
+#define DVZ_MAX_PRESENT_MODES               16
+#define DVZ_MAX_PUSH_CONSTANTS              16
+#define DVZ_MAX_QUEUE_FAMILIES              16
+#define DVZ_MAX_QUEUES                      16
+#define DVZ_MAX_SWAPCHAIN_IMAGES            8
 #define DVZ_MAX_COMMAND_BUFFERS_PER_SET     DVZ_MAX_SWAPCHAIN_IMAGES
 #define DVZ_MAX_BUFFER_REGIONS_PER_SET      DVZ_MAX_SWAPCHAIN_IMAGES
 #define DVZ_MAX_IMAGES_PER_SET              DVZ_MAX_SWAPCHAIN_IMAGES
@@ -50,7 +47,9 @@ MUTE_OFF
 #define DVZ_MAX_DEPENDENCIES_PER_RENDERPASS 8
 #define DVZ_MAX_VERTEX_BINDINGS             16
 #define DVZ_MAX_VERTEX_ATTRS                32
+#define DVZ_MAX_FRAMES_IN_FLIGHT            2
 
+// TODO: move elsewhere
 #define DVZ_BUFFER_TYPE_COUNT 5
 
 
@@ -1548,6 +1547,15 @@ DVZ_EXPORT void dvz_compute_bindings(DvzCompute* compute, DvzBindings* bindings)
  * @param compute the compute pipeline
  */
 DVZ_EXPORT void dvz_compute_destroy(DvzCompute* compute);
+
+
+
+/*************************************************************************************************/
+/*  Shaders                                                                                      */
+/*************************************************************************************************/
+
+DVZ_EXPORT VkShaderModule
+dvz_shader_compile(DvzGpu* gpu, const char* code, VkShaderStageFlagBits stage);
 
 
 

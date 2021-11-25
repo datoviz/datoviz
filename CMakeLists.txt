@@ -27,7 +27,7 @@ option(DATOVIZ_WITH_PNG "Build Datoviz with PNG support" OFF)
 option(DATOVIZ_WITH_GLFW "Build Datoviz with glfw" ON)
 option(DATOVIZ_WITH_CLI "Build Datoviz command-line interface with tests and demos" ON)
 option(DATOVIZ_WITH_VULKAN_SDK "Build Datoviz with Vulkan SDK" ON)
-# option(DATOVIZ_WITH_GLSLANG "Build Datoviz with glslang support" OFF)
+option(DATOVIZ_WITH_GLSLANG "Build Datoviz with glslang support" ON)
 # option(DATOVIZ_WITH_SWIFTSHADER "Build Datoviz with Swiftshader support" OFF)
 
 
@@ -81,6 +81,7 @@ endif()
 
 # ---- Vulkan (SDK or bundled) --------------------------------------------------------------------
 
+set(HAS_GLSLANG 0)
 if (DATOVIZ_WITH_VULKAN_SDK)
     find_package(Vulkan)
 endif()
@@ -92,18 +93,17 @@ if (Vulkan_FOUND)
         message(FATAL_ERROR "-- glslc executable NOT found")
     endif()
 
-    # # glslang
-    # # TODO: remove?
-    # set(glslangValidator "")
-    # if (DATOVIZ_WITH_GLSLANG)
-    #     FetchContent_Declare(
-    #         glslang
-    #         GIT_REPOSITORY https://github.com/KhronosGroup/glslang
-    #         GIT_TAG        11.6.0
-    #     )
-    #     FetchContent_MakeAvailable(glslang)
-    #     set(HAS_GLSLANG 1)
-    # endif()
+    # glslang
+    set(glslangValidator "")
+    if (DATOVIZ_WITH_GLSLANG)
+        FetchContent_Declare(
+            glslang
+            GIT_REPOSITORY https://github.com/KhronosGroup/glslang
+            GIT_TAG        11.7.1
+        )
+        FetchContent_MakeAvailable(glslang)
+        set(HAS_GLSLANG 1)
+    endif()
 else()
 
     # Vulkan headers
@@ -148,9 +148,6 @@ else()
         GIT_TAG        master # 11.6.0
     )
     FetchContent_MakeAvailable(glslang)
-    # if (DATOVIZ_WITH_GLSLANG)
-    #     set(HAS_GLSLANG 1)
-    # endif()
 
     # glslc
     set(SHADERC_SKIP_TESTS ON CACHE BOOL "" FORCE)
@@ -163,6 +160,7 @@ else()
         )
     FetchContent_MakeAvailable(glslc)
 
+    set(HAS_GLSLANG 1)
     set(GLSLC glslc_exe)
 
 endif()
@@ -241,6 +239,7 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
 
     # Dependencies.
     HAS_GLFW=${HAS_GLFW}
+    HAS_GLSLANG=${HAS_GLSLANG}
 )
 
 
@@ -298,6 +297,9 @@ set(INCL_DIRS
     ${CMAKE_SOURCE_DIR}/external/imgui
     ${CMAKE_SOURCE_DIR}/external/imgui/backends
 )
+if (HAS_GLSLANG)
+    set(INCL_DIRS ${INCL_DIRS} ${glslang_SOURCE_DIR})
+endif()
 
 # ---- OS-specific directories --------------------------------------------------------------------
 if(${OS_MACOS})
@@ -318,6 +320,11 @@ set(LINK_LIBS cglm)
 # Link with glfw.
 if(DATOVIZ_WITH_GLFW)
     set(LINK_LIBS ${LINK_LIBS} glfw)
+endif()
+
+# Link with glslang.
+if (HAS_GLSLANG)
+    set(LINK_LIBS ${LINK_LIBS} glslang SPIRV glslang-default-resource-limits)
 endif()
 
 # Link with system libraries.
@@ -422,6 +429,7 @@ set(sources
     "src/fifo.c"
     "src/window.c"
     "src/vklite.c"
+    "src/spirv.c"
 
     "external/tinycthread.c"
     "external/vk_mem_alloc.cpp"

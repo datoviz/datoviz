@@ -2228,9 +2228,8 @@ void dvz_compute_create(DvzCompute* compute)
 
     if (compute->shader_code != NULL)
     {
-        // TODO
-        // compute->shader_module =
-        //     dvz_shader_compile(compute->gpu, compute->shader_code, VK_SHADER_STAGE_COMPUTE_BIT);
+        compute->shader_module =
+            dvz_shader_compile(compute->gpu, compute->shader_code, VK_SHADER_STAGE_COMPUTE_BIT);
     }
     else
     {
@@ -2326,9 +2325,8 @@ void dvz_graphics_shader_glsl(DvzGraphics* graphics, VkShaderStageFlagBits stage
     ASSERT(graphics->gpu->device != VK_NULL_HANDLE);
 
     graphics->shader_stages[graphics->shader_count] = stage;
-    // TODO
-    // graphics->shader_modules[graphics->shader_count] =
-    //     dvz_shader_compile(graphics->gpu, code, stage);
+    graphics->shader_modules[graphics->shader_count] =
+        dvz_shader_compile(graphics->gpu, code, stage);
     graphics->shader_count++;
 }
 

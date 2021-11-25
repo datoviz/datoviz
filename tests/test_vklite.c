@@ -699,62 +699,64 @@ int test_vklite_submit(TstSuite* suite)
 
 
 
-// int test_vklite_offscreen(TstSuite* suite)
-// {
-//     ASSERT(suite != NULL);
-//     DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
-//     DvzGpu* gpu = dvz_gpu_best(host);
-//     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
-//     dvz_gpu_create(gpu, 0);
+int test_vklite_offscreen(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+    DvzHost* host = get_host(suite);
+    DvzGpu* gpu = dvz_gpu_best(host);
+    dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
+    dvz_gpu_create(gpu, 0);
 
-//     TestCanvas canvas = offscreen(gpu);
-//     DvzFramebuffers* framebuffers = &canvas.framebuffers;
+    TestCanvas canvas = offscreen(gpu);
+    DvzFramebuffers* framebuffers = &canvas.framebuffers;
 
-//     DvzCommands cmds = dvz_commands(gpu, 0, 1);
-//     empty_commands(&canvas, &cmds, 0);
-//     dvz_cmd_submit_sync(&cmds, 0);
+    DvzCommands cmds = dvz_commands(gpu, 0, 1);
+    empty_commands(&canvas, &cmds, 0);
+    dvz_cmd_submit_sync(&cmds, 0);
 
-//     uint8_t* rgba = screenshot(framebuffers->attachments[0], 1);
-//     for (uint32_t i = 0; i < WIDTH * HEIGHT * 3; i++)
-//         AT(rgba[i] >= 100);
+    uint8_t* rgba = screenshot(framebuffers->attachments[0], 1);
+    for (uint32_t i = 0; i < WIDTH * HEIGHT * 3; i++)
+        AT(rgba[i] >= 100);
 
-//     FREE(rgba);
+    FREE(rgba);
 
-//     test_canvas_destroy(&canvas);
+    test_canvas_destroy(&canvas);
 
-//     dvz_host_destroy(host);
-//     return 0;
-// }
+    dvz_gpu_destroy(gpu);
+    // dvz_host_destroy(host);
+    return 0;
+}
 
 
 
-// int test_vklite_shader(TstSuite* suite)
-// {
-//     ASSERT(suite != NULL);
-// #if HAS_GLSLANG
-//     DvzHost* host = dvz_host(DVZ_BACKEND_OFFSCREEN);
+int test_vklite_shader(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+#if HAS_GLSLANG
+    DvzHost* host = get_host(suite);
 
-//     DvzGpu* gpu = dvz_gpu_best(host);
-//     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
-//     dvz_gpu_create(gpu, VK_NULL_HANDLE);
+    DvzGpu* gpu = dvz_gpu_best(host);
+    dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
+    dvz_gpu_create(gpu, VK_NULL_HANDLE);
 
-//     VkShaderModule module = dvz_shader_compile(
-//         gpu,
-//         "#version 450\n"
-//         "layout (location = 0) in vec3 pos;\n"
-//         "layout (location = 1) in vec4 color;\n"
-//         "layout (location = 0) out vec4 out_color;\n"
-//         "void main() {\n"
-//         "    gl_Position = vec4(pos, 1.0);\n"
-//         "    out_color = color;\n"
-//         "}",
-//         VK_SHADER_STAGE_VERTEX_BIT);
-//     vkDestroyShaderModule(gpu->device, module, NULL);
+    VkShaderModule module = dvz_shader_compile(
+        gpu,
+        "#version 450\n"
+        "layout (location = 0) in vec3 pos;\n"
+        "layout (location = 1) in vec4 color;\n"
+        "layout (location = 0) out vec4 out_color;\n"
+        "void main() {\n"
+        "    gl_Position = vec4(pos, 1.0);\n"
+        "    out_color = color;\n"
+        "}",
+        VK_SHADER_STAGE_VERTEX_BIT);
+    vkDestroyShaderModule(gpu->device, module, NULL);
 
-//     dvz_host_destroy(host);
-//     return 0;
-// #else
-//     log_warn("skip shader compilation test as the library was not compiled with glslc support");
-//     return 0;
-// #endif
-// }
+    dvz_gpu_destroy(gpu);
+    // dvz_host_destroy(host);
+    return 0;
+#else
+    log_warn("skip shader compilation test as the library was not compiled with glslc support");
+    return 0;
+#endif
+}
