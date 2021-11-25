@@ -474,7 +474,7 @@ static void create_swapchain(
     uint32_t* width, uint32_t* height) // final actual swapchain size in pixels
 {
     ASSERT(surface != VK_NULL_HANDLE);
-    ASSERT(format != VK_NULL_HANDLE);
+    ASSERT(format != 0);
     ASSERT(image_count > 0);
 
     // NOTE: this call is necessary when creating multiple canvases, otherwise we get the message
@@ -707,7 +707,7 @@ static void create_image_view(
 
     ASSERT(aspect_flags != 0);
     ASSERT(image != VK_NULL_HANDLE);
-    ASSERT(format != VK_NULL_HANDLE);
+    ASSERT(format != 0);
 
     VkImageViewCreateInfo viewInfo = {0};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
