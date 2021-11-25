@@ -212,7 +212,7 @@ static TstItem* _append(TstSuite* suite, TstItemType type, TstFunction function,
         log_trace("reallocate memory for test suite items");
         ASSERT(suite->items != NULL);
         ASSERT(suite->n_items > 0);
-        REALLOC(suite->items, 2 * suite->n_items * sizeof(TstItem));
+        REALLOC(suite->items, (size_t)(2 * suite->n_items * sizeof(TstItem)));
         suite->capacity *= 2;
     }
     ASSERT(suite->n_items < suite->capacity);

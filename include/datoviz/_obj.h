@@ -201,7 +201,7 @@ static inline DvzContainer dvz_container(uint32_t count, size_t item_size, DvzOb
     container.count = 0;
     container.item_size = item_size;
     container.type = type;
-    container.capacity = dvz_next_pow2(count);
+    container.capacity = (uint32_t)dvz_next_pow2(count);
     ASSERT(container.capacity > 0);
     container.items = (void**)calloc(container.capacity, sizeof(void*));
     // NOTE: we shouldn't rely on calloc() initializing pointer values to NULL as it is not
@@ -272,7 +272,7 @@ static inline void* dvz_container_alloc(DvzContainer* container)
     {
         log_trace("reallocate container up to %d items", 2 * container->capacity);
         void** _new =
-            (void**)realloc(container->items, 2 * container->capacity * container->item_size);
+            (void**)realloc(container->items, (size_t)(2 * container->capacity * container->item_size));
         ASSERT(_new != NULL);
         container->items = _new;
 

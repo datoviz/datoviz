@@ -296,7 +296,7 @@ static inline void _dmat4_mul(dmat4 m1, dmat4 m2, dmat4 dest)
 
 static inline void _dmat4_mulv(dmat4 m, dvec4 v, dvec4 dest)
 {
-    dvec4 res;
+    dvec4 res = {0};
     res[0] = m[0][0] * v[0] + m[1][0] * v[1] + m[2][0] * v[2] + m[3][0] * v[3];
     res[1] = m[0][1] * v[0] + m[1][1] * v[1] + m[2][1] * v[2] + m[3][1] * v[3];
     res[2] = m[0][2] * v[0] + m[1][2] * v[1] + m[2][2] * v[2] + m[3][2] * v[3];
@@ -359,8 +359,8 @@ static inline void _dmat4_scale_p(dmat4 m, double s)
 
 static inline void _dmat4_inv(dmat4 mat, dmat4 dest)
 {
-    double t[6];
-    double det;
+    double t[6] = {0};
+    double det = 0;
     double a = mat[0][0], b = mat[0][1], c = mat[0][2], d = mat[0][3], e = mat[1][0],
            f = mat[1][1], g = mat[1][2], h = mat[1][3], i = mat[2][0], j = mat[2][1],
            k = mat[2][2], l = mat[2][3], m = mat[3][0], n = mat[3][1], o = mat[3][2],
@@ -465,7 +465,7 @@ static inline float dvz_rand_float() { return (float)rand() / (float)(RAND_MAX);
  *
  * @returns random number
  */
-static inline float dvz_rand_double() { return (double)rand() / (double)(RAND_MAX); }
+static inline double dvz_rand_double() { return (double)rand() / (double)(RAND_MAX); }
 
 
 
@@ -474,9 +474,9 @@ static inline float dvz_rand_double() { return (double)rand() / (double)(RAND_MA
  *
  * @returns random number
  */
-static inline float dvz_rand_normal()
+static inline double dvz_rand_normal()
 {
-    return sqrt(-2.0 * log(dvz_rand_float())) * cos(2 * M_PI * dvz_rand_float());
+    return sqrt(-2.0 * log(dvz_rand_double())) * cos(2 * M_PI * dvz_rand_double());
 }
 
 

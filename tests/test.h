@@ -2,8 +2,8 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_TESTS
-#define DVZ_HEADER_TESTS
+#ifndef DVZ_HEADER_TEST
+#define DVZ_HEADER_TEST
 
 
 

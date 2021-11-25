@@ -540,7 +540,7 @@ int test_vklite_barrier_image(TstSuite* suite)
 
     // Staging buffer.
     DvzBuffer buffer = dvz_buffer(gpu);
-    const VkDeviceSize size = img_size * img_size * 4;
+    const VkDeviceSize size = (size_t)(img_size * img_size * 4);
     dvz_buffer_size(&buffer, size);
     dvz_buffer_usage(&buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
     // dvz_buffer_memory(

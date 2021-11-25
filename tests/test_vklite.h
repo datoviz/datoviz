@@ -271,6 +271,7 @@ static TestCanvas offscreen(DvzGpu* gpu)
     // Color attachment
     DvzImages images_struct = dvz_images(canvas.renderpass.gpu, VK_IMAGE_TYPE_2D, 1);
     DvzImages* images = (DvzImages*)calloc(1, sizeof(DvzImages));
+    ASSERT(images != NULL);
     *images = images_struct;
     dvz_images_format(images, canvas.renderpass.attachments[0].format);
     dvz_images_size(images, (uvec3){WIDTH, HEIGHT, 1});
@@ -287,6 +288,7 @@ static TestCanvas offscreen(DvzGpu* gpu)
     // Depth attachment.
     DvzImages depth_struct = dvz_images(gpu, VK_IMAGE_TYPE_2D, 1);
     DvzImages* depth = (DvzImages*)calloc(1, sizeof(DvzImages));
+    ASSERT(depth != NULL);
     *depth = depth_struct;
     depth_image(depth, &canvas.renderpass, WIDTH, HEIGHT);
     canvas.depth = depth;
@@ -334,6 +336,7 @@ static TestCanvas test_canvas_create(DvzGpu* gpu, DvzWindow* window)
     // Depth attachment.
     DvzImages depth_struct = dvz_images(gpu, VK_IMAGE_TYPE_2D, 1);
     DvzImages* depth = (DvzImages*)calloc(1, sizeof(DvzImages));
+    ASSERT(depth != NULL);
     *depth = depth_struct;
     depth_image(depth, &canvas.renderpass, canvas.images->shape[0], canvas.images->shape[1]);
     canvas.depth = depth;
@@ -595,7 +598,7 @@ static void triangle_commands(
 
     uint32_t width = framebuffers->attachments[0]->shape[0];
     uint32_t height = framebuffers->attachments[0]->shape[1];
-    uint32_t n_vertices = br.size / sizeof(TestVertex);
+    uint32_t n_vertices = (uint32_t)(br.size / sizeof(TestVertex));
     n_vertices = n_vertices > 0 ? n_vertices : 3;
     log_debug("refill n vertices: %d", n_vertices);
     ASSERT(n_vertices > 0);
@@ -606,7 +609,7 @@ static void triangle_commands(
     // Commands.
     dvz_cmd_begin(cmds, idx);
     dvz_cmd_begin_renderpass(cmds, idx, renderpass, framebuffers);
-    dvz_cmd_viewport(cmds, idx, (VkViewport){0, 0, width, height, 0, 1});
+    dvz_cmd_viewport(cmds, idx, (VkViewport){0, 0, (float)width, (float)height, 0, 1});
     dvz_cmd_bind_vertex_buffer(cmds, idx, br, 0);
     dvz_cmd_bind_graphics(cmds, idx, graphics, bindings, 0);
 

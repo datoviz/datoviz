@@ -145,7 +145,7 @@ void log_log(int level, const char* file, int line, const char* fmt, ...)
     if (!L.quiet)
     {
         va_list args;
-        char buf[24];
+        char buf[24] = {0};
         clock_t uptime = (clock() / (CLOCKS_PER_SEC / 1000)) % 1000;
         buf[strftime(buf, sizeof(buf), "%H:%M:%S.    ", lt)] = '\0';
         // HH:MM:SS.MMS(thread_id)
@@ -172,7 +172,7 @@ void log_log(int level, const char* file, int line, const char* fmt, ...)
     if (L.fp)
     {
         va_list args;
-        char buf[32];
+        char buf[32] = {0};
         buf[strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", lt)] = '\0';
         fprintf(L.fp, "%s %-5s %s:%d: ", buf, level_names[level], file, line);
         va_start(args, fmt);
