@@ -70,6 +70,8 @@ int dvz_run_tests(const char* match)
     TEST(test_vklite_submit)
     TEST(test_vklite_offscreen)
     TEST(test_vklite_shader)
+    TEST(test_vklite_window)
+    TEST(test_vklite_swapchain)
     TEARDOWN(teardown_host)
 
     tst_suite_run(&suite, match);

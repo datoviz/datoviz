@@ -197,7 +197,7 @@ DvzWindow* dvz_window(DvzHost* host, uint32_t width, uint32_t height)
     ASSERT(window->obj.type == DVZ_OBJECT_TYPE_WINDOW);
     ASSERT(window->obj.status == DVZ_OBJECT_STATUS_ALLOC);
     window->host = host;
-    ASSERT(host->backend != DVZ_BACKEND_NONE && host->backend != DVZ_BACKEND_OFFSCREEN);
+    // ASSERT(host->backend != DVZ_BACKEND_NONE && host->backend != DVZ_BACKEND_OFFSCREEN);
 
     window->width = width;
     window->height = height;

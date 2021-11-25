@@ -473,6 +473,8 @@ int test_vklite_submit(TstSuite*);
 int test_vklite_offscreen(TstSuite*);
 int test_vklite_shader(TstSuite*);
 int test_vklite_surface(TstSuite*);
+int test_vklite_window(TstSuite*);
+int test_vklite_swapchain(TstSuite*);
 
 
 

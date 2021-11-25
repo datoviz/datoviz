@@ -760,3 +760,80 @@ int test_vklite_shader(TstSuite* suite)
     return 0;
 #endif
 }
+
+
+
+/*************************************************************************************************/
+/*  Tests with window                                                                            */
+/*************************************************************************************************/
+
+int test_vklite_surface(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+    DvzHost* host = get_host(suite);
+    // OFFSCREEN_SKIP
+    DvzGpu* gpu = dvz_gpu_best(host);
+    dvz_gpu_queue(gpu, 0, DVZ_QUEUE_ALL);
+
+    // Create a GLFW window and surface.
+    VkSurfaceKHR surface = 0;
+    DvzWindow w = {0};
+#if HAS_GLFW
+    GLFWwindow* window =
+        (GLFWwindow*)backend_window(host->instance, DVZ_BACKEND_GLFW, 100, 100, &w, &surface);
+    ASSERT(window != NULL);
+#endif
+    dvz_gpu_create(gpu, surface);
+
+    backend_window_destroy(&w);
+
+    dvz_gpu_destroy(gpu);
+    // dvz_host_destroy(host);
+    return 0;
+}
+
+
+
+int test_vklite_window(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+    DvzHost* host = get_host(suite);
+    // OFFSCREEN_SKIP
+    DvzWindow* window = dvz_window(host, 100, 100);
+    AT(window != NULL);
+    AT(window->host != NULL);
+
+    DvzWindow* window2 = dvz_window(host, 100, 100);
+    AT(window2 != NULL);
+    AT(window2->host != NULL);
+
+    // dvz_host_destroy(host);
+    return 0;
+}
+
+
+
+int test_vklite_swapchain(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+    DvzHost* host = get_host(suite);
+    // OFFSCREEN_SKIP
+    DvzWindow* window = dvz_window(host, 100, 100);
+    AT(window != NULL);
+
+    DvzGpu* gpu = dvz_gpu_best(host);
+    dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
+    dvz_gpu_queue(gpu, 1, DVZ_QUEUE_PRESENT);
+    dvz_gpu_create(gpu, window->surface);
+
+    DvzSwapchain swapchain = dvz_swapchain(gpu, window, 3);
+    dvz_swapchain_format(&swapchain, VK_FORMAT_B8G8R8A8_UNORM);
+    dvz_swapchain_present_mode(&swapchain, VK_PRESENT_MODE_FIFO_KHR);
+    dvz_swapchain_create(&swapchain);
+    dvz_swapchain_destroy(&swapchain);
+    dvz_window_destroy(window);
+
+    dvz_gpu_destroy(gpu);
+    // dvz_host_destroy(host);
+    return 0;
+}
