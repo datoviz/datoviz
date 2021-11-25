@@ -331,15 +331,14 @@ static void test_canvas_show(TestCanvas canvas, FillCallback fill_commands, uint
     bak_fences.gpu = gpu;
     bak_fences.count = swapchain->img_count;
     uint32_t cur_frame = 0;
-    DvzBackend backend = DVZ_BACKEND_GLFW;
 
     for (uint32_t frame = 0; frame < n_frames; frame++)
     {
         log_debug("iteration %d", frame);
 
-        backend_poll_events(backend, window);
+        backend_poll_events(window);
 
-        if (backend_window_should_close(backend, window->backend_window) ||
+        if (backend_window_should_close(window) ||
             window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
             break;
 
@@ -362,7 +361,7 @@ static void test_canvas_show(TestCanvas canvas, FillCallback fill_commands, uint
             // Framebuffer new size.
             uint32_t width, height;
             backend_window_get_size(
-                backend, window->backend_window, //
+                window,                          //
                 &window->width, &window->height, //
                 &width, &height);
             dvz_gpu_wait(gpu);

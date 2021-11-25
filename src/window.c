@@ -224,8 +224,8 @@ void dvz_window_get_size(
     ASSERT(window != NULL);
     ASSERT(window->host != NULL);
     backend_window_get_size(
-        window->host->backend, window->backend_window, //
-        &window->width, &window->height,               //
+        window,                          //
+        &window->width, &window->height, //
         framebuffer_width, framebuffer_height);
 }
 
@@ -235,7 +235,7 @@ void dvz_window_set_size(DvzWindow* window, uint32_t width, uint32_t height)
 {
     ASSERT(window != NULL);
     ASSERT(window->host != NULL);
-    backend_window_set_size(window->host->backend, window->backend_window, width, height);
+    backend_window_set_size(window, width, height);
 }
 
 
@@ -244,7 +244,7 @@ void dvz_window_poll_events(DvzWindow* window)
 {
     ASSERT(window != NULL);
     ASSERT(window->host != NULL);
-    backend_poll_events(window->host->backend, window);
+    backend_poll_events(window);
 }
 
 
@@ -258,8 +258,6 @@ void dvz_window_destroy(DvzWindow* window)
     }
     ASSERT(window != NULL);
     ASSERT(window->host != NULL);
-    backend_window_destroy(
-        window->host->instance, window->host->backend, //
-        window->backend_window, window->surface);
+    backend_window_destroy(window);
     dvz_obj_destroyed(&window->obj);
 }
