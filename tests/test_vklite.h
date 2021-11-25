@@ -379,7 +379,8 @@ static void test_canvas_show(TestCanvas* canvas, FillCallback fill_commands, uin
     bak_fences.count = swapchain->img_count;
     uint32_t cur_frame = 0;
 
-    for (uint32_t frame = 0; frame < n_frames || INFINITY; frame++)
+    n_frames = n_frames == 0 ? INFINITY : n_frames;
+    for (uint32_t frame = 0; frame < n_frames; frame++)
     {
         log_debug("iteration %d", frame);
         ASSERT(swapchain->images == canvas->images);
