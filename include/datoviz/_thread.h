@@ -63,7 +63,11 @@ EXTERN_C_ON
  */
 static inline DvzThread dvz_thread(DvzThreadCallback callback, void* user_data)
 {
+#ifdef LANG_CPP
+    DvzThread thread = {};
+#else
     DvzThread thread = {0};
+#endif
     if (thrd_create(&thread.thread, callback, user_data) != thrd_success)
         log_error("thread creation failed");
     if (dvz_mutex_init(&thread.lock) != 0)

@@ -430,6 +430,7 @@ set(sources
     "src/window.c"
     "src/vklite.c"
     "src/spirv.c"
+    "src/alloc.cpp"
 
     "external/tinycthread.c"
     "external/vk_mem_alloc.cpp"
