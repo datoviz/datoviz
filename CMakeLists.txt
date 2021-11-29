@@ -479,6 +479,7 @@ if (DATOVIZ_WITH_CLI)
         "tests/test_fifo.c"
         "tests/test_window.c"
         "tests/test_vklite.c"
+        "tests/test_alloc.c"
         "tests/test.c"
     )
 

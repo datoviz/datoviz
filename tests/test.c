@@ -12,6 +12,7 @@
 
 #include "_thread.h"
 #include "test.h"
+#include "test_alloc.h"
 #include "test_fifo.h"
 #include "test_obj.h"
 #include "test_thread.h"
@@ -49,6 +50,10 @@ int dvz_run_tests(const char* match)
     TEST(test_utils_fifo_first)
     TEST(test_utils_deq_1)
     TEST(test_utils_deq_2)
+
+    // Testing alloc.
+    TEST(test_utils_alloc_1)
+    TEST(test_utils_alloc_2)
 
     // Testing window.
     TEST(test_window_1)
