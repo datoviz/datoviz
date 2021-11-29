@@ -96,6 +96,8 @@ int dvz_run_tests(const char* match)
 
     // Testing resources.
     TEST(test_resources_1)
+    TEST(test_resources_dat_1)
+    TEST(test_resources_tex_1)
 
     // Teardown the gpu fixture.
     TEARDOWN(teardown_gpu)
