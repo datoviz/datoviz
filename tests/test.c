@@ -15,6 +15,7 @@
 #include "test_alloc.h"
 #include "test_fifo.h"
 #include "test_obj.h"
+#include "test_resources.h"
 #include "test_thread.h"
 #include "test_vklite.h"
 #include "test_window.h"
@@ -61,7 +62,11 @@ int dvz_run_tests(const char* match)
     // Testing vklite.
     TEST(test_vklite_host)
 
+
+
+    // Setup the host fixture.
     SETUP(setup_host)
+
     TEST(test_vklite_commands)
     TEST(test_vklite_buffer_1)
     TEST(test_vklite_buffer_resize)
@@ -80,7 +85,22 @@ int dvz_run_tests(const char* match)
     TEST(test_vklite_graphics)
     TEST(test_vklite_canvas_blank)
     TEST(test_vklite_canvas_triangle)
+
+    // Teardown the host fixture.
     TEARDOWN(teardown_host)
+
+
+
+    // Setup the gpu fixture.
+    SETUP(setup_gpu)
+
+    // Testing resources.
+    TEST(test_resources_1)
+
+    // Teardown the gpu fixture.
+    TEARDOWN(teardown_gpu)
+
+
 
     tst_suite_run(&suite, match);
     tst_suite_destroy(&suite);

@@ -12,6 +12,7 @@
 /*************************************************************************************************/
 
 #include "testing.h"
+// #include "vklite.h"
 #include "window.h"
 
 
@@ -22,6 +23,10 @@
 
 typedef struct DvzTestCtx DvzTestCtx;
 
+// Forward declarations.
+typedef struct DvzGpu DvzGpu;
+typedef struct DvzResources DvzResources;
+
 
 
 /*************************************************************************************************/
@@ -31,12 +36,14 @@ typedef struct DvzTestCtx DvzTestCtx;
 struct DvzTestCtx
 {
     DvzHost* host;
+    DvzGpu* gpu;
+    // DvzResources* res;
 };
 
 
 
 /*************************************************************************************************/
-/*  Fixtures                                                                                     */
+/*  Host fixture                                                                                 */
 /*************************************************************************************************/
 
 static int setup_host(TstSuite* suite)

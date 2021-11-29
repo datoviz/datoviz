@@ -14,6 +14,7 @@
 #include "test.h"
 #include "test_resources.h"
 #include "testing.h"
+#include "vklite.h"
 
 
 
@@ -23,33 +24,32 @@
 
 int test_resources_1(TstSuite* suite)
 {
-    // ASSERT(tc != NULL);
-    // DvzContext* ctx = tc->context;
-    // ASSERT(ctx != NULL);
+    ASSERT(suite != NULL);
+    DvzGpu* gpu = get_gpu(suite);
+    ASSERT(gpu != NULL);
 
-    // DvzGpu* gpu = ctx->gpu;
-    // ASSERT(gpu != NULL);
+    // Create the resources object.
+    DvzResources res = {0};
+    dvz_resources(gpu, &res);
 
-    // DvzResources* res = &ctx->res;
-    // ASSERT(res != NULL);
+    // Create some GPU objects, which should be automatically destroyed upon context destruction
+    // (resources destruction).
+    DvzBuffer* buffer = dvz_resources_buffer(&res, DVZ_BUFFER_TYPE_VERTEX, false, 64);
+    ASSERT(buffer != NULL);
 
-    // // Create some GPU objects, which should be automatically destroyed upon context destruction
-    // // (resources destruction).
-    // DvzBuffer* buffer = dvz_resources_buffer(res, DVZ_BUFFER_TYPE_VERTEX, false, 64);
-    // ASSERT(buffer != NULL);
+    uvec3 shape = {2, 4, 1};
+    DvzImages* img = dvz_resources_image(&res, DVZ_TEX_2D, shape, VK_FORMAT_R8G8B8A8_UNORM);
+    ASSERT(img != NULL);
 
-    // uvec3 shape = {2, 4, 1};
-    // DvzImages* img = dvz_resources_image(res, DVZ_TEX_2D, shape, VK_FORMAT_R8G8B8A8_UNORM);
-    // ASSERT(img != NULL);
+    DvzSampler* sampler =
+        dvz_resources_sampler(&res, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
+    ASSERT(sampler != NULL);
 
-    // DvzSampler* sampler =
-    //     dvz_resources_sampler(res, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
-    // ASSERT(sampler != NULL);
-
-    // char path[1024];
-    // snprintf(path, sizeof(path), "%s/test_double.comp.spv", SPIRV_DIR);
-    // DvzCompute* compute = dvz_resources_compute(res, path);
-    // ASSERT(compute != NULL);
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/test_double.comp.spv", SPIRV_DIR);
+    DvzCompute* compute = dvz_resources_compute(&res, path);
+    ASSERT(compute != NULL);
+    dvz_resources_destroy(&res);
 
     return 0;
 }

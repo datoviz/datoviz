@@ -26,6 +26,17 @@
 /*  Default buffers                                                                              */
 /*************************************************************************************************/
 
+static void _default_queues(DvzGpu* gpu, bool has_present_queue)
+{
+    dvz_gpu_queue(gpu, DVZ_DEFAULT_QUEUE_TRANSFER, DVZ_QUEUE_TRANSFER);
+    dvz_gpu_queue(gpu, DVZ_DEFAULT_QUEUE_COMPUTE, DVZ_QUEUE_COMPUTE);
+    dvz_gpu_queue(gpu, DVZ_DEFAULT_QUEUE_RENDER, DVZ_QUEUE_RENDER);
+    if (has_present_queue)
+        dvz_gpu_queue(gpu, DVZ_DEFAULT_QUEUE_PRESENT, DVZ_QUEUE_PRESENT);
+}
+
+
+
 static inline bool _is_buffer_mappable(DvzBuffer* buffer)
 {
     ASSERT(buffer != NULL);
@@ -213,6 +224,8 @@ _standalone_buffer_regions(DvzGpu* gpu, DvzBufferType type, uint32_t count, VkDe
     return stg;
 }
 
+
+
 static void _destroy_buffer_regions(DvzBufferRegions br)
 {
     dvz_buffer_destroy(br.buffer);
@@ -242,6 +255,8 @@ static VkImageType _image_type_from_dims(DvzTexDims dims)
     return VK_IMAGE_TYPE_2D;
 }
 
+
+
 static void _transition_image(DvzImages* img)
 {
     ASSERT(img != NULL);
@@ -265,6 +280,8 @@ static void _transition_image(DvzImages* img)
     dvz_cmd_end(cmds, 0);
     dvz_cmd_submit_sync(cmds, 0);
 }
+
+
 
 static void _make_image(DvzGpu* gpu, DvzImages* img, DvzTexDims dims, uvec3 shape, VkFormat format)
 {
@@ -290,6 +307,8 @@ static void _make_image(DvzGpu* gpu, DvzImages* img, DvzTexDims dims, uvec3 shap
     _transition_image(img);
 }
 
+
+
 static DvzImages* _standalone_image(DvzGpu* gpu, DvzTexDims dims, uvec3 shape, VkFormat format)
 {
     ASSERT(gpu != NULL);
@@ -302,6 +321,8 @@ static DvzImages* _standalone_image(DvzGpu* gpu, DvzTexDims dims, uvec3 shape, V
     _make_image(gpu, img, dims, shape, format);
     return img;
 }
+
+
 
 static void _destroy_image(DvzImages* img)
 {
@@ -371,11 +392,15 @@ static inline bool _dat_is_standalone(DvzDat* dat)
     return (dat->flags & DVZ_DAT_OPTIONS_STANDALONE) != 0;
 }
 
+
+
 static inline bool _dat_has_staging(DvzDat* dat)
 {
     ASSERT(dat != NULL);
     return (dat->flags & DVZ_DAT_OPTIONS_MAPPABLE) == 0;
 }
+
+
 
 static inline bool _dat_is_dup(DvzDat* dat)
 {
@@ -383,17 +408,23 @@ static inline bool _dat_is_dup(DvzDat* dat)
     return (dat->flags & DVZ_DAT_OPTIONS_DUP) != 0;
 }
 
+
+
 static inline bool _dat_keep_on_resize(DvzDat* dat)
 {
     ASSERT(dat != NULL);
     return (dat->flags & DVZ_DAT_OPTIONS_KEEP_ON_RESIZE) != 0;
 }
 
+
+
 static inline bool _dat_persistent_staging(DvzDat* dat)
 {
     ASSERT(dat != NULL);
     return (dat->flags & DVZ_DAT_OPTIONS_PERSISTENT_STAGING) != 0;
 }
+
+
 
 static inline VkDeviceSize
 _total_aligned_size(DvzBuffer* buffer, uint32_t count, VkDeviceSize size, VkDeviceSize* alignment)
@@ -415,6 +446,8 @@ static inline DvzDat* _alloc_staging(DvzResources* res, VkDeviceSize size)
     ASSERT(res != NULL);
     return dvz_dat(res, DVZ_BUFFER_TYPE_STAGING, size, 0);
 }
+
+
 
 static void
 _dat_alloc(DvzResources* res, DvzDat* dat, DvzBufferType type, uint32_t count, VkDeviceSize size)
@@ -467,6 +500,8 @@ _dat_alloc(DvzResources* res, DvzDat* dat, DvzBufferType type, uint32_t count, V
     // Set the buffer region.
     dat->br = dvz_buffer_regions(buffer, count, offset, size, alignment);
 }
+
+
 
 static void _dat_dealloc(DvzDat* dat)
 {
