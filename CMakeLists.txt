@@ -431,6 +431,7 @@ set(sources
     "src/vklite.c"
     "src/spirv.c"
     "src/alloc.cpp"
+    "src/resources.c"
 
     "external/tinycthread.c"
     "external/vk_mem_alloc.cpp"
@@ -480,6 +481,7 @@ if (DATOVIZ_WITH_CLI)
         "tests/test_window.c"
         "tests/test_vklite.c"
         "tests/test_alloc.c"
+        "tests/test_resources.c"
         "tests/test.c"
     )
 
