@@ -96,6 +96,9 @@ typedef struct DvzDat DvzDat;
 typedef struct DvzTex DvzTex;
 typedef struct DvzResources DvzResources;
 
+// Forward declarations.
+typedef struct DvzDatAlloc DvzDatAlloc;
+
 
 
 /*************************************************************************************************/
@@ -106,6 +109,7 @@ struct DvzDat
 {
     DvzObject obj;
     DvzResources* res;
+    DvzDatAlloc* datalloc;
 
     int flags;
     DvzBufferRegions br;
@@ -251,7 +255,8 @@ DVZ_EXPORT void dvz_resources_destroy(DvzResources* res);
  * @param flags the flags
  * @returns the newly-allocated Dat
  */
-DVZ_EXPORT DvzDat* dvz_dat(DvzResources* res, DvzBufferType type, VkDeviceSize size, int flags);
+DVZ_EXPORT DvzDat* dvz_dat(
+    DvzResources* res, DvzDatAlloc* datalloc, DvzBufferType type, VkDeviceSize size, int flags);
 
 /**
  * Resize a dat.

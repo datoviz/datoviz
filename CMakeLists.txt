@@ -432,6 +432,7 @@ set(sources
     "src/spirv.c"
     "src/alloc.cpp"
     "src/resources.c"
+    "src/datalloc.c"
 
     "external/tinycthread.c"
     "external/vk_mem_alloc.cpp"

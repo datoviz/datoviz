@@ -67,12 +67,17 @@ int test_resources_dat_1(TstSuite* suite)
     dvz_resources(gpu, &res);
     res.img_count = 3;
 
+    // Create the datalloc object.
+    DvzDatAlloc datalloc = {0};
+    dvz_datalloc(gpu, &res, &datalloc);
+
     // Allocate a dat.
     DvzSize size = 128;
-    DvzDat* dat = dvz_dat(&res, DVZ_BUFFER_TYPE_VERTEX, size, 0);
+    DvzDat* dat = dvz_dat(&res, &datalloc, DVZ_BUFFER_TYPE_VERTEX, size, 0);
     ASSERT(dat != NULL);
 
     dvz_dat_destroy(dat);
+    dvz_datalloc_destroy(&datalloc);
     dvz_resources_destroy(&res);
     return 0;
 }

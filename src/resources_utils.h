@@ -6,6 +6,7 @@
 #define DVZ_HEADER_RESOURCES_UTILS
 
 #include "alloc.h"
+#include "datalloc.h"
 #include "resources.h"
 
 
@@ -441,10 +442,10 @@ _total_aligned_size(DvzBuffer* buffer, uint32_t count, VkDeviceSize size, VkDevi
 /*  Dat allocation                                                                               */
 /*************************************************************************************************/
 
-static inline DvzDat* _alloc_staging(DvzResources* res, VkDeviceSize size)
+static inline DvzDat* _alloc_staging(DvzResources* res, DvzDatAlloc* datalloc, VkDeviceSize size)
 {
     ASSERT(res != NULL);
-    return dvz_dat(res, DVZ_BUFFER_TYPE_STAGING, size, 0);
+    return dvz_dat(res, datalloc, DVZ_BUFFER_TYPE_STAGING, size, 0);
 }
 
 
@@ -478,8 +479,7 @@ _dat_alloc(DvzResources* res, DvzDat* dat, DvzBufferType type, uint32_t count, V
 
         // Allocate a DvzDat from it.
         // NOTE: this call may resize the underlying DvzBuffer, which is slow (hard GPU sync).
-        // TODO
-        // offset = _allocate_dat(&ctx->datalloc, res, type, mappable, tot_size);
+        offset = dvz_datalloc_alloc(dat->datalloc, res, type, mappable, tot_size);
     }
 
     // Standalone buffer.
@@ -514,8 +514,7 @@ static void _dat_dealloc(DvzDat* dat)
     if (shared)
     {
         // Deallocate the buffer regions but keep the underlying buffer.
-        // TODO
-        // _deallocate_dat(&ctx->datalloc, dat->br.buffer->type, mappable, dat->br.offsets[0]);
+        dvz_datalloc_dealloc(dat->datalloc, dat->br.buffer->type, mappable, dat->br.offsets[0]);
     }
     else
     {
@@ -538,7 +537,8 @@ static inline bool _tex_persistent_staging(DvzTex* tex)
 
 
 
-static DvzDat* _tex_staging(DvzResources* res, DvzTex* tex, VkDeviceSize size)
+static DvzDat*
+_tex_staging(DvzResources* res, DvzDatAlloc* datalloc, DvzTex* tex, VkDeviceSize size)
 {
     ASSERT(res != NULL);
     ASSERT(tex != NULL);
@@ -548,7 +548,7 @@ static DvzDat* _tex_staging(DvzResources* res, DvzTex* tex, VkDeviceSize size)
 
     // Need to allocate a staging buffer.
     log_debug("allocate persistent staging buffer with size %s for tex", pretty_size(size));
-    stg = _alloc_staging(res, size);
+    stg = _alloc_staging(res, datalloc, size);
 
     // If persistent staging, store it.
     if (_tex_persistent_staging(tex))

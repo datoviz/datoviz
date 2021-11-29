@@ -119,13 +119,16 @@ void dvz_resources_destroy(DvzResources* res)
 /*  Dats                                                                                         */
 /*************************************************************************************************/
 
-DvzDat* dvz_dat(DvzResources* res, DvzBufferType type, VkDeviceSize size, int flags)
+DvzDat*
+dvz_dat(DvzResources* res, DvzDatAlloc* datalloc, DvzBufferType type, VkDeviceSize size, int flags)
 {
     ASSERT(res != NULL);
+    ASSERT(datalloc != NULL);
     ASSERT(size > 0);
 
     DvzDat* dat = (DvzDat*)dvz_container_alloc(&res->dats);
     dat->res = res;
+    dat->datalloc = datalloc;
     dat->flags = flags;
     log_debug("create dat with size %s", pretty_size(size));
 
@@ -145,7 +148,7 @@ DvzDat* dvz_dat(DvzResources* res, DvzBufferType type, VkDeviceSize size, int fl
     if (_dat_persistent_staging(dat))
     {
         log_debug("allocate persistent staging for dat with size %s", pretty_size(size));
-        dat->stg = _alloc_staging(res, size);
+        dat->stg = _alloc_staging(res, datalloc, size);
     }
 
     dvz_obj_created(&dat->obj);
