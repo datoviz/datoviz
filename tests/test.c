@@ -103,6 +103,13 @@ int dvz_run_tests(const char* match)
     // Testing transfers.
     TEST(test_transfers_buffer_mappable)
     TEST(test_transfers_buffer_large)
+    TEST(test_transfers_buffer_copy)
+    TEST(test_transfers_image_buffer)
+    TEST(test_transfers_direct_buffer)
+    TEST(test_transfers_direct_image)
+    TEST(test_transfers_dups_util)
+    TEST(test_transfers_dups_upload)
+    TEST(test_transfers_dups_copy)
 
     // Teardown the gpu fixture.
     TEARDOWN(teardown_gpu)
