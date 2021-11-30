@@ -30,6 +30,7 @@ DvzFifo dvz_fifo(int32_t capacity)
     dvz_atomic_set(fifo.is_empty, 1);
 
     fifo.is_processing = dvz_atomic();
+    dvz_atomic_set(fifo.is_processing, 0);
 
     fifo.lock = dvz_mutex();
     fifo.cond = dvz_cond();
@@ -238,7 +239,7 @@ void dvz_fifo_destroy(DvzFifo* fifo)
 
 
 /*************************************************************************************************/
-/*  Dequeues                                                                                     */
+/*  Dequeue utils                                                                                */
 /*************************************************************************************************/
 
 static DvzFifo* _deq_fifo(DvzDeq* deq, uint32_t deq_idx)
@@ -255,27 +256,193 @@ static DvzFifo* _deq_fifo(DvzDeq* deq, uint32_t deq_idx)
 
 
 // Call all callback functions registered with a deq_idx and type on a deq item.
-static void _deq_callbacks(DvzDeq* deq, DvzDeqItem item_s)
+static void _deq_callbacks(DvzDeq* deq, DvzDeqItem* item)
 {
     ASSERT(deq != NULL);
-    ASSERT(item_s.item != NULL);
+    ASSERT(item->item != NULL);
     DvzDeqCallbackRegister* reg = NULL;
-    for (uint32_t i = 0; i < deq->callback_count; i++)
+    uint32_t n = deq->callback_count;
+
+    // First, we need to determine if there is at least one non-default callback. If so, we'll only
+    // call them. Otherwise, we call the default callbacks.
+    bool do_call_default = true;
+    if (deq->has_default)
+    {
+        for (uint32_t i = 0; i < n; i++)
+        {
+            reg = &deq->callbacks[i];
+            ASSERT(reg != NULL);
+            if (reg->deq_idx == item->deq_idx && reg->type == item->type && !reg->is_default)
+            {
+                // NOTE: we call all non-default callbacks. We only call a default callback if
+                // it's the last one in the list of callbacks. Otherwise, we assume that the
+                // other callbacks after the default will supersede it.
+                do_call_default = false;
+                break;
+            }
+        }
+    }
+
+    // Now, we go through all callbacks and we call them or not depending on whether they're
+    // default, and whether we call the default or not.
+    for (uint32_t i = 0; i < n; i++)
     {
         reg = &deq->callbacks[i];
         ASSERT(reg != NULL);
-        if (reg->deq_idx == item_s.deq_idx && reg->type == item_s.type)
+        if (reg->deq_idx == item->deq_idx && reg->type == item->type)
         {
-            reg->callback(deq, item_s.item, reg->user_data);
+            // NOTE: we do not call the callback if we should not call the default callbacks, and
+            // if the current callback is a default one.
+            if (do_call_default || !reg->is_default)
+                reg->callback(deq, item->item, reg->user_data);
         }
     }
 }
 
 
 
+// Return the total size of the Deq.
+static int _deq_size(DvzDeq* deq, uint32_t queue_count, uint32_t* queue_ids)
+{
+    ASSERT(deq != NULL);
+    ASSERT(queue_count > 0);
+    ASSERT(queue_ids != NULL);
+    int size = 0;
+    uint32_t deq_idx = 0;
+    for (uint32_t i = 0; i < queue_count; i++)
+    {
+        deq_idx = queue_ids[i];
+        ASSERT(deq_idx < deq->queue_count);
+        size += dvz_fifo_size(&deq->queues[deq_idx]);
+    }
+    return size;
+}
+
+
+
+static void
+_proc_callbacks(DvzDeq* deq, uint32_t proc_idx, DvzDeqProcCallbackPosition pos, DvzDeqItem* item)
+{
+    ASSERT(deq != NULL);
+    ASSERT(proc_idx < deq->proc_count);
+    DvzDeqProc* proc = &deq->procs[proc_idx];
+
+    for (uint32_t i = 0; i < proc->callback_count; i++)
+    {
+        if (proc->callbacks[i].pos == pos)
+        {
+            ASSERT(proc->callbacks[i].callback != NULL);
+            proc->callbacks[i].callback(
+                deq, item->deq_idx, item->type, item->item, proc->callbacks[i].user_data);
+        }
+    }
+}
+
+
+
+static void _proc_wait_callbacks(DvzDeq* deq, uint32_t proc_idx)
+{
+    ASSERT(deq != NULL);
+    ASSERT(proc_idx < deq->proc_count);
+    DvzDeqProc* proc = &deq->procs[proc_idx];
+
+    for (uint32_t i = 0; i < proc->wait_callback_count; i++)
+    {
+        ASSERT(proc->wait_callbacks[i].callback != NULL);
+        proc->wait_callbacks[i].callback(deq, proc->wait_callbacks[i].user_data);
+    }
+}
+
+
+
+static void _proc_batch_callbacks(
+    DvzDeq* deq, uint32_t proc_idx, DvzDeqProcBatchPosition pos, uint32_t item_count,
+    DvzDeqItem* items)
+{
+    ASSERT(deq != NULL);
+    ASSERT(proc_idx < deq->proc_count);
+    DvzDeqProc* proc = &deq->procs[proc_idx];
+    DvzDeqProcBatchCallbackRegister* reg = NULL;
+
+    for (uint32_t i = 0; i < proc->batch_callback_count; i++)
+    {
+        reg = &proc->batch_callbacks[i];
+        ASSERT(reg->callback != NULL);
+        if (reg->pos == pos)
+            reg->callback(deq, pos, item_count, items, reg->user_data);
+    }
+}
+
+
+
+// Return 0 if an item was dequeued, or a non-zero integer if the timeout-ed wait was unsuccessful
+// (in which case we need to continue waiting).
+static int _proc_wait(DvzDeqProc* proc)
+{
+    ASSERT(proc != NULL);
+
+    if (proc->max_wait == 0)
+    {
+        // NOTE: this call automatically releases the mutex while waiting, and reacquires it
+        // afterwards
+        return pthread_cond_wait(&proc->cond, &proc->lock);
+    }
+    else
+    {
+        struct timeval now;
+        uint32_t wait_s = proc->max_wait / 1000; // in seconds
+        //                  ^^ in ms  ^^   ^^^^ convert to s
+        uint32_t wait_us = (proc->max_wait - 1000 * wait_s) * 1000; // in us
+        //                  ^^ in ms  ^^^    ^^^ in ms ^^^    ^^^ to us
+        // Determine until when to wait for the cond.
+
+        gettimeofday(&now, NULL);
+
+        // How many seconds after now?
+        proc->wait.tv_sec = now.tv_sec + wait_s;
+        // How many nanoseconds after the X seconds?
+        proc->wait.tv_nsec = ((uint32_t)now.tv_usec + wait_us) * 1000; // from us to ns
+
+        // NOTE: this call automatically releases the mutex while waiting, and reacquires it
+        // afterwards
+        return pthread_cond_timedwait(&proc->cond, &proc->lock, &proc->wait);
+    }
+}
+
+
+
+static void _enqueue_next(DvzDeq* deq, uint32_t item_count, DvzDeqItem* items)
+{
+    ASSERT(deq != NULL);
+    if (item_count == 0)
+        return;
+    ASSERT(item_count > 0);
+    ASSERT(items != NULL);
+
+    // Go through all items.
+    DvzDeqItemNext* next = NULL;
+    for (uint32_t i = 0; i < item_count; i++)
+    {
+        // Go through every next item.
+        for (uint32_t j = 0; j < items[i].next_count; j++)
+        {
+            next = &items[i].next_items[j];
+            // Enqueue the next item.
+            dvz_deq_enqueue_submit(deq, next->next_item, next->enqueue_first);
+        }
+    }
+}
+
+
+
+/*************************************************************************************************/
+/*  Dequeues                                                                                     */
+/*************************************************************************************************/
+
 DvzDeq dvz_deq(uint32_t nq)
 {
     DvzDeq deq = {0};
+    ASSERT(nq <= DVZ_DEQ_MAX_QUEUES);
     deq.queue_count = nq;
     for (uint32_t i = 0; i < nq; i++)
         deq.queues[i] = dvz_fifo(DVZ_MAX_FIFO_CAPACITY);
@@ -284,8 +451,9 @@ DvzDeq dvz_deq(uint32_t nq)
 
 
 
-void dvz_deq_callback(
-    DvzDeq* deq, uint32_t deq_idx, int type, DvzDeqCallback callback, void* user_data)
+static void _deq_callback(
+    DvzDeq* deq, uint32_t deq_idx, int type, DvzDeqCallback callback, void* user_data,
+    bool is_default)
 {
     ASSERT(deq != NULL);
     ASSERT(callback != NULL);
@@ -297,36 +465,222 @@ void dvz_deq_callback(
     reg->type = type;
     reg->callback = callback;
     reg->user_data = user_data;
+    reg->is_default = is_default;
+
+    if (is_default)
+        deq->has_default = true;
+}
+
+void dvz_deq_callback(
+    DvzDeq* deq, uint32_t deq_idx, int type, DvzDeqCallback callback, void* user_data)
+{
+    _deq_callback(deq, deq_idx, type, callback, user_data, false);
+}
+
+void dvz_deq_callback_default(
+    DvzDeq* deq, uint32_t deq_idx, int type, DvzDeqCallback callback, void* user_data)
+{
+    _deq_callback(deq, deq_idx, type, callback, user_data, true);
 }
 
 
+
+void dvz_deq_proc(DvzDeq* deq, uint32_t proc_idx, uint32_t queue_count, uint32_t* queue_ids)
+{
+    ASSERT(deq != NULL);
+    ASSERT(queue_ids != NULL);
+
+    // HACK: calls to dvz_deq_proc(deq, proc_idx, ...) must be with proc_idx strictly increasing:
+    // 0, 1, 2...
+    ASSERT(proc_idx == deq->proc_count);
+
+    DvzDeqProc* proc = &deq->procs[deq->proc_count++];
+    ASSERT(proc != NULL);
+
+    ASSERT(queue_count <= DVZ_DEQ_MAX_PROC_SIZE);
+    proc->queue_count = queue_count;
+    // Copy the queue ids to the DvzDeqProc struct.
+    for (uint32_t i = 0; i < queue_count; i++)
+    {
+        ASSERT(queue_ids[i] < deq->queue_count);
+        proc->queue_indices[i] = queue_ids[i];
+
+        // Register, for each of the indicated queue, which proc idx is handling it.
+        ASSERT(queue_ids[i] < DVZ_DEQ_MAX_QUEUES);
+        deq->q_to_proc[queue_ids[i]] = proc_idx;
+    }
+
+    // Initialize the thread objects.
+    if (pthread_mutex_init(&proc->lock, NULL) != 0)
+        log_error("mutex creation failed");
+    if (pthread_cond_init(&proc->cond, NULL) != 0)
+        log_error("cond creation failed");
+    proc->is_processing = dvz_atomic();
+}
+
+
+
+void dvz_deq_proc_callback(
+    DvzDeq* deq, uint32_t proc_idx, DvzDeqProcCallbackPosition pos, DvzDeqProcCallback callback,
+    void* user_data)
+{
+    ASSERT(deq != NULL);
+
+    ASSERT(proc_idx < deq->proc_count);
+    DvzDeqProc* proc = &deq->procs[proc_idx];
+    ASSERT(proc != NULL);
+
+    ASSERT(callback != NULL);
+
+    DvzDeqProcCallbackRegister* reg = &proc->callbacks[proc->callback_count++];
+    ASSERT(reg != NULL);
+
+    reg->callback = callback;
+    reg->pos = pos;
+    reg->user_data = user_data;
+}
+
+
+
+void dvz_deq_proc_wait_delay(DvzDeq* deq, uint32_t proc_idx, uint32_t delay_ms)
+{
+    ASSERT(deq != NULL);
+    ASSERT(proc_idx < deq->proc_count);
+    DvzDeqProc* proc = &deq->procs[proc_idx];
+    ASSERT(proc != NULL);
+
+    proc->max_wait = delay_ms;
+}
+
+
+
+void dvz_deq_proc_wait_callback(
+    DvzDeq* deq, uint32_t proc_idx, DvzDeqProcWaitCallback callback, void* user_data)
+{
+    ASSERT(deq != NULL);
+
+    ASSERT(proc_idx < deq->proc_count);
+    DvzDeqProc* proc = &deq->procs[proc_idx];
+    ASSERT(proc != NULL);
+
+    ASSERT(callback != NULL);
+
+    DvzDeqProcWaitCallbackRegister* reg = &proc->wait_callbacks[proc->wait_callback_count++];
+    ASSERT(reg != NULL);
+
+    reg->callback = callback;
+    reg->user_data = user_data;
+}
+
+
+
+void dvz_deq_proc_batch_callback(
+    DvzDeq* deq, uint32_t proc_idx, DvzDeqProcBatchPosition pos, DvzDeqProcBatchCallback callback,
+    void* user_data)
+{
+    ASSERT(deq != NULL);
+
+    ASSERT(proc_idx < deq->proc_count);
+    DvzDeqProc* proc = &deq->procs[proc_idx];
+    ASSERT(proc != NULL);
+
+    ASSERT(callback != NULL);
+
+    DvzDeqProcBatchCallbackRegister* reg = &proc->batch_callbacks[proc->batch_callback_count++];
+    ASSERT(reg != NULL);
+
+    reg->callback = callback;
+    reg->pos = pos;
+    reg->user_data = user_data;
+}
+
+
+
+static DvzDeqItem*
+_deq_item(uint32_t deq_idx, int type, void* item, uint32_t next_count, DvzDeqItemNext* next_items)
+{
+    DvzDeqItem* deq_item = calloc(1, sizeof(DvzDeqItem));
+    ASSERT(deq_item != NULL);
+    deq_item->deq_idx = deq_idx;
+    deq_item->type = type;
+    deq_item->item = item;
+    deq_item->next_count = next_count;
+    deq_item->next_items = next_items;
+
+    return deq_item;
+}
+
+static void
+_deq_enqueue_item(DvzDeq* deq, uint32_t deq_idx, DvzDeqItem* deq_item, bool enqueue_first)
+{
+    ASSERT(deq != NULL);
+    ASSERT(deq_idx < deq->queue_count);
+    ASSERT(deq_idx < DVZ_DEQ_MAX_QUEUES);
+
+    // Find the proc that processes the specified queue.
+    uint32_t proc_idx = deq->q_to_proc[deq_idx];
+    ASSERT(proc_idx < deq->proc_count);
+    DvzDeqProc* proc = &deq->procs[proc_idx];
+
+    // We signal that proc that an item has been enqueued to one of its queues.
+    pthread_mutex_lock(&proc->lock);
+    DvzFifo* fifo = _deq_fifo(deq, deq_idx);
+    if (!enqueue_first)
+        dvz_fifo_enqueue(fifo, deq_item);
+    else
+        dvz_fifo_enqueue_first(fifo, deq_item);
+    // log_trace("signal cond of proc #%d", proc_idx);
+    pthread_cond_signal(&proc->cond);
+    pthread_mutex_unlock(&proc->lock);
+}
 
 void dvz_deq_enqueue(DvzDeq* deq, uint32_t deq_idx, int type, void* item)
 {
-    ASSERT(deq != NULL);
-    ASSERT(deq_idx < deq->queue_count);
-    DvzFifo* fifo = _deq_fifo(deq, deq_idx);
-    DvzDeqItem* deq_item = calloc(1, sizeof(DvzDeqItem));
-    ASSERT(deq_item != NULL);
-    deq_item->deq_idx = deq_idx;
-    deq_item->type = type;
-    deq_item->item = item;
-    dvz_fifo_enqueue(fifo, deq_item);
+    DvzDeqItem* deq_item = _deq_item(deq_idx, type, item, 0, NULL);
+    _deq_enqueue_item(deq, deq_idx, deq_item, false);
+}
+
+void dvz_deq_enqueue_first(DvzDeq* deq, uint32_t deq_idx, int type, void* item)
+{
+    DvzDeqItem* deq_item = _deq_item(deq_idx, type, item, 0, NULL);
+    _deq_enqueue_item(deq, deq_idx, deq_item, true);
 }
 
 
 
-void dvz_deq_enqueue_first(DvzDeq* deq, uint32_t deq_idx, int type, void* item)
+DvzDeqItem* dvz_deq_enqueue_custom(uint32_t deq_idx, int type, void* item)
+{
+    return _deq_item(deq_idx, type, item, 0, NULL);
+}
+
+void dvz_deq_enqueue_next(DvzDeqItem* deq_item, DvzDeqItem* next_item, bool enqueue_first)
+{
+    ASSERT(deq_item != NULL);
+    ASSERT(next_item != NULL);
+
+    if (deq_item->next_items == NULL)
+    {
+        ASSERT(deq_item->next_count == 0);
+        deq_item->next_items = calloc(2, sizeof(DvzDeqItemNext));
+    }
+    ASSERT(deq_item->next_items != NULL);
+    if (deq_item->next_count >= 2)
+    {
+        // TO DO: implement this, just need a REALLOC with a 2x size
+        log_error("more than 2 next items: not currently supported");
+        return;
+    }
+
+    DvzDeqItemNext* next = &deq_item->next_items[deq_item->next_count++];
+    next->next_item = next_item;
+}
+
+void dvz_deq_enqueue_submit(DvzDeq* deq, DvzDeqItem* deq_item, bool enqueue_first)
 {
     ASSERT(deq != NULL);
-    ASSERT(deq_idx < deq->queue_count);
-    DvzFifo* fifo = _deq_fifo(deq, deq_idx);
-    DvzDeqItem* deq_item = calloc(1, sizeof(DvzDeqItem));
     ASSERT(deq_item != NULL);
-    deq_item->deq_idx = deq_idx;
-    deq_item->type = type;
-    deq_item->item = item;
-    dvz_fifo_enqueue_first(fifo, deq_item);
+
+    _deq_enqueue_item(deq, deq_item->deq_idx, deq_item, enqueue_first);
 }
 
 
@@ -365,7 +719,18 @@ DvzDeqItem dvz_deq_peek_last(DvzDeq* deq, uint32_t deq_idx)
 
 
 
-DvzDeqItem dvz_deq_dequeue(DvzDeq* deq, bool wait)
+void dvz_deq_strategy(DvzDeq* deq, uint32_t proc_idx, DvzDeqStrategy strategy)
+{
+    ASSERT(deq != NULL);
+    ASSERT(proc_idx < deq->proc_count);
+    DvzDeqProc* proc = &deq->procs[proc_idx];
+    ASSERT(proc != NULL);
+    proc->strategy = strategy;
+}
+
+
+
+DvzDeqItem dvz_deq_dequeue(DvzDeq* deq, uint32_t proc_idx, bool wait)
 {
     ASSERT(deq != NULL);
 
@@ -373,29 +738,273 @@ DvzDeqItem dvz_deq_dequeue(DvzDeq* deq, bool wait)
     DvzDeqItem* deq_item = NULL;
     DvzDeqItem item_s = {0};
 
-    // Find the first non-empty FIFO queue, and dequeue it.
-    for (uint32_t deq_idx = 0; deq_idx < deq->queue_count; deq_idx++)
+    ASSERT(proc_idx < deq->proc_count);
+    DvzDeqProc* proc = &deq->procs[proc_idx];
+
+    pthread_mutex_lock(&proc->lock);
+
+    // Wait until the queue is not empty.
+    if (wait)
     {
+        log_trace("waiting for one of the queues in proc #%d to be non-empty", proc_idx);
+        while (_deq_size(deq, proc->queue_count, proc->queue_indices) == 0)
+        {
+            // log_trace("waiting for proc #%d cond", proc_idx);
+            if (_proc_wait(proc) != 0)
+            {
+                // If the timeout-ed wait was unsuccessful, we will continue waiting at the next
+                // iteration. But before that, we call the proc wait callbacks.
+                _proc_wait_callbacks(deq, proc_idx);
+            }
+            else
+            {
+                // log_trace("proc #%d cond signaled!", proc_idx);
+                break; // NOTE: this is not necessary, because if the cond is signaled, it means
+                       // the queue is non empty, and the while() condition at the very next
+                       // iteration will fail, thereby ending the while loop.
+            }
+        }
+        // log_trace("proc #%d has an item", proc_idx);
+    }
+
+    // Here, we know there is at least one item to dequeue because one of the queues is non-empty.
+
+    // Go through the passed queue indices.
+    uint32_t deq_idx = 0;
+    for (uint32_t i = 0; i < proc->queue_count; i++)
+    {
+        // This is the ID of the queue.
+        // NOTE: process the queues circularly so that all queues successively get a chance to be
+        // dequeued, even if another queue is getting filled more quickly.
+        deq_idx = proc->queue_indices[(i + proc->queue_offset) % proc->queue_count];
+        ASSERT(deq_idx < deq->queue_count);
+
+        // Get that FIFO queue.
         fifo = _deq_fifo(deq, deq_idx);
-        deq_item = dvz_fifo_dequeue(fifo, wait);
+
+        // Dequeue it immediately, return NULL if the queue was empty.
+        deq_item = dvz_fifo_dequeue(fifo, false);
         if (deq_item != NULL)
         {
+            // Make a copy of the struct.
             item_s = *deq_item;
-            log_trace(
-                "dequeue item from FIFO queue #%d with type %d", item_s.deq_idx, item_s.type);
-            ASSERT(item_s.item != NULL);
+            // Consistency check.
+            ASSERT(deq_idx == item_s.deq_idx);
+            // log_trace("dequeue item from FIFO queue #%d with type %d", deq_idx, item_s.type);
             FREE(deq_item);
             break;
         }
+        // log_trace("queue #%d was empty", deq_idx);
     }
+    // IMPORTANT: we must unlock BEFORE calling the callbacks if we want to permit callbacks to
+    // enqueue new tasks.
+    pthread_mutex_unlock(&proc->lock);
 
-    // Call the associated callbacks automatically.
+    // First, call the generic Proc pre callbacks.
+    _proc_callbacks(deq, proc_idx, DVZ_DEQ_PROC_CALLBACK_PRE, &item_s);
+
+    // Then, call the typed callbacks.
     if (item_s.item != NULL)
     {
-        _deq_callbacks(deq, item_s);
+        dvz_atomic_set(proc->is_processing, 1);
+        _deq_callbacks(deq, &item_s);
     }
 
+    // Finally, call the generic Proc post callbacks.
+    _proc_callbacks(deq, proc_idx, DVZ_DEQ_PROC_CALLBACK_POST, &item_s);
+
+    dvz_atomic_set(proc->is_processing, 0);
+
+    // Enqueue the next items.
+    _enqueue_next(deq, 1, &item_s);
+
+    // Implement the dequeue strategy here. If queue_offset remains at 0, the dequeue will first
+    // empty the first queue, then move to the second queue, etc. Otherwise, all queues will be
+    // handled one after the other.
+    if (proc->strategy == DVZ_DEQ_STRATEGY_BREADTH_FIRST)
+        proc->queue_offset = (proc->queue_offset + 1) % proc->queue_count;
+
     return item_s;
+}
+
+
+
+// WARNING: when using this function, the items that are enqueued will be FREE-ed automatically!
+void dvz_deq_dequeue_loop(DvzDeq* deq, uint32_t proc_idx)
+{
+    ASSERT(deq != NULL);
+    ASSERT(proc_idx < deq->proc_count);
+    DvzDeqItem item = {0};
+
+    while (true)
+    {
+        log_trace("waiting for proc #%d", proc_idx);
+        // This call dequeues an item and also calls all registered callbacks if the item is not
+        // null.
+        item = dvz_deq_dequeue(deq, proc_idx, true);
+        if (item.item == NULL)
+        {
+            log_debug("stop the deq loop for proc #%d", proc_idx);
+            break;
+        }
+        else
+        {
+            // WARNING: the pointer MUST be alloc-ed on the heap, because it is always
+            // freed here after dequeue and callbacks.
+            log_trace("free item");
+            FREE(item.item);
+        }
+        // log_trace("got a deq item on proc #%d", proc_idx);
+    }
+}
+
+
+
+// WARNING: this function FREEs every enqueue item, like dvz_deq_dequeue_loop().
+void dvz_deq_dequeue_batch(DvzDeq* deq, uint32_t proc_idx)
+{
+    ASSERT(deq != NULL);
+
+    DvzFifo* fifo = NULL;
+    DvzDeqItem* deq_item = NULL;
+    DvzDeqItem item_s = {0};
+
+    ASSERT(proc_idx < deq->proc_count);
+    DvzDeqProc* proc = &deq->procs[proc_idx];
+
+    pthread_mutex_lock(&proc->lock);
+
+    // Find the number of items that should be dequeued now.
+    int size = _deq_size(deq, proc->queue_count, proc->queue_indices);
+    ASSERT(size >= 0);
+    uint32_t item_count = (uint32_t)size;
+    DvzDeqItem* items = NULL;
+    // Allocate the memory for the items to be dequeued.
+    if (item_count > 0)
+        items = calloc(item_count, sizeof(DvzDeqItem));
+    else
+    {
+        // Skip this function if there are no pending items in the dequeue.
+        pthread_mutex_unlock(&proc->lock);
+        return;
+    }
+    uint32_t k = 0;     // item index for each queue
+    uint32_t k_tot = 0; // item index across all queues
+
+    // Call the BEGIN batch callbacks.
+    dvz_atomic_set(proc->is_processing, 1);
+    // NOTE: we cannot pass the items array at BEGIN because we haven't dequeued the items yet.
+    _proc_batch_callbacks(deq, proc_idx, DVZ_DEQ_PROC_BATCH_BEGIN, item_count, NULL);
+    dvz_atomic_set(proc->is_processing, 0);
+
+    // Go through the queue indices.
+    uint32_t deq_idx = 0;
+    for (uint32_t i = 0; i < proc->queue_count; i++)
+    {
+        k = 0;
+        // This is the ID of the queue.
+        deq_idx = proc->queue_indices[i];
+        ASSERT(deq_idx < deq->queue_count);
+
+        // Get that FIFO queue.
+        fifo = _deq_fifo(deq, deq_idx);
+
+        // Dequeue it immediately, return NULL if the queue was empty.
+        // NOTE: the dequeue strategie is implemented in this function.
+        deq_item = dvz_fifo_dequeue(fifo, false);
+        while (deq_item != NULL)
+        {
+            // Make a copy of the struct.
+            item_s = *deq_item;
+            // Consistency check.
+            ASSERT(deq_idx == item_s.deq_idx);
+            // log_trace("dequeue item from FIFO queue #%d with type %d", deq_idx, item_s.type);
+            FREE(deq_item);
+            // Copy the item into the array allocated above.
+            items[k++] = item_s;
+            k_tot++;
+            // Dequeue the next item, if any.
+            deq_item = dvz_fifo_dequeue(fifo, false);
+        }
+        // log_trace("%d items batch-dequeued from queue #%d", k, deq_idx);
+    }
+    // log_trace("%d items batch-dequeued from %d queues", k_tot, proc->queue_count);
+    ASSERT(k_tot == item_count);
+
+    // IMPORTANT: we must unlock BEFORE calling the callbacks if we want to permit callbacks to
+    // enqueue new tasks.
+    pthread_mutex_unlock(&proc->lock);
+
+    // Call the typed callbacks.
+    dvz_atomic_set(proc->is_processing, 1);
+    for (uint32_t i = 0; i < item_count; i++)
+    {
+        if (items[i].item != NULL)
+        {
+            _deq_callbacks(deq, &items[i]);
+        }
+    }
+
+    // Call the END batch callbacks.
+    _proc_batch_callbacks(deq, proc_idx, DVZ_DEQ_PROC_BATCH_END, item_count, items);
+
+    dvz_atomic_set(proc->is_processing, 0);
+
+    // Enqueue the next items.
+    _enqueue_next(deq, item_count, items);
+
+    // FREE all items, and the items container.
+    for (uint32_t i = 0; i < item_count; i++)
+    {
+        if (items[i].item != NULL)
+            FREE(items[i].item);
+    }
+    FREE(items);
+}
+
+
+
+void dvz_deq_wait(DvzDeq* deq, uint32_t proc_idx)
+{
+    ASSERT(deq != NULL);
+
+    ASSERT(proc_idx < deq->proc_count);
+    DvzDeqProc* proc = &deq->procs[proc_idx];
+    log_trace("start waiting for proc #%d", proc_idx);
+
+    while (_deq_size(deq, proc->queue_count, proc->queue_indices) > 0 ||
+           dvz_atomic_get(proc->is_processing))
+    {
+        dvz_sleep(1);
+    }
+    log_trace("finished waiting for empty queues");
+}
+
+
+
+static char* _strcat(char* dest, char* src)
+{
+    while (*dest)
+        dest++;
+    while ((*dest++ = *src++))
+        ;
+    return --dest;
+}
+
+void dvz_deq_stats(DvzDeq* deq)
+{
+    ASSERT(deq != NULL);
+
+    char s[1024] = {0};
+    char sn[8] = {0};
+    for (uint32_t i = 0; i < deq->queue_count; i++)
+    {
+        snprintf(sn, sizeof(sn), "%d", dvz_fifo_size(&deq->queues[i]));
+        _strcat(s, sn);
+        if (i < deq->queue_count - 1)
+            _strcat(s, ", ");
+    }
+    log_info("queue sizes: %s", s);
 }
 
 
@@ -403,6 +1012,14 @@ DvzDeqItem dvz_deq_dequeue(DvzDeq* deq, bool wait)
 void dvz_deq_destroy(DvzDeq* deq)
 {
     ASSERT(deq != NULL);
+
     for (uint32_t i = 0; i < deq->queue_count; i++)
         dvz_fifo_destroy(&deq->queues[i]);
+
+    for (uint32_t i = 0; i < deq->proc_count; i++)
+    {
+        pthread_mutex_destroy(&deq->procs[i].lock);
+        pthread_cond_destroy(&deq->procs[i].cond);
+        dvz_atomic_destroy(deq->procs[i].is_processing);
+    }
 }
