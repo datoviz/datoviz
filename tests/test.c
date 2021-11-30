@@ -17,6 +17,7 @@
 #include "test_obj.h"
 #include "test_resources.h"
 #include "test_thread.h"
+#include "test_transfers.h"
 #include "test_vklite.h"
 #include "test_window.h"
 #include "testing.h"
@@ -98,6 +99,10 @@ int dvz_run_tests(const char* match)
     TEST(test_resources_1)
     TEST(test_resources_dat_1)
     TEST(test_resources_tex_1)
+
+    // Testing transfers.
+    TEST(test_transfers_buffer_mappable)
+    TEST(test_transfers_buffer_large)
 
     // Teardown the gpu fixture.
     TEARDOWN(teardown_gpu)
