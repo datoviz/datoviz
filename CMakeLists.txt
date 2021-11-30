@@ -433,6 +433,7 @@ set(sources
     "src/alloc.cpp"
     "src/resources.c"
     "src/datalloc.c"
+    "src/transfers.c"
 
     "external/tinycthread.c"
     "external/vk_mem_alloc.cpp"
