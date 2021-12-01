@@ -97,6 +97,10 @@ int test_resources_dat_transfers(TstSuite* suite);
 
 int test_resources_dat_resize(TstSuite* suite);
 
+int test_resources_tex_transfers(TstSuite* suite);
+
+int test_resources_tex_resize(TstSuite* suite);
+
 
 
 #endif

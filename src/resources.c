@@ -337,11 +337,14 @@ void dvz_dat_destroy(DvzDat* dat)
 /*************************************************************************************************/
 
 
-DvzTex* dvz_tex(DvzResources* res, DvzTexDims dims, uvec3 shape, VkFormat format, int flags)
+DvzTex* dvz_tex(DvzContext* ctx, DvzTexDims dims, uvec3 shape, VkFormat format, int flags)
 {
+    ASSERT(ctx != NULL);
+    DvzResources* res = &ctx->res;
     ASSERT(res != NULL);
 
     DvzTex* tex = (DvzTex*)dvz_container_alloc(&res->texs);
+    tex->ctx = ctx;
     tex->res = res;
     tex->flags = flags;
     tex->dims = dims;
@@ -368,6 +371,59 @@ void dvz_tex_resize(DvzTex* tex, uvec3 new_shape, DvzSize new_size)
     // Resize the persistent staging tex if there is one.
     if (tex->stg != NULL)
         dvz_dat_resize(tex->stg, new_size);
+}
+
+
+
+void dvz_tex_upload(
+    DvzTex* tex, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data, bool wait)
+{
+    ASSERT(tex != NULL);
+    ASSERT(tex->img != NULL);
+
+    DvzContext* ctx = tex->ctx;
+    ASSERT(ctx != NULL);
+
+    DvzTransfers* transfers = &ctx->transfers;
+    ASSERT(transfers != NULL);
+
+    // Get the associated staging buffer.
+    DvzDat* stg = _tex_staging(ctx, tex, size);
+    ASSERT(stg != NULL);
+
+    _enqueue_image_upload(&transfers->deq, tex->img, offset, shape, stg->br, 0, size, data);
+
+    if (wait)
+    {
+        dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
+    }
+}
+
+
+
+void dvz_tex_download(
+    DvzTex* tex, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data, bool wait)
+{
+    ASSERT(tex != NULL);
+    ASSERT(tex->img != NULL);
+
+    DvzContext* ctx = tex->ctx;
+    ASSERT(ctx != NULL);
+
+    DvzTransfers* transfers = &ctx->transfers;
+    ASSERT(transfers != NULL);
+
+    // Get the associated staging buffer.
+    DvzDat* stg = _tex_staging(ctx, tex, size);
+    ASSERT(stg != NULL);
+
+    _enqueue_image_download(&transfers->deq, tex->img, offset, shape, stg->br, 0, size, data);
+
+    if (wait)
+    {
+        dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
+        dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_EV, true);
+    }
 }
 
 

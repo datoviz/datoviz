@@ -85,19 +85,20 @@ int test_resources_tex_1(TstSuite* suite)
     DvzGpu* gpu = get_gpu(suite);
     ASSERT(gpu != NULL);
 
-    // Create the resources object.
-    DvzResources res = {0};
-    dvz_resources(gpu, &res);
+    // Create the context.
+    DvzContext* ctx = dvz_context(gpu);
+    ASSERT(ctx != NULL);
 
     uvec3 shape = {2, 4, 1};
     VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
 
     // Allocate a tex.
-    DvzTex* tex = dvz_tex(&res, DVZ_TEX_2D, shape, format, 0);
+    DvzTex* tex = dvz_tex(ctx, DVZ_TEX_2D, shape, format, 0);
     ASSERT(tex != NULL);
 
     dvz_tex_destroy(tex);
-    dvz_resources_destroy(&res);
+
+    dvz_context_destroy(ctx);
     return 0;
 }
 
@@ -186,6 +187,100 @@ int test_resources_dat_resize(TstSuite* suite)
     ASSERT(memcmp(data1, data, size) == 0);
 
     dvz_dat_destroy(dat);
+
+    dvz_context_destroy(ctx);
+    return 0;
+}
+
+
+
+int test_resources_tex_transfers(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+    DvzGpu* gpu = get_gpu(suite);
+    ASSERT(gpu != NULL);
+
+    DvzContext* ctx = dvz_context(gpu);
+    ASSERT(ctx != NULL);
+
+    uvec3 shape = {2, 4, 1};
+    VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
+    VkDeviceSize size = 4 * shape[0] * shape[1] * shape[2];
+
+    // Create a data array.
+    uint8_t data[32] = {0};
+    uint8_t data1[32 * 4] = {0};
+    ASSERT(size == 32);
+    for (uint32_t i = 0; i < size; i++)
+        data[i] = i;
+
+    // Allocate a tex.
+    DvzTex* tex = dvz_tex(ctx, DVZ_TEX_2D, shape, format, 0);
+    ASSERT(tex != NULL);
+
+    // Upload some data.
+    dvz_tex_upload(tex, DVZ_ZERO_OFFSET, shape, size, data, true);
+
+    // Resize.
+    uvec3 new_shape = {4, 8, 1};
+    VkDeviceSize new_size = size * 4;
+    dvz_tex_resize(tex, new_shape, new_size);
+
+    // Download back the data.
+    dvz_tex_download(tex, DVZ_ZERO_OFFSET, shape, size, data1, true);
+
+    // NOTE: there is NO guarantee that the data will be kept upon resize. Whether that is the case
+    // or not is undefined behavior. for (uint32_t i = 0; i < size; i++)
+    //     AT(data1[i] == i);
+
+    dvz_tex_destroy(tex);
+
+    dvz_context_destroy(ctx);
+    return 0;
+}
+
+
+
+int test_resources_tex_resize(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+    DvzGpu* gpu = get_gpu(suite);
+    ASSERT(gpu != NULL);
+
+    DvzContext* ctx = dvz_context(gpu);
+    ASSERT(ctx != NULL);
+
+    uvec3 shape = {2, 4, 1};
+    VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
+    VkDeviceSize size = 4 * shape[0] * shape[1] * shape[2];
+
+    // Create a data array.
+    uint8_t data[32] = {0};
+    uint8_t data1[32 * 4] = {0};
+    ASSERT(size == 32);
+    for (uint32_t i = 0; i < size; i++)
+        data[i] = i;
+
+    // Allocate a tex.
+    DvzTex* tex = dvz_tex(ctx, DVZ_TEX_2D, shape, format, 0);
+    ASSERT(tex != NULL);
+
+    // Upload some data.
+    dvz_tex_upload(tex, DVZ_ZERO_OFFSET, shape, size, data, true);
+
+    // Resize.
+    uvec3 new_shape = {4, 8, 1};
+    VkDeviceSize new_size = size * 4;
+    dvz_tex_resize(tex, new_shape, new_size);
+
+    // Download back the data.
+    dvz_tex_download(tex, DVZ_ZERO_OFFSET, shape, size, data1, true);
+
+    // NOTE: there is NO guarantee that the data will be kept upon resize. Whether that is the case
+    // or not is undefined behavior. for (uint32_t i = 0; i < size; i++)
+    //     AT(data1[i] == i);
+
+    dvz_tex_destroy(tex);
 
     dvz_context_destroy(ctx);
     return 0;

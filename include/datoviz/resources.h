@@ -125,6 +125,8 @@ struct DvzDat
 struct DvzTex
 {
     DvzObject obj;
+
+    DvzContext* ctx;
     DvzResources* res;
 
     DvzTexDims dims;
@@ -335,7 +337,7 @@ DVZ_EXPORT void dvz_dat_destroy(DvzDat* dat);
  * @returns the Tex
  */
 DVZ_EXPORT DvzTex*
-dvz_tex(DvzResources* res, DvzTexDims dims, uvec3 shape, VkFormat format, int flags);
+dvz_tex(DvzContext* ctx, DvzTexDims dims, uvec3 shape, VkFormat format, int flags);
 
 /**
  * Resize a Tex.
@@ -348,6 +350,32 @@ dvz_tex(DvzResources* res, DvzTexDims dims, uvec3 shape, VkFormat format, int fl
  * @param new_size the number of bytes corresponding to the new image shape
  */
 DVZ_EXPORT void dvz_tex_resize(DvzTex* tex, uvec3 new_shape, DvzSize new_size);
+
+/**
+ * Upload data to a Tex.
+ *
+ * @param tex the Tex
+ * @param offset the offset within the image
+ * @param shape the width, height, depth of the data to upload
+ * @param size the number of bytes of the data
+ * @param data the data
+ * @param wait whether this function should wait until the upload is complete or not
+ */
+DVZ_EXPORT void
+dvz_tex_upload(DvzTex* tex, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data, bool wait);
+
+/**
+ * Download data from a Tex.
+ *
+ * @param tex the Tex
+ * @param offset the offset within the image
+ * @param shape the width, height, depth of the data to download
+ * @param size the number of bytes of the data
+ * @param data the data
+ * @param wait whether this function should wait until the download is complete or not
+ */
+DVZ_EXPORT void
+dvz_tex_download(DvzTex* tex, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data, bool wait);
 
 /**
  * Destroy a tex.
