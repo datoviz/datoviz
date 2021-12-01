@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 
+#include "host.h"
 #include "resources.h"
 #include "test.h"
 #include "test_resources.h"

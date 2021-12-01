@@ -24,6 +24,7 @@ typedef struct GLFWwindow GLFWwindow;
 #endif
 
 #include "common.h"
+#include "host.h"
 #include "window.h"
 
 

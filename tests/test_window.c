@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 
+#include "host.h"
 #include "test_window.h"
 #include "testing.h"
 #include "window.h"
