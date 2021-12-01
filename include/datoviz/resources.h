@@ -110,6 +110,7 @@ struct DvzDat
     DvzObject obj;
     DvzResources* res;
     DvzDatAlloc* datalloc;
+    DvzTransfers* transfers;
 
     int flags;
     DvzBufferRegions br;
@@ -271,6 +272,23 @@ dvz_dat(DvzResources* res, DvzDatAlloc* datalloc, DvzBufferType type, DvzSize si
  * @param new_size the new size
  */
 DVZ_EXPORT void dvz_dat_resize(DvzDat* dat, DvzSize new_size);
+
+/**
+ * Upload data to a Dat.
+ *
+ * This function may be asynchronous (wait=false) or synchronous (wait=true). If it is
+ * asynchronous, the function `dvz_transfers_frame()` must be called at every frame in the event
+ * loop.
+ *
+ * This function handles all types of uploads: with or without a staging buffer, normal or dup
+ * transfers, etc.
+ *
+ * @param dat the Dat
+ * @param offset the offset within the Dat
+ * @param size the size of the data to upload to the Dat
+ * @param wait whether this function should wait until the upload is complete or not
+ */
+DVZ_EXPORT void dvz_dat_upload(DvzDat* dat, DvzSize offset, DvzSize size, void* data, bool wait);
 
 /**
  * Destroy a dat.

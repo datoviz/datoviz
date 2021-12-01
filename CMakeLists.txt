@@ -485,6 +485,7 @@ if (DATOVIZ_WITH_CLI)
         "tests/test_vklite.c"
         "tests/test_alloc.c"
         "tests/test_resources.c"
+        "tests/test_datalloc.c"
         "tests/test_transfers.c"
         "tests/test.c"
     )

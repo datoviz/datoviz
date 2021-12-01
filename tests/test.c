@@ -13,6 +13,7 @@
 #include "_thread.h"
 #include "test.h"
 #include "test_alloc.h"
+#include "test_datalloc.h"
 #include "test_fifo.h"
 #include "test_obj.h"
 #include "test_resources.h"
@@ -99,6 +100,7 @@ int dvz_run_tests(const char* match)
     TEST(test_resources_1)
     TEST(test_resources_dat_1)
     TEST(test_resources_tex_1)
+    TEST(test_datalloc_1)
 
     // Testing transfers.
     TEST(test_transfers_buffer_mappable)

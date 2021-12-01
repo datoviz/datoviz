@@ -11,6 +11,7 @@
 #include "fifo.h"
 #include "resources_utils.h"
 #include "transfers.h"
+#include "transfers_utils.h"
 #include "vklite_utils.h"
 #include <stdlib.h>
 
@@ -175,6 +176,87 @@ void dvz_dat_resize(DvzDat* dat, DvzSize new_size)
         dvz_dat_resize(dat->stg, new_size);
 
     _dat_alloc(dat->res, dat, dat->br.buffer->type, dat->br.count, new_size);
+}
+
+
+
+void dvz_dat_upload(DvzDat* dat, VkDeviceSize offset, VkDeviceSize size, void* data, bool wait)
+{
+    ASSERT(dat != NULL);
+
+    DvzResources* res = dat->res;
+    ASSERT(res != NULL);
+
+    DvzDatAlloc* datalloc = dat->datalloc;
+    ASSERT(datalloc != NULL);
+
+    DvzTransfers* transfers = dat->transfers;
+    ASSERT(transfers != NULL);
+
+    DvzGpu* gpu = res->gpu;
+    ASSERT(gpu != NULL);
+
+    // Do we need a staging buffer?
+    DvzDat* stg = dat->stg;
+    bool need_dealloc_stg = false;
+    if (_dat_has_staging(dat) && stg == NULL)
+    {
+        // Need to allocate a temporary staging buffer.
+        ASSERT(!_dat_persistent_staging(dat));
+        log_warn("allocate temporary staging dat, not efficient -- if this message is displayed "
+                 "frequently, you should have a permanent staging dat");
+        stg = _alloc_staging(res, datalloc, size);
+        need_dealloc_stg = true;
+    }
+
+    // Enqueue the transfer task corresponding to the flags.
+    bool dup = _dat_is_dup(dat);
+    bool staging = stg != NULL;
+    DvzBufferRegions stg_br = staging ? stg->br : (DvzBufferRegions){0};
+
+    log_debug("upload %s to dat%s", pretty_size(size), staging ? " (with staging)" : "");
+
+    if (!dup)
+    {
+        // Enqueue a standard upload task, with or without staging buffer.
+        DvzDeqItem* done = need_dealloc_stg ? _create_upload_done(stg) : NULL;
+        _enqueue_buffer_upload(&transfers->deq, dat->br, offset, stg_br, 0, size, data, done);
+        if (wait)
+        {
+            if (staging)
+                dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
+            else
+            {
+                // WARNING: for mappable buffers, the transfer is done on the main thread (using
+                // the COPY queue, not the UD queue), not in the background thread, so we need to
+                // dequeue the COPY queue manually!
+                dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
+                dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
+            }
+
+            // Dequeue the upload_done event if needed.
+            if (need_dealloc_stg)
+                dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_EV, true);
+        }
+    }
+
+    else
+    {
+        // Enqueue a dup transfer task, with or without staging buffer.
+        _enqueue_dup_transfer(&transfers->deq, dat->br, offset, stg_br, 0, size, data);
+        if (wait)
+        {
+
+            // IMPORTANT: before calling the dvz_transfers_frame(), we must wait for the DUP task
+            // to be in the queue. Here we dequeue it manually. The callback will add it to the
+            // special Dups structure, and it will be correctly processed by dvz_transfer_frame().
+            dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_DUP, true);
+
+            ASSERT(dat->br.count > 0);
+            for (uint32_t i = 0; i < dat->br.count; i++)
+                dvz_transfers_frame(transfers, i);
+        }
+    }
 }
 
 
